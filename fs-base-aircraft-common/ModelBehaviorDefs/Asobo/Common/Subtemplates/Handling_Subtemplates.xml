@@ -1,0 +1,565 @@
+
+<!-- Do not call directly unless facing a specific case, prefer using HANDLING_Yoke_Hideable_Template instead -->
+<Template Name="ASOBO_HANDLING_Yoke_Hider_Template">
+	<DefaultTemplateParameters>
+		<ID>1</ID>
+	</DefaultTemplateParameters>
+	<UseTemplate Name="ASOBO_HANDLING_Yoke_Hider_SubTemplate">
+	</UseTemplate>
+</Template>
+<Template Name="ASOBO_HANDLING_Yoke_Hider_SubTemplate">
+	<DefaultTemplateParameters>
+		<NODE_ID>HANDLING_YOKE_Hider_#ID#</NODE_ID>
+	</DefaultTemplateParameters>
+	<Component ID="#NODE_ID#_Hider" Node="#NODE_ID#">
+		<UseTemplate Name="ASOBO_GT_Interaction_LeftSingle_Code">
+			<LEFT_SINGLE_CODE>(L:XMLVAR_YokeHidden#ID#) ! (&gt;L:XMLVAR_YokeHidden#ID#)</LEFT_SINGLE_CODE>
+			<TOOLTIPID>TT:COCKPIT.TOOLTIPS.YOKE_VISIBILITY</TOOLTIPID>
+		</UseTemplate>
+	</Component>
+</Template>
+
+<!-- Yoke that cannot be hidden -->
+<!-- 
+	NODE_ID: Node that should be highlighted during checklist
+	
+	optional: 
+	CREATE_TWO_NODES: create both yoke nodes and there respective highlight
+		NODE_ID2: other Node that should be highlighted during checklist (ex: copilot yoke)
+-->
+<Template Name="ASOBO_HANDLING_Yoke_SubTemplate">
+	<DefaultTemplateParameters>
+		<Condition Check="CREATE_TWO_NODES">
+			<True>
+				<NODE_ID>HANDLING_Yoke_1</NODE_ID>
+				<NODE_ID2>HANDLING_Yoke_2</NODE_ID2>
+			</True>
+			<False>
+				<NODE_ID>HANDLING_Yoke_#ID#</NODE_ID>
+			</False>
+		</Condition>
+		<Condition Valid="AP_CAN_DRIVE_ANIMATION">
+			<True>
+				<ANIM_SIMVAR_X>YOKE X POSITION WITH AP</ANIM_SIMVAR_X>
+				<ANIM_SIMVAR_Y>YOKE Y POSITION WITH AP</ANIM_SIMVAR_Y>
+			</True>
+			<False>
+				<ANIM_SIMVAR_X>YOKE X POSITION</ANIM_SIMVAR_X>
+				<ANIM_SIMVAR_Y>YOKE Y POSITION</ANIM_SIMVAR_Y>
+			</False>
+		</Condition>
+		<ANIM_NAME_YOKE_X>HANDLING_YOKE_Lever_StickLR</ANIM_NAME_YOKE_X>
+		<ANIM_NAME_YOKE_Y>HANDLING_YOKE_Lever_StickForeAft</ANIM_NAME_YOKE_Y>
+		<PART_ID>HANDLING_Yoke</PART_ID>
+	</DefaultTemplateParameters>
+	<Component ID="#NODE_ID#_#ID#" Node="#NODE_ID#">
+		<UseTemplate Name="ASOBO_GT_Anim_Sim">
+			<ANIM_NAME>#ANIM_NAME_YOKE_X#</ANIM_NAME>
+			<ANIM_LENGTH>200</ANIM_LENGTH>
+			<ANIM_SIMVAR>#ANIM_SIMVAR_X#</ANIM_SIMVAR>
+			<ANIM_SIMVAR_UNITS>percent</ANIM_SIMVAR_UNITS>
+			<!-- [-100, 100] -->
+			<ANIM_SIMVAR_BIAS>100</ANIM_SIMVAR_BIAS>
+			<!-- [-100, 100] + 100 => [0, 200] -->
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_GT_Anim_Sim">
+			<ANIM_NAME>#ANIM_NAME_YOKE_Y#</ANIM_NAME>
+			<ANIM_LENGTH>200</ANIM_LENGTH>
+			<ANIM_SIMVAR>#ANIM_SIMVAR_Y#</ANIM_SIMVAR>
+			<ANIM_SIMVAR_UNITS>percent</ANIM_SIMVAR_UNITS>
+			<!-- [-100, 100] -->
+			<ANIM_SIMVAR_BIAS>100</ANIM_SIMVAR_BIAS>
+			<!-- [-100, 100] + 100 => [0, 200] -->
+		</UseTemplate>
+	</Component>
+	<Condition Check="CREATE_TWO_NODES">
+		<UseTemplate Name="ASOBO_GT_ComponentWith_PART_ID">
+			<NODE_ID>#NODE_ID2#</NODE_ID>
+		</UseTemplate>
+	</Condition>
+</Template>
+
+<Template Name="ASOBO_HANDLING_Yoke_Hideable_SubTemplate">
+	<DefaultTemplateParameters>
+		<NODE_ID>HANDLING_YOKE_Hideable_#ID#</NODE_ID>
+		<YOKE_HIDER_NODE_ID>HANDLING_YOKE_Hider_#ID#</YOKE_HIDER_NODE_ID>
+		<YOKE_NODE_ID>HANDLING_Yoke_#ID#</YOKE_NODE_ID>
+		<TOOLTIPID>TT:COCKPIT.TOOLTIPS.YOKE_VISIBILITY</TOOLTIPID>
+	</DefaultTemplateParameters>
+	<Component ID="#NODE_ID#_VisibilityNode" Node="#NODE_ID#">
+		<UseTemplate Name="ASOBO_GT_Visibility_Code">
+			<VISIBILITY_CODE>(L:XMLVAR_YokeHidden#ID#) !</VISIBILITY_CODE>
+		</UseTemplate>
+	</Component>
+	<Condition Check="ONLY_DECORATIVE">
+		<False>
+			<UseTemplate Name="ASOBO_HANDLING_Yoke_Hider_Template">
+				<NODE_ID>#YOKE_HIDER_NODE_ID#</NODE_ID>
+			</UseTemplate>
+			<Condition Check="ONLY_HIDEABLE">
+				<True>
+					<UseTemplate Name="ASOBO_GT_ComponentWith_PART_ID">
+						<NODE_ID>#YOKE_NODE_ID#</NODE_ID>
+						<PART_ID>HANDLING_YOKE</PART_ID>
+					</UseTemplate>
+				</True>
+				<False>
+					<UseTemplate Name="ASOBO_HANDLING_Yoke_Template">
+						<NODE_ID>#YOKE_NODE_ID#</NODE_ID>
+					</UseTemplate>
+				</False>
+			</Condition>
+		</False>
+	</Condition>
+</Template>
+
+<Template Name="ASOBO_HANDLING_Joystick_YawPitch_SubTemplate">
+	<DefaultTemplateParameters>
+		<NODE_ID>HANDLING_Joystick_YawPitch_#ID#</NODE_ID>
+		<ANIM_NAME_L_R>HANDLING_Joystick_YawPitch_L_R_#ID#</ANIM_NAME_L_R> 
+		<ANIM_NAME_DN_UP>HANDLING_Joystick_YawPitch_DN_UP_#ID#</ANIM_NAME_DN_UP>
+	</DefaultTemplateParameters>
+	<Component ID="#NODE_ID#" Node="#NODE_ID#">
+		<UseTemplate Name="ASOBO_GT_Joystick">
+			<JOYSTICK_X_CODE_LEFT>(&gt;K:RUDDER_TRIM_LEFT)</JOYSTICK_X_CODE_LEFT>
+			<JOYSTICK_X_CODE_RIGHT>(&gt;K:RUDDER_TRIM_RIGHT)</JOYSTICK_X_CODE_RIGHT>
+			<JOYSTICK_Y_CODE_DOWN>
+				(A:AUTOPILOT DISENGAGED, Bool) ! if{ 1 (&gt;K:AUTOPILOT_DISENGAGE_SET) }
+				(&gt;K:ELEV_TRIM_DN)
+			</JOYSTICK_Y_CODE_DOWN>
+			<JOYSTICK_Y_CODE_UP>
+				(A:AUTOPILOT DISENGAGED, Bool) ! if{ 1 (&gt;K:AUTOPILOT_DISENGAGE_SET) }
+				(&gt;K:ELEV_TRIM_UP)
+			</JOYSTICK_Y_CODE_UP>
+			<JOYSTICK_RELEASE_CODE>(A:AUTOPILOT DISENGAGED, Bool) if{ 0 (&gt;K:AUTOPILOT_DISENGAGE_SET) }</JOYSTICK_RELEASE_CODE>
+			<UPDATE_FREQUENCY>20</UPDATE_FREQUENCY>
+			<TOOLTIPID>TT:COCKPIT.TOOLTIPS.YOKE_PUSH_NOSE</TOOLTIPID>
+		</UseTemplate>
+	</Component>
+</Template>
+
+<Template Name="ASOBO_HANDLING_Steering_Tiller_SubTemplate">
+	<DefaultTemplateParameters>
+		<NODE_ID>HANDLING_Steering_Tiller_#ID#</NODE_ID>
+		<ANIM_NAME>HANDLING_Steering_Tiller_#ID#</ANIM_NAME> 
+	</DefaultTemplateParameters>
+	
+	<Component ID="#NODE_ID#" Node="#NODE_ID#">
+		<UseTemplate Name="ASOBO_GT_Anim_Code">
+			<ANIM_CODE>
+				(A:SIM ON GROUND, Bool) if{
+					(A:GEAR STEER ANGLE PCT, Percent) 100 +
+				} els{
+					(A:STEER INPUT CONTROL, Percent) 100 +
+				}
+			</ANIM_CODE>
+			<ANIM_LENGTH>200</ANIM_LENGTH>
+		</UseTemplate>
+	</Component>
+</Template>
+
+<Template Name="ASOBO_HANDLING_RudderPedals_SubTemplate">
+	<DefaultTemplateParameters>
+		<ANIM_NAME>HANDLING_RudderPedals</ANIM_NAME>
+		<ANIM_LAG>400</ANIM_LAG>
+		<Switch Param="RUDDERPEDALS_TYPE">
+			<Case Value="SPLITTED"><!-- Separate rudders L & R for pilot & copilot -->
+				<Condition Valid="DIFFERENTIATE_BRAKE_ANIM_L_R">
+					<True>
+						<NODE_ID>HANDLING_RudderPedals_Left_1_1</NODE_ID><!-- Any valid node -->
+						<PREFIX_LEFT_PEDALS>HANDLING_RudderPedals_Left_</PREFIX_LEFT_PEDALS>
+						<SUFFIX_LEFT_PEDALS>_1</SUFFIX_LEFT_PEDALS>
+						<PREFIX_RIGHT_PEDALS>HANDLING_RudderPedals_Right_</PREFIX_RIGHT_PEDALS>
+						<SUFFIX_RIGHT_PEDALS>_2</SUFFIX_RIGHT_PEDALS>
+					</True>
+					<False>
+						<NODE_ID>HANDLING_RudderPedals_#ID#_1</NODE_ID>
+						<PART_ID>HANDLING_RudderPedals</PART_ID>
+						<NODE_ID2>HANDLING_RudderPedals_#ID#_2</NODE_ID2>
+					</False>
+				</Condition>
+			</Case>
+			<Case Value="MERGED"><!-- Each rudder pedal node is shared for pilot & copilot (L & R) -->
+				<NODE_ID>HANDLING_RudderPedals_1</NODE_ID><!-- any valid node -->
+				<NODE_ID_L_BRAKE>HANDLING_RudderPedals_1_Brake</NODE_ID_L_BRAKE>
+				<NODE_ID_L_RUDDER>HANDLING_RudderPedals_1_Rudder</NODE_ID_L_RUDDER>
+				<NODE_ID_R_BRAKE>HANDLING_RudderPedals_2_Brake</NODE_ID_R_BRAKE>
+				<NODE_ID_R_RUDDER>HANDLING_RudderPedals_2_Rudder</NODE_ID_R_RUDDER>
+				<PART_ID_BRAKES>HANDLING_RudderPedals_Brake</PART_ID_BRAKES>
+				<PART_ID_RUDDERS>HANDLING_RudderPedals_Rudder</PART_ID_RUDDERS>
+				<USE_BRAKE/>
+			</Case>
+			<Case Value="MIXED"><!-- Each rudder pedal root node is shared for pilot & copilot (L & R) but brakes are splitted -->
+				<NODE_ID>HANDLING_RudderPedals_1</NODE_ID><!-- any valid node -->
+				<NODE_ID_L_BRAKE_1>HANDLING_RudderPedals_1_1_Brake</NODE_ID_L_BRAKE_1>
+				<NODE_ID_L_BRAKE_2>HANDLING_RudderPedals_2_1_Brake</NODE_ID_L_BRAKE_2>
+				<NODE_ID_R_BRAKE_1>HANDLING_RudderPedals_1_2_Brake</NODE_ID_R_BRAKE_1>
+				<NODE_ID_R_BRAKE_2>HANDLING_RudderPedals_2_2_Brake</NODE_ID_R_BRAKE_2>
+				<NODE_ID_L_RUDDER>HANDLING_RudderPedals_1</NODE_ID_L_RUDDER>
+				<NODE_ID_R_RUDDER>HANDLING_RudderPedals_2</NODE_ID_R_RUDDER>
+				<PART_ID_BRAKES>HANDLING_RudderPedals</PART_ID_BRAKES>
+				<PART_ID_RUDDERS>HANDLING_RudderPedals</PART_ID_RUDDERS>
+				<DIFFERENTIATE_BRAKE_ANIM_L_R>True</DIFFERENTIATE_BRAKE_ANIM_L_R>
+				<USE_BRAKE/>
+			</Case>
+			<Default>
+				<PART_ID>HANDLING_RudderPedals</PART_ID>
+				<NODE_ID>HANDLING_RudderPedals_#ID#</NODE_ID>
+			</Default>
+		</Switch>
+	</DefaultTemplateParameters>
+	<OverrideTemplateParameters>
+		<Switch Param="RUDDERPEDALS_TYPE">
+			<Case Value="SPLITTED">
+				<Condition Valid="DIFFERENTIATE_BRAKE_ANIM_L_R">
+					<True>
+						<PART_ID>HANDLING_RudderPedals</PART_ID>
+						<EXIT_TEMPLATE>ASOBO_GT_Highlight_Template</EXIT_TEMPLATE>
+						<MAX_ID>2</MAX_ID>
+						<PARAM1>HIGHLIGHT_NODE_ID</PARAM1>
+					</True>
+				</Condition>
+			</Case>
+		</Switch>
+	</OverrideTemplateParameters>
+	<Switch Param="RUDDERPEDALS_TYPE">
+		<Case Value="SPLITTED">
+			<Condition Valid="DIFFERENTIATE_BRAKE_ANIM_L_R">
+				<True>
+					<Component ID="HANDLING_RudderPedals_Highlights">
+						<!-- highlights all four pedals -->
+						<UseTemplate Name="ASOBO_GT_Helper_Recursive_ID">
+							<ID>1</ID>
+							<!-- VV Recursive parameters VV -->
+							<PARAM1_PREFIX>#PREFIX_LEFT_PEDALS#</PARAM1_PREFIX>
+							<PARAM1_SUFFIX>#SUFFIX_LEFT_PEDALS#</PARAM1_SUFFIX>
+						</UseTemplate>
+						<UseTemplate Name="ASOBO_GT_Helper_Recursive_ID">
+							<ID>2</ID>
+							<!-- VV Recursive parameters VV -->
+							<PARAM1_PREFIX>#PREFIX_RIGHT_PEDALS#</PARAM1_PREFIX>
+							<PARAM1_SUFFIX>#SUFFIX_RIGHT_PEDALS#</PARAM1_SUFFIX>
+						</UseTemplate>
+					</Component>
+				</True>
+				<False>
+					<UseTemplate Name="ASOBO_GT_ComponentWith_PART_ID">
+						<NODE_ID>#NODE_ID2#</NODE_ID>
+						<ID>2</ID>
+					</UseTemplate>
+				</False>
+			</Condition>
+		</Case>
+		<Case Value="MERGED"><!-- Each rudder pedal node is shared for pilot & copilot (L & R) -->
+			<UseTemplate Name="ASOBO_GT_Highlight_Template">
+				<HIGHLIGHT_NODE_ID>#NODE_ID_L_BRAKE#</HIGHLIGHT_NODE_ID>
+				<PART_ID>#PART_ID_BRAKES#</PART_ID>
+			</UseTemplate>
+			<UseTemplate Name="ASOBO_GT_Highlight_Template">
+				<HIGHLIGHT_NODE_ID>#NODE_ID_R_BRAKE#</HIGHLIGHT_NODE_ID>
+				<PART_ID>#PART_ID_BRAKES#</PART_ID>
+			</UseTemplate>
+			<UseTemplate Name="ASOBO_GT_Highlight_Template">
+				<HIGHLIGHT_NODE_ID>#NODE_ID_L_RUDDER#</HIGHLIGHT_NODE_ID>
+				<PART_ID>#PART_ID_RUDDERS#</PART_ID>
+			</UseTemplate>
+			<UseTemplate Name="ASOBO_GT_Highlight_Template">
+				<HIGHLIGHT_NODE_ID>#NODE_ID_R_RUDDER#</HIGHLIGHT_NODE_ID>
+				<PART_ID>#PART_ID_RUDDERS#</PART_ID>
+			</UseTemplate>
+		</Case>
+		<Case Value="MIXED">
+			<UseTemplate Name="ASOBO_GT_Highlight_Template">
+				<HIGHLIGHT_NODE_ID>#NODE_ID_L_BRAKE_1#</HIGHLIGHT_NODE_ID>
+				<PART_ID>#PART_ID_BRAKES#</PART_ID>
+			</UseTemplate>
+			<UseTemplate Name="ASOBO_GT_Highlight_Template">
+				<HIGHLIGHT_NODE_ID>#NODE_ID_L_BRAKE_2#</HIGHLIGHT_NODE_ID>
+				<PART_ID>#PART_ID_BRAKES#</PART_ID>
+			</UseTemplate>
+			<UseTemplate Name="ASOBO_GT_Highlight_Template">
+				<HIGHLIGHT_NODE_ID>#NODE_ID_R_BRAKE_1#</HIGHLIGHT_NODE_ID>
+				<PART_ID>#PART_ID_BRAKES#</PART_ID>
+			</UseTemplate>
+			<UseTemplate Name="ASOBO_GT_Highlight_Template">
+				<HIGHLIGHT_NODE_ID>#NODE_ID_R_BRAKE_2#</HIGHLIGHT_NODE_ID>
+				<PART_ID>#PART_ID_BRAKES#</PART_ID>
+			</UseTemplate>
+			<UseTemplate Name="ASOBO_GT_Highlight_Template">
+				<HIGHLIGHT_NODE_ID>#NODE_ID_L_RUDDER#</HIGHLIGHT_NODE_ID>
+				<PART_ID>#PART_ID_RUDDERS#</PART_ID>
+			</UseTemplate>
+			<UseTemplate Name="ASOBO_GT_Highlight_Template">
+				<HIGHLIGHT_NODE_ID>#NODE_ID_R_RUDDER#</HIGHLIGHT_NODE_ID>
+				<PART_ID>#PART_ID_RUDDERS#</PART_ID>
+			</UseTemplate>
+		</Case>
+	</Switch>
+	<Condition Check="DONT_CREATE_ANIMATION">
+		<True>
+			<UseTemplate Name="ASOBO_GT_ComponentWith_PART_ID">
+				<ID>1</ID>
+			</UseTemplate>
+		</True>
+		<False>
+			<Component ID="#NODE_ID#" Node="#NODE_ID#">
+				<DefaultTemplateParameters>
+					<Condition Check="USE_BRAKE">
+						<Condition Valid="DIFFERENTIATE_BRAKE_ANIM_L_R">
+							<True>
+								<BRAKE_ANIM_NAME_L>HANDLING_RudderPedals_Brake_L</BRAKE_ANIM_NAME_L>
+								<BRAKE_ANIM_NAME_R>HANDLING_RudderPedals_Brake_R</BRAKE_ANIM_NAME_R>
+							</True>
+							<False>
+								<BRAKE_ANIM_NAME>HANDLING_RudderPedals_Brake</BRAKE_ANIM_NAME>
+							</False>
+						</Condition>
+					</Condition>
+				</DefaultTemplateParameters>
+				<OverrideTemplateParameters>
+					<Condition Valid="NO_PART_ID_ON_ANIM_NODE">
+						<PART_ID></PART_ID>
+					</Condition>
+				</OverrideTemplateParameters>
+				<UseTemplate Name="ASOBO_GT_Anim_Sim">
+					<ID>1</ID>
+					<ANIM_LENGTH>200</ANIM_LENGTH>
+					<ANIM_SIMVAR>RUDDER PEDAL POSITION</ANIM_SIMVAR>
+					<ANIM_SIMVAR_UNITS>percent</ANIM_SIMVAR_UNITS>
+					<!-- [-100, 100] -->
+					<ANIM_SIMVAR_BIAS>100</ANIM_SIMVAR_BIAS>
+					<!-- [-100, 100] + 100 => [0, 200] -->
+				</UseTemplate>
+				<Condition Check="USE_BRAKE">
+					<UseTemplate Name="ASOBO_HANDLING_RudderPedals_Brake_Template">
+						<Condition Valid="DIFFERENTIATE_BRAKE_ANIM_L_R">
+							<True>
+								<ANIM_NAME_L>#BRAKE_ANIM_NAME_L#</ANIM_NAME_L>
+								<ANIM_NAME_R>#BRAKE_ANIM_NAME_R#</ANIM_NAME_R>
+							</True>
+							<False>
+								<ANIM_NAME>#BRAKE_ANIM_NAME#</ANIM_NAME>
+							</False>
+						</Condition>
+					</UseTemplate>
+				</Condition>
+			</Component>
+		</False>
+	</Condition>
+</Template>
+
+<Template Name="ASOBO_HANDLING_Light_Flaps_SubTemplate">
+	<DefaultTemplateParameters>
+		<NODE_ID>HANDLING_Light_Flaps_#ID#</NODE_ID>
+		<Switch Param="TYPE">
+			<Case Value="ALWAYS_ONE_LIT">
+				<ADJUSTED_ID_FLAP Process="Int">#ID# 0 max #MAX_FLAPS_INDEX# min</ADJUSTED_ID_FLAP>
+				<FLAPS_INDEX_COUNT Process="Int">#MAX_FLAPS_INDEX# 1 +</FLAPS_INDEX_COUNT>
+				<ANGLE_DEGREE_1>0</ANGLE_DEGREE_1>
+				<ANGLE_DEGREE_2>15</ANGLE_DEGREE_2>
+				<ANGLE_DEGREE_3>30</ANGLE_DEGREE_3>
+				<ANGLE_DEGREE_4>35</ANGLE_DEGREE_4>
+				<ANGLE_DEGREE_5>42</ANGLE_DEGREE_5>
+			</Case>
+			<Default>
+				<TARGET_ANGLE_DEGREE>0</TARGET_ANGLE_DEGREE>
+			</Default>
+		</Switch>
+	</DefaultTemplateParameters>
+	<OverrideTemplateParameters>
+		<Switch Param="TYPE">
+			<Case Value="ALWAYS_ONE_LIT">
+				<TARGET_ANGLE Process="Float">
+					#ANGLE_DEGREE_5# #ANGLE_DEGREE_4# #ANGLE_DEGREE_3# #ANGLE_DEGREE_2# #ANGLE_DEGREE_1# #FLAPS_INDEX_COUNT# #ADJUSTED_ID_FLAP# case
+				</TARGET_ANGLE>
+			</Case>
+		</Switch>
+	</OverrideTemplateParameters>
+	<Component ID="#NODE_ID#" Node="#NODE_ID#">
+		<DefaultTemplateParameters>
+			<Switch Param="TYPE">
+				<Case Value="ALWAYS_ONE_LIT">
+					<TARGET_ANGLE_LIMIT_MIN Process="Float">
+						#ADJUSTED_ID_FLAP# 1 - 0 max sp0
+						#ANGLE_DEGREE_5# #ANGLE_DEGREE_4# #ANGLE_DEGREE_3# #ANGLE_DEGREE_2# #ANGLE_DEGREE_1# #FLAPS_INDEX_COUNT# l0 case sp1
+						#TARGET_ANGLE# l1 - 2 / l1 +
+					</TARGET_ANGLE_LIMIT_MIN>
+					<TARGET_ANGLE_LIMIT_MAX Process="Float">
+						#ADJUSTED_ID_FLAP# 1 + #MAX_FLAPS_INDEX# min sp0
+						#ANGLE_DEGREE_5# #ANGLE_DEGREE_4# #ANGLE_DEGREE_3# #ANGLE_DEGREE_2# #ANGLE_DEGREE_1# #FLAPS_INDEX_COUNT# l0 case sp1
+						l1 #TARGET_ANGLE# - 2 / #TARGET_ANGLE# +
+					</TARGET_ANGLE_LIMIT_MAX>
+				</Case>
+			</Switch>
+		</DefaultTemplateParameters>
+		<UseTemplate Name="ASOBO_GT_Emissive_Gauge">
+			<Switch Param="TYPE">
+				<Case Value="ALWAYS_ONE_LIT">
+					<EMISSIVE_CODE>
+						#TARGET_ANGLE_LIMIT_MIN# #TARGET_ANGLE_LIMIT_MAX# (A:TRAILING EDGE FLAPS LEFT ANGLE, degrees) rng
+					</EMISSIVE_CODE>
+				</Case>
+				<Default>
+					<EMISSIVE_CODE>(A:TRAILING EDGE FLAPS LEFT ANGLE, degrees) #TARGET_ANGLE_DEGREE# - abs 0.1 &lt;</EMISSIVE_CODE>
+				</Default>
+			</Switch>
+		</UseTemplate>
+	</Component>
+</Template>
+
+<Template Name="ASOBO_HANDLING_Switch_ElevatorTrim_SubTemplate">
+	<DefaultTemplateParameters>
+		<NODE_ID>HANDLING_Switch_ElevatorTrim_#ID#</NODE_ID>
+		<ANIM_NAME>HANDLING_Switch_ElevatorTrim_#ID#</ANIM_NAME>
+		<PART_ID>HANDLING_Switch_Elevator_Trim</PART_ID>
+		<OTHER_PART_ID>HANDLING_Switch_ElevatorTrim</OTHER_PART_ID>
+		<WWISE_EVENT>elevator_switch</WWISE_EVENT>
+		<COUNT>2</COUNT>
+		<ANIMREF_ID>-1</ANIMREF_ID>
+		<ANIMTIP_0_ON_CURSOR>UpArrow</ANIMTIP_0_ON_CURSOR>
+		<ANIMTIP_1_ON_CURSOR>DownArrow</ANIMTIP_1_ON_CURSOR>
+		<ANIMTIP_0>TT:COCKPIT.TOOLTIPS.MET_PITCH_TRIM_DN</ANIMTIP_0>
+		<ANIMTIP_1>TT:COCKPIT.TOOLTIPS.MET_PITCH_TRIM_UP</ANIMTIP_1>
+		<TRIM_LIMIT>20</TRIM_LIMIT><!-- elevator_trim_limit in flight_model.cfg -->
+	</DefaultTemplateParameters>
+	<UseTemplate Name="ASOBO_HANDLING_Trim_Variable_Speed_Base_Template">
+		<SWITCH_DIRECTION>Vertical</SWITCH_DIRECTION>
+		<!-- Trim_Base configuration -->
+		<TRIM_NAME>ElevatorTrim</TRIM_NAME>
+		<GET_TRIM>(A:ELEVATOR TRIM PCT, percent)</GET_TRIM>
+		<SET_TRIM>(&gt;K:ELEVATOR_TRIM_SET)</SET_TRIM>
+	</UseTemplate>
+</Template>
+
+<Template Name="ASOBO_HANDLING_Push_AP_Trim_Disc_SubTemplate">
+	<DefaultTemplateParameters>
+		<NODE_ID>HANDLING_Push_AP_Trim_Disc_#ID#</NODE_ID>
+		<ANIM_NAME>HANDLING_Push_AP_Trim_Disc_#ID#</ANIM_NAME>
+		<WWISE_EVENT_1>yoke_push_button_on</WWISE_EVENT_1>
+		<WWISE_EVENT_2>yoke_push_button_off</WWISE_EVENT_2>
+		<DISABLE_TRIM>
+			1 (&gt;K:RUDDER_TRIM_DISABLED_SET)
+			1 (&gt;K:AILERON_TRIM_DISABLED_SET)
+		</DISABLE_TRIM>
+		<ENABLE_TRIM>
+			0 (&gt;K:RUDDER_TRIM_DISABLED_SET)
+			0 (&gt;K:AILERON_TRIM_DISABLED_SET)
+		</ENABLE_TRIM>
+	</DefaultTemplateParameters>
+	<Component ID="#NODE_ID#" Node="#NODE_ID#">
+		<UseTemplate Name="ASOBO_GT_Push_Button_Held">
+			<LEFT_SINGLE_CODE>
+				#DISABLE_TRIM#
+				1 (&gt;K:AUTOPILOT_OFF)
+			</LEFT_SINGLE_CODE>
+			<LEFT_LEAVE_CODE>
+				#ENABLE_TRIM#
+			</LEFT_LEAVE_CODE>
+			<TOOLTIPID>TT:COCKPIT.TOOLTIPS.YOKE_AP_TRIM_DISC</TOOLTIPID>
+		</UseTemplate>
+	</Component>
+</Template>
+
+<!-- REQ: NODE_ID, ANIM_NAME, TRIM_LIMIT, TRIM_NAME, GET_TRIM, SET_TRIM -->
+<Template Name="ASOBO_HANDLING_Trim_Variable_Speed_Base_Template">
+	<DefaultTemplateParameters>
+		<UPDATE_FREQ>10</UPDATE_FREQ><!-- How many updates per second -->
+		<UPDATE_COUNT_BEFORE_FAST_MODE>40</UPDATE_COUNT_BEFORE_FAST_MODE>
+		<UPDATE_COUNT_BEFORE_REPEAT>5</UPDATE_COUNT_BEFORE_REPEAT>
+		<MOMENTARY_MIN_DURATION>0.1</MOMENTARY_MIN_DURATION>
+		<TRIM_LIMIT>10</TRIM_LIMIT><!-- DEGREES -->
+		<NORMAL_INC_DEGREES>0.1</NORMAL_INC_DEGREES><!-- How many degrees per update -->
+		<FAST_MODE_SCALE>3</FAST_MODE_SCALE><!-- How many time faster the increment is when in fast mode -->
+		<SCALE_INCREMENT>163.83 * 16383 min -16383 max</SCALE_INCREMENT><!-- Used for elevator trim since you don't set a percentage but a value scaled by 163.83 -->
+		<Condition Valid="LOCK_NODE_ID">
+			<VAR_NAME_TRIM_LOCK_UNLOCKED>XMLVAR_#TRIM_NAME##ID#_Unlocked</VAR_NAME_TRIM_LOCK_UNLOCKED>
+			<VAR_SCOPE_TRIM_LOCK_UNLOCKED>I</VAR_SCOPE_TRIM_LOCK_UNLOCKED>
+		</Condition>
+		<Condition Check="SECONDARY">
+			<True>
+				<ADDITIONAL_TESTS>(L:XMLVAR_Secondary_#TRIM_NAME#_Available) and</ADDITIONAL_TESTS>
+			</True>
+			<False>
+				<ADDITIONAL_TESTS/>
+			</False>
+		</Condition>
+		<SWITCH_DIRECTION>Horizontal</SWITCH_DIRECTION>
+		<COUNT>2</COUNT>
+	</DefaultTemplateParameters>
+	<OverrideTemplateParameters>
+		<NORMAL_MODE_PERCENT_PER_UPDATE process="Float">#NORMAL_INC_DEGREES# #TRIM_LIMIT# / 100 *</NORMAL_MODE_PERCENT_PER_UPDATE>
+		<FAST_MODE_PERCENT_PER_UPDATE process="Float">#NORMAL_INC_DEGREES# #TRIM_LIMIT# / #FAST_MODE_SCALE# * 100 *</FAST_MODE_PERCENT_PER_UPDATE>
+	</OverrideTemplateParameters>
+	<Condition Valid="LOCK_NODE_ID">
+		<True>
+			<Component ID="#LOCK_NODE_ID#" Node="#LOCK_NODE_ID#">
+				<UseTemplate Name="ASOBO_GT_Switch_Code">
+					<ANIM_NAME>#LOCK_ANIM_NAME#</ANIM_NAME>
+					<LEFT_SINGLE_CODE>
+						(#VAR_SCOPE_TRIM_LOCK_UNLOCKED#:#VAR_NAME_TRIM_LOCK_UNLOCKED#) ! (&gt;#VAR_SCOPE_TRIM_LOCK_UNLOCKED#:#VAR_NAME_TRIM_LOCK_UNLOCKED#)
+					</LEFT_SINGLE_CODE>
+					<ANIM_CODE>
+						(#VAR_SCOPE_TRIM_LOCK_UNLOCKED#:#VAR_NAME_TRIM_LOCK_UNLOCKED#) 100 *
+					</ANIM_CODE>
+				</UseTemplate>
+			</Component>
+		</True>
+	</Condition>
+	<Component ID="#NODE_ID#" Node="#NODE_ID#">
+		<UseTemplate Name="ASOBO_GT_Update">
+			<FREQUENCY>#UPDATE_FREQ#</FREQUENCY>
+			<UPDATE_CODE>
+				(O:_TrimDelta) 0 != #ADDITIONAL_TESTS# if{
+					(O:_UPDATE_Count) #UPDATE_COUNT_BEFORE_FAST_MODE# &gt;= if{
+						(O:_TrimDelta) 0 &gt; if{
+							#GET_TRIM# #FAST_MODE_PERCENT_PER_UPDATE# - #SCALE_INCREMENT# #SET_TRIM#
+						} els{
+							#GET_TRIM# #FAST_MODE_PERCENT_PER_UPDATE# + #SCALE_INCREMENT# #SET_TRIM#
+						}
+					} els{
+						(O:_UPDATE_Count) #UPDATE_COUNT_BEFORE_REPEAT# &gt;= if{
+							(O:_TrimDelta) 0 &gt; if{
+								#GET_TRIM# #NORMAL_MODE_PERCENT_PER_UPDATE# - #SCALE_INCREMENT# #SET_TRIM#
+							} els{
+								#GET_TRIM# #NORMAL_MODE_PERCENT_PER_UPDATE# + #SCALE_INCREMENT# #SET_TRIM#
+							}
+						}
+						(O:_UPDATE_Count) 1 + (&gt;O:_UPDATE_Count)
+					}
+				}
+			</UPDATE_CODE>
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_GT_Switch_3States">
+			<CODE_POS_0>
+				1 (&gt;O:_TrimDelta)
+				#GET_TRIM# #NORMAL_MODE_PERCENT_PER_UPDATE# - #SCALE_INCREMENT# #SET_TRIM#
+			</CODE_POS_0>
+			<CODE_POS_1>
+				0 (&gt;O:_TrimDelta)
+				0 (&gt;O:_UPDATE_Count)
+			</CODE_POS_1>
+			<CODE_POS_2>
+				-1 (&gt;O:_TrimDelta)
+				#GET_TRIM# #NORMAL_MODE_PERCENT_PER_UPDATE# + #SCALE_INCREMENT# #SET_TRIM#
+			</CODE_POS_2>
+			<MOMENTARY_SWITCH/>
+			<STATE_MAX_TIMER>#MOMENTARY_MIN_DURATION#</STATE_MAX_TIMER>
+			<STATE0_TIMER>#MOMENTARY_MIN_DURATION#</STATE0_TIMER>
+			<STATE0_TEST>
+				(O:_TrimDelta) 0 &gt;
+			</STATE0_TEST>
+			<STATE1_TEST>
+				(O:_TrimDelta) 0 ==
+			</STATE1_TEST>
+			<STATE2_TEST>
+				(O:_TrimDelta) 0 &lt;
+			</STATE2_TEST>
+			<Condition Valid="LOCK_NODE_ID">
+				<True>
+					<CODE_POS_0_VERIF>(#VAR_SCOPE_TRIM_LOCK_UNLOCKED#:#VAR_NAME_TRIM_LOCK_UNLOCKED#)</CODE_POS_0_VERIF>
+					<CODE_POS_2_VERIF>(#VAR_SCOPE_TRIM_LOCK_UNLOCKED#:#VAR_NAME_TRIM_LOCK_UNLOCKED#)</CODE_POS_2_VERIF>
+				</True>
+			</Condition>
+		</UseTemplate>
+	</Component>
+</Template>

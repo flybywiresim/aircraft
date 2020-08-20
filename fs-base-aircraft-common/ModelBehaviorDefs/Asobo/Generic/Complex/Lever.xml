@@ -1,0 +1,246 @@
+
+
+<!--
+	Dragging lever on Y axis,
+	using incrementing and decrementing events.
+
+	Required parameters:
+		ANIM_NAME
+		ANIM_SIMVAR
+		ANIM_SIMVAR_UNITS
+		CLOCKWISE_EVENTID
+		ANTICLOCKWISE_EVENTID
+-->
+<Template Name="ASOBO_GT_Lever_DraggingYAxis_EventsIncDec">
+	<DefaultTemplateParameters>
+		<AXIS>Y</AXIS>
+	</DefaultTemplateParameters>
+
+	<UseTemplate Name = "ASOBO_GT_Anim_Sim">
+	</UseTemplate>
+
+	<UseTemplate Name = "ASOBO_GT_Interaction_DraggingYAxis_EventsIncDec">
+	</UseTemplate>
+</Template>
+
+<!--
+	Dragging lever on Y axis,
+	using code with some gates.
+
+	Required parameters:
+		NODE_ID
+		ANIM_NAME
+		DRAG_CODE
+-->
+<Template Name="ASOBO_GT_Lever_DraggingYAxis_Gates">
+	<DefaultTemplateParameters>
+		<STEPS_NUMBER>3</STEPS_NUMBER>
+		<POSITION_TYPE>O</POSITION_TYPE>
+		<POSITION_VAR>Position</POSITION_VAR>
+		<Condition Check="ANIMATION_CODE_SETTER">
+			<True>
+				<OVERRIDE_ANIM_CODE>(#DRAG_ANIMATION_VARIABLE_TYPE#:#DRAG_ANIMATION_VARIABLE_NAME#) #STEPS_NUMBER# *</OVERRIDE_ANIM_CODE>
+			</True>
+			<False>
+				<OVERRIDE_ANIM_CODE>(#POSITION_TYPE#:#POSITION_VAR#) 100 *</OVERRIDE_ANIM_CODE>
+			</False>
+		</Condition>
+	</DefaultTemplateParameters>
+
+	<UseTemplate Name="ASOBO_GT_Anim_Code">
+		<ANIM_CODE>#OVERRIDE_ANIM_CODE#</ANIM_CODE>
+		<ANIM_LENGTH>#STEPS_NUMBER#00</ANIM_LENGTH>
+	</UseTemplate>
+		
+	<UseTemplate Name="ASOBO_GT_AnimTriggers_SoundEvents_Same">
+		<COUNT>#STEPS_NUMBER#</COUNT>
+	</UseTemplate>
+	
+	<UseTemplate Name = "ASOBO_GT_Interaction_DraggingYAxis_Gates">
+	</UseTemplate>
+</Template>
+
+<!--
+	Dragging lever on Y axis,
+	using code with some gates with Simvars and EventIDs.
+
+	Required parameters:
+		NODE_ID
+		ANIM_NAME
+		SIMVAR
+		SIMVAR_UNITS
+		EVENTID_SET
+		
+	Optional:
+		SIMVAR_CONVERSION
+		EVENTID_CONVERSION
+-->
+<Template Name="ASOBO_GT_Lever_DraggingYAxis_SimGates">
+	<DefaultTemplateParameters>
+		<STEPS_NUMBER>3</STEPS_NUMBER>
+		<ANIM_TRIGGER_COUNT>2</ANIM_TRIGGER_COUNT>
+		<POSITION_TYPE>O</POSITION_TYPE>
+		<POSITION_VAR>Position</POSITION_VAR>
+		<ANIM_LAG>0</ANIM_LAG>
+	</DefaultTemplateParameters>
+
+	<UseTemplate Name="ASOBO_GT_Anim_Code">
+		<ANIM_CODE>(A:#SIMVAR#, #SIMVAR_UNITS#) #SIMVAR_CONVERSION# 100 *</ANIM_CODE>
+		<ANIM_LENGTH>#STEPS_NUMBER#00</ANIM_LENGTH>
+	</UseTemplate>
+		
+	<UseTemplate Name="ASOBO_GT_AnimTriggers_SoundEvents_Same">
+		<COUNT>#ANIM_TRIGGER_COUNT#</COUNT>
+	</UseTemplate>
+	
+	<UseTemplate Name = "ASOBO_GT_Interaction_DraggingYAxis_SimGates">
+	</UseTemplate>
+</Template>
+
+<!--
+	Dragging lever on Y axis,
+	calling code.
+
+	Required parameters:
+		ANIM_NAME
+		UP_CODE
+		DOWN_CODE
+-->
+<Template Name="ASOBO_GT_Lever_DraggingYAxis_Code">
+	<DefaultTemplateParameters>
+		<HELPID/>
+		<TOOLTIPID/>
+		<ANIM_LAG>0</ANIM_LAG>
+		<Condition Check="IS_LOOPING">
+			<ANIM_LENGTH>360</ANIM_LENGTH>
+		</Condition>
+		<ANIM_SCALE>1</ANIM_SCALE>
+		<Condition Check="SINGLE_STEP">
+			<ANIM_LAG>300</ANIM_LAG>
+			<DRAG_DELTA>0.0001</DRAG_DELTA>
+			<DRAG_SPEED>1</DRAG_SPEED>
+			<ANIM_SCALE>100</ANIM_SCALE>
+			<ANIM_LENGTH>100</ANIM_LENGTH>
+			<MIN_LIMITER> 0 max </MIN_LIMITER>
+			<MAX_LIMITER> 1 min </MAX_LIMITER>
+		</Condition>
+		
+		<POSITION_TYPE>O</POSITION_TYPE>
+		<POSITION_VAR>Position</POSITION_VAR>
+	</DefaultTemplateParameters>
+
+	<UseTemplate Name = "ASOBO_GT_Lever_DraggingYAxis_Code_Base">
+	</UseTemplate>
+</Template>
+
+<Template Name="ASOBO_GT_Lever_DraggingYAxis_Code_Base">
+	<DefaultTemplateParameters>
+		<ANIM_CODE>(#POSITION_TYPE#:#POSITION_VAR#) #ANIM_SCALE# *</ANIM_CODE>
+	</DefaultTemplateParameters>
+
+	<UseTemplate Name = "ASOBO_GT_Anim_Code">
+	</UseTemplate>
+
+	<UseTemplate Name = "ASOBO_GT_AnimTriggers_2SoundEvents">
+		<NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
+		<DIRECTION_1>Backward</DIRECTION_1>
+		<NORMALIZED_TIME_2>0.9</NORMALIZED_TIME_2>
+		<DIRECTION_2>Forward</DIRECTION_2>
+	</UseTemplate>
+
+	<UseTemplate Name = "ASOBO_GT_Interaction_DraggingYAxis_Code">
+	
+	</UseTemplate>
+</Template>
+
+
+<!--
+	Dragging Wheel,
+	calling code.
+
+	Required parameters:
+		ANIM_NAME / (ANIM_SIMVAR, ANIM_SIMVAR_UNITS)
+		UP_CODE
+		DOWN_CODE
+-->
+<Template Name="ASOBO_GT_Lever_DraggingWheelLeftDrag_Axis">
+	<DefaultTemplateParameters>
+		<AXIS>Y</AXIS>
+	</DefaultTemplateParameters>
+
+	<UseTemplate Name = "ASOBO_GT_Anim">
+		<Condition Valid="OVERRIDE_DRAG_ANIM_CODE">
+			<ANIM_CODE>#OVERRIDE_DRAG_ANIM_CODE#</ANIM_CODE>
+		</Condition>
+	</UseTemplate>
+	
+	<Condition Check="DONT_CREATE_SOUND_ANIM_TRIGGERS">
+		<False>
+			<UseTemplate Name = "ASOBO_GT_AnimTriggers_2SoundEvents">
+				<NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
+				<DIRECTION_1>Backward</DIRECTION_1>
+				<NORMALIZED_TIME_2>0.9</NORMALIZED_TIME_2>
+				<DIRECTION_2>Forward</DIRECTION_2>
+			</UseTemplate>
+		</False>
+	</Condition>
+	
+	<Condition Check="CREATE_SOUNDEVENTS_SAME_TRIGGER">
+		<True>
+			<UseTemplate Name = "ASOBO_GT_AnimTriggers_SoundEvents_Same">
+				<COUNT>36</COUNT>
+			</UseTemplate>
+		</True>
+	</Condition>
+	
+	<UseTemplate Name = "ASOBO_GT_Interaction_WheelLeftDrag_Axis">
+	
+	</UseTemplate>
+</Template>
+
+<!--
+	Dragging lever on Y axis,
+	using "set" event.
+
+	Required parameters:
+		ANIM_NAME
+		DRAG_SIMVAR
+		DRAG_SIMVAR_UNITS
+		DRAG_EVENTID_SET
+-->
+<Template Name="ASOBO_GT_Lever_DraggingYAxis_EventsSet">
+	<DefaultTemplateParameters>
+		<ANIM_SIMVAR_SCALE>1</ANIM_SIMVAR_SCALE>
+		<ANIM_SIMVAR_BIAS>0</ANIM_SIMVAR_BIAS>
+		<Condition Check="ANIM_SIMVAR">
+			<DRAG_SIMVAR>#ANIM_SIMVAR#</DRAG_SIMVAR>
+			<DRAG_SIMVAR_UNITS>#ANIM_SIMVAR_UNITS#</DRAG_SIMVAR_UNITS>
+		</Condition>
+		<AXIS>Y</AXIS>
+	</DefaultTemplateParameters>
+
+	<UseTemplate Name = "ASOBO_GT_Anim">
+	</UseTemplate>
+	
+	<UseTemplate Name = "ASOBO_GT_AnimTriggers_2SoundEvents">
+		<NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
+		<DIRECTION_1>Backward</DIRECTION_1>
+		<NORMALIZED_TIME_2>0.9</NORMALIZED_TIME_2>
+		<DIRECTION_2>Forward</DIRECTION_2>
+	</UseTemplate>
+
+	<UseTemplate Name = "ASOBO_GT_Interaction_DraggingYAxis_EventSet">
+	</UseTemplate>
+</Template>
+
+<Template Name = "ASOBO_GT_Lever_WheelLeftSingle_Axis">
+	<UseTemplate Name = "ASOBO_GT_Anim">
+		<Condition Valid="OVERRIDE_ANIM_CODE">
+			<ANIM_CODE>#OVERRIDE_ANIM_CODE#</ANIM_CODE>
+		</Condition>
+	</UseTemplate>
+	<UseTemplate Name = "ASOBO_GT_AnimTriggers_SoundEvents_Same">
+	</UseTemplate>
+	<UseTemplate Name = "ASOBO_GT_Interaction_WheelLeftSingle_Axis">
+	</UseTemplate>
+</Template>

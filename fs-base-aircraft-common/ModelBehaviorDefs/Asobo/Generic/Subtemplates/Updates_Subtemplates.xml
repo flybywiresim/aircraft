@@ -1,0 +1,110 @@
+
+<!-- DO NOT CALL THIS TEMPLATE - Use GT_Interaction_LeftSingle_MultiStates instead -->
+<Template Name = "ASOBO_GT_Update_EnsureVariableConsistency_MultiStates_ParamSetup">
+	<OverrideTemplateParameters>
+		<START_STATE Process="Int">#NUM_STATES# 1 -</START_STATE>
+	</OverrideTemplateParameters>
+	
+	<UseTemplate Name="ASOBO_GT_Update_EnsureVariableConsistency_MultiStates_ParamSetup_Recursive_1">
+		<CURRENT_ID>#START_STATE#</CURRENT_ID>
+		<POS_MAX>#START_STATE#</POS_MAX>
+	</UseTemplate>
+</Template>
+
+<Template Name = "ASOBO_GT_Update_EnsureVariableConsistency_MultiStates_ParamSetup_Recursive_1">
+	<DefaultTemplateParameters>
+		<STATE#CURRENT_ID#_ACTION/>
+	</DefaultTemplateParameters>
+
+	<UseTemplate Name="ASOBO_GT_Update_EnsureVariableConsistency_MultiStates_ParamSetup_Recursive_2">
+		<CURRENT_ENUM_VAL_POS Process="Param">ENUM_VAL_POS_#CURRENT_ID#</CURRENT_ENUM_VAL_POS>
+	</UseTemplate>
+</Template>
+
+<Template Name = "ASOBO_GT_Update_EnsureVariableConsistency_MultiStates_ParamSetup_Recursive_2">
+	<DefaultTemplateParameters>
+		<Condition NotEmpty="CURRENT_ENUM_VAL_POS">
+			<True>
+				<STATE#CURRENT_ID#_TEST>
+					(A:#ENUM_SIMVAR#, Enum) #CURRENT_ENUM_VAL_POS# ==
+				</STATE#CURRENT_ID#_TEST>
+			</True>
+			<False>
+				<STATE#CURRENT_ID#_TEST>0</STATE#CURRENT_ID#_TEST>
+			</False>
+		</Condition>
+	</DefaultTemplateParameters>
+	<OverrideTemplateParameters>
+		<CURRENT_ID Process="Int">#CURRENT_ID# 1 -</CURRENT_ID>
+	</OverrideTemplateParameters>
+
+	<Condition>
+		<Test>
+			<GreaterOrEqual>
+				<Value>CURRENT_ID</Value>
+				<Number>0</Number>
+			</GreaterOrEqual>
+		</Test>
+		<True>
+			<UseTemplate Name="ASOBO_GT_Update_EnsureVariableConsistency_MultiStates_ParamSetup_Recursive_1">
+			</UseTemplate>
+		</True>
+		<False>
+			<UseTemplate Name="ASOBO_GT_Update_EnsureVariableConsistency_MultiStates_CodeSetup_Recursive">
+				<CURRENT_ID>#START_STATE#</CURRENT_ID>
+				<NEXT_ID Process="Int">#START_STATE# 1 -</NEXT_ID>
+			</UseTemplate>
+		</False>
+	</Condition>
+</Template>
+
+<Template Name = "ASOBO_GT_Update_EnsureVariableConsistency_MultiStates_CodeSetup_Recursive">
+	<OverrideTemplateParameters>
+		<CURRENT_STATE_TEST Process="Param">STATE#CURRENT_ID#_TEST</CURRENT_STATE_TEST>
+		<CURRENT_STATE_ACTION Process="Param">STATE#CURRENT_ID#_ACTION</CURRENT_STATE_ACTION>
+	</OverrideTemplateParameters>
+		
+	<Condition>
+		<Test>
+			<GreaterOrEqual>
+				<Value>CURRENT_ID</Value>
+				<Number>0</Number>
+			</GreaterOrEqual>
+		</Test>
+		<True>
+			<UseTemplate Name="ASOBO_GT_Update_EnsureVariableConsistency_MultiStates_CodeSetup_Recursive">
+				<Condition Check="CURRENT_STATE_TEST" Match="0">
+					<False>
+						<UPDATE_STATES>
+						 els{ 
+						#CURRENT_STATE_TEST# if{
+							(#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#) #CURRENT_ID# != if{
+								#CURRENT_ID# (&gt;#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#)
+								#CURRENT_STATE_ACTION#
+							}
+						} 
+						#UPDATE_STATES#
+						} 
+						</UPDATE_STATES>
+					</False>
+				</Condition>
+				<CURRENT_ID>#NEXT_ID#</CURRENT_ID>
+				<NEXT_ID Process="Int">#NEXT_ID# 1 -</NEXT_ID>
+			</UseTemplate>
+		</True>
+		<False>
+			<Condition NotEmpty="UPDATE_STATES">
+				<True>
+					<UseTemplate Name="ASOBO_GT_Update">
+						<FREQUENCY>5</FREQUENCY>
+						<UPDATE_CODE>
+							#INIT_VARS#
+							0 if{ }
+							#UPDATE_STATES#
+						</UPDATE_CODE>
+					</UseTemplate>
+				</True>
+			</Condition>
+		</False>
+	</Condition>
+</Template>

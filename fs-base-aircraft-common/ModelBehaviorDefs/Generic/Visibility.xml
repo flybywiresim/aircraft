@@ -1,0 +1,66 @@
+
+
+<!-- ####################################################################### -->
+<!-- ######################### Visibility Templates ######################## -->
+<!-- ####################################################################### -->
+
+
+<!--
+	Visibility parameter, driven by simvar.
+
+	Required parameter:
+		VISIBILITY_SIMVAR
+		VISIBILITY_SIMVAR_UNITS
+-->
+<Template Name = "GT_Visibility_Sim">
+	<DefaultTemplateParameters>
+		<VISIBILITY_SIMVAR_SCALE>1</VISIBILITY_SIMVAR_SCALE>
+		<VISIBILITY_SIMVAR_BIAS>0</VISIBILITY_SIMVAR_BIAS>
+	</DefaultTemplateParameters>
+
+	<Visibility>
+		<Parameter>
+			<Sim>
+				<Variable>#VISIBILITY_SIMVAR#</Variable>
+				<Units>#VISIBILITY_SIMVAR_UNITS#</Units>
+				<Scale>#VISIBILITY_SIMVAR_SCALE#</Scale>
+				<Bias>#VISIBILITY_SIMVAR_BIAS#</Bias>
+			</Sim>
+		</Parameter>
+	</Visibility>
+</Template>
+
+
+<!--
+	Visibility parameter, driven by code.
+
+	Required parameter:
+		VISIBILITY_CODE
+-->
+<Template Name = "GT_Visibility_Code">
+	<Visibility>
+		<Parameter>
+			<Code>#VISIBILITY_CODE#</Code>
+		</Parameter>
+	</Visibility>
+</Template>
+
+<!--
+	Visibility parameter, driven by code.
+
+	Required parameter:
+		VISIBILITY_CODE
+-->
+<Template Name = "GT_Visibility">
+	<Condition Check="VISIBILITY_SIMVAR">
+		<True>
+			<UseTemplate Name="GT_Visibility_Sim">
+			</UseTemplate>
+		</True>
+		<False>
+			<UseTemplate Name="GT_Visibility_Code">
+			</UseTemplate>
+		</False>
+	</Condition>
+</Template>
+

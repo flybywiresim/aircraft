@@ -1,0 +1,28 @@
+{
+  "LocalisationPackage": {
+    "Language": "de-DE",
+    "Strings": {
+      "MODELBEHAVIOR.CDI.OPTIONS.NO_EMISSIVE_GPS": "Wählt einen Emissive GPS-Indicator ab",
+      "MODELBEHAVIOR.CDI.OPTIONS.NO_EMISSIVE_NAV": "Wählt einen Emissive NAV-Indicator ab",
+      "MODELBEHAVIOR.CDI.OPTIONS.NO_EMISSIVE_VLOC": "Wählt einen Emissive VLOC-Indicator ab",
+      "MODELBEHAVIOR.CDI.OPTIONS.NO_FLAG_GLIDE": "Wählt die Gleitflagge ab",
+      "MODELBEHAVIOR.CDI.OPTIONS.NO_FLAG_LOCALIZER": "Wählt die Landekurssenderflagge ab",
+      "MODELBEHAVIOR.CDI.OPTIONS.NO_GLIDE_LOCALIZER_INIT_ANIMATION": "Wählt eine Initialisierungsanimation für den Gleitlandekurssender ab.",
+      "MODELBEHAVIOR.CDI.OPTIONS.NO_NEEDLE_GLIDE": "Wählt die Gleitnadel ab",
+      "MODELBEHAVIOR.CDI.PARAMS.ANIM_NAME.COMPASS": "Name der Animation des Kompasses",
+      "MODELBEHAVIOR.CDI.PARAMS.ANIM_NAME.COURSE_KNOB": "Name der Animation des Kursreglers",
+      "MODELBEHAVIOR.CDI.PARAMS.ANIM_NAME.FLAG_FROM": "Name der Animation der Von-Flagge",
+      "MODELBEHAVIOR.CDI.PARAMS.ANIM_NAME.FLAG_GLIDE": "Name der Animation der Gleitflagge",
+      "MODELBEHAVIOR.CDI.PARAMS.ANIM_NAME.FLAG_LOCALIZER": "Name der Animation der Landekurssenderflagge",
+      "MODELBEHAVIOR.CDI.PARAMS.ANIM_NAME.FLAG_OFF": "Name der Animation der Aus-Flagge",
+      "MODELBEHAVIOR.CDI.PARAMS.ANIM_NAME.FLAG_TO": "Name der Animation der Zu-Flagge",
+      "MODELBEHAVIOR.CDI.PARAMS.ANIM_NAME.NEEDLE_GLIDE": "Name der Animation der Gleitnadel",
+      "MODELBEHAVIOR.CDI.PARAMS.ANIM_NAME.NEEDLE_LOCALIZER": "Name der Animation der Landekurssendernadel",
+      "MODELBEHAVIOR.CDI.PARAMS.NODE_ID.COURSE_KNOB": "Name des Kursregler-Knotens",
+      "MODELBEHAVIOR.CDI.PARAMS.NODE_ID.EMISSIVE_GPS": "Name des „GPS Emissive Indicator“-Knotens",
+      "MODELBEHAVIOR.CDI.PARAMS.NODE_ID.EMISSIVE_NAV": "Name des „NAV Emissive Indicator“-Knotens",
+      "MODELBEHAVIOR.CDI.PARAMS.NODE_ID.EMISSIVE_VLOC": "Name des „VLOC Emissive Indicator“-Knotens",
+      "MODELBEHAVIOR.CDI.PARAMS.NODE_ID.HIGHLIGHT": "Der Name des Knotens wird für Markierungen verwendet"
+    }
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "LocalisationPackage": {
+    "Language": "en-US",
+    "Strings": {
+      "MODELBEHAVIOR.CDI.OPTIONS.NO_EMISSIVE_GPS": "Opts out of an emissive GPS indicator",
+      "MODELBEHAVIOR.CDI.OPTIONS.NO_EMISSIVE_NAV": "Opts out of an emissive NAV indicator",
+      "MODELBEHAVIOR.CDI.OPTIONS.NO_EMISSIVE_VLOC": "Opts out of an emissive VLOC indicator",
+      "MODELBEHAVIOR.CDI.OPTIONS.NO_FLAG_GLIDE": "Opts out of a Glide Flag",
+      "MODELBEHAVIOR.CDI.OPTIONS.NO_FLAG_LOCALIZER": "Opts out of a Localizer Flag",
+      "MODELBEHAVIOR.CDI.OPTIONS.NO_GLIDE_LOCALIZER_INIT_ANIMATION": "Opts out of a initialization animation for the glide localizer.",
+      "MODELBEHAVIOR.CDI.OPTIONS.NO_NEEDLE_GLIDE": "Opts out of a Glide Needle",
+      "MODELBEHAVIOR.CDI.PARAMS.ANIM_NAME.COMPASS": "Name of the compass' animation",
+      "MODELBEHAVIOR.CDI.PARAMS.ANIM_NAME.COURSE_KNOB": "Name of the course Knob's animation",
+      "MODELBEHAVIOR.CDI.PARAMS.ANIM_NAME.FLAG_FROM": "Name of the From Flag's Animation",
+      "MODELBEHAVIOR.CDI.PARAMS.ANIM_NAME.FLAG_GLIDE": "Name of the Glide Flag's animation",
+      "MODELBEHAVIOR.CDI.PARAMS.ANIM_NAME.FLAG_LOCALIZER": "Name of the Localizer Flag's animation",
+      "MODELBEHAVIOR.CDI.PARAMS.ANIM_NAME.FLAG_OFF": "Name of the Off Flag's Animation",
+      "MODELBEHAVIOR.CDI.PARAMS.ANIM_NAME.FLAG_TO": "Name of the To Flag's Animation",
+      "MODELBEHAVIOR.CDI.PARAMS.ANIM_NAME.NEEDLE_GLIDE": "Name of the Glide Needle's animation",
+      "MODELBEHAVIOR.CDI.PARAMS.ANIM_NAME.NEEDLE_LOCALIZER": "Name of the Localizer Needle's animation",
+      "MODELBEHAVIOR.CDI.PARAMS.NODE_ID.COURSE_KNOB": "Name of the Course Knob's node",
+      "MODELBEHAVIOR.CDI.PARAMS.NODE_ID.EMISSIVE_GPS": "Name of the GPS Emissive Indicator's node",
+      "MODELBEHAVIOR.CDI.PARAMS.NODE_ID.EMISSIVE_NAV": "Name of the NAV Emissive Indicator's node",
+      "MODELBEHAVIOR.CDI.PARAMS.NODE_ID.EMISSIVE_VLOC": "Name of the VLOC Emissive Indicator's node",
+      "MODELBEHAVIOR.CDI.PARAMS.NODE_ID.HIGHLIGHT": "Name of the node used for highlights"
+    }
+  }
+}

@@ -1,0 +1,107 @@
+<Include Path="Asobo\Generic.xml"/>
+
+<Template Name="ASOBO_Pl463_Template">
+	<DefaultTemplateParameters>
+		<ID>1</ID>
+		<Pl463>RPM_Meter_</Pl463>
+		<WWISE_EVENT_1>Pl463_button_push_on</WWISE_EVENT_1>
+		<NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
+		<WWISE_EVENT_2>Pl463_button_push_off</WWISE_EVENT_2>
+		<NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
+	</DefaultTemplateParameters>
+	<UseTemplate Name="ASOBO_GT_Helper_Suffix_ID_Appender">
+		<TEMPLATE_TO_CALL>ASOBO_Pl463_SubTemplate</TEMPLATE_TO_CALL>
+	</UseTemplate>
+</Template>
+
+<Template Name="ASOBO_Pl463_SubTemplate">
+	<DefaultTemplateParameters>
+		<SCREEN_NODE_ID>RPM_Meter_Screen#SUFFIX_ID#</SCREEN_NODE_ID>
+		<CIRCUIT_ID>1</CIRCUIT_ID>
+		<DEFAULT_EMISSIVE>50</DEFAULT_EMISSIVE>
+		<KEY_PREFIX>Pl463</KEY_PREFIX>
+	</DefaultTemplateParameters>
+	<Component ID="#SCREEN_NODE_ID#" Node="#SCREEN_NODE_ID#">
+		<DefaultTemplateParameters>
+			<EMISSIVE_FAILURE>(A:CIRCUIT ON:#CIRCUIT_ID#, Bool)</EMISSIVE_FAILURE>
+		</DefaultTemplateParameters>
+		<UseTemplate Name="ASOBO_GT_Emissive_Gauge">
+			<EMISSIVE_CODE>#DEFAULT_EMISSIVE# 100 / 0.95 * 0.05 +</EMISSIVE_CODE>
+			<FAILURE>#EMISSIVE_FAILURE#</FAILURE>
+		</UseTemplate>
+	</Component>
+	<Component ID="#Pl463#_Interactions">
+		<Component ID="#Pl463#Push_OnOff" Node="#Pl463#Push_OnOff#SUFFIX_ID#">
+			<DefaultTemplateParameters>
+				<MIN_TIME_ONOFF>1</MIN_TIME_ONOFF>
+				<TOGGLE_CIRCUIT_STATE>#CIRCUIT_ID# (&gt;K:ELECTRICAL_CIRCUIT_TOGGLE)</TOGGLE_CIRCUIT_STATE>
+			</DefaultTemplateParameters>
+			<UseTemplate Name="ASOBO_GT_Push_Button">
+				<ANIM_NAME>#Pl463#Push_OnOff#SUFFIX_ID#</ANIM_NAME>
+				<OVERRIDE_ANIM_CODE>
+					(O:_PushTimeout) 0 &gt;
+					(E:ABSOLUTE TIME, second) (O:_PushTimeout) &gt; and 
+					if{
+						#TOGGLE_CIRCUIT_STATE#
+						0 (&gt;O:_PushTimeout)
+					}
+					(O:_Pressed) 100 *
+				</OVERRIDE_ANIM_CODE>
+				<LEFT_SINGLE_CODE>
+					1 (&gt;O:_Pressed)
+					(A:CIRCUIT ON:#CIRCUIT_ID#, Bool) (&gt;O:_bCircuitWasOn)
+					(E:ABSOLUTE TIME, second) #MIN_TIME_ONOFF# + (&gt;O:_PushTimeout)
+				</LEFT_SINGLE_CODE>
+				<LEFT_LEAVE_CODE>
+					0 (&gt;O:_Pressed)
+					0 (&gt;O:_PushTimeout)
+					(O:_bCircuitWasOn) (A:CIRCUIT ON:#CIRCUIT_ID#, Bool) and if{
+						(&gt;H:#KEY_PREFIX#_Push_OnOff)
+					}
+				</LEFT_LEAVE_CODE>
+			</UseTemplate>
+		</Component>
+		<Component ID="#Pl463#Push_Menu" Node="#Pl463#Push_Menu#SUFFIX_ID#">
+			<DefaultTemplateParameters>
+				<MIN_TIME_MENU>1</MIN_TIME_MENU>
+			</DefaultTemplateParameters>
+			<UseTemplate Name="ASOBO_GT_Push_Button">
+				<ANIM_NAME>#Pl463#Push_Menu#SUFFIX_ID#</ANIM_NAME>
+				<LEFT_SINGLE_CODE>
+					1 (&gt;O:_Pressed)
+					(E:ABSOLUTE TIME, second) #MIN_TIME_MENU# + (&gt;O:_PushTimeout)
+				</LEFT_SINGLE_CODE>
+				<LEFT_LEAVE_CODE>
+					0 (&gt;O:_Pressed)
+					(E:ABSOLUTE TIME, second) (O:_PushTimeout) &gt; if{
+						(&gt;H:#KEY_PREFIX#_Long_Push_Menu)	
+					} els{
+						(&gt;H:#KEY_PREFIX#_Push_Menu)					
+					}
+				</LEFT_LEAVE_CODE>
+			</UseTemplate>
+		</Component>
+		<Component ID="#Pl463#Push_Start" Node="#Pl463#Push_Start#SUFFIX_ID#">
+			<UseTemplate Name="ASOBO_GT_Push_Button">
+				<ANIM_NAME>#Pl463#Push_Start#SUFFIX_ID#</ANIM_NAME>
+				<LEFT_SINGLE_CODE>(&gt;H:#KEY_PREFIX#_Push_Start)</LEFT_SINGLE_CODE>
+			</UseTemplate>
+		</Component>
+		<Component ID="#Pl463#Push_Stop" Node="#Pl463#Push_Stop#SUFFIX_ID#">
+			<UseTemplate Name="ASOBO_GT_Push_Button">
+				<ANIM_NAME>#Pl463#Push_Stop#SUFFIX_ID#</ANIM_NAME>
+				<LEFT_SINGLE_CODE>(&gt;H:#KEY_PREFIX#_Push_Stop)</LEFT_SINGLE_CODE>
+			</UseTemplate>
+		</Component>
+	</Component>
+	<Component ID="#Pl463#_Emissives">
+		<DefaultTemplateParameters>
+			<EMISSIVE_FAILURE>(A:CIRCUIT ON:#CIRCUIT_ID#, Bool)</EMISSIVE_FAILURE>
+		</DefaultTemplateParameters>
+		<UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
+			<NODE_ID>RPM_Meter_Screen_ACTIVE</NODE_ID>
+			<FAILURE>#EMISSIVE_FAILURE#</FAILURE>
+			<EMISSIVE_CODE>(L:#KEY_PREFIX#_LED_ACTIVE)</EMISSIVE_CODE>
+		</UseTemplate>
+	</Component>
+</Template>

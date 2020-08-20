@@ -1,0 +1,124 @@
+
+
+<!-- ####################################################################### -->
+<!-- #################### Animation triggers Templates ##################### -->
+<!-- ####################################################################### -->
+
+
+<!--
+	One effect event on animation.
+
+	Required parameter:
+		ANIM_NAME
+		EVENT_NAME
+-->
+<Template Name = "ASOBO_GT_AnimTriggers_EffectEvent">
+	<DefaultTemplateParameters>
+		<NORMALIZED_TIME>0</NORMALIZED_TIME>
+		<DIRECTION>Both</DIRECTION>
+		<ACTION>Play</ACTION>
+	</DefaultTemplateParameters>
+
+	<AnimationTriggers Animation="#ANIM_NAME#">
+		<EventTrigger NormalizedTime="#NORMALIZED_TIME#" Direction="#DIRECTION#">
+			<EffectEvent Name="#EVENT_NAME#"/>
+		</EventTrigger>
+	</AnimationTriggers>
+</Template>
+
+<!-- ####################################################################### -->
+<!-- ################## Animation Triggers Sound Templates ################# -->
+<!-- ####################################################################### -->
+
+<!--
+	One sound event on animation.
+
+	Required parameter:
+		ANIM_NAME
+		WWISE_EVENT
+-->
+<Template Name = "ASOBO_GT_AnimTriggers_SoundEvent">
+	<DefaultTemplateParameters>
+		<WWISE_EVENT>button_switch_generic</WWISE_EVENT>
+		<NORMALIZED_TIME>0.1</NORMALIZED_TIME>
+		<DIRECTION>Both</DIRECTION>
+		<ACTION>Play</ACTION>
+	</DefaultTemplateParameters>
+	<OverrideTemplateParameters>
+		<Condition Check="AUDIO_NORMALIZED_TIME">
+			<NORMALIZED_TIME>#AUDIO_NORMALIZED_TIME#</NORMALIZED_TIME>
+		</Condition>
+		<Condition Check="AUDIO_DIRECTION">
+			<DIRECTION>#AUDIO_DIRECTION#</DIRECTION>
+		</Condition>
+	</OverrideTemplateParameters>
+
+	<AnimationTriggers Animation="#ANIM_NAME#">
+		<EventTrigger NormalizedTime="#NORMALIZED_TIME#" Direction="#DIRECTION#">
+			<SoundEvent WwiseEvent="#WWISE_EVENT#" Action="#ACTION#"/>
+		</EventTrigger>
+	</AnimationTriggers>
+</Template>
+
+<Template Name = "ASOBO_GT_AnimTriggers_SoundEvents_Same">
+	<DefaultTemplateParameters>
+		<WWISE_EVENT>button_switch_generic</WWISE_EVENT>
+		<ACTION>Play</ACTION>
+		<COUNT>2</COUNT>
+		<AUDIO_DIRECTION>Both</AUDIO_DIRECTION>
+	</DefaultTemplateParameters>
+	<OverrideTemplateParameters>
+		<Condition Check="AUDIO_DIRECTION">
+			<DIRECTION>#AUDIO_DIRECTION#</DIRECTION>
+		</Condition>
+	</OverrideTemplateParameters>
+	
+	<AnimationTriggers Animation="#ANIM_NAME#">
+		<EventTrigger Count="#COUNT#" Direction="#DIRECTION#">
+			<SoundEvent WwiseEvent="#WWISE_EVENT#" Action="#ACTION#"/>
+		</EventTrigger>
+	</AnimationTriggers>
+</Template>
+
+<!--
+	Two same sound events on animation.
+
+	Required parameter:
+		ANIM_NAME
+		WWISE_EVENT
+-->
+<Template Name = "ASOBO_GT_AnimTriggers_2SoundEvents">
+	<DefaultTemplateParameters>
+		<WWISE_EVENT_1>button_switch_generic</WWISE_EVENT_1>
+		<ACTION_1>Play</ACTION_1>
+		<NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
+		<DIRECTION_1>Forward</DIRECTION_1>
+		<WWISE_EVENT_2>button_switch_generic</WWISE_EVENT_2>
+		<ACTION_2>Play</ACTION_2>
+		<NORMALIZED_TIME_2>0.9</NORMALIZED_TIME_2>
+		<DIRECTION_2>Backward</DIRECTION_2>
+	</DefaultTemplateParameters>
+	<OverrideTemplateParameters>
+		<Condition Check="AUDIO_NORMALIZED_TIME_1">
+			<NORMALIZED_TIME_1>#AUDIO_NORMALIZED_TIME_1#</NORMALIZED_TIME_1>
+		</Condition>
+		<Condition Check="AUDIO_NORMALIZED_TIME_2">
+			<NORMALIZED_TIME_2>#AUDIO_NORMALIZED_TIME_2#</NORMALIZED_TIME_2>
+		</Condition>
+		<Condition Check="AUDIO_DIRECTION_1">
+			<DIRECTION_1>#AUDIO_DIRECTION_1#</DIRECTION_1>
+		</Condition>
+		<Condition Check="AUDIO_DIRECTION_2">
+			<DIRECTION_2>#AUDIO_DIRECTION_2#</DIRECTION_2>
+		</Condition>
+	</OverrideTemplateParameters>
+
+	<AnimationTriggers Animation="#ANIM_NAME#">
+		<EventTrigger NormalizedTime="#NORMALIZED_TIME_1#" Direction="#DIRECTION_1#">
+			<SoundEvent WwiseEvent="#WWISE_EVENT_1#" Action="#ACTION_1#"/>
+		</EventTrigger>
+		<EventTrigger NormalizedTime="#NORMALIZED_TIME_2#" Direction="#DIRECTION_2#">
+			<SoundEvent WwiseEvent="#WWISE_EVENT_2#" Action="#ACTION_2#"/>
+		</EventTrigger>
+	</AnimationTriggers>
+</Template>

@@ -1,0 +1,21 @@
+﻿:root {
+  --ecamDefaultColour: white;
+  --ecamUnitsColour: #009696;
+  --ecamValueColour: green;
+  --ecamWarningColour: #db7200;
+  --ecamDangerColour: red;
+  --ecamInactiveColour: #db7200;
+  --ecamSeparatorsColour: white; }
+  :root .Separator {
+    stroke: #3c3c3c;
+    stroke-width: 4;
+    fill: none; }
+  :root div {
+    font-family: Roboto-Bold; }
+  :root text {
+    font-family: Roboto-Bold; }
+  :root #PageTitle {
+    fill: var(--ecamDefaultColour);
+    font-size: 25px;
+    text-decoration: underline; }
+

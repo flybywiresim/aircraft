@@ -1,0 +1,9 @@
+
+<!-- Generic templates (GT) / Complex templates -->
+
+<Include File="Joystick.xml"/>
+<Include File="Knob.xml"/>
+<Include File="Lever.xml"/>
+<Include File="PushButton.xml"/>
+<Include File="Switch.xml"/>
+<Include File="Misc.xml"/>

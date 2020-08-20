@@ -1,0 +1,37 @@
+﻿<link rel="stylesheet" href="./CommonDisplay.css" />
+
+<script type="text/html" id="JetEICASCommonDisplayTemplate">
+    <svg viewBox="0 0 600 150" xmlns="http://www.w3.org/2000/svg">
+        <g id="grid">
+            <line x1="25" y1="25" x2="575" y2="25" />
+            <line x1="200" y1="25" x2="200" y2="100" />
+            <line x1="400" y1="25" x2="400" y2="100" />
+        </g>
+
+        <g id="TAT">
+            <text class="Title" x="80" y="50" text-anchor="end">TAT</text>
+            <text id="TATValue" class="Value" x="115" y="50" text-anchor="middle">--</text>
+            <text class="Unit" x="150" y="50" text-anchor="start">&#176;C</text>
+        </g>
+
+        <g id="SAT">
+            <text class="Title" x="80" y="75" text-anchor="end">SAT</text>
+            <text id="SATValue" class="Value" x="115" y="75" text-anchor="middle">--</text>
+            <text class="Unit" x="150" y="75" text-anchor="start">&#176;C</text>
+        </g>
+
+        <g id="Clock">
+            <text id="HoursValue" class="Value" x="280" y="75" text-anchor="end">--</text>
+            <text class="Unit" x="300" y="75" text-anchor="middle">H</text>
+            <text id="MinutesValue" class="Value" x="320" y="75" text-anchor="start">--</text>
+        </g>
+
+        <g id="GW">
+            <text class="Title" x="435" y="50" text-anchor="end">GW</text>
+            <text id="GWValue" class="Value" x="485" y="50" text-anchor="middle">--</text>
+            <text id="GWUnit" class="Unit" x="535" y="50" text-anchor="start">KG</text>
+        </g>
+    </svg>
+</script>
+
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/Shared/EICAS/CommonDisplay.js"></script>

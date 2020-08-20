@@ -1,0 +1,1234 @@
+<Include File="Subtemplates\\Interactions_Subtemplates.xml"/>
+
+<!-- ####################################################################### -->
+<!-- ######################## Interaction Templates ######################## -->
+<!-- ####################################################################### -->
+
+
+<!--
+	Empty interaction
+-->
+<Template Name = "GT_Interaction_NoInteraction">
+	<DefaultTemplateParameters>
+		<MOUSEFLAGS/>
+	</DefaultTemplateParameters>
+
+	<UseTemplate Name="GT_MouseRect">
+		<CALLBACKCODE>0</CALLBACKCODE>
+	</UseTemplate>
+</Template>
+
+<!--
+	Tooltip only interaction
+-->
+<Template Name = "GT_Interaction_Tooltip">
+	<DefaultTemplateParameters>
+	</DefaultTemplateParameters>
+
+	<Condition>
+		<Test>
+			<Greater>
+				<Value>CONTAINER_COUNT</Value>
+				<Number>0</Number>
+			</Greater>
+		</Test>
+		<True>
+			<Component ID="#NODE_ID#_1" Node="#NODE_ID#_1">
+				<UseTemplate Name="GT_Interaction_NoInteraction">
+					<TOOLTIPID>TT:COCKPIT.TOOLTIPS.INOP</TOOLTIPID>
+				</UseTemplate>
+			</Component>
+		</True>
+		<False>
+			<Component ID="#NODE_ID#" Node="#NODE_ID#">
+				<UseTemplate Name="GT_Interaction_NoInteraction">
+					<TOOLTIPID>TT:COCKPIT.TOOLTIPS.INOP</TOOLTIPID>
+				</UseTemplate>
+			</Component>
+		</False>
+	</Condition>
+	
+	<Condition>
+		<Test>
+			<Greater>
+				<Value>CONTAINER_COUNT</Value>
+				<Number>1</Number>
+			</Greater>
+		</Test>
+		<True>
+			<Component ID="#NODE_ID#_2" Node="#NODE_ID#_2">
+				<UseTemplate Name="GT_Interaction_NoInteraction">
+					<TOOLTIPID>TT:COCKPIT.TOOLTIPS.INOP</TOOLTIPID>
+				</UseTemplate>
+			</Component>
+		</True>
+	</Condition>
+	
+	<Condition>
+		<Test>
+			<Greater>
+				<Value>CONTAINER_COUNT</Value>
+				<Number>2</Number>
+			</Greater>
+		</Test>
+		<True>
+			<Component ID="#NODE_ID#_3" Node="#NODE_ID#_3">
+				<UseTemplate Name="GT_Interaction_NoInteraction">
+					<TOOLTIPID>TT:COCKPIT.TOOLTIPS.INOP</TOOLTIPID>
+				</UseTemplate>
+			</Component>
+		</True>
+	</Condition>
+</Template>
+
+
+<!--
+	Simple left click interaction,
+	using event.
+
+	Required parameter:
+		EVENTID
+-->
+<Template Name = "GT_Interaction_LeftSingle_Event">
+	<DefaultTemplateParameters>
+		<HELPID/>
+		<TOOLTIPID/>
+		<CURSOR>Hand</CURSOR>
+	</DefaultTemplateParameters>
+
+	<UseTemplate Name="GT_MouseRect">
+		<MouseFlags>LeftSingle</MouseFlags>
+	</UseTemplate>
+</Template>
+
+
+<!--
+	Simple left click interaction,
+	using code.
+
+	Required parameter:
+		LEFT_SINGLE_CODE
+-->
+<Template Name = "GT_Interaction_LeftSingle_Code">
+	<DefaultTemplateParameters>
+		<HELPID/>
+		<TOOLTIPID/>
+		<CURSOR>Hand</CURSOR>
+		<MOUSEFLAGS>LeftSingle</MOUSEFLAGS>
+	</DefaultTemplateParameters>
+	
+	<UseTemplate Name="GT_MouseRect">
+		<CALLBACKCODE>
+			#LEFT_SINGLE_CODE#
+		</CALLBACKCODE>
+	</UseTemplate>
+</Template>
+
+
+<!--
+	Left click and left leave interaction,
+	using code.
+
+	Required parameter:
+		LEFT_SINGLE_CODE
+		LEFT_LEAVE_CODE
+-->
+<Template Name = "GT_Interaction_LeftSingle_Leave_Code">
+	<DefaultTemplateParameters>
+		<HELPID></HELPID>
+		<TOOLTIPID></TOOLTIPID>
+		<CURSOR>Hand</CURSOR>
+		<MOUSEFLAGS>LeftAll</MOUSEFLAGS>
+		<MOUSE_WHEEL_INPUTS></MOUSE_WHEEL_INPUTS>
+	</DefaultTemplateParameters>
+
+	<UseTemplate Name="GT_Interaction_LeftSingle_Leave_Code_Subtemplate1">
+		<Condition Check="WHEEL_UP_CODE">
+			<MOUSEFLAGS>#MOUSEFLAGS#+WheelUp</MOUSEFLAGS>	
+			<MOUSE_WHEEL_INPUTS> els{ (M:Event) 'WheelUp'   scmi 0 == if{ #WHEEL_UP_CODE# } #MOUSE_WHEEL_INPUTS# }</MOUSE_WHEEL_INPUTS>
+		</Condition>
+	</UseTemplate>
+</Template>
+
+<!--
+	Left click timed interaction, with short and long press codes.
+
+	Required parameter:
+		SHORT_CLICK_CODE
+		LONG_CLICK_CODE
+-->
+<Template Name = "GT_Interaction_Left_Timed_Code">
+	<DefaultTemplateParameters>
+		<LONG_CLICK_TIME>2</LONG_CLICK_TIME>
+		<HELPID/>
+		<TOOLTIPID/>
+		<LEFT_SINGLE_CODE/>
+		<LEFT_LEAVE_CODE/>
+	</DefaultTemplateParameters>
+
+	<Update Frequency = "10">
+		(O:_PressTime) 0 &gt; if{
+			(E:SIMULATION TIME, second) (O:_PressTime) #LONG_CLICK_TIME# + &gt;
+			if{ #LONG_CLICK_CODE# 0 (&gt;O:_PressTime) }
+		}
+	</Update>
+
+	<UseTemplate Name = "GT_Interaction_LeftSingle_Leave_Code">
+		<LEFT_SINGLE_CODE>
+			(E:SIMULATION TIME, second) (&gt;O:_PressTime)
+			#LEFT_SINGLE_CODE#
+		</LEFT_SINGLE_CODE>
+		<LEFT_LEAVE_CODE>
+			(O:_PressTime) 0 &gt; if{
+				(E:SIMULATION TIME, second) (O:_PressTime) #LONG_CLICK_TIME# + &lt;
+				if{ #SHORT_CLICK_CODE# }
+			}
+			0 (&gt;O:_PressTime)
+			#LEFT_LEAVE_CODE#
+		</LEFT_LEAVE_CODE>
+	</UseTemplate>
+</Template>
+
+<Template Name = "GT_Interaction_LeftSingle_Recurring">
+	<DefaultTemplateParameters>
+		<HELPID/>
+		<TOOLTIPID/>
+		<CURSOR>Hand</CURSOR>
+	</DefaultTemplateParameters>
+
+	<!-- Call code if left click is held, depending on the X axis side -->
+	<Update Frequency = "10">
+		(O:_IsMouseDown) if{ #LEFT_SINGLE_CODE# }
+	</Update>
+	
+	<UseTemplate Name="GT_Interaction_LeftSingle_Leave_Code">
+		<LEFT_SINGLE_CODE>
+			1 (&gt;O:_IsMouseDown)
+			#LEFT_SINGLE_CODE#
+		</LEFT_SINGLE_CODE>
+		<LEFT_LEAVE_CODE>
+			0 (&gt;O:_IsMouseDown)
+		</LEFT_LEAVE_CODE>
+	</UseTemplate>
+</Template>
+
+<!--
+	This template is used to create a multi states switch.
+	This should be the only entry point. Do not call GT_Interaction_LeftSingle_ParamSetup_XStates.
+	NUM_STATES can be set to decide how many states the switch should have.
+-->
+<Template Name = "GT_Interaction_LeftSingle_MultiStates">
+	<DefaultTemplateParameters>
+		<NUM_STATES>2</NUM_STATES>
+		<SWITCH_POSITION_TYPE>O</SWITCH_POSITION_TYPE>
+		<SWITCH_POSITION_VAR>SwitchState</SWITCH_POSITION_VAR>
+		<SWITCH_DIRECTION>Vertical</SWITCH_DIRECTION>
+		<CODE_DOWN> </CODE_DOWN>
+		<CODE_DOWN_CLOSING></CODE_DOWN_CLOSING>
+		<CODE_UP> </CODE_UP>
+		<CODE_UP_CLOSING> </CODE_UP_CLOSING>
+		<CODE_REPEAT></CODE_REPEAT>
+		<Condition Check="MOMENTARY_SWITCH">
+			<SWITCH_POSITION_TYPE_TIMER>O</SWITCH_POSITION_TYPE_TIMER>
+			<SWITCH_POSITION_VAR_TIMER>XMLVAR_SwitchStateTimer</SWITCH_POSITION_VAR_TIMER>
+			<SWITCH_POSITION_TYPE_ISDOWN>O</SWITCH_POSITION_TYPE_ISDOWN>
+			<SWITCH_POSITION_VAR_ISDOWN>XMLVAR_MomentarySwitch_IsHeld</SWITCH_POSITION_VAR_ISDOWN>
+			<STATE_MAX_TIMER>2</STATE_MAX_TIMER>
+			<STATE0_TIMER>2</STATE0_TIMER>
+		</Condition>
+	</DefaultTemplateParameters>
+
+	<Condition>
+		<Test>
+			<And>
+				<Arg Check="STATE0_TIMER"/>
+				<Greater>
+					<Value>STATE0_TIMER</Value>
+					<Number>0</Number>
+				</Greater>
+			</And>
+		</Test>
+		<True>
+			<UseTemplate Name="GT_Update">
+				<UPDATE_ONCE>True</UPDATE_ONCE>
+				<UPDATE_CODE>(#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#) 0 == if{ 1 (&gt;#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#) }</UPDATE_CODE>
+			</UseTemplate>
+		</True>
+	</Condition>
+	<UseTemplate Name="GT_Interaction_LeftSingle_ParamSetup">
+	</UseTemplate>
+</Template>
+
+<!--
+	Continuous rotary objects kind interations.
+
+	Required parameter:
+		CLOCKWISE_CODE
+		ANTICLOCKWISE_CODE
+-->
+<Template Name = "GT_Interaction_WheelAndContinuousLeft">
+	<DefaultTemplateParameters>
+		<SWITCH_DIRECTION>Horizontal</SWITCH_DIRECTION>
+	</DefaultTemplateParameters>
+
+	<UseTemplate Name="GT_Interaction_WheelAndContinuousLeft_#SWITCH_DIRECTION#">
+	</UseTemplate>
+</Template>
+
+<!--
+	Combo of continuous rotary objects and left click and left leave interaction,
+	using code.
+
+	Required parameter:
+		CLOCKWISE_CODE
+		ANTICLOCKWISE_CODE
+		LEFT_SINGLE_CODE
+-->
+<Template Name = "GT_Interaction_WheelAndContinuousLeft_LeftSingle">
+	<DefaultTemplateParameters>
+		<CURSOR_LEFT>TurnLeft</CURSOR_LEFT>
+		<!-- Big arrows by default -->
+		<CURSOR_RIGHT>TurnRight</CURSOR_RIGHT>
+		<CENTER_RADIUS>0.004</CENTER_RADIUS>
+		<HELPID/>
+		<TOOLTIPID/>
+		<Condition Check="LEFT_LEAVE_CODE">
+			<True>
+				<LEFT_LEAVE_CODE_OUTER></LEFT_LEAVE_CODE_OUTER><!-- By default only call left leave when the button was pressed -->
+				<LEFT_LEAVE_CODE_INNER>#LEFT_LEAVE_CODE#</LEFT_LEAVE_CODE_INNER>
+			</True>
+			<False>
+				<LEFT_LEAVE_CODE_OUTER/>
+				<LEFT_LEAVE_CODE_INNER/>
+			</False>
+		</Condition>
+		<Condition Check="LEFT_SINGLE_CODE">
+			<True>
+				<LEFT_SINGLE_CODE_OUTER></LEFT_SINGLE_CODE_OUTER><!-- By default only call left single when clicking in the middle of the knob -->
+				<LEFT_SINGLE_CODE_INNER>#LEFT_SINGLE_CODE#</LEFT_SINGLE_CODE_INNER>
+			</True>
+			<False>
+				<LEFT_SINGLE_CODE_OUTER/>
+				<LEFT_SINGLE_CODE_INNER/>
+			</False>
+		</Condition>
+		<CENTER_CURSOR>Hand</CENTER_CURSOR>
+		<UPDATE_FREQUENCY>10</UPDATE_FREQUENCY>
+	</DefaultTemplateParameters>
+
+	<Update Frequency = "#UPDATE_FREQUENCY#">
+		(O:_MouseDownRelativePosX) 0 &gt; if{ #CLOCKWISE_CODE# } els{
+		(O:_MouseDownRelativePosX) 0 &lt; if{ #ANTICLOCKWISE_CODE# } }
+	</Update>
+
+	<UseTemplate Name="GT_MouseRect">
+		<MouseFlags>LeftSingle+LeftRelease+WheelUp+WheelDown</MouseFlags>
+		<LEFTARROW>#CURSOR_LEFT#</LEFTARROW>
+		<RIGHTARROW>#CURSOR_RIGHT#</RIGHTARROW>
+		<CALLBACKCODE>
+			(M:Event) 'WheelUp'    scmi 0 == if{ #CLOCKWISE_CODE# } els{
+			(M:Event) 'WheelDown'  scmi 0 == if{ #ANTICLOCKWISE_CODE# } els{
+			(M:Event) 'LeftSingle' scmi 0 == if{ 
+				(M:RelativeX) abs #CENTER_RADIUS# &gt; if{
+					0 (&gt;O:_ButtonPressed)
+					(M:RelativeX) (&gt;O:_MouseDownRelativePosX)
+					#LEFT_SINGLE_CODE_OUTER#
+				} els{
+					0 (&gt;O:_MouseDownRelativePosX)
+					1 (&gt;O:_ButtonPressed)
+					#LEFT_SINGLE_CODE_INNER#
+				}
+			} els{
+			(M:Event) 'LeftRelease'   scmi 0 == if{
+				(O:_MouseDownRelativePosX) 0 != if{ #LEFT_LEAVE_CODE_OUTER# }
+				(O:_ButtonPressed) if{ #LEFT_LEAVE_CODE_INNER# }
+				0 (&gt;O:_MouseDownRelativePosX)
+				0 (&gt;O:_ButtonPressed)
+			} 
+			} } }
+		</CALLBACKCODE>
+	</UseTemplate>
+</Template>
+
+<!--
+	Combo of continuous rotary objects and left click and left leave interaction,
+	using code.
+
+	Required parameter:
+		CLOCKWISE_CODE
+		ANTICLOCKWISE_CODE
+		PUSH_CODE
+		PULL_CODE
+-->
+<Template Name = "GT_Interaction_WheelAndContinuousLeft_PushPull">
+	<DefaultTemplateParameters>
+		<CURSOR_LEFT>TurnLeft</CURSOR_LEFT>
+		<!-- Big arrows by default -->
+		<CURSOR_RIGHT>TurnRight</CURSOR_RIGHT>
+		<CENTER_RADIUS>0.004</CENTER_RADIUS>
+		<HELPID/>
+		<TOOLTIPID/>
+		<LEFT_LEAVE_CODE/>
+		<CURSOR_UP>UpArrow</CURSOR_UP>
+		<CURSOR_DOWN>DownArrow</CURSOR_DOWN>
+		<UPDATE_FREQUENCY>10</UPDATE_FREQUENCY>
+	</DefaultTemplateParameters>
+	
+	<Update Frequency = "#UPDATE_FREQUENCY#">
+		(O:_MouseDownRelativePosX) 0 &gt; if{ #CLOCKWISE_CODE# } els{
+		(O:_MouseDownRelativePosX) 0 &lt; if{ #ANTICLOCKWISE_CODE# } }
+	</Update>
+
+	<UseTemplate Name="GT_MouseRect">
+		<MouseFlags>LeftSingle+LeftRelease+WheelUp+WheelDown</MouseFlags>
+		<LEFTARROW>#CURSOR_LEFT#</LEFTARROW>
+		<RIGHTARROW>#CURSOR_RIGHT#</RIGHTARROW>
+		<UPARROW>#CURSOR_UP#</UPARROW>
+		<DOWNARROW>#CURSOR_DOWN#</DOWNARROW>
+		<CALLBACKCODE>
+			(M:Event) 'WheelUp'    scmi 0 == if{ #CLOCKWISE_CODE# } els{
+			(M:Event) 'WheelDown'  scmi 0 == if{ #ANTICLOCKWISE_CODE# } els{
+			
+			(M:Event) 'LeftRelease'   scmi 0 == if{ 0 (&gt;O:_MouseDownRelativePosX) }
+			
+			(M:RelativeX) abs #CENTER_RADIUS# &gt;
+			(M:RelativeY) abs #CENTER_RADIUS# &gt; or if{
+				(M:RelativeX) abs (M:RelativeY) abs &gt; if{
+					(M:Event) 'LeftSingle' scmi 0 ==
+					 if{ (M:RelativeX) (&gt;O:_MouseDownRelativePosX) }
+					
+				} els{
+					0 (&gt;O:_MouseDownRelativePosX)
+					(M:Event) 'LeftSingle' scmi 0 ==
+					 if{
+						(M:RelativeY) 0 &gt; if{
+							#PUSH_CODE#
+							1 (&gt;O:IsPushed)
+						} els{
+							#PULL_CODE#
+							1 (&gt;O:IsPulled)
+						}
+					 }
+					els{ (M:Event) 'LeftRelease'   scmi 0 == if{
+							#LEFT_LEAVE_CODE# 
+							0 (&gt;O:IsPulled)
+							0 (&gt;O:IsPushed)
+						}
+					}
+				}
+			}
+			} }
+		</CALLBACKCODE>
+	</UseTemplate>
+</Template>
+
+<!--
+	Combo of continuous rotary objects and left click and left leave interaction whith short and long action depending of time clicked,
+	using code.
+
+	Required parameter:
+		CLOCKWISE_CODE
+		ANTICLOCKWISE_CODE
+		LONG_CLICK_TIME
+		SHORT_CLICK_CODE
+		LONG_CLICK_CODE
+-->
+<Template Name = "GT_Interaction_WheelAndContinuousLeft_LeftSingleTimed">
+	<DefaultTemplateParameters>
+		<LEFT_SINGLE_CODE/>
+		<LEFT_LEAVE_CODE/>
+	</DefaultTemplateParameters>
+	<UseTemplate Name="GT_Interaction_WheelAndContinuousLeft_LeftSingle">
+		<LEFT_SINGLE_CODE>
+			(E:SIMULATION TIME, second) (&gt;O:_PressTime)
+			#LEFT_SINGLE_CODE#
+		</LEFT_SINGLE_CODE>
+		<LEFT_LEAVE_CODE>
+			(O:_PressTime) 0 &gt; if{
+				(E:SIMULATION TIME, second) (O:_PressTime) #LONG_CLICK_TIME# + &lt;
+				if{ #SHORT_CLICK_CODE# }
+			}
+			0 (&gt;O:_PressTime)
+			#LEFT_LEAVE_CODE#
+		</LEFT_LEAVE_CODE>
+	</UseTemplate>
+
+	<Update Frequency = "10">
+		(O:_PressTime) 0 &gt; if{
+			(E:SIMULATION TIME, second) (O:_PressTime) #LONG_CLICK_TIME# + &gt;
+			if{ #LONG_CLICK_CODE# 0 (&gt;O:_PressTime) }
+		}
+	</Update>
+</Template>
+
+<Template Name = "GT_Interaction_WheelLeftDrag_Axis">
+	<DefaultTemplateParameters>
+		<HELPID/>
+		<TOOLTIPID/>
+		<DELTA_MIN>0.0005</DELTA_MIN>
+		<Condition Check="NO_ARROWS">
+			<False>
+				<Condition Check="AXIS" Match="Y">
+					<UPARROW>UpArrow</UPARROW>
+					<DOWNARROW>DownArrow</DOWNARROW>
+				</Condition>
+				<Condition Check="AXIS" Match="X">
+					<LEFTARROW>TurnLeft</LEFTARROW>
+					<RIGHTARROW>TurnRight</RIGHTARROW>
+				</Condition>
+			</False>
+		</Condition>
+		<CALLBACKCODE></CALLBACKCODE>
+		<Condition Check="INVERT_INTERACTION">
+			<True>
+				<FLAG_1>2</FLAG_1>
+				<FLAG_2>1</FLAG_2>
+				<DRAG_INVERTION>1</DRAG_INVERTION>
+			</True>
+			<False>
+				<FLAG_1>1</FLAG_1>
+				<FLAG_2>2</FLAG_2>
+				<DRAG_INVERTION>-1</DRAG_INVERTION>
+			</False>
+		</Condition>
+		<COUNT>2</COUNT>
+		<DOWN_CODE></DOWN_CODE>
+		<RELEASE_CODE></RELEASE_CODE>
+	</DefaultTemplateParameters>
+	<OverrideTemplateParameters>
+		<Condition Check="USE_TRAJECTORY_DRAG_MODE">
+			<True>
+				<DOWN_CODE>
+					1 (&gt;O:_Interacting)
+					#DOWN_CODE#
+				</DOWN_CODE>
+				<RELEASE_CODE>
+					0 (&gt;O:_Interacting)
+					#RELEASE_CODE#
+				</RELEASE_CODE>
+				<DRAG_CODE>
+					(M:Relative#AXIS#) (&gt;O:_LastPos)
+					(O:_Interacting) if{
+						#DRAG_CODE#
+					}
+				</DRAG_CODE>
+			</True>
+			<False>
+				<DRAG_CODE>
+					(O:_LastPos) (M:Relative#AXIS#) - (&gt;O:_Delta)
+					(O:_Delta) abs #DELTA_MIN# &gt; if{
+						(O:_Delta) #DELTA_MIN# / #DRAG_INVERTION# * (&gt;O:DragScale)
+						(M:Relative#AXIS#) (&gt;O:_LastPos)
+						#DRAG_CODE# g3 quit
+					}
+				</DRAG_CODE>
+			</False>
+		</Condition>
+	</OverrideTemplateParameters>
+	
+	<UseTemplate Name="GT_MouseRect">
+		<MouseFlags>LeftSingle+LeftRelease+LeftDrag+WheelUp+WheelDown</MouseFlags>
+		<CALLBACKCODE>
+			(M:Event) 'WheelUp'    scmi 0 == if{ g#FLAG_1# } els{
+			(M:Event) 'WheelDown'  scmi 0 == if{ g#FLAG_2# } els{
+			(M:Event) 'LeftSingle' scmi 0 == if{
+					(M:Relative#AXIS#) (&gt;O:_LastPos)
+					#DOWN_CODE#
+				} els{
+			(M:Event) 'LeftRelease' scmi 0 == if{
+					#RELEASE_CODE#
+			} els{
+			(M:Event) 'LeftDrag' scmi 0 == if{
+					#DRAG_CODE#
+				}
+			} } } }
+			g3 quit
+			
+			:1 #POSITIVE_AXIS_CODE# g3 quit
+			:2 #NEGATIVE_AXIS_CODE# g3 quit
+			
+			:3 
+			#CALLBACKCODE#
+		</CALLBACKCODE>
+	</UseTemplate>
+</Template>
+
+<Template Name = "GT_Interaction_WheelLeftSingle_Axis">
+	<DefaultTemplateParameters>
+		<HELPID/>
+		<TOOLTIPID/>
+		<DELTA_MIN>1</DELTA_MIN>
+		<Condition Check="NO_ARROWS">
+			<False>
+				<Condition Check="AXIS" Match="Y">
+					<UPARROW>UpArrow</UPARROW>
+					<DOWNARROW>DownArrow</DOWNARROW>
+				</Condition>
+				<Condition Check="AXIS" Match="X">
+					<LEFTARROW>TurnLeft</LEFTARROW>
+					<RIGHTARROW>TurnRight</RIGHTARROW>
+				</Condition>
+			</False>
+		</Condition>
+		<CALLBACKCODE></CALLBACKCODE>
+	</DefaultTemplateParameters>
+	<UseTemplate Name="GT_MouseRect">
+		<MouseFlags>LeftSingle+WheelUp+WheelDown</MouseFlags>
+		<CALLBACKCODE>
+			(M:Event) 'WheelUp'    scmi 0 == if{ g1 } els{
+			(M:Event) 'WheelDown'  scmi 0 == if{ g2 } els{
+			(M:Event) 'LeftSingle' scmi 0 == if{
+					(M:Relative#AXIS#) (&gt;O:_LastPos)
+					(M:Relative#AXIS#) 0 &gt; if{ g1 } els{ g2 }
+				}
+			} }
+			quit
+			
+			:1 #POSITIVE_AXIS_CODE# quit
+			:2 #NEGATIVE_AXIS_CODE# quit
+			
+			#CALLBACKCODE#
+		</CALLBACKCODE>
+	</UseTemplate>
+</Template>
+
+<!--
+	Dragging objects interations on X axis,
+	using "set" event.
+
+	Required parameter:
+		DRAG_SIMVAR
+		DRAG_SIMVAR_UNITS
+		DRAG_EVENTID_SET
+-->
+<Template Name = "GT_Interaction_DraggingXAxis_EventSet">
+	<DefaultTemplateParameters>
+		<HELPID/>
+		<TOOLTIPID/>
+		<CURSOR>Grab</CURSOR>
+		<DRAG_SCALE>163.84</DRAG_SCALE>
+		<DRAG_AXIS_SCALE>100</DRAG_AXIS_SCALE>
+		<DRAG_MIN_VALUE>0</DRAG_MIN_VALUE>
+		<DRAG_MAX_VALUE>16384</DRAG_MAX_VALUE>
+		<AXIS>X</AXIS>
+	</DefaultTemplateParameters>
+
+	<UseTemplate Name="GT_MouseRect">
+		<MouseFlags>LeftSingle+LeftDrag+WheelUp+WheelDown</MouseFlags>
+		<CALLBACKDRAGGING/>
+	</UseTemplate>
+</Template>
+
+
+<!--
+	Dragging objects interations on Y axis,
+	using "set" event.
+
+	Required parameter:
+		DRAG_SIMVAR
+		DRAG_SIMVAR_UNITS
+		DRAG_EVENTID_SET
+-->
+<Template Name = "GT_Interaction_DraggingYAxis_EventSet">
+	<DefaultTemplateParameters>
+		<HELPID/>
+		<TOOLTIPID/>
+		<CURSOR>Grab</CURSOR>
+		<DRAG_SCALE>163.84</DRAG_SCALE>
+		<DRAG_AXIS_SCALE>-100</DRAG_AXIS_SCALE>
+		<DRAG_MIN_VALUE>0</DRAG_MIN_VALUE>
+		<DRAG_MAX_VALUE>16384</DRAG_MAX_VALUE>
+		<AXIS>Y</AXIS>
+	</DefaultTemplateParameters>
+
+	<UseTemplate Name="GT_MouseRect">
+		<MouseFlags>LeftSingle+LeftDrag+WheelUp+WheelDown</MouseFlags>
+		<CALLBACKDRAGGING/>
+	</UseTemplate>
+</Template>
+
+
+<!--
+	Base logic template for dragging objects interations on axis,
+	using code.
+
+	Required parameter:
+		UP_CODE
+		DOWN_CODE
+		AXIS (must be exactly "X" or "Y")
+-->
+<Template Name = "GT_Interaction_DraggingAxis_Code">
+	<DefaultTemplateParameters>
+		<HELPID/>
+		<TOOLTIPID/>
+		<CURSOR>Grab</CURSOR>
+		<DRAG_DELTA>0.001</DRAG_DELTA>
+		<DRAG_SPEED>0.5</DRAG_SPEED>
+		
+		<POSITION_TYPE>O</POSITION_TYPE>
+		<POSITION_VAR>Position</POSITION_VAR>
+		
+		<Condition Check="IS_LOOPING">
+			<True>
+				<MIN_LIMITER>dnor</MIN_LIMITER>
+				<MAX_LIMITER>dnor</MAX_LIMITER>
+			</True>
+			<False>
+				<Condition Check="ANIM_LENGTH">
+					<True>
+						<MIN_LIMITER> 0 max </MIN_LIMITER>
+						<MAX_LIMITER> #ANIM_LENGTH# min </MAX_LIMITER>
+					</True>
+					<False>
+						<ANIM_LENGTH>100</ANIM_LENGTH>
+						<MIN_LIMITER> 0 max </MIN_LIMITER>
+						<MAX_LIMITER> 100 min </MAX_LIMITER>
+					</False>
+				</Condition>
+			</False>
+		</Condition>
+		<Condition Check="REVERSE_INTERACTION">
+			<True>
+				<FLAG_1>2</FLAG_1>
+				<FLAG_2>1</FLAG_2>
+			</True>
+			<False>
+				<FLAG_1>1</FLAG_1>
+				<FLAG_2>2</FLAG_2>
+			</False>
+		</Condition>
+		<LEFT_SINGLE_CODE></LEFT_SINGLE_CODE>
+	</DefaultTemplateParameters>
+	
+	<UseTemplate Name="GT_MouseRect">
+		<MouseFlags>LeftAll+WheelUp+WheelDown</MouseFlags>
+		<CALLBACKCODE>
+			(M:Event) 'WheelUp'    scmi 0 == if{ g1 } els{
+			(M:Event) 'WheelDown'  scmi 0 == if{ g2 } els{
+			(M:Event) 'LeftSingle' scmi 0 == if{ #LEFT_SINGLE_CODE# (M:Relative#AXIS#) (&gt;O:_Last#AXIS#) } els{
+			(M:Event) 'LeftDrag'   scmi 0 == if{
+				(O:_Last#AXIS#) (M:Relative#AXIS#) -  #DRAG_DELTA# / abs (&gt;O:DragFactor)
+				(O:_Last#AXIS#) (M:Relative#AXIS#) -  -#DRAG_DELTA# &lt; if{ 
+					(M:Relative#AXIS#) (&gt;O:_Last#AXIS#) 
+					g1 
+				} els{
+					(O:_Last#AXIS#) (M:Relative#AXIS#) -  #DRAG_DELTA# &gt; if{ 
+					(M:Relative#AXIS#) (&gt;O:_Last#AXIS#) 
+					g2 
+					} els{
+			} } } } } }
+			quit
+			
+			:#FLAG_1# (#POSITION_TYPE#:#POSITION_VAR#) #DRAG_SPEED# (O:DragFactor) * + #MAX_LIMITER# (&gt;#POSITION_TYPE#:#POSITION_VAR#)
+			#UP_CODE#
+			quit
+			
+			:#FLAG_2# (#POSITION_TYPE#:#POSITION_VAR#) #DRAG_SPEED# (O:DragFactor) * - #MIN_LIMITER# (&gt;#POSITION_TYPE#:#POSITION_VAR#)
+			#DOWN_CODE#
+			quit
+		</CALLBACKCODE>
+	</UseTemplate>
+</Template>
+
+<!--
+	Dragging objects interations on X axis,
+	using code.
+
+	Required parameter:
+		CLOCKWISE_CODE
+		ANTICLOCKWISE_CODE
+-->
+<Template Name = "GT_Interaction_DraggingXAxis_Code">
+
+	<UseTemplate Name = "GT_Interaction_DraggingAxis_Code">
+		<AXIS>X</AXIS>
+	</UseTemplate>
+</Template>
+
+
+<!--
+	Dragging objects interations on Y axis,
+	using code.
+
+	Required parameter:
+		CLOCKWISE_CODE
+		ANTICLOCKWISE_CODE
+-->
+<Template Name = "GT_Interaction_DraggingYAxis_Code">
+
+	<UseTemplate Name = "GT_Interaction_DraggingAxis_Code">
+		<AXIS>Y</AXIS>
+	</UseTemplate>
+</Template>
+
+
+<!--
+	Dragging objects interations on X axis,
+	using "increase" and "decrease" events.
+
+	Required parameter:
+		CLOCKWISE_EVENTID
+		ANTICLOCKWISE_EVENTID
+-->
+<Template Name = "GT_Interaction_DraggingXAxis_EventsIncDec">
+	<DefaultTemplateParameters>
+		<HELPID/>
+		<TOOLTIPID/>
+		<DRAG_DELTA>8</DRAG_DELTA>
+		<CURSOR>Grab</CURSOR>
+	</DefaultTemplateParameters>
+
+	<UseTemplate Name="GT_MouseRect">
+		<MouseFlags>LeftSingle+LeftDrag+WheelUp+WheelDown</MouseFlags>
+		<X_MOVEMENT/>
+	</UseTemplate>
+</Template>
+
+
+<!--
+	Dragging objects interations on Y axis,
+	using "increase" and "decrease" events.
+
+	Required parameter:
+		CLOCKWISE_EVENTID
+		ANTICLOCKWISE_EVENTID
+-->
+<Template Name = "GT_Interaction_DraggingYAxis_EventsIncDec">
+	<DefaultTemplateParameters>
+		<HELPID/>
+		<TOOLTIPID/>
+		<DRAG_DELTA>20</DRAG_DELTA>
+		<CURSOR>Grab</CURSOR>
+	</DefaultTemplateParameters>
+
+	<UseTemplate Name="GT_MouseRect">
+		<MouseFlags>LeftSingle+LeftDrag+WheelUp+WheelDown</MouseFlags>
+		<Y_MOVEMENT/>
+	</UseTemplate>
+</Template>
+
+<Template Name="GT_Interaction_DraggingYAxis_Gates">
+	<DefaultTemplateParameters>
+		<STEPS_NUMBER>3</STEPS_NUMBER>
+		<GATE_TOLERANCE>0.2</GATE_TOLERANCE>
+		<DRAG_SPEED>10</DRAG_SPEED> 
+		<POSITION_TYPE>O</POSITION_TYPE>
+		<POSITION_VAR>Position</POSITION_VAR>
+		<CURSOR>Grab</CURSOR>
+		<AXIS>Y</AXIS>
+		<GATE_DIRECTION>1</GATE_DIRECTION>
+		<!-- GATE_DIRECTION : 
+					-1 = Forwards
+					0 = Both
+					1 = Backwards
+		-->
+		<IGNORE_GATE>False</IGNORE_GATE>
+	</DefaultTemplateParameters>
+	<OverrideTemplateParameters>
+		<Condition Valid="USE_TRAJECTORY_DRAG_MODE">
+			<True>
+				<Condition Valid="OVERRIDE_NEW_POSITION">
+					<True>
+						<NEW_POSITION>#OVERRIDE_NEW_POSITION#</NEW_POSITION>
+					</True>
+					<False>
+						<NEW_POSITION>#STEPS_NUMBER# (M:DragPercent) * </NEW_POSITION>
+					</False>
+				</Condition>
+			</True>
+			<False>
+				<NEW_POSITION>(#POSITION_TYPE#:#POSITION_VAR#) l3 + </NEW_POSITION>
+			</False>
+		</Condition>
+		<Condition>
+			<Test>
+				<And>
+					<Greater>
+						<Value>IGNORE_GATE</Value>
+						<Number>0</Number>
+					</Greater>
+					<Lower>
+						<Value>IGNORE_GATE</Value>
+						<Value>STEPS_NUMBER</Value>
+					</Lower>
+				</And>
+			</Test>
+			<True>
+				<IGNORE_GATE_CODE>
+					(O:MaxDraggingPosition) #IGNORE_GATE# == if{
+						(O:MaxDraggingPosition) ++ (&gt;O:MaxDraggingPosition)
+					}
+					(O:MinDraggingPosition) #IGNORE_GATE# == if{
+						(O:MinDraggingPosition) -- (&gt;O:MinDraggingPosition)
+					}
+				</IGNORE_GATE_CODE>
+			</True>
+			<False>
+				<IGNORE_GATE_CODE></IGNORE_GATE_CODE>
+			</False>
+		</Condition>
+	</OverrideTemplateParameters>
+
+	<UseTemplate Name="GT_MouseRect">
+		<MOUSEFLAGS>LeftAll+WheelUp+WheelDown</MOUSEFLAGS>
+		<CALLBACKCODE>
+			(M:Event) 'LeftSingle' scmp 0 == if{
+				(M:RelativeY) (&gt;O:PrevY, Number)
+				(#POSITION_TYPE#:#POSITION_VAR#) (&gt;O:InitialDraggingPosition)
+				(O:InitialDraggingPosition) near (O:InitialDraggingPosition) - abs #GATE_TOLERANCE# &lt; sp1
+				
+				#GATE_DIRECTION# -1 != if{
+					l1 if{
+						(O:InitialDraggingPosition) near 1 + #STEPS_NUMBER# min (&gt;O:MaxDraggingPosition)
+					} els{
+						(O:InitialDraggingPosition) ceil #STEPS_NUMBER# min (&gt;O:MaxDraggingPosition)
+					}
+				} els{
+					#STEPS_NUMBER# (&gt;O:MaxDraggingPosition)
+				}
+				
+				#GATE_DIRECTION# 1 != if{
+					l1 if{
+						(O:InitialDraggingPosition) near 1 - 0 max (&gt;O:MinDraggingPosition)
+					} els{
+						(O:InitialDraggingPosition) flr 0 max (&gt;O:MinDraggingPosition)
+					}
+				} els{
+					0 (&gt;O:MinDraggingPosition)
+				}
+				#IGNORE_GATE_CODE#
+				1 (&gt;O:IsDragging)
+			} els{ 
+				(M:Event) 'LeftRelease' scmp 0 == if{
+					0 (&gt;O:IsDragging)
+				} els{			
+					(M:Event) 'LeftDrag' scmp 0 == if{
+						(O:PrevY) (M:RelativeY) - sp2	
+						l2 #DRAG_SPEED# * sp3
+						
+						#GATE_DIRECTION# -1 != if{
+							(#POSITION_TYPE#:#POSITION_VAR#) #GATE_TOLERANCE# + flr 1 + (O:MaxDraggingPosition) min (&gt;O:MaxDraggingPosition)
+						}
+						#GATE_DIRECTION# 1 != if{
+							(#POSITION_TYPE#:#POSITION_VAR#) #GATE_TOLERANCE# - ceil 1 - (O:MinDraggingPosition) max (&gt;O:MinDraggingPosition)
+						}
+						#IGNORE_GATE_CODE#
+						
+						#NEW_POSITION# (O:MaxDraggingPosition) min (O:MinDraggingPosition) max (&gt;#POSITION_TYPE#:#POSITION_VAR#)
+						
+						#DRAG_CODE#
+						
+						(M:RelativeY) (&gt;O:PrevY)
+					}
+				}
+			}
+		</CALLBACKCODE>
+	</UseTemplate>
+</Template>
+
+<Template Name="GT_Interaction_DraggingYAxis_SimGates">
+	<DefaultTemplateParameters>
+		<STEPS_NUMBER>3</STEPS_NUMBER>
+		<GATE_TOLERANCE>0.2</GATE_TOLERANCE>
+		<DRAG_SPEED>0.01</DRAG_SPEED> 
+		<CURSOR>Grab</CURSOR>
+		<GATE_DIRECTION>1</GATE_DIRECTION>
+		<AXIS>Y</AXIS>
+		<!-- GATE_DIRECTION : 
+					-1 = Forwards
+					0 = Both
+					1 = Backwards
+		-->
+		<SIMVAR_CONVERSION> </SIMVAR_CONVERSION>
+		<EVENTID_CONVERSION> </EVENTID_CONVERSION>
+		
+	</DefaultTemplateParameters>
+
+	<UseTemplate Name="GT_Interaction_DraggingYAxis_SimGates_Base">
+	</UseTemplate>
+</Template>
+
+<Template Name="GT_MouseRect">
+	<DefaultTemplateParameters>
+		<HELPID/>
+		<TOOLTIPID/>
+		<UPARROW/>
+		<DOWNARROW/>
+		<LEFTARROW/>
+		<RIGHTARROW/>
+		<CURSOR/>
+		<CENTER_CURSOR/>
+		<CENTER_RADIUS>0</CENTER_RADIUS>
+		<ANIMCURSOR_MIN/>
+		<ANIMCURSOR_MAX/>
+		<ANIMTIP_LOOP/>
+		<ANIMTIP_0_ON_PERCENT/>
+		<ANIMTIP_1_ON_PERCENT/>
+		<ANIMTIP_2_ON_PERCENT/>
+		<ANIMTIP_3_ON_PERCENT/>
+		<ANIMTIP_4_ON_PERCENT/>
+		<ANIMTIP_5_ON_PERCENT/>
+		<ANIMTIP_6_ON_PERCENT/>
+		<ANIMTIP_7_ON_PERCENT/>
+		<ANIMTIP_8_ON_PERCENT/>
+		<ANIMTIP_9_ON_PERCENT/>		
+		<ANIMTIP_10_ON_PERCENT/>
+		<ANIMTIP_11_ON_PERCENT/>
+		<ANIMTIP_12_ON_PERCENT/>
+		<ANIMTIP_13_ON_PERCENT/>
+		<ANIMTIP_14_ON_PERCENT/>
+		<ANIMTIP_15_ON_PERCENT/>
+		
+		<ANIMTIP_0_ON_CURSOR/>
+		<ANIMTIP_1_ON_CURSOR/>
+		<ANIMTIP_2_ON_CURSOR/>
+		<ANIMTIP_3_ON_CURSOR/>
+		<ANIMTIP_4_ON_CURSOR/>
+		<ANIMTIP_5_ON_CURSOR/>
+		<ANIMTIP_6_ON_CURSOR/>
+		<ANIMTIP_7_ON_CURSOR/>
+		<ANIMTIP_8_ON_CURSOR/>
+		<ANIMTIP_9_ON_CURSOR/>
+		<ANIMTIP_10_ON_CURSOR/>
+		<ANIMTIP_11_ON_CURSOR/>
+		<ANIMTIP_12_ON_CURSOR/>
+		<ANIMTIP_13_ON_CURSOR/>
+		<ANIMTIP_14_ON_CURSOR/>
+		<ANIMTIP_15_ON_CURSOR/>
+		
+		<ANIMTIP_0_ON_HITBOX/>
+		<ANIMTIP_1_ON_HITBOX/>
+		<ANIMTIP_2_ON_HITBOX/>
+		<ANIMTIP_3_ON_HITBOX/>
+		<ANIMTIP_4_ON_HITBOX/>
+		<ANIMTIP_5_ON_HITBOX/>
+		<ANIMTIP_6_ON_HITBOX/>
+		<ANIMTIP_7_ON_HITBOX/>
+		<ANIMTIP_8_ON_HITBOX/>
+		<ANIMTIP_9_ON_HITBOX/>
+		<ANIMTIP_10_ON_HITBOX/>
+		<ANIMTIP_11_ON_HITBOX/>
+		<ANIMTIP_12_ON_HITBOX/>
+		<ANIMTIP_13_ON_HITBOX/>
+		<ANIMTIP_14_ON_HITBOX/>
+		<ANIMTIP_15_ON_HITBOX/>
+		
+		<DRAG_IS_RELATIVE>True</DRAG_IS_RELATIVE>
+		<DRAG_AXIS_X_SCALE>0</DRAG_AXIS_X_SCALE>
+		<DRAG_AXIS_Y_SCALE>0</DRAG_AXIS_Y_SCALE>
+		<DRAG_AXIS_Z_SCALE>0</DRAG_AXIS_Z_SCALE>
+		<Condition Check="DRAG_AXIS_SCALE">
+			<Switch Param="AXIS">
+				<Case Value="X">
+					<DRAG_AXIS_X_SCALE>#DRAG_AXIS_SCALE#</DRAG_AXIS_X_SCALE>
+				</Case>
+				<Case Value="Y">
+					<DRAG_AXIS_Y_SCALE>#DRAG_AXIS_SCALE#</DRAG_AXIS_Y_SCALE>
+				</Case>
+				<Case Value="Z">
+					<DRAG_AXIS_Z_SCALE>#DRAG_AXIS_SCALE#</DRAG_AXIS_Z_SCALE>
+				</Case>
+			</Switch>
+		</Condition>
+		<DRAG_NODE_ID></DRAG_NODE_ID>
+		<DRAG_ANIM_NAME></DRAG_ANIM_NAME>
+		<Condition Check="USE_TRAJECTORY_DRAG_MODE">
+			<True>
+				<DRAG_MODE>Trajectory</DRAG_MODE>
+			</True>
+			<False>
+				<DRAG_MODE>Default</DRAG_MODE>
+			</False>
+		</Condition>
+		
+		<Condition Check="NODE_ID">
+			<True>
+				<DRAG_ANIMATION_VARIABLE_TYPE>O</DRAG_ANIMATION_VARIABLE_TYPE>
+				<DRAG_ANIMATION_VARIABLE_NAME>XMLVAR_#NODE_ID#_Animation_Position</DRAG_ANIMATION_VARIABLE_NAME>
+				<DRAG_ANIMATION_TARGET_VARIABLE_TYPE>O</DRAG_ANIMATION_TARGET_VARIABLE_TYPE>
+				<DRAG_ANIMATION_TARGET_VARIABLE_NAME>XMLVAR_#NODE_ID#_Animation_Target_Position</DRAG_ANIMATION_TARGET_VARIABLE_NAME>
+			</True>
+		</Condition>
+		
+		<ANIMCURSOR_DIR>1.0</ANIMCURSOR_DIR>
+	</DefaultTemplateParameters>
+	<OverrideTemplateParameters>
+		<Condition NotEmpty="ANIMATION_CODE_SETTER">
+			<Switch>
+				<Case Check="X_MOVEMENT">
+					<X_MOVEMENT>
+						#X_MOVEMENT#
+						#ANIMATION_CODE_SETTER# (&gt;#DRAG_ANIMATION_VARIABLE_TYPE#:#DRAG_ANIMATION_VARIABLE_NAME#)
+						#ANIMATION_CODE_SETTER# (&gt;#DRAG_ANIMATION_TARGET_VARIABLE_TYPE#:#DRAG_ANIMATION_TARGET_VARIABLE_NAME#)
+					</X_MOVEMENT>
+				</Case>
+				<Case Check="Y_MOVEMENT">
+					<Y_MOVEMENT>
+						#Y_MOVEMENT#
+						#ANIMATION_CODE_SETTER# (&gt;#DRAG_ANIMATION_VARIABLE_TYPE#:#DRAG_ANIMATION_VARIABLE_NAME#)
+						#ANIMATION_CODE_SETTER# (&gt;#DRAG_ANIMATION_TARGET_VARIABLE_TYPE#:#DRAG_ANIMATION_TARGET_VARIABLE_NAME#)
+					</Y_MOVEMENT>
+				</Case>
+				<Case Check="CALLBACKDRAGGING">
+					<CALLBACKDRAGGING>
+						#CALLBACKDRAGGING#
+						#ANIMATION_CODE_SETTER# (&gt;#DRAG_ANIMATION_VARIABLE_TYPE#:#DRAG_ANIMATION_VARIABLE_NAME#)
+						#ANIMATION_CODE_SETTER# (&gt;#DRAG_ANIMATION_TARGET_VARIABLE_TYPE#:#DRAG_ANIMATION_TARGET_VARIABLE_NAME#)
+					</CALLBACKDRAGGING>
+				</Case>
+				<Case Check="CALLBACKCODE">
+					<CALLBACKCODE>
+						#CALLBACKCODE#
+						#ANIMATION_CODE_SETTER# (&gt;#DRAG_ANIMATION_VARIABLE_TYPE#:#DRAG_ANIMATION_VARIABLE_NAME#)
+						#ANIMATION_CODE_SETTER# (&gt;#DRAG_ANIMATION_TARGET_VARIABLE_TYPE#:#DRAG_ANIMATION_TARGET_VARIABLE_NAME#)
+					</CALLBACKCODE>
+				</Case>
+			</Switch>
+		</Condition>
+		<Condition Check="INVERT_ANIM">
+			<True>
+				<ANIMCURSOR_DIR Process="Float">#ANIMCURSOR_DIR# -1 *</ANIMCURSOR_DIR>
+			</True>
+		</Condition>
+	</OverrideTemplateParameters>
+	
+	<Switch>
+		<Case Check="EMISSIVE_NODE_POTENTIOMETER">
+			<UseTemplate Name="GT_Emissive_Potentiometer">
+				<POTENTIOMETER>#EMISSIVE_NODE_POTENTIOMETER#</POTENTIOMETER>
+			</UseTemplate>
+		</Case>
+		<Case Check="EMISSIVE_NODE_SIMVAR_POWER_SETTING">
+			<UseTemplate Name="GT_Emissive_Power_Setting">
+				<SIMVAR_POWER_SETTING>#EMISSIVE_NODE_SIMVAR_POWER_SETTING#</SIMVAR_POWER_SETTING>
+			</UseTemplate>
+		</Case>
+	</Switch>
+	
+	<Condition Check="ANIMATION_CODE_SETTER">
+		<UseTemplate Name="GT_Update_SmoothLeverMovement">
+		</UseTemplate>
+	</Condition>
+	
+	<MouseRect>
+		<HelpID>#HELPID#</HelpID>
+		<TooltipID>#TOOLTIPID#</TooltipID>	
+		<CursorLeft>#LEFTARROW#</CursorLeft>
+		<CursorRight>#RIGHTARROW#</CursorRight>
+		<CursorUp>#UPARROW#</CursorUp>
+		<CursorDown>#DOWNARROW#</CursorDown>	
+		<CursorCenter>#CENTER_CURSOR#</CursorCenter>
+		<Cursor>#CURSOR#</Cursor>
+		<CursorCenterRadius>#CENTER_RADIUS#</CursorCenterRadius>
+		<MouseFlags>#MOUSEFLAGS#</MouseFlags>
+		<Animated>
+			<Condition Check="ANIMREF_ID">
+				<AnimRefID>#ANIMREF_ID#</AnimRefID>
+			</Condition>
+			
+			<AnimCursor min="#ANIMCURSOR_MIN#" max="#ANIMCURSOR_MAX#">#ANIMCURSOR_DIR#</AnimCursorDir>
+			
+			<Condition Check="ANIMTIP_LOOP">
+				<AnimTooltipLoop>#ANIMTIP_LOOP#</AnimTooltipLoop>
+			</Condition>
+						
+			<Condition NotEmpty="ANIMTIP_0">
+				<AnimTooltip percent="#ANIMTIP_0_ON_PERCENT#" cursor="#ANIMTIP_0_ON_CURSOR#" hitbox="#ANIMTIP_0_ON_HITBOX#">#ANIMTIP_0#</AnimTooltip>
+			</Condition>
+			<Condition NotEmpty="ANIMTIP_1">
+				<AnimTooltip percent="#ANIMTIP_1_ON_PERCENT#" cursor="#ANIMTIP_1_ON_CURSOR#" hitbox="#ANIMTIP_1_ON_HITBOX#">#ANIMTIP_1#</AnimTooltip>
+			</Condition>
+			<Condition NotEmpty="ANIMTIP_2">
+				<AnimTooltip percent="#ANIMTIP_2_ON_PERCENT#" cursor="#ANIMTIP_2_ON_CURSOR#" hitbox="#ANIMTIP_2_ON_HITBOX#">#ANIMTIP_2#</AnimTooltip>
+			</Condition>
+			<Condition NotEmpty="ANIMTIP_3">
+				<AnimTooltip percent="#ANIMTIP_3_ON_PERCENT#" cursor="#ANIMTIP_3_ON_CURSOR#" hitbox="#ANIMTIP_3_ON_HITBOX#">#ANIMTIP_3#</AnimTooltip>
+			</Condition>
+			<Condition NotEmpty="ANIMTIP_4">
+				<AnimTooltip percent="#ANIMTIP_4_ON_PERCENT#" cursor="#ANIMTIP_4_ON_CURSOR#" hitbox="#ANIMTIP_4_ON_HITBOX#">#ANIMTIP_4#</AnimTooltip>
+			</Condition>
+			<Condition NotEmpty="ANIMTIP_5">
+				<AnimTooltip percent="#ANIMTIP_5_ON_PERCENT#" cursor="#ANIMTIP_5_ON_CURSOR#" hitbox="#ANIMTIP_5_ON_HITBOX#">#ANIMTIP_5#</AnimTooltip>
+			</Condition>
+			<Condition NotEmpty="ANIMTIP_6">
+				<AnimTooltip percent="#ANIMTIP_6_ON_PERCENT#" cursor="#ANIMTIP_6_ON_CURSOR#" hitbox="#ANIMTIP_6_ON_HITBOX#">#ANIMTIP_6#</AnimTooltip>
+			</Condition>
+			<Condition NotEmpty="ANIMTIP_7">
+				<AnimTooltip percent="#ANIMTIP_7_ON_PERCENT#" cursor="#ANIMTIP_7_ON_CURSOR#" hitbox="#ANIMTIP_7_ON_HITBOX#">#ANIMTIP_7#</AnimTooltip>
+			</Condition>
+			<Condition NotEmpty="ANIMTIP_8">
+				<AnimTooltip percent="#ANIMTIP_8_ON_PERCENT#" cursor="#ANIMTIP_8_ON_CURSOR#" hitbox="#ANIMTIP_8_ON_HITBOX#">#ANIMTIP_8#</AnimTooltip>
+			</Condition>
+			<Condition NotEmpty="ANIMTIP_9">
+				<AnimTooltip percent="#ANIMTIP_9_ON_PERCENT#" cursor="#ANIMTIP_9_ON_CURSOR#" hitbox="#ANIMTIP_9_ON_HITBOX#">#ANIMTIP_9#</AnimTooltip>
+			</Condition>
+			<Condition NotEmpty="ANIMTIP_10">
+				<AnimTooltip percent="#ANIMTIP_10_ON_PERCENT#" cursor="#ANIMTIP_10_ON_CURSOR#" hitbox="#ANIMTIP_10_ON_HITBOX#">#ANIMTIP_10#</AnimTooltip>
+			</Condition>
+			<Condition NotEmpty="ANIMTIP_11">
+				<AnimTooltip percent="#ANIMTIP_11_ON_PERCENT#" cursor="#ANIMTIP_11_ON_CURSOR#" hitbox="#ANIMTIP_11_ON_HITBOX#">#ANIMTIP_11#</AnimTooltip>
+			</Condition>
+			<Condition NotEmpty="ANIMTIP_12">
+				<AnimTooltip percent="#ANIMTIP_12_ON_PERCENT#" cursor="#ANIMTIP_12_ON_CURSOR#" hitbox="#ANIMTIP_12_ON_HITBOX#">#ANIMTIP_12#</AnimTooltip>
+			</Condition>
+			<Condition NotEmpty="ANIMTIP_13">
+				<AnimTooltip percent="#ANIMTIP_13_ON_PERCENT#" cursor="#ANIMTIP_13_ON_CURSOR#" hitbox="#ANIMTIP_13_ON_HITBOX#">#ANIMTIP_13#</AnimTooltip>
+			</Condition>
+			<Condition NotEmpty="ANIMTIP_14">
+				<AnimTooltip percent="#ANIMTIP_14_ON_PERCENT#" cursor="#ANIMTIP_14_ON_CURSOR#" hitbox="#ANIMTIP_14_ON_HITBOX#">#ANIMTIP_14#</AnimTooltip>
+			</Condition>
+			<Condition NotEmpty="ANIMTIP_15">
+				<AnimTooltip percent="#ANIMTIP_15_ON_PERCENT#" cursor="#ANIMTIP_15_ON_CURSOR#" hitbox="#ANIMTIP_15_ON_HITBOX#">#ANIMTIP_15#</AnimTooltip>
+			</Condition>
+		</Animated>
+		
+		<Switch>
+			<Case Check="EVENTID">
+				<EventID>#EVENTID#</EventID>
+			</Case>
+			<Case Check="CALLBACKCODE">
+				<CallbackCode>
+					<Code>#CALLBACKCODE#</Code>
+					<DragAnimName>#DRAG_ANIM_NAME#</DragAnimName>
+					<DragNodeId>#DRAG_NODE_ID#</DragNodeId>
+					<DragMode>#DRAG_MODE#</DragMode>
+				</CallbackCode>
+			</Case>
+			<Case Check="Y_MOVEMENT">
+				<CallbackJumpDragging>
+					<YMovement>
+						<Delta>#DRAG_DELTA#</Delta>
+						<EventIdInc>#CLOCKWISE_EVENTID#</EventIdInc>
+						<EventIdDec>#ANTICLOCKWISE_EVENTID#</EventIdDec>
+					</YMovement>
+				</CallbackJumpDragging>
+			</Case>
+			<Case Check="X_MOVEMENT">
+				<CallbackJumpDragging>
+					<XMovement>
+						<Delta>#DRAG_DELTA#</Delta>
+						<EventIdInc>#CLOCKWISE_EVENTID#</EventIdInc>
+						<EventIdDec>#ANTICLOCKWISE_EVENTID#</EventIdDec>
+					</XMovement>
+				</CallbackJumpDragging>
+			</Case>
+			<Case Check="CALLBACKDRAGGING">
+				<CallbackDragging>
+					<Variable>#DRAG_SIMVAR#</Variable>
+					<Units>#DRAG_SIMVAR_UNITS#</Units>
+					<Scale>#DRAG_SCALE#</Scale>
+					<XScale>#DRAG_AXIS_X_SCALE#</XScale>
+					<YScale>#DRAG_AXIS_Y_SCALE#</YScale>
+					<ZScale>#DRAG_AXIS_Z_SCALE#</ZScale>
+					<MinValue>#DRAG_MIN_VALUE#</MinValue>
+					<MaxValue>#DRAG_MAX_VALUE#</MaxValue>
+					<EventID>#DRAG_EVENTID_SET#</EventID>
+					<IsRelative>#DRAG_IS_RELATIVE#</IsRelative>
+					<DragAnimName>#DRAG_ANIM_NAME#</DragAnimName>
+					<DragNodeName>#DRAG_NODE_ID#</DragNodeName>
+					<DragMode>#DRAG_MODE#</DragMode>
+				</CallbackDragging>
+			</Case>
+		</Switch>
+	</MouseRect>
+</Template>

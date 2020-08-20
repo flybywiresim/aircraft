@@ -1,0 +1,11 @@
+
+<!-- Generic templates (GT) -->
+
+<Include File="Helpers.xml"/>
+<Include File="Interactions.xml"/>
+<Include File="Updates.xml"/>
+<Include File="Visibility.xml"/>
+<Include File="Emissive.xml"/>
+<Include File="AnimationTriggers.xml"/>
+<Include File="Animations.xml"/>
+<Include File="Complex\\Index.xml"/>

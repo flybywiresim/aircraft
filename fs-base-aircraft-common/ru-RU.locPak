@@ -1,0 +1,28 @@
+{
+  "LocalisationPackage": {
+    "Language": "ru-RU",
+    "Strings": {
+      "MODELBEHAVIOR.CDI.OPTIONS.NO_EMISSIVE_GPS": "Отключает излучающий индикатор GPS",
+      "MODELBEHAVIOR.CDI.OPTIONS.NO_EMISSIVE_NAV": "Отключает излучающий индикатор NAV",
+      "MODELBEHAVIOR.CDI.OPTIONS.NO_EMISSIVE_VLOC": "Отключает излучающий индикатор VLOC",
+      "MODELBEHAVIOR.CDI.OPTIONS.NO_FLAG_GLIDE": "Отключает флажок глиссады",
+      "MODELBEHAVIOR.CDI.OPTIONS.NO_FLAG_LOCALIZER": "Отключает флажок курсового маяка",
+      "MODELBEHAVIOR.CDI.OPTIONS.NO_GLIDE_LOCALIZER_INIT_ANIMATION": "Отключает начальную анимацию для курсового маяка глиссады",
+      "MODELBEHAVIOR.CDI.OPTIONS.NO_NEEDLE_GLIDE": "Отключает планку глиссады",
+      "MODELBEHAVIOR.CDI.PARAMS.ANIM_NAME.COMPASS": "Название анимации компаса",
+      "MODELBEHAVIOR.CDI.PARAMS.ANIM_NAME.COURSE_KNOB": "Название анимации задатчика путевого угла",
+      "MODELBEHAVIOR.CDI.PARAMS.ANIM_NAME.FLAG_FROM": "Название анимации флажка пункта отправления",
+      "MODELBEHAVIOR.CDI.PARAMS.ANIM_NAME.FLAG_GLIDE": "Название анимации флажка глиссады",
+      "MODELBEHAVIOR.CDI.PARAMS.ANIM_NAME.FLAG_LOCALIZER": "Название анимации флажка курсового маяка",
+      "MODELBEHAVIOR.CDI.PARAMS.ANIM_NAME.FLAG_OFF": "Название анимации флажка сноса",
+      "MODELBEHAVIOR.CDI.PARAMS.ANIM_NAME.FLAG_TO": "Название анимации флажка пункта назначения",
+      "MODELBEHAVIOR.CDI.PARAMS.ANIM_NAME.NEEDLE_GLIDE": "Название анимации планки глиссады",
+      "MODELBEHAVIOR.CDI.PARAMS.ANIM_NAME.NEEDLE_LOCALIZER": "Название анимации планки курсового маяка",
+      "MODELBEHAVIOR.CDI.PARAMS.NODE_ID.COURSE_KNOB": "Название точки пересечения задатчика путевого угла",
+      "MODELBEHAVIOR.CDI.PARAMS.NODE_ID.EMISSIVE_GPS": "Название точки пересечения излучающего индикатора GPS",
+      "MODELBEHAVIOR.CDI.PARAMS.NODE_ID.EMISSIVE_NAV": "Название точки пересечения излучающего индикатора NAV",
+      "MODELBEHAVIOR.CDI.PARAMS.NODE_ID.EMISSIVE_VLOC": "Название точки пересечения излучающего индикатора VLOC",
+      "MODELBEHAVIOR.CDI.PARAMS.NODE_ID.HIGHLIGHT": "Название точки пересечения, используемой для подсветки"
+    }
+  }
+}

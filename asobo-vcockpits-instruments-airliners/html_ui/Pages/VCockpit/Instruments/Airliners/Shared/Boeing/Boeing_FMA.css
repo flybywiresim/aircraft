@@ -1,0 +1,144 @@
+﻿:root {
+  --bodyHeightScale: 1; }
+
+@keyframes TemporaryShow {
+  0%, 100% {
+    visibility: visible; } }
+
+@keyframes TemporaryHide {
+  0%, 100% {
+    visibility: hidden; } }
+
+#highlight {
+  position: absolute;
+  height: 100%;
+  width: 100%;
+  z-index: 10; }
+
+#Electricity {
+  width: 100%;
+  height: 100%; }
+  #Electricity[state=off] {
+    display: none; }
+
+@font-face {
+  font-family: "Roboto";
+  src: url("/Fonts/RobotoMono-Medium.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal; }
+
+@font-face {
+  font-family: "Roboto-Light";
+  src: url("/Fonts/RobotoMono-Light.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal; }
+
+@font-face {
+  font-family: "Roboto-Bold";
+  src: url("/Fonts/RobotoMono-Bold.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal; }
+
+boeing-fma {
+  position: absolute;
+  top: 0%;
+  height: 100%;
+  left: 0%;
+  width: 100%;
+  font-size: 20px;
+  color: lime; }
+  boeing-fma div {
+    position: absolute;
+    top: 0%;
+    height: 100%;
+    left: 0%;
+    width: 100%; }
+  boeing-fma #Background {
+    height: 100%; }
+  boeing-fma .top {
+    height: 55%; }
+  boeing-fma .middle {
+    top: 60%;
+    height: 33%;
+    font-size: 13px; }
+  boeing-fma .bottom {
+    top: 67%;
+    height: 33%; }
+  boeing-fma .warning {
+    color: orange; }
+  boeing-fma .highlight-top, boeing-fma .highlight-middle, boeing-fma .highlight-bottom {
+    color: none;
+    border: 1px solid lime;
+    left: 5%;
+    width: 90%;
+    height: 50%; }
+  boeing-fma .highlight-top {
+    top: 5%; }
+  boeing-fma .highlight-middle {
+    top: 39%; }
+  boeing-fma .highlight-bottom {
+    top: 72%; }
+  boeing-fma #Column1, boeing-fma #Column2, boeing-fma #Column3 {
+    text-align: center; }
+  boeing-fma #Column1 {
+    width: 33%; }
+  boeing-fma #Column2 {
+    left: 33%;
+    width: 34%;
+    border-left: 2px solid white;
+    border-right: 2px solid white; }
+    boeing-fma #Column2 #COL2_BOTTOM_ARROWS {
+      position: absolute;
+      top: 40%;
+      height: 100%;
+      left: 4%;
+      width: 92%;
+      fill: white; }
+  boeing-fma #Column3 {
+    left: 67%;
+    width: 33%; }
+
+boeing-fma.B747_8_PFD {
+  font-size: 35px; }
+  boeing-fma.B747_8_PFD .middle {
+    font-size: 24px;
+    color: white; }
+  boeing-fma.B747_8_PFD #Background {
+    background-color: #343B51; }
+  boeing-fma.B747_8_PFD #Column2 .bottom {
+    top: 220%;
+    font-size: 36px; }
+  boeing-fma.B747_8_PFD #Column2 #COL2_BOTTOM_ARROWS {
+    top: 200%; }
+
+boeing-fma.AS01B_PFD {
+  font-size: 20px; }
+  boeing-fma.AS01B_PFD .middle {
+    font-size: 15px;
+    color: white; }
+  boeing-fma.AS01B_PFD #Background {
+    background-color: black;
+    opacity: 0.3; }
+  boeing-fma.AS01B_PFD #Column2 .bottom {
+    top: 240%;
+    font-size: 23px; }
+  boeing-fma.AS01B_PFD #Column2 #COL2_BOTTOM_ARROWS {
+    top: 240%; }
+
+boeing-fma.AS01B_HUD {
+  font-size: 32px; }
+  boeing-fma.AS01B_HUD .warning {
+    color: lime; }
+  boeing-fma.AS01B_HUD .middle {
+    font-size: 25px;
+    color: white; }
+  boeing-fma.AS01B_HUD #Column2 .top, boeing-fma.AS01B_HUD #Column2 .middle {
+    border-left: 2px solid green;
+    border-right: 2px solid green; }
+  boeing-fma.AS01B_HUD #Column2 .bottom {
+    top: 240%;
+    font-size: 28px; }
+  boeing-fma.AS01B_HUD #Column2 #COL2_BOTTOM_ARROWS {
+    top: 240%;
+    fill: lime; }
+

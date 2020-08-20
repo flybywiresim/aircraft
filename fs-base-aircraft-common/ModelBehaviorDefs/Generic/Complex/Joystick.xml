@@ -1,0 +1,166 @@
+<!--
+	Basic Joystick interaction (all or nothing (0, 1 or -1), no in between value)
+
+	JOYSTICK_X_CODE_LEFT(code): code executed when joystick is orientated left
+	JOYSTICK_X_CODE_RIGHT(code): code executed when joystick is orientated right
+	JOYSTICK_Y_CODE_DOWN(code): code executed when joystick is orientated down
+	JOYSTICK_Y_CODE_UP(code): code executed when joystick is orientated up
+-->
+<Template Name = "GT_Joystick_Interaction">
+	<DefaultTemplateParameters>
+		<JOYSTICK_LEFT_SINGLE_CODE/>
+		<JOYSTICK_RELEASE_CODE/>
+		<UPDATE_FREQUENCY>5</UPDATE_FREQUENCY>
+		<CENTER_RADIUS>0.0025</CENTER_RADIUS>
+		<JOYSTICK_X_CODE_LEFT></JOYSTICK_X_CODE_LEFT>
+		<JOYSTICK_X_CODE_RIGHT></JOYSTICK_X_CODE_RIGHT>
+		<JOYSTICK_Y_CODE_DOWN></JOYSTICK_Y_CODE_DOWN>
+		<JOYSTICK_Y_CODE_UP></JOYSTICK_Y_CODE_UP>
+		<VAR_NAME>XMLVAR_Interacting_With_Joystick#ID#</VAR_NAME>
+	</DefaultTemplateParameters>
+	<Update frequency="#UPDATE_FREQUENCY#">
+			(I:#VAR_NAME#) if{
+				(O:Interacting_With_X_Axis) if{
+					(O:Can_Pan_On_X_Axis) if{
+						(O:Panning_X_Axis_Delta) 0 &lt; if{ #JOYSTICK_X_CODE_LEFT# } els{ #JOYSTICK_X_CODE_RIGHT# }
+					}
+				} els{
+					(O:Can_Pan_On_Y_Axis) if{
+						(O:Panning_Y_Axis_Delta) 0 &lt; if{ #JOYSTICK_Y_CODE_DOWN# } els{ #JOYSTICK_Y_CODE_UP# }
+					}
+				}
+			}
+		</Update>
+	<UseTemplate Name="GT_MouseRect">
+		<CALLBACKCODE>
+			(M:Event) 'LeftSingle'  scmi 0 == if{
+				1 (&gt;I:#VAR_NAME#)
+				#JOYSTICK_LEFT_SINGLE_CODE#
+				g1
+			} els{
+			(M:Event) 'LeftRelease' scmi 0 == if{ 
+				0 (&gt;I:#VAR_NAME#)
+				0 (&gt;O:Can_Pan_On_X_Axis)
+				0 (&gt;O:Can_Pan_On_Y_Axis)
+				#JOYSTICK_RELEASE_CODE#
+			} els{
+			(M:Event) 'LeftDrag' scmi 0 == if{ 
+				g1
+			} } }
+			quit
+			:1 (M:RelativeX) abs (M:RelativeY) abs &gt; (&gt;O:Interacting_With_X_Axis)
+			(M:RelativeX) abs #CENTER_RADIUS# &gt; (&gt;O:Can_Pan_On_X_Axis)
+			(M:RelativeY) abs #CENTER_RADIUS# &gt; (&gt;O:Can_Pan_On_Y_Axis)
+			-1 1 (M:RelativeX) 0 &lt; ? (&gt;O:Panning_X_Axis_Delta)
+			-1 1 (M:RelativeY) 0 &lt; ? (&gt;O:Panning_Y_Axis_Delta)
+		</CALLBACKCODE>
+		<MOUSEFLAGS>LeftAll</MOUSEFLAGS>
+	</UseTemplate>
+</Template>
+
+<Template Name = "GT_Joystick">
+	<DefaultTemplateParameters>
+		<ANIM_NAME_L_R>Joystick_X_Axis</ANIM_NAME_L_R>
+		<ANIM_NAME_DN_UP>Joystick_Y_Axis</ANIM_NAME_DN_UP>
+		<LEFTARROW>LeftArrow</LEFTARROW>
+		<RIGHTARROW>RightArrow</RIGHTARROW>
+		<UPARROW>UpArrow</UPARROW>
+		<DOWNARROW>DownArrow</DOWNARROW>
+		<CENTER_CURSOR>Hand</CENTER_CURSOR>
+		<ID>1</ID>
+		<WWISE_JOYSTICK_EVENT_L>generic_joystick_L</WWISE_JOYSTICK_EVENT_L>
+		<WWISE_JOYSTICK_EVENT_R>generic_joystick_R</WWISE_JOYSTICK_EVENT_R >	
+		<WWISE_JOYSTICK_EVENT_UP>generic_joystick_UP</WWISE_JOYSTICK_EVENT_UP>
+		<WWISE_JOYSTICK_EVENT_DN>generic_joystick_DN</WWISE_JOYSTICK_EVENT_DN>
+	</DefaultTemplateParameters>
+	<EditableTemplateParameters>
+		<AddParams>
+			<ANIM_NAME_L_R></ANIM_NAME_L_R>
+			<ANIM_NAME_DN_UP></ANIM_NAME_DN_UP>
+		</AddParams>
+	</EditableTemplateParameters>
+	<UseTemplate Name="GT_Anim_Code">
+		<ANIM_CODE>(O:Panning_X_Axis_Delta) (O:Can_Pan_On_X_Axis) * (O:Interacting_With_X_Axis) * 50 * 50 +</ANIM_CODE>
+		<ANIM_LENGTH>100</ANIM_LENGTH>
+		<ANIM_NAME>#ANIM_NAME_L_R#</ANIM_NAME>
+	</UseTemplate>
+	<UseTemplate Name="GT_Anim_Code">
+		<ANIM_CODE>(O:Panning_Y_Axis_Delta) (O:Can_Pan_On_Y_Axis) * (O:Interacting_With_X_Axis) ! * 50 * 50 +</ANIM_CODE>
+		<ANIM_LENGTH>100</ANIM_LENGTH>
+		<ANIM_NAME>#ANIM_NAME_DN_UP#</ANIM_NAME>
+	</UseTemplate>
+	<UseTemplate Name="GT_Joystick_Interaction">
+	</UseTemplate>	
+	<UseTemplate Name="GT_AnimTriggers_2SoundEvents">
+		<ANIM_NAME>#ANIM_NAME_L_R#</ANIM_NAME>
+		<WWISE_EVENT_1>#WWISE_JOYSTICK_EVENT_L#</WWISE_EVENT_1>
+		<DIRECTION_1>Both</DIRECTION_1>
+		<WWISE_EVENT_2>#WWISE_JOYSTICK_EVENT_R#</WWISE_EVENT_2>
+		<DIRECTION_2>Both</DIRECTION_2>
+	</UseTemplate>
+	<UseTemplate Name="GT_AnimTriggers_2SoundEvents">
+		<ANIM_NAME>#ANIM_NAME_DN_UP#</ANIM_NAME>
+		<WWISE_EVENT_1>#WWISE_JOYSTICK_EVENT_DN#</WWISE_EVENT_1>
+		<DIRECTION_1>Both</DIRECTION_1>
+		<WWISE_EVENT_2>#WWISE_JOYSTICK_EVENT_UP#</WWISE_EVENT_2>
+		<DIRECTION_2>Both</DIRECTION_2>
+	</UseTemplate>
+</Template>
+
+<!-- Add some functionalities to the base joystick:
+- Push
+- Knob
+- Separate pan interaction from the joystick itself
+-->
+<Template Name = "GT_Joystick_Separated_Interaction">
+	<DefaultTemplateParameters>
+		<ANIM_NAME_KNOB>Joystick_Knob</ANIM_NAME_KNOB>
+		<ANIM_NAME_PUSH>Joystick_Push</ANIM_NAME_PUSH>
+		<PAN_NODE_ID>Joystick_Pan</PAN_NODE_ID>
+		<NODE_ID>Joystick</NODE_ID>
+		<WHEEL_UP_CODE></WHEEL_UP_CODE>
+		<WHEEL_DOWN_CODE></WHEEL_DOWN_CODE>
+		<LEFT_SINGLE_CODE></LEFT_SINGLE_CODE>
+		<KNOB_TURN_SPEED>10</KNOB_TURN_SPEED>
+		<PUSH_TOOLTIP></PUSH_TOOLTIP>
+		<ROTATE_TOOLTIP></ROTATE_TOOLTIP>
+		<ID>1</ID>
+	</DefaultTemplateParameters>
+	<EditableTemplateParameters>
+		<AddParams>
+		<ANIM_NAME_KNOB></ANIM_NAME_KNOB>
+		<ANIM_NAME_PUSH></ANIM_NAME_PUSH>
+		<PAN_NODE_ID></PAN_NODE_ID>
+		<NODE_ID></NODE_ID>
+		</AddParams>
+	</EditableTemplateParameters>
+	<Component ID="#NODE_ID#_#ID#" Node="#NODE_ID#">
+		<UseTemplate Name="GT_Knob_Infinite_Push">
+			<CURSOR_LEFT>TurnLeft</CURSOR_LEFT>
+			<CURSOR_RIGHT>TurnRight</CURSOR_RIGHT>
+			<CENTER_CURSOR>Hand</CENTER_CURSOR>
+			<CLOCKWISE_CODE>#WHEEL_UP_CODE#</CLOCKWISE_CODE>
+			<ANTICLOCKWISE_CODE>#WHEEL_DOWN_CODE#</ANTICLOCKWISE_CODE>
+			<ANIMTIP_0>#PUSH_TOOLTIP#</ANIMTIP_0>
+			<ANIMTIP_0_ON_CURSOR>HAND</ANIMTIP_0_ON_CURSOR>
+			<ANIMTIP_1>#ROTATE_TOOLTIP#</ANIMTIP_1>
+			<ANIMTIP_1_ON_CURSOR>TurnLeft</ANIMTIP_1_ON_CURSOR>
+			<ANIMTIP_2>#ROTATE_TOOLTIP#</ANIMTIP_2>
+			<ANIMTIP_2_ON_CURSOR>TurnRight</ANIMTIP_2_ON_CURSOR>
+		</UseTemplate>
+	</Component>
+	<Component ID="#PAN_NODE_ID#_#ID#" Node="#PAN_NODE_ID#">
+		<UseTemplate Name="GT_Joystick">
+			<Condition Check="PAN_TOOLTIP">
+				<ANIMTIP_0>#PAN_TOOLTIP#</ANIMTIP_0>
+				<ANIMTIP_0_ON_CURSOR>UPARROW</ANIMTIP_0_ON_CURSOR>
+				<ANIMTIP_1>#PAN_TOOLTIP#</ANIMTIP_1>
+				<ANIMTIP_1_ON_CURSOR>DOWNARROW</ANIMTIP_1_ON_CURSOR>
+				<ANIMTIP_2>#PAN_TOOLTIP#</ANIMTIP_2>
+				<ANIMTIP_2_ON_CURSOR>LEFTARROW</ANIMTIP_2_ON_CURSOR>
+				<ANIMTIP_3>#PAN_TOOLTIP#</ANIMTIP_3>
+				<ANIMTIP_3_ON_CURSOR>RIGHTARROW</ANIMTIP_3_ON_CURSOR>
+			</Condition>
+		</UseTemplate>
+	</Component>
+</Template>

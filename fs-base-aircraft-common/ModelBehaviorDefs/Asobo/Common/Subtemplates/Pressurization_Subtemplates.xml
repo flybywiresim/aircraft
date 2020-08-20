@@ -1,0 +1,15 @@
+
+<Template Name="ASOBO_PRESSURIZATION_Needle_Suction_SubTemplate">
+	<DefaultTemplateParameters>
+		<ANIM_NAME>PRESSURIZATION_Needle_Suction#SUFFIX_ID#</ANIM_NAME>
+		<PART_ID>PRESSURIZATION_Needle_Suction</PART_ID>
+		<NODE_ID>PRESSURIZATION_Needle_Suction#SUFFIX_ID#</NODE_ID>
+		<MIN_VALUE>3</MIN_VALUE>
+		<MAX_VALUE>7</MAX_VALUE>
+		<UNITS>inHg</UNITS>
+	</DefaultTemplateParameters>
+
+	<UseTemplate Name="ASOBO_GT_Needle_Code">
+		<SIMVAR>SUCTION PRESSURE</SIMVAR>
+	</UseTemplate>
+</Template>

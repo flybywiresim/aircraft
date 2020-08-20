@@ -1,0 +1,85 @@
+
+<Include Path="Asobo\Generic.xml"/>
+
+
+<Template Name="ASOBO_INSTRUMENT_Clock_Template">
+	<DefaultTemplateParameters>
+		<ID>1</ID>
+	</DefaultTemplateParameters>
+
+	<UseTemplate Name="ASOBO_GT_Helper_Suffix_ID_Appender">
+		<TEMPLATE_TO_CALL>ASOBO_INSTRUMENT_Clock_SubTemplate</TEMPLATE_TO_CALL>
+	</UseTemplate>
+</Template>
+
+<Template Name="ASOBO_INSTRUMENT_Clock_SubTemplate">
+	<DefaultTemplateParameters>
+		<SELECT_BUTTON_NODE_ID>INSTRUMENT_Push_Clock_Select#SUFFIX_ID#</SELECT_BUTTON_NODE_ID>
+		<SELECT_BUTTON_ANIM_NAME>INSTRUMENT_Push_Clock_Select#SUFFIX_ID#</SELECT_BUTTON_ANIM_NAME>
+		<OAT_BUTTON_NODE_ID>INSTRUMENT_Push_Clock_OAT#SUFFIX_ID#</OAT_BUTTON_NODE_ID>
+		<OAT_BUTTON_ANIM_NAME>INSTRUMENT_Push_Clock_OAT#SUFFIX_ID#</OAT_BUTTON_ANIM_NAME>
+		<CONTROL_BUTTON_NODE_ID>INSTRUMENT_Push_Clock_Control#SUFFIX_ID#</CONTROL_BUTTON_NODE_ID>
+		<CONTROL_BUTTON_ANIM_NAME>INSTRUMENT_Push_Clock_Control#SUFFIX_ID#</CONTROL_BUTTON_ANIM_NAME>
+		<Condition Valid="USE_BACKLIGHTING">
+			<SCREEN_NODE_ID>INSTRUMENT_Clock_Screen#SUFFIX_ID#</SCREEN_NODE_ID>
+		</Condition>
+		<WWISE_EVENT_1>clock_push_button_on</WWISE_EVENT_1> 
+		<WWISE_EVENT_2>clock_push_button_off</WWISE_EVENT_2>
+		<NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
+		<NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>	
+	</DefaultTemplateParameters>
+	
+	<Condition Valid="USE_BACKLIGHTING">
+		<Component ID="INSTRUMENT_Clock_Screen" Node="#SCREEN_NODE_ID#">
+			<UseTemplate Name="ASOBO_GT_Emissive_Gauge">
+				<EMISSIVE_CODE>0.5</EMISSIVE_CODE>
+			</UseTemplate>
+		</Component>
+	</Condition>
+	
+	<Component ID="Instrument_Clock_Select_Button" Node="#SELECT_BUTTON_NODE_ID#">
+		<UseTemplate Name="ASOBO_GT_Push_Button">
+			<TOOLTIPID>TT:COCKPIT.TOOLTIPS.CLOCK_SELECT_BUTTON</TOOLTIPID>
+			<ANIM_NAME>#SELECT_BUTTON_ANIM_NAME#</ANIM_NAME>
+			<LEFT_SINGLE_CODE>(&gt;H:oclock_select)</LEFT_SINGLE_CODE>
+		</UseTemplate>
+	</Component>
+	
+	<Component ID="Instrument_Clock_OAT_Button" Node="#OAT_BUTTON_NODE_ID#">
+		<UseTemplate Name="ASOBO_GT_Push_Button">
+			<TOOLTIPID>TT:COCKPIT.TOOLTIPS.CLOCK_OAT_BUTTON</TOOLTIPID>
+			<ANIM_NAME>#OAT_BUTTON_ANIM_NAME#</ANIM_NAME>
+			<LEFT_SINGLE_CODE>(&gt;H:oclock_oat)</LEFT_SINGLE_CODE>
+		</UseTemplate>
+	</Component>
+	
+	<Component ID="Instrument_Clock_Control_Button" Node="#CONTROL_BUTTON_NODE_ID#">
+		<UseTemplate Name="ASOBO_GT_Push_Button_Timed">
+			<TOOLTIPID>TT:COCKPIT.TOOLTIPS.INOP TT:COCKPIT.TOOLTIPS.CLOCK_CONTROL_BUTTON</TOOLTIPID>
+			<ANIM_NAME>#CONTROL_BUTTON_ANIM_NAME#</ANIM_NAME>
+			<SHORT_CLICK_CODE>(&gt;H:oclock_control)</SHORT_CLICK_CODE>
+			<LONG_CLICK_CODE>(&gt;H:oclock_control_long)</LONG_CLICK_CODE>
+		</UseTemplate>
+	</Component>
+</Template>
+
+<Template Name="ASOBO_INSTRUMENT_OAT_Template">
+	<DefaultTemplateParameters>
+		<SELECT_BUTTON_NODE_ID>INSTRUMENT_OAT_Push_Select</SELECT_BUTTON_NODE_ID>
+		<SELECT_BUTTON_ANIM_NAME>INSTRUMENT_OAT_Push_Select</SELECT_BUTTON_ANIM_NAME>
+		<SCREEN_NODE_ID>INSTRUMENT_OAT_Screen</SCREEN_NODE_ID>
+		<WWISE_EVENT_1>misc_oat_push_button_on</WWISE_EVENT_1>
+		<WWISE_EVENT_2>misc_oat_push_button_off</WWISE_EVENT_2>
+	</DefaultTemplateParameters>
+	<Component ID="INSTRUMENT_OAT_Screen" Node="#SCREEN_NODE_ID#">
+		<UseTemplate Name="ASOBO_GT_Emissive_Gauge">
+			<EMISSIVE_CODE>0.5</EMISSIVE_CODE>
+		</UseTemplate>
+	</Component>
+	<Component ID="Instrument_OAT_Select_Button" Node="#SELECT_BUTTON_NODE_ID#">
+		<UseTemplate Name="ASOBO_GT_Push_Button">
+			<ANIM_NAME>#SELECT_BUTTON_ANIM_NAME#</ANIM_NAME>
+			<LEFT_SINGLE_CODE>(&gt;H:oclock_select)</LEFT_SINGLE_CODE>
+		</UseTemplate>
+	</Component>
+</Template>

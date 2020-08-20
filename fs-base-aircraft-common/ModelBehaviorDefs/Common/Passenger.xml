@@ -1,0 +1,19 @@
+
+<Include File="Subtemplates\\Passenger_Subtemplates.xml"/>
+<!-- Passenger ############################################## -->
+<Template Name="PASSENGER_Switch_Cabin_Heat_Template">
+	<DefaultTemplateParameters>
+		<ID>1</ID>
+	</DefaultTemplateParameters>
+	<UseTemplate Name="PASSENGER_Switch_Cabin_Heat_SubTemplate">
+	</UseTemplate>
+</Template>
+
+<Template Name="PASSENGER_Switch_Cabin_Air_Template">
+	<DefaultTemplateParameters>
+		<ID>1</ID>
+		<TOOLTIPID>TT:COCKPIT.TOOLTIPS.SWITCH_CABIN_AIR</TOOLTIPID>
+	</DefaultTemplateParameters>
+	<UseTemplate Name="PASSENGER_Switch_Cabin_Air_SubTemplate">
+	</UseTemplate>
+</Template>

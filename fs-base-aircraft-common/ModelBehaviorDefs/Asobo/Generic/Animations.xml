@@ -1,0 +1,103 @@
+<Include File="Subtemplates\\Animations_Subtemplates.xml"/>
+
+<!-- ####################################################################### -->
+<!-- ###################### Animation Templates ############################ -->
+<!-- ####################################################################### -->
+
+
+<!--
+	Simvar driven sim animation.
+
+	Required parameter:
+		ANIM_NAME
+		ANIM_SIMVAR
+		ANIM_SIMVAR_UNITS
+-->
+<Template Name = "ASOBO_GT_Anim_Sim">
+	<DefaultTemplateParameters>
+		<ANIM_LENGTH>100</ANIM_LENGTH>
+		<ANIM_SIMVAR_SCALE>1</ANIM_SIMVAR_SCALE>
+		<ANIM_SIMVAR_BIAS>0</ANIM_SIMVAR_BIAS>
+	</DefaultTemplateParameters>
+	
+	<Condition Check="INVERT_ANIM">
+		<True>
+			<UseTemplate Name = "ASOBO_GT_Anim_Code">
+				<ANIM_CODE>(A:#ANIM_SIMVAR#, #ANIM_SIMVAR_UNITS#) #ANIM_SIMVAR_SCALE# * #ANIM_SIMVAR_BIAS# +</ANIM_CODE>
+			</UseTemplate>
+		</True>
+		<False>
+			<Condition Check="FAILURE">
+				<True>
+					<UseTemplate Name = "ASOBO_GT_Anim_Code">
+						<ANIM_CODE>(A:#ANIM_SIMVAR#, #ANIM_SIMVAR_UNITS#) #ANIM_SIMVAR_SCALE# * #ANIM_SIMVAR_BIAS# +</ANIM_CODE>
+					</UseTemplate>
+				</True>
+				<False>
+					<UseTemplate Name = "ASOBO_GT_Anim_Sim_Base">
+					</UseTemplate>
+				</False>
+			</Condition>
+		</False>
+	</Condition>
+</Template>
+
+<!--
+	Code driven sim animation.
+
+	Required parameter:
+		ANIM_NAME
+		ANIM_CODE
+-->
+<Template Name = "ASOBO_GT_Anim_Code">
+	<DefaultTemplateParameters>
+		<ANIM_LENGTH>100</ANIM_LENGTH>
+		<ID/>
+	</DefaultTemplateParameters>
+
+	<UseTemplate Name="ASOBO_GT_Anim_Code_Failure_Test">
+	</UseTemplate>
+</Template>
+
+<!--
+	Generic Anim Code - depends on parameters.
+
+	Required parameter:
+		ANIM_NAME
+		ANIM_CODE / (ANIM_SIMVAR, ANIM_SIMVAR_UNITS)
+-->
+<Template Name = "ASOBO_GT_Anim">
+	<DefaultTemplateParameters>
+	</DefaultTemplateParameters>
+
+	<Condition Check="ANIM_SIMVAR">
+		<True>
+			<UseTemplate Name="ASOBO_GT_Anim_Sim">
+			</UseTemplate>
+		</True>
+		<False>
+			<UseTemplate Name="ASOBO_GT_Anim_Code">
+			</UseTemplate>
+		</False>
+	</Condition>
+</Template>
+
+<!-- 
+	Init an animation to a desired position
+	
+	Required parameter:
+		ANIM_NAME 
+		NODE_ID (default is ANIM_NAME)
+		PERCENT (position to setup)
+-->
+<Template Name = "ASOBO_GT_Anim_Setup">
+	<DefaultTemplateParameters>
+		<NODE_ID>#ANIM_NAME#</NODE_ID>
+		<ANIM_LENGTH>100</ANIM_LENGTH>
+	</DefaultTemplateParameters>
+	<Component ID="#NODE_ID#" Node="NODE_ID">
+		<UseTemplate Name="ASOBO_GT_Anim_Code_Base">
+			<ANIM_CODE>#PERCENT#</ANIM_CODE>
+		</UseTemplate>
+	</Component>
+</Template>

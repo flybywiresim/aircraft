@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="Windows-1252"?>
+
+<SimBase.Document Type="Checklist" version="1,0">
+  <Checklist.Checklist>
+    <IncludeCheckpointLibrary FileName="CheckpointsLibrary\\Asobo_DefaultCheckpointLibrary.xml"/>
+	<IncludeCheckpointLibrary FileName="SimObjects\\Airplanes\\Asobo_A320_NEO\\Checklist\\Library.xml"/>
+
+    <Step ChecklistStepId="PREFLIGHT_GATE">
+   
+	  
+      <!-- Before starting engine -->
+      <Page SubjectTT="TT:GAME.CHECKLIST_BEFORE_STARTING_ENGINE">
+        <Checkpoint ReferenceId="A320_Battery_Switches_On_2">
+          <CheckpointDesc SubjectTT="TT:GAME.CHECKLIST_BATTERY_SWITCHES" ExpectationTT="TT:GAME.CHECKLIST_ON"/>
+        </Checkpoint>
+        <Checkpoint ReferenceId="External_Power_On_If_Avail"/>
+        <Checkpoint ReferenceId="GENERATOR_MAIN_2">
+          <CheckpointDesc SubjectTT="TT:GAME.CHECKLIST_ENGINE_GENERATORS" ExpectationTT="TT:GAME.CHECKLIST_ON_FAULT"/>
+        </Checkpoint>
+        <Checkpoint ReferenceId="ENGINE_BLEED_AIR_SWITCHES_ON"/>
+        <Checkpoint ReferenceId="APU_MASTER_SWITCH_ON"/>
+        <Checkpoint ReferenceId="APU_START_ON"/>
+        <Checkpoint ReferenceId="APU_START_AVAIL_LIT"/>
+        <Checkpoint ReferenceId="APU_Bleed_On"/>
+        <Checkpoint ReferenceId="EXTERNAL_POWER_OFF"/>
+        <Checkpoint ReferenceId="FUEL_PUMPS_AIRLINER_2_ENGINES"/>
+        <Checkpoint ReferenceId="Beacon_Light_On"/>
+      </Page>
+	  
+      <!-- Starting Engine -->
+      <Page SubjectTT="TT:GAME.CHECKLIST_STARTING_ENGINE">
+        <Checkpoint ReferenceId="POWER_LEVERS_IDLE_2ENGINES">
+          <CheckpointDesc SubjectTT="TT:GAME.CHECKLIST_THRUST_LEVERS" ExpectationTT="TT:GAME.CHECKLIST_IDLE"/>
+        </Checkpoint>
+        <Checkpoint ReferenceId="ENGINE_MODE_SELECTOR_IGN_START"/>
+        <Checkpoint ReferenceId="ENGINE_MASTER_2_ON"/>
+        <Checkpoint ReferenceId="ENGINE_MASTER_1_ON"/>
+        <Checkpoint ReferenceId="ENGINES_CONFIRM_STABILIZED"/>
+      
+      </Page>
+	  
+      <!-- After starting engine 1/2 -->
+      <Page SubjectTT="TT:GAME.CHECKLIST_AFTER_STARTING_ENGINE_1">
+        <Checkpoint ReferenceId="APU_Bleed_Off"/>
+        <Checkpoint ReferenceId="APU_MASTER_SWITCH_OFF"/>
+        <Checkpoint ReferenceId="ENGINE_MODE_SELECTOR_NORMAL"/>
+                
+      </Page>
+    </Step>
+    
+    
+    
+    
+    
+	
+    <Step ChecklistStepId="PREFLIGHT_TAXI_OUT"/>
+   	
+    <Step ChecklistStepId="FLIGHT_RUNWAY"/>
+     
+    <Step ChecklistStepId="FLIGHT_TAKEOFF"/>
+   
+    <Step ChecklistStepId="FLIGHT_CRUISE"/>
+	
+    <Step ChecklistStepId="FLIGHT_DESCENT"/>
+    	
+    <Step ChecklistStepId="LANDING_APPROACH"/>
+
+    <Step ChecklistStepId="LANDING_TOUCHDOWN"/>
+	
+    <Step ChecklistStepId="LANDING_GROUNDROLL"/>
+	
+    <Step ChecklistStepId="LANDING_TAXI_IN"/>
+	
+    <Step ChecklistStepId="LANDING_GATE"/>
+  
+
+  </Checklist.Checklist>
+</SimBase.Document>

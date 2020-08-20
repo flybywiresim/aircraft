@@ -1,0 +1,35 @@
+<Include Path="Asobo\Generic.xml"/>
+
+<Template Name="ASOBO_Airbus_EICAS_Template">
+	<DefaultTemplateParameters>
+		<ID>1</ID>
+	</DefaultTemplateParameters>
+	<UseTemplate Name="ASOBO_Airbus_EICAS_SubTemplate"></UseTemplate>
+</Template>
+
+<Template Name="ASOBO_Airbus_EICAS_SubTemplate">
+	<DefaultTemplateParameters>
+		<Condition Check="BOTH_SCREENS_ON_ONE_NODE">
+			<True>
+				<NODE_ID>Airbus_EICAS</NODE_ID>
+				<PART_ID_1>Airbus_EICAS_1</PART_ID_1>
+				<PART_ID_2>Airbus_EICAS_2</PART_ID_2>
+			</True>
+			<False>
+				<NODE_ID>Airbus_EICAS_#ID#</NODE_ID>
+			</False>
+		</Condition>
+	</DefaultTemplateParameters>
+	<Condition Check="BOTH_SCREENS_ON_ONE_NODE">
+		<True>
+			<UseTemplate Name="ASOBO_GT_ComponentWith_PART_ID">
+				<PART_ID>#PART_ID_1#</PART_ID>
+				<OTHER_PART_ID>#PART_ID_2#</OTHER_PART_ID>
+			</UseTemplate>
+		</True>
+		<False>
+			<UseTemplate Name="ASOBO_GT_ComponentWith_PART_ID">
+			</UseTemplate>
+		</False>
+	</Condition>
+</Template>

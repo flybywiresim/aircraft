@@ -1,0 +1,28 @@
+{
+  "LocalisationPackage": {
+    "Language": "pl-PL",
+    "Strings": {
+      "MODELBEHAVIOR.CDI.OPTIONS.NO_EMISSIVE_GPS": "Wyłącza wskaźnik emisji GPS",
+      "MODELBEHAVIOR.CDI.OPTIONS.NO_EMISSIVE_NAV": "Wyłącza wskaźnik emisji NAV",
+      "MODELBEHAVIOR.CDI.OPTIONS.NO_EMISSIVE_VLOC": "Wyłącza wskaźnik emisji VLOC",
+      "MODELBEHAVIOR.CDI.OPTIONS.NO_FLAG_GLIDE": "Wyłącza wskaźnik zniżania",
+      "MODELBEHAVIOR.CDI.OPTIONS.NO_FLAG_LOCALIZER": "Wyłącza wskaźnik localizera",
+      "MODELBEHAVIOR.CDI.OPTIONS.NO_GLIDE_LOCALIZER_INIT_ANIMATION": "Wyłącza animację inicjalizacji localizera zniżania.",
+      "MODELBEHAVIOR.CDI.OPTIONS.NO_NEEDLE_GLIDE": "Wyłącza wskazówkę zniżania",
+      "MODELBEHAVIOR.CDI.PARAMS.ANIM_NAME.COMPASS": "Nazwa animacji busoli",
+      "MODELBEHAVIOR.CDI.PARAMS.ANIM_NAME.COURSE_KNOB": "Nazwa animacji pokrętła kursu",
+      "MODELBEHAVIOR.CDI.PARAMS.ANIM_NAME.FLAG_FROM": "Nazwa animacji wskaźnika FROM",
+      "MODELBEHAVIOR.CDI.PARAMS.ANIM_NAME.FLAG_GLIDE": "Nazwa animacji wskaźnika zniżania",
+      "MODELBEHAVIOR.CDI.PARAMS.ANIM_NAME.FLAG_LOCALIZER": "Nazwa animacji wskaźnika localizera",
+      "MODELBEHAVIOR.CDI.PARAMS.ANIM_NAME.FLAG_OFF": "Nazwa animacji wskaźnika niedostępności sygnału",
+      "MODELBEHAVIOR.CDI.PARAMS.ANIM_NAME.FLAG_TO": "Nazwa animacji wskaźnika TO",
+      "MODELBEHAVIOR.CDI.PARAMS.ANIM_NAME.NEEDLE_GLIDE": "Nazwa animacji wskazówki zniżania",
+      "MODELBEHAVIOR.CDI.PARAMS.ANIM_NAME.NEEDLE_LOCALIZER": "Nazwa animacji wskazówki localizera",
+      "MODELBEHAVIOR.CDI.PARAMS.NODE_ID.COURSE_KNOB": "Nazwa węzła pokrętła kursu",
+      "MODELBEHAVIOR.CDI.PARAMS.NODE_ID.EMISSIVE_GPS": "Nazwa węzła wskaźnika emisji GPS",
+      "MODELBEHAVIOR.CDI.PARAMS.NODE_ID.EMISSIVE_NAV": "Nazwa węzła wskaźnika emisji NAV",
+      "MODELBEHAVIOR.CDI.PARAMS.NODE_ID.EMISSIVE_VLOC": "Nazwa węzła wskaźnika emisji VLOC",
+      "MODELBEHAVIOR.CDI.PARAMS.NODE_ID.HIGHLIGHT": "Nazwa węzła używanego do wyróżnień"
+    }
+  }
+}

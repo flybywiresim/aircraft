@@ -1,0 +1,202 @@
+
+<Template Name = "GT_Anim_Sim_Base">
+	<DefaultTemplateParameters>
+		<ANIM_GUID/>
+		<Condition Check="LEFT_SINGLE_CODE">
+			<True>
+				<ANIM_LAG>400</ANIM_LAG>
+			</True>
+			<False>
+				<Condition Check="EVENTID">
+					<True>
+						<ANIM_LAG>400</ANIM_LAG>
+					</True>
+					<False>
+						<ANIM_LAG>0</ANIM_LAG>
+					</False>
+				</Condition>
+			</False>
+		</Condition>
+		<ANIM_WRAP>FALSE</ANIM_WRAP>
+	</DefaultTemplateParameters>
+
+	<Animation Name = "#ANIM_NAME#" Guid = "#ANIM_GUID#" Length = "#ANIM_LENGTH#" Type = "Sim" TypeParam = "AutoPlay">
+		<Parameter>
+			<Sim>
+				<Variable>#ANIM_SIMVAR#</Variable>
+				<Units>#ANIM_SIMVAR_UNITS#</Units>
+				<Scale>#ANIM_SIMVAR_SCALE#</Scale>
+				<Bias>#ANIM_SIMVAR_BIAS#</Bias>
+			</Sim>
+			<Lag>#ANIM_LAG#</Lag>
+			<Wrap>#ANIM_WRAP#</Wrap>
+		</Parameter>
+	</Animation>
+
+	<UseTemplate Name="GT_Anim_Base"/>
+</Template>
+
+
+<!--
+	Do not call this Template Directly ! 
+	Call GT_Anim_Code Instead !
+	
+	Checks if the FAILURE param exist to ckeck for any condition
+-->
+<Template Name = "GT_Anim_Code_Failure_Test">
+	<DefaultTemplateParameters>
+		<FAILURE_CODE>(O:AnimCode)</FAILURE_CODE>
+	</DefaultTemplateParameters>
+	<UseTemplate Name="GT_Anim_Code_Inversion_Test">
+		<Condition Check="FAILURE">
+			<Condition Check="ANIM_NEVER_FAILS">
+				<False>
+					<ANIM_CODE>
+						#FAILURE# if{
+							#ANIM_CODE# (&gt;O:AnimCode)
+							(O:AnimCode)
+						} els{
+							#FAILURE_CODE#
+						}
+					</ANIM_CODE>
+				</False>
+			</Condition>
+		</Condition>
+	</UseTemplate>
+</Template>
+
+<!--
+	Do not call this Template Directly ! 
+	Call GT_Anim_Code Instead !
+	
+	Checks if the INVERT_ANIM param exist, and inverts the animation if it does.
+-->
+<Template Name = "GT_Anim_Code_Inversion_Test">	
+	<UseTemplate Name="GT_Anim_Code_Repeat_Test">
+		<Condition Check="INVERT_ANIM">
+			<ANIM_CODE>
+				#ANIM_LENGTH# #ANIM_CODE# -
+			</ANIM_CODE>
+		</Condition>
+	</UseTemplate>
+</Template>
+
+<!--
+	Do not call this Template Directly ! 
+	Call GT_Anim_Code Instead !
+	
+	Checks if the REPEAT_ANIM param exist, and repeats the animation X time for the range of the simvar if it does.
+-->
+<Template Name = "GT_Anim_Code_Repeat_Test">
+	<DefaultTemplateParameters>
+		<Condition Check="REPEAT_ANIM">
+			<ANIM_WRAP>True</ANIM_WRAP>
+		</Condition>
+	</DefaultTemplateParameters>
+	<UseTemplate Name="GT_Anim_Code_Base">
+		<Condition Check="REPEAT_ANIM">
+			<ANIM_CODE>
+				#ANIM_CODE# #REPEAT_ANIM# * #ANIM_LENGTH# %
+			</ANIM_CODE>
+		</Condition>
+	</UseTemplate>
+</Template>
+
+<!--
+	Do not call this Template Directly ! 
+	Call GT_Anim_Code Instead !
+-->
+<Template Name = "GT_Anim_Code_Base">
+	<DefaultTemplateParameters>
+		<ANIM_GUID/>
+		<Condition Check="LEFT_SINGLE_CODE">
+			<True>
+				<ANIM_LAG>400</ANIM_LAG>
+			</True>
+			<False>
+				<Condition Check="EVENTID">
+					<True>
+						<ANIM_LAG>400</ANIM_LAG>
+					</True>
+					<False>
+						<ANIM_LAG>0</ANIM_LAG>
+					</False>
+				</Condition>
+			</False>
+		</Condition>
+		<ANIM_WRAP>FALSE</ANIM_WRAP>
+		<ANIM_DELTA>FALSE</ANIM_DELTA>
+		<ANIM_BLENDWEIGHT>1.0</ANIM_BLENDWEIGHT>
+	</DefaultTemplateParameters>
+	<EditableTemplateParameters>
+		<AddParams>
+			<ANIM_NAME/>
+		</AddParams>
+	</EditableTemplateParameters>
+	
+	<Animation Name = "#ANIM_NAME#" Guid = "#ANIM_GUID#" Length = "#ANIM_LENGTH#" Type = "Sim" TypeParam = "AutoPlay">
+		<Parameter>
+			<Code>#ANIM_CODE#</Code>
+			<Lag>#ANIM_LAG#</Lag>
+			<Wrap>#ANIM_WRAP#</Wrap>
+			<Delta>#ANIM_DELTA#</Delta>
+			<BlendWeight>#ANIM_BLENDWEIGHT#</BlendWeight>
+		</Parameter>
+	</Animation>
+	
+	<UseTemplate Name="GT_Anim_Base"/>
+</Template>
+
+<!--
+	Do not call this Template Directly ! 
+	Call GT_Anim_Code Instead !
+-->
+<Template Name = "GT_Anim_Base">
+	<DefaultTemplateParameters>
+	</DefaultTemplateParameters>
+	<EditableTemplateParameters>
+	</EditableTemplateParameters>
+	
+	<UseTemplate Name="GT_Part_ID"/>
+
+	<Condition Check="ANIM_EVENT_EFFECT_NAME">
+		<True>
+			<UseTemplate Name="GT_AnimTriggers_EffectEvent">
+				<EVENT_NAME>#ANIM_EVENT_EFFECT_NAME#</EVENT_NAME>
+			</UseTemplate>
+		</True>
+		<False>
+			<UseTemplate Name="GT_Recursive_AnimEvents">
+				<ANIM_EVENT_ID>1</ANIM_EVENT_ID>
+			</UseTemplate>
+		</False>
+	</Condition>
+</Template>
+
+<Template Name="GT_Recursive_AnimEvents">
+	<OverrideTemplateParameters>
+		<CURRENT_ANIM_EVENT_EFFECT_NAME Process="Param">ANIM_EVENT_EFFECT_NAME_#ANIM_EVENT_ID#</CURRENT_ANIM_EVENT_EFFECT_NAME>
+		<CURRENT_NORMALIZED_TIME Process="Param">NORMALIZED_TIME_#ANIM_EVENT_ID#</CURRENT_NORMALIZED_TIME>
+		<CURRENT_DIRECTION Process="Param">DIRECTION_#ANIM_EVENT_ID#</CURRENT_DIRECTION>
+	</OverrideTemplateParameters>
+	<Condition NotEmpty="CURRENT_ANIM_EVENT_EFFECT_NAME">
+		<True>
+			<UseTemplate Name="GT_AnimTriggers_EffectEvent">
+				<EVENT_NAME>#CURRENT_ANIM_EVENT_EFFECT_NAME#</EVENT_NAME>
+				<Condition Check="CURRENT_NORMALIZED_TIME">
+					<True>
+						<NORMALIZED_TIME>#CURRENT_NORMALIZED_TIME#</NORMALIZED_TIME>
+					</True>
+				</Condition>
+				<Condition Check="CURRENT_DIRECTION">
+					<True>
+						<DIRECTION>#CURRENT_DIRECTION#</DIRECTION>
+					</True>
+				</Condition>
+			</UseTemplate>
+			<UseTemplate Name="GT_Recursive_AnimEvents">
+				<ANIM_EVENT_ID Process="Int">#ANIM_EVENT_ID# 1 +</ANIM_EVENT_ID>
+			</UseTemplate>
+		</True>
+	</Condition>
+</Template>

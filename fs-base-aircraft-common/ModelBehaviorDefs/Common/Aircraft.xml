@@ -1,0 +1,88 @@
+
+<Include File="Subtemplates\\Aircraft_Subtemplates.xml"/>
+
+<!-- Aircraft ################################################################ -->
+<Template Name="AIRCRAFT_Lever_Canopy_Template">
+	<DefaultTemplateParameters>
+		<NODE_ID>AIRCRAFT_Lever_Canopy</NODE_ID>
+		<ANIM_NAME>AIRCRAFT_Lever_Canopy</ANIM_NAME>
+		<ANIM_CODE>(A:CANOPY OPEN, Percent)</ANIM_CODE>
+		<WWISE_EVENT_1>canopy_open_lever</WWISE_EVENT_1>
+		<WWISE_EVENT_2>canopy_close_lever</WWISE_EVENT_2>
+		<NORMALIZED_TIME_2>0.1</NORMALIZED_TIME_2>
+		<DIRECTION_2>Backward</DIRECTION_2>
+	</DefaultTemplateParameters>
+	<Component ID="#NODE_ID#" Node="#NODE_ID#">
+		<UseTemplate Name="GT_Switch_Code">
+			<!-- <TOOLTIPID>TOOLTIPTEXT_CANOPY</TOOLTIPID> -->
+			<ANIMTIP_0>TT:COCKPIT.TOOLTIPS.CANOPY_CLOSED</ANIMTIP_0>
+			<ANIMTIP_1>TT:COCKPIT.TOOLTIPS.CANOPY_OPEN</ANIMTIP_1>
+			<LEFT_SINGLE_CODE>1 (&gt;K:TOGGLE_AIRCRAFT_EXIT_FAST)</LEFT_SINGLE_CODE>
+		</UseTemplate>
+	</Component>
+</Template>
+<!-- Cannot be more generic atm as ID is off by 1 between SIMVAR and KEY -->
+<Template Name="AIRCRAFT_Lever_Exit_0_Template">
+	<DefaultTemplateParameters>
+		<NODE_ID>AIRCRAFT_Lever_Exit_0</NODE_ID>
+		<ANIM_CODE>(A:EXIT OPEN:0, Percent)</ANIM_CODE>
+		<LEFT_SINGLE_CODE>0 (&gt;K:TOGGLE_AIRCRAFT_EXIT_FAST)</LEFT_SINGLE_CODE>
+	</DefaultTemplateParameters>
+
+	<UseTemplate Name="AIRCRAFT_Lever_Exit_SubTemplate">
+	</UseTemplate>
+</Template>
+<Template Name="AIRCRAFT_Lever_Exit_1_Template">
+	<DefaultTemplateParameters>
+		<NODE_ID>AIRCRAFT_Lever_Exit_1</NODE_ID>
+		<ANIM_CODE>(A:EXIT OPEN:0, Percent)</ANIM_CODE>
+		<LEFT_SINGLE_CODE>1 (&gt;K:TOGGLE_AIRCRAFT_EXIT_FAST)</LEFT_SINGLE_CODE>
+	</DefaultTemplateParameters>
+
+	<UseTemplate Name="AIRCRAFT_Lever_Exit_SubTemplate">
+	</UseTemplate>
+</Template>
+<Template Name="AIRCRAFT_Lever_Exit_2_Template">
+	<DefaultTemplateParameters>
+		<NODE_ID>AIRCRAFT_Lever_Exit_2</NODE_ID>
+		<ANIM_CODE>(A:EXIT OPEN:1, Percent)</ANIM_CODE>
+		<LEFT_SINGLE_CODE>2 (&gt;K:TOGGLE_AIRCRAFT_EXIT_FAST)</LEFT_SINGLE_CODE>
+	</DefaultTemplateParameters>
+
+	<UseTemplate Name="AIRCRAFT_Lever_Exit_SubTemplate">
+	</UseTemplate>
+</Template>
+<Template Name="AIRCRAFT_Lever_Exit_3_Template">
+	<DefaultTemplateParameters>
+		<NODE_ID>AIRCRAFT_Lever_Exit_3</NODE_ID>
+		<ANIM_CODE>(A:EXIT OPEN:2, Percent)</ANIM_CODE>
+		<LEFT_SINGLE_CODE>3 (&gt;K:TOGGLE_AIRCRAFT_EXIT_FAST)</LEFT_SINGLE_CODE>
+	</DefaultTemplateParameters>
+
+	<UseTemplate Name="AIRCRAFT_Lever_Exit_SubTemplate">
+	</UseTemplate>
+</Template>
+
+<Template Name="AIRFRAME_Warning_Door_Unlock_Template">
+	<DefaultTemplateParameters>
+		<TYPE>Front</TYPE>
+		<INDEX>0</INDEX>
+	</DefaultTemplateParameters>
+
+	<UseTemplate Name="AIRFRAME_Warning_Door_Unlock_SubTemplate">
+	</UseTemplate>
+</Template>
+
+<Template Name="AIRFRAME_Warning_Door_Unlock_SubTemplate">
+	<DefaultTemplateParameters>
+		<NODE_ID>AIRFRAME_Warning_Door_Unlock_#TYPE#</NODE_ID>
+		<ANIM_NAME>AIRFRAME_Warning_Door_Unlock_#TYPE#</ANIM_NAME>
+		<ANIM_LENGTH>1</ANIM_LENGTH>
+	</DefaultTemplateParameters>
+
+	<Component ID="#NODE_ID#" Node="#NODE_ID#">
+		<UseTemplate Name="GT_Anim_Code">
+			<ANIM_CODE>(A:EXIT OPEN:#INDEX#, Percent over 100) 0 == </ANIM_CODE>
+		</UseTemplate>
+	</Component>
+</Template>

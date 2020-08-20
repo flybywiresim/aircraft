@@ -1,0 +1,440 @@
+
+<Include Path="Asobo\Generic.xml"/>
+
+
+<Template Name="ASOBO_GroundVehicle_Smooth_Animation">
+	<DefaultTemplateParameters>
+		<MIN_POSITION>0</MIN_POSITION>
+		<MAX_POSITION>0</MAX_POSITION>
+		<SPEED>0.1</SPEED>
+		<VAR_TARGET>O:XMLVAR_#ANIM_NAME#_Animation_Target_Position</VAR_TARGET>
+		<VAR_CURRENT>O:XMLVAR_#ANIM_NAME#_Animation_Position</VAR_CURRENT>
+		<!-- Necessary : BASE_TARGET_VALUE, ANIM_NAME -->
+	</DefaultTemplateParameters>
+
+	<UseTemplate Name="ASOBO_GroundVehicle_Smooth_VarEvolution">
+		<ANIMATION_BASE_CODE>
+			#BASE_TARGET_VALUE# (#VAR_TARGET#) - abs 0.01 &gt; if{
+				#BASE_TARGET_VALUE# (&gt;#VAR_TARGET#)
+			}
+		</ANIMATION_BASE_CODE>
+	</UseTemplate>
+</Template>
+
+<Template Name="ASOBO_GroundVehicle_Smooth_VarEvolution">
+	<DefaultTemplateParameters>
+		<MIN_POSITION>0</MIN_POSITION>
+		<MAX_POSITION>0</MAX_POSITION>
+		<SPEED>0.1</SPEED>
+		<ANIMATION_BASE_CODE></ANIMATION_BASE_CODE>
+		<!-- Necessary : VAR_CURRENT, VAR_TARGET, ANIM_NAME -->
+	</DefaultTemplateParameters>
+
+	<UseTemplate Name="ASOBO_GT_Anim_Code">
+		<ANIM_CODE>
+			#ANIMATION_BASE_CODE#
+			
+			(#VAR_TARGET#) #MAX_POSITION# &gt; if{
+				#MAX_POSITION# (&gt;#VAR_TARGET#)
+			}
+			(#VAR_TARGET#) #MIN_POSITION# &lt; if{
+				#MIN_POSITION# (&gt;#VAR_TARGET#)
+			}
+			
+			(#VAR_CURRENT#) #MAX_POSITION# &gt; if{
+				#MAX_POSITION# (&gt;#VAR_CURRENT#)
+			}
+			(#VAR_CURRENT#) #MIN_POSITION# &lt; if{
+				#MIN_POSITION# (&gt;#VAR_CURRENT#)
+			}
+			
+			(#VAR_CURRENT#) (#VAR_TARGET#) - abs 0.01 &gt; if{
+				(#VAR_CURRENT#) (#VAR_TARGET#) &gt; if{
+					(#VAR_CURRENT#) #SPEED# (A:ANIMATION DELTA TIME,seconds) * - (#VAR_TARGET#) max (&gt;#VAR_CURRENT#)
+				} els{
+					(#VAR_CURRENT#) #SPEED# (A:ANIMATION DELTA TIME,seconds) * + (#VAR_TARGET#) min (&gt;#VAR_CURRENT#)
+				}
+			} els{
+				(#VAR_TARGET#) (&gt;#VAR_CURRENT#) 
+			}
+			
+			(#VAR_CURRENT#) #MIN_POSITION# - 100 #MAX_POSITION# #MIN_POSITION# - / *
+		
+		</ANIM_CODE>
+		<ANIM_LENGTH>100</ANIM_LENGTH>
+	</UseTemplate>
+</Template>
+
+<Template Name="ASOBO_GroundVehicle_Apply_Direct_Clamped_Value">
+	<DefaultTemplateParameters>
+		<MIN_POSITION>0</MIN_POSITION>
+		<MAX_POSITION>0</MAX_POSITION>
+		<!-- Necessary : VAR_CURRENT, ANIMATION_BASE_CODE, ANIM_NAME -->
+	</DefaultTemplateParameters>
+
+	<UseTemplate Name="ASOBO_GT_Anim_Code">
+		<ANIM_CODE>
+			#ANIMATION_BASE_CODE# (&gt;#VAR_CURRENT#) 
+			
+			(#VAR_CURRENT#)  #MAX_POSITION# &gt; if{
+				#MAX_POSITION# (&gt;#VAR_CURRENT#) 
+			}
+			
+			(#VAR_CURRENT#)  #MIN_POSITION# &lt; if{
+				#MIN_POSITION# (&gt;#VAR_CURRENT#) 
+			}
+			
+			(#VAR_CURRENT#) #MIN_POSITION# - 100 #MAX_POSITION# #MIN_POSITION# - / *
+		
+		</ANIM_CODE>
+		<ANIM_LENGTH>100</ANIM_LENGTH>
+	</UseTemplate>
+</Template>
+
+<Template Name="ASOBO_Wheel_Roll">
+	<DefaultTemplateParameters>
+		<ANIM_NAME>Wheel_Rotation</ANIM_NAME>
+		<WHEEL_RADIUS>0.5</WHEEL_RADIUS>
+	</DefaultTemplateParameters>
+
+	<UseTemplate Name="ASOBO_GT_Anim_Code">
+		<ANIM_CODE>(A:VELOCITY BODY Z,meters per second) (A:ANIMATION DELTA TIME, seconds) * 2 pi * #WHEEL_RADIUS# * / 100 *</ANIM_CODE>
+		<ANIM_DELTA>1</ANIM_DELTA>
+		<ANIM_WRAP>1</ANIM_WRAP>
+		<ANIM_LENGTH>100</ANIM_LENGTH>
+	</UseTemplate>
+	
+</Template>
+
+<Template Name="ASOBO_Wheel_Turn">
+	<DefaultTemplateParameters>
+		<ANIM_NAME>Wheel_Rotation</ANIM_NAME>
+		<!--<DISTANCE_BETWEEN_WHEELS>4</DISTANCE_BETWEEN_WHEELS>
+		<FIRST_FRAME_ANGLE>40</FIRST_FRAME_ANGLE>
+		<LAST_FRAME_ANGLE>-40</LAST_FRAME_ANGLE>-->
+		<ORDER_MULTIPLIER>1</ORDER_MULTIPLIER>
+		<PERCENT_PER_SECOND>50</PERCENT_PER_SECOND>
+	</DefaultTemplateParameters>
+
+	<UseTemplate Name="ASOBO_GroundVehicle_Smooth_Animation">
+		<!--<ANIM_CODE>	
+			(A:GROUND VELOCITY,meters per second) 0 == if{
+				0
+			} els{
+				(A:ROTATION VELOCITY BODY Y,radians per second) 0 == if{
+					0
+				} els{
+					#DISTANCE_BETWEEN_WHEELS# (A:ROTATION VELOCITY BODY Y,radians per second) * (A:GROUND VELOCITY,meters per second) / atg
+				}
+			}
+			(&gt;O:XMLVAR_#ANIM_NAME#_Cur_Angle_Radians)
+			
+			(O:XMLVAR_#ANIM_NAME#_Cur_Angle_Radians) 360 * 2 pi * / #FIRST_FRAME_ANGLE# - #LAST_FRAME_ANGLE# #FIRST_FRAME_ANGLE# - / (&gt;O:XMLVAR_#ANIM_NAME#_Cur_Percentage)
+			
+			(O:XMLVAR_#ANIM_NAME#_Cur_Percentage) 1 &gt; if{
+				1 (&gt;O:XMLVAR_#ANIM_NAME#_Cur_Percentage)
+			}
+			els{
+				(O:XMLVAR_#ANIM_NAME#_Cur_Percentage) 0 &lt; if{
+					0 (&gt;O:XMLVAR_#ANIM_NAME#_Cur_Percentage)
+				}
+			}
+			
+			(O:XMLVAR_#ANIM_NAME#_Cur_Percentage) 100 *
+		</ANIM_CODE>-->
+		<BASE_TARGET_VALUE>(A:GEAR CENTER STEER ANGLE PCT,percent) #ORDER_MULTIPLIER# * 2 *</BASE_TARGET_VALUE>
+		<MIN_POSITION>-100</MIN_POSITION>
+		<MAX_POSITION>100</MAX_POSITION>
+		<SPEED>#PERCENT_PER_SECOND# 2 *</SPEED>
+	</UseTemplate>
+	
+</Template>
+
+<Template Name="ASOBO_CateringTruck_Elevation_Template">
+	<DefaultTemplateParameters>
+		<ANIM_NAME>Elevation</ANIM_NAME>
+		<BASE_HEIGHT>0</BASE_HEIGHT>
+		<MAX_HEIGHT>0</MAX_HEIGHT>
+		<METERS_PER_SECOND>0.1</METERS_PER_SECOND>
+	</DefaultTemplateParameters>
+
+	<UseTemplate Name="ASOBO_GroundVehicle_Smooth_VarEvolution">
+		<VAR_CURRENT>A:CATERINGTRUCK ELEVATION CURRENT,meters</VAR_CURRENT>
+		<VAR_TARGET>A:CATERINGTRUCK ELEVATION TARGET,meters</VAR_TARGET>
+		<MIN_POSITION>#BASE_HEIGHT#</MIN_POSITION>
+		<MAX_POSITION>#MAX_HEIGHT#</MAX_POSITION>
+		<SPEED>#METERS_PER_SECOND#</SPEED>
+	</UseTemplate>
+	
+</Template>
+
+<Template Name="ASOBO_CateringTruck_Overture_Template">
+	<DefaultTemplateParameters>
+		<ANIM_NAME>Deployment</ANIM_NAME>
+		<PERCENT_PER_SECOND>20</PERCENT_PER_SECOND>
+	</DefaultTemplateParameters>
+
+	<UseTemplate Name="ASOBO_GroundVehicle_Smooth_VarEvolution">
+		<VAR_CURRENT>A:CATERINGTRUCK OPENING CURRENT,percent</VAR_CURRENT>
+		<VAR_TARGET>A:CATERINGTRUCK OPENING TARGET,percent</VAR_TARGET>
+		<MIN_POSITION>0</MIN_POSITION>
+		<MAX_POSITION>100</MAX_POSITION>
+		<SPEED>#PERCENT_PER_SECOND#</SPEED>
+	</UseTemplate>
+	
+</Template>
+
+<Template Name="ASOBO_CateringTruck_Overture_Follow_Template">
+	<DefaultTemplateParameters>
+		<ANIM_NAME>Deployment</ANIM_NAME>
+	</DefaultTemplateParameters>
+
+	<UseTemplate Name="ASOBO_GT_Anim_Code">
+		<ANIM_CODE>(A:CATERINGTRUCK OPENING CURRENT,percent)</ANIM_CODE>
+		<ANIM_LENGTH>100</ANIM_LENGTH>
+	</UseTemplate>
+	
+</Template>
+
+
+
+<Template Name="ASOBO_BoardingRamp_Elevation_Template">
+	<DefaultTemplateParameters>
+		<ANIM_NAME>Deployment</ANIM_NAME>
+		<BASE_HEIGHT>0</BASE_HEIGHT>
+		<MAX_HEIGHT>0</MAX_HEIGHT>
+		<METERS_PER_SECOND>0.1</METERS_PER_SECOND>
+	</DefaultTemplateParameters>
+
+	<UseTemplate Name="ASOBO_GroundVehicle_Smooth_VarEvolution">
+		<VAR_CURRENT>A:BOARDINGRAMP ELEVATION CURRENT,meters</VAR_CURRENT>
+		<VAR_TARGET>A:BOARDINGRAMP ELEVATION TARGET,meters</VAR_TARGET>
+		<MIN_POSITION>#BASE_HEIGHT#</MIN_POSITION>
+		<MAX_POSITION>#MAX_HEIGHT#</MAX_POSITION>
+		<SPEED>#METERS_PER_SECOND#</SPEED>
+	</UseTemplate>
+	
+</Template>
+
+<Template Name="ASOBO_BoardingRamp_Orientation_Template">
+	<DefaultTemplateParameters>
+		<ANIM_NAME>Elevation</ANIM_NAME>
+		<PERCENT_PER_SECOND>10</PERCENT_PER_SECOND>
+	</DefaultTemplateParameters>
+
+	<UseTemplate Name="ASOBO_GroundVehicle_Smooth_VarEvolution">
+		<VAR_CURRENT>A:BOARDINGRAMP ORIENTATION CURRENT,percent</VAR_CURRENT>
+		<VAR_TARGET>A:BOARDINGRAMP ORIENTATION TARGET,percent</VAR_TARGET>
+		<MIN_POSITION>0</MIN_POSITION>
+		<MAX_POSITION>100</MAX_POSITION>
+		<SPEED>#PERCENT_PER_SECOND#</SPEED>
+	</UseTemplate>
+	
+</Template>
+
+<Template Name="ASOBO_BaggageLoader_Inclination_Template">
+	<DefaultTemplateParameters>
+		<ANIM_NAME>Elevation</ANIM_NAME>
+		<DEGREE_PER_SECOND>10</DEGREE_PER_SECOND>
+		<BASE_ANGLE>0</BASE_ANGLE>
+		<MAX_ANGLE>90</MAX_ANGLE>
+	</DefaultTemplateParameters>
+
+	<UseTemplate Name="ASOBO_GroundVehicle_Smooth_VarEvolution">
+		<VAR_CURRENT>A:BAGGAGELOADER ANGLE CURRENT,degrees</VAR_CURRENT>
+		<VAR_TARGET>A:BAGGAGELOADER ANGLE TARGET,degrees</VAR_TARGET>
+		<MIN_POSITION>#BASE_ANGLE#</MIN_POSITION>
+		<MAX_POSITION>#MAX_ANGLE#</MAX_POSITION>
+		<SPEED>#DEGREE_PER_SECOND#</SPEED>
+	</UseTemplate>
+	
+</Template>
+
+<Template Name="ASOBO_Pushback_Attach">
+	<DefaultTemplateParameters>
+		<ANIM_NAME>Locker</ANIM_NAME>
+		<PERCENT_PER_SECOND>50</PERCENT_PER_SECOND>
+	</DefaultTemplateParameters>
+
+	<UseTemplate Name="ASOBO_GroundVehicle_Smooth_Animation">
+		<BASE_TARGET_VALUE>(A:PUSHBACK ATTACHED,bool) if{ 100 } els{ 0 }</BASE_TARGET_VALUE>
+		<MIN_POSITION>0</MIN_POSITION>
+		<MAX_POSITION>100</MAX_POSITION>
+		<SPEED>#PERCENT_PER_SECOND#</SPEED>
+	</UseTemplate>
+	
+</Template>
+
+
+<Template Name="ASOBO_FuelTruck_Hose_Deployment_Template">
+	<DefaultTemplateParameters>
+		<NODE_ID>FUEL_HOSE</NODE_ID>
+	</DefaultTemplateParameters>
+	
+	<Component ID="#NODE_ID#" Node="#NODE_ID#">
+		<UseTemplate Name="ASOBO_GT_Visibility_Code">
+			<VISIBILITY_CODE>(A:FUELTRUCK HOSE DEPLOYED,percent) 0 &gt; if{ 1 } els{ 0 }</VISIBILITY_CODE>
+		</UseTemplate>
+	</Component>
+</Template>
+
+<Template Name="ASOBO_GroundPowerUnit_Hose_Deployment_Template">
+	<DefaultTemplateParameters>
+		<NODE_ID>ELECTRICAL_HOSE</NODE_ID>
+	</DefaultTemplateParameters>
+	
+	<Component ID="#NODE_ID#" Node="#NODE_ID#">
+		<UseTemplate Name="ASOBO_GT_Visibility_Code">
+			<VISIBILITY_CODE>(A:GROUNDPOWERUNIT HOSE DEPLOYED,percent) 0 &gt; if{ 1 } els{ 0 }</VISIBILITY_CODE>
+		</UseTemplate>
+	</Component>
+</Template>
+
+
+<Template Name="ASOBO_Wagon_Front_Link_Template">
+	<DefaultTemplateParameters>
+		<ANIM_NAME>Link</ANIM_NAME>
+		<ORDER_MULTIPLIER>1</ORDER_MULTIPLIER>
+		<MIN_ANGLE>-60</MIN_ANGLE>
+		<MAX_ANGLE>60</MAX_ANGLE>
+	</DefaultTemplateParameters>
+
+	<UseTemplate Name="ASOBO_GroundVehicle_Apply_Direct_Clamped_Value">
+		<MIN_POSITION>#MIN_ANGLE#</MIN_POSITION>
+		<MAX_POSITION>#MAX_ANGLE#</MAX_POSITION>
+		<VAR_CURRENT>O:XMLVAR_#ANIM_NAME#_Animation_Position</VAR_CURRENT>
+		<ANIMATION_BASE_CODE>(A:WAGON FRONT LINK ORIENTATION,degrees) #ORDER_MULTIPLIER# *</ANIMATION_BASE_CODE>
+	</UseTemplate>
+</Template>
+
+<Template Name="ASOBO_Wagon_Back_Link_Template">
+	<DefaultTemplateParameters>
+		<ANIM_NAME>Link</ANIM_NAME>
+		<ORDER_MULTIPLIER>1</ORDER_MULTIPLIER>
+		<MIN_ANGLE>-60</MIN_ANGLE>
+		<MAX_ANGLE>60</MAX_ANGLE>
+	</DefaultTemplateParameters>
+
+	<UseTemplate Name="ASOBO_GroundVehicle_Apply_Direct_Clamped_Value">
+		<MIN_POSITION>#MIN_ANGLE#</MIN_POSITION>
+		<MAX_POSITION>#MAX_ANGLE#</MAX_POSITION>
+		<VAR_CURRENT>O:XMLVAR_#ANIM_NAME#_Animation_Position</VAR_CURRENT>
+		<ANIMATION_BASE_CODE>(A:WAGON BACK LINK ORIENTATION,degrees) #ORDER_MULTIPLIER# *</ANIMATION_BASE_CODE>
+	</UseTemplate>
+</Template>
+
+
+<Template Name="ASOBO_GroundVehicle_Old_HeadLights">
+	<UseTemplate Name="ASOBO_GT_Update">
+		<FREQUENCY>1</FREQUENCY>
+		<!-- TIME OF DAY enum : 1 = Day ; 2 = Dusk/Dawn ; 3 = Night -->
+		<UPDATE_CODE>
+			(E:TIME OF DAY,enum) 1 !=
+			(A:GENERAL ENG COMBUSTION SOUND PERCENT,percent) 1 &gt; and
+			if{
+				(&gt;K:LANDING_LIGHTS_ON)
+			} els{
+				(&gt;K:LANDING_LIGHTS_OFF)
+			}
+		</UPDATE_CODE>
+	</UseTemplate>
+</Template>
+
+<Template Name="ASOBO_GroundVehicle_Old_Gyrophare">
+	<DefaultTemplateParameters>
+		<ANIM_NAME>Gyrolight</ANIM_NAME>
+		<PERCENT_PER_SECOND>100</PERCENT_PER_SECOND>
+	</DefaultTemplateParameters>
+	
+	<UseTemplate Name="ASOBO_GT_Anim_Code">
+		<ANIM_CODE>(A:ANIMATION DELTA TIME,seconds) #PERCENT_PER_SECOND# *</ANIM_CODE>
+		<ANIM_DELTA>1</ANIM_DELTA>
+		<ANIM_WRAP>1</ANIM_WRAP>
+		<ANIM_LENGTH>100</ANIM_LENGTH>
+	</UseTemplate>
+
+	<UseTemplate Name="ASOBO_GT_Update">
+		<FREQUENCY>1</FREQUENCY>
+		<UPDATE_CODE>
+			(A:GENERAL ENG COMBUSTION SOUND PERCENT,percent) 1 &gt;
+			if{
+				(&gt;K:STROBES_ON)
+			} els{
+				(&gt;K:STROBES_OFF)
+			}
+		</UPDATE_CODE>
+	</UseTemplate>
+</Template>
+
+<Template Name="ASOBO_GroundVehicle_HeadLights">
+	<UseTemplate Name="ASOBO_GT_Update">
+		<FREQUENCY>1</FREQUENCY>
+		<!-- TIME OF DAY enum : 1 = Day ; 2 = Dusk/Dawn ; 3 = Night -->
+		<UPDATE_CODE>
+			(E:TIME OF DAY,enum) 1 !=
+			(A:GENERAL ENG COMBUSTION SOUND PERCENT,percent) 1 &gt; and
+			if{
+				1 (&gt;A:LIGHT HEADLIGHT INTENSITY, percent over 100)
+			} els{
+				0 (&gt;A:LIGHT HEADLIGHT INTENSITY, percent over 100)
+			}
+		</UPDATE_CODE>
+	</UseTemplate>
+</Template>
+<Template Name="ASOBO_GroundVehicle_BackLights">
+	<UseTemplate Name="ASOBO_GT_Update">
+		<FREQUENCY>1</FREQUENCY>
+		<!-- TIME OF DAY enum : 1 = Day ; 2 = Dusk/Dawn ; 3 = Night -->
+		<UPDATE_CODE>
+			(E:TIME OF DAY,enum) 1 !=
+			(A:GENERAL ENG COMBUSTION SOUND PERCENT,percent) 1 &gt; and
+			if{
+				1 (&gt;A:LIGHT BACKLIGHT INTENSITY, percent over 100)
+			} els{
+				0 (&gt;A:LIGHT BACKLIGHT INTENSITY, percent over 100)
+			}
+		</UPDATE_CODE>
+	</UseTemplate>
+</Template>
+
+<Template Name="ASOBO_GroundVehicle_GyroLights">
+	<UseTemplate Name="ASOBO_GT_Update">
+		<FREQUENCY>1</FREQUENCY>
+		<UPDATE_CODE>
+			(A:GENERAL ENG COMBUSTION SOUND PERCENT,percent) 1 &gt;
+			if{
+				1 (&gt;A:LIGHT GYROLIGHT INTENSITY, percent over 100)
+			} els{
+				0 (&gt;A:LIGHT GYROLIGHT INTENSITY, percent over 100)
+			}
+		</UPDATE_CODE>
+	</UseTemplate>
+</Template>
+
+<Template Name="ASOBO_GroundVehicle_GyroLights_Animated">
+	<DefaultTemplateParameters>
+		<ANIM_NAME>Gyrolight</ANIM_NAME>
+		<PERCENT_PER_SECOND>100</PERCENT_PER_SECOND>
+	</DefaultTemplateParameters>
+	
+	<UseTemplate Name="ASOBO_GT_Anim_Code">
+		<ANIM_CODE>(A:ANIMATION DELTA TIME,seconds) #PERCENT_PER_SECOND# *</ANIM_CODE>
+		<ANIM_DELTA>1</ANIM_DELTA>
+		<ANIM_WRAP>1</ANIM_WRAP>
+		<ANIM_LENGTH>100</ANIM_LENGTH>
+	</UseTemplate>
+
+	<UseTemplate Name="ASOBO_GT_Update">
+		<FREQUENCY>1</FREQUENCY>
+		<UPDATE_CODE>
+			(A:GENERAL ENG COMBUSTION SOUND PERCENT,percent) 1 &gt;
+			if{
+				1 (&gt;A:LIGHT GYROLIGHT INTENSITY, percent over 100)
+			} els{
+				0 (&gt;A:LIGHT GYROLIGHT INTENSITY, percent over 100)
+			}
+		</UPDATE_CODE>
+	</UseTemplate>
+</Template>
+
+

@@ -1,0 +1,17 @@
+
+<Template Name="AIRCRAFT_Lever_Exit_SubTemplate">
+	<DefaultTemplateParameters>
+		<DOOR_OPENING_CONDITION>(A:SIM ON GROUND, Bool) (A:AIRSPEED TRUE, Knots) 30 &lt; and</DOOR_OPENING_CONDITION>
+		<WWISE_EVENT_1>doorknob_lock</WWISE_EVENT_1>
+		<WWISE_EVENT_2>doorknob_unlock</WWISE_EVENT_2>
+	</DefaultTemplateParameters>
+	<Component ID="#NODE_ID#" Node="#NODE_ID#">
+		<UseTemplate Name="GT_Switch_Code">
+			<LEFT_SINGLE_CODE>
+				#ANIM_CODE# 0 &gt; #DOOR_OPENING_CONDITION# or if{
+					#LEFT_SINGLE_CODE#
+				}
+			</LEFT_SINGLE_CODE>
+		</UseTemplate>
+	</Component>
+</Template>

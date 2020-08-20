@@ -1,0 +1,28 @@
+{
+  "LocalisationPackage": {
+    "Language": "pt-BR",
+    "Strings": {
+      "MODELBEHAVIOR.CDI.OPTIONS.NO_EMISSIVE_GPS": "Recusa de um indicador de GPS emissivo",
+      "MODELBEHAVIOR.CDI.OPTIONS.NO_EMISSIVE_NAV": "Recusa de um indicador de Navegação (NAV) emissivo",
+      "MODELBEHAVIOR.CDI.OPTIONS.NO_EMISSIVE_VLOC": "Recusa de um indicador de VLOC emissivo",
+      "MODELBEHAVIOR.CDI.OPTIONS.NO_FLAG_GLIDE": "Recusa de um Sinalizador de Planeio",
+      "MODELBEHAVIOR.CDI.OPTIONS.NO_FLAG_LOCALIZER": "Recusa de um Sinalizador de Localizador",
+      "MODELBEHAVIOR.CDI.OPTIONS.NO_GLIDE_LOCALIZER_INIT_ANIMATION": "Recusa de uma animação de inicialização para o localizador de planeio.",
+      "MODELBEHAVIOR.CDI.OPTIONS.NO_NEEDLE_GLIDE": "Recusa de uma Agulha de Planeio",
+      "MODELBEHAVIOR.CDI.PARAMS.ANIM_NAME.COMPASS": "Nome da animação da bússola",
+      "MODELBEHAVIOR.CDI.PARAMS.ANIM_NAME.COURSE_KNOB": "Nome da animação do Botão de Curso",
+      "MODELBEHAVIOR.CDI.PARAMS.ANIM_NAME.FLAG_FROM": "Nome da Animação do Sinalizador De",
+      "MODELBEHAVIOR.CDI.PARAMS.ANIM_NAME.FLAG_GLIDE": "Nome da animação do Sinalizador de Planeio",
+      "MODELBEHAVIOR.CDI.PARAMS.ANIM_NAME.FLAG_LOCALIZER": "Nome da animação do Sinalizador do Localizador",
+      "MODELBEHAVIOR.CDI.PARAMS.ANIM_NAME.FLAG_OFF": "Nome da Animação do Sinalizador Desligado",
+      "MODELBEHAVIOR.CDI.PARAMS.ANIM_NAME.FLAG_TO": "Nome da Animação do Sinalizador Para",
+      "MODELBEHAVIOR.CDI.PARAMS.ANIM_NAME.NEEDLE_GLIDE": "Nome da animação da Agulha de Planeio",
+      "MODELBEHAVIOR.CDI.PARAMS.ANIM_NAME.NEEDLE_LOCALIZER": "Nome da animação da Agulha do Localizador",
+      "MODELBEHAVIOR.CDI.PARAMS.NODE_ID.COURSE_KNOB": "Nome do nó do Botão de Curso",
+      "MODELBEHAVIOR.CDI.PARAMS.NODE_ID.EMISSIVE_GPS": "Nome do nó do Indicador Emissivo GPS",
+      "MODELBEHAVIOR.CDI.PARAMS.NODE_ID.EMISSIVE_NAV": "Nome do nó do Indicador Emissivo de Navegação (NAV)",
+      "MODELBEHAVIOR.CDI.PARAMS.NODE_ID.EMISSIVE_VLOC": "Nome do nó do Indicador Emissivo VLOC",
+      "MODELBEHAVIOR.CDI.PARAMS.NODE_ID.HIGHLIGHT": "Nome do nó usado para destaques"
+    }
+  }
+}

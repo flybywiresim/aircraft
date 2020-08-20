@@ -1,0 +1,17 @@
+
+<!-- Common Templates -->
+
+<Include File="Aircraft.xml"/>
+<Include File="Autopilot.xml"/>
+<Include File="Deice.xml"/>
+<Include File="Electrical.xml"/>
+<Include File="Engine.xml"/>
+<Include File="Fuel.xml"/>
+<Include File="Handling.xml"/>
+<Include File="Instrument.xml"/>
+<Include File="LandingGear.xml"/>
+<Include File="Lighting.xml"/>
+<Include File="Passenger.xml"/>
+<Include File="Pilot.xml"/>
+<Include File="Pressurization.xml"/>
+<Include File="Safety.xml"/>

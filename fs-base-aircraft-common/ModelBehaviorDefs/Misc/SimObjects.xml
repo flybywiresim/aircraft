@@ -1,0 +1,170 @@
+
+<Include Path="Generic.xml"/>
+
+<Template Name="WindTurbine_Template">
+	<DefaultTemplateParameters>
+		<ANIM_NAME>WindMil_Rotate</ANIM_NAME>
+		<SPEED_RATIO>1</SPEED_RATIO>
+		<STARTANGLE Process="float">rand 360 *</STARTANGLE>
+	</DefaultTemplateParameters>
+
+	<UseTemplate Name="GT_Anim_Code">
+		<ANIM_CODE>(O:XMLVAR_IsInit) 0 == if{ 1 (&gt;O:XMLVAR_IsInit) #STARTANGLE# sp0 } l0 (A:AMBIENT WIND VELOCITY,feet per second) #SPEED_RATIO# * (A:ANIMATION DELTA TIME, seconds) * +</ANIM_CODE>
+		<ANIM_WRAP>1</ANIM_WRAP>
+		<ANIM_DELTA>1</ANIM_DELTA>
+	</UseTemplate>
+	
+</Template>
+
+<Template Name="WindDirection_Template">
+	<DefaultTemplateParameters>
+		<ANIM_NAME>Orientation</ANIM_NAME>
+	</DefaultTemplateParameters>
+
+	<UseTemplate Name="GT_Anim_Code">
+		<ANIM_CODE>(A:AMBIENT WIND DIRECTION,degrees) 180 + dnor</ANIM_CODE>
+		<ANIM_WRAP>1</ANIM_WRAP>
+		<ANIM_LENGTH>360</ANIM_LENGTH>
+	</UseTemplate>
+	
+</Template>
+
+
+<Template Name="SimObject_Smooth_VarEvolution">
+	<DefaultTemplateParameters>
+		<MIN_POSITION>0</MIN_POSITION>
+		<MAX_POSITION>0</MAX_POSITION>
+		<SPEED>0.1</SPEED>
+		<ANIMATION_BASE_CODE></ANIMATION_BASE_CODE>
+		<!-- Necessary : VAR_CURRENT, VAR_TARGET, ANIM_NAME -->
+	</DefaultTemplateParameters>
+
+	<UseTemplate Name="GT_Anim_Code">
+		<ANIM_CODE>
+			#ANIMATION_BASE_CODE#
+			
+			(#VAR_TARGET#) #MAX_POSITION# &gt; if{
+				#MAX_POSITION# (&gt;#VAR_TARGET#)
+			}
+			(#VAR_TARGET#) #MIN_POSITION# &lt; if{
+				#MIN_POSITION# (&gt;#VAR_TARGET#)
+			}
+			
+			(#VAR_CURRENT#) #MAX_POSITION# &gt; if{
+				#MAX_POSITION# (&gt;#VAR_CURRENT#)
+			}
+			(#VAR_CURRENT#) #MIN_POSITION# &lt; if{
+				#MIN_POSITION# (&gt;#VAR_CURRENT#)
+			}
+			
+			(#VAR_CURRENT#) (#VAR_TARGET#) - abs 0.01 &gt; if{
+				(#VAR_CURRENT#) (#VAR_TARGET#) &gt; if{
+					(#VAR_CURRENT#) #SPEED# (A:ANIMATION DELTA TIME,seconds) * - (#VAR_TARGET#) max (&gt;#VAR_CURRENT#)
+				} els{
+					(#VAR_CURRENT#) #SPEED# (A:ANIMATION DELTA TIME,seconds) * + (#VAR_TARGET#) min (&gt;#VAR_CURRENT#)
+				}
+			} els{
+				(#VAR_TARGET#) (&gt;#VAR_CURRENT#) 
+			}
+			
+			(#VAR_CURRENT#) #MIN_POSITION# - 100 #MAX_POSITION# #MIN_POSITION# - / *
+		
+		</ANIM_CODE>
+		<ANIM_LENGTH>100</ANIM_LENGTH>
+	</UseTemplate>
+</Template>
+	
+<Template Name="Jetway_Hood_Left_Bend">
+	<DefaultTemplateParameters>
+		<!-- Required : ANIM_NAME -->
+		<PERCENT_PER_SECOND>50</PERCENT_PER_SECOND>
+	</DefaultTemplateParameters>
+
+	<UseTemplate Name="SimObject_Smooth_VarEvolution">
+		<VAR_CURRENT>O:XMLVAR_JetwayHoodLeftBendCurrent</VAR_CURRENT>
+		<VAR_TARGET>A:JETWAY HOOD LEFT BEND,percent</VAR_TARGET>
+		<MIN_POSITION>0</MIN_POSITION>
+		<MAX_POSITION>100</MAX_POSITION>
+		<SPEED>#PERCENT_PER_SECOND#</SPEED>
+	</UseTemplate>
+</Template>	
+
+<Template Name="Jetway_Hood_Left_Deployment">
+	<DefaultTemplateParameters>
+		<!-- Required : ANIM_NAME -->
+		<DEGREE_PER_SECOND>20</DEGREE_PER_SECOND>
+		<MIN_ANGLE>0</MIN_ANGLE>
+		<MAX_ANGLE>45</MAX_ANGLE>
+	</DefaultTemplateParameters>
+
+	<UseTemplate Name="SimObject_Smooth_VarEvolution">
+		<VAR_CURRENT>O:XMLVAR_JetwayHoodLeftDeploymentCurrent</VAR_CURRENT>
+		<VAR_TARGET>A:JETWAY HOOD LEFT DEPLOYMENT,degrees</VAR_TARGET>
+		<MIN_POSITION>#MIN_ANGLE#</MIN_POSITION>
+		<MAX_POSITION>#MAX_ANGLE#</MAX_POSITION>
+		<SPEED>#DEGREE_PER_SECOND#</SPEED>
+	</UseTemplate>
+</Template>
+
+<Template Name="Jetway_Hood_Right_Bend">
+	<DefaultTemplateParameters>
+		<!-- Required : ANIM_NAME -->
+		<PERCENT_PER_SECOND>50</PERCENT_PER_SECOND>
+	</DefaultTemplateParameters>
+
+	<UseTemplate Name="SimObject_Smooth_VarEvolution">
+		<VAR_CURRENT>O:XMLVAR_JetwayHoodRightBendCurrent</VAR_CURRENT>
+		<VAR_TARGET>A:JETWAY HOOD RIGHT BEND,percent</VAR_TARGET>
+		<MIN_POSITION>0</MIN_POSITION>
+		<MAX_POSITION>100</MAX_POSITION>
+		<SPEED>#PERCENT_PER_SECOND#</SPEED>
+	</UseTemplate>
+</Template>	
+
+<Template Name="Jetway_Hood_Right_Deployment">
+	<DefaultTemplateParameters>
+		<!-- Required : ANIM_NAME -->
+		<DEGREE_PER_SECOND>20</DEGREE_PER_SECOND>
+		<MIN_ANGLE>0</MIN_ANGLE>
+		<MAX_ANGLE>45</MAX_ANGLE>
+	</DefaultTemplateParameters>
+
+	<UseTemplate Name="SimObject_Smooth_VarEvolution">
+		<VAR_CURRENT>O:XMLVAR_JetwayHoodRightDeploymentCurrent</VAR_CURRENT>
+		<VAR_TARGET>A:JETWAY HOOD RIGHT DEPLOYMENT,degrees</VAR_TARGET>
+		<MIN_POSITION>#MIN_ANGLE#</MIN_POSITION>
+		<MAX_POSITION>#MAX_ANGLE#</MAX_POSITION>
+		<SPEED>#DEGREE_PER_SECOND#</SPEED>
+	</UseTemplate>
+</Template>
+
+<Template Name="Jetway_Hood_Top_Horizontal">
+	<DefaultTemplateParameters>
+		<!-- Required : ANIM_NAME -->
+		<PERCENT_PER_SECOND>100</PERCENT_PER_SECOND>
+	</DefaultTemplateParameters>
+
+	<UseTemplate Name="SimObject_Smooth_VarEvolution">
+		<VAR_CURRENT>O:XMLVAR_JetwayHoodTopHorizontalCurrent</VAR_CURRENT>
+		<VAR_TARGET>A:JETWAY HOOD TOP HORIZONTAL,percent</VAR_TARGET>
+		<MIN_POSITION>-100</MIN_POSITION>
+		<MAX_POSITION>100</MAX_POSITION>
+		<SPEED>#PERCENT_PER_SECOND# 2 *</SPEED>
+	</UseTemplate>
+</Template>
+
+<Template Name="Jetway_Hood_Top_Vertical">
+	<DefaultTemplateParameters>
+		<!-- Required : ANIM_NAME -->
+		<PERCENT_PER_SECOND>100</PERCENT_PER_SECOND>
+	</DefaultTemplateParameters>
+
+	<UseTemplate Name="SimObject_Smooth_VarEvolution">
+		<VAR_CURRENT>O:XMLVAR_JetwayHoodTopVerticalCurrent</VAR_CURRENT>
+		<VAR_TARGET>A:JETWAY HOOD TOP VERTICAL,percent</VAR_TARGET>
+		<MIN_POSITION>-100</MIN_POSITION>
+		<MAX_POSITION>100</MAX_POSITION>
+		<SPEED>#PERCENT_PER_SECOND# 2 *</SPEED>
+	</UseTemplate>
+</Template>
+	

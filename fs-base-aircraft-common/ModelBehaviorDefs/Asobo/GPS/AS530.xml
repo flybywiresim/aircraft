@@ -1,0 +1,13 @@
+<Include File="AS430.xml"/>
+
+<Template Name="ASOBO_AS530_Template">
+	<!-- Same code but different layout -->
+	<DefaultTemplateParameters>
+		<AS430>AS530</AS430>
+		<WWISE_PREFIX>gns530</WWISE_PREFIX>
+	</DefaultTemplateParameters>
+	<UseTemplate Name="ASOBO_AS430_Template">
+		<USE_VNAV_BUTTON/>
+		<RANGE_BUTTON_LAYOUT_DIRECTION>Y</RANGE_BUTTON_LAYOUT_DIRECTION>
+	</UseTemplate>
+</Template>

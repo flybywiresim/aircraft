@@ -1,0 +1,163 @@
+<Include Path="Generic.xml"/>
+
+<!-- KAP 140 -->
+<Template Name="KAP140_Template">
+	<DefaultTemplateParameters>
+		<ID>1</ID>
+	</DefaultTemplateParameters>
+	<UseTemplate Name="GT_Helper_Suffix_ID_Appender">
+		<TEMPLATE_TO_CALL>KAP140_SubTemplate</TEMPLATE_TO_CALL>
+	</UseTemplate>
+</Template>
+
+<Template Name="KAP140_SubTemplate">
+	<DefaultTemplateParameters> 
+		<AP_NODE_ID>AUTOPILOT_Push_Autopilot#SUFFIX_ID#</AP_NODE_ID>
+		<AP_ANIM_NAME>AUTOPILOT_Push_Autopilot#SUFFIX_ID#</AP_ANIM_NAME>
+		<HDG_NODE_ID>AUTOPILOT_Push_Heading#SUFFIX_ID#</HDG_NODE_ID>
+		<HDG_ANIM_NAME>AUTOPILOT_Push_Heading#SUFFIX_ID#</HDG_ANIM_NAME>
+		<NAV_NODE_ID>AUTOPILOT_Push_Navigation#SUFFIX_ID#</NAV_NODE_ID>
+		<NAV_ANIM_NAME>AUTOPILOT_Push_Navigation#SUFFIX_ID#</NAV_ANIM_NAME>
+		<APR_NODE_ID>AUTOPILOT_Push_Approach#SUFFIX_ID#</APR_NODE_ID>
+		<APR_ANIM_NAME>AUTOPILOT_Push_Approach#SUFFIX_ID#</APR_ANIM_NAME>
+		<BC_NODE_ID>AUTOPILOT_Push_BackCourse#SUFFIX_ID#</BC_NODE_ID>
+		<BC_ANIM_NAME>AUTOPILOT_Push_BackCourse#SUFFIX_ID#</BC_ANIM_NAME>
+		<ALT_NODE_ID>AUTOPILOT_Push_Altitude#SUFFIX_ID#</ALT_NODE_ID>
+		<ALT_ANIM_NAME>AUTOPILOT_Push_Altitude#SUFFIX_ID#</ALT_ANIM_NAME>
+		<UP_NODE_ID>AUTOPILOT_Push_VerticalSpeed_Up#SUFFIX_ID#</UP_NODE_ID>
+		<UP_ANIM_NAME>AUTOPILOT_Push_VerticalSpeed_Up#SUFFIX_ID#</UP_ANIM_NAME>
+		<DN_NODE_ID>AUTOPILOT_Push_VerticalSpeed_Down#SUFFIX_ID#</DN_NODE_ID>
+		<DN_ANIM_NAME>AUTOPILOT_Push_VerticalSpeed_Down#SUFFIX_ID#</DN_ANIM_NAME>
+		<FLC_NODE_ID>AUTOPILOT_Push_FlightLevelChange#SUFFIX_ID#</FLC_NODE_ID>
+		<FLC_ANIM_NAME>AUTOPILOT_Push_FlightLevelChange#SUFFIX_ID#</FLC_ANIM_NAME>
+		<VS_NODE_ID>AUTOPILOT_Push_VerticalSpeed#SUFFIX_ID#</VS_NODE_ID>
+		<VS_ANIM_NAME>AUTOPILOT_Push_VerticalSpeed#SUFFIX_ID#</VS_ANIM_NAME>
+		<KNOB_100_NODE_ID>AUTOPILOT_Knob_Altitude_100#SUFFIX_ID#</KNOB_100_NODE_ID>
+		<KNOB_100_ANIM_NAME>AUTOPILOT_Knob_Altitude_100#SUFFIX_ID#</KNOB_100_ANIM_NAME>
+		<KNOB_1000_NODE_ID>AUTOPILOT_Knob_Altitude_1000#SUFFIX_ID#</KNOB_1000_NODE_ID>
+		<KNOB_1000_ANIM_NAME>AUTOPILOT_Knob_Altitude_1000#SUFFIX_ID#</KNOB_1000_ANIM_NAME>
+		<FAILURE>(A:CIRCUIT AUTOPILOT ON, Bool)</FAILURE>
+		<NO_SIMVAR_LIGHT/>
+		<EMISSIVE_CODE>1</EMISSIVE_CODE>
+		<ANIM_NEVER_FAILS/>
+		<NO_TEXT_EMISSIVE>True</NO_TEXT_EMISSIVE>
+		<NO_INDICATOR>True</NO_INDICATOR>
+		<BUTTON_EMISSIVE>True</BUTTON_EMISSIVE>
+		<KEY_PREFIX>KAP140</KEY_PREFIX>
+	</DefaultTemplateParameters>
+	<EditableTemplateParameters>
+		<AddParams>
+			<AP_NODE_ID></AP_NODE_ID>
+			<AP_ANIM_NAME></AP_ANIM_NAME>
+			<HDG_NODE_ID></HDG_NODE_ID>
+			<HDG_ANIM_NAME></HDG_ANIM_NAME>
+			<NAV_NODE_ID></NAV_NODE_ID>
+			<NAV_ANIM_NAME></NAV_ANIM_NAME>
+			<APR_NODE_ID></APR_NODE_ID>
+			<APR_ANIM_NAME></APR_ANIM_NAME>
+			<BC_NODE_ID></BC_NODE_ID>
+			<BC_ANIM_NAME></BC_ANIM_NAME>
+			<ALT_NODE_ID></ALT_NODE_ID>
+			<ALT_ANIM_NAME></ALT_ANIM_NAME>
+			<UP_NODE_ID></UP_NODE_ID>
+			<UP_ANIM_NAME></UP_ANIM_NAME>
+			<DN_NODE_ID></DN_NODE_ID>
+			<DN_ANIM_NAME></DN_ANIM_NAME>
+			<FLC_NODE_ID></FLC_NODE_ID>
+			<FLC_ANIM_NAME></FLC_ANIM_NAME>
+			<VS_NODE_ID></VS_NODE_ID>
+			<VS_ANIM_NAME></VS_ANIM_NAME>
+			<KNOB_100_NODE_ID></KNOB_100_NODE_ID>
+			<KNOB_100_ANIM_NAME></KNOB_100_ANIM_NAME>
+			<KNOB_1000_NODE_ID></KNOB_1000_NODE_ID>
+			<KNOB_1000_ANIM_NAME></KNOB_1000_ANIM_NAME>
+		</AddParams>
+	</EditableTemplateParameters>
+	<!-- AP -->
+	<Component ID="#AP_NODE_ID#" Node="#AP_NODE_ID#">
+		<UseTemplate Name="GT_Push_Button">
+			<ANIM_NAME>#AP_ANIM_NAME#</ANIM_NAME>
+			<LEFT_SINGLE_CODE>(&gt;H:#KEY_PREFIX#_Push_AP)</LEFT_SINGLE_CODE>
+		</UseTemplate>
+	</Component>
+	<!-- HDG -->
+	<Component ID="#HDG_NODE_ID#" Node="#HDG_NODE_ID#">
+		<UseTemplate Name="GT_Push_Button">
+			<ANIM_NAME>#HDG_ANIM_NAME#</ANIM_NAME>
+			<LEFT_SINGLE_CODE>(&gt;H:#KEY_PREFIX#_Push_HDG)</LEFT_SINGLE_CODE>
+		</UseTemplate>
+	</Component>
+	<!-- NAV -->
+	<Component ID="#NAV_NODE_ID#" Node="#NAV_NODE_ID#">
+		<UseTemplate Name="GT_Push_Button">
+			<ANIM_NAME>#NAV_ANIM_NAME#</ANIM_NAME>
+			<LEFT_SINGLE_CODE>(&gt;H:#KEY_PREFIX#_Push_NAV)</LEFT_SINGLE_CODE>
+		</UseTemplate>
+	</Component>
+	<!-- APR -->
+	<Component ID="#APR_NODE_ID#" Node="#APR_NODE_ID#">
+		<UseTemplate Name="GT_Push_Button">
+			<ANIM_NAME>#APR_ANIM_NAME#</ANIM_NAME>
+			<LEFT_SINGLE_CODE>(&gt;H:#KEY_PREFIX#_Push_APR)</LEFT_SINGLE_CODE>
+		</UseTemplate>
+	</Component>
+	<!-- REV -->
+	<Component ID="#BC_NODE_ID#" Node="#BC_NODE_ID#">
+		<UseTemplate Name="GT_Push_Button">
+			<ANIM_NAME>#BC_ANIM_NAME#</ANIM_NAME>
+			<LEFT_SINGLE_CODE>(&gt;H:#KEY_PREFIX#_Push_REV)</LEFT_SINGLE_CODE>
+		</UseTemplate>
+	</Component>
+	<!-- ALT -->
+	<Component ID="#ALT_NODE_ID#" Node="#ALT_NODE_ID#">
+		<UseTemplate Name="GT_Push_Button">
+			<ANIM_NAME>#ALT_ANIM_NAME#</ANIM_NAME>
+			<LEFT_SINGLE_CODE>(&gt;H:#KEY_PREFIX#_Push_ALT)</LEFT_SINGLE_CODE>
+		</UseTemplate>
+	</Component>
+	<!-- UP -->
+	<Component ID="#UP_NODE_ID#" Node="#UP_NODE_ID#">
+		<UseTemplate Name="GT_Push_Button">
+			<ANIM_NAME>#UP_ANIM_NAME#</ANIM_NAME>
+			<LEFT_SINGLE_CODE>(&gt;H:#KEY_PREFIX#_Push_UP)</LEFT_SINGLE_CODE>
+		</UseTemplate>
+	</Component>
+	<!-- DN -->
+	<Component ID="#DN_NODE_ID#" Node="#DN_NODE_ID#">
+		<UseTemplate Name="GT_Push_Button">
+			<ANIM_NAME>#DN_ANIM_NAME#</ANIM_NAME>
+			<LEFT_SINGLE_CODE>(&gt;H:#KEY_PREFIX#_Push_DN)</LEFT_SINGLE_CODE>
+		</UseTemplate>
+	</Component>
+	<!-- BARO -->
+	<Component ID="#FLC_NODE_ID#" Node="#FLC_NODE_ID#">
+		<UseTemplate Name="GT_Push_Button_Timed">
+			<ANIM_NAME>#FLC_ANIM_NAME#</ANIM_NAME>
+			<SHORT_CLICK_CODE>(&gt;H:#KEY_PREFIX#_Push_BARO)</SHORT_CLICK_CODE>
+			<LONG_CLICK_CODE>(&gt;H:#KEY_PREFIX#_Long_Push_BARO)</LONG_CLICK_CODE>
+		</UseTemplate>
+	</Component>
+	<!-- ARM -->
+	<Component ID="#VS_NODE_ID#" Node="#VS_NODE_ID#">
+		<UseTemplate Name="GT_Push_Button">
+			<ANIM_NAME>#VS_ANIM_NAME#</ANIM_NAME>
+			<LEFT_SINGLE_CODE>(&gt;H:#KEY_PREFIX#_Push_ARM)</LEFT_SINGLE_CODE>
+		</UseTemplate>
+	</Component>
+	<!-- Knob have different functions based on context -->
+	<Component ID="#KNOB_100_NODE_ID#" Node="#KNOB_100_NODE_ID#">
+		<UseTemplate Name="GT_Knob_Infinite">
+			<ANIM_NAME>#KNOB_100_ANIM_NAME#</ANIM_NAME>
+			<CLOCKWISE_CODE>(&gt;H:#KEY_PREFIX#_Knob_Inner_INC)</CLOCKWISE_CODE>
+			<ANTICLOCKWISE_CODE>(&gt;H:#KEY_PREFIX#_Knob_Inner_DEC)</ANTICLOCKWISE_CODE>
+		</UseTemplate>
+	</Component>
+	<Component ID="#KNOB_1000_NODE_ID#" Node="#KNOB_1000_NODE_ID#">
+		<UseTemplate Name="GT_Knob_Infinite">
+			<ANIM_NAME>#KNOB_1000_ANIM_NAME#</ANIM_NAME>
+			<CLOCKWISE_CODE>(&gt;H:#KEY_PREFIX#_Knob_Outer_INC)</CLOCKWISE_CODE>
+			<ANTICLOCKWISE_CODE>(&gt;H:#KEY_PREFIX#_Knob_Outer_DEC)</ANTICLOCKWISE_CODE>
+		</UseTemplate>
+	</Component>
+</Template>
+

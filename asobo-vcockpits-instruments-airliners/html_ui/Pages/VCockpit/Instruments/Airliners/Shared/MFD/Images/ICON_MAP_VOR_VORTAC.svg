@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="128"
+   height="128"
+   viewBox="0 0 33.866666 33.866668"
+   version="1.1"
+   id="svg8"
+   inkscape:version="0.92.3 (2405546, 2018-03-11)"
+   sodipodi:docname="ICON_MAP_VOR_VORTAC.svg"
+   inkscape:export-filename="D:\KittyHawk\SRC\KittyHawk\html_UI\Pages\VCockpit\Panels\Instruments\GlassCockpits\Airliners\Shared\MFD\Images\ICON_MAP_VOR_FLIGHTPLAN.png"
+   inkscape:export-xdpi="96"
+   inkscape:export-ydpi="96">
+  <defs
+     id="defs2" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="3.959798"
+     inkscape:cx="22.799366"
+     inkscape:cy="67.976835"
+     inkscape:document-units="mm"
+     inkscape:current-layer="layer1"
+     showgrid="false"
+     units="px"
+     inkscape:measure-start="0,0"
+     inkscape:measure-end="0,0"
+     inkscape:window-width="1920"
+     inkscape:window-height="1057"
+     inkscape:window-x="-8"
+     inkscape:window-y="-8"
+     inkscape:window-maximized="1" />
+  <metadata
+     id="metadata5">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Calque 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(0,-263.13332)">
+    <path
+       style="fill:#ff00ff;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:12.95256329;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;paint-order:markers stroke fill"
+       d="M 59.255859 2.0195312 L 59.255859 25.703125 A 38.638336 38.638336 0 0 1 64 25.361328 A 38.638336 38.638336 0 0 1 68.744141 25.689453 L 68.744141 2.0195312 L 59.255859 2.0195312 z M 2.0195312 59.255859 L 2.0195312 68.744141 L 25.703125 68.744141 A 38.638336 38.638336 0 0 1 25.361328 64 A 38.638336 38.638336 0 0 1 25.689453 59.255859 L 2.0195312 59.255859 z M 102.29688 59.255859 A 38.638336 38.638336 0 0 1 102.63867 64 A 38.638336 38.638336 0 0 1 102.31055 68.744141 L 125.98047 68.744141 L 125.98047 59.255859 L 102.29688 59.255859 z M 68.744141 102.29688 A 38.638336 38.638336 0 0 1 64 102.63867 A 38.638336 38.638336 0 0 1 59.255859 102.31055 L 59.255859 125.98047 L 68.744141 125.98047 L 68.744141 102.29688 z "
+       transform="matrix(0.26458333,0,0,0.26458333,0,263.13332)"
+       id="rect816" />
+    <circle
+       style="fill:none;fill-opacity:1;fill-rule:nonzero;stroke:#ff10ff;stroke-width:2.64583325;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;paint-order:markers stroke fill"
+       id="path814"
+       cx="16.933332"
+       cy="280.06665"
+       r="10.22306" />
+  </g>
+</svg>

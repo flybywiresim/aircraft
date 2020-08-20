@@ -1,0 +1,13 @@
+
+<!-- Pilot ############################################## -->
+<Template Name="Pilot_Visibility_Template">
+	<DefaultTemplateParameters>
+		<NODE_ID>Pilot</NODE_ID>
+	</DefaultTemplateParameters>
+	<Component ID="#NODE_ID#" Node="#NODE_ID#">
+		<UseTemplate Name="GT_Visibility_Code">
+			<VISIBILITY_CODE>(A:PLANE IN PARKING STATE, bool) !</VISIBILITY_CODE>
+		</UseTemplate>
+	</Component>
+</Template>
+

@@ -1,0 +1,175 @@
+<Include Path="Generic.xml"/>
+
+<Template Name="AS330_Push_Button_Template">
+	<DefaultTemplateParameters>
+		<BTN_ID>#ID#</BTN_ID>
+		<PREFIX>#AS330#_Push</PREFIX>
+		<HTML_KEY>Transponder</HTML_KEY>
+		<Condition Check="CIRCUIT_ID">
+			<Condition Check="TURN_OFF_CIRCUIT">
+				<True>
+					<SET_CIRCUIT_STATE>
+						(A:CIRCUIT ON:#CIRCUIT_ID#, Bool) if{ #CIRCUIT_ID# (&gt;K:ELECTRICAL_CIRCUIT_TOGGLE) }
+					</SET_CIRCUIT_STATE>
+				</True>
+				<False>
+					<SET_CIRCUIT_STATE>
+						(A:CIRCUIT ON:#CIRCUIT_ID#, Bool) ! if{ #CIRCUIT_ID# (&gt;K:ELECTRICAL_CIRCUIT_TOGGLE) }
+					</SET_CIRCUIT_STATE>
+				</False>
+			</Condition>
+		</Condition>
+	</DefaultTemplateParameters>
+	<UseTemplate Name="AS330_Push_Button_SubTemplate"/>
+</Template>
+<Template Name="AS330_Push_Button_SubTemplate">
+	<DefaultTemplateParameters>
+		<NODE_ID>#PREFIX#_#BTN_ID##SUFFIX_ID#</NODE_ID>
+		<ANIM_NAME>#PREFIX#_#BTN_ID##SUFFIX_ID#</ANIM_NAME>
+		<PART_ID>#PREFIX#_#BTN_ID#</PART_ID>
+		<WWISE_EVENT_1>transponder_push_button_on</WWISE_EVENT_1>
+		<WWISE_EVENT_2>transponder_push_button_off</WWISE_EVENT_2> 
+		<NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
+		<NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
+		<Condition Valid="EMISSIVE_BUTTONS">
+			<True>
+				<EXTRA>_Emissive</EXTRA>
+			</True>
+			<False>
+				<EXTRA></EXTRA>
+			</False>
+		</Condition>
+		<Condition Check="CIRCUIT_ID">
+			<True>
+				<LEFT_SINGLE_CODE>
+					#SET_CIRCUIT_STATE#
+					(&gt;H:#HTML_KEY##BTN_ID#)
+				</LEFT_SINGLE_CODE>   
+			</True>
+			<False>
+				<LEFT_SINGLE_CODE>(&gt;H:#HTML_KEY##BTN_ID#)</LEFT_SINGLE_CODE>   
+			</False>
+		</Condition>
+	</DefaultTemplateParameters>
+	<Component ID="#NODE_ID#" Node="#NODE_ID#">
+		<UseTemplate Name="GT_Push_Button#EXTRA#">
+		</UseTemplate>
+	</Component>
+</Template>
+
+<Template Name="AS330_Template">
+	<DefaultTemplateParameters>
+		<ID>1</ID>
+		<Condition Check="CIRCUIT_ID">
+			<True>
+				<FAILURE>(A:CIRCUIT ON:#CIRCUIT_ID#, Bool)</FAILURE>
+			</True>
+			<False>
+				<FAILURE>(A:CIRCUIT GENERAL PANEL ON, Bool)</FAILURE>
+			</False>
+		</Condition>
+		<ANIM_NEVER_FAILS/>
+		<EMISSIVE_DEFAULT_VALUE>0.5</EMISSIVE_DEFAULT_VALUE>
+		<AS330>TRANSPONDER</AS330>
+	</DefaultTemplateParameters>
+	
+	<UseTemplate Name="GT_Helper_Suffix_ID_Appender">
+		<TEMPLATE_TO_CALL>AS330_SubTemplate</TEMPLATE_TO_CALL>
+	</UseTemplate>
+</Template>
+<Template Name="AS330_SubTemplate">
+	<DefaultTemplateParameters>
+		<Condition Check="POTENTIOMETER">
+			<True>
+				<EMISSIVE_CODE>(A:LIGHT POTENTIOMETER:#POTENTIOMETER#, percent over 100) #EMISSIVE_DEFAULT_VALUE# * (A:TRANSPONDER STATE:1, Enum) 0 &gt; *</EMISSIVE_CODE>
+			</True>
+			<False>
+				<EMISSIVE_CODE>#EMISSIVE_DEFAULT_VALUE# (A:TRANSPONDER STATE:1, Enum) 0 &gt; *</EMISSIVE_CODE>
+			</False>
+		</Condition>
+	</DefaultTemplateParameters>
+	<Condition Check="CIRCUIT_ID">
+		<Update Once="True">
+			(A:CIRCUIT ON:#CIRCUIT_ID#, Bool) ! (A:CIRCUIT SWITCH ON:#CIRCUIT_ID#, Bool) and if{ #CIRCUIT_ID# (&gt;K:ELECTRICAL_CIRCUIT_TOGGLE) }
+		</Update>
+	</Condition>
+	<Condition Valid="NO_SCREEN_EMISSIVE">
+		<False>
+			<Component ID="#AS330#_Screen_#ID#" Node="#AS330#_Screen#SUFFIX_ID#">
+				<UseTemplate Name="GT_Emissive_Gauge">
+				</UseTemplate>
+			</Component>
+		</False>
+	</Condition>
+	<UseTemplate Name="AS330_Push_Button_Template">
+		<BTN_ID>ALT</BTN_ID>
+		<TOOLTIPID>TT:COCKPIT.TOOLTIPS.XPDR_ALT</TOOLTIPID>
+	</UseTemplate>
+	<UseTemplate Name="AS330_Push_Button_Template">
+		<BTN_ID>CLR</BTN_ID>
+		<TOOLTIPID>TT:COCKPIT.TOOLTIPS.XPDR_CLR</TOOLTIPID>
+	</UseTemplate>
+	<UseTemplate Name="AS330_Push_Button_Template">
+		<BTN_ID>CRSR</BTN_ID>
+		<TOOLTIPID>TT:COCKPIT.TOOLTIPS.XPDR_CSRS</TOOLTIPID>
+	</UseTemplate>
+	<UseTemplate Name="AS330_Push_Button_Template">
+		<BTN_ID>FUNC</BTN_ID>
+		<TOOLTIPID>TT:COCKPIT.TOOLTIPS.XPDR_FUNC</TOOLTIPID>
+	</UseTemplate>
+	<UseTemplate Name="AS330_Push_Button_Template">
+		<BTN_ID>IDT</BTN_ID>
+		<TOOLTIPID>TT:COCKPIT.TOOLTIPS.YOKE_BUTTON_IDENT</TOOLTIPID>
+	</UseTemplate>
+	<UseTemplate Name="AS330_Push_Button_Template">
+		<BTN_ID>ON</BTN_ID>
+		<TOOLTIPID>TT:COCKPIT.TOOLTIPS.XPDR_ON</TOOLTIPID>
+	</UseTemplate>
+	<UseTemplate Name="AS330_Push_Button_Template">
+		<BTN_ID>OFF</BTN_ID>
+		<TOOLTIPID>TT:COCKPIT.TOOLTIPS.XPDR_OFF</TOOLTIPID>
+		<TURN_OFF_CIRCUIT/>
+	</UseTemplate>
+	<UseTemplate Name="AS330_Push_Button_Template">
+		<BTN_ID>STARTSTOP</BTN_ID>
+		<TOOLTIPID>TT:COCKPIT.TOOLTIPS.XPDR_STARTSTOP</TOOLTIPID>
+	</UseTemplate>
+	<UseTemplate Name="AS330_Push_Button_Template">
+		<BTN_ID>STBY</BTN_ID>
+		<TOOLTIPID>TT:COCKPIT.TOOLTIPS.XPDR_SBY</TOOLTIPID>
+	</UseTemplate>
+	<UseTemplate Name="AS330_Push_Button_Template">
+		<BTN_ID>VFR</BTN_ID>
+		<TOOLTIPID>TT:COCKPIT.TOOLTIPS.XPDR_VFR</TOOLTIPID>
+	</UseTemplate>
+	<UseTemplate Name="AS330_Push_Button_Template">
+		<BTN_ID>0</BTN_ID>
+	</UseTemplate>
+	<UseTemplate Name="AS330_Push_Button_Template">
+		<BTN_ID>1</BTN_ID>
+	</UseTemplate>
+	<UseTemplate Name="AS330_Push_Button_Template">
+		<BTN_ID>2</BTN_ID>
+	</UseTemplate>
+	<UseTemplate Name="AS330_Push_Button_Template">
+		<BTN_ID>3</BTN_ID>
+	</UseTemplate>
+	<UseTemplate Name="AS330_Push_Button_Template">
+		<BTN_ID>4</BTN_ID>
+	</UseTemplate>
+	<UseTemplate Name="AS330_Push_Button_Template">
+		<BTN_ID>5</BTN_ID>
+	</UseTemplate>
+	<UseTemplate Name="AS330_Push_Button_Template">
+		<BTN_ID>6</BTN_ID>
+	</UseTemplate>
+	<UseTemplate Name="AS330_Push_Button_Template">
+		<BTN_ID>7</BTN_ID>
+	</UseTemplate>
+	<UseTemplate Name="AS330_Push_Button_Template">
+		<BTN_ID>8</BTN_ID>
+	</UseTemplate>
+	<UseTemplate Name="AS330_Push_Button_Template">
+		<BTN_ID>9</BTN_ID>
+	</UseTemplate>
+</Template>

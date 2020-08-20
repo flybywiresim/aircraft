@@ -1,0 +1,1340 @@
+
+<Include File="Subtemplates\\Autopilot_Subtemplates.xml"/>
+<!-- Autopilot ################################################################ -->
+<!-- Components list: 
+- Push: AP, Heading, Bank, Approach, Backcourse, FD x2, Altitude, YD, FLC, VS, NAV, VNV, Speed, LVL, Transfer, Disc
+- Knob: BARO x3, Heading, Altitude, VS, Course x2
+- Emissives: Transfer x2
+-->
+<Template Name="AUTOPILOT_Composite_Template">
+	<DefaultTemplateParameters>
+		<ID>1</ID>
+	</DefaultTemplateParameters>
+	<UseTemplate Name="GT_Helper_Suffix_ID_Appender">
+		<TEMPLATE_TO_CALL>AUTOPILOT_Composite_SubTemplate</TEMPLATE_TO_CALL>
+	</UseTemplate>
+</Template>
+<Template Name="AUTOPILOT_Composite_SubTemplate">
+	<DefaultTemplateParameters>
+		<BARO_COUNT>3</BARO_COUNT>
+		<CRS_COUNT>2</CRS_COUNT>
+		<FD_COUNT>2</FD_COUNT>
+		<USE_SINGLE_ALTITUDE_KNOB>True</USE_SINGLE_ALTITUDE_KNOB>
+		<NO_ALTITUDE_FIXED_INCREMENT>True</NO_ALTITUDE_FIXED_INCREMENT>
+	</DefaultTemplateParameters>
+	<!-- BARO -->
+	<Condition Check="NO_BARO">
+		<False>
+			<UseTemplate Name="GT_Helper_Recursive_ID">
+				<ANIMREF_ID>-1</ANIMREF_ID>
+				<ANIMTIP_0>TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_BARO_KNOB_INCREASE</ANIMTIP_0>
+				<ANIMTIP_0_ON_CURSOR>TurnRight</ANIMTIP_0_ON_CURSOR>
+				<ANIMTIP_1>TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_BARO_KNOB_DECREASE</ANIMTIP_1>
+				<ANIMTIP_1_ON_CURSOR>TurnLeft</ANIMTIP_1_ON_CURSOR>
+				<ANIMTIP_3>TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_BARO_KNOB_PUSH</ANIMTIP_3>
+				<ANIMTIP_3_ON_CURSOR>Hand</ANIMTIP_3_ON_CURSOR>
+				<Condition Check="BARO_COUNT" Match="1">
+					<BARO_KNOB_1_NODE_ID>AUTOPILOT_Knob_Baro#SUFFIX_ID#</BARO_KNOB_1_NODE_ID>
+				</Condition>
+				<Condition Valid="BARO_PUSH">
+					<PUSH/>
+				</Condition>
+				<!-- VV Recursive parameters VV -->
+				<EXIT_TEMPLATE>AUTOPILOT_Knob_Baro_Template</EXIT_TEMPLATE>
+				<MAX_ID>#BARO_COUNT#</MAX_ID>
+				<!-- Dyn param -->
+				<!-- NODE_ID -->
+				<PROCESS_PARAM2>True</PROCESS_PARAM2>
+				<PARAM2>NODE_ID</PARAM2>
+				<PARAM2_PREFIX>BARO_KNOB_</PARAM2_PREFIX>
+				<PARAM2_SUFFIX>_NODE_ID</PARAM2_SUFFIX>
+				<!-- ANIM_NAME -->
+				<PROCESS_PARAM3>True</PROCESS_PARAM3>
+				<PARAM3>ANIM_NAME</PARAM3>
+				<PARAM3_PREFIX>BARO_KNOB_</PARAM3_PREFIX>
+				<PARAM3_SUFFIX>_ANIM_NAME</PARAM3_SUFFIX>
+				<!-- BARO_ID -->
+				<PROCESS_PARAM4>True</PROCESS_PARAM4>
+				<PARAM4>BARO_ID</PARAM4>
+				<PARAM4_PREFIX>BARO_KNOB_</PARAM4_PREFIX>
+				<PARAM4_SUFFIX>_BARO_ID</PARAM4_SUFFIX>
+				<!-- ANIM_NAME_PUSH -->
+				<PROCESS_PARAM5>True</PROCESS_PARAM5>
+				<PARAM5>ANIM_NAME_PUSH</PARAM5>
+				<PARAM5_PREFIX>BARO_KNOB_</PARAM5_PREFIX>
+				<PARAM5_SUFFIX>_ANIM_NAME_PUSH</PARAM5_SUFFIX>
+				<!-- ANIM_NAME_PUSH -->
+				<PROCESS_PARAM6>True</PROCESS_PARAM6>
+				<PARAM6>USE_PUSH_STD</PARAM6>
+				<PARAM6_PREFIX>BARO_KNOB_</PARAM6_PREFIX>
+				<PARAM6_SUFFIX>_USE_PUSH_STD</PARAM6_SUFFIX>
+			</UseTemplate>
+		</False>
+	</Condition>
+	<!-- ENGAGE/DISENGAGE -->
+	<Condition Check="NO_AP">
+		<False>
+			<UseTemplate Name="AUTOPILOT_Push_Autopilot_Template">
+				<TOOLTIPID>%((A:AUTOPILOT MASTER, bool))%{if}TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_AP_ON%{else}TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_AP_OFF%{end}</TOOLTIPID>
+			</UseTemplate>
+		</False>
+	</Condition>
+	<!-- HEADING -->
+	<Condition Check="NO_HEADING">
+		<False>
+			<UseTemplate Name="AUTOPILOT_Push_Heading_Template">
+				<TOOLTIPID>%((A:AUTOPILOT HEADING LOCK, BOOL))%{if}TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_HDG_BUTTON_ON%{else}TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_HDG_BUTTON_OFF%{end}</TOOLTIPID>
+			</UseTemplate>
+			<Condition Check="NO_HEADING_KNOB">
+				<False>
+					<UseTemplate Name="AUTOPILOT_Knob_Heading_Template">
+						<ANIMTIP_0>TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_HDG_TUNING_LEFT</ANIMTIP_0>
+						<ANIMTIP_0_ON_CURSOR>TurnLeft</ANIMTIP_0_ON_CURSOR>
+						<ANIMTIP_1>TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_HDG_TUNING_RIGHT</ANIMTIP_1>
+						<ANIMTIP_1_ON_CURSOR>TurnRight</ANIMTIP_1_ON_CURSOR>
+						<ANIMTIP_3>TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_HDG_PUSH</ANIMTIP_3>
+						<ANIMTIP_3_ON_CURSOR>Hand</ANIMTIP_3_ON_CURSOR>
+						<PUSH/>
+					</UseTemplate>
+				</False>
+			</Condition>	
+		</False>
+	</Condition>	
+	<!-- BANK -->
+	<Condition Check="NO_BANK">
+		<False>
+			<UseTemplate Name="AUTOPILOT_Push_Bank_Template">
+				<TOOLTIPID>%((A:AUTOPILOT MAX BANK, degrees) 26 &lt;)%{if}TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_BANK_OFF%{else}TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_BANK_ON%{end}</TOOLTIPID>
+			</UseTemplate>
+		</False>
+	</Condition>
+	<!-- APPROACH -->	
+	<Condition Check="NO_APPROACH">
+		<False>
+			<UseTemplate Name="AUTOPILOT_Push_Approach_Template">
+				<TOOLTIPID>%((A:AUTOPILOT APPROACH HOLD, bool))%{if}TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_APR_ON%{else}TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_APR_OFF%{end}</TOOLTIPID>
+			</UseTemplate>
+		</False>
+	</Condition>
+	<!-- BACKCOURSE -->	
+	<Condition Check="NO_BACKCOURSE">
+		<False>
+			<UseTemplate Name="AUTOPILOT_Push_BackCourse_Template">
+				<TOOLTIPID>%((A:AUTOPILOT BACKCOURSE HOLD, bool))%{if}TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_BC_ON%{else}TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_BC_OFF%{end}</TOOLTIPID>
+			</UseTemplate>
+		</False>
+	</Condition>
+	<!-- FLIGHT DIRECTOR -->
+	<Condition Check="NO_FLIGHT_DIRECTOR">
+		<False>
+			<UseTemplate Name="GT_Helper_Recursive_ID">
+				<Condition Check="FD_COUNT" Match="1">
+					<False>
+						<USE_CONCATENATED_ID/>
+					</False>
+				</Condition>
+				<!-- VV Recursive parameters VV -->
+				<EXIT_TEMPLATE>AUTOPILOT_Push_FlightDirector_Template</EXIT_TEMPLATE>
+				<MAX_ID>#FD_COUNT#</MAX_ID>
+				<!-- Dyn param -->
+				<!-- NODE_ID -->
+				<PROCESS_PARAM2>True</PROCESS_PARAM2>
+				<PARAM2>NODE_ID</PARAM2>
+				<PARAM2_PREFIX>FLIGHT_DIRECTOR_</PARAM2_PREFIX>
+				<PARAM2_SUFFIX>_NODE_ID</PARAM2_SUFFIX>
+				<!-- ANIM_NAME -->
+				<PROCESS_PARAM3>True</PROCESS_PARAM3>
+				<PARAM3>ANIM_NAME</PARAM3>
+				<PARAM3_PREFIX>FLIGHT_DIRECTOR_</PARAM3_PREFIX>
+				<PARAM3_SUFFIX>_ANIM_NAME</PARAM3_SUFFIX>
+				<!-- EMISSIVE_NODE_ID -->
+				<PROCESS_PARAM4>True</PROCESS_PARAM4>
+				<PARAM4>EMISSIVE_NODE_ID</PARAM4>
+				<PARAM4_PREFIX>FLIGHT_DIRECTOR_</PARAM4_PREFIX>
+				<PARAM4_SUFFIX>_EMISSIVE_NODE_ID</PARAM4_SUFFIX>
+			</UseTemplate>
+		</False>
+	</Condition>
+	<!-- YAW DAMPER -->	
+	<Condition Check="NO_YAW_DAMPER">
+		<False>
+			<UseTemplate Name="AUTOPILOT_Push_YawDamper_Template">
+			</UseTemplate>
+		</False>
+	</Condition>
+	<!-- ALTITUDE -->
+	<Condition Check="NO_ALTITUDE">
+		<False>
+			<UseTemplate Name="AUTOPILOT_Push_Altitude_Template">
+			</UseTemplate>
+			<Condition Check="NO_ALTITUDE_KNOB">
+				<False>
+					<Condition Valid="USE_SINGLE_ALTITUDE_KNOB">
+						<True>
+							<UseTemplate Name="AUTOPILOT_Knob_Altitude_Template">
+								<Condition Valid="NO_ALTITUDE_FIXED_INCREMENT">
+									<False>
+										<INCREMENT>100</INCREMENT>
+									</False>
+								</Condition>
+								<PUSH/>
+								<NODE_ID>AUTOPILOT_Knob_Altitude#SUFFIX_ID#</NODE_ID>
+							</UseTemplate>
+						</True>
+						<False>
+							<UseTemplate Name="AUTOPILOT_Knob_Altitude_Template">
+								<INCREMENT>100</INCREMENT>
+								<PUSH/>
+								<NODE_ID>AUTOPILOT_Knob_Altitude_Hundred#SUFFIX_ID#</NODE_ID>
+								<ANIM_NAME_KNOB>AUTOPILOT_Knob_Altitude_Hundred#SUFFIX_ID#</ANIM_NAME_KNOB>
+								<ANIM_NAME_PUSH>AUTOPILOT_Knob_Altitude_Hundred_Push#SUFFIX_ID#</ANIM_NAME_PUSH>
+							</UseTemplate>
+							<UseTemplate Name="AUTOPILOT_Knob_Altitude_Template">
+								<INCREMENT>1000</INCREMENT>
+								<NODE_ID>AUTOPILOT_Knob_Altitude_Thousand#SUFFIX_ID#</NODE_ID>
+								<ANIM_NAME>AUTOPILOT_Knob_Altitude_Thousand#SUFFIX_ID#</ANIM_NAME>
+							</UseTemplate>
+						</False>
+					</Condition>
+				</False>	
+			</Condition>
+		</False>	
+	</Condition>
+	<!-- FLIGHT LEVEL CHANGE -->
+	<Condition Check="NO_FLC">
+		<False>
+			<UseTemplate Name="AUTOPILOT_Push_FlightLevelChange_Template">
+				<Condition Valid="FLC_NODE_ID">
+					<NODE_ID>#FLC_NODE_ID#</NODE_ID>
+				</Condition>
+				<Condition Valid="FLC_ANIM_NAME">
+					<ANIM_NAME>#FLC_ANIM_NAME#</ANIM_NAME>
+				</Condition>
+				<Condition Valid="FLC_BASE_NODE_ID">
+					<BASE_NODE_ID>#FLC_BASE_NODE_ID#</BASE_NODE_ID>
+				</Condition>
+			</UseTemplate>
+		</False>
+	</Condition>
+	<!-- VERTICAL SPEED -->	
+	<Condition Check="NO_VERTICAL_SPEED">
+		<False>
+			<UseTemplate Name="AUTOPILOT_Push_VerticalSpeed_Template">
+			</UseTemplate>
+			<UseTemplate Name="AUTOPILOT_Knob_VerticalSpeed_Template">
+				<Condition Valid="SINGLE_HITBOX_VERTICALSPEED_KNOB">
+					<False>
+						<HITBOX_UP_NODE_ID>AUTOPILOT_Knob_VerticalSpeed_DN#SUFFIX_ID#</HITBOX_UP_NODE_ID>
+						<HITBOX_DOWN_NODE_ID>AUTOPILOT_Knob_VerticalSpeed_UP#SUFFIX_ID#</HITBOX_DOWN_NODE_ID>
+						<NODE_ID>AUTOPILOT_Knob_VerticalSpeed_Visual#SUFFIX_ID#</NODE_ID>
+					</False>
+				</Condition>
+			</UseTemplate>
+		</False>
+	</Condition>
+	<!-- NAV -->
+	<Condition Check="NO_NAV">
+		<False>
+			<UseTemplate Name="AUTOPILOT_Push_Navigation_Template">
+			</UseTemplate>
+		</False>
+	</Condition>
+	<!-- VNAV -->
+	<Condition Check="NO_VNAV">
+		<False>
+			<UseTemplate Name="AUTOPILOT_Push_VerticalNavigation_Template">
+			</UseTemplate>
+		</False>
+	</Condition>	
+	<!-- SPEED -->	
+	<Condition Check="NO_SPEED">
+		<False>
+			<Switch>
+				<Case Check="MODE_IAS_MACH_SPEED_KNOB">
+					<UseTemplate Name="AUTOPILOT_Knob_Speed_Template">
+					</UseTemplate>
+				</Case>
+				<Default>
+					<Switch>
+						<Case Check="NO_SPEED_TOGGLE_BTN">
+							<UseTemplate Name="AUTOPILOT_Push_Speed_Template">
+							</UseTemplate>
+						</Case>
+						<Default>
+							<UseTemplate Name="AUTOPILOT_Push_SpeedToggle_Template">
+							</UseTemplate>
+						</Default>
+					</Switch>
+					<Condition Check="NO_SPEED_KNOB">
+						<False>
+							<UseTemplate Name="AUTOPILOT_Knob_SpeedMach_Template">
+								<Condition Valid="SPEED_KNOB_TYPE">
+									<TYPE>#SPEED_KNOB_TYPE#</TYPE>
+								</Condition>
+							</UseTemplate>
+						</False>
+					</Condition>
+				</Default>
+			</Switch>
+		</False>
+	</Condition>
+	<!-- AP Transfer -->
+	<Condition Check="NO_TRANSFER">
+		<False>
+			<UseTemplate Name="AUTOPILOT_Push_Transfer_Template">
+			</UseTemplate>
+		</False>
+	</Condition>
+	<!-- COURSE -->
+	<Condition Check="NO_COURSE">
+		<False>
+			<UseTemplate Name="GT_Helper_Recursive_ID">
+				<PUSH/>
+				<!-- VV Recursive parameters VV -->
+				<EXIT_TEMPLATE>AUTOPILOT_Knob_Course_Template</EXIT_TEMPLATE>
+				<MAX_ID>#CRS_COUNT#</MAX_ID>
+				<!-- Dyn param -->
+				<!-- NODE_ID -->
+				<PROCESS_PARAM2>True</PROCESS_PARAM2>
+				<PARAM2>NODE_ID</PARAM2>
+				<PARAM2_PREFIX>COURSE_KNOB_</PARAM2_PREFIX>
+				<PARAM2_SUFFIX>_NODE_ID</PARAM2_SUFFIX>
+				<!-- ANIM_NAME -->
+				<PROCESS_PARAM3>True</PROCESS_PARAM3>
+				<PARAM3>ANIM_NAME</PARAM3>
+				<PARAM3_PREFIX>COURSE_KNOB_</PARAM3_PREFIX>
+				<PARAM3_SUFFIX>_ANIM_NAME</PARAM3_SUFFIX>
+				<!-- ANIM_NAME_PUSH -->
+				<PROCESS_PARAM3>True</PROCESS_PARAM3>
+				<PARAM3>ANIM_NAME_PUSH</PARAM3>
+				<PARAM3_PREFIX>COURSE_KNOB_</PARAM3_PREFIX>
+				<PARAM3_SUFFIX>_ANIM_NAME_PUSH</PARAM3_SUFFIX>
+			</UseTemplate>
+		</False>
+	</Condition>
+	<!-- DISC -->	
+	<Condition Check="NO_AUTOPILOT_DISC">
+		<False>
+			<UseTemplate Name="AUTOPILOT_Push_Disconnect_Template">
+				<Condition Valid="AUTOPILOT_DISC_TOGGLEABLE">
+					<True>
+						<TOGGLEABLE>True</TOGGLEABLE>
+					</True>
+				</Condition>
+			</UseTemplate>
+		</False>
+	</Condition>
+	<!-- LVL -->
+	<Condition Check="NO_LEVEL">
+		<False>
+			<UseTemplate Name="AUTOPILOT_Push_Level_Template">
+			</UseTemplate>
+		</False>
+	</Condition>
+</Template>
+<!-- Autopilot pushs -->
+<Template Name="AUTOPILOT_Update_Autopilot_Match_Simvar">
+	<OverrideTemplateParameters>
+		<Switch Param="AP_COUNT">
+			<Case Value="3">
+				<XMLVAR_VALUE>
+					(L:XMLVAR_Autopilot_1_Status) (L:XMLVAR_Autopilot_2_Status) or (L:XMLVAR_Autopilot_3_Status) or
+				</XMLVAR_VALUE>
+				<XMLVAR_SETTER>
+					sp1
+					l1 (&gt;L:XMLVAR_Autopilot_1_Status) 
+					l1 (&gt;L:XMLVAR_Autopilot_2_Status) 
+					l1 (&gt;L:XMLVAR_Autopilot_3_Status)
+				</XMLVAR_SETTER>
+			</Case>
+			<Case Value="2">
+				<XMLVAR_VALUE>
+					(L:XMLVAR_Autopilot_1_Status) (L:XMLVAR_Autopilot_2_Status) or
+				</XMLVAR_VALUE>
+				<XMLVAR_SETTER>
+					sp1
+					l1 (&gt;L:XMLVAR_Autopilot_1_Status) 
+					l1 (&gt;L:XMLVAR_Autopilot_2_Status) 
+				</XMLVAR_SETTER>
+			</Case>
+		</Switch>
+	</OverrideTemplateParameters>
+
+	<UseTemplate Name="GT_Update">
+		<FREQUENCY>2</FREQUENCY>
+		<UPDATE_CODE>
+			#XMLVAR_VALUE# (A:AUTOPILOT MASTER, Bool) s0 != if{
+				l0 if{
+					0 #XMLVAR_SETTER#
+					1 (&gt;L:XMLVAR_Autopilot_1_Status) 
+				} els{
+					l0 #XMLVAR_SETTER#
+				}
+			}
+		</UPDATE_CODE>
+	</UseTemplate>
+</Template>
+
+<Template Name="AUTOPILOT_Push_Autopilot_Template">
+	<DefaultTemplateParameters> 
+		<DEFAULT_NAME>Autopilot</DEFAULT_NAME>
+		<HELPID>HELPID_AUTOPILOT_MASTER</HELPID>
+		<TOOLTIPID>%((A:AUTOPILOT MASTER, bool))%{if}TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_AP_ON%{else}TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_AP_OFF%{end}</TOOLTIPID>
+		<AP_COUNT>1</AP_COUNT>
+		<ID>1</ID>
+		<ON_AP_MASTER_SWITCH></ON_AP_MASTER_SWITCH>
+	</DefaultTemplateParameters>
+	<OverrideTemplateParameters>
+		<Switch Param="TYPE">
+			<Case Value="EXCLUSIVE_AP">
+				<Switch Param="AP_COUNT">
+					<Case Value="3">
+						<RESET_CODE>
+							1 #ID# != if{ 0 (&gt;L:XMLVAR_Autopilot_1_Status) }
+							2 #ID# != if{ 0 (&gt;L:XMLVAR_Autopilot_2_Status) }
+							3 #ID# != if{ 0 (&gt;L:XMLVAR_Autopilot_3_Status) }
+						</RESET_CODE>
+					</Case>
+					<Case Value="2">
+						<RESET_CODE>
+							1 #ID# != if{ 0 (&gt;L:XMLVAR_Autopilot_1_Status) }
+							2 #ID# != if{ 0 (&gt;L:XMLVAR_Autopilot_2_Status) }
+						</RESET_CODE>
+					</Case>
+				</Switch>
+				<TEST_CODE>1</TEST_CODE>
+				<Condition Check="ID" Match="1">
+					<True>
+						<INIT>(A:AUTOPILOT MASTER, Bool) (&gt;L:XMLVAR_Autopilot_#ID#_Status)</INIT>
+					</True>
+				</Condition>
+			</Case>
+			<Case Value="ONLY_IF_DISCONNECTED">
+				<TEST_CODE> (A:AUTOPILOT MASTER, Bool) ! </TEST_CODE>
+				<RESET_CODE></RESET_CODE>
+				<Condition Check="ID" Match="1">
+					<True>
+						<INIT>(A:AUTOPILOT MASTER, Bool) (&gt;L:XMLVAR_Autopilot_#ID#_Status)</INIT>
+					</True>
+				</Condition>
+			</Case>
+			<Default>
+				<RESET_CODE></RESET_CODE>
+				<TEST_CODE>1</TEST_CODE>
+				<INIT>(A:AUTOPILOT MASTER, Bool) (&gt;L:XMLVAR_Autopilot_#ID#_Status)</INIT>
+			</Default>
+		</Switch>
+		<Condition Valid="ALL_AP_ON_APPR">
+			<True>
+				<APPR_CONDITION>(A:AUTOPILOT APPROACH HOLD, Bool) (A:AUTOPILOT GLIDESLOPE HOLD, Bool) and (A:AUTOPILOT MASTER, Bool) and</APPR_CONDITION>
+			</True>
+			<False>
+				<APPR_CONDITION>0</APPR_CONDITION>
+			</False>
+		</Condition>
+	</OverrideTemplateParameters>
+	<Condition Check="ID" Match="1">
+		<True>
+			<UseTemplate Name="GT_Update">
+				<FREQUENCY>3</FREQUENCY>
+				<Switch Param="AP_COUNT">
+					<Case Value="3">
+						<UPDATE_CODE>
+							(A:AUTOPILOT MASTER, Bool) (L:XMLVAR_Autopilot_1_Status) (L:XMLVAR_Autopilot_2_Status) or (L:XMLVAR_Autopilot_3_Status) or != if{
+								#RESET_CODE#
+								(A:AUTOPILOT MASTER, Bool) (&gt;L:XMLVAR_Autopilot_#ID#_Status) 
+							}
+						</UPDATE_CODE>
+					</Case>
+					<Case Value="2">
+						<UPDATE_CODE>
+							(A:AUTOPILOT MASTER, Bool) (L:XMLVAR_Autopilot_1_Status) (L:XMLVAR_Autopilot_2_Status) or != if{
+								#RESET_CODE#
+								(A:AUTOPILOT MASTER, Bool) (&gt;L:XMLVAR_Autopilot_#ID#_Status) 
+							}
+						</UPDATE_CODE>
+					</Case>
+				</Switch>
+			</UseTemplate>
+		</True>
+	</Condition>
+	<UseTemplate Name="AUTOPILOT_Push_Template">
+		<Switch Param="AP_COUNT">
+			<Case Value="3">
+				<LEFT_SINGLE_CODE>
+					(A:AUTOPILOT DISENGAGED, Bool) ! #TEST_CODE# and if{
+						#RESET_CODE#
+						(L:XMLVAR_Autopilot_#ID#_Status) ! (&gt;L:XMLVAR_Autopilot_#ID#_Status)
+						(L:XMLVAR_Autopilot_1_Status) (L:XMLVAR_Autopilot_2_Status) or (L:XMLVAR_Autopilot_3_Status) or
+						(A:AUTOPILOT MASTER, Bool) != if{
+							(&gt;K:AP_MASTER)
+							(A:AUTOPILOT MASTER, Bool) ! if{
+								0 (&gt;L:XMLVAR_Autopilot_#ID#_Status) 
+							}
+						}
+					}
+				</LEFT_SINGLE_CODE>
+				<EMISSIVE_CODE_ACTIVE>#APPR_CONDITION# (A:AUTOPILOT MASTER, Bool) (L:XMLVAR_Autopilot_#ID#_Status) and or</EMISSIVE_CODE_ACTIVE>  
+			</Case>
+			<Case Value="2">
+				<LEFT_SINGLE_CODE>
+					(A:AUTOPILOT DISENGAGED, Bool) ! #TEST_CODE# and  if{
+						#RESET_CODE#
+						(L:XMLVAR_Autopilot_#ID#_Status) ! (&gt;L:XMLVAR_Autopilot_#ID#_Status)
+						(L:XMLVAR_Autopilot_1_Status) (L:XMLVAR_Autopilot_2_Status) or
+						(A:AUTOPILOT MASTER, Bool) != if{
+							(&gt;K:AP_MASTER)
+							(A:AUTOPILOT MASTER, Bool) ! if{
+								0 (&gt;L:XMLVAR_Autopilot_#ID#_Status) 
+							}
+						}
+					}
+				</LEFT_SINGLE_CODE>
+				<EMISSIVE_CODE_ACTIVE>#APPR_CONDITION# (A:AUTOPILOT MASTER, Bool) (L:XMLVAR_Autopilot_#ID#_Status) and or</EMISSIVE_CODE_ACTIVE>  
+			</Case>
+			<Default>
+				<LEFT_SINGLE_CODE>
+					(A:AUTOPILOT DISENGAGED, Bool) ! if{
+						(&gt;K:AP_MASTER) #ON_AP_MASTER_SWITCH#
+					}
+				</LEFT_SINGLE_CODE>
+				<EMISSIVE_SIMVAR_ACTIVE>AUTOPILOT MASTER</EMISSIVE_SIMVAR_ACTIVE>  
+			</Case>
+		</Switch>
+	</UseTemplate>
+</Template>
+<Template Name="AUTOPILOT_Push_Disconnect_Template">
+	<DefaultTemplateParameters> 
+		<DEFAULT_NAME>Disconnect</DEFAULT_NAME>
+		<ID>1</ID>
+		<Condition Check="TOGGLEABLE">
+			<True>
+				<ANIM_CODE>(A:AUTOPILOT DISENGAGED, Bool) 100 *</ANIM_CODE>
+			</True>
+		</Condition>
+		<AUTOPILOT_PUSH_BUTTON_ON>autopilot_disconnect_button_on</AUTOPILOT_PUSH_BUTTON_ON>
+		<AUTOPILOT_PUSH_BUTTON_OFF>autopilot_disconnect_button_off</AUTOPILOT_PUSH_BUTTON_OFF>
+	</DefaultTemplateParameters>
+	<EditableTemplateParameters>
+		<AddOptions>
+			<TOGGLEABLE/>
+		</AddOptions>
+	</EditableTemplateParameters>
+	<OverrideTemplateParameters>
+		<Condition Valid="RESET_XMLVARS">
+			<True>
+				<XMLVAR_RESET_CODE>
+					0 (&gt;L:XMLVAR_Autopilot_1_Status) 
+					#AP_COUNT# 2 &gt;= if{ 0 (&gt;L:XMLVAR_Autopilot_2_Status) }
+					#AP_COUNT# 3 &gt;= if{ 0 (&gt;L:XMLVAR_Autopilot_3_Status) }
+				</XMLVAR_RESET_CODE>
+			</True>
+			<False>
+				<XMLVAR_RESET_CODE></XMLVAR_RESET_CODE>
+			</False>
+		</Condition>
+	</OverrideTemplateParameters>
+	<UseTemplate Name="AUTOPILOT_Push_Template">
+		<LEFT_SINGLE_CODE>
+			(A:AUTOPILOT DISENGAGED, Bool) if{ 
+				0 (&gt;K:AUTOPILOT_DISENGAGE_SET)
+			} els{ 
+				1 (&gt;K:AUTOPILOT_DISENGAGE_SET)
+				#XMLVAR_RESET_CODE#
+			}
+		</LEFT_SINGLE_CODE>
+		<EMISSIVE_SIMVAR_ACTIVE>AUTOPILOT DISENGAGED</EMISSIVE_SIMVAR_ACTIVE>
+		<TOOLTIPID>%((A:AUTOPILOT DISENGAGED, BOOL))%{if}TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_YD_AP_DISC_ON%{else}TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_YD_AP_DISC_OFF%{end}</TOOLTIPID>
+	</UseTemplate>
+</Template>
+<Template Name="AUTOPILOT_Push_Heading_Template">
+	<DefaultTemplateParameters>
+		<DEFAULT_NAME>Heading</DEFAULT_NAME>
+		<HELPID>HELPID_AUTOPILOT_HEADING_HOLD</HELPID>
+		<Switch Param="TYPE">
+			<Case Value="B747">
+				<TOOLTIPID>TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_HDG_PUSH</TOOLTIPID>
+				<LEFT_SINGLE_CODE>
+					(&gt;K:AP_HDG_HOLD_ON)
+					(&gt;H:B747_8_FMC_1_AP_HEADING_HOLD)
+				</LEFT_SINGLE_CODE>
+				<EMISSIVE_CODE_ACTIVE>(L:AP_HEADING_HOLD_ACTIVE)</EMISSIVE_CODE_ACTIVE> 
+			</Case>
+			<Case Value="AS01B">
+				<TOOLTIPID>TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_HDG_PUSH</TOOLTIPID>
+				<LEFT_SINGLE_CODE>
+					(&gt;K:AP_HDG_HOLD_ON)
+					(&gt;H:AS01B_FMC_1_AP_HEADING_HOLD)
+				</LEFT_SINGLE_CODE>
+				<EMISSIVE_CODE_ACTIVE>(L:AP_HEADING_HOLD_ACTIVE)</EMISSIVE_CODE_ACTIVE> 
+			</Case>
+			<Default>
+				<TOOLTIPID>%((A:AUTOPILOT HEADING LOCK, BOOL))%{if}TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_HDG_BUTTON_ON%{else}TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_HDG_BUTTON_OFF%{end}</TOOLTIPID>
+				<LEFT_SINGLE_CODE>(&gt;K:AP_PANEL_HEADING_HOLD)</LEFT_SINGLE_CODE>
+				<EMISSIVE_SIMVAR_ACTIVE>AUTOPILOT HEADING LOCK</EMISSIVE_SIMVAR_ACTIVE>
+			</Default>
+		</Switch>
+	</DefaultTemplateParameters>
+	<UseTemplate Name="AUTOPILOT_Push_Template">
+	</UseTemplate>
+</Template>
+	
+<Template Name="AUTOPILOT_Push_Bank_Template">
+	<DefaultTemplateParameters>
+		<Condition Valid="REVERSE_ACTIVE_CONDITION">
+			<True>
+				<REVERSAL_PARAM> ! </REVERSAL_PARAM>
+			</True>
+			<False>
+				<REVERSAL_PARAM></REVERSAL_PARAM>
+			</False>
+		</Condition>
+	</DefaultTemplateParameters>
+	
+	<UseTemplate Name="AUTOPILOT_Push_Bank_SubTemplate">
+	</UseTemplate>
+</Template>
+<Template Name="AUTOPILOT_Push_Bank_SubTemplate">
+	<DefaultTemplateParameters> 
+		<MAX_BANK_DEGREES>30</MAX_BANK_DEGREES>
+		<DEFAULT_NAME>Bank</DEFAULT_NAME>
+		<TOOLTIPID>%((A:AUTOPILOT MAX BANK, degrees) 26 &lt; #REVERSAL_PARAM#)%{if}TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_BANK_OFF%{else}TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_BANK_ON%{end}</TOOLTIPID>
+	</DefaultTemplateParameters>
+	<UseTemplate Name="AUTOPILOT_Push_Template">
+		<LEFT_SINGLE_CODE>
+			(&gt;K:AP_MAX_BANK_INC)
+		</LEFT_SINGLE_CODE>  
+		<EMISSIVE_CODE_ACTIVE>(A:AUTOPILOT MAX BANK, degrees) #MAX_BANK_DEGREES# - abs 0.1 &lt; #REVERSAL_PARAM#</EMISSIVE_CODE_ACTIVE>
+	</UseTemplate>
+</Template>
+<Template Name="AUTOPILOT_Push_Localizer_Template">
+	<DefaultTemplateParameters>
+		<DEFAULT_NAME>Localizer</DEFAULT_NAME>
+		<HELPID>HELPID_AUTOPILOT_NAV_HOLD</HELPID>
+		<TOOLTIPID>%((A:AUTOPILOT APPROACH HOLD, Bool) (A:AUTOPILOT GLIDESLOPE HOLD, Bool) ! and)%{if}TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_LOC_ON%{else}TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_LOC_OFF%{end}</TOOLTIPID>
+	</DefaultTemplateParameters>
+	<UseTemplate Name="AUTOPILOT_Push_Template">
+		<!-- To APPROACH and LOCALIZER are the same as far as toggling, so has to toggle twice if already active from other mode -->
+		<LEFT_SINGLE_CODE>
+			(A:AUTOPILOT APPROACH HOLD, Bool) (A:AUTOPILOT GLIDESLOPE HOLD, Bool) and if{ (&gt;K:AP_LOC_HOLD) }
+			(&gt;K:AP_LOC_HOLD)
+		</LEFT_SINGLE_CODE>
+		<EMISSIVE_CODE_ACTIVE>
+			(A:AUTOPILOT APPROACH HOLD, Bool) (A:AUTOPILOT GLIDESLOPE HOLD, Bool) ! and
+		</EMISSIVE_CODE_ACTIVE>
+	</UseTemplate>
+</Template>
+<Template Name="AUTOPILOT_Push_Approach_Template">
+	<DefaultTemplateParameters>
+		<MAX_BANK_DEGREES>30</MAX_BANK_DEGREES>
+		<DEFAULT_NAME>Approach</DEFAULT_NAME>
+		<HELPID>HELPID_AUTOPILOT_APP_HOLD</HELPID>
+		<TOOLTIPID>%((A:AUTOPILOT APPROACH HOLD, Bool) (A:AUTOPILOT GLIDESLOPE HOLD, Bool) and)%{if}TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_APR_ON%{else}TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_APR_OFF%{end}</TOOLTIPID>
+	</DefaultTemplateParameters>
+	<OverrideTemplateParameters>
+		<Condition Valid="DISABLE_GPS_MODE">
+			<True>
+				<GPS_DISABLE_CODE>(A:GPS DRIVES NAV1, Bool) if{ (&gt;K:TOGGLE_GPS_DRIVES_NAV1) }</GPS_DISABLE_CODE>
+			</True>
+			<False>
+				<GPS_DISABLE_CODE></GPS_DISABLE_CODE>
+			</False>
+		</Condition>
+	</OverrideTemplateParameters>
+	
+	<UseTemplate Name="AUTOPILOT_Push_Template">
+		<LEFT_SINGLE_CODE>
+			#GPS_DISABLE_CODE# 
+			(A:AUTOPILOT APPROACH HOLD, Bool) (A:AUTOPILOT GLIDESLOPE HOLD, Bool) ! and if{ (&gt;K:AP_APR_HOLD) }
+			(&gt;K:AP_APR_HOLD)
+		</LEFT_SINGLE_CODE>
+		<EMISSIVE_CODE_ACTIVE>
+			(A:AUTOPILOT APPROACH HOLD, Bool) (A:AUTOPILOT GLIDESLOPE HOLD, Bool) and
+		</EMISSIVE_CODE_ACTIVE>
+	</UseTemplate>
+</Template>
+<Template Name="AUTOPILOT_Push_BackCourse_Template">
+	<DefaultTemplateParameters>
+		<DEFAULT_NAME>BackCourse</DEFAULT_NAME>
+		<HELPID>HELPID_AUTOPILOT_BC_HOLD</HELPID>
+		<TOOLTIPID>%((A:AUTOPILOT BACKCOURSE HOLD, bool))%{if}TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_BC_ON%{else}TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_BC_OFF%{end}</TOOLTIPID> 
+	</DefaultTemplateParameters>
+	<UseTemplate Name="AUTOPILOT_Push_Template">
+		<LEFT_SINGLE_CODE>(&gt;K:AP_BC_HOLD)</LEFT_SINGLE_CODE>
+		<EMISSIVE_SIMVAR_ACTIVE>AUTOPILOT BACKCOURSE HOLD</EMISSIVE_SIMVAR_ACTIVE>
+	</UseTemplate>
+</Template>
+<Template Name="AUTOPILOT_Push_FlightDirector_Template">
+	<DefaultTemplateParameters>
+		<ID>1</ID>
+	</DefaultTemplateParameters>
+	
+	<UseTemplate Name="AUTOPILOT_Push_FlightDirector_SubTemplate">
+	</UseTemplate>
+</Template>
+<Template Name="AUTOPILOT_Push_YawDamper_Template">
+	<DefaultTemplateParameters>
+		<DEFAULT_NAME>YawDamper</DEFAULT_NAME>
+		<TOOLTIPID>%((A:AUTOPILOT YAW DAMPER, bool))%{if}TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_YD_ON%{else}TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_YD_OFF%{end}</TOOLTIPID>
+	</DefaultTemplateParameters>
+	<UseTemplate Name="AUTOPILOT_Push_Template">
+		<LEFT_SINGLE_CODE>(&gt;K:YAW_DAMPER_TOGGLE)</LEFT_SINGLE_CODE>
+		<EMISSIVE_SIMVAR_ACTIVE>AUTOPILOT YAW DAMPER</EMISSIVE_SIMVAR_ACTIVE>
+	</UseTemplate>
+</Template>
+<Template Name="AUTOPILOT_Push_Altitude_Template">
+	<DefaultTemplateParameters>
+		<DEFAULT_NAME>Altitude</DEFAULT_NAME>
+		<HELPID>HELPID_AUTOPILOT_ALTITUDE_HOLD</HELPID>
+		<TOOLTIPID>%((A:AUTOPILOT ALTITUDE LOCK, bool))%{if}TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_ALT_ON%{else}TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_ALT_OFF%{end}</TOOLTIPID>
+		<ON_ALTITUDE_MODE_SWITCH></ON_ALTITUDE_MODE_SWITCH>
+	</DefaultTemplateParameters>
+	<UseTemplate Name="AUTOPILOT_Push_Template">
+		<Switch Param="TYPE">
+			<Case Value="B747">
+				<LEFT_SINGLE_CODE>(&gt;H:B747_8_FMC_1_AP_ALT_HOLD)</LEFT_SINGLE_CODE>
+				<EMISSIVE_CODE_ACTIVE>(L:AP_ALT_HOLD_ACTIVE)</EMISSIVE_CODE_ACTIVE> 
+			</Case>
+			<Case Value="AS01B">
+				<LEFT_SINGLE_CODE>(&gt;H:AS01B_FMC_1_AP_ALT_HOLD)</LEFT_SINGLE_CODE>
+				<EMISSIVE_CODE_ACTIVE>(L:AP_ALT_HOLD_ACTIVE)</EMISSIVE_CODE_ACTIVE> 
+			</Case>
+			<Default>
+				<LEFT_SINGLE_CODE>(&gt;K:AP_ALT_HOLD) #ON_ALTITUDE_MODE_SWITCH#</LEFT_SINGLE_CODE>
+				<EMISSIVE_SIMVAR_ACTIVE>AUTOPILOT ALTITUDE LOCK</EMISSIVE_SIMVAR_ACTIVE>
+			</Default>
+		</Switch>
+	</UseTemplate>
+</Template>
+<Template Name="AUTOPILOT_Push_FlightLevelChange_Template">
+	<DefaultTemplateParameters>
+		<DEFAULT_NAME>FlightLevelChange</DEFAULT_NAME>
+		<HELPID>HELPID_AUTOPILOT_ALTITUDE_HOLD</HELPID>
+		<TOOLTIPID>%((A:AUTOPILOT FLIGHT LEVEL CHANGE, BOOL))%{if}TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_FLC_ON%{else}TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_FLC_OFF%{end}</TOOLTIPID> 
+
+	</DefaultTemplateParameters>
+	<UseTemplate Name="AUTOPILOT_Push_Template">
+		<Switch Param="TYPE">
+			<Case Value="B747">
+				<LEFT_SINGLE_CODE>(&gt;H:B747_8_FMC_1_AP_FLCH)</LEFT_SINGLE_CODE>
+				<EMISSIVE_CODE_ACTIVE>(L:AP_FLCH_ACTIVE)</EMISSIVE_CODE_ACTIVE> 
+			</Case>
+			<Case Value="AS01B">
+				<LEFT_SINGLE_CODE>(&gt;H:AS01B_FMC_1_AP_FLCH)</LEFT_SINGLE_CODE>
+				<EMISSIVE_CODE_ACTIVE>(L:AP_FLCH_ACTIVE)</EMISSIVE_CODE_ACTIVE> 
+			</Case>
+			<Default>
+				<LEFT_SINGLE_CODE>
+					(&gt;K:FLIGHT_LEVEL_CHANGE)
+					(A:AIRSPEED INDICATED, knots) (&gt;K:AP_SPD_VAR_SET)
+				</LEFT_SINGLE_CODE>
+				<EMISSIVE_SIMVAR_ACTIVE>AUTOPILOT FLIGHT LEVEL CHANGE</EMISSIVE_SIMVAR_ACTIVE>
+			</Default>
+		</Switch>
+	</UseTemplate>
+</Template>
+<Template Name="AUTOPILOT_Push_VerticalSpeed_Template">
+	<DefaultTemplateParameters>
+		<DEFAULT_NAME>VerticalSpeed</DEFAULT_NAME>
+		<TOOLTIPID>%((A:AUTOPILOT VERTICAL HOLD, bool))%{if}TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_VS_ON%{else}TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_VS_OFF%{end}</TOOLTIPID>
+	</DefaultTemplateParameters>
+	<UseTemplate Name="AUTOPILOT_Push_Template">
+		<Switch Param="TYPE">
+			<Case Value="B747">
+				<LEFT_SINGLE_CODE>(&gt;H:B747_8_FMC_1_AP_VSPEED)</LEFT_SINGLE_CODE>
+				<EMISSIVE_CODE_ACTIVE>(L:AP_VS_ACTIVE)</EMISSIVE_CODE_ACTIVE> 
+			</Case>
+			<Case Value="AS01B">
+				<LEFT_SINGLE_CODE>(&gt;H:AS01B_FMC_1_AP_VSPEED)</LEFT_SINGLE_CODE>
+				<EMISSIVE_CODE_ACTIVE>(L:AP_VS_ACTIVE)</EMISSIVE_CODE_ACTIVE> 
+			</Case>
+			<Default>
+				<LEFT_SINGLE_CODE>(&gt;K:AP_PANEL_VS_HOLD)</LEFT_SINGLE_CODE>
+				<EMISSIVE_SIMVAR_ACTIVE>AUTOPILOT VERTICAL HOLD</EMISSIVE_SIMVAR_ACTIVE>
+			</Default>
+		</Switch>
+	</UseTemplate>
+</Template>
+<Template Name="AUTOPILOT_Push_Navigation_Template">
+	<DefaultTemplateParameters>
+		<DEFAULT_NAME>Navigation</DEFAULT_NAME>
+		<HELPID>HELPID_AUTOPILOT_NAV_HOLD</HELPID>
+		<TOOLTIPID>%((A:AUTOPILOT NAV1 LOCK, bool))%{if}TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_NAV_ON%{else}TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_NAV_OFF%{end}</TOOLTIPID>
+	</DefaultTemplateParameters>
+	<UseTemplate Name="AUTOPILOT_Push_Template">
+		<Switch Param="TYPE">
+			<Case Value="B747">
+				<LEFT_SINGLE_CODE>
+					(&gt;H:B747_8_FMC_1_AP_LNAV)
+				</LEFT_SINGLE_CODE>
+				<EMISSIVE_CODE_ACTIVE>(L:AP_LNAV_ARMED)</EMISSIVE_CODE_ACTIVE> 
+			</Case>
+			<Case Value="AS01B">
+				<LEFT_SINGLE_CODE>
+					(&gt;H:AS01B_FMC_1_AP_LNAV)
+				</LEFT_SINGLE_CODE>
+				<EMISSIVE_CODE_ACTIVE>(L:AP_LNAV_ARMED)</EMISSIVE_CODE_ACTIVE> 
+			</Case>
+			<Default>
+				<LEFT_SINGLE_CODE>
+					(&gt;K:AP_NAV1_HOLD)
+				</LEFT_SINGLE_CODE>
+				<EMISSIVE_SIMVAR_ACTIVE>AUTOPILOT NAV1 LOCK</EMISSIVE_SIMVAR_ACTIVE>
+			</Default>
+		</Switch>
+	</UseTemplate>
+</Template>
+<Template Name="AUTOPILOT_Push_Vertical_Navigation_Template">
+	<DefaultTemplateParameters>
+		<DEFAULT_NAME>VerticalNavigation</DEFAULT_NAME>
+		<PLANE_PREFIX></PLANE_PREFIX>
+	</DefaultTemplateParameters>
+	<UseTemplate Name="AUTOPILOT_Push_Template">
+		<Switch Param="TYPE">
+			<Case Value="B747">
+				<LEFT_SINGLE_CODE>(&gt;H:B747_8_FMC_1_AP_VNAV)</LEFT_SINGLE_CODE>
+			</Case>
+			<Case Value="AS01B">
+				<LEFT_SINGLE_CODE>(&gt;H:AS01B_FMC_1_AP_VNAV)</LEFT_SINGLE_CODE>
+			</Case>
+		</Switch>
+		<EMISSIVE_CODE_ACTIVE>(L:AP_VNAV_ARMED)</EMISSIVE_CODE_ACTIVE> 
+		<TOOLTIPID>%((A:AUTOPILOT NAV1 LOCK, bool))%{if}TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_VNAV_ON%{else}TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_VNAV_OFF%{end}</TOOLTIPID>
+	</UseTemplate>
+</Template>
+<Template Name="AUTOPILOT_Push_Level_Template">
+	<DefaultTemplateParameters>
+		<DEFAULT_NAME>Level</DEFAULT_NAME>
+	</DefaultTemplateParameters>
+	<UseTemplate Name="AUTOPILOT_Push_Template">
+		<LEFT_SINGLE_CODE>
+			(&gt;K:AP_WING_LEVELER) 
+			(A:AUTOPILOT WING LEVELER, Bool) if{
+				(&gt;K:AP_PITCH_LEVELER_ON)
+			} els{
+				(&gt;K:AP_PITCH_LEVELER_OFF)
+			}
+		</LEFT_SINGLE_CODE>
+		<EMISSIVE_SIMVAR_ACTIVE>AUTOPILOT WING LEVELER</EMISSIVE_SIMVAR_ACTIVE>
+		<TOOLTIPID>%((A:AUTOPILOT WING LEVELER, Bool))%{if}TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_LVL_ON%{else}TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_LVL_OFF%{end}</TOOLTIPID>
+	</UseTemplate>
+</Template>
+<Template Name="AUTOPILOT_Push_AutoThrottle_Template">
+	<DefaultTemplateParameters>
+		<Condition Valid="ID">
+			<True>
+				<SIMVAR_ID_SUFFIX>:#ID#</SIMVAR_ID_SUFFIX>
+			</True>
+			<False>
+				<SIMVAR_ID_SUFFIX></SIMVAR_ID_SUFFIX>
+				<ID>0</ID>
+			</False>
+		</Condition>
+	</DefaultTemplateParameters>
+	<UseTemplate Name="AUTOPILOT_Push_AutoThrottle_SubTemplate">
+	</UseTemplate>
+</Template>
+
+<Template Name="AUTOPILOT_Push_AutoThrottle_SubTemplate">
+	<DefaultTemplateParameters>
+		<DEFAULT_NAME>AutoThrottle</DEFAULT_NAME>
+		<ANIMTIP_0>TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_AUTOTHROTTLE_OFF</ANIMTIP_0>
+		<ANIMTIP_1>TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_AUTOTHROTTLE_ARMED</ANIMTIP_1>
+	</DefaultTemplateParameters>
+	<EditableTemplateParameters>
+		<AddOptions>
+			<TOGGLEABLE/>
+		</AddOptions>
+	</EditableTemplateParameters>
+	<OverrideTemplateParameters>
+		<Switch Param="TYPE">
+			<Case Value="B747">
+				<LEFT_SINGLE_CODE>
+					(L:XMLVAR_AUTO_THROTTLE_ARM_#ID#_STATE) ! (&gt;L:XMLVAR_AUTO_THROTTLE_ARM_#ID#_STATE)
+					(L:XMLVAR_AUTO_THROTTLE_ARM_#ID#_STATE) (A:AUTOPILOT THROTTLE ARM#SIMVAR_ID_SUFFIX#, Bool) != if{
+						#ID# (&gt;K:AUTO_THROTTLE_ARM)
+					}
+				</LEFT_SINGLE_CODE>
+				<TOGGLEABLE/>
+				<ANIM_CODE>(L:XMLVAR_AUTO_THROTTLE_ARM_#ID#_STATE) 100 *</ANIM_CODE>
+				<NO_INDICATOR>True</NO_INDICATOR>
+				<NO_TEXT_EMISSIVE>True</NO_TEXT_EMISSIVE>
+			</Case>
+			<Default>
+				<LEFT_SINGLE_CODE>
+					#ID# (&gt;K:AUTO_THROTTLE_ARM)
+				</LEFT_SINGLE_CODE>
+				<EMISSIVE_SIMVAR_ACTIVE>AUTOPILOT THROTTLE ARM#SIMVAR_ID_SUFFIX#</EMISSIVE_SIMVAR_ACTIVE>
+				<Condition Check="TOGGLEABLE">
+					<True>
+						<ANIM_CODE>(A:AUTOPILOT THROTTLE ARM#SIMVAR_ID_SUFFIX#, Bool) 100 *</ANIM_CODE>
+					</True>
+				</Condition>
+			</Default>
+		</Switch>
+	</OverrideTemplateParameters>
+	
+	<Switch Param="TYPE">
+		<Case Value="B747">
+			<UseTemplate Name="GT_Update">
+				<!-- Load Initial State - then states are not linked -->
+				<UPDATE_CODE>
+					(A:AUTOPILOT THROTTLE ARM#SIMVAR_ID_SUFFIX#, Bool) (&gt;L:XMLVAR_AUTO_THROTTLE_ARM_#ID#_STATE)
+				</UPDATE_CODE>
+				<UPDATE_ONCE>True</UPDATE_ONCE>
+			</UseTemplate>
+		</Case>
+	</Switch>
+	
+	<UseTemplate Name="AUTOPILOT_Push_Template">
+	</UseTemplate>
+</Template>
+<Template Name="AUTOPILOT_Push_AutoThrottle_Disengage_Template">
+	<DefaultTemplateParameters>
+		<DEFAULT_NAME>AutoThrottle_Disengage</DEFAULT_NAME>
+		<PLANE_PREFIX></PLANE_PREFIX>
+		<TOOLTIPID>TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_AUTOTHROTTLE_ARMED</TOOLTIPID>
+	</DefaultTemplateParameters>
+	<OverrideTemplateParameters>
+		<Condition Valid="CLEARS_EICAS_WARNING">
+			<True>
+				<SECOND_CLICK_EFFECT>(&gt;H:#PLANE_PREFIX#_EICAS_ATHR_LEVER)</SECOND_CLICK_EFFECT>
+			</True>
+			<False>
+				<SECOND_CLICK_EFFECT></SECOND_CLICK_EFFECT>
+			</False>
+		</Condition>
+	</OverrideTemplateParameters>
+	
+	<UseTemplate Name="AUTOPILOT_Push_Template">
+		<LEFT_SINGLE_CODE>
+			(A:AUTOPILOT THROTTLE ARM, Bool) if{
+				(&gt;K:AUTO_THROTTLE_ARM)
+			} els{
+				#SECOND_CLICK_EFFECT#
+			}
+		</LEFT_SINGLE_CODE>
+	</UseTemplate>
+</Template>
+<Template Name="AUTOPILOT_Push_VerticalNavigation_Template">
+	<DefaultTemplateParameters>
+		<DEFAULT_NAME>VerticalNavigation</DEFAULT_NAME>
+		<EMISSIVE_DEFAULT_NAME>AUTOPILOT_Push_VerticalNavigation_Text</EMISSIVE_DEFAULT_NAME>
+	</DefaultTemplateParameters>
+	<UseTemplate Name="AUTOPILOT_Push_Template">
+		<LEFT_SINGLE_CODE>(L:XMLVAR_VNAVButtonValue) ! (&gt;L:XMLVAR_VNAVButtonValue)</LEFT_SINGLE_CODE>
+		<EMISSIVE_CODE_ACTIVE>(L:XMLVAR_VNAVButtonValue)</EMISSIVE_CODE_ACTIVE>
+		<TOOLTIPID>%((L:XMLVAR_VNAVButtonValue, bool))%{if}TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_VNV_ON%{else}TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_VNV_OFF%{end}</TOOLTIPID>
+	</UseTemplate>
+
+</Template>
+<Template Name="AUTOPILOT_Push_Speed_Template">
+	<DefaultTemplateParameters> 
+		<DEFAULT_NAME>Speed</DEFAULT_NAME>
+		<IS_MACH_CODE>0</IS_MACH_CODE>
+		<!-- <TOOLTIPID>%((A:AUTOPILOT AIRSPEED HOLD, Bool) (A:AUTOPILOT MACH HOLD, Bool) or)%{if}TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_AUTOTHROTTLE_SPD_TURN_OFF%{else}TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_AUTOTHROTTLE_SPD_TURN_ON%{end}</TOOLTIPID> -->
+		<TOOLTIPID>%((A:AUTOPILOT AIRSPEED HOLD, Bool) (A:AUTOPILOT MACH HOLD, Bool) or)%{if}TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_IAS_ON%{else}TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_IAS_OFF%{end}</TOOLTIPID>
+	</DefaultTemplateParameters>
+	<UseTemplate Name="AUTOPILOT_Push_Template">
+		<Switch Param="TYPE">
+			<Case Value="AS01B">
+				<LEFT_SINGLE_CODE>(&gt;H:AS01B_FMC_1_AP_SPD)</LEFT_SINGLE_CODE>
+				<EMISSIVE_CODE_ACTIVE>(L:AP_SPD_ACTIVE)</EMISSIVE_CODE_ACTIVE> 
+			</Case>
+			<Case Value="B747">
+				<LEFT_SINGLE_CODE>(&gt;H:B747_8_FMC_1_AP_SPD)</LEFT_SINGLE_CODE>
+				<EMISSIVE_CODE_ACTIVE>(L:AP_SPD_ACTIVE)</EMISSIVE_CODE_ACTIVE> 
+			</Case>
+			<Default>
+				<LEFT_SINGLE_CODE>
+						#IS_MACH_CODE#
+						if{	(&gt;K:AP_PANEL_MACH_HOLD) }
+						els{ (&gt;K:AP_PANEL_SPEED_HOLD) }
+				</LEFT_SINGLE_CODE>
+				<EMISSIVE_CODE_ACTIVE>(A:AUTOPILOT AIRSPEED HOLD, Bool) (A:AUTOPILOT MACH HOLD, Bool) or</EMISSIVE_CODE_ACTIVE>
+			</Default>
+		</Switch>
+	</UseTemplate>
+</Template>
+<Template Name="AUTOPILOT_Push_Thrust_Template">
+	<DefaultTemplateParameters> 
+		<DEFAULT_NAME>Thrust</DEFAULT_NAME>
+		<TOOLTIPID>%(0)%{if}TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_THR_ON%{else}TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_THR_OFF%{end}</TOOLTIPID> <!-- NOTE TO DEV : TELL SWem WHEN CORRESPONDING EMISSIVE CODE IS DEFINED PLEASE -->
+	</DefaultTemplateParameters>
+	<UseTemplate Name="AUTOPILOT_Push_Template">
+		<LEFT_SINGLE_CODE>
+			(&gt;H:AP_THRUST_MODE)
+		</LEFT_SINGLE_CODE>
+		<EMISSIVE_CODE_ACTIVE>0</EMISSIVE_CODE_ACTIVE> <!-- TODO -->
+	</UseTemplate>
+</Template>
+<Template Name="AUTOPILOT_Push_SpeedHold_Template">
+	<DefaultTemplateParameters> 
+		<DEFAULT_NAME>SpeedHold</DEFAULT_NAME>
+	</DefaultTemplateParameters>
+	<UseTemplate Name="AUTOPILOT_Push_Template">
+		<LEFT_SINGLE_CODE>
+			(&gt;K:AP_FLIGHT_LEVEL_CHANGE)
+		</LEFT_SINGLE_CODE>
+		<EMISSIVE_CODE_ACTIVE>(A:AUTOPILOT FLIGHT LEVEL CHANGE, Bool)</EMISSIVE_CODE_ACTIVE>
+	</UseTemplate>
+</Template>
+<Template Name="AUTOPILOT_Push_SpeedToggle_Template">
+	<DefaultTemplateParameters> 
+		<DEFAULT_NAME>SpeedToggle</DEFAULT_NAME>
+	</DefaultTemplateParameters>
+	<UseTemplate Name="AUTOPILOT_Push_Template">
+		<Switch Param="TYPE">
+			<Case Value="AIRBUS">
+				<LEFT_SINGLE_CODE>
+					(&gt;K:AP_MANAGED_SPEED_IN_MACH_TOGGLE)
+				</LEFT_SINGLE_CODE>
+				<EMISSIVE_CODE_ACTIVE>(A:AUTOPILOT MANAGED SPEED IN MACH, Bool)</EMISSIVE_CODE_ACTIVE>
+				<TOOLTIPID>%((A:AUTOPILOT MANAGED SPEED IN MACH, Bool))%{if}TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_SPD_MACH%{else}TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_SPD_KNOT%{end}</TOOLTIPID>
+			</Case>
+			<Default>
+				<LEFT_SINGLE_CODE>
+					(L:XMLVAR_AirSpeedIsInMach) ! (&gt;L:XMLVAR_AirSpeedIsInMach)
+				</LEFT_SINGLE_CODE>
+				<EMISSIVE_CODE_ACTIVE>(L:XMLVAR_AirSpeedIsInMach)</EMISSIVE_CODE_ACTIVE>
+				<TOOLTIPID>%((L:XMLVAR_AirSpeedIsInMach, bool))%{if}TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_SPD_MACH%{else}TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_SPD_KNOT%{end}</TOOLTIPID>
+			</Default>
+		</Switch>
+	</UseTemplate>
+</Template>
+<Template Name="AUTOPILOT_Push_Transfer_Template">
+	<DefaultTemplateParameters>
+		<DEFAULT_NAME>Transfer</DEFAULT_NAME>
+	</DefaultTemplateParameters>
+	<UseTemplate Name="AUTOPILOT_Push_Template">
+		<LEFT_SINGLE_CODE>(L:XMLVAR_PushXFR) ! (&gt;L:XMLVAR_PushXFR)</LEFT_SINGLE_CODE>
+		<NO_INDICATOR>True</NO_INDICATOR>
+		<TOOLTIPID>%((L:XMLVAR_PushXFR, bool))%{if}TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_XFR_ON%{else}TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_XFR_OFF%{end}</TOOLTIPID>
+	</UseTemplate>
+
+
+</Template>
+
+<Template Name="AUTOPILOT_Push_Transfer_Light_Template">
+	<DefaultTemplateParameters>
+		<LIGHT_ID>1</LIGHT_ID>
+	</DefaultTemplateParameters>
+	<UseTemplate Name="AUTOPILOT_Push_Transfer_Light_SubTemplate">
+	</UseTemplate>
+</Template>
+<Template Name="AUTOPILOT_Push_Transfer_Light_SubTemplate">
+	<DefaultTemplateParameters>
+		<NODE_ID>AUTOPILOT_Push_Transfer_Light_#LIGHT_ID#</NODE_ID>
+	</DefaultTemplateParameters>
+	<Component ID="#NODE_ID#" Node="#NODE_ID#">
+		<UseTemplate Name="GT_Emissive_Gauge">
+		</UseTemplate>
+	</Component>
+</Template>
+
+<Template Name="AUTOPILOT_Push_Standby_Template">
+	<DefaultTemplateParameters>
+		<NODE_ID>AUTOPILOT_Push_Standby</NODE_ID>
+		<ANIM_NAME>AUTOPILOT_Push_Standby</ANIM_NAME>
+		<PART_ID>AUTOPILOT_Push_Standby</PART_ID>
+		<DEFAULT_NAME>Standby</DEFAULT_NAME>
+	</DefaultTemplateParameters>
+	<UseTemplate Name="AUTOPILOT_Push_Template">
+		<LEFT_SINGLE_CODE>
+			(A:AUTOPILOT MASTER, Bool) if{
+				(* Turns off AP then turns it back on to go back to default modes. *)
+				(&gt;K:AUTOPILOT_OFF)
+				(&gt;K:AUTOPILOT_ON)
+			}
+		</LEFT_SINGLE_CODE>
+		<EMISSIVE_SIMVAR_ACTIVE>0</EMISSIVE_SIMVAR_ACTIVE>
+	</UseTemplate>
+</Template>
+
+<Template Name="AUTOPILOT_Push_VerticalSpeed_Direction_Template">
+	<DefaultTemplateParameters>
+		<DEFAULT_NAME>VerticalSpeed_#DIRECTION#</DEFAULT_NAME>
+	</DefaultTemplateParameters>
+	<EditableTemplateParameters>
+		<AddOptions>
+			<DIRECTION></DIRECTION>
+		</AddOptions>
+	</EditableTemplateParameters>
+	<UseTemplate Name="AUTOPILOT_Push_Template">
+		<Condition Check="DIRECTION" Match="UP">
+			<True>
+				<LEFT_SINGLE_CODE>(&gt;K:AP_VS_VAR_INC) (&gt;H:AP_DN)</LEFT_SINGLE_CODE>
+			</True>
+			<False>
+				<LEFT_SINGLE_CODE>(&gt;K:AP_VS_VAR_DEC) (&gt;H:AP_UP)</LEFT_SINGLE_CODE>
+			</False>
+		</Condition>
+		<EMISSIVE_SIMVAR_ACTIVE>AUTOPILOT VERTICAL HOLD</EMISSIVE_SIMVAR_ACTIVE>
+	</UseTemplate>
+</Template>
+<!-- Autopilot knobs -->
+<Template Name="AUTOPILOT_Knob_Heading_Template">
+	<DefaultTemplateParameters>
+		<ID>1</ID>
+	</DefaultTemplateParameters>
+	
+	<UseTemplate Name="GT_Helper_Suffix_ID_Appender">
+		<TEMPLATE_TO_CALL>AUTOPILOT_Knob_Heading_SubTemplate</TEMPLATE_TO_CALL>
+	</UseTemplate>
+</Template>
+
+<Template Name="AUTOPILOT_Knob_Bank_Limit_Template">
+	<DefaultTemplateParameters>
+		<SETTINGS_COUNT>2</SETTINGS_COUNT>
+		<NODE_ID>AUTOPILOT_Knob_Bank_Limit</NODE_ID>
+		<ANIM_NAME>AUTOPILOT_Knob_Bank_Limit</ANIM_NAME>
+		<WWISE_EVENT>autopilot_hdg_bank_knob</WWISE_EVENT>
+		<COUNT>5</COUNT>
+		<ANIMTIP_0_ON_CURSOR></ANIMTIP_0_ON_CURSOR>
+		<ANIMTIP_1_ON_CURSOR></ANIMTIP_1_ON_CURSOR>
+		<ANIMTIP_0_ON_PERCENT>0</ANIMTIP_0_ON_PERCENT>
+		<ANIMTIP_1_ON_PERCENT>.2</ANIMTIP_1_ON_PERCENT>
+		<ANIMTIP_2_ON_PERCENT>.4</ANIMTIP_2_ON_PERCENT>
+		<ANIMTIP_3_ON_PERCENT>.6</ANIMTIP_3_ON_PERCENT>
+		<ANIMTIP_4_ON_PERCENT>.8</ANIMTIP_4_ON_PERCENT>
+		<ANIMTIP_5_ON_PERCENT>1</ANIMTIP_5_ON_PERCENT>
+		<ANIMTIP_0>TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_HDG_BANK_LIMIT_AUTO</ANIMTIP_0>
+		<ANIMTIP_1>TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_HDG_BANK_LIMIT_5</ANIMTIP_1>
+		<ANIMTIP_2>TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_HDG_BANK_LIMIT_10</ANIMTIP_2>
+		<ANIMTIP_3>TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_HDG_BANK_LIMIT_15</ANIMTIP_3>
+		<ANIMTIP_4>TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_HDG_BANK_LIMIT_20</ANIMTIP_4>
+		<ANIMTIP_5>TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_HDG_BANK_LIMIT_25</ANIMTIP_5>
+		<ANIMTIP_6>TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_HDG_BANK_LIMIT_30</ANIMTIP_6>
+		<WRAP>False</WRAP>
+	</DefaultTemplateParameters>
+	<Component ID="#NODE_ID#" Node="#NODE_ID#">
+		<UseTemplate Name="GT_Knob_Finite_Code">
+			<CLOCKWISE_CODE>
+				(&gt;K:AP_MAX_BANK_INC)
+			</CLOCKWISE_CODE>  
+			<ANTICLOCKWISE_CODE>
+				(&gt;K:AP_MAX_BANK_DEC)
+			</ANTICLOCKWISE_CODE>  
+			<ANIM_CODE>1 (A:AUTOPILOT MAX BANK ID, Number) #SETTINGS_COUNT# / - 100 *</ANIM_CODE>
+		</UseTemplate>
+	</Component>
+</Template>
+<Template Name="AUTOPILOT_Knob_Altitude_Template">
+	<DefaultTemplateParameters>
+		<ID>1</ID>
+	</DefaultTemplateParameters>
+
+	<UseTemplate Name="GT_Helper_Suffix_ID_Appender">
+		<TEMPLATE_TO_CALL>AUTOPILOT_Knob_Altitude_SubTemplate</TEMPLATE_TO_CALL>
+	</UseTemplate>
+</Template>
+<Template Name="AUTOPILOT_Knob_VerticalSpeed_Template">
+	<DefaultTemplateParameters>
+		<ID>1</ID>
+	</DefaultTemplateParameters>
+
+	<UseTemplate Name="GT_Helper_Suffix_ID_Appender">
+		<TEMPLATE_TO_CALL>AUTOPILOT_Knob_VerticalSpeed_SubTemplate</TEMPLATE_TO_CALL>
+	</UseTemplate>
+</Template>
+
+<Template Name="AUTOPILOT_Knob_SpeedMach_Template">
+	<DefaultTemplateParameters>
+		<ANIM_NAME>AUTOPILOT_Knob_SpeedMach</ANIM_NAME>
+		<ANIM_NAME_PUSH>AUTOPILOT_Knob_SpeedMach_Push</ANIM_NAME_PUSH>
+		<ANIM_NAME_PUSHPULL>AUTOPILOT_Knob_SpeedMach_Push</ANIM_NAME_PUSHPULL>
+		<PART_ID>AUTOPILOT_Knob_SpeedMach</PART_ID>
+		<NODE_ID>AUTOPILOT_Knob_SpeedMach</NODE_ID>
+		<WWISE_EVENT>autopilot_speed_knob</WWISE_EVENT>
+		<COUNT>36</COUNT>
+		<ANIMTIP_0_ON_CURSOR>TurnLeft</ANIMTIP_0_ON_CURSOR>
+		<ANIMTIP_1_ON_CURSOR>TurnRight</ANIMTIP_1_ON_CURSOR>
+		<ANIMTIP_0>TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_SPEED_DECREASE</ANIMTIP_0>
+		<ANIMTIP_1>TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_SPEED_INCREASE</ANIMTIP_1>
+	</DefaultTemplateParameters>
+	<EditableTemplateParameters>
+		<AddParams>
+			<ANIM_NAME></ANIM_NAME>
+			<ANIM_NAME_PUSHPULL></ANIM_NAME_PUSHPULL>
+		</AddParams>
+	</EditableTemplateParameters>
+	<Component ID="#NODE_ID#" Node="#NODE_ID#">
+		<Switch Param="TYPE">
+			<Case Value="AIRBUS">
+				<UseTemplate Name="GT_Knob_Infinite_PushPull">
+					<ANIM_NAME_KNOB>#ANIM_NAME#</ANIM_NAME_KNOB>
+					<ANTICLOCKWISE_CODE>
+						(L:XMLVAR_AirSpeedIsInMach) if{
+							1 (&gt;K:AP_MACH_VAR_DEC)
+						} els{
+							1 (&gt;K:AP_SPD_VAR_DEC)
+						}
+						(&gt;H:A320_Neo_CDU_AP_DEC_SPEED)
+					</ANTICLOCKWISE_CODE>
+					<CLOCKWISE_CODE>
+						(L:XMLVAR_AirSpeedIsInMach) if{
+							1 (&gt;K:AP_MACH_VAR_INC)
+						} els{
+							1 (&gt;K:AP_SPD_VAR_INC)
+						}
+						(&gt;H:A320_Neo_CDU_AP_INC_SPEED)
+					</CLOCKWISE_CODE>
+					<PULL_CODE>
+						(&gt;H:A320_Neo_CDU_MODE_SELECTED_SPEED)
+					</PULL_CODE>
+					<PUSH_CODE>
+						(&gt;H:A320_Neo_CDU_MODE_MANAGED_SPEED)
+					</PUSH_CODE>
+					<WWISE_EVENT_1>autopilot_knob_push_button_on</WWISE_EVENT_1>
+					<WWISE_EVENT_2>autopilot_knob_push_button_off</WWISE_EVENT_2>
+					<!--<ANIMTIP_0_ON_CURSOR>TurnLeft</ANIMTIP_0_ON_CURSOR>
+					<ANIMTIP_1_ON_CURSOR>TurnRight</ANIMTIP_1_ON_CURSOR> -->
+					<ANIMTIP_2_ON_CURSOR>UpArrow</ANIMTIP_2_ON_CURSOR>
+					<ANIMTIP_3_ON_CURSOR>DownArrow</ANIMTIP_3_ON_CURSOR>
+					<ANIMTIP_0>TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_SPEED_DECREASE</ANIMTIP_0>
+					<ANIMTIP_1>TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_SPEED_INCREASE</ANIMTIP_1>
+					<ANIMTIP_2>TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_SPEED_ENGAGE_MANAGE_MODE</ANIMTIP_2>
+					<ANIMTIP_3>TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_SPEED_ENGAGE_SELECTED_AIRSPEED_MODE</ANIMTIP_3>
+				</UseTemplate>
+			</Case>
+			<Case Value="B747">
+				<UseTemplate Name="GT_Knob_Infinite_Push">
+					<ANIM_NAME_KNOB>#ANIM_NAME#</ANIM_NAME_KNOB>
+					<ANTICLOCKWISE_CODE>(L:XMLVAR_AirSpeedIsInMach) if{ 1 (&gt;K:AP_MACH_VAR_DEC) } els{ 1 (&gt;K:AP_SPD_VAR_DEC) } </ANTICLOCKWISE_CODE>
+					<CLOCKWISE_CODE>(L:XMLVAR_AirSpeedIsInMach) if{ 1 (&gt;K:AP_MACH_VAR_INC) } els{ 1 (&gt;K:AP_SPD_VAR_INC) } </CLOCKWISE_CODE>
+					<LEFT_SINGLE_CODE>(&gt;H:B747_8_FMC_1_AP_SPEED_INTERVENTION)</LEFT_SINGLE_CODE>
+					<WWISE_EVENT_1>autopilot_knob_push_button_on</WWISE_EVENT_1>
+					<WWISE_EVENT_2>autopilot_knob_push_button_off</WWISE_EVENT_2>
+				</UseTemplate>
+			</Case>
+			<Case Value="PUSH">
+				<UseTemplate Name="GT_Knob_Infinite_Push">
+					<ANIM_NAME_KNOB>#ANIM_NAME#</ANIM_NAME_KNOB>
+					<ANTICLOCKWISE_CODE>(L:XMLVAR_AirSpeedIsInMach) if{ 1 (&gt;K:AP_MACH_VAR_DEC) } els{ 1 (&gt;K:AP_SPD_VAR_DEC) } </ANTICLOCKWISE_CODE>
+					<CLOCKWISE_CODE>(L:XMLVAR_AirSpeedIsInMach) if{ 1 (&gt;K:AP_MACH_VAR_INC) } els{ 1 (&gt;K:AP_SPD_VAR_INC) } </CLOCKWISE_CODE>
+					<LEFT_SINGLE_CODE>(L:XMLVAR_AirSpeedIsInMach) ! (&gt;L:XMLVAR_AirSpeedIsInMach)</LEFT_SINGLE_CODE>
+					<WWISE_EVENT_1>autopilot_knob_push_button_on</WWISE_EVENT_1>
+					<WWISE_EVENT_2>autopilot_knob_push_button_off</WWISE_EVENT_2>
+				</UseTemplate>
+			</Case>
+			<Default>
+				<UseTemplate Name="GT_Knob_Infinite">
+					<ANTICLOCKWISE_CODE>(L:XMLVAR_AirSpeedIsInMach) if{ (&gt;K:AP_MACH_VAR_DEC) } els{ (&gt;K:AP_SPD_VAR_DEC) } </ANTICLOCKWISE_CODE>
+					<CLOCKWISE_CODE>(L:XMLVAR_AirSpeedIsInMach) if{ (&gt;K:AP_MACH_VAR_INC) } els{ (&gt;K:AP_SPD_VAR_INC) } </CLOCKWISE_CODE>
+					<WWISE_EVENT_1>autopilot_knob_push_button_on</WWISE_EVENT_1>
+					<WWISE_EVENT_2>autopilot_knob_push_button_off</WWISE_EVENT_2>
+				</UseTemplate>
+			</Default>
+		</Switch>
+	</Component>
+</Template>
+<Template Name="AUTOPILOT_Knob_Speed_Template">
+	<DefaultTemplateParameters>
+		<ANIM_NAME_KNOB>AUTOPILOT_Knob_Speed</ANIM_NAME_KNOB>
+		<ANIM_NAME_MODE>AUTOPILOT_Knob_Speed_Mode</ANIM_NAME_MODE>
+		<ANIM_NAME_PUSH>AUTOPILOT_Knob_Speed_Push</ANIM_NAME_PUSH>
+		<NODE_ID_KNOB>AUTOPILOT_Knob_Speed</NODE_ID_KNOB>
+		<NODE_ID_MODE>AUTOPILOT_Knob_Speed_Mode</NODE_ID_MODE>
+		<PART_ID>AUTOPILOT_Knob_Speed</PART_ID>
+	</DefaultTemplateParameters>
+	<Component ID="#NODE_ID_KNOB#" Node="#NODE_ID_KNOB#">
+		<UseTemplate Name="GT_Knob_Infinite_Push">
+			<ANTICLOCKWISE_CODE>
+				(L:XMLVAR_SpeedIsManuallySet) if{
+					(L:XMLVAR_AirSpeedIsInMach) if{
+						(&gt;K:AP_MACH_VAR_DEC)
+					} els{
+						(&gt;K:AP_SPD_VAR_DEC)
+					}
+				}
+			</ANTICLOCKWISE_CODE>
+			<CLOCKWISE_CODE>
+				(L:XMLVAR_SpeedIsManuallySet) if{
+					(L:XMLVAR_AirSpeedIsInMach) if{
+						(&gt;K:AP_MACH_VAR_INC)
+					} els{
+						(&gt;K:AP_SPD_VAR_INC)
+					}
+				}
+			</CLOCKWISE_CODE>
+			<LEFT_SINGLE_CODE>(L:XMLVAR_AirSpeedIsInMach) ! (&gt;L:XMLVAR_AirSpeedIsInMach)</LEFT_SINGLE_CODE>
+			<WWISE_EVENT>autopilot_speed_knob</WWISE_EVENT>
+			<COUNT>36</COUNT>
+			<WWISE_EVENT_1>autopilot_knob_push_button_on</WWISE_EVENT_1>
+			<WWISE_EVENT_2>autopilot_knob_push_button_off</WWISE_EVENT_2>
+			<ANIMTIP_0_ON_CURSOR>TurnLeft</ANIMTIP_0_ON_CURSOR>
+			<ANIMTIP_1_ON_CURSOR>TurnRight</ANIMTIP_1_ON_CURSOR>
+			<ANIMTIP_2_ON_CURSOR>Hand</ANIMTIP_2_ON_CURSOR>
+			<ANIMTIP_0>TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_SPEED_DECREASE </ANIMTIP_0>
+			<ANIMTIP_1>TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_SPEED_INCREASE </ANIMTIP_1>
+			<ANIMTIP_2>%((L:XMLVAR_AirSpeedIsInMach, Bool))%{if}TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_SPD_MACH %{else}%TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_SPD_KNOT%{end}</ANIMTIP_2>
+		</UseTemplate>
+	</Component>
+	<Component ID="#NODE_ID_MODE#" Node="#NODE_ID_MODE#">
+		<UseTemplate Name="GT_Knob_Infinite">
+			<!-- ANIMTIPS -->
+				<ANIMREF_ID>0</ANIMREF_ID>
+				<ANIMTIP_0_ON_PERCENT>0</ANIMTIP_0_ON_PERCENT>
+				<ANIMTIP_1_ON_PERCENT>1</ANIMTIP_1_ON_PERCENT>
+				<ANIMCURSOR_MIN>0</ANIMCURSOR_MIN>
+				<ANIMCURSOR_MAX>1</ANIMCURSOR_MAX>
+				<ANIMTIP_0>TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_SPEED_ENGAGE_MANAGE_MODE</ANIMTIP_0>
+				<ANIMTIP_1>TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_SPEED_ENGAGE_SELECTED_AIRSPEED_MODE</ANIMTIP_1>
+			<ANIM_NAME>#ANIM_NAME_MODE#</ANIM_NAME>
+			<ANIM_LAG>300</ANIM_LAG>
+			<OVERRIDE_ANIM_CODE>(L:XMLVAR_SpeedIsManuallySet) 100 *</OVERRIDE_ANIM_CODE>
+			<ANTICLOCKWISE_CODE>0 (&gt;L:XMLVAR_SpeedIsManuallySet)</ANTICLOCKWISE_CODE>
+			<CLOCKWISE_CODE>1 (&gt;L:XMLVAR_SpeedIsManuallySet)</CLOCKWISE_CODE>
+			<WWISE_EVENT>autopilot_speed_mode_knob</WWISE_EVENT>
+			<COUNT>1</COUNT>
+			
+		</UseTemplate>
+	</Component>
+</Template>
+
+<Template Name="AUTOPILOT_Knob_Course_Template">
+	<DefaultTemplateParameters>
+		<ID>1</ID>
+		<ANIMTIP_0>TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_CRS1_KNOB_LEFT</ANIMTIP_0>
+		<ANIMTIP_0_ON_CURSOR>TurnLeft</ANIMTIP_0_ON_CURSOR>
+		<ANIMTIP_1>TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_CRS1_KNOB_RIGHT</ANIMTIP_1>
+		<ANIMTIP_1_ON_CURSOR>TurnRight</ANIMTIP_1_ON_CURSOR>
+		<ANIMTIP_2>TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_CRS1_KNOB_PUSH</ANIMTIP_2>
+		<ANIMTIP_2_ON_CURSOR>Hand</ANIMTIP_2_ON_CURSOR>
+	</DefaultTemplateParameters>
+	
+	<UseTemplate Name="GT_Helper_Suffix_ID_Appender">
+		<TEMPLATE_TO_CALL>AUTOPILOT_Knob_Course_SubTemplate</TEMPLATE_TO_CALL>
+	</UseTemplate>
+</Template>
+
+<Template Name="AUTOPILOT_Knob_Baro_Template">
+	<DefaultTemplateParameters>
+		<ID>1</ID>
+		<ANIMREF_ID>-1</ANIMREF_ID>
+		<ANIMTIP_0>TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_BARO_KNOB_INCREASE</ANIMTIP_0>
+		<ANIMTIP_0_ON_CURSOR>TurnRight</ANIMTIP_0_ON_CURSOR>
+		<ANIMTIP_1>TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_BARO_KNOB_DECREASE</ANIMTIP_1>
+		<ANIMTIP_1_ON_CURSOR>TurnLeft</ANIMTIP_1_ON_CURSOR>
+		<ANIMTIP_2>TT:COCKPIT.TOOLTIPS.BARO_REF_SET_STD</ANIMTIP_2>
+		<ANIMTIP_2_ON_CURSOR>DownArrow</ANIMTIP_2_ON_CURSOR>
+		<ANIMTIP_3>TT:COCKPIT.TOOLTIPS.BARO_ENABLE_SELECTION</ANIMTIP_3>
+		<ANIMTIP_3_ON_CURSOR>UpArrow</ANIMTIP_3_ON_CURSOR>
+		<ANIMTIP_4>TT:COCKPIT.TOOLTIPS.BARO_REF_SET_STD</ANIMTIP_4>
+		<ANIMTIP_4_ON_CURSOR>Hand</ANIMTIP_4_ON_CURSOR>
+	</DefaultTemplateParameters>
+	
+	<UseTemplate Name="GT_Helper_Suffix_ID_Appender">
+		<TEMPLATE_TO_CALL>AUTOPILOT_Knob_Baro_SubTemplate1</TEMPLATE_TO_CALL>
+	</UseTemplate>
+</Template>
+
+<Template Name="AUTOPILOT_HUD_Template">
+	<DefaultTemplateParameters>
+		<ID>1</ID>
+	</DefaultTemplateParameters>
+	
+	<UseTemplate Name="AUTOPILOT_HUD_SubTemplate">
+	
+	</UseTemplate>
+</Template>

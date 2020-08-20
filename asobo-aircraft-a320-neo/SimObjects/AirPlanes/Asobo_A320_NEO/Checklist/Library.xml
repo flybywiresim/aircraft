@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="Windows-1252"?>
+<SimBase.Document Type="CheckpointLibrary" version="1,0">
+	<Checklist.CheckpointLibrary>
+
+		<Checkpoint Id="ENGINE_MASTER_1_ON">
+		  <CheckpointDesc SubjectTT="TT:GAME.CHECKLIST_ENGINE_MASTER_1" ExpectationTT="TT:GAME.CHECKLIST_ON"/>
+		  <Clue name="TT:CLUE.ENGINE_MASTER_1_ON"/>
+		  <Sequence SeqType="Unordered">
+			  <Test>
+				<TestValue>
+				  <Val SimVarName="FUELSYSTEM VALVE SWITCH:6" Units="boolean"/>
+				</TestValue>
+				<Action Copilot="True" Condition="TestValueFalse" Once="true" EventID="FUELSYSTEM_VALVE_OPEN" EventParam="6"/>
+				<Instrument Id="ENGINE_Switch_Master1"/>
+			  </Test>
+			  <Test>
+				<TestValue>
+				  <Val SimVarName="GENERAL ENG STARTER:1" Units="boolean"/>
+				</TestValue>
+				<Action Copilot="True" Condition="TestValueFalse" Once="true" EventID="TOGGLE_STARTER1"/>
+				<Instrument Id="ENGINE_Switch_Master1"/>
+			  </Test>
+		  </Sequence>
+		</Checkpoint>
+
+		<Checkpoint Id="ENGINE_MASTER_2_ON">
+		  <CheckpointDesc SubjectTT="TT:GAME.CHECKLIST_ENGINE_MASTER_2" ExpectationTT="TT:GAME.CHECKLIST_ON"/>
+		  <Clue name="TT:CLUE.ENGINE_MASTER_2_ON"/>
+		  <Sequence SeqType="Unordered">
+			  <Test>
+				<TestValue>
+				  <Val SimVarName="FUELSYSTEM VALVE SWITCH:7" Units="boolean"/>
+				</TestValue>
+				<Action Copilot="True" Condition="TestValueFalse" Once="true" EventID="FUELSYSTEM_VALVE_OPEN" EventParam="7"/>
+				<Instrument Id="ENGINE_Switch_Master2"/>
+			  </Test>
+			  <Test>
+				<TestValue>
+				  <Val SimVarName="GENERAL ENG STARTER:2" Units="boolean"/>
+				</TestValue>
+				<Action Copilot="True" Condition="TestValueFalse" Once="true" EventID="TOGGLE_STARTER2"/>
+				<Instrument Id="ENGINE_Switch_Master2"/>
+			  </Test>
+		  </Sequence>
+		</Checkpoint>
+		
+		<Checkpoint Id="A320_Battery_Switches_On_2">
+			<Clue name="TT:CLUE.BATTERY_SWITCHES_ON_2"/>
+			<CheckpointDesc SubjectTT="TT:GAME.CHECKLIST_BATTERY_SWITCHES" ExpectationTT="TT:GAME.CHECKLIST_ON"/>
+			<Sequence SeqType="Parallel">
+				<Test>
+					<TestValue>
+						<Val Code="6 (&gt;A:BUS LOOKUP INDEX, Number) (A:BUS CONNECTION ON:10, Bool)"/>
+					</TestValue>
+					<Action Copilot="True" Condition="TestValueFalse" Once="true" Code="6 10 (&gt;K:2:ELECTRICAL_BUS_TO_BUS_CONNECTION_TOGGLE)"/>
+					<Instrument Id="ELECTRICAL_Switch_Battery_Master"/>
+					<Instrument Id="knob_electric_master"/>
+				</Test>
+				<Test>
+					<TestValue>
+						<Val Code="6 (&gt;A:BUS LOOKUP INDEX, Number) (A:BUS CONNECTION ON:11, Bool)"/>
+					</TestValue>
+					<Action Copilot="True" Condition="TestValueFalse" Once="true" Code="6 11 (&gt;K:2:ELECTRICAL_BUS_TO_BUS_CONNECTION_TOGGLE)"/>
+					<Instrument Id="ELECTRICAL_Switch_Battery_Master"/>
+					<Instrument Id="knob_electric_master"/>
+				</Test>
+			</Sequence>
+		</Checkpoint>
+		
+
+
+    
+    
+	</Checklist.CheckpointLibrary>
+</SimBase.Document>

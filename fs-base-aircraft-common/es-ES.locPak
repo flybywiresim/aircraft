@@ -1,0 +1,28 @@
+{
+  "LocalisationPackage": {
+    "Language": "es-ES",
+    "Strings": {
+      "MODELBEHAVIOR.CDI.OPTIONS.NO_EMISSIVE_GPS": "Excluye un indicador de GPS emisivo",
+      "MODELBEHAVIOR.CDI.OPTIONS.NO_EMISSIVE_NAV": "Excluye un indicador de NAV emisivo",
+      "MODELBEHAVIOR.CDI.OPTIONS.NO_EMISSIVE_VLOC": "Excluye un indicador de VLOC emisivo",
+      "MODELBEHAVIOR.CDI.OPTIONS.NO_FLAG_GLIDE": "Excluye un indicador de planeo",
+      "MODELBEHAVIOR.CDI.OPTIONS.NO_FLAG_LOCALIZER": "Excluye un indicador de localizador",
+      "MODELBEHAVIOR.CDI.OPTIONS.NO_GLIDE_LOCALIZER_INIT_ANIMATION": "Excluye la inicialización de una animación para el localizador de planeo.",
+      "MODELBEHAVIOR.CDI.OPTIONS.NO_NEEDLE_GLIDE": "Excluye la aguja de planeo",
+      "MODELBEHAVIOR.CDI.PARAMS.ANIM_NAME.COMPASS": "Nombre de la animación de la brújula",
+      "MODELBEHAVIOR.CDI.PARAMS.ANIM_NAME.COURSE_KNOB": "Nombre de la animación de la rueda de curso",
+      "MODELBEHAVIOR.CDI.PARAMS.ANIM_NAME.FLAG_FROM": "Nombre de la animación del indicador de procedencia",
+      "MODELBEHAVIOR.CDI.PARAMS.ANIM_NAME.FLAG_GLIDE": "Nombre de la animación del indicador de planeo",
+      "MODELBEHAVIOR.CDI.PARAMS.ANIM_NAME.FLAG_LOCALIZER": "Nombre de la animación del indicador de localizador",
+      "MODELBEHAVIOR.CDI.PARAMS.ANIM_NAME.FLAG_OFF": "Nombre de la animación del indicador de apagado",
+      "MODELBEHAVIOR.CDI.PARAMS.ANIM_NAME.FLAG_TO": "Nombre de la animación del indicador de dirección",
+      "MODELBEHAVIOR.CDI.PARAMS.ANIM_NAME.NEEDLE_GLIDE": "Nombre de la animación de la aguja de planeo",
+      "MODELBEHAVIOR.CDI.PARAMS.ANIM_NAME.NEEDLE_LOCALIZER": "Nombre de la animación de la aguja de localizador",
+      "MODELBEHAVIOR.CDI.PARAMS.NODE_ID.COURSE_KNOB": "Nombre del nodo de la rueda de curso",
+      "MODELBEHAVIOR.CDI.PARAMS.NODE_ID.EMISSIVE_GPS": "Nombre del nodo del indicador de GPS emisivo",
+      "MODELBEHAVIOR.CDI.PARAMS.NODE_ID.EMISSIVE_NAV": "Nombre del nodo del indicador de NAV emisivo",
+      "MODELBEHAVIOR.CDI.PARAMS.NODE_ID.EMISSIVE_VLOC": "Nombre del nodo del indicador de VLOC emisivo",
+      "MODELBEHAVIOR.CDI.PARAMS.NODE_ID.HIGHLIGHT": "Nombre del nodo utilizado para resaltar"
+    }
+  }
+}

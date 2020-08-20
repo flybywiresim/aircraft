@@ -1,0 +1,172 @@
+<Include Path="Generic.xml"/>
+
+<Template Name="AS580">
+	<DefaultTemplateParameters>
+		<EMISSIVE_CODE>(A:LIGHT POTENTIOMETER:4, Percent over 100)</EMISSIVE_CODE>
+		<FAILURE>(A:CIRCUIT AVIONICS ON, Bool)</FAILURE>
+		<ANIM_NEVER_FAILS>True</ANIM_NEVER_FAILS>
+	</DefaultTemplateParameters>
+	<UseTemplate Name="GT_Component_Emissive_Gauge">
+		<NODE_ID>AS580_text</NODE_ID>
+	</UseTemplate>
+	<Component ID="AS580_PUSH_01_L" Node="AS580_PUSH_01_L">
+		<UseTemplate Name="GT_Push_Button_Emissive">
+			<ANIM_NAME>AS580_PUSH_01_L</ANIM_NAME>
+			<LEFT_SINGLE_CODE>(&gt;H:AS3000_TSC_Horizontal_1_SoftKey_1)</LEFT_SINGLE_CODE>
+			<WWISE_EVENT_1>AS580_push_button_on</WWISE_EVENT_1>  
+			<NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
+			<WWISE_EVENT_2>AS580_push_button_off</WWISE_EVENT_2> 
+			<NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>	 
+		</UseTemplate>
+	</Component>
+	<Component ID="AS580_PUSH_02_L" Node="AS580_PUSH_02_L">
+		<UseTemplate Name="GT_Push_Button_Emissive">
+			<ANIM_NAME>AS580_PUSH_02_L</ANIM_NAME>
+			<LEFT_SINGLE_CODE>(&gt;H:AS3000_TSC_Horizontal_1_SoftKey_2)</LEFT_SINGLE_CODE>
+			<WWISE_EVENT_1>AS580_push_button_on</WWISE_EVENT_1>  
+			<NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
+			<WWISE_EVENT_2>AS580_push_button_off</WWISE_EVENT_2> 
+			<NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
+		</UseTemplate>
+	</Component>
+	<Component ID="AS580_PUSH_03_L" Node="AS580_PUSH_03_L">
+		<UseTemplate Name="GT_Push_Button_Emissive">
+			<ANIM_NAME>AS580_PUSH_03_L</ANIM_NAME>
+			<LEFT_SINGLE_CODE>(&gt;H:AS3000_TSC_Horizontal_1_SoftKey_3)</LEFT_SINGLE_CODE>
+			<WWISE_EVENT_1>AS580_push_button_on</WWISE_EVENT_1>  
+			<NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
+			<WWISE_EVENT_2>AS580_push_button_off</WWISE_EVENT_2> 
+			<NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>	 
+		</UseTemplate>
+		<PartID>SET_XPDR_AS3000_BUTTON</PartID>
+	</Component>
+	<Component ID="AS580_KNOB_01_L" Node="AS580_KNOB_01_L">
+		<UseTemplate Name="GT_Knob_Infinite">
+			<ANIM_NAME>AS580_KNOB_01_L</ANIM_NAME>
+			<CLOCKWISE_CODE>(&gt;H:AS3000_TSC_Horizontal_1_TopKnob_Large_INC)</CLOCKWISE_CODE>
+			<ANTICLOCKWISE_CODE>(&gt;H:AS3000_TSC_Horizontal_1_TopKnob_Large_DEC)</ANTICLOCKWISE_CODE>
+			<WWISE_EVENT>AS580_big_knob_turn</WWISE_EVENT>
+			<COUNT>36</COUNT>
+		</UseTemplate>
+	</Component>
+	<Component ID="AS580_KNOB_01_SMALL_L" Node="AS580_KNOB_01_SMALL_L">
+		<UseTemplate Name="GT_Knob_Infinite_Push_Timed">
+			<CURSOR_LEFT>TurnLeftSmall</CURSOR_LEFT>
+			<CURSOR_RIGHT>TurnRightSmall</CURSOR_RIGHT>
+			
+			<ANIM_NAME_KNOB>AS580_KNOB_01_SMALL_L</ANIM_NAME_KNOB>
+			<ANIM_NAME_PUSH>AS580_push_KNOB_01_SMALL_L</ANIM_NAME_PUSH>
+			<CLOCKWISE_CODE>(&gt;H:AS3000_TSC_Horizontal_1_TopKnob_Small_INC)</CLOCKWISE_CODE>
+			<ANTICLOCKWISE_CODE>(&gt;H:AS3000_TSC_Horizontal_1_TopKnob_Small_DEC)</ANTICLOCKWISE_CODE>
+			<LONG_CLICK_CODE>(&gt;H:AS3000_TSC_Horizontal_1_TopKnob_Push_Long)</LONG_CLICK_CODE>
+			<SHORT_CLICK_CODE>(&gt;H:AS3000_TSC_Horizontal_1_TopKnob_Push)</SHORT_CLICK_CODE>
+			<LONG_CLICK_TIME>2</LONG_CLICK_TIME>
+			<ANIMREF_ID>0</ANIMREF_ID>
+			<ANIMCURSOR_DIR>-1.0</ANIMCURSOR_DIR>
+			<ANIMCURSOR_MIN>-1</ANIMCURSOR_MIN>
+			<ANIMCURSOR_MAX>2</ANIMCURSOR_MAX>
+			<WWISE_EVENT>AS580_knob_turn</WWISE_EVENT>
+			<COUNT>36</COUNT>
+			<WWISE_EVENT_1>AS580_knob_push_button_on</WWISE_EVENT_1>  
+			<WWISE_EVENT_2>AS580_knob_push_button_off</WWISE_EVENT_2> 
+		</UseTemplate>
+	</Component>
+	<Component ID="AS580_KNOB_02_L" Node="AS580_KNOB_02_L">
+		<UseTemplate Name="GT_Knob_Infinite_Push">
+			<CURSOR_LEFT>TurnLeftSmall</CURSOR_LEFT>
+			<CURSOR_RIGHT>TurnRightSmall</CURSOR_RIGHT>
+			<ANIM_NAME_KNOB>AS580_KNOB_02_L</ANIM_NAME_KNOB>
+			<ANIM_NAME_PUSH>AS580_push_KNOB_02_L</ANIM_NAME_PUSH>
+			<CLOCKWISE_CODE>(&gt;H:AS3000_TSC_Horizontal_1_BottomKnob_Small_INC)</CLOCKWISE_CODE>
+			<ANTICLOCKWISE_CODE>(&gt;H:AS3000_TSC_Horizontal_1_BottomKnob_Small_DEC)</ANTICLOCKWISE_CODE>
+			<LEFT_SINGLE_CODE>(&gt;H:AS3000_TSC_Horizontal_1_BottomKnob_Push)</LEFT_SINGLE_CODE>
+			<ANIMREF_ID>0</ANIMREF_ID>
+			<ANIMCURSOR_DIR>-1.0</ANIMCURSOR_DIR>
+			<ANIMCURSOR_MIN>-1</ANIMCURSOR_MIN>
+			<ANIMCURSOR_MAX>2</ANIMCURSOR_MAX>
+			<WWISE_EVENT>AS580_big_knob_turn</WWISE_EVENT>
+			<COUNT>36</COUNT>
+			<WWISE_EVENT_1>AS580_knob_push_button_on</WWISE_EVENT_1>  
+			<WWISE_EVENT_2>AS580_knob_push_button_off</WWISE_EVENT_2> 
+		</UseTemplate>
+	</Component>
+	<Component ID="AS580_PUSH_01_R" Node="AS580_PUSH_01_R">
+		<UseTemplate Name="GT_Push_Button_Emissive">
+			<ANIM_NAME>AS580_PUSH_01_R</ANIM_NAME>
+			<LEFT_SINGLE_CODE>(&gt;H:AS3000_TSC_Horizontal_2_SoftKey_1)</LEFT_SINGLE_CODE>
+			<WWISE_EVENT_1>AS580_push_button_on</WWISE_EVENT_1>  
+			<NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
+			<WWISE_EVENT_2>AS580_push_button_off</WWISE_EVENT_2> 
+			<NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>	 
+		</UseTemplate>
+	</Component>
+	<Component ID="AS580_PUSH_02_R" Node="AS580_PUSH_02_R">
+		<UseTemplate Name="GT_Push_Button_Emissive">
+			<ANIM_NAME>AS580_PUSH_02_R</ANIM_NAME>
+			<LEFT_SINGLE_CODE>(&gt;H:AS3000_TSC_Horizontal_2_SoftKey_2)</LEFT_SINGLE_CODE>
+			<WWISE_EVENT_1>AS580_push_button_on</WWISE_EVENT_1>  
+			<NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
+			<WWISE_EVENT_2>AS580_push_button_off</WWISE_EVENT_2> 
+			<NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>	 
+		</UseTemplate>
+	</Component>
+	<Component ID="AS580_PUSH_03_R" Node="AS580_PUSH_03_R">
+		<UseTemplate Name="GT_Push_Button_Emissive">
+			<ANIM_NAME>AS580_PUSH_03_R</ANIM_NAME>
+			<LEFT_SINGLE_CODE>(&gt;H:AS3000_TSC_Horizontal_2_SoftKey_3)</LEFT_SINGLE_CODE>
+			<WWISE_EVENT_1>AS580_push_button_on</WWISE_EVENT_1>  
+			<NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
+			<WWISE_EVENT_2>AS580_push_button_off</WWISE_EVENT_2> 
+			<NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>	 
+		</UseTemplate>
+	</Component>
+	<Component ID="AS580_KNOB_01_R" Node="AS580_KNOB_01_R">
+		<UseTemplate Name="GT_Knob_Infinite">
+			<ANIM_NAME>AS580_KNOB_01_R</ANIM_NAME>
+			<CLOCKWISE_CODE>(&gt;H:AS3000_TSC_Horizontal_2_TopKnob_Large_INC)</CLOCKWISE_CODE>
+			<ANTICLOCKWISE_CODE>(&gt;H:AS3000_TSC_Horizontal_2_TopKnob_Large_DEC)</ANTICLOCKWISE_CODE>
+			<WWISE_EVENT>AS580_big_knob_turn</WWISE_EVENT>
+			<COUNT>36</COUNT>
+		</UseTemplate>
+	</Component>
+	<Component ID="AS580_KNOB_01_SMALL_R" Node="AS580_KNOB_01_SMALL_R">
+		<UseTemplate Name="GT_Knob_Infinite_Push_Timed">
+			<CURSOR_LEFT>TurnLeftSmall</CURSOR_LEFT>
+			<CURSOR_RIGHT>TurnRightSmall</CURSOR_RIGHT>
+			<ANIM_NAME_KNOB>AS580_KNOB_01_SMALL_R</ANIM_NAME_KNOB>
+			<ANIM_NAME_PUSH>AS580_push_KNOB_01_SMALL_R</ANIM_NAME_PUSH>
+			<CLOCKWISE_CODE>(&gt;H:AS3000_TSC_Horizontal_2_TopKnob_Small_INC)</CLOCKWISE_CODE>
+			<ANTICLOCKWISE_CODE>(&gt;H:AS3000_TSC_Horizontal_2_TopKnob_Small_DEC)</ANTICLOCKWISE_CODE>
+			<LONG_CLICK_CODE>(&gt;H:AS3000_TSC_Horizontal_2_TopKnob_Push_Long)</LONG_CLICK_CODE>
+			<SHORT_CLICK_CODE>(&gt;H:AS3000_TSC_Horizontal_2_TopKnob_Push)</SHORT_CLICK_CODE>
+			<LONG_CLICK_TIME>2</LONG_CLICK_TIME>
+			<ANIMREF_ID>0</ANIMREF_ID>
+			<ANIMCURSOR_DIR>-1.0</ANIMCURSOR_DIR>
+			<ANIMCURSOR_MIN>-1</ANIMCURSOR_MIN>
+			<ANIMCURSOR_MAX>2</ANIMCURSOR_MAX>
+			<WWISE_EVENT>AS580_knob_turn</WWISE_EVENT>
+			<COUNT>36</COUNT>
+			<WWISE_EVENT_1>AS580_knob_push_button_on</WWISE_EVENT_1>  
+			<WWISE_EVENT_2>AS580_knob_push_button_off</WWISE_EVENT_2> 
+		</UseTemplate>
+	</Component>
+	<Component ID="AS580_KNOB_02_R" Node="AS580_KNOB_02_R">
+		<UseTemplate Name="GT_Knob_Infinite_Push">
+			<CURSOR_LEFT>TurnLeftSmall</CURSOR_LEFT>
+			<CURSOR_RIGHT>TurnRightSmall</CURSOR_RIGHT>
+			<ANIM_NAME_KNOB>AS580_KNOB_02_R</ANIM_NAME_KNOB>
+			<ANIM_NAME_PUSH>AS580_push_KNOB_02_R</ANIM_NAME_PUSH>
+			<CLOCKWISE_CODE>(&gt;H:AS3000_TSC_Horizontal_2_BottomKnob_Small_INC)</CLOCKWISE_CODE>
+			<ANTICLOCKWISE_CODE>(&gt;H:AS3000_TSC_Horizontal_2_BottomKnob_Small_DEC)</ANTICLOCKWISE_CODE>
+			<LEFT_SINGLE_CODE>(&gt;H:AS3000_TSC_Horizontal_2_BottomKnob_Push)</LEFT_SINGLE_CODE>
+			<ANIMREF_ID>0</ANIMREF_ID>
+			<ANIMCURSOR_DIR>-1.0</ANIMCURSOR_DIR>
+			<ANIMCURSOR_MIN>-1</ANIMCURSOR_MIN>
+			<ANIMCURSOR_MAX>2</ANIMCURSOR_MAX>
+			<WWISE_EVENT>AS580_big_knob_turn</WWISE_EVENT>
+			<COUNT>36</COUNT>
+			<WWISE_EVENT_1>AS580_knob_push_button_on</WWISE_EVENT_1>  
+			<WWISE_EVENT_2>AS580_knob_push_button_off</WWISE_EVENT_2>     
+		</UseTemplate>
+	</Component>
+</Template>

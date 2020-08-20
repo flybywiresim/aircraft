@@ -1,0 +1,28 @@
+{
+  "LocalisationPackage": {
+    "Language": "fr-FR",
+    "Strings": {
+      "MODELBEHAVIOR.CDI.OPTIONS.NO_EMISSIVE_GPS": "Quitter un indicateur émissif GPS",
+      "MODELBEHAVIOR.CDI.OPTIONS.NO_EMISSIVE_NAV": "Quitter un indicateur émissif NAV",
+      "MODELBEHAVIOR.CDI.OPTIONS.NO_EMISSIVE_VLOC": "Quitter un indicateur émissif VLOC",
+      "MODELBEHAVIOR.CDI.OPTIONS.NO_FLAG_GLIDE": "Quitter un drapeau de vol plané.",
+      "MODELBEHAVIOR.CDI.OPTIONS.NO_FLAG_LOCALIZER": "Quitter un drapeau de localiseur.",
+      "MODELBEHAVIOR.CDI.OPTIONS.NO_GLIDE_LOCALIZER_INIT_ANIMATION": "Quitter l'animation d'initialisation du localiseur de vol plané.",
+      "MODELBEHAVIOR.CDI.OPTIONS.NO_NEEDLE_GLIDE": "Quitter une aiguille de vol plané.",
+      "MODELBEHAVIOR.CDI.PARAMS.ANIM_NAME.COMPASS": "Nom de l'animation du compas",
+      "MODELBEHAVIOR.CDI.PARAMS.ANIM_NAME.COURSE_KNOB": "Nom de l'animation du bouton de trajectoire",
+      "MODELBEHAVIOR.CDI.PARAMS.ANIM_NAME.FLAG_FROM": "Nom de l'animation du drapeau de point de départ",
+      "MODELBEHAVIOR.CDI.PARAMS.ANIM_NAME.FLAG_GLIDE": "Nom de l'animation du drapeau du vol plané",
+      "MODELBEHAVIOR.CDI.PARAMS.ANIM_NAME.FLAG_LOCALIZER": "Nom de l'animation du drapeau du localiseur",
+      "MODELBEHAVIOR.CDI.PARAMS.ANIM_NAME.FLAG_OFF": "Nom de l'animation du drapeau de départ",
+      "MODELBEHAVIOR.CDI.PARAMS.ANIM_NAME.FLAG_TO": "Nom de l'animation du drapeau de direction",
+      "MODELBEHAVIOR.CDI.PARAMS.ANIM_NAME.NEEDLE_GLIDE": "Nom de l'animation de l'aiguille du vol plané",
+      "MODELBEHAVIOR.CDI.PARAMS.ANIM_NAME.NEEDLE_LOCALIZER": "Nom de l'animation de l'aiguille du localiseur",
+      "MODELBEHAVIOR.CDI.PARAMS.NODE_ID.COURSE_KNOB": "Nom du nœud du bouton de trajectoire",
+      "MODELBEHAVIOR.CDI.PARAMS.NODE_ID.EMISSIVE_GPS": "Nom du nœud de l'indicateur émissif GPS",
+      "MODELBEHAVIOR.CDI.PARAMS.NODE_ID.EMISSIVE_NAV": "Nom du nœud de l'indicateur émissif NAV",
+      "MODELBEHAVIOR.CDI.PARAMS.NODE_ID.EMISSIVE_VLOC": "Nom du nœud de l'indicateur émissif VLOC",
+      "MODELBEHAVIOR.CDI.PARAMS.NODE_ID.HIGHLIGHT": "Nom du nœud utilisé pour les faits marquants"
+    }
+  }
+}

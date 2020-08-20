@@ -1,0 +1,21 @@
+{
+  "dependencies": [
+    {
+      "name": "fs-base-propdefs",
+      "package_version": "0.1.2"
+    }
+  ],
+  "content_type": "AIRCRAFT",
+  "title": "A320neo",
+  "manufacturer": "Airbus",
+  "creator": "Asobo Studio",
+  "package_version": "0.1.51",
+  "minimum_game_version": "1.7.12",
+  "release_notes": {
+    "neutral": {
+      "LastUpdate": "",
+      "OlderHistory": ""
+    }
+  },
+  "total_package_size": "00000000000662360564"
+}

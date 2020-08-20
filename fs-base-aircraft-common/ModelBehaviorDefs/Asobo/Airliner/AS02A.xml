@@ -1,0 +1,155 @@
+
+<Template Name="ASOBO_AS02A_Battery_Type_Switcher">
+	<DefaultTemplateParameters>
+		<ANIMTIP_0>TT:COCKPIT.TOOLTIPS.BAT_SEL_SET_MAIN</ANIMTIP_0>
+		<ANIMTIP_1>TT:COCKPIT.TOOLTIPS.BAT_SEL_SET_EMER</ANIMTIP_1>
+	</DefaultTemplateParameters>
+
+	<Component ID="#NODE_ID#" Node="#NODE_ID#">
+		<UseTemplate Name="ASOBO_GT_Update">
+			<FREQUENCY>5</FREQUENCY>
+			<UPDATE_CODE>
+				(L:XMLVAR_BatteryStatus_Unlocked) !
+				(L:XMLVAR_BatteryStatus) 0 == and if{
+					1 (&gt;L:XMLVAR_BatteryStatus)
+				}
+				
+				#MERGE_BATTERY_BUS_ID# (&gt;A:BUS LOOKUP INDEX, Number) 
+				(A:BUS CONNECTION ON:#HOT_BATTERY_BUS_ID1#, Bool) sp0
+				(A:BUS CONNECTION ON:#HOT_BATTERY_BUS_ID2#, Bool) sp1
+				(A:BUS CONNECTION ON:#BATTERY_BUS_ID#, Bool) sp2
+				
+				(L:XMLVAR_BatteryStatus) 2 == if{
+					(* Disconnect Merge Bus *)
+					l2 if{
+						#BATTERY_BUS_ID# #MERGE_BATTERY_BUS_ID# (&gt;K:2:ELECTRICAL_BUS_TO_BUS_CONNECTION_TOGGLE)
+					}
+				} els{
+					(* Connect Merge Bus *)
+					l2 ! if{
+						#BATTERY_BUS_ID# #MERGE_BATTERY_BUS_ID# (&gt;K:2:ELECTRICAL_BUS_TO_BUS_CONNECTION_TOGGLE)
+					}
+					
+					(L:XMLVAR_BatteryStatus) 1 == if{
+						(L:XMLVAR_BatteryType) 0 == l0 != if{
+							#MERGE_BATTERY_BUS_ID# #HOT_BATTERY_BUS_ID1# (&gt;K:2:ELECTRICAL_BUS_TO_BUS_CONNECTION_TOGGLE)
+						} 
+						(L:XMLVAR_BatteryType) 1 == l1 != if{
+							#MERGE_BATTERY_BUS_ID# #HOT_BATTERY_BUS_ID2# (&gt;K:2:ELECTRICAL_BUS_TO_BUS_CONNECTION_TOGGLE)
+						}
+					} els{
+						(* Connect both batteries *)
+						l0 ! if{
+							#MERGE_BATTERY_BUS_ID# #HOT_BATTERY_BUS_ID1# (&gt;K:2:ELECTRICAL_BUS_TO_BUS_CONNECTION_TOGGLE)
+						} 
+						l1 ! if{
+							#MERGE_BATTERY_BUS_ID# #HOT_BATTERY_BUS_ID2# (&gt;K:2:ELECTRICAL_BUS_TO_BUS_CONNECTION_TOGGLE)
+						}
+					}
+				}
+			</UPDATE_CODE>
+		</UseTemplate>
+		<Condition NotEmpty="INIT_BAT_TYPE">
+			<UseTemplate Name="ASOBO_GT_Update">
+				<UPDATE_ONCE>True</UPDATE_ONCE>
+				<UPDATE_CODE>#INIT_BAT_TYPE# (&gt;L:XMLVAR_BatteryType)</UPDATE_CODE>
+			</UseTemplate>
+		</Condition>
+		<UseTemplate Name = "ASOBO_GT_Switch_Code">
+			<ANIM_CODE>(L:XMLVAR_BatteryType) 100 *</ANIM_CODE>
+			<LEFT_SINGLE_CODE>(L:XMLVAR_BatteryType) ! (&gt;L:XMLVAR_BatteryType)</LEFT_SINGLE_CODE>
+			<WWISE_EVENT_1>batteryselector_switch_on</WWISE_EVENT_1>
+			<WWISE_EVENT_2>batteryselector_switch_off</WWISE_EVENT_2>
+		</UseTemplate>
+	</Component>
+</Template>
+
+<Template Name="ASOBO_AS02A_Announcer_Starter">
+	<DefaultTemplateParameters>
+		<NODE_ID>AS02A_Announcer_Stater_#ID#</NODE_ID>
+	</DefaultTemplateParameters>
+
+	<Component ID="#NODE_ID#" Node="#NODE_ID#">
+		<UseTemplate Name = "ASOBO_GT_Push_Button_Airliner">
+			<DUMMY_BUTTON>True</DUMMY_BUTTON>
+			<SEQ1_EMISSIVE_CODE>0</SEQ1_EMISSIVE_CODE>
+			<SEQ2_EMISSIVE_CODE>(A:GENERAL ENG STARTER ACTIVE:#ID#, Boolean)</SEQ2_EMISSIVE_CODE>
+		</UseTemplate>
+	</Component>
+</Template>
+
+<Template Name="ASOBO_AS02A_Radio_Template">
+	<DefaultTemplateParameters>
+		<ID>1</ID>
+	</DefaultTemplateParameters>
+	
+	<UseTemplate Name="ASOBO_GT_Helper_Suffix_ID_Appender">
+		<TEMPLATE_TO_CALL>ASOBO_AS02A_Radio_SubTemplate</TEMPLATE_TO_CALL>
+	</UseTemplate>
+</Template>
+
+<Template Name="ASOBO_AS02A_Radio_Button_Template">
+	<DefaultTemplateParameters>
+		<NODE_ID>AS02A_Radio_Button_#KEY_ID##SUFFIX_ID#</NODE_ID>
+		<ANIM_NAME>AS02A_Radio_Button_#KEY_ID##SUFFIX_ID#</ANIM_NAME>
+	</DefaultTemplateParameters>
+
+	<Component ID="#NODE_ID#" Node="#NODE_ID#">
+		<UseTemplate Name = "ASOBO_GT_Push_Button">
+			<LEFT_SINGLE_CODE>(&gt;H:AS02A_Radio_#ID#_#KEY_ID#)</LEFT_SINGLE_CODE>
+		</UseTemplate>
+	</Component>
+</Template>
+
+<Template Name="ASOBO_AS02A_Radio_SubTemplate">
+	<DefaultTemplateParameters>
+		<PUSH_1_KEY_ID>0</PUSH_1_KEY_ID>
+		<PUSH_2_KEY_ID>1</PUSH_2_KEY_ID>
+		<PUSH_3_KEY_ID>2</PUSH_3_KEY_ID>
+		<PUSH_4_KEY_ID>3</PUSH_4_KEY_ID>
+		<PUSH_5_KEY_ID>4</PUSH_5_KEY_ID>
+		<PUSH_6_KEY_ID>5</PUSH_6_KEY_ID>
+		<PUSH_7_KEY_ID>6</PUSH_7_KEY_ID>
+		<PUSH_8_KEY_ID>7</PUSH_8_KEY_ID>
+		<PUSH_9_KEY_ID>8</PUSH_9_KEY_ID>
+		<PUSH_10_KEY_ID>9</PUSH_10_KEY_ID>
+		<PUSH_11_KEY_ID>DOT</PUSH_11_KEY_ID>
+		<PUSH_12_KEY_ID>COM</PUSH_12_KEY_ID>
+		<PUSH_13_KEY_ID>NAV</PUSH_13_KEY_ID>
+		<PUSH_14_KEY_ID>SURV</PUSH_14_KEY_ID>
+		<PUSH_15_KEY_ID>ESC</PUSH_15_KEY_ID>
+		<PUSH_16_KEY_ID>ENT</PUSH_16_KEY_ID>
+		<PUSH_17_KEY_ID>LEFT</PUSH_17_KEY_ID>
+		<PUSH_18_KEY_ID>RIGHT</PUSH_18_KEY_ID>
+		<PUSH_19_KEY_ID>UP</PUSH_19_KEY_ID>
+		<PUSH_20_KEY_ID>DOWN</PUSH_20_KEY_ID>
+		<WWISE_EVENT_1>navcom_radio_button_on</WWISE_EVENT_1>
+		<WWISE_EVENT_2>navcom_radio_button_off</WWISE_EVENT_2>
+		<NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
+		<NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
+	</DefaultTemplateParameters>
+
+	<Component ID="AS02A_Radio_#ID#">
+		<UseTemplate Name="ASOBO_GT_Helper_Recursive_ID">
+			<!-- VV Recursive parameters VV -->
+			<EXIT_TEMPLATE>ASOBO_AS02A_Radio_Button_Template</EXIT_TEMPLATE>
+			<MAX_ID>20</MAX_ID>
+			<!-- Dyn param -->
+			<!-- NODE_ID --><!-- required if we want to override the node_id -->
+			<PROCESS_PARAM1>True</PROCESS_PARAM1>
+			<PARAM1>NODE_ID</PARAM1>
+			<PARAM1_PREFIX>PUSH_</PARAM1_PREFIX>
+			<PARAM1_SUFFIX>_NODE_ID</PARAM1_SUFFIX>
+			<!-- ANIM_NAME --><!-- required if we want to override the anim_name -->
+			<PROCESS_PARAM2>True</PROCESS_PARAM2>
+			<PARAM2>ANIM_NAME</PARAM2>
+			<PARAM2_PREFIX>PUSH_</PARAM2_PREFIX>
+			<PARAM2_SUFFIX>_ANIM_NAME</PARAM2_SUFFIX>
+			<!-- KEY_ID -->
+			<PROCESS_PARAM3>True</PROCESS_PARAM3>
+			<PARAM3>KEY_ID</PARAM3>
+			<PARAM3_PREFIX>PUSH_</PARAM3_PREFIX>
+			<PARAM3_SUFFIX>_KEY_ID</PARAM3_SUFFIX>
+		</UseTemplate>
+	</Component>
+</Template>

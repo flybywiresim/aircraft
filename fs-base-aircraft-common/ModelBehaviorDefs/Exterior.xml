@@ -1,0 +1,1713 @@
+<Include File="Common.xml"/>
+
+<!-------------------------- DO NOT USE OLD TEMPLATES, SEE BELOW FOR NEW VERSIONS ------------------------------------------------------------------->
+
+<!-- Propeller ############################################################# -->
+<Template Name="Propeller_Anim_Rotation_Template">
+	<UseTemplate Name="GT_Anim_Sim">
+		<ANIM_SIMVAR>PROP ROTATION ANGLE:#ID#</ANIM_SIMVAR>
+		<ANIM_SIMVAR_UNITS>degrees</ANIM_SIMVAR_UNITS>
+		<ANIM_LENGTH>360</ANIM_LENGTH>
+	</UseTemplate>
+</Template>
+<Template Name="Propeller_Visibility_Base_Template">
+	<DefaultTemplateParameters>
+		<RECURSIVE_ID>2</RECURSIVE_ID>
+	</DefaultTemplateParameters>
+	<Component ID="#NODE_ID#" Node="#NODE_ID#">
+		<UseTemplate Name="Propeller_#STATE#_Visibility_Template">
+		</UseTemplate>
+	</Component>
+	<Condition Valid="NODE_ID#RECURSIVE_ID#">
+		<UseTemplate Name="Propeller_Visibility_Base_Template">
+			<RECURSIVE_ID Process="Int">#RECURSIVE_ID# 1 +</RECURSIVE_ID>
+			<NODE_ID Process="Param">NODE_ID#RECURSIVE_ID#</NODE_ID>
+		</UseTemplate>
+	</Condition>
+</Template>
+<Template Name="Propeller_Still_Visibility_Template">
+	<UseTemplate Name="GT_Visibility_Code">
+		<VISIBILITY_CODE>(A:PROP RPM:#ID#, rpm) #MIN_RPM_FOR_SLOW# &lt;</VISIBILITY_CODE>
+	</UseTemplate>
+</Template>
+<Template Name="Propeller_Slow_Visibility_Template">
+	<UseTemplate Name="GT_Visibility_Code">
+		<VISIBILITY_CODE>
+				(A:PROP RPM:#ID#, rpm) #MIN_RPM_FOR_SLOW# &gt;
+				(A:PROP RPM:#ID#, rpm) #MIN_RPM_FOR_BLUR# &lt; and
+		</VISIBILITY_CODE>
+	</UseTemplate>
+</Template>
+<Template Name="Propeller_Blurred_Visibility_Template">
+	<UseTemplate Name="GT_Visibility_Code">
+		<VISIBILITY_CODE>(A:PROP RPM:#ID#, rpm) #MIN_RPM_FOR_BLUR# &gt;</VISIBILITY_CODE>
+	</UseTemplate>
+</Template>
+	
+<Template Name="Propeller_Basic_Template">
+	<DefaultTemplateParameters>
+		<ID>1</ID>
+		<MIN_RPM_FOR_SLOW>143</MIN_RPM_FOR_SLOW>
+		<MIN_RPM_FOR_BLUR>287.5</MIN_RPM_FOR_BLUR>
+		<FROSTED>True</FROSTED>
+		<SIDE_BLUR>True</SIDE_BLUR>
+	</DefaultTemplateParameters>
+	<UseTemplate Name="Propeller_Basic_SubTemplate">
+	</UseTemplate>
+</Template>
+
+<Template Name="Propeller_Basic_SubTemplate">
+	<DefaultTemplateParameters>
+		<ANIM_NODE_ID>prop#ID#_anim</ANIM_NODE_ID>
+		<ANIM_NAME>prop#ID#_anim</ANIM_NAME>
+		<STILL_NODE_ID>prop#ID#_still</STILL_NODE_ID>
+		<SLOW_NODE_ID>prop#ID#_slow</SLOW_NODE_ID>
+		<PROP_BLURRED_NODE_ID>prop#ID#_blurred</PROP_BLURRED_NODE_ID>
+		<CONE_BLURRED_NODE_ID>cone#ID#_blurred</CONE_BLURRED_NODE_ID>
+		<Condition Valid="FROSTED">
+			<FROSTED_BLURRED_NODE_ID>cone#ID#_blurred_frosted</FROSTED_BLURRED_NODE_ID>
+			<FROSTED_STILL_NODE_ID>prop#ID#_still_frosted</FROSTED_STILL_NODE_ID>
+			<FROSTED_SLOW_NODE_ID>prop#ID#_slow_frosted</FROSTED_SLOW_NODE_ID>
+			<FROST_SUFFIX_BLADES>_Frost</FROST_SUFFIX_BLADES>
+		</Condition>
+		<Condition Valid="SIDE_BLUR">
+			<PROP_SIDE_BLURRED_NODE_ID>side_prop#ID#_blurred</PROP_SIDE_BLURRED_NODE_ID>
+		</Condition>
+	</DefaultTemplateParameters>
+	<Component ID="#ANIM_NODE_ID#" Node="#ANIM_NODE_ID#">
+		<UseTemplate Name="Propeller_Anim_Rotation_Template"></UseTemplate>
+	</Component>
+	<UseTemplate Name="Propeller_Visibility_Base_Template">
+		<STATE>Still</STATE>
+		<NODE_ID>#STILL_NODE_ID#</NODE_ID>
+		<Condition Valid="FROSTED">
+			<True>
+				<NODE_ID2>#FROSTED_STILL_NODE_ID#</NODE_ID2>
+				<Condition Valid="STILL_NODE_ID_BLADE_1">
+					<NODE_ID3>#STILL_NODE_ID_BLADE_1#</NODE_ID3>
+					<NODE_ID4>#STILL_NODE_ID_BLADE_1##FROST_SUFFIX_BLADES#</NODE_ID4>
+				</Condition>
+				<Condition Valid="STILL_NODE_ID_BLADE_2">
+					<NODE_ID5>#STILL_NODE_ID_BLADE_2#</NODE_ID5>
+					<NODE_ID6>#STILL_NODE_ID_BLADE_2##FROST_SUFFIX_BLADES#</NODE_ID6>
+				</Condition>
+				<Condition Valid="STILL_NODE_ID_BLADE_3">
+					<NODE_ID7>#STILL_NODE_ID_BLADE_3#</NODE_ID7>
+					<NODE_ID8>#STILL_NODE_ID_BLADE_3##FROST_SUFFIX_BLADES#</NODE_ID8>
+				</Condition>
+				<Condition Valid="STILL_NODE_ID_BLADE_4">
+					<NODE_ID7>#STILL_NODE_ID_BLADE_4#</NODE_ID7>
+					<NODE_ID8>#STILL_NODE_ID_BLADE_4##FROST_SUFFIX_BLADES#</NODE_ID8>
+				</Condition>
+			</True>
+			<False>
+				<Condition Valid="STILL_NODE_ID_BLADE_1">
+					<NODE_ID2>#STILL_NODE_ID_BLADE_1#</NODE_ID2>
+				</Condition>
+				<Condition Valid="STILL_NODE_ID_BLADE_2">
+					<NODE_ID3>#STILL_NODE_ID_BLADE_2#</NODE_ID3>
+				</Condition>
+				<Condition Valid="STILL_NODE_ID_BLADE_3">
+					<NODE_ID4>#STILL_NODE_ID_BLADE_3#</NODE_ID4>
+				</Condition>
+				<Condition Valid="STILL_NODE_ID_BLADE_4">
+					<NODE_ID5>#STILL_NODE_ID_BLADE_4#</NODE_ID5>
+				</Condition>
+			</False>
+		</Condition>
+		</UseTemplate>
+	<UseTemplate Name="Propeller_Visibility_Base_Template">
+		<STATE>Slow</STATE>
+		<NODE_ID>#SLOW_NODE_ID#</NODE_ID>
+		<Condition Valid="FROSTED">
+			<NODE_ID2>#FROSTED_SLOW_NODE_ID#</NODE_ID2>
+		</Condition>
+		</UseTemplate>
+	<UseTemplate Name="Propeller_Visibility_Base_Template">
+		<STATE>Blurred</STATE>
+		<NODE_ID>#CONE_BLURRED_NODE_ID#</NODE_ID>
+		<NODE_ID2>#PROP_BLURRED_NODE_ID#</NODE_ID2>
+		<Condition Valid="FROSTED">
+			<True>
+				<NODE_ID3>#FROSTED_BLURRED_NODE_ID#</NODE_ID3>
+				<Condition Valid="SIDE_BLUR">
+					<NODE_ID4>#PROP_SIDE_BLURRED_NODE_ID#</NODE_ID4>
+				</Condition>
+			</True>
+			<False>
+				<Condition Valid="SIDE_BLUR">
+					<NODE_ID3>#PROP_SIDE_BLURRED_NODE_ID#</NODE_ID3>
+				</Condition>
+			</False>
+		</Condition>
+		</UseTemplate>
+</Template>
+
+<Template Name="EXTERIOR_Jet_Turbine_Anim_Rotation_Template">
+	<UseTemplate Name="GT_Anim">
+		<ANIM_CODE>(A:GENERAL ENG RPM:#ID#, degrees per second) (A:ANIMATION DELTA TIME, seconds) *</ANIM_CODE>
+		<ANIM_LENGTH>360</ANIM_LENGTH>
+		<ANIM_WRAP>1</ANIM_WRAP>
+		<ANIM_DELTA>1</ANIM_DELTA>
+	</UseTemplate>
+</Template>
+<Template Name="EXTERIOR_Jet_Turbine_Still_Visibility_Template">
+	<UseTemplate Name="GT_Visibility">
+		<VISIBILITY_CODE> (A:GENERAL ENG RPM:#ID#, rpm) #MIN_RPM_FOR_SLOW# &lt; </VISIBILITY_CODE>
+	</UseTemplate>
+</Template>
+<Template Name="EXTERIOR_Jet_Turbine_Slow_Visibility_Template">
+	<UseTemplate Name="GT_Visibility">
+		<VISIBILITY_CODE>
+			(A:GENERAL ENG RPM:#ID#, rpm) #MIN_RPM_FOR_SLOW# &gt;
+			(A:GENERAL ENG RPM:#ID#, rpm) #MIN_RPM_FOR_BLUR# &lt; and
+		</VISIBILITY_CODE>
+	</UseTemplate>
+</Template>
+<Template Name="EXTERIOR_Jet_Turbine_Blurred_Visibility_Template">
+	<UseTemplate Name="GT_Visibility">
+		<VISIBILITY_CODE>(A:GENERAL ENG RPM:#ID#, rpm) #MIN_RPM_FOR_BLUR# &gt;</VISIBILITY_CODE>
+	</UseTemplate>
+</Template>
+	
+<Template Name="EXTERIOR_Jet_Turbine_Template">
+	<DefaultTemplateParameters>
+		<ANIM_NODE_ID>N1_#ID#_anim</ANIM_NODE_ID>
+		<ANIM_NAME>N1_#ID#_anim</ANIM_NAME>
+		<STILL_NODE_ID>N1_#ID#_still</STILL_NODE_ID>
+		<SLOW_NODE_ID>N1_#ID#_slow</SLOW_NODE_ID>
+		<BLURRED_NODE_ID>N1_#ID#_blurred</BLURRED_NODE_ID>
+		<MIN_RPM_FOR_SLOW>188</MIN_RPM_FOR_SLOW>
+		<MIN_RPM_FOR_BLUR>375</MIN_RPM_FOR_BLUR>
+	</DefaultTemplateParameters>
+	
+	<Component ID="Jet_Turbine_#ID#_anim" Node="#ANIM_NODE_ID#">
+		<UseTemplate Name="EXTERIOR_Jet_Turbine_Anim_Rotation_Template">
+		</UseTemplate>
+	</Component>
+	<Component ID="Jet_Turbine_#ID#_still" Node="#STILL_NODE_ID#">
+		<UseTemplate Name="EXTERIOR_Jet_Turbine_Still_Visibility_Template">
+		</UseTemplate>
+	</Component>
+	<Component ID="Jet_Turbine_#ID#_slow" Node="#SLOW_NODE_ID#">
+		<UseTemplate Name="EXTERIOR_Jet_Turbine_Slow_Visibility_Template">
+		</UseTemplate>
+	</Component>
+	<Component ID="Jet_Turbine_#ID#_blurred" Node="#BLURRED_NODE_ID#">
+		<UseTemplate Name="EXTERIOR_Jet_Turbine_Blurred_Visibility_Template">
+		</UseTemplate>
+	</Component>
+</Template>
+
+<Template Name="EXTERIOR_Turbine_Thrust_Reverser_Template">
+	<DefaultTemplateParameters>
+		<ID>1</ID>
+	</DefaultTemplateParameters>
+	
+	<UseTemplate Name="EXTERIOR_Turbine_Thrust_Reverser_SubTemplate">
+	</UseTemplate>
+</Template>
+
+<Template Name="EXTERIOR_Turbine_Thrust_Reverser_SubTemplate">
+	<DefaultTemplateParameters>
+		<ANIM_NAME>thrust_rev_#ID#</ANIM_NAME>
+	</DefaultTemplateParameters>
+	
+	<UseTemplate Name="GT_Anim">
+		<ANIM_SIMVAR>TURB ENG REVERSE NOZZLE PERCENT:#ID#</ANIM_SIMVAR>
+		<ANIM_SIMVAR_UNITS>Percent</ANIM_SIMVAR_UNITS>
+	</UseTemplate>
+</Template>
+
+<!-- Gears ############################################################## -->
+
+<Template Name="EXTERIOR_Gear_Template">
+	<DefaultTemplateParameters>
+		<ID>0</ID>
+	</DefaultTemplateParameters>
+
+	<UseTemplate Name="GT_Anim_Sim">
+		<ANIM_SIMVAR>GEAR ANIMATION POSITION:#ID#</ANIM_SIMVAR>
+		<ANIM_SIMVAR_UNITS>percent</ANIM_SIMVAR_UNITS>
+	</UseTemplate>
+</Template>
+
+<!-- Gears ############################################################## -->
+
+<Template Name="EXTERIOR_Tire_Anim">
+	<UseTemplate Name="GT_Anim">
+		<ANIM_SIMVAR>#ANIM_SIDE# WHEEL ROTATION ANGLE</ANIM_SIMVAR>
+		<ANIM_SIMVAR_UNITS>degrees</ANIM_SIMVAR_UNITS>
+		<ANIM_LENGTH>360</ANIM_LENGTH>
+		<ANIM_WRAP>1</ANIM_WRAP>
+	</UseTemplate>
+</Template>
+
+<Template Name="EXTERIOR_Tires_L_Template">
+	<DefaultTemplateParameters>
+		<ANIM_SIDE>LEFT</ANIM_SIDE>
+		<ANIM_SIDE_SHORTHAND>l</ANIM_SIDE_SHORTHAND>
+	</DefaultTemplateParameters>
+
+	<UseTemplate Name="Tire_Template_Base">
+	</UseTemplate>
+</Template>
+
+<Template Name="EXTERIOR_Tires_R_Template">
+	<DefaultTemplateParameters>
+		<ANIM_SIDE>RIGHT</ANIM_SIDE>
+		<ANIM_SIDE_SHORTHAND>r</ANIM_SIDE_SHORTHAND>
+	</DefaultTemplateParameters>
+
+	<UseTemplate Name="Tire_Template_Base">
+	</UseTemplate>
+</Template>
+
+<Template Name="EXTERIOR_Tires_C_Template">
+	<DefaultTemplateParameters>
+		<ANIM_SIDE>CENTER</ANIM_SIDE>
+		<ANIM_SIDE_SHORTHAND>c</ANIM_SIDE_SHORTHAND>
+	</DefaultTemplateParameters>
+
+	<UseTemplate Name="Tire_Template_Base">
+	</UseTemplate>
+</Template>
+
+<Template Name="Tire_Template_Base">
+	<DefaultTemplateParameters>
+		<RPM_LIMIT>400</RPM_LIMIT>
+		<ANIM_NAME>#ANIM_SIDE_SHORTHAND#_tire_anim</ANIM_NAME>
+		<NODE_ID_STILL>#ANIM_SIDE#_WHEEL_STILL</NODE_ID_STILL>
+		<NODE_ID_BLURRED>#ANIM_SIDE#_WHEEL_BLURRED</NODE_ID_BLURRED>
+	</DefaultTemplateParameters>
+	
+	<Condition Check="NO_ANIMATION">
+		<False>
+			<UseTemplate Name="EXTERIOR_Tire_Anim">
+			</UseTemplate>
+		</False>
+	</Condition>
+	
+	<Component ID="#NODE_ID_STILL#" Node="#NODE_ID_STILL#">
+		<UseTemplate Name="GT_Visibility">
+			<VISIBILITY_CODE>(A:#ANIM_SIDE# WHEEL RPM, rpm) #RPM_LIMIT# &gt; if{ 0 } els{ 1 }</VISIBILITY_CODE>
+		</UseTemplate>
+	</Component>
+	<Component ID="#NODE_ID_BLURRED#" Node="#NODE_ID_BLURRED#">
+		<UseTemplate Name="GT_Visibility">
+			<VISIBILITY_CODE>(A:#ANIM_SIDE# WHEEL RPM, rpm) #RPM_LIMIT# &gt; if{ 1 } els{ 0 }</VISIBILITY_CODE>
+		</UseTemplate>
+	</Component>
+	
+	<Condition Check="NODE_ID_STILL_2">
+		<True>
+			<Component ID="#NODE_ID_STILL_2#" Node="#NODE_ID_STILL_2#">
+				<UseTemplate Name="GT_Visibility">
+					<VISIBILITY_CODE>(A:#ANIM_SIDE# WHEEL RPM, rpm) #RPM_LIMIT# &gt; if{ 0 } els{ 1 }</VISIBILITY_CODE>
+				</UseTemplate>
+			</Component>
+		</True>
+	</Condition>
+	<Condition Check="NODE_ID_BLURRED_2">
+		<True>
+			<Component ID="#NODE_ID_BLURRED_2#" Node="#NODE_ID_BLURRED_2#">
+				<UseTemplate Name="GT_Visibility">
+					<VISIBILITY_CODE>(A:#ANIM_SIDE# WHEEL RPM, rpm) #RPM_LIMIT# &gt; if{ 1 } els{ 0 }</VISIBILITY_CODE>
+				</UseTemplate>
+			</Component>
+		</True>
+	</Condition>
+</Template>
+
+<Template Name="EXTERIOR_Gear_Steering_Template">
+	<DefaultTemplateParameters>
+		<ANIM_NAME>EXTERIOR_Gear_Steering</ANIM_NAME>
+		<ID>0</ID>
+	</DefaultTemplateParameters>
+
+	<UseTemplate Name="GT_Anim">
+		<ANIM_CODE>(A:GEAR STEER ANGLE:#ID#, degrees) dnor </ANIM_CODE>
+		<ANIM_LENGTH>360</ANIM_LENGTH>
+		<ANIM_WRAP>True</ANIM_WRAP>
+	</UseTemplate>
+</Template>
+
+<!-- Ailerons ############################################################## -->
+
+<Template Name="Ailerons_Template">
+	<DefaultTemplateParameters>
+		<ANIM_NAME_LEFT>l_aileron_percent_key</ANIM_NAME_LEFT>
+		<ANIM_NAME_RIGHT>r_aileron_percent_key</ANIM_NAME_RIGHT>
+	</DefaultTemplateParameters>
+	<Condition Check="INTEGRATED_TRIM">
+		<True>
+			<UseTemplate Name="GT_Anim">
+				<ANIM_NAME>#ANIM_NAME_LEFT#</ANIM_NAME>
+				<ANIM_CODE>(A:AILERON LEFT DEFLECTION PCT, Percent) 1.25 * (A:AILERON TRIM PCT, Percent) + 100 min -100 max 0.5 * 50 +</ANIM_CODE>
+			</UseTemplate>
+			<UseTemplate Name="GT_Anim">
+				<ANIM_NAME>#ANIM_NAME_RIGHT#</ANIM_NAME>
+				<ANIM_CODE>(A:AILERON RIGHT DEFLECTION PCT, Percent) 1.25 * (A:AILERON TRIM PCT, Percent) + 100 min -100 max 0.5 * 50 +</ANIM_CODE>
+			</UseTemplate>
+		</True>
+		<False>
+			<Animation name="#ANIM_NAME_LEFT#" guid="" length="100" type="Sim" typeParam="AutoPlay">
+				<Parameter>
+					<Sim>
+						<Variable>AILERON LEFT DEFLECTION PCT</Variable>
+						<Units>percent</Units> <!-- [-100, 100] -->
+						<Scale>0.5</Scale> <!-- [-100, 100] * 0.5 => [-50, 50] (length 100) -->
+						<Bias>50</Bias> <!-- [-50, 50] + 50 => [0, 100] -->
+					</Sim>
+				</Parameter>
+			</Animation>
+			<Animation name="#ANIM_NAME_RIGHT#" guid="" length="100" type="Sim" typeParam="AutoPlay">
+				<Parameter>
+					<Sim>
+						<Variable>AILERON RIGHT DEFLECTION PCT</Variable>
+						<Units>percent</Units> <!-- [-100, 100] -->
+						<Scale>0.5</Scale> <!-- [-100, 100] * 0.5 => [-50, 50] (length 100) -->
+						<Bias>50</Bias> <!-- [-50, 50] + 50 => [0, 100] -->
+					</Sim>
+				</Parameter>
+			</Animation>
+		</False>
+	</Condition>
+</Template>
+
+<Template Name="Trimtab_Aileron_Template">
+	<DefaultTemplateParameters>
+		<ANIM_NAME>trimtab_aileron</ANIM_NAME>
+	</DefaultTemplateParameters>
+
+	<Animation name="#ANIM_NAME#" guid="" length="100" type="Sim" typeParam="AutoPlay">
+		<Parameter>
+			<Sim>
+				<Variable>AILERON TRIM PCT</Variable>
+				<Units>percent</Units> <!-- [-100, 100] -->
+				<Scale>0.5</Scale> <!-- [-100, 100] * 0.5 => [-50, 50] (length 100) -->
+				<Bias>50</Bias> <!-- [-50, 50] + 50 => [0, 100] -->
+			</Sim>
+		</Parameter>
+	</Animation>
+</Template>
+
+<Template Name="EXTERIOR_Spoilers_Template">
+	<DefaultTemplateParameters>
+		<ANIM_NAME_LEFT>l_spoiler_key</ANIM_NAME_LEFT>
+		<ANIM_NAME_RIGHT>r_spoiler_key</ANIM_NAME_RIGHT>
+	</DefaultTemplateParameters>
+
+	<Component ID="Spoilers">
+		<UseTemplate Name="GT_Anim">
+			<ANIM_NAME>#ANIM_NAME_LEFT#</ANIM_NAME>
+			<ANIM_SIMVAR>SPOILERS LEFT POSITION</ANIM_SIMVAR>
+			<ANIM_SIMVAR_UNITS>Percent</ANIM_SIMVAR_UNITS>
+		</UseTemplate>
+		<UseTemplate Name="GT_Anim">
+			<ANIM_NAME>#ANIM_NAME_RIGHT#</ANIM_NAME>
+			<ANIM_SIMVAR>SPOILERS RIGHT POSITION</ANIM_SIMVAR>
+			<ANIM_SIMVAR_UNITS>Percent</ANIM_SIMVAR_UNITS>
+		</UseTemplate>
+	</Component>
+</Template>
+
+<!-- Elevators ############################################################# -->
+
+<Template Name="Elevators_Template">
+	<DefaultTemplateParameters>
+		<ANIM_NAME>elevator_percent_key</ANIM_NAME>
+	</DefaultTemplateParameters>
+
+	<Animation name="#ANIM_NAME#" guid="" length="100" type="Sim" typeParam="AutoPlay">
+		<Parameter>
+			<Sim>
+				<Variable>ELEVATOR DEFLECTION PCT</Variable>
+				<Units>percent</Units> <!-- [-100, 100] -->
+				<Scale>0.5</Scale> <!-- [-100, 100] * 0.5 => [-50, 50] (length 100) -->
+				<Bias>50</Bias> <!-- [-50, 50] + 50 => [0, 100] -->
+			</Sim>
+		</Parameter>
+	</Animation>
+</Template>
+
+<Template Name="Trimtab_Elevator_Template">
+	<DefaultTemplateParameters>
+		<ANIM_NAME>trimtab_elevator</ANIM_NAME>
+	</DefaultTemplateParameters>
+
+	<Animation name="#ANIM_NAME#" guid="" length="100" type="Sim" typeParam="AutoPlay">
+		<Parameter>
+			<Sim>
+				<Variable>ELEVATOR TRIM PCT</Variable>
+				<Units>percent</Units> <!-- [-100, 100] -->
+				<Scale>0.5</Scale> <!-- [-100, 100] * 0.5 => [-50, 50] (length 100) -->
+				<Bias>50</Bias> <!-- [-50, 50] + 50 => [0, 100] -->
+			</Sim>
+		</Parameter>
+	</Animation>
+</Template>
+
+<Template Name="Trimtab_Elevator_CounterTrim_Template">
+	<DefaultTemplateParameters>
+		<ANIM_NAME>trimtab_elevator_key</ANIM_NAME>
+	</DefaultTemplateParameters>
+
+	<UseTemplate Name="GT_Anim_Code">
+		<ANIM_CODE>(A:ELEVATOR DEFLECTION PCT, percent) -0.25 * (A:ELEVATOR TRIM PCT, percent) 0.75 * + 0.5 * 50 +</ANIM_CODE>
+	</UseTemplate>
+</Template>
+
+
+<!-- Rudder ################################################################ -->
+
+<Template Name="Rudder_Template">
+	<DefaultTemplateParameters>
+		<ANIM_NAME>rudder_percent_key</ANIM_NAME>
+	</DefaultTemplateParameters>
+
+	<Condition Check="INTEGRATED_TRIM">
+		<True>
+			<UseTemplate Name="GT_Anim">
+				<ANIM_CODE>(A:RUDDER TRIM PCT, Percent) 0.25 * (A:RUDDER DEFLECTION PCT, Percent) 1.25 * + 100 min -100 max 0.5 * 50 +</ANIM_CODE>
+			</UseTemplate>
+		</True>
+		<False>
+			<UseTemplate Name="GT_Anim">
+				<ANIM_SIMVAR>RUDDER DEFLECTION PCT</ANIM_SIMVAR>
+				<ANIM_SIMVAR_UNITS>percent</ANIM_SIMVAR_UNITS>
+				<ANIM_SIMVAR_SCALE>0.5</ANIM_SIMVAR_SCALE>
+				<ANIM_SIMVAR_BIAS>50</ANIM_SIMVAR_BIAS>
+			</UseTemplate>
+		</False>
+	</Condition>
+</Template>
+
+<Template Name="Trimtab_Rudder_Template">
+	<DefaultTemplateParameters>
+		<ANIM_NAME>trimtab_rudder</ANIM_NAME>
+	</DefaultTemplateParameters>
+
+	<Animation name="#ANIM_NAME#" guid="" length="100" type="Sim" typeParam="AutoPlay">
+		<Parameter>
+			<Sim>
+				<Variable>RUDDER TRIM PCT</Variable>
+				<Units>percent</Units> <!-- [-100, 100] -->
+				<Scale>0.5</Scale> <!-- [-100, 100] * 0.5 => [-50, 50] (length 100) -->
+				<Bias>50</Bias> <!-- [-50, 50] + 50 => [0, 100] -->
+			</Sim>
+		</Parameter>
+	</Animation>
+</Template>
+
+
+<!-- Flaps ################################################################# -->
+
+<Template Name="Flaps_Template">
+	<DefaultTemplateParameters>
+		<ANIM_NAME_LEFT>l_flap_percent_key</ANIM_NAME_LEFT>
+		<ANIM_NAME_RIGHT>r_flap_percent_key</ANIM_NAME_RIGHT>
+	</DefaultTemplateParameters>
+
+	<UseTemplate Name="GT_Anim">
+		<ANIM_NAME>#ANIM_NAME_LEFT#</ANIM_NAME>
+		<ANIM_LENGTH>100</ANIM_LENGTH>
+		<ANIM_SIMVAR>TRAILING EDGE FLAPS LEFT PERCENT</ANIM_SIMVAR>
+		<ANIM_SIMVAR_UNITS>Percent</ANIM_SIMVAR_UNITS>
+	</UseTemplate>
+	<UseTemplate Name="GT_Anim">
+		<ANIM_NAME>#ANIM_NAME_RIGHT#</ANIM_NAME>
+		<ANIM_LENGTH>100</ANIM_LENGTH>
+		<ANIM_SIMVAR>TRAILING EDGE FLAPS RIGHT PERCENT</ANIM_SIMVAR>
+		<ANIM_SIMVAR_UNITS>Percent</ANIM_SIMLEFTVAR_UNITS>
+	</UseTemplate>
+</Template>
+
+<Template Name="Flaperons_Template">
+	<DefaultTemplateParameters>
+		<ANIM_NAME_LEFT>l_flaperon_percent_key</ANIM_NAME_LEFT>
+		<ANIM_NAME_RIGHT>r_flaperon_percent_key</ANIM_NAME_RIGHT>
+		<MIN_SPEED_TAKEOFF_HYDRAULICS>80</MIN_SPEED_TAKEOFF_HYDRAULICS>
+		<ANIM_LENGTH>100</ANIM_LENGTH>
+		<ANIM_LAG>100</ANIM_LAG>
+	</DefaultTemplateParameters>
+	<OverrideTemplateParameters>
+		<IS_TAKING_OFF_CONDITION>
+			(A:GROUND VELOCITY, Knots) sp0
+			(A:GENERAL ENG THROTTLE LEVER POSITION:1, Percent) 0 &gt;
+			(A:GENERAL ENG PCT MAX RPM:1, Percent) 20 &gt; and 
+			l0 #MIN_SPEED_TAKEOFF_HYDRAULICS# &lt; and
+		</IS_TAKING_OFF_CONDITION>
+		<MIN_SPEED_TAKEOFF_AEORDYNAMIC_LIFT Process="Float">#MIN_SPEED_TAKEOFF_HYDRAULICS# 0.45 *</MIN_SPEED_TAKEOFF_AEORDYNAMIC_LIFT>
+		<MAX_SPEED_TAKEOFF_AEORDYNAMIC_LIFT Process="Float">#MIN_SPEED_TAKEOFF_HYDRAULICS# 0.85 *</MAX_SPEED_TAKEOFF_AEORDYNAMIC_LIFT>
+		<ANIM_CODE_LEFT_BASE>
+			0.5 (A:AILERON LEFT DEFLECTION PCT, Percent over 100) -0.5 * +
+			(A:TRAILING EDGE FLAPS LEFT PERCENT, Percent over 100) 0.4 * +
+		</ANIM_CODE_LEFT_BASE>
+		<ANIM_CODE_RIGHT_BASE>
+			0.5 (A:AILERON RIGHT DEFLECTION PCT, Percent over 100) 0.5 * +
+			(A:TRAILING EDGE FLAPS RIGHT PERCENT, Percent over 100) 0.4 * +
+		</ANIM_CODE_RIGHT_BASE>
+	</OverrideTemplateParameters>
+	<UseTemplate Name="GT_Anim">
+		<ANIM_NAME>#ANIM_NAME_LEFT#</ANIM_NAME>
+		<ANIM_CODE>
+			#IS_TAKING_OFF_CONDITION# if{
+				(* Takeoff mode - hydraulics are disabled and animation is driven by aerodynamic forces (Simplified as just a factor of velocity) *)
+				1 l0 #MIN_SPEED_TAKEOFF_AEORDYNAMIC_LIFT# - #MAX_SPEED_TAKEOFF_AEORDYNAMIC_LIFT# #MIN_SPEED_TAKEOFF_AEORDYNAMIC_LIFT# - / 0 max 1 min - sp1
+			} els{
+				#ANIM_CODE_LEFT_BASE#
+				0 max 1 min sp1
+			}
+			l1 #ANIM_LENGTH# * 
+		</ANIM_CODE>
+	</UseTemplate>
+	<UseTemplate Name="GT_Anim">
+		<ANIM_NAME>#ANIM_NAME_RIGHT#</ANIM_NAME>
+		<ANIM_CODE>
+			#IS_TAKING_OFF_CONDITION# if{
+				(* Takeoff mode - hydraulics are disabled and animation is driven by aerodynamic forces (Simplified as just a factor of velocity) *)
+				1 l0 #MIN_SPEED_TAKEOFF_AEORDYNAMIC_LIFT# - #MAX_SPEED_TAKEOFF_AEORDYNAMIC_LIFT# #MIN_SPEED_TAKEOFF_AEORDYNAMIC_LIFT# - / 0 max 1 min - sp1
+			} els{
+				#ANIM_CODE_RIGHT_BASE#
+				0 max 1 min sp1
+			}
+			l1 #ANIM_LENGTH# * 
+		</ANIM_CODE>
+	</UseTemplate>
+</Template>
+
+<!-- Slats ################################################################# -->
+
+<Template Name="Slats_Template">
+	<DefaultTemplateParameters>
+		<ANIM_NAME_LEFT>l_slat_percent_key</ANIM_NAME_LEFT>
+		<ANIM_NAME_RIGHT>r_slat_percent_key</ANIM_NAME_RIGHT>
+	</DefaultTemplateParameters>
+
+	<UseTemplate Name="GT_Anim">
+		<ANIM_NAME>#ANIM_NAME_LEFT#</ANIM_NAME>
+		<ANIM_LENGTH>100</ANIM_LENGTH>
+		<ANIM_SIMVAR>LEADING EDGE FLAPS LEFT PERCENT</ANIM_SIMVAR>
+		<ANIM_SIMVAR_UNITS>Percent</ANIM_SIMVAR_UNITS>
+	</UseTemplate>
+	<UseTemplate Name="GT_Anim">
+		<ANIM_NAME>#ANIM_NAME_RIGHT#</ANIM_NAME>
+		<ANIM_LENGTH>100</ANIM_LENGTH>
+		<ANIM_SIMVAR>LEADING EDGE FLAPS RIGHT PERCENT</ANIM_SIMVAR>
+		<ANIM_SIMVAR_UNITS>Percent</ANIM_SIMLEFTVAR_UNITS>
+	</UseTemplate>
+</Template>
+
+
+<!-- Spoilers ############################################################## -->
+
+<Template Name="Spoilers_Template">
+	<DefaultTemplateParameters>
+		<ANIM_NAME_LEFT>l_spoiler_key</ANIM_NAME_LEFT>
+		<ANIM_NAME_RIGHT>r_spoiler_key</ANIM_NAME_RIGHT>
+	</DefaultTemplateParameters>
+
+	<Animation name="#ANIM_NAME_LEFT#" guid="" length="100" type="Sim" typeParam="AutoPlay">
+		<Parameter>
+			<Sim>
+				<Variable>SPOILERS LEFT POSITION</Variable>
+				<Units>percent</Units> <!-- [0, 100] -->
+			</Sim>
+		</Parameter>
+	</Animation>
+	<Animation name="#ANIM_NAME_RIGHT#" guid="" length="100" type="Sim" typeParam="AutoPlay">
+		<Parameter>
+			<Sim>
+				<Variable>SPOILERS RIGHT POSITION</Variable>
+				<Units>percent</Units> <!-- [0, 100] -->
+			</Sim>
+		</Parameter>
+	</Animation>
+</Template>
+
+
+<!-- Protections ########################################################### -->
+
+<Template Name="Protections_Visibility_Template">
+
+	<Visibility>
+		<Parameter>
+			<Sim>
+				<Variable>PLANE IN PARKING STATE</Variable>
+				<Units>bool</Units>
+			</Sim>
+		</Parameter>
+	</Visibility>
+</Template>
+
+<Template Name="Visible_In_Hangar_Only">
+	<DefaultTemplateParameters>
+		<RECURSIVE_ID>2</RECURSIVE_ID>
+	</DefaultTemplateParameters>
+	<Component ID="#NODE_ID#" Node="#NODE_ID#">
+		<UseTemplate Name="GT_Visibility_Sim">
+			<VISIBILITY_SIMVAR>PLANE IN PARKING STATE</VISIBILITY_SIMVAR>
+			<VISIBILITY_SIMVAR_UNITS>Bool</VISIBILITY_SIMVAR_UNITS>
+		</UseTemplate>
+	</Component>
+	<Condition Valid="NODE_ID#RECURSIVE_ID#">
+		<UseTemplate Name="Visible_In_Hangar_Only">
+			<RECURSIVE_ID Process="Int">#RECURSIVE_ID# 1 +</RECURSIVE_ID>
+			<NODE_ID Process="Param">NODE_ID#RECURSIVE_ID#</NODE_ID>
+		</UseTemplate>
+	</Condition>
+</Template>
+
+<!-- Exterior lights ########################################################### --> 
+<!-- handles multiple lights indexes (ex: <LANDING>Landing_Left</LANDING> <LANDING2>Landing_Right</LANDING2> -->
+<Template Name="Exterior_Lights">
+	<DefaultTemplateParameters>
+		<NO_POTENTIOMETER_FACTOR>True</NO_POTENTIOMETER_FACTOR>
+	</DefaultTemplateParameters>
+	<Condition Valid="LANDING">
+		<UseTemplate Name="Exterior_Light_Template">
+			<TYPE>LANDING</TYPE>
+		</UseTemplate>
+	</Condition>
+	<Condition Valid="TAXI">
+		<UseTemplate Name="Exterior_Light_Template">
+			<TYPE>TAXI</TYPE>
+		</UseTemplate>
+	</Condition>
+	<Condition Valid="STROBE">
+		<UseTemplate Name="Exterior_Light_Template">
+			<TYPE>STROBE</TYPE>
+		</UseTemplate>
+	</Condition>
+	<Condition Valid="NAV">
+		<UseTemplate Name="Exterior_Light_Template">
+			<TYPE>NAV</TYPE>
+		</UseTemplate>
+	</Condition>
+	<Condition Valid="BEACON">
+		<UseTemplate Name="Exterior_Light_Template">
+			<TYPE>BEACON</TYPE>
+		</UseTemplate>
+	</Condition>
+	<Condition Valid="WING">
+		<UseTemplate Name="Exterior_Light_Template">
+			<TYPE>WING</TYPE>
+		</UseTemplate>
+	</Condition>
+</Template>
+
+<!-- Process first node_id from type -->
+<Template Name="Exterior_Light_Template">
+	<UseTemplate Name="Exterior_Light_SubTemplate">
+		<NODE_ID Process="Param">#TYPE#</NODE_ID>
+		<ID>1</ID>
+	</UseTemplate>
+</Template>
+
+<!-- To specify light index for simvar : #TYPE##ID#_SIMVAR_INDEX (ex:<LANDING2_SIMVAR_INDEX>1</LANDING2_SIMVAR_INDEX>)-->
+<Template Name="Exterior_Light_SubTemplate">
+	<DefaultTemplateParameters>
+		<RECURSIVE_ID>2</RECURSIVE_ID>
+	</DefaultTemplateParameters>
+	<OverrideTemplateParameters>
+		<Condition Valid="#TYPE##ID#_SIMVAR_INDEX">
+			<NO_SIMVAR_INDEX>True</NO_SIMVAR_INDEX>
+			<SIMVAR_INDEX Process="Param">#TYPE##ID#_SIMVAR_INDEX</SIMVAR_INDEX>
+		</Condition>
+	</OverrideTemplateParameters>
+	<Component ID="#NODE_ID#" Node="#NODE_ID#">
+		<UseTemplate Name="LIGHTING_Emissive_SubTemplate">
+			<SIMVAR_LIGHT>LIGHT #TYPE#</SIMVAR_LIGHT>
+			<SIMVAR_LIGHT_ON>LIGHT #TYPE# ON</SIMVAR_LIGHT_ON>
+			<Condition Valid="NO_SIMVAR_INDEX">
+				<False>
+					<SIMVAR_INDEX>#ID#</SIMVAR_INDEX>
+				</False>
+			</Condition>
+		</UseTemplate>
+	</Component>
+	<Condition Valid="#TYPE##RECURSIVE_ID#">
+		<UseTemplate Name="Exterior_Light_SubTemplate">
+			<RECURSIVE_ID Process="Int">#RECURSIVE_ID# 1 +</RECURSIVE_ID>
+			<NODE_ID Process="Param">#TYPE##RECURSIVE_ID#</NODE_ID>
+			<ID>#RECURSIVE_ID#</ID>
+		</UseTemplate>
+	</Condition>
+</Template>
+
+<!-- Cowl flaps -->
+<Template Name="Cowl_Flaps_Template">
+	<DefaultTemplateParameters>
+		<ID>1</ID>
+	</DefaultTemplateParameters>
+	<UseTemplate Name="Cowl_Flaps_SubTemplate">
+	</UseTemplate>
+</Template>
+<Template Name="Cowl_Flaps_SubTemplate">
+	<DefaultTemplateParameters>
+		<ANIM_NAME>cowl_flap#ID#_percent_key</ANIM_NAME>
+	</DefaultTemplateParameters>
+	<UseTemplate Name="GT_Anim">
+		<ANIM_NAME>#ANIM_NAME#</ANIM_NAME>
+		<ANIM_LENGTH>100</ANIM_LENGTH>
+		<ANIM_SIMVAR>RECIP ENG COWL FLAP POSITION:#ID#</ANIM_SIMVAR>
+		<ANIM_SIMVAR_UNITS>Percent</ANIM_SIMVAR_UNITS>
+	</UseTemplate>
+</Template>
+
+<!----------------------------------------------------------------------------------------------------------------------------->
+<!------------------------ New "Cleaner" version (not deleting the old one as long as it is in use ---------------------------->
+
+<!-- ENGINE ############################################################# -->
+	<!-- PROPELLER ###################################################### -->
+	<!-- Animate a propeller with different mesh depending on RPM (optional frost meshes and side blur, opt-in by default)(ID is used to identify which engine to look for) -->
+	<Template Name="ENGINE_Propeller_Template">
+		<DefaultTemplateParameters>
+			<ID>1</ID>
+			<MIN_RPM_FOR_SLOW>143</MIN_RPM_FOR_SLOW>
+			<MIN_RPM_FOR_BLUR>287.5</MIN_RPM_FOR_BLUR>
+			<FROSTED>True</FROSTED>
+			<SIDE_BLUR>True</SIDE_BLUR>
+			<BLADE_COUNT>0</BLADE_COUNT>
+			<USE_BLADE_ROTATION>False</USE_BLADE_ROTATION>
+			<NO_PROP_CONE_BLUR>False</NO_PROP_CONE_BLUR>
+		</DefaultTemplateParameters>
+		<UseTemplate Name="ENGINE_Propeller_SubTemplate"></UseTemplate>
+	</Template>
+	<Template Name="ENGINE_Propeller_SubTemplate">
+		<DefaultTemplateParameters>
+			<ANIM_NODE_ID>ENGINE_Propeller_#ID#</ANIM_NODE_ID>
+			<ANIM_NAME>ENGINE_Propeller_#ID#</ANIM_NAME>
+			<STILL_NODE_ID>ENGINE_Propeller_Still_#ID#</STILL_NODE_ID>
+			<SLOW_NODE_ID>ENGINE_Propeller_Slow_#ID#</SLOW_NODE_ID>
+			<PROP_BLURRED_NODE_ID>ENGINE_Propeller_Blurred_#ID#_Blades</PROP_BLURRED_NODE_ID>
+			<CONE_BLURRED_NODE_ID>ENGINE_Propeller_Blurred_#ID#_Cone</CONE_BLURRED_NODE_ID>
+			<Condition Valid="FROSTED">
+				<FROSTED_STILL_NODE_ID>ENGINE_Propeller_Still_#ID#_Frost</FROSTED_STILL_NODE_ID>
+				<FROSTED_SLOW_NODE_ID>ENGINE_Propeller_Slow_#ID#_Frost</FROSTED_SLOW_NODE_ID>
+				<FROSTED_BLURRED_NODE_ID>ENGINE_Propeller_Blurred_#ID#_Cone_Frost</FROSTED_BLURRED_NODE_ID>
+			</Condition>
+			<Condition Valid="SIDE_BLUR">
+				<PROP_SIDE_BLURRED_NODE_ID>ENGINE_Propeller_Blurred_#ID#_Side</PROP_SIDE_BLURRED_NODE_ID>
+			</Condition>
+			<PREFIX_BLADE_NODE_ID>ENGINE_Propeller_#ID#_Blade_</PREFIX_BLADE_NODE_ID>
+			<SUFFIX_BLADE_NODE_ID_FROSTED>_Frost</SUFFIX_BLADE_NODE_ID_FROSTED>
+			<Condition Valid="USE_BLADE_ROTATION">
+				<!-- For rotation of blades around their own axis influcend by propeller lever (simvar PROP BETA) -->
+				<ROTATION_ANIM_NAME>ENGINE_Propeller_#ID#_Blades</ROTATION_ANIM_NAME>
+			</Condition>
+		</DefaultTemplateParameters>
+		<Component ID="#ANIM_NODE_ID#" Node="#ANIM_NODE_ID#">
+			<UseTemplate Name="ENGINE_Propeller_Rotation_Template"></UseTemplate>
+		</Component>
+		<UseTemplate Name="ENGINE_Propeller_Visibility_Base_Template">
+			<STATE>Still</STATE>
+			<NODE_ID>#STILL_NODE_ID#</NODE_ID>
+			<Condition Valid="FROSTED">
+				<NODE_ID2>#FROSTED_STILL_NODE_ID#</NODE_ID2>
+			</Condition>
+		</UseTemplate>
+		<!-- Hide blades -->
+		<Condition>
+			<Test>
+				<Greater>
+					<Value>BLADE_COUNT</Value>
+					<Number>0</Number>
+				</Greater>
+			</Test>
+			<True>
+				<UseTemplate Name="GT_Helper_Recursive_ID">
+					<STATE>Still</STATE>
+					<!-- VV Recursive parameters VV -->
+					<EXIT_TEMPLATE>ENGINE_Propeller_Visibility_Base_Template</EXIT_TEMPLATE>
+					<PARAM1>NODE_ID</PARAM1>
+					<PARAM1_PREFIX>#PREFIX_BLADE_NODE_ID#</PARAM1_PREFIX>
+					<MAX_ID>#BLADE_COUNT#</MAX_ID>
+					<Condition Valid="FROSTED">
+						<PARAM2>NODE_ID2</PARAM2>
+						<PARAM2_PREFIX>#PREFIX_BLADE_NODE_ID#</PARAM2_PREFIX>
+						<PARAM2_SUFFIX>#SUFFIX_BLADE_NODE_ID_FROSTED#</PARAM2_SUFFIX>
+					</Condition>
+				</UseTemplate>
+			</True>
+		</Condition>
+		<UseTemplate Name="ENGINE_Propeller_Visibility_Base_Template">
+			<STATE>Slow</STATE>
+			<NODE_ID>#SLOW_NODE_ID#</NODE_ID>
+			<Condition Valid="NO_PROP_CONE_BLUR">
+				<False>
+					<Condition Valid="FROSTED">
+						<NODE_ID2>#FROSTED_SLOW_NODE_ID#</NODE_ID2>
+					</Condition>
+				</False>
+			</Condition>
+			</UseTemplate>
+		<UseTemplate Name="ENGINE_Propeller_Visibility_Base_Template">
+			<STATE>Blurred</STATE>
+			<Condition Valid="NO_PROP_CONE_BLUR">
+				<True>
+					<NODE_ID>#PROP_BLURRED_NODE_ID#</NODE_ID>
+				</True>
+				<False>
+					<NODE_ID>#CONE_BLURRED_NODE_ID#</NODE_ID>
+					<NODE_ID2>#PROP_BLURRED_NODE_ID#</NODE_ID2>
+					<Condition Valid="FROSTED">
+						<True>
+							<NODE_ID3>#FROSTED_BLURRED_NODE_ID#</NODE_ID3>
+						</True>
+					</Condition>
+				</False>
+			</Condition>
+		</UseTemplate>
+		<Condition Valid="SIDE_BLUR">
+			<UseTemplate Name="ENGINE_Propeller_Visibility_Base_Template">
+				<STATE>Blurred</STATE>
+				<NODE_ID>#PROP_SIDE_BLURRED_NODE_ID#</NODE_ID>
+			</UseTemplate>
+		</Condition>
+		<Condition Valid="USE_BLADE_ROTATION">
+			<UseTemplate Name="GT_Anim_Code">
+				<ANIM_NAME>#ROTATION_ANIM_NAME#</ANIM_NAME>
+				<ANIM_CODE>90 (A:PROP BETA:1, degrees) - dnor</ANIM_CODE>
+				<ANIM_LENGTH>360</ANIM_LENGTH>
+				<ANIM_LAG>100</ANIM_LAG>
+			</UseTemplate>
+		</Condition>
+	</Template>
+	
+	<!-- PROPELLER::Utils -->
+	<Template Name="ENGINE_Propeller_Rotation_Template">
+		<UseTemplate Name="GT_Anim_Sim">
+			<ANIM_SIMVAR>PROP ROTATION ANGLE:#ID#</ANIM_SIMVAR>
+			<ANIM_SIMVAR_UNITS>degrees</ANIM_SIMVAR_UNITS>
+			<ANIM_LENGTH>360</ANIM_LENGTH>
+		</UseTemplate>
+	</Template>
+	<Template Name="ENGINE_Propeller_Visibility_Base_Template">
+		<DefaultTemplateParameters>
+			<RECURSIVE_ID>2</RECURSIVE_ID>
+		</DefaultTemplateParameters>
+		<Component ID="#NODE_ID#" Node="#NODE_ID#">
+			<UseTemplate Name="ENGINE_Propeller_#STATE#_Visibility_Template">
+			</UseTemplate>
+		</Component>
+		<Condition Valid="NODE_ID#RECURSIVE_ID#">
+			<UseTemplate Name="ENGINE_Propeller_Visibility_Base_Template">
+				<RECURSIVE_ID Process="Int">#RECURSIVE_ID# 1 +</RECURSIVE_ID>
+				<NODE_ID Process="Param">NODE_ID#RECURSIVE_ID#</NODE_ID>
+			</UseTemplate>
+		</Condition>
+	</Template>
+	<Template Name="ENGINE_Propeller_Still_Visibility_Template">
+		<UseTemplate Name="GT_Visibility_Code">
+			<VISIBILITY_CODE>(A:PROP RPM:#ID#, rpm) #MIN_RPM_FOR_SLOW# &lt;</VISIBILITY_CODE>
+		</UseTemplate>
+	</Template>
+	<Template Name="ENGINE_Propeller_Slow_Visibility_Template">
+		<UseTemplate Name="GT_Visibility_Code">
+			<VISIBILITY_CODE>
+					(A:PROP RPM:#ID#, rpm) #MIN_RPM_FOR_SLOW# &gt;
+					(A:PROP RPM:#ID#, rpm) #MIN_RPM_FOR_BLUR# &lt; and
+			</VISIBILITY_CODE>
+		</UseTemplate>
+	</Template>
+	<Template Name="ENGINE_Propeller_Blurred_Visibility_Template">
+		<UseTemplate Name="GT_Visibility_Code">
+			<VISIBILITY_CODE>(A:PROP RPM:#ID#, rpm) #MIN_RPM_FOR_BLUR# &gt;</VISIBILITY_CODE>
+		</UseTemplate>
+	</Template>
+
+	<!-- TURBINE ######################################################## -->
+	<!-- Animate a turbine with different mesh depending on RPM (ID is used to identify which engine to look for) -->
+	<Template Name="ENGINE_Turbine_Template">
+		<DefaultTemplateParameters>
+			<ID>1</ID>
+			<MIN_RPM_FOR_SLOW>188</MIN_RPM_FOR_SLOW>
+			<MIN_RPM_FOR_BLUR>375</MIN_RPM_FOR_BLUR>
+		</DefaultTemplateParameters>
+		<UseTemplate Name="ENGINE_Turbine_SubTemplate"></UseTemplate>
+	</Template>
+	<Template Name="ENGINE_Turbine_SubTemplate">
+		<DefaultTemplateParameters>
+			<ANIM_NODE_ID>ENGINE_Turbine_#ID#</ANIM_NODE_ID>
+			<ANIM_NAME>ENGINE_Turbine_#ID#</ANIM_NAME>
+			<STILL_NODE_ID>ENGINE_Turbine_Still_#ID#</STILL_NODE_ID>
+			<SLOW_NODE_ID>ENGINE_Turbine_Slow_#ID#</SLOW_NODE_ID>
+			<BLURRED_NODE_ID>ENGINE_Turbine_Blurred_#ID#</BLURRED_NODE_ID>
+		</DefaultTemplateParameters>
+		<Component ID="ENGINE_Turbine_#ID#" Node="#ANIM_NODE_ID#">
+			<UseTemplate Name="ENGINE_Turbine_Rotation_Template">
+			</UseTemplate>
+		</Component>
+		<Component ID="ENGINE_Turbine_Still_#ID#" Node="#STILL_NODE_ID#">
+			<UseTemplate Name="ENGINE_Turbine_Still_Visibility_Template">
+			</UseTemplate>
+		</Component>
+		<Component ID="ENGINE_Turbine_Slow_#ID#" Node="#SLOW_NODE_ID#">
+			<UseTemplate Name="ENGINE_Turbine_Slow_Visibility_Template">
+			</UseTemplate>
+		</Component>
+		<Component ID="ENGINE_Turbine_Blurred_#ID#" Node="#BLURRED_NODE_ID#">
+			<UseTemplate Name="ENGINE_Turbine_Blurred_Visibility_Template">
+			</UseTemplate>
+		</Component>
+	</Template>
+	<!-- Animate a turbine thrust reverser (ID is used to identify which engine to look for) -->
+	<Template Name="ENGINE_Turbine_ReverseThrust_Template">
+		<DefaultTemplateParameters>
+			<ID>1</ID>
+		</DefaultTemplateParameters>
+		<UseTemplate Name="ENGINE_Turbine_ReverseThrust_SubTemplate">
+		</UseTemplate>
+	</Template>
+	<Template Name="ENGINE_Turbine_ReverseThrust_SubTemplate">
+		<DefaultTemplateParameters>
+			<ANIM_NAME>ENGINE_Turbine_ReverseThrust_#ID#</ANIM_NAME>
+		</DefaultTemplateParameters>
+		<UseTemplate Name="GT_Anim">
+			<ANIM_SIMVAR>TURB ENG REVERSE NOZZLE PERCENT:#ID#</ANIM_SIMVAR>
+			<ANIM_SIMVAR_UNITS>Percent</ANIM_SIMVAR_UNITS>
+		</UseTemplate>
+	</Template>
+
+	<!-- TURBINE::Utils -->
+	<Template Name="ENGINE_Turbine_Rotation_Template">
+		<UseTemplate Name="GT_Anim">
+			<ANIM_CODE>(A:GENERAL ENG RPM:#ID#, degrees per second) (A:ANIMATION DELTA TIME, seconds) *</ANIM_CODE>
+			<ANIM_LENGTH>360</ANIM_LENGTH>
+			<ANIM_WRAP>1</ANIM_WRAP>
+			<ANIM_DELTA>1</ANIM_DELTA>
+		</UseTemplate>
+	</Template>
+	<Template Name="ENGINE_Turbine_Still_Visibility_Template">
+		<UseTemplate Name="GT_Visibility">
+			<VISIBILITY_CODE>(A:GENERAL ENG RPM:#ID#, rpm) #MIN_RPM_FOR_SLOW# &lt;</VISIBILITY_CODE>
+		</UseTemplate>
+	</Template>
+	<Template Name="ENGINE_Turbine_Slow_Visibility_Template">
+		<UseTemplate Name="GT_Visibility">
+			<VISIBILITY_CODE>
+				(A:GENERAL ENG RPM:#ID#, rpm) #MIN_RPM_FOR_SLOW# &gt;
+				(A:GENERAL ENG RPM:#ID#, rpm) #MIN_RPM_FOR_BLUR# &lt; and
+			</VISIBILITY_CODE>
+		</UseTemplate>
+	</Template>
+	<Template Name="ENGINE_Turbine_Blurred_Visibility_Template">
+		<UseTemplate Name="GT_Visibility">
+			<VISIBILITY_CODE>(A:GENERAL ENG RPM:#ID#, rpm) #MIN_RPM_FOR_BLUR# &gt;</VISIBILITY_CODE>
+		</UseTemplate>
+	</Template>
+	
+	<!-- COWL_FLAPS ##################################################### -->
+	<!-- Animate CowlFlaps opening/closing (ID is used to identify which engine to look for) -->
+	<Template Name="ENGINE_CowlFlaps_Template">
+		<DefaultTemplateParameters>
+			<ID>1</ID>
+		</DefaultTemplateParameters>
+		<UseTemplate Name="ENGINE_CowlFlaps_SubTemplate">
+		</UseTemplate>
+	</Template>
+	<Template Name="ENGINE_CowlFlaps_SubTemplate">
+		<DefaultTemplateParameters>
+			<ANIM_NAME>ENGINE_CowlFlaps_#ID#</ANIM_NAME>
+		</DefaultTemplateParameters>
+		<UseTemplate Name="GT_Anim">
+			<ANIM_LENGTH>100</ANIM_LENGTH>
+			<ANIM_SIMVAR>RECIP ENG COWL FLAP POSITION:#ID#</ANIM_SIMVAR>
+			<ANIM_SIMVAR_UNITS>Percent</ANIM_SIMVAR_UNITS>
+		</UseTemplate>
+	</Template>
+
+<!-- #################################################################### -->
+<!-- GEARS ############################################################## -->
+	<!-- GEAR Center, Left, Right templates (for faster integration) -->
+	<Template Name="GEAR_Center_Template">
+		<DefaultTemplateParameters>
+			<ANIM_NAME>GEAR_Center</ANIM_NAME>
+			<ID>0</ID>
+		</DefaultTemplateParameters>
+		<UseTemplate Name="GEAR_Base_Template">
+		</UseTemplate>
+	</Template>
+	<Template Name="GEAR_Back_Template">
+		<DefaultTemplateParameters>
+			<ANIM_NAME>GEAR_Back</ANIM_NAME>
+			<ID>0</ID>
+		</DefaultTemplateParameters>
+		<UseTemplate Name="GEAR_Base_Template">
+		</UseTemplate>
+	</Template>
+	<Template Name="GEAR_Left_Template">
+		<DefaultTemplateParameters>
+			<ANIM_NAME>GEAR_Left</ANIM_NAME>
+			<ID>1</ID>
+		</DefaultTemplateParameters>
+		<UseTemplate Name="GEAR_Base_Template">
+		</UseTemplate>
+	</Template>
+	<Template Name="GEAR_Right_Template">
+		<DefaultTemplateParameters>
+			<ANIM_NAME>GEAR_Right</ANIM_NAME>
+			<ID>2</ID>
+		</DefaultTemplateParameters>
+		<UseTemplate Name="GEAR_Base_Template">
+		</UseTemplate>
+	</Template>
+	<!-- Animate gears (ID is a STANDARD_GEAR enum value, default is 0(center)) -->
+	<Template Name="GEAR_Base_Template">
+		<DefaultTemplateParameters>
+			<ID>0</ID>
+		</DefaultTemplateParameters>
+		<UseTemplate Name="GT_Anim_Sim">
+			<ANIM_SIMVAR>GEAR ANIMATION POSITION:#ID#</ANIM_SIMVAR>
+			<ANIM_SIMVAR_UNITS>percent</ANIM_SIMVAR_UNITS>
+		</UseTemplate>
+	</Template>
+	<!-- Animate steering wheel (ID is a STANDARD_GEAR enum value, default is 0(center)) -->
+	<Template Name="GEAR_Steering_Template">
+		<DefaultTemplateParameters>
+			<ANIM_NAME>GEAR_Steering</ANIM_NAME>
+			<ID>0</ID>
+		</DefaultTemplateParameters>
+		<UseTemplate Name="GT_Anim">
+			<ANIM_CODE>(A:GEAR STEER ANGLE:#ID#, degrees) dnor</ANIM_CODE>
+			<ANIM_LENGTH>360</ANIM_LENGTH>
+			<ANIM_WRAP>True</ANIM_WRAP>
+		</UseTemplate>
+	</Template>
+	
+	<!-- TIRES ########################################################## -->
+	<!-- Animate tires rotation & switch mesh with a blurred version depending on wheel RPM -->
+	<Template Name="GEAR_Left_Tire_Template">
+		<DefaultTemplateParameters>
+			<POSITION>LEFT</POSITION>
+			<ANIM_NAME>GEAR_Left_Tire</ANIM_NAME>
+			<NODE_ID>GEAR_Left_Tire</NODE_ID>
+			<SIMVAR>LEFT WHEEL RPM</SIMVAR>
+			<ANIM_SIMVAR>LEFT WHEEL ROTATION ANGLE</ANIM_SIMVAR>
+		</DefaultTemplateParameters>
+		<UseTemplate Name="GEAR_Tire_Base_Template"/>
+	</Template>
+	<Template Name="GEAR_Right_Tire_Template">
+		<DefaultTemplateParameters>
+			<POSITION>RIGHT</POSITION>
+			<ANIM_NAME>GEAR_Right_Tire</ANIM_NAME>
+			<NODE_ID>GEAR_Right_Tire</NODE_ID>
+			<SIMVAR>RIGHT WHEEL RPM</SIMVAR>
+			<ANIM_SIMVAR>RIGHT WHEEL ROTATION ANGLE</ANIM_SIMVAR>
+		</DefaultTemplateParameters>
+		<UseTemplate Name="GEAR_Tire_Base_Template"/>
+	</Template>
+	<Template Name="GEAR_Center_Tire_Template">
+		<DefaultTemplateParameters>
+			<POSITION>CENTER</POSITION>
+			<ANIM_NAME>GEAR_Center_Tire</ANIM_NAME>
+			<NODE_ID>GEAR_Center_Tire</NODE_ID>
+			<SIMVAR>CENTER WHEEL RPM</SIMVAR>
+			<ANIM_SIMVAR>CENTER WHEEL ROTATION ANGLE</ANIM_SIMVAR>
+		</DefaultTemplateParameters>
+		<UseTemplate Name="GEAR_Tire_Base_Template"/>
+	</Template>
+	<Template Name="GEAR_Back_Tire_Template">
+		<DefaultTemplateParameters>
+			<POSITION>CENTER</POSITION>
+			<ANIM_NAME>GEAR_Back_Tire</ANIM_NAME>
+			<NODE_ID>GEAR_Back_Tire</NODE_ID>
+			<SIMVAR>CENTER WHEEL RPM</SIMVAR>
+			<ANIM_SIMVAR>CENTER WHEEL ROTATION ANGLE</ANIM_SIMVAR>
+		</DefaultTemplateParameters>
+		<UseTemplate Name="GEAR_Tire_Base_Template"/>
+	</Template>
+	<!-- Required: ANIM_NAME, ID (ID is a STANDARD_GEAR enum value, default is 0(center)) -->
+	<Template Name="GEAR_Tire_Base_Template">
+		<DefaultTemplateParameters>
+			<MIN_RPM_FOR_BLUR>400</MIN_RPM_FOR_BLUR>
+			<NODE_ID_STILL>#NODE_ID#_Still</NODE_ID_STILL>
+			<NODE_ID_BLURRED>#NODE_ID#_Blurred</NODE_ID_BLURRED>
+			<Condition Valid="SIMVAR">
+				<False>
+					<SIMVAR>WHEEL RPM:#ID#</SIMVAR>
+				</False>
+			</Condition>		
+		</DefaultTemplateParameters>
+		<Condition Check="NO_ANIMATION">
+			<False>
+				<UseTemplate Name="GEAR_Tire_Animation_Template"/>
+			</False>
+		</Condition>
+		<Condition Check="NO_STILL_BLURRED_TRANSITION">
+			<False>
+				<UseTemplate Name="GEAR_Tire_Visibility_Base_Template">
+					<STATE>Still</STATE>
+					<NODE_ID>#NODE_ID_STILL#</NODE_ID>
+				</UseTemplate>
+				<UseTemplate Name="GEAR_Tire_Visibility_Base_Template">
+					<STATE>Blurred</STATE>
+					<NODE_ID>#NODE_ID_BLURRED#</NODE_ID>
+				</UseTemplate>
+			</False>
+		</Condition>
+	</Template>
+
+	<!-- TIRES::Utils ################################################### -->
+	<Template Name="GEAR_Tire_Animation_Template">
+		<DefaultTemplateParameters>
+			<Condition Valid="ANIM_SIMVAR">
+				<False>
+					<ANIM_SIMVAR>WHEEL ROTATION ANGLE:#ID#</ANIM_SIMVAR>
+				</False>
+			</Condition>
+		</DefaultTemplateParameters>
+		<UseTemplate Name="GT_Anim">
+			<ANIM_SIMVAR_UNITS>degrees</ANIM_SIMVAR_UNITS>
+			<ANIM_LENGTH>360</ANIM_LENGTH>
+			<ANIM_WRAP>1</ANIM_WRAP>
+		</UseTemplate>
+	</Template>
+	<Template Name="GEAR_Tire_Visibility_Base_Template">
+		<DefaultTemplateParameters>
+			<RECURSIVE_ID>2</RECURSIVE_ID>
+		</DefaultTemplateParameters>
+		<Component ID="#NODE_ID#" Node="#NODE_ID#">
+			<UseTemplate Name="GEAR_Tire_#STATE#_Visibility_Template"/>
+		</Component>
+		<Condition Valid="NODE_ID_#STATE#_#RECURSIVE_ID#">
+			<UseTemplate Name="GEAR_Tire_Visibility_Base_Template">
+				<RECURSIVE_ID Process="Int">#RECURSIVE_ID# 1 +</RECURSIVE_ID>
+				<NODE_ID Process="Param">NODE_ID_#STATE#_#RECURSIVE_ID#</NODE_ID>
+			</UseTemplate>
+		</Condition>
+	</Template>
+	<Template Name="GEAR_Tire_Still_Visibility_Template">
+		<UseTemplate Name="GT_Visibility">
+			<VISIBILITY_CODE>(A:#SIMVAR#, rpm) #MIN_RPM_FOR_BLUR# &lt;</VISIBILITY_CODE>
+		</UseTemplate>
+	</Template>
+	<Template Name="GEAR_Tire_Blurred_Visibility_Template">
+		<UseTemplate Name="GT_Visibility">
+			<VISIBILITY_CODE>(A:#SIMVAR#, rpm) #MIN_RPM_FOR_BLUR# &gt;</VISIBILITY_CODE>
+		</UseTemplate>
+	</Template>
+
+<!-- #################################################################### -->
+<!-- HANDLING ########################################################### -->
+	<!-- HANDLING::Utils ################################################ -->
+	<Template Name="HANDLING_Trim_Base_Template">
+		<DefaultTemplateParameters>
+			<DEFAULT_TRIM_IMPACT_ON_DEFLECTION>0.25</DEFAULT_TRIM_IMPACT_ON_DEFLECTION>
+			<ANIM_SIMVAR_UNITS>percent</ANIM_SIMVAR_UNITS>
+			<Condition Valid="USE_DIFFERENT_ANIM_FOR_L_R">
+				<False>
+					<ANIM_NAME_TRIM>#ANIM_NAME#Trim</ANIM_NAME_TRIM>
+				</False>
+			</Condition>
+		</DefaultTemplateParameters>
+		<OverrideTemplateParameters>
+			<TRIM_IMPACT_ON_DEFLECTION Process="Float">#DEFAULT_TRIM_IMPACT_ON_DEFLECTION# 1 min 0 max</TRIM_IMPACT_ON_DEFLECTION>
+			<IMPACT_OF_DEFLECTION Process="Float">1 #DEFAULT_TRIM_IMPACT_ON_DEFLECTION# 1 min 0 max -</IMPACT_OF_DEFLECTION>
+		</OverrideTemplateParameters>
+		<Switch>
+			<Case Valid="USE_INTEGRATED_TRIM">
+				<Switch>
+					<Case Valid="USE_DIFFERENT_ANIM_FOR_L_R">
+						<UseTemplate Name="GT_Anim_Code">
+							<ANIM_NAME>#ANIM_NAME_LEFT#</ANIM_NAME>
+							<ANIM_CODE>(A:#ANIM_SIMVAR_TRIM#, percent) #TRIM_IMPACT_ON_DEFLECTION# * (A:#ANIM_SIMVAR_LEFT#, percent) #IMPACT_OF_DEFLECTION# * + 0.5 * 50 +</ANIM_CODE>
+						</UseTemplate>
+						<UseTemplate Name="GT_Anim_Code">
+							<ANIM_NAME>#ANIM_NAME_RIGHT#</ANIM_NAME>
+							<ANIM_CODE>(A:#ANIM_SIMVAR_TRIM#, percent) #TRIM_IMPACT_ON_DEFLECTION# * (A:#ANIM_SIMVAR_RIGHT#, percent) #IMPACT_OF_DEFLECTION# * + 0.5 * 50 +</ANIM_CODE>
+						</UseTemplate>
+					</Case>
+					<Default>
+						<UseTemplate Name="GT_Anim_Code">
+							<ANIM_CODE>(A:#ANIM_SIMVAR_TRIM#, percent) #TRIM_IMPACT_ON_DEFLECTION# * (A:#ANIM_SIMVAR#, percent) #IMPACT_OF_DEFLECTION# * + 0.5 * 50 +</ANIM_CODE>
+						</UseTemplate>
+					</Default>
+				</Switch>
+			</Case>
+			<Case Valid="TRIM_ONLY">
+				<UseTemplate Name="GT_Anim_Sim">
+					<ANIM_NAME>#ANIM_NAME_TRIM#</ANIM_NAME>
+					<ANIM_SIMVAR>#ANIM_SIMVAR_TRIM#</ANIM_SIMVAR>
+				</UseTemplate>
+			</Case>
+			<Default>
+				<Switch>
+					<Case Valid="USE_DIFFERENT_ANIM_FOR_L_R">
+						<UseTemplate Name="GT_Anim_Sim">
+							<ANIM_NAME>#ANIM_NAME_LEFT#</ANIM_NAME>
+							<ANIM_SIMVAR>#ANIM_SIMVAR_LEFT#</ANIM_SIMVAR>
+						</UseTemplate>
+						<UseTemplate Name="GT_Anim_Sim">
+							<ANIM_NAME>#ANIM_NAME_RIGHT#</ANIM_NAME>
+							<ANIM_SIMVAR>#ANIM_SIMVAR_RIGHT#</ANIM_SIMVAR>
+						</UseTemplate>
+					</Case>
+					<Default>
+						<UseTemplate Name="GT_Anim_Sim"/>
+					</Default>
+				</Switch>
+			</Default>
+		</Switch>
+	</Template>
+	<!-- Elevator ####################################################### -->
+	<Template Name="HANDLING_Elevator_Template">
+		<DefaultTemplateParameters>
+			<ANIM_NAME>HANDLING_Elevator</ANIM_NAME>
+			<ANIM_SIMVAR_SCALE>0.5</ANIM_SIMVAR_SCALE>
+			<ANIM_SIMVAR_BIAS>50</ANIM_SIMVAR_BIAS>
+		</DefaultTemplateParameters>
+		<UseTemplate Name="HANDLING_Trim_Base_Template">
+			<ANIM_SIMVAR>ELEVATOR DEFLECTION PCT</ANIM_SIMVAR>
+			<ANIM_SIMVAR_TRIM>ELEVATOR TRIM PCT</ANIM_SIMVAR_TRIM>
+		</UseTemplate>
+	</Template>
+	<!-- Rudders ######################################################## -->
+	<Template Name="HANDLING_Rudder_Template">
+		<DefaultTemplateParameters>
+			<ANIM_NAME>HANDLING_Rudder</ANIM_NAME>
+			<ANIM_SIMVAR_SCALE>0.5</ANIM_SIMVAR_SCALE>
+			<ANIM_SIMVAR_BIAS>50</ANIM_SIMVAR_BIAS>
+		</DefaultTemplateParameters>
+		<UseTemplate Name="HANDLING_Trim_Base_Template">
+			<ANIM_SIMVAR>RUDDER DEFLECTION PCT</ANIM_SIMVAR>
+			<ANIM_SIMVAR_TRIM>RUDDER TRIM PCT</ANIM_SIMVAR_TRIM>
+		</UseTemplate>
+	</Template>
+	<!-- Ailerons ####################################################### -->
+	<Template Name="HANDLING_Aileron_Template">
+		<DefaultTemplateParameters>
+			<ANIM_NAME_LEFT>HANDLING_Aileron_L</ANIM_NAME_LEFT>
+			<ANIM_NAME_RIGHT>HANDLING_Aileron_R</ANIM_NAME_RIGHT>
+			<ANIM_NAME_TRIM>HANDLING_AileronTrim</ANIM_NAME_TRIM>
+			<ANIM_SIMVAR_SCALE>0.5</ANIM_SIMVAR_SCALE>
+			<ANIM_SIMVAR_BIAS>50</ANIM_SIMVAR_BIAS>
+		</DefaultTemplateParameters>
+		<UseTemplate Name="HANDLING_Trim_Base_Template">
+			<USE_DIFFERENT_ANIM_FOR_L_R>True</USE_DIFFERENT_ANIM_FOR_L_R>
+			<ANIM_SIMVAR_LEFT>AILERON LEFT DEFLECTION PCT</ANIM_SIMVAR_LEFT>
+			<ANIM_SIMVAR_RIGHT>AILERON RIGHT DEFLECTION PCT</ANIM_SIMVAR_RIGHT>
+			<ANIM_SIMVAR_TRIM>AILERON TRIM PCT</ANIM_SIMVAR_TRIM>
+		</UseTemplate>
+	</Template>
+	<!-- Spoilers ####################################################### -->
+	<Template Name="HANDLING_Spoilers_Template">
+		<DefaultTemplateParameters>
+			<ANIM_NAME_LEFT>HANDLING_Spoilers_L</ANIM_NAME_LEFT>
+			<ANIM_NAME_RIGHT>HANDLING_Spoilers_R</ANIM_NAME_RIGHT>
+			<Condition Valid="USE_GROUND_SPOILER">
+				<ANIM_NAME_GROUND>HANDLING_Spoilers_Ground</ANIM_NAME_GROUND>
+				<ANIM_LAG_GROUND>100</ANIM_LAG_GROUND>
+				<ANIM_LAG_GROUND_2>100</ANIM_LAG_GROUND_2>
+				<TIME_REMAINS_AFTER_GROUND>5</TIME_REMAINS_AFTER_GROUND>
+			</Condition>
+		</DefaultTemplateParameters>
+		<OverrideTemplateParameters>
+			<Condition Valid="USE_GROUND_SPOILER">
+				<Switch Param="USE_GROUND_SPOILER">
+					<Case Value="GROUND_ONLY">
+						<DEPLOYMENT_CONDITION>
+						s1 0 &gt; if{ 
+							(O:XMLVAR_GroundSpoilerTriggered) ! if{
+								(A:SIM ON GROUND, Bool) if{ 100 (&gt;O:XMLVAR_GroundSpoilerTriggered)  }
+							}
+						} els{
+							0 (&gt;O:XMLVAR_GroundSpoilerTriggered)
+						}
+						(O:XMLVAR_GroundSpoilerTriggered)
+						</DEPLOYMENT_CONDITION>
+					</Case>
+					<Case Value="FULL_SPOILER">
+						<DEPLOYMENT_CONDITION>99.9 &gt; 100 *</DEPLOYMENT_CONDITION>
+					</Case>
+					<Default>
+						<DEPLOYMENT_CONDITION></DEPLOYMENT_CONDITION>
+					</Default>
+				</Switch>
+			</Condition>
+		</OverrideTemplateParameters>
+		<UseTemplate Name="HANDLING_Trim_Base_Template">
+			<USE_DIFFERENT_ANIM_FOR_L_R>True</USE_DIFFERENT_ANIM_FOR_L_R>
+			<USE_INTEGRATED_TRIM>False</USE_INTEGRATED_TRIM><!-- Spoilers not trimable -->
+			<TRIM_ONLY>False</TRIM_ONLY><!-- Spoilers not trimable -->
+			<ANIM_SIMVAR_LEFT>SPOILERS LEFT POSITION</ANIM_SIMVAR_LEFT>
+			<ANIM_SIMVAR_RIGHT>SPOILERS RIGHT POSITION</ANIM_SIMVAR_RIGHT>
+		</UseTemplate>
+		<Condition Valid="USE_GROUND_SPOILER">
+			<UseTemplate Name="GT_Anim">
+				<ANIM_NAME>#ANIM_NAME_GROUND#</ANIM_NAME>
+				<ANIM_CODE>(A:SPOILERS LEFT POSITION, Percent) (A:SPOILERS RIGHT POSITION, Percent) + 0.5 * #DEPLOYMENT_CONDITION#</ANIM_CODE>
+				<ANIM_LAG>#ANIM_LAG_GROUND#</ANIM_LAG>
+			</UseTemplate>
+			<Condition NotEmpty="ANIM_NAME_GROUND_2">
+				<True>
+					<UseTemplate Name="GT_Anim">
+						<ANIM_NAME>#ANIM_NAME_GROUND_2#</ANIM_NAME>
+						<ANIM_CODE>(O:XMLVAR_GroundSpoilerTriggered)</ANIM_CODE>
+						<ANIM_LAG>#ANIM_LAG_GROUND_2#</ANIM_LAG>
+					</UseTemplate>
+				</True>
+			</Condition>
+		</Condition>
+	</Template>
+	<!-- Flaps ########################################################## -->
+	<Template Name="HANDLING_Flaps_Template">
+		<DefaultTemplateParameters>
+			<ANIM_NAME_LEFT>HANDLING_Flaps_L</ANIM_NAME_LEFT>
+			<ANIM_NAME_RIGHT>HANDLING_Flaps_R</ANIM_NAME_RIGHT>
+			<MIN_FLAPS_VALUE>0</MIN_FLAPS_VALUE>
+			<MAX_FLAPS_VALUE>0</MAX_FLAPS_VALUE>
+			<ANIM_LENGTH>100</ANIM_LENGTH>
+			<ANIM_SIMVAR_SCALE>1</ANIM_SIMVAR_SCALE>
+			<ANIM_SIMVAR_BIAS>0</ANIM_SIMVAR_BIAS>
+		</DefaultTemplateParameters>
+		<OverrideTemplateParameters>
+			<Condition>
+				<Test>
+					<Lower>
+						<Value>MIN_FLAPS_VALUE</Value>
+						<Number>0</Number>
+					</Lower>
+				</Test>
+				<True>
+					<ANIM_SIMVAR_SCALE Process="Float">1 #MIN_FLAPS_VALUE# abs #MAX_FLAPS_VALUE# / 1 + /</ANIM_SIMVAR_SCALE>
+				</True>
+			</Condition>
+		</OverrideTemplateParameters>
+		<UseTemplate Name="HANDLING_Trim_Base_Template">
+			<USE_DIFFERENT_ANIM_FOR_L_R>True</USE_DIFFERENT_ANIM_FOR_L_R>
+			<USE_INTEGRATED_TRIM>False</USE_INTEGRATED_TRIM><!-- Flaps not trimable -->
+			<TRIM_ONLY>False</TRIM_ONLY><!-- Flaps not trimable -->
+			<ANIM_SIMVAR_LEFT>TRAILING EDGE FLAPS LEFT PERCENT</ANIM_SIMVAR_LEFT>
+			<ANIM_SIMVAR_RIGHT>TRAILING EDGE FLAPS RIGHT PERCENT</ANIM_SIMVAR_RIGHT>
+			<Condition>
+				<Test>
+					<Lower>
+						<Value>ANIM_SIMVAR_SCALE</Value>
+						<Number>1</Number>
+					</Lower>
+				</Test>
+				<True>
+					<ANIM_SIMVAR_BIAS Process="Float">1 #ANIM_SIMVAR_SCALE# - #ANIM_LENGTH# *</ANIM_SIMVAR_BIAS>
+				</True>
+			</Condition>
+		</UseTemplate>
+	</Template>
+	<!-- Flaperons ###################################################### -->
+	<Template Name="HANDLING_Flaperons_Template">
+		<DefaultTemplateParameters>
+			<ANIM_NAME_LEFT>HANDLING_Flaps_L</ANIM_NAME_LEFT>
+			<ANIM_NAME_RIGHT>HANDLING_Flaps_R</ANIM_NAME_RIGHT>
+			<MIN_SPEED_TAKEOFF_HYDRAULICS>80</MIN_SPEED_TAKEOFF_HYDRAULICS>
+			<ANIM_LENGTH>100</ANIM_LENGTH>
+			<ANIM_LAG>100</ANIM_LAG>
+			<ENG_ID>1</ENG_ID><!-- First engine by default -->
+		</DefaultTemplateParameters>
+		<OverrideTemplateParameters>
+			<IS_TAKING_OFF_CONDITION>
+				(A:GROUND VELOCITY, Knots) sp0
+				(A:GENERAL ENG THROTTLE LEVER POSITION:#ENG_ID#, Percent) 0 &gt;
+				(A:GENERAL ENG PCT MAX RPM:#ENG_ID#, Percent) 20 &gt; and 
+				l0 #MIN_SPEED_TAKEOFF_HYDRAULICS# &lt; and
+			</IS_TAKING_OFF_CONDITION>
+			<MIN_SPEED_TAKEOFF_AEORDYNAMIC_LIFT Process="Float">#MIN_SPEED_TAKEOFF_HYDRAULICS# 0.45 *</MIN_SPEED_TAKEOFF_AEORDYNAMIC_LIFT>
+			<MAX_SPEED_TAKEOFF_AEORDYNAMIC_LIFT Process="Float">#MIN_SPEED_TAKEOFF_HYDRAULICS# 0.85 *</MAX_SPEED_TAKEOFF_AEORDYNAMIC_LIFT>
+			<ANIM_CODE_LEFT_BASE>
+				0.5 (A:AILERON LEFT DEFLECTION PCT, Percent over 100) -0.5 * +
+				(A:TRAILING EDGE FLAPS LEFT PERCENT, Percent over 100) 0.4 * +
+			</ANIM_CODE_LEFT_BASE>
+			<ANIM_CODE_RIGHT_BASE>
+				0.5 (A:AILERON RIGHT DEFLECTION PCT, Percent over 100) 0.5 * +
+				(A:TRAILING EDGE FLAPS RIGHT PERCENT, Percent over 100) 0.4 * +
+			</ANIM_CODE_RIGHT_BASE>
+		</OverrideTemplateParameters>
+		<UseTemplate Name="GT_Anim">
+			<ANIM_NAME>#ANIM_NAME_LEFT#</ANIM_NAME>
+			<ANIM_CODE>
+				#IS_TAKING_OFF_CONDITION# if{
+					(* Takeoff mode - hydraulics are disabled and animation is driven by aerodynamic forces (Simplified as just a factor of velocity) *)
+					1 l0 #MIN_SPEED_TAKEOFF_AEORDYNAMIC_LIFT# - #MAX_SPEED_TAKEOFF_AEORDYNAMIC_LIFT# #MIN_SPEED_TAKEOFF_AEORDYNAMIC_LIFT# - / 0 max 1 min - sp1
+				} els{
+					#ANIM_CODE_LEFT_BASE#
+					0 max 1 min sp1
+				}
+				l1 #ANIM_LENGTH# * 
+			</ANIM_CODE>
+		</UseTemplate>
+		<UseTemplate Name="GT_Anim">
+			<ANIM_NAME>#ANIM_NAME_RIGHT#</ANIM_NAME>
+			<ANIM_CODE>
+				#IS_TAKING_OFF_CONDITION# if{
+					(* Takeoff mode - hydraulics are disabled and animation is driven by aerodynamic forces (Simplified as just a factor of velocity) *)
+					1 l0 #MIN_SPEED_TAKEOFF_AEORDYNAMIC_LIFT# - #MAX_SPEED_TAKEOFF_AEORDYNAMIC_LIFT# #MIN_SPEED_TAKEOFF_AEORDYNAMIC_LIFT# - / 0 max 1 min - sp1
+				} els{
+					#ANIM_CODE_RIGHT_BASE#
+					0 max 1 min sp1
+				}
+				l1 #ANIM_LENGTH# * 
+			</ANIM_CODE>
+		</UseTemplate>
+	</Template>
+	<!-- Slats ########################################################## -->
+	<Template Name="HANDLING_Slats_Template">
+		<DefaultTemplateParameters>
+			<ANIM_NAME_LEFT>HANDLING_Slats_L</ANIM_NAME_LEFT>
+			<ANIM_NAME_RIGHT>HANDLING_Slats_R</ANIM_NAME_RIGHT>
+		</DefaultTemplateParameters>
+		<UseTemplate Name="HANDLING_Trim_Base_Template">
+			<USE_DIFFERENT_ANIM_FOR_L_R>True</USE_DIFFERENT_ANIM_FOR_L_R>
+			<USE_INTEGRATED_TRIM>False</USE_INTEGRATED_TRIM><!-- Slats not trimable -->
+			<TRIM_ONLY>False</TRIM_ONLY><!-- Slats not trimable -->
+			<ANIM_SIMVAR_LEFT>LEADING EDGE FLAPS LEFT PERCENT</ANIM_SIMVAR_LEFT>
+			<ANIM_SIMVAR_RIGHT>LEADING EDGE FLAPS RIGHT PERCENT</ANIM_SIMVAR_RIGHT>
+		</UseTemplate>
+	</Template>
+	<!-- WaterRudders ################################################### -->
+	<Template Name="HANDLING_Water_Rudder_Template">
+		<DefaultTemplateParameters>
+			<ANIM_NAME_RUDDER>HANDLING_Water_Rudder</ANIM_NAME_RUDDER>
+			<ANIM_NAME_TAIL>HANDLING_Water_Rudder_Tail</ANIM_NAME_TAIL>
+			<SIDE>LEFT</SIDE><!-- Default when one water rudder only -->
+		</DefaultTemplateParameters>
+		<UseTemplate Name="GT_Anim_Sim">
+			<ANIM_NAME>#ANIM_NAME_RUDDER#</ANIM_NAME>
+			<ANIM_SIMVAR>WATER #SIDE# RUDDER STEER ANGLE PCT</ANIM_SIMVAR>
+			<Condition Valid="NO_TAIL_ANIM">
+				<False>
+					<FAILURE>(A:WATER #SIDE# RUDDER EXTENDED, Percent) 99.9 &gt;</FAILURE>
+					<FAILURE_CODE>50</FAILURE_CODE>
+				</False>
+			</Condition>
+			<ANIM_SIMVAR_SCALE>-0.5</ANIM_SIMVAR_SCALE>
+			<ANIM_SIMVAR_BIAS>50</ANIM_SIMVAR_BIAS>
+			<ANIM_SIMVAR_UNITS>percent</ANIM_SIMVAR_UNITS>
+		</UseTemplate>
+		<Condition Valid="NO_TAIL_ANIM">
+			<False>
+				<UseTemplate Name="GT_Anim_Sim">
+					<ANIM_NAME>#ANIM_NAME_TAIL#</ANIM_NAME>
+					<ANIM_SIMVAR>WATER #SIDE# RUDDER EXTENDED</ANIM_SIMVAR>
+					<ANIM_SIMVAR_UNITS>percent</ANIM_SIMVAR_UNITS>
+				</UseTemplate>
+			</False>
+		</Condition>
+	</Template>
+	<!-- WaterRudders ################################################### -->
+	<Template Name="HANDLING_Wipers_Template">
+		<DefaultTemplateParameters>
+			<ANIM_NAME>HANDLING_Wipers</ANIM_NAME>
+			<CIRCUIT_ID_WIPERS>1</CIRCUIT_ID_WIPERS><!-- ID of the circuit powering the wipers -->
+			<MIN_SPEED_PERCENT>0.1</MIN_SPEED_PERCENT>
+			<MAX_SPEED>600</MAX_SPEED><!-- ANIM frames played per second at max speed -->
+			<Condition Valid="CIRCUIT_ID_PARK">
+				<PARK_SPEED>600</PARK_SPEED>
+			</Condition>
+			<WWISE_EVENT_1>wipers_forward</WWISE_EVENT_1>
+			<NORMALIZED_TIME_1>0.2</NORMALIZED_TIME_1>
+			<WWISE_EVENT_2>wipers_backward</WWISE_EVENT_2>
+			<NORMALIZED_TIME_2>0.8</NORMALIZED_TIME_2>
+			<AIRSPEED_DISABLED>230</AIRSPEED_DISABLED>
+		</DefaultTemplateParameters>
+		<OverrideTemplateParameters>
+			<ONE_MINUS_MIN_SPEED Process="Float">1 #MIN_SPEED_PERCENT# -</ONE_MINUS_MIN_SPEED>
+			<!-- if using a dedicated circuit for park function wipers will not automatically reset in the park position -->
+			<Condition Valid="CIRCUIT_ID_PARK">
+				<True>
+					<FAILURE_CODE>
+						(O:AnimCode) 0 &gt; if{
+							(A:CIRCUIT ON:#CIRCUIT_ID_PARK#, Bool) if{
+								#PARK_SPEED# (&gt;O:_AnimSpeed)
+								-1 (O:_AnimSpeed) * (A:ANIMATION DELTA TIME, seconds) * (O:AnimCode) + (&gt;O:NewAnimCode)
+								(O:NewAnimCode) 0 &lt; if{ 0 (&gt;O:NewAnimCode) }
+								(O:NewAnimCode) (&gt;O:AnimCode)
+							}
+						}
+						(O:AnimCode)
+					</FAILURE_CODE>
+				</True>
+				<False>
+					<FAILURE_CODE>
+						(O:AnimCode) 0 &gt; if{
+							(A:CIRCUIT POWER SETTING:#CIRCUIT_ID_WIPERS#, percent over 100) 1 #MIN_SPEED_PERCENT# - * #MIN_SPEED_PERCENT# + #MAX_SPEED# * (&gt;O:_AnimSpeed)
+							(O:_GoForward) if{ 1 (&gt;O:_AnimDirection) } els{ -1 (&gt;O:_AnimDirection) }
+							(O:_AnimDirection) (O:_AnimSpeed) * (A:ANIMATION DELTA TIME, seconds) * (O:AnimCode) + (&gt;O:NewAnimCode)
+							(O:NewAnimCode) 100 &gt; if{
+								100 (O:NewAnimCode) 100 % - (&gt;O:NewAnimCode)
+								1 (&gt;O:_ChangedDirection)
+							} 
+							(O:NewAnimCode) 0 &lt; if{
+								0 (&gt;O:NewAnimCode)
+							}
+							(O:_ChangedDirection) if{ 
+								(O:_GoForward) ! (&gt;O:_GoForward)
+								0 (&gt;O:_ChangedDirection)
+							}
+							(O:NewAnimCode) (&gt;O:AnimCode)
+						}
+						(O:AnimCode)
+					</FAILURE_CODE>
+				</False>
+			</Condition>
+		</OverrideTemplateParameters>
+		<Update Once="True">
+			0 (&gt;O:AnimCode)
+		</Update>
+		<UseTemplate Name="GT_Anim_Code">
+			<ANIM_CODE>
+				(A:CIRCUIT POWER SETTING:#CIRCUIT_ID_WIPERS#, percent over 100) #ONE_MINUS_MIN_SPEED# * #MIN_SPEED_PERCENT# + #MAX_SPEED# * (&gt;O:_AnimSpeed)
+				(O:_GoForward) if{ 1 (&gt;O:_AnimDirection) } els{ -1 (&gt;O:_AnimDirection) }
+				(O:_AnimDirection) (O:_AnimSpeed) * (A:ANIMATION DELTA TIME, seconds) * (O:AnimCode) + (&gt;O:NewAnimCode)
+				(O:NewAnimCode) 100 &gt; if{
+					100 (O:NewAnimCode) 100 % - (&gt;O:NewAnimCode)
+					1 (&gt;O:_ChangedDirection)
+				} 
+				(O:NewAnimCode) 0 &lt; if{
+					(O:NewAnimCode) abs 100 % (&gt;O:NewAnimCode)
+					1 (&gt;O:_ChangedDirection)
+				}
+				(O:_ChangedDirection) if{ 
+					(O:_GoForward) ! (&gt;O:_GoForward)
+					0 (&gt;O:_ChangedDirection)
+				}
+				(O:NewAnimCode)
+			</ANIM_CODE>
+			<FAILURE>(A:CIRCUIT ON:#CIRCUIT_ID_WIPERS#, Bool) (A:AIRSPEED INDICATED, Knots) #AIRSPEED_DISABLED# &lt; and</FAILURE>
+		</UseTemplate>
+		<UseTemplate Name="GT_AnimTriggers_2SoundEvents"/>
+	</Template>
+<!-- #################################################################### -->
+<!-- MISC/UTILS ######################################################### -->
+	<!-- HANGAR ######################################################### -->
+	<!-- List of NODE_ID (NODE_ID2, NODE_ID3..) that will only be visible while in hangar -->
+	<Template Name="HANGAR_Visibility_Template">
+		<DefaultTemplateParameters>
+			<RECURSIVE_ID>2</RECURSIVE_ID>
+		</DefaultTemplateParameters>
+		<Component ID="#NODE_ID#" Node="#NODE_ID#">
+			<UseTemplate Name="GT_Visibility_Sim">
+				<VISIBILITY_SIMVAR>PLANE IN PARKING STATE</VISIBILITY_SIMVAR>
+				<VISIBILITY_SIMVAR_UNITS>Bool</VISIBILITY_SIMVAR_UNITS>
+			</UseTemplate>
+		</Component>
+		<Condition Valid="NODE_ID#RECURSIVE_ID#">
+			<UseTemplate Name="Visible_In_Hangar_Only">
+				<RECURSIVE_ID Process="Int">#RECURSIVE_ID# 1 +</RECURSIVE_ID>
+				<NODE_ID Process="Param">NODE_ID#RECURSIVE_ID#</NODE_ID>
+			</UseTemplate>
+		</Condition>
+	</Template>
+	
+	<!-- LIGHTS ######################################################### -->
+	<!-- handles multiple lights indexes (ex: <LANDING>Landing_Left</LANDING> <LANDING2>Landing_Right</LANDING2> <TAXI>Taxi_Light</TAXI> -->
+	<Template Name="LIGHTING_Exterior_Template">
+		<DefaultTemplateParameters>
+			<NO_POTENTIOMETER_FACTOR>True</NO_POTENTIOMETER_FACTOR>
+		</DefaultTemplateParameters>
+		<Condition Valid="LANDING">
+			<UseTemplate Name="LIGHTING_Exterior_Light_Template">
+				<TYPE>LANDING</TYPE>
+			</UseTemplate>
+		</Condition>
+		<Condition Valid="TAXI">
+			<UseTemplate Name="LIGHTING_Exterior_Light_Template">
+				<TYPE>TAXI</TYPE>
+			</UseTemplate>
+		</Condition>
+		<Condition Valid="STROBE">
+			<UseTemplate Name="LIGHTING_Exterior_Light_Template">
+				<TYPE>STROBE</TYPE>
+			</UseTemplate>
+		</Condition>
+		<Condition Valid="NAV">
+			<UseTemplate Name="LIGHTING_Exterior_Light_Template">
+				<TYPE>NAV</TYPE>
+			</UseTemplate>
+		</Condition>
+		<Condition Valid="BEACON">
+			<UseTemplate Name="LIGHTING_Exterior_Light_Template">
+				<TYPE>BEACON</TYPE>
+			</UseTemplate>
+		</Condition>
+		<Condition Valid="WING">
+			<UseTemplate Name="LIGHTING_Exterior_Light_Template">
+				<TYPE>WING</TYPE>
+			</UseTemplate>
+		</Condition>
+	</Template>
+	<!-- LIGHTS::Utils ################################################## -->
+	<!-- Process first node_id from type -->
+	<Template Name="LIGHTING_Exterior_Light_Template">
+		<UseTemplate Name="LIGHTING_Exterior_Light_SubTemplate">
+			<NODE_ID Process="Param">#TYPE#</NODE_ID>
+			<ID>1</ID>
+		</UseTemplate>
+	</Template>
+	<!-- To specify light index for simvar : #TYPE##ID#_SIMVAR_INDEX (ex:<LANDING2_SIMVAR_INDEX>1</LANDING2_SIMVAR_INDEX>)-->
+	<Template Name="LIGHTING_Exterior_Light_SubTemplate">
+		<DefaultTemplateParameters>
+			<RECURSIVE_ID>2</RECURSIVE_ID>
+		</DefaultTemplateParameters>
+		<OverrideTemplateParameters>
+			<Condition Valid="#TYPE##ID#_SIMVAR_INDEX">
+				<NO_SIMVAR_INDEX>True</NO_SIMVAR_INDEX>
+				<SIMVAR_INDEX Process="Param">#TYPE##ID#_SIMVAR_INDEX</SIMVAR_INDEX>
+			</Condition>
+		</OverrideTemplateParameters>
+		<Component ID="#NODE_ID#" Node="#NODE_ID#">
+			<UseTemplate Name="LIGHTING_Emissive_SubTemplate">
+				<SIMVAR_LIGHT>LIGHT #TYPE#</SIMVAR_LIGHT>
+				<SIMVAR_LIGHT_ON>LIGHT #TYPE# ON</SIMVAR_LIGHT_ON>
+				<Condition Valid="NO_SIMVAR_INDEX">
+					<False>
+						<SIMVAR_INDEX>#ID#</SIMVAR_INDEX>
+					</False>
+				</Condition>
+			</UseTemplate>
+		</Component>
+		<Condition Valid="#TYPE##RECURSIVE_ID#">
+			<UseTemplate Name="LIGHTING_Exterior_Light_SubTemplate">
+				<RECURSIVE_ID Process="Int">#RECURSIVE_ID# 1 +</RECURSIVE_ID>
+				<NODE_ID Process="Param">#TYPE##RECURSIVE_ID#</NODE_ID>
+				<ID>#RECURSIVE_ID#</ID>
+				<NO_SIMVAR_INDEX>False</NO_SIMVAR_INDEX>
+				<SIMVAR_INDEX>0</SIMVAR_INDEX>
+			</UseTemplate>
+		</Condition>
+	</Template>
+	<Template Name="LIGHTING_Exterior_Retractable_Light_Template">
+		<DefaultTemplateParameters>
+			<ANIM_NAME>LIGHTING_Retractable_#LIGHT_TYPE#_Light_#ID#</ANIM_NAME>
+			<ANIM_LAG>100</ANIM_LAG>
+		</DefaultTemplateParameters>
+		<UseTemplate Name="GT_Anim_Code">
+			<ANIM_CODE>(L:#LIGHT_TYPE#_#ID#_Retracted) ! 100 *</ANIM_CODE>
+		</UseTemplate>
+	</Template>
+	<!-- DOORS ########################################################## -->
+	<Template Name="DOOR_InteractivePoint_Template">
+		<DefaultTemplateParameters>
+			<ID>1</ID>
+		</DefaultTemplateParameters>
+		
+		<UseTemplate Name="GT_Anim">
+			<ANIM_SIMVAR>INTERACTIVE POINT OPEN:#ID#</ANIM_SIMVAR>
+			<ANIM_SIMVAR_UNITS>Percent</ANIM_SIMVAR_UNITS>
+			<ANIM_LENGTH>100</ANIM_LENGTH>
+		</UseTemplate>
+	</Template>
+	
+	<!-- HOSE ########################################################## -->
+	<Template Name="FuelHose_InteractivePoint_Template">
+		<DefaultTemplateParameters>
+			<ID>1</ID>
+			<NODE_ID>FUEL_HOSE</NODE_ID>
+		</DefaultTemplateParameters>
+		
+		<Component ID="#NODE_ID#" Node="#NODE_ID#">
+			<UseTemplate Name="GT_Visibility_Code">
+				<VISIBILITY_CODE>(A:INTERACTIVE POINT OPEN:#ID#,percent) 0 &gt; if{ 1 } els{ 0 }</VISIBILITY_CODE>
+			</UseTemplate>
+		</Component>
+	</Template>

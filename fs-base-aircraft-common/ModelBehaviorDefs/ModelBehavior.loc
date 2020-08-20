@@ -1,0 +1,969 @@
+{
+  "LocalisationFile": {
+    "Version": 2,
+    "UUID": "51093339-0259-4b16-a4fe-501f2fc30e0a",
+    "Languages": [
+      "en-US",
+      "fr-FR",
+      "es-ES",
+      "de-DE",
+      "it-IT",
+      "pl-PL",
+      "pt-BR",
+      "ru-RU",
+      "zh-CN"
+    ],
+    "Strings": {
+      "MODELBEHAVIOR.CDI.OPTIONS.NO_EMISSIVE_GPS": {
+        "UUID": "09eec39f-a180-42c1-a336-768f1a420f76",
+        "LastModifiedBy": "ajimeno",
+        "LastModifiedDate": "2020-02-17 13:57:12",
+        "LocalizationStatus": "TranslationNeeded",
+        "Tags": {
+          "Locked": "False"
+        },
+        "Languages": {
+          "en-US": {
+            "Text": "Opts out of an emissive GPS indicator"
+          },
+          "fr-FR": {
+            "Text": "Quitter un indicateur émissif GPS",
+            "LocalizationStatus": "TranslationNeeded"
+          },
+          "es-ES": {
+            "Text": "Excluye un indicador de GPS emisivo",
+            "LocalizationStatus": "TranslationNeeded"
+          },
+          "de-DE": {
+            "Text": "Wählt einen Emissive GPS-Indicator ab",
+            "LocalizationStatus": "TranslationNeeded"
+          },
+          "it-IT": {
+            "Text": "Disattivazione indicatore GPS emissivo",
+            "LocalizationStatus": "TranslationNeeded"
+          },
+          "pl-PL": {
+            "Text": "Wyłącza wskaźnik emisji GPS",
+            "LocalizationStatus": "TranslationNeeded"
+          },
+          "pt-BR": {
+            "Text": "Recusa de um indicador de GPS emissivo",
+            "LocalizationStatus": "TranslationNeeded"
+          },
+          "ru-RU": {
+            "Text": "Отключает излучающий индикатор GPS",
+            "LocalizationStatus": "TranslationNeeded"
+          },
+          "zh-CN": {
+            "Text": "中止GPS高亮指示显示",
+            "LocalizationStatus": "TranslationNeeded"
+          }
+        }
+      },
+      "MODELBEHAVIOR.CDI.OPTIONS.NO_EMISSIVE_NAV": {
+        "UUID": "e9d9b396-c840-4276-894c-2b43f73ff134",
+        "LastModifiedBy": "ajimeno",
+        "LastModifiedDate": "2020-02-17 13:57:12",
+        "LocalizationStatus": "TranslationNeeded",
+        "Tags": {
+          "Locked": "False"
+        },
+        "Languages": {
+          "en-US": {
+            "Text": "Opts out of an emissive NAV indicator"
+          },
+          "fr-FR": {
+            "Text": "Quitter un indicateur émissif NAV",
+            "LocalizationStatus": "TranslationNeeded"
+          },
+          "es-ES": {
+            "Text": "Excluye un indicador de NAV emisivo",
+            "LocalizationStatus": "TranslationNeeded"
+          },
+          "de-DE": {
+            "Text": "Wählt einen Emissive NAV-Indicator ab",
+            "LocalizationStatus": "TranslationNeeded"
+          },
+          "it-IT": {
+            "Text": "Disattivazione indicatore NAV emissivo",
+            "LocalizationStatus": "TranslationNeeded"
+          },
+          "pl-PL": {
+            "Text": "Wyłącza wskaźnik emisji NAV",
+            "LocalizationStatus": "TranslationNeeded"
+          },
+          "pt-BR": {
+            "Text": "Recusa de um indicador de Navegação (NAV) emissivo",
+            "LocalizationStatus": "TranslationNeeded"
+          },
+          "ru-RU": {
+            "Text": "Отключает излучающий индикатор NAV",
+            "LocalizationStatus": "TranslationNeeded"
+          },
+          "zh-CN": {
+            "Text": "中止导航无线电高亮指示显示",
+            "LocalizationStatus": "TranslationNeeded"
+          }
+        }
+      },
+      "MODELBEHAVIOR.CDI.OPTIONS.NO_EMISSIVE_VLOC": {
+        "UUID": "915be141-04f0-4994-9e30-c41806ba3d23",
+        "LastModifiedBy": "ajimeno",
+        "LastModifiedDate": "2020-02-17 13:57:12",
+        "LocalizationStatus": "TranslationNeeded",
+        "Tags": {
+          "Locked": "False"
+        },
+        "Languages": {
+          "en-US": {
+            "Text": "Opts out of an emissive VLOC indicator"
+          },
+          "fr-FR": {
+            "Text": "Quitter un indicateur émissif VLOC",
+            "LocalizationStatus": "TranslationNeeded"
+          },
+          "es-ES": {
+            "Text": "Excluye un indicador de VLOC emisivo",
+            "LocalizationStatus": "TranslationNeeded"
+          },
+          "de-DE": {
+            "Text": "Wählt einen Emissive VLOC-Indicator ab",
+            "LocalizationStatus": "TranslationNeeded"
+          },
+          "it-IT": {
+            "Text": "Disattivazione indicatore VLOC emissivo",
+            "LocalizationStatus": "TranslationNeeded"
+          },
+          "pl-PL": {
+            "Text": "Wyłącza wskaźnik emisji VLOC",
+            "LocalizationStatus": "TranslationNeeded"
+          },
+          "pt-BR": {
+            "Text": "Recusa de um indicador de VLOC emissivo",
+            "LocalizationStatus": "TranslationNeeded"
+          },
+          "ru-RU": {
+            "Text": "Отключает излучающий индикатор VLOC",
+            "LocalizationStatus": "TranslationNeeded"
+          },
+          "zh-CN": {
+            "Text": "中止全向无线电信标/航向台高亮指示显示",
+            "LocalizationStatus": "TranslationNeeded"
+          }
+        }
+      },
+      "MODELBEHAVIOR.CDI.OPTIONS.NO_FLAG_GLIDE": {
+        "UUID": "f7159098-726e-444b-b026-3c197ab87ddf",
+        "LastModifiedBy": "ajimeno",
+        "LastModifiedDate": "2020-02-17 13:57:12",
+        "LocalizationStatus": "TranslationNeeded",
+        "Tags": {
+          "Locked": "False"
+        },
+        "Languages": {
+          "en-US": {
+            "Text": "Opts out of a Glide Flag"
+          },
+          "fr-FR": {
+            "Text": "Quitter un drapeau de vol plané.",
+            "LocalizationStatus": "TranslationNeeded"
+          },
+          "es-ES": {
+            "Text": "Excluye un indicador de planeo",
+            "LocalizationStatus": "TranslationNeeded"
+          },
+          "de-DE": {
+            "Text": "Wählt die Gleitflagge ab",
+            "LocalizationStatus": "TranslationNeeded"
+          },
+          "it-IT": {
+            "Text": "Disattivazione indicatore di planata",
+            "LocalizationStatus": "TranslationNeeded"
+          },
+          "pl-PL": {
+            "Text": "Wyłącza wskaźnik zniżania",
+            "LocalizationStatus": "TranslationNeeded"
+          },
+          "pt-BR": {
+            "Text": "Recusa de um Sinalizador de Planeio",
+            "LocalizationStatus": "TranslationNeeded"
+          },
+          "ru-RU": {
+            "Text": "Отключает флажок глиссады",
+            "LocalizationStatus": "TranslationNeeded"
+          },
+          "zh-CN": {
+            "Text": "中止下滑旗显示",
+            "LocalizationStatus": "TranslationNeeded"
+          }
+        }
+      },
+      "MODELBEHAVIOR.CDI.OPTIONS.NO_FLAG_LOCALIZER": {
+        "UUID": "76d4f7b0-2822-43ac-8f08-5b29b7809218",
+        "LastModifiedBy": "ajimeno",
+        "LastModifiedDate": "2020-02-17 13:57:12",
+        "LocalizationStatus": "TranslationNeeded",
+        "Tags": {
+          "Locked": "False"
+        },
+        "Languages": {
+          "en-US": {
+            "Text": "Opts out of a Localizer Flag"
+          },
+          "fr-FR": {
+            "Text": "Quitter un drapeau de localiseur.",
+            "LocalizationStatus": "TranslationNeeded"
+          },
+          "es-ES": {
+            "Text": "Excluye un indicador de localizador",
+            "LocalizationStatus": "TranslationNeeded"
+          },
+          "de-DE": {
+            "Text": "Wählt die Landekurssenderflagge ab",
+            "LocalizationStatus": "TranslationNeeded"
+          },
+          "it-IT": {
+            "Text": "Disattivazione indicatore del localizzatore",
+            "LocalizationStatus": "TranslationNeeded"
+          },
+          "pl-PL": {
+            "Text": "Wyłącza wskaźnik localizera",
+            "LocalizationStatus": "TranslationNeeded"
+          },
+          "pt-BR": {
+            "Text": "Recusa de um Sinalizador de Localizador",
+            "LocalizationStatus": "TranslationNeeded"
+          },
+          "ru-RU": {
+            "Text": "Отключает флажок курсового маяка",
+            "LocalizationStatus": "TranslationNeeded"
+          },
+          "zh-CN": {
+            "Text": "中止航向信标台旗显示",
+            "LocalizationStatus": "TranslationNeeded"
+          }
+        }
+      },
+      "MODELBEHAVIOR.CDI.OPTIONS.NO_GLIDE_LOCALIZER_INIT_ANIMATION": {
+        "UUID": "82c796e6-03f1-499d-baa6-fd2e868e15d1",
+        "LastModifiedBy": "ajimeno",
+        "LastModifiedDate": "2020-02-17 13:57:12",
+        "LocalizationStatus": "TranslationNeeded",
+        "Tags": {
+          "Locked": "False"
+        },
+        "Languages": {
+          "en-US": {
+            "Text": "Opts out of a initialization animation for the glide localizer."
+          },
+          "fr-FR": {
+            "Text": "Quitter l'animation d'initialisation du localiseur de vol plané.",
+            "LocalizationStatus": "TranslationNeeded"
+          },
+          "es-ES": {
+            "Text": "Excluye la inicialización de una animación para el localizador de planeo.",
+            "LocalizationStatus": "TranslationNeeded"
+          },
+          "de-DE": {
+            "Text": "Wählt eine Initialisierungsanimation für den Gleitlandekurssender ab.",
+            "LocalizationStatus": "TranslationNeeded"
+          },
+          "it-IT": {
+            "Text": "Disattivazione animazione di inizializzazione per il localizzatore di planata",
+            "LocalizationStatus": "TranslationNeeded"
+          },
+          "pl-PL": {
+            "Text": "Wyłącza animację inicjalizacji localizera zniżania.",
+            "LocalizationStatus": "TranslationNeeded"
+          },
+          "pt-BR": {
+            "Text": "Recusa de uma animação de inicialização para o localizador de planeio.",
+            "LocalizationStatus": "TranslationNeeded"
+          },
+          "ru-RU": {
+            "Text": "Отключает начальную анимацию для курсового маяка глиссады",
+            "LocalizationStatus": "TranslationNeeded"
+          },
+          "zh-CN": {
+            "Text": "中止下滑信标台初始化动画。",
+            "LocalizationStatus": "TranslationNeeded"
+          }
+        }
+      },
+      "MODELBEHAVIOR.CDI.OPTIONS.NO_NEEDLE_GLIDE": {
+        "UUID": "94371a67-471c-4b2e-a3e7-e754b16e74d4",
+        "LastModifiedBy": "ajimeno",
+        "LastModifiedDate": "2020-02-17 13:57:12",
+        "LocalizationStatus": "TranslationNeeded",
+        "Tags": {
+          "Locked": "False"
+        },
+        "Languages": {
+          "en-US": {
+            "Text": "Opts out of a Glide Needle"
+          },
+          "fr-FR": {
+            "Text": "Quitter une aiguille de vol plané.",
+            "LocalizationStatus": "TranslationNeeded"
+          },
+          "es-ES": {
+            "Text": "Excluye la aguja de planeo",
+            "LocalizationStatus": "TranslationNeeded"
+          },
+          "de-DE": {
+            "Text": "Wählt die Gleitnadel ab",
+            "LocalizationStatus": "TranslationNeeded"
+          },
+          "it-IT": {
+            "Text": "Disattivazione ago di planata",
+            "LocalizationStatus": "TranslationNeeded"
+          },
+          "pl-PL": {
+            "Text": "Wyłącza wskazówkę zniżania",
+            "LocalizationStatus": "TranslationNeeded"
+          },
+          "pt-BR": {
+            "Text": "Recusa de uma Agulha de Planeio",
+            "LocalizationStatus": "TranslationNeeded"
+          },
+          "ru-RU": {
+            "Text": "Отключает планку глиссады",
+            "LocalizationStatus": "TranslationNeeded"
+          },
+          "zh-CN": {
+            "Text": "中止下滑指针显示",
+            "LocalizationStatus": "TranslationNeeded"
+          }
+        }
+      },
+      "MODELBEHAVIOR.CDI.PARAMS.ANIM_NAME.COMPASS": {
+        "UUID": "8a756243-831e-4392-a872-cffe416ad5be",
+        "LastModifiedBy": "ajimeno",
+        "LastModifiedDate": "2020-02-17 13:57:12",
+        "LocalizationStatus": "TranslationNeeded",
+        "Tags": {
+          "Locked": "False"
+        },
+        "Languages": {
+          "en-US": {
+            "Text": "Name of the compass' animation"
+          },
+          "fr-FR": {
+            "Text": "Nom de l'animation du compas",
+            "LocalizationStatus": "TranslationNeeded"
+          },
+          "es-ES": {
+            "Text": "Nombre de la animación de la brújula",
+            "LocalizationStatus": "TranslationNeeded"
+          },
+          "de-DE": {
+            "Text": "Name der Animation des Kompasses",
+            "LocalizationStatus": "TranslationNeeded"
+          },
+          "it-IT": {
+            "Text": "Nome dell'animazione della bussola",
+            "LocalizationStatus": "TranslationNeeded"
+          },
+          "pl-PL": {
+            "Text": "Nazwa animacji busoli",
+            "LocalizationStatus": "TranslationNeeded"
+          },
+          "pt-BR": {
+            "Text": "Nome da animação da bússola",
+            "LocalizationStatus": "TranslationNeeded"
+          },
+          "ru-RU": {
+            "Text": "Название анимации компаса",
+            "LocalizationStatus": "TranslationNeeded"
+          },
+          "zh-CN": {
+            "Text": "罗盘动画名称",
+            "LocalizationStatus": "TranslationNeeded"
+          }
+        }
+      },
+      "MODELBEHAVIOR.CDI.PARAMS.ANIM_NAME.COURSE_KNOB": {
+        "UUID": "2b16e90a-4601-423e-967e-318a4dfca52a",
+        "LastModifiedBy": "dmedina",
+        "LastModifiedDate": "2020-07-01 11:55:35",
+        "LocalizationStatus": "TranslationNeeded",
+        "Tags": {
+          "Locked": "False"
+        },
+        "Languages": {
+          "en-US": {
+            "Text": "Name of the course Knob's animation"
+          },
+          "fr-FR": {
+            "Text": "Nom de l'animation du bouton de trajectoire"
+          },
+          "es-ES": {
+            "Text": "Nombre de la animación de la rueda de curso"
+          },
+          "de-DE": {
+            "Text": "Name der Animation des Kursreglers"
+          },
+          "it-IT": {
+            "Text": "Nome dell'animazione del selettore di rotta"
+          },
+          "pl-PL": {
+            "Text": "Nazwa animacji pokrętła kursu"
+          },
+          "pt-BR": {
+            "Text": "Nome da animação do Botão de Curso"
+          },
+          "ru-RU": {
+            "Text": "Название анимации задатчика путевого угла"
+          },
+          "zh-CN": {
+            "Text": "航向旋钮动画名称"
+          }
+        }
+      },
+      "MODELBEHAVIOR.CDI.PARAMS.ANIM_NAME.FLAG_FROM": {
+        "UUID": "ef4739d1-782c-472a-a696-871520110cad",
+        "LastModifiedBy": "ajimeno",
+        "LastModifiedDate": "2020-02-17 13:57:12",
+        "LocalizationStatus": "TranslationNeeded",
+        "Tags": {
+          "Locked": "False"
+        },
+        "Languages": {
+          "en-US": {
+            "Text": "Name of the From Flag's Animation"
+          },
+          "fr-FR": {
+            "Text": "Nom de l'animation du drapeau de point de départ",
+            "LocalizationStatus": "TranslationNeeded"
+          },
+          "es-ES": {
+            "Text": "Nombre de la animación del indicador de procedencia",
+            "LocalizationStatus": "TranslationNeeded"
+          },
+          "de-DE": {
+            "Text": "Name der Animation der Von-Flagge",
+            "LocalizationStatus": "TranslationNeeded"
+          },
+          "it-IT": {
+            "Text": "Nome dell'animazione dell'indicatore di partenza",
+            "LocalizationStatus": "TranslationNeeded"
+          },
+          "pl-PL": {
+            "Text": "Nazwa animacji wskaźnika FROM",
+            "LocalizationStatus": "TranslationNeeded"
+          },
+          "pt-BR": {
+            "Text": "Nome da Animação do Sinalizador De",
+            "LocalizationStatus": "TranslationNeeded"
+          },
+          "ru-RU": {
+            "Text": "Название анимации флажка пункта отправления",
+            "LocalizationStatus": "TranslationNeeded"
+          },
+          "zh-CN": {
+            "Text": "来自旗动画名称",
+            "LocalizationStatus": "TranslationNeeded"
+          }
+        }
+      },
+      "MODELBEHAVIOR.CDI.PARAMS.ANIM_NAME.FLAG_GLIDE": {
+        "UUID": "7ec84357-19a2-4420-a86b-530b94cafa13",
+        "LastModifiedBy": "ajimeno",
+        "LastModifiedDate": "2020-02-17 13:57:12",
+        "LocalizationStatus": "TranslationNeeded",
+        "Tags": {
+          "Locked": "False"
+        },
+        "Languages": {
+          "en-US": {
+            "Text": "Name of the Glide Flag's animation"
+          },
+          "fr-FR": {
+            "Text": "Nom de l'animation du drapeau du vol plané",
+            "LocalizationStatus": "TranslationNeeded"
+          },
+          "es-ES": {
+            "Text": "Nombre de la animación del indicador de planeo",
+            "LocalizationStatus": "TranslationNeeded"
+          },
+          "de-DE": {
+            "Text": "Name der Animation der Gleitflagge",
+            "LocalizationStatus": "TranslationNeeded"
+          },
+          "it-IT": {
+            "Text": "Nome dell'animazione dell'indicatore di planata",
+            "LocalizationStatus": "TranslationNeeded"
+          },
+          "pl-PL": {
+            "Text": "Nazwa animacji wskaźnika zniżania",
+            "LocalizationStatus": "TranslationNeeded"
+          },
+          "pt-BR": {
+            "Text": "Nome da animação do Sinalizador de Planeio",
+            "LocalizationStatus": "TranslationNeeded"
+          },
+          "ru-RU": {
+            "Text": "Название анимации флажка глиссады",
+            "LocalizationStatus": "TranslationNeeded"
+          },
+          "zh-CN": {
+            "Text": "下滑旗动画名称",
+            "LocalizationStatus": "TranslationNeeded"
+          }
+        }
+      },
+      "MODELBEHAVIOR.CDI.PARAMS.ANIM_NAME.FLAG_LOCALIZER": {
+        "UUID": "c9158746-5094-4821-855f-0b726b9300bc",
+        "LastModifiedBy": "ajimeno",
+        "LastModifiedDate": "2020-02-17 13:57:12",
+        "LocalizationStatus": "TranslationNeeded",
+        "Tags": {
+          "Locked": "False"
+        },
+        "Languages": {
+          "en-US": {
+            "Text": "Name of the Localizer Flag's animation"
+          },
+          "fr-FR": {
+            "Text": "Nom de l'animation du drapeau du localiseur",
+            "LocalizationStatus": "TranslationNeeded"
+          },
+          "es-ES": {
+            "Text": "Nombre de la animación del indicador de localizador",
+            "LocalizationStatus": "TranslationNeeded"
+          },
+          "de-DE": {
+            "Text": "Name der Animation der Landekurssenderflagge",
+            "LocalizationStatus": "TranslationNeeded"
+          },
+          "it-IT": {
+            "Text": "Nome dell'animazione dell'indicatore del localizzatore",
+            "LocalizationStatus": "TranslationNeeded"
+          },
+          "pl-PL": {
+            "Text": "Nazwa animacji wskaźnika localizera",
+            "LocalizationStatus": "TranslationNeeded"
+          },
+          "pt-BR": {
+            "Text": "Nome da animação do Sinalizador do Localizador",
+            "LocalizationStatus": "TranslationNeeded"
+          },
+          "ru-RU": {
+            "Text": "Название анимации флажка курсового маяка",
+            "LocalizationStatus": "TranslationNeeded"
+          },
+          "zh-CN": {
+            "Text": "航向信标台旗动画名称",
+            "LocalizationStatus": "TranslationNeeded"
+          }
+        }
+      },
+      "MODELBEHAVIOR.CDI.PARAMS.ANIM_NAME.FLAG_OFF": {
+        "UUID": "a0f76cd4-6a6c-448f-8aee-b6e29f36e929",
+        "LastModifiedBy": "ajimeno",
+        "LastModifiedDate": "2020-02-17 13:57:12",
+        "LocalizationStatus": "TranslationNeeded",
+        "Tags": {
+          "Locked": "False"
+        },
+        "Languages": {
+          "en-US": {
+            "Text": "Name of the Off Flag's Animation"
+          },
+          "fr-FR": {
+            "Text": "Nom de l'animation du drapeau de départ",
+            "LocalizationStatus": "TranslationNeeded"
+          },
+          "es-ES": {
+            "Text": "Nombre de la animación del indicador de apagado",
+            "LocalizationStatus": "TranslationNeeded"
+          },
+          "de-DE": {
+            "Text": "Name der Animation der Aus-Flagge",
+            "LocalizationStatus": "TranslationNeeded"
+          },
+          "it-IT": {
+            "Text": "Nome dell'animazione dell'indicatore di fuori rotta",
+            "LocalizationStatus": "TranslationNeeded"
+          },
+          "pl-PL": {
+            "Text": "Nazwa animacji wskaźnika niedostępności sygnału",
+            "LocalizationStatus": "TranslationNeeded"
+          },
+          "pt-BR": {
+            "Text": "Nome da Animação do Sinalizador Desligado",
+            "LocalizationStatus": "TranslationNeeded"
+          },
+          "ru-RU": {
+            "Text": "Название анимации флажка сноса",
+            "LocalizationStatus": "TranslationNeeded"
+          },
+          "zh-CN": {
+            "Text": "出发旗动画名称",
+            "LocalizationStatus": "TranslationNeeded"
+          }
+        }
+      },
+      "MODELBEHAVIOR.CDI.PARAMS.ANIM_NAME.FLAG_TO": {
+        "UUID": "d197b0d4-3b8e-4aa2-b363-c8ac09046d49",
+        "LastModifiedBy": "ajimeno",
+        "LastModifiedDate": "2020-02-17 13:57:12",
+        "LocalizationStatus": "TranslationNeeded",
+        "Tags": {
+          "Locked": "False"
+        },
+        "Languages": {
+          "en-US": {
+            "Text": "Name of the To Flag's Animation"
+          },
+          "fr-FR": {
+            "Text": "Nom de l'animation du drapeau de direction",
+            "LocalizationStatus": "TranslationNeeded"
+          },
+          "es-ES": {
+            "Text": "Nombre de la animación del indicador de dirección",
+            "LocalizationStatus": "TranslationNeeded"
+          },
+          "de-DE": {
+            "Text": "Name der Animation der Zu-Flagge",
+            "LocalizationStatus": "TranslationNeeded"
+          },
+          "it-IT": {
+            "Text": "Nome dell'animazione dell'indicatore di destinazione",
+            "LocalizationStatus": "TranslationNeeded"
+          },
+          "pl-PL": {
+            "Text": "Nazwa animacji wskaźnika TO",
+            "LocalizationStatus": "TranslationNeeded"
+          },
+          "pt-BR": {
+            "Text": "Nome da Animação do Sinalizador Para",
+            "LocalizationStatus": "TranslationNeeded"
+          },
+          "ru-RU": {
+            "Text": "Название анимации флажка пункта назначения",
+            "LocalizationStatus": "TranslationNeeded"
+          },
+          "zh-CN": {
+            "Text": "飞往旗动画名称",
+            "LocalizationStatus": "TranslationNeeded"
+          }
+        }
+      },
+      "MODELBEHAVIOR.CDI.PARAMS.ANIM_NAME.NEEDLE_GLIDE": {
+        "UUID": "1714fc95-b140-45af-b7d1-e6a1af2bb7b9",
+        "LastModifiedBy": "ajimeno",
+        "LastModifiedDate": "2020-02-17 13:57:12",
+        "LocalizationStatus": "TranslationNeeded",
+        "Tags": {
+          "Locked": "False"
+        },
+        "Languages": {
+          "en-US": {
+            "Text": "Name of the Glide Needle's animation"
+          },
+          "fr-FR": {
+            "Text": "Nom de l'animation de l'aiguille du vol plané",
+            "LocalizationStatus": "TranslationNeeded"
+          },
+          "es-ES": {
+            "Text": "Nombre de la animación de la aguja de planeo",
+            "LocalizationStatus": "TranslationNeeded"
+          },
+          "de-DE": {
+            "Text": "Name der Animation der Gleitnadel",
+            "LocalizationStatus": "TranslationNeeded"
+          },
+          "it-IT": {
+            "Text": "Nome dell'animazione dell'ago di planata",
+            "LocalizationStatus": "TranslationNeeded"
+          },
+          "pl-PL": {
+            "Text": "Nazwa animacji wskazówki zniżania",
+            "LocalizationStatus": "TranslationNeeded"
+          },
+          "pt-BR": {
+            "Text": "Nome da animação da Agulha de Planeio",
+            "LocalizationStatus": "TranslationNeeded"
+          },
+          "ru-RU": {
+            "Text": "Название анимации планки глиссады",
+            "LocalizationStatus": "TranslationNeeded"
+          },
+          "zh-CN": {
+            "Text": "下滑指针动画名称",
+            "LocalizationStatus": "TranslationNeeded"
+          }
+        }
+      },
+      "MODELBEHAVIOR.CDI.PARAMS.ANIM_NAME.NEEDLE_LOCALIZER": {
+        "UUID": "fc1b3239-8f06-4a77-9c37-12374147078b",
+        "LastModifiedBy": "ajimeno",
+        "LastModifiedDate": "2020-02-17 13:57:12",
+        "LocalizationStatus": "TranslationNeeded",
+        "Tags": {
+          "Locked": "False"
+        },
+        "Languages": {
+          "en-US": {
+            "Text": "Name of the Localizer Needle's animation"
+          },
+          "fr-FR": {
+            "Text": "Nom de l'animation de l'aiguille du localiseur",
+            "LocalizationStatus": "TranslationNeeded"
+          },
+          "es-ES": {
+            "Text": "Nombre de la animación de la aguja de localizador",
+            "LocalizationStatus": "TranslationNeeded"
+          },
+          "de-DE": {
+            "Text": "Name der Animation der Landekurssendernadel",
+            "LocalizationStatus": "TranslationNeeded"
+          },
+          "it-IT": {
+            "Text": "Nome dell'animazione dell'ago del localizzatore",
+            "LocalizationStatus": "TranslationNeeded"
+          },
+          "pl-PL": {
+            "Text": "Nazwa animacji wskazówki localizera",
+            "LocalizationStatus": "TranslationNeeded"
+          },
+          "pt-BR": {
+            "Text": "Nome da animação da Agulha do Localizador",
+            "LocalizationStatus": "TranslationNeeded"
+          },
+          "ru-RU": {
+            "Text": "Название анимации планки курсового маяка",
+            "LocalizationStatus": "TranslationNeeded"
+          },
+          "zh-CN": {
+            "Text": "航向信标台指针动画名称",
+            "LocalizationStatus": "TranslationNeeded"
+          }
+        }
+      },
+      "MODELBEHAVIOR.CDI.PARAMS.NODE_ID.COURSE_KNOB": {
+        "UUID": "fc0743fa-4777-4f90-b7c9-a0490c73e533",
+        "LastModifiedBy": "dmedina",
+        "LastModifiedDate": "2020-07-01 11:55:35",
+        "LocalizationStatus": "TranslationNeeded",
+        "Tags": {
+          "Locked": "False"
+        },
+        "Languages": {
+          "en-US": {
+            "Text": "Name of the Course Knob's node"
+          },
+          "fr-FR": {
+            "Text": "Nom du nœud du bouton de trajectoire"
+          },
+          "es-ES": {
+            "Text": "Nombre del nodo de la rueda de curso"
+          },
+          "de-DE": {
+            "Text": "Name des Kursregler-Knotens"
+          },
+          "it-IT": {
+            "Text": "Nome del nodo del selettore di rotta"
+          },
+          "pl-PL": {
+            "Text": "Nazwa węzła pokrętła kursu"
+          },
+          "pt-BR": {
+            "Text": "Nome do nó do Botão de Curso"
+          },
+          "ru-RU": {
+            "Text": "Название точки пересечения задатчика путевого угла"
+          },
+          "zh-CN": {
+            "Text": "航向旋钮节点名称"
+          }
+        }
+      },
+      "MODELBEHAVIOR.CDI.PARAMS.NODE_ID.EMISSIVE_GPS": {
+        "UUID": "9704c4b9-0118-41b0-be42-ff7cd460453e",
+        "LastModifiedBy": "ajimeno",
+        "LastModifiedDate": "2020-02-17 13:57:12",
+        "LocalizationStatus": "TranslationNeeded",
+        "Tags": {
+          "Locked": "False"
+        },
+        "Languages": {
+          "en-US": {
+            "Text": "Name of the GPS Emissive Indicator's node"
+          },
+          "fr-FR": {
+            "Text": "Nom du nœud de l'indicateur émissif GPS",
+            "LocalizationStatus": "TranslationNeeded"
+          },
+          "es-ES": {
+            "Text": "Nombre del nodo del indicador de GPS emisivo",
+            "LocalizationStatus": "TranslationNeeded"
+          },
+          "de-DE": {
+            "Text": "Name des „GPS Emissive Indicator“-Knotens",
+            "LocalizationStatus": "TranslationNeeded"
+          },
+          "it-IT": {
+            "Text": "Nome del nodo dell'indicatore GPS emissivo",
+            "LocalizationStatus": "TranslationNeeded"
+          },
+          "pl-PL": {
+            "Text": "Nazwa węzła wskaźnika emisji GPS",
+            "LocalizationStatus": "TranslationNeeded"
+          },
+          "pt-BR": {
+            "Text": "Nome do nó do Indicador Emissivo GPS",
+            "LocalizationStatus": "TranslationNeeded"
+          },
+          "ru-RU": {
+            "Text": "Название точки пересечения излучающего индикатора GPS",
+            "LocalizationStatus": "TranslationNeeded"
+          },
+          "zh-CN": {
+            "Text": "GPS高亮指示节点名称",
+            "LocalizationStatus": "TranslationNeeded"
+          }
+        }
+      },
+      "MODELBEHAVIOR.CDI.PARAMS.NODE_ID.EMISSIVE_NAV": {
+        "UUID": "bec534ea-8210-467b-8c25-83d5c6d610ae",
+        "LastModifiedBy": "ajimeno",
+        "LastModifiedDate": "2020-02-17 13:57:12",
+        "LocalizationStatus": "TranslationNeeded",
+        "Tags": {
+          "Locked": "False"
+        },
+        "Languages": {
+          "en-US": {
+            "Text": "Name of the NAV Emissive Indicator's node"
+          },
+          "fr-FR": {
+            "Text": "Nom du nœud de l'indicateur émissif NAV",
+            "LocalizationStatus": "TranslationNeeded"
+          },
+          "es-ES": {
+            "Text": "Nombre del nodo del indicador de NAV emisivo",
+            "LocalizationStatus": "TranslationNeeded"
+          },
+          "de-DE": {
+            "Text": "Name des „NAV Emissive Indicator“-Knotens",
+            "LocalizationStatus": "TranslationNeeded"
+          },
+          "it-IT": {
+            "Text": "Nome del nodo dell'indicatore NAV emissivo",
+            "LocalizationStatus": "TranslationNeeded"
+          },
+          "pl-PL": {
+            "Text": "Nazwa węzła wskaźnika emisji NAV",
+            "LocalizationStatus": "TranslationNeeded"
+          },
+          "pt-BR": {
+            "Text": "Nome do nó do Indicador Emissivo de Navegação (NAV)",
+            "LocalizationStatus": "TranslationNeeded"
+          },
+          "ru-RU": {
+            "Text": "Название точки пересечения излучающего индикатора NAV",
+            "LocalizationStatus": "TranslationNeeded"
+          },
+          "zh-CN": {
+            "Text": "导航无线电高亮指示节点名称",
+            "LocalizationStatus": "TranslationNeeded"
+          }
+        }
+      },
+      "MODELBEHAVIOR.CDI.PARAMS.NODE_ID.EMISSIVE_VLOC": {
+        "UUID": "0448adac-1239-40b1-9b1b-bc18e3ff0c68",
+        "LastModifiedBy": "ajimeno",
+        "LastModifiedDate": "2020-02-17 13:57:12",
+        "LocalizationStatus": "TranslationNeeded",
+        "Tags": {
+          "Locked": "False"
+        },
+        "Languages": {
+          "en-US": {
+            "Text": "Name of the VLOC Emissive Indicator's node"
+          },
+          "fr-FR": {
+            "Text": "Nom du nœud de l'indicateur émissif VLOC",
+            "LocalizationStatus": "TranslationNeeded"
+          },
+          "es-ES": {
+            "Text": "Nombre del nodo del indicador de VLOC emisivo",
+            "LocalizationStatus": "TranslationNeeded"
+          },
+          "de-DE": {
+            "Text": "Name des „VLOC Emissive Indicator“-Knotens",
+            "LocalizationStatus": "TranslationNeeded"
+          },
+          "it-IT": {
+            "Text": "Nome del nodo dell'indicatore VLOC emissivo",
+            "LocalizationStatus": "TranslationNeeded"
+          },
+          "pl-PL": {
+            "Text": "Nazwa węzła wskaźnika emisji VLOC",
+            "LocalizationStatus": "TranslationNeeded"
+          },
+          "pt-BR": {
+            "Text": "Nome do nó do Indicador Emissivo VLOC",
+            "LocalizationStatus": "TranslationNeeded"
+          },
+          "ru-RU": {
+            "Text": "Название точки пересечения излучающего индикатора VLOC",
+            "LocalizationStatus": "TranslationNeeded"
+          },
+          "zh-CN": {
+            "Text": "全向无线电信标/航向台高亮指示节点名称",
+            "LocalizationStatus": "TranslationNeeded"
+          }
+        }
+      },
+      "MODELBEHAVIOR.CDI.PARAMS.NODE_ID.HIGHLIGHT": {
+        "UUID": "2b21482d-480d-4cdc-9668-8aa3957e6efa",
+        "LastModifiedBy": "ajimeno",
+        "LastModifiedDate": "2020-02-17 13:57:12",
+        "LocalizationStatus": "TranslationNeeded",
+        "Tags": {
+          "Locked": "False"
+        },
+        "Languages": {
+          "en-US": {
+            "Text": "Name of the node used for highlights"
+          },
+          "fr-FR": {
+            "Text": "Nom du nœud utilisé pour les faits marquants",
+            "LocalizationStatus": "TranslationNeeded"
+          },
+          "es-ES": {
+            "Text": "Nombre del nodo utilizado para resaltar",
+            "LocalizationStatus": "TranslationNeeded"
+          },
+          "de-DE": {
+            "Text": "Der Name des Knotens wird für Markierungen verwendet",
+            "LocalizationStatus": "TranslationNeeded"
+          },
+          "it-IT": {
+            "Text": "Nome del nodo utilizzato per gli highlight",
+            "LocalizationStatus": "TranslationNeeded"
+          },
+          "pl-PL": {
+            "Text": "Nazwa węzła używanego do wyróżnień",
+            "LocalizationStatus": "TranslationNeeded"
+          },
+          "pt-BR": {
+            "Text": "Nome do nó usado para destaques",
+            "LocalizationStatus": "TranslationNeeded"
+          },
+          "ru-RU": {
+            "Text": "Название точки пересечения, используемой для подсветки",
+            "LocalizationStatus": "TranslationNeeded"
+          },
+          "zh-CN": {
+            "Text": "高亮节点名称",
+            "LocalizationStatus": "TranslationNeeded"
+          }
+        }
+      }
+    }
+  }
+}

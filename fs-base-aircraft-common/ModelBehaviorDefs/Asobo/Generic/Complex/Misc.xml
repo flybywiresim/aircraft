@@ -1,0 +1,134 @@
+
+<!--
+	Needle Animation that looks up a simvar value and uses frame between a min and max val
+
+	Required parameter:
+		ANIM_NAME
+		SIMVAR
+		SIMVAR_UNIT
+		MIN_VALUE
+		MAX_VALUE
+-->
+<Template Name="ASOBO_GT_Needle_Code">
+	<DefaultTemplateParameters>
+		<SWITCH_POSITION_TYPE>O</SWITCH_POSITION_TYPE>
+		<SWITCH_POSITION_VAR>SwitchState</SWITCH_POSITION_VAR>
+		<ID></ID>
+		<ANIMATION_OFFSET_CODE></ANIMATION_OFFSET_CODE>
+		<SIMVAR_ADJUSTMENT_CODE></SIMVAR_ADJUSTMENT_CODE>
+	</DefaultTemplateParameters>
+	<EditableTemplateParameters>
+		<AddParams>
+			<HIGHLIGHT_NODE_ID></HIGHLIGHT_NODE_ID>
+		</AddParams>
+	</EditableTemplateParameters>
+	
+	<Component ID="#NODE_ID##ID#" Node="#NODE_ID#">
+		<UseTemplate Name="ASOBO_GT_Anim_Code">
+			<Condition Check="HIGHLIGHT_NODE_ID">
+				<PART_ID></PART_ID>
+			</Condition>
+			<Condition Check="OVERRIDE_ANIM_CODE">
+				<True>
+					<ANIM_CODE>#OVERRIDE_ANIM_CODE#</ANIM_CODE>
+				</True>
+				<False>
+					<ANIM_CODE>
+						(A:#SIMVAR#, #UNITS#) #SIMVAR_ADJUSTMENT_CODE# #MIN_VALUE# - #MAX_VALUE# #MIN_VALUE# - / #ANIMATION_OFFSET_CODE# 100 * 
+					</ANIM_CODE>
+				</False>
+			</Condition>
+		</UseTemplate>
+	</Component>
+	
+	<Condition Check="HIGHLIGHT_NODE_ID">
+		<UseTemplate Name="ASOBO_GT_ComponentWith_PART_ID">
+			<NODE_ID>#HIGHLIGHT_NODE_ID#</NODE_ID>
+		</UseTemplate>
+	</Condition>
+</Template>
+
+
+<!--
+	Create a component node with a nested PART_ID node
+
+	[Required]NODE_ID(Text): Name of the node and part_id by default
+	PART_ID(Text, default:NODE_ID): Override part_id
+-->
+
+<Template Name = "ASOBO_GT_ComponentWith_PART_ID">
+	<DefaultTemplateParameters>
+		<ID>1</ID>
+	</DefaultTemplateParameters>
+	<Component ID="#NODE_ID#_PartID" Node="#NODE_ID#">
+		<UseTemplate Name="ASOBO_GT_Part_ID">
+			<Condition Check="PART_ID">
+				<False>
+					<PART_ID>#NODE_ID#</PART_ID>
+				</False>
+			</Condition>
+		</UseTemplate>
+		<Condition Valid="CAMERA_TITLE">
+			<CameraTitle>#CAMERA_TITLE#</CameraTitle>
+		</Condition>
+	</Component>
+</Template>
+
+<!-- 
+	Generates PartIds from PART_ID parameters
+-->
+<Template Name = "ASOBO_GT_Part_ID">
+	<EditableTemplateParameters>
+		<AddParams>
+			<NODE_ID></NODE_ID>
+		</AddParams>
+	</EditableTemplateParameters>
+	
+	<UseTemplate Name="ASOBO_GT_Part_ID_SubTemplate"></UseTemplate>
+	<Condition Check="OTHER_PART_ID">
+		<UseTemplate Name="ASOBO_GT_Part_ID_SubTemplate">
+			<PART_ID>#OTHER_PART_ID#</PART_ID>
+		</UseTemplate>
+	</Condition>
+</Template>
+
+<Template Name = "ASOBO_GT_Part_ID_SubTemplate">
+	<Condition Check="PART_ID">
+		<Condition Check="PART_ID" Match="">
+			<False>
+				<PartID>#PART_ID#</PartID>
+				<Condition Check="ID">
+					<Condition Check="NO_ID_IN_PARTID">
+						<False>
+							<PartID>#PART_ID##ID#</PartID>
+						</False>
+					</Condition>
+				</Condition>
+			</False>
+		</Condition>
+	</Condition>
+</Template>
+
+<!--
+	Create a component which contains a PartId used for Highlighting a Gauge
+-->
+<Template Name = "ASOBO_GT_Highlight_Template">
+	<EditableTemplateParameters>
+		<AddParams>
+			<HIGHLIGHT_NODE_ID></HIGHLIGHT_NODE_ID>
+		</AddParams>
+	</EditableTemplateParameters>
+	<UseTemplate Name="ASOBO_GT_ComponentWith_PART_ID">
+		<NODE_ID>#HIGHLIGHT_NODE_ID#</NODE_ID>
+	</UseTemplate>
+</Template>
+
+<!--
+	Create a component which blocks interactions
+-->
+<Template Name = "ASOBO_GT_Interaction_Blocker">
+	<Component ID="#NODE_ID#" Node="#NODE_ID#">
+		<UseTemplate Name="ASOBO_GT_Interaction_NoInteraction">
+		</UseTemplate>
+	</Component>
+</Template>

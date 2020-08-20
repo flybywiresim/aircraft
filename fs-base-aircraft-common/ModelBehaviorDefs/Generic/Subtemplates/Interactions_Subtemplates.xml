@@ -1,0 +1,565 @@
+
+<Template Name = "GT_Interaction_LeftSingle_Leave_Code_Subtemplate1">
+	<UseTemplate Name="GT_Interaction_LeftSingle_Leave_Code_Subtemplate2">
+		<Condition Check="WHEEL_DOWN_CODE">
+			<MOUSEFLAGS>#MOUSEFLAGS#+WheelDown</MOUSEFLAGS>	
+			<MOUSE_WHEEL_INPUTS> els{ (M:Event) 'WheelDown'   scmi 0 == if{ #WHEEL_DOWN_CODE# } #MOUSE_WHEEL_INPUTS# }</MOUSE_WHEEL_INPUTS>
+		</Condition>
+	</UseTemplate>
+</Template>
+
+<Template Name = "GT_Interaction_LeftSingle_Leave_Code_Subtemplate2">
+	<DefaultTemplateParameters>
+	</DefaultTemplateParameters>
+
+	<UseTemplate Name="GT_MouseRect">
+		<CALLBACKCODE>
+			(M:Event) 'LeftSingle' scmi 0 == if{ #LEFT_SINGLE_CODE# } els{ 
+			(M:Event) 'LeftRelease'   scmi 0 == if{ #LEFT_LEAVE_CODE# } 
+			#MOUSE_WHEEL_INPUTS#
+		}
+		</CALLBACKCODE>
+	</UseTemplate>
+</Template>
+
+<!-- DO NOT CALL THIS TEMPLATE - Use GT_Interaction_LeftSingle_MultiStates instead -->
+<Template Name = "GT_Interaction_LeftSingle_ParamSetup">
+	<DefaultTemplateParameters>
+		<Condition Check="MOMENTARY_SWITCH">
+			<STATE0_TIMER>0</STATE0_TIMER>
+			<STATE_MAX_TIMER>0</STATE_MAX_TIMER>
+		</Condition>
+		<MOMENTARY_REPEAT_DELAY>0.5</MOMENTARY_REPEAT_DELAY>
+	</DefaultTemplateParameters>
+	<OverrideTemplateParameters>
+		<START_STATE Process="Int">#NUM_STATES# 1 -</START_STATE>
+		<Condition Check="MOMENTARY_SWITCH">
+			<True>
+				<MOMENTARY_UP_0>
+					#STATE0_TIMER# 0 &gt; if{ 
+						(E:SIMULATION TIME, seconds) #STATE0_TIMER# + (&gt;#SWITCH_POSITION_TYPE_TIMER#:#SWITCH_POSITION_VAR_TIMER#) 
+						(E:SIMULATION TIME, seconds) #MOMENTARY_REPEAT_DELAY# + (&gt;O:XMLVAR_Repeat_StartTime) 
+					} els{ 
+						0 (&gt;#SWITCH_POSITION_TYPE_TIMER#:#SWITCH_POSITION_VAR_TIMER#) 
+					}
+					1 (&gt;#SWITCH_POSITION_TYPE_ISDOWN#:#SWITCH_POSITION_VAR_ISDOWN#)
+				</MOMENTARY_UP_0>
+				<CODE_RELEASE>0 (&gt;#SWITCH_POSITION_TYPE_ISDOWN#:#SWITCH_POSITION_VAR_ISDOWN#)</CODE_RELEASE>
+			</True>
+			<False>
+				<MOMENTARY_UP_0></MOMENTARY_UP_0>
+			</False>
+		</Condition>
+	</OverrideTemplateParameters>
+	<UseTemplate Name="GT_Interaction_LeftSingle_ParamSetup_Recursive_1">
+		<CURRENT_ID>#START_STATE#</CURRENT_ID>
+		<POS_MAX>#START_STATE#</POS_MAX>
+	</UseTemplate>
+</Template>
+
+<Template Name = "GT_Interaction_LeftSingle_ParamSetup_Recursive_1">
+	<DefaultTemplateParameters>
+		<CODE_POS_#CURRENT_ID#_VERIF>1</CODE_POS_#CURRENT_ID#_VERIF>
+		<ANIMTIP_#CURRENT_ID#_ON_PERCENT Process="Float">#CURRENT_ID# #POS_MAX# /</ANIMTIP_#CURRENT_ID#_ON_PERCENT>
+	</DefaultTemplateParameters>
+
+	<UseTemplate Name="GT_Interaction_LeftSingle_ParamSetup_Recursive_2">
+		<CURRENT_ENUM_VAL_POS Process="Param">ENUM_VAL_POS_#CURRENT_ID#</CURRENT_ENUM_VAL_POS>
+	</UseTemplate>
+</Template>
+<Template Name = "GT_Interaction_LeftSingle_ParamSetup_Recursive_2">
+	<DefaultTemplateParameters>
+		<Condition NotEmpty="CURRENT_ENUM_VAL_POS">
+			<True>
+				<CODE_POS_#CURRENT_ID#>
+					(A:#ENUM_SIMVAR#, Enum) #CURRENT_ENUM_VAL_POS# != if{ #CURRENT_ENUM_VAL_POS# (&gt;K:#ENUM_KEY#) }
+				</CODE_POS_#CURRENT_ID#>
+			</True>
+			<False>
+				<CODE_POS_#CURRENT_ID#/>
+			</False>
+		</Condition>
+	</DefaultTemplateParameters>
+	<OverrideTemplateParameters>
+		<CURRENT_ID Process="Int">#CURRENT_ID# 1 -</CURRENT_ID>
+	</OverrideTemplateParameters>
+
+	<Condition>
+		<Test>
+			<GreaterOrEqual>
+				<Value>CURRENT_ID</Value>
+				<Number>0</Number>
+			</GreaterOrEqual>
+		</Test>
+		<True>
+			<UseTemplate Name="GT_Interaction_LeftSingle_ParamSetup_Recursive_1">
+			</UseTemplate>
+		</True>
+		<False>
+			<UseTemplate Name="GT_Interaction_LeftSingle_CodeSetup_Recursive">
+				<CURRENT_ID>#START_STATE#</CURRENT_ID>
+				<NEXT_ID Process="Int">#START_STATE# 1 -</NEXT_ID>
+				<CODE_POS_MAX Process="Param">CODE_POS_#START_STATE#</CODE_POS_MAX>
+				<CODE_POS_MAX_VERIF Process="Param">CODE_POS_#START_STATE#_VERIF</CODE_POS_MAX_VERIF>
+				<ELSE_BRACKET_OPENING>els{</ELSE_BRACKET_OPENING>
+				<ELSE_BRACKET_CLOSING>}</ELSE_BRACKET_CLOSING>
+			</UseTemplate>
+		</False>
+	</Condition>
+</Template>
+
+<Template Name = "GT_Interaction_LeftSingle_CodeSetup_Recursive">
+	<DefaultTemplateParameters>
+		<Condition Check="MOMENTARY_SWITCH">
+			<True>
+				<Condition Check="MOMENTARY_SWITCH_DOWN_SET">
+					<True>
+						<MOMENTARY_UP_#CURRENT_ID#></MOMENTARY_UP_#CURRENT_ID#>
+					</True>
+					<False>
+						<MOMENTARY_SWITCH_DOWN_SET/>
+						<MOMENTARY_UP_#CURRENT_ID#>
+							#STATE_MAX_TIMER# 0 &gt; if{ 
+								(E:SIMULATION TIME, seconds) #STATE_MAX_TIMER# + (&gt;#SWITCH_POSITION_TYPE_TIMER#:#SWITCH_POSITION_VAR_TIMER#) 
+								(E:SIMULATION TIME, seconds) #MOMENTARY_REPEAT_DELAY# + (&gt;O:XMLVAR_Repeat_StartTime) 
+							} els{ 
+								0 (&gt;#SWITCH_POSITION_TYPE_TIMER#:#SWITCH_POSITION_VAR_TIMER#) 
+							}
+							1 (&gt;#SWITCH_POSITION_TYPE_ISDOWN#:#SWITCH_POSITION_VAR_ISDOWN#)
+						</MOMENTARY_UP_#CURRENT_ID#>
+						<MOMENTARY_SWITCH_DOWN_INDEX>#CURRENT_ID#</MOMENTARY_SWITCH_DOWN_INDEX>
+						<REST_STATE>#NEXT_ID#</REST_STATE>
+						<CODE_POS_RETURN Process="Param">CODE_POS_#NEXT_ID#</CODE_POS_RETURN>
+					</False>
+				</Condition>
+			</True>
+			<False>
+				<MOMENTARY_UP_#CURRENT_ID#></MOMENTARY_UP_#CURRENT_ID#>
+			</False>
+		</Condition>
+	</DefaultTemplateParameters>
+	<OverrideTemplateParameters>
+		<CURRENT_POS_VERIF Process="Param">CODE_POS_#CURRENT_ID#_VERIF</CURRENT_POS_VERIF>
+		<NEXT_POS_VERIF Process="Param">CODE_POS_#NEXT_ID#_VERIF</NEXT_POS_VERIF>
+		<CURRENT_CODE_POS Process="Param">CODE_POS_#CURRENT_ID#</CURRENT_CODE_POS>
+		<NEXT_CODE_POS Process="Param">CODE_POS_#NEXT_ID#</NEXT_CODE_POS>
+		<CURRENT_MOMENTARY_UP Process="Param">MOMENTARY_UP_#CURRENT_ID#</CURRENT_MOMENTARY_UP>
+		<NEXT_MOMENTARY_UP Process="Param">MOMENTARY_UP_#NEXT_ID#</NEXT_MOMENTARY_UP>
+		<CURRENT_CODE_REPEAT Process="Param">CODE_REPEAT_#CURRENT_ID#</CURRENT_CODE_REPEAT>
+		<!-- <NEXT_CODE_REPEAT Process="Param">CODE_REPEAT_#NEXT_ID#</NEXT_CODE_REPEAT> -->
+	</OverrideTemplateParameters>
+
+	<Condition>
+		<Test>
+			<GreaterOrEqual>
+				<Value>NEXT_ID</Value>
+				<Number>0</Number>
+			</GreaterOrEqual>
+		</Test>
+		<True>
+			<UseTemplate Name="GT_Interaction_LeftSingle_CodeSetup_Recursive">
+				<CODE_UP>
+					#CODE_UP#
+					(#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#) #CURRENT_ID# == if{ 
+					#NEXT_POS_VERIF# if{
+						#NEXT_ID# (&gt;#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#) 
+						#NEXT_CODE_POS#
+						#NEXT_MOMENTARY_UP#
+					}
+				} #ELSE_BRACKET_OPENING#
+				</CODE_UP>
+				<CODE_UP_CLOSING>
+				#ELSE_BRACKET_CLOSING#
+				#CODE_UP_CLOSING#
+				</CODE_UP_CLOSING>
+				<CODE_DOWN>
+					 #ELSE_BRACKET_OPENING#
+						(#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#) #NEXT_ID# == if{ 
+							#CURRENT_POS_VERIF# if{
+								#CURRENT_ID# (&gt;#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#) 
+								#CURRENT_CODE_POS# 
+								#CURRENT_MOMENTARY_UP#
+							}
+						}
+						#CODE_DOWN#
+					#ELSE_BRACKET_CLOSING#
+				</CODE_DOWN>
+				<Condition Check="NEXT_ID" Match="1">
+					<True>
+						<ELSE_BRACKET_OPENING></ELSE_BRACKET_OPENING>
+						<ELSE_BRACKET_CLOSING></ELSE_BRACKET_CLOSING>
+					</True>
+				</Condition>
+				
+				<Condition Valid="CURRENT_CODE_REPEAT">
+					<CODE_REPEAT>
+						(#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#) #CURRENT_ID# == if{ 
+							#CURRENT_CODE_REPEAT#
+						} els{
+							#CODE_REPEAT#
+						}
+					</CODE_REPEAT>
+				</Condition>
+				<CURRENT_ID>#NEXT_ID#</CURRENT_ID>
+				<NEXT_ID Process="Int">#NEXT_ID# 1 -</NEXT_ID>
+			</UseTemplate>
+		</True>
+		<False>
+			<UseTemplate Name="GT_Interaction_LeftSingle_MultiStates_Base_1">
+				<Condition Valid="CURRENT_CODE_REPEAT">
+					<CODE_REPEAT>
+						(#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#) #CURRENT_ID# == if{ 
+							#CURRENT_CODE_REPEAT#
+						} els{
+							#CODE_REPEAT#
+						}
+					</CODE_REPEAT>
+				</Condition>
+			</UseTemplate>
+		</False>
+	</Condition>
+</Template>
+
+<!-- DO NOT CALL THIS TEMPLATE - Use GT_Interaction_LeftSingle_MultiStates instead -->
+<Template Name = "GT_Interaction_LeftSingle_MultiStates_Base_1">
+	<DefaultTemplateParameters>
+		<Condition Check="SWITCH_DIRECTION" Match="Vertical">
+			<UPARROW>UpArrow</UPARROW>
+			<DOWNARROW>DownArrow</DOWNARROW>
+		</Condition>
+		<Condition Check="SWITCH_DIRECTION" Match="Horizontal">
+			<Condition Check="ARROW_TYPE" Match="Curved">
+				<True>
+					<LEFTARROW>TurnLeft</LEFTARROW>
+					<RIGHTARROW>TurnRight</RIGHTARROW>
+				</True>
+				<False>
+					<LEFTARROW>LeftArrow</LEFTARROW>
+					<RIGHTARROW>RightArrow</RIGHTARROW>
+				</False>
+			</Condition>
+		</Condition>
+		<LEFT_DOWN_CODE/>
+		<LEFT_UP_CODE/>
+		<ANIMCURSOR_MIN>0</ANIMCURSOR_MIN>
+		<Condition Check="ANIM_LENGTH">
+			<True>
+				<ANIMCURSOR_MAX>#ANIM_LENGTH#</ANIMCURSOR_MAX>
+			</True>
+			<False>
+				<ANIMCURSOR_MAX>100</ANIMCURSOR_MAX>
+			</False>
+		</Condition>
+	</DefaultTemplateParameters>
+
+	<UseTemplate Name="GT_Interaction_LeftSingle_MultiStates_Base_2">
+		<Condition Check="IS_LOOPING">
+			<True>
+				<ANIMCURSOR_MIN>-1</ANIMCURSOR_MIN>
+				<ANIMCURSOR_MAX>-1</ANIMCURSOR_MAX>
+				<CODE_UP>
+					#CODE_UP#
+				els{
+					(#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#) 0 == if{ 
+						#CODE_POS_MAX_VERIF# if{
+							#POS_MAX# (&gt;#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#) 
+							#CODE_POS_MAX# 
+						}
+					}
+				}
+				</CODE_UP>
+				<CODE_DOWN>
+					(#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#) #POS_MAX# == if{ 
+						#CODE_POS_0_VERIF# if{
+							0 (&gt;#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#) 
+							#CODE_POS_0#
+						}
+					}
+					els{
+						#CODE_DOWN#
+					}
+				</CODE_DOWN>
+			</True>
+		</Condition>
+		<Switch Param="SWITCH_DIRECTION">
+			<Case Value="Vertical">
+				<INPUT_CODE>
+					(M:Event) 'WheelUp'   scmi 0 == if{ 1 (&gt;O:GoToRelease) g1 } els{
+					(M:Event) 'WheelDown' scmi 0 == if{ 1 (&gt;O:GoToRelease) g2 } els{
+					(M:Event) 'LeftSingle'   scmi 0 == if{ 
+						#LEFT_DOWN_CODE#
+						(M:RelativeY) 0 &gt; if{ g1 } els{ g2 }
+					} els{
+						(M:Event) 'LeftRelease'   scmi 0 == if{ 
+							#LEFT_UP_CODE#
+							g3
+						}
+					} } }
+						quit
+				</INPUT_CODE>
+			</Case>
+			<Case Value="Horizontal">
+				<INPUT_CODE>
+					(M:Event) 'WheelUp'   scmi 0 == if{ 1 (&gt;O:GoToRelease) g2 } els{
+					(M:Event) 'WheelDown' scmi 0 == if{ 1 (&gt;O:GoToRelease) g1 } els{
+					(M:Event) 'LeftSingle'   scmi 0 == if{ 
+						#LEFT_DOWN_CODE#
+						(M:RelativeX) 0 &gt; if{ g2 } els{ g1 }
+					} els{
+						(M:Event) 'LeftRelease'   scmi 0 == if{ 
+							#LEFT_UP_CODE#
+							g3
+						}
+					} } }
+						quit
+				</INPUT_CODE>
+			</Case>
+		</Switch>
+	</UseTemplate>
+</Template>
+
+<!-- DO NOT CALL THIS TEMPLATE - Use GT_Interaction_LeftSingle_MultiStates instead -->
+<Template Name = "GT_Interaction_LeftSingle_MultiStates_Base_2">
+	<DefaultTemplateParameters>
+		<HELPID/>
+		<TOOLTIPID/>
+
+		<SWITCH_POSITION_TYPE>O</SWITCH_POSITION_TYPE>
+		<SWITCH_POSITION_VAR>SwitchState</SWITCH_POSITION_VAR>
+
+		<CODE_POS_0/>
+		<CODE_POS_1/>
+
+		<!-- 
+		This code is run when the lever should move to the corresponding position
+		Overriding this allows you to specify if some special condition should block the lever from going to that position
+		i.e. : Crash Lever in TBM930
+		By default, this does not block anything.
+		-->
+		<CODE_POS_0_VERIF>1</CODE_POS_0_VERIF>
+		<CODE_POS_1_VERIF>1</CODE_POS_1_VERIF>
+		<!-- These vars should not be modified outside of generic templates -->
+		<CODE_UP/>
+		<CODE_UP_CLOSING/>
+		<CODE_DOWN/>
+		<CODE_DOWN_CLOSING/>
+		<CODE_RELEASE/>
+		<LEFTARROW/>
+		<RIGHTARROW/>
+		<UPARROW/>
+		<DOWNARROW/>
+		<INPUT_CODE> </INPUT_CODE>
+		<CODE_REPEAT></CODE_REPEAT>
+	</DefaultTemplateParameters>
+
+	<Condition Check="REPEAT_FREQUENCY">
+		<Update Frequency="#REPEAT_FREQUENCY#">
+			#CODE_REPEAT#
+		</Update>
+	</Condition>
+	
+	<Condition Check="MOMENTARY_SWITCH">
+		<Update Frequency = "5">
+			(#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#) 0 == 
+			(#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#) #MOMENTARY_SWITCH_DOWN_INDEX# == or if{
+				(#SWITCH_POSITION_TYPE_TIMER#:#SWITCH_POSITION_VAR_TIMER#) 0 &gt; if{
+					(#SWITCH_POSITION_TYPE_TIMER#:#SWITCH_POSITION_VAR_TIMER#) (E:SIMULATION TIME, seconds) &lt;
+					(#SWITCH_POSITION_TYPE_ISDOWN#:#SWITCH_POSITION_VAR_ISDOWN#) ! and
+					if{ 
+						(#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#) 0 == if{ 
+							1 (&gt;#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#)
+						} els{
+							#REST_STATE# (&gt;#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#)
+						}
+						
+						0 (&gt;#SWITCH_POSITION_TYPE_TIMER#:#SWITCH_POSITION_VAR_TIMER#)
+						#CODE_POS_RETURN#
+					}
+				} els{
+					(#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#) 0 == if{ 
+						#STATE0_TIMER# 0 &gt; if{ 
+							(E:SIMULATION TIME, seconds) #STATE0_TIMER# + (&gt;#SWITCH_POSITION_TYPE_TIMER#:#SWITCH_POSITION_VAR_TIMER#)
+						}
+					} els{
+					(#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#) #MOMENTARY_SWITCH_DOWN_INDEX# == if{ 
+						#STATE_MAX_TIMER# 0 &gt; if{ 
+							(E:SIMULATION TIME, seconds) #STATE_MAX_TIMER# + (&gt;#SWITCH_POSITION_TYPE_TIMER#:#SWITCH_POSITION_VAR_TIMER#) 
+						}
+					} els{ 
+						0 (&gt;#SWITCH_POSITION_TYPE_TIMER#:#SWITCH_POSITION_VAR_TIMER#) 
+					}
+					}
+					}
+				}
+			}
+		</Update>
+		<Condition Check="MOMENTARY_REPEAT_FREQUENCY">
+			<True>
+				<Update Frequency="#MOMENTARY_REPEAT_FREQUENCY#">
+				(O:XMLVAR_Repeat_StartTime) (E:SIMULATION TIME, seconds) &lt; if{
+						(#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#) 0 == if{
+							#CODE_POS_0#
+						} els{
+							(#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#) #POS_MAX# == if{
+								#CODE_POS_MAX#
+							}
+						}
+					}
+				</Update>
+			</True>
+		</Condition>
+	</Condition>
+	
+	<UseTemplate Name="GT_MouseRect">
+		<MouseFlags>LeftAll+WheelUp+WheelDown</MouseFlags>
+		<CALLBACKCODE>
+			(#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#) (&gt;O:PreviousPos)
+
+			#INPUT_CODE#
+
+			:1
+			#CODE_UP#
+			#CODE_UP_CLOSING#
+			(O:GoToRelease) if{ g3 }
+			quit
+			:2
+			#CODE_DOWN#
+			#CODE_DOWN_CLOSING#
+			(O:GoToRelease) if{ g3 }
+			quit
+			:3
+			0 (&gt;O:GoToRelease)
+			#CODE_RELEASE#
+			quit
+		</CALLBACKCODE>
+	</UseTemplate>
+</Template>
+
+
+<Template Name = "GT_Interaction_WheelAndContinuousLeft_Vertical">
+	<UseTemplate Name="GT_Interaction_WheelAndContinuousLeft_Base">
+		<UPARROW>UpArrow</UPARROW>
+		<DOWNARROW>DownArrow</DOWNARROW>
+		<COOR_DIRECTION>Y</COOR_DIRECTION>
+		<!-- Inverting Clockwise & anticlockwise for vertical only -->
+		<CLOCKWISE_CODE>#ANTICLOCKWISE_CODE#</CLOCKWISE_CODE>
+		<ANTICLOCKWISE_CODE>#CLOCKWISE_CODE#</ANTICLOCKWISE_CODE>
+	</UseTemplate>
+</Template>
+
+<Template Name = "GT_Interaction_WheelAndContinuousLeft_Horizontal">
+	<UseTemplate Name="GT_Interaction_WheelAndContinuousLeft_Base">
+		<LEFTARROW>TurnLeft</LEFTARROW>
+		<RIGHTARROW>TurnRight</RIGHTARROW>
+		<COOR_DIRECTION>X</COOR_DIRECTION>
+	</UseTemplate>
+</Template>
+
+<Template Name = "GT_Interaction_WheelAndContinuousLeft_Base">
+	<DefaultTemplateParameters>
+		<HELPID/>
+		<TOOLTIPID/>
+		<UPARROW/>
+		<DOWNARROW/>
+		<LEFTARROW/>
+		<RIGHTARROW/>
+		<CALLBACKCODE/>
+		<UPDATE_FREQUENCY>10</UPDATE_FREQUENCY>
+		<UPDATE_DELAY>0.4</UPDATE_DELAY>
+	</DefaultTemplateParameters>
+
+	<!-- Call code if left click is held, depending on the X axis side -->
+	<Update Frequency = "#UPDATE_FREQUENCY#">
+		(O:XMLVAR_FirstUpdateTime) (E:SIMULATION TIME, seconds) &lt; if{
+			(O:_MouseDownRelativePos#COOR_DIRECTION#) 0 &gt; if{ #CLOCKWISE_CODE# } els{
+			(O:_MouseDownRelativePos#COOR_DIRECTION#) 0 &lt; if{ #ANTICLOCKWISE_CODE# } }
+		}
+	</Update>
+
+	<UseTemplate Name="GT_MouseRect">
+		<MouseFlags>LeftAll+WheelUp+WheelDown</MouseFlags>
+		<CALLBACKCODE>
+			(M:Event) 'WheelUp'    scmi 0 == if{ #CLOCKWISE_CODE# } els{
+			(M:Event) 'WheelDown'  scmi 0 == if{ #ANTICLOCKWISE_CODE# } els{
+			(M:Event) 'LeftSingle' scmi 0 == if{ 
+				(M:Relative#COOR_DIRECTION#) (&gt;O:_MouseDownRelativePos#COOR_DIRECTION#) 
+				(E:SIMULATION TIME, seconds) #UPDATE_DELAY# + (&gt;O:XMLVAR_FirstUpdateTime)
+				(O:_MouseDownRelativePos#COOR_DIRECTION#) 0 &gt; if{ #CLOCKWISE_CODE# } els{
+				(O:_MouseDownRelativePos#COOR_DIRECTION#) 0 &lt; if{ #ANTICLOCKWISE_CODE# } }
+			} els{ (M:Event) 'LeftRelease'   scmi 0 == if{
+				0 (&gt;O:_MouseDownRelativePos#COOR_DIRECTION#) 
+			} } } }
+		</CALLBACKCODE>
+	</UseTemplate>
+</Template>
+
+<Template Name="GT_Interaction_DraggingYAxis_SimGates_Base">
+	<DefaultTemplateParameters>
+		<LIMITATIONS_OVERRIDE/>
+		<INCREMENT>0.1</INCREMENT>
+		<Condition Check="IGNORE_GATES">
+			<LIMITATIONS_OVERRIDE>
+					#STEPS_NUMBER# (&gt;O:MaxDraggingPosition)
+					0 (&gt;O:MinDraggingPosition)
+			</LIMITATIONS_OVERRIDE>
+		</Condition>
+	</DefaultTemplateParameters>
+
+	<UseTemplate Name="GT_MouseRect">
+		<MOUSEFLAGS>LeftAll+WheelUp+WheelDown</MOUSEFLAGS>
+		<CALLBACKCODE>
+			(A:#SIMVAR#, #SIMVAR_UNITS#) #SIMVAR_CONVERSION# sp0
+			(M:Event) 'LeftSingle' scmp 0 == if{
+				(M:RelativeY) (&gt;O:PrevY, Number)
+				l0 near l0 - abs #GATE_TOLERANCE# &lt; sp1
+				
+				#GATE_DIRECTION# -1 != if{
+					l1 if{
+						l0 near 1 + #STEPS_NUMBER# min (&gt;O:MaxDraggingPosition)
+					} els{
+						l0 ceil #STEPS_NUMBER# min (&gt;O:MaxDraggingPosition)
+					}
+				} els{
+					#STEPS_NUMBER# (&gt;O:MaxDraggingPosition)
+				}
+				
+				#GATE_DIRECTION# 1 != if{
+					l1 if{
+						l0 near 1 - 0 max (&gt;O:MinDraggingPosition)
+					} els{
+						l0 flr 0 max (&gt;O:MinDraggingPosition)
+					}
+				} els{
+					0 (&gt;O:MinDraggingPosition)
+				}
+				
+			} els{			
+				(M:Event) 'LeftDrag' scmp 0 == if{
+					(O:PrevY) (M:RelativeY) - sp2	
+					l2 #DRAG_SPEED# * sp3
+					
+					#GATE_DIRECTION# -1 != if{
+						l0 #GATE_TOLERANCE# + flr 1 + (O:MaxDraggingPosition) min (&gt;O:MaxDraggingPosition)
+					}
+					#GATE_DIRECTION# 1 != if{
+						l0 #GATE_TOLERANCE# - ceil 1 - (O:MinDraggingPosition) max (&gt;O:MinDraggingPosition)
+					}
+					
+					#LIMITATIONS_OVERRIDE#
+					
+					l0 l3 + (O:MaxDraggingPosition) min (O:MinDraggingPosition) max #EVENTID_CONVERSION# (&gt;K:#EVENTID_SET#)
+					
+					(M:RelativeY) (&gt;O:PrevY)
+				} els{			
+				(M:Event) 'WheelUp' scmp 0 == if{
+					l0 #INCREMENT# - #EVENTID_CONVERSION# (&gt;K:#EVENTID_SET#)
+					} els{			
+						(M:Event) 'WheelDown' scmp 0 == if{
+							l0 #INCREMENT# + #EVENTID_CONVERSION# (&gt;K:#EVENTID_SET#)
+						}
+					}
+				} 
+			} 
+		</CALLBACKCODE>
+	</UseTemplate>
+</Template>

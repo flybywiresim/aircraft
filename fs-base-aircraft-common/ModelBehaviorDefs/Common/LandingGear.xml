@@ -1,0 +1,182 @@
+
+<Include File="Subtemplates\\LandingGear_Subtemplates.xml"/>
+
+<!-- Landing Gears ################################################################ -->
+<Template Name="LANDING_GEAR_Lever_Gear_Template">
+	<DefaultTemplateParameters>
+		<ANIM_NAME>LANDING_GEAR_Lever_Gear</ANIM_NAME>
+		<PART_ID>LANDING_GEAR_Lever_Gear</PART_ID>
+		<NODE_ID>LANDING_GEAR_Lever_Gear</NODE_ID>
+		<LIGHT_NODE_ID>LANDING_GEAR_Lever_GearLight</LIGHT_NODE_ID>
+		<ANIM_LAG>400</ANIM_LAG>
+		<TOOLTIPID>%((A:GEAR HANDLE POSITION, percent) 50 &gt;)%{if}TT:COCKPIT.TOOLTIPS.LANDING_GEAR_DN %{else}TT:COCKPIT.TOOLTIPS.LANDING_GEAR_UP %{end}</TOOLTIPID> <!-- -->
+	</DefaultTemplateParameters>
+	<Component ID="#NODE_ID#" Node="#NODE_ID#">
+		<Condition Check="NO_GEARUP_ON_GROUND">
+			<True>
+				<UseTemplate Name="GT_Lever_DraggingYAxis_Code">
+					<ANIM_CODE>(A:GEAR HANDLE POSITION, Bool) 100 *</ANIM_CODE>
+					<UP_CODE>(A:SIM ON GROUND, Bool) ! if{ (&gt;K:GEAR_UP) }</UP_CODE>
+					<DOWN_CODE>(&gt;K:GEAR_DOWN)</DOWN_CODE>
+					<HELPID>HELPID_GAUGE_GEAR_LEVER</HELPID>
+				</UseTemplate>
+			</True>
+			<False>
+				<UseTemplate Name="GT_Lever_DraggingYAxis_EventsIncDec">
+					<ANIM_SIMVAR>GEAR HANDLE POSITION</ANIM_SIMVAR>
+					<ANIM_SIMVAR_UNITS>Bool</ANIM_SIMVAR_UNITS>
+					<ANIM_SIMVAR_SCALE>100</ANIM_SIMVAR_SCALE>
+					<HELPID>HELPID_GAUGE_GEAR_LEVER</HELPID>
+					<CLOCKWISE_EVENTID>GEAR_DOWN</CLOCKWISE_EVENTID>
+					<ANTICLOCKWISE_EVENTID>GEAR_UP</ANTICLOCKWISE_EVENTID>
+				</UseTemplate>
+			</False>
+		</Condition>
+		<UseTemplate Name="GT_AnimTriggers_SoundEvents_Same">
+			<WWISE_EVENT>gear_lever</WWISE_EVENT>
+			<COUNT>1</COUNT>
+		</UseTemplate>
+	</Component>
+	<Condition Check="EMISSIVE_CODE">
+		<Component ID="#LIGHT_NODE_ID#" Node="#LIGHT_NODE_ID#">
+			<UseTemplate Name="GT_Emissive_Gauge">
+				<PART_ID>#LIGHT_NODE_ID#</PART_ID>
+			</UseTemplate>
+		</Component>
+	</Condition>
+</Template>
+<Template Name="LANDING_GEAR_Light_Template">
+	<DefaultTemplateParameters>
+		<ID>1</ID>
+		<GEAR_ID>0</GEAR_ID>
+	</DefaultTemplateParameters>
+	<UseTemplate Name="LANDING_GEAR_Light_SubTemplate">
+	</UseTemplate>
+</Template>
+
+<Template Name="LANDING_GEAR_Light_Transit_Template">
+	<DefaultTemplateParameters>
+		<NODE_ID>LANDING_GEAR_Light_Unsafe</NODE_ID>
+	</DefaultTemplateParameters>
+	<Component ID="#NODE_ID#" Node="#NODE_ID#">
+		<UseTemplate Name="GT_Emissive_Gauge">
+			<EMISSIVE_CODE>(A:CIRCUIT GEAR MOTOR ON, Bool)</EMISSIVE_CODE>
+		</UseTemplate>
+	</Component>
+</Template>
+
+<Template Name="LANDING_GEAR_Warning_Template">
+	<DefaultTemplateParameters>
+		<ANIM_NAME>LANDING_GEAR_Warning</ANIM_NAME>
+	</DefaultTemplateParameters>
+	<UseTemplate Name="GT_Anim">
+		<ANIM_CODE>(A:GEAR HANDLE POSITION, Bool) 0 == (A:INDICATED ALTITUDE, feet) 750 &lt; and 100 * </ANIM_CODE>
+	</UseTemplate>
+</Template>
+
+<Template Name="LANDING_GEAR_LowAltitude_Warning_Light_Template">
+	<DefaultTemplateParameters>
+		<NODE_ID>LANDING_GEAR_LowAltitude_Warning_Light</NODE_ID>
+	</DefaultTemplateParameters>
+	
+	<Component ID="#NODE_ID#" Node="#NODE_ID#">
+		<UseTemplate Name="GT_Emissive_Gauge">
+			<EMISSIVE_CODE>
+				(A:GEAR POSITION:0, Percent) 100 &lt;
+				(A:INDICATED ALTITUDE:1, Feet) 750 &lt; and
+			</EMISSIVE_CODE>
+		</UseTemplate>
+	</Component>
+</Template>
+<!-- LANDING_GEAR_Light definitions -->
+<Template Name="LANDING_GEAR_Light_Center_Template">
+	<UseTemplate Name="LANDING_GEAR_Light_Template">
+		<SIMVAR>GEAR CENTER POSITION</SIMVAR>
+		<ID>Center</ID>
+	</UseTemplate>
+</Template>
+<Template Name="LANDING_GEAR_Light_Left_Template">
+	<UseTemplate Name="LANDING_GEAR_Light_Template">
+		<SIMVAR>GEAR LEFT POSITION</SIMVAR>
+		<ID>Left</ID>
+	</UseTemplate>
+</Template>
+<Template Name="LANDING_GEAR_Light_Right_Template">
+	<UseTemplate Name="LANDING_GEAR_Light_Template">
+		<SIMVAR>GEAR RIGHT POSITION</SIMVAR>
+		<ID>Right</ID>
+	</UseTemplate>
+</Template>
+<Template Name="LANDING_GEAR_Light_Unsafe_Template">
+	<DefaultTemplateParameters>
+		<NODE_ID>LANDING_GEAR_Light_Unsafe</NODE_ID>
+		<PART_ID>LANDING_GEAR_Light</PART_ID>
+		<DEFAULT_TEST>
+			(A:GEAR HANDLE POSITION, Bool) 0 ==
+			(A:SIM ON GROUND, Bool) and
+		</DEFAULT_TEST>
+		<EMISSIVE_CODE/>
+		<Condition Check="CHECK_GEAR_CENTER_POSITION">
+			<True>
+				<GEAR_CENTER_POSITION_CHECK>
+					(A:GEAR CENTER POSITION, Percent) 0 &gt;
+					(A:GEAR CENTER POSITION, Percent) 100 &lt; and or
+				</GEAR_CENTER_POSITION_CHECK>
+			</True>
+			<False>
+				<GEAR_CENTER_POSITION_CHECK>
+				</GEAR_CENTER_POSITION_CHECK>
+			</False>
+		</Condition>
+		<Condition Check="CHECK_GEAR_LEFT_POSITION">
+			<True>
+				<GEAR_LEFT_POSITION_CHECK>
+					(A:GEAR LEFT POSITION, Percent) 0 &gt;
+					(A:GEAR LEFT POSITION, Percent) 100 &lt; and or
+				</GEAR_LEFT_POSITION_CHECK>
+			</True>
+			<False>
+				<GEAR_LEFT_POSITION_CHECK>
+				</GEAR_LEFT_POSITION_CHECK>
+			</False>
+		</Condition>
+		<Condition Check="CHECK_GEAR_RIGHT_POSITION">
+			<True>
+				<GEAR_RIGHT_POSITION_CHECK>
+					(A:GEAR RIGHT POSITION, Percent) 0 &gt;
+					(A:GEAR RIGHT POSITION, Percent) 100 &lt; and or
+				</GEAR_RIGHT_POSITION_CHECK>
+			</True>
+			<False>
+				<GEAR_RIGHT_POSITION_CHECK>
+				</GEAR_RIGHT_POSITION_CHECK>
+			</False>
+		</Condition>
+	</DefaultTemplateParameters>
+	<Component ID="#NODE_ID#" Node="#NODE_ID#">
+		<UseTemplate Name="GT_Emissive_Gauge">
+			<EMISSIVE_CODE>
+				#DEFAULT_TEST#
+				#GEAR_CENTER_POSITION_CHECK#
+				#GEAR_LEFT_POSITION_CHECK#
+				#GEAR_RIGHT_POSITION_CHECK#
+				#EMISSIVE_CODE#
+			</EMISSIVE_CODE>
+		</UseTemplate>
+	</Component>
+</Template>
+<Template Name="LANDING_GEAR_Switch_ParkingBrake_Template">
+	<DefaultTemplateParameters>
+		<ANIM_DELAY>0</ANIM_DELAY>
+		<Condition Check="USE_DRAGGING_INTERACTION">
+			<ANIM_SPEED>100</ANIM_SPEED>
+		</Condition>
+	</DefaultTemplateParameters>
+	<UseTemplate Name="LANDING_GEAR_Switch_ParkingBrake_SubTemplate">
+	</UseTemplate>
+</Template>
+
+<Template Name="LANDING_GEAR_Lever_Brake_Template">
+	<UseTemplate Name="LANDING_GEAR_Lever_Brake_SubTemplate">
+	</UseTemplate>
+</Template>
