@@ -21,6 +21,14 @@ var A320_Neo_LowerECAM_APU;
             //Avail
             this.APUAvail = this.querySelector("#APUAvail_On");
 
+            //Flap Open
+            this.APUFlapOpen = this.querySelector("#APUFlapOpen_On");
+
+            //Bleed
+            this.APUBleedOn = this.querySelector("#APUBleed_On");
+            this.APUBleedOff = this.querySelector("#APUBleed_Off");
+            this.APUBleedPressure = this.querySelector("#APUBleedAirPressure");
+
             //Gauges
             this.apuInfo = new APUInfo(this.querySelector("#APUGauges"));
 
@@ -46,11 +54,22 @@ var A320_Neo_LowerECAM_APU;
                 this.APUFrequency.textContent = "0";
             }
 
-            //AVAIL Indication
+            //Bleed
+            if (SimVar.GetSimVarValue("BLEED AIR APU", "Bool") == 1) {
+                this.APUBleedOn.setAttribute("visibility", "visible");
+                this.APUBleedOff.setAttribute("visibility", "hidden");
+            } else {
+                this.APUBleedOn.setAttribute("visibility", "hidden");
+                this.APUBleedOff.setAttribute("visibility", "visible");
+            }
+
+            //AVAIL indication & bleed pressure
             if (APUPctRPM > 95) {
                 this.APUAvail.setAttribute("visibility", "visible");
+                this.APUBleedPressure = "35";
             } else {
                 this.APUAvail.setAttribute("visibility", "hidden");
+                this.APUBleedPressure = "XX";
             }
 
             //Gauges
@@ -58,7 +77,12 @@ var A320_Neo_LowerECAM_APU;
                 this.apuInfo.update(_deltaTime);
             }
 
-            this.querySelector("#APUAvail").textContent = this.querySelector("#Gauges").innerHTML;
+            //FLAP OPEN Indication
+            if (SimVar.GetSimVarValue("FUELSYSTEM VALVE SWITCH:8", "Bool") == 1) {
+                this.APUFlapOpen.setAttribute("visibility", "visible");
+            } else {
+                this.APUFlapOpen.setAttribute("visibility", "hidden");
+            }
 
         }
     }
