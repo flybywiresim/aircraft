@@ -236,6 +236,21 @@
       "date": 132412716805159541
     },
     {
+      "path": "html_ui/Pages/VCockpit/Instruments/Airliners/A320_Neo/EICAS/ECAM/A320_Neo_LowerECAM_DOOR.css",
+      "size": 1783,
+      "date": 132412721965359060
+    },
+    {
+      "path": "html_ui/Pages/VCockpit/Instruments/Airliners/A320_Neo/EICAS/ECAM/A320_Neo_LowerECAM_DOOR.html",
+      "size": 3357,
+      "date": 132402817714110148
+    },
+    {
+      "path": "html_ui/Pages/VCockpit/Instruments/Airliners/A320_Neo/EICAS/ECAM/A320_Neo_LowerECAM_DOOR.js",
+      "size": 956,
+      "date": 132412716805159541
+    },
+    {
       "path": "html_ui/Pages/VCockpit/Instruments/Airliners/A320_Neo/EICAS/ECAM/A320_Neo_LowerECAM_Engine.css",
       "size": 1783,
       "date": 132412721958333794
@@ -373,6 +388,11 @@
     {
       "path": "html_ui/Pages/VCockpit/Instruments/Airliners/A320_Neo/SAI/A320_Neo_SAI.js",
       "size": 50065,
+      "date": 132412716807939457
+    },
+    {
+      "path": "html_ui/Fonts/B612Mono-Regular.ttf",
+      "size": 140292,
       "date": 132412716807939457
     }
   ]
