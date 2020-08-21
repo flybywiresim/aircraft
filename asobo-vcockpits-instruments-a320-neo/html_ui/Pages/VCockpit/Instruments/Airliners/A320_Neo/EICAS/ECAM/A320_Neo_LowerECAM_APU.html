@@ -4,10 +4,12 @@
     <svg viewBox="0 0 600 600" xmlns="http://www.w3.org/2000/svg">
         <path class="Separator" d="M25 275 l0 -25 l550 0 l0 25"></path>
 
-            <text id="PageTitle" x="300" y="50">APUU</text>
+            <text id="PageTitle" x="300" y="50">APU</text>
 
             <!-- Avail Indication -->
-            <text id="APUAvail" x="300" y="100">AVAIL</text>
+            <g id="APUAvail_On">
+                <text id="APUAvail" x="300" y="100">AVAIL</text>
+            </g>
 
             <!-- APU Gen Parameters -->
             <path class="GreenLine" d="M100 115 l0 -10 l-10 0 l10 -20 l10 20 l-10 0"></path>
@@ -29,16 +31,29 @@
             <text id="APUBleedAirPressure" class="APUGenParamValue" x="425" y="215">XX</text>
             <text class="APUGenParamUnit" x="455" y="215">PSI</text>
             <path class="GreenLine" d="M450 165 l0 -10 m0 -40 l0 -10 l-10 0 l10 -20 l10 20 l-10 0"></path>
-            <path class="GreenLine" id="APUBleedClosed" d="M430 135 l40 0"></path>
-            <path class="GreenLine" id="APUBleedOpen" d="M450 155 l0 -40"></path>
+            <g id="APUBleed_Off">
+                <path class="GreenLine" id="APUBleedClosed" d="M430 135 l40 0"></path>
+            </g>
+            <g id="APUBleed_On">
+                <path class="GreenLine" id="APUBleedOpen" d="M450 155 l0 -40"></path>
+            </g>
             <circle class="GreenLine" cx="450" cy="135" r="20"></circle>
 
-            <!-- APU N -->
-            <!--<text id="APUN" x="150" y="400">XX</text>-->
+            <!-- Gauge Labels -->
+            <text class="APUGaugeParamUnitWhite" x="300" y="320">N</text>
+            <text class="APUGaugeParamUnit" x="300" y="340">%</text>
+
+            <text class="APUGaugeParamUnitWhite" x="300" y="400">EGT</text>
+            <text class="APUGaugeParamUnit" x="300" y="420">°C</text>
+
+            <!-- FLAP OPEN Indication -->
+            <g id="APUFlapOpen_On">
+                <text id="APUFlapOpen" x="450" y="375">FLAP OPEN</text>
+            </g>
             
     </svg>
-    <div id="Gauges">
-
+    <div id="AGauges" style="position:absolute;left:10%;top:45%;display:flex">
+        <div id="APUGauges"></div>
     </div>
 </script>
 

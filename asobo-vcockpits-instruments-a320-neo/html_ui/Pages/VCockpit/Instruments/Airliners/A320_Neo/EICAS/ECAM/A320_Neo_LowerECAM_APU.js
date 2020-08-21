@@ -7,7 +7,6 @@ var A320_Neo_LowerECAM_APU;
         constructor() {
             super();
             this.isInitialised = false;
-            //this.allToggleElements = new Array();
         }
         get templateID() { return "LowerECAMAPUTemplate"; }
         connectedCallback() {
@@ -18,13 +17,12 @@ var A320_Neo_LowerECAM_APU;
             this.APUGenLoad = this.querySelector("#APUGenLoad");
             this.APUVolts = this.querySelector("#APUGenVoltage");
             this.APUFrequency = this.querySelector("#APUGenFrequency");
-            //this.APUN = this.querySelector("#APUN");
 
             //Avail
-            this.APUAvail = this.querySelector("#APUAvail");
+            this.APUAvail = this.querySelector("#APUAvail_On");
 
             //Gauges
-            //this.apuInfo = new APUInfo(this.querySelector("#Gauges"));
+            this.apuInfo = new APUInfo(this.querySelector("#APUGauges"));
 
             this.isInitialised = true;
         }
@@ -36,9 +34,6 @@ var A320_Neo_LowerECAM_APU;
             var APUPctRPM = SimVar.GetSimVarValue("APU PCT RPM", "percent");
             var totalElectricalLoad = SimVar.GetSimVarValue("ELECTRICAL TOTAL LOAD AMPS", "amperes");
             var APULoadPercent = totalElectricalLoad / 782.609 // 1000 * 90 kVA / 115V = 782.609A
-
-            //APU N Indication
-            //this.APUN.textContent = Math.round(APUPctRPM);
 
             //APU Load/Volts/Frequency Indication
             if (APUPctRPM >= 87) {
@@ -55,48 +50,100 @@ var A320_Neo_LowerECAM_APU;
             if (APUPctRPM > 95) {
                 this.APUAvail.setAttribute("visibility", "visible");
             } else {
-                this.APUAvail.setAttribute("Visibility", "hidden");
+                this.APUAvail.setAttribute("visibility", "hidden");
             }
 
             //Gauges
-            /*if (this.apuInfo != null) {
+            if (this.apuInfo != null) {
                 this.apuInfo.update(_deltaTime);
-            }*/
+            }
+
+            this.querySelector("#APUAvail").textContent = this.querySelector("#Gauges").innerHTML;
 
         }
     }
     A320_Neo_LowerECAM_APU.Page = Page;
 
-    /*class APUInfo {
+    class APUInfo {
         constructor(_gaugeDiv) {
-            var gaugeDef = new A320_Neo_ECAM_Common.GaugeDefinition();
-            gaugeDef.arcSize = 200;
-            gaugeDef.currentValuePrecision = 0;
-            gaugeDef.minValue = 0;
-            gaugeDef.maxValue = 110;
-            gaugeDef.currentValueFunction = this.getAPUN.bind(this);
+            //APU N Gauge
+            var gaugeDef1 = new A320_Neo_ECAM_Common.GaugeDefinition();
+            gaugeDef1.arcSize = 200;
+            gaugeDef1.currentValuePrecision = 0;
+            gaugeDef1.minValue = 0;
+            gaugeDef1.maxValue = 110;
+            gaugeDef1.minRedValue = 101;
+            gaugeDef1.maxRedValue = 110;
+            gaugeDef1.dangerRange[0] = 101;
+            gaugeDef1.dangerRange[1] = 110;
+            gaugeDef1.currentValueFunction = this.getAPUN.bind(this);
             this.apuNGauge = window.document.createElement("a320-neo-ecam-gauge");
             this.apuNGauge.id = "APU_N_Gauge";
-            this.apuNGauge.init(gaugeDef);
+            this.apuNGauge.init(gaugeDef1);
             this.apuNGauge.addGraduation(0, true, "0");
             this.apuNGauge.addGraduation(50, true);
-            this.apuNGauge.addGraduation(100, true, "100");
+            this.apuNGauge.addGraduation(100, true, "10");
             if (_gaugeDiv != null) {
                 _gaugeDiv.appendChild(this.apuNGauge);
+            }
+
+            //APU EGT Gauge
+            var gaugeDef2 = new A320_Neo_ECAM_Common.GaugeDefinition();
+            gaugeDef2.arcSize = 220;
+            gaugeDef2.currentValuePrecision = 0;
+            gaugeDef2.minValue = 300;
+            gaugeDef2.maxValue = 1200;
+            gaugeDef2.minRedValue = 1000;
+            gaugeDef2.maxRedValue = 1200;
+            gaugeDef2.dangerRange[0] = 1000;
+            gaugeDef2.dangerRange[1] = 1200;
+            gaugeDef2.currentValueFunction = this.getAPUEGT.bind(this);
+            this.apuEGTGauge = window.document.createElement("a320-neo-ecam-gauge");
+            this.apuEGTGauge.id = "APU_EGT_Gauge";
+            this.apuEGTGauge.init(gaugeDef2);
+            this.apuEGTGauge.addGraduation(300, true, "3");
+            this.apuEGTGauge.addGraduation(700, true, "7");
+            this.apuEGTGauge.addGraduation(1000, true, "10");
+            if (_gaugeDiv != null) {
+                _gaugeDiv.appendChild(this.apuEGTGauge);
             }
         }
 
         update(_deltaTime) {
-            if (this.apuNGauge != null) {
+            //Update gauges
+            if (this.apuNGauge != null && this.apuEGTGauge != null) {
                 this.apuNGauge.update(_deltaTime);
+                this.apuEGTGauge.update(_deltaTime);
             }
         }
 
         getAPUN() {
             return SimVar.GetSimVarValue("APU PCT RPM", "percent");
         }
+
+        //Calculates the APU EGT Based on the RPM
+        getAPUEGTRaw() {
+            var n = this.getAPUN();
+            if (n < 10) {
+                return 10;
+            } else if (n < 16) {
+                return (135*n)-1320;
+            } else if (n < 20) {
+                return -1262 + (224*n) - (5.8 * (n*n));
+            } else if (n < 36) {
+                return ((-5/4)*n) + 925;
+            } else if (n < 42) {
+                return -2062 + (151.7*n) - (1.94 * (n*n));
+            } else {
+                return ((-425/58)*n) + (34590/29);
+            }
+        }
+
+        getAPUEGT() {
+            return Math.round(this.getAPUEGTRaw()/5)*5;
+        }
     }
-    A320_Neo_LowerECAM_APU.APUInfo = APUInfo;*/
+    A320_Neo_LowerECAM_APU.APUInfo = APUInfo;
 })(A320_Neo_LowerECAM_APU || (A320_Neo_LowerECAM_APU = {}));
 customElements.define("a320-neo-lower-ecam-apu", A320_Neo_LowerECAM_APU.Page);
 //# sourceMappingURL=A320_Neo_LowerECAM_APU.js.map

@@ -31,18 +31,17 @@ a320-neo-lower-ecam-apu {
     alignment-baseline: central; }
 
 /* Gauges */
-a320-lower-ecam-apu #Gauges {
+#AGauges {
   position: absolute;
-  left: 5%;
+  left: 0%;
   width: 56%;
-  top: 60%;
+  top: 15%;
   height: 50%;
-  display: flex;
   justify-content: center;
 }
 
 /* Custom Styles */
-:root #APUAvail {
+:root #APUAvail, :root #APUFlapOpen {
   fill: var(--ecamValueColour);
   font-size: 25px; 
 }
@@ -67,6 +66,16 @@ a320-lower-ecam-apu #Gauges {
   fill: var(--ecamUnitsColour);
   font-size: 15px;
   text-anchor: start !important;
+}
+:root .APUGaugeParamUnit {
+  fill: var(--ecamUnitsColour);
+  font-size: 15px;
+  text-anchor: middle !important;
+}
+:root .APUGaugeParamUnitWhite {
+  fill: var(--ecamDefaultColour);
+  font-size: 15px;
+  text-anchor: middle !important;
 }
 :root .GreenLine {
   stroke: var(--ecamValueColour);
