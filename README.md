@@ -1,5 +1,7 @@
 # MSFS A320neo Improvement Mod
 
+Preview of APU and DOOR ECAM pages: https://www.youtube.com/watch?v=rLaVK3nNCXc
+
 ## Installation
 
 Simply copy the "A32NX" folder into your community package folder, located in `AppData\Roaming\Microsoft Flight Simulator\Packages\Community`, and start up the A320neo! If you wish to revert to the default Asobo version (no modifications), simply delete the "A32NX" folder and you're done.
