@@ -66,10 +66,10 @@ var A320_Neo_LowerECAM_APU;
             //AVAIL indication & bleed pressure
             if (APUPctRPM > 95) {
                 this.APUAvail.setAttribute("visibility", "visible");
-                this.APUBleedPressure = "35";
+                this.APUBleedPressure.textContent = "35";
             } else {
                 this.APUAvail.setAttribute("visibility", "hidden");
-                this.APUBleedPressure = "XX";
+                this.APUBleedPressure.textContent = "XX";
             }
 
             //Gauges
@@ -90,6 +90,10 @@ var A320_Neo_LowerECAM_APU;
 
     class APUInfo {
         constructor(_gaugeDiv) {
+
+            this.lastN = 0;
+            this.APUWarm = false;
+
             //APU N Gauge
             var gaugeDef1 = new A320_Neo_ECAM_Common.GaugeDefinition();
             gaugeDef1.arcSize = 200;
@@ -146,26 +150,39 @@ var A320_Neo_LowerECAM_APU;
         }
 
         //Calculates the APU EGT Based on the RPM
-        getAPUEGTRaw() {
+        getAPUEGTRaw(startup) {
             var n = this.getAPUN();
-            if (n < 10) {
-                return 10;
-            } else if (n < 16) {
-                return (135*n)-1320;
-            } else if (n < 20) {
-                return -1262 + (224*n) - (5.8 * (n*n));
-            } else if (n < 36) {
-                return ((-5/4)*n) + 925;
-            } else if (n < 42) {
-                return -2062 + (151.7*n) - (1.94 * (n*n));
+            if (startup) {
+                if (n < 10) {
+                    return 10;
+                } else if (n < 16) {
+                    return (135*n)-1320;
+                } else if (n < 20) {
+                    return -1262 + (224*n) - (5.8 * (n*n));
+                } else if (n < 36) {
+                    return ((-5/4)*n) + 925;
+                } else if (n < 42) {
+                    return -2062 + (151.7*n) - (1.94 * (n*n));
+                } else {
+                    return ((-425/58)*n) + (34590/29);
+                }
             } else {
-                return ((-425/58)*n) + (34590/29);
+                return ((18/5)*n)+100;
             }
         }
 
         getAPUEGT() {
-            return Math.round(this.getAPUEGTRaw()/5)*5;
+            var n = this.getAPUN();
+            var egt = (Math.round(this.getAPUEGTRaw(this.lastN < n)/5)*5);
+            this.lastN = n;
+            if (this.APUWarm && egt < 100) {
+                return 100;
+            } else {
+                if (n > 1) this.APUWarm = true;
+                return egt;
+            }
         }
+
     }
     A320_Neo_LowerECAM_APU.APUInfo = APUInfo;
 })(A320_Neo_LowerECAM_APU || (A320_Neo_LowerECAM_APU = {}));
