@@ -10,7 +10,7 @@ The A32NX package only contains files which have been modified from the original
 
 **ALWAYS REMEMBER TO RUN BUILD.PY BEFORE COMMITTING NEW FILES**
 
-# Changelog
+## Changelog
 
 ### 0.1.1
 
@@ -22,7 +22,7 @@ The A32NX package only contains files which have been modified from the original
 - Fixed APU startup time
 - Added MODE change indication to Navigation Display
 
-# Known Issues
+## Known Issues
 - APU ECAM page doesn't display correct load percent
 - Bleed ECAM page isn't modeled
 - No automatic ECAM page switching for APU and DOOR pages
