@@ -138,7 +138,7 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
             }
             if (this.modeChangeMask) {
                 this.modeChangeMask.style.display = "block";
-                this.modeChangeTimer = 0.15;
+                this.modeChangeTimer = 0.5;
             }
         }
         switch (this.mapConfigId) {
