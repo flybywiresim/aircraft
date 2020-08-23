@@ -1,0 +1,847 @@
+
+<!--
+Params:
+ID (number, default: 1): light unique ID
+LIGHT_TYPE (text): light type (TAXI, STROBE, ..) in caps
+-->
+
+<Template Name="LIGHTING_Push_Light_Template">
+	<DefaultTemplateParameters>
+		<ID>1</ID>
+		<SIMVAR_INDEX>0</SIMVAR_INDEX>
+	</DefaultTemplateParameters>
+	<UseTemplate Name="LIGHTING_Push_Light_SubTemplate">
+	</UseTemplate>
+</Template>
+
+<Template Name="LIGHTING_Push_Light_SubTemplate">
+	<DefaultTemplateParameters>
+		<ANIM_NAME>LIGHTING_Push_Light_#LIGHT_TYPE#_#ID#</ANIM_NAME>
+		<PART_ID>LIGHTING_Push_Light_#LIGHT_TYPE#</PART_ID>
+		<NODE_ID>LIGHTING_Push_Light_#LIGHT_TYPE#_#ID#</NODE_ID>
+		<LEFT_SINGLE_CODE/>
+		<Switch Param="TYPE">
+			<Case Value="BOEING">
+				<TEMPLATE_TO_CALL>GT_Push_Button_Airliner</TEMPLATE_TO_CALL>
+				<SEQ1_EMISSIVE_CODE>(A:LIGHT #LIGHT_TYPE#:#ID#, Bool)</SEQ1_EMISSIVE_CODE>
+				<SEQ2_EMISSIVE_CODE>(A:LIGHT #LIGHT_TYPE#:#ID#, Bool)</SEQ2_EMISSIVE_CODE>
+				<TOOLTIPID>%((A:LIGHT #LIGHT_TYPE#:#ID#, Bool))%{if}TT:COCKPIT.TOOLTIPS.#LIGHT_TYPE#_LIGHT_ON%{else}TT:COCKPIT.TOOLTIPS.#LIGHT_TYPE#_LIGHT_OFF%{end}</TOOLTIPID>
+			</Case>
+			<Default>
+				<TEMPLATE_TO_CALL>GT_Push_Button</TEMPLATE_TO_CALL>
+			</Default>
+		</Switch>
+		
+		<Condition Check="POTENTIOMETER">
+			<True>
+				<POTENTIOMETER_SEQ1>#POTENTIOMETER#</POTENTIOMETER_SEQ1>
+				<POTENTIOMETER_SEQ2>#POTENTIOMETER#</POTENTIOMETER_SEQ2>
+			</True>
+		</Condition>
+		<Condition Check="SIMVAR_POWER_SETTING">
+			<True>
+				<SIMVAR_POWER_SETTING_SEQ1>#SIMVAR_POWER_SETTING#</SIMVAR_POWER_SETTING_SEQ1>
+				<SIMVAR_POWER_SETTING_SEQ2>#SIMVAR_POWER_SETTING#</SIMVAR_POWER_SETTING_SEQ2>
+			</True>
+		</Condition>
+	</DefaultTemplateParameters>
+	
+	<UseTemplate Name="GT_Helper_Recursive_Param_Builder">
+		<EXIT_TEMPLATE>#TEMPLATE_TO_CALL#</EXIT_TEMPLATE>
+		<PARAM_NAME>LEFT_SINGLE_CODE</PARAM_NAME>
+		<PARAM_REPEATED_END> (&gt;K:TOGGLE_#LIGHT_TYPE#_LIGHTS) </PARAM_REPEATED_END>
+		<Condition Check="REVERSE_SEQ">
+			<SEQ1_EMISSIVE_CODE>#SEQ2_EMISSIVE_CODE#</SEQ1_EMISSIVE_CODE>
+			<SEQ2_EMISSIVE_CODE>#SEQ1_EMISSIVE_CODE#</SEQ2_EMISSIVE_CODE>
+		</Condition>
+	</UseTemplate>
+</Template>
+
+
+<Template Name="LIGHTING_Switch_Light_Template">
+	<DefaultTemplateParameters>
+		<ID>1</ID>
+		<SIMVAR_INDEX>0</SIMVAR_INDEX>
+		<INTERACTION>Switch</INTERACTION>
+	</DefaultTemplateParameters>
+	<UseTemplate Name="LIGHTING_Switch_Light_SubTemplate">
+	</UseTemplate>
+</Template>
+
+<Template Name="LIGHTING_Switch_Light_SubTemplate">
+	<DefaultTemplateParameters>
+		<ANIM_NAME>LIGHTING_#INTERACTION#_Light_#LIGHT_TYPE#_#ID#</ANIM_NAME>
+		<PART_ID>LIGHTING_#INTERACTION#_Light_#LIGHT_TYPE#</PART_ID>
+		<NODE_ID>LIGHTING_#INTERACTION#_Light_#LIGHT_TYPE#_#ID#</NODE_ID>
+		<ANIM_SIMVAR>LIGHT #LIGHT_TYPE#:#SIMVAR_INDEX#</ANIM_SIMVAR>
+		<WWISE_EVENT>light_switch</WWISE_EVENT>
+		<Condition Check="SIMVAR_INDEX_2">
+			<True>
+				<ANIM_SIMVAR_2>LIGHT #LIGHT_TYPE#:#SIMVAR_INDEX_2#</ANIM_SIMVAR_2>
+			</True>
+		</Condition>
+		<ANIM_SIMVAR_UNITS>Percent</ANIM_SIMVAR_UNITS>
+		<KEY_ID>TOGGLE_#LIGHT_TYPE#_LIGHTS</KEY_ID>
+		<Condition Valid="POTENTIOMETER">
+			<True>
+				<TOGGLE_COND>1</TOGGLE_COND>
+			</True>
+			<False>
+				<HELPID>HELPID_GAUGE_LIGHT_SWITCH_#LIGHT_TYPE#</HELPID>
+				
+			</False>
+		</Condition>
+		<Condition Check="KEY_ID_2">
+			<False>
+				<Condition Check="LIGHT_TYPE2">
+					<True>
+						<KEY_ID_2>TOGGLE_#LIGHT_TYPE2#_LIGHTS</KEY_ID_2>
+					</True>
+					<False>
+						<KEY_ID_2>TOGGLE_#LIGHT_TYPE#_LIGHTS</KEY_ID_2>
+					</False>
+				</Condition>
+			</False>
+		</Condition>
+	</DefaultTemplateParameters>
+	<OverrideTemplateParameters>
+		<Condition Check="SIMVAR_INDEX_2">
+			<True>
+				<SIMVAR_LEFT_SINGLE_CODE>
+					#SIMVAR_INDEX# (&gt;K:#KEY_ID#)
+					#SIMVAR_INDEX_2# (&gt;K:#KEY_ID_2#)
+				</SIMVAR_LEFT_SINGLE_CODE>
+			</True>
+			<False>
+				<SIMVAR_LEFT_SINGLE_CODE>
+					#SIMVAR_INDEX# (&gt;K:#KEY_ID#)
+				</SIMVAR_LEFT_SINGLE_CODE>
+			</False>
+		</Condition>
+		
+	</OverrideTemplateParameters>
+	
+	<Condition Valid="POTENTIOMETER">
+		<True>
+			<Switch>
+				<Case Check="DIMMER">
+					<Component ID="#NODE_ID#" Node="#NODE_ID#">
+						<UseTemplate Name="GT_Switch_3States">
+							<CODE_POS_0>
+								(A:#ANIM_SIMVAR#, #ANIM_SIMVAR_UNITS#) ! if{
+									#SIMVAR_LEFT_SINGLE_CODE#
+								}
+								100 (&gt;K:LIGHT_POTENTIOMETER_#POTENTIOMETER#_SET)
+							</CODE_POS_0>
+							<CODE_POS_1>
+								(A:#ANIM_SIMVAR#, #ANIM_SIMVAR_UNITS#) ! if{
+									#SIMVAR_LEFT_SINGLE_CODE#
+								}
+								50 (&gt;K:LIGHT_POTENTIOMETER_#POTENTIOMETER#_SET)
+							</CODE_POS_1>
+							<CODE_POS_2>
+								(A:#ANIM_SIMVAR#, #ANIM_SIMVAR_UNITS#) if{
+									#SIMVAR_LEFT_SINGLE_CODE#
+								}
+								0 (&gt;K:LIGHT_POTENTIOMETER_#POTENTIOMETER#_SET)
+							</CODE_POS_2>
+							<STATE0_TEST> (A:#ANIM_SIMVAR#, #ANIM_SIMVAR_UNITS#) (A:LIGHT POTENTIOMETER:#POTENTIOMETER#, Percent) 50 &gt; and</STATE0_TEST>
+							<STATE1_TEST> (A:#ANIM_SIMVAR#, #ANIM_SIMVAR_UNITS#) (A:LIGHT POTENTIOMETER:#POTENTIOMETER#, Percent) 50 &lt;= and</STATE1_TEST>
+							<STATE2_TEST> (A:#ANIM_SIMVAR#, #ANIM_SIMVAR_UNITS#) ! </STATE2_TEST>
+						</UseTemplate>
+					</Component>
+				</Case>
+				<Case Check="HAS_AUTO">
+					<Component ID="#NODE_ID#" Node="#NODE_ID#">
+						<UseTemplate Name="GT_Update">
+							<FREQUENCY>1</FREQUENCY>
+							<UPDATE_CODE>
+								(L:#LIGHT_TYPE#_#ID#_Auto) if{
+									(A:SIM ON GROUND, Bool) ! 100 * (&gt;K:LIGHT_POTENTIOMETER_#POTENTIOMETER#_SET)
+								} els{
+									100 (&gt;K:LIGHT_POTENTIOMETER_#POTENTIOMETER#_SET)
+								}
+							</UPDATE_CODE>
+						</UseTemplate>
+						<UseTemplate Name="GT_Switch_3States">
+							<CODE_POS_0>
+								(A:#ANIM_SIMVAR#, #ANIM_SIMVAR_UNITS#) ! if{
+									#SIMVAR_LEFT_SINGLE_CODE#
+								}
+								0 (&gt;L:#LIGHT_TYPE#_#ID#_Auto)
+							</CODE_POS_0>
+							<CODE_POS_1>
+								(A:#ANIM_SIMVAR#, #ANIM_SIMVAR_UNITS#) ! if{
+									#SIMVAR_LEFT_SINGLE_CODE#
+								}
+								1 (&gt;L:#LIGHT_TYPE#_#ID#_Auto)
+							</CODE_POS_1>
+							<CODE_POS_2>
+								(A:#ANIM_SIMVAR#, #ANIM_SIMVAR_UNITS#) if{
+									#SIMVAR_LEFT_SINGLE_CODE#
+								}
+								0 (&gt;L:#LIGHT_TYPE#_#ID#_Auto)
+							</CODE_POS_2>
+							<STATE0_TEST> (A:#ANIM_SIMVAR#, #ANIM_SIMVAR_UNITS#) (L:#LIGHT_TYPE#_#ID#_Auto) ! and </STATE0_TEST>
+							<STATE1_TEST> (A:#ANIM_SIMVAR#, #ANIM_SIMVAR_UNITS#) (L:#LIGHT_TYPE#_#ID#_Auto) and</STATE1_TEST>
+							<STATE2_TEST> (A:#ANIM_SIMVAR#, #ANIM_SIMVAR_UNITS#) ! </STATE2_TEST>
+						</UseTemplate>
+					</Component>
+				</Case>
+				<Default>
+					<UseTemplate Name="LIGHTING_Switch_Potentiometer_Template">
+						<ANIM_CODE>
+							(A:LIGHT POTENTIOMETER:#POTENTIOMETER#, Percent) 0 != (A:#ANIM_SIMVAR#, bool) and 100 *
+						</ANIM_CODE>
+						<LEFT_SINGLE_CODE>
+							#TOGGLE_COND# (A:#ANIM_SIMVAR#, bool) != if{
+								#SIMVAR_LEFT_SINGLE_CODE#
+							}
+						</LEFT_SINGLE_CODE>
+						<INIT_ON_COND>(A:LIGHT POTENTIOMETER:#POTENTIOMETER#, Percent) 0 &gt; (A:#ANIM_SIMVAR#, bool) and</INIT_ON_COND>
+					</UseTemplate>
+				</Default>
+			</Switch>
+		</True>
+		<False>
+			<Switch>
+				<Case Check="RETRACTABLE">
+					<Component ID="#NODE_ID#" Node="#NODE_ID#">
+						<UseTemplate Name="GT_Switch_3States">
+							<CODE_POS_0>
+								(A:#ANIM_SIMVAR#, #ANIM_SIMVAR_UNITS#) ! if{
+									#SIMVAR_LEFT_SINGLE_CODE#
+								}
+							</CODE_POS_0>
+							<CODE_POS_1>
+								(A:#ANIM_SIMVAR#, #ANIM_SIMVAR_UNITS#) if{
+									#SIMVAR_LEFT_SINGLE_CODE#
+								}
+								0 (&gt;L:#LIGHT_TYPE#_#ID#_Retracted)
+							</CODE_POS_1>
+							<CODE_POS_2>
+								1 (&gt;L:#LIGHT_TYPE#_#ID#_Retracted)
+							</CODE_POS_2>
+							<STATE0_TEST> (A:#ANIM_SIMVAR#, #ANIM_SIMVAR_UNITS#) </STATE0_TEST>
+							<STATE1_TEST> (A:#ANIM_SIMVAR#, #ANIM_SIMVAR_UNITS#) ! (L:#LIGHT_TYPE#_#ID#_Retracted) ! and</STATE1_TEST>
+							<STATE2_TEST> (A:#ANIM_SIMVAR#, #ANIM_SIMVAR_UNITS#) ! (L:#LIGHT_TYPE#_#ID#_Retracted) and</STATE2_TEST>
+						</UseTemplate>
+					</Component>
+				</Case>
+				<Case Check="PARTIAL_LIGHT_OPTION">
+					<Component ID="#NODE_ID#" Node="#NODE_ID#">
+						<UseTemplate Name="GT_Switch_3States">
+							<CODE_POS_0>
+								(A:#ANIM_SIMVAR#, #ANIM_SIMVAR_UNITS#) ! if{
+									#SIMVAR_INDEX# (&gt;K:#KEY_ID#)
+								}
+								(A:#ANIM_SIMVAR_2#, #ANIM_SIMVAR_UNITS#) if{
+									#SIMVAR_INDEX_2# (&gt;K:#KEY_ID#)
+								}
+							</CODE_POS_0>
+							<CODE_POS_1>
+								(A:#ANIM_SIMVAR#, #ANIM_SIMVAR_UNITS#) if{
+									#SIMVAR_INDEX# (&gt;K:#KEY_ID#)
+								}
+								(A:#ANIM_SIMVAR_2#, #ANIM_SIMVAR_UNITS#) if{
+									#SIMVAR_INDEX_2# (&gt;K:#KEY_ID#)
+								}
+							</CODE_POS_1>
+							<CODE_POS_2>
+								(A:#ANIM_SIMVAR#, #ANIM_SIMVAR_UNITS#) ! if{
+									#SIMVAR_INDEX# (&gt;K:#KEY_ID#)
+								}
+								(A:#ANIM_SIMVAR_2#, #ANIM_SIMVAR_UNITS#) ! if{
+									#SIMVAR_INDEX_2# (&gt;K:#KEY_ID#)
+								}
+							</CODE_POS_2>
+							<STATE0_TEST> (A:#ANIM_SIMVAR#, #ANIM_SIMVAR_UNITS#) (A:#ANIM_SIMVAR_2#, #ANIM_SIMVAR_UNITS#) ! and </STATE0_TEST>
+							<STATE1_TEST> (A:#ANIM_SIMVAR#, #ANIM_SIMVAR_UNITS#) ! (A:#ANIM_SIMVAR_2#, #ANIM_SIMVAR_UNITS#) ! and </STATE1_TEST>
+							<STATE2_TEST> (A:#ANIM_SIMVAR#, #ANIM_SIMVAR_UNITS#) (A:#ANIM_SIMVAR_2#, #ANIM_SIMVAR_UNITS#) and </STATE2_TEST>
+						</UseTemplate>
+					</Component>
+				</Case>
+				<Default>
+					<Component ID="#NODE_ID#" Node="#NODE_ID#">
+						<DefaultTemplateParameters>
+							<TOOLTIPID>%((A:#ANIM_SIMVAR#, #ANIM_SIMVAR_UNITS#))%{if}TT:COCKPIT.TOOLTIPS.#LIGHT_TYPE#_LIGHT_ON %{else}TT:COCKPIT.TOOLTIPS.#LIGHT_TYPE#_LIGHT_OFF%{end}</TOOLTIPID>
+						</DefaultTemplateParameters>
+						<Switch Param="INTERACTION">
+							<Case Value="Push">
+								<UseTemplate Name="GT_Push_Button_Airliner">
+									<LEFT_SINGLE_CODE>#SIMVAR_LEFT_SINGLE_CODE#</LEFT_SINGLE_CODE>
+									<ONLY_SEQ1/>
+									<SEQ1_EMISSIVE_CODE>(A:#ANIM_SIMVAR#, Bool)</SEQ1_EMISSIVE_CODE>
+								</UseTemplate>
+							</Case>
+							<Default>
+								<UseTemplate Name="GT_Switch_Code">
+									<LEFT_SINGLE_CODE>#SIMVAR_LEFT_SINGLE_CODE#</LEFT_SINGLE_CODE>
+								</UseTemplate>
+							</Default>
+						</Switch>
+					</Component>
+				</Default>
+			</Switch>
+		</False>
+	</Condition>
+</Template>
+
+<Template Name="LIGHTING_Knob_SubTemplate">	
+	<DefaultTemplateParameters>
+		<CLOCKWISE_CODE/>
+		<ANTICLOCKWISE_CODE/>
+		<MAX_VALUE>100</MAX_VALUE>
+		<MIN_VALUE>0</MIN_VALUE>
+		<KNOB_TURN_SPEED>10</KNOB_TURN_SPEED>
+		<Condition Valid="USE_INTEGRATED_POWER_SETTING">
+			<True>
+				<SIMVAR_INDEX>1</SIMVAR_INDEX>
+			</True>
+		</Condition>
+	</DefaultTemplateParameters>
+	<UseTemplate Name="LIGHTING_Knob_SubSubTemplate">
+		<Condition Valid="USE_INTEGRATED_POWER_SETTING">
+			<True>
+				<CLOCKWISE_CODE>
+					#CLOCKWISE_CODE#
+					(A:#LIGHT_SIMVAR_POWER_SETTING#:#SIMVAR_INDEX#, Percent) #KNOB_TURN_SPEED# + #MAX_VALUE# min #SIMVAR_INDEX# (&gt;K:2:#LIGHT_EVENTID_SET_POWER_SETTING#) 
+				</CLOCKWISE_CODE>
+				<ANTICLOCKWISE_CODE>
+					#ANTICLOCKWISE_CODE#
+					(A:#LIGHT_SIMVAR_POWER_SETTING#:#SIMVAR_INDEX#, Percent) #KNOB_TURN_SPEED# - #MIN_VALUE# max #SIMVAR_INDEX# (&gt;K:2:#LIGHT_EVENTID_SET_POWER_SETTING#) 
+				</ANTICLOCKWISE_CODE>
+			</True>
+			<False>
+				<CLOCKWISE_CODE>
+					#CLOCKWISE_CODE#
+					(A:LIGHT POTENTIOMETER:#POTENTIOMETER#, Percent) #KNOB_TURN_SPEED# + #MAX_VALUE# min #POTENTIOMETER# (&gt;K:2:LIGHT_POTENTIOMETER_SET) 
+				</CLOCKWISE_CODE>
+				<ANTICLOCKWISE_CODE>
+					#ANTICLOCKWISE_CODE#
+					(A:LIGHT POTENTIOMETER:#POTENTIOMETER#, Percent) #KNOB_TURN_SPEED# - #MIN_VALUE# max #POTENTIOMETER# (&gt;K:2:LIGHT_POTENTIOMETER_SET)
+				</ANTICLOCKWISE_CODE>
+			</False>
+		</Condition>
+		<Condition Check="SIMVAR_INDEX">
+			<True>
+				<LIGHT_SIMVAR>#LIGHT_SIMVAR#:#SIMVAR_INDEX#</LIGHT_SIMVAR>
+			</True>
+			<False>
+				<SIMVAR_INDEX></SIMVAR_INDEX>
+			</False>
+		</Condition>
+	</UseTemplate>
+</Template>
+<Template Name="LIGHTING_Knob_SubSubTemplate">
+	<DefaultTemplateParameters>
+		<ANIMREF_ID>0</ANIMREF_ID>
+		<ANIMTIP_0_ON_CURSOR>TurnLeft</ANIMTIP_0_ON_CURSOR>
+		<ANIMTIP_1_ON_CURSOR>TurnRight</ANIMTIP_1_ON_CURSOR>
+		<ANIMTIP_0>TT:COCKPIT.TOOLTIPS.LIGHTING_KNOB_LIGHT_GENERIC_DECREASE</ANIMTIP_0>
+		<ANIMTIP_1>TT:COCKPIT.TOOLTIPS.LIGHTING_KNOB_LIGHT_GENERIC_INCREASE</ANIMTIP_1> 
+		<WWISE_EVENT>lighting_knob_generic</WWISE_EVENT>
+		<COUNT>12</COUNT>
+		<Condition Check="LIGHT_SIMVAR">
+			<CUSTOM_CONDITION_OFF></CUSTOM_CONDITION_OFF>
+			<INIT_VALUE>0</INIT_VALUE>
+			<Condition Check="SIMVAR_INDEX">
+				<True>
+					<LIGHT_SIMVAR>#LIGHT_SIMVAR#:#SIMVAR_INDEX#</LIGHT_SIMVAR>
+					<INC_COUNTER/>
+					<DEC_COUNTER/>
+					<STORE_COUNTER/>
+					<INIT_COUNTER/>
+					<Condition Valid="USE_INTEGRATED_POWER_SETTING">
+						<True>
+							<CHECK_COUNTER>(A:#LIGHT_SIMVAR_POWER_SETTING#:#SIMVAR_INDEX#, Percent) 0 == and</CHECK_COUNTER>
+						</True>
+						<False>
+							<CHECK_COUNTER>(A:LIGHT POTENTIOMETER:#POTENTIOMETER#, Percent) 0 == and</CHECK_COUNTER>
+						</False>
+					</Condition>
+				</True>
+				<False>
+					<SIMVAR_INDEX></SIMVAR_INDEX>
+					<INC_COUNTER>
+						(A:LIGHT POTENTIOMETER:#POTENTIOMETER#, Percent) 0 == if{
+							(L:XMLVAR_#LIGHT_EVENTID_ON#_Counter) 1 + (&gt;L:XMLVAR_#LIGHT_EVENTID_ON#_Counter)
+						}
+					</INC_COUNTER>
+					<STORE_COUNTER>
+						(A:LIGHT POTENTIOMETER:#POTENTIOMETER#, Percent) (&gt;O:XMLVAR_Potentiometer_PreviousFrameValue)
+					</STORE_COUNTER>
+					<DEC_COUNTER>
+						(O:XMLVAR_Potentiometer_PreviousFrameValue) 0 &gt;
+						(A:LIGHT POTENTIOMETER:#POTENTIOMETER#, Percent) 0 == and if{
+							(L:XMLVAR_#LIGHT_EVENTID_ON#_Counter) 1 - (&gt;L:XMLVAR_#LIGHT_EVENTID_ON#_Counter)
+						}
+					</DEC_COUNTER>
+					<INIT_COUNTER>
+						(A:LIGHT POTENTIOMETER:#POTENTIOMETER#, Percent) 0 &gt; if{
+							(L:XMLVAR_#LIGHT_EVENTID_ON#_Counter) 1 + (&gt;L:XMLVAR_#LIGHT_EVENTID_ON#_Counter)
+						}
+					</INIT_COUNTER>
+					<CHECK_COUNTER>
+						(L:XMLVAR_#LIGHT_EVENTID_ON#_Counter) 0 == and 
+					</CHECK_COUNTER>
+				</False>
+			</Condition>
+		</Condition>
+		<Condition Valid="EMISSIVE_KNOB">
+			<KNOB_EMISSIVE_CODE>1</KNOB_EMISSIVE_CODE>
+		</Condition>
+	</DefaultTemplateParameters>
+	<Component ID="#NODE_ID#" Node="#NODE_ID#">
+		<DefaultTemplateParameters>
+			<Condition Check="LIGHT_SIMVAR">
+				<Condition Check="NO_AUTHORITY_OVER_SWITCH_STATE">
+					<True>
+						<TURN_ON_LIGHT_CODE></TURN_ON_LIGHT_CODE>
+						<TURN_OFF_LIGHT_CODE></TURN_OFF_LIGHT_CODE>
+					</True>
+					<False>
+						<TURN_ON_LIGHT_CODE>
+							(A:#LIGHT_SIMVAR#, Bool) ! if{ #SIMVAR_INDEX# (&gt;K:#LIGHT_EVENTID_ON#) }
+						</TURN_ON_LIGHT_CODE>
+						<TURN_OFF_LIGHT_CODE>
+							(A:#LIGHT_SIMVAR#, Bool) 
+							#CHECK_COUNTER#
+							#CUSTOM_CONDITION_OFF# 
+							if{ #SIMVAR_INDEX# (&gt;K:#LIGHT_EVENTID_OFF#) }
+						</TURN_OFF_LIGHT_CODE>
+					</False>
+				</Condition>
+				<Condition Valid="USE_INTEGRATED_POWER_SETTING">
+					<True>
+						<SET_POTENTIOMETER_VALUE>#SIMVAR_INDEX# (&gt;K:2:#LIGHT_EVENTID_SET_POWER_SETTING#)</SET_POTENTIOMETER_VALUE>
+					</True>
+					<False>
+						<SET_POTENTIOMETER_VALUE>#POTENTIOMETER# (&gt;K:2:LIGHT_POTENTIOMETER_SET)</SET_POTENTIOMETER_VALUE>
+					</False>
+				</Condition>
+			</Condition>
+		</DefaultTemplateParameters>
+		<OverrideTemplateParameters>
+			<Condition Valid="USE_INTEGRATED_POWER_SETTING">
+				<POTENTIOMETER_MATCH_SIMVAR>False</POTENTIOMETER_MATCH_SIMVAR>
+			</Condition>
+		</OverrideTemplateParameters>
+		<Condition Check="LIGHT_SIMVAR">
+			<True>
+				<UseTemplate Name="GT_Update">
+					<UPDATE_ONCE>True</UPDATE_ONCE>
+					<UPDATE_CODE>
+						#INIT_COUNTER#
+						(A:#LIGHT_SIMVAR#, Bool) ! if{
+							#INIT_VALUE# #SET_POTENTIOMETER_VALUE#
+						}
+					</UPDATE_CODE>
+				</UseTemplate>
+				<Condition Valid="POTENTIOMETER_MATCH_SIMVAR">
+					<UseTemplate Name="GT_Update">
+						<FREQUENCY>2</FREQUENCY>
+						<UPDATE_CODE>
+							(A:LIGHT POTENTIOMETER:#POTENTIOMETER#, Percent over 100) 0 &gt; (A:#LIGHT_SIMVAR#, Bool) != if{
+								(A:#LIGHT_SIMVAR#, Bool) #POTENTIOMETER# (&gt;K:2:LIGHT_POTENTIOMETER_SET)
+							}
+						</UPDATE_CODE>
+					</UseTemplate>
+				</Condition>
+			</True>
+			<False>
+				<Condition Check="INIT_VALUE">
+					<Update Once="True">
+						#INIT_VALUE# #POTENTIOMETER# (&gt;K:2:LIGHT_POTENTIOMETER_SET)
+					</Update>
+				</Condition>
+			</False>
+		</Condition>
+		<UseTemplate Name="GT_Knob_Finite_Simvar">
+			<Condition Valid="USE_INTEGRATED_POWER_SETTING">
+				<True>
+					<ANIM_SIMVAR>#LIGHT_SIMVAR_POWER_SETTING#:#SIMVAR_INDEX#</ANIM_SIMVAR>
+					<ANIM_SIMVAR_UNITS>Percent</ANIM_SIMVAR_UNITS>
+				</True>
+				<False>
+					<ANIM_SIMVAR>LIGHT POTENTIOMETER:#POTENTIOMETER#</ANIM_SIMVAR>
+					<ANIM_SIMVAR_UNITS>Percent</ANIM_SIMVAR_UNITS>
+				</False>
+			</Condition>
+			<Condition Check="LIGHT_SIMVAR">
+				<CLOCKWISE_CODE>
+					#INC_COUNTER#
+					#TURN_ON_LIGHT_CODE#
+					#CLOCKWISE_CODE#
+				</CLOCKWISE_CODE>
+				<ANTICLOCKWISE_CODE>
+					#STORE_COUNTER#
+					#ANTICLOCKWISE_CODE#
+					#DEC_COUNTER#
+					#TURN_OFF_LIGHT_CODE#
+				</ANTICLOCKWISE_CODE>
+			</Condition>
+		</UseTemplate>
+		<Condition Valid="EMISSIVE_KNOB">
+			<UseTemplate Name="GT_Emissive_Gauge">
+				<Switch>
+					<Case Check="KNOB_EMISSIVE_POTENTIOMETER">
+						<EMISSIVE_CODE>#KNOB_EMISSIVE_CODE# (A:LIGHT POTENTIOMETER:#KNOB_EMISSIVE_POTENTIOMETER#, Percent over 100) *</EMISSIVE_CODE>
+					</Case>
+					<Case Valid="KNOB_LIGHT_SIMVAR_POWER_SETTING">
+						<EMISSIVE_CODE>#KNOB_EMISSIVE_CODE# (A:#KNOB_LIGHT_SIMVAR_POWER_SETTING#, Percent over 100) *</EMISSIVE_CODE>
+					</Case>
+					<Default>
+						<EMISSIVE_CODE>#KNOB_EMISSIVE_CODE#</EMISSIVE_CODE>
+					</Default>
+				</Switch>
+				<Condition Check="KNOB_EMISSIVE_POTENTIOMETER">
+					<True>
+					</True>
+					<False>
+					</False>
+				</Condition>
+				<Condition Check="KNOB_EMISSIVE_FAILURE">
+					<FAILURE>#KNOB_EMISSIVE_FAILURE#</FAILURE>
+				</Condition>
+			</UseTemplate>
+		</Condition>
+	</Component>
+</Template>
+
+<Template Name="LIGHTING_Emissive_SubTemplate">
+	<DefaultTemplateParameters>
+		<EMISSIVE_CODE>1</EMISSIVE_CODE>
+		<Condition Valid="USE_INTEGRATED_POWER_SETTING">
+			<SIMVAR_INDEX>1</SIMVAR_INDEX>
+		</Condition>
+	</DefaultTemplateParameters>
+	
+	<UseTemplate Name="LIGHTING_Emissive_SubSubTemplate">
+		<Condition Check="NO_POTENTIOMETER_FACTOR">
+			<False>
+				<Condition Valid="USE_INTEGRATED_POWER_SETTING">
+					<True>
+						<EMISSIVE_CODE>#EMISSIVE_CODE# (A:#LIGHT_SIMVAR_POWER_SETTING#:#SIMVAR_INDEX#, Percent over 100) *</EMISSIVE_CODE>
+					</True>
+					<False>
+						<EMISSIVE_CODE>#EMISSIVE_CODE# (A:LIGHT POTENTIOMETER:#POTENTIOMETER#, Percent over 100) *</EMISSIVE_CODE>
+					</False>
+				</Condition>
+			</False>
+		</Condition>
+	</UseTemplate>
+</Template>
+
+<Template Name="LIGHTING_Emissive_SubSubTemplate">
+	<Component ID="#NODE_ID#_Emissive" Node="#NODE_ID#">
+		<UseTemplate Name="GT_Emissive_Gauge">
+			<Condition Check="NO_SIMVAR_LIGHT">
+				<False>
+					<Condition Check="SIMVAR_LIGHT">
+						<Condition Check="SIMVAR_INDEX">
+							<TRUE>
+								<EMISSIVE_CODE>#EMISSIVE_CODE# (A:#SIMVAR_LIGHT#:#SIMVAR_INDEX#, Bool) * (A:#SIMVAR_LIGHT_ON#:#SIMVAR_INDEX#, Bool) *</EMISSIVE_CODE>
+							</TRUE>
+							<FALSE>
+								<EMISSIVE_CODE>#EMISSIVE_CODE# (A:#SIMVAR_LIGHT#, Bool) * (A:#SIMVAR_LIGHT_ON#, Bool) *</EMISSIVE_CODE>
+							</FALSE>
+						</Condition>
+					</Condition>
+				</False>
+			</Condition>
+		</UseTemplate>
+	</Component>
+</Template>
+
+<Template Name="LIGHTING_Switch_SubTemplate">
+	<DefaultTemplateParameters>
+		<ANIM_NAME>LIGHTING_Switch_#LIGHT_TYPE#</ANIM_NAME>
+		<PART_ID>LIGHTING_Switch_#LIGHT_TYPE#</PART_ID>
+		<NODE_ID>LIGHTING_Switch_#LIGHT_TYPE#_#ID#</NODE_ID>
+		<WWISE_EVENT_1>common_light_switch_on</WWISE_EVENT_1>
+		<WWISE_EVENT_2>common_light_switch_off</WWISE_EVENT_2> 
+		<VAR_SCOPE>O</VAR_SCOPE>
+	</DefaultTemplateParameters>
+	<Component ID="#NODE_ID#" Node="#NODE_ID#">
+		<UseTemplate Name="GT_Toggle_Variable_Anim">
+		</UseTemplate>
+	</Component>
+</Template>
+
+<Template Name="LIGHTING_Switches_Light_Pulse_Landing_SubTemplate">
+	<DefaultTemplateParameters>
+		<Switch Param="TYPE">
+			<Case Value="PULSE_LANDING">
+				<LANDING_NODE_ID>LIGHTING_Switch_Light_Landing_#ID#</LANDING_NODE_ID>
+				<LANDING_ANIM_NAME>LIGHTING_Switch_Light_Landing_#ID#</LANDING_ANIM_NAME>
+				<PULSE_NODE_ID>LIGHTING_Switch_Light_Pulse</PULSE_NODE_ID>
+				<PULSE_ANIM_NAME>LIGHTING_Switch_Light_Pulse</PULSE_ANIM_NAME>
+				<ON_TOGGLE_LANDING/>
+				<ON_TOGGLE_PULSE/>
+			</Case>
+			<Case Value="PULSE_LANDING_TAXI_OFF">
+				<!-- Pulse only available in LANDING position -->
+				<POS_LANDING>0</POS_LANDING>
+				<POS_TAXI>1</POS_TAXI>
+				<POS_OFF>2</POS_OFF>
+				<ON_LANDING/>
+				<ON_TAXI/>
+				<ON_OFF/>
+				<ON_TOGGLE_PULSE/>
+				<IS_PULSE>(A:LIGHT #LIGHT_TYPE_PULSE#, Bool)</IS_PULSE>
+				<IS_PULSE_SWITCH_ON>(I:XMLVAR_PULSE_Switch_ON)</IS_PULSE_SWITCH_ON>
+				<SET_PULSE>(A:LIGHT #LIGHT_TYPE_PULSE#, Bool) != if{ (&gt;K:TOGGLE_#LIGHT_TYPE_PULSE#_LIGHTS) }</SET_PULSE>
+				<SET_PULSE_SWITCH>(&gt;I:XMLVAR_PULSE_Switch_ON)</SET_PULSE_SWITCH>
+				<SET_LANDING>(A:LIGHT LANDING, Bool) != if{ (&gt;K:LANDING_LIGHTS_TOGGLE) }</SET_LANDING>
+				<SET_TAXI>(A:LIGHT TAXI, Bool) != if{ (&gt;K:TOGGLE_TAXI_LIGHTS) }</SET_TAXI>
+				<SET_LANDING_TAXI_OFF_SWITCH>(&gt;L:XMLVAR_LANDING_TAXI_OFF_Switch_Position)</SET_LANDING_TAXI_OFF_SWITCH>
+				<GET_LANDING_TAXI_OFF_SWITCH>(L:XMLVAR_LANDING_TAXI_OFF_Switch_Position)</GET_LANDING_TAXI_OFF_SWITCH>
+				<ANIMTIP_0_LANDING_TAXI_OFF></ANIMTIP_0_LANDING_TAXI_OFF>
+				<ANIMTIP_1_LANDING_TAXI_OFF></ANIMTIP_1_LANDING_TAXI_OFF>
+				<ANIMTIP_2_LANDING_TAXI_OFF></ANIMTIP_2_LANDING_TAXI_OFF>
+				<WWISE_EVENT_LANDING_TAXI_OFF>button_switch_metal</WWISE_EVENT_LANDING_TAXI_OFF>
+				<WWISE_EVENT_1_PULSE>pulse_light_switch_on</WWISE_EVENT_1_PULSE>
+				<WWISE_EVENT_2_PULSE>pulse_light_switch_off</WWISE_EVENT_2_PULSE>
+				<PART_ID_PULSE>LIGHTING_Switch_Pulse</PART_ID_PULSE>
+				<PART_ID_LANDING_TAXI_OFF>LIGHTING_Switch_Landing_Taxi_Off</PART_ID_LANDING_TAXI_OFF>
+				<ANIM_NAME_PULSE>LIGHTING_Switch_Pulse</ANIM_NAME_PULSE>
+				<ANIM_NAME_LANDING_TAXI_OFF>LIGHTING_Switch_Landing_Taxi_Off</ANIM_NAME_LANDING_TAXI_OFF>
+				<NODE_ID_PULSE>LIGHTING_Switch_Pulse</NODE_ID_PULSE>
+				<NODE_ID_LANDING_TAXI_OFF>LIGHTING_Switch_Landing_Taxi_Off</NODE_ID_LANDING_TAXI_OFF>
+			</Case>
+		</Switch>
+	</DefaultTemplateParameters>
+	<OverrideTemplateParameters>
+		<Switch Param="TYPE">
+			<Case Value="PULSE_LANDING_TAXI_OFF">
+				<CAN_PULSE>#GET_LANDING_TAXI_OFF_SWITCH# #POS_LANDING# !=</CAN_PULSE>
+				<IS_LANDING>#GET_LANDING_TAXI_OFF_SWITCH# #POS_LANDING# ==</IS_LANDING>
+				<IS_TAXI>#GET_LANDING_TAXI_OFF_SWITCH# #POS_TAXI# ==</IS_TAXI>
+				<IS_OFF>#GET_LANDING_TAXI_OFF_SWITCH# #POS_OFF# ==</IS_OFF>
+			</Case>
+		</Switch>
+	</OverrideTemplateParameters>
+	<Switch Param="TYPE">
+		<Case Value="PULSE_LANDING">
+			<Component ID="LIGHTING_Switches_Light_Pulse_Landing_#ID#">
+				<Update Once="True">
+					(A:LIGHT LANDING, Bool) (&gt;I:XMLVAR_Light_Switch_Landing_ON)
+					(A:LIGHT #LIGHT_TYPE_PULSE#, Bool) (&gt;I:XMLVAR_Light_Switch_Pulse_ON)
+					(I:XMLVAR_Light_Switch_Pulse_ON) if{
+						(A:LIGHT LANDING, Bool) if{ (&gt;K:LANDING_LIGHTS_TOGGLE) }
+						(A:LIGHT #LIGHT_TYPE_PULSE#, Bool) ! if{ (&gt;K:TOGGLE_#LIGHT_TYPE_PULSE#_LIGHTS) }
+					}
+				</Update>
+				<!-- ensure variables consistency -->
+				<Update Frequency="2">
+					(A:LIGHT LANDING, Bool) if{ 1 (&gt;I:XMLVAR_Light_Switch_Landing_ON) }
+					(A:LIGHT #LIGHT_TYPE_PULSE#, Bool) if{ 1 (&gt;I:XMLVAR_Light_Switch_Pulse_ON) }
+					(A:LIGHT LANDING, Bool) (A:LIGHT #LIGHT_TYPE_PULSE#, Bool) and if{
+						(I:XMLVAR_Light_Switch_Pulse_ON) (I:XMLVAR_Light_Switch_Landing_ON) and if{
+							(&gt;K:LANDING_LIGHTS_TOGGLE)
+						} els{
+							(&gt;K:TOGGLE_#LIGHT_TYPE_PULSE#_LIGHTS)
+						}
+					}
+					(A:LIGHT LANDING, Bool) ! (A:LIGHT #LIGHT_TYPE_PULSE#, Bool) ! and if{
+						0 (&gt;I:XMLVAR_Light_Switch_Landing_ON)
+					}
+				</Update>
+				<Component ID="#PULSE_NODE_ID#_#ID#" Node="#PULSE_NODE_ID#">
+					<UseTemplate Name="GT_Toggle_Variable_Anim">
+						<Condition Valid="INVERT_ANIM_PULSE">
+							<INVERT_ANIM>True</INVERT_ANIM>
+						</Condition>
+						<VAR_NAME>XMLVAR_Light_Switch_Pulse_ON</VAR_NAME>
+						<VAR_SCOPE>I</VAR_SCOPE>
+						<ANIM_CODE>(I:XMLVAR_Light_Switch_Pulse_ON) (A:LIGHT #LIGHT_TYPE_PULSE#, Bool) or 100 *</ANIM_CODE>
+						<ANIM_NAME>#PULSE_ANIM_NAME#</ANIM_NAME>
+						<TOGGLE_CODE>
+							(I:XMLVAR_Light_Switch_Pulse_ON) if{
+								(I:XMLVAR_Light_Switch_Landing_ON) if{
+									(A:LIGHT LANDING, Bool) if{ (&gt;K:LANDING_LIGHTS_TOGGLE) }
+									(A:LIGHT #LIGHT_TYPE_PULSE#, Bool) ! if{ (&gt;K:TOGGLE_#LIGHT_TYPE_PULSE#_LIGHTS) }						
+								}
+							} els{
+								(A:LIGHT #LIGHT_TYPE_PULSE#, Bool) if{ (&gt;K:TOGGLE_#LIGHT_TYPE_PULSE#_LIGHTS) }
+								(A:LIGHT LANDING, Bool) ! (I:XMLVAR_Light_Switch_Landing_ON) and if{ (&gt;K:LANDING_LIGHTS_TOGGLE) }
+							}
+							#ON_TOGGLE_PULSE#
+						</TOGGLE_CODE>
+						<WWISE_EVENT>recognition_light_switch</WWISE_EVENT>
+						<WWISE_EVENT_1>pulse_light_switch_on</WWISE_EVENT_1>
+						<WWISE_EVENT_2>pulse_light_switch_off</WWISE_EVENT_2>
+						<ANIMTIP_0>TT:COCKPIT.TOOLTIPS.STBY_STROBE_LIGHT_OFF</ANIMTIP_0>
+						<ANIMTIP_1>TT:COCKPIT.TOOLTIPS.STBY_STROBE_LIGHT_ON</ANIMTIP_1>
+					</UseTemplate>
+				</Component>
+				<Component ID="#LANDING_NODE_ID#" Node="#LANDING_NODE_ID#">
+					<UseTemplate Name="GT_Toggle_Variable_Anim">
+						<VAR_NAME>XMLVAR_Light_Switch_Landing_ON</VAR_NAME>
+						<VAR_SCOPE>I</VAR_SCOPE>
+						<ANIM_CODE>(I:XMLVAR_Light_Switch_Landing_ON) (A:LIGHT LANDING, Bool) or 100 *</ANIM_CODE>
+						<ANIM_NAME>#LANDING_ANIM_NAME#</ANIM_NAME>
+						<TOGGLE_CODE>
+							(I:XMLVAR_Light_Switch_Landing_ON) if{
+								(I:XMLVAR_Light_Switch_Pulse_ON) if{
+									(A:LIGHT #LIGHT_TYPE_PULSE#, Bool) ! if{ (&gt;K:TOGGLE_#LIGHT_TYPE_PULSE#_LIGHTS) }
+								} els{
+									(A:LIGHT LANDING, Bool) ! if{ (&gt;K:LANDING_LIGHTS_TOGGLE) }
+									(A:LIGHT #LIGHT_TYPE_PULSE#, Bool) if{ (&gt;K:TOGGLE_#LIGHT_TYPE_PULSE#_LIGHTS) }
+								}
+							} els{
+								(A:LIGHT #LIGHT_TYPE_PULSE#, Bool) if{ (&gt;K:TOGGLE_#LIGHT_TYPE_PULSE#_LIGHTS) }
+								(A:LIGHT LANDING, Bool) if{ (&gt;K:LANDING_LIGHTS_TOGGLE) }
+							}
+							#ON_TOGGLE_LANDING#
+						</TOGGLE_CODE>
+						<WWISE_EVENT>landing_light_switch</WWISE_EVENT>
+						<WWISE_EVENT_1>landing_light_switch_on</WWISE_EVENT_1>
+						<WWISE_EVENT_2>landing_light_switch_off</WWISE_EVENT_2>
+						<ANIMTIP_0>TT:COCKPIT.TOOLTIPS.LANDING_LIGHT_OFF</ANIMTIP_0>
+						<ANIMTIP_1>TT:COCKPIT.TOOLTIPS.LANDING_LIGHT_ON</ANIMTIP_1>
+					</UseTemplate>
+				</Component>
+			</Component>
+		</Case>
+		<Case Value="PULSE_LANDING_TAXI_OFF">
+			<Component ID="#NODE_ID_PULSE#" Node="#NODE_ID_PULSE#">
+				<OverrideTemplateParameters>
+					<ON_TOGGLE_PULSE>
+						#IS_PULSE_SWITCH_ON# #CAN_PULSE# and #SET_PULSE#
+						#IS_PULSE# if{
+							0 #SET_LANDING#
+							0 #SET_TAXI#
+						} els{
+							#IS_LANDING# #SET_LANDING#
+							#IS_TAXI# #SET_TAXI#
+						}
+						#ON_TOGGLE_PULSE#
+					</ON_TOGGLE_PULSE>
+					<IS_PULSE_FORCED_FROM_FLT>(L:XMLVAR_FORCE_PULSE_ON)</IS_PULSE_FORCED_FROM_FLT>
+				</OverrideTemplateParameters>
+				<!-- Init switch correctly from sim -->
+				<UseTemplate Name="GT_Update">
+					<UPDATE_ONCE>True</UPDATE_ONCE>
+					<UPDATE_CODE>
+						1 0 #IS_PULSE_FORCED_FROM_FLT# ? #SET_PULSE#
+						#IS_PULSE# #SET_PULSE_SWITCH#
+					</UPDATE_CODE>
+				</UseTemplate>
+				<!-- Ensure switch state consistency -->
+				<UseTemplate Name="GT_Update">
+					<FREQUENCY>2</FREQUENCY>
+					<UPDATE_CODE>
+						#IS_PULSE_SWITCH_ON# #CAN_PULSE# and #SET_PULSE#				
+					</UPDATE_CODE>
+				</UseTemplate>
+				<UseTemplate Name="GT_Toggle_Variable_Anim">
+					<PART_ID>#PART_ID_PULSE#</PART_ID>
+					<Condition Valid="INVERT_ANIM_PULSE">
+						<INVERT_ANIM>True</INVERT_ANIM>
+					</Condition>
+					<VAR_NAME>XMLVAR_PULSE_Switch_ON</VAR_NAME>
+					<VAR_SCOPE>I</VAR_SCOPE>
+					<ANIM_NAME>#ANIM_NAME_PULSE#</ANIM_NAME>
+					<TOGGLE_CODE>
+						#ON_TOGGLE_PULSE#
+					</TOGGLE_CODE>
+					<ANIMTIP_0>TT:COCKPIT.TOOLTIPS.PULSE_LIGHT_OFF</ANIMTIP_0>							
+					<ANIMTIP_1>TT:COCKPIT.TOOLTIPS.PULSE_LIGHT_ON</ANIMTIP_1>
+					<WWISE_EVENT_1>#WWISE_EVENT_1_PULSE#</WWISE_EVENT_1>
+					<WWISE_EVENT_2>#WWISE_EVENT_2_PULSE#</WWISE_EVENT_2>
+				</UseTemplate>
+			</Component>
+			<Component ID="#NODE_ID_LANDING_TAXI_OFF#" Node="#NODE_ID_LANDING_TAXI_OFF#">
+				<OverrideTemplateParameters>
+					<ON_LANDING>
+						1 #SET_LANDING#
+						0 #SET_PULSE#
+						0 #SET_TAXI#
+						#POS_LANDING# #SET_LANDING_TAXI_OFF_SWITCH#
+						#ON_LANDING#
+					</ON_LANDING>
+					<ON_TAXI>
+						#IS_PULSE_SWITCH_ON# #SET_PULSE#
+						0 #SET_LANDING#
+						#IS_PULSE_SWITCH_ON# ! #SET_TAXI#
+						#POS_TAXI# #SET_LANDING_TAXI_OFF_SWITCH#
+						#ON_TAXI#
+					</ON_TAXI>
+					<ON_OFF>
+						0 #SET_PULSE#
+						0 #SET_LANDING#
+						0 #SET_TAXI#
+						#POS_OFF# #SET_LANDING_TAXI_OFF_SWITCH#
+						#ON_OFF#
+					</ON_OFF>
+					<INIT_VARS>
+						(A:LIGHT LANDING, Bool) ! (A:LIGHT TAXI, Bool) ! and #IS_PULSE# ! and #IS_LANDING# #IS_TAXI# or and if{
+							#POS_OFF# #SET_LANDING_TAXI_OFF_SWITCH#
+						} els{
+							#IS_TAXI# if{
+								(A:LIGHT LANDING, Bool) if{ 
+									0 #SET_PULSE#
+									0 #SET_TAXI#
+									#POS_LANDING# #SET_LANDING_TAXI_OFF_SWITCH#
+								}
+							} els{
+								#IS_OFF# if{
+									(A:LIGHT LANDING, Bool) (A:LIGHT TAXI, Bool) or if{ 
+										(A:LIGHT LANDING, Bool) #SET_LANDING#
+										#IS_LANDING# ! #SET_TAXI#
+										#POS_LANDING# #POS_TAXI# #IS_LANDING# ? #SET_LANDING_TAXI_OFF_SWITCH#
+									}
+								}
+							}
+						}
+						#IS_PULSE_SWITCH_ON# #CAN_PULSE# and if{ 
+							0 #SET_LANDING#
+							0 #SET_TAXI#
+						}
+					</INIT_VARS>
+				</OverrideTemplateParameters>
+				<!-- Init switch correctly from sim -->
+				<UseTemplate Name="GT_Update">
+					<UPDATE_ONCE>True</UPDATE_ONCE>
+					<UPDATE_CODE>
+						(A:LIGHT LANDING, Bool) if{ 
+							#POS_LANDING# #SET_LANDING_TAXI_OFF_SWITCH# 
+						} els{
+							(A:LIGHT TAXI, Bool) if{ 
+								#POS_TAXI# #SET_LANDING_TAXI_OFF_SWITCH# 
+							} els{
+								#POS_OFF# #SET_LANDING_TAXI_OFF_SWITCH#
+							}
+						}
+						#IS_LANDING# #SET_LANDING#
+						#IS_TAXI# #SET_TAXI#
+					</UPDATE_CODE>
+				</UseTemplate>
+				<UseTemplate Name="GT_Switch_3States">
+					<SWITCH_POSITION_TYPE>L</SWITCH_POSITION_TYPE>
+					<SWITCH_POSITION_VAR>XMLVAR_LANDING_TAXI_OFF_Switch_Position</SWITCH_POSITION_VAR>
+					<PART_ID>#PART_ID_LANDING_TAXI_OFF#</PART_ID>
+					<ANIM_NAME>#ANIM_NAME_LANDING_TAXI_OFF#</ANIM_NAME>
+					<CODE_POS_#POS_LANDING#>
+						#ON_LANDING#
+					</CODE_POS_#POS_LANDING#>
+					<CODE_POS_#POS_TAXI#>
+						#ON_TAXI#
+					</CODE_POS_#POS_TAXI#>
+					<CODE_POS_#POS_OFF#>
+						#ON_OFF#
+					</CODE_POS_#POS_OFF#>
+					<STATE#POS_LANDING#_TEST>#IS_LANDING#</STATE#POS_LANDING#_TEST>
+					<STATE#POS_TAXI#_TEST>#IS_TAXI#</STATE#POS_TAXI#_TEST>
+					<STATE#POS_OFF#_TEST>#IS_OFF#</STATE#POS_OFF#_TEST>
+					<WWISE_EVENT>#WWISE_EVENT_LANDING_TAXI_OFF#</WWISE_EVENT>
+					<ANIMTIP_0>#ANIMTIP_0_LANDING_TAXI_OFF#</ANIMTIP_0>
+					<ANIMTIP_1>#ANIMTIP_1_LANDING_TAXI_OFF#</ANIMTIP_1>
+					<ANIMTIP_2>#ANIMTIP_2_LANDING_TAXI_OFF#</ANIMTIP_2>
+				</UseTemplate>
+			</Component>
+		</Case>
+	</Switch>
+</Template>

@@ -17,7 +17,7 @@
         },
         {
             "path": "html_ui/Pages/VCockpit/Instruments/Airliners/A320_Neo/EICAS/A320_Neo_EICAS.js",
-            "size": 5079,
+            "size": 4638,
             "date": "132402817714110148"
         },
         {
@@ -96,6 +96,26 @@
             "date": "132402817714110148"
         },
         {
+            "path": "ModelBehaviorDefs/Asobo/Common/Lighting.xml",
+            "size": 30885,
+            "date": "132402817714110148"
+        },
+        {
+            "path": "ModelBehaviorDefs/Asobo/Common/Subtemplates/Lighting_Subtemplates.xml",
+            "size": 31992,
+            "date": "132402817714110148"
+        },
+        {
+            "path": "ModelBehaviorDefs/Common/Lighting.xml",
+            "size": 28354,
+            "date": "132402817714110148"
+        },
+        {
+            "path": "ModelBehaviorDefs/Common/Subtemplates/Lighting_Subtemplates.xml",
+            "size": 30910,
+            "date": "132402817714110148"
+        },
+        {
             "path": "SimObjects/AirPlanes/Asobo_A320_NEO/engines.cfg",
             "size": 10383,
             "date": "132402817714110148"
@@ -107,7 +127,12 @@
         },
         {
             "path": "SimObjects/AirPlanes/Asobo_A320_NEO/model/A320_NEO_INTERIOR.xml",
-            "size": 127217,
+            "size": 129393,
+            "date": "132402817714110148"
+        },
+        {
+            "path": "SimObjects/AirPlanes/Asobo_A320_NEO/TEXTURE/A320NEO_COCKPIT_DECALSTEXT_EMIS.PNG.DDS",
+            "size": 524416,
             "date": "132402817714110148"
         }
     ]

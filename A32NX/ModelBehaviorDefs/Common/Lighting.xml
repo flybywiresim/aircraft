@@ -1,0 +1,753 @@
+
+<Include File="Subtemplates\\Lighting_Subtemplates.xml"/>
+<!-- Lights ################################################################ -->
+
+<Template Name="LIGHTING_Switch_Light_Landing_Template">
+	<DefaultTemplateParameters>
+		<ANIMTIP_0>TT:COCKPIT.TOOLTIPS.LANDING_LIGHT_OFF</ANIMTIP_0>
+		<ANIMTIP_1>TT:COCKPIT.TOOLTIPS.LANDING_LIGHT_ON</ANIMTIP_1>
+		<ANIMTIP_2>TT:COCKPIT.TOOLTIPS.LANDING_LIGHT_RETRACT</ANIMTIP_2>
+		<WWISE_EVENT_1>landing_light_switch_on</WWISE_EVENT_1>
+		<WWISE_EVENT_2>landing_light_switch_off</WWISE_EVENT_2>
+		<NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
+		<NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>	
+	</DefaultTemplateParameters>
+	<UseTemplate Name="LIGHTING_Switch_Light_Template">
+		<LIGHT_TYPE>LANDING</LIGHT_TYPE>
+		<KEY_ID>LANDING_LIGHTS_TOGGLE</KEY_ID>
+	</UseTemplate>
+</Template>
+<!-- Create both pulse and landing switches components -->
+<Template Name="LIGHTING_Switches_Light_Pulse_Landing_Template">
+	<DefaultTemplateParameters>
+		<ID>1</ID>
+		<TYPE>PULSE_LANDING</TYPE>
+		<LIGHT_TYPE_PULSE>RECOGNITION</LIGHT_TYPE_PULSE>
+	</DefaultTemplateParameters>
+	<UseTemplate Name="LIGHTING_Switches_Light_Pulse_Landing_SubTemplate">
+	</UseTemplate>
+</Template>
+<Template Name="LIGHTING_Switch_Light_Navigation_Template">
+		<DefaultTemplateParameters>
+			<ANIMTIP_0>TT:COCKPIT.TOOLTIPS.NAV_LIGHT_OFF</ANIMTIP_0>
+			<ANIMTIP_1>TT:COCKPIT.TOOLTIPS.NAV_LIGHT_ON</ANIMTIP_1>	
+			<WWISE_EVENT_1>nav_light_switch_on</WWISE_EVENT_1>
+			<WWISE_EVENT_2>nav_light_switch_off</WWISE_EVENT_2> 
+			<NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
+			<NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>				
+		</DefaultTemplateParameters>
+	
+	<UseTemplate Name="LIGHTING_Switch_Light_Template">
+		<PART_ID>LIGHTING_Switch_Light_Navigation</PART_ID>
+		<LIGHT_TYPE>NAV</LIGHT_TYPE>
+	</UseTemplate>
+</Template>
+<Template Name="LIGHTING_Push_Light_Navigation_Template">
+	<UseTemplate Name="LIGHTING_Push_Light_Template">
+		<LIGHT_TYPE>NAV</LIGHT_TYPE>
+		<WWISE_EVENT_1>nav_light_switch_on</WWISE_EVENT_1>
+		<WWISE_EVENT_2>nav_light_switch_off</WWISE_EVENT_2> 
+		<NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
+		<NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>		
+	</UseTemplate>
+</Template>
+<Template Name="LIGHTING_Switch_Light_Taxi_Template">
+	<DefaultTemplateParameters>
+		<ANIMTIP_0>TT:COCKPIT.TOOLTIPS.TAXI_LIGHT_OFF</ANIMTIP_0>
+		<ANIMTIP_1>TT:COCKPIT.TOOLTIPS.TAXI_LIGHT_ON</ANIMTIP_1>
+		<WWISE_EVENT_1>taxi_light_switch_on</WWISE_EVENT_1>
+		<WWISE_EVENT_2>taxi_light_switch_off</WWISE_EVENT_2>
+		<NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
+		<NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>	
+	</DefaultTemplateParameters>
+	
+	<UseTemplate Name="LIGHTING_Switch_Light_Template">
+		<LIGHT_TYPE>TAXI</LIGHT_TYPE>
+	</UseTemplate>
+</Template>
+
+<Template Name="LIGHTING_Switch_Light_No_Smoking_Template">
+	<DefaultTemplateParameters>
+		<ANIMTIP_0>TT:COCKPIT.TOOLTIPS.NO_SMOKING_LIGHT_OFF</ANIMTIP_0>
+		<ANIMTIP_1>TT:COCKPIT.TOOLTIPS.NO_SMOKING_LIGHT_AUTO</ANIMTIP_1>
+		<!-- <ANIMTIP_2>TT:COCKPIT.TOOLTIPS.NO_SMOKING_LIGHT_ON</ANIMTIP_2>
+		<ANIM_SIMVAR1>LIGHT #LIGHT_TYPE1#:#SIMVAR_INDEX1#</ANIM_SIMVAR1>
+		<ANIM_SIMVAR2>LIGHT #LIGHT_TYPE2#:#SIMVAR_INDEX2#</ANIM_SIMVAR2>
+		<KEY_ID1>TOGGLE_#LIGHT_TYPE1#_LIGHTS</KEY_ID1>
+		<KEY_ID2>TOGGLE_#LIGHT_TYPE2#_LIGHTS</KEY_ID2> -->
+		<WWISE_EVENT>double_light_switch</WWISE_EVENT>
+		<!-- <ANIMREF_ID>0</ANIMREF_ID>
+		<ANIMTIP_0_ON_PERCENT>0</ANIMTIP_0_ON_PERCENT>
+		<ANIMTIP_1_ON_PERCENT>0.5</ANIMTIP_1_ON_PERCENT>
+		<ANIMTIP_2_ON_PERCENT>1</ANIMTIP_2_ON_PERCENT>
+		<NUM_STATES>3</NUM_STATES> -->
+	</DefaultTemplateParameters>
+	<UseTemplate Name="ASOBO_LIGHTING_Switch_Light_Template">
+		<LIGHT_TYPE>NO_SMOKING</LIGHT_TYPE>
+	</UseTemplate>
+</Template>
+
+<Template Name="LIGHTING_Switch_Light_Double_Template">
+	<DefaultTemplateParameters>
+		<ANIM_SIMVAR1>LIGHT #LIGHT_TYPE1#:#SIMVAR_INDEX1#</ANIM_SIMVAR1>
+		<ANIM_SIMVAR2>LIGHT #LIGHT_TYPE2#:#SIMVAR_INDEX2#</ANIM_SIMVAR2>
+		<KEY_ID1>TOGGLE_#LIGHT_TYPE1#_LIGHTS</KEY_ID1>
+		<KEY_ID2>TOGGLE_#LIGHT_TYPE2#_LIGHTS</KEY_ID2>
+		<WWISE_EVENT>double_light_switch</WWISE_EVENT>
+		<ANIMREF_ID>0</ANIMREF_ID>
+		<ANIMTIP_0_ON_PERCENT>0</ANIMTIP_0_ON_PERCENT>
+		<ANIMTIP_1_ON_PERCENT>0.5</ANIMTIP_1_ON_PERCENT>
+		<ANIMTIP_2_ON_PERCENT>1</ANIMTIP_2_ON_PERCENT>
+		<ANIMTIP_0>TT:COCKPIT.TOOLTIPS.NOSE_LIGHT_SET_OFF</ANIMTIP_0>
+		<ANIMTIP_1>TT:COCKPIT.TOOLTIPS.NOSE_LIGHT_SET_TAXI</ANIMTIP_1>
+		<ANIMTIP_2>TT:COCKPIT.TOOLTIPS.NOSE_LIGHT_SET_TO</ANIMTIP_2>
+		<NUM_STATES>3</NUM_STATES>
+	</DefaultTemplateParameters>
+	<Component ID="#NODE_ID#" Node="#NODE_ID#">
+		<Switch Param="NUM_STATES">
+			<Case Value="3">
+				<UseTemplate Name="GT_Switch_3States">
+					<CODE_POS_0>
+						(A:#ANIM_SIMVAR1#, Bool) ! if{
+							#SIMVAR_INDEX1# (&gt;K:#KEY_ID1#)
+						}
+						(A:#ANIM_SIMVAR2#, Bool) if{
+							#SIMVAR_INDEX2# (&gt;K:#KEY_ID2#)
+						}
+					</CODE_POS_0>
+					<CODE_POS_1>
+						(A:#ANIM_SIMVAR1#, Bool) if{
+							#SIMVAR_INDEX1# (&gt;K:#KEY_ID1#)
+						}
+						(A:#ANIM_SIMVAR2#, Bool) ! if{
+							#SIMVAR_INDEX2# (&gt;K:#KEY_ID2#)
+						}
+					</CODE_POS_1>
+					<CODE_POS_2>
+						(A:#ANIM_SIMVAR1#, Bool) if{
+							#SIMVAR_INDEX1# (&gt;K:#KEY_ID1#)
+						}
+						(A:#ANIM_SIMVAR2#, Bool) if{
+							#SIMVAR_INDEX2# (&gt;K:#KEY_ID2#)
+						}
+					</CODE_POS_2>
+					<STATE0_TEST> (A:#ANIM_SIMVAR1#, Bool) </STATE0_TEST>
+					<STATE1_TEST> (A:#ANIM_SIMVAR1#, Bool) ! (A:#ANIM_SIMVAR2#, Bool) and </STATE1_TEST>
+					<STATE2_TEST> (A:#ANIM_SIMVAR1#, Bool) ! (A:#ANIM_SIMVAR2#, Bool) ! and </STATE2_TEST>
+				</UseTemplate>
+			</Case>
+			<Case Value="2">
+				<UseTemplate Name="GT_Update">
+					<UPDATE_CODE>
+						(A:#ANIM_SIMVAR1#, Bool) (A:#ANIM_SIMVAR2#, Bool) != if{
+							#SIMVAR_INDEX2# (&gt;K:#KEY_ID2#)
+						}
+					</UPDATE_CODE>
+				</UseTemplate>
+				<UseTemplate Name="GT_Switch_Code">
+					<ANIM_CODE>(A:#ANIM_SIMVAR1#, Bool) (A:#ANIM_SIMVAR2#, Bool) and 100 *</ANIM_CODE>
+					<LEFT_SINGLE_CODE>
+						(A:#ANIM_SIMVAR1#, Bool) ! (&gt;O:_bON)
+						(A:#ANIM_SIMVAR1#, Bool) (O:_bON) != if{
+							#SIMVAR_INDEX1# (&gt;K:#KEY_ID1#)
+						}
+						(A:#ANIM_SIMVAR2#, Bool) (O:_bON) != if{
+							#SIMVAR_INDEX2# (&gt;K:#KEY_ID2#)
+						}
+					</LEFT_SINGLE_CODE>
+				</UseTemplate>
+			</Case>
+		</Switch>
+	</Component>
+</Template>
+<Template Name="LIGHTING_Switch_Light_Strobe_Template">
+		
+		<DefaultTemplateParameters>
+			<ANIMTIP_0>TT:COCKPIT.TOOLTIPS.STROBE_LIGHT_OFF</ANIMTIP_0>
+			<ANIMTIP_1>TT:COCKPIT.TOOLTIPS.STROBE_LIGHT_ON</ANIMTIP_1>
+			<WWISE_EVENT_1>strobe_light_switch_on</WWISE_EVENT_1>
+			<WWISE_EVENT_2>strobe_light_switch_off</WWISE_EVENT_2> 
+			<NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
+			<NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>	
+		</DefaultTemplateParameters>
+		
+		<Condition Check="OTHER_PART_ID">
+			<PART_ID>#OTHER_PART_ID#</PART_ID>
+			<PART_ID>LIGHTING_Switch_Light_Strobe</PART_ID>
+		</Condition>
+		<UseTemplate Name="LIGHTING_Switch_Light_Template">
+			<LIGHT_TYPE>STROBE</LIGHT_TYPE>
+			<KEY_ID>STROBES_TOGGLE</KEY_ID>
+		</UseTemplate>
+		
+</Template>
+<Template Name="LIGHTING_Push_Light_Strobe_Template">
+	<UseTemplate Name="LIGHTING_Push_Light_Template">
+		<LIGHT_TYPE>STROBE</LIGHT_TYPE>
+		<WWISE_EVENT_1>strobe_light_switch_on</WWISE_EVENT_1>
+		<WWISE_EVENT_2>strobe_light_switch_off</WWISE_EVENT_2> 
+		<NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
+		<NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>		
+	</UseTemplate>
+</Template>
+<Template Name="LIGHTING_Switch_Light_Beacon_Template">
+	<UseTemplate Name="LIGHTING_Switch_Light_Template">
+		<DefaultTemplateParameters>
+			<ANIMTIP_0>TT:COCKPIT.TOOLTIPS.BEACON_LIGHT_OFF</ANIMTIP_0>
+			<ANIMTIP_1>TT:COCKPIT.TOOLTIPS.BEACON_LIGHT_ON</ANIMTIP_1>		
+		</DefaultTemplateParameters>
+		<LIGHT_TYPE>BEACON</LIGHT_TYPE>
+		<WWISE_EVENT_1>beacon_light_switch_on</WWISE_EVENT_1>
+		<WWISE_EVENT_2>beacon_light_switch_off</WWISE_EVENT_2> 
+		<NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
+		<NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>	
+
+		
+	</UseTemplate>
+</Template>
+
+<Template Name="LIGHTING_Switch_Light_Seatbelt_Template">
+	<UseTemplate Name="LIGHTING_Switch_Light_Template">
+		<DefaultTemplateParameters>
+			<ANIMTIP_0>TT:COCKPIT.TOOLTIPS.SEATBELT_LIGHT_OFF</ANIMTIP_0>
+			<ANIMTIP_1>TT:COCKPIT.TOOLTIPS.SEATBELT_LIGHT_ON</ANIMTIP_1>		
+		</DefaultTemplateParameters>
+		<LIGHT_TYPE>SEATBELT</LIGHT_TYPE>
+		<WWISE_EVENT_1>seatbelt_light_switch_on</WWISE_EVENT_1>
+		<WWISE_EVENT_2>seatbelt_light_switch_off</WWISE_EVENT_2> 
+		<NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
+		<NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>	
+	</UseTemplate>
+</Template>
+
+<Template Name="LIGHTING_Push_Light_Beacon_Template">
+	<UseTemplate Name="LIGHTING_Push_Light_Template">
+		<LIGHT_TYPE>BEACON</LIGHT_TYPE>
+		<WWISE_EVENT_1>beacon_light_switch_on</WWISE_EVENT_1>
+		<WWISE_EVENT_2>beacon_light_switch_off</WWISE_EVENT_2> 	
+		<NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
+		<NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
+	</UseTemplate>
+</Template>
+<Template Name="LIGHTING_Switch_Light_Cabin_Template">
+	<DefaultTemplateParameters>
+		<ANIMTIP_0>TT:COCKPIT.TOOLTIPS.LIGHTING_FLOODLIGHT_OFF</ANIMTIP_0>
+		<ANIMTIP_1>TT:COCKPIT.TOOLTIPS.LIGHTING_FLOODLIGHT_ON</ANIMTIP_1>	
+		<WWISE_EVENT_1>cabin_light_switch_on</WWISE_EVENT_1>
+		<WWISE_EVENT_2>cabin_light_switch_off</WWISE_EVENT_2>
+		<NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
+		<NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>	
+	</DefaultTemplateParameters>
+	<UseTemplate Name="LIGHTING_Switch_Light_Template">
+		<LIGHT_TYPE>CABIN</LIGHT_TYPE>  
+
+	</UseTemplate>
+</Template>
+<Template Name="LIGHTING_Push_Light_Cabin_Template">
+	<UseTemplate Name="LIGHTING_Push_Light_Template">
+		<LIGHT_TYPE>CABIN</LIGHT_TYPE>
+		<WWISE_EVENT_1>cabin_light_switch_on</WWISE_EVENT_1>
+		<WWISE_EVENT_2>cabin_light_switch_off</WWISE_EVENT_2> 	
+		<NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
+		<NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
+	</UseTemplate>
+</Template>
+<Template Name="LIGHTING_Switch_Light_Glareshield_Template">
+	<DefaultTemplateParameters>
+		<ANIMTIP_0>TT:COCKPIT.TOOLTIPS.LIGHTING_FLOODLIGHT_OFF</ANIMTIP_0>
+		<ANIMTIP_1>TT:COCKPIT.TOOLTIPS.LIGHTING_FLOODLIGHT_ON</ANIMTIP_1>	
+		<WWISE_EVENT_1>cabin_light_switch_on</WWISE_EVENT_1>
+		<WWISE_EVENT_2>cabin_light_switch_off</WWISE_EVENT_2>
+		<NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
+		<NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>	
+	</DefaultTemplateParameters>
+	<UseTemplate Name="LIGHTING_Switch_Light_Template">
+		<LIGHT_TYPE>GLARESHIELD</LIGHT_TYPE>
+		<KEY_ID>GLARESHIELD_LIGHTS_TOGGLE</KEY_ID>
+	</UseTemplate>
+</Template>
+<Template Name="LIGHTING_Push_Light_Glareshield_Template">
+	<UseTemplate Name="LIGHTING_Push_Light_Template">
+		<LIGHT_TYPE>GLARESHIELD</LIGHT_TYPE>
+		<WWISE_EVENT_1>cabin_light_switch_on</WWISE_EVENT_1>
+		<WWISE_EVENT_2>cabin_light_switch_off</WWISE_EVENT_2> 	
+		<NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
+		<NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
+	</UseTemplate>
+</Template>
+<Template Name="LIGHTING_Switch_Light_Panel_Template">
+	<UseTemplate Name="LIGHTING_Switch_Light_Template">
+		<LIGHT_TYPE>PANEL</LIGHT_TYPE>  
+		<WWISE_EVENT_1>panel_light_switch_on</WWISE_EVENT_1>
+		<WWISE_EVENT_2>panel_light_switch_off</WWISE_EVENT_2>
+		<NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
+		<NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>	
+		<KEY_ID>PANEL_LIGHTS_TOGGLE</KEY_ID>
+		<ANIMTIP_0>TT:COCKPIT.TOOLTIPS.PANEL_LIGHT_OFF</ANIMTIP_0>
+		<ANIMTIP_1>TT:COCKPIT.TOOLTIPS.PANEL_LIGHT_ON</ANIMTIP_1>		
+	</UseTemplate>
+</Template>
+<Template Name="LIGHTING_Push_Light_Panel_Template">
+	<UseTemplate Name="LIGHTING_Push_Light_Template">
+		<LIGHT_TYPE>PANEL</LIGHT_TYPE>
+		<WWISE_EVENT_1>panel_light_switch_on</WWISE_EVENT_1>
+		<WWISE_EVENT_2>panel_light_switch_off</WWISE_EVENT_2> 
+		<NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
+		<NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>		
+	</UseTemplate>
+</Template>
+<Template Name="LIGHTING_Switch_Light_Recognition_Template">
+	<UseTemplate Name="LIGHTING_Switch_Light_Template">
+		<LIGHT_TYPE>RECOGNITION</LIGHT_TYPE>
+		<WWISE_EVENT_1>recognition_light_switch_on</WWISE_EVENT_1>
+		<WWISE_EVENT_2>recognition_light_switch_off</WWISE_EVENT_2>     
+		<NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
+		<NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>			
+		<ANIMTIP_0>TT:COCKPIT.TOOLTIPS.RECOGNITION_LIGHT_OFF</ANIMTIP_0>
+		<ANIMTIP_1>TT:COCKPIT.TOOLTIPS.RECOGNITION_LIGHT_ON</ANIMTIP_1>	
+	</UseTemplate>
+</Template>
+<Template Name="LIGHTING_Push_Light_Recognition_Template">
+	<UseTemplate Name="LIGHTING_Push_Light_Template">
+		<LIGHT_TYPE>RECOGNITION</LIGHT_TYPE>
+		<WWISE_EVENT_1>recognition_light_switch_on</WWISE_EVENT_1>
+		<WWISE_EVENT_2>recognition_light_switch_off</WWISE_EVENT_2>
+		<NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
+		<NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>		
+	</UseTemplate>
+</Template>
+<Template Name="LIGHTING_Switch_Light_Wing_Template">
+	<UseTemplate Name="LIGHTING_Switch_Light_Template">
+		<LIGHT_TYPE>WING</LIGHT_TYPE>   
+		<WWISE_EVENT_1>wing_light_switch_on</WWISE_EVENT_1>
+		<WWISE_EVENT_2>wing_light_switch_off</WWISE_EVENT_2>
+		<NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
+		<NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
+		<ANIMTIP_0>TT:COCKPIT.TOOLTIPS.PANEL_DEICE_WING_LIGHT_OFF</ANIMTIP_0>
+		<ANIMTIP_1>TT:COCKPIT.TOOLTIPS.PANEL_DEICE_WING_LIGHT_ON</ANIMTIP_1>		
+	</UseTemplate>
+</Template>
+<Template Name="LIGHTING_Push_Light_Wing_Template">
+	<UseTemplate Name="LIGHTING_Push_Light_Template">
+		<LIGHT_TYPE>WING</LIGHT_TYPE>
+		<WWISE_EVENT_1>wing_light_switch_on</WWISE_EVENT_1>
+		<WWISE_EVENT_2>wing_light_switch_off</WWISE_EVENT_2> 	
+		<NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
+		<NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
+	</UseTemplate>
+</Template>
+<Template Name="LIGHTING_Switch_Light_Logo_Template">
+	<UseTemplate Name="LIGHTING_Switch_Light_Template">
+		<LIGHT_TYPE>LOGO</LIGHT_TYPE>
+		<WWISE_EVENT_1>logo_light_switch_on</WWISE_EVENT_1>
+		<WWISE_EVENT_2>logo_light_switch_off</WWISE_EVENT_2> 	
+		<NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
+		<NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>	
+	</UseTemplate>
+</Template>
+<Template Name="LIGHTING_Push_Light_Logo_Template">
+	<UseTemplate Name="LIGHTING_Push_Light_Template">
+		<LIGHT_TYPE>LOGO</LIGHT_TYPE>
+		<WWISE_EVENT_1>logo_light_switch_on</WWISE_EVENT_1>
+		<WWISE_EVENT_2>logo_light_switch_off</WWISE_EVENT_2> 
+		<NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
+		<NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>		
+	</UseTemplate>
+</Template>
+
+<Template Name="LIGHTING_Retractable_Light_Template">
+	<DefaultTemplateParameters>
+		<ANIM_NAME>LIGHTING_Retractable_#LIGHT_TYPE#_Light_#ID#</ANIM_NAME>
+		<ANIM_LAG>100</ANIM_LAG>
+	</DefaultTemplateParameters>
+	
+	<UseTemplate Name="GT_Anim_Code">
+		<ANIM_CODE>(L:#LIGHT_TYPE#_#ID#_Retracted) ! 100 *</ANIM_CODE>
+	</UseTemplate>
+</Template>
+
+<Template Name="LIGHTING_Switch_Potentiometer_Template">
+	<DefaultTemplateParameters>
+		<POTENTIOMETER>1</POTENTIOMETER>
+		<NODE_ID>LIGHTING_Switch_Potentiometer</NODE_ID>
+		<ANIM_NAME>LIGHTING_Switch_Potentiometer</ANIM_NAME>
+		<LEFT_SINGLE_CODE></LEFT_SINGLE_CODE>
+		<ANIM_CODE>(A:LIGHT POTENTIOMETER:#POTENTIOMETER#, Percent) 0 &gt; 100 *</ANIM_CODE>
+		<INIT_ON_COND>(A:LIGHT POTENTIOMETER:#POTENTIOMETER#, Percent) 0 &gt;</INIT_ON_COND>
+		<WWISE_EVENT_1>potentiometer_light_switch_on</WWISE_EVENT_1>
+		<WWISE_EVENT_2>potentiometer_light_switch_off</WWISE_EVENT_2>
+		<NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
+		<NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>	
+	</DefaultTemplateParameters>
+	<Component ID="#NODE_ID#_#POTENTIOMETER#" Node="#NODE_ID#">
+		<Update Frequency="0.1">
+			(O:IsInit) ! if{
+				1 (&gt;O:IsInit)
+				#INIT_ON_COND# if{ 
+					1 (&gt;O:XMLVAR_TogglePotentiometer_#POTENTIOMETER#) 
+				} els{
+					0 #POTENTIOMETER# (&gt;K:2:LIGHT_POTENTIOMETER_SET)
+				}
+			}
+		</Update>
+		<UseTemplate Name="GT_Switch_Code">
+			<LEFT_SINGLE_CODE>
+				(O:XMLVAR_TogglePotentiometer_#POTENTIOMETER#) ! (&gt;O:XMLVAR_TogglePotentiometer_#POTENTIOMETER#)
+				(O:XMLVAR_TogglePotentiometer_#POTENTIOMETER#) if{ 
+					100 #POTENTIOMETER# (&gt;K:2:LIGHT_POTENTIOMETER_SET)
+				} els{
+					0 #POTENTIOMETER# (&gt;K:2:LIGHT_POTENTIOMETER_SET)
+				}
+				#LEFT_SINGLE_CODE#
+			</LEFT_SINGLE_CODE>
+		</UseTemplate>
+	</Component>
+</Template>
+<Template Name="LIGHTING_Knob_Potentiometer_Template">
+	<DefaultTemplateParameters>
+		<Condition Check="ID">
+			<True>
+				<NODE_ID>LIGHTING_Knob_Potentiometer_#ID#</NODE_ID>
+				<ANIM_NAME>LIGHTING_Knob_Potentiometer_#ID#</ANIM_NAME>
+			</True>
+			<False>
+				<NODE_ID>LIGHTING_Knob_Potentiometer</NODE_ID>
+				<ANIM_NAME>LIGHTING_Knob_Potentiometer</ANIM_NAME>
+			</False>
+		</Condition>
+		<POTENTIOMETER>1</POTENTIOMETER>
+	</DefaultTemplateParameters>
+	<UseTemplate Name="LIGHTING_Knob_SubTemplate">
+		
+	</UseTemplate>
+</Template>
+
+<Template Name="LIGHTING_Potentiometer_Emissive_Template">
+	<DefaultTemplateParameters>
+		<NODE_ID>LIGHTING_Potentiometer_Emissive</NODE_ID>
+		<POTENTIOMETER>1</POTENTIOMETER>
+	</DefaultTemplateParameters>
+	
+	<UseTemplate Name="LIGHTING_Emissive_SubTemplate">
+	</UseTemplate>
+</Template>
+
+<Template Name="LIGHTING_Knob_Instruments_Template">
+	<DefaultTemplateParameters>
+		<Condition Check="ID">
+			<True>
+				<NODE_ID>LIGHTING_Knob_Instruments_#ID#</NODE_ID>
+				<ANIM_NAME>LIGHTING_Knob_Instruments_#ID#</ANIM_NAME>
+			</True>
+			<False>
+				<NODE_ID>LIGHTING_Knob_Instruments</NODE_ID>
+				<ANIM_NAME>LIGHTING_Knob_Instruments</ANIM_NAME>
+			</False>
+		</Condition>
+		<POTENTIOMETER>2</POTENTIOMETER>
+	</DefaultTemplateParameters>
+	
+	<UseTemplate Name="LIGHTING_Knob_SubTemplate">
+	</UseTemplate>
+</Template>
+<Template Name="LIGHTING_Instruments_Emissive_Template">
+	<DefaultTemplateParameters>
+		<NODE_ID>LIGHTING_Instruments_Emissive</NODE_ID>
+		<POTENTIOMETER>2</POTENTIOMETER>
+	</DefaultTemplateParameters>
+	<UseTemplate Name="LIGHTING_Emissive_SubTemplate">
+	</UseTemplate>
+</Template>
+<Template Name="LIGHTING_Knob_Radio_Template">
+	<DefaultTemplateParameters>
+		<Condition Check="ID">
+			<True>
+				<NODE_ID>LIGHTING_Knob_Radio_#ID#</NODE_ID>
+				<ANIM_NAME>LIGHTING_Knob_Radio_#ID#</ANIM_NAME>
+			</True>
+			<False>
+				<NODE_ID>LIGHTING_Knob_Radio</NODE_ID>
+				<ANIM_NAME>LIGHTING_Knob_Radio</ANIM_NAME>
+			</False>
+		</Condition>
+		<POTENTIOMETER>7</POTENTIOMETER>
+		<LIGHT_SIMVAR>LIGHT GLARESHIELD</LIGHT_SIMVAR>
+		<LIGHT_EVENTID_ON>GLARESHIELD_LIGHTS_ON</LIGHT_EVENTID_ON>
+		<LIGHT_EVENTID_OFF>GLARESHIELD_LIGHTS_OFF</LIGHT_EVENTID_OFF>
+	</DefaultTemplateParameters>
+	
+	<UseTemplate Name="LIGHTING_Knob_SubTemplate">
+		<ANIMREF_ID>0</ANIMREF_ID>
+		<ANIMTIP_0>TT:COCKPIT.TOOLTIPS.LIGHTING_KNOB_RADIO_DECREASE</ANIMTIP_0>
+		<ANIMTIP_0_ON_CURSOR>TurnLeft</ANIMTIP_0_ON_CURSOR>
+		<ANIMTIP_1>TT:COCKPIT.TOOLTIPS.LIGHTING_KNOB_RADIO_INCREASE</ANIMTIP_1>
+		<ANIMTIP_1_ON_CURSOR>TurnRight</ANIMTIP_1_ON_CURSOR>
+	
+	</UseTemplate>
+</Template>
+<Template Name="LIGHTING_Radio_Emissive_Template">
+	<DefaultTemplateParameters>
+		<NODE_ID>LIGHTING_Radio_Emissive</NODE_ID>
+		<POTENTIOMETER>7</POTENTIOMETER>
+	</DefaultTemplateParameters>
+	
+	<UseTemplate Name="LIGHTING_Emissive_SubTemplate">
+	</UseTemplate>
+</Template>
+
+<Template Name="LIGHTING_Knob_Panel_Template">
+	<DefaultTemplateParameters>
+		<Condition Check="ID">
+			<True>
+				<NODE_ID>LIGHTING_Knob_Panel_#ID#</NODE_ID>
+				<ANIM_NAME>LIGHTING_Knob_Panel_#ID#</ANIM_NAME>
+			</True>
+			<False>
+				<NODE_ID>LIGHTING_Knob_Panel</NODE_ID>
+				<ANIM_NAME>LIGHTING_Knob_Panel</ANIM_NAME>
+			</False>
+		</Condition>
+		<POTENTIOMETER>3</POTENTIOMETER>
+		<ANIMREF_ID>0</ANIMREF_ID>
+		<ANIMTIP_0>TT:COCKPIT.TOOLTIPS.LIGHTING_KNOB_PANEL_DECREASE</ANIMTIP_0>
+		<ANIMTIP_0_ON_CURSOR>TurnLeft</ANIMTIP_0_ON_CURSOR>
+		<ANIMTIP_1>TT:COCKPIT.TOOLTIPS.LIGHTING_KNOB_PANEL_INCREASE</ANIMTIP_1>
+		<ANIMTIP_1_ON_CURSOR>TurnRight</ANIMTIP_1_ON_CURSOR>
+	</DefaultTemplateParameters>
+	<UseTemplate Name="LIGHTING_Knob_SubTemplate">
+		<LIGHT_SIMVAR>LIGHT PANEL</LIGHT_SIMVAR>
+		<LIGHT_EVENTID_ON>PANEL_LIGHTS_ON</LIGHT_EVENTID_ON>
+		<LIGHT_EVENTID_OFF>PANEL_LIGHTS_OFF</LIGHT_EVENTID_OFF>
+		<Condition Valid="USE_INTEGRATED_POWER_SETTING">
+			<LIGHT_EVENTID_SET_POWER_SETTING>PANEL_LIGHTS_POWER_SETTING_SET</LIGHT_EVENTID_SET_POWER_SETTING>
+			<LIGHT_SIMVAR_POWER_SETTING>LIGHT PANEL POWER SETTING</LIGHT_SIMVAR_POWER_SETTING>
+		</Condition>
+	</UseTemplate>
+</Template>
+<Template Name="LIGHTING_Panel_Emissive_Template">
+	<DefaultTemplateParameters>
+		<NODE_ID>LIGHTING_Panel_Emissive</NODE_ID>
+		<POTENTIOMETER>3</POTENTIOMETER>
+	</DefaultTemplateParameters>
+	<UseTemplate Name="LIGHTING_Emissive_SubTemplate">
+		<SIMVAR_LIGHT>LIGHT PANEL</SIMVAR_LIGHT>
+		<SIMVAR_LIGHT_ON>LIGHT PANEL ON</SIMVAR_LIGHT_ON>
+		<Condition Valid="USE_INTEGRATED_POWER_SETTING">
+			<LIGHT_SIMVAR_POWER_SETTING>LIGHT PANEL POWER SETTING</LIGHT_SIMVAR_POWER_SETTING>
+		</Condition>
+	</UseTemplate>
+</Template>
+<Template Name="LIGHTING_Knob_Glareshield_Template">
+	<DefaultTemplateParameters>
+		<Condition Check="ID">
+			<True>
+				<NODE_ID>LIGHTING_Knob_Glareshield_#ID#</NODE_ID>
+				<ANIM_NAME>LIGHTING_Knob_Glareshield_#ID#</ANIM_NAME>
+			</True>
+			<False>
+				<NODE_ID>LIGHTING_Knob_Glareshield</NODE_ID>
+				<ANIM_NAME>LIGHTING_Knob_Glareshield</ANIM_NAME>
+			</False>
+		</Condition>
+		<POTENTIOMETER>5</POTENTIOMETER>
+		<ANIMREF_ID>0</ANIMREF_ID>
+		<ANIMTIP_0>TT:COCKPIT.TOOLTIPS.LIGHTING_KNOB_GLARESHIELD_DECREASE</ANIMTIP_0>
+		<ANIMTIP_0_ON_CURSOR>TurnLeft</ANIMTIP_0_ON_CURSOR>
+		<ANIMTIP_1>TT:COCKPIT.TOOLTIPS.LIGHTING_KNOB_GLARESHIELD_INCREASE</ANIMTIP_1>
+		<ANIMTIP_1_ON_CURSOR>TurnRight</ANIMTIP_1_ON_CURSOR>		
+	</DefaultTemplateParameters>
+	
+	<UseTemplate Name="LIGHTING_Knob_SubTemplate">
+		<LIGHT_SIMVAR>LIGHT GLARESHIELD</LIGHT_SIMVAR>
+		<LIGHT_EVENTID_ON>GLARESHIELD_LIGHTS_ON</LIGHT_EVENTID_ON>
+		<LIGHT_EVENTID_OFF>GLARESHIELD_LIGHTS_OFF</LIGHT_EVENTID_OFF>
+		<Condition Valid="USE_INTEGRATED_POWER_SETTING">
+			<LIGHT_EVENTID_SET_POWER_SETTING>GLARESHIELD_LIGHTS_POWER_SETTING_SET</LIGHT_EVENTID_SET_POWER_SETTING>
+			<LIGHT_SIMVAR_POWER_SETTING>LIGHT GLARESHIELD POWER SETTING</LIGHT_SIMVAR_POWER_SETTING>
+		</Condition>
+	</UseTemplate>
+</Template>
+<Template Name="LIGHTING_Glareshield_Emissive_Template">
+	<DefaultTemplateParameters>
+		<NODE_ID>LIGHTING_Glareshield_Emissive</NODE_ID>
+		<POTENTIOMETER>5</POTENTIOMETER>
+	</DefaultTemplateParameters>
+	<UseTemplate Name="LIGHTING_Emissive_SubTemplate">
+		<SIMVAR_LIGHT>LIGHT GLARESHIELD</SIMVAR_LIGHT>
+		<SIMVAR_LIGHT_ON>LIGHT GLARESHIELD ON</SIMVAR_LIGHT_ON>
+		<Condition Valid="USE_INTEGRATED_POWER_SETTING">
+			<LIGHT_SIMVAR_POWER_SETTING>LIGHT GLARESHIELD POWER SETTING</LIGHT_SIMVAR_POWER_SETTING>
+		</Condition>
+	</UseTemplate>
+</Template>
+<Template Name="LIGHTING_Knob_Pedestal_Template">
+	<DefaultTemplateParameters>
+		<Condition Check="ID">
+			<True>
+				<NODE_ID>LIGHTING_Knob_Pedestal_#ID#</NODE_ID>
+				<ANIM_NAME>LIGHTING_Knob_Pedestal_#ID#</ANIM_NAME>
+			</True>
+			<False>
+				<NODE_ID>LIGHTING_Knob_Pedestal</NODE_ID>
+				<ANIM_NAME>LIGHTING_Knob_Pedestal</ANIM_NAME>
+			</False>
+		</Condition>
+		<POTENTIOMETER>6</POTENTIOMETER>
+	</DefaultTemplateParameters>
+	
+	<UseTemplate Name="LIGHTING_Knob_SubTemplate">
+		<LIGHT_SIMVAR>LIGHT PEDESTRAL</LIGHT_SIMVAR>
+		<LIGHT_EVENTID_ON>PEDESTRAL_LIGHTS_ON</LIGHT_EVENTID_ON>
+		<LIGHT_EVENTID_OFF>PEDESTRAL_LIGHTS_OFF</LIGHT_EVENTID_OFF>
+		<Condition Valid="USE_INTEGRATED_POWER_SETTING">
+			<LIGHT_EVENTID_SET_POWER_SETTING>PEDESTRAL_LIGHTS_POWER_SETTING_SET</LIGHT_EVENTID_SET_POWER_SETTING>
+			<LIGHT_SIMVAR_POWER_SETTING>LIGHT PEDESTRAL POWER SETTING</LIGHT_SIMVAR_POWER_SETTING>
+		</Condition>
+	</UseTemplate>
+</Template>
+<Template Name="LIGHTING_Pedestal_Emissive_Template">
+	<DefaultTemplateParameters>
+		<NODE_ID>LIGHTING_Pedestal_Emissive</NODE_ID>
+		<POTENTIOMETER>6</POTENTIOMETER>
+	</DefaultTemplateParameters>
+	<UseTemplate Name="LIGHTING_Emissive_SubTemplate">
+		<SIMVAR_LIGHT>LIGHT PEDESTRAL</SIMVAR_LIGHT>
+		<SIMVAR_LIGHT_ON>LIGHT PEDESTRAL ON</SIMVAR_LIGHT_ON>
+		<Condition Valid="USE_INTEGRATED_POWER_SETTING">
+			<LIGHT_SIMVAR_POWER_SETTING>LIGHT PEDESTRAL POWER SETTING</LIGHT_SIMVAR_POWER_SETTING>
+		</Condition>
+	</UseTemplate>
+</Template>
+<Template Name="LIGHTING_Knob_Cabin_Template">
+	<DefaultTemplateParameters>
+		<Condition Check="ID">
+			<True>
+				<NODE_ID>LIGHTING_Knob_Cabin_#ID#</NODE_ID>
+				<ANIM_NAME>LIGHTING_Knob_Cabin_#ID#</ANIM_NAME>
+			</True>
+			<False>
+				<NODE_ID>LIGHTING_Knob_Cabin</NODE_ID>
+				<ANIM_NAME>LIGHTING_Knob_Cabin</ANIM_NAME>
+			</False>
+		</Condition>
+		<POTENTIOMETER>4</POTENTIOMETER>
+	</DefaultTemplateParameters>
+	<UseTemplate Name="LIGHTING_Knob_SubTemplate">
+		<LIGHT_SIMVAR>LIGHT CABIN</LIGHT_SIMVAR>
+		<LIGHT_EVENTID_ON>CABIN_LIGHTS_ON</LIGHT_EVENTID_ON>
+		<LIGHT_EVENTID_OFF>CABIN_LIGHTS_OFF</LIGHT_EVENTID_OFF>
+		<Condition Valid="USE_INTEGRATED_POWER_SETTING">
+			<LIGHT_EVENTID_SET_POWER_SETTING>CABIN_LIGHTS_POWER_SETTING_SET</LIGHT_EVENTID_SET_POWER_SETTING>
+			<LIGHT_SIMVAR_POWER_SETTING>LIGHT CABIN POWER SETTING</LIGHT_SIMVAR_POWER_SETTING>
+		</Condition>
+	</UseTemplate>
+</Template>
+<Template Name="LIGHTING_Knob_Avionics_Template">
+	<DefaultTemplateParameters>
+		<Condition Check="ID">
+			<True>
+				<NODE_ID>LIGHTING_Knob_Avionics_#ID#</NODE_ID>
+				<ANIM_NAME>LIGHTING_Knob_Avionics_#ID#</ANIM_NAME>
+			</True>
+			<False>
+				<NODE_ID>LIGHTING_Knob_Avionics</NODE_ID>
+				<ANIM_NAME>LIGHTING_Knob_Avionics</ANIM_NAME>
+			</False>
+		</Condition>
+		<POTENTIOMETER>9</POTENTIOMETER>
+	</DefaultTemplateParameters>
+	<UseTemplate Name="LIGHTING_Knob_SubTemplate">
+	</UseTemplate>
+</Template>
+<Template Name="LIGHTING_Cabin_Emissive_Template">
+	<DefaultTemplateParameters>
+		<NODE_ID>LIGHTING_Cabin_Emissive</NODE_ID>
+		<POTENTIOMETER>4</POTENTIOMETER>
+	</DefaultTemplateParameters>
+	<UseTemplate Name="LIGHTING_Emissive_SubTemplate">
+		<SIMVAR_LIGHT>LIGHT CABIN</SIMVAR_LIGHT>
+		<SIMVAR_LIGHT_ON>LIGHT CABIN ON</SIMVAR_LIGHT_ON>
+		<Condition Valid="USE_INTEGRATED_POWER_SETTING">
+			<LIGHT_SIMVAR_POWER_SETTING>LIGHT CABIN POWER SETTING</LIGHT_SIMVAR_POWER_SETTING>
+		</Condition>
+	</UseTemplate>
+</Template>
+<Template Name="LIGHTING_Cabin_Bounce_Template">
+	<DefaultTemplateParameters>
+		<NODE_ID>LIGHTING_Cabin_Bounce</NODE_ID>
+		<POTENTIOMETER>8</POTENTIOMETER>
+	</DefaultTemplateParameters>
+	<Component ID="#NODE_ID#">
+		<Update Frequency="20">
+			#BOUNCE_POTENTIOMETER_PERCENT# (&gt;O:_Bounce)
+				(O:_Bounce) (A:LIGHT POTENTIOMETER:#POTENTIOMETER#, Percent) != if{
+				(O:_Bounce) (&gt;K:LIGHT_POTENTIOMETER_#POTENTIOMETER#_SET)
+			 }
+		</Update>
+	</Component>
+</Template>
+
+<!-- REQUIRED: valid NODE_ID & either EMISSIVE_CODE or SIMVAR-->
+<Template Name="LIGHTING_Indicator_Emissive_Template">
+	<DefaultTemplateParameters>
+		<NODE_ID>LIGHTING_Indicator_Emissive</NODE_ID>
+		<Condition Check="SIMVAR">
+			<EMISSIVE_CODE>(A:#SIMVAR#, Bool)</EMISSIVE_CODE>			
+		</Condition>
+	</DefaultTemplateParameters>
+	<Component ID="#NODE_ID#" Node="#NODE_ID#">
+		<UseTemplate Name="GT_Emissive_Gauge">
+		</UseTemplate>
+	</Component>
+</Template>
+
+<!-- REQUIRED: POTENTIOMETER & BOUNCE_POTENTIOMETER_PERCENT-->
+<Template Name="LIGHTING_Ambient_Template">
+	<DefaultTemplateParameters>
+		<NODE_ID>LIGHTING_Ambient</NODE_ID>
+		<ID>1</ID>
+		<Condition Check="FAILURE_CIRCUIT">
+			<False>
+				<FAILURE>(A:CIRCUIT GENERAL PANEL ON, Bool)</FAILURE>
+			</False>
+			<True>
+				<FAILURE>(A:CIRCUIT ON:#FAILURE_CIRCUIT#, Bool)</FAILURE>
+			</True>
+		</Condition>
+	</DefaultTemplateParameters>
+	<Component ID="#NODE_ID#_#ID#">
+		<Update Frequency="20">
+			#BOUNCE_POTENTIOMETER_PERCENT# #FAILURE# * (&gt;O:_Bounce)
+				(O:_Bounce) (A:LIGHT POTENTIOMETER:#POTENTIOMETER#, Percent) != if{
+				(O:_Bounce) #POTENTIOMETER# (&gt;K:2:LIGHT_POTENTIOMETER_SET)
+			 }
+		</Update>
+	</Component>
+</Template>
+<!--
+Params:
+LIGHT_TYPE (text): light type (Taxi, Strobe, ..) in proper case
+ID (number, default: 1): light unique ID
+[REQUIRED] VAR_NAME(bool): variable name
+VAR_SCOPE(Text, default:L): Scope of the variable
+-->
+<Template Name="LIGHTING_Switch_Template">
+	<DefaultTemplateParameters>
+		<ID>1</ID>
+	</DefaultTemplateParameters>
+	<UseTemplate Name="LIGHTING_Switch_SubTemplate"/>
+</Template>
+
+<Template Name="LIGHTING_Update_SetLandingGearPotentiometer_Template">
+	<DefaultTemplateParameters>
+		<MAX_ANIM_PERCENT_FOR_LIGHTS>0.75</MAX_ANIM_PERCENT_FOR_LIGHTS>
+	</DefaultTemplateParameters>
+	<Component ID="Light_LandingGear_Update_#POTENTIOMETER#">
+		<UseTemplate Name="GT_Update">
+			<FREQUENCY>1</FREQUENCY>
+			<UPDATE_CODE>
+				(A:GEAR TOTAL PCT EXTENDED, Percent) #MAX_ANIM_PERCENT_FOR_LIGHTS# &gt; 100 * #POTENTIOMETER# (&gt;K:2:LIGHT_POTENTIOMETER_SET)
+			</UPDATE_CODE>
+		</UseTemplate>
+	</Component>
+</Template>
