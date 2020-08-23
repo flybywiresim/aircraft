@@ -1489,18 +1489,26 @@
 				<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
 					<NODE_ID>PUSH_OVHD_AIRCOND_HOTAIR</NODE_ID>
 				</UseTemplate>
-				<UseTemplate Name="ASOBO_GT_Anim">
+
+				<UseTemplate Name="ASOBO_AIRLINER_Aircond_Knob_Template">
+					<ID>1</ID>
 					<ANIM_CODE>50</ANIM_CODE>
 					<ANIM_NAME>KNOB_OVHD_AIRCOND_COCKPIT</ANIM_NAME>
+					<NODE_ID>KNOB_OVHD_AIRCOND_COCKPIT</NODE_ID>
 				</UseTemplate>
-				<UseTemplate Name="ASOBO_GT_Anim">
+				<UseTemplate Name="ASOBO_AIRLINER_Aircond_Knob_Template">
+					<ID>2</ID>
 					<ANIM_CODE>50</ANIM_CODE>
 					<ANIM_NAME>KNOB_OVHD_AIRCOND_FWDCABIN</ANIM_NAME>
+					<NODE_ID>KNOB_OVHD_AIRCOND_FWDCABIN</NODE_ID>
 				</UseTemplate>
-				<UseTemplate Name="ASOBO_GT_Anim">
+				<UseTemplate Name="ASOBO_AIRLINER_Aircond_Knob_Template">
+					<ID>3</ID>
 					<ANIM_CODE>50</ANIM_CODE>
 					<ANIM_NAME>KNOB_OVHD_AIRCOND_AFTCABIN</ANIM_NAME>
+					<NODE_ID>KNOB_OVHD_AIRCOND_AFTCABIN</NODE_ID>
 				</UseTemplate>
+
 				<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
 					<NODE_ID>PUSH_OVHD_CABINPRESS_MODESEL</NODE_ID>
 				</UseTemplate>
@@ -2955,7 +2963,7 @@
 		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
 			<NODE_ID>KNOB_OVHD_AIRCOND_PACKFLOW</NODE_ID>
 		</UseTemplate>
-		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
+		<!-- <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
 			<NODE_ID>KNOB_OVHD_AIRCOND_COCKPIT</NODE_ID>
 		</UseTemplate>
 		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
@@ -2963,7 +2971,7 @@
 		</UseTemplate>
 		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
 			<NODE_ID>KNOB_OVHD_AIRCOND_AFTCABIN</NODE_ID>
-		</UseTemplate>
+		</UseTemplate> -->
 		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
 			<NODE_ID>PUSH_OVHD_AIRCOND_HOTAIR</NODE_ID>
 		</UseTemplate>
