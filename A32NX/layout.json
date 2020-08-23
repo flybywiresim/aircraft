@@ -92,7 +92,7 @@
         },
         {
             "path": "ModelBehaviorDefs/Asobo/Airliner/Airbus.xml",
-            "size": 40733,
+            "size": 40646,
             "date": "132402817714110148"
         },
         {
@@ -108,6 +108,16 @@
         {
             "path": "SimObjects/AirPlanes/Asobo_A320_NEO/model/A320_NEO_INTERIOR.xml",
             "size": 130479,
+            "date": "132402817714110148"
+        },
+        {
+            "path": "SimObjects/AirPlanes/Asobo_A320_NEO/TEXTURE/A320NEO_COCKPIT_DECALSTEXT_EMIS.PNG.DDS",
+            "size": 524416,
+            "date": "132402817714110148"
+        },
+		{
+            "path": "SimObjects/AirPlanes/Asobo_A320_NEO/TEXTURE/A320NEO_COCKPIT_DECALSTEXT_EMIS.PNG.DDS.json",
+            "size": 102,
             "date": "132402817714110148"
         }
     ]
