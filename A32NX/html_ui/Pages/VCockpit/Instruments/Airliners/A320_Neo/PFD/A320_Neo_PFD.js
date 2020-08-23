@@ -89,13 +89,18 @@ class A320_Neo_PFD_MainPage extends NavSystemPage {
             this.hdgFlash.setAttribute("visibility", "hidden");
         }
 
-        var ADIRSAligned = SimVar.GetSimVarValue("BRAKE PARKING INDICATOR", "Bool") == 0;
+        var ADIRSState = SimVar.GetSimVarValue("L:A320_Neo_ADIRS_STATE", "Enum");
 
-        if (ADIRSAligned) {
+        if (ADIRSState >= 1) {
             this.attitudeFail.setAttribute("style", "display:none");
-            this.headingFail.setAttribute("style", "display:none");
+            
         } else {
             this.attitudeFail.setAttribute("style", "");
+        }
+
+        if (ADIRSState == 2) {
+            this.headingFail.setAttribute("style", "display:none");
+        } else {
             this.headingFail.setAttribute("style", "");
         }
     }

@@ -50,6 +50,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     Update() {
         super.Update();
         this.updateAutopilot();
+        this.updateADIRS();
     }
     getClbManagedSpeed() {
         let maxSpeed = Infinity;
@@ -666,6 +667,43 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                 }
             }
             this.updateAutopilotCooldown = this._apCooldown;
+        }
+    }
+    updateADIRS() {
+
+        //Get the time since last update
+        var now = Date.now();
+        if (this.lastTime == null) this.lastTime = now;
+        var deltaTime = now - this.lastTime;
+        this.lastTime = now;
+
+        if (this.ADIRSTimer == null) this.ADIRSTimer = -1;
+        var ADIRSOn = ((SimVar.GetSimVarValue("L:A320_Neo_ADIRS_KNOB_1", "Enum") >= 1) && (SimVar.GetSimVarValue("L:A320_Neo_ADIRS_KNOB_2", "Enum") >= 1) && (SimVar.GetSimVarValue("L:A320_Neo_ADIRS_KNOB_3", "Enum") >= 1));
+        var ADIRSState = SimVar.GetSimVarValue("L:A320_Neo_ADIRS_STATE", "Enum");
+
+        if (!ADIRSOn && ADIRSState != 0) {
+            //Turn off ADIRS
+            SimVar.SetSimVarValue("L:A320_Neo_ADIRS_STATE", "Enum", 0);
+            ADIRSState = 0;
+        }
+
+        if (ADIRSOn && ADIRSState == 0) {
+            //Start ADIRS Alignment
+            SimVar.SetSimVarValue("L:A320_Neo_ADIRS_STATE", "Enum", 1);
+            ADIRSState = 1;
+            this.ADIRSTimer = 30;
+        }
+
+        if (ADIRSState == 1) {
+            if (this.ADIRSTimer > 0) {
+                this.ADIRSTimer -= deltaTime/1000;
+                if (this.ADIRSTimer <= 0) {
+                    this.ADIRSTimer = -1;
+                    //ADIRS Alignment Completed
+                    SimVar.SetSimVarValue("L:A320_Neo_ADIRS_STATE", "Enum", 2);
+                }
+            }
+            
         }
     }
 }
