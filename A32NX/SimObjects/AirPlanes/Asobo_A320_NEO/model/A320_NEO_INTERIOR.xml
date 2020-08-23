@@ -2303,9 +2303,15 @@
 			<ANIM_NAME>SWITCH_OVHD_INTLT_EMEREXIT</ANIM_NAME>
 			<PERCENT>50</PERCENT>
 		</UseTemplate>
-		<UseTemplate Name="ASOBO_GT_Anim_Setup">
+		<UseTemplate Name="ASOBO_GT_Switch_Dummy">
+			<NODE_ID>SWITCH_OVHD_INTLT_SEATBELT</NODE_ID>
 			<ANIM_NAME>SWITCH_OVHD_INTLT_SEATBELT</ANIM_NAME>
-			<PERCENT>100</PERCENT>
+			<ANIMTIP_0>TT:COCKPIT.TOOLTIPS.LIGHTS_SEATBELT_OFF</ANIMTIP_0>
+			<ANIMTIP_1>TT:COCKPIT.TOOLTIPS.LIGHTS_SEATBELT_ON</ANIMTIP_1>
+			<WWISE_EVENT_1>wing_light_switch_on</WWISE_EVENT_1>
+			<WWISE_EVENT_2>wing_light_switch_off</WWISE_EVENT_2>
+			<NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
+			<NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
 		</UseTemplate>
 		<UseTemplate Name="ASOBO_GT_Anim_Setup">
 			<ANIM_NAME>SWITCH_OVHD_INTLT_NOSMOKING</ANIM_NAME>
@@ -2325,9 +2331,9 @@
 		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
 			<NODE_ID>PUSH_AUTOPILOT_HDGTRK</NODE_ID>
 		</UseTemplate>
-		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
+		<!-- <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
 			<NODE_ID>SWITCH_OVHD_INTLT_SEATBELT</NODE_ID>
-		</UseTemplate>
+		</UseTemplate> -->
 		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
 			<NODE_ID>SWITCH_OVHD_INTLT_NOSMOKING</NODE_ID>
 		</UseTemplate>
