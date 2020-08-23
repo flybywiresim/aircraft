@@ -6,6 +6,12 @@
         <div id="Electricity" state="off">
             <div id="HorizonContainer">
                 <jet-pfd-attitude-indicator id="Horizon" background="true"></jet-pfd-attitude-indicator>
+                <div style="position: absolute; left: 0%; top: 0%; width: 100%; height: 100%; border: none;">
+                    <svg id="AttitudeFail" viewBox="0 0 600 600" style="position:absolute; top:0%; left: 0%; width: 100%; height:100%;">
+                        <rect fill="black" x="0" y="0" width="100%" height="100%"></rect>
+                        <text id="att_flash" fill="red" text-anchor="middle" x="45%" y="50%" font-size="25px">ATT</text>
+                    </svg>
+                </div>
             </div>
 
             <div id="InstrumentsContainer">
@@ -13,6 +19,13 @@
                 <jet-pfd-altimeter-indicator id="Altimeter"></jet-pfd-altimeter-indicator>
                 <jet-pfd-vspeed-indicator id="VSpeed"></jet-pfd-vspeed-indicator>
                 <jet-pfd-hs-indicator id="Compass"></jet-pfd-hs-indicator>
+                <div id="HeadingFail" style="transform: rotateX(0); position: absolute; border: none; top: 88%; left: 19%; width: 50%; height: 45%; z-index: 0;">
+                    <svg viewBox="0 0 600 600" width="100%" height="100%" overflow="visible">
+                        <rect fill="black" x="-5" y="-5" width="110%" height="110%"></rect>
+                        <rect fill="black" stroke="red" stroke-width="2" x="0" y="10%" width="100%" height="110%"></rect>
+                        <text id="hdg_flash" fill="red" text-anchor="middle" x="50%" y="22%" font-size="50px">HDG</text>
+                    </svg>
+                </div>
                 <airbus-fma id="FMA"></airbus-fma>
                 <jet-pfd-ils-indicator id="ILS"></jet-pfd-ils-indicator>
             </div>
