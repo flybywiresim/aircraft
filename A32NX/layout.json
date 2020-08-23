@@ -97,12 +97,12 @@
         },
         {
             "path": "ModelBehaviorDefs/Asobo/Common/Lighting.xml",
-            "size": 30885,
+            "size": 30894,
             "date": "132402817714110148"
         },
         {
             "path": "ModelBehaviorDefs/Asobo/Common/Subtemplates/Lighting_Subtemplates.xml",
-            "size": 31992,
+            "size": 31984,
             "date": "132402817714110148"
         },
         {
@@ -127,7 +127,7 @@
         },
         {
             "path": "SimObjects/AirPlanes/Asobo_A320_NEO/model/A320_NEO_INTERIOR.xml",
-            "size": 129393,
+            "size": 127907,
             "date": "132402817714110148"
         }
     ]
