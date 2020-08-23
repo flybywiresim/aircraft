@@ -14,6 +14,9 @@ var A320_Neo_LowerECAM_APU;
             TemplateElement.call(this, this.init.bind(this));
         }
         init() {
+            this.lastAPUMasterState = 0;
+            SimVar.SetSimVarValue("L:APU_FLAP_OPEN", "Bool", 0);
+
             //Generator
             this.APUGenInfo = this.querySelector("#APUGenInfo_On");
             this.APUGenAvailArrow = this.querySelector("#APUGenAvailArrow");
@@ -35,12 +38,34 @@ var A320_Neo_LowerECAM_APU;
             //Gauges
             this.apuInfo = new APUInfo(this.querySelector("#APUGauges"));
 
+            this.APUStartTimer = -1
             this.isInitialised = true;
         }
         update(_deltaTime) {
             if (!this.isInitialised) {
                 return;
             }
+
+            var currentAPUMasterState = SimVar.GetSimVarValue("FUELSYSTEM VALVE SWITCH:8", "Bool");
+
+            if (this.lastAPUMasterState != currentAPUMasterState) {
+                this.lastAPUMasterState = currentAPUMasterState;
+                this.APUStartTimer = 20;
+            }
+
+            if (this.APUStartTimer >= 0) {
+                this.APUStartTimer -= _deltaTime/1000;
+                if (this.APUStartTimer <= 0) {
+                    this.APUStartTimer = -1;
+                    SimVar.SetSimVarValue("L:APU_FLAP_OPEN", "Bool", 1);
+                }
+            }
+
+            if (SimVar.GetSimVarValue("FUELSYSTEM VALVE SWITCH:8", "Bool") === 0) {
+                this.APUStartTimer = -1;
+                SimVar.SetSimVarValue("L:APU_FLAP_OPEN", "Bool", 0);
+            }
+
             //Get APU N%
             var APUPctRPM = SimVar.GetSimVarValue("APU PCT RPM", "percent");
             var totalElectricalLoad = SimVar.GetSimVarValue("ELECTRICAL TOTAL LOAD AMPS", "amperes");
@@ -89,8 +114,8 @@ var A320_Neo_LowerECAM_APU;
                 this.apuInfo.update(_deltaTime);
             }
 
-            //APU Master
-            if (SimVar.GetSimVarValue("FUELSYSTEM VALVE SWITCH:8", "Bool") == 1) {
+            //Flap Open
+            if (SimVar.GetSimVarValue("L:APU_FLAP_OPEN", "Bool") == 1) {
                 this.APUFlapOpen.setAttribute("visibility", "visible");
                 this.APUGenInfo.setAttribute("visibility", "visible");
             } else {
