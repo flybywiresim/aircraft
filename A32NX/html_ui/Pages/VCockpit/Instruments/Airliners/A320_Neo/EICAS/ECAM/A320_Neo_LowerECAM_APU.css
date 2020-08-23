@@ -41,9 +41,14 @@ a320-neo-lower-ecam-apu {
 }
 
 /* Custom Styles */
-:root #APUAvail, :root #APUFlapOpen {
+:root #APUAvail {
   fill: var(--ecamValueColour);
   font-size: 25px; 
+}
+
+:root #APUFlapOpen {  /* CREATED JZ */
+  fill: var(--ecamValueColour);
+  font-size: 20px;
 }
 :root .WhiteBox {
   stroke: #ffffff;
@@ -59,8 +64,10 @@ a320-neo-lower-ecam-apu {
 }
 :root .APUGenParamValue {
   fill: var(--ecamValueColour);
-  font-size: 15px;
-  text-anchor: start !important;
+  font-size: 18px;/* MODIFIED JZ */
+  font-weight: bold;
+  font-stretch:ultra-condensed;
+  text-anchor: end !important; /* MODIFIED JZ */
 }
 :root .APUGenParamValueWarn {
   fill: var(--ecamWarningColour);
@@ -69,8 +76,9 @@ a320-neo-lower-ecam-apu {
 }
 :root .APUGenParamUnit {
   fill: var(--ecamUnitsColour);
-  font-size: 15px;
-  text-anchor: start !important;
+  font-size: 13px;
+  text-anchor: start !important; /* MODIFIED JZ */
+}
 }
 :root .APUGaugeParamUnit {
   fill: var(--ecamUnitsColour);
@@ -84,7 +92,7 @@ a320-neo-lower-ecam-apu {
 }
 :root .GreenLine {
   stroke: var(--ecamValueColour);
-  stroke-width: 2;
+  stroke-width: 3;/* MODIFIED JZ */
   fill: none;
 }
 :root #APUN {
