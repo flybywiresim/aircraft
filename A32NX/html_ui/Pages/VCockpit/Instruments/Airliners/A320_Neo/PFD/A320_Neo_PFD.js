@@ -60,6 +60,34 @@ class A320_Neo_PFD_MainPage extends NavSystemPage {
         this.showILS = SimVar.GetSimVarValue("L:BTN_LS_FILTER_ACTIVE", "bool");
         this.ils.showILS(this.showILS);
         this.compass.showILS(this.showILS);
+
+        //ADIRS
+        this.flashTimer = 1;
+        this.flashState = false;
+
+        this.attitudeFail = document.querySelector("#AttitudeFail");
+        this.attFlash = document.querySelector("#att_flash");
+
+        this.headingFail = document.querySelector("#HeadingFail");
+        this.hdgFlash = document.querySelector("#hdg_flash");
+
+        this.hasInitialized = true;
+    }
+    onUpdate(_deltaTime) {
+        super.onUpdate();
+        if (!this.hasInitialized) return;
+        this.flashTimer -= _deltaTime/1000;
+        if (this.flashTimer <= 0) {
+            this.flashTimer = 1;
+            this.flashState = !this.flashState;
+        }
+        if (this.flashState) {
+            this.attFlash.setAttribute("visibility", "visible");
+            this.hdgFlash.setAttribute("visibility", "visible");
+        } else {
+            this.attFlash.setAttribute("visibility", "hidden");
+            this.hdgFlash.setAttribute("visibility", "hidden");
+        }
     }
     onEvent(_event) {
         switch (_event) {
