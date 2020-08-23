@@ -11,6 +11,11 @@
             "date": "132402817714110148"
         },
         {
+            "path": "html_ui/Pages/VCockpit/Instruments/Airliners/A320_Neo/CDU/A320_Neo_CDU_MainDisplay.js",
+            "size": 32063,
+            "date": "132402817714110148"
+        },
+        {
             "path": "html_ui/Pages/VCockpit/Instruments/Airliners/A320_Neo/EICAS/A320_Neo_EICAS.html",
             "size": 4338,
             "date": "132402817714110148"
@@ -82,7 +87,7 @@
         },
         {
             "path": "html_ui/Pages/VCockpit/Instruments/Airliners/A320_Neo/PFD/A320_Neo_PFD.js",
-            "size": 7693,
+            "size": 8080,
             "date": "132402817714110148"
         },
         {
@@ -97,7 +102,7 @@
         },
         {
             "path": "ModelBehaviorDefs/Asobo/Airliner/Airbus.xml",
-            "size": 39601,
+            "size": 40836,
             "date": "132402817714110148"
         },
         {
@@ -112,7 +117,7 @@
         },
         {
             "path": "SimObjects/AirPlanes/Asobo_A320_NEO/model/A320_NEO_INTERIOR.xml",
-            "size": 127217,
+            "size": 127476,
             "date": "132402817714110148"
         }
     ]
