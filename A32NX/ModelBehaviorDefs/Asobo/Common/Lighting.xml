@@ -791,7 +791,7 @@ VAR_SCOPE(Text, default:L): Scope of the variable
 			</Case>
 		</Switch>
 	</Component>
-	<UseTemplate Name="ASOBO_LIGHTING_Switch_Light_Template">
+	<!-- <UseTemplate Name="ASOBO_LIGHTING_Switch_Light_Template">
 		<LIGHT_TYPE>NO_SMOKING</LIGHT_TYPE>
-	</UseTemplate>
+	</UseTemplate> -->
 </Template>
