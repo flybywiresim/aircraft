@@ -1,5 +1,7 @@
 # MSFS A320neo Improvement Mod
 
+[![Discord server](https://img.shields.io/discord/738864299392630914?logo=Discord&color=%237289DA&label=A32X%20Project)](https://discord.gg/UTebcK)
+
 Preview of APU and DOOR ECAM pages: https://www.youtube.com/watch?v=rLaVK3nNCXc
 
 ## Installation
