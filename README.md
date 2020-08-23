@@ -9,6 +9,7 @@ Simply copy the "A32NX" folder into your community package folder, located in `A
 ## Developing
 
 The A32NX package only contains files which have been modified from the original package. If you want to work on a file that isn't present in the development branch, simply copy it over from the latest Asobo branch. Please DO NOT add, modify, or delete files from the Asobo branch.
+Join our Discord server to find out about the latest updates and discuss the development of the project. https://discord.gg/UjzuHMU
 
 **ALWAYS REMEMBER TO RUN BUILD.PY BEFORE COMMITTING NEW FILES**
 
