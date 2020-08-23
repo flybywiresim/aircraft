@@ -28,10 +28,19 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
     Init() {
         super.Init();
         this.changePage("FUEL");
+
+        this.lastAPUMasterState = 0 // MODIFIED
     }
     onUpdate(_deltaTime) {
         super.onUpdate(_deltaTime);
         this.updateAnnunciations();
+
+        var currentAPUMasterState = SimVar.GetSimVarValue("FUELSYSTEM VALVE SWITCH:8", "Bool"); // MODIFIED
+        // automaticaly switch to the APU page when apu master switch is on
+        if (this.lastAPUMasterState != currentAPUMasterState) { // MODIFIED
+            this.lastAPUMasterState = currentAPUMasterState; // MODIFIED
+            this.changePage("APU"); // MODIFIED
+        }
     }
     updateAnnunciations() {
         let infoPanelManager = this.upperTopScreen.getInfoPanelManager();
