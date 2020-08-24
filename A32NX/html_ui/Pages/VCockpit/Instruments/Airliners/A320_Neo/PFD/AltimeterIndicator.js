@@ -1094,13 +1094,16 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
             var _width = width;
             var _height = height;
             var bg = document.createElementNS(Avionics.SVG.NS, "rect");
+            this.bg = bg;
             bg.setAttribute("x", _left.toString());
             bg.setAttribute("y", _top.toString());
             bg.setAttribute("width", _width.toString());
             bg.setAttribute("height", _height.toString());
             bg.setAttribute("fill", "#343B51");
+            bg.setAttribute("stroke-width", "4");
             this.centerSVG.appendChild(bg);
             var topLine = document.createElementNS(Avionics.SVG.NS, "line");
+            this.topLine = topLine;
             topLine.setAttribute("x1", _left.toString());
             topLine.setAttribute("y1", (_top + 2).toString());
             topLine.setAttribute("x2", (_left + _width + arcWidth).toString());
@@ -1109,6 +1112,7 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
             topLine.setAttribute("stroke-width", "4");
             this.centerSVG.appendChild(topLine);
             var bottomLine = document.createElementNS(Avionics.SVG.NS, "line");
+            this.bottomLine = bottomLine;
             bottomLine.setAttribute("x1", _left.toString());
             bottomLine.setAttribute("y1", (_top + _height - 2).toString());
             bottomLine.setAttribute("x2", (_left + _width + arcWidth).toString());
@@ -1317,6 +1321,7 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
         this.updateTargetAltitude(altitude, selectedAltitude, baroMode);
         this.updateBaroPressure(baroMode);
         this.updateMtrs(altitude, selectedAltitude);
+        this.updateFail();
     }
     updateMtrs(_altitude, _selected) {
         if (this.mtrsVisible) {
@@ -1607,6 +1612,41 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
         if (this.hudAPAltitude != hudAltitude) {
             this.hudAPAltitude = Math.round(hudAltitude);
             SimVar.SetSimVarValue("L:HUD_AP_SELECTED_ALTITUDE", "Number", this.hudAPAltitude);
+        }
+    }
+    updateFail() {
+        var failed = !(SimVar.GetSimVarValue("L:A320_Neo_ADIRS_STATE", "Enum") >= 1);
+        if (!failed) {
+            this.bg.setAttribute("stroke", "transparent");
+            this.topLine.setAttribute("stroke", "white");
+            this.bottomLine.setAttribute("stroke", "transparent");
+            this.cursorSVGShape.setAttribute("stroke", "white");
+            this.cursorSVGMainText.setAttribute("visibility", "visible");
+        } else {
+            this.bg.setAttribute("stroke", "red");
+            this.topLine.setAttribute("stroke", "red");
+            this.bottomLine.setAttribute("stroke", "red");
+            this.cursorSVGShape.setAttribute("stroke", "transparent");
+            if (this.targetAltitudeTextSVG1) this.targetAltitudeTextSVG1.setAttribute("visibility", "hidden");
+            if (this.targetAltitudeTextSVG2) this.targetAltitudeTextSVG2.setAttribute("visibility", "hidden");
+            this.cursorSVGMainText.setAttribute("visibility", "hidden");
+            if (this.targetAltitudeText) this.targetAltitudeText.textContent = "";
+        }
+        if (this.groundRibbonSVGShape) this.groundRibbonSVG.setAttribute("style", failed ? "display:none" : "");
+        if (this.cursorSVGScrollTexts) {
+            for (let st of this.cursorSVGScrollTexts) {
+                st.setAttribute("visibility", failed ? "hidden" : "visible");
+            }
+        }
+        
+        if (this.graduations != null) {
+            for (let grad of this.graduations) {
+                grad.SVGLine.setAttribute("visibility", failed ? "hidden" : "visible");
+                if (grad.IsPrimary && failed) {
+                    if (grad.SVGText1) grad.SVGText1.textContent = "";
+                    if (grad.SVGText2) grad.SVGText2.textContent = "";
+                }
+            }
         }
     }
 }
