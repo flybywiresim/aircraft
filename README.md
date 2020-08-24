@@ -52,7 +52,8 @@ Join our Discord server to find out about the latest updates and discuss the dev
 - MCP Panel Font offset (VS indicator).
 - No smoking sign doesn't use full range of motion.
 - T.O Config is not fully functional yet.
-- Self-test missing. 
+ 
+
 ##FAQ
 Q: Can I download the aircraft in the current state?
 A: Yes, the master branch contains the latest stable release. You can always download it off the dev branch, but keep in mind it is a WIP and will be unstable.
