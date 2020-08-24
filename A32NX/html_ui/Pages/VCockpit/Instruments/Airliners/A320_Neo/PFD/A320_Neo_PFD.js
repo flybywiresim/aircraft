@@ -75,6 +75,7 @@ class A320_Neo_PFD_MainPage extends NavSystemPage {
 
         this.spdFlash = document.querySelector("#spd_flash");
         this.altFlash = document.querySelector("#alt_flash");
+        this.vsFlash = document.querySelector("#vs_flash");
 
         this.hasInitialized = true;
     }
@@ -91,11 +92,13 @@ class A320_Neo_PFD_MainPage extends NavSystemPage {
             this.hdgFlash.setAttribute("visibility", "visible");
             this.spdFlash.setAttribute("visibility", "visible");
             this.altFlash.setAttribute("visibility", "visible");
+            this.vsFlash.setAttribute("visibility", "visible");
         } else {
             this.attFlash.setAttribute("visibility", "hidden");
             this.hdgFlash.setAttribute("visibility", "hidden");
             this.spdFlash.setAttribute("visibility", "hidden");
             this.altFlash.setAttribute("visibility", "hidden");
+            this.vsFlash.setAttribute("visibility", "hidden");
         }
 
         var ADIRSState = SimVar.GetSimVarValue("L:A320_Neo_ADIRS_STATE", "Enum");

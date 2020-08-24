@@ -666,11 +666,19 @@ class Jet_PFD_VerticalSpeedIndicator extends HTMLElement {
             this.cursorSVGGroup.appendChild(this.cursorSVGText);
             this.centerGroup.appendChild(this.cursorSVGGroup);
         }
+        {
+            this.failMask = document.createElementNS(Avionics.SVG.NS, "path");
+            this.failMask.setAttribute("fill", "#343B51");
+            this.failMask.setAttribute("d", "M 0 0 L 0 " + height + " L 30 " + height + " L 50 " + (height - 100) + " L 50 100 L 30 0 Z");
+            this.failMask.setAttribute("transform", "translate(" + posX + " " + posY + ")");
+            this.centerGroup.appendChild(this.failMask);
+        }
         this.rootGroup.appendChild(this.centerGroup);
         this.rootSVG.appendChild(this.rootGroup);
         this.appendChild(this.rootSVG);
     }
     attributeChangedCallback(name, oldValue, newValue) {
+        this.updateFail();
         if (oldValue == newValue)
             return;
         switch (name) {
@@ -800,6 +808,16 @@ class Jet_PFD_VerticalSpeedIndicator extends HTMLElement {
                 height = this.gradYPos[this.gradYPos.length - 1];
         }
         return height;
+    }
+    updateFail() {
+        var failed = !(SimVar.GetSimVarValue("L:A320_Neo_ADIRS_STATE", "Enum") >= 1);
+        if (!failed) {
+            this.failMask.setAttribute("visibility", "hidden");
+            this.cursorSVGGroup.setAttribute("visibility", "visible");
+        } else {
+            this.failMask.setAttribute("visibility", "visible");
+            this.cursorSVGGroup.setAttribute("visibility", "hidden");
+        }
     }
 }
 customElements.define("jet-pfd-vspeed-indicator", Jet_PFD_VerticalSpeedIndicator);

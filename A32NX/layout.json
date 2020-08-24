@@ -82,12 +82,12 @@
         },
         {
             "path": "html_ui/Pages/VCockpit/Instruments/Airliners/A320_Neo/PFD/A320_Neo_PFD.html",
-            "size": 5687,
+            "size": 6102,
             "date": "132402817714110148"
         },
         {
             "path": "html_ui/Pages/VCockpit/Instruments/Airliners/A320_Neo/PFD/A320_Neo_PFD.js",
-            "size": 8710,
+            "size": 8897,
             "date": "132402817714110148"
         },
         {
@@ -107,7 +107,7 @@
         },
         {
             "path": "html_ui/Pages/VCockpit/Instruments/Airliners/A320_Neo/PFD/VerticalSpeedIndicator.js",
-            "size": 42504,
+            "size": 43409,
             "date": "132402817714110148"
         },
         {
