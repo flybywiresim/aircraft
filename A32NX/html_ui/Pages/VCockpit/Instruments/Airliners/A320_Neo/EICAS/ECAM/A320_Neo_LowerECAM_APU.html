@@ -2,23 +2,33 @@
 
 <script type="text/html" id="LowerECAMAPUTemplate">
     <svg viewBox="0 0 600 600" xmlns="http://www.w3.org/2000/svg">
-        <path class="Separator" d="M25 275 l0 -25 l550 0 l0 25"></path>
+ 
 
-            <text id="PageTitle" x="300" y="50">APU</text>
+            <text id="PageTitle" x="300" y="100">APU</text>
 
             <!-- Avail Indication -->
             <g id="APUAvail_On">
-                <text id="APUAvail" x="300" y="100">AVAIL</text>
+                <text id="APUAvail" x="300" y="150">AVAIL</text>
             </g>
 
             <!-- APU Gen Parameters -->
-            
+            <rect class="WhiteBox" width="76" height="80" x="112" y="150"></rect>
             <g id="APUGenInfo_On">
                 <g id="APUGenAvailArrow">
-                    <path class="GreenLine" d="M100 115 l0 -10 l-10 0 l10 -20 l10 20 l-10 0"></path>
+                    <path class="GreenLine" d="M150 150 l0 -25 l-7 0 l7 -15 l7 15 l-7 0"></path>
                 </g>
                 
-                <rect class="WhiteBox" width="100" height="115" x="50" y="115"></rect>
+
+            <text id="APUGenParams" x="150" y="160">APU GEN</text>
+
+            <text id="APUGenLoad" class="APUGenParamValue" x="160" y="178">XX</text>
+            <text class="APUGenParamUnit" x="168" y="180">%</text>
+
+            <text id="APUGenVoltage" class="APUGenParamValue" x="160" y="198">XXX</text>
+            <text class="APUGenParamUnit" x="168" y="200">V</text>
+			
+            <text id="APUGenFrequency" class="APUGenParamValue" x="160" y="218">XXX</text>
+            <text class="APUGenParamUnit" x="168" y="220">HZ</text>
 
                 <text id="APUGenLoad" class="APUGenParamValue" x="80" y="165">XX</text>
                 <text class="APUGenParamUnit" x="115" y="165">%</text>
@@ -26,41 +36,43 @@
                 <text id="APUGenVoltage" class="APUGenParamValue" x="80" y="190">XXX</text>
                 <text class="APUGenParamUnit" x="115" y="190">V</text>
     
-                <text id="APUGenFrequency" class="APUGenParamValue" x="80" y="215">XXX</text>
-                <text class="APUGenParamUnit" x="115" y="215">HZ</text>
             </g>
             <text id="APUGenParams" x="100" y="140">APU GEN</text>
             
 
             <!-- APU Bleed Air Pressure -->
-            <rect class="WhiteBox" width="100" height="65" x="400" y="165"></rect>
-            <text id="APUBleed" x="450" y="185">BLEED</text>
-            <text id="APUBleedAirPressure" class="APUGenParamValue" x="425" y="215">XX</text>
-            <text class="APUGenParamUnit" x="455" y="215">PSI</text>
-            <g id="APUBleed_Off">
-                <path class="GreenLine" id="APUBleedClosed" d="M430 135 l40 0"></path>
-                <path class="GreenLine" d="M450 165 l0 -10"></path>
+
+
+			<path class="GreenLine" d="M440 185 l0 -10 m0 -30 l0 -10 l-7 0 l7 -15 l7 15 l-7 0"></path>
+                <g id="APUBleed_Off">
+				<path class="GreenLine" id="APUBleedClosed" d="M425 160 l30 0"></path>
+                <path class="GreenLine" d="M425 160 l0 -10"></path>
             </g>
             <g id="APUBleed_On">
-                <path class="GreenLine" id="APUBleedOpen" d="M450 155 l0 -40"></path>
-                <path class="GreenLine" d="M450 165 l0 -10 m0 -40 l0 -10 l-10 0 l10 -20 l10 20 l-10 0"></path>
+                <path class="GreenLine" id="APUBleedOpen" d="M440 185 l0 -40"></path>
+                
             </g>
-            <circle class="GreenLine" cx="450" cy="135" r="20"></circle>
+            <circle class="GreenLine" cx="440" cy="160" r="15"></circle>
+            <rect class="WhiteBox" width="70" height="45" x="405" y="185"></rect>
+            <text id="APUBleed" x="440" y="200">BLEED</text>
+            <text id="APUBleedAirPressure" class="APUGenParamValue" x="435" y="218">XX</text>
+            <text class="APUGenParamUnit" x="443" y="220">PSI</text>																	
 
+			<path class="Separator" d="M100 295 l0 -25 400 0 l0 25"></path>															  
             <!-- Gauge Labels -->
-            <text class="APUGaugeParamUnitWhite" x="300" y="320">N</text>
-            <text class="APUGaugeParamUnit" x="300" y="340">%</text>
+            <text class="APUGaugeParamUnitWhite" x="230" y="320">N</text>
+            <text class="APUGaugeParamUnit" x="230" y="350">%</text>
 
-            <text class="APUGaugeParamUnitWhite" x="300" y="400">EGT</text>
-            <text class="APUGaugeParamUnit" x="300" y="420">°C</text>
+            <text class="APUGaugeParamUnitWhite" x="230" y="400">EGT</text>
+            <text class="APUGaugeParamUnit" x="230" y="430">°C</text>
 
             <!-- FLAP OPEN Indication -->
             <g id="APUFlapOpen_On">
-                <text id="APUFlapOpen" x="450" y="375">FLAP OPEN</text>
+                <text id="APUFlapOpen" x="420" y="375">FLAP OPEN</text>
             </g>
             
     </svg>
-    <div id="AGauges" style="position:absolute;left:10%;top:45%;display:flex">
+    <div id="AGauges" style="position:absolute;left:4%;top:19%;display:flex">
         <div id="APUGauges"></div>
     </div>
 </script>
