@@ -58,6 +58,15 @@ a320-neo-lower-ecam-apu {
   fill: var(--ecamDefaultColour);
   font-size: 15px;
 }
+
+:root .APUGenParamsWarn {
+  fill: var(--ecamWarningColour);
+  font-size: 18px;/* CREATED JZ */
+  font-weight: bold;
+  font-stretch:ultra-condensed;
+  text-anchor: end !important; 
+}
+
 :root #APUBleed {
   fill: var(--ecamDefaultColour);
   font-size: 15px;
@@ -71,8 +80,8 @@ a320-neo-lower-ecam-apu {
 }
 :root .APUGenParamValueWarn {
   fill: var(--ecamWarningColour);
-  font-size: 15px;
-  text-anchor: start !important;
+  font-size: 18px;
+  text-anchor: end !important;
 }
 :root .APUGenParamUnit {
   fill: var(--ecamUnitsColour);
