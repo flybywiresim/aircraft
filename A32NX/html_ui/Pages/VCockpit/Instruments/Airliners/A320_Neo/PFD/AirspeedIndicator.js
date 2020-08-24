@@ -1306,13 +1306,17 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
             var _width = width;
             var _height = height;
             var bg = document.createElementNS(Avionics.SVG.NS, "rect");
+            this.bg = bg;
             bg.setAttribute("x", _left.toString());
             bg.setAttribute("y", _top.toString());
             bg.setAttribute("width", _width.toString());
             bg.setAttribute("height", _height.toString());
             bg.setAttribute("fill", "#343B51");
+            bg.setAttribute("stroke-width", "4");
+            bg.setAttribute("stroke", "tranparent");
             this.centerSVG.appendChild(bg);
             var topLine = document.createElementNS(Avionics.SVG.NS, "line");
+            this.topLine = topLine;
             topLine.setAttribute("x1", _left.toString());
             topLine.setAttribute("y1", (_top + 2).toString());
             topLine.setAttribute("x2", (_left + _width + arcWidth).toString());
@@ -1321,6 +1325,7 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
             topLine.setAttribute("stroke-width", "4");
             this.centerSVG.appendChild(topLine);
             var bottomLine = document.createElementNS(Avionics.SVG.NS, "line");
+            this.bottomLine = bottomLine;
             bottomLine.setAttribute("x1", _left.toString());
             bottomLine.setAttribute("y1", (_top + _height - 2).toString());
             bottomLine.setAttribute("x2", (_left + _width + arcWidth).toString());
@@ -1730,6 +1735,7 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
         this.updateMachSpeed(dTime);
         this.updateSpeedOverride(dTime);
         this.updateVSpeeds();
+        this.updateFail();
     }
     smoothSpeeds(_indicatedSpeed, _dTime, _maxSpeed, _lowestSelectableSpeed, _stallProtectionMin, _stallProtectionMax, _stallSpeed) {
         let refSpeed = _maxSpeed;
@@ -2045,7 +2051,7 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
                         }
                         hideBluePointer = false;
                     }
-                    else {
+                    else if (SimVar.GetSimVarValue("L:A320_Neo_ADIRS_STATE", "Enum") >= 1) {
                         hideBlueText = false;
                     }
                     hudSpeed = blueAirspeed;
@@ -2211,6 +2217,7 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
     updateStrip(_strip, currentAirspeed, maxSpeed, _forceHide, _topToBottom) {
         if (_strip) {
             let hideStrip = true;
+            if (!(SimVar.GetSimVarValue("L:A320_Neo_ADIRS_STATE", "Enum") >= 1)) _forceHide = true;
             if (!_forceHide) {
                 if (maxSpeed > this.graduationMinValue) {
                     let vPosY = this.valueToSvg(currentAirspeed, maxSpeed);
@@ -2233,6 +2240,11 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
     updateSpeedMarkers(currentAirspeed) {
         for (let i = 0; i < this.speedMarkers.length; i++) {
             this.speedMarkers[i].update(currentAirspeed);
+            if (!(SimVar.GetSimVarValue("L:A320_Neo_ADIRS_STATE", "Enum") >= 1)) {
+                this.speedMarkers[i].svg.setAttribute("style", "display:none");
+            } else {
+                this.speedMarkers[i].svg.setAttribute("style", "");
+            }
         }
     }
     updateMarkerF(_marker, currentAirspeed) {
@@ -2423,6 +2435,28 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
         }
         else {
             _marker.svg.setAttribute("visibility", "hidden");
+        }
+    }
+    updateFail() {
+        var failed = !(SimVar.GetSimVarValue("L:A320_Neo_ADIRS_STATE", "Enum") >= 1);
+        if (!failed) {
+            this.bg.setAttribute("stroke", "transparent");
+            this.topLine.setAttribute("stroke", "white");
+            this.bottomLine.setAttribute("stroke", "transparent");
+            this.graduationVLine.setAttribute("stroke", "white");
+            this.cursorSVGShape.setAttribute("visibility", "visible");
+        } else {
+            this.bg.setAttribute("stroke", "red");
+            this.topLine.setAttribute("stroke", "red");
+            this.bottomLine.setAttribute("stroke", "red");
+            this.graduationVLine.setAttribute("stroke", "transparent");
+            this.cursorSVGShape.setAttribute("visibility", "hidden");
+        }
+        if (this.graduations != null) {
+            for (let grad of this.graduations) {
+                grad.SVGLine.setAttribute("visibility", failed ? "hidden" : "visible");
+                if (grad.IsPrimary && failed) grad.SVGText1.textContent = "";
+            }
         }
     }
 }
