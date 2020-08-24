@@ -1622,6 +1622,7 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
             this.bottomLine.setAttribute("stroke", "transparent");
             this.cursorSVGShape.setAttribute("stroke", "white");
             this.cursorSVGMainText.setAttribute("visibility", "visible");
+            this.pressureSVG.setAttribute("visibility", "visible");
         } else {
             this.bg.setAttribute("stroke", "red");
             this.topLine.setAttribute("stroke", "red");
@@ -1631,6 +1632,7 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
             if (this.targetAltitudeTextSVG2) this.targetAltitudeTextSVG2.setAttribute("visibility", "hidden");
             this.cursorSVGMainText.setAttribute("visibility", "hidden");
             if (this.targetAltitudeText) this.targetAltitudeText.textContent = "";
+            this.pressureSVG.setAttribute("visibility", "hidden");
         }
         if (this.groundRibbonSVGShape) this.groundRibbonSVG.setAttribute("style", failed ? "display:none" : "");
         if (this.cursorSVGScrollTexts) {
