@@ -27,7 +27,7 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
     }
     Init() {
         super.Init();
-        this.changePage("DOOR"); // MODIFIED
+        this.changePage("FUEL"); // MODIFIED
 
         this.lastAPUMasterState = 0 // MODIFIED
         this.externalPowerWhenApuMasterOnTimer = -1 // MODIFIED
@@ -41,21 +41,19 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         var currentAPUMasterState = SimVar.GetSimVarValue("FUELSYSTEM VALVE SWITCH:8", "Bool");  
         // automaticaly switch to the APU page when apu master switch is on
         if (this.lastAPUMasterState != currentAPUMasterState) {  
+            this.lastAPUMasterState = currentAPUMasterState;  
+            this.changePage("APU")
+
             //if external power is off when turning on apu, only show the apu page for 10 seconds, then the DOOR page
             var externalPower = SimVar.GetSimVarValue("EXTERNAL POWER ON", "Bool")  
-            if (externalPower === 1) {  
+            if (externalPower === 0) {  
                 this.externalPowerWhenApuMasterOnTimer = 10
-                this.lastAPUMasterState = currentAPUMasterState;  
-                this.changePage("APU")
-            } else {  
-                this.lastAPUMasterState = currentAPUMasterState;  
-                this.changePage("APU");  
-            }  
+            }
 
         }
 
         if (this.externalPowerWhenApuMasterOnTimer >= 0) {  
-            this.externalPowerWhenApuMasterOnTimer -= _deltaTime
+            this.externalPowerWhenApuMasterOnTimer -= _deltaTime/1000
             if (this.externalPowerWhenApuMasterOnTimer <= 0) {  
                 this.changePage("DOOR")  
             }  
