@@ -21,9 +21,6 @@ For the Steam edition:
 If the aforementioned methods do not work:
 * You can find your community folder by going into FS2020 general options and enabling developer mode. You will see a menu appear on top. Go to tools and virtual file system. Click on watch bases and your community folder will be listed in one of the folders. 
 
---
-Simply copy the "A32NX" folder into your community package folder, located in `AppData\Roaming\Microsoft Flight Simulator\Packages\Community`, and start up the A320neo! If you wish to revert to the default Asobo version (no modifications), simply delete the "A32NX" folder and you're done.
-
 ## Developing
 
 The A32NX package only contains files which have been modified from the original package. If you want to work on a file that isn't present in the development branch, simply copy it over from the latest Asobo branch. Please DO NOT add, modify, or delete files from the Asobo branch.
