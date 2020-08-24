@@ -51,6 +51,7 @@ var A320_Neo_LowerECAM_APU;
             if (this.lastAPUMasterState != currentAPUMasterState) {
                 this.lastAPUMasterState = currentAPUMasterState;
                 this.APUStartTimer = 20;
+                this.APUGenInfo.setAttribute("visibility", "visible");
             }
 
             if (this.APUStartTimer >= 0) {
