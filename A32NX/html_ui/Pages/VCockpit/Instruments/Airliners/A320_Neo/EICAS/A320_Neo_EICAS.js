@@ -27,7 +27,7 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
     }
     Init() {
         super.Init();
-        this.changePage("DOOR");
+        this.changePage("DOOR"); // MODIFIED
 
         this.lastAPUMasterState = 0 // MODIFIED
         this.externalPowerWhenApuMasterOnTimer = -1 // MODIFIED
@@ -55,7 +55,7 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         }
 
         if (this.externalPowerWhenApuMasterOnTimer >= 0) {  
-            this.externalPowerWhenApuMasterOnTimer -= _deltaTime/1000
+            this.externalPowerWhenApuMasterOnTimer -= _deltaTime
             if (this.externalPowerWhenApuMasterOnTimer <= 0) {  
                 this.changePage("DOOR")  
             }  
