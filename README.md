@@ -18,6 +18,10 @@ For the Steam edition:
 * Copy the "A32NX" folder into your community package folder. It is located in:
 `C:\Users\[YOUR USERNAME]\AppData\Roaming\Microsoft Flight Simulator\Packages\Community`.
 
+For the Boxed edition:
+* Copy the "A32NX" folder into your community package folder. It is located in:
+`C:/Users/[YOUR USERNAME]/AppData/Local/MSFSPackages/Community`.
+
 If the aforementioned methods do not work:
 * You can find your community folder by going into FS2020 general options and enabling developer mode. You will see a menu appear on top. Go to tools and virtual file system. Click on watch bases and your community folder will be listed in one of the folders. 
 
