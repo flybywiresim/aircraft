@@ -82,7 +82,7 @@
         },
         {
             "path": "html_ui/Pages/VCockpit/Instruments/Airliners/A320_Neo/PFD/A320_Neo_PFD.html",
-            "size": 5631,
+            "size": 5687,
             "date": "132402817714110148"
         },
         {
@@ -103,6 +103,11 @@
         {
             "path": "html_ui/Pages/VCockpit/Instruments/Airliners/A320_Neo/PFD/AttitudeIndicator.js",
             "size": 100511,
+            "date": "132402817714110148"
+        },
+        {
+            "path": "html_ui/Pages/VCockpit/Instruments/Airliners/A320_Neo/PFD/VerticalSpeedIndicator.js",
+            "size": 42504,
             "date": "132402817714110148"
         },
         {
