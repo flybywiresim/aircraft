@@ -59,6 +59,14 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
             }  
         }  
 
+
+        //automatic DOOR page switch
+        var cabinDoorPctOpen = SimVar.GetSimVarValue("INTERACTIVE POINT OPEN:0", "percent");
+        var cateringDoorPctOpen = SimVar.GetSimVarValue("INTERACTIVE POINT OPEN:3", "percent");
+        var fwdCargoPctOpen = SimVar.GetSimVarValue("INTERACTIVE POINT OPEN:5", "percent");
+        if (cabinDoorPctOpen >= 20 || cateringDoorPctOpen >= 20 || fwdCargoPctOpen >= 20) {
+            this.changePage("DOOR")
+        }
         // modification ends here
     }
     updateAnnunciations() {
