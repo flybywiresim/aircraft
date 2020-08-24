@@ -87,11 +87,33 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
         this.showILS = SimVar.GetSimVarValue("L:BTN_LS_FILTER_ACTIVE", "bool");
         this.compass.showILS(this.showILS);
         this.info.showILS(this.showILS);
+        this.selfTestDiv = this.gps.getChildById("SelfTestDiv");
+        this.selfTestTimer = -1;
+        this.selfTestTimerStarted = false;
     }
     onUpdate(_deltaTime) {
         super.onUpdate(_deltaTime);
         this.updateMap(_deltaTime);
         this.updateNDInfo(_deltaTime);
+
+        var externalPower = SimVar.GetSimVarValue("EXTERNAL POWER ON", "bool");
+        var engineOn = SimVar.GetSimVarValue("GENERAL ENG STARTER:1", "bool");
+        if (engineOn) {
+            this.selfTestDiv.style.display = "none";
+            this.selfTestTimerStarted = true;
+        }
+        // Check if external power is on & timer not already started
+        if (externalPower && !this.selfTestTimerStarted) {
+            this.selfTestTimer = 13.75;
+            this.selfTestTimerStarted = true;
+        }
+        // Timer
+        if (this.selfTestTimer >= 0) {
+            this.selfTestTimer -= _deltaTime / 1000;
+            if (this.selfTestTimer <= 0) {
+                this.selfTestDiv.style.display = "none";
+            }
+        }
     }
     _updateNDFiltersStatuses() {
         SimVar.SetSimVarValue("L:BTN_CSTR_FILTER_ACTIVE", "number", this.map.instrument.showConstraints ? 1 : 0);
