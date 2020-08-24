@@ -48,7 +48,56 @@ Join our Discord server to find out about the latest updates and discuss the dev
 - Fixed APU startup time
 - Added MODE change indication to Navigation Display
 
-## Known Issues
-- APU ECAM page doesn't display correct load percent
-- Bleed ECAM page isn't modeled
-- No automatic ECAM page switching for APU and DOOR pages
+## Known Issues (Please note that most issues are being worked on and some of them may even be fixed in the dev branch)
+- APU ECAM page doesn't display correct load percent.
+- Bleed ECAM page isn't modeled.
+- No automatic ECAM page switching for APU and DOOR pages.
+- No chime coming from No smoking & Seatbelts.
+- MCP Panel Font offset (VS indicator).
+- No smoking sign doesn't use full range of motion.
+- T.O Config is not fully functional yet.
+ 
+
+## FAQ
+
+Q: Can I download the aircraft in the current state?
+
+A: Yes, the master branch contains the latest stable release. You can always download it off the dev branch, but keep in mind it is a WIP and will be unstable.
+
+Q: Where is the plane in-sim?
+
+A: The mod is added on top on the default A320N from Asobo. If you want to uninstall it and revert to the original aircraft, just delete the A32NX folder in your community folder.
+
+Q: What are the liveries available?
+
+A: All the default aircraft liveries are working on our aircraft!
+
+Q: When will it be released?
+
+A: We don't know, but you can download the aircraft with the latest improvements we've made! 
+
+Q: When is the next update?
+
+A: We don't know, since it depends on many factors. We'll however announce it each time there's an update! We are currently working on a visual roadmap to let you know what latest features we are working on!
+
+Q: How do I join the team?
+
+A: Join our Discord server and either select your role from the bot at #roles , or you DM @Kieran [Z+1].
+
+Q: Is it payware?
+
+A: No, it is a completely free aircraft, open-source.
+
+Q: What is the roadmap/progress?
+
+A: You can follow our current progress on the trello: https://trello.com/b/z3jimJLq/study-level-a320neo
+
+Q: How do we report bugs?
+
+A: You have two options: Report it on the discord server at #bugs-and-suggestions, or fill this form (that will be directly linked to the dev attention) :https://docs.google.com/forms/d/e/1FAIpQLSe6Bdx8x8mFmOmBoAipYoazfeomrJ8cri55NBn32MBRqIW4nA/viewform?usp=sf_link
+
+Q: What is the name of this team?
+
+A: Still no name! If you have a good idea, please feel free to suggest it on discord's #bugs-and-suggestions channel!
+
+
