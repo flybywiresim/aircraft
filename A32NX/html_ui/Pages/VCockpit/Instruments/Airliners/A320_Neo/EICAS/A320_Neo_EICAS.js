@@ -28,18 +28,36 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
     Init() {
         super.Init();
         this.changePage("FUEL"); // MODIFIED
-        this.lastAPUMasterState = 0 // MODIFIED
-        this.beforeTakeoffPhase = true; // MODIFIED
-        this.externalPowerWhenApuMasterOnTimer = -1 // MODIFIED
-        this.doorPageActivated = false
-        this.selfTestDiv = this.querySelector("#SelfTestDiv");
-        this.selfTestTimer = -1;
-        this.selfTestTimerStarted = false;
 
+        this.lastAPUMasterState = 0 // MODIFIED
+        this.externalPowerWhenApuMasterOnTimer = -1 // MODIFIED
+
+        this.doorPageActivated = false
     }
     onUpdate(_deltaTime) {
         super.onUpdate(_deltaTime);
         this.updateAnnunciations();
+        
+        var externalPower = SimVar.GetSimVarValue("EXTERNAL POWER ON", "bool");
+        var engineOn = SimVar.GetSimVarValue("GENERAL ENG STARTER:1", "bool");
+
+        // Check if engine is on so self test doesn't appear when not starting from cold and dark
+        if (engineOn) {
+            this.selfTestDiv.style.display = "none";
+            this.selfTestTimerStarted = true;
+        }
+        // Check if external power is on & timer not already started
+        if (externalPower && !this.selfTestTimerStarted) {
+            this.selfTestTimer = 14.25;
+            this.selfTestTimerStarted = true;
+        } // timer
+        if (this.selfTestTimer >= 0) {
+            this.selfTestTimer -= _deltaTime / 1000;
+            if (this.selfTestTimer <= 0) {
+                this.selfTestDiv.style.display = "none";
+            }
+        }
+
 
 
         // modification start here
@@ -76,30 +94,12 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         if (!(cabinDoorPctOpen >= 20 || cateringDoorPctOpen >= 20 || fwdCargoPctOpen >= 20) && this.doorPageActivated) {
             this.doorPageActivated = false
         }
-
-        // checks if the plane is on takeoff phase or else disables it.
-        var planeOnGround = SimVar.GetSimVarValue("SIM ON GROUND", "Bool"); // Temporary Sim Value
-        if(!planeOnGround && this.beforeTakeoffPhase) {
-            this.beforeTakeoffPhase = false;
-        }
         // modification ends here
     }
     updateAnnunciations() {
         let infoPanelManager = this.upperTopScreen.getInfoPanelManager();
         if (infoPanelManager) {
-
-            // ----------- MODIFIED --------------------//
-            let autoBrkValue = SimVar.GetSimVarValue("L:XMLVAR_Autobrakes_Level", "Number");
-            let starterOne = SimVar.GetSimVarValue("GENERAL ENG STARTER:1", "Bool");
-            let starterTwo = SimVar.GetSimVarValue("GENERAL ENG STARTER:2", "Bool");
-            let splrsArmed = SimVar.GetSimVarValue("SPOILERS ARMED", "Bool");
-            let flapsPosition = SimVar.GetSimVarValue("FLAPS HANDLE INDEX", "Number");
-            console.log(autoBrkValue);
-            // ----------- MODIFIED END --------------------//
-
             infoPanelManager.clearScreen(Airliners.EICAS_INFO_PANEL_ID.PRIMARY);
-
-
             if (this.warnings) {
                 let text = this.warnings.getCurrentWarningText();
                 if (text && text != "") {
@@ -117,31 +117,7 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
                     }
                 }
             }
-
-            // ----------- MODIFIED --------------------//
-            if(this.beforeTakeoffPhase && starterOne && starterTwo) {
-                if(autoBrkValue == 3) {
-                    infoPanelManager.addMessage(Airliners.EICAS_INFO_PANEL_ID.PRIMARY, "T.O AUTO BRK MAX", Airliners.EICAS_INFO_PANEL_MESSAGE_STYLE.INDICATION);
-                }else{
-                    infoPanelManager.addMessage(Airliners.EICAS_INFO_PANEL_ID.PRIMARY, "T.O AUTO BRK......MAX", Airliners.EICAS_INFO_PANEL_MESSAGE_STYLE.INDICATION);
-                }
-                    infoPanelManager.addMessage(Airliners.EICAS_INFO_PANEL_ID.PRIMARY, "\xa0\xa0\xa0\xa0SIGNS ON", Airliners.EICAS_INFO_PANEL_MESSAGE_STYLE.INDICATION);
-                if(splrsArmed) {
-                    infoPanelManager.addMessage(Airliners.EICAS_INFO_PANEL_ID.PRIMARY, "\xa0\xa0\xa0\xa0SPLRS ARM", Airliners.EICAS_INFO_PANEL_MESSAGE_STYLE.INDICATION);
-                }else {
-                    infoPanelManager.addMessage(Airliners.EICAS_INFO_PANEL_ID.PRIMARY, "\xa0\xa0\xa0\xa0SPLRS.........ARM", Airliners.EICAS_INFO_PANEL_MESSAGE_STYLE.INDICATION);
-                }
-                if(flapsPosition > 0) {
-                    infoPanelManager.addMessage(Airliners.EICAS_INFO_PANEL_ID.PRIMARY, "\xa0\xa0\xa0\xa0FLAPS T.O", Airliners.EICAS_INFO_PANEL_MESSAGE_STYLE.INDICATION);
-                }else{
-                    infoPanelManager.addMessage(Airliners.EICAS_INFO_PANEL_ID.PRIMARY, "\xa0\xa0\xa0\xa0FLAPS.........T.O", Airliners.EICAS_INFO_PANEL_MESSAGE_STYLE.INDICATION);
-                }
-                infoPanelManager.addMessage(Airliners.EICAS_INFO_PANEL_ID.PRIMARY, "\xa0\xa0\xa0\xa0T.O CONFIG", Airliners.EICAS_INFO_PANEL_MESSAGE_STYLE.INDICATION);
-            }
-            // ----------- MODIFIED END --------------------//
-            
-            
-            else if (this.annunciations) {
+            if (this.annunciations) {
                 let onGround = Simplane.getIsGrounded();
                 for (let i = this.annunciations.displayWarning.length - 1; i >= 0; i--) {
                     if (!this.annunciations.displayWarning[i].Acknowledged)
