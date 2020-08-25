@@ -60,22 +60,69 @@ class A320_Neo_PFD_MainPage extends NavSystemPage {
         this.showILS = SimVar.GetSimVarValue("L:BTN_LS_FILTER_ACTIVE", "bool");
         this.ils.showILS(this.showILS);
         this.compass.showILS(this.showILS);
+
+        //ADIRS
+        this.flashTimer = 1;
+        this.flashState = false;
+
+        this.miscFail = document.querySelector("#MiscFail");
+
+        this.attitudeFail = document.querySelector("#AttitudeFail");
+        this.attFlash = document.querySelector("#att_flash");
+
+        this.headingFail = document.querySelector("#HeadingFail");
+        this.hdgFlash = document.querySelector("#hdg_flash");
+
+        this.spdFlash = document.querySelector("#spd_flash");
+        this.altFlash = document.querySelector("#alt_flash");
+        this.vsFlash = document.querySelector("#vs_flash");
+
+        this.hasInitialized = true;
+
+        //SELF TEST
         this.selfTestDiv = this.gps.getChildById("SelfTestDiv");
-        this.selfTestTimer = -1;
         this.selfTestTimerStarted = false;
         this.electricity = this.gps.getChildById("Electricity")
     }
-    onEvent(_event) {
-        switch (_event) {
-            case "BTN_LS":
-                this.showILS = !this.showILS;
-                SimVar.SetSimVarValue("L:BTN_LS_FILTER_ACTIVE", "number", this.showILS ? 1 : 0);
-                this.ils.showILS(this.showILS);
-                this.compass.showILS(this.showILS);
-                break;
-        }
-    }
     onUpdate(_deltaTime) {
+        super.onUpdate();
+        if (!this.hasInitialized) return;
+        this.flashTimer -= _deltaTime/1000;
+        if (this.flashTimer <= 0) {
+            this.flashTimer = 1;
+            this.flashState = !this.flashState;
+        }
+        if (this.flashState) {
+            this.attFlash.setAttribute("visibility", "visible");
+            this.hdgFlash.setAttribute("visibility", "visible");
+            this.spdFlash.setAttribute("visibility", "visible");
+            this.altFlash.setAttribute("visibility", "visible");
+            this.vsFlash.setAttribute("visibility", "visible");
+        } else if (this.selfTestTimer > -5) {
+            this.attFlash.setAttribute("visibility", "hidden");
+            this.hdgFlash.setAttribute("visibility", "hidden");
+            this.spdFlash.setAttribute("visibility", "hidden");
+            this.altFlash.setAttribute("visibility", "hidden");
+            this.vsFlash.setAttribute("visibility", "hidden");
+        }
+
+        var ADIRSState = SimVar.GetSimVarValue("L:A320_Neo_ADIRS_STATE", "Enum");
+
+        if (ADIRSState >= 1) {
+            this.attitudeFail.setAttribute("style", "display:none");
+            this.miscFail.setAttribute("style", "display:none");
+            
+        } else {
+            this.attitudeFail.setAttribute("style", "");
+            this.miscFail.setAttribute("style", "");
+        }
+
+        if (ADIRSState == 2) {
+            this.headingFail.setAttribute("style", "display:none");
+        } else {
+            this.headingFail.setAttribute("style", "");
+        }
+
         var externalPower = SimVar.GetSimVarValue("EXTERNAL POWER ON", "bool");
         var engineOn = SimVar.GetSimVarValue("GENERAL ENG STARTER:1", "bool");
         var apuOn = SimVar.GetSimVarValue("APU SWITCH", "bool");  
@@ -92,11 +139,21 @@ class A320_Neo_PFD_MainPage extends NavSystemPage {
             this.selfTestTimerStarted = true;
         }
         // Timer
-        if (this.selfTestTimer >= 0) {
+        if (this.selfTestTimer != null) {
             this.selfTestTimer -= _deltaTime / 1000;
             if (this.selfTestTimer <= 0) {
                 this.selfTestDiv.style.display = "none";
             }
+        }
+    }
+    onEvent(_event) {
+        switch (_event) {
+            case "BTN_LS":
+                this.showILS = !this.showILS;
+                SimVar.SetSimVarValue("L:BTN_LS_FILTER_ACTIVE", "number", this.showILS ? 1 : 0);
+                this.ils.showILS(this.showILS);
+                this.compass.showILS(this.showILS);
+                break;
         }
     }
 

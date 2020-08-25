@@ -51,6 +51,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     Update() {
         super.Update();
         this.updateAutopilot();
+        this.updateADIRS();
 
         var externalPower = SimVar.GetSimVarValue("EXTERNAL POWER ON", "bool");
         var engineOn = SimVar.GetSimVarValue("GENERAL ENG STARTER:1", "bool");
@@ -682,6 +683,46 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                 }
             }
             this.updateAutopilotCooldown = this._apCooldown;
+        }
+    }
+    updateADIRS() {
+
+        //Get the time since last update
+        var now = Date.now();
+        if (this.lastTime == null) this.lastTime = now;
+        var deltaTime = now - this.lastTime;
+        this.lastTime = now;
+
+        if (this.ADIRSTimer == null) this.ADIRSTimer = -1;
+        var ADIRSOn = ((SimVar.GetSimVarValue("L:A320_Neo_ADIRS_KNOB_1", "Enum") >= 1) && (SimVar.GetSimVarValue("L:A320_Neo_ADIRS_KNOB_2", "Enum") >= 1) && (SimVar.GetSimVarValue("L:A320_Neo_ADIRS_KNOB_3", "Enum") >= 1));
+        var ADIRSState = SimVar.GetSimVarValue("L:A320_Neo_ADIRS_STATE", "Enum");
+
+        if (!ADIRSOn && ADIRSState != 0) {
+            //Turn off ADIRS
+            SimVar.SetSimVarValue("L:A320_Neo_ADIRS_STATE", "Enum", 0);
+            SimVar.SetSimVarValue("L:A320_Neo_ADIRS_IN_ALIGN", "Bool", 0);
+            ADIRSState = 0;
+        }
+
+        if (ADIRSOn && ADIRSState == 0) {
+            //Start ADIRS Alignment
+            SimVar.SetSimVarValue("L:A320_Neo_ADIRS_STATE", "Enum", 1);
+            SimVar.SetSimVarValue("L:A320_Neo_ADIRS_IN_ALIGN", "Bool", 1); // DELETE AFTER MCDU IRS INIT IS IMPLEMENTED
+            ADIRSState = 1;
+            this.ADIRSTimer = 120; //ADIRS ALIGN TIME
+        }
+
+        if (ADIRSState == 1 && SimVar.GetSimVarValue("L:A320_Neo_ADIRS_IN_ALIGN", "Bool") == 1) {
+            if (this.ADIRSTimer > 0) {
+                this.ADIRSTimer -= deltaTime/1000;
+                if (this.ADIRSTimer <= 0) {
+                    this.ADIRSTimer = -1;
+                    //ADIRS Alignment Completed
+                    SimVar.SetSimVarValue("L:A320_Neo_ADIRS_STATE", "Enum", 2);
+                    SimVar.SetSimVarValue("L:A320_Neo_ADIRS_IN_ALIGN", "Bool", 0);
+                }
+            }
+            
         }
     }
 }
