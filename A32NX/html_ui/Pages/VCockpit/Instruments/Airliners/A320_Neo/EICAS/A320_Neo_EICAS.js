@@ -37,7 +37,7 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
     onUpdate(_deltaTime) {
         super.onUpdate(_deltaTime);
         this.updateAnnunciations();
-        w
+        
         var externalPower = SimVar.GetSimVarValue("EXTERNAL POWER ON", "bool");
         var engineOn = SimVar.GetSimVarValue("GENERAL ENG STARTER:1", "bool");
 
