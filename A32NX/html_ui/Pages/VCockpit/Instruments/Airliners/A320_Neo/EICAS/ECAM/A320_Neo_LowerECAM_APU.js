@@ -158,6 +158,7 @@ var A320_Neo_LowerECAM_APU;
             this.apuNGauge.addGraduation(0, true, "0");
             this.apuNGauge.addGraduation(50, true);
             this.apuNGauge.addGraduation(100, true, "10");
+            this.apuNGauge.active = false
             if (_gaugeDiv != null) {
                 _gaugeDiv.appendChild(this.apuNGauge);
             }
@@ -179,16 +180,22 @@ var A320_Neo_LowerECAM_APU;
             this.apuEGTGauge.addGraduation(300, true, "3");
             this.apuEGTGauge.addGraduation(700, true, "7");
             this.apuEGTGauge.addGraduation(1000, true, "10");
+            this.apuEGTGauge.active = false
             if (_gaugeDiv != null) {
                 _gaugeDiv.appendChild(this.apuEGTGauge);
             }
+            this.apuInactiveTimer = 3
         }
 
         update(_deltaTime) {
             //Update gauges
-            var currentAPUMasterState = SimVar.GetSimVarValue("FUELSYSTEM VALVE SWITCH:8", "Bool");
-            if (currentAPUMasterState === 0) {
-                this.apuNGauge.isActive = false
+            if (this.apuInactiveTimer >= 0) {
+                this.apuInactiveTimer -= _deltaTime/1000
+                if (this.apuInactiveTimer <= 0) {
+                    this.apuInactiveTimer = -1
+                    this.apuEGTGauge.active = true
+                    this.apuNGauge.active = true
+                }
             }
             if (this.apuNGauge != null && this.apuEGTGauge != null) {
                 this.apuNGauge.update(_deltaTime);
