@@ -48,9 +48,15 @@ var A320_Neo_LowerECAM_APU;
 
             var currentAPUMasterState = SimVar.GetSimVarValue("FUELSYSTEM VALVE SWITCH:8", "Bool");
 
+
             if (this.lastAPUMasterState != currentAPUMasterState) {
                 this.lastAPUMasterState = currentAPUMasterState;
                 this.APUStartTimer = 20;
+                this.APUGenInfo.setAttribute("visibility", "visible");
+            }
+
+            if (currentAPUMasterState === 0) {
+                // TODO: put xx instead of numbers in APU gauge if apu master is off
             }
 
             if (this.APUStartTimer >= 0) {
@@ -180,6 +186,10 @@ var A320_Neo_LowerECAM_APU;
 
         update(_deltaTime) {
             //Update gauges
+            var currentAPUMasterState = SimVar.GetSimVarValue("FUELSYSTEM VALVE SWITCH:8", "Bool");
+            if (currentAPUMasterState === 0) {
+                this.apuNGauge.isActive = false
+            }
             if (this.apuNGauge != null && this.apuEGTGauge != null) {
                 this.apuNGauge.update(_deltaTime);
                 this.apuEGTGauge.update(_deltaTime);

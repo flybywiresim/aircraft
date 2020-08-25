@@ -27,21 +27,73 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
     }
     Init() {
         super.Init();
-        this.changePage("FUEL");
-
+        this.changePage("FUEL"); // MODIFIED
         this.lastAPUMasterState = 0 // MODIFIED
-
         this.beforeTakeoffPhase = true; // MODIFIED
+        this.externalPowerWhenApuMasterOnTimer = -1 // MODIFIED
+        this.doorPageActivated = false
+        this.selfTestDiv = this.querySelector("#SelfTestDiv");
+        this.selfTestTimer = -1;
+        this.selfTestTimerStarted = false;
     }
+    
     onUpdate(_deltaTime) {
         super.onUpdate(_deltaTime);
         this.updateAnnunciations();
 
-        var currentAPUMasterState = SimVar.GetSimVarValue("FUELSYSTEM VALVE SWITCH:8", "Bool"); // MODIFIED
+        var externalPower = SimVar.GetSimVarValue("EXTERNAL POWER ON", "bool");
+        var engineOn = SimVar.GetSimVarValue("GENERAL ENG STARTER:1", "bool");
+
+        // Check if engine is on so self test doesn't appear when not starting from cold and dark
+        if (engineOn) {
+            this.selfTestDiv.style.display = "none";
+            this.selfTestTimerStarted = true;
+        }
+        // Check if external power is on & timer not already started
+        if (externalPower && !this.selfTestTimerStarted) {
+            this.selfTestTimer = 14.25;
+            this.selfTestTimerStarted = true;
+        } // timer
+        if (this.selfTestTimer >= 0) {
+            this.selfTestTimer -= _deltaTime / 1000;
+            if (this.selfTestTimer <= 0) {
+                this.selfTestDiv.style.display = "none";
+            }
+        }
+
+        // modification start here
+        var currentAPUMasterState = SimVar.GetSimVarValue("FUELSYSTEM VALVE SWITCH:8", "Bool");  
         // automaticaly switch to the APU page when apu master switch is on
-        if (this.lastAPUMasterState != currentAPUMasterState) { // MODIFIED
-            this.lastAPUMasterState = currentAPUMasterState; // MODIFIED
-            this.changePage("APU"); // MODIFIED
+        if (this.lastAPUMasterState != currentAPUMasterState && this.lastAPUMasterState === 1) {  
+            this.lastAPUMasterState = currentAPUMasterState;  
+            this.changePage("APU")
+
+            //if external power is off when turning on apu, only show the apu page for 10 seconds, then the DOOR page
+            var externalPower = SimVar.GetSimVarValue("EXTERNAL POWER ON", "Bool")  
+            if (externalPower === 0) {  
+                this.externalPowerWhenApuMasterOnTimer = 10
+            }
+
+        }
+
+        if (this.externalPowerWhenApuMasterOnTimer >= 0) {  
+            this.externalPowerWhenApuMasterOnTimer -= _deltaTime/1000
+            if (this.externalPowerWhenApuMasterOnTimer <= 0) {  
+                this.changePage("DOOR")  
+            }  
+        }  
+
+
+        //automatic DOOR page switch
+        var cabinDoorPctOpen = SimVar.GetSimVarValue("INTERACTIVE POINT OPEN:0", "percent");
+        var cateringDoorPctOpen = SimVar.GetSimVarValue("INTERACTIVE POINT OPEN:3", "percent");
+        var fwdCargoPctOpen = SimVar.GetSimVarValue("INTERACTIVE POINT OPEN:5", "percent");
+        if ((cabinDoorPctOpen >= 20 || cateringDoorPctOpen >= 20 || fwdCargoPctOpen >= 20) && !this.doorPageActivated) {
+            this.changePage("DOOR")
+            this.doorPageActivated = true
+        }
+        if (!(cabinDoorPctOpen >= 20 || cateringDoorPctOpen >= 20 || fwdCargoPctOpen >= 20) && this.doorPageActivated) {
+            this.doorPageActivated = false
         }
 
         // checks if the plane is on takeoff phase or else disables it.
@@ -49,6 +101,7 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         if(!planeOnGround && this.beforeTakeoffPhase) {
             this.beforeTakeoffPhase = false;
         }
+        // modification ends here
     }
     updateAnnunciations() {
         let infoPanelManager = this.upperTopScreen.getInfoPanelManager();
