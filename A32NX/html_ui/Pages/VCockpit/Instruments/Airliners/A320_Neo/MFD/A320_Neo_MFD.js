@@ -95,7 +95,7 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
         super.onUpdate(_deltaTime);
         this.updateMap(_deltaTime);
         this.updateNDInfo(_deltaTime);
-        if (SimVar.GetSimVarValue("L:A320_Neo_ADIRS_STATE", "Enum") != 2) {
+        if (SimVar.GetSimVarValue("L:A320_Neo_ADIRS_STATE", "Enum") != 2 && !this.map.planMode && this.modeChangeTimer == -1) {
             document.querySelector("#MapFail").setAttribute("visibility", "visible");
             document.querySelector("#Map").setAttribute("style", "display:none");
         } else {
@@ -395,6 +395,7 @@ class A320_Neo_MFD_Map extends MapInstrumentElement {
         switch (display) {
             case Jet_NDCompass_Display.ROSE:
                 {
+                    this.planMode = false;
                     this.instrument.zoomRanges = this.getAdaptiveRanges(4.5);
                     this.instrument.style.top = "0%";
                     this.instrument.rotateWithPlane(true);
@@ -404,6 +405,7 @@ class A320_Neo_MFD_Map extends MapInstrumentElement {
                 }
             case Jet_NDCompass_Display.ARC:
                 {
+                    this.planMode = false;
                     this.instrument.zoomRanges = this.getAdaptiveRanges(2.3);
                     this.instrument.style.top = "24%";
                     this.instrument.rotateWithPlane(true);
@@ -413,6 +415,7 @@ class A320_Neo_MFD_Map extends MapInstrumentElement {
                 }
             case Jet_NDCompass_Display.PLAN:
                 {
+                    this.planMode = true;
                     this.instrument.zoomRanges = this.getAdaptiveRanges(4.5);
                     this.instrument.style.top = "0%";
                     this.instrument.rotateWithPlane(false);
@@ -421,6 +424,7 @@ class A320_Neo_MFD_Map extends MapInstrumentElement {
                     break;
                 }
             default:
+                this.planMode = false;
                 this.instrument.style.top = "0%";
                 this.instrument.rotateWithPlane(false);
                 this.instrument.centerOnActiveWaypoint(false);
