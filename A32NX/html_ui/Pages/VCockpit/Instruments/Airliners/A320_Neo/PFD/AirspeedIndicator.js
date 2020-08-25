@@ -2451,6 +2451,7 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
             this.bottomLine.setAttribute("stroke", "red");
             this.graduationVLine.setAttribute("stroke", "transparent");
             this.cursorSVGShape.setAttribute("visibility", "hidden");
+            this.redSpeedText.setAttribute("visibility", "hidden");
         }
         if (this.graduations != null) {
             for (let grad of this.graduations) {
