@@ -17,7 +17,7 @@
         },
         {
             "path": "html_ui/Pages/VCockpit/Instruments/Airliners/A320_Neo/EICAS/A320_Neo_EICAS.js",
-            "size": 8262,
+            "size": 10161,
             "date": "132402817714110148"
         },
         {
@@ -32,7 +32,7 @@
         },
         {
             "path": "html_ui/Pages/VCockpit/Instruments/Airliners/A320_Neo/EICAS/ECAM/A320_Neo_LowerECAM_APU.js",
-            "size": 9925,
+            "size": 10429,
             "date": "132402817714110148"
         },
         {
@@ -81,13 +81,18 @@
             "date": "132402817714110148"
         },
         {
+            "path": "html_ui/Pages/VCockpit/Instruments/Airliners/A320_Neo/MFD/A320_Neo_MFD.css",
+            "size": 8327,
+            "date": "132402817714110148"
+        },
+        {
             "path": "html_ui/Pages/VCockpit/Instruments/Airliners/A320_Neo/MFD/A320_Neo_MFD.html",
-            "size": 10409,
+            "size": 10718,
             "date": "132402817714110148"
         },
         {
             "path": "html_ui/Pages/VCockpit/Instruments/Airliners/A320_Neo/MFD/A320_Neo_MFD.js",
-            "size": 21906,
+            "size": 22488,
             "date": "132402817714110148"
         },
         {
@@ -117,7 +122,7 @@
         },
         {
             "path": "SimObjects/AirPlanes/Asobo_A320_NEO/engines.cfg",
-            "size": 10486,
+            "size": 10489,
             "date": "132402817714110148"
         },
         {

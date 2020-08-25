@@ -8,12 +8,19 @@
                 <map-instrument id="MapInstrument" map-mode="plan" bing-id="MFD" show-overlay="false" show-roads="false" config-path="/Pages/VCockpit/Instruments/Airliners/A320_Neo/MFD/"></map-instrument>
             </div>
 
-            <jet-mfd-nd-compass id="Compass"></jet-mfd-nd-compass>
             <div id="ModeChangeMask">
                 <svg width="1280" height="1280">
                     <text class="Value" x="50%" y="40%" alignment-baseline="baseline" font-size="50px" fill="lime" text-anchor="middle">MODE CHANGE</text>
                 </svg>
             </div>
+            <div id="RangeChangeMask">
+                <svg width="1280" height="1280">
+                    <text class="Value" x="50%" y="40%" alignment-baseline="baseline" font-size="50px" fill="lime" text-anchor="middle">RANGE CHANGE</text>
+                </svg>
+            </div>
+
+            <jet-mfd-nd-compass id="Compass"></jet-mfd-nd-compass>
+
             <jet-mfd-nd-info id="NDInfo">
                 <div id="TopBox">
                     <div id="Speed">
@@ -89,6 +96,7 @@
                     </svg>
                 </div>
             </jet-mfd-nd-info>
+            
             <div style="position: absolute; left: 0%; top: 0%; width: 100%; height: 100%; border: none;" id="SelfTestDiv">
                 <svg id="SelfTest" viewBox="0 0 600 600" style="position:absolute; top:0%; left: 0%; width: 100%; height:100%;">
                     <rect fill="black" x="0" y="0" width="100%" height="100%"></rect>

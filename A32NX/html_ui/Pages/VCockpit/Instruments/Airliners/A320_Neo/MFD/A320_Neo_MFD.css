@@ -1,0 +1,254 @@
+:root {
+    --bodyHeightScale: 1; }
+  
+  @keyframes TemporaryShow {
+    0%, 100% {
+      visibility: visible; } }
+  
+  @keyframes TemporaryHide {
+    0%, 100% {
+      visibility: hidden; } }
+  
+  #highlight {
+    position: absolute;
+    height: 100%;
+    width: 100%;
+    z-index: 10; }
+  
+  #Electricity {
+    width: 100%;
+    height: 100%; }
+    #Electricity[state=off] {
+      display: none; }
+  
+  @font-face {
+    font-family: "Roboto";
+    src: url("/Fonts/RobotoMono-Medium.ttf") format("truetype");
+    font-weight: normal;
+    font-style: normal; }
+  
+  @font-face {
+    font-family: "Roboto-Light";
+    src: url("/Fonts/RobotoMono-Light.ttf") format("truetype");
+    font-weight: normal;
+    font-style: normal; }
+  
+  @font-face {
+    font-family: "Roboto-Bold";
+    src: url("/Fonts/RobotoMono-Bold.ttf") format("truetype");
+    font-weight: normal;
+    font-style: normal; }
+  
+  #Mainframe {
+    --refWidth: 1024;
+    --refHeight: 1024; }
+  
+  a320-neo-mfd-element {
+    width: 100%;
+    height: 100%;
+    background-color: black;
+    font-family: Roboto-Bold;
+    overflow: hidden; }
+    a320-neo-mfd-element #Electricity {
+      width: 100%;
+      height: 100%; }
+      a320-neo-mfd-element #Electricity[state=off] {
+        display: none; }
+    a320-neo-mfd-element #highlight {
+      position: absolute;
+      height: 100%;
+      width: 100%;
+      z-index: 10; }
+    a320-neo-mfd-element #Mainframe {
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: block;
+      position: relative; }
+      a320-neo-mfd-element #Mainframe #Compass {
+        transform: rotateX(0);
+        position: absolute;
+        border: none;
+        left: 0%;
+        top: 0%;
+        width: 100%;
+        height: 100%; }
+      a320-neo-mfd-element #Mainframe #Map {
+        position: absolute;
+        height: 150%;
+        width: 150%;
+        top: -25%;
+        left: -25%;
+        display: block;
+        /* Map position (left and top) is set in mapConfig.json file (see SvgMapConfig.ts) (makes it editable at runtime) */
+        /* Map position (left and top) is set in mapConfig.json file (see SvgMapConfig.ts) (makes it editable at runtime) */ }
+        a320-neo-mfd-element #Mainframe #Map #MapOrientation {
+          position: absolute;
+          top: 0%;
+          right: 0%;
+          width: 10%;
+          height: calc( 3 * 1vh * var(--bodyHeightScale));
+          background-color: #1a1d21;
+          color: white; }
+        a320-neo-mfd-element #Mainframe #Map #WindData {
+          position: absolute;
+          top: 0%;
+          width: 7%;
+          right: 10%; }
+        a320-neo-mfd-element #Mainframe #Map #MapRange {
+          position: absolute;
+          bottom: 0%;
+          right: 0%;
+          width: 7%;
+          height: calc( 3 * 1vh * var(--bodyHeightScale));
+          background-color: #1a1d21;
+          color: #36c8d2; }
+        a320-neo-mfd-element #Mainframe #Map #MapSVG, a320-neo-mfd-element #Mainframe #Map #road-network-canvas {
+          transform: rotateX(0);
+          position: absolute; }
+        a320-neo-mfd-element #Mainframe #Map bing-map {
+          transform: rotateX(0);
+          position: absolute;
+          top: 0%;
+          left: 0%;
+          width: 100%;
+          height: 100%; }
+      a320-neo-mfd-element #Mainframe #ModeChangeMask {
+        top: 0%;
+        left: 0%;
+        width: 100%;
+        height: 100%;
+        display: none;
+        position: absolute;
+        background-color: black; }
+      a320-neo-mfd-element #Mainframe #RangeChangeMask {
+        top: 0%;
+        left: 0%;
+        width: 100%;
+        height: 100%;
+        display: none;
+        position: absolute;
+        background-color: black; }
+      a320-neo-mfd-element #Mainframe #TopBox {
+        top: 2%;
+        left: 4%;
+        width: 92%;
+        height: 13%;
+        position: absolute; }
+        a320-neo-mfd-element #Mainframe #TopBox #Speed {
+          top: 15%;
+          height: 100%;
+          left: 0%;
+          width: 40%;
+          position: absolute; }
+        a320-neo-mfd-element #Mainframe #TopBox #Title {
+          top: 15%;
+          height: 100%;
+          left: 40%;
+          width: 20%;
+          position: absolute; }
+        a320-neo-mfd-element #Mainframe #TopBox #Approach {
+          top: 15%;
+          height: 100%;
+          left: 60%;
+          width: 40%;
+          position: absolute; }
+          a320-neo-mfd-element #Mainframe #TopBox #Approach text {
+            text-anchor: end; }
+        a320-neo-mfd-element #Mainframe #TopBox #Waypoint {
+          top: 15%;
+          height: 100%;
+          left: 60%;
+          width: 40%;
+          position: absolute; }
+          a320-neo-mfd-element #Mainframe #TopBox #Waypoint text {
+            text-anchor: end; }
+        a320-neo-mfd-element #Mainframe #TopBox svg {
+          width: 100%;
+          height: 100%; }
+        a320-neo-mfd-element #Mainframe #TopBox text {
+          width: 100%;
+          height: 100%;
+          font-family: Roboto-Light; }
+        a320-neo-mfd-element #Mainframe #TopBox text.Value {
+          font-size: 38px;
+          fill: lime; }
+        a320-neo-mfd-element #Mainframe #TopBox text.ValueVor {
+          font-size: 38px;
+          fill: cyan; }
+        a320-neo-mfd-element #Mainframe #TopBox text.ValueIls {
+          font-size: 38px;
+          fill: #ff00ff; }
+        a320-neo-mfd-element #Mainframe #TopBox text.Small {
+          font-size: 30px;
+          fill: white; }
+        a320-neo-mfd-element #Mainframe #TopBox text.Large {
+          font-size: 38px;
+          fill: white; }
+        a320-neo-mfd-element #Mainframe #TopBox text.Units {
+          font-size: 30px;
+          fill: cyan; }
+        a320-neo-mfd-element #Mainframe #TopBox text.Title {
+          font-size: 45px;
+          fill: lime; }
+          a320-neo-mfd-element #Mainframe #TopBox text.Title[state=ils] {
+            fill: #FF0CE2; }
+      a320-neo-mfd-element #Mainframe #VORDMENavaids div {
+        top: 87%;
+        width: 25%;
+        height: 13%;
+        position: absolute;
+        background-color: black; }
+      a320-neo-mfd-element #Mainframe #VORDMENavaids svg {
+        width: 100%;
+        height: 100%; }
+      a320-neo-mfd-element #Mainframe #VORDMENavaids #VORDMENavaid_Left {
+        left: 2.5%; }
+      a320-neo-mfd-element #Mainframe #VORDMENavaids #VORDMENavaid_Right {
+        right: 2.5%; }
+      a320-neo-mfd-element #Mainframe #VORDMENavaids text {
+        font-family: Roboto-Light;
+        text-align: center;
+        text-anchor: middle; }
+      a320-neo-mfd-element #Mainframe #VORDMENavaids #State {
+        font-size: calc( 3 * 1vh * var(--bodyHeightScale));
+        fill: white; }
+      a320-neo-mfd-element #Mainframe #VORDMENavaids #ID {
+        font-size: calc( 3 * 1vh * var(--bodyHeightScale));
+        fill: white; }
+      a320-neo-mfd-element #Mainframe #VORDMENavaids #Mode {
+        font-size: calc( 3 * 1vh * var(--bodyHeightScale));
+        fill: white;
+        text-decoration: underline; }
+      a320-neo-mfd-element #Mainframe #VORDMENavaids #Distance {
+        font-size: calc( 2.5 * 1vh * var(--bodyHeightScale));
+        fill: lime; }
+      a320-neo-mfd-element #Mainframe #VORDMENavaids #Unit {
+        font-size: calc( 2.5 * 1vh * var(--bodyHeightScale));
+        fill: cyan; }
+      a320-neo-mfd-element #Mainframe #VORDMENavaids #Arrow {
+        fill: none;
+        stroke: white;
+        stroke-width: 6px; }
+      a320-neo-mfd-element #Mainframe #Symbols {
+        top: 79%;
+        left: 92%;
+        width: 100%;
+        height: 50%;
+        position: absolute; }
+        a320-neo-mfd-element #Mainframe #Symbols svg {
+          width: 100%;
+          height: 100%; }
+        a320-neo-mfd-element #Mainframe #Symbols text {
+          width: 100%;
+          height: 100%;
+          font-family: Roboto-Bold; }
+        a320-neo-mfd-element #Mainframe #Symbols text.Small {
+          font-size: 30px;
+          fill: lime; }
+        a320-neo-mfd-element #Mainframe #Symbols text.Large {
+          font-size: 38px;
+          fill: lime; }
+  
+  

@@ -53,6 +53,7 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
         this.mapRange = -1;
         this.mapConfigId = 0;
         this.modeChangeTimer = -1;
+        this.rangeChangeTimer = -1;
         this.headingSelected = false;
         this.showILS = false;
         this.map = new A320_Neo_MFD_Map();
@@ -67,6 +68,7 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
     init() {
         super.init();
         this.modeChangeMask = this.gps.getChildById("ModeChangeMask");
+        this.rangeChangeMask = this.gps.getChildById("RangeChangeMask");
         this.map.instrument.setNPCAirplaneManagerTCASMode(true);
         this.map.instrument.showRoads = false;
         this.map.instrument.showObstacles = false;
@@ -130,6 +132,13 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
                 this.modeChangeTimer = -1;
             }
         }
+        if (this.rangeChangeMask && this.rangeChangeTimer >= 0) {
+            this.rangeChangeTimer -= _deltaTime / 1000;
+            if (this.rangeChangeTimer <= 0) {
+                this.rangeChangeMask.style.display = "none";
+                this.rangeChangeTimer = -1;
+            }
+        }
         var wxRadarOn = (SimVar.GetSimVarValue("L:XMLVAR_A320_WeatherRadar_Sys", "number") != 1) ? true : false;
         var wxRadarMode = SimVar.GetSimVarValue("L:XMLVAR_A320_WeatherRadar_Mode", "number");
         var terrainOn = SimVar.GetSimVarValue("L:BTN_TERRONND_ACTIVE", "number");
@@ -186,6 +195,11 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
             this.mapRange = mapRange;
             this.map.instrument.setZoom(this.mapRange);
             this.compass.svg.mapRange = this.map.zoomRanges[this.mapRange];
+
+            if (this.rangeChangeMask) {
+                this.rangeChangeMask.style.display = "block";
+                this.rangeChangeTimer = 0.5;
+            }
         }
         let selected = Simplane.getAutoPilotHeadingSelected();
         if (selected != this.headingSelected) {
