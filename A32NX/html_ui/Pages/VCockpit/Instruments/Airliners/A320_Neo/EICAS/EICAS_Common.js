@@ -31,32 +31,33 @@ class EICASCommonDisplay extends Airliners.EICASTemplateElement {
         this.refreshSAT(Math.round(Simplane.getAmbientTemperature()));
         this.refreshClock();
         this.refreshGrossWeight();
+        this.refreshADIRS();
     }
     refreshTAT(_value, _force = false) {
-        if ((_value != this.currentTAT) || _force) {
-            this.currentTAT = _value;
-            if (this.tatText != null) {
-                if (this.currentTAT > 0) {
-                    this.tatText.textContent = "+" + this.currentTAT.toString();
-                }
-                else {
-                    this.tatText.textContent = this.currentTAT.toString();
-                }
+        //if ((_value != this.currentTAT) || _force) {
+        this.currentTAT = _value;
+        if (this.tatText != null) {
+            if (this.currentTAT > 0) {
+                this.tatText.textContent = "+" + this.currentTAT.toString();
+            }
+            else {
+                this.tatText.textContent = this.currentTAT.toString();
             }
         }
+        //}
     }
     refreshSAT(_value, _force = false) {
-        if ((_value != this.currentSAT) || _force) {
-            this.currentSAT = _value;
-            if (this.satText != null) {
-                if (this.currentSAT > 0) {
-                    this.satText.textContent = "+" + this.currentSAT.toString();
-                }
-                else {
-                    this.satText.textContent = this.currentSAT.toString();
-                }
+        //if ((_value != this.currentSAT) || _force) {
+        this.currentSAT = _value;
+        if (this.satText != null) {
+            if (this.currentSAT > 0) {
+                this.satText.textContent = "+" + this.currentSAT.toString();
+            }
+            else {
+                this.satText.textContent = this.currentSAT.toString();
             }
         }
+        //}
     }
     refreshClock() {
         var seconds = Math.floor(SimVar.GetGlobalVarValue("ZULU TIME", "seconds"));
@@ -92,6 +93,19 @@ class EICASCommonDisplay extends Airliners.EICASTemplateElement {
             this.currentGW = gw;
             if (this.gwValue != null) {
                 this.gwValue.textContent = this.currentGW.toString();
+            }
+        }
+    }
+    refreshADIRS() {
+        if (this.tatText != null && this.satText != null) {
+            if (SimVar.GetSimVarValue("L:A320_Neo_ADIRS_STATE", "Enum") != 2) {
+                this.tatText.textContent = "XX";
+                this.tatText.setAttribute("fill", "#db7200");
+                this.satText.textContent = "XX";
+                this.satText.setAttribute("fill", "#db7200");
+            } else {
+                this.tatText.setAttribute("fill", "green");
+                this.satText.setAttribute("fill", "green");
             }
         }
     }
