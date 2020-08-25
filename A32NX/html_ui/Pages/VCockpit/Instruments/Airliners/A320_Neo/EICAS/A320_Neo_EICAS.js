@@ -35,6 +35,7 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         this.selfTestTimer = -1;
         this.selfTestTimerStarted = false;
         this.doorPageActivated = false
+        this.changePage("DOOR"); // MODIFIED
     }
     onUpdate(_deltaTime) {
         super.onUpdate(_deltaTime);
