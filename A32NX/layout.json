@@ -111,6 +111,11 @@
             "date": "132402817714110148"
         },
         {
+            "path": "html_ui/Pages/VCockpit/Instruments/Airliners/Shared/Airbus/Airbus_FMA.js",
+            "size": 84104,
+            "date": "132402817714110148"
+        },
+        {
             "path": "ModelBehaviorDefs/Airliner/Airbus.xml",
             "size": 37721,
             "date": "132402817714110148"
