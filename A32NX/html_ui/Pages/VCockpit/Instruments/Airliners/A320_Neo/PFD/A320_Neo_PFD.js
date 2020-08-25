@@ -63,6 +63,7 @@ class A320_Neo_PFD_MainPage extends NavSystemPage {
         this.selfTestDiv = this.gps.getChildById("SelfTestDiv");
         this.selfTestTimer = -1;
         this.selfTestTimerStarted = false;
+        this.electricity = this.gps.getChildById("Electricity")
     }
     onEvent(_event) {
         switch (_event) {
@@ -77,6 +78,10 @@ class A320_Neo_PFD_MainPage extends NavSystemPage {
     onUpdate(_deltaTime) {
         var externalPower = SimVar.GetSimVarValue("EXTERNAL POWER ON", "bool");
         var engineOn = SimVar.GetSimVarValue("GENERAL ENG STARTER:1", "bool");
+        var apuOn = SimVar.GetSimVarValue("APU SWITCH", "bool");  
+
+        this.updateScreenState(externalPower, engineOn, apuOn);
+
         if (engineOn) {
             this.selfTestDiv.style.display = "none";
             this.selfTestTimerStarted = true;
@@ -92,6 +97,14 @@ class A320_Neo_PFD_MainPage extends NavSystemPage {
             if (this.selfTestTimer <= 0) {
                 this.selfTestDiv.style.display = "none";
             }
+        }
+    }
+
+    updateScreenState(externalPowerOn, engineOn, apuOn) {
+        if (!externalPowerOn && !engineOn && !apuOn) {
+            this.electricity.style.display = "none";
+        } else {
+            this.electricity.style.display = "block";
         }
     }
     
