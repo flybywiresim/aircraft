@@ -191,15 +191,9 @@ var A320_Neo_LowerECAM_APU;
         update(_deltaTime) {
             //Update gauges
             var currentAPUMasterState = SimVar.GetSimVarValue("FUELSYSTEM VALVE SWITCH:8", "Bool");
-            if ((currentAPUMasterState !== this.lastAPUMasterState)) {
-                if (currentAPUMasterState === 1) {
-                    this.apuInactiveTimer = 3
-                    this.lastAPUMasterState = currentAPUMasterState
-                } else {
-                    this.apuEGTGauge.active = false
-                    this.apuNGauge.active = false
-                    this.lastAPUMasterState = currentAPUMasterState
-                }
+            if ((currentAPUMasterState !== this.lastAPUMasterState) && currentAPUMasterState === 1) {
+                this.apuInactiveTimer = 3
+                this.lastAPUMasterState = currentAPUMasterState
                 
             }
             if (this.apuInactiveTimer >= 0) {
