@@ -31,8 +31,13 @@
             "date": "132402817714110148"
         },
         {
+            "path": "html_ui/Pages/VCockpit/Instruments/Airliners/A320_Neo/EICAS/EICAS_Common.html",
+            "size": 1695,
+            "date": "132402817714110148"
+        },
+        {
             "path": "html_ui/Pages/VCockpit/Instruments/Airliners/A320_Neo/EICAS/EICAS_Common.js",
-            "size": 3729,
+            "size": 4303,
             "date": "132402817714110148"
         },
         {
