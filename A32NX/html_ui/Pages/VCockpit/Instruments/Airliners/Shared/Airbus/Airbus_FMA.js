@@ -658,7 +658,7 @@ var Airbus_FMA;
             return false;
         }
         IsActive_SPEED() {
-			if (!Airbus_FMA.CurrentPlaneState.autoPilotMachModeActive) {
+			if (!Airbus_FMA.CurrentPlaneState.autoPilotMachModeActive && Airbus_FMA.CurrentPlaneState.autoPilotThrottleActive && Airbus_FMA.CurrentPlaneState.anyAutoPilotsActive) {
 				if (AltCaptured) {
 					return true;
 				}
@@ -669,7 +669,7 @@ var Airbus_FMA;
 			return false;
         }
         IsActive_MACH() {
-			if (Airbus_FMA.CurrentPlaneState.autoPilotMachModeActive) {
+			if (Airbus_FMA.CurrentPlaneState.autoPilotMachModeActive && Airbus_FMA.CurrentPlaneState.autoPilotThrottleActive && Airbus_FMA.CurrentPlaneState.anyAutoPilotsActive) {
 				if (AltCaptured) {
 					return true;
 				}
