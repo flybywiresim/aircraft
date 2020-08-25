@@ -55,10 +55,6 @@ var A320_Neo_LowerECAM_APU;
                 this.APUGenInfo.setAttribute("visibility", "visible");
             }
 
-            if (currentAPUMasterState === 0) {
-                // TODO: put xx instead of numbers in APU gauge if apu master is off
-            }
-
             if (this.APUStartTimer >= 0) {
                 this.APUStartTimer -= _deltaTime/1000;
                 if (this.APUStartTimer <= 0) {
@@ -212,6 +208,7 @@ var A320_Neo_LowerECAM_APU;
 
         getAPUN() {
             return SimVar.GetSimVarValue("APU PCT RPM", "percent");
+            
         }
 
         //Calculates the APU EGT Based on the RPM
