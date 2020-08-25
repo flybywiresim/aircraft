@@ -219,6 +219,14 @@
 		</Annunciation>
 
 		<Annunciation>
+		  <Type>Advisory</Type>
+		  <Text>IRS IN ALIGN</Text>
+		  <Condition>
+			<Simvar name="L:A320_Neo_ADIRS_IN_ALIGN" unit="Bool"/>
+		  </Condition>
+		</Annunciation>
+
+		<Annunciation>
 		  <Type>Warning</Type>
 		  <Text>FIRE</Text>
 		  <Condition>
