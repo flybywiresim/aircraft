@@ -21,13 +21,14 @@ var A320_Neo_LowerECAM_BLEED;
             this.left_ip = [this.querySelector("#left-ip-open"), this.querySelector("#left-ip-closed")];
             this.right_ip = [this.querySelector("#right-ip-open"), this.querySelector("#right-ip-closed")];
             this.right_hp = [this.querySelector("#right-hp-open"), this.querySelector("#right-hp-closed")]
+            this.apu = [this.querySelector("#apu-open"), this.querySelector("#apu-closed")]
         }
         update(_deltaTime) {
             if (!this.isInitialised) {
                 return;
             }
             // find if engine one and two are providing bleed air
-            var currentEngineGenState = [SimVar.GetSimVarValue("BLEED AIR ENGINE:1", "Bool",), SimVar.GetSimVarValue("BLEED AIR ENGINE:2", "Bool")]
+            var currentEngineBleedState = [SimVar.GetSimVarValue("BLEED AIR ENGINE:1", "Bool",), SimVar.GetSimVarValue("BLEED AIR ENGINE:2", "Bool")]
 
             if (currentEngineGenState[0] === 1) {
                 this.left_hp[0].setAttribute("visibility", 'visible')
@@ -50,6 +51,17 @@ var A320_Neo_LowerECAM_BLEED;
                 this.right_hp[1].setAttribute("visibility", 'visible')
                 this.right_ip[0].setAttribute("visibility", 'hidden')
                 this.right_ip[1].setAttribute("visibility", 'visible')
+            }
+
+            //find if the APU bleed is on
+            var currentApuBleedSate = SimVar.GetSimVarValue("BLEED AIR APU", "Bool")
+
+            if (currentApuBleedSate === 1) {
+                this.apuBleedIndication[0].setAttribute("visibility", 'visible')
+                this.apuBleedIndication[1].setAttribute("visibility", "hidden")
+            } else {
+                this.apuBleedIndication[0].setAttribute("visibility", "hidden")
+                this.apuBleedIndication[1].setAttribute("visibility", "hidden")
             }
         }
     }
