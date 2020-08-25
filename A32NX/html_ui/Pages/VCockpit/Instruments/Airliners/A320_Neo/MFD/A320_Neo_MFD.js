@@ -90,6 +90,7 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
         this.selfTestDiv = this.gps.getChildById("SelfTestDiv");
         this.selfTestTimer = -1;
         this.selfTestTimerStarted = false;
+        this.electricity = this.gps.getChildById("Electricity")
     }
     onUpdate(_deltaTime) {
         super.onUpdate(_deltaTime);
@@ -98,6 +99,10 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
 
         var externalPower = SimVar.GetSimVarValue("EXTERNAL POWER ON", "bool");
         var engineOn = SimVar.GetSimVarValue("GENERAL ENG STARTER:1", "bool");
+        var apuOn = SimVar.GetSimVarValue("APU SWITCH", "bool");   
+        
+        this.updateScreenState(externalPower, engineOn, apuOn);
+
         if (engineOn) {
             this.selfTestDiv.style.display = "none";
             this.selfTestTimerStarted = true;
@@ -114,7 +119,17 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
                 this.selfTestDiv.style.display = "none";
             }
         }
+        
     }
+
+    updateScreenState(externalPowerOn, engineOn, apuOn) {
+        if (!externalPowerOn && !engineOn && !apuOn) {
+            this.electricity.style.display = "none";
+        } else {
+            this.electricity.style.display = "block";
+        }
+    }
+
     _updateNDFiltersStatuses() {
         SimVar.SetSimVarValue("L:BTN_CSTR_FILTER_ACTIVE", "number", this.map.instrument.showConstraints ? 1 : 0);
         SimVar.SetSimVarValue("L:BTN_VORD_FILTER_ACTIVE", "number", this.map.instrument.showVORs ? 1 : 0);
