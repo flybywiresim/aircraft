@@ -110,14 +110,14 @@ a320-neo-fcu-element {
         left: 60%;
         position: absolute; }
         a320-neo-fcu-element #Mainframe #LargeScreen #AltVS #Altitude {
-          width: 80%;
+          width: 50%;
           height: 100%;
           left: 0%;
           position: absolute; }
         a320-neo-fcu-element #Mainframe #LargeScreen #AltVS #VerticalSpeed {
-          width: 20%;
+          width: 50%;
           height: 100%;
-          left: 80%;
+          left: 50%;
           position: absolute; }
     a320-neo-fcu-element #Mainframe #SmallScreen {
       width: 14%;
