@@ -52,9 +52,8 @@ Join our Discord server to find out about the latest updates and discuss ongoing
 ## Known Issues (Please note that most issues are being worked on and some of them may even be fixed in the dev branch)
 - APU ECAM page doesn't display correct load percent.
 - Bleed ECAM page isn't modeled.
-- No automatic ECAM page switching for APU and DOOR pages.
+- No automatic ECAM page switching for DOOR page
 - No chime coming from No smoking & Seatbelts.
-- MCP Panel Font offset (VS indicator).
 - No smoking sign doesn't use full range of motion.
 - T.O Config is not fully functional yet.
  
