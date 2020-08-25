@@ -17,7 +17,7 @@
         },
         {
             "path": "html_ui/Pages/VCockpit/Instruments/Airliners/A320_Neo/EICAS/A320_Neo_EICAS.js",
-            "size": 6995,
+            "size": 8262,
             "date": "132402817714110148"
         },
         {
@@ -107,7 +107,7 @@
         },
         {
             "path": "SimObjects/AirPlanes/Asobo_A320_NEO/model/A320_NEO_INTERIOR.xml",
-            "size": 130479,
+            "size": 131180,
             "date": "132402817714110148"
         },
         {

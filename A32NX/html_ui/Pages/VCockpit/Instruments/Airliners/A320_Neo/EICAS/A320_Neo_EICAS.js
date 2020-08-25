@@ -55,8 +55,9 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         if (infoPanelManager) {
 
             // ----------- MODIFIED --------------------//
-            let planeOnGround = SimVar.GetSimVarValue("SIM ON GROUND", "Bool"); // Temporary Sim Value
             let autoBrkValue = SimVar.GetSimVarValue("L:XMLVAR_Autobrakes_Level", "Number");
+            let starterOne = SimVar.GetSimVarValue("GENERAL ENG STARTER:1", "Bool");
+            let starterTwo = SimVar.GetSimVarValue("GENERAL ENG STARTER:2", "Bool");
             let splrsArmed = SimVar.GetSimVarValue("SPOILERS ARMED", "Bool");
             let flapsPosition = SimVar.GetSimVarValue("FLAPS HANDLE INDEX", "Number");
             console.log(autoBrkValue);
@@ -84,7 +85,7 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
             }
 
             // ----------- MODIFIED --------------------//
-            if(this.beforeTakeoffPhase) {
+            if(this.beforeTakeoffPhase && starterOne && starterTwo) {
                 if(autoBrkValue == 3) {
                     infoPanelManager.addMessage(Airliners.EICAS_INFO_PANEL_ID.PRIMARY, "T.O AUTO BRK MAX", Airliners.EICAS_INFO_PANEL_MESSAGE_STYLE.INDICATION);
                 }else{
