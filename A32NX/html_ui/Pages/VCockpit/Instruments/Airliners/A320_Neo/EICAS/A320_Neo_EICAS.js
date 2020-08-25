@@ -35,7 +35,9 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         this.selfTestTimer = -1;
         this.selfTestTimerStarted = false;
         this.doorPageActivated = false
+        this.electricity = this.querySelector("#Electricity")
         this.changePage("DOOR"); // MODIFIED
+        
     }
     onUpdate(_deltaTime) {
         super.onUpdate(_deltaTime);
@@ -43,6 +45,9 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         
         var externalPower = SimVar.GetSimVarValue("EXTERNAL POWER ON", "bool");
         var engineOn = SimVar.GetSimVarValue("GENERAL ENG STARTER:1", "bool");
+        var apuOn = SimVar.GetSimVarValue("APU SWITCH", "bool");
+
+        this.updateScreenState(externalPower, engineOn, apuOn);
 
         // Check if engine is on so self test doesn't appear when not starting from cold and dark
         if (engineOn) {
@@ -60,8 +65,6 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
                 this.selfTestDiv.style.display = "none";
             }
         }
-
-
 
         // modification start here
         var currentAPUMasterState = SimVar.GetSimVarValue("FUELSYSTEM VALVE SWITCH:8", "Bool");  
@@ -99,6 +102,15 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         }
         // modification ends here
     }
+
+    updateScreenState(externalPowerOn, engineOn, apuOn) {
+        if (!externalPowerOn && !engineOn && !apuOn) {
+            this.electricity.style.display = "none";
+        } else {
+            this.electricity.style.display = "block";
+        }
+    }
+
     updateAnnunciations() {
         let infoPanelManager = this.upperTopScreen.getInfoPanelManager();
         if (infoPanelManager) {

@@ -54,11 +54,13 @@
 
                     <div id="Waypoint">
                         <svg>
-                            <text id="WP_Name" class="Large" x="75%" y="20%" alignment-baseline="baseline"></text>
-                            <text id="WP_Track_Value" class="Value" x="100%" y="20%" alignment-baseline="baseline">---&deg</text>
-                            <text id="WP_Distance_Value" class="Value" x="92%" y="45%" alignment-baseline="baseline">-.-</text>
-                            <text id="WP_Distance_Units" class="Units" x="100%" y="45%" alignment-baseline="baseline">NM</text>
-                            <text id="WP_Time" class="Value" x="100%" y="70%" alignment-baseline="baseline">--:--</text>
+                            <g id="Waypoint_Group">
+                                <text id="WP_Name" class="Large" x="75%" y="20%" alignment-baseline="baseline"></text>
+                                <text id="WP_Track_Value" class="Value" x="100%" y="20%" alignment-baseline="baseline">---&deg</text>
+                                <text id="WP_Distance_Value" class="Value" x="92%" y="45%" alignment-baseline="baseline">-.-</text>
+                                <text id="WP_Distance_Units" class="Units" x="100%" y="45%" alignment-baseline="baseline">NM</text>
+                                <text id="WP_Time" class="Value" x="100%" y="70%" alignment-baseline="baseline">--:--</text>
+                            </g>
                         </svg>
                     </div>
                 </div>
@@ -96,7 +98,18 @@
                     </svg>
                 </div>
             </jet-mfd-nd-info>
-            
+
+            <div>
+                <div style="position: absolute; left: 0%; top: 0%; width: 100%; height: 100%; border: none;">
+                    <svg viewBox="0 0 600 600" style="position:absolute; top:0%; left: 0%; width: 100%; height:100%;">
+                        <g id="MapFail">
+                            <text fill="red" text-anchor="middle" x="50%" y="33%" font-size="30px">HDG</text>
+                            <text fill="red" text-anchor="middle" x="50%" y="45%" font-size="30px">MAP NOT AVAIL</text>
+                        </g>
+                    </svg>
+                </div>
+            </div>
+
             <div style="position: absolute; left: 0%; top: 0%; width: 100%; height: 100%; border: none;" id="SelfTestDiv">
                 <svg id="SelfTest" viewBox="0 0 600 600" style="position:absolute; top:0%; left: 0%; width: 100%; height:100%;">
                     <rect fill="black" x="0" y="0" width="100%" height="100%"></rect>
@@ -142,9 +155,9 @@
 <script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/Shared/LogicElements/GaugeElement.js"></script>
 
 <script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/Shared/BaseAirliners.js"></script>
-<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/Shared/BaseNDCompass.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/A320_Neo/BaseNDCompass.js"></script> <!-- MODIFIED -->
 
-<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/Shared/MFD/NDCompass.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/A320_Neo/MFD/NDCompass.js"></script> <!-- MODIFIED -->
 <script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/Shared/MFD/NDInfo.js"></script>
 
 <script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/A320_Neo/MFD/A320_Neo_MFD.js"></script>

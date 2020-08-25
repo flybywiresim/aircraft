@@ -92,14 +92,26 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
         this.selfTestDiv = this.gps.getChildById("SelfTestDiv");
         this.selfTestTimer = -1;
         this.selfTestTimerStarted = false;
+        this.electricity = this.gps.getChildById("Electricity")
     }
     onUpdate(_deltaTime) {
         super.onUpdate(_deltaTime);
         this.updateMap(_deltaTime);
         this.updateNDInfo(_deltaTime);
+        if (SimVar.GetSimVarValue("L:A320_Neo_ADIRS_STATE", "Enum") != 2 && !this.map.planMode && this.modeChangeTimer == -1) {
+            document.querySelector("#MapFail").setAttribute("visibility", "visible");
+            document.querySelector("#Map").setAttribute("style", "display:none");
+        } else {
+            document.querySelector("#MapFail").setAttribute("visibility", "hidden");
+            document.querySelector("#Map").setAttribute("style", "");
+        }
 
         var externalPower = SimVar.GetSimVarValue("EXTERNAL POWER ON", "bool");
         var engineOn = SimVar.GetSimVarValue("GENERAL ENG STARTER:1", "bool");
+        var apuOn = SimVar.GetSimVarValue("APU SWITCH", "bool");   
+        
+        this.updateScreenState(externalPower, engineOn, apuOn);
+
         if (engineOn) {
             this.selfTestDiv.style.display = "none";
             this.selfTestTimerStarted = true;
@@ -116,7 +128,17 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
                 this.selfTestDiv.style.display = "none";
             }
         }
+        
     }
+
+    updateScreenState(externalPowerOn, engineOn, apuOn) {
+        if (!externalPowerOn && !engineOn && !apuOn) {
+            this.electricity.style.display = "none";
+        } else {
+            this.electricity.style.display = "block";
+        }
+    }
+
     _updateNDFiltersStatuses() {
         SimVar.SetSimVarValue("L:BTN_CSTR_FILTER_ACTIVE", "number", this.map.instrument.showConstraints ? 1 : 0);
         SimVar.SetSimVarValue("L:BTN_VORD_FILTER_ACTIVE", "number", this.map.instrument.showVORs ? 1 : 0);
@@ -402,6 +424,7 @@ class A320_Neo_MFD_Map extends MapInstrumentElement {
         switch (display) {
             case Jet_NDCompass_Display.ROSE:
                 {
+                    this.planMode = false;
                     this.instrument.zoomRanges = this.getAdaptiveRanges(4.5);
                     this.instrument.style.top = "0%";
                     this.instrument.rotateWithPlane(true);
@@ -411,6 +434,7 @@ class A320_Neo_MFD_Map extends MapInstrumentElement {
                 }
             case Jet_NDCompass_Display.ARC:
                 {
+                    this.planMode = false;
                     this.instrument.zoomRanges = this.getAdaptiveRanges(2.3);
                     this.instrument.style.top = "24%";
                     this.instrument.rotateWithPlane(true);
@@ -420,6 +444,7 @@ class A320_Neo_MFD_Map extends MapInstrumentElement {
                 }
             case Jet_NDCompass_Display.PLAN:
                 {
+                    this.planMode = true;
                     this.instrument.zoomRanges = this.getAdaptiveRanges(4.5);
                     this.instrument.style.top = "0%";
                     this.instrument.rotateWithPlane(false);
@@ -428,6 +453,7 @@ class A320_Neo_MFD_Map extends MapInstrumentElement {
                     break;
                 }
             default:
+                this.planMode = false;
                 this.instrument.style.top = "0%";
                 this.instrument.rotateWithPlane(false);
                 this.instrument.centerOnActiveWaypoint(false);
@@ -502,6 +528,25 @@ class A320_Neo_MFD_NDInfo extends NavSystemElement {
         if (this.ndInfo != null) {
             this.ndInfo.update(_deltaTime);
         }
+        var ADIRSState = SimVar.GetSimVarValue("L:A320_Neo_ADIRS_STATE", "Enum");
+        var gs = this.ndInfo.querySelector("#GS_Value");
+        var tas = this.ndInfo.querySelector("#TAS_Value");
+        var wd = this.ndInfo.querySelector("#Wind_Direction");
+        var ws = this.ndInfo.querySelector("#Wind_Strength");
+        var wa = this.ndInfo.querySelector("#Wind_Arrow");
+        var wptg = this.ndInfo.querySelector("#Waypoint_Group");
+        if (ADIRSState != 2) {
+            //Hide GS, TAS, and wind info
+            gs.textContent = "---";
+            tas.textContent = "---";
+            wd.textContent = "---";
+            ws.textContent = "---";
+        }
+        //Show/hide wind arrow
+        wa.setAttribute("visibility", (ADIRSState != 2) ? "hidden" : "visible");
+
+        //Hide waypoint when ADIRS not aligned
+        wptg.setAttribute("visibility", (ADIRSState != 2) ? "hidden" : "visible");
     }
     onExit() {
     }

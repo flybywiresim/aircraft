@@ -1,9 +1,21 @@
-﻿<link rel="stylesheet" href="./A320_Neo_LowerECAM_BLEED.css" />
-
-<script type="text/html" id="LowerECAMBLEEDTemplate">
-    <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Generator: Adobe Illustrator 24.3.0, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
+<svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
 	 viewBox="0 0 600 600" style="enable-background:new 0 0 600 600;" xml:space="preserve">
-
+<style type="text/css">
+	.st0{fill:#FFFFFF;stroke:#FFFFFF;stroke-width:2;stroke-miterlimit:10;}
+	.st1{fill:#FFFFFF;}
+	.st2{font-family:'B612-Regular';}
+	.st3{font-size:22.4px;}
+	.st4{fill:none;stroke:#FFFFFF;stroke-width:2;stroke-miterlimit:10;}
+	.st5{fill:none;stroke:#00C800;stroke-width:2;stroke-miterlimit:10;}
+	.st6{font-size:18.29px;}
+	.st7{fill:#00C800;}
+	.st8{fill:#0AB9B9;}
+	.st9{fill:none;stroke:#FFFFFF;stroke-width:3;stroke-miterlimit:10;}
+	.st10{fill:none;stroke:#FFFFFF;stroke-miterlimit:10;}
+	.st11{fill:#FFFFFF;stroke:#000000;stroke-miterlimit:10;}
+</style>
 <rect y="0" width="600" height="600"/>
 <g>
 	<path class="st0" d="M2.4,506.31"/>
@@ -84,15 +96,21 @@
 	<rect x="458.72" y="318.04" class="st10" width="43" height="49"/>
 	<polygon class="st9" points="242.89,283.54 247.36,291.29 251.83,299.04 242.89,299.04 233.94,299.04 238.41,291.29 	"/>
 	<circle class="st5" cx="120.49" cy="407.81" r="16"/>
-
+	<line class="st5" x1="104.49" y1="407.81" x2="136.49" y2="407.81"/>
+	<line class="st5" x1="120.49" y1="391.81" x2="120.49" y2="423.81"/>
 	<circle class="st5" cx="299.49" cy="360.81" r="16"/>
+	<line class="st5" x1="283.49" y1="360.81" x2="315.49" y2="360.81"/>
+	<line class="st5" x1="299.49" y1="344.81" x2="299.49" y2="376.81"/>
 	<line class="st5" x1="120.49" y1="212.81" x2="120.49" y2="244.81"/>
 	<circle class="st5" cx="480.49" cy="407.81" r="16"/>
-
+	<line class="st5" x1="464.49" y1="407.81" x2="496.49" y2="407.81"/>
+	<line class="st5" x1="480.49" y1="391.81" x2="480.49" y2="423.81"/>
 	<circle class="st5" cx="434.49" cy="453.81" r="16"/>
-
+	<line class="st5" x1="418.49" y1="453.81" x2="450.49" y2="453.81"/>
+	<line class="st5" x1="434.49" y1="437.81" x2="434.49" y2="469.81"/>
 	<circle class="st5" cx="165.49" cy="452.81" r="16"/>
-	
+	<line class="st5" x1="149.49" y1="452.81" x2="181.49" y2="452.81"/>
+	<line class="st5" x1="165.49" y1="436.81" x2="165.49" y2="468.81"/>
 	<circle class="st5" cx="358.49" cy="276.81" r="16"/>
 	<line class="st5" x1="342.49" y1="276.81" x2="374.49" y2="276.81"/>
 	<line class="st5" x1="358.49" y1="260.81" x2="358.49" y2="292.81"/>
@@ -113,52 +131,5 @@
 	<line class="st10" x1="434.45" y1="210.18" x2="445.77" y2="210.18"/>
 	<line class="st10" x1="76.21" y1="207.01" x2="87.82" y2="207.01"/>
 	<line class="st10" x1="155.46" y1="206.69" x2="167.47" y2="206.69"/>
-	<g id="apu-switch">
-		<g id="apu-switch-open">
-			<line class="st5" x1="299.49" y1="344.81" x2="299.49" y2="376.81"/>
-		</g>
-		<g id="apu-switch-closed">
-			<line class="st5" x1="283.49" y1="360.81" x2="315.49" y2="360.81"/>
-		</g>
-	</g>
-	<g id="left-engine">
-		<g id="left-engine-ip">
-			<g id="left-engine-ip-open">
-				<line class="st5" x1="120.49" y1="391.81" x2="120.49" y2="423.81"/>
-			</g>
-			<g id="left-engine-ip-closed">
-				<line class="st5" x1="104.49" y1="407.81" x2="136.49" y2="407.81"/>
-			</g>
-		<g id="left-engine-hp">
-			<g id="left-engine-hp-open">
-				<line class="st5" x1="149.49" y1="452.81" x2="181.49" y2="452.81"/>
-			</g>
-			<g id="left-engine-hp-closed">
-				<line class="st5" x1="165.49" y1="436.81" x2="165.49" y2="468.81"/>
-			</g>
-		</g>
-	</g>
-	<g id="right-engine">
-		<g id="right-engine-ip">
-			<g id="right-engine-ip-open">
-				<line class="st5" x1="480.49" y1="391.81" x2="480.49" y2="423.81"/>
-			</g>
-			<g id="right-engine-ip-closed">
-				<line class="st5" x1="464.49" y1="407.81" x2="496.49" y2="407.81"/>		
-			</g>		
-		</g>
-		<g id="right-engine-hp">
-			<g id="right-engine-hp-open">
-				<line class="st5" x1="418.49" y1="453.81" x2="450.49" y2="453.81"/>
-				
-			</g>
-			<g id="right-engine-hp-closed">
-				<line class="st5" x1="434.49" y1="437.81" x2="434.49" y2="469.81"/>
-			</g>
-		</g>
-	</g>
 </g>
 </svg>
-</script>
-
-<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/A320_Neo/EICAS/ECAM/A320_Neo_LowerECAM_BLEED.js"></script>
