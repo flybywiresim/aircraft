@@ -317,7 +317,7 @@
 						<Transition to="Over">
 							<GreaterEqual>
 								<Simvar name="PLANE ALT ABOVE GROUND MINUS CG" unit="feet"/>
-								<Constant>60</Constant>
+								<Constant>50</Constant>
 							</GreaterEqual>
 						</Transition>
 					</State>
@@ -446,66 +446,6 @@
 							<LowerEqual>
 								<Simvar name="PLANE ALT ABOVE GROUND MINUS CG" unit="feet"/>
 								<Constant>50</Constant>
-							</LowerEqual>
-						</Transition>
-					</State>
-					<State id="Alerting" value="1">
-						<Transition to="Under">
-							<Constant>1</Constant>
-						</Transition>
-					</State>
-				</StateMachine>
-			</Condition>
-		</Alert>
-		
-		<Alert>
-			<Type>SoundOnly</Type>
-			<SoundEvent>aural_60ft</SoundEvent>
-			<Condition>
-				<StateMachine>
-					<State id="Under" value="0">
-						<Transition to="Over">
-							<GreaterEqual>
-								<Simvar name="PLANE ALT ABOVE GROUND MINUS CG" unit="feet"/>
-								<Constant>110</Constant>
-							</GreaterEqual>
-						</Transition>
-					</State>
-					<State id="Over" value="0">
-						<Transition to="Alerting">
-							<LowerEqual>
-								<Simvar name="PLANE ALT ABOVE GROUND MINUS CG" unit="feet"/>
-								<Constant>60</Constant>
-							</LowerEqual>
-						</Transition>
-					</State>
-					<State id="Alerting" value="1">
-						<Transition to="Under">
-							<Constant>1</Constant>
-						</Transition>
-					</State>
-				</StateMachine>
-			</Condition>
-		</Alert>
-		
-		<Alert>
-			<Type>SoundOnly</Type>
-			<SoundEvent>aural_70ft</SoundEvent>
-			<Condition>
-				<StateMachine>
-					<State id="Under" value="0">
-						<Transition to="Over">
-							<GreaterEqual>
-								<Simvar name="PLANE ALT ABOVE GROUND MINUS CG" unit="feet"/>
-								<Constant>120</Constant>
-							</GreaterEqual>
-						</Transition>
-					</State>
-					<State id="Over" value="0">
-						<Transition to="Alerting">
-							<LowerEqual>
-								<Simvar name="PLANE ALT ABOVE GROUND MINUS CG" unit="feet"/>
-								<Constant>70</Constant>
 							</LowerEqual>
 						</Transition>
 					</State>
