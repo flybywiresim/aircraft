@@ -31,7 +31,9 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
 
         this.lastAPUMasterState = 0 // MODIFIED
         this.externalPowerWhenApuMasterOnTimer = -1 // MODIFIED
-
+        this.selfTestDiv = this.querySelector("#SelfTestDiv");
+        this.selfTestTimer = -1;
+        this.selfTestTimerStarted = false;
         this.doorPageActivated = false
     }
     onUpdate(_deltaTime) {
