@@ -34,6 +34,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this.onRad = () => { CDUNavRadioPage.ShowPage(this); };
         this.onFuel = () => { CDUFuelPredPage.ShowPage(this); };
         CDUIdentPage.ShowPage(this);
+        this.electricity = this.querySelector("#Electricity")
     }
     onPowerOn() {
         super.onPowerOn();
@@ -51,7 +52,22 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         super.Update();
         this.updateAutopilot();
         this.updateADIRS();
+
+        var externalPower = SimVar.GetSimVarValue("EXTERNAL POWER ON", "bool");
+        var engineOn = SimVar.GetSimVarValue("GENERAL ENG STARTER:1", "bool");
+        var apuOn = SimVar.GetSimVarValue("APU SWITCH", "bool");
+
+        this.updateScreenState(externalPower, engineOn, apuOn);
     }
+
+    updateScreenState(externalPowerOn, engineOn, apuOn) {
+        if (!externalPowerOn && !engineOn && !apuOn) {
+            this.electricity.style.display = "none";
+        } else {
+            this.electricity.style.display = "block";
+        }
+    }
+
     getClbManagedSpeed() {
         let maxSpeed = Infinity;
         if (isFinite(this.v2Speed)) {
