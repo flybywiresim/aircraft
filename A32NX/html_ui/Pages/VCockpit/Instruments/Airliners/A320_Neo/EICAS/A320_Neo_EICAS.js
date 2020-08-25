@@ -31,16 +31,41 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
 
         this.lastAPUMasterState = 0 // MODIFIED
         this.externalPowerWhenApuMasterOnTimer = -1 // MODIFIED
+        this.doorPageActivated = false
+        this.selfTestDiv = this.querySelector("#SelfTestDiv");
+        this.selfTestTimer = -1;
+        this.selfTestTimerStarted = false;
+
     }
+    
     onUpdate(_deltaTime) {
         super.onUpdate(_deltaTime);
         this.updateAnnunciations();
 
+        var externalPower = SimVar.GetSimVarValue("EXTERNAL POWER ON", "bool");
+        var engineOn = SimVar.GetSimVarValue("GENERAL ENG STARTER:1", "bool");
+
+        // Check if engine is on so self test doesn't appear when not starting from cold and dark
+        if (engineOn) {
+            this.selfTestDiv.style.display = "none";
+            this.selfTestTimerStarted = true;
+        }
+        // Check if external power is on & timer not already started
+        if (externalPower && !this.selfTestTimerStarted) {
+            this.selfTestTimer = 14.25;
+            this.selfTestTimerStarted = true;
+        } // timer
+        if (this.selfTestTimer >= 0) {
+            this.selfTestTimer -= _deltaTime / 1000;
+            if (this.selfTestTimer <= 0) {
+                this.selfTestDiv.style.display = "none";
+            }
+        }
 
         // modification start here
         var currentAPUMasterState = SimVar.GetSimVarValue("FUELSYSTEM VALVE SWITCH:8", "Bool");  
         // automaticaly switch to the APU page when apu master switch is on
-        if (this.lastAPUMasterState != currentAPUMasterState) {  
+        if (this.lastAPUMasterState != currentAPUMasterState && this.lastAPUMasterState === 1) {  
             this.lastAPUMasterState = currentAPUMasterState;  
             this.changePage("APU")
 
@@ -64,8 +89,12 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         var cabinDoorPctOpen = SimVar.GetSimVarValue("INTERACTIVE POINT OPEN:0", "percent");
         var cateringDoorPctOpen = SimVar.GetSimVarValue("INTERACTIVE POINT OPEN:3", "percent");
         var fwdCargoPctOpen = SimVar.GetSimVarValue("INTERACTIVE POINT OPEN:5", "percent");
-        if (cabinDoorPctOpen >= 20 || cateringDoorPctOpen >= 20 || fwdCargoPctOpen >= 20) {
+        if ((cabinDoorPctOpen >= 20 || cateringDoorPctOpen >= 20 || fwdCargoPctOpen >= 20) && !this.doorPageActivated) {
             this.changePage("DOOR")
+            this.doorPageActivated = true
+        }
+        if (!(cabinDoorPctOpen >= 20 || cateringDoorPctOpen >= 20 || fwdCargoPctOpen >= 20) && this.doorPageActivated) {
+            this.doorPageActivated = false
         }
         // modification ends here
     }

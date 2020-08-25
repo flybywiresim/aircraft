@@ -78,6 +78,10 @@ class A320_Neo_PFD_MainPage extends NavSystemPage {
         this.vsFlash = document.querySelector("#vs_flash");
 
         this.hasInitialized = true;
+
+        //SELF TEST
+        this.selfTestDiv = this.gps.getChildById("SelfTestDiv");
+        this.selfTestTimerStarted = false;
     }
     onUpdate(_deltaTime) {
         super.onUpdate();
@@ -93,7 +97,7 @@ class A320_Neo_PFD_MainPage extends NavSystemPage {
             this.spdFlash.setAttribute("visibility", "visible");
             this.altFlash.setAttribute("visibility", "visible");
             this.vsFlash.setAttribute("visibility", "visible");
-        } else {
+        } else if (this.selfTestTimer > -5) {
             this.attFlash.setAttribute("visibility", "hidden");
             this.hdgFlash.setAttribute("visibility", "hidden");
             this.spdFlash.setAttribute("visibility", "hidden");
@@ -117,6 +121,25 @@ class A320_Neo_PFD_MainPage extends NavSystemPage {
         } else {
             this.headingFail.setAttribute("style", "");
         }
+
+        var externalPower = SimVar.GetSimVarValue("EXTERNAL POWER ON", "bool");
+        var engineOn = SimVar.GetSimVarValue("GENERAL ENG STARTER:1", "bool");
+        if (engineOn) {
+            this.selfTestDiv.style.display = "none";
+            this.selfTestTimerStarted = true;
+        }
+        // Check if external power is on & timer not already started
+        if (externalPower && !this.selfTestTimerStarted) {
+            this.selfTestTimer = 13;
+            this.selfTestTimerStarted = true;
+        }
+        // Timer
+        if (this.selfTestTimer != null) {
+            this.selfTestTimer -= _deltaTime / 1000;
+            if (this.selfTestTimer <= 0) {
+                this.selfTestDiv.style.display = "none";
+            }
+        }
     }
     onEvent(_event) {
         switch (_event) {
@@ -128,6 +151,7 @@ class A320_Neo_PFD_MainPage extends NavSystemPage {
                 break;
         }
     }
+    
 }
 class A320_Neo_PFD_VSpeed extends NavSystemElement {
     init(root) {
