@@ -684,12 +684,14 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         if (!ADIRSOn && ADIRSState != 0) {
             //Turn off ADIRS
             SimVar.SetSimVarValue("L:A320_Neo_ADIRS_STATE", "Enum", 0);
+            SimVar.SetSimVarValue("L:A320_Neo_ADIRS_IN_ALIGN", "Bool", 0);
             ADIRSState = 0;
         }
 
         if (ADIRSOn && ADIRSState == 0) {
             //Start ADIRS Alignment
             SimVar.SetSimVarValue("L:A320_Neo_ADIRS_STATE", "Enum", 1);
+            SimVar.SetSimVarValue("L:A320_Neo_ADIRS_IN_ALIGN", "Bool", 1);
             ADIRSState = 1;
             this.ADIRSTimer = 30;
         }
@@ -701,6 +703,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                     this.ADIRSTimer = -1;
                     //ADIRS Alignment Completed
                     SimVar.SetSimVarValue("L:A320_Neo_ADIRS_STATE", "Enum", 2);
+                    SimVar.SetSimVarValue("L:A320_Neo_ADIRS_IN_ALIGN", "Bool", 0);
                 }
             }
             
