@@ -182,6 +182,7 @@ var A320_Neo_LowerECAM_APU;
             }
             this.apuInactiveTimer = -1
             this.lastAPUMasterState = 0
+            this.apuShuttingDown = false
         }
 
         update(_deltaTime) {
@@ -190,7 +191,14 @@ var A320_Neo_LowerECAM_APU;
             if ((currentAPUMasterState !== this.lastAPUMasterState) && currentAPUMasterState === 1) {
                 this.apuInactiveTimer = 3
                 this.lastAPUMasterState = currentAPUMasterState
-                
+                this.apuShuttingDown = false
+            }
+            if ((currentAPUMasterState !== this.lastAPUMasterState) && currentAPUMasterState === 0) {
+                this.apuShuttingDown = true
+            }
+            if (this.apuShuttingDown && SimVar.GetSimVarValue("APU PCT RPM", "percent") === 0) {
+                this.apuEGTGauge.active = false
+                this.apuNGauge.active = false
             }
             if (this.apuInactiveTimer >= 0) {
                 this.apuInactiveTimer -= _deltaTime/1000
