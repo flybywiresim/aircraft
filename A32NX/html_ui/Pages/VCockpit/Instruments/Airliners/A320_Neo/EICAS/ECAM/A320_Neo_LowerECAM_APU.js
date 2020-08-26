@@ -194,7 +194,7 @@ var A320_Neo_LowerECAM_APU;
                 this.apuShuttingDown = false
             }
             if ((currentAPUMasterState !== this.lastAPUMasterState) && currentAPUMasterState === 0) {
-                this.apuShutitngDown = true
+                this.apuShuttingDown = true
             }
             if (this.apuShuttingDown && SimVar.GetSimVarValue("APU PCT RPM", "percent") === 0) {
                 this.apuEGTGauge.active = false
