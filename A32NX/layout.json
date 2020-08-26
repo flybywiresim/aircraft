@@ -1,6 +1,11 @@
 {
     "content": [
         {
+            "path": "effects/LIGHT_A32NX_TaxiLarge.fx",
+            "size": 1278,
+            "date": "132402817714110148"
+        },
+        {
             "path": "html_ui/Fonts/B612Mono-Regular.ttf",
             "size": 140292,
             "date": "132402817714110148"
