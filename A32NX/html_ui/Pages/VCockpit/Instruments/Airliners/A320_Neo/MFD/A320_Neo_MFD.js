@@ -98,6 +98,15 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
         super.onUpdate(_deltaTime);
         this.updateMap(_deltaTime);
         this.updateNDInfo(_deltaTime);
+
+        if (SimVar.GetSimVarValue("L:A320_Neo_ADIRS_STATE", "Enum") != 2) {
+            document.querySelector("#GPSPrimary").setAttribute("visibility", "hidden");
+            document.querySelector("#GPSPrimaryLost").setAttribute("visibility", "visible");
+        } else {
+            document.querySelector("#GPSPrimary").setAttribute("visibility", "visible");
+            document.querySelector("#GPSPrimaryLost").setAttribute("visibility", "hidden");
+        }
+
         if (SimVar.GetSimVarValue("L:A320_Neo_ADIRS_STATE", "Enum") != 2 && !this.map.planMode && this.modeChangeTimer == -1) {
             document.querySelector("#MapFail").setAttribute("visibility", "visible");
             document.querySelector("#Map").setAttribute("style", "display:none");
