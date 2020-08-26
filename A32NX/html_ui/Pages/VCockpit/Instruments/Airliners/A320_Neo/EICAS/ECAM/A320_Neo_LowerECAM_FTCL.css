@@ -30,11 +30,11 @@
   a320-neo-lower-ecam-ftcl {
   display: block;
   position: absolute;
-  top: 0%;
+  top: -5%;
   bottom: 5%;
-  left: 5%;
-  width: 90%;
-  height: 90%; }
+  left: 0%;
+  width: 100%;
+  height: 100%; }
   a320-neo-lower-ecam-ftcl text {
     text-anchor: middle;
     alignment-baseline: central; }
@@ -69,7 +69,7 @@
     stroke: none; }
   
   a320-neo-lower-ecam-ftcl text.Title {
-    font-size: 32pt;
+    font-size: 25px;
     fill: var(--ecamDefaultColour); }
   a320-neo-lower-ecam-ftcl text.Note {
     font-size: 12pt;
