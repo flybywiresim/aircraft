@@ -3,7 +3,7 @@
 Preview of APU and DOOR ECAM pages: https://www.youtube.com/watch?v=rLaVK3nNCXc
 
 ## About
-The FS2020 A32NX Project is a community driven open source project to create a free Airbus A320neo in the latest Microsoft Flight Simulator that is as close to reality as possible. It is an open source project and aims to enhance FS2020's default A320neo by improving the systems depth and functionality to bring it up to payware-level, and releasing it to the community for free, even perhaps making variants of the family (e.g. a319, a321).
+The FS2020 A32NX Project is a community-driven open source project to create a free Airbus A320neo in the latest Microsoft Flight Simulator that is as close to reality as possible. It is an open-source project and aims to enhance FS2020's default A320neo by improving the systems depth and functionality to bring it up to payware-level, and releasing it to the community for free, even perhaps making variants of the family (e.g. a319, a321).
 
 Central Repository: https://github.com/wpine215/msfs-a320neo
 
@@ -22,13 +22,13 @@ For the Boxed edition:
 * Copy the "A32NX" folder into your community package folder. It is located in:
 `C:\Users\[YOUR USERNAME]\AppData\Local\MSFSPackages\Community`.
 
-If the aforementioned methods do not work:
-* You can find your community folder by going into FS2020 general options and enabling developer mode. You will see a menu appear on top. Go to tools and virtual file system. Click on watch bases and your community folder will be listed in one of the folders.
+If the methods mentioned above do not work:
+* You can find your community folder by going into FS2020 general options and enabling developer mode. You will see a menu appear on top. Go to tools and virtual file system. Click on watch bases, and your community folder will be listed in one of the folders.
 * Please make sure you're copying the "A32NX" folder into your community package folder, NOT the "msfs-a320neo-master" folder.
 
 ## Developing
 
-The A32NX package only contains files which have been modified from the original package. If you wish to work on a file that isn't present in the development branch, simply copy it over from the latest Asobo branch. Please DO NOT add, modify, or delete files from the Asobo branch.
+The A32NX package only contains files that have been modified from the original package. If you wish to work on a file that isn't present in the development branch, simply copy it over from the latest Asobo branch. Please DO NOT add, modify, or delete files from the Asobo branch.
 
 Join our Discord server to find out about the latest updates and discuss ongoing development.
 
@@ -66,7 +66,7 @@ A: Yes, the master branch contains the latest stable release. You can always dow
 
 **Q: Where is the plane in-sim?**
 
-A: The mod is added on top on the default A320neo from Asobo. If you want to uninstall it and revert to the original aircraft, just delete the A32NX folder in your community folder.
+A: The mod is added on top of the default A320neo from Asobo. If you want to uninstall it and revert to the original aircraft, just delete the A32NX folder in your community folder.
 
 **Q: What are the liveries available?**
 
@@ -86,11 +86,11 @@ A: Join our Discord server and either select your role from the bot at #roles , 
 
 **Q: Is it payware?**
 
-A: No, it is a completely free aircraft, open-source.
+A: No, it is an entirely free aircraft, open-source.
 
 **Q: What is the roadmap/progress?**
 
-A: You can follow our current progress on the trello: https://trello.com/b/z3jimJLq/study-level-a320neo
+A: You can follow our current progress on the Trello: https://trello.com/b/z3jimJLq/study-level-a320neo
 
 **Q: How do we report bugs?**
 
@@ -98,4 +98,4 @@ A: If the bug is related to features introduced by our mod, please open a GitHub
 
 **Q: What is the name of this team?**
 
-A: Still no name! If you have a good idea, please feel free to suggest it on discord's #bugs-and-suggestions channel!
+A: We still have no name! If you have a good idea, please feel free to suggest it on discord's #bugs-and-suggestions channel!
