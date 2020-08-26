@@ -212,7 +212,17 @@
         },
         {
             "path": "SimObjects/AirPlanes/Asobo_A320_NEO/panel/panel.xml",
-            "size": 19226,
+            "size": 17616,
+            "date": "132402817714110148"
+        },
+        {
+            "path": "SimObjects/AirPlanes/Asobo_A320_NEO/sound/Asobo_A320_NEO.PC.PCK",
+            "size": 59377074,
+            "date": "132402817714110148"
+        },
+        {
+            "path": "SimObjects/AirPlanes/Asobo_A320_NEO/sound/sound.xml",
+            "size": 29045,
             "date": "132402817714110148"
         }
     ]

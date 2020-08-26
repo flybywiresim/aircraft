@@ -317,7 +317,7 @@
 						<Transition to="Over">
 							<GreaterEqual>
 								<Simvar name="PLANE ALT ABOVE GROUND MINUS CG" unit="feet"/>
-								<Constant>60</Constant>
+								<Constant>50</Constant>
 							</GreaterEqual>
 						</Transition>
 					</State>
