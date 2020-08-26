@@ -242,6 +242,8 @@ var A320_Neo_LowerECAM_APU;
         }
 
         getAPUEGT() {
+            let ambient = SimVar.GetSimVarValue("AMBIENT TEMPERATURE", "celsius");
+
             var n = this.getAPUN();
             var egt = (Math.round(this.getAPUEGTRaw(this.lastN <= n)/5)*5);
             this.lastN = n;
@@ -249,7 +251,8 @@ var A320_Neo_LowerECAM_APU;
                 return 100;
             } else {
                 if (n > 1) this.APUWarm = false;
-                return egt;
+                // range from getAPUEGTRaw is 10~900 C
+                return ambient + (egt - 10);
             }
         }
 
