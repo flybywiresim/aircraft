@@ -34,8 +34,9 @@ Join our Discord server to find out about the latest updates and discuss ongoing
 
 [![Discord](https://img.shields.io/discord/738864299392630914.svg?label=&logo=discord&logoColor=ffffff&color=7389D8&labelColor=6A7EC2)](https://discord.gg/UjzuHMU)
 
+### Committing changes
 
-**ALWAYS REMEMBER TO RUN BUILD.PY BEFORE COMMITTING NEW FILES**
+After making any changes to files inside the `A32NX` directory, ensure you run the `build.py` script to regenerate the `layout.json` as necessary. There's also a CI check to ensure this has been done.
 
 ## Changelog
 
