@@ -1,0 +1,135 @@
+﻿<link rel="stylesheet" href="A320_Neo_MFD.css" />
+
+<script type="text/html" id="A320_Neo_MFD">
+    <glasscockpit-highlight id="highlight"></glasscockpit-highlight>
+    <div id="Mainframe">
+        <div id="Electricity" state="off">
+            <div id="Map">
+                <map-instrument id="MapInstrument" map-mode="plan" bing-id="MFD" show-overlay="false" show-roads="false" config-path="/Pages/VCockpit/Instruments/Airliners/A320_Neo/MFD/"></map-instrument>
+            </div>
+
+            <jet-mfd-nd-compass id="Compass"></jet-mfd-nd-compass>
+            <div id="ModeChangeMask">
+                <svg width="1280" height="1280">
+                    <text class="Value" x="50%" y="40%" alignment-baseline="baseline" font-size="50px" fill="lime" text-anchor="middle">MODE CHANGE</text>
+                </svg>
+            </div>
+            <jet-mfd-nd-info id="NDInfo">
+                <div id="TopBox">
+                    <div id="Speed">
+                        <svg>
+                            <text id="GS_Text" class="Small" x="0%" y="20%" alignment-baseline="baseline">GS</text>
+                            <text id="GS_Value" class="Value" x="10%" y="20%" alignment-baseline="baseline">---</text>
+                            <text id="TAS_Text" class="Small" x="26%" y="20%" alignment-baseline="baseline">TAS</text>
+                            <text id="TAS_Value" class="Value" x="39%" y="20%" alignment-baseline="baseline">---</text>
+                            <text id="Wind_Direction" class="Value" x="0%" y="45%" alignment-baseline="baseline">--</text>
+                            <text id="Wind_Separator" class="Large" x="14%" y="45%" alignment-baseline="baseline">/</text>
+                            <text id="Wind_Strength" class="Value" x="22%" y="45%" alignment-baseline="baseline">--</text>
+                            <polygon id="Wind_Arrow" points="-5 20, 5 20, 5 -20, 15 -20, 0 -40, -15 -20, -5 -20" transform="translate(40 130) rotate(0)" fill="lime" display="none" />
+                        </svg>
+                    </div>
+
+                    <div id="Title">
+                        <svg>
+                            <text id="Title_Text" class="Title" x="50%" y="20%" text-anchor="middle" alignment-baseline="middle"></text>
+                        </svg>
+                    </div>
+
+                    <div id="Approach">
+                        <svg>
+                            <text id="APP_Type" class="Large" x="68%" y="20%" alignment-baseline="baseline"></text>
+                            <text id="APP_Freq" class="ValueVor" x="100%" y="20%" alignment-baseline="baseline">---</text>
+                            <text id="APP_Course" class="Large" x="78%" y="45%" alignment-baseline="baseline">CRS</text>
+                            <text id="APP_Course_Value" class="ValueVor" x="101%" y="45%" alignment-baseline="baseline"></text>
+                            <text id="APP_Info" class="ValueVor" x="100%" y="70%" alignment-baseline="baseline">---</text>
+                        </svg>
+                    </div>
+
+                    <div id="Waypoint">
+                        <svg>
+                            <text id="WP_Name" class="Large" x="75%" y="20%" alignment-baseline="baseline"></text>
+                            <text id="WP_Track_Value" class="Value" x="100%" y="20%" alignment-baseline="baseline">---&deg</text>
+                            <text id="WP_Distance_Value" class="Value" x="92%" y="45%" alignment-baseline="baseline">-.-</text>
+                            <text id="WP_Distance_Units" class="Units" x="100%" y="45%" alignment-baseline="baseline">NM</text>
+                            <text id="WP_Time" class="Value" x="100%" y="70%" alignment-baseline="baseline">--:--</text>
+                        </svg>
+                    </div>
+                </div>
+
+                <div id="VORDMENavaids">
+                    <div id="VORDMENavaid_Left" style="display:none">
+                        <svg>
+                            <text id="State" x="50%" y="16%" alignment-baseline="middle"></text>
+                            <text id="ID" x="42.5%" y="50%" alignment-baseline="middle"></text>
+                            <text id="Mode" x="67.5%" y="50%" alignment-baseline="middle"></text>
+                            <text id="Distance" x="50%" y="84%" alignment-baseline="middle">--</text>
+                            <text id="Unit" x="75%" y="84%" alignment-baseline="middle">nm</text>
+                            <path id="Arrow" d="M0,25 L0,0 L-15,0 L0,-25 L0,-35 M0,-25 L15,0 L0,0" transform="translate(40 55)" />
+                        </svg>
+                    </div>
+
+                    <div id="VORDMENavaid_Right" style="display:none">
+                        <svg>
+                            <text id="State" x="50%" y="16%" alignment-baseline="middle"></text>
+                            <text id="ID" x="42.5%" y="50%" alignment-baseline="middle"></text>
+                            <text id="Mode" x="67.5%" y="50%" alignment-baseline="middle"></text>
+                            <text id="Distance" x="25%" y="84%" alignment-baseline="middle">--</text>
+                            <text id="Unit" x="50%" y="84%" alignment-baseline="middle">nm</text>
+                            <path id="Arrow" d="M-8,25 L-8,0 L-15,0 L0,-25 L0,-35 M0,-25 L15,0 L8,0 L8,25" transform="translate(280 55)" />
+                        </svg>
+                    </div>
+                </div>
+
+                <div id="Symbols">
+                    <svg>
+                        <text id="WXR" class="Small" x="0%" y="5%" alignment-baseline="baseline">WX</text>
+                        <text id="WXRTURB" class="Small" x="0%" y="5%" alignment-baseline="baseline">WX+T</text>
+                        <text id="TURB" class="Small" x="0%" y="5%" alignment-baseline="baseline">TURB</text>
+                        <text id="MAP" class="Small" x="0%" y="5%" alignment-baseline="baseline">MAP</text>
+                    </svg>
+                </div>
+            </jet-mfd-nd-info>
+        </div>
+    </div>
+</script>
+
+<script type="text/html" import-script="/JS/SimPlane.js"></script>
+
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Shared/Utils/RadioNav.js"></script>
+
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/Shared/Templates/Highlight/Highlight.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/Shared/Templates/WindDataDisplay/WindDataDisplay.js"></script>
+
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/Shared/LogicElements/FlightPlan.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/Shared/LogicElements/FlightPlanManager.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/Shared/LogicElements/GeoCalc.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/Shared/LogicElements/SearchField.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/Shared/LogicElements/Waypoint.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/Shared/LogicElements/Runway.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/Shared/LogicElements/Approach.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/Shared/LogicElements/NearestWaypoint.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/Shared/LogicElements/SelectableElement.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/Shared/LogicElements/ContextualMenu.js"></script>
+
+<script type="text/html" import-template="/Pages/VCockpit/Instruments/Shared/Map/MapInstrument.html"></script>
+
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Shared/Gauges/AbstractGauge.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Shared/Gauges/CircularGauge.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Shared/Gauges/HorizontalGauge.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Shared/Gauges/VerticalGauge.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Shared/Gauges/FlapsGauge.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Shared/Gauges/AilTrimGauge.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Shared/Gauges/ElevTrimGauge.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Shared/Gauges/RudderTrimGauge.js"></script>
+
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/Shared/NavSystem.js"></script>
+
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/Shared/LogicElements/GaugeElement.js"></script>
+
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/Shared/BaseAirliners.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/Shared/BaseNDCompass.js"></script>
+
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/Shared/MFD/NDCompass.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/Shared/MFD/NDInfo.js"></script>
+
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/A320_Neo/MFD/A320_Neo_MFD.js"></script>
