@@ -235,7 +235,7 @@ class BaseInstrument extends TemplateElement {
     CanUpdate() {
         var quality = this.getQuality();
         if (quality == Quality.high) {
-            if ((this.frameCount % 2) != 0) {
+            if ((this.frameCount % 4) != 0) {
                 return false;
             }
         }
