@@ -78,42 +78,42 @@ By filling out this form, your issue will be taken care of in the same order of 
 
 ## FAQ
 
-Q: Can I download the aircraft in the current state?
+**Q: Can I download the aircraft in the current state?**
 
 A: Yes, the master branch contains the latest stable release. You can always download it off the dev branch, but keep in mind it is a WIP and will be unstable.
 
-Q: Where is the plane in-sim?
+**Q: Where is the plane in-sim?**
 
-A: The mod is added on top on the default A320N from Asobo. If you want to uninstall it and revert to the original aircraft, just delete the A32NX folder in your community folder.
+A: The mod is added on top on the default A320neo from Asobo. If you want to uninstall it and revert to the original aircraft, just delete the A32NX folder in your community folder.
 
-Q: What are the liveries available?
+**Q: What are the liveries available?**
 
-A: All the default aircraft liveries are working on our aircraft!
+A: All the default A320neo liveries are working on our aircraft!
 
-Q: When will it be released?
+**Q: When will it be released?**
 
-A: We don't know, but you can download the aircraft with the latest improvements we've made! 
+A: The project is an ongoing rolling release. You can download the latest (stable) version from the master branch of this repository!
 
-Q: When is the next update?
+**Q: When is the next update?**
 
 A: We don't know, since it depends on many factors. We'll however announce it each time there's an update! We are currently working on a visual roadmap to let you know what latest features we are working on!
 
-Q: How do I join the team?
+**Q: How do I join the team?**
 
 A: Join our Discord server and either select your role from the bot at #roles , or you DM @Kieran [Z+1].
 
-Q: Is it payware?
+**Q: Is it payware?**
 
 A: No, it is a completely free aircraft, open-source.
 
-Q: What is the roadmap/progress?
+**Q: What is the roadmap/progress?**
 
 A: You can follow our current progress on the trello: https://trello.com/b/z3jimJLq/study-level-a320neo
 
-Q: What is the name of this team?
+**Q: How do we report bugs?**
+
+A: If the bug is related to features introduced by our mod, please open a GitHub issue with a thorough description of it, and screenshots if necessary. Otherwise, you have two options: Report it on the discord server at #bugs-and-suggestions, or fill this form (that will be directly linked to the dev attention) :https://docs.google.com/forms/d/e/1FAIpQLSe6Bdx8x8mFmOmBoAipYoazfeomrJ8cri55NBn32MBRqIW4nA/viewform?usp=sf_link
+
+**Q: What is the name of this team?**
 
 A: Still no name! If you have a good idea, please feel free to suggest it on discord's #bugs-and-suggestions channel!
-
-Q: What are the current limitations (Like what can we not modify)?
-
-A: We cannot modify the aircraft's 3D model. However, we are working hard to find a workaround and a way to do it without needing them.
