@@ -1094,7 +1094,7 @@ var Airbus_FMA;
             }
         }
         GetModeState_CLB() {
-            if ((Airbus_FMA.CurrentPlaneState.autoPilotAltitudeLockActive || Simplane.getAutoPilotFLCActive()) && (Airbus_FMA.CurrentPlaneState.altitude < Airbus_FMA.CurrentPlaneState.autoPilotAltitudeLockValue)) {
+            if ((Airbus_FMA.CurrentPlaneState.autoPilotAltitudeLockActive && Airbus_FMA.CurrentPlaneState.anyFlightDirectorsActive || Simplane.getAutoPilotFLCActive()) && (Airbus_FMA.CurrentPlaneState.altitude < Airbus_FMA.CurrentPlaneState.autoPilotAltitudeLockValue) && Airbus_FMA.CurrentPlaneState.anyFlightDirectorsActive) {
                 if (Airbus_FMA.CurrentPlaneState.flightPhase < FlightPhase.FLIGHT_PHASE_CLIMB) {
                     return Airbus_FMA.MODE_STATE.ARMED;
                 }
@@ -1112,12 +1112,12 @@ var Airbus_FMA;
             return Airbus_FMA.MODE_STATE.NONE;
         }
         IsActive_DES() {
-            if (Airbus_FMA.CurrentPlaneState.autoPilotAltitudeLockActive && (Airbus_FMA.CurrentPlaneState.altitude > Airbus_FMA.CurrentPlaneState.autoPilotAltitudeLockValue)) {
+            if (Airbus_FMA.CurrentPlaneState.autoPilotAltitudeLockActive && (Airbus_FMA.CurrentPlaneState.altitude > Airbus_FMA.CurrentPlaneState.autoPilotAltitudeLockValue) && Airbus_FMA.CurrentPlaneState.anyFlightDirectorsActive) {
                 if (Airbus_FMA.CurrentPlaneState.flightPhase == FlightPhase.FLIGHT_PHASE_DESCENT) {
                     return true;
                 }
             }
-            if (Simplane.getAutoPilotFLCActive()) {
+            if (Simplane.getAutoPilotFLCActive() && Airbus_FMA.CurrentPlaneState.anyFlightDirectorsActive) {
                 let targetAltitude = Simplane.getAutoPilotAltitudeLockValue("feets");
                 let altitude = Simplane.getAltitude();
                 if (altitude > targetAltitude + 100) {
@@ -1358,7 +1358,7 @@ var Airbus_FMA;
             return Airbus_FMA.MODE_STATE.NONE;
         }
         GetModeState_NAV() {
-            if (Airbus_FMA.CurrentPlaneState.autoPilotHeadingManagedMode) {
+            if (Airbus_FMA.CurrentPlaneState.autoPilotHeadingManagedMode && Airbus_FMA.CurrentPlaneState.anyFlightDirectorsActive) {
                 if ((Airbus_FMA.CurrentPlaneState.radioAltitude >= 30) && Airbus_FMA.CurrentPlaneState.anyAutoPilotsActive) {
                     return Airbus_FMA.MODE_STATE.ENGAGED;
                 }
