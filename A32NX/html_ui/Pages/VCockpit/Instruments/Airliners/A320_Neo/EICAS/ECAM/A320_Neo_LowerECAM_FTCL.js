@@ -33,6 +33,14 @@ var A320_Neo_LowerECAM_FTCL;
             this.pitchTrimTrailingDecimal = this.querySelector("#pitchTrimTrailingDecimal");
             this.pitchTrimDirection = this.querySelector("#pitchTrimDirection");
 
+            // Ailerons
+            this.leftAileronCursor = this.querySelector("#leftAileronCursor");
+            this.rightAileronCursor = this.querySelector("#rightAileronCursor");
+
+            // Elevators
+            this.leftElevatorCursor = this.querySelector("#leftElevatorCursor");
+            this.rightElevatorCursor = this.querySelector("#rightElevatorCursor");
+
             this.isInitialised = true;
         }
         update(_deltaTime) {
@@ -59,6 +67,26 @@ var A320_Neo_LowerECAM_FTCL;
             } else {
                 this.pitchTrimDirection.textContent = "UP";
             }
+
+            // Update left aileron
+            var leftAileronDeflectPct = SimVar.GetSimVarValue("AILERON LEFT DEFLECTION PCT", "percent over 100");
+            let leftAileronDeflectPctNormalized = leftAileronDeflectPct * 54;
+            let laCursorPath = "M73," + (204 + leftAileronDeflectPctNormalized) + " l15,-7 l0,14Z";
+            this.leftAileronCursor.setAttribute("d", laCursorPath);
+
+            // Update right aileron
+            var rightAileronDeflectPct = SimVar.GetSimVarValue("AILERON RIGHT DEFLECTION PCT", "percent over 100");
+            let rightAileronDeflectPctNormalized = rightAileronDeflectPct * 54;
+            let raCursorPath = "M527," + (204 - rightAileronDeflectPctNormalized) + " l-15,-7 l0,14Z";
+            this.rightAileronCursor.setAttribute("d", raCursorPath);
+
+            // Update left/right elevators
+            var elevatorDeflectPct = SimVar.GetSimVarValue("ELEVATOR DEFLECTION PCT", "percent over 100");
+            let elevatorDeflectPctNormalized = elevatorDeflectPct * 52;
+            let leCursorPath = "M169," + (398 - elevatorDeflectPctNormalized) + " l15,-7 l0,14Z";
+            let reCursorPath = "M431," + (398 - elevatorDeflectPctNormalized) + " l-15,-7 l0,14Z";
+            this.leftElevatorCursor.setAttribute("d", leCursorPath);
+            this.rightElevatorCursor.setAttribute("d", reCursorPath);
 
             // Update ELAC's and SEC's
             var elac1_On = SimVar.GetSimVarValue("FLY BY WIRE ELAC SWITCH:1", "boolean");
