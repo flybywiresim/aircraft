@@ -35,7 +35,6 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this.onFuel = () => { CDUFuelPredPage.ShowPage(this); };
         CDUIdentPage.ShowPage(this);
         this.electricity = this.querySelector("#Electricity")
-        this.displaysAbleToTurnOff = true;
     }
     onPowerOn() {
         super.onPowerOn();
@@ -54,21 +53,19 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this.updateAutopilot();
         this.updateADIRS();
 
+        var engineOn = Simplane.getEngineActive(0) || Simplane.getEngineActive(1);
         var externalPower = SimVar.GetSimVarValue("EXTERNAL POWER ON", "bool");
-        var engineOn = SimVar.GetSimVarValue("GENERAL ENG STARTER:1", "bool");
         var apuOn = SimVar.GetSimVarValue("APU SWITCH", "bool");
-        var onRunway = SimVar.GetSimVarValue("ON ANY RUNWAY", "bool");
-        var isOnGround = SimVar.GetSimVarValue("SIM ON GROUND", "bool")
 
-        this.updateScreenState(externalPower, engineOn, apuOn, onRunway, isOnGround);
+        var isPowerAvailable = engineOn || apuOn || externalPower;
+        this.updateScreenState(isPowerAvailable);
     }
 
-    updateScreenState(externalPowerOn, engineOn, apuOn, onRunway, isOnGround) {
-        if (!externalPowerOn && !apuOn && !engineOn && !onRunway && isOnGround && this.displaysAbleToTurnOff) {
+    updateScreenState(isPowerAvailable) {
+        if (!isPowerAvailable) {
             this.electricity.style.display = "none";
         } else {
             this.electricity.style.display = "block";
-            this.displaysAbleToTurnOff = false;
         }
     }
 
