@@ -1,0 +1,64 @@
+﻿<link rel="stylesheet" href="A320_Neo_CDU.css" />
+
+<script type="text/html" id="A320_Neo_CDU">
+
+    <div id="Mainframe">
+        <div id="Electricity" state="off">
+        </div>
+    </div>
+</script>
+
+<script type="text/html" import-script="/JS/SimPlane.js"></script>
+
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Shared/Utils/RadioNav.js"></script>
+
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/Shared/LogicElements/Runway.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/Shared/LogicElements/Waypoint.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/Shared/LogicElements/Approach.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/Shared/LogicElements/WaypointLoader.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/Shared/LogicElements/FlightPlan.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/Shared/LogicElements/FlightPlanManager.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/Shared/LogicElements/GeoCalc.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/Shared/LogicElements/SearchField.js"></script>
+
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/Shared/NavSystem.js"></script>
+
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/Shared/BaseAirliners.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/Shared/FMC/FMCMainDisplay.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/Shared/FMC/FMCDataManager.js"></script>
+
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/A320_Neo/CDU/A320_Neo_CDU_DataIndexPage.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/A320_Neo/CDU/A320_Neo_CDU_PositionMonitorPage.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/A320_Neo/CDU/A320_Neo_CDU_ProgressPage.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/A320_Neo/CDU/A320_Neo_CDU_IdentPage.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/A320_Neo/CDU/A320_Neo_CDU_InitPage.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/A320_Neo/CDU/A320_Neo_CDU_AvailableFlightPlanPage.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/A320_Neo/CDU/A320_Neo_CDU_FlightPlanPage.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/A320_Neo/CDU/A320_Neo_CDU_FuelPredPage.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/A320_Neo/CDU/A320_Neo_CDU_AvailableDeparturesPage.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/A320_Neo/CDU/A320_Neo_CDU_AvailableArrivalsPage.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/A320_Neo/CDU/A320_Neo_CDU_LateralRevisionPage.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/A320_Neo/CDU/A320_Neo_CDU_VerticalRevisionPage.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/A320_Neo/CDU/A320_Neo_CDU_AirwaysFromWaypointPage.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/A320_Neo/CDU/A320_Neo_CDU_NavRadioPage.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/A320_Neo/CDU/A320_Neo_CDU_PerformancePage.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/A320_Neo/CDU/A320_Neo_CDU_DirectToPage.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/A320_Neo/CDU/A320_Neo_CDU_SelectWptPage.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/A320_Neo/CDU/A320_Neo_CDU_MenuPage.js"></script>
+
+<!-- MODIFIED BELOW 
+    <script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/A320_Neo/CDU/A320_Neo_CDU_"></script> 
+MODIFIED BELOW -->
+
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/A320_Neo/CDU/A320_Neo_CDU_MenuPage.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/A320_Neo/CDU/A320_Neo_CDU_IRSMonitor.js"></script> 
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/A320_Neo/CDU/A320_Neo_CDU_IRSStatus.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/A320_Neo/CDU/A320_Neo_CDU_PositionFrozen.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/A320_Neo/CDU/A320_Neo_CDU_SelectedNavaids.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/A320_Neo/CDU/A320_Neo_CDU_GPSMonitor.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/A320_Neo/CDU/A320_Neo_CDU_WaypointPage.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/A320_Neo/CDU/A320_Neo_CDU_NavaidPage.js"></script> 
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/A320_Neo/CDU/A320_Neo_CDU_NewWaypoint.js"></script> 
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/A320_Neo/CDU/A320_Neo_CDU_PilotsWaypoint.js"></script> 
+
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/A320_Neo/CDU/A320_Neo_CDU_MainDisplay.js"></script>

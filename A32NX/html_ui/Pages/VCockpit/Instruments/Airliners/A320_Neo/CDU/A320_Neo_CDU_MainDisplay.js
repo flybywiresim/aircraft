@@ -29,6 +29,14 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this.onProg = () => { CDUProgressPage.ShowPage(this); };
         this.onPerf = () => { CDUPerformancePage.ShowPage(this); };
         this.onInit = () => { CDUInitPage.ShowPage1(this); };
+<<<<<<< HEAD
+        this.onData = () => { CDUDataIndexPage.ShowPage1(this); };
+        this.onFpln = () => { CDUFlightPlanPage.ShowPage(this); };
+        this.onRad = () => { CDUNavRadioPage.ShowPage(this); };
+        this.onFuel = () => { CDUFuelPredPage.ShowPage(this); };
+        this.onMcdu = () => { CDUMenuPage.ShowPage(this) };
+        CDUIdentPage.ShowPage(this);
+=======
         this.onData = () => { CDUDataIndexPage.ShowPage(this); };
         this.onFpln = () => { CDUFlightPlanPage.ShowPage(this); };
         this.onRad = () => { CDUNavRadioPage.ShowPage(this); };
@@ -36,6 +44,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         CDUIdentPage.ShowPage(this);
         this.electricity = this.querySelector("#Electricity")
         this.displaysAbleToTurnOff = true;
+>>>>>>> e0bae94e675bc42150288291c64f99507a4566b4
     }
     onPowerOn() {
         super.onPowerOn();
@@ -52,6 +61,9 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     Update() {
         super.Update();
         this.updateAutopilot();
+<<<<<<< HEAD
+    }
+=======
         this.updateADIRS();
 
         var externalPower = SimVar.GetSimVarValue("EXTERNAL POWER ON", "bool");
@@ -72,6 +84,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         }
     }
 
+>>>>>>> e0bae94e675bc42150288291c64f99507a4566b4
     getClbManagedSpeed() {
         let maxSpeed = Infinity;
         if (isFinite(this.v2Speed)) {
@@ -689,6 +702,8 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             this.updateAutopilotCooldown = this._apCooldown;
         }
     }
+<<<<<<< HEAD
+=======
     updateADIRS() {
 
         //Get the time since last update
@@ -730,6 +745,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             
         }
     }
+>>>>>>> e0bae94e675bc42150288291c64f99507a4566b4
 }
 A320_Neo_CDU_MainDisplay._v1sConf1 = [
     [145, 149],
