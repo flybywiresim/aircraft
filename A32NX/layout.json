@@ -167,7 +167,7 @@
         },
         {
             "path": "html_ui/Pages/VCockpit/Instruments/Airliners/A320_Neo/CDU/A320_Neo_CDU_MainDisplay.js",
-            "size": 35894,
+            "size": 35575,
             "date": "132402817714110148"
         },
         {
@@ -247,7 +247,7 @@
         },
         {
             "path": "html_ui/Pages/VCockpit/Instruments/Airliners/A320_Neo/EICAS/A320_Neo_EICAS.js",
-            "size": 10966,
+            "size": 10637,
             "date": "132402817714110148"
         },
         {
@@ -352,7 +352,7 @@
         },
         {
             "path": "html_ui/Pages/VCockpit/Instruments/Airliners/A320_Neo/MFD/A320_Neo_MFD.js",
-            "size": 25378,
+            "size": 25051,
             "date": "132402817714110148"
         },
         {
@@ -367,7 +367,7 @@
         },
         {
             "path": "html_ui/Pages/VCockpit/Instruments/Airliners/A320_Neo/PFD/A320_Neo_PFD.js",
-            "size": 10933,
+            "size": 10614,
             "date": "132402817714110148"
         },
         {
