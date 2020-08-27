@@ -29,12 +29,22 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this.onProg = () => { CDUProgressPage.ShowPage(this); };
         this.onPerf = () => { CDUPerformancePage.ShowPage(this); };
         this.onInit = () => { CDUInitPage.ShowPage1(this); };
+<<<<<<< HEAD
         this.onData = () => { CDUDataIndexPage.ShowPage1(this); };
         this.onFpln = () => { CDUFlightPlanPage.ShowPage(this); };
         this.onRad = () => { CDUNavRadioPage.ShowPage(this); };
         this.onFuel = () => { CDUFuelPredPage.ShowPage(this); };
         this.onMcdu = () => { CDUMenuPage.ShowPage(this) };
         CDUIdentPage.ShowPage(this);
+=======
+        this.onData = () => { CDUDataIndexPage.ShowPage(this); };
+        this.onFpln = () => { CDUFlightPlanPage.ShowPage(this); };
+        this.onRad = () => { CDUNavRadioPage.ShowPage(this); };
+        this.onFuel = () => { CDUFuelPredPage.ShowPage(this); };
+        CDUIdentPage.ShowPage(this);
+        this.electricity = this.querySelector("#Electricity")
+        this.displaysAbleToTurnOff = true;
+>>>>>>> e0bae94e675bc42150288291c64f99507a4566b4
     }
     onPowerOn() {
         super.onPowerOn();
@@ -51,7 +61,30 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     Update() {
         super.Update();
         this.updateAutopilot();
+<<<<<<< HEAD
     }
+=======
+        this.updateADIRS();
+
+        var externalPower = SimVar.GetSimVarValue("EXTERNAL POWER ON", "bool");
+        var engineOn = SimVar.GetSimVarValue("GENERAL ENG STARTER:1", "bool");
+        var apuOn = SimVar.GetSimVarValue("APU SWITCH", "bool");
+        var onRunway = SimVar.GetSimVarValue("ON ANY RUNWAY", "bool");
+        var isOnGround = SimVar.GetSimVarValue("SIM ON GROUND", "bool")
+
+        this.updateScreenState(externalPower, engineOn, apuOn, onRunway, isOnGround);
+    }
+
+    updateScreenState(externalPowerOn, engineOn, apuOn, onRunway, isOnGround) {
+        if (!externalPowerOn && !apuOn && !engineOn && !onRunway && isOnGround && this.displaysAbleToTurnOff) {
+            this.electricity.style.display = "none";
+        } else {
+            this.electricity.style.display = "block";
+            this.displaysAbleToTurnOff = false;
+        }
+    }
+
+>>>>>>> e0bae94e675bc42150288291c64f99507a4566b4
     getClbManagedSpeed() {
         let maxSpeed = Infinity;
         if (isFinite(this.v2Speed)) {
@@ -669,6 +702,50 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             this.updateAutopilotCooldown = this._apCooldown;
         }
     }
+<<<<<<< HEAD
+=======
+    updateADIRS() {
+
+        //Get the time since last update
+        var now = Date.now();
+        if (this.lastTime == null) this.lastTime = now;
+        var deltaTime = now - this.lastTime;
+        this.lastTime = now;
+
+        if (this.ADIRSTimer == null) this.ADIRSTimer = -1;
+        var AllADIRSOn = ((SimVar.GetSimVarValue("L:A320_Neo_ADIRS_KNOB_1", "Enum") >= 1) && (SimVar.GetSimVarValue("L:A320_Neo_ADIRS_KNOB_2", "Enum") >= 1) && (SimVar.GetSimVarValue("L:A320_Neo_ADIRS_KNOB_3", "Enum") >= 1));
+        var SomeADIRSOn = ((SimVar.GetSimVarValue("L:A320_Neo_ADIRS_KNOB_1", "Enum") >= 1) || (SimVar.GetSimVarValue("L:A320_Neo_ADIRS_KNOB_2", "Enum") >= 1) || (SimVar.GetSimVarValue("L:A320_Neo_ADIRS_KNOB_3", "Enum") >= 1));
+        var ADIRSState = SimVar.GetSimVarValue("L:A320_Neo_ADIRS_STATE", "Enum");
+
+        if (!SomeADIRSOn && ADIRSState != 0) {
+            //Turn off ADIRS
+            SimVar.SetSimVarValue("L:A320_Neo_ADIRS_STATE", "Enum", 0);
+            SimVar.SetSimVarValue("L:A320_Neo_ADIRS_IN_ALIGN", "Bool", 0);
+            ADIRSState = 0;
+        }
+
+        if (AllADIRSOn && ADIRSState == 0) {
+            //Start ADIRS Alignment
+            SimVar.SetSimVarValue("L:A320_Neo_ADIRS_STATE", "Enum", 1);
+            SimVar.SetSimVarValue("L:A320_Neo_ADIRS_IN_ALIGN", "Bool", 1); // DELETE AFTER MCDU IRS INIT IS IMPLEMENTED
+            ADIRSState = 1;
+            this.ADIRSTimer = 120; //ADIRS ALIGN TIME
+        }
+
+        if (ADIRSState == 1 && SimVar.GetSimVarValue("L:A320_Neo_ADIRS_IN_ALIGN", "Bool") == 1) {
+            if (this.ADIRSTimer > 0) {
+                this.ADIRSTimer -= deltaTime/1000;
+                if (this.ADIRSTimer <= 0) {
+                    this.ADIRSTimer = -1;
+                    //ADIRS Alignment Completed
+                    SimVar.SetSimVarValue("L:A320_Neo_ADIRS_STATE", "Enum", 2);
+                    SimVar.SetSimVarValue("L:A320_Neo_ADIRS_IN_ALIGN", "Bool", 0);
+                }
+            }
+            
+        }
+    }
+>>>>>>> e0bae94e675bc42150288291c64f99507a4566b4
 }
 A320_Neo_CDU_MainDisplay._v1sConf1 = [
     [145, 149],

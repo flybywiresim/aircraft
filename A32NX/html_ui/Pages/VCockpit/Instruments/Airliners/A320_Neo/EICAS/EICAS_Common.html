@@ -1,0 +1,37 @@
+﻿<link rel="stylesheet" href="/Pages/VCockpit/Instruments/Airliners/Shared/EICAS/EICAS_Common.css" />
+
+<script type="text/html" id="EICASCommonDisplayTemplate">
+    <svg viewBox="0 0 600 150" xmlns="http://www.w3.org/2000/svg">
+        <g id="grid">
+            <line x1="0" y1="40" x2="600" y2="40" />
+            <line x1="200" y1="40" x2="200" y2="125" />
+            <line x1="400" y1="40" x2="400" y2="125" />
+        </g>
+
+        <g id="TAT">
+            <text class="Title" x="74" y="70" text-anchor="end">TAT</text>
+            <text id="TATValue" x="112" y="70" text-anchor="middle">--</text>
+            <text class="Unit" x="150" y="70" text-anchor="start">&#176;C</text>
+        </g>
+
+        <g id="SAT">
+            <text class="Title" x="74" y="95" text-anchor="end">SAT</text>
+            <text id="SATValue" x="112" y="95" text-anchor="middle">--</text>
+            <text class="Unit" x="150" y="95" text-anchor="start">&#176;C</text>
+        </g>
+
+        <g id="Clock">
+            <text id="HoursValue" class="Value" x="280" y="90" text-anchor="end">--</text>
+            <text class="Unit" x="300" y="90" text-anchor="middle">H</text>
+            <text id="MinutesValue" class="Value" x="320" y="90" text-anchor="start">--</text>
+        </g>
+
+        <g id="GW">
+            <text class="Title" x="438" y="70" text-anchor="end">GW</text>
+            <text id="GWValue" class="Value" x="495" y="70" text-anchor="middle">--</text>
+            <text id="GWUnit" class="Unit" x="545" y="70" text-anchor="start">KG</text>
+        </g>
+    </svg>
+</script>
+
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/A320_Neo/EICAS/EICAS_Common.js"></script> <!-- MODIFIED -->

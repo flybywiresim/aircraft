@@ -1,11 +1,4 @@
-﻿/* @font-face {
-  font-family: "Liberation-Mono";
-  src: url("/Pages/VCockpit/Instruments/Airliners/A320_Neo/Fonts/LiberationMono-Regular.ttf") format("truetype");
-  font-weight: normal;
-  font-style: normal;
-} */
-
-@font-face {
+﻿@font-face {
   font-family: "B612Mono";
   src: url("/Fonts/B612Mono-Regular.ttf") format("truetype");
   font-weight: normal;
