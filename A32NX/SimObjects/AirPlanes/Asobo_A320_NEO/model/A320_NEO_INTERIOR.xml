@@ -2362,6 +2362,51 @@
 		</UseTemplate>
 	</Component>
 	
+	<!-- This section has been entirely modified 	-->
+
+	<Component ID="Chronometer">
+		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
+			<NODE_ID>PUSH_AUTOPILOT_CHRONO_L</NODE_ID>
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
+			<NODE_ID>PUSH_AUTOPILOT_CHRONO_R</NODE_ID>
+		</UseTemplate>
+
+		<UseTemplate Name="ASOBO_AIRBUS_Chronometer_Button">
+			<NODE_ID>PUSH_CHRONO_RST</NODE_ID>
+			<TOOLTIPID>Reset Chronometer</TOOLTIPID>
+			<HTML_EVENT>Chrono_RST</HTML_EVENT>
+			<ANIM_NAME>PUSH_CHRONO_RST</ANIM_NAME>
+		</UseTemplate>
+
+		<UseTemplate Name="ASOBO_AIRBUS_Chronometer_Button">
+			<NODE_ID>PUSH_CHRONO_CHR</NODE_ID>
+			<TOOLTIPID>%((L:Chrono_CHR_State, Bool) !)%{if}Start%{else}Stop%{end} Chronometer</TOOLTIPID>
+			<HTML_EVENT>Chrono_CHR</HTML_EVENT>
+			<ANIM_NAME>PUSH_CHRONO_CHR</ANIM_NAME>
+		</UseTemplate>
+
+		<UseTemplate Name="ASOBO_AIRBUS_Chronometer_Button">
+			<NODE_ID>PUSH_CHRONO_SET</NODE_ID>
+			<TOOLTIPID>Set chronometer to %((L:Chrono_SET_Mode, Bool) !)%{if}date%{else}time%{end}</TOOLTIPID>
+			<HTML_EVENT>Chrono_SET</HTML_EVENT>
+			<ANIM_NAME>PUSH_CHRONO_SET</ANIM_NAME>
+		</UseTemplate>
+
+		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
+			<NODE_ID>KNOB_CHRONO_GPS</NODE_ID>
+		</UseTemplate>
+
+		<UseTemplate Name="ASOBO_AIRLINER_Chrono_Knob_Template">
+			<ANIM_CODE>50</ANIM_CODE>
+			<NODE_ID>KNOB_CHRONO_RUN</NODE_ID>
+			<ANIM_NAME>KNOB_CHRONO_RUN</ANIM_NAME>
+		</UseTemplate>
+
+	</Component>
+
+	<!-- This section has been partially modified	-->
+
 	<Component ID="INOP">
 		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
 			<NODE_ID>PUSH_AUTOPILOT_HDGTRK</NODE_ID>
@@ -2376,13 +2421,7 @@
 			<NODE_ID>PUSH_AUTOPILOT_AUTOLAND_L</NODE_ID>
 		</UseTemplate>
 		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-			<NODE_ID>PUSH_AUTOPILOT_CHRONO_L</NODE_ID>
-		</UseTemplate>
-		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
 			<NODE_ID>PUSH_AUTOPILOT_SIDESTICK_L</NODE_ID>
-		</UseTemplate>
-		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-			<NODE_ID>PUSH_AUTOPILOT_CHRONO_R</NODE_ID>
 		</UseTemplate>
 		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
 			<NODE_ID>PUSH_AUTOPILOT_SIDESTICK_R</NODE_ID>
@@ -2423,21 +2462,7 @@
 		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
 			<NODE_ID>PUSH_AUTOBKR_LDGGEAR_3</NODE_ID>
 		</UseTemplate>
-		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-			<NODE_ID>PUSH_CHRONO_RST</NODE_ID>
-		</UseTemplate>
-		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-			<NODE_ID>PUSH_CHRONO_SET</NODE_ID>
-		</UseTemplate>
-		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-			<NODE_ID>PUSH_CHRONO_CHR</NODE_ID>
-		</UseTemplate>
-		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-			<NODE_ID>KNOB_CHRONO_GPS</NODE_ID>
-		</UseTemplate>
-		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-			<NODE_ID>KNOB_CHRONO_RUN</NODE_ID>
-		</UseTemplate>
+
 		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
 			<NODE_ID>PUSH_EFIS_FO_PFD</NODE_ID>
 		</UseTemplate>

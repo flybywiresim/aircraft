@@ -1,6 +1,11 @@
 {
     "content": [
         {
+            "path": "en-US.locPak",
+            "size": 1859,
+            "date": "132402817714110148"
+        },
+        {
             "path": "html_ui/Fonts/B612Mono-Regular.ttf",
             "size": 140292,
             "date": "132402817714110148"
@@ -21,8 +26,23 @@
             "date": "132402817714110148"
         },
         {
+            "path": "html_ui/Pages/VCockpit/Instruments/Airliners/A320_Neo/Clock/A320_Neo_Clock.css",
+            "size": 2344,
+            "date": "132402817714110148"
+        },
+        {
+            "path": "html_ui/Pages/VCockpit/Instruments/Airliners/A320_Neo/Clock/A320_Neo_Clock.html",
+            "size": 1392,
+            "date": "132402817714110148"
+        },
+        {
+            "path": "html_ui/Pages/VCockpit/Instruments/Airliners/A320_Neo/Clock/A320_Neo_Clock.js",
+            "size": 3404,
+            "date": "132402817714110148"
+        },
+        {
             "path": "html_ui/Pages/VCockpit/Instruments/Airliners/A320_Neo/EICAS/A320_Neo_EICAS.css",
-            "size": 6266,
+            "size": 6300,
             "date": "132402817714110148"
         },
         {
@@ -32,7 +52,7 @@
         },
         {
             "path": "html_ui/Pages/VCockpit/Instruments/Airliners/A320_Neo/EICAS/A320_Neo_EICAS.js",
-            "size": 10627,
+            "size": 10638,
             "date": "132402817714110148"
         },
         {
@@ -197,7 +217,7 @@
         },
         {
             "path": "ModelBehaviorDefs/Asobo/Airliner/Airbus.xml",
-            "size": 41920,
+            "size": 43521,
             "date": "132402817714110148"
         },
         {
@@ -217,7 +237,7 @@
         },
         {
             "path": "SimObjects/AirPlanes/Asobo_A320_NEO/engines.cfg",
-            "size": 10489,
+            "size": 10499,
             "date": "132402817714110148"
         },
         {
@@ -242,7 +262,7 @@
         },
         {
             "path": "SimObjects/AirPlanes/Asobo_A320_NEO/model/A320_NEO_INTERIOR.xml",
-            "size": 131450,
+            "size": 132202,
             "date": "132402817714110148"
         },
         {
