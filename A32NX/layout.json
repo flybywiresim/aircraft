@@ -81,6 +81,21 @@
             "date": "132402817714110148"
         },
         {
+            "path": "html_ui/Fonts/LiberationMono.ttf",
+            "size": 596704,
+            "date": "132402817714110148"
+        },
+        {
+            "path": "html_ui/Fonts/LiberationMono.ttf.birdfont",
+            "size": 1891789,
+            "date": "132402817714110148"
+        },
+        {
+            "path": "html_ui/Fonts/LiberationMonoOriginal.ttf",
+            "size": 313408,
+            "date": "132402817714110148"
+        },
+        {
             "path": "html_ui/Pages/VCockpit/Instruments/Airliners/A320_Neo/BaseNDCompass.js",
             "size": 35783,
             "date": "132402817714110148"
@@ -282,7 +297,7 @@
         },
         {
             "path": "html_ui/Pages/VCockpit/Instruments/Airliners/A320_Neo/EICAS/ECAM/A320_Neo_LowerECAM_DOOR.css",
-            "size": 2209,
+            "size": 2382,
             "date": "132402817714110148"
         },
         {
@@ -297,7 +312,7 @@
         },
         {
             "path": "html_ui/Pages/VCockpit/Instruments/Airliners/A320_Neo/EICAS/ECAM/A320_Neo_LowerECAM_FTCL.css",
-            "size": 2848,
+            "size": 3021,
             "date": "132402817714110148"
         },
         {
@@ -342,7 +357,7 @@
         },
         {
             "path": "html_ui/Pages/VCockpit/Instruments/Airliners/A320_Neo/MFD/A320_Neo_MFD.css",
-            "size": 8074,
+            "size": 8298,
             "date": "132402817714110148"
         },
         {
@@ -358,6 +373,11 @@
         {
             "path": "html_ui/Pages/VCockpit/Instruments/Airliners/A320_Neo/MFD/NDCompass.js",
             "size": 37238,
+            "date": "132402817714110148"
+        },
+        {
+            "path": "html_ui/Pages/VCockpit/Instruments/Airliners/A320_Neo/PFD/A320_Neo_PFD.css",
+            "size": 9653,
             "date": "132402817714110148"
         },
         {
@@ -382,7 +402,7 @@
         },
         {
             "path": "html_ui/Pages/VCockpit/Instruments/Airliners/A320_Neo/PFD/AltimeterIndicator.js",
-            "size": 97744,
+            "size": 97747,
             "date": "132402817714110148"
         },
         {
