@@ -2,51 +2,61 @@
 
 <script type="text/html" id="LowerECAMEngineTemplate">
     <svg viewBox="0 0 600 600" xmlns="http://www.w3.org/2000/svg">
-        <line class="Separator" x1="400" y1="100" x2="400" y2="475" />
+        <text id="PageTitle" x="60" y="25">ENGINE</text>
 
-        <text id="PageTitle" x="400" y="75">ENGINE</text>
+        <text id="FuelUsedTitle" class="Title" x="300" y="70">F.USED</text>
+        <text id="FuelUsedUnit" class="Unit" x="300" y="92">KG</text>
+        <text id="FuelUsedValueLeft" class="Value" x="196" y="81">----</text>
+        <text id="FuelUsedValueRight" class="Value" x="404" y="81">----</text>
+        <line class="Indicator" x1="250" y1="75" x2="220" y2="77" />
+        <line class="Indicator" x1="350" y1="75" x2="380" y2="77" />
 
-        <text id="FuelUsedTitle" class="Title" x="190" y="110">F.USED</text>
-        <text id="FuelUsedUnit" class="Unit" x="190" y="130">KG</text>
-        <text id="FuelUsedValueLeft" class="Value" x="110" y="130">----</text>
-        <text id="FuelUsedValueRight" class="Value" x="270" y="130">----</text>
-        <line class="Indicator" x1="180" y1="120" x2="140" y2="130" />
-        <line class="Indicator" x1="200" y1="120" x2="240" y2="130" />
+        <text id="OilQuantityTitle" class="Title" x="300" y="135">OIL</text>
+        <text id="OilQuantityUnit" class="Unit" x="300" y="165">QT</text>
 
-        <text id="OilQuantityTitle" class="Title" x="190" y="180">OIL</text>
-        <text id="OilQuantityUnit" class="Unit" x="190" y="200">QT</text>
+        <text id="OilPressureUnit" class="Unit" x="300" y="265">PSI</text>
 
-        <text id="OilPressureUnit" class="Unit" x="190" y="260">PSI</text>
+        <text id="OilTemperatureUnit" class="Unit" x="300" y="315">&#176;C</text>
+        <text id="OilTemperatureValueLeft" class="Value" x="180" y="325">--</text>
+        <text id="OilTemperatureValueRight" class="Value" x="420" y="325">--</text>
+        <line class="Indicator" x1="250" y1="317" x2="220" y2="319" />
+        <line class="Indicator" x1="350" y1="317" x2="380" y2="319" />
 
-        <text id="OilTemperatureUnit" class="Unit" x="190" y="350">&#176;C</text>
-        <text id="OilTemperatureValueLeft" class="Value" x="120" y="370">--</text>
-        <text id="OilTemperatureValueRight" class="Value" x="260" y="370">--</text>
-        <line class="Indicator" x1="180" y1="360" x2="140" y2="370" />
-        <line class="Indicator" x1="200" y1="360" x2="240" y2="370" />
+        <text id="N1VibrationLevelUnit" class="Unit" x="300" y="360">VIB N1</text>
+        <text id="N1VibrationLevelValueLeft" class="Value" x="180" y="363">0.0</text>
+        <text id="N1VibrationLevelValueRight" class="Value" x="420" y="363">0.0</text>
+        <line class="Indicator" x1="250" y1="360" x2="220" y2="362" />
+        <line class="Indicator" x1="350" y1="360" x2="380" y2="362" />
 
-        <text id="EngineBleedPressureUnitLeft" class="Unit" x="95" y="480">PSI</text>
-        <text id="EngineBleedPressureValueLeft" class="Value" x="135" y="480">---</text>
+        <text id="N2VibrationLevelUnit" class="Unit" x="300" y="390">&nbsp;&nbsp;&nbsp; N2</text>
+        <text id="N2VibrationLevelValueLeft" class="Value" x="180" y="393">0.0</text>
+        <text id="N2VibrationLevelValueRight" class="Value" x="420" y="393">0.0</text>
+        <line class="Indicator" x1="250" y1="390" x2="220" y2="392" />
+        <line class="Indicator" x1="350" y1="390" x2="380" y2="392" />
 
-        <text id="IGNValueLeft" class="Value" x="165" y="460"></text>
-        <text id="IGNTitle" class="Title" x="190" y="440"></text>
-        <text id="IGNValueRight" class="Value" x="215" y="460"></text>
+        <text id="EngineBleedPressureValueLeft" class="Value" x="180" y="490">---</text>
 
-        <text id="EngineBleedPressureValueRight" class="Value" x="245" y="480">---</text>
-        <text id="EngineBleedPressureUnitRight" class="Unit" x="285" y="480">PSI</text>
+        <text id="N1VibrationLevelUnit" class="Unit" x="300" y="490">PSI</text>
+        <line class="Indicator" x1="250" y1="488" x2="220" y2="490" />
+        <line class="Indicator" x1="350" y1="488" x2="380" y2="490" />
+
+        <text id="IGNValueLeft" class="Value" x="275" y="465"></text>
+        <text id="IGNTitle" class="Title" x="300" y="440"></text>
+        <text id="IGNValueRight" class="Value" x="325" y="465"></text>
+
+        <text id="EngineBleedPressureValueRight" class="Value" x="420" y="490">---</text>
 
         <g id="StartValveDiagrams">
             <g id="StartValveDiagramLeft">
-                <path d="M135 470 l0 -24 l-70 0" />
-                <circle r="12" cx="95" cy="446" />
-                <line id="StartValveLeft_OPEN" x1="83" y1="446" x2="107" y2="446" display="none"></line>
-                <line id="StartValveLeft_CLOSED" x1="95" y1="434" x2="95" y2="458" display="none"></line>
+                <circle r="12" cx="180" cy="456" />
+                <line id="StartValveLeft_OPEN" x1="168" y1="456" x2="192" y2="456" display="none"></line>
+                <line id="StartValveLeft_CLOSED" x1="180" y1="444" x2="180" y2="468" display="none"></line>
             </g>
 
             <g id="StartValveDiagramRight">
-                <path d="M245 470 l0 -24 l70 0" />
-                <circle r="12" cx="285" cy="446" />
-                <line id="StartValveRight_OPEN" x1="273" y1="446" x2="297" y2="446" display="none"></line>
-                <line id="StartValveRight_CLOSED" x1="285" y1="434" x2="285" y2="458" display="none"></line>
+                <circle r="12" cx="420" cy="456" />
+                <line id="StartValveRight_OPEN" x1="408" y1="456" x2="432" y2="456" display="none"></line>
+                <line id="StartValveRight_CLOSED" x1="420" y1="444" x2="420" y2="468" display="none"></line>
             </g>
         </g>
     </svg>
