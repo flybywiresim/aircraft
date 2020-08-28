@@ -273,6 +273,14 @@
 			</Inequal>
 		  </Condition>
 		</Annunciation>
+
+		<Annunciation>
+		  <Type>Warning</Type>
+		  <Text>OVERSPEED</Text>
+		  <Condition>
+			<Simvar name="OVERSPEED WARNING" unit="bool"/>
+		  </Condition>
+		</Annunciation>
 	</Annunciations>
   
 	<!-- Voices Alerts -->
@@ -733,14 +741,6 @@
 			<SoundEvent>aural_stall</SoundEvent>
 			<Condition>
 				<Simvar name="STALL WARNING" unit="Bool"/>
-			</Condition>
-		</Alert>
-				
-		<Alert>
-			<Type>SoundOnly</Type>
-			<SoundEvent>aural_overspeed</SoundEvent>
-			<Condition>
-				<Simvar name="OVERSPEED WARNING" unit="bool"/>
 			</Condition>
 		</Alert>
 	</VoicesAlerts>

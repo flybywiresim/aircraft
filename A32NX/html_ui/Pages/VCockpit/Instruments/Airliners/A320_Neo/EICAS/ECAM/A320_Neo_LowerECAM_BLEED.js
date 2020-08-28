@@ -21,8 +21,7 @@ var A320_Neo_LowerECAM_BLEED;
             this.leftEngineIp = [this.querySelector("#left-engine-ip-open"), this.querySelector("#left-engine-ip-closed")]
             this.rightEngineIp = [this.querySelector("#right-engine-ip-open"), this.querySelector("#right-engine-ip-closed")]
             this.rightEngineHp = [this.querySelector("#right-engine-hp-open"), this.querySelector("#right-engine-hp-closed")]
-           
-        }
+        }   
         update(_deltaTime) {
             if (!this.isInitialised) {
                 return;
