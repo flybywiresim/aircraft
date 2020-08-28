@@ -52,7 +52,7 @@
         },
         {
             "path": "SimObjects/AirPlanes/Asobo_A320_NEO/panel/panel.xml",
-            "size": 19219,
+            "size": 19953,
             "date": "132402817714110148"
         },
         {
@@ -182,7 +182,7 @@
         },
         {
             "path": "html_ui/Pages/VCockpit/Instruments/Airliners/A320_Neo/CDU/A320_Neo_CDU_MainDisplay.js",
-            "size": 35728,
+            "size": 35862,
             "date": "132402817714110148"
         },
         {

@@ -202,6 +202,35 @@
 		  </Condition>
 		</Annunciation>
 
+        <Annunciation>
+		  <Type>Advisory</Type>
+		  <Text>IRS IN ALIGN</Text>
+          <!-- Idk why the ADIRS_TIME simvar isn't able to be included -->
+          <!-- <Text>IRS IN ALIGN <ToFixed precision="0"><Simvar name="L:A320_Neo_ADIRS_TIME" unit="minutes"/></ToFixed> MN</Text> -->
+		  <Condition>
+			<Simvar name="L:A320_Neo_ADIRS_IN_ALIGN" unit="Bool"/>
+		  </Condition>
+		</Annunciation>
+
+        <Annunciation>
+		  <Type>Advisory</Type>
+		  <Text>SEAT BELTS</Text>
+		  <Condition>
+			<Simvar name="L:XMLVAR_SWITCH_OVHD_INTLT_SEATBELT_Position" unit="Bool"/>
+		  </Condition>
+		</Annunciation>
+
+        <Annunciation>
+		  <Type>Advisory</Type>
+		  <Text>NO SMOKING</Text>
+		  <Condition>
+            <Equal>
+			  <Simvar name="XMLVAR_SWITCH_OVHD_INTLT_NOSMOKING_Position" unit="position"/>
+              <Constant>0.0</Constant>
+            </Equal>
+		  </Condition>
+		</Annunciation>
+
 		<Annunciation>
 		  <Type>Advisory</Type>
 		  <Text>PARK BRAKE</Text>
@@ -215,14 +244,6 @@
 		  <Text>GND SPLRS ARMED</Text>
 		  <Condition>
 			<Simvar name="SPOILERS ARMED" unit="Bool"/>
-		  </Condition>
-		</Annunciation>
-
-		<Annunciation>
-		  <Type>Advisory</Type>
-		  <Text>IRS IN ALIGN</Text>
-		  <Condition>
-			<Simvar name="L:A320_Neo_ADIRS_IN_ALIGN" unit="Bool"/>
 		  </Condition>
 		</Annunciation>
 
