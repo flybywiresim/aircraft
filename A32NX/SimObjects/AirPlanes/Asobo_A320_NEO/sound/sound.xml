@@ -244,8 +244,6 @@
 	</Sound>
 
 	<Sound WwiseData="true" WwiseEvent="light_switch_seatbelt" LocalVar="XMLVAR_SWITCH_OVHD_INTLT_SEATBELT_Position" Continuous="false">
-		<Range LowerBound="0" UpperBound="0.1"/>
-		<Range LowerBound="0.9" UpperBound="1"/>
 		<Requires LocalVar="A320_Neo_BAT_State">
             <Range LowerBound="1" />
         </Requires>
