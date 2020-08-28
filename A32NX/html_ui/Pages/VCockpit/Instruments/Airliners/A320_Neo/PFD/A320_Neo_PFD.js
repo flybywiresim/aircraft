@@ -135,7 +135,7 @@ class A320_Neo_PFD_MainPage extends NavSystemPage {
             this.selfTestTimerStarted = true;
         }
         // Check if external power is on & timer not already started
-        if (externalPower && !this.selfTestTimerStarted) {
+        if ((externalPower || apuOn) && !this.selfTestTimerStarted) {
             this.selfTestTimer = 13;
             this.selfTestTimerStarted = true;
         }
