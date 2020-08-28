@@ -1595,17 +1595,17 @@ var Airbus_FMA;
                 switch (targetState) {
                     case Column5.ROW_1_STATE.AP_1:
                         {
-                            this.setRowText(0, "AP1", Airbus_FMA.MODE_STATE.ENGAGED);
+                            this.setRowText(0, "AP1", Airbus_FMA.MODE_STATE.ACTIVE);
                             break;
                         }
                     case Column5.ROW_1_STATE.AP_2:
                         {
-                            this.setRowText(0, "AP2", Airbus_FMA.MODE_STATE.ENGAGED);
+                            this.setRowText(0, "AP2", Airbus_FMA.MODE_STATE.ACTIVE);
                             break;
                         }
                     case Column5.ROW_1_STATE.AP_BOTH:
                         {
-                            this.setRowText(0, "AP1+2", Airbus_FMA.MODE_STATE.ENGAGED);
+                            this.setRowText(0, "AP1+2", Airbus_FMA.MODE_STATE.ACTIVE);
                             break;
                         }
                     default:
@@ -1626,17 +1626,17 @@ var Airbus_FMA;
                 switch (targetState) {
                     case Column5.ROW_2_STATE.FD_1:
                         {
-                            this.setRowText(1, "1FD-", Airbus_FMA.MODE_STATE.STATUS);
+                            this.setRowText(1, "1FD-", Airbus_FMA.MODE_STATE.ACTIVE);
                             break;
                         }
                     case Column5.ROW_2_STATE.FD_2:
                         {
-                            this.setRowText(1, "-FD2", Airbus_FMA.MODE_STATE.STATUS);
+                            this.setRowText(1, "-FD2", Airbus_FMA.MODE_STATE.ACTIVE);
                             break;
                         }
                     case Column5.ROW_2_STATE.FD_BOTH:
                         {
-                            this.setRowText(1, "1FD2", Airbus_FMA.MODE_STATE.STATUS);
+                            this.setRowText(1, "1FD2", Airbus_FMA.MODE_STATE.ACTIVE);
                             break;
                         }
                     default:
