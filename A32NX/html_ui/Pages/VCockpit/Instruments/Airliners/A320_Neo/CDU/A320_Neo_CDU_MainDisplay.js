@@ -711,7 +711,8 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             SimVar.SetSimVarValue("L:A320_Neo_ADIRS_STATE", "Enum", 1);
             SimVar.SetSimVarValue("L:A320_Neo_ADIRS_IN_ALIGN", "Bool", 1); // DELETE AFTER MCDU IRS INIT IS IMPLEMENTED
             ADIRSState = 1;
-            this.ADIRSTimer = 120; //ADIRS ALIGN TIME
+            let currentLatitude = SimVar.GetSimVarValue("GPS POSITION LAT", "degree latitude")
+            this.ADIRSTimer = Math.abs(1.14 * currentLatitude) * 10; //ADIRS ALIGN TIME DEPENDING ON LATITUDE.
         }
 
         if (ADIRSState == 1 && SimVar.GetSimVarValue("L:A320_Neo_ADIRS_IN_ALIGN", "Bool") == 1) {
