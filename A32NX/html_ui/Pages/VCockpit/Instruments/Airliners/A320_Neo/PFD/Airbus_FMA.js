@@ -617,7 +617,7 @@ var Airbus_FMA;
         IsActive_THRCLB() {
             if (Airbus_FMA.CurrentPlaneState.autoPilotThrottleActive &&
                 Airbus_FMA.CurrentPlaneState.highestThrottleDetent == ThrottleMode.CLIMB &&
-                Simplane.getVerticalSpeed() > 100 && !AltCaptured && Airbus_FMA.CurrentPlaneState.anyFlightDirectorsActive) {
+                Simplane.getVerticalSpeed() > 150 && !AltCaptured && Airbus_FMA.CurrentPlaneState.anyFlightDirectorsActive) {
 				return true;
             }
             return false;
