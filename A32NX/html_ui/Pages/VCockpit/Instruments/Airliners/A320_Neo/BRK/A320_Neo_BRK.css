@@ -1,0 +1,95 @@
+﻿:root {
+  --bodyHeightScale: 1; }
+
+@keyframes TemporaryShow {
+  0%, 100% {
+    visibility: visible; } }
+
+@keyframes TemporaryHide {
+  0%, 100% {
+    visibility: hidden; } }
+
+#highlight {
+  position: absolute;
+  height: 100%;
+  width: 100%;
+  z-index: 10; }
+
+#Electricity {
+  width: 100%;
+  height: 100%; }
+  #Electricity[state=off] {
+    /*JZ REMOVED (Display stays on after POwer supply off) */
+    display: none; }
+#Unit {
+   fill: #009696;
+   font-size: 40px;} /* JZ ADDED */
+@font-face {
+  font-family: "Roboto";
+  src: url("/Fonts/RobotoMono-Medium.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal; }
+
+@font-face {
+  font-family: "Roboto-Light";
+  src: url("/Fonts/RobotoMono-Light.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal; }
+
+@font-face {
+  font-family: "Roboto-Bold";
+  src: url("/Fonts/RobotoMono-Bold.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal; }
+
+a320-neo-brk {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  /* overflow: hidden;
+  background-color: darkgrey; } */
+  /* background-color: black; } */
+    }
+  a320-neo-brk text {
+    font-family: Roboto;
+    /* font-family: Roboto-Bold; */
+    text-anchor: middle;
+    alignment-baseline: central; 
+    font-size: 65px; }
+  a320-neo-brk text.title {
+    fill: white; }
+  a320-neo-brk text.unit {
+    fill: #009696; 
+    font-size: 40px; } /* JZ ADDED */
+  a320-neo-brk text.value {
+    fill: white; 
+    font-size: 65px;}/* JZ ADDED*/
+  a320-neo-brk svg {
+    width: 100%;
+    height: 100%; }
+  a320-neo-brk .dialFrame {
+    fill: #121212;
+    stroke: black;
+    stroke-width: 8px; }
+  a320-neo-brk .marker {
+    stroke: white;
+    stroke-width: 8px; }
+  a320-neo-brk .indicator {/* JZ ADDED*/
+      fill: #171717;
+      stroke:red;
+      /* stroke: grey; */
+      stroke-width: 8px; }
+  a320-neo-brk .indicatorCircle {
+    fill: #171717;
+    stroke:black;
+    /* stroke: grey; */
+    stroke-width: 8px; }
+  a320-neo-brk .indicatorArrow {
+    fill: darkgrey;
+    stroke:black; 
+    stroke-width: 8px; }
+  a320-neo-brk .outerArc {
+    fill: none;
+    stroke: lime;
+    stroke-width: 32px; }
+
