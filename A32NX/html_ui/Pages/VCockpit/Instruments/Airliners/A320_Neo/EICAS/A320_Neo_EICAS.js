@@ -55,7 +55,7 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
             this.selfTestTimerStarted = true;
         }
         // Check if external power is on & timer not already started
-        if (externalPower && !this.selfTestTimerStarted) {
+        if ((externalPower || apuOn) && !this.selfTestTimerStarted) {
             this.selfTestTimer = 14.25;
             this.selfTestTimerStarted = true;
         } // timer

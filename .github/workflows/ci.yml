@@ -20,4 +20,5 @@ jobs:
           cd ./A32NX
           python3 build.py
           cd ../
+          chmod +x ./.github/workflows/check_git_diff.sh
           ./.github/workflows/check_git_diff.sh
