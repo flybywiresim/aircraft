@@ -1,4 +1,4 @@
-# MSFS A320neo Improvement Mod | Master Version
+# MSFS A320neo Improvement Mod - Stable Version
 
 Preview of APU and DOOR ECAM pages: https://www.youtube.com/watch?v=rLaVK3nNCXc
 
