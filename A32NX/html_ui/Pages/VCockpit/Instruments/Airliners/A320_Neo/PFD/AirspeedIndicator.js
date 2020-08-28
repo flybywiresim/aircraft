@@ -1354,7 +1354,7 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
                         line.SVGText1 = document.createElementNS(Avionics.SVG.NS, "text");
                         line.SVGText1.setAttribute("x", (linePosX - 6).toString());
                         line.SVGText1.setAttribute("fill", "white");
-                        line.SVGText1.setAttribute("font-size", (this.fontSize * 1.7).toString());
+                        line.SVGText1.setAttribute("font-size", (this.fontSize * 1.5).toString());
                         line.SVGText1.setAttribute("font-family", "Roboto-Bold");
                         line.SVGText1.setAttribute("text-anchor", "end");
                         line.SVGText1.setAttribute("alignment-baseline", "central");

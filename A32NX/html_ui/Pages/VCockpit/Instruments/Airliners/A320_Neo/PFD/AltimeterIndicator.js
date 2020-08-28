@@ -1235,7 +1235,7 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
             this.cursorSVG.setAttribute("viewBox", "0 0 " + cursorWidth + " " + cursorHeight);
             {
                 var _cursorPosX = 5;
-                var _cursorPosY = cursorHeight * 0.5 - 2;
+                var _cursorPosY = cursorHeight * 0.5;// - 2;
                 if (!this.cursorSVGShape)
                     this.cursorSVGShape = document.createElementNS(Avionics.SVG.NS, "path");
                 this.cursorSVGShape.setAttribute("fill", "black");

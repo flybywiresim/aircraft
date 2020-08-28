@@ -1,0 +1,306 @@
+﻿:root {
+  --bodyHeightScale: 1; }
+
+@keyframes TemporaryShow {
+  0%, 100% {
+    visibility: visible; } }
+
+@keyframes TemporaryHide {
+  0%, 100% {
+    visibility: hidden; } }
+
+#highlight {
+  position: absolute;
+  height: 100%;
+  width: 100%;
+  z-index: 10; }
+
+#Electricity {
+  width: 100%;
+  height: 100%; }
+  #Electricity[state=off] {
+    display: none; }
+
+@font-face {
+  font-family: "Roboto";
+  src: url("/Fonts/RobotoMono-Medium.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal; }
+
+@font-face {
+  font-family: "Roboto-Light";
+  src: url("/Fonts/RobotoMono-Light.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal; }
+
+@font-face {
+  font-family: "Roboto-Bold";
+  src: url("/Fonts/RobotoMono-Bold.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal; }
+
+  @font-face {
+  font-family: "Liberation Mono";
+  src: url("/Fonts/LiberationMono.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal; }
+
+#highlight {
+  position: absolute;
+  height: 100%;
+  width: 100%;
+  z-index: 10; }
+
+#Mainframe {
+  --refWidth: 1024;
+  --refHeight: 1024; }
+
+text {
+  font-family: "Liberation Mono" !important;
+}
+
+a320-neo-pfd-element {
+  width: 100%;
+  height: 100%;
+  background-color: black;
+  font-family: "Liberation Mono" !important;
+  position: relative;
+  overflow: hidden;
+  z-index: -10; }
+  a320-neo-pfd-element #Electricity {
+    width: 100%;
+    height: 100%; }
+    a320-neo-pfd-element #Electricity[state=off] {
+      display: none; }
+  a320-neo-pfd-element .PopupWindow {
+    visibility: hidden; }
+    a320-neo-pfd-element .PopupWindow[state=Active] {
+      visibility: inherit; }
+  a320-neo-pfd-element #Mainframe {
+    width: 100%;
+    height: 100%;
+    display: block;
+    position: relative; }
+    a320-neo-pfd-element #Mainframe #HorizonContainer {
+      transform: rotateX(0);
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      z-index: -6;
+      border: none;
+      overflow: hidden; }
+      a320-neo-pfd-element #Mainframe #HorizonContainer #Horizon {
+        position: absolute;
+        left: 15%;
+        top: 21%;
+        width: 58%;
+        height: 48%;
+        border: none;
+        transform: scale(0.9); }
+    a320-neo-pfd-element #Mainframe #InstrumentsContainer {
+      transform: rotateX(0);
+      width: 100%;
+      height: 100%;
+      z-index: 0; }
+      a320-neo-pfd-element #Mainframe #InstrumentsContainer #Altimeter {
+        transform: rotateX(0);
+        position: absolute;
+        top: 21.5%;
+        left: 68%;
+        width: 28%;
+        height: 100%; }
+      a320-neo-pfd-element #Mainframe #InstrumentsContainer #Airspeed {
+        transform: rotateX(0);
+        position: absolute;
+        top: 20.4%;
+        left: -4%;
+        width: 28%;
+        height: 100%; }
+      a320-neo-pfd-element #Mainframe #InstrumentsContainer #VSpeed {
+        transform: rotateX(0);
+        position: absolute;
+        border: none;
+        top: 18%;
+        left: 92%;
+        width: 28%;
+        height: 100%;
+        z-index: 0; }
+      a320-neo-pfd-element #Mainframe #InstrumentsContainer #Compass {
+        transform: rotateX(0);
+        position: absolute;
+        border: none;
+        top: 88%;
+        left: 19%;
+        width: 50%;
+        height: 45%;
+        z-index: 0; }
+      a320-neo-pfd-element #Mainframe #InstrumentsContainer #FMA {
+        transform: rotateX(0);
+        position: absolute;
+        background-color: black;
+        display: flex;
+        width: 100%;
+        height: 14%;
+        top: 1%;
+        left: 0%; }
+        a320-neo-pfd-element #Mainframe #InstrumentsContainer #FMA div {
+          font-size: 46px;
+          font-family: "Liberation Mono";
+          text-align: center;
+          line-height: 100%;
+          justify-content: space-between;
+          white-space: nowrap; }
+        a320-neo-pfd-element #Mainframe #InstrumentsContainer #FMA .Engaged {
+          color: lime; }
+        a320-neo-pfd-element #Mainframe #InstrumentsContainer #FMA .Captured {
+          color: lime; }
+        a320-neo-pfd-element #Mainframe #InstrumentsContainer #FMA .Armed {
+          color: cyan; }
+        a320-neo-pfd-element #Mainframe #InstrumentsContainer #FMA .Constrained {
+          color: magenta; }
+        a320-neo-pfd-element #Mainframe #InstrumentsContainer #FMA .Active {
+          color: white; }
+
+@keyframes blinking {
+  from {
+    opacity: 1; }
+  to {
+    opacity: 0; }
+  0% {
+    opacity: 0; }
+  50% {
+    opacity: 0; }
+  51% {
+    opacity: 1; }
+  100% {
+    opacity: 1; } }
+        a320-neo-pfd-element #Mainframe #InstrumentsContainer #FMA .ActiveBlink {
+          color: white;
+          animation: blinking 1s infinite; }
+        a320-neo-pfd-element #Mainframe #InstrumentsContainer #FMA .Status {
+          color: white; }
+        a320-neo-pfd-element #Mainframe #InstrumentsContainer #FMA .Warning {
+          color: orange; }
+        a320-neo-pfd-element #Mainframe #InstrumentsContainer #FMA .Danger {
+          color: red; }
+        a320-neo-pfd-element #Mainframe #InstrumentsContainer #FMA #Column1 {
+          width: 20%;
+          height: 100%;
+          position: relative; }
+          a320-neo-pfd-element #Mainframe #InstrumentsContainer #FMA #Column1 div {
+            position: relative;
+            width: 92%;
+            height: 33%;
+            left: 4%; }
+          a320-neo-pfd-element #Mainframe #InstrumentsContainer #FMA #Column1 #Row2SubLeft {
+            position: absolute;
+            top: 33%;
+            text-align: left;
+            padding-left: 4%; }
+          a320-neo-pfd-element #Mainframe #InstrumentsContainer #FMA #Column1 #Row2SubRight {
+            position: absolute;
+            top: 33%;
+            font-size: 35px;
+            text-align: right;
+            padding-right: 4%;
+            padding-top: 5%; }
+        a320-neo-pfd-element #Mainframe #InstrumentsContainer #FMA #Column2 {
+          width: 20%;
+          height: 100%;
+          border-left: solid 2px white;
+          position: relative; }
+          a320-neo-pfd-element #Mainframe #InstrumentsContainer #FMA #Column2 div {
+            position: relative;
+            width: 92%;
+            height: 33%;
+            left: 4%; }
+          a320-neo-pfd-element #Mainframe #InstrumentsContainer #FMA #Column2 #Row1SubLeft {
+            position: absolute;
+            top: 0%;
+            text-align: left;
+            padding-left: 3%; }
+          a320-neo-pfd-element #Mainframe #InstrumentsContainer #FMA #Column2 #Row1SubRight {
+            position: absolute;
+            top: 0%;
+            font-size: 35px;
+            text-align: right;
+            padding-right: 3%;
+            padding-top: 5%; }
+          a320-neo-pfd-element #Mainframe #InstrumentsContainer #FMA #Column2 #Row2SubLeft {
+            position: absolute;
+            top: 33%;
+            text-align: left;
+            padding-left: 4%; }
+          a320-neo-pfd-element #Mainframe #InstrumentsContainer #FMA #Column2 #Row2SubRight {
+            position: absolute;
+            top: 33%;
+            text-align: right;
+            padding-right: 4%; }
+        a320-neo-pfd-element #Mainframe #InstrumentsContainer #FMA #Column3 {
+          width: 20%;
+          height: 100%;
+          border-left: solid 2px white; }
+          a320-neo-pfd-element #Mainframe #InstrumentsContainer #FMA #Column3 div {
+            position: relative;
+            width: 92%;
+            height: 33%;
+            left: 4%; }
+        a320-neo-pfd-element #Mainframe #InstrumentsContainer #FMA #Column4 {
+          width: 20%;
+          height: 100%;
+          border-left: solid 2px white;
+          position: relative; }
+          a320-neo-pfd-element #Mainframe #InstrumentsContainer #FMA #Column4 div {
+            position: relative;
+            width: 92%;
+            height: 33%;
+            left: 4%; }
+          a320-neo-pfd-element #Mainframe #InstrumentsContainer #FMA #Column4 #Row3SubLeft {
+            position: absolute;
+            top: 66%;
+            text-align: left;
+            padding-left: 4%; }
+          a320-neo-pfd-element #Mainframe #InstrumentsContainer #FMA #Column4 #Row3SubRight {
+            position: absolute;
+            top: 66%;
+            font-size: 35px;
+            text-align: right;
+            padding-right: 4%;
+            padding-top: 5%; }
+        a320-neo-pfd-element #Mainframe #InstrumentsContainer #FMA #Column5 {
+          width: 20%;
+          height: 100%;
+          border-left: solid 2px white; }
+          a320-neo-pfd-element #Mainframe #InstrumentsContainer #FMA #Column5 div {
+            position: relative;
+            width: 92%;
+            height: 33%;
+            left: 4%; }
+        a320-neo-pfd-element #Mainframe #InstrumentsContainer #FMA #VerticalAndLateral div {
+          position: absolute;
+          left: 22%;
+          width: 36%;
+          height: 100%;
+          background-color: black; }
+        a320-neo-pfd-element #Mainframe #InstrumentsContainer #FMA #SpecialMessages div {
+          position: absolute;
+          width: 36%;
+          bottom: 0%;
+          height: 34%;
+          background-color: black; }
+        a320-neo-pfd-element #Mainframe #InstrumentsContainer #FMA #SpecialMessages #Msg1 {
+          left: 2%; }
+        a320-neo-pfd-element #Mainframe #InstrumentsContainer #FMA #SpecialMessages #Msg2 {
+          left: 22%;
+          padding-top: 1%;
+          font-size: 35px; }
+      a320-neo-pfd-element #Mainframe #InstrumentsContainer #ILS {
+        transform: rotateX(0);
+        position: absolute;
+        border: none;
+        top: 0%;
+        left: 0%;
+        width: 100%;
+        height: 100%;
+        z-index: 1; }
+

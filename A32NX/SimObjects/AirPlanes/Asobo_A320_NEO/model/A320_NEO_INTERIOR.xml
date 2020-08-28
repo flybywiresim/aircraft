@@ -1437,13 +1437,17 @@
 				<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
 					<NODE_ID>PUSH_OVHD_COCKPITDOORVIDEO</NODE_ID>
 				</UseTemplate>
-				<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
+
+				<UseTemplate Name="ASOBO_AIRLINER_ADIRS_LIGHT_Template">
+					<ID>1</ID>
 					<NODE_ID>PUSH_OVHD_ADIRS_IR1</NODE_ID>
 				</UseTemplate>
-				<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
+				<UseTemplate Name="ASOBO_AIRLINER_ADIRS_LIGHT_Template">
+					<ID>2</ID>
 					<NODE_ID>PUSH_OVHD_ADIRS_IR2</NODE_ID>
 				</UseTemplate>
-				<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
+				<UseTemplate Name="ASOBO_AIRLINER_ADIRS_LIGHT_Template">
+					<ID>3</ID>
 					<NODE_ID>PUSH_OVHD_ADIRS_IR3</NODE_ID>
 				</UseTemplate>
 				
@@ -1468,12 +1472,15 @@
 
 				<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
 					<NODE_ID>PUSH_OVHD_ADIRS_1</NODE_ID>
+					<ID>1</ID>
 				</UseTemplate>
 				<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
 					<NODE_ID>PUSH_OVHD_ADIRS_2</NODE_ID>
+					<ID>2</ID>
 				</UseTemplate>
 				<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
 					<NODE_ID>PUSH_OVHD_ADIRS_3</NODE_ID>
+					<ID>3</ID>
 				</UseTemplate>
 				<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
 					<NODE_ID>PUSH_OVHD_EVAC_COMMAND</NODE_ID>
@@ -2818,6 +2825,7 @@
 		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
 			<NODE_ID>PUSH_OVHD_COCKPITDOORVIDEO</NODE_ID>
 		</UseTemplate>
+		<!--
 		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
 			<NODE_ID>PUSH_OVHD_ADIRS</NODE_ID>
 		</UseTemplate>
@@ -2829,7 +2837,7 @@
 		</UseTemplate>
 		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
 			<NODE_ID>PUSH_OVHD_ADIRS_IR3</NODE_ID>
-		</UseTemplate>
+		</UseTemplate>-->
 		<!--
 		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
 			<NODE_ID>KNOB_OVHD_ADIRS_1</NODE_ID>

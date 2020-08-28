@@ -38,7 +38,17 @@
     src: url("/Fonts/RobotoMono-Bold.ttf") format("truetype");
     font-weight: normal;
     font-style: normal; }
-  
+
+  @font-face {
+    font-family: "Liberation Mono";
+    src: url("/Fonts/LiberationMono.ttf") format("truetype");
+    font-weight: normal;
+    font-style: normal; }
+
+  text {
+    font-family: "Liberation Mono" !important;
+  }
+
   #Mainframe {
     --refWidth: 1024;
     --refHeight: 1024; }
