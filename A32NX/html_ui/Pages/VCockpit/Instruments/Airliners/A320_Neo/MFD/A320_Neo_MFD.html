@@ -32,7 +32,10 @@
                             <text id="Wind_Direction" class="Value" x="0%" y="45%" alignment-baseline="baseline">--</text>
                             <text id="Wind_Separator" class="Large" x="14%" y="45%" alignment-baseline="baseline">/</text>
                             <text id="Wind_Strength" class="Value" x="22%" y="45%" alignment-baseline="baseline">--</text>
-                            <polygon id="Wind_Arrow" points="-5 20, 5 20, 5 -20, 15 -20, 0 -40, -15 -20, -5 -20" transform="translate(40 130) rotate(0)" fill="lime" display="none" />
+                            <g id="Wind_Arrow" transform="translate(40 130) rotate(0)" fill="none" stroke="lime" stroke-width="5" stroke-linejoin="round" stroke-linecap="round" display="none">
+                                <polyline points="0,16 0,-35" />
+                                <polyline points="15,-20, 0,-40 -15,-20" />
+                            </g>
                         </svg>
                     </div>
 
