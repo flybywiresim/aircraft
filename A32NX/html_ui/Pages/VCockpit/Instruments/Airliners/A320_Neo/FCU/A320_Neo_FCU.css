@@ -61,7 +61,7 @@
     fill: var(--main-display-colour-inactive); }
   :root text.Value {
     font-family: Digital;
-    font-size: 64px;
+    font-size: 68px;
     text-anchor: start;
     fill: var(--main-display-colour);
     letter-spacing: 8px; }
@@ -110,12 +110,12 @@ a320-neo-fcu-element {
         left: 60%;
         position: absolute; }
         a320-neo-fcu-element #Mainframe #LargeScreen #AltVS #Altitude {
-          width: 50%;
+          width: 60%;
           height: 100%;
           left: 0%;
           position: absolute; }
         a320-neo-fcu-element #Mainframe #LargeScreen #AltVS #VerticalSpeed {
-          width: 50%;
+          width: 90%;
           height: 100%;
           left: 50%;
           position: absolute; }

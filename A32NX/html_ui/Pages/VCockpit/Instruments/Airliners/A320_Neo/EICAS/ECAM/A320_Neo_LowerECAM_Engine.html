@@ -1,0 +1,84 @@
+﻿<link rel="stylesheet" href="./A320_Neo_LowerECAM_Engine.css" />
+
+<script type="text/html" id="LowerECAMEngineTemplate">
+    <svg viewBox="0 0 600 600" xmlns="http://www.w3.org/2000/svg">
+        <!-- <line class="Separator" x1="400" y1="100" x2="400" y2="475" /> -->
+        <text id="PageTitle" x="80" y="30">ENGINE</text>
+
+        <text id="FuelUsedTitle" class="Title" x="300" y="70">F.USED</text>
+        <text id="FuelUsedUnit" class="Unit" x="300" y="90">KG</text>
+        <text id="FuelUsedValueLeft" class="Value" x="220" y="80">----</text>
+        <text id="FuelUsedValueRight" class="Value" x="380" y="80">----</text>
+        <line class="Indicator" x1="240" y1="73" x2="260" y2="72" />
+        <line class="Indicator" x1="340" y1="72" x2="360" y2="73" />
+
+        <text id="OilQuantityTitle" class="Title" x="300" y="130">OIL</text>
+        <text id="OilQuantityUnit" class="Unit" x="300" y="160">QT</text>
+
+        <text id="OilPressureUnit" class="Unit" x="300" y="240">PSI</text>
+
+        <text id="OilTemperatureUnit" class="Unit" x="300" y="280">&#176;C</text>
+        <text id="OilTemperatureValueLeft" class="Value" x="210" y="285">--</text>
+        <text id="OilTemperatureValueRight" class="Value" x="390" y="285">--</text>
+        <line class="Indicator" x1="240" y1="283" x2="260" y2="282" />
+        <line class="Indicator" x1="340" y1="282" x2="360" y2="283" />
+
+        <text id="VibN1Unit" class="Title" x="300" y="320">VIB N1</text>
+        <text id="VibN1ValueLeft" class="Value" x="210" y="325">XX</text>
+        <text id="VibN1ValueRight" class="Value" x="390" y="325">XX</text>
+        <line class="Indicator" x1="240" y1="323" x2="260" y2="322" />
+        <line class="Indicator" x1="340" y1="322" x2="360" y2="323" />
+
+        <text id="VibN2Unit" class="Title" x="320" y="350">N2</text>
+        <text id="VibN2ValueLeft" class="Value" x="210" y="355">XX</text>
+        <text id="VibN2ValueRight" class="Value" x="390" y="355">XX</text>
+        <line class="Indicator" x1="240" y1="353" x2="260" y2="352" />
+        <line class="Indicator" x1="340" y1="352" x2="360" y2="353" />
+
+        <text id="EngineBleedPressureUnitLeft" class="Title" x="300" y="480">PSI</text>
+        <text id="EngineBleedPressureValueLeft" class="Value" x="220" y="485">--</text>
+        <text id="EngineBleedPressureValueRight" class="Value" x="380" y="485">--</text>
+        <line class="Indicator" x1="240" y1="483" x2="260" y2="482" />
+        <line class="Indicator" x1="340" y1="482" x2="360" y2="483" />
+
+        <!-- <text id="EngineBleedPressureUnitLeft" class="Unit" x="205" y="440">PSI</text>
+        <text id="EngineBleedPressureValueLeft" class="Value" x="245" y="440">---</text> -->
+
+        <text id="IGNTitle" class="Title" x="300" y="410"></text>
+        <text id="IGNValueLeft" class="IGNValue" x="225" y="430"></text>
+        <text id="IGNValueRight" class="IGNValue" x="375" y="430"></text>
+
+        <!-- <text id="EngineBleedPressureValueRight" class="Value" x="355" y="480">---</text>
+        <text id="EngineBleedPressureUnitRight" class="Unit" x="395" y="480">PSI</text> -->
+
+        <g id="StartValveDiagrams">
+            <g id="StartValveDiagramLeft">
+                <path d="M210 475 l0 -12" />
+                <circle r="12" cx="210" cy="456" />
+                <line id="StartValveLeft_OPEN" x1="198" y1="456" x2="222" y2="456" display="none"></line>
+                
+                <line id="StartValveLeft_CLOSED" x1="210" y1="444" x2="210" y2="468" display="none"></line>
+            </g>
+
+            <g id="StartValveDiagramRight">
+                <path d="M390 475 l0 -12" />
+                <circle r="12" cx="390" cy="456" />
+                <line id="StartValveRight_OPEN" x1="378" y1="456" x2="402" y2="456" display="none"></line>
+                <line id="StartValveRight_CLOSED" x1="390" y1="444" x2="390" y2="468" display="none"></line>
+
+            </g>
+        </g>
+    </svg>
+
+    <div id="Gauges">
+        <div id="LeftGauges">
+
+        </div>
+
+        <div id="RightGauges">
+
+        </div>
+    </div>
+</script>
+
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/A320_Neo/EICAS/ECAM/A320_Neo_LowerECAM_Engine.js"></script>
