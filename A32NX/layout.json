@@ -1,11 +1,6 @@
 {
     "content": [
         {
-             "path": "effects/LIGHT_A32NX_TaxiLarge.fx",
-             "size": 1278,
-             "date": "132402817714110148"
-        },
-        {
             "path": "ModelBehaviorDefs/Airliner/Airbus.xml",
             "size": 37721,
             "date": "132402817714110148"
@@ -98,6 +93,21 @@
         {
             "path": "html_ui/Fonts/B612Mono-Regular.ttf",
             "size": 140292,
+            "date": "132402817714110148"
+        },
+        {
+            "path": "html_ui/Pages/VCockpit/Instruments/Airliners/A320_Neo/BRK/A320_Neo_BRK.css",
+            "size": 2233,
+            "date": "132402817714110148"
+        },
+        {
+            "path": "html_ui/Pages/VCockpit/Instruments/Airliners/A320_Neo/BRK/A320_Neo_BRK.html",
+            "size": 2466,
+            "date": "132402817714110148"
+        },
+        {
+            "path": "html_ui/Pages/VCockpit/Instruments/Airliners/A320_Neo/BRK/A320_Neo_BRK.js",
+            "size": 12083,
             "date": "132402817714110148"
         },
         {
@@ -267,7 +277,7 @@
         },
         {
             "path": "html_ui/Pages/VCockpit/Instruments/Airliners/A320_Neo/EICAS/A320_Neo_EICAS.js",
-            "size": 10637,
+            "size": 10648,
             "date": "132402817714110148"
         },
         {
@@ -317,7 +327,7 @@
         },
         {
             "path": "html_ui/Pages/VCockpit/Instruments/Airliners/A320_Neo/EICAS/ECAM/A320_Neo_LowerECAM_Engine.css",
-            "size": 1938,
+            "size": 2008,
             "date": "132402817714110148"
         },
         {
@@ -387,7 +397,7 @@
         },
         {
             "path": "html_ui/Pages/VCockpit/Instruments/Airliners/A320_Neo/MFD/A320_Neo_MFD.js",
-            "size": 25051,
+            "size": 25062,
             "date": "132402817714110148"
         },
         {
@@ -402,7 +412,7 @@
         },
         {
             "path": "html_ui/Pages/VCockpit/Instruments/Airliners/A320_Neo/PFD/A320_Neo_PFD.js",
-            "size": 10614,
+            "size": 10625,
             "date": "132402817714110148"
         },
         {
