@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<WwiseDocument Type="WorkUnit" ID="{05797BE6-8F49-4F46-9DFF-1EA0B1EEBBBC}" SchemaVersion="97">
+	<GameParameters>
+		<WorkUnit Name="engine" ID="{05797BE6-8F49-4F46-9DFF-1EA0B1EEBBBC}" PersistMode="Standalone">
+			<PropertyList>
+				<Property Name="Color" Type="int16" Value="12"/>
+				<Property Name="OverrideColor" Type="bool" Value="True"/>
+			</PropertyList>
+			<ChildrenList>
+				<Folder Name="spp" ID="{853A321C-F34B-4827-A90D-AB8733F7AC47}" ShortID="406287292">
+					<ChildrenList>
+						<GameParameter Name="SPP_DISTANCE" ID="{725BFF84-7802-4228-829E-0F43E2AB5928}">
+							<PropertyList>
+								<Property Name="BindToBuiltInParam" Type="int16" Value="1"/>
+								<Property Name="InitialValue" Type="Real64" Value="0"/>
+								<Property Name="Max" Type="Real64" Value="30000"/>
+							</PropertyList>
+						</GameParameter>
+					</ChildrenList>
+				</Folder>
+			</ChildrenList>
+		</WorkUnit>
+	</GameParameters>
+</WwiseDocument>
