@@ -28,8 +28,8 @@ var A320_Neo_LowerECAM_Engine;
             TemplateElement.call(this, this.init.bind(this));
         }
         init() {
-            this.engineLeft = new EngineInfo(1, this.querySelector("#LeftGauges"), this.querySelector("#FuelUsedValueLeft"), this.querySelector("#OilTemperatureValueLeft"), this.querySelector("#EngineBleedPressureValueLeft"), this.querySelector("#StartValveLeft_OPEN"), this.querySelector("#StartValveLeft_CLOSED"));
-            this.engineRight = new EngineInfo(2, this.querySelector("#RightGauges"), this.querySelector("#FuelUsedValueRight"), this.querySelector("#OilTemperatureValueRight"), this.querySelector("#EngineBleedPressureValueRight"), this.querySelector("#StartValveRight_OPEN"), this.querySelector("#StartValveRight_CLOSED"));
+            this.engineLeft = new EngineInfo(1, this.querySelector("#LeftGauges"), this.querySelector("#FuelUsedValueLeft"), this.querySelector("#OilTemperatureValueLeft"), this.querySelector("#EngineBleedPressureValueLeft"), this.querySelector("#StartValveLeft_OPEN"), this.querySelector("#StartValveLeft_CLOSED"), this.querySelector("#N1VibrationLevelValueLeft"), this.querySelector("#N2VibrationLevelValueLeft"));
+            this.engineRight = new EngineInfo(2, this.querySelector("#RightGauges"), this.querySelector("#FuelUsedValueRight"), this.querySelector("#OilTemperatureValueRight"), this.querySelector("#EngineBleedPressureValueRight"), this.querySelector("#StartValveRight_OPEN"), this.querySelector("#StartValveRight_CLOSED"), this.querySelector("#N1VibrationLevelValueRight"), this.querySelector("#N2VibrationLevelValueRight"));
             this.ignTitleText = this.querySelector("#IGNTitle");
             this.ignLeftValueText = this.querySelector("#IGNValueLeft");
             this.ignRightValueText = this.querySelector("#IGNValueRight");
@@ -110,13 +110,15 @@ var A320_Neo_LowerECAM_Engine;
     }
     A320_Neo_LowerECAM_Engine.Page = Page;
     class EngineInfo {
-        constructor(_engineIndex, _gaugeDiv, _fuelUsedValueText, _oilTemperatureValueText, _engineBleedPressureValueText, _startValveOpenLine, _startValveClosedLine) {
+        constructor(_engineIndex, _gaugeDiv, _fuelUsedValueText, _oilTemperatureValueText, _engineBleedPressureValueText, _startValveOpenLine, _startValveClosedLine, _N1VibrationValueText, _N2VibrationValueText) {
             this.engineIndex = _engineIndex;
             this.fuelUsedValueText = _fuelUsedValueText;
             this.oilTemperatureValueText = _oilTemperatureValueText;
             this.engineBleedPressureValueText = _engineBleedPressureValueText;
             this.engineBleedValveOpenLine = _startValveOpenLine;
             this.engineBleedValveClosedLine = _startValveClosedLine;
+            this.N1VibrationValueText = _N1VibrationValueText;
+            this.N2VibrationValueText = _N2VibrationValueText;
             var gaugeDef = new A320_Neo_ECAM_Common.GaugeDefinition();
             gaugeDef.startAngle = -180;
             gaugeDef.arcSize = 180;
@@ -152,12 +154,17 @@ var A320_Neo_LowerECAM_Engine;
             this.setOilTemperatureValue(0, true);
             this.setEngineBleedPressureValue(0, true);
             this.setEngineBleedValveState(false, true);
+            this.setN1VibrationValue(0, true);
+            this.setN2VibrationValue(0, true);
         }
         update(_deltaTime) {
             this.setFuelUsedValue(SimVar.GetSimVarValue("GENERAL ENG FUEL USED SINCE START:" + this.engineIndex, "kg"));
             this.setOilTemperatureValue(SimVar.GetSimVarValue("GENERAL ENG OIL TEMPERATURE:" + this.engineIndex, "celsius"));
             this.setEngineBleedPressureValue(SimVar.GetSimVarValue("APU BLEED PRESSURE RECEIVED BY ENGINE:" + this.engineIndex, "psi"));
             this.setEngineBleedValveState(SimVar.GetSimVarValue("GENERAL ENG STARTER:" + this.engineIndex, "bool"));
+            this.setN1VibrationValue(SimVar.GetSimVarValue("TURB ENG VIBRATION:" + this.engineIndex, "Number"));
+            this.setN2VibrationValue(SimVar.GetSimVarValue("TURB ENG VIBRATION:" + this.engineIndex, "Number")); // TODO: should have a different value than N1, currently API limited
+
             if (this.oilQuantityGauge != null) {
                 this.oilQuantityGauge.update(_deltaTime);
             }
@@ -212,6 +219,22 @@ var A320_Neo_LowerECAM_Engine;
                 }
                 if (this.engineBleedValveClosedLine != null) {
                     this.engineBleedValveClosedLine.style.display = !this.engineBleedValveIsOpen ? "block" : "none";
+                }
+            }
+        }
+        setN1VibrationValue(_value, _force = false) {
+            if ((_value != this.N1VibrationValue) || _force) {
+                this.N1VibrationValue = _value;
+                if (this.N1VibrationValueText != null) {
+                    this.N1VibrationValueText.textContent = fastToFixed(this.N1VibrationValue, 1);
+                }
+            }
+        }
+        setN2VibrationValue(_value, _force = false) {
+            if ((_value != this.N2VibrationValue) || _force) {
+                this.N2VibrationValue = _value;
+                if (this.N2VibrationValueText != null) {
+                    this.N2VibrationValueText.textContent = fastToFixed(this.N2VibrationValue, 1);
                 }
             }
         }
