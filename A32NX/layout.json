@@ -1,6 +1,11 @@
 {
     "content": [
         {
+             "path": "effects/LIGHT_A32NX_TaxiLarge.fx",
+             "size": 1278,
+             "date": "132402817714110148"
+        },
+        {
             "path": "ModelBehaviorDefs/Airliner/Airbus.xml",
             "size": 37721,
             "date": "132402817714110148"
