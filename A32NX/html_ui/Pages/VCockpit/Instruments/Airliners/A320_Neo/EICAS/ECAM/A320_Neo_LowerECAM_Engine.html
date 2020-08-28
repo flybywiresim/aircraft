@@ -1,0 +1,65 @@
+﻿<link rel="stylesheet" href="./A320_Neo_LowerECAM_Engine.css" />
+
+<script type="text/html" id="LowerECAMEngineTemplate">
+    <svg viewBox="0 0 600 600" xmlns="http://www.w3.org/2000/svg">
+        <line class="Separator" x1="400" y1="100" x2="400" y2="475" />
+
+        <text id="PageTitle" x="400" y="75">ENGINE</text>
+
+        <text id="FuelUsedTitle" class="Title" x="190" y="110">F.USED</text>
+        <text id="FuelUsedUnit" class="Unit" x="190" y="130">KG</text>
+        <text id="FuelUsedValueLeft" class="Value" x="110" y="130">----</text>
+        <text id="FuelUsedValueRight" class="Value" x="270" y="130">----</text>
+        <line class="Indicator" x1="180" y1="120" x2="140" y2="130" />
+        <line class="Indicator" x1="200" y1="120" x2="240" y2="130" />
+
+        <text id="OilQuantityTitle" class="Title" x="190" y="180">OIL</text>
+        <text id="OilQuantityUnit" class="Unit" x="190" y="200">QT</text>
+
+        <text id="OilPressureUnit" class="Unit" x="190" y="260">PSI</text>
+
+        <text id="OilTemperatureUnit" class="Unit" x="190" y="350">&#176;C</text>
+        <text id="OilTemperatureValueLeft" class="Value" x="120" y="370">--</text>
+        <text id="OilTemperatureValueRight" class="Value" x="260" y="370">--</text>
+        <line class="Indicator" x1="180" y1="360" x2="140" y2="370" />
+        <line class="Indicator" x1="200" y1="360" x2="240" y2="370" />
+
+        <text id="EngineBleedPressureUnitLeft" class="Unit" x="95" y="480">PSI</text>
+        <text id="EngineBleedPressureValueLeft" class="Value" x="135" y="480">---</text>
+
+        <text id="IGNValueLeft" class="Value" x="165" y="460"></text>
+        <text id="IGNTitle" class="Title" x="190" y="440"></text>
+        <text id="IGNValueRight" class="Value" x="215" y="460"></text>
+
+        <text id="EngineBleedPressureValueRight" class="Value" x="245" y="480">---</text>
+        <text id="EngineBleedPressureUnitRight" class="Unit" x="285" y="480">PSI</text>
+
+        <g id="StartValveDiagrams">
+            <g id="StartValveDiagramLeft">
+                <path d="M135 470 l0 -24 l-70 0" />
+                <circle r="12" cx="95" cy="446" />
+                <line id="StartValveLeft_OPEN" x1="83" y1="446" x2="107" y2="446" display="none"></line>
+                <line id="StartValveLeft_CLOSED" x1="95" y1="434" x2="95" y2="458" display="none"></line>
+            </g>
+
+            <g id="StartValveDiagramRight">
+                <path d="M245 470 l0 -24 l70 0" />
+                <circle r="12" cx="285" cy="446" />
+                <line id="StartValveRight_OPEN" x1="273" y1="446" x2="297" y2="446" display="none"></line>
+                <line id="StartValveRight_CLOSED" x1="285" y1="434" x2="285" y2="458" display="none"></line>
+            </g>
+        </g>
+    </svg>
+
+    <div id="Gauges">
+        <div id="LeftGauges">
+
+        </div>
+
+        <div id="RightGauges">
+
+        </div>
+    </div>
+</script>
+
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/A320_Neo/EICAS/ECAM/A320_Neo_LowerECAM_Engine.js"></script>

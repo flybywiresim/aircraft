@@ -36,18 +36,21 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         this.selfTestTimerStarted = false;
         this.doorPageActivated = false
         this.electricity = this.querySelector("#Electricity")
+        this.displaysAbleToTurnOff = true;
         this.changePage("DOOR"); // MODIFIED
+        
     }
     onUpdate(_deltaTime) {
         super.onUpdate(_deltaTime);
         this.updateAnnunciations();
         
-        var engineOn = Simplane.getEngineActive(0) || Simplane.getEngineActive(1);
         var externalPower = SimVar.GetSimVarValue("EXTERNAL POWER ON", "bool");
+        var engineOn = SimVar.GetSimVarValue("GENERAL ENG STARTER:1", "bool");
         var apuOn = SimVar.GetSimVarValue("APU SWITCH", "bool");
+        var onRunway = SimVar.GetSimVarValue("ON ANY RUNWAY", "bool");
+        var isOnGround = SimVar.GetSimVarValue("SIM ON GROUND", "bool")
 
-        var isPowerAvailable = engineOn || apuOn || externalPower;
-        this.updateScreenState(isPowerAvailable);
+        this.updateScreenState(externalPower, engineOn, apuOn, onRunway, isOnGround);
 
         // Check if engine is on so self test doesn't appear when not starting from cold and dark
         if (engineOn) {
@@ -103,11 +106,12 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         // modification ends here
     }
 
-    updateScreenState(isPowerAvailable) {
-        if (!isPowerAvailable) {
+    updateScreenState(externalPowerOn, engineOn, apuOn, onRunway, isOnGround) {
+        if (!externalPowerOn && !apuOn && !engineOn && !onRunway && isOnGround && this.displaysAbleToTurnOff) {
             this.electricity.style.display = "none";
         } else {
             this.electricity.style.display = "block";
+            this.displaysAbleToTurnOff = false;
         }
     }
 

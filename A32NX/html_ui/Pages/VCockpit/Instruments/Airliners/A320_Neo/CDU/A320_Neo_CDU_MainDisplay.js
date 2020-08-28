@@ -29,12 +29,13 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this.onProg = () => { CDUProgressPage.ShowPage(this); };
         this.onPerf = () => { CDUPerformancePage.ShowPage(this); };
         this.onInit = () => { CDUInitPage.ShowPage1(this); };
-        this.onData = () => { CDUDataIndexPage.ShowPage1(this); };
+        this.onData = () => { CDUDataIndexPage.ShowPage(this); };
         this.onFpln = () => { CDUFlightPlanPage.ShowPage(this); };
         this.onRad = () => { CDUNavRadioPage.ShowPage(this); };
         this.onFuel = () => { CDUFuelPredPage.ShowPage(this); };
         CDUIdentPage.ShowPage(this);
         this.electricity = this.querySelector("#Electricity")
+        this.displaysAbleToTurnOff = true;
     }
     onPowerOn() {
         super.onPowerOn();
@@ -53,19 +54,21 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this.updateAutopilot();
         this.updateADIRS();
 
-        var engineOn = Simplane.getEngineActive(0) || Simplane.getEngineActive(1);
         var externalPower = SimVar.GetSimVarValue("EXTERNAL POWER ON", "bool");
+        var engineOn = SimVar.GetSimVarValue("GENERAL ENG STARTER:1", "bool");
         var apuOn = SimVar.GetSimVarValue("APU SWITCH", "bool");
+        var onRunway = SimVar.GetSimVarValue("ON ANY RUNWAY", "bool");
+        var isOnGround = SimVar.GetSimVarValue("SIM ON GROUND", "bool")
 
-        var isPowerAvailable = engineOn || apuOn || externalPower;
-        this.updateScreenState(isPowerAvailable);
+        this.updateScreenState(externalPower, engineOn, apuOn, onRunway, isOnGround);
     }
 
-    updateScreenState(isPowerAvailable) {
-        if (!isPowerAvailable) {
+    updateScreenState(externalPowerOn, engineOn, apuOn, onRunway, isOnGround) {
+        if (!externalPowerOn && !apuOn && !engineOn && !onRunway && isOnGround && this.displaysAbleToTurnOff) {
             this.electricity.style.display = "none";
         } else {
             this.electricity.style.display = "block";
+            this.displaysAbleToTurnOff = false;
         }
     }
 
@@ -711,8 +714,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             SimVar.SetSimVarValue("L:A320_Neo_ADIRS_STATE", "Enum", 1);
             SimVar.SetSimVarValue("L:A320_Neo_ADIRS_IN_ALIGN", "Bool", 1); // DELETE AFTER MCDU IRS INIT IS IMPLEMENTED
             ADIRSState = 1;
-            let currentLatitude = SimVar.GetSimVarValue("GPS POSITION LAT", "degree latitude")
-            this.ADIRSTimer = Math.abs(1.14 * currentLatitude) * 10; //ADIRS ALIGN TIME DEPENDING ON LATITUDE.
+            this.ADIRSTimer = 120; //ADIRS ALIGN TIME
         }
 
         if (ADIRSState == 1 && SimVar.GetSimVarValue("L:A320_Neo_ADIRS_IN_ALIGN", "Bool") == 1) {
