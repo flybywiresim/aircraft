@@ -202,14 +202,272 @@
 		  </Condition>
 		</Annunciation>
 
-        <Annunciation>
-		  <Type>Advisory</Type>
-		  <Text>IRS IN ALIGN</Text>
-          <!-- Idk why the ADIRS_TIME simvar isn't able to be included -->
-          <!-- <Text>IRS IN ALIGN <ToFixed precision="0"><Simvar name="L:A320_Neo_ADIRS_TIME" unit="minutes"/></ToFixed> MN</Text> -->
-		  <Condition>
-			<Simvar name="L:A320_Neo_ADIRS_IN_ALIGN" unit="Bool"/>
-		  </Condition>
+		<Annunciation>
+			<Type>Advisory</Type>
+			<Text>IRS IN ALIGN &lt; 1 min</Text>
+			<Condition>
+				<And>
+					<Greater>
+						<Simvar name="L:A320_Neo_ADIRS_TIME" unit="Seconds"/>
+						<Constant>0</Constant>
+					</Greater>
+					<Lower>
+						<Simvar name="L:A320_Neo_ADIRS_TIME" unit="Seconds"/>
+						<Constant>60</Constant>
+					</Lower>
+				</And>
+			</Condition>
+		</Annunciation>
+
+		<Annunciation>
+			<Type>Advisory</Type>
+			<Text>IRS IN ALIGN &lt; 2 min</Text>
+			<Condition>
+				<And>
+					<Greater>
+						<Simvar name="L:A320_Neo_ADIRS_TIME" unit="Seconds"/>
+						<Constant>60</Constant>
+					</Greater>
+					<Lower>
+						<Simvar name="L:A320_Neo_ADIRS_TIME" unit="Seconds"/>
+						<Constant>120</Constant>
+					</Lower>
+				</And>
+			</Condition>
+		</Annunciation>
+
+		<Annunciation>
+			<Type>Advisory</Type>
+			<Text>IRS IN ALIGN &lt; 3 min</Text>
+			<Condition>
+				<And>
+					<Greater>
+						<Simvar name="L:A320_Neo_ADIRS_TIME" unit="Seconds"/>
+						<Constant>120</Constant>
+					</Greater>
+					<Lower>
+						<Simvar name="L:A320_Neo_ADIRS_TIME" unit="Seconds"/>
+						<Constant>180</Constant>
+					</Lower>
+				</And>
+			</Condition>
+		</Annunciation>
+
+		<Annunciation>
+			<Type>Advisory</Type>
+			<Text>IRS IN ALIGN &lt; 4 min</Text>
+			<Condition>
+				<And>
+					<Greater>
+						<Simvar name="L:A320_Neo_ADIRS_TIME" unit="Seconds"/>
+						<Constant>180</Constant>
+					</Greater>
+					<Lower>
+						<Simvar name="L:A320_Neo_ADIRS_TIME" unit="Seconds"/>
+						<Constant>240</Constant>
+					</Lower>
+				</And>
+			</Condition>
+		</Annunciation>
+
+		<Annunciation>
+			<Type>Advisory</Type>
+			<Text>IRS IN ALIGN &lt; 5 min</Text>
+			<Condition>
+				<And>
+					<Greater>
+						<Simvar name="L:A320_Neo_ADIRS_TIME" unit="Seconds"/>
+						<Constant>240</Constant>
+					</Greater>
+					<Lower>
+						<Simvar name="L:A320_Neo_ADIRS_TIME" unit="Seconds"/>
+						<Constant>300</Constant>
+					</Lower>
+				</And>
+			</Condition>
+		</Annunciation>
+
+		<Annunciation>
+			<Type>Advisory</Type>
+			<Text>IRS IN ALIGN &lt; 6 min</Text>
+			<Condition>
+				<And>
+					<Greater>
+						<Simvar name="L:A320_Neo_ADIRS_TIME" unit="Seconds"/>
+						<Constant>300</Constant>
+					</Greater>
+					<Lower>
+						<Simvar name="L:A320_Neo_ADIRS_TIME" unit="Seconds"/>
+						<Constant>360</Constant>
+					</Lower>
+				</And>
+			</Condition>
+		</Annunciation>
+
+		<Annunciation>
+			<Type>Advisory</Type>
+			<Text>IRS IN ALIGN &lt; 7 min</Text>
+			<Condition>
+				<And>
+					<Greater>
+						<Simvar name="L:A320_Neo_ADIRS_TIME" unit="Seconds"/>
+						<Constant>360</Constant>
+					</Greater>
+					<Lower>
+						<Simvar name="L:A320_Neo_ADIRS_TIME" unit="Seconds"/>
+						<Constant>420</Constant>
+					</Lower>
+				</And>
+			</Condition>
+		</Annunciation>
+
+		<Annunciation>
+			<Type>Advisory</Type>
+			<Text>IRS IN ALIGN &lt; 8 min</Text>
+			<Condition>
+				<And>
+					<Greater>
+						<Simvar name="L:A320_Neo_ADIRS_TIME" unit="Seconds"/>
+						<Constant>420</Constant>
+					</Greater>
+					<Lower>
+						<Simvar name="L:A320_Neo_ADIRS_TIME" unit="Seconds"/>
+						<Constant>480</Constant>
+					</Lower>
+				</And>
+			</Condition>
+		</Annunciation>
+
+		<Annunciation>
+			<Type>Advisory</Type>
+			<Text>IRS IN ALIGN &lt; 9 min</Text>
+			<Condition>
+				<And>
+					<Greater>
+						<Simvar name="L:A320_Neo_ADIRS_TIME" unit="Seconds"/>
+						<Constant>480</Constant>
+					</Greater>
+					<Lower>
+						<Simvar name="L:A320_Neo_ADIRS_TIME" unit="Seconds"/>
+						<Constant>540</Constant>
+					</Lower>
+				</And>
+			</Condition>
+		</Annunciation>
+
+		<Annunciation>
+			<Type>Advisory</Type>
+			<Text>IRS IN ALIGN &lt; 10 min</Text>
+			<Condition>
+				<And>
+					<Greater>
+						<Simvar name="L:A320_Neo_ADIRS_TIME" unit="Seconds"/>
+						<Constant>540</Constant>
+					</Greater>
+					<Lower>
+						<Simvar name="L:A320_Neo_ADIRS_TIME" unit="Seconds"/>
+						<Constant>600</Constant>
+					</Lower>
+				</And>
+			</Condition>
+		</Annunciation>
+
+		<Annunciation>
+			<Type>Advisory</Type>
+			<Text>IRS IN ALIGN &lt; 11 min</Text>
+			<Condition>
+				<And>
+					<Greater>
+						<Simvar name="L:A320_Neo_ADIRS_TIME" unit="Seconds"/>
+						<Constant>600</Constant>
+					</Greater>
+					<Lower>
+						<Simvar name="L:A320_Neo_ADIRS_TIME" unit="Seconds"/>
+						<Constant>660</Constant>
+					</Lower>
+				</And>
+			</Condition>
+		</Annunciation>
+
+		<Annunciation>
+			<Type>Advisory</Type>
+			<Text>IRS IN ALIGN &lt; 12 min</Text>
+			<Condition>
+				<And>
+					<Greater>
+						<Simvar name="L:A320_Neo_ADIRS_TIME" unit="Seconds"/>
+						<Constant>660</Constant>
+					</Greater>
+					<Lower>
+						<Simvar name="L:A320_Neo_ADIRS_TIME" unit="Seconds"/>
+						<Constant>720</Constant>
+					</Lower>
+				</And>
+			</Condition>
+		</Annunciation>
+
+		<Annunciation>
+			<Type>Advisory</Type>
+			<Text>IRS IN ALIGN &lt; 13 min</Text>
+			<Condition>
+				<And>
+					<Greater>
+						<Simvar name="L:A320_Neo_ADIRS_TIME" unit="Seconds"/>
+						<Constant>720</Constant>
+					</Greater>
+					<Lower>
+						<Simvar name="L:A320_Neo_ADIRS_TIME" unit="Seconds"/>
+						<Constant>780</Constant>
+					</Lower>
+				</And>
+			</Condition>
+		</Annunciation>
+
+		<Annunciation>
+			<Type>Advisory</Type>
+			<Text>IRS IN ALIGN &lt; 14 min</Text>
+			<Condition>
+				<And>
+					<Greater>
+						<Simvar name="L:A320_Neo_ADIRS_TIME" unit="Seconds"/>
+						<Constant>840</Constant>
+					</Greater>
+					<Lower>
+						<Simvar name="L:A320_Neo_ADIRS_TIME" unit="Seconds"/>
+						<Constant>900</Constant>
+					</Lower>
+				</And>
+			</Condition>
+		</Annunciation>
+
+		<Annunciation>
+			<Type>Advisory</Type>
+			<Text>IRS IN ALIGN &lt; 15 min</Text>
+			<Condition>
+				<And>
+					<Greater>
+						<Simvar name="L:A320_Neo_ADIRS_TIME" unit="Seconds"/>
+						<Constant>900</Constant>
+					</Greater>
+					<Lower>
+						<Simvar name="L:A320_Neo_ADIRS_TIME" unit="Seconds"/>
+						<Constant>960</Constant>
+					</Lower>
+				</And>
+			</Condition>
+		</Annunciation>
+
+		<Annunciation>
+			<Type>Advisory</Type>
+			<Text>IRS IN ALIGN &gt; 15 min</Text>
+			<Condition>
+				<And>
+					<Greater>
+						<Simvar name="L:A320_Neo_ADIRS_TIME" unit="Seconds"/>
+						<Constant>960</Constant>
+					</Greater>
+				</And>
+			</Condition>
 		</Annunciation>
 
         <Annunciation>
