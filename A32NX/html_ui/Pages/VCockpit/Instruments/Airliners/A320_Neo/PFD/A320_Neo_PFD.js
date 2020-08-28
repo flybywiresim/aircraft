@@ -83,7 +83,6 @@ class A320_Neo_PFD_MainPage extends NavSystemPage {
         this.selfTestDiv = this.gps.getChildById("SelfTestDiv");
         this.selfTestTimerStarted = false;
         this.electricity = this.gps.getChildById("Electricity")
-        this.displaysAbleToTurnOff = true;
     }
     onUpdate(_deltaTime) {
         super.onUpdate();
@@ -124,13 +123,12 @@ class A320_Neo_PFD_MainPage extends NavSystemPage {
             this.headingFail.setAttribute("style", "");
         }
 
+        var engineOn = Simplane.getEngineActive(0) || Simplane.getEngineActive(1);
         var externalPower = SimVar.GetSimVarValue("EXTERNAL POWER ON", "bool");
-        var engineOn = SimVar.GetSimVarValue("GENERAL ENG STARTER:1", "bool");
         var apuOn = SimVar.GetSimVarValue("APU SWITCH", "bool");
-        var onRunway = SimVar.GetSimVarValue("ON ANY RUNWAY", "bool");
-        var isOnGround = SimVar.GetSimVarValue("SIM ON GROUND", "bool")
 
-        this.updateScreenState(externalPower, engineOn, apuOn, onRunway, isOnGround);
+        var isPowerAvailable = engineOn || apuOn || externalPower;
+        this.updateScreenState(isPowerAvailable);
 
         if (engineOn) {
             this.selfTestDiv.style.display = "none";
@@ -160,12 +158,11 @@ class A320_Neo_PFD_MainPage extends NavSystemPage {
         }
     }
 
-    updateScreenState(externalPowerOn, engineOn, apuOn, onRunway, isOnGround) {
-        if (!externalPowerOn && !apuOn && !engineOn && !onRunway && isOnGround && this.displaysAbleToTurnOff) {
+    updateScreenState(isPowerAvailable) {
+        if (!isPowerAvailable) {
             this.electricity.style.display = "none";
         } else {
             this.electricity.style.display = "block";
-            this.displaysAbleToTurnOff = false;
         }
     }
     
