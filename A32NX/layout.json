@@ -12,7 +12,7 @@
         },
         {
             "path": "ModelBehaviorDefs/Asobo/Airliner/Airbus.xml",
-            "size": 40841,
+            "size": 41325,
             "date": "132402817714110148"
         },
         {
@@ -47,7 +47,12 @@
         },
         {
             "path": "SimObjects/AirPlanes/Asobo_A320_NEO/model/A320_NEO_INTERIOR.xml",
-            "size": 130020,
+            "size": 130136,
+            "date": "132402817714110148"
+        },
+        {
+            "path": "SimObjects/AirPlanes/Asobo_A320_NEO/model/A320_NEO_INTERIOR_LOD00.bin",
+            "size": 18771072,
             "date": "132402817714110148"
         },
         {
@@ -197,7 +202,7 @@
         },
         {
             "path": "html_ui/Pages/VCockpit/Instruments/Airliners/A320_Neo/CDU/A320_Neo_CDU_MainDisplay.js",
-            "size": 34996,
+            "size": 35502,
             "date": "132402817714110148"
         },
         {
