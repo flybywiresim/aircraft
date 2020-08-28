@@ -47,7 +47,7 @@
         },
         {
             "path": "SimObjects/AirPlanes/Asobo_A320_NEO/model/A320_NEO_INTERIOR.xml",
-            "size": 133197,
+            "size": 133053,
             "date": "132402817714110148"
         },
         {
@@ -58,6 +58,21 @@
         {
             "path": "SimObjects/AirPlanes/Asobo_A320_NEO/runway.FLT",
             "size": 3996,
+            "date": "132402817714110148"
+        },
+        {
+            "path": "SimObjects/AirPlanes/Asobo_A320_NEO/sound/Asobo_A320_NEO.PC.PCK",
+            "size": 59377074,
+            "date": "132402817714110148"
+        },
+        {
+            "path": "SimObjects/AirPlanes/Asobo_A320_NEO/sound/Asobo_A320_NEO_Improved.PC.PCK",
+            "size": 13198,
+            "date": "132402817714110148"
+        },
+        {
+            "path": "SimObjects/AirPlanes/Asobo_A320_NEO/sound/sound.xml",
+            "size": 29904,
             "date": "132402817714110148"
         },
         {
