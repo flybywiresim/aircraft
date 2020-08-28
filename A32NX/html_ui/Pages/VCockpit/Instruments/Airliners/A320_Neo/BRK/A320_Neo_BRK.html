@@ -1,0 +1,48 @@
+﻿<link rel="stylesheet" href="A320_Neo_BRK.css" />
+
+<script type="text/html" id="A320_Neo_BRK">
+    <!-- <div JZ:----id="Electricity" state="off"> -->
+    
+        <div id="Content">
+            <svg viewBox="0 0 800 800">
+                <circle cx="400" cy="400" r="400" fill="black" />
+
+                <g id="topGauge" transform="translate(400, 50) rotate(135) scale(1, -1)"><!-- modified JZ: 40 -->
+
+
+                </g>
+
+                <g id="leftGauge" transform="translate(85, 620) rotate(0) scale(1, -1)"><!-- modified JZ: 60 -->
+
+
+                </g>
+
+                <g id="rightGauge" transform="translate(715, 620) rotate(180)"> <!-- modified JZ: 740 -->
+
+                </g>
+
+                <text class="title" x="30%" y="16%">ACCU</text>
+                <text class="title" x="70%" y="16%">PRESS</text>
+                <text class="title" x="50%" y="85%">BRAKES</text>    <!-- modified JZ: -->
+                <text id="Unit" x="50%" y="91%">PSIx1000</text> <!-- modified JZ: -->
+
+                <text class="value" x="27%" y="32%">0</text>
+                <text class="value" x="73%" y="32%">4</text>
+
+                <text class="value" x="14%" y="41%">3</text><!-- modified JZ: -->
+                <text class="value" x="46%" y="53%">1</text><!-- modified JZ: x=43-->
+                <text class="value" x="50%" y="75%">0</text><!-- modified JZ: -->
+                <text class="value" x="54%" y="53%">1</text><!-- modified JZ: x=57-->
+                <text class="value" x="86%" y="41%">3</text><!-- modified JZ: -->
+            </svg>
+        </div>
+    
+</script>
+
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Shared/Utils/RadioNav.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/Shared/LogicElements/FlightPlan.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/Shared/LogicElements/FlightPlanManager.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/Shared/LogicElements/GeoCalc.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/Shared/NavSystem.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/Shared/BaseAirliners.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/A320_Neo/BRK/A320_Neo_BRK.js"></script>
