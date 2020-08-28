@@ -204,7 +204,7 @@
 
 		<Annunciation>
 			<Type>Advisory</Type>
-			<Text>IRS IN ALIGN &lt; 1 min</Text>
+			<Text>IRS IN ALIGN 1 MN</Text>
 			<Condition>
 				<And>
 					<Greater>
@@ -221,7 +221,7 @@
 
 		<Annunciation>
 			<Type>Advisory</Type>
-			<Text>IRS IN ALIGN &lt; 2 min</Text>
+			<Text>IRS IN ALIGN 2 MN</Text>
 			<Condition>
 				<And>
 					<Greater>
@@ -238,7 +238,7 @@
 
 		<Annunciation>
 			<Type>Advisory</Type>
-			<Text>IRS IN ALIGN &lt; 3 min</Text>
+			<Text>IRS IN ALIGN 3 MN</Text>
 			<Condition>
 				<And>
 					<Greater>
@@ -255,7 +255,7 @@
 
 		<Annunciation>
 			<Type>Advisory</Type>
-			<Text>IRS IN ALIGN &lt; 4 min</Text>
+			<Text>IRS IN ALIGN 4 MN</Text>
 			<Condition>
 				<And>
 					<Greater>
@@ -272,7 +272,7 @@
 
 		<Annunciation>
 			<Type>Advisory</Type>
-			<Text>IRS IN ALIGN &lt; 5 min</Text>
+			<Text>IRS IN ALIGN 5 MN</Text>
 			<Condition>
 				<And>
 					<Greater>
@@ -289,7 +289,7 @@
 
 		<Annunciation>
 			<Type>Advisory</Type>
-			<Text>IRS IN ALIGN &lt; 6 min</Text>
+			<Text>IRS IN ALIGN 6 MN</Text>
 			<Condition>
 				<And>
 					<Greater>
@@ -306,7 +306,7 @@
 
 		<Annunciation>
 			<Type>Advisory</Type>
-			<Text>IRS IN ALIGN &lt; 7 min</Text>
+			<Text>IRS IN ALIGN 7 MN</Text>
 			<Condition>
 				<And>
 					<Greater>
@@ -323,7 +323,7 @@
 
 		<Annunciation>
 			<Type>Advisory</Type>
-			<Text>IRS IN ALIGN &lt; 8 min</Text>
+			<Text>IRS IN ALIGN 8 MN</Text>
 			<Condition>
 				<And>
 					<Greater>
@@ -340,7 +340,7 @@
 
 		<Annunciation>
 			<Type>Advisory</Type>
-			<Text>IRS IN ALIGN &lt; 9 min</Text>
+			<Text>IRS IN ALIGN 9 MN</Text>
 			<Condition>
 				<And>
 					<Greater>
@@ -357,7 +357,7 @@
 
 		<Annunciation>
 			<Type>Advisory</Type>
-			<Text>IRS IN ALIGN &lt; 10 min</Text>
+			<Text>IRS IN ALIGN 10 MN</Text>
 			<Condition>
 				<And>
 					<Greater>
@@ -374,7 +374,7 @@
 
 		<Annunciation>
 			<Type>Advisory</Type>
-			<Text>IRS IN ALIGN &lt; 11 min</Text>
+			<Text>IRS IN ALIGN 11 MN</Text>
 			<Condition>
 				<And>
 					<Greater>
@@ -391,7 +391,7 @@
 
 		<Annunciation>
 			<Type>Advisory</Type>
-			<Text>IRS IN ALIGN &lt; 12 min</Text>
+			<Text>IRS IN ALIGN 12 MN</Text>
 			<Condition>
 				<And>
 					<Greater>
@@ -408,7 +408,7 @@
 
 		<Annunciation>
 			<Type>Advisory</Type>
-			<Text>IRS IN ALIGN &lt; 13 min</Text>
+			<Text>IRS IN ALIGN 13 MN</Text>
 			<Condition>
 				<And>
 					<Greater>
@@ -425,7 +425,7 @@
 
 		<Annunciation>
 			<Type>Advisory</Type>
-			<Text>IRS IN ALIGN &lt; 14 min</Text>
+			<Text>IRS IN ALIGN 14 MN</Text>
 			<Condition>
 				<And>
 					<Greater>
@@ -442,7 +442,7 @@
 
 		<Annunciation>
 			<Type>Advisory</Type>
-			<Text>IRS IN ALIGN &lt; 15 min</Text>
+			<Text>IRS IN ALIGN 15 MN</Text>
 			<Condition>
 				<And>
 					<Greater>
@@ -459,7 +459,7 @@
 
 		<Annunciation>
 			<Type>Advisory</Type>
-			<Text>IRS IN ALIGN &gt; 15 min</Text>
+			<Text>IRS IN ALIGN &gt; 15 MN</Text>
 			<Condition>
 				<And>
 					<Greater>
