@@ -1772,6 +1772,9 @@ var Airbus_FMA;
                                 break;
                             }
                     }
+					if (!Airbus_FMA.CurrentPlaneState.anyFlightDirectorsActive) {
+						str = "";
+					}
                     if (str.length > 0) {
                         this.msg.setText(str, Airbus_FMA.MODE_STATE.ENGAGED);
                         this.msg.setVisibility(true);
@@ -1787,7 +1790,7 @@ var Airbus_FMA;
             this._previousState = this.currentState;
         }
         static IsActive_FinalApp() {
-            return Simplane.getAutoPilotGlideslopeActive() && Simplane.getAutoPilotAPPRActive() && Simplane.getAutoPilotApproachType() == 10;
+            return Simplane.getAutoPilotGlideslopeActive() && Simplane.getAutoPilotAPPRActive() && Simplane.getAutoPilotApproachType() == 10 && Airbus_FMA.CurrentPlaneState.anyFlightDirectorsActive;
         }
         static IsActive_Any() {
             return Airbus_FMA.VerticalAndLateral.isActive;
