@@ -694,8 +694,11 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         var deltaTime = now - this.lastTime;
         this.lastTime = now;
 
+        if (this.ADIRSTimerSkip == null) this.ADIRSTimerSkip = -2;
+
         var AllADIRSOn = ((SimVar.GetSimVarValue("L:A320_Neo_ADIRS_KNOB_1", "Enum") >= 1) && (SimVar.GetSimVarValue("L:A320_Neo_ADIRS_KNOB_2", "Enum") >= 1) && (SimVar.GetSimVarValue("L:A320_Neo_ADIRS_KNOB_3", "Enum") >= 1));
         var SomeADIRSOn = ((SimVar.GetSimVarValue("L:A320_Neo_ADIRS_KNOB_1", "Enum") >= 1) || (SimVar.GetSimVarValue("L:A320_Neo_ADIRS_KNOB_2", "Enum") >= 1) || (SimVar.GetSimVarValue("L:A320_Neo_ADIRS_KNOB_3", "Enum") >= 1));
+        var SkipAlign = SimVar.GetSimVarValue("L:A320_Neo_ADIRS_KNOB_3", "Enum") == 2 && SimVar.GetSimVarValue("L:A320_Neo_ADIRS_KNOB_1", "Enum") == 1 && SimVar.GetSimVarValue("L:A320_Neo_ADIRS_KNOB_2", "Enum") == 1;
         var ADIRSState = SimVar.GetSimVarValue("L:A320_Neo_ADIRS_STATE", "Enum");
         var ADIRSTimer = SimVar.GetSimVarValue("L:A320_Neo_ADIRS_TIME", "Seconds");
 
@@ -714,6 +717,24 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             let currentLatitude = SimVar.GetSimVarValue("GPS POSITION LAT", "degree latitude")
             ADIRSTimer = Math.abs(1.14 * currentLatitude) * 10; //ADIRS ALIGN TIME DEPENDING ON LATITUDE.
             SimVar.SetSimVarValue("L:A320_Neo_ADIRS_TIME", "Seconds", ADIRSTimer);
+        }
+
+        //Todo: Replace the skip align into a aircraft setting via the MCDU settings or EFB (when thats a thing) so it doesn't mess with actual systems.
+        if (SkipAlign && ADIRSState == 1) {
+            if (this.ADIRSTimerSkip == -1) {
+                // Do nothing...
+            } else if (this.ADIRSTimerSkip == -2) {
+                this.ADIRSTimerSkip = 5;
+            } else {
+                this.ADIRSTimerSkip -= deltaTime / 1000;
+
+                if (this.ADIRSTimerSkip <= 0) {
+                    this.ADIRSTimerSkip = -1;
+
+                    SimVar.SetSimVarValue("L:A320_Neo_ADIRS_KNOB_3", "Enum", 1); // Set knob back to NAV.
+                    ADIRSTimer = 1;
+                }
+            }
         }
 
         if (ADIRSState == 1 && SimVar.GetSimVarValue("L:A320_Neo_ADIRS_IN_ALIGN", "Bool") == 1) {
