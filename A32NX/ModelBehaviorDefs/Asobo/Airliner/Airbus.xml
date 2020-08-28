@@ -1078,3 +1078,18 @@
 		</UseTemplate>
 	</Component>
 </Template>
+
+<Template Name="ASOBO_AIRLINER_ADIRS_LIGHT_Template">
+	<DefaultTemplateParameters>
+		<ID>1</ID>
+	</DefaultTemplateParameters>
+	<UseTemplate Name="ASOBO_AIRLINER_ADIRS_LIGHT_SubTemplate"></UseTemplate>
+</Template>
+
+<Template Name="ASOBO_AIRLINER_ADIRS_LIGHT_SubTemplate">
+	<UseTemplate Name="ASOBO_GT_Push_Button_Airliner">
+	
+		<SEQ1_EMISSIVE_CODE>0</SEQ1_EMISSIVE_CODE>
+		<SEQ2_EMISSIVE_CODE>(L:A320_Neo_ADIRS_ALIGN_LIGHT_#ID#, Bool)</SEQ2_EMISSIVE_CODE>
+	</UseTemplate>
+</Template>
