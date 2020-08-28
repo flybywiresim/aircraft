@@ -541,15 +541,15 @@ var Airbus_FMA;
             else if (this.IsActive_THRCLB()) {
                 return Column1.ROW_1_2_STATE.THRCLB;
             }
-            else if (this.IsActive_SPEED()) {
-                return Column1.ROW_1_2_STATE.SPEED;
-            }
             else if (this.IsActive_THRLVR()) {
                 return Column1.ROW_1_2_STATE.THRLVR;
             }
             else if (this.IsActive_THRIDLE()) {
                 return Column1.ROW_1_2_STATE.THRIDLE;
             }
+			else if (this.IsActive_SPEED()) {
+                return Column1.ROW_1_2_STATE.SPEED;
+			}
             else if (this.IsActive_MACH()) {
                 return Column1.ROW_1_2_STATE.MACH;
             }
