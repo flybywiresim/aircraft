@@ -5,7 +5,7 @@ Preview of APU and DOOR ECAM pages: https://www.youtube.com/watch?v=rLaVK3nNCXc
 # Important
 
 ### Please note, this version does not include the full capability you may see in the progress updates on our discord server.
-### To download the BETA features, which come with no warranty and may include bugs, please visit https://github.com/wpine215/msfs-a320neo/tree/dev-0.1.1
+### To download the BETA features, which may include bugs, please visit https://github.com/wpine215/msfs-a320neo/tree/dev-0.1.1
 
 ### Please follow ALL steps in this README if you encounter any issues with installation before seeking support.
 
