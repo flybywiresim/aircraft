@@ -624,8 +624,7 @@ var Airbus_FMA;
         }
         IsActive_THRLVR() {
             if (Airbus_FMA.CurrentPlaneState.autoPilotThrottleActive && Airbus_FMA.CurrentPlaneState.anyFlightDirectorsActive &&
-                (Airbus_FMA.CurrentPlaneState.highestThrottleDetent == ThrottleMode.AUTO ||
-                    Simplane.getCurrentFlightPhase() >= FlightPhase.FLIGHT_PHASE_CRUISE)) {
+                Airbus_FMA.CurrentPlaneState.highestThrottleDetent == ThrottleMode.AUTO) {
                 return true;
             }
             return false;
