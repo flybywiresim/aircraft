@@ -225,7 +225,7 @@
 		  <Text>NO SMOKING</Text>
 		  <Condition>
             <Equal>
-			  <Simvar name="XMLVAR_SWITCH_OVHD_INTLT_NOSMOKING_Position" unit="position"/>
+			  <Simvar name="L:XMLVAR_SWITCH_OVHD_INTLT_NOSMOKING_Position" unit="Position"/>
               <Constant>0.0</Constant>
             </Equal>
 		  </Condition>
