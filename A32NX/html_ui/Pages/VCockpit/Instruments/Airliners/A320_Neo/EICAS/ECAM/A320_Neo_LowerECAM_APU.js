@@ -102,9 +102,9 @@ var A320_Neo_LowerECAM_APU;
                 SimVar.SetSimVarValue("L:APU_LOAD_PERCENT","percent",0);
             }
             //Bleed
-            if ((SimVar.GetSimVarValue("BLEED AIR SOURCE CONTROL","Enum")==3) && !(this.APULastBleedState == 2)) {
+            if ((SimVar.GetSimVarValue("BLEED AIR SOURCE CONTROL","enum") == 3) && !(this.APULastBleedState == 1)) {
                 this.APUBleedTimer = 4;
-                this.APULastBleedState = 2;
+                this.APULastBleedState = 1;
             }
             if(this.APUBleedTimer >= 0){
                 this.APUBleedTimer -= _deltaTime/1000;
@@ -112,7 +112,6 @@ var A320_Neo_LowerECAM_APU;
             }
             else{
                 this.APUBleedTimer = -1;
-                this.APULastBleedState = SimVar.GetSimVarValue("BLEED AIR SOURCE CONTROL","Enum");
             }
 
             //display volt,load,freq
@@ -126,6 +125,7 @@ var A320_Neo_LowerECAM_APU;
                 this.APUBleedOn.setAttribute("visibility", "visible");
                 this.APUBleedOff.setAttribute("visibility", "hidden");
             } else {
+                this.APULastBleedState = 0;
                 this.APUBleedOn.setAttribute("visibility", "hidden");
                 this.APUBleedOff.setAttribute("visibility", "visible");
             }
