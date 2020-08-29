@@ -90,7 +90,7 @@ var A320_Neo_LowerECAM_APU;
                 SimVar.SetSimVarValue("L:APU_GEN_VOLTAGE","Volts",115);
                 SimVar.SetSimVarValue("L:APU_GEN_AMPERAGE","Amperes",782.609); // 1000 * 90 kVA / 115V = 782.609A
                 SimVar.SetSimVarValue("L:APU_GEN_FREQ","Hertz",Math.round((4.46*APUPctRPM)-46.15));
-                SimVar.SetSimVarValue("L:APU_BLEED_PRESSURE","PSI",39);
+                SimVar.SetSimVarValue("L:APU_BLEED_PRESSURE","PSI",35);
                 SimVar.SetSimVarValue("L:APU_LOAD_PERCENT","percent",SimVar.GetSimVarValue("L:APU_GEN_AMPERAGE","Amperes")/SimVar.GetSimVarValue("ELECTRICAL TOTAL LOAD AMPS","Amperes"));
             }
             else{
@@ -112,6 +112,7 @@ var A320_Neo_LowerECAM_APU;
             }
             else{
                 this.APUBleedTimer = -1;
+                this.APULastBleedState = SimVar.GetSimVarValue("BLEED AIR SOURCE CONTROL","Enum");
             }
 
             //display volt,load,freq
@@ -125,7 +126,6 @@ var A320_Neo_LowerECAM_APU;
                 this.APUBleedOn.setAttribute("visibility", "visible");
                 this.APUBleedOff.setAttribute("visibility", "hidden");
             } else {
-                this.APULastBleedState = SimVar.GetSimVarValue("BLEED AIR SOURCE CONTROL","Enum");
                 this.APUBleedOn.setAttribute("visibility", "hidden");
                 this.APUBleedOff.setAttribute("visibility", "visible");
             }
