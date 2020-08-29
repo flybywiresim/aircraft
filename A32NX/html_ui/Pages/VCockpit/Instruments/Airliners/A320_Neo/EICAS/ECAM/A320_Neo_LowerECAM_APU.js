@@ -51,7 +51,7 @@ var A320_Neo_LowerECAM_APU;
 
             if (this.lastAPUMasterState != currentAPUMasterState) {
                 this.lastAPUMasterState = currentAPUMasterState;
-                this.APUStartTimer = 20;
+                this.APUStartTimer = 3;// JZ initialisation time reduced from 20 to 3 according @dalmont this.APUStartTimer = 20;
                 this.APUGenInfo.setAttribute("visibility", "visible");
             }
 
