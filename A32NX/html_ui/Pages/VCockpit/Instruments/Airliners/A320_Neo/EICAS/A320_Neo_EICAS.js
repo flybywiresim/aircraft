@@ -29,25 +29,38 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         super.Init();
         this.changePage("FUEL"); // MODIFIED
 
-        this.lastAPUMasterState = 0 // MODIFIED
-        this.externalPowerWhenApuMasterOnTimer = -1 // MODIFIED
+        this.lastAPUMasterState = 0; // MODIFIED
+        this.externalPowerWhenApuMasterOnTimer = -1; // MODIFIED
         this.selfTestDiv = this.querySelector("#SelfTestDiv");
         this.selfTestTimer = -1;
         this.selfTestTimerStarted = false;
-        this.doorPageActivated = false
-        this.electricity = this.querySelector("#Electricity")
+        this.doorPageActivated = false;
+        this.electricity = this.querySelector("#Electricity");
         this.changePage("DOOR"); // MODIFIED
     }
     onUpdate(_deltaTime) {
         super.onUpdate(_deltaTime);
         this.updateAnnunciations();
+        this.updateScreenState();
         
         var engineOn = Simplane.getEngineActive(0) || Simplane.getEngineActive(1);
         var externalPower = SimVar.GetSimVarValue("EXTERNAL POWER ON", "bool");
-        var apuOn = SimVar.GetSimVarValue("APU SWITCH", "bool");
+        var apuOn = SimVar.GetSimVarValue("L:APU_GEN_ONLINE", "bool");
 
-        var isPowerAvailable = engineOn || apuOn || externalPower;
-        this.updateScreenState(isPowerAvailable);
+        var isACPowerAvailable = engineOn || apuOn || externalPower;
+        var isDCPowerAvailable = isACPowerAvailable || SimVar.GetSimVarValue("ELECTRICAL MASTER BATTERY","Bool");
+        if(isDCPowerAvailable){
+            SimVar.SetSimVarValue("L:DCPowerAvailable","bool",1);   //True if any AC|DC bus is online
+        }
+        else{
+            SimVar.SetSimVarValue("L:DCPowerAvailable","bool",0);
+        }
+        if(isACPowerAvailable){
+            SimVar.SetSimVarValue("L:ACPowerAvailable","bool",1);   //True if any AC bus is online
+        }
+        else{
+            SimVar.SetSimVarValue("L:ACPowerAvailable","bool",0);
+        }
 
         // Check if engine is on so self test doesn't appear when not starting from cold and dark
         if (engineOn) {
@@ -103,11 +116,11 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         // modification ends here
     }
 
-    updateScreenState(isPowerAvailable) {
-        if (!isPowerAvailable) {
-            this.electricity.style.display = "none";
-        } else {
+    updateScreenState() {
+        if (SimVar.GetSimVarValue("L:ACPowerAvailable","bool")) {
             this.electricity.style.display = "block";
+        } else {
+            this.electricity.style.display = "none";
         }
     }
 
