@@ -1999,7 +1999,7 @@
 			<EMISSIVE_NODE_ID>PUSH_AUTOPILOT_AP1_SEQ2</EMISSIVE_NODE_ID>
 			<ID>1</ID>
 			<AP_COUNT>2</AP_COUNT>
-			<TYPE>EXCLUSIVE_AP</TYPE>
+			<!-- <TYPE>EXCLUSIVE_AP</TYPE> -->
 		</UseTemplate>
 		
 		<UseTemplate Name="ASOBO_AUTOPILOT_Push_Autopilot_Template">
@@ -2010,7 +2010,7 @@
 			<EMISSIVE_NODE_ID>PUSH_AUTOPILOT_AP2_SEQ2</EMISSIVE_NODE_ID>
 			<ID>2</ID>
 			<AP_COUNT>2</AP_COUNT>
-			<TYPE>EXCLUSIVE_AP</TYPE>
+			<!-- <TYPE>EXCLUSIVE_AP</TYPE> -->
 		</UseTemplate>
 		
 		<UseTemplate Name="ASOBO_AUTOPILOT_Push_AutoThrottle_Template">
