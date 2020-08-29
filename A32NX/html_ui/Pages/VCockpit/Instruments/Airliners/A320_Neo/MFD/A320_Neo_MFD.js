@@ -545,7 +545,7 @@ class A320_Neo_MFD_NDInfo extends NavSystemElement {
         var ws = this.ndInfo.querySelector("#Wind_Strength");
         var wa = this.ndInfo.querySelector("#Wind_Arrow");
         var wptg = this.ndInfo.querySelector("#Waypoint_Group");
-        if (ADIRSState != 2) {
+        if (ADIRSState != 2 || groundSpeed <= 100) {
             //Hide GS, TAS, and wind info
             gs.textContent = "---";
             tas.textContent = "---";
@@ -553,10 +553,10 @@ class A320_Neo_MFD_NDInfo extends NavSystemElement {
             ws.textContent = "---";
         }
         //Show/hide wind arrow
-        wa.setAttribute("visibility", (ADIRSState != 2) ? "hidden" : "visible");
+        wa.setAttribute("visibility", (ADIRSState != 2 || groundSpeed <= 100) ? "hidden" : "visible");
 
         //Hide waypoint when ADIRS not aligned
-        wptg.setAttribute("visibility", (ADIRSState != 2) ? "hidden" : "visible");
+        wptg.setAttribute("visibility", (ADIRSState != 2 || groundSpeed <= 100) ? "hidden" : "visible");
     }
     onExit() {
     }
