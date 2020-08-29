@@ -186,7 +186,6 @@ class Jet_NDCompass extends HTMLElement {
         this.updateCompass(_deltaTime);
         this.updateNavigationInfo();
         this.updateMapRange();
-        if (this.updateFail) this.updateFail();
     }
     updateCompass(_deltaTime) {
         var simHeading = SimVar.GetSimVarValue("PLANE HEADING DEGREES MAGNETIC", "degree");

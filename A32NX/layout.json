@@ -132,7 +132,7 @@
         },
         {
             "path": "html_ui/Pages/VCockpit/Instruments/Airliners/A320_Neo/BaseNDCompass.js",
-            "size": 36552,
+            "size": 36503,
             "date": "132402817714110148"
         },
         {
@@ -407,12 +407,12 @@
         },
         {
             "path": "html_ui/Pages/VCockpit/Instruments/Airliners/A320_Neo/MFD/A320_Neo_MFD.css",
-            "size": 8655,
+            "size": 8651,
             "date": "132402817714110148"
         },
         {
             "path": "html_ui/Pages/VCockpit/Instruments/Airliners/A320_Neo/MFD/A320_Neo_MFD.html",
-            "size": 12144,
+            "size": 12172,
             "date": "132402817714110148"
         },
         {
@@ -422,7 +422,12 @@
         },
         {
             "path": "html_ui/Pages/VCockpit/Instruments/Airliners/A320_Neo/MFD/NDCompass.js",
-            "size": 37871,
+            "size": 41508,
+            "date": "132402817714110148"
+        },
+        {
+            "path": "html_ui/Pages/VCockpit/Instruments/Airliners/A320_Neo/MFD/NDInfo.js",
+            "size": 23625,
             "date": "132402817714110148"
         },
         {
