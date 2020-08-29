@@ -1,11 +1,10 @@
 #!/bin/bash
 set -e
 
-if [[ -z "$(git status --porcelain $STATUS_ARGS $PATHSPEC)" ]];
+LAYOUT_FILE="A32NX/layout.json"
+
+if git status --porcelain | grep $LAYOUT_FILE;
 then
-    echo "Working directory clean!"
-    exit 0
-else
-    echo "Working directory dirty. Did you run build.py?"
+    echo "Changes detected in A32NX/layout.json. Did you run build.py?"
     exit 1
 fi
