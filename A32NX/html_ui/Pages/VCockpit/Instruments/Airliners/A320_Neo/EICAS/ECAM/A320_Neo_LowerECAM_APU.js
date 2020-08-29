@@ -113,7 +113,6 @@ var A320_Neo_LowerECAM_APU;
             else{
                 this.APUBleedTimer = -1;
             }
-
             //display volt,load,freq
             this.APUGenLoad.textContent = Math.round(SimVar.GetSimVarValue("L:APU_LOAD_PERCENT","percent"));
             this.APUVolts.textContent = SimVar.GetSimVarValue("L:APU_GEN_VOLTAGE","Volts");
