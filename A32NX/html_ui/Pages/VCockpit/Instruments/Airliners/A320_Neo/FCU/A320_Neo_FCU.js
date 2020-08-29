@@ -543,8 +543,6 @@ class A320_Neo_FCU_LargeScreen extends NavSystemElement {
             this.verticalSpeedDisplay = new A320_Neo_FCU_VerticalSpeed(this.gps, "VerticalSpeed");
             this.components.push(this.verticalSpeedDisplay);
         }
-        this.electricity = this.querySelector("#Electricity");
-        this.electricity.style.display = "none";
     }
     onEnter() {
     }
@@ -573,14 +571,6 @@ class A320_Neo_FCU_LargeScreen extends NavSystemElement {
                     this.components[i].update(_deltaTime);
                 }
             }
-        }
-        this.updateScreenState();
-    }
-    updateScreenState(){
-        if (SimVar.GetSimVarValue("L:ACPowerAvailable","bool")) {
-            this.electricity.style.display = "block";
-        } else {
-            this.electricity.style.display = "none";
         }
     }
     onExit() {
@@ -632,8 +622,6 @@ class A320_Neo_FCU_SmallScreen extends NavSystemElement {
         if (this.pressure == null) {
             this.pressure = new A320_Neo_FCU_Pressure(this.gps, "SmallScreen");
         }
-        this.electricity = this.querySelector("#Electricity");
-        this.electricity.style.display = "none";
     }
     onEnter() {
     }
@@ -652,13 +640,6 @@ class A320_Neo_FCU_SmallScreen extends NavSystemElement {
             this.pressure.reboot();
     }
     onFlightStart() {
-    }
-    updateScreenState(){
-        if (SimVar.GetSimVarValue("L:ACPowerAvailable","bool")) {
-            this.electricity.style.display = "block";
-        } else {
-            this.electricity.style.display = "none";
-        }
     }
 }
 registerInstrument("a320-neo-fcu-element", A320_Neo_FCU);

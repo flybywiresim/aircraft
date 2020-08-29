@@ -37,6 +37,11 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         this.doorPageActivated = false;
         this.electricity = this.querySelector("#Electricity");
         this.changePage("DOOR"); // MODIFIED
+        
+        SimVar.SetSimVarValue("POTENTIOMETER:7","FLOAT64",0);
+        SimVar.SetSimVarValue("POTENTIOMETER:14","FLOAT64",0);
+        SimVar.SetSimVarValue("POTENTIOMETER:16","FLOAT64",0);
+        SimVar.SetSimVarValue("POTENTIOMETER:15","FLOAT64",1);
     }
     onUpdate(_deltaTime) {
         super.onUpdate(_deltaTime);
@@ -84,20 +89,25 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         // automaticaly switch to the APU page when apu master switch is on
         if (this.lastAPUMasterState != currentAPUMasterState && currentAPUMasterState === 1) {  
             this.lastAPUMasterState = currentAPUMasterState;  
-            this.changePage("APU")
+            this.changePage("APU");
 
             //if external power is off when turning on apu, only show the apu page for 10 seconds, then the DOOR page
             var externalPower = SimVar.GetSimVarValue("EXTERNAL POWER ON", "Bool")  
             if (externalPower === 0) {  
-                this.externalPowerWhenApuMasterOnTimer = 10
+                this.externalPowerWhenApuMasterOnTimer = 100;
             }
 
         }
 
         if (this.externalPowerWhenApuMasterOnTimer >= 0) {  
             this.externalPowerWhenApuMasterOnTimer -= _deltaTime/1000
+            this.electricity.style.display = "block";
+            this.electricity.style.opacity = 0;
+            this.changePage("APU");
             if (this.externalPowerWhenApuMasterOnTimer <= 0) {  
-                this.changePage("DOOR")  
+                this.changePage("APU");
+                this.electricity.style.display = "none";
+                this.electricity.style.opacity = 1;
             }  
         }  
 
