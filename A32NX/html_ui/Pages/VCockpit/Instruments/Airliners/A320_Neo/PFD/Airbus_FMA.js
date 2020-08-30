@@ -1671,7 +1671,7 @@ var Airbus_FMA;
         }
         refreshAutoThrottleDisplay() {
             var targetState = Column5.ROW_3_STATE.NONE;
-            if (Airbus_FMA.CurrentPlaneState.autoPilotThrottleActive) {
+            if (Airbus_FMA.CurrentPlaneState.autoPilotThrottleActive && Airbus_FMA.CurrentPlaneState.radioAltitude > 1.5) {
                 targetState = Column5.ROW_3_STATE.ATHR_ACTIVE;
             }
             else if (Airbus_FMA.CurrentPlaneState.autoPilotThrottleArmed) {
