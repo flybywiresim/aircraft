@@ -662,9 +662,15 @@ var Airbus_FMA;
 				if (AltCaptured) {
 					return true;
 				}
-				if (Simplane.getVerticalSpeed() < 150) {
+				if (Simplane.getVerticalSpeed() < 150 && Simplane.getVerticalSpeed() > -150) {
 					return true;
-				}
+                }
+                if (!Airbus_FMA.CurrentPlaneState.anyAutoPilotsActive) {
+                    return true;
+                }
+                if (Column2.IsActive_VS() || Column2.GetModeState_GS() == MODE_STATE.ENGAGED) {
+                    return true;
+                }
 			}
 			return false;
         }
@@ -673,9 +679,12 @@ var Airbus_FMA;
 				if (AltCaptured) {
 					return true;
 				}
-				if (Simplane.getVerticalSpeed() < 150) {
+				if (Simplane.getVerticalSpeed() < 150 && Simplane.getVerticalSpeed() > -150) {
 					return true;
-				}
+                }
+                if (!Airbus_FMA.CurrentPlaneState.anyAutoPilotsActive) {
+                    return true;
+                }
 			}
 			return false;
         }
