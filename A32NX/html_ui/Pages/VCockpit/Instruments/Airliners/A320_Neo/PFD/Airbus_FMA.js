@@ -1071,7 +1071,7 @@ var Airbus_FMA;
             return false;
         }
         static GetModeState_GS() {
-            if (Simplane.getAutoPilotAPPRHold() && Simplane.getAutoPilotGlideslopeHold() && Simplane.getAutoPilotApproachType() == 4) {
+            if (Simplane.getAutoPilotAPPRHold() && Simplane.getAutoPilotGlideslopeHold() && Simplane.getAutoPilotApproachType() == 4 && Airbus_FMA.CurrentPlaneState.anyFlightDirectorsActive) {
                 if (Simplane.getAutoPilotGlideslopeActive() && Simplane.getAutoPilotAPPRActive()) {
                     return Airbus_FMA.MODE_STATE.ENGAGED;
                 }
