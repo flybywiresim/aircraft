@@ -1032,15 +1032,15 @@ var Airbus_FMA;
                     this._lastALTMode = Airbus_FMA.MODE_STATE.ENGAGED;
                 }
                 else {
-                      if (this._lastALTMode == Airbus_FMA.MODE_STATE.ENGAGED) {
-                         if ((diffAlt - Airbus_FMA.Definitions.ALT_ENGAGED_RANGE) > 50) {
+                    if (this._lastALTMode == Airbus_FMA.MODE_STATE.ENGAGED) {
+                        if ((diffAlt - Airbus_FMA.Definitions.ALT_ENGAGED_RANGE) > 50) {
                             this._lastALTMode = Airbus_FMA.MODE_STATE.CAPTURED;
                         }
-                      }
-                      else {
+                    }
+                    else {
                         this._lastALTMode = Airbus_FMA.MODE_STATE.CAPTURED;
                     }
-                 }
+                }
                 return this._lastALTMode;
             }
             return Airbus_FMA.MODE_STATE.NONE;
