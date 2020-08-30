@@ -662,7 +662,7 @@ var Airbus_FMA;
 				if (AltCaptured) {
 					return true;
 				}
-				if (Simplane.getVerticalSpeed() < 100) {
+				if (Simplane.getVerticalSpeed() < 150) {
 					return true;
 				}
 			}
@@ -673,7 +673,7 @@ var Airbus_FMA;
 				if (AltCaptured) {
 					return true;
 				}
-				if (Simplane.getVerticalSpeed() < 100) {
+				if (Simplane.getVerticalSpeed() < 150) {
 					return true;
 				}
 			}
