@@ -53,7 +53,7 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         var apuOn = SimVar.GetSimVarValue("L:APU_GEN_ONLINE", "bool");
 
         var isACPowerAvailable = engineOn || apuOn || externalPower;
-        var isDCPowerAvailable = isACPowerAvailable || SimVar.GetSimVarValue("ELECTRICAL MASTER BATTERY","Bool");
+        var isDCPowerAvailable = isACPowerAvailable || (SimVar.GetSimVarValue("ELECTRICAL MASTER BATTERYELECTRICAL MAIN BUS VOLTAGE","Volts")>=25);
         if(isDCPowerAvailable){
             SimVar.SetSimVarValue("L:DCPowerAvailable","bool",1);   //True if any AC|DC bus is online
         }
