@@ -1101,22 +1101,37 @@ var Airbus_FMA;
                 if (Airbus_FMA.CurrentPlaneState.flightPhase < FlightPhase.FLIGHT_PHASE_CLIMB) {
                     return Airbus_FMA.MODE_STATE.ARMED;
                 }
-                else if (Airbus_FMA.CurrentPlaneState.flightPhase == FlightPhase.FLIGHT_PHASE_CLIMB) {
-                    return Airbus_FMA.MODE_STATE.ENGAGED;
+                else if (Airbus_FMA.CurrentPlaneState.radioAltitude <= 1.5) {
+                    return Airbus_FMA.MODE_STATE.NONE;
                 }
-            }
-            if (Simplane.getAutoPilotFLCActive()) {
                 let targetAltitude = Simplane.getAutoPilotAltitudeLockValue("feets");
                 let altitude = Simplane.getAltitude();
                 if (altitude < targetAltitude - 100) {
-                    return Airbus_FMA.MODE_STATE.ENGAGED;
+                    if (Airbus_FMA.CurrentPlaneState.radioAltitude > 1.5) {
+                        return Airbus_FMA.MODE_STATE.ENGAGED;
+                    }
+                    else {
+                        return Airbus_FMA.MODE_STATE.NONE;
+                    }
+                }
+            }
+            if (Simplane.getAutoPilotFLCActive() && Airbus_FMA.CurrentPlaneState.anyFlightDirectorsActive) {
+                let targetAltitude = Simplane.getAutoPilotAltitudeLockValue("feets");
+                let altitude = Simplane.getAltitude();
+                if (altitude < targetAltitude - 100) {
+                    if (Airbus_FMA.CurrentPlaneState.radioAltitude <= 1.5) {
+                        return Airbus_FMA.MODE_STATE.ENGAGED;
+                    }
+                    else {
+                        return Airbus_FMA.MODE_STATE.NONE;
+                    }
                 }
             }
             return Airbus_FMA.MODE_STATE.NONE;
         }
         IsActive_DES() {
             if (Airbus_FMA.CurrentPlaneState.autoPilotAltitudeLockActive && (Airbus_FMA.CurrentPlaneState.altitude > Airbus_FMA.CurrentPlaneState.autoPilotAltitudeLockValue) && Airbus_FMA.CurrentPlaneState.anyFlightDirectorsActive) {
-                if (Airbus_FMA.CurrentPlaneState.flightPhase == FlightPhase.FLIGHT_PHASE_DESCENT) {
+                if (Airbus_FMA.CurrentPlaneState.flightPhase == FlightPhase.FLIGHT_PHASE_DESCENT && Simplane.getVerticalSpeed() < -10) {
                     return true;
                 }
             }
