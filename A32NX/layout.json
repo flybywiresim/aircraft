@@ -122,7 +122,7 @@
         },
         {
             "path": "SimObjects/AirPlanes/Asobo_A320_NEO/model/A320_NEO_INTERIOR.xml",
-            "size": 130142,
+            "size": 130136,
             "date": "132402817714110148"
         },
         {
@@ -191,21 +191,6 @@
             "date": "132402817714110148"
         },
         {
-            "path": "html_ui/Pages/VCockpit/Instruments/Airliners/A320_Neo/BAT/A320_Neo_BAT.css",
-            "size": 1376,
-            "date": "132402817714110148"
-        },
-        {
-            "path": "html_ui/Pages/VCockpit/Instruments/Airliners/A320_Neo/BAT/A320_Neo_BAT.html",
-            "size": 1284,
-            "date": "132402817714110148"
-        },
-        {
-            "path": "html_ui/Pages/VCockpit/Instruments/Airliners/A320_Neo/BAT/A320_Neo_BAT.js",
-            "size": 1363,
-            "date": "132402817714110148"
-        },
-        {
             "path": "html_ui/Pages/VCockpit/Instruments/Airliners/A320_Neo/BRK/A320_Neo_BRK.css",
             "size": 2138,
             "date": "132402817714110148"
@@ -217,7 +202,7 @@
         },
         {
             "path": "html_ui/Pages/VCockpit/Instruments/Airliners/A320_Neo/BRK/A320_Neo_BRK.js",
-            "size": 12168,
+            "size": 11865,
             "date": "132402817714110148"
         },
         {
@@ -307,7 +292,7 @@
         },
         {
             "path": "html_ui/Pages/VCockpit/Instruments/Airliners/A320_Neo/CDU/A320_Neo_CDU_MainDisplay.js",
-            "size": 35207,
+            "size": 35502,
             "date": "132402817714110148"
         },
         {
@@ -387,7 +372,7 @@
         },
         {
             "path": "html_ui/Pages/VCockpit/Instruments/Airliners/A320_Neo/EICAS/A320_Neo_EICAS.js",
-            "size": 11494,
+            "size": 10395,
             "date": "132402817714110148"
         },
         {
@@ -402,7 +387,7 @@
         },
         {
             "path": "html_ui/Pages/VCockpit/Instruments/Airliners/A320_Neo/EICAS/ECAM/A320_Neo_LowerECAM_APU.js",
-            "size": 12731,
+            "size": 10918,
             "date": "132402817714110148"
         },
         {
@@ -447,7 +432,7 @@
         },
         {
             "path": "html_ui/Pages/VCockpit/Instruments/Airliners/A320_Neo/EICAS/ECAM/A320_Neo_LowerECAM_Engine.js",
-            "size": 13207,
+            "size": 13206,
             "date": "132402817714110148"
         },
         {
@@ -463,21 +448,6 @@
         {
             "path": "html_ui/Pages/VCockpit/Instruments/Airliners/A320_Neo/EICAS/ECAM/A320_Neo_LowerECAM_FTCL.js",
             "size": 7292,
-            "date": "132402817714110148"
-        },
-        {
-            "path": "html_ui/Pages/VCockpit/Instruments/Airliners/A320_Neo/EICAS/ECAM/A320_Neo_LowerECAM_Fuel.css",
-            "size": 2261,
-            "date": "132402817714110148"
-        },
-        {
-            "path": "html_ui/Pages/VCockpit/Instruments/Airliners/A320_Neo/EICAS/ECAM/A320_Neo_LowerECAM_Fuel.html",
-            "size": 8264,
-            "date": "132402817714110148"
-        },
-        {
-            "path": "html_ui/Pages/VCockpit/Instruments/Airliners/A320_Neo/EICAS/ECAM/A320_Neo_LowerECAM_Fuel.js",
-            "size": 8638,
             "date": "132402817714110148"
         },
         {
@@ -507,7 +477,7 @@
         },
         {
             "path": "html_ui/Pages/VCockpit/Instruments/Airliners/A320_Neo/FCU/A320_Neo_FCU.js",
-            "size": 25891,
+            "size": 25803,
             "date": "132402817714110148"
         },
         {
@@ -522,7 +492,7 @@
         },
         {
             "path": "html_ui/Pages/VCockpit/Instruments/Airliners/A320_Neo/MFD/A320_Neo_MFD.js",
-            "size": 24416,
+            "size": 24482,
             "date": "132402817714110148"
         },
         {
@@ -542,7 +512,7 @@
         },
         {
             "path": "html_ui/Pages/VCockpit/Instruments/Airliners/A320_Neo/PFD/A320_Neo_PFD.js",
-            "size": 10290,
+            "size": 10289,
             "date": "132402817714110148"
         },
         {

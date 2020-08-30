@@ -16,7 +16,6 @@ var A320_Neo_LowerECAM_APU;
         init() {
             this.lastAPUMasterState = 0;
             SimVar.SetSimVarValue("L:APU_FLAP_OPEN", "Bool", 0);
-            SimVar.SetSimVarValue("L:APU_STARTERSW_AVAIL","Bool",0);
 
             //Generator
             this.APUGenInfo = this.querySelector("#APUGenInfo_On");
@@ -39,10 +38,7 @@ var A320_Neo_LowerECAM_APU;
             //Gauges
             this.apuInfo = new APUInfo(this.querySelector("#APUGauges"));
 
-            this.APUStartTimer = -1;
-            this.APUFlapTimer = -1;
-            this.APUBleedTimer = -1;
-            this.APULastBleedState = SimVar.GetSimVarValue("BLEED AIR SOURCE CONTROL","Enum");
+            this.APUStartTimer = -1
             this.isInitialised = true;
         }
         update(_deltaTime) {
@@ -55,76 +51,48 @@ var A320_Neo_LowerECAM_APU;
 
             if (this.lastAPUMasterState != currentAPUMasterState) {
                 this.lastAPUMasterState = currentAPUMasterState;
-                this.APUStartTimer = 2;
-                this.APUFlapTimer = 20;
+                this.APUStartTimer = 3;// JZ initialisation time reduced from 20 to 3 according @dalmont this.APUStartTimer = 20;
                 this.APUGenInfo.setAttribute("visibility", "visible");
             }
-            //starter sw delay
+
             if (this.APUStartTimer >= 0) {
                 this.APUStartTimer -= _deltaTime/1000;
                 if (this.APUStartTimer <= 0) {
                     this.APUStartTimer = -1;
-                    SimVar.SetSimVarValue("L:APU_STARTERSW_AVAIL", "Bool", 1);
-                }
-            }
-            //flap open delay
-            if (this.APUFlapTimer >= 0) {
-                this.APUFlapTimer -= _deltaTime/1000;
-                if (this.APUFlapTimer <= 0) {
-                    this.APUFlapTimer = -1;
                     SimVar.SetSimVarValue("L:APU_FLAP_OPEN", "Bool", 1);
                 }
             }
 
             if (SimVar.GetSimVarValue("FUELSYSTEM VALVE SWITCH:8", "Bool") === 0) {
                 this.APUStartTimer = -1;
-                this.APUFlapTimer = -1;
                 SimVar.SetSimVarValue("L:APU_FLAP_OPEN", "Bool", 0);
-                SimVar.SetSimVarValue("L:APU_STARTSW_AVAIL","Bool",0);
             }
 
-            //APU start, stop
+            //Get APU N%
             var APUPctRPM = SimVar.GetSimVarValue("APU PCT RPM", "percent");
-            if(APUPctRPM >= 87){
-                SimVar.SetSimVarValue("L:APU_GEN_ONLINE","Bool",1);
-                SimVar.SetSimVarValue("L:APU_GEN_VOLTAGE","Volts",115);
-                SimVar.SetSimVarValue("L:APU_GEN_AMPERAGE","Amperes",782.609); // 1000 * 90 kVA / 115V = 782.609A
-                SimVar.SetSimVarValue("L:APU_GEN_FREQ","Hertz",Math.round((4.46*APUPctRPM)-46.15));
-                SimVar.SetSimVarValue("L:APU_BLEED_PRESSURE","PSI",35);
-                SimVar.SetSimVarValue("L:APU_LOAD_PERCENT","percent",SimVar.GetSimVarValue("L:APU_GEN_AMPERAGE","Amperes")/SimVar.GetSimVarValue("ELECTRICAL TOTAL LOAD AMPS","Amperes"));
-            }
-            else{
-                SimVar.SetSimVarValue("L:APU_GEN_ONLINE","Bool",0);
-                SimVar.SetSimVarValue("L:APU_GEN_VOLTAGE","Volts",0);
-                SimVar.SetSimVarValue("L:APU_GEN_AMPERAGE","Amperes",0);
-                SimVar.SetSimVarValue("L:APU_GEN_FREQ","Hertz",0);
-                SimVar.SetSimVarValue("L:APU_BLEED_PRESSURE","PSI",0);
-                SimVar.SetSimVarValue("L:APU_LOAD_PERCENT","percent",0);
-            }
-            //Bleed
-            if ((SimVar.GetSimVarValue("BLEED AIR SOURCE CONTROL","enum") == 3) && !(this.APULastBleedState == 1)) {
-                this.APUBleedTimer = 4;
-                this.APULastBleedState = 1;
-            }
-            if(this.APUBleedTimer >= 0){
-                this.APUBleedTimer -= _deltaTime/1000;
-                SimVar.SetSimVarValue("L:APU_BLEED_PRESSURE","PSI",Math.round(36-this.APUBleedTimer));
-            }
-            else{
-                this.APUBleedTimer = -1;
-            }
-            //display volt,load,freq
-            this.APUGenLoad.textContent = Math.round(SimVar.GetSimVarValue("L:APU_LOAD_PERCENT","percent"));
-            this.APUVolts.textContent = SimVar.GetSimVarValue("L:APU_GEN_VOLTAGE","Volts");
-            this.APUVolts.setAttribute("class", "APUGenParamValue");
-            this.APUFrequency.textContent = SimVar.GetSimVarValue("L:APU_GEN_FREQ","Hertz");
-            this.APUFrequency.setAttribute("class", "APUGenParamValue");
+            var totalElectricalLoad = SimVar.GetSimVarValue("ELECTRICAL TOTAL LOAD AMPS", "amperes");
+            var APULoadPercent = totalElectricalLoad / 782.609 // 1000 * 90 kVA / 115V = 782.609A
 
-            if (SimVar.GetSimVarValue("BLEED AIR APU", "Bool") == 1){
+            //APU Load/Volts/Frequency Indication
+            if (APUPctRPM >= 87) {
+                this.APUGenLoad.textContent = Math.round(APULoadPercent * 100);
+                this.APUVolts.textContent = "115";
+                this.APUVolts.setAttribute("class", "APUGenParamValue");
+                this.APUFrequency.textContent = Math.round((4.46*APUPctRPM)-46.15);
+                this.APUFrequency.setAttribute("class", "APUGenParamValue");
+            } else {
+                this.APUGenLoad.textContent = "0";
+                this.APUVolts.textContent = "0";
+                this.APUVolts.setAttribute("class", "APUGenParamValueWarn");
+                this.APUFrequency.textContent = "0";
+                this.APUFrequency.setAttribute("class", "APUGenParamValueWarn");
+            }
+
+            //Bleed
+            if (SimVar.GetSimVarValue("BLEED AIR APU", "Bool") == 1) {
                 this.APUBleedOn.setAttribute("visibility", "visible");
                 this.APUBleedOff.setAttribute("visibility", "hidden");
             } else {
-                this.APULastBleedState = 0;
                 this.APUBleedOn.setAttribute("visibility", "hidden");
                 this.APUBleedOff.setAttribute("visibility", "visible");
             }
@@ -134,7 +102,7 @@ var A320_Neo_LowerECAM_APU;
                 this.APUAvail.setAttribute("visibility", "visible");
                 if (SimVar.GetSimVarValue("APU GENERATOR ACTIVE", "Bool") == 1 && SimVar.GetSimVarValue("EXTERNAL POWER ON", "Bool") === 0) this.APUGenAvailArrow.setAttribute("visibility", "visible");
                 else this.APUGenAvailArrow.setAttribute("visibility", "hidden");
-                this.APUBleedPressure.textContent = SimVar.GetSimVarValue("L:APU_BLEED_PRESSURE","PSI");
+                this.APUBleedPressure.textContent = "35";
                 this.APUBleedPressure.setAttribute("class", "APUGenParamValue");
             } else {
                 this.APUAvail.setAttribute("visibility", "hidden");
@@ -248,27 +216,28 @@ var A320_Neo_LowerECAM_APU;
 
         getAPUN() {
             return SimVar.GetSimVarValue("APU PCT RPM", "percent");
+            
         }
 
-        //Calculates the APU EGT Based on the RPM, APU now reaches peak EGT of 765'C
+        //Calculates the APU EGT Based on the RPM
         getAPUEGTRaw(startup) {
             var n = this.getAPUN();
             if (startup) {
                 if (n < 10) {
                     return 10;
                 } else if (n < 16) {
-                    return (135*n)-1600;
-                } else if(n < 20){
-                    return (20*n)+105;
-                } else if (n < 37) {
-                    return (17.125*n)+148.5;
+                    return (135*n)-1320;
+                } else if (n < 20) {
+                    return -1262 + (224*n) - (5.8 * (n*n));
+                } else if (n < 36) {
+                    return ((-5/4)*n) + 925;
                 } else if (n < 42) {
-                    return (15/6*n)+675;
+                    return -2062 + (151.7*n) - (1.94 * (n*n));
                 } else {
-                    return ((-385/58)*n)  + 1050;
+                    return ((-425/58)*n) + (34590/29);
                 }
             } else {
-                return ((18/5)*n)+35;
+                return ((18/5)*n)+100;
             }
         }
 

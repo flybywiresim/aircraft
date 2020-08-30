@@ -67,26 +67,20 @@ var A320_Neo_BRK;
         }
         Update() {
             super.Update();
-            
             var currentPKGBrakeState = SimVar.GetSimVarValue("BRAKE PARKING POSITION", "Bool");//Z ADDED if PKG BRAKE IS SET
             if (this.topGauge != null) {
-                if(SimVar.GetSimVarValue("L:DCPowerAvailable","Bool")){
-                    this.topGauge.setValue(3);
-                }
-                else{
-                    this.topGauge.setValue(0);
-                }
+                this.topGauge.setValue(3);
             }
             
             if (this.leftGauge != null) {
-                if (currentPKGBrakeState !=0 && SimVar.GetSimVarValue("L:DCPowerAvailable","Bool")) {//Z ADDED if PKG BRAKE IS SET
+                if (currentPKGBrakeState !=0) {//Z ADDED if PKG BRAKE IS SET
                 this.leftGauge.setValue(2);// JZ ADDED SET the PSI values
                 } else {
                 this.leftGauge.setValue(0);// JZ ADDED SET the PSI values 
                 }
             }
             if (this.rightGauge != null) {
-                if (currentPKGBrakeState !=0  && SimVar.GetSimVarValue("L:DCPowerAvailable","Bool")) {//Z ADDED if PKG BRAKE IS SET
+                if (currentPKGBrakeState !=0) {//Z ADDED if PKG BRAKE IS SET
                     this.rightGauge.setValue(2);// JZ ADDED SET the PSI values
                     } else {
                     this.rightGauge.setValue(0);// JZ ADDED SET the PSI values 

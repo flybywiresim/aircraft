@@ -119,7 +119,8 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
         var externalPower = SimVar.GetSimVarValue("EXTERNAL POWER ON", "bool");
         var apuOn = SimVar.GetSimVarValue("APU SWITCH", "bool");
 
-        this.updateScreenState();
+        var isPowerAvailable = engineOn || apuOn || externalPower;
+        this.updateScreenState(isPowerAvailable);
 
         if (engineOn) {
             this.selfTestDiv.style.display = "none";
@@ -140,11 +141,11 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
         
     }
 
-    updateScreenState() {
-        if (SimVar.GetSimVarValue("L:ACPowerAvailable","bool")) {
-            this.electricity.style.display = "block";
-        } else {
+    updateScreenState(isPowerAvailable) {
+        if (!isPowerAvailable) {
             this.electricity.style.display = "none";
+        } else {
+            this.electricity.style.display = "block";
         }
     }
 

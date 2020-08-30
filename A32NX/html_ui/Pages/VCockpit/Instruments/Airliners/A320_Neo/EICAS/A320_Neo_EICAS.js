@@ -29,43 +29,25 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         super.Init();
         this.changePage("FUEL"); // MODIFIED
 
-        this.lastAPUMasterState = 0; // MODIFIED
-        this.externalPowerWhenApuMasterOnTimer = -1; // MODIFIED
+        this.lastAPUMasterState = 0 // MODIFIED
+        this.externalPowerWhenApuMasterOnTimer = -1 // MODIFIED
         this.selfTestDiv = this.querySelector("#SelfTestDiv");
         this.selfTestTimer = -1;
         this.selfTestTimerStarted = false;
-        this.doorPageActivated = false;
-        this.electricity = this.querySelector("#Electricity");
+        this.doorPageActivated = false
+        this.electricity = this.querySelector("#Electricity")
         this.changePage("DOOR"); // MODIFIED
-        
-        SimVar.SetSimVarValue("POTENTIOMETER:7","FLOAT64",0);
-        SimVar.SetSimVarValue("POTENTIOMETER:14","FLOAT64",0);
-        SimVar.SetSimVarValue("POTENTIOMETER:16","FLOAT64",0);
-        SimVar.SetSimVarValue("POTENTIOMETER:15","FLOAT64",1);
     }
     onUpdate(_deltaTime) {
         super.onUpdate(_deltaTime);
         this.updateAnnunciations();
-        this.updateScreenState();
         
         var engineOn = Simplane.getEngineActive(0) || Simplane.getEngineActive(1);
         var externalPower = SimVar.GetSimVarValue("EXTERNAL POWER ON", "bool");
-        var apuOn = SimVar.GetSimVarValue("L:APU_GEN_ONLINE", "bool");
+        var apuOn = SimVar.GetSimVarValue("APU SWITCH", "bool");
 
-        var isACPowerAvailable = engineOn || apuOn || externalPower;
-        var isDCPowerAvailable = isACPowerAvailable || SimVar.GetSimVarValue("ELECTRICAL MASTER BATTERY","Bool");
-        if(isDCPowerAvailable){
-            SimVar.SetSimVarValue("L:DCPowerAvailable","bool",1);   //True if any AC|DC bus is online
-        }
-        else{
-            SimVar.SetSimVarValue("L:DCPowerAvailable","bool",0);
-        }
-        if(isACPowerAvailable){
-            SimVar.SetSimVarValue("L:ACPowerAvailable","bool",1);   //True if any AC bus is online
-        }
-        else{
-            SimVar.SetSimVarValue("L:ACPowerAvailable","bool",0);
-        }
+        var isPowerAvailable = engineOn || apuOn || externalPower;
+        this.updateScreenState(isPowerAvailable);
 
         // Check if engine is on so self test doesn't appear when not starting from cold and dark
         if (engineOn) {
@@ -89,25 +71,20 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         // automaticaly switch to the APU page when apu master switch is on
         if (this.lastAPUMasterState != currentAPUMasterState && currentAPUMasterState === 1) {  
             this.lastAPUMasterState = currentAPUMasterState;  
-            this.changePage("APU");
+            this.changePage("APU")
 
             //if external power is off when turning on apu, only show the apu page for 10 seconds, then the DOOR page
             var externalPower = SimVar.GetSimVarValue("EXTERNAL POWER ON", "Bool")  
             if (externalPower === 0) {  
-                this.externalPowerWhenApuMasterOnTimer = 85;
+                this.externalPowerWhenApuMasterOnTimer = 10
             }
 
         }
 
         if (this.externalPowerWhenApuMasterOnTimer >= 0) {  
             this.externalPowerWhenApuMasterOnTimer -= _deltaTime/1000
-            this.electricity.style.display = "block";
-            this.electricity.style.opacity = 0;
-            this.changePage("APU");
             if (this.externalPowerWhenApuMasterOnTimer <= 0) {  
-                this.changePage("APU");
-                this.electricity.style.display = "none";
-                this.electricity.style.opacity = 1;
+                this.changePage("DOOR")  
             }  
         }  
 
@@ -126,11 +103,11 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         // modification ends here
     }
 
-    updateScreenState() {
-        if (SimVar.GetSimVarValue("L:ACPowerAvailable","bool")) {
-            this.electricity.style.display = "block";
-        } else {
+    updateScreenState(isPowerAvailable) {
+        if (!isPowerAvailable) {
             this.electricity.style.display = "none";
+        } else {
+            this.electricity.style.display = "block";
         }
     }
 
