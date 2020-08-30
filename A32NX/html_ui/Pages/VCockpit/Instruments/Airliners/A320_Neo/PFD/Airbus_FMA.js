@@ -1379,7 +1379,7 @@ var Airbus_FMA;
         }
         GetModeState_NAV() {
             if (Airbus_FMA.CurrentPlaneState.autoPilotHeadingManagedMode && Airbus_FMA.CurrentPlaneState.anyFlightDirectorsActive) {
-                if ((Airbus_FMA.CurrentPlaneState.radioAltitude >= 30) && Airbus_FMA.CurrentPlaneState.anyAutoPilotsActive) {
+                if (Airbus_FMA.CurrentPlaneState.radioAltitude >= 30) {
                     return Airbus_FMA.MODE_STATE.ENGAGED;
                 }
                 else {
