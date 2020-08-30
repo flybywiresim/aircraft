@@ -1,0 +1,78 @@
+﻿:root {
+  --bodyHeightScale: 1; }
+
+@keyframes TemporaryShow {
+  0%, 100% {
+    visibility: visible; } }
+
+@keyframes TemporaryHide {
+  0%, 100% {
+    visibility: hidden; } }
+
+#highlight {
+  position: absolute;
+  height: 100%;
+  width: 100%;
+  z-index: 10; }
+
+#Electricity {
+  width: 100%;
+  height: 100%; }
+
+  /* JZ removed as this LCD display is ALWAYS on*/
+  /* #Electricity[state=off] {
+    display: none; } */
+
+@font-face {
+  font-family: "Roboto";
+  src: url("/Fonts/RobotoMono-Medium.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal; }
+
+@font-face {
+  font-family: "Roboto-Light";
+  src: url("/Fonts/RobotoMono-Light.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal; }
+
+@font-face {
+  font-family: "Roboto-Bold";
+  src: url("/Fonts/RobotoMono-Bold.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal; }
+
+@font-face {
+  font-family: "Digital";
+  src: url("/Pages/VCockpit/Instruments/Shared/Fonts/digital.ttf") format("truetype");
+  font-weight: 900;
+  font-style: normal; }
+
+
+  /* JZ added a Special font for the Voltage display */
+  @font-face {
+    font-family: "Digitalv";
+    src: url("/Fonts/wwDigital.ttf") format("truetype");
+    font-weight: normal;
+    font-style: normal; }
+  
+a320-neo-bat {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  overflow: hidden;
+  background-color: black; }
+  a320-neo-bat svg {
+    width: 100%;
+    height: 100%; }
+  a320-neo-bat text {
+    font-family: Digital;
+    fill: #985d1c; 
+    opacity:0.5; } /* JZ opacity reduced */
+  a320-neo-bat text.value {
+    font-size: 55px; /* was 50 px
+    text-anchor: end; }
+  a320-neo-bat text.unit {
+    font-family: Digitalv; /* JZ Special font for the Voltage display */
+    font-size: 30px;
+    text-anchor: start; }
+
