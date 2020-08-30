@@ -617,20 +617,20 @@ var Airbus_FMA;
         IsActive_THRCLB() {
             if (Airbus_FMA.CurrentPlaneState.autoPilotThrottleActive &&
                 Airbus_FMA.CurrentPlaneState.highestThrottleDetent == ThrottleMode.CLIMB &&
-                Simplane.getVerticalSpeed() > 150 && !AltCaptured && Airbus_FMA.CurrentPlaneState.anyFlightDirectorsActive) {
+                Simplane.getVerticalSpeed() > 150 && !AltCaptured && Airbus_FMA.CurrentPlaneState.anyFlightDirectorsActive && Airbus_FMA.CurrentPlaneState.anyAutoPilotsActive && !Column2.IsActive_VS() && (Column2.GetModeState_GS() != MODE_STATE.ENGAGED) && !AltCaptured) {
 				return true;
             }
             return false;
         }
         IsActive_THRLVR() {
             if (Airbus_FMA.CurrentPlaneState.autoPilotThrottleActive && Airbus_FMA.CurrentPlaneState.anyFlightDirectorsActive &&
-                Airbus_FMA.CurrentPlaneState.highestThrottleDetent == ThrottleMode.AUTO) {
+                Airbus_FMA.CurrentPlaneState.highestThrottleDetent == ThrottleMode.AUTO && Airbus_FMA.CurrentPlaneState.anyAutoPilotsActive && !Column2.IsActive_VS() && (Column2.GetModeState_GS() != MODE_STATE.ENGAGED) && !AltCaptured) {
                 return true;
             }
             return false;
         }
         IsActive_THRIDLE() {
-            if (Airbus_FMA.CurrentPlaneState.autoPilotThrottleActive && Airbus_FMA.CurrentPlaneState.anyFlightDirectorsActive && Simplane.getVerticalSpeed() < -150) {
+            if (Airbus_FMA.CurrentPlaneState.autoPilotThrottleActive && Airbus_FMA.CurrentPlaneState.anyFlightDirectorsActive && Simplane.getVerticalSpeed() < -150 && Airbus_FMA.CurrentPlaneState.anyAutoPilotsActive && !Column2.IsActive_VS() && (Column2.GetModeState_GS() != MODE_STATE.ENGAGED) && !AltCaptured) {
                 return true;
             }
             return false;
