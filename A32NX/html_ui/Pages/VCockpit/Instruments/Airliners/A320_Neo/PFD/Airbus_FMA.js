@@ -1766,6 +1766,9 @@ var Airbus_FMA;
                         targetState = VerticalAndLateral.STATE.LAND;
                     }
                 }
+                if (!Airbus_FMA.CurrentPlaneState.anyFlightDirectorsActive || Simplane.getGroundSpeed() < 40) {
+                    targetState = VerticalAndLateral.STATE.NONE;
+                }
                 if (targetState != this.currentState) {
                     if (this.currentState == VerticalAndLateral.STATE.ROLLOUT) {
                         this.rolloutDelay = 0;
