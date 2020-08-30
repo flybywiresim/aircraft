@@ -72,6 +72,9 @@ class A320_Neo_FCU_MainPage extends NavSystemPage {
         this.largeScreen.onFlightStart();
         this.smallScreen.onFlightStart();
     }
+    Update(){
+        this.updateScreenState();
+    }
 }
 class A320_Neo_FCU_Component {
     getDivElement(_name) {
@@ -626,6 +629,7 @@ class A320_Neo_FCU_SmallScreen extends NavSystemElement {
         if (this.pressure != null) {
             this.pressure.update(_deltaTime);
         }
+        this.updateScreenState();
     }
     onExit() {
     }
