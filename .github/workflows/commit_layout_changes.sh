@@ -5,10 +5,10 @@ LAYOUT_FILE="A32NX/layout.json"
 
 if git status --porcelain | grep $LAYOUT_FILE;
 then
-    echo "layout.json has changed. Committing changes..."
+    echo "$LAYOUT_FILE has changed. Committing changes..."
     git add "$LAYOUT_FILE"
-    git commit -m "[CI] Generate layout.json"
+    git commit -m "[CI] Generate $LAYOUT_FILE"
     git push
 fi
 
-echo "layout.json has no changes. Skipping."
+echo "$LAYOUT_FILE has no changes. Skipping."
