@@ -21,6 +21,8 @@
   #Electricity[state=off] {
     /*JZ REMOVED (Display stays on after POwer supply off) */
     display: none; }
+    /* display: none;  */
+  }
 #Unit {
    fill: #009696;
    font-size: 40px;} /* JZ ADDED */
@@ -71,6 +73,13 @@ a320-neo-brk {
     fill: #121212;
     stroke: black;
     stroke-width: 8px; }
+
+/* Ajout JZ properties for the arcs*/
+a320-neo-brk .dialindicatorArc {
+  stroke: blue;
+  stroke-width: 8px; }
+/* Ajout JZ*/
+
   a320-neo-brk .marker {
     stroke: white;
     stroke-width: 8px; }
