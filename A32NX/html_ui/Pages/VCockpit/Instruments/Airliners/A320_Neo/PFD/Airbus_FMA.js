@@ -1636,7 +1636,7 @@ var Airbus_FMA;
                         }
                     case Column5.ROW_2_STATE.FD_BOTH:
                         {
-                            this.setRowText(1, "1FD2", Airbus_FMA.MODE_STATE.ACTIVE);
+                            this.setRowText(1, "1 FD 2", Airbus_FMA.MODE_STATE.ACTIVE);
                             break;
                         }
                     default:
