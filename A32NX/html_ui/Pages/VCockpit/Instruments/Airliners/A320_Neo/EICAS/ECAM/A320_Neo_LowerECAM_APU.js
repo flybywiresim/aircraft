@@ -42,7 +42,7 @@ var A320_Neo_LowerECAM_APU;
             this.APUStartTimer = -1;
             this.APUFlapTimer = -1;
             this.APUBleedTimer = -1;
-            this.APULastBleedState = SimVar.GetSimVarValue("BLEED AIR SOURCE CONTROL","Enum");
+            this.APULastBleedState = 0;
             this.isInitialised = true;
         }
         update(_deltaTime) {
@@ -102,16 +102,9 @@ var A320_Neo_LowerECAM_APU;
                 SimVar.SetSimVarValue("L:APU_LOAD_PERCENT","percent",0);
             }
             //Bleed
-            if ((SimVar.GetSimVarValue("BLEED AIR SOURCE CONTROL","enum") == 3) && !(this.APULastBleedState == 1)) {
+            if ((SimVar.GetSimVarValue("BLEED AIR APU","Bool") && !(this.APULastBleedState == 1))) {
                 this.APUBleedTimer = 4;
                 this.APULastBleedState = 1;
-            }
-            if(this.APUBleedTimer >= 0){
-                this.APUBleedTimer -= _deltaTime/1000;
-                SimVar.SetSimVarValue("L:APU_BLEED_PRESSURE","PSI",Math.round(36-this.APUBleedTimer));
-            }
-            else{
-                this.APUBleedTimer = -1;
             }
             //display volt,load,freq
             this.APUGenLoad.textContent = Math.round(SimVar.GetSimVarValue("L:APU_LOAD_PERCENT","percent"));
@@ -131,6 +124,13 @@ var A320_Neo_LowerECAM_APU;
 
             //AVAIL indication & bleed pressure
             if (APUPctRPM > 95) {
+                if(this.APUBleedTimer > 0){
+                    this.APUBleedTimer -= _deltaTime/1000;
+                    SimVar.SetSimVarValue("L:APU_BLEED_PRESSURE","PSI",Math.round(36-this.APUBleedTimer));
+                }
+                else{
+                    this.APUBleedTimer = -1;
+                }
                 this.APUAvail.setAttribute("visibility", "visible");
                 if (SimVar.GetSimVarValue("APU GENERATOR ACTIVE", "Bool") == 1 && SimVar.GetSimVarValue("EXTERNAL POWER ON", "Bool") === 0) this.APUGenAvailArrow.setAttribute("visibility", "visible");
                 else this.APUGenAvailArrow.setAttribute("visibility", "hidden");
@@ -256,16 +256,22 @@ var A320_Neo_LowerECAM_APU;
             if (startup) {
                 if (n < 10) {
                     return 10;
-                } else if (n < 16) {
-                    return (135*n)-1600;
-                } else if(n < 20){
-                    return (20*n)+105;
-                } else if (n < 37) {
-                    return (17.125*n)+148.5;
-                } else if (n < 42) {
-                    return (15/6*n)+675;
+                } else if(n <14){
+                    reuturn ((90/6*n)- 140);
+                } else if (n < 20) {
+                    return ((215/4*n)-760);
+                } else if(n < 32){
+                    return ((420/11*n)-481.8);
+                } else if (n < 36) {
+                    return (20/3*n)+525;
+                } else if (n < 43) {
+                    return ((-15/6*n)+888.3);
+                } else if(n < 50){
+                    return ((3*n)+618)
+                } else if(n < 74){
+                    return ((-100/13)*n+1152.3);
                 } else {
-                    return ((-385/58)*n)  + 1050;
+                    return ((-104/10*n)+1430);
                 }
             } else {
                 return ((18/5)*n)+35;
@@ -276,7 +282,7 @@ var A320_Neo_LowerECAM_APU;
             let ambient = SimVar.GetSimVarValue("AMBIENT TEMPERATURE", "celsius");
 
             var n = this.getAPUN();
-            var egt = (Math.round(this.getAPUEGTRaw(this.lastN <= n)/5)*5);
+            var egt = (Math.round(this.getAPUEGTRaw(this.lastN <= n)));
             this.lastN = n;
             if (this.APUWarm && egt < 100) {
                 return 100;
