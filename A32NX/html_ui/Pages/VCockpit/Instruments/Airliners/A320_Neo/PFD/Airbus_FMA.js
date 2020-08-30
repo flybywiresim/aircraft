@@ -879,6 +879,9 @@ var Airbus_FMA;
                         }
                 }
             }
+            if (this.currentRow1State == Column2.ROW_1_STATE.OP_CLB || this.currentRow1State == Column2.ROW_1_STATE.OP_DES || this.currentRow1State == Column2.ROW_1_STATE.CLB_ENGAGED || this.currentRow1State == Column2.ROW_1_STATE.DES) {
+                targetRow2State = Column2.ROW_2_STATE.ALT_ARMED;
+            }
             if (targetRow2State != this.currentRow2State) {
                 this.currentRow2State = targetRow2State;
                 switch (this.currentRow2State) {
