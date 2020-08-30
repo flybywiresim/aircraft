@@ -1,5 +1,6 @@
 *
 !*/
+!/.github/**
 !/A32NX/**
 !/src/**
 !.gitignore
