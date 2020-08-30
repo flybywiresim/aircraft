@@ -67,23 +67,35 @@ var A320_Neo_BRK;
         }
         Update() {
             super.Update();
-            var currentPKGBrakeState = SimVar.GetSimVarValue("BRAKE PARKING POSITION", "Bool");//Z ADDED if PKG BRAKE IS SET
+            var currentPKGBrakeState = SimVar.GetSimVarValue("BRAKE PARKING POSITION", "Bool");//JZ ADDED if PKG BRAKE IS SET
+            var currentDCState = SimVar.GetSimVarValue("ELECTRICAL MASTER BATTERY", "Bool");//Z ADDED if DC POWER available "L:DCPowerAvailable", "Bool"
             if (this.topGauge != null) {
-                this.topGauge.setValue(3);
-            }
-            
-            if (this.leftGauge != null) {
-                if (currentPKGBrakeState !=0) {//Z ADDED if PKG BRAKE IS SET
-                this.leftGauge.setValue(2);// JZ ADDED SET the PSI values
+                if (currentDCState !=0) {// is A/c powered UP (ie DC available?)
+                    this.topGauge.setValue(3);// JZ Should be the actual acuumulator value, decreasing over time
                 } else {
-                this.leftGauge.setValue(0);// JZ ADDED SET the PSI values 
+                    this.topGauge.setValue(0);// JZ ADDED needle set to 0 
                 }
             }
+            if (this.leftGauge != null) {
+                if (currentDCState !=0) {// is A/c powered UP (ie DC available?)
+                    if (currentPKGBrakeState !=0) {//Z ADDED if PKG BRAKE IS SET
+                        this.leftGauge.setValue(2);// JZ ADDED SET the PSI values
+                    } else {
+                        this.leftGauge.setValue(0);// JZ ADDED SET the PSI values 
+                    } 
+                } else {
+                    this.leftGauge.setValue(0);// JZ ADDED needle set to 0 
+                }
+
+            }
             if (this.rightGauge != null) {
-                if (currentPKGBrakeState !=0) {//Z ADDED if PKG BRAKE IS SET
+                if (currentDCState !=0) {
+                    if (currentPKGBrakeState !=0) {//Z ADDED if PKG BRAKE IS SET
                     this.rightGauge.setValue(2);// JZ ADDED SET the PSI values
                     } else {
                     this.rightGauge.setValue(0);// JZ ADDED SET the PSI values 
+                    }else {
+                    this.rightGauge.setValue(0);// JZ ADDED needle set to 0 
                     }
             }
         }
@@ -102,6 +114,24 @@ var A320_Neo_BRK;
                 this.markersGroup.setAttribute("class", "markers");
                 this.markersGroup.setAttribute("transform", A320_Neo_BRK_Definitions.Common.DEFAULT_TRANSLATE_STRING);
                 _svgGroup.appendChild(this.markersGroup);
+
+                // AJOUT JZ indicator Arcs
+                this.dialindicatorArcGroup = document.createElementNS(Avionics.SVG.NS, "g");
+                this.dialindicatorArcGroup.setAttribute("class", "dialindicatorArc");
+                {
+                var dialindicatorArc = document.createElementNS(Avionics.SVG.NS, "path");
+                var d = [
+                    "M", A320_Neo_BRK_Definitions.DialFrame.START.x, A320_Neo_BRK_Definitions.DialFrame.START.y,
+                    "L", A320_Neo_BRK_Definitions.DialFrame.OUTER_RADIUS, A320_Neo_BRK_Definitions.DialFrame.START.y,
+                    "A", A320_Neo_BRK_Definitions.DialFrame.OUTER_RADIUS, A320_Neo_BRK_Definitions.DialFrame.OUTER_RADIUS, "0 0 1", A320_Neo_BRK_Definitions.DialFrame.END.x, A320_Neo_BRK_Definitions.DialFrame.OUTER_RADIUS,
+                    "L", A320_Neo_BRK_Definitions.DialFrame.END.x, A320_Neo_BRK_Definitions.DialFrame.END.y,
+                    "A", A320_Neo_BRK_Definitions.DialFrame.INNER_RADIUS, A320_Neo_BRK_Definitions.DialFrame.INNER_RADIUS, "0 1 1", A320_Neo_BRK_Definitions.DialFrame.START.x, A320_Neo_BRK_Definitions.DialFrame.START.y
+                ].join(" ");
+                dialindicatorArc.setAttribute("d", d);
+                dialindicatorArcGroup.appendChild(dialindicatorArc);
+                // end ajout JZ
+
+
                 var dialFrameGroup = document.createElementNS(Avionics.SVG.NS, "g");
                 dialFrameGroup.setAttribute("class", "dialFrame");
                 dialFrameGroup.setAttribute("transform", A320_Neo_BRK_Definitions.Common.DEFAULT_TRANSLATE_STRING);
@@ -118,6 +148,7 @@ var A320_Neo_BRK;
                     dialFrameGroup.appendChild(dialFrameShape);
                 }
                 _svgGroup.appendChild(dialFrameGroup);
+
                 this.indicatorGroup = document.createElementNS(Avionics.SVG.NS, "g");
                 this.indicatorGroup.setAttribute("class", "indicator");
                 {

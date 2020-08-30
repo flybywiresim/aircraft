@@ -2,11 +2,14 @@
 
 Preview of APU and DOOR ECAM pages: https://www.youtube.com/watch?v=rLaVK3nNCXc
 
+<<<<<<< HEAD
 ## About
 The FS2020 A32NX Project is a community driven open source project to create a free Airbus A320neo in the latest Microsoft Flight Simulator that is as close to reality as possible. It is an open source project and aims to enhance FS2020's default A320neo by improving the systems depth and functionality to bring it up to payware-level, and releasing it to the community for free, even perhaps making variants of the family (e.g. a319, a321).
 
 Central Repository: https://github.com/wpine215/msfs-a320neo
 
+=======
+>>>>>>> master
 ## Installation
 Installation is really simple. You only have to download the "A32NX" folder.
 
@@ -28,16 +31,24 @@ If the aforementioned methods do not work:
 
 ## Developing
 
+<<<<<<< HEAD
 The A32NX package only contains files which have been modified from the original package. If you wish to work on a file that isn't present in the development branch, simply copy it over from the latest Asobo branch. Please DO NOT add, modify, or delete files from the Asobo branch.
 
 Join our Discord server to find out about the latest updates and discuss ongoing development.
 
 [![Discord](https://img.shields.io/discord/738864299392630914.svg?label=&logo=discord&logoColor=ffffff&color=7389D8&labelColor=6A7EC2)](https://discord.gg/UjzuHMU)
+=======
+The A32NX package only contains files which have been modified from the original package. If you want to work on a file that isn't present in the development branch, simply copy it over from the latest Asobo branch. Please DO NOT add, modify, or delete files from the Asobo branch.
+Join our Discord server to find out about the latest updates and discuss the development of the project. https://discord.gg/UjzuHMU
+>>>>>>> master
 
 ### Committing changes
 
+<<<<<<< HEAD
 After making any changes to files inside the `A32NX` directory, ensure you run the `build.py` script to regenerate the `layout.json` as necessary. There's also a CI check to ensure this has been done.
 
+=======
+>>>>>>> master
 ## Changelog
 
 ### 0.1.1
@@ -50,6 +61,7 @@ After making any changes to files inside the `A32NX` directory, ensure you run t
 - Fixed APU startup time
 - Added MODE change indication to Navigation Display
 
+<<<<<<< HEAD
 ## Known Issues (Please note that most issues are being worked on and some of them may even be fixed in the dev branch)
 - APU ECAM page doesn't display correct load percent.
 - Bleed ECAM page isn't modeled.
@@ -100,3 +112,9 @@ A: If the bug is related to features introduced by our mod, please open a GitHub
 **Q: What is the name of this team?**
 
 A: Still no name! If you have a good idea, please feel free to suggest it on discord's #bugs-and-suggestions channel!
+=======
+## Known Issues
+- APU ECAM page doesn't display correct load percent
+- Bleed ECAM page isn't modeled
+- No automatic ECAM page switching for APU and DOOR pages
+>>>>>>> master
