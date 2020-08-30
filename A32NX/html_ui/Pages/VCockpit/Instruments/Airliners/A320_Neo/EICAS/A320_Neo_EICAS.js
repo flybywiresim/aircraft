@@ -180,7 +180,7 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
                 }
                 for (let i = this.annunciations.displayAdvisory.length - 1; i >= 0; i--) {
                     if (!this.annunciations.displayAdvisory[i].Acknowledged)
-                        infoPanelManager.addMessage(Airliners.EICAS_INFO_PANEL_ID.PRIMARY, this.annunciations.displayAdvisory[i].Text, (onGround) ? Airliners.EICAS_INFO_PANEL_MESSAGE_STYLE.INDICATION : Airliners.EICAS_INFO_PANEL_MESSAGE_STYLE.CAUTION);
+                        infoPanelManager.addMessage(Airliners.EICAS_INFO_PANEL_ID.PRIMARY, this.annunciations.displayAdvisory[i].Text, Airliners.EICAS_INFO_PANEL_MESSAGE_STYLE.INDICATION);
                 }
             }
         }

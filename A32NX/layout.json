@@ -31,6 +31,71 @@
             "date": "132402817714110148"
         },
         {
+            "path": "SimObjects/AirPlanes/Asobo_A320_NEO/TEXTURE/A320NEO_COCKPIT_DECALSTEXT_ALBD.TIF.DDS.json",
+            "size": 119,
+            "date": "132402817714110148"
+        },
+        {
+            "path": "SimObjects/AirPlanes/Asobo_A320_NEO/TEXTURE/A320NEO_COCKPIT_DECALSTEXT_ALBD.TIF.dds",
+            "size": 1398276,
+            "date": "132402817714110148"
+        },
+        {
+            "path": "SimObjects/AirPlanes/Asobo_A320_NEO/TEXTURE/A320NEO_COCKPIT_DECALSTEXT_ALBD.psd",
+            "size": 9551948,
+            "date": "132402817714110148"
+        },
+        {
+            "path": "SimObjects/AirPlanes/Asobo_A320_NEO/TEXTURE/A320NEO_COCKPIT_DECALSTEXT_EMIS.PNG.DDS.json",
+            "size": 102,
+            "date": "132402817714110148"
+        },
+        {
+            "path": "SimObjects/AirPlanes/Asobo_A320_NEO/TEXTURE/A320NEO_COCKPIT_DECALSTEXT_EMIS.PNG.dds",
+            "size": 1398276,
+            "date": "132402817714110148"
+        },
+        {
+            "path": "SimObjects/AirPlanes/Asobo_A320_NEO/TEXTURE/A320NEO_COCKPIT_DECALSTEXT_EMIS.psd",
+            "size": 4701766,
+            "date": "132402817714110148"
+        },
+        {
+            "path": "SimObjects/AirPlanes/Asobo_A320_NEO/TEXTURE/A320NEO_COCKPIT_INPUTS01_ALBD.PNG.DDS",
+            "size": 2097280,
+            "date": "132402817714110148"
+        },
+        {
+            "path": "SimObjects/AirPlanes/Asobo_A320_NEO/TEXTURE/A320NEO_COCKPIT_INPUTS01_ALBD.PNG.DDS.json",
+            "size": 102,
+            "date": "132402817714110148"
+        },
+        {
+            "path": "SimObjects/AirPlanes/Asobo_A320_NEO/TEXTURE/A320NEO_COCKPIT_INPUTS02_ALBD.PNG.DDS.json",
+            "size": 102,
+            "date": "132402817714110148"
+        },
+        {
+            "path": "SimObjects/AirPlanes/Asobo_A320_NEO/TEXTURE/A320NEO_COCKPIT_INPUTS02_ALBD.PNG.dds",
+            "size": 2097280,
+            "date": "132402817714110148"
+        },
+        {
+            "path": "SimObjects/AirPlanes/Asobo_A320_NEO/TEXTURE/A320NEO_COCKPIT_PEDESTAL_ALBD.PNG.DDS",
+            "size": 4194432,
+            "date": "132402817714110148"
+        },
+        {
+            "path": "SimObjects/AirPlanes/Asobo_A320_NEO/TEXTURE/A320NEO_COCKPIT_PEDESTAL_ALBD.PNG.DDS.json",
+            "size": 102,
+            "date": "132402817714110148"
+        },
+        {
+            "path": "SimObjects/AirPlanes/Asobo_A320_NEO/TEXTURE/texture.CFG",
+            "size": 166,
+            "date": "132402817714110148"
+        },
+        {
             "path": "SimObjects/AirPlanes/Asobo_A320_NEO/approach.FLT",
             "size": 4089,
             "date": "132402817714110148"
@@ -307,7 +372,7 @@
         },
         {
             "path": "html_ui/Pages/VCockpit/Instruments/Airliners/A320_Neo/EICAS/A320_Neo_EICAS.js",
-            "size": 10648,
+            "size": 10584,
             "date": "132402817714110148"
         },
         {
@@ -322,7 +387,7 @@
         },
         {
             "path": "html_ui/Pages/VCockpit/Instruments/Airliners/A320_Neo/EICAS/ECAM/A320_Neo_LowerECAM_APU.js",
-            "size": 11092,
+            "size": 11181,
             "date": "132402817714110148"
         },
         {
