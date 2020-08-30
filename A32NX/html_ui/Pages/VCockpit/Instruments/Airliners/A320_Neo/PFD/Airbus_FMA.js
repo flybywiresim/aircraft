@@ -1791,9 +1791,6 @@ var Airbus_FMA;
                                 break;
                             }
                     }
-					if (!Airbus_FMA.CurrentPlaneState.anyFlightDirectorsActive) {
-						str = "";
-					}
                     if (str.length > 0) {
                         this.msg.setText(str, Airbus_FMA.MODE_STATE.ENGAGED);
                         this.msg.setVisibility(true);
