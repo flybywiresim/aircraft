@@ -143,7 +143,8 @@ var Airbus_FMA;
     CurrentPlaneState.autoPilotActive = [false, false];
     CurrentPlaneState.autoPilotFlightDirectorActive = [false, false];
     Airbus_FMA.CurrentPlaneState = CurrentPlaneState;
-	AltCaptured = false;
+    var AltCaptured = false;
+    var SRSEnabled = false;
     class Cell {
         constructor(_parent, _className) {
             this.parent = _parent;
@@ -1000,45 +1001,44 @@ var Airbus_FMA;
         GetModeState_SRS() {
             if (Airbus_FMA.CurrentPlaneState.flightPhase == FlightPhase.FLIGHT_PHASE_TAKEOFF && Airbus_FMA.CurrentPlaneState.anyFlightDirectorsActive) {
                 if (Airbus_FMA.CurrentPlaneState.highestThrottleDetent == ThrottleMode.TOGA) {
-                    return Airbus_FMA.MODE_STATE.ENGAGED;
+                    SRSEnabled = true;
                 }
                 else if ((Airbus_FMA.CurrentPlaneState.highestThrottleDetent == ThrottleMode.FLEX_MCT) && (Airbus_FMA.CurrentPlaneState.flexTemperature > 0)) {
-                    return Airbus_FMA.MODE_STATE.ENGAGED;
-                }
-                else if ((SimVar.GetSimVarValue("L:AIRLINER_V2_SPEED", "Number") > 0) && (Airbus_FMA.CurrentPlaneState.flapsHandlePercent != 0)) {
-                    return Airbus_FMA.MODE_STATE.ARMED;
+                    SRSEnabled = true;
                 }
             }
             else if (Airbus_FMA.CurrentPlaneState.flightPhase == FlightPhase.FLIGHT_PHASE_GOAROUND) {
                 if ((Airbus_FMA.CurrentPlaneState.highestThrottleDetent == ThrottleMode.TOGA) &&
                     (Airbus_FMA.CurrentPlaneState.flapsHandlePercent != 0)) {
-                    return Airbus_FMA.MODE_STATE.ENGAGED;
+                        SRSEnabled = true;
+                        return Airbus_FMA.MODE_STATE.ENGAGED;
                 }
+            }
+            if (Airbus_FMA.CurrentPlaneState.flightPhase != FlightPhase.FLIGHT_PHASE_TAKEOFF) {
+                SRSEnabled = false;
+            }
+            if (SRSEnabled) {
+                return Airbus_FMA.MODE_STATE.ENGAGED;
             }
             return Airbus_FMA.MODE_STATE.NONE;
         }
         static GetModeState_ALT() {
             if (Airbus_FMA.CurrentPlaneState.anyAutoPilotsActive && Airbus_FMA.CurrentPlaneState.autoPilotAltitudeLockActive && Airbus_FMA.CurrentPlaneState.anyFlightDirectorsActive) {
-                if (Airbus_FMA.CurrentPlaneState.autoPilotAltitudeArmed) {
-                    return Airbus_FMA.MODE_STATE.ARMED;
+                var diffAlt = Math.abs(Airbus_FMA.CurrentPlaneState.autoPilotAltitudeLockValue - Airbus_FMA.CurrentPlaneState.altitude);
+                if (diffAlt <= Airbus_FMA.Definitions.ALT_ENGAGED_RANGE) {
+                    this._lastALTMode = Airbus_FMA.MODE_STATE.ENGAGED;
                 }
                 else {
-                    var diffAlt = Math.abs(Airbus_FMA.CurrentPlaneState.autoPilotAltitudeLockValue - Airbus_FMA.CurrentPlaneState.altitude);
-                    if (diffAlt <= Airbus_FMA.Definitions.ALT_ENGAGED_RANGE) {
-                        this._lastALTMode = Airbus_FMA.MODE_STATE.ENGAGED;
-                    }
-                    else {
-                        if (this._lastALTMode == Airbus_FMA.MODE_STATE.ENGAGED) {
-                            if ((diffAlt - Airbus_FMA.Definitions.ALT_ENGAGED_RANGE) > 50) {
-                                this._lastALTMode = Airbus_FMA.MODE_STATE.CAPTURED;
-                            }
-                        }
-                        else {
+                      if (this._lastALTMode == Airbus_FMA.MODE_STATE.ENGAGED) {
+                         if ((diffAlt - Airbus_FMA.Definitions.ALT_ENGAGED_RANGE) > 50) {
                             this._lastALTMode = Airbus_FMA.MODE_STATE.CAPTURED;
                         }
+                      }
+                      else {
+                        this._lastALTMode = Airbus_FMA.MODE_STATE.CAPTURED;
                     }
-                    return this._lastALTMode;
-                }
+                 }
+                return this._lastALTMode;
             }
             return Airbus_FMA.MODE_STATE.NONE;
         }
