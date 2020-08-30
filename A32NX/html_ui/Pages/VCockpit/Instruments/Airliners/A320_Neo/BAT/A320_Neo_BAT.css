@@ -20,7 +20,11 @@
   height: 100%; }
   #Electricity[state=off] {
     display: none; }
-
+#AlwayOn {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
 @font-face {
   font-family: "Roboto";
   src: url("/Fonts/RobotoMono-Medium.ttf") format("truetype");
