@@ -67,7 +67,6 @@ var A320_Neo_BRK;
         }
         Update() {
             super.Update();
-            
             var currentPKGBrakeState = SimVar.GetSimVarValue("BRAKE PARKING POSITION", "Bool");
             if (this.topGauge != null) {
                 if(SimVar.GetSimVarValue("L:DCPowerAvailable","Bool")){

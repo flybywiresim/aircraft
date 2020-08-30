@@ -15,12 +15,19 @@
   width: 100%;
   z-index: 10; }
 
-#Electricity {
+#AlwaysOn {
   width: 100%;
   height: 100%; }
-  #Electricity[state=off] {
-    /*JZ REMOVED (Display stays on after POwer supply off) */
-    display: none; }
+
+  
+#overlay {
+    opacity: 0.3;
+    background-color: black;
+    height: 100%;
+    width: 100%;
+}
+
+
 #Unit {
    fill: #009696;
    font-size: 40px;} /* JZ ADDED */
@@ -92,4 +99,3 @@ a320-neo-brk {
     fill: none;
     stroke: lime;
     stroke-width: 32px; }
-

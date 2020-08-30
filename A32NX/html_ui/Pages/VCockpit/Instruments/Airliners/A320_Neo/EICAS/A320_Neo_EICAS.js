@@ -35,13 +35,22 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         this.selfTestTimer = -1;
         this.selfTestTimerStarted = false;
         this.doorPageActivated = false;
+        this.EngineStarter = 0;
+        this.EngineStart == 0
         this.electricity = this.querySelector("#Electricity");
         this.changePage("DOOR"); // MODIFIED
         
-        SimVar.SetSimVarValue("POTENTIOMETER:7","FLOAT64",0);
-        SimVar.SetSimVarValue("POTENTIOMETER:14","FLOAT64",0);
-        SimVar.SetSimVarValue("POTENTIOMETER:16","FLOAT64",0);
-        SimVar.SetSimVarValue("POTENTIOMETER:15","FLOAT64",1);
+        SimVar.SetSimVarValue("LIGHT POTENTIOMETER:7","FLOAT64",0);
+        SimVar.SetSimVarValue("LIGHT POTENTIOMETER:14","FLOAT64",0);
+        SimVar.SetSimVarValue("LIGHT POTENTIOMETER:15","FLOAT64",0);
+        SimVar.SetSimVarValue("LIGHT POTENTIOMETER:16","FLOAT64",0);        
+        SimVar.SetSimVarValue("LIGHT POTENTIOMETER:17","FLOAT64",0);
+        SimVar.SetSimVarValue("LIGHT POTENTIOMETER:18","FLOAT64",0);
+        SimVar.SetSimVarValue("LIGHT POTENTIOMETER:19","FLOAT64",0);
+        SimVar.SetSimVarValue("LIGHT POTENTIOMETER:20","FLOAT64",0);
+        SimVar.SetSimVarValue("LIGHT POTENTIOMETER:21","FLOAT64",0);
+        SimVar.SetSimVarValue("LIGHT POTENTIOMETER:22","FLOAT64",0);
+        SimVar.SetSimVarValue("LIGHT POTENTIOMETER:23","FLOAT64",0);
     }
     onUpdate(_deltaTime) {
         super.onUpdate(_deltaTime);
@@ -53,7 +62,11 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         var apuOn = SimVar.GetSimVarValue("L:APU_GEN_ONLINE", "bool");
 
         var isACPowerAvailable = engineOn || apuOn || externalPower;
-        var isDCPowerAvailable = isACPowerAvailable || (SimVar.GetSimVarValue("ELECTRICAL MASTER BATTERYELECTRICAL MAIN BUS VOLTAGE","Volts")>=25);
+        var DCBus = false;
+        if(SimVar.GetSimVarValue("ELECTRICAL MAIN BUS VOLTAGE","Volts")>=20){
+            DCBus = true;
+        }
+        var isDCPowerAvailable = isACPowerAvailable || DCBus;
         if(isDCPowerAvailable){
             SimVar.SetSimVarValue("L:DCPowerAvailable","bool",1);   //True if any AC|DC bus is online
         }
@@ -97,6 +110,19 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
                 this.externalPowerWhenApuMasterOnTimer = 85;
             }
 
+        }
+        //fixed ecam page not switching to engine 2 if starter is set to off
+        if(this.EngineStart == 0 && this.EngineStarter < 2 && SimVar.GetSimVarValue("GENERAL ENG STARTER")){
+            this.changePage("Engine");
+            this.EngineStarter += 1;
+        }
+        if(this.EngineStarter == 2){
+            this.EngineStarter = 0;
+            this.EngineStart = 1;
+        }
+        if((SimVar.GetSimVarValue("GENERAL ENG STARTER"),"Bool") == 0){
+            this.EngineStart = 0;
+            this.EngineStarter = 0;
         }
 
         if (this.externalPowerWhenApuMasterOnTimer >= 0) {  
