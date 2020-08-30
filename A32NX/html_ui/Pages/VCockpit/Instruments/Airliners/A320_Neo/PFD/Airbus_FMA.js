@@ -669,7 +669,7 @@ var Airbus_FMA;
 			return false;
         }
         IsActive_MACH() {
-			if (Airbus_FMA.CurrentPlaneState.autoPilotMachModeActive && Airbus_FMA.CurrentPlaneState.autoPilotThrottleActive) {
+			if (Airbus_FMA.CurrentPlaneState.autoPilotMachModeActive && Airbus_FMA.CurrentPlaneState.autoPilotThrottleActive && Airbus_FMA.CurrentPlaneState.radioAltitude > 1.5) {
 				if (AltCaptured) {
 					return true;
 				}
