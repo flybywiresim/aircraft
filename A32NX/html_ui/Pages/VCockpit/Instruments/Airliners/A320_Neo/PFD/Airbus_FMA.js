@@ -1079,15 +1079,19 @@ var Airbus_FMA;
             return Airbus_FMA.MODE_STATE.NONE;
         }
         IsActive_OPCLB() {
-            if (Simplane.getAutoPilotAltitudeSelected() && Airbus_FMA.CurrentPlaneState.anyFlightDirectorsActive) {
-                if (Simplane.getVerticalSpeed() > 100) {
+            if ((Simplane.getAutoPilotAltitudeSelected() || Simplane.getAutoPilotAltitudeArmed()) && Airbus_FMA.CurrentPlaneState.anyFlightDirectorsActive && Airbus_FMA.CurrentPlaneState.anyAutoPilotsActive) {
+                let targetAltitude = Simplane.getAutoPilotAltitudeLockValue("feets");
+                let altitude = Simplane.getAltitude();
+                if (altitude < targetAltitude - 100) {
                     return true;
                 }
             }
         }
         IsActive_OPDES() {
-            if (Simplane.getAutoPilotAltitudeSelected() && Airbus_FMA.CurrentPlaneState.anyFlightDirectorsActive) {
-                if (Simplane.getVerticalSpeed() < -100) {
+            if ((Simplane.getAutoPilotAltitudeSelected() || Simplane.getAutoPilotAltitudeArmed()) && Airbus_FMA.CurrentPlaneState.anyFlightDirectorsActive && Airbus_FMA.CurrentPlaneState.anyAutoPilotsActive) {
+                let targetAltitude = Simplane.getAutoPilotAltitudeLockValue("feets");
+                let altitude = Simplane.getAltitude();
+                if (altitude > targetAltitude + 100) {
                     return true;
                 }
             }
