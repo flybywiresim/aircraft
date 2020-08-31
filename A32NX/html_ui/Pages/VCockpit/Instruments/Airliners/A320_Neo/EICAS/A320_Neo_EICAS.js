@@ -112,7 +112,7 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
 
         }
         //fixed ecam page not switching to engine 2 if starter is set to off
-        if(this.EngineStart == 0 && this.EngineStarter < 2 && SimVar.GetSimVarValue("GENERAL ENG STARTER")){
+        if(this.EngineStart == 0 && this.EngineStarter < 2 && SimVar.GetSimVarValue("GENERAL ENG STARTER", "Bool")){
             this.changePage("Engine");
             this.EngineStarter += 1;
         }
@@ -120,7 +120,7 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
             this.EngineStarter = 0;
             this.EngineStart = 1;
         }
-        if((SimVar.GetSimVarValue("GENERAL ENG STARTER"),"Bool") == 0){
+        if(SimVar.GetSimVarValue("GENERAL ENG STARTER","Bool") == false){
             this.EngineStart = 0;
             this.EngineStarter = 0;
         }
