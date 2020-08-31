@@ -376,7 +376,7 @@ class A320_Neo_MFD_Map extends MapInstrumentElement {
         this.zoomRanges = [10, 20, 40, 80, 160, 320];
     }
     updateTopOfDescent() {
-        let showTopOfDescent = true;
+        let showTopOfDescent = SimVar.GetSimVarValue("L:AIRLINER_FMS_SHOW_TOP_DSCNT", "number") === 1;
         if (showTopOfDescent) {
             if (!this.topOfDescentIcon) {
                 this.topOfDescentIcon = new SvgTopOfXElement("a320-neo-top-of-descent", "ICON_TOP_DSCNT_WHITE");
@@ -397,7 +397,7 @@ class A320_Neo_MFD_Map extends MapInstrumentElement {
         }
     }
     updateTopOfClimb() {
-        let showTopOfClimb = true;
+        let showTopOfClimb = SimVar.GetSimVarValue("L:AIRLINER_FMS_SHOW_TOP_CLIMB", "number") === 1;
         if (showTopOfClimb) {
             if (!this.topOfClimbIcon) {
                 this.topOfClimbIcon = new SvgTopOfXElement("a320-neo-top-of-climb", "ICON_LEVEL_OFF_BLUE");
