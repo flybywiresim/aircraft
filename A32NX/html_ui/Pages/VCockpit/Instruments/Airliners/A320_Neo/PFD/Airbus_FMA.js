@@ -1510,7 +1510,7 @@ var Airbus_FMA;
         }
         updateRow2(_deltaTime) {
             var targetState = Column4.ROW_2_STATE.NONE;
-            if (Airbus_FMA.CurrentPlaneState.autoPilotAPPRActive && (Airbus_FMA.CurrentPlaneState.isILSApproachActive || Airbus_FMA.CurrentPlaneState.isNonILSApproachActive) && Airbus_FMA.CurrentPlaneState.anyAutoPilotsActive) {
+            if (Simplane.getAutoPilotAPPRActive() && (Airbus_FMA.CurrentPlaneState.isILSApproachActive || Airbus_FMA.CurrentPlaneState.isNonILSApproachActive) && Airbus_FMA.CurrentPlaneState.anyAutoPilotsActive) {
                 if (Airbus_FMA.CurrentPlaneState.bothAutoPilotsActive) {
                     targetState = Column4.ROW_2_STATE.DUAL;
                 }
