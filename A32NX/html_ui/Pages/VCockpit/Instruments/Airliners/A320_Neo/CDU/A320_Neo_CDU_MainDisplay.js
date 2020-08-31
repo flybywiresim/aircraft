@@ -33,8 +33,8 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this.onFpln = () => { CDUFlightPlanPage.ShowPage(this); };
         this.onRad = () => { CDUNavRadioPage.ShowPage(this); };
         this.onFuel = () => { CDUFuelPredPage.ShowPage(this); };
-        this.onMcdu = () => { CDUMenuPage.ShowPage(this) };
         CDUIdentPage.ShowPage(this);
+        this.electricity = this.querySelector("#Electricity")
     }
     onPowerOn() {
         super.onPowerOn();
@@ -51,7 +51,19 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     Update() {
         super.Update();
         this.updateAutopilot();
+        this.updateADIRS();
+
+        this.updateScreenState();
     }
+
+    updateScreenState() {
+        if (SimVar.GetSimVarValue("L:ACPowerAvailable","bool")) {
+            this.electricity.style.display = "block";
+        } else {
+            this.electricity.style.display = "none";
+        }
+    }
+
     getClbManagedSpeed() {
         let maxSpeed = Infinity;
         if (isFinite(this.v2Speed)) {
@@ -668,6 +680,55 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             }
             this.updateAutopilotCooldown = this._apCooldown;
         }
+    }
+    updateADIRS() {
+
+        //Get the time since last update
+        var now = Date.now();
+        if (this.lastTime == null) this.lastTime = now;
+        var deltaTime = now - this.lastTime;
+        this.lastTime = now;
+
+        var AllADIRSOn = ((SimVar.GetSimVarValue("L:A320_Neo_ADIRS_KNOB_1", "Enum") >= 1) && (SimVar.GetSimVarValue("L:A320_Neo_ADIRS_KNOB_2", "Enum") >= 1) && (SimVar.GetSimVarValue("L:A320_Neo_ADIRS_KNOB_3", "Enum") >= 1));
+        var SomeADIRSOn = ((SimVar.GetSimVarValue("L:A320_Neo_ADIRS_KNOB_1", "Enum") >= 1) || (SimVar.GetSimVarValue("L:A320_Neo_ADIRS_KNOB_2", "Enum") >= 1) || (SimVar.GetSimVarValue("L:A320_Neo_ADIRS_KNOB_3", "Enum") >= 1));
+        var ADIRSState = SimVar.GetSimVarValue("L:A320_Neo_ADIRS_STATE", "Enum");
+        var ADIRSTimer = SimVar.GetSimVarValue("L:A320_Neo_ADIRS_TIME", "Seconds");
+
+        if (!SomeADIRSOn && ADIRSState != 0) {
+            //Turn off ADIRS
+            SimVar.SetSimVarValue("L:A320_Neo_ADIRS_STATE", "Enum", 0);
+            SimVar.SetSimVarValue("L:A320_Neo_ADIRS_IN_ALIGN", "Bool", 0);
+            ADIRSState = 0;
+        }
+
+        if (AllADIRSOn && ADIRSState == 0) {
+            //Start ADIRS Alignment
+            SimVar.SetSimVarValue("L:A320_Neo_ADIRS_STATE", "Enum", 1);
+            SimVar.SetSimVarValue("L:A320_Neo_ADIRS_IN_ALIGN", "Bool", 1); // DELETE AFTER MCDU IRS INIT IS IMPLEMENTED
+            ADIRSState = 1;
+            let currentLatitude = SimVar.GetSimVarValue("GPS POSITION LAT", "degree latitude")
+            ADIRSTimer = Math.abs(1.14 * currentLatitude) * 10; //ADIRS ALIGN TIME DEPENDING ON LATITUDE.
+            SimVar.SetSimVarValue("L:A320_Neo_ADIRS_TIME", "Seconds", ADIRSTimer);
+        }
+
+        if (ADIRSState == 1 && SimVar.GetSimVarValue("L:A320_Neo_ADIRS_IN_ALIGN", "Bool") == 1) {
+            if (ADIRSTimer > 0) {
+                ADIRSTimer -= deltaTime/1000;
+                SimVar.SetSimVarValue("L:A320_Neo_ADIRS_TIME", "Seconds", ADIRSTimer);
+                if (ADIRSTimer <= 0) {
+                    //ADIRS Alignment Completed
+                    SimVar.SetSimVarValue("L:A320_Neo_ADIRS_STATE", "Enum", 2);
+                    SimVar.SetSimVarValue("L:A320_Neo_ADIRS_IN_ALIGN", "Bool", 0);
+                }
+            }
+            
+        }
+
+        //Align light
+        SimVar.SetSimVarValue("L:A320_Neo_ADIRS_ALIGN_LIGHT_1", "Bool", (SimVar.GetSimVarValue("L:A320_Neo_ADIRS_KNOB_1", "Enum") == 1 && ADIRSState != 2) );
+        SimVar.SetSimVarValue("L:A320_Neo_ADIRS_ALIGN_LIGHT_2", "Bool", (SimVar.GetSimVarValue("L:A320_Neo_ADIRS_KNOB_2", "Enum") == 1 && ADIRSState != 2) );
+        SimVar.SetSimVarValue("L:A320_Neo_ADIRS_ALIGN_LIGHT_3", "Bool", (SimVar.GetSimVarValue("L:A320_Neo_ADIRS_KNOB_3", "Enum") == 1 && ADIRSState != 2) );
+        
     }
 }
 A320_Neo_CDU_MainDisplay._v1sConf1 = [

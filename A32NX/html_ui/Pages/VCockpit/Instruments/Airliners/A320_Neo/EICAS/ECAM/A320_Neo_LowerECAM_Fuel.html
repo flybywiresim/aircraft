@@ -1,0 +1,164 @@
+﻿<link rel="stylesheet" href="./A320_Neo_LowerECAM_Fuel.css" />
+
+<script type="text/html" id="LowerECAMFuelTemplate">
+    <svg viewBox="0 0 600 600" xmlns="http://www.w3.org/2000/svg">
+        <g id="wings">
+            <path class="MainShape" d="M300 300 l-50 0 l-150 30 l2 50 l396 0 l2 -50 l-150 -30Z" />
+            <line class="MainShape" x1="250" y1="300" x2="240" y2="380" />
+            <line class="MainShape" x1="350" y1="300" x2="360" y2="380" />
+            <line class="MainShape" x1="150" y1="322" x2="152" y2="380" />
+            <line class="MainShape" x1="450" y1="322" x2="448" y2="380" />
+        </g>
+
+        <!--APU-->
+        <g id="APU">
+            <text x="165" y="250" text-anchor="end" alignment-baseline="central">APU</text>
+            <line x1="182.5" y1="242.5" x2="182.5" y2="257.5"></line>
+            <line x1="182.5" y1="242.5" x2="167.5" y2="250"></line>
+            <line x1="182.5" y1="257.5" x2="167.5" y2="250"></line>
+        </g>
+
+        <!--Left-->
+        <g id="leftPipes">
+            <line class="FlowShape" x1="190" y1="300" x2="190" y2="185" />
+            <line class="FlowShape" x1="190" y1="250" x2="275" y2="250" />
+            <line class="FlowShape" x1="275" y1="250" x2="275" y2="290" />
+            <line class="FlowShape" x1="190" y1="275" x2="220" y2="275" />
+            <line class="FlowShape" x1="220" y1="275" x2="220" y2="298" />
+            <line class="MainShape" x1="210" y1="160" x2="260" y2="150" />
+        </g>
+
+        <g id="leftValve_On">
+            <circle cx="190" cy="210" r="15" />
+            <line x1="190" y1="195" x2="190" y2="225" />
+        </g>
+        <g id="leftValve_Off">
+            <circle cx="190" cy="210" r="15" />
+            <line x1="175" y1="210" x2="205" y2="210" />
+        </g>
+
+        <g id="leftPump1_Off">
+            <rect class="ValvePumpInactive" x="177.5" y="300" width="25" height="25" />
+            <line class="ValvePumpInactive" x1="182.5" y1="312.5" x2="197.5" y2="312.5" />
+        </g>
+        <g id="leftPump1_On">
+            <rect x="177.5" y="300" width="25" height="25" />
+            <line x1="190" y1="300" x2="190" y2="325" />
+        </g>
+
+        <g id="leftPump2_Off">
+            <rect class="ValvePumpInactive" x="207.5" y="300" width="25" height="25" />
+            <line class="ValvePumpInactive" x1="212.5" y1="312.5" x2="227.5" y2="312.5" />
+        </g>
+        <g id="leftPump2_On">
+            <rect x="207.5" y="300" width="25" height="25" />
+            <line x1="220" y1="300" x2="220" y2="325" />
+        </g>
+
+        <!--Right-->
+        <g id="rightPipes">
+            <line class="FlowShape" x1="410" y1="300" x2="410" y2="185" />
+            <line class="FlowShape" x1="410" y1="250" x2="325" y2="250" />
+            <line class="FlowShape" x1="325" y1="250" x2="325" y2="290" />
+            <line class="FlowShape" x1="410" y1="275" x2="380" y2="275" />
+            <line class="FlowShape" x1="380" y1="275" x2="380" y2="298" />
+            <line class="MainShape" x1="390" y1="160" x2="340" y2="150" />
+        </g>
+
+        <g id="rightValve_On">
+            <circle cx="410" cy="210" r="15" />
+            <line x1="410" y1="195" x2="410" y2="225" />
+        </g>
+        <g id="rightValve_Off">
+            <circle cx="410" cy="210" r="15" />
+            <line x1="395" y1="210" x2="425" y2="210" />
+        </g>
+
+        <g id="rightPump1_Off">
+            <rect class="ValvePumpInactive" x="367.5" y="300" width="25" height="25" />
+            <line class="ValvePumpInactive" x1="372.5" y1="312.5" x2="387.5" y2="312.5" />
+        </g>
+        <g id="rightPump1_On">
+            <rect x="367.5" y="300" width="25" height="25" />
+            <line x1="380" y1="300" x2="380" y2="325" />
+        </g>
+
+        <g id="rightPump2_Off">
+            <rect class="ValvePumpInactive" x="397.5" y="300" width="25" height="25" />
+            <line class="ValvePumpInactive" x1="402.5" y1="312.5" x2="417.5" y2="312.5" />
+        </g>
+        <g id="rightPump2_On">
+            <rect x="397.5" y="300" width="25" height="25" />
+            <line x1="410" y1="300" x2="410" y2="325" />
+        </g>
+
+        <!--Middle-->
+        <g id="middleValve_On">
+            <circle cx="300" cy="250" r="15" />
+            <line x1="285" y1="250" x2="315" y2="250" />
+        </g>
+
+        <g id="middleValve_Off">
+            <circle cx="300" cy="250" r="15" />
+            <line x1="300" y1="235" x2="300" y2="265" />
+        </g>
+
+        <g id="middlePump1_Off">
+            <rect class="ValvePumpInactive" x="262.5" y="290" width="25" height="25" />
+            <line class="ValvePumpInactive" x1="267.5" y1="302.5" x2="282.5" y2="302.5" />
+        </g>
+        <g id="middlePump1_On">
+            <rect x="262.5" y="290" width="25" height="25" />
+            <line x1="275" y1="290" x2="275" y2="315" />
+        </g>
+
+        <g id="middlePump2_Off">
+            <rect class="ValvePumpInactive" x="312.5" y="290" width="25" height="25" />
+            <line class="ValvePumpInactive" x1="317.5" y1="302.5" x2="332.5" y2="302.5" />
+        </g>
+        <g id="middlePump2_On">
+            <rect x="312.5" y="290" width="25" height="25" />
+            <line x1="325" y1="290" x2="325" y2="315" />
+        </g>
+
+        <g id="FuelFlow">
+            <text id="ffTitleTop" class="Title Small" x="90" y="430" text-anchor="start">F.FLOW</text>
+            <text id="ffTitleBottom" class="Title Small" x="105" y="445" text-anchor="start">1+2</text>
+            <text id="ffSeparator" class="Title Small" x="145" y="445">:</text>
+            <text id="ffValue" class="Value Small" x="230" y="445" text-anchor="end">56</text>
+            <text id="ffUnit" class="Unit Small" x="240" y="445" text-anchor="start">KG/MIN</text>
+        </g>
+
+        <g id="fob">
+            <text id="fobTitle" class="Title Large" x="90" y="475" text-anchor="start">FOB</text>
+            <text id="fobSeparator" class="Title Large" x="145" y="475">:</text>
+            <text id="fobValue" class="Value" x="230" y="475" font-size="18" text-anchor="end">1000</text>
+            <text id="fobUnit" class="Unit" x="240" y="475" font-size="16" text-anchor="start">KG</text>
+            <rect id="fobBorder" class="MainShape" x="80" y="455" width="190" height="30" />
+        </g>
+
+        <!--Texts-->
+        <g id="texts">
+            <text id="pageTitle" class="Title Large" x="125" y="152" text-anchor="middle" alignment-baseline="central" text-decoration="underline">FUEL</text>
+
+            <text id="middleTitle1" class="Title Small" x="300" y="150" text-anchor="middle" alignment-baseline="central">F.USED</text>
+            <text id="middleTitle2" class="Title Small" x="300" y="165" text-anchor="middle" alignment-baseline="central">1+2</text>
+            <text id="middleFuelValue" class="Value Small" x="300" y="180" text-anchor="middle" alignment-baseline="central">1400</text>
+            <text id="middleFuelUnit" class="Unit Small" x="300" y="195" text-anchor="middle" alignment-baseline="central">KG</text>
+
+            <text id="rightValveId" class="Title Large" x="190" y="160" text-anchor="middle">1</text>
+            <text id="leftValveId" class="Title Large" x="410" y="160" text-anchor="middle">2</text>
+
+            <text id="leftValveValue" class="Value Large" x="190" y="180" text-anchor="middle">700</text>
+            <text id="rightValveValue" class="Value Large" x="410" y="180" text-anchor="middle">700</text>
+
+            <text id="leftOuterTankValue" class="Value Large" x="125" y="350" text-anchor="middle" alignment-baseline="central">100</text>
+            <text id="leftInnerTankValue" class="Value Large" x="200" y="345" text-anchor="middle" alignment-baseline="central">200</text>
+            <text id="centerTankValue" class="Value Large" x="300" y="340" text-anchor="middle" alignment-baseline="central">300</text>
+            <text id="rightInnerTankValue" class="Value Large" x="400" y="345" text-anchor="middle" alignment-baseline="central">400</text>
+            <text id="rightOuterTankValue" class="Value Large" x="475" y="350" text-anchor="middle" alignment-baseline="central">500</text>
+        </g>
+    </svg>
+</script>
+
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/A320_Neo/EICAS/ECAM/A320_Neo_LowerECAM_Fuel.js"></script>

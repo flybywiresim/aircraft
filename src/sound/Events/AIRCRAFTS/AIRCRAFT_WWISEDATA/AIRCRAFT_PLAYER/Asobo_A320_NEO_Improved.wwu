@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<WwiseDocument Type="WorkUnit" ID="{662E2C1B-6F57-46BC-90E1-9E4CE64174C6}" SchemaVersion="97">
+	<Events>
+		<WorkUnit Name="Asobo_A320_NEO_Improved" ID="{662E2C1B-6F57-46BC-90E1-9E4CE64174C6}" PersistMode="Standalone">
+			<ChildrenList>
+				<Event Name="Play_Asobo_A320_NEO_light_switch_seatbelt" ID="{FCAF9BD1-3F13-4779-BD27-5C7D4BAE4AC9}">
+					<ChildrenList>
+						<Action Name="" ID="{4E83A951-2A8E-4EFC-866F-3437BFE0C0A4}" ShortID="158550068">
+							<PropertyList>
+								<Property Name="ActionType" Type="int16" Value="1"/>
+							</PropertyList>
+							<ReferenceList>
+								<Reference Name="Target">
+									<ObjectRef Name="seatbelt" ID="{9207D07D-554E-4478-98E7-2347C7C4E359}" WorkUnitID="{27D32D8D-6C92-4542-9BFC-F0D08111F92F}"/>
+								</Reference>
+							</ReferenceList>
+						</Action>
+					</ChildrenList>
+				</Event>
+			</ChildrenList>
+		</WorkUnit>
+	</Events>
+</WwiseDocument>

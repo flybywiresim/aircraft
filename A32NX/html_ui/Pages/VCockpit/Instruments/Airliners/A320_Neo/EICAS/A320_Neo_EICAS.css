@@ -1,0 +1,202 @@
+﻿:root {
+  --bodyHeightScale: 1; }
+
+@keyframes TemporaryShow {
+  0%, 100% {
+    visibility: visible; } }
+
+@keyframes TemporaryHide {
+  0%, 100% {
+    visibility: hidden; } }
+
+#highlight {
+  position: absolute;
+  height: 100%;
+  width: 100%;
+  z-index: 10; }
+
+#Electricity {
+  width: 100%;
+  height: 100%; }
+  #Electricity[state=off] {
+    display: none; }
+
+@font-face {
+  font-family: "Roboto";
+  src: url("/Fonts/RobotoMono-Medium.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal; }
+
+@font-face {
+  font-family: "Roboto-Light";
+  src: url("/Fonts/RobotoMono-Light.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal; }
+
+@font-face {
+  font-family: "Roboto-Bold";
+  src: url("/Fonts/RobotoMono-Bold.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal; }
+
+:root {
+  --ecamDefaultColour: white;
+  --ecamUnitsColour: #009696;
+  --ecamValueColour: green;
+  --ecamWarningColour: #db7200;
+  --ecamDangerColour: red;
+  --ecamInactiveColour: #db7200;
+  --ecamSeparatorsColour: white; }
+  :root .Separator {
+    stroke: #3c3c3c;
+    stroke-width: 4;
+    fill: none; }
+  :root div {
+    font-family: Roboto-Bold; }
+  :root text {
+    font-family: Roboto-Bold; }
+  :root #PageTitle {
+    fill: var(--ecamDefaultColour);
+    font-size: 25px;
+    text-decoration: underline; }
+
+a320-neo-ecam-gauge {
+  display: inline-block;
+  margin-left: 15%;
+  width: calc(var(--viewportHeightRatio) * (640px / 21.6) * var(--currentPageHeight) / 100);
+  height: calc(var(--viewportHeightRatio) * (640px / 21.6) * var(--currentPageHeight) / 100); }
+  a320-neo-ecam-gauge text {
+    fill: var(--ecamDefaultColour);
+    font-size: 12px;
+    text-align: center;
+    text-anchor: middle; }
+  a320-neo-ecam-gauge #RootSVG {
+    overflow: visible;
+    width: 100%;
+    height: 100%; }
+    a320-neo-ecam-gauge #RootSVG #MainArc {
+      fill: none; }
+    a320-neo-ecam-gauge #RootSVG #MainArc.active {
+      stroke: var(--ecamDefaultColour); }
+    a320-neo-ecam-gauge #RootSVG #MainArc.inactive {
+      stroke: var(--ecamInactiveColour); }
+    a320-neo-ecam-gauge #RootSVG #RedArc {
+      fill: none;
+      stroke: var(--ecamDangerColour); }
+    a320-neo-ecam-gauge #RootSVG #RedArc.active {
+      display: block; }
+    a320-neo-ecam-gauge #RootSVG #RedArc.inactive {
+      display: none; }
+    a320-neo-ecam-gauge #RootSVG #GraduationsGroup line.InnerMarker {
+      stroke: var(--ecamDefaultColour); }
+    a320-neo-ecam-gauge #RootSVG #GraduationsGroup line.OuterMarker {
+      stroke: #db7200; }
+    a320-neo-ecam-gauge #RootSVG #GraduationsGroup.active {
+      display: block; }
+    a320-neo-ecam-gauge #RootSVG #GraduationsGroup.inactive {
+      display: none; }
+    a320-neo-ecam-gauge #RootSVG #CursorGroup {
+      width: 100%;
+      height: 100%; }
+      a320-neo-ecam-gauge #RootSVG #CursorGroup line {
+        stroke: var(--ecamValueColour);
+        stroke-width: 3; }
+      a320-neo-ecam-gauge #RootSVG #CursorGroup path {
+        fill: none;
+        stroke: var(--ecamDefaultColour);
+        stroke-width: 1px; }
+      a320-neo-ecam-gauge #RootSVG #CursorGroup .active {
+        display: block; }
+      a320-neo-ecam-gauge #RootSVG #CursorGroup .warning {
+        display: block;
+        stroke: var(--ecamWarningColour); }
+      a320-neo-ecam-gauge #RootSVG #CursorGroup .danger {
+        display: block;
+        stroke: var(--ecamDangerColour); }
+      a320-neo-ecam-gauge #RootSVG #CursorGroup .inactive {
+        display: none; }
+    a320-neo-ecam-gauge #RootSVG #OuterDynamicArcObject {
+      fill: none;
+      stroke: var(--ecamValueColour);
+      stroke-width: 4px; }
+    a320-neo-ecam-gauge #RootSVG #OuterDynamicArcObject.active {
+      display: block; }
+    a320-neo-ecam-gauge #RootSVG #OuterDynamicArcObject.inactive {
+      display: none; }
+    a320-neo-ecam-gauge #RootSVG #CurrentValue {
+      text-align: right;
+      text-anchor: end; }
+    a320-neo-ecam-gauge #RootSVG #CurrentValue.active {
+      fill: var(--ecamValueColour);
+      font-size: 15px; }
+    a320-neo-ecam-gauge #RootSVG #CurrentValue.warning {
+      fill: var(--ecamWarningColour);
+      font-size: 15px; }
+    a320-neo-ecam-gauge #RootSVG #CurrentValue.danger {
+      fill: var(--ecamDangerColour);
+      font-size: 15px; }
+    a320-neo-ecam-gauge #RootSVG #CurrentValue.inactive {
+      fill: var(--ecamInactiveColour);
+      font-size: 20px;
+      letter-spacing: 5px; }
+    a320-neo-ecam-gauge #RootSVG #CurrentValueBorder {
+      fill: none;
+      stroke: grey;
+      stroke-width: 3px; }
+    a320-neo-ecam-gauge #RootSVG #ExtraMessage {
+      width: 100%;
+      height: 100%; }
+      a320-neo-ecam-gauge #RootSVG #ExtraMessage rect {
+        fill: black;
+        stroke: grey;
+        stroke-width: 3px; }
+      a320-neo-ecam-gauge #RootSVG #ExtraMessage text {
+        text-align: center;
+        text-anchor: middle;
+        fill: var(--ecamValueColour);
+        font-size: 15px; }
+      a320-neo-ecam-gauge #RootSVG #ExtraMessage .active {
+        display: block; }
+      a320-neo-ecam-gauge #RootSVG #ExtraMessage .inactive {
+        display: none; }
+
+a320-neo-eicas-element {
+  width: 100%;
+  height: 100%;
+  background-color: black;
+  font-family: Roboto-Bold;
+  position: relative;
+  overflow: hidden; }
+  a320-neo-eicas-element #highlight {
+    position: absolute;
+    height: 100%;
+    width: 100%;
+    z-index: 10; }
+  a320-neo-eicas-element #Mainframe {
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+    position: relative; }
+    a320-neo-eicas-element #Mainframe #TopScreen {
+      transform: rotateX(0);
+      top: 0%;
+      left: 0%;
+      width: 100%;
+      height: 100%;
+      position: relative;
+      display: none; }
+    a320-neo-eicas-element #Mainframe #BottomScreen {
+      transform: rotateX(0);
+      top: 5%;
+      left: 0%;
+      width: 100%;
+      height: 100%;
+      position: relative;
+      display: none; }
+  a320-neo-eicas-element[index="1"] #Mainframe #TopScreen {
+    display: block; }
+  a320-neo-eicas-element[index="2"] #Mainframe #BottomScreen {
+    display: block; }
+
