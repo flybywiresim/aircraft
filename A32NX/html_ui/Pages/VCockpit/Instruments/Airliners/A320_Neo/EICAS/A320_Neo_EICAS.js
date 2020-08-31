@@ -170,7 +170,6 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
             let starterTwo = SimVar.GetSimVarValue("GENERAL ENG STARTER:2", "Bool");
             let splrsArmed = SimVar.GetSimVarValue("SPOILERS ARMED", "Bool");
             let flapsPosition = SimVar.GetSimVarValue("FLAPS HANDLE INDEX", "Number");
-            console.log(autoBrkValue);
             // ----------- MODIFIED END --------------------//
 
             infoPanelManager.clearScreen(Airliners.EICAS_INFO_PANEL_ID.PRIMARY);
