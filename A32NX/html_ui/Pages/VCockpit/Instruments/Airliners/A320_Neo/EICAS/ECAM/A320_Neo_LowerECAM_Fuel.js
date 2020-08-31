@@ -132,6 +132,7 @@ var A320_Neo_LowerECAM_Fuel;
         updateQuantity(_elem, _simvar, _unitFactor) {
             var quantity = SimVar.GetSimVarValue(_simvar, "gallons");
             quantity *= _unitFactor;
+            quantity -= quantity % 10; //Issue 283 - Fuel should be in increments of 10
             _elem.textContent = fastToFixed(quantity, 0);
         }
         setAPUState(_isOn, _isActive, _force = false) {
