@@ -122,7 +122,7 @@
         },
         {
             "path": "html_ui/Pages/VCockpit/Instruments/Airliners/A320_Neo/CDU/A320_Neo_CDU_IdentPage.js",
-            "size": 777,
+            "size": 652,
             "date": "132402817714110148"
         },
         {
@@ -147,7 +147,7 @@
         },
         {
             "path": "html_ui/Pages/VCockpit/Instruments/Airliners/A320_Neo/CDU/A320_Neo_CDU_MainDisplay.js",
-            "size": 36526,
+            "size": 36074,
             "date": "132402817714110148"
         },
         {
@@ -237,12 +237,12 @@
         },
         {
             "path": "html_ui/Pages/VCockpit/Instruments/Airliners/A320_Neo/EICAS/A320_Neo_EICAS.html",
-            "size": 6468,
+            "size": 5471,
             "date": "132402817714110148"
         },
         {
             "path": "html_ui/Pages/VCockpit/Instruments/Airliners/A320_Neo/EICAS/A320_Neo_EICAS.js",
-            "size": 13877,
+            "size": 12915,
             "date": "132402817714110148"
         },
         {
@@ -262,37 +262,37 @@
         },
         {
             "path": "html_ui/Pages/VCockpit/Instruments/Airliners/A320_Neo/EICAS/ECAM/A320_Neo_LowerECAM_APU.css",
-            "size": 2074,
+            "size": 2001,
             "date": "132402817714110148"
         },
         {
             "path": "html_ui/Pages/VCockpit/Instruments/Airliners/A320_Neo/EICAS/ECAM/A320_Neo_LowerECAM_APU.html",
-            "size": 4397,
+            "size": 3159,
             "date": "132402817714110148"
         },
         {
             "path": "html_ui/Pages/VCockpit/Instruments/Airliners/A320_Neo/EICAS/ECAM/A320_Neo_LowerECAM_APU.js",
-            "size": 16744,
+            "size": 13229,
             "date": "132402817714110148"
         },
         {
             "path": "html_ui/Pages/VCockpit/Instruments/Airliners/A320_Neo/EICAS/ECAM/A320_Neo_LowerECAM_BLEED.css",
-            "size": 1565,
+            "size": 1390,
             "date": "132402817714110148"
         },
         {
             "path": "html_ui/Pages/VCockpit/Instruments/Airliners/A320_Neo/EICAS/ECAM/A320_Neo_LowerECAM_BLEED.html",
-            "size": 10230,
+            "size": 9950,
             "date": "132402817714110148"
         },
         {
             "path": "html_ui/Pages/VCockpit/Instruments/Airliners/A320_Neo/EICAS/ECAM/A320_Neo_LowerECAM_BLEED.js",
-            "size": 4636,
+            "size": 4479,
             "date": "132402817714110148"
         },
         {
             "path": "html_ui/Pages/VCockpit/Instruments/Airliners/A320_Neo/EICAS/ECAM/A320_Neo_LowerECAM_DOOR.css",
-            "size": 3044,
+            "size": 2470,
             "date": "132402817714110148"
         },
         {
@@ -302,7 +302,7 @@
         },
         {
             "path": "html_ui/Pages/VCockpit/Instruments/Airliners/A320_Neo/EICAS/ECAM/A320_Neo_LowerECAM_DOOR.js",
-            "size": 5268,
+            "size": 5142,
             "date": "132402817714110148"
         },
         {
@@ -372,12 +372,12 @@
         },
         {
             "path": "html_ui/Pages/VCockpit/Instruments/Airliners/A320_Neo/MFD/A320_Neo_MFD.html",
-            "size": 13691,
+            "size": 12144,
             "date": "132402817714110148"
         },
         {
             "path": "html_ui/Pages/VCockpit/Instruments/Airliners/A320_Neo/MFD/A320_Neo_MFD.js",
-            "size": 26025,
+            "size": 24863,
             "date": "132402817714110148"
         },
         {
@@ -442,7 +442,7 @@
         },
         {
             "path": "ModelBehaviorDefs/Asobo/Airliner/Airbus.xml",
-            "size": 42492,
+            "size": 42419,
             "date": "132402817714110148"
         },
         {
@@ -467,7 +467,7 @@
         },
         {
             "path": "SimObjects/AirPlanes/Asobo_A320_NEO/engines.cfg",
-            "size": 20942,
+            "size": 10386,
             "date": "132402817714110148"
         },
         {
@@ -482,7 +482,7 @@
         },
         {
             "path": "SimObjects/AirPlanes/Asobo_A320_NEO/systems.cfg",
-            "size": 18557,
+            "size": 17928,
             "date": "132402817714110148"
         },
         {
