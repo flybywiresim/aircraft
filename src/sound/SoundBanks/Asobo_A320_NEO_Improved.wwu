@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<WwiseDocument Type="WorkUnit" ID="{167C941E-BA6B-406D-B48E-F5262F7EC8A9}" SchemaVersion="97">
+	<SoundBanks>
+		<WorkUnit Name="Asobo_A320_NEO_Improved" ID="{167C941E-BA6B-406D-B48E-F5262F7EC8A9}" PersistMode="Standalone">
+			<ChildrenList>
+				<SoundBank Name="Asobo_A320_NEO_Improved" ID="{210EF042-45E5-4AF4-AE40-FE92FA016F27}">
+					<ObjectInclusionList>
+						<ObjectRef Name="Play_Asobo_A320_NEO_light_switch_seatbelt" ID="{FCAF9BD1-3F13-4779-BD27-5C7D4BAE4AC9}" WorkUnitID="{662E2C1B-6F57-46BC-90E1-9E4CE64174C6}" Origin="Manual" Filter="7"/>
+					</ObjectInclusionList>
+					<ObjectExclusionList/>
+					<GameSyncExclusionList/>
+				</SoundBank>
+			</ChildrenList>
+		</WorkUnit>
+	</SoundBanks>
+</WwiseDocument>

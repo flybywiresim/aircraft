@@ -1,5 +1,7 @@
 *
 !*/
+!/.github/**
 !/A32NX/**
+!/src/**
 !.gitignore
 .DS_Store

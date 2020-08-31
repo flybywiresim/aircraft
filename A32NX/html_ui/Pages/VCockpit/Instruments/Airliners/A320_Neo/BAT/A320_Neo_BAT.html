@@ -1,14 +1,20 @@
 ﻿<link rel="stylesheet" href="A320_Neo_BAT.css" />
 
 <script type="text/html" id="A320_Neo_BAT">
+
     <!-- <div id="Electricity" state="off"> JZ: This display is always on-->
+
+    <div id="AlwaysOn" state="on">
+
         <svg viewBox="0 0 200 100">
-            <text id="BAT1" class="value" x="75%" y="45%">0.0</text>
-            <text class="unit" x="75%" y="30%">V</text>
-            <text id="BAT2" class="value" x="75%" y="95%">0.0</text>
-            <text class="unit" x="75%" y="80%">V</text>
+            <text id="BAT1" class="value" x="85%" y="45%">0.0</text> /* Modification of position was  x="75%" y="45%"> */
+            <text class="unit" x="87%" y="24%">V</text> /* modification of position and v lowercase, was x="75%" y="30%" */
+            <text id="BAT2" class="value" x=85%" y="95%">0.0</text> /* was x="75%" y="95%" */
+            <text class="unit" x="87%" y="74%">v</text> /* modification of position and v lowercase, was x="75%" y="80%" */
         </svg>
-    <!-- </div> -->
+
+    </div>
+
 </script>
 
 <script type="text/html" import-script="/Pages/VCockpit/Instruments/Shared/Utils/RadioNav.js"></script>

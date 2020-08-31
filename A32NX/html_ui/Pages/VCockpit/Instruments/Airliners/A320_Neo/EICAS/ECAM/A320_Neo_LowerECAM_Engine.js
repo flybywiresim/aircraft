@@ -5,7 +5,9 @@ var A320_Neo_LowerECAM_Engine;
     Definitions.MIN_GAUGE_OIL = 0;
     Definitions.MAX_GAUGE_OIL = 25;
     Definitions.MIN_GAUGE_PSI = 0;
-    Definitions.MAX_GAUGE_PSI = 400;// JZ Changed from 100 to 400 as per FCOM
+
+    Definitions.MAX_GAUGE_PSI = 100;
+
     Definitions.MIN_GAUGE_PSI_RED = 0;
     Definitions.MAX_GAUGE_PSI_RED = 17;
     Definitions.MAX_GAUGE_PSI_WARNING = 25;
@@ -28,8 +30,10 @@ var A320_Neo_LowerECAM_Engine;
             TemplateElement.call(this, this.init.bind(this));
         }
         init() {
-            this.engineLeft = new EngineInfo(1, this.querySelector("#LeftGauges"), this.querySelector("#FuelUsedValueLeft"), this.querySelector("#OilTemperatureValueLeft"), this.querySelector("#EngineBleedPressureValueLeft"), this.querySelector("#StartValveLeft_OPEN"), this.querySelector("#StartValveLeft_CLOSED"));
-            this.engineRight = new EngineInfo(2, this.querySelector("#RightGauges"), this.querySelector("#FuelUsedValueRight"), this.querySelector("#OilTemperatureValueRight"), this.querySelector("#EngineBleedPressureValueRight"), this.querySelector("#StartValveRight_OPEN"), this.querySelector("#StartValveRight_CLOSED"));
+
+            this.engineLeft = new EngineInfo(1, this.querySelector("#LeftGauges"), this.querySelector("#FuelUsedValueLeft"), this.querySelector("#OilTemperatureValueLeft"), this.querySelector("#EngineBleedPressureValueLeft"), this.querySelector("#StartValveLeft_OPEN"), this.querySelector("#StartValveLeft_CLOSED"), this.querySelector("#N1VibrationLevelValueLeft"), this.querySelector("#N2VibrationLevelValueLeft"));
+            this.engineRight = new EngineInfo(2, this.querySelector("#RightGauges"), this.querySelector("#FuelUsedValueRight"), this.querySelector("#OilTemperatureValueRight"), this.querySelector("#EngineBleedPressureValueRight"), this.querySelector("#StartValveRight_OPEN"), this.querySelector("#StartValveRight_CLOSED"), this.querySelector("#N1VibrationLevelValueRight"), this.querySelector("#N2VibrationLevelValueRight"));
+
             this.ignTitleText = this.querySelector("#IGNTitle");
             this.ignLeftValueText = this.querySelector("#IGNValueLeft");
             this.ignRightValueText = this.querySelector("#IGNValueRight");
@@ -93,6 +97,7 @@ var A320_Neo_LowerECAM_Engine;
                 case A320_Neo_LowerECAM_Engine.Definitions.IGN_STATE.B:
                     {
                         return " B";
+
                     }
                 case A320_Neo_LowerECAM_Engine.Definitions.IGN_STATE.AB:
                     {
@@ -110,19 +115,26 @@ var A320_Neo_LowerECAM_Engine;
     }
     A320_Neo_LowerECAM_Engine.Page = Page;
     class EngineInfo {
-        constructor(_engineIndex, _gaugeDiv, _fuelUsedValueText, _oilTemperatureValueText, _engineBleedPressureValueText, _startValveOpenLine, _startValveClosedLine) {
+
+
+        constructor(_engineIndex, _gaugeDiv, _fuelUsedValueText, _oilTemperatureValueText, _engineBleedPressureValueText, _startValveOpenLine, _startValveClosedLine, _N1VibrationValueText, _N2VibrationValueText) {
+
             this.engineIndex = _engineIndex;
             this.fuelUsedValueText = _fuelUsedValueText;
             this.oilTemperatureValueText = _oilTemperatureValueText;
             this.engineBleedPressureValueText = _engineBleedPressureValueText;
             this.engineBleedValveOpenLine = _startValveOpenLine;
             this.engineBleedValveClosedLine = _startValveClosedLine;
+
+            this.N1VibrationValueText = _N1VibrationValueText;
+            this.N2VibrationValueText = _N2VibrationValueText;
             var gaugeDef = new A320_Neo_ECAM_Common.GaugeDefinition();
-            gaugeDef.arcSize = 180; // Modified JZ
-            gaugeDef.startAngle = -180;// modified JZ
+            gaugeDef.startAngle = -180;
+            gaugeDef.arcSize = 180;
             gaugeDef.cursorLength = 0.4;// added JZ
             gaugeDef.currentValuePos.x = 0.6;// added JZ
             gaugeDef.currentValuePos.y = 0.5;// added JZ
+
             gaugeDef.currentValuePrecision = 0;
             gaugeDef.minValue = A320_Neo_LowerECAM_Engine.Definitions.MIN_GAUGE_OIL;
             gaugeDef.maxValue = A320_Neo_LowerECAM_Engine.Definitions.MAX_GAUGE_OIL;
@@ -130,9 +142,11 @@ var A320_Neo_LowerECAM_Engine;
             this.oilQuantityGauge = window.document.createElement("a320-neo-ecam-gauge");
             this.oilQuantityGauge.id = "OIL_Gauge";
             this.oilQuantityGauge.init(gaugeDef);
+
             this.oilQuantityGauge.addGraduation(0, true, "");
             this.oilQuantityGauge.addGraduation(12.5, true, "");
             this.oilQuantityGauge.addGraduation(25, true, "");
+
             gaugeDef.minValue = A320_Neo_LowerECAM_Engine.Definitions.MIN_GAUGE_PSI;
             gaugeDef.maxValue = A320_Neo_LowerECAM_Engine.Definitions.MAX_GAUGE_PSI;
             gaugeDef.minRedValue = A320_Neo_LowerECAM_Engine.Definitions.MIN_GAUGE_PSI_RED;
@@ -145,9 +159,11 @@ var A320_Neo_LowerECAM_Engine;
             this.oilPressureGauge = window.document.createElement("a320-neo-ecam-gauge");
             this.oilPressureGauge.id = "PSI_Gauge";
             this.oilPressureGauge.init(gaugeDef);
+
             this.oilPressureGauge.addGraduation(0, true, "");
-            this.oilPressureGauge.addGraduation(200, true, "");
-            this.oilPressureGauge.addGraduation(400, true, "");
+            this.oilPressureGauge.addGraduation(50, true, "");
+            this.oilPressureGauge.addGraduation(100, true, "");
+
             if (_gaugeDiv != null) {
                 _gaugeDiv.appendChild(this.oilQuantityGauge);
                 _gaugeDiv.appendChild(this.oilPressureGauge);
@@ -156,12 +172,20 @@ var A320_Neo_LowerECAM_Engine;
             this.setOilTemperatureValue(0, true);
             this.setEngineBleedPressureValue(0, true);
             this.setEngineBleedValveState(false, true);
+
+            this.setN1VibrationValue(0, true);
+            this.setN2VibrationValue(0, true);
+
         }
         update(_deltaTime) {
             this.setFuelUsedValue(SimVar.GetSimVarValue("GENERAL ENG FUEL USED SINCE START:" + this.engineIndex, "kg"));
             this.setOilTemperatureValue(SimVar.GetSimVarValue("GENERAL ENG OIL TEMPERATURE:" + this.engineIndex, "celsius"));
             this.setEngineBleedPressureValue(SimVar.GetSimVarValue("APU BLEED PRESSURE RECEIVED BY ENGINE:" + this.engineIndex, "psi"));
             this.setEngineBleedValveState(SimVar.GetSimVarValue("GENERAL ENG STARTER:" + this.engineIndex, "bool"));
+
+            this.setN1VibrationValue(SimVar.GetSimVarValue("TURB ENG VIBRATION:" + this.engineIndex, "Number"));
+            this.setN2VibrationValue(SimVar.GetSimVarValue("TURB ENG VIBRATION:" + this.engineIndex, "Number")); // TODO: should have a different value than N1, currently API limited
+
             if (this.oilQuantityGauge != null) {
                 this.oilQuantityGauge.update(_deltaTime);
             }
@@ -170,7 +194,9 @@ var A320_Neo_LowerECAM_Engine;
             }
         }
         getOilQuantity() {
-            var value = SimVar.GetSimVarValue("ENG OIL QUANTITY:" + this.engineIndex, "percent") * 0.01 * A320_Neo_LowerECAM_Engine.Definitions.MAX_GAUGE_OIL;
+
+            var value = SimVar.GetSimVarValue("ENG OIL QUANTITY:" + this.engineIndex, "percent") * 0.01;
+
             value *= A320_Neo_LowerECAM_Engine.Definitions.MAX_GAUGE_OIL;
             return value;
         }
@@ -219,8 +245,28 @@ var A320_Neo_LowerECAM_Engine;
                 }
             }
         }
+
+        setN1VibrationValue(_value, _force = false) {
+            if ((_value != this.N1VibrationValue) || _force) {
+                this.N1VibrationValue = _value;
+                if (this.N1VibrationValueText != null) {
+                    this.N1VibrationValueText.textContent = fastToFixed(this.N1VibrationValue, 1);
+                }
+            }
+        }
+        setN2VibrationValue(_value, _force = false) {
+            if ((_value != this.N2VibrationValue) || _force) {
+                this.N2VibrationValue = _value;
+                if (this.N2VibrationValueText != null) {
+                    this.N2VibrationValueText.textContent = fastToFixed(this.N2VibrationValue, 1);
+                }
+            }
+        }
+
     }
     A320_Neo_LowerECAM_Engine.EngineInfo = EngineInfo;
 })(A320_Neo_LowerECAM_Engine || (A320_Neo_LowerECAM_Engine = {}));
 customElements.define("a320-neo-lower-ecam-engine", A320_Neo_LowerECAM_Engine.Page);
+
 //# sourceMappingURL=A320_Neo_LowerECAM_Engine.js.map
+

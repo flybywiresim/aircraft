@@ -14,7 +14,7 @@ def build_layout(project_dir):
         for filename in files:
             filepath = os.path.join(root, filename)
 
-            if not filepath.endswith(".json") and not filepath.endswith(".py"):
+            if not filepath.endswith("layout.json") and not filepath.endswith("manifest.json") and not filepath.endswith(".py"):
                 rel_dir = os.path.relpath(root)
                 rel_file = str(os.path.join(rel_dir, filename))
                 if rel_file[0] == '.':

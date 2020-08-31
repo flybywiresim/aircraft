@@ -1,4 +1,18 @@
-# MSFS A320neo Improvement Mod
+# MSFS A320neo Improvement Mod - Stable Version
+
+Preview of APU and DOOR ECAM pages: https://www.youtube.com/watch?v=rLaVK3nNCXc
+
+# Important
+
+### Please note, this version does not include the full capability you may see in the progress updates on our discord server.
+### To download the BETA features, which may include bugs, please visit https://github.com/wpine215/msfs-a320neo/tree/dev-0.1.1
+
+### Please follow ALL steps in this README if you encounter any issues with installation before seeking support.
+
+## About
+The A32NX Project is a community driven open source project to create a free Airbus A320neo in Microsoft Flight Simulator that is as close to reality as possible. It  aims to enhance the default A320neo by improving the systems depth and functionality to bring it up to payware-level, all for free.
+
+Central Repository: https://github.com/wpine215/msfs-a320neo
 
 Preview of APU and DOOR ECAM pages: https://www.youtube.com/watch?v=rLaVK3nNCXc
 

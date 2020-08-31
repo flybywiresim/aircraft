@@ -32,6 +32,7 @@ a320-neo-lower-ecam-engine {
   a320-neo-lower-ecam-engine text {
     text-anchor: middle;
     alignment-baseline: central; }
+
   a320-neo-lower-ecam-engine text.Title {
     font-size: 16px;
     fill: var(--ecamDefaultColour); }
@@ -53,16 +54,19 @@ a320-neo-lower-ecam-engine {
     position: absolute;
     left: 23%;
     width: 56%;
-    top: 18%; /* 10%*/
-    height: 30%;/*50%*/
-    /*left: 23%;
-    width: 56%;
-    top: 18%;  /*10%*
-    height: 30%; /*50% */
+    top: 18%; /* was 10%*/
+    height: 30%;/* was 50%*/
+
     display: flex;
     justify-content: center; }
 
-  a320-neo-lower-ecam-engine  #Gauges #LeftGauges:nth-child(2) { top: 5% }
+a320-neo-lower-ecam-engine #LeftGauges {
+    position: relative;
+    right:12%; }
+    a320-neo-lower-ecam-engine #RightGauges {
+        position: relative;
+        left:-5%; }
+  /* a320-neo-lower-ecam-engine  #Gauges #LeftGauges:nth-child(2) { top: 5% } */
 
   a320-neo-lower-ecam-engine #StartValveDiagrams {
     stroke: var(--ecamValueColour);
@@ -73,4 +77,5 @@ a320-neo-lower-ecam-engine {
       fill: black; }
     a320-neo-lower-ecam-engine #StartValveDiagrams line {
       fill: var(--ecamValueColour); }
+
 

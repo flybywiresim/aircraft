@@ -1,0 +1,261 @@
+<?xml version="1.0" encoding="utf-8"?>
+<WwiseDocument Type="WorkUnit" ID="{33EB1407-1601-4B0D-A620-9099C0353115}" SchemaVersion="97">
+	<Effects>
+		<WorkUnit Name="Factory iZotope Hybrid Reverb Effects" ID="{33EB1407-1601-4B0D-A620-9099C0353115}" PersistMode="Standalone">
+			<ChildrenList>
+				<Effect Name="Auditorium" ID="{FD6C692A-56DE-4AB5-BD21-11FF4CB13068}" PluginName="iZotope Hybrid Reverb" CompanyID="259" PluginID="2" PluginType="3">
+					<PropertyList>
+						<Property Name="DecayHighFrequency" Type="Real32" Value="8000"/>
+						<Property Name="DecayHighRatio" Type="Real32" Value="0.9352735"/>
+						<Property Name="DecayLowFrequency" Type="Real32" Value="800"/>
+						<Property Name="DecayLowRatio" Type="Real32" Value="1.153108"/>
+						<Property Name="DecayMidRatio" Type="Real32" Value="0.9116192"/>
+						<Property Name="DecayTime" Type="Real32" Value="0.3421163"/>
+					</PropertyList>
+					<ChildrenList>
+						<PluginMediaSource Name="Auditorium" ID="{D4846814-C3F4-4F40-9A76-8B0025FDEED2}">
+							<ParentPluginID>135219</ParentPluginID>
+							<PropertyList>
+								<Property Name="DataFileName" Type="string" Value="Auditorium.wav"/>
+							</PropertyList>
+						</PluginMediaSource>
+					</ChildrenList>
+				</Effect>
+				<Effect Name="Car_Interior" ID="{82544AC0-02E9-4250-8027-5F4297F2BDAB}" PluginName="iZotope Hybrid Reverb" CompanyID="259" PluginID="2" PluginType="3">
+					<PropertyList>
+						<Property Name="DecayHighFrequency" Type="Real32" Value="8000"/>
+						<Property Name="DecayHighRatio" Type="Real32" Value="1.282206"/>
+						<Property Name="DecayLowFrequency" Type="Real32" Value="800"/>
+						<Property Name="DecayLowRatio" Type="Real32" Value="0.5370792"/>
+						<Property Name="DecayMidRatio" Type="Real32" Value="1.180715"/>
+						<Property Name="DecayTime" Type="Real32" Value="0.2527097"/>
+					</PropertyList>
+					<ChildrenList>
+						<PluginMediaSource Name="Car Interior" ID="{7625F8D6-E620-47D4-B844-A82C19CEB6AE}">
+							<ParentPluginID>135219</ParentPluginID>
+							<PropertyList>
+								<Property Name="DataFileName" Type="string" Value="Car Interior.wav"/>
+							</PropertyList>
+						</PluginMediaSource>
+					</ChildrenList>
+				</Effect>
+				<Effect Name="Cavern" ID="{1521FCD2-6307-424F-A67D-5E76C381342F}" PluginName="iZotope Hybrid Reverb" CompanyID="259" PluginID="2" PluginType="3">
+					<PropertyList>
+						<Property Name="DecayHighFrequency" Type="Real32" Value="8000"/>
+						<Property Name="DecayHighRatio" Type="Real32" Value="0.7150547"/>
+						<Property Name="DecayLowFrequency" Type="Real32" Value="800"/>
+						<Property Name="DecayLowRatio" Type="Real32" Value="1.314807"/>
+						<Property Name="DecayMidRatio" Type="Real32" Value="0.9701383"/>
+						<Property Name="DecayTime" Type="Real32" Value="0.3059267"/>
+					</PropertyList>
+					<ChildrenList>
+						<PluginMediaSource Name="Cavern" ID="{708A63DA-72DF-47A4-AE8E-1AB398F035D8}">
+							<ParentPluginID>135219</ParentPluginID>
+							<PropertyList>
+								<Property Name="DataFileName" Type="string" Value="Cavern.wav"/>
+							</PropertyList>
+						</PluginMediaSource>
+					</ChildrenList>
+				</Effect>
+				<Effect Name="Church" ID="{B650CF1D-D9BA-43E2-A1FD-B54404971299}" PluginName="iZotope Hybrid Reverb" CompanyID="259" PluginID="2" PluginType="3">
+					<PropertyList>
+						<Property Name="DecayHighFrequency" Type="Real32" Value="8000"/>
+						<Property Name="DecayHighRatio" Type="Real32" Value="0.6264278"/>
+						<Property Name="DecayLowFrequency" Type="Real32" Value="800"/>
+						<Property Name="DecayLowRatio" Type="Real32" Value="1.169077"/>
+						<Property Name="DecayMidRatio" Type="Real32" Value="1.204495"/>
+						<Property Name="DecayTime" Type="Real32" Value="0.6851689"/>
+					</PropertyList>
+					<ChildrenList>
+						<PluginMediaSource Name="Church" ID="{576DC51E-8E05-4A63-889A-C10208ED7D54}">
+							<ParentPluginID>135219</ParentPluginID>
+							<PropertyList>
+								<Property Name="DataFileName" Type="string" Value="Church.wav"/>
+							</PropertyList>
+						</PluginMediaSource>
+					</ChildrenList>
+				</Effect>
+				<Effect Name="City_Center" ID="{C0BCFD9D-288E-4551-A9AA-651BD535AFE7}" PluginName="iZotope Hybrid Reverb" CompanyID="259" PluginID="2" PluginType="3">
+					<PropertyList>
+						<Property Name="DecayHighFrequency" Type="Real32" Value="8000"/>
+						<Property Name="DecayHighRatio" Type="Real32" Value="0.8789631"/>
+						<Property Name="DecayLowFrequency" Type="Real32" Value="800"/>
+						<Property Name="DecayLowRatio" Type="Real32" Value="0.487843"/>
+						<Property Name="DecayMidRatio" Type="Real32" Value="1.633194"/>
+						<Property Name="DecayTime" Type="Real32" Value="0.5061578"/>
+					</PropertyList>
+					<ChildrenList>
+						<PluginMediaSource Name="City Center" ID="{63F73444-446A-492A-9DE5-A5743D61554B}">
+							<ParentPluginID>135219</ParentPluginID>
+							<PropertyList>
+								<Property Name="DataFileName" Type="string" Value="City Center.wav"/>
+							</PropertyList>
+						</PluginMediaSource>
+					</ChildrenList>
+				</Effect>
+				<Effect Name="City_Streets" ID="{7B15BCFE-88CF-43F0-9ABE-9B70D7526277}" PluginName="iZotope Hybrid Reverb" CompanyID="259" PluginID="2" PluginType="3">
+					<PropertyList>
+						<Property Name="DecayHighFrequency" Type="Real32" Value="8000"/>
+						<Property Name="DecayHighRatio" Type="Real32" Value="1.162309"/>
+						<Property Name="DecayLowFrequency" Type="Real32" Value="800"/>
+						<Property Name="DecayLowRatio" Type="Real32" Value="0.8012477"/>
+						<Property Name="DecayMidRatio" Type="Real32" Value="1.036443"/>
+						<Property Name="DecayTime" Type="Real32" Value="0.5579304"/>
+					</PropertyList>
+					<ChildrenList>
+						<PluginMediaSource Name="City Streets" ID="{FEAAE5A1-A9A3-452A-90D1-6AA148AA3828}">
+							<ParentPluginID>135219</ParentPluginID>
+							<PropertyList>
+								<Property Name="DataFileName" Type="string" Value="City Streets.wav"/>
+							</PropertyList>
+						</PluginMediaSource>
+					</ChildrenList>
+				</Effect>
+				<Effect Name="Forest" ID="{CD538FCE-1EFA-4395-BE71-E35D54A57F75}" PluginName="iZotope Hybrid Reverb" CompanyID="259" PluginID="2" PluginType="3">
+					<PropertyList>
+						<Property Name="DecayHighFrequency" Type="Real32" Value="8000"/>
+						<Property Name="DecayHighRatio" Type="Real32" Value="0.9603763"/>
+						<Property Name="DecayLowFrequency" Type="Real32" Value="800"/>
+						<Property Name="DecayLowRatio" Type="Real32" Value="1.070392"/>
+						<Property Name="DecayMidRatio" Type="Real32" Value="0.9692316"/>
+						<Property Name="DecayTime" Type="Real32" Value="0.4626513"/>
+					</PropertyList>
+					<ChildrenList>
+						<PluginMediaSource Name="Forest" ID="{A34F93CF-3CA4-4F62-8DBB-C9B60D6E58EF}">
+							<ParentPluginID>135219</ParentPluginID>
+							<PropertyList>
+								<Property Name="DataFileName" Type="string" Value="Forest.wav"/>
+							</PropertyList>
+						</PluginMediaSource>
+					</ChildrenList>
+				</Effect>
+				<Effect Name="Medium_Metal_Room" ID="{0071057C-8E6E-403C-95FB-54CAF39E8DF1}" PluginName="iZotope Hybrid Reverb" CompanyID="259" PluginID="2" PluginType="3">
+					<PropertyList>
+						<Property Name="DecayHighFrequency" Type="Real32" Value="8000"/>
+						<Property Name="DecayHighRatio" Type="Real32" Value="1.126188"/>
+						<Property Name="DecayLowFrequency" Type="Real32" Value="800"/>
+						<Property Name="DecayLowRatio" Type="Real32" Value="1.122162"/>
+						<Property Name="DecayMidRatio" Type="Real32" Value="0.7516494"/>
+						<Property Name="DecayTime" Type="Real32" Value="0.223779"/>
+					</PropertyList>
+					<ChildrenList>
+						<PluginMediaSource Name="Medium Metal Room" ID="{F1DFE9B5-9333-4382-A167-BDD83A2A36FE}">
+							<ParentPluginID>135219</ParentPluginID>
+							<PropertyList>
+								<Property Name="DataFileName" Type="string" Value="Medium Metal Room.wav"/>
+							</PropertyList>
+						</PluginMediaSource>
+					</ChildrenList>
+				</Effect>
+				<Effect Name="Medium_Wood_Hall" ID="{897FF188-3EFE-45FC-A203-F1D69F999D9A}" PluginName="iZotope Hybrid Reverb" CompanyID="259" PluginID="2" PluginType="3">
+					<PropertyList>
+						<Property Name="DecayHighFrequency" Type="Real32" Value="8000"/>
+						<Property Name="DecayHighRatio" Type="Real32" Value="1.014952"/>
+						<Property Name="DecayLowFrequency" Type="Real32" Value="800"/>
+						<Property Name="DecayLowRatio" Type="Real32" Value="1.186363"/>
+						<Property Name="DecayMidRatio" Type="Real32" Value="0.7986856"/>
+						<Property Name="DecayTime" Type="Real32" Value="0.1786582"/>
+					</PropertyList>
+					<ChildrenList>
+						<PluginMediaSource Name="Medium Wood Hall" ID="{CB8E33E3-5509-4FEC-80AC-456B0BB44FAC}">
+							<ParentPluginID>135219</ParentPluginID>
+							<PropertyList>
+								<Property Name="DataFileName" Type="string" Value="Medium Wood Hall.wav"/>
+							</PropertyList>
+						</PluginMediaSource>
+					</ChildrenList>
+				</Effect>
+				<Effect Name="Medium_Wood_Room" ID="{C37DE3C0-20A2-4D6E-8BD6-CE4DF3D055A8}" PluginName="iZotope Hybrid Reverb" CompanyID="259" PluginID="2" PluginType="3">
+					<PropertyList>
+						<Property Name="DecayHighFrequency" Type="Real32" Value="8000"/>
+						<Property Name="DecayHighRatio" Type="Real32" Value="0.9829428"/>
+						<Property Name="DecayLowFrequency" Type="Real32" Value="800"/>
+						<Property Name="DecayLowRatio" Type="Real32" Value="1.240443"/>
+						<Property Name="DecayMidRatio" Type="Real32" Value="0.7766145"/>
+						<Property Name="DecayTime" Type="Real32" Value="0.1335653"/>
+					</PropertyList>
+					<ChildrenList>
+						<PluginMediaSource Name="Medium Wood Room" ID="{9ADF02FD-DD9B-4C59-8917-6E09B2ACD985}">
+							<ParentPluginID>135219</ParentPluginID>
+							<PropertyList>
+								<Property Name="DataFileName" Type="string" Value="Medium Wood Room.wav"/>
+							</PropertyList>
+						</PluginMediaSource>
+					</ChildrenList>
+				</Effect>
+				<Effect Name="Metallic_Hall" ID="{D4E13D81-5B34-4A81-8660-BEDB27B1BB7C}" PluginName="iZotope Hybrid Reverb" CompanyID="259" PluginID="2" PluginType="3">
+					<PropertyList>
+						<Property Name="DecayHighFrequency" Type="Real32" Value="8000"/>
+						<Property Name="DecayHighRatio" Type="Real32" Value="1.360297"/>
+						<Property Name="DecayLowFrequency" Type="Real32" Value="800"/>
+						<Property Name="DecayLowRatio" Type="Real32" Value="0.9382429"/>
+						<Property Name="DecayMidRatio" Type="Real32" Value="0.7014605"/>
+						<Property Name="DecayTime" Type="Real32" Value="0.4974262"/>
+					</PropertyList>
+					<ChildrenList>
+						<PluginMediaSource Name="Metallic Hall" ID="{20A5A0B9-114D-4676-86BC-18C77DB525F9}">
+							<ParentPluginID>135219</ParentPluginID>
+							<PropertyList>
+								<Property Name="DataFileName" Type="string" Value="Metallic Hall.wav"/>
+							</PropertyList>
+						</PluginMediaSource>
+					</ChildrenList>
+				</Effect>
+				<Effect Name="Rock_Wall" ID="{0574D37E-802A-4332-8EF5-EBA7491C1CB9}" PluginName="iZotope Hybrid Reverb" CompanyID="259" PluginID="2" PluginType="3">
+					<PropertyList>
+						<Property Name="DecayHighFrequency" Type="Real32" Value="8000"/>
+						<Property Name="DecayHighRatio" Type="Real32" Value="1.03326"/>
+						<Property Name="DecayLowFrequency" Type="Real32" Value="800"/>
+						<Property Name="DecayLowRatio" Type="Real32" Value="0.6187223"/>
+						<Property Name="DecayMidRatio" Type="Real32" Value="1.348018"/>
+						<Property Name="DecayTime" Type="Real32" Value="0.2221229"/>
+					</PropertyList>
+					<ChildrenList>
+						<PluginMediaSource Name="Rock Wall" ID="{16DC2867-52CE-4852-A7EA-5DCFD83A3C95}">
+							<ParentPluginID>135219</ParentPluginID>
+							<PropertyList>
+								<Property Name="DataFileName" Type="string" Value="Rock Wall.wav"/>
+							</PropertyList>
+						</PluginMediaSource>
+					</ChildrenList>
+				</Effect>
+				<Effect Name="Small_Metal_Room" ID="{A65387F1-585D-42DF-B26F-77DA121F0FC7}" PluginName="iZotope Hybrid Reverb" CompanyID="259" PluginID="2" PluginType="3">
+					<PropertyList>
+						<Property Name="DecayHighFrequency" Type="Real32" Value="8000"/>
+						<Property Name="DecayHighRatio" Type="Real32" Value="1.016629"/>
+						<Property Name="DecayLowFrequency" Type="Real32" Value="800"/>
+						<Property Name="DecayLowRatio" Type="Real32" Value="1.166601"/>
+						<Property Name="DecayMidRatio" Type="Real32" Value="0.8167706"/>
+						<Property Name="DecayTime" Type="Real32" Value="0.3363199"/>
+					</PropertyList>
+					<ChildrenList>
+						<PluginMediaSource Name="Small Metal Room" ID="{E2EBAF6C-65EE-4867-923B-3FDAFCBCB0B2}">
+							<ParentPluginID>135219</ParentPluginID>
+							<PropertyList>
+								<Property Name="DataFileName" Type="string" Value="Small Metal Room.wav"/>
+							</PropertyList>
+						</PluginMediaSource>
+					</ChildrenList>
+				</Effect>
+				<Effect Name="Small_Wood_Room" ID="{1D2694C0-F2C5-4638-A397-93CDC96C7109}" PluginName="iZotope Hybrid Reverb" CompanyID="259" PluginID="2" PluginType="3">
+					<PropertyList>
+						<Property Name="DecayHighFrequency" Type="Real32" Value="8000"/>
+						<Property Name="DecayHighRatio" Type="Real32" Value="2.004662"/>
+						<Property Name="DecayLowFrequency" Type="Real32" Value="800"/>
+						<Property Name="DecayLowRatio" Type="Real32" Value="0.6789197"/>
+						<Property Name="DecayMidRatio" Type="Real32" Value="0.3164179"/>
+						<Property Name="DecayTime" Type="Real32" Value="0.2566709"/>
+					</PropertyList>
+					<ChildrenList>
+						<PluginMediaSource Name="Small Wood Room" ID="{1FF68362-3DCD-4F7D-8657-7B574D5C19EF}">
+							<ParentPluginID>135219</ParentPluginID>
+							<PropertyList>
+								<Property Name="DataFileName" Type="string" Value="Small Wood Room.wav"/>
+							</PropertyList>
+						</PluginMediaSource>
+					</ChildrenList>
+				</Effect>
+			</ChildrenList>
+		</WorkUnit>
+	</Effects>
+</WwiseDocument>

@@ -15,9 +15,11 @@ var A320_Neo_BAT;
         Update() {
             super.Update();
             if ((this.batTexts != null) && (this.batTexts.length == 2) && (this.batValues != null) && (this.batValues.length == 2)) {
+
                 for (var i = 0; i < 2; ++i) {
                     if (this.batTexts[i] != null) {
-                        var batValue = SimVar.GetSimVarValue("ELECTRICAL BATTERY VOLTAGE:" + (10 + i), "Volts");//JZ was :ELECTRICAL MAIN BUS VOLTAGE:
+                        var batValue = SimVar.GetSimVarValue("ELECTRICAL BATTERY VOLTAGE:" + ( i ), "Volts");//JZ was :ELECTRICAL BATTERY BUS VOLTAGE: +(10 *i)???
+
                         if (batValue != this.batValues[i]) {
                             this.batValues[i] = batValue;
                             this.batTexts[i].textContent = this.batValues[i].toFixed(1);

@@ -67,36 +67,46 @@ var A320_Neo_BRK;
         }
         Update() {
             super.Update();
+
             var currentPKGBrakeState = SimVar.GetSimVarValue("BRAKE PARKING POSITION", "Bool");//JZ ADDED if PKG BRAKE IS SET
-            var currentDCState = SimVar.GetSimVarValue("ELECTRICAL MASTER BATTERY", "Bool");//Z ADDED if DC POWER available "L:DCPowerAvailable", "Bool"
             if (this.topGauge != null) {
-                if (currentDCState !=0) {// is A/c powered UP (ie DC available?)
-                    this.topGauge.setValue(3);// JZ Should be the actual acuumulator value, decreasing over time
-                } else {
-                    this.topGauge.setValue(0);// JZ ADDED needle set to 0 
+                if(SimVar.GetSimVarValue("L:DCPowerAvailable","Bool")){
+                    this.topGauge.setValue(3); // !!!!!  Fixed Accumulator 3000PSI (Dummy value waiting for HYD Y system to be developed)
+                }
+                else{
+                    this.topGauge.setValue(0);// Needle show 0 when powered OFF
                 }
             }
+            
             if (this.leftGauge != null) {
-                if (currentDCState !=0) {// is A/c powered UP (ie DC available?)
-                    if (currentPKGBrakeState !=0) {//Z ADDED if PKG BRAKE IS SET
-                        this.leftGauge.setValue(2);// JZ ADDED SET the PSI values
-                    } else {
-                        this.leftGauge.setValue(0);// JZ ADDED SET the PSI values 
-                    } 
-                } else {
-                    this.leftGauge.setValue(0);// JZ ADDED needle set to 0 
+                if(SimVar.GetSimVarValue("L:DCPowerAvailable","Bool")){
+                    if (currentPKGBrakeState !=0) {
+                        this.leftGauge.setValue(2); // !!!!!  Fixed Accumulator 2000PSI (Dummy value waiting for HYD Y system to be developed)
+                    }
+                    else{
+                      this.leftGauge.setValue(0);// WIP: the PSI is set to 0 when pkg brake is realeased, unless NWS is off, in that case, it is either Brakes or Pkg barke pressure
+                      //  this.leftGauge.setValue(2*(SimVar.GetSimVarValue("BRAKE LEFT POSITION","SINT32")/32000));
+                    }
                 }
-
+                else{
+                    this.leftGauge.setValue(0);// Needle show 0 when powered OFF
+                }
             }
             if (this.rightGauge != null) {
-                if (currentDCState !=0) {
-                    if (currentPKGBrakeState !=0) {//Z ADDED if PKG BRAKE IS SET
-                    this.rightGauge.setValue(2);// JZ ADDED SET the PSI values
-                    } else {
-                    this.rightGauge.setValue(0);// JZ ADDED SET the PSI values 
-                    }else {
-                    this.rightGauge.setValue(0);// JZ ADDED needle set to 0 
+                if(SimVar.GetSimVarValue("L:DCPowerAvailable","Bool")){
+                    if (currentPKGBrakeState !=0) {
+                        this.rightGauge.setValue(2); // !!!!!  Fixed Accumulator 2000PSI (Dummy value waiting for HYD Y system to be developed)
                     }
+                    else{
+                       this.rightGauge.setValue(0);
+                      // WIP: the PSI is set to 0 when pkg brake is realeased, unless NWS is off, in that case, it is either Brakes or Pkg barke pressure
+                       //  this.rightGauge.setValue(2*(SimVar.GetSimVarValue("BRAKE RIGHT POSITION","SINT32")/32000));
+                    }
+                }
+                else{
+                    this.rightGauge.setValue(0);// Needle show 0 when powered OFF
+                }
+
             }
         }
     }
@@ -114,6 +124,7 @@ var A320_Neo_BRK;
                 this.markersGroup.setAttribute("class", "markers");
                 this.markersGroup.setAttribute("transform", A320_Neo_BRK_Definitions.Common.DEFAULT_TRANSLATE_STRING);
                 _svgGroup.appendChild(this.markersGroup);
+
 
                 // AJOUT JZ indicator Arcs
                 this.dialindicatorArcGroup = document.createElementNS(Avionics.SVG.NS, "g");
