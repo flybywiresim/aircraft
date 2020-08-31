@@ -512,7 +512,7 @@
         },
         {
             "path": "html_ui/Pages/VCockpit/Instruments/Airliners/A320_Neo/FCU/A320_Neo_FCU.js",
-            "size": 25803,
+            "size": 26614,
             "date": "132402817714110148"
         },
         {
@@ -562,7 +562,7 @@
         },
         {
             "path": "html_ui/Pages/VCockpit/Instruments/Airliners/A320_Neo/PFD/AltimeterIndicator.js",
-            "size": 97747,
+            "size": 97796,
             "date": "132402817714110148"
         },
         {
