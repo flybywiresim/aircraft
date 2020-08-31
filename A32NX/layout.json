@@ -196,33 +196,38 @@
             "date": "132402817714110148"
         },
         {
+            "path": "html_ui/Fonts/wwDigital.ttf",
+            "size": 59612,
+            "date": "132402817714110148"
+        },
+        {
             "path": "html_ui/Pages/VCockpit/Instruments/Airliners/A320_Neo/BAT/A320_Neo_BAT.css",
-            "size": 1437,
+            "size": 2074,
             "date": "132402817714110148"
         },
         {
             "path": "html_ui/Pages/VCockpit/Instruments/Airliners/A320_Neo/BAT/A320_Neo_BAT.html",
-            "size": 1280,
+            "size": 1576,
             "date": "132402817714110148"
         },
         {
             "path": "html_ui/Pages/VCockpit/Instruments/Airliners/A320_Neo/BAT/A320_Neo_BAT.js",
-            "size": 1354,
+            "size": 1413,
             "date": "132402817714110148"
         },
         {
             "path": "html_ui/Pages/VCockpit/Instruments/Airliners/A320_Neo/BRK/A320_Neo_BRK.css",
-            "size": 2124,
+            "size": 2421,
             "date": "132402817714110148"
         },
         {
             "path": "html_ui/Pages/VCockpit/Instruments/Airliners/A320_Neo/BRK/A320_Neo_BRK.html",
-            "size": 2393,
+            "size": 2397,
             "date": "132402817714110148"
         },
         {
             "path": "html_ui/Pages/VCockpit/Instruments/Airliners/A320_Neo/BRK/A320_Neo_BRK.js",
-            "size": 12397,
+            "size": 14521,
             "date": "132402817714110148"
         },
         {
@@ -407,7 +412,7 @@
         },
         {
             "path": "html_ui/Pages/VCockpit/Instruments/Airliners/A320_Neo/EICAS/ECAM/A320_Neo_LowerECAM_APU.js",
-            "size": 12929,
+            "size": 12931,
             "date": "132402817714110148"
         },
         {
@@ -442,17 +447,17 @@
         },
         {
             "path": "html_ui/Pages/VCockpit/Instruments/Airliners/A320_Neo/EICAS/ECAM/A320_Neo_LowerECAM_Engine.css",
-            "size": 1938,
+            "size": 2179,
             "date": "132402817714110148"
         },
         {
             "path": "html_ui/Pages/VCockpit/Instruments/Airliners/A320_Neo/EICAS/ECAM/A320_Neo_LowerECAM_Engine.html",
-            "size": 3729,
+            "size": 4216,
             "date": "132402817714110148"
         },
         {
             "path": "html_ui/Pages/VCockpit/Instruments/Airliners/A320_Neo/EICAS/ECAM/A320_Neo_LowerECAM_Engine.js",
-            "size": 13207,
+            "size": 13462,
             "date": "132402817714110148"
         },
         {
