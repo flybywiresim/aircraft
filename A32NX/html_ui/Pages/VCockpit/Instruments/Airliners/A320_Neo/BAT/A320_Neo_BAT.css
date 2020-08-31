@@ -21,7 +21,7 @@
 
   #Electricity[state=off] {
     display: none; }
-#AlwaysOn { */ corrceted a Typo s was missing */
+#AlwaysOn { /* corrected a Typo: s was missing on Always */
   width: 100%;
   height: 100%;
   display: block;
@@ -55,8 +55,8 @@
 
   /* JZ added a Special font for the Voltage display */
   @font-face {
-    font-family: "Digital";
-    src: url("/Fonts/wwDigital.ttf") format("truetype"); //* Curiously, the font is not loaded in the sim??? */
+    font-family: "Digitalv";
+    src: url("/Fonts/wwDigital.ttf") format("truetype"); /* New font type for the v in Volts. Curiously, the font is not loaded in the sim??? */
     font-weight: normal;
     font-style: normal; }
   
