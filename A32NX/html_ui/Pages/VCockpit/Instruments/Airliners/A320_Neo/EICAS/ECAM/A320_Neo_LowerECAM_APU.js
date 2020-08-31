@@ -80,7 +80,7 @@ var A320_Neo_LowerECAM_APU;
                 this.APUStartTimer = -1;
                 this.APUFlapTimer = -1;
                 SimVar.SetSimVarValue("L:APU_FLAP_OPEN", "Bool", 0);
-                SimVar.SetSimVarValue("L:APU_STARTSW_AVAIL","Bool",0);
+                SimVar.SetSimVarValue("L:APU_STARTERSW_AVAIL","Bool",0);
             }
 
             //APU start, stop
