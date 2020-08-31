@@ -1475,10 +1475,10 @@ var Airbus_FMA;
         updateRow1(_deltaTime) {
             var targetState = Column4.ROW_1_STATE.NONE;
             if (Simplane.getAutoPilotAPPRActive() && Airbus_FMA.CurrentPlaneState.isILSApproachActive) {
-                if (Airbus_FMA.CurrentPlaneState.decisionHeight < 100) {
+                if (Airbus_FMA.CurrentPlaneState.decisionHeight < 100 && Airbus_FMA.CurrentPlaneState.anyAutoPilotsActive) {
                     targetState = Column4.ROW_1_STATE.CAT_3;
                 }
-                else if (Airbus_FMA.CurrentPlaneState.decisionHeight > 100 && Airbus_FMA.CurrentPlaneState.decisionHeight < 200) {
+                else if (Airbus_FMA.CurrentPlaneState.decisionHeight > 100 && Airbus_FMA.CurrentPlaneState.decisionHeight < 200 && Airbus_FMA.CurrentPlaneState.anyAutoPilotsActive) {
                     targetState = Column4.ROW_1_STATE.CAT_2;
                 }
                 else if (Airbus_FMA.CurrentPlaneState.decisionHeight >= 200) {
