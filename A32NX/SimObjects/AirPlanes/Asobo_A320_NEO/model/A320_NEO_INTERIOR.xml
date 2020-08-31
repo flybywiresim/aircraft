@@ -636,7 +636,7 @@
 		<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
 			<NODE_ID>PUSH_DOORPANEL_OPEN</NODE_ID>
 		</UseTemplate>
-		
+
 		<Component ID="WeatherRadar">
 			<UseTemplate Name="ASOBO_AIRBUS_WeatherRadar_Template">
 				<NODE_ID_MODE_KNOB>KNOB_RADAR_MODE</NODE_ID_MODE_KNOB>
