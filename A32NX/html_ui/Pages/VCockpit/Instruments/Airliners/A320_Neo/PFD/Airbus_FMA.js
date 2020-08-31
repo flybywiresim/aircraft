@@ -890,14 +890,19 @@ var Airbus_FMA;
                 }
             }
             if (this.currentRow1State == Column2.ROW_1_STATE.OP_CLB || this.currentRow1State == Column2.ROW_1_STATE.OP_DES || this.currentRow1State == Column2.ROW_1_STATE.CLB_ENGAGED || this.currentRow1State == Column2.ROW_1_STATE.DES) {
-                targetRow2State = Column2.ROW_2_STATE.ALT_ARMED;
+                if (Column2.GetModeState_GS() == MODE_STATE.ARMED) {
+                    targetRow2State = Column2.ROW_2_STATE.ALT_GS_ARMED;
+                }
+                else {
+                    targetRow2State = Column2.ROW_2_STATE.ALT_ARMED;
+                }
             }
             if (targetRow2State != this.currentRow2State) {
                 this.currentRow2State = targetRow2State;
                 switch (this.currentRow2State) {
                     case Column2.ROW_2_STATE.ALT_ARMED:
                         {
-                            this.setRowText(1, "ALT", Airbus_FMA.MODE_STATE.ARMED);
+                            this.setRowMultiText(1, "ALT", Airbus_FMA.MODE_STATE.ARMED, "", Airbus_FMA.MODE_STATE.ACTIVE);
                             break;
                         }
                     case Column2.ROW_2_STATE.ALT_CST_CONSTRAINED:
@@ -918,6 +923,11 @@ var Airbus_FMA;
                     case Column2.ROW_2_STATE.CLB_ARMED:
                         {
                             this.setRowMultiText(1, "CLB", Airbus_FMA.MODE_STATE.ARMED, "", Airbus_FMA.MODE_STATE.ACTIVE);
+                            break;
+                        }
+                    case Column2.ROW_2_STATE.ALT_GS_ARMED:
+                        {
+                            this.setRowMultiText(1, "ALT", Airbus_FMA.MODE_STATE.ARMED, "G/S", Airbus_FMA.MODE_STATE.ARMED);
                             break;
                         }
                     default:
@@ -1192,7 +1202,8 @@ var Airbus_FMA;
         ALT_CST_CONSTRAINED: 2,
         GS_ARMED: 3,
         GS_FINAL_ARMED: 4,
-        CLB_ARMED: 5
+        CLB_ARMED: 5,
+        ALT_GS_ARMED: 6
     };
     Column2._lastALTMode = undefined;
     Airbus_FMA.Column2 = Column2;
