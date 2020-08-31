@@ -671,6 +671,9 @@ var Airbus_FMA;
                 if (Column2.IsActive_VS() || Column2.GetModeState_GS() == MODE_STATE.ENGAGED) {
                     return true;
                 }
+                if (!Airbus_FMA.CurrentPlaneState.anyFlightDirectorsActive && Airbus_FMA.CurrentPlaneState.highestThrottleDetent > ThrottleMode.IDLE) {
+                    return true;
+                }
 			}
 			return false;
         }
