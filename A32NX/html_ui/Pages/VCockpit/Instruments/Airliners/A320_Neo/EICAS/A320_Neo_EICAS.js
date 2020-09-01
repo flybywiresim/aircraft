@@ -39,6 +39,7 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         this.EngineStart == 0
         this.electricity = this.querySelector("#Electricity");
         this.changePage("DOOR"); // MODIFIED
+        this.localVarUpdater = new LocalVarUpdater();
         
         SimVar.SetSimVarValue("LIGHT POTENTIOMETER:7","FLOAT64",0);
         SimVar.SetSimVarValue("LIGHT POTENTIOMETER:14","FLOAT64",0);
@@ -54,6 +55,7 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
     }
     onUpdate(_deltaTime) {
         super.onUpdate(_deltaTime);
+        this.localVarUpdater.update();
         this.updateAnnunciations();
         this.updateScreenState();
         
