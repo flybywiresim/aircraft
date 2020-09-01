@@ -1,8 +1,8 @@
 class A320_Neo_Clock extends BaseAirliners {
     constructor() {
         super();
-        this.chronoStarted = false;
         this.chronoValue = 0;
+        this.lastResetVal = 0
     }
     get templateID() { return "A320_Neo_Clock"; }
     connectedCallback() {
@@ -15,30 +15,36 @@ class A320_Neo_Clock extends BaseAirliners {
         super.disconnectedCallback();
     }
     onInteractionEvent(_args) {
-        if (_args[0] == "oclock_chrono") {
-            if (this.chronoStarted) {
-                this.chronoStarted = false;
-            }
-            else if (this.chronoValue > 0) {
-                this.chronoValue = 0;
-            }
-            else {
-                this.chronoStarted = true;
-            }
-        }
     }
     Update() {
         super.Update();
         if (this.CanUpdate()) {
-            if (this.chronoStarted) {
+            if (SimVar.GetSimVarValue("L:PUSH_CHRONO_CHR", "Bool") == 1) {
                 this.chronoValue += this.deltaTime / 1000;
             }
+
+            if (SimVar.GetSimVarValue("L:PUSH_CHRONO_RST", "Bool") != this.lastResetVal) {
+                this.chronoValue = 0
+                this.lastResetVal = SimVar.GetSimVarValue("L:PUSH_CHRONO_RST", "Bool")
+            }
+
             if (this.topSelectorElem) {
-                this.topSelectorElem.textContent = this.getChronoTime();
+                let ChronoTime = this.getChronoTime();
+                if (SimVar.GetSimVarValue("L:PUSH_CHRONO_CHR", "Bool") == 0 && ChronoTime == "00:00") {
+                    this.topSelectorElem.textContent = ""
+                } else {
+                    this.topSelectorElem.textContent = ChronoTime
+                }
             }
+
             if (this.middleSelectorElem) {
-                this.middleSelectorElem.textContent = this.getUTCTime();
+                if (SimVar.GetSimVarValue("L:PUSH_CHRONO_SET", "Bool") == 0) {
+                    this.middleSelectorElem.textContent = this.getUTCTime();
+                } else {
+                    this.middleSelectorElem.textContent = this.getUTCDate();
+                }
             }
+
             if (this.bottomselectorElem) {
                 this.bottomselectorElem.textContent = this.getFlightTime();
             }
@@ -53,6 +59,15 @@ class A320_Neo_Clock extends BaseAirliners {
         }
         return "";
     }
+
+    getUTCDate() {
+        let Day = SimVar.GetGlobalVarValue("ZULU DAY OF MONTH", "number")
+        let Month = SimVar.GetGlobalVarValue("ZULU MONTH OF YEAR", "number")
+        let Year = `${SimVar.GetGlobalVarValue("ZULU YEAR", "number")}`.substr(2,4)
+
+        return `${Day}.${Month}.${Year}`
+    }
+
     getLocalTime() {
         var value = SimVar.GetGlobalVarValue("LOCAL TIME", "seconds");
         if (value) {

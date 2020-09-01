@@ -100,7 +100,7 @@ var A320_Neo_LowerECAM_APU;
             //AVAIL indication & bleed pressure
             if (APUPctRPM > 95) {
                 this.APUAvail.setAttribute("visibility", "visible");
-                if (SimVar.GetSimVarValue("APU GENERATOR ACTIVE", "Bool") == 1) this.APUGenAvailArrow.setAttribute("visibility", "visible");
+                if (SimVar.GetSimVarValue("APU GENERATOR ACTIVE", "Bool") == 1 && SimVar.GetSimVarValue("EXTERNAL POWER ON", "Bool") === 0) this.APUGenAvailArrow.setAttribute("visibility", "visible");
                 else this.APUGenAvailArrow.setAttribute("visibility", "hidden");
                 this.APUBleedPressure.textContent = "35";
                 this.APUBleedPressure.setAttribute("class", "APUGenParamValue");
