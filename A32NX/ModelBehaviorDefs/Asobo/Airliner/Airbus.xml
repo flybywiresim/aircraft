@@ -1089,7 +1089,7 @@
 	<UseTemplate Name="ASOBO_AIRLINER_SubNodes_Setter_Template">
 		<TEMPLATE_TO_CALL>ASOBO_GT_Push_Button_Airliner</TEMPLATE_TO_CALL>
 		<LEFT_SINGLE_CODE>(L:#NODE_ID#) ! (>L:#NODE_ID#)</LEFT_SINGLE_CODE>
-  </UseTemplate>
+  	</UseTemplate>
 </Template
 
 <Template Name="ASOBO_AIRLINER_ADIRS_LIGHT_Template">
