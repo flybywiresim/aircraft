@@ -783,16 +783,19 @@
 		<UseTemplate Name="ASOBO_LANDING_GEAR_Light_Template">
 			<NODE_ID>PUSH_AUTOBKR_LDGGEAR_1</NODE_ID>
 			<ID>1</ID>
+			<GEAR_ID>1</GEAR_ID>
 			<AIRBUS_TYPE/>
 		</UseTemplate>
 		<UseTemplate Name="ASOBO_LANDING_GEAR_Light_Template">
 			<NODE_ID>PUSH_AUTOBKR_LDGGEAR_2</NODE_ID>
 			<ID>2</ID>
+			<GEAR_ID>0</GEAR_ID>
 			<AIRBUS_TYPE/>
 		</UseTemplate>
 		<UseTemplate Name="ASOBO_LANDING_GEAR_Light_Template">
 			<NODE_ID>PUSH_AUTOBKR_LDGGEAR_3</NODE_ID>
 			<ID>3</ID>
+			<GEAR_ID>2</GEAR_ID>
 			<AIRBUS_TYPE/>
 		</UseTemplate>
 		<UseTemplate Name="ASOBO_LANDING_GEAR_Warning_Template">
@@ -2462,7 +2465,7 @@
 		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
 			<NODE_ID>PUSH_BARO_RST</NODE_ID>
 		</UseTemplate>
-		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
+		<!-- <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
 			<NODE_ID>PUSH_AUTOBKR_LDGGEAR_1</NODE_ID>
 		</UseTemplate>
 		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
@@ -2470,7 +2473,7 @@
 		</UseTemplate>
 		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
 			<NODE_ID>PUSH_AUTOBKR_LDGGEAR_3</NODE_ID>
-		</UseTemplate>
+		</UseTemplate> -->
 		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
 			<NODE_ID>PUSH_CHRONO_RST</NODE_ID>
 		</UseTemplate>
