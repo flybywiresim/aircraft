@@ -33,7 +33,8 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this.onFpln = () => { CDUFlightPlanPage.ShowPage(this); };
         this.onRad = () => { CDUNavRadioPage.ShowPage(this); };
         this.onFuel = () => { CDUFuelPredPage.ShowPage(this); };
-        CDUIdentPage.ShowPage(this);
+        this.onMenu = () => { CDUMenuPage.ShowPage(this); };
+        CDUMenuPage.ShowPage(this);
         this.electricity = this.querySelector("#Electricity")
     }
     onPowerOn() {
@@ -271,9 +272,9 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             }
             return true;
         }
-        else if (input === "MCDU") {
-            if (this.onMcdu) {
-                this.onMcdu();
+        else if (input === "MENU") {
+            if (this.onMenu) {
+                this.onMenu();
             }
             return true;
         }
