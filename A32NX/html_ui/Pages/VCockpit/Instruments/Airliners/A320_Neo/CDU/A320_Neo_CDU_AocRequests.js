@@ -72,7 +72,7 @@ class CDUAocRequests {
                             
                             LineNumberBaseRatio += 1;
                         }
-                        lines.push(setSpace(10))
+                        lines.push(' ');
                     });
     
                     mcdu.onRightInput[5] = () => {
