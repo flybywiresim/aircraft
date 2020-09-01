@@ -121,9 +121,15 @@ var A320_Neo_LowerECAM_Fuel;
                 var leftConsumption = SimVar.GetSimVarValue("GENERAL ENG FUEL USED SINCE START:" + 1, "gallon") * _unitFactor * 0.001;
                 var rightConsumption = SimVar.GetSimVarValue("GENERAL ENG FUEL USED SINCE START:" + 2, "gallon") * _unitFactor * 0.001;
                 var totalConsumption = leftConsumption + rightConsumption;
-                this.leftValveValue.textContent = fastToFixed(leftConsumption, 0);
-                this.rightValveValue.textContent = fastToFixed(rightConsumption, 0);
-                this.middleFuelValue.textContent = fastToFixed(totalConsumption, 0);
+
+                //Issue 283 - Fuel should be in increments of 10
+                var leftConsumptionShown = leftConsumption - leftConsumption % 10;
+                var rightConsumptionShown = rightConsumption - rightConsumption % 10;
+                var totalConsumptionShown = totalConsumption - totalConsumption % 10;
+
+                this.leftValveValue.textContent = fastToFixed(leftConsumptionShown, 0);
+                this.rightValveValue.textContent = fastToFixed(rightConsumptionShown, 0);
+                this.middleFuelValue.textContent = fastToFixed(totalConsumptionShown, 0);
             }
             else {
                 this.fuelLevels = SimVar.GetGameVarValue("AIRCRAFT INITIAL FUEL LEVELS", "FuelLevels");
