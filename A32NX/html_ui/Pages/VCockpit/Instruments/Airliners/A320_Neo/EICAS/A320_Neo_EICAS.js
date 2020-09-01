@@ -29,28 +29,56 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         super.Init();
         this.changePage("FUEL"); // MODIFIED
 
-        this.lastAPUMasterState = 0 // MODIFIED
-        this.externalPowerWhenApuMasterOnTimer = -1 // MODIFIED
+        this.lastAPUMasterState = 0; // MODIFIED
+        this.externalPowerWhenApuMasterOnTimer = -1; // MODIFIED
         this.selfTestDiv = this.querySelector("#SelfTestDiv");
         this.selfTestTimer = -1;
         this.selfTestTimerStarted = false;
-        this.doorPageActivated = false
-        this.electricity = this.querySelector("#Electricity")
-        this.displaysAbleToTurnOff = true;
+        this.doorPageActivated = false;
+        this.EngineStarter = 0;
+        this.EngineStart == 0
+        this.electricity = this.querySelector("#Electricity");
         this.changePage("DOOR"); // MODIFIED
         
+        SimVar.SetSimVarValue("LIGHT POTENTIOMETER:7","FLOAT64",0);
+        SimVar.SetSimVarValue("LIGHT POTENTIOMETER:14","FLOAT64",0);
+        SimVar.SetSimVarValue("LIGHT POTENTIOMETER:15","FLOAT64",0);
+        SimVar.SetSimVarValue("LIGHT POTENTIOMETER:16","FLOAT64",0);        
+        SimVar.SetSimVarValue("LIGHT POTENTIOMETER:17","FLOAT64",0);
+        SimVar.SetSimVarValue("LIGHT POTENTIOMETER:18","FLOAT64",0);
+        SimVar.SetSimVarValue("LIGHT POTENTIOMETER:19","FLOAT64",0);
+        SimVar.SetSimVarValue("LIGHT POTENTIOMETER:20","FLOAT64",0);
+        SimVar.SetSimVarValue("LIGHT POTENTIOMETER:21","FLOAT64",0);
+        SimVar.SetSimVarValue("LIGHT POTENTIOMETER:22","FLOAT64",0);
+        SimVar.SetSimVarValue("LIGHT POTENTIOMETER:23","FLOAT64",0);
     }
     onUpdate(_deltaTime) {
         super.onUpdate(_deltaTime);
         this.updateAnnunciations();
+        this.updateScreenState();
         
+        var engineOn = Simplane.getEngineActive(0) || Simplane.getEngineActive(1);
         var externalPower = SimVar.GetSimVarValue("EXTERNAL POWER ON", "bool");
-        var engineOn = SimVar.GetSimVarValue("GENERAL ENG STARTER:1", "bool");
-        var apuOn = SimVar.GetSimVarValue("APU SWITCH", "bool");
-        var onRunway = SimVar.GetSimVarValue("ON ANY RUNWAY", "bool");
-        var isOnGround = SimVar.GetSimVarValue("SIM ON GROUND", "bool")
+        var apuOn = SimVar.GetSimVarValue("L:APU_GEN_ONLINE", "bool");
 
-        this.updateScreenState(externalPower, engineOn, apuOn, onRunway, isOnGround);
+        var isACPowerAvailable = engineOn || apuOn || externalPower;
+        var DCBus = false;
+        if(SimVar.GetSimVarValue("ELECTRICAL MAIN BUS VOLTAGE","Volts")>=20){
+            DCBus = true;
+        }
+        var isDCPowerAvailable = isACPowerAvailable || DCBus;
+        if(isDCPowerAvailable){
+            SimVar.SetSimVarValue("L:DCPowerAvailable","bool",1);   //True if any AC|DC bus is online
+        }
+        else{
+            SimVar.SetSimVarValue("L:DCPowerAvailable","bool",0);
+        }
+        if(isACPowerAvailable){
+            SimVar.SetSimVarValue("L:ACPowerAvailable","bool",1);   //True if any AC bus is online
+        }
+        else{
+            SimVar.SetSimVarValue("L:ACPowerAvailable","bool",0);
+        }
 
         // Check if engine is on so self test doesn't appear when not starting from cold and dark
         if (engineOn) {
@@ -58,7 +86,7 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
             this.selfTestTimerStarted = true;
         }
         // Check if external power is on & timer not already started
-        if (externalPower && !this.selfTestTimerStarted) {
+        if ((externalPower || apuOn) && !this.selfTestTimerStarted) {
             this.selfTestTimer = 14.25;
             this.selfTestTimerStarted = true;
         } // timer
@@ -74,20 +102,38 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         // automaticaly switch to the APU page when apu master switch is on
         if (this.lastAPUMasterState != currentAPUMasterState && currentAPUMasterState === 1) {  
             this.lastAPUMasterState = currentAPUMasterState;  
-            this.changePage("APU")
+            this.changePage("APU");
 
             //if external power is off when turning on apu, only show the apu page for 10 seconds, then the DOOR page
             var externalPower = SimVar.GetSimVarValue("EXTERNAL POWER ON", "Bool")  
             if (externalPower === 0) {  
-                this.externalPowerWhenApuMasterOnTimer = 10
+                this.externalPowerWhenApuMasterOnTimer = 85;
             }
 
+        }
+        //fixed ecam page not switching to engine 2 if starter is set to off
+        if(this.EngineStart == 0 && this.EngineStarter < 2 && SimVar.GetSimVarValue("GENERAL ENG STARTER:1", "Bool")){
+            this.changePage("Engine");
+            this.EngineStarter += 1;
+        }
+        if(this.EngineStarter == 2){
+            this.EngineStarter = 0;
+            this.EngineStart = 1;
+        }
+        if(SimVar.GetSimVarValue("GENERAL ENG STARTER:1","Bool") == false){
+            this.EngineStart = 0;
+            this.EngineStarter = 0;
         }
 
         if (this.externalPowerWhenApuMasterOnTimer >= 0) {  
             this.externalPowerWhenApuMasterOnTimer -= _deltaTime/1000
+            this.electricity.style.display = "block";
+            this.electricity.style.opacity = 0;
+            this.changePage("APU");
             if (this.externalPowerWhenApuMasterOnTimer <= 0) {  
-                this.changePage("DOOR")  
+                this.changePage("APU");
+                this.electricity.style.display = "none";
+                this.electricity.style.opacity = 1;
             }  
         }  
 
@@ -106,12 +152,11 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         // modification ends here
     }
 
-    updateScreenState(externalPowerOn, engineOn, apuOn, onRunway, isOnGround) {
-        if (!externalPowerOn && !apuOn && !engineOn && !onRunway && isOnGround && this.displaysAbleToTurnOff) {
-            this.electricity.style.display = "none";
-        } else {
+    updateScreenState() {
+        if (SimVar.GetSimVarValue("L:ACPowerAvailable","bool")) {
             this.electricity.style.display = "block";
-            this.displaysAbleToTurnOff = false;
+        } else {
+            this.electricity.style.display = "none";
         }
     }
 
@@ -125,7 +170,6 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
             let starterTwo = SimVar.GetSimVarValue("GENERAL ENG STARTER:2", "Bool");
             let splrsArmed = SimVar.GetSimVarValue("SPOILERS ARMED", "Bool");
             let flapsPosition = SimVar.GetSimVarValue("FLAPS HANDLE INDEX", "Number");
-            console.log(autoBrkValue);
             // ----------- MODIFIED END --------------------//
 
             infoPanelManager.clearScreen(Airliners.EICAS_INFO_PANEL_ID.PRIMARY);
@@ -184,7 +228,7 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
                 }
                 for (let i = this.annunciations.displayAdvisory.length - 1; i >= 0; i--) {
                     if (!this.annunciations.displayAdvisory[i].Acknowledged)
-                        infoPanelManager.addMessage(Airliners.EICAS_INFO_PANEL_ID.PRIMARY, this.annunciations.displayAdvisory[i].Text, (onGround) ? Airliners.EICAS_INFO_PANEL_MESSAGE_STYLE.INDICATION : Airliners.EICAS_INFO_PANEL_MESSAGE_STYLE.CAUTION);
+                        infoPanelManager.addMessage(Airliners.EICAS_INFO_PANEL_ID.PRIMARY, this.annunciations.displayAdvisory[i].Text, Airliners.EICAS_INFO_PANEL_MESSAGE_STYLE.INDICATION);
                 }
             }
         }

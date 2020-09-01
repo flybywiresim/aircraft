@@ -93,7 +93,6 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
         this.selfTestTimer = -1;
         this.selfTestTimerStarted = false;
         this.electricity = this.gps.getChildById("Electricity")
-        this.displaysAbleToTurnOff = true;
     }
     onUpdate(_deltaTime) {
         super.onUpdate(_deltaTime);
@@ -116,20 +115,18 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
             document.querySelector("#Map").setAttribute("style", "");
         }
 
+        var engineOn = Simplane.getEngineActive(0) || Simplane.getEngineActive(1);
         var externalPower = SimVar.GetSimVarValue("EXTERNAL POWER ON", "bool");
-        var engineOn = SimVar.GetSimVarValue("GENERAL ENG STARTER:1", "bool");
         var apuOn = SimVar.GetSimVarValue("APU SWITCH", "bool");
-        var onRunway = SimVar.GetSimVarValue("ON ANY RUNWAY", "bool");
-        var isOnGround = SimVar.GetSimVarValue("SIM ON GROUND", "bool")
-        
-        this.updateScreenState(externalPower, engineOn, apuOn, onRunway, isOnGround);
+
+        this.updateScreenState();
 
         if (engineOn) {
             this.selfTestDiv.style.display = "none";
             this.selfTestTimerStarted = true;
         }
         // Check if external power is on & timer not already started
-        if (externalPower && !this.selfTestTimerStarted) {
+        if ((externalPower || apuOn) && !this.selfTestTimerStarted) {
             this.selfTestTimer = 13.75;
             this.selfTestTimerStarted = true;
         }
@@ -143,12 +140,11 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
         
     }
 
-    updateScreenState(externalPowerOn, engineOn, apuOn, onRunway, isOnGround) {
-        if (!externalPowerOn && !apuOn && !engineOn && !onRunway && isOnGround && this.displaysAbleToTurnOff) {
-            this.electricity.style.display = "none";
-        } else {
+    updateScreenState() {
+        if (SimVar.GetSimVarValue("L:ACPowerAvailable","bool")) {
             this.electricity.style.display = "block";
-            this.displaysAbleToTurnOff = false;
+        } else {
+            this.electricity.style.display = "none";
         }
     }
 

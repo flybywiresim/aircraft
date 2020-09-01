@@ -4,6 +4,12 @@
   font-weight: normal;
   font-style: normal; }
 
+@font-face {
+  font-family: "Liberation Mono";
+  src: url("/Fonts/LiberationMono.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal; }
+
 :root {
   --ecamDefaultColour: white;
   --ecamShapeColour: lightgray;
@@ -19,9 +25,9 @@
     stroke-width: 4;
     fill: none; }
   :root div {
-    font-family: B612Mono !important; }
+    font-family: "Liberation Mono" !important; }
   :root text {
-    font-family: B612Mono !important; }
+    font-family: "Liberation Mono" !important; }
   :root #PageTitle {
     fill: var(--ecamDefaultColour);
     font-size: 25px;

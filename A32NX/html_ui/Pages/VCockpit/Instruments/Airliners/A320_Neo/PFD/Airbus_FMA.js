@@ -143,7 +143,8 @@ var Airbus_FMA;
     CurrentPlaneState.autoPilotActive = [false, false];
     CurrentPlaneState.autoPilotFlightDirectorActive = [false, false];
     Airbus_FMA.CurrentPlaneState = CurrentPlaneState;
-	AltCaptured = false;
+    var AltCaptured = false;
+    var SRSEnabled = false;
     class Cell {
         constructor(_parent, _className) {
             this.parent = _parent;
@@ -541,15 +542,15 @@ var Airbus_FMA;
             else if (this.IsActive_THRCLB()) {
                 return Column1.ROW_1_2_STATE.THRCLB;
             }
-            else if (this.IsActive_SPEED()) {
-                return Column1.ROW_1_2_STATE.SPEED;
-            }
             else if (this.IsActive_THRLVR()) {
                 return Column1.ROW_1_2_STATE.THRLVR;
             }
             else if (this.IsActive_THRIDLE()) {
                 return Column1.ROW_1_2_STATE.THRIDLE;
             }
+			else if (this.IsActive_SPEED()) {
+                return Column1.ROW_1_2_STATE.SPEED;
+			}
             else if (this.IsActive_MACH()) {
                 return Column1.ROW_1_2_STATE.MACH;
             }
@@ -609,7 +610,7 @@ var Airbus_FMA;
             return false;
         }
         IsActive_THRMCT() {
-            if (Airbus_FMA.CurrentPlaneState.autoPilotThrottleActive && (Airbus_FMA.CurrentPlaneState.highestThrottleDetent == ThrottleMode.FLEX_MCT)) {
+            if (Airbus_FMA.CurrentPlaneState.autoPilotThrottleActive && Airbus_FMA.CurrentPlaneState.anyFlightDirectorsActive && (Airbus_FMA.CurrentPlaneState.highestThrottleDetent == ThrottleMode.FLEX_MCT)) {
                 return true;
             }
             return false;
@@ -617,21 +618,20 @@ var Airbus_FMA;
         IsActive_THRCLB() {
             if (Airbus_FMA.CurrentPlaneState.autoPilotThrottleActive &&
                 Airbus_FMA.CurrentPlaneState.highestThrottleDetent == ThrottleMode.CLIMB &&
-                Simplane.getVerticalSpeed() > 100 && !AltCaptured) {
+                Simplane.getVerticalSpeed() > 150 && !AltCaptured && Airbus_FMA.CurrentPlaneState.anyFlightDirectorsActive && Airbus_FMA.CurrentPlaneState.anyAutoPilotsActive && !Column2.IsActive_VS() && (Column2.GetModeState_GS() != MODE_STATE.ENGAGED) && !AltCaptured) {
 				return true;
             }
             return false;
         }
         IsActive_THRLVR() {
-            if (Airbus_FMA.CurrentPlaneState.autoPilotThrottleActive &&
-                (Airbus_FMA.CurrentPlaneState.highestThrottleDetent == ThrottleMode.AUTO ||
-                    Simplane.getCurrentFlightPhase() >= FlightPhase.FLIGHT_PHASE_CRUISE)) {
+            if (Airbus_FMA.CurrentPlaneState.autoPilotThrottleActive && Airbus_FMA.CurrentPlaneState.anyFlightDirectorsActive &&
+                Airbus_FMA.CurrentPlaneState.highestThrottleDetent == ThrottleMode.AUTO && Airbus_FMA.CurrentPlaneState.anyAutoPilotsActive && !Column2.IsActive_VS() && (Column2.GetModeState_GS() != MODE_STATE.ENGAGED) && !AltCaptured) {
                 return true;
             }
             return false;
         }
         IsActive_THRIDLE() {
-            if (Airbus_FMA.CurrentPlaneState.autoPilotThrottleActive && (Airbus_FMA.CurrentPlaneState.highestThrottleDetent == ThrottleMode.IDLE)) {
+            if (Airbus_FMA.CurrentPlaneState.autoPilotThrottleActive && Airbus_FMA.CurrentPlaneState.anyFlightDirectorsActive && Simplane.getVerticalSpeed() < -150 && Airbus_FMA.CurrentPlaneState.anyAutoPilotsActive && !Column2.IsActive_VS() && (Column2.GetModeState_GS() != MODE_STATE.ENGAGED) && !AltCaptured) {
                 return true;
             }
             return false;
@@ -658,24 +658,36 @@ var Airbus_FMA;
             return false;
         }
         IsActive_SPEED() {
-			if (!Airbus_FMA.CurrentPlaneState.autoPilotMachModeActive && Airbus_FMA.CurrentPlaneState.autoPilotThrottleActive && Airbus_FMA.CurrentPlaneState.anyAutoPilotsActive) {
+			if (!Airbus_FMA.CurrentPlaneState.autoPilotMachModeActive && Airbus_FMA.CurrentPlaneState.autoPilotThrottleActive && Airbus_FMA.CurrentPlaneState.radioAltitude > 1.5) {
 				if (AltCaptured) {
 					return true;
 				}
-				if (Simplane.getVerticalSpeed() < 100) {
+				if (Simplane.getVerticalSpeed() < 150 && Simplane.getVerticalSpeed() > -150) {
 					return true;
-				}
+                }
+                if (!Airbus_FMA.CurrentPlaneState.anyAutoPilotsActive) {
+                    return true;
+                }
+                if (Column2.IsActive_VS() || Column2.GetModeState_GS() == MODE_STATE.ENGAGED) {
+                    return true;
+                }
+                if (!Airbus_FMA.CurrentPlaneState.anyFlightDirectorsActive && Airbus_FMA.CurrentPlaneState.highestThrottleDetent > ThrottleMode.IDLE) {
+                    return true;
+                }
 			}
 			return false;
         }
         IsActive_MACH() {
-			if (Airbus_FMA.CurrentPlaneState.autoPilotMachModeActive && Airbus_FMA.CurrentPlaneState.autoPilotThrottleActive && Airbus_FMA.CurrentPlaneState.anyAutoPilotsActive) {
+			if (Airbus_FMA.CurrentPlaneState.autoPilotMachModeActive && Airbus_FMA.CurrentPlaneState.autoPilotThrottleActive && Airbus_FMA.CurrentPlaneState.radioAltitude > 1.5) {
 				if (AltCaptured) {
 					return true;
 				}
-				if (Simplane.getVerticalSpeed() < 100) {
+				if (Simplane.getVerticalSpeed() < 150 && Simplane.getVerticalSpeed() > -150) {
 					return true;
-				}
+                }
+                if (!Airbus_FMA.CurrentPlaneState.anyAutoPilotsActive) {
+                    return true;
+                }
 			}
 			return false;
         }
@@ -879,6 +891,9 @@ var Airbus_FMA;
                         }
                 }
             }
+            if (this.currentRow1State == Column2.ROW_1_STATE.OP_CLB || this.currentRow1State == Column2.ROW_1_STATE.OP_DES || this.currentRow1State == Column2.ROW_1_STATE.CLB_ENGAGED || this.currentRow1State == Column2.ROW_1_STATE.DES) {
+                targetRow2State = Column2.ROW_2_STATE.ALT_ARMED;
+            }
             if (targetRow2State != this.currentRow2State) {
                 this.currentRow2State = targetRow2State;
                 switch (this.currentRow2State) {
@@ -999,47 +1014,46 @@ var Airbus_FMA;
             }
         }
         GetModeState_SRS() {
-            if (Airbus_FMA.CurrentPlaneState.flightPhase == FlightPhase.FLIGHT_PHASE_TAKEOFF) {
+            if (Airbus_FMA.CurrentPlaneState.flightPhase == FlightPhase.FLIGHT_PHASE_TAKEOFF && Airbus_FMA.CurrentPlaneState.anyFlightDirectorsActive) {
                 if (Airbus_FMA.CurrentPlaneState.highestThrottleDetent == ThrottleMode.TOGA) {
-                    return Airbus_FMA.MODE_STATE.ENGAGED;
+                    SRSEnabled = true;
                 }
                 else if ((Airbus_FMA.CurrentPlaneState.highestThrottleDetent == ThrottleMode.FLEX_MCT) && (Airbus_FMA.CurrentPlaneState.flexTemperature > 0)) {
-                    return Airbus_FMA.MODE_STATE.ENGAGED;
-                }
-                else if ((SimVar.GetSimVarValue("L:AIRLINER_V2_SPEED", "Number") > 0) && (Airbus_FMA.CurrentPlaneState.flapsHandlePercent != 0)) {
-                    return Airbus_FMA.MODE_STATE.ARMED;
+                    SRSEnabled = true;
                 }
             }
             else if (Airbus_FMA.CurrentPlaneState.flightPhase == FlightPhase.FLIGHT_PHASE_GOAROUND) {
                 if ((Airbus_FMA.CurrentPlaneState.highestThrottleDetent == ThrottleMode.TOGA) &&
                     (Airbus_FMA.CurrentPlaneState.flapsHandlePercent != 0)) {
-                    return Airbus_FMA.MODE_STATE.ENGAGED;
+                        SRSEnabled = true;
+                        return Airbus_FMA.MODE_STATE.ENGAGED;
                 }
+            }
+            if (Airbus_FMA.CurrentPlaneState.flightPhase != FlightPhase.FLIGHT_PHASE_TAKEOFF) {
+                SRSEnabled = false;
+            }
+            if (SRSEnabled) {
+                return Airbus_FMA.MODE_STATE.ENGAGED;
             }
             return Airbus_FMA.MODE_STATE.NONE;
         }
         static GetModeState_ALT() {
-            if (Airbus_FMA.CurrentPlaneState.anyAutoPilotsActive && Airbus_FMA.CurrentPlaneState.autoPilotAltitudeLockActive) {
-                if (Airbus_FMA.CurrentPlaneState.autoPilotAltitudeArmed) {
-                    return Airbus_FMA.MODE_STATE.ARMED;
+            if (Airbus_FMA.CurrentPlaneState.anyAutoPilotsActive && Airbus_FMA.CurrentPlaneState.autoPilotAltitudeLockActive && Airbus_FMA.CurrentPlaneState.anyFlightDirectorsActive) {
+                var diffAlt = Math.abs(Airbus_FMA.CurrentPlaneState.autoPilotAltitudeLockValue - Airbus_FMA.CurrentPlaneState.altitude);
+                if (diffAlt <= Airbus_FMA.Definitions.ALT_ENGAGED_RANGE) {
+                    this._lastALTMode = Airbus_FMA.MODE_STATE.ENGAGED;
                 }
                 else {
-                    var diffAlt = Math.abs(Airbus_FMA.CurrentPlaneState.autoPilotAltitudeLockValue - Airbus_FMA.CurrentPlaneState.altitude);
-                    if (diffAlt <= Airbus_FMA.Definitions.ALT_ENGAGED_RANGE) {
-                        this._lastALTMode = Airbus_FMA.MODE_STATE.ENGAGED;
-                    }
-                    else {
-                        if (this._lastALTMode == Airbus_FMA.MODE_STATE.ENGAGED) {
-                            if ((diffAlt - Airbus_FMA.Definitions.ALT_ENGAGED_RANGE) > 50) {
-                                this._lastALTMode = Airbus_FMA.MODE_STATE.CAPTURED;
-                            }
-                        }
-                        else {
+                    if (this._lastALTMode == Airbus_FMA.MODE_STATE.ENGAGED) {
+                        if ((diffAlt - Airbus_FMA.Definitions.ALT_ENGAGED_RANGE) > 50) {
                             this._lastALTMode = Airbus_FMA.MODE_STATE.CAPTURED;
                         }
                     }
-                    return this._lastALTMode;
+                    else {
+                        this._lastALTMode = Airbus_FMA.MODE_STATE.CAPTURED;
+                    }
                 }
+                return this._lastALTMode;
             }
             return Airbus_FMA.MODE_STATE.NONE;
         }
@@ -1047,7 +1061,7 @@ var Airbus_FMA;
             return Airbus_FMA.MODE_STATE.NONE;
         }
         static IsActive_VS() {
-            if (Airbus_FMA.CurrentPlaneState.autoPilotVerticalSpeedHoldActive && !Airbus_FMA.CurrentPlaneState.autoPilotTRKFPAModeActive) {
+            if (Airbus_FMA.CurrentPlaneState.autoPilotVerticalSpeedHoldActive && !Airbus_FMA.CurrentPlaneState.autoPilotTRKFPAModeActive && Airbus_FMA.CurrentPlaneState.anyFlightDirectorsActive) {
                 return true;
             }
             else {
@@ -1055,7 +1069,7 @@ var Airbus_FMA;
             }
         }
         static IsActive_FPA() {
-            if (Airbus_FMA.CurrentPlaneState.autoPilotVerticalSpeedHoldActive && Airbus_FMA.CurrentPlaneState.autoPilotTRKFPAModeActive) {
+            if (Airbus_FMA.CurrentPlaneState.autoPilotVerticalSpeedHoldActive && Airbus_FMA.CurrentPlaneState.autoPilotTRKFPAModeActive && Airbus_FMA.CurrentPlaneState.anyFlightDirectorsActive) {
                 return true;
             }
             else {
@@ -1069,7 +1083,7 @@ var Airbus_FMA;
             return false;
         }
         static GetModeState_GS() {
-            if (Simplane.getAutoPilotAPPRHold() && Simplane.getAutoPilotGlideslopeHold() && Simplane.getAutoPilotApproachType() == 4) {
+            if (Simplane.getAutoPilotAPPRHold() && Simplane.getAutoPilotGlideslopeHold() && Simplane.getAutoPilotApproachType() == 4 && Airbus_FMA.CurrentPlaneState.anyFlightDirectorsActive) {
                 if (Simplane.getAutoPilotGlideslopeActive() && Simplane.getAutoPilotAPPRActive()) {
                     return Airbus_FMA.MODE_STATE.ENGAGED;
                 }
@@ -1080,40 +1094,59 @@ var Airbus_FMA;
             return Airbus_FMA.MODE_STATE.NONE;
         }
         IsActive_OPCLB() {
-            if (Simplane.getAutoPilotAltitudeSelected()) {
-                if (Simplane.getVerticalSpeed() > 100) {
+            if ((Simplane.getAutoPilotAltitudeSelected() || Simplane.getAutoPilotAltitudeArmed()) && Airbus_FMA.CurrentPlaneState.anyFlightDirectorsActive && Airbus_FMA.CurrentPlaneState.anyAutoPilotsActive) {
+                let targetAltitude = Simplane.getAutoPilotAltitudeLockValue("feets");
+                let altitude = Simplane.getAltitude();
+                if (altitude < targetAltitude - 100) {
                     return true;
                 }
             }
         }
         IsActive_OPDES() {
-            if (Simplane.getAutoPilotAltitudeSelected()) {
-                if (Simplane.getVerticalSpeed() < -100) {
+            if ((Simplane.getAutoPilotAltitudeSelected() || Simplane.getAutoPilotAltitudeArmed()) && Airbus_FMA.CurrentPlaneState.anyFlightDirectorsActive && Airbus_FMA.CurrentPlaneState.anyAutoPilotsActive) {
+                let targetAltitude = Simplane.getAutoPilotAltitudeLockValue("feets");
+                let altitude = Simplane.getAltitude();
+                if (altitude > targetAltitude + 100) {
                     return true;
                 }
             }
         }
         GetModeState_CLB() {
-            if ((Airbus_FMA.CurrentPlaneState.autoPilotAltitudeLockActive && Airbus_FMA.CurrentPlaneState.anyFlightDirectorsActive || Simplane.getAutoPilotFLCActive()) && (Airbus_FMA.CurrentPlaneState.altitude < Airbus_FMA.CurrentPlaneState.autoPilotAltitudeLockValue) && Airbus_FMA.CurrentPlaneState.anyFlightDirectorsActive) {
+            if ((Airbus_FMA.CurrentPlaneState.autoPilotAltitudeLockActive && Airbus_FMA.CurrentPlaneState.anyFlightDirectorsActive || Simplane.getAutoPilotFLCActive() && Airbus_FMA.CurrentPlaneState.anyFlightDirectorsActive) && (Airbus_FMA.CurrentPlaneState.altitude < Airbus_FMA.CurrentPlaneState.autoPilotAltitudeLockValue) && Airbus_FMA.CurrentPlaneState.anyFlightDirectorsActive) {
                 if (Airbus_FMA.CurrentPlaneState.flightPhase < FlightPhase.FLIGHT_PHASE_CLIMB) {
                     return Airbus_FMA.MODE_STATE.ARMED;
                 }
-                else if (Airbus_FMA.CurrentPlaneState.flightPhase == FlightPhase.FLIGHT_PHASE_CLIMB) {
-                    return Airbus_FMA.MODE_STATE.ENGAGED;
+                else if (Airbus_FMA.CurrentPlaneState.radioAltitude <= 1.5) {
+                    return Airbus_FMA.MODE_STATE.NONE;
                 }
-            }
-            if (Simplane.getAutoPilotFLCActive()) {
                 let targetAltitude = Simplane.getAutoPilotAltitudeLockValue("feets");
                 let altitude = Simplane.getAltitude();
                 if (altitude < targetAltitude - 100) {
-                    return Airbus_FMA.MODE_STATE.ENGAGED;
+                    if (Airbus_FMA.CurrentPlaneState.radioAltitude > 1.5) {
+                        return Airbus_FMA.MODE_STATE.ENGAGED;
+                    }
+                    else {
+                        return Airbus_FMA.MODE_STATE.NONE;
+                    }
+                }
+            }
+            if (Simplane.getAutoPilotFLCActive() && Airbus_FMA.CurrentPlaneState.anyFlightDirectorsActive) {
+                let targetAltitude = Simplane.getAutoPilotAltitudeLockValue("feets");
+                let altitude = Simplane.getAltitude();
+                if (altitude < targetAltitude - 100) {
+                    if (Airbus_FMA.CurrentPlaneState.radioAltitude <= 1.5) {
+                        return Airbus_FMA.MODE_STATE.ENGAGED;
+                    }
+                    else {
+                        return Airbus_FMA.MODE_STATE.NONE;
+                    }
                 }
             }
             return Airbus_FMA.MODE_STATE.NONE;
         }
         IsActive_DES() {
             if (Airbus_FMA.CurrentPlaneState.autoPilotAltitudeLockActive && (Airbus_FMA.CurrentPlaneState.altitude > Airbus_FMA.CurrentPlaneState.autoPilotAltitudeLockValue) && Airbus_FMA.CurrentPlaneState.anyFlightDirectorsActive) {
-                if (Airbus_FMA.CurrentPlaneState.flightPhase == FlightPhase.FLIGHT_PHASE_DESCENT) {
+                if (Airbus_FMA.CurrentPlaneState.flightPhase == FlightPhase.FLIGHT_PHASE_DESCENT && Simplane.getVerticalSpeed() < -10) {
                     return true;
                 }
             }
@@ -1323,7 +1356,7 @@ var Airbus_FMA;
             }
         }
         IsActive_RWY() {
-            if (Airbus_FMA.CurrentPlaneState.flightPhase <= FlightPhase.FLIGHT_PHASE_CLIMB) {
+            if (Airbus_FMA.CurrentPlaneState.flightPhase <= FlightPhase.FLIGHT_PHASE_CLIMB && Airbus_FMA.CurrentPlaneState.anyFlightDirectorsActive) {
                 if (Airbus_FMA.CurrentPlaneState.highestThrottleDetent >= ThrottleMode.FLEX_MCT) {
                     if (Airbus_FMA.CurrentPlaneState.radioAltitude < 30) {
                         return true;
@@ -1333,7 +1366,7 @@ var Airbus_FMA;
             return false;
         }
         IsActive_HDG() {
-            if (Airbus_FMA.CurrentPlaneState.autoPilotHeadingSelectedMode && !Airbus_FMA.CurrentPlaneState.autoPilotTRKFPAModeActive) {
+            if (Airbus_FMA.CurrentPlaneState.autoPilotHeadingSelectedMode && !Airbus_FMA.CurrentPlaneState.autoPilotTRKFPAModeActive && Airbus_FMA.CurrentPlaneState.anyFlightDirectorsActive && Airbus_FMA.CurrentPlaneState.radioAltitude >= 1.5) {
                 return true;
             }
             else {
@@ -1341,7 +1374,7 @@ var Airbus_FMA;
             }
         }
         IsActive_TRACK() {
-            if (Airbus_FMA.CurrentPlaneState.autoPilotHeadingSelectedMode && Airbus_FMA.CurrentPlaneState.autoPilotTRKFPAModeActive) {
+            if (Airbus_FMA.CurrentPlaneState.autoPilotHeadingSelectedMode && Airbus_FMA.CurrentPlaneState.autoPilotTRKFPAModeActive && Airbus_FMA.CurrentPlaneState.anyFlightDirectorsActive) {
                 return true;
             }
             else {
@@ -1349,17 +1382,19 @@ var Airbus_FMA;
             }
         }
         GetModeState_LOC() {
-            if (Simplane.getAutoPilotAPPRActive()) {
-                return Airbus_FMA.MODE_STATE.ENGAGED;
-            }
-            else if (Simplane.getAutoPilotAPPRArm()) {
-                return Airbus_FMA.MODE_STATE.ARMED;
-            }
+			if (Airbus_FMA.CurrentPlaneState.anyFlightDirectorsActive) {
+				if (Simplane.getAutoPilotAPPRActive()) {
+					return Airbus_FMA.MODE_STATE.ENGAGED;
+				}
+				else if (Simplane.getAutoPilotAPPRArm()) {
+					return Airbus_FMA.MODE_STATE.ARMED;
+				}
+			}
             return Airbus_FMA.MODE_STATE.NONE;
         }
         GetModeState_NAV() {
             if (Airbus_FMA.CurrentPlaneState.autoPilotHeadingManagedMode && Airbus_FMA.CurrentPlaneState.anyFlightDirectorsActive) {
-                if ((Airbus_FMA.CurrentPlaneState.radioAltitude >= 30) && Airbus_FMA.CurrentPlaneState.anyAutoPilotsActive) {
+                if (Airbus_FMA.CurrentPlaneState.radioAltitude >= 30) {
                     return Airbus_FMA.MODE_STATE.ENGAGED;
                 }
                 else {
@@ -1370,7 +1405,7 @@ var Airbus_FMA;
         }
         IsActive_RWYTRK() {
             if (!this.rwytrkDisabled) {
-                if (Airbus_FMA.CurrentPlaneState.flightPhase <= FlightPhase.FLIGHT_PHASE_CLIMB) {
+                if (Airbus_FMA.CurrentPlaneState.flightPhase <= FlightPhase.FLIGHT_PHASE_CLIMB && Airbus_FMA.CurrentPlaneState.anyFlightDirectorsActive) {
                     if (Airbus_FMA.CurrentPlaneState.highestThrottleDetent >= ThrottleMode.FLEX_MCT) {
                         if (!Airbus_FMA.CurrentPlaneState.autoPilotHeadingManagedMode) {
                             if (Airbus_FMA.CurrentPlaneState.radioAltitude >= 30) {
@@ -1439,11 +1474,14 @@ var Airbus_FMA;
         }
         updateRow1(_deltaTime) {
             var targetState = Column4.ROW_1_STATE.NONE;
-            if (Airbus_FMA.CurrentPlaneState.autoPilotAPPRActive) {
-                if (Airbus_FMA.CurrentPlaneState.autoPilotActive && Airbus_FMA.CurrentPlaneState.isILSApproachActive) {
+            if (Simplane.getAutoPilotAPPRActive() && Airbus_FMA.CurrentPlaneState.isILSApproachActive) {
+                if (Airbus_FMA.CurrentPlaneState.decisionHeight < 100 && Airbus_FMA.CurrentPlaneState.anyAutoPilotsActive) {
                     targetState = Column4.ROW_1_STATE.CAT_3;
                 }
-                else if (!Airbus_FMA.CurrentPlaneState.autoPilotActive && Airbus_FMA.CurrentPlaneState.isILSApproachActive) {
+                else if (Airbus_FMA.CurrentPlaneState.decisionHeight > 100 && Airbus_FMA.CurrentPlaneState.decisionHeight < 200 && Airbus_FMA.CurrentPlaneState.anyAutoPilotsActive) {
+                    targetState = Column4.ROW_1_STATE.CAT_2;
+                }
+                else if (Airbus_FMA.CurrentPlaneState.decisionHeight >= 200) {
                     targetState = Column4.ROW_1_STATE.CAT_1;
                 }
             }
@@ -1475,7 +1513,7 @@ var Airbus_FMA;
         }
         updateRow2(_deltaTime) {
             var targetState = Column4.ROW_2_STATE.NONE;
-            if (Airbus_FMA.CurrentPlaneState.autoPilotAPPRActive && (Airbus_FMA.CurrentPlaneState.isILSApproachActive || Airbus_FMA.CurrentPlaneState.isNonILSApproachActive) && Airbus_FMA.CurrentPlaneState.anyAutoPilotsActive) {
+            if (Simplane.getAutoPilotAPPRActive() && (Airbus_FMA.CurrentPlaneState.isILSApproachActive || Airbus_FMA.CurrentPlaneState.isNonILSApproachActive) && Airbus_FMA.CurrentPlaneState.anyAutoPilotsActive) {
                 if (Airbus_FMA.CurrentPlaneState.bothAutoPilotsActive) {
                     targetState = Column4.ROW_2_STATE.DUAL;
                 }
@@ -1594,17 +1632,17 @@ var Airbus_FMA;
                 switch (targetState) {
                     case Column5.ROW_1_STATE.AP_1:
                         {
-                            this.setRowText(0, "AP1", Airbus_FMA.MODE_STATE.ENGAGED);
+                            this.setRowText(0, "AP1", Airbus_FMA.MODE_STATE.ACTIVE);
                             break;
                         }
                     case Column5.ROW_1_STATE.AP_2:
                         {
-                            this.setRowText(0, "AP2", Airbus_FMA.MODE_STATE.ENGAGED);
+                            this.setRowText(0, "AP2", Airbus_FMA.MODE_STATE.ACTIVE);
                             break;
                         }
                     case Column5.ROW_1_STATE.AP_BOTH:
                         {
-                            this.setRowText(0, "AP1+2", Airbus_FMA.MODE_STATE.ENGAGED);
+                            this.setRowText(0, "AP1+2", Airbus_FMA.MODE_STATE.ACTIVE);
                             break;
                         }
                     default:
@@ -1625,17 +1663,17 @@ var Airbus_FMA;
                 switch (targetState) {
                     case Column5.ROW_2_STATE.FD_1:
                         {
-                            this.setRowText(1, "1FD-", Airbus_FMA.MODE_STATE.STATUS);
+                            this.setRowText(1, "1FD-", Airbus_FMA.MODE_STATE.ACTIVE);
                             break;
                         }
                     case Column5.ROW_2_STATE.FD_2:
                         {
-                            this.setRowText(1, "-FD2", Airbus_FMA.MODE_STATE.STATUS);
+                            this.setRowText(1, "-FD2", Airbus_FMA.MODE_STATE.ACTIVE);
                             break;
                         }
                     case Column5.ROW_2_STATE.FD_BOTH:
                         {
-                            this.setRowText(1, "1FD2", Airbus_FMA.MODE_STATE.STATUS);
+                            this.setRowText(1, "1 FD 2", Airbus_FMA.MODE_STATE.ACTIVE);
                             break;
                         }
                     default:
@@ -1648,7 +1686,7 @@ var Airbus_FMA;
         }
         refreshAutoThrottleDisplay() {
             var targetState = Column5.ROW_3_STATE.NONE;
-            if (Airbus_FMA.CurrentPlaneState.autoPilotThrottleActive) {
+            if (Airbus_FMA.CurrentPlaneState.autoPilotThrottleActive && Airbus_FMA.CurrentPlaneState.radioAltitude > 1.5) {
                 targetState = Column5.ROW_3_STATE.ATHR_ACTIVE;
             }
             else if (Airbus_FMA.CurrentPlaneState.autoPilotThrottleArmed) {
@@ -1743,6 +1781,9 @@ var Airbus_FMA;
                         targetState = VerticalAndLateral.STATE.LAND;
                     }
                 }
+                if (!Airbus_FMA.CurrentPlaneState.anyFlightDirectorsActive || Simplane.getGroundSpeed() < 40) {
+                    targetState = VerticalAndLateral.STATE.NONE;
+                }
                 if (targetState != this.currentState) {
                     if (this.currentState == VerticalAndLateral.STATE.ROLLOUT) {
                         this.rolloutDelay = 0;
@@ -1786,7 +1827,7 @@ var Airbus_FMA;
             this._previousState = this.currentState;
         }
         static IsActive_FinalApp() {
-            return Simplane.getAutoPilotGlideslopeActive() && Simplane.getAutoPilotAPPRActive() && Simplane.getAutoPilotApproachType() == 10;
+            return Simplane.getAutoPilotGlideslopeActive() && Simplane.getAutoPilotAPPRActive() && Simplane.getAutoPilotApproachType() == 10 && Airbus_FMA.CurrentPlaneState.anyFlightDirectorsActive;
         }
         static IsActive_Any() {
             return Airbus_FMA.VerticalAndLateral.isActive;

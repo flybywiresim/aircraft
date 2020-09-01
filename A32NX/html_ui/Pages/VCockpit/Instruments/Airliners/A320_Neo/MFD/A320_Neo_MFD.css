@@ -38,7 +38,17 @@
     src: url("/Fonts/RobotoMono-Bold.ttf") format("truetype");
     font-weight: normal;
     font-style: normal; }
-  
+
+  @font-face {
+    font-family: "Liberation Mono";
+    src: url("/Fonts/LiberationMono.ttf") format("truetype");
+    font-weight: normal;
+    font-style: normal; }
+
+  text {
+    font-family: "Liberation Mono" !important;
+  }
+
   #Mainframe {
     --refWidth: 1024;
     --refHeight: 1024; }
@@ -142,6 +152,8 @@
           left: 0%;
           width: 40%;
           position: absolute; }
+        a320-neo-mfd-element #Mainframe #TopBox #Speed svg {
+          overflow: visible; }
         a320-neo-mfd-element #Mainframe #TopBox #Title {
           top: 15%;
           height: 100%;
