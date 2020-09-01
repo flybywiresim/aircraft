@@ -244,18 +244,18 @@
 	</Sound>
 
 	<Sound WwiseData="true" WwiseEvent="light_switch_seatbelt" LocalVar="XMLVAR_SWITCH_OVHD_INTLT_SEATBELT_Position" Continuous="false">
-		<Requires LocalVar="A320_Neo_BAT_State">
-            <Range LowerBound="1" />
-        </Requires>
+		<Requires SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1">
+			<Range LowerBound="28" />
+		</Requires>
 		<Requires LocalVar="XMLVAR_SWITCH_OVHD_INTLT_SEATBELT_Position"/>
 	</Sound>
 
 	<Sound WwiseData="true" WwiseEvent="light_switch_seatbelt" LocalVar="XMLVAR_SWITCH_OVHD_INTLT_NOSMOKING_Position" Continuous="false">
 		<Range LowerBound="0" UpperBound="1.1"/>
 		<Range LowerBound="1.9" UpperBound="2"/>
-		<Requires LocalVar="A320_Neo_BAT_State">
-            <Range LowerBound="1" />
-        </Requires>
+		<Requires SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1">
+			<Range LowerBound="28" />
+		</Requires>
     	<Requires LocalVar="XMLVAR_SWITCH_OVHD_INTLT_NOSMOKING_Position"/>
 	</Sound>
 	
@@ -386,8 +386,6 @@
 	<Sound WwiseData="true" WwiseEvent="double_light_switch" ViewPoint="Inside"/>	  	  
 	<Sound WwiseData="true" WwiseEvent="cabin_light_switch" ViewPoint="Inside"/>	  		  
 	<Sound WwiseData="true" WwiseEvent="lighting_knob_generic" ViewPoint="Inside"/>
-
-	<!-- <Sound WwiseData="true" WwiseEvent="light_switch_seatbelt" ViewPoint="Inside"/> -->
 
 	<!-- AUTOPILOT =======================================================================================  --> 	  
 	<Sound WwiseData="true" WwiseEvent="autopilot_knob_push_button_on" ViewPoint="Inside"/>	  	  

@@ -155,13 +155,16 @@ CabinLights=False
 GlareshieldLights=False
 PedestalLights=False
 Potentiometer.7=0
-Potentiometer.14=0.5
+Potentiometer.14=0
 Potentiometer.15=0
-Potentiometer.17=0.5
-Potentiometer.18=0.5
-Potentiometer.19=0.5
-Potentiometer.20=0.5
-Potentiometer.21=0.5
+Potentiometer.16=0
+Potentiometer.17=0
+Potentiometer.18=0
+Potentiometer.19=0
+Potentiometer.20=0
+Potentiometer.21=0
+Potentiometer.22=0
+Potentiometer.23=0
 
 [AutoPilot.0]
 MasterSwitch=False

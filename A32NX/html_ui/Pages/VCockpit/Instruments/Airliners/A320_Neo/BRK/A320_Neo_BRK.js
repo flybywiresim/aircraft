@@ -67,24 +67,41 @@ var A320_Neo_BRK;
         }
         Update() {
             super.Update();
-            var currentPKGBrakeState = SimVar.GetSimVarValue("BRAKE PARKING POSITION", "Bool");//Z ADDED if PKG BRAKE IS SET
+            var currentPKGBrakeState = SimVar.GetSimVarValue("BRAKE PARKING POSITION", "Bool");
             if (this.topGauge != null) {
-                this.topGauge.setValue(3);
+                if(SimVar.GetSimVarValue("L:DCPowerAvailable","Bool")){
+                    this.topGauge.setValue(3);
+                }
+                else{
+                    this.topGauge.setValue(0);
+                }
             }
             
             if (this.leftGauge != null) {
-                if (currentPKGBrakeState !=0) {//Z ADDED if PKG BRAKE IS SET
-                this.leftGauge.setValue(2);// JZ ADDED SET the PSI values
-                } else {
-                this.leftGauge.setValue(0);// JZ ADDED SET the PSI values 
+                if(SimVar.GetSimVarValue("L:DCPowerAvailable","Bool")){
+                    if (currentPKGBrakeState !=0) {
+                        this.leftGauge.setValue(2);
+                    }
+                    else{
+                        this.leftGauge.setValue(2*(SimVar.GetSimVarValue("BRAKE LEFT POSITION","SINT32")/32000));
+                    }
+                }
+                else{
+                    this.leftGauge.setValue(0);
                 }
             }
             if (this.rightGauge != null) {
-                if (currentPKGBrakeState !=0) {//Z ADDED if PKG BRAKE IS SET
-                    this.rightGauge.setValue(2);// JZ ADDED SET the PSI values
-                    } else {
-                    this.rightGauge.setValue(0);// JZ ADDED SET the PSI values 
+                if(SimVar.GetSimVarValue("L:DCPowerAvailable","Bool")){
+                    if (currentPKGBrakeState !=0) {
+                        this.rightGauge.setValue(2);
                     }
+                    else{
+                        this.rightGauge.setValue(2*(SimVar.GetSimVarValue("BRAKE RIGHT POSITION","SINT32")/32000));
+                    }
+                }
+                else{
+                    this.rightGauge.setValue(0);
+                }
             }
         }
     }
