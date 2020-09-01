@@ -1615,7 +1615,7 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
         }
     }
     updateFail() {
-        var failed = !(SimVar.GetSimVarValue("L:A320_Neo_ADIRS_STATE", "Enum") >= 1);
+        var failed = !(SimVar.GetSimVarValue("L:A32NX_ADIRS_PFD_ALIGNED", "Bool") == 1);
         if (!failed) {
             this.bg.setAttribute("stroke", "transparent");
             this.topLine.setAttribute("stroke", "white");

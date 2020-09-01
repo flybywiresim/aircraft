@@ -698,6 +698,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             //Turn off ADIRS
             SimVar.SetSimVarValue("L:A320_Neo_ADIRS_STATE", "Enum", 0);
             SimVar.SetSimVarValue("L:A320_Neo_ADIRS_IN_ALIGN", "Bool", 0);
+            SimVar.SetSimVarValue("L:A32NX_ADIRS_PFD_ALIGNED", "Bool", 0);
             ADIRSState = 0;
         }
 
@@ -705,16 +706,23 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             //Start ADIRS Alignment
             SimVar.SetSimVarValue("L:A320_Neo_ADIRS_STATE", "Enum", 1);
             SimVar.SetSimVarValue("L:A320_Neo_ADIRS_IN_ALIGN", "Bool", 1); // DELETE AFTER MCDU IRS INIT IS IMPLEMENTED
+            SimVar.SetSimVarValue("L:A32NX_ADIRS_PFD_ALIGNED", "Bool", 0);
             ADIRSState = 1;
             let currentLatitude = SimVar.GetSimVarValue("GPS POSITION LAT", "degree latitude")
             ADIRSTimer = Math.abs(1.14 * currentLatitude) * 10; //ADIRS ALIGN TIME DEPENDING ON LATITUDE.
             SimVar.SetSimVarValue("L:A320_Neo_ADIRS_TIME", "Seconds", ADIRSTimer);
+            SimVar.SetSimVarValue("L:A32NX_Neo_ADIRS_START_TIME", "Seconds", ADIRSTimer);
         }
 
         if (ADIRSState == 1 && SimVar.GetSimVarValue("L:A320_Neo_ADIRS_IN_ALIGN", "Bool") == 1) {
             if (ADIRSTimer > 0) {
                 ADIRSTimer -= deltaTime/1000;
                 SimVar.SetSimVarValue("L:A320_Neo_ADIRS_TIME", "Seconds", ADIRSTimer);
+                const pfdAlignTime = SimVar.GetSimVarValue("L:A32NX_Neo_ADIRS_START_TIME", "Seconds") * 0.6;
+                if (ADIRSTimer < pfdAlignTime && SimVar.GetSimVarValue("L:A32NX_ADIRS_PFD_ALIGNED", "Bool") == 0) {
+                    //PFD Alignment Completed
+                    SimVar.SetSimVarValue("L:A32NX_ADIRS_PFD_ALIGNED", "Bool", 1);
+                }
                 if (ADIRSTimer <= 0) {
                     //ADIRS Alignment Completed
                     SimVar.SetSimVarValue("L:A320_Neo_ADIRS_STATE", "Enum", 2);

@@ -107,11 +107,11 @@ class A320_Neo_PFD_MainPage extends NavSystemPage {
         }
 
         var ADIRSState = SimVar.GetSimVarValue("L:A320_Neo_ADIRS_STATE", "Enum");
+        var PFDAligned = SimVar.GetSimVarValue("L:A32NX_ADIRS_PFD_ALIGNED", "Bool");
 
-        if (ADIRSState >= 1) {
+        if (PFDAligned) {
             this.attitudeFail.setAttribute("style", "display:none");
             this.miscFail.setAttribute("style", "display:none");
-            
         } else {
             this.attitudeFail.setAttribute("style", "");
             this.miscFail.setAttribute("style", "");
