@@ -2465,7 +2465,8 @@
 		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
 			<NODE_ID>PUSH_BARO_RST</NODE_ID>
 		</UseTemplate>
-		<!-- <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
+		<!-- Landing Light Indicators 
+		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
 			<NODE_ID>PUSH_AUTOBKR_LDGGEAR_1</NODE_ID>
 		</UseTemplate>
 		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
@@ -2473,7 +2474,8 @@
 		</UseTemplate>
 		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
 			<NODE_ID>PUSH_AUTOBKR_LDGGEAR_3</NODE_ID>
-		</UseTemplate> -->
+		</UseTemplate>
+		 -->
 		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
 			<NODE_ID>PUSH_CHRONO_RST</NODE_ID>
 		</UseTemplate>
