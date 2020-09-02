@@ -1,6 +1,11 @@
 {
     "content": [
         {
+            "path": ".editorconfig",
+            "size": 151,
+            "date": "132402817714110148"
+        },
+        {
             "path": "ModelBehaviorDefs/Airliner/Airbus.xml",
             "size": 36725,
             "date": "132402817714110148"
