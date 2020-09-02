@@ -682,7 +682,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         }
     }
     checkUpdateFlightPhase() {
-        let airSpeed = SimVar.GetSimVarValue("AIRSPEED TRUE", "knots");
+        const airSpeed = SimVar.GetSimVarValue("AIRSPEED TRUE", "knots");
         if (airSpeed > 10) {
             if (this.currentFlightPhase === 0) {
                 this.currentFlightPhase = FlightPhase.FLIGHT_PHASE_TAKEOFF;
