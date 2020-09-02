@@ -470,7 +470,7 @@
 			</Condition>
 		</Annunciation>
 
-        <Annunciation>
+		<Annunciation>
 		  <Type>Advisory</Type>
 		  <Text>SEAT BELTS</Text>
 		  <Condition>
@@ -478,34 +478,11 @@
 		  </Condition>
 		</Annunciation>
 
-        <Annunciation>
+		<Annunciation>
 		  <Type>Advisory</Type>
 		  <Text>NO SMOKING</Text>
 		  <Condition>
-		  	<Or>
-				<Equal>
-					<Simvar name="L:XMLVAR_SWITCH_OVHD_INTLT_NOSMOKING_Position" unit="Position"/>
-					<Constant>0.0</Constant>
-				</Equal>
-				<And>
-					<Equal>
-						<Simvar name="L:XMLVAR_SWITCH_OVHD_INTLT_NOSMOKING_Position" unit="Position"/>
-						<Constant>1.0</Constant>
-					</Equal>
-					<Greater>
-						<Simvar name="GEAR RIGHT POSITION" unit="Percent"/>
-						<Constant>50</Constant>
-					</Greater>
-					<Greater>
-						<Simvar name="GEAR CENTER POSITION" unit="Percent"/>
-						<Constant>50</Constant>
-					</Greater>
-					<Greater>
-						<Simvar name="GEAR LEFT POSITION" unit="Percent"/>
-						<Constant>50</Constant>
-					</Greater>
-				</And>
-			</Or>
+			<Simvar name="L:A32NX_NO_SMOKING_MEMO" unit="Bool"/>
 		  </Condition>
 		</Annunciation>
 
