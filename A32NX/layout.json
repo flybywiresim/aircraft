@@ -137,7 +137,7 @@
         },
         {
             "path": "SimObjects/AirPlanes/Asobo_A320_NEO/panel/panel.xml",
-            "size": 25371,
+            "size": 24736,
             "date": "132402817714110148"
         },
         {
@@ -157,7 +157,7 @@
         },
         {
             "path": "SimObjects/AirPlanes/Asobo_A320_NEO/sound/sound.xml",
-            "size": 29393,
+            "size": 29277,
             "date": "132402817714110148"
         },
         {
@@ -412,12 +412,17 @@
         },
         {
             "path": "html_ui/Pages/VCockpit/Instruments/Airliners/A320_Neo/EICAS/A320_Neo_EICAS.html",
-            "size": 5403,
+            "size": 5532,
             "date": "132402817714110148"
         },
         {
             "path": "html_ui/Pages/VCockpit/Instruments/Airliners/A320_Neo/EICAS/A320_Neo_EICAS.js",
-            "size": 12688,
+            "size": 12781,
+            "date": "132402817714110148"
+        },
+        {
+            "path": "html_ui/Pages/VCockpit/Instruments/Airliners/A320_Neo/EICAS/A32NX_LocalVarUpdater.js",
+            "size": 1524,
             "date": "132402817714110148"
         },
         {
