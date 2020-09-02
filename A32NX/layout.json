@@ -176,6 +176,11 @@
             "date": "132402817714110148"
         },
         {
+            "path": "en-US.locPak",
+            "size": 1859,
+            "date": "132402817714110148"
+        },
+        {
             "path": "html_ui/Fonts/B612Mono-Regular.ttf",
             "size": 140292,
             "date": "132402817714110148"
@@ -378,6 +383,21 @@
         {
             "path": "html_ui/Pages/VCockpit/Instruments/Airliners/A320_Neo/CDU/A320_Neo_CDU_WaypointPage.js",
             "size": 1535,
+            "date": "132402817714110148"
+        },
+        {
+            "path": "html_ui/Pages/VCockpit/Instruments/Airliners/A320_Neo/Clock/A320_Neo_Clock.css",
+            "size": 2344,
+            "date": "132402817714110148"
+        },
+        {
+            "path": "html_ui/Pages/VCockpit/Instruments/Airliners/A320_Neo/Clock/A320_Neo_Clock.html",
+            "size": 1363,
+            "date": "132402817714110148"
+        },
+        {
+            "path": "html_ui/Pages/VCockpit/Instruments/Airliners/A320_Neo/Clock/A320_Neo_Clock.js",
+            "size": 4006,
             "date": "132402817714110148"
         },
         {
