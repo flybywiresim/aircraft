@@ -51,10 +51,8 @@
   font-weight: 900;
   font-style: normal; }
 
-
-
   /* JZ added a Special font for the Voltage display */
-  @font-face {
+@font-face {
     font-family: "Digitalv";
     src: url("/Fonts/wwDigital.ttf") format("truetype"); 
     font-weight: normal;
@@ -66,20 +64,20 @@ a320-neo-bat {
   height: 100%;
   position: relative;
   overflow: hidden;
-  background-color: rgb(43, 29, 29); } /* was black; */
+  background-color: rgb(43, 29, 29); } 
   a320-neo-bat svg {
     width: 100%;
     height: 100%; }
   a320-neo-bat text {
     font-family: Digital;
-    fill: ##c5d46f; /* was #985d1c; */
+    fill: ##c5d46f;
     letter-spacing: 10px;
-    opacity:0.9; } /* JZ opacity reduced */
+    opacity:0.9; } 
   a320-neo-bat text.value {
-    font-size: 58px; /* was 50 px */
+    font-size: 58px; 
     text-anchor: end; }
   a320-neo-bat text.unit {
     font-family: Digitalv; 
-    font-size: 34px; /* was 30px */
+    font-size: 34px; 
     text-anchor: start; }
 
