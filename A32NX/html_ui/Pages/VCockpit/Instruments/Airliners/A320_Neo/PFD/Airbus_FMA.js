@@ -1481,17 +1481,23 @@ var Airbus_FMA;
             this.updateRow2(_deltaTime);
             this.updateRow3(_deltaTime);
         }
+	    
+	 var isCAT3Capable = false; // Is the A/C CAT3 Capable?
          updateRow1(_deltaTime) {
+
             var targetState = Column4.ROW_1_STATE.NONE;
-            if (Airbus_FMA.CurrentPlaneState.autoPilotAPPRActive) {
-                if (Airbus_FMA.CurrentPlaneState.anyAutoPilotsActive  && Airbus_FMA.CurrentPlaneState.isILSApproachActive && Airbus_FMA.CurrentPlaneState.autoPilotThrottleActive) { 
+            if (Airbus_FMA.CurrentPlaneState.autoPilotAPPRActive && Airbus_FMA.CurrentPlaneState.isILSApproachActive && Airbus_FMA.CurrentPlaneState.radioAltitude <= 5000) { // below 5000 fT AGL
+                if (Airbus_FMA.CurrentPlaneState.anyAutoPilotsActive && Airbus_FMA.CurrentPlaneState.autoPilotThrottleActive) { // At least One A/P and A/T
                     targetState = Column4.ROW_1_STATE.CAT_3;
+		    isCAT3Capable = true;	
                 }
-                else if (!Airbus_FMA.CurrentPlaneState.anyAutoPilotsActive  && Airbus_FMA.CurrentPlaneState.isILSApproachActive) {
+                else if (!Airbus_FMA.CurrentPlaneState.anyAutoPilotsActive) {
                     targetState = Column4.ROW_1_STATE.CAT_2;
+		    isCAT3Capable = false;	
                 }
-            } else if (Airbus_FMA.CurrentPlaneState.isILSApproachActive) {
+            } else if (Airbus_FMA.CurrentPlaneState.autoPilotAPPRActive && Airbus_FMA.CurrentPlaneState.isILSApproachActive && Airbus_FMA.CurrentPlaneState.radioAltitude > 5000) {
                 targetState = Column4.ROW_1_STATE.CAT_1;
+		isCAT3Capable = false;	
             }
             if (targetState != this.currentRow1State) {
                 this.currentRow1State = targetState;
@@ -1521,7 +1527,7 @@ var Airbus_FMA;
         }
         updateRow2(_deltaTime) {
             var targetState = Column4.ROW_2_STATE.NONE;
-            if (Airbus_FMA.CurrentPlaneState.autoPilotAPPRActive && Airbus_FMA.CurrentPlaneState.isILSApproachActive && Airbus_FMA.CurrentPlaneState.anyAutoPilotsActive) {
+            if (isCAT3Capable == true) {
                 if (Airbus_FMA.CurrentPlaneState.bothAutoPilotsActive) { //CAT 3 DUAL: 2 AP, 2 A/T, 2FACs, 2 ELACs, 2 Y/D& RT, 3 HYD circuits, 2 FWC, 2 RA, 3 ADIRs
                     targetState = Column4.ROW_2_STATE.DUAL;
                 }
