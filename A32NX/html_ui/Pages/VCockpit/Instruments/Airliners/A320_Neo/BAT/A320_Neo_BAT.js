@@ -18,7 +18,7 @@ var A320_Neo_BAT;
 
                 for (var i = 0; i < 2; ++i) {
                     if (this.batTexts[i] != null) {
-                        var batValue = SimVar.GetSimVarValue("ELECTRICAL BATTERY VOLTAGE:" + ( i ), "Volts");//JZ was :ELECTRICAL BATTERY BUS VOLTAGE: +(10 *i)???
+                        var batValue = SimVar.GetSimVarValue("ELECTRICAL BATTERY VOLTAGE:" + ( i ), "Volts");
 
                         if (batValue != this.batValues[i]) {
                             this.batValues[i] = batValue;
