@@ -2051,7 +2051,7 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
                         }
                         hideBluePointer = false;
                     }
-                    else if (SimVar.GetSimVarValue("L:A320_Neo_ADIRS_STATE", "Enum") >= 1) {
+                    else if (SimVar.GetSimVarValue("L:A32NX_ADIRS_PFD_ALIGNED_FIRST", "Bool") == 1) {
                         hideBlueText = false;
                     }
                     hudSpeed = blueAirspeed;
@@ -2217,7 +2217,7 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
     updateStrip(_strip, currentAirspeed, maxSpeed, _forceHide, _topToBottom) {
         if (_strip) {
             let hideStrip = true;
-            if (!(SimVar.GetSimVarValue("L:A320_Neo_ADIRS_STATE", "Enum") >= 1)) _forceHide = true;
+            if (!(SimVar.GetSimVarValue("L:A32NX_ADIRS_PFD_ALIGNED_FIRST", "Bool") == 1)) _forceHide = true;
             if (!_forceHide) {
                 if (maxSpeed > this.graduationMinValue) {
                     let vPosY = this.valueToSvg(currentAirspeed, maxSpeed);
@@ -2240,7 +2240,7 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
     updateSpeedMarkers(currentAirspeed) {
         for (let i = 0; i < this.speedMarkers.length; i++) {
             this.speedMarkers[i].update(currentAirspeed);
-            if (!(SimVar.GetSimVarValue("L:A320_Neo_ADIRS_STATE", "Enum") >= 1)) {
+            if (!(SimVar.GetSimVarValue("L:A32NX_ADIRS_PFD_ALIGNED_FIRST", "Bool") == 1)) {
                 this.speedMarkers[i].svg.setAttribute("style", "display:none");
             } else {
                 this.speedMarkers[i].svg.setAttribute("style", "");
@@ -2438,7 +2438,7 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
         }
     }
     updateFail() {
-        var failed = !(SimVar.GetSimVarValue("L:A320_Neo_ADIRS_STATE", "Enum") >= 1);
+        var failed = !(SimVar.GetSimVarValue("L:A32NX_ADIRS_PFD_ALIGNED_FIRST", "Bool") == 1);
         if (!failed) {
             this.bg.setAttribute("stroke", "transparent");
             this.topLine.setAttribute("stroke", "white");

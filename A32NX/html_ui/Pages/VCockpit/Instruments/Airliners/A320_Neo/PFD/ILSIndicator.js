@@ -238,7 +238,7 @@ class Jet_PFD_ILSIndicator extends HTMLElement {
         this.appendChild(this.rootSVG);
     }
     update(_deltaTime) {
-        if (!this.gsVisible && SimVar.GetSimVarValue("L:A320_Neo_ADIRS_STATE", "Bool") == 0) {
+        if (!this.gsVisible && SimVar.GetSimVarValue("L:A32NX_ADIRS_PFD_ALIGNED_FIRST", "Bool") == 0) {
             this.neutralLine.setAttribute("visibility", "hidden");
         } else {
             this.neutralLine.setAttribute("visibility", "visible");

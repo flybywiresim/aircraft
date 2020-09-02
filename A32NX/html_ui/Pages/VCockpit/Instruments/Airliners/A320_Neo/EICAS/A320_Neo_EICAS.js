@@ -39,6 +39,7 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         this.EngineStart == 0
         this.electricity = this.querySelector("#Electricity");
         this.changePage("DOOR"); // MODIFIED
+        this.localVarUpdater = new LocalVarUpdater();
         
         SimVar.SetSimVarValue("LIGHT POTENTIOMETER:7","FLOAT64",0);
         SimVar.SetSimVarValue("LIGHT POTENTIOMETER:14","FLOAT64",0);
@@ -54,6 +55,7 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
     }
     onUpdate(_deltaTime) {
         super.onUpdate(_deltaTime);
+        this.localVarUpdater.update();
         this.updateAnnunciations();
         this.updateScreenState();
         
@@ -112,7 +114,7 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
 
         }
         //fixed ecam page not switching to engine 2 if starter is set to off
-        if(this.EngineStart == 0 && this.EngineStarter < 2 && SimVar.GetSimVarValue("GENERAL ENG STARTER")){
+        if(this.EngineStart == 0 && this.EngineStarter < 2 && SimVar.GetSimVarValue("GENERAL ENG STARTER:1", "Bool")){
             this.changePage("Engine");
             this.EngineStarter += 1;
         }
@@ -120,7 +122,7 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
             this.EngineStarter = 0;
             this.EngineStart = 1;
         }
-        if((SimVar.GetSimVarValue("GENERAL ENG STARTER"),"Bool") == 0){
+        if(SimVar.GetSimVarValue("GENERAL ENG STARTER:1","Bool") == false){
             this.EngineStart = 0;
             this.EngineStarter = 0;
         }
@@ -170,7 +172,6 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
             let starterTwo = SimVar.GetSimVarValue("GENERAL ENG STARTER:2", "Bool");
             let splrsArmed = SimVar.GetSimVarValue("SPOILERS ARMED", "Bool");
             let flapsPosition = SimVar.GetSimVarValue("FLAPS HANDLE INDEX", "Number");
-            console.log(autoBrkValue);
             // ----------- MODIFIED END --------------------//
 
             infoPanelManager.clearScreen(Airliners.EICAS_INFO_PANEL_ID.PRIMARY);
@@ -199,7 +200,7 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
                 if (autoBrkValue == 3) {
                     infoPanelManager.addMessage(Airliners.EICAS_INFO_PANEL_ID.PRIMARY, "T.O AUTO BRK MAX", Airliners.EICAS_INFO_PANEL_MESSAGE_STYLE.INDICATION);
                 } else {
-                    infoPanelManager.addMessage(Airliners.EICAS_INFO_PANEL_ID.PRIMARY, "T.O AUTO BRK......MAX", Airliners.EICAS_INFO_PANEL_MESSAGE_STYLE.INDICATION);
+                    infoPanelManager.addMessage(Airliners.EICAS_INFO_PANEL_ID.PRIMARY, "T.O AUTO BRK......MAX[color]blue", Airliners.EICAS_INFO_PANEL_MESSAGE_STYLE.INDICATION);
                 }
                 infoPanelManager.addMessage(Airliners.EICAS_INFO_PANEL_ID.PRIMARY, "\xa0\xa0\xa0\xa0SIGNS ON", Airliners.EICAS_INFO_PANEL_MESSAGE_STYLE.INDICATION);
                 if (splrsArmed) {
