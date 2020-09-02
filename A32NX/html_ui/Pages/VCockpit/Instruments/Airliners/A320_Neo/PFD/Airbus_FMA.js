@@ -1527,7 +1527,7 @@ var Airbus_FMA;
         }
         updateRow2(_deltaTime) {
             var targetState = Column4.ROW_2_STATE.NONE;
-            if (isCAT3Capable == true) {
+            if (isCAT3Capable) {
                 if (Airbus_FMA.CurrentPlaneState.bothAutoPilotsActive) { //CAT 3 DUAL: 2 AP, 2 A/T, 2FACs, 2 ELACs, 2 Y/D& RT, 3 HYD circuits, 2 FWC, 2 RA, 3 ADIRs
                     targetState = Column4.ROW_2_STATE.DUAL;
                 }
