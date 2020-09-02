@@ -1481,15 +1481,17 @@ var Airbus_FMA;
             this.updateRow2(_deltaTime);
             this.updateRow3(_deltaTime);
         }
-        updateRow1(_deltaTime) {
+         updateRow1(_deltaTime) {
             var targetState = Column4.ROW_1_STATE.NONE;
-            if (Simplane.getAutoPilotAPPRActive() && Airbus_FMA.CurrentPlaneState.isILSApproachActive) {
-                if (Airbus_FMA.CurrentPlaneState.anyAutoPilotsActive) {
+            if (Airbus_FMA.CurrentPlaneState.autoPilotAPPRActive) {
+                if (Airbus_FMA.CurrentPlaneState.anyAutoPilotsActive  && Airbus_FMA.CurrentPlaneState.isILSApproachActive && Airbus_FMA.CurrentPlaneState.autoPilotThrottleActive) { 
                     targetState = Column4.ROW_1_STATE.CAT_3;
                 }
-                else {
-                    targetState = Column4.ROW_1_STATE.CAT_1;
+                else if (!Airbus_FMA.CurrentPlaneState.anyAutoPilotsActive  && Airbus_FMA.CurrentPlaneState.isILSApproachActive) {
+                    targetState = Column4.ROW_1_STATE.CAT_2;
                 }
+            } else if (Airbus_FMA.CurrentPlaneState.isILSApproachActive) {
+                targetState = Column4.ROW_1_STATE.CAT_1;
             }
             if (targetState != this.currentRow1State) {
                 this.currentRow1State = targetState;
@@ -1501,12 +1503,12 @@ var Airbus_FMA;
                         }
                     case Column4.ROW_1_STATE.CAT_2:
                         {
-                            this.setRowText(0, "CAT 2", Airbus_FMA.MODE_STATE.STATUS);
+                            this.setRowText(0, "CAT 2", Airbus_FMA.MODE_STATE.STATUS);//CAT 2: 1 AP, 0 A/T, 1FACs, 1 ELACs, 1 Y/D& RT, 2 HYD circuits, 1 FWC, 1 RA, 2 ADIRs
                             break;
                         }
                     case Column4.ROW_1_STATE.CAT_3:
                         {
-                            this.setRowText(0, "CAT 3", Airbus_FMA.MODE_STATE.STATUS);
+                            this.setRowText(0, "CAT 3", Airbus_FMA.MODE_STATE.STATUS); //CAT 3 SINGLE: 1 AP, 1 A/T, 1FACs, 1 ELACs, 1 Y/D& RT, 2 HYD circuits, 1 FWC, 2 RA, 2 ADIRs
                             break;
                         }
                     default:
@@ -1519,12 +1521,12 @@ var Airbus_FMA;
         }
         updateRow2(_deltaTime) {
             var targetState = Column4.ROW_2_STATE.NONE;
-            if (Simplane.getAutoPilotAPPRActive() && Airbus_FMA.CurrentPlaneState.isILSApproachActive && Airbus_FMA.CurrentPlaneState.anyAutoPilotsActive) {
-                if (Airbus_FMA.CurrentPlaneState.bothAutoPilotsActive) {
+            if (Airbus_FMA.CurrentPlaneState.autoPilotAPPRActive && Airbus_FMA.CurrentPlaneState.isILSApproachActive && Airbus_FMA.CurrentPlaneState.anyAutoPilotsActive) {
+                if (Airbus_FMA.CurrentPlaneState.bothAutoPilotsActive) { //CAT 3 DUAL: 2 AP, 2 A/T, 2FACs, 2 ELACs, 2 Y/D& RT, 3 HYD circuits, 2 FWC, 2 RA, 3 ADIRs
                     targetState = Column4.ROW_2_STATE.DUAL;
                 }
-                else if (Airbus_FMA.CurrentPlaneState.anyAutoPilotsActive) {
-                    targetState = Column4.ROW_2_STATE.SINGLE;
+                else if (Airbus_FMA.CurrentPlaneState.anyAutoPilotsActive) { 
+                    targetState = Column4.ROW_2_STATE.SINGLE; //CAT 3 SINGLE: 1 AP, 1 A/T, 1FACs, 1 ELACs, 1 Y/D& RT, 2 HYD circuits, 1 FWC, 2 RA, 2 ADIRs
                 }
             }
             if (targetState != this.currentRow2State) {
