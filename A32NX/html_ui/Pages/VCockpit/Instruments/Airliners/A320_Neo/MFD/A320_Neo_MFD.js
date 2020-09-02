@@ -539,6 +539,7 @@ class A320_Neo_MFD_NDInfo extends NavSystemElement {
             this.ndInfo.update(_deltaTime);
         }
         var ADIRSState = SimVar.GetSimVarValue("L:A320_Neo_ADIRS_STATE", "Enum");
+        var groundSpeed = Math.round(Simplane.getGroundSpeed());
         var gs = this.ndInfo.querySelector("#GS_Value");
         var tas = this.ndInfo.querySelector("#TAS_Value");
         var wd = this.ndInfo.querySelector("#Wind_Direction");
