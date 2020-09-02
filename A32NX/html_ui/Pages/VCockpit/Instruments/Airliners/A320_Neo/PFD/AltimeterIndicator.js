@@ -1615,7 +1615,7 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
         }
     }
     updateFail() {
-        var failed = !(SimVar.GetSimVarValue("L:A320_Neo_ADIRS_STATE", "Enum") >= 1);
+        var failed = !(SimVar.GetSimVarValue("L:A32NX_ADIRS_PFD_ALIGNED_FIRST", "Bool") == 1);
         if (!failed) {
             this.bg.setAttribute("stroke", "transparent");
             this.topLine.setAttribute("stroke", "white");
@@ -1623,6 +1623,8 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
             this.cursorSVGShape.setAttribute("stroke", "white");
             this.cursorSVGMainText.setAttribute("visibility", "visible");
             this.pressureSVG.setAttribute("visibility", "visible");
+            this.targetAltitudeIndicatorSVGText.setAttribute("visibility", "visible");
+            this.targetAltitudeIndicatorSVG.setAttribute("visibility", "visible");
         } else {
             this.bg.setAttribute("stroke", "red");
             this.topLine.setAttribute("stroke", "red");
@@ -1633,6 +1635,8 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
             this.cursorSVGMainText.setAttribute("visibility", "hidden");
             if (this.targetAltitudeText) this.targetAltitudeText.textContent = "";
             this.pressureSVG.setAttribute("visibility", "hidden");
+            this.targetAltitudeIndicatorSVGText.setAttribute("visibility", "hidden");
+            this.targetAltitudeIndicatorSVG.setAttribute("visibility", "hidden");
         }
         if (this.groundRibbonSVGShape) this.groundRibbonSVG.setAttribute("style", failed ? "display:none" : "");
         if (this.cursorSVGScrollTexts) {
@@ -1640,7 +1644,7 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
                 st.setAttribute("visibility", failed ? "hidden" : "visible");
             }
         }
-        
+
         if (this.graduations != null) {
             for (let grad of this.graduations) {
                 grad.SVGLine.setAttribute("visibility", failed ? "hidden" : "visible");
