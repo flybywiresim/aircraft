@@ -56,7 +56,7 @@
   /* JZ added a Special font for the Voltage display */
   @font-face {
     font-family: "Digitalv";
-    src: url("/Fonts/wwDigital.ttf") format("truetype"); /* New font type for the v in Volts. Curiously, the font is not loaded in the sim??? */
+    src: url("/Fonts/wwDigital.ttf") format("truetype"); 
     font-weight: normal;
     font-style: normal; }
   
@@ -79,7 +79,7 @@ a320-neo-bat {
     font-size: 58px; /* was 50 px */
     text-anchor: end; }
   a320-neo-bat text.unit {
-    font-family: Digitalv; /* JZ Special font for the Voltage display (doesn't work at the moment,new font not loaded in the sim????  so reverted with Digital instead of Digitalv) */
+    font-family: Digitalv; 
     font-size: 34px; /* was 30px */
     text-anchor: start; }
 
