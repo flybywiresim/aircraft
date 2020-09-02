@@ -1,0 +1,24 @@
+name: CI
+on:
+  pull_request:
+  push:
+    branches:
+      - master
+
+jobs:
+  main:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v2
+      - name: Setup Python 3
+        uses: actions/setup-python@v2
+        with:
+          python-version: "3.x"
+      - name: Ensure layout.json
+        run: |
+          cd ./A32NX
+          python3 build.py
+          cd ../
+          chmod +x ./.github/workflows/check_git_diff.sh
+          ./.github/workflows/check_git_diff.sh
