@@ -21,7 +21,7 @@
 
   #Electricity[state=off] {
     display: none; }
-#AlwaysOn { /* corrected a Typo: s was missing on Always */
+#AlwaysOn { 
   width: 100%;
   height: 100%;
   display: block;
