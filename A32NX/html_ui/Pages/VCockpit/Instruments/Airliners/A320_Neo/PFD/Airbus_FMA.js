@@ -103,7 +103,7 @@ var Airbus_FMA;
             this.autoPilotActive[0] = Simplane.getAutoPilotActive(1);
             this.autoPilotActive[1] = Simplane.getAutoPilotActive(2);
             this.anyAutoPilotsActive = (this.autoPilotActive[0] || this.autoPilotActive[1]);
-            this.bothAutoPilotsActive = (this.autoPilotActive[0] && this.autoPilotActive[1]);
+	    this.onlyoneAutopilotActive = ((this.autoPilotActive[0] && !this.autoPilotActive[1]) || (!this.autoPilotActive[0] && this.autoPilotActive[1]));            this.bothAutoPilotsActive = (this.autoPilotActive[0] && this.autoPilotActive[1]);
             this.autoPilotFlightDirectorActive[0] = Simplane.getAutoPilotFlightDirectorActive(1);
             this.autoPilotFlightDirectorActive[1] = Simplane.getAutoPilotFlightDirectorActive(2);
             this.anyFlightDirectorsActive = (this.autoPilotFlightDirectorActive[0] || this.autoPilotFlightDirectorActive[1]);
@@ -1491,7 +1491,7 @@ var Airbus_FMA;
                     targetState = Column4.ROW_1_STATE.CAT_3;
 		    isCAT3Capable = true;	
                 }
-                else if (!Airbus_FMA.CurrentPlaneState.anyAutoPilotsActive) {
+                else if (!Airbus_FMA.CurrentPlaneState.onlyoneAutopilotActive) {
                     targetState = Column4.ROW_1_STATE.CAT_2;
 		    isCAT3Capable = false;	
                 }
@@ -1531,7 +1531,7 @@ var Airbus_FMA;
                 if (Airbus_FMA.CurrentPlaneState.bothAutoPilotsActive) { //CAT 3 DUAL: 2 AP, 2 A/T, 2FACs, 2 ELACs, 2 Y/D& RT, 3 HYD circuits, 2 FWC, 2 RA, 3 ADIRs
                     targetState = Column4.ROW_2_STATE.DUAL;
                 }
-                else if (Airbus_FMA.CurrentPlaneState.anyAutoPilotsActive) { 
+                else if (Airbus_FMA.CurrentPlaneState.onlyoneAutopilotActive) { 
                     targetState = Column4.ROW_2_STATE.SINGLE; //CAT 3 SINGLE: 1 AP, 1 A/T, 1FACs, 1 ELACs, 1 Y/D& RT, 2 HYD circuits, 1 FWC, 2 RA, 2 ADIRs
                 }
             }
