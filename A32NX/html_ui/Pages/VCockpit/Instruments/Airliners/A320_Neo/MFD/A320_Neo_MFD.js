@@ -150,7 +150,6 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
 		}
 		
         if (this.selfTestTimer >= 0) {
-            console.log(this.selfTestTimer)
             this.selfTestTimer -= _deltaTime / 1000;
             if (this.selfTestTimer <= 0) {
                 this.selfTestDiv.style.display = "none";

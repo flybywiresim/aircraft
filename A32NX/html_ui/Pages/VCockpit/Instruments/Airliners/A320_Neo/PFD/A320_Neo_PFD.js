@@ -146,7 +146,7 @@ class A320_Neo_PFD_MainPage extends NavSystemPage {
 
 		/**
 		 * Self test on PFD screen
-         * TODO: Seperate both PFD screens, currently if the FO changes its screen, it also tests the screen for the captain and vice versa
+         * TODO: Seperate both PFD screens, currently if the FO changes its screen, it also tests the screen for the captain and vice versa.
 		 **/
 		 	
 		let selfTestCurrentKnobValueFO = SimVar.GetSimVarValue("LIGHT POTENTIOMETER:20", "number");
@@ -193,10 +193,8 @@ class A320_Neo_PFD_MainPage extends NavSystemPage {
 
     updateScreenState() {
         if (SimVar.GetSimVarValue("L:ACPowerAvailable","bool")) {
-            //this.electricity.style.display = "block";
             this.electricity.style.display = "block"
         } else {
-            //this.electricity.style.display = "none";
             this.electricity.style.display = "none"
         }
     }
