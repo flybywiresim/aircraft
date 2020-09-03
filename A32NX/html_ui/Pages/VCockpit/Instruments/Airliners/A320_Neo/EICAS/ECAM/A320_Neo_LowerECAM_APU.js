@@ -264,25 +264,25 @@ var A320_Neo_LowerECAM_APU;
             if (startup) {
                 if (n < 10) {
                     return 10;
-                } else if(n <14){
-                    return ((90/6*n)- 140);
+                } else if(n < 14){
+                    return (90/6*n) - 140;
                 } else if (n < 20) {
-                    return ((215/4*n)-760);
+                    return (215/4*n) - 760;
                 } else if(n < 32){
-                    return ((420/11*n)-481.8);
+                    return (420/11*n) - 481.8;
                 } else if (n < 36) {
-                    return (20/3*n)+525;
+                    return (20/3*n) + 525;
                 } else if (n < 43) {
-                    return ((-15/6*n)+888.3);
+                    return (-15/6*n) + 888.3;
                 } else if(n < 50){
-                    return ((3*n)+618)
+                    return (3*n) + 618;
                 } else if(n < 74){
-                    return ((-100/13)*n+1152.3);
+                    return (-100/13*n) + 1152.3;
                 } else {
-                    return ((-104/10*n)+1430);
+                    return (-104/10*n) + 1430;
                 }
             } else {
-                return ((18/5)*n)+35;
+                return (18/5*n) + 35;
             }
         }
 
