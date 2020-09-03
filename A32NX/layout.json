@@ -27,7 +27,7 @@
         },
         {
             "path": "ModelBehaviorDefs/Asobo/Common/Subtemplates/Electrical_Subtemplates.xml",
-            "size": 72761,
+            "size": 71115,
             "date": "132402817714110148"
         },
         {
@@ -132,7 +132,7 @@
         },
         {
             "path": "SimObjects/AirPlanes/Asobo_A320_NEO/model/A320_NEO_INTERIOR.xml",
-            "size": 130519,
+            "size": 130589,
             "date": "132402817714110148"
         },
         {
@@ -442,7 +442,7 @@
         },
         {
             "path": "html_ui/Pages/VCockpit/Instruments/Airliners/A320_Neo/EICAS/ECAM/A320_Neo_LowerECAM_APU.js",
-            "size": 12993,
+            "size": 13103,
             "date": "132402817714110148"
         },
         {
