@@ -1145,6 +1145,10 @@
 				<HAS_AUTO>True</HAS_AUTO>
 				<INVERT_ANIM>True</INVERT_ANIM>
 				<POTENTIOMETER>24</POTENTIOMETER>
+				<ANIMTIP_0>Turn OFF strobe lights</ANIMTIP_0>
+				<ANIMTIP_1_ON_PERCENT>0.5</ANIMTIP_1_ON_PERCENT>
+				<ANIMTIP_1>Set strobe lights to AUTO</ANIMTIP_1>
+				<ANIMTIP_2>Turn ON strobe lights</ANIMTIP_2>
 			</UseTemplate>
 
 			<!-- TODO: Seatbelt Light DUMMY -->
