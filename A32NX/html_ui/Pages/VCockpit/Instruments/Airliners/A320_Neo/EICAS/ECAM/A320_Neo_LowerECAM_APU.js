@@ -14,7 +14,11 @@ var A320_Neo_LowerECAM_APU;
             TemplateElement.call(this, this.init.bind(this));
         }
         init() {
+            // Last state tracking inits to -1 since we don't know what the state is.
+            // The first update sets it correctly for us.
             this.lastAPUMasterState = -1;
+            this.lastAPUBleedState = -1;
+
             SimVar.SetSimVarValue("L:APU_FLAP_OPEN", "Percent", 0);
 
             //Generator
@@ -39,7 +43,6 @@ var A320_Neo_LowerECAM_APU;
             this.apuInfo = new APUInfo(this.querySelector("#APUGauges"));
 
             this.APUBleedTimer = 0;
-            this.APULastBleedState = -1;
             this.isInitialised = true;
         }
         update(_deltaTime) {
@@ -103,11 +106,10 @@ var A320_Neo_LowerECAM_APU;
 
             //Bleed
             const currentAPUBleedState = SimVar.GetSimVarValue("BLEED AIR APU","Bool")
-            if (currentAPUBleedState !== this.APULastBleedState) {
-                this.APULastBleedState = currentAPUBleedState
+            if (currentAPUBleedState !== this.lastAPUBleedState) {
+                this.lastAPUBleedState = currentAPUBleedState
                 if (currentAPUBleedState === 1) {
                     this.APUBleedTimer = 3;
-                    this.APULastBleedState = 1;
                     this.APUBleedOn.setAttribute("visibility", "visible");
                     this.APUBleedOff.setAttribute("visibility", "hidden");
                 } else {
@@ -216,27 +218,32 @@ var A320_Neo_LowerECAM_APU;
             if (_gaugeDiv != null) {
                 _gaugeDiv.appendChild(this.apuEGTGauge);
             }
-            this.apuInactiveTimer = -1
-            this.lastAPUMasterState = 0
+
+            // Last state tracking inits to -1 since we don't know what the state is.
+            // The first update sets it correctly for us.
+            this.lastAPUMasterState = -1
             this.apuShuttingDown = false
+            this.apuInactiveTimer = -1
         }
 
         update(_deltaTime) {
             //Update gauges
             var currentAPUMasterState = SimVar.GetSimVarValue("FUELSYSTEM VALVE SWITCH:8", "Bool");
-            if ((currentAPUMasterState !== this.lastAPUMasterState) && currentAPUMasterState === 1) {
-                this.apuInactiveTimer = 3
-                this.lastAPUMasterate = currentAPUMasterState
-                this.apuShuttingDown = false
-            }
-            if ((currentAPUMasterState !== this.lastAPUMasterState) && currentAPUMasterState === 0) {
+            if ((currentAPUMasterState !== this.lastAPUMasterState)) {
                 this.lastAPUMasterState = currentAPUMasterState
-                this.apuShuttingDown = true
+                if (currentAPUMasterState === 1) {
+                    this.apuInactiveTimer = 3
+                    this.apuShuttingDown = false
+                } else {
+                    this.apuShuttingDown = true
+                }
             }
-            if (this.apuShuttingDown && SimVar.GetSimVarValue("APU PCT RPM", "percent") === 0) {
+
+            if (this.apuShuttingDown && this.getAPUN() === 0) {
                 this.apuEGTGauge.active = false
                 this.apuNGauge.active = false
             }
+
             if (this.apuInactiveTimer >= 0) {
                 this.apuInactiveTimer -= _deltaTime/1000
                 if (this.apuInactiveTimer <= 0) {
@@ -245,6 +252,7 @@ var A320_Neo_LowerECAM_APU;
                     this.apuNGauge.active = true
                 }
             }
+
             if (this.apuNGauge != null && this.apuEGTGauge != null) {
                 this.apuNGauge.update(_deltaTime);
                 this.apuEGTGauge.update(_deltaTime);
