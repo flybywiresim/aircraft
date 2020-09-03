@@ -14,7 +14,7 @@ var A320_Neo_LowerECAM_APU;
             TemplateElement.call(this, this.init.bind(this));
         }
         init() {
-            this.lastAPUMasterState = 0;
+            this.lastAPUMasterState = -1;
             SimVar.SetSimVarValue("L:APU_FLAP_OPEN", "Bool", 0);
             SimVar.SetSimVarValue("L:APU_STARTERSW_AVAIL","Bool",0);
 
@@ -41,8 +41,8 @@ var A320_Neo_LowerECAM_APU;
 
             this.APUStartTimer = -1;
             this.APUFlapTimer = -1;
-            this.APUBleedTimer = -1;
-            this.APULastBleedState = 0;
+            this.APUBleedTimer = 0;
+            this.APULastBleedState = -1;
             this.isInitialised = true;
         }
         update(_deltaTime) {
@@ -50,14 +50,19 @@ var A320_Neo_LowerECAM_APU;
                 return;
             }
 
-            var currentAPUMasterState = SimVar.GetSimVarValue("FUELSYSTEM VALVE SWITCH:8", "Bool");
-
-
+            const currentAPUMasterState = SimVar.GetSimVarValue("FUELSYSTEM VALVE SWITCH:8", "Bool");
             if (this.lastAPUMasterState != currentAPUMasterState) {
                 this.lastAPUMasterState = currentAPUMasterState;
-                this.APUStartTimer = 2;
-                this.APUFlapTimer = 20;
-                this.APUGenInfo.setAttribute("visibility", "visible");
+                if (currentAPUMasterState === 1) {
+                    this.APUStartTimer = 2;
+                    this.APUFlapTimer = 20;
+                    this.APUGenInfo.setAttribute("visibility", "visible");
+                } else {
+                    this.APUStartTimer = -1;
+                    this.APUFlapTimer = -1;
+                    SimVar.SetSimVarValue("L:APU_FLAP_OPEN", "Bool", 0);
+                    SimVar.SetSimVarValue("L:APU_STARTERSW_AVAIL","Bool",0);
+                }
             }
             //starter sw delay
             if (this.APUStartTimer >= 0) {
@@ -76,24 +81,21 @@ var A320_Neo_LowerECAM_APU;
                 }
             }
 
-            if (SimVar.GetSimVarValue("FUELSYSTEM VALVE SWITCH:8", "Bool") === 0) {
-                this.APUStartTimer = -1;
-                this.APUFlapTimer = -1;
-                SimVar.SetSimVarValue("L:APU_FLAP_OPEN", "Bool", 0);
-                SimVar.SetSimVarValue("L:APU_STARTSW_AVAIL","Bool",0);
-            }
-
             //APU start, stop
-            var APUPctRPM = SimVar.GetSimVarValue("APU PCT RPM", "percent");
-            if(APUPctRPM >= 87){
+            const APUPctRPM = SimVar.GetSimVarValue("APU PCT RPM", "percent");
+
+            if (APUPctRPM >= 87) {
                 SimVar.SetSimVarValue("L:APU_GEN_ONLINE","Bool",1);
                 SimVar.SetSimVarValue("L:APU_GEN_VOLTAGE","Volts",115);
                 SimVar.SetSimVarValue("L:APU_GEN_AMPERAGE","Amperes",782.609); // 1000 * 90 kVA / 115V = 782.609A
                 SimVar.SetSimVarValue("L:APU_GEN_FREQ","Hertz",Math.round((4.46*APUPctRPM)-46.15));
                 SimVar.SetSimVarValue("L:APU_BLEED_PRESSURE","PSI",35);
-                SimVar.SetSimVarValue("L:APU_LOAD_PERCENT","percent",SimVar.GetSimVarValue("L:APU_GEN_AMPERAGE","Amperes")/SimVar.GetSimVarValue("ELECTRICAL TOTAL LOAD AMPS","Amperes"));
-            }
-            else{
+                SimVar.SetSimVarValue(
+                    "L:APU_LOAD_PERCENT",
+                    "percent",
+                    Math.max(SimVar.GetSimVarValue("L:APU_GEN_AMPERAGE","Amperes")/SimVar.GetSimVarValue("ELECTRICAL TOTAL LOAD AMPS","Amperes"), 0)
+                );
+            } else {
                 SimVar.SetSimVarValue("L:APU_GEN_ONLINE","Bool",0);
                 SimVar.SetSimVarValue("L:APU_GEN_VOLTAGE","Volts",0);
                 SimVar.SetSimVarValue("L:APU_GEN_AMPERAGE","Amperes",0);
@@ -101,11 +103,23 @@ var A320_Neo_LowerECAM_APU;
                 SimVar.SetSimVarValue("L:APU_BLEED_PRESSURE","PSI",0);
                 SimVar.SetSimVarValue("L:APU_LOAD_PERCENT","percent",0);
             }
+
             //Bleed
-            if ((SimVar.GetSimVarValue("BLEED AIR APU","Bool") && !(this.APULastBleedState == 1))) {
-                this.APUBleedTimer = 4;
-                this.APULastBleedState = 1;
+            const currentAPUBleedState = SimVar.GetSimVarValue("BLEED AIR APU","Bool")
+            if (currentAPUBleedState !== this.APULastBleedState) {
+                this.APULastBleedState = currentAPUBleedState
+                if (currentAPUBleedState === 1) {
+                    this.APUBleedTimer = 3;
+                    this.APULastBleedState = 1;
+                    this.APUBleedOn.setAttribute("visibility", "visible");
+                    this.APUBleedOff.setAttribute("visibility", "hidden");
+                } else {
+                    this.APUBleedTimer = 0;
+                    this.APUBleedOn.setAttribute("visibility", "hidden");
+                    this.APUBleedOff.setAttribute("visibility", "visible");
+                }
             }
+
             //display volt,load,freq
             this.APUGenLoad.textContent = Math.round(SimVar.GetSimVarValue("L:APU_LOAD_PERCENT","percent"));
             this.APUVolts.textContent = SimVar.GetSimVarValue("L:APU_GEN_VOLTAGE","Volts");
@@ -113,27 +127,21 @@ var A320_Neo_LowerECAM_APU;
             this.APUFrequency.textContent = SimVar.GetSimVarValue("L:APU_GEN_FREQ","Hertz");
             this.APUFrequency.setAttribute("class", "APUGenParamValue");
 
-            if (SimVar.GetSimVarValue("BLEED AIR APU", "Bool") == 1){
-                this.APUBleedOn.setAttribute("visibility", "visible");
-                this.APUBleedOff.setAttribute("visibility", "hidden");
-            } else {
-                this.APULastBleedState = 0;
-                this.APUBleedOn.setAttribute("visibility", "hidden");
-                this.APUBleedOff.setAttribute("visibility", "visible");
-            }
-
             //AVAIL indication & bleed pressure
             if (APUPctRPM > 95) {
-                if(this.APUBleedTimer > 0){
+                if (this.APUBleedTimer > 0) {
                     this.APUBleedTimer -= _deltaTime/1000;
-                    SimVar.SetSimVarValue("L:APU_BLEED_PRESSURE","PSI",Math.round(36-this.APUBleedTimer));
+                    SimVar.SetSimVarValue("L:APU_BLEED_PRESSURE","PSI",Math.round(35-this.APUBleedTimer));
                 }
-                else{
-                    this.APUBleedTimer = -1;
-                }
+
                 this.APUAvail.setAttribute("visibility", "visible");
-                if (SimVar.GetSimVarValue("APU GENERATOR ACTIVE", "Bool") == 1 && SimVar.GetSimVarValue("EXTERNAL POWER ON", "Bool") === 0) this.APUGenAvailArrow.setAttribute("visibility", "visible");
-                else this.APUGenAvailArrow.setAttribute("visibility", "hidden");
+
+                if (SimVar.GetSimVarValue("APU GENERATOR ACTIVE", "Bool") == 1 && SimVar.GetSimVarValue("EXTERNAL POWER ON", "Bool") === 0) {
+                    this.APUGenAvailArrow.setAttribute("visibility", "visible");
+                } else {
+                    this.APUGenAvailArrow.setAttribute("visibility", "hidden");
+                }
+
                 this.APUBleedPressure.textContent = SimVar.GetSimVarValue("L:APU_BLEED_PRESSURE","PSI");
                 this.APUBleedPressure.setAttribute("class", "APUGenParamValue");
             } else {
@@ -141,24 +149,23 @@ var A320_Neo_LowerECAM_APU;
                 this.APUGenAvailArrow.setAttribute("visibility", "hidden");
                 this.APUBleedPressure.textContent = "XX";
                 this.APUBleedPressure.setAttribute("class", "APUGenParamValueWarn");
+
+                if (currentAPUMasterState === 0) {
+                    this.APUGenInfo.setAttribute("visibility", "hidden");
+                }
+            }
+
+            //Flap Open
+            if (SimVar.GetSimVarValue("L:APU_FLAP_OPEN", "Bool") == 1) {
+                this.APUFlapOpen.setAttribute("visibility", "visible");
+            } else if (APUPctRPM <= 7) {
+                this.APUFlapOpen.setAttribute("visibility", "hidden");
             }
 
             //Gauges
             if (this.apuInfo != null) {
                 this.apuInfo.update(_deltaTime);
             }
-
-            //Flap Open
-            if (SimVar.GetSimVarValue("L:APU_FLAP_OPEN", "Bool") == 1) {
-                this.APUFlapOpen.setAttribute("visibility", "visible");
-                this.APUGenInfo.setAttribute("visibility", "visible");
-            } else {
-                if (APUPctRPM <= 7) {
-                    this.APUFlapOpen.setAttribute("visibility", "hidden");
-                }
-                this.APUGenInfo.setAttribute("visibility", "hidden");
-            }
-
         }
     }
     A320_Neo_LowerECAM_APU.Page = Page;
@@ -258,7 +265,7 @@ var A320_Neo_LowerECAM_APU;
                 if (n < 10) {
                     return 10;
                 } else if(n <14){
-                    reuturn ((90/6*n)- 140);
+                    return ((90/6*n)- 140);
                 } else if (n < 20) {
                     return ((215/4*n)-760);
                 } else if(n < 32){
