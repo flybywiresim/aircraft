@@ -3,6 +3,7 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
     createUpperScreenPage() {
         this.upperTopScreen = new Airliners.EICASScreen("TopScreen", "TopScreen", "a320-neo-upper-ecam");
         this.annunciations = new Cabin_Annunciations();
+        this.annunciations.offStart = true;
         this.upperTopScreen.addIndependentElement(this.annunciations);
         this.warnings = new Cabin_Warnings();
         this.upperTopScreen.addIndependentElement(this.warnings);
