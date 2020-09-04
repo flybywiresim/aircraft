@@ -174,7 +174,7 @@ A: The mod is added on top on the default A320neo from Asobo. If you want to uni
 
 **Q: What are the liveries available?**
 
-A: All the default A320neo liveries are working on our aircraft!
+A: This project modifies the default A320 Neo from Asobo, therefore all liveries is compatible.
 
 **Q: When will it be released?**
 
@@ -186,7 +186,7 @@ A: We don't know, since it depends on many factors. We'll however announce it ea
 
 **Q: How do I join the team?**
 
-A: Join our Discord server and either select your role from the bot at #roles , or you DM @Kieran [Z+1].
+A: Join our Discord server and either select your role from the bot at #roles , or you DM inaxair#1819.
 
 **Q: Is it payware?**
 
@@ -199,7 +199,3 @@ A: You can follow our current progress on the trello: https://trello.com/b/z3jim
 **Q: How do we report bugs?**
 
 A: If the bug is related to features introduced by our mod, please open a GitHub issue with a thorough description of it, and screenshots if necessary. Otherwise, you have two options: Report it on the discord server at #bugs-and-suggestions, or fill this form (that will be directly linked to the dev attention) :https://docs.google.com/forms/d/e/1FAIpQLSe6Bdx8x8mFmOmBoAipYoazfeomrJ8cri55NBn32MBRqIW4nA/viewform?usp=sf_link
-
-**Q: What is the name of this team?**
-
-A: Still no name! If you have a good idea, please feel free to suggest it on discord's #bugs-and-suggestions channel!
