@@ -227,18 +227,6 @@
 	
     <!-- Miscellaneous ==========================================================================================  --> 
 	
-	<Sound WwiseData="true" WwiseEvent="ptu_on" LocalVar="XMLVAR_PTU_ON" Continuous="false">
-		<Requires SimVar="TURB ENG N1" Units="PERCENT" Index="1">
-			<Range UpperBound="1" />
-		</Requires>
-	</Sound>
-	
-	<Sound WwiseData="true" WwiseEvent="ptu_on" LocalVar="XMLVAR_PTU_ON" Continuous="false">
-		<Requires SimVar="TURB ENG N1" Units="PERCENT" Index="2">
-			<Range UpperBound="1" />
-		</Requires>
-	</Sound>
-	
 	<Sound WwiseData="true" WwiseEvent="hydraulic_pump" FadeOutType="2" FadeOutTime="5" SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1">
         <Range LowerBound="28" />
 	</Sound>
