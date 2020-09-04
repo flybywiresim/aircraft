@@ -47,23 +47,33 @@ After making any changes to files inside the `A32NX` directory, ensure you run t
 
 ## Changelog
 
-### 0.1.1
+### 0.2.0
 
-- Removed INOP property from all ECAM page buttons
-- Added APU ECAM page
-- Added Door ECAM page
-- Added Bleed ECAM page placeholder
-- Fixed fuel consumption
-- Fixed APU startup time
-- Added MODE change indication to Navigation Display
+Features;
+- ADIRS ALIGN functional
+- IRS alignment affects PFD and MFD displays and indicators alongside TAT and SAT indicators on lower ECAM
+- IRS alignment time dependant on latitude and displays on upper ECAM
+- Brake gauge properly reflects status of toe and parking brakes
+- Added F/CTL EXAM page with support for elevator, aileron and pitch trim
+- F/CTL ECAM relects current ELAC and SEC status
+- Lower ECAM automatically switches to DOOR page when door is opened
+- Lower ECAM automatically switches to APU page when APU master is switched on
+- Added ECAM memos 'GND SPLRS ARMED', 'SEAT BELTS', and 'NO SMOKING'
+- Added range change indicator on ND
+- PFD, MFD and ECAM displays now present a self-test upon powering up
+- PFD, MFD and ECAM displays no longer work on battery power.
+- Added seatbelt sign functionality
+- Added no smoking sign functionality (full range of motion currently restricted)
+- Added moveable dummy knobs for cockpit, fwd and aft cabin air conditioning controls
+- Added chimes for seatbelt and no smoking switches
 
-## Known Issues (Please note that most issues are being worked on and some of them may even be fixed in the dev branch)
-- APU ECAM page doesn't display correct load percent.
-- Bleed ECAM page isn't modeled.
-- No automatic ECAM page switching for DOOR page
-- No chime coming from No smoking & Seatbelts.
-- No smoking sign doesn't use full range of motion.
-- T.O Config is not fully functional yet.
+Improvements;
+- Taxi light no longer bleeds into cockpit
+- Removed 70ft and 60ft altimeter callouts
+
+Various bug fixes have been implemented to improve system logic, lighting, performance and textures.
+
+All previous changelogs can be viewed here: http://www.flybywiresim.com/changelog
  
 
 ## FAQ
@@ -78,7 +88,7 @@ A: The mod is added on top on the default A320neo from Asobo. If you want to uni
 
 **Q: What are the liveries available?**
 
-A: All the default A320neo liveries are working on our aircraft!
+A: This only modifies the default A320 Neo from Asobo and therefore all liveries will be compatible.
 
 **Q: When will it be released?**
 
@@ -90,7 +100,7 @@ A: We don't know, since it depends on many factors. We'll however announce it ea
 
 **Q: How do I join the team?**
 
-A: Join our Discord server and either select your role from the bot at #roles , or you DM @Kieran [Z+1].
+A: Join our Discord server and either select your role from the bot at #roles or DM Inaxair#1819.
 
 **Q: Is it payware?**
 
@@ -103,7 +113,3 @@ A: You can follow our current progress on the trello: https://trello.com/b/z3jim
 **Q: How do we report bugs?**
 
 A: If the bug is related to features introduced by our mod, please open a GitHub issue with a thorough description of it, and screenshots if necessary. Otherwise, you have two options: Report it on the discord server at #bugs-and-suggestions, or fill this form (that will be directly linked to the dev attention) :https://docs.google.com/forms/d/e/1FAIpQLSe6Bdx8x8mFmOmBoAipYoazfeomrJ8cri55NBn32MBRqIW4nA/viewform?usp=sf_link
-
-**Q: What is the name of this team?**
-
-A: Still no name! If you have a good idea, please feel free to suggest it on discord's #bugs-and-suggestions channel!
