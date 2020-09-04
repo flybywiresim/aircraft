@@ -62,6 +62,11 @@ a320-neo-lower-ecam-apu {
   font-size: 15px;
   text-anchor: start !important;
 }
+:root .APUGenParamValueWarn {
+  fill: var(--ecamWarningColour);
+  font-size: 15px;
+  text-anchor: start !important;
+}
 :root .APUGenParamUnit {
   fill: var(--ecamUnitsColour);
   font-size: 15px;

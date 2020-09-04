@@ -1,0 +1,676 @@
+<?xml version="1.0" encoding="utf-8"?>
+<WwiseDocument Type="WorkUnit" ID="{F1660524-81F2-40BA-9D90-9E9E2D938886}" SchemaVersion="97">
+	<Switches>
+		<WorkUnit Name="flight_control" ID="{F1660524-81F2-40BA-9D90-9E9E2D938886}" PersistMode="Standalone">
+			<ChildrenList>
+				<SwitchGroup Name="exit_door_direction" ID="{96925BAA-274D-4019-8C0A-17CB46A567AD}">
+					<PropertyList>
+						<Property Name="UseGameParameter" Type="bool" Value="True"/>
+					</PropertyList>
+					<ChildrenList>
+						<Switch Name="close" ID="{53E042DA-DC7B-4C3A-BA50-286E779E2559}"/>
+						<Switch Name="open" ID="{A068CDF4-E275-4446-BA83-A91660EE68AE}"/>
+					</ChildrenList>
+					<SwitchOnRTPC>
+						<GameParameterRef Name="SIMVAR_EXIT_OPEN_DERIVED" ID="{3CBC52B8-1220-46BC-9646-5C16DE69108D}"/>
+						<Curve Name="" ID="{79FCE875-9C9E-47F2-B994-761E6140DF47}">
+							<PropertyList>
+								<Property Name="Flags" Type="int32" Value="65537"/>
+							</PropertyList>
+							<PointList>
+								<Point>
+									<XPos>-100</XPos>
+									<YPos>1</YPos>
+									<Flags>5</Flags>
+								</Point>
+								<Point>
+									<XPos>0.1</XPos>
+									<YPos>2</YPos>
+									<Flags>0</Flags>
+								</Point>
+								<Point>
+									<XPos>100</XPos>
+									<YPos>2</YPos>
+									<Flags>37</Flags>
+								</Point>
+							</PointList>
+						</Curve>
+					</SwitchOnRTPC>
+				</SwitchGroup>
+				<SwitchGroup Name="elevator_movement" ID="{10B69AE4-633D-4211-BA84-DE90B559C63F}">
+					<PropertyList>
+						<Property Name="UseGameParameter" Type="bool" Value="True"/>
+					</PropertyList>
+					<ChildrenList>
+						<Switch Name="movement" ID="{915DDBBE-4B7B-4EB9-8DA4-E3A5902E5333}"/>
+						<Switch Name="stop" ID="{281AA4F5-4195-4FDF-9BA5-681650B00DA9}"/>
+					</ChildrenList>
+					<SwitchOnRTPC>
+						<GameParameterRef Name="SIMVAR_ELEVATOR_POSITION" ID="{EE2A533F-2D24-4986-8427-F29098C965AD}"/>
+						<Curve Name="" ID="{C383DF05-04E6-489A-AA54-5054AD8E6F0D}">
+							<PropertyList>
+								<Property Name="Flags" Type="int32" Value="65537"/>
+							</PropertyList>
+							<PointList>
+								<Point>
+									<XPos>-100</XPos>
+									<YPos>2</YPos>
+									<Flags>5</Flags>
+								</Point>
+								<Point>
+									<XPos>-90</XPos>
+									<YPos>1</YPos>
+									<Flags>0</Flags>
+								</Point>
+								<Point>
+									<XPos>90</XPos>
+									<YPos>2</YPos>
+									<Flags>0</Flags>
+								</Point>
+								<Point>
+									<XPos>100</XPos>
+									<YPos>2</YPos>
+									<Flags>37</Flags>
+								</Point>
+							</PointList>
+						</Curve>
+					</SwitchOnRTPC>
+				</SwitchGroup>
+				<SwitchGroup Name="rudder_movement" ID="{32BAC6C1-7674-47C3-B6F1-E25A308E9109}">
+					<PropertyList>
+						<Property Name="UseGameParameter" Type="bool" Value="True"/>
+					</PropertyList>
+					<ChildrenList>
+						<Switch Name="movement" ID="{B7E55BCE-8394-46FC-ACE9-9D3E72C1EC92}"/>
+						<Switch Name="stop" ID="{A7190B1D-B2A1-41F9-B039-A18E57B927D6}"/>
+					</ChildrenList>
+					<SwitchOnRTPC>
+						<GameParameterRef Name="SIMVAR_RUDDER_POSITION" ID="{34AD7DB9-F093-4339-A2C3-B032D91713D2}"/>
+						<Curve Name="" ID="{BB6D5852-48F8-43A9-856A-E38046D4CE48}">
+							<PropertyList>
+								<Property Name="Flags" Type="int32" Value="65537"/>
+							</PropertyList>
+							<PointList>
+								<Point>
+									<XPos>-100</XPos>
+									<YPos>2</YPos>
+									<Flags>5</Flags>
+								</Point>
+								<Point>
+									<XPos>-98</XPos>
+									<YPos>1</YPos>
+									<Flags>0</Flags>
+								</Point>
+								<Point>
+									<XPos>98</XPos>
+									<YPos>2</YPos>
+									<Flags>0</Flags>
+								</Point>
+								<Point>
+									<XPos>100</XPos>
+									<YPos>2</YPos>
+									<Flags>37</Flags>
+								</Point>
+							</PointList>
+						</Curve>
+					</SwitchOnRTPC>
+				</SwitchGroup>
+				<SwitchGroup Name="flaps_left_move_generic" ID="{6E4FBCC0-B66A-4D65-89A5-276F640774D1}">
+					<PropertyList>
+						<Property Name="UseGameParameter" Type="bool" Value="True"/>
+					</PropertyList>
+					<ChildrenList>
+						<Switch Name="movement" ID="{335EF69A-FBFF-4DE9-892A-EB6D5918551C}"/>
+						<Switch Name="stop" ID="{F8344C4D-A30E-4AC1-9028-45171CF323B6}"/>
+					</ChildrenList>
+					<SwitchOnRTPC>
+						<GameParameterRef Name="SIMVAR_TRAILING_EDGE_FLAPS_LEFT_PERCENT_DERIVED" ID="{03CA6A30-7945-4784-9A5B-8CFE530CEF39}"/>
+						<Curve Name="" ID="{2F6D38FE-A7A6-4371-A624-70A21614374C}">
+							<PropertyList>
+								<Property Name="Flags" Type="int32" Value="65537"/>
+							</PropertyList>
+							<PointList>
+								<Point>
+									<XPos>-100</XPos>
+									<YPos>1</YPos>
+									<Flags>5</Flags>
+								</Point>
+								<Point>
+									<XPos>-3</XPos>
+									<YPos>2</YPos>
+									<Flags>0</Flags>
+								</Point>
+								<Point>
+									<XPos>3</XPos>
+									<YPos>1</YPos>
+									<Flags>0</Flags>
+								</Point>
+								<Point>
+									<XPos>100</XPos>
+									<YPos>1</YPos>
+									<Flags>37</Flags>
+								</Point>
+							</PointList>
+						</Curve>
+					</SwitchOnRTPC>
+				</SwitchGroup>
+				<SwitchGroup Name="aileron_right_movement" ID="{E062FB5F-DC2F-4681-88EC-52C93712C36E}">
+					<PropertyList>
+						<Property Name="UseGameParameter" Type="bool" Value="True"/>
+					</PropertyList>
+					<ChildrenList>
+						<Switch Name="stop" ID="{B18229E7-B1DD-4247-93F6-C47FC1E37346}"/>
+						<Switch Name="movement" ID="{5D82E7BE-9C69-415A-BE13-802C253B0728}"/>
+					</ChildrenList>
+					<SwitchOnRTPC>
+						<GameParameterRef Name="SIMVAR_AILERON_POSITION" ID="{955E665C-12BB-4C61-B8E1-4A1AE024D6E4}"/>
+						<Curve Name="" ID="{2F168886-2AB0-429C-9829-593C3241E546}">
+							<PropertyList>
+								<Property Name="Flags" Type="int32" Value="65537"/>
+							</PropertyList>
+							<PointList>
+								<Point>
+									<XPos>-100</XPos>
+									<YPos>1</YPos>
+									<Flags>5</Flags>
+								</Point>
+								<Point>
+									<XPos>-90</XPos>
+									<YPos>2</YPos>
+									<Flags>0</Flags>
+								</Point>
+								<Point>
+									<XPos>90</XPos>
+									<YPos>1</YPos>
+									<Flags>0</Flags>
+								</Point>
+								<Point>
+									<XPos>100</XPos>
+									<YPos>1</YPos>
+									<Flags>37</Flags>
+								</Point>
+							</PointList>
+						</Curve>
+					</SwitchOnRTPC>
+				</SwitchGroup>
+				<SwitchGroup Name="flaps_right_move_generic" ID="{CB240840-39BE-4098-AE92-63732AB50AD2}">
+					<PropertyList>
+						<Property Name="UseGameParameter" Type="bool" Value="True"/>
+					</PropertyList>
+					<ChildrenList>
+						<Switch Name="movement" ID="{79AF1683-EA42-490E-80D3-A71352A318C8}"/>
+						<Switch Name="stop" ID="{5EEDB88D-7A6D-48CC-9730-1E58BCAAD382}"/>
+					</ChildrenList>
+					<SwitchOnRTPC>
+						<GameParameterRef Name="SIMVAR_TRAILING_EDGE_FLAPS_RIGHT_PERCENT_DERIVED" ID="{9625EFA9-085D-4324-8FB9-F8A2375E4496}"/>
+						<Curve Name="" ID="{FFAFF191-70DE-4B6D-B955-A2AC599F90E3}">
+							<PropertyList>
+								<Property Name="Flags" Type="int32" Value="65537"/>
+							</PropertyList>
+							<PointList>
+								<Point>
+									<XPos>-100</XPos>
+									<YPos>1</YPos>
+									<Flags>5</Flags>
+								</Point>
+								<Point>
+									<XPos>-3</XPos>
+									<YPos>2</YPos>
+									<Flags>0</Flags>
+								</Point>
+								<Point>
+									<XPos>3</XPos>
+									<YPos>1</YPos>
+									<Flags>0</Flags>
+								</Point>
+								<Point>
+									<XPos>100</XPos>
+									<YPos>1</YPos>
+									<Flags>37</Flags>
+								</Point>
+							</PointList>
+						</Curve>
+					</SwitchOnRTPC>
+				</SwitchGroup>
+				<SwitchGroup Name="aileron_left_movement" ID="{97D0817E-0F4B-47A4-AB53-B1311295FF0F}">
+					<PropertyList>
+						<Property Name="UseGameParameter" Type="bool" Value="True"/>
+					</PropertyList>
+					<ChildrenList>
+						<Switch Name="stop" ID="{2D998888-0557-4246-A334-6896F000C737}"/>
+						<Switch Name="movement" ID="{15E22780-615E-4F29-B9DA-628A55C9AD33}"/>
+					</ChildrenList>
+					<SwitchOnRTPC>
+						<GameParameterRef Name="SIMVAR_AILERON_POSITION" ID="{955E665C-12BB-4C61-B8E1-4A1AE024D6E4}"/>
+						<Curve Name="" ID="{EF642E4A-0C09-481A-A767-FD7B94FA3AF7}">
+							<PropertyList>
+								<Property Name="Flags" Type="int32" Value="65537"/>
+							</PropertyList>
+							<PointList>
+								<Point>
+									<XPos>-100</XPos>
+									<YPos>1</YPos>
+									<Flags>5</Flags>
+								</Point>
+								<Point>
+									<XPos>-90</XPos>
+									<YPos>2</YPos>
+									<Flags>0</Flags>
+								</Point>
+								<Point>
+									<XPos>90</XPos>
+									<YPos>1</YPos>
+									<Flags>0</Flags>
+								</Point>
+								<Point>
+									<XPos>100</XPos>
+									<YPos>1</YPos>
+									<Flags>37</Flags>
+								</Point>
+							</PointList>
+						</Curve>
+					</SwitchOnRTPC>
+				</SwitchGroup>
+				<SwitchGroup Name="flaps_left_up_down" ID="{A3EF26C8-9900-4DCA-9D81-708D763DCA0A}">
+					<PropertyList>
+						<Property Name="UseGameParameter" Type="bool" Value="True"/>
+					</PropertyList>
+					<ChildrenList>
+						<Switch Name="up" ID="{01F986E4-851B-4FAB-9CBA-B3E30A53C627}"/>
+						<Switch Name="down" ID="{292EFEF1-7DFF-4983-BAF2-05AFF8416DDF}"/>
+					</ChildrenList>
+					<SwitchOnRTPC>
+						<GameParameterRef Name="SIMVAR_TRAILING_EDGE_FLAPS_LEFT_PERCENT_DERIVED" ID="{03CA6A30-7945-4784-9A5B-8CFE530CEF39}"/>
+						<Curve Name="" ID="{69B66F45-DF66-485A-87DD-C8BB0DD89D62}">
+							<PropertyList>
+								<Property Name="Flags" Type="int32" Value="65537"/>
+							</PropertyList>
+							<PointList>
+								<Point>
+									<XPos>-100</XPos>
+									<YPos>1</YPos>
+									<Flags>5</Flags>
+								</Point>
+								<Point>
+									<XPos>0.1</XPos>
+									<YPos>2</YPos>
+									<Flags>0</Flags>
+								</Point>
+								<Point>
+									<XPos>100</XPos>
+									<YPos>2</YPos>
+									<Flags>37</Flags>
+								</Point>
+							</PointList>
+						</Curve>
+					</SwitchOnRTPC>
+				</SwitchGroup>
+				<SwitchGroup Name="flaps_right_up_down" ID="{F4D7C600-34F3-4E5C-B9DF-4DF4B5BB75F3}">
+					<PropertyList>
+						<Property Name="UseGameParameter" Type="bool" Value="True"/>
+					</PropertyList>
+					<ChildrenList>
+						<Switch Name="up" ID="{362CF88F-300A-4807-968E-E4617725B197}"/>
+						<Switch Name="down" ID="{954682AB-49DF-4E08-8B96-1B6251BFF87F}"/>
+					</ChildrenList>
+					<SwitchOnRTPC>
+						<GameParameterRef Name="SIMVAR_TRAILING_EDGE_FLAPS_RIGHT_PERCENT_DERIVED" ID="{9625EFA9-085D-4324-8FB9-F8A2375E4496}"/>
+						<Curve Name="" ID="{FCF03C02-35E7-4C04-AF92-D5E1C88E8FFB}">
+							<PropertyList>
+								<Property Name="Flags" Type="int32" Value="65537"/>
+							</PropertyList>
+							<PointList>
+								<Point>
+									<XPos>-100</XPos>
+									<YPos>1</YPos>
+									<Flags>5</Flags>
+								</Point>
+								<Point>
+									<XPos>0.1</XPos>
+									<YPos>2</YPos>
+									<Flags>0</Flags>
+								</Point>
+								<Point>
+									<XPos>100</XPos>
+									<YPos>2</YPos>
+									<Flags>37</Flags>
+								</Point>
+							</PointList>
+						</Curve>
+					</SwitchOnRTPC>
+				</SwitchGroup>
+				<SwitchGroup Name="canopy_movement" ID="{F0D57C2D-1A5E-4C5C-A992-FD3F701CC961}">
+					<PropertyList>
+						<Property Name="UseGameParameter" Type="bool" Value="True"/>
+					</PropertyList>
+					<ChildrenList>
+						<Switch Name="open" ID="{B5BBF1A8-7166-4A99-A2BB-749BB6F01CFD}"/>
+						<Switch Name="close" ID="{8D51C3B9-BC73-4908-82AD-C20F7A1E1057}"/>
+					</ChildrenList>
+					<SwitchOnRTPC>
+						<GameParameterRef Name="SIMVAR_CANOPY_OPEN_DERIVED" ID="{4149B9E7-AB3F-4DB8-AF6F-47F27D924B7E}"/>
+						<Curve Name="" ID="{9CDACF05-485B-449E-B98B-555657A22A60}">
+							<PropertyList>
+								<Property Name="Flags" Type="int32" Value="65537"/>
+							</PropertyList>
+							<PointList>
+								<Point>
+									<XPos>-100</XPos>
+									<YPos>2</YPos>
+									<Flags>5</Flags>
+								</Point>
+								<Point>
+									<XPos>-0.00509</XPos>
+									<YPos>0</YPos>
+									<Flags>0</Flags>
+								</Point>
+								<Point>
+									<XPos>0.00491</XPos>
+									<YPos>1</YPos>
+									<Flags>0</Flags>
+								</Point>
+								<Point>
+									<XPos>100</XPos>
+									<YPos>1</YPos>
+									<Flags>37</Flags>
+								</Point>
+							</PointList>
+						</Curve>
+					</SwitchOnRTPC>
+				</SwitchGroup>
+				<SwitchGroup Name="exit_door_movements" ID="{3B4A3918-E59A-459A-9406-D095930B5E56}">
+					<PropertyList>
+						<Property Name="UseGameParameter" Type="bool" Value="True"/>
+					</PropertyList>
+					<ChildrenList>
+						<Switch Name="movement" ID="{E7B4432D-2DA9-4550-A1BD-30D7BCC3E8E9}"/>
+						<Switch Name="stop" ID="{1E1A734B-43EE-4CCE-BCDE-39D6ABDC54E7}"/>
+					</ChildrenList>
+					<SwitchOnRTPC>
+						<GameParameterRef Name="SIMVAR_EXIT_OPEN_DERIVED" ID="{3CBC52B8-1220-46BC-9646-5C16DE69108D}"/>
+						<Curve Name="" ID="{32DBD0BE-7056-4EC8-9218-426F123B0051}">
+							<PropertyList>
+								<Property Name="Flags" Type="int32" Value="65537"/>
+							</PropertyList>
+							<PointList>
+								<Point>
+									<XPos>-100</XPos>
+									<YPos>1</YPos>
+									<Flags>5</Flags>
+								</Point>
+								<Point>
+									<XPos>-0.1</XPos>
+									<YPos>2</YPos>
+									<Flags>0</Flags>
+								</Point>
+								<Point>
+									<XPos>0.1</XPos>
+									<YPos>1</YPos>
+									<Flags>0</Flags>
+								</Point>
+								<Point>
+									<XPos>100</XPos>
+									<YPos>0</YPos>
+									<Flags>37</Flags>
+								</Point>
+							</PointList>
+						</Curve>
+					</SwitchOnRTPC>
+				</SwitchGroup>
+				<SwitchGroup Name="gears_direction" ID="{41542167-9352-4EDE-80E7-8A96C73AEDA5}">
+					<PropertyList>
+						<Property Name="UseGameParameter" Type="bool" Value="True"/>
+					</PropertyList>
+					<ChildrenList>
+						<Switch Name="up" ID="{E5911DAB-A752-4663-99C8-2D295A65495E}"/>
+						<Switch Name="down" ID="{0E7D7D68-4A2F-444E-9C76-4D844CE68DAB}"/>
+					</ChildrenList>
+					<SwitchOnRTPC>
+						<GameParameterRef Name="SIMVAR_GEAR_TOTAL_PCT_EXTENDED_DERIVED" ID="{F4E40E6D-4D7A-41F3-8B49-14BB33EDE893}"/>
+						<Curve Name="" ID="{344D75F1-3319-419E-9BD8-83F390A9EA82}">
+							<PropertyList>
+								<Property Name="Flags" Type="int32" Value="65537"/>
+							</PropertyList>
+							<PointList>
+								<Point>
+									<XPos>-100</XPos>
+									<YPos>1</YPos>
+									<Flags>5</Flags>
+								</Point>
+								<Point>
+									<XPos>0</XPos>
+									<YPos>2</YPos>
+									<Flags>0</Flags>
+								</Point>
+								<Point>
+									<XPos>100</XPos>
+									<YPos>2</YPos>
+									<Flags>37</Flags>
+								</Point>
+							</PointList>
+						</Curve>
+					</SwitchOnRTPC>
+				</SwitchGroup>
+				<SwitchGroup Name="water_rudder_movement" ID="{028133A2-E65D-450B-A809-BA5FD7C52326}">
+					<PropertyList>
+						<Property Name="UseGameParameter" Type="bool" Value="True"/>
+					</PropertyList>
+					<ChildrenList>
+						<Switch Name="up" ID="{126BA26D-CBA4-4DB4-B498-DAB9A8DAB35D}"/>
+						<Switch Name="down" ID="{5F0F8516-3853-4ADF-951C-11F0B7E41190}"/>
+					</ChildrenList>
+					<SwitchOnRTPC>
+						<GameParameterRef Name="SIMVAR_WATER_LEFT_RUDDER_EXTENDED_DERIVED" ID="{FFA721C4-39E6-4037-B18B-8CFA476B72F6}"/>
+						<Curve Name="" ID="{0980D790-4835-418E-9A7D-6CD18D1C2807}">
+							<PropertyList>
+								<Property Name="Flags" Type="int32" Value="65537"/>
+							</PropertyList>
+							<PointList>
+								<Point>
+									<XPos>-100</XPos>
+									<YPos>1</YPos>
+									<Flags>5</Flags>
+								</Point>
+								<Point>
+									<XPos>0</XPos>
+									<YPos>2</YPos>
+									<Flags>0</Flags>
+								</Point>
+								<Point>
+									<XPos>100</XPos>
+									<YPos>2</YPos>
+									<Flags>37</Flags>
+								</Point>
+							</PointList>
+						</Curve>
+					</SwitchOnRTPC>
+				</SwitchGroup>
+				<SwitchGroup Name="gears_movement" ID="{3F1132E8-DD93-4514-A5F6-0CBAACE9DDE3}">
+					<PropertyList>
+						<Property Name="UseGameParameter" Type="bool" Value="True"/>
+					</PropertyList>
+					<ChildrenList>
+						<Switch Name="stop" ID="{50EF5703-1D5A-47B6-AE84-26C8A3334444}"/>
+						<Switch Name="move" ID="{9520911A-158A-45D2-BB68-4032DA3B9372}"/>
+					</ChildrenList>
+					<SwitchOnRTPC>
+						<GameParameterRef Name="SIMVAR_GEAR_TOTAL_PCT_EXTENDED_DERIVED" ID="{F4E40E6D-4D7A-41F3-8B49-14BB33EDE893}"/>
+						<Curve Name="" ID="{1EB18365-9AB2-4E57-AD36-967E7ED3C6A1}">
+							<PropertyList>
+								<Property Name="Flags" Type="int32" Value="65537"/>
+							</PropertyList>
+							<PointList>
+								<Point>
+									<XPos>-100</XPos>
+									<YPos>2</YPos>
+									<Flags>5</Flags>
+								</Point>
+								<Point>
+									<XPos>-0.07</XPos>
+									<YPos>1</YPos>
+									<Flags>0</Flags>
+								</Point>
+								<Point>
+									<XPos>0.07</XPos>
+									<YPos>2</YPos>
+									<Flags>0</Flags>
+								</Point>
+								<Point>
+									<XPos>100</XPos>
+									<YPos>2</YPos>
+									<Flags>37</Flags>
+								</Point>
+							</PointList>
+						</Curve>
+					</SwitchOnRTPC>
+				</SwitchGroup>
+				<SwitchGroup Name="left_gears_movement" ID="{2A9484AD-B835-453A-ABE2-CB7C3A763B99}">
+					<PropertyList>
+						<Property Name="UseGameParameter" Type="bool" Value="True"/>
+					</PropertyList>
+					<ChildrenList>
+						<Switch Name="stop" ID="{A594F6C8-F7C8-44A1-A041-3B35154A46E3}"/>
+						<Switch Name="move" ID="{BA2B4BFB-C234-4EB0-B654-82BBC95B8857}"/>
+					</ChildrenList>
+					<SwitchOnRTPC>
+						<GameParameterRef Name="SIMVAR_GEAR_LEFT_POSITION_DERIVED" ID="{4DA2CC33-20F8-41CC-957E-A7DB0E2B20FB}"/>
+						<Curve Name="" ID="{1A164E0F-8540-47E0-8BE9-F9145D24FDDC}">
+							<PropertyList>
+								<Property Name="Flags" Type="int32" Value="65537"/>
+							</PropertyList>
+							<PointList>
+								<Point>
+									<XPos>-100</XPos>
+									<YPos>2</YPos>
+									<Flags>5</Flags>
+								</Point>
+								<Point>
+									<XPos>-1</XPos>
+									<YPos>1</YPos>
+									<Flags>0</Flags>
+								</Point>
+								<Point>
+									<XPos>1</XPos>
+									<YPos>2</YPos>
+									<Flags>0</Flags>
+								</Point>
+								<Point>
+									<XPos>100</XPos>
+									<YPos>2</YPos>
+									<Flags>37</Flags>
+								</Point>
+							</PointList>
+						</Curve>
+					</SwitchOnRTPC>
+				</SwitchGroup>
+				<SwitchGroup Name="left_gears_direction" ID="{E458A394-3633-40B7-B6D4-7A5F6AF2256D}">
+					<PropertyList>
+						<Property Name="UseGameParameter" Type="bool" Value="True"/>
+					</PropertyList>
+					<ChildrenList>
+						<Switch Name="up" ID="{843C1D20-0308-4BFD-9144-FA9091B95B5B}"/>
+						<Switch Name="down" ID="{D6391C64-A9E1-4865-B827-F7836C763F5A}"/>
+					</ChildrenList>
+					<SwitchOnRTPC>
+						<GameParameterRef Name="SIMVAR_GEAR_LEFT_POSITION_DERIVED" ID="{4DA2CC33-20F8-41CC-957E-A7DB0E2B20FB}"/>
+						<Curve Name="" ID="{CD9B10D6-4CC4-4157-BAC1-DD2B17BE8B17}">
+							<PropertyList>
+								<Property Name="Flags" Type="int32" Value="65537"/>
+							</PropertyList>
+							<PointList>
+								<Point>
+									<XPos>-100</XPos>
+									<YPos>1</YPos>
+									<Flags>5</Flags>
+								</Point>
+								<Point>
+									<XPos>0</XPos>
+									<YPos>2</YPos>
+									<Flags>0</Flags>
+								</Point>
+								<Point>
+									<XPos>100</XPos>
+									<YPos>2</YPos>
+									<Flags>37</Flags>
+								</Point>
+							</PointList>
+						</Curve>
+					</SwitchOnRTPC>
+				</SwitchGroup>
+				<SwitchGroup Name="right_gears_movement" ID="{A980A1E4-1E41-43DD-9728-2705425D7272}">
+					<PropertyList>
+						<Property Name="UseGameParameter" Type="bool" Value="True"/>
+					</PropertyList>
+					<ChildrenList>
+						<Switch Name="stop" ID="{7BB2CFD1-DA3D-4B23-B41E-3A586C8E5D49}"/>
+						<Switch Name="move" ID="{C6C4CFB9-A286-4797-B74A-889283401304}"/>
+					</ChildrenList>
+					<SwitchOnRTPC>
+						<GameParameterRef Name="SIMVAR_GEAR_RIGHT_POSITION_DERIVED" ID="{8A1FF5B3-8CD5-4E2A-8715-A35C0A311B6C}"/>
+						<Curve Name="" ID="{36E65269-A61A-4927-887E-E5124F97C983}">
+							<PropertyList>
+								<Property Name="Flags" Type="int32" Value="65537"/>
+							</PropertyList>
+							<PointList>
+								<Point>
+									<XPos>-100</XPos>
+									<YPos>2</YPos>
+									<Flags>5</Flags>
+								</Point>
+								<Point>
+									<XPos>-1</XPos>
+									<YPos>1</YPos>
+									<Flags>0</Flags>
+								</Point>
+								<Point>
+									<XPos>1</XPos>
+									<YPos>2</YPos>
+									<Flags>0</Flags>
+								</Point>
+								<Point>
+									<XPos>100</XPos>
+									<YPos>2</YPos>
+									<Flags>37</Flags>
+								</Point>
+							</PointList>
+						</Curve>
+					</SwitchOnRTPC>
+				</SwitchGroup>
+				<SwitchGroup Name="right_gears_direction" ID="{EB732C4F-94F2-48E2-9ED2-BD74BC65AFD7}">
+					<PropertyList>
+						<Property Name="UseGameParameter" Type="bool" Value="True"/>
+					</PropertyList>
+					<ChildrenList>
+						<Switch Name="up" ID="{DA1E0DAC-FDDE-42F6-8D56-059C3800985F}"/>
+						<Switch Name="down" ID="{7FD2F8F1-1BB6-4174-B7E1-4DF221C25D40}"/>
+					</ChildrenList>
+					<SwitchOnRTPC>
+						<GameParameterRef Name="SIMVAR_GEAR_RIGHT_POSITION_DERIVED" ID="{8A1FF5B3-8CD5-4E2A-8715-A35C0A311B6C}"/>
+						<Curve Name="" ID="{3D2FFFC8-43DB-4A17-A7FC-0F116E9AA3EE}">
+							<PropertyList>
+								<Property Name="Flags" Type="int32" Value="65537"/>
+							</PropertyList>
+							<PointList>
+								<Point>
+									<XPos>-100</XPos>
+									<YPos>1</YPos>
+									<Flags>5</Flags>
+								</Point>
+								<Point>
+									<XPos>0</XPos>
+									<YPos>2</YPos>
+									<Flags>0</Flags>
+								</Point>
+								<Point>
+									<XPos>100</XPos>
+									<YPos>2</YPos>
+									<Flags>37</Flags>
+								</Point>
+							</PointList>
+						</Curve>
+					</SwitchOnRTPC>
+				</SwitchGroup>
+			</ChildrenList>
+		</WorkUnit>
+	</Switches>
+</WwiseDocument>

@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<WwiseDocument Type="WorkUnit" ID="{5458EF71-B27B-4D0D-B540-D318B378CCA4}" SchemaVersion="97">
+	<GameParameters>
+		<WorkUnit Name="gplay" ID="{5458EF71-B27B-4D0D-B540-D318B378CCA4}" PersistMode="Standalone">
+			<PropertyList>
+				<Property Name="Color" Type="int16" Value="1"/>
+				<Property Name="OverrideColor" Type="bool" Value="True"/>
+			</PropertyList>
+			<ChildrenList>
+				<GameParameter Name="HEADPHONE_FILTER" ID="{8A8CBF06-0F14-4953-A5B8-AEB468C22D92}">
+					<Comment>0 headphone filter  off
+1 headphone filter on</Comment>
+					<PropertyList>
+						<Property Name="FilterTimeDown" Type="Real64" Value="0.2"/>
+						<Property Name="FilterTimeUp" Type="Real64" Value="0.2"/>
+						<Property Name="InitialValue" Type="Real64" Value="0"/>
+						<Property Name="Max" Type="Real64" Value="1"/>
+						<Property Name="RTPCRamping" Type="int16" Value="2"/>
+					</PropertyList>
+				</GameParameter>
+				<GameParameter Name="CAMERA_VIEWPOINT" ID="{70814150-A69A-42B8-9CB2-EA379C31F23E}">
+					<Comment>camera inside = 0
+camera outisde= 1</Comment>
+					<PropertyList>
+						<Property Name="InitialValue" Type="Real64" Value="0"/>
+						<Property Name="Max" Type="Real64" Value="1"/>
+					</PropertyList>
+				</GameParameter>
+				<GameParameter Name="HEADPHONE_SWITCH" ID="{4E25D4AF-E47C-4016-90D4-06A637759DC8}">
+					<Comment>0 headset switch off : headset not put 
+1 if camera is outside
+1 if heaphone filter is set to on
+1 if communication device is set to on
+
+</Comment>
+					<PropertyList>
+						<Property Name="FilterTimeDown" Type="Real64" Value="0.1"/>
+						<Property Name="FilterTimeUp" Type="Real64" Value="0.1"/>
+						<Property Name="InitialValue" Type="Real64" Value="0"/>
+						<Property Name="Max" Type="Real64" Value="1"/>
+						<Property Name="RTPCRamping" Type="int16" Value="2"/>
+					</PropertyList>
+				</GameParameter>
+				<GameParameter Name="PASSENGER_NUMBER" ID="{EBE8473A-351C-415B-9F8C-5FAA7C7B5797}">
+					<PropertyList>
+						<Property Name="InitialValue" Type="Real64" Value="0"/>
+						<Property Name="Max" Type="Real64" Value="500"/>
+					</PropertyList>
+				</GameParameter>
+				<GameParameter Name="HEADPHONE_IN_COCKPIT" ID="{6A96F2B7-4E69-4D2C-83CD-07F89DB80F92}">
+					<Comment>0 if communication in default mode
+0 if communication in headphone filter &amp; viewpoint outside
+1 if heaphone filter is set to on &amp; viewpoint inside
+1 if communication device is set to on
+
+</Comment>
+					<PropertyList>
+						<Property Name="InitialValue" Type="Real64" Value="0"/>
+						<Property Name="Max" Type="Real64" Value="1"/>
+					</PropertyList>
+				</GameParameter>
+			</ChildrenList>
+		</WorkUnit>
+	</GameParameters>
+</WwiseDocument>
