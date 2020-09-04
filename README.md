@@ -159,12 +159,11 @@ After making any changes to files inside the `A32NX` directory, ensure you run t
 - **[ECAM]** Removed INOP property from all ECAM page buttons
 
 ## Known Issues (Please note that most issues are being worked on and some of them may even be fixed in the dev branch)
-- APU ECAM page doesn't display correct load percent.
-- Bleed ECAM page isn't modeled.
-- No automatic ECAM page switching for DOOR page
-- No chime coming from No smoking & Seatbelts.
-- No smoking sign doesn't use full range of motion.
+- No Smoking switch doesn't use full range of motion.
 - T.O Config is not fully functional yet.
+- F/CTL page does not have working rudder and speedbrake integration
+- BLEED page is not fully functional
+- Automatic ECAM page switching should not light up ECAM buttons
  
 
 ## FAQ
