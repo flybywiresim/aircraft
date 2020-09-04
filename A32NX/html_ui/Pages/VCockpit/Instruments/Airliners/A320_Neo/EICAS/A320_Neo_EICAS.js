@@ -36,7 +36,7 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         this.topSelfTestTimer = -1;
         this.topSelfTestTimerStarted = false;
         this.topSelfTestLastKnobValue = 1;
-                
+        
         this.bottomSelfTestDiv = this.querySelector("#BottomSelfTest");
         this.bottomSelfTestTimer = -1;
         this.bottomSelfTestTimerStarted = false;
