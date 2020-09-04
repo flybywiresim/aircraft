@@ -27,7 +27,7 @@
         },
         {
             "path": "ModelBehaviorDefs/Asobo/Common/Subtemplates/Electrical_Subtemplates.xml",
-            "size": 71115,
+            "size": 71067,
             "date": "132402817714110148"
         },
         {
@@ -332,7 +332,7 @@
         },
         {
             "path": "html_ui/Pages/VCockpit/Instruments/Airliners/A320_Neo/CDU/A320_Neo_CDU_MainDisplay.js",
-            "size": 36436,
+            "size": 41487,
             "date": "132402817714110148"
         },
         {
@@ -427,7 +427,7 @@
         },
         {
             "path": "html_ui/Pages/VCockpit/Instruments/Airliners/A320_Neo/EICAS/A320_Neo_EICAS.js",
-            "size": 12781,
+            "size": 12535,
             "date": "132402817714110148"
         },
         {
@@ -447,7 +447,7 @@
         },
         {
             "path": "html_ui/Pages/VCockpit/Instruments/Airliners/A320_Neo/EICAS/ECAM/A320_Neo_LowerECAM_APU.js",
-            "size": 13103,
+            "size": 13484,
             "date": "132402817714110148"
         },
         {
@@ -602,7 +602,7 @@
         },
         {
             "path": "html_ui/Pages/VCockpit/Instruments/Airliners/A320_Neo/PFD/Airbus_FMA.js",
-            "size": 86692,
+            "size": 87066,
             "date": "132402817714110148"
         },
         {
@@ -612,7 +612,7 @@
         },
         {
             "path": "html_ui/Pages/VCockpit/Instruments/Airliners/A320_Neo/PFD/AltimeterIndicator.js",
-            "size": 98135,
+            "size": 97880,
             "date": "132402817714110148"
         },
         {
