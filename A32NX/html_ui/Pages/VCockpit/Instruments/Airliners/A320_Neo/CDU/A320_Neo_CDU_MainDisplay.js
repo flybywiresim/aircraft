@@ -681,6 +681,95 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             this.updateAutopilotCooldown = this._apCooldown;
         }
     }
+    checkUpdateFlightPhase() {
+        const airSpeed = SimVar.GetSimVarValue("AIRSPEED TRUE", "knots");
+        if (airSpeed > 10) {
+            if (this.currentFlightPhase === 0) {
+                this.currentFlightPhase = FlightPhase.FLIGHT_PHASE_TAKEOFF;
+            }
+
+            //Changes to climb phase when acceleration altitude is reached
+            if (this.currentFlightPhase === FlightPhase.FLIGHT_PHASE_TAKEOFF) {
+                const agl = Simplane.getAltitudeAboveGround();
+                if (agl > this.accelerationAltitude) {
+                    this.currentFlightPhase = FlightPhase.FLIGHT_PHASE_CLIMB;
+                }
+            }
+            //Default Asobo logic
+            if (this.currentFlightPhase === FlightPhase.FLIGHT_PHASE_CLIMB) {
+                const altitude = SimVar.GetSimVarValue("PLANE ALTITUDE", "feets");
+                const cruiseFlightLevel = this.cruiseFlightLevel * 100;
+                if (isFinite(cruiseFlightLevel)) {
+                    if (altitude >= 0.96 * cruiseFlightLevel) {
+                        this.currentFlightPhase = FlightPhase.FLIGHT_PHASE_CRUISE;
+                        Coherent.call("GENERAL_ENG_THROTTLE_MANAGED_MODE_SET", ThrottleMode.AUTO);
+                    }
+                }
+            }
+            //Default Asobo logic
+            if (this.currentFlightPhase === FlightPhase.FLIGHT_PHASE_CRUISE) {
+                const altitude = SimVar.GetSimVarValue("PLANE ALTITUDE", "feets");
+                const cruiseFlightLevel = this.cruiseFlightLevel;
+                if (isFinite(cruiseFlightLevel)) {
+                    if (altitude < 0.94 * cruiseFlightLevel) {
+                        this.currentFlightPhase = FlightPhase.FLIGHT_PHASE_DESCENT;
+                        Coherent.call("GENERAL_ENG_THROTTLE_MANAGED_MODE_SET", ThrottleMode.AUTO);
+                    }
+                }
+            }
+            //Default Asobo logic
+            if (this.flightPlanManager.getActiveWaypoint() === this.flightPlanManager.getDestination()) {
+                if (SimVar.GetSimVarValue("L:FLIGHTPLAN_USE_DECEL_WAYPOINT", "number") != 1) {
+                    const lat = SimVar.GetSimVarValue("PLANE LATITUDE", "degree latitude");
+                    const long = SimVar.GetSimVarValue("PLANE LONGITUDE", "degree longitude");
+                    const planeLla = new LatLongAlt(lat, long);
+                    const dist = Avionics.Utils.computeGreatCircleDistance(planeLla, this.flightPlanManager.getDestination().infos.coordinates);
+                    if (dist < 40) {
+                        this.connectIls();
+                        this.flightPlanManager.activateApproach();
+                        if (this.currentFlightPhase != FlightPhase.FLIGHT_PHASE_APPROACH) {
+                            this.tryGoInApproachPhase();
+                        }
+                    }
+                }
+            }
+            //Default Asobo logic
+            if (SimVar.GetSimVarValue("L:FLIGHTPLAN_USE_DECEL_WAYPOINT", "number") === 1) {
+                if (this.currentFlightPhase != FlightPhase.FLIGHT_PHASE_APPROACH) {
+                    if (this.flightPlanManager.decelWaypoint) {
+                        const lat = SimVar.GetSimVarValue("PLANE LATITUDE", "degree latitude");
+                        const long = SimVar.GetSimVarValue("PLANE LONGITUDE", "degree longitude");
+                        const planeLla = new LatLongAlt(lat, long);
+                        const dist = Avionics.Utils.computeGreatCircleDistance(this.flightPlanManager.decelWaypoint.infos.coordinates, planeLla);
+                        if (dist < 3) {
+                            console.log("Switching into approach. DECEL lat : " + lat + " long " + long);
+                            this.tryGoInApproachPhase();
+                        }
+                    }
+                }
+            }
+            //Resets flight phase to takeoff 30 seconds after touchdown
+            if (this.currentFlightPhase === FlightPhase.FLIGHT_PHASE_APPROACH && Simplane.getAltitudeAboveGround() < 1.5) {
+                if (this.landingResetTimer == null) this.landingResetTimer = 30;
+                if (this.lastPhaseUpdateTime == null) this.lastPhaseUpdateTime = Date.now();
+                const deltaTime = Date.now() - this.lastPhaseUpdateTime;
+                this.lastPhaseUpdateTime = Date.now();
+                this.landingResetTimer -= deltaTime/1000;
+                if (this.landingResetTimer <= 0) {
+                    this.landingResetTimer = null;
+                    this.currentFlightPhase = 0;
+                    CDUIdentPage.ShowPage(this);
+                }
+            } else {
+                //Reset timer to 30 when airborne in case of go around
+                this.landingResetTimer = 30;
+            }
+        }
+        if (SimVar.GetSimVarValue("L:AIRLINER_FLIGHT_PHASE", "number") != this.currentFlightPhase) {
+            SimVar.SetSimVarValue("L:AIRLINER_FLIGHT_PHASE", "number", this.currentFlightPhase);
+            this.onFlightPhaseChanged();
+        }
+    }
     updateADIRS() {
 
         //Get the time since last update
