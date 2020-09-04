@@ -102,7 +102,7 @@
         },
         {
             "path": "SimObjects/AirPlanes/Asobo_A320_NEO/TEXTURE/texture.CFG",
-            "size": 166,
+            "size": 160,
             "date": "132402817714110148"
         },
         {
@@ -208,11 +208,6 @@
         {
             "path": "html_ui/Fonts/LiberationMonoOriginal.ttf",
             "size": 313408,
-            "date": "132402817714110148"
-        },
-        {
-            "path": "html_ui/Fonts/debug.log",
-            "size": 3555,
             "date": "132402817714110148"
         },
         {
@@ -332,7 +327,7 @@
         },
         {
             "path": "html_ui/Pages/VCockpit/Instruments/Airliners/A320_Neo/CDU/A320_Neo_CDU_MainDisplay.js",
-            "size": 40256,
+            "size": 41487,
             "date": "132402817714110148"
         },
         {
