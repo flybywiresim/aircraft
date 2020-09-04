@@ -1484,8 +1484,11 @@ var Airbus_FMA;
         updateRow1(_deltaTime) {
             var targetState = Column4.ROW_1_STATE.NONE;
             if (Simplane.getAutoPilotAPPRActive() && Airbus_FMA.CurrentPlaneState.isILSApproachActive) {
-                if (Airbus_FMA.CurrentPlaneState.anyAutoPilotsActive) {
+                if (Airbus_FMA.CurrentPlaneState.anyAutoPilotsActive && Airbus_FMA.CurrentPlaneState.autoPilotThrottleActive && Simplane.radioAltitude() < 5000) {
                     targetState = Column4.ROW_1_STATE.CAT_3;
+                }
+                else if (Airbus_FMA.CurrentPlaneState.anyAutoPilotsActive && Simplane.radioAltitude() < 5000) {
+                    targetState = Column4.ROW_1_STATE.CAT_2;
                 }
                 else {
                     targetState = Column4.ROW_1_STATE.CAT_1;
@@ -1519,7 +1522,7 @@ var Airbus_FMA;
         }
         updateRow2(_deltaTime) {
             var targetState = Column4.ROW_2_STATE.NONE;
-            if (Simplane.getAutoPilotAPPRActive() && Airbus_FMA.CurrentPlaneState.isILSApproachActive && Airbus_FMA.CurrentPlaneState.anyAutoPilotsActive) {
+            if (Simplane.getAutoPilotAPPRActive() && Airbus_FMA.CurrentPlaneState.isILSApproachActive && Airbus_FMA.CurrentPlaneState.anyAutoPilotsActive && Airbus_FMA.CurrentPlaneState.autoPilotThrottleActive) {
                 if (Airbus_FMA.CurrentPlaneState.bothAutoPilotsActive) {
                     targetState = Column4.ROW_2_STATE.DUAL;
                 }
