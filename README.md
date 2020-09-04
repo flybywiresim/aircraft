@@ -199,7 +199,3 @@ A: You can follow our current progress on the trello: https://trello.com/b/z3jim
 **Q: How do we report bugs?**
 
 A: If the bug is related to features introduced by our mod, please open a GitHub issue with a thorough description of it, and screenshots if necessary. Otherwise, you have two options: Report it on the discord server at #bugs-and-suggestions, or fill this form (that will be directly linked to the dev attention) :https://docs.google.com/forms/d/e/1FAIpQLSe6Bdx8x8mFmOmBoAipYoazfeomrJ8cri55NBn32MBRqIW4nA/viewform?usp=sf_link
-
-**Q: What is the name of this team?**
-
-A: Still no name! If you have a good idea, please feel free to suggest it on discord's #bugs-and-suggestions channel!
