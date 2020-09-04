@@ -1,11 +1,14 @@
 ---
 name: Bug report
-about: Create a report to help us improve
+about: Create a report to help us improve the mod
 title: "[BUG]"
 labels: bug
 assignees: ''
 
 ---
+
+**Branch**
+Which branch of the code is the issue present in?
 
 **Describe the bug**
 A clear and concise description of what the bug is.
