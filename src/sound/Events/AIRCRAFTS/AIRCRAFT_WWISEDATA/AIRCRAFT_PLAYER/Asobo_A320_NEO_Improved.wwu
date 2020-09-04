@@ -8,7 +8,7 @@
 						<Action Name="" ID="{54D794F2-E165-4732-961E-0D7D87B64423}" ShortID="342604536">
 							<PropertyList>
 								<Property Name="ActionType" Type="int16" Value="12"/>
-								<Property Name="Volume" Type="Real64" Value="-8"/>
+								<Property Name="Volume" Type="Real64" Value="-4"/>
 							</PropertyList>
 							<ReferenceList>
 								<Reference Name="Target">
@@ -33,7 +33,7 @@
 						<Action Name="" ID="{B264D8AF-9143-4AC0-8672-68A86F316730}" ShortID="598570066">
 							<PropertyList>
 								<Property Name="ActionType" Type="int16" Value="12"/>
-								<Property Name="Volume" Type="Real64" Value="-15"/>
+								<Property Name="Volume" Type="Real64" Value="-10"/>
 							</PropertyList>
 							<ReferenceList>
 								<Reference Name="Target">
@@ -58,7 +58,7 @@
 						<Action Name="" ID="{52F3D980-0847-4F27-84A1-7C8AE84C27F8}" ShortID="491221372">
 							<PropertyList>
 								<Property Name="ActionType" Type="int16" Value="12"/>
-								<Property Name="Volume" Type="Real64" Value="-25"/>
+								<Property Name="Volume" Type="Real64" Value="-20"/>
 							</PropertyList>
 							<ReferenceList>
 								<Reference Name="Target">
