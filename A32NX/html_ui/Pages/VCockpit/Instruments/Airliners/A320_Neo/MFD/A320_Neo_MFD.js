@@ -91,14 +91,14 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
         this.info.showILS(this.showILS);
 
         //SELF TEST
-        this.selfTestDiv = document.querySelector('#SelfTestDiv');
+        this.selfTestDiv = document.querySelector("#SelfTestDiv");
         this.selfTestTimerStarted = false;
         this.selfTestTimer = -1;
         this.selfTestLastKnobValueFO = 1;
         this.selfTestLastKnobValueCAP = 1;
 
-		this.APULastValue = false;
-		this.externalPowerLastValue = false;
+        this.APULastValue = false;
+        this.externalPowerLastValue = false;
 
         this.electricity = this.gps.getChildById("Electricity")
     }
@@ -126,38 +126,35 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
         var engineOn = Simplane.getEngineActive(0) || Simplane.getEngineActive(1);
         var externalPower = SimVar.GetSimVarValue("EXTERNAL POWER ON", "bool");
         var apuOn = SimVar.GetSimVarValue("APU SWITCH", "bool");
-		let apuStatusChanged = (apuOn != this.APULastValue);
-		let externalPowerChanged = (externalPower != this.externalPowerLastValue);
+        let apuStatusChanged = (apuOn != this.APULastValue);
+        let externalPowerChanged = (externalPower != this.externalPowerLastValue);
         
          /**
-		 * Self test on MFD screen
+         * Self test on MFD screen
          * TODO: Seperate both MFD screens, currently if the FO changes its screen, it also tests the screen for the captain and vice versa
-		 **/
-		 	
-		let selfTestCurrentKnobValueFO = SimVar.GetSimVarValue("LIGHT POTENTIOMETER:21", "number");
+         **/
+             
+        let selfTestCurrentKnobValueFO = SimVar.GetSimVarValue("LIGHT POTENTIOMETER:21", "number");
         let selfTestCurrentKnobValueCAP = SimVar.GetSimVarValue("LIGHT POTENTIOMETER:19", "number");
-		
-		if(
-            (
-                (selfTestCurrentKnobValueFO >= 0.1 && this.selfTestLastKnobValueFO < 0.1) ||
-                (selfTestCurrentKnobValueCAP >= 0.1 && this.selfTestLastKnobValueCAP < 0.1) ||
-                (externalPowerChanged || apuStatusChanged)) &&
-                !this.selfTestTimerStarted
-            ) {
-			this.selfTestDiv.style.display = "block";
+
+        const FOKnobChanged = (selfTestCurrentKnobValueFO >= 0.1 && this.selfTestLastKnobValueFO < 0.1);
+        const CAPKnobChanged = (selfTestCurrentKnobValueCAP >= 0.1 && this.selfTestLastKnobValueCAP < 0.1);
+        
+        if((FOKnobChanged || CAPKnobChanged || (externalPowerChanged || apuStatusChanged)) && !this.selfTestTimerStarted) {
+            this.selfTestDiv.style.display = "block";
             this.selfTestTimer = 14.25;
             this.selfTestTimerStarted = true;
-		}
-		
+        }
+        
         if (this.selfTestTimer >= 0) {
             this.selfTestTimer -= _deltaTime / 1000;
             if (this.selfTestTimer <= 0) {
                 this.selfTestDiv.style.display = "none";
-				this.selfTestTimerStarted = false;
+                this.selfTestTimerStarted = false;
             }
         }
-		
-		this.selfTestLastKnobValueFO = selfTestCurrentKnobValueFO
+        
+        this.selfTestLastKnobValueFO = selfTestCurrentKnobValueFO
         this.selfTestLastKnobValueCAP = selfTestCurrentKnobValueCAP
         
         this.APULastValue = apuOn;
