@@ -129,13 +129,8 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
 
         if (this.externalPowerWhenApuMasterOnTimer >= 0) {  
             this.externalPowerWhenApuMasterOnTimer -= _deltaTime/1000
-            this.electricity.style.display = "block";
-            this.electricity.style.opacity = 0;
-            this.changePage("APU");
             if (this.externalPowerWhenApuMasterOnTimer <= 0) {  
-                this.changePage("APU");
-                this.electricity.style.display = "none";
-                this.electricity.style.opacity = 1;
+                this.changePage("DOOR");
             }  
         }  
 
