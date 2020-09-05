@@ -89,9 +89,17 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
         this.showILS = SimVar.GetSimVarValue("L:BTN_LS_FILTER_ACTIVE", "bool");
         this.compass.showILS(this.showILS);
         this.info.showILS(this.showILS);
-        this.selfTestDiv = this.gps.getChildById("SelfTestDiv");
-        this.selfTestTimer = -1;
+
+        //SELF TEST
+        this.selfTestDiv = document.querySelector("#SelfTestDiv");
         this.selfTestTimerStarted = false;
+        this.selfTestTimer = -1;
+        this.selfTestLastKnobValueFO = 1;
+        this.selfTestLastKnobValueCAP = 1;
+
+        this.APULastValue = false;
+        this.externalPowerLastValue = false;
+
         this.electricity = this.gps.getChildById("Electricity")
     }
     onUpdate(_deltaTime) {
@@ -118,26 +126,41 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
         var engineOn = Simplane.getEngineActive(0) || Simplane.getEngineActive(1);
         var externalPower = SimVar.GetSimVarValue("EXTERNAL POWER ON", "bool");
         var apuOn = SimVar.GetSimVarValue("APU SWITCH", "bool");
+        let apuStatusChanged = (apuOn != this.APULastValue);
+        let externalPowerChanged = (externalPower != this.externalPowerLastValue);
+        
+         /**
+         * Self test on MFD screen
+         * TODO: Seperate both MFD screens, currently if the FO changes its screen, it also tests the screen for the captain and vice versa
+         **/
+             
+        let selfTestCurrentKnobValueFO = SimVar.GetSimVarValue("LIGHT POTENTIOMETER:21", "number");
+        let selfTestCurrentKnobValueCAP = SimVar.GetSimVarValue("LIGHT POTENTIOMETER:19", "number");
 
-        this.updateScreenState();
-
-        if (engineOn) {
-            this.selfTestDiv.style.display = "none";
+        const FOKnobChanged = (selfTestCurrentKnobValueFO >= 0.1 && this.selfTestLastKnobValueFO < 0.1);
+        const CAPKnobChanged = (selfTestCurrentKnobValueCAP >= 0.1 && this.selfTestLastKnobValueCAP < 0.1);
+        
+        if((FOKnobChanged || CAPKnobChanged || (externalPowerChanged || apuStatusChanged)) && !this.selfTestTimerStarted) {
+            this.selfTestDiv.style.display = "block";
+            this.selfTestTimer = 14.25;
             this.selfTestTimerStarted = true;
         }
-        // Check if external power is on & timer not already started
-        if ((externalPower || apuOn) && !this.selfTestTimerStarted) {
-            this.selfTestTimer = 13.75;
-            this.selfTestTimerStarted = true;
-        }
-        // Timer
+        
         if (this.selfTestTimer >= 0) {
             this.selfTestTimer -= _deltaTime / 1000;
             if (this.selfTestTimer <= 0) {
                 this.selfTestDiv.style.display = "none";
+                this.selfTestTimerStarted = false;
             }
         }
         
+        this.selfTestLastKnobValueFO = selfTestCurrentKnobValueFO
+        this.selfTestLastKnobValueCAP = selfTestCurrentKnobValueCAP
+        
+        this.APULastValue = apuOn;
+        this.externalPowerLastValue = externalPower;
+
+        this.updateScreenState();        
     }
 
     updateScreenState() {
