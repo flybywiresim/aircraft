@@ -7,21 +7,34 @@ assignees: ''
 
 ---
 
-**Branch**
-Which branch of the code is the issue present in?
+<!-- ⚠⚠ Do not delete this issue template! ⚠⚠ -->
+<!-- Issues that do not use the issue template are likely to be ignored and closed. -->
+
+
+**Mod Version**
+<!-- Either a release version or "dev" for the latest dev branch. -->
+<!-- Reports from previous releases are likely to be ignored. Test your issue against the latest release before reporting! -->
+
 
 **Describe the bug**
-A clear and concise description of what the bug is.
+<!-- A clear and concise description of what the bug is. -->
+
 
 **To Reproduce**
-Steps to reproduce the behavior:
-1. Go to '...'
+<!-- Steps to reproduce the behavior. -->
+<!-- We need to know how you encountered the bug to properly troubleshoot the issue. -->
+1.
+2.
+3.
+
 
 **Expected behavior**
-A clear and concise description of what you expected to happen.
+<!-- A clear and concise description of what you expected to happen. -->
 
-**Screenshots or Videos**
-If applicable, add screenshots or videos to help explain your problem.
+
+**References**
+<!-- If applicable, add screenshots or videos to help explain your problem. -->
+
 
 **Additional context**
-Add any other context about the problem here.
+<!-- Add any other context about the problem here. -->
