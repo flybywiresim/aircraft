@@ -150,7 +150,6 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
             this.changePage("APU");
 
             //if external power is off when turning on apu, only show the apu page for 10 seconds, then the DOOR page
-            var externalPower = SimVar.GetSimVarValue("EXTERNAL POWER ON", "Bool")  
             if (externalPower === 0) {  
                 this.externalPowerWhenApuMasterOnTimer = 85;
             }
