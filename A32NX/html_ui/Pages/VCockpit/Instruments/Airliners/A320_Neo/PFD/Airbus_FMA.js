@@ -948,6 +948,13 @@ var Airbus_FMA;
             else if (srsModeState == Airbus_FMA.MODE_STATE.ENGAGED) {
                 return Column2.ROW_1_STATE.SRS_ENGAGED;
             }
+            var gsModeState = Column2.GetModeState_GS();
+            if (gsModeState == Airbus_FMA.MODE_STATE.ENGAGED) {
+                return Column2.ROW_1_STATE.GS_ENGAGED;
+            }
+            else if (gsModeState == Airbus_FMA.MODE_STATE.CAPTURED) {
+                return Column2.ROW_1_STATE.GS_CAPTURED;
+            }
             var altModeState = Column2.GetModeState_ALT();
             if (altModeState == Airbus_FMA.MODE_STATE.ENGAGED) {
                 if (Airbus_FMA.CurrentPlaneState.flightPhase == FlightPhase.FLIGHT_PHASE_CRUISE) {
@@ -979,13 +986,6 @@ var Airbus_FMA;
             }
             else if (this.IsActive_EXPDES()) {
                 return Column2.ROW_1_STATE.EXP_DES;
-            }
-            var gsModeState = Column2.GetModeState_GS();
-            if (gsModeState == Airbus_FMA.MODE_STATE.ENGAGED) {
-                return Column2.ROW_1_STATE.GS_ENGAGED;
-            }
-            else if (gsModeState == Airbus_FMA.MODE_STATE.CAPTURED) {
-                return Column2.ROW_1_STATE.GS_CAPTURED;
             }
             if (Column2.IsActive_OPCLB()) {
                 return Column2.ROW_1_STATE.OP_CLB;
