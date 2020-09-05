@@ -701,26 +701,28 @@ var Airbus_FMA;
             return false;
         }
         IsActive_LVRCLB() {
-            if (Airbus_FMA.CurrentPlaneState.flightPhase == FlightPhase.FLIGHT_PHASE_TAKEOFF) {
-                if (Airbus_FMA.CurrentPlaneState.highestThrottleDetent < ThrottleMode.CLIMB && Simplane.getIndicatedSpeed() > 30) {
-                    return true;
-                }
-            }
-            else if (Airbus_FMA.CurrentPlaneState.flightPhase == FlightPhase.FLIGHT_PHASE_CLIMB) {
-                if (Airbus_FMA.CurrentPlaneState.highestThrottleDetent > ThrottleMode.CLIMB) {
-                    if (Airbus_FMA.CurrentPlaneState.radioAltitude >= Simplane.getThrustReductionAltitude()) {
+            if (Airbus_FMA.CurrentPlaneState.radioAltitude > 1.5) {
+                if (Airbus_FMA.CurrentPlaneState.flightPhase == FlightPhase.FLIGHT_PHASE_TAKEOFF) {
+                    if (Airbus_FMA.CurrentPlaneState.highestThrottleDetent < ThrottleMode.CLIMB && Simplane.getIndicatedSpeed() > 30) {
                         return true;
                     }
                 }
-            }
-            else if (Airbus_FMA.CurrentPlaneState.flightPhase == FlightPhase.FLIGHT_PHASE_GOAROUND) {
-                if (Airbus_FMA.CurrentPlaneState.highestThrottleDetent > ThrottleMode.CLIMB) {
-                    if (Airbus_FMA.CurrentPlaneState.radioAltitude >= Simplane.getThrustReductionAltitude()) {
-                        return true;
+                else if (Airbus_FMA.CurrentPlaneState.flightPhase == FlightPhase.FLIGHT_PHASE_CLIMB) {
+                    if (Airbus_FMA.CurrentPlaneState.highestThrottleDetent > ThrottleMode.CLIMB) {
+                        if (Airbus_FMA.CurrentPlaneState.radioAltitude >= Simplane.getThrustReductionAltitude()) {
+                            return true;
+                        }
                     }
                 }
-                else if (Airbus_FMA.CurrentPlaneState.highestThrottleDetent < ThrottleMode.CLIMB) {
-                    return true;
+                else if (Airbus_FMA.CurrentPlaneState.flightPhase == FlightPhase.FLIGHT_PHASE_GOAROUND) {
+                    if (Airbus_FMA.CurrentPlaneState.highestThrottleDetent > ThrottleMode.CLIMB) {
+                        if (Airbus_FMA.CurrentPlaneState.radioAltitude >= Simplane.getThrustReductionAltitude()) {
+                            return true;
+                        }
+                    }
+                    else if (Airbus_FMA.CurrentPlaneState.highestThrottleDetent < ThrottleMode.CLIMB) {
+                        return true;
+                    }
                 }
             }
             return false;
