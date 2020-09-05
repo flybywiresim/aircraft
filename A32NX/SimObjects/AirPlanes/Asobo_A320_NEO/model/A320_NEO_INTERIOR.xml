@@ -783,16 +783,25 @@
 		<UseTemplate Name="ASOBO_LANDING_GEAR_Light_Template">
 			<NODE_ID>PUSH_AUTOBKR_LDGGEAR_1</NODE_ID>
 			<ID>1</ID>
+			<INVERT_CONDITION>1</INVERT_CONDITION>
+			<CUSTOM_RANGE>&gt; 90</CUSTOM_RANGE>
+			<GEAR_ID>1</GEAR_ID>
 			<AIRBUS_TYPE/>
 		</UseTemplate>
 		<UseTemplate Name="ASOBO_LANDING_GEAR_Light_Template">
 			<NODE_ID>PUSH_AUTOBKR_LDGGEAR_2</NODE_ID>
 			<ID>2</ID>
+			<INVERT_CONDITION>1</INVERT_CONDITION>
+			<CUSTOM_RANGE>&gt; 90</CUSTOM_RANGE>
+			<GEAR_ID>0</GEAR_ID>
 			<AIRBUS_TYPE/>
 		</UseTemplate>
 		<UseTemplate Name="ASOBO_LANDING_GEAR_Light_Template">
 			<NODE_ID>PUSH_AUTOBKR_LDGGEAR_3</NODE_ID>
 			<ID>3</ID>
+			<INVERT_CONDITION>1</INVERT_CONDITION>
+			<CUSTOM_RANGE>&gt; 90</CUSTOM_RANGE>
+			<GEAR_ID>2</GEAR_ID>
 			<AIRBUS_TYPE/>
 		</UseTemplate>
 		<UseTemplate Name="ASOBO_LANDING_GEAR_Warning_Template">
@@ -2501,6 +2510,7 @@
 		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
 			<NODE_ID>PUSH_BARO_RST</NODE_ID>
 		</UseTemplate>
+		<!-- Landing Light Indicators 
 		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
 			<NODE_ID>PUSH_AUTOBKR_LDGGEAR_1</NODE_ID>
 		</UseTemplate>
@@ -2510,7 +2520,7 @@
 		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
 			<NODE_ID>PUSH_AUTOBKR_LDGGEAR_3</NODE_ID>
 		</UseTemplate>
-
+		 -->
 		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
 			<NODE_ID>PUSH_EFIS_FO_PFD</NODE_ID>
 		</UseTemplate>
