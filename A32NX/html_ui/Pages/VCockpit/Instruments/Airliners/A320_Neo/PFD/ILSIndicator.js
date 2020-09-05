@@ -13,6 +13,8 @@ class Jet_PFD_ILSIndicator extends HTMLElement {
         this.gsVisible = false;
         this.infoVisible = false;
         this._aircraft = Aircraft.A320_NEO;
+        this.locCaptured = false;
+        this.gsCaptured = false;
     }
     get aircraft() {
         return this._aircraft;
@@ -252,6 +254,16 @@ class Jet_PFD_ILSIndicator extends HTMLElement {
                     let gsi = -SimVar.GetSimVarValue("NAV GSI:" + localizer.id, "number") / 127.0;
                     let delta = (gsi + 1.0) * 0.5;
                     let y = this.gs_cursorMinY + (this.gs_cursorMaxY - this.gs_cursorMinY) * delta;
+                    if (y >= 220 && y <= 230 || this.gsCaptured) {
+                        SimVar.SetSimVarValue("L:A32NX_OFF_GS", "bool", 0);
+                        this.gsCaptured = true;
+                    }
+                    else {
+                        SimVar.SetSimVarValue("L:A32NX_OFF_GS", "bool", 1);
+                    }
+                    if (y < 105 || y > 340) {
+                        this.gsCaptured = false;
+                    }
                     y = Math.min(this.gs_cursorMinY, Math.max(this.gs_cursorMaxY, y));
                     this.gs_cursorGroup.setAttribute("transform", "translate(" + this.gs_cursorPosX + ", " + y + ")");
                     if (delta >= 0.95) {
@@ -273,6 +285,16 @@ class Jet_PFD_ILSIndicator extends HTMLElement {
                     let gsi = -SimVar.GetSimVarValue("GPS VERTICAL ERROR", "meters");
                     let delta = 0.5 + (gsi / 150.0) / 2;
                     let y = this.gs_cursorMinY + (this.gs_cursorMaxY - this.gs_cursorMinY) * delta;
+                    if (y >= 220 && y <= 230 || this.gsCaptured) {
+                        SimVar.SetSimVarValue("L:A32NX_OFF_GS", "bool", 0);
+                        this.gsCaptured = true;
+                    }
+                    else {
+                        SimVar.SetSimVarValue("L:A32NX_OFF_GS", "bool", 1);
+                    }
+                    if (y < 105 || y > 340) {
+                        this.gsCaptured = false;
+                    }
                     y = Math.min(this.gs_cursorMinY, Math.max(this.gs_cursorMaxY, y));
                     this.gs_cursorGroup.setAttribute("transform", "translate(" + this.gs_cursorPosX + ", " + y + ")");
                     if (delta >= 0.95) {
@@ -302,6 +324,16 @@ class Jet_PFD_ILSIndicator extends HTMLElement {
                     let cdi = SimVar.GetSimVarValue("NAV CDI:" + localizer.id, "number") / 127.0;
                     let delta = (cdi + 1.0) * 0.5;
                     let x = this.loc_cursorMinX + (this.loc_cursorMaxX - this.loc_cursorMinX) * delta;
+                    if (x >= 245 && x <= 255 || this.locCaptured) {
+                        SimVar.SetSimVarValue("L:A32NX_OFF_LOC", "bool", 0);
+                        this.locCaptured = true;
+                    }
+                    else {
+                        SimVar.SetSimVarValue("L:A32NX_OFF_LOC", "bool", 1);
+                    }
+                    if (x < 115 || x > 375) {
+                        this.locCaptured = false;
+                    }
                     x = Math.max(this.loc_cursorMinX, Math.min(this.loc_cursorMaxX, x));
                     this.loc_cursorGroup.setAttribute("transform", "translate(" + x + ", " + this.loc_cursorPosY + ")");
                     if (delta >= 0.95) {
