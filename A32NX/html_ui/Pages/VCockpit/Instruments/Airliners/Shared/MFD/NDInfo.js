@@ -112,7 +112,7 @@ class Jet_MFD_NDInfo extends HTMLElement {
         if ((_speed != this.currentGroundSpeed) || _force) {
             this.currentGroundSpeed = _speed;
             if (this.groundSpeed != null) {
-                this.groundSpeed.textContent = this.currentGroundSpeed.toString().padStart(3, "0");
+                this.groundSpeed.textContent = this.currentGroundSpeed.toString().padStart(3);
             }
         }
     }

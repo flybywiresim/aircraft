@@ -561,22 +561,25 @@ class A320_Neo_MFD_NDInfo extends NavSystemElement {
             this.ndInfo.update(_deltaTime);
         }
         var ADIRSState = SimVar.GetSimVarValue("L:A320_Neo_ADIRS_STATE", "Enum");
+        var groundSpeed = Math.round(Simplane.getGroundSpeed());
         var gs = this.ndInfo.querySelector("#GS_Value");
         var tas = this.ndInfo.querySelector("#TAS_Value");
         var wd = this.ndInfo.querySelector("#Wind_Direction");
         var ws = this.ndInfo.querySelector("#Wind_Strength");
         var wa = this.ndInfo.querySelector("#Wind_Arrow");
         var wptg = this.ndInfo.querySelector("#Waypoint_Group");
-        if (ADIRSState != 2) {
-            //Hide GS, TAS, and wind info
-            gs.textContent = "---";
+        if (ADIRSState != 2 || groundSpeed <= 100) {
+            //Hide TAS, and wind info
             tas.textContent = "---";
             wd.textContent = "---";
             ws.textContent = "---";
+            wa.setAttribute("visibility", "hidden");
+        }else {
+            wa.setAttribute("visibility", "visible");
         }
-        //Show/hide wind arrow
-        wa.setAttribute("visibility", (ADIRSState != 2) ? "hidden" : "visible");
-
+        if (ADIRSState != 2){
+            gs.textContent = "---";
+        }
         //Hide waypoint when ADIRS not aligned
         wptg.setAttribute("visibility", (ADIRSState != 2) ? "hidden" : "visible");
     }
