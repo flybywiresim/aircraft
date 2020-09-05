@@ -12,8 +12,7 @@ assignees: ''
 
 
 **Mod Version**
-<!-- Either a release version or "dev" for the latest dev branch. -->
-<!-- Reports from previous releases are likely to be ignored. Test your issue against the latest release before reporting! -->
+<!-- Either a release version or "master" for the latest master branch. -->
 
 
 **Describe the bug**
@@ -30,6 +29,10 @@ assignees: ''
 
 **Expected behavior**
 <!-- A clear and concise description of what you expected to happen. -->
+
+
+**Actual behavior**
+<!-- A clear and concise description of what actually happened. -->
 
 
 **References**
