@@ -102,7 +102,7 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         
         let topSelfTestCurrentKnobValue = SimVar.GetSimVarValue("LIGHT POTENTIOMETER:22", "number");
         
-        if(((topSelfTestCurrentKnobValue >= 0.1 && this.topSelfTestLastKnobValue < 0.1) || ACPowerStateChange) && !this.topSelfTestTimerStarted) {
+        if(((topSelfTestCurrentKnobValue >= 0.1 && this.topSelfTestLastKnobValue < 0.1) || ACPowerStateChange) && isACPowerAvailable && !this.topSelfTestTimerStarted) {
             this.topSelfTestDiv.style.display = "block";
             this.topSelfTestTimer = 14.25;
             this.topSelfTestTimerStarted = true;
@@ -124,7 +124,7 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         
         let bottomSelfTestCurrentKnobValue = SimVar.GetSimVarValue("LIGHT POTENTIOMETER:23", "number");
         
-        if(((bottomSelfTestCurrentKnobValue >= 0.1 && this.bottomSelfTestLastKnobValue < 0.1) || ACPowerStateChange) && !this.bottomSelfTestTimerStarted) {
+        if(((bottomSelfTestCurrentKnobValue >= 0.1 && this.bottomSelfTestLastKnobValue < 0.1) || ACPowerStateChange) && isACPowerAvailable && !this.bottomSelfTestTimerStarted) {
             this.bottomSelfTestDiv.style.display = "block";
             this.bottomSelfTestTimer = 14.25;
             this.bottomSelfTestTimerStarted = true;
