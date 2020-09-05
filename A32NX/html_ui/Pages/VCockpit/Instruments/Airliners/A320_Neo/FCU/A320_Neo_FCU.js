@@ -322,6 +322,19 @@ class A320_Neo_FCU_Altitude extends A320_Neo_FCU_Component {
             var value = Math.floor(Math.max(this.currentValue, 100));
             this.textValueContent = value.toString().padStart(5, "0");
             this.setElementVisibility(this.illuminator, this.isManaged);
+			if (!_isManaged) {
+				if ((Simplane.getAutoPilotAltitudeSelected() || Simplane.getAutoPilotAltitudeArmed()) && (Simplane.getAutoPilotFlightDirectorActive(1) || Simplane.getAutoPilotFlightDirectorActive(2)) && (Simplane.getAutoPilotActive(1)|| Simplane.getAutoPilotActive(2))) {
+					let targetAltitude = Simplane.getAutoPilotAltitudeLockValue("feets");
+					let altitude = Simplane.getAltitude();
+					if (altitude > targetAltitude + 100 || altitude < targetAltitude - 100) {
+						if (!Simplane.getAutoPilotGlideslopeHold()) {
+							SimVar.SetSimVarValue("L:A320_NEO_FCU_FORCE_IDLE_VS", "Number", 1);
+						}
+						Coherent.call("AP_ALT_VAR_SET_ENGLISH", 1, Simplane.getAutoPilotDisplayedAltitudeLockValue(), true);
+						SimVar.SetSimVarValue("K:ALTITUDE_SLOT_INDEX_SET", "number", 1);
+					}
+				}
+			}
         }
     }
 }
