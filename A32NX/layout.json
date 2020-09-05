@@ -142,7 +142,7 @@
         },
         {
             "path": "SimObjects/AirPlanes/Asobo_A320_NEO/panel/panel.xml",
-            "size": 24737,
+            "size": 17719,
             "date": "132402817714110148"
         },
         {
@@ -208,11 +208,6 @@
         {
             "path": "html_ui/Fonts/LiberationMonoOriginal.ttf",
             "size": 313408,
-            "date": "132402817714110148"
-        },
-        {
-            "path": "html_ui/Fonts/debug.log",
-            "size": 3555,
             "date": "132402817714110148"
         },
         {
@@ -332,7 +327,7 @@
         },
         {
             "path": "html_ui/Pages/VCockpit/Instruments/Airliners/A320_Neo/CDU/A320_Neo_CDU_MainDisplay.js",
-            "size": 41487,
+            "size": 41698,
             "date": "132402817714110148"
         },
         {
@@ -526,13 +521,18 @@
             "date": "132402817714110148"
         },
         {
+            "path": "html_ui/Pages/VCockpit/Instruments/Airliners/A320_Neo/EICAS/ECAM/A320_Neo_UpperECAM.css",
+            "size": 7876,
+            "date": "132402817714110148"
+        },
+        {
             "path": "html_ui/Pages/VCockpit/Instruments/Airliners/A320_Neo/EICAS/ECAM/A320_Neo_UpperECAM.html",
-            "size": 656,
+            "size": 745,
             "date": "132402817714110148"
         },
         {
             "path": "html_ui/Pages/VCockpit/Instruments/Airliners/A320_Neo/EICAS/ECAM/A320_Neo_UpperECAM.js",
-            "size": 47796,
+            "size": 65962,
             "date": "132402817714110148"
         },
         {

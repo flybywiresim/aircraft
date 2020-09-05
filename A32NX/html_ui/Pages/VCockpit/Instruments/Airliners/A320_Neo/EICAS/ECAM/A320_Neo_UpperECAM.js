@@ -57,18 +57,316 @@ var A320_Neo_UpperECAM;
             super.connectedCallback();
             TemplateElement.call(this, this.init.bind(this));
         }
+        getADIRSMins() {
+            const secs = SimVar.GetSimVarValue("L:A320_Neo_ADIRS_TIME", "seconds");
+            const mins = Math.floor(secs/60);
+            if (secs > 0) return mins;
+            else return -1;
+        }
         init() {
             this.enginePanel = new A320_Neo_UpperECAM.EnginePanel(this, "EnginesPanel");
             this.infoTopPanel = new A320_Neo_UpperECAM.InfoTopPanel(this, "InfoTopPanel");
             this.flapsPanel = new A320_Neo_UpperECAM.FlapsPanel(this, "FlapsPanel");
-            this.infoBottomLeftPanel = new A320_Neo_UpperECAM.InfoBottomLeftPanel(this, "InfoBottomLeftPanel");
-            this.infoBottomRightPanel = new A320_Neo_UpperECAM.InfoBottomRightPanel(this, "InfoBottomRightPanel");
-            this.infoPanelsManager = new A320_Neo_UpperECAM.InfoPanelsManager();
+            this.ecamMessages = {
+                failures: [
+                    {
+                        name: "CAB PR",
+                        messages: [
+                            {
+                                message: "EXCESS CAB ALT",
+                                level: 3,
+                                isActive: () => {
+                                    return SimVar.GetSimVarValue("PRESSURIZATION CABIN ALTITUDE", "feet") > 10000;
+                                },
+                                actions: [
+                                    {
+                                        style: "action",
+                                        message: "CREW OXY MASK",
+                                        action: "ON"
+                                    },
+                                    {
+                                        style: "action",
+                                        message: "DESCENT",
+                                        action: "INITIATE",
+                                        isCompleted: () => {
+                                            return SimVar.GetSimVarValue("VERTICAL SPEED", "feet per minute") < -100;
+                                        }
+                                    },
+                                    {
+                                        style: "remark",
+                                        message: "IF RAPID DECOMPRESSION"
+                                    },
+                                    {
+                                        style: "action-underline",
+                                        message: "EMER DESCENT FL 100/MEA",
+                                    },
+                                    {
+                                        style: "action",
+                                        message: "SPEED BRK",
+                                        action: "FULL",
+                                        isCompleted: () => {
+                                            return SimVar.GetSimVarValue("SPOILERS HANDLE POSITION", "Position") > 0.95;
+                                        }
+                                    },
+                                    {
+                                        style: "action",
+                                        message: "SPD",
+                                        action: "MAX/APPROPRIATE"
+                                    },
+                                    {
+                                        style: "remark",
+                                        message: "IF CAB ALT>14000FT"
+                                    },
+                                    {
+                                        style: "action",
+                                        message: "PAX OXY MASKS",
+                                        action: "MAN ON"
+                                    },
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        name: "NAV",
+                        messages: [
+                            {
+                                message: "TCAS FAULT",
+                                level: 2,
+                                isActive: () => {
+                                    return SimVar.GetSimVarValue("L:A320_Neo_ADIRS_STATE", "Enum") != 2;
+                                },
+                            }
+                        ]
+                    }
+                ],
+                normal: [
+                    {
+                        message: "IR IN ALGIN 0 MN",
+                        isActive: () => {
+                            return this.getADIRSMins() == 0;
+                        }
+                    },
+                    {
+                        message: "IR IN ALGIN 1 MN",
+                        isActive: () => {
+                            return this.getADIRSMins() == 1;
+                        }
+                    },
+                    {
+                        message: "IR IN ALGIN 2 MN",
+                        isActive: () => {
+                            return this.getADIRSMins() == 2;
+                        }
+                    },
+                    {
+                        message: "IR IN ALGIN 3 MN",
+                        isActive: () => {
+                            return this.getADIRSMins() == 3;
+                        }
+                    },
+                    {
+                        message: "IR IN ALGIN 4 MN",
+                        isActive: () => {
+                            return this.getADIRSMins() == 4;
+                        }
+                    },
+                    {
+                        message: "IR IN ALGIN 5 MN",
+                        isActive: () => {
+                            return this.getADIRSMins() == 5;
+                        }
+                    },
+                    {
+                        message: "IR IN ALGIN 6 MN",
+                        isActive: () => {
+                            return this.getADIRSMins() == 6;
+                        }
+                    },
+                    {
+                        message: "IR IN ALGIN 7 MN",
+                        isActive: () => {
+                            return this.getADIRSMins() == 7;
+                        }
+                    },
+                    {
+                        message: "IR IN ALGIN >7 MN",
+                        isActive: () => {
+                            return this.getADIRSMins() > 7;
+                        }
+                    },
+                    {
+                        message: "GND SPLRS ARMED",
+                        isActive: () => {
+                            return SimVar.GetSimVarValue("SPOILERS ARMED", "Bool") == 1;
+                        }
+                    },
+                    {
+                        message: "SEAT BELTS",
+                        isActive: () => {
+                            return SimVar.GetSimVarValue("L:XMLVAR_SWITCH_OVHD_INTLT_SEATBELT_Position", "Bool") == 1;
+                        }
+                    },
+                    {
+                        message: "NO SMOKING",
+                        isActive: () => {
+                            return SimVar.GetSimVarValue("L:A32NX_NO_SMOKING_MEMO", "Bool") == 1;
+                        }
+                    }
+                ]
+            }
+            this.secondaryEcamMessage = {
+                failures: [],
+                normal: [
+                    {
+                        message: "T.O. INHIBIT",
+                        style: "InfoSpecial",
+                        isActive: () => {
+                            return (SimVar.GetSimVarValue("L:AIRLINER_FLIGHT_PHASE", "Enum") == 2) && (SimVar.GetSimVarValue("L:A32NX_Preflight_Complete", "Bool") == 1);
+                        }
+                    },
+                    {
+                        message: "LDG INHIBIT",
+                        style: "InfoSpecial",
+                        isActive: () => {
+                            return (SimVar.GetSimVarValue("L:AIRLINER_FLIGHT_PHASE", "Enum") == 6) && (SimVar.GetSimVarValue("RADIO HEIGHT", "feet") < 800);
+                        }
+                    },
+                    {
+                        message: "PARK BRK",
+                        isActive: () => {
+                            return SimVar.GetSimVarValue("BRAKE PARKING INDICATOR", "Bool") == 1;
+                        }
+                    },
+                    {
+                        message: "APU BLEED",
+                        isActive: () => {
+                            return (SimVar.GetSimVarValue("BLEED AIR APU", "Bool") == 1) && (SimVar.GetSimVarValue("APU PCT RPM", "Percent") >= 95);
+                        }
+                    },
+                    {
+                        message: "APU AVAIL",
+                        isActive: () => {
+                            return (SimVar.GetSimVarValue("BLEED AIR APU", "Bool") == 0) && (SimVar.GetSimVarValue("APU PCT RPM", "Percent") >= 95);
+                        }
+                    },
+                    {
+                        message: "LDG LT",
+                        isActive: () => {
+                            return (SimVar.GetSimVarValue("LIGHT LANDING ON", "Bool") == 1);
+                        }
+                    },
+                    {
+                        message: "SPEED BRK",
+                        isActive: () => {
+                            return (SimVar.GetSimVarValue("SPOILERS HANDLE POSITION", "position") > 0);
+                        }
+                    },
+                    {
+                        message: "AUTO BRK LO",
+                        isActive: () => {
+                            return (SimVar.GetSimVarValue("L:XMLVAR_Autobrakes_Level", "Enum") == 1);
+                        }
+                    },
+                    {
+                        message: "AUTO BRK MED",
+                        isActive: () => {
+                            return (SimVar.GetSimVarValue("L:XMLVAR_Autobrakes_Level", "Enum") == 2);
+                        }
+                    },
+                    {
+                        message: "AUTO BRK MAX",
+                        isActive: () => {
+                            return (SimVar.GetSimVarValue("L:XMLVAR_Autobrakes_Level", "Enum") == 3);
+                        }
+                    }
+                ]
+            }
+            this.leftEcamMessagePanel = new A320_Neo_UpperECAM.EcamMessagePanel(this, "left-msg", 7, this.ecamMessages);
+            this.rightEcamMessagePanel = new A320_Neo_UpperECAM.EcamMessagePanel(this, "right-msg", 7, this.secondaryEcamMessage);
+            this.takeoffMemo = new A320_Neo_UpperECAM.Memo(this, "to-memo", "T.O", [
+                                                new A320_Neo_UpperECAM.MemoItem(
+                                                    "to-memo-autobrk",
+                                                    "AUTO BRK",
+                                                    "MAX",
+                                                    "MAX",
+                                                    function() {
+                                                        return (SimVar.GetSimVarValue("L:XMLVAR_Autobrakes_Level", "Enum") == 3);
+                                                    }),
+                                                new A320_Neo_UpperECAM.MemoItem(
+                                                    "to-memo-signs",
+                                                    "SIGNS",
+                                                    "ON",
+                                                    "ON",
+                                                    function() {
+                                                        return (SimVar.GetSimVarValue("L:XMLVAR_SWITCH_OVHD_INTLT_SEATBELT_Position", "Bool") > 0);
+                                                    }),
+                                                new A320_Neo_UpperECAM.MemoItem(
+                                                    "to-memo-splrs",
+                                                    "SPLRS",
+                                                    "ARM",
+                                                    "ARM",
+                                                    function() {
+                                                        return (SimVar.GetSimVarValue("SPOILERS ARMED", "Bool") == 1);
+                                                    }),
+                                                new A320_Neo_UpperECAM.MemoItem(
+                                                    "to-memo-flaps",
+                                                    "FLAPS",
+                                                    "T.O",
+                                                    "T.O",
+                                                    function() {
+                                                        return (SimVar.GetSimVarValue("FLAPS HANDLE INDEX", "Enum") >= 1);
+                                                    }),
+                                                new A320_Neo_UpperECAM.MemoItem(
+                                                    "to-memo-config",
+                                                    "T.O CONFIG",
+                                                    "TEST",
+                                                    "NORMAL",
+                                                    function() {
+                                                        return false;
+                                                    })
+                                                 ],);
+            
+            this.landingMemo = new A320_Neo_UpperECAM.Memo(this, "ldg-memo", "LDG", [
+                                                    new A320_Neo_UpperECAM.MemoItem(
+                                                        "ldg-memo-gear",
+                                                        "LDG GEAR",
+                                                        "DN",
+                                                        "DN",
+                                                        function() {
+                                                            return (SimVar.GetSimVarValue("GEAR HANDLE POSITION", "Bool") == 1);
+                                                        }),
+                                                    new A320_Neo_UpperECAM.MemoItem(
+                                                        "ldg-memo-signs",
+                                                        "SIGNS",
+                                                        "ON",
+                                                        "ON",
+                                                        function() {
+                                                            return (SimVar.GetSimVarValue("L:XMLVAR_SWITCH_OVHD_INTLT_SEATBELT_Position", "Bool") > 0);
+                                                        }),
+                                                    new A320_Neo_UpperECAM.MemoItem(
+                                                        "ldg-memo-splrs",
+                                                        "SPLRS",
+                                                        "ARM",
+                                                        "ARM",
+                                                        function() {
+                                                            return (SimVar.GetSimVarValue("SPOILERS ARMED", "Bool") == 1);
+                                                        }),
+                                                    new A320_Neo_UpperECAM.MemoItem(
+                                                        "ldg-memo-flaps",
+                                                        "FLAPS",
+                                                        "FULL",
+                                                        "FULL",
+                                                        function() {
+                                                            return (SimVar.GetSimVarValue("FLAPS HANDLE INDEX", "Enum") == 4);
+                                                        })
+                                                     ],);
             this.allPanels.push(this.enginePanel);
             this.allPanels.push(this.infoTopPanel);
             this.allPanels.push(this.flapsPanel);
-            this.allPanels.push(this.infoBottomLeftPanel);
-            this.allPanels.push(this.infoBottomRightPanel);
+            this.allPanels.push(this.takeoffMemo);
+            this.allPanels.push(this.landingMemo);
+            this.allPanels.push(this.leftEcamMessagePanel);
+            this.allPanels.push(this.rightEcamMessagePanel);
             for (var i = 0; i < this.allPanels.length; ++i) {
                 if (this.allPanels[i] != null) {
                     this.allPanels[i].init();
@@ -88,6 +386,34 @@ var A320_Neo_UpperECAM;
                     this.allPanels[i].update(_deltaTime);
                 }
             }
+            
+            //Show takeoff memo 2 mins after second engine start
+            //Hides after takeoff thurst application
+            if (SimVar.GetSimVarValue("ENG N1 RPM:1", "Percent") > 15 && SimVar.GetSimVarValue("ENG N1 RPM:2", "Percent") > 15 && SimVar.GetSimVarValue("L:AIRLINER_FLIGHT_PHASE", "number") <= 2 && SimVar.GetSimVarValue("L:A32NX_Preflight_Complete", "Bool") == 0) {
+                if (this.takeoffMemoTimer == null) this.takeoffMemoTimer = 120;
+                if (this.takeoffMemoTimer > 0) {
+                    this.takeoffMemoTimer -= _deltaTime/1000;
+                } else {
+                    this.showTakeoffMemo = true;
+                }
+                
+            } else {
+                this.takeoffMemoTimer = null;
+                this.showTakeoffMemo = false;
+            }
+
+            //Show landing memo at 2000ft
+            //Hides after slowing down to 80kts
+            if (SimVar.GetSimVarValue("RADIO HEIGHT", "Feet") < 2000 && SimVar.GetSimVarValue("L:AIRLINER_FLIGHT_PHASE", "number") == 6 && SimVar.GetSimVarValue("AIRSPEED INDICATED", "knots") > 80) {
+                this.showLandingMemo = true;
+            } else {
+                this.showLandingMemo = false;
+            }
+
+            if (this.takeoffMemo != null) this.takeoffMemo.divMain.style.display = this.showTakeoffMemo ? "block" : "none";
+            if (this.landingMemo != null) this.landingMemo.divMain.style.display = this.showLandingMemo ? "block" : "none";
+            //Hide left message panel when memo is diplayed
+            if (this.leftEcamMessagePanel != null) this.leftEcamMessagePanel.divMain.style.display = (this.showTakeoffMemo || this.showLandingMemo) ? "none" : "block";
         }
         getInfoPanelManager() {
             return this.infoPanelsManager;
@@ -767,106 +1093,187 @@ var A320_Neo_UpperECAM;
         }
     }
     A320_Neo_UpperECAM.FlapsPanel = FlapsPanel;
-    class InfoPanelsManager extends Airliners.EICASInfoPanelManager {
-        init(_left, _right) {
-            this.leftInfo = _left;
-            this.rightInfo = _right;
-            Coherent.on("AddUpperECAMMessage", this.onInfoPanelEvent.bind(this, Airliners.EICAS_INFO_PANEL_EVENT_TYPE.ADD_MESSAGE));
-            Coherent.on("RemoveUpperECAMMessage", this.onInfoPanelEvent.bind(this, Airliners.EICAS_INFO_PANEL_EVENT_TYPE.REMOVE_MESSAGE));
-            Coherent.on("ModifyUpperECAMMessage", this.onInfoPanelEvent.bind(this, Airliners.EICAS_INFO_PANEL_EVENT_TYPE.MODIFY_MESSAGE));
-            Coherent.on("ClearUpperECAMScreen", this.onInfoPanelEvent.bind(this, Airliners.EICAS_INFO_PANEL_EVENT_TYPE.CLEAR_SCREEN));
+
+    /**
+     * Represents an ECAM message panel that can display a list of messages and failures
+     */
+    class EcamMessagePanel extends A320_Neo_UpperECAM.PanelBase {
+        /**
+         * @param {*} _parent 
+         * @param {string} _id 
+         * @param {number} _max The maximum number of lines this panel can display
+         * @param {*} _messages Object containing all posible messages this panel can display
+         */
+        constructor(_parent, _id, _max, _messages) {
+            super(_parent, _id);
+            this.allDivs = [];
+            this.maxLines = _max;
+            this.messages = _messages;
+            this.currentLine = 0;
+            this.activeCategories = [];
         }
-        addMessage(_id, _message, _style) {
-            if (_message != "") {
-                let infoPanel = this.getInfoPanel(_id);
-                if (infoPanel) {
-                    infoPanel.addMessage(_message, _style);
-                }
+        init() {
+            super.init();
+            for (var i = 0; i < this.maxLines; i++) {
+                this.addDiv();
             }
         }
-        removeMessage(_id, _message) {
-            if (_message != "") {
-                let infoPanel = this.getInfoPanel(_id);
-                if (infoPanel) {
-                    infoPanel.removeMessage(_message);
-                }
+        update() {
+            this.activeCategories = [];
+            this.currentLine = 0;
+            for (let div of this.allDivs) {
+                div.innerHTML = "";
             }
-        }
-        modifyMessage(_id, _currentMessage, _newMessage, _newStyle) {
-            let infoPanel = this.getInfoPanel(_id);
-            if (infoPanel) {
-                if (_newMessage == "")
-                    _newMessage = _currentMessage;
-                infoPanel.modifyMessage(_currentMessage, _newMessage, _newStyle);
-            }
-        }
-        clearScreen(_id) {
-            let infoPanel = this.getInfoPanel(_id);
-            if (infoPanel) {
-                infoPanel.clearScreen();
-            }
-        }
-        getInfoPanel(_id) {
-            switch (_id) {
-                case Airliners.EICAS_INFO_PANEL_ID.PRIMARY:
-                    return this.leftInfo;
-                case Airliners.EICAS_INFO_PANEL_ID.SECONDARY:
-                    return this.rightInfo;
-                default:
-                    return null;
-            }
-        }
-        onInfoPanelEvent(_type, ..._args) {
-            if ((_args != null) && (_args.length > 0)) {
-                var strings = _args[0];
-                if ((strings != null) && (strings.length > 0)) {
-                    let panelId;
-                    if (strings[0] == "primary") {
-                        panelId = Airliners.EICAS_INFO_PANEL_ID.PRIMARY;
-                    }
-                    else if (strings[0] == "secondary") {
-                        panelId = Airliners.EICAS_INFO_PANEL_ID.PRIMARY;
-                    }
-                    else {
-                        return;
-                    }
-                    switch (_type) {
-                        case Airliners.EICAS_INFO_PANEL_EVENT_TYPE.ADD_MESSAGE:
-                            {
-                                if (strings.length >= 3) {
-                                    this.addMessage(panelId, strings[1], Airliners.EICAS_INFO_PANEL_MESSAGE_STYLE[strings[2]]);
-                                }
-                                break;
-                            }
-                        case Airliners.EICAS_INFO_PANEL_EVENT_TYPE.REMOVE_MESSAGE:
-                            {
-                                if (strings.length >= 2) {
-                                    this.removeMessage(panelId, strings[1]);
-                                }
-                                break;
-                            }
-                        case Airliners.EICAS_INFO_PANEL_EVENT_TYPE.MODIFY_MESSAGE:
-                            {
-                                if (strings.length >= 4) {
-                                    this.modifyMessage(panelId, strings[1], strings[2], Airliners.EICAS_INFO_PANEL_MESSAGE_STYLE[strings[3]]);
-                                }
-                                break;
-                            }
-                        case Airliners.EICAS_INFO_PANEL_EVENT_TYPE.CLEAR_SCREEN:
-                            {
-                                this.clearScreen(panelId);
-                                break;
-                            }
+            const activeFailures = this.getActiveFailures();
+            for (const i in activeFailures) {
+                const category = activeFailures[i];
+                for (var n = 0; n < category.messages.length; n++) {
+                    const failure = category.messages[n];
+                    this.addLine("fail-"+failure.level, category.name, failure.message, failure.action);
+                    if (failure.actions != null) {
+                        for (const action of failure.actions) {
+                            if (action.isCompleted == null || !action.isCompleted()) this.addLine(action.style, null, action.message, action.action);
+                        }
                     }
                 }
             }
+            const activeMessages = this.getActiveMessages();
+            for (const message of activeMessages) {
+                this.addLine(message.style || "InfoIndication", null, message.message, null);
+            }
+        }
+        addLine(_style, _category, _message, _action) {
+            if (this.currentLine < this.maxLines) {
+                var div = this.allDivs[this.currentLine];
+                div.innerHTML = "";
+                div.className = _style;
+                if (div != null) {
+
+                    //Category
+                    if (_category != null && !this.activeCategories.includes(_category)) {
+                        var category = document.createElement("span");
+                        category.className = "Underline";
+                        category.textContent = _category;
+                        div.appendChild(category);
+                        
+                    }
+                    
+                    //Message
+                    var message = document.createElement("span");
+                    switch(_style) {
+                        case "action":
+                            var msgOutput = "-"+_message;
+                            for (var i = 0; i < (22 - _message.length - _action.length); i++) {
+                                msgOutput = msgOutput+".";
+                            }
+                            msgOutput += _action;
+                            break;
+                        case "remark":
+                            var msgOutput = "."+(_message+":").substring(0,22);
+                            break;
+                        default:
+                            var msgOutput = " "+_message;
+                            if (!_category) break;
+                            if (this.activeCategories.includes(_category)) {
+                                for (var i = 0; i < _category.length; i++) {
+                                    msgOutput = "&nbsp;"+msgOutput;
+                                }
+                            }
+                            break;
+                    }
+                    message.innerHTML = msgOutput;
+                    div.appendChild(message);
+
+                    if (!this.activeCategories.includes(_category)) {
+                        this.activeCategories.push(_category);
+                    }
+                }
+            }
+            this.currentLine++;
+        }
+
+        
+        getActiveFailures() {
+            var output = {};
+            for (var i = 0; i < this.messages.failures.length; i++) {
+                const messages = this.messages.failures[i].messages;
+                for (var n = 0; n < messages.length; n++) {
+                    const message = messages[n];
+                    if (message.isActive()) {
+                        if (output[i] == null) {
+                            output[i] = this.messages.failures[i];
+                            output[i].messages = [];
+                        }
+                        output[i].messages.push(message);
+                    }
+                }
+            }
+            return output;
+        }
+
+        getActiveMessages() {
+            var output = [];
+            for (const message of this.messages.normal) {
+                if (message.isActive()) output.push(message);
+            }
+            return output;
+        }
+
+        addDiv() {
+            if (this.divMain != null) {
+                var newDiv = document.createElement("div");
+                this.allDivs.push(newDiv);
+                this.divMain.appendChild(newDiv);
+                return newDiv;
+            }
+            return null;
         }
     }
-    A320_Neo_UpperECAM.InfoPanelsManager = InfoPanelsManager;
-    class InfoPanel extends A320_Neo_UpperECAM.PanelBase {
-        constructor() {
-            super(...arguments);
+    A320_Neo_UpperECAM.EcamMessagePanel = EcamMessagePanel;
+    
+    /**
+     * Represents an ECAM Memo Item
+     */
+    class MemoItem {
+        constructor(_id, _name, _action, _completed, _condition) {
+            /** The unique ID of the item */
+            this.id = _id;
+
+            /** The name of the item */
+            this.name = _name;
+
+            /** The action text that is displayed after the dots */
+            this.action = _action;
+
+            /** The text that displays after the action is completed */
+            this.completed = _completed;
+
+            /** Function that returns true if the item is completed */
+            this.isCompleted = _condition;
+        }
+    }
+    A320_Neo_UpperECAM.MemoItem = MemoItem;
+
+    /**
+     * Represents an ECAM Memo
+     */
+    class Memo extends A320_Neo_UpperECAM.PanelBase {
+        constructor(_parent, _id, _title, _items) {
+            super(_parent, _id);
             this.allDivs = [];
+            this.title =_title;
+            this.items = _items;
+        }
+        init() {
+            super.init();
+            for (var i = 0; i < this.items.length; i++) {
+                this.addItem(this.items[i], i === 0);
+            }
+        }
+        update() {
+            for (let item of this.items) {
+                this.setCompleted(item, item.isCompleted());
+            }
         }
         getNextAvailableDiv() {
             for (var i = 0; i < this.allDivs.length; ++i) {
@@ -882,69 +1289,74 @@ var A320_Neo_UpperECAM;
             }
             return null;
         }
-        getDivFromMessage(_message) {
-            for (var i = 0; i < this.allDivs.length; ++i) {
-                if (this.allDivs[i].textContent == _message) {
-                    return this.allDivs[i];
-                }
-            }
-            return null;
-        }
-        getClassNameFromStyle(_style) {
-            switch (_style) {
-                case Airliners.EICAS_INFO_PANEL_MESSAGE_STYLE.INDICATION: return "InfoIndication";
-                case Airliners.EICAS_INFO_PANEL_MESSAGE_STYLE.CAUTION: return "InfoCaution";
-                case Airliners.EICAS_INFO_PANEL_MESSAGE_STYLE.WARNING: return "InfoWarning";
-            }
-            return "";
-        }
-        addMessage(_message, _style) {
+        
+        /**
+         * Adds an item to the memo
+         * @param {MemoItem} _item The item to add to the memo
+         * @param {boolean} _first Whether this is the first item
+         */
+        addItem(_item, _first) {
             var div = this.getNextAvailableDiv();
             if (div != null) {
-                div.textContent = _message;
-                div.className = this.getClassNameFromStyle(_style);
+                if (_first) {
+                    var title = document.createElement("span");
+                    title.className = "Underline";
+                    title.textContent = this.title;
+                    div.appendChild(title);
+                }
+                
+                //Item name
+                var itemName = document.createElement("span");
+                itemName.innerHTML = _first ? " "+_item.name : "&nbsp;&nbsp;&nbsp;&nbsp;"+_item.name;
+                div.appendChild(itemName);
+
+                //Action
+                var action = document.createElement("span");
+                action.className = "Action";
+                var actionText = _item.action;
+                for (var i = 0; i < (19 - _item.name.length - _item.action.length); i++) {
+                    actionText = "."+actionText;
+                }
+                action.textContent = actionText;
+                div.appendChild(action);
+
+                //Completed
+                var completed = document.createElement("span");
+                completed.className = "Completed";
+                completed.textContent = " "+_item.completed;
+                div.appendChild(completed);
+                
+                div.className = "InfoIndication";
+                div.setAttribute("id", _item.id);
             }
         }
-        removeMessage(_message) {
-            var div = this.getDivFromMessage(_message);
-            if (div != null) {
-                div.textContent = "";
-                for (var i = 0; i < (this.allDivs.length - 1); ++i) {
-                    if (this.allDivs[i].textContent.length == 0) {
-                        if (this.allDivs[i + 1].textContent.length > 0) {
-                            this.allDivs[i].textContent = this.allDivs[i + 1].textContent;
-                            this.allDivs[i].className = this.allDivs[i + 1].className;
-                            this.allDivs[i + 1].textContent = "";
-                        }
+
+        /**
+         * @param {MemoItem} _item 
+         * @param {boolean} _completed 
+         */
+        setCompleted(_item, _completed) {
+            for (let div of this.allDivs) {
+                if (div.id == _item.id) {
+                    for (let child of div.children) {
+                        if (child.className == "Action") child.style.display = _completed ? "none" : "inline";
+                        if (child.className == "Completed") child.style.display = _completed ? "inline" : "none";
                     }
+                    return;
                 }
             }
         }
-        modifyMessage(_currentMessage, _newMessage, _newStyle) {
-            var div = this.getDivFromMessage(_currentMessage);
-            if (div != null) {
-                div.textContent = _newMessage;
-                div.className = this.getClassNameFromStyle(_newStyle);
+
+        update() {
+            for (let item of this.items) {
+                this.setCompleted(item, item.isCompleted());
             }
         }
-        clearScreen() {
-            for (var i = 0; i < this.allDivs.length; ++i) {
-                this.allDivs[i].textContent = "";
-            }
-        }
+        
+        
     }
-    A320_Neo_UpperECAM.InfoPanel = InfoPanel;
-    class InfoBottomLeftPanel extends A320_Neo_UpperECAM.InfoPanel {
-        create() {
-            super.create();
-            this.addMessage("SEAT BELTS", Airliners.EICAS_INFO_PANEL_MESSAGE_STYLE.INDICATION);
-            this.addMessage("NO SMOKING", Airliners.EICAS_INFO_PANEL_MESSAGE_STYLE.INDICATION);
-        }
-    }
-    A320_Neo_UpperECAM.InfoBottomLeftPanel = InfoBottomLeftPanel;
-    class InfoBottomRightPanel extends A320_Neo_UpperECAM.InfoPanel {
-    }
-    A320_Neo_UpperECAM.InfoBottomRightPanel = InfoBottomRightPanel;
+    A320_Neo_UpperECAM.Memo = Memo;
+
 })(A320_Neo_UpperECAM || (A320_Neo_UpperECAM = {}));
 customElements.define("a320-neo-upper-ecam", A320_Neo_UpperECAM.Display);
 //# sourceMappingURL=A320_Neo_UpperECAM.js.map
