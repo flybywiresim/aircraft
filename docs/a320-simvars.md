@@ -11,3 +11,9 @@
     - Seconds
     - Holds the start time in seconds that the ADIRS TIMER will count down from
     - Used to have certain things turn on based on a percentage of the total alignment time
+- XMLVAR_Auto
+    - Used in the `.flt` files to set a default value for the ATC 3 way switch on the TCAS panel
+    - Maps to the `I:XMLVAR_Auto` variable which is the actual backing var for the switch
+- XMLVAR_ALT_MODE_REQUESTED
+    - Used in the `.flt` files to set a default value for the ALT RPTG 2 way switch on the TCAS panel
+    - Maps to the `I:XMLVAR_ALT_MODE_REQUESTED` variable which is the actual backing var for the switch

@@ -5,6 +5,6 @@ charset = utf-8
 end_of_line = crlf
 indent_size = 4
 indent_style = space
-insert_final_newline = true
+insert_final_newline = false
 max_line_length = 180
 tab_width = 4

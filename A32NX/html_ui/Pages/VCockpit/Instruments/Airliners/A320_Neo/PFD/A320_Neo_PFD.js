@@ -57,6 +57,7 @@ class A320_Neo_PFD_MainPage extends NavSystemPage {
     }
     init() {
         super.init();
+        
         this.showILS = SimVar.GetSimVarValue("L:BTN_LS_FILTER_ACTIVE", "bool");
         this.ils.showILS(this.showILS);
         this.compass.showILS(this.showILS);
@@ -80,9 +81,16 @@ class A320_Neo_PFD_MainPage extends NavSystemPage {
         this.hasInitialized = true;
 
         //SELF TEST
-        this.selfTestDiv = this.gps.getChildById("SelfTestDiv");
+        this.selfTestDiv = document.querySelector('#SelfTestDiv');
         this.selfTestTimerStarted = false;
-        this.electricity = this.gps.getChildById("Electricity")
+        this.selfTestTimer = -1;
+        this.selfTestLastKnobValueFO = 1;
+        this.selfTestLastKnobValueCAP = 1;
+        
+        this.APULastValue = false;
+        this.externalPowerLastValue = false;
+        
+        this.electricity = document.querySelector('#Electricity')
     }
     onUpdate(_deltaTime) {
         super.onUpdate();
@@ -131,26 +139,43 @@ class A320_Neo_PFD_MainPage extends NavSystemPage {
         var engineOn = Simplane.getEngineActive(0) || Simplane.getEngineActive(1);
         var externalPower = SimVar.GetSimVarValue("EXTERNAL POWER ON", "bool");
         var apuOn = SimVar.GetSimVarValue("APU SWITCH", "bool");
+        let apuStatusChanged = (apuOn != this.APULastValue);
+        let externalPowerChanged = (externalPower != this.externalPowerLastValue);
 
         var isPowerAvailable = engineOn || apuOn || externalPower;
-        this.updateScreenState();
 
-        if (engineOn) {
-            this.selfTestDiv.style.display = "none";
+        /**
+         * Self test on PFD screen
+         * TODO: Seperate both PFD screens, currently if the FO changes its screen, it also tests the screen for the captain and vice versa.
+         **/
+        
+        let selfTestCurrentKnobValueFO = SimVar.GetSimVarValue("LIGHT POTENTIOMETER:20", "number");
+        let selfTestCurrentKnobValueCAP = SimVar.GetSimVarValue("LIGHT POTENTIOMETER:18", "number");
+        
+        const FOKnobChanged = (selfTestCurrentKnobValueFO >= 0.1 && this.selfTestLastKnobValueFO < 0.1);
+        const CAPKnobChanged = (selfTestCurrentKnobValueCAP >= 0.1 && this.selfTestLastKnobValueCAP < 0.1);
+        
+        if((FOKnobChanged || CAPKnobChanged || (externalPowerChanged || apuStatusChanged)) && !this.selfTestTimerStarted) {
+            this.selfTestDiv.style.display = "block";
+            this.selfTestTimer = 14.25;
             this.selfTestTimerStarted = true;
         }
-        // Check if external power is on & timer not already started
-        if ((externalPower || apuOn) && !this.selfTestTimerStarted) {
-            this.selfTestTimer = 13;
-            this.selfTestTimerStarted = true;
-        }
-        // Timer
-        if (this.selfTestTimer != null) {
+        
+        if (this.selfTestTimer >= 0) {
             this.selfTestTimer -= _deltaTime / 1000;
             if (this.selfTestTimer <= 0) {
                 this.selfTestDiv.style.display = "none";
+                this.selfTestTimerStarted = false;
             }
         }
+        
+        this.selfTestLastKnobValueFO = selfTestCurrentKnobValueFO
+        this.selfTestLastKnobValueCAP = selfTestCurrentKnobValueCAP
+
+        this.APULastValue = apuOn;
+        this.externalPowerLastValue = externalPower;
+        
+        this.updateScreenState();
     }
     onEvent(_event) {
         switch (_event) {
@@ -165,9 +190,9 @@ class A320_Neo_PFD_MainPage extends NavSystemPage {
 
     updateScreenState() {
         if (SimVar.GetSimVarValue("L:ACPowerAvailable","bool")) {
-            this.electricity.style.display = "block";
+            this.electricity.style.display = "block"
         } else {
-            this.electricity.style.display = "none";
+            this.electricity.style.display = "none"
         }
     }
     
