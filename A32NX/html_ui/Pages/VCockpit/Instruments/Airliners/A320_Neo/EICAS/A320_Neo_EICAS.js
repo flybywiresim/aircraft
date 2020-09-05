@@ -77,7 +77,7 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         var DCBus = false;
 
         const ACPowerStateChange = (isACPowerAvailable != this.ACPowerLastState);
-        SimVar.SetSimVarValue("L:ACPowerStateChange",Bool,ACPowerStateChange);
+        SimVar.SetSimVarValue("L:ACPowerStateChange","Bool",ACPowerStateChange);
 
         if(SimVar.GetSimVarValue("ELECTRICAL MAIN BUS VOLTAGE","Volts")>=20){
             DCBus = true;
