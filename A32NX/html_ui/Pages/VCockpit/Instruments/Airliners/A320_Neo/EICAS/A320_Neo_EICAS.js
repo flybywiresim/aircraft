@@ -43,8 +43,7 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         this.bottomSelfTestTimerStarted = false;
         this.bottomSelfTestLastKnobValue = 1;
         
-        this.APULastValue = false;
-        this.externalPowerLastValue = false;
+        this.ACPowerLastState = false;
 
         this.doorPageActivated = false;
         this.EngineStarter = 0;
@@ -71,14 +70,15 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         this.updateAnnunciations();
         this.updateScreenState();
         
-        var engineOn = Simplane.getEngineActive(0) || Simplane.getEngineActive(1);
-        var externalPower = SimVar.GetSimVarValue("EXTERNAL POWER ON", "bool");
-        var apuOn = SimVar.GetSimVarValue("L:APU_GEN_ONLINE", "bool");
-        let apuStatusChanged = (apuOn != this.APULastValue);
-        let externalPowerChanged = (externalPower != this.externalPowerLastValue);
-
-        var isACPowerAvailable = engineOn || apuOn || externalPower;
+        const engineOn = Simplane.getEngineActive(0) || Simplane.getEngineActive(1);
+        const externalPower = SimVar.GetSimVarValue("EXTERNAL POWER ON", "bool");
+        const apuOn = SimVar.GetSimVarValue("L:APU_GEN_ONLINE", "bool");
+        const isACPowerAvailable = engineOn || apuOn || externalPower;
         var DCBus = false;
+
+        const ACPowerStateChange = (isACPowerAvailable != this.ACPowerLastState);
+        SimVar.SetSimVarValue("L:ACPowerStateChange",Bool,ACPowerStateChange);
+
         if(SimVar.GetSimVarValue("ELECTRICAL MAIN BUS VOLTAGE","Volts")>=20){
             DCBus = true;
         }
@@ -140,8 +140,7 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         
         this.bottomSelfTestLastKnobValue = bottomSelfTestCurrentKnobValue;
 
-        this.APULastValue = apuOn;
-        this.externalPowerLastValue = externalPower;
+        this.ACPowerLastState = isACPowerAvailable;
 
         // modification start here
         var currentAPUMasterState = SimVar.GetSimVarValue("FUELSYSTEM VALVE SWITCH:8", "Bool");  
