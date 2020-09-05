@@ -39,6 +39,7 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         this.EngineStart == 0
         this.electricity = this.querySelector("#Electricity");
         this.changePage("DOOR"); // MODIFIED
+        this.localVarUpdater = new LocalVarUpdater();
         
         SimVar.SetSimVarValue("LIGHT POTENTIOMETER:7","FLOAT64",0);
         SimVar.SetSimVarValue("LIGHT POTENTIOMETER:14","FLOAT64",0);
@@ -54,6 +55,7 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
     }
     onUpdate(_deltaTime) {
         super.onUpdate(_deltaTime);
+        this.localVarUpdater.update();
         this.updateAnnunciations();
         this.updateScreenState();
         
@@ -127,13 +129,8 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
 
         if (this.externalPowerWhenApuMasterOnTimer >= 0) {  
             this.externalPowerWhenApuMasterOnTimer -= _deltaTime/1000
-            this.electricity.style.display = "block";
-            this.electricity.style.opacity = 0;
-            this.changePage("APU");
             if (this.externalPowerWhenApuMasterOnTimer <= 0) {  
-                this.changePage("APU");
-                this.electricity.style.display = "none";
-                this.electricity.style.opacity = 1;
+                this.changePage("DOOR");
             }  
         }  
 
@@ -198,7 +195,7 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
                 if (autoBrkValue == 3) {
                     infoPanelManager.addMessage(Airliners.EICAS_INFO_PANEL_ID.PRIMARY, "T.O AUTO BRK MAX", Airliners.EICAS_INFO_PANEL_MESSAGE_STYLE.INDICATION);
                 } else {
-                    infoPanelManager.addMessage(Airliners.EICAS_INFO_PANEL_ID.PRIMARY, "T.O AUTO BRK......MAX", Airliners.EICAS_INFO_PANEL_MESSAGE_STYLE.INDICATION);
+                    infoPanelManager.addMessage(Airliners.EICAS_INFO_PANEL_ID.PRIMARY, "T.O AUTO BRK......MAX[color]blue", Airliners.EICAS_INFO_PANEL_MESSAGE_STYLE.INDICATION);
                 }
                 infoPanelManager.addMessage(Airliners.EICAS_INFO_PANEL_ID.PRIMARY, "\xa0\xa0\xa0\xa0SIGNS ON", Airliners.EICAS_INFO_PANEL_MESSAGE_STYLE.INDICATION);
                 if (splrsArmed) {

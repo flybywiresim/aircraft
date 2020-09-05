@@ -810,7 +810,7 @@ class Jet_PFD_VerticalSpeedIndicator extends HTMLElement {
         return height;
     }
     updateFail() {
-        var failed = !(SimVar.GetSimVarValue("L:A320_Neo_ADIRS_STATE", "Enum") >= 1);
+        var failed = !(SimVar.GetSimVarValue("L:A32NX_ADIRS_PFD_ALIGNED_FIRST", "Bool") == 1);
         if (!failed) {
             this.failMask.setAttribute("visibility", "hidden");
             this.cursorSVGGroup.setAttribute("visibility", "visible");

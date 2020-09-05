@@ -1,6 +1,11 @@
 {
     "content": [
         {
+            "path": ".editorconfig",
+            "size": 153,
+            "date": "132402817714110148"
+        },
+        {
             "path": "ModelBehaviorDefs/Airliner/Airbus.xml",
             "size": 37721,
             "date": "132402817714110148"
@@ -12,12 +17,17 @@
         },
         {
             "path": "ModelBehaviorDefs/Asobo/Airliner/Airbus.xml",
-            "size": 42419,
+            "size": 41742,
             "date": "132402817714110148"
         },
         {
             "path": "ModelBehaviorDefs/Asobo/Airliner/FMC.xml",
             "size": 62826,
+            "date": "132402817714110148"
+        },
+        {
+            "path": "ModelBehaviorDefs/Asobo/Common/Subtemplates/Electrical_Subtemplates.xml",
+            "size": 71067,
             "date": "132402817714110148"
         },
         {
@@ -97,17 +107,17 @@
         },
         {
             "path": "SimObjects/AirPlanes/Asobo_A320_NEO/approach.FLT",
-            "size": 4089,
+            "size": 3995,
             "date": "132402817714110148"
         },
         {
             "path": "SimObjects/AirPlanes/Asobo_A320_NEO/apron.FLT",
-            "size": 4209,
+            "size": 4429,
             "date": "132402817714110148"
         },
         {
             "path": "SimObjects/AirPlanes/Asobo_A320_NEO/cruise.FLT",
-            "size": 4177,
+            "size": 4079,
             "date": "132402817714110148"
         },
         {
@@ -117,12 +127,12 @@
         },
         {
             "path": "SimObjects/AirPlanes/Asobo_A320_NEO/final.FLT",
-            "size": 4171,
+            "size": 4076,
             "date": "132402817714110148"
         },
         {
             "path": "SimObjects/AirPlanes/Asobo_A320_NEO/model/A320_NEO_INTERIOR.xml",
-            "size": 133550,
+            "size": 130589,
             "date": "132402817714110148"
         },
         {
@@ -132,12 +142,12 @@
         },
         {
             "path": "SimObjects/AirPlanes/Asobo_A320_NEO/panel/panel.xml",
-            "size": 26433,
+            "size": 24736,
             "date": "132402817714110148"
         },
         {
             "path": "SimObjects/AirPlanes/Asobo_A320_NEO/runway.FLT",
-            "size": 4210,
+            "size": 4104,
             "date": "132402817714110148"
         },
         {
@@ -152,7 +162,7 @@
         },
         {
             "path": "SimObjects/AirPlanes/Asobo_A320_NEO/sound/sound.xml",
-            "size": 29845,
+            "size": 29277,
             "date": "132402817714110148"
         },
         {
@@ -162,7 +172,7 @@
         },
         {
             "path": "SimObjects/AirPlanes/Asobo_A320_NEO/taxi.flt",
-            "size": 4107,
+            "size": 4008,
             "date": "132402817714110148"
         },
         {
@@ -173,6 +183,11 @@
         {
             "path": "effects/LIGHT_A32NX_TaxiLarge.fx",
             "size": 1278,
+            "date": "132402817714110148"
+        },
+        {
+            "path": "en-US.locPak",
+            "size": 1859,
             "date": "132402817714110148"
         },
         {
@@ -312,7 +327,7 @@
         },
         {
             "path": "html_ui/Pages/VCockpit/Instruments/Airliners/A320_Neo/CDU/A320_Neo_CDU_MainDisplay.js",
-            "size": 36074,
+            "size": 41529,
             "date": "132402817714110148"
         },
         {
@@ -381,18 +396,38 @@
             "date": "132402817714110148"
         },
         {
+            "path": "html_ui/Pages/VCockpit/Instruments/Airliners/A320_Neo/Clock/A320_Neo_Clock.css",
+            "size": 2344,
+            "date": "132402817714110148"
+        },
+        {
+            "path": "html_ui/Pages/VCockpit/Instruments/Airliners/A320_Neo/Clock/A320_Neo_Clock.html",
+            "size": 1363,
+            "date": "132402817714110148"
+        },
+        {
+            "path": "html_ui/Pages/VCockpit/Instruments/Airliners/A320_Neo/Clock/A320_Neo_Clock.js",
+            "size": 4006,
+            "date": "132402817714110148"
+        },
+        {
             "path": "html_ui/Pages/VCockpit/Instruments/Airliners/A320_Neo/EICAS/A320_Neo_EICAS.css",
-            "size": 6266,
+            "size": 6096,
             "date": "132402817714110148"
         },
         {
             "path": "html_ui/Pages/VCockpit/Instruments/Airliners/A320_Neo/EICAS/A320_Neo_EICAS.html",
-            "size": 5471,
+            "size": 5532,
             "date": "132402817714110148"
         },
         {
             "path": "html_ui/Pages/VCockpit/Instruments/Airliners/A320_Neo/EICAS/A320_Neo_EICAS.js",
-            "size": 12915,
+            "size": 12535,
+            "date": "132402817714110148"
+        },
+        {
+            "path": "html_ui/Pages/VCockpit/Instruments/Airliners/A320_Neo/EICAS/A32NX_LocalVarUpdater.js",
+            "size": 1524,
             "date": "132402817714110148"
         },
         {
@@ -407,7 +442,7 @@
         },
         {
             "path": "html_ui/Pages/VCockpit/Instruments/Airliners/A320_Neo/EICAS/ECAM/A320_Neo_LowerECAM_APU.js",
-            "size": 13229,
+            "size": 13484,
             "date": "132402817714110148"
         },
         {
@@ -547,22 +582,22 @@
         },
         {
             "path": "html_ui/Pages/VCockpit/Instruments/Airliners/A320_Neo/PFD/A320_Neo_PFD.js",
-            "size": 10626,
+            "size": 10522,
             "date": "132402817714110148"
         },
         {
             "path": "html_ui/Pages/VCockpit/Instruments/Airliners/A320_Neo/PFD/Airbus_FMA.js",
-            "size": 88464,
+            "size": 87066,
             "date": "132402817714110148"
         },
         {
             "path": "html_ui/Pages/VCockpit/Instruments/Airliners/A320_Neo/PFD/AirspeedIndicator.js",
-            "size": 139127,
+            "size": 136671,
             "date": "132402817714110148"
         },
         {
             "path": "html_ui/Pages/VCockpit/Instruments/Airliners/A320_Neo/PFD/AltimeterIndicator.js",
-            "size": 99451,
+            "size": 97880,
             "date": "132402817714110148"
         },
         {
@@ -572,12 +607,12 @@
         },
         {
             "path": "html_ui/Pages/VCockpit/Instruments/Airliners/A320_Neo/PFD/ILSIndicator.js",
-            "size": 21404,
+            "size": 21038,
             "date": "132402817714110148"
         },
         {
             "path": "html_ui/Pages/VCockpit/Instruments/Airliners/A320_Neo/PFD/VerticalSpeedIndicator.js",
-            "size": 44232,
+            "size": 43418,
             "date": "132402817714110148"
         }
     ]
