@@ -895,7 +895,7 @@ var Airbus_FMA;
                 if (Column2.GetModeState_GS() == MODE_STATE.ARMED) {
                     targetRow2State = Column2.ROW_2_STATE.ALT_GS_ARMED;
                 }
-                else {
+                else if (Column2.GetModeState_GS() != MODE_STATE.CAPTURED) {
                     targetRow2State = Column2.ROW_2_STATE.ALT_ARMED;
                 }
             }
