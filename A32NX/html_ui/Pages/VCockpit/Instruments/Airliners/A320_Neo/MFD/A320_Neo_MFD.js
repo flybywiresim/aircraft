@@ -97,9 +97,6 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
         this.selfTestLastKnobValueFO = 1;
         this.selfTestLastKnobValueCAP = 1;
 
-        this.APULastValue = false;
-        this.externalPowerLastValue = false;
-
         this.electricity = this.gps.getChildById("Electricity")
     }
     onUpdate(_deltaTime) {
@@ -123,11 +120,8 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
             document.querySelector("#Map").setAttribute("style", "");
         }
 
-        var engineOn = Simplane.getEngineActive(0) || Simplane.getEngineActive(1);
-        var externalPower = SimVar.GetSimVarValue("EXTERNAL POWER ON", "bool");
-        var apuOn = SimVar.GetSimVarValue("APU SWITCH", "bool");
-        let apuStatusChanged = (apuOn != this.APULastValue);
-        let externalPowerChanged = (externalPower != this.externalPowerLastValue);
+        const ACPowerStateChange = SimVar.GetSimVarValue("L:ACPowerStateChange","Bool");
+        const ACPowerAvailable = SimVar.GetSimVarValue("L:ACPowerAvailable","Bool");
         
          /**
          * Self test on MFD screen
@@ -140,7 +134,7 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
         const FOKnobChanged = (selfTestCurrentKnobValueFO >= 0.1 && this.selfTestLastKnobValueFO < 0.1);
         const CAPKnobChanged = (selfTestCurrentKnobValueCAP >= 0.1 && this.selfTestLastKnobValueCAP < 0.1);
         
-        if((FOKnobChanged || CAPKnobChanged || (externalPowerChanged || apuStatusChanged)) && !this.selfTestTimerStarted) {
+        if((FOKnobChanged || CAPKnobChanged || ACPowerStateChange) && ACPowerAvailable && !this.selfTestTimerStarted) {
             this.selfTestDiv.style.display = "block";
             this.selfTestTimer = 14.25;
             this.selfTestTimerStarted = true;
@@ -156,9 +150,6 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
         
         this.selfTestLastKnobValueFO = selfTestCurrentKnobValueFO
         this.selfTestLastKnobValueCAP = selfTestCurrentKnobValueCAP
-        
-        this.APULastValue = apuOn;
-        this.externalPowerLastValue = externalPower;
 
         this.updateScreenState();        
     }
@@ -198,6 +189,7 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
         var terrainOn = SimVar.GetSimVarValue("L:BTN_TERRONND_ACTIVE", "number");
         var mapMode = SimVar.GetSimVarValue("L:A320_Neo_MFD_NAV_MODE", "number");
         var mapRange = SimVar.GetSimVarValue("L:A320_Neo_MFD_Range", "number");
+        var shouldShowWeather = wxRadarOn && wxRadarMode != 3;
         if (this.wxRadarOn != wxRadarOn || this.terrainOn != terrainOn || this.wxRadarMode != wxRadarMode || this.mapMode != mapMode) {
             this.wxRadarOn = wxRadarOn;
             this.wxRadarMode = wxRadarMode;
@@ -207,7 +199,7 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
             if (this.terrainOn) {
                 this.mapConfigId = 1;
             }
-            else if (this.wxRadarOn && this.wxRadarMode != 3) {
+            else if (shouldShowWeather) {
                 this.showWeather();
             }
             else {
@@ -245,6 +237,19 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
                 }
                 break;
         }
+
+        // This code shows the BingMap only when either weather or terrain are
+        // supposed to be shown.
+        // When neither weather nor terrain are supposed to be shown,
+        // the BingMap will be hidden.
+        var isTerrainVisible = this.map.instrument.mapConfigId == 1;
+        var isWeatherVisible = !terrainOn && shouldShowWeather;
+        if (isTerrainVisible || isWeatherVisible) {
+            this.setShowBingMap("true");
+        } else {
+            this.setShowBingMap("false");
+        }
+
         if (this.mapRange != mapRange) {
             this.mapRange = mapRange;
             this.map.instrument.setZoom(this.mapRange);
@@ -278,6 +283,11 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
         }
         this.map.updateTopOfDescent();
         this.map.updateTopOfClimb();
+    }
+    // The BingMap is used by the A320 to render terrain and weather,
+    // but it also renders airports, which the real A320 does not.
+    setShowBingMap(showBingMap) {
+        this.map.instrument.attributeChangedCallback("show-bing-map", null, showBingMap);
     }
     onEvent(_event) {
         switch (_event) {

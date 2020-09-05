@@ -86,10 +86,7 @@ class A320_Neo_PFD_MainPage extends NavSystemPage {
         this.selfTestTimer = -1;
         this.selfTestLastKnobValueFO = 1;
         this.selfTestLastKnobValueCAP = 1;
-        
-        this.APULastValue = false;
-        this.externalPowerLastValue = false;
-        
+
         this.electricity = document.querySelector('#Electricity')
     }
     onUpdate(_deltaTime) {
@@ -136,13 +133,8 @@ class A320_Neo_PFD_MainPage extends NavSystemPage {
             this.headingFail.setAttribute("style", "");
         }
 
-        var engineOn = Simplane.getEngineActive(0) || Simplane.getEngineActive(1);
-        var externalPower = SimVar.GetSimVarValue("EXTERNAL POWER ON", "bool");
-        var apuOn = SimVar.GetSimVarValue("APU SWITCH", "bool");
-        let apuStatusChanged = (apuOn != this.APULastValue);
-        let externalPowerChanged = (externalPower != this.externalPowerLastValue);
-
-        var isPowerAvailable = engineOn || apuOn || externalPower;
+        const ACPowerStateChange = SimVar.GetSimVarValue("L:ACPowerStateChange","Bool");
+        const ACPowerAvailable = SimVar.GetSimVarValue("L:ACPowerAvailable","Bool");
 
         /**
          * Self test on PFD screen
@@ -155,7 +147,7 @@ class A320_Neo_PFD_MainPage extends NavSystemPage {
         const FOKnobChanged = (selfTestCurrentKnobValueFO >= 0.1 && this.selfTestLastKnobValueFO < 0.1);
         const CAPKnobChanged = (selfTestCurrentKnobValueCAP >= 0.1 && this.selfTestLastKnobValueCAP < 0.1);
         
-        if((FOKnobChanged || CAPKnobChanged || (externalPowerChanged || apuStatusChanged)) && !this.selfTestTimerStarted) {
+        if((FOKnobChanged || CAPKnobChanged || ACPowerStateChange) && ACPowerAvailable && !this.selfTestTimerStarted) {
             this.selfTestDiv.style.display = "block";
             this.selfTestTimer = 14.25;
             this.selfTestTimerStarted = true;
@@ -172,9 +164,6 @@ class A320_Neo_PFD_MainPage extends NavSystemPage {
         this.selfTestLastKnobValueFO = selfTestCurrentKnobValueFO
         this.selfTestLastKnobValueCAP = selfTestCurrentKnobValueCAP
 
-        this.APULastValue = apuOn;
-        this.externalPowerLastValue = externalPower;
-        
         this.updateScreenState();
     }
     onEvent(_event) {
