@@ -133,7 +133,8 @@ class A320_Neo_PFD_MainPage extends NavSystemPage {
             this.headingFail.setAttribute("style", "");
         }
 
-        const ACPowerStateChange = SimVar.GetSimVarValue("L:ACPowerStateChange",Bool);
+        const ACPowerStateChange = SimVar.GetSimVarValue("L:ACPowerStateChange","Bool");
+        const ACPowerAvailable = SimVar.GetSimVarValue("L:ACPowerAvailable","Bool");
 
         /**
          * Self test on PFD screen
@@ -146,7 +147,7 @@ class A320_Neo_PFD_MainPage extends NavSystemPage {
         const FOKnobChanged = (selfTestCurrentKnobValueFO >= 0.1 && this.selfTestLastKnobValueFO < 0.1);
         const CAPKnobChanged = (selfTestCurrentKnobValueCAP >= 0.1 && this.selfTestLastKnobValueCAP < 0.1);
         
-        if((FOKnobChanged || CAPKnobChanged || ACPowerStateChange) && !this.selfTestTimerStarted) {
+        if((FOKnobChanged || CAPKnobChanged || ACPowerStateChange) && ACPowerAvailable && !this.selfTestTimerStarted) {
             this.selfTestDiv.style.display = "block";
             this.selfTestTimer = 14.25;
             this.selfTestTimerStarted = true;
