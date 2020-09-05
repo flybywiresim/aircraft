@@ -79,16 +79,22 @@ class EICASCommonDisplay extends Airliners.EICASTemplateElement {
     refreshGrossWeight(_force = false) {
         let gw = 0;
         let isInMetric = BaseAirliners.unitIsMetric(Aircraft.A320_NEO);
+        let unit;
         if (isInMetric) {
-            gw = Math.round(SimVar.GetSimVarValue("TOTAL WEIGHT", "kg"));
-            if (this.gwUnit)
+            if (this.gwUnit) {
                 this.gwUnit.textContent = "KG";
-        }
-        else {
-            gw = Math.round(SimVar.GetSimVarValue("TOTAL WEIGHT", "lbs"));
-            if (this.gwUnit)
+                unit = "kg";
+            }
+        } else {
+            if (this.gwUnit) {
                 this.gwUnit.textContent = "LBS";
+                unit = "lbs";
+            }
         }
+        for (var i = 1; i <= 6; i++) {
+            gw += Math.round(SimVar.GetSimVarValue(`PAYLOAD STATION WEIGHT:${i}`, unit));
+        }
+        gw += Math.round(SimVar.GetSimVarValue("EMPTY WEIGHT", unit)) + Math.round(SimVar.GetSimVarValue("FUEL TOTAL QUANTITY WEIGHT", unit));
         if ((gw != this.currentGW) || _force) {
             this.currentGW = gw;
             if (this.gwValue != null) {
