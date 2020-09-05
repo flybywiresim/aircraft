@@ -726,16 +726,22 @@ var Airbus_FMA;
             return false;
         }
         IsActive_LVRMCT() {
-            var takeoff = (Airbus_FMA.CurrentPlaneState.flightPhase == FlightPhase.FLIGHT_PHASE_TAKEOFF);
-            var goaround = (Airbus_FMA.CurrentPlaneState.flightPhase == FlightPhase.FLIGHT_PHASE_GOAROUND);
-            if (takeoff || goaround) {
-                var greenDotSpeed = goaround ? Simplane.getFMCApprGreenDotSpeed() : Simplane.getFMCGreenDotSpeed();
-                if (Airbus_FMA.CurrentPlaneState.highestThrottleDetent < ThrottleMode.FLEX_MCT) {
-                    if (SimVar.GetSimVarValue("AIRSPEED TRUE", "Number") < greenDotSpeed) {
-                        return true;
-                    }
+            const inTakeoff = (Airbus_FMA.CurrentPlaneState.flightPhase == FlightPhase.FLIGHT_PHASE_TAKEOFF);
+            const inGoAround = (Airbus_FMA.CurrentPlaneState.flightPhase == FlightPhase.FLIGHT_PHASE_GOAROUND);
+
+            const oneEngineOff = SimVar.GetSimVarValue("ENG COMBUSTION:1", "Bool") == 0 || SimVar.GetSimVarValue("ENG COMBUSTION:2", "Bool") == 0;
+
+            if (oneEngineOff && (inTakeoff || inGoAround)) {
+                const greenDotSpeed = inGoAround ? Simplane.getFMCApprGreenDotSpeed() : Simplane.getFMCGreenDotSpeed();
+
+                const aboveGreenDotSpeed = SimVar.GetSimVarValue("AIRSPEED TRUE", "Number") > greenDotSpeed;
+                const throttleBelowFlexMctDetent = Airbus_FMA.CurrentPlaneState.highestThrottleDetent < ThrottleMode.FLEX_MCT;
+
+                if (aboveGreenDotSpeed && throttleBelowFlexMctDetent) {
+                    return true;
                 }
             }
+
             return false;
         }
     }
