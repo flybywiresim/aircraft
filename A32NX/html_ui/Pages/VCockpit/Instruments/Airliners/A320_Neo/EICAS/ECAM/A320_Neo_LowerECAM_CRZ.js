@@ -23,7 +23,13 @@ var A320_Neo_LowerECAM_CRZ;
             this.cumulatedPressure = 0;
             this.numberOfPressureReadings = 0;
             this.cumulatedTime = 1000;
-           
+
+            if (BaseAirliners.unitIsMetric(Aircraft.A320_NEO)) {
+                this.querySelector("#FuelUsedUnit").textContent = "KG";
+            } else {
+                this.querySelector("#FuelUsedUnit").textContent = "LBS";
+            }
+
             this.FuelUsedTotal = this.querySelector("#FuelUsedTotal");
             this.FuelUsedLeft = this.querySelector("#FuelUsedLeft");
             this.FuelUsedRight = this.querySelector("#FuelUsedRight");
