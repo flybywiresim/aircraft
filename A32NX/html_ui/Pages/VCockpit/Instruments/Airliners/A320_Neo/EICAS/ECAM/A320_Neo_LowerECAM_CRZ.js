@@ -2,6 +2,11 @@ var A320_Neo_LowerECAM_CRZ;
 (function (A320_Neo_LowerECAM_CRZ) {
     class Definitions {
     }
+    Definitions.feetToMeters = 0.3048;
+    Definitions.seaLevelPressurePascal = 101325;
+    Definitions.barometricPressureFactor = -0.00011857591;
+    Definitions.pascalToPSI = 0.000145038;
+    Definitions.inHgToPSI = 0.491154;
     A320_Neo_LowerECAM_CRZ.Definitions = Definitions;
     class Page extends Airliners.EICASTemplateElement {
         constructor() {
@@ -14,6 +19,11 @@ var A320_Neo_LowerECAM_CRZ;
             TemplateElement.call(this, this.init.bind(this));
         }
         init() {
+            this.pressureDiff = 0;
+            this.cumulatedPressure = 0;
+            this.numberOfPressureReadings = 0;
+            this.cumulatedTime = 0;
+
             this.FuelUsedTotal = this.querySelector("#FuelUsedTotal");
             this.FuelUsedLeft = this.querySelector("#FuelUsedLeft");
             this.FuelUsedRight = this.querySelector("#FuelUsedRight");
@@ -102,16 +112,27 @@ var A320_Neo_LowerECAM_CRZ;
             value = SimVar.GetSimVarValue("PRESSURIZATION CABIN ALTITUDE", "feet");
             this.CabinAltitude.textContent = fastToFixed(value, 0);
 
-            let cabinAltMetres = value * 0.3048;
-            let cabinPressurePascal = 101325 * Math.exp(-0.00011857591 * cabinAltMetres);
-            let cabinPressurePSI = cabinPressurePascal * 0.000145038;
+            let cabinAltMeters = value * Definitions.feetToMeters;
+            let cabinPressurePascal = Definitions.seaLevelPressurePascal * Math.exp(Definitions.barometricPressureFactor * cabinAltMeters); // Barometric formula
+            let cabinPressurePSI = cabinPressurePascal * Definitions.pascalToPSI;
             let outsidePressureINHG = SimVar.GetSimVarValue("AMBIENT PRESSURE", "inHg");
-            let outsidePressurePSI = outsidePressureINHG * 0.491154;
+            let outsidePressurePSI = outsidePressureINHG * Definitions.inHgToPSI;
             let pressureDiff = cabinPressurePSI - outsidePressurePSI;
 
-            this.DeltaPressure.textContent = Math.floor(pressureDiff) + ".";
-            this.DeltaPressureDecimal.textContent = value.toFixed(1).split(".", 2)[1];
+            // Only update pressure every second and with mean to prevent it flickering
+            this.cumulatedPressure += pressureDiff;
+            this.numberOfPressureReadings += 1;
 
+            if (this.cumulatedTime < 1000) {
+                this.cumulatedTime += _deltaTime;
+            } else {
+                let shownPressure = this.cumulatedPressure/this.numberOfPressureReadings;
+                this.DeltaPressure.textContent = Math.floor(shownPressure) + ".";
+                this.DeltaPressureDecimal.textContent = shownPressure.toFixed(1).split(".", 2)[1];
+                this.cumulatedTime = 0;
+                this.cumulatedPressure = 0;
+                this.numberOfPressureReadings = 0;
+            }
         }
     }
     A320_Neo_LowerECAM_CRZ.Page = Page;
