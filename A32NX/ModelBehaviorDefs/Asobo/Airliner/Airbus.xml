@@ -1145,3 +1145,50 @@
 		<SEQ2_EMISSIVE_CODE>(L:XMLVAR_SWITCH_OVHD_INTLT_EMEREXIT_Position) 2 ==</SEQ2_EMISSIVE_CODE>
 	</UseTemplate>
 </Template>
+
+<!-- Copy of A32NX_GT_Switch_Dummy -->
+<!-- Removed the INIT_VALUE stuff which was overriding what we had in the flt files -->
+<Template Name="ASOBO_GT_Switch_Dummy">
+	<DefaultTemplateParameters>
+		<SWITCH_POSITION_TYPE>O</SWITCH_POSITION_TYPE>
+		<SWITCH_POSITION_VAR>SwitchState</SWITCH_POSITION_VAR>
+		<LEFT_SINGLE_CODE></LEFT_SINGLE_CODE>
+		<NUM_STATES>2</NUM_STATES>
+		<ANIMREF_ID>0</ANIMREF_ID>
+		<ANIMTIP_0_ON_PERCENT>0</ANIMTIP_0_ON_PERCENT>
+		<ANIMTIP_1_ON_PERCENT>1</ANIMTIP_1_ON_PERCENT>
+	</DefaultTemplateParameters>
+	<Component ID="#NODE_ID#" Node="#NODE_ID#">
+		<Switch Param="NUM_STATES">
+			<Case Value="2">
+				<UseTemplate Name = "ASOBO_GT_Anim_Code">
+					<ANIM_CODE>(#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#) 100 *</ANIM_CODE>
+				</UseTemplate>
+				<UseTemplate Name = "ASOBO_GT_AnimTriggers_2SoundEvents">
+				</UseTemplate>
+				<UseTemplate Name = "ASOBO_GT_Interaction_LeftSingle_Code">
+					<LEFT_SINGLE_CODE>
+						(#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#) ! (&gt;#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#)
+						#LEFT_SINGLE_CODE#
+					</LEFT_SINGLE_CODE>
+				</UseTemplate>
+			</Case>
+			<Case Value="3">
+				<UseTemplate Name = "ASOBO_GT_Switch_3States">
+					<CODE_POS_0>
+						0 (&gt;#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#)
+					</CODE_POS_0>
+					<CODE_POS_1>
+						1 (&gt;#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#)
+					</CODE_POS_1>
+					<CODE_POS_2>
+						2 (&gt;#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#)
+					</CODE_POS_2>
+					<STATE0_TEST>(#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#) 0 ==</STATE0_TEST>
+					<STATE1_TEST>(#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#) 1 ==</STATE1_TEST>
+					<STATE2_TEST>(#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#) 1 ==</STATE2_TEST>
+				</UseTemplate>
+			</Case>
+		</Switch>
+	</Component>
+</Template>
