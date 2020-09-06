@@ -1519,28 +1519,7 @@
 					<NODE_ID>PUSH_OVHD_EMERELECPWR_RAT</NODE_ID>
 				</UseTemplate>
 				<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
-					<NODE_ID>PUSH_OVHD_GPWS_TERR</NODE_ID>
-				</UseTemplate>
-				<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
-					<NODE_ID>PUSH_OVHD_GPWS_SYS</NODE_ID>
-				</UseTemplate>
-				<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
-					<NODE_ID>PUSH_OVHD_GPWS_GSMODE</NODE_ID>
-				</UseTemplate>
-				<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
-					<NODE_ID>PUSH_OVHD_GPWS_FLAP</NODE_ID>
-				</UseTemplate>
-				<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
-					<NODE_ID>PUSH_OVHD_GPWS_LDG</NODE_ID>
-				</UseTemplate>
-				<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
 					<NODE_ID>PUSH_OVHD_RCDR_GNDCTL</NODE_ID>
-				</UseTemplate>
-				<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
-					<NODE_ID>PUSH_OVHD_OXYGEN_PASSENGER</NODE_ID>
-				</UseTemplate>
-				<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
-					<NODE_ID>PUSH_OVHD_OXYGEN_CREW</NODE_ID>
 				</UseTemplate>
 				<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
 					<NODE_ID>PUSH_OVHD_CALLS_EMER</NODE_ID>
@@ -2467,6 +2446,50 @@
 
 	</Component>
 
+	<Component ID="Overhead_Misc">
+		<Component ID="Left_Column">
+			<UseTemplate Name="ASOBO_AIRLINER_GPWS_Template">
+				<NODE_ID>PUSH_OVHD_GPWS_TERR</NODE_ID>
+				<TOOLTIPID>(INOP) TERR</TOOLTIPID>
+			</UseTemplate>
+			<UseTemplate Name="ASOBO_AIRLINER_GPWS_Template">
+				<NODE_ID>PUSH_OVHD_GPWS_SYS</NODE_ID>
+				<TOOLTIPID>(INOP) SYS</TOOLTIPID>
+			</UseTemplate>
+			<UseTemplate Name="ASOBO_AIRLINER_GPWS_Template">
+				<NODE_ID>PUSH_OVHD_GPWS_GSMODE</NODE_ID>
+				<TOOLTIPID>(INOP) G/S Mode</TOOLTIPID>
+			</UseTemplate>
+			<UseTemplate Name="ASOBO_AIRLINER_GPWS_Template">
+				<NODE_ID>PUSH_OVHD_GPWS_FLAP</NODE_ID>
+				<TOOLTIPID>(INOP) Flap Mode</TOOLTIPID>
+			</UseTemplate>
+			<UseTemplate Name="ASOBO_AIRLINER_GPWS_Template">
+				<NODE_ID>PUSH_OVHD_GPWS_LDG</NODE_ID>
+				<TOOLTIPID>(INOP) LDG Flaps 3</TOOLTIPID>
+			</UseTemplate>
+			<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
+				<NODE_ID>PUSH_OVHD_OXYGEN_PASSENGER</NODE_ID>
+			</UseTemplate>
+			<UseTemplate Name="ASOBO_AIRLINER_OXYGEN_Template">
+				<NODE_ID>PUSH_OVHD_OXYGEN_CREW</NODE_ID>
+				<TOOLTIPID>Crew oxygen supply</TOOLTIPID>
+			</UseTemplate>
+			<UseTemplate Name="ASOBO_AIRLINER_CALLS_Template">
+				<NODE_ID>PUSH_OVHD_CALLS_MECH</NODE_ID>
+			</UseTemplate>
+			<UseTemplate Name="ASOBO_AIRLINER_CALLS_Template">
+				<NODE_ID>PUSH_OVHD_CALLS_ALL</NODE_ID>
+			</UseTemplate>
+			<UseTemplate Name="ASOBO_AIRLINER_CALLS_Template">
+				<NODE_ID>PUSH_OVHD_CALLS_FWD</NODE_ID>
+			</UseTemplate>
+			<UseTemplate Name="ASOBO_AIRLINER_CALLS_Template">
+				<NODE_ID>PUSH_OVHD_CALLS_AFT</NODE_ID>
+			</UseTemplate>
+		</Component>
+	</Component>
+
 	<!-- This section has been partially modified	-->
 
 	<Component ID="INOP">
@@ -2925,21 +2948,6 @@
 			<NODE_ID>PUSH_OVHD_EMERELECPWR_MANON</NODE_ID>
 		</UseTemplate>
 		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-			<NODE_ID>PUSH_OVHD_GPWS_TERR</NODE_ID>
-		</UseTemplate>
-		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-			<NODE_ID>PUSH_OVHD_GPWS_SYS</NODE_ID>
-		</UseTemplate>
-		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-			<NODE_ID>PUSH_OVHD_GPWS_GSMODE</NODE_ID>
-		</UseTemplate>
-		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-			<NODE_ID>PUSH_OVHD_GPWS_FLAP</NODE_ID>
-		</UseTemplate>
-		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-			<NODE_ID>PUSH_OVHD_GPWS_LDG</NODE_ID>
-		</UseTemplate>
-		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
 			<NODE_ID>PUSH_OVHD_RCDR_GNDCTL</NODE_ID>
 		</UseTemplate>
 		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
@@ -2953,24 +2961,6 @@
 		</UseTemplate>
 		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
 			<NODE_ID>PUSH_OVHD_OXYGEN_RATMANON</NODE_ID>
-		</UseTemplate>
-		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-			<NODE_ID>PUSH_OVHD_OXYGEN_PASSENGER</NODE_ID>
-		</UseTemplate>
-		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-			<NODE_ID>PUSH_OVHD_OXYGEN_CREW</NODE_ID>
-		</UseTemplate>
-		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-			<NODE_ID>PUSH_OVHD_CALLS_MECH</NODE_ID>
-		</UseTemplate>
-		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-			<NODE_ID>PUSH_OVHD_CALLS_ALL</NODE_ID>
-		</UseTemplate>
-		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-			<NODE_ID>PUSH_OVHD_CALLS_FWD</NODE_ID>
-		</UseTemplate>
-		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-			<NODE_ID>PUSH_OVHD_CALLS_AFT</NODE_ID>
 		</UseTemplate>
 		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
 			<NODE_ID>LOCK_OVHD_CALLS_EMER</NODE_ID>

@@ -1106,6 +1106,39 @@
 	</UseTemplate>
 </Template>
 
+<Template Name="ASOBO_AIRLINER_OXYGEN_Template">
+	<UseTemplate Name="ASOBO_GT_Push_Button_Airliner">
+		<ANIM_NAME>#NODE_ID#</ANIM_NAME>
+		<WWISE_EVENT_1>master_apu_switch_on</WWISE_EVENT_1>
+		<WWISE_EVENT_2>master_apu_switch_off</WWISE_EVENT_2>
+		<SEQ1_EMISSIVE_CODE>0</SEQ1_EMISSIVE_CODE>
+		<SEQ2_EMISSIVE_CODE>(L:#NODE_ID#, Bool)</SEQ2_EMISSIVE_CODE>
+		<LEFT_SINGLE_CODE>(L:#NODE_ID#) ! (>L:#NODE_ID#)</LEFT_SINGLE_CODE>
+	</UseTemplate>
+</Template>
+
+<Template Name="ASOBO_AIRLINER_GPWS_Template">
+	<UseTemplate Name="ASOBO_GT_Push_Button_Airliner">
+		<ANIM_NAME>#NODE_ID#</ANIM_NAME>
+		<WWISE_EVENT_1>master_apu_switch_on</WWISE_EVENT_1>
+		<WWISE_EVENT_2>master_apu_switch_off</WWISE_EVENT_2>
+		<SEQ1_EMISSIVE_CODE>0</SEQ1_EMISSIVE_CODE>
+		<SEQ2_EMISSIVE_CODE>(L:#NODE_ID#, Bool)</SEQ2_EMISSIVE_CODE>
+		<LEFT_SINGLE_CODE>(L:#NODE_ID#) ! (>L:#NODE_ID#)</LEFT_SINGLE_CODE>
+	</UseTemplate>
+</Template>
+
+<Template Name="ASOBO_AIRLINER_CALLS_Template">
+	<UseTemplate Name="ASOBO_GT_Push_Button_Airliner">
+		<ANIM_NAME>#NODE_ID#</ANIM_NAME>
+		<WWISE_EVENT_1>master_apu_switch_on</WWISE_EVENT_1>
+		<WWISE_EVENT_2>master_apu_switch_off</WWISE_EVENT_2>
+		<SEQ1_EMISSIVE_CODE>0</SEQ1_EMISSIVE_CODE>
+		<SEQ2_EMISSIVE_CODE>(L:#NODE_ID#, Bool)</SEQ2_EMISSIVE_CODE>
+		<LEFT_SINGLE_CODE>(L:#NODE_ID#) ! (>L:#NODE_ID#)</LEFT_SINGLE_CODE>
+	</UseTemplate>
+</Template>
+
 <Template Name="ASOBO_AIRLINER_SIGNS_LIGHT_Template">
 	<UseTemplate Name="ASOBO_GT_Push_Button_Airliner">
 		<SEQ1_EMISSIVE_CODE>0</SEQ1_EMISSIVE_CODE>

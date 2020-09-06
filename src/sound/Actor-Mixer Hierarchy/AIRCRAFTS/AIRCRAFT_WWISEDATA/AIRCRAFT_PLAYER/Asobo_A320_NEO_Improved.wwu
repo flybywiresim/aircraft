@@ -4,9 +4,20 @@
 		<WorkUnit Name="Asobo_A320_NEO_Improved" ID="{27D32D8D-6C92-4542-9BFC-F0D08111F92F}" PersistMode="Standalone">
 			<ChildrenList>
 				<Sound Name="seatbelt" ID="{9207D07D-554E-4478-98E7-2347C7C4E359}" ShortID="554112459">
+					<PropertyList>
+						<Property Name="3DPosition" Type="int16" Value="1"/>
+						<Property Name="3DSpatialization" Type="int16" Value="2"/>
+						<Property Name="HoldEmitterPositionOrientation" Type="bool" Value="True"/>
+					</PropertyList>
 					<ReferenceList>
+						<Reference Name="Attenuation">
+							<ObjectRef Name="aircraft_player_inside_3m" ID="{538CDAF5-4564-463A-A841-C73D21967E20}" WorkUnitID="{60292DF5-73DF-4CD4-B755-61C8D02B90BD}"/>
+						</Reference>
 						<Reference Name="Conversion">
 							<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{72C899CE-308C-4CA7-87C0-8E1504B1D757}"/>
+						</Reference>
+						<Reference Name="Effect0" PluginName="Wwise RoomVerb" CompanyID="0" PluginID="118" PluginType="3">
+							<ObjectRef Name="rev_inside_default" ID="{0FBFEC3C-DA09-46DB-925A-66BC63C4D9A1}" WorkUnitID="{E20C9B57-2CC8-4F9A-88A9-45A8D75F964F}"/>
 						</Reference>
 						<Reference Name="OutputBus">
 							<ObjectRef Name="Master Audio Bus" ID="{1514A4D8-1DA6-412A-A17E-75CA0C2149F3}" WorkUnitID="{D8341C40-AF31-4D5B-9D65-E60D709F4609}"/>
@@ -24,8 +35,78 @@
 							<AudioFile>seatbelt.wav</AudioFile>
 						</AudioFileSource>
 					</ChildrenList>
+					<PositioningInfo>
+						<Position Name="" ID="{C4884C31-2007-432E-9EAB-BC32DD4E9362}">
+							<ChildrenList>
+								<Path2D Name="seatbelt_Path" ID="{95243EA6-0480-430B-A9F5-A27CCC0B9972}">
+									<PropertyList>
+										<Property Name="Duration" Type="Uint32" Value="685"/>
+									</PropertyList>
+									<PointList>
+										<Point>
+											<XPos>40</XPos>
+											<YPos>-100</YPos>
+											<Flags>12</Flags>
+											<Time>0</Time>
+										</Point>
+									</PointList>
+								</Path2D>
+							</ChildrenList>
+						</Position>
+					</PositioningInfo>
 					<ActiveSourceList>
 						<ActiveSource Name="seatbelt" ID="{5B76F6BB-9C86-4997-9558-403BD6183683}" Platform="Linked"/>
+					</ActiveSourceList>
+				</Sound>
+				<Sound Name="cabincrewbell" ID="{01322D71-CD4B-43BC-AE3D-977B4495B791}" ShortID="788589249">
+					<PropertyList>
+						<Property Name="3DPosition" Type="int16" Value="1"/>
+						<Property Name="3DSpatialization" Type="int16" Value="2"/>
+					</PropertyList>
+					<ReferenceList>
+						<Reference Name="Attenuation">
+							<ObjectRef Name="aircraft_player_inside_3m" ID="{538CDAF5-4564-463A-A841-C73D21967E20}" WorkUnitID="{60292DF5-73DF-4CD4-B755-61C8D02B90BD}"/>
+						</Reference>
+						<Reference Name="Conversion">
+							<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{72C899CE-308C-4CA7-87C0-8E1504B1D757}"/>
+						</Reference>
+						<Reference Name="Effect0" PluginName="Wwise RoomVerb" CompanyID="0" PluginID="118" PluginType="3">
+							<ObjectRef Name="rev_inside_default" ID="{0FBFEC3C-DA09-46DB-925A-66BC63C4D9A1}" WorkUnitID="{E20C9B57-2CC8-4F9A-88A9-45A8D75F964F}"/>
+						</Reference>
+						<Reference Name="OutputBus">
+							<ObjectRef Name="Master Audio Bus" ID="{1514A4D8-1DA6-412A-A17E-75CA0C2149F3}" WorkUnitID="{D8341C40-AF31-4D5B-9D65-E60D709F4609}"/>
+						</Reference>
+					</ReferenceList>
+					<ChildrenList>
+						<AudioFileSource Name="cabincrewbell" ID="{FB8FA135-6D38-4723-B257-8F1675E14C0F}">
+							<PropertyList>
+								<Property Name="LoopBegin" Type="Real64" Value="-0.001"/>
+								<Property Name="LoopEnd" Type="Real64" Value="-0.001"/>
+								<Property Name="TrimBegin" Type="Real64" Value="-0.001"/>
+								<Property Name="TrimEnd" Type="Real64" Value="-0.001"/>
+							</PropertyList>
+							<Language>SFX</Language>
+							<AudioFile>cabincrewbell.wav</AudioFile>
+						</AudioFileSource>
+					</ChildrenList>
+					<PositioningInfo>
+						<Position Name="" ID="{02C77D9B-68B1-400C-AD0E-3B2DAAA3F302}">
+							<ChildrenList>
+								<Path2D Name="cabincrewbell_Path" ID="{4FC3E003-9016-41EC-8D38-FE5B70BFD369}">
+									<PointList>
+										<Point>
+											<XPos>40</XPos>
+											<YPos>-100</YPos>
+											<Flags>12</Flags>
+											<Time>0</Time>
+										</Point>
+									</PointList>
+								</Path2D>
+							</ChildrenList>
+						</Position>
+					</PositioningInfo>
+					<ActiveSourceList>
+						<ActiveSource Name="cabincrewbell" ID="{FB8FA135-6D38-4723-B257-8F1675E14C0F}" Platform="Linked"/>
 					</ActiveSourceList>
 				</Sound>
 			</ChildrenList>
