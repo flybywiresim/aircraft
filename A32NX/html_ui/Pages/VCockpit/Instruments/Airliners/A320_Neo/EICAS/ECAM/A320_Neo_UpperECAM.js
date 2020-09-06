@@ -67,8 +67,49 @@ var A320_Neo_UpperECAM;
             this.enginePanel = new A320_Neo_UpperECAM.EnginePanel(this, "EnginesPanel");
             this.infoTopPanel = new A320_Neo_UpperECAM.InfoTopPanel(this, "InfoTopPanel");
             this.flapsPanel = new A320_Neo_UpperECAM.FlapsPanel(this, "FlapsPanel");
+            this.activeTakeoffConfigWarnings = [];
             this.ecamMessages = {
                 failures: [
+                    {
+                        name: "CONFIG",
+                        messages: [
+                            {
+                                message: "",
+                                level: 3,
+                                isActive: () => {
+                                    return this.activeTakeoffConfigWarnings.includes("flaps");
+                                },
+                                alwaysShowCategory: true,
+                                actions: [
+                                    {
+                                        style: "fail-3",
+                                        message: "FLAPS NOT IN T.O CONFIG"
+                                    }
+                                ]
+                            },
+                            {
+                                message: "",
+                                level: 3,
+                                isActive: () => {
+                                    return this.activeTakeoffConfigWarnings.includes("spd_brk") == true;
+                                },
+                                alwaysShowCategory: true,
+                                actions: [
+                                    {
+                                        style: "fail-3",
+                                        message: "SPD BRK NOT RETRACTED"
+                                    }
+                                ]
+                            },
+                            {
+                                message: "PARK BRAKE ON",
+                                level: 3,
+                                isActive: () => {
+                                    return this.activeTakeoffConfigWarnings.includes("park_brake") == true;
+                                }
+                            }
+                        ]
+                    },
                     {
                         name: "CAB PR",
                         messages: [
@@ -322,7 +363,7 @@ var A320_Neo_UpperECAM;
                                                     "TEST",
                                                     "NORMAL",
                                                     function() {
-                                                        return false;
+                                                        return SimVar.GetSimVarValue("L:A32NX_TO_CONFIG_NORMAL", "Bool") == 1;
                                                     })
                                                  ],);
             
@@ -389,8 +430,8 @@ var A320_Neo_UpperECAM;
             
             //Show takeoff memo 2 mins after second engine start
             //Hides after takeoff thurst application
-            if (SimVar.GetSimVarValue("ENG N1 RPM:1", "Percent") > 15 && SimVar.GetSimVarValue("ENG N1 RPM:2", "Percent") > 15 && SimVar.GetSimVarValue("L:AIRLINER_FLIGHT_PHASE", "number") <= 2 && SimVar.GetSimVarValue("L:A32NX_Preflight_Complete", "Bool") == 0) {
-                if (this.takeoffMemoTimer == null) this.takeoffMemoTimer = 120;
+            if (SimVar.GetSimVarValue("ENG N1 RPM:1", "Percent") > 15 && SimVar.GetSimVarValue("ENG N1 RPM:2", "Percent") > 15 && SimVar.GetSimVarValue("L:AIRLINER_FLIGHT_PHASE", "number") <= 2 && SimVar.GetSimVarValue("L:A32NX_Preflight_Complete", "Bool") == 0 && this.leftEcamMessagePanel.hasActiveFailures == false) {
+                if (this.takeoffMemoTimer == null) this.takeoffMemoTimer = 10;
                 if (this.takeoffMemoTimer > 0) {
                     this.takeoffMemoTimer -= _deltaTime/1000;
                 } else {
@@ -404,7 +445,7 @@ var A320_Neo_UpperECAM;
 
             //Show landing memo at 2000ft
             //Hides after slowing down to 80kts
-            if (SimVar.GetSimVarValue("RADIO HEIGHT", "Feet") < 2000 && SimVar.GetSimVarValue("L:AIRLINER_FLIGHT_PHASE", "number") == 6 && SimVar.GetSimVarValue("AIRSPEED INDICATED", "knots") > 80) {
+            if (SimVar.GetSimVarValue("RADIO HEIGHT", "Feet") < 2000 && SimVar.GetSimVarValue("L:AIRLINER_FLIGHT_PHASE", "number") == 6 && SimVar.GetSimVarValue("AIRSPEED INDICATED", "knots") > 80 && !this.leftEcamMessagePanel.hasActiveFailures) {
                 this.showLandingMemo = true;
             } else {
                 this.showLandingMemo = false;
@@ -414,6 +455,34 @@ var A320_Neo_UpperECAM;
             if (this.landingMemo != null) this.landingMemo.divMain.style.display = this.showLandingMemo ? "block" : "none";
             //Hide left message panel when memo is diplayed
             if (this.leftEcamMessagePanel != null) this.leftEcamMessagePanel.divMain.style.display = (this.showTakeoffMemo || this.showLandingMemo) ? "none" : "block";
+        
+            if (SimVar.GetSimVarValue("L:A32NX_BTN_TOCONFIG", "Bool") == 1) {
+                SimVar.SetSimVarValue("L:A32NX_BTN_TOCONFIG", "Bool", 0);
+                this.updateTakeoffConfigWarnings(true);
+            }
+
+            const leftThrottleDetent = Simplane.getEngineThrottleMode(0);
+            const rightThrottleDetent = Simplane.getEngineThrottleMode(1);
+            const highestThrottleDetent = (leftThrottleDetent >= rightThrottleDetent) ? leftThrottleDetent : rightThrottleDetent;
+            if (highestThrottleDetent == ThrottleMode.TOGA || highestThrottleDetent == ThrottleMode.FLEX_MCT) {
+                this.updateTakeoffConfigWarnings(false);
+            }
+        }
+        updateTakeoffConfigWarnings(_test) {
+            const flaps = SimVar.GetSimVarValue("FLAPS HANDLE INDEX", "Enum");
+            const speedBrake = SimVar.GetSimVarValue("SPOILERS HANDLE POSITION", "Position");
+            const parkBrake = SimVar.GetSimVarValue("BRAKE PARKING INDICATOR", "Bool");
+            this.activeTakeoffConfigWarnings = [];
+            if (SimVar.GetSimVarValue("L:AIRLINER_FLIGHT_PHASE", "Enum") > 2) return;
+            if (!(flaps >= 1 && flaps <= 2)) this.activeTakeoffConfigWarnings.push("flaps");
+            if (speedBrake > 0) this.activeTakeoffConfigWarnings.push("spd_brk");
+            if (parkBrake == 1 && !_test) this.activeTakeoffConfigWarnings.push("park_brake");
+            if (_test && this.activeTakeoffConfigWarnings.length == 0) {
+                SimVar.SetSimVarValue("L:A32NX_TO_CONFIG_NORMAL", "Bool", 1);
+                this.takeoffMemoTimer = 0;
+            } else {
+                SimVar.SetSimVarValue("L:A32NX_TO_CONFIG_NORMAL", "Bool", 0);
+            }
         }
         getInfoPanelManager() {
             return this.infoPanelsManager;
@@ -1111,6 +1180,7 @@ var A320_Neo_UpperECAM;
             this.messages = _messages;
             this.currentLine = 0;
             this.activeCategories = [];
+            this.hasActiveFailures = false;
         }
         init() {
             super.init();
@@ -1128,7 +1198,7 @@ var A320_Neo_UpperECAM;
             for (const i in activeFailures) {
                 const category = activeFailures[i];
                 for (const failure of category.messages) {
-                    this.addLine("fail-"+failure.level, category.name, failure.message, failure.action);
+                    this.addLine("fail-"+failure.level, category.name, failure.message, failure.action, failure.alwaysShowCategory);
                     if (failure.actions != null) {
                         for (const action of failure.actions) {
                             if (action.isCompleted == null || !action.isCompleted()) this.addLine(action.style, null, action.message, action.action);
@@ -1141,7 +1211,7 @@ var A320_Neo_UpperECAM;
                 this.addLine(message.style || "InfoIndication", null, message.message, null);
             }
         }
-        addLine(_style, _category, _message, _action) {
+        addLine(_style, _category, _message, _action, _alwaysShowCategory = false) {
             if (this.currentLine < this.maxLines) {
                 var div = this.allDivs[this.currentLine];
                 div.innerHTML = "";
@@ -1149,12 +1219,11 @@ var A320_Neo_UpperECAM;
                 if (div != null) {
 
                     //Category
-                    if (_category != null && !this.activeCategories.includes(_category)) {
+                    if (_category != null && (!this.activeCategories.includes(_category) || _alwaysShowCategory)) {
                         var category = document.createElement("span");
                         category.className = "Underline";
                         category.textContent = _category;
                         div.appendChild(category);
-                        
                     }
                     
                     //Message
@@ -1194,11 +1263,13 @@ var A320_Neo_UpperECAM;
         
         getActiveFailures() {
             var output = {};
+            this.hasActiveFailures = false;
             for (var i = 0; i < this.messages.failures.length; i++) {
                 const messages = this.messages.failures[i].messages;
                 for (var n = 0; n < messages.length; n++) {
                     const message = messages[n];
                     if (message.isActive()) {
+                        this.hasActiveFailures = true;
                         if (output[i] == null) {
                             output[i] = this.messages.failures[i];
                             output[i].messages = [];

@@ -774,6 +774,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                 this.landingResetTimer = null;
                 this.currentFlightPhase = 0;
                 SimVar.SetSimVarValue("L:A32NX_Preflight_Complete", "Bool", 0);
+                SimVar.SetSimVarValue("L:A32NX_TO_CONFIG_NORMAL", "Bool", 0);
                 CDUIdentPage.ShowPage(this);
             }
         } else {
