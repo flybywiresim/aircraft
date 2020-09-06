@@ -1,0 +1,77 @@
+<link rel="stylesheet" href="./A320_Neo_LowerECAM_WHEEL.css" />
+<script type="text/html" id="LowerECAMWHEELTemplate">
+    <svg viewBox="0 0 600 600" xmlns="http://www.w3.org/2000/svg">
+        <!--Texts-->
+        <text id="PageTitle" x="60" y="135" text-decoration="underline">WHEEL</text>
+
+
+        <!--Center info panel-->
+        <text id="steering" class="ALTNBRKIndicator" x="300" y="285">N/W STEERING</text>
+        <text id="lgctl" class="ALTNBRKIndicator" x="271" y="310">L/G CTL</text>
+        <text id="antiskid" class="ALTNBRKIndicator" x="280" y="380">ANTI SKID</text>
+        <text id="normbrake" class="ALTNBRKIndicator" x="280" y="400">NORM BRK</text>
+        <text id="altnbrake" class="ALTNBRKIndicator" x="280" y="422">ALTN BRK</text>
+        <text id="acconly" class="ALTNBRKIndicator" x="300" y="440">ACCU ONLY</text>
+        <text id="autobrake" class="ALTNBRKIndicator" x="288" y="470">AUTO BRK</text>
+        <text id="autoBrakeText" class="ALTNBRKIndicator" x="288" y="490">FULL</text>
+
+        <!--lower gauges info-->
+        <!--Gauge Left-->
+        <text class="WHEELGaugeParamUnit" x="100" y="400">°C</text>
+        <text class="WHEELGaugeParamUnitWhite" x="105" y="420">REL</text>
+        <!--Upper Numbers Temp-->
+        <text id="WheelTemp1" class="WHEELTempPrecentage" x="70" y="400">xx</text>
+        <text id="WheelTemp2" class="WHEELTempPrecentage" x="138" y="400">xx</text>
+        <!--Lower Numbers-->
+        <text class="BreakNumber" x="70" y="420">1</text>
+        <text class="BreakNumber" x="138" y="420">2</text>
+        
+
+        <!--Gauge Right -->
+        <text class="WHEELGaugeParamUnit" x="460" y="400">°C</text>
+        <text class="WHEELGaugeParamUnitWhite" x="465" y="420">REL</text>
+        <!--R Upper Numbers-->
+        <text id="WheelTemp3" class="WHEELTempPrecentage" x="425" y="400">xx</text>
+        <text id="WheelTemp4" class="WHEELTempPrecentage" x="500" y="400">xx</text>
+        <!--R Lower Numbers-->
+        <text class="BreakNumber" x="425" y="420">3</text>
+        <text class="BreakNumber" x="500" y="420">4</text>
+
+
+        <!--Speed Indicators-->
+        <g id="speedbrakesLeft">
+            <path class="GreenShapeThick" d="M 103 104 l 15 0"></path>
+            <path class="GreenShapeThick" d="M 142 99 l 15 0"></path>
+            <path class="GreenShapeThick" d="M 180 94 l 15 0"></path>
+            <path class="GreenShapeThick" d="M 219 89 l 15 0"></path>
+            <path class="GreenShapeThick" d="M 257 84 l 15 0"></path>
+        </g>
+        <g id="speedbrakesRight">
+            <path class="GreenShapeThick" d="M 497 104 l -15 0"></path>
+            <path class="GreenShapeThick" d="M 458 99 l -15 0"></path>
+            <path class="GreenShapeThick" d="M 420 94 l -15 0"></path>
+            <path class="GreenShapeThick" d="M 381 89 l -15 0"></path>
+            <path class="GreenShapeThick" d="M 343 84 l -15 0"></path>
+        </g>
+        <!--Need Some better at html / css to create the triangles need above-->
+        
+        <!--Hyd for Steering-->
+        <g id="speedbrakeHyd">
+            <rect class="HydBgShape" x="208" y="275" width="20" height="20" rx="2"></rect>
+            <text id="speedbrakeHydText" class="HydColorYellow" x="218" y="286" text-anchor="middle" alignment-baseline="central">Y</text>
+        </g>
+
+        <!--Hyd for Norm Brk-->
+        <g id="normBrkHyd">
+            <rect class="HydBgShape" x="208" y="390" width="20" height="20" rx="2"></rect>
+            <text id="normBrkHydText" class="HydColorGreen" x="218" y="401" text-anchor="middle" alignment-baseline="central">G</text>
+        </g>
+        
+        <!--Hyd for ALTN Brk-->
+        <g id="atlnBrk">
+            <rect class="HydBgShape" x="208" y="414" width="20" height="20" rx="2"></rect>
+            <text id="atlnBrkText" class="HydColorYellow" x="218" y="425" text-anchor="middle" alignment-baseline="central">Y</text>
+        </g>
+    </svg>
+</script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/A320_Neo/EICAS/ECAM/A320_Neo_LowerECAM_WHEEL.js"></script>

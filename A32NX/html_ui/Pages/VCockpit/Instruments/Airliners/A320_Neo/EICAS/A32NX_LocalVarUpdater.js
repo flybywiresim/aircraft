@@ -41,4 +41,29 @@ class LocalVarUpdater {
     }
 
     // New selectors go here...
+    _engineOneHydralicsPressure() {
+        const hydralicPressure = SimVar.GetSimVarValue("ENG HYDRAULIC PRESSURE:1","pound-force pre square inch")
+        return hydralicPressure;
+    }
+
+    _engineTwoHydralicsPressure() {
+        const hydralicPressure = SimVar.GetSimVarValue("ENG HYDRAULIC PRESSURE:2","pound-force pre square inch")
+        return hydralicPressure;
+    }
+
+    _gearHandlePosition() {
+        const gearPosUp = SimVar.GetSimVarValue("GEAR HANDLE POSITION","Bool");
+        if(gearPosUp === 0) return true;
+        return false;
+    }
+
+    _autoBrakeIndicating() {
+        const autoBrakeNumber = SimVar.GetSimVarValue("L:XMLVAR_Autobrakes_Level", "Number"); // probably can just return this value
+        return autoBrakeNumber;
+    }
+
+    _antiSkiddOn() {
+        const antiSkidOn = SimVar.GetSimVarValue("ANTISKID BRAKES ACTIVE","Bool");
+        return antiSkidOn;
+    }
 }
