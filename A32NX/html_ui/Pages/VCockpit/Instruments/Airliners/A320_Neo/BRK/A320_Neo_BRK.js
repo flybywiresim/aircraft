@@ -68,8 +68,8 @@ var A320_Neo_BRK;
         }
         Update() {
             super.Update();
-            var currentPKGBrakeState = SimVar.GetSimVarValue("BRAKE PARKING POSITION", "Bool");
-            var powerAvailable = SimVar.GetSimVarValue("L:DCPowerAvailable","Bool");
+            const currentPKGBrakeState = SimVar.GetSimVarValue("BRAKE PARKING POSITION", "Bool");
+            const powerAvailable = SimVar.GetSimVarValue("L:DCPowerAvailable","Bool");
             if (this.topGauge != null) {
                 if (powerAvailable) {
                     this.topGauge.setValue(3);
@@ -105,7 +105,7 @@ var A320_Neo_BRK;
                     this.rightGauge.setValue(0);
                 }
             }
-            updateElectricityState(powerAvailable);
+            this.updateElectricityState(powerAvailable);
         }
         updateElectricityState(powerAvailable) {
             if (powerAvailable) {
