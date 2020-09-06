@@ -5068,6 +5068,11 @@
 					<ChildrenList>
 						<Attenuation Name="aircraft_player_inside_3m_spread100" ID="{023C370B-520E-4E03-AC0C-96158D8C267D}" ShortID="631822099">
 							<PropertyList>
+								<Property Name="ConeUse" Type="bool">
+									<ValueList>
+										<Value>True</Value>
+									</ValueList>
+								</Property>
 								<Property Name="RadiusMax" Type="Real64" Value="3"/>
 							</PropertyList>
 							<CurveUsageInfoList>
@@ -5428,7 +5433,7 @@
 												</Point>
 												<Point>
 													<XPos>3</XPos>
-													<YPos>0</YPos>
+													<YPos>-0</YPos>
 													<Flags>37</Flags>
 												</Point>
 											</PointList>

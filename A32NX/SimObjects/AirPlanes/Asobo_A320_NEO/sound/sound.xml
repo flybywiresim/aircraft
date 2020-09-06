@@ -256,6 +256,24 @@
 			<Range LowerBound="28" />
 		</Requires>
 	</Sound>
+
+	<Sound WwiseData="true" WwiseEvent="cockpit_cabin_call_fwd" LocalVar="PUSH_OVHD_CALLS_FWD" Continuous="false">
+		<Requires SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1">
+			<Range LowerBound="28" />
+		</Requires>
+	</Sound>
+
+	<Sound WwiseData="true" WwiseEvent="cockpit_cabin_call_fwd" LocalVar="PUSH_OVHD_CALLS_ALL" Continuous="false">
+		<Requires SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1">
+			<Range LowerBound="28" />
+		</Requires>
+	</Sound>
+
+	<Sound WwiseData="true" WwiseEvent="cockpit_cabin_call_aft" LocalVar="PUSH_OVHD_CALLS_AFT" Continuous="false">
+		<Requires SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1">
+			<Range LowerBound="28" />
+		</Requires>
+	</Sound>
 	
   	<!-- RAIN ========================================================================================== --> 
 	
