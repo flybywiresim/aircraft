@@ -92,7 +92,9 @@ class EICASCommonDisplay extends Airliners.EICASTemplateElement {
             if (this.gwValue != null) {
                 this.gwValue.textContent = this.currentGW.toString();
             }
-            if (this.gwUnit) this.gwUnit.textContent = unit.toUpperCase();
+            if (this.gwUnit) {
+                this.gwUnit.textContent = unit.toUpperCase();
+            }
         }
     }
     refreshADIRS() {
