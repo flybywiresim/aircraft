@@ -1,4 +1,4 @@
-# MSFS A320neo Improvement Mod - Stable 0.2.0
+# FlyByWire A32NX - Stable 0.2.0
 
 # Important
 
