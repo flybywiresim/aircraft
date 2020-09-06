@@ -57,13 +57,24 @@ a320-neo-lower-ecam-crz {
 :root .CRZValue {
   fill: var(--ecamValueColour);
   font-size: 20px;
-  text-anchor: end !important; 
 }
 
 :root .CRZValueDecimal {
   fill: var(--ecamValueColour);
   font-size: 15px;
-  text-anchor: end !important; 
+  text-anchor: end !important;
+}
+
+:root .AlignLeft {
+  text-anchor: start !important;
+}
+
+:root .AlignCenter {
+  text-anchor: middle !important;
+}
+
+:root .AlignRight {
+  text-anchor: end !important;
 }
 
 :root .SmallText {
