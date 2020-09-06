@@ -262,7 +262,7 @@ var A320_Neo_UpperECAM;
                         message: "T.O. INHIBIT",
                         style: "InfoSpecial",
                         isActive: () => {
-                            return (SimVar.GetSimVarValue("L:AIRLINER_FLIGHT_PHASE", "Enum") == 2) && (SimVar.GetSimVarValue("L:A32NX_Preflight_Complete", "Bool") == 1);
+                            return (SimVar.GetSimVarValue("L:AIRLINER_FLIGHT_PHASE", "Enum") <= 2) && (SimVar.GetSimVarValue("L:A32NX_Preflight_Complete", "Bool") == 1);
                         }
                     },
                     {
