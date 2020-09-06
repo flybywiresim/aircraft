@@ -22,8 +22,8 @@ var A320_Neo_LowerECAM_CRZ;
             this.pressureDiff = 0;
             this.cumulatedPressure = 0;
             this.numberOfPressureReadings = 0;
-            this.cumulatedTime = 0;
-
+            this.cumulatedTime = 1000;
+           
             this.FuelUsedTotal = this.querySelector("#FuelUsedTotal");
             this.FuelUsedLeft = this.querySelector("#FuelUsedLeft");
             this.FuelUsedRight = this.querySelector("#FuelUsedRight");
@@ -71,9 +71,9 @@ var A320_Neo_LowerECAM_CRZ;
             let leftConsumption = SimVar.GetSimVarValue("GENERAL ENG FUEL USED SINCE START:1", "gallon") * unitFactor * 0.001;
             let rightConsumption = SimVar.GetSimVarValue("GENERAL ENG FUEL USED SINCE START:2", "gallon") * unitFactor * 0.001;
 
-            this.FuelUsedTotal.textContent = fastToFixed(leftConsumption+rightConsumption, 0);
-            this.FuelUsedLeft.textContent = fastToFixed(leftConsumption, 0);
-            this.FuelUsedRight.textContent = fastToFixed(rightConsumption, 0);
+            this.FuelUsedTotal.textContent = Math.floor(leftConsumption)+Math.floor(rightConsumption);
+            this.FuelUsedLeft.textContent = Math.floor(leftConsumption);
+            this.FuelUsedRight.textContent = Math.floor(rightConsumption);
 
             // Oil
             let value = SimVar.GetSimVarValue("ENG OIL QUANTITY:1", "percent") * 0.01 * 25;
