@@ -141,55 +141,55 @@ var A320_Neo_UpperECAM;
                 ],
                 normal: [
                     {
-                        message: "IR IN ALGIN 0 MN",
+                        message: "IR IN ALIGN 0 MN",
                         isActive: () => {
                             return this.getADIRSMins() == 0;
                         }
                     },
                     {
-                        message: "IR IN ALGIN 1 MN",
+                        message: "IR IN ALIGN 1 MN",
                         isActive: () => {
                             return this.getADIRSMins() == 1;
                         }
                     },
                     {
-                        message: "IR IN ALGIN 2 MN",
+                        message: "IR IN ALIGN 2 MN",
                         isActive: () => {
                             return this.getADIRSMins() == 2;
                         }
                     },
                     {
-                        message: "IR IN ALGIN 3 MN",
+                        message: "IR IN ALIGN 3 MN",
                         isActive: () => {
                             return this.getADIRSMins() == 3;
                         }
                     },
                     {
-                        message: "IR IN ALGIN 4 MN",
+                        message: "IR IN ALIGN 4 MN",
                         isActive: () => {
                             return this.getADIRSMins() == 4;
                         }
                     },
                     {
-                        message: "IR IN ALGIN 5 MN",
+                        message: "IR IN ALIGN 5 MN",
                         isActive: () => {
                             return this.getADIRSMins() == 5;
                         }
                     },
                     {
-                        message: "IR IN ALGIN 6 MN",
+                        message: "IR IN ALIGN 6 MN",
                         isActive: () => {
                             return this.getADIRSMins() == 6;
                         }
                     },
                     {
-                        message: "IR IN ALGIN 7 MN",
+                        message: "IR IN ALIGN 7 MN",
                         isActive: () => {
                             return this.getADIRSMins() == 7;
                         }
                     },
                     {
-                        message: "IR IN ALGIN >7 MN",
+                        message: "IR IN ALIGN >7 MN",
                         isActive: () => {
                             return this.getADIRSMins() > 7;
                         }
