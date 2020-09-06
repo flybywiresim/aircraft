@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Generator: Adobe Illustrator 24.3.0, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
+<svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+	 viewBox="0 0 600 600" style="enable-background:new 0 0 600 600;" xml:space="preserve">
+<style type="text/css">
+	.st0{fill:#FFFFFF;}
+	.st1{font-family:'B612-Regular';}
+	.st2{font-size:20.348px;}
+	.st3{font-size:26.1278px;}
+	.st4{font-size:17.9631px;}
+	.st5{font-size:25.1281px;}
+	.st6{fill:#00B400;}
+	.st7{fill:#00BBBA;}
+	.st8{fill:#FFFFFF;stroke:#FFFFFF;stroke-width:2;stroke-miterlimit:10;}
+	.st9{fill:none;stroke:#00B400;stroke-width:2;stroke-miterlimit:10;}
+	.st10{fill:none;stroke:#FFFFFF;stroke-width:2;stroke-miterlimit:10;}
+	.st11{fill:none;stroke:#8F8F8F;stroke-width:2;stroke-miterlimit:10;}
+	.st12{fill:none;stroke:#C95700;stroke-width:2;stroke-miterlimit:10;}
+</style>
+<rect x="1.01" y="0.9" width="599.2" height="599.2"/>
+<text transform="matrix(1 0 0 1 452.8701 89.6665)" class="st0 st1 st2">YELLOW</text>
+<text transform="matrix(1 0 0 1 523.8701 229.6665)" class="st0 st1 st2">ELEC</text>
+<text transform="matrix(1 0 0 1 327.8701 293.6665)" class="st0 st1 st2">ELEC</text>
+<text transform="matrix(1 0 0 1 438.8711 314.7246)" class="st0 st1 st3">2</text>
+<text transform="matrix(1 0 0 1 144.8711 314.7246)" class="st0 st1 st3">1</text>
+<text transform="matrix(1 0 0 1 227.8701 221.6665)" class="st0 st1 st2">RAT</text>
+<text transform="matrix(1 0 0 1 375.8701 175.5796)" class="st0 st1 st4">PTU</text>
+<text transform="matrix(1 0 0 1 274.8701 89.6665)" class="st0 st1 st2">BLUE</text>
+<text transform="matrix(1 0 0 1 275.001 30.8501)" class="st0 st1 st5">HYD</text>
+<text transform="matrix(1 0 0 1 74.8701 89.6665)" class="st0 st1 st2">GREEN</text>
+<text transform="matrix(1 0 0 1 79.8701 121.6665)" class="st6 st1 st2">3000</text>
+<text transform="matrix(1 0 0 1 272.8701 121.6665)" class="st6 st1 st2">3000</text>
+<text transform="matrix(1 0 0 1 464.8701 121.6665)" class="st6 st1 st2">3000</text>
+<text transform="matrix(1 0 0 1 187.8701 122.6665)" class="st7 st1 st2">PSI</text>
+<text transform="matrix(1 0 0 1 379.8701 122.6665)" class="st7 st1 st2">PSI</text>
+<line class="st8" x1="277.12" y1="34.7" x2="322" y2="34.7"/>
+<polygon class="st9" points="108.05,52 111.81,58.5 115.56,65 108.05,65 100.55,65 104.3,58.5 "/>
+<polygon class="st9" points="300.05,52.5 303.81,59 307.56,65.5 300.05,65.5 292.55,65.5 296.3,59 "/>
+<polygon class="st9" points="492.05,52.5 495.81,59 499.56,65.5 492.05,65.5 484.55,65.5 488.3,59 "/>
+<polygon class="st9" points="349.5,169 356,165.25 362.5,161.49 362.5,169 362.5,176.51 356,172.75 "/>
+<polygon class="st10" points="504,223 510.5,219.25 517,215.49 517,223 517,230.51 510.5,226.75 "/>
+<polygon class="st10" points="286,222 279.5,225.75 273,229.51 273,222 273,214.49 279.5,218.25 "/>
+<polygon class="st9" points="199,169 205.5,165.25 212,161.49 212,169 212,176.51 205.5,172.75 "/>
+<polygon class="st9" points="435,169 428.5,172.75 422,176.51 422,169 422,161.49 428.5,165.25 "/>
+<line class="st9" x1="108" y1="132" x2="108" y2="338.33"/>
+<rect x="91" y="253" class="st9" width="34" height="34"/>
+<polyline class="st9" points="108,499.67 98.67,499.67 98.67,402.67 108,402.67 108,372.67 "/>
+<polyline class="st9" points="99,393 108,402.67 114,403.33 114,428 108,428 108,403 "/>
+<line class="st11" x1="108" y1="475" x2="108" y2="429"/>
+<rect x="108" y="475" class="st12" width="6" height="25"/>
+<polyline class="st9" points="300.09,500.36 290.76,500.36 290.76,403.36 300.09,403.36 300,132 "/>
+<polyline class="st9" points="291.09,393.69 300.09,403.36 306.09,404.02 306.09,428.69 300.09,428.69 300.09,403.69 "/>
+<line class="st11" x1="300.09" y1="476" x2="300.09" y2="429.69"/>
+<rect x="300.09" y="475.69" class="st12" width="6" height="25"/>
+<polyline class="st9" points="492,499.83 482.67,499.83 482.67,402.83 492,402.83 492,372.83 "/>
+<polyline class="st9" points="483,393.17 492,402.83 498,403.5 498,428.17 492,428.17 492,403.17 "/>
+<line class="st11" x1="492" y1="475.17" x2="492" y2="429.17"/>
+<rect x="492" y="475.17" class="st12" width="6" height="25"/>
+<polygon class="st9" points="317,341 283,341 283,307 300,307 317,307 "/>
+<polygon class="st9" points="509,287 475,287 475,253 492,253 509,253 "/>
+<path class="st9" d="M300,132"/>
+<path class="st9" d="M212,169h69.67c0,0,2.33,19,18.33,19s18.67-19,18.67-19h30.83"/>
+<line class="st9" x1="491" y1="338" x2="491" y2="133.33"/>
+</svg>

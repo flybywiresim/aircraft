@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<WwiseDocument Type="WorkUnit" ID="{70F46671-A828-4029-A11A-36BB09D872B9}" SchemaVersion="97">
+	<Effects>
+		<WorkUnit Name="Factory iZotope Dynamics" ID="{70F46671-A828-4029-A11A-36BB09D872B9}" PersistMode="Standalone">
+			<ChildrenList>
+				<Effect Name="Chopper_Gate" ID="{497C8BAC-E7E1-43DF-B9EC-94FB03021432}" PluginName="iZotope Trash Dynamics Mono" CompanyID="259" PluginID="5" PluginType="3">
+					<PropertyList>
+						<Property Name="GateRatio" Type="Real32" Value="23"/>
+						<Property Name="GateRelease" Type="Real32" Value="80"/>
+						<Property Name="GateThreshold" Type="Real32" Value="-15"/>
+					</PropertyList>
+				</Effect>
+				<Effect Name="Bigger_Boom" ID="{4D23DF35-E058-4705-9D8D-2DBDC605B8B3}" PluginName="iZotope Trash Dynamics Mono" CompanyID="259" PluginID="5" PluginType="3">
+					<PropertyList>
+						<Property Name="CompressorAttack" Type="Real32" Value="50"/>
+						<Property Name="CompressorRatio" Type="Real32" Value="12"/>
+						<Property Name="CompressorRelease" Type="Real32" Value="225"/>
+						<Property Name="CompressorThreshold" Type="Real32" Value="-30"/>
+						<Property Name="Gain" Type="Real32" Value="12"/>
+						<Property Name="GateAttack" Type="Real32" Value="0"/>
+						<Property Name="GateRelease" Type="Real32" Value="0"/>
+					</PropertyList>
+				</Effect>
+				<Effect Name="No_Attack" ID="{914A06D9-46A4-443A-B0BE-7EC361A770FE}" PluginName="iZotope Trash Dynamics Mono" CompanyID="259" PluginID="5" PluginType="3">
+					<PropertyList>
+						<Property Name="CompressorAttack" Type="Real32" Value="0"/>
+						<Property Name="CompressorRatio" Type="Real32" Value="6"/>
+						<Property Name="CompressorRelease" Type="Real32" Value="225"/>
+						<Property Name="CompressorThreshold" Type="Real32" Value="-26"/>
+						<Property Name="Gain" Type="Real32" Value="10"/>
+						<Property Name="GateAttack" Type="Real32" Value="0"/>
+						<Property Name="GateRelease" Type="Real32" Value="0"/>
+					</PropertyList>
+				</Effect>
+				<Effect Name="Peak_Limiter" ID="{2F0E3F03-9305-479C-A4FE-E238AAEA2519}" PluginName="iZotope Trash Dynamics Mono" CompanyID="259" PluginID="5" PluginType="3">
+					<PropertyList>
+						<Property Name="CompressorAttack" Type="Real32" Value="0"/>
+						<Property Name="CompressorRatio" Type="Real32" Value="30"/>
+						<Property Name="CompressorRelease" Type="Real32" Value="175"/>
+						<Property Name="CompressorThreshold" Type="Real32" Value="-1"/>
+						<Property Name="GateAttack" Type="Real32" Value="0"/>
+						<Property Name="GateRelease" Type="Real32" Value="0"/>
+					</PropertyList>
+				</Effect>
+				<Effect Name="Squashed" ID="{EAB76B59-B682-4EF7-806D-54F972D7B8FF}" PluginName="iZotope Trash Dynamics Mono" CompanyID="259" PluginID="5" PluginType="3">
+					<PropertyList>
+						<Property Name="CompressorAttack" Type="Real32" Value="40"/>
+						<Property Name="CompressorRatio" Type="Real32" Value="24"/>
+						<Property Name="CompressorRelease" Type="Real32" Value="500"/>
+						<Property Name="CompressorThreshold" Type="Real32" Value="-28"/>
+						<Property Name="Gain" Type="Real32" Value="14"/>
+						<Property Name="GateAttack" Type="Real32" Value="0"/>
+						<Property Name="GateRelease" Type="Real32" Value="0"/>
+					</PropertyList>
+				</Effect>
+				<Effect Name="Light_Compression" ID="{FBC7EB53-C025-4756-8D44-0F901C5E095C}" PluginName="iZotope Trash Dynamics Mono" CompanyID="259" PluginID="5" PluginType="3">
+					<PropertyList>
+						<Property Name="CompressorAttack" Type="Real32" Value="55"/>
+						<Property Name="CompressorRatio" Type="Real32" Value="3"/>
+						<Property Name="CompressorRelease" Type="Real32" Value="325"/>
+						<Property Name="CompressorThreshold" Type="Real32" Value="-20"/>
+						<Property Name="Gain" Type="Real32" Value="5"/>
+						<Property Name="GateAttack" Type="Real32" Value="0"/>
+						<Property Name="GateRelease" Type="Real32" Value="0"/>
+					</PropertyList>
+				</Effect>
+				<Effect Name="Bus_Compressor" ID="{5AB0685A-E72E-4FF0-9169-E0FBC7240AAE}" PluginName="iZotope Trash Dynamics Mono" CompanyID="259" PluginID="5" PluginType="3">
+					<PropertyList>
+						<Property Name="CompressorAttack" Type="Real32" Value="185"/>
+						<Property Name="CompressorRatio" Type="Real32" Value="2"/>
+						<Property Name="CompressorRelease" Type="Real32" Value="480"/>
+						<Property Name="CompressorThreshold" Type="Real32" Value="-3"/>
+					</PropertyList>
+				</Effect>
+				<Effect Name="Transient_Snap" ID="{4D8E5463-BB0E-436B-9019-C78475730570}" PluginName="iZotope Trash Dynamics Mono" CompanyID="259" PluginID="5" PluginType="3">
+					<PropertyList>
+						<Property Name="CompressorAttack" Type="Real32" Value="8"/>
+						<Property Name="CompressorRatio" Type="Real32" Value="19"/>
+						<Property Name="CompressorRelease" Type="Real32" Value="225"/>
+						<Property Name="CompressorThreshold" Type="Real32" Value="-25"/>
+						<Property Name="Gain" Type="Real32" Value="6"/>
+					</PropertyList>
+				</Effect>
+				<Effect Name="Noise_Gate" ID="{1351BC85-A7E0-44B8-BF88-95980DEF7210}" PluginName="iZotope Trash Dynamics Mono" CompanyID="259" PluginID="5" PluginType="3"/>
+				<Effect Name="Minus_6dB_Limit" ID="{0981FCD6-5DEA-4586-9C62-E79CED4CEC71}" PluginName="iZotope Trash Dynamics Mono" CompanyID="259" PluginID="5" PluginType="3">
+					<PropertyList>
+						<Property Name="CompressorAttack" Type="Real32" Value="0"/>
+						<Property Name="CompressorRatio" Type="Real32" Value="30"/>
+						<Property Name="CompressorThreshold" Type="Real32" Value="-6"/>
+					</PropertyList>
+				</Effect>
+			</ChildrenList>
+		</WorkUnit>
+	</Effects>
+</WwiseDocument>

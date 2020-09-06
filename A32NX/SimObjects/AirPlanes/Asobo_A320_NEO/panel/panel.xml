@@ -1,0 +1,1023 @@
+<PlaneHTMLConfig>
+  
+  <SoundSourceNode>AS1000_MFD</SoundSourceNode>
+  
+  <Instrument>
+    <Name>A320_Neo_PFD</Name>
+    <SyntheticVision>True</SyntheticVision>
+    <Electric>
+		<Simvar name="CIRCUIT ON:52" unit="Boolean"/>
+    </Electric>
+  </Instrument>
+
+  <Instrument>
+    <Name>A320_Neo_Clock</Name>
+    <Electric>
+      <Simvar name="CIRCUIT ON:52" unit="Boolean"/>
+    </Electric>
+  </Instrument>
+
+  <Instrument>
+    <Name>A320_Neo_SAI</Name>
+    <Electric>
+      <Simvar name="CIRCUIT ON:52" unit="Boolean"/>
+    </Electric>
+  </Instrument>
+
+  <Instrument>
+    <Name>A320_Neo_MFD</Name>
+    <Electric>
+		<Simvar name="CIRCUIT ON:53" unit="Boolean"/>
+    </Electric>
+  </Instrument>
+  
+  <Instrument>
+    <Name>A320_Neo_EICAS_1</Name>
+    <Electric>
+		<Simvar name="CIRCUIT ON:54" unit="Boolean"/>
+    </Electric>
+  </Instrument>
+  
+  <Instrument>
+    <Name>A320_Neo_EICAS_2</Name>
+    <Electric>
+		<Simvar name="CIRCUIT ON:55" unit="Boolean"/>
+    </Electric>
+  </Instrument>
+  
+  <Instrument>
+    <Name>A320_Neo_CDU</Name>
+    <Electric>
+		<Simvar name="CIRCUIT ON:56" unit="Boolean"/>
+    </Electric>
+  </Instrument>
+  
+  <Instrument>
+    <Name>A320_Neo_FCU</Name>
+    <Electric>
+		<Simvar name="CIRCUIT ON:57" unit="Boolean"/>
+    </Electric>
+  </Instrument>
+
+  <Instrument>
+    <Name>A320_Neo_BRK</Name>
+    <Electric>
+      <Simvar name="CIRCUIT ON:52" unit="Boolean"/>
+    </Electric>
+  </Instrument>
+
+  <Instrument>
+    <Name>A320_Neo_BAT</Name>
+    <Electric>
+      <Simvar name="CIRCUIT ON:52" unit="Boolean"/>
+    </Electric>
+  </Instrument>
+
+  <Instrument>
+    <Name>A320_Neo_FDW</Name>
+    <Electric>
+      <Simvar name="CIRCUIT ON:52" unit="Boolean"/>
+    </Electric>
+  </Instrument>
+
+  <Instrument>
+    <Name>A320_Neo_RTPI</Name>
+    <Electric>
+      <Simvar name="CIRCUIT ON:52" unit="Boolean"/>
+    </Electric>
+  </Instrument>
+
+  <Instrument>
+    <Name>A320_Neo_ATC</Name>
+    <Electric>
+      <Simvar name="CIRCUIT ON:52" unit="Boolean"/>
+    </Electric>
+  </Instrument>
+
+	<!-- Annunciations -->
+
+	<Annunciations>
+		<Annunciation>
+			<Type>Caution</Type>
+			<Text></Text>
+			<Condition>
+				<Simvar name="STALL WARNING" unit="Boolean"/>
+			</Condition>
+		</Annunciation>
+		
+		<Annunciation>
+		  <Type>Warning</Type>
+		  <Text>FUEL OFF</Text>
+		  <Condition>
+			<Equal>
+			  <Simvar name="FUEL TANK SELECTOR:1" unit="number"/>
+			  <Constant>0</Constant>
+			</Equal>
+		  </Condition>
+		</Annunciation>
+
+		<Annunciation>
+		  <Type>Warning</Type>
+		  <Text>DOOR</Text>
+		  <Condition>
+			<Greater>
+			  <Simvar name="EXIT OPEN:0" unit="percent"/>
+			  <Constant>0</Constant>
+			</Greater>
+		  </Condition>
+		</Annunciation>
+
+		<Annunciation>
+		  <Type>Warning</Type>
+		  <Text>L/G GEAR NOT DOWN</Text>
+		  <Condition>
+			<StateMachine>
+				<State id="Under" value="0">
+					<Transition to="Over">
+						<GreaterEqual>
+							<Simvar name="PLANE ALT ABOVE GROUND" unit="feet"/>
+							<Constant>750</Constant>
+						</GreaterEqual>
+					</Transition>
+				</State>
+				<State id="Over" value="0">
+					<Transition to="Alerting">
+						<And>
+							<Lower>
+								<Simvar name="PLANE ALT ABOVE GROUND" unit="feet"/>
+								<Constant>750</Constant>
+							</Lower>
+							<Or>
+								<Lower>
+									<Simvar name="GEAR RIGHT POSITION" unit="Percent"/>
+									<Constant>100</Constant>
+								</Lower>
+								<Lower>
+									<Simvar name="GEAR CENTER POSITION" unit="Percent"/>
+									<Constant>100</Constant>
+								</Lower>
+								<Lower>
+									<Simvar name="GEAR LEFT POSITION" unit="Percent"/>
+									<Constant>100</Constant>
+								</Lower>
+							</Or>
+							<Or>
+								<GreaterEqual>
+									<Simvar name="FLAPS HANDLE INDEX" unit="number"/>
+									<Constant>3</Constant>
+								</GreaterEqual>
+								<LowerEqual>
+									<Simvar name="GENERAL ENG THROTTLE LEVER POSITION:1" unit="Percent"/>
+									<Constant>0</Constant>
+								</LowerEqual>
+							</Or>
+						</And>
+					</Transition>
+				</State>
+				<State id="Alerting" value="1">
+					<Transition to="Over">
+						<Or>
+							<GreaterEqual>
+								<Simvar name="PLANE ALT ABOVE GROUND" unit="feet"/>
+								<Constant>750</Constant>
+							</GreaterEqual>
+							<And>
+								<Equal>
+									<Simvar name="GEAR RIGHT POSITION" unit="Percent"/>
+									<Constant>100</Constant>
+								</Equal>
+								<Equal>
+									<Simvar name="GEAR CENTER POSITION" unit="Percent"/>
+									<Constant>100</Constant>
+								</Equal>
+								<Equal>
+									<Simvar name="GEAR LEFT POSITION" unit="Percent"/>
+									<Constant>100</Constant>
+								</Equal>
+							</And>
+						</Or>
+					</Transition>
+				</State>
+			</StateMachine>
+		  </Condition>
+		</Annunciation>
+
+		<Annunciation>
+			<Type>Advisory</Type>
+			<Text>IR IN ALIGN 1 MN</Text>
+			<Condition>
+				<And>
+					<Greater>
+						<Simvar name="L:A320_Neo_ADIRS_TIME" unit="Seconds"/>
+						<Constant>0</Constant>
+					</Greater>
+					<Lower>
+						<Simvar name="L:A320_Neo_ADIRS_TIME" unit="Seconds"/>
+						<Constant>60</Constant>
+					</Lower>
+				</And>
+			</Condition>
+		</Annunciation>
+
+		<Annunciation>
+			<Type>Advisory</Type>
+			<Text>IR IN ALIGN 2 MN</Text>
+			<Condition>
+				<And>
+					<Greater>
+						<Simvar name="L:A320_Neo_ADIRS_TIME" unit="Seconds"/>
+						<Constant>60</Constant>
+					</Greater>
+					<Lower>
+						<Simvar name="L:A320_Neo_ADIRS_TIME" unit="Seconds"/>
+						<Constant>120</Constant>
+					</Lower>
+				</And>
+			</Condition>
+		</Annunciation>
+
+		<Annunciation>
+			<Type>Advisory</Type>
+			<Text>IR IN ALIGN 3 MN</Text>
+			<Condition>
+				<And>
+					<Greater>
+						<Simvar name="L:A320_Neo_ADIRS_TIME" unit="Seconds"/>
+						<Constant>120</Constant>
+					</Greater>
+					<Lower>
+						<Simvar name="L:A320_Neo_ADIRS_TIME" unit="Seconds"/>
+						<Constant>180</Constant>
+					</Lower>
+				</And>
+			</Condition>
+		</Annunciation>
+
+		<Annunciation>
+			<Type>Advisory</Type>
+			<Text>IR IN ALIGN 4 MN</Text>
+			<Condition>
+				<And>
+					<Greater>
+						<Simvar name="L:A320_Neo_ADIRS_TIME" unit="Seconds"/>
+						<Constant>180</Constant>
+					</Greater>
+					<Lower>
+						<Simvar name="L:A320_Neo_ADIRS_TIME" unit="Seconds"/>
+						<Constant>240</Constant>
+					</Lower>
+				</And>
+			</Condition>
+		</Annunciation>
+
+		<Annunciation>
+			<Type>Advisory</Type>
+			<Text>IR IN ALIGN 5 MN</Text>
+			<Condition>
+				<And>
+					<Greater>
+						<Simvar name="L:A320_Neo_ADIRS_TIME" unit="Seconds"/>
+						<Constant>240</Constant>
+					</Greater>
+					<Lower>
+						<Simvar name="L:A320_Neo_ADIRS_TIME" unit="Seconds"/>
+						<Constant>300</Constant>
+					</Lower>
+				</And>
+			</Condition>
+		</Annunciation>
+
+		<Annunciation>
+			<Type>Advisory</Type>
+			<Text>IR IN ALIGN 6 MN</Text>
+			<Condition>
+				<And>
+					<Greater>
+						<Simvar name="L:A320_Neo_ADIRS_TIME" unit="Seconds"/>
+						<Constant>300</Constant>
+					</Greater>
+					<Lower>
+						<Simvar name="L:A320_Neo_ADIRS_TIME" unit="Seconds"/>
+						<Constant>360</Constant>
+					</Lower>
+				</And>
+			</Condition>
+		</Annunciation>
+
+		<Annunciation>
+			<Type>Advisory</Type>
+			<Text>IR IN ALIGN 7 MN</Text>
+			<Condition>
+				<And>
+					<Greater>
+						<Simvar name="L:A320_Neo_ADIRS_TIME" unit="Seconds"/>
+						<Constant>360</Constant>
+					</Greater>
+					<Lower>
+						<Simvar name="L:A320_Neo_ADIRS_TIME" unit="Seconds"/>
+						<Constant>420</Constant>
+					</Lower>
+				</And>
+			</Condition>
+		</Annunciation>
+
+		<Annunciation>
+			<Type>Advisory</Type>
+			<Text>IR IN ALIGN 8 MN</Text>
+			<Condition>
+				<And>
+					<Greater>
+						<Simvar name="L:A320_Neo_ADIRS_TIME" unit="Seconds"/>
+						<Constant>420</Constant>
+					</Greater>
+					<Lower>
+						<Simvar name="L:A320_Neo_ADIRS_TIME" unit="Seconds"/>
+						<Constant>480</Constant>
+					</Lower>
+				</And>
+			</Condition>
+		</Annunciation>
+
+		<Annunciation>
+			<Type>Advisory</Type>
+			<Text>IR IN ALIGN 9 MN</Text>
+			<Condition>
+				<And>
+					<Greater>
+						<Simvar name="L:A320_Neo_ADIRS_TIME" unit="Seconds"/>
+						<Constant>480</Constant>
+					</Greater>
+					<Lower>
+						<Simvar name="L:A320_Neo_ADIRS_TIME" unit="Seconds"/>
+						<Constant>540</Constant>
+					</Lower>
+				</And>
+			</Condition>
+		</Annunciation>
+
+		<Annunciation>
+			<Type>Advisory</Type>
+			<Text>IR IN ALIGN 10 MN</Text>
+			<Condition>
+				<And>
+					<Greater>
+						<Simvar name="L:A320_Neo_ADIRS_TIME" unit="Seconds"/>
+						<Constant>540</Constant>
+					</Greater>
+					<Lower>
+						<Simvar name="L:A320_Neo_ADIRS_TIME" unit="Seconds"/>
+						<Constant>600</Constant>
+					</Lower>
+				</And>
+			</Condition>
+		</Annunciation>
+
+		<Annunciation>
+			<Type>Advisory</Type>
+			<Text>IR IN ALIGN 11 MN</Text>
+			<Condition>
+				<And>
+					<Greater>
+						<Simvar name="L:A320_Neo_ADIRS_TIME" unit="Seconds"/>
+						<Constant>600</Constant>
+					</Greater>
+					<Lower>
+						<Simvar name="L:A320_Neo_ADIRS_TIME" unit="Seconds"/>
+						<Constant>660</Constant>
+					</Lower>
+				</And>
+			</Condition>
+		</Annunciation>
+
+		<Annunciation>
+			<Type>Advisory</Type>
+			<Text>IR IN ALIGN 12 MN</Text>
+			<Condition>
+				<And>
+					<Greater>
+						<Simvar name="L:A320_Neo_ADIRS_TIME" unit="Seconds"/>
+						<Constant>660</Constant>
+					</Greater>
+					<Lower>
+						<Simvar name="L:A320_Neo_ADIRS_TIME" unit="Seconds"/>
+						<Constant>720</Constant>
+					</Lower>
+				</And>
+			</Condition>
+		</Annunciation>
+
+		<Annunciation>
+			<Type>Advisory</Type>
+			<Text>IR IN ALIGN 13 MN</Text>
+			<Condition>
+				<And>
+					<Greater>
+						<Simvar name="L:A320_Neo_ADIRS_TIME" unit="Seconds"/>
+						<Constant>720</Constant>
+					</Greater>
+					<Lower>
+						<Simvar name="L:A320_Neo_ADIRS_TIME" unit="Seconds"/>
+						<Constant>780</Constant>
+					</Lower>
+				</And>
+			</Condition>
+		</Annunciation>
+
+		<Annunciation>
+			<Type>Advisory</Type>
+			<Text>IR IN ALIGN 14 MN</Text>
+			<Condition>
+				<And>
+					<Greater>
+						<Simvar name="L:A320_Neo_ADIRS_TIME" unit="Seconds"/>
+						<Constant>840</Constant>
+					</Greater>
+					<Lower>
+						<Simvar name="L:A320_Neo_ADIRS_TIME" unit="Seconds"/>
+						<Constant>900</Constant>
+					</Lower>
+				</And>
+			</Condition>
+		</Annunciation>
+
+		<Annunciation>
+			<Type>Advisory</Type>
+			<Text>IR IN ALIGN 15 MN</Text>
+			<Condition>
+				<And>
+					<Greater>
+						<Simvar name="L:A320_Neo_ADIRS_TIME" unit="Seconds"/>
+						<Constant>900</Constant>
+					</Greater>
+					<Lower>
+						<Simvar name="L:A320_Neo_ADIRS_TIME" unit="Seconds"/>
+						<Constant>960</Constant>
+					</Lower>
+				</And>
+			</Condition>
+		</Annunciation>
+
+		<Annunciation>
+			<Type>Advisory</Type>
+			<Text>IR IN ALIGN &gt; 15 MN</Text>
+			<Condition>
+				<And>
+					<Greater>
+						<Simvar name="L:A320_Neo_ADIRS_TIME" unit="Seconds"/>
+						<Constant>960</Constant>
+					</Greater>
+				</And>
+			</Condition>
+		</Annunciation>
+
+		<Annunciation>
+		  <Type>Advisory</Type>
+		  <Text>SEAT BELTS</Text>
+		  <Condition>
+			<Simvar name="L:XMLVAR_SWITCH_OVHD_INTLT_SEATBELT_Position" unit="Bool"/>
+		  </Condition>
+		</Annunciation>
+
+		<Annunciation>
+		  <Type>Advisory</Type>
+		  <Text>NO SMOKING</Text>
+		  <Condition>
+			<Simvar name="L:A32NX_NO_SMOKING_MEMO" unit="Bool"/>
+		  </Condition>
+		</Annunciation>
+
+		<Annunciation>
+		  <Type>Advisory</Type>
+		  <Text>PARK BRAKE</Text>
+		  <Condition>
+			<Simvar name="BRAKE PARKING INDICATOR" unit="Bool"/>
+		  </Condition>
+		</Annunciation>
+
+		<Annunciation>
+		  <Type>Advisory</Type>
+		  <Text>GND SPLRS ARMED</Text>
+		  <Condition>
+			<Simvar name="SPOILERS ARMED" unit="Bool"/>
+		  </Condition>
+		</Annunciation>
+
+		<Annunciation>
+		  <Type>Warning</Type>
+		  <Text>FIRE</Text>
+		  <Condition>
+			<Simvar name="ENG ON FIRE:1" unit="Bool"/>
+		  </Condition>
+		</Annunciation>
+
+		<Annunciation>
+		  <Type>Caution</Type>
+		  <Text>FUEL LOW </Text>
+		  <Condition Suffix="L-R">
+			<And>
+			  <Lower>
+				<Simvar name="FUEL TANK LEFT MAIN QUANTITY" unit="gallon"/>
+				<Constant>9</Constant>
+			  </Lower>
+			  <Lower>
+				<Simvar name="FUEL TANK RIGHT MAIN QUANTITY" unit="gallon"/>
+				<Constant>9</Constant>
+			  </Lower>
+			</And>
+		  </Condition>
+		  <Condition Suffix="L">
+			<Lower>
+			  <Simvar name="FUEL TANK LEFT MAIN QUANTITY" unit="gallon"/>
+			  <Constant>9</Constant>
+			</Lower>
+		  </Condition>
+		  <Condition Suffix="R">
+			<Lower>
+			  <Simvar name="FUEL TANK RIGHT MAIN QUANTITY" unit="gallon"/>
+			  <Constant>9</Constant>
+			</Lower>
+		  </Condition>
+		</Annunciation>
+
+		<Annunciation>
+		  <Type>Caution</Type>
+		  <Text>FUEL IMBALANCE</Text>
+		  <Condition>
+			<Inequal tolerance="700">
+				<Simvar name="FUEL TANK LEFT MAIN QUANTITY" unit="gallon"/>
+				<Simvar name="FUEL TANK RIGHT MAIN QUANTITY" unit="gallon"/>
+			</Inequal>
+		  </Condition>
+		</Annunciation>
+
+		<Annunciation>
+		  <Type>Warning</Type>
+		  <Text>OVERSPEED</Text>
+		  <Condition>
+			<Simvar name="OVERSPEED WARNING" unit="bool"/>
+		  </Condition>
+		</Annunciation>
+	</Annunciations>
+  
+	<!-- Voices Alerts -->
+  
+	<VoicesAlerts>
+		<Alert>
+			<Type>SoundOnly</Type>
+			<SoundEvent>aural_5ft</SoundEvent>
+			<Condition>
+				<StateMachine>
+					<State id="Under" value="0">
+						<Transition to="Over">
+							<GreaterEqual>
+								<Simvar name="PLANE ALT ABOVE GROUND MINUS CG" unit="feet"/>
+								<Constant>55</Constant>
+							</GreaterEqual>
+						</Transition>
+					</State>
+					<State id="Over" value="0">
+						<Transition to="Alerting">
+							<LowerEqual>
+								<Simvar name="PLANE ALT ABOVE GROUND MINUS CG" unit="feet"/>
+								<Constant>5</Constant>
+							</LowerEqual>
+						</Transition>
+					</State>
+					<State id="Alerting" value="1">
+						<Transition to="Under">
+							<Constant>1</Constant>
+						</Transition>
+					</State>
+				</StateMachine>
+			</Condition>
+		</Alert>
+		
+		<Alert>
+			<Type>SoundOnly</Type>
+			<SoundEvent>aural_retard</SoundEvent>
+			<Condition>
+				<StateMachine>
+					<State id="Under" value="0">
+						<Transition to="Over">
+							<GreaterEqual>
+								<Simvar name="PLANE ALT ABOVE GROUND MINUS CG" unit="feet"/>
+								<Constant>60</Constant>
+							</GreaterEqual>
+						</Transition>
+					</State>
+					<State id="Over" value="0">
+						<Transition to="Alerting">
+							<LowerEqual>
+								<Simvar name="PLANE ALT ABOVE GROUND MINUS CG" unit="feet"/>
+								<Constant>10</Constant>
+							</LowerEqual>
+						</Transition>
+					</State>
+					<State id="Alerting" value="1">
+						<Transition to="Under">
+							<Constant>1</Constant>
+						</Transition>
+					</State>
+				</StateMachine>
+			</Condition>
+		</Alert>
+		
+		<Alert>
+			<Type>SoundOnly</Type>
+			<SoundEvent>aural_20ft</SoundEvent>
+			<Condition>
+				<StateMachine>
+					<State id="Under" value="0">
+						<Transition to="Over">
+							<GreaterEqual>
+								<Simvar name="PLANE ALT ABOVE GROUND MINUS CG" unit="feet"/>
+								<Constant>70</Constant>
+							</GreaterEqual>
+						</Transition>
+					</State>
+					<State id="Over" value="0">
+						<Transition to="Alerting">
+							<LowerEqual>
+								<Simvar name="PLANE ALT ABOVE GROUND MINUS CG" unit="feet"/>
+								<Constant>20</Constant>
+							</LowerEqual>
+						</Transition>
+					</State>
+					<State id="Alerting" value="1">
+						<Transition to="Under">
+							<Constant>1</Constant>
+						</Transition>
+					</State>
+				</StateMachine>
+			</Condition>
+		</Alert>
+		
+		<Alert>
+			<Type>SoundOnly</Type>
+			<SoundEvent>aural_30ft</SoundEvent>
+			<Condition>
+				<StateMachine>
+					<State id="Under" value="0">
+						<Transition to="Over">
+							<GreaterEqual>
+								<Simvar name="PLANE ALT ABOVE GROUND MINUS CG" unit="feet"/>
+								<Constant>80</Constant>
+							</GreaterEqual>
+						</Transition>
+					</State>
+					<State id="Over" value="0">
+						<Transition to="Alerting">
+							<LowerEqual>
+								<Simvar name="PLANE ALT ABOVE GROUND MINUS CG" unit="feet"/>
+								<Constant>30</Constant>
+							</LowerEqual>
+						</Transition>
+					</State>
+					<State id="Alerting" value="1">
+						<Transition to="Under">
+							<Constant>1</Constant>
+						</Transition>
+					</State>
+				</StateMachine>
+			</Condition>
+		</Alert>
+		
+		<Alert>
+			<Type>SoundOnly</Type>
+			<SoundEvent>aural_40ft</SoundEvent>
+			<Condition>
+				<StateMachine>
+					<State id="Under" value="0">
+						<Transition to="Over">
+							<GreaterEqual>
+								<Simvar name="PLANE ALT ABOVE GROUND MINUS CG" unit="feet"/>
+								<Constant>90</Constant>
+							</GreaterEqual>
+						</Transition>
+					</State>
+					<State id="Over" value="0">
+						<Transition to="Alerting">
+							<LowerEqual>
+								<Simvar name="PLANE ALT ABOVE GROUND MINUS CG" unit="feet"/>
+								<Constant>40</Constant>
+							</LowerEqual>
+						</Transition>
+					</State>
+					<State id="Alerting" value="1">
+						<Transition to="Under">
+							<Constant>1</Constant>
+						</Transition>
+					</State>
+				</StateMachine>
+			</Condition>
+		</Alert>
+		
+		<Alert>
+			<Type>SoundOnly</Type>
+			<SoundEvent>aural_50ft</SoundEvent>
+			<Condition>
+				<StateMachine>
+					<State id="Under" value="0">
+						<Transition to="Over">
+							<GreaterEqual>
+								<Simvar name="PLANE ALT ABOVE GROUND MINUS CG" unit="feet"/>
+								<Constant>100</Constant>
+							</GreaterEqual>
+						</Transition>
+					</State>
+					<State id="Over" value="0">
+						<Transition to="Alerting">
+							<LowerEqual>
+								<Simvar name="PLANE ALT ABOVE GROUND MINUS CG" unit="feet"/>
+								<Constant>50</Constant>
+							</LowerEqual>
+						</Transition>
+					</State>
+					<State id="Alerting" value="1">
+						<Transition to="Under">
+							<Constant>1</Constant>
+						</Transition>
+					</State>
+				</StateMachine>
+			</Condition>
+		</Alert>
+		
+		<Alert>
+			<Type>SoundOnly</Type>
+			<SoundEvent>aural_60ft</SoundEvent>
+			<Condition>
+				<StateMachine>
+					<State id="Under" value="0">
+						<Transition to="Over">
+							<GreaterEqual>
+								<Simvar name="PLANE ALT ABOVE GROUND MINUS CG" unit="feet"/>
+								<Constant>110</Constant>
+							</GreaterEqual>
+						</Transition>
+					</State>
+					<State id="Over" value="0">
+						<Transition to="Alerting">
+							<LowerEqual>
+								<Simvar name="PLANE ALT ABOVE GROUND MINUS CG" unit="feet"/>
+								<Constant>60</Constant>
+							</LowerEqual>
+						</Transition>
+					</State>
+					<State id="Alerting" value="1">
+						<Transition to="Under">
+							<Constant>1</Constant>
+						</Transition>
+					</State>
+				</StateMachine>
+			</Condition>
+		</Alert>
+		
+		<Alert>
+			<Type>SoundOnly</Type>
+			<SoundEvent>aural_70ft</SoundEvent>
+			<Condition>
+				<StateMachine>
+					<State id="Under" value="0">
+						<Transition to="Over">
+							<GreaterEqual>
+								<Simvar name="PLANE ALT ABOVE GROUND MINUS CG" unit="feet"/>
+								<Constant>120</Constant>
+							</GreaterEqual>
+						</Transition>
+					</State>
+					<State id="Over" value="0">
+						<Transition to="Alerting">
+							<LowerEqual>
+								<Simvar name="PLANE ALT ABOVE GROUND MINUS CG" unit="feet"/>
+								<Constant>70</Constant>
+							</LowerEqual>
+						</Transition>
+					</State>
+					<State id="Alerting" value="1">
+						<Transition to="Under">
+							<Constant>1</Constant>
+						</Transition>
+					</State>
+				</StateMachine>
+			</Condition>
+		</Alert>
+		
+		<Alert>
+			<Type>SoundOnly</Type>
+			<SoundEvent>aural_100ft</SoundEvent>
+			<Condition>
+				<StateMachine>
+					<State id="Under" value="0">
+						<Transition to="Over">
+							<GreaterEqual>
+								<Simvar name="PLANE ALT ABOVE GROUND MINUS CG" unit="feet"/>
+								<Constant>150</Constant>
+							</GreaterEqual>
+						</Transition>
+					</State>
+					<State id="Over" value="0">
+						<Transition to="Alerting">
+							<LowerEqual>
+								<Simvar name="PLANE ALT ABOVE GROUND MINUS CG" unit="feet"/>
+								<Constant>100</Constant>
+							</LowerEqual>
+						</Transition>
+					</State>
+					<State id="Alerting" value="1">
+						<Transition to="Under">
+							<Constant>1</Constant>
+						</Transition>
+					</State>
+				</StateMachine>
+			</Condition>
+		</Alert>
+		
+		<Alert>
+			<Type>SoundOnly</Type>
+			<SoundEvent>aural_200ft</SoundEvent>
+			<Condition>
+				<StateMachine>
+					<State id="Under" value="0">
+						<Transition to="Over">
+							<GreaterEqual>
+								<Simvar name="PLANE ALT ABOVE GROUND MINUS CG" unit="feet"/>
+								<Constant>250</Constant>
+							</GreaterEqual>
+						</Transition>
+					</State>
+					<State id="Over" value="0">
+						<Transition to="Alerting">
+							<LowerEqual>
+								<Simvar name="PLANE ALT ABOVE GROUND MINUS CG" unit="feet"/>
+								<Constant>200</Constant>
+							</LowerEqual>
+						</Transition>
+					</State>
+					<State id="Alerting" value="1">
+						<Transition to="Under">
+							<Constant>1</Constant>
+						</Transition>
+					</State>
+				</StateMachine>
+			</Condition>
+		</Alert>
+		
+		<Alert>
+			<Type>SoundOnly</Type>
+			<SoundEvent>aural_300ft</SoundEvent>
+			<Condition>
+				<StateMachine>
+					<State id="Under" value="0">
+						<Transition to="Over">
+							<GreaterEqual>
+								<Simvar name="PLANE ALT ABOVE GROUND MINUS CG" unit="feet"/>
+								<Constant>350</Constant>
+							</GreaterEqual>
+						</Transition>
+					</State>
+					<State id="Over" value="0">
+						<Transition to="Alerting">
+							<LowerEqual>
+								<Simvar name="PLANE ALT ABOVE GROUND MINUS CG" unit="feet"/>
+								<Constant>300</Constant>
+							</LowerEqual>
+						</Transition>
+					</State>
+					<State id="Alerting" value="1">
+						<Transition to="Under">
+							<Constant>1</Constant>
+						</Transition>
+					</State>
+				</StateMachine>
+			</Condition>
+		</Alert>
+		
+		<Alert>
+			<Type>SoundOnly</Type>
+			<SoundEvent>aural_400ft</SoundEvent>
+			<Condition>
+				<StateMachine>
+					<State id="Under" value="0">
+						<Transition to="Over">
+							<GreaterEqual>
+								<Simvar name="PLANE ALT ABOVE GROUND MINUS CG" unit="feet"/>
+								<Constant>450</Constant>
+							</GreaterEqual>
+						</Transition>
+					</State>
+					<State id="Over" value="0">
+						<Transition to="Alerting">
+							<LowerEqual>
+								<Simvar name="PLANE ALT ABOVE GROUND MINUS CG" unit="feet"/>
+								<Constant>400</Constant>
+							</LowerEqual>
+						</Transition>
+					</State>
+					<State id="Alerting" value="1">
+						<Transition to="Under">
+							<Constant>1</Constant>
+						</Transition>
+					</State>
+				</StateMachine>
+			</Condition>
+		</Alert>
+		
+		<Alert>
+			<Type>SoundOnly</Type>
+			<SoundEvent>aural_500ft</SoundEvent>
+			<Condition>
+				<StateMachine>
+					<State id="Under" value="0">
+						<Transition to="Over">
+							<GreaterEqual>
+								<Simvar name="PLANE ALT ABOVE GROUND MINUS CG" unit="feet"/>
+								<Constant>550</Constant>
+							</GreaterEqual>
+						</Transition>
+					</State>
+					<State id="Over" value="0">
+						<Transition to="Alerting">
+							<LowerEqual>
+								<Simvar name="PLANE ALT ABOVE GROUND MINUS CG" unit="feet"/>
+								<Constant>500</Constant>
+							</LowerEqual>
+						</Transition>
+					</State>
+					<State id="Alerting" value="1">
+						<Transition to="Under">
+							<Constant>1</Constant>
+						</Transition>
+					</State>
+				</StateMachine>
+			</Condition>
+		</Alert>
+		
+		<Alert>
+			<Type>SoundOnly</Type>
+			<SoundEvent>aural_1000ft</SoundEvent>
+			<Condition>
+				<StateMachine>
+					<State id="Under" value="0">
+						<Transition to="Over">
+							<GreaterEqual>
+								<Simvar name="PLANE ALT ABOVE GROUND MINUS CG" unit="feet"/>
+								<Constant>1050</Constant>
+							</GreaterEqual>
+						</Transition>
+					</State>
+					<State id="Over" value="0">
+						<Transition to="Alerting">
+							<LowerEqual>
+								<Simvar name="PLANE ALT ABOVE GROUND MINUS CG" unit="feet"/>
+								<Constant>1000</Constant>
+							</LowerEqual>
+						</Transition>
+					</State>
+					<State id="Alerting" value="1">
+						<Transition to="Under">
+							<Constant>1</Constant>
+						</Transition>
+					</State>
+				</StateMachine>
+			</Condition>
+		</Alert>
+		
+		<Alert>
+			<Type>SoundOnly</Type>
+			<SoundEvent>aural_2500ft</SoundEvent>
+			<Condition>
+				<StateMachine>
+					<State id="Under" value="0">
+						<Transition to="Over">
+							<GreaterEqual>
+								<Simvar name="PLANE ALT ABOVE GROUND MINUS CG" unit="feet"/>
+								<Constant>2550</Constant>
+							</GreaterEqual>
+						</Transition>
+					</State>
+					<State id="Over" value="0">
+						<Transition to="Alerting">
+							<LowerEqual>
+								<Simvar name="PLANE ALT ABOVE GROUND MINUS CG" unit="feet"/>
+								<Constant>2500</Constant>
+							</LowerEqual>
+						</Transition>
+					</State>
+					<State id="Alerting" value="1">
+						<Transition to="Under">
+							<Constant>1</Constant>
+						</Transition>
+					</State>
+				</StateMachine>
+			</Condition>
+		</Alert>
+		
+		<Alert>
+			<Type>Warning</Type>
+			<SoundEvent>aural_stall</SoundEvent>
+			<Condition>
+				<Simvar name="STALL WARNING" unit="Bool"/>
+			</Condition>
+		</Alert>
+	</VoicesAlerts>
+</PlaneHTMLConfig>
