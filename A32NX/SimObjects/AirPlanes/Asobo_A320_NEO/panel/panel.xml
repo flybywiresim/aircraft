@@ -120,16 +120,10 @@
 		  <Type>Warning</Type>
 		  <Text>DOOR</Text>
 		  <Condition>
-		  	<And>
-				<Greater>
-				<Simvar name="EXIT OPEN:0" unit="percent"/>
-				<Constant>0</Constant>
-				</Greater>
-				<Or>
-					<Simvar name="ENG COMBUSTION:1" unit="Boolean"/>
-					<Simvar name="ENG COMBUSTION:2" unit="Boolean"/>
-				</Or>
-			</And>
+			<Greater>
+			  <Simvar name="EXIT OPEN:0" unit="percent"/>
+			  <Constant>0</Constant>
+			</Greater>
 		  </Condition>
 		</Annunciation>
 
