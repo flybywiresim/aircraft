@@ -1,9 +1,6 @@
 # Welcome
 Welcome to the A32NX project repository. Thank you for your interest in contributing to the project. Full details and guidelines on how to ensure this project is managed well are included below.
 
-# Contributor license agreement
-By submitting code as an individual you agree that FlyByWire can use your amendments, fixes, patches, changes, modifications, submissions and creations in the production of the A32NX and that the ownership of your submissions transfers to FlyByWire in their entirety.
-
 # Helping others
 Please help other contributors to the project wherever you can, as people all start somewhere. If you require assistance or wish to provide assistance you can ask/answer questions on the #dev-support channel on discord.
 
