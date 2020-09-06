@@ -1127,8 +1127,7 @@ var A320_Neo_UpperECAM;
             const activeFailures = this.getActiveFailures();
             for (const i in activeFailures) {
                 const category = activeFailures[i];
-                for (var n = 0; n < category.messages.length; n++) {
-                    const failure = category.messages[n];
+                for (const failure of category.messages) {
                     this.addLine("fail-"+failure.level, category.name, failure.message, failure.action);
                     if (failure.actions != null) {
                         for (const action of failure.actions) {
@@ -1212,7 +1211,7 @@ var A320_Neo_UpperECAM;
         }
 
         getActiveMessages() {
-            var output = [];
+            const output = [];
             for (const message of this.messages.normal) {
                 if (message.isActive()) output.push(message);
             }
@@ -1221,7 +1220,7 @@ var A320_Neo_UpperECAM;
 
         addDiv() {
             if (this.divMain != null) {
-                var newDiv = document.createElement("div");
+                const newDiv = document.createElement("div");
                 this.allDivs.push(newDiv);
                 this.divMain.appendChild(newDiv);
                 return newDiv;
@@ -1271,18 +1270,18 @@ var A320_Neo_UpperECAM;
             }
         }
         update() {
-            for (let item of this.items) {
+            for (const item of this.items) {
                 this.setCompleted(item, item.isCompleted());
             }
         }
         getNextAvailableDiv() {
-            for (var i = 0; i < this.allDivs.length; ++i) {
-                if (this.allDivs[i].textContent.length == 0) {
-                    return this.allDivs[i];
+            for (const div of this.allDivs) {
+                if (div.textContent.length == 0) {
+                    return div;
                 }
             }
             if (this.divMain != null) {
-                var newDiv = document.createElement("div");
+                const newDiv = document.createElement("div");
                 this.allDivs.push(newDiv);
                 this.divMain.appendChild(newDiv);
                 return newDiv;
@@ -1296,22 +1295,22 @@ var A320_Neo_UpperECAM;
          * @param {boolean} _first Whether this is the first item
          */
         addItem(_item, _first) {
-            var div = this.getNextAvailableDiv();
+            const div = this.getNextAvailableDiv();
             if (div != null) {
                 if (_first) {
-                    var title = document.createElement("span");
+                    const title = document.createElement("span");
                     title.className = "Underline";
                     title.textContent = this.title;
                     div.appendChild(title);
                 }
                 
                 //Item name
-                var itemName = document.createElement("span");
+                const itemName = document.createElement("span");
                 itemName.innerHTML = _first ? " "+_item.name : "&nbsp;&nbsp;&nbsp;&nbsp;"+_item.name;
                 div.appendChild(itemName);
 
                 //Action
-                var action = document.createElement("span");
+                const action = document.createElement("span");
                 action.className = "Action";
                 var actionText = _item.action;
                 for (var i = 0; i < (19 - _item.name.length - _item.action.length); i++) {
@@ -1321,7 +1320,7 @@ var A320_Neo_UpperECAM;
                 div.appendChild(action);
 
                 //Completed
-                var completed = document.createElement("span");
+                const completed = document.createElement("span");
                 completed.className = "Completed";
                 completed.textContent = " "+_item.completed;
                 div.appendChild(completed);
@@ -1336,9 +1335,9 @@ var A320_Neo_UpperECAM;
          * @param {boolean} _completed 
          */
         setCompleted(_item, _completed) {
-            for (let div of this.allDivs) {
+            for (const div of this.allDivs) {
                 if (div.id == _item.id) {
-                    for (let child of div.children) {
+                    for (const child of div.children) {
                         if (child.className == "Action") child.style.display = _completed ? "none" : "inline";
                         if (child.className == "Completed") child.style.display = _completed ? "inline" : "none";
                     }
@@ -1348,7 +1347,7 @@ var A320_Neo_UpperECAM;
         }
 
         update() {
-            for (let item of this.items) {
+            for (const item of this.items) {
                 this.setCompleted(item, item.isCompleted());
             }
         }
