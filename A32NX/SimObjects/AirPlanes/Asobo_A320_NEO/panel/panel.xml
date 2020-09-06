@@ -97,156 +97,22 @@
 	<!-- Annunciations -->
 
 	<Annunciations>
-		<Annunciation>
-			<Type>Caution</Type>
-			<Text></Text>
-			<Condition>
-				<Simvar name="STALL WARNING" unit="Boolean"/>
-			</Condition>
-		</Annunciation>
-		
-		<Annunciation>
-		  <Type>Warning</Type>
-		  <Text>FUEL OFF</Text>
-		  <Condition>
-			<Equal>
-			  <Simvar name="FUEL TANK SELECTOR:1" unit="number"/>
-			  <Constant>0</Constant>
-			</Equal>
-		  </Condition>
-		</Annunciation>
 
 		<Annunciation>
 		  <Type>Warning</Type>
-		  <Text>L/G GEAR NOT DOWN</Text>
+		  <Text>MASTER WARNING</Text>
 		  <Condition>
-			<StateMachine>
-				<State id="Under" value="0">
-					<Transition to="Over">
-						<GreaterEqual>
-							<Simvar name="PLANE ALT ABOVE GROUND" unit="feet"/>
-							<Constant>750</Constant>
-						</GreaterEqual>
-					</Transition>
-				</State>
-				<State id="Over" value="0">
-					<Transition to="Alerting">
-						<And>
-							<Lower>
-								<Simvar name="PLANE ALT ABOVE GROUND" unit="feet"/>
-								<Constant>750</Constant>
-							</Lower>
-							<Or>
-								<Lower>
-									<Simvar name="GEAR RIGHT POSITION" unit="Percent"/>
-									<Constant>100</Constant>
-								</Lower>
-								<Lower>
-									<Simvar name="GEAR CENTER POSITION" unit="Percent"/>
-									<Constant>100</Constant>
-								</Lower>
-								<Lower>
-									<Simvar name="GEAR LEFT POSITION" unit="Percent"/>
-									<Constant>100</Constant>
-								</Lower>
-							</Or>
-							<Or>
-								<GreaterEqual>
-									<Simvar name="FLAPS HANDLE INDEX" unit="number"/>
-									<Constant>3</Constant>
-								</GreaterEqual>
-								<LowerEqual>
-									<Simvar name="GENERAL ENG THROTTLE LEVER POSITION:1" unit="Percent"/>
-									<Constant>0</Constant>
-								</LowerEqual>
-							</Or>
-						</And>
-					</Transition>
-				</State>
-				<State id="Alerting" value="1">
-					<Transition to="Over">
-						<Or>
-							<GreaterEqual>
-								<Simvar name="PLANE ALT ABOVE GROUND" unit="feet"/>
-								<Constant>750</Constant>
-							</GreaterEqual>
-							<And>
-								<Equal>
-									<Simvar name="GEAR RIGHT POSITION" unit="Percent"/>
-									<Constant>100</Constant>
-								</Equal>
-								<Equal>
-									<Simvar name="GEAR CENTER POSITION" unit="Percent"/>
-									<Constant>100</Constant>
-								</Equal>
-								<Equal>
-									<Simvar name="GEAR LEFT POSITION" unit="Percent"/>
-									<Constant>100</Constant>
-								</Equal>
-							</And>
-						</Or>
-					</Transition>
-				</State>
-			</StateMachine>
-		  </Condition>
-		</Annunciation>
-
-		<Annunciation>
-		  <Type>Warning</Type>
-		  <Text>FIRE</Text>
-		  <Condition>
-			<Simvar name="ENG ON FIRE:1" unit="Bool"/>
+			<Simvar name="L:A32NX_MASTER_WARNING" unit="Bool"/>
 		  </Condition>
 		</Annunciation>
 
 		<Annunciation>
 		  <Type>Caution</Type>
-		  <Text>FUEL LOW </Text>
-		  <Condition Suffix="L-R">
-			<And>
-			  <Lower>
-				<Simvar name="FUEL TANK LEFT MAIN QUANTITY" unit="gallon"/>
-				<Constant>9</Constant>
-			  </Lower>
-			  <Lower>
-				<Simvar name="FUEL TANK RIGHT MAIN QUANTITY" unit="gallon"/>
-				<Constant>9</Constant>
-			  </Lower>
-			</And>
-		  </Condition>
-		  <Condition Suffix="L">
-			<Lower>
-			  <Simvar name="FUEL TANK LEFT MAIN QUANTITY" unit="gallon"/>
-			  <Constant>9</Constant>
-			</Lower>
-		  </Condition>
-		  <Condition Suffix="R">
-			<Lower>
-			  <Simvar name="FUEL TANK RIGHT MAIN QUANTITY" unit="gallon"/>
-			  <Constant>9</Constant>
-			</Lower>
-		  </Condition>
-		</Annunciation>
-
-		<Annunciation>
-		  <Type>Caution</Type>
-		  <Text>FUEL IMBALANCE</Text>
+		  <Text>MASTER CAUTION</Text>
 		  <Condition>
-			<Inequal tolerance="700">
-				<Simvar name="FUEL TANK LEFT MAIN QUANTITY" unit="gallon"/>
-				<Simvar name="FUEL TANK RIGHT MAIN QUANTITY" unit="gallon"/>
-			</Inequal>
+			<Simvar name="L:A32NX_MASTER_CAUTION" unit="Bool"/>
 		  </Condition>
 		</Annunciation>
-
-		<Annunciation>
-		  <Type>Warning</Type>
-		  <Text>OVERSPEED</Text>
-		  <Condition>
-			<Simvar name="OVERSPEED WARNING" unit="bool"/>
-		  </Condition>
-		</Annunciation>
-	
 
   	</Annunciations>
 	<!-- Voices Alerts -->
