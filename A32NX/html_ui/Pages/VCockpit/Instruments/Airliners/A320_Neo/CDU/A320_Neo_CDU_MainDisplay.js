@@ -821,11 +821,13 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                     //ADIRS Alignment Completed
                     SimVar.SetSimVarValue("L:A320_Neo_ADIRS_STATE", "Enum", 2);
                     SimVar.SetSimVarValue("L:A320_Neo_ADIRS_IN_ALIGN", "Bool", 0);
-                    SimVar.SetSimVarValue("L:A32NX_ADIRS_PFD_ALIGNED_FIRST", "Bool", 1);
-                    SimVar.SetSimVarValue("L:A32NX_ADIRS_PFD_ALIGNED_ATT", "Bool", 1);
                 }
             }
-            
+        }
+
+        if (ADIRSState == 2) {
+            SimVar.SetSimVarValue("L:A32NX_ADIRS_PFD_ALIGNED_FIRST", "Bool", 1);
+            SimVar.SetSimVarValue("L:A32NX_ADIRS_PFD_ALIGNED_ATT", "Bool", 1);
         }
 
         //Align light
