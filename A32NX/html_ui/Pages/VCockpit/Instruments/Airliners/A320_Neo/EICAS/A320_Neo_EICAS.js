@@ -14,7 +14,8 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         this.createLowerScreenPage("BLEED", "BottomScreen", "a320-neo-lower-ecam-bleed"); // MODIFIED
         this.createLowerScreenPage("PRESS", "BottomScreen", "a320-neo-lower-ecam-press"); // MODIFIED
         this.createLowerScreenPage("ELEC", "BottomScreen", "a320-neo-lower-ecam-elec"); // MODIFIED
-        this.createLowerScreenPage("HYD", "BottomScreen", "a320-neo-lower-ecam-hyd"); // MODIFIED
+        //this.createLowerScreenPage("HYD", "BottomScreen", "a320-neo-lower-ecam-hyd"); // MODIFIED
+        this.createLowerScreenPage("HYD", "BottomScreen", "a320-neo-lower-ecam-crz"); // MODIFIED
         this.createLowerScreenPage("FUEL", "BottomScreen", "a320-neo-lower-ecam-fuel");
         this.createLowerScreenPage("APU", "BottomScreen", "a320-neo-lower-ecam-apu");
         this.createLowerScreenPage("COND", "BottomScreen", "a320-neo-lower-ecam-cond"); // MODIFIED
