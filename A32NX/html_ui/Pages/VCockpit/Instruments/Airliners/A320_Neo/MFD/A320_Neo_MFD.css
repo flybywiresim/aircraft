@@ -154,6 +154,9 @@
           position: absolute; }
         a320-neo-mfd-element #Mainframe #TopBox #Speed svg {
           overflow: visible; }
+        a320-neo-mfd-element #Mainframe #TopBox #Speed svg #GS_Value {
+          white-space: pre;
+        }
         a320-neo-mfd-element #Mainframe #TopBox #Title {
           top: 15%;
           height: 100%;
