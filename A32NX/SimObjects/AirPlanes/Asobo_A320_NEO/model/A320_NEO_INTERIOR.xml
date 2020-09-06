@@ -2126,12 +2126,6 @@
 			</DefaultTemplateParameters>
 
 			<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
-				<NODE_ID>PUSH_ECAM_TOCONFIG</NODE_ID>
-				<POTENTIOMETER_SEQ1>15</POTENTIOMETER_SEQ1>
-				<ONLY_SEQ1/>
-			</UseTemplate>
-
-			<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
 				<NODE_ID>PUSH_ECAM_ALL</NODE_ID>
 				<POTENTIOMETER_SEQ1>15</POTENTIOMETER_SEQ1>
 				<ONLY_SEQ1/>
@@ -2626,9 +2620,6 @@
 		</UseTemplate>
 		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
 			<NODE_ID>KNOB_SWITCHING_4</NODE_ID>
-		</UseTemplate>
-		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-			<NODE_ID>PUSH_ECAM_TOCONFIG</NODE_ID>
 		</UseTemplate>
 		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
 			<NODE_ID>LOCK_ECAM_EMERCANC</NODE_ID>
