@@ -92,8 +92,8 @@ var A320_Neo_LowerECAM_FTCL;
             this.rightElevatorCursor.setAttribute("d", reCursorPath);
 
             // Update rudder
-            var rudderDeflectPct = SimVar.GetSimVarValue("RUDDER DEFLECTION PCT", "percent over 100");
-            let rudderAngle = -rudderDeflectPct * 29.06;
+            const rudderDeflectPct = SimVar.GetSimVarValue("RUDDER DEFLECTION PCT", "percent over 100");
+            const rudderAngle = -rudderDeflectPct * 29.06;
             this.rudderCursor.setAttribute("transform", `rotate(${rudderAngle} 300 380)`)
 
             // Update ELAC's and SEC's
