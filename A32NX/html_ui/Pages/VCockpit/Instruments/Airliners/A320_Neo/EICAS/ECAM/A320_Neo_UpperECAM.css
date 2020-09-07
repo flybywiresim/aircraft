@@ -173,34 +173,68 @@ a320-neo-upper-ecam {
       a320-neo-upper-ecam #FlapsPanel #DiagramSVG .targetArrow {
         fill: none;
         stroke: var(--ecamUnitsColour); }
-  a320-neo-upper-ecam #InfoBottomLeftPanel {
+  a320-neo-upper-ecam #InfoBottomLeftPanel, a320-neo-upper-ecam #left-msg {
     position: absolute;
     left: 3%;
     width: 55%;
     top: 68%;
     height: 30%; }
-    a320-neo-upper-ecam #InfoBottomLeftPanel div {
+    a320-neo-upper-ecam #InfoBottomLeftPanel div, a320-neo-upper-ecam #left-msg div {
       width: 100%;
       height: 12%;
-      font-size: 36px;
+      font-size: 45px;
       text-align: left; }
-  a320-neo-upper-ecam #InfoBottomRightPanel {
+  a320-neo-upper-ecam #InfoBottomRightPanel, a320-neo-upper-ecam #right-msg {
     position: absolute;
     left: 67.5%;
     width: 30%;
     top: 68%;
     height: 30%; }
-    a320-neo-upper-ecam #InfoBottomRightPanel div {
+    a320-neo-upper-ecam #InfoBottomRightPanel div, a320-neo-upper-ecam #right-msg div {
       width: 100%;
       height: 12%;
-      font-size: 36px;
+      font-size: 45px;
       text-align: left; }
+  a320-neo-upper-ecam #to-memo, a320-neo-upper-ecam #ldg-memo {
+    position: absolute;
+    left: 3%;
+    width: 55%;
+    top: 68%;
+    height: 30%; }
+  a320-neo-upper-ecam #to-memo div, a320-neo-upper-ecam #ldg-memo div {
+    width: 100%;
+    height: 12%;
+    font-size: 45px;
+    text-align: left; }
   a320-neo-upper-ecam .InfoIndication {
     color: var(--ecamValueColour); }
   a320-neo-upper-ecam .InfoCaution {
     color: var(--ecamWarningColour); }
   a320-neo-upper-ecam .InfoWarning {
     color: var(--ecamDangerColour); }
+  a320-neo-upper-ecam .InfoSpecial {
+    color: #d100b2; }
+  a320-neo-upper-ecam .Action {
+    color: var(--ecamUnitsColour);
+  }
+  a320-neo-upper-ecam .Underline, a320-neo-upper-ecam .action-underline {
+    text-decoration: underline;
+  }
+  a320-neo-upper-ecam .Completed {
+    display:none;
+  }
+
+  a320-neo-upper-ecam .fail-3 {
+    color: var(--ecamDangerColour);
+  }
+  a320-neo-upper-ecam .fail-2 {
+    color: var(--ecamWarningColour);
+  }
+  a320-neo-upper-ecam .action, a320-neo-upper-ecam .action-underline {
+    color: var(--ecamUnitsColour);
+  }
+
+
   a320-neo-upper-ecam #Separators {
     position: absolute;
     display: block;
