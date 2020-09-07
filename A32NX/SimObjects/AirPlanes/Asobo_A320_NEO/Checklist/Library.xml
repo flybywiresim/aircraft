@@ -550,7 +550,7 @@
          <CheckpointDesc SubjectTT="TT:Flight Instruments" ExpectationTT="TT:CHECK" />
       </Checkpoint>
       <Checkpoint Id="A320_TAXI_RADAR">
-         <CheckpointDesc SubjectTT="TT:Radar" ExpectationTT="TT:AS REQUIRED" />
+         <CheckpointDesc SubjectTT="TT:Weather Radar" ExpectationTT="TT:AS REQUIRED" />
       </Checkpoint>
       <Checkpoint Id="A320_TAXI_PRED_WINDSHEAR_SYS">
          <CheckpointDesc SubjectTT="TT:Predictive Windshear System (INOP)" ExpectationTT="TT:AUTO" />
@@ -698,7 +698,7 @@
          <Instrument Id="DEICE_Engine" />
       </Checkpoint>
       <Checkpoint Id="A320_CLIMB_RADAR_TILT">
-         <CheckpointDesc SubjectTT="TT:Radar Tilt (INOP)" ExpectationTT="TT:ADJUST" />
+         <CheckpointDesc SubjectTT="TT:Weather Radar Tilt (INOP)" ExpectationTT="TT:ADJUST" />
       </Checkpoint>
       <Checkpoint Id="A320_CLIMB_AT_FL10_SPACER">
          <CheckpointDesc SubjectTT="TT:AT 10000Ft" ExpectationTT="TT:" />
@@ -741,7 +741,7 @@
          <CheckpointDesc SubjectTT="TT:Navigation Accuracy" ExpectationTT="TT:CHECK" />
       </Checkpoint>
       <Checkpoint Id="A320_CRUISE_RADAR_TILT">
-         <CheckpointDesc SubjectTT="TT:Radar Tilt (INOP)" ExpectationTT="TT:CHECK" />
+         <CheckpointDesc SubjectTT="TT:Weather Radar Tilt (INOP)" ExpectationTT="TT:CHECK" />
       </Checkpoint>
       <Checkpoint Id="A320_CRUISE_CABIN_TEMP">
          <CheckpointDesc SubjectTT="TT:Cabin Temperature" ExpectationTT="TT:MONITOR" />
@@ -811,7 +811,7 @@
          <Instrument Id="HANDLING_Lever_Spoilers" />
       </Checkpoint>
       <Checkpoint Id="A320_DESCENT_RADAR_TILT">
-         <CheckpointDesc SubjectTT="TT:Radar Tilt (INOP)" ExpectationTT="TT:ADJUST" />
+         <CheckpointDesc SubjectTT="TT:Weather Radar Tilt (INOP)" ExpectationTT="TT:ADJUST" />
       </Checkpoint>
       <Checkpoint Id="A320_DESCENT_BARO_REF">
          <CheckpointDesc SubjectTT="TT:Barometric Reference" ExpectationTT="TT:SET (BUT STILL ON STD)" />
@@ -872,7 +872,7 @@
          <CheckpointDesc SubjectTT="TT:Navigation Accuracy" ExpectationTT="TT:MONITOR(HIGH)" />
       </Checkpoint>
       <Checkpoint Id="A320_ILSAPPR_RADAR_TILT">
-         <CheckpointDesc SubjectTT="TT:Radar Tilt" ExpectationTT="TT:ADJUST" />
+         <CheckpointDesc SubjectTT="TT:Weather Radar Tilt" ExpectationTT="TT:ADJUST" />
       </Checkpoint>
       <Checkpoint Id="A320_ILSAPPR_APPR_CHECKLIST">
          <CheckpointDesc SubjectTT="TT:Approach Checklist" ExpectationTT="TT:COMPLETE" />
@@ -988,7 +988,7 @@
          <CheckpointDesc SubjectTT="TT:Navigation Accuracy" ExpectationTT="TT:MONITOR(HIGH)" />
       </Checkpoint>
       <Checkpoint Id="A320_NONPAPPR_RADAR_TILT">
-         <CheckpointDesc SubjectTT="TT:Radar Tilt (INOP)" ExpectationTT="TT:ADJUST" />
+         <CheckpointDesc SubjectTT="TT:Weather Radar Tilt (INOP)" ExpectationTT="TT:ADJUST" />
       </Checkpoint>
       <Checkpoint Id="A320_NONPAPPR_APPROACH_CHECKLIST">
          <CheckpointDesc SubjectTT="TT:Approach Checklist" ExpectationTT="TT:COMPLETE" />
@@ -1144,7 +1144,7 @@
          <CheckpointDesc SubjectTT="TT:TCAM Mode Selector (INOP)" ExpectationTT="TT:STBY" />
       </Checkpoint>
       <Checkpoint Id="A320_AFTERLANDING_RADAR">
-         <CheckpointDesc SubjectTT="TT:Radar" ExpectationTT="TT:OFF/STBY" />
+         <CheckpointDesc SubjectTT="TT:Weather Radar" ExpectationTT="TT:OFF/STBY" />
       </Checkpoint>
       <Checkpoint Id="A320_AFTERLANDING_WXR_PWS">
          <CheckpointDesc SubjectTT="TT:Predictive Windshear System (INOP)" ExpectationTT="TT:OFF" />
