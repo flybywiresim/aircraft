@@ -1195,7 +1195,7 @@
 
 <!-- Copy of A32NX_GT_Switch_Dummy -->
 <!-- Removed the INIT_VALUE stuff which was overriding what we had in the flt files -->
-<Template Name="ASOBO_GT_Switch_Dummy">
+<Template Name="A32NX_GT_Switch_Dummy">
 	<DefaultTemplateParameters>
 		<SWITCH_POSITION_TYPE>O</SWITCH_POSITION_TYPE>
 		<SWITCH_POSITION_VAR>SwitchState</SWITCH_POSITION_VAR>
