@@ -1145,10 +1145,14 @@
 				<HAS_AUTO>True</HAS_AUTO>
 				<INVERT_ANIM>True</INVERT_ANIM>
 				<POTENTIOMETER>24</POTENTIOMETER>
+				<ANIMTIP_0>Turn OFF strobe lights</ANIMTIP_0>
+				<ANIMTIP_1_ON_PERCENT>0.5</ANIMTIP_1_ON_PERCENT>
+				<ANIMTIP_1>Set strobe lights to AUTO</ANIMTIP_1>
+				<ANIMTIP_2>Turn ON strobe lights</ANIMTIP_2>
 			</UseTemplate>
 
 			<!-- TODO: Seatbelt Light DUMMY -->
-			<UseTemplate Name="ASOBO_GT_Switch_Dummy">
+			<UseTemplate Name="A32NX_GT_Switch_Dummy">
 				<NODE_ID>SWITCH_OVHD_INTLT_SEATBELT</NODE_ID>
 				<ANIM_NAME>SWITCH_OVHD_INTLT_SEATBELT</ANIM_NAME>
 				<LIGHT_TYPE>SEATBELT</LIGHT_TYPE>
@@ -1162,11 +1166,10 @@
 				<NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
 			</UseTemplate>
 
-			<UseTemplate Name="ASOBO_GT_Switch_Dummy">
+			<UseTemplate Name="A32NX_GT_Switch_Dummy">
 				<NODE_ID>SWITCH_OVHD_INTLT_NOSMOKING</NODE_ID>
 				<ANIM_NAME>SWITCH_OVHD_INTLT_NOSMOKING</ANIM_NAME>
 				<NUM_STATES>3</NUM_STATES>
-				<INIT_VALUE>2</INIT_VALUE>
 				<SWITCH_DIRECTION>Vertical</SWITCH_DIRECTION>
 				<INVERT_ANIM>True</INVERT_ANIM>
 				<SWITCH_POSITION_TYPE>L</SWITCH_POSITION_TYPE>
@@ -1174,41 +1177,43 @@
 				<LIGHT_TYPE>NO_SMOKING</LIGHT_TYPE>
 				<ANIMTIP_1_ON_PERCENT>0.5</ANIMTIP_1_ON_PERCENT>
 				<!-- TODO: Figure out what the actual tooltips are or how to add them. -->
-				<ANIMTIP_0>TT:COCKPIT.TOOLTIPS.LIGHTS_NOSMOKING_OFF</ANIMTIP_0>
-				<ANIMTIP_1>TT:COCKPIT.TOOLTIPS.LIGHTS_NOSMOKING_AUTO</ANIMTIP_1>
-				<ANIMTIP_2>TT:COCKPIT.TOOLTIPS.LIGHTS_NOSMOKING_ON</ANIMTIP_2>
+				<ANIMTIP_0>Turn OFF no smoking signs</ANIMTIP_0>
+				<ANIMTIP_1>Set no smoking signs to AUTO</ANIMTIP_1>
+				<ANIMTIP_2>Turn ON no smoking signs</ANIMTIP_2>
 				<WWISE_EVENT>double_light_switch</WWISE_EVENT>
 			</UseTemplate>
 
-			<UseTemplate Name="ASOBO_GT_Switch_Dummy">
+			<UseTemplate Name="A32NX_GT_Switch_Dummy">
 				<NODE_ID>SWITCH_OVHD_INTLT_EMEREXIT</NODE_ID>
 				<ANIM_NAME>SWITCH_OVHD_INTLT_EMEREXIT</ANIM_NAME>
 				<NUM_STATES>3</NUM_STATES>
-				<INIT_VALUE>2</INIT_VALUE>
 				<SWITCH_DIRECTION>Vertical</SWITCH_DIRECTION>
 				<LIGHT_TYPE>EMER_EXIT</LIGHT_TYPE>
 				<SWITCH_POSITION_TYPE>L</SWITCH_POSITION_TYPE>
 				<SWITCH_POSITION_VAR>XMLVAR_SWITCH_OVHD_INTLT_EMEREXIT_Position</SWITCH_POSITION_VAR>
 				<ANIMTIP_1_ON_PERCENT>0.5</ANIMTIP_1_ON_PERCENT>
-				<ANIMTIP_0>TT:COCKPIT.TOOLTIPS.LIGHTS_EMEREXIT_ON</ANIMTIP_0>
-				<ANIMTIP_1>TT:COCKPIT.TOOLTIPS.LIGHTS_EMEREXIT_ARM</ANIMTIP_1>
-				<ANIMTIP_2>TT:COCKPIT.TOOLTIPS.LIGHTS_EMEREXIT_OFF</ANIMTIP_2>
+				<ANIMTIP_0>Turn ON emergency exit signs</ANIMTIP_0>
+				<ANIMTIP_1>Set emergency exit signs to ARM</ANIMTIP_1>
+				<ANIMTIP_2>Turn OFF emergency exit signs</ANIMTIP_2>
 				<WWISE_EVENT>double_light_switch</WWISE_EVENT>
 			</UseTemplate>
 
-			<UseTemplate Name="ASOBO_GT_Switch_Dummy">
+			<UseTemplate Name="ASOBO_AIRLINER_SIGNS_LIGHT_Template">
+				<NODE_ID>PUSH_OVHD_SIGNS</NODE_ID>
+			</UseTemplate>
+
+			<UseTemplate Name="A32NX_GT_Switch_Dummy">
 				<NODE_ID>SWITCH_OVHD_INTLT_ANNLT</NODE_ID>
 				<ANIM_NAME>SWITCH_OVHD_INTLT_ANNLT</ANIM_NAME>
 				<NUM_STATES>3</NUM_STATES>
-				<INIT_VALUE>1</INIT_VALUE>
 				<SWITCH_DIRECTION>Vertical</SWITCH_DIRECTION>
 				<LIGHT_TYPE>ANN_LT</LIGHT_TYPE>
 				<SWITCH_POSITION_TYPE>L</SWITCH_POSITION_TYPE>
 				<SWITCH_POSITION_VAR>XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position</SWITCH_POSITION_VAR>
 				<ANIMTIP_1_ON_PERCENT>0.5</ANIMTIP_1_ON_PERCENT>
-				<ANIMTIP_0>TT:COCKPIT.TOOLTIPS.LIGHTS_ANNLT_TEST</ANIMTIP_0>
-				<ANIMTIP_1>TT:COCKPIT.TOOLTIPS.LIGHTS_ANNLT_BRIGHT</ANIMTIP_1>
-				<ANIMTIP_2>TT:COCKPIT.TOOLTIPS.LIGHTS_ANNLT_DIM</ANIMTIP_2>
+				<ANIMTIP_0>Test annunciator lights</ANIMTIP_0>
+				<ANIMTIP_1>Set annunciator lights to BRT</ANIMTIP_1>
+				<ANIMTIP_2>Set annunciator lights to DIM</ANIMTIP_2>
 				<WWISE_EVENT>double_light_switch</WWISE_EVENT>
 				<NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
 				<NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
@@ -1218,8 +1223,8 @@
 				<NODE_ID>SWITCH_OVHD_INTLT_STBYCOMPAS</NODE_ID>
 				<ANIM_NAME>SWITCH_OVHD_INTLT_STBYCOMPAS</ANIM_NAME>
 				<LIGHT_TYPE>STBYCOMPAS</LIGHT_TYPE>
-				<ANIMTIP_0>TT:COCKPIT.TOOLTIPS.LIGHTS_STBYCOMPAS_OFF</ANIMTIP_0>
-				<ANIMTIP_1>TT:COCKPIT.TOOLTIPS.LIGHTS_STBYCOMPAS_ON</ANIMTIP_1>
+				<ANIMTIP_0>Turn ON standby compass light</ANIMTIP_0>
+				<ANIMTIP_1>Turn OFF standby compass light</ANIMTIP_1>
 				<WWISE_EVENT_1>wing_light_switch_on</WWISE_EVENT_1>
 				<WWISE_EVENT_2>wing_light_switch_off</WWISE_EVENT_2>
 				<NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
@@ -1511,28 +1516,7 @@
 					<NODE_ID>PUSH_OVHD_EMERELECPWR_RAT</NODE_ID>
 				</UseTemplate>
 				<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
-					<NODE_ID>PUSH_OVHD_GPWS_TERR</NODE_ID>
-				</UseTemplate>
-				<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
-					<NODE_ID>PUSH_OVHD_GPWS_SYS</NODE_ID>
-				</UseTemplate>
-				<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
-					<NODE_ID>PUSH_OVHD_GPWS_GSMODE</NODE_ID>
-				</UseTemplate>
-				<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
-					<NODE_ID>PUSH_OVHD_GPWS_FLAP</NODE_ID>
-				</UseTemplate>
-				<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
-					<NODE_ID>PUSH_OVHD_GPWS_LDG</NODE_ID>
-				</UseTemplate>
-				<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
 					<NODE_ID>PUSH_OVHD_RCDR_GNDCTL</NODE_ID>
-				</UseTemplate>
-				<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
-					<NODE_ID>PUSH_OVHD_OXYGEN_PASSENGER</NODE_ID>
-				</UseTemplate>
-				<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
-					<NODE_ID>PUSH_OVHD_OXYGEN_CREW</NODE_ID>
 				</UseTemplate>
 				<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
 					<NODE_ID>PUSH_OVHD_CALLS_EMER</NODE_ID>
@@ -1618,9 +1602,6 @@
 				</UseTemplate>
 				<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
 					<NODE_ID>PUSH_OVHD_CABINPRESS_MODESEL</NODE_ID>
-				</UseTemplate>
-				<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
-					<NODE_ID>PUSH_OVHD_SIGNS</NODE_ID>
 				</UseTemplate>
 			</Component>
 			<Component ID="Right_Column">
@@ -2145,12 +2126,6 @@
 			</DefaultTemplateParameters>
 
 			<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
-				<NODE_ID>PUSH_ECAM_TOCONFIG</NODE_ID>
-				<POTENTIOMETER_SEQ1>15</POTENTIOMETER_SEQ1>
-				<ONLY_SEQ1/>
-			</UseTemplate>
-
-			<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
 				<NODE_ID>PUSH_ECAM_ALL</NODE_ID>
 				<POTENTIOMETER_SEQ1>15</POTENTIOMETER_SEQ1>
 				<ONLY_SEQ1/>
@@ -2371,7 +2346,10 @@
 	</Component>
 
 	<Component ID="SAFETY">
-		<UseTemplate Name="ASOBO_SAFETY_Push_Warning_Template">
+		<UseTemplate Name="ASOBO_SAFETY_Push_Template">
+			<LEFT_SINGLE_CODE>0 (&gt;L:A32NX_MASTER_WARNING)</LEFT_SINGLE_CODE>
+			<EMISSIVE_CODE>(L:Generic_Master_Warning_Active) (#VAR_SCOPE#:#VAR_NAME#) or</EMISSIVE_CODE>
+			<TOOLTIPID>TT:COCKPIT.TOOLTIPS.MASTER_WARNING_ACKNOWLEDGE</TOOLTIPID>
 			<VAR_SCOPE>L</VAR_SCOPE>
 			<VAR_NAME>XMLVAR_LTS_Test</VAR_NAME>
 			<NODE_ID>PUSH_AUTOPILOT_MASTERAWARN_L</NODE_ID>
@@ -2381,7 +2359,11 @@
 			<AIRBUS_TYPE/>
 			<NO_SEQ2/>
 		</UseTemplate>
-		<UseTemplate Name="ASOBO_SAFETY_Push_Caution_Template">
+		<UseTemplate Name="ASOBO_SAFETY_Push_Template">
+			<ID>Caution</ID>
+			<LEFT_SINGLE_CODE>0 (&gt;L:A32NX_MASTER_CAUTION)</LEFT_SINGLE_CODE>
+			<EMISSIVE_CODE>(L:Generic_Master_Caution_Active)</EMISSIVE_CODE>
+			<TOOLTIPID>TT:COCKPIT.TOOLTIPS.MASTER_CAUTION_ACKNOWLEDGE</TOOLTIPID>
 			<VAR_SCOPE>L</VAR_SCOPE>
 			<VAR_NAME>XMLVAR_LTS_Test</VAR_NAME>
 			<NODE_ID>PUSH_AUTOPILOT_MASTERCAUT_L</NODE_ID>
@@ -2391,7 +2373,10 @@
 			<AIRBUS_TYPE/>
 			<NO_SEQ2/>
 		</UseTemplate>
-		<UseTemplate Name="ASOBO_SAFETY_Push_Warning_Template">
+		<UseTemplate Name="ASOBO_SAFETY_Push_Template">
+			<LEFT_SINGLE_CODE>0 (&gt;L:A32NX_MASTER_WARNING)</LEFT_SINGLE_CODE>
+			<EMISSIVE_CODE>(L:Generic_Master_Warning_Active) (#VAR_SCOPE#:#VAR_NAME#) or</EMISSIVE_CODE>
+			<TOOLTIPID>TT:COCKPIT.TOOLTIPS.MASTER_WARNING_ACKNOWLEDGE</TOOLTIPID>
 			<VAR_SCOPE>L</VAR_SCOPE>
 			<VAR_NAME>XMLVAR_LTS_Test</VAR_NAME>
 			<NODE_ID>PUSH_AUTOPILOT_MASTERAWARN_R</NODE_ID>
@@ -2401,7 +2386,11 @@
 			<AIRBUS_TYPE/>
 			<NO_SEQ2/>
 		</UseTemplate>
-		<UseTemplate Name="ASOBO_SAFETY_Push_Caution_Template">
+		<UseTemplate Name="ASOBO_SAFETY_Push_Template">
+		<ID>Caution</ID>
+			<LEFT_SINGLE_CODE>0 (&gt;L:A32NX_MASTER_CAUTION)</LEFT_SINGLE_CODE>
+			<EMISSIVE_CODE>(L:Generic_Master_Caution_Active)</EMISSIVE_CODE>
+			<TOOLTIPID>TT:COCKPIT.TOOLTIPS.MASTER_CAUTION_ACKNOWLEDGE</TOOLTIPID>
 			<VAR_SCOPE>L</VAR_SCOPE>
 			<VAR_NAME>XMLVAR_LTS_Test</VAR_NAME>
 			<NODE_ID>PUSH_AUTOPILOT_MASTERCAUT_R</NODE_ID>
@@ -2460,6 +2449,50 @@
 			<NODE_ID>KNOB_CHRONO_RUN</NODE_ID>
 		</UseTemplate>
 
+	</Component>
+
+	<Component ID="Overhead_Misc">
+		<Component ID="Left_Column">
+			<UseTemplate Name="ASOBO_AIRLINER_GPWS_Template">
+				<NODE_ID>PUSH_OVHD_GPWS_TERR</NODE_ID>
+				<TOOLTIPID>(INOP) TERR</TOOLTIPID>
+			</UseTemplate>
+			<UseTemplate Name="ASOBO_AIRLINER_GPWS_Template">
+				<NODE_ID>PUSH_OVHD_GPWS_SYS</NODE_ID>
+				<TOOLTIPID>(INOP) SYS</TOOLTIPID>
+			</UseTemplate>
+			<UseTemplate Name="ASOBO_AIRLINER_GPWS_Template">
+				<NODE_ID>PUSH_OVHD_GPWS_GSMODE</NODE_ID>
+				<TOOLTIPID>(INOP) G/S Mode</TOOLTIPID>
+			</UseTemplate>
+			<UseTemplate Name="ASOBO_AIRLINER_GPWS_Template">
+				<NODE_ID>PUSH_OVHD_GPWS_FLAP</NODE_ID>
+				<TOOLTIPID>(INOP) Flap Mode</TOOLTIPID>
+			</UseTemplate>
+			<UseTemplate Name="ASOBO_AIRLINER_GPWS_Template">
+				<NODE_ID>PUSH_OVHD_GPWS_LDG</NODE_ID>
+				<TOOLTIPID>(INOP) LDG Flaps 3</TOOLTIPID>
+			</UseTemplate>
+			<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
+				<NODE_ID>PUSH_OVHD_OXYGEN_PASSENGER</NODE_ID>
+			</UseTemplate>
+			<UseTemplate Name="ASOBO_AIRLINER_OXYGEN_Template">
+				<NODE_ID>PUSH_OVHD_OXYGEN_CREW</NODE_ID>
+				<TOOLTIPID>Crew oxygen supply</TOOLTIPID>
+			</UseTemplate>
+			<UseTemplate Name="ASOBO_AIRLINER_CALLS_Template">
+				<NODE_ID>PUSH_OVHD_CALLS_MECH</NODE_ID>
+			</UseTemplate>
+			<UseTemplate Name="ASOBO_AIRLINER_CALLS_Template">
+				<NODE_ID>PUSH_OVHD_CALLS_ALL</NODE_ID>
+			</UseTemplate>
+			<UseTemplate Name="ASOBO_AIRLINER_CALLS_Template">
+				<NODE_ID>PUSH_OVHD_CALLS_FWD</NODE_ID>
+			</UseTemplate>
+			<UseTemplate Name="ASOBO_AIRLINER_CALLS_Template">
+				<NODE_ID>PUSH_OVHD_CALLS_AFT</NODE_ID>
+			</UseTemplate>
+		</Component>
 	</Component>
 
 	<!-- This section has been partially modified	-->
@@ -2601,9 +2634,6 @@
 		</UseTemplate>
 		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
 			<NODE_ID>KNOB_SWITCHING_4</NODE_ID>
-		</UseTemplate>
-		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-			<NODE_ID>PUSH_ECAM_TOCONFIG</NODE_ID>
 		</UseTemplate>
 		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
 			<NODE_ID>LOCK_ECAM_EMERCANC</NODE_ID>
@@ -2920,21 +2950,6 @@
 			<NODE_ID>PUSH_OVHD_EMERELECPWR_MANON</NODE_ID>
 		</UseTemplate>
 		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-			<NODE_ID>PUSH_OVHD_GPWS_TERR</NODE_ID>
-		</UseTemplate>
-		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-			<NODE_ID>PUSH_OVHD_GPWS_SYS</NODE_ID>
-		</UseTemplate>
-		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-			<NODE_ID>PUSH_OVHD_GPWS_GSMODE</NODE_ID>
-		</UseTemplate>
-		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-			<NODE_ID>PUSH_OVHD_GPWS_FLAP</NODE_ID>
-		</UseTemplate>
-		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-			<NODE_ID>PUSH_OVHD_GPWS_LDG</NODE_ID>
-		</UseTemplate>
-		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
 			<NODE_ID>PUSH_OVHD_RCDR_GNDCTL</NODE_ID>
 		</UseTemplate>
 		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
@@ -2948,24 +2963,6 @@
 		</UseTemplate>
 		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
 			<NODE_ID>PUSH_OVHD_OXYGEN_RATMANON</NODE_ID>
-		</UseTemplate>
-		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-			<NODE_ID>PUSH_OVHD_OXYGEN_PASSENGER</NODE_ID>
-		</UseTemplate>
-		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-			<NODE_ID>PUSH_OVHD_OXYGEN_CREW</NODE_ID>
-		</UseTemplate>
-		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-			<NODE_ID>PUSH_OVHD_CALLS_MECH</NODE_ID>
-		</UseTemplate>
-		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-			<NODE_ID>PUSH_OVHD_CALLS_ALL</NODE_ID>
-		</UseTemplate>
-		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-			<NODE_ID>PUSH_OVHD_CALLS_FWD</NODE_ID>
-		</UseTemplate>
-		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-			<NODE_ID>PUSH_OVHD_CALLS_AFT</NODE_ID>
 		</UseTemplate>
 		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
 			<NODE_ID>LOCK_OVHD_CALLS_EMER</NODE_ID>
@@ -3110,9 +3107,6 @@
 		</UseTemplate>
 		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
 			<NODE_ID>PUSH_OVHD_CABINPRESS_DITCHING</NODE_ID>
-		</UseTemplate>
-		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-			<NODE_ID>PUSH_OVHD_SIGNS</NODE_ID>
 		</UseTemplate>
 		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
 			<NODE_ID>PUSH_OVHD_CARGOVENT_AFTISOL</NODE_ID>
