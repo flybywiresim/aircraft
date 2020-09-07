@@ -3,26 +3,30 @@ class CDUAocMenu {
         mcdu.clearDisplay();
         mcdu.setTemplate([
             ["AOC MENU"],
+            ["", "RECEIVED"],
+            ["<DELAY", "MESSAGES>"],
+            ["WX", "SENT"],
+            ["<REQUEST", "MESSAGES>"],
             [""],
-            ["<PREFLIGHT", "FLT LOG>"],
+            ["<FREE TEXT", "DIVERSION>"],
             [""],
-            ["<ENROUTE", "REPORTS>"],
-            [""],
-            ["<POSTFLIGHT", "REQUESTS>"],
-            [""],
-            ["", "RCVD MSGS"],
-            [""],
-            ["<MISC MENU", "UNSENT MSGS>"],
+            ["<ETA"],
+            ["POSITION"],
+            ["<REPORT", "MISC"],
             [""],
             ["<RETURN"]
         ]);
 
-        mcdu.onRightInput[2] = () => {
-            CDUAocRequests.ShowPage(mcdu, null);
+        mcdu.onLeftInput[1] = () => {
+            CDUAocRequestsWeather.ShowPage(mcdu);
         }
 
         mcdu.onLeftInput[5] = () => {
             CDUAtsuMenu.ShowPage(mcdu);
+        }
+
+        mcdu.onRightInput[0] = () => {
+            CDUAocMessagesReceived.ShowPage(mcdu);
         }
     }
 }

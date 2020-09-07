@@ -11,6 +11,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this._hasReachedTopOfDescent = false;
         this._apCooldown = 500;
         this._lastRequestedFLCModeWaypointIndex = -1;
+        this.messages = [];
     }
     get templateID() { return "A320_Neo_CDU"; }
     connectedCallback() {
@@ -730,6 +731,9 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         SimVar.SetSimVarValue("L:A320_Neo_ADIRS_ALIGN_LIGHT_2", "Bool", (SimVar.GetSimVarValue("L:A320_Neo_ADIRS_KNOB_2", "Enum") == 1 && ADIRSState != 2) );
         SimVar.SetSimVarValue("L:A320_Neo_ADIRS_ALIGN_LIGHT_3", "Bool", (SimVar.GetSimVarValue("L:A320_Neo_ADIRS_KNOB_3", "Enum") == 1 && ADIRSState != 2) );
         
+    }
+    getMessages() {
+        return this.messages;
     }
 }
 A320_Neo_CDU_MainDisplay._v1sConf1 = [
