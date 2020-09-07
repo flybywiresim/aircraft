@@ -77,7 +77,7 @@ var A320_Neo_UpperECAM;
                                 message: "",
                                 level: 3,
                                 isActive: () => {
-                                    return this.activeTakeoffConfigWarnings.includes("flaps");
+                                    return this.activeTakeoffConfigWarnings.includes("flaps") && SimVar.GetSimVarValue("RADIO HEIGHT", "feet") < 1.5;
                                 },
                                 alwaysShowCategory: true,
                                 actions: [
@@ -91,7 +91,7 @@ var A320_Neo_UpperECAM;
                                 message: "",
                                 level: 3,
                                 isActive: () => {
-                                    return this.activeTakeoffConfigWarnings.includes("spd_brk") == true;
+                                    return this.activeTakeoffConfigWarnings.includes("spd_brk") && SimVar.GetSimVarValue("RADIO HEIGHT", "feet") < 1.5;
                                 },
                                 alwaysShowCategory: true,
                                 actions: [
@@ -105,7 +105,7 @@ var A320_Neo_UpperECAM;
                                 message: "PARK BRAKE ON",
                                 level: 3,
                                 isActive: () => {
-                                    return this.activeTakeoffConfigWarnings.includes("park_brake") == true;
+                                    return this.activeTakeoffConfigWarnings.includes("park_brake") && SimVar.GetSimVarValue("RADIO HEIGHT", "feet") < 1.5;
                                 }
                             }
                         ]
@@ -466,6 +466,10 @@ var A320_Neo_UpperECAM;
             const highestThrottleDetent = (leftThrottleDetent >= rightThrottleDetent) ? leftThrottleDetent : rightThrottleDetent;
             if (highestThrottleDetent == ThrottleMode.TOGA || highestThrottleDetent == ThrottleMode.FLEX_MCT) {
                 this.updateTakeoffConfigWarnings(false);
+            }
+
+            if (Simplane.getCurrentFlightPhase() > 2) {
+                this.activeTakeoffConfigWarnings = [];
             }
         }
         updateTakeoffConfigWarnings(_test) {
