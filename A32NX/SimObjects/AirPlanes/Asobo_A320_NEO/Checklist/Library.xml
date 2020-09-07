@@ -56,7 +56,7 @@
 			<CheckpointDesc SubjectTT="TT:X-Bleed (INOP)" ExpectationTT="TT:ON"/>
 		</Checkpoint>
 		<Checkpoint Id="A320_PREP_WEATHER_RADAR">
-			<CheckpointDesc SubjectTT="TT:Weather Radar (INOP)" ExpectationTT="TT:OFF"/>
+			<CheckpointDesc SubjectTT="TT:Weather Radar" ExpectationTT="TT:OFF"/>
 		</Checkpoint>
 		<Checkpoint Id="A320_PREP_CARGOHEAT">
 			<CheckpointDesc SubjectTT="TT:Cargo Heat Selector (INOP)" ExpectationTT="TT:AS REQUIRED"/>
@@ -520,7 +520,7 @@
 			<CheckpointDesc SubjectTT="TT:Flight Instruments" ExpectationTT="TT:CHECK"/>
 		</Checkpoint>
 		<Checkpoint Id="A320_TAXI_RADAR">
-			<CheckpointDesc SubjectTT="TT:Radar (INOP)" ExpectationTT="TT:AS REQUIRED"/>
+			<CheckpointDesc SubjectTT="TT:Weather Radar" ExpectationTT="TT:AS REQUIRED"/>
 		</Checkpoint>
 		<Checkpoint Id="A320_TAXI_PRED_WINDSHEAR_SYS">
 			<CheckpointDesc SubjectTT="TT:Predictive Windshear System (INOP)" ExpectationTT="TT:AUTO"/>
@@ -1074,7 +1074,7 @@
 			<CheckpointDesc SubjectTT="TT:TCAM Mode Selector (INOP)" ExpectationTT="TT:STBY"/>
 		</Checkpoint>
 		<Checkpoint Id="A320_AFTERLANDING_RADAR">
-			<CheckpointDesc SubjectTT="TT:Radar (INOP)" ExpectationTT="TT:OFF/STBY"/>
+			<CheckpointDesc SubjectTT="TT:Weather Radar" ExpectationTT="TT:OFF"/>
 		</Checkpoint>
 		<Checkpoint Id="A320_AFTERLANDING_WXR_PWS">
 			<CheckpointDesc SubjectTT="TT:Predictive Windshear System (INOP)" ExpectationTT="TT:OFF"/>
