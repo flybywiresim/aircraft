@@ -511,6 +511,14 @@ var A320_Neo_UpperECAM;
                                                         return (SimVar.GetSimVarValue("L:XMLVAR_SWITCH_OVHD_INTLT_SEATBELT_Position", "Bool") > 0);
                                                     }),
                                                 new A320_Neo_UpperECAM.MemoItem(
+                                                    "to-memo-cabin",
+                                                    "CABIN",
+                                                    "CHECK",
+                                                    "READY",
+                                                    function() {
+                                                        return (SimVar.GetSimVarValue("L:A32NX_CABIN_READY", "Bool") == 1);
+                                                    }),
+                                                new A320_Neo_UpperECAM.MemoItem(
                                                     "to-memo-splrs",
                                                     "SPLRS",
                                                     "ARM",
@@ -552,6 +560,14 @@ var A320_Neo_UpperECAM;
                                                         "ON",
                                                         function() {
                                                             return (SimVar.GetSimVarValue("L:XMLVAR_SWITCH_OVHD_INTLT_SEATBELT_Position", "Bool") > 0);
+                                                        }),
+                                                    new A320_Neo_UpperECAM.MemoItem(
+                                                        "ldg-memo-cabin",
+                                                        "CABIN",
+                                                        "CHECK",
+                                                        "READY",
+                                                        function() {
+                                                            return (SimVar.GetSimVarValue("L:A32NX_CABIN_READY", "Bool") == 1);
                                                         }),
                                                     new A320_Neo_UpperECAM.MemoItem(
                                                         "ldg-memo-splrs",
@@ -654,6 +670,10 @@ var A320_Neo_UpperECAM;
 
             if (!(this.leftEcamMessagePanel.hasCautions)) SimVar.SetSimVarValue("L:A32NX_MASTER_CAUTION", "Bool", 0);
             if (!(this.leftEcamMessagePanel.hasWarnings)) SimVar.SetSimVarValue("L:A32NX_MASTER_WARNING", "Bool", 0);
+            
+            if ((SimVar.GetSimVarValue("L:PUSH_OVHD_CALLS_ALL", "Bool") == 1) || (SimVar.GetSimVarValue("L:PUSH_OVHD_CALLS_FWD", "Bool") == 1) || (SimVar.GetSimVarValue("L:PUSH_OVHD_CALLS_AFT", "Bool") == 1)) {
+                SimVar.SetSimVarValue("L:A32NX_CABIN_READY", "Bool", 1);
+            }
         }
         updateTakeoffConfigWarnings(_test) {
             const flaps = SimVar.GetSimVarValue("FLAPS HANDLE INDEX", "Enum");
