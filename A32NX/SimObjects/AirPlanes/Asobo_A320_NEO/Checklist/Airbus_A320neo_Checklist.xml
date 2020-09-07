@@ -13,7 +13,6 @@
 				<Checkpoint ReferenceId="A320_Battery_Switches_On_2">
 					<CheckpointDesc SubjectTT="TT:GAME.CHECKLIST_BATTERY_SWITCHES" ExpectationTT="TT:ON (Check Annotation)"/>
 				</Checkpoint>
-				<Checkpoint ReferenceId="A320_PREP_RPM3_PA"/>
 				<Checkpoint ReferenceId="A320_PREP_APU_FIRE_TEST"/>
 				<Block SubjectTT="TT:APU START">
 					<Checkpoint ReferenceId="APU_MASTER_SWITCH_ON"/>
@@ -29,7 +28,6 @@
 				<Checkpoint ReferenceId="APU_Bleed_On"/>
 				<Checkpoint ReferenceId="A320_PREP_CHECK_OVRHEAD"/>
 				<Checkpoint ReferenceId="A320_PREP_XBLEED"/>
-				<Checkpoint ReferenceId="A320_PREP_WEATHER_RADAR"/>
 				<Checkpoint ReferenceId="A320_PREP_CARGOHEAT"/>
 				<Checkpoint ReferenceId="A320_PREP_ELEC_PANEL"/>
 				<Checkpoint ReferenceId="A320_PREP_VENTILATION_PANEL"/>
@@ -53,7 +51,6 @@
 					<Checkpoint ReferenceId="A320_CPREP1_ECAM_ELEC"/>
 					<Checkpoint ReferenceId="A320_CPREP1_BATTERY"/>
 					<Checkpoint ReferenceId="A320_CPREP1_FUEL_MODE"/>
-					<Checkpoint ReferenceId="A320_CPREP1_CENTER_TANK_PUMP"/>
 					<Checkpoint ReferenceId="A320_CPREP1_ENGINE_FIRE_TEST"/>
 					<Checkpoint ReferenceId="A320_CPREP1_AUDIO_SWITCHING"/>
 					<Checkpoint ReferenceId="A320_CPREP1_PA_RECEPTION"/>
