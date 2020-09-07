@@ -785,6 +785,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         if (SimVar.GetSimVarValue("L:AIRLINER_FLIGHT_PHASE", "number") != this.currentFlightPhase) {
             SimVar.SetSimVarValue("L:AIRLINER_FLIGHT_PHASE", "number", this.currentFlightPhase);
             this.onFlightPhaseChanged();
+            SimVar.SetSimVarValue("L:A32NX_CABIN_READY", "Bool", 0);
         }
     }
     updateADIRS() {
