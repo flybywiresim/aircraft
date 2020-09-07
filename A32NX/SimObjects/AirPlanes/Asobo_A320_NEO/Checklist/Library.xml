@@ -542,7 +542,7 @@
 		</Checkpoint>
 		<!-- Before Takeoff -->
 		<Checkpoint Id="A320_BeforeTakeoff_BRAKE_TEMP">
-			<CheckpointDesc SubjectTT="TT:Brake Temperature" ExpectationTT="TT:CHECK"/>
+			<CheckpointDesc SubjectTT="TT:Brake Temperature (INOP)" ExpectationTT="TT:CHECK"/>
 		</Checkpoint>
 		<Checkpoint Id="A320_BeforeTakeoff_TO_CLEARANCE">
 			<CheckpointDesc SubjectTT="TT:Takeoff or Line Up Clearance" ExpectationTT="TT:OBTAIN"/>
