@@ -29,6 +29,8 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
     Init() {
         super.Init();
         this.changePage("FUEL"); // MODIFIED
+        this.A32NXCore = new A32NXCore();
+        this.A32NXCore.init();
 
         this.lastAPUMasterState = 0; // MODIFIED
         this.externalPowerWhenApuMasterOnTimer = -1; // MODIFIED
@@ -66,6 +68,7 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
     }
     onUpdate(_deltaTime) {
         super.onUpdate(_deltaTime);
+        this.A32NXCore.update(_deltaTime);
         this.localVarUpdater.update();
         this.updateAnnunciations();
         this.updateScreenState();
