@@ -178,7 +178,201 @@ var A320_Neo_UpperECAM;
                                 },
                             }
                         ]
-                    }
+                    },
+                    {
+                        name: "ENG 1 FIRE",
+                        messages: [
+                            {
+                                message: "",
+                                level: 3,
+                                isActive: () => {
+                                    return SimVar.GetSimVarValue("L:FIRE_TEST_ENG1", "Bool")
+                                },
+                                actions: [
+                                    {
+                                        style: "remark",
+                                        message: "WHEN A/C IS STOPPED"
+                                    },
+                                    {
+                                        style: "action",
+                                        message: "PARKING BRK",
+                                        action: "ON",
+                                        isCompleted: () => {
+                                            return SimVar.GetSimVarValue("BRAKE PARKING INDICATOR", "Bool") == 1;
+                                        }
+                                    },
+                                    {
+                                        style: "action",
+                                        message: "ATC",
+                                        action: "NOTIFY",
+                                    },
+                                    {
+                                        style: "action",
+                                        message: "CABIN CREW",
+                                        action: "ALERT"
+                                    },
+                                    {
+                                        style: "action",
+                                        message: "ENG 1 FIRE P/B",
+                                        action: "PUSH"
+                                    },
+                                    {
+                                        style: "action",
+                                        message: "AGENT 1",
+                                        action: "DISCH"
+                                    },
+                                    {
+                                        style: "action",
+                                        message: "AGENT 2",
+                                        action: "DISCH"
+                                    }
+                                ]
+                            },
+                        ]
+                    },
+                    {
+                        name: "ENG 2 FIRE",
+                        messages: [
+                            {
+                                message: "",
+                                level: 3,
+                                isActive: () => {
+                                    return SimVar.GetSimVarValue("L:FIRE_TEST_ENG2", "Bool")
+                                },
+                                actions: [
+                                    {
+                                        style: "remark",
+                                        message: "WHEN A/C IS STOPPED"
+                                    },
+                                    {
+                                        style: "action",
+                                        message: "PARKING BRK",
+                                        action: "ON",
+                                        isCompleted: () => {
+                                            return SimVar.GetSimVarValue("BRAKE PARKING INDICATOR", "Bool") == 1;
+                                        }
+                                    },
+                                    {
+                                        style: "action",
+                                        message: "ATC",
+                                        action: "NOTIFY",
+                                    },
+                                    {
+                                        style: "action",
+                                        message: "CABIN CREW",
+                                        action: "ALERT"
+                                    },
+                                    {
+                                        style: "action",
+                                        message: "ENG 2 FIRE P/B",
+                                        action: "PUSH"
+                                    },
+                                    {
+                                        style: "action",
+                                        message: "AGENT 1",
+                                        action: "DISCH"
+                                    },
+                                    {
+                                        style: "action",
+                                        message: "AGENT 2",
+                                        action: "DISCH"
+                                    }
+                                ]
+                            },
+                        ]
+                    },
+                    {
+                        name: "APU FIRE",
+                        messages: [
+                            {
+                                message: "",
+                                level: 3,
+                                isActive: () => {
+                                    return SimVar.GetSimVarValue("L:FIRE_TEST_APU", "Bool")
+                                },
+                                actions: [
+                                    {
+                                        style: "remark",
+                                        message: "WHEN A/C IS STOPPED"
+                                    },
+                                    {
+                                        style: "action",
+                                        message: "PARKING BRK",
+                                        action: "ON",
+                                        isCompleted: () => {
+                                            return SimVar.GetSimVarValue("BRAKE PARKING INDICATOR", "Bool") == 1;
+                                        }
+                                    },
+                                    {
+                                        style: "action",
+                                        message: "ATC",
+                                        action: "NOTIFY",
+                                    },
+                                    {
+                                        style: "action",
+                                        message: "CABIN CREW",
+                                        action: "ALERT"
+                                    },
+                                    {
+                                        style: "action",
+                                        message: "APU FIRE P/B",
+                                        action: "PUSH"
+                                    },
+                                    {
+                                        style: "action",
+                                        message: "AGENT",
+                                        action: "DISCH"
+                                    },
+                                ]
+                            },
+                        ]
+                    },
+                    {
+                        name: "Cargo Smoke",
+                        messages: [
+                            {
+                                message: "",
+                                level: 3,
+                                isActive: () => {
+                                    return SimVar.GetSimVarValue("L:FIRE_TEST_SMOKE", "Bool")
+                                },
+                                actions: [
+                                    {
+                                        style: "remark",
+                                        message: "WHEN A/C IS STOPPED"
+                                    },
+                                    {
+                                        style: "action",
+                                        message: "PARKING BRK",
+                                        action: "ON",
+                                        isCompleted: () => {
+                                            return SimVar.GetSimVarValue("BRAKE PARKING INDICATOR", "Bool") == 1;
+                                        }
+                                    },
+                                    {
+                                        style: "action",
+                                        message: "ATC",
+                                        action: "NOTIFY",
+                                    },
+                                    {
+                                        style: "action",
+                                        message: "CABIN CREW",
+                                        action: "ALERT"
+                                    },
+                                    {
+                                        style: "action",
+                                        message: "AGENT 1",
+                                        action: "DISCH"
+                                    },
+                                    {
+                                        style: "action",
+                                        message: "AGENT 2",
+                                        action: "DISCH"
+                                    },
+                                ]
+                            },
+                        ]
+                    },
                 ],
                 normal: [
                     {
@@ -455,7 +649,7 @@ var A320_Neo_UpperECAM;
             if (this.landingMemo != null) this.landingMemo.divMain.style.display = this.showLandingMemo ? "block" : "none";
             //Hide left message panel when memo is diplayed
             if (this.leftEcamMessagePanel != null) this.leftEcamMessagePanel.divMain.style.display = (this.showTakeoffMemo || this.showLandingMemo) ? "none" : "block";
-        
+
             if (SimVar.GetSimVarValue("L:A32NX_BTN_TOCONFIG", "Bool") == 1) {
                 SimVar.SetSimVarValue("L:A32NX_BTN_TOCONFIG", "Bool", 0);
                 this.updateTakeoffConfigWarnings(true);
