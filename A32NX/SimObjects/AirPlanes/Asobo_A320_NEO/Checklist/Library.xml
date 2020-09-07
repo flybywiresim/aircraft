@@ -535,10 +535,10 @@
 			<CheckpointDesc SubjectTT="TT:Cabin Report" ExpectationTT="TT:RECEIVE"/>
 		</Checkpoint>
 		<Checkpoint Id="A320_TAXI_TO_CFG_PUSH">
-			<CheckpointDesc SubjectTT="TT:Takeoff Config Pushbutton (INOP)" ExpectationTT="TT:PRESS"/>
+			<CheckpointDesc SubjectTT="TT:Takeoff Config Pushbutton" ExpectationTT="TT:PRESS"/>
 		</Checkpoint>
 		<Checkpoint Id="A320_TAXI_ECAM_TO_MEMO">
-			<CheckpointDesc SubjectTT="TT:ECAM Takeoff MEMO (INOP)" ExpectationTT="TT:TAKEOFF, NO BLUE"/>
+			<CheckpointDesc SubjectTT="TT:ECAM Takeoff MEMO" ExpectationTT="TT:TAKEOFF, NO BLUE"/>
 		</Checkpoint>
 		<!-- Before Takeoff -->
 		<Checkpoint Id="A320_BeforeTakeoff_BRAKE_TEMP">
