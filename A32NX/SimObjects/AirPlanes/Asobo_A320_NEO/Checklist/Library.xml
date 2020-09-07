@@ -551,10 +551,10 @@
 			<CheckpointDesc SubjectTT="TT:Approach Path Clear of Traffic" ExpectationTT="TT:CHECK"/>
 		</Checkpoint>
 		<Checkpoint Id="A320_BeforeTakeoff_ENG_MODE_SEL">
-			<CheckpointDesc SubjectTT="TT:Engine Mode Selector" ExpectationTT="TT:IGN/START or NORM"/>
+			<CheckpointDesc SubjectTT="TT:Engine Mode Selector" ExpectationTT="TT:IGN/START OR NORM"/>
 		</Checkpoint>
 		<Checkpoint Id="A320_BeforeTakeoff_TCAS_MODE_SEL">
-			<CheckpointDesc SubjectTT="TT:TCAS Mode Selector (INOP)" ExpectationTT="TT:TA or TA/RA"/>
+			<CheckpointDesc SubjectTT="TT:TCAS Mode Selector (INOP)" ExpectationTT="TT:TA OR TA/RA"/>
 		</Checkpoint>
 		<Checkpoint Id="A320_BeforeTakeoff_PACKS">
 			<CheckpointDesc SubjectTT="TT:Packs (INOP)" ExpectationTT="TT:AS REQUIRED"/>
@@ -566,7 +566,7 @@
 			<CheckpointDesc SubjectTT="TT:Sliding Table (INOP)" ExpectationTT="TT:STOWED"/>
 		</Checkpoint>
 		<Checkpoint Id="A320_BeforeTakeoff_ATC_CLRD_TO">
-			<CheckpointDesc SubjectTT="TT:ATC When Cleared for T/O" ExpectationTT="TT:ON(XPDR or XPNDR)"/>
+			<CheckpointDesc SubjectTT="TT:ATC When Cleared for T/O" ExpectationTT="TT:ON"/>
 		</Checkpoint>
 		<!-- Takeoff -->
 		<Checkpoint Id="A320_TO_BRAKES">
@@ -612,7 +612,7 @@
 			<CheckpointDesc SubjectTT="TT:AT ACCELERATION ALTITUDE" ExpectationTT="TT:"/>
 		</Checkpoint>
 		<Checkpoint Id="A320_TO_FMA">
-			<CheckpointDesc SubjectTT="TT:FMA" ExpectationTT="TT:&quot;THR CLB/CLB&quot; or &quot;THR CLB/OP CLB&quot;"/>
+			<CheckpointDesc SubjectTT="TT:FMA" ExpectationTT="TT:THR CLB/CLB OR THR CLB/OP CLB"/>
 		</Checkpoint>
 		<Checkpoint Id="A320_TO_ABOVE_ACCEL_SPACER">
 			<CheckpointDesc SubjectTT="TT:ABOVE ACCELERATION ALTITUDE" ExpectationTT="TT:"/>
@@ -770,7 +770,7 @@
 			<CheckpointDesc SubjectTT="TT:Barometric Reference" ExpectationTT="TT:SET (BUT STILL ON STD)"/>
 		</Checkpoint>
 		<Checkpoint Id="A320_DESCENT_TERRAIN_ND">
-			<CheckpointDesc SubjectTT="TT:Terrain on ND" ExpectationTT="TT:ON If EGPWS is AVAIL"/>
+			<CheckpointDesc SubjectTT="TT:Terrain on ND" ExpectationTT="TT:ON IF EGPWS AVAIL"/>
 		</Checkpoint>
 		<Checkpoint Id="A320_DESCENT_ECAM_STATUS">
 			<CheckpointDesc SubjectTT="TT:ECAM Status" ExpectationTT="TT:CHECK"/>
@@ -801,7 +801,7 @@
 			<CheckpointDesc SubjectTT="TT:INITIAL APPROACH" ExpectationTT="TT:"/>
 		</Checkpoint>
 		<Checkpoint Id="A320_ILSAPPR_ENG_MODE_SEL">
-			<CheckpointDesc SubjectTT="TT:Engine Mode Selector" ExpectationTT="TT:IGN/START or NORM"/>
+			<CheckpointDesc SubjectTT="TT:Engine Mode Selector" ExpectationTT="TT:IGN/START OR NORM"/>
 		</Checkpoint>
 		<Checkpoint Id="A320_ILSAPPR_SEATBELT">
 			<CheckpointDesc SubjectTT="TT:Seatbelt Signs" ExpectationTT="TT:ON/AUTO"/>
@@ -840,7 +840,7 @@
 			<CheckpointDesc SubjectTT="TT:Flaps 1 (AT GREEN DOT SPEED)" ExpectationTT="TT:SELECT"/>
 		</Checkpoint>
 		<Checkpoint Id="A320_ILSAPPR_TCAS">
-			<CheckpointDesc SubjectTT="TT:TCAS (INOP)" ExpectationTT="TT:TA or TA/RA"/>
+			<CheckpointDesc SubjectTT="TT:TCAS (INOP)" ExpectationTT="TT:TA OR TA/RA"/>
 		</Checkpoint>
 		<Checkpoint Id="A320_ILSAPPR_FMA">
 			<CheckpointDesc SubjectTT="TT:Flight Mode Annunciator" ExpectationTT="TT:CHECK"/>
@@ -910,7 +910,7 @@
 			<CheckpointDesc SubjectTT="TT:INITIAL APPROACH" ExpectationTT="TT:"/>
 		</Checkpoint>
 		<Checkpoint Id="A320_NONPAPPR_ENG_MODE_SEL">
-			<CheckpointDesc SubjectTT="TT:Engine Mode Selector" ExpectationTT="TT:IGN/START or NORM"/>
+			<CheckpointDesc SubjectTT="TT:Engine Mode Selector" ExpectationTT="TT:IGN/START OR NORM"/>
 		</Checkpoint>
 		<Checkpoint Id="A320_NONPAPPR_SEATBELT">
 			<CheckpointDesc SubjectTT="TT:Seatbelt Signs" ExpectationTT="TT:ON/AUTO"/>
@@ -928,7 +928,7 @@
 			<CheckpointDesc SubjectTT="TT:Speed Brakes" ExpectationTT="TT:ARMED"/>
 		</Checkpoint>
 		<Checkpoint Id="A320_NONPAPPR_NAV_ACCURACY">
-			<CheckpointDesc SubjectTT="TT:Navigation Accuracy" ExpectationTT="TT:MONITOR(HIGH)"/>
+			<CheckpointDesc SubjectTT="TT:Navigation Accuracy" ExpectationTT="TT:MONITOR (HIGH)"/>
 		</Checkpoint>
 		<Checkpoint Id="A320_NONPAPPR_RADAR_TILT">
 			<CheckpointDesc SubjectTT="TT:Radar Tilt (INOP)" ExpectationTT="TT:ADJUST"/>
@@ -958,7 +958,7 @@
 			<CheckpointDesc SubjectTT="TT:Flaps 1 (AT GREEN DOT SPEED)" ExpectationTT="TT:SELECT"/>
 		</Checkpoint>
 		<Checkpoint Id="A320_NONPAPPR_TCAS">
-			<CheckpointDesc SubjectTT="TT:TCAS (INOP)" ExpectationTT="TT:TA or TA/RA"/>
+			<CheckpointDesc SubjectTT="TT:TCAS (INOP)" ExpectationTT="TT:TA OR TA/RA"/>
 		</Checkpoint>
 		<Checkpoint Id="A320_NONPAPPR_ND">
 			<CheckpointDesc SubjectTT="TT:ND Display" ExpectationTT="TT:ADJUST RANGE/MODE"/>
