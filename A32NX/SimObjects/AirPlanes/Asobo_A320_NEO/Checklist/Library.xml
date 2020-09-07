@@ -15,7 +15,7 @@
          <Instrument Id="ENGINE_Switch_Engine_Mode" />
       </Checkpoint>
       <Checkpoint Id="A320_PREP_LANDING_GEAR_LEVER">
-         <CheckpointDesc SubjectTT="TT:Landing Gear Lever" ExpectationTT="TT:Check DOWN position" />
+         <CheckpointDesc SubjectTT="TT:Landing Gear Lever" ExpectationTT="TT:CHECK DOWN" />
          <Instrument Id="LANDING_GEAR_Lever_Gear" />
       </Checkpoint>
       <Checkpoint Id="A320_PREP_WIPERS">
@@ -375,7 +375,7 @@
          <CheckpointDesc SubjectTT="TT:FMGS: Takeoff Data" ExpectationTT="TT:CALCULATE/CHECK" />
       </Checkpoint>
       <Checkpoint Id="A320_CPREP1_FMGS_FPLAN_AB_CHECK">
-         <CheckpointDesc SubjectTT="TT:FMGS: Flight Plan A and B" ExpectationTT="TT:Check" />
+         <CheckpointDesc SubjectTT="TT:FMGS: Flight Plan A and B" ExpectationTT="TT:CHECK" />
       </Checkpoint>
       <Checkpoint Id="A320_CPREP1_SQUAWK">
          <CheckpointDesc SubjectTT="TT:Squawk Code" ExpectationTT="TT:SET" />
@@ -597,7 +597,7 @@
          <CheckpointDesc SubjectTT="TT:Sliding Table (INOP)" ExpectationTT="TT:STOWED" />
       </Checkpoint>
       <Checkpoint Id="A320_BeforeTakeoff_ATC_CLRD_TO">
-         <CheckpointDesc SubjectTT="TT:ATC When Cleared for T/O" ExpectationTT="TT:ON)" />
+         <CheckpointDesc SubjectTT="TT:ATC When Cleared for T/O" ExpectationTT="TT:ON" />
       </Checkpoint>
       <!-- Takeoff -->
       <Checkpoint Id="A320_TO_BRAKES">
