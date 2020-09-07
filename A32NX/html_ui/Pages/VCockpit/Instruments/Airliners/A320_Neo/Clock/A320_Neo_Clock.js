@@ -1,8 +1,9 @@
 class A320_Neo_Clock extends BaseAirliners {
     constructor() {
         super();
-        this.chronoValue = 0;
-        this.localDeltaTime = 0;
+        this.chronoAcc = 0; // Accumulated time since he chrono was first started. This is to retain time after a pause.
+        this.chronoStart = 0;
+        this.lastChronoState = null;
         this.lastChronoTime = null;
         this.lastDisplayTime = null;
         this.lastFlightTime = null;
@@ -21,24 +22,28 @@ class A320_Neo_Clock extends BaseAirliners {
     }
     onInteractionEvent(_args) {
     }
-    updateLocalDelta() {
-        const nowTime = Date.now()
-        this.localDeltaTime = nowTime - this.lastLocalTime
-        this.lastLocalTime = nowTime
-    }
     Update() {
         super.Update();
         if (this.CanUpdate()) {
-            this.updateLocalDelta()
-            const chronoActive = SimVar.GetSimVarValue("L:PUSH_CHRONO_CHR", "Bool");
-            if (chronoActive === 1) {
-                this.chronoValue += this.localDeltaTime / 1000;
+            const absTime = SimVar.GetGlobalVarValue("ABSOLUTE TIME", "Seconds")
+
+            const chronoState = SimVar.GetSimVarValue("L:PUSH_CHRONO_CHR", "Bool");
+            if (chronoState !== this.lastChronoState) {
+                this.lastChronoState = chronoState
+                if (chronoState === 1) {
+                    this.chronoStart = absTime
+                } else {
+                    this.chronoAcc = this.chronoSeconds
+                    this.chronoStart = 0
+                }
             }
 
             const currentResetVal = SimVar.GetSimVarValue("L:PUSH_CHRONO_RST", "Bool")
             if (currentResetVal != this.lastResetVal) {
                 this.lastResetVal = currentResetVal
-                this.chronoValue = 0
+                // Intentionally performed on every press.
+                this.chronoStart = chronoState === 1 ? absTime : 0
+                this.chronoAcc = 0
             }
 
             if (this.topSelectorElem) {
@@ -102,10 +107,9 @@ class A320_Neo_Clock extends BaseAirliners {
         return "";
     }
     getChronoTime() {
-        const chronoActive = SimVar.GetSimVarValue("L:PUSH_CHRONO_CHR", "Bool");
-        const totalSeconds = this.chronoValue;
+        const totalSeconds = this.chronoSeconds
 
-        if (chronoActive || totalSeconds > 0) {
+        if (this.chronoStart || totalSeconds > 0) {
             const hours = Math.floor(totalSeconds / 3600).toString().padStart(2, '0');
             const minutes = Math.floor((totalSeconds % 3600) / 60).toString().padStart(2, '0');
 
@@ -117,6 +121,15 @@ class A320_Neo_Clock extends BaseAirliners {
             }
         }
         return "";
+    }
+    get chronoSeconds () {
+        let totalSeconds = this.chronoAcc
+
+        if (this.chronoStart) {
+            totalSeconds += SimVar.GetGlobalVarValue("ABSOLUTE TIME", "Seconds") - this.chronoStart
+        }
+
+        return Math.max(totalSeconds, 0)
     }
 }
 registerInstrument("a320-neo-clock-element", A320_Neo_Clock);
