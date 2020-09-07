@@ -809,6 +809,21 @@
 		<BASE_NAME>TOCONFIG</BASE_NAME>
 		<TOOLTIPID>Test T.O CONFIG</TOOLTIPID>
 	</UseTemplate>
+
+	<UseTemplate Name="ASOBO_ECAM_BUTTON_Template">
+		<BASE_NAME>CLR</BASE_NAME>
+		<TOOLTIPID>Clear ECAM messages</TOOLTIPID>
+	</UseTemplate>
+
+	<UseTemplate Name="ASOBO_ECAM_BUTTON_Template">
+		<BASE_NAME>CLR2</BASE_NAME>
+		<TOOLTIPID>Clear ECAM messages</TOOLTIPID>
+	</UseTemplate>
+
+	<UseTemplate Name="ASOBO_ECAM_BUTTON_Template">
+		<BASE_NAME>RCL</BASE_NAME>
+		<TOOLTIPID>Recall ECAM messages</TOOLTIPID>
+	</UseTemplate>
 </Template>
 
 <Template Name="ASOBO_AIRBUS_Push_Fuel_Pump_Template">

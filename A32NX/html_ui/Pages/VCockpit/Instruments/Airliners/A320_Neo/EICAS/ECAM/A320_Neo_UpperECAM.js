@@ -187,6 +187,7 @@ var A320_Neo_UpperECAM;
                         name: "CONFIG",
                         messages: [
                             {
+                                id: "config_flaps",
                                 message: "",
                                 level: 3,
                                 isActive: () => {
@@ -201,6 +202,7 @@ var A320_Neo_UpperECAM;
                                 ]
                             },
                             {
+                                id: "config_spd_brk",
                                 message: "",
                                 level: 3,
                                 isActive: () => {
@@ -215,6 +217,7 @@ var A320_Neo_UpperECAM;
                                 ]
                             },
                             {
+                                id: "config_park_brake",
                                 message: "",
                                 level: 3,
                                 isActive: () => {
@@ -627,6 +630,17 @@ var A320_Neo_UpperECAM;
                 this.updateTakeoffConfigWarnings(true);
             }
 
+            if (SimVar.GetSimVarValue("L:A32NX_BTN_CLR", "Bool") == 1 || SimVar.GetSimVarValue("L:A32NX_BTN_CLR2", "Bool") == 1) {
+                SimVar.SetSimVarValue("L:A32NX_BTN_CLR", "Bool", 0);
+                SimVar.SetSimVarValue("L:A32NX_BTN_CLR2", "Bool", 0);
+                this.leftEcamMessagePanel.clearHighestCategory();
+            }
+
+            if (SimVar.GetSimVarValue("L:A32NX_BTN_RCL", "Bool") == 1) {
+                SimVar.SetSimVarValue("L:A32NX_BTN_RCL", "Bool", 0);
+                this.leftEcamMessagePanel.recall();
+            }
+
             const leftThrottleDetent = Simplane.getEngineThrottleMode(0);
             const rightThrottleDetent = Simplane.getEngineThrottleMode(1);
             const highestThrottleDetent = (leftThrottleDetent >= rightThrottleDetent) ? leftThrottleDetent : rightThrottleDetent;
@@ -652,6 +666,9 @@ var A320_Neo_UpperECAM;
                 this.takeoffMemoTimer = 0;
             } else {
                 SimVar.SetSimVarValue("L:A32NX_TO_CONFIG_NORMAL", "Bool", 0);
+                this.leftEcamMessagePanel.recall("config_flaps");
+                this.leftEcamMessagePanel.recall("config_spd_brk");
+                this.leftEcamMessagePanel.recall("config_park_brake");
             }
         }
         getInfoPanelManager() {
@@ -1355,6 +1372,7 @@ var A320_Neo_UpperECAM;
                 2: 0,
                 3: 0
             }
+            this.clearedMessages = [];
         }
         init() {
             super.init();
@@ -1457,17 +1475,42 @@ var A320_Neo_UpperECAM;
                 const messages = this.messages.failures[i].messages;
                 for (var n = 0; n < messages.length; n++) {
                     const message = messages[n];
-                    if (message.isActive()) {
+                    if (message.id == null) message.id = `${i} ${n}`;
+                    if (message.isActive() && !this.clearedMessages.includes(message.id)) {
                         this.hasActiveFailures = true;
                         if (output[i] == null) {
                             output[i] = this.messages.failures[i];
                             output[i].messages = [];
                         }
+                        
                         output[i].messages.push(message);
                     }
                 }
             }
             return output;
+        }
+
+        clearHighestCategory() {
+            const activeFailures = this.getActiveFailures();
+            for (const n in activeFailures) {
+                var category = activeFailures[n];
+                console.log(JSON.stringify(category));
+                for (const failure of category.messages) {
+                    this.clearedMessages.push(failure.id);
+                }
+                return;
+            }
+        }
+
+        recall(_failure) {
+            if (_failure != null) {
+                const index = this.clearedMessages.indexOf(_failure);
+                if (index > -1) {
+                    this.clearedMessages.splice(index, 1);
+                }
+            } else {
+                this.clearedMessages = [];
+            }
         }
 
         getActiveMessages() {
