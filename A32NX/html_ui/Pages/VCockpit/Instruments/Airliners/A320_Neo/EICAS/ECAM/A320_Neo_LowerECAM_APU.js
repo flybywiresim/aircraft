@@ -49,6 +49,10 @@ var A320_Neo_LowerECAM_APU;
                 return;
             }
 
+            // *******************************************************************************************************
+            // APU Logic that isn't tied to the APU ECAM SCREEN belongs in A32NX/html_ui/Pages/A32NX_Core/A32NX_APU.js
+            // *******************************************************************************************************
+
             const currentAPUMasterState = SimVar.GetSimVarValue("FUELSYSTEM VALVE SWITCH:8", "Bool");
 
             if (this.lastAPUMasterState != currentAPUMasterState) {

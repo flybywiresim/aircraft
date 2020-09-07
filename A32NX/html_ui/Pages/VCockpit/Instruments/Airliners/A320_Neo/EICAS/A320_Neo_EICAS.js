@@ -29,7 +29,7 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
     Init() {
         super.Init();
         this.changePage("FUEL"); // MODIFIED
-        this.A32NXCore = new A32NXCore();
+        this.A32NXCore = new A32NX_Core();
         this.A32NXCore.init();
 
         this.lastAPUMasterState = 0; // MODIFIED

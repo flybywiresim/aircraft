@@ -1,20 +1,13 @@
-class A32NXCore {
+class A32NX_APU {
     constructor() {
-        console.log('A32NXCore constructed');
+        console.log('A32NX_APU constructed');
     }
     init() {
-        console.log('A32NXCore init');
-        this.flag = true;
-
+        console.log('A32NX_APU init');
         SimVar.SetSimVarValue("L:APU_FLAP_OPEN", "Percent", 0);
         this.lastAPUBleedState = -1;
     }
     update(_deltaTime) {
-        if (this.flag) {
-            console.log('A32NXCore first update! ' + _deltaTime);
-            this.flag = false;
-        }
-
         const currentAPUMasterState = SimVar.GetSimVarValue("FUELSYSTEM VALVE SWITCH:8", "Bool");
         const apuFlapOpenPercent = SimVar.GetSimVarValue("L:APU_FLAP_OPEN", "Percent");
         const APUPctRPM = SimVar.GetSimVarValue("APU PCT RPM", "percent");
@@ -61,7 +54,7 @@ class A32NXCore {
         }
 
         //Bleed
-        const currentAPUBleedState = SimVar.GetSimVarValue("BLEED AIR APU","Bool")
+        const currentAPUBleedState = SimVar.GetSimVarValue("BLEED AIR APU","Bool");
         if (currentAPUBleedState !== this.lastAPUBleedState) {
             this.lastAPUBleedState = currentAPUBleedState
             if (currentAPUBleedState === 1) {
