@@ -651,6 +651,9 @@ var A320_Neo_UpperECAM;
             if (Simplane.getCurrentFlightPhase() > 2) {
                 this.activeTakeoffConfigWarnings = [];
             }
+
+            if (!(this.leftEcamMessagePanel.hasCautions)) SimVar.SetSimVarValue("L:A32NX_MASTER_CAUTION", "Bool", 0);
+            if (!(this.leftEcamMessagePanel.hasWarnings)) SimVar.SetSimVarValue("L:A32NX_MASTER_WARNING", "Bool", 0);
         }
         updateTakeoffConfigWarnings(_test) {
             const flaps = SimVar.GetSimVarValue("FLAPS HANDLE INDEX", "Enum");
@@ -1471,6 +1474,8 @@ var A320_Neo_UpperECAM;
         getActiveFailures() {
             var output = {};
             this.hasActiveFailures = false;
+            this.hasWarnings = false;
+            this.hasCautions = false;
             for (var i = 0; i < this.messages.failures.length; i++) {
                 const messages = this.messages.failures[i].messages;
                 for (var n = 0; n < messages.length; n++) {
@@ -1478,6 +1483,8 @@ var A320_Neo_UpperECAM;
                     if (message.id == null) message.id = `${i} ${n}`;
                     if (message.isActive() && !this.clearedMessages.includes(message.id)) {
                         this.hasActiveFailures = true;
+                        if (message.level == 3) this.hasWarnings = true;
+                        if (message.level == 2) this.hasCautions = true;
                         if (output[i] == null) {
                             output[i] = this.messages.failures[i];
                             output[i].messages = [];
