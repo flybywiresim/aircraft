@@ -1,3 +1,4 @@
+/** @type A320_Neo_LowerECAM_APU */
 var A320_Neo_LowerECAM_APU;
 (function (A320_Neo_LowerECAM_APU) {
     class Definitions {
@@ -18,8 +19,6 @@ var A320_Neo_LowerECAM_APU;
             // The first update sets it correctly for us.
             this.lastAPUMasterState = -1;
             this.lastAPUBleedState = -1;
-
-            SimVar.SetSimVarValue("L:APU_FLAP_OPEN", "Percent", 0);
 
             //Generator
             this.APUGenInfo = this.querySelector("#APUGenInfo_On");
@@ -63,57 +62,14 @@ var A320_Neo_LowerECAM_APU;
 
             const apuFlapOpenPercent = SimVar.GetSimVarValue("L:APU_FLAP_OPEN", "Percent");
 
-            if (apuFlapOpenPercent === 100 && SimVar.GetSimVarValue("A:APU SWITCH", "Bool") === 0) {
-                const apuFuelsystemValveOpen = SimVar.GetSimVarValue("A:FUELSYSTEM VALVE OPEN:8", "Percent");
-                const apuStartButtonPressed = SimVar.GetSimVarValue("L:A32NX_APU_START_ACTIVATED", "Bool");
-                if (apuFuelsystemValveOpen === 100 && apuStartButtonPressed) {
-                    // This fires the APU_STARTER key event, which will cause `A:APU SWITCH` to be set to 1
-                    SimVar.SetSimVarValue("K:APU_STARTER", "Number", 1);
-                }
-            }
-
-            // Takes 20 seconds to open
-            const apuFlapOpenPercentSpeed = 20;
-
-            if (currentAPUMasterState === 1 && apuFlapOpenPercent < 100) {
-                const newFlap = Math.min(apuFlapOpenPercent + ((100 / apuFlapOpenPercentSpeed) * (_deltaTime / 1000)), 100);
-                SimVar.SetSimVarValue("L:APU_FLAP_OPEN", "Percent", newFlap);
-            } else if (currentAPUMasterState === 0 && apuFlapOpenPercent > 0 && APUPctRPM <= 7) {
-                const newFlap = Math.max(apuFlapOpenPercent - ((100 / apuFlapOpenPercentSpeed) * (_deltaTime / 1000)), 0);
-                SimVar.SetSimVarValue("L:APU_FLAP_OPEN", "Percent", newFlap);
-            }
-
-            //APU start, stop
-            if(APUPctRPM >= 87){
-                SimVar.SetSimVarValue("L:APU_GEN_ONLINE","Bool",1);
-                SimVar.SetSimVarValue("L:APU_GEN_VOLTAGE","Volts",115);
-                SimVar.SetSimVarValue("L:APU_GEN_AMPERAGE","Amperes",782.609); // 1000 * 90 kVA / 115V = 782.609A
-                SimVar.SetSimVarValue("L:APU_GEN_FREQ","Hertz",Math.round((4.46*APUPctRPM)-46.15));
-                SimVar.SetSimVarValue("L:APU_BLEED_PRESSURE","PSI",35);
-                SimVar.SetSimVarValue(
-                    "L:APU_LOAD_PERCENT",
-                    "percent",
-                    Math.max(SimVar.GetSimVarValue("L:APU_GEN_AMPERAGE","Amperes")/SimVar.GetSimVarValue("ELECTRICAL TOTAL LOAD AMPS","Amperes"), 0)
-                );
-            } else {
-                SimVar.SetSimVarValue("L:APU_GEN_ONLINE","Bool",0);
-                SimVar.SetSimVarValue("L:APU_GEN_VOLTAGE","Volts",0);
-                SimVar.SetSimVarValue("L:APU_GEN_AMPERAGE","Amperes",0);
-                SimVar.SetSimVarValue("L:APU_GEN_FREQ","Hertz",0);
-                SimVar.SetSimVarValue("L:APU_BLEED_PRESSURE","PSI",0);
-                SimVar.SetSimVarValue("L:APU_LOAD_PERCENT","percent",0);
-            }
-
             //Bleed
             const currentAPUBleedState = SimVar.GetSimVarValue("BLEED AIR APU","Bool")
             if (currentAPUBleedState !== this.lastAPUBleedState) {
                 this.lastAPUBleedState = currentAPUBleedState
                 if (currentAPUBleedState === 1) {
-                    this.APUBleedTimer = 3;
                     this.APUBleedOn.setAttribute("visibility", "visible");
                     this.APUBleedOff.setAttribute("visibility", "hidden");
                 } else {
-                    this.APUBleedTimer = 0;
                     this.APUBleedOn.setAttribute("visibility", "hidden");
                     this.APUBleedOff.setAttribute("visibility", "visible");
                 }
@@ -128,11 +84,6 @@ var A320_Neo_LowerECAM_APU;
 
             //AVAIL indication & bleed pressure
             if (APUPctRPM > 95) {
-                if (this.APUBleedTimer > 0) {
-                    this.APUBleedTimer -= _deltaTime/1000;
-                    SimVar.SetSimVarValue("L:APU_BLEED_PRESSURE","PSI",Math.round(35-this.APUBleedTimer));
-                }
-
                 this.APUAvail.setAttribute("visibility", "visible");
 
                 if (SimVar.GetSimVarValue("APU GENERATOR ACTIVE", "Bool") == 1 && SimVar.GetSimVarValue("EXTERNAL POWER ON", "Bool") === 0) {
