@@ -1,5 +1,6 @@
 *
 !*/
+!/.vscode/**
 !/.github/**
 !/A32NX/**
 !/docs/**
