@@ -131,7 +131,7 @@
 					<Checkpoint ReferenceId="A320_CPREP1_THRUST_LEVERS"/>
 					<Checkpoint ReferenceId="A320_CPREP1_ENGINE_MASTER"/>
 					<Checkpoint ReferenceId="A320_CPREP1_ENGINE_MODE_SEL"/>
-					<Checkpoint ReferenceId="A320_CPREP1_BARKING_BRAKE"/>
+					<Checkpoint ReferenceId="A320_CPREP1_PARKING_BRAKE"/>
 					<Checkpoint ReferenceId="A320_CPREP1_GRAVITY_GEAR"/>
 					<Checkpoint ReferenceId="A320_CPREP1_ATC"/>
 					<Checkpoint ReferenceId="A320_CPREP1_ALT_REPORT"/>
