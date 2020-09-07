@@ -347,7 +347,7 @@ var A320_Neo_UpperECAM;
                                                     "CHECK",
                                                     "READY",
                                                     function() {
-                                                        return (SimVar.GetSimVarValue("L:PUSH_OVHD_CALLS_ALL", "Bool") == 1);
+                                                        return (SimVar.GetSimVarValue("L:A32NX_CABIN_READY", "Bool") == 1);
                                                     }),
                                                 new A320_Neo_UpperECAM.MemoItem(
                                                     "to-memo-splrs",
@@ -398,7 +398,7 @@ var A320_Neo_UpperECAM;
                                                         "CHECK",
                                                         "READY",
                                                         function() {
-                                                            return (SimVar.GetSimVarValue("L:PUSH_OVHD_CALLS_ALL", "Bool") == 0);
+                                                            return (SimVar.GetSimVarValue("L:A32NX_CABIN_READY", "Bool") == 1);
                                                         }),
                                                     new A320_Neo_UpperECAM.MemoItem(
                                                         "ldg-memo-splrs",
@@ -486,6 +486,10 @@ var A320_Neo_UpperECAM;
 
             if (Simplane.getCurrentFlightPhase() > 2) {
                 this.activeTakeoffConfigWarnings = [];
+            }
+
+            if ((SimVar.GetSimVarValue("L:PUSH_OVHD_CALLS_ALL", "Bool") == 1) || (SimVar.GetSimVarValue("L:PUSH_OVHD_CALLS_FWD", "Bool") == 1) || (SimVar.GetSimVarValue("L:PUSH_OVHD_CALLS_AFT", "Bool") == 1)) {
+                SimVar.SetSimVarValue("L:A32NX_CABIN_READY", "Bool", 1);
             }
         }
         updateTakeoffConfigWarnings(_test) {
