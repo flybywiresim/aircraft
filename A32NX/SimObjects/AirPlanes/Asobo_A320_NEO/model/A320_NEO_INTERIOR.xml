@@ -1043,6 +1043,7 @@
 				<POTENTIOMETER>23</POTENTIOMETER>
 			</UseTemplate>
 		</Component>
+		<CameraTitle>ECAM</CameraTitle>
 	</Component>
 
 	<Component ID="OVERHEAD">
@@ -1793,6 +1794,7 @@
 				<POS_OFF>0</POS_OFF>
 				<POS_SLOW>1</POS_SLOW>
 				<POS_NORM>2</POS_NORM>
+				<PART_ID>HANDLING_Switch_Wipers</PART_ID>
 			</UseTemplate>
 		</Component>
 		<CameraTitle>Overhead</CameraTitle>
