@@ -670,7 +670,7 @@ var A320_Neo_UpperECAM;
 
             if (!(this.leftEcamMessagePanel.hasCautions)) SimVar.SetSimVarValue("L:A32NX_MASTER_CAUTION", "Bool", 0);
             if (!(this.leftEcamMessagePanel.hasWarnings)) SimVar.SetSimVarValue("L:A32NX_MASTER_WARNING", "Bool", 0);
-            
+
             if ((SimVar.GetSimVarValue("L:PUSH_OVHD_CALLS_ALL", "Bool") == 1) || (SimVar.GetSimVarValue("L:PUSH_OVHD_CALLS_FWD", "Bool") == 1) || (SimVar.GetSimVarValue("L:PUSH_OVHD_CALLS_AFT", "Bool") == 1)) {
                 SimVar.SetSimVarValue("L:A32NX_CABIN_READY", "Bool", 1);
             }
@@ -1492,7 +1492,7 @@ var A320_Neo_UpperECAM;
 
         
         getActiveFailures() {
-            var output = {};
+            let output = {};
             this.hasActiveFailures = false;
             this.hasWarnings = false;
             this.hasCautions = false;
@@ -1519,10 +1519,8 @@ var A320_Neo_UpperECAM;
 
         clearHighestCategory() {
             const activeFailures = this.getActiveFailures();
-            for (const n in activeFailures) {
-                var category = activeFailures[n];
-                console.log(JSON.stringify(category));
-                for (const failure of category.messages) {
+            for (const category in activeFailures) {
+                for (const failure of activeFailures[category].messages) {
                     this.clearedMessages.push(failure.id);
                 }
                 return;
