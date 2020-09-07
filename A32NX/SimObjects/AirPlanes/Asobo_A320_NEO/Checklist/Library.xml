@@ -576,7 +576,7 @@
 			<CheckpointDesc SubjectTT="TT:Thrust Levers" ExpectationTT="TT:FLX OR TOGA"/>
 		</Checkpoint>
 		<Checkpoint Id="A320_TO_CHRONO">
-			<CheckpointDesc SubjectTT="TT:Chrono (INOP)" ExpectationTT="TT:START"/>
+			<CheckpointDesc SubjectTT="TT:Chrono" ExpectationTT="TT:START"/>
 		</Checkpoint>
 		<Checkpoint Id="A320_TO_PFD_ND">
 			<CheckpointDesc SubjectTT="TT:PFD/ND" ExpectationTT="TT:CHECK"/>
@@ -955,7 +955,7 @@
 			<CheckpointDesc SubjectTT="TT:MANAGE VERT GUIDANCE APPR: APPR BUTTON" ExpectationTT="TT:PRESS"/>
 		</Checkpoint>
 		<Checkpoint Id="A320_NONPAPPR_FLAPS_ONE">
-			<CheckpointDesc SubjectTT="TT:Flaps 1 (AT GREEN  DOT SPEED)" ExpectationTT="TT:SELECT"/>
+			<CheckpointDesc SubjectTT="TT:Flaps 1 (AT GREEN DOT SPEED)" ExpectationTT="TT:SELECT"/>
 		</Checkpoint>
 		<Checkpoint Id="A320_NONPAPPR_TCAS">
 			<CheckpointDesc SubjectTT="TT:TCAS (INOP)" ExpectationTT="TT:TA or TA/RA"/>
@@ -994,7 +994,7 @@
 			<CheckpointDesc SubjectTT="TT:Exterior Lights" ExpectationTT="TT:SET"/>
 		</Checkpoint>
 		<Checkpoint Id="A320_NONPAPPR_SLIDING_TABLE">
-			<CheckpointDesc SubjectTT="TT:Sliding  Table (INOP)" ExpectationTT="TT:STOWED"/>
+			<CheckpointDesc SubjectTT="TT:Sliding Table (INOP)" ExpectationTT="TT:STOWED"/>
 		</Checkpoint>
 		<Checkpoint Id="A320_NONPAPPR_ECAM_MEMO">
 			<CheckpointDesc SubjectTT="TT:ECAM MEMO" ExpectationTT="TT:LANDING NO BLUE"/>
@@ -1189,7 +1189,7 @@
 			<CheckpointDesc SubjectTT="TT:Battery 1 and 2" ExpectationTT="TT:OFF"/>
 		</Checkpoint>
 		<Checkpoint Id="A320_BATT_ANNOT_BAT1_2_VOLT">
-			<CheckpointDesc SubjectTT="TT:Battery 1  and 2 Voltage" ExpectationTT="TT:ABOVE 25.5V"/>
+			<CheckpointDesc SubjectTT="TT:Battery 1 and 2 Voltage" ExpectationTT="TT:ABOVE 25.5V"/>
 		</Checkpoint>
 		<Checkpoint Id="A320_BATT_ANNOT_VOLT_BELOW">
 			<CheckpointDesc SubjectTT="TT:If the Voltage is below 25.5 Volts:" ExpectationTT="TT:"/>
