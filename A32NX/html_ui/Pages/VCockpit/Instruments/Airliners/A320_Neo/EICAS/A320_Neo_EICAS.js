@@ -1,7 +1,20 @@
 class A320_Neo_EICAS extends Airliners.BaseEICAS {
     get templateID() { return "A320_Neo_EICAS"; }
-    constructor() {
-        super(true);
+    changePage(_pageName) {
+        let pageName = _pageName.toUpperCase();
+        for (var i = 0; i < this.lowerScreenPages.length; i++) {
+            if (this.lowerScreenPages[i].name == pageName) {
+                let pageIndex = i;
+                if (pageIndex == this.currentPage) {
+                    pageName = "CRZ";
+                    pageIndex = -1;
+                }
+                this.currentPage = pageIndex;
+                SimVar.SetSimVarValue("L:XMLVAR_ECAM_CURRENT_PAGE", "number", pageIndex);
+                break;
+            }
+        }
+        this.SwitchToPageName(this.LOWER_SCREEN_GROUP_NAME, pageName);
     }
     createUpperScreenPage() {
         this.upperTopScreen = new Airliners.EICASScreen("TopScreen", "TopScreen", "a320-neo-upper-ecam");
@@ -31,6 +44,9 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
     }
     Init() {
         super.Init();
+
+        this.currentPage = -1;
+
         this.changePage("FUEL"); // MODIFIED
 
         this.lastAPUMasterState = 0; // MODIFIED
