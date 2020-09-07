@@ -1099,7 +1099,7 @@
 			<CheckpointDesc SubjectTT="TT:Ground Contact" ExpectationTT="TT:ESTABLISH"/>
 		</Checkpoint>
 		<Checkpoint Id="A320_PARKING_SLIDE">
-			<CheckpointDesc SubjectTT="TT:Slide Disarmed" ExpectationTT="TT:CHECK"/>
+			<CheckpointDesc SubjectTT="TT:Slides Disarmed" ExpectationTT="TT:CHECK"/>
 		</Checkpoint>
 		<Checkpoint Id="A320_PARKING_EXT_LIGHTS">
 			<CheckpointDesc SubjectTT="TT:Exterior Lights" ExpectationTT="TT:AS REQUIRED"/>
