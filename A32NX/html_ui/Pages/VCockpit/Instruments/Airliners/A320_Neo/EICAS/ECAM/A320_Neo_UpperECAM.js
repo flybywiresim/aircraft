@@ -77,7 +77,7 @@ var A320_Neo_UpperECAM;
                                 message: "",
                                 level: 3,
                                 isActive: () => {
-                                    return this.activeTakeoffConfigWarnings.includes("flaps");
+                                    return this.activeTakeoffConfigWarnings.includes("flaps") && SimVar.GetSimVarValue("RADIO HEIGHT", "feet") < 1.5;
                                 },
                                 alwaysShowCategory: true,
                                 actions: [
@@ -91,7 +91,7 @@ var A320_Neo_UpperECAM;
                                 message: "",
                                 level: 3,
                                 isActive: () => {
-                                    return this.activeTakeoffConfigWarnings.includes("spd_brk") == true;
+                                    return this.activeTakeoffConfigWarnings.includes("spd_brk") && SimVar.GetSimVarValue("RADIO HEIGHT", "feet") < 1.5;
                                 },
                                 alwaysShowCategory: true,
                                 actions: [
@@ -105,7 +105,7 @@ var A320_Neo_UpperECAM;
                                 message: "PARK BRAKE ON",
                                 level: 3,
                                 isActive: () => {
-                                    return this.activeTakeoffConfigWarnings.includes("park_brake") == true;
+                                    return this.activeTakeoffConfigWarnings.includes("park_brake") && SimVar.GetSimVarValue("RADIO HEIGHT", "feet") < 1.5;
                                 }
                             }
                         ]
@@ -466,6 +466,10 @@ var A320_Neo_UpperECAM;
             const highestThrottleDetent = (leftThrottleDetent >= rightThrottleDetent) ? leftThrottleDetent : rightThrottleDetent;
             if (highestThrottleDetent == ThrottleMode.TOGA || highestThrottleDetent == ThrottleMode.FLEX_MCT) {
                 this.updateTakeoffConfigWarnings(false);
+            }
+
+            if (Simplane.getCurrentFlightPhase() > 2) {
+                this.activeTakeoffConfigWarnings = [];
             }
         }
         updateTakeoffConfigWarnings(_test) {
@@ -1181,6 +1185,10 @@ var A320_Neo_UpperECAM;
             this.currentLine = 0;
             this.activeCategories = [];
             this.hasActiveFailures = false;
+            this.lastWarningsCount = {
+                2: 0,
+                3: 0
+            }
         }
         init() {
             super.init();
@@ -1191,6 +1199,10 @@ var A320_Neo_UpperECAM;
         update() {
             this.activeCategories = [];
             this.currentLine = 0;
+            var warningsCount = {
+                2: 0,
+                3: 0
+            };
             for (let div of this.allDivs) {
                 div.innerHTML = "";
             }
@@ -1199,6 +1211,7 @@ var A320_Neo_UpperECAM;
                 const category = activeFailures[i];
                 for (const failure of category.messages) {
                     this.addLine("fail-"+failure.level, category.name, failure.message, failure.action, failure.alwaysShowCategory);
+                    warningsCount[failure.level] = warningsCount[failure.level] + 1;
                     if (failure.actions != null) {
                         for (const action of failure.actions) {
                             if (action.isCompleted == null || !action.isCompleted()) this.addLine(action.style, null, action.message, action.action);
@@ -1210,6 +1223,16 @@ var A320_Neo_UpperECAM;
             for (const message of activeMessages) {
                 this.addLine(message.style || "InfoIndication", null, message.message, null);
             }
+
+            if (warningsCount[3] > this.lastWarningsCount[3]) {
+                console.warn(warningsCount[3]);
+                SimVar.SetSimVarValue("L:A32NX_MASTER_WARNING", "Bool", 1);
+            }
+            if (warningsCount[2] > this.lastWarningsCount[2]) {
+                SimVar.SetSimVarValue("L:A32NX_MASTER_CAUTION", "Bool", 1);
+            }
+            this.lastWarningsCount[2] = parseInt(warningsCount[2]);
+            this.lastWarningsCount[3] = parseInt(warningsCount[3]);
         }
         addLine(_style, _category, _message, _action, _alwaysShowCategory = false) {
             if (this.currentLine < this.maxLines) {
