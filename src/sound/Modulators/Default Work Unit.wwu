@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<WwiseDocument Type="WorkUnit" ID="{9E7F4619-33ED-4F3F-A182-F90EAD8EEDE1}" SchemaVersion="97">
+	<Modulators>
+		<WorkUnit Name="Default Work Unit" ID="{9E7F4619-33ED-4F3F-A182-F90EAD8EEDE1}" PersistMode="Standalone">
+			<ChildrenList>
+				<ModulatorLfo Name="LFO_grounroll_grass_bumpy" ID="{6E91CC76-C576-4D45-8EC2-06780E9A93E5}" ShortID="173164616">
+					<PropertyList>
+						<Property Name="LfoFrequency" Type="Real64" Value="19.84">
+							<RTPCList>
+								<RTPC Name="" ID="{11231ACE-62AA-40A1-A104-97C29F38E691}" ShortID="448834348">
+									<ReferenceList>
+										<Reference Name="ControlInput">
+											<ObjectRef Name="LFO_grounroll_random_freq_vel" ID="{0D257FE9-E3A0-486C-B5D3-CD474DE511AA}" WorkUnitID="{9E7F4619-33ED-4F3F-A182-F90EAD8EEDE1}"/>
+										</Reference>
+									</ReferenceList>
+									<Curve Name="" ID="{790F8746-BBDD-41A6-8F74-62397BFE9737}">
+										<PropertyList>
+											<Property Name="Flags" Type="int32" Value="5"/>
+										</PropertyList>
+										<PointList>
+											<Point>
+												<XPos>0</XPos>
+												<YPos>1</YPos>
+												<Flags>21</Flags>
+											</Point>
+											<Point>
+												<XPos>1</XPos>
+												<YPos>20</YPos>
+												<Flags>53</Flags>
+											</Point>
+										</PointList>
+									</Curve>
+								</RTPC>
+							</RTPCList>
+						</Property>
+						<Property Name="LfoSmoothing" Type="Real64" Value="10"/>
+						<Property Name="LfoWaveform" Type="int32" Value="5"/>
+					</PropertyList>
+				</ModulatorLfo>
+				<ModulatorLfo Name="LFO_grounroll_random_freq_vel" ID="{0D257FE9-E3A0-486C-B5D3-CD474DE511AA}" ShortID="601342766">
+					<PropertyList>
+						<Property Name="LfoDepth" Type="Real64">
+							<RTPCList>
+								<RTPC Name="" ID="{CD836E67-0834-476D-9C37-7B99949B5BB3}" ShortID="503689908">
+									<ReferenceList>
+										<Reference Name="ControlInput">
+											<ObjectRef Name="SIMVAR_GROUND_VELOCITY" ID="{8E7BB6E5-0182-456B-BE83-12F6B4244555}" WorkUnitID="{160297A3-539B-416D-BB27-309DA15AE344}"/>
+										</Reference>
+									</ReferenceList>
+									<Curve Name="" ID="{FDA07C2C-F306-455B-876B-943007411A7B}">
+										<PropertyList>
+											<Property Name="Flags" Type="int32" Value="1"/>
+										</PropertyList>
+										<PointList>
+											<Point>
+												<XPos>0</XPos>
+												<YPos>0.005</YPos>
+												<Flags>5</Flags>
+											</Point>
+											<Point>
+												<XPos>60</XPos>
+												<YPos>100</YPos>
+												<Flags>0</Flags>
+											</Point>
+											<Point>
+												<XPos>600</XPos>
+												<YPos>100</YPos>
+												<Flags>37</Flags>
+											</Point>
+										</PointList>
+									</Curve>
+								</RTPC>
+							</RTPCList>
+						</Property>
+						<Property Name="LfoFrequency" Type="Real64" Value="10"/>
+						<Property Name="LfoWaveform" Type="int32" Value="5"/>
+					</PropertyList>
+				</ModulatorLfo>
+			</ChildrenList>
+		</WorkUnit>
+	</Modulators>
+</WwiseDocument>
