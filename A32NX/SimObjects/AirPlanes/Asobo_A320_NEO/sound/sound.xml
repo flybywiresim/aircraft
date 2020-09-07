@@ -243,20 +243,39 @@
         <Range LowerBound="28" />
 	</Sound>
 
+	<!-- Play sound whenever the seat belts switch position changes -->
 	<Sound WwiseData="true" WwiseEvent="light_switch_seatbelt" LocalVar="XMLVAR_SWITCH_OVHD_INTLT_SEATBELT_Position" Continuous="false">
 		<Requires SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1">
 			<Range LowerBound="28" />
 		</Requires>
-		<Requires LocalVar="XMLVAR_SWITCH_OVHD_INTLT_SEATBELT_Position"/>
 	</Sound>
 
-	<Sound WwiseData="true" WwiseEvent="light_switch_seatbelt" LocalVar="XMLVAR_SWITCH_OVHD_INTLT_NOSMOKING_Position" Continuous="false">
-		<Range LowerBound="0" UpperBound="1.1"/>
-		<Range LowerBound="1.9" UpperBound="2"/>
+	<!-- Play sound whenever the no smoking ecam memo changes -->
+	<Sound WwiseData="true" WwiseEvent="light_switch_seatbelt" LocalVar="A32NX_NO_SMOKING_MEMO" Continuous="false">
 		<Requires SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1">
 			<Range LowerBound="28" />
 		</Requires>
-    	<Requires LocalVar="XMLVAR_SWITCH_OVHD_INTLT_NOSMOKING_Position"/>
+	</Sound>
+
+	<Sound WwiseData="true" WwiseEvent="cockpit_cabin_call_fwd" LocalVar="PUSH_OVHD_CALLS_FWD" Continuous="false">
+		<Range LowerBound="1" />
+		<Requires SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1">
+			<Range LowerBound="28" />
+		</Requires>
+	</Sound>
+
+	<Sound WwiseData="true" WwiseEvent="cockpit_cabin_call_fwd" LocalVar="PUSH_OVHD_CALLS_ALL" Continuous="false">
+		<Range LowerBound="1" />
+		<Requires SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1">
+			<Range LowerBound="28" />
+		</Requires>
+	</Sound>
+
+	<Sound WwiseData="true" WwiseEvent="cockpit_cabin_call_aft" LocalVar="PUSH_OVHD_CALLS_AFT" Continuous="false">
+		<Range LowerBound="1" />
+		<Requires SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1">
+			<Range LowerBound="28" />
+		</Requires>
 	</Sound>
 	
   	<!-- RAIN ========================================================================================== --> 

@@ -200,3 +200,24 @@ a320-neo-eicas-element {
   a320-neo-eicas-element[index="2"] #Mainframe #BottomScreen {
     display: block; }
 
+.blue-text {
+  color: #009696;
+}
+
+.SelfTestWrapper {
+	position: absolute;
+	left: 0%;
+	top: 0%;
+	width: 100%;
+	height: 100%;
+	border: none; 
+	display: none;
+}
+
+.SelfTest {
+	position:absolute;
+	top:0%;
+	left: 0%;
+	width: 100%;
+	height:100%;
+}
