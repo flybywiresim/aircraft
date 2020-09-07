@@ -443,7 +443,7 @@
 				<Checkpoint ReferenceId="A320_PARKING_PARKING_BRAKE_ACCU_PRESS"/>
 				<Checkpoint ReferenceId="A320_PARKING_PARKING_BRAKE"/>
 				<Checkpoint ReferenceId="A320_PARKING_ANTI_ICE"/>
-				<Checkpoint ReferenceId="APU_Bleed_Off"/>
+				<Checkpoint ReferenceId="APU_Bleed_On"/>
 				<Checkpoint ReferenceId="A320_PARKING_ENGINE_MASTER"/>
 				<Checkpoint ReferenceId="A320_PARKING_GRND_CONTACT"/>
 				<Checkpoint ReferenceId="A320_PARKING_SLIDE"/>
