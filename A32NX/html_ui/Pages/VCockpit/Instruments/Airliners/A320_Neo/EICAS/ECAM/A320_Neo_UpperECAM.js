@@ -63,6 +63,47 @@ var A320_Neo_UpperECAM;
             if (secs > 0) return mins;
             else return -1;
         }
+        getEngineFireGroundActions(_engine) {
+            return [
+                {
+                    style: "remark",
+                    message: "WHEN A/C IS STOPPED"
+                },
+                {
+                    style: "action",
+                    message: "PARKING BRK",
+                    action: "ON",
+                    isCompleted: () => {
+                        return SimVar.GetSimVarValue("BRAKE PARKING INDICATOR", "Bool") == 1;
+                    }
+                },
+                {
+                    style: "action",
+                    message: "ATC",
+                    action: "NOTIFY",
+                },
+                {
+                    style: "action",
+                    message: "CABIN CREW",
+                    action: "ALERT"
+                },
+                {
+                    style: "action",
+                    message: `ENG ${_engine} FIRE P/B`,
+                    action: "PUSH"
+                },
+                {
+                    style: "action",
+                    message: "AGENT 1",
+                    action: "DISCH"
+                },
+                {
+                    style: "action",
+                    message: "AGENT 2",
+                    action: "DISCH"
+                }
+            ];
+        }
         init() {
             this.enginePanel = new A320_Neo_UpperECAM.EnginePanel(this, "EnginesPanel");
             this.infoTopPanel = new A320_Neo_UpperECAM.InfoTopPanel(this, "InfoTopPanel");
@@ -71,13 +112,85 @@ var A320_Neo_UpperECAM;
             this.ecamMessages = {
                 failures: [
                     {
+                        name: "ENG 1 FIRE",
+                        messages: [
+                            {
+                                message: "",
+                                level: 3,
+                                isActive: () => {
+                                    return SimVar.GetSimVarValue("L:FIRE_TEST_ENG1", "Bool") && Simplane.getIsGrounded();
+                                },
+                                actions: this.getEngineFireGroundActions(1)
+                            },
+                        ]
+                    },
+                    {
+                        name: "ENG 2 FIRE",
+                        messages: [
+                            {
+                                message: "",
+                                level: 3,
+                                isActive: () => {
+                                    return SimVar.GetSimVarValue("L:FIRE_TEST_ENG2", "Bool") && Simplane.getIsGrounded();
+                                },
+                                actions: this.getEngineFireGroundActions(2)
+                            },
+                        ]
+                    },
+                    {
+                        name: "APU FIRE",
+                        messages: [
+                            {
+                                message: "",
+                                level: 3,
+                                isActive: () => {
+                                    return SimVar.GetSimVarValue("L:FIRE_TEST_APU", "Bool")
+                                },
+                                actions: [
+                                    {
+                                        style: "remark",
+                                        message: "WHEN A/C IS STOPPED"
+                                    },
+                                    {
+                                        style: "action",
+                                        message: "PARKING BRK",
+                                        action: "ON",
+                                        isCompleted: () => {
+                                            return SimVar.GetSimVarValue("BRAKE PARKING INDICATOR", "Bool") == 1;
+                                        }
+                                    },
+                                    {
+                                        style: "action",
+                                        message: "ATC",
+                                        action: "NOTIFY",
+                                    },
+                                    {
+                                        style: "action",
+                                        message: "CABIN CREW",
+                                        action: "ALERT"
+                                    },
+                                    {
+                                        style: "action",
+                                        message: "APU FIRE P/B",
+                                        action: "PUSH"
+                                    },
+                                    {
+                                        style: "action",
+                                        message: "AGENT",
+                                        action: "DISCH"
+                                    },
+                                ]
+                            },
+                        ]
+                    },
+                    {
                         name: "CONFIG",
                         messages: [
                             {
                                 message: "",
                                 level: 3,
                                 isActive: () => {
-                                    return this.activeTakeoffConfigWarnings.includes("flaps") && SimVar.GetSimVarValue("RADIO HEIGHT", "feet") < 1.5;
+                                    return this.activeTakeoffConfigWarnings.includes("flaps") && Simplane.getIsGrounded();
                                 },
                                 alwaysShowCategory: true,
                                 actions: [
@@ -91,7 +204,7 @@ var A320_Neo_UpperECAM;
                                 message: "",
                                 level: 3,
                                 isActive: () => {
-                                    return this.activeTakeoffConfigWarnings.includes("spd_brk") && SimVar.GetSimVarValue("RADIO HEIGHT", "feet") < 1.5;
+                                    return this.activeTakeoffConfigWarnings.includes("spd_brk") && Simplane.getIsGrounded();
                                 },
                                 alwaysShowCategory: true,
                                 actions: [
@@ -102,11 +215,18 @@ var A320_Neo_UpperECAM;
                                 ]
                             },
                             {
-                                message: "PARK BRAKE ON",
+                                message: "",
                                 level: 3,
                                 isActive: () => {
-                                    return this.activeTakeoffConfigWarnings.includes("park_brake") && SimVar.GetSimVarValue("RADIO HEIGHT", "feet") < 1.5;
-                                }
+                                    return this.activeTakeoffConfigWarnings.includes("park_brake") && Simplane.getIsGrounded();
+                                },
+                                alwaysShowCategory: true,
+                                actions: [
+                                    {
+                                        style: "fail-3",
+                                        message: "PARK BRAKE ON"
+                                    }
+                                ]
                             }
                         ]
                     },
@@ -178,7 +298,53 @@ var A320_Neo_UpperECAM;
                                 },
                             }
                         ]
-                    }
+                    },
+                    {
+                        name: "Cargo Smoke",
+                        messages: [
+                            {
+                                message: "",
+                                level: 3,
+                                isActive: () => {
+                                    return SimVar.GetSimVarValue("L:FIRE_TEST_SMOKE", "Bool")
+                                },
+                                actions: [
+                                    {
+                                        style: "remark",
+                                        message: "WHEN A/C IS STOPPED"
+                                    },
+                                    {
+                                        style: "action",
+                                        message: "PARKING BRK",
+                                        action: "ON",
+                                        isCompleted: () => {
+                                            return SimVar.GetSimVarValue("BRAKE PARKING INDICATOR", "Bool") == 1;
+                                        }
+                                    },
+                                    {
+                                        style: "action",
+                                        message: "ATC",
+                                        action: "NOTIFY",
+                                    },
+                                    {
+                                        style: "action",
+                                        message: "CABIN CREW",
+                                        action: "ALERT"
+                                    },
+                                    {
+                                        style: "action",
+                                        message: "AGENT 1",
+                                        action: "DISCH"
+                                    },
+                                    {
+                                        style: "action",
+                                        message: "AGENT 2",
+                                        action: "DISCH"
+                                    },
+                                ]
+                            },
+                        ]
+                    },
                 ],
                 normal: [
                     {
@@ -431,7 +597,7 @@ var A320_Neo_UpperECAM;
             //Show takeoff memo 2 mins after second engine start
             //Hides after takeoff thurst application
             if (SimVar.GetSimVarValue("ENG N1 RPM:1", "Percent") > 15 && SimVar.GetSimVarValue("ENG N1 RPM:2", "Percent") > 15 && SimVar.GetSimVarValue("L:AIRLINER_FLIGHT_PHASE", "number") <= 2 && SimVar.GetSimVarValue("L:A32NX_Preflight_Complete", "Bool") == 0 && this.leftEcamMessagePanel.hasActiveFailures == false) {
-                if (this.takeoffMemoTimer == null) this.takeoffMemoTimer = 10;
+                if (this.takeoffMemoTimer == null) this.takeoffMemoTimer = 120;
                 if (this.takeoffMemoTimer > 0) {
                     this.takeoffMemoTimer -= _deltaTime/1000;
                 } else {
@@ -455,7 +621,7 @@ var A320_Neo_UpperECAM;
             if (this.landingMemo != null) this.landingMemo.divMain.style.display = this.showLandingMemo ? "block" : "none";
             //Hide left message panel when memo is diplayed
             if (this.leftEcamMessagePanel != null) this.leftEcamMessagePanel.divMain.style.display = (this.showTakeoffMemo || this.showLandingMemo) ? "none" : "block";
-        
+
             if (SimVar.GetSimVarValue("L:A32NX_BTN_TOCONFIG", "Bool") == 1) {
                 SimVar.SetSimVarValue("L:A32NX_BTN_TOCONFIG", "Bool", 0);
                 this.updateTakeoffConfigWarnings(true);

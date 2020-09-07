@@ -22,6 +22,9 @@ class A320_Neo_CDU_AirwaysFromWaypointPage {
             });
         };
         let showInput = false;
+        let departureWaypoints= mcdu.flightPlanManager.getDepartureWaypoints();
+        let routeWaypoints = mcdu.flightPlanManager.getEnRouteWaypoints();      
+        offset = routeWaypoints.indexOf(waypoint) >= 0 ? routeWaypoints.indexOf(waypoint) + (departureWaypoints.length ? 1 : 0) + 1 : offset;
         for (let i = 0; i < rows.length; i++) {
             if (allRows[i + offset]) {
                 rows[i] = allRows[i + offset];

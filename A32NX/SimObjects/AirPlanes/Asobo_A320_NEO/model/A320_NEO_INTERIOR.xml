@@ -1043,6 +1043,7 @@
 				<POTENTIOMETER>23</POTENTIOMETER>
 			</UseTemplate>
 		</Component>
+		<CameraTitle>ECAM</CameraTitle>
 	</Component>
 
 	<Component ID="OVERHEAD">
@@ -1524,21 +1525,6 @@
 			</Component>
 			<Component ID="Center_Column">
 				<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
-					<NODE_ID>PUSH_OVHD_FIRE_ENG1_AGENT1</NODE_ID>
-				</UseTemplate>
-				<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
-					<NODE_ID>PUSH_OVHD_FIRE_ENG1_AGENT2</NODE_ID>
-				</UseTemplate>
-				<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
-					<NODE_ID>PUSH_OVHD_FIRE_ENG2_AGENT1</NODE_ID>
-				</UseTemplate>
-				<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
-					<NODE_ID>PUSH_OVHD_FIRE_ENG2_AGENT2</NODE_ID>
-				</UseTemplate>
-				<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
-					<NODE_ID>PUSH_OVHD_FIRE_AGENT</NODE_ID>
-				</UseTemplate>
-				<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
 					<NODE_ID>PUSH_OVHD_HYD_ENG1PUMP</NODE_ID>
 				</UseTemplate>
 				<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
@@ -1789,6 +1775,14 @@
 
 		<Component ID="Overhead_Handling">
 			<UseTemplate Name="ASOBO_HANDLING_Switch_Wipers_Template">
+				<CIRCUIT_ID_WIPERS>77</CIRCUIT_ID_WIPERS>
+				<POS_OFF>0</POS_OFF>
+				<POS_SLOW>1</POS_SLOW>
+				<POS_NORM>2</POS_NORM>
+				<PART_ID>HANDLING_Switch_Wipers</PART_ID>
+			</UseTemplate>
+			<UseTemplate Name="ASOBO_HANDLING_Switch_Wipers_Template">
+				<NODE_ID>HANDLING_Switch_Wipers_1</NODE_ID>
 				<CIRCUIT_ID_WIPERS>77</CIRCUIT_ID_WIPERS>
 				<POS_OFF>0</POS_OFF>
 				<POS_SLOW>1</POS_SLOW>
@@ -2451,6 +2445,105 @@
 
 	</Component>
 
+	<Component ID="Overhead_Fire">
+		<Component ID="ENG1">
+			<UseTemplate Name="ASOBO_AIRLINER_FIRE_TEST">
+				<NODE_ID>PUSH_FIRE_ENG1_TEST</NODE_ID>
+				<ID>ENG1</ID>
+			</UseTemplate>
+			<UseTemplate Name="ASOBO_AIRLINER_FIRE_TEST_LIGHTS">
+				<NODE_ID>PUSH_OVHD_FIRE_ENG1_AGENT1</NODE_ID>
+				<ID>ENG1</ID>
+			</UseTemplate>
+			<UseTemplate Name="ASOBO_AIRLINER_FIRE_TEST_LIGHTS">
+				<NODE_ID>PUSH_OVHD_FIRE_ENG1_AGENT2</NODE_ID>
+				<ID>ENG1</ID>
+			</UseTemplate>
+			<UseTemplate Name="ASOBO_AIRLINER_FIRE_TEST_LIGHTS">
+				<NODE_ID>PUSH_ENGINES_1</NODE_ID>
+				<ID>ENG1</ID>
+			</UseTemplate>
+			<!--Unused currently-->
+			<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
+				<NODE_ID>LOCK_OVHD_ENG1</NODE_ID>
+			</UseTemplate>
+			<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
+				<NODE_ID>PUSH_OVHD_FIRE_ENG1</NODE_ID>
+			</UseTemplate>
+		</Component>
+
+		<Component ID="ENG2">
+			<UseTemplate Name="ASOBO_AIRLINER_FIRE_TEST">
+				<NODE_ID>PUSH_FIRE_ENG2_TEST</NODE_ID>
+				<ID>ENG2</ID>
+			</UseTemplate>
+			<UseTemplate Name="ASOBO_AIRLINER_FIRE_TEST_LIGHTS">
+				<NODE_ID>PUSH_OVHD_FIRE_ENG2_AGENT1</NODE_ID>
+				<ID>ENG2</ID>
+			</UseTemplate>
+			<UseTemplate Name="ASOBO_AIRLINER_FIRE_TEST_LIGHTS">
+				<NODE_ID>PUSH_OVHD_FIRE_ENG2_AGENT2</NODE_ID>
+				<ID>ENG2</ID>
+			</UseTemplate>
+			<UseTemplate Name="ASOBO_AIRLINER_FIRE_TEST_LIGHTS">
+				<NODE_ID>PUSH_ENGINES_2</NODE_ID>
+				<ID>ENG2</ID>
+			</UseTemplate>
+			<!--Unused currently-->
+			<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
+				<NODE_ID>LOCK_OVHD_ENG2</NODE_ID>
+			</UseTemplate>
+			<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
+				<NODE_ID>PUSH_OVHD_FIRE_ENG2</NODE_ID>
+			</UseTemplate>
+		</Component>
+
+		<Component ID="APU">
+			<UseTemplate Name="ASOBO_AIRLINER_FIRE_TEST">
+				<NODE_ID>PUSH_FIRE_APU_TEST</NODE_ID>
+				<ID>APU</ID>
+			</UseTemplate>
+			<UseTemplate Name="ASOBO_AIRLINER_FIRE_TEST_LIGHTS">
+				<NODE_ID>PUSH_OVHD_FIRE_AGENT</NODE_ID>
+				<ID>APU</ID>
+			</UseTemplate>
+			<!--Unused currently-->
+			<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
+				<NODE_ID>LOCK_OVHD_APU</NODE_ID>
+			</UseTemplate>
+			<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
+				<NODE_ID>PUSH_OVHD_FIRE_APU</NODE_ID>
+			</UseTemplate>
+		</Component>
+
+		<Component ID="CARGO_SMOKE">
+			<UseTemplate Name="ASOBO_AIRLINER_FIRE_TEST">
+				<NODE_ID>PUSH_OVHD_CARGOSMOKE_TEST</NODE_ID>
+				<ID>SMOKE</ID>
+			</UseTemplate>
+			<UseTemplate Name="ASOBO_AIRLINER_FIRE_TEST_LIGHTS">
+				<NODE_ID>PUSH_OVHD_CARGOSMOKE_FWD2</NODE_ID>
+				<ID>SMOKE</ID>
+			</UseTemplate>
+			<UseTemplate Name="ASOBO_AIRLINER_FIRE_TEST_LIGHTS">
+				<NODE_ID>PUSH_OVHD_CARGOSMOKE_FWD1</NODE_ID>
+				<ID>SMOKE</ID>
+			</UseTemplate>
+			<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
+				<NODE_ID>LOCK_OVHD_CARGOSMOKE_2</NODE_ID>
+			</UseTemplate>
+			<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
+				<NODE_ID>PUSH_OVHD_CARGOSMOKE_2</NODE_ID>
+			</UseTemplate>
+			<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
+				<NODE_ID>LOCK_OVHD_CARGOSMOKE_1</NODE_ID>
+			</UseTemplate>
+			<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
+				<NODE_ID>PUSH_OVHD_CARGOSMOKE_1</NODE_ID>
+			</UseTemplate>
+		</Component>
+	</Component>
+
 	<Component ID="Overhead_Misc">
 		<Component ID="Left_Column">
 			<UseTemplate Name="ASOBO_AIRLINER_GPWS_Template">
@@ -2846,12 +2939,6 @@
 			<NODE_ID>PUSH_DOORPANEL_VIDEO</NODE_ID>
 		</UseTemplate>
 		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-			<NODE_ID>PUSH_ENGINES_2</NODE_ID>
-		</UseTemplate>
-		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-			<NODE_ID>PUSH_ENGINES_1</NODE_ID>
-		</UseTemplate>
-		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
 			<NODE_ID>PUSH_PANELCS_AIDS</NODE_ID>
 		</UseTemplate>
 		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
@@ -2974,48 +3061,6 @@
 			<NODE_ID>PUSH_OVHD_RAINRPNLTR</NODE_ID>
 		</UseTemplate>
 		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-			<NODE_ID>PUSH_OVHD_FIRE_ENG1_AGENT1</NODE_ID>
-		</UseTemplate>
-		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-			<NODE_ID>PUSH_FIRE_ENG1_TEST</NODE_ID>
-		</UseTemplate>
-		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-			<NODE_ID>LOCK_OVHD_ENG1</NODE_ID>
-		</UseTemplate>
-		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-			<NODE_ID>PUSH_OVHD_FIRE_ENG1</NODE_ID>
-		</UseTemplate>
-		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-			<NODE_ID>PUSH_OVHD_FIRE_ENG1_AGENT2</NODE_ID>
-		</UseTemplate>
-		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-			<NODE_ID>PUSH_OVHD_FIRE_AGENT</NODE_ID>
-		</UseTemplate>
-		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-			<NODE_ID>LOCK_OVHD_APU</NODE_ID>
-		</UseTemplate>
-		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-			<NODE_ID>PUSH_OVHD_FIRE_APU</NODE_ID>
-		</UseTemplate>
-		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-			<NODE_ID>PUSH_FIRE_APU_TEST</NODE_ID>
-		</UseTemplate>
-		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-			<NODE_ID>PUSH_OVHD_FIRE_ENG2_AGENT1</NODE_ID>
-		</UseTemplate>
-		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-			<NODE_ID>LOCK_OVHD_ENG2</NODE_ID>
-		</UseTemplate>
-		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-			<NODE_ID>PUSH_OVHD_FIRE_ENG2</NODE_ID>
-		</UseTemplate>
-		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-			<NODE_ID>PUSH_OVHD_FIRE_ENG2_AGENT2</NODE_ID>
-		</UseTemplate>
-		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-			<NODE_ID>PUSH_FIRE_ENG2_TEST</NODE_ID>
-		</UseTemplate>
-		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
 			<NODE_ID>PUSH_OVHD_HYD_ENG1PUMP</NODE_ID>
 		</UseTemplate>
 		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
@@ -3112,27 +3157,6 @@
 			<NODE_ID>PUSH_OVHD_CARGOVENT_AFTISOL</NODE_ID>
 		</UseTemplate>
 		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-			<NODE_ID>LOCK_OVHD_CARGOSMOKE_2</NODE_ID>
-		</UseTemplate>
-		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-			<NODE_ID>PUSH_OVHD_CARGOSMOKE_2</NODE_ID>
-		</UseTemplate>
-		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-			<NODE_ID>PUSH_OVHD_CARGOSMOKE_FWD2</NODE_ID>
-		</UseTemplate>
-		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-			<NODE_ID>PUSH_OVHD_CARGOSMOKE_TEST</NODE_ID>
-		</UseTemplate>
-		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-			<NODE_ID>PUSH_OVHD_CARGOSMOKE_FWD1</NODE_ID>
-		</UseTemplate>
-		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-			<NODE_ID>LOCK_OVHD_CARGOSMOKE_1</NODE_ID>
-		</UseTemplate>
-		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-			<NODE_ID>PUSH_OVHD_CARGOSMOKE_1</NODE_ID>
-		</UseTemplate>
-		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
 			<NODE_ID>PUSH_OVHD_VENTILATION_CABFANS</NODE_ID>
 		</UseTemplate>
 		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
@@ -3167,9 +3191,6 @@
 		</UseTemplate>
 		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
 			<NODE_ID>PUSH_OVHD_RAINRPLNTL</NODE_ID>
-		</UseTemplate>
-		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-			<NODE_ID>HANDLING_Switch_Wipers_1</NODE_ID>
 		</UseTemplate>
 		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
 			<NODE_ID>PUSH_OVHD_RADIO_VOR1</NODE_ID>
