@@ -348,7 +348,7 @@
 			<CheckpointDesc SubjectTT="TT:Altitude Reporting (INOP)" ExpectationTT="TT:ON"/>
 		</Checkpoint>
 		<Checkpoint Id="A320_CPREP1_WXR_SYS_SEL">
-			<CheckpointDesc SubjectTT="TT:SYS 1 (INOP)" ExpectationTT="TT:SELECT"/>
+			<CheckpointDesc SubjectTT="TT:WXR: SYS 1" ExpectationTT="TT:SELECT"/>
 		</Checkpoint>
 		<Checkpoint Id="A320_CPREP1_FMGS_AIRFIELD_DATA_IRS">
 			<CheckpointDesc SubjectTT="TT:FMGS: Airfield Data and IRS Aligned" ExpectationTT="TT:CONFIRM"/>
