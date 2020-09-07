@@ -5,4 +5,5 @@
 !/docs/**
 !/src/**
 !.gitignore
+!CODEOWNERS
 .DS_Store
