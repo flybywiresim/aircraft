@@ -97,6 +97,22 @@ a320-neo-pfd-element {
         height: 48%;
         border: none;
         transform: scale(0.9); }
+      a320-neo-pfd-element #Mainframe #HorizonContainer #GroundCursor {
+        position: absolute;
+        left: 40.9%;
+        top: 47.7%;
+        width: 7%;
+        height: 7%;
+        border: none;
+        display: block; }
+      a320-neo-pfd-element #Mainframe #HorizonContainer #GroundCursorLimits {
+        position: absolute;
+        left: 25%;
+        top: 35%;
+        width: 37.5%;
+        height: 15%;
+        border: none;
+        display: block; }
     a320-neo-pfd-element #Mainframe #InstrumentsContainer {
       transform: rotateX(0);
       width: 100%;

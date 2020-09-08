@@ -62,6 +62,9 @@ class A320_Neo_PFD_MainPage extends NavSystemPage {
         this.ils.showILS(this.showILS);
         this.compass.showILS(this.showILS);
 
+        this.groundCursor = this.gps.getChildById("GroundCursor");
+        this.groundCursorLimits = this.gps.getChildById("GroundCursorLimits");
+
         //ADIRS
         this.flashTimer = 1;
         this.flashState = false;
@@ -111,10 +114,27 @@ class A320_Neo_PFD_MainPage extends NavSystemPage {
             this.vsFlash.setAttribute("visibility", "hidden");
         }
 
-        var ADIRSState = SimVar.GetSimVarValue("L:A320_Neo_ADIRS_STATE", "Enum");
-        var PFDAlignedFirst = SimVar.GetSimVarValue("L:A32NX_ADIRS_PFD_ALIGNED_FIRST", "Bool");
+        let IsOnGround = SimVar.GetSimVarValue("SIM ON GROUND", "Bool");
         var PFDAlignedATT = SimVar.GetSimVarValue("L:A32NX_ADIRS_PFD_ALIGNED_ATT", "Bool");
 
+        if (IsOnGround && PFDAlignedATT) {
+            this.groundCursor.style.display = "block";
+            this.groundCursorLimits.style.display = "block";
+        }
+        else {
+            this.groundCursor.style.display = "none";
+            this.groundCursorLimits.style.display = "none";
+        }
+
+        let YokeXPosition = 40.9 + (15 * SimVar.GetSimVarValue("YOKE X POSITION", "Position"));
+        let YokeYPosition = 47.7 - (15 * SimVar.GetSimVarValue("YOKE Y POSITION", "Position"));
+
+        this.groundCursor.style.left = YokeXPosition.toString() + "%";
+        this.groundCursor.style.top = YokeYPosition.toString() + "%";
+
+        var ADIRSState = SimVar.GetSimVarValue("L:A320_Neo_ADIRS_STATE", "Enum");
+        var PFDAlignedFirst = SimVar.GetSimVarValue("L:A32NX_ADIRS_PFD_ALIGNED_FIRST", "Bool");
+        
         if (PFDAlignedFirst) {
             this.miscFail.setAttribute("style", "display:none");
         } else {
