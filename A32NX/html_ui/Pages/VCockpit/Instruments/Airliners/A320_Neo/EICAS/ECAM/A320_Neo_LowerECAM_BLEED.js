@@ -1,4 +1,4 @@
-var A320_Neo_LowerECAM_BLEED;
+let A320_Neo_LowerECAM_BLEED;
 (function (A320_Neo_LowerECAM_BLEED) {
     class Definitions {
     }
@@ -27,7 +27,7 @@ var A320_Neo_LowerECAM_BLEED;
                 return;
             }
 
-            var currentEngineBleedState = [SimVar.GetSimVarValue("BLEED AIR ENGINE:1", "Bool"), SimVar.GetSimVarValue("BLEED AIR ENGINE:2", "Bool")]
+            const currentEngineBleedState = [SimVar.GetSimVarValue("BLEED AIR ENGINE:1", "Bool"), SimVar.GetSimVarValue("BLEED AIR ENGINE:2", "Bool")]
 
             
             if (currentEngineBleedState[0] === 1) {
@@ -56,7 +56,7 @@ var A320_Neo_LowerECAM_BLEED;
 
 
             //find if the APU bleed is on
-            var currentApuBleedSate = SimVar.GetSimVarValue("BLEED AIR APU", "Bool")
+            const currentApuBleedSate = SimVar.GetSimVarValue("BLEED AIR APU", "Bool")
 
             if (currentApuBleedSate === 1) {
                 this.apuBleedIndication[0].setAttribute("visibility", 'visible')

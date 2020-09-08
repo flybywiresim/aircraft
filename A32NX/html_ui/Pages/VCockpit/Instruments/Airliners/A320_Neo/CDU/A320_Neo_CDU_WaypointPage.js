@@ -27,7 +27,7 @@ class CDUWaypointPage {
             let INPUT = mcdu.inOut;
             mcdu.clearUserInput()
 
-            var selectedWaypoint = mcdu.getOrSelectWaypointByIdent(INPUT, res => {
+            let selectedWaypoint = mcdu.getOrSelectWaypointByIdent(INPUT, res => {
                 if(res) {
                     mcdu.clearDisplay()
                     mcdu.setTemplate([

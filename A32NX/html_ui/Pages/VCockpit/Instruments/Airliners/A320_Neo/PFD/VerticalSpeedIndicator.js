@@ -63,10 +63,10 @@ class Jet_PFD_VerticalSpeedIndicator extends HTMLElement {
         this.rootSVG = document.createElementNS(Avionics.SVG.NS, "svg");
         this.rootSVG.setAttribute("id", "ViewBox");
         this.rootSVG.setAttribute("viewBox", "0 0 250 1000");
-        var width = 70.5;
-        var centerHeight = 495;
-        var posX = width * 0.5;
-        var posY = 350;
+        let width = 70.5;
+        let centerHeight = 495;
+        let posX = width * 0.5;
+        let posY = 350;
         this.maxSpeed = 4000;
         this.cursorTextColor = "rgb(26,255,0)";
         if (!this.rootGroup) {
@@ -85,11 +85,11 @@ class Jet_PFD_VerticalSpeedIndicator extends HTMLElement {
         }
         posY -= centerHeight;
         {
-            var _top = 0;
-            var _left = posX - width * 0.5;
-            var _width = width;
-            var _height = centerHeight;
-            var bg = document.createElementNS(Avionics.SVG.NS, "rect");
+            let _top = 0;
+            let _left = posX - width * 0.5;
+            let _width = width;
+            let _height = centerHeight;
+            let bg = document.createElementNS(Avionics.SVG.NS, "rect");
             bg.setAttribute("x", _left.toString());
             bg.setAttribute("y", _top.toString());
             bg.setAttribute("width", _width.toString());
@@ -116,20 +116,20 @@ class Jet_PFD_VerticalSpeedIndicator extends HTMLElement {
             }
             this.gradSpeeds = [500, 1000, 2000, 4000];
             this.gradYPos = [30, 55, 130, 190];
-            var _gradLengths = [14, 20, 27, 35];
+            let _gradLengths = [14, 20, 27, 35];
             this.cursorPosX1 = _left + 16;
             this.cursorPosX2 = _left + _width + 105;
             this.cursorPosY1 = _top + _height * 0.5 - 3.5;
             this.cursorPosY2 = _top + _height * 0.5 - 3.5;
-            var _gradLineVec = new Vec2();
-            for (var i = 0; i < this.gradSpeeds.length; i++) {
-                var grad = this.gradSpeeds[i];
-                var len = _gradLengths[i];
-                var y = this.cursorPosY2 + this.gradYPos[i];
+            let _gradLineVec = new Vec2();
+            for (let i = 0; i < this.gradSpeeds.length; i++) {
+                let grad = this.gradSpeeds[i];
+                let len = _gradLengths[i];
+                let y = this.cursorPosY2 + this.gradYPos[i];
                 _gradLineVec.x = this.cursorPosX2 - this.cursorPosX1;
                 _gradLineVec.y = this.cursorPosY2 - y;
                 _gradLineVec.SetNorm(len);
-                var line = document.createElementNS(Avionics.SVG.NS, "line");
+                let line = document.createElementNS(Avionics.SVG.NS, "line");
                 line.setAttribute("x1", this.cursorPosX1.toString());
                 line.setAttribute("y1", y.toString());
                 line.setAttribute("x2", (this.cursorPosX1 + _gradLineVec.x).toString());
@@ -138,7 +138,7 @@ class Jet_PFD_VerticalSpeedIndicator extends HTMLElement {
                 line.setAttribute("stroke-width", "1");
                 this.graduationsGroup.appendChild(line);
                 if (grad >= 1000) {
-                    var text = document.createElementNS(Avionics.SVG.NS, "text");
+                    let text = document.createElementNS(Avionics.SVG.NS, "text");
                     text.textContent = (grad / 1000).toString();
                     text.setAttribute("x", (this.cursorPosX1 - 2).toString());
                     text.setAttribute("y", y.toString());
@@ -162,7 +162,7 @@ class Jet_PFD_VerticalSpeedIndicator extends HTMLElement {
                 line.setAttribute("stroke-width", "1");
                 this.graduationsGroup.appendChild(line);
                 if (grad >= 1000) {
-                    var text = document.createElementNS(Avionics.SVG.NS, "text");
+                    let text = document.createElementNS(Avionics.SVG.NS, "text");
                     text.textContent = (grad / 1000).toString();
                     text.setAttribute("x", (this.cursorPosX1 - 2).toString());
                     text.setAttribute("y", y.toString());
@@ -225,10 +225,10 @@ class Jet_PFD_VerticalSpeedIndicator extends HTMLElement {
         this.rootSVG = document.createElementNS(Avionics.SVG.NS, "svg");
         this.rootSVG.setAttribute("id", "ViewBox");
         this.rootSVG.setAttribute("viewBox", "0 0 250 600");
-        var width = 100;
-        var height = 450;
-        var posX = 0;
-        var posY = (600 - height) * 0.5;
+        let width = 100;
+        let height = 450;
+        let posX = 0;
+        let posY = (600 - height) * 0.5;
         this.maxSpeed = 6000;
         this.cursorTextColor = "rgb(255,255,255)";
         if (!this.rootGroup) {
@@ -245,17 +245,17 @@ class Jet_PFD_VerticalSpeedIndicator extends HTMLElement {
         else {
             Utils.RemoveAllChildren(this.centerGroup);
         }
-        var smallBg = document.createElementNS(Avionics.SVG.NS, "path");
+        let smallBg = document.createElementNS(Avionics.SVG.NS, "path");
         smallBg.setAttribute("fill", "#343B51");
         smallBg.setAttribute("d", "M 0 0 l 0 " + (height * 0.34) + " l 30 15 l 0 " + (height - (height * 0.34 + 15) * 2) + " l -30 15 L 0 " + height + " L 45 " + height + " L 75 " + (height - 90) + " L 75 90 L 45 0 Z");
         smallBg.setAttribute("transform", "translate(" + posX + " " + posY + ")");
         this.centerGroup.appendChild(smallBg);
-        var _width = width;
-        var _height = height;
-        var _top = posY;
-        var _left = posX + 10;
-        var _graduationStartY = _top + _height * 0.05;
-        var _graduationHeight = (_top + _height * 0.95) - _graduationStartY;
+        let _width = width;
+        let _height = height;
+        let _top = posY;
+        let _left = posX + 10;
+        let _graduationStartY = _top + _height * 0.05;
+        let _graduationHeight = (_top + _height * 0.95) - _graduationStartY;
         this.topSpeedText = document.createElementNS(Avionics.SVG.NS, "text");
         this.topSpeedText.textContent = "";
         this.topSpeedText.setAttribute("x", (_left - 10).toString());
@@ -275,16 +275,16 @@ class Jet_PFD_VerticalSpeedIndicator extends HTMLElement {
         }
         this.gradSpeeds = [500, 1000, 1500, 2000, 4000, 6000];
         this.gradYPos = [60, 120, 170, 220, 250, 280];
-        for (var i = 0; i < this.gradYPos.length; i++) {
+        for (let i = 0; i < this.gradYPos.length; i++) {
             this.gradYPos[i] *= height / 600;
         }
-        for (var i = 0; i < this.gradSpeeds.length; i++) {
-            var isPrimary = (i % 2 != 0) ? true : false;
-            var lineWidth = isPrimary ? 12 : 9;
-            var lineHeight = isPrimary ? 3 : 2;
-            var offset = isPrimary ? 0 : 3;
-            var y = _graduationStartY + _graduationHeight * 0.5 + this.gradYPos[i];
-            var line = document.createElementNS(Avionics.SVG.NS, "rect");
+        for (let i = 0; i < this.gradSpeeds.length; i++) {
+            let isPrimary = (i % 2 != 0) ? true : false;
+            let lineWidth = isPrimary ? 12 : 9;
+            let lineHeight = isPrimary ? 3 : 2;
+            let offset = isPrimary ? 0 : 3;
+            let y = _graduationStartY + _graduationHeight * 0.5 + this.gradYPos[i];
+            let line = document.createElementNS(Avionics.SVG.NS, "rect");
             line.setAttribute("x", (_left + _width * 0.2 + offset).toString());
             line.setAttribute("y", y.toString());
             line.setAttribute("width", lineWidth.toString());
@@ -292,7 +292,7 @@ class Jet_PFD_VerticalSpeedIndicator extends HTMLElement {
             line.setAttribute("fill", "white");
             this.graduationsGroup.appendChild(line);
             if (isPrimary) {
-                var text = document.createElementNS(Avionics.SVG.NS, "text");
+                let text = document.createElementNS(Avionics.SVG.NS, "text");
                 text.textContent = (this.gradSpeeds[i] / 1000).toString();
                 text.setAttribute("x", _left.toString());
                 text.setAttribute("y", y.toString());
@@ -304,7 +304,7 @@ class Jet_PFD_VerticalSpeedIndicator extends HTMLElement {
                 this.graduationsGroup.appendChild(text);
             }
             y = _graduationStartY + _graduationHeight * 0.5 - this.gradYPos[i];
-            var line = document.createElementNS(Avionics.SVG.NS, "rect");
+            let line = document.createElementNS(Avionics.SVG.NS, "rect");
             line.setAttribute("x", (_left + _width * 0.2 + offset).toString());
             line.setAttribute("y", y.toString());
             line.setAttribute("width", lineWidth.toString());
@@ -312,7 +312,7 @@ class Jet_PFD_VerticalSpeedIndicator extends HTMLElement {
             line.setAttribute("fill", "white");
             this.graduationsGroup.appendChild(line);
             if (isPrimary) {
-                var text = document.createElementNS(Avionics.SVG.NS, "text");
+                let text = document.createElementNS(Avionics.SVG.NS, "text");
                 text.textContent = (this.gradSpeeds[i] / 1000).toString();
                 text.setAttribute("x", _left.toString());
                 text.setAttribute("y", y.toString());
@@ -341,7 +341,7 @@ class Jet_PFD_VerticalSpeedIndicator extends HTMLElement {
             this.cursorSVGLine.setAttribute("stroke", this.cursorTextColor);
             this.cursorSVGLine.setAttribute("stroke-width", "3");
             this.cursorSVGGroup.appendChild(this.cursorSVGLine);
-            var cursorSVGNeutral = document.createElementNS(Avionics.SVG.NS, "line");
+            let cursorSVGNeutral = document.createElementNS(Avionics.SVG.NS, "line");
             cursorSVGNeutral.setAttribute("x1", (_left + _width * 0.2).toString());
             cursorSVGNeutral.setAttribute("y1", this.cursorPosY1.toString());
             cursorSVGNeutral.setAttribute("x2", (_left + _width * 0.5).toString());
@@ -380,10 +380,10 @@ class Jet_PFD_VerticalSpeedIndicator extends HTMLElement {
         this.rootSVG = document.createElementNS(Avionics.SVG.NS, "svg");
         this.rootSVG.setAttribute("id", "ViewBox");
         this.rootSVG.setAttribute("viewBox", "0 0 250 600");
-        var width = 100;
-        var height = 450;
-        var posX = 0;
-        var posY = (600 - height) * 0.5;
+        let width = 100;
+        let height = 450;
+        let posX = 0;
+        let posY = (600 - height) * 0.5;
         this.maxSpeed = 6000;
         this.cursorTextColor = "rgb(255,255,255)";
         if (!this.rootGroup) {
@@ -400,18 +400,18 @@ class Jet_PFD_VerticalSpeedIndicator extends HTMLElement {
         else {
             Utils.RemoveAllChildren(this.centerGroup);
         }
-        var smallBg = document.createElementNS(Avionics.SVG.NS, "path");
+        let smallBg = document.createElementNS(Avionics.SVG.NS, "path");
         smallBg.setAttribute("d", "M 0 0 l 0 " + (height * 0.34) + " l 30 15 l 0 " + (height - (height * 0.34 + 15) * 2) + " l -30 15 L 0 " + height + " L 45 " + height + " L 75 " + (height - 90) + " L 75 90 L 45 0 Z");
         smallBg.setAttribute("transform", "translate(" + posX + " " + posY + ")");
         smallBg.setAttribute("fill", "black");
         smallBg.setAttribute("fill-opacity", "0.3");
         this.centerGroup.appendChild(smallBg);
-        var _width = width;
-        var _height = height;
-        var _top = posY;
-        var _left = posX + 10;
-        var _graduationStartY = _top + _height * 0.05;
-        var _graduationHeight = (_top + _height * 0.95) - _graduationStartY;
+        let _width = width;
+        let _height = height;
+        let _top = posY;
+        let _left = posX + 10;
+        let _graduationStartY = _top + _height * 0.05;
+        let _graduationHeight = (_top + _height * 0.95) - _graduationStartY;
         this.topSpeedText = document.createElementNS(Avionics.SVG.NS, "text");
         this.topSpeedText.textContent = "";
         this.topSpeedText.setAttribute("x", (_left - 5).toString());
@@ -431,16 +431,16 @@ class Jet_PFD_VerticalSpeedIndicator extends HTMLElement {
         }
         this.gradSpeeds = [500, 1000, 1500, 2000, 4000, 6000];
         this.gradYPos = [60, 120, 170, 220, 250, 280];
-        for (var i = 0; i < this.gradYPos.length; i++) {
+        for (let i = 0; i < this.gradYPos.length; i++) {
             this.gradYPos[i] *= height / 600;
         }
-        for (var i = 0; i < this.gradSpeeds.length; i++) {
-            var isPrimary = (i % 2 != 0) ? true : false;
-            var lineWidth = isPrimary ? 12 : 9;
-            var lineHeight = isPrimary ? 3 : 2;
-            var offset = isPrimary ? 0 : 3;
-            var y = _graduationStartY + _graduationHeight * 0.5 + this.gradYPos[i];
-            var line = document.createElementNS(Avionics.SVG.NS, "rect");
+        for (let i = 0; i < this.gradSpeeds.length; i++) {
+            let isPrimary = (i % 2 != 0) ? true : false;
+            let lineWidth = isPrimary ? 12 : 9;
+            let lineHeight = isPrimary ? 3 : 2;
+            let offset = isPrimary ? 0 : 3;
+            let y = _graduationStartY + _graduationHeight * 0.5 + this.gradYPos[i];
+            let line = document.createElementNS(Avionics.SVG.NS, "rect");
             line.setAttribute("x", (_left + _width * 0.2 + offset).toString());
             line.setAttribute("y", y.toString());
             line.setAttribute("width", lineWidth.toString());
@@ -448,7 +448,7 @@ class Jet_PFD_VerticalSpeedIndicator extends HTMLElement {
             line.setAttribute("fill", "white");
             this.graduationsGroup.appendChild(line);
             if (isPrimary) {
-                var text = document.createElementNS(Avionics.SVG.NS, "text");
+                let text = document.createElementNS(Avionics.SVG.NS, "text");
                 text.textContent = (this.gradSpeeds[i] / 1000).toString();
                 text.setAttribute("x", _left.toString());
                 text.setAttribute("y", y.toString());
@@ -460,7 +460,7 @@ class Jet_PFD_VerticalSpeedIndicator extends HTMLElement {
                 this.graduationsGroup.appendChild(text);
             }
             y = _graduationStartY + _graduationHeight * 0.5 - this.gradYPos[i];
-            var line = document.createElementNS(Avionics.SVG.NS, "rect");
+            let line = document.createElementNS(Avionics.SVG.NS, "rect");
             line.setAttribute("x", (_left + _width * 0.2 + offset).toString());
             line.setAttribute("y", y.toString());
             line.setAttribute("width", lineWidth.toString());
@@ -468,7 +468,7 @@ class Jet_PFD_VerticalSpeedIndicator extends HTMLElement {
             line.setAttribute("fill", "white");
             this.graduationsGroup.appendChild(line);
             if (isPrimary) {
-                var text = document.createElementNS(Avionics.SVG.NS, "text");
+                let text = document.createElementNS(Avionics.SVG.NS, "text");
                 text.textContent = (this.gradSpeeds[i] / 1000).toString();
                 text.setAttribute("x", _left.toString());
                 text.setAttribute("y", y.toString());
@@ -497,7 +497,7 @@ class Jet_PFD_VerticalSpeedIndicator extends HTMLElement {
             this.cursorSVGLine.setAttribute("stroke", this.cursorTextColor);
             this.cursorSVGLine.setAttribute("stroke-width", "3");
             this.cursorSVGGroup.appendChild(this.cursorSVGLine);
-            var cursorSVGNeutral = document.createElementNS(Avionics.SVG.NS, "line");
+            let cursorSVGNeutral = document.createElementNS(Avionics.SVG.NS, "line");
             cursorSVGNeutral.setAttribute("x1", (_left + _width * 0.2).toString());
             cursorSVGNeutral.setAttribute("y1", this.cursorPosY1.toString());
             cursorSVGNeutral.setAttribute("x2", (_left + _width * 0.5).toString());
@@ -536,10 +536,10 @@ class Jet_PFD_VerticalSpeedIndicator extends HTMLElement {
         this.rootSVG = document.createElementNS(Avionics.SVG.NS, "svg");
         this.rootSVG.setAttribute("id", "ViewBox");
         this.rootSVG.setAttribute("viewBox", "0 0 250 600");
-        var posX = 0;
-        var posY = 0;
-        var width = 100;
-        var height = 600;
+        let posX = 0;
+        let posY = 0;
+        let width = 100;
+        let height = 600;
         this.maxSpeed = 6000;
         this.cursorTextColor = "rgb(26,255,0)";
         if (!this.rootGroup) {
@@ -556,17 +556,17 @@ class Jet_PFD_VerticalSpeedIndicator extends HTMLElement {
         else {
             Utils.RemoveAllChildren(this.centerGroup);
         }
-        var smallBg = document.createElementNS(Avionics.SVG.NS, "path");
+        let smallBg = document.createElementNS(Avionics.SVG.NS, "path");
         smallBg.setAttribute("fill", "#343B51");
         smallBg.setAttribute("d", "M 0 0 L 0 " + height + " L 30 " + height + " L 50 " + (height - 100) + " L 50 100 L 30 0 Z");
         smallBg.setAttribute("transform", "translate(" + posX + " " + posY + ")");
         this.centerGroup.appendChild(smallBg);
-        var _width = width;
-        var _height = height;
-        var _top = posY;
-        var _left = posX + 50 - _width * 0.5;
-        var _graduationStartY = _top + _height * 0.05;
-        var _graduationHeight = (_top + _height * 0.95) - _graduationStartY;
+        let _width = width;
+        let _height = height;
+        let _top = posY;
+        let _left = posX + 50 - _width * 0.5;
+        let _graduationStartY = _top + _height * 0.05;
+        let _graduationHeight = (_top + _height * 0.95) - _graduationStartY;
         if (!this.graduationsGroup) {
             this.graduationsGroup = document.createElementNS(Avionics.SVG.NS, "g");
             this.graduationsGroup.setAttribute("id", "GraduationsGroup");
@@ -576,10 +576,10 @@ class Jet_PFD_VerticalSpeedIndicator extends HTMLElement {
         }
         this.gradSpeeds = [500, 1000, 1500, 2000, 4000, 6000];
         this.gradYPos = [70, 140, 175, 210, 245, 280];
-        for (var i = 0; i < this.gradSpeeds.length; i++) {
-            var isPrimary = (i % 2 != 0) ? true : false;
-            var y = _graduationStartY + _graduationHeight * 0.5 + this.gradYPos[i];
-            var line = document.createElementNS(Avionics.SVG.NS, "rect");
+        for (let i = 0; i < this.gradSpeeds.length; i++) {
+            let isPrimary = (i % 2 != 0) ? true : false;
+            let y = _graduationStartY + _graduationHeight * 0.5 + this.gradYPos[i];
+            let line = document.createElementNS(Avionics.SVG.NS, "rect");
             line.setAttribute("x", (_left + _width * 0.2).toString());
             line.setAttribute("y", y.toString());
             line.setAttribute("width", isPrimary ? "9" : "9");
@@ -587,7 +587,7 @@ class Jet_PFD_VerticalSpeedIndicator extends HTMLElement {
             line.setAttribute("fill", "white");
             this.graduationsGroup.appendChild(line);
             if (isPrimary) {
-                var text = document.createElementNS(Avionics.SVG.NS, "text");
+                let text = document.createElementNS(Avionics.SVG.NS, "text");
                 text.textContent = (this.gradSpeeds[i] / 1000).toString();
                 text.setAttribute("x", _left.toString());
                 text.setAttribute("y", y.toString());
@@ -599,7 +599,7 @@ class Jet_PFD_VerticalSpeedIndicator extends HTMLElement {
                 this.graduationsGroup.appendChild(text);
             }
             y = _graduationStartY + _graduationHeight * 0.5 - this.gradYPos[i];
-            var line = document.createElementNS(Avionics.SVG.NS, "rect");
+            let line = document.createElementNS(Avionics.SVG.NS, "rect");
             line.setAttribute("x", (_left + _width * 0.2).toString());
             line.setAttribute("y", y.toString());
             line.setAttribute("width", isPrimary ? "9" : "9");
@@ -607,7 +607,7 @@ class Jet_PFD_VerticalSpeedIndicator extends HTMLElement {
             line.setAttribute("fill", "white");
             this.graduationsGroup.appendChild(line);
             if (isPrimary) {
-                var text = document.createElementNS(Avionics.SVG.NS, "text");
+                let text = document.createElementNS(Avionics.SVG.NS, "text");
                 text.textContent = (this.gradSpeeds[i] / 1000).toString();
                 text.setAttribute("x", _left.toString());
                 text.setAttribute("y", y.toString());
@@ -636,7 +636,7 @@ class Jet_PFD_VerticalSpeedIndicator extends HTMLElement {
             this.cursorSVGLine.setAttribute("stroke", this.cursorTextColor);
             this.cursorSVGLine.setAttribute("stroke-width", "4.5");
             this.cursorSVGGroup.appendChild(this.cursorSVGLine);
-            var cursorSVGNeutral = document.createElementNS(Avionics.SVG.NS, "line");
+            let cursorSVGNeutral = document.createElementNS(Avionics.SVG.NS, "line");
             cursorSVGNeutral.setAttribute("x1", _left.toString());
             cursorSVGNeutral.setAttribute("y1", this.cursorPosY1.toString());
             cursorSVGNeutral.setAttribute("x2", this.cursorPosX1.toString());
@@ -726,7 +726,7 @@ class Jet_PFD_VerticalSpeedIndicator extends HTMLElement {
                         this.cursorSVGLine.setAttribute("stroke", this.cursorTextColor);
                 }
                 if (this.cursorSVGText) {
-                    var displaySpeed = Math.floor(vSpeed / 100);
+                    let displaySpeed = Math.floor(vSpeed / 100);
                     if (Math.abs(displaySpeed) > 0) {
                         this.cursorSVGText.textContent = Math.abs(displaySpeed).toString();
                         let posY;
@@ -754,7 +754,7 @@ class Jet_PFD_VerticalSpeedIndicator extends HTMLElement {
             }
             {
                 let threshold = 400;
-                var displaySpeed = Math.abs(Math.floor(_speed));
+                let displaySpeed = Math.abs(Math.floor(_speed));
                 displaySpeed = Math.round(displaySpeed / 5) * 5;
                 if (this.topSpeedText) {
                     if (_speed >= threshold)
@@ -788,17 +788,17 @@ class Jet_PFD_VerticalSpeedIndicator extends HTMLElement {
         }
     }
     heightFromSpeed(_speed) {
-        var absSpeed = Math.abs(_speed);
-        var height = 0;
-        var found = false;
+        let absSpeed = Math.abs(_speed);
+        let height = 0;
+        let found = false;
         if (absSpeed < this.gradSpeeds[0]) {
-            var percent = absSpeed / this.gradSpeeds[0];
+            let percent = absSpeed / this.gradSpeeds[0];
             height = this.gradYPos[0] * percent;
         }
         else {
-            for (var i = 0; i < this.gradSpeeds.length - 1; i++) {
+            for (let i = 0; i < this.gradSpeeds.length - 1; i++) {
                 if (absSpeed >= this.gradSpeeds[i] && absSpeed < this.gradSpeeds[i + 1]) {
-                    var percent = (absSpeed - this.gradSpeeds[i]) / (this.gradSpeeds[i + 1] - this.gradSpeeds[i]);
+                    let percent = (absSpeed - this.gradSpeeds[i]) / (this.gradSpeeds[i + 1] - this.gradSpeeds[i]);
                     height = this.gradYPos[i] + (this.gradYPos[i + 1] - this.gradYPos[i]) * percent;
                     found = true;
                     break;
@@ -810,7 +810,7 @@ class Jet_PFD_VerticalSpeedIndicator extends HTMLElement {
         return height;
     }
     updateFail() {
-        var failed = !(SimVar.GetSimVarValue("L:A320_Neo_ADIRS_STATE", "Enum") >= 1);
+        const failed = !(SimVar.GetSimVarValue("L:A320_Neo_ADIRS_STATE", "Enum") >= 1);
         if (!failed) {
             this.failMask.setAttribute("visibility", "hidden");
             this.cursorSVGGroup.setAttribute("visibility", "visible");

@@ -2,12 +2,12 @@ class CDUIRSStatus {
     static ShowPage(mcdu, index) {
         mcdu.clearDisplay()
         let currPos = new LatLong(SimVar.GetSimVarValue("GPS POSITION LAT", "degree latitude"), SimVar.GetSimVarValue("GPS POSITION LON", "degree longitude")).toShortDegreeString();
-        let GROUNDSPEED = SimVar.GetSimVarValue("GPS GROUND SPEED", "Meters per second") || "0";
-        let THDG = SimVar.GetSimVarValue("GPS GROUND TRUE HEADING", "radians") || "000";
-        let TTRK = SimVar.GetSimVarValue("GPS GROUND MAGNETIC TRACK", "radians") || "000";
-        let MHDG = SimVar.GetSimVarValue("GPS GROUND TRUE TRACK", "radians") || "000";
-        let WIND_DIR = SimVar.GetSimVarValue("AMBIENT WIND DIRECTION", "Degrees") || "000";
-        let WIND_VELOCITY = SimVar.GetSimVarValue("AMBIENT WIND VELOCITY", "Knots") || "00";
+        const GROUNDSPEED = SimVar.GetSimVarValue("GPS GROUND SPEED", "Meters per second") || "0";
+        const THDG = SimVar.GetSimVarValue("GPS GROUND TRUE HEADING", "radians") || "000";
+        const TTRK = SimVar.GetSimVarValue("GPS GROUND MAGNETIC TRACK", "radians") || "000";
+        const MHDG = SimVar.GetSimVarValue("GPS GROUND TRUE TRACK", "radians") || "000";
+        const WIND_DIR = SimVar.GetSimVarValue("AMBIENT WIND DIRECTION", "Degrees") || "000";
+        const WIND_VELOCITY = SimVar.GetSimVarValue("AMBIENT WIND VELOCITY", "Knots") || "00";
         mcdu.setTemplate([
             [`IRS${index}`],
             ["POSITION"],

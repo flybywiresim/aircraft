@@ -107,7 +107,7 @@ class A320_Neo_PFD_MainPage extends NavSystemPage {
             this.vsFlash.setAttribute("visibility", "hidden");
         }
 
-        var ADIRSState = SimVar.GetSimVarValue("L:A320_Neo_ADIRS_STATE", "Enum");
+        const ADIRSState = SimVar.GetSimVarValue("L:A320_Neo_ADIRS_STATE", "Enum");
 
         if (ADIRSState >= 1) {
             this.attitudeFail.setAttribute("style", "display:none");
@@ -124,11 +124,11 @@ class A320_Neo_PFD_MainPage extends NavSystemPage {
             this.headingFail.setAttribute("style", "");
         }
 
-        var externalPower = SimVar.GetSimVarValue("EXTERNAL POWER ON", "bool");
-        var engineOn = SimVar.GetSimVarValue("GENERAL ENG STARTER:1", "bool");
-        var apuOn = SimVar.GetSimVarValue("APU SWITCH", "bool");
-        var onRunway = SimVar.GetSimVarValue("ON ANY RUNWAY", "bool");
-        var isOnGround = SimVar.GetSimVarValue("SIM ON GROUND", "bool")
+        const externalPower = SimVar.GetSimVarValue("EXTERNAL POWER ON", "bool");
+        const engineOn = SimVar.GetSimVarValue("GENERAL ENG STARTER:1", "bool");
+        const apuOn = SimVar.GetSimVarValue("APU SWITCH", "bool");
+        const onRunway = SimVar.GetSimVarValue("ON ANY RUNWAY", "bool");
+        const isOnGround = SimVar.GetSimVarValue("SIM ON GROUND", "bool")
 
         this.updateScreenState(externalPower, engineOn, apuOn, onRunway, isOnGround);
 
@@ -179,10 +179,10 @@ class A320_Neo_PFD_VSpeed extends NavSystemElement {
     onEnter() {
     }
     onUpdate(_deltaTime) {
-        var vSpeed = Math.round(Simplane.getVerticalSpeed());
+        const vSpeed = Math.round(Simplane.getVerticalSpeed());
         this.vsi.setAttribute("vspeed", vSpeed.toString());
         if (Simplane.getAutoPilotVerticalSpeedHoldActive()) {
-            var selVSpeed = Math.round(Simplane.getAutoPilotVerticalSpeedHoldValue());
+            const selVSpeed = Math.round(Simplane.getAutoPilotVerticalSpeedHoldValue());
             this.vsi.setAttribute("selected_vspeed", selVSpeed.toString());
             this.vsi.setAttribute("selected_vspeed_active", "true");
         }
@@ -256,7 +256,7 @@ class A320_Neo_PFD_Attitude extends NavSystemElement {
     onUpdate(_deltaTime) {
         if (this.hsi) {
             this.hsi.update(_deltaTime);
-            var xyz = Simplane.getOrientationAxis();
+            const xyz = Simplane.getOrientationAxis();
             if (xyz) {
                 this.hsi.setAttribute("pitch", (xyz.pitch / Math.PI * 180).toString());
                 this.hsi.setAttribute("bank", (xyz.bank / Math.PI * 180).toString());

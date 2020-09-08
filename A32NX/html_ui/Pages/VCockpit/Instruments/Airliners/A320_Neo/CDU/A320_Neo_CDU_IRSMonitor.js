@@ -1,7 +1,7 @@
 class CDUIRSMonitor {
     static ShowPage(mcdu) {
         mcdu.clearDisplay();
-        let checkAligned = SimVar.GetSimVarValue("L:A320_Neo_ADIRS_STATE", "Number") || 2;
+        const checkAligned = SimVar.GetSimVarValue("L:A320_Neo_ADIRS_STATE", "Number") || 2;
         let IRSStatus;
         switch(checkAligned) {
             case 0:

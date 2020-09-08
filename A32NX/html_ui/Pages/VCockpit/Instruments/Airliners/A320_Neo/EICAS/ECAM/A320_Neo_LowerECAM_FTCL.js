@@ -1,4 +1,4 @@
-var A320_Neo_LowerECAM_FTCL;
+let A320_Neo_LowerECAM_FTCL;
 (function (A320_Neo_LowerECAM_FTCL) {
     class Definitions {
     }
@@ -49,16 +49,16 @@ var A320_Neo_LowerECAM_FTCL;
             }
 
             // Update pitch trim
-            var rawPitchTrim = SimVar.GetSimVarValue("ELEVATOR TRIM INDICATOR", "Position 16k") / 1213.6296;
+            let rawPitchTrim = SimVar.GetSimVarValue("ELEVATOR TRIM INDICATOR", "Position 16k") / 1213.6296;
             // Cap pitch trim at 13.5 up, 4 down
             if (rawPitchTrim > 16384.0) {
                 rawPitchTrim = 16384.0;
             } else if (rawPitchTrim < -4854) {
                 rawPitchTrim = -4854;
             }
-            var pitchTrimPctLeading = fastToFixed(Math.floor(Math.abs(rawPitchTrim)), 0);
-            var pitchTrimPctTrailing = fastToFixed(Math.floor((Math.abs(rawPitchTrim) * 10) % 10), 0);
-            var pitchTrimSign = Math.sign(rawPitchTrim);
+            let pitchTrimPctLeading = fastToFixed(Math.floor(Math.abs(rawPitchTrim)), 0);
+            let pitchTrimPctTrailing = fastToFixed(Math.floor((Math.abs(rawPitchTrim) * 10) % 10), 0);
+            let pitchTrimSign = Math.sign(rawPitchTrim);
 
             this.pitchTrimLeadingDecimal.textContent = pitchTrimPctLeading;
             this.pitchTrimTrailingDecimal.textContent = pitchTrimPctTrailing;
@@ -69,19 +69,19 @@ var A320_Neo_LowerECAM_FTCL;
             }
 
             // Update left aileron
-            var leftAileronDeflectPct = SimVar.GetSimVarValue("AILERON LEFT DEFLECTION PCT", "percent over 100");
+            const leftAileronDeflectPct = SimVar.GetSimVarValue("AILERON LEFT DEFLECTION PCT", "percent over 100");
             let leftAileronDeflectPctNormalized = leftAileronDeflectPct * 54;
             let laCursorPath = "M73," + (204 + leftAileronDeflectPctNormalized) + " l15,-7 l0,14Z";
             this.leftAileronCursor.setAttribute("d", laCursorPath);
 
             // Update right aileron
-            var rightAileronDeflectPct = SimVar.GetSimVarValue("AILERON RIGHT DEFLECTION PCT", "percent over 100");
+            const rightAileronDeflectPct = SimVar.GetSimVarValue("AILERON RIGHT DEFLECTION PCT", "percent over 100");
             let rightAileronDeflectPctNormalized = rightAileronDeflectPct * 54;
             let raCursorPath = "M527," + (204 - rightAileronDeflectPctNormalized) + " l-15,-7 l0,14Z";
             this.rightAileronCursor.setAttribute("d", raCursorPath);
 
             // Update left/right elevators
-            var elevatorDeflectPct = SimVar.GetSimVarValue("ELEVATOR DEFLECTION PCT", "percent over 100");
+            const elevatorDeflectPct = SimVar.GetSimVarValue("ELEVATOR DEFLECTION PCT", "percent over 100");
             let elevatorDeflectPctNormalized = elevatorDeflectPct * 52;
             let leCursorPath = "M169," + (398 - elevatorDeflectPctNormalized) + " l15,-7 l0,14Z";
             let reCursorPath = "M431," + (398 - elevatorDeflectPctNormalized) + " l-15,-7 l0,14Z";
@@ -89,16 +89,16 @@ var A320_Neo_LowerECAM_FTCL;
             this.rightElevatorCursor.setAttribute("d", reCursorPath);
 
             // Update ELAC's and SEC's
-            var elac1_On = SimVar.GetSimVarValue("FLY BY WIRE ELAC SWITCH:1", "boolean");
-            var elac2_On = SimVar.GetSimVarValue("FLY BY WIRE ELAC SWITCH:2", "boolean");
-            var elac1_Failed = SimVar.GetSimVarValue("FLY BY WIRE ELAC FAILED:1", "boolean");
-            var elac2_Failed = SimVar.GetSimVarValue("FLY BY WIRE ELAC FAILED:2", "boolean");
-            var sec1_On = SimVar.GetSimVarValue("FLY BY WIRE SEC SWITCH:1", "boolean");
-            var sec2_On = SimVar.GetSimVarValue("FLY BY WIRE SEC SWITCH:2", "boolean");
-            var sec3_On = SimVar.GetSimVarValue("FLY BY WIRE SEC SWITCH:3", "boolean");
-            var sec1_Failed = SimVar.GetSimVarValue("FLY BY WIRE SEC FAILED:1", "boolean");
-            var sec2_Failed = SimVar.GetSimVarValue("FLY BY WIRE SEC FAILED:2", "boolean");
-            var sec3_Failed = SimVar.GetSimVarValue("FLY BY WIRE SEC FAILED:3", "boolean");
+            const elac1_On = SimVar.GetSimVarValue("FLY BY WIRE ELAC SWITCH:1", "boolean");
+            const elac2_On = SimVar.GetSimVarValue("FLY BY WIRE ELAC SWITCH:2", "boolean");
+            const elac1_Failed = SimVar.GetSimVarValue("FLY BY WIRE ELAC FAILED:1", "boolean");
+            const elac2_Failed = SimVar.GetSimVarValue("FLY BY WIRE ELAC FAILED:2", "boolean");
+            const sec1_On = SimVar.GetSimVarValue("FLY BY WIRE SEC SWITCH:1", "boolean");
+            const sec2_On = SimVar.GetSimVarValue("FLY BY WIRE SEC SWITCH:2", "boolean");
+            const sec3_On = SimVar.GetSimVarValue("FLY BY WIRE SEC SWITCH:3", "boolean");
+            const sec1_Failed = SimVar.GetSimVarValue("FLY BY WIRE SEC FAILED:1", "boolean");
+            const sec2_Failed = SimVar.GetSimVarValue("FLY BY WIRE SEC FAILED:2", "boolean");
+            const sec3_Failed = SimVar.GetSimVarValue("FLY BY WIRE SEC FAILED:3", "boolean");
 
             if (elac1_On && !elac1_Failed) {
                 this.elac1Shape.setAttribute("class", "MainShape");

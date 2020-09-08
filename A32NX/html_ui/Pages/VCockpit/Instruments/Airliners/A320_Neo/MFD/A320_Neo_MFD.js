@@ -1,3 +1,10 @@
+const A320_Neo_ND_Symbol = {
+    WXR: 0,
+    WXRTURB: 1,
+    TURB: 2,
+    MAP: 3
+}
+
 class A320_Neo_MFD extends BaseAirliners {
     constructor() {
         super();
@@ -31,6 +38,7 @@ class A320_Neo_MFD extends BaseAirliners {
         super.Update();
     }
 }
+
 class A320_Neo_MFD_MainElement extends NavSystemElement {
     init(root) {
     }
@@ -43,6 +51,7 @@ class A320_Neo_MFD_MainElement extends NavSystemElement {
     onEvent(_event) {
     }
 }
+
 class A320_Neo_MFD_MainPage extends NavSystemPage {
     constructor() {
         super("Main", "Mainframe", new A320_Neo_MFD_MainElement());
@@ -116,11 +125,11 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
             document.querySelector("#Map").setAttribute("style", "");
         }
 
-        var externalPower = SimVar.GetSimVarValue("EXTERNAL POWER ON", "bool");
-        var engineOn = SimVar.GetSimVarValue("GENERAL ENG STARTER:1", "bool");
-        var apuOn = SimVar.GetSimVarValue("APU SWITCH", "bool");
-        var onRunway = SimVar.GetSimVarValue("ON ANY RUNWAY", "bool");
-        var isOnGround = SimVar.GetSimVarValue("SIM ON GROUND", "bool")
+        const externalPower = SimVar.GetSimVarValue("EXTERNAL POWER ON", "bool");
+        const engineOn = SimVar.GetSimVarValue("GENERAL ENG STARTER:1", "bool");
+        const apuOn = SimVar.GetSimVarValue("APU SWITCH", "bool");
+        const onRunway = SimVar.GetSimVarValue("ON ANY RUNWAY", "bool");
+        const isOnGround = SimVar.GetSimVarValue("SIM ON GROUND", "bool")
         
         this.updateScreenState(externalPower, engineOn, apuOn, onRunway, isOnGround);
 
@@ -174,11 +183,11 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
                 this.rangeChangeTimer = -1;
             }
         }
-        var wxRadarOn = (SimVar.GetSimVarValue("L:XMLVAR_A320_WeatherRadar_Sys", "number") != 1) ? true : false;
-        var wxRadarMode = SimVar.GetSimVarValue("L:XMLVAR_A320_WeatherRadar_Mode", "number");
-        var terrainOn = SimVar.GetSimVarValue("L:BTN_TERRONND_ACTIVE", "number");
-        var mapMode = SimVar.GetSimVarValue("L:A320_Neo_MFD_NAV_MODE", "number");
-        var mapRange = SimVar.GetSimVarValue("L:A320_Neo_MFD_Range", "number");
+        const wxRadarOn = (SimVar.GetSimVarValue("L:XMLVAR_A320_WeatherRadar_Sys", "number") != 1) ? true : false;
+        const wxRadarMode = SimVar.GetSimVarValue("L:XMLVAR_A320_WeatherRadar_Mode", "number");
+        const terrainOn = SimVar.GetSimVarValue("L:BTN_TERRONND_ACTIVE", "number");
+        const mapMode = SimVar.GetSimVarValue("L:A320_Neo_MFD_NAV_MODE", "number");
+        const mapRange = SimVar.GetSimVarValue("L:A320_Neo_MFD_Range", "number");
         if (this.wxRadarOn != wxRadarOn || this.terrainOn != terrainOn || this.wxRadarMode != wxRadarMode || this.mapMode != mapMode) {
             this.wxRadarOn = wxRadarOn;
             this.wxRadarMode = wxRadarMode;
@@ -187,21 +196,20 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
             this.setMapMode(this.mapMode);
             if (this.terrainOn) {
                 this.mapConfigId = 1;
-            }
-            else if (this.wxRadarOn && this.wxRadarMode != 3) {
+            } else if (this.wxRadarOn && this.wxRadarMode != 3) {
                 this.showWeather();
-            }
-            else {
+            } else {
                 this.mapConfigId = 0;
             }
+            
             if (this.compass.svg.displayMode === Jet_NDCompass_Display.ARC) {
                 this.map.showCompassMask();
                 this.map.hidePlanMask();
-            }
-            else {
+            } else {
                 this.map.showPlanMask();
                 this.map.hideCompassMask();
             }
+            
             if (this.modeChangeMask) {
                 this.modeChangeMask.style.display = "block";
                 this.modeChangeTimer = 0.5;
@@ -226,6 +234,7 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
                 }
                 break;
         }
+
         if (this.mapRange != mapRange) {
             this.mapRange = mapRange;
             this.map.instrument.setZoom(this.mapRange);
@@ -236,6 +245,7 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
                 this.rangeChangeTimer = 0.5;
             }
         }
+
         let selected = Simplane.getAutoPilotHeadingSelected();
         if (selected != this.headingSelected) {
             this.headingSelected = selected;
@@ -253,10 +263,10 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
             this.map.instrument.tmpDirectToElement.llaRequested = new LatLongAlt(SimVar.GetSimVarValue("L:A320_NEO_PREVIEW_DIRECT_TO_LAT_0", "number"), SimVar.GetSimVarValue("L:A320_NEO_PREVIEW_DIRECT_TO_LONG_0", "number"));
             this.map.instrument.tmpDirectToElement.targetLla = new LatLongAlt(SimVar.GetSimVarValue("L:A320_NEO_PREVIEW_DIRECT_TO_LAT_1", "number"), SimVar.GetSimVarValue("L:A320_NEO_PREVIEW_DIRECT_TO_LONG_1", "number"));
             this.map.instrument.tmpDirectToElement.planeHeading = SimVar.GetSimVarValue("PLANE HEADING DEGREES TRUE", "degree");
-        }
-        else {
+        } else {
             this.map.instrument.tmpDirectToElement = undefined;
         }
+
         this.map.updateTopOfDescent();
         this.map.updateTopOfClimb();
     }
@@ -353,6 +363,7 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
         this.info.showSymbol(A320_Neo_ND_Symbol.MAP, this.wxRadarOn && this.wxRadarMode == 3);
     }
 }
+
 class A320_Neo_MFD_Compass extends NavSystemElement {
     init(root) {
         this.svg = this.gps.getChildById("Compass");
@@ -374,13 +385,14 @@ class A320_Neo_MFD_Compass extends NavSystemElement {
         }
     }
 }
+
 class A320_Neo_MFD_Map extends MapInstrumentElement {
     constructor() {
         super(...arguments);
         this.zoomRanges = [10, 20, 40, 80, 160, 320];
     }
     updateTopOfDescent() {
-        let showTopOfDescent = SimVar.GetSimVarValue("L:AIRLINER_FMS_SHOW_TOP_DSCNT", "number") === 1;
+        const showTopOfDescent = SimVar.GetSimVarValue("L:AIRLINER_FMS_SHOW_TOP_DSCNT", "number") === 1;
         if (showTopOfDescent) {
             if (!this.topOfDescentIcon) {
                 this.topOfDescentIcon = new SvgTopOfXElement("a320-neo-top-of-descent", "ICON_TOP_DSCNT_WHITE");
@@ -401,7 +413,7 @@ class A320_Neo_MFD_Map extends MapInstrumentElement {
         }
     }
     updateTopOfClimb() {
-        let showTopOfClimb = SimVar.GetSimVarValue("L:AIRLINER_FMS_SHOW_TOP_CLIMB", "number") === 1;
+        const showTopOfClimb = SimVar.GetSimVarValue("L:AIRLINER_FMS_SHOW_TOP_CLIMB", "number") === 1;
         if (showTopOfClimb) {
             if (!this.topOfClimbIcon) {
                 this.topOfClimbIcon = new SvgTopOfXElement("a320-neo-top-of-climb", "ICON_LEVEL_OFF_BLUE");
@@ -514,13 +526,7 @@ class A320_Neo_MFD_Map extends MapInstrumentElement {
         }
     }
 }
-var A320_Neo_ND_Symbol;
-(function (A320_Neo_ND_Symbol) {
-    A320_Neo_ND_Symbol[A320_Neo_ND_Symbol["WXR"] = 0] = "WXR";
-    A320_Neo_ND_Symbol[A320_Neo_ND_Symbol["WXRTURB"] = 1] = "WXRTURB";
-    A320_Neo_ND_Symbol[A320_Neo_ND_Symbol["TURB"] = 2] = "TURB";
-    A320_Neo_ND_Symbol[A320_Neo_ND_Symbol["MAP"] = 3] = "MAP";
-})(A320_Neo_ND_Symbol || (A320_Neo_ND_Symbol = {}));
+
 class A320_Neo_MFD_NDInfo extends NavSystemElement {
     constructor() {
         super(...arguments);
@@ -541,13 +547,13 @@ class A320_Neo_MFD_NDInfo extends NavSystemElement {
         if (this.ndInfo != null) {
             this.ndInfo.update(_deltaTime);
         }
-        var ADIRSState = SimVar.GetSimVarValue("L:A320_Neo_ADIRS_STATE", "Enum");
-        var gs = this.ndInfo.querySelector("#GS_Value");
-        var tas = this.ndInfo.querySelector("#TAS_Value");
-        var wd = this.ndInfo.querySelector("#Wind_Direction");
-        var ws = this.ndInfo.querySelector("#Wind_Strength");
-        var wa = this.ndInfo.querySelector("#Wind_Arrow");
-        var wptg = this.ndInfo.querySelector("#Waypoint_Group");
+        const ADIRSState = SimVar.GetSimVarValue("L:A320_Neo_ADIRS_STATE", "Enum");
+        let gs = this.ndInfo.querySelector("#GS_Value");
+        let tas = this.ndInfo.querySelector("#TAS_Value");
+        let wd = this.ndInfo.querySelector("#Wind_Direction");
+        let ws = this.ndInfo.querySelector("#Wind_Strength");
+        let wa = this.ndInfo.querySelector("#Wind_Arrow");
+        let wptg = this.ndInfo.querySelector("#Waypoint_Group");
         if (ADIRSState != 2) {
             //Hide GS, TAS, and wind info
             gs.textContent = "---";

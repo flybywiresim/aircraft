@@ -54,11 +54,11 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this.updateAutopilot();
         this.updateADIRS();
 
-        var externalPower = SimVar.GetSimVarValue("EXTERNAL POWER ON", "bool");
-        var engineOn = SimVar.GetSimVarValue("GENERAL ENG STARTER:1", "bool");
-        var apuOn = SimVar.GetSimVarValue("APU SWITCH", "bool");
-        var onRunway = SimVar.GetSimVarValue("ON ANY RUNWAY", "bool");
-        var isOnGround = SimVar.GetSimVarValue("SIM ON GROUND", "bool")
+        const externalPower = SimVar.GetSimVarValue("EXTERNAL POWER ON", "bool");
+        const engineOn = SimVar.GetSimVarValue("GENERAL ENG STARTER:1", "bool");
+        const apuOn = SimVar.GetSimVarValue("APU SWITCH", "bool");
+        const onRunway = SimVar.GetSimVarValue("ON ANY RUNWAY", "bool");
+        const isOnGround = SimVar.GetSimVarValue("SIM ON GROUND", "bool")
 
         this.updateScreenState(externalPower, engineOn, apuOn, onRunway, isOnGround);
     }
@@ -80,7 +80,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                 maxSpeed = this.v2Speed + 10;
             }
         }
-        let flapsHandleIndex = SimVar.GetSimVarValue("FLAPS HANDLE INDEX", "Number");
+        const flapsHandleIndex = SimVar.GetSimVarValue("FLAPS HANDLE INDEX", "Number");
         if (flapsHandleIndex != 0) {
             return Math.min(maxSpeed, this.getFlapSpeed());
         }
@@ -392,8 +392,8 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         let dWeightCoeff = (this.getWeight(true) - 100) / (175 - 100);
         dWeightCoeff = Utils.Clamp(dWeightCoeff, 0, 1);
         dWeightCoeff = 0.7 + (1.0 - 0.7) * dWeightCoeff;
-        let flapsHandleIndex = SimVar.GetSimVarValue("FLAPS HANDLE INDEX", "Number");
-        let temp = SimVar.GetSimVarValue("AMBIENT TEMPERATURE", "celsius");
+        const flapsHandleIndex = SimVar.GetSimVarValue("FLAPS HANDLE INDEX", "Number");
+        const temp = SimVar.GetSimVarValue("AMBIENT TEMPERATURE", "celsius");
         let index = this._getIndexFromTemp(temp);
         console.log("Index From Temp = " + index);
         let min = A320_Neo_CDU_MainDisplay._v1sConf1[index][0];
@@ -421,8 +421,8 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         let dWeightCoeff = (this.getWeight(true) - 100) / (175 - 100);
         dWeightCoeff = Utils.Clamp(dWeightCoeff, 0, 1);
         dWeightCoeff = 0.695 + (0.985 - 0.695) * dWeightCoeff;
-        let flapsHandleIndex = SimVar.GetSimVarValue("FLAPS HANDLE INDEX", "Number");
-        let temp = SimVar.GetSimVarValue("AMBIENT TEMPERATURE", "celsius");
+        const flapsHandleIndex = SimVar.GetSimVarValue("FLAPS HANDLE INDEX", "Number");
+        const temp = SimVar.GetSimVarValue("AMBIENT TEMPERATURE", "celsius");
         let index = this._getIndexFromTemp(temp);
         console.log("Index From Temp = " + index);
         let min = A320_Neo_CDU_MainDisplay._vRsConf1[index][0];
@@ -450,8 +450,8 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         let dWeightCoeff = (this.getWeight(true) - 100) / (175 - 100);
         dWeightCoeff = Utils.Clamp(dWeightCoeff, 0, 1);
         dWeightCoeff = 0.71 + (0.96 - 0.71) * dWeightCoeff;
-        let flapsHandleIndex = SimVar.GetSimVarValue("FLAPS HANDLE INDEX", "Number");
-        let temp = SimVar.GetSimVarValue("AMBIENT TEMPERATURE", "celsius");
+        const flapsHandleIndex = SimVar.GetSimVarValue("FLAPS HANDLE INDEX", "Number");
+        const temp = SimVar.GetSimVarValue("AMBIENT TEMPERATURE", "celsius");
         let index = this._getIndexFromTemp(temp);
         console.log("Index From Temp = " + index);
         let min = A320_Neo_CDU_MainDisplay._v2sConf1[index][0];
@@ -489,14 +489,14 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         }
         if (apLogicOn && this.currentFlightPhase >= FlightPhase.FLIGHT_PHASE_TAKEOFF) {
             if (this.isHeadingManaged()) {
-                let heading = SimVar.GetSimVarValue("GPS COURSE TO STEER", "degree", "FMC");
+                const heading = SimVar.GetSimVarValue("GPS COURSE TO STEER", "degree", "FMC");
                 if (isFinite(heading)) {
                     Coherent.call("HEADING_BUG_SET", 2, heading);
                 }
             }
         }
         if (this.updateAutopilotCooldown < 0) {
-            let currentApMasterStatus = SimVar.GetSimVarValue("AUTOPILOT MASTER", "boolean");
+            const currentApMasterStatus = SimVar.GetSimVarValue("AUTOPILOT MASTER", "boolean");
             if (currentApMasterStatus != this._apMasterStatus) {
                 this._apMasterStatus = currentApMasterStatus;
                 apLogicOn = (this._apMasterStatus || Simplane.getAutoPilotFlightDirectorActive(1));
@@ -692,15 +692,15 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     updateADIRS() {
 
         //Get the time since last update
-        var now = Date.now();
+        const now = Date.now();
         if (this.lastTime == null) this.lastTime = now;
-        var deltaTime = now - this.lastTime;
+        const deltaTime = now - this.lastTime;
         this.lastTime = now;
 
         if (this.ADIRSTimer == null) this.ADIRSTimer = -1;
-        var AllADIRSOn = ((SimVar.GetSimVarValue("L:A320_Neo_ADIRS_KNOB_1", "Enum") >= 1) && (SimVar.GetSimVarValue("L:A320_Neo_ADIRS_KNOB_2", "Enum") >= 1) && (SimVar.GetSimVarValue("L:A320_Neo_ADIRS_KNOB_3", "Enum") >= 1));
-        var SomeADIRSOn = ((SimVar.GetSimVarValue("L:A320_Neo_ADIRS_KNOB_1", "Enum") >= 1) || (SimVar.GetSimVarValue("L:A320_Neo_ADIRS_KNOB_2", "Enum") >= 1) || (SimVar.GetSimVarValue("L:A320_Neo_ADIRS_KNOB_3", "Enum") >= 1));
-        var ADIRSState = SimVar.GetSimVarValue("L:A320_Neo_ADIRS_STATE", "Enum");
+        const AllADIRSOn = ((SimVar.GetSimVarValue("L:A320_Neo_ADIRS_KNOB_1", "Enum") >= 1) && (SimVar.GetSimVarValue("L:A320_Neo_ADIRS_KNOB_2", "Enum") >= 1) && (SimVar.GetSimVarValue("L:A320_Neo_ADIRS_KNOB_3", "Enum") >= 1));
+        const SomeADIRSOn = ((SimVar.GetSimVarValue("L:A320_Neo_ADIRS_KNOB_1", "Enum") >= 1) || (SimVar.GetSimVarValue("L:A320_Neo_ADIRS_KNOB_2", "Enum") >= 1) || (SimVar.GetSimVarValue("L:A320_Neo_ADIRS_KNOB_3", "Enum") >= 1));
+        const ADIRSState = SimVar.GetSimVarValue("L:A320_Neo_ADIRS_STATE", "Enum");
 
         if (!SomeADIRSOn && ADIRSState != 0) {
             //Turn off ADIRS

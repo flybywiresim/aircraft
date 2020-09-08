@@ -1,4 +1,5 @@
-var A320_Neo_LowerECAM_APU;
+let A320_Neo_LowerECAM_APU;
+
 (function (A320_Neo_LowerECAM_APU) {
     class Definitions {
     }
@@ -46,7 +47,7 @@ var A320_Neo_LowerECAM_APU;
                 return;
             }
 
-            var currentAPUMasterState = SimVar.GetSimVarValue("FUELSYSTEM VALVE SWITCH:8", "Bool");
+            const currentAPUMasterState = SimVar.GetSimVarValue("FUELSYSTEM VALVE SWITCH:8", "Bool");
 
 
             if (this.lastAPUMasterState != currentAPUMasterState) {
@@ -69,9 +70,9 @@ var A320_Neo_LowerECAM_APU;
             }
 
             //Get APU N%
-            var APUPctRPM = SimVar.GetSimVarValue("APU PCT RPM", "percent");
-            var totalElectricalLoad = SimVar.GetSimVarValue("ELECTRICAL TOTAL LOAD AMPS", "amperes");
-            var APULoadPercent = totalElectricalLoad / 782.609 // 1000 * 90 kVA / 115V = 782.609A
+            const APUPctRPM = SimVar.GetSimVarValue("APU PCT RPM", "percent");
+            const totalElectricalLoad = SimVar.GetSimVarValue("ELECTRICAL TOTAL LOAD AMPS", "amperes");
+            const APULoadPercent = totalElectricalLoad / 782.609 // 1000 * 90 kVA / 115V = 782.609A
 
             //APU Load/Volts/Frequency Indication
             if (APUPctRPM >= 87) {
@@ -138,7 +139,7 @@ var A320_Neo_LowerECAM_APU;
             this.APUWarm = false;
 
             //APU N Gauge
-            var gaugeDef1 = new A320_Neo_ECAM_Common.GaugeDefinition();
+            let gaugeDef1 = new A320_Neo_ECAM_Common.GaugeDefinition();
             gaugeDef1.arcSize = 200;
             gaugeDef1.currentValuePrecision = 0;
             gaugeDef1.minValue = 0;
@@ -160,7 +161,7 @@ var A320_Neo_LowerECAM_APU;
             }
 
             //APU EGT Gauge
-            var gaugeDef2 = new A320_Neo_ECAM_Common.GaugeDefinition();
+            let gaugeDef2 = new A320_Neo_ECAM_Common.GaugeDefinition();
             gaugeDef2.arcSize = 220;
             gaugeDef2.currentValuePrecision = 0;
             gaugeDef2.minValue = 300;
@@ -187,7 +188,7 @@ var A320_Neo_LowerECAM_APU;
 
         update(_deltaTime) {
             //Update gauges
-            var currentAPUMasterState = SimVar.GetSimVarValue("FUELSYSTEM VALVE SWITCH:8", "Bool");
+            const currentAPUMasterState = SimVar.GetSimVarValue("FUELSYSTEM VALVE SWITCH:8", "Bool");
             if ((currentAPUMasterState !== this.lastAPUMasterState) && currentAPUMasterState === 1) {
                 this.apuInactiveTimer = 3
                 this.lastAPUMasterState = currentAPUMasterState
@@ -221,7 +222,7 @@ var A320_Neo_LowerECAM_APU;
 
         //Calculates the APU EGT Based on the RPM
         getAPUEGTRaw(startup) {
-            var n = this.getAPUN();
+            const n = this.getAPUN();
             if (startup) {
                 if (n < 10) {
                     return 10;
@@ -242,10 +243,10 @@ var A320_Neo_LowerECAM_APU;
         }
 
         getAPUEGT() {
-            let ambient = SimVar.GetSimVarValue("AMBIENT TEMPERATURE", "celsius");
+            const ambient = SimVar.GetSimVarValue("AMBIENT TEMPERATURE", "celsius");
 
-            var n = this.getAPUN();
-            var egt = (Math.round(this.getAPUEGTRaw(this.lastN <= n)/5)*5);
+            const n = this.getAPUN();
+            const egt = (Math.round(this.getAPUEGTRaw(this.lastN <= n)/5)*5);
             this.lastN = n;
             if (this.APUWarm && egt < 100) {
                 return 100;

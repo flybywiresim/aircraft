@@ -46,10 +46,10 @@ class Jet_PFD_ILSIndicator extends HTMLElement {
     construct_B747_8() { }
     construct_AS01B() { }
     construct_A320_Neo() {
-        var posX = 0;
-        var posY = 0;
-        var width = 500;
-        var height = 500;
+        let posX = 0;
+        let posY = 0;
+        let width = 500;
+        let height = 500;
         this.rootSVG = document.createElementNS(Avionics.SVG.NS, "svg");
         this.rootSVG.setAttribute("id", "ViewBox");
         this.rootSVG.setAttribute("viewBox", "0 0 " + width + " " + height);
@@ -245,8 +245,8 @@ class Jet_PFD_ILSIndicator extends HTMLElement {
         }
         if (this.gsVisible || this.locVisible || this.infoVisible) {
             let localizer = this.gps.radioNav.getBestILSBeacon();
-            let isApproachLoaded = SimVar.GetSimVarValue("GPS IS APPROACH LOADED", "bool");
-            let approachType = SimVar.GetSimVarValue("GPS APPROACH APPROACH TYPE", "Enum");
+            const isApproachLoaded = SimVar.GetSimVarValue("GPS IS APPROACH LOADED", "bool");
+            const approachType = SimVar.GetSimVarValue("GPS APPROACH APPROACH TYPE", "Enum");
             if (this.gs_cursorGroup && this.gsVisible) {
                 if ((!isApproachLoaded || approachType == 4) && localizer.id > 0 && SimVar.GetSimVarValue("NAV HAS GLIDE SLOPE:" + localizer.id, "Bool")) {
                     let gsi = -SimVar.GetSimVarValue("NAV GSI:" + localizer.id, "number") / 127.0;
@@ -299,7 +299,7 @@ class Jet_PFD_ILSIndicator extends HTMLElement {
             }
             if (this.loc_cursorGroup && this.locVisible) {
                 if ((!isApproachLoaded || approachType == 4) && localizer.id > 0) {
-                    let cdi = SimVar.GetSimVarValue("NAV CDI:" + localizer.id, "number") / 127.0;
+                    const cdi = SimVar.GetSimVarValue("NAV CDI:" + localizer.id, "number") / 127.0;
                     let delta = (cdi + 1.0) * 0.5;
                     let x = this.loc_cursorMinX + (this.loc_cursorMaxX - this.loc_cursorMinX) * delta;
                     x = Math.max(this.loc_cursorMinX, Math.min(this.loc_cursorMaxX, x));

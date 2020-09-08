@@ -1,3 +1,10 @@
+const A320_Neo_FCU_VSpeed_State = {
+    Idle: 0,
+    Zeroing: 1,
+    Selecting: 2,
+    Flying: 3
+}
+
 class A320_Neo_FCU extends BaseAirliners {
     constructor() {
         super();
@@ -48,6 +55,7 @@ class A320_Neo_FCU_MainElement extends NavSystemElement {
     onEvent(_event) {
     }
 }
+
 class A320_Neo_FCU_MainPage extends NavSystemPage {
     constructor() {
         super("Main", "Mainframe", new A320_Neo_FCU_MainElement());
@@ -73,6 +81,7 @@ class A320_Neo_FCU_MainPage extends NavSystemPage {
         this.smallScreen.onFlightStart();
     }
 }
+
 class A320_Neo_FCU_Component {
     getDivElement(_name) {
         if (this.divRef != null) {
@@ -86,9 +95,9 @@ class A320_Neo_FCU_Component {
     }
     getElement(_type, _name) {
         if (this.divRef != null) {
-            var allText = this.divRef.getElementsByTagName(_type);
+            const allText = this.divRef.getElementsByTagName(_type);
             if (allText != null) {
-                for (var i = 0; i < allText.length; ++i) {
+                for (let i = 0; i < allText.length; ++i) {
                     if (allText[i].id == _name) {
                         return allText[i];
                     }
@@ -138,7 +147,7 @@ class A320_Neo_FCU_Speed extends A320_Neo_FCU_Component {
         this.refresh(false, false, false, false, 0);
     }
     update(_deltaTime) {
-        let showSelectedSpeed = SimVar.GetSimVarValue("L:A320_FCU_SHOW_SELECTED_SPEED", "number") === 1;
+        const showSelectedSpeed = SimVar.GetSimVarValue("L:A320_FCU_SHOW_SELECTED_SPEED", "number") === 1;
         let isManaged = Simplane.getAutoPilotAirspeedManaged();
         let isMachActive = Simplane.getAutoPilotMachModeActive();
         this.refresh(true, isManaged, showSelectedSpeed, isMachActive, (isMachActive) ? Simplane.getAutoPilotSelectedMachHoldValue() * 100 : Simplane.getAutoPilotSelectedAirspeedHoldValue());
@@ -152,14 +161,14 @@ class A320_Neo_FCU_Speed extends A320_Neo_FCU_Component {
             this.setTextElementActive(this.textSPD, !_machActive);
             this.setTextElementActive(this.textMACH, _machActive);
             if (!this.isManaged) {
-                var value = Math.round(Math.max(this.currentValue, 0));
+                let value = Math.round(Math.max(this.currentValue, 0));
                 this.textValueContent = value.toString().padStart(3, "0");
                 this.setElementVisibility(this.illuminator, false);
                 this.setElementVisibility(this.decimalPoint, _machActive);
             }
             else if (this.isManaged) {
                 if (this.showSelectedSpeed) {
-                    var value = Math.round(Math.max(this.currentValue, 0));
+                    let value = Math.round(Math.max(this.currentValue, 0));
                     this.textValueContent = value.toString().padStart(3, "0");
                 }
                 else {
@@ -184,16 +193,16 @@ class A320_Neo_FCU_Heading extends A320_Neo_FCU_Component {
     }
     onFlightStart() {
         super.onFlightStart();
-        let showSelectedHeading = SimVar.GetSimVarValue("L:A320_FCU_SHOW_SELECTED_HEADING", "number") === 1;
+        const showSelectedHeading = SimVar.GetSimVarValue("L:A320_FCU_SHOW_SELECTED_HEADING", "number") === 1;
         if (!showSelectedHeading) {
-            var simHeading = SimVar.GetSimVarValue("PLANE HEADING DEGREES MAGNETIC", "degree");
+            const simHeading = SimVar.GetSimVarValue("PLANE HEADING DEGREES MAGNETIC", "degree");
             Coherent.call("HEADING_BUG_SET", 1, Math.round(simHeading));
         }
     }
     update(_deltaTime) {
-        var isLateralModeActive = Simplane.getAutoPilotLateralModeActive();
-        var isTRKMode = Simplane.getAutoPilotTRKFPAModeActive();
-        let showSelectedHeading = SimVar.GetSimVarValue("L:A320_FCU_SHOW_SELECTED_HEADING", "number") === 1;
+        const isLateralModeActive = Simplane.getAutoPilotLateralModeActive();
+        const isTRKMode = Simplane.getAutoPilotTRKFPAModeActive();
+        const showSelectedHeading = SimVar.GetSimVarValue("L:A320_FCU_SHOW_SELECTED_HEADING", "number") === 1;
         if (SimVar.GetSimVarValue("AUTOPILOT GLIDESLOPE HOLD", "boolean")) {
             showSelectedHeading = false;
         }
@@ -235,12 +244,12 @@ class A320_Neo_FCU_Heading extends A320_Neo_FCU_Component {
             this.setTextElementActive(this.textHDG, !this.isTRKMode);
             this.setTextElementActive(this.textTRK, this.isTRKMode);
             if (!this.isManaged) {
-                var value = Math.floor(Math.max(this.currentValue, 0));
+                let value = Math.floor(Math.max(this.currentValue, 0));
                 this.textValueContent = value.toString().padStart(3, "0");
             }
             else if (this.isManaged) {
                 if (this.showSelectedHeading) {
-                    var value = Math.floor(Math.max(this.currentValue, 0));
+                    let value = Math.floor(Math.max(this.currentValue, 0));
                     this.textValueContent = value.toString().padStart(3, "0");
                 }
                 else {
@@ -252,7 +261,7 @@ class A320_Neo_FCU_Heading extends A320_Neo_FCU_Component {
     }
     onManagedChanged(_newValue) {
         if (_newValue) {
-            var simHeading = SimVar.GetSimVarValue("PLANE HEADING DEGREES MAGNETIC", "degree");
+            const simHeading = SimVar.GetSimVarValue("PLANE HEADING DEGREES MAGNETIC", "degree");
             Coherent.call("HEADING_BUG_SET", 1, simHeading);
         }
         else {
@@ -319,19 +328,13 @@ class A320_Neo_FCU_Altitude extends A320_Neo_FCU_Component {
             this.isActive = _isActive;
             this.isManaged = _isManaged;
             this.currentValue = _value;
-            var value = Math.floor(Math.max(this.currentValue, 100));
+            let value = Math.floor(Math.max(this.currentValue, 100));
             this.textValueContent = value.toString().padStart(5, "0");
             this.setElementVisibility(this.illuminator, this.isManaged);
         }
     }
 }
-var A320_Neo_FCU_VSpeed_State;
-(function (A320_Neo_FCU_VSpeed_State) {
-    A320_Neo_FCU_VSpeed_State[A320_Neo_FCU_VSpeed_State["Idle"] = 0] = "Idle";
-    A320_Neo_FCU_VSpeed_State[A320_Neo_FCU_VSpeed_State["Zeroing"] = 1] = "Zeroing";
-    A320_Neo_FCU_VSpeed_State[A320_Neo_FCU_VSpeed_State["Selecting"] = 2] = "Selecting";
-    A320_Neo_FCU_VSpeed_State[A320_Neo_FCU_VSpeed_State["Flying"] = 3] = "Flying";
-})(A320_Neo_FCU_VSpeed_State || (A320_Neo_FCU_VSpeed_State = {}));
+
 class A320_Neo_FCU_VerticalSpeed extends A320_Neo_FCU_Component {
     constructor() {
         super(...arguments);
@@ -489,9 +492,9 @@ class A320_Neo_FCU_VerticalSpeed extends A320_Neo_FCU_Component {
             this.setTextElementActive(this.textVS, !this.isFPAMode);
             this.setTextElementActive(this.textFPA, this.isFPAMode);
             if (this.isActive && this.currentState != A320_Neo_FCU_VSpeed_State.Idle) {
-                var sign = (this.currentValue < 0) ? "-" : "+";
+                let sign = (this.currentValue < 0) ? "-" : "+";
                 if (this.isFPAMode) {
-                    var value = Math.min(Math.abs(this.currentValue), 9.9);
+                    let value = Math.min(Math.abs(this.currentValue), 9.9);
                     this.textValueContent = String.fromCharCode(160) + sign + (value * 100).toFixed(0).padStart(3, "0");
                 }
                 else {
@@ -499,7 +502,7 @@ class A320_Neo_FCU_VerticalSpeed extends A320_Neo_FCU_Component {
                         this.textValueContent = (" 00oo");
                     }
                     else {
-                        var value = Math.floor(this.currentValue);
+                        let value = Math.floor(this.currentValue);
                         value = Math.abs(value);
                         this.textValueContent = sign + (Math.floor(value * 0.01).toString().padStart(2, "0")) + "oo";
                     }
@@ -545,7 +548,7 @@ class A320_Neo_FCU_LargeScreen extends NavSystemElement {
     }
     reboot() {
         if (this.components != null) {
-            for (var i = 0; i < this.components.length; ++i) {
+            for (let i = 0; i < this.components.length; ++i) {
                 if (this.components[i] != null) {
                     this.components[i].reboot();
                 }
@@ -554,7 +557,7 @@ class A320_Neo_FCU_LargeScreen extends NavSystemElement {
     }
     onFlightStart() {
         if (this.components != null) {
-            for (var i = 0; i < this.components.length; ++i) {
+            for (let i = 0; i < this.components.length; ++i) {
                 if (this.components[i] != null) {
                     this.components[i].onFlightStart();
                 }
@@ -563,7 +566,7 @@ class A320_Neo_FCU_LargeScreen extends NavSystemElement {
     }
     onUpdate(_deltaTime) {
         if (this.components != null) {
-            for (var i = 0; i < this.components.length; ++i) {
+            for (let i = 0; i < this.components.length; ++i) {
                 if (this.components[i] != null) {
                     this.components[i].update(_deltaTime);
                 }
@@ -586,8 +589,8 @@ class A320_Neo_FCU_Pressure extends A320_Neo_FCU_Component {
         this.refresh("QFE", true, 0, true);
     }
     update(_deltaTime) {
-        var units = Simplane.getPressureSelectedUnits();
-        var mode = Simplane.getPressureSelectedMode(Aircraft.A320_NEO);
+        const units = Simplane.getPressureSelectedUnits();
+        const mode = Simplane.getPressureSelectedMode(Aircraft.A320_NEO);
         this.refresh(mode, (units != "millibar"), Simplane.getPressureValue(units));
     }
     refresh(_mode, _isHGUnit, _value, _force = false) {
@@ -608,7 +611,7 @@ class A320_Neo_FCU_Pressure extends A320_Neo_FCU_Component {
                 this.setTextElementActive(this.textQFE, isQFE);
                 this.setTextElementActive(this.textQNH, !isQFE);
                 this.setElementVisibility(this.decimalPoint, this.isHGUnit);
-                var value = Math.round(Math.max(this.isHGUnit ? (this.currentValue * 100) : this.currentValue, 0));
+                let value = Math.round(Math.max(this.isHGUnit ? (this.currentValue * 100) : this.currentValue, 0));
                 this.textValueContent = value.toString().padStart(4, "0");
             }
         }

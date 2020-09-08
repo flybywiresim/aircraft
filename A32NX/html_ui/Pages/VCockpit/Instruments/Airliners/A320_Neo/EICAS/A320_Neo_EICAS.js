@@ -44,11 +44,11 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         super.onUpdate(_deltaTime);
         this.updateAnnunciations();
         
-        var externalPower = SimVar.GetSimVarValue("EXTERNAL POWER ON", "bool");
-        var engineOn = SimVar.GetSimVarValue("GENERAL ENG STARTER:1", "bool");
-        var apuOn = SimVar.GetSimVarValue("APU SWITCH", "bool");
-        var onRunway = SimVar.GetSimVarValue("ON ANY RUNWAY", "bool");
-        var isOnGround = SimVar.GetSimVarValue("SIM ON GROUND", "bool")
+        const externalPower = SimVar.GetSimVarValue("EXTERNAL POWER ON", "bool");
+        const engineOn = SimVar.GetSimVarValue("GENERAL ENG STARTER:1", "bool");
+        const apuOn = SimVar.GetSimVarValue("APU SWITCH", "bool");
+        const onRunway = SimVar.GetSimVarValue("ON ANY RUNWAY", "bool");
+        const isOnGround = SimVar.GetSimVarValue("SIM ON GROUND", "bool")
 
         this.updateScreenState(externalPower, engineOn, apuOn, onRunway, isOnGround);
 
@@ -70,14 +70,14 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         }
 
         // modification start here
-        var currentAPUMasterState = SimVar.GetSimVarValue("FUELSYSTEM VALVE SWITCH:8", "Bool");  
+        const currentAPUMasterState = SimVar.GetSimVarValue("FUELSYSTEM VALVE SWITCH:8", "Bool");  
         // automaticaly switch to the APU page when apu master switch is on
         if (this.lastAPUMasterState != currentAPUMasterState && currentAPUMasterState === 1) {  
             this.lastAPUMasterState = currentAPUMasterState;  
             this.changePage("APU")
 
             //if external power is off when turning on apu, only show the apu page for 10 seconds, then the DOOR page
-            var externalPower = SimVar.GetSimVarValue("EXTERNAL POWER ON", "Bool")  
+            const externalPower = SimVar.GetSimVarValue("EXTERNAL POWER ON", "Bool")  
             if (externalPower === 0) {  
                 this.externalPowerWhenApuMasterOnTimer = 10
             }
@@ -93,9 +93,9 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
 
 
         //automatic DOOR page switch
-        var cabinDoorPctOpen = SimVar.GetSimVarValue("INTERACTIVE POINT OPEN:0", "percent");
-        var cateringDoorPctOpen = SimVar.GetSimVarValue("INTERACTIVE POINT OPEN:3", "percent");
-        var fwdCargoPctOpen = SimVar.GetSimVarValue("INTERACTIVE POINT OPEN:5", "percent");
+        const cabinDoorPctOpen = SimVar.GetSimVarValue("INTERACTIVE POINT OPEN:0", "percent");
+        const cateringDoorPctOpen = SimVar.GetSimVarValue("INTERACTIVE POINT OPEN:3", "percent");
+        const fwdCargoPctOpen = SimVar.GetSimVarValue("INTERACTIVE POINT OPEN:5", "percent");
         if ((cabinDoorPctOpen >= 20 || cateringDoorPctOpen >= 20 || fwdCargoPctOpen >= 20) && !this.doorPageActivated) {
             this.changePage("DOOR")
             this.doorPageActivated = true
@@ -120,12 +120,11 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         if (infoPanelManager) {
 
             // ----------- MODIFIED --------------------//
-            let autoBrkValue = SimVar.GetSimVarValue("L:XMLVAR_Autobrakes_Level", "Number");
-            let starterOne = SimVar.GetSimVarValue("GENERAL ENG STARTER:1", "Bool");
-            let starterTwo = SimVar.GetSimVarValue("GENERAL ENG STARTER:2", "Bool");
-            let splrsArmed = SimVar.GetSimVarValue("SPOILERS ARMED", "Bool");
-            let flapsPosition = SimVar.GetSimVarValue("FLAPS HANDLE INDEX", "Number");
-            console.log(autoBrkValue);
+            const autoBrkValue = SimVar.GetSimVarValue("L:XMLVAR_Autobrakes_Level", "Number");
+            const starterOne = SimVar.GetSimVarValue("GENERAL ENG STARTER:1", "Bool");
+            const starterTwo = SimVar.GetSimVarValue("GENERAL ENG STARTER:2", "Bool");
+            const splrsArmed = SimVar.GetSimVarValue("SPOILERS ARMED", "Bool");
+            const flapsPosition = SimVar.GetSimVarValue("FLAPS HANDLE INDEX", "Number");
             // ----------- MODIFIED END --------------------//
 
             infoPanelManager.clearScreen(Airliners.EICAS_INFO_PANEL_ID.PRIMARY);

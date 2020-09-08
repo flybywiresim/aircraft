@@ -51,10 +51,10 @@ class A320_Neo_Clock extends BaseAirliners {
         }
     }
     getUTCTime() {
-        var value = SimVar.GetGlobalVarValue("ZULU TIME", "seconds");
+        const value = SimVar.GetGlobalVarValue("ZULU TIME", "seconds");
         if (value) {
-            var seconds = Number.parseInt(value);
-            var time = Utils.SecondsToDisplayTime(seconds, true, true, false);
+            const seconds = Number.parseInt(value);
+            const time = Utils.SecondsToDisplayTime(seconds, true, true, false);
             return time.toString();
         }
         return "";
@@ -69,44 +69,52 @@ class A320_Neo_Clock extends BaseAirliners {
     }
 
     getLocalTime() {
-        var value = SimVar.GetGlobalVarValue("LOCAL TIME", "seconds");
+        const value = SimVar.GetGlobalVarValue("LOCAL TIME", "seconds");
         if (value) {
-            var seconds = Number.parseInt(value);
-            var time = Utils.SecondsToDisplayTime(seconds, true, false, false);
+            const seconds = Number.parseInt(value);
+            const time = Utils.SecondsToDisplayTime(seconds, true, false, false);
             return time.toString();
         }
         return "";
     }
     getFlightTime() {
-        var value = SimVar.GetGameVarValue("FLIGHT DURATION", "seconds");
+        const value = SimVar.GetGameVarValue("FLIGHT DURATION", "seconds");
         if (value) {
-            var time = Utils.SecondsToDisplayTime(value, true, false, false);
+            const time = Utils.SecondsToDisplayTime(value, true, false, false);
             return time.toString();
         }
         return "";
     }
     getChronoTime() {
-        var totalSeconds = this.chronoValue;
-        var hours = Math.floor(totalSeconds / 3600);
-        var minutes = Math.floor((totalSeconds - (hours * 3600)) / 60);
-        var seconds = Math.floor(totalSeconds - (minutes * 60) - (hours * 3600));
-        var time = "";
+        const totalSeconds = this.chronoValue;
+        const hours = Math.floor(totalSeconds / 3600);
+        const minutes = Math.floor((totalSeconds - (hours * 3600)) / 60);
+        const seconds = Math.floor(totalSeconds - (minutes * 60) - (hours * 3600));
+        let time = "";
+        
         if (hours == 0) {
-            if (minutes < 10)
+            if (minutes < 10) {
                 time += "0";
+            }
+    
             time += minutes;
             time += ":";
-            if (seconds < 10)
+            if (seconds < 10) {
                 time += "0";
+            }
+                
             time += seconds;
-        }
-        else {
-            if (hours < 10)
+        } else {
+            if (hours < 10) {
                 time += "0";
+            }
+        
             time += hours;
             time += ":";
-            if (minutes < 10)
+            if (minutes < 10) {
                 time += "0";
+            }
+                
             time += minutes;
         }
         return time.toString();

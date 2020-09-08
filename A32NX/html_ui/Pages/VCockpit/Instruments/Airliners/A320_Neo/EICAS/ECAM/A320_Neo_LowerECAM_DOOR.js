@@ -1,4 +1,4 @@
-var A320_Neo_LowerECAM_DOOR;
+let A320_Neo_LowerECAM_DOOR;
 (function (A320_Neo_LowerECAM_DOOR) {
     class Definitions {
     }
@@ -43,14 +43,14 @@ var A320_Neo_LowerECAM_DOOR;
             }
 
             // Get door statuses
-            var cabinDoorPctOpen = SimVar.GetSimVarValue("INTERACTIVE POINT OPEN:0", "percent");
-            var cateringDoorPctOpen = SimVar.GetSimVarValue("INTERACTIVE POINT OPEN:3", "percent");
-            var fwdCargoPctOpen = SimVar.GetSimVarValue("INTERACTIVE POINT OPEN:5", "percent");
+            const cabinDoorPctOpen = SimVar.GetSimVarValue("INTERACTIVE POINT OPEN:0", "percent");
+            const cateringDoorPctOpen = SimVar.GetSimVarValue("INTERACTIVE POINT OPEN:3", "percent");
+            const fwdCargoPctOpen = SimVar.GetSimVarValue("INTERACTIVE POINT OPEN:5", "percent");
 
             // Get info for arming slides
-            var isBeaconOn = SimVar.GetSimVarValue("LIGHT BEACON ON", "bool");
-            var isOnGround = SimVar.GetSimVarValue("SIM ON GROUND", "bool");
-            var isOnRunway = SimVar.GetSimVarValue("ON ANY RUNWAY", "bool");
+            const isBeaconOn = SimVar.GetSimVarValue("LIGHT BEACON ON", "bool");
+            const isOnGround = SimVar.GetSimVarValue("SIM ON GROUND", "bool");
+            const isOnRunway = SimVar.GetSimVarValue("ON ANY RUNWAY", "bool");
 
             if (cabinDoorPctOpen >= 20) {
                 this.cabinDoorShape.setAttribute("class", "DoorWarningShape");
