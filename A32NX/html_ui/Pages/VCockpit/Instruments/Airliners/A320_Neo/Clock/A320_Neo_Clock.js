@@ -39,11 +39,13 @@ class A320_Neo_Clock extends BaseAirliners {
             }
 
             const currentResetVal = SimVar.GetSimVarValue("L:PUSH_CHRONO_RST", "Bool")
-            if (currentResetVal != this.lastResetVal) {
+            if (currentResetVal !== this.lastResetVal) {
                 this.lastResetVal = currentResetVal
                 // Intentionally performed on every press.
-                this.chronoStart = chronoState === 1 ? absTime : 0
-                this.chronoAcc = 0
+                if (chronoState === 0) {
+                    this.chronoStart = 0
+                    this.chronoAcc = 0
+                }
             }
 
             if (this.topSelectorElem) {
