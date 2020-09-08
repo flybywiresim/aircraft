@@ -1,3 +1,4 @@
+/** @type A320_Neo_LowerECAM_CRZ */
 var A320_Neo_LowerECAM_CRZ;
 (function (A320_Neo_LowerECAM_CRZ) {
     class Definitions {
@@ -19,10 +20,6 @@ var A320_Neo_LowerECAM_CRZ;
             TemplateElement.call(this, this.init.bind(this));
         }
         init() {
-            this.pressureDiff = 0;
-            this.cumulatedPressure = 0;
-            this.numberOfPressureReadings = 0;
-            this.cumulatedTime = 1000;
 
             if (BaseAirliners.unitIsMetric(Aircraft.A320_NEO)) {
                 this.querySelector("#FuelUsedUnit").textContent = "KG";
@@ -77,38 +74,38 @@ var A320_Neo_LowerECAM_CRZ;
             let leftConsumption = SimVar.GetSimVarValue("GENERAL ENG FUEL USED SINCE START:1", "gallon") * unitFactor * 0.001;
             let rightConsumption = SimVar.GetSimVarValue("GENERAL ENG FUEL USED SINCE START:2", "gallon") * unitFactor * 0.001;
 
-            this.FuelUsedTotal.textContent = Math.floor(leftConsumption)+Math.floor(rightConsumption);
-            this.FuelUsedLeft.textContent = Math.floor(leftConsumption);
-            this.FuelUsedRight.textContent = Math.floor(rightConsumption);
+            this.FuelUsedTotal.textContent = Math.round(leftConsumption)+Math.round(rightConsumption);
+            this.FuelUsedLeft.textContent = Math.round(leftConsumption);
+            this.FuelUsedRight.textContent = Math.round(rightConsumption);
 
             // Oil
             let value = SimVar.GetSimVarValue("ENG OIL QUANTITY:1", "percent") * 0.01 * 25;
-            this.OilQuantityLeft.textContent = Math.floor(value) + ".";
+            this.OilQuantityLeft.textContent = value.toFixed(1).split(".", 2)[0] + ".";
             this.OilQuantityLeftDecimal.textContent = value.toFixed(1).split(".", 2)[1];
 
             value = SimVar.GetSimVarValue("ENG OIL QUANTITY:2", "percent") * 0.01 * 25;
-            this.OilQuantityRight.textContent = Math.floor(value) + ".";
+            this.OilQuantityRight.textContent = value.toFixed(1).split(".", 2)[0] + ".";
             this.OilQuantityRightDecimal.textContent = value.toFixed(1).split(".", 2)[1];
 
             // Engines
             value = SimVar.GetSimVarValue("TURB ENG VIBRATION:1", "Number");
             if (value < 0) value = 0.0;
-            this.VibN1Left.textContent = Math.floor(value) + ".";
+            this.VibN1Left.textContent = value.toFixed(1).split(".", 2)[0] + ".";
             this.VibN1LeftDecimal.textContent = value.toFixed(1).split(".", 2)[1];
 
             value = SimVar.GetSimVarValue("TURB ENG VIBRATION:2", "Number");
             if (value < 0) value = 0.0;
-            this.VibN1Right.textContent = Math.floor(value) + ".";
+            this.VibN1Right.textContent = value.toFixed(1).split(".", 2)[0] + ".";
             this.VibN1RightDecimal.textContent = value.toFixed(1).split(".", 2)[1];
 
             value = SimVar.GetSimVarValue("TURB ENG VIBRATION:1", "Number");
             if (value < 0) value = 0.0;
-            this.VibN2Left.textContent = Math.floor(value) + ".";
+            this.VibN2Left.textContent = value.toFixed(1).split(".", 2)[0] + ".";
             this.VibN2LeftDecimal.textContent = value.toFixed(1).split(".", 2)[1];
 
             value = SimVar.GetSimVarValue("TURB ENG VIBRATION:2", "Number");
             if (value < 0) value = 0.0;
-            this.VibN2Right.textContent = Math.floor(value) + ".";
+            this.VibN2Right.textContent = value.toFixed(1).split(".", 2)[0] + ".";
             this.VibN2RightDecimal.textContent = value.toFixed(1).split(".", 2)[1];
 
             // Cabin pressure
@@ -125,20 +122,12 @@ var A320_Neo_LowerECAM_CRZ;
             let outsidePressurePSI = outsidePressureINHG * Definitions.inHgToPSI;
             let pressureDiff = cabinPressurePSI - outsidePressurePSI;
 
-            // Only update pressure every second and with mean to prevent it flickering
-            this.cumulatedPressure += pressureDiff;
-            this.numberOfPressureReadings += 1;
-
-            if (this.cumulatedTime < 1000) {
-                this.cumulatedTime += _deltaTime;
-            } else {
-                let shownPressure = this.cumulatedPressure/this.numberOfPressureReadings;
-                this.DeltaPressure.textContent = Math.floor(shownPressure) + ".";
-                this.DeltaPressureDecimal.textContent = shownPressure.toFixed(1).split(".", 2)[1];
-                this.cumulatedTime = 0;
-                this.cumulatedPressure = 0;
-                this.numberOfPressureReadings = 0;
+            if ((pressureDiff > -0.05) && (pressureDiff < 0)) {
+                pressureDiff = 0; // Prevent it showing -0.0
             }
+
+            this.DeltaPressure.textContent = pressureDiff.toFixed(1).split(".", 2)[0] + ".";
+            this.DeltaPressureDecimal.textContent = pressureDiff.toFixed(1).split(".", 2)[1];
         }
     }
     A320_Neo_LowerECAM_CRZ.Page = Page;
