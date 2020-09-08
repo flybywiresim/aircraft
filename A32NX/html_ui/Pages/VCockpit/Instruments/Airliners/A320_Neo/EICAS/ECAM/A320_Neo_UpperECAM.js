@@ -666,7 +666,7 @@ var A320_Neo_UpperECAM;
             if (Simplane.getCurrentFlightPhase() > 2) {
                 this.activeTakeoffConfigWarnings = [];
             }
-            
+      
             if (!(this.leftEcamMessagePanel.hasCautions)) SimVar.SetSimVarValue("L:A32NX_MASTER_CAUTION", "Bool", 0);
             if (!(this.leftEcamMessagePanel.hasWarnings)) SimVar.SetSimVarValue("L:A32NX_MASTER_WARNING", "Bool", 0);
 
@@ -1535,12 +1535,11 @@ var A320_Neo_UpperECAM;
             }
             this.currentLine++;
         }
-
-        
+  
         getActiveFailures() {
             let output = {};
             this.hasActiveFailures = false;
-                        this.hasWarnings = false;
+            this.hasWarnings = false;
             this.hasCautions = false;
             for (var i = 0; i < this.messages.failures.length; i++) {
                 const messages = this.messages.failures[i].messages;
@@ -1548,8 +1547,9 @@ var A320_Neo_UpperECAM;
                     const message = messages[n];
                     if (message.id == null) message.id = `${i} ${n}`;
                     if (message.isActive() && !this.clearedMessages.includes(message.id)) {
-                    if (message.isActive()) {
                         this.hasActiveFailures = true;
+                        if (message.level == 3) this.hasWarnings = true;
+                        if (message.level == 2) this.hasCautions = true;
                         if (output[i] == null) {
                             output[i] = this.messages.failures[i];
                             output[i].messages = [];
@@ -1578,7 +1578,8 @@ var A320_Neo_UpperECAM;
                 if (index > -1) {
                     this.clearedMessages.splice(index, 1);
                 }
-            } else {
+            } 
+            else {
                 this.clearedMessages = [];
             }
         }    
