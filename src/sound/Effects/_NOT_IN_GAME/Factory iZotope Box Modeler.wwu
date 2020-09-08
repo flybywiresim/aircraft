@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="utf-8"?>
+<WwiseDocument Type="WorkUnit" ID="{179CB675-B9DD-4227-A92F-79C21B4691CB}" SchemaVersion="97">
+	<Effects>
+		<WorkUnit Name="Factory iZotope Box Modeler" ID="{179CB675-B9DD-4227-A92F-79C21B4691CB}" PersistMode="Standalone">
+			<ChildrenList>
+				<Effect Name="Thin_Walls" ID="{5B666852-5BCF-4749-B992-8F3A0AEF1C92}" PluginName="iZotope Trash Box Modeler" CompanyID="259" PluginID="7" PluginType="3">
+					<PropertyList>
+						<Property Name="BoxModel" Type="int32" Value="10"/>
+						<Property Name="InputGain" Type="Real32" Value="-6"/>
+						<Property Name="Length" Type="Real32" Value="0.2"/>
+						<Property Name="MicType" Type="int32" Value="1"/>
+						<Property Name="OutputGain" Type="Real32" Value="2"/>
+						<Property Name="Trim" Type="Real32" Value="7.5"/>
+					</PropertyList>
+					<ChildrenList>
+						<PluginMediaSource Name="_boxmodel" ID="{C50692C8-65AF-4302-8169-4B1739A02088}">
+							<ParentPluginID>462899</ParentPluginID>
+							<PropertyList>
+								<Property Name="DataFileName" Type="string" Value="/boxmodel.wav"/>
+							</PropertyList>
+						</PluginMediaSource>
+					</ChildrenList>
+				</Effect>
+				<Effect Name="Dirty_Metal_01" ID="{756DA3C5-B5F5-4CF5-BBE9-30A91715F973}" PluginName="iZotope Trash Box Modeler" CompanyID="259" PluginID="7" PluginType="3">
+					<PropertyList>
+						<Property Name="BoxModel" Type="int32" Value="27"/>
+						<Property Name="Mix" Type="Real32" Value="75"/>
+						<Property Name="OutputGain" Type="Real32" Value="-5"/>
+					</PropertyList>
+					<ChildrenList>
+						<PluginMediaSource Name="_boxmodel" ID="{D2569304-EE64-4CC6-AB7B-1D3ACCE1CFA7}">
+							<ParentPluginID>462899</ParentPluginID>
+							<PropertyList>
+								<Property Name="DataFileName" Type="string" Value="/boxmodel.wav"/>
+							</PropertyList>
+						</PluginMediaSource>
+					</ChildrenList>
+				</Effect>
+				<Effect Name="Metal_Scrap_01" ID="{495C7624-AB72-4FC2-9726-D8FDABBF9A04}" PluginName="iZotope Trash Box Modeler" CompanyID="259" PluginID="7" PluginType="3">
+					<PropertyList>
+						<Property Name="BoxModel" Type="int32" Value="14"/>
+						<Property Name="Length" Type="Real32" Value="0.9"/>
+						<Property Name="Mix" Type="Real32" Value="63"/>
+						<Property Name="OutputGain" Type="Real32" Value="-6"/>
+					</PropertyList>
+					<ChildrenList>
+						<PluginMediaSource Name="_boxmodel" ID="{5F4CD654-5CE2-442C-82D0-7AA520FCC0CB}">
+							<ParentPluginID>462899</ParentPluginID>
+							<PropertyList>
+								<Property Name="DataFileName" Type="string" Value="/boxmodel.wav"/>
+							</PropertyList>
+						</PluginMediaSource>
+					</ChildrenList>
+				</Effect>
+				<Effect Name="Tin_Can_01" ID="{94D6981F-6E80-4CE5-A90B-2EA4D0EB59FA}" PluginName="iZotope Trash Box Modeler" CompanyID="259" PluginID="7" PluginType="3">
+					<PropertyList>
+						<Property Name="BoxModel" Type="int32" Value="25"/>
+						<Property Name="OutputGain" Type="Real32" Value="-6"/>
+					</PropertyList>
+					<ChildrenList>
+						<PluginMediaSource Name="_boxmodel" ID="{E0DAFC91-04D8-41F9-90D3-D33081ABCAF0}">
+							<ParentPluginID>462899</ParentPluginID>
+							<PropertyList>
+								<Property Name="DataFileName" Type="string" Value="/boxmodel.wav"/>
+							</PropertyList>
+						</PluginMediaSource>
+					</ChildrenList>
+				</Effect>
+				<Effect Name="Radio_01" ID="{03A56F03-3F0F-468D-82B8-3391C5BD578F}" PluginName="iZotope Trash Box Modeler" CompanyID="259" PluginID="7" PluginType="3">
+					<PropertyList>
+						<Property Name="BoxModel" Type="int32" Value="9"/>
+						<Property Name="MicType" Type="int32" Value="2"/>
+					</PropertyList>
+					<ChildrenList>
+						<PluginMediaSource Name="_boxmodel" ID="{1AFF01D0-DC31-41C1-A0EB-03E1359514D5}">
+							<ParentPluginID>462899</ParentPluginID>
+							<PropertyList>
+								<Property Name="DataFileName" Type="string" Value="/boxmodel.wav"/>
+							</PropertyList>
+						</PluginMediaSource>
+					</ChildrenList>
+				</Effect>
+				<Effect Name="Other_Room_01" ID="{6A07E895-8CA0-4443-B5E7-E4EC8A65F138}" PluginName="iZotope Trash Box Modeler" CompanyID="259" PluginID="7" PluginType="3">
+					<PropertyList>
+						<Property Name="BoxModel" Type="int32" Value="18"/>
+						<Property Name="MicType" Type="int32" Value="2"/>
+					</PropertyList>
+					<ChildrenList>
+						<PluginMediaSource Name="_boxmodel" ID="{0A4B2342-5182-48DE-8975-91940213D442}">
+							<ParentPluginID>462899</ParentPluginID>
+							<PropertyList>
+								<Property Name="DataFileName" Type="string" Value="/boxmodel.wav"/>
+							</PropertyList>
+						</PluginMediaSource>
+					</ChildrenList>
+				</Effect>
+				<Effect Name="The_Field_01" ID="{DFA1FE04-E64C-42BB-A90B-ADAFD8276921}" PluginName="iZotope Trash Box Modeler" CompanyID="259" PluginID="7" PluginType="3">
+					<PropertyList>
+						<Property Name="BoxModel" Type="int32" Value="28"/>
+						<Property Name="OutputGain" Type="Real32" Value="3"/>
+					</PropertyList>
+					<ChildrenList>
+						<PluginMediaSource Name="_boxmodel" ID="{1B593321-7F63-4BC7-A61D-043284B2DE23}">
+							<ParentPluginID>462899</ParentPluginID>
+							<PropertyList>
+								<Property Name="DataFileName" Type="string" Value="/boxmodel.wav"/>
+							</PropertyList>
+						</PluginMediaSource>
+					</ChildrenList>
+				</Effect>
+				<Effect Name="Old_Trash_Bin_01" ID="{F54FF5CB-16E7-4794-8CD2-6EFC8B2D2713}" PluginName="iZotope Trash Box Modeler" CompanyID="259" PluginID="7" PluginType="3">
+					<PropertyList>
+						<Property Name="BoxModel" Type="int32" Value="21"/>
+						<Property Name="OutputGain" Type="Real32" Value="-11"/>
+					</PropertyList>
+					<ChildrenList>
+						<PluginMediaSource Name="_boxmodel" ID="{2CB56BB7-790B-4F50-A4A2-99D3E5FC0506}">
+							<ParentPluginID>462899</ParentPluginID>
+							<PropertyList>
+								<Property Name="DataFileName" Type="string" Value="/boxmodel.wav"/>
+							</PropertyList>
+						</PluginMediaSource>
+					</ChildrenList>
+				</Effect>
+				<Effect Name="Fuzzy_Phaser_01" ID="{4B4F732A-9097-4711-856C-14EE9F97C5C3}" PluginName="iZotope Trash Box Modeler" CompanyID="259" PluginID="7" PluginType="3">
+					<PropertyList>
+						<Property Name="BoxModel" Type="int32" Value="32"/>
+						<Property Name="MicType" Type="int32" Value="1"/>
+						<Property Name="OutputGain" Type="Real32" Value="5"/>
+					</PropertyList>
+					<ChildrenList>
+						<PluginMediaSource Name="_boxmodel" ID="{BE94D118-A130-4BF0-AB81-467C31EA57AD}">
+							<ParentPluginID>462899</ParentPluginID>
+							<PropertyList>
+								<Property Name="DataFileName" Type="string" Value="/boxmodel.wav"/>
+							</PropertyList>
+						</PluginMediaSource>
+					</ChildrenList>
+				</Effect>
+				<Effect Name="Guitar_Cabinet_01" ID="{44FB4DC0-473F-4A1A-9CF4-AD80953B4871}" PluginName="iZotope Trash Box Modeler" CompanyID="259" PluginID="7" PluginType="3">
+					<PropertyList>
+						<Property Name="BoxModel" Type="int32" Value="2"/>
+						<Property Name="OutputGain" Type="Real32" Value="-3"/>
+					</PropertyList>
+					<ChildrenList>
+						<PluginMediaSource Name="_boxmodel" ID="{1455BF48-51B4-4887-A883-A259A888BEAD}">
+							<ParentPluginID>462899</ParentPluginID>
+							<PropertyList>
+								<Property Name="DataFileName" Type="string" Value="/boxmodel.wav"/>
+							</PropertyList>
+						</PluginMediaSource>
+					</ChildrenList>
+				</Effect>
+				<Effect Name="Underwater_01" ID="{A7B00287-FE3B-4CA1-A741-911C3F6340F9}" PluginName="iZotope Trash Box Modeler" CompanyID="259" PluginID="7" PluginType="3">
+					<PropertyList>
+						<Property Name="BoxModel" Type="int32" Value="39"/>
+						<Property Name="OutputGain" Type="Real32" Value="-13"/>
+					</PropertyList>
+					<ChildrenList>
+						<PluginMediaSource Name="_boxmodel" ID="{218C80FB-B7BD-4923-A6DC-D147DA9D643A}">
+							<ParentPluginID>462899</ParentPluginID>
+							<PropertyList>
+								<Property Name="DataFileName" Type="string" Value="/boxmodel.wav"/>
+							</PropertyList>
+						</PluginMediaSource>
+					</ChildrenList>
+				</Effect>
+				<Effect Name="Wood_Floor_01" ID="{C87E2109-E7D3-4E1B-8179-14F09F7300A9}" PluginName="iZotope Trash Box Modeler" CompanyID="259" PluginID="7" PluginType="3">
+					<ChildrenList>
+						<PluginMediaSource Name="_boxmodel" ID="{2A054DA1-8524-432D-BB6C-0D0410B66AD6}">
+							<ParentPluginID>462899</ParentPluginID>
+							<PropertyList>
+								<Property Name="DataFileName" Type="string" Value="/boxmodel.wav"/>
+							</PropertyList>
+						</PluginMediaSource>
+					</ChildrenList>
+				</Effect>
+			</ChildrenList>
+		</WorkUnit>
+	</Effects>
+</WwiseDocument>

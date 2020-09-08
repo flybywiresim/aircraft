@@ -1,0 +1,198 @@
+<?xml version="1.0" encoding="utf-8"?>
+<WwiseDocument Type="WorkUnit" ID="{5BE2EA44-25AF-4E61-A838-5455C517386F}" SchemaVersion="97">
+	<Effects>
+		<WorkUnit Name="eq" ID="{5BE2EA44-25AF-4E61-A838-5455C517386F}" PersistMode="Standalone">
+			<ChildrenList>
+				<Folder Name="shared" ID="{57252BD3-0F9C-49F5-86CA-AF50A9E6AD28}" ShortID="939258364">
+					<ChildrenList>
+						<Effect Name="eq_outdoor_aircraft_generic" ID="{38F16881-A281-4594-83DC-4644F7CDD03B}" PluginName="Wwise Parametric EQ" CompanyID="0" PluginID="105" PluginType="3">
+							<PropertyList>
+								<Property Name="FilterTypeBand1" Type="int32" Value="1"/>
+								<Property Name="FilterTypeBand3" Type="int32" Value="0"/>
+								<Property Name="FrequencyBand1" Type="Real32" Value="150"/>
+								<Property Name="FrequencyBand2" Type="Real32" Value="3000"/>
+								<Property Name="FrequencyBand3" Type="Real32" Value="8392"/>
+								<Property Name="GainBand2" Type="Real32" Value="-3"/>
+								<Property Name="QFactorBand2" Type="Real32" Value="2"/>
+							</PropertyList>
+						</Effect>
+					</ChildrenList>
+				</Folder>
+				<Folder Name="sidechain" ID="{6B513675-C58E-4A20-8FD2-3488B8413942}" ShortID="720808543">
+					<ChildrenList>
+						<Effect Name="eq_sc_vo" ID="{1617E141-9C67-4200-B049-0911FA041FC7}" PluginName="Wwise Parametric EQ" CompanyID="0" PluginID="105" PluginType="3">
+							<PropertyList>
+								<Property Name="FrequencyBand2" Type="Real32" Value="3000"/>
+								<Property Name="GainBand2" Type="Real32">
+									<RTPCList>
+										<RTPC Name="" ID="{FF8792FE-E995-4FF7-A104-3A9180CD51DA}" ShortID="213931524">
+											<ReferenceList>
+												<Reference Name="ControlInput">
+													<ObjectRef Name="SC_VO" ID="{B6839AC9-E419-435D-8213-6AF5526276DA}" WorkUnitID="{5643FBF5-8C78-49CB-8A2A-A4513C92F617}"/>
+												</Reference>
+											</ReferenceList>
+											<Curve Name="" ID="{F597CA89-E9DE-4020-808D-E99DFEA0117E}">
+												<PropertyList>
+													<Property Name="Flags" Type="int32" Value="3"/>
+												</PropertyList>
+												<PointList>
+													<Point>
+														<XPos>-48</XPos>
+														<YPos>0</YPos>
+														<Flags>5</Flags>
+													</Point>
+													<Point>
+														<XPos>-39.9201995012469</XPos>
+														<YPos>0</YPos>
+														<Flags>0</Flags>
+														<SegmentShape>SCurve</SegmentShape>
+													</Point>
+													<Point>
+														<XPos>-20</XPos>
+														<YPos>-4</YPos>
+														<Flags>0</Flags>
+													</Point>
+													<Point>
+														<XPos>0</XPos>
+														<YPos>-4</YPos>
+														<Flags>37</Flags>
+													</Point>
+												</PointList>
+											</Curve>
+										</RTPC>
+									</RTPCList>
+								</Property>
+								<Property Name="OutputLevel" Type="Real32">
+									<RTPCList>
+										<RTPC Name="" ID="{DA83D7A2-E056-4F78-93B6-BD52F4B44F55}" ShortID="911053427">
+											<ReferenceList>
+												<Reference Name="ControlInput">
+													<ObjectRef Name="SC_VO" ID="{B6839AC9-E419-435D-8213-6AF5526276DA}" WorkUnitID="{5643FBF5-8C78-49CB-8A2A-A4513C92F617}"/>
+												</Reference>
+											</ReferenceList>
+											<Curve Name="" ID="{8D7773D0-5731-4BE4-BAD9-441A43822553}">
+												<PropertyList>
+													<Property Name="Flags" Type="int32" Value="3"/>
+												</PropertyList>
+												<PointList>
+													<Point>
+														<XPos>-48</XPos>
+														<YPos>0</YPos>
+														<Flags>5</Flags>
+													</Point>
+													<Point>
+														<XPos>-40</XPos>
+														<YPos>0</YPos>
+														<Flags>0</Flags>
+														<SegmentShape>SCurve</SegmentShape>
+													</Point>
+													<Point>
+														<XPos>-20</XPos>
+														<YPos>-3</YPos>
+														<Flags>0</Flags>
+													</Point>
+													<Point>
+														<XPos>0</XPos>
+														<YPos>-3</YPos>
+														<Flags>37</Flags>
+													</Point>
+												</PointList>
+											</Curve>
+										</RTPC>
+									</RTPCList>
+								</Property>
+								<Property Name="QFactorBand2" Type="Real32" Value="0.5"/>
+							</PropertyList>
+						</Effect>
+						<Effect Name="eq_sc_aural_warning" ID="{01965E08-6990-4903-8E2E-B387AC5F2BBF}" PluginName="Wwise Parametric EQ" CompanyID="0" PluginID="105" PluginType="3">
+							<PropertyList>
+								<Property Name="FrequencyBand2" Type="Real32" Value="3000"/>
+								<Property Name="GainBand2" Type="Real32">
+									<RTPCList>
+										<RTPC Name="" ID="{104CB68D-948F-4F0A-963C-363BC354AD1E}" ShortID="531872290">
+											<ReferenceList>
+												<Reference Name="ControlInput">
+													<ObjectRef Name="SC_AURAL_WARNING" ID="{97119893-2912-4259-A0FB-B324273D4B99}" WorkUnitID="{5643FBF5-8C78-49CB-8A2A-A4513C92F617}"/>
+												</Reference>
+											</ReferenceList>
+											<Curve Name="" ID="{3428863E-D209-4271-8F21-F44EED7F1773}">
+												<PropertyList>
+													<Property Name="Flags" Type="int32" Value="3"/>
+												</PropertyList>
+												<PointList>
+													<Point>
+														<XPos>-48</XPos>
+														<YPos>0</YPos>
+														<Flags>5</Flags>
+													</Point>
+													<Point>
+														<XPos>-39.9201995012469</XPos>
+														<YPos>0</YPos>
+														<Flags>0</Flags>
+														<SegmentShape>SCurve</SegmentShape>
+													</Point>
+													<Point>
+														<XPos>-20</XPos>
+														<YPos>-3</YPos>
+														<Flags>0</Flags>
+													</Point>
+													<Point>
+														<XPos>0</XPos>
+														<YPos>-3</YPos>
+														<Flags>37</Flags>
+													</Point>
+												</PointList>
+											</Curve>
+										</RTPC>
+									</RTPCList>
+								</Property>
+								<Property Name="OnOffBand1" Type="bool" Value="False"/>
+								<Property Name="OnOffBand3" Type="bool" Value="False"/>
+								<Property Name="OutputLevel" Type="Real32">
+									<RTPCList>
+										<RTPC Name="" ID="{4925965C-19E9-446E-A6E3-1A543F9F86B3}" ShortID="934965709">
+											<ReferenceList>
+												<Reference Name="ControlInput">
+													<ObjectRef Name="SC_AURAL_WARNING" ID="{97119893-2912-4259-A0FB-B324273D4B99}" WorkUnitID="{5643FBF5-8C78-49CB-8A2A-A4513C92F617}"/>
+												</Reference>
+											</ReferenceList>
+											<Curve Name="" ID="{03A98D0D-44F4-4958-8E16-8C5A42C66FAE}">
+												<PropertyList>
+													<Property Name="Flags" Type="int32" Value="3"/>
+												</PropertyList>
+												<PointList>
+													<Point>
+														<XPos>-48</XPos>
+														<YPos>0</YPos>
+														<Flags>5</Flags>
+													</Point>
+													<Point>
+														<XPos>-40</XPos>
+														<YPos>0</YPos>
+														<Flags>0</Flags>
+														<SegmentShape>SCurve</SegmentShape>
+													</Point>
+													<Point>
+														<XPos>-24</XPos>
+														<YPos>-3</YPos>
+														<Flags>0</Flags>
+													</Point>
+													<Point>
+														<XPos>0</XPos>
+														<YPos>-3</YPos>
+														<Flags>37</Flags>
+													</Point>
+												</PointList>
+											</Curve>
+										</RTPC>
+									</RTPCList>
+								</Property>
+								<Property Name="QFactorBand2" Type="Real32" Value="0.5"/>
+							</PropertyList>
+						</Effect>
+					</ChildrenList>
+				</Folder>
+			</ChildrenList>
+		</WorkUnit>
+	</Effects>
+</WwiseDocument>

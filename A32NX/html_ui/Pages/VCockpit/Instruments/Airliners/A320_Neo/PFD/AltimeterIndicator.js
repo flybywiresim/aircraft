@@ -1313,7 +1313,7 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
             selectedAltitude = Simplane.getAutoPilotDisplayedAltitudeLockValue();
         }
         else {
-            selectedAltitude = Simplane.getAutoPilotAltitudeLockValue();
+            selectedAltitude = Simplane.getAutoPilotDisplayedAltitudeLockValue(Simplane.getAutoPilotAltitudeLockUnits());
         }
         this.updateGraduationScrolling(altitude);
         this.updateCursorScrolling(altitude);
@@ -1633,6 +1633,7 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
             this.cursorSVGMainText.setAttribute("visibility", "hidden");
             if (this.targetAltitudeText) this.targetAltitudeText.textContent = "";
             this.pressureSVG.setAttribute("visibility", "hidden");
+            this.targetAltitudeIndicatorSVG.setAttribute("visibility", "hidden");
         }
         if (this.groundRibbonSVGShape) this.groundRibbonSVG.setAttribute("style", failed ? "display:none" : "");
         if (this.cursorSVGScrollTexts) {
@@ -1640,7 +1641,7 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
                 st.setAttribute("visibility", failed ? "hidden" : "visible");
             }
         }
-        
+
         if (this.graduations != null) {
             for (let grad of this.graduations) {
                 grad.SVGLine.setAttribute("visibility", failed ? "hidden" : "visible");

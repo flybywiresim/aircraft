@@ -21,6 +21,8 @@ let A320_Neo_LowerECAM_BLEED;
             this.leftEngineIp = [this.querySelector("#left-engine-ip-open"), this.querySelector("#left-engine-ip-closed")]
             this.rightEngineIp = [this.querySelector("#right-engine-ip-open"), this.querySelector("#right-engine-ip-closed")]
             this.rightEngineHp = [this.querySelector("#right-engine-hp-open"), this.querySelector("#right-engine-hp-closed")]
+            this.apuProvidesBleed = false
+            this.apuBleedStartTimer = -1
         }   
         update(_deltaTime) {
             if (!this.isInitialised) {
@@ -28,7 +30,19 @@ let A320_Neo_LowerECAM_BLEED;
             }
 
             const currentEngineBleedState = [SimVar.GetSimVarValue("BLEED AIR ENGINE:1", "Bool"), SimVar.GetSimVarValue("BLEED AIR ENGINE:2", "Bool")]
+            const currentApuN = SimVar.GetSimVarValue("APU PCT RPM", "percent")
 
+            if (!this.apuProvidesBleed && (currentApuN > 0.94)) {
+                this.apuBleedStartTimer = 2
+            }
+
+            if (this.apuBleedStartTimer >= 0) {
+                this.apuBleedStartTimer -= _deltaTime/1000
+                if (this.apuBleedStartTimer < 0) {
+                    this.apuProvidesBleed = true
+                    this.querySelector("#apu-connecting-line").setAttribute("style", "stroke:008000")
+                }
+            }
             
             if (currentEngineBleedState[0] === 1) {
                 this.leftEngineHp[0].setAttribute("visibility", "visible");
@@ -53,12 +67,10 @@ let A320_Neo_LowerECAM_BLEED;
                 this.rightEngineIp[1].setAttribute("visibility", "visible")
             }
 
-
-
             //find if the APU bleed is on
             const currentApuBleedSate = SimVar.GetSimVarValue("BLEED AIR APU", "Bool")
 
-            if (currentApuBleedSate === 1) {
+            if (currentApuBleedSate) {
                 this.apuBleedIndication[0].setAttribute("visibility", 'visible')
                 this.apuBleedIndication[1].setAttribute("visibility", "hidden")
             } else {

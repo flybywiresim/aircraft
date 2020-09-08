@@ -98,11 +98,15 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
         this.showILS = SimVar.GetSimVarValue("L:BTN_LS_FILTER_ACTIVE", "bool");
         this.compass.showILS(this.showILS);
         this.info.showILS(this.showILS);
-        this.selfTestDiv = this.gps.getChildById("SelfTestDiv");
-        this.selfTestTimer = -1;
+
+        //SELF TEST
+        this.selfTestDiv = document.querySelector("#SelfTestDiv");
         this.selfTestTimerStarted = false;
+        this.selfTestTimer = -1;
+        this.selfTestLastKnobValueFO = 1;
+        this.selfTestLastKnobValueCAP = 1;
+
         this.electricity = this.gps.getChildById("Electricity")
-        this.displaysAbleToTurnOff = true;
     }
     onUpdate(_deltaTime) {
         super.onUpdate(_deltaTime);
@@ -125,39 +129,45 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
             document.querySelector("#Map").setAttribute("style", "");
         }
 
-        const externalPower = SimVar.GetSimVarValue("EXTERNAL POWER ON", "bool");
-        const engineOn = SimVar.GetSimVarValue("GENERAL ENG STARTER:1", "bool");
-        const apuOn = SimVar.GetSimVarValue("APU SWITCH", "bool");
-        const onRunway = SimVar.GetSimVarValue("ON ANY RUNWAY", "bool");
-        const isOnGround = SimVar.GetSimVarValue("SIM ON GROUND", "bool")
+        const ACPowerStateChange = SimVar.GetSimVarValue("L:ACPowerStateChange","Bool");
+        const ACPowerAvailable = SimVar.GetSimVarValue("L:ACPowerAvailable","Bool");
         
-        this.updateScreenState(externalPower, engineOn, apuOn, onRunway, isOnGround);
+         /**
+         * Self test on MFD screen
+         * TODO: Seperate both MFD screens, currently if the FO changes its screen, it also tests the screen for the captain and vice versa
+         **/
+             
+        let selfTestCurrentKnobValueFO = SimVar.GetSimVarValue("LIGHT POTENTIOMETER:21", "number");
+        let selfTestCurrentKnobValueCAP = SimVar.GetSimVarValue("LIGHT POTENTIOMETER:19", "number");
 
-        if (engineOn) {
-            this.selfTestDiv.style.display = "none";
+        const FOKnobChanged = (selfTestCurrentKnobValueFO >= 0.1 && this.selfTestLastKnobValueFO < 0.1);
+        const CAPKnobChanged = (selfTestCurrentKnobValueCAP >= 0.1 && this.selfTestLastKnobValueCAP < 0.1);
+        
+        if((FOKnobChanged || CAPKnobChanged || ACPowerStateChange) && ACPowerAvailable && !this.selfTestTimerStarted) {
+            this.selfTestDiv.style.display = "block";
+            this.selfTestTimer = 14.25;
             this.selfTestTimerStarted = true;
         }
-        // Check if external power is on & timer not already started
-        if (externalPower && !this.selfTestTimerStarted) {
-            this.selfTestTimer = 13.75;
-            this.selfTestTimerStarted = true;
-        }
-        // Timer
+        
         if (this.selfTestTimer >= 0) {
             this.selfTestTimer -= _deltaTime / 1000;
             if (this.selfTestTimer <= 0) {
                 this.selfTestDiv.style.display = "none";
+                this.selfTestTimerStarted = false;
             }
         }
         
+        this.selfTestLastKnobValueFO = selfTestCurrentKnobValueFO
+        this.selfTestLastKnobValueCAP = selfTestCurrentKnobValueCAP
+
+        this.updateScreenState();        
     }
 
-    updateScreenState(externalPowerOn, engineOn, apuOn, onRunway, isOnGround) {
-        if (!externalPowerOn && !apuOn && !engineOn && !onRunway && isOnGround && this.displaysAbleToTurnOff) {
-            this.electricity.style.display = "none";
-        } else {
+    updateScreenState() {
+        if (SimVar.GetSimVarValue("L:ACPowerAvailable","bool")) {
             this.electricity.style.display = "block";
-            this.displaysAbleToTurnOff = false;
+        } else {
+            this.electricity.style.display = "none";
         }
     }
 
@@ -183,11 +193,14 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
                 this.rangeChangeTimer = -1;
             }
         }
+
         const wxRadarOn = (SimVar.GetSimVarValue("L:XMLVAR_A320_WeatherRadar_Sys", "number") != 1) ? true : false;
         const wxRadarMode = SimVar.GetSimVarValue("L:XMLVAR_A320_WeatherRadar_Mode", "number");
         const terrainOn = SimVar.GetSimVarValue("L:BTN_TERRONND_ACTIVE", "number");
         const mapMode = SimVar.GetSimVarValue("L:A320_Neo_MFD_NAV_MODE", "number");
         const mapRange = SimVar.GetSimVarValue("L:A320_Neo_MFD_Range", "number");
+        let shouldShowWeather = wxRadarOn && wxRadarMode != 3;
+
         if (this.wxRadarOn != wxRadarOn || this.terrainOn != terrainOn || this.wxRadarMode != wxRadarMode || this.mapMode != mapMode) {
             this.wxRadarOn = wxRadarOn;
             this.wxRadarMode = wxRadarMode;
@@ -196,7 +209,7 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
             this.setMapMode(this.mapMode);
             if (this.terrainOn) {
                 this.mapConfigId = 1;
-            } else if (this.wxRadarOn && this.wxRadarMode != 3) {
+            } else if (shouldShowWeather) {
                 this.showWeather();
             } else {
                 this.mapConfigId = 0;
@@ -235,6 +248,18 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
                 break;
         }
 
+        // This code shows the BingMap only when either weather or terrain are
+        // supposed to be shown.
+        // When neither weather nor terrain are supposed to be shown,
+        // the BingMap will be hidden.
+        const isTerrainVisible = this.map.instrument.mapConfigId == 1;
+        const isWeatherVisible = !terrainOn && shouldShowWeather;
+        if (isTerrainVisible || isWeatherVisible) {
+            this.setShowBingMap("true");
+        } else {
+            this.setShowBingMap("false");
+        }
+
         if (this.mapRange != mapRange) {
             this.mapRange = mapRange;
             this.map.instrument.setZoom(this.mapRange);
@@ -269,6 +294,11 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
 
         this.map.updateTopOfDescent();
         this.map.updateTopOfClimb();
+    }
+    // The BingMap is used by the A320 to render terrain and weather,
+    // but it also renders airports, which the real A320 does not.
+    setShowBingMap(showBingMap) {
+        this.map.instrument.attributeChangedCallback("show-bing-map", null, showBingMap);
     }
     onEvent(_event) {
         switch (_event) {
@@ -548,22 +578,27 @@ class A320_Neo_MFD_NDInfo extends NavSystemElement {
             this.ndInfo.update(_deltaTime);
         }
         const ADIRSState = SimVar.GetSimVarValue("L:A320_Neo_ADIRS_STATE", "Enum");
-        let gs = this.ndInfo.querySelector("#GS_Value");
-        let tas = this.ndInfo.querySelector("#TAS_Value");
-        let wd = this.ndInfo.querySelector("#Wind_Direction");
-        let ws = this.ndInfo.querySelector("#Wind_Strength");
-        let wa = this.ndInfo.querySelector("#Wind_Arrow");
-        let wptg = this.ndInfo.querySelector("#Waypoint_Group");
-        if (ADIRSState != 2) {
-            //Hide GS, TAS, and wind info
-            gs.textContent = "---";
+        const groundSpeed = Math.round(Simplane.getGroundSpeed());
+        const gs = this.ndInfo.querySelector("#GS_Value");
+        const tas = this.ndInfo.querySelector("#TAS_Value");
+        const wd = this.ndInfo.querySelector("#Wind_Direction");
+        const ws = this.ndInfo.querySelector("#Wind_Strength");
+        const wa = this.ndInfo.querySelector("#Wind_Arrow");
+        const wptg = this.ndInfo.querySelector("#Waypoint_Group");
+        if (ADIRSState != 2 || groundSpeed <= 100) {
+            //Hide TAS, and wind info
             tas.textContent = "---";
             wd.textContent = "---";
             ws.textContent = "---";
+            wa.setAttribute("visibility", "hidden");
+        }else {
+            wa.setAttribute("visibility", "visible");
         }
-        //Show/hide wind arrow
-        wa.setAttribute("visibility", (ADIRSState != 2) ? "hidden" : "visible");
-
+        if (ADIRSState != 2){
+            gs.textContent = "---";
+        }else {
+            gs.textContent = groundSpeed.toString().padStart(3);
+        }
         //Hide waypoint when ADIRS not aligned
         wptg.setAttribute("visibility", (ADIRSState != 2) ? "hidden" : "visible");
     }

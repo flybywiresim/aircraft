@@ -1,7 +1,7 @@
 ﻿:root {
   --ecamDefaultColour: white;
   --ecamUnitsColour: #009696;
-  --ecamValueColour: green;
+  --ecamValueColour: #008000;
   --ecamWarningColour: #db7200;
   --ecamDangerColour: red;
   --ecamInactiveColour: #db7200;
@@ -45,4 +45,9 @@ a320-neo-lower-ecam-bleed {
 
 text {
   transform: translateX(-15)
+}
+
+
+.warning {
+  stroke: #db7200
 }

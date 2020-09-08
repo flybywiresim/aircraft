@@ -1354,7 +1354,7 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
                         line.SVGText1 = document.createElementNS(Avionics.SVG.NS, "text");
                         line.SVGText1.setAttribute("x", (linePosX - 6).toString());
                         line.SVGText1.setAttribute("fill", "white");
-                        line.SVGText1.setAttribute("font-size", (this.fontSize * 1.7).toString());
+                        line.SVGText1.setAttribute("font-size", (this.fontSize * 1.5).toString());
                         line.SVGText1.setAttribute("font-family", "Roboto-Bold");
                         line.SVGText1.setAttribute("text-anchor", "end");
                         line.SVGText1.setAttribute("alignment-baseline", "central");
@@ -2051,7 +2051,7 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
                         }
                         hideBluePointer = false;
                     }
-                    else if (SimVar.GetSimVarValue("L:A320_Neo_ADIRS_STATE", "Enum") >= 1) {
+                    else if (SimVar.GetSimVarValue("L:A32NX_ADIRS_PFD_ALIGNED_FIRST", "Bool") == 1) {
                         hideBlueText = false;
                     }
                     hudSpeed = blueAirspeed;
@@ -2217,7 +2217,7 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
     updateStrip(_strip, currentAirspeed, maxSpeed, _forceHide, _topToBottom) {
         if (_strip) {
             let hideStrip = true;
-            if (!(SimVar.GetSimVarValue("L:A320_Neo_ADIRS_STATE", "Enum") >= 1)) _forceHide = true;
+            if (!(SimVar.GetSimVarValue("L:A32NX_ADIRS_PFD_ALIGNED_FIRST", "Bool") == 1)) _forceHide = true;
             if (!_forceHide) {
                 if (maxSpeed > this.graduationMinValue) {
                     let vPosY = this.valueToSvg(currentAirspeed, maxSpeed);
@@ -2240,7 +2240,7 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
     updateSpeedMarkers(currentAirspeed) {
         for (let i = 0; i < this.speedMarkers.length; i++) {
             this.speedMarkers[i].update(currentAirspeed);
-            if (!(SimVar.GetSimVarValue("L:A320_Neo_ADIRS_STATE", "Enum") >= 1)) {
+            if (!(SimVar.GetSimVarValue("L:A32NX_ADIRS_PFD_ALIGNED_FIRST", "Bool") == 1)) {
                 this.speedMarkers[i].svg.setAttribute("style", "display:none");
             } else {
                 this.speedMarkers[i].svg.setAttribute("style", "");

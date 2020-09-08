@@ -1,15 +1,21 @@
 class A320_Neo_Clock extends BaseAirliners {
     constructor() {
         super();
-        this.chronoValue = 0;
-        this.lastResetVal = 0
+        this.chronoAcc = 0; // Accumulated time since he chrono was first started. This is to retain time after a pause.
+        this.chronoStart = 0;
+        this.lastChronoState = null;
+        this.lastChronoTime = null;
+        this.lastDisplayTime = null;
+        this.lastFlightTime = null;
+        this.lastLocalTime = 0;
+        this.lastResetVal = null;
     }
     get templateID() { return "A320_Neo_Clock"; }
     connectedCallback() {
         super.connectedCallback();
         this.topSelectorElem = this.getChildById("TopSelectorValue");
         this.middleSelectorElem = this.getChildById("MiddleSelectorValue");
-        this.bottomselectorElem = this.getChildById("BottomSelectorValue");
+        this.bottomSelectorElem = this.getChildById("BottomSelectorValue");
     }
     disconnectedCallback() {
         super.disconnectedCallback();
@@ -19,34 +25,49 @@ class A320_Neo_Clock extends BaseAirliners {
     Update() {
         super.Update();
         if (this.CanUpdate()) {
-            if (SimVar.GetSimVarValue("L:PUSH_CHRONO_CHR", "Bool") == 1) {
-                this.chronoValue += this.deltaTime / 1000;
+            const absTime = SimVar.GetGlobalVarValue("ABSOLUTE TIME", "Seconds")
+
+            const chronoState = SimVar.GetSimVarValue("L:PUSH_CHRONO_CHR", "Bool");
+            if (chronoState !== this.lastChronoState) {
+                this.lastChronoState = chronoState
+                if (chronoState === 1) {
+                    this.chronoStart = absTime
+                } else {
+                    this.chronoAcc = this.chronoSeconds
+                    this.chronoStart = 0
+                }
             }
 
-            if (SimVar.GetSimVarValue("L:PUSH_CHRONO_RST", "Bool") != this.lastResetVal) {
-                this.chronoValue = 0
-                this.lastResetVal = SimVar.GetSimVarValue("L:PUSH_CHRONO_RST", "Bool")
+            const currentResetVal = SimVar.GetSimVarValue("L:PUSH_CHRONO_RST", "Bool")
+            if (currentResetVal != this.lastResetVal) {
+                this.lastResetVal = currentResetVal
+                // Intentionally performed on every press.
+                this.chronoStart = chronoState === 1 ? absTime : 0
+                this.chronoAcc = 0
             }
 
             if (this.topSelectorElem) {
-                let ChronoTime = this.getChronoTime();
-                if (SimVar.GetSimVarValue("L:PUSH_CHRONO_CHR", "Bool") == 0 && ChronoTime == "00:00") {
-                    this.topSelectorElem.textContent = ""
-                } else {
-                    this.topSelectorElem.textContent = ChronoTime
+                const chronoTime = this.getChronoTime();
+                if (chronoTime !== this.lastChronoTime) {
+                    this.lastChronoTime = chronoTime
+                    this.topSelectorElem.textContent = chronoTime
                 }
             }
 
             if (this.middleSelectorElem) {
-                if (SimVar.GetSimVarValue("L:PUSH_CHRONO_SET", "Bool") == 0) {
-                    this.middleSelectorElem.textContent = this.getUTCTime();
-                } else {
-                    this.middleSelectorElem.textContent = this.getUTCDate();
+                const currentDisplayTime = SimVar.GetSimVarValue("L:PUSH_CHRONO_SET", "Bool") ? this.getUTCDate() : this.getUTCTime()
+                if (currentDisplayTime !== this.lastDisplayTime) {
+                    this.lastDisplayTime = currentDisplayTime;
+                    this.middleSelectorElem.textContent = currentDisplayTime;
                 }
             }
 
-            if (this.bottomselectorElem) {
-                this.bottomselectorElem.textContent = this.getFlightTime();
+            if (this.bottomSelectorElem) {
+                const currentFlightTime = this.getFlightTime();
+                if (currentFlightTime !== this.lastFlightTime) {
+                    this.lastFlightTime = currentFlightTime;
+                    this.bottomSelectorElem.textContent = currentFlightTime;
+                }
             }
         }
     }
@@ -61,9 +82,9 @@ class A320_Neo_Clock extends BaseAirliners {
     }
 
     getUTCDate() {
-        let Day = SimVar.GetGlobalVarValue("ZULU DAY OF MONTH", "number")
-        let Month = SimVar.GetGlobalVarValue("ZULU MONTH OF YEAR", "number")
-        let Year = `${SimVar.GetGlobalVarValue("ZULU YEAR", "number")}`.substr(2,4)
+        const Day = SimVar.GetGlobalVarValue("ZULU DAY OF MONTH", "number")
+        const Month = SimVar.GetGlobalVarValue("ZULU MONTH OF YEAR", "number")
+        const Year = `${SimVar.GetGlobalVarValue("ZULU YEAR", "number")}`.substr(2,4)
 
         return `${Day}.${Month}.${Year}`
     }
@@ -86,38 +107,29 @@ class A320_Neo_Clock extends BaseAirliners {
         return "";
     }
     getChronoTime() {
-        const totalSeconds = this.chronoValue;
-        const hours = Math.floor(totalSeconds / 3600);
-        const minutes = Math.floor((totalSeconds - (hours * 3600)) / 60);
-        const seconds = Math.floor(totalSeconds - (minutes * 60) - (hours * 3600));
-        let time = "";
-        
-        if (hours == 0) {
-            if (minutes < 10) {
-                time += "0";
+        const totalSeconds = this.chronoSeconds
+
+        if (this.chronoStart || totalSeconds > 0) {
+            const hours = Math.floor(totalSeconds / 3600).toString().padStart(2, '0');
+            const minutes = Math.floor((totalSeconds % 3600) / 60).toString().padStart(2, '0');
+
+            if (hours === "00") {
+                const seconds = Math.floor(totalSeconds % 60).toString().padStart(2, '0');
+                return `${minutes}:${seconds}`;
+            } else {
+                return `${hours}:${minutes}`;
             }
-    
-            time += minutes;
-            time += ":";
-            if (seconds < 10) {
-                time += "0";
-            }
-                
-            time += seconds;
-        } else {
-            if (hours < 10) {
-                time += "0";
-            }
-        
-            time += hours;
-            time += ":";
-            if (minutes < 10) {
-                time += "0";
-            }
-                
-            time += minutes;
         }
-        return time.toString();
+        return "";
+    }
+    get chronoSeconds () {
+        let totalSeconds = this.chronoAcc
+
+        if (this.chronoStart) {
+            totalSeconds += SimVar.GetGlobalVarValue("ABSOLUTE TIME", "Seconds") - this.chronoStart
+        }
+
+        return Math.max(totalSeconds, 0)
     }
 }
 registerInstrument("a320-neo-clock-element", A320_Neo_Clock);

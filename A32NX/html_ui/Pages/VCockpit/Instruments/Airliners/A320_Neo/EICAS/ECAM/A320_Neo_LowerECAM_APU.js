@@ -15,8 +15,10 @@ let A320_Neo_LowerECAM_APU;
             TemplateElement.call(this, this.init.bind(this));
         }
         init() {
-            this.lastAPUMasterState = 0;
-            SimVar.SetSimVarValue("L:APU_FLAP_OPEN", "Bool", 0);
+            // Last state tracking inits to -1 since we don't know what the state is.
+            // The first update sets it correctly for us.
+            this.lastAPUMasterState = -1;
+            this.lastAPUBleedState = -1;
 
             //Generator
             this.APUGenInfo = this.querySelector("#APUGenInfo_On");
@@ -39,7 +41,7 @@ let A320_Neo_LowerECAM_APU;
             //Gauges
             this.apuInfo = new APUInfo(this.querySelector("#APUGauges"));
 
-            this.APUStartTimer = -1
+            this.APUBleedTimer = 0;
             this.isInitialised = true;
         }
         update(_deltaTime) {
@@ -47,87 +49,76 @@ let A320_Neo_LowerECAM_APU;
                 return;
             }
 
-            const currentAPUMasterState = SimVar.GetSimVarValue("FUELSYSTEM VALVE SWITCH:8", "Bool");
+            // *******************************************************************************************************
+            // APU Logic that isn't tied to the APU ECAM SCREEN belongs in A32NX/html_ui/Pages/A32NX_Core/A32NX_APU.js
+            // *******************************************************************************************************
 
+            const currentAPUMasterState = SimVar.GetSimVarValue("FUELSYSTEM VALVE SWITCH:8", "Bool");
 
             if (this.lastAPUMasterState != currentAPUMasterState) {
                 this.lastAPUMasterState = currentAPUMasterState;
-                this.APUStartTimer = 20;
-                this.APUGenInfo.setAttribute("visibility", "visible");
-            }
-
-            if (this.APUStartTimer >= 0) {
-                this.APUStartTimer -= _deltaTime/1000;
-                if (this.APUStartTimer <= 0) {
-                    this.APUStartTimer = -1;
-                    SimVar.SetSimVarValue("L:APU_FLAP_OPEN", "Bool", 1);
+                if (currentAPUMasterState === 1) {
+                    this.APUGenInfo.setAttribute("visibility", "visible");
                 }
             }
 
-            if (SimVar.GetSimVarValue("FUELSYSTEM VALVE SWITCH:8", "Bool") === 0) {
-                this.APUStartTimer = -1;
-                SimVar.SetSimVarValue("L:APU_FLAP_OPEN", "Bool", 0);
-            }
-
-            //Get APU N%
             const APUPctRPM = SimVar.GetSimVarValue("APU PCT RPM", "percent");
-            const totalElectricalLoad = SimVar.GetSimVarValue("ELECTRICAL TOTAL LOAD AMPS", "amperes");
-            const APULoadPercent = totalElectricalLoad / 782.609 // 1000 * 90 kVA / 115V = 782.609A
-
-            //APU Load/Volts/Frequency Indication
-            if (APUPctRPM >= 87) {
-                this.APUGenLoad.textContent = Math.round(APULoadPercent * 100);
-                this.APUVolts.textContent = "115";
-                this.APUVolts.setAttribute("class", "APUGenParamValue");
-                this.APUFrequency.textContent = Math.round((4.46*APUPctRPM)-46.15);
-                this.APUFrequency.setAttribute("class", "APUGenParamValue");
-            } else {
-                this.APUGenLoad.textContent = "0";
-                this.APUVolts.textContent = "0";
-                this.APUVolts.setAttribute("class", "APUGenParamValueWarn");
-                this.APUFrequency.textContent = "0";
-                this.APUFrequency.setAttribute("class", "APUGenParamValueWarn");
-            }
+            const apuFlapOpenPercent = SimVar.GetSimVarValue("L:APU_FLAP_OPEN", "Percent");
 
             //Bleed
-            if (SimVar.GetSimVarValue("BLEED AIR APU", "Bool") == 1) {
-                this.APUBleedOn.setAttribute("visibility", "visible");
-                this.APUBleedOff.setAttribute("visibility", "hidden");
-            } else {
-                this.APUBleedOn.setAttribute("visibility", "hidden");
-                this.APUBleedOff.setAttribute("visibility", "visible");
+            const currentAPUBleedState = SimVar.GetSimVarValue("BLEED AIR APU","Bool")
+            if (currentAPUBleedState !== this.lastAPUBleedState) {
+                this.lastAPUBleedState = currentAPUBleedState
+                if (currentAPUBleedState === 1) {
+                    this.APUBleedOn.setAttribute("visibility", "visible");
+                    this.APUBleedOff.setAttribute("visibility", "hidden");
+                } else {
+                    this.APUBleedOn.setAttribute("visibility", "hidden");
+                    this.APUBleedOff.setAttribute("visibility", "visible");
+                }
             }
+
+            //display volt,load,freq
+            this.APUGenLoad.textContent = Math.round(SimVar.GetSimVarValue("L:APU_LOAD_PERCENT","percent"));
+            this.APUVolts.textContent = SimVar.GetSimVarValue("L:APU_GEN_VOLTAGE","Volts");
+            this.APUVolts.setAttribute("class", "APUGenParamValue");
+            this.APUFrequency.textContent = SimVar.GetSimVarValue("L:APU_GEN_FREQ","Hertz");
+            this.APUFrequency.setAttribute("class", "APUGenParamValue");
 
             //AVAIL indication & bleed pressure
             if (APUPctRPM > 95) {
                 this.APUAvail.setAttribute("visibility", "visible");
-                if (SimVar.GetSimVarValue("APU GENERATOR ACTIVE", "Bool") == 1 && SimVar.GetSimVarValue("EXTERNAL POWER ON", "Bool") === 0) this.APUGenAvailArrow.setAttribute("visibility", "visible");
-                else this.APUGenAvailArrow.setAttribute("visibility", "hidden");
-                this.APUBleedPressure.textContent = "35";
+
+                if (SimVar.GetSimVarValue("APU GENERATOR ACTIVE", "Bool") == 1 && SimVar.GetSimVarValue("EXTERNAL POWER ON", "Bool") === 0) {
+                    this.APUGenAvailArrow.setAttribute("visibility", "visible");
+                } else {
+                    this.APUGenAvailArrow.setAttribute("visibility", "hidden");
+                }
+
+                this.APUBleedPressure.textContent = SimVar.GetSimVarValue("L:APU_BLEED_PRESSURE","PSI");
                 this.APUBleedPressure.setAttribute("class", "APUGenParamValue");
             } else {
                 this.APUAvail.setAttribute("visibility", "hidden");
                 this.APUGenAvailArrow.setAttribute("visibility", "hidden");
                 this.APUBleedPressure.textContent = "XX";
                 this.APUBleedPressure.setAttribute("class", "APUGenParamValueWarn");
+
+                if (currentAPUMasterState === 0) {
+                    this.APUGenInfo.setAttribute("visibility", "hidden");
+                }
+            }
+
+            //Flap Open
+            if (apuFlapOpenPercent === 100) {
+                this.APUFlapOpen.setAttribute("visibility", "visible");
+            } else {
+                this.APUFlapOpen.setAttribute("visibility", "hidden");
             }
 
             //Gauges
             if (this.apuInfo != null) {
                 this.apuInfo.update(_deltaTime);
             }
-
-            //Flap Open
-            if (SimVar.GetSimVarValue("L:APU_FLAP_OPEN", "Bool") == 1) {
-                this.APUFlapOpen.setAttribute("visibility", "visible");
-                this.APUGenInfo.setAttribute("visibility", "visible");
-            } else {
-                if (APUPctRPM <= 7) {
-                    this.APUFlapOpen.setAttribute("visibility", "hidden");
-                }
-                this.APUGenInfo.setAttribute("visibility", "hidden");
-            }
-
         }
     }
     A320_Neo_LowerECAM_APU.Page = Page;
@@ -171,36 +162,44 @@ let A320_Neo_LowerECAM_APU;
             gaugeDef2.dangerRange[0] = 1000;
             gaugeDef2.dangerRange[1] = 1200;
             gaugeDef2.currentValueFunction = this.getAPUEGT.bind(this);
+            gaugeDef2.outerDynamicMarkerFunction = this.getAPUEGTWarn.bind(this,"EGTWarn");
             this.apuEGTGauge = window.document.createElement("a320-neo-ecam-gauge");
             this.apuEGTGauge.id = "APU_EGT_Gauge";
             this.apuEGTGauge.init(gaugeDef2);
             this.apuEGTGauge.addGraduation(300, true, "3");
             this.apuEGTGauge.addGraduation(700, true, "7");
             this.apuEGTGauge.addGraduation(1000, true, "10");
+            this.apuEGTGauge.addGraduation(1200,false,"",true,true,"EGTWarn");
             this.apuEGTGauge.active = false
             if (_gaugeDiv != null) {
                 _gaugeDiv.appendChild(this.apuEGTGauge);
             }
-            this.apuInactiveTimer = -1
-            this.lastAPUMasterState = 0
+
+            // Last state tracking inits to -1 since we don't know what the state is.
+            // The first update sets it correctly for us.
+            this.lastAPUMasterState = -1
             this.apuShuttingDown = false
+            this.apuInactiveTimer = -1
         }
 
         update(_deltaTime) {
             //Update gauges
             const currentAPUMasterState = SimVar.GetSimVarValue("FUELSYSTEM VALVE SWITCH:8", "Bool");
-            if ((currentAPUMasterState !== this.lastAPUMasterState) && currentAPUMasterState === 1) {
-                this.apuInactiveTimer = 3
+            if ((currentAPUMasterState !== this.lastAPUMasterState)) {
                 this.lastAPUMasterState = currentAPUMasterState
-                this.apuShuttingDown = false
+                if (currentAPUMasterState === 1) {
+                    this.apuInactiveTimer = 3
+                    this.apuShuttingDown = false
+                } else {
+                    this.apuShuttingDown = true
+                }
             }
-            if ((currentAPUMasterState !== this.lastAPUMasterState) && currentAPUMasterState === 0) {
-                this.apuShuttingDown = true
-            }
-            if (this.apuShuttingDown && SimVar.GetSimVarValue("APU PCT RPM", "percent") === 0) {
+
+            if (this.apuShuttingDown && this.getAPUN() === 0) {
                 this.apuEGTGauge.active = false
                 this.apuNGauge.active = false
             }
+
             if (this.apuInactiveTimer >= 0) {
                 this.apuInactiveTimer -= _deltaTime/1000
                 if (this.apuInactiveTimer <= 0) {
@@ -209,6 +208,7 @@ let A320_Neo_LowerECAM_APU;
                     this.apuNGauge.active = true
                 }
             }
+
             if (this.apuNGauge != null && this.apuEGTGauge != null) {
                 this.apuNGauge.update(_deltaTime);
                 this.apuEGTGauge.update(_deltaTime);
@@ -217,36 +217,63 @@ let A320_Neo_LowerECAM_APU;
 
         getAPUN() {
             return SimVar.GetSimVarValue("APU PCT RPM", "percent");
-            
         }
 
-        //Calculates the APU EGT Based on the RPM
+        //function accepts ID of the marker and returns an array with ID and EGT
+        getAPUEGTWarn(_id){
+            const n = this.getAPUN();
+            const ID_EGT = [];
+            ID_EGT.push(_id);
+            if(n < 11){
+                ID_EGT.push(1200);
+                return ID_EGT;
+            }
+            else if(n <= 15){
+                ID_EGT.push(((-50*n)+1750));
+                return ID_EGT;
+            }
+            else if(n <= 65){
+                ID_EGT.push(((-3*n)+1045));
+                return ID_EGT;
+            }
+            else{
+                ID_EGT.push(((-30/7*n)+1128.6));
+                return ID_EGT;
+            }
+        }
+        //Calculates the APU EGT Based on the RPM, APU now reaches peak EGT of 765'C
         getAPUEGTRaw(startup) {
             const n = this.getAPUN();
             if (startup) {
                 if (n < 10) {
                     return 10;
-                } else if (n < 16) {
-                    return (135*n)-1320;
-                } else if (n < 20) {
-                    return -1262 + (224*n) - (5.8 * (n*n));
-                } else if (n < 36) {
-                    return ((-5/4)*n) + 925;
-                } else if (n < 42) {
-                    return -2062 + (151.7*n) - (1.94 * (n*n));
+                } else if(n <= 14){
+                    return (90/6*n) - 140;
+                } else if (n <= 20) {
+                    return (215/4*n) - 760;
+                } else if(n <= 32){
+                    return (420/11*n) - 481.8;
+                } else if (n <= 36) {
+                    return (20/3*n) + 525;
+                } else if (n <= 43) {
+                    return (-15/6*n) + 888.3;
+                } else if(n <= 50){
+                    return (3*n) + 618;
+                } else if(n <= 74){
+                    return (-100/13*n) + 1152.3;
                 } else {
-                    return ((-425/58)*n) + (34590/29);
+                    return (-104/10*n) + 1430;
                 }
             } else {
-                return ((18/5)*n)+100;
+                return (18/5*n) + 35;
             }
         }
 
         getAPUEGT() {
             const ambient = SimVar.GetSimVarValue("AMBIENT TEMPERATURE", "celsius");
-
             const n = this.getAPUN();
-            const egt = (Math.round(this.getAPUEGTRaw(this.lastN <= n)/5)*5);
+            const egt = (Math.round(this.getAPUEGTRaw(this.lastN <= n)));
+          
             this.lastN = n;
             if (this.APUWarm && egt < 100) {
                 return 100;

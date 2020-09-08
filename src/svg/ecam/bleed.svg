@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Generator: Adobe Illustrator 24.3.0, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
+<svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+	 viewBox="0 0 600 600" style="enable-background:new 0 0 600 600;" xml:space="preserve">
+<style type="text/css">
+	.st0{fill:#FFFFFF;stroke:#FFFFFF;stroke-width:2;stroke-miterlimit:10;}
+	.st1{fill:#FFFFFF;}
+	.st2{font-family:'B612-Regular';}
+	.st3{font-size:22.4px;}
+	.st4{fill:none;stroke:#FFFFFF;stroke-width:2;stroke-miterlimit:10;}
+	.st5{fill:none;stroke:#00C800;stroke-width:2;stroke-miterlimit:10;}
+	.st6{font-size:18.29px;}
+	.st7{fill:#00C800;}
+	.st8{fill:#0AB9B9;}
+	.st9{fill:none;stroke:#FFFFFF;stroke-width:3;stroke-miterlimit:10;}
+	.st10{fill:none;stroke:#FFFFFF;stroke-miterlimit:10;}
+	.st11{fill:#FFFFFF;stroke:#000000;stroke-miterlimit:10;}
+</style>
+<rect y="0" width="600" height="600"/>
+<g>
+	<path class="st0" d="M2.4,506.31"/>
+	<text transform="matrix(1 0 0 1 27.3566 38.2644)" class="st1 st2 st3">BLEED</text>
+	<line class="st4" x1="28.61" y1="44.51" x2="97.17" y2="44.51"/>
+	<polyline class="st5" points="120.22,68.54 120.22,49.29 479.22,49.29 479.22,70.54 	"/>
+	<polygon class="st5" points="180.29,43.54 173.36,43.54 176.83,37.54 180.29,31.54 183.76,37.54 187.22,43.54 	"/>
+	<polygon class="st5" points="299.93,43.54 293.01,43.54 296.47,37.54 299.93,31.54 303.4,37.54 306.86,43.54 	"/>
+	<polygon class="st5" points="419.93,43.54 413.01,43.54 416.47,37.54 419.93,31.54 423.4,37.54 426.86,43.54 	"/>
+	<polyline class="st5" points="182.22,453.54 210.22,453.54 210.22,468.46 	"/>
+	<polyline class="st5" points="390.22,468.54 390.22,453.54 418.05,453.54 	"/>
+	<line class="st5" x1="120.65" y1="468.46" x2="120.65" y2="424.97"/>
+	<line class="st5" x1="120.65" y1="391.97" x2="120.65" y2="367.54"/>
+	<line class="st5" x1="480.05" y1="468.54" x2="480.05" y2="424.54"/>
+	<line class="st5" x1="480.05" y1="392.21" x2="480.05" y2="367.21"/>
+	<line class="st5" x1="120.65" y1="317.54" x2="120.65" y2="245.04"/>
+	<line class="st5" x1="120.22" y1="276.29" x2="343.22" y2="276.29"/>
+	<line class="st5" x1="374.22" y1="276.54" x2="480.22" y2="276.54"/>
+	<line class="st5" x1="299.34" y1="276.54" x2="299.34" y2="345.42"/>
+	<line class="st5" x1="299.09" y1="376.54" x2="299.09" y2="386.54"/>
+	<line class="st5" x1="480.22" y1="317.54" x2="480.22" y2="244.83"/>
+	<line class="st5" x1="300.2" y1="126.8" x2="300.23" y2="103.53"/>
+	<text transform="matrix(1 0 0 1 282.5466 403.3845)" class="st1 st2 st6">APU</text>
+	<text transform="matrix(1 0 0 1 281.5466 146.3844)" class="st1 st2 st6">RAM</text>
+	<text transform="matrix(1 0 0 1 59.5466 148.3844)" class="st1 st2 st6">C</text>
+	<text transform="matrix(1 0 0 1 108.5466 96.3844)" class="st7 st2 st6">XX</text>
+	<text transform="matrix(1 0 0 1 468.5466 100.3844)" class="st7 st2 st6">XX</text>
+	<text transform="matrix(1 0 0 1 468.5466 161.3844)" class="st7 st2 st6">XX</text>
+	<text transform="matrix(1 0 0 1 109.5466 155.3844)" class="st7 st2 st6">XX</text>
+	<text transform="matrix(1 0 0 1 107.5466 337.3845)" class="st7 st2 st6">XX</text>
+	<text transform="matrix(1 0 0 1 101.5466 359.3845)" class="st7 st2 st6">XXX</text>
+	<text transform="matrix(1 0 0 1 468.5466 338.3845)" class="st7 st2 st6">XX</text>
+	<text transform="matrix(1 0 0 1 462.5466 360.3845)" class="st7 st2 st6">XXX</text>
+	<text transform="matrix(1 0 0 1 170.5466 148.3844)" class="st1 st2 st6">H</text>
+	<text transform="matrix(1 0 0 1 145.5466 96.3844)" class="st8 st2 st6">°C</text>
+	<text transform="matrix(1 0 0 1 145.5466 171.3844)" class="st8 st2 st6">°C</text>
+	<text transform="matrix(1 0 0 1 148.5466 337.3845)" class="st8 st2 st6">PSI</text>
+	<text transform="matrix(1 0 0 1 112.5466 487.3845)" class="st8 st2 st6">IP</text>
+	<text transform="matrix(1 0 0 1 473.5466 487.3845)" class="st8 st2 st6">IP</text>
+	<text transform="matrix(1 0 0 1 197.5466 487.3845)" class="st8 st2 st6">HP</text>
+	<text transform="matrix(1 0 0 1 378.5466 487.3845)" class="st8 st2 st6">HP</text>
+	<text transform="matrix(1 0 0 1 157.5466 361.3845)" class="st8 st2 st6">°C</text>
+	<text transform="matrix(1 0 0 1 421.5466 337.3845)" class="st8 st2 st6">PSI</text>
+	<text transform="matrix(1 0 0 1 430.5466 361.3845)" class="st8 st2 st6">°C</text>
+	<text transform="matrix(1 0 0 1 47.5466 214.3844)" class="st1 st2 st6">L</text>
+	<text transform="matrix(1 0 0 1 56.6966 214.3844)" class="st1 st2 st6">O</text>
+	<text transform="matrix(1 0 0 1 169.5466 214.3844)" class="st1 st2 st6">HI</text>
+	<text transform="matrix(1 0 0 1 223.5466 317.3845)" class="st1 st2 st6">GND</text>
+	<text transform="matrix(1.22 0 0 1 283.5466 169.3846)" class="st1 st2 st6">AIR</text>
+	<text transform="matrix(1 0 0 1 54.1666 414.9644)" class="st1 st2 st6">1</text>
+	<text transform="matrix(1 0 0 1 534.1666 414.9644)" class="st1 st2 st6">2</text>
+	<text transform="matrix(1 0 0 1 418.1766 148.3244)" class="st1 st2 st6">C</text>
+	<text transform="matrix(1 0 0 1 530.1766 148.3244)" class="st1 st2 st6">H</text>
+	<text transform="matrix(1 0 0 1 406.1766 214.3244)" class="st1 st2 st6">L</text>
+	<text transform="matrix(1 0 0 1 415.3266 214.3244)" class="st1 st2 st6">O</text>
+	<text transform="matrix(1 0 0 1 529.1766 214.3244)" class="st1 st2 st6">HI</text>
+	<text transform="matrix(1 0 0 1 503.0866 96.9944)" class="st8 st2 st6">°C</text>
+	<text transform="matrix(1 0 0 1 503.0866 174.9944)" class="st8 st2 st6">°C</text>
+	<polyline class="st4" points="76.22,207.54 76.1,146.38 75.97,77.49 120.22,68.54 166.72,76.04 166.49,206.81 	"/>
+	<path class="st4" d="M165.97,146.04L165.97,146.04z"/>
+	<path class="st4" d="M84.97,146.81L84.97,146.81z"/>
+	<path class="st9" d="M156.86,147.47c-1.13-7.67-4.73-14.77-10.26-20.2c-7-6.88-16.36-10.91-25.45-10.88s-18.07,4.22-25,11.28
+		c-5.54,5.6-9.05,12.89-10,20.71"/>
+	<path class="st4" d="M523.97,147.04L523.97,147.04z"/>
+	<path class="st4" d="M442.97,147.81L442.97,147.81z"/>
+	<path class="st9" d="M514.95,147.89c-1.13-7.67-4.73-14.77-10.26-20.2c-7-6.88-16.36-10.91-25.45-10.88s-18.07,4.22-25,11.28
+		c-5.54,5.6-9.05,12.89-10,20.71"/>
+	<path class="st4" d="M165.97,206.04L165.97,206.04z"/>
+	<path class="st4" d="M84.97,206.81L84.97,206.81z"/>
+	<path class="st9" d="M156.95,206.37c-1.13-7.67-4.73-14.77-10.26-20.2c-7-6.88-16.36-10.91-25.45-10.88s-18.07,4.22-25,11.28
+		c-5.54,5.6-9.05,12.89-10,20.71"/>
+	<path class="st4" d="M523.97,209.04L523.97,209.04z"/>
+	<path class="st4" d="M442.97,209.81L442.97,209.81z"/>
+	<path class="st9" d="M514.95,209.12c-1.13-7.67-4.73-13.99-10.26-19.43c-7-6.88-16.36-10.91-25.45-10.88s-18.07,4.22-25,11.28
+		c-5.54,5.6-9.05,12.89-10,20.71"/>
+	<polyline class="st4" points="434.22,210.67 434.1,148.38 433.97,79.49 478.22,70.54 524.72,78.04 524.72,209.54 	"/>
+	<rect x="98.22" y="317.54" class="st10" width="43" height="49"/>
+	<rect x="458.72" y="318.04" class="st10" width="43" height="49"/>
+	<polygon class="st9" points="242.89,283.54 247.36,291.29 251.83,299.04 242.89,299.04 233.94,299.04 238.41,291.29 	"/>
+	<circle class="st5" cx="120.49" cy="407.81" r="16"/>
+	<line class="st5" x1="104.49" y1="407.81" x2="136.49" y2="407.81"/>
+	<line class="st5" x1="120.49" y1="391.81" x2="120.49" y2="423.81"/>
+	<circle class="st5" cx="299.49" cy="360.81" r="16"/>
+	<line class="st5" x1="283.49" y1="360.81" x2="315.49" y2="360.81"/>
+	<line class="st5" x1="299.49" y1="344.81" x2="299.49" y2="376.81"/>
+	<line class="st5" x1="120.49" y1="212.81" x2="120.49" y2="244.81"/>
+	<circle class="st5" cx="480.49" cy="407.81" r="16"/>
+	<line class="st5" x1="464.49" y1="407.81" x2="496.49" y2="407.81"/>
+	<line class="st5" x1="480.49" y1="391.81" x2="480.49" y2="423.81"/>
+	<circle class="st5" cx="434.49" cy="453.81" r="16"/>
+	<line class="st5" x1="418.49" y1="453.81" x2="450.49" y2="453.81"/>
+	<line class="st5" x1="434.49" y1="437.81" x2="434.49" y2="469.81"/>
+	<circle class="st5" cx="165.49" cy="452.81" r="16"/>
+	<line class="st5" x1="149.49" y1="452.81" x2="181.49" y2="452.81"/>
+	<line class="st5" x1="165.49" y1="436.81" x2="165.49" y2="468.81"/>
+	<circle class="st5" cx="358.49" cy="276.81" r="16"/>
+	<line class="st5" x1="342.49" y1="276.81" x2="374.49" y2="276.81"/>
+	<line class="st5" x1="358.49" y1="260.81" x2="358.49" y2="292.81"/>
+	<circle class="st5" cx="480.49" cy="227.81" r="16"/>
+	<line class="st5" x1="464.49" y1="227.81" x2="496.49" y2="227.81"/>
+	<line class="st5" x1="480.49" y1="211.81" x2="480.49" y2="243.81"/>
+	<circle class="st5" cx="120.49" cy="228.81" r="16"/>
+	<line class="st5" x1="104.49" y1="228.81" x2="136.49" y2="228.81"/>
+	<circle class="st5" cx="300.49" cy="87.81" r="16"/>
+	<line class="st5" x1="284.49" y1="87.81" x2="316.49" y2="87.81"/>
+	<line class="st5" x1="300.49" y1="71.81" x2="300.49" y2="103.81"/>
+	<path class="st11" d="M75.97,147.8"/>
+	<line class="st10" x1="76.12" y1="148.04" x2="87.73" y2="148.04"/>
+	<line class="st10" x1="155.37" y1="147.8" x2="166.68" y2="147.8"/>
+	<line class="st10" x1="434.45" y1="148.8" x2="445.77" y2="148.8"/>
+	<line class="st10" x1="514.19" y1="147.48" x2="525.5" y2="147.48"/>
+	<line class="st10" x1="513.19" y1="209.04" x2="524.5" y2="209.04"/>
+	<line class="st10" x1="434.45" y1="210.18" x2="445.77" y2="210.18"/>
+	<line class="st10" x1="76.21" y1="207.01" x2="87.82" y2="207.01"/>
+	<line class="st10" x1="155.46" y1="206.69" x2="167.47" y2="206.69"/>
+</g>
+</svg>

@@ -1,0 +1,89 @@
+:root {
+    --bodyHeightScale: 1; }
+  
+  @keyframes TemporaryShow {
+    0%, 100% {
+      visibility: visible; } }
+  
+  @keyframes TemporaryHide {
+    0%, 100% {
+      visibility: hidden; } }
+  
+  #highlight {
+    position: absolute;
+    height: 100%;
+    width: 100%;
+    z-index: 10; }
+  
+  #Electricity {
+    width: 100%;
+    height: 100%; }
+    #Electricity[state=off] {
+      display: none; }
+  
+  @font-face {
+    font-family: "Roboto";
+    src: url("/Fonts/RobotoMono-Medium.ttf") format("truetype");
+    font-weight: normal;
+    font-style: normal; }
+  
+  @font-face {
+    font-family: "Roboto-Light";
+    src: url("/Fonts/RobotoMono-Light.ttf") format("truetype");
+    font-weight: normal;
+    font-style: normal; }
+  
+  @font-face {
+    font-family: "Roboto-Bold";
+    src: url("/Fonts/RobotoMono-Bold.ttf") format("truetype");
+    font-weight: normal;
+    font-style: normal; }
+  
+  a320-neo-lower-ecam-fuel {
+    display: block;
+    position: relative;
+    top: -25%;
+    left: -12.5%;
+    width: 125%;
+    height: 125%; }
+    a320-neo-lower-ecam-fuel .MainShape {
+      fill: transparent;
+      stroke: lightgray;
+      stroke-width: 2; }
+    a320-neo-lower-ecam-fuel .FlowShape {
+      fill: black;
+      stroke: green;
+      stroke-width: 2; }
+    a320-neo-lower-ecam-fuel .ValvePumpActive {
+      fill: black;
+      stroke: green;
+      stroke-width: 2; }
+    a320-neo-lower-ecam-fuel .ValvePumpInactive {
+      fill: black;
+      stroke: #db7200;
+      stroke-width: 2; }
+    a320-neo-lower-ecam-fuel text {
+      font-family: Roboto-Bold; }
+    a320-neo-lower-ecam-fuel text.Title {
+      fill: white; }
+    a320-neo-lower-ecam-fuel text.Value {
+      fill: green; }
+    a320-neo-lower-ecam-fuel text.Unit {
+      fill: #009696; }
+    a320-neo-lower-ecam-fuel text.Large {
+      font-size: 20px; }
+    a320-neo-lower-ecam-fuel text.Small {
+      font-size: 15px; }
+    a320-neo-lower-ecam-fuel #APU text {
+      font-size: 15px;
+      fill: white;
+      stroke-width: 0; }
+    a320-neo-lower-ecam-fuel #APU line {
+      stroke-width: 2; }
+    a320-neo-lower-ecam-fuel #APU.active {
+      stroke: green; }
+    a320-neo-lower-ecam-fuel #APU.warning {
+      stroke: #db7200; }
+    a320-neo-lower-ecam-fuel #APU.inactive {
+      stroke: white; }
+  
