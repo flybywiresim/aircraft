@@ -197,7 +197,7 @@
          <CheckpointDesc SubjectTT="TT:TAKEOFF DATA INSERTION (PERF)" ExpectationTT="TT:" />
       </Checkpoint>
       <Checkpoint Id="A320_CPREP1_FMGS_V1_VR_V2">
-         <CheckpointDesc SubjectTT="TT:V1, VR, V2 (INOP)" ExpectationTT="TT:INSERT/CHECK" />
+         <CheckpointDesc SubjectTT="TT:V1, Vr, V2 (INOP)" ExpectationTT="TT:INSERT/CHECK" />
       </Checkpoint>
       <Checkpoint Id="A320_CPREP1_FMGS_FLEX_TEMP">
          <CheckpointDesc SubjectTT="TT:FLEX To Temperature" ExpectationTT="TT:INSERT" />
@@ -514,7 +514,7 @@
          <CheckpointDesc SubjectTT="TT:T/O DATA: Flaps Lever" ExpectationTT="TT:CHECK" />
       </Checkpoint>
       <Checkpoint Id="A320_TAXI_TO_DATA_VSPEEDS">
-         <CheckpointDesc SubjectTT="TT:T/O DATA: V1, VR, V2 (INOP)" ExpectationTT="TT:REINSERT" />
+         <CheckpointDesc SubjectTT="TT:T/O DATA: V1, Vr, V2 (INOP)" ExpectationTT="TT:REINSERT" />
       </Checkpoint>
       <Checkpoint Id="A320_TAXI_TO_DATA_FLX_TEMP">
          <CheckpointDesc SubjectTT="TT:T/O DATA: FLX To Temperature" ExpectationTT="TT:REINSERT" />
