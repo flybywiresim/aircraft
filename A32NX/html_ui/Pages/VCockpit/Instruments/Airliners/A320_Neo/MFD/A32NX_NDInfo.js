@@ -194,7 +194,12 @@ class Jet_MFD_NDInfo extends HTMLElement {
                   }
                   if ((_eta != this.currentWaypointTimeETA) || _force) {
                       this.currentWaypointTimeETA = _eta;
-                      const utcETA = (_eta + SimVar.GetGlobalVarValue("TIME ZONE OFFSET", "seconds")) % 86400;
+                      let utcETA = (_eta + SimVar.GetGlobalVarValue("TIME ZONE OFFSET", "seconds")) % 86400;
+                      if (_track === 0 && _distance === 0 && _eta === 0) {
+                          // Everything is set to zero if all variables are also 0.
+                          // This should only happen at the end of our route.
+                          utcETA = 0
+                      }
                       if (this.waypointTime != null) {
                           const hours = Math.floor(utcETA / 3600);
                           const minutes = Math.floor((utcETA % 3600) / 60);
