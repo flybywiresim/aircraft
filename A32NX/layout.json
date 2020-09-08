@@ -12,7 +12,7 @@
         },
         {
             "path": "ModelBehaviorDefs/Asobo/Airliner/Airbus.xml",
-            "size": 43508,
+            "size": 42349,
             "date": "132402817714110148"
         },
         {
@@ -47,7 +47,7 @@
         },
         {
             "path": "SimObjects/AirPlanes/Asobo_A320_NEO/model/A320_NEO_INTERIOR.xml",
-            "size": 133951,
+            "size": 133750,
             "date": "132402817714110148"
         },
         {
@@ -252,7 +252,7 @@
         },
         {
             "path": "html_ui/Pages/VCockpit/Instruments/Airliners/A320_Neo/Clock/A320_Neo_Clock.js",
-            "size": 3404,
+            "size": 4121,
             "date": "132402817714110148"
         },
         {
