@@ -4,7 +4,7 @@ declare global {
         | "radians" | ("Percent" | "percent") | ("Feet" | "feet" | "feets") | "Volts" | "Amperes" | "Hertz" | "PSI" | "celsius" | "degree latitude"
         | "degree longitude" | "Meters per second" | "Position" | ("Knots" | "knots") | "Seconds"
 
-    type TextSimVarUnit = "Text" | "string" | ("Knots" | "knots")
+    type TextSimVarUnit = "Text" | "string"
 
     const SimVar: {
         GetSimVarValue(name: string, type: NumberSimVarUnit): number
