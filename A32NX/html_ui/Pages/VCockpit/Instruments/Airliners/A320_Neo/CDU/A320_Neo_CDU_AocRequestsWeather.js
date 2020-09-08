@@ -37,6 +37,17 @@ class CDUAocRequestsWeather {
             let value = mcdu.inOut;
             mcdu.clearUserInput();
             store["arpt1"] = value;
+            mcdu.dataManager.GetWaypointsByIdent(value).then((waypoints) => {
+                if (!waypoints || waypoints.length === 0) {
+                    mcdu.showErrorMessage("ILLEGAL VALUE");
+                }
+                if (waypoints.length === 1) {
+                    const waypoint = waypoints[0];
+                    const lat = waypoint.infos.coordinates.lat;
+                    const long = waypoint.infos.coordinates.long;
+                    mcdu.showErrorMessage(`${lat},${long}`);
+                }
+            });
             CDUAocRequestsWeather.ShowPage(mcdu, store);
         }
 
