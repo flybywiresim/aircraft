@@ -194,11 +194,11 @@ class Jet_MFD_NDInfo extends HTMLElement {
                   }
                   if ((_eta != this.currentWaypointTimeETA) || _force) {
                       this.currentWaypointTimeETA = _eta;
-                      let localETA = _eta;
+                      const utcETA = (_eta + SimVar.GetGlobalVarValue("TIME ZONE OFFSET", "seconds")) % 86400;
                       if (this.waypointTime != null) {
-                          var hours = Math.floor(localETA / 3600);
-                          var minutes = Math.floor((localETA - (hours * 3600)) / 60);
-                          this.waypointTime.textContent = hours.toString().padStart(2, "0") + ":" + minutes.toString().padStart(2, "0");
+                          const hours = Math.floor(utcETA / 3600).toString().padStart(2, "0");
+                          const minutes = Math.floor((utcETA % 3600) / 60).toString().padStart(2, "0");
+                          this.waypointTime.textContent = `${hours}:${minutes}`;
                       }
                   }
               }
