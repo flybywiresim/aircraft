@@ -77,24 +77,30 @@ class EICASCommonDisplay extends Airliners.EICASTemplateElement {
         }
     }
     refreshGrossWeight(_force = false) {
-        let gw = 0;
-        let isInMetric = BaseAirliners.unitIsMetric(Aircraft.A320_NEO);
-        if (isInMetric) {
-            gw = Math.round(SimVar.GetSimVarValue("TOTAL WEIGHT", "kg"));
-            if (this.gwUnit)
-                this.gwUnit.textContent = "KG";
-        }
-        else {
-            gw = Math.round(SimVar.GetSimVarValue("TOTAL WEIGHT", "lbs"));
-            if (this.gwUnit)
-                this.gwUnit.textContent = "LBS";
-        }
+        const isInMetric = BaseAirliners.unitIsMetric(Aircraft.A320_NEO);
+        const unit = isInMetric ? "kg" : "lbs";
+        const fuelWeight = SimVar.GetSimVarValue("FUEL TOTAL QUANTITY WEIGHT", unit);
+        const emptyWeight = SimVar.GetSimVarValue("EMPTY WEIGHT", unit);
+        const payloadWeight = this.getPayloadWeight(unit);
+        const gw = Math.round(emptyWeight + fuelWeight + payloadWeight);
         if ((gw != this.currentGW) || _force) {
             this.currentGW = gw;
             if (this.gwValue != null) {
-                this.gwValue.textContent = this.currentGW.toString();
+                // Lower EICAS displays GW in increments of 100
+                this.gwValue.textContent = (Math.floor(this.currentGW / 100) * 100).toString();
+            }
+            if (this.gwUnit) {
+                this.gwUnit.textContent = unit.toUpperCase();
             }
         }
+    }
+    getPayloadWeight(unit) {
+        const payloadCount = SimVar.GetSimVarValue("PAYLOAD STATION COUNT", "number");
+        let payloadWeight = 0;
+        for (let i = 1; i <= payloadCount; i++) {
+            payloadWeight += SimVar.GetSimVarValue(`PAYLOAD STATION WEIGHT:${i}`, unit);
+        }
+        return payloadWeight;
     }
     refreshADIRS() {
         if (this.tatText != null && this.satText != null) {

@@ -41,6 +41,9 @@ var A320_Neo_LowerECAM_FTCL;
             this.leftElevatorCursor = this.querySelector("#leftElevatorCursor");
             this.rightElevatorCursor = this.querySelector("#rightElevatorCursor");
 
+            //Rudder
+            this.rudderCursor = this.querySelector("#rudderCursor");
+
             this.isInitialised = true;
         }
         update(_deltaTime) {
@@ -87,6 +90,11 @@ var A320_Neo_LowerECAM_FTCL;
             let reCursorPath = "M431," + (398 - elevatorDeflectPctNormalized) + " l-15,-7 l0,14Z";
             this.leftElevatorCursor.setAttribute("d", leCursorPath);
             this.rightElevatorCursor.setAttribute("d", reCursorPath);
+
+            // Update rudder
+            const rudderDeflectPct = SimVar.GetSimVarValue("RUDDER DEFLECTION PCT", "percent over 100");
+            const rudderAngle = -rudderDeflectPct * 29.06;
+            this.rudderCursor.setAttribute("transform", `rotate(${rudderAngle} 300 380)`)
 
             // Update ELAC's and SEC's
             var elac1_On = SimVar.GetSimVarValue("FLY BY WIRE ELAC SWITCH:1", "boolean");

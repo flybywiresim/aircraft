@@ -1,7 +1,7 @@
 import os
 import json
 
-project_directories = ["html_ui", "SimObjects", "ModelBehaviorDefs"]
+project_directories = ["effects", "html_ui", "SimObjects", "ModelBehaviorDefs"]
 
 content_entries = list()
 total_package_size = 0
