@@ -1,5 +1,8 @@
 class A320_Neo_EICAS extends Airliners.BaseEICAS {
     get templateID() { return "A320_Neo_EICAS"; }
+    // This js file has 2 intances at runtime, 1 upper screen and 1 lower
+    get isTopScreen() { return this.urlConfig.index === 1; }
+    get isBottomScreen() { return this.urlConfig.index === 2; }
     changePage(_pageName) {
         let pageName = _pageName.toUpperCase();
         for (var i = 0; i < this.lowerScreenPages.length; i++) {
@@ -16,9 +19,6 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         }
         this.SwitchToPageName(this.LOWER_SCREEN_GROUP_NAME, pageName);
     }
-    // This js file has 2 intances at runtime, 1 upper screen and 1 lower
-    get isTopScreen() { return this.urlConfig.index === 1; }
-    get isBottomScreen() { return this.urlConfig.index === 2; }
     createUpperScreenPage() {
         this.upperTopScreen = new Airliners.EICASScreen("TopScreen", "TopScreen", "a320-neo-upper-ecam");
         this.annunciations = new Cabin_Annunciations();
