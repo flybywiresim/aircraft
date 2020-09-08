@@ -208,12 +208,14 @@ var A320_Neo_LowerECAM_APU;
             gaugeDef2.dangerRange[0] = 1000;
             gaugeDef2.dangerRange[1] = 1200;
             gaugeDef2.currentValueFunction = this.getAPUEGT.bind(this);
+            gaugeDef2.outerDynamicMarkerFunction = this.getAPUEGTWarn.bind(this,"EGTWarn");
             this.apuEGTGauge = window.document.createElement("a320-neo-ecam-gauge");
             this.apuEGTGauge.id = "APU_EGT_Gauge";
             this.apuEGTGauge.init(gaugeDef2);
             this.apuEGTGauge.addGraduation(300, true, "3");
             this.apuEGTGauge.addGraduation(700, true, "7");
             this.apuEGTGauge.addGraduation(1000, true, "10");
+            this.apuEGTGauge.addGraduation(1200,false,"",true,true,"EGTWarn");
             this.apuEGTGauge.active = false
             if (_gaugeDiv != null) {
                 _gaugeDiv.appendChild(this.apuEGTGauge);
@@ -263,25 +265,47 @@ var A320_Neo_LowerECAM_APU;
             return SimVar.GetSimVarValue("APU PCT RPM", "percent");
         }
 
+        //function accepts ID of the marker and returns an array with ID and EGT
+        getAPUEGTWarn(_id){
+            var n = this.getAPUN();
+            var ID_EGT = [];
+            ID_EGT.push(_id);
+            if(n < 11){
+                ID_EGT.push(1200);
+                return ID_EGT;
+            }
+            else if(n <= 15){
+                ID_EGT.push(((-50*n)+1750));
+                return ID_EGT;
+            }
+            else if(n <= 65){
+                ID_EGT.push(((-3*n)+1045));
+                return ID_EGT;
+            }
+            else{
+                ID_EGT.push(((-30/7*n)+1128.6));
+                return ID_EGT;
+            }
+        }
         //Calculates the APU EGT Based on the RPM, APU now reaches peak EGT of 765'C
         getAPUEGTRaw(startup) {
             var n = this.getAPUN();
             if (startup) {
                 if (n < 10) {
                     return 10;
-                } else if(n < 14){
+                } else if(n <= 14){
                     return (90/6*n) - 140;
-                } else if (n < 20) {
+                } else if (n <= 20) {
                     return (215/4*n) - 760;
-                } else if(n < 32){
+                } else if(n <= 32){
                     return (420/11*n) - 481.8;
-                } else if (n < 36) {
+                } else if (n <= 36) {
                     return (20/3*n) + 525;
-                } else if (n < 43) {
+                } else if (n <= 43) {
                     return (-15/6*n) + 888.3;
-                } else if(n < 50){
+                } else if(n <= 50){
                     return (3*n) + 618;
-                } else if(n < 74){
+                } else if(n <= 74){
                     return (-100/13*n) + 1152.3;
                 } else {
                     return (-104/10*n) + 1430;

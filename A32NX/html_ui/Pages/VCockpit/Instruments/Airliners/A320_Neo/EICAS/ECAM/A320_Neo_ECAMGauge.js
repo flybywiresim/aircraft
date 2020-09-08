@@ -22,6 +22,9 @@ var A320_Neo_ECAM_Common;
             this.outerIndicatorFunction = null;
             this.outerDynamicArcFunction = null;
             this.extraMessageFunction = null;
+            this.outerDynamicMarkerFunction = null;
+            this.dangerMinDynamicFunction = null;
+            this.outerMarkerValue = null;
         }
     }
     A320_Neo_ECAM_Common.GaugeDefinition = GaugeDefinition;
@@ -123,6 +126,8 @@ var A320_Neo_ECAM_Common;
             this.outerIndicatorFunction = _gaugeDefinition.outerIndicatorFunction;
             this.outerDynamicArcFunction = _gaugeDefinition.outerDynamicArcFunction;
             this.extraMessageFunction = _gaugeDefinition.extraMessageFunction;
+            this.outerDynamicMarkerFunction = _gaugeDefinition.outerDynamicMarkerFunction;
+            this.dangerMinDynamicFunction = _gaugeDefinition.dangerMinDynamicFunction;
             this.endAngle = this.startAngle + _gaugeDefinition.arcSize;
             this.center = new Vec2(this.viewBoxSize.x * 0.5, this.viewBoxSize.y * 0.5);
             this.rootSVG = document.createElementNS(Avionics.SVG.NS, "svg");
@@ -236,12 +241,17 @@ var A320_Neo_ECAM_Common;
             }
             this.refreshActiveState();
         }
-        addGraduation(_value, _showInnerMarker, _text = "", _showOuterMarker = false) {
+
+        //accepts two more parameters to set custom ID for dynamic markers
+        addGraduation(_value, _showInnerMarker, _text = "", _showOuterMarker = false, _setid = false, _idName = "") {
             var dir = this.valueToDir(_value);
             if (_showInnerMarker) {
                 var start = new Vec2(this.center.x + (dir.x * this.mainArcRadius), this.center.y + (dir.y * this.mainArcRadius));
                 var end = new Vec2(this.center.x + (dir.x * this.graduationInnerLineEndOffset), this.center.y + (dir.y * this.graduationInnerLineEndOffset));
                 var marker = document.createElementNS(Avionics.SVG.NS, "line");
+                if(_setid){
+                    marker.setAttribute("id",_idName);
+                }
                 marker.setAttribute("class", "InnerMarker");
                 marker.setAttribute("x1", start.x.toString());
                 marker.setAttribute("y1", start.y.toString());
@@ -253,6 +263,8 @@ var A320_Neo_ECAM_Common;
                 var start = new Vec2(this.center.x + (dir.x * this.mainArcRadius), this.center.y + (dir.y * this.mainArcRadius));
                 var end = new Vec2(this.center.x + (dir.x * this.graduationOuterLineEndOffset), this.center.y + (dir.y * this.graduationOuterLineEndOffset));
                 var marker = document.createElementNS(Avionics.SVG.NS, "line");
+                this.outerMarkerValue = _value;
+                marker.setAttribute("id", _idName);
                 marker.setAttribute("class", "OuterMarker");
                 marker.setAttribute("x1", start.x.toString());
                 marker.setAttribute("y1", start.y.toString());
@@ -309,6 +321,12 @@ var A320_Neo_ECAM_Common;
                     this.outerDynamicArcFunction(this.outerDynamicArcTargetValues);
                     this.refreshOuterDynamicArc(this.outerDynamicArcTargetValues[0], this.outerDynamicArcTargetValues[1]);
                 }
+                if(this.outerDynamicMarkerFunction != null) {
+                    this.refreshOuterMarkerFunction(this.outerDynamicMarkerFunction());
+                }
+                if(this.dangerMinDynamicFunction != null) {
+                    this.refreshDangerMinFunction(this.dangerMinDynamicFunction());
+                }
             }
             if ((this.extraMessageFunction != null) && (this.extraMessageText != null) && (this.extraMessageBorder != null)) {
                 var extraMessage = this.isActive ? this.extraMessageFunction().toString() : "";
@@ -319,6 +337,25 @@ var A320_Neo_ECAM_Common;
                     this.extraMessageText.setAttribute("class", style);
                     this.extraMessageBorder.setAttribute("class", style);
                 }
+            }
+        }
+        //accepts ID_EGT, _value[0] = _id, _value[1] = EGT
+        refreshOuterMarkerFunction(_value, _force = false){
+            if(_value[1] != this.outerMarkerValue){
+                this.outerMarkerValue = _value[1];
+                var dir = this.valueToDir(_value[1]);
+                var start = new Vec2(this.center.x + (dir.x * this.mainArcRadius), this.center.y + (dir.y * this.mainArcRadius));
+                var end = new Vec2(this.center.x + (dir.x * this.graduationOuterLineEndOffset), this.center.y + (dir.y * this.graduationOuterLineEndOffset));
+                var marker = document.getElementById(_value[0]);
+                marker.setAttribute("x1", start.x.toString());
+                marker.setAttribute("y1", start.y.toString());
+                marker.setAttribute("x2", end.x.toString());
+                marker.setAttribute("y2", end.y.toString());
+            }
+        }
+        refreshDangerMinFunction(_value, _force = false){
+            if(_value != this.dangerRange[0]){
+                this.dangerRange[0] = _value;
             }
         }
         refreshMainValue(_value, _force = false) {

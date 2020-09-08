@@ -59,11 +59,11 @@ a320-neo-ecam-gauge {
       height: 100%; }
       a320-neo-ecam-gauge #RootSVG #CursorGroup line {
         stroke: var(--ecamValueColour);
-        stroke-width: 3; }
+        stroke-width: 4; }
       a320-neo-ecam-gauge #RootSVG #CursorGroup path {
         fill: none;
         stroke: var(--ecamDefaultColour);
-        stroke-width: 1px; }
+        stroke-width: 2px; }
       a320-neo-ecam-gauge #RootSVG #CursorGroup .active {
         display: block; }
       a320-neo-ecam-gauge #RootSVG #CursorGroup .warning {
