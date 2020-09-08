@@ -852,7 +852,7 @@ var A320_Neo_UpperECAM;
             if(this.throttleMode == ThrottleMode.TOGA && this.timerTOGA > 0){
                 return 1060;
             }
-            else if(this.timerTOGA <0){
+            else if(this.throttleMode == ThrottleMode.TOGA && this.timerTOGA <0){
                 return 1025;
             }
             if(this.throttleMode == ThrottleMode.FLEX_MCT){
