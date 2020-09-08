@@ -18,6 +18,19 @@
 	<Include Path="Asobo\Airliner\GlassCockpit.xml"/>
 	<Include Path="Asobo\Airliner\Airbus.xml"/>
 
+<Template Name="A32NX_LANDING_GEAR_Light_Template">
+	<DefaultTemplateParameters>
+		<NODE_ID>LANDING_GEAR_Light_#ID#</NODE_ID>
+		<PART_ID>LANDING_GEAR_Light</PART_ID>
+		<SIMVAR>GEAR POSITION:#GEAR_ID#</SIMVAR>
+	</DefaultTemplateParameters>
+	<UseTemplate Name="ASOBO_GT_Push_Button_Airliner">
+		<DUMMY_BUTTON>True</DUMMY_BUTTON>
+		<SEQ1_EMISSIVE_CODE>0.01 99.99 (A:#SIMVAR#, Percent) rng</SEQ1_EMISSIVE_CODE>
+		<SEQ2_EMISSIVE_CODE>90 100 (A:#SIMVAR#, Percent) rng</SEQ2_EMISSIVE_CODE>
+	</UseTemplate>
+</Template>
+
 <!-- RETROECLAIRAGE #############################################################################################################-->
 	<Component ID="MCDU">
 		<UseTemplate Name="ASOBO_FMC_A320">
@@ -780,29 +793,20 @@
 			<ANIM_NAME>lever_landing_gear</ANIM_NAME>
 			<NODE_ID>LEVER_LANDINGGEAR</NODE_ID>
 		</UseTemplate>
-		<UseTemplate Name="ASOBO_LANDING_GEAR_Light_Template">
+		<UseTemplate Name="A32NX_LANDING_GEAR_Light_Template">
 			<NODE_ID>PUSH_AUTOBKR_LDGGEAR_1</NODE_ID>
 			<ID>1</ID>
-			<INVERT_CONDITION>1</INVERT_CONDITION>
-			<CUSTOM_RANGE>&gt; 90</CUSTOM_RANGE>
 			<GEAR_ID>1</GEAR_ID>
-			<AIRBUS_TYPE/>
 		</UseTemplate>
-		<UseTemplate Name="ASOBO_LANDING_GEAR_Light_Template">
+		<UseTemplate Name="A32NX_LANDING_GEAR_Light_Template">
 			<NODE_ID>PUSH_AUTOBKR_LDGGEAR_2</NODE_ID>
 			<ID>2</ID>
-			<INVERT_CONDITION>1</INVERT_CONDITION>
-			<CUSTOM_RANGE>&gt; 90</CUSTOM_RANGE>
 			<GEAR_ID>0</GEAR_ID>
-			<AIRBUS_TYPE/>
 		</UseTemplate>
-		<UseTemplate Name="ASOBO_LANDING_GEAR_Light_Template">
+		<UseTemplate Name="A32NX_LANDING_GEAR_Light_Template">
 			<NODE_ID>PUSH_AUTOBKR_LDGGEAR_3</NODE_ID>
 			<ID>3</ID>
-			<INVERT_CONDITION>1</INVERT_CONDITION>
-			<CUSTOM_RANGE>&gt; 90</CUSTOM_RANGE>
 			<GEAR_ID>2</GEAR_ID>
-			<AIRBUS_TYPE/>
 		</UseTemplate>
 		<UseTemplate Name="ASOBO_LANDING_GEAR_Warning_Template">
 			<ANIM_NAME>DECAL_LANDING_INDICATOR</ANIM_NAME>

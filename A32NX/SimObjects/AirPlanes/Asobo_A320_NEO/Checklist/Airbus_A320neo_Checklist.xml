@@ -103,7 +103,7 @@
 				<Block SubjectTT="LATERAL CONSOLE">
 					<Checkpoint ReferenceId="A320_CPREP1_OXYGEN_MASK"/>
 					<Checkpoint ReferenceId="A320_CPREP1_CREW_SUPPLY"/>
-					<Checkpoint ReferenceId="A320_CPREP1_INT_RECEPTION_KNOW"/>
+					<Checkpoint ReferenceId="A320_CPREP1_INT_RECEPTION_KNOB"/>
 					<Checkpoint ReferenceId="A320_CPREP1_ECAM_DOOR_OXY"/>
 				</Block>
 				<Block SubjectTT="INSTRUMENT PANELS">
