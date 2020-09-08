@@ -1,5 +1,8 @@
 class A320_Neo_EICAS extends Airliners.BaseEICAS {
     get templateID() { return "A320_Neo_EICAS"; }
+    // This js file has 2 intances at runtime, 1 upper screen and 1 lower
+    get isTopScreen() { return this.urlConfig.index === 1; }
+    get isBottomScreen() { return this.urlConfig.index === 2; }
     createUpperScreenPage() {
         this.upperTopScreen = new Airliners.EICASScreen("TopScreen", "TopScreen", "a320-neo-upper-ecam");
         this.annunciations = new Cabin_Annunciations();
@@ -29,8 +32,10 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
     Init() {
         super.Init();
         this.changePage("FUEL"); // MODIFIED
-        this.A32NXCore = new A32NX_Core();
-        this.A32NXCore.init();
+        if (this.isTopScreen) {
+            this.A32NXCore = new A32NX_Core();
+            this.A32NXCore.init();
+        }
 
         this.lastAPUMasterState = 0; // MODIFIED
         this.externalPowerWhenApuMasterOnTimer = -1; // MODIFIED
@@ -68,8 +73,10 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
     }
     onUpdate(_deltaTime) {
         super.onUpdate(_deltaTime);
-        this.A32NXCore.update(_deltaTime);
-        this.localVarUpdater.update();
+        if (this.isTopScreen) {
+            this.A32NXCore.update(_deltaTime);
+            this.localVarUpdater.update();
+        }
         this.updateAnnunciations();
         this.updateScreenState();
         
