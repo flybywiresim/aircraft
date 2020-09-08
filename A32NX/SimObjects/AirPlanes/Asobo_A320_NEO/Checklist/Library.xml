@@ -295,7 +295,7 @@
          <CheckpointDesc SubjectTT="TT:Clock" ExpectationTT="TT:CHECK" />
       </Checkpoint>
       <Checkpoint Id="A320_CPREP1_ANTISKID_NOSEWHEEL_STEERING">
-         <CheckpointDesc SubjectTT="TT:Anti-skid and Nosewheel Steering" ExpectationTT="TT:ON" />
+         <CheckpointDesc SubjectTT="TT:Anti-Skid and Nosewheel Steering" ExpectationTT="TT:ON" />
       </Checkpoint>
       <Checkpoint Id="A320_CPREP1_PEDESTAL_SPACER">
          <CheckpointDesc SubjectTT="TT:PEDESTAL" ExpectationTT="TT:" />
