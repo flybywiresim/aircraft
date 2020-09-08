@@ -174,8 +174,11 @@ class Jet_MFD_NDInfo extends HTMLElement {
       if (this.waypoint) {
           if (this._navMode == Jet_NDCompass_Navigation.NAV) {
               if (_name && _name != "") {
-                  if (this.waypointName != null) {
-                      this.waypointName.textContent = _name;
+                  if (_name != this.currentWaypointName || _force) {
+                      this.currentWaypointName = _name
+                      if (this.waypointName != null) {
+                          this.waypointName.textContent = _name;
+                      }
                   }
                   if ((_track != this.currentWaypointTrack) || _force) {
                       this.currentWaypointTrack = _track;
