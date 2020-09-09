@@ -34,7 +34,8 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this.onRad = () => { CDUNavRadioPage.ShowPage(this); };
         this.onFuel = () => { CDUFuelPredPage.ShowPage(this); };
         CDUIdentPage.ShowPage(this);
-        this.electricity = this.querySelector("#Electricity")
+        this.electricity = this.querySelector("#Electricity");
+        this.climbTransitionGroundAltitude = null;
     }
     trySetFlapsTHS(s) {
         if (s) {
@@ -791,14 +792,33 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         if (this.currentFlightPhase <= 2 && SimVar.GetSimVarValue("L:A32NX_Preflight_Complete", "Bool") == 1) {
             if (!(highestThrottleDetent == ThrottleMode.TOGA || highestThrottleDetent == ThrottleMode.FLEX_MCT) && SimVar.GetSimVarValue("RADIO HEIGHT", "Feet") < 100) {
                 SimVar.SetSimVarValue("L:A32NX_Preflight_Complete", "Bool", 0);
+                this.climbTransitionGroundAltitude = null;
             }
         }
-
+        
         //Changes to climb phase when acceleration altitude is reached
         if (this.currentFlightPhase === FlightPhase.FLIGHT_PHASE_TAKEOFF && airSpeed > 80) {
-            const agl = Simplane.getAltitudeAboveGround();
-            if (agl > (this.accelerationAltitude || this.thrustReductionAltitude || 1500)) {
+            const planeAltitudeMsl = Simplane.getAltitude();
+            let accelerationAltitudeMsl = (this.accelerationAltitude || this.thrustReductionAltitude);
+            
+            if(!accelerationAltitudeMsl) {     
+                if(!this.climbTransitionGroundAltitude) {
+                    let airport = this.flightPlanManager.getOrigin();
+                    if (airport) {
+                        this.climbTransitionGroundAltitude = airport.infos.coordinates.alt;
+                    }
+
+                    if (!this.climbTransitionGroundAltitude) {
+                        this.climbTransitionGroundAltitude = (parseInt(SimVar.GetSimVarValue("GROUND ALTITUDE", "feet")) || 0);
+                    }
+                }
+                
+                accelerationAltitudeMsl = this.climbTransitionGroundAltitude + 1500;
+            }
+            
+            if (planeAltitudeMsl > accelerationAltitudeMsl) {
                 this.currentFlightPhase = FlightPhase.FLIGHT_PHASE_CLIMB;
+                this.climbTransitionGroundAltitude = null;
             }
         }
         //Default Asobo logic
