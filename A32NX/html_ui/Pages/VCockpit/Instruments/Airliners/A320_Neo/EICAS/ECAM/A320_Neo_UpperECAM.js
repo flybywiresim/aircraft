@@ -387,7 +387,7 @@ var A320_Neo_UpperECAM;
                         }
                     },
                     {
-                        message: "IR IN ALIGN >7 MN",
+                        message: "IR IN ALIGN > 7 MN",
                         isActive: () => {
                             return this.getADIRSMins() >= 7;
                         }
