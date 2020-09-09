@@ -52,7 +52,8 @@ class CDUPerformancePage {
                 SimVar.SetSimVarValue("L:AIRLINER_V1_SPEED", "Knots", -1);
                 CDUPerformancePage.ShowTAKEOFFPage(mcdu);
             } else if (value === "") {
-                mcdu.inOut = mcdu._getV1Speed();
+                mcdu.inOut = mcdu._getV1Speed().toString();
+                CDUPerformancePage.ShowTAKEOFFPage(mcdu);
             } else {
                 if (mcdu.trySetV1Speed(value)) {
                     CDUPerformancePage.ShowTAKEOFFPage(mcdu);
@@ -72,7 +73,8 @@ class CDUPerformancePage {
                 CDUPerformancePage.ShowTAKEOFFPage(mcdu);
             }
             else if (value === "") {
-                mcdu.inOut = mcdu._getVRSpeed();
+                mcdu.inOut = mcdu._getVRSpeed().toString();
+                CDUPerformancePage.ShowTAKEOFFPage(mcdu);
             }
             else {
                 if (mcdu.trySetVRSpeed(value)) {
@@ -93,7 +95,8 @@ class CDUPerformancePage {
                 CDUPerformancePage.ShowTAKEOFFPage(mcdu);
             }
             else if (value === "") {
-                mcdu.inOut = mcdu._getV2Speed();
+                mcdu.inOut = mcdu._getV2Speed().toString();
+                CDUPerformancePage.ShowTAKEOFFPage(mcdu);
             }
             else {
                 if (mcdu.trySetV2Speed(value)) {
