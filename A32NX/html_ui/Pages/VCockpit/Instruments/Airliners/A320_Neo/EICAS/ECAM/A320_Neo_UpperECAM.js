@@ -442,11 +442,38 @@ var A320_Neo_UpperECAM;
                         }
                     },
                     {
-                        message: "PARK BRK",
+                        message: "SPEED BRK",
                         isActive: () => {
-                            return SimVar.GetSimVarValue("BRAKE PARKING INDICATOR", "Bool") == 1;
+                            return (SimVar.GetSimVarValue("SPOILERS HANDLE POSITION", "position") > 0);
                         }
                     },
+                    {
+                        message: "PARK BRK",
+                        isActive: () => {
+                            return (SimVar.GetSimVarValue("BRAKE PARKING INDICATOR", "Bool") == 1);
+                        }
+                    },
+                    {
+                        message: "HYD PTU",
+                        isActive: () => {
+                            // Rough approximation until hydraulic system fully implemented
+                            // Needs the last 2 conditions because PTU_ON is (incorrectly) permanently set to true during first engine start
+                            return (SimVar.GetSimVarValue("L:XMLVAR_PTU_ON", "Bool") == 1) && (SimVar.GetSimVarValue("ENG N1 RPM:1", "Percent") < 1 || SimVar.GetSimVarValue("ENG N1 RPM:2", "Percent") < 1);
+                        }
+                    },
+                    {
+                        message: "ENG A.ICE",
+                        isActive: () => {
+                            return (SimVar.GetSimVarValue("ENG ANTI ICE:1", "Bool") == 1) || (SimVar.GetSimVarValue("ENG ANTI ICE:2", "Bool") == 1);
+                        }
+                    },
+                    {
+                        message: "WING A.ICE",
+                        isActive: () => {
+                            return (SimVar.GetSimVarValue("STRUCTURAL DEICE SWITCH", "Bool") == 1);
+                        }
+                    },
+
                     {
                         message: "APU BLEED",
                         isActive: () => {
@@ -466,12 +493,6 @@ var A320_Neo_UpperECAM;
                         }
                     },
                     {
-                        message: "SPEED BRK",
-                        isActive: () => {
-                            return (SimVar.GetSimVarValue("SPOILERS HANDLE POSITION", "position") > 0);
-                        }
-                    },
-                    {
                         message: "AUTO BRK LO",
                         isActive: () => {
                             return (SimVar.GetSimVarValue("L:XMLVAR_Autobrakes_Level", "Enum") == 1);
@@ -487,6 +508,12 @@ var A320_Neo_UpperECAM;
                         message: "AUTO BRK MAX",
                         isActive: () => {
                             return (SimVar.GetSimVarValue("L:XMLVAR_Autobrakes_Level", "Enum") == 3);
+                        }
+                    },
+                    {
+                        message: "GPWS FLAP 3",
+                        isActive: () => {
+                            return (SimVar.GetSimVarValue("L:PUSH_OVHD_GPWS_LDG", "Bool") == 1);
                         }
                     }
                 ]

@@ -1,7 +1,9 @@
 declare global {
 
-    type NumberSimVarUnit = ("number" | "Number") | ("bool" | "Bool") | "Enum" | "lbs" | "kg" | "degree" | ("Percent" | "percent")
-        | "Volts" | "Amperes" | "Hertz" | "PSI" | "celsius"
+    type NumberSimVarUnit = ("number" | "Number") | ("SINT32") | ("bool" | "Bool" | "Boolean" | "boolean") | "Enum" | "lbs" | "kg" | ("Degrees" | "degree")
+        | "radians" | ("Percent" | "percent") | ("Feet" | "feet" | "feets") | "Volts" | "Amperes" | "Hertz" | "PSI" | "celsius" | "degree latitude"
+        | "degree longitude" | "Meters per second" | "Position" | ("Knots" | "knots") | "Seconds"
+
     type TextSimVarUnit = "Text" | "string"
 
     const SimVar: {
@@ -25,7 +27,8 @@ declare global {
         getAutoPilotAirspeedManaged(): boolean
         getAutoPilotHeadingManaged(): boolean
 
-        getAutoPilotMachModeActive(): boolean
+        getAutoPilotMachModeActive(): number
+        getEngineActive(_engineIndex: number): number
     };
 
     enum FlightPhase {
@@ -64,7 +67,12 @@ declare global {
     class EICASTemplateElement extends TemplateElement {
     }
 
+    class BaseEICAS {
+        
+    }
+
     const Airliners: {
+        BaseEICAS: new () => BaseEICAS,
         EICASTemplateElement: new () => EICASTemplateElement,
     };
 

@@ -10,6 +10,8 @@ As this is an open source project, anyone is free to contribute as much or as li
 
 If you're comfortable contributing to Open Source projects on GitHub please ensure you read our expectations for issue tracking, feature proposals and pull requests.
 
+If you're looking for tools and tips to help you develop, see [Development Resources](../docs/resources.md).
+
 **Please avoid** adding features that are not true to life or features without providing supported documentation.
 
 # Testing the project
@@ -29,7 +31,7 @@ When submitting an issue, there's a few guidelines we'd ask you to respect to ma
 
 # Pull Requests
 
-We welcome pull requests with fixes and improvements to the project. 
+We welcome pull requests with fixes and improvements to the project.
 
 If you wish to add a new feature or you spot a bug that you wish to fix, **please open an issue for it first** on the [A32NX issue tracker](https://github.com/flybywiresim/a32nx/issues).
 
