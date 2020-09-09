@@ -444,52 +444,7 @@ var A320_Neo_UpperECAM;
                     {
                         message: "SPEED BRK",
                         isActive: () => {
-                            return (SimVar.GetSimVarValue("SPOILERS HANDLE POSITION", "position") > 0);
-                        }
-                    },
-                    {
-                        message: "PARK BRK",
-                        isActive: () => {
-                            return (SimVar.GetSimVarValue("BRAKE PARKING INDICATOR", "Bool") == 1);
-                        }
-                    },
-                    {
-                        message: "HYD PTU",
-                        isActive: () => {
-                            // Rough approximation until hydraulic system fully implemented
-                            // Needs the last 2 conditions because PTU_ON is (incorrectly) permanently set to true during first engine start
-                            return (SimVar.GetSimVarValue("L:XMLVAR_PTU_ON", "Bool") == 1) && (SimVar.GetSimVarValue("ENG N1 RPM:1", "Percent") < 1 || SimVar.GetSimVarValue("ENG N1 RPM:2", "Percent") < 1);
-                        }
-                    },
-                    {
-                        message: "ENG A.ICE",
-                        isActive: () => {
-                            return (SimVar.GetSimVarValue("ENG ANTI ICE:1", "Bool") == 1) || (SimVar.GetSimVarValue("ENG ANTI ICE:2", "Bool") == 1);
-                        }
-                    },
-                    {
-                        message: "WING A.ICE",
-                        isActive: () => {
-                            return (SimVar.GetSimVarValue("STRUCTURAL DEICE SWITCH", "Bool") == 1);
-                        }
-                    },
-
-                    {
-                        message: "APU BLEED",
-                        isActive: () => {
-                            return (SimVar.GetSimVarValue("BLEED AIR APU", "Bool") == 1) && (SimVar.GetSimVarValue("APU PCT RPM", "Percent") >= 95);
-                        }
-                    },
-                    {
-                        message: "APU AVAIL",
-                        isActive: () => {
-                            return (SimVar.GetSimVarValue("BLEED AIR APU", "Bool") == 0) && (SimVar.GetSimVarValue("APU PCT RPM", "Percent") >= 95);
-                        }
-                    },
-                    {
-                        message: "LDG LT",
-                        isActive: () => {
-                            return (SimVar.GetSimVarValue("LIGHT LANDING ON", "Bool") == 1);
+                            return (SimVar.GetSimVarValue("SPOILERS HANDLE POSITION", "position") > 0) && (SimVar.GetSimVarValue("RADIO HEIGHT", "feet") > 1.5);
                         }
                     },
                     {
@@ -508,6 +463,57 @@ var A320_Neo_UpperECAM;
                         message: "AUTO BRK MAX",
                         isActive: () => {
                             return (SimVar.GetSimVarValue("L:XMLVAR_Autobrakes_Level", "Enum") == 3);
+                        }
+                    },
+                    {
+                        message: "PARK BRK",
+                        isActive: () => {
+                            return (SimVar.GetSimVarValue("BRAKE PARKING INDICATOR", "Bool") == 1);
+                        }
+                    },
+                    {
+                        message: "HYD PTU",
+                        isActive: () => {
+                            // Rough approximation until hydraulic system fully implemented
+                            // Needs the last 2 conditions because PTU_ON is (incorrectly) permanently set to true during first engine start
+                            return (SimVar.GetSimVarValue("L:XMLVAR_PTU_ON", "Bool") == 1) && (SimVar.GetSimVarValue("ENG N1 RPM:1", "Percent") < 1 || SimVar.GetSimVarValue("ENG N1 RPM:2", "Percent") < 1);
+                        }
+                    },
+                    {
+                        message: "PRED W/S OFF",
+                        style: "InfoIndication",
+                        isActive: () => {
+                            return (SimVar.GetSimVarValue("XMLVAR_SWITCH_RADAR_PWS_Position", "Bool") == 0) && (SimVar.GetSimVarValue("ENG N1 RPM:1", "Percent") > 15 || SimVar.GetSimVarValue("ENG N1 RPM:2", "Percent") > 15);
+                        }
+                    },
+                    {
+                        message: "ENG A.ICE",
+                        isActive: () => {
+                            return (SimVar.GetSimVarValue("ENG ANTI ICE:1", "Bool") == 1) || (SimVar.GetSimVarValue("ENG ANTI ICE:2", "Bool") == 1);
+                        }
+                    },
+                    {
+                        message: "WING A.ICE",
+                        isActive: () => {
+                            return (SimVar.GetSimVarValue("STRUCTURAL DEICE SWITCH", "Bool") == 1);
+                        }
+                    },
+                    {
+                        message: "APU BLEED",
+                        isActive: () => {
+                            return (SimVar.GetSimVarValue("BLEED AIR APU", "Bool") == 1) && (SimVar.GetSimVarValue("APU PCT RPM", "Percent") >= 95);
+                        }
+                    },
+                    {
+                        message: "APU AVAIL",
+                        isActive: () => {
+                            return (SimVar.GetSimVarValue("BLEED AIR APU", "Bool") == 0) && (SimVar.GetSimVarValue("APU PCT RPM", "Percent") >= 95);
+                        }
+                    },
+                    {
+                        message: "LDG LT",
+                        isActive: () => {
+                            return (SimVar.GetSimVarValue("LIGHT LANDING ON", "Bool") == 1);
                         }
                     },
                     {
@@ -699,6 +705,14 @@ var A320_Neo_UpperECAM;
 
             if ((SimVar.GetSimVarValue("L:PUSH_OVHD_CALLS_ALL", "Bool") == 1) || (SimVar.GetSimVarValue("L:PUSH_OVHD_CALLS_FWD", "Bool") == 1) || (SimVar.GetSimVarValue("L:PUSH_OVHD_CALLS_AFT", "Bool") == 1)) {
                 SimVar.SetSimVarValue("L:A32NX_CABIN_READY", "Bool", 1);
+            }
+
+            // Update predictive windshear style
+            // If the order of secondary memos is modified, be sure to change index below
+            if (SimVar.GetSimVarValue("RADIO HEIGHT", "feet") >= 50 && (SimVar.GetSimVarValue("RADIO HEIGHT", "feet") <= 1500)) {
+                secondaryEcamMessage.normal[8].style = "InfoCaution";
+            } else {
+                secondaryEcamMessage.normal[8].style = "InfoIndication";
             }
         }
         updateTakeoffConfigWarnings(_test) {

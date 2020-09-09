@@ -657,6 +657,19 @@
 				<NODE_ID_ONOFF_SWITCH>SWITCH_RADAR_SYS</NODE_ID_ONOFF_SWITCH>
 				<ANIM_NAME_ONOFF_SWITCH>SWITCH_RADAR_SYS</ANIM_NAME_ONOFF_SWITCH>
 			</UseTemplate>
+
+			<UseTemplate Name="A32NX_GT_Switch_Dummy">
+				<NODE_ID>SWITCH_RADAR_PWS</NODE_ID>
+				<ANIM_NAME>SWITCH_RADAR_PWS</ANIM_NAME>
+				<SWITCH_POSITION_TYPE>L</SWITCH_POSITION_TYPE>
+				<SWITCH_POSITION_VAR>XMLVAR_SWITCH_RADAR_PWS_Position</SWITCH_POSITION_VAR>
+				<ANIMTIP_0>Set predictive windshear to AUTO (INOP)</ANIMTIP_0>
+				<ANIMTIP_1>Turn OFF predictive windshear</ANIMTIP_1>
+				<WWISE_EVENT_1>wing_light_switch_on</WWISE_EVENT_1>
+				<WWISE_EVENT_2>wing_light_switch_off</WWISE_EVENT_2>
+				<NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
+				<NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
+			</UseTemplate>
 		</Component>
 		<CameraTitle>PedestalAft</CameraTitle>
 	</Component>
@@ -2922,9 +2935,6 @@
 		</UseTemplate>
 		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
 			<NODE_ID>KNOB_RADAR_TILT</NODE_ID>
-		</UseTemplate>
-		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-			<NODE_ID>SWITCH_RADAR_PWS</NODE_ID>
 		</UseTemplate>
 		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
 			<NODE_ID>SWITCH_DOORPANEL_LOCK</NODE_ID>
