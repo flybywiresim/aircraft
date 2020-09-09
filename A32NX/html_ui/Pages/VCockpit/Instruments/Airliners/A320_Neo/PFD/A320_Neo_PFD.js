@@ -114,10 +114,10 @@ class A320_Neo_PFD_MainPage extends NavSystemPage {
             this.vsFlash.setAttribute("visibility", "hidden");
         }
 
-        let IsOnGround = SimVar.GetSimVarValue("SIM ON GROUND", "Bool");
-        var PFDAlignedATT = SimVar.GetSimVarValue("L:A32NX_ADIRS_PFD_ALIGNED_ATT", "Bool");
+        const IsOnGround = SimVar.GetSimVarValue("SIM ON GROUND", "Bool");
+        const isAnyEngineSwitchOn = SimVar.GetSimVarValue("GENERAL ENG STARTER:1", "Bool") || SimVar.GetSimVarValue("GENERAL ENG STARTER:2", "Bool");
 
-        if (IsOnGround && PFDAlignedATT) {
+        if (IsOnGround && isAnyEngineSwitchOn) {
             this.groundCursor.style.display = "block";
             this.groundCursorLimits.style.display = "block";
         }
@@ -126,15 +126,15 @@ class A320_Neo_PFD_MainPage extends NavSystemPage {
             this.groundCursorLimits.style.display = "none";
         }
 
-        let YokeXPosition = 40.9 + (15 * SimVar.GetSimVarValue("YOKE X POSITION", "Position"));
-        let YokeYPosition = 47.7 - (15 * SimVar.GetSimVarValue("YOKE Y POSITION", "Position"));
+        const YokeXPosition = 40.9 + (15 * SimVar.GetSimVarValue("YOKE X POSITION", "Position"));
+        const YokeYPosition = 47.7 - (15 * SimVar.GetSimVarValue("YOKE Y POSITION", "Position"));
 
         this.groundCursor.style.left = YokeXPosition.toString() + "%";
         this.groundCursor.style.top = YokeYPosition.toString() + "%";
 
-        var ADIRSState = SimVar.GetSimVarValue("L:A320_Neo_ADIRS_STATE", "Enum");
-        var PFDAlignedFirst = SimVar.GetSimVarValue("L:A32NX_ADIRS_PFD_ALIGNED_FIRST", "Bool");
-        
+        const ADIRSState = SimVar.GetSimVarValue("L:A320_Neo_ADIRS_STATE", "Enum");
+        const PFDAlignedFirst = SimVar.GetSimVarValue("L:A32NX_ADIRS_PFD_ALIGNED_FIRST", "Bool");
+
         if (PFDAlignedFirst) {
             this.miscFail.setAttribute("style", "display:none");
         } else {

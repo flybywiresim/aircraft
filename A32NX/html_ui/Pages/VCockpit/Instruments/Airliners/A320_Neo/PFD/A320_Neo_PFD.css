@@ -105,6 +105,8 @@ a320-neo-pfd-element {
         height: 7%;
         border: none;
         display: block; }
+        a320-neo-pfd-element #Mainframe #HorizonContainer #GroundCursor svg line {
+          stroke: white; }
       a320-neo-pfd-element #Mainframe #HorizonContainer #GroundCursorLimits {
         position: absolute;
         left: 25%;
@@ -113,6 +115,9 @@ a320-neo-pfd-element {
         height: 10%;
         border: none;
         display: block; }
+        a320-neo-pfd-element #Mainframe #HorizonContainer #GroundCursorLimits svg line {
+          stroke-width: 10;
+          stroke: white; }
     a320-neo-pfd-element #Mainframe #InstrumentsContainer {
       transform: rotateX(0);
       width: 100%;
