@@ -483,7 +483,7 @@ var A320_Neo_UpperECAM;
                         message: "PRED W/S OFF",
                         style: "InfoIndication",
                         isActive: () => {
-                            return (SimVar.GetSimVarValue("L:XMLVAR_SWITCH_RADAR_PWS_Position", "Bool") == 0) && (SimVar.GetSimVarValue("ENG N1 RPM:1", "Percent") > 15 || SimVar.GetSimVarValue("ENG N1 RPM:2", "Percent") > 15);
+                            return (SimVar.GetSimVarValue("L:A32NX_SWITCH_RADAR_PWS_Position", "Bool") == 0) && (SimVar.GetSimVarValue("ENG N1 RPM:1", "Percent") > 15 || SimVar.GetSimVarValue("ENG N1 RPM:2", "Percent") > 15);
                         }
                     },
                     {
