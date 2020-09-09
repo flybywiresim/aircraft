@@ -51,7 +51,7 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         this.bottomSelfTestLastKnobValue = 1;
         
         // Using ternary in case the LVar is undefined
-        this.ACPowerLastState = SimVar.GetSimVarValue('L:A32NX_COLD_AND_DARK_SPAWN', 'Bool') ? 1 : 0;
+        this.ACPowerLastState = SimVar.GetSimVarValue('L:A32NX_COLD_AND_DARK_SPAWN', 'Bool') ? 0 : 1;
 
         this.doorPageActivated = false;
         this.EngineStarter = 0;
