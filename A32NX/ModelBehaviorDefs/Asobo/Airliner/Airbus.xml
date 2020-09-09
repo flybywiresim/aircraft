@@ -1190,7 +1190,7 @@
 	</UseTemplate>
 </Template>
 
-<Template Name="ASOBO_AIRLINER_GPWS_ALIGN_Template">
+<Template Name="A32NX_AIRLINER_GPWS_ALIGN_Template">
 	<UseTemplate Name="ASOBO_GT_Push_Button_Airliner">
 		<ANIM_NAME>#NODE_ID#</ANIM_NAME>
 		<WWISE_EVENT_1>master_apu_switch_on</WWISE_EVENT_1>
