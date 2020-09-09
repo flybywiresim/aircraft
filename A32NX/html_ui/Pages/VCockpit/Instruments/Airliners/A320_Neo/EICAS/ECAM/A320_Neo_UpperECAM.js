@@ -444,7 +444,7 @@ var A320_Neo_UpperECAM;
                     {
                         message: "SPEED BRK",
                         isActive: () => {
-                            return (SimVar.GetSimVarValue("SPOILERS HANDLE POSITION", "position") > 0) && (SimVar.GetSimVarValue("RADIO HEIGHT", "feet") > 1.5);
+                            return (SimVar.GetSimVarValue("SPOILERS HANDLE POSITION", "position") > 0) && (SimVar.GetSimVarValue("SIM ON GROUND", "Bool") == 0);
                         }
                     },
                     {
@@ -710,9 +710,9 @@ var A320_Neo_UpperECAM;
             // Update predictive windshear style
             // If the order of secondary memos is modified, be sure to change index below
             if (SimVar.GetSimVarValue("RADIO HEIGHT", "feet") >= 50 && (SimVar.GetSimVarValue("RADIO HEIGHT", "feet") <= 1500)) {
-                secondaryEcamMessage.normal[8].style = "InfoCaution";
+                this.secondaryEcamMessage.normal[8].style = "InfoCaution";
             } else {
-                secondaryEcamMessage.normal[8].style = "InfoIndication";
+                this.secondaryEcamMessage.normal[8].style = "InfoIndication";
             }
         }
         updateTakeoffConfigWarnings(_test) {
