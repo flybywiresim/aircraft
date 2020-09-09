@@ -59,7 +59,7 @@ var A320_Neo_UpperECAM;
         }
         getADIRSMins() {
             const secs = SimVar.GetSimVarValue("L:A320_Neo_ADIRS_TIME", "seconds");
-            const mins = Math.floor(secs/60);
+            const mins = Math.ceil(secs/60);
             if (secs > 0) return mins;
             else return -1;
         }
@@ -351,15 +351,9 @@ var A320_Neo_UpperECAM;
                 ],
                 normal: [
                     {
-                        message: "IR IN ALIGN 0 MN",
-                        isActive: () => {
-                            return this.getADIRSMins() == 0;
-                        }
-                    },
-                    {
                         message: "IR IN ALIGN 1 MN",
                         isActive: () => {
-                            return this.getADIRSMins() == 1;
+                            return this.getADIRSMins() == 0 || this.getADIRSMins() == 1;
                         }
                     },
                     {
@@ -393,15 +387,9 @@ var A320_Neo_UpperECAM;
                         }
                     },
                     {
-                        message: "IR IN ALIGN 7 MN",
-                        isActive: () => {
-                            return this.getADIRSMins() == 7;
-                        }
-                    },
-                    {
                         message: "IR IN ALIGN >7 MN",
                         isActive: () => {
-                            return this.getADIRSMins() > 7;
+                            return this.getADIRSMins() >= 7;
                         }
                     },
                     {

@@ -2552,13 +2552,15 @@
 
 	<Component ID="Overhead_Misc">
 		<Component ID="Left_Column">
-			<UseTemplate Name="ASOBO_AIRLINER_GPWS_Template">
+			<UseTemplate Name="ASOBO_AIRLINER_GPWS_ALIGN_Template">
 				<NODE_ID>PUSH_OVHD_GPWS_TERR</NODE_ID>
 				<TOOLTIPID>(INOP) TERR</TOOLTIPID>
+				<WAIT_FOR_ALIGN_TIME>120 0.055 (A:GPS POSITION LAT, degree latitude) 2 pow * +</WAIT_FOR_ALIGN_TIME>
 			</UseTemplate>
-			<UseTemplate Name="ASOBO_AIRLINER_GPWS_Template">
+			<UseTemplate Name="ASOBO_AIRLINER_GPWS_ALIGN_Template">
 				<NODE_ID>PUSH_OVHD_GPWS_SYS</NODE_ID>
 				<TOOLTIPID>(INOP) SYS</TOOLTIPID>
+				<WAIT_FOR_ALIGN_TIME>305 0.095 (A:GPS POSITION LAT, degree latitude) 2 pow * + (A:GPS POSITION LAT, degree latitude) 2 / -</WAIT_FOR_ALIGN_TIME>
 			</UseTemplate>
 			<UseTemplate Name="ASOBO_AIRLINER_GPWS_Template">
 				<NODE_ID>PUSH_OVHD_GPWS_GSMODE</NODE_ID>

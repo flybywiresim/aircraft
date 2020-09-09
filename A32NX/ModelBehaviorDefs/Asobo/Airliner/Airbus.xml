@@ -1190,6 +1190,24 @@
 	</UseTemplate>
 </Template>
 
+<Template Name="ASOBO_AIRLINER_GPWS_ALIGN_Template">
+	<UseTemplate Name="ASOBO_GT_Push_Button_Airliner">
+		<ANIM_NAME>#NODE_ID#</ANIM_NAME>
+		<WWISE_EVENT_1>master_apu_switch_on</WWISE_EVENT_1>
+		<WWISE_EVENT_2>master_apu_switch_off</WWISE_EVENT_2>
+		<Condition Check="WAIT_FOR_ALIGN_TIME">
+			<True>
+				<SEQ1_EMISSIVE_CODE>(L:#NODE_ID#, Bool) ! (L:A320_Neo_ADIRS_STATE, Enum) 0 == (L:A320_Neo_ADIRS_STATE, Enum) 1 == (L:A320_Neo_ADIRS_TIME, seconds) #WAIT_FOR_ALIGN_TIME# &gt; and or and</SEQ1_EMISSIVE_CODE>
+			</True>
+			<False>
+				<SEQ1_EMISSIVE_CODE>(L:A320_Neo_ADIRS_STATE, Enum) 2 != (L:#NODE_ID#, Bool) ! and</SEQ1_EMISSIVE_CODE>
+			</False>
+		</Condition>
+		<SEQ2_EMISSIVE_CODE>(L:#NODE_ID#, Bool)</SEQ2_EMISSIVE_CODE>
+		<LEFT_SINGLE_CODE>(L:#NODE_ID#) ! (>L:#NODE_ID#)</LEFT_SINGLE_CODE>
+	</UseTemplate>
+</Template>
+
 <Template Name="ASOBO_AIRLINER_CALLS_Template">
 	<DefaultTemplateParameters>
 		<ANIM_NAME>#NODE_ID#</ANIM_NAME>
