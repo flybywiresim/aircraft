@@ -106,7 +106,10 @@ class Jet_MFD_NDInfo extends HTMLElement {
       this.setWind(Math.round(Simplane.getWindDirection()), Math.round(Simplane.getWindStrength()), Simplane.getHeadingMagnetic());
   }
   updateWaypoint() {
-      this.setWaypoint(Simplane.getNextWaypointName(), Math.round(Simplane.getNextWaypointTrack()), Simplane.getNextWaypointDistance(), Simplane.getNextWaypointETA());
+      const wpETE = SimVar.GetSimVarValue("GPS WP ETE", "seconds"); // ETE is not available in Simplane 🙄
+      const utcTime = SimVar.GetGlobalVarValue("ZULU TIME", "seconds");
+      const utcETA = wpETE > 0 ? (utcTime + wpETE) % 86400 : 0;
+      this.setWaypoint(Simplane.getNextWaypointName(), Math.round(Simplane.getNextWaypointTrack()), Simplane.getNextWaypointDistance(), utcETA);
   }
   setGroundSpeed(_speed, _force = false) {
       if ((_speed != this.currentGroundSpeed) || _force) {
@@ -197,15 +200,9 @@ class Jet_MFD_NDInfo extends HTMLElement {
                   }
                   if ((_eta != this.currentWaypointTimeETA) || _force) {
                       this.currentWaypointTimeETA = _eta;
-                      let utcETA = (_eta + SimVar.GetGlobalVarValue("TIME ZONE OFFSET", "seconds")) % 86400;
-                      if (_track === 0 && _distance === 0 && _eta === 0) {
-                          // Everything is set to zero if all variables are also 0.
-                          // This should only happen at the end of our route.
-                          utcETA = 0
-                      }
                       if (this.waypointTime != null) {
-                          const hours = Math.floor(utcETA / 3600);
-                          const minutes = Math.floor((utcETA % 3600) / 60);
+                          const hours = Math.floor(_eta / 3600);
+                          const minutes = Math.floor((_eta % 3600) / 60);
                           this.waypointTime.textContent = `${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}`;
                       }
                   }
