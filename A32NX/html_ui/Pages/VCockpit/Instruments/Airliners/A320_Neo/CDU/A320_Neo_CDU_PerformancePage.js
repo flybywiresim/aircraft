@@ -18,7 +18,6 @@ class CDUPerformancePage {
     }
     static ShowTAKEOFFPage(mcdu) {
         mcdu.clearDisplay();
-        mcdu.updateVSpeeds();
         CDUPerformancePage._timer = 0;
         CDUPerformancePage._lastPhase = mcdu.currentFlightPhase;
         mcdu.pageUpdate = () => {
@@ -54,7 +53,7 @@ class CDUPerformancePage {
                 CDUPerformancePage.ShowTAKEOFFPage(mcdu);
             }
             else if (value === "") {
-                mcdu._computeV1Speed();
+                mcdu.inOut = mcdu._computeV1Speed(true);
                 CDUPerformancePage.ShowTAKEOFFPage(mcdu);
             }
             else {
