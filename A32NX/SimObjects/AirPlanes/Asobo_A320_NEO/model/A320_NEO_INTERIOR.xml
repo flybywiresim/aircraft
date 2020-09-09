@@ -18,20 +18,20 @@
 	<Include Path="Asobo\Airliner\GlassCockpit.xml"/>
 	<Include Path="Asobo\Airliner\Airbus.xml"/>
 
-<Template Name="A32NX_LANDING_GEAR_Light_Template">
-	<DefaultTemplateParameters>
-		<NODE_ID>LANDING_GEAR_Light_#ID#</NODE_ID>
-		<PART_ID>LANDING_GEAR_Light</PART_ID>
-		<SIMVAR>GEAR POSITION:#GEAR_ID#</SIMVAR>
-	</DefaultTemplateParameters>
-	<UseTemplate Name="ASOBO_GT_Push_Button_Airliner">
-		<DUMMY_BUTTON>True</DUMMY_BUTTON>
-		<SEQ1_EMISSIVE_CODE>0.01 99.99 (A:#SIMVAR#, Percent) rng</SEQ1_EMISSIVE_CODE>
-		<SEQ2_EMISSIVE_CODE>90 100 (A:#SIMVAR#, Percent) rng</SEQ2_EMISSIVE_CODE>
-	</UseTemplate>
-</Template>
+	<Template Name="A32NX_LANDING_GEAR_Light_Template">
+		<DefaultTemplateParameters>
+			<NODE_ID>LANDING_GEAR_Light_#ID#</NODE_ID>
+			<PART_ID>LANDING_GEAR_Light</PART_ID>
+			<SIMVAR>GEAR POSITION:#GEAR_ID#</SIMVAR>
+		</DefaultTemplateParameters>
+		<UseTemplate Name="ASOBO_GT_Push_Button_Airliner">
+			<DUMMY_BUTTON>True</DUMMY_BUTTON>
+			<SEQ1_EMISSIVE_CODE>0.01 99.99 (A:#SIMVAR#, Percent) rng</SEQ1_EMISSIVE_CODE>
+			<SEQ2_EMISSIVE_CODE>90 100 (A:#SIMVAR#, Percent) rng</SEQ2_EMISSIVE_CODE>
+		</UseTemplate>
+	</Template>
 
-<!-- RETROECLAIRAGE #############################################################################################################-->
+	<!-- RETROECLAIRAGE #############################################################################################################-->
 	<Component ID="MCDU">
 		<UseTemplate Name="ASOBO_FMC_A320">
 			<ID>1</ID>
@@ -531,7 +531,7 @@
 			<DOUBLE_WHEEL/>
 			<REPEAT_ANIM>5</REPEAT_ANIM>
 			<DRAG_AXIS_SCALE>20</DRAG_AXIS_SCALE>
-			<DRAG_MIN_VALUE>-4854</DRAG_MIN_VALUE> <!-- Limit to -4.5 deg -->
+			<DRAG_MIN_VALUE>-4854</DRAG_MIN_VALUE>			<!-- Limit to -4.5 deg -->
 
 		</UseTemplate>
 
@@ -827,7 +827,7 @@
 		</UseTemplate>
 		<UseTemplate Name="ASOBO_HANDLING_Push_Autobrakes_Template">
 			<NODE_ID>PUSH_AUTOBKR_MED</NODE_ID>
-						<PART_ID>Autobrake_2</PART_ID>
+			<PART_ID>Autobrake_2</PART_ID>
 			<ANIM_NAME>PUSH_AUTOBKR_MED</ANIM_NAME>
 			<NODE_ID_DECEL>PUSH_AUTOBKR_MED_SEQ1</NODE_ID_DECEL>
 			<NODE_ID_ON>PUSH_AUTOBKR_MED_SEQ2</NODE_ID_ON>
@@ -837,7 +837,7 @@
 		</UseTemplate>
 		<UseTemplate Name="ASOBO_HANDLING_Push_Autobrakes_Template">
 			<NODE_ID>PUSH_AUTOBKR_MAX</NODE_ID>
-						<PART_ID>Autobrake_3</PART_ID>
+			<PART_ID>Autobrake_3</PART_ID>
 
 			<ANIM_NAME>PUSH_AUTOBKR_MAX</ANIM_NAME>
 			<NODE_ID_DECEL>PUSH_AUTOBKR_MAX_SEQ1</NODE_ID_DECEL>
@@ -1989,12 +1989,12 @@
 			<EMISSIVE_NODE_ID>PUSH_AUTOPILOT_LOC_SEQ2</EMISSIVE_NODE_ID>
 		</UseTemplate>
 
-		
+
 		<UseTemplate Name="ASOBO_AIRBUS_Push_Heading_Track_Template">
 			<NODE_ID>PUSH_AUTOPILOT_HDGTRK</NODE_ID>
 			<ANIM_NAME>PUSH_AUTOPILOT_HDGTRK</ANIM_NAME>
 		</UseTemplate>
-		
+
 
 		<UseTemplate Name="ASOBO_AUTOPILOT_Update_Autopilot_Match_Simvar">
 			<AP_COUNT>2</AP_COUNT>
@@ -2126,7 +2126,7 @@
 		<CameraTitle>PA</CameraTitle>
 	</Component>
 
-	<Component ID="Airbus_EICAS">	
+	<Component ID="Airbus_EICAS">
 		<UseTemplate Name="ASOBO_Airbus_EICAS_Template">
 			<BOTH_SCREENS_ON_ONE_NODE/>
 			<NODE_ID>DYN_SCREEN</NODE_ID>
@@ -2332,14 +2332,14 @@
 
 			<UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
 				<NODE_ID>SCREEN_COM_L</NODE_ID>
-				<EMISSIVE_CODE>0.5</EMISSIVE_CODE> <!-- TODO - Make this editable with a knob -->
+				<EMISSIVE_CODE>0.5</EMISSIVE_CODE>				<!-- TODO - Make this editable with a knob -->
 			</UseTemplate>
 		</Component>
 		<Component ID="Radio_Right">
 
 			<UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
 				<NODE_ID>SCREEN_COM_R</NODE_ID>
-				<EMISSIVE_CODE>0.5</EMISSIVE_CODE> <!-- TODO - Make this editable with a knob -->
+				<EMISSIVE_CODE>0.5</EMISSIVE_CODE>				<!-- TODO - Make this editable with a knob -->
 			</UseTemplate>
 		</Component>
 		<Component ID="Switching_Panel">
@@ -2404,7 +2404,7 @@
 			<NO_SEQ2/>
 		</UseTemplate>
 		<UseTemplate Name="ASOBO_SAFETY_Push_Template">
-		<ID>Caution</ID>
+			<ID>Caution</ID>
 			<LEFT_SINGLE_CODE>0 (&gt;L:A32NX_MASTER_CAUTION)</LEFT_SINGLE_CODE>
 			<EMISSIVE_CODE>(L:Generic_Master_Caution_Active)</EMISSIVE_CODE>
 			<TOOLTIPID>TT:COCKPIT.TOOLTIPS.MASTER_CAUTION_ACKNOWLEDGE</TOOLTIPID>
@@ -2465,7 +2465,7 @@
 		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
 			<NODE_ID>KNOB_CHRONO_RUN</NODE_ID>
 		</UseTemplate>
-	<CameraTitle>ECAM</CameraTitle>
+		<CameraTitle>ECAM</CameraTitle>
 	</Component>
 
 	<Component ID="Overhead_Fire">
@@ -2614,7 +2614,7 @@
 				<NODE_ID>PUSH_OVHD_CALLS_AFT</NODE_ID>
 			</UseTemplate>
 		</Component>
-			<CameraTitle>Overhead</CameraTitle>
+		<CameraTitle>Overhead</CameraTitle>
 	</Component>
 
 	<!-- This section has been partially modified	-->
