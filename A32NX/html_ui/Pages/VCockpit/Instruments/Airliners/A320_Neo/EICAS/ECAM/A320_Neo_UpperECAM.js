@@ -351,45 +351,63 @@ var A320_Neo_UpperECAM;
                 ],
                 normal: [
                     {
-                        message: "IR IN ALIGN 1 MN",
+                        message: "IRS IN ALIGN 1 MN",
                         isActive: () => {
                             return this.getADIRSMins() == 0 || this.getADIRSMins() == 1;
                         }
                     },
                     {
-                        message: "IR IN ALIGN 2 MN",
+                        message: "IRS IN ALIGN 2 MN",
                         isActive: () => {
                             return this.getADIRSMins() == 2;
                         }
                     },
                     {
-                        message: "IR IN ALIGN 3 MN",
+                        message: "IRS IN ALIGN 3 MN",
                         isActive: () => {
                             return this.getADIRSMins() == 3;
                         }
                     },
                     {
-                        message: "IR IN ALIGN 4 MN",
+                        message: "IRS IN ALIGN 4 MN",
                         isActive: () => {
                             return this.getADIRSMins() == 4;
                         }
                     },
                     {
-                        message: "IR IN ALIGN 5 MN",
+                        message: "IRS IN ALIGN 5 MN",
                         isActive: () => {
                             return this.getADIRSMins() == 5;
                         }
                     },
                     {
-                        message: "IR IN ALIGN 6 MN",
+                        message: "IRS IN ALIGN 6 MN",
                         isActive: () => {
                             return this.getADIRSMins() == 6;
                         }
                     },
                     {
-                        message: "IR IN ALIGN >7 MN",
+                        message: "IRS IN ALIGN 7 MN",
                         isActive: () => {
-                            return this.getADIRSMins() >= 7;
+                            return this.getADIRSMins() == 7;
+                        }
+                    },
+                    {
+                        message: "IRS IN ALIGN 8 MN",
+                        isActive: () => {
+                            return this.getADIRSMins() == 8;
+                        }
+                    },
+                    {
+                        message: "IRS IN ALIGN 9 MN",
+                        isActive: () => {
+                            return this.getADIRSMins() == 9;
+                        }
+                    },
+                    {
+                        message: "IRS IN ALIGN >10 MN",
+                        isActive: () => {
+                            return this.getADIRSMins() >= 10;
                         }
                     },
                     {
