@@ -107,7 +107,7 @@
          <CheckpointDesc SubjectTT="TT:Exterior Lights" ExpectationTT="TT:As required" />
       </Checkpoint>
       <Checkpoint Id="A320_CPREP1_NO_SMOKING_SEATBELTS">
-         <CheckpointDesc SubjectTT="TT:No Smoking and Seatbelt Signs" ExpectationTT="TT:AUTO" />
+         <CheckpointDesc SubjectTT="TT:No Smoking and Seatbelt Signs" ExpectationTT="TT:ON" />
          <Instrument Id="Smoking_Switch"/>
          <Instrument Id="Seatbelt_Switch"/>
       </Checkpoint>
@@ -285,8 +285,10 @@
       </Checkpoint>
       <Checkpoint Id="A320_CPREP1_PFD_ND_BRIGHTNESS">
          <CheckpointDesc SubjectTT="TT:PFD and ND Brightness" ExpectationTT="TT:ADJUST" />
-         <Instrument Id="Lighting_Knob_Glareshield_2"/>
-         <Instrument Id="Lighting_Knob_Glareshield_3"/>
+         <Instrument Id="PFD_Brightness"/>
+         <Instrument Id="ND_Brightness"/>
+         <Instrument Id="PFD_Brightness_FO"/>
+         <Instrument Id="ND_Brightness_FO"/>
       </Checkpoint>
       <Checkpoint Id="A320_CPREP1_LOUDSPEAKER">
          <CheckpointDesc SubjectTT="TT:Loudspeaker (INOP)" ExpectationTT="TT:SET" />
@@ -687,7 +689,7 @@
       </Checkpoint>
       <Checkpoint Id="A320_AFTER_TO_PILOT_APU_MASTER">
          <CheckpointDesc SubjectTT="TT:APU Master Switch" ExpectationTT="TT:AS REQUIRED" />
-         <Instrument Id="ELECTRICAL_Switch_APU_Generator" />
+         <Instrument Id="ELECTRICAL_Switch_APU_Master" />
       </Checkpoint>
       <Checkpoint Id="A320_AFTER_TO_ENG_MODE">
          <CheckpointDesc SubjectTT="TT:Engine Mode Selector" ExpectationTT="TT:NORM" />

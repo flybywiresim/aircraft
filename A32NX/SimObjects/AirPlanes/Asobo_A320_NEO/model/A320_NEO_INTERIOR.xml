@@ -734,6 +734,7 @@
 			<UseTemplate Name="ASOBO_LIGHTING_Knob_Potentiometer_Template">
 				<POTENTIOMETER>18</POTENTIOMETER>
 				<NODE_ID>KNOB_EFIS_CS_PFD</NODE_ID>
+				<PART_ID>PFD_Brightness</PART_ID>
 				<ANIM_NAME>KNOB_EFIS_CS_PFD</ANIM_NAME>
 				<MIN_VALUE>0</MIN_VALUE>
 				<ANIMTIP_0>TT:COCKPIT.TOOLTIPS.LIGHTING_KNOB_L_PFD_DECREASE</ANIMTIP_0>
@@ -749,6 +750,7 @@
 			<UseTemplate Name="ASOBO_LIGHTING_Knob_Potentiometer_Template">
 				<POTENTIOMETER>19</POTENTIOMETER>
 				<NODE_ID>KNOB_EFIS_CS_ND</NODE_ID>
+				<PART_ID>ND_Brightness</PART_ID>
 				<ANIM_NAME>KNOB_EFIS_CS_ND</ANIM_NAME>
 				<MIN_VALUE>0</MIN_VALUE>
 				<ANIMTIP_0>TT:COCKPIT.TOOLTIPS.LIGHTING_KNOB_L_ND_DECREASE</ANIMTIP_0>
@@ -765,6 +767,7 @@
 			<UseTemplate Name="ASOBO_LIGHTING_Knob_Potentiometer_Template">
 				<POTENTIOMETER>20</POTENTIOMETER>
 				<NODE_ID>KNOB_EFIS_FO_PFD</NODE_ID>
+				<PART_ID>PFD_Brightness_FO</PART_ID>
 				<ANIM_NAME>KNOB_EFIS_FO_PFD</ANIM_NAME>
 				<MIN_VALUE>0</MIN_VALUE>
 				<ANIMTIP_0>TT:COCKPIT.TOOLTIPS.LIGHTING_KNOB_R_PFD_DECREASE</ANIMTIP_0>
@@ -779,6 +782,7 @@
 			<UseTemplate Name="ASOBO_LIGHTING_Knob_Potentiometer_Template">
 				<POTENTIOMETER>21</POTENTIOMETER>
 				<NODE_ID>KNOB_EFIS_FO_ND</NODE_ID>
+				<PART_ID>ND_Brightness_FO</PART_ID>
 				<ANIM_NAME>KNOB_EFIS_FO_ND</ANIM_NAME>
 				<MIN_VALUE>0</MIN_VALUE>
 				<ANIMTIP_0>TT:COCKPIT.TOOLTIPS.LIGHTING_KNOB_R_ND_DECREASE</ANIMTIP_0>
@@ -790,6 +794,7 @@
 				<POTENTIOMETER>21</POTENTIOMETER>
 			</UseTemplate>
 		</Component>
+		<CameraTitle>Pilot</CameraTitle>
 	</Component>
 
 	<Component ID="Front_Middle">
@@ -881,6 +886,7 @@
 
 
 			</UseTemplate>
+			<CameraTitle>PA</CameraTitle>
 		</Component>
 
 		<Component ID="Dummies">
@@ -2170,7 +2176,7 @@
 			</UseTemplate>
 		</Component>
 
-		<CameraTitle>MFD</CameraTitle>
+		<CameraTitle>ECAM</CameraTitle>
 	</Component>
 
 	<Component ID="Airbus_FDW">
