@@ -43,6 +43,8 @@ var A320_Neo_LowerECAM_FTCL;
 
             //Rudder
             this.rudderCursor = this.querySelector("#rudderCursor");
+            this.rudderLeftMaxAngle = this.querySelector("#rudderLeftMaxAngle");
+            this.rudderRightMaxAngle = this.querySelector("#rudderRightMaxAngle");
 
             this.isInitialised = true;
         }
@@ -93,8 +95,20 @@ var A320_Neo_LowerECAM_FTCL;
 
             // Update rudder
             const rudderDeflectPct = SimVar.GetSimVarValue("RUDDER DEFLECTION PCT", "percent over 100");
-            const rudderAngle = -rudderDeflectPct * 29.06;
-            this.rudderCursor.setAttribute("transform", `rotate(${rudderAngle} 300 380)`)
+            const rudderAngle = -rudderDeflectPct * 25;
+            this.rudderCursor.setAttribute("transform", `rotate(${rudderAngle} 300 380)`);
+
+            //Update Rudder limits
+            const IndicatedAirspeed = SimVar.GetSimVarValue("AIRSPEED INDICATED", "knots");
+            let MaxAngleNorm = 1;
+            if(IndicatedAirspeed > 380){
+                MaxAngleNorm = 3.4 / 25;
+            } else if(IndicatedAirspeed > 160){
+                MaxAngleNorm = (69.2667 - 0.351818 * IndicatedAirspeed + 0.00047 * IndicatedAirspeed**2) / 25;
+            }
+
+            this.rudderLeftMaxAngle.setAttribute("transform", `rotate(${-26.4 * (1-MaxAngleNorm)} 300 385)`)
+            this.rudderRightMaxAngle.setAttribute("transform", `rotate(${26.4 * (1-MaxAngleNorm)} 300 385)`)
 
             // Update ELAC's and SEC's
             var elac1_On = SimVar.GetSimVarValue("FLY BY WIRE ELAC SWITCH:1", "boolean");
