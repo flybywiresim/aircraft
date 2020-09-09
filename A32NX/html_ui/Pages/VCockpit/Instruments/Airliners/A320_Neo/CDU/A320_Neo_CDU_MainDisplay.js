@@ -705,8 +705,8 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
 
         //Changes to climb phase when acceleration altitude is reached
         if (this.currentFlightPhase === FlightPhase.FLIGHT_PHASE_TAKEOFF && airSpeed > 80) {
-            const agl = Simplane.getAltitudeAboveGround();
-            if (agl > (this.accelerationAltitude || this.thrustReductionAltitude || 1500)) {
+            const msl = Simplane.getAltitude();
+            if (msl > (this.accelerationAltitude || this.thrustReductionAltitude || 1500)) {
                 this.currentFlightPhase = FlightPhase.FLIGHT_PHASE_CLIMB;
             }
         }
