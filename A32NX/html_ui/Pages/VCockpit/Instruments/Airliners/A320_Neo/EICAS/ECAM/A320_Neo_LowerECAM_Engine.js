@@ -5,7 +5,7 @@ var A320_Neo_LowerECAM_Engine;
     Definitions.MIN_GAUGE_OIL = 0;
     Definitions.MAX_GAUGE_OIL = 25;
     Definitions.MIN_GAUGE_PSI = 0;
-    Definitions.MAX_GAUGE_PSI = 100;
+    Definitions.MAX_GAUGE_PSI = 130;       //updated from 100 to 130
     Definitions.MIN_GAUGE_PSI_RED = 0;
     Definitions.MAX_GAUGE_PSI_RED = 17;
     Definitions.MAX_GAUGE_PSI_WARNING = 25;
@@ -144,8 +144,8 @@ var A320_Neo_LowerECAM_Engine;
             this.oilPressureGauge = window.document.createElement("a320-neo-ecam-gauge");
             this.oilPressureGauge.id = "PSI_Gauge";
             this.oilPressureGauge.init(gaugeDef);
-            this.oilPressureGauge.addGraduation(50, true);
-            this.oilPressureGauge.addGraduation(100, true, "100");
+            this.oilPressureGauge.addGraduation(65, true);
+            this.oilPressureGauge.addGraduation(130, true, "");
             if (_gaugeDiv != null) {
                 _gaugeDiv.appendChild(this.oilQuantityGauge);
                 _gaugeDiv.appendChild(this.oilPressureGauge);

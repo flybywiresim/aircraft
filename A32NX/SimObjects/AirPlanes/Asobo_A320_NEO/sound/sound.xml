@@ -256,6 +256,41 @@
 			<Range LowerBound="28" />
 		</Requires>
 	</Sound>
+
+	<Sound WwiseData="true" WwiseEvent="cockpit_cabin_call_fwd" LocalVar="PUSH_OVHD_CALLS_FWD" Continuous="false">
+		<Range LowerBound="1" />
+		<Requires SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1">
+			<Range LowerBound="28" />
+		</Requires>
+	</Sound>
+
+	<Sound WwiseData="true" WwiseEvent="cockpit_cabin_call_fwd" LocalVar="PUSH_OVHD_CALLS_ALL" Continuous="false">
+		<Range LowerBound="1" />
+		<Requires SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1">
+			<Range LowerBound="28" />
+		</Requires>
+	</Sound>
+
+	<Sound WwiseData="true" WwiseEvent="cockpit_cabin_call_aft" LocalVar="PUSH_OVHD_CALLS_AFT" Continuous="false">
+		<Range LowerBound="1" />
+		<Requires SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1">
+			<Range LowerBound="28" />
+		</Requires>
+	</Sound>
+
+	<Sound WwiseData="true" WwiseEvent="cabin_crew_seats_takeoff" LocalVar="A32NX_TO_CONFIG_NORMAL" Continuous="false">
+		<Range LowerBound="1" />
+		<Requires LocalVar="A32NX_CABIN_READY">
+			<Range LowerBound="1" />
+		</Requires>
+	</Sound>
+
+	<Sound WwiseData="true" WwiseEvent="cabin_crew_seats_landing" LocalVar="A32NX_CABIN_READY" Continuous="false">
+		<Range LowerBound="1" />
+		<Requires LocalVar="AIRLINER_FLIGHT_PHASE">
+			<Range LowerBound="6" UpperBound="6" />
+		</Requires>
+	</Sound>
 	
   	<!-- RAIN ========================================================================================== --> 
 	

@@ -13,7 +13,6 @@
 				<Checkpoint ReferenceId="A320_Battery_Switches_On_2">
 					<CheckpointDesc SubjectTT="TT:GAME.CHECKLIST_BATTERY_SWITCHES" ExpectationTT="TT:ON (Check Annotation)"/>
 				</Checkpoint>
-				<Checkpoint ReferenceId="A320_PREP_RPM3_PA"/>
 				<Checkpoint ReferenceId="A320_PREP_APU_FIRE_TEST"/>
 				<Block SubjectTT="TT:APU START">
 					<Checkpoint ReferenceId="APU_MASTER_SWITCH_ON"/>
@@ -29,7 +28,6 @@
 				<Checkpoint ReferenceId="APU_Bleed_On"/>
 				<Checkpoint ReferenceId="A320_PREP_CHECK_OVRHEAD"/>
 				<Checkpoint ReferenceId="A320_PREP_XBLEED"/>
-				<Checkpoint ReferenceId="A320_PREP_WEATHER_RADAR"/>
 				<Checkpoint ReferenceId="A320_PREP_CARGOHEAT"/>
 				<Checkpoint ReferenceId="A320_PREP_ELEC_PANEL"/>
 				<Checkpoint ReferenceId="A320_PREP_VENTILATION_PANEL"/>
@@ -46,14 +44,14 @@
 					<Checkpoint ReferenceId="A320_CPREP1_EVAC_CPT"/>
 					<Checkpoint ReferenceId="A320_CPREP1_ADIRS"/>
 					<Checkpoint ReferenceId="A320_CPREP1_EXT_LIGHTS"/>
-					<Checkpoint ReferenceId="A320_CPREP1_NO_SMOKING_SEATBELTS"/>
+					<Checkpoint ReferenceId="A320_CPREP1_NO_SMOKING"/>
+					<Checkpoint ReferenceId="A320_CPREP1_SEATBELTS"/>
 					<Checkpoint ReferenceId="A320_CPREP1_EMERGENCY_EXIT"/>
 					<Checkpoint ReferenceId="A320_CPREP1_LANDING_ELEVATION"/>
 					<Checkpoint ReferenceId="A320_CPREP1_PACK_FLOW"/>
 					<Checkpoint ReferenceId="A320_CPREP1_ECAM_ELEC"/>
 					<Checkpoint ReferenceId="A320_CPREP1_BATTERY"/>
 					<Checkpoint ReferenceId="A320_CPREP1_FUEL_MODE"/>
-					<Checkpoint ReferenceId="A320_CPREP1_CENTER_TANK_PUMP"/>
 					<Checkpoint ReferenceId="A320_CPREP1_ENGINE_FIRE_TEST"/>
 					<Checkpoint ReferenceId="A320_CPREP1_AUDIO_SWITCHING"/>
 					<Checkpoint ReferenceId="A320_CPREP1_PA_RECEPTION"/>
@@ -106,7 +104,7 @@
 				<Block SubjectTT="LATERAL CONSOLE">
 					<Checkpoint ReferenceId="A320_CPREP1_OXYGEN_MASK"/>
 					<Checkpoint ReferenceId="A320_CPREP1_CREW_SUPPLY"/>
-					<Checkpoint ReferenceId="A320_CPREP1_INT_RECEPTION_KNOW"/>
+					<Checkpoint ReferenceId="A320_CPREP1_INT_RECEPTION_KNOB"/>
 					<Checkpoint ReferenceId="A320_CPREP1_ECAM_DOOR_OXY"/>
 				</Block>
 				<Block SubjectTT="INSTRUMENT PANELS">
@@ -134,7 +132,7 @@
 					<Checkpoint ReferenceId="A320_CPREP1_THRUST_LEVERS"/>
 					<Checkpoint ReferenceId="A320_CPREP1_ENGINE_MASTER"/>
 					<Checkpoint ReferenceId="A320_CPREP1_ENGINE_MODE_SEL"/>
-					<Checkpoint ReferenceId="A320_CPREP1_BARKING_BRAKE"/>
+					<Checkpoint ReferenceId="A320_CPREP1_PARKING_BRAKE"/>
 					<Checkpoint ReferenceId="A320_CPREP1_GRAVITY_GEAR"/>
 					<Checkpoint ReferenceId="A320_CPREP1_ATC"/>
 					<Checkpoint ReferenceId="A320_CPREP1_ALT_REPORT"/>
@@ -446,7 +444,7 @@
 				<Checkpoint ReferenceId="A320_PARKING_PARKING_BRAKE_ACCU_PRESS"/>
 				<Checkpoint ReferenceId="A320_PARKING_PARKING_BRAKE"/>
 				<Checkpoint ReferenceId="A320_PARKING_ANTI_ICE"/>
-				<Checkpoint ReferenceId="APU_Bleed_Off"/>
+				<Checkpoint ReferenceId="APU_Bleed_On"/>
 				<Checkpoint ReferenceId="A320_PARKING_ENGINE_MASTER"/>
 				<Checkpoint ReferenceId="A320_PARKING_GRND_CONTACT"/>
 				<Checkpoint ReferenceId="A320_PARKING_SLIDE"/>

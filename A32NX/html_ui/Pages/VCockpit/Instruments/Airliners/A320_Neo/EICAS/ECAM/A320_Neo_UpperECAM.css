@@ -1,0 +1,245 @@
+﻿:root {
+  --ecamDefaultColour: white;
+  --ecamUnitsColour: #009696;
+  --ecamValueColour: green;
+  --ecamWarningColour: #db7200;
+  --ecamDangerColour: red;
+  --ecamInactiveColour: #db7200;
+  --ecamSeparatorsColour: white; }
+  :root .Separator {
+    stroke: #3c3c3c;
+    stroke-width: 4;
+    fill: none; }
+  :root div {
+    font-family: Roboto-Bold; }
+  :root text {
+    font-family: Roboto-Bold; }
+  :root #PageTitle {
+    fill: var(--ecamDefaultColour);
+    font-size: 25px;
+    text-decoration: underline; }
+
+a320-neo-upper-ecam {
+  position: relative;
+  left: 0%;
+  width: 100%;
+  height: 100%;
+  display: block; }
+  a320-neo-upper-ecam line {
+    stroke: var(--ecamDefaultColour);
+    stroke-width: 3; }
+  a320-neo-upper-ecam #EnginesPanel {
+    position: absolute;
+    left: 20%;
+    width: 60%;
+    top: 3%;
+    height: 48%;
+    display: flex;
+    justify-content: center; }
+    a320-neo-upper-ecam #EnginesPanel .engine {
+      width: 100%;
+      height: 100%;
+      margin-left: 1%; }
+    a320-neo-upper-ecam #EnginesPanel #GaugeInfo {
+      position: absolute;
+      left: 23%;
+      width: 50%;
+      top: -5%;
+      height: 100%; }
+      a320-neo-upper-ecam #EnginesPanel #GaugeInfo div {
+        position: relative;
+        color: var(--ecamDefaultColour);
+        font-size: 32px;
+        text-align: center; }
+      a320-neo-upper-ecam #EnginesPanel #GaugeInfo .STATUS {
+        height: 25%; }
+      a320-neo-upper-ecam #EnginesPanel #GaugeInfo .SLOT1_TITLE {
+        height: 5%; }
+      a320-neo-upper-ecam #EnginesPanel #GaugeInfo .SLOT1_UNIT {
+        height: 22%;
+        color: var(--ecamUnitsColour); }
+      a320-neo-upper-ecam #EnginesPanel #GaugeInfo .SLOT2_TITLE {
+        height: 5%; }
+      a320-neo-upper-ecam #EnginesPanel #GaugeInfo .SLOT2_UNIT {
+        height: 25%;
+        color: var(--ecamUnitsColour); }
+    a320-neo-upper-ecam #EnginesPanel #LineStyleInfos {
+      position: absolute;
+      left: -2%;
+      width: 100%;
+      height: 20%;
+      bottom: 0%; }
+      a320-neo-upper-ecam #EnginesPanel #LineStyleInfos svg {
+        width: 100%;
+        height: 100%; }
+      a320-neo-upper-ecam #EnginesPanel #LineStyleInfos text {
+        font-size: 32px;
+        text-anchor: middle; }
+      a320-neo-upper-ecam #EnginesPanel #LineStyleInfos .Title {
+        fill: var(--ecamDefaultColour); }
+      a320-neo-upper-ecam #EnginesPanel #LineStyleInfos .Unit {
+        fill: var(--ecamUnitsColour); }
+      a320-neo-upper-ecam #EnginesPanel #LineStyleInfos .Value {
+        fill: var(--ecamValueColour); }
+      a320-neo-upper-ecam #EnginesPanel #LineStyleInfos .Inactive {
+        fill: var(--ecamInactiveColour);
+        letter-spacing: 5px; }
+  a320-neo-upper-ecam #InfoTopPanel {
+    position: absolute;
+    left: 0%;
+    width: 100%;
+    top: 0%;
+    height: 65%; }
+    a320-neo-upper-ecam #InfoTopPanel div {
+      position: absolute;
+      width: 100%;
+      font-size: 45px; }
+    a320-neo-upper-ecam #InfoTopPanel #Status {
+      top: 1%;
+      height: 50%;
+      right: 5%;
+      width: 25%; }
+      a320-neo-upper-ecam #InfoTopPanel #Status #ThrottleState {
+        right: 20%;
+        text-align: right; }
+      a320-neo-upper-ecam #InfoTopPanel #Status #ThrottleValue {
+        top: 12%;
+        right: 15%;
+        text-align: right;
+        content: "\00b0"; }
+      a320-neo-upper-ecam #InfoTopPanel #Status #ThrottleValue::after {
+        content: "%";
+        color: var(--ecamUnitsColour); }
+      a320-neo-upper-ecam #InfoTopPanel #Status #ThrottleState.active {
+        color: var(--ecamUnitsColour); }
+      a320-neo-upper-ecam #InfoTopPanel #Status #ThrottleState.inactive {
+        color: var(--ecamInactiveColour);
+        letter-spacing: 5px; }
+      a320-neo-upper-ecam #InfoTopPanel #Status #ThrottleValue.active {
+        color: var(--ecamValueColour); }
+      a320-neo-upper-ecam #InfoTopPanel #Status #ThrottleValue.inactive {
+        color: var(--ecamInactiveColour);
+        letter-spacing: 5px; }
+      a320-neo-upper-ecam #InfoTopPanel #Status #FlexTemperature {
+        color: var(--ecamUnitsColour);
+        top: 24%;
+        right: 20%;
+        text-align: right; }
+      a320-neo-upper-ecam #InfoTopPanel #Status #FlexTemperature::after {
+        content: "\00b0 C"; }
+      a320-neo-upper-ecam #InfoTopPanel #Status #FlexTemperature.active {
+        display: block; }
+      a320-neo-upper-ecam #InfoTopPanel #Status #FlexTemperature.inactive {
+        display: none; }
+    a320-neo-upper-ecam #InfoTopPanel #FuelOnBoard {
+      top: 90%;
+      left: 3%;
+      width: 32%; }
+      a320-neo-upper-ecam #InfoTopPanel #FuelOnBoard #Title {
+        color: var(--ecamDefaultColour);
+        text-align: left; }
+      a320-neo-upper-ecam #InfoTopPanel #FuelOnBoard #Value {
+        color: var(--ecamValueColour);
+        right: 25%;
+        text-align: right; }
+      a320-neo-upper-ecam #InfoTopPanel #FuelOnBoard #Unit {
+        color: var(--ecamUnitsColour);
+        right: 0%;
+        text-align: right; }
+  a320-neo-upper-ecam #FlapsPanel {
+    position: absolute;
+    left: 50%;
+    width: 50%;
+    top: 55%;
+    height: 12.5%; }
+    a320-neo-upper-ecam #FlapsPanel #DiagramSVG {
+      width: 100%;
+      height: 100%; }
+      a320-neo-upper-ecam #FlapsPanel #DiagramSVG text {
+        text-anchor: middle;
+        font-size: 32px; }
+      a320-neo-upper-ecam #FlapsPanel #DiagramSVG .sfText {
+        fill: var(--ecamDefaultColour); }
+      a320-neo-upper-ecam #FlapsPanel #DiagramSVG .state {
+        fill: var(--ecamValueColour); }
+      a320-neo-upper-ecam #FlapsPanel #DiagramSVG .dot {
+        fill: var(--ecamDefaultColour); }
+      a320-neo-upper-ecam #FlapsPanel #DiagramSVG .shape {
+        fill: none;
+        stroke: #3c3c3c; }
+      a320-neo-upper-ecam #FlapsPanel #DiagramSVG .currentArrow {
+        fill: none;
+        stroke: var(--ecamValueColour); }
+      a320-neo-upper-ecam #FlapsPanel #DiagramSVG .targetArrow {
+        fill: none;
+        stroke: var(--ecamUnitsColour); }
+  a320-neo-upper-ecam #InfoBottomLeftPanel, a320-neo-upper-ecam #left-msg {
+    position: absolute;
+    left: 3%;
+    width: 55%;
+    top: 68%;
+    height: 30%; }
+    a320-neo-upper-ecam #InfoBottomLeftPanel div, a320-neo-upper-ecam #left-msg div {
+      width: 100%;
+      height: 12%;
+      font-size: 45px;
+      text-align: left; }
+  a320-neo-upper-ecam #InfoBottomRightPanel, a320-neo-upper-ecam #right-msg {
+    position: absolute;
+    left: 67.5%;
+    width: 30%;
+    top: 68%;
+    height: 30%; }
+    a320-neo-upper-ecam #InfoBottomRightPanel div, a320-neo-upper-ecam #right-msg div {
+      width: 100%;
+      height: 12%;
+      font-size: 45px;
+      text-align: left; }
+  a320-neo-upper-ecam #to-memo, a320-neo-upper-ecam #ldg-memo {
+    position: absolute;
+    left: 3%;
+    width: 55%;
+    top: 68%;
+    height: 30%; }
+  a320-neo-upper-ecam #to-memo div, a320-neo-upper-ecam #ldg-memo div {
+    width: 100%;
+    height: 12%;
+    font-size: 45px;
+    text-align: left; }
+  a320-neo-upper-ecam .InfoIndication {
+    color: var(--ecamValueColour); }
+  a320-neo-upper-ecam .InfoCaution {
+    color: var(--ecamWarningColour); }
+  a320-neo-upper-ecam .InfoWarning {
+    color: var(--ecamDangerColour); }
+  a320-neo-upper-ecam .InfoSpecial {
+    color: #d100b2; }
+  a320-neo-upper-ecam .Action {
+    color: var(--ecamUnitsColour);
+  }
+  a320-neo-upper-ecam .Underline, a320-neo-upper-ecam .action-underline {
+    text-decoration: underline;
+  }
+  a320-neo-upper-ecam .Completed {
+    display:none;
+  }
+
+  a320-neo-upper-ecam .fail-3 {
+    color: var(--ecamDangerColour);
+  }
+  a320-neo-upper-ecam .fail-2 {
+    color: var(--ecamWarningColour);
+  }
+  a320-neo-upper-ecam .action, a320-neo-upper-ecam .action-underline {
+    color: var(--ecamUnitsColour);
+  }
+
+
+  a320-neo-upper-ecam #Separators {
+    position: absolute;
+    display: block;
+    left: 0%;
+    width: 100%;
+    top: 0%;
+    height: 100%; }
+
