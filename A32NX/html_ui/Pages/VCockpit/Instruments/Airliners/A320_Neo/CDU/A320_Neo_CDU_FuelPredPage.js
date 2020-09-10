@@ -27,7 +27,7 @@ class CDUFuelPredPage {
         let zfwCell = "□□□.□";
         if (isFinite(mcdu.zeroFuelWeight)) {
             zfwCell = mcdu.zeroFuelWeight.toFixed(1);
-            zfwColor = "[color]blue;";
+            zfwColor = "[color]blue";
         }
         let zfwCgCell = "□□.□";
         if (isFinite(mcdu.zeroFuelWeightMassCenter)) {
