@@ -1514,7 +1514,7 @@ var A320_Neo_UpperECAM;
         }
         setFuelOnBoard(_value, _force = false) {
             if ((this.currentFOBValue != _value) || _force) {
-                this.currentFOBValue = _value;
+                this.currentFOBValue = _value - (_value % 20);
                 if (this.fobValue != null) {
                     this.fobValue.textContent = fastToFixed(this.currentFOBValue, 0);
                 }
