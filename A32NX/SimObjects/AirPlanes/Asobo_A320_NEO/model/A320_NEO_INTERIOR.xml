@@ -26,8 +26,8 @@
 	</DefaultTemplateParameters>
 	<UseTemplate Name="ASOBO_GT_Push_Button_Airliner">
 		<DUMMY_BUTTON>True</DUMMY_BUTTON>
-		<SEQ1_EMISSIVE_CODE>0.01 99.99 (A:#SIMVAR#, Percent) rng</SEQ1_EMISSIVE_CODE>
-		<SEQ2_EMISSIVE_CODE>90 100 (A:#SIMVAR#, Percent) rng</SEQ2_EMISSIVE_CODE>
+		<SEQ1_EMISSIVE_CODE>0.01 99.99 (A:#SIMVAR#, Percent) rng (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or</SEQ1_EMISSIVE_CODE>
+		<SEQ2_EMISSIVE_CODE>90 100 (A:#SIMVAR#, Percent) rng (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or</SEQ2_EMISSIVE_CODE>
 	</UseTemplate>
 </Template>
 
@@ -561,8 +561,8 @@
 				<NODE_ID>SWITCH_ENGINES_ENG1</NODE_ID>
 				<ID>1</ID>
 				<VALVE_ID>6</VALVE_ID>
-				<POTENTIOMETER>15</POTENTIOMETER>
-
+				<!-- This makes it not light up -->
+				<POTENTIOMETER>9999</POTENTIOMETER>
 			</UseTemplate>
 
 			<UseTemplate Name="ASOBO_ENGINE_Switch_Master_Template">
@@ -571,7 +571,8 @@
 				<NODE_ID>SWITCH_ENGINES_ENG2</NODE_ID>
 				<ID>2</ID>
 				<VALVE_ID>7</VALVE_ID>
-				<POTENTIOMETER>15</POTENTIOMETER>
+				<!-- This makes it not light up -->
+				<POTENTIOMETER>9999</POTENTIOMETER>
 			</UseTemplate>
 
 			<UseTemplate Name="ASOBO_AIRBUS_Update_PTU_Template">
@@ -635,6 +636,7 @@
 			<Component ID="Parking_Brake_Text" Node="LEVER_PARKINGBRAKE_SEQ1">
 				<UseTemplate Name="ASOBO_GT_Emissive_Potentiometer">
 					<POTENTIOMETER>15</POTENTIOMETER>
+					<EMISSIVE_CODE>0</EMISSIVE_CODE>
 				</UseTemplate>
 			</Component>
 
@@ -862,11 +864,13 @@
 		<UseTemplate Name="ASOBO_AIRBUS_Push_TERRONND_Template">
 			<NODE_ID>PUSH_TERRONND</NODE_ID>
 			<ANIM_NAME>PUSH_TERRONND</ANIM_NAME>
+			<BLOCK_SEQ1>1</BLOCK_SEQ1>
 		</UseTemplate>
 
 		<UseTemplate Name="ASOBO_AIRBUS_Push_TERRONND_Template">
 			<NODE_ID>PUSH_AUTOBKR_TERRONND</NODE_ID>
 			<ANIM_NAME>PUSH_AUTOBKR_TERRONND</ANIM_NAME>
+			<BLOCK_SEQ1>1</BLOCK_SEQ1>
 		</UseTemplate>
 
 		<Component ID="Standby_Indicator">
@@ -1235,6 +1239,9 @@
 				<WWISE_EVENT>double_light_switch</WWISE_EVENT>
 				<NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
 				<NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
+				<CODE_POS_0>1 (&gt;L:XMLVAR_LTS_Test)</CODE_POS_0>
+				<CODE_POS_1>0 (&gt;L:XMLVAR_LTS_Test)</CODE_POS_1>
+				<CODE_POS_2>0 (&gt;L:XMLVAR_LTS_Test)</CODE_POS_2>
 			</UseTemplate>
 
 			<UseTemplate Name="ASOBO_GT_Switch_Dummy">
@@ -1471,10 +1478,12 @@
 			<Component ID="Left_Column">
 				<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
 					<NODE_ID>PUSH_OVHD_PA</NODE_ID>
-					<ONLY_SEQ1/>
+					<BLOCK_SEQ1>1</BLOCK_SEQ1>
+					<BLOCK_SEQ2>1</BLOCK_SEQ2>
 				</UseTemplate>
 				<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
 					<NODE_ID>PUSH_OVHD_COCKPITDOORVIDEO</NODE_ID>
+					<BLOCK_SEQ1>1</BLOCK_SEQ1>
 				</UseTemplate>
 
 				<UseTemplate Name="ASOBO_AIRLINER_ADIRS_LIGHT_Template">
@@ -1534,9 +1543,11 @@
 				</UseTemplate>
 				<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
 					<NODE_ID>PUSH_OVHD_EMERELECPWR_RAT</NODE_ID>
+					<BLOCK_SEQ2>1</BLOCK_SEQ2>
 				</UseTemplate>
 				<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
 					<NODE_ID>PUSH_OVHD_RCDR_GNDCTL</NODE_ID>
+					<BLOCK_SEQ1>1</BLOCK_SEQ1>
 				</UseTemplate>
 				<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
 					<NODE_ID>PUSH_OVHD_CALLS_EMER</NODE_ID>
@@ -1566,15 +1577,18 @@
 				</UseTemplate>
 				<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
 					<NODE_ID>PUSH_OVHD_ELEC_IDG1</NODE_ID>
+					<BLOCK_SEQ2>1</BLOCK_SEQ2>
 				</UseTemplate>
 				<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
 					<NODE_ID>PUSH_OVHD_ELEC_BUSTIE</NODE_ID>
+					<BLOCK_SEQ1>1</BLOCK_SEQ1>
 				</UseTemplate>
 				<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
 					<NODE_ID>PUSH_OVHD_ELEC_ACESSFEED</NODE_ID>
 				</UseTemplate>
 				<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
 					<NODE_ID>PUSH_OVHD_ELEC_IDG2</NODE_ID>
+					<BLOCK_SEQ2>1</BLOCK_SEQ2>
 				</UseTemplate>
 
 				<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
@@ -1615,30 +1629,37 @@
 				</UseTemplate>
 				<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
 					<NODE_ID>PUSH_OVHD_SVGEINT</NODE_ID>
+					<BLOCK_SEQ1>1</BLOCK_SEQ1>
 				</UseTemplate>
 				<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
 					<NODE_ID>PUSH_OVHD_AVIONICS_COMPLT</NODE_ID>
+					<BLOCK_SEQ1>1</BLOCK_SEQ1>
 				</UseTemplate>
 				<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
 					<NODE_ID>PUSH_OVHD_HYD_BLUEPUMP</NODE_ID>
 				</UseTemplate>
 				<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
 					<NODE_ID>PUSH_OVHD_HYD_G</NODE_ID>
+					<BLOCK_SEQ1>1</BLOCK_SEQ1>
 				</UseTemplate>
 				<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
 					<NODE_ID>PUSH_OVHD_HYD_B</NODE_ID>
+					<BLOCK_SEQ1>1</BLOCK_SEQ1>
 				</UseTemplate>
 				<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
 					<NODE_ID>PUSH_OVHD_HYD_Y</NODE_ID>
+					<BLOCK_SEQ1>1</BLOCK_SEQ1>
 				</UseTemplate>
 				<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
 					<NODE_ID>PUSH_OVHD_APU_AUTOEXITING_TEST</NODE_ID>
 				</UseTemplate>
 				<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
 					<NODE_ID>PUSH_OVHD_ENG_FADEC1</NODE_ID>
+					<BLOCK_SEQ1>1</BLOCK_SEQ1>
 				</UseTemplate>
 				<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
 					<NODE_ID>PUSH_OVHD_ENG_FADEC2</NODE_ID>
+					<BLOCK_SEQ1>1</BLOCK_SEQ1>
 				</UseTemplate>
 
 				<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
@@ -1660,45 +1681,53 @@
 				</UseTemplate>
 				<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
 					<NODE_ID>PUSH_OVHD_VENTILATION_CABFANS</NODE_ID>
+					<BLOCK_SEQ1>1</BLOCK_SEQ1>
 				</UseTemplate>
 				<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
 					<NODE_ID>PUSH_OVHD_ENGMANSTART_1</NODE_ID>
+					<BLOCK_SEQ1>1</BLOCK_SEQ1>
 				</UseTemplate>
 				<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
 					<NODE_ID>PUSH_OVHD_ENGMANSTART_2</NODE_ID>
+					<BLOCK_SEQ1>1</BLOCK_SEQ1>
 				</UseTemplate>
 				<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
 					<NODE_ID>PUSH_OVHD_ENGN1MODE_1</NODE_ID>
+					<BLOCK_SEQ1>1</BLOCK_SEQ1>
 				</UseTemplate>
 				<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
 					<NODE_ID>PUSH_OVHD_ENGN1MODE_2</NODE_ID>
+					<BLOCK_SEQ1>1</BLOCK_SEQ1>
 				</UseTemplate>
 
 				<Component ID="Overhead_Audio_Panel">
 					<OverrideTemplateParameters>
-						<EMISSIVE_CODE>0</EMISSIVE_CODE>
+						<EMISSIVE_CODE>(L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 ==</EMISSIVE_CODE>
 					</OverrideTemplateParameters>
 
-					<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
-						<NODE_ID>PUSH_OVHD_RADIO_VOR1</NODE_ID>
+					<UseTemplate Name="A32NX_Audio_Panel_Volume_Dummy">
+						<NODE_ID>PUSH_OVHD_RADIO_VOR1_EMIS</NODE_ID>
 					</UseTemplate>
-					<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
-						<NODE_ID>PUSH_OVHD_RADIO_VOR2</NODE_ID>
+					<UseTemplate Name="A32NX_Audio_Panel_Volume_Dummy">
+						<NODE_ID>PUSH_OVHD_RADIO_VOR2_EMIS</NODE_ID>
 					</UseTemplate>
-					<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
-						<NODE_ID>PUSH_OVHD_RADIO_MKR</NODE_ID>
+					<UseTemplate Name="A32NX_Audio_Panel_Volume_Dummy">
+						<NODE_ID>PUSH_OVHD_RADIO_MKR_EMIS</NODE_ID>
 					</UseTemplate>
-					<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
-						<NODE_ID>PUSH_OVHD_RADIO_ILS</NODE_ID>
+					<UseTemplate Name="A32NX_Audio_Panel_Volume_Dummy">
+						<NODE_ID>PUSH_OVHD_RADIO_ILS_EMIS</NODE_ID>
 					</UseTemplate>
-					<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
-						<NODE_ID>PUSH_OVHD_RADIO_MLS</NODE_ID>
+					<UseTemplate Name="A32NX_Audio_Panel_Volume_Dummy">
+						<NODE_ID>PUSH_OVHD_RADIO_MLS_EMIS</NODE_ID>
 					</UseTemplate>
-					<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
-						<NODE_ID>PUSH_OVHD_RADIO_ADF1</NODE_ID>
+					<UseTemplate Name="A32NX_Audio_Panel_Volume_Dummy">
+						<NODE_ID>PUSH_OVHD_RADIO_ADF1_EMIS</NODE_ID>
 					</UseTemplate>
-					<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
-						<NODE_ID>PUSH_OVHD_RADIO_ADF2</NODE_ID>
+					<UseTemplate Name="A32NX_Audio_Panel_Volume_Dummy">
+						<NODE_ID>PUSH_OVHD_RADIO_ADF2_EMIS</NODE_ID>
+					</UseTemplate>
+					<UseTemplate Name="A32NX_Audio_Panel_Volume_Dummy">
+						<NODE_ID>PUSH_OVHD_RADIO_INT_EMIS</NODE_ID>
 					</UseTemplate>
 					<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
 						<NODE_ID>SWITCH_OVHD_RADIO_INT</NODE_ID>
@@ -1709,29 +1738,29 @@
 					<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
 						<NODE_ID>PUSH_OVHD_RADIO_RESET</NODE_ID>
 					</UseTemplate>
-					<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
-						<NODE_ID>PUSH_OVHD_RADIO_PA1</NODE_ID>
+					<UseTemplate Name="A32NX_Audio_Panel_Volume_Dummy">
+						<NODE_ID>PUSH_OVHD_RADIO_PA1_EMIS</NODE_ID>
 					</UseTemplate>
 					<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
 						<NODE_ID>PUSH_OVHD_RADIO_PA</NODE_ID>
 					</UseTemplate>
-					<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
-						<NODE_ID>PUSH_OVHD_RADIO_VHF1</NODE_ID>
+					<UseTemplate Name="A32NX_Audio_Panel_Volume_Dummy">
+						<NODE_ID>PUSH_OVHD_RADIO_VHF1_EMIS</NODE_ID>
 					</UseTemplate>
-					<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
-						<NODE_ID>PUSH_OVHD_RADIO_VHF2</NODE_ID>
+					<UseTemplate Name="A32NX_Audio_Panel_Volume_Dummy">
+						<NODE_ID>PUSH_OVHD_RADIO_VHF2_EMIS</NODE_ID>
 					</UseTemplate>
-					<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
-						<NODE_ID>PUSH_OVHD_RADIO_VHF3</NODE_ID>
+					<UseTemplate Name="A32NX_Audio_Panel_Volume_Dummy">
+						<NODE_ID>PUSH_OVHD_RADIO_VHF3_EMIS</NODE_ID>
 					</UseTemplate>
-					<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
-						<NODE_ID>PUSH_OVHD_RADIO_HF1</NODE_ID>
+					<UseTemplate Name="A32NX_Audio_Panel_Volume_Dummy">
+						<NODE_ID>PUSH_OVHD_RADIO_HF1_EMIS</NODE_ID>
 					</UseTemplate>
-					<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
-						<NODE_ID>PUSH_OVHD_RADIO_HF2</NODE_ID>
+					<UseTemplate Name="A32NX_Audio_Panel_Volume_Dummy">
+						<NODE_ID>PUSH_OVHD_RADIO_HF2_EMIS</NODE_ID>
 					</UseTemplate>
-					<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
-						<NODE_ID>PUSH_OVHD_RADIO_CAB</NODE_ID>
+					<UseTemplate Name="A32NX_Audio_Panel_Volume_Dummy">
+						<NODE_ID>PUSH_OVHD_RADIO_CAB_EMIS</NODE_ID>
 					</UseTemplate>
 					<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
 						<NODE_ID>PUSH_OVHD_RADIO_ATT</NODE_ID>
@@ -1759,6 +1788,7 @@
 			<Component ID="Back_Panel">
 				<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
 					<NODE_ID>PUSH_OVHD_HYD_BLUEPUMP</NODE_ID>
+					<BLOCK_SEQ1>1</BLOCK_SEQ1>
 				</UseTemplate>
 			</Component>
 		</Component>
@@ -2213,7 +2243,7 @@
 			</UseTemplate>
 			<Component ID="Audio_Panel_Left_Dummies">
 				<OverrideTemplateParameters>
-					<SEQ1_EMISSIVE_CODE>0</SEQ1_EMISSIVE_CODE>
+					<SEQ1_EMISSIVE_CODE>(L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 ==</SEQ1_EMISSIVE_CODE>
 					<SEQ2_EMISSIVE_CODE>1</SEQ2_EMISSIVE_CODE>
 					<SEQ1_EMISSIVE_DRIVES_VISIBILITY>False</SEQ1_EMISSIVE_DRIVES_VISIBILITY>
 					<SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
@@ -2240,6 +2270,47 @@
 				</UseTemplate>
 				<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
 					<NODE_ID>PUSH_AUDIOL_CALL5</NODE_ID>
+				</UseTemplate>
+			</Component>
+			<Component ID="Audio_Panel_Left_Volume_Dummies">
+				<OverrideTemplateParameters>
+					<EMISSIVE_CODE>(L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == 16 *</EMISSIVE_CODE>
+				</OverrideTemplateParameters>
+				<UseTemplate Name="A32NX_Audio_Panel_Volume_Dummy">
+					<NODE_ID>PUSH_AUDIOL_VOR1_EMIS</NODE_ID>
+				</UseTemplate>
+				<UseTemplate Name="A32NX_Audio_Panel_Volume_Dummy">
+					<NODE_ID>PUSH_AUDIOL_VOR2_EMIS</NODE_ID>
+				</UseTemplate>
+				<UseTemplate Name="A32NX_Audio_Panel_Volume_Dummy">
+					<NODE_ID>PUSH_AUDIOL_MKR_EMIS</NODE_ID>
+				</UseTemplate>
+				<UseTemplate Name="A32NX_Audio_Panel_Volume_Dummy">
+					<NODE_ID>PUSH_AUDIOL_ILS_EMIS</NODE_ID>
+				</UseTemplate>
+				<UseTemplate Name="A32NX_Audio_Panel_Volume_Dummy">
+					<NODE_ID>PUSH_AUDIOL_HF1_EMIS</NODE_ID>
+				</UseTemplate>
+				<UseTemplate Name="A32NX_Audio_Panel_Volume_Dummy">
+					<NODE_ID>PUSH_AUDIOL_MLS_EMIS</NODE_ID>
+				</UseTemplate>
+				<UseTemplate Name="A32NX_Audio_Panel_Volume_Dummy">
+					<NODE_ID>PUSH_AUDIOL_HF2_EMIS</NODE_ID>
+				</UseTemplate>
+				<UseTemplate Name="A32NX_Audio_Panel_Volume_Dummy">
+					<NODE_ID>PUSH_AUDIOL_ADF1_EMIS</NODE_ID>
+				</UseTemplate>
+				<UseTemplate Name="A32NX_Audio_Panel_Volume_Dummy">
+					<NODE_ID>PUSH_AUDIOL_INT_EMIS</NODE_ID>
+				</UseTemplate>
+				<UseTemplate Name="A32NX_Audio_Panel_Volume_Dummy">
+					<NODE_ID>PUSH_AUDIOL_ADF2_EMIS</NODE_ID>
+				</UseTemplate>
+				<UseTemplate Name="A32NX_Audio_Panel_Volume_Dummy">
+					<NODE_ID>PUSH_AUDIOL_CAB_EMIS</NODE_ID>
+				</UseTemplate>
+				<UseTemplate Name="A32NX_Audio_Panel_Volume_Dummy">
+					<NODE_ID>PUSH_AUDIOL_PA1_EMIS</NODE_ID>
 				</UseTemplate>
 			</Component>
 		</Component>
@@ -2279,7 +2350,7 @@
 			</UseTemplate>
 			<Component ID="Audio_Panel_Right_Dummies">
 				<OverrideTemplateParameters>
-					<SEQ1_EMISSIVE_CODE>0</SEQ1_EMISSIVE_CODE>
+					<SEQ1_EMISSIVE_CODE>(L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 ==</SEQ1_EMISSIVE_CODE>
 					<SEQ2_EMISSIVE_CODE>1</SEQ2_EMISSIVE_CODE>
 					<SEQ1_EMISSIVE_DRIVES_VISIBILITY>False</SEQ1_EMISSIVE_DRIVES_VISIBILITY>
 					<SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
@@ -2306,6 +2377,47 @@
 				</UseTemplate>
 				<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
 					<NODE_ID>PUSH_AUDIOR_CALL5</NODE_ID>
+				</UseTemplate>
+			</Component>
+			<Component ID="Audio_Panel_Right_Volume_Dummies">
+				<OverrideTemplateParameters>
+					<EMISSIVE_CODE>(L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == 16 *</EMISSIVE_CODE>
+				</OverrideTemplateParameters>
+				<UseTemplate Name="A32NX_Audio_Panel_Volume_Dummy">
+					<NODE_ID>PUSH_AUDIOR_VOR1_EMIS</NODE_ID>
+				</UseTemplate>
+				<UseTemplate Name="A32NX_Audio_Panel_Volume_Dummy">
+					<NODE_ID>PUSH_AUDIOR_VOR2_EMIS</NODE_ID>
+				</UseTemplate>
+				<UseTemplate Name="A32NX_Audio_Panel_Volume_Dummy">
+					<NODE_ID>PUSH_AUDIOR_MKR_EMIS</NODE_ID>
+				</UseTemplate>
+				<UseTemplate Name="A32NX_Audio_Panel_Volume_Dummy">
+					<NODE_ID>PUSH_AUDIOR_ILS_EMIS</NODE_ID>
+				</UseTemplate>
+				<UseTemplate Name="A32NX_Audio_Panel_Volume_Dummy">
+					<NODE_ID>PUSH_AUDIOR_HF1_EMIS</NODE_ID>
+				</UseTemplate>
+				<UseTemplate Name="A32NX_Audio_Panel_Volume_Dummy">
+					<NODE_ID>PUSH_AUDIOR_MLS_EMIS</NODE_ID>
+				</UseTemplate>
+				<UseTemplate Name="A32NX_Audio_Panel_Volume_Dummy">
+					<NODE_ID>PUSH_AUDIOR_HF2_EMIS</NODE_ID>
+				</UseTemplate>
+				<UseTemplate Name="A32NX_Audio_Panel_Volume_Dummy">
+					<NODE_ID>PUSH_AUDIOR_ADF1_EMIS</NODE_ID>
+				</UseTemplate>
+				<UseTemplate Name="A32NX_Audio_Panel_Volume_Dummy">
+					<NODE_ID>PUSH_AUDIOR_INT_EMIS</NODE_ID>
+				</UseTemplate>
+				<UseTemplate Name="A32NX_Audio_Panel_Volume_Dummy">
+					<NODE_ID>PUSH_AUDIOR_ADF2_EMIS</NODE_ID>
+				</UseTemplate>
+				<UseTemplate Name="A32NX_Audio_Panel_Volume_Dummy">
+					<NODE_ID>PUSH_AUDIOR_CAB_EMIS</NODE_ID>
+				</UseTemplate>
+				<UseTemplate Name="A32NX_Audio_Panel_Volume_Dummy">
+					<NODE_ID>PUSH_AUDIOR_PA1_EMIS</NODE_ID>
 				</UseTemplate>
 			</Component>
 		</Component>
@@ -2361,7 +2473,7 @@
 	<Component ID="SAFETY">
 		<UseTemplate Name="ASOBO_SAFETY_Push_Template">
 			<LEFT_SINGLE_CODE>0 (&gt;L:A32NX_MASTER_WARNING)</LEFT_SINGLE_CODE>
-			<EMISSIVE_CODE>(L:Generic_Master_Warning_Active) (#VAR_SCOPE#:#VAR_NAME#) or</EMISSIVE_CODE>
+			<EMISSIVE_CODE>(L:Generic_Master_Warning_Active) (#VAR_SCOPE#:#VAR_NAME#) or (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or</EMISSIVE_CODE>
 			<TOOLTIPID>TT:COCKPIT.TOOLTIPS.MASTER_WARNING_ACKNOWLEDGE</TOOLTIPID>
 			<VAR_SCOPE>L</VAR_SCOPE>
 			<VAR_NAME>XMLVAR_LTS_Test</VAR_NAME>
@@ -2375,7 +2487,7 @@
 		<UseTemplate Name="ASOBO_SAFETY_Push_Template">
 			<ID>Caution</ID>
 			<LEFT_SINGLE_CODE>0 (&gt;L:A32NX_MASTER_CAUTION)</LEFT_SINGLE_CODE>
-			<EMISSIVE_CODE>(L:Generic_Master_Caution_Active)</EMISSIVE_CODE>
+			<EMISSIVE_CODE>(L:Generic_Master_Caution_Active) (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or</EMISSIVE_CODE>
 			<TOOLTIPID>TT:COCKPIT.TOOLTIPS.MASTER_CAUTION_ACKNOWLEDGE</TOOLTIPID>
 			<VAR_SCOPE>L</VAR_SCOPE>
 			<VAR_NAME>XMLVAR_LTS_Test</VAR_NAME>
@@ -2388,7 +2500,7 @@
 		</UseTemplate>
 		<UseTemplate Name="ASOBO_SAFETY_Push_Template">
 			<LEFT_SINGLE_CODE>0 (&gt;L:A32NX_MASTER_WARNING)</LEFT_SINGLE_CODE>
-			<EMISSIVE_CODE>(L:Generic_Master_Warning_Active) (#VAR_SCOPE#:#VAR_NAME#) or</EMISSIVE_CODE>
+			<EMISSIVE_CODE>(L:Generic_Master_Warning_Active) (#VAR_SCOPE#:#VAR_NAME#) or (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or</EMISSIVE_CODE>
 			<TOOLTIPID>TT:COCKPIT.TOOLTIPS.MASTER_WARNING_ACKNOWLEDGE</TOOLTIPID>
 			<VAR_SCOPE>L</VAR_SCOPE>
 			<VAR_NAME>XMLVAR_LTS_Test</VAR_NAME>
@@ -2402,7 +2514,7 @@
 		<UseTemplate Name="ASOBO_SAFETY_Push_Template">
 		<ID>Caution</ID>
 			<LEFT_SINGLE_CODE>0 (&gt;L:A32NX_MASTER_CAUTION)</LEFT_SINGLE_CODE>
-			<EMISSIVE_CODE>(L:Generic_Master_Caution_Active)</EMISSIVE_CODE>
+			<EMISSIVE_CODE>(L:Generic_Master_Caution_Active) (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or</EMISSIVE_CODE>
 			<TOOLTIPID>TT:COCKPIT.TOOLTIPS.MASTER_CAUTION_ACKNOWLEDGE</TOOLTIPID>
 			<VAR_SCOPE>L</VAR_SCOPE>
 			<VAR_NAME>XMLVAR_LTS_Test</VAR_NAME>
@@ -2589,6 +2701,7 @@
 			</UseTemplate>
 			<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
 				<NODE_ID>PUSH_OVHD_OXYGEN_PASSENGER</NODE_ID>
+				<BLOCK_SEQ2>1</BLOCK_SEQ2>
 			</UseTemplate>
 			<UseTemplate Name="ASOBO_AIRLINER_OXYGEN_Template">
 				<NODE_ID>PUSH_OVHD_OXYGEN_CREW</NODE_ID>
