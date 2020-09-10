@@ -175,8 +175,8 @@ var A320_Neo_LowerECAM_WHEEL;
                 this.BreakTemp2.setAttribute("class", "WHEELTempPrecentage");
                 this.BreakTemp3.setAttribute("class", "WHEELTempPrecentage");
                 this.BreakTemp4.setAttribute("class", "WHEELTempPrecentage");
-                SimVar.SetSimVarValue("BRAKE RIGHT POSITION", currentBreakLeft - this.currentBreak1Temp);
-                SimVar.SetSimVarValue("BRAKE LEFT POSITION", currentBreakLeft - this.currentBreak1Temp);
+                //SimVar.SetSimVarValue("BRAKE RIGHT POSITION", currentBreakLeft - this.currentBreak1Temp); -- Commit out this , was testing something 
+                //SimVar.SetSimVarValue("BRAKE LEFT POSITION", currentBreakLeft - this.currentBreak1Temp); -- Commit out this , was testing something 
             }
             if(this.currentBreak1Temp >= 300 || this.currentBreak2Temp >= 300 || this.currentBreak3Temp >= 300 || this.currentBreak4Temp >= 300)
             {
