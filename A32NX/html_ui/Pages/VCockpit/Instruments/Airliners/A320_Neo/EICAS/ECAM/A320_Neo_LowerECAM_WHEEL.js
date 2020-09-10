@@ -19,36 +19,36 @@ var A320_Neo_LowerECAM_WHEEL;
             this.selfTestTimer = 3;
             this.newTimer = 3;
 
-            this.autoBrakeText = this.getElementById("autoBrakeText");
+            this.autoBrakeText = this.querySelector("#autoBrakeText");
 
             // Hyd Indicator for Steering
-            this.speedbrakeHyd = this.getElementById("speedbrakeHyd");
-            this.normBrkHyd = this.getElementById("normBrkHyd");
-            this.atlnBrk = this.getElementById("atlnBrk");
+            this.speedbrakeHyd = this.querySelector("#speedbrakeHyd");
+            this.normBrkHyd = this.querySelector("#normBrkHyd");
+            this.atlnBrk = this.querySelector("#atlnBrk");
 
-            this.steeringNW = this.getElementById("steering");
-            this.antiSkidd = this.getElementById("antiskid");
+            this.steeringNW = this.querySelector("#steering");
+            this.antiSkidd = this.querySelector("#antiskid");
             this.lastSkiddState = -1;
 
             // Brake Temp Precentage 
-            this.BrakeTemp1 = this.getElementById("WheelTemp1");
-            this.BrakeTemp2 = this.getElementById("WheelTemp2");
-            this.BrakeTemp3 = this.getElementById("WheelTemp3");
-            this.BrakeTemp4 = this.getElementById("WheelTemp4");
+            this.BrakeTemp1 = this.querySelector("#WheelTemp1");
+            this.BrakeTemp2 = this.querySelector("#WheelTemp2");
+            this.BrakeTemp3 = this.querySelector("#WheelTemp3");
+            this.BrakeTemp4 = this.querySelector("#WheelTemp4");
 
-            this.autoBrakeIndicator = this.getElementById("autobrake");
+            this.autoBrakeIndicator = this.querySelector("#autobrake");
             this.autoBrakeIndicator.setAttribute("visibility", "hidden");
-            this.autoBrakeBlinker = this.getElementById("blinkAutoBrake")
+            this.autoBrakeBlinker = this.querySelector("#blinkAutoBrake")
             this.autoBrakeBlinker.setAttribute("visibility", "hidden");
 
             // Spoiler
-            this.spoilerRight = this.getElementById("spoilerRight");
+            this.spoilerRight = this.querySelector("#spoilerRight");
             this.spoilerRight.setAttribute("visibility", "hidden");
 
-            this.spoilerLeft = this.getElementById("spoilerLeft");
+            this.spoilerLeft = this.querySelector("#spoilerLeft");
             this.spoilerLeft.setAttribute("visibility", "hidden");
 
-            this.tempText = this.getElementById("temp");
+            this.tempText = this.querySelector("#temp");
             this.tempText.setAttribute("visibility", "hidden");
 
             // TODO Need to finish making failure logic
@@ -77,21 +77,21 @@ var A320_Neo_LowerECAM_WHEEL;
             this.autoBrakeMax = "MAX";
 
             // LandingGEAR
-            this.leftLGGroup = this.getElementById("leftSideLandingGear");
-            this.rightLGGroup = this.getElementById("RightSideLandingGear");
-            this.centerLGGroup = this.getElementById("centerLandingGroup");
+            this.leftLGGroup = this.querySelector("#leftSideLandingGear");
+            this.rightLGGroup = this.querySelector("#RightSideLandingGear");
+            this.centerLGGroup = this.querySelector("#centerLandingGroup");
 
-            this.LGFailureXX = this.getElementById("LGFailure");
+            this.LGFailureXX = this.querySelector("#LGFailure");
             this.LGFailureXX.setAttribute("visibility", "hidden");
 
-            this.greenBarLeft = this.getElementById("leftLGBar");
-            this.greenBarRight = this.getElementById("rightLGBar");
-            this.greenBarCenter = this.getElementById("LGFailure");
+            this.greenBarLeft = this.querySelector("#leftLGBar");
+            this.greenBarRight = this.querySelector("#rightLGBar");
+            this.greenBarCenter = this.querySelector("#LGFailure");
 
-            this.orangeBars = this.getElementById("orangeLGDown");
+            this.orangeBars = this.querySelector("#orangeLGDown");
             this.orangeBars.setAttribute("visibility", "hidden");
 
-            this.greenBarUp = this.getElementById("greenBarUp");
+            this.greenBarUp = this.querySelector("#greenBarUp");
         }
 
         update(_deltaTime) {
