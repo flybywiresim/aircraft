@@ -53,7 +53,7 @@
         font-size: 25px;
         text-decoration: underline; }
 
-    :root .BreakNumber {
+    :root .BrakeNumber {
         fill: var(--ecamDefaultColour);
         font-size: 15px;
         text-anchor: middle !important; }
@@ -69,7 +69,7 @@
         fill: var(--ecamValueColour);
         font-size: 18px;
         text-anchor: middle !important; }
-    :root .AUTOBREAKIndicator {
+    :root .AUTOBRAKEIndicator {
         fill: var(--ecamWarningColour);
         font-size: 18px;
         text-anchor: middle !important; }
@@ -77,11 +77,11 @@
         fill: var(--ecamValueColour);
         font-size: 18px;
         text-anchor: middle !important; }
-    :root .WHEELBREAKWARNING {
+    :root .WHEELBRAKEWARNING {
         fill: var(--ecamWarningColour);
         font-size: 18px;
         text-anchor: middle !important; }
-    :root .WHEELBREAKRED {
+    :root .WHEELBRAKERED {
         fill: var(--ecamDangerColour);
         font-size: 18px;
         text-anchor: middle !important; }
@@ -179,7 +179,7 @@
         white-space:normal
     }
 
-    :root .AUTOBREAKUNDERLINE {
+    :root .AUTOBRAKEUNDERLINE {
         fill:none;
         stroke-linecap:round;
         stroke-width:2.477;
