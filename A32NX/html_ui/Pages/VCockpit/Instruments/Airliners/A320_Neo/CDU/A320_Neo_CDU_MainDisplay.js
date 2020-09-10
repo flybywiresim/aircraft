@@ -47,6 +47,12 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this._onModeManagedHeading();
         this._onModeManagedAltitude();
         SimVar.SetSimVarValue("K:VS_SLOT_INDEX_SET", "number", 1);
+
+        const groundAltitude = (parseInt(SimVar.GetSimVarValue("GROUND ALTITUDE", "feet")) || 0);
+        const thrRedAccAltitude = groundAltitude + 1500;
+
+        this.thrustReductionAltitude = thrRedAccAltitude;
+        this.accelerationAltitude = thrRedAccAltitude;
     }
     Update() {
         super.Update();
