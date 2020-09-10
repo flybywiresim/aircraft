@@ -29,7 +29,7 @@ class CDUFuelPredPage {
             zfwCell = mcdu.zeroFuelWeight.toFixed(1);
             zfwColor = "[color]blue;";
         }
-        let zfwCgCell = " /□□.□";
+        let zfwCgCell = "□□.□";
         if (isFinite(mcdu.zeroFuelWeightMassCenter)) {
             zfwCgCell = mcdu.zeroFuelWeightMassCenter.toFixed(1);
         }
@@ -47,7 +47,7 @@ class CDUFuelPredPage {
             [""],
             [""],
             ["RTE RSV/ %", "ZFW/ ZFWCG"],
-            [rteRsvWeightCell + " /" + rteRsvPercentCell + "[color]green", zfwCell + zfwCgCell + zfwColor],
+            [rteRsvWeightCell + " /" + rteRsvPercentCell + "[color]green", zfwCell + " /" + zfwCgCell + zfwColor],
             ["ALTN /TIME", "FOB"],
             [""],
             ["FINAL /TIME", "GW/ CG"],
