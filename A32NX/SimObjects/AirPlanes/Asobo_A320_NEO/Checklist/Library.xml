@@ -362,7 +362,7 @@
          <Instrument Id="ENGINE_Switch_Engine_Mode" />
       </Checkpoint>
       <Checkpoint Id="A320_CPREP1_PARKING_BRAKE">
-         <CheckpointDesc SubjectTT="TT:Parking Brake" ExpectationTT="TT:ON THEN OFF" />
+         <CheckpointDesc SubjectTT="TT:Parking Brake" ExpectationTT="TT:OFF THEN ON" />
          <Instrument Id="LANDING_GEAR_Switch_ParkingBrake" />
       </Checkpoint>
       <Checkpoint Id="A320_CPREP1_GRAVITY_GEAR">
