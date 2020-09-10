@@ -120,10 +120,9 @@ var A320_Neo_LowerECAM_Fuel;
             if (this.fuelLevels) {
                 const leftConsumption = SimVar.GetSimVarValue("GENERAL ENG FUEL USED SINCE START:" + 1, "gallon") * _unitFactor * 0.001;
                 const rightConsumption = SimVar.GetSimVarValue("GENERAL ENG FUEL USED SINCE START:" + 2, "gallon") * _unitFactor * 0.001;
-                const totalConsumption = leftConsumption + rightConsumption;
 
-                const leftConsumptionShown = leftConsumption - leftConsumption % 10;
-                const rightConsumptionShown = rightConsumption - rightConsumption % 10;
+                const leftConsumptionShown = leftConsumption - (leftConsumption % 10);
+                const rightConsumptionShown = rightConsumption - (rightConsumption % 10);
                 const totalConsumptionShown = leftConsumptionShown + rightConsumptionShown;
 
                 this.leftValveValue.textContent = fastToFixed(leftConsumptionShown, 0);
