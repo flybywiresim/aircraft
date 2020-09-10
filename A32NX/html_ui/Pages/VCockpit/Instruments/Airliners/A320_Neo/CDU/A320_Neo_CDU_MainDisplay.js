@@ -399,6 +399,8 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         return this._getVSpeed(dWeightCoef, min, max)
     }
     _computeV1Speed() {
+        // computeV1Speed is called by inherited class so it must remain,
+        // but we need the calculation logic so that sits in it's own function now.
         const nextV1 = this._getV1Speed()
         this.v1Speed = nextV1
         SimVar.SetSimVarValue("L:AIRLINER_V1_SPEED", "Knots", nextV1);
@@ -416,6 +418,8 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         return this._getVSpeed(dWeightCoef, min, max)
      }
     _computeVRSpeed() {
+        // computeVRSpeed is called by inherited class so it must remain,
+        // but we need the calculation logic so that sits in it's own function now.
         const nextVR = this._getVRSpeed()
         this.vRSpeed = nextVR
         SimVar.SetSimVarValue("L:AIRLINER_VR_SPEED", "Knots", nextVR);
@@ -433,6 +437,8 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         return this._getVSpeed(dWeightCoef, min, max)
     }
     _computeV2Speed() {
+        // computeV2Speed is called by inherited class so it must remain,
+        // but we need the calculation logic so that sits in it's own function now.
         const nextV2 = this._getV2Speed()
         this.v2Speed = nextV2
         SimVar.SetSimVarValue("L:AIRLINER_V2_SPEED", "Knots", nextV2);
