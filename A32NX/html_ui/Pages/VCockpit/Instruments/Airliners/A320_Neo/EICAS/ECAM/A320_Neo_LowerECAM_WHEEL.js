@@ -129,9 +129,9 @@ var A320_Neo_LowerECAM_WHEEL;
                 this.dummyTempCounter += _deltaTime/1000;
                 // Add temp slowly
                 this.currentBreak1Temp = Math.round(this.currentBreak1Temp) + Math.floor(Math.random() * this.dummyTempCounter) + 1;
-                this.currentBreak2Temp = Math.round(this.currentBreak1Temp) + Math.floor(Math.random() * this.dummyTempCounter) + 1;
-                this.currentBreak3Temp = Math.round(this.currentBreak1Temp) + Math.floor(Math.random() * this.dummyTempCounter) + 1;
-                this.currentBreak4Temp = Math.round(this.currentBreak1Temp) + Math.floor(Math.random() * this.dummyTempCounter) + 1;
+                this.currentBreak2Temp = Math.round(this.currentBreak2Temp) + Math.floor(Math.random() * this.dummyTempCounter) + 1;
+                this.currentBreak3Temp = Math.round(this.currentBreak3Temp) + Math.floor(Math.random() * this.dummyTempCounter) + 1;
+                this.currentBreak4Temp = Math.round(this.currentBreak4Temp) + Math.floor(Math.random() * this.dummyTempCounter) + 1;
 
                 this.BreakTemp1.textContent = this.currentBreak1Temp;
                 this.BreakTemp2.textContent = this.currentBreak2Temp;
@@ -160,16 +160,23 @@ var A320_Neo_LowerECAM_WHEEL;
                     this.dummyTempCounter = 0;
                 }
             }
+
+        
            
         }
 
         updateTempColor(_deltaTime)
         {
+            const currentBreakRight = SimVar.GetSimVarValue("BRAKE RIGHT POSITION", "position 32k");
+            const currentBreakLeft =  SimVar.GetSimVarValue("BRAKE LEFT POSITION", "position 32k");
+
             if(this.currentBreak1Temp <= 100 || this.currentBreak2Temp <= 100|| this.currentBreak3Temp <= 100|| this.currentBreak4Temp <= 100) {
                 this.BreakTemp1.setAttribute("class", "WHEELTempPrecentage");
                 this.BreakTemp2.setAttribute("class", "WHEELTempPrecentage");
                 this.BreakTemp3.setAttribute("class", "WHEELTempPrecentage");
                 this.BreakTemp4.setAttribute("class", "WHEELTempPrecentage");
+                SimVar.SetSimVarValue("BRAKE RIGHT POSITION", currentBreakLeft - this.currentBreak1Temp);
+                SimVar.SetSimVarValue("BRAKE LEFT POSITION", currentBreakLeft - this.currentBreak1Temp);
             }
             if(this.currentBreak1Temp >= 300 || this.currentBreak2Temp >= 300 || this.currentBreak3Temp >= 300 || this.currentBreak4Temp >= 300)
             {
@@ -384,7 +391,7 @@ var A320_Neo_LowerECAM_WHEEL;
             }
         }
 
-        _checkBreakPressure() {
+        _checkBrakesPressure() {
             // HERE WE NEED TO LOOP THROUGH HYDRALICS
         }
 
