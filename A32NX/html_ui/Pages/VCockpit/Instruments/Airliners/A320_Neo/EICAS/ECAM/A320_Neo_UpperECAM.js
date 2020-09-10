@@ -51,17 +51,146 @@ var A320_Neo_UpperECAM;
             super();
             this.isInitialised = false;
             this.allPanels = [];
+            this.simVarCache = {};
+            this.frameCount = 0;
         }
         get templateID() { return "UpperECAMTemplate"; }
         connectedCallback() {
             super.connectedCallback();
             TemplateElement.call(this, this.init.bind(this));
         }
+        getCachedSimVar(_simvar, _unit) {
+            const key = `${_simvar}:${_unit}`;
+            if (this.simVarCache[key] != null) return this.simVarCache[key];
+            const value = SimVar.GetSimVarValue(_simvar, _unit);
+            this.simVarCache[key] = value;
+            return value;
+        }
         getADIRSMins() {
             const secs = SimVar.GetSimVarValue("L:A320_Neo_ADIRS_TIME", "seconds");
             const mins = Math.floor(secs/60);
             if (secs > 0) return mins;
             else return -1;
+        }
+        engineFailed(_engine) {
+            return (this.getCachedSimVar("ENG FAILED:"+_engine, "Bool") == 1) && !Simplane.getIsGrounded();
+        }
+        engineShutdown(_engine) {
+            return (this.getCachedSimVar("TURB ENG N1:"+_engine, "Percent") < 15 || this.getCachedSimVar("FUELSYSTEM VALVE SWITCH:"+(_engine+5), "Bool") == 0) && !Simplane.getIsGrounded();
+        }
+        getEngineFailActions(_engine) {
+            return [
+                {
+                    style: "action",
+                    message: "ENG MODE SEL",
+                    action: "IGN",
+                    isCompleted: () => {
+                        return this.getCachedSimVar("L:XMLVAR_ENG_MODE_SEL", "Enum") == 2;
+                    }
+                },
+                {
+                    style: "action",
+                    message: "THR LVR "+_engine,
+                    action: "IDLE",
+                    isCompleted: () => {
+                        return this.getCachedSimVar("GENERAL ENG THROTTLE LEVER POSITION:"+_engine, "Enum") == 0;
+                    }
+                },
+                {
+                    style: "remark",
+                    message: "IF NO RELIGHT AFTER 30S",
+                    isCompleted: () => {
+                        return this.getCachedSimVar("FUELSYSTEM VALVE SWITCH:"+(_engine+5), "Bool") == 0;
+                    }
+                },
+                {
+                    style: "action",
+                    message: "ENG MASTER "+_engine,
+                    action: "OFF",
+                    isCompleted: () => {
+                        return this.getCachedSimVar("FUELSYSTEM VALVE SWITCH:"+(_engine+5), "Bool") == 0;
+                    }
+                },
+                {
+                    style: "remark-indent",
+                    message: "IF DAMAGE",
+                    isCompleted: () => {
+                        return this.getCachedSimVar("L:FIRE_BUTTON_ENG"+_engine, "Bool") == 1;
+                    }
+                },
+                {
+                    style: "action",
+                    message: `ENG ${_engine} FIRE P/B`,
+                    action: "PUSH",
+                    isCompleted: () => {
+                        return this.getCachedSimVar("L:FIRE_BUTTON_ENG"+_engine, "Bool") == 1;
+                    }
+                },
+                {
+                    style: "remark-indent",
+                    message: "IF NO DAMAGE",
+                },
+                {
+                    style: "action",
+                    message: `ENG ${_engine} RELIGHT`,
+                    action: "CONSIDER",
+                }
+            ];
+        }
+        getEngineShutdownActions() {
+            return [
+                {
+                    style: "remark-indent",
+                    message: "IF NO FUEL LEAK"
+                },
+                {
+                    style: "action",
+                    message: "IMBALANCE",
+                    action: "MONITOR"
+                },
+                {
+                    style: "action",
+                    message: "TCAS MODE SEL",
+                    action: "TA"
+                },
+                {
+                    style: "blue",
+                    message: "AVOID ICING CONDITIONS"
+                }
+            ];
+        }
+        getEngineFireActions(_engine) {
+            return [
+                {
+                    style: "action",
+                    message: "THR LEVER "+_engine,
+                    action: "IDLE",
+                    isCompleted: () => {
+                        return this.getCachedSimVar("GENERAL ENG THROTTLE LEVER POSITION:"+_engine, "Enum") == 0;
+                    }
+                },
+                {
+                    style: "action",
+                    message: "ENG MASTER "+_engine,
+                    action: "OFF",
+                    isCompleted: () => {
+                        return this.getCachedSimVar("FUELSYSTEM VALVE SWITCH:"+(_engine+5), "Bool") == 0;
+                    }
+                },
+                {
+                    style: `action`,
+                    message: `ENG ${_engine} FIRE P/B`,
+                    action: "PUSH",
+                    isCompleted: () => {
+                        return this.getCachedSimVar("L:FIRE_BUTTON_ENG"+_engine, "Bool") == 1;
+                    }
+                },
+                {
+                    style: "action",
+                    message: "ATC",
+                    action: "NOTIFY"
+                },
+            ];
         }
         getEngineFireGroundActions(_engine) {
             return [
@@ -74,7 +203,7 @@ var A320_Neo_UpperECAM;
                     message: "PARKING BRK",
                     action: "ON",
                     isCompleted: () => {
-                        return SimVar.GetSimVarValue("BRAKE PARKING INDICATOR", "Bool") == 1;
+                        return this.getCachedSimVar("BRAKE PARKING INDICATOR", "Bool") == 1;
                     }
                 },
                 {
@@ -90,7 +219,10 @@ var A320_Neo_UpperECAM;
                 {
                     style: "action",
                     message: `ENG ${_engine} FIRE P/B`,
-                    action: "PUSH"
+                    action: "PUSH",
+                    isCompleted: () => {
+                        return this.getCachedSimVar("L:FIRE_BUTTON_ENG"+_engine, "Bool") == 1;
+                    }
                 },
                 {
                     style: "action",
@@ -112,13 +244,125 @@ var A320_Neo_UpperECAM;
             this.ecamMessages = {
                 failures: [
                     {
+                        name: "ENG",
+                        messages: [
+                            {
+                                message: "DUAL FAILURE",
+                                level: 3,
+                                isActive: () => {
+                                    return ((this.engineShutdown(1) || this.engineFailed(1)) && (this.engineShutdown(2) || this.engineFailed(2)) && this.getCachedSimVar("AIRSPEED INDICATED", "knots") > 80);
+                                },
+                                inopSystems: [
+                                    "G_HYD",
+                                    "Y_HYD",
+                                    "R_AIL",
+                                    "IR_2",
+                                    "IR_3",
+                                    "ELAC_2",
+                                    "YAW_DAMPER",
+                                    "ATHR",
+                                    "NW_STEER",
+                                    "LG_RETRACT",
+                                    "FCTL_PROT",
+                                    "REVERSER_1",
+                                    "REVERSER_2",
+                                    "RA_1",
+                                    "RA_2",
+                                    "SEC_2",
+                                    "SEC_3",
+                                    "ACALL_OUT",
+                                    "FUEL PUMPS",
+                                    "AUTO_BRK",
+                                    "CAB_PR_1",
+                                    "CAB_PR_2",
+                                    "STABILIZER",
+                                    "ADR_2",
+                                    "ADR_3",
+                                    "SPLR_1245",
+                                    "FLAPS",
+                                    "AP_1",
+                                    "AP_2",
+                                    "ANTI_SKID",
+                                    "CAT_2",
+                                    "PACK_1",
+                                    "PACK_2"
+                                ],
+                                actions: [
+                                    {
+                                        style: "action",
+                                        message: "EMER ELEC PWR",
+                                        action: "MAN ON"
+                                    },
+                                    {
+                                        style: "action",
+                                        message: "OPT RELIGHT SPD",
+                                        action: "280KT"
+                                    },
+                                    {
+                                        style: "action",
+                                        message: "APU",
+                                        action: "START",
+                                        isCompleted: () => {
+                                            return this.getCachedSimVar("APU PCT RPM", "Percent") > 95;
+                                        }
+                                    },
+                                    {
+                                        style: "action",
+                                        message: "THR LEVERS",
+                                        action: "IDLE",
+                                        isCompleted: () => {
+                                            return this.getCachedSimVar("GENERAL ENG THROTTLE LEVER POSITION:1", "Enum") == 0 && this.getCachedSimVar("GENERAL ENG THROTTLE LEVER POSITION:2", "Enum") == 0;
+                                        }
+                                    },
+                                    {
+                                        style: "blue",
+                                        message: "GLDG DIST: 2NM/1000FT"
+                                    },
+                                    {
+                                        style: "action",
+                                        message: "DIVERSION",
+                                        action: "INITIATE"
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    //Airborne
+                    {
                         name: "ENG 1 FIRE",
                         messages: [
                             {
                                 message: "",
                                 level: 3,
                                 isActive: () => {
-                                    return SimVar.GetSimVarValue("L:FIRE_TEST_ENG1", "Bool") && Simplane.getIsGrounded();
+                                    return (this.getCachedSimVar("L:FIRE_TEST_ENG1", "Bool") || this.getCachedSimVar("ENG ON FIRE:1", "Bool")) && !Simplane.getIsGrounded();
+                                },
+                                actions: this.getEngineFireActions(1)
+                            },
+                        ]
+                    },
+                    {
+                        name: "ENG 2 FIRE",
+                        messages: [
+                            {
+                                message: "",
+                                level: 3,
+                                isActive: () => {
+                                    return (this.getCachedSimVar("L:FIRE_TEST_ENG2", "Bool") || this.getCachedSimVar("ENG ON FIRE:2", "Bool")) && !Simplane.getIsGrounded();
+                                },
+                                actions: this.getEngineFireActions(2)
+                            },
+                        ]
+                    },
+                    //Ground
+                    {
+                        name: "ENG 1 FIRE",
+                        messages: [
+                            {
+                                message: "",
+                                level: 3,
+                                isActive: () => {
+                                    return (this.getCachedSimVar("L:FIRE_TEST_ENG1", "Bool") || this.getCachedSimVar("ENG ON FIRE:1", "Bool")) && Simplane.getIsGrounded();
                                 },
                                 actions: this.getEngineFireGroundActions(1)
                             },
@@ -131,7 +375,7 @@ var A320_Neo_UpperECAM;
                                 message: "",
                                 level: 3,
                                 isActive: () => {
-                                    return SimVar.GetSimVarValue("L:FIRE_TEST_ENG2", "Bool") && Simplane.getIsGrounded();
+                                    return (this.getCachedSimVar("L:FIRE_TEST_ENG2", "Bool") || this.getCachedSimVar("ENG ON FIRE:2", "Bool")) && Simplane.getIsGrounded();
                                 },
                                 actions: this.getEngineFireGroundActions(2)
                             },
@@ -144,7 +388,7 @@ var A320_Neo_UpperECAM;
                                 message: "",
                                 level: 3,
                                 isActive: () => {
-                                    return SimVar.GetSimVarValue("L:FIRE_TEST_APU", "Bool")
+                                    return this.getCachedSimVar("L:FIRE_TEST_APU", "Bool")
                                 },
                                 actions: [
                                     {
@@ -156,7 +400,7 @@ var A320_Neo_UpperECAM;
                                         message: "PARKING BRK",
                                         action: "ON",
                                         isCompleted: () => {
-                                            return SimVar.GetSimVarValue("BRAKE PARKING INDICATOR", "Bool") == 1;
+                                            return this.getCachedSimVar("BRAKE PARKING INDICATOR", "Bool") == 1;
                                         }
                                     },
                                     {
@@ -177,6 +421,52 @@ var A320_Neo_UpperECAM;
                                     {
                                         style: "action",
                                         message: "AGENT",
+                                        action: "DISCH"
+                                    },
+                                ]
+                            },
+                        ]
+                    },
+                    {
+                        name: "CARGO SMOKE",
+                        messages: [
+                            {
+                                message: "",
+                                level: 3,
+                                isActive: () => {
+                                    return this.getCachedSimVar("L:FIRE_TEST_SMOKE", "Bool")
+                                },
+                                actions: [
+                                    {
+                                        style: "remark",
+                                        message: "WHEN A/C IS STOPPED"
+                                    },
+                                    {
+                                        style: "action",
+                                        message: "PARKING BRK",
+                                        action: "ON",
+                                        isCompleted: () => {
+                                            return this.getCachedSimVar("BRAKE PARKING INDICATOR", "Bool") == 1;
+                                        }
+                                    },
+                                    {
+                                        style: "action",
+                                        message: "ATC",
+                                        action: "NOTIFY",
+                                    },
+                                    {
+                                        style: "action",
+                                        message: "CABIN CREW",
+                                        action: "ALERT"
+                                    },
+                                    {
+                                        style: "action",
+                                        message: "AGENT 1",
+                                        action: "DISCH"
+                                    },
+                                    {
+                                        style: "action",
+                                        message: "AGENT 2",
                                         action: "DISCH"
                                     },
                                 ]
@@ -240,7 +530,7 @@ var A320_Neo_UpperECAM;
                                 message: "EXCESS CAB ALT",
                                 level: 3,
                                 isActive: () => {
-                                    return SimVar.GetSimVarValue("PRESSURIZATION CABIN ALTITUDE", "feet") > 10000;
+                                    return this.getCachedSimVar("PRESSURIZATION CABIN ALTITUDE", "feet") > 10000;
                                 },
                                 actions: [
                                     {
@@ -253,7 +543,7 @@ var A320_Neo_UpperECAM;
                                         message: "DESCENT",
                                         action: "INITIATE",
                                         isCompleted: () => {
-                                            return SimVar.GetSimVarValue("VERTICAL SPEED", "feet per minute") < -100;
+                                            return this.getCachedSimVar("VERTICAL SPEED", "feet per minute") < -100;
                                         }
                                     },
                                     {
@@ -269,7 +559,7 @@ var A320_Neo_UpperECAM;
                                         message: "SPEED BRK",
                                         action: "FULL",
                                         isCompleted: () => {
-                                            return SimVar.GetSimVarValue("SPOILERS HANDLE POSITION", "Position") > 0.95;
+                                            return this.getCachedSimVar("SPOILERS HANDLE POSITION", "Position") > 0.95;
                                         }
                                     },
                                     {
@@ -291,61 +581,84 @@ var A320_Neo_UpperECAM;
                         ]
                     },
                     {
+                        name: "ENG 1",
+                        messages: [
+                            {
+                                message: "<span class='boxed'>FAIL</span>",
+                                level: 2,
+                                inopSystems: [],
+                                isActive: () => {
+                                    return this.engineFailed(1) && !this.engineFailed(2);
+                                },
+                                actions: this.getEngineFailActions(1)
+                            },
+                            {
+                                message: "<span class='boxed'>SHUT DOWN</span>",
+                                level: 2,
+                                inopSystems: [
+                                    "ENG_1",
+                                    "WING_A_ICE",
+                                    "CAT_3_DUAL",
+                                    "ENG_1_BLEED",
+                                    "PACK_1",
+                                    "MAIN_GALLEY",
+                                    "GEN_1",
+                                    "G_ENG_1_PUMP"
+                                ],
+                                isActive: () => {
+                                    return this.engineShutdown(1);
+                                },
+                                actions: this.getEngineShutdownActions()
+                            }
+                        ]
+                    },
+                    {
+                        name: "ENG 2",
+                        messages: [
+                            {
+                                message: "<span class='boxed'>FAIL</span>",
+                                level: 2,
+                                inopSystems: [],
+                                isActive: () => {
+                                    return this.engineFailed(2) && !this.engineFailed(1);
+                                },
+                                actions: () => {
+                                    return this.getEngineFailActions(2);
+                                }
+                            },
+                            {
+                                message: "<span class='boxed'>SHUT DOWN</span>",
+                                level: 2,
+                                inopSystems: [
+                                    "ENG_2",
+                                    "WING_A_ICE",
+                                    "CAT_3_DUAL",
+                                    "ENG_2_BLEED",
+                                    "PACK_2",
+                                    "MAIN_GALLEY",
+                                    "GEN_2",
+                                    "G_ENG_1_PUMP"
+                                ],
+                                isActive: () => {
+                                    return this.engineShutdown(2);
+                                },
+                                actions: this.getEngineShutdownActions()
+                            }
+                        ]
+                    },
+                    {
                         name: "NAV",
                         messages: [
                             {
                                 message: "TCAS FAULT",
                                 level: 2,
+                                inopSystems: [
+                                    "TCAS"
+                                ],
                                 isActive: () => {
-                                    return SimVar.GetSimVarValue("L:A320_Neo_ADIRS_STATE", "Enum") != 2;
+                                    return this.getCachedSimVar("L:A320_Neo_ADIRS_STATE", "Enum") != 2;
                                 },
                             }
-                        ]
-                    },
-                    {
-                        name: "Cargo Smoke",
-                        messages: [
-                            {
-                                message: "",
-                                level: 3,
-                                isActive: () => {
-                                    return SimVar.GetSimVarValue("L:FIRE_TEST_SMOKE", "Bool")
-                                },
-                                actions: [
-                                    {
-                                        style: "remark",
-                                        message: "WHEN A/C IS STOPPED"
-                                    },
-                                    {
-                                        style: "action",
-                                        message: "PARKING BRK",
-                                        action: "ON",
-                                        isCompleted: () => {
-                                            return SimVar.GetSimVarValue("BRAKE PARKING INDICATOR", "Bool") == 1;
-                                        }
-                                    },
-                                    {
-                                        style: "action",
-                                        message: "ATC",
-                                        action: "NOTIFY",
-                                    },
-                                    {
-                                        style: "action",
-                                        message: "CABIN CREW",
-                                        action: "ALERT"
-                                    },
-                                    {
-                                        style: "action",
-                                        message: "AGENT 1",
-                                        action: "DISCH"
-                                    },
-                                    {
-                                        style: "action",
-                                        message: "AGENT 2",
-                                        action: "DISCH"
-                                    },
-                                ]
-                            },
                         ]
                     },
                 ],
@@ -407,19 +720,19 @@ var A320_Neo_UpperECAM;
                     {
                         message: "GND SPLRS ARMED",
                         isActive: () => {
-                            return SimVar.GetSimVarValue("SPOILERS ARMED", "Bool") == 1;
+                            return this.getCachedSimVar("SPOILERS ARMED", "Bool") == 1;
                         }
                     },
                     {
                         message: "SEAT BELTS",
                         isActive: () => {
-                            return SimVar.GetSimVarValue("L:XMLVAR_SWITCH_OVHD_INTLT_SEATBELT_Position", "Bool") == 1;
+                            return this.getCachedSimVar("L:XMLVAR_SWITCH_OVHD_INTLT_SEATBELT_Position", "Bool") == 1;
                         }
                     },
                     {
                         message: "NO SMOKING",
                         isActive: () => {
-                            return SimVar.GetSimVarValue("L:A32NX_NO_SMOKING_MEMO", "Bool") == 1;
+                            return this.getCachedSimVar("L:A32NX_NO_SMOKING_MEMO", "Bool") == 1;
                         }
                     }
                 ]
@@ -431,62 +744,62 @@ var A320_Neo_UpperECAM;
                         message: "T.O. INHIBIT",
                         style: "InfoSpecial",
                         isActive: () => {
-                            return (SimVar.GetSimVarValue("L:AIRLINER_FLIGHT_PHASE", "Enum") <= 2) && (SimVar.GetSimVarValue("L:A32NX_Preflight_Complete", "Bool") == 1);
+                            return (this.getCachedSimVar("L:AIRLINER_FLIGHT_PHASE", "Enum") <= 2) && (this.getCachedSimVar("L:A32NX_Preflight_Complete", "Bool") == 1);
                         }
                     },
                     {
                         message: "LDG INHIBIT",
                         style: "InfoSpecial",
                         isActive: () => {
-                            return (SimVar.GetSimVarValue("L:AIRLINER_FLIGHT_PHASE", "Enum") == 6) && (SimVar.GetSimVarValue("RADIO HEIGHT", "feet") < 800);
+                            return (this.getCachedSimVar("L:AIRLINER_FLIGHT_PHASE", "Enum") == 6) && (this.getCachedSimVar("RADIO HEIGHT", "feet") < 800);
                         }
                     },
                     {
                         message: "PARK BRK",
                         isActive: () => {
-                            return SimVar.GetSimVarValue("BRAKE PARKING INDICATOR", "Bool") == 1;
+                            return this.getCachedSimVar("BRAKE PARKING INDICATOR", "Bool") == 1;
                         }
                     },
                     {
                         message: "APU BLEED",
                         isActive: () => {
-                            return (SimVar.GetSimVarValue("BLEED AIR APU", "Bool") == 1) && (SimVar.GetSimVarValue("APU PCT RPM", "Percent") >= 95);
+                            return (this.getCachedSimVar("BLEED AIR APU", "Bool") == 1) && (this.getCachedSimVar("APU PCT RPM", "Percent") >= 95);
                         }
                     },
                     {
                         message: "APU AVAIL",
                         isActive: () => {
-                            return (SimVar.GetSimVarValue("BLEED AIR APU", "Bool") == 0) && (SimVar.GetSimVarValue("APU PCT RPM", "Percent") >= 95);
+                            return (this.getCachedSimVar("BLEED AIR APU", "Bool") == 0) && (this.getCachedSimVar("APU PCT RPM", "Percent") >= 95);
                         }
                     },
                     {
                         message: "LDG LT",
                         isActive: () => {
-                            return (SimVar.GetSimVarValue("LIGHT LANDING ON", "Bool") == 1);
+                            return (this.getCachedSimVar("LIGHT LANDING ON", "Bool") == 1);
                         }
                     },
                     {
                         message: "SPEED BRK",
                         isActive: () => {
-                            return (SimVar.GetSimVarValue("SPOILERS HANDLE POSITION", "position") > 0);
+                            return (this.getCachedSimVar("SPOILERS HANDLE POSITION", "position") > 0);
                         }
                     },
                     {
                         message: "AUTO BRK LO",
                         isActive: () => {
-                            return (SimVar.GetSimVarValue("L:XMLVAR_Autobrakes_Level", "Enum") == 1);
+                            return (this.getCachedSimVar("L:XMLVAR_Autobrakes_Level", "Enum") == 1);
                         }
                     },
                     {
                         message: "AUTO BRK MED",
                         isActive: () => {
-                            return (SimVar.GetSimVarValue("L:XMLVAR_Autobrakes_Level", "Enum") == 2);
+                            return (this.getCachedSimVar("L:XMLVAR_Autobrakes_Level", "Enum") == 2);
                         }
                     },
                     {
                         message: "AUTO BRK MAX",
                         isActive: () => {
-                            return (SimVar.GetSimVarValue("L:XMLVAR_Autobrakes_Level", "Enum") == 3);
+                            return (this.getCachedSimVar("L:XMLVAR_Autobrakes_Level", "Enum") == 3);
                         }
                     }
                 ]
@@ -612,6 +925,9 @@ var A320_Neo_UpperECAM;
                     this.allPanels[i].update(_deltaTime);
                 }
             }
+
+            this.frameCount++;
+            if (this.frameCount % 16 == 0) this.simVarCache = {};
             
             //Show takeoff memo 2 mins after second engine start
             //Hides after takeoff thurst application
@@ -1396,6 +1712,7 @@ var A320_Neo_UpperECAM;
                 3: 0
             }
             this.clearedMessages = [];
+            this.inopSystems = {};
         }
         init() {
             super.init();
@@ -1426,9 +1743,11 @@ var A320_Neo_UpperECAM;
                     }
                 }
             }
-            const activeMessages = this.getActiveMessages();
-            for (const message of activeMessages) {
-                this.addLine(message.style || "InfoIndication", null, message.message, null);
+            if (!this.hasActiveFailures) {
+                const activeMessages = this.getActiveMessages();
+                for (const message of activeMessages) {
+                    this.addLine(message.style || "InfoIndication", null, message.message, null);
+                }
             }
 
             if (warningsCount[3] > this.lastWarningsCount[3]) {
@@ -1440,6 +1759,15 @@ var A320_Neo_UpperECAM;
             }
             this.lastWarningsCount[2] = parseInt(warningsCount[2]);
             this.lastWarningsCount[3] = parseInt(warningsCount[3]);
+
+            for (const system in this.inopSystems) {
+                if (this.inopSystems[system] == true) {
+                    SimVar.SetSimVarValue("L:A32NX_ECAM_INOP_SYS_"+system, "Bool", 1);
+                } else {
+                    SimVar.SetSimVarValue("L:A32NX_ECAM_INOP_SYS_"+system, "Bool", 0);
+                    delete this.inopSystems[system];
+                }
+            }
         }
         addLine(_style, _category, _message, _action, _alwaysShowCategory = false) {
             if (this.currentLine < this.maxLines) {
@@ -1460,14 +1788,17 @@ var A320_Neo_UpperECAM;
                     var message = document.createElement("span");
                     switch(_style) {
                         case "action":
-                            var msgOutput = "-"+_message;
+                            var msgOutput = "&nbsp;-"+_message;
                             for (var i = 0; i < (22 - _message.length - _action.length); i++) {
                                 msgOutput = msgOutput+".";
                             }
                             msgOutput += _action;
                             break;
                         case "remark":
-                            var msgOutput = "."+(_message+":").substring(0,22);
+                            var msgOutput = "."+(_message+":").substring(0,23);
+                            break;
+                        case "remark-indent":
+                            var msgOutput = `&nbsp;&nbsp;&nbsp;&nbsp;.${_message}:`;
                             break;
                         default:
                             var msgOutput = " "+_message;
@@ -1496,12 +1827,16 @@ var A320_Neo_UpperECAM;
             this.hasActiveFailures = false;
             this.hasWarnings = false;
             this.hasCautions = false;
+            for (const system in this.inopSystems) {
+                this.inopSystems[system] = false;
+            }
             for (var i = 0; i < this.messages.failures.length; i++) {
                 const messages = this.messages.failures[i].messages;
                 for (var n = 0; n < messages.length; n++) {
                     const message = messages[n];
                     if (message.id == null) message.id = `${i} ${n}`;
-                    if (message.isActive() && !this.clearedMessages.includes(message.id)) {
+                    const isActive = message.isActive();
+                    if (isActive && !this.clearedMessages.includes(message.id)) {
                         this.hasActiveFailures = true;
                         if (message.level == 3) this.hasWarnings = true;
                         if (message.level == 2) this.hasCautions = true;
@@ -1509,8 +1844,13 @@ var A320_Neo_UpperECAM;
                             output[i] = this.messages.failures[i];
                             output[i].messages = [];
                         }
-                        
                         output[i].messages.push(message);
+                    }
+                    //Add inop systems even if message is cleared
+                    if (isActive && message.inopSystems != null) {
+                        for (const system of message.inopSystems) {
+                            this.inopSystems[system] = true;
+                        }
                     }
                 }
             }
