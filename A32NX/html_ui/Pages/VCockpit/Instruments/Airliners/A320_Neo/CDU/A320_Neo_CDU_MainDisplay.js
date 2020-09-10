@@ -22,11 +22,6 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                 this._registered = true;
             });
         });
-
-        // TODO: Remove
-        if (typeof g_modDebugMgr != "undefined") {
-            g_modDebugMgr.AddConsole(null);
-        }
     }
     Init() {
         super.Init();
