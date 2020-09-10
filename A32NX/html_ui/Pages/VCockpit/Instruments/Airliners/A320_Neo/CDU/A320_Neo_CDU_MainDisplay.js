@@ -717,8 +717,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                     groundAltitudeMsl = airport.infos.coordinates.alt;
                 }
                 
-                if (!groundAltitudeMsl)
-                {
+                if (!groundAltitudeMsl) {
                     groundAltitudeMsl = (parseInt(SimVar.GetSimVarValue("GROUND ALTITUDE", "feet")) || 0);
                 }
                 
