@@ -107,11 +107,11 @@
          <CheckpointDesc SubjectTT="TT:Exterior Lights" ExpectationTT="TT:As required" />
       </Checkpoint>
       <Checkpoint Id="A320_CPREP1_NO_SMOKING">
-         <CheckpointDesc SubjectTT="TT:No Smoking Signs" ExpectationTT="TT:ON" />
+         <CheckpointDesc SubjectTT="TT:No Smoking Signs" ExpectationTT="TT:AUTO" />
          <Instrument Id="Smoking_Switch"/>
       </Checkpoint>
       <Checkpoint Id="A320_CPREP1_SEATBELTS">
-         <CheckpointDesc SubjectTT="TT:Seatbelt Signs" ExpectationTT="TT:AUTO" />
+         <CheckpointDesc SubjectTT="TT:Seatbelt Signs" ExpectationTT="TT:ON" />
          <Instrument Id="Seatbelt_Switch"/>
       </Checkpoint>
       <Checkpoint Id="A320_CPREP1_EMERGENCY_EXIT">
@@ -211,7 +211,7 @@
          <CheckpointDesc SubjectTT="TT:TAKEOFF DATA INSERTION (PERF)" ExpectationTT="TT:" />
       </Checkpoint>
       <Checkpoint Id="A320_CPREP1_FMGS_V1_VR_V2">
-         <CheckpointDesc SubjectTT="TT:V1, Vr, V2 (INOP)" ExpectationTT="TT:INSERT/CHECK" />
+         <CheckpointDesc SubjectTT="TT:V1, Vr, V2" ExpectationTT="TT:INSERT/CHECK" />
       </Checkpoint>
       <Checkpoint Id="A320_CPREP1_FMGS_FLEX_TEMP">
          <CheckpointDesc SubjectTT="TT:FLEX To Temperature" ExpectationTT="TT:INSERT" />
@@ -331,7 +331,7 @@
          <CheckpointDesc SubjectTT="TT:WXR: Power Supply (INOP)" ExpectationTT="TT:OFF" />
       </Checkpoint>
       <Checkpoint Id="A320_CPREP1_WXR_WINDSHEAR">
-         <CheckpointDesc SubjectTT="TT:WXR: Windshear Switch (INOP)" ExpectationTT="TT:OFF" />
+         <CheckpointDesc SubjectTT="TT:WXR: Windshear Switch" ExpectationTT="TT:OFF" />
       </Checkpoint>
       <Checkpoint Id="A320_CPREP1_WXR_GAIN">
          <CheckpointDesc SubjectTT="TT:WXR: Gain (INOP)" ExpectationTT="TT:AUTO" />
@@ -362,7 +362,7 @@
          <Instrument Id="ENGINE_Switch_Engine_Mode" />
       </Checkpoint>
       <Checkpoint Id="A320_CPREP1_PARKING_BRAKE">
-         <CheckpointDesc SubjectTT="TT:Parking Brake" ExpectationTT="TT:ON THEN OFF" />
+         <CheckpointDesc SubjectTT="TT:Parking Brake" ExpectationTT="TT:OFF THEN ON" />
          <Instrument Id="LANDING_GEAR_Switch_ParkingBrake" />
       </Checkpoint>
       <Checkpoint Id="A320_CPREP1_GRAVITY_GEAR">
@@ -540,7 +540,7 @@
          <CheckpointDesc SubjectTT="TT:T/O DATA: Flaps Lever" ExpectationTT="TT:CHECK" />
       </Checkpoint>
       <Checkpoint Id="A320_TAXI_TO_DATA_VSPEEDS">
-         <CheckpointDesc SubjectTT="TT:T/O DATA: V1, Vr, V2 (INOP)" ExpectationTT="TT:REINSERT" />
+         <CheckpointDesc SubjectTT="TT:T/O DATA: V1, Vr, V2" ExpectationTT="TT:REINSERT" />
       </Checkpoint>
       <Checkpoint Id="A320_TAXI_TO_DATA_FLX_TEMP">
          <CheckpointDesc SubjectTT="TT:T/O DATA: FLX To Temperature" ExpectationTT="TT:REINSERT" />
@@ -574,7 +574,7 @@
          <CheckpointDesc SubjectTT="TT:Weather Radar" ExpectationTT="TT:AS REQUIRED" />
       </Checkpoint>
       <Checkpoint Id="A320_TAXI_PRED_WINDSHEAR_SYS">
-         <CheckpointDesc SubjectTT="TT:Predictive Windshear System (INOP)" ExpectationTT="TT:AUTO" />
+         <CheckpointDesc SubjectTT="TT:Predictive Windshear System" ExpectationTT="TT:AUTO" />
       </Checkpoint>
       <Checkpoint Id="A320_TAXI_SQUAWK">
          <CheckpointDesc SubjectTT="TT:Squawk Code" ExpectationTT="TT:CONFIRM" />
@@ -736,7 +736,7 @@
          <Instrument Id="Seatbelt_Switch"/>
       </Checkpoint>
       <Checkpoint Id="A320_CLIMB_EDIS">
-         <CheckpointDesc SubjectTT="TT:EDIS Options (INOP)" ExpectationTT="TT:ARPT" />
+         <CheckpointDesc SubjectTT="TT:EDIS Options" ExpectationTT="TT:ARPT" />
       </Checkpoint>
       <Checkpoint Id="A320_CLIMB_ECAM_MEMO">
          <CheckpointDesc SubjectTT="TT:ECAM MEMO" ExpectationTT="TT:CHECK" />
@@ -773,7 +773,7 @@
          <CheckpointDesc SubjectTT="TT:Cabin Temperature" ExpectationTT="TT:MONITOR" />
       </Checkpoint>
       <Checkpoint Id="A320_CRUISE_OXYGEN_MASK">
-         <CheckpointDesc SubjectTT="TT:Oxygen Mask (ONLY IF OXYGEN MASK WAS USED)" ExpectationTT="TT:CHECK" />
+         <CheckpointDesc SubjectTT="TT:Oxygen Mask (IF USED)" ExpectationTT="TT:CHECK" />
       </Checkpoint>
       <!-- Descent Preparation -->
       <Checkpoint Id="A320_DPREP_LANDING_ELEVATION">
@@ -1201,7 +1201,7 @@
          <CheckpointDesc SubjectTT="TT:Weather Radar" ExpectationTT="TT:OFF/STBY" />
       </Checkpoint>
       <Checkpoint Id="A320_AFTERLANDING_WXR_PWS">
-         <CheckpointDesc SubjectTT="TT:Predictive Windshear System (INOP)" ExpectationTT="TT:OFF" />
+         <CheckpointDesc SubjectTT="TT:Predictive Windshear System" ExpectationTT="TT:OFF" />
       </Checkpoint>
       <Checkpoint Id="A320_AFTERLANDING_BRAKE_TEMP">
          <CheckpointDesc SubjectTT="TT:Brake Temperature" ExpectationTT="TT:CHECK" />
