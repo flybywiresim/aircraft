@@ -240,6 +240,7 @@ var A320_Neo_UpperECAM;
             this.enginePanel = new A320_Neo_UpperECAM.EnginePanel(this, "EnginesPanel");
             this.infoTopPanel = new A320_Neo_UpperECAM.InfoTopPanel(this, "InfoTopPanel");
             this.flapsPanel = new A320_Neo_UpperECAM.FlapsPanel(this, "FlapsPanel");
+            this.overflowArrow = this.querySelector("#overflow-arrow");
             this.activeTakeoffConfigWarnings = [];
             this.ecamMessages = {
                 failures: [
@@ -249,6 +250,7 @@ var A320_Neo_UpperECAM;
                             {
                                 message: "DUAL FAILURE",
                                 level: 3,
+                                landASAP: true,
                                 isActive: () => {
                                     return ((this.engineShutdown(1) || this.engineFailed(1)) && (this.engineShutdown(2) || this.engineFailed(2)) && this.getCachedSimVar("AIRSPEED INDICATED", "knots") > 80);
                                 },
@@ -334,6 +336,7 @@ var A320_Neo_UpperECAM;
                             {
                                 message: "",
                                 level: 3,
+                                landASAP: true,
                                 isActive: () => {
                                     return (this.getCachedSimVar("L:FIRE_TEST_ENG1", "Bool") || this.getCachedSimVar("ENG ON FIRE:1", "Bool")) && !Simplane.getIsGrounded();
                                 },
@@ -347,6 +350,7 @@ var A320_Neo_UpperECAM;
                             {
                                 message: "",
                                 level: 3,
+                                landASAP: true,
                                 isActive: () => {
                                     return (this.getCachedSimVar("L:FIRE_TEST_ENG2", "Bool") || this.getCachedSimVar("ENG ON FIRE:2", "Bool")) && !Simplane.getIsGrounded();
                                 },
@@ -586,6 +590,7 @@ var A320_Neo_UpperECAM;
                             {
                                 message: "<span class='boxed'>FAIL</span>",
                                 level: 2,
+                                landASAP: true,
                                 inopSystems: [],
                                 isActive: () => {
                                     return this.engineFailed(1) && !this.engineFailed(2);
@@ -618,6 +623,7 @@ var A320_Neo_UpperECAM;
                             {
                                 message: "<span class='boxed'>FAIL</span>",
                                 level: 2,
+                                landASAP: true,
                                 inopSystems: [],
                                 isActive: () => {
                                     return this.engineFailed(2) && !this.engineFailed(1);
@@ -728,6 +734,20 @@ var A320_Neo_UpperECAM;
             this.secondaryEcamMessage = {
                 failures: [],
                 normal: [
+                    {
+                        message: "LAND ASAP",
+                        style: "fail-3",
+                        isActive: () => {
+                            return this.leftEcamMessagePanel.landASAP == 3;
+                        }
+                    },
+                    {
+                        message: "LAND ASAP",
+                        style: "fail-2",
+                        isActive: () => {
+                            return this.leftEcamMessagePanel.landASAP == 2;
+                        }
+                    },
                     {
                         message: "T.O. INHIBIT",
                         style: "InfoSpecial",
@@ -949,6 +969,8 @@ var A320_Neo_UpperECAM;
 
             this.frameCount++;
             if (this.frameCount % 16 == 0) this.simVarCache = {};
+
+            this.overflowArrow.setAttribute("opacity", (this.leftEcamMessagePanel.overflow || this.rightEcamMessagePanel.overflow) ? "1" : "0");
             
             //Show takeoff memo 2 mins after second engine start
             //Hides after takeoff thurst application
@@ -1788,6 +1810,8 @@ var A320_Neo_UpperECAM;
             }
             this.clearedMessages = [];
             this.inopSystems = {};
+            this.landASAP = 0;
+            this.overflow = false;
         }
         init() {
             super.init();
@@ -1798,6 +1822,7 @@ var A320_Neo_UpperECAM;
         update() {
             this.activeCategories = [];
             this.currentLine = 0;
+            this.overflow = false;
             var warningsCount = {
                 2: 0,
                 3: 0
@@ -1892,6 +1917,8 @@ var A320_Neo_UpperECAM;
                         this.activeCategories.push(_category);
                     }
                 }
+            } else {
+                this.overflow = true;
             }
             this.currentLine++;
         }
@@ -1901,6 +1928,7 @@ var A320_Neo_UpperECAM;
             this.hasActiveFailures = false;
             this.hasWarnings = false;
             this.hasCautions = false;
+            this.landASAP = 0;
             for (const system in this.inopSystems) {
                 this.inopSystems[system] = false;
             }
@@ -1925,6 +1953,9 @@ var A320_Neo_UpperECAM;
                         for (const system of message.inopSystems) {
                             this.inopSystems[system] = true;
                         }
+                    }
+                    if (isActive && message.landASAP == true) {
+                        if (this.landASAP < message.level) this.landASAP = message.level;
                     }
                 }
             }
