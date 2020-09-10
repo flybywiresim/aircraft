@@ -27,7 +27,8 @@ declare global {
         getAutoPilotAirspeedManaged(): boolean
         getAutoPilotHeadingManaged(): boolean
 
-        getAutoPilotMachModeActive(): boolean
+        getAutoPilotMachModeActive(): number
+        getEngineActive(_engineIndex: number): number
     };
 
     enum FlightPhase {
@@ -66,7 +67,12 @@ declare global {
     class EICASTemplateElement extends TemplateElement {
     }
 
+    class BaseEICAS {
+        
+    }
+
     const Airliners: {
+        BaseEICAS: new () => BaseEICAS,
         EICASTemplateElement: new () => EICASTemplateElement,
     };
 

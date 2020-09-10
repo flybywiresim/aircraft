@@ -49,6 +49,7 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
         this.groundLineSVGHeight = 0;
         this.thousandIndicator = null;
         this.targetAltitudeIndicatorSVGText = null;
+        this._delayedAltitude = 0;
         if (this.aircraft == Aircraft.CJ4) {
             this.construct_CJ4();
         }
@@ -1306,6 +1307,17 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
     }
     update(_dTime) {
         var altitude = Simplane.getAltitude();
+
+        // This stuff makes the altimeter do a smooth rise to the actual altitude after alignment reaches a certain point
+        const desiredDisplayedAltitude = SimVar.GetSimVarValue("L:A32NX_ADIRS_PFD_ALIGNED_FIRST", "Bool") === 0
+            ? 0
+            : altitude;
+        const delta = desiredDisplayedAltitude - this._delayedAltitude;
+        if (Math.abs(delta) > 0.01) {
+            this._delayedAltitude += delta * (4 * (_dTime / 1000));
+            altitude = this._delayedAltitude;
+        }
+
         var groundReference = altitude - Simplane.getAltitudeAboveGround();
         var baroMode = Simplane.getPressureSelectedMode(this.aircraft);
         var selectedAltitude;

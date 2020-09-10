@@ -3,6 +3,22 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
     // This js file has 2 intances at runtime, 1 upper screen and 1 lower
     get isTopScreen() { return this.urlConfig.index === 1; }
     get isBottomScreen() { return this.urlConfig.index === 2; }
+    changePage(_pageName) {
+        let pageName = _pageName.toUpperCase();
+        for (var i = 0; i < this.lowerScreenPages.length; i++) {
+            if (this.lowerScreenPages[i].name == pageName) {
+                let pageIndex = i;
+                if (pageIndex == this.currentPage) {
+                    pageName = "CRZ";
+                    pageIndex = -1;
+                }
+                this.currentPage = pageIndex;
+                SimVar.SetSimVarValue("L:XMLVAR_ECAM_CURRENT_PAGE", "number", pageIndex);
+                break;
+            }
+        }
+        this.SwitchToPageName(this.LOWER_SCREEN_GROUP_NAME, pageName);
+    }
     createUpperScreenPage() {
         this.upperTopScreen = new Airliners.EICASScreen("TopScreen", "TopScreen", "a320-neo-upper-ecam");
         this.annunciations = new Cabin_Annunciations();
@@ -25,12 +41,16 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         this.createLowerScreenPage("DOOR", "BottomScreen", "a320-neo-lower-ecam-door"); // MODIFIED
         this.createLowerScreenPage("WHEEL", "BottomScreen", "a320-neo-lower-ecam-wheel"); // MODIFIED
         this.createLowerScreenPage("FTCL", "BottomScreen", "a320-neo-lower-ecam-ftcl"); // MODIFIED
+        this.createLowerScreenPage("CRZ", "BottomScreen", "a320-neo-lower-ecam-crz"); // MODIFIED
     }
     getLowerScreenChangeEventNamePrefix() {
         return "ECAM_CHANGE_PAGE_";
     }
     Init() {
         super.Init();
+
+        this.currentPage = -1;
+
         this.changePage("FUEL"); // MODIFIED
         if (this.isTopScreen) {
             this.A32NXCore = new A32NX_Core();
@@ -50,7 +70,8 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         this.bottomSelfTestTimerStarted = false;
         this.bottomSelfTestLastKnobValue = 1;
         
-        this.ACPowerLastState = false;
+        // Using ternary in case the LVar is undefined
+        this.ACPowerLastState = SimVar.GetSimVarValue('L:A32NX_COLD_AND_DARK_SPAWN', 'Bool') ? 0 : 1;
 
         this.doorPageActivated = false;
         this.EngineStarter = 0;
