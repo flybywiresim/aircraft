@@ -327,7 +327,9 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             A320_Neo_CDU_SelectWptPage.ShowPage(this, waypoints, callback);
         });
     }
-    _getIndexFromTemp(temp) {
+
+    _getTempIndex() {
+        const temp = SimVar.GetSimVarValue("AMBIENT TEMPERATURE", "celsius")
         if (temp < -10)
             return 0;
         if (temp < 0)
@@ -368,93 +370,81 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             return 18;
         return 19;
     }
-    _computeV1Speed() {
+
+    _getVSpeed (dWeightCoef, min, max) {
         let runwayCoef = 1.0;
-        {
-            let runway = this.flightPlanManager.getDepartureRunway();
-            if (!runway) {
-                runway = this.flightPlanManager.getDetectedCurrentRunway();
-            }
-            console.log(runway);
-            if (runway) {
-                let f = (runway.length - 1500) / (2500 - 1500);
-                runwayCoef = Utils.Clamp(f, 0, 1);
-            }
+        const runway = this.flightPlanManager.getDepartureRunway() || this.flightPlanManager.getDetectedCurrentRunway();
+        if (runway) {
+            let f = (runway.length - 1500) / (2500 - 1500);
+            runwayCoef = Utils.Clamp(f, 0, 1);
         }
-        let dWeightCoeff = (this.getWeight(true) - 100) / (175 - 100);
-        dWeightCoeff = Utils.Clamp(dWeightCoeff, 0, 1);
-        dWeightCoeff = 0.7 + (1.0 - 0.7) * dWeightCoeff;
-        let flapsHandleIndex = SimVar.GetSimVarValue("FLAPS HANDLE INDEX", "Number");
-        let temp = SimVar.GetSimVarValue("AMBIENT TEMPERATURE", "celsius");
-        let index = this._getIndexFromTemp(temp);
-        console.log("Index From Temp = " + index);
-        let min = A320_Neo_CDU_MainDisplay._v1sConf1[index][0];
-        let max = A320_Neo_CDU_MainDisplay._v1sConf1[index][1];
-        this.v1Speed = min * (1 - runwayCoef) + max * runwayCoef;
-        this.v1Speed *= dWeightCoeff;
-        this.v1Speed += (flapsHandleIndex - 1) * 6;
-        this.v1Speed = Math.round(this.v1Speed);
-        SimVar.SetSimVarValue("L:AIRLINER_V1_SPEED", "Knots", this.v1Speed);
-        console.log("Computed V1Speed = " + this.v1Speed);
+
+        const flapsHandleIndex = this.flaps || SimVar.GetSimVarValue("FLAPS HANDLE INDEX", "Number");
+
+        let vSpeed = min * (1 - runwayCoef) + max * runwayCoef;
+        vSpeed *= dWeightCoef;
+        vSpeed += (flapsHandleIndex - 1) * 6;
+        return Math.round(vSpeed);
     }
+
+    _getV1Speed () {
+        let dWeightCoef = (this.getWeight(true) - 100) / (175 - 100);
+        dWeightCoef = Utils.Clamp(dWeightCoef, 0, 1);
+        dWeightCoef = 0.7 + (1.0 - 0.7) * dWeightCoef;
+
+        const tempIndex = this._getTempIndex();
+        let min = A320_Neo_CDU_MainDisplay._v1sConf1[tempIndex][0];
+        let max = A320_Neo_CDU_MainDisplay._v1sConf1[tempIndex][1];
+
+        return this._getVSpeed(dWeightCoef, min, max)
+    }
+    _computeV1Speed() {
+        // computeV1Speed is called by inherited class so it must remain,
+        // but we need the calculation logic so that sits in it's own function now.
+        const nextV1 = this._getV1Speed()
+        this.v1Speed = nextV1
+        SimVar.SetSimVarValue("L:AIRLINER_V1_SPEED", "Knots", nextV1);
+    }
+
+    _getVRSpeed() {
+        let dWeightCoef = (this.getWeight(true) - 100) / (175 - 100);
+        dWeightCoef = Utils.Clamp(dWeightCoef, 0, 1);
+        dWeightCoef = 0.695 + (0.985 - 0.695) * dWeightCoef;
+
+        const tempIndex = this._getTempIndex();
+        let min = A320_Neo_CDU_MainDisplay._vRsConf1[tempIndex][0];
+        let max = A320_Neo_CDU_MainDisplay._vRsConf1[tempIndex][1];
+
+        return this._getVSpeed(dWeightCoef, min, max)
+     }
     _computeVRSpeed() {
-        let runwayCoef = 1.0;
-        {
-            let runway = this.flightPlanManager.getDepartureRunway();
-            if (!runway) {
-                runway = this.flightPlanManager.getDetectedCurrentRunway();
-            }
-            console.log(runway);
-            if (runway) {
-                let f = (runway.length - 1500) / (2500 - 1500);
-                runwayCoef = Utils.Clamp(f, 0, 1);
-            }
-        }
-        let dWeightCoeff = (this.getWeight(true) - 100) / (175 - 100);
-        dWeightCoeff = Utils.Clamp(dWeightCoeff, 0, 1);
-        dWeightCoeff = 0.695 + (0.985 - 0.695) * dWeightCoeff;
-        let flapsHandleIndex = SimVar.GetSimVarValue("FLAPS HANDLE INDEX", "Number");
-        let temp = SimVar.GetSimVarValue("AMBIENT TEMPERATURE", "celsius");
-        let index = this._getIndexFromTemp(temp);
-        console.log("Index From Temp = " + index);
-        let min = A320_Neo_CDU_MainDisplay._vRsConf1[index][0];
-        let max = A320_Neo_CDU_MainDisplay._vRsConf1[index][1];
-        this.vRSpeed = min * (1 - runwayCoef) + max * runwayCoef;
-        this.vRSpeed *= dWeightCoeff;
-        this.vRSpeed += (flapsHandleIndex - 1) * 6;
-        this.vRSpeed = Math.round(this.vRSpeed);
-        SimVar.SetSimVarValue("L:AIRLINER_VR_SPEED", "Knots", this.vRSpeed);
-        console.log("Computed VRSpeed = " + this.vRSpeed);
+        // computeVRSpeed is called by inherited class so it must remain,
+        // but we need the calculation logic so that sits in it's own function now.
+        const nextVR = this._getVRSpeed()
+        this.vRSpeed = nextVR
+        SimVar.SetSimVarValue("L:AIRLINER_VR_SPEED", "Knots", nextVR);
+    }
+
+    _getV2Speed() {
+        let dWeightCoef = (this.getWeight(true) - 100) / (175 - 100);
+        dWeightCoef = Utils.Clamp(dWeightCoef, 0, 1);
+        dWeightCoef = 0.71 + (0.96 - 0.71) * dWeightCoef;
+
+        const tempIndex = this._getTempIndex();
+        let min = A320_Neo_CDU_MainDisplay._v2sConf1[tempIndex][0];
+        let max = A320_Neo_CDU_MainDisplay._v2sConf1[tempIndex][1];
+
+        return this._getVSpeed(dWeightCoef, min, max)
     }
     _computeV2Speed() {
-        let runwayCoef = 1.0;
-        {
-            let runway = this.flightPlanManager.getDepartureRunway();
-            if (!runway) {
-                runway = this.flightPlanManager.getDetectedCurrentRunway();
-            }
-            console.log(runway);
-            if (runway) {
-                let f = (runway.length - 1500) / (2500 - 1500);
-                runwayCoef = Utils.Clamp(f, 0, 1);
-            }
-        }
-        let dWeightCoeff = (this.getWeight(true) - 100) / (175 - 100);
-        dWeightCoeff = Utils.Clamp(dWeightCoeff, 0, 1);
-        dWeightCoeff = 0.71 + (0.96 - 0.71) * dWeightCoeff;
-        let flapsHandleIndex = SimVar.GetSimVarValue("FLAPS HANDLE INDEX", "Number");
-        let temp = SimVar.GetSimVarValue("AMBIENT TEMPERATURE", "celsius");
-        let index = this._getIndexFromTemp(temp);
-        console.log("Index From Temp = " + index);
-        let min = A320_Neo_CDU_MainDisplay._v2sConf1[index][0];
-        let max = A320_Neo_CDU_MainDisplay._v2sConf1[index][1];
-        this.v2Speed = min * (1 - runwayCoef) + max * runwayCoef;
-        this.v2Speed *= dWeightCoeff;
-        this.v2Speed += (flapsHandleIndex - 1) * 6;
-        this.v2Speed = Math.round(this.v2Speed);
-        SimVar.SetSimVarValue("L:AIRLINER_V2_SPEED", "Knots", this.v2Speed);
-        console.log("Computed VRSpeed = " + this.v2Speed);
+        // computeV2Speed is called by inherited class so it must remain,
+        // but we need the calculation logic so that sits in it's own function now.
+        const nextV2 = this._getV2Speed()
+        this.v2Speed = nextV2
+        SimVar.SetSimVarValue("L:AIRLINER_V2_SPEED", "Knots", nextV2);
     }
+
+
     isAirspeedManaged() {
         return SimVar.GetSimVarValue("AUTOPILOT SPEED SLOT INDEX", "number") === 2;
     }
@@ -687,7 +677,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         const rightThrottleDetent = Simplane.getEngineThrottleMode(1);
         const highestThrottleDetent = (leftThrottleDetent >= rightThrottleDetent) ? leftThrottleDetent : rightThrottleDetent;
 
-        
+
 
         //End preflight when takeoff power is applied and engines are running
         if (this.currentFlightPhase <= 2) {
@@ -781,7 +771,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             //Reset timer to 30 when airborne in case of go around
             this.landingResetTimer = 30;
         }
-        
+
         if (SimVar.GetSimVarValue("L:AIRLINER_FLIGHT_PHASE", "number") != this.currentFlightPhase) {
             SimVar.SetSimVarValue("L:AIRLINER_FLIGHT_PHASE", "number", this.currentFlightPhase);
             this.onFlightPhaseChanged();
@@ -818,7 +808,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             SimVar.SetSimVarValue("L:A32NX_ADIRS_PFD_ALIGNED_ATT", "Bool", 0);
             ADIRSState = 1;
             let currentLatitude = SimVar.GetSimVarValue("GPS POSITION LAT", "degree latitude")
-            ADIRSTimer = Math.abs(1.14 * currentLatitude) * 10; //ADIRS ALIGN TIME DEPENDING ON LATITUDE.
+            ADIRSTimer = (Math.pow(currentLatitude, 2) * 0.095) + 310; //ADIRS ALIGN TIME DEPENDING ON LATITUDE.
             SimVar.SetSimVarValue("L:A320_Neo_ADIRS_TIME", "Seconds", ADIRSTimer);
             SimVar.SetSimVarValue("L:A32NX_Neo_ADIRS_START_TIME", "Seconds", ADIRSTimer);
         }
@@ -852,7 +842,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         SimVar.SetSimVarValue("L:A320_Neo_ADIRS_ALIGN_LIGHT_1", "Bool", (SimVar.GetSimVarValue("L:A320_Neo_ADIRS_KNOB_1", "Enum") == 1 && ADIRSState != 2) );
         SimVar.SetSimVarValue("L:A320_Neo_ADIRS_ALIGN_LIGHT_2", "Bool", (SimVar.GetSimVarValue("L:A320_Neo_ADIRS_KNOB_2", "Enum") == 1 && ADIRSState != 2) );
         SimVar.SetSimVarValue("L:A320_Neo_ADIRS_ALIGN_LIGHT_3", "Bool", (SimVar.GetSimVarValue("L:A320_Neo_ADIRS_KNOB_3", "Enum") == 1 && ADIRSState != 2) );
-        
+
     }
 }
 A320_Neo_CDU_MainDisplay._v1sConf1 = [
