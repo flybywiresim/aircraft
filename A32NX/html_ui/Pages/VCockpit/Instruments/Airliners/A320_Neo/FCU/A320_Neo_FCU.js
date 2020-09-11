@@ -140,7 +140,9 @@ class A320_Neo_FCU_Speed extends A320_Neo_FCU_Component {
     init() {
         this.textSPD = this.getTextElement("SPD");
         this.textMACH = this.getTextElement("MACH");
-        this.decimalPoint = this.getElement("circle", "DEC_PNT");
+        this.decimalPoint1 = this.getElement("circle", "DEC_PNT1");
+        this.decimalPoint2 = this.getElement("circle", "DEC_PNT2");
+        this.decimalPoint3 = this.getElement("circle", "DEC_PNT3");
         this.illuminator = this.getElement("circle", "Illuminator");
         this.refresh(false, false, false, false, 0, 0, true);
     }
@@ -161,7 +163,9 @@ class A320_Neo_FCU_Speed extends A320_Neo_FCU_Component {
             this.lightsTest = _lightsTest;
             if (this.lightsTest) {
                 this.setElementVisibility(this.illuminator, true);
-                this.setElementVisibility(this.decimalPoint, true);
+                this.setElementVisibility(this.decimalPoint1, true);
+                this.setElementVisibility(this.decimalPoint2, true);
+                this.setElementVisibility(this.decimalPoint3, true);
                 this.textValueContent = "888";
                 this.setTextElementActive(this.textSPD, true);
                 this.setTextElementActive(this.textMACH, true);
@@ -171,7 +175,7 @@ class A320_Neo_FCU_Speed extends A320_Neo_FCU_Component {
                     var value = Math.round(Math.max(this.currentValue, 0));
                     this.textValueContent = value.toString().padStart(3, "0");
                     this.setElementVisibility(this.illuminator, false);
-                    this.setElementVisibility(this.decimalPoint, _machActive);
+                    this.setElementVisibility(this.decimalPoint2, _machActive);
                 }
                 else if (this.isManaged) {
                     if (this.showSelectedSpeed) {
@@ -183,7 +187,9 @@ class A320_Neo_FCU_Speed extends A320_Neo_FCU_Component {
                     }
                 }
                 this.setElementVisibility(this.illuminator, this.isManaged);
-                this.setElementVisibility(this.decimalPoint, _machActive);
+                this.setElementVisibility(this.decimalPoint1, false);
+                this.setElementVisibility(this.decimalPoint2, _machActive);
+                this.setElementVisibility(this.decimalPoint3, false);
             }
         }
     }
@@ -196,8 +202,12 @@ class A320_Neo_FCU_Heading extends A320_Neo_FCU_Component {
     init() {
         this.textHDG = this.getTextElement("HDG");
         this.textTRK = this.getTextElement("TRK");
+        this.textLAT = this.getTextElement("LAT");
+        this.decimalPoint1 = this.getElement("circle", "DEC_PNT1");
+        this.decimalPoint2 = this.getElement("circle", "DEC_PNT2");
+        this.decimalPoint3 = this.getElement("circle", "DEC_PNT3");
         this.illuminator = this.getElement("circle", "Illuminator");
-        this.refresh(false, false, false, false, 0, true);
+        this.refresh(false, false, false, false, 0, 0, true);
     }
     onFlightStart() {
         super.onFlightStart();
@@ -222,22 +232,23 @@ class A320_Neo_FCU_Heading extends A320_Neo_FCU_Component {
                 showSelectedHeading = false;
             }
         }
+        const lightsTest = SimVar.GetSimVarValue("L:XMLVAR_LTS_Test", "Bool");
         if (isLateralModeActive) {
-            this.refresh(false, isManaged, isTRKMode, showSelectedHeading, 0);
+            this.refresh(false, isManaged, isTRKMode, showSelectedHeading, 0, lightsTest);
         }
         else {
             {
                 if (isTRKMode) {
-                    this.refresh(true, isManaged, true, showSelectedHeading, Simplane.getAutoPilotTrackAngle());
+                    this.refresh(true, isManaged, true, showSelectedHeading, Simplane.getAutoPilotTrackAngle(), lightsTest);
                 }
                 else {
-                    this.refresh(true, isManaged, false, showSelectedHeading, Simplane.getAutoPilotSelectedHeadingLockValue(false));
+                    this.refresh(true, isManaged, false, showSelectedHeading, Simplane.getAutoPilotSelectedHeadingLockValue(false), lightsTest);
                 }
             }
         }
     }
-    refresh(_isActive, _isManaged, _isTRKMode, _showSelectedHeading, _value, _force = false) {
-        if ((_isActive != this.isActive) || _isManaged != this.isManaged || (_isTRKMode != this.isTRKMode) || (_showSelectedHeading != this.showSelectedHeading) || (_value != this.currentValue) || _force) {
+    refresh(_isActive, _isManaged, _isTRKMode, _showSelectedHeading, _value, _lightsTest, _force = false) {
+        if ((_isActive != this.isActive) || _isManaged != this.isManaged || (_isTRKMode != this.isTRKMode) || (_showSelectedHeading != this.showSelectedHeading) || (_value != this.currentValue) || (_lightsTest !== this.lightsTest) || _force) {
             if (_isManaged != this.isManaged)
                 this.onManagedChanged(_isManaged);
             if (_value != this.currentValue)
@@ -251,20 +262,36 @@ class A320_Neo_FCU_Heading extends A320_Neo_FCU_Component {
             this.currentValue = _value;
             this.setTextElementActive(this.textHDG, !this.isTRKMode);
             this.setTextElementActive(this.textTRK, this.isTRKMode);
-            if (!this.isManaged) {
-                var value = Math.floor(Math.max(this.currentValue, 0));
-                this.textValueContent = value.toString().padStart(3, "0");
+            this.lightsTest = _lightsTest;
+            if (this.lightsTest) {
+                this.setTextElementActive(this.textHDG, true);
+                this.setTextElementActive(this.textTRK, true);
+                this.setTextElementActive(this.textLAT, true);
+                this.textValueContent = "888";
+                this.setElementVisibility(this.illuminator, true);
+                this.setElementVisibility(this.decimalPoint1, true);
+                this.setElementVisibility(this.decimalPoint2, true);
+                this.setElementVisibility(this.decimalPoint3, true);
             }
-            else if (this.isManaged) {
-                if (this.showSelectedHeading) {
+            else {
+                if (!this.isManaged) {
                     var value = Math.floor(Math.max(this.currentValue, 0));
                     this.textValueContent = value.toString().padStart(3, "0");
                 }
-                else {
-                    this.textValueContent = "---";
+                else if (this.isManaged) {
+                    if (this.showSelectedHeading) {
+                        var value = Math.floor(Math.max(this.currentValue, 0));
+                        this.textValueContent = value.toString().padStart(3, "0");
+                    }
+                    else {
+                        this.textValueContent = "---";
+                    }
                 }
+                this.setElementVisibility(this.illuminator, this.isManaged);
+                this.setElementVisibility(this.decimalPoint1, false);
+                this.setElementVisibility(this.decimalPoint2, false);
+                this.setElementVisibility(this.decimalPoint3, false);
             }
-            this.setElementVisibility(this.illuminator, this.isManaged);
         }
     }
     onManagedChanged(_newValue) {
