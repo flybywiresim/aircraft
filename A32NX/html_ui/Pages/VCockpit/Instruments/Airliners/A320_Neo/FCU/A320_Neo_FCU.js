@@ -320,18 +320,27 @@ class A320_Neo_FCU_Mode extends A320_Neo_FCU_Component {
         this.textVS = this.getTextElement("VS");
         this.textTRK = this.getTextElement("TRK");
         this.textFPA = this.getTextElement("FPA");
-        this.refresh(false, true);
+        this.refresh(false, 0, true);
     }
     update(_deltaTime) {
-        this.refresh(Simplane.getAutoPilotTRKFPAModeActive());
+        this.refresh(Simplane.getAutoPilotTRKFPAModeActive(), SimVar.GetSimVarValue("L:XMLVAR_LTS_Test", "Bool"));
     }
-    refresh(_isTRKFPADisplayMode, _force = false) {
-        if ((_isTRKFPADisplayMode != this.isTRKFPADisplayMode) || _force) {
+    refresh(_isTRKFPADisplayMode, _lightsTest, _force = false) {
+        if ((_isTRKFPADisplayMode != this.isTRKFPADisplayMode) || (_lightsTest !== this.lightsTest) || _force) {
             this.isTRKFPADisplayMode = _isTRKFPADisplayMode;
-            this.setTextElementActive(this.textHDG, !this.isTRKFPADisplayMode);
-            this.setTextElementActive(this.textVS, !this.isTRKFPADisplayMode);
-            this.setTextElementActive(this.textTRK, this.isTRKFPADisplayMode);
-            this.setTextElementActive(this.textFPA, this.isTRKFPADisplayMode);
+            this.lightsTest = _lightsTest;
+            if (this.lightsTest) {
+                this.setTextElementActive(this.textHDG, true);
+                this.setTextElementActive(this.textVS, true);
+                this.setTextElementActive(this.textTRK, true);
+                this.setTextElementActive(this.textFPA, true);
+            }
+            else {
+                this.setTextElementActive(this.textHDG, !this.isTRKFPADisplayMode);
+                this.setTextElementActive(this.textVS, !this.isTRKFPADisplayMode);
+                this.setTextElementActive(this.textTRK, this.isTRKFPADisplayMode);
+                this.setTextElementActive(this.textFPA, this.isTRKFPADisplayMode);
+            }
         }
     }
 }
