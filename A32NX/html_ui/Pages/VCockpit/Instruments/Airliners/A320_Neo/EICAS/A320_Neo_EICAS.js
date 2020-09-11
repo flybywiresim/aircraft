@@ -197,11 +197,11 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         const EngModeSel = SimVar.GetSimVarValue("L:XMLVAR_ENG_MODE_SEL", "number");
         const spoilerOrFlapsDeployed = SimVar.GetSimVarValue("FLAPS HANDLE INDEX", "number") != 0 || SimVar.GetSimVarValue("SPOILERS HANDLE POSITION", "percent") != 0;
 
-        const crzCond = ((spoilerOrFlapsDeployed || ToPowerSet) && (currFlightPhase == FlightPhase.FLIGHT_PHASE_CLIMB) && this.CrzCondTimer <= 0) || (currFlightPhase == FlightPhase.FLIGHT_PHASE_CLIMB && !spoilerOrFlapsDeployed && !ToPowerSet);
+        const crzCond = ((spoilerOrFlapsDeployed || ToPowerSet) && (currFlightPhase == FlightPhase.FLIGHT_PHASE_CLIMB || currFlightPhase == FlightPhase.FLIGHT_PHASE_CRUISE) && this.CrzCondTimer <= 0) || (currFlightPhase == FlightPhase.FLIGHT_PHASE_CLIMB && !spoilerOrFlapsDeployed && !ToPowerSet);
 
-        if ((currFlightPhase != FlightPhase.FLIGHT_PHASE_CLIMB) || (!spoilerOrFlapsDeployed && !ToPowerSet)) {
+        if ((currFlightPhase != FlightPhase.FLIGHT_PHASE_CLIMB || currFlightPhase == FlightPhase.FLIGHT_PHASE_CRUISE) || (!spoilerOrFlapsDeployed && !ToPowerSet) && this.CrzCondTimer >= 0) {
             this.CrzCondTimer = 60;
-        } else if ((spoilerOrFlapsDeployed || ToPowerSet) && (currFlightPhase == FlightPhase.FLIGHT_PHASE_CLIMB) && this.CrzCondTimer >= 0) {
+        } else if ((spoilerOrFlapsDeployed || ToPowerSet) && (currFlightPhase == FlightPhase.FLIGHT_PHASE_CLIMB || currFlightPhase == FlightPhase.FLIGHT_PHASE_CRUISE) && this.CrzCondTimer >= 0) {
             this.CrzCondTimer -= _deltaTime/1000;
         }
 
@@ -222,8 +222,9 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
 
             this.pageNameWhenUnselected = "APU";
         } else if (isACPowerAvailable && !engineOn && Simplane.getIsGrounded()) {
-            // reset minIndex after shutdown
+            // reset minIndex and cruise timer after shutdown
             this.minPageIndexWhenUnselected = 0;
+            this.CrzCondTimer = 60;
             this.pageNameWhenUnselected = "DOOR";
         } else if (engineOn && !ToPowerSet && Simplane.getIsGrounded() && this.minPageIndexWhenUnselected <= 1) {
             const sidestickPosX = SimVar.GetSimVarValue("YOKE X POSITION", "Position");
@@ -242,11 +243,12 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
             }
         } else if ((ToPowerSet || !Simplane.getIsGrounded()) && !crzCond && this.minPageIndexWhenUnselected <= 2) {
             this.pageNameWhenUnselected = "ENG";
-        } else if (crzCond && !(isGearExtended && altitude < 16000)) {
+        } else if (crzCond && !(isGearExtended && altitude < 16000) && this.minPageIndexWhenUnselected <= 3) {
             this.pageNameWhenUnselected = "CRZ";
+            this.minPageIndexWhenUnselected = 3;
         } else if (isGearExtended && (altitude < 16000)) {
             this.pageNameWhenUnselected = "WHEEL";
-            this.minPageIndexWhenUnselected = 5;
+            this.minPageIndexWhenUnselected = 4;
         }
 
         // switch page when desired page was changed
