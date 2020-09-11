@@ -323,8 +323,21 @@ class A320_Neo_FDW extends BaseAirliners {
         else if (!isOn && (this.currentFrequencyType != A320_Neo_RadioManagement.FREQUENCY_TYPE.NONE)) {
             this.switchOff();
         }
+
+        const lightsTest = SimVar.GetSimVarValue("L:XMLVAR_LTS_Test", "Bool");
+        const lightsTestChanged = lightsTest !== this.lightsTest;
+        this.lightsTest = lightsTest;
+
+        if (lightsTest) {
+            if (lightsTestChanged) {
+                this.valueTexts[0].textContent = "888.888";
+                this.valueTexts[1].textContent = "888.888";
+            }
+            return;
+        }
+
         var needShowValues = (isOn && (this.currentFrequencyType != A320_Neo_RadioManagement.FREQUENCY_TYPE.NONE));
-        if (needShowValues != this.showValues) {
+        if (needShowValues != this.showValues || lightsTestChanged) {
             this.showValues = needShowValues;
             if (!this.showValues) {
                 if (this.valueTexts[0] != null) {
