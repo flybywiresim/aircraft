@@ -603,19 +603,28 @@ class A320_Neo_FCU_Pressure extends A320_Neo_FCU_Component {
         this.textQFE = this.getTextElement("QFE");
         this.textQNH = this.getTextElement("QNH");
         this.decimalPoint = this.getElement("circle", "DEC_PNT");
-        this.refresh("QFE", true, 0, true);
+        this.refresh("QFE", true, 0, false, true);
     }
     update(_deltaTime) {
         var units = Simplane.getPressureSelectedUnits();
         var mode = Simplane.getPressureSelectedMode(Aircraft.A320_NEO);
-        this.refresh(mode, (units != "millibar"), Simplane.getPressureValue(units));
+        this.refresh(mode, (units != "millibar"), Simplane.getPressureValue(units), SimVar.GetSimVarValue("L:XMLVAR_LTS_Test", "Bool"));
     }
-    refresh(_mode, _isHGUnit, _value, _force = false) {
-        if ((_mode != this.currentMode) || (_isHGUnit != this.isHGUnit) || (_value != this.currentValue) || _force) {
+    refresh(_mode, _isHGUnit, _value, _lightsTest, _force = false) {
+        if ((_mode != this.currentMode) || (_isHGUnit != this.isHGUnit) || (_value != this.currentValue) || (_lightsTest !== this.lightsTest) || _force) {
             this.currentMode = _mode;
             this.isHGUnit = _isHGUnit;
             this.currentValue = _value;
-            if (this.currentMode == "STD") {
+            this.lightsTest = _lightsTest;
+            if (this.lightsTest) {
+                this.standardElem.style.display = "none";
+                this.selectedElem.style.display = "block";
+                this.setTextElementActive(this.textQFE, true);
+                this.setTextElementActive(this.textQNH, true);
+                this.textValueContent = "8888";
+                this.setElementVisibility(this.decimalPoint, true);
+            }
+            else if (this.currentMode == "STD") {
                 this.standardElem.style.display = "block";
                 this.selectedElem.style.display = "none";
                 SimVar.SetSimVarValue("KOHLSMAN SETTING STD", "Bool", 1);
