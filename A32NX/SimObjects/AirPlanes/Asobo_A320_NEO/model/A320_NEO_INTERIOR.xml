@@ -2454,7 +2454,7 @@
 		</UseTemplate>
 		<UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
 			<NODE_ID>PUSH_ATC_FAIL_SEQ2</NODE_ID>
-			<EMISSIVE_CODE>0</EMISSIVE_CODE>
+			<EMISSIVE_CODE>(L:XMLVAR_LTS_Test)</EMISSIVE_CODE>
 		</UseTemplate>
 	</Component>
 
