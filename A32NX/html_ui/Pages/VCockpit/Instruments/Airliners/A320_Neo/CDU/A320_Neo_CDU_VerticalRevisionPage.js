@@ -33,15 +33,6 @@ class CDUVerticalRevisionPage {
                     altitudeConstraint = ((waypoint.legAltitude1 + waypoint.legAltitude2) * 0.5).toFixed(0);
                 }
             }
-            mcdu.onRightInput[5] = async () => {
-                let value = mcdu.inOut;
-                if (value.length >= 0) {
-                    mcdu.clearUserInput();
-                    mcdu.insertWaypoint(value, mcdu.flightPlanManager.getEnRouteWaypointsLastIndex() + 1, () => {
-                        A320_Neo_CDU_AirwaysFromWaypointPage.ShowPage(mcdu, waypoint, offset);
-                    });
-                }
-            };
             mcdu.setTemplate([
                 ["VERT REV AT " + waypointIdent],
                 [" EFOB=" + efob,  "EXTRA=" + extra],
@@ -71,15 +62,31 @@ class CDUVerticalRevisionPage {
                 mcdu.clearUserInput();
                 mcdu.showErrorMessage("NOT YET IMPLEMENTED");
             }; // SPD CSTR
-            mcdu.onRightInput[2] = async () => {
-                let value = parseInt(mcdu.inOut);
+            mcdu.onRightInput[2] =  () => {
+                let value = mcdu.inOut;
+                /* API limited at this moment, no way to alter a waypoint except altitude
+                waypoint.legAltitudeDescription = 1;
+                if (value.charAt(0) == '+')
+                {
+                    waypoint.legAltitudeDescription = 2;
+                    value = value.substring(1);
+                }
+                else if (value.charAt(0) == '-')
+                {
+                    waypoint.legAltitudeDescription = 3;
+                    value = value.substring(1);
+                } */
+                value = parseInt(value);
                 if (isFinite(value)) {
                     if (value >= 0) {
-                        // NYI
+                        mcdu.clearUserInput();
+                        mcdu.flightPlanManager.setWaypointAltitude(value / 3.28084, mcdu.flightPlanManager.indexOfWaypoint(waypoint), () => {
+                            this.ShowPage(mcdu, waypoint);
+                        });
                     }
                 }
-                mcdu.clearUserInput();
-                mcdu.showErrorMessage("NOT YET IMPLEMENTED");
+                else
+                    mcdu.showErrorMessage("INVALID ENTRY");
             }; // ALT CSTR
             mcdu.onLeftInput[4] = () => {}; // WIND
             mcdu.onRightInput[4] = () => {}; // STEP ALTS 
