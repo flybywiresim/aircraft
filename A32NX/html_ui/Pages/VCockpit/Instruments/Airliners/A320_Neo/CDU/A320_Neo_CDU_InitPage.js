@@ -118,15 +118,13 @@ class CDUInitPage {
         Coherent.trigger("AP_HDG_VAL_SET", 180);
     }
     // Does not refresh page so that other things can be performed first as necessary
-    static async updateTowIfNeeded(mcdu) {
+    static updateTowIfNeeded(mcdu) {
         if (isFinite(mcdu.taxiFuelWeight) &&
             isFinite(mcdu.zeroFuelWeight) &&
             isFinite(mcdu.blockFuel)) {
 
-            const tow = mcdu.zeroFuelWeight +
-                mcdu.blockFuel -
-                mcdu.taxiFuelWeight;
-            await mcdu.trySetTakeOffWeightLandingWeight(tow.toFixed(1));
+            const tow = mcdu.zeroFuelWeight + mcdu.blockFuel - mcdu.taxiFuelWeight;
+            mcdu.trySetTakeOffWeightLandingWeight(tow.toFixed(1));
         }
     }
     static ShowPage2(mcdu) {
