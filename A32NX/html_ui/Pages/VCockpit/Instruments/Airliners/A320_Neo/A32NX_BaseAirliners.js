@@ -326,8 +326,20 @@ var Airliners;
         }
         Update() {
             super.Update();
+
+            const lightsTest = SimVar.GetSimVarValue("L:XMLVAR_LTS_Test", "Bool");
+            const lightsTestChanged = lightsTest !== this.lightsTest;
+            this.lightsTest = lightsTest;
+
+            if (lightsTest) {
+                if (lightsTestChanged && this.valueText != null) {
+                    this.valueText.textContent = "8888";
+                }
+                return;
+            }
+
             let code = SimVar.GetSimVarValue("TRANSPONDER CODE:1", "number");
-            if (code != this.currentCode) {
+            if (code != this.currentCode || lightsTestChanged) {
                 this.currentCode = code;
                 this.currentDigits = [Math.floor(code / 1000), Math.floor((code % 1000) / 100), Math.floor((code % 100) / 10), code % 10];
                 this.refreshValue();
