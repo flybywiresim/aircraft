@@ -142,39 +142,49 @@ class A320_Neo_FCU_Speed extends A320_Neo_FCU_Component {
         this.textMACH = this.getTextElement("MACH");
         this.decimalPoint = this.getElement("circle", "DEC_PNT");
         this.illuminator = this.getElement("circle", "Illuminator");
-        this.refresh(false, false, false, false, 0);
+        this.refresh(false, false, false, false, 0, 0, true);
     }
     update(_deltaTime) {
         let showSelectedSpeed = SimVar.GetSimVarValue("L:A320_FCU_SHOW_SELECTED_SPEED", "number") === 1;
         let isManaged = Simplane.getAutoPilotAirspeedManaged();
         let isMachActive = Simplane.getAutoPilotMachModeActive();
-        this.refresh(true, isManaged, showSelectedSpeed, isMachActive, (isMachActive) ? Simplane.getAutoPilotSelectedMachHoldValue() * 100 : Simplane.getAutoPilotSelectedAirspeedHoldValue());
+        this.refresh(true, isManaged, showSelectedSpeed, isMachActive, (isMachActive) ? Simplane.getAutoPilotSelectedMachHoldValue() * 100 : Simplane.getAutoPilotSelectedAirspeedHoldValue(), SimVar.GetSimVarValue("L:XMLVAR_LTS_Test", "Bool"));
     }
-    refresh(_isActive, _isManaged, _showSelectedSpeed, _machActive, _value, _force = false) {
-        if ((_isActive != this.isActive) || (_isManaged != this.isManaged) || (_showSelectedSpeed != this.showSelectedSpeed) || (_value != this.currentValue) || _force) {
+    refresh(_isActive, _isManaged, _showSelectedSpeed, _machActive, _value, _lightsTest, _force = false) {
+        if ((_isActive != this.isActive) || (_isManaged != this.isManaged) || (_showSelectedSpeed != this.showSelectedSpeed) || (_value != this.currentValue) || (_lightsTest !== this.lightsTest) || _force) {
             this.isActive = _isActive;
             this.isManaged = _isManaged;
             this.showSelectedSpeed = _showSelectedSpeed;
             this.currentValue = _value;
             this.setTextElementActive(this.textSPD, !_machActive);
             this.setTextElementActive(this.textMACH, _machActive);
-            if (!this.isManaged) {
-                var value = Math.round(Math.max(this.currentValue, 0));
-                this.textValueContent = value.toString().padStart(3, "0");
-                this.setElementVisibility(this.illuminator, false);
-                this.setElementVisibility(this.decimalPoint, _machActive);
+            this.lightsTest = _lightsTest;
+            if (this.lightsTest) {
+                this.setElementVisibility(this.illuminator, true);
+                this.setElementVisibility(this.decimalPoint, true);
+                this.textValueContent = "888";
+                this.setTextElementActive(this.textSPD, true);
+                this.setTextElementActive(this.textMACH, true);
             }
-            else if (this.isManaged) {
-                if (this.showSelectedSpeed) {
+            else {
+                if (!this.isManaged) {
                     var value = Math.round(Math.max(this.currentValue, 0));
                     this.textValueContent = value.toString().padStart(3, "0");
+                    this.setElementVisibility(this.illuminator, false);
+                    this.setElementVisibility(this.decimalPoint, _machActive);
                 }
-                else {
-                    this.textValueContent = "---";
+                else if (this.isManaged) {
+                    if (this.showSelectedSpeed) {
+                        var value = Math.round(Math.max(this.currentValue, 0));
+                        this.textValueContent = value.toString().padStart(3, "0");
+                    }
+                    else {
+                        this.textValueContent = "---";
+                    }
                 }
+                this.setElementVisibility(this.illuminator, this.isManaged);
+                this.setElementVisibility(this.decimalPoint, _machActive);
             }
-            this.setElementVisibility(this.illuminator, this.isManaged);
-            this.setElementVisibility(this.decimalPoint, _machActive);
         }
     }
 }
@@ -603,7 +613,7 @@ class A320_Neo_FCU_Pressure extends A320_Neo_FCU_Component {
         this.textQFE = this.getTextElement("QFE");
         this.textQNH = this.getTextElement("QNH");
         this.decimalPoint = this.getElement("circle", "DEC_PNT");
-        this.refresh("QFE", true, 0, false, true);
+        this.refresh("QFE", true, 0, 0, true);
     }
     update(_deltaTime) {
         var units = Simplane.getPressureSelectedUnits();
