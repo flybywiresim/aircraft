@@ -359,35 +359,42 @@ class A320_Neo_FCU_Altitude extends A320_Neo_FCU_Component {
         else
             initValue = Math.round(initValue / 100) * 100;
         Coherent.call("AP_ALT_VAR_SET_ENGLISH", 1, initValue, true);
-        this.refresh(false, false, initValue, true);
+        this.refresh(false, false, initValue, 0, true);
     }
     reboot() {
         this.init();
     }
     update(_deltaTime) {
-        this.refresh(Simplane.getAutoPilotActive(), Simplane.getAutoPilotAltitudeManaged(), Simplane.getAutoPilotDisplayedAltitudeLockValue(Simplane.getAutoPilotAltitudeLockUnits()));
+        this.refresh(Simplane.getAutoPilotActive(), Simplane.getAutoPilotAltitudeManaged(), Simplane.getAutoPilotDisplayedAltitudeLockValue(Simplane.getAutoPilotAltitudeLockUnits()), SimVar.GetSimVarValue("L:XMLVAR_LTS_Test", "Bool"));
     }
-    refresh(_isActive, _isManaged, _value, _force = false) {
-        if ((_isActive != this.isActive) || (_isManaged != this.isManaged) || (_value != this.currentValue) || _force) {
+    refresh(_isActive, _isManaged, _value, _lightsTest, _force = false) {
+        if ((_isActive != this.isActive) || (_isManaged != this.isManaged) || (_value != this.currentValue) || (_lightsTest !== this.lightsTest) || _force) {
             this.isActive = _isActive;
             this.isManaged = _isManaged;
             this.currentValue = _value;
-            var value = Math.floor(Math.max(this.currentValue, 100));
-            this.textValueContent = value.toString().padStart(5, "0");
-            this.setElementVisibility(this.illuminator, this.isManaged);
-			if (!_isManaged) {
-				if ((Simplane.getAutoPilotAltitudeSelected() || Simplane.getAutoPilotAltitudeArmed()) && (Simplane.getAutoPilotFlightDirectorActive(1) || Simplane.getAutoPilotFlightDirectorActive(2)) && (Simplane.getAutoPilotActive(1)|| Simplane.getAutoPilotActive(2))) {
-					let targetAltitude = Simplane.getAutoPilotAltitudeLockValue("feets");
-					let altitude = Simplane.getAltitude();
-					if (altitude > targetAltitude + 100 || altitude < targetAltitude - 100) {
-						if (!Simplane.getAutoPilotGlideslopeHold()) {
-							SimVar.SetSimVarValue("L:A320_NEO_FCU_FORCE_IDLE_VS", "Number", 1);
-						}
-						Coherent.call("AP_ALT_VAR_SET_ENGLISH", 1, Simplane.getAutoPilotDisplayedAltitudeLockValue(), true);
-						SimVar.SetSimVarValue("K:ALTITUDE_SLOT_INDEX_SET", "number", 1);
-					}
-				}
-			}
+            this.lightsTest = _lightsTest;
+            if (this.lightsTest) {
+                this.textValueContent = "88888";
+                this.setElementVisibility(this.illuminator, true);
+            }
+            else {
+                var value = Math.floor(Math.max(this.currentValue, 100));
+                this.textValueContent = value.toString().padStart(5, "0");
+                this.setElementVisibility(this.illuminator, this.isManaged);
+                if (!_isManaged) {
+                    if ((Simplane.getAutoPilotAltitudeSelected() || Simplane.getAutoPilotAltitudeArmed()) && (Simplane.getAutoPilotFlightDirectorActive(1) || Simplane.getAutoPilotFlightDirectorActive(2)) && (Simplane.getAutoPilotActive(1) || Simplane.getAutoPilotActive(2))) {
+                        let targetAltitude = Simplane.getAutoPilotAltitudeLockValue("feets");
+                        let altitude = Simplane.getAltitude();
+                        if (altitude > targetAltitude + 100 || altitude < targetAltitude - 100) {
+                            if (!Simplane.getAutoPilotGlideslopeHold()) {
+                                SimVar.SetSimVarValue("L:A320_NEO_FCU_FORCE_IDLE_VS", "Number", 1);
+                            }
+                            Coherent.call("AP_ALT_VAR_SET_ENGLISH", 1, Simplane.getAutoPilotDisplayedAltitudeLockValue(), true);
+                            SimVar.SetSimVarValue("K:ALTITUDE_SLOT_INDEX_SET", "number", 1);
+                        }
+                    }
+                }
+            }
         }
     }
 }
