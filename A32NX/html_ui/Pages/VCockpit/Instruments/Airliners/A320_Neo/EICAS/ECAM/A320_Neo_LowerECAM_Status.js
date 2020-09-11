@@ -326,6 +326,7 @@ var A320_Neo_LowerECAM_Status;
         }
         init() {
             this.statusNormal = this.querySelector("#status-normal");
+            this.inopSysTitle = this.querySelector("#inop-sys-title");
             this.statusMessageArea.init();
             this.inopSystemsMessageArea.init();
             this.isInitialised = true;
@@ -339,6 +340,7 @@ var A320_Neo_LowerECAM_Status;
                 this.statusMessageArea.update();
                 this.inopSystemsMessageArea.update();
                 this.statusNormal.setAttribute("visibility", (this.statusMessageArea.hasActiveFailures || this.inopSystemsMessageArea.hasActiveMessages) ? "hidden" : "visible");
+                this.inopSysTitle.setAttribute("visibility", (this.statusMessageArea.hasActiveFailures || this.inopSystemsMessageArea.hasActiveMessages) ? "visible" : "hidden");
             }
         }
     }

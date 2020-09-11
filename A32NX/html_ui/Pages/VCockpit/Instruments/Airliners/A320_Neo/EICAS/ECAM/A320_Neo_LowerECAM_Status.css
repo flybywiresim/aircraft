@@ -28,7 +28,7 @@
     font-family: "Liberation Mono" !important; }
   :root text {
     font-family: "Liberation Mono" !important; }
-  :root #PageTitle {
+  :root .PageTitle {
     fill: var(--ecamDefaultColour);
     font-size: 25px;
     text-decoration: underline; }
