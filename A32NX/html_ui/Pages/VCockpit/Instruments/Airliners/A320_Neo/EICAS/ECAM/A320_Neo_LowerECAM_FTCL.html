@@ -140,12 +140,17 @@
         </g>
         <g id="rudderAxis">
             <path id="rudderPath" class="MainShape" d="M 350 469 A 100 100 0 0 1 250 469"></path>
-            <path id="rudderLeftLimitGreen" class="GreenShape" d="M246,473 l6,4"></path>
-            <path id="rudderLeftLimitWhite" class="MainShape" d="M253,464 l-6,10"></path>
-            <path id="rudderRightLimitGreen" class="GreenShape" d="M354,473 l-6,4"></path>
-            <path id="rudderRightLimitWhite" class="MainShape" d="M347,464 l6,10"></path>
-            <path id="rudderCenterThick" class="MainShape4" d="M300,482 l0,6"></path>
-            <path id="rudderCenterThin" class="MainShape" d="M300,482 l0,10"></path>
+            <path id="rudderCenter" class="MainShape" d="m302 482-6e-3 6-4 0.01 0.05-6"/>
+            <path id="rudderRightBorder" class="MainShape" d="m343 472 2 5-7 3-2-5"/>
+            <path id="rudderLeftBorder" class="MainShape" d="m257 472-2 5 7 3 2-5"/>
+        </g>
+        <g id="rudderLeftMaxAngle">
+            <path id="rudderLeftLimitGreen" class="GreenShape" d="m250 484 6 3"/>
+            <path id="rudderLeftLimitWhite" class="GreenShape" d="m257 472-7 13"/>
+        </g>
+        <g id="rudderRightMaxAngle">
+            <path id="rudderRightLimitGreen" class="GreenShape" d="m350 484-6 3" />
+            <path id="rudderRightLimitWhite" class="GreenShape" d="m343 472 7 13"/>
         </g>
         <g id="rudderCursor">
             <path id="rudderCircle" class="GreenShape" d="M 292 434 A 8 8 0 0 1 308 434"></path>

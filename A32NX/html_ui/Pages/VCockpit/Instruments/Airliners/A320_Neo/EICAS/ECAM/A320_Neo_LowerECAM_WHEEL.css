@@ -1,0 +1,265 @@
+:root {
+    --ecamDefaultColour: white;
+    --ecamUnitsColour: #03a0a0;
+    --ecamValueColour: #00b300;
+    --ecamWarningColour: #db7200;
+    --ecamDangerColour: red;
+    --ecamInactiveColour: #db7200;
+    --ecamSeparatorsColour: white; 
+    --ecamHydraulicBgYellow: #f5d108;
+    --ecamHydraulicBgGreen: #00b300;
+    --ecamHydraulicBgColour: #484848; }
+
+    @keyframes animate{ 
+        100%,
+        0%{ 
+            fill: #00b300; 
+        } 
+        60%{ 
+            fill: #0000; 
+        } 
+    }
+    
+    @keyframes animateLandingGear{
+        100%,
+        0%{ 
+            stroke: red;
+        } 
+        60%{ 
+            stroke:#000;
+        } 
+    }
+    
+    :root .Blink {
+        font-size: 18px;
+        animation: animate .8s 6;}
+
+    :root .BlinkLandingGear {
+        fill:none;
+        stroke-linejoin:round;
+        stroke-width:2.6;
+        animation: animateLandingGear .8s infinite;}
+
+    :root .Separator {
+        stroke: #3c3c3c;
+        stroke-width: 4;
+        fill: none; }
+    :root div {
+        font-family: Roboto-Bold; }
+    :root text {
+        font-family: Roboto-Bold; }
+    :root #PageTitle {
+        fill: var(--ecamDefaultColour);
+        font-size: 25px;
+        text-decoration: underline; }
+
+    :root .BrakeNumber {
+        fill: var(--ecamDefaultColour);
+        font-size: 15px;
+        text-anchor: middle !important; }
+    :root .WHEELGaugeParamUnit {
+        fill: var(--ecamUnitsColour);
+        font-size: 15px;
+        text-anchor: middle !important; }
+    :root .WHEELGaugeParamUnitWhite {
+        fill: var(--ecamDefaultColour);
+        font-size: 15px;
+        text-anchor: middle !important; }
+    :root .WHEELTempPrecentage {
+        fill: var(--ecamValueColour);
+        font-size: 18px;
+        text-anchor: middle !important; }
+    :root .AUTOBRAKEIndicator {
+        fill: var(--ecamWarningColour);
+        font-size: 18px;
+        text-anchor: middle !important; }
+    :root .ALTNBRKIndicator {
+        fill: var(--ecamValueColour);
+        font-size: 18px;
+        text-anchor: middle !important; }
+    :root .WHEELBRAKEWARNING {
+        fill: var(--ecamWarningColour);
+        font-size: 18px;
+        text-anchor: middle !important; }
+    :root .WHEELBRAKERED {
+        fill: var(--ecamDangerColour);
+        font-size: 18px;
+        text-anchor: middle !important; }
+
+
+    :root .WHITELINES {
+        fill: var(--ecamDefaultColour);
+        stroke-linecap:round;
+        stroke-linejoin:round;
+        stroke-miterlimit:10;
+        stroke-width:2.4146;
+        stroke:#ffffff
+    }
+
+    :root .WHITECIRCLES {
+        fill:none;
+        stroke-linecap:round;
+        stroke-linejoin:round;
+        stroke-miterlimit:10;
+        stroke-width:2.3127;
+        stroke:#ffffff
+    }
+
+    :root .LANDINGGEARGREEN {
+        fill:none;
+        stroke-linejoin:round;
+        stroke-width:2.6;
+        stroke:#009400
+    }
+
+    :root .LANDINGGEARRED {
+        fill:none;
+        stroke-linejoin:round;
+        stroke-width:2.6;
+        stroke: red;
+    }
+
+    :root .LANDINGGEARORANGE {
+        fill:none;
+        stroke-linecap:round;
+        stroke-width:2.4673;
+        stroke:#f29400
+    }
+
+    :root .FAILUREXX {
+        fill:#f29400;
+        font-family:B612-Regular;
+        font-size:13.713px;
+        stroke-width:.74974;
+        stroke:#f29400 }
+
+    :root .FAILUREBAR {
+        fill:none;
+        stroke-linecap:round;
+        stroke-width:2.1851;
+        stroke:#f29400
+    }
+
+    :root .LANDINGGEARUP {
+        fill:none;
+        stroke-linecap:round;
+        stroke-linejoin:round;
+        stroke-miterlimit:10;
+        stroke-width:2.802;
+        stroke:#00c800 }
+
+    :root .WHITEANCHORS {
+        color-rendering:auto;
+        color:#000000;
+        dominant-baseline:auto;
+        fill:#ffffff;
+        font-feature-settings:normal;
+        font-variant-alternates:normal;
+        font-variant-caps:normal;
+        font-variant-east-asian:normal;
+        font-variant-ligatures:normal;
+        font-variant-numeric:normal;
+        font-variant-position:normal;
+        font-variation-settings:normal;
+        image-rendering:auto;
+        inline-size:0;
+        isolation:auto;
+        mix-blend-mode:normal;
+        shape-margin:0;
+        shape-padding:0;
+        shape-rendering:auto;
+        solid-color:#000000;
+        stop-color:#000000;
+        text-decoration-color:#000000;
+        text-decoration-line:none;
+        text-decoration-style:solid;
+        text-indent:0;
+        text-orientation:mixed;
+        text-transform:none;
+        white-space:normal
+    }
+
+    :root .AUTOBRAKEUNDERLINE {
+        fill:none;
+        stroke-linecap:round;
+        stroke-width:2.477;
+        stroke:#00c800}
+
+
+    :root .ARROWLINER {
+        fill:none;
+        marker-end:url(#Arrow2Mend-8);
+        stroke-linecap:round;
+        stroke: var(--ecamValueColour);
+        stroke-miterlimit:4.1;
+        stroke-width:3.3; }
+
+    :root .ARROWLINEL {
+        fill:none;
+        marker-end:url(#Arrow2Mend-9);
+        stroke-linecap:round;
+        stroke: var(--ecamValueColour);
+        stroke-miterlimit:4.1;
+        stroke-width:3.3; }
+
+    :root .ARROW {
+        fill-rule:evenodd;
+        fill: var(--ecamValueColour);
+        stroke-linejoin:round;
+        stroke-width:.625;
+        stroke: var(--ecamValueColour);
+    }
+
+    a320-neo-lower-ecam-wheel {
+        display: block;
+        position: absolute;
+        top: -5%;
+        left: 0%;
+        width: 100%;
+        height: 100%;  }
+    a320-neo-lower-ecam-wheel .HydBgShape {
+        fill: var(--ecamHydraulicBgColour);
+        stroke: none; }
+    a320-neo-lower-ecam-wheel .HydColorYellow {
+        fill: var(--ecamHydraulicBgYellow);
+        stroke: none; }
+    a320-neo-lower-ecam-wheel .HydColorGreen {
+        fill: var(--ecamHydraulicBgGreen);
+        stroke: none; }
+    a320-neo-lower-ecam-wheel text.Value15 {
+        font-size: 15pt;
+        fill: var(--ecamValueColour); }
+    a320-neo-lower-ecam-wheel line.Indicator {
+        stroke: var(--ecamDefaultColour);
+        stroke-width: 1; }
+    a320-neo-lower-ecam-wheel text {
+        text-anchor: middle;
+        alignment-baseline: central; }
+    a320-neo-lower-ecam-wheel text.Title {
+        font-size: 18px;
+        fill: var(--ecamDefaultColour); }
+    a320-neo-lower-ecam-wheel text.Unit {
+        font-size: 18px;
+        fill: var(--ecamUnitsColour); }
+    a320-neo-lower-ecam-wheel text.Value {
+        font-size: 22px;
+        fill: var(--ecamValueColour); }
+    a320-neo-lower-ecam-wheel text.Warning {
+        font-size: 22px;
+        fill: var(--ecamWarningColour); }
+    a320-neo-lower-ecam-wheel .GreenShapeThick {
+        fill: transparent;
+        stroke: var(--ecamValueColour);
+        stroke-width: 3; 
+    }
+    a320-neo-lower-ecam-wheel .GreenArrow {
+        fill:none;
+        width: 3.3;
+        stroke: var(--ecamValueColour);
+        stroke-linecap: round;
+        stroke-linejoin: miter;
+        stroke-miterlimit: 4.1;
+        stroke-dasharray: none;
+        stroke-opacity: 1;
+        marker-end:url(#Arrow2Mend-8-6)
+    }
