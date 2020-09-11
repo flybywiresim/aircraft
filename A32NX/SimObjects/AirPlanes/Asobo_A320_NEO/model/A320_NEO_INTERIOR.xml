@@ -18,7 +18,20 @@
 	<Include Path="Asobo\Airliner\GlassCockpit.xml"/>
 	<Include Path="Asobo\Airliner\Airbus.xml"/>
 
-<!-- RETROECLAIRAGE #############################################################################################################-->	
+	<Template Name="A32NX_LANDING_GEAR_Light_Template">
+		<DefaultTemplateParameters>
+			<NODE_ID>LANDING_GEAR_Light_#ID#</NODE_ID>
+			<PART_ID>LANDING_GEAR_Light</PART_ID>
+			<SIMVAR>GEAR POSITION:#GEAR_ID#</SIMVAR>
+		</DefaultTemplateParameters>
+		<UseTemplate Name="ASOBO_GT_Push_Button_Airliner">
+			<DUMMY_BUTTON>True</DUMMY_BUTTON>
+			<SEQ1_EMISSIVE_CODE>0.01 99.99 (A:#SIMVAR#, Percent) rng (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or</SEQ1_EMISSIVE_CODE>
+			<SEQ2_EMISSIVE_CODE>90 100 (A:#SIMVAR#, Percent) rng (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or</SEQ2_EMISSIVE_CODE>
+		</UseTemplate>
+	</Template>
+
+	<!-- RETROECLAIRAGE #############################################################################################################-->
 	<Component ID="MCDU">
 		<UseTemplate Name="ASOBO_FMC_A320">
 			<ID>1</ID>
@@ -319,42 +332,42 @@
 			<NODE_ID_SCREEN>SCREEN_MCDUR</NODE_ID_SCREEN>
 		</UseTemplate>
 	</Component>
-	
-	<Component ID="LIGHTING">		
+
+	<Component ID="LIGHTING">
 		<UseTemplate Name="ASOBO_LIGHTING_Knob_Pedestal_Template">
 			<NODE_ID>LIGHTING_Knob_Pedestal</NODE_ID>
 			<ANIM_NAME>LIGHTING_Knob_Pedestal</ANIM_NAME>
 			<ANIMTIP_0>TT:COCKPIT.TOOLTIPS.LIGHTING_KNOB_PEDESTAL_DECREASE</ANIMTIP_0>
 			<ANIMTIP_1>TT:COCKPIT.TOOLTIPS.LIGHTING_KNOB_PEDESTAL_INCREASE</ANIMTIP_1>
 		</UseTemplate>
-		
+
 		<UseTemplate Name="ASOBO_LIGHTING_Pedestal_Emissive_Template">
 			<NODE_ID>LIGHT_OVHD_TOPEDESTAL</NODE_ID>
 		</UseTemplate>
-		
+
 		<UseTemplate Name="ASOBO_LIGHTING_Knob_Panel_Template">
 			<POTENTIOMETER>15</POTENTIOMETER>
 			<SIMVAR_INDEX>1</SIMVAR_INDEX>
 			<NODE_ID>LIGHTING_Knob_Panel</NODE_ID>
 			<ANIM_NAME>LIGHTING_Knob_Panel</ANIM_NAME>
 		</UseTemplate>
-		
+
 		<!-- All Pedestal & Main Panel Backlighting should be on potentiometer 15 -->
 		<UseTemplate Name="ASOBO_LIGHTING_Panel_Emissive_Template">
 			<NODE_ID>LIGHTS_PEDESTAL</NODE_ID>
 			<POTENTIOMETER>15</POTENTIOMETER>
 		</UseTemplate>
-		
+
 		<UseTemplate Name="ASOBO_LIGHTING_Panel_Emissive_Template">
 			<NODE_ID>LEVER_ELEVATORTRIM_DECAL</NODE_ID>
 			<POTENTIOMETER>15</POTENTIOMETER>
 		</UseTemplate>
-		
+
 		<UseTemplate Name="ASOBO_LIGHTING_Panel_Emissive_Template">
 			<NODE_ID>LIGHTS_MAINPANEL</NODE_ID>
 			<POTENTIOMETER>15</POTENTIOMETER>
 		</UseTemplate>
-		
+
 		<!-- Front Glareshields -->
 		<UseTemplate Name="ASOBO_LIGHTING_Knob_Glareshield_Template">
 			<ID>1</ID>
@@ -363,13 +376,13 @@
 			<ANIMTIP_0>TT:COCKPIT.TOOLTIPS.LIGHTING_MAIN_PANEL_FLOOD_DECREASE</ANIMTIP_0>
 			<ANIMTIP_1>TT:COCKPIT.TOOLTIPS.LIGHTING_MAIN_PANEL_FLOOD_INCREASE</ANIMTIP_1>
 		</UseTemplate>
-		
+
 		<UseTemplate Name="ASOBO_LIGHTING_Glareshield_Emissive_Template">
 			<NODE_ID>LIGHTS_Glareshield_Front_1</NODE_ID>
 			<SIMVAR_INDEX>1</SIMVAR_INDEX>
 			<POTENTIOMETER>11</POTENTIOMETER>
 		</UseTemplate>
-		
+
 		<UseTemplate Name="ASOBO_LIGHTING_Knob_Glareshield_Template">
 			<NODE_ID>LIGHTING_Knob_Glareshield_4</NODE_ID>
 			<ANIM_NAME>LIGHTING_Knob_Glareshield_4</ANIM_NAME>
@@ -377,13 +390,13 @@
 			<SIMVAR_INDEX>2</SIMVAR_INDEX>
 			<POTENTIOMETER>12</POTENTIOMETER>
 		</UseTemplate>
-		
+
 		<UseTemplate Name="ASOBO_LIGHTING_Glareshield_Emissive_Template">
 			<NODE_ID>LIGHTS_Glareshield_Front_2</NODE_ID>
 			<SIMVAR_INDEX>2</SIMVAR_INDEX>
 			<POTENTIOMETER>12</POTENTIOMETER>
 		</UseTemplate>
-		
+
 		<!-- Triangle Glareshields -->
 		<UseTemplate Name="ASOBO_LIGHTING_Knob_Glareshield_Template">
 			<NODE_ID>LIGHTING_Knob_Glareshield</NODE_ID>
@@ -392,63 +405,65 @@
 			<SIMVAR_INDEX>3</SIMVAR_INDEX>
 			<POTENTIOMETER>13</POTENTIOMETER>
 		</UseTemplate>
-		
+
 		<UseTemplate Name="ASOBO_LIGHTING_Glareshield_Emissive_Template">
 			<NODE_ID>LIGHTS_Glareshield_1</NODE_ID>
 			<SIMVAR_INDEX>3</SIMVAR_INDEX>
 			<POTENTIOMETER>13</POTENTIOMETER>
 		</UseTemplate>
-		
+
 		<UseTemplate Name="ASOBO_LIGHTING_Glareshield_Emissive_Template">
 			<NODE_ID>LIGHTS_Glareshield_2</NODE_ID>
 			<SIMVAR_INDEX>3</SIMVAR_INDEX>
 			<POTENTIOMETER>13</POTENTIOMETER>
 		</UseTemplate>
-		
+
 		<UseTemplate Name="ASOBO_LIGHTING_Glareshield_Emissive_Template">
 			<NODE_ID>LIGHTS_Glareshield_3</NODE_ID>
 			<SIMVAR_INDEX>3</SIMVAR_INDEX>
 			<POTENTIOMETER>13</POTENTIOMETER>
 		</UseTemplate>
-		
+
 		<UseTemplate Name="ASOBO_LIGHTING_Glareshield_Emissive_Template">
 			<NODE_ID>LIGHTS_Glareshield_4</NODE_ID>
 			<SIMVAR_INDEX>3</SIMVAR_INDEX>
 			<POTENTIOMETER>13</POTENTIOMETER>
 		</UseTemplate>
-		
+
 		<!-- Panel Lights -->
 		<UseTemplate Name="ASOBO_LIGHTING_Knob_Panel_Template">
 			<NODE_ID>LIGHTING_Knob_Glareshield_2</NODE_ID>
+			<PART_ID>Lighting_Knob_Glareshield_2</PART_ID>
 			<ANIM_NAME>LIGHTING_Knob_Glareshield_2</ANIM_NAME>
 			<ID>2</ID>
 			<SIMVAR_INDEX>2</SIMVAR_INDEX>
 			<POTENTIOMETER>14</POTENTIOMETER>
 		</UseTemplate>
-		
+
 		<UseTemplate Name="ASOBO_LIGHTING_Panel_Emissive_Template">
 			<NODE_ID>LIGHTS_AUTOPILOT</NODE_ID>
 			<SIMVAR_INDEX>2</SIMVAR_INDEX>
 			<POTENTIOMETER>14</POTENTIOMETER>
 		</UseTemplate>
-		
+
 		<UseTemplate Name="ASOBO_LIGHTING_Knob_Potentiometer_Template">
 			<NODE_ID>LIGHTING_Knob_Glareshield_3</NODE_ID>
+			<PART_ID>Lighting_Knob_Glareshield_3</PART_ID>
 			<ANIM_NAME>LIGHTING_Knob_Glareshield_3</ANIM_NAME>
 			<POTENTIOMETER>17</POTENTIOMETER>
 			<ANIMTIP_0>TT:COCKPIT.TOOLTIPS.FD_DISPLAY_BRIGHTNESS_DECREASE</ANIMTIP_0>
 			<ANIMTIP_1>TT:COCKPIT.TOOLTIPS.FD_DISPLAY_BRIGHTNESS_INCREASE</ANIMTIP_1>
 		</UseTemplate>
-		
+
 		<UseTemplate Name="ASOBO_LIGHTING_Potentiometer_Emissive_Template">
 			<NODE_ID>SCREEN_AUTOPILOT</NODE_ID>
 			<POTENTIOMETER>17</POTENTIOMETER>
 		</UseTemplate>
 	</Component>
-	
-	
-	<!-- G1000 ###################################### -->	
-	
+
+
+	<!-- G1000 ###################################### -->
+
 	<Component ID="Screen_emissive" Node="DYN_SCREEN">
 		<Material>
 			<EmissiveFactor>
@@ -457,7 +472,7 @@
 				</Parameter>
 			</EmissiveFactor>
 		</Material>
-	</Component>		
+	</Component>
 
 	<Component ID="Pedestal_Fwd">
 		<!-- TODO - Test this with new anim -->
@@ -486,28 +501,29 @@
 		<Component ID="Throttle_1_Visibility" Node="LEVER_THROTTLE_1">
 			<UseTemplate Name="ASOBO_GT_Visibility_Code">
 				<VISIBILITY_CODE>(L:XMLVAR_LeverThrottleHidden1) !</VISIBILITY_CODE>
-			</UseTemplate> 
+			</UseTemplate>
 		</Component>
 		<Component ID="Throttle_2_Visibility" Node="LEVER_THROTTLE_2">
 			<UseTemplate Name="ASOBO_GT_Visibility_Code">
 				<VISIBILITY_CODE>(L:XMLVAR_LeverThrottleHidden2) !</VISIBILITY_CODE>
-			</UseTemplate> 
+			</UseTemplate>
 		</Component>
-	
+
 		<UseTemplate Name="ASOBO_AUTOPILOT_Push_AutoThrottle_Disengage_Template">
 			<NODE_ID>PUSH_THROTTLE_1</NODE_ID>
+			<PART_ID>Autothrottle_button</PART_ID>
 			<ANIM_NAME>PUSH_THROTTLE_1</ANIM_NAME>
 			<NO_INDICATOR>True</NO_INDICATOR>
 			<NO_TEXT_EMISSIVE>True</NO_TEXT_EMISSIVE>
-		</UseTemplate>	
-	
+		</UseTemplate>
+
 		<UseTemplate Name="ASOBO_AUTOPILOT_Push_AutoThrottle_Disengage_Template">
 			<NODE_ID>PUSH_THROTTLE_2</NODE_ID>
 			<ANIM_NAME>PUSH_THROTTLE_2</ANIM_NAME>
 			<NO_INDICATOR>True</NO_INDICATOR>
 			<NO_TEXT_EMISSIVE>True</NO_TEXT_EMISSIVE>
-		</UseTemplate>	
-	
+		</UseTemplate>
+
 		<UseTemplate Name="ASOBO_HANDLING_Wheel_ElevatorTrim_Template">
 			<ANIM_NAME>lever_trimtab_elevator_key_pct</ANIM_NAME>
 			<NODE_ID>LEVER_ELEVATORTRIM_1</NODE_ID>
@@ -515,10 +531,10 @@
 			<DOUBLE_WHEEL/>
 			<REPEAT_ANIM>5</REPEAT_ANIM>
 			<DRAG_AXIS_SCALE>20</DRAG_AXIS_SCALE>
-			<DRAG_MIN_VALUE>-4854</DRAG_MIN_VALUE> <!-- Limit to -4.5 deg -->
+			<DRAG_MIN_VALUE>-4854</DRAG_MIN_VALUE>			<!-- Limit to -4.5 deg -->
 
 		</UseTemplate>
-	
+
 		<UseTemplate Name="ASOBO_HANDLING_Indicator_ElevatorTrim_Template">
 			<ANIM_NAME>LEVER_ELEVATORTRIM_DECAL</ANIM_NAME>
 			<MIN_DISPLAYABLE>-4</MIN_DISPLAYABLE>
@@ -531,16 +547,16 @@
 			<ANIM_VALUE_2>100</ANIM_VALUE_2>
 			<MAX_POINT_INDEX>2</MAX_POINT_INDEX>
 		</UseTemplate>
-		
+
 		<UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
 			<NODE_ID>DECAL_THROTTLE_01</NODE_ID>
 			<POTENTIOMETER>15</POTENTIOMETER>
 		</UseTemplate>
-		
+
 		<CameraTitle>PedestalFwd</CameraTitle>
 	</Component>
-	
-	<Component ID="Pedestal_Aft">	
+
+	<Component ID="Pedestal_Aft">
 		<Component ID="Engines">
 			<UseTemplate Name="ASOBO_ENGINE_Switch_Master_Template">
 				<AIRBUS_TYPE/>
@@ -548,22 +564,23 @@
 				<NODE_ID>SWITCH_ENGINES_ENG1</NODE_ID>
 				<ID>1</ID>
 				<VALVE_ID>6</VALVE_ID>
-				<POTENTIOMETER>15</POTENTIOMETER>
-
+				<!-- This makes it not light up -->
+				<POTENTIOMETER>9999</POTENTIOMETER>
 			</UseTemplate>
-			
+
 			<UseTemplate Name="ASOBO_ENGINE_Switch_Master_Template">
 				<AIRBUS_TYPE/>
 				<ANIM_NAME>SWITCH_ENGINES_ENG2</ANIM_NAME>
 				<NODE_ID>SWITCH_ENGINES_ENG2</NODE_ID>
 				<ID>2</ID>
 				<VALVE_ID>7</VALVE_ID>
-				<POTENTIOMETER>15</POTENTIOMETER>
+				<!-- This makes it not light up -->
+				<POTENTIOMETER>9999</POTENTIOMETER>
 			</UseTemplate>
-			
+
 			<UseTemplate Name="ASOBO_AIRBUS_Update_PTU_Template">
 			</UseTemplate>
-			
+
 			<!-- Mixture Lever does not exist in A320 but can be set to 0 by Auto Shutdown. Ensure it is always >0.9 -->
 			<Update Frequency="1">
 				(A:GENERAL ENG MIXTURE LEVER POSITION:1, Percent over 100) 0.9 &lt; if{ (&gt;K:MIXTURE1_RICH) }
@@ -591,7 +608,7 @@
 				<RESET_PUSH_ANIM_NAME>PUSH_RUDDERTRIM_RESET</RESET_PUSH_ANIM_NAME>
 				<RESET_PUSH_NODE_ID>PUSH_RUDDERTRIM_RESET</RESET_PUSH_NODE_ID>
 			</UseTemplate>
-			
+
 			<UseTemplate Name="ASOBO_HANDLING_Lever_With_Button_Flaps_Template">
 				<NODE_ID>LEVER_FLAPS</NODE_ID>
 				<ANIM_NAME_LEVER>flaps_lever</ANIM_NAME_LEVER>
@@ -613,18 +630,19 @@
 				<ANIMTIP_4>TT:COCKPIT.TOOLTIPS.FLAPS_LEVER_FULL</ANIMTIP_4>
 
 			</UseTemplate>
-			
+
 			<UseTemplate Name="ASOBO_LANDING_GEAR_Switch_ParkingBrake_Template">
 				<ANIM_NAME>lever_parking_brake</ANIM_NAME>
 				<NODE_ID>LEVER_PARKINGBRAKE</NODE_ID>
 			</UseTemplate>
-			
+
 			<Component ID="Parking_Brake_Text" Node="LEVER_PARKINGBRAKE_SEQ1">
 				<UseTemplate Name="ASOBO_GT_Emissive_Potentiometer">
 					<POTENTIOMETER>15</POTENTIOMETER>
+					<EMISSIVE_CODE>0</EMISSIVE_CODE>
 				</UseTemplate>
 			</Component>
-			
+
 			<UseTemplate Name="ASOBO_HANDLING_Lever_Spoilers_Template">
 				<ANIM_NAME>lever_speed_brake</ANIM_NAME>
 				<NODE_ID>LEVER_SPEEDBRAKE</NODE_ID>
@@ -632,7 +650,7 @@
 				<TOOLTIPID>TT:COCKPIT.TOOLTIPS.SPEEDBRAKE_LEVER</TOOLTIPID>
 			</UseTemplate>
 		</Component>
-		
+
 		<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
 			<NODE_ID>PUSH_DOORPANEL_OPEN</NODE_ID>
 		</UseTemplate>
@@ -644,10 +662,23 @@
 				<NODE_ID_ONOFF_SWITCH>SWITCH_RADAR_SYS</NODE_ID_ONOFF_SWITCH>
 				<ANIM_NAME_ONOFF_SWITCH>SWITCH_RADAR_SYS</ANIM_NAME_ONOFF_SWITCH>
 			</UseTemplate>
-		</Component>		
+
+			<UseTemplate Name="A32NX_GT_Switch_Dummy">
+				<NODE_ID>SWITCH_RADAR_PWS</NODE_ID>
+				<ANIM_NAME>SWITCH_RADAR_PWS</ANIM_NAME>
+				<SWITCH_POSITION_TYPE>L</SWITCH_POSITION_TYPE>
+				<SWITCH_POSITION_VAR>A32NX_SWITCH_RADAR_PWS_Position</SWITCH_POSITION_VAR>
+				<ANIMTIP_0>Set predictive windshear to AUTO (INOP)</ANIMTIP_0>
+				<ANIMTIP_1>Turn OFF predictive windshear</ANIMTIP_1>
+				<WWISE_EVENT_1>wing_light_switch_on</WWISE_EVENT_1>
+				<WWISE_EVENT_2>wing_light_switch_off</WWISE_EVENT_2>
+				<NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
+				<NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
+			</UseTemplate>
+		</Component>
 		<CameraTitle>PedestalAft</CameraTitle>
 	</Component>
-	
+
 	<Component ID="Front_Sides">
 		<UseTemplate Name="ASOBO_HANDLING_RudderPedals_Template">
 			<RUDDERPEDALS_TYPE>MIXED</RUDDERPEDALS_TYPE>
@@ -670,7 +701,7 @@
 			<ANIM_NAME_YOKE_X>yoke_lever_stick2_l_r</ANIM_NAME_YOKE_X>
 			<ANIM_NAME_YOKE_Y>yoke_lever_stick_fore2_aft</ANIM_NAME_YOKE_Y>
 		</UseTemplate>
-		
+
 		<UseTemplate Name="ASOBO_HANDLING_Push_AP_Trim_Disc_Template">
 			<NODE_ID>PUSH_YOKE_LEFT</NODE_ID>
 			<ANIM_NAME>PUSH_YOKE_LEFT</ANIM_NAME>
@@ -679,7 +710,7 @@
 			<NODE_ID>PUSH_YOKE_RIGHT</NODE_ID>
 			<ANIM_NAME>PUSH_YOKE_RIGHT</ANIM_NAME>
 		</UseTemplate>
-		
+
 		<UseTemplate Name="ASOBO_HANDLING_Steering_Tiller_Template">
 			<NODE_ID>HANDLE_LEFT_YOKE</NODE_ID>
 			<ANIM_NAME>HANDLE_LEFT_YOKE</ANIM_NAME>
@@ -690,7 +721,7 @@
 			<ANIM_NAME>HANDLE_RIGHT_YOKE</ANIM_NAME>
 			<MAX_STEERING_VELOCITY>30</MAX_STEERING_VELOCITY>
 		</UseTemplate>
-		
+
 		<UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
 			<NODE_ID>PUSH_HANDLE_LEFT_YOKE</NODE_ID>
 			<POTENTIOMETER>15</POTENTIOMETER>
@@ -699,116 +730,114 @@
 			<NODE_ID>PUSH_HANDLE_RIGHT_YOKE</NODE_ID>
 			<POTENTIOMETER>15</POTENTIOMETER>
 		</UseTemplate>
-		
+
 		<!-- NYI
 		<UseTemplate Name="ASOBO_AIRBUS_Push_Transfer_Template">
 			<NODE_ID>PUSH_EFIS_CS_PFD</NODE_ID>
 			<ANIM_NAME>PUSH_EFIS_CS_PFD</ANIM_NAME>
 			<ID>1</ID>
 		</UseTemplate>
-		
+
 		<UseTemplate Name="ASOBO_AIRBUS_Push_Transfer_Template">
 			<NODE_ID>PUSH_EFIS_FO_PFD</NODE_ID>
 			<ANIM_NAME>PUSH_EFIS_FO_PFD</ANIM_NAME>
 			<ID>2</ID>
 		</UseTemplate>
 		-->
-		
+
 		<Component ID="Screens_Left">
 			<UseTemplate Name="ASOBO_LIGHTING_Knob_Potentiometer_Template">
 				<POTENTIOMETER>18</POTENTIOMETER>
 				<NODE_ID>KNOB_EFIS_CS_PFD</NODE_ID>
+				<PART_ID>PFD_Brightness</PART_ID>
 				<ANIM_NAME>KNOB_EFIS_CS_PFD</ANIM_NAME>
 				<MIN_VALUE>0</MIN_VALUE>
 				<ANIMTIP_0>TT:COCKPIT.TOOLTIPS.LIGHTING_KNOB_L_PFD_DECREASE</ANIMTIP_0>
 				<ANIMTIP_0>TT:COCKPIT.TOOLTIPS.LIGHTING_KNOB_L_PFD_INCREASE</ANIMTIP_0>
 			</UseTemplate>
-			
+
 			<UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
 				<NODE_ID>SCREEN_PFD_L</NODE_ID>
+				<PART_ID>PFD</PART_ID>
 				<POTENTIOMETER>18</POTENTIOMETER>
-			</UseTemplate>	
-			
+			</UseTemplate>
+
 			<UseTemplate Name="ASOBO_LIGHTING_Knob_Potentiometer_Template">
 				<POTENTIOMETER>19</POTENTIOMETER>
 				<NODE_ID>KNOB_EFIS_CS_ND</NODE_ID>
+				<PART_ID>ND_Brightness</PART_ID>
 				<ANIM_NAME>KNOB_EFIS_CS_ND</ANIM_NAME>
 				<MIN_VALUE>0</MIN_VALUE>
 				<ANIMTIP_0>TT:COCKPIT.TOOLTIPS.LIGHTING_KNOB_L_ND_DECREASE</ANIMTIP_0>
 				<ANIMTIP_0>TT:COCKPIT.TOOLTIPS.LIGHTING_KNOB_L_ND_INCREASE</ANIMTIP_0>
 			</UseTemplate>
-			
+
 			<UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
 				<NODE_ID>SCREEN_MFD_L</NODE_ID>
 				<POTENTIOMETER>19</POTENTIOMETER>
-			</UseTemplate>	
+			</UseTemplate>
 		</Component>
-		
+
 		<Component ID="Screens_Right">
 			<UseTemplate Name="ASOBO_LIGHTING_Knob_Potentiometer_Template">
 				<POTENTIOMETER>20</POTENTIOMETER>
 				<NODE_ID>KNOB_EFIS_FO_PFD</NODE_ID>
+				<PART_ID>PFD_Brightness_FO</PART_ID>
 				<ANIM_NAME>KNOB_EFIS_FO_PFD</ANIM_NAME>
 				<MIN_VALUE>0</MIN_VALUE>
 				<ANIMTIP_0>TT:COCKPIT.TOOLTIPS.LIGHTING_KNOB_R_PFD_DECREASE</ANIMTIP_0>
 				<ANIMTIP_0>TT:COCKPIT.TOOLTIPS.LIGHTING_KNOB_R_PFD_INCREASE</ANIMTIP_0>
 			</UseTemplate>
-			
+
 			<UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
 				<NODE_ID>SCREEN_PFD_R</NODE_ID>
 				<POTENTIOMETER>20</POTENTIOMETER>
-			</UseTemplate>	
-			
+			</UseTemplate>
+
 			<UseTemplate Name="ASOBO_LIGHTING_Knob_Potentiometer_Template">
 				<POTENTIOMETER>21</POTENTIOMETER>
 				<NODE_ID>KNOB_EFIS_FO_ND</NODE_ID>
+				<PART_ID>ND_Brightness_FO</PART_ID>
 				<ANIM_NAME>KNOB_EFIS_FO_ND</ANIM_NAME>
 				<MIN_VALUE>0</MIN_VALUE>
 				<ANIMTIP_0>TT:COCKPIT.TOOLTIPS.LIGHTING_KNOB_R_ND_DECREASE</ANIMTIP_0>
 				<ANIMTIP_0>TT:COCKPIT.TOOLTIPS.LIGHTING_KNOB_R_ND_INCREASE</ANIMTIP_0>
 			</UseTemplate>
-			
+
 			<UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
 				<NODE_ID>SCREEN_MFD_R</NODE_ID>
 				<POTENTIOMETER>21</POTENTIOMETER>
 			</UseTemplate>
-		</Component>	
+		</Component>
+		<CameraTitle>Pilot</CameraTitle>
 	</Component>
-	
+
 	<Component ID="Front_Middle">
 		<UseTemplate Name="ASOBO_LANDING_GEAR_Lever_Gear_Template">
 			<ANIM_NAME>lever_landing_gear</ANIM_NAME>
 			<NODE_ID>LEVER_LANDINGGEAR</NODE_ID>
 		</UseTemplate>
-		<UseTemplate Name="ASOBO_LANDING_GEAR_Light_Template">
+		<UseTemplate Name="A32NX_LANDING_GEAR_Light_Template">
 			<NODE_ID>PUSH_AUTOBKR_LDGGEAR_1</NODE_ID>
 			<ID>1</ID>
-			<INVERT_CONDITION>1</INVERT_CONDITION>
-			<CUSTOM_RANGE>&gt; 90</CUSTOM_RANGE>
 			<GEAR_ID>1</GEAR_ID>
-			<AIRBUS_TYPE/>
 		</UseTemplate>
-		<UseTemplate Name="ASOBO_LANDING_GEAR_Light_Template">
+		<UseTemplate Name="A32NX_LANDING_GEAR_Light_Template">
 			<NODE_ID>PUSH_AUTOBKR_LDGGEAR_2</NODE_ID>
 			<ID>2</ID>
-			<INVERT_CONDITION>1</INVERT_CONDITION>
-			<CUSTOM_RANGE>&gt; 90</CUSTOM_RANGE>
 			<GEAR_ID>0</GEAR_ID>
-			<AIRBUS_TYPE/>
 		</UseTemplate>
-		<UseTemplate Name="ASOBO_LANDING_GEAR_Light_Template">
+		<UseTemplate Name="A32NX_LANDING_GEAR_Light_Template">
 			<NODE_ID>PUSH_AUTOBKR_LDGGEAR_3</NODE_ID>
 			<ID>3</ID>
-			<INVERT_CONDITION>1</INVERT_CONDITION>
-			<CUSTOM_RANGE>&gt; 90</CUSTOM_RANGE>
 			<GEAR_ID>2</GEAR_ID>
-			<AIRBUS_TYPE/>
 		</UseTemplate>
 		<UseTemplate Name="ASOBO_LANDING_GEAR_Warning_Template">
 			<ANIM_NAME>DECAL_LANDING_INDICATOR</ANIM_NAME>
 		</UseTemplate>
 		<UseTemplate Name="ASOBO_HANDLING_Push_Autobrakes_Template">
 			<NODE_ID>PUSH_AUTOBKR_LO</NODE_ID>
+			<PART_ID>Autobrake_1</PART_ID>
 			<ANIM_NAME>PUSH_AUTOBKR_LO</ANIM_NAME>
 			<NODE_ID_DECEL>PUSH_AUTOBKR_LO_SEQ1</NODE_ID_DECEL>
 			<NODE_ID_ON>PUSH_AUTOBKR_LO_SEQ2</NODE_ID_ON>
@@ -818,6 +847,7 @@
 		</UseTemplate>
 		<UseTemplate Name="ASOBO_HANDLING_Push_Autobrakes_Template">
 			<NODE_ID>PUSH_AUTOBKR_MED</NODE_ID>
+			<PART_ID>Autobrake_2</PART_ID>
 			<ANIM_NAME>PUSH_AUTOBKR_MED</ANIM_NAME>
 			<NODE_ID_DECEL>PUSH_AUTOBKR_MED_SEQ1</NODE_ID_DECEL>
 			<NODE_ID_ON>PUSH_AUTOBKR_MED_SEQ2</NODE_ID_ON>
@@ -827,6 +857,8 @@
 		</UseTemplate>
 		<UseTemplate Name="ASOBO_HANDLING_Push_Autobrakes_Template">
 			<NODE_ID>PUSH_AUTOBKR_MAX</NODE_ID>
+			<PART_ID>Autobrake_3</PART_ID>
+
 			<ANIM_NAME>PUSH_AUTOBKR_MAX</ANIM_NAME>
 			<NODE_ID_DECEL>PUSH_AUTOBKR_MAX_SEQ1</NODE_ID_DECEL>
 			<NODE_ID_ON>PUSH_AUTOBKR_MAX_SEQ2</NODE_ID_ON>
@@ -834,42 +866,46 @@
 			<MIN_DECEL_FPSS>-21</MIN_DECEL_FPSS>
 			<OFF_TOOLTIP>COCKPIT.TOOLTIPS.AUTO_BRK_SET_MAX</OFF_TOOLTIP>
 		</UseTemplate>
-		
+
 		<UseTemplate Name="ASOBO_HANDLING_Switch_AntiSkid_Template">
 			<NODE_ID>SWITCH_AUTOBKR_ASKID</NODE_ID>
+			<PART_ID>Antiskid_Switch</PART_ID>
 			<ANIM_NAME>SWITCH_AUTOBKR_ASKID</ANIM_NAME>
 			<ANIMTIP_0>TT:COCKPIT.TOOLTIPS.ANTISKID_TURN_ON</ANIMTIP_0>
 			<ANIMTIP_1>TT:COCKPIT.TOOLTIPS.ANTISKID_TURN_OFF</ANIMTIP_1>
 		</UseTemplate>
-		
+
 		<UseTemplate Name="ASOBO_AIRBUS_Push_TERRONND_Template">
 			<NODE_ID>PUSH_TERRONND</NODE_ID>
 			<ANIM_NAME>PUSH_TERRONND</ANIM_NAME>
+			<BLOCK_SEQ1>1</BLOCK_SEQ1>
 		</UseTemplate>
-		
+
 		<UseTemplate Name="ASOBO_AIRBUS_Push_TERRONND_Template">
 			<NODE_ID>PUSH_AUTOBKR_TERRONND</NODE_ID>
 			<ANIM_NAME>PUSH_AUTOBKR_TERRONND</ANIM_NAME>
+			<BLOCK_SEQ1>1</BLOCK_SEQ1>
 		</UseTemplate>
-		
+
 		<Component ID="Standby_Indicator">
-			
+
 			<UseTemplate Name="ASOBO_AUTOPILOT_Knob_Baro_Template">
 				<ANIM_NAME>AUTOPILOT_Knob_Baro</ANIM_NAME>
 				<NODE_ID>AUTOPILOT_Knob_Baro</NODE_ID>
 				<ID>3</ID>
 				<BARO_ID>2</BARO_ID>
-				
+
 				<ANIMREF_ID>-1</ANIMREF_ID>
 				<ANIMTIP_0>TT:COCKPIT.TOOLTIPS.STBY_TUNING_KNOB_INCREASE</ANIMTIP_0>
 				<ANIMTIP_0_ON_CURSOR>TurnRight</ANIMTIP_0_ON_CURSOR>
 				<ANIMTIP_1>TT:COCKPIT.TOOLTIPS.STBY_TUNING_KNOB_DECREASE</ANIMTIP_1>
 				<ANIMTIP_1_ON_CURSOR>TurnLeft</ANIMTIP_1_ON_CURSOR>
 
-				
+
 			</UseTemplate>
+			<CameraTitle>PA</CameraTitle>
 		</Component>
-		
+
 		<Component ID="Dummies">
 			<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
 				<NODE_ID>PUSH_AUTOPILOT_SIDESTICK_L</NODE_ID>
@@ -893,13 +929,13 @@
 			<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
 				<NODE_ID>PUSH_EFIS_FO_GPWS</NODE_ID>
 			</UseTemplate>
-			
+
 			<Component ID="BARO">
 				<DefaultTemplateParameters>
 					<POTENTIOMETER_SEQ1>15</POTENTIOMETER_SEQ1>
 					<SEQ1_EMISSIVE_DRIVES_VISIBILITY>False</SEQ1_EMISSIVE_DRIVES_VISIBILITY>
 				</DefaultTemplateParameters>
-				
+
 				<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
 					<NODE_ID>PUSH_BARO_BUGS</NODE_ID>
 					<ONLY_SEQ1/>
@@ -926,7 +962,7 @@
 					<POTENTIOMETER_SEQ1>15</POTENTIOMETER_SEQ1>
 					<SEQ1_EMISSIVE_DRIVES_VISIBILITY>False</SEQ1_EMISSIVE_DRIVES_VISIBILITY>
 				</DefaultTemplateParameters>
-			
+
 				<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
 					<NODE_ID>SWITCH_MPL_DIM</NODE_ID>
 					<ONLY_SEQ1/>
@@ -968,7 +1004,7 @@
 					<ONLY_SEQ1/>
 				</UseTemplate>
 			</Component>
-			
+
 			<Component ID="MPR">
 				<DefaultTemplateParameters>
 					<POTENTIOMETER_SEQ1>15</POTENTIOMETER_SEQ1>
@@ -1016,7 +1052,7 @@
 				</UseTemplate>
 			</Component>
 		</Component>
-		
+
 		<Component ID="EICAS_Screens">
 			<UseTemplate Name="ASOBO_LIGHTING_Knob_Potentiometer_Template">
 				<POTENTIOMETER>22</POTENTIOMETER>
@@ -1029,7 +1065,7 @@
 			<UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
 				<NODE_ID>SCREEN_EICAS1</NODE_ID>
 				<POTENTIOMETER>22</POTENTIOMETER>
-			</UseTemplate>	
+			</UseTemplate>
 			<UseTemplate Name="ASOBO_LIGHTING_Knob_Potentiometer_Template">
 				<POTENTIOMETER>23</POTENTIOMETER>
 				<NODE_ID>KNOB_ECAM_LOWER</NODE_ID>
@@ -1041,10 +1077,11 @@
 			<UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
 				<NODE_ID>SCREEN_EICAS2</NODE_ID>
 				<POTENTIOMETER>23</POTENTIOMETER>
-			</UseTemplate>	
+			</UseTemplate>
 		</Component>
+		<CameraTitle>ECAM</CameraTitle>
 	</Component>
-	
+
 	<Component ID="OVERHEAD">
 		<Component ID="OVERHEAD_Electricals">
 			<DefaultTemplateParameters>
@@ -1064,7 +1101,7 @@
 				<BATTERY_BUS_ID>11</BATTERY_BUS_ID>
 				<HOT_BATTERY_BUS_ID>6</HOT_BATTERY_BUS_ID>
 			</UseTemplate>
-			
+
 			<UseTemplate Name="ASOBO_ELECTRICAL_Switch_Alternator_Template">
 				<NODE_ID>PUSH_OVHD_ELEC_GEN1</NODE_ID>
 				<ANIM_NAME>PUSH_OVHD_ELEC_GEN1</ANIM_NAME>
@@ -1109,12 +1146,13 @@
 				<ANIM_NAME>KNOB_OVHD_AIRCOND_PACKFLOW</ANIM_NAME>
 				<ANIM_CODE>50</ANIM_CODE>
 			</UseTemplate>
-			
+
 			<UseTemplate Name="ASOBO_AIRBUS_Push_Fuel_Valve_Template">
 				<NODE_ID>PUSH_OVHD_APU_MASTERSW</NODE_ID>
 				<ANIM_NAME>PUSH_OVHD_APU_MASTERSW</ANIM_NAME>
 				<PART_ID>ELECTRICAL_Switch_APU_Master</PART_ID>
 				<SEQ1_EMISSIVE_CODE>0</SEQ1_EMISSIVE_CODE>
+				<EXTRA_CONDITION>(A:ELECTRICAL MAIN BUS VOLTAGE, Volts) 20 &gt;</EXTRA_CONDITION>
 				<LEFT_SINGLE_CODE>
 					(A:FUELSYSTEM VALVE SWITCH:8, Bool) if{
 						(&gt;K:APU_OFF_SWITCH)
@@ -1129,14 +1167,14 @@
 				<OFF_TOOLTIP>COCKPIT.TOOLTIPS.APU_SWITCH_TURN_ON</OFF_TOOLTIP>
 				<ON_TOOLTIP>COCKPIT.TOOLTIPS.APU_SWITCH_TURN_OFF</ON_TOOLTIP>
 			</UseTemplate>
-			
+
 			<UseTemplate Name="ASOBO_ELECTRICAL_Switch_APU_Starter_Template">
 				<NODE_ID>PUSH_OVHD_APU_START</NODE_ID>
 				<ANIM_NAME>PUSH_OVHD_APU_START</ANIM_NAME>
-				<EXTRA_CONDITION>(A:FUELSYSTEM VALVE SWITCH:8, Bool)</EXTRA_CONDITION>
+				<EXTRA_CONDITION>(A:ELECTRICAL MAIN BUS VOLTAGE, Volts) 20 &gt; (A:FUELSYSTEM VALVE SWITCH:8, Bool) and</EXTRA_CONDITION>
 			</UseTemplate>
 		</Component>
-		
+
 		<Component ID="OVERHEAD_Lights">
 			<!-- Lights -->
 			<UseTemplate Name="ASOBO_LIGHTING_Switch_Light_Strobe_Template">
@@ -1145,11 +1183,16 @@
 				<HAS_AUTO>True</HAS_AUTO>
 				<INVERT_ANIM>True</INVERT_ANIM>
 				<POTENTIOMETER>24</POTENTIOMETER>
+				<ANIMTIP_0>Turn OFF strobe lights</ANIMTIP_0>
+				<ANIMTIP_1_ON_PERCENT>0.5</ANIMTIP_1_ON_PERCENT>
+				<ANIMTIP_1>Set strobe lights to AUTO</ANIMTIP_1>
+				<ANIMTIP_2>Turn ON strobe lights</ANIMTIP_2>
 			</UseTemplate>
 
 			<!-- TODO: Seatbelt Light DUMMY -->
-			<UseTemplate Name="ASOBO_GT_Switch_Dummy">
+			<UseTemplate Name="A32NX_GT_Switch_Dummy">
 				<NODE_ID>SWITCH_OVHD_INTLT_SEATBELT</NODE_ID>
+				<PART_ID>Seatbelt_Switch</PART_ID>
 				<ANIM_NAME>SWITCH_OVHD_INTLT_SEATBELT</ANIM_NAME>
 				<LIGHT_TYPE>SEATBELT</LIGHT_TYPE>
 				<SWITCH_POSITION_TYPE>L</SWITCH_POSITION_TYPE>
@@ -1162,11 +1205,11 @@
 				<NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
 			</UseTemplate>
 
-			<UseTemplate Name="ASOBO_GT_Switch_Dummy">
+			<UseTemplate Name="A32NX_GT_Switch_Dummy">
 				<NODE_ID>SWITCH_OVHD_INTLT_NOSMOKING</NODE_ID>
+				<PART_ID>Smoking_Switch</PART_ID>
 				<ANIM_NAME>SWITCH_OVHD_INTLT_NOSMOKING</ANIM_NAME>
 				<NUM_STATES>3</NUM_STATES>
-				<INIT_VALUE>2</INIT_VALUE>
 				<SWITCH_DIRECTION>Vertical</SWITCH_DIRECTION>
 				<INVERT_ANIM>True</INVERT_ANIM>
 				<SWITCH_POSITION_TYPE>L</SWITCH_POSITION_TYPE>
@@ -1174,63 +1217,70 @@
 				<LIGHT_TYPE>NO_SMOKING</LIGHT_TYPE>
 				<ANIMTIP_1_ON_PERCENT>0.5</ANIMTIP_1_ON_PERCENT>
 				<!-- TODO: Figure out what the actual tooltips are or how to add them. -->
-				<ANIMTIP_0>TT:COCKPIT.TOOLTIPS.LIGHTS_NOSMOKING_OFF</ANIMTIP_0>
-				<ANIMTIP_1>TT:COCKPIT.TOOLTIPS.LIGHTS_NOSMOKING_AUTO</ANIMTIP_1>
-				<ANIMTIP_2>TT:COCKPIT.TOOLTIPS.LIGHTS_NOSMOKING_ON</ANIMTIP_2>
+				<ANIMTIP_0>Turn OFF no smoking signs</ANIMTIP_0>
+				<ANIMTIP_1>Set no smoking signs to AUTO</ANIMTIP_1>
+				<ANIMTIP_2>Turn ON no smoking signs</ANIMTIP_2>
 				<WWISE_EVENT>double_light_switch</WWISE_EVENT>
 			</UseTemplate>
 
-			<UseTemplate Name="ASOBO_GT_Switch_Dummy">
+			<UseTemplate Name="A32NX_GT_Switch_Dummy">
 				<NODE_ID>SWITCH_OVHD_INTLT_EMEREXIT</NODE_ID>
+				<PART_ID>Emergency_Exit_Switch</PART_ID>
 				<ANIM_NAME>SWITCH_OVHD_INTLT_EMEREXIT</ANIM_NAME>
 				<NUM_STATES>3</NUM_STATES>
-				<INIT_VALUE>2</INIT_VALUE>
 				<SWITCH_DIRECTION>Vertical</SWITCH_DIRECTION>
 				<LIGHT_TYPE>EMER_EXIT</LIGHT_TYPE>
 				<SWITCH_POSITION_TYPE>L</SWITCH_POSITION_TYPE>
 				<SWITCH_POSITION_VAR>XMLVAR_SWITCH_OVHD_INTLT_EMEREXIT_Position</SWITCH_POSITION_VAR>
 				<ANIMTIP_1_ON_PERCENT>0.5</ANIMTIP_1_ON_PERCENT>
-				<ANIMTIP_0>TT:COCKPIT.TOOLTIPS.LIGHTS_EMEREXIT_ON</ANIMTIP_0>
-				<ANIMTIP_1>TT:COCKPIT.TOOLTIPS.LIGHTS_EMEREXIT_ARM</ANIMTIP_1>
-				<ANIMTIP_2>TT:COCKPIT.TOOLTIPS.LIGHTS_EMEREXIT_OFF</ANIMTIP_2>
+				<ANIMTIP_0>Turn ON emergency exit signs</ANIMTIP_0>
+				<ANIMTIP_1>Set emergency exit signs to ARM</ANIMTIP_1>
+				<ANIMTIP_2>Turn OFF emergency exit signs</ANIMTIP_2>
 				<WWISE_EVENT>double_light_switch</WWISE_EVENT>
 			</UseTemplate>
 
-			<UseTemplate Name="ASOBO_GT_Switch_Dummy">
+			<UseTemplate Name="ASOBO_AIRLINER_SIGNS_LIGHT_Template">
+				<NODE_ID>PUSH_OVHD_SIGNS</NODE_ID>
+			</UseTemplate>
+
+			<UseTemplate Name="A32NX_GT_Switch_Dummy">
 				<NODE_ID>SWITCH_OVHD_INTLT_ANNLT</NODE_ID>
 				<ANIM_NAME>SWITCH_OVHD_INTLT_ANNLT</ANIM_NAME>
 				<NUM_STATES>3</NUM_STATES>
-				<INIT_VALUE>1</INIT_VALUE>
 				<SWITCH_DIRECTION>Vertical</SWITCH_DIRECTION>
 				<LIGHT_TYPE>ANN_LT</LIGHT_TYPE>
 				<SWITCH_POSITION_TYPE>L</SWITCH_POSITION_TYPE>
 				<SWITCH_POSITION_VAR>XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position</SWITCH_POSITION_VAR>
 				<ANIMTIP_1_ON_PERCENT>0.5</ANIMTIP_1_ON_PERCENT>
-				<ANIMTIP_0>TT:COCKPIT.TOOLTIPS.LIGHTS_ANNLT_TEST</ANIMTIP_0>
-				<ANIMTIP_1>TT:COCKPIT.TOOLTIPS.LIGHTS_ANNLT_BRIGHT</ANIMTIP_1>
-				<ANIMTIP_2>TT:COCKPIT.TOOLTIPS.LIGHTS_ANNLT_DIM</ANIMTIP_2>
+				<ANIMTIP_0>Test annunciator lights</ANIMTIP_0>
+				<ANIMTIP_1>Set annunciator lights to BRT</ANIMTIP_1>
+				<ANIMTIP_2>Set annunciator lights to DIM</ANIMTIP_2>
 				<WWISE_EVENT>double_light_switch</WWISE_EVENT>
 				<NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
 				<NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
+				<CODE_POS_0>1 (&gt;L:XMLVAR_LTS_Test)</CODE_POS_0>
+				<CODE_POS_1>0 (&gt;L:XMLVAR_LTS_Test)</CODE_POS_1>
+				<CODE_POS_2>0 (&gt;L:XMLVAR_LTS_Test)</CODE_POS_2>
 			</UseTemplate>
 
 			<UseTemplate Name="ASOBO_GT_Switch_Dummy">
 				<NODE_ID>SWITCH_OVHD_INTLT_STBYCOMPAS</NODE_ID>
 				<ANIM_NAME>SWITCH_OVHD_INTLT_STBYCOMPAS</ANIM_NAME>
 				<LIGHT_TYPE>STBYCOMPAS</LIGHT_TYPE>
-				<ANIMTIP_0>TT:COCKPIT.TOOLTIPS.LIGHTS_STBYCOMPAS_OFF</ANIMTIP_0>
-				<ANIMTIP_1>TT:COCKPIT.TOOLTIPS.LIGHTS_STBYCOMPAS_ON</ANIMTIP_1>
+				<ANIMTIP_0>Turn ON standby compass light</ANIMTIP_0>
+				<ANIMTIP_1>Turn OFF standby compass light</ANIMTIP_1>
 				<WWISE_EVENT_1>wing_light_switch_on</WWISE_EVENT_1>
 				<WWISE_EVENT_2>wing_light_switch_off</WWISE_EVENT_2>
 				<NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
 				<NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
 			</UseTemplate>
-			
+
 			<UseTemplate Name="ASOBO_LIGHTING_Switch_Light_Beacon_Template">
 				<NODE_ID>SWITCH_OVHD_EXTLT_BEACON</NODE_ID>
+				<PART_ID>Beacon_Light_Switch</PART_ID>
 				<ANIM_NAME>SWITCH_OVHD_EXTLT_BEACON</ANIM_NAME>
 			</UseTemplate>
-			
+
 			<UseTemplate Name="ASOBO_LIGHTING_Switch_Light_Taxi_Template">
 				<NODE_ID>SWITCH_OVHD_EXTLT_RWY</NODE_ID>
 				<ANIM_NAME>SWITCH_OVHD_EXTLT_RWY</ANIM_NAME>
@@ -1240,7 +1290,7 @@
 				<ANIMTIP_0>TT:COCKPIT.TOOLTIPS.RWY_TURNOFF_LIGHTS_OFF</ANIMTIP_0>
 				<ANIMTIP_1>TT:COCKPIT.TOOLTIPS.RWY_TURNOFF_LIGHTS_ON</ANIMTIP_1>
 			</UseTemplate>
-			
+
 			<UseTemplate Name="ASOBO_LIGHTING_Switch_Light_Landing_Template">
 				<NODE_ID>SWITCH_OVHD_EXTLT_LANDL</NODE_ID>
 				<ANIM_NAME>SWITCH_OVHD_EXTLT_LANDL</ANIM_NAME>
@@ -1251,7 +1301,7 @@
 				<ANIMTIP_2>TT:COCKPIT.TOOLTIPS.LANDING_LIGHT_L_RETRACT</ANIMTIP_2>
 				<RETRACTABLE/>
 			</UseTemplate>
-			
+
 			<UseTemplate Name="ASOBO_LIGHTING_Switch_Light_Landing_Template">
 				<NODE_ID>SWITCH_OVHD_EXTLT_LANDR</NODE_ID>
 				<ANIM_NAME>SWITCH_OVHD_EXTLT_LANDR</ANIM_NAME>
@@ -1262,7 +1312,7 @@
 				<ANIMTIP_1>TT:COCKPIT.TOOLTIPS.LANDING_LIGHT_R_ON</ANIMTIP_1>
 				<ANIMTIP_2>TT:COCKPIT.TOOLTIPS.LANDING_LIGHT_R_RETRACT</ANIMTIP_2>
 			</UseTemplate>
-		
+
 			<UseTemplate Name="ASOBO_LIGHTING_Switch_Light_Wing_Template">
 				<NODE_ID>SWITCH_OVHD_EXTLT_WING</NODE_ID>
 				<ANIM_NAME>SWITCH_OVHD_EXTLT_WING</ANIM_NAME>
@@ -1297,9 +1347,11 @@
 					2 (&gt;A:BUS LOOKUP INDEX, Number)
 					(A:CIRCUIT CONNECTION ON:17, Bool) l0 != if{ 17 2 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE) }
 					(A:CIRCUIT CONNECTION ON:20, Bool) l0 != if{ 20 2 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE) }
+					(A:CIRCUIT CONNECTION ON:21, Bool) l0 != if{ 21 2 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE) }
+					(A:CIRCUIT CONNECTION ON:22, Bool) l0 != if{ 22 2 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE) }
 				</UPDATE_CODE>
 			</UseTemplate>
-			
+
 			<UseTemplate Name="ASOBO_LIGHTING_Knob_Panel_Template">
 				<NODE_ID>KNOB_OVHD_INTLT_BRT</NODE_ID>
 				<ANIM_NAME>KNOB_OVHD_INTLT_BRT</ANIM_NAME>
@@ -1311,13 +1363,13 @@
 				<ANIMTIP_0>TT:COCKPIT.TOOLTIPS.LIGHT_OVHD_PANEL_SUBPANEL_DECREASE</ANIMTIP_0>
 				<ANIMTIP_1>TT:COCKPIT.TOOLTIPS.LIGHT_OVHD_PANEL_SUBPANEL_INCREASE</ANIMTIP_1>
 			</Component>
-			
+
 			<UseTemplate Name="ASOBO_LIGHTING_Panel_Emissive_Template">
 				<NODE_ID>LIGHTS_OVHD</NODE_ID>
 				<SIMVAR_INDEX>4</SIMVAR_INDEX>
 				<POTENTIOMETER>16</POTENTIOMETER>
 			</Component>
-			
+
 			<UseTemplate Name="ASOBO_LIGHTING_Switch_Light_Cabin_Template">
 				<POTENTIOMETER>7</POTENTIOMETER>
 				<DIMMER/>
@@ -1332,14 +1384,14 @@
 				<ANIMCURSOR_MIN>0</ANIMCURSOR_MIN>
 				<ANIMCURSOR_MAX>1</ANIMCURSOR_MAX>
 			</Component>
-			
+
 			<UseTemplate Name="ASOBO_LIGHTING_Cabin_Emissive_Template">
 				<NODE_ID>LIGHTS_Overhead</NODE_ID>
 				<POTENTIOMETER>7</POTENTIOMETER>
 			</Component>
 			<CameraTitle>Overhead</CameraTitle>
 		</Component>
-		
+
 		<Component ID="Overhead_Fuel">
 			<DefaultTemplateParameters>
 				<TYPE>AIRBUS</TYPE>
@@ -1349,7 +1401,7 @@
 				<ANIM_NAME>PUSH_OVHD_FUEL_XFEED</ANIM_NAME>
 				<ID>1</ID>
 				<OFF_TOOLTIP>COCKPIT.TOOLTIPS.FUEL_XFEED_TURN_ON</OFF_TOOLTIP>
-				<ON_TOOLTIP>COCKPIT.TOOLTIPS.FUEL_XFEED_TURN_OFF</ON_TOOLTIP>				
+				<ON_TOOLTIP>COCKPIT.TOOLTIPS.FUEL_XFEED_TURN_OFF</ON_TOOLTIP>
 			</UseTemplate>
 			<UseTemplate Name="ASOBO_FUEL_Push_Pump_Template">
 				<NODE_ID>PUSH_OVHD_FUEL_LTKPUMPS1</NODE_ID>
@@ -1377,7 +1429,7 @@
 				<ANIM_NAME>PUSH_OVHD_FUEL_PUMP2</ANIM_NAME>
 				<ID>4</ID>
 				<OFF_TOOLTIP>COCKPIT.TOOLTIPS.CTR_TK_PUMP_2_OFF</OFF_TOOLTIP>
-				<ON_TOOLTIP>COCKPIT.TOOLTIPS.CTR_TK_PUMP_2_ON</ON_TOOLTIP>				
+				<ON_TOOLTIP>COCKPIT.TOOLTIPS.CTR_TK_PUMP_2_ON</ON_TOOLTIP>
 			</UseTemplate>
 			<UseTemplate Name="ASOBO_FUEL_Push_Pump_Template">
 				<NODE_ID>PUSH_OVHD_FUEL_RTKPUMPS1</NODE_ID>
@@ -1402,7 +1454,7 @@
 				</SEQ1_EMISSIVE_CODE>
 			</UseTemplate>
 		</Component>
-		
+
 		<Component ID="OverHead_Flight_Controls">
 			<UseTemplate Name="ASOBO_AIRBUS_Push_ELAC_Template">
 				<NODE_ID>PUSH_OVHD_FLTCTL_ELAC</NODE_ID>
@@ -1413,7 +1465,7 @@
 				<NODE_ID>PUSH_OVHD_FLTCTL_SEC</NODE_ID>
 				<ANIM_NAME>PUSH_OVHD_FLTCTL_SEC</ANIM_NAME>
 				<ID>1</ID>
-				
+
 			</UseTemplate>
 			<UseTemplate Name="ASOBO_AIRBUS_Push_FAC_Template">
 				<NODE_ID>PUSH_OVHD_FLTCTL_FAC</NODE_ID>
@@ -1424,32 +1476,34 @@
 				<NODE_ID>PUSH_OVHD_FLTCTL_ELAC2</NODE_ID>
 				<ANIM_NAME>PUSH_OVHD_FLTCTL_ELAC2</ANIM_NAME>
 				<ID>2</ID>
-			</UseTemplate>	
+			</UseTemplate>
 			<UseTemplate Name="ASOBO_AIRBUS_Push_SEC_Template">
 				<NODE_ID>PUSH_OVHD_FLTCTL_SEC2</NODE_ID>
 				<ANIM_NAME>PUSH_OVHD_FLTCTL_SEC2</ANIM_NAME>
 				<ID>2</ID>
-			</UseTemplate>				
+			</UseTemplate>
 			<UseTemplate Name="ASOBO_AIRBUS_Push_SEC_Template">
 				<NODE_ID>PUSH_OVHD_FLTCTL_SEC3</NODE_ID>
 				<ANIM_NAME>PUSH_OVHD_FLTCTL_SEC3</ANIM_NAME>
 				<ID>3</ID>
-			</UseTemplate>			
+			</UseTemplate>
 			<UseTemplate Name="ASOBO_AIRBUS_Push_FAC_Template">
 				<NODE_ID>PUSH_OVHD_FLTCTL_FAC2</NODE_ID>
 				<ANIM_NAME>PUSH_OVHD_FLTCTL_FAC2</ANIM_NAME>
 				<ID>2</ID>
-			</UseTemplate>	
+			</UseTemplate>
 		</Component>
-		
+
 		<Component ID="Overhead_Dummies">
 			<Component ID="Left_Column">
 				<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
 					<NODE_ID>PUSH_OVHD_PA</NODE_ID>
-					<ONLY_SEQ1/>
+					<BLOCK_SEQ1>1</BLOCK_SEQ1>
+					<BLOCK_SEQ2>1</BLOCK_SEQ2>
 				</UseTemplate>
 				<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
 					<NODE_ID>PUSH_OVHD_COCKPITDOORVIDEO</NODE_ID>
+					<BLOCK_SEQ1>1</BLOCK_SEQ1>
 				</UseTemplate>
 
 				<UseTemplate Name="ASOBO_AIRLINER_ADIRS_LIGHT_Template">
@@ -1464,7 +1518,7 @@
 					<ID>3</ID>
 					<NODE_ID>PUSH_OVHD_ADIRS_IR3</NODE_ID>
 				</UseTemplate>
-				
+
 				<UseTemplate Name="ASOBO_AIRLINER_ADIRS_Knob_Template">
 					<ID>1</ID>
 					<ANIM_CODE>50</ANIM_CODE>
@@ -1509,51 +1563,17 @@
 				</UseTemplate>
 				<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
 					<NODE_ID>PUSH_OVHD_EMERELECPWR_RAT</NODE_ID>
-				</UseTemplate>
-				<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
-					<NODE_ID>PUSH_OVHD_GPWS_TERR</NODE_ID>
-				</UseTemplate>
-				<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
-					<NODE_ID>PUSH_OVHD_GPWS_SYS</NODE_ID>
-				</UseTemplate>
-				<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
-					<NODE_ID>PUSH_OVHD_GPWS_GSMODE</NODE_ID>
-				</UseTemplate>
-				<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
-					<NODE_ID>PUSH_OVHD_GPWS_FLAP</NODE_ID>
-				</UseTemplate>
-				<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
-					<NODE_ID>PUSH_OVHD_GPWS_LDG</NODE_ID>
+					<BLOCK_SEQ2>1</BLOCK_SEQ2>
 				</UseTemplate>
 				<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
 					<NODE_ID>PUSH_OVHD_RCDR_GNDCTL</NODE_ID>
-				</UseTemplate>
-				<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
-					<NODE_ID>PUSH_OVHD_OXYGEN_PASSENGER</NODE_ID>
-				</UseTemplate>
-				<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
-					<NODE_ID>PUSH_OVHD_OXYGEN_CREW</NODE_ID>
+					<BLOCK_SEQ1>1</BLOCK_SEQ1>
 				</UseTemplate>
 				<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
 					<NODE_ID>PUSH_OVHD_CALLS_EMER</NODE_ID>
 				</UseTemplate>
 			</Component>
 			<Component ID="Center_Column">
-				<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
-					<NODE_ID>PUSH_OVHD_FIRE_ENG1_AGENT1</NODE_ID>
-				</UseTemplate>
-				<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
-					<NODE_ID>PUSH_OVHD_FIRE_ENG1_AGENT2</NODE_ID>
-				</UseTemplate>
-				<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
-					<NODE_ID>PUSH_OVHD_FIRE_ENG2_AGENT1</NODE_ID>
-				</UseTemplate>
-				<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
-					<NODE_ID>PUSH_OVHD_FIRE_ENG2_AGENT2</NODE_ID>
-				</UseTemplate>
-				<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
-					<NODE_ID>PUSH_OVHD_FIRE_AGENT</NODE_ID>
-				</UseTemplate>
 				<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
 					<NODE_ID>PUSH_OVHD_HYD_ENG1PUMP</NODE_ID>
 				</UseTemplate>
@@ -1577,17 +1597,20 @@
 				</UseTemplate>
 				<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
 					<NODE_ID>PUSH_OVHD_ELEC_IDG1</NODE_ID>
+					<BLOCK_SEQ2>1</BLOCK_SEQ2>
 				</UseTemplate>
 				<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
 					<NODE_ID>PUSH_OVHD_ELEC_BUSTIE</NODE_ID>
+					<BLOCK_SEQ1>1</BLOCK_SEQ1>
 				</UseTemplate>
 				<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
 					<NODE_ID>PUSH_OVHD_ELEC_ACESSFEED</NODE_ID>
 				</UseTemplate>
 				<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
 					<NODE_ID>PUSH_OVHD_ELEC_IDG2</NODE_ID>
+					<BLOCK_SEQ2>1</BLOCK_SEQ2>
 				</UseTemplate>
-		
+
 				<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
 					<NODE_ID>PUSH_OVHD_AIRCOND_PACK1</NODE_ID>
 				</UseTemplate>
@@ -1619,9 +1642,6 @@
 				<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
 					<NODE_ID>PUSH_OVHD_CABINPRESS_MODESEL</NODE_ID>
 				</UseTemplate>
-				<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
-					<NODE_ID>PUSH_OVHD_SIGNS</NODE_ID>
-				</UseTemplate>
 			</Component>
 			<Component ID="Right_Column">
 				<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
@@ -1629,90 +1649,105 @@
 				</UseTemplate>
 				<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
 					<NODE_ID>PUSH_OVHD_SVGEINT</NODE_ID>
+					<BLOCK_SEQ1>1</BLOCK_SEQ1>
 				</UseTemplate>
 				<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
 					<NODE_ID>PUSH_OVHD_AVIONICS_COMPLT</NODE_ID>
+					<BLOCK_SEQ1>1</BLOCK_SEQ1>
 				</UseTemplate>
 				<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
 					<NODE_ID>PUSH_OVHD_HYD_BLUEPUMP</NODE_ID>
 				</UseTemplate>
 				<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
 					<NODE_ID>PUSH_OVHD_HYD_G</NODE_ID>
-				</UseTemplate>	
+					<BLOCK_SEQ1>1</BLOCK_SEQ1>
+				</UseTemplate>
 				<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
 					<NODE_ID>PUSH_OVHD_HYD_B</NODE_ID>
-				</UseTemplate>	
+					<BLOCK_SEQ1>1</BLOCK_SEQ1>
+				</UseTemplate>
 				<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
 					<NODE_ID>PUSH_OVHD_HYD_Y</NODE_ID>
-				</UseTemplate>	
+					<BLOCK_SEQ1>1</BLOCK_SEQ1>
+				</UseTemplate>
 				<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
 					<NODE_ID>PUSH_OVHD_APU_AUTOEXITING_TEST</NODE_ID>
-				</UseTemplate>	
+				</UseTemplate>
 				<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
 					<NODE_ID>PUSH_OVHD_ENG_FADEC1</NODE_ID>
-				</UseTemplate>		
+					<BLOCK_SEQ1>1</BLOCK_SEQ1>
+				</UseTemplate>
 				<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
 					<NODE_ID>PUSH_OVHD_ENG_FADEC2</NODE_ID>
-				</UseTemplate>		
-		
+					<BLOCK_SEQ1>1</BLOCK_SEQ1>
+				</UseTemplate>
+
 				<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
 					<NODE_ID>PUSH_OVHD_CARGOVENT_AFTISOL</NODE_ID>
-				</UseTemplate>	
+				</UseTemplate>
 				<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
 					<NODE_ID>PUSH_OVHD_CARGOSMOKE_FWD1</NODE_ID>
 					<ONLY_SEQ1/>
-				</UseTemplate>		
+				</UseTemplate>
 				<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
 					<NODE_ID>PUSH_OVHD_CARGOSMOKE_FWD2</NODE_ID>
 					<ONLY_SEQ1/>
-				</UseTemplate>	
+				</UseTemplate>
 				<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
 					<NODE_ID>PUSH_OVHD_VENTILATION_BLOWER</NODE_ID>
-				</UseTemplate>	
+				</UseTemplate>
 				<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
 					<NODE_ID>PUSH_OVHD_VENTILATION_EXTRACT</NODE_ID>
-				</UseTemplate>	
+				</UseTemplate>
 				<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
 					<NODE_ID>PUSH_OVHD_VENTILATION_CABFANS</NODE_ID>
-				</UseTemplate>	
+					<BLOCK_SEQ1>1</BLOCK_SEQ1>
+				</UseTemplate>
 				<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
 					<NODE_ID>PUSH_OVHD_ENGMANSTART_1</NODE_ID>
-				</UseTemplate>				
+					<BLOCK_SEQ1>1</BLOCK_SEQ1>
+				</UseTemplate>
 				<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
 					<NODE_ID>PUSH_OVHD_ENGMANSTART_2</NODE_ID>
-				</UseTemplate>			
+					<BLOCK_SEQ1>1</BLOCK_SEQ1>
+				</UseTemplate>
 				<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
 					<NODE_ID>PUSH_OVHD_ENGN1MODE_1</NODE_ID>
-				</UseTemplate>		
+					<BLOCK_SEQ1>1</BLOCK_SEQ1>
+				</UseTemplate>
 				<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
 					<NODE_ID>PUSH_OVHD_ENGN1MODE_2</NODE_ID>
+					<BLOCK_SEQ1>1</BLOCK_SEQ1>
 				</UseTemplate>
-				
+
 				<Component ID="Overhead_Audio_Panel">
 					<OverrideTemplateParameters>
-						<EMISSIVE_CODE>0</EMISSIVE_CODE>
+						<EMISSIVE_CODE>(L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 ==</EMISSIVE_CODE>
 					</OverrideTemplateParameters>
-					
-					<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
-						<NODE_ID>PUSH_OVHD_RADIO_VOR1</NODE_ID>
+
+					<UseTemplate Name="A32NX_Audio_Panel_Volume_Dummy">
+						<NODE_ID>PUSH_OVHD_RADIO_VOR1_EMIS</NODE_ID>
 					</UseTemplate>
-					<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
-						<NODE_ID>PUSH_OVHD_RADIO_VOR2</NODE_ID>
+					<UseTemplate Name="A32NX_Audio_Panel_Volume_Dummy">
+						<NODE_ID>PUSH_OVHD_RADIO_VOR2_EMIS</NODE_ID>
 					</UseTemplate>
-					<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
-						<NODE_ID>PUSH_OVHD_RADIO_MKR</NODE_ID>
+					<UseTemplate Name="A32NX_Audio_Panel_Volume_Dummy">
+						<NODE_ID>PUSH_OVHD_RADIO_MKR_EMIS</NODE_ID>
 					</UseTemplate>
-					<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
-						<NODE_ID>PUSH_OVHD_RADIO_ILS</NODE_ID>
+					<UseTemplate Name="A32NX_Audio_Panel_Volume_Dummy">
+						<NODE_ID>PUSH_OVHD_RADIO_ILS_EMIS</NODE_ID>
 					</UseTemplate>
-					<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
-						<NODE_ID>PUSH_OVHD_RADIO_MLS</NODE_ID>
+					<UseTemplate Name="A32NX_Audio_Panel_Volume_Dummy">
+						<NODE_ID>PUSH_OVHD_RADIO_MLS_EMIS</NODE_ID>
 					</UseTemplate>
-					<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
-						<NODE_ID>PUSH_OVHD_RADIO_ADF1</NODE_ID>
+					<UseTemplate Name="A32NX_Audio_Panel_Volume_Dummy">
+						<NODE_ID>PUSH_OVHD_RADIO_ADF1_EMIS</NODE_ID>
 					</UseTemplate>
-					<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
-						<NODE_ID>PUSH_OVHD_RADIO_ADF2</NODE_ID>
+					<UseTemplate Name="A32NX_Audio_Panel_Volume_Dummy">
+						<NODE_ID>PUSH_OVHD_RADIO_ADF2_EMIS</NODE_ID>
+					</UseTemplate>
+					<UseTemplate Name="A32NX_Audio_Panel_Volume_Dummy">
+						<NODE_ID>PUSH_OVHD_RADIO_INT_EMIS</NODE_ID>
 					</UseTemplate>
 					<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
 						<NODE_ID>SWITCH_OVHD_RADIO_INT</NODE_ID>
@@ -1723,29 +1758,29 @@
 					<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
 						<NODE_ID>PUSH_OVHD_RADIO_RESET</NODE_ID>
 					</UseTemplate>
-					<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
-						<NODE_ID>PUSH_OVHD_RADIO_PA1</NODE_ID>
+					<UseTemplate Name="A32NX_Audio_Panel_Volume_Dummy">
+						<NODE_ID>PUSH_OVHD_RADIO_PA1_EMIS</NODE_ID>
 					</UseTemplate>
 					<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
 						<NODE_ID>PUSH_OVHD_RADIO_PA</NODE_ID>
 					</UseTemplate>
-					<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
-						<NODE_ID>PUSH_OVHD_RADIO_VHF1</NODE_ID>
+					<UseTemplate Name="A32NX_Audio_Panel_Volume_Dummy">
+						<NODE_ID>PUSH_OVHD_RADIO_VHF1_EMIS</NODE_ID>
 					</UseTemplate>
-					<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
-						<NODE_ID>PUSH_OVHD_RADIO_VHF2</NODE_ID>
+					<UseTemplate Name="A32NX_Audio_Panel_Volume_Dummy">
+						<NODE_ID>PUSH_OVHD_RADIO_VHF2_EMIS</NODE_ID>
 					</UseTemplate>
-					<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
-						<NODE_ID>PUSH_OVHD_RADIO_VHF3</NODE_ID>
+					<UseTemplate Name="A32NX_Audio_Panel_Volume_Dummy">
+						<NODE_ID>PUSH_OVHD_RADIO_VHF3_EMIS</NODE_ID>
 					</UseTemplate>
-					<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
-						<NODE_ID>PUSH_OVHD_RADIO_HF1</NODE_ID>
+					<UseTemplate Name="A32NX_Audio_Panel_Volume_Dummy">
+						<NODE_ID>PUSH_OVHD_RADIO_HF1_EMIS</NODE_ID>
 					</UseTemplate>
-					<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
-						<NODE_ID>PUSH_OVHD_RADIO_HF2</NODE_ID>
+					<UseTemplate Name="A32NX_Audio_Panel_Volume_Dummy">
+						<NODE_ID>PUSH_OVHD_RADIO_HF2_EMIS</NODE_ID>
 					</UseTemplate>
-					<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
-						<NODE_ID>PUSH_OVHD_RADIO_CAB</NODE_ID>
+					<UseTemplate Name="A32NX_Audio_Panel_Volume_Dummy">
+						<NODE_ID>PUSH_OVHD_RADIO_CAB_EMIS</NODE_ID>
 					</UseTemplate>
 					<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
 						<NODE_ID>PUSH_OVHD_RADIO_ATT</NODE_ID>
@@ -1773,10 +1808,11 @@
 			<Component ID="Back_Panel">
 				<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
 					<NODE_ID>PUSH_OVHD_HYD_BLUEPUMP</NODE_ID>
+					<BLOCK_SEQ1>1</BLOCK_SEQ1>
 				</UseTemplate>
 			</Component>
 		</Component>
-		
+
 		<Component ID="OverHead_AntiIce">
 			<UseTemplate Name="ASOBO_DEICE_Switch_Engine_Template">
 				<NODE_ID>PUSH_OVHD_ANTIICE_ENG1</NODE_ID>
@@ -1805,9 +1841,17 @@
 				<SWITCH_TYPE>AIRBUS</SWITCH_TYPE>
 			</UseTemplate>
 		</Component>
-		
+
 		<Component ID="Overhead_Handling">
 			<UseTemplate Name="ASOBO_HANDLING_Switch_Wipers_Template">
+				<CIRCUIT_ID_WIPERS>77</CIRCUIT_ID_WIPERS>
+				<POS_OFF>0</POS_OFF>
+				<POS_SLOW>1</POS_SLOW>
+				<POS_NORM>2</POS_NORM>
+				<PART_ID>HANDLING_Switch_Wipers</PART_ID>
+			</UseTemplate>
+			<UseTemplate Name="ASOBO_HANDLING_Switch_Wipers_Template">
+				<NODE_ID>HANDLING_Switch_Wipers_1</NODE_ID>
 				<CIRCUIT_ID_WIPERS>77</CIRCUIT_ID_WIPERS>
 				<POS_OFF>0</POS_OFF>
 				<POS_SLOW>1</POS_SLOW>
@@ -1822,7 +1866,7 @@
 			<SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
 			<DEFAULT_TEMPLATE_EMISSIVE>ASOBO_LIGHTING_Potentiometer_Emissive_Template</DEFAULT_TEMPLATE_EMISSIVE>
 		</DefaultTemplateParameters>
-	
+
 		<UseTemplate Name="ASOBO_AIRLINER_Switch_Baro_Selector_Template">
 			<NODE_ID>KNOB_AUTOPILOT_SELECTOR_L1</NODE_ID>
 			<ANIM_NAME>KNOB_AUTOPILOT_SELECTOR_L1</ANIM_NAME>
@@ -1831,7 +1875,7 @@
 			<NODE_ID>KNOB_AUTOPILOT_SELECTOR_R1</NODE_ID>
 			<ANIM_NAME>KNOB_AUTOPILOT_SELECTOR_R1</ANIM_NAME>
 		</UseTemplate>
-		
+
 		<UseTemplate Name="ASOBO_AUTOPILOT_Knob_Baro_Template">
 			<NODE_ID>KNOB_AUTOPILOT_KNOB1_L</NODE_ID>
 			<ANIM_NAME_KNOB>KNOB_AUTOPILOT_KNOB1_L</ANIM_NAME_KNOB>
@@ -1844,7 +1888,7 @@
 			<ANIM_NAME_PUSHPULL>PUSH_AUTOPILOT_KNOB1_R</ANIM_NAME_PUSHPULL>
 			<AIRLINER_TYPE>A320</AIRLINER_TYPE>
 		</UseTemplate>
-		
+
 		<UseTemplate Name="ASOBO_AUTOPILOT_Push_FlightDirector_Template">
 			<NODE_ID>PUSH_AUTOPILOT_FD_L</NODE_ID>
 			<ANIM_NAME>PUSH_AUTOPILOT_FD_L</ANIM_NAME>
@@ -1853,7 +1897,7 @@
 			<POTENTIOMETER>14</POTENTIOMETER>
 			<ID>1</ID>
 		</UseTemplate>
-		
+
 		<UseTemplate Name="ASOBO_AUTOPILOT_Push_FlightDirector_Template">
 			<NODE_ID>PUSH_AUTOPILOT_FD_R</NODE_ID>
 			<ANIM_NAME>PUSH_AUTOPILOT_FD_R</ANIM_NAME>
@@ -1862,103 +1906,103 @@
 			<POTENTIOMETER>14</POTENTIOMETER>
 			<ID>1</ID>
 		</UseTemplate>
-	
+
 		<UseTemplate Name="ASOBO_AIRBUS_Push_ILS_Template">
 			<NODE_ID>PUSH_AUTOPILOT_LS_L</NODE_ID>
 			<ANIM_NAME>PUSH_AUTOPILOT_LS_L</ANIM_NAME>
-			<POTENTIOMETER>14</POTENTIOMETER>
+			<POTENTIOMETER_SEQ2>14</POTENTIOMETER_SEQ2>
 		</UseTemplate>
-	
+
 		<UseTemplate Name="ASOBO_AIRBUS_Push_ILS_Template">
 			<NODE_ID>PUSH_AUTOPILOT_LS_R</NODE_ID>
 			<ANIM_NAME>PUSH_AUTOPILOT_LS_R</ANIM_NAME>
-			<POTENTIOMETER>14</POTENTIOMETER>
+			<POTENTIOMETER_SEQ2>14</POTENTIOMETER_SEQ2>
 		</UseTemplate>
-	
+
 		<UseTemplate Name="ASOBO_AIRLINER_Knob_ND_Template">
 			<TYPE>AIRBUS</TYPE>
 			<NODE_ID>KNOB_AUTOPILOT_ROSE_L</NODE_ID>
 			<ANIM_NAME>KNOB_AUTOPILOT_ROSE_L_</ANIM_NAME>
 		</UseTemplate>
-		
+
 		<UseTemplate Name="ASOBO_AIRLINER_Knob_ND_Range_Template">
 			<TYPE>AIRBUS</TYPE>
 			<NODE_ID>KNOB_AUTOPILOT_L1</NODE_ID>
 			<ANIM_NAME>KNOB_AUTOPILOT_L1</ANIM_NAME>
 		</UseTemplate>
-	
+
 		<UseTemplate Name="ASOBO_AIRLINER_Knob_ND_Template">
 			<TYPE>AIRBUS</TYPE>
 			<NODE_ID>KNOB_AUTOPILOT_ROSE_R</NODE_ID>
 			<ANIM_NAME>KNOB_AUTOPILOT_ROSE_R</ANIM_NAME>
 		</UseTemplate>
-		
+
 		<UseTemplate Name="ASOBO_AIRLINER_Knob_ND_Range_Template">
 			<TYPE>AIRBUS</TYPE>
 			<NODE_ID>KNOB_AUTOPILOT_R1</NODE_ID>
 			<ANIM_NAME>KNOB_AUTOPILOT_R1</ANIM_NAME>
 		</UseTemplate>
-	
+
 		<UseTemplate Name="ASOBO_AIRBUS_Push_CSTR_Template">
 			<NODE_ID>PUSH_AUTOPILOT_CSTR_L</NODE_ID>
 			<ANIM_NAME>PUSH_AUTOPILOT_CSTR_L</ANIM_NAME>
 			<POTENTIOMETER_SEQ2>14</POTENTIOMETER_SEQ2>
 		</UseTemplate>
-	
+
 		<UseTemplate Name="ASOBO_AIRBUS_Push_VORD_Template">
 			<NODE_ID>PUSH_AUTOPILOT_VORD_L</NODE_ID>
 			<ANIM_NAME>PUSH_AUTOPILOT_VORD_L</ANIM_NAME>
 			<POTENTIOMETER_SEQ2>14</POTENTIOMETER_SEQ2>
 		</UseTemplate>
-	
+
 		<UseTemplate Name="ASOBO_AIRBUS_Push_WPT_Template">
 			<NODE_ID>PUSH_AUTOPILOT_WPT_L</NODE_ID>
 			<ANIM_NAME>PUSH_AUTOPILOT_WPT_L</ANIM_NAME>
 			<POTENTIOMETER_SEQ2>14</POTENTIOMETER_SEQ2>
 		</UseTemplate>
-	
+
 		<UseTemplate Name="ASOBO_AIRBUS_Push_NDB_Template">
 			<NODE_ID>PUSH_AUTOPILOT_NDB_L</NODE_ID>
 			<ANIM_NAME>PUSH_AUTOPILOT_NDB_L</ANIM_NAME>
 			<POTENTIOMETER_SEQ2>14</POTENTIOMETER_SEQ2>
 		</UseTemplate>
-	
+
 		<UseTemplate Name="ASOBO_AIRBUS_Push_ARPT_Template">
 			<NODE_ID>PUSH_AUTOPILOT_ARPT_L</NODE_ID>
 			<ANIM_NAME>PUSH_AUTOPILOT_ARPT_L</ANIM_NAME>
 			<POTENTIOMETER_SEQ2>14</POTENTIOMETER_SEQ2>
 		</UseTemplate>
-	
+
 		<UseTemplate Name="ASOBO_AIRBUS_Push_CSTR_Template">
 			<NODE_ID>PUSH_AUTOPILOT_CSTR_R</NODE_ID>
 			<ANIM_NAME>PUSH_AUTOPILOT_CSTR_R</ANIM_NAME>
 			<POTENTIOMETER_SEQ2>14</POTENTIOMETER_SEQ2>
 		</UseTemplate>
-	
+
 		<UseTemplate Name="ASOBO_AIRBUS_Push_VORD_Template">
 			<NODE_ID>PUSH_AUTOPILOT_VORD_R</NODE_ID>
 			<ANIM_NAME>PUSH_AUTOPILOT_VORD_R</ANIM_NAME>
 			<POTENTIOMETER_SEQ2>14</POTENTIOMETER_SEQ2>
 		</UseTemplate>
-	
+
 		<UseTemplate Name="ASOBO_AIRBUS_Push_WPT_Template">
 			<NODE_ID>PUSH_AUTOPILOT_WPT_R</NODE_ID>
 			<ANIM_NAME>PUSH_AUTOPILOT_WPT_R</ANIM_NAME>
 			<POTENTIOMETER_SEQ2>14</POTENTIOMETER_SEQ2>
 		</UseTemplate>
-	
+
 		<UseTemplate Name="ASOBO_AIRBUS_Push_NDB_Template">
 			<NODE_ID>PUSH_AUTOPILOT_NDB_R</NODE_ID>
 			<ANIM_NAME>PUSH_AUTOPILOT_NDB_R</ANIM_NAME>
 			<POTENTIOMETER_SEQ2>14</POTENTIOMETER_SEQ2>
 		</UseTemplate>
-	
+
 		<UseTemplate Name="ASOBO_AIRBUS_Push_ARPT_Template">
 			<NODE_ID>PUSH_AUTOPILOT_ARPT_R</NODE_ID>
 			<ANIM_NAME>PUSH_AUTOPILOT_ARPT_R</ANIM_NAME>
 			<POTENTIOMETER_SEQ2>14</POTENTIOMETER_SEQ2>
 		</UseTemplate>
-		
+
 		<UseTemplate Name="ASOBO_AUTOPILOT_Push_SpeedToggle_Template">
 			<NODE_ID>PUSH_AUTOPILOT_SPDMACH_L</NODE_ID>
 			<ANIM_NAME>PUSH_AUTOPILOT_SPDMACH_L</ANIM_NAME>
@@ -1966,14 +2010,15 @@
 			<NO_TEXT_EMISSIVE>True</NO_TEXT_EMISSIVE>
 
 		</UseTemplate>
-		
+
 		<UseTemplate Name="ASOBO_AUTOPILOT_Knob_SpeedMach_Template">
 			<NODE_ID>KNOB_AUTOPILOT_L2</NODE_ID>
+			<PART_ID>Speed_knob</PART_ID>
 			<ANIM_NAME>KNOB_AUTOPILOT_L2</ANIM_NAME>
 			<ANIM_NAME_PUSHPULL>PUSH_AUTOPILOT_L2</ANIM_NAME_PUSHPULL>
 			<TYPE>AIRBUS</TYPE>
 		</UseTemplate>
-		
+
 		<UseTemplate Name="ASOBO_AUTOPILOT_Knob_Heading_Template">
 			<NODE_ID>KNOB_AUTOPILOT_L3</NODE_ID>
 			<ANIM_NAME_KNOB>KNOB_AUTOPILOT_L3</ANIM_NAME_KNOB>
@@ -1983,9 +2028,9 @@
 			<ANIMTIP_2_ON_CURSOR>UpArrow</ANIMTIP_2_ON_CURSOR>
 			<ANIMTIP_3>TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_HDG_ENGAGE_SELECTED_HEADING_MODE</ANIMTIP_3>
 			<ANIMTIP_3_ON_CURSOR>DownArrow</ANIMTIP_3_ON_CURSOR>
-			
+
 		</UseTemplate>
-		
+
 		<UseTemplate Name="ASOBO_AUTOPILOT_Push_Localizer_Template">
 			<NODE_ID>PUSH_AUTOPILOT_LOC</NODE_ID>
 			<ANIM_NAME>PUSH_AUTOPILOT_LOC</ANIM_NAME>
@@ -1993,20 +2038,21 @@
 			<ACTIVE_NODE_ID>PUSH_AUTOPILOT_LOC_SEQ1</ACTIVE_NODE_ID>
 			<EMISSIVE_NODE_ID>PUSH_AUTOPILOT_LOC_SEQ2</EMISSIVE_NODE_ID>
 		</UseTemplate>
-		
-		<!--
+
+
 		<UseTemplate Name="ASOBO_AIRBUS_Push_Heading_Track_Template">
 			<NODE_ID>PUSH_AUTOPILOT_HDGTRK</NODE_ID>
 			<ANIM_NAME>PUSH_AUTOPILOT_HDGTRK</ANIM_NAME>
-		</UseTemplate>	
-		-->
-		
+		</UseTemplate>
+
+
 		<UseTemplate Name="ASOBO_AUTOPILOT_Update_Autopilot_Match_Simvar">
 			<AP_COUNT>2</AP_COUNT>
 		</UseTemplate>
-		
+
 		<UseTemplate Name="ASOBO_AUTOPILOT_Push_Autopilot_Template">
 			<NODE_ID>PUSH_AUTOPILOT_AP1</NODE_ID>
+			<PART_ID>PUSH_AUTOPILOT_AP1</PART_ID>
 			<ANIM_NAME>PUSH_AUTOPILOT_AP1</ANIM_NAME>
 			<POTENTIOMETER>14</POTENTIOMETER>
 			<ACTIVE_NODE_ID>PUSH_AUTOPILOT_AP1_SEQ1</ACTIVE_NODE_ID>
@@ -2015,9 +2061,10 @@
 			<AP_COUNT>2</AP_COUNT>
 			<TYPE>EXCLUSIVE_AP</TYPE>
 		</UseTemplate>
-		
+
 		<UseTemplate Name="ASOBO_AUTOPILOT_Push_Autopilot_Template">
 			<NODE_ID>PUSH_AUTOPILOT_AP2</NODE_ID>
+			<PART_ID>PUSH_AUTOPILOT_AP2</PART_ID>
 			<ANIM_NAME>PUSH_AUTOPILOT_AP2</ANIM_NAME>
 			<POTENTIOMETER>14</POTENTIOMETER>
 			<ACTIVE_NODE_ID>PUSH_AUTOPILOT_AP2_SEQ1</ACTIVE_NODE_ID>
@@ -2026,7 +2073,7 @@
 			<AP_COUNT>2</AP_COUNT>
 			<TYPE>EXCLUSIVE_AP</TYPE>
 		</UseTemplate>
-		
+
 		<UseTemplate Name="ASOBO_AUTOPILOT_Push_AutoThrottle_Template">
 			<NODE_ID>PUSH_AUTOPILOT_ATHR</NODE_ID>
 			<ANIM_NAME>PUSH_AUTOPILOT_ATHR</ANIM_NAME>
@@ -2034,7 +2081,7 @@
 			<ACTIVE_NODE_ID>PUSH_AUTOPILOT_ATHR_SEQ1</ACTIVE_NODE_ID>
 			<EMISSIVE_NODE_ID>PUSH_AUTOPILOT_ATHR_SEQ2</EMISSIVE_NODE_ID>
 		</UseTemplate>
-	
+
 		<UseTemplate Name="ASOBO_AUTOPILOT_Push_Approach_Template">
 			<NODE_ID>PUSH_AUTOPILOT_APPR</NODE_ID>
 			<ANIM_NAME>PUSH_AUTOPILOT_APPR</ANIM_NAME>
@@ -2043,26 +2090,26 @@
 			<EMISSIVE_NODE_ID>PUSH_AUTOPILOT_APPR_SEQ2</EMISSIVE_NODE_ID>
 			<DISABLE_GPS_MODE>False</DISABLE_GPS_MODE>
 		</UseTemplate>
-		
+
 		<UseTemplate Name="ASOBO_AIRBUS_Push_Expedite_Template">
 			<NODE_ID>PUSH_AUTOPILOT_EXPED</NODE_ID>
 			<ANIM_NAME>PUSH_AUTOPILOT_EXPED</ANIM_NAME>
 			<ACTIVE_NODE_ID>PUSH_AUTOPILOT_EXPED_SEQ1</ACTIVE_NODE_ID>
 			<EMISSIVE_NODE_ID>PUSH_AUTOPILOT_EXPED_SEQ2</EMISSIVE_NODE_ID>
 			<POTENTIOMETER>14</POTENTIOMETER>
-		</UseTemplate>	
-		
+		</UseTemplate>
+
 		<UseTemplate Name="ASOBO_AIRBUS_Push_Metric_Alt_Template">
 			<NODE_ID>PUSH_AUTOPILOT_METRICALT</NODE_ID>
 			<ANIM_NAME>PUSH_AUTOPILOT_METRICALT</ANIM_NAME>
-		</UseTemplate>	
-		
+		</UseTemplate>
+
 		<UseTemplate Name="ASOBO_AIRBUS_Switch_Altitude_Increment_Template">
 			<NODE_ID>KNOB_AUTOPILOT_SELECTOR_ALT</NODE_ID>
 			<ANIM_NAME>KNOB_AUTOPILOT_SELECTOR_ALT</ANIM_NAME>
-			
+
 		</UseTemplate>
-	
+
 		<UseTemplate Name="ASOBO_AUTOPILOT_Knob_Altitude_Template">
 			<NODE_ID>KNOB_AUTOPILOT_KNOB_ALT</NODE_ID>
 			<ANIM_NAME_KNOB>KNOB_AUTOPILOT_ALT</ANIM_NAME_KNOB>
@@ -2074,11 +2121,11 @@
 			<ANIMTIP_1_ON_CURSOR>TurnRight</ANIMTIP_1_ON_CURSOR>
 			<ANIMTIP_2>TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_ENGAGE_MANAGED_ALTITUDE_MODE</ANIMTIP_2>
 			<ANIMTIP_2_ON_CURSOR>UpArrow</ANIMTIP_2_ON_CURSOR>
-			<ANIMTIP_3>TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_ENGAGE_SELECTED_ALTITUDE_MODE</ANIMTIP_3>	
+			<ANIMTIP_3>TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_ENGAGE_SELECTED_ALTITUDE_MODE</ANIMTIP_3>
 			<ANIMTIP_3_ON_CURSOR>DownArrow</ANIMTIP_3_ON_CURSOR>
 			<TYPE>AIRBUS</TYPE>
 		</UseTemplate>
-	
+
 		<UseTemplate Name="ASOBO_AUTOPILOT_Knob_VerticalSpeed_Template">
 			<NODE_ID>KNOB_AUTOPILOT_UPDN</NODE_ID>
 			<ANIM_NAME_KNOB>KNOB_AUTOPILOT_UPDN</ANIM_NAME_KNOB>
@@ -2092,9 +2139,9 @@
 			<ANIMTIP_2>TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_LEVEL_OFF</ANIMTIP_2>
 			<ANIMTIP_2_ON_CURSOR>UpArrow</ANIMTIP_2_ON_CURSOR>
 			<ANIMTIP_3>TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_VS_FPA_ENGAGE</ANIMTIP_3>
-			<ANIMTIP_3_ON_CURSOR>DownArrow</ANIMTIP_3_ON_CURSOR>			
+			<ANIMTIP_3_ON_CURSOR>DownArrow</ANIMTIP_3_ON_CURSOR>
 		</UseTemplate>
-			
+
 		<UseTemplate Name="ASOBO_AIRBUS_NAV_AID_SWITCH_Template">
 			<BASE_NAME>SWITCH_AUTOPILOT_ADF1_L</BASE_NAME>
 			<STATE_VAR_NAME>XMLVAR_NAV_AID_SWITCH_L1_State</STATE_VAR_NAME>
@@ -2102,7 +2149,7 @@
 			<ANIMTIP_1>TT:COCKPIT.TOOLTIPS.EFIS_PANEL_ADFSWITCH_OFF1</ANIMTIP_1>
 			<ANIMTIP_2>TT:COCKPIT.TOOLTIPS.EFIS_PANEL_ADFSWITCH_VOR1</ANIMTIP_2>
 		</UseTemplate>
-		
+
 		<UseTemplate Name="ASOBO_AIRBUS_NAV_AID_SWITCH_Template">
 			<BASE_NAME>SWITCH_AUTOPILOT_ADF2_L</BASE_NAME>
 			<STATE_VAR_NAME>XMLVAR_NAV_AID_SWITCH_L2_State</STATE_VAR_NAME>
@@ -2110,7 +2157,7 @@
 			<ANIMTIP_1>TT:COCKPIT.TOOLTIPS.EFIS_PANEL_ADFSWITCH_OFF2</ANIMTIP_1>
 			<ANIMTIP_2>TT:COCKPIT.TOOLTIPS.EFIS_PANEL_ADFSWITCH_VOR2</ANIMTIP_2>
 		</UseTemplate>
-		
+
 		<UseTemplate Name="ASOBO_AIRBUS_NAV_AID_SWITCH_Template">
 			<BASE_NAME>SWITCH_AUTOPILOT_ADF1_R</BASE_NAME>
 			<STATE_VAR_NAME>XMLVAR_NAV_AID_SWITCH_R1_State</STATE_VAR_NAME>
@@ -2118,7 +2165,7 @@
 			<ANIMTIP_1>TT:COCKPIT.TOOLTIPS.EFIS_PANEL_ADFSWITCH_OFF1</ANIMTIP_1>
 			<ANIMTIP_2>TT:COCKPIT.TOOLTIPS.EFIS_PANEL_ADFSWITCH_VOR1</ANIMTIP_2>
 		</UseTemplate>
-		
+
 		<UseTemplate Name="ASOBO_AIRBUS_NAV_AID_SWITCH_Template">
 			<BASE_NAME>SWITCH_AUTOPILOT_ADF2_R</BASE_NAME>
 			<STATE_VAR_NAME>XMLVAR_NAV_AID_SWITCH_R2_State</STATE_VAR_NAME>
@@ -2126,6 +2173,7 @@
 			<ANIMTIP_1>TT:COCKPIT.TOOLTIPS.EFIS_PANEL_ADFSWITCH_OFF2</ANIMTIP_1>
 			<ANIMTIP_2>TT:COCKPIT.TOOLTIPS.EFIS_PANEL_ADFSWITCH_VOR2</ANIMTIP_2>
 		</UseTemplate>
+		<CameraTitle>PA</CameraTitle>
 	</Component>
 
 	<Component ID="Airbus_EICAS">
@@ -2133,54 +2181,48 @@
 			<BOTH_SCREENS_ON_ONE_NODE/>
 			<NODE_ID>DYN_SCREEN</NODE_ID>
 		</UseTemplate>
-		
+
 		<UseTemplate Name="ASOBO_ECAM_PAGE_SELECTION_Template">
 			<POTENTIOMETER>15</POTENTIOMETER>
 		</UseTemplate>
-		
+
 		<Component ID="ECAM_Push_Dummies">
 			<DefaultTemplateParameters>
 				<SEQ1_EMISSIVE_DRIVES_VISIBILITY>False</SEQ1_EMISSIVE_DRIVES_VISIBILITY>
 				<SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
 			</DefaultTemplateParameters>
-			
-			<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
-				<NODE_ID>PUSH_ECAM_TOCONFIG</NODE_ID>
-				<POTENTIOMETER_SEQ1>15</POTENTIOMETER_SEQ1>
-				<ONLY_SEQ1/>
-			</UseTemplate>
-			
+
 			<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
 				<NODE_ID>PUSH_ECAM_ALL</NODE_ID>
 				<POTENTIOMETER_SEQ1>15</POTENTIOMETER_SEQ1>
 				<ONLY_SEQ1/>
 			</UseTemplate>
-			
+
 			<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
 				<NODE_ID>PUSH_ECAM_CLR</NODE_ID>
 				<POTENTIOMETER_SEQ1>15</POTENTIOMETER_SEQ1>
 			</UseTemplate>
-			
+
 			<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
 				<NODE_ID>PUSH_ECAM_STS</NODE_ID>
 				<POTENTIOMETER_SEQ1>15</POTENTIOMETER_SEQ1>
 			</UseTemplate>
-			
+
 			<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
 				<NODE_ID>PUSH_ECAM_RCL</NODE_ID>
 				<POTENTIOMETER_SEQ1>15</POTENTIOMETER_SEQ1>
 				<ONLY_SEQ1/>
 			</UseTemplate>
-			
+
 			<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
 				<NODE_ID>PUSH_ECAM_CLR2</NODE_ID>
 				<POTENTIOMETER_SEQ1>15</POTENTIOMETER_SEQ1>
 			</UseTemplate>
 		</Component>
-		
-		<CameraTitle>MFD</CameraTitle>
+
+		<CameraTitle>ECAM</CameraTitle>
 	</Component>
-	
+
 	<Component ID="Airbus_FDW">
 		<DefaultTemplateParameters>
 			<POTENTIOMETER>15</POTENTIOMETER>
@@ -2225,7 +2267,7 @@
 			</UseTemplate>
 			<Component ID="Audio_Panel_Left_Dummies">
 				<OverrideTemplateParameters>
-					<SEQ1_EMISSIVE_CODE>0</SEQ1_EMISSIVE_CODE>
+					<SEQ1_EMISSIVE_CODE>(L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 ==</SEQ1_EMISSIVE_CODE>
 					<SEQ2_EMISSIVE_CODE>1</SEQ2_EMISSIVE_CODE>
 					<SEQ1_EMISSIVE_DRIVES_VISIBILITY>False</SEQ1_EMISSIVE_DRIVES_VISIBILITY>
 					<SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
@@ -2254,8 +2296,49 @@
 					<NODE_ID>PUSH_AUDIOL_CALL5</NODE_ID>
 				</UseTemplate>
 			</Component>
+			<Component ID="Audio_Panel_Left_Volume_Dummies">
+				<OverrideTemplateParameters>
+					<EMISSIVE_CODE>(L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == 16 *</EMISSIVE_CODE>
+				</OverrideTemplateParameters>
+				<UseTemplate Name="A32NX_Audio_Panel_Volume_Dummy">
+					<NODE_ID>PUSH_AUDIOL_VOR1_EMIS</NODE_ID>
+				</UseTemplate>
+				<UseTemplate Name="A32NX_Audio_Panel_Volume_Dummy">
+					<NODE_ID>PUSH_AUDIOL_VOR2_EMIS</NODE_ID>
+				</UseTemplate>
+				<UseTemplate Name="A32NX_Audio_Panel_Volume_Dummy">
+					<NODE_ID>PUSH_AUDIOL_MKR_EMIS</NODE_ID>
+				</UseTemplate>
+				<UseTemplate Name="A32NX_Audio_Panel_Volume_Dummy">
+					<NODE_ID>PUSH_AUDIOL_ILS_EMIS</NODE_ID>
+				</UseTemplate>
+				<UseTemplate Name="A32NX_Audio_Panel_Volume_Dummy">
+					<NODE_ID>PUSH_AUDIOL_HF1_EMIS</NODE_ID>
+				</UseTemplate>
+				<UseTemplate Name="A32NX_Audio_Panel_Volume_Dummy">
+					<NODE_ID>PUSH_AUDIOL_MLS_EMIS</NODE_ID>
+				</UseTemplate>
+				<UseTemplate Name="A32NX_Audio_Panel_Volume_Dummy">
+					<NODE_ID>PUSH_AUDIOL_HF2_EMIS</NODE_ID>
+				</UseTemplate>
+				<UseTemplate Name="A32NX_Audio_Panel_Volume_Dummy">
+					<NODE_ID>PUSH_AUDIOL_ADF1_EMIS</NODE_ID>
+				</UseTemplate>
+				<UseTemplate Name="A32NX_Audio_Panel_Volume_Dummy">
+					<NODE_ID>PUSH_AUDIOL_INT_EMIS</NODE_ID>
+				</UseTemplate>
+				<UseTemplate Name="A32NX_Audio_Panel_Volume_Dummy">
+					<NODE_ID>PUSH_AUDIOL_ADF2_EMIS</NODE_ID>
+				</UseTemplate>
+				<UseTemplate Name="A32NX_Audio_Panel_Volume_Dummy">
+					<NODE_ID>PUSH_AUDIOL_CAB_EMIS</NODE_ID>
+				</UseTemplate>
+				<UseTemplate Name="A32NX_Audio_Panel_Volume_Dummy">
+					<NODE_ID>PUSH_AUDIOL_PA1_EMIS</NODE_ID>
+				</UseTemplate>
+			</Component>
 		</Component>
-		
+
 		<Component ID="Radio_Right">
 			<UseTemplate Name="ASOBO_RMP_DISPLAY_Template">
 				<SIDE>R</SIDE>
@@ -2291,7 +2374,7 @@
 			</UseTemplate>
 			<Component ID="Audio_Panel_Right_Dummies">
 				<OverrideTemplateParameters>
-					<SEQ1_EMISSIVE_CODE>0</SEQ1_EMISSIVE_CODE>
+					<SEQ1_EMISSIVE_CODE>(L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 ==</SEQ1_EMISSIVE_CODE>
 					<SEQ2_EMISSIVE_CODE>1</SEQ2_EMISSIVE_CODE>
 					<SEQ1_EMISSIVE_DRIVES_VISIBILITY>False</SEQ1_EMISSIVE_DRIVES_VISIBILITY>
 					<SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
@@ -2320,9 +2403,50 @@
 					<NODE_ID>PUSH_AUDIOR_CALL5</NODE_ID>
 				</UseTemplate>
 			</Component>
+			<Component ID="Audio_Panel_Right_Volume_Dummies">
+				<OverrideTemplateParameters>
+					<EMISSIVE_CODE>(L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == 16 *</EMISSIVE_CODE>
+				</OverrideTemplateParameters>
+				<UseTemplate Name="A32NX_Audio_Panel_Volume_Dummy">
+					<NODE_ID>PUSH_AUDIOR_VOR1_EMIS</NODE_ID>
+				</UseTemplate>
+				<UseTemplate Name="A32NX_Audio_Panel_Volume_Dummy">
+					<NODE_ID>PUSH_AUDIOR_VOR2_EMIS</NODE_ID>
+				</UseTemplate>
+				<UseTemplate Name="A32NX_Audio_Panel_Volume_Dummy">
+					<NODE_ID>PUSH_AUDIOR_MKR_EMIS</NODE_ID>
+				</UseTemplate>
+				<UseTemplate Name="A32NX_Audio_Panel_Volume_Dummy">
+					<NODE_ID>PUSH_AUDIOR_ILS_EMIS</NODE_ID>
+				</UseTemplate>
+				<UseTemplate Name="A32NX_Audio_Panel_Volume_Dummy">
+					<NODE_ID>PUSH_AUDIOR_HF1_EMIS</NODE_ID>
+				</UseTemplate>
+				<UseTemplate Name="A32NX_Audio_Panel_Volume_Dummy">
+					<NODE_ID>PUSH_AUDIOR_MLS_EMIS</NODE_ID>
+				</UseTemplate>
+				<UseTemplate Name="A32NX_Audio_Panel_Volume_Dummy">
+					<NODE_ID>PUSH_AUDIOR_HF2_EMIS</NODE_ID>
+				</UseTemplate>
+				<UseTemplate Name="A32NX_Audio_Panel_Volume_Dummy">
+					<NODE_ID>PUSH_AUDIOR_ADF1_EMIS</NODE_ID>
+				</UseTemplate>
+				<UseTemplate Name="A32NX_Audio_Panel_Volume_Dummy">
+					<NODE_ID>PUSH_AUDIOR_INT_EMIS</NODE_ID>
+				</UseTemplate>
+				<UseTemplate Name="A32NX_Audio_Panel_Volume_Dummy">
+					<NODE_ID>PUSH_AUDIOR_ADF2_EMIS</NODE_ID>
+				</UseTemplate>
+				<UseTemplate Name="A32NX_Audio_Panel_Volume_Dummy">
+					<NODE_ID>PUSH_AUDIOR_CAB_EMIS</NODE_ID>
+				</UseTemplate>
+				<UseTemplate Name="A32NX_Audio_Panel_Volume_Dummy">
+					<NODE_ID>PUSH_AUDIOR_PA1_EMIS</NODE_ID>
+				</UseTemplate>
+			</Component>
 		</Component>
 	</Component>
-	
+
 	<Component ID="Airbus_ATC">
 		<UseTemplate Name="ASOBO_AIRLINER_ATC_Template">
 			<TYPE>AIRBUS</TYPE>
@@ -2337,18 +2461,18 @@
 
 	<Component ID="Airbus_Pedestal_Radios">
 		<Component ID="Radio_Left">
-			
+
 			<UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
 				<NODE_ID>SCREEN_COM_L</NODE_ID>
-				<EMISSIVE_CODE>0.5</EMISSIVE_CODE> <!-- TODO - Make this editable with a knob -->
-			</UseTemplate>	
+				<EMISSIVE_CODE>0.5</EMISSIVE_CODE>				<!-- TODO - Make this editable with a knob -->
+			</UseTemplate>
 		</Component>
 		<Component ID="Radio_Right">
-			
+
 			<UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
 				<NODE_ID>SCREEN_COM_R</NODE_ID>
-				<EMISSIVE_CODE>0.5</EMISSIVE_CODE> <!-- TODO - Make this editable with a knob -->
-			</UseTemplate>	
+				<EMISSIVE_CODE>0.5</EMISSIVE_CODE>				<!-- TODO - Make this editable with a knob -->
+			</UseTemplate>
 		</Component>
 		<Component ID="Switching_Panel">
 			<UseTemplate Name="ASOBO_GT_Anim">
@@ -2371,48 +2495,62 @@
 	</Component>
 
 	<Component ID="SAFETY">
-		<UseTemplate Name="ASOBO_SAFETY_Push_Warning_Template">
+		<UseTemplate Name="ASOBO_SAFETY_Push_Template">
+			<LEFT_SINGLE_CODE>0 (&gt;L:A32NX_MASTER_WARNING)</LEFT_SINGLE_CODE>
+			<EMISSIVE_CODE>(L:Generic_Master_Warning_Active) (#VAR_SCOPE#:#VAR_NAME#) or (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or</EMISSIVE_CODE>
+			<TOOLTIPID>TT:COCKPIT.TOOLTIPS.MASTER_WARNING_ACKNOWLEDGE</TOOLTIPID>
 			<VAR_SCOPE>L</VAR_SCOPE>
 			<VAR_NAME>XMLVAR_LTS_Test</VAR_NAME>
 			<NODE_ID>PUSH_AUTOPILOT_MASTERAWARN_L</NODE_ID>
 			<NODE_ID_SEQ1>PUSH_AUTOPILOT_MASTERAWARN_L_SEQ1</NODE_ID_SEQ1>
 			<NODE_ID_SEQ2>PUSH_AUTOPILOT_MASTERAWARN_L_SEQ2</NODE_ID_SEQ2>
-			<ANIM_NAME>PUSH_AUTOPILOT_MASTERAWARN_L</ANIM_NAME>		
+			<ANIM_NAME>PUSH_AUTOPILOT_MASTERAWARN_L</ANIM_NAME>
 			<AIRBUS_TYPE/>
 			<NO_SEQ2/>
 		</UseTemplate>
-		<UseTemplate Name="ASOBO_SAFETY_Push_Caution_Template">
+		<UseTemplate Name="ASOBO_SAFETY_Push_Template">
+			<ID>Caution</ID>
+			<LEFT_SINGLE_CODE>0 (&gt;L:A32NX_MASTER_CAUTION)</LEFT_SINGLE_CODE>
+			<EMISSIVE_CODE>(L:Generic_Master_Caution_Active) (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or</EMISSIVE_CODE>
+			<TOOLTIPID>TT:COCKPIT.TOOLTIPS.MASTER_CAUTION_ACKNOWLEDGE</TOOLTIPID>
 			<VAR_SCOPE>L</VAR_SCOPE>
 			<VAR_NAME>XMLVAR_LTS_Test</VAR_NAME>
 			<NODE_ID>PUSH_AUTOPILOT_MASTERCAUT_L</NODE_ID>
 			<NODE_ID_SEQ1>PUSH_AUTOPILOT_MASTERCAUT_L_SEQ1</NODE_ID_SEQ1>
 			<NODE_ID_SEQ2>PUSH_AUTOPILOT_MASTERCAUT_L_SEQ2</NODE_ID_SEQ2>
-			<ANIM_NAME>PUSH_AUTOPILOT_MASTERCAUT_L</ANIM_NAME>	
+			<ANIM_NAME>PUSH_AUTOPILOT_MASTERCAUT_L</ANIM_NAME>
 			<AIRBUS_TYPE/>
 			<NO_SEQ2/>
 		</UseTemplate>
-		<UseTemplate Name="ASOBO_SAFETY_Push_Warning_Template">
+		<UseTemplate Name="ASOBO_SAFETY_Push_Template">
+			<LEFT_SINGLE_CODE>0 (&gt;L:A32NX_MASTER_WARNING)</LEFT_SINGLE_CODE>
+			<EMISSIVE_CODE>(L:Generic_Master_Warning_Active) (#VAR_SCOPE#:#VAR_NAME#) or (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or</EMISSIVE_CODE>
+			<TOOLTIPID>TT:COCKPIT.TOOLTIPS.MASTER_WARNING_ACKNOWLEDGE</TOOLTIPID>
 			<VAR_SCOPE>L</VAR_SCOPE>
 			<VAR_NAME>XMLVAR_LTS_Test</VAR_NAME>
 			<NODE_ID>PUSH_AUTOPILOT_MASTERAWARN_R</NODE_ID>
 			<NODE_ID_SEQ1>PUSH_AUTOPILOT_MASTERAWARN_R_SEQ1</NODE_ID_SEQ1>
 			<NODE_ID_SEQ2>PUSH_AUTOPILOT_MASTERAWARN_R_SEQ2</NODE_ID_SEQ2>
-			<ANIM_NAME>PUSH_AUTOPILOT_MASTERAWARN_R</ANIM_NAME>		
-			<AIRBUS_TYPE/>	
-			<NO_SEQ2/>	
+			<ANIM_NAME>PUSH_AUTOPILOT_MASTERAWARN_R</ANIM_NAME>
+			<AIRBUS_TYPE/>
+			<NO_SEQ2/>
 		</UseTemplate>
-		<UseTemplate Name="ASOBO_SAFETY_Push_Caution_Template">
+		<UseTemplate Name="ASOBO_SAFETY_Push_Template">
+			<ID>Caution</ID>
+			<LEFT_SINGLE_CODE>0 (&gt;L:A32NX_MASTER_CAUTION)</LEFT_SINGLE_CODE>
+			<EMISSIVE_CODE>(L:Generic_Master_Caution_Active) (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or</EMISSIVE_CODE>
+			<TOOLTIPID>TT:COCKPIT.TOOLTIPS.MASTER_CAUTION_ACKNOWLEDGE</TOOLTIPID>
 			<VAR_SCOPE>L</VAR_SCOPE>
 			<VAR_NAME>XMLVAR_LTS_Test</VAR_NAME>
 			<NODE_ID>PUSH_AUTOPILOT_MASTERCAUT_R</NODE_ID>
 			<NODE_ID_SEQ1>PUSH_AUTOPILOT_MASTERCAUT_R_SEQ1</NODE_ID_SEQ1>
 			<NODE_ID_SEQ2>PUSH_AUTOPILOT_MASTERCAUT_R_SEQ2</NODE_ID_SEQ2>
-			<ANIM_NAME>PUSH_AUTOPILOT_MASTERCAUT_R</ANIM_NAME>	
+			<ANIM_NAME>PUSH_AUTOPILOT_MASTERCAUT_R</ANIM_NAME>
 			<AIRBUS_TYPE/>
 			<NO_SEQ2/>
 		</UseTemplate>
 	</Component>
-	
+
 	<Component ID="DUMMY_ELEMENTS_SETUP_ANIM_STATE">
 		<UseTemplate Name="ASOBO_GT_Anim_Setup">
 			<ANIM_NAME>KNOB_ATC_THRT</ANIM_NAME>
@@ -2423,7 +2561,7 @@
 			<PERCENT>100</PERCENT>
 		</UseTemplate>
 	</Component>
-	
+
 	<!-- This section has been entirely modified 	-->
 
 	<Component ID="Chronometer">
@@ -2459,7 +2597,159 @@
 		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
 			<NODE_ID>KNOB_CHRONO_RUN</NODE_ID>
 		</UseTemplate>
+		<CameraTitle>ECAM</CameraTitle>
+	</Component>
 
+	<Component ID="Overhead_Fire">
+		<Component ID="ENG1">
+			<UseTemplate Name="ASOBO_AIRLINER_FIRE_TEST">
+				<NODE_ID>PUSH_FIRE_ENG1_TEST</NODE_ID>
+				<PART_ID>Fire_test_eng1</PART_ID>
+				<ID>ENG1</ID>
+			</UseTemplate>
+			<UseTemplate Name="ASOBO_AIRLINER_FIRE_TEST_LIGHTS">
+				<NODE_ID>PUSH_OVHD_FIRE_ENG1_AGENT1</NODE_ID>
+				<ID>ENG1</ID>
+			</UseTemplate>
+			<UseTemplate Name="ASOBO_AIRLINER_FIRE_TEST_LIGHTS">
+				<NODE_ID>PUSH_OVHD_FIRE_ENG1_AGENT2</NODE_ID>
+				<ID>ENG1</ID>
+			</UseTemplate>
+			<UseTemplate Name="ASOBO_AIRLINER_FIRE_TEST_LIGHTS">
+				<NODE_ID>PUSH_ENGINES_1</NODE_ID>
+				<ID>ENG1</ID>
+			</UseTemplate>
+			<!--Unused currently-->
+			<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
+				<NODE_ID>LOCK_OVHD_ENG1</NODE_ID>
+			</UseTemplate>
+			<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
+				<NODE_ID>PUSH_OVHD_FIRE_ENG1</NODE_ID>
+			</UseTemplate>
+		</Component>
+
+		<Component ID="ENG2">
+			<UseTemplate Name="ASOBO_AIRLINER_FIRE_TEST">
+				<NODE_ID>PUSH_FIRE_ENG2_TEST</NODE_ID>
+				<PART_ID>Fire_test_eng2</PART_ID>
+				<ID>ENG2</ID>
+			</UseTemplate>
+			<UseTemplate Name="ASOBO_AIRLINER_FIRE_TEST_LIGHTS">
+				<NODE_ID>PUSH_OVHD_FIRE_ENG2_AGENT1</NODE_ID>
+				<ID>ENG2</ID>
+			</UseTemplate>
+			<UseTemplate Name="ASOBO_AIRLINER_FIRE_TEST_LIGHTS">
+				<NODE_ID>PUSH_OVHD_FIRE_ENG2_AGENT2</NODE_ID>
+				<ID>ENG2</ID>
+			</UseTemplate>
+			<UseTemplate Name="ASOBO_AIRLINER_FIRE_TEST_LIGHTS">
+				<NODE_ID>PUSH_ENGINES_2</NODE_ID>
+				<ID>ENG2</ID>
+			</UseTemplate>
+			<!--Unused currently-->
+			<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
+				<NODE_ID>LOCK_OVHD_ENG2</NODE_ID>
+			</UseTemplate>
+			<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
+				<NODE_ID>PUSH_OVHD_FIRE_ENG2</NODE_ID>
+			</UseTemplate>
+		</Component>
+
+		<Component ID="APU">
+			<UseTemplate Name="ASOBO_AIRLINER_FIRE_TEST">
+				<NODE_ID>PUSH_FIRE_APU_TEST</NODE_ID>
+				<ID>APU</ID>
+			</UseTemplate>
+			<UseTemplate Name="ASOBO_AIRLINER_FIRE_TEST_LIGHTS">
+				<NODE_ID>PUSH_OVHD_FIRE_AGENT</NODE_ID>
+				<ID>APU</ID>
+			</UseTemplate>
+			<!--Unused currently-->
+			<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
+				<NODE_ID>LOCK_OVHD_APU</NODE_ID>
+			</UseTemplate>
+			<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
+				<NODE_ID>PUSH_OVHD_FIRE_APU</NODE_ID>
+			</UseTemplate>
+		</Component>
+
+		<Component ID="CARGO_SMOKE">
+			<UseTemplate Name="ASOBO_AIRLINER_FIRE_TEST">
+				<NODE_ID>PUSH_OVHD_CARGOSMOKE_TEST</NODE_ID>
+				<ID>SMOKE</ID>
+			</UseTemplate>
+			<UseTemplate Name="ASOBO_AIRLINER_FIRE_TEST_LIGHTS">
+				<NODE_ID>PUSH_OVHD_CARGOSMOKE_FWD2</NODE_ID>
+				<ID>SMOKE</ID>
+			</UseTemplate>
+			<UseTemplate Name="ASOBO_AIRLINER_FIRE_TEST_LIGHTS">
+				<NODE_ID>PUSH_OVHD_CARGOSMOKE_FWD1</NODE_ID>
+				<ID>SMOKE</ID>
+			</UseTemplate>
+			<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
+				<NODE_ID>LOCK_OVHD_CARGOSMOKE_2</NODE_ID>
+			</UseTemplate>
+			<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
+				<NODE_ID>PUSH_OVHD_CARGOSMOKE_2</NODE_ID>
+			</UseTemplate>
+			<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
+				<NODE_ID>LOCK_OVHD_CARGOSMOKE_1</NODE_ID>
+			</UseTemplate>
+			<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
+				<NODE_ID>PUSH_OVHD_CARGOSMOKE_1</NODE_ID>
+			</UseTemplate>
+		</Component>
+		<CameraTitle>Overhead</CameraTitle>
+	</Component>
+
+	<Component ID="Overhead_Misc">
+		<Component ID="Left_Column">
+			<UseTemplate Name="A32NX_AIRLINER_GPWS_ALIGN_Template">
+				<NODE_ID>PUSH_OVHD_GPWS_TERR</NODE_ID>
+				<TOOLTIPID>(INOP) TERR</TOOLTIPID>
+				<WAIT_FOR_ALIGN_TIME>120 0.055 (A:GPS POSITION LAT, degree latitude) 2 pow * +</WAIT_FOR_ALIGN_TIME>
+			</UseTemplate>
+			<UseTemplate Name="A32NX_AIRLINER_GPWS_ALIGN_Template">
+				<NODE_ID>PUSH_OVHD_GPWS_SYS</NODE_ID>
+				<TOOLTIPID>(INOP) SYS</TOOLTIPID>
+				<WAIT_FOR_ALIGN_TIME>305 0.095 (A:GPS POSITION LAT, degree latitude) 2 pow * + (A:GPS POSITION LAT, degree latitude) 2 / -</WAIT_FOR_ALIGN_TIME>
+			</UseTemplate>
+			<UseTemplate Name="ASOBO_AIRLINER_GPWS_Template">
+				<NODE_ID>PUSH_OVHD_GPWS_GSMODE</NODE_ID>
+				<TOOLTIPID>(INOP) G/S Mode</TOOLTIPID>
+			</UseTemplate>
+			<UseTemplate Name="ASOBO_AIRLINER_GPWS_Template">
+				<NODE_ID>PUSH_OVHD_GPWS_FLAP</NODE_ID>
+				<PART_ID>GPWS_Flap</PART_ID>
+				<TOOLTIPID>(INOP) Flap Mode</TOOLTIPID>
+			</UseTemplate>
+			<UseTemplate Name="ASOBO_AIRLINER_GPWS_Template">
+				<NODE_ID>PUSH_OVHD_GPWS_LDG</NODE_ID>
+				<TOOLTIPID>(INOP) LDG Flaps 3</TOOLTIPID>
+			</UseTemplate>
+			<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
+				<NODE_ID>PUSH_OVHD_OXYGEN_PASSENGER</NODE_ID>
+				<BLOCK_SEQ2>1</BLOCK_SEQ2>
+			</UseTemplate>
+			<UseTemplate Name="ASOBO_AIRLINER_OXYGEN_Template">
+				<NODE_ID>PUSH_OVHD_OXYGEN_CREW</NODE_ID>
+				<PART_ID>Crew_Supply</PART_ID>
+				<TOOLTIPID>Crew oxygen supply</TOOLTIPID>
+			</UseTemplate>
+			<UseTemplate Name="ASOBO_AIRLINER_CALLS_Template">
+				<NODE_ID>PUSH_OVHD_CALLS_MECH</NODE_ID>
+			</UseTemplate>
+			<UseTemplate Name="ASOBO_AIRLINER_CALLS_Template">
+				<NODE_ID>PUSH_OVHD_CALLS_ALL</NODE_ID>
+			</UseTemplate>
+			<UseTemplate Name="ASOBO_AIRLINER_CALLS_Template">
+				<NODE_ID>PUSH_OVHD_CALLS_FWD</NODE_ID>
+			</UseTemplate>
+			<UseTemplate Name="ASOBO_AIRLINER_CALLS_Template">
+				<NODE_ID>PUSH_OVHD_CALLS_AFT</NODE_ID>
+			</UseTemplate>
+		</Component>
+		<CameraTitle>Overhead</CameraTitle>
 	</Component>
 
 	<!-- This section has been partially modified	-->
@@ -2510,7 +2800,7 @@
 		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
 			<NODE_ID>PUSH_BARO_RST</NODE_ID>
 		</UseTemplate>
-		<!-- Landing Light Indicators 
+		<!-- Landing Light Indicators
 		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
 			<NODE_ID>PUSH_AUTOBKR_LDGGEAR_1</NODE_ID>
 		</UseTemplate>
@@ -2603,25 +2893,13 @@
 			<NODE_ID>KNOB_SWITCHING_4</NODE_ID>
 		</UseTemplate>
 		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-			<NODE_ID>PUSH_ECAM_TOCONFIG</NODE_ID>
-		</UseTemplate>
-		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
 			<NODE_ID>LOCK_ECAM_EMERCANC</NODE_ID>
 		</UseTemplate>
 		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
 			<NODE_ID>PUSH_ECAM_EMERCANC</NODE_ID>
 		</UseTemplate>
 		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-			<NODE_ID>PUSH_ECAM_CLR</NODE_ID>
-		</UseTemplate>
-		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
 			<NODE_ID>PUSH_ECAM_STS</NODE_ID>
-		</UseTemplate>
-		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-			<NODE_ID>PUSH_ECAM_RCL</NODE_ID>
-		</UseTemplate>
-		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-			<NODE_ID>PUSH_ECAM_CLR2</NODE_ID>
 		</UseTemplate>
 		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
 			<NODE_ID>PUSH_ECAM_ALL</NODE_ID>
@@ -2804,9 +3082,6 @@
 			<NODE_ID>KNOB_RADAR_TILT</NODE_ID>
 		</UseTemplate>
 		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-			<NODE_ID>SWITCH_RADAR_PWS</NODE_ID>
-		</UseTemplate>
-		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
 			<NODE_ID>SWITCH_DOORPANEL_LOCK</NODE_ID>
 		</UseTemplate>
 		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
@@ -2814,12 +3089,6 @@
 		</UseTemplate>
 		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
 			<NODE_ID>PUSH_DOORPANEL_VIDEO</NODE_ID>
-		</UseTemplate>
-		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-			<NODE_ID>PUSH_ENGINES_2</NODE_ID>
-		</UseTemplate>
-		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-			<NODE_ID>PUSH_ENGINES_1</NODE_ID>
 		</UseTemplate>
 		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
 			<NODE_ID>PUSH_PANELCS_AIDS</NODE_ID>
@@ -2920,21 +3189,6 @@
 			<NODE_ID>PUSH_OVHD_EMERELECPWR_MANON</NODE_ID>
 		</UseTemplate>
 		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-			<NODE_ID>PUSH_OVHD_GPWS_TERR</NODE_ID>
-		</UseTemplate>
-		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-			<NODE_ID>PUSH_OVHD_GPWS_SYS</NODE_ID>
-		</UseTemplate>
-		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-			<NODE_ID>PUSH_OVHD_GPWS_GSMODE</NODE_ID>
-		</UseTemplate>
-		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-			<NODE_ID>PUSH_OVHD_GPWS_FLAP</NODE_ID>
-		</UseTemplate>
-		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-			<NODE_ID>PUSH_OVHD_GPWS_LDG</NODE_ID>
-		</UseTemplate>
-		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
 			<NODE_ID>PUSH_OVHD_RCDR_GNDCTL</NODE_ID>
 		</UseTemplate>
 		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
@@ -2950,24 +3204,6 @@
 			<NODE_ID>PUSH_OVHD_OXYGEN_RATMANON</NODE_ID>
 		</UseTemplate>
 		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-			<NODE_ID>PUSH_OVHD_OXYGEN_PASSENGER</NODE_ID>
-		</UseTemplate>
-		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-			<NODE_ID>PUSH_OVHD_OXYGEN_CREW</NODE_ID>
-		</UseTemplate>
-		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-			<NODE_ID>PUSH_OVHD_CALLS_MECH</NODE_ID>
-		</UseTemplate>
-		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-			<NODE_ID>PUSH_OVHD_CALLS_ALL</NODE_ID>
-		</UseTemplate>
-		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-			<NODE_ID>PUSH_OVHD_CALLS_FWD</NODE_ID>
-		</UseTemplate>
-		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-			<NODE_ID>PUSH_OVHD_CALLS_AFT</NODE_ID>
-		</UseTemplate>
-		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
 			<NODE_ID>LOCK_OVHD_CALLS_EMER</NODE_ID>
 		</UseTemplate>
 		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
@@ -2975,48 +3211,6 @@
 		</UseTemplate>
 		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
 			<NODE_ID>PUSH_OVHD_RAINRPNLTR</NODE_ID>
-		</UseTemplate>
-		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-			<NODE_ID>PUSH_OVHD_FIRE_ENG1_AGENT1</NODE_ID>
-		</UseTemplate>
-		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-			<NODE_ID>PUSH_FIRE_ENG1_TEST</NODE_ID>
-		</UseTemplate>
-		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-			<NODE_ID>LOCK_OVHD_ENG1</NODE_ID>
-		</UseTemplate>
-		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-			<NODE_ID>PUSH_OVHD_FIRE_ENG1</NODE_ID>
-		</UseTemplate>
-		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-			<NODE_ID>PUSH_OVHD_FIRE_ENG1_AGENT2</NODE_ID>
-		</UseTemplate>
-		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-			<NODE_ID>PUSH_OVHD_FIRE_AGENT</NODE_ID>
-		</UseTemplate>
-		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-			<NODE_ID>LOCK_OVHD_APU</NODE_ID>
-		</UseTemplate>
-		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-			<NODE_ID>PUSH_OVHD_FIRE_APU</NODE_ID>
-		</UseTemplate>
-		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-			<NODE_ID>PUSH_FIRE_APU_TEST</NODE_ID>
-		</UseTemplate>
-		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-			<NODE_ID>PUSH_OVHD_FIRE_ENG2_AGENT1</NODE_ID>
-		</UseTemplate>
-		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-			<NODE_ID>LOCK_OVHD_ENG2</NODE_ID>
-		</UseTemplate>
-		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-			<NODE_ID>PUSH_OVHD_FIRE_ENG2</NODE_ID>
-		</UseTemplate>
-		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-			<NODE_ID>PUSH_OVHD_FIRE_ENG2_AGENT2</NODE_ID>
-		</UseTemplate>
-		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-			<NODE_ID>PUSH_FIRE_ENG2_TEST</NODE_ID>
 		</UseTemplate>
 		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
 			<NODE_ID>PUSH_OVHD_HYD_ENG1PUMP</NODE_ID>
@@ -3112,31 +3306,7 @@
 			<NODE_ID>PUSH_OVHD_CABINPRESS_DITCHING</NODE_ID>
 		</UseTemplate>
 		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-			<NODE_ID>PUSH_OVHD_SIGNS</NODE_ID>
-		</UseTemplate>
-		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
 			<NODE_ID>PUSH_OVHD_CARGOVENT_AFTISOL</NODE_ID>
-		</UseTemplate>
-		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-			<NODE_ID>LOCK_OVHD_CARGOSMOKE_2</NODE_ID>
-		</UseTemplate>
-		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-			<NODE_ID>PUSH_OVHD_CARGOSMOKE_2</NODE_ID>
-		</UseTemplate>
-		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-			<NODE_ID>PUSH_OVHD_CARGOSMOKE_FWD2</NODE_ID>
-		</UseTemplate>
-		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-			<NODE_ID>PUSH_OVHD_CARGOSMOKE_TEST</NODE_ID>
-		</UseTemplate>
-		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-			<NODE_ID>PUSH_OVHD_CARGOSMOKE_FWD1</NODE_ID>
-		</UseTemplate>
-		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-			<NODE_ID>LOCK_OVHD_CARGOSMOKE_1</NODE_ID>
-		</UseTemplate>
-		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-			<NODE_ID>PUSH_OVHD_CARGOSMOKE_1</NODE_ID>
 		</UseTemplate>
 		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
 			<NODE_ID>PUSH_OVHD_VENTILATION_CABFANS</NODE_ID>
@@ -3173,9 +3343,6 @@
 		</UseTemplate>
 		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
 			<NODE_ID>PUSH_OVHD_RAINRPLNTL</NODE_ID>
-		</UseTemplate>
-		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-			<NODE_ID>HANDLING_Switch_Wipers_1</NODE_ID>
 		</UseTemplate>
 		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
 			<NODE_ID>PUSH_OVHD_RADIO_VOR1</NODE_ID>
@@ -3355,5 +3522,5 @@
 			<NODE_ID>PUSH_OVHD_ELT_ON</NODE_ID>
 		</UseTemplate>
 	</Component>
-	
+
 </ModelBehaviors>

@@ -1,14 +1,11 @@
-# MSFS A320neo Improvement Mod - Stable 0.2.0
+# FlyByWire A32NX - Stable 0.2.0
 
 # Important
 
 ### Please follow ALL steps in this README if you encounter any issues with installation before seeking support.
 
 ## About
-The A32NX Project is a community driven open source project to create a free Airbus A320neo in Microsoft Flight Simulator that is as close to reality as possible. It  aims to enhance the default A320neo by improving the systems depth and functionality to bring it up to payware-level, all for free.
-
-## About
-The FS2020 A32NX Project is a community driven open source project to create a free Airbus A320neo in the latest Microsoft Flight Simulator that is as close to reality as possible. It is an open source project and aims to enhance FS2020's default A320neo by improving the systems depth and functionality to bring it up to payware-level, and releasing it to the community for free, even perhaps making variants of the family (e.g. a319, a321).
+The A32NX Project is a community driven open source project to create a free Airbus A320neo in Microsoft Flight Simulator that is as close to reality as possible. It aims to enhance the default A320neo by improving the systems depth and functionality to bring it up to payware-level, all for free.
 
 Central Repository: https://github.com/flybywiresim/a32nx
 
@@ -29,7 +26,7 @@ For the Boxed edition:
 
 If the aforementioned methods do not work:
 * You can find your community folder by going into FS2020 general options and enabling developer mode. You will see a menu appear on top. Go to tools and virtual file system. Click on watch bases and your community folder will be listed in one of the folders.
-* Please make sure you're copying the "A32NX" folder into your community package folder, NOT the "msfs-a320neo-master" folder.
+* Please make sure you're copying the "A32NX" folder into your community package folder, NOT the "flybywiresim-a32nx" folder.
 
 ## Developing
 
