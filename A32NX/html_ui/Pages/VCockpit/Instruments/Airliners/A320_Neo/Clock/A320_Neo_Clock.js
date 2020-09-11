@@ -26,6 +26,9 @@ class A320_Neo_Clock extends BaseAirliners {
         super.Update();
         if (this.CanUpdate()) {
             const absTime = SimVar.GetGlobalVarValue("ABSOLUTE TIME", "Seconds")
+            const lightsTest = SimVar.GetSimVarValue("L:XMLVAR_LTS_Test", "Bool");
+            const lightsTestChanged = lightsTest !== this.lightsTest;
+            this.lightsTest = lightsTest;
 
             const chronoState = SimVar.GetSimVarValue("L:PUSH_CHRONO_CHR", "Bool");
             if (chronoState !== this.lastChronoState) {
@@ -49,26 +52,38 @@ class A320_Neo_Clock extends BaseAirliners {
             }
 
             if (this.topSelectorElem) {
-                const chronoTime = this.getChronoTime();
-                if (chronoTime !== this.lastChronoTime) {
-                    this.lastChronoTime = chronoTime
-                    this.topSelectorElem.textContent = chronoTime
+                if (lightsTest) {
+                    this.topSelectorElem.textContent = "88:88";
+                } else {
+                    const chronoTime = this.getChronoTime();
+                    if (chronoTime !== this.lastChronoTime || lightsTestChanged) {
+                        this.lastChronoTime = chronoTime
+                        this.topSelectorElem.textContent = chronoTime
+                    }
                 }
             }
 
             if (this.middleSelectorElem) {
-                const currentDisplayTime = SimVar.GetSimVarValue("L:PUSH_CHRONO_SET", "Bool") ? this.getUTCDate() : this.getUTCTime()
-                if (currentDisplayTime !== this.lastDisplayTime) {
-                    this.lastDisplayTime = currentDisplayTime;
-                    this.middleSelectorElem.textContent = currentDisplayTime;
+                if (lightsTest) {
+                    this.middleSelectorElem.textContent = "88:88:88";
+                } else {
+                    const currentDisplayTime = SimVar.GetSimVarValue("L:PUSH_CHRONO_SET", "Bool") ? this.getUTCDate() : this.getUTCTime()
+                    if (currentDisplayTime !== this.lastDisplayTime || lightsTestChanged) {
+                        this.lastDisplayTime = currentDisplayTime;
+                        this.middleSelectorElem.textContent = currentDisplayTime;
+                    }
                 }
             }
 
             if (this.bottomSelectorElem) {
-                const currentFlightTime = this.getFlightTime();
-                if (currentFlightTime !== this.lastFlightTime) {
-                    this.lastFlightTime = currentFlightTime;
-                    this.bottomSelectorElem.textContent = currentFlightTime;
+                if (lightsTest) {
+                    this.bottomSelectorElem.textContent = "88:88";
+                } else {
+                    const currentFlightTime = this.getFlightTime();
+                    if (currentFlightTime !== this.lastFlightTime || lightsTestChanged) {
+                        this.lastFlightTime = currentFlightTime;
+                        this.bottomSelectorElem.textContent = currentFlightTime;
+                    }
                 }
             }
         }
