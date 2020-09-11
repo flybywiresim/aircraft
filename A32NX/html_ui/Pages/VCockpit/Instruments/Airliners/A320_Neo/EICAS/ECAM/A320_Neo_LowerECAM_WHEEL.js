@@ -151,18 +151,21 @@ var A320_Neo_LowerECAM_WHEEL;
                 this.BrakeTemp2.setAttribute("class", "WHEELTempPrecentage");
                 this.BrakeTemp3.setAttribute("class", "WHEELTempPrecentage");
                 this.BrakeTemp4.setAttribute("class", "WHEELTempPrecentage");
+                SimVar.SetSimVarValue("L:A32NX_BRAKES_HOT", "Bool", 0);
             }
             if (this.currentBrake1Temp >= 300 || this.currentBrake2Temp >= 300 || this.currentBrake3Temp >= 300 || this.currentBrake4Temp >= 300) {
                 this.BrakeTemp1.setAttribute("class", "WHEELBRAKEWARNING");
                 this.BrakeTemp2.setAttribute("class", "WHEELBRAKEWARNING");
                 this.BrakeTemp3.setAttribute("class", "WHEELBRAKEWARNING");
                 this.BrakeTemp4.setAttribute("class", "WHEELBRAKEWARNING");
+                SimVar.SetSimVarValue("L:A32NX_BRAKES_HOT", "Bool", 1);
             }
             if (this.currentBrake1Temp >= 500 || this.currentBrake2Temp >= 500 || this.currentBrake3Temp >= 500 || this.currentBrake4Temp >= 500) {
                 this.BrakeTemp1.setAttribute("class", "WHEELBRAKERED");
                 this.BrakeTemp2.setAttribute("class", "WHEELBRAKERED");
                 this.BrakeTemp3.setAttribute("class", "WHEELBRAKERED");
                 this.BrakeTemp4.setAttribute("class", "WHEELBRAKERED");
+                SimVar.SetSimVarValue("L:A32NX_BRAKES_HOT", "Bool", 1);
             }
         }
 

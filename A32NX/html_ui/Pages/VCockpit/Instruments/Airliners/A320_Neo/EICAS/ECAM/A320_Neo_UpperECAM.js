@@ -653,6 +653,30 @@ var A320_Neo_UpperECAM;
                         ]
                     },
                     {
+                        name: "BRAKES",
+                        messages: [
+                            {
+                                message: "HOT",
+                                id: "brakes_hot",
+                                level: 2,
+                                isActive: () => {
+                                    return SimVar.GetSimVarValue("L:A32NX_BRAKES_HOT", "Bool") == 1;
+                                },
+                                actions: [
+                                    {
+                                        style: "action",
+                                        message: "PARK BRK",
+                                        action: "PREFER CHOCKS"
+                                    },
+                                    {
+                                        style: "blue",
+                                        message: "&nbsp;-DELAY T.O FOR COOL"
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    {
                         name: "NAV",
                         messages: [
                             {
@@ -1045,11 +1069,14 @@ var A320_Neo_UpperECAM;
             const flaps = SimVar.GetSimVarValue("FLAPS HANDLE INDEX", "Enum");
             const speedBrake = SimVar.GetSimVarValue("SPOILERS HANDLE POSITION", "Position");
             const parkBrake = SimVar.GetSimVarValue("BRAKE PARKING INDICATOR", "Bool");
+            const brakesHot = SimVar.GetSimVarValue("L:A32NX_BRAKES_HOT", "Bool");
             this.activeTakeoffConfigWarnings = [];
             if (SimVar.GetSimVarValue("L:AIRLINER_FLIGHT_PHASE", "Enum") > 2) return;
             if (!(flaps >= 1 && flaps <= 2)) this.activeTakeoffConfigWarnings.push("flaps");
             if (speedBrake > 0) this.activeTakeoffConfigWarnings.push("spd_brk");
             if (parkBrake == 1 && !_test) this.activeTakeoffConfigWarnings.push("park_brake");
+            if (brakesHot == 1) this.activeTakeoffConfigWarnings.push("brakes_hot");
+            
             if (_test && this.activeTakeoffConfigWarnings.length == 0) {
                 SimVar.SetSimVarValue("L:A32NX_TO_CONFIG_NORMAL", "Bool", 1);
                 this.takeoffMemoTimer = 0;
@@ -1058,6 +1085,7 @@ var A320_Neo_UpperECAM;
                 this.leftEcamMessagePanel.recall("config_flaps");
                 this.leftEcamMessagePanel.recall("config_spd_brk");
                 this.leftEcamMessagePanel.recall("config_park_brake");
+                this.leftEcamMessagePanel.recall("brakes_hot");
             }
         }
         getInfoPanelManager() {
