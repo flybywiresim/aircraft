@@ -49,10 +49,6 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
     Init() {
         super.Init();
 
-        if (typeof g_modDebugMgr != "undefined") {
-            g_modDebugMgr.AddConsole(null);
-        }
-
         this.currentPage = -1;
 
         this.pageNameWhenUnselected = "DOOR";
