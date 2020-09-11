@@ -795,17 +795,16 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                 this.climbTransitionGroundAltitude = null;
             }
         }
-        
         //Changes to climb phase when acceleration altitude is reached
         if (this.currentFlightPhase === FlightPhase.FLIGHT_PHASE_TAKEOFF && airSpeed > 80) {
             const planeAltitudeMsl = Simplane.getAltitude();
             let accelerationAltitudeMsl = (this.accelerationAltitude || this.thrustReductionAltitude);
             
-            if(!accelerationAltitudeMsl) {     
-                if(!this.climbTransitionGroundAltitude) {
-                    let airport = this.flightPlanManager.getOrigin();
-                    if (airport) {
-                        this.climbTransitionGroundAltitude = airport.infos.coordinates.alt;
+            if (!accelerationAltitudeMsl) {     
+                if (!this.climbTransitionGroundAltitude) {
+                    const origin = this.flightPlanManager.getOrigin();
+                    if (origin) {
+                        this.climbTransitionGroundAltitude = origin.altitudeinFP;
                     }
 
                     if (!this.climbTransitionGroundAltitude) {
