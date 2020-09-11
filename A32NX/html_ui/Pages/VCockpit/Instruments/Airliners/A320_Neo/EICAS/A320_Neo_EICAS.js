@@ -9,7 +9,7 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
             if (this.lowerScreenPages[i].name == pageName) {
                 let pageIndex = i;
                 if (pageIndex == this.currentPage) {
-                    pageName = "CRZ";
+                    pageName = this.pageNameWhenUnselected;
                     pageIndex = -1;
                 }
                 this.currentPage = pageIndex;
@@ -52,6 +52,12 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
 
         this.currentPage = -1;
 
+        this.pageNameWhenUnselected = "DOOR";
+        //this prevents switching back to previous pages
+        this.minPageIndexWhenUnselected = 0;
+
+        this.ecamFCTLTimer = -1;
+
         this.changePage("FUEL"); // MODIFIED
         if (this.isTopScreen) {
             this.A32NXCore = new A32NX_Core();
@@ -59,7 +65,9 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         }
 
         this.lastAPUMasterState = 0; // MODIFIED
-        this.externalPowerWhenApuMasterOnTimer = -1; // MODIFIED
+        this.ApuAboveThresholdTimer = -1; // MODIFIED
+        this.MainEngineStarterOffTimer = -1;
+        this.CrzCondTimer = 60;
 
         this.topSelfTestDiv = this.querySelector("#TopSelfTest");
         this.topSelfTestTimer = -1;
@@ -74,11 +82,9 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         // Using ternary in case the LVar is undefined
         this.ACPowerLastState = SimVar.GetSimVarValue('L:A32NX_COLD_AND_DARK_SPAWN', 'Bool') ? 0 : 1;
 
-        this.doorPageActivated = false;
-        this.EngineStarter = 0;
-        this.EngineStart == 0
         this.electricity = this.querySelector("#Electricity");
         this.changePage("DOOR"); // MODIFIED
+        this.changePage("DOOR"); // This should get the ECAM into the "unselected" state
         this.localVarUpdater = new LocalVarUpdater();
         
         SimVar.SetSimVarValue("LIGHT POTENTIOMETER:7","FLOAT64",0);
@@ -175,51 +181,82 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         this.ACPowerLastState = isACPowerAvailable;
 
         // modification start here
-        var currentAPUMasterState = SimVar.GetSimVarValue("FUELSYSTEM VALVE SWITCH:8", "Bool");  
-        // automaticaly switch to the APU page when apu master switch is on
-        if (this.lastAPUMasterState != currentAPUMasterState && currentAPUMasterState === 1) {  
-            this.lastAPUMasterState = currentAPUMasterState;  
-            this.changePage("APU");
+        var currentAPUMasterState = SimVar.GetSimVarValue("FUELSYSTEM VALVE SWITCH:8", "Bool");
 
-            //if external power is off when turning on apu, only show the apu page for 10 seconds, then the DOOR page
-            if (externalPower === 0) {  
-                this.externalPowerWhenApuMasterOnTimer = 85;
+
+        //Determine displayed page when no button is selected
+        const prevPage = this.pageNameWhenUnselected;
+
+        const altitude = Simplane.getAltitude();
+        const isGearExtended = SimVar.GetSimVarValue("GEAR HANDLE POSITION", "Bool");
+        const currFlightPhase = SimVar.GetSimVarValue("L:AIRLINER_FLIGHT_PHASE", "number");
+        const leftThrottleDetent = Simplane.getEngineThrottleMode(0);
+        const rightThrottleDetent = Simplane.getEngineThrottleMode(1);
+        const highestThrottleDetent = (leftThrottleDetent >= rightThrottleDetent) ? leftThrottleDetent : rightThrottleDetent;
+        const ToPowerSet = (highestThrottleDetent == ThrottleMode.TOGA || highestThrottleDetent == ThrottleMode.FLEX_MCT) && SimVar.GetSimVarValue("ENG N1 RPM:1", "Percent") > 15 && SimVar.GetSimVarValue("ENG N1 RPM:2", "Percent") > 15
+        const APUPctRPM = SimVar.GetSimVarValue("APU PCT RPM", "percent");
+        const EngModeSel = SimVar.GetSimVarValue("L:XMLVAR_ENG_MODE_SEL", "number");
+        const spoilerOrFlapsDeployed = SimVar.GetSimVarValue("FLAPS HANDLE INDEX", "number") != 0 || SimVar.GetSimVarValue("SPOILERS HANDLE POSITION", "percent") != 0;
+
+        const crzCond = ((spoilerOrFlapsDeployed || ToPowerSet) && (currFlightPhase == FlightPhase.FLIGHT_PHASE_CLIMB || currFlightPhase == FlightPhase.FLIGHT_PHASE_CRUISE) && this.CrzCondTimer <= 0) || (currFlightPhase == FlightPhase.FLIGHT_PHASE_CLIMB && !spoilerOrFlapsDeployed && !ToPowerSet);
+
+        if ((currFlightPhase != FlightPhase.FLIGHT_PHASE_CLIMB || currFlightPhase == FlightPhase.FLIGHT_PHASE_CRUISE) || (!spoilerOrFlapsDeployed && !ToPowerSet) && this.CrzCondTimer >= 0) {
+            this.CrzCondTimer = 60;
+        } else if ((spoilerOrFlapsDeployed || ToPowerSet) && (currFlightPhase == FlightPhase.FLIGHT_PHASE_CLIMB || currFlightPhase == FlightPhase.FLIGHT_PHASE_CRUISE) && this.CrzCondTimer >= 0) {
+            this.CrzCondTimer -= _deltaTime/1000;
+        }
+
+        if (EngModeSel == 2 || EngModeSel == 0 || this.MainEngineStarterOffTimer >= 0) {
+            if (EngModeSel == 0 || EngModeSel == 2) {
+                this.MainEngineStarterOffTimer = 10;
+            } else if (this.MainEngineStarterOffTimer >= 0) {
+                this.MainEngineStarterOffTimer -= _deltaTime / 1000;
+            }
+            this.pageNameWhenUnselected = "ENG";
+        } else if (currentAPUMasterState && (APUPctRPM <= 95 || this.ApuAboveThresholdTimer >= 0)) {
+            // Show Apu when master sw. is on, and N% is lower than 95, or until 10s after N% over 95
+            if (this.ApuAboveThresholdTimer <= 0 && APUPctRPM <= 95) {
+                this.ApuAboveThresholdTimer = 10;
+            } else if (APUPctRPM >= 95) {
+                this.ApuAboveThresholdTimer -= _deltaTime / 1000;
             }
 
-        }
-        //fixed ecam page not switching to engine 2 if starter is set to off
-        if(this.EngineStart == 0 && this.EngineStarter < 2 && SimVar.GetSimVarValue("GENERAL ENG STARTER:1", "Bool")){
-            this.changePage("Engine");
-            this.EngineStarter += 1;
-        }
-        if(this.EngineStarter == 2){
-            this.EngineStarter = 0;
-            this.EngineStart = 1;
-        }
-        if(SimVar.GetSimVarValue("GENERAL ENG STARTER:1","Bool") == false){
-            this.EngineStart = 0;
-            this.EngineStarter = 0;
+            this.pageNameWhenUnselected = "APU";
+        } else if (isACPowerAvailable && !engineOn && Simplane.getIsGrounded()) {
+            // reset minIndex and cruise timer after shutdown
+            this.minPageIndexWhenUnselected = 0;
+            this.CrzCondTimer = 60;
+            this.pageNameWhenUnselected = "DOOR";
+        } else if (engineOn && !ToPowerSet && Simplane.getIsGrounded() && this.minPageIndexWhenUnselected <= 1) {
+            const sidestickPosX = SimVar.GetSimVarValue("YOKE X POSITION", "Position");
+            const sidestickPosY = SimVar.GetSimVarValue("YOKE Y POSITION", "Position");
+            const rudderPos = SimVar.GetSimVarValue("RUDDER PEDAL POSITION", "Position");
+            const controlsMoved = Math.abs(sidestickPosX) > 0.05 || Math.abs(sidestickPosY) > 0.05 || Math.abs(rudderPos) > 0.2;
+
+            this.pageNameWhenUnselected = "WHEEL";
+            // When controls are moved, show FCTL page for 20s
+            if (controlsMoved) {
+                this.pageNameWhenUnselected ="FTCL";
+                this.ecamFCTLTimer = 20;
+            } else if (this.ecamFCTLTimer >= 0) {
+                this.pageNameWhenUnselected ="FTCL";
+                this.ecamFCTLTimer -= _deltaTime / 1000;
+            }
+        } else if ((ToPowerSet || !Simplane.getIsGrounded()) && !crzCond && this.minPageIndexWhenUnselected <= 2) {
+            this.pageNameWhenUnselected = "ENG";
+        } else if (crzCond && !(isGearExtended && altitude < 16000) && this.minPageIndexWhenUnselected <= 3) {
+            this.pageNameWhenUnselected = "CRZ";
+            this.minPageIndexWhenUnselected = 3;
+        } else if (isGearExtended && (altitude < 16000)) {
+            this.pageNameWhenUnselected = "WHEEL";
+            this.minPageIndexWhenUnselected = 4;
         }
 
-        if (this.externalPowerWhenApuMasterOnTimer >= 0) {  
-            this.externalPowerWhenApuMasterOnTimer -= _deltaTime/1000
-            if (this.externalPowerWhenApuMasterOnTimer <= 0) {  
-                this.changePage("DOOR");
-            }  
-        }  
-
-
-        //automatic DOOR page switch
-        var cabinDoorPctOpen = SimVar.GetSimVarValue("INTERACTIVE POINT OPEN:0", "percent");
-        var cateringDoorPctOpen = SimVar.GetSimVarValue("INTERACTIVE POINT OPEN:3", "percent");
-        var fwdCargoPctOpen = SimVar.GetSimVarValue("INTERACTIVE POINT OPEN:5", "percent");
-        if ((cabinDoorPctOpen >= 20 || cateringDoorPctOpen >= 20 || fwdCargoPctOpen >= 20) && !this.doorPageActivated) {
-            this.changePage("DOOR")
-            this.doorPageActivated = true
+        // switch page when desired page was changed
+        if (this.pageNameWhenUnselected != prevPage) {
+            this.SwitchToPageName(this.LOWER_SCREEN_GROUP_NAME, this.pageNameWhenUnselected);
         }
-        if (!(cabinDoorPctOpen >= 20 || cateringDoorPctOpen >= 20 || fwdCargoPctOpen >= 20) && this.doorPageActivated) {
-            this.doorPageActivated = false
-        }
+
         // modification ends here
     }
 
