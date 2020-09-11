@@ -188,7 +188,7 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
 
         const altitude = Simplane.getAltitude();
         const isGearExtended = SimVar.GetSimVarValue("GEAR HANDLE POSITION", "Bool");
-        const currFlightPhase = SimVar.GetSimVarValue("RADIO HEIGHT", "feet") > 1500; //This simvar should be exactly what we need, but it doesn't work: SimVar.GetSimVarValue("L:AIRLINER_FLIGHT_PHASE", "number");
+        const currFlightPhase = SimVar.GetSimVarValue("L:AIRLINER_FLIGHT_PHASE", "number");
         const leftThrottleDetent = Simplane.getEngineThrottleMode(0);
         const rightThrottleDetent = Simplane.getEngineThrottleMode(1);
         const highestThrottleDetent = (leftThrottleDetent >= rightThrottleDetent) ? leftThrottleDetent : rightThrottleDetent;
@@ -197,11 +197,11 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         const EngModeSel = SimVar.GetSimVarValue("L:XMLVAR_ENG_MODE_SEL", "number");
         const spoilerOrFlapsDeployed = SimVar.GetSimVarValue("FLAPS HANDLE INDEX", "number") != 0 || SimVar.GetSimVarValue("SPOILERS HANDLE POSITION", "percent") != 0;
 
-        const crzCond = ((spoilerOrFlapsDeployed || ToPowerSet) && (currFlightPhase == true) && this.CrzCondTimer <= 0) || (currFlightPhase == true && !spoilerOrFlapsDeployed && !ToPowerSet);
+        const crzCond = ((spoilerOrFlapsDeployed || ToPowerSet) && (currFlightPhase == FlightPhase.FLIGHT_PHASE_CLIMB) && this.CrzCondTimer <= 0) || (currFlightPhase == FlightPhase.FLIGHT_PHASE_CLIMB && !spoilerOrFlapsDeployed && !ToPowerSet);
 
-        if ((currFlightPhase == false) || (!spoilerOrFlapsDeployed && !ToPowerSet)) {
+        if ((currFlightPhase != FlightPhase.FLIGHT_PHASE_CLIMB) || (!spoilerOrFlapsDeployed && !ToPowerSet)) {
             this.CrzCondTimer = 60;
-        } else if ((spoilerOrFlapsDeployed || ToPowerSet) && (currFlightPhase == true) && this.CrzCondTimer >= 0) {
+        } else if ((spoilerOrFlapsDeployed || ToPowerSet) && (currFlightPhase == FlightPhase.FLIGHT_PHASE_CLIMB) && this.CrzCondTimer >= 0) {
             this.CrzCondTimer -= _deltaTime/1000;
         }
 
@@ -209,7 +209,7 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
             if (EngModeSel == 0 || EngModeSel == 2) {
                 this.MainEngineStarterOffTimer = 10;
             } else if (this.MainEngineStarterOffTimer >= 0) {
-                this.MainEngineStarterOffTimer -= _deltaTime/1000;
+                this.MainEngineStarterOffTimer -= _deltaTime / 1000;
             }
             this.pageNameWhenUnselected = "ENG";
         } else if (currentAPUMasterState && (APUPctRPM <= 95 || this.ApuAboveThresholdTimer >= 0)) {
@@ -217,7 +217,7 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
             if (this.ApuAboveThresholdTimer <= 0 && APUPctRPM <= 95) {
                 this.ApuAboveThresholdTimer = 10;
             } else if (APUPctRPM >= 95) {
-                this.ApuAboveThresholdTimer -= _deltaTime/1000;
+                this.ApuAboveThresholdTimer -= _deltaTime / 1000;
             }
 
             this.pageNameWhenUnselected = "APU";
@@ -238,7 +238,7 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
                 this.ecamFCTLTimer = 20;
             } else if (this.ecamFCTLTimer >= 0) {
                 this.pageNameWhenUnselected ="FTCL";
-                this.ecamFCTLTimer -= _deltaTime/1000;
+                this.ecamFCTLTimer -= _deltaTime / 1000;
             }
         } else if ((ToPowerSet || !Simplane.getIsGrounded()) && !crzCond && this.minPageIndexWhenUnselected <= 2) {
             this.pageNameWhenUnselected = "ENG";
