@@ -93,7 +93,17 @@ class CDUInitPage {
             let value = mcdu.inOut;
             mcdu.clearUserInput();
             mcdu.tryUpdateFromTo(value, (result) => {
-                if (result) {
+                if (result) {                    
+                    let thrRedAccAltitude;
+                    
+                    const origin = mcdu.flightPlanManager.getOrigin();
+                    if (origin) {
+                        thrRedAccAltitude = origin.altitudeinFP + 1500;
+                    }
+                    
+                    mcdu.thrustReductionAltitude = thrRedAccAltitude;
+                    mcdu.accelerationAltitude = thrRedAccAltitude;
+                    
                     CDUAvailableFlightPlanPage.ShowPage(mcdu);
                 }
             });
