@@ -71,3 +71,11 @@ a320-neo-sai {
     width: 100%;
     height: 100%;
     z-index: 1; }
+a320-neo-sai #Pressure {
+  position: absolute;
+  left: 33.5%;
+  bottom: 3%;
+  width: 200px;
+  height: 30px;
+  z-index: 1;
+}
