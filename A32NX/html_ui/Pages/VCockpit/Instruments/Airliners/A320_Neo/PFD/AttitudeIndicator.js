@@ -71,7 +71,7 @@ class Jet_PFD_AttitudeIndicator extends HTMLElement {
         this.pitchGradFactor = 1.0;
         this.horizonHeight = 300;
         this.attitudeHeight = 250;
-        this.horizonToAttitudeRatio = attitudeHeight / horizonHeight;
+        this.horizonToAttitudeRatio = this.attitudeHeight / this.horizonHeight;
 
         {
             this.horizon_root = document.createElementNS(Avionics.SVG.NS, "svg");
@@ -1352,7 +1352,7 @@ class Jet_PFD_AttitudeIndicator extends HTMLElement {
         this.applyAttributes();
     }
     applyAttributes() {
-        let deltaY = this.pitch * this.pitchAngleFactor * this.pitchGradFactor;
+        const deltaY = this.pitch * this.pitchAngleFactor * this.pitchGradFactor;
 
         if (this.bottomPart)
             this.bottomPart.setAttribute("transform", "rotate(" + this.bank + ", 0, 0) translate(0," + (deltaY) + ")");
