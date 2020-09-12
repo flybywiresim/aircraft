@@ -3,9 +3,9 @@ var A320_Neo_UpperECAM;
     class Definitions {
     }
     Definitions.MIN_GAUGE_EGT = 0;
-    Definitions.MAX_GAUGE_EGT = 1000;
+    Definitions.MAX_GAUGE_EGT = 1200;
     Definitions.MIN_GAUGE_EGT_RED = 850;
-    Definitions.MAX_GAUGE_EGT_RED = 1000;
+    Definitions.MAX_GAUGE_EGT_RED = 1200;
     Definitions.MIN_GAUGE_N1 = 0;
     Definitions.MAX_GAUGE_N1 = 110;
     Definitions.THROTTLE_TO_N1_GAUGE = 100 / Definitions.MAX_GAUGE_N1;
@@ -59,7 +59,7 @@ var A320_Neo_UpperECAM;
         }
         getADIRSMins() {
             const secs = SimVar.GetSimVarValue("L:A320_Neo_ADIRS_TIME", "seconds");
-            const mins = Math.floor(secs/60);
+            const mins = Math.ceil(secs/60);
             if (secs > 0) return mins;
             else return -1;
         }
@@ -187,6 +187,7 @@ var A320_Neo_UpperECAM;
                         name: "CONFIG",
                         messages: [
                             {
+                                id: "config_flaps",
                                 message: "",
                                 level: 3,
                                 isActive: () => {
@@ -201,6 +202,7 @@ var A320_Neo_UpperECAM;
                                 ]
                             },
                             {
+                                id: "config_spd_brk",
                                 message: "",
                                 level: 3,
                                 isActive: () => {
@@ -215,6 +217,7 @@ var A320_Neo_UpperECAM;
                                 ]
                             },
                             {
+                                id: "config_park_brake",
                                 message: "",
                                 level: 3,
                                 isActive: () => {
@@ -348,15 +351,9 @@ var A320_Neo_UpperECAM;
                 ],
                 normal: [
                     {
-                        message: "IR IN ALIGN 0 MN",
-                        isActive: () => {
-                            return this.getADIRSMins() == 0;
-                        }
-                    },
-                    {
                         message: "IR IN ALIGN 1 MN",
                         isActive: () => {
-                            return this.getADIRSMins() == 1;
+                            return this.getADIRSMins() == 0 || this.getADIRSMins() == 1;
                         }
                     },
                     {
@@ -390,15 +387,9 @@ var A320_Neo_UpperECAM;
                         }
                     },
                     {
-                        message: "IR IN ALIGN 7 MN",
+                        message: "IR IN ALIGN > 7 MN",
                         isActive: () => {
-                            return this.getADIRSMins() == 7;
-                        }
-                    },
-                    {
-                        message: "IR IN ALIGN >7 MN",
-                        isActive: () => {
-                            return this.getADIRSMins() > 7;
+                            return this.getADIRSMins() >= 7;
                         }
                     },
                     {
@@ -439,9 +430,60 @@ var A320_Neo_UpperECAM;
                         }
                     },
                     {
+                        message: "SPEED BRK",
+                        isActive: () => {
+                            return (SimVar.GetSimVarValue("SPOILERS HANDLE POSITION", "position") > 0) && (SimVar.GetSimVarValue("SIM ON GROUND", "Bool") == 0);
+                        }
+                    },
+                    {
+                        message: "AUTO BRK LO",
+                        isActive: () => {
+                            return (SimVar.GetSimVarValue("L:XMLVAR_Autobrakes_Level", "Enum") == 1);
+                        }
+                    },
+                    {
+                        message: "AUTO BRK MED",
+                        isActive: () => {
+                            return (SimVar.GetSimVarValue("L:XMLVAR_Autobrakes_Level", "Enum") == 2);
+                        }
+                    },
+                    {
+                        message: "AUTO BRK MAX",
+                        isActive: () => {
+                            return (SimVar.GetSimVarValue("L:XMLVAR_Autobrakes_Level", "Enum") == 3);
+                        }
+                    },
+                    {
                         message: "PARK BRK",
                         isActive: () => {
-                            return SimVar.GetSimVarValue("BRAKE PARKING INDICATOR", "Bool") == 1;
+                            return (SimVar.GetSimVarValue("BRAKE PARKING INDICATOR", "Bool") == 1);
+                        }
+                    },
+                    {
+                        message: "HYD PTU",
+                        isActive: () => {
+                            // Rough approximation until hydraulic system fully implemented
+                            // Needs the last 2 conditions because PTU_ON is (incorrectly) permanently set to true during first engine start
+                            return (SimVar.GetSimVarValue("L:XMLVAR_PTU_ON", "Bool") == 1) && (SimVar.GetSimVarValue("ENG N1 RPM:1", "Percent") < 1 || SimVar.GetSimVarValue("ENG N1 RPM:2", "Percent") < 1);
+                        }
+                    },
+                    {
+                        message: "PRED W/S OFF",
+                        style: "InfoIndication",
+                        isActive: () => {
+                            return (SimVar.GetSimVarValue("L:A32NX_SWITCH_RADAR_PWS_Position", "Bool") == 0) && (SimVar.GetSimVarValue("ENG N1 RPM:1", "Percent") > 15 || SimVar.GetSimVarValue("ENG N1 RPM:2", "Percent") > 15);
+                        }
+                    },
+                    {
+                        message: "ENG A.ICE",
+                        isActive: () => {
+                            return (SimVar.GetSimVarValue("ENG ANTI ICE:1", "Bool") == 1) || (SimVar.GetSimVarValue("ENG ANTI ICE:2", "Bool") == 1);
+                        }
+                    },
+                    {
+                        message: "WING A.ICE",
+                        isActive: () => {
+                            return (SimVar.GetSimVarValue("STRUCTURAL DEICE SWITCH", "Bool") == 1);
                         }
                     },
                     {
@@ -463,27 +505,9 @@ var A320_Neo_UpperECAM;
                         }
                     },
                     {
-                        message: "SPEED BRK",
+                        message: "GPWS FLAP 3",
                         isActive: () => {
-                            return (SimVar.GetSimVarValue("SPOILERS HANDLE POSITION", "position") > 0);
-                        }
-                    },
-                    {
-                        message: "AUTO BRK LO",
-                        isActive: () => {
-                            return (SimVar.GetSimVarValue("L:XMLVAR_Autobrakes_Level", "Enum") == 1);
-                        }
-                    },
-                    {
-                        message: "AUTO BRK MED",
-                        isActive: () => {
-                            return (SimVar.GetSimVarValue("L:XMLVAR_Autobrakes_Level", "Enum") == 2);
-                        }
-                    },
-                    {
-                        message: "AUTO BRK MAX",
-                        isActive: () => {
-                            return (SimVar.GetSimVarValue("L:XMLVAR_Autobrakes_Level", "Enum") == 3);
+                            return (SimVar.GetSimVarValue("L:PUSH_OVHD_GPWS_LDG", "Bool") == 1);
                         }
                     }
                 ]
@@ -643,6 +667,16 @@ var A320_Neo_UpperECAM;
                 this.updateTakeoffConfigWarnings(true);
             }
 
+            if (SimVar.GetSimVarValue("L:A32NX_BTN_CLR", "Bool") == 1 || SimVar.GetSimVarValue("L:A32NX_BTN_CLR2", "Bool") == 1) {
+                SimVar.SetSimVarValue("L:A32NX_BTN_CLR", "Bool", 0);
+                SimVar.SetSimVarValue("L:A32NX_BTN_CLR2", "Bool", 0);
+                this.leftEcamMessagePanel.clearHighestCategory();
+            }
+
+            if (SimVar.GetSimVarValue("L:A32NX_BTN_RCL", "Bool") == 1) {
+                SimVar.SetSimVarValue("L:A32NX_BTN_RCL", "Bool", 0);
+                this.leftEcamMessagePanel.recall();
+            }
             const leftThrottleDetent = Simplane.getEngineThrottleMode(0);
             const rightThrottleDetent = Simplane.getEngineThrottleMode(1);
             const highestThrottleDetent = (leftThrottleDetent >= rightThrottleDetent) ? leftThrottleDetent : rightThrottleDetent;
@@ -653,9 +687,20 @@ var A320_Neo_UpperECAM;
             if (Simplane.getCurrentFlightPhase() > 2) {
                 this.activeTakeoffConfigWarnings = [];
             }
+      
+            if (!(this.leftEcamMessagePanel.hasCautions)) SimVar.SetSimVarValue("L:A32NX_MASTER_CAUTION", "Bool", 0);
+            if (!(this.leftEcamMessagePanel.hasWarnings)) SimVar.SetSimVarValue("L:A32NX_MASTER_WARNING", "Bool", 0);
 
             if ((SimVar.GetSimVarValue("L:PUSH_OVHD_CALLS_ALL", "Bool") == 1) || (SimVar.GetSimVarValue("L:PUSH_OVHD_CALLS_FWD", "Bool") == 1) || (SimVar.GetSimVarValue("L:PUSH_OVHD_CALLS_AFT", "Bool") == 1)) {
                 SimVar.SetSimVarValue("L:A32NX_CABIN_READY", "Bool", 1);
+            }
+
+            // Update predictive windshear style
+            // If the order of secondary memos is modified, be sure to change index below
+            if (SimVar.GetSimVarValue("RADIO HEIGHT", "feet") >= 50 && (SimVar.GetSimVarValue("RADIO HEIGHT", "feet") <= 1500)) {
+                this.secondaryEcamMessage.normal[8].style = "InfoCaution";
+            } else {
+                this.secondaryEcamMessage.normal[8].style = "InfoIndication";
             }
         }
         updateTakeoffConfigWarnings(_test) {
@@ -672,6 +717,9 @@ var A320_Neo_UpperECAM;
                 this.takeoffMemoTimer = 0;
             } else {
                 SimVar.SetSimVarValue("L:A32NX_TO_CONFIG_NORMAL", "Bool", 0);
+                this.leftEcamMessagePanel.recall("config_flaps");
+                this.leftEcamMessagePanel.recall("config_spd_brk");
+                this.leftEcamMessagePanel.recall("config_park_brake");
             }
         }
         getInfoPanelManager() {
@@ -743,6 +791,8 @@ var A320_Neo_UpperECAM;
             this.createN1Gauge();
             this.createEGTGauge();
             this.parent.appendChild(this.divMain);
+            this.timerTOGA = -1;
+            this.throttleMode = Math.max(Simplane.getEngineThrottleMode(0), Simplane.getEngineThrottleMode(1));
         }
         update(_deltaTime) {
             if (this.allGauges != null) {
@@ -753,6 +803,21 @@ var A320_Neo_UpperECAM;
                         this.allGauges[i].update(_deltaTime);
                     }
                 }
+            }
+            var currentThrottleState = Math.max(Simplane.getEngineThrottleMode(0), Simplane.getEngineThrottleMode(1));
+            if(this.throttleMode != currentThrottleState){
+                this.throttleMode = currentThrottleState;
+            }
+            if(this.throttleMode == ThrottleMode.TOGA){
+                if(this.timerTOGA == -1){
+                    this.timerTOGA = 300;
+                }
+                if(this.timerTOGA >= 0){
+                    this.timerTOGA -= _deltaTime/1000;
+                }
+            }
+            else{
+                this.timerTOGA = -1;
             }
         }
         createEGTGauge() {
@@ -769,6 +834,7 @@ var A320_Neo_UpperECAM;
             gaugeDef.currentValueBorderWidth = 0.5;
             gaugeDef.dangerRange[0] = gaugeDef.minRedValue;
             gaugeDef.dangerRange[1] = gaugeDef.maxRedValue;
+            gaugeDef.dangerMinDynamicFunction = this.getModeEGTMax.bind(this);
             gaugeDef.currentValueFunction = this.getEGTGaugeValue.bind(this);
             gaugeDef.currentValuePrecision = 0;
             this.gaugeEGT = window.document.createElement("a320-neo-ecam-gauge");
@@ -795,6 +861,7 @@ var A320_Neo_UpperECAM;
             gaugeDef.maxRedValue = A320_Neo_UpperECAM.Definitions.MAX_GAUGE_N1_RED;
             gaugeDef.dangerRange[0] = gaugeDef.minRedValue;
             gaugeDef.dangerRange[1] = gaugeDef.maxRedValue;
+            gaugeDef.dangerMinDynamicFunction = this.getModeN1Max.bind(this);
             gaugeDef.currentValueFunction = this.getN1GaugeValue.bind(this);
             gaugeDef.currentValuePrecision = 1;
             this.gaugeN1 = window.document.createElement("a320-neo-ecam-gauge");
@@ -809,6 +876,34 @@ var A320_Neo_UpperECAM;
             this.gaugeN1.addGraduation(100, true, "10", true);
             this.divMain.appendChild(this.gaugeN1);
             this.allGauges.push(this.gaugeN1);
+        }
+        getModeEGTMax(){
+            if(this.throttleMode == ThrottleMode.TOGA && this.timerTOGA > 0){
+                return 1060;
+            }
+            else if(this.throttleMode == ThrottleMode.TOGA && this.timerTOGA <0){
+                return 1025;
+            }
+            if(this.throttleMode == ThrottleMode.FLEX_MCT){
+                return 1025;
+            }
+            if(this.throttleMode == ThrottleMode.CLIMB){
+                return 875;
+            }
+            if(this.ThrottleMode == ThrottleMode.AUTO){
+                return 850;
+            }
+            else{
+                return 750;
+            }
+        }
+        getModeN1Max(){
+            if(this.throttleMode == ThrottleMode.TOGA && this.timerTOGA > 0){
+                return 101.5;
+            }
+            else{
+                return 100;
+            }
         }
         getEGTGaugeValue() {
             var engineId = this.index + 1;
@@ -1081,7 +1176,7 @@ var A320_Neo_UpperECAM;
         }
         setFuelOnBoard(_value, _force = false) {
             if ((this.currentFOBValue != _value) || _force) {
-                this.currentFOBValue = _value;
+                this.currentFOBValue = _value - (_value % 20);
                 if (this.fobValue != null) {
                     this.fobValue.textContent = fastToFixed(this.currentFOBValue, 0);
                 }
@@ -1375,6 +1470,7 @@ var A320_Neo_UpperECAM;
                 2: 0,
                 3: 0
             }
+            this.clearedMessages = [];
         }
         init() {
             super.init();
@@ -1468,27 +1564,54 @@ var A320_Neo_UpperECAM;
             }
             this.currentLine++;
         }
-
-        
+  
         getActiveFailures() {
-            var output = {};
+            let output = {};
             this.hasActiveFailures = false;
+            this.hasWarnings = false;
+            this.hasCautions = false;
             for (var i = 0; i < this.messages.failures.length; i++) {
                 const messages = this.messages.failures[i].messages;
                 for (var n = 0; n < messages.length; n++) {
                     const message = messages[n];
-                    if (message.isActive()) {
+                    if (message.id == null) message.id = `${i} ${n}`;
+                    if (message.isActive() && !this.clearedMessages.includes(message.id)) {
                         this.hasActiveFailures = true;
+                        if (message.level == 3) this.hasWarnings = true;
+                        if (message.level == 2) this.hasCautions = true;
                         if (output[i] == null) {
                             output[i] = this.messages.failures[i];
                             output[i].messages = [];
                         }
+                        
                         output[i].messages.push(message);
                     }
                 }
             }
             return output;
         }
+            
+        clearHighestCategory() {
+            const activeFailures = this.getActiveFailures();
+            for (const category in activeFailures) {
+                for (const failure of activeFailures[category].messages) {
+                    this.clearedMessages.push(failure.id);
+                }
+                return;
+            }
+        }
+
+        recall(_failure) {
+            if (_failure != null) {
+                const index = this.clearedMessages.indexOf(_failure);
+                if (index > -1) {
+                    this.clearedMessages.splice(index, 1);
+                }
+            } 
+            else {
+                this.clearedMessages = [];
+            }
+        }    
 
         getActiveMessages() {
             const output = [];

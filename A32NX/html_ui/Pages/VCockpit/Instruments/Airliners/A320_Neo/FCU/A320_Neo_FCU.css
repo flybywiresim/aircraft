@@ -61,7 +61,7 @@
     fill: var(--main-display-colour-inactive); }
   :root text.Value {
     font-family: Digital;
-    font-size: 64px;
+    font-size: 66px;
     text-anchor: start;
     fill: var(--main-display-colour);
     letter-spacing: 8px; }

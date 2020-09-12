@@ -118,12 +118,16 @@ var A320_Neo_LowerECAM_Fuel;
         }
         updateFuelConsumption(_unitFactor) {
             if (this.fuelLevels) {
-                var leftConsumption = SimVar.GetSimVarValue("GENERAL ENG FUEL USED SINCE START:" + 1, "gallon") * _unitFactor * 0.001;
-                var rightConsumption = SimVar.GetSimVarValue("GENERAL ENG FUEL USED SINCE START:" + 2, "gallon") * _unitFactor * 0.001;
-                var totalConsumption = leftConsumption + rightConsumption;
-                this.leftValveValue.textContent = fastToFixed(leftConsumption, 0);
-                this.rightValveValue.textContent = fastToFixed(rightConsumption, 0);
-                this.middleFuelValue.textContent = fastToFixed(totalConsumption, 0);
+                const leftConsumption = SimVar.GetSimVarValue("GENERAL ENG FUEL USED SINCE START:" + 1, "gallon") * _unitFactor * 0.001;
+                const rightConsumption = SimVar.GetSimVarValue("GENERAL ENG FUEL USED SINCE START:" + 2, "gallon") * _unitFactor * 0.001;
+
+                const leftConsumptionShown = leftConsumption - (leftConsumption % 10);
+                const rightConsumptionShown = rightConsumption - (rightConsumption % 10);
+                const totalConsumptionShown = leftConsumptionShown + rightConsumptionShown;
+
+                this.leftValveValue.textContent = fastToFixed(leftConsumptionShown, 0);
+                this.rightValveValue.textContent = fastToFixed(rightConsumptionShown, 0);
+                this.middleFuelValue.textContent = fastToFixed(totalConsumptionShown, 0);
             }
             else {
                 this.fuelLevels = SimVar.GetGameVarValue("AIRCRAFT INITIAL FUEL LEVELS", "FuelLevels");
@@ -132,6 +136,7 @@ var A320_Neo_LowerECAM_Fuel;
         updateQuantity(_elem, _simvar, _unitFactor) {
             var quantity = SimVar.GetSimVarValue(_simvar, "gallons");
             quantity *= _unitFactor;
+            quantity -= quantity % 20;
             _elem.textContent = fastToFixed(quantity, 0);
         }
         setAPUState(_isOn, _isActive, _force = false) {

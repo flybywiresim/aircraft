@@ -41,6 +41,11 @@ var A320_Neo_LowerECAM_FTCL;
             this.leftElevatorCursor = this.querySelector("#leftElevatorCursor");
             this.rightElevatorCursor = this.querySelector("#rightElevatorCursor");
 
+            //Rudder
+            this.rudderCursor = this.querySelector("#rudderCursor");
+            this.rudderLeftMaxAngle = this.querySelector("#rudderLeftMaxAngle");
+            this.rudderRightMaxAngle = this.querySelector("#rudderRightMaxAngle");
+
             this.isInitialised = true;
         }
         update(_deltaTime) {
@@ -87,6 +92,23 @@ var A320_Neo_LowerECAM_FTCL;
             let reCursorPath = "M431," + (398 - elevatorDeflectPctNormalized) + " l-15,-7 l0,14Z";
             this.leftElevatorCursor.setAttribute("d", leCursorPath);
             this.rightElevatorCursor.setAttribute("d", reCursorPath);
+
+            // Update rudder
+            const rudderDeflectPct = SimVar.GetSimVarValue("RUDDER DEFLECTION PCT", "percent over 100");
+            const rudderAngle = -rudderDeflectPct * 25;
+            this.rudderCursor.setAttribute("transform", `rotate(${rudderAngle} 300 380)`);
+
+            //Update Rudder limits
+            const IndicatedAirspeed = SimVar.GetSimVarValue("AIRSPEED INDICATED", "knots");
+            let MaxAngleNorm = 1;
+            if(IndicatedAirspeed > 380){
+                MaxAngleNorm = 3.4 / 25;
+            } else if(IndicatedAirspeed > 160){
+                MaxAngleNorm = (69.2667 - 0.351818 * IndicatedAirspeed + 0.00047 * IndicatedAirspeed**2) / 25;
+            }
+
+            this.rudderLeftMaxAngle.setAttribute("transform", `rotate(${-26.4 * (1-MaxAngleNorm)} 300 385)`)
+            this.rudderRightMaxAngle.setAttribute("transform", `rotate(${26.4 * (1-MaxAngleNorm)} 300 385)`)
 
             // Update ELAC's and SEC's
             var elac1_On = SimVar.GetSimVarValue("FLY BY WIRE ELAC SWITCH:1", "boolean");

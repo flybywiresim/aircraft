@@ -37,6 +37,7 @@ class Jet_NDCompass extends HTMLElement {
         this._referenceMode = Jet_NDCompass_Reference.NONE;
         this._aircraft = Aircraft.A320_NEO;
         this._mapRange = 0;
+        this._delayedCompass = 0;
     }
     static get dynamicAttributes() {
         return [
@@ -218,6 +219,17 @@ class Jet_NDCompass extends HTMLElement {
                     this.currentRefMode.textContent = "HDG";
                 }
             }
+        
+            // This stuff makes the compass do a smooth spin to the actual heading after alignment finishes
+            const desiredRotationHeading = SimVar.GetSimVarValue("L:A320_Neo_ADIRS_STATE", "Number") !== 2
+                ? 0
+                : compass;
+            const delta = ((desiredRotationHeading - this._delayedCompass + 540) % 360) - 180;
+            if (Math.abs(delta) > 0.01) {
+                this._delayedCompass += delta * (4 * (_deltaTime / 1000));
+                compass = this._delayedCompass;
+            }
+        
             var roundedCompass = fastToFixed(compass, 2);
             this.setAttribute("rotation", roundedCompass);
             if (this.currentRefGroup)
