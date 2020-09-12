@@ -1307,7 +1307,7 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
         }
         this.rootGroup.appendChild(this.centerSVG);
 
-        // JZ Added STD Boxed display
+        // Added STD Boxed display
         if (!this.STDpressureSVG)
             this.STDpressureSVG = document.createElementNS(Avionics.SVG.NS, "text");
         this.STDpressureSVG.textContent = "STD";
