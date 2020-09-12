@@ -1395,6 +1395,10 @@
 			</Condition>
 		</UseTemplate>
 
+		<UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
+			<EMISSIVE_CODE>(L:FIRE_TEST_#ID#, Bool) (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or</EMISSIVE_CODE>
+		</UseTemplate>
+
 		<UseTemplate Name = "ASOBO_GT_Interaction_LeftSingle_Leave_Code">
 			<LEFT_SINGLE_CODE>
 				(L:FIRE_GUARD_#ID#) 1 == if{
