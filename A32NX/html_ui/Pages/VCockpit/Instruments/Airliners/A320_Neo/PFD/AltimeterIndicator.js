@@ -1432,8 +1432,7 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
                 } else {
                     this.pressureSVG.textContent = "STD";
                 }
-            } 
-            else {
+            } else {
                 if (this.aircraft == Aircraft.A320_NEO) {
                     this.STDpressureSVG.setAttribute("visibility", "hidden");
                     this.STDpressureSVGShape.setAttribute("visibility", "hidden");
