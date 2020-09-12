@@ -1570,9 +1570,11 @@ var Airbus_FMA;
                 }
                 else if (Airbus_FMA.CurrentPlaneState.decisionHeight > 0) {
                     targetState = Column4.ROW_3_STATE.DH;
+                } else {
+                    targetState = Column4.ROW_3_STATE.NULL_DH;
                 }
-                else {
-                    targetState = Column4.ROW_3_STATE.NO_DH;
+                if(Airbus_FMA.CurrentPlaneState.decisionHeight == 'NO') {
+                    targetState = Column4.ROW_3_STATE.NO_DH; //When they enter NO into the stratchpad then into DH
                 }
             }
             if ((targetState != this.currentRow3State) || (targetState == Column4.ROW_3_STATE.DH) || (targetState == Column4.ROW_3_STATE.MDA)) {
@@ -1587,6 +1589,11 @@ var Airbus_FMA;
                     case Column4.ROW_3_STATE.NO_DH:
                         {
                             this.setRowText(2, "NO DH", Airbus_FMA.MODE_STATE.STATUS);
+                            break;
+                        }
+                    case Column4.ROW_3_STATE.NULL_DH:
+                        {
+                            this.setRowText(2, "", Airbus_FMA.MODE_STATE.STATUS);
                             break;
                         }
                     case Column4.ROW_3_STATE.MDA:
@@ -1619,7 +1626,8 @@ var Airbus_FMA;
         NONE: 0,
         DH: 1,
         NO_DH: 2,
-        MDA: 3
+        MDA: 3,
+        NULL_DH: 4
     };
     Airbus_FMA.Column4 = Column4;
     class Column5 extends Airbus_FMA.ColumnBase {
