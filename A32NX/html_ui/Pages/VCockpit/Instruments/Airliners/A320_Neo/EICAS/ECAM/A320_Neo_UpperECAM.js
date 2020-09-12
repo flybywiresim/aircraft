@@ -747,7 +747,7 @@ var A320_Neo_UpperECAM;
                                     "TCAS"
                                 ],
                                 isActive: () => {
-                                    return this.getCachedSimVar("L:A320_Neo_ADIRS_STATE", "Enum") != 2;
+                                    return this.getCachedSimVar("L:A320_Neo_ADIRS_STATE", "Enum") == 0;
                                 },
                             }
                         ]
