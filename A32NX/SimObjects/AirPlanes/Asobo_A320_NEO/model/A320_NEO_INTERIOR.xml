@@ -908,14 +908,6 @@
 
 		<Component ID="Dummies">
 			<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
-				<NODE_ID>PUSH_AUTOPILOT_SIDESTICK_L</NODE_ID>
-				<ONLY_SEQ1/>
-			</UseTemplate>
-			<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
-				<NODE_ID>PUSH_AUTOPILOT_SIDESTICK_R</NODE_ID>
-				<ONLY_SEQ1/>
-			</UseTemplate>
-			<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
 				<NODE_ID>PUSH_AUTOPILOT_AUTOLAND_L</NODE_ID>
 				<ONLY_SEQ1/>
 			</UseTemplate>
@@ -1919,6 +1911,14 @@
 			<POTENTIOMETER_SEQ2>14</POTENTIOMETER_SEQ2>
 		</UseTemplate>
 
+		<UseTemplate Name="A32NX_PUSH_AUTOPILOT_SIDESTICK">
+			<NODE_ID>PUSH_AUTOPILOT_SIDESTICK_L</NODE_ID>
+		</UseTemplate>
+		
+		<UseTemplate Name="A32NX_PUSH_AUTOPILOT_SIDESTICK">
+			<NODE_ID>PUSH_AUTOPILOT_SIDESTICK_R</NODE_ID>
+		</UseTemplate>
+
 		<UseTemplate Name="ASOBO_AIRLINER_Knob_ND_Template">
 			<TYPE>AIRBUS</TYPE>
 			<NODE_ID>KNOB_AUTOPILOT_ROSE_L</NODE_ID>
@@ -2768,12 +2768,6 @@
 		</UseTemplate>
 		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
 			<NODE_ID>PUSH_AUTOPILOT_AUTOLAND_L</NODE_ID>
-		</UseTemplate>
-		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-			<NODE_ID>PUSH_AUTOPILOT_SIDESTICK_L</NODE_ID>
-		</UseTemplate>
-		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-			<NODE_ID>PUSH_AUTOPILOT_SIDESTICK_R</NODE_ID>
 		</UseTemplate>
 		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
 			<NODE_ID>PUSH_AUTOPILOT_AUTOLAND_R</NODE_ID>
