@@ -917,10 +917,23 @@ var A320_Neo_UpperECAM;
                         }
                     },
                     {
+                        message: "NW STRG DISC",
+                        isActive: () => {
+                            return (SimVar.GetSimVarValue("PUSHBACK STATE", "Enum") != 3);
+                        }
+                    },
+                    {
                         message: "PRED W/S OFF",
                         style: "InfoIndication",
                         isActive: () => {
                             return (this.getCachedSimVar("L:A32NX_SWITCH_RADAR_PWS_Position", "Bool") == 0) && (SimVar.GetSimVarValue("ENG N1 RPM:1", "Percent") > 15 || SimVar.GetSimVarValue("ENG N1 RPM:2", "Percent") > 15);
+                        }
+                    },
+                    {
+                        message: "TCAS STBY",
+                        style: "InfoIndication",
+                        isActive: () => {
+                            return (SimVar.GetSimVarValue("L:A32NX_SWITCH_TCAS_Position", "Enum") == 0 || (SimVar.GetSimVarValue("L:A320_Neo_ADIRS_STATE", "Enum") < 2))
                         }
                     },
                     {
@@ -950,7 +963,7 @@ var A320_Neo_UpperECAM;
                     {
                         message: "LDG LT",
                         isActive: () => {
-                            return (this.getCachedSimVar("LIGHT LANDING ON", "Bool") == 1);
+                            return (SimVar.GetSimVarValue("L:LANDING_1_Retracted", "Bool") == 0 || SimVar.GetSimVarValue("L:LANDING_2_Retracted", "Bool") == 0);
                         }
                     },
                     {
