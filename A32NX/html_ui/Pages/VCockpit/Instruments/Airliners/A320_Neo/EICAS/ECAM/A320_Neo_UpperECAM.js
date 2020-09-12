@@ -509,6 +509,12 @@ var A320_Neo_UpperECAM;
                         isActive: () => {
                             return (SimVar.GetSimVarValue("L:PUSH_OVHD_GPWS_LDG", "Bool") == 1);
                         }
+                    },
+                    {
+                        message: "NW STRG DISC",
+                        isActive: () => {
+                            return (SimVar.GetSimVarValue("PUSHBACK STATE", "Enum") != 3);
+                        }
                     }
                 ]
             }
