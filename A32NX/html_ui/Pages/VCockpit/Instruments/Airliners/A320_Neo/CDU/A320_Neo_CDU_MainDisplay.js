@@ -859,6 +859,28 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     getMessages() {
         return this.messages;
     }
+    getMessage(id, type) {
+        const messages = this.messages;
+        const currentMessageIndex = messages.findIndex(m => m["id"].toString() === id.toString());
+        if (type === 'previous') {
+            if (messages[currentMessageIndex - 1]) {
+                return messages[currentMessageIndex - 1];
+            }
+            return null;
+        } else if (type === 'next') {
+            if (messages[currentMessageIndex + 1]) {
+                return messages[currentMessageIndex + 1];
+            }
+            return null;
+        }
+        return messages[currentMessageIndex];
+    }
+    getMessageIndex(id) {
+        return this.messages.findIndex(m => m["id"].toString() === id.toString());
+    }
+    addMessage(message) {
+        this.messages.push(message)
+    }
 }
 A320_Neo_CDU_MainDisplay._v1sConf1 = [
     [145, 149],

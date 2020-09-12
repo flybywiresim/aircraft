@@ -37,17 +37,6 @@ class CDUAocRequestsWeather {
             let value = mcdu.inOut;
             mcdu.clearUserInput();
             store["arpt1"] = value;
-            mcdu.dataManager.GetWaypointsByIdent(value).then((waypoints) => {
-                if (!waypoints || waypoints.length === 0) {
-                    mcdu.showErrorMessage("ILLEGAL VALUE");
-                }
-                if (waypoints.length === 1) {
-                    const waypoint = waypoints[0];
-                    const lat = waypoint.infos.coordinates.lat;
-                    const long = waypoint.infos.coordinates.long;
-                    mcdu.showErrorMessage(`${lat},${long}`);
-                }
-            });
             CDUAocRequestsWeather.ShowPage(mcdu, store);
         }
 
@@ -68,56 +57,67 @@ class CDUAocRequestsWeather {
         mcdu.onRightInput[3] = () => {
             let value = mcdu.inOut;
             mcdu.clearUserInput();
-            store["arpt3"] = value;
+            store["arpt4"] = value;
             CDUAocRequestsWeather.ShowPage(mcdu, store);
         }
 
         mcdu.onRightInput[5] = async () => {
-            const setSpace = (spaces) => {
-                let space = "";
-                for (let counter = 0; counter <= spaces; counter++) {
-                      space+= " ";
-                }
-                return space;
-            }
-
             store["sendStatus"] = "QUEUED"
             updateView();
-            const ICAOS = [store["arpt1"], store["arpt2"], store["arpt3"]];
+            const ICAOS = [store["arpt1"], store["arpt2"], store["arpt3"], store["arpt4"]];
             mcdu.clearUserInput();
             const lines = []; // Prev Messages
+            let errors = 0;
             const getData = async () => {
                 for (const icao of ICAOS) {
                     if (icao !== "") {
-                        await fetch(`https://cors-anywhere.herokuapp.com/https://aviationweather.gov/adds/dataserver_current/httpparam?dataSource=metars&requestType=retrieve&format=xml&hoursBeforeNow=3&mostRecent=true&stationString=${icao}`)
-                            .then(response => response.text())
-                            .then(str => (new window.DOMParser()).parseFromString(str, "text/xml"))
-                            .then((data) => {
-                                const message = data.childNodes[0].childNodes[13].childNodes[1].childNodes[1].innerHTML.match(/(.*?\s){2}/g);
-                                lines.push(`METAR ${message[0]}`);
-                                let LineNumberBaseRatio = 1; // 3
-                                const totalLines = Math.ceil(message.length - 1 / 3)
-                                for (let LineCount = 0; LineCount <= totalLines; LineCount++) {
-                                    const count = 3 * LineNumberBaseRatio;
-                                    if (message[count - 2]) {
-                                        lines.push(`${message[count - 2]}${message[count - 1] ? message[count - 1] : setSpace(12)}${message[count] ? message[count] : setSpace(8)}`)
+                        await fetch(`https://weather.fs-2020.org/httpparam?dataSource=metars&requestType=retrieve&format=xml&hoursBeforeNow=24&mostRecent=true&stationString=${icao}`)
+                                .then((data) => data.json())      
+                                .then((data) => {
+                                    let hasMetar = false;
+                                    if (data["response"]["data"]["METAR"]) {
+                                        const metar = data["response"]["data"]["METAR"]["raw_text"]["_text"];
+                                        if (metar) {
+                                            hasMetar = true;
+                                            let message = metar.match(/(.*?\s){2}/g);
+                                            lines.push(`METAR ${message[0]}`);
+                                            message = message.join('')
+
+                                            function wordWrapToStringList(text, maxLength) {
+                                                let result = [], line = [];
+                                                let length = 0;
+                                                text.split(" ").forEach(function (word) {
+                                                    if ((length + word.length) >= maxLength) {
+                                                        result.push(line.join(" "));
+                                                        line = []; length = 0;
+                                                    }
+                                                    length += word.length + 1;
+                                                    line.push(word);
+                                                });
+                                                if (line.length > 0) {
+                                                    result.push(line.join(" "));
+                                                }
+                                                return result;
+                                            };
+
+                                            const newLines = wordWrapToStringList(metar, 52);
+                                            newLines.forEach(l => lines.push(l));
+                                            lines.push('--------------------------');
+
+                                        }
+                                        if (!hasMetar) errors += 1;
                                     }
-                                    
-                                    LineNumberBaseRatio += 1;
-                                }
-                                lines.push(" ");
-                            })
+                                })
                     }
                 }
                 store["sendStatus"] = "SENT"
                 updateView();
             }
-
-            const newMessage = { "id": Date.now(), "type": "METAR", "time": '00:00', "opened": null, "content": lines, }
+            
+            const newMessage = { "id": Date.now(), "type": "METAR", "time": '00:00', "opened": null, "content": errors > 0 ? ["ILLEGAL STATION IDENT"] : lines, }
 
             getData().then(() => {
                 setTimeout(() => {
-                    newMessage["content"] = lines;
                     let timeValue = SimVar.GetGlobalVarValue("ZULU TIME", "seconds");
                     if (timeValue) {
                         const seconds = Number.parseInt(timeValue);
@@ -125,7 +125,7 @@ class CDUAocRequestsWeather {
                         timeValue = displayTime.toString();
                     }
                     newMessage["time"] = timeValue.substring(0, 5);
-                    mcdu.messages.push(newMessage);
+                    mcdu.addMessage(newMessage);
                     store["sendStatus"] = "";
                     updateView();
                 }, 1000);

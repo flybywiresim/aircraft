@@ -12,9 +12,12 @@ class CDUAocRequestsMessage {
             message["opened"] = timeValue.substring(0, 5);
         }
 
+        const currentMesssageIndex = mcdu.getMessageIndex(message["id"]);
+        const currentMesssageCount = currentMesssageIndex + 1;
+
         mcdu.setTemplate([
             ["AOC MSG DISPLAY"],
-            [`${message["opened"]} VIEWED[color]green`, `01/${mcdu.messages.length}`],
+            [`${message["opened"]} VIEWED[color]green`, `${currentMesssageCount}/${mcdu.messages.length}`],
             [`${lines[offset] ? lines[offset] : ""}`],
             [""],
             [`${lines[offset + 1] ? lines[offset + 1] : ""}`],
@@ -38,6 +41,18 @@ class CDUAocRequestsMessage {
                 CDUAocRequestsMessage.ShowPage(mcdu, message, offset);
             }
         }
+
+
+        mcdu.onNextPage = () => {
+            const nextMessage = mcdu.getMessage(message["id"], 'next')
+            if (nextMessage) CDUAocRequestsMessage.ShowPage(mcdu, nextMessage);
+        }
+
+        mcdu.onPrevPage = () => {
+            const previousMessage = mcdu.getMessage(message["id"], 'previous')
+            if (previousMessage) CDUAocRequestsMessage.ShowPage(mcdu, previousMessage);
+        }
+
 
         mcdu.onLeftInput[5] = () => {
             CDUAocMessagesReceived.ShowPage(mcdu);
