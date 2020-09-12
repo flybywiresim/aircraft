@@ -188,7 +188,7 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
                     line.SVGText1.setAttribute("alignment-baseline", "central");
                     line.SVGText2 = document.createElementNS(Avionics.SVG.NS, "text");
                     line.SVGText2.setAttribute("x", "-28");
-                    line.SVGText2.setAttribute("fill", "white");//blue
+                    line.SVGText2.setAttribute("fill", "white");
                     line.SVGText2.setAttribute("font-size", (this.fontSize * 0.72).toString());
                     line.SVGText2.setAttribute("font-family", "Roboto-Light");
                     line.SVGText2.setAttribute("text-anchor", "start");
