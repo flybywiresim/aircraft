@@ -501,7 +501,7 @@ var A320_Neo_UpperECAM;
                     {
                         message: "LDG LT",
                         isActive: () => {
-                            return (SimVar.GetSimVarValue("LIGHT LANDING ON", "Bool") == 1);
+                            return (SimVar.GetSimVarValue("L:LANDING_1_Retracted", "Bool") == 0 || SimVar.GetSimVarValue("L:LANDING_2_Retracted", "Bool") == 0);
                         }
                     },
                     {
