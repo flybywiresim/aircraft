@@ -483,7 +483,7 @@ var A320_Neo_UpperECAM;
                     {
                         message: "TCAS STBY",
                         style: "InfoIndication",
-                        isActive: () =>{
+                        isActive: () => {
                             return (SimVar.GetSimVarValue("L:A32NX_SWITCH_TCAS_Position", "Enum") == 0)
                         }
                     },
