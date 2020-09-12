@@ -1824,9 +1824,7 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
         }
 
         this._lastIASTime = newIASTime;
-
-        let accel = this._computedIASAcceleration;
-        return accel * 10;
+        return this._computedIASAcceleration * 10;
     }
     getAutopilotMode() {
         if (this.aircraft == Aircraft.A320_NEO) {
