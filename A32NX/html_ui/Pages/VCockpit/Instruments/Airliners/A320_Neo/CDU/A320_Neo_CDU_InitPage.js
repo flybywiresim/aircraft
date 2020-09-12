@@ -35,7 +35,6 @@ class CDUInitPage {
         let coRoute = "NONE[color]blue";
         if (mcdu.coRoute) {
             coRoute = mcdu.coRoute + "[color]blue";
-            ;
         }
         let altDest = "-------[color]blue";
         if (mcdu.flightPlanManager.getDestination()) {
@@ -50,6 +49,11 @@ class CDUInitPage {
                     CDUInitPage.ShowPage1(mcdu);
                 }
             };
+        }
+        let alignCheck = SimVar.GetSimVarValue("L:A320_Neo_ADIRS_IN_ALIGN", "Boolean");
+        let alignOption = ""
+        if (alignCheck) {
+            alignOption = "ALIGN IRS"
         }
         let flightNo = SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string", "FMC");
         if (!flightNo) {
@@ -72,7 +76,7 @@ class CDUInitPage {
             ["ALTN/CO RTE"],
             [altDest],
             ["FLT NBR"],
-            [flightNo + "[color]blue"],
+            [flightNo + "[color]blue", alignOption + " [color]red"],
             ["LAT", "LONG"],
             [lat, long],
             ["COST INDEX"],
@@ -97,6 +101,17 @@ class CDUInitPage {
                     CDUAvailableFlightPlanPage.ShowPage(mcdu);
                 }
             });
+        };
+        mcdu.onRightInput[2] = async () => {
+            mcdu.clearUserInput();
+            SimVar.SetSimVarValue("L:A320_Neo_ADIRS_STATE", "Enum", 2);
+            SimVar.SetSimVarValue("L:A320_Neo_ADIRS_IN_ALIGN", "Boolean", 0);
+            SimVar.SetSimVarValue("L:A320_Neo_ADIRS_TIME", "seconds", 0);
+            // Slight delay for var A320_Neo_ADIRS_TIME, if no delay var will not be correctly set to 0
+            await new Promise(r => setTimeout(r, 100));
+            // Set A320_Neo_ADIRS_TIME to 0 to remove align msg in ECAM
+            SimVar.SetSimVarValue("L:A320_Neo_ADIRS_TIME", "seconds", 0);
+            CDUInitPage.ShowPage1(mcdu);
         };
         mcdu.onLeftInput[2] = () => {
             let value = mcdu.inOut;
