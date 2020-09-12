@@ -1359,7 +1359,6 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
         this.pressureSVG.setAttribute("alignment-baseline", "central");
         this.pressureSVG.setAttribute("letter-spacing", "-3px");
         this.rootGroup.appendChild(this.pressureSVG);
-
         this.rootSVG.appendChild(this.rootGroup);
         this.appendChild(this.rootSVG);
     }
