@@ -252,6 +252,27 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
             this.minPageIndexWhenUnselected = 4;
         }
 
+        const sFailPage = SimVar.GetSimVarValue("L:A32NX_ECAM_SFAIL", "Enum");
+
+        if (sFailPage != -1) {
+            const ECAMPageIndices = {
+                0: "ENG",
+                1: "BLEED",
+                2: "PRESS",
+                3: "ELEC",
+                4: "HYD",
+                5: "FUEL",
+                6: "APU",
+                7: "COND",
+                8: "DOOR",
+                9: "WHEEL",
+                10: "FTCL",
+                11: "STS"
+            }
+
+            this.pageNameWhenUnselected = ECAMPageIndices[sFailPage];
+        }
+
         // switch page when desired page was changed
         if (this.pageNameWhenUnselected != prevPage) {
             this.SwitchToPageName(this.LOWER_SCREEN_GROUP_NAME, this.pageNameWhenUnselected);

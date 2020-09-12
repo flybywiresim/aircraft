@@ -137,6 +137,9 @@ var A320_Neo_UpperECAM;
                 }
             ];
         }
+        getEngineFailSecondaryFailures() {
+            return ["BLEED", "ELEC"];
+        }
         getEngineShutdownActions() {
             return [
                 {
@@ -158,6 +161,9 @@ var A320_Neo_UpperECAM;
                     message: "AVOID ICING CONDITIONS"
                 }
             ];
+        }
+        getEngineShutdownSecondaryFailures() {
+            return ["BLEED", "ELEC", "HYD", "STS"];
         }
         getEngineFireActions(_engine) {
             return [
@@ -236,12 +242,27 @@ var A320_Neo_UpperECAM;
                 }
             ];
         }
+        secondaryFailureActive(_failure) {
+            const secondaryFailures = this.leftEcamMessagePanel.secondaryFailures;
+            //if (secondaryFailures.length < 2) return false;
+            for (var i = this.clearedSecondaryFailures.length; i < secondaryFailures.length; i++) {
+                if (secondaryFailures[i] == _failure) return true;
+            }
+            return false;
+        }
+        getActiveSecondaryFailure() {
+            for (const secondaryFailure of this.leftEcamMessagePanel.secondaryFailures) {
+                if (!this.clearedSecondaryFailures.includes(secondaryFailure)) return secondaryFailure;
+            }
+        }
         init() {
             this.enginePanel = new A320_Neo_UpperECAM.EnginePanel(this, "EnginesPanel");
             this.infoTopPanel = new A320_Neo_UpperECAM.InfoTopPanel(this, "InfoTopPanel");
             this.flapsPanel = new A320_Neo_UpperECAM.FlapsPanel(this, "FlapsPanel");
             this.overflowArrow = this.querySelector("#overflow-arrow");
+            this.statusReminder = this.querySelector("#sts-reminder");
             this.activeTakeoffConfigWarnings = [];
+            this.clearedSecondaryFailures = [];
             this.ecamMessages = {
                 failures: [
                     {
@@ -592,6 +613,8 @@ var A320_Neo_UpperECAM;
                                 level: 2,
                                 landASAP: true,
                                 inopSystems: [],
+                                secondaryFailures: this.getEngineFailSecondaryFailures(),
+                                page: "ENG",
                                 isActive: () => {
                                     return this.engineFailed(1) && !this.engineFailed(2);
                                 },
@@ -600,6 +623,7 @@ var A320_Neo_UpperECAM;
                             {
                                 message: "<span class='boxed'>SHUT DOWN</span>",
                                 level: 2,
+                                landASAP: true,
                                 inopSystems: [
                                     "ENG_1",
                                     "WING_A_ICE",
@@ -610,6 +634,8 @@ var A320_Neo_UpperECAM;
                                     "GEN_1",
                                     "G_ENG_1_PUMP"
                                 ],
+                                secondaryFailures: this.getEngineShutdownSecondaryFailures(),
+                                page: "ENG",
                                 isActive: () => {
                                     return this.engineShutdown(1);
                                 },
@@ -625,6 +651,8 @@ var A320_Neo_UpperECAM;
                                 level: 2,
                                 landASAP: true,
                                 inopSystems: [],
+                                secondaryFailures: this.getEngineFailSecondaryFailures(),
+                                page: "ENG",
                                 isActive: () => {
                                     return this.engineFailed(2) && !this.engineFailed(1);
                                 },
@@ -635,6 +663,7 @@ var A320_Neo_UpperECAM;
                             {
                                 message: "<span class='boxed'>SHUT DOWN</span>",
                                 level: 2,
+                                landASAP: true,
                                 inopSystems: [
                                     "ENG_2",
                                     "WING_A_ICE",
@@ -645,6 +674,8 @@ var A320_Neo_UpperECAM;
                                     "GEN_2",
                                     "G_ENG_1_PUMP"
                                 ],
+                                secondaryFailures: this.getEngineShutdownSecondaryFailures(),
+                                page: "ENG",
                                 isActive: () => {
                                     return this.engineShutdown(2);
                                 },
@@ -761,6 +792,7 @@ var A320_Neo_UpperECAM;
                     {
                         message: "LAND ASAP",
                         style: "fail-3",
+                        important: true,
                         isActive: () => {
                             return this.leftEcamMessagePanel.landASAP == 3;
                         }
@@ -768,6 +800,7 @@ var A320_Neo_UpperECAM;
                     {
                         message: "LAND ASAP",
                         style: "fail-2",
+                        important: true,
                         isActive: () => {
                             return this.leftEcamMessagePanel.landASAP == 2;
                         }
@@ -775,6 +808,7 @@ var A320_Neo_UpperECAM;
                     {
                         message: "T.O. INHIBIT",
                         style: "InfoSpecial",
+                        important: true,
                         isActive: () => {
                             return (this.getCachedSimVar("L:AIRLINER_FLIGHT_PHASE", "Enum") <= 2) && (this.getCachedSimVar("L:A32NX_Preflight_Complete", "Bool") == 1);
                         }
@@ -782,10 +816,38 @@ var A320_Neo_UpperECAM;
                     {
                         message: "LDG INHIBIT",
                         style: "InfoSpecial",
+                        important: true,
                         isActive: () => {
                             return (this.getCachedSimVar("L:AIRLINER_FLIGHT_PHASE", "Enum") == 6) && (this.getCachedSimVar("RADIO HEIGHT", "feet") < 800);
                         }
                     },
+
+                    //Secondary failures
+                    {
+                        message: "*AIR BLEED",
+                        style: "InfoCaution",
+                        important: true,
+                        isActive: () => {
+                            return this.secondaryFailureActive("BLEED");
+                        }
+                    },
+                    {
+                        message: "*ELEC",
+                        style: "InfoCaution",
+                        important: true,
+                        isActive: () => {
+                            return this.secondaryFailureActive("ELEC");
+                        }
+                    },
+                    {
+                        message: "*HYD",
+                        style: "InfoCaution",
+                        important: true,
+                        isActive: () => {
+                            return this.secondaryFailureActive("HYD");
+                        }
+                    },
+
                     {
                         message: "SPEED BRK",
                         isActive: () => {
@@ -1027,18 +1089,57 @@ var A320_Neo_UpperECAM;
             if (SimVar.GetSimVarValue("L:A32NX_BTN_TOCONFIG", "Bool") == 1) {
                 SimVar.SetSimVarValue("L:A32NX_BTN_TOCONFIG", "Bool", 0);
                 this.updateTakeoffConfigWarnings(true);
+                SimVar.SetSimVarValue("ENG ON FIRE:1", "Bool", 1);
             }
 
             if (SimVar.GetSimVarValue("L:A32NX_BTN_CLR", "Bool") == 1 || SimVar.GetSimVarValue("L:A32NX_BTN_CLR2", "Bool") == 1) {
                 SimVar.SetSimVarValue("L:A32NX_BTN_CLR", "Bool", 0);
                 SimVar.SetSimVarValue("L:A32NX_BTN_CLR2", "Bool", 0);
-                this.leftEcamMessagePanel.clearHighestCategory();
+                const secondaryFailures = this.leftEcamMessagePanel.secondaryFailures;
+                if (this.leftEcamMessagePanel.hasActiveFailures) {
+                    //Clear failure
+                    this.leftEcamMessagePanel.clearHighestCategory();
+                } else if (this.clearedSecondaryFailures.length < secondaryFailures.length) {
+                    //Clear secondary failure
+                    this.clearedSecondaryFailures.push(this.getActiveSecondaryFailure());
+                }
+                
             }
 
             if (SimVar.GetSimVarValue("L:A32NX_BTN_RCL", "Bool") == 1) {
                 SimVar.SetSimVarValue("L:A32NX_BTN_RCL", "Bool", 0);
                 this.leftEcamMessagePanel.recall();
+                this.clearedSecondaryFailures = [];
             }
+
+            const ECAMPageIndices = {
+                "ENG": 0,
+                "BLEED": 1,
+                "PRESS": 2,
+                "ELEC": 3,
+                "HYD": 4,
+                "FUEL": 5,
+                "APU": 6,
+                "COND": 7,
+                "DOOR": 8,
+                "WHEEL": 9,
+                "FTCL": 10,
+                "STS": 11
+            }
+
+            const activeSecondaryFailure = this.getActiveSecondaryFailure()
+            if (this.leftEcamMessagePanel.activePage != null) {
+                SimVar.SetSimVarValue("L:A32NX_ECAM_SFAIL", "Enum", ECAMPageIndices[this.leftEcamMessagePanel.activePage]);
+            } else if (activeSecondaryFailure != null) {
+                SimVar.SetSimVarValue("L:A32NX_ECAM_SFAIL", "Enum", ECAMPageIndices[activeSecondaryFailure]);
+            } else {
+                SimVar.SetSimVarValue("L:A32NX_ECAM_SFAIL", "Enum", -1);
+            }
+
+            this.rightEcamMessagePanel.failMode = ((this.leftEcamMessagePanel.secondaryFailures.length - this.clearedSecondaryFailures.length) > 0 && (this.leftEcamMessagePanel.secondaryFailures[this.clearedSecondaryFailures.length] != "STS"));
+
+            this.statusReminder.setAttribute("visibility", (this.leftEcamMessagePanel.secondaryFailures.length > 0 && this.leftEcamMessagePanel.secondaryFailures.length == this.clearedSecondaryFailures.length) ? "visible" : "hidden");
+
             const leftThrottleDetent = Simplane.getEngineThrottleMode(0);
             const rightThrottleDetent = Simplane.getEngineThrottleMode(1);
             const highestThrottleDetent = (leftThrottleDetent >= rightThrottleDetent) ? leftThrottleDetent : rightThrottleDetent;
@@ -1840,6 +1941,8 @@ var A320_Neo_UpperECAM;
             this.inopSystems = {};
             this.landASAP = 0;
             this.overflow = false;
+            this.failMode = false;
+            this.activePage = null;
         }
         init() {
             super.init();
@@ -1874,7 +1977,7 @@ var A320_Neo_UpperECAM;
             if (!this.hasActiveFailures) {
                 const activeMessages = this.getActiveMessages();
                 for (const message of activeMessages) {
-                    this.addLine(message.style || "InfoIndication", null, message.message, null);
+                    if (!this.failMode || message.important) this.addLine(message.style || "InfoIndication", null, message.message, null);
                 }
             }
 
@@ -1957,6 +2060,8 @@ var A320_Neo_UpperECAM;
             this.hasWarnings = false;
             this.hasCautions = false;
             this.landASAP = 0;
+            this.secondaryFailures = [];
+            this.activePage = null;
             for (const system in this.inopSystems) {
                 this.inopSystems[system] = false;
             }
@@ -1966,24 +2071,32 @@ var A320_Neo_UpperECAM;
                     const message = messages[n];
                     if (message.id == null) message.id = `${i} ${n}`;
                     const isActive = message.isActive();
-                    if (isActive && !this.clearedMessages.includes(message.id)) {
-                        this.hasActiveFailures = true;
-                        if (message.level == 3) this.hasWarnings = true;
-                        if (message.level == 2) this.hasCautions = true;
-                        if (output[i] == null) {
-                            output[i] = this.messages.failures[i];
-                            output[i].messages = [];
+
+                    if (isActive) {
+                        if (!this.clearedMessages.includes(message.id)) {
+                            this.hasActiveFailures = true;
+                            if (message.level == 3) this.hasWarnings = true;
+                            if (message.level == 2) this.hasCautions = true;
+                            if (output[i] == null) {
+                                output[i] = this.messages.failures[i];
+                                output[i].messages = [];
+                            }
+                            output[i].messages.push(message);
+                            if (this.activePage == null && message.page != null) this.activePage = message.page;
                         }
-                        output[i].messages.push(message);
-                    }
-                    //Add inop systems even if message is cleared
-                    if (isActive && message.inopSystems != null) {
-                        for (const system of message.inopSystems) {
-                            this.inopSystems[system] = true;
+                        if (message.inopSystems != null) {
+                            for (const system of message.inopSystems) {
+                                this.inopSystems[system] = true;
+                            }
                         }
-                    }
-                    if (isActive && message.landASAP == true) {
-                        if (this.landASAP < message.level) this.landASAP = message.level;
+                        if (message.landASAP == true) {
+                            if (this.landASAP < message.level) this.landASAP = message.level;
+                        }
+                        if (message.secondaryFailures != null) {
+                            for (const secondaryFailure of message.secondaryFailures) {
+                                if (!this.secondaryFailures.includes(secondaryFailure)) this.secondaryFailures.push(secondaryFailure);
+                            }
+                        }
                     }
                 }
             }
