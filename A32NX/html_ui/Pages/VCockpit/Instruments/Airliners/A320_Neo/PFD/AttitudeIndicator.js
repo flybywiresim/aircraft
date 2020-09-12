@@ -1348,12 +1348,18 @@ class Jet_PFD_AttitudeIndicator extends HTMLElement {
         this.applyAttributes();
     }
     applyAttributes() {
+        let horizonHeight = 300;
+        let attitudeHeight = 250;
+        let horizonToAttitudeRatio = attitudeHeight / horizonHeight;
+        let deltaY = this.pitch * this.pitchAngleFactor * this.pitchGradFactor;
+
         if (this.bottomPart)
-            this.bottomPart.setAttribute("transform", "rotate(" + this.bank + ", 0, 0) translate(0," + (this.pitch * this.pitchAngleFactor * this.pitchGradFactor) + ")");
+            this.bottomPart.setAttribute("transform", "rotate(" + this.bank + ", 0, 0) translate(0," + (deltaY) + ")");
         if (this.pitch_root_group)
             this.pitch_root_group.setAttribute("transform", "rotate(" + this.bank + ", 0, 0)");
         if (this.attitude_pitch)
-            this.attitude_pitch.setAttribute("transform", "translate(0," + (this.pitch * this.pitchAngleFactor * this.pitchGradFactor * 0.8333333333333) + ")");
+            // The viewbox height for attitude is different from the horizon - multiply by ratio to keep horizon and pitch lines aligned
+            this.attitude_pitch.setAttribute("transform", "translate(0," + (deltaY * horizonToAttitudeRatio) + ")");
         if (this.slipSkid)
             this.slipSkid.setAttribute("transform", "rotate(" + this.bank + ", 0, 0) translate(" + (this.slipSkidValue * 40) + ", 0)");
         if (this.slipSkidTriangle)
