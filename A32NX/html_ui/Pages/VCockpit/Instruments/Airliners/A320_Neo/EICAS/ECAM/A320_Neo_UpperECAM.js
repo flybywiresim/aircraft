@@ -481,6 +481,13 @@ var A320_Neo_UpperECAM;
                         }
                     },
                     {
+                        message: "TCAS STBY",
+                        style: "InfoIndication",
+                        isActive: () =>{
+                            return (SimVar.GetSimVarValue("L:A32NX_SWITCH_TCAS_Position", "Enum") == 0)
+                        }
+                    },
+                    {
                         message: "ENG A.ICE",
                         isActive: () => {
                             return (SimVar.GetSimVarValue("ENG ANTI ICE:1", "Bool") == 1) || (SimVar.GetSimVarValue("ENG ANTI ICE:2", "Bool") == 1);
