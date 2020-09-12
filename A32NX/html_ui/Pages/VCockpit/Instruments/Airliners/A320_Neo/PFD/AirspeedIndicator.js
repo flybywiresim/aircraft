@@ -1819,8 +1819,7 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
         
         if (isFinite(frameIASAcceleration)) {
             // Low pass filter for accel : https://en.wikipedia.org/wiki/Low-pass_filter
-            this._computedIASAcceleration = this._computedIASAcceleration
-                                          + this._accelAlpha * (frameIASAcceleration - this._computedIASAcceleration);
+            this._computedIASAcceleration += this._accelAlpha * (frameIASAcceleration - this._computedIASAcceleration);
         }
 
         this._lastIASTime = newIASTime;
