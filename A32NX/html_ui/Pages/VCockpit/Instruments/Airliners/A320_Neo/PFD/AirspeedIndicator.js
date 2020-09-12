@@ -1818,28 +1818,14 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
         frameIASAcceleration = Math.max(frameIASAcceleration, -10);
         
         if (isFinite(frameIASAcceleration)) {
-            // High pass filter for acceleration: https://en.wikipedia.org/wiki/High-pass_filter
-            // this._computedIASAcceleration = (frameIASAcceleration * this._accelAlpha)
-            //                               + (this._computedIASAcceleration * (1 - this._accelAlpha));
-        
             // Low pass filter for accel : https://en.wikipedia.org/wiki/Low-pass_filter
             this._computedIASAcceleration = this._computedIASAcceleration
                                           + this._accelAlpha * (frameIASAcceleration - this._computedIASAcceleration);
         }
 
         this._lastIASTime = newIASTime;
-        
-        // this._computedIASAcceleration = Math.min(this._computedIASAcceleration, 1.5);
-        // this._computedIASAcceleration = Math.max(this._computedIASAcceleration, -1.5);
 
-        // return frameIASAcceleration * 10;
         let accel = this._computedIASAcceleration;
-
-        // if (Math.abs(accel) < 0.05) {
-        //     accel = 0;
-        // }
-
-        console.log(accel);
         return accel * 10;
     }
     getAutopilotMode() {
