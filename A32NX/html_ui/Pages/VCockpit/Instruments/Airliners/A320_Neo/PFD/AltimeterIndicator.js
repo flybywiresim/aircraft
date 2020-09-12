@@ -1125,8 +1125,8 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
             bottomLine.setAttribute("stroke-width", "3");
             this.centerSVG.appendChild(bottomLine);
 
-            // JZ: vertical line on the scale
-            var verticalLine = document.createElementNS(Avionics.SVG.NS, "line");
+            //  vertical line on the scale
+            const verticalLine = document.createElementNS(Avionics.SVG.NS, "line");
             this.verticalLine = verticalLine;
             verticalLine.setAttribute("x1", (_left + _width - 1).toString());
             verticalLine.setAttribute("y1", (_top).toString());
@@ -1333,7 +1333,7 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
         this.STDpressureSVGShape.setAttribute("height", "38");//36
         this.rootGroup.appendChild(this.STDpressureSVGShape);
         
-        // JZ added separate white Legend for pressure display
+        //  added separate white Legend for pressure display
         if (!this.pressureSVGLegend)
             this.pressureSVGLegend = document.createElementNS(Avionics.SVG.NS, "text");
         this.pressureSVGLegend.textContent = "---";
