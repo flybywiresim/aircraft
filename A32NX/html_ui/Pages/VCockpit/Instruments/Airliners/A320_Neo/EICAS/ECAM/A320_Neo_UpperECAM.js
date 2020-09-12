@@ -1190,9 +1190,9 @@ var A320_Neo_UpperECAM;
             // Update predictive windshear style
             // If the order of secondary memos is modified, be sure to change index below
             if (SimVar.GetSimVarValue("RADIO HEIGHT", "feet") >= 50 && (SimVar.GetSimVarValue("RADIO HEIGHT", "feet") <= 1500)) {
-                this.secondaryEcamMessage.normal[8].style = "InfoCaution";
+                this.secondaryEcamMessage.normal[13].style = "InfoCaution";
             } else {
-                this.secondaryEcamMessage.normal[8].style = "InfoIndication";
+                this.secondaryEcamMessage.normal[13].style = "InfoIndication";
             }
 
             if (SimVar.GetSimVarValue("L:XMLVAR_PUSH_OVHD_FIRE_ENG1_AGENT1_Discharge", "Bool") == 1) {
