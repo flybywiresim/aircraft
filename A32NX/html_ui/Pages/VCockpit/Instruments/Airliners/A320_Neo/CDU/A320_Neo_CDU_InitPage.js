@@ -53,7 +53,7 @@ class CDUInitPage {
         let alignCheck = SimVar.GetSimVarValue("L:A320_Neo_ADIRS_IN_ALIGN", "Boolean");
         let alignOption = ""
         if (alignCheck) {
-            alignOption = "ALIGN IRS"
+            alignOption = "ALIGN IRS>"
         }
         let flightNo = SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string", "FMC");
         if (!flightNo) {
