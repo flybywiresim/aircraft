@@ -69,6 +69,10 @@ class Jet_PFD_AttitudeIndicator extends HTMLElement {
         let pitchFactor = -7;
         this.pitchAngleFactor = pitchFactor;
         this.pitchGradFactor = 1.0;
+        this.horizonHeight = 300;
+        this.attitudeHeight = 250;
+        this.horizonToAttitudeRatio = attitudeHeight / horizonHeight;
+
         {
             this.horizon_root = document.createElementNS(Avionics.SVG.NS, "svg");
             this.horizon_root.setAttribute("width", "100%");
@@ -136,9 +140,9 @@ class Jet_PFD_AttitudeIndicator extends HTMLElement {
                 borders.setAttribute("stroke-opacity", "1");
                 this.pitch_root_group.appendChild(borders);
                 var x = -115;
-                var y = -125.0;
+                var y = -(this.attitudeHeight / 2);
                 var w = 230;
-                var h = 250;
+                var h = this.attitudeHeight;
                 let attitudePitchContainer = document.createElementNS(Avionics.SVG.NS, "svg");
                 attitudePitchContainer.setAttribute("width", w.toString());
                 attitudePitchContainer.setAttribute("height", h.toString());
@@ -1348,9 +1352,6 @@ class Jet_PFD_AttitudeIndicator extends HTMLElement {
         this.applyAttributes();
     }
     applyAttributes() {
-        let horizonHeight = 300;
-        let attitudeHeight = 250;
-        let horizonToAttitudeRatio = attitudeHeight / horizonHeight;
         let deltaY = this.pitch * this.pitchAngleFactor * this.pitchGradFactor;
 
         if (this.bottomPart)
@@ -1359,7 +1360,7 @@ class Jet_PFD_AttitudeIndicator extends HTMLElement {
             this.pitch_root_group.setAttribute("transform", "rotate(" + this.bank + ", 0, 0)");
         if (this.attitude_pitch)
             // The viewbox height for attitude is different from the horizon - multiply by ratio to keep horizon and pitch lines aligned
-            this.attitude_pitch.setAttribute("transform", "translate(0," + (deltaY * horizonToAttitudeRatio) + ")");
+            this.attitude_pitch.setAttribute("transform", "translate(0," + (deltaY * this.horizonToAttitudeRatio) + ")");
         if (this.slipSkid)
             this.slipSkid.setAttribute("transform", "rotate(" + this.bank + ", 0, 0) translate(" + (this.slipSkidValue * 40) + ", 0)");
         if (this.slipSkidTriangle)
