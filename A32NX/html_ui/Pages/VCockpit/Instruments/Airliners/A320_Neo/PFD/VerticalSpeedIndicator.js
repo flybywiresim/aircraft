@@ -716,7 +716,6 @@ class Jet_PFD_VerticalSpeedIndicator extends HTMLElement {
                         alert = true;
                     if ((vSpeed >=6000) || (vSpeed <= -6000)) alert = true; //airbus alerts thresholds
                 }
-                
 
                 if (this.cursorSVGLine) {
                     this.cursorSVGLine.setAttribute("x1", this.cursorPosX1.toString());
