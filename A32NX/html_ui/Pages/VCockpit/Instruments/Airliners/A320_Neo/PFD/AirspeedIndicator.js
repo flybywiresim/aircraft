@@ -1234,6 +1234,7 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
         this.stripOffsetX = -2;
         this.graduationSpacing = 57;
         this.graduationScroller = new Avionics.Scroller(this.nbPrimaryGraduations, 20);
+        this._accelAlpha = 0.01;
         if (!this.rootGroup) {
             this.rootGroup = document.createElementNS(Avionics.SVG.NS, "g");
             this.rootGroup.setAttribute("id", "Airspeed");
@@ -1810,16 +1811,36 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
             this._lastIASTime = newIASTime;
             return;
         }
+        
         let frameIASAcceleration = (newIASTime.ias - this._lastIASTime.ias) / (newIASTime.t - this._lastIASTime.t);
+        
         frameIASAcceleration = Math.min(frameIASAcceleration, 10);
         frameIASAcceleration = Math.max(frameIASAcceleration, -10);
+        
         if (isFinite(frameIASAcceleration)) {
-            this._computedIASAcceleration *= 0.998;
-            this._computedIASAcceleration += frameIASAcceleration * 0.002;
+            // High pass filter for acceleration: https://en.wikipedia.org/wiki/High-pass_filter
+            // this._computedIASAcceleration = (frameIASAcceleration * this._accelAlpha)
+            //                               + (this._computedIASAcceleration * (1 - this._accelAlpha));
+        
+            // Low pass filter for accel : https://en.wikipedia.org/wiki/Low-pass_filter
+            this._computedIASAcceleration = this._computedIASAcceleration
+                                          + this._accelAlpha * (frameIASAcceleration - this._computedIASAcceleration);
         }
+
         this._lastIASTime = newIASTime;
-        let accel = this._computedIASAcceleration * 10;
-        return accel;
+        
+        // this._computedIASAcceleration = Math.min(this._computedIASAcceleration, 1.5);
+        // this._computedIASAcceleration = Math.max(this._computedIASAcceleration, -1.5);
+
+        // return frameIASAcceleration * 10;
+        let accel = this._computedIASAcceleration;
+
+        // if (Math.abs(accel) < 0.05) {
+        //     accel = 0;
+        // }
+
+        console.log(accel);
+        return accel * 10;
     }
     getAutopilotMode() {
         if (this.aircraft == Aircraft.A320_NEO) {
