@@ -109,8 +109,9 @@ var A320_Neo_LowerECAM_WHEEL;
             const currentBrakeRight = SimVar.GetSimVarValue("BRAKE RIGHT POSITION", "position 32k");
             const currentBrakeLeft = SimVar.GetSimVarValue("BRAKE LEFT POSITION", "position 32k");
             const currentParkingBrake = SimVar.GetSimVarValue("BRAKE PARKING INDICATOR", "Bool");
+            const wheelRPM = SimVar.GetSimVarValue("WHEEL RPM", "rpm"); 
 
-            if (Simplane.getGroundSpeed() > 20 && currentBrakeLeft >= 30000 && currentBrakeRight >= 30000 && !currentParkingBrake) {
+            if (wheelRPM > 150 && currentBrakeLeft >= 30000 && currentBrakeRight >= 30000 && !currentParkingBrake) {
                 this.dummyTempCounter += _deltaTime / 1000;
                 // Add temp slowly
                 this.currentBrake1Temp = Math.round(this.currentBrake1Temp) + Math.floor(Math.random() * this.dummyTempCounter) + 1;
@@ -166,6 +167,8 @@ var A320_Neo_LowerECAM_WHEEL;
                 this.BrakeTemp3.setAttribute("class", "WHEELBRAKERED");
                 this.BrakeTemp4.setAttribute("class", "WHEELBRAKERED");
                 SimVar.SetSimVarValue("L:A32NX_BRAKES_HOT", "Bool", 1);
+                //SimVar.SetSimVarValue("BRAKE RIGHT POSITION","position 32k", 0);// -- Commit out this , was testing something 
+                //SimVar.SetSimVarValue("BRAKE LEFT POSITION", "position 32k", 0); // --- Uncomment to allow brakes to fail when over 500c
             }
         }
 
