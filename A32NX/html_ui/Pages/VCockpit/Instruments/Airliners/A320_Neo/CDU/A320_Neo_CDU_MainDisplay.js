@@ -47,16 +47,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this._onModeManagedHeading();
         this._onModeManagedAltitude();
 
-        let thrRedAccAltitude;
-        
-        const origin = this.flightPlanManager.getOrigin();
-        
-        if (origin) {
-            thrRedAccAltitude = origin.altitudeinFP + 1500;
-        }
-        
-        this.thrustReductionAltitude = thrRedAccAltitude;
-        this.accelerationAltitude = thrRedAccAltitude;
+        CDUPerformancePage.UpdateThrRedAccFromOrigin(this);
         
         SimVar.SetSimVarValue("K:VS_SLOT_INDEX_SET", "number", 1);
     }
