@@ -1729,7 +1729,6 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
             if (this.pressureSVGLegend) this.pressureSVGLegend.setAttribute("visibility", "hidden");
             if (this.STDpressureSVG) this.STDpressureSVG.setAttribute("visibility", "hidden");
             if (this.STDpressureSVGShape)this.STDpressureSVGShape.setAttribute("visibility", "hidden");
-            //
             this.targetAltitudeIndicatorSVG.setAttribute("visibility", "hidden");
         }
         if (this.groundRibbonSVGShape) this.groundRibbonSVG.setAttribute("style", failed ? "display:none" : "");
