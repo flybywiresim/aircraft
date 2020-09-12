@@ -73,7 +73,7 @@ var A320_Neo_UpperECAM;
             else return -1;
         }
         engineFailed(_engine) {
-            return (this.getCachedSimVar("ENG FAILED:"+_engine, "Bool") == 1) && !Simplane.getIsGrounded();
+            return (this.getCachedSimVar("ENG FAILED:"+_engine, "Bool") == 1) && !this.getCachedSimVar("ENG ON FIRE:"+_engine) && !Simplane.getIsGrounded();
         }
         engineShutdown(_engine) {
             return (this.getCachedSimVar("TURB ENG N1:"+_engine, "Percent") < 15 || this.getCachedSimVar("FUELSYSTEM VALVE SWITCH:"+(_engine+5), "Bool") == 0) && !Simplane.getIsGrounded();
@@ -192,6 +192,28 @@ var A320_Neo_UpperECAM;
                     }
                 },
                 {
+                    style: "action-timer",
+                    id: `eng${_engine}_agent1`,
+                    message: "AGENT 1",
+                    action: "DISCH",
+                    timerMessage: "AGENT1",
+                    duration: 10,
+                    isCompleted:() => {
+                        return this.getCachedSimVar(`L:XMLVAR_PUSH_OVHD_FIRE_ENG${_engine}_AGENT1_Discharge`, "Bool") == 1;
+                    }
+                },
+                {
+                    style: "action-timer",
+                    id: `eng${_engine}_agent2`,
+                    message: "AGENT 2",
+                    action: "DISCH",
+                    timerMessage: "AGENT2",
+                    duration: 10,
+                    isCompleted:() => {
+                        return this.getCachedSimVar(`L:XMLVAR_PUSH_OVHD_FIRE_ENG${_engine}_AGENT2_Discharge`, "Bool") == 1;
+                    }
+                },
+                {
                     style: "action",
                     message: "ATC",
                     action: "NOTIFY"
@@ -233,12 +255,18 @@ var A320_Neo_UpperECAM;
                 {
                     style: "action",
                     message: "AGENT 1",
-                    action: "DISCH"
+                    action: "DISCH",
+                    isCompleted:() => {
+                        return this.getCachedSimVar(`L:XMLVAR_PUSH_OVHD_FIRE_ENG${_engine}_AGENT1_Discharge`, "Bool") == 1;
+                    }
                 },
                 {
                     style: "action",
                     message: "AGENT 2",
-                    action: "DISCH"
+                    action: "DISCH",
+                    isCompleted:() => {
+                        return this.getCachedSimVar(`L:XMLVAR_PUSH_OVHD_FIRE_ENG${_engine}_AGENT2_Discharge`, "Bool") == 1;
+                    }
                 }
             ];
         }
@@ -358,6 +386,7 @@ var A320_Neo_UpperECAM;
                                 message: "",
                                 level: 3,
                                 landASAP: true,
+                                page: "ENG",
                                 isActive: () => {
                                     return (this.getCachedSimVar("L:FIRE_TEST_ENG1", "Bool") || this.getCachedSimVar("ENG ON FIRE:1", "Bool")) && !Simplane.getIsGrounded();
                                 },
@@ -372,6 +401,7 @@ var A320_Neo_UpperECAM;
                                 message: "",
                                 level: 3,
                                 landASAP: true,
+                                page: "ENG",
                                 isActive: () => {
                                     return (this.getCachedSimVar("L:FIRE_TEST_ENG2", "Bool") || this.getCachedSimVar("ENG ON FIRE:2", "Bool")) && !Simplane.getIsGrounded();
                                 },
@@ -1089,7 +1119,6 @@ var A320_Neo_UpperECAM;
             if (SimVar.GetSimVarValue("L:A32NX_BTN_TOCONFIG", "Bool") == 1) {
                 SimVar.SetSimVarValue("L:A32NX_BTN_TOCONFIG", "Bool", 0);
                 this.updateTakeoffConfigWarnings(true);
-                SimVar.SetSimVarValue("ENG ON FIRE:1", "Bool", 1);
             }
 
             if (SimVar.GetSimVarValue("L:A32NX_BTN_CLR", "Bool") == 1 || SimVar.GetSimVarValue("L:A32NX_BTN_CLR2", "Bool") == 1) {
@@ -1164,6 +1193,13 @@ var A320_Neo_UpperECAM;
                 this.secondaryEcamMessage.normal[8].style = "InfoCaution";
             } else {
                 this.secondaryEcamMessage.normal[8].style = "InfoIndication";
+            }
+
+            if (SimVar.GetSimVarValue("L:XMLVAR_PUSH_OVHD_FIRE_ENG1_AGENT1_Discharge", "Bool") == 1) {
+                SimVar.SetSimVarValue("ENG ON FIRE:1", "Bool", 0);
+            }
+            if (SimVar.GetSimVarValue("L:XMLVAR_PUSH_OVHD_FIRE_ENG2_AGENT1_Discharge", "Bool") == 1) {
+                SimVar.SetSimVarValue("ENG ON FIRE:2", "Bool", 0);
             }
         }
         updateTakeoffConfigWarnings(_test) {
@@ -1943,6 +1979,7 @@ var A320_Neo_UpperECAM;
             this.overflow = false;
             this.failMode = false;
             this.activePage = null;
+            this.timers = {};
         }
         init() {
             super.init();
@@ -1968,8 +2005,14 @@ var A320_Neo_UpperECAM;
                     this.addLine("fail-"+failure.level, category.name, failure.message, failure.action, failure.alwaysShowCategory);
                     warningsCount[failure.level] = warningsCount[failure.level] + 1;
                     if (failure.actions != null) {
+                        let fisrtAction = true;
                         for (const action of failure.actions) {
-                            if (action.isCompleted == null || !action.isCompleted()) this.addLine(action.style, null, action.message, action.action);
+                            if (action.isCompleted == null || !action.isCompleted()) {
+                                if ((action.style != "action-timer" || fisrtAction)) {
+                                    this.addLine(action.style, null, action.message, action.action, false, action.id, action.duration, action.timerMessage);
+                                }
+                                fisrtAction = false;
+                            }
                         }
                     }
                 }
@@ -2000,7 +2043,7 @@ var A320_Neo_UpperECAM;
                 }
             }
         }
-        addLine(_style, _category, _message, _action, _alwaysShowCategory = false) {
+        addLine(_style, _category, _message, _action, _alwaysShowCategory = false, _id, _duration, _timerMessage) {
             if (this.currentLine < this.maxLines) {
                 var div = this.allDivs[this.currentLine];
                 div.innerHTML = "";
@@ -2018,9 +2061,23 @@ var A320_Neo_UpperECAM;
                     //Message
                     var message = document.createElement("span");
                     switch(_style) {
+                        case "action-timer":
+                            const now = Date.now();
+                            div.className = "action";
+                            if (this.timers[_id] == null) {
+                                this.timers[_id] = _duration;
+                                this.lastTimerUpdate = now;
+                            }
+                            if (this.timers[_id] > 0) {
+                                div.className = "action-timer";
+                                const seconds = Math.floor(this.timers[_id])+1;
+                                _message = `${_timerMessage} AFTER ${seconds < 10 ? "&nbsp;" : ""}${seconds}S`;
+                                this.timers[_id] += (this.lastTimerUpdate - now)/1000;
+                                this.lastTimerUpdate = now;
+                            }
                         case "action":
                             var msgOutput = "&nbsp;-"+_message;
-                            for (var i = 0; i < (22 - _message.length - _action.length); i++) {
+                            for (var i = 0; i < (22 - _message.replace("&nbsp;", " ").length - _action.length); i++) {
                                 msgOutput = msgOutput+".";
                             }
                             msgOutput += _action;

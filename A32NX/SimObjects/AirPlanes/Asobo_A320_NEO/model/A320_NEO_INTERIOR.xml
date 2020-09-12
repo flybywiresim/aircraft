@@ -2607,11 +2607,11 @@
 				<PART_ID>Fire_test_eng1</PART_ID>
 				<ID>ENG1</ID>
 			</UseTemplate>
-			<UseTemplate Name="ASOBO_AIRLINER_FIRE_TEST_LIGHTS">
+			<UseTemplate Name="ASOBO_AIRLINER_FIRE_AGENT">
 				<NODE_ID>PUSH_OVHD_FIRE_ENG1_AGENT1</NODE_ID>
 				<ID>ENG1</ID>
 			</UseTemplate>
-			<UseTemplate Name="ASOBO_AIRLINER_FIRE_TEST_LIGHTS">
+			<UseTemplate Name="ASOBO_AIRLINER_FIRE_AGENT">
 				<NODE_ID>PUSH_OVHD_FIRE_ENG1_AGENT2</NODE_ID>
 				<ID>ENG1</ID>
 			</UseTemplate>
@@ -2635,11 +2635,11 @@
 				<PART_ID>Fire_test_eng2</PART_ID>
 				<ID>ENG2</ID>
 			</UseTemplate>
-			<UseTemplate Name="ASOBO_AIRLINER_FIRE_TEST_LIGHTS">
+			<UseTemplate Name="ASOBO_AIRLINER_FIRE_AGENT">
 				<NODE_ID>PUSH_OVHD_FIRE_ENG2_AGENT1</NODE_ID>
 				<ID>ENG2</ID>
 			</UseTemplate>
-			<UseTemplate Name="ASOBO_AIRLINER_FIRE_TEST_LIGHTS">
+			<UseTemplate Name="ASOBO_AIRLINER_FIRE_AGENT">
 				<NODE_ID>PUSH_OVHD_FIRE_ENG2_AGENT2</NODE_ID>
 				<ID>ENG2</ID>
 			</UseTemplate>

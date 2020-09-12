@@ -1344,6 +1344,18 @@
 	</UseTemplate>
 </Template>
 
+<Template Name="ASOBO_AIRLINER_FIRE_AGENT">
+	<UseTemplate Name="ASOBO_GT_Push_Button_Airliner">
+		<SEQ1_EMISSIVE_CODE>(L:FIRE_TEST_#ID#, Bool) (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or (L:FIRE_BUTTON_#ID#, Bool) or</SEQ1_EMISSIVE_CODE>
+		<SEQ2_EMISSIVE_CODE>(L:FIRE_TEST_#ID#, Bool) (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or (L:XMLVAR_#NODE_ID#_Discharge) or</SEQ2_EMISSIVE_CODE>
+		<LEFT_SINGLE_CODE>
+			(L:FIRE_BUTTON_#ID#, Bool) if{
+				1 (>L:XMLVAR_#NODE_ID#_Discharge)
+			}
+		</LEFT_SINGLE_CODE>
+	</UseTemplate>
+</Template>
+
 <Template Name="ASOBO_AIRLINER_FIRE_BUTTON">
 	<DefaultTemplateParameters>
 		<NODE_ID>#NODE_ID#</NODE_ID>
