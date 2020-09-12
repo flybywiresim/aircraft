@@ -1314,7 +1314,7 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
         this.STDpressureSVG.setAttribute("x", "90");//90
         this.STDpressureSVG.setAttribute("y", (posY + height + 90 - 36));// - (this.fontSize * 1.3)).toString());
         this.STDpressureSVG.setAttribute("fill", "cyan");
-        this.STDpressureSVG.setAttribute("font-size", (this.fontSize * 1.3 ).toString());//1.05
+        this.STDpressureSVG.setAttribute("font-size", (this.fontSize * 1.3).toString());//1.05
         this.STDpressureSVG.setAttribute("font-family", "Roboto-Light");
         this.STDpressureSVG.setAttribute("text-anchor", "start");
         this.STDpressureSVG.setAttribute("alignment-baseline", "central");
