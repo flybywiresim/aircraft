@@ -468,6 +468,12 @@ var A320_Neo_UpperECAM;
                         }
                     },
                     {
+                        message: "NW STRG DISC",
+                        isActive: () => {
+                            return (SimVar.GetSimVarValue("PUSHBACK STATE", "Enum") != 3);
+                        }
+                    },
+                    {
                         message: "PRED W/S OFF",
                         style: "InfoIndication",
                         isActive: () => {
@@ -508,12 +514,6 @@ var A320_Neo_UpperECAM;
                         message: "GPWS FLAP 3",
                         isActive: () => {
                             return (SimVar.GetSimVarValue("L:PUSH_OVHD_GPWS_LDG", "Bool") == 1);
-                        }
-                    },
-                    {
-                        message: "NW STRG DISC",
-                        isActive: () => {
-                            return (SimVar.GetSimVarValue("PUSHBACK STATE", "Enum") != 3);
                         }
                     }
                 ]
@@ -704,9 +704,9 @@ var A320_Neo_UpperECAM;
             // Update predictive windshear style
             // If the order of secondary memos is modified, be sure to change index below
             if (SimVar.GetSimVarValue("RADIO HEIGHT", "feet") >= 50 && (SimVar.GetSimVarValue("RADIO HEIGHT", "feet") <= 1500)) {
-                this.secondaryEcamMessage.normal[8].style = "InfoCaution";
+                this.secondaryEcamMessage.normal[9].style = "InfoCaution";
             } else {
-                this.secondaryEcamMessage.normal[8].style = "InfoIndication";
+                this.secondaryEcamMessage.normal[9].style = "InfoIndication";
             }
         }
         updateTakeoffConfigWarnings(_test) {
