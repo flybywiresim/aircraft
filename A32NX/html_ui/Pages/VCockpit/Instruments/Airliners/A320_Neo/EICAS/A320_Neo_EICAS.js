@@ -41,6 +41,7 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         this.createLowerScreenPage("DOOR", "BottomScreen", "a320-neo-lower-ecam-door"); // MODIFIED
         this.createLowerScreenPage("WHEEL", "BottomScreen", "a320-neo-lower-ecam-wheel"); // MODIFIED
         this.createLowerScreenPage("FTCL", "BottomScreen", "a320-neo-lower-ecam-ftcl"); // MODIFIED
+        this.createLowerScreenPage("STS", "BottomScreen", "a320-neo-lower-ecam-status"); // MODIFIED
         this.createLowerScreenPage("CRZ", "BottomScreen", "a320-neo-lower-ecam-crz"); // MODIFIED
     }
     getLowerScreenChangeEventNamePrefix() {
@@ -249,6 +250,27 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         } else if (isGearExtended && (altitude < 16000)) {
             this.pageNameWhenUnselected = "WHEEL";
             this.minPageIndexWhenUnselected = 4;
+        }
+
+        const sFailPage = SimVar.GetSimVarValue("L:A32NX_ECAM_SFAIL", "Enum");
+
+        if (sFailPage != -1) {
+            const ECAMPageIndices = {
+                0: "ENG",
+                1: "BLEED",
+                2: "PRESS",
+                3: "ELEC",
+                4: "HYD",
+                5: "FUEL",
+                6: "APU",
+                7: "COND",
+                8: "DOOR",
+                9: "WHEEL",
+                10: "FTCL",
+                11: "STS"
+            }
+
+            this.pageNameWhenUnselected = ECAMPageIndices[sFailPage];
         }
 
         // switch page when desired page was changed

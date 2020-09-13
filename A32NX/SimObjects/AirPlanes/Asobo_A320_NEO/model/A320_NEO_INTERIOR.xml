@@ -2457,6 +2457,12 @@
 			<NODE_ID>PUSH_ATC_FAIL_SEQ2</NODE_ID>
 			<EMISSIVE_CODE>0</EMISSIVE_CODE>
 		</UseTemplate>
+		<UseTemplate Name="A32NX_ATC_Panel_TARA">
+			<Node_ID>KNOB_ATC_TARA</Node_ID>
+			<ANIMTIP_0>Set TCAS to STBY</ANIMTIP_0>
+			<ANIMTIP_1>Set TCAS to TA</ANIMTIP_1>
+			<ANIMTIP_2>Set TCAS to TARA</ANIMTIP_2>
+		</UseTemplate>
 	</Component>
 
 	<Component ID="Airbus_Pedestal_Radios">
@@ -2556,10 +2562,6 @@
 			<ANIM_NAME>KNOB_ATC_THRT</ANIM_NAME>
 			<PERCENT>33</PERCENT>
 		</UseTemplate>
-		<UseTemplate Name="ASOBO_GT_Anim_Setup">
-			<ANIM_NAME>KNOB_ATC_TARA</ANIM_NAME>
-			<PERCENT>100</PERCENT>
-		</UseTemplate>
 	</Component>
 
 	<!-- This section has been entirely modified 	-->
@@ -2607,11 +2609,11 @@
 				<PART_ID>Fire_test_eng1</PART_ID>
 				<ID>ENG1</ID>
 			</UseTemplate>
-			<UseTemplate Name="ASOBO_AIRLINER_FIRE_TEST_LIGHTS">
+			<UseTemplate Name="ASOBO_AIRLINER_FIRE_AGENT">
 				<NODE_ID>PUSH_OVHD_FIRE_ENG1_AGENT1</NODE_ID>
 				<ID>ENG1</ID>
 			</UseTemplate>
-			<UseTemplate Name="ASOBO_AIRLINER_FIRE_TEST_LIGHTS">
+			<UseTemplate Name="ASOBO_AIRLINER_FIRE_AGENT">
 				<NODE_ID>PUSH_OVHD_FIRE_ENG1_AGENT2</NODE_ID>
 				<ID>ENG1</ID>
 			</UseTemplate>
@@ -2619,12 +2621,14 @@
 				<NODE_ID>PUSH_ENGINES_1</NODE_ID>
 				<ID>ENG1</ID>
 			</UseTemplate>
-			<!--Unused currently-->
-			<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
+			<UseTemplate Name="ASOBO_AIRLINER_FIRE_GUARD">
 				<NODE_ID>LOCK_OVHD_ENG1</NODE_ID>
+				<ID>ENG1</id>
 			</UseTemplate>
-			<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
+			<UseTemplate Name="ASOBO_AIRLINER_FIRE_BUTTON">
 				<NODE_ID>PUSH_OVHD_FIRE_ENG1</NODE_ID>
+				<ID>ENG1</ID>
+				<ENGINE>1</ENGINE>
 			</UseTemplate>
 		</Component>
 
@@ -2634,11 +2638,11 @@
 				<PART_ID>Fire_test_eng2</PART_ID>
 				<ID>ENG2</ID>
 			</UseTemplate>
-			<UseTemplate Name="ASOBO_AIRLINER_FIRE_TEST_LIGHTS">
+			<UseTemplate Name="ASOBO_AIRLINER_FIRE_AGENT">
 				<NODE_ID>PUSH_OVHD_FIRE_ENG2_AGENT1</NODE_ID>
 				<ID>ENG2</ID>
 			</UseTemplate>
-			<UseTemplate Name="ASOBO_AIRLINER_FIRE_TEST_LIGHTS">
+			<UseTemplate Name="ASOBO_AIRLINER_FIRE_AGENT">
 				<NODE_ID>PUSH_OVHD_FIRE_ENG2_AGENT2</NODE_ID>
 				<ID>ENG2</ID>
 			</UseTemplate>
@@ -2646,12 +2650,14 @@
 				<NODE_ID>PUSH_ENGINES_2</NODE_ID>
 				<ID>ENG2</ID>
 			</UseTemplate>
-			<!--Unused currently-->
-			<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
+			<UseTemplate Name="ASOBO_AIRLINER_FIRE_GUARD">
 				<NODE_ID>LOCK_OVHD_ENG2</NODE_ID>
+				<ID>ENG2</id>
 			</UseTemplate>
-			<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
+			<UseTemplate Name="ASOBO_AIRLINER_FIRE_BUTTON">
 				<NODE_ID>PUSH_OVHD_FIRE_ENG2</NODE_ID>
+				<ID>ENG2</ID>
+				<ENGINE>2</ENGINE>
 			</UseTemplate>
 		</Component>
 
@@ -2668,8 +2674,9 @@
 			<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
 				<NODE_ID>LOCK_OVHD_APU</NODE_ID>
 			</UseTemplate>
-			<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
+			<UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
 				<NODE_ID>PUSH_OVHD_FIRE_APU</NODE_ID>
+				<EMISSIVE_CODE>(L:FIRE_TEST_APU, Bool) (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or</EMISSIVE_CODE>
 			</UseTemplate>
 		</Component>
 
@@ -2899,9 +2906,6 @@
 			<NODE_ID>PUSH_ECAM_EMERCANC</NODE_ID>
 		</UseTemplate>
 		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-			<NODE_ID>PUSH_ECAM_STS</NODE_ID>
-		</UseTemplate>
-		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
 			<NODE_ID>PUSH_ECAM_ALL</NODE_ID>
 		</UseTemplate>
 		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
@@ -3101,9 +3105,6 @@
 		</UseTemplate>
 		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
 			<NODE_ID>KNOB_ATC_THRT</NODE_ID>
-		</UseTemplate>
-		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-			<NODE_ID>KNOB_ATC_TARA</NODE_ID>
 		</UseTemplate>
 		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
 			<NODE_ID>PUSH_HANDLE_LEFT_YOKE</NODE_ID>
