@@ -212,14 +212,18 @@ class CDUFlightPlanPage {
                         }
                         let altitudeConstraint = "---";
                         if (waypoint.legAltitudeDescription !== 0) {
-                            if (waypoint.legAltitudeDescription === 1) {
+                            if (mcdu.transitionAltitude >= 100 && waypoint.legAltitude1 > mcdu.transitionAltitude)
+                                altitudeConstraint = "FL" + (waypoint.legAltitude1.toFixed(0) / 100);
+                            else
                                 altitudeConstraint = waypoint.legAltitude1.toFixed(0);
+                            if (waypoint.legAltitudeDescription === 1) {
+                                altitudeConstraint = altitudeConstraint;
                             }
                             if (waypoint.legAltitudeDescription === 2) {
-                                altitudeConstraint = waypoint.legAltitude1.toFixed(0) + "A";
+                                altitudeConstraint = "+" + altitudeConstraint;
                             }
                             if (waypoint.legAltitudeDescription === 3) {
-                                altitudeConstraint = waypoint.legAltitude1.toFixed(0) + "B";
+                                altitudeConstraint = "-" + altitudeConstraint;
                             }
                             else if (waypoint.legAltitudeDescription === 4) {
                                 altitudeConstraint = ((waypoint.legAltitude1 + waypoint.legAltitude2) * 0.5).toFixed(0);
@@ -252,32 +256,31 @@ class CDUFlightPlanPage {
                             color = "green";
                         }
                         rows[2 * i + 1] = [waypoint.ident + "[color]" + color, speedConstraint + "/" + altitudeConstraint + "[s-text][color]" + color, timeCell + "[color]" + color];
-                        if (fpIndex !== -42) {
-                            mcdu.onLeftInput[i] = async () => {
-                                let value = mcdu.inOut;
-                                mcdu.clearUserInput();
-                                if (value === "") {
-                                    if (waypoint) {
-                                        CDULateralRevisionPage.ShowPage(mcdu, waypoint, fpIndex);
-                                    }
-                                }
-                                else if (value === FMCMainDisplay.clrValue) {
-                                    mcdu.removeWaypoint(fpIndex, () => {
-                                        CDUFlightPlanPage.ShowPage(mcdu, offset);
-                                    });
-                                }
-                                else if (value.length > 0) {
-                                    mcdu.insertWaypoint(value, fpIndex, () => {
-                                        CDUFlightPlanPage.ShowPage(mcdu, offset);
-                                    });
-                                }
-                            };
-                            mcdu.onRightInput[i] = async () => {
+
+                        mcdu.onLeftInput[i] = async () => {
+                            let value = mcdu.inOut;
+                            mcdu.clearUserInput();
+                            if (value === "") {
                                 if (waypoint) {
-                                    CDUVerticalRevisionPage.ShowPage(mcdu, waypoint);
+                                    CDULateralRevisionPage.ShowPage(mcdu, waypoint, fpIndex);
                                 }
-                            };
-                        }
+                            }
+                            else if (value === FMCMainDisplay.clrValue) {
+                                mcdu.removeWaypoint(fpIndex, () => {
+                                    CDUFlightPlanPage.ShowPage(mcdu, offset);
+                                });
+                            }
+                            else if (value.length > 0) {
+                                mcdu.insertWaypoint(value, fpIndex, () => {
+                                    CDUFlightPlanPage.ShowPage(mcdu, offset);
+                                });
+                            }
+                        };
+                        mcdu.onRightInput[i] = async () => {
+                            if (waypoint) {
+                                CDUVerticalRevisionPage.ShowPage(mcdu, waypoint);
+                            }
+                        };
                     }
                     else {
                         let destTimeCell = "----";

@@ -230,8 +230,18 @@ a320-neo-upper-ecam {
   a320-neo-upper-ecam .fail-2 {
     color: var(--ecamWarningColour);
   }
-  a320-neo-upper-ecam .action, a320-neo-upper-ecam .action-underline {
+  a320-neo-upper-ecam .action, a320-neo-upper-ecam .action-underline, a320-neo-upper-ecam .blue {
     color: var(--ecamUnitsColour);
+  }
+  a320-neo-upper-ecam .fail-2 .boxed {
+    border: 2px solid var(--ecamWarningColour);
+    display: inline-block;
+    height: 97%;
+  }
+  a320-neo-upper-ecam .fail-3 .boxed {
+    border: 2px solid var(--ecamDangerColour);
+    display: inline-block;
+    height: 97%
   }
 
 

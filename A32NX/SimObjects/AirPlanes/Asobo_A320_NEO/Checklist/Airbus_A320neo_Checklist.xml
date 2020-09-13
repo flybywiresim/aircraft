@@ -5,7 +5,7 @@
 		<IncludeCheckpointLibrary FileName="SimObjects\\Airplanes\\Asobo_A320_NEO\\Checklist\\Library.xml"/>
 		<Step ChecklistStepId="PREFLIGHT_GATE">
 			<!-- Before starting engine -->
-			<Page SubjectTT="TT:PRELIMINARY COCKPIT PREP. (NON-INTERACTIVE)">
+			<Page SubjectTT="TT:PRELIMINARY COCKPIT PREP.">
 				<Checkpoint ReferenceId="A320_PREP_ENGINE_MASTER_SWITCHES"/>
 				<Checkpoint ReferenceId="A320_PREP_ENGINE_MODE_SELECTOR"/>
 				<Checkpoint ReferenceId="A320_PREP_LANDING_GEAR_LEVER"/>
@@ -37,7 +37,7 @@
 				<Checkpoint ReferenceId="A320_PREP_EXTERIOR"/>
 			</Page>
 			<!-- Cockpit Preparation -->
-			<Page SubjectTT="TT:Cockpit Preparation (NON-INTERACTIVE)">
+			<Page SubjectTT="TT:Cockpit Preparation">
 				<Block SubjectTT="TT:OVERHEAD PANEL">
 					<Checkpoint ReferenceId="A320_CPREP1_REC_GROUND_CONTROL"/>
 					<Checkpoint ReferenceId="A320_CPREP1_CVR_TEST"/>
@@ -163,7 +163,7 @@
 				<Checkpoint ReferenceId="A320_BeforeStart_PARKING_BRAKE"/>
 			</Page>
 			<!-- ENGINE STARTUP -->
-			<Page SubjectTT="TT:Engine Startup (NON-INTERACTIVE)">
+			<Page SubjectTT="TT:Engine Startup">
 				<Checkpoint ReferenceId="A320_EngineStartup_ENG_MODE_SEL"/>
 				<Checkpoint ReferenceId="A320_EngineStartup_ENG_START2_ANNOUNCE"/>
 				<Checkpoint ReferenceId="A320_EngineStartup_ENG_MASTER_2"/>
@@ -173,7 +173,7 @@
 				<Checkpoint ReferenceId="A320_EngineStartup_ENG_IDLE_PARAMETERS"/>
 			</Page>
 			<!-- After Engine Startup -->
-			<Page SubjectTT="TT:After Engine Startup (NON-INTERACTIVE)">
+			<Page SubjectTT="TT:After Engine Startup">
 				<Checkpoint ReferenceId="A320_AfterEngineStartup_ENG_MODE_SEL"/>
 				<Checkpoint ReferenceId="APU_Bleed_Off"/>
 				<Checkpoint ReferenceId="A320_AfterEngineStartup_GROUND_SPOILERS"/>
@@ -186,8 +186,10 @@
 				<Checkpoint ReferenceId="A320_AfterEngineStartup_ECAM_DOOR_PAGE"/>
 				<Checkpoint ReferenceId="A320_AfterEngineStartup_ANNOUNCE_DISC"/>
 			</Page>
+		</Step>
+		<Step ChecklistStepId="PREFLIGHT_TAXI_OUT">
 			<!-- Taxi Checklist -->
-			<Page SubjectTT="TT:Taxi Checklist (NON-INTERACTIVE)">
+			<Page SubjectTT="TT:Taxi Checklist">
 				<Checkpoint ReferenceId="A320_TAXI_OBTAIN_CLEARANCE"/>
 				<Checkpoint ReferenceId="A320_TAXI_NOSE_LIGHT"/>
 				<Checkpoint ReferenceId="A320_TAXI_RWY_TURNOFF_LIGHTS"/>
@@ -215,8 +217,10 @@
 				<Checkpoint ReferenceId="A320_TAXI_TO_CFG_PUSH"/>
 				<Checkpoint ReferenceId="A320_TAXI_ECAM_TO_MEMO"/>
 			</Page>
-			<!-- Before Takeoff -->
-			<Page SubjectTT="TT:Before Takeoff (NON-INTERACTIVE)">
+		</Step>
+		<!-- Before Takeoff -->
+		<Step ChecklistStepId="FLIGHT_RUNWAY">
+			<Page SubjectTT="TT:Before Takeoff">
 				<Checkpoint ReferenceId="A320_BeforeTakeoff_BRAKE_TEMP"/>
 				<Checkpoint ReferenceId="A320_BeforeTakeoff_TO_CLEARANCE"/>
 				<Checkpoint ReferenceId="A320_BeforeTakeoff_APPR_PATH_CLR_TRFC"/>
@@ -227,8 +231,10 @@
 				<Checkpoint ReferenceId="A320_BeforeTakeoff_SLIDING_TABLE"/>
 				<Checkpoint ReferenceId="A320_BeforeTakeoff_ATC_CLRD_TO"/>
 			</Page>
-			<!-- Takeoff -->
-			<Page SubjectTT="TT:Takeoff (NON-INTERACTIVE)">
+		</Step>
+		<!-- Takeoff -->
+		<Step ChecklistStepId="FLIGHT_TAKEOFF">
+			<Page SubjectTT="TT:Takeoff">
 				<Checkpoint ReferenceId="A320_TO_BRAKES"/>
 				<Checkpoint ReferenceId="A320_TO_THRUST_LEVERS"/>
 				<Checkpoint ReferenceId="A320_TO_CHRONO"/>
@@ -251,8 +257,10 @@
 					<Checkpoint ReferenceId="A320_TO_AT_S_SPEED"/>
 				</Block>
 			</Page>
-			<!-- After Takeoff -->
-			<Page SubjectTT="TT:After Takeoff (NON-INTERACTIVE)">
+		</Step>
+		<!-- After Takeoff -->
+		<Step ChecklistStepId="FLIGHT_CRUISE">
+			<Page SubjectTT="TT:After Takeoff">
 				<Checkpoint ReferenceId="A320_AFTER_TO_PILOT_APU_BLEED"/>
 				<Checkpoint ReferenceId="A320_AFTER_TO_PILOT_APU_MASTER"/>
 				<Checkpoint ReferenceId="A320_AFTER_TO_ENG_MODE"/>
@@ -260,7 +268,7 @@
 				<Checkpoint ReferenceId="A320_AFTER_TO_ANTI_ICE"/>
 			</Page>
 			<!-- Climb -->
-			<Page SubjectTT="TT:Climb (NON-INTERACTIVE)">
+			<Page SubjectTT="TT:Climb">
 				<Checkpoint ReferenceId="A320_CLIMB_PILOT_MONITORING_MCDU_PAGE"/>
 				<Checkpoint ReferenceId="A320_CLIMB_PILOT_FLYING_MCDU_PAGE"/>
 				<Checkpoint ReferenceId="A320_CLIMB_BARO_REF"/>
@@ -277,9 +285,9 @@
 				</Block>
 			</Page>
 			<!-- Cruise -->
-			<Page SubjectTT="TT:Cruise (NON-INTERACTIVE)">
+			<Page SubjectTT="TT:Cruise">
 				<Checkpoint ReferenceId="A320_CRUISE_ECAM_MEMO"/>
-				<Checkpoint ReferenceId="A320_CRUISE_ECAM_SYS_PAGE"/>
+				<Checkpoint ReferenceId="A320_CRUISE_ECAM_CRUISE_PAGE"/>
 				<Checkpoint ReferenceId="A320_CRUISE_FLT_PROGRESS"/>
 				<Checkpoint ReferenceId="A320_CRUISE_STEP_FLT_LVL"/>
 				<Checkpoint ReferenceId="A320_CRUISE_NAV_ACCURACY"/>
@@ -287,8 +295,11 @@
 				<Checkpoint ReferenceId="A320_CRUISE_CABIN_TEMP"/>
 				<Checkpoint ReferenceId="A320_CRUISE_OXYGEN_MASK"/>
 			</Page>
-			<!-- Descent Preparation -->
-			<Page SubjectTT="TT:Descent Preparation (NON-INTERACTIVE)">
+		</Step>
+		<!-- Descent Preparation -->
+
+		<Step ChecklistStepId="FLIGHT_DESCENT">
+			<Page SubjectTT="TT:Descent Preparation">
 				<Checkpoint ReferenceId="A320_DPREP_LANDING_ELEVATION"/>
 				<Checkpoint ReferenceId="A320_DPREP_WEATHER_LANDING_INFO"/>
 				<Checkpoint ReferenceId="A320_DPREP_FMGS_ARRIVAL"/>
@@ -305,7 +316,7 @@
 				<Checkpoint ReferenceId="A320_DPREP_ANTI_ICE"/>
 			</Page>
 			<!-- Descent Checklist -->
-			<Page SubjectTT="TT:Descent Checklist (NON-INTERACTIVE)">
+			<Page SubjectTT="TT:Descent Checklist">
 				<Checkpoint ReferenceId="A320_DESCENT_DESC"/>
 				<Checkpoint ReferenceId="A320_DESCENT_PF_MCDU"/>
 				<Checkpoint ReferenceId="A320_DESCENT_PM_MCDU"/>
@@ -324,15 +335,17 @@
 					<Checkpoint ReferenceId="A320_DESCENT_NAV_ACCURACY"/>
 				</Block>
 			</Page>
-			<!-- ILS Approach -->
-			<Page SubjectTT="TT:ILS Approach (NON-INTERACTIVE)">
+		</Step>
+		<!-- ILS Approach -->
+		<Step ChecklistStepId="LANDING_APPROACH">
+			<Page SubjectTT="TT:ILS Approach">
 				<Block SubjectTT="INITIAL APPROACH">
 					<Checkpoint ReferenceId="A320_ILSAPPR_ENG_MODE_SEL"/>
 					<Checkpoint ReferenceId="A320_ILSAPPR_SEATBELT"/>
 					<Checkpoint ReferenceId="A320_ILSAPPR_APPR_PHRASE"/>
 					<Checkpoint ReferenceId="A320_ILSAPPR_POSITIONING"/>
 					<Checkpoint ReferenceId="A320_ILSAPPR_MANAGED_SPEED"/>
-					<Checkpoint ReferenceId="A320_ILSAPPR_SPEED_BRAKES"/>
+					<Checkpoint ReferenceId="A320_ILSAPPR_SPOILERS"/>
 					<Checkpoint ReferenceId="A320_ILSAPPR_NAV_ACCURACY"/>
 					<Checkpoint ReferenceId="A320_ILSAPPR_RADAR_TILT"/>
 					<Checkpoint ReferenceId="A320_ILSAPPR_APPR_CHECKLIST"/>
@@ -360,21 +373,21 @@
 					<Checkpoint ReferenceId="A320_ILSAPPR_WING_ANTI"/>
 					<Checkpoint ReferenceId="A320_ILSAPPR_EXTERIOR"/>
 					<Checkpoint ReferenceId="A320_ILSAPPR_SLIDING_TABLE"/>
-					<Checkpoint ReferenceId="A320_ILSAPPR_ECAM_MEMO"/>
 					<Checkpoint ReferenceId="A320_ILSAPPR_CABIN_CREW"/>
+					<Checkpoint ReferenceId="A320_ILSAPPR_ECAM_MEMO"/>
 					<Checkpoint ReferenceId="A320_ILSAPPR_LANDING_CHECKLIST"/>
 					<Checkpoint ReferenceId="A320_ILSAPPR_FLIGHT_PARAMETERS"/>
 				</Block>
 			</Page>
 			<!-- Non-Precision Approach -->
-			<Page SubjectTT="TT:Non-Precision Approach (NON-INTERACTIVE)">
+			<Page SubjectTT="TT:Non-Precision Approach">
 				<Block SubjectTT="INITIAL APPROACH">
 					<Checkpoint ReferenceId="A320_NONPAPPR_ENG_MODE_SEL"/>
 					<Checkpoint ReferenceId="A320_NONPAPPR_SEATBELT"/>
 					<Checkpoint ReferenceId="A320_NONPAPPR_APPROACH_PHASE"/>
 					<Checkpoint ReferenceId="A320_NONPAPPR_POSITIONING"/>
 					<Checkpoint ReferenceId="A320_NONPAPPR_MANAGED_SPEED"/>
-					<Checkpoint ReferenceId="A320_NONPAPPR_SPEED_BRAKE"/>
+					<Checkpoint ReferenceId="A320_NONPAPPR_SPOILERS"/>
 					<Checkpoint ReferenceId="A320_NONPAPPR_NAV_ACCURACY"/>
 					<Checkpoint ReferenceId="A320_NONPAPPR_RADAR_TILT"/>
 					<Checkpoint ReferenceId="A320_NONPAPPR_APPROACH_CHECKLIST"/>
@@ -399,16 +412,18 @@
 					<Checkpoint ReferenceId="A320_NONPAPPR_WING_ANTIICE"/>
 					<Checkpoint ReferenceId="A320_NONPAPPR_EXT_LIGHTS"/>
 					<Checkpoint ReferenceId="A320_NONPAPPR_SLIDING_TABLE"/>
-					<Checkpoint ReferenceId="A320_NONPAPPR_ECAM_MEMO"/>
 					<Checkpoint ReferenceId="A320_NONPAPPR_CABIN_REPORT"/>
+					<Checkpoint ReferenceId="A320_NONPAPPR_ECAM_MEMO"/>
 					<Checkpoint ReferenceId="A320_NONPAPPR_LANDING_CHECKLIST"/>
 					<Checkpoint ReferenceId="A320_NONPAPPR_FLIGHT_PARA"/>
 					<Checkpoint ReferenceId="A320_NONPAPPR_AUTOPILOT"/>
 					<Checkpoint ReferenceId="A320_NONPAPPR_GO_AROUND_CHECKLIST"/>
 				</Block>
 			</Page>
-			<!-- Landing -->
-			<Page SubjectTT="TT:Landing (NON-INTERACTIVE)">
+		</Step>
+		<!-- Landing -->
+		<Step ChecklistStepId="LANDING_TOUCHDOWN">
+			<Page SubjectTT="TT:Landing">
 				<Block SubjectTT="AT ABOUT 20FT">
 					<Checkpoint ReferenceId="A320_LANDING_FLARE"/>
 					<Checkpoint ReferenceId="A320_LANDING_THRUST_LEVERS"/>
@@ -425,22 +440,27 @@
 					<Checkpoint ReferenceId="A320_LANDING_AUTOBRAKES"/>
 				</Block>
 			</Page>
-			<!-- After Landing -->
-			<Page SubjectTT="TT:After Landing (NON-INTERACTIVE)">
+		</Step>
+		<!-- After Landing -->
+		<Step ChecklistStepId="LANDING_GROUNDROLL">
+
+			<Page SubjectTT="TT:After Landing">
 				<Checkpoint ReferenceId="A320_AFTERLANDING_LANDING_LIGHTS"/>
 				<Checkpoint ReferenceId="A320_AFTERLANDING_GRND_SPOILERS"/>
 				<Checkpoint ReferenceId="A320_AFTERLANDING_FLAPS"/>
 				<Checkpoint ReferenceId="A320_AFTERLANDING_ENG_MODE_SEL"/>
 				<Checkpoint ReferenceId="A320_AFTERLANDING_ATC"/>
-				<Checkpoint ReferenceId="A320_AFTERLANDING_TCAM_MODE_SEL"/>
+				<Checkpoint ReferenceId="A320_AFTERLANDING_TCAS_MODE_SEL"/>
 				<Checkpoint ReferenceId="APU_MASTER_SWITCH_ON"/>
 				<Checkpoint ReferenceId="APU_START_ON"/>
 				<Checkpoint ReferenceId="A320_AFTERLANDING_RADAR"/>
 				<Checkpoint ReferenceId="A320_AFTERLANDING_WXR_PWS"/>
 				<Checkpoint ReferenceId="A320_AFTERLANDING_BRAKE_TEMP"/>
 			</Page>
-			<!-- Parking -->
-			<Page SubjectTT="TT:Parking (NON-INTERACTIVE)">
+		</Step>
+		<!-- Parking -->
+		<Step ChecklistStepId="LANDING_GATE">
+			<Page SubjectTT="TT:Parking">
 				<Checkpoint ReferenceId="A320_PARKING_PARKING_BRAKE_ACCU_PRESS"/>
 				<Checkpoint ReferenceId="A320_PARKING_PARKING_BRAKE"/>
 				<Checkpoint ReferenceId="A320_PARKING_ANTI_ICE"/>
@@ -458,7 +478,7 @@
 				<Checkpoint ReferenceId="A320_PARKING_PARKING_BRAKE_AS_REQ"/>
 			</Page>
 			<!-- Securing the Aircraft -->
-			<Page SubjectTT="TT:Securing the aircraft (NON-INTERACTIVE)">
+			<Page SubjectTT="TT:Securing the aircraft">
 				<Checkpoint ReferenceId="A320_SECURE_PARKING_BRAKE"/>
 				<Checkpoint ReferenceId="A320_SECURE_OXYGEN_CREW"/>
 				<Checkpoint ReferenceId="A320_SECURE_ADIRS"/>
@@ -471,7 +491,7 @@
 				<Checkpoint ReferenceId="A320_SECURE_BATTERY"/>
 			</Page>
 			<!-- Go Around -->
-			<Page SubjectTT="TT:Go-Around (NON-INTERACTIVE)">
+			<Page SubjectTT="TT:Go-Around">
 				<Checkpoint ReferenceId="A320_GOAROUND_THRUST_TOGA"/>
 				<Checkpoint ReferenceId="A320_GOAROUND_ROTATION"/>
 				<Checkpoint ReferenceId="A320_GOAROUND_FLAPS_RETRACT_ONE_STEP"/>
@@ -541,15 +561,11 @@
 				<Checkpoint ReferenceId="ENGINE_MODE_SELECTOR_NORMAL"/>
 			</Page>
 		</Step>
-		<Step ChecklistStepId="PREFLIGHT_TAXI_OUT"/>
-		<Step ChecklistStepId="FLIGHT_RUNWAY"/>
-		<Step ChecklistStepId="FLIGHT_TAKEOFF"/>
-		<Step ChecklistStepId="FLIGHT_CRUISE"/>
-		<Step ChecklistStepId="FLIGHT_DESCENT"/>
-		<Step ChecklistStepId="LANDING_APPROACH"/>
-		<Step ChecklistStepId="LANDING_TOUCHDOWN"/>
-		<Step ChecklistStepId="LANDING_GROUNDROLL"/>
+
+
+
+
 		<Step ChecklistStepId="LANDING_TAXI_IN"/>
-		<Step ChecklistStepId="LANDING_GATE"/>
+
 	</Checklist.Checklist>
 </SimBase.Document>

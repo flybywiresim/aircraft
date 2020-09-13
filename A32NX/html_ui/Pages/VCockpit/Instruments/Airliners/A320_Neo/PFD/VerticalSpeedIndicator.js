@@ -540,7 +540,7 @@ class Jet_PFD_VerticalSpeedIndicator extends HTMLElement {
         var posY = 0;
         var width = 100;
         var height = 600;
-        this.maxSpeed = 6000;
+        this.maxSpeed = 10000; // was 6000, raised to keep on displaying the values
         this.cursorTextColor = "rgb(26,255,0)";
         if (!this.rootGroup) {
             this.rootGroup = document.createElementNS(Avionics.SVG.NS, "g");
@@ -712,9 +712,11 @@ class Jet_PFD_VerticalSpeedIndicator extends HTMLElement {
                 let alert = false;
                 {
                     let altitude = Simplane.getAltitudeAboveGround();
-                    if ((altitude <= 2500 && vSpeed <= -2000) || (altitude > 2500 && vSpeed <= -6000))
+                    if ((altitude < 2500 && altitude > 1000 && vSpeed <= -2000) || (altitude < 1000 && vSpeed <= -1200)) //airbus alerts thresholds
                         alert = true;
+                    if ((vSpeed >=6000) || (vSpeed <= -6000)) alert = true; // airbus alerts thresholds
                 }
+
                 if (this.cursorSVGLine) {
                     this.cursorSVGLine.setAttribute("x1", this.cursorPosX1.toString());
                     this.cursorSVGLine.setAttribute("y1", this.cursorPosY1.toString());
@@ -727,7 +729,7 @@ class Jet_PFD_VerticalSpeedIndicator extends HTMLElement {
                 }
                 if (this.cursorSVGText) {
                     var displaySpeed = Math.floor(vSpeed / 100);
-                    if (Math.abs(displaySpeed) > 0) {
+                    if (Math.abs(displaySpeed) > 2) {//text is displayed above +/-200ft/min only was 0 
                         this.cursorSVGText.textContent = Math.abs(displaySpeed).toString();
                         let posY;
                         if (displaySpeed > 0)
