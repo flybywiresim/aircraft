@@ -1,0 +1,81 @@
+:root {
+  --bodyHeightScale: 1; }
+
+@keyframes TemporaryShow {
+  0%, 100% {
+    visibility: visible; } }
+
+@keyframes TemporaryHide {
+  0%, 100% {
+    visibility: hidden; } }
+
+#highlight {
+  position: absolute;
+  height: 100%;
+  width: 100%;
+  z-index: 10; }
+
+#Electricity {
+  width: 100%;
+  height: 100%; }
+  #Electricity[state=off] {
+    display: none; }
+
+@font-face {
+  font-family: "Roboto";
+  src: url("/Fonts/RobotoMono-Medium.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal; }
+
+@font-face {
+  font-family: "Roboto-Light";
+  src: url("/Fonts/RobotoMono-Light.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal; }
+
+@font-face {
+  font-family: "Roboto-Bold";
+  src: url("/Fonts/RobotoMono-Bold.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal; }
+
+a320-neo-sai {
+  width: 100%;
+  height: 100%;
+  overflow: hidden; }
+  a320-neo-sai #Mainframe {
+    top: 4%;
+    left: 4%;
+    width: 92%;
+    height: 92%;
+    position: relative; }
+  a320-neo-sai #Horizon {
+    position: absolute;
+    height: 80%;
+    bottom: 16%;
+    left: 22%;
+    right: 28%;
+    width: auto;
+    z-index: -1; }
+  a320-neo-sai #Altimeter {
+    position: absolute;
+    left: 50%;
+    top: 0%;
+    width: 100%;
+    height: 100%;
+    z-index: 1; }
+  a320-neo-sai #Airspeed {
+    position: absolute;
+    left: 0%;
+    top: 0%;
+    width: 100%;
+    height: 100%;
+    z-index: 1; }
+a320-neo-sai #Pressure {
+  position: absolute;
+  left: 33.5%;
+  bottom: 3%;
+  width: 200px;
+  height: 30px;
+  z-index: 1;
+}

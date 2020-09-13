@@ -117,6 +117,16 @@ class CDUInitPage {
         Coherent.trigger("AP_VS_VAL_SET", 300);
         Coherent.trigger("AP_HDG_VAL_SET", 180);
     }
+    // Does not refresh page so that other things can be performed first as necessary
+    static updateTowIfNeeded(mcdu) {
+        if (isFinite(mcdu.taxiFuelWeight) &&
+            isFinite(mcdu.zeroFuelWeight) &&
+            isFinite(mcdu.blockFuel)) {
+
+            const tow = mcdu.zeroFuelWeight + mcdu.blockFuel - mcdu.taxiFuelWeight;
+            mcdu.trySetTakeOffWeightLandingWeight(tow.toFixed(1));
+        }
+    }
     static ShowPage2(mcdu) {
         mcdu.clearDisplay();
         let taxiFuelCell = "-.-";
@@ -127,6 +137,7 @@ class CDUInitPage {
             let value = mcdu.inOut;
             mcdu.clearUserInput();
             if (await mcdu.trySetTaxiFuelWeight(value)) {
+                CDUInitPage.updateTowIfNeeded(mcdu);
                 CDUInitPage.ShowPage2(mcdu);
             }
         };
@@ -188,6 +199,7 @@ class CDUInitPage {
             let value = mcdu.inOut;
             mcdu.clearUserInput();
             if (await mcdu.trySetZeroFuelWeightZFWCG(value)) {
+                CDUInitPage.updateTowIfNeeded(mcdu);
                 CDUInitPage.ShowPage2(mcdu);
             }
         };
@@ -199,6 +211,7 @@ class CDUInitPage {
             let value = mcdu.inOut;
             mcdu.clearUserInput();
             if (await mcdu.trySetBlockFuel(value)) {
+                CDUInitPage.updateTowIfNeeded(mcdu);
                 CDUInitPage.ShowPage2(mcdu);
             }
         };
@@ -210,13 +223,6 @@ class CDUInitPage {
         if (isFinite(mcdu.landingWeight)) {
             lwCell = mcdu.landingWeight.toFixed(1);
         }
-        mcdu.onRightInput[3] = async () => {
-            let value = mcdu.inOut;
-            mcdu.clearUserInput();
-            if (await mcdu.trySetTakeOffWeightLandingWeight(value)) {
-                CDUInitPage.ShowPage2(mcdu);
-            }
-        };
         let tripWindCell = "---.-";
         if (isFinite(mcdu.averageWind)) {
             tripWindCell = mcdu.averageWind.toFixed(1);
@@ -237,7 +243,7 @@ class CDUInitPage {
             ["RTE RSV /%"],
             [rteRsvWeightCell + " /" + rteRsvPercentCell + "[color]blue"],
             ["ALTN /TIME", "TOW /LW"],
-            ["--.-/----", towCell + " /" + lwCell + "[color]blue"],
+            ["--.-/----", towCell + " /" + lwCell + "[color]green"],
             ["FINAL /TIME", "TRIP WIND"],
             [rteFinalWeightCell + " /" + rteFinalTimeCell + "[color]blue", tripWindCell + "[color]blue"],
             ["MIN DEST FOB", "EXTRA /TIME"],
