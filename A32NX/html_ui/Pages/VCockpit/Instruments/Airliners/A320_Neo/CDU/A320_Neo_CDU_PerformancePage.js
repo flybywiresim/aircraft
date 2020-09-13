@@ -591,6 +591,10 @@ class CDUPerformancePage {
         mcdu.onRightInput[2] = () => {
             let value = mcdu.inOut;
             mcdu.clearUserInput();
+            if(value == 'NO' || 'no') {
+                mcdu.setPerfApprDH(0 || '0');
+                CDUPerformancePage.ShowAPPRPage(mcdu);
+            }
             if (mcdu.setPerfApprDH(value)) {
                 CDUPerformancePage.ShowAPPRPage(mcdu);
             }
