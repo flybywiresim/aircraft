@@ -652,10 +652,6 @@
 			</UseTemplate>
 		</Component>
 
-		<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
-			<NODE_ID>PUSH_DOORPANEL_OPEN</NODE_ID>
-		</UseTemplate>
-
 		<Component ID="WeatherRadar">
 			<UseTemplate Name="ASOBO_AIRBUS_WeatherRadar_Template">
 				<NODE_ID_MODE_KNOB>KNOB_RADAR_MODE</NODE_ID_MODE_KNOB>
@@ -2569,6 +2565,16 @@
 		</UseTemplate>
 	</Component>
 
+	<Component ID="DOOR_PANEL">
+		<UseTemplate Name="A32NX_SWITCH_DOORPANEL_LOCK">
+			<Node_ID>SWITCH_DOORPANEL_LOCK</ANIM_NAME>
+			<INVERT_ANIM>1</INVERT_ANIM>
+		</UseTemplate>
+		<UseTemplate Name="A32NX_PUSH_DOORPANEL_OPEN">
+			<Node_ID>PUSH_DOORPANEL_OPEN</ANIM_NAME>
+		</UseTemplate>
+	</Component>
+
 	<Component ID="DUMMY_ELEMENTS_SETUP_ANIM_STATE">
 		<UseTemplate Name="ASOBO_GT_Anim_Setup">
 			<ANIM_NAME>KNOB_ATC_THRT</ANIM_NAME>
@@ -3097,12 +3103,6 @@
 		</UseTemplate>
 		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
 			<NODE_ID>KNOB_RADAR_TILT</NODE_ID>
-		</UseTemplate>
-		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-			<NODE_ID>SWITCH_DOORPANEL_LOCK</NODE_ID>
-		</UseTemplate>
-		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-			<NODE_ID>PUSH_DOORPANEL_OPEN</NODE_ID>
 		</UseTemplate>
 		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
 			<NODE_ID>PUSH_DOORPANEL_VIDEO</NODE_ID>

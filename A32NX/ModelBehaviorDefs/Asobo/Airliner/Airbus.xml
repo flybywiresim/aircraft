@@ -1474,3 +1474,27 @@
 		</UseTemplate>
 	</Component>
 </Template>
+
+<Template Name="A32NX_SWITCH_DOORPANEL_LOCK">
+	<Component ID="#NODE_ID#" Node="#NODE_ID#">
+		<UseTemplate Name="ASOBO_GT_Switch_3States">
+			<ANIM_NAME>#NODE_ID#</ANIM_NAME>
+			<PART_ID>#NODE_ID#</PART_ID>
+			<SWITCH_DIRECTION>Vertical</SWITCH_DIRECTION>
+			<WWISE_EVENT>double_light_switch</WWISE_EVENT>
+			<CODE_POS_0>0 (&gt;L:A32NX_COCKPIT_DOOR_LOCKED)</CODE_POS_0>
+			<CODE_POS_2>1 (&gt;L:A32NX_COCKPIT_DOOR_LOCKED)</CODE_POS_2>
+			<STATE0_TIMER>0.3</STATE0_TIMER>
+			<REST_STATE>2</REST_STATE>
+			<ANIM_DURATION>0.15</ANIM_DURATION>
+			<MOMENTARY_SWITCH/>
+		</UseTemplate>
+	</Component>
+</Template>
+
+<Template Name="A32NX_PUSH_DOORPANEL_OPEN">
+	<UseTemplate Name="ASOBO_GT_Push_Button_Airliner">
+		<SEQ1_EMISSIVE_CODE>(L:A32NX_COCKPIT_DOOR_LOCKED, Bool) 0 == (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or</SEQ1_EMISSIVE_CODE>
+		<SEQ2_EMISSIVE_CODE>(L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 ==</SEQ2_EMISSIVE_CODE>
+	</UseTemplate>
+</Template>
