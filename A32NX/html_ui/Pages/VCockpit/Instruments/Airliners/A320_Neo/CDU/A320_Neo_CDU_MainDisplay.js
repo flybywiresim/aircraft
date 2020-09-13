@@ -46,6 +46,9 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         }
         this._onModeManagedHeading();
         this._onModeManagedAltitude();
+
+        CDUPerformancePage.UpdateThrRedAccFromOrigin(this);
+        
         SimVar.SetSimVarValue("K:VS_SLOT_INDEX_SET", "number", 1);
     }
     Update() {

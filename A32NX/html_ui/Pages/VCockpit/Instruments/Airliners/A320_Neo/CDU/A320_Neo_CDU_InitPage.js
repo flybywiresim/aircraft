@@ -93,7 +93,9 @@ class CDUInitPage {
             let value = mcdu.inOut;
             mcdu.clearUserInput();
             mcdu.tryUpdateFromTo(value, (result) => {
-                if (result) {
+                if (result) {                    
+                    CDUPerformancePage.UpdateThrRedAccFromOrigin(mcdu);
+                    
                     CDUAvailableFlightPlanPage.ShowPage(mcdu);
                 }
             });
