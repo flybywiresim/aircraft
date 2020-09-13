@@ -32,18 +32,25 @@ declare global {
     };
 
     enum FlightPhase {
+        FLIGHT_PHASE_PREFLIGHT,
+        FLIGHT_PHASE_TAXI,
         FLIGHT_PHASE_TAKEOFF,
         FLIGHT_PHASE_CLIMB,
         FLIGHT_PHASE_CRUISE,
+        FLIGHT_PHASE_DESCENT,
         FLIGHT_PHASE_APPROACH,
         FLIGHT_PHASE_GOAROUND
     }
 
     enum ThrottleMode {
+        UNKNOWN,
+        REVERSE,
+        IDLE,
+        AUTO,
         CLIMB,
         FLEX_MCT,
         TOGA,
-        AUTO
+        HOLD
     }
 
     type A320_Neo_LowerECAM_APU = {
@@ -128,7 +135,7 @@ declare global {
         get extraMessageBorderPosY(): number;
         get extraMessageBorderWidth(): number;
         get extraMessageBorderHeight(): number;
-        set active(_isActive: boolean): void;
+        set active(_isActive: boolean);
         get active(): boolean;
         polarToCartesian(_centerX: number, _centerY: number, _radius: number, _angleInDegrees: number): Vec2;
         valueToAngle(_value: number, _radians: number): number;
