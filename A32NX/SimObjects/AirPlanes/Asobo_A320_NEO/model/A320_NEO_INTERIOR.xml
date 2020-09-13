@@ -459,6 +459,7 @@
 			<NODE_ID>SCREEN_AUTOPILOT</NODE_ID>
 			<POTENTIOMETER>17</POTENTIOMETER>
 		</UseTemplate>
+		<CameraTitle>PA</CameraTitle>
 	</Component>
 
 
@@ -858,7 +859,6 @@
 		<UseTemplate Name="ASOBO_HANDLING_Push_Autobrakes_Template">
 			<NODE_ID>PUSH_AUTOBKR_MAX</NODE_ID>
 			<PART_ID>Autobrake_3</PART_ID>
-
 			<ANIM_NAME>PUSH_AUTOBKR_MAX</ANIM_NAME>
 			<NODE_ID_DECEL>PUSH_AUTOBKR_MAX_SEQ1</NODE_ID_DECEL>
 			<NODE_ID_ON>PUSH_AUTOBKR_MAX_SEQ2</NODE_ID_ON>
@@ -1293,6 +1293,7 @@
 			<UseTemplate Name="ASOBO_LIGHTING_Switch_Light_Landing_Template">
 				<NODE_ID>SWITCH_OVHD_EXTLT_LANDL</NODE_ID>
 				<ANIM_NAME>SWITCH_OVHD_EXTLT_LANDL</ANIM_NAME>
+				<Part_ID>LANDING_Light_L</Part_ID>
 				<SIMVAR_INDEX>2</SIMVAR_INDEX>
 				<ID>1</ID>
 				<ANIMTIP_0>TT:COCKPIT.TOOLTIPS.LANDING_LIGHT_L_OFF</ANIMTIP_0>
@@ -1304,6 +1305,7 @@
 			<UseTemplate Name="ASOBO_LIGHTING_Switch_Light_Landing_Template">
 				<NODE_ID>SWITCH_OVHD_EXTLT_LANDR</NODE_ID>
 				<ANIM_NAME>SWITCH_OVHD_EXTLT_LANDR</ANIM_NAME>
+				<Part_ID>LANDING_Light_R</Part_ID>
 				<SIMVAR_INDEX>3</SIMVAR_INDEX>
 				<ID>2</ID>
 				<RETRACTABLE/>
@@ -2725,6 +2727,7 @@
 			</UseTemplate>
 			<UseTemplate Name="ASOBO_AIRLINER_GPWS_Template">
 				<NODE_ID>PUSH_OVHD_GPWS_LDG</NODE_ID>
+				<PART_ID>GPWS_Flap3</PART_ID>
 				<TOOLTIPID>(INOP) LDG Flaps 3</TOOLTIPID>
 			</UseTemplate>
 			<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">

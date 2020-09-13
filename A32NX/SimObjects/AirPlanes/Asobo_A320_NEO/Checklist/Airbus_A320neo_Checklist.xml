@@ -279,7 +279,7 @@
 			<!-- Cruise -->
 			<Page SubjectTT="TT:Cruise">
 				<Checkpoint ReferenceId="A320_CRUISE_ECAM_MEMO"/>
-				<Checkpoint ReferenceId="A320_CRUISE_ECAM_SYS_PAGE"/>
+				<Checkpoint ReferenceId="A320_CRUISE_ECAM_CRUISE_PAGE"/>
 				<Checkpoint ReferenceId="A320_CRUISE_FLT_PROGRESS"/>
 				<Checkpoint ReferenceId="A320_CRUISE_STEP_FLT_LVL"/>
 				<Checkpoint ReferenceId="A320_CRUISE_NAV_ACCURACY"/>
@@ -332,7 +332,7 @@
 					<Checkpoint ReferenceId="A320_ILSAPPR_APPR_PHRASE"/>
 					<Checkpoint ReferenceId="A320_ILSAPPR_POSITIONING"/>
 					<Checkpoint ReferenceId="A320_ILSAPPR_MANAGED_SPEED"/>
-					<Checkpoint ReferenceId="A320_ILSAPPR_SPEED_BRAKES"/>
+					<Checkpoint ReferenceId="A320_ILSAPPR_SPOILERS"/>
 					<Checkpoint ReferenceId="A320_ILSAPPR_NAV_ACCURACY"/>
 					<Checkpoint ReferenceId="A320_ILSAPPR_RADAR_TILT"/>
 					<Checkpoint ReferenceId="A320_ILSAPPR_APPR_CHECKLIST"/>
@@ -374,7 +374,7 @@
 					<Checkpoint ReferenceId="A320_NONPAPPR_APPROACH_PHASE"/>
 					<Checkpoint ReferenceId="A320_NONPAPPR_POSITIONING"/>
 					<Checkpoint ReferenceId="A320_NONPAPPR_MANAGED_SPEED"/>
-					<Checkpoint ReferenceId="A320_NONPAPPR_SPEED_BRAKE"/>
+					<Checkpoint ReferenceId="A320_NONPAPPR_SPOILERS"/>
 					<Checkpoint ReferenceId="A320_NONPAPPR_NAV_ACCURACY"/>
 					<Checkpoint ReferenceId="A320_NONPAPPR_RADAR_TILT"/>
 					<Checkpoint ReferenceId="A320_NONPAPPR_APPROACH_CHECKLIST"/>
@@ -432,7 +432,7 @@
 				<Checkpoint ReferenceId="A320_AFTERLANDING_FLAPS"/>
 				<Checkpoint ReferenceId="A320_AFTERLANDING_ENG_MODE_SEL"/>
 				<Checkpoint ReferenceId="A320_AFTERLANDING_ATC"/>
-				<Checkpoint ReferenceId="A320_AFTERLANDING_TCAM_MODE_SEL"/>
+				<Checkpoint ReferenceId="A320_AFTERLANDING_TCAS_MODE_SEL"/>
 				<Checkpoint ReferenceId="APU_MASTER_SWITCH_ON"/>
 				<Checkpoint ReferenceId="APU_START_ON"/>
 				<Checkpoint ReferenceId="A320_AFTERLANDING_RADAR"/>

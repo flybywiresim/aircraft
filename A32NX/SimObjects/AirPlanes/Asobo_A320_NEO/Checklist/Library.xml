@@ -107,7 +107,7 @@
          </Test>
       </Checkpoint>
       <Checkpoint Id="A320_PREP_SPEED_BRAKE_LEVERS">
-         <CheckpointDesc SubjectTT="TT:Speedbrake Levers" ExpectationTT="TT:DISARMED AND RETRACTED" />
+         <CheckpointDesc SubjectTT="TT:Speedbrake Lever" ExpectationTT="TT:DISARMED AND RETRACTED" />
          <Instrument Id="HANDLING_Lever_Spoilers" />
          <Sequence SeqType="Unordered">
             <Test>
@@ -362,6 +362,8 @@
       </Checkpoint>
       <Checkpoint Id="A320_CPREP1_GLARESHIELD_LIGHTS">
          <CheckpointDesc SubjectTT="TT:Glareshield Integral Light and Flood Flight" ExpectationTT="TT:SET" />
+         <Instrument Id="Lighting_Knob_Glareshield_2"/>
+         <Instrument Id="Lighting_Knob_Glareshield_3"/>
       </Checkpoint>
       <Checkpoint Id="A320_CPREP1_GLARESHIELD_BARO_REF">
          <CheckpointDesc SubjectTT="TT:Barometric Reference" ExpectationTT="TT:SET" />
@@ -371,10 +373,7 @@
          <CheckpointDesc SubjectTT="TT:Flight Director" ExpectationTT="TT:ON" />
          <Test>
             <TestValue>
-               <Operator OpType="EQUAL">
-                  <Val SimVarName="AUTOPILOT FLIGHT DIRECTOR ACTIVE" Units="Boolean"/>
-                  <Val Value="0"/>
-               </Operator>
+               <Val SimVarName="AUTOPILOT FLIGHT DIRECTOR ACTIVE:1" Units="Boolean"/>
             </TestValue>
             <Action Copilot="True" Condition="TestValueFalse" Once="true" EventID="TOGGLE_FLIGHT_DIRECTOR"/>
             <Instrument Id="AUTOPILOT_PUSH_FLIGHTDIRECTOR"/>
@@ -421,7 +420,7 @@
          <CheckpointDesc SubjectTT="TT:FCU" ExpectationTT="TT:" />
       </Checkpoint>
       <Checkpoint Id="A320_CPREP1_ECAM_DOOR_OXY">
-         <CheckpointDesc SubjectTT="TT:ECAM DOOR/OXY PAGE (Regular LO PR Message)" ExpectationTT="TT:CHECK OFF" />
+         <CheckpointDesc SubjectTT="TT:ECAM DOOR Page (Regular LO PR Message)" ExpectationTT="TT:CHECK OFF" />
          <Instrument Id="ECAM_DOOR"/>
       </Checkpoint>
       <Checkpoint Id="A320_CPREP1_PFD_ND_BRIGHTNESS">
@@ -712,7 +711,7 @@
                <Val SimVarName="GENERAL ENG STARTER:2" Units="boolean" />
             </TestValue>
             <Action Copilot="True" Condition="TestValueFalse" Once="true" EventID="TOGGLE_STARTER1" />
-            <Instrument Id="ENGINE_Switch_Master1" />
+            <Instrument Id="ENGINE_Switch_Master2" />
          </Test>
       </Checkpoint>
       <Checkpoint Id="A320_EngineStartup_ENG_IDLE_PARAMETERS">
@@ -784,7 +783,7 @@
          <Instrument Id="HANDLING_Switch_Elevator_Trim" />
       </Checkpoint>
       <Checkpoint Id="A320_AfterEngineStartup_ECAM_STATUS">
-         <CheckpointDesc SubjectTT="TT:ECAM Status Page (INOP)" ExpectationTT="TT:CHECK" />
+         <CheckpointDesc SubjectTT="TT:ECAM Status Page" ExpectationTT="TT:CHECK" />
       </Checkpoint>
       <Checkpoint Id="A320_AfterEngineStartup_ENG_WING_ANTI_ICE">
          <CheckpointDesc SubjectTT="TT:Engine and Wing Anti-Ice" ExpectationTT="TT:AS REQUIRED" />
@@ -792,7 +791,7 @@
          <Instrument Id="DEICE_Switch_Airframe" />
       </Checkpoint>
       <Checkpoint Id="A320_AfterEngineStartup_ECAM_DOOR_PAGE">
-         <CheckpointDesc SubjectTT="TT:ECAM Door Page" ExpectationTT="TT:SELECT" />
+         <CheckpointDesc SubjectTT="TT:ECAM DOOR Page" ExpectationTT="TT:SELECT" />
          <Instrument Id="ECAM_DOOR"/>
       </Checkpoint>
       <Checkpoint Id="A320_AfterEngineStartup_ANNOUNCE_DISC">
@@ -839,10 +838,12 @@
          <Instrument Id="Autobrake_3"/>
          <Test>
             <TestValue>
-               <Val SimVarName="AUTO BRAKE SWITCH CB" Units="Number"/>
-               <Val Value="3"/>
+               <Operator OpType="EQUAL">
+                  <Val Code="(L:XMLVAR_Autobrakes_Level)"/>
+                  <Val Value="3"/>
+               </Operator>
             </TestValue>
-            <Action Copilot="True" Condition="TestValueFalse" Once="true" EventID="SET_AUTOBRAKE_CONTROL" EventParam="3"/>
+            <!--<Action Copilot="True" Condition="TestValueFalse" Once="true" Code="(&gt;L:XMLVAR_Autobrakes_Level)" />-->
          </Test>
       </Checkpoint>
       <Checkpoint Id="A320_TAXI_ATC_CLEARANCE">
@@ -889,7 +890,6 @@
       </Checkpoint>
       <Checkpoint Id="A320_TAXI_FLT_MODE_ANN">
          <CheckpointDesc SubjectTT="TT:Flight Mode Annunciator" ExpectationTT="TT:CHECK" />
-         <Instrument Id="PFD"/>
       </Checkpoint>
       <Checkpoint Id="A320_TAXI_FLT_INSTRUMENTS">
          <CheckpointDesc SubjectTT="TT:Flight Instruments" ExpectationTT="TT:CHECK" />
@@ -941,13 +941,13 @@
          </Test>
       </Checkpoint>
       <Checkpoint Id="A320_BeforeTakeoff_TCAS_MODE_SEL">
-         <CheckpointDesc SubjectTT="TT:TCAS Mode Selector (INOP)" ExpectationTT="TT:TA OR TA/RA" />
+         <CheckpointDesc SubjectTT="TT:TCAS Mode Selector" ExpectationTT="TT:TA OR TA/RA" />
       </Checkpoint>
       <Checkpoint Id="A320_BeforeTakeoff_PACKS">
          <CheckpointDesc SubjectTT="TT:Packs (INOP)" ExpectationTT="TT:AS REQUIRED" />
       </Checkpoint>
       <Checkpoint Id="A320_BeforeTakeoff_EXT_LIGHT">
-         <CheckpointDesc SubjectTT="TT:Exterior Light" ExpectationTT="TT:SET" />
+         <CheckpointDesc SubjectTT="TT:Exterior Lights" ExpectationTT="TT:SET" />
       </Checkpoint>
       <Checkpoint Id="A320_BeforeTakeoff_SLIDING_TABLE">
          <CheckpointDesc SubjectTT="TT:Sliding Table (INOP)" ExpectationTT="TT:STOWED" />
@@ -966,19 +966,19 @@
             <TestValue>
                <Operator OpType="GREATER_OR_EQUAL">
                   <Val SimVarName="GENERAL ENG THROTTLE LEVER POSITION:1" Units="percent"/>
-                  <Val Value="95"/>
+                  <Val Value="93"/>
                </Operator>
             </TestValue>
-            <Action Copilot="True" Condition="TestValueFalse" Once="true" EventID="THROTTLE_SET"/>
+            <!-- <Action Copilot="True" Condition="TestValueFalse" Once="true" EventID="THROTTLE_SET"/> -->
          </Test>
          <Test>
             <TestValue>
                <Operator OpType="GREATER_OR_EQUAL">
                   <Val SimVarName="GENERAL ENG THROTTLE LEVER POSITION:2" Units="percent"/>
-                  <Val Value="95"/>
+                  <Val Value="93"/>
                </Operator>
             </TestValue>
-            <Action Copilot="True" Condition="TestValueFalse" Once="true" EventID="THROTTLE_SET"/>
+            <!-- <Action Copilot="True" Condition="TestValueFalse" Once="true" EventID="THROTTLE_SET"/> -->
          </Test>
       </Checkpoint>
       <Checkpoint Id="A320_TO_CHRONO">
@@ -1033,21 +1033,23 @@
          <Instrument Id="ENGINE_Lever_Throttle" />
          <Test>
             <TestValue>
-               <Operator OpType="EQUAL" Tolerance="5">
+               <Operator OpType="BETWEEN">
                   <Val SimVarName="GENERAL ENG THROTTLE LEVER POSITION:1" Units="percent"/>
-                  <Val Value="95"/>
+                  <Val Value="82"/>
+                  <Val Value="91"/>
                </Operator>
             </TestValue>
-            <Action Copilot="True" Condition="TestValueFalse" Once="true" EventID="THROTTLE_SET"/>
+            <!-- <Action Copilot="True" Condition="TestValueFalse" Once="true" EventID="THROTTLE_SET" EventParam="90"/>  -->
          </Test>
          <Test>
             <TestValue>
-               <Operator OpType="EQUAL" Tolerance="5">
+               <Operator OpType="BETWEEN">
                   <Val SimVarName="GENERAL ENG THROTTLE LEVER POSITION:2" Units="percent"/>
-                  <Val Value="95"/>
+                  <Val Value="82"/>
+                  <Val Value="91"/>
                </Operator>
             </TestValue>
-            <Action Copilot="True" Condition="TestValueFalse" Once="true" EventID="THROTTLE_SET"/>
+            <!-- <Action Copilot="True" Condition="TestValueFalse" Once="true" EventID="THROTTLE_SET" EventParam="90"/>  -->
          </Test>
       </Checkpoint>
       <Checkpoint Id="A320_TO_PACKS">
@@ -1111,7 +1113,7 @@
          <Instrument Id="ENGINE_Switch_Engine_Mode" />
       </Checkpoint>
       <Checkpoint Id="A320_AFTER_TO_TCAS_MODE">
-         <CheckpointDesc SubjectTT="TT:TCAS Mode Selector (INOP)" ExpectationTT="TT:TA/RA" />
+         <CheckpointDesc SubjectTT="TT:TCAS Mode Selector" ExpectationTT="TT:TA/RA" />
       </Checkpoint>
       <Checkpoint Id="A320_AFTER_TO_ANTI_ICE">
          <CheckpointDesc SubjectTT="TT:Anti-Ice Protection" ExpectationTT="TT:AS REQUIRED" />
@@ -1144,8 +1146,16 @@
          <CheckpointDesc SubjectTT="TT:Landing Lights" ExpectationTT="TT:OFF" />
          <Test>
             <TestValue>
-               <Operator OpType="NOT">
-                  <Val SimVarName="LIGHT LANDING" Units="Boolean"/>
+               <Operator OpType="AND">
+                  <Operator OpType="NOT">
+                     <Val SimVarName="LIGHT LANDING:1" Units="Boolean"/>
+                  </Operator>
+                  <Operator OpType="NOT">
+                     <Val SimVarName="LIGHT LANDING:2" Units="Boolean"/>
+                  </Operator>
+                  <Operator OpType="NOT">
+                     <Val SimVarName="LIGHT LANDING:3" Units="Boolean"/>
+                  </Operator>
                </Operator>
             </TestValue>
             <Action Copilot="True" Condition="TestValueFalse" Once="true" EventID="LANDING_LIGHTS_TOGGLE"/>
@@ -1174,8 +1184,8 @@
       <Checkpoint Id="A320_CRUISE_ECAM_MEMO">
          <CheckpointDesc SubjectTT="TT:ECAM Memo" ExpectationTT="TT:CHECK" />
       </Checkpoint>
-      <Checkpoint Id="A320_CRUISE_ECAM_SYS_PAGE">
-         <CheckpointDesc SubjectTT="TT:ECAM SYS Page (INOP)" ExpectationTT="TT:CHECK" />
+      <Checkpoint Id="A320_CRUISE_ECAM_CRUISE_PAGE">
+         <CheckpointDesc SubjectTT="TT:ECAM CRUISE Page" ExpectationTT="TT:CHECK" />
       </Checkpoint>
       <Checkpoint Id="A320_CRUISE_FLT_PROGRESS">
          <CheckpointDesc SubjectTT="TT:Flight Progress" ExpectationTT="TT:CHECK" />
@@ -1228,7 +1238,7 @@
       </Checkpoint>
       <Checkpoint Id="A320_DPREP_GPWS_LF3">
          <CheckpointDesc SubjectTT="TT:GPWS Landing Flap 3" ExpectationTT="TT:AS REQUIRED" />
-         <Instrument Id="GPWS_Flap"/>
+         <Instrument Id="GPWS_Flap3"/>
       </Checkpoint>
       <Checkpoint Id="A320_DPREP_APPROACH_BRIEFING">
          <CheckpointDesc SubjectTT="TT:Approach Briefing" ExpectationTT="TT:COMPLETED" />
@@ -1327,8 +1337,8 @@
          <CheckpointDesc SubjectTT="TT:Managed Speed" ExpectationTT="TT:CHECK" />
          <Instrument Id="Speed_knob"/>
       </Checkpoint>
-      <Checkpoint Id="A320_ILSAPPR_SPEED_BRAKES">
-         <CheckpointDesc SubjectTT="TT:Speed Brakes" ExpectationTT="TT:ARMED" />
+      <Checkpoint Id="A320_ILSAPPR_SPOILERS">
+         <CheckpointDesc SubjectTT="TT:Ground Spoilers" ExpectationTT="TT:ARMED" />
          <Instrument Id="HANDLING_Lever_Spoilers" />
          <Test>
             <TestValue>
@@ -1338,7 +1348,7 @@
          </Test>
       </Checkpoint>
       <Checkpoint Id="A320_ILSAPPR_NAV_ACCURACY">
-         <CheckpointDesc SubjectTT="TT:Navigation Accuracy" ExpectationTT="TT:MONITOR(HIGH)" />
+         <CheckpointDesc SubjectTT="TT:Navigation Accuracy" ExpectationTT="TT:MONITOR (HIGH)" />
       </Checkpoint>
       <Checkpoint Id="A320_ILSAPPR_RADAR_TILT">
          <CheckpointDesc SubjectTT="TT:Weather Radar Tilt" ExpectationTT="TT:ADJUST" />
@@ -1377,7 +1387,7 @@
          </Test>
       </Checkpoint>
       <Checkpoint Id="A320_ILSAPPR_TCAS">
-         <CheckpointDesc SubjectTT="TT:TCAS (INOP)" ExpectationTT="TT:TA OR TA/RA" />
+         <CheckpointDesc SubjectTT="TT:TCAS" ExpectationTT="TT:TA OR TA/RA" />
       </Checkpoint>
       <Checkpoint Id="A320_ILSAPPR_FMA">
          <CheckpointDesc SubjectTT="TT:Flight Mode Annunciator" ExpectationTT="TT:CHECK" />
@@ -1444,7 +1454,7 @@
          </Test>
       </Checkpoint>
       <Checkpoint Id="A320_ILSAPPR_ECAM_WHEEL">
-         <CheckpointDesc SubjectTT="TT:ECAM Wheel Page (INOP)" ExpectationTT="TT:CHECK" />
+         <CheckpointDesc SubjectTT="TT:ECAM WHEEL Page" ExpectationTT="TT:CHECK" />
          <Instrument Id="ECAM_WHEEL"/>
       </Checkpoint>
       <Checkpoint Id="A320_ILSAPPR_FLAPF">
@@ -1516,8 +1526,8 @@
          <CheckpointDesc SubjectTT="TT:Managed Speed" ExpectationTT="TT:CHECK" />
          <Instrument Id="Speed_knob"/>
       </Checkpoint>
-      <Checkpoint Id="A320_NONPAPPR_SPEED_BRAKE">
-         <CheckpointDesc SubjectTT="TT:Speed Brakes" ExpectationTT="TT:ARMED" />
+      <Checkpoint Id="A320_NONPAPPR_SPOILERS">
+         <CheckpointDesc SubjectTT="TT:Ground Spoilers" ExpectationTT="TT:ARMED" />
          <Instrument Id="HANDLING_Lever_Spoilers" />
          <Test>
             <TestValue>
@@ -1527,7 +1537,7 @@
          </Test>
       </Checkpoint>
       <Checkpoint Id="A320_NONPAPPR_NAV_ACCURACY">
-         <CheckpointDesc SubjectTT="TT:Navigation Accuracy" ExpectationTT="TT:MONITOR(HIGH)" />
+         <CheckpointDesc SubjectTT="TT:Navigation Accuracy" ExpectationTT="TT:MONITOR (HIGH)" />
       </Checkpoint>
       <Checkpoint Id="A320_NONPAPPR_RADAR_TILT">
          <CheckpointDesc SubjectTT="TT:Weather Radar Tilt (INOP)" ExpectationTT="TT:ADJUST" />
@@ -1567,7 +1577,7 @@
          </Test>
       </Checkpoint>
       <Checkpoint Id="A320_NONPAPPR_TCAS">
-         <CheckpointDesc SubjectTT="TT:TCAS (INOP)" ExpectationTT="TT:TA OR TA/RA" />
+         <CheckpointDesc SubjectTT="TT:TCAS" ExpectationTT="TT:TA OR TA/RA" />
       </Checkpoint>
       <Checkpoint Id="A320_NONPAPPR_ND">
          <CheckpointDesc SubjectTT="TT:ND Display" ExpectationTT="TT:ADJUST RANGE/MODE" />
@@ -1625,7 +1635,7 @@
          </Test>
       </Checkpoint>
       <Checkpoint Id="A320_NONPAPPR_ECAM_WHEEL_PAGE">
-         <CheckpointDesc SubjectTT="TT:ECAM Wheel Page (INOP)" ExpectationTT="TT:CHECK" />
+         <CheckpointDesc SubjectTT="TT:ECAM WHEEL Page" ExpectationTT="TT:CHECK" />
          <Instrument Id="ECAM_WHEEL"/>
       </Checkpoint>
       <Checkpoint Id="A320_NONPAPPR_FLAPS_FULL">
@@ -1774,10 +1784,12 @@
          <Instrument Id="Autobrake_3"/>
          <Test>
             <TestValue>
-               <Val SimVarName="AUTO BRAKE SWITCH CB" Units="Number"/>
-               <Val Value="0"/>
+               <Operator OpType="EQUAL">
+                  <Val Code="(L:XMLVAR_Autobrakes_Level)"/>
+                  <Val Value="0"/>
+               </Operator>
             </TestValue>
-            <Action Copilot="True" Condition="TestValueFalse" Once="true" EventID="SET_AUTOBRAKE_CONTROL" EventParam="0"/>
+            <!-- <Action Copilot="True" Condition="TestValueFalse" Once="true" EventID="SET_AUTOBRAKE_CONTROL" EventParam="0"/> -->
          </Test>
       </Checkpoint>
       <!-- AFTER LANDING -->
@@ -1920,7 +1932,7 @@
          <CheckpointDesc SubjectTT="TT:IRS Performance and Fuel Quantity" ExpectationTT="TT:CHECK" />
       </Checkpoint>
       <Checkpoint Id="A320_PARKING_ECAM_STATUS">
-         <CheckpointDesc SubjectTT="TT:ECAM Status (INOP)" ExpectationTT="TT:CHECK" />
+         <CheckpointDesc SubjectTT="TT:ECAM Status" ExpectationTT="TT:CHECK" />
       </Checkpoint>
       <Checkpoint Id="A320_PARKING_BRAKE_FAN">
          <CheckpointDesc SubjectTT="TT:Brake Fan (INOP)" ExpectationTT="TT:OFF" />
@@ -2052,21 +2064,23 @@
          <Instrument Id="ENGINE_Lever_Throttle" />
          <Test>
             <TestValue>
-               <Operator OpType="EQUAL" Tolerance="5">
+               <Operator OpType="BETWEEN">
                   <Val SimVarName="GENERAL ENG THROTTLE LEVER POSITION:1" Units="percent"/>
-                  <Val Value="95"/>
+                  <Val Value="82"/>
+                  <Val Value="91"/>
                </Operator>
             </TestValue>
-            <Action Copilot="True" Condition="TestValueFalse" Once="true" EventID="THROTTLE_SET"/>
+            <!-- <Action Copilot="True" Condition="TestValueFalse" Once="true" EventID="THROTTLE_SET" EventParam="90"/>  -->
          </Test>
          <Test>
             <TestValue>
-               <Operator OpType="EQUAL" Tolerance="5">
+               <Operator OpType="BETWEEN">
                   <Val SimVarName="GENERAL ENG THROTTLE LEVER POSITION:2" Units="percent"/>
-                  <Val Value="95"/>
+                  <Val Value="82"/>
+                  <Val Value="91"/>
                </Operator>
             </TestValue>
-            <Action Copilot="True" Condition="TestValueFalse" Once="true" EventID="THROTTLE_SET"/>
+            <!-- <Action Copilot="True" Condition="TestValueFalse" Once="true" EventID="THROTTLE_SET" EventParam="90"/>  -->
          </Test>
       </Checkpoint>
       <Checkpoint Id="A320_GOAROUND_FCU_ALT">
