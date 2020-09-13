@@ -1015,19 +1015,30 @@ class A320_Neo_SAI_SelfTest extends NavSystemElement {
         return true;
     }
     onUpdate(_deltaTime) {
+
         // Delta time mitigation strategy
         let curTime = Date.now();
         let localDeltaTime = curTime - this._lastTime;
         this._lastTime = curTime;
 
-        const pwr = SimVar.GetSimVarValue("L:ACPowerAvailable", "bool");
-        if (pwr && !this.complete) {
+        const ac_pwr = SimVar.GetSimVarValue("L:ACPowerAvailable", "bool");
+        const dc_pwr = SimVar.GetSimVarValue("L:DCPowerAvailable", "bool");
+        const ColdAndDark = SimVar.GetSimVarValue('L:A32NX_COLD_AND_DARK_SPAWN', 'Bool');
+
+        if ( (ac_pwr || dc_pwr) && !this.complete) {
             //this.selfTestElement.update(_deltaTime);
             this.selfTestElement.update(localDeltaTime);
-        } else if (!pwr) {
-            // TODO: Advanced Behaviour when power is lost
-            //this.selfTestElement.resetTimer();
         }
+        if (!ac_pwr && !dc_pwr) {
+            // TODO: More realistic/advanced Behaviour when power is lost
+            this.selfTestElement.resetTimer();
+        }
+
+        if (!ColdAndDark && ac_pwr && dc_pwr) {
+            // TODO: better way of doing this not on loop
+            this.selfTestElement.finishTest();
+        }
+
     }
     onExit() {
     }
@@ -1040,6 +1051,7 @@ class A320_Neo_SAI_SelfTestTimer extends HTMLElement {
     }
 
     construct() {
+
         this.start_time = 73;
 
         const boxHeight = 7;
@@ -1051,7 +1063,7 @@ class A320_Neo_SAI_SelfTestTimer extends HTMLElement {
         const boxRow3 = 64;
         const txt_off = 6;
 
-        this.testTimer = Math.floor(Math.random() * 3) + start_time;
+        this.testTimer = Math.floor(Math.random() * 3) + this.start_time;
         Utils.RemoveAllChildren(this);
 
         let element = document.querySelector("#SelfTestHider");
@@ -1160,26 +1172,34 @@ class A320_Neo_SAI_SelfTestTimer extends HTMLElement {
 
     }
     update(dTime) {
-        this.testTimer -= dTime / 1000;
-        if (this.testTimer >= 10) {
-            this.st_tmr_txt.textContent = "INIT " + Math.ceil(this.testTimer) + "s";
-        }
-        else if (this.testTimer > 0) {
-            this.st_tmr_txt.textContent = "INIT 0" + Math.ceil(this.testTimer) + "s";
-        }
-        else if (this.testTimer < 0) {
-            this.allowDisplay();
+        if (!this.complete) {
+            if (this.testTimer >= 0) {
+                this.testTimer -= dTime / 1000;
+            }
+
+            if (this.testTimer > 9) {
+                this.st_tmr_txt.textContent = "INIT " + Math.ceil(this.testTimer) + "s";
+            }
+            else {
+                this.st_tmr_txt.textContent = "INIT 0" + Math.ceil(this.testTimer) + "s";
+            }
+            if (this.testTimer <= 0) {
+                this.finishTest();
+            }
         }
     }
 
     resetTimer() {
-        this.testTimer = Math.floor(Math.random() * 3) + start_time;
+        this.testTimer = Math.floor(Math.random() * 3) + this.start_time;
         this.complete = false;
-    }
-
-    allowDisplay() {
         let element = document.querySelector("#SelfTestHider");
+        element.style.display = "none";
+        this.selfTestDiv.style.display = "block";
+    }
+    finishTest() {
+        this.testTimer = 0;
         this.selfTestDiv.style.display = "none";
+        let element = document.querySelector("#SelfTestHider");
         element.style.display = "block";
         this.complete = true;
     }
