@@ -675,6 +675,18 @@ var A320_Neo_UpperECAM;
                                 actions: this.getEngineFailActions(1)
                             },
                             {
+                                message: "<span class='boxed'>OIL LO PR</span>",
+                                level: 2,
+                                landASAP: true,
+                                inopSystems: [],
+                                secondaryFailures: this.getEngineFailSecondaryFailures(),
+                                page: "ENG",
+                                isActive: () => {
+                                    return (SimVar.GetSimVarValue("TURB ENG N1:1", "Percent") > 10) && (SimVar.GetSimVarValue("ENG OIL PRESSURE:1", "PSI") < 25) && !this.engineFailed(1);
+                                },
+                                actions: this.getEngineOilLoPrActions(1)
+                            },
+                            {
                                 message: "<span class='boxed'>SHUT DOWN</span>",
                                 level: 2,
                                 landASAP: true,
@@ -715,67 +727,6 @@ var A320_Neo_UpperECAM;
                                 }
                             },
                             {
-                                message: "<span class='boxed'>SHUT DOWN</span>",
-                                level: 2,
-                                landASAP: true,
-                                inopSystems: [
-                                    "ENG_2",
-                                    "WING_A_ICE",
-                                    "CAT_3_DUAL",
-                                    "ENG_2_BLEED",
-                                    "PACK_2",
-                                    "MAIN_GALLEY",
-                                    "GEN_2",
-                                    "G_ENG_1_PUMP"
-                                ],
-                                secondaryFailures: this.getEngineShutdownSecondaryFailures(),
-                                page: "ENG",
-                                isActive: () => {
-                                    return this.engineShutdown(2);
-                                },
-                                actions: this.getEngineShutdownActions()
-                            }
-                        ]
-                    },
-                    {
-                        name: "ENG 1",
-                        messages: [
-                            {
-                                message: "<span class='boxed'>OIL LO PR</span>",
-                                level: 2,
-                                landASAP: true,
-                                inopSystems: [],
-                                secondaryFailures: this.getEngineFailSecondaryFailures(),
-                                page: "ENG",
-                                isActive: () => {
-                                    return (SimVar.GetSimVarValue("TURB ENG N1:1", "Percent") > 10) && (SimVar.GetSimVarValue("ENG OIL PRESSURE:1", "PSI") < 25) && !this.engineFailed(1);
-                                },
-                                actions: this.getEngineOilLoPrActions(1)
-                            },
-                            {
-                                message: "<span class='boxed'>SHUT DOWN</span>",
-                                level: 2,
-                                inopSystems: [
-                                    "ENG_1",
-                                    "WING_A_ICE",
-                                    "CAT_3_DUAL",
-                                    "ENG_1_BLEED",
-                                    "PACK_1",
-                                    "MAIN_GALLEY",
-                                    "GEN_1",
-                                    "G_ENG_1_PUMP"
-                                ],
-                                isActive: () => {
-                                    return this.engineShutdown(1);
-                                },
-                                actions: this.getEngineShutdownActions()
-                            }
-                        ]
-                    },
-                    {
-                        name: "ENG 2",
-                        messages: [
-                            {
                                 message: "<span class='boxed'>OIL LO PR</span>",
                                 level: 2,
                                 landASAP: true,
@@ -792,6 +743,7 @@ var A320_Neo_UpperECAM;
                             {
                                 message: "<span class='boxed'>SHUT DOWN</span>",
                                 level: 2,
+                                landASAP: true,
                                 inopSystems: [
                                     "ENG_2",
                                     "WING_A_ICE",
@@ -802,6 +754,8 @@ var A320_Neo_UpperECAM;
                                     "GEN_2",
                                     "G_ENG_1_PUMP"
                                 ],
+                                secondaryFailures: this.getEngineShutdownSecondaryFailures(),
+                                page: "ENG",
                                 isActive: () => {
                                     return this.engineShutdown(2);
                                 },
