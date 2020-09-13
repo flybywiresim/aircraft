@@ -1216,10 +1216,10 @@
 				<SWITCH_POSITION_VAR>XMLVAR_SWITCH_OVHD_INTLT_NOSMOKING_Position</SWITCH_POSITION_VAR>
 				<LIGHT_TYPE>NO_SMOKING</LIGHT_TYPE>
 				<ANIMTIP_1_ON_PERCENT>0.5</ANIMTIP_1_ON_PERCENT>
-				<!-- TODO: Figure out what the actual tooltips are or how to add them. -->
-				<ANIMTIP_0>Turn OFF no smoking signs</ANIMTIP_0>
-				<ANIMTIP_1>Set no smoking signs to AUTO</ANIMTIP_1>
-				<ANIMTIP_2>Turn ON no smoking signs</ANIMTIP_2>
+				<!-- TODO: Figure out how to add custom TT in .locPak and .loc files. -->
+				<ANIMTIP_0>TT:COCKPIT.TOOLTIPS.LIGHTS_NOSMOKE_ON</ANIMTIP_0>
+				<ANIMTIP_1>"Set \"no smoke\" prompt light to AUTO mode"</ANIMTIP_1>
+				<ANIMTIP_2>TT:COCKPIT.TOOLTIPS.LIGHTS_NOSMOKE_OFF</ANIMTIP_2>
 				<WWISE_EVENT>double_light_switch</WWISE_EVENT>
 			</UseTemplate>
 
