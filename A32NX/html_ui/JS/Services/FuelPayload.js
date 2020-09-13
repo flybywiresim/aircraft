@@ -33,4 +33,3 @@ function RegisterFuelPayloadListener(callback) {
     return RegisterViewListenerT("JS_LISTENER_FUEL_PAYLOAD", callback, FuelPayloadListener);
 }
 checkAutoload();
-//# sourceMappingURL=FuelPayload.js.map
