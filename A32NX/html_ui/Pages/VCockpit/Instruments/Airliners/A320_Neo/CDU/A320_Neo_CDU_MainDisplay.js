@@ -853,7 +853,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this._balanceData = data.balance;
     }
 
-    async trySetZFWCG(input, useLbs = false) {
+    trySetZFWCG(input, useLbs = false) {
         let zfw = NaN;
         let zfwcg = NaN;
         if (input) {
