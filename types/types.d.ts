@@ -1,6 +1,6 @@
 declare global {
 
-    type NumberSimVarUnit = ("number" | "Number") | ("SINT32") | ("bool" | "Bool" | "Boolean" | "boolean") | "Enum" | "lbs" | "kg" | ("Degrees" | "degree")
+    type NumberSimVarUnit = ("number" | "Number") | "position 32k" | ("SINT32") | ("bool" | "Bool" | "Boolean" | "boolean") | "Enum" | "lbs" | "kg" | ("Degrees" | "degree")
         | "radians" | ("Percent" | "percent") | ("Feet" | "feet" | "feets") | "Volts" | "Amperes" | "Hertz" | "PSI" | "celsius" | "degree latitude"
         | "degree longitude" | "Meters per second" | "Position" | ("Knots" | "knots") | "Seconds"
 
@@ -65,10 +65,11 @@ declare global {
     }
 
     class EICASTemplateElement extends TemplateElement {
+        init(): void
     }
 
     class BaseEICAS {
-        
+
     }
 
     const Airliners: {
