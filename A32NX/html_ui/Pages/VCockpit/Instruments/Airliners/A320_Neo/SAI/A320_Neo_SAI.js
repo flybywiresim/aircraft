@@ -5,6 +5,7 @@ class A320_Neo_SAI extends BaseAirliners {
         this.addIndependentElementContainer(new NavSystemElementContainer("Altimeter", "Altimeter", new A320_Neo_SAI_Altimeter()));
         this.addIndependentElementContainer(new NavSystemElementContainer("Airspeed", "Airspeed", new A320_Neo_SAI_Airspeed()));
         this.addIndependentElementContainer(new NavSystemElementContainer("Horizon", "Horizon", new A320_Neo_SAI_Attitude()));
+        this.addIndependentElementContainer(new NavSystemElementContainer("SelfTest", "SelfTest", new A320_Neo_SAI_SelfTest()));
         this.addIndependentElementContainer(new NavSystemElementContainer("Pressure", "Pressure", new A320_Neo_SAI_Pressure()));
     }
     Update() {
@@ -1001,6 +1002,210 @@ class A320_Neo_SAI_PressureIndicator extends HTMLElement {
     }
 }
 customElements.define('a320-neo-sai-pressure-indicator', A320_Neo_SAI_PressureIndicator);
+
+class A320_Neo_SAI_SelfTest extends NavSystemElement {
+    init(root) {
+        this._lastTime = Date.now();
+        this.selfTestElement = this.gps.getChildById("SelfTest");
+        this.complete = false;
+    }
+    onEnter() {
+    }
+    isReady() {
+        return true;
+    }
+    onUpdate(_deltaTime) {
+
+        // Delta time mitigation strategy
+        let curTime = Date.now();
+        let localDeltaTime = curTime - this._lastTime;
+        this._lastTime = curTime;
+
+        const ac_pwr = SimVar.GetSimVarValue("L:ACPowerAvailable", "bool");
+        const dc_pwr = SimVar.GetSimVarValue("L:DCPowerAvailable", "bool");
+        const ColdAndDark = SimVar.GetSimVarValue('L:A32NX_COLD_AND_DARK_SPAWN', 'Bool');
+
+        if ( (ac_pwr || dc_pwr) && !this.complete) {
+            //this.selfTestElement.update(_deltaTime);
+            this.selfTestElement.update(localDeltaTime);
+        }
+        if (!ac_pwr && !dc_pwr) {
+            // TODO: More realistic/advanced Behaviour when power is lost
+            this.selfTestElement.resetTimer();
+        }
+
+        if (!ColdAndDark && ac_pwr && dc_pwr) {
+            // TODO: better way of doing this not on loop
+            this.selfTestElement.finishTest();
+        }
+
+    }
+    onExit() {
+    }
+    onEvent(_event) {
+    }
+}
+class A320_Neo_SAI_SelfTestTimer extends HTMLElement {
+    connectedCallback() {
+        this.construct();
+    }
+
+    construct() {
+
+        this.start_time = 73;
+
+        const boxHeight = 7;
+        const boxWidthSmall = 15;
+        const boxWidth = 18;
+        const boxWidthInit = 30;
+        const boxRow1 = 32.5;
+        const boxRow2 = 46.5;
+        const boxRow3 = 64;
+        const txt_off = 6;
+
+        this.testTimer = Math.floor(Math.random() * 3) + this.start_time;
+        Utils.RemoveAllChildren(this);
+
+        let element = document.querySelector("#SelfTestHider");
+        element.style.display = "none";
+
+        this.selfTestDiv = document.createElement("div");
+        this.selfTestDiv.id = "SelfTestDiv";
+        this.selfTestDiv.setAttribute("border", "none");
+        this.selfTestDiv.setAttribute("position", "absolute");
+        this.selfTestDiv.setAttribute("display", "block");
+        this.selfTestDiv.setAttribute("top", "0%");
+        this.selfTestDiv.setAttribute("left", "0%");
+        this.selfTestDiv.setAttribute("width", "100%");
+        this.selfTestDiv.setAttribute("height", "100%");
+        this.appendChild(this.selfTestDiv);
+
+        this.selfTestSVG = document.createElementNS(Avionics.SVG.NS, "svg");
+        this.selfTestSVG.setAttribute("id", "SelfTestSVG");
+        this.selfTestSVG.setAttribute("viewBox", "0 0 600 600");
+        this.selfTestSVG.style.position = "absolute";
+        this.selfTestSVG.style.top = "0%";
+        this.selfTestSVG.style.left = "0%";
+        this.selfTestSVG.style.width = "100%";
+        this.selfTestSVG.style.height = "100%";
+        this.selfTestDiv.appendChild(this.selfTestSVG);
+
+        let st_spd = document.createElementNS(Avionics.SVG.NS, "rect");
+        st_spd.setAttribute("id", "SpeedTest");
+        st_spd.setAttribute("fill", "#afbb3a");
+        st_spd.setAttribute("x", "8%");
+        st_spd.setAttribute("y", boxRow2 + "%");
+        st_spd.setAttribute("width", boxWidthSmall + "%");
+        st_spd.setAttribute("height", boxHeight + "%");
+        this.selfTestSVG.appendChild(st_spd);
+
+        let st_spd_txt = document.createElementNS(Avionics.SVG.NS, "text");
+        st_spd_txt.setAttribute("id", "SpeedTestTxt");
+        st_spd_txt.textContent = "SPD";
+        st_spd_txt.setAttribute("font", "Roboto");
+        st_spd_txt.setAttribute("font-weight", "900");
+        st_spd_txt.setAttribute("font-size", "42px");
+        st_spd_txt.setAttribute("fill", "#1f242d");
+        st_spd_txt.setAttribute("x", "8.75%");
+        st_spd_txt.setAttribute("y", boxRow2 + txt_off + "%");
+        this.selfTestSVG.appendChild(st_spd_txt);
+
+        let st_alt = document.createElementNS(Avionics.SVG.NS, "rect");
+        st_alt.setAttribute("id", "AltTest");
+        st_alt.setAttribute("fill", "#afbb3a");
+        st_alt.setAttribute("x", "70%");
+        st_alt.setAttribute("y", boxRow2 + "%");
+        st_alt.setAttribute("width", boxWidth + "%");
+        st_alt.setAttribute("height", boxHeight + "%");
+        this.selfTestSVG.appendChild(st_alt);
+
+        let st_alt_txt = document.createElementNS(Avionics.SVG.NS, "text");
+        st_alt_txt.setAttribute("id", "AltTestTxt")
+        st_alt_txt.textContent = "ALT";
+        st_alt_txt.setAttribute("font", "Roboto");
+        st_alt_txt.setAttribute("font-weight", "900");
+        st_alt_txt.setAttribute("font-size", "42px");
+        st_alt_txt.setAttribute("fill", "#1f242d");
+        st_alt_txt.setAttribute("x", "72.5%");
+        st_alt_txt.setAttribute("y", boxRow2 + txt_off + "%");
+        this.selfTestSVG.appendChild(st_alt_txt);
+
+        let st_tmr = document.createElementNS(Avionics.SVG.NS, "rect");
+        st_tmr.setAttribute("id", "TmrTest")
+        st_tmr.setAttribute("fill", "#afbb3a");
+        st_tmr.setAttribute("x", "30%");
+        st_tmr.setAttribute("y", boxRow3 + "%");
+        st_tmr.setAttribute("width", boxWidthInit + "%");
+        st_tmr.setAttribute("height", boxHeight + "%");
+        this.selfTestSVG.appendChild(st_tmr);
+
+        this.st_tmr_txt = document.createElementNS(Avionics.SVG.NS, "text");
+        this.st_tmr_txt.setAttribute("id", "TmrTestTxt")
+        this.st_tmr_txt.textContent = "INIT "+ Math.ceil(this.testTimer)  +"s";
+        this.st_tmr_txt.setAttribute("font", "Roboto");
+        this.st_tmr_txt.setAttribute("font-weight", "900");
+        this.st_tmr_txt.setAttribute("font-size", "42px");
+        this.st_tmr_txt.setAttribute("fill", "#1f242d");
+        this.st_tmr_txt.setAttribute("x", "31%");
+        this.st_tmr_txt.setAttribute("y", boxRow3 + txt_off + "%");
+        this.selfTestSVG.appendChild(this.st_tmr_txt);
+
+        let st_att = document.createElementNS(Avionics.SVG.NS, "rect");
+        st_att.setAttribute("id", "AttTest")
+        st_att.setAttribute("fill", "#afbb3a");
+        st_att.setAttribute("x", "36%");
+        st_att.setAttribute("y", boxRow1 + "%");
+        st_att.setAttribute("width", boxWidth + "%");
+        st_att.setAttribute("height", boxHeight + "%");
+        this.selfTestSVG.appendChild(st_att);
+
+        let st_att_txt = document.createElementNS(Avionics.SVG.NS, "text");
+        st_att_txt.setAttribute("id", "AttTestTxt")
+        st_att_txt.textContent = "ATT";
+        st_att_txt.setAttribute("font", "Roboto");
+        st_att_txt.setAttribute("font-weight", "900");
+        st_att_txt.setAttribute("font-size", "42px");
+        st_att_txt.setAttribute("fill", "#1f242d");
+        st_att_txt.setAttribute("x", "38%");
+        st_att_txt.setAttribute("y", boxRow1 + txt_off + "%");
+        this.selfTestSVG.appendChild(st_att_txt);
+
+    }
+    update(dTime) {
+        if (!this.complete) {
+            if (this.testTimer >= 0) {
+                this.testTimer -= dTime / 1000;
+            }
+
+            if (this.testTimer > 9) {
+                this.st_tmr_txt.textContent = "INIT " + Math.ceil(this.testTimer) + "s";
+            }
+            else {
+                this.st_tmr_txt.textContent = "INIT 0" + Math.ceil(this.testTimer) + "s";
+            }
+            if (this.testTimer <= 0) {
+                this.finishTest();
+            }
+        }
+    }
+
+    resetTimer() {
+        this.testTimer = Math.floor(Math.random() * 3) + this.start_time;
+        this.complete = false;
+        let element = document.querySelector("#SelfTestHider");
+        element.style.display = "none";
+        this.selfTestDiv.style.display = "block";
+    }
+    finishTest() {
+        this.testTimer = 0;
+        this.selfTestDiv.style.display = "none";
+        let element = document.querySelector("#SelfTestHider");
+        element.style.display = "block";
+        this.complete = true;
+    }
+}
+
+customElements.define('a320-neo-sai-self-test', A320_Neo_SAI_SelfTestTimer);
 
 registerInstrument("a320-neo-sai", A320_Neo_SAI);
 //# sourceMappingURL=A320_Neo_SAI.js.map
