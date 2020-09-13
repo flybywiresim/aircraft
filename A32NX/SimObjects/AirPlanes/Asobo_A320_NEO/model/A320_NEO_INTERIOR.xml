@@ -2628,6 +2628,7 @@
 			<UseTemplate Name="ASOBO_AIRLINER_FIRE_BUTTON">
 				<NODE_ID>PUSH_OVHD_FIRE_ENG1</NODE_ID>
 				<ID>ENG1</ID>
+				<ENGINE>1</ENGINE>
 			</UseTemplate>
 		</Component>
 
@@ -2656,6 +2657,7 @@
 			<UseTemplate Name="ASOBO_AIRLINER_FIRE_BUTTON">
 				<NODE_ID>PUSH_OVHD_FIRE_ENG2</NODE_ID>
 				<ID>ENG2</ID>
+				<ENGINE>2</ENGINE>
 			</UseTemplate>
 		</Component>
 
