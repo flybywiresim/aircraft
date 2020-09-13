@@ -42,6 +42,12 @@ declare global {
         FLIGHT_PHASE_GOAROUND
     }
 
+    enum AutopilotMode {
+        MANAGED,
+        SELECTED,
+        HOLD
+    }
+
     enum ThrottleMode {
         UNKNOWN,
         REVERSE,
