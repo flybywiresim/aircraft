@@ -69,6 +69,10 @@ class Jet_PFD_AttitudeIndicator extends HTMLElement {
         let pitchFactor = -7;
         this.pitchAngleFactor = pitchFactor;
         this.pitchGradFactor = 1.0;
+        this.horizonHeight = 300;
+        this.attitudeHeight = 250;
+        this.horizonToAttitudeRatio = this.attitudeHeight / this.horizonHeight;
+
         {
             this.horizon_root = document.createElementNS(Avionics.SVG.NS, "svg");
             this.horizon_root.setAttribute("width", "100%");
@@ -77,7 +81,7 @@ class Jet_PFD_AttitudeIndicator extends HTMLElement {
             this.horizon_root.setAttribute("x", "-100");
             this.horizon_root.setAttribute("y", "-100");
             this.horizon_root.setAttribute("overflow", "visible");
-            this.horizon_root.setAttribute("style", "position:absolute; z-index: -3; width: 100%; height:100%;");
+            this.horizon_root.setAttribute("style", "position:absolute; z-index: -3;");
             this.horizon_root.setAttribute("transform", "translate(0, 100)");
             this.appendChild(this.horizon_root);
             this.horizonTopColor = "#19A0E0";//"#5384EC";
@@ -101,9 +105,9 @@ class Jet_PFD_AttitudeIndicator extends HTMLElement {
             let separator = document.createElementNS(Avionics.SVG.NS, "rect");
             separator.setAttribute("fill", "#e0e0e0");
             separator.setAttribute("x", "-1500");
-            separator.setAttribute("y", "-3");
+            separator.setAttribute("y", "0");
             separator.setAttribute("width", "3000");
-            separator.setAttribute("height", "6");
+            separator.setAttribute("height", "3");
             this.bottomPart.appendChild(separator);
         }
         {
@@ -129,16 +133,16 @@ class Jet_PFD_AttitudeIndicator extends HTMLElement {
                 borders.setAttribute("x", "-200");
                 borders.setAttribute("y", "-125");
                 borders.setAttribute("width", "400");
-                borders.setAttribute("height", "255");
+                borders.setAttribute("height", "250");
                 borders.setAttribute("fill", "transparent");
                 borders.setAttribute("stroke", "white");
                 borders.setAttribute("stroke-width", "3");
                 borders.setAttribute("stroke-opacity", "1");
                 this.pitch_root_group.appendChild(borders);
                 var x = -115;
-                var y = -122;
+                var y = -(this.attitudeHeight / 2);
                 var w = 230;
-                var h = 235;
+                var h = this.attitudeHeight;
                 let attitudePitchContainer = document.createElementNS(Avionics.SVG.NS, "svg");
                 attitudePitchContainer.setAttribute("width", w.toString());
                 attitudePitchContainer.setAttribute("height", h.toString());
@@ -158,9 +162,9 @@ class Jet_PFD_AttitudeIndicator extends HTMLElement {
                 let unusualAttitudeUpperLimit = 50;
                 let bigWidth = 120;
                 let bigHeight = 3;
-                let mediumWidth = 60;
+                let mediumWidth = 45;
                 let mediumHeight = 3;
-                let smallWidth = 40;
+                let smallWidth = 20;
                 let smallHeight = 2;
                 let fontSize = 20;
                 let angle = -maxDash;
@@ -1348,12 +1352,15 @@ class Jet_PFD_AttitudeIndicator extends HTMLElement {
         this.applyAttributes();
     }
     applyAttributes() {
+        const deltaY = this.pitch * this.pitchAngleFactor * this.pitchGradFactor;
+
         if (this.bottomPart)
-            this.bottomPart.setAttribute("transform", "rotate(" + this.bank + ", 0, 0) translate(0," + (this.pitch * this.pitchAngleFactor) + ")");
+            this.bottomPart.setAttribute("transform", "rotate(" + this.bank + ", 0, 0) translate(0," + (deltaY) + ")");
         if (this.pitch_root_group)
             this.pitch_root_group.setAttribute("transform", "rotate(" + this.bank + ", 0, 0)");
         if (this.attitude_pitch)
-            this.attitude_pitch.setAttribute("transform", "translate(0," + (this.pitch * this.pitchAngleFactor * this.pitchGradFactor) + ")");
+            // The viewbox height for attitude is different from the horizon - multiply by ratio to keep horizon and pitch lines aligned
+            this.attitude_pitch.setAttribute("transform", "translate(0," + (deltaY * this.horizonToAttitudeRatio) + ")");
         if (this.slipSkid)
             this.slipSkid.setAttribute("transform", "rotate(" + this.bank + ", 0, 0) translate(" + (this.slipSkidValue * 40) + ", 0)");
         if (this.slipSkidTriangle)
