@@ -20,6 +20,8 @@ class A320_Neo_ATC extends Airliners.BaseATC {
                     }
                     this.refreshValue();
                 }
+            } else if (buttonSuffix.charAt(0) == 'I') {
+                return
             } else {
                 let slot = -1;
                 {
