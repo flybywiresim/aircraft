@@ -588,12 +588,16 @@ class CDUPerformancePage {
         if (isFinite(mcdu.perfApprDH)) {
             dhCell = mcdu.perfApprDH.toFixed(0);
         }
+        if(mcdu.perfApprDH == -1) {
+            dhCell = "NO";
+        }
         mcdu.onRightInput[2] = () => {
             let value = mcdu.inOut;
             mcdu.clearUserInput();
             if(value == 'NO' || 'no') {
-                mcdu.setPerfApprDH(0 || '0');
+                mcdu.setPerfApprDH(-1);
                 CDUPerformancePage.ShowAPPRPage(mcdu);
+                mcdu.clearUserInput();
             }
             if (mcdu.setPerfApprDH(value)) {
                 CDUPerformancePage.ShowAPPRPage(mcdu);

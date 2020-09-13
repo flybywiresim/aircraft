@@ -1570,12 +1570,14 @@ var Airbus_FMA;
                 }
                 else if (Airbus_FMA.CurrentPlaneState.decisionHeight > 0) {
                     targetState = Column4.ROW_3_STATE.DH;
-                } else {
+                } 
+                if(Airbus_FMA.CurrentPlaneState.decisionHeight == -1) {
+                    targetState = Column4.ROW_3_STATE.NO_DH;
+                }
+                if(Airbus_FMA.CurrentPlaneState.decisionHeight == 0 ) {
                     targetState = Column4.ROW_3_STATE.NULL_DH;
                 }
-                if(Airbus_FMA.CurrentPlaneState.decisionHeight == 'NO') {
-                    targetState = Column4.ROW_3_STATE.NO_DH; //When they enter NO into the stratchpad then into DH
-                }
+                
             }
             if ((targetState != this.currentRow3State) || (targetState == Column4.ROW_3_STATE.DH) || (targetState == Column4.ROW_3_STATE.MDA)) {
                 this.currentRow3State = targetState;
