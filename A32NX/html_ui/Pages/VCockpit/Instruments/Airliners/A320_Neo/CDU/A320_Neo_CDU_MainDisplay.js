@@ -1,3 +1,4 @@
+Include.addScript("/JS/Services/FuelPayload.js");
 class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     constructor() {
         super(...arguments);
@@ -11,6 +12,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this._hasReachedTopOfDescent = false;
         this._apCooldown = 500;
         this._lastRequestedFLCModeWaypointIndex = -1;
+        this._balanceData = null;
     }
     get templateID() { return "A320_Neo_CDU"; }
     connectedCallback() {
@@ -34,7 +36,9 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this.onRad = () => { CDUNavRadioPage.ShowPage(this); };
         this.onFuel = () => { CDUFuelPredPage.ShowPage(this); };
         CDUIdentPage.ShowPage(this);
-        this.electricity = this.querySelector("#Electricity")
+        this.electricity = this.querySelector("#Electricity");
+        this.m_payloadListener = RegisterFuelPayloadListener();
+        this.m_payloadListener.onShapeDataUpdated(this.SetBalanceData.bind(this));
     }
     onPowerOn() {
         super.onPowerOn();
@@ -843,6 +847,40 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         SimVar.SetSimVarValue("L:A320_Neo_ADIRS_ALIGN_LIGHT_2", "Bool", (SimVar.GetSimVarValue("L:A320_Neo_ADIRS_KNOB_2", "Enum") == 1 && ADIRSState != 2) );
         SimVar.SetSimVarValue("L:A320_Neo_ADIRS_ALIGN_LIGHT_3", "Bool", (SimVar.GetSimVarValue("L:A320_Neo_ADIRS_KNOB_3", "Enum") == 1 && ADIRSState != 2) );
 
+    }
+
+    SetBalanceData(data) {
+        this._balanceData = data.balance;
+    }
+
+    async trySetZFWCG(input, useLbs = false) {
+        let zfw = NaN;
+        let zfwcg = NaN;
+        if (input) {
+            let inputSplit = input.split("/");
+            zfw = parseFloat(inputSplit[0]);
+            if (useLbs && !isNaN(zfw)) {
+                zfw = zfw / 2.204623;
+            }
+            zfwcg = parseFloat(inputSplit[1]);
+        }
+        if (isNaN(zfwcg)) {
+            zfwcg = parseFloat(this._balanceData.balancePercent.value);
+        }
+        if (isFinite(zfw) || isFinite(zfwcg)) {
+            if (isFinite(zfw)) {
+                super.zeroFuelWeight = zfw;
+            }
+            if (isFinite(zfwcg)) {
+                super.zeroFuelWeightMassCenter = zfwcg;
+            }
+            super.updateTakeOffTrim();
+            super.updateCleanTakeOffSpeed();
+            super.updateCleanApproachSpeed();
+            return true;
+        }
+        super.showErrorMessage("INVALID ENTRY");
+        return false;
     }
 }
 A320_Neo_CDU_MainDisplay._v1sConf1 = [
