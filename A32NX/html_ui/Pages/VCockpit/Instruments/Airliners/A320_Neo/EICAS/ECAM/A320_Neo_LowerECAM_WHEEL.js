@@ -30,7 +30,7 @@ var A320_Neo_LowerECAM_WHEEL;
             this.antiSkidd = this.querySelector("#antiskid");
             this.lastSkiddState = -1;
 
-            // Brake Temp Precentage 
+            // Brake Temp Precentage
             this.BrakeTemp1 = this.querySelector("#WheelTemp1");
             this.BrakeTemp2 = this.querySelector("#WheelTemp2");
             this.BrakeTemp3 = this.querySelector("#WheelTemp3");
@@ -54,21 +54,6 @@ var A320_Neo_LowerECAM_WHEEL;
             // TODO Need to finish making failure logic
             this.failureLGCIUS1 = false;
             this.failureLGCIUS2 = false;
-
-            this.dummyTempCounter = 1;
-            this.dummyTempCounterCoolDown = 1;
-
-            // The code below can be stream line better for now it works 
-            this.currentBrake1Temp = 45;
-            this.currentBrake2Temp = 50;
-            this.currentBrake3Temp = 45;
-            this.currentBrake4Temp = 50;
-
-            // Set Default State of Brakes Temp
-            this.BrakeTemp1.textContent = 45;
-            this.BrakeTemp2.textContent = 50;
-            this.BrakeTemp3.textContent = 45;
-            this.BrakeTemp4.textContent = 50;
 
             this.engineOneHydG = "G";
             this.engineOneHydY = "Y";
@@ -104,46 +89,7 @@ var A320_Neo_LowerECAM_WHEEL;
             this.updateSkidToggle(_deltaTime);
             this.updateSpoilerSpeedBrake(_deltaTime);
             this.updateLandingGear(_deltaTime);
-
-            // Brake Temp - this is a based loop checking both speed and current brake pressure
-            const currentBrakeRight = SimVar.GetSimVarValue("BRAKE RIGHT POSITION", "position 32k");
-            const currentBrakeLeft = SimVar.GetSimVarValue("BRAKE LEFT POSITION", "position 32k");
-            const currentParkingBrake = SimVar.GetSimVarValue("BRAKE PARKING INDICATOR", "Bool");
-            const wheelRPM = SimVar.GetSimVarValue("WHEEL RPM", "rpm"); 
-
-            if (wheelRPM > 150 && currentBrakeLeft >= 30000 && currentBrakeRight >= 30000 && !currentParkingBrake) {
-                this.dummyTempCounter += _deltaTime / 1000;
-                // Add temp slowly
-                this.currentBrake1Temp = Math.round(this.currentBrake1Temp) + Math.floor(Math.random() * this.dummyTempCounter) + 1;
-                this.currentBrake2Temp = Math.round(this.currentBrake2Temp) + Math.floor(Math.random() * this.dummyTempCounter) + 1;
-                this.currentBrake3Temp = Math.round(this.currentBrake3Temp) + Math.floor(Math.random() * this.dummyTempCounter) + 1;
-                this.currentBrake4Temp = Math.round(this.currentBrake4Temp) + Math.floor(Math.random() * this.dummyTempCounter) + 1;
-
-                this.BrakeTemp1.textContent = this.currentBrake1Temp;
-                this.BrakeTemp2.textContent = this.currentBrake2Temp;
-                this.BrakeTemp3.textContent = this.currentBrake3Temp;
-                this.BrakeTemp4.textContent = this.currentBrake4Temp;
-                this.dummyTempCounter = 0;
-
-            } else if (currentBrakeLeft <= 0 && currentBrakeRight <= 0 && !currentParkingBrake) {
-
-                if (this.currentBrake1Temp > 45 || this.currentBrake2Temp > 50 || this.currentBrake3Temp > 45 || this.currentBrake4Temp > 50) {
-                    this.dummyTempCounter += _deltaTime / 1000;
-
-                    // Add cool down slowly
-                    this.currentBrake1Temp -= this.dummyTempCounter;
-                    this.currentBrake2Temp -= this.dummyTempCounter;
-                    this.currentBrake3Temp -= this.dummyTempCounter;
-                    this.currentBrake4Temp -= this.dummyTempCounter;
-
-                    this.BrakeTemp1.textContent = Math.round(this.currentBrake1Temp);
-                    this.BrakeTemp2.textContent = Math.round(this.currentBrake2Temp);
-                    this.BrakeTemp3.textContent = Math.round(this.currentBrake3Temp);
-                    this.BrakeTemp4.textContent = Math.round(this.currentBrake4Temp);
-
-                    this.dummyTempCounter = 0;
-                }
-            }
+            this.updateBrakeTemp(_deltaTime);
         }
 
         updateTempColor(_deltaTime) {
@@ -167,8 +113,6 @@ var A320_Neo_LowerECAM_WHEEL;
                 this.BrakeTemp3.setAttribute("class", "WHEELBRAKERED");
                 this.BrakeTemp4.setAttribute("class", "WHEELBRAKERED");
                 SimVar.SetSimVarValue("L:A32NX_BRAKES_HOT", "Bool", 1);
-                //SimVar.SetSimVarValue("BRAKE RIGHT POSITION","position 32k", 0);// -- Commit out this , was testing something 
-                //SimVar.SetSimVarValue("BRAKE LEFT POSITION", "position 32k", 0); // --- Uncomment to allow brakes to fail when over 500c
             }
         }
 
@@ -356,6 +300,18 @@ var A320_Neo_LowerECAM_WHEEL;
             } else if (landingGearRight >= 0.1) {
                 this.centerLGGroup.setAttribute("visibility", "visible");
             }
+        }
+
+        updateBrakeTemp(_deltaTime) {
+            this.currentBrake1Temp = Math.round(SimVar.GetSimVarValue("L:A32NX_BRAKE_TEMPERATURE_1", "celsius"));
+            this.currentBrake2Temp = Math.round(SimVar.GetSimVarValue("L:A32NX_BRAKE_TEMPERATURE_2", "celsius"));
+            this.currentBrake3Temp = Math.round(SimVar.GetSimVarValue("L:A32NX_BRAKE_TEMPERATURE_3", "celsius"));
+            this.currentBrake4Temp = Math.round(SimVar.GetSimVarValue("L:A32NX_BRAKE_TEMPERATURE_4", "celsius"));
+
+            this.BrakeTemp1.textContent = this.currentBrake1Temp
+            this.BrakeTemp2.textContent = this.currentBrake2Temp
+            this.BrakeTemp3.textContent = this.currentBrake3Temp
+            this.BrakeTemp4.textContent = this.currentBrake4Temp
         }
 
         _checkBrakesPressure() {
