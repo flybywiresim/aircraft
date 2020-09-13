@@ -373,8 +373,8 @@
 					<Checkpoint ReferenceId="A320_ILSAPPR_WING_ANTI"/>
 					<Checkpoint ReferenceId="A320_ILSAPPR_EXTERIOR"/>
 					<Checkpoint ReferenceId="A320_ILSAPPR_SLIDING_TABLE"/>
-					<Checkpoint ReferenceId="A320_ILSAPPR_ECAM_MEMO"/>
 					<Checkpoint ReferenceId="A320_ILSAPPR_CABIN_CREW"/>
+					<Checkpoint ReferenceId="A320_ILSAPPR_ECAM_MEMO"/>
 					<Checkpoint ReferenceId="A320_ILSAPPR_LANDING_CHECKLIST"/>
 					<Checkpoint ReferenceId="A320_ILSAPPR_FLIGHT_PARAMETERS"/>
 				</Block>
@@ -412,8 +412,8 @@
 					<Checkpoint ReferenceId="A320_NONPAPPR_WING_ANTIICE"/>
 					<Checkpoint ReferenceId="A320_NONPAPPR_EXT_LIGHTS"/>
 					<Checkpoint ReferenceId="A320_NONPAPPR_SLIDING_TABLE"/>
-					<Checkpoint ReferenceId="A320_NONPAPPR_ECAM_MEMO"/>
 					<Checkpoint ReferenceId="A320_NONPAPPR_CABIN_REPORT"/>
+					<Checkpoint ReferenceId="A320_NONPAPPR_ECAM_MEMO"/>
 					<Checkpoint ReferenceId="A320_NONPAPPR_LANDING_CHECKLIST"/>
 					<Checkpoint ReferenceId="A320_NONPAPPR_FLIGHT_PARA"/>
 					<Checkpoint ReferenceId="A320_NONPAPPR_AUTOPILOT"/>
