@@ -17,3 +17,15 @@
 - XMLVAR_ALT_MODE_REQUESTED
     - Used in the `.flt` files to set a default value for the ALT RPTG 2 way switch on the TCAS panel
     - Maps to the `I:XMLVAR_ALT_MODE_REQUESTED` variable which is the actual backing var for the switch
+- A32NX_ELEC_COMMERCIAL_TOGGLE
+    - Bool
+    - True if electrical commercial push button on
+- A32NX_ELEC_COMMERCIAL_FAULT
+    - Bool
+    - True if fault in electrical commercial system
+- A32NX_ELEC_GALYCAB_TOGGLE
+    - Bool
+    - True if electrical galy & cab push button on
+- A32NX_ELEC_GALYCAB_FAULT
+    - Bool
+    - True if fault in electrical galy & cab system
