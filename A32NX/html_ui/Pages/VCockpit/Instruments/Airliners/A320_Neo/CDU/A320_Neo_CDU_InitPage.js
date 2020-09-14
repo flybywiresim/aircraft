@@ -87,7 +87,7 @@ class CDUInitPage {
             ["LAT", "LONG"],
             [lat, long],
             ["COST INDEX"],
-            [costIndex, "WIND"],
+            [costIndex, "WIND>"],
             ["CRZ FL/TEMP", "TROPO"],
             [cruiseFlTemp, "36090[color]blue"]
         ]);
