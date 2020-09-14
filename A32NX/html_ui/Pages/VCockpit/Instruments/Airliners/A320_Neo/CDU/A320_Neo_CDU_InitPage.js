@@ -51,17 +51,9 @@ class CDUInitPage {
             };
         }
         let alignOption;
-        var events = [];
-        for (var property in document.documentElement) {
-        var match = property.match(/^on(.*)/)
-        if (match) {
-            events.push(match[1]);
-            }
-        }
-        // console.log(events.join('\n'))
+
         if (mcdu.flightPlanManager.getOrigin()) {
             alignOption = "IRS INIT>"
-            console.log(mcdu.flightPlanManager.getOrigin().ident);
         }
         let flightNo = SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string", "FMC");
         if (!flightNo) {
@@ -92,7 +84,6 @@ class CDUInitPage {
             [cruiseFlTemp, "36090[color]blue"]
         ]);
 
-
         mcdu.onLeftInput[0] = () => {
             let value = mcdu.inOut;
             mcdu.clearUserInput();
@@ -113,7 +104,7 @@ class CDUInitPage {
                 }
             });
         };
-        mcdu.onRightInput[2] =  () => {
+        mcdu.onRightInput[2] = () => {
             if (alignOption) {
                 CDUIRSInit.ShowPage(mcdu);
             }

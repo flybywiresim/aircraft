@@ -2,22 +2,22 @@ class CDUIRSInit {
     static ShowPage(mcdu, lon) {
         mcdu.clearDisplay();
         mcdu.setTitle('IRS INIT');
-        let checkAligned = SimVar.GetSimVarValue("L:A320_Neo_ADIRS_STATE", "Number");
-        let emptyIRSGpsString = "--°--.--/---°--.--"
-        let arrowupdwn = "↑↓"
+        const checkAligned = SimVar.GetSimVarValue("L:A320_Neo_ADIRS_STATE", "Number");
+        const emptyIRSGpsString = "--°--.--/---°--.--"
+        const arrowupdwn = "↑↓"
         let larrowupdwn = arrowupdwn
         let rarrowupdwn = ""
         if (lon) {
             rarrowupdwn = arrowupdwn
             larrowupdwn = ""
         }
-        let IRS1Status;
-        let IRS2Status;
-        let IRS3Status;
-        let AirportCoordinates = mcdu.flightPlanManager.getOrigin().infos.coordinates;
+        let statusIRS1;
+        let statusIRS2;
+        let statusIRS3;
         // Ref coordinates are taken based on origin airport
-        let originAirportLat = ConvertDDToDMS(AirportCoordinates['lat'], false);
-        let originAirportLon = ConvertDDToDMS(AirportCoordinates['long'], true);
+        const airportCoordinates = mcdu.flightPlanManager.getOrigin().infos.coordinates;
+        let originAirportLat = ConvertDDToDMS(airportCoordinates['lat'], false);
+        let originAirportLon = ConvertDDToDMS(airportCoordinates['long'], true);
         let currentGPSLat = ConvertDDToDMS(SimVar.GetSimVarValue("GPS POSITION LAT", "degree latitude"), false);
         let currentGPSLon = ConvertDDToDMS(SimVar.GetSimVarValue("GPS POSITION LON", "degree longitude"), true);
         let alignMsg = "ALIGN ON REF →[color]blue"
@@ -32,38 +32,36 @@ class CDUIRSInit {
         let IRS1GpsString = emptyIRSGpsString
         if (SimVar.GetSimVarValue("L:A320_Neo_ADIRS_KNOB_1", "Enum") == 1) {
             if (checkAligned == 2) {
-                IRS1Status = "IRS1 ALIGNED ON GPS"
+                statusIRS1 = "IRS1 ALIGNED ON GPS"
             } else {
-                IRS1Status = "IRS1 ALIGNING ON GPS"
+                statusIRS1 = "IRS1 ALIGNING ON GPS"
             }
             IRS1GpsString = IRSAlignOnPos + "[color]green"
         } else {
-            IRS1Status = "IRS1 OFF"
+            statusIRS1 = "IRS1 OFF"
         }
         let IRS2GpsString = emptyIRSGpsString
         if (SimVar.GetSimVarValue("L:A320_Neo_ADIRS_KNOB_2", "Enum") == 1) {
             if (checkAligned == 2) {
-                IRS2Status = "IRS2 ALIGNED ON GPS"
+                statusIRS2 = "IRS2 ALIGNED ON GPS"
             } else {
-                IRS2Status = "IRS2 ALIGNING ON GPS"
+                statusIRS2 = "IRS2 ALIGNING ON GPS"
             }
             IRS2GpsString = IRSAlignOnPos + "[color]green"
         } else {
-            IRS2Status = "IRS2 OFF"
+            statusIRS2 = "IRS2 OFF"
         }
         let IRS3GpsString = emptyIRSGpsString
         if (SimVar.GetSimVarValue("L:A320_Neo_ADIRS_KNOB_3", "Enum") == 1) {
             if (checkAligned == 2) {
-                IRS3Status = "IRS3 ALIGNED ON GPS"
+                statusIRS3 = "IRS3 ALIGNED ON GPS"
             } else {
-                IRS3Status = "IRS3 ALIGNING ON GPS"
+                statusIRS3 = "IRS3 ALIGNING ON GPS"
             }
             IRS3GpsString = IRSAlignOnPos + "[color]green"
         } else {
-            IRS3Status = "IRS3 OFF"
+            statusIRS3 = "IRS3 OFF"
         }
-
-
 
         mcdu.setTemplate([
             ["IRS INIT"],
@@ -71,11 +69,11 @@ class CDUIRSInit {
             ['{IrsInitFont}' + originAirportLat['deg'] + '°{IrsInitFontEnd}' + originAirportLat['min'] + '.' + Math.ceil(Number(originAirportLat['sec'] / 100)) + '[s-text]{IrsInitFont}' + originAirportLat['dir'] + "{IrsInitFontEnd} [color]blue", '{IrsInitFont}' + originAirportLon['deg'] + '°{IrsInitFontEnd}' + originAirportLon['min'] + '.' + Math.ceil(Number(originAirportLon['sec'] / 100)) + '[s-text]{IrsInitFont}' + originAirportLon['dir'] + "{IrsInitFontEnd} [color]blue", mcdu.flightPlanManager.getOrigin().ident + " [color]green"],
             ["LAT", "LONG", "GPS POSITION"],
             GPSPosAlign,
-            ["", "", IRS1Status],
+            ["", "", statusIRS1],
             ["", "", IRS1GpsString],
-            ["", "", IRS2Status],
+            ["", "", statusIRS2],
             ["", "", IRS2GpsString],
-            ["", "", IRS3Status],
+            ["", "", statusIRS3],
             ["", "", IRS3GpsString],
             [],
             ["<RETURN", alignMsg]
@@ -95,11 +93,11 @@ class CDUIRSInit {
         });
 
         mcdu.onLeftInput[0] = () => {
-            lon=false
+            lon = false
         };
 
         mcdu.onRightInput[0] = () => {
-            lon=true
+            lon = true
         };
 
         mcdu.onLeftInput[5] = () => {
@@ -120,24 +118,28 @@ class CDUIRSInit {
         async function autoRefresh() {
             await new Promise(r => setTimeout(r, 2000));
             if (mcdu.getTitle() == 'IRS INIT') {
-               CDUIRSInit.ShowPage(mcdu, lon=lon)
+                CDUIRSInit.ShowPage(mcdu, lon = lon)
             } else {
                 return
             }
         }
 
         function ConvertDDToDMS(deg, lng) {
+            // converts decimal degrees to degrees minutes seconds
             const M=0|(deg%1)*60e7;
             return {
-                dir : deg<0?lng?'W':'S':lng?'E':'N',
-                deg : 0|(deg<0?deg=-deg:deg),
+                dir : deg<0 ? lng ? 'W':'S' : lng ? 'E':'N',
+                deg : pad(0 | (deg < 0 ? deg = -deg:deg), 3, 0),
                 min : Math.abs(0|M/1e7),
                 sec : Math.abs((0|M/1e6%1*6e4)/100)
             };
         }
 
-        function wait (time) {
-            return new Promise((resolve) => setTimeout(resolve, time));
+        function pad(n, width, filler) {
+            // returns value with size 3, i.e n=1 width=3 filler=. -> "..1"
+            n = n + '';
+            return n.length >= width ? n : new Array(width - n.length + 1).join(filler) + n;
         }
+
     }
 }
