@@ -68,7 +68,7 @@ class CDUIRSInit {
         mcdu.setTemplate([
             ["IRS INIT"],
             ["LAT" + larrowupdwn , rarrowupdwn + "LONG", "REFERENCE",],
-            ['{IrsInitFont}' + originAirportLat['deg'] + '°{IrsInitFontEnd}' + originAirportLat['min'] + '.' + Math.ceil(Number(originAirportLat['sec'] / 100)) + '[s-text]{IrsInitFont}' + originAirportLat['dir'] + "{IrsInitFontEnd} [color]blue", '{IrsInitFont}' + originAirportLon['deg'] + '°{IrsInitFontEnd}' + originAirportLon['min'] + '.' + Math.ceil(Number(originAirportLon['sec'] / 100)) + '{IrsInitFont}' + originAirportLon['dir'] + "{IrsInitFontEnd} [color]blue", mcdu.flightPlanManager.getOrigin().ident + " [color]green"],
+            ['{IrsInitFont}' + originAirportLat['deg'] + '°{IrsInitFontEnd}' + originAirportLat['min'] + '.' + Math.ceil(Number(originAirportLat['sec'] / 100)) + '[s-text]{IrsInitFont}' + originAirportLat['dir'] + "{IrsInitFontEnd} [color]blue", '{IrsInitFont}' + originAirportLon['deg'] + '°{IrsInitFontEnd}' + originAirportLon['min'] + '.' + Math.ceil(Number(originAirportLon['sec'] / 100)) + '[s-text]{IrsInitFont}' + originAirportLon['dir'] + "{IrsInitFontEnd} [color]blue", mcdu.flightPlanManager.getOrigin().ident + " [color]green"],
             ["LAT", "LONG", "GPS POSITION"],
             GPSPosAlign,
             ["", "", IRS1Status],
