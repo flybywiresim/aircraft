@@ -148,7 +148,7 @@ class CDUPerformancePage {
             sltRetrCell = slatSpeed.toFixed(0) + "[color]green";
         }
         let cleanCell = "---";
-        let cleanSpeed = mcdu.getCleanTakeOffSpeed();
+        let cleanSpeed = mcdu.getPerfGreenDotSpeed();
         if (isFinite(cleanSpeed)) {
             cleanCell = cleanSpeed.toFixed(0) + "[color]green";
         }
@@ -606,7 +606,7 @@ class CDUPerformancePage {
             sltRetrCell = slatSpeed.toFixed(0) + "[color]green";
         }
         let cleanCell = "---";
-        let cleanSpeed = mcdu.getCleanApproachSpeed();
+        let cleanSpeed = mcdu.getPerfGreenDotSpeed();
         if (isFinite(cleanSpeed)) {
             cleanCell = cleanSpeed.toFixed(0) + "[color]green";
         }
@@ -665,6 +665,15 @@ class CDUPerformancePage {
         mcdu.onLeftInput[5] = () => {
             CDUPerformancePage.ShowAPPRPage(mcdu);
         };
+    }
+    static UpdateThrRedAccFromOrigin(mcdu) {
+        const origin = mcdu.flightPlanManager.getOrigin();
+        const thrRedAccAltitude = origin && origin.altitudeinFP 
+            ? origin.altitudeinFP + 1500 
+            : undefined;
+
+        mcdu.thrustReductionAltitude = thrRedAccAltitude;
+        mcdu.accelerationAltitude = thrRedAccAltitude;
     }
 }
 CDUPerformancePage._timer = 0;
