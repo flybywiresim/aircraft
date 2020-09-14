@@ -25,7 +25,7 @@ declare global {
         getTotalAirTemperature(): number
         getAmbientTemperature(): number
 
-        getPressureSelectedMode(_aircraft: any): string
+        getPressureSelectedMode(_aircraft: Aircraft): string
         getPressureSelectedUnits(): string
         getPressureValue(_units?: string): number
 
@@ -78,6 +78,14 @@ declare global {
         FLEX_MCT,
         TOGA,
         HOLD
+    }
+
+    enum Aircraft {
+        CJ4,
+        A320_NEO,
+        B747_8,
+        AS01B,
+        AS02A
     }
 
     enum NAV_AID_STATE {
