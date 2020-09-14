@@ -148,7 +148,7 @@ class CDUPerformancePage {
             sltRetrCell = slatSpeed.toFixed(0) + "[color]green";
         }
         let cleanCell = "---";
-        let cleanSpeed = mcdu.getCleanTakeOffSpeed();
+        let cleanSpeed = mcdu.getPerfGreenDotSpeed();
         if (isFinite(cleanSpeed)) {
             cleanCell = cleanSpeed.toFixed(0) + "[color]green";
         }
@@ -606,7 +606,7 @@ class CDUPerformancePage {
             sltRetrCell = slatSpeed.toFixed(0) + "[color]green";
         }
         let cleanCell = "---";
-        let cleanSpeed = mcdu.getCleanApproachSpeed();
+        let cleanSpeed = mcdu.getPerfGreenDotSpeed();
         if (isFinite(cleanSpeed)) {
             cleanCell = cleanSpeed.toFixed(0) + "[color]green";
         }
