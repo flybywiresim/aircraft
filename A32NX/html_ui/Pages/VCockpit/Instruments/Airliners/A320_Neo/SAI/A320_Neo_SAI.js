@@ -1007,7 +1007,6 @@ class A320_Neo_SAI_SelfTest extends NavSystemElement {
     init(root) {
         this._lastTime = Date.now();
         this.selfTestElement = this.gps.getChildById("SelfTest");
-        this.complete = false;
     }
     onEnter() {
     }
@@ -1017,16 +1016,16 @@ class A320_Neo_SAI_SelfTest extends NavSystemElement {
     onUpdate(_deltaTime) {
 
         // Delta time mitigation strategy
-        let curTime = Date.now();
-        let localDeltaTime = curTime - this._lastTime;
+        const curTime = Date.now();
+        const localDeltaTime = curTime - this._lastTime;
         this._lastTime = curTime;
 
         const ac_pwr = SimVar.GetSimVarValue("L:ACPowerAvailable", "bool");
         const dc_pwr = SimVar.GetSimVarValue("L:DCPowerAvailable", "bool");
-        const ColdAndDark = SimVar.GetSimVarValue('L:A32NX_COLD_AND_DARK_SPAWN', 'Bool');
+        const cold_dark = SimVar.GetSimVarValue('L:A32NX_COLD_AND_DARK_SPAWN', 'Bool');
+        const complete = this.selfTestElement.complete;
 
-        if ((ac_pwr || dc_pwr) && !this.complete) {
-            //this.selfTestElement.update(_deltaTime);
+        if ((ac_pwr || dc_pwr) && !complete) {
             this.selfTestElement.update(localDeltaTime);
         }
         if (!ac_pwr && !dc_pwr) {
@@ -1034,7 +1033,7 @@ class A320_Neo_SAI_SelfTest extends NavSystemElement {
             this.selfTestElement.resetTimer();
         }
 
-        if (!ColdAndDark && ac_pwr && dc_pwr) {
+        if (!cold_dark && ac_pwr && dc_pwr) {
             // TODO: better way of doing this not on loop
             this.selfTestElement.finishTest();
         }
@@ -1052,8 +1051,7 @@ class A320_Neo_SAI_SelfTestTimer extends HTMLElement {
     }
 
     construct() {
-        this.start_time = 73;
-
+        Utils.RemoveAllChildren(this);
         const boxHeight = 7;
         const boxWidthSmall = 15;
         const boxWidth = 18;
@@ -1063,11 +1061,12 @@ class A320_Neo_SAI_SelfTestTimer extends HTMLElement {
         const boxRow3 = 64;
         const txt_off = 6;
 
+        this.start_time = 73;
+        this.complete = false;
         this.testTimer = Math.floor(Math.random() * 3) + this.start_time;
-        Utils.RemoveAllChildren(this);
 
-        let element = document.querySelector("#SelfTestHider");
-        element.style.display = "none";
+        this.hide_inst_div = document.querySelector("#SelfTestHider");
+        this.hide_inst_div.style.display = "none";
 
         this.selfTestDiv = document.createElement("div");
         this.selfTestDiv.id = "SelfTestDiv";
@@ -1172,35 +1171,34 @@ class A320_Neo_SAI_SelfTestTimer extends HTMLElement {
 
     }
     update(dTime) {
-        if (!this.complete) {
-            if (this.testTimer >= 0) {
-                this.testTimer -= dTime / 1000;
-            }
+        if (this.complete) return;
+        if (this.testTimer >= 0) {
+            this.testTimer -= dTime / 1000;
+        }
 
-            if (this.testTimer > 9) {
-                this.st_tmr_txt.textContent = "INIT " + Math.ceil(this.testTimer) + "s";
-            }
-            else {
-                this.st_tmr_txt.textContent = "INIT 0" + Math.ceil(this.testTimer) + "s";
-            }
-            if (this.testTimer <= 0) {
-                this.finishTest();
-            }
+        if (this.testTimer > 9) {
+            this.st_tmr_txt.textContent = "INIT " + Math.ceil(this.testTimer) + "s";
+        }
+        else {
+            this.st_tmr_txt.textContent = "INIT 0" + Math.ceil(this.testTimer) + "s";
+        }
+        if (this.testTimer <= 0) {
+            this.finishTest();
         }
     }
 
     resetTimer() {
+        if (this.testTimer > this.start_time) return;
         this.testTimer = Math.floor(Math.random() * 3) + this.start_time;
         this.complete = false;
-        const element = document.querySelector("#SelfTestHider");
-        element.style.display = "none";
+        this.hide_inst_div.style.display = "none";
         this.selfTestDiv.style.display = "block";
     }
     finishTest() {
+        if (this.complete) return;
         this.testTimer = 0;
         this.selfTestDiv.style.display = "none";
-        const element = document.querySelector("#SelfTestHider");
-        element.style.display = "block";
+        this.hide_inst_div.style.display = "block";
         this.complete = true;
     }
 }
