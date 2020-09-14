@@ -1025,7 +1025,7 @@ class A320_Neo_SAI_SelfTest extends NavSystemElement {
         const dc_pwr = SimVar.GetSimVarValue("L:DCPowerAvailable", "bool");
         const ColdAndDark = SimVar.GetSimVarValue('L:A32NX_COLD_AND_DARK_SPAWN', 'Bool');
 
-        if ( (ac_pwr || dc_pwr) && !this.complete) {
+        if ((ac_pwr || dc_pwr) && !this.complete) {
             //this.selfTestElement.update(_deltaTime);
             this.selfTestElement.update(localDeltaTime);
         }
@@ -1046,12 +1046,12 @@ class A320_Neo_SAI_SelfTest extends NavSystemElement {
     }
 }
 class A320_Neo_SAI_SelfTestTimer extends HTMLElement {
+
     connectedCallback() {
         this.construct();
     }
 
     construct() {
-
         this.start_time = 73;
 
         const boxHeight = 7;
@@ -1090,7 +1090,7 @@ class A320_Neo_SAI_SelfTestTimer extends HTMLElement {
         this.selfTestSVG.style.height = "100%";
         this.selfTestDiv.appendChild(this.selfTestSVG);
 
-        let st_spd = document.createElementNS(Avionics.SVG.NS, "rect");
+        const st_spd = document.createElementNS(Avionics.SVG.NS, "rect");
         st_spd.setAttribute("id", "SpeedTest");
         st_spd.setAttribute("fill", "#afbb3a");
         st_spd.setAttribute("x", "8%");
@@ -1099,7 +1099,7 @@ class A320_Neo_SAI_SelfTestTimer extends HTMLElement {
         st_spd.setAttribute("height", boxHeight + "%");
         this.selfTestSVG.appendChild(st_spd);
 
-        let st_spd_txt = document.createElementNS(Avionics.SVG.NS, "text");
+        const st_spd_txt = document.createElementNS(Avionics.SVG.NS, "text");
         st_spd_txt.setAttribute("id", "SpeedTestTxt");
         st_spd_txt.textContent = "SPD";
         st_spd_txt.setAttribute("font", "Roboto");
@@ -1110,7 +1110,7 @@ class A320_Neo_SAI_SelfTestTimer extends HTMLElement {
         st_spd_txt.setAttribute("y", boxRow2 + txt_off + "%");
         this.selfTestSVG.appendChild(st_spd_txt);
 
-        let st_alt = document.createElementNS(Avionics.SVG.NS, "rect");
+        const st_alt = document.createElementNS(Avionics.SVG.NS, "rect");
         st_alt.setAttribute("id", "AltTest");
         st_alt.setAttribute("fill", "#afbb3a");
         st_alt.setAttribute("x", "70%");
@@ -1119,7 +1119,7 @@ class A320_Neo_SAI_SelfTestTimer extends HTMLElement {
         st_alt.setAttribute("height", boxHeight + "%");
         this.selfTestSVG.appendChild(st_alt);
 
-        let st_alt_txt = document.createElementNS(Avionics.SVG.NS, "text");
+        const st_alt_txt = document.createElementNS(Avionics.SVG.NS, "text");
         st_alt_txt.setAttribute("id", "AltTestTxt")
         st_alt_txt.textContent = "ALT";
         st_alt_txt.setAttribute("font", "Roboto");
@@ -1130,7 +1130,7 @@ class A320_Neo_SAI_SelfTestTimer extends HTMLElement {
         st_alt_txt.setAttribute("y", boxRow2 + txt_off + "%");
         this.selfTestSVG.appendChild(st_alt_txt);
 
-        let st_tmr = document.createElementNS(Avionics.SVG.NS, "rect");
+        const st_tmr = document.createElementNS(Avionics.SVG.NS, "rect");
         st_tmr.setAttribute("id", "TmrTest")
         st_tmr.setAttribute("fill", "#afbb3a");
         st_tmr.setAttribute("x", "30%");
@@ -1150,7 +1150,7 @@ class A320_Neo_SAI_SelfTestTimer extends HTMLElement {
         this.st_tmr_txt.setAttribute("y", boxRow3 + txt_off + "%");
         this.selfTestSVG.appendChild(this.st_tmr_txt);
 
-        let st_att = document.createElementNS(Avionics.SVG.NS, "rect");
+        const st_att = document.createElementNS(Avionics.SVG.NS, "rect");
         st_att.setAttribute("id", "AttTest")
         st_att.setAttribute("fill", "#afbb3a");
         st_att.setAttribute("x", "36%");
@@ -1159,7 +1159,7 @@ class A320_Neo_SAI_SelfTestTimer extends HTMLElement {
         st_att.setAttribute("height", boxHeight + "%");
         this.selfTestSVG.appendChild(st_att);
 
-        let st_att_txt = document.createElementNS(Avionics.SVG.NS, "text");
+        const st_att_txt = document.createElementNS(Avionics.SVG.NS, "text");
         st_att_txt.setAttribute("id", "AttTestTxt")
         st_att_txt.textContent = "ATT";
         st_att_txt.setAttribute("font", "Roboto");
@@ -1192,14 +1192,14 @@ class A320_Neo_SAI_SelfTestTimer extends HTMLElement {
     resetTimer() {
         this.testTimer = Math.floor(Math.random() * 3) + this.start_time;
         this.complete = false;
-        let element = document.querySelector("#SelfTestHider");
+        const element = document.querySelector("#SelfTestHider");
         element.style.display = "none";
         this.selfTestDiv.style.display = "block";
     }
     finishTest() {
         this.testTimer = 0;
         this.selfTestDiv.style.display = "none";
-        let element = document.querySelector("#SelfTestHider");
+        const element = document.querySelector("#SelfTestHider");
         element.style.display = "block";
         this.complete = true;
     }
