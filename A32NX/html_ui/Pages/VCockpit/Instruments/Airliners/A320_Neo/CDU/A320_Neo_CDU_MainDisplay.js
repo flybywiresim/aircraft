@@ -803,7 +803,6 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         if (AllADIRSOn && ADIRSState == 0) {
             //Start ADIRS Alignment
             SimVar.SetSimVarValue("L:A320_Neo_ADIRS_STATE", "Enum", 1);
-            SimVar.SetSimVarValue("L:A320_Neo_ADIRS_IN_ALIGN", "Bool", 1); // DELETE AFTER MCDU IRS INIT IS IMPLEMENTED
             SimVar.SetSimVarValue("L:A32NX_ADIRS_PFD_ALIGNED_FIRST", "Bool", 0);
             SimVar.SetSimVarValue("L:A32NX_ADIRS_PFD_ALIGNED_ATT", "Bool", 0);
             ADIRSState = 1;

@@ -1,5 +1,8 @@
 class CDUInitPage {
     static ShowPage1(mcdu) {
+        if (typeof g_modDebugMgr != "undefined") {
+            g_modDebugMgr.AddConsole(null);
+        }
         mcdu.clearDisplay();
         let fromTo = "□□□□/□□□□[color]red";
         let cruiseFlTemp = "----- /---°";
@@ -50,10 +53,18 @@ class CDUInitPage {
                 }
             };
         }
-        let alignCheck = SimVar.GetSimVarValue("L:A320_Neo_ADIRS_IN_ALIGN", "Boolean");
-        let alignOption = ""
-        if (alignCheck) {
-            alignOption = "ALIGN IRS>"
+        let alignOption;
+        var events = [];
+        for (var property in document.documentElement) {
+        var match = property.match(/^on(.*)/)
+        if (match) {
+            events.push(match[1]);
+            }
+        }
+        // console.log(events.join('\n'))
+        if (mcdu.flightPlanManager.getOrigin()) {
+            alignOption = "IRS INIT>"
+            console.log(mcdu.flightPlanManager.getOrigin().ident);
         }
         let flightNo = SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string", "FMC");
         if (!flightNo) {
@@ -61,7 +72,6 @@ class CDUInitPage {
         }
         let lat = "----.--";
         let long = "-----.--";
-        console.log(mcdu.flightPlanManager.getOrigin());
         if (mcdu.flightPlanManager.getOrigin() && mcdu.flightPlanManager.getOrigin().infos && mcdu.flightPlanManager.getOrigin().infos.coordinates) {
             lat = mcdu.flightPlanManager.getOrigin().infos.coordinates.latToDegreeString() + "[color]blue";
             long = mcdu.flightPlanManager.getOrigin().infos.coordinates.longToDegreeString() + "[color]blue";
@@ -76,14 +86,16 @@ class CDUInitPage {
             ["ALTN/CO RTE"],
             [altDest],
             ["FLT NBR"],
-            [flightNo + "[color]blue", alignOption + " [color]red"],
+            [flightNo + "[color]blue", alignOption],
             ["LAT", "LONG"],
             [lat, long],
             ["COST INDEX"],
-            [costIndex, "WIND>"],
+            [costIndex, "WIND"],
             ["CRZ FL/TEMP", "TROPO"],
             [cruiseFlTemp, "36090[color]blue"]
         ]);
+
+
         mcdu.onLeftInput[0] = () => {
             let value = mcdu.inOut;
             mcdu.clearUserInput();
@@ -102,16 +114,10 @@ class CDUInitPage {
                 }
             });
         };
-        mcdu.onRightInput[2] = async () => {
-            mcdu.clearUserInput();
-            SimVar.SetSimVarValue("L:A320_Neo_ADIRS_STATE", "Enum", 2);
-            SimVar.SetSimVarValue("L:A320_Neo_ADIRS_IN_ALIGN", "Boolean", 0);
-            SimVar.SetSimVarValue("L:A320_Neo_ADIRS_TIME", "seconds", 0);
-            // Slight delay for var A320_Neo_ADIRS_TIME, if no delay var will not be correctly set to 0
-            await new Promise(r => setTimeout(r, 100));
-            // Set A320_Neo_ADIRS_TIME to 0 to remove align msg in ECAM
-            SimVar.SetSimVarValue("L:A320_Neo_ADIRS_TIME", "seconds", 0);
-            CDUInitPage.ShowPage1(mcdu);
+        mcdu.onRightInput[2] =  () => {
+            if (alignOption) {
+                CDUIRSInit.ShowPage(mcdu);
+            }
         };
         mcdu.onLeftInput[2] = () => {
             let value = mcdu.inOut;
