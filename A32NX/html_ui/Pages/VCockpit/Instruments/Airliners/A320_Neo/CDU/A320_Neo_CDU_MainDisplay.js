@@ -678,7 +678,8 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             }
             if (this.currentFlightPhase === FlightPhase.FLIGHT_PHASE_TAKEOFF) {
                 if (this.isAirspeedManaged()) {
-                    let speed = this.getCleanTakeOffSpeed();
+                    // getCleanTakeOffSpeed is a final fallback and not truth to reality
+                    const speed = isFinite(this.v2Speed) ? this.v2Speed + 10 : this.getCleanTakeOffSpeed();
                     this.setAPManagedSpeed(speed, Aircraft.A320_NEO);
                 }
             }
