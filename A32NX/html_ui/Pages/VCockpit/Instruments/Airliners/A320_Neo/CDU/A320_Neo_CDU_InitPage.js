@@ -1,8 +1,5 @@
 class CDUInitPage {
     static ShowPage1(mcdu) {
-        if (typeof g_modDebugMgr != "undefined") {
-            g_modDebugMgr.AddConsole(null);
-        }
         mcdu.clearDisplay();
         let fromTo = "□□□□/□□□□[color]red";
         let cruiseFlTemp = "----- /---°";
