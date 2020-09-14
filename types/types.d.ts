@@ -17,6 +17,7 @@ declare global {
     const Simplane: {
         getVerticalSpeed(): number
         getAltitude(): number
+        getAltitudeAboveGround(): number
         getHeadingMagnetic(): number
 
         getIsGrounded(): boolean
@@ -24,12 +25,32 @@ declare global {
         getTotalAirTemperature(): number
         getAmbientTemperature(): number
 
+        getPressureSelectedMode(_aircraft: any): string
+        getPressureSelectedUnits(): string
+        getPressureValue(_units?: string): number
+
+        getAutoPilotDisplayedAltitudeLockValue(_units?: string): number
         getAutoPilotAirspeedManaged(): boolean
         getAutoPilotHeadingManaged(): boolean
+        getAutoPilotAltitudeManaged(): boolean
 
         getAutoPilotMachModeActive(): number
         getEngineActive(_engineIndex: number): number
     };
+
+    const Utils: {
+        RemoveAllChildren(elem): void
+
+        leadingZeros(_value, _nbDigits, _pointFixed?: number): string
+    }
+
+    const Avionics: {
+        SVG: SVG
+    }
+
+    class SVG {
+        NS: string;
+    }
 
     enum FlightPhase {
         FLIGHT_PHASE_PREFLIGHT,
