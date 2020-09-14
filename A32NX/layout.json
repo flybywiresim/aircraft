@@ -102,8 +102,8 @@
         },
         {
             "path": "html_ui/Pages/VCockpit/Instruments/Airliners/A320_Neo/CDU/A320_Neo_CDU.css",
-            "size": 3601,
-            "date": 132443953718956886
+            "size": 3602,
+            "date": 132445172358382946
         },
         {
             "path": "html_ui/Pages/VCockpit/Instruments/Airliners/A320_Neo/CDU/A320_Neo_CDU.html",
@@ -128,17 +128,17 @@
         {
             "path": "html_ui/Pages/VCockpit/Instruments/Airliners/A320_Neo/CDU/A320_Neo_CDU_AocRequestsMessage.js",
             "size": 2252,
-            "date": 132443953718966896
+            "date": 132445172244503912
         },
         {
             "path": "html_ui/Pages/VCockpit/Instruments/Airliners/A320_Neo/CDU/A320_Neo_CDU_AocRequestsWeather.js",
             "size": 6373,
-            "date": 132443953718976902
+            "date": 132445171789918308
         },
         {
             "path": "html_ui/Pages/VCockpit/Instruments/Airliners/A320_Neo/CDU/A320_Neo_CDU_AtsuMenu.js",
-            "size": 646,
-            "date": 132443953718976902
+            "size": 683,
+            "date": 132444162784260292
         },
         {
             "path": "html_ui/Pages/VCockpit/Instruments/Airliners/A320_Neo/CDU/A320_Neo_CDU_AvailableArrivalsPage.js",
@@ -207,13 +207,13 @@
         },
         {
             "path": "html_ui/Pages/VCockpit/Instruments/Airliners/A320_Neo/CDU/A320_Neo_CDU_MainDisplay.js",
-            "size": 43307,
-            "date": 132443953904976336
+            "size": 43839,
+            "date": 132444161280182068
         },
         {
             "path": "html_ui/Pages/VCockpit/Instruments/Airliners/A320_Neo/CDU/A320_Neo_CDU_MenuPage.js",
-            "size": 1838,
-            "date": 132443953718986910
+            "size": 2867,
+            "date": 132445118325621450
         },
         {
             "path": "html_ui/Pages/VCockpit/Instruments/Airliners/A320_Neo/CDU/A320_Neo_CDU_NavaidPage.js",

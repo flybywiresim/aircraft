@@ -12,6 +12,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this._apCooldown = 500;
         this._lastRequestedFLCModeWaypointIndex = -1;
         this.messages = [];
+        this.activeSystem = 'FMGC';
     }
     get templateID() { return "A320_Neo_CDU"; }
     connectedCallback() {
@@ -211,60 +212,70 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         if (input === "DIR") {
             if (this.onDir) {
                 this.onDir();
+                this.activeSystem = 'FMGC';
             }
             return true;
         }
         else if (input === "PROG") {
             if (this.onProg) {
                 this.onProg();
+                this.activeSystem = 'FMGC';
             }
             return true;
         }
         else if (input === "PERF") {
             if (this.onPerf) {
                 this.onPerf();
+                this.activeSystem = 'FMGC';
             }
             return true;
         }
         else if (input === "INIT") {
             if (this.onInit) {
                 this.onInit();
+                this.activeSystem = 'FMGC';
             }
             return true;
         }
         else if (input === "DATA") {
             if (this.onData) {
                 this.onData();
+                this.activeSystem = 'FMGC';
             }
             return true;
         }
         else if (input === "FPLN") {
             if (this.onFpln) {
                 this.onFpln();
+                this.activeSystem = 'FMGC';
             }
             return true;
         }
         else if (input === "RAD") {
             if (this.onRad) {
                 this.onRad();
+                this.activeSystem = 'FMGC';
             }
             return true;
         }
         else if (input === "FUEL") {
             if (this.onFuel) {
                 this.onFuel();
+                this.activeSystem = 'FMGC';
             }
             return true;
         }
         else if (input === "SEC") {
             if (this.onSec) {
                 this.onSec();
+                this.activeSystem = 'FMGC';
             }
             return true;
         }
         else if (input === "ATC") {
             if (this.onAtc) {
                 this.onAtc();
+                this.activeSystem = 'FMGC';
             }
             return true;
         }
@@ -277,6 +288,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         else if (input === "AIRPORT") {
             if (this.onAirport) {
                 this.onAirport();
+                this.activeSystem = 'FMGC';
             }
             return true;
         }

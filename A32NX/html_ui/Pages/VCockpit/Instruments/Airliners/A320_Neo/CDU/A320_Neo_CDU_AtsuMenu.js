@@ -1,6 +1,7 @@
 class CDUAtsuMenu {
     static ShowPage(mcdu) {
         mcdu.clearDisplay();
+        mcdu.activeSystem = 'ATSU';
         const display = [
             ["ATSU DATALINK"],
             [""],

@@ -100,7 +100,7 @@ class CDUAocRequestsWeather {
                                                 return result;
                                             };
 
-                                            const newLines = wordWrapToStringList(metar, 52);
+                                            const newLines = wordWrapToStringList(metar, 50);
                                             newLines.forEach(l => lines.push(l));
                                             lines.push('--------------------------');
 
