@@ -1142,6 +1142,20 @@
 				<ANIM_NAME>KNOB_OVHD_AIRCOND_PACKFLOW</ANIM_NAME>
 				<ANIM_CODE>50</ANIM_CODE>
 			</UseTemplate>
+			<UseTemplate Name="ASOBO_GT_Push_Button_Airliner">
+				<NODE_ID>PUSH_OVHD_ELEC_COMMERCIAL</NODE_ID>
+				<ANIM_NAME>PUSH_OVHD_ELEC_COMMERCIAL</ANIM_NAME>
+				<SEQ1_EMISSIVE_CODE>(L:A32NX_ELEC_COMMERCIAL_FAULT, Bool)</SEQ1_EMISSIVE_CODE>
+				<SEQ2_EMISSIVE_CODE>(L:A32NX_ELEC_COMMERCIAL_TOGGLE, Bool) !</SEQ2_EMISSIVE_CODE>
+				<LEFT_SINGLE_CODE>(L:A32NX_ELEC_COMMERCIAL_TOGGLE) ! (>L:A32NX_ELEC_COMMERCIAL_TOGGLE)</LEFT_SINGLE_CODE>
+			</UseTemplate>
+			<UseTemplate Name="ASOBO_GT_Push_Button_Airliner">
+				<NODE_ID>PUSH_OVHD_ELEC_GALYCAB</NODE_ID>
+				<ANIM_NAME>PUSH_OVHD_ELEC_GALYCAB</ANIM_NAME>
+				<SEQ1_EMISSIVE_CODE>(L:A32NX_ELEC_GALYCAB_FAULT, Bool)</SEQ1_EMISSIVE_CODE>
+				<SEQ2_EMISSIVE_CODE>(L:A32NX_ELEC_GALYCAB_TOGGLE, Bool) !</SEQ2_EMISSIVE_CODE>
+				<LEFT_SINGLE_CODE>(L:A32NX_ELEC_GALYCAB_TOGGLE) ! (>L:A32NX_ELEC_GALYCAB_TOGGLE)</LEFT_SINGLE_CODE>
+			</UseTemplate>
 
 			<UseTemplate Name="ASOBO_AIRBUS_Push_Fuel_Valve_Template">
 				<NODE_ID>PUSH_OVHD_APU_MASTERSW</NODE_ID>
@@ -1587,12 +1601,6 @@
 				</UseTemplate>
 				<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
 					<NODE_ID>PUSH_OVHD_HYD_ELECPUMPY</NODE_ID>
-				</UseTemplate>
-				<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
-					<NODE_ID>PUSH_OVHD_ELEC_COMMERCIAL</NODE_ID>
-				</UseTemplate>
-				<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
-					<NODE_ID>PUSH_OVHD_ELEC_GALYCAB</NODE_ID>
 				</UseTemplate>
 				<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
 					<NODE_ID>PUSH_OVHD_ELEC_IDG1</NODE_ID>
@@ -3252,12 +3260,6 @@
 		</UseTemplate>
 		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
 			<NODE_ID>PUSH_OVHD_FUEL_MODESEL</NODE_ID>
-		</UseTemplate>
-		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-			<NODE_ID>PUSH_OVHD_ELEC_COMMERCIAL</NODE_ID>
-		</UseTemplate>
-		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-			<NODE_ID>PUSH_OVHD_ELEC_GALYCAB</NODE_ID>
 		</UseTemplate>
 		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
 			<NODE_ID>LOCK_OVHD_ELEC_IDG1</NODE_ID>
