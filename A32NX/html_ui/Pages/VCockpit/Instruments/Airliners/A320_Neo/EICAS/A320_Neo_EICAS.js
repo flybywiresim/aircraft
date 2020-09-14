@@ -109,9 +109,9 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         this.updateScreenState();
 
         const engineOn = Simplane.getEngineActive(0) || Simplane.getEngineActive(1);
-        const externalPower = SimVar.GetSimVarValue("EXTERNAL POWER ON", "bool");
+        const externalPowerOn = SimVar.GetSimVarValue("EXTERNAL POWER AVAILABLE:1", "Bool") === 1 && SimVar.GetSimVarValue("EXTERNAL POWER ON", "Bool") === 1;
         const apuOn = SimVar.GetSimVarValue("L:APU_GEN_ONLINE", "bool");
-        const isACPowerAvailable = engineOn || apuOn || externalPower;
+        const isACPowerAvailable = engineOn || apuOn || externalPowerOn;
         var DCBus = false;
 
         const ACPowerStateChange = (isACPowerAvailable != this.ACPowerLastState);
