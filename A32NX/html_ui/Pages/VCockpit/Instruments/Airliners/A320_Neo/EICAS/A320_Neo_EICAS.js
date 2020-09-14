@@ -41,6 +41,7 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         this.createLowerScreenPage("DOOR", "BottomScreen", "a320-neo-lower-ecam-door"); // MODIFIED
         this.createLowerScreenPage("WHEEL", "BottomScreen", "a320-neo-lower-ecam-wheel"); // MODIFIED
         this.createLowerScreenPage("FTCL", "BottomScreen", "a320-neo-lower-ecam-ftcl"); // MODIFIED
+        this.createLowerScreenPage("STS", "BottomScreen", "a320-neo-lower-ecam-status"); // MODIFIED
         this.createLowerScreenPage("CRZ", "BottomScreen", "a320-neo-lower-ecam-crz"); // MODIFIED
     }
     getLowerScreenChangeEventNamePrefix() {
@@ -72,12 +73,12 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         this.topSelfTestTimer = -1;
         this.topSelfTestTimerStarted = false;
         this.topSelfTestLastKnobValue = 1;
-        
+
         this.bottomSelfTestDiv = this.querySelector("#BottomSelfTest");
         this.bottomSelfTestTimer = -1;
         this.bottomSelfTestTimerStarted = false;
         this.bottomSelfTestLastKnobValue = 1;
-        
+
         // Using ternary in case the LVar is undefined
         this.ACPowerLastState = SimVar.GetSimVarValue('L:A32NX_COLD_AND_DARK_SPAWN', 'Bool') ? 0 : 1;
 
@@ -85,18 +86,18 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         this.changePage("DOOR"); // MODIFIED
         this.changePage("DOOR"); // This should get the ECAM into the "unselected" state
         this.localVarUpdater = new LocalVarUpdater();
-        
+
         SimVar.SetSimVarValue("LIGHT POTENTIOMETER:7","FLOAT64",0);
         SimVar.SetSimVarValue("LIGHT POTENTIOMETER:14","FLOAT64",0);
         SimVar.SetSimVarValue("LIGHT POTENTIOMETER:15","FLOAT64",0);
-        SimVar.SetSimVarValue("LIGHT POTENTIOMETER:16","FLOAT64",0);        
-        SimVar.SetSimVarValue("LIGHT POTENTIOMETER:17","FLOAT64",0);
-        SimVar.SetSimVarValue("LIGHT POTENTIOMETER:18","FLOAT64",0);
-        SimVar.SetSimVarValue("LIGHT POTENTIOMETER:19","FLOAT64",0);
-        SimVar.SetSimVarValue("LIGHT POTENTIOMETER:20","FLOAT64",0);
-        SimVar.SetSimVarValue("LIGHT POTENTIOMETER:21","FLOAT64",0);
-        SimVar.SetSimVarValue("LIGHT POTENTIOMETER:22","FLOAT64",0);
-        SimVar.SetSimVarValue("LIGHT POTENTIOMETER:23","FLOAT64",0);
+        SimVar.SetSimVarValue("LIGHT POTENTIOMETER:16","FLOAT64",0);
+        SimVar.SetSimVarValue("LIGHT POTENTIOMETER:17","FLOAT64",0.1);
+        SimVar.SetSimVarValue("LIGHT POTENTIOMETER:18","FLOAT64",0.1);
+        SimVar.SetSimVarValue("LIGHT POTENTIOMETER:19","FLOAT64",0.1);
+        SimVar.SetSimVarValue("LIGHT POTENTIOMETER:20","FLOAT64",0.1);
+        SimVar.SetSimVarValue("LIGHT POTENTIOMETER:21","FLOAT64",0.1);
+        SimVar.SetSimVarValue("LIGHT POTENTIOMETER:22","FLOAT64",0.1);
+        SimVar.SetSimVarValue("LIGHT POTENTIOMETER:23","FLOAT64",0.1);
     }
     onUpdate(_deltaTime) {
         super.onUpdate(_deltaTime);
@@ -106,7 +107,7 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         }
         this.updateAnnunciations();
         this.updateScreenState();
-        
+
         const engineOn = Simplane.getEngineActive(0) || Simplane.getEngineActive(1);
         const externalPower = SimVar.GetSimVarValue("EXTERNAL POWER ON", "bool");
         const apuOn = SimVar.GetSimVarValue("L:APU_GEN_ONLINE", "bool");
@@ -136,15 +137,15 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         /**
          * Self test on top ECAM screen
          **/
-        
+
         let topSelfTestCurrentKnobValue = SimVar.GetSimVarValue("LIGHT POTENTIOMETER:22", "number");
-        
+
         if(((topSelfTestCurrentKnobValue >= 0.1 && this.topSelfTestLastKnobValue < 0.1) || ACPowerStateChange) && isACPowerAvailable && !this.topSelfTestTimerStarted) {
             this.topSelfTestDiv.style.display = "block";
             this.topSelfTestTimer = 14.25;
             this.topSelfTestTimerStarted = true;
         }
-        
+
         if (this.topSelfTestTimer >= 0) {
             this.topSelfTestTimer -= _deltaTime / 1000;
             if (this.topSelfTestTimer <= 0) {
@@ -152,21 +153,21 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
                 this.topSelfTestTimerStarted = false;
             }
         }
-        
+
         this.topSelfTestLastKnobValue = topSelfTestCurrentKnobValue;
 
         /**
          * Self test on bottom ECAM screen
          **/
-        
+
         let bottomSelfTestCurrentKnobValue = SimVar.GetSimVarValue("LIGHT POTENTIOMETER:23", "number");
-        
+
         if(((bottomSelfTestCurrentKnobValue >= 0.1 && this.bottomSelfTestLastKnobValue < 0.1) || ACPowerStateChange) && isACPowerAvailable && !this.bottomSelfTestTimerStarted) {
             this.bottomSelfTestDiv.style.display = "block";
             this.bottomSelfTestTimer = 14.25;
             this.bottomSelfTestTimerStarted = true;
         }
-        
+
         if (this.bottomSelfTestTimer >= 0) {
             this.bottomSelfTestTimer -= _deltaTime / 1000;
             if (this.bottomSelfTestTimer <= 0) {
@@ -174,7 +175,7 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
                 this.bottomSelfTestTimerStarted = false;
             }
         }
-        
+
         this.bottomSelfTestLastKnobValue = bottomSelfTestCurrentKnobValue;
 
         this.ACPowerLastState = isACPowerAvailable;
@@ -249,6 +250,27 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         } else if (isGearExtended && (altitude < 16000)) {
             this.pageNameWhenUnselected = "WHEEL";
             this.minPageIndexWhenUnselected = 4;
+        }
+
+        const sFailPage = SimVar.GetSimVarValue("L:A32NX_ECAM_SFAIL", "Enum");
+
+        if (sFailPage != -1) {
+            const ECAMPageIndices = {
+                0: "ENG",
+                1: "BLEED",
+                2: "PRESS",
+                3: "ELEC",
+                4: "HYD",
+                5: "FUEL",
+                6: "APU",
+                7: "COND",
+                8: "DOOR",
+                9: "WHEEL",
+                10: "FTCL",
+                11: "STS"
+            }
+
+            this.pageNameWhenUnselected = ECAMPageIndices[sFailPage];
         }
 
         // switch page when desired page was changed

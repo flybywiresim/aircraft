@@ -49,7 +49,13 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         }
         this._onModeManagedHeading();
         this._onModeManagedAltitude();
+
+        CDUPerformancePage.UpdateThrRedAccFromOrigin(this);
+        
         SimVar.SetSimVarValue("K:VS_SLOT_INDEX_SET", "number", 1);
+
+        this.taxiFuelWeight = 0.2;
+        CDUInitPage.updateTowIfNeeded(this);
     }
     Update() {
         super.Update();
@@ -776,7 +782,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             this.landingResetTimer -= deltaTime/1000;
             if (this.landingResetTimer <= 0) {
                 this.landingResetTimer = null;
-                this.currentFlightPhase = 0;
+                this.currentFlightPhase = 2;
                 SimVar.SetSimVarValue("L:A32NX_Preflight_Complete", "Bool", 0);
                 SimVar.SetSimVarValue("L:A32NX_TO_CONFIG_NORMAL", "Bool", 0);
                 CDUIdentPage.ShowPage(this);
