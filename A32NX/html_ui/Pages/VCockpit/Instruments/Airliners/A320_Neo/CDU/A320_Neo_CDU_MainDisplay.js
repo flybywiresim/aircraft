@@ -38,33 +38,58 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     }
     trySetFlapsTHS(s) {
         if (s) {
-            let flaps = s.split("/")[0];
             let validEntry = false;
-            if (!/^\d+$/.test(flaps)) {
-                this.showErrorMessage("FORMAT ERROR");
-                return false;
+            let nextFlaps = this.flaps
+            let nextThs = this.ths
+            let [flaps, ths] = s.split("/");
+
+            // Parse flaps
+            if (flaps && flaps.length > 0) {
+                if (!/^\d+$/.test(flaps)) {
+                    this.showErrorMessage("FORMAT ERROR");
+                    return false;
+                }
+
+                let vFlaps = parseInt(flaps);
+                if (isFinite(vFlaps) && vFlaps > 0 && vFlaps < 4) {
+                    nextFlaps = vFlaps;
+                    validEntry = true;
+                }
             }
-            let vFlaps = parseInt(flaps);
-            if (isFinite(vFlaps)) {
-                this.flaps = vFlaps;
-                validEntry = true;
-            }
-            let vThs = s.split("/")[1];
-            if (vThs) {
-                if (vThs.substr(0, 2) === "UP" || vThs.substr(0, 2) === "DN") {
-                    if (isFinite(parseFloat(vThs.substr(2)))) {
-                        this.ths = vThs;
+
+            // Parse THS
+            if (ths) {
+                if (!/^((UP|DN)(\d?\.?\d)|(\d?\.?\d)(UP|DN))$/.test(ths)) {
+                    this.showErrorMessage("FORMAT ERROR");
+                    return false;
+                }
+
+                let direction = null
+                ths = ths.replace(/(UP|DN)/g, (substr) => {
+                    direction = substr
+                    return ''
+                })
+
+                if (direction) {
+                    const vThs = parseFloat(ths.trim())
+                    if (isFinite(vThs) && vThs > 0.0 && vThs <= 2.5) {
+                        nextThs = `${direction}${vThs.toFixed(1)}`;
                         validEntry = true;
                     }
                 }
             }
+
+            // Commit changes.
             if (validEntry) {
+                this.flaps = nextFlaps
+                this.ths = nextThs
                 return true;
             }
         }
+
         this.showErrorMessage("INVALID ENTRY");
         return false;
-    }
+      }
     onPowerOn() {
         super.onPowerOn();
         if (Simplane.getAutoPilotAirspeedManaged()) {
