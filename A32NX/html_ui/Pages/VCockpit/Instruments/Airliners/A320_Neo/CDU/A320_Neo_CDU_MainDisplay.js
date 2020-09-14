@@ -36,6 +36,35 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         CDUIdentPage.ShowPage(this);
         this.electricity = this.querySelector("#Electricity")
     }
+    trySetFlapsTHS(s) {
+        if (s) {
+            let flaps = s.split("/")[0];
+            let validEntry = false;
+            if (!/^\d+$/.test(flaps)) {
+                this.showErrorMessage("FORMAT ERROR");
+                return false;
+            }
+            let vFlaps = parseInt(flaps);
+            if (isFinite(vFlaps)) {
+                this.flaps = vFlaps;
+                validEntry = true;
+            }
+            let vThs = s.split("/")[1];
+            if (vThs) {
+                if (vThs.substr(0, 2) === "UP" || vThs.substr(0, 2) === "DN") {
+                    if (isFinite(parseFloat(vThs.substr(2)))) {
+                        this.ths = vThs;
+                        validEntry = true;
+                    }
+                }
+            }
+            if (validEntry) {
+                return true;
+            }
+        }
+        this.showErrorMessage("INVALID ENTRY");
+        return false;
+    }
     onPowerOn() {
         super.onPowerOn();
         if (Simplane.getAutoPilotAirspeedManaged()) {
@@ -48,7 +77,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this._onModeManagedAltitude();
 
         CDUPerformancePage.UpdateThrRedAccFromOrigin(this);
-        
+
         SimVar.SetSimVarValue("K:VS_SLOT_INDEX_SET", "number", 1);
 
         this.taxiFuelWeight = 0.2;
