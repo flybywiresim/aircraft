@@ -98,9 +98,43 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         let dWeight = (this.getWeight() - 47) / (78 - 47);
         return 154 + 44 * dWeight;
     }
-    getCleanTakeOffSpeed() {
-        let dWeight = (this.getWeight() - 47) / (78 - 47);
-        return 170 + 51 * dWeight;
+
+    /**
+     * Get aircraft takeoff and approach green dot speed
+     * Calculation:
+     * Gross weight in thousandths (KG) * 2 + 85 when below FL200
+     * @returns {number}
+     */
+    getPerfGreenDotSpeed() {
+        return ((this.getGrossWeight('kg') / 1000) * 2) + 85;
+    }
+
+    /**
+     * Get the gross weight of the aircraft from the addition
+     * of the ZFW, fuel and payload.
+     * @param unit
+     * @returns {number}
+     */
+    getGrossWeight(unit) {
+        const fuelWeight = SimVar.GetSimVarValue("FUEL TOTAL QUANTITY WEIGHT", unit);
+        const emptyWeight = SimVar.GetSimVarValue("EMPTY WEIGHT", unit);
+        const payloadWeight = this.getPayloadWeight(unit);
+        return Math.round(emptyWeight + fuelWeight + payloadWeight);
+    }
+
+    /**
+     * Get the payload of the aircraft, taking in to account each
+     * payload station
+     * @param unit
+     * @returns {number}
+     */
+    getPayloadWeight(unit) {
+        const payloadCount = SimVar.GetSimVarValue("PAYLOAD STATION COUNT", "number");
+        let payloadWeight = 0;
+        for (let i = 1; i <= payloadCount; i++) {
+            payloadWeight += SimVar.GetSimVarValue(`PAYLOAD STATION WEIGHT:${i}`, unit);
+        }
+        return payloadWeight;
     }
     _onModeSelectedSpeed() {
         if (SimVar.GetSimVarValue("L:A320_FCU_SHOW_SELECTED_SPEED", "number") === 0) {
