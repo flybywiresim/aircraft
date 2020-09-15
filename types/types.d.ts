@@ -1,22 +1,23 @@
 declare global {
 
-    type NumberSimVarUnit = ("number" | "Number") | ("SINT32") | ("bool" | "Bool" | "Boolean" | "boolean") | "Enum" | "lbs" | "kg" | ("Degrees" | "degree")
+    type NumberSimVarUnit = ("number" | "Number") | "position 32k" | ("SINT32") | ("bool" | "Bool" | "Boolean" | "boolean") | "Enum" | "lbs" | "kg" | ("Degrees" | "degree")
         | "radians" | ("Percent" | "percent") | ("Feet" | "feet" | "feets") | "Volts" | "Amperes" | "Hertz" | "PSI" | "celsius" | "degree latitude"
         | "degree longitude" | "Meters per second" | "Position" | ("Knots" | "knots") | "Seconds"
 
     type TextSimVarUnit = "Text" | "string"
 
     const SimVar: {
-        GetSimVarValue(name: string, type: NumberSimVarUnit): number
-        GetSimVarValue(name: string, type: TextSimVarUnit): string
+        GetSimVarValue(name: string, type: NumberSimVarUnit, dataSource?: string): number
+        GetSimVarValue(name: string, type: TextSimVarUnit, dataSource?: string): string
 
-        SetSimVarValue(name: string, type: NumberSimVarUnit, value: number): void
-        SetSimVarValue(name: string, type: TextSimVarUnit, value: string): void
+        SetSimVarValue(name: string, type: NumberSimVarUnit, value: number, dataSource?: string): void
+        SetSimVarValue(name: string, type: TextSimVarUnit, value: string, dataSource?: string): void
     }
 
     const Simplane: {
         getVerticalSpeed(): number
         getAltitude(): number
+        getAltitudeAboveGround(): number
         getHeadingMagnetic(): number
 
         getIsGrounded(): boolean
@@ -24,26 +25,79 @@ declare global {
         getTotalAirTemperature(): number
         getAmbientTemperature(): number
 
+        getPressureSelectedMode(_aircraft: Aircraft): string
+        getPressureSelectedUnits(): string
+        getPressureValue(_units?: string): number
+
+        getAutoPilotDisplayedAltitudeLockValue(_units?: string): number
         getAutoPilotAirspeedManaged(): boolean
         getAutoPilotHeadingManaged(): boolean
+        getAutoPilotAltitudeManaged(): boolean
 
         getAutoPilotMachModeActive(): number
         getEngineActive(_engineIndex: number): number
     };
 
+    const Utils: {
+        RemoveAllChildren(elem): void
+
+        leadingZeros(_value, _nbDigits, _pointFixed?: number): string
+    }
+
+    const Avionics: {
+        SVG: SVG
+    }
+
+    class SVG {
+        NS: string;
+    }
+
     enum FlightPhase {
+        FLIGHT_PHASE_PREFLIGHT,
+        FLIGHT_PHASE_TAXI,
         FLIGHT_PHASE_TAKEOFF,
         FLIGHT_PHASE_CLIMB,
         FLIGHT_PHASE_CRUISE,
+        FLIGHT_PHASE_DESCENT,
         FLIGHT_PHASE_APPROACH,
         FLIGHT_PHASE_GOAROUND
     }
 
+    enum AutopilotMode {
+        MANAGED,
+        SELECTED,
+        HOLD
+    }
+
     enum ThrottleMode {
+        UNKNOWN,
+        REVERSE,
+        IDLE,
+        AUTO,
         CLIMB,
         FLEX_MCT,
         TOGA,
-        AUTO
+        HOLD
+    }
+
+    enum Aircraft {
+        CJ4,
+        A320_NEO,
+        B747_8,
+        AS01B,
+        AS02A
+    }
+
+    enum NAV_AID_STATE {
+        OFF,
+        ADF,
+        VOR
+    }
+
+    enum NAV_AID_MODE {
+        NONE,
+        MANUAL,
+        REMOTE
     }
 
     type A320_Neo_LowerECAM_APU = {
@@ -65,10 +119,11 @@ declare global {
     }
 
     class EICASTemplateElement extends TemplateElement {
+        init(): void
     }
 
     class BaseEICAS {
-        
+
     }
 
     const Airliners: {
@@ -127,7 +182,7 @@ declare global {
         get extraMessageBorderPosY(): number;
         get extraMessageBorderWidth(): number;
         get extraMessageBorderHeight(): number;
-        set active(_isActive: boolean): void;
+        set active(_isActive: boolean);
         get active(): boolean;
         polarToCartesian(_centerX: number, _centerY: number, _radius: number, _angleInDegrees: number): Vec2;
         valueToAngle(_value: number, _radians: number): number;
