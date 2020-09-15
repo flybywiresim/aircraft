@@ -127,9 +127,15 @@ class CDUIRSInit {
         function ConvertDDToDMS(deg, lng) {
             // converts decimal degrees to degrees minutes seconds
             const M=0|(deg%1)*60e7;
+            let degree;
+            if (lng) {
+                degree = pad(0 | (deg < 0 ? deg = -deg:deg), 3, 0)
+            } else {
+                degree = 0 | (deg < 0 ? deg = -deg:deg);
+            }
             return {
                 dir : deg<0 ? lng ? 'W':'S' : lng ? 'E':'N',
-                deg : pad(0 | (deg < 0 ? deg = -deg:deg), 3, 0),
+                deg : degree,
                 min : Math.abs(0|M/1e7),
                 sec : Math.abs((0|M/1e6%1*6e4)/100)
             };
