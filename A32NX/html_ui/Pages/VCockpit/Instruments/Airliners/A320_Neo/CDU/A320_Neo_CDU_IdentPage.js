@@ -12,7 +12,7 @@ class CDUIdentPage {
             [""],
             [""],
             ["CHG CODE"],
-            ["A2N"],
+            ["A20N"],
             ["IDLE/PERF", "SOFTWARE"],
             ["+0.0/+2.4[color]green", "STATUS/XLOAD>"]
         ]);
