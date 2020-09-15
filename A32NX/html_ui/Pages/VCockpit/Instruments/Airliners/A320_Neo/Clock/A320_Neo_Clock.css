@@ -56,7 +56,7 @@ a320-neo-clock-element {
     bottom: 0;
     left: 2%;
     right: 0; 
-    color:white;}
+    color: rgba(155, 148, 148, 0.911);}
     a320-neo-clock-element #Mainframe #TopSelector {
       margin-top: 0%;
       /* width: 100%;
@@ -68,9 +68,9 @@ a320-neo-clock-element {
       justify-content: center; }
       a320-neo-clock-element #Mainframe #TopSelector #TopSelectorValue {
         font-family: Alarm-Clock;
-        font-size: 65px;
+        font-size: 81px;
         text-align: center;
-        color: white; }
+        color: rgba(155, 148, 148, 0.911); }
     a320-neo-clock-element #Mainframe #MiddleSelector {
       margin-top: 0%;
       margin-left: 0%;
@@ -82,7 +82,7 @@ a320-neo-clock-element {
       }
       a320-neo-clock-element #Mainframe #MiddleSelector #MiddleSelectorValue {
         font-family: Alarm-Clock;
-        font-size: 82px;
+        font-size: 81px;
         margin-left: 2%;
         margin-right: 5%;
         width: 95%;
@@ -97,7 +97,7 @@ a320-neo-clock-element {
           width: 5%;
           text-align: right;
           vertical-align: middle;
-          color: white; }
+          color: rgba(155, 148, 148, 0.911); }
 
     a320-neo-clock-element #Mainframe #BottomSelector {
       margin-top: 1%;
@@ -108,7 +108,7 @@ a320-neo-clock-element {
       justify-content: center; }
       a320-neo-clock-element #Mainframe #BottomSelector #BottomSelectorValue {
         font-family: Alarm-Clock;
-        font-size: 65px;
+        font-size: 81px;
         text-align: center;
-        color: white; }
+        color: rgba(155, 148, 148, 0.911); }
 
