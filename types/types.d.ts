@@ -7,16 +7,17 @@ declare global {
     type TextSimVarUnit = "Text" | "string"
 
     const SimVar: {
-        GetSimVarValue(name: string, type: NumberSimVarUnit): number
-        GetSimVarValue(name: string, type: TextSimVarUnit): string
+        GetSimVarValue(name: string, type: NumberSimVarUnit, dataSource?: string): number
+        GetSimVarValue(name: string, type: TextSimVarUnit, dataSource?: string): string
 
-        SetSimVarValue(name: string, type: NumberSimVarUnit, value: number): void
-        SetSimVarValue(name: string, type: TextSimVarUnit, value: string): void
+        SetSimVarValue(name: string, type: NumberSimVarUnit, value: number, dataSource?: string): void
+        SetSimVarValue(name: string, type: TextSimVarUnit, value: string, dataSource?: string): void
     }
 
     const Simplane: {
         getVerticalSpeed(): number
         getAltitude(): number
+        getAltitudeAboveGround(): number
         getHeadingMagnetic(): number
 
         getIsGrounded(): boolean
@@ -24,12 +25,32 @@ declare global {
         getTotalAirTemperature(): number
         getAmbientTemperature(): number
 
+        getPressureSelectedMode(_aircraft: Aircraft): string
+        getPressureSelectedUnits(): string
+        getPressureValue(_units?: string): number
+
+        getAutoPilotDisplayedAltitudeLockValue(_units?: string): number
         getAutoPilotAirspeedManaged(): boolean
         getAutoPilotHeadingManaged(): boolean
+        getAutoPilotAltitudeManaged(): boolean
 
         getAutoPilotMachModeActive(): number
         getEngineActive(_engineIndex: number): number
     };
+
+    const Utils: {
+        RemoveAllChildren(elem): void
+
+        leadingZeros(_value, _nbDigits, _pointFixed?: number): string
+    }
+
+    const Avionics: {
+        SVG: SVG
+    }
+
+    class SVG {
+        NS: string;
+    }
 
     enum FlightPhase {
         FLIGHT_PHASE_PREFLIGHT,
@@ -57,6 +78,26 @@ declare global {
         FLEX_MCT,
         TOGA,
         HOLD
+    }
+
+    enum Aircraft {
+        CJ4,
+        A320_NEO,
+        B747_8,
+        AS01B,
+        AS02A
+    }
+
+    enum NAV_AID_STATE {
+        OFF,
+        ADF,
+        VOR
+    }
+
+    enum NAV_AID_MODE {
+        NONE,
+        MANUAL,
+        REMOTE
     }
 
     type A320_Neo_LowerECAM_APU = {
