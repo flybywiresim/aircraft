@@ -359,7 +359,7 @@
 						<Property Name="UseGameAuxSends" Type="bool" Value="True"/>
 						<Property Name="Volume" Type="Real64">
 							<ValueList>
-								<Value>-5</Value>
+								<Value>8</Value>
 							</ValueList>
 						</Property>
 					</PropertyList>
@@ -414,7 +414,7 @@
 						<Property Name="UseGameAuxSends" Type="bool" Value="True"/>
 						<Property Name="Volume" Type="Real64">
 							<ValueList>
-								<Value>-5</Value>
+								<Value>5</Value>
 							</ValueList>
 						</Property>
 					</PropertyList>
@@ -427,7 +427,7 @@
 						</Reference>
 					</ReferenceList>
 					<ChildrenList>
-						<AudioFileSource Name="single_chime" ID="{6B4DB144-1819-4B34-BE0E-74FFD3D2C570}">
+						<AudioFileSource Name="improved_tone_caution" ID="{6B4DB144-1819-4B34-BE0E-74FFD3D2C570}">
 							<PropertyList>
 								<Property Name="LoopBegin" Type="Real64" Value="-0.001"/>
 								<Property Name="LoopEnd" Type="Real64" Value="-0.001"/>
@@ -439,7 +439,7 @@
 						</AudioFileSource>
 					</ChildrenList>
 					<ActiveSourceList>
-						<ActiveSource Name="single_chime" ID="{6B4DB144-1819-4B34-BE0E-74FFD3D2C570}" Platform="Linked"/>
+						<ActiveSource Name="improved_tone_caution" ID="{6B4DB144-1819-4B34-BE0E-74FFD3D2C570}" Platform="Linked"/>
 					</ActiveSourceList>
 				</Sound>
 			</ChildrenList>

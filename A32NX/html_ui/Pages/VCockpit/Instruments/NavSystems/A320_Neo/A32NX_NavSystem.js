@@ -2150,7 +2150,7 @@ class Cabin_Annunciations extends Annunciations {
         this.displayWarning = [];
         this.displayCaution = [];
         this.displayAdvisory = [];
-        this.warningToneNameZ = new Name_Z("CRC");
+        //this.warningToneNameZ = new Name_Z("CRC");
         this.cautionToneNameZ = new Name_Z("improved_tone_caution");
         this.warningTone = false;
         this.firstAcknowledge = true;
@@ -2279,9 +2279,9 @@ class Cabin_Annunciations extends Annunciations {
                 this.annunciations.innerHTML = messages;
             this.needReload = false;
         }
-        if (this.warningTone && !this.isPlayingWarningTone && this.gps.isPrimary) {
+        /*if (this.warningTone && !this.isPlayingWarningTone && this.gps.isPrimary) {
             this.isPlayingWarningTone = true;
-        }
+        }*/
     }
     onEvent(_event) {
         switch (_event) {

@@ -242,7 +242,7 @@
 						</File>
 					</IncludedMemoryFiles>
 				</Event>
-				<Event Id="39660050" Name="Play_Asobo_A320_NEO_improved_tone_caution" ObjectPath="\Events\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved\Play_Asobo_A320_NEO_improved_tone_caution" GUID="{C3F82F3D-BFFD-44F5-AF60-2625B748917D}" DurationType="OneShot" DurationMin="0.500000" DurationMax="0.500000">
+				<Event Id="39660050" Name="Play_Asobo_A320_NEO_improved_tone_caution" ObjectPath="\Events\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved\Play_Asobo_A320_NEO_improved_tone_caution" GUID="{C3F82F3D-BFFD-44F5-AF60-2625B748917D}" MaxAttenuation="3.000000" DurationType="OneShot" DurationMin="0.500000" DurationMax="0.500000">
 					<IncludedMemoryFiles>
 						<File Id="522173839" Language="SFX">
 							<ShortName>single_chime.wav</ShortName>
