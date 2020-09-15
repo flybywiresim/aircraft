@@ -305,7 +305,7 @@
 <!-- AvionicSounds ========================================================================================== --> 
   
   <AvionicSounds> 
-	<Sound WwiseData="true" WwiseEvent="tone_caution" ViewPoint="Inside"/>
+	<Sound WwiseData="true" WwiseEvent="improved_tone_caution" ViewPoint="Inside"/>
 	<Sound WwiseData="true" WwiseEvent="tone_warning" ViewPoint="Inside" />
 	<Sound WwiseData="true" WwiseEvent="tone_altitude_alert_default" ViewPoint="Inside"/>	
 	<Sound WwiseData="true" WwiseEvent="aural_stall" />
