@@ -556,9 +556,6 @@ class A320_Neo_MFD_NDInfo extends NavSystemElement {
         this.allSymbols = new Array();
     }
     init(root) {
-        if (typeof g_modDebugMgr != "undefined") {
-            g_modDebugMgr.AddConsole(null);
-        }
         this.ndInfo = this.gps.getChildById("NDInfo");
         this.ndInfo.aircraft = Aircraft.A320_NEO;
         this.ndInfo.gps = this.gps;
