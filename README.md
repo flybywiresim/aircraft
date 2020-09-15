@@ -1,4 +1,4 @@
-# FlyByWire A32NX - Stable 0.2.0
+# FlyByWire A32NX - Dev Build 0.2.0
 
 # Important
 
@@ -8,6 +8,8 @@
 The A32NX Project is a community driven open source project to create a free Airbus A320neo in Microsoft Flight Simulator that is as close to reality as possible. It aims to enhance the default A320neo by improving the systems depth and functionality to bring it up to payware-level, all for free.
 
 Central Repository: https://github.com/flybywiresim/a32nx
+
+**IMPORTANT** The GitHub Master is now the dedicated Dev Build for the A32NX project. **No support will be provided for Developer Build issues**. If you are looking to install the stable version, please visit http://www.flybywiresim.com/a32nx.
 
 ## Installation
 Installation is really simple. You only have to download the "A32NX" folder.
@@ -163,7 +165,7 @@ After making any changes to files inside the `A32NX` directory, ensure you run t
 
 **Q: Can I download the aircraft in the current state?**
 
-A: Yes, the master branch contains the latest stable release. You can always download it off the dev branch, but keep in mind it is a WIP and will be unstable.
+A: Yes, the releases page contains the latest stable release. You can always download the dev version off the master branch, but keep in mind it is a WIP and will be unstable.
 
 **Q: Where is the plane in-sim?**
 
@@ -195,4 +197,4 @@ A: You can follow our current progress on the trello: https://trello.com/b/z3jim
 
 **Q: How do we report bugs?**
 
-A: If the bug is related to features introduced by our mod, please open a GitHub issue with a thorough description of it, and screenshots if necessary. Otherwise, you have two options: Report it on the discord server at #bugs-and-suggestions, or fill this form (that will be directly linked to the dev attention) :https://docs.google.com/forms/d/e/1FAIpQLSe6Bdx8x8mFmOmBoAipYoazfeomrJ8cri55NBn32MBRqIW4nA/viewform?usp=sf_link
+A: If the bug is related to features introduced by our mod, please open a GitHub issue with a thorough description of it, and screenshots if necessary. Otherwise, you have two options: Report it on the discord server at #bugs, or fill this form (that will be directly linked to the dev attention) :https://docs.google.com/forms/d/e/1FAIpQLSe6Bdx8x8mFmOmBoAipYoazfeomrJ8cri55NBn32MBRqIW4nA/viewform?usp=sf_link
