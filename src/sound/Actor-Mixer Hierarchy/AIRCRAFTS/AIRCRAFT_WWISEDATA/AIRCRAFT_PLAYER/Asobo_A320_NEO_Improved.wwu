@@ -347,7 +347,6 @@
 				</RandomSequenceContainer>
 				<Sound Name="CRC" ID="{5E7473BD-B6F1-46BD-8EBA-3564DDA9ABAD}" ShortID="626301765">
 					<PropertyList>
-						<Property Name="3DPosition" Type="int16" Value="1"/>
 						<Property Name="3DSpatialization" Type="int16" Value="2"/>
 						<Property Name="EnableLoudnessNormalization" Type="bool" Value="True"/>
 						<Property Name="IsLoopingEnabled" Type="bool" Value="True"/>
@@ -389,20 +388,7 @@
 						</AudioFileSource>
 					</ChildrenList>
 					<PositioningInfo>
-						<Position Name="" ID="{A4B83DC0-4FF7-402D-9AC4-8501304C7BAE}">
-							<ChildrenList>
-								<Path2D Name="CRC_Path" ID="{E3B13636-C049-4B51-8BA0-BA368F22BC91}">
-									<PointList>
-										<Point>
-											<XPos>0</XPos>
-											<YPos>50</YPos>
-											<Flags>12</Flags>
-											<Time>0</Time>
-										</Point>
-									</PointList>
-								</Path2D>
-							</ChildrenList>
-						</Position>
+						<Position Name="" ID="{A4B83DC0-4FF7-402D-9AC4-8501304C7BAE}"/>
 					</PositioningInfo>
 					<ActiveSourceList>
 						<ActiveSource Name="CRC" ID="{2203DD76-9853-4C0A-8CF3-473131DB9CB3}" Platform="Linked"/>
@@ -410,6 +396,7 @@
 				</Sound>
 				<Sound Name="improved_tone_caution" ID="{88367DBC-CDA3-4230-AA00-35D25D05D8E5}" ShortID="769350125">
 					<PropertyList>
+						<Property Name="3DSpatialization" Type="int16" Value="2"/>
 						<Property Name="EnableLoudnessNormalization" Type="bool" Value="True"/>
 						<Property Name="UseGameAuxSends" Type="bool" Value="True"/>
 						<Property Name="Volume" Type="Real64">
@@ -419,6 +406,9 @@
 						</Property>
 					</PropertyList>
 					<ReferenceList>
+						<Reference Name="Attenuation">
+							<ObjectRef Name="aircraft_player_inside_3m" ID="{538CDAF5-4564-463A-A841-C73D21967E20}" WorkUnitID="{60292DF5-73DF-4CD4-B755-61C8D02B90BD}"/>
+						</Reference>
 						<Reference Name="Conversion">
 							<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{72C899CE-308C-4CA7-87C0-8E1504B1D757}"/>
 						</Reference>
