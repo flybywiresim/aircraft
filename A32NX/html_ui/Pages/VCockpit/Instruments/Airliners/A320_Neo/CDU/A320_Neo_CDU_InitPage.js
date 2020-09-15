@@ -87,7 +87,6 @@ class CDUInitPage {
             [cruiseFlTemp, "36090[color]blue"]
         ]);
 
-
         mcdu.onLeftInput[0] = () => {
             let value = mcdu.inOut;
             mcdu.clearUserInput();
