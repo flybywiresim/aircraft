@@ -62,8 +62,11 @@ class CDUInitPage {
         let lat = "----.--";
         let long = "-----.--";
         if (mcdu.flightPlanManager.getOrigin() && mcdu.flightPlanManager.getOrigin().infos && mcdu.flightPlanManager.getOrigin().infos.coordinates) {
-            lat = mcdu.flightPlanManager.getOrigin().infos.coordinates.latToDegreeString() + "[color]blue";
-            long = mcdu.flightPlanManager.getOrigin().infos.coordinates.longToDegreeString() + "[color]blue";
+            const airportCoordinates = mcdu.flightPlanManager.getOrigin().infos.coordinates;
+            const originAirportLat = this.ConvertDDToDMS(airportCoordinates['lat'], false);
+            const originAirportLon = this.ConvertDDToDMS(airportCoordinates['long'], true);
+            lat = originAirportLat['deg'] + '°' + originAirportLat['min'] + '.' + Math.ceil(Number(originAirportLat['sec'] / 10)) + originAirportLat['dir'] + "[color]blue";
+            long = originAirportLon['deg'] + '°' + originAirportLon['min'] + '.' + Math.ceil(Number(originAirportLon['sec'] / 10)) + originAirportLon['dir'] + "[color]blue";
         }
         if (mcdu.costIndex) {
             costIndex = mcdu.costIndex + "[color]blue";
@@ -83,6 +86,7 @@ class CDUInitPage {
             ["CRZ FL/TEMP", "TROPO"],
             [cruiseFlTemp, "36090[color]blue"]
         ]);
+
 
         mcdu.onLeftInput[0] = () => {
             let value = mcdu.inOut;
@@ -266,6 +270,30 @@ class CDUInitPage {
         mcdu.onNextPage = () => {
             CDUInitPage.ShowPage1(mcdu);
         };
+    }
+
+    // Defining as static here to avoid duplicate code in CDUIRSInit
+    static ConvertDDToDMS(deg, lng) {
+            // converts decimal degrees to degrees minutes seconds
+            const M=0|(deg%1)*60e7;
+            let degree;
+            if (lng) {
+                degree = this.pad(0 | (deg < 0 ? deg = -deg:deg), 3, 0)
+            } else {
+                degree = 0 | (deg < 0 ? deg = -deg:deg);
+            }
+            return {
+                dir : deg<0 ? lng ? 'W':'S' : lng ? 'E':'N',
+                deg : degree,
+                min : Math.abs(0|M/1e7),
+                sec : Math.abs((0|M/1e6%1*6e4)/100)
+            };
+    }
+
+    static pad(n, width, filler) {
+            // returns value with size 3, i.e n=1 width=3 filler=. -> "..1"
+            n = n + '';
+            return n.length >= width ? n : new Array(width - n.length + 1).join(filler) + n;
     }
 }
 //# sourceMappingURL=A320_Neo_CDU_InitPage.js.map

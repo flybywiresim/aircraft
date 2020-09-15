@@ -69,7 +69,7 @@ var A320_Neo_UpperECAM;
         getADIRSMins() {
             const secs = SimVar.GetSimVarValue("L:A320_Neo_ADIRS_TIME", "seconds");
             const mins = Math.ceil(secs/60);
-            if (secs > 0) return mins;
+            if (secs > 0 && SimVar.GetSimVarValue("L:A320_Neo_ADIRS_IN_ALIGN", "Bool")) return mins;
             else return -1;
         }
         engineFailed(_engine) {
@@ -750,6 +750,18 @@ var A320_Neo_UpperECAM;
                                     return this.getCachedSimVar("L:A320_Neo_ADIRS_STATE", "Enum") == 0;
                                 },
                             }
+                        ]
+                    },
+                    {
+                        name: "MDCU",
+                        messages: [
+                            {
+                                message: "CONFIRM IRS ALIGN",
+                                level: 2,
+                                isActive: () => {
+                                    return this.getCachedSimVar("L:A320_Neo_ADIRS_IN_ALIGN", "Enum") == 0 && this.getCachedSimVar("L:A320_Neo_ADIRS_STATE", "Enum") == 1;
+                                },
+                            },
                         ]
                     },
                 ],

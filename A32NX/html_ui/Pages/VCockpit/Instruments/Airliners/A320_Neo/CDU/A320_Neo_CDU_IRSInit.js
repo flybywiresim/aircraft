@@ -16,10 +16,10 @@ class CDUIRSInit {
         let statusIRS3;
         // Ref coordinates are taken based on origin airport
         const airportCoordinates = mcdu.flightPlanManager.getOrigin().infos.coordinates;
-        let originAirportLat = ConvertDDToDMS(airportCoordinates['lat'], false);
-        let originAirportLon = ConvertDDToDMS(airportCoordinates['long'], true);
-        let currentGPSLat = ConvertDDToDMS(SimVar.GetSimVarValue("GPS POSITION LAT", "degree latitude"), false);
-        let currentGPSLon = ConvertDDToDMS(SimVar.GetSimVarValue("GPS POSITION LON", "degree longitude"), true);
+        const originAirportLat = CDUInitPage.ConvertDDToDMS(airportCoordinates['lat'], false);
+        const originAirportLon = CDUInitPage.ConvertDDToDMS(airportCoordinates['long'], true);
+        const currentGPSLat = CDUInitPage.ConvertDDToDMS(SimVar.GetSimVarValue("GPS POSITION LAT", "degree latitude"), false);
+        const currentGPSLon = CDUInitPage.ConvertDDToDMS(SimVar.GetSimVarValue("GPS POSITION LON", "degree longitude"), true);
         let alignMsg = "ALIGN ON REF →[color]blue"
         let GPSPosAlign = ["--°--.--", "--°--.--", " "]
         if (SimVar.GetSimVarValue("L:A320_Neo_ADIRS_KNOB_1", "Enum") || SimVar.GetSimVarValue("L:A320_Neo_ADIRS_KNOB_2", "Enum") || SimVar.GetSimVarValue("L:A320_Neo_ADIRS_KNOB_3", "Enum")) {
@@ -105,7 +105,7 @@ class CDUIRSInit {
         };
 
         mcdu.onRightInput[5] = () => {
-            if (! SimVar.GetSimVarValue("A32NX_ADIRS_PFD_ALIGNED_FIRST", "Bool") && ! SimVar.GetSimVarValue("L:A320_Neo_ADIRS_IN_ALIGN", "Bool")) {
+            if (!SimVar.GetSimVarValue("A32NX_ADIRS_PFD_ALIGNED_FIRST", "Bool") && !SimVar.GetSimVarValue("L:A320_Neo_ADIRS_IN_ALIGN", "Bool")) {
                 SimVar.SetSimVarValue("L:A320_Neo_ADIRS_IN_ALIGN", "Bool", 1);
             } else {
                 // Ref alignment not currently implemented
@@ -122,29 +122,6 @@ class CDUIRSInit {
             } else {
                 return
             }
-        }
-
-        function ConvertDDToDMS(deg, lng) {
-            // converts decimal degrees to degrees minutes seconds
-            const M=0|(deg%1)*60e7;
-            let degree;
-            if (lng) {
-                degree = pad(0 | (deg < 0 ? deg = -deg:deg), 3, 0)
-            } else {
-                degree = 0 | (deg < 0 ? deg = -deg:deg);
-            }
-            return {
-                dir : deg<0 ? lng ? 'W':'S' : lng ? 'E':'N',
-                deg : degree,
-                min : Math.abs(0|M/1e7),
-                sec : Math.abs((0|M/1e6%1*6e4)/100)
-            };
-        }
-
-        function pad(n, width, filler) {
-            // returns value with size 3, i.e n=1 width=3 filler=. -> "..1"
-            n = n + '';
-            return n.length >= width ? n : new Array(width - n.length + 1).join(filler) + n;
         }
 
     }
