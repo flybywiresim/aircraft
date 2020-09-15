@@ -1,4 +1,4 @@
-# FlyByWire A32NX - Stable 0.2.0
+# FlyByWire A32NX - Dev Build 0.2.0
 
 # Important
 
@@ -8,6 +8,8 @@
 The A32NX Project is a community driven open source project to create a free Airbus A320neo in Microsoft Flight Simulator that is as close to reality as possible. It aims to enhance the default A320neo by improving the systems depth and functionality to bring it up to payware-level, all for free.
 
 Central Repository: https://github.com/flybywiresim/a32nx
+
+**IMPORTANT** The GitHub Master is now the dedicated Dev Build for the A32NX project. **No support will be provided for Developer Build issues**. If you are looking to install the stable version, please visit http://www.flybywiresim.com/a32nx.
 
 ## Installation
 Installation is really simple. You only have to download the "A32NX" folder.
