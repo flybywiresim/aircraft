@@ -72,7 +72,13 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
 
                 if (direction) {
                     const vThs = parseFloat(ths.trim())
-                    if (isFinite(vThs) && vThs > 0.0 && vThs <= 2.5) {
+                    if (isFinite(vThs) && vThs >= 0.0 && vThs <= 2.5) {
+
+                        if (vThs === 0.0) {
+                            // DN0.0 should be corrected to UP0.0
+                            direction = 'UP'
+                        }
+
                         nextThs = `${direction}${vThs.toFixed(1)}`;
                         validEntry = true;
                     }
