@@ -1,4 +1,4 @@
-﻿:root {
+:root {
   --bodyHeightScale: 1; }
 
 @keyframes TemporaryShow {
@@ -51,12 +51,16 @@ a320-neo-clock-element {
   overflow: hidden; }
   a320-neo-clock-element #Mainframe {
     position: absolute;
+    /* top: -4%; */
     top: -4%;
     bottom: 0;
     left: 2%;
-    right: 0; }
+    right: 0; 
+    color:white;}
     a320-neo-clock-element #Mainframe #TopSelector {
       margin-top: 0%;
+      /* width: 100%;
+      height: 35%; */
       width: 100%;
       height: 35%;
       display: flex;
@@ -69,16 +73,32 @@ a320-neo-clock-element {
         color: white; }
     a320-neo-clock-element #Mainframe #MiddleSelector {
       margin-top: 0%;
-      width: 100%;
+      margin-left: 0%;
+      width: 80%;
       height: 35%;
-      display: flex;
+      display: flex; 
       align-items: center;
-      justify-content: center; }
+      justify-content: center; 
+      }
       a320-neo-clock-element #Mainframe #MiddleSelector #MiddleSelectorValue {
         font-family: Alarm-Clock;
-        font-size: 65px;
-        text-align: center;
+        font-size: 82px;
+        margin-left: 2%;
+        margin-right: 5%;
+        width: 95%;
+        text-align: right;
+        /* font-kerning: none; */
         color: white; }
+      a320-neo-clock-element #Mainframe #MiddleSelector #MiddleSelectorValue2 {
+          font-family: Alarm-Clock;
+          font-size: 65px;
+          margin-left: 0%;
+          margin-right: 0%;
+          width: 5%;
+          text-align: right;
+          vertical-align: middle;
+          color: white; }
+
     a320-neo-clock-element #Mainframe #BottomSelector {
       margin-top: 1%;
       width: 100%;
