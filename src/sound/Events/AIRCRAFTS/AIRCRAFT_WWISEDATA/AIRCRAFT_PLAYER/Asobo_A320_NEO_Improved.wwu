@@ -120,19 +120,13 @@
 					<ChildrenList>
 						<Action Name="" ID="{848DCB24-6346-4E20-9EFC-4B7BC190D2AD}" ShortID="940870529">
 							<PropertyList>
-								<Property Name="ActionType" Type="int16" Value="2"/>
+								<Property Name="ActionType" Type="int16" Value="1"/>
 							</PropertyList>
 							<ReferenceList>
 								<Reference Name="Target">
 									<ObjectRef Name="CRC" ID="{5E7473BD-B6F1-46BD-8EBA-3564DDA9ABAD}" WorkUnitID="{27D32D8D-6C92-4542-9BFC-F0D08111F92F}"/>
 								</Reference>
 							</ReferenceList>
-						</Action>
-						<Action Name="" ID="{99432AC4-3ACF-47CD-95A3-2DF1451EA15B}" ShortID="567160811">
-							<PropertyList>
-								<Property Name="ActionType" Type="int16" Value="35"/>
-							</PropertyList>
-							<ReferenceList/>
 						</Action>
 					</ChildrenList>
 				</Event>
