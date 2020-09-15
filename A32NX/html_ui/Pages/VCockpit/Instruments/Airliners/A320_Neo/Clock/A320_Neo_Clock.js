@@ -6,15 +6,18 @@ class A320_Neo_Clock extends BaseAirliners {
         this.lastChronoState = null;
         this.lastChronoTime = null;
         this.lastDisplayTime = null;
+        this.lastDisplayTime2 = null;
         this.lastFlightTime = null;
         this.lastLocalTime = 0;
         this.lastResetVal = null;
+
     }
     get templateID() { return "A320_Neo_Clock"; }
     connectedCallback() {
         super.connectedCallback();
         this.topSelectorElem = this.getChildById("TopSelectorValue");
         this.middleSelectorElem = this.getChildById("MiddleSelectorValue");
+        this.middleSelectorElem2 = this.getChildById("MiddleSelectorValue2");
         this.bottomSelectorElem = this.getChildById("BottomSelectorValue");
     }
     disconnectedCallback() {
@@ -57,10 +60,25 @@ class A320_Neo_Clock extends BaseAirliners {
             }
 
             if (this.middleSelectorElem) {
-                const currentDisplayTime = SimVar.GetSimVarValue("L:PUSH_CHRONO_SET", "Bool") ? this.getUTCDate() : this.getUTCTime()
+                let currentDisplayTime = "";
+                let currentDisplayTime2 = "";
+                if (SimVar.GetSimVarValue("L:PUSH_CHRONO_SET", "Bool") == true) {
+
+                    currentDisplayTime = this.getUTCDate(); 
+                    currentDisplayTime2 = this.getUTCYear(); 
+                    
+                } else {
+                    currentDisplayTime = this.getUTCTime(); 
+                    currentDisplayTime2 = this.getUTCSeconds(); 
+                }
                 if (currentDisplayTime !== this.lastDisplayTime) {
                     this.lastDisplayTime = currentDisplayTime;
                     this.middleSelectorElem.textContent = currentDisplayTime;
+                    
+                }
+                if (currentDisplayTime2 !== this.lastDisplayTime2) {
+                    this.lastDisplayTime2 = currentDisplayTime2;
+                    this.middleSelectorElem2.textContent = currentDisplayTime2;
                 }
             }
 
@@ -78,25 +96,36 @@ class A320_Neo_Clock extends BaseAirliners {
         if (value) {
             const seconds = Number.parseInt(value);
             const time = Utils.SecondsToDisplayTime(seconds, true, true, false);
-            return time.toString();
+            return time.toString().substr(0,5);
         }
         return "";
     }
 
+    getUTCSeconds() {
+        const value = SimVar.GetGlobalVarValue("ZULU TIME", "seconds");
+        if (value) {
+            const seconds = Number.parseInt(value);
+            const time = Utils.SecondsToDisplayTime(seconds, true, true, false);
+            return time.toString().substr(6,2);
+        }
+        return "";
+    }
     getUTCDate() {
-        const Day = SimVar.GetGlobalVarValue("ZULU DAY OF MONTH", "number")
-        const Month = SimVar.GetGlobalVarValue("ZULU MONTH OF YEAR", "number")
-        const Year = `${SimVar.GetGlobalVarValue("ZULU YEAR", "number")}`.substr(2,4)
-
-        return `${Day}.${Month}.${Year}`
+        const Day = SimVar.GetGlobalVarValue("ZULU DAY OF MONTH", "number");
+        const Month = `${SimVar.GetGlobalVarValue("ZULU MONTH OF YEAR", "number")}`.padStart(2,'0');
+        return `${Month}.${Day}`;
     }
 
+    getUTCYear() {
+        const Year = `${SimVar.GetGlobalVarValue("ZULU YEAR", "number")}`.substr(2,4);
+        return `${Year}`;
+    }
     getLocalTime() {
         const value = SimVar.GetGlobalVarValue("LOCAL TIME", "seconds");
         if (value) {
             const seconds = Number.parseInt(value);
             const time = Utils.SecondsToDisplayTime(seconds, true, false, false);
-            return time.toString();
+            return time.toString().substr(0,5);
         }
         return "";
     }
