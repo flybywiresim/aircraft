@@ -274,7 +274,7 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         }
 
         // switch page when desired page was changed
-        if (this.pageNameWhenUnselected != prevPage) {
+        if (this.pageNameWhenUnselected != prevPage && this.currentPage == -1) {
             this.SwitchToPageName(this.LOWER_SCREEN_GROUP_NAME, this.pageNameWhenUnselected);
         }
 
