@@ -62,7 +62,7 @@ class A320_Neo_Clock extends BaseAirliners {
             if (this.middleSelectorElem) {
                 let currentDisplayTime = "";
                 let currentDisplayTime2 = "";
-                if (SimVar.GetSimVarValue("L:PUSH_CHRONO_SET", "Bool") == true) {
+                if (SimVar.GetSimVarValue("L:PUSH_CHRONO_SET", "Bool") === 1) {
 
                     currentDisplayTime = this.getUTCDate(); 
                     currentDisplayTime2 = this.getUTCYear(); 
