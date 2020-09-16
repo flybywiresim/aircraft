@@ -1142,6 +1142,20 @@
 				<ANIM_NAME>KNOB_OVHD_AIRCOND_PACKFLOW</ANIM_NAME>
 				<ANIM_CODE>50</ANIM_CODE>
 			</UseTemplate>
+			<UseTemplate Name="ASOBO_GT_Push_Button_Airliner">
+				<NODE_ID>PUSH_OVHD_ELEC_COMMERCIAL</NODE_ID>
+				<ANIM_NAME>PUSH_OVHD_ELEC_COMMERCIAL</ANIM_NAME>
+				<SEQ1_EMISSIVE_CODE>(L:A32NX_ELEC_COMMERCIAL_FAULT, Bool) (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or</SEQ1_EMISSIVE_CODE>
+				<SEQ2_EMISSIVE_CODE>(L:A32NX_ELEC_COMMERCIAL_TOGGLE, Bool) ! (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or</SEQ2_EMISSIVE_CODE>
+				<LEFT_SINGLE_CODE>(L:A32NX_ELEC_COMMERCIAL_TOGGLE) ! (>L:A32NX_ELEC_COMMERCIAL_TOGGLE)</LEFT_SINGLE_CODE>
+			</UseTemplate>
+			<UseTemplate Name="ASOBO_GT_Push_Button_Airliner">
+				<NODE_ID>PUSH_OVHD_ELEC_GALYCAB</NODE_ID>
+				<ANIM_NAME>PUSH_OVHD_ELEC_GALYCAB</ANIM_NAME>
+				<SEQ1_EMISSIVE_CODE>(L:A32NX_ELEC_GALYCAB_FAULT, Bool) (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or</SEQ1_EMISSIVE_CODE>
+				<SEQ2_EMISSIVE_CODE>(L:A32NX_ELEC_GALYCAB_TOGGLE, Bool) ! (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or</SEQ2_EMISSIVE_CODE>
+				<LEFT_SINGLE_CODE>(L:A32NX_ELEC_GALYCAB_TOGGLE) ! (>L:A32NX_ELEC_GALYCAB_TOGGLE)</LEFT_SINGLE_CODE>
+			</UseTemplate>
 
 			<UseTemplate Name="ASOBO_AIRBUS_Push_Fuel_Valve_Template">
 				<NODE_ID>PUSH_OVHD_APU_MASTERSW</NODE_ID>
@@ -1212,10 +1226,10 @@
 				<SWITCH_POSITION_VAR>XMLVAR_SWITCH_OVHD_INTLT_NOSMOKING_Position</SWITCH_POSITION_VAR>
 				<LIGHT_TYPE>NO_SMOKING</LIGHT_TYPE>
 				<ANIMTIP_1_ON_PERCENT>0.5</ANIMTIP_1_ON_PERCENT>
-				<!-- TODO: Figure out what the actual tooltips are or how to add them. -->
-				<ANIMTIP_0>Turn OFF no smoking signs</ANIMTIP_0>
-				<ANIMTIP_1>Set no smoking signs to AUTO</ANIMTIP_1>
-				<ANIMTIP_2>Turn ON no smoking signs</ANIMTIP_2>
+				<!-- TODO: Figure out how to add custom TT in .locPak and .loc files. -->
+				<ANIMTIP_0>TT:COCKPIT.TOOLTIPS.LIGHTS_NOSMOKE_ON</ANIMTIP_0>
+				<ANIMTIP_1>Set "no smoke" prompt light to AUTO</ANIMTIP_1>
+				<ANIMTIP_2>TT:COCKPIT.TOOLTIPS.LIGHTS_NOSMOKE_OFF</ANIMTIP_2>
 				<WWISE_EVENT>double_light_switch</WWISE_EVENT>
 			</UseTemplate>
 
@@ -1587,12 +1601,6 @@
 				</UseTemplate>
 				<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
 					<NODE_ID>PUSH_OVHD_HYD_ELECPUMPY</NODE_ID>
-				</UseTemplate>
-				<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
-					<NODE_ID>PUSH_OVHD_ELEC_COMMERCIAL</NODE_ID>
-				</UseTemplate>
-				<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
-					<NODE_ID>PUSH_OVHD_ELEC_GALYCAB</NODE_ID>
 				</UseTemplate>
 				<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
 					<NODE_ID>PUSH_OVHD_ELEC_IDG1</NODE_ID>
@@ -2688,10 +2696,6 @@
 				<NODE_ID>PUSH_OVHD_FIRE_AGENT</NODE_ID>
 				<ID>APU</ID>
 			</UseTemplate>
-			<!--Unused currently-->
-			<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-				<NODE_ID>LOCK_OVHD_APU</NODE_ID>
-			</UseTemplate>
 			<UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
 				<NODE_ID>PUSH_OVHD_FIRE_APU</NODE_ID>
 				<EMISSIVE_CODE>(L:FIRE_TEST_APU, Bool) (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or</EMISSIVE_CODE>
@@ -3252,12 +3256,6 @@
 		</UseTemplate>
 		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
 			<NODE_ID>PUSH_OVHD_FUEL_MODESEL</NODE_ID>
-		</UseTemplate>
-		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-			<NODE_ID>PUSH_OVHD_ELEC_COMMERCIAL</NODE_ID>
-		</UseTemplate>
-		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-			<NODE_ID>PUSH_OVHD_ELEC_GALYCAB</NODE_ID>
 		</UseTemplate>
 		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
 			<NODE_ID>LOCK_OVHD_ELEC_IDG1</NODE_ID>
