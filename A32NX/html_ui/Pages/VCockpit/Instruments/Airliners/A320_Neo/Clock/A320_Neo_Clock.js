@@ -10,7 +10,6 @@ class A320_Neo_Clock extends BaseAirliners {
         this.lastFlightTime = null;
         this.lastLocalTime = 0;
         this.lastResetVal = null;
-
     }
     get templateID() { return "A320_Neo_Clock"; }
     connectedCallback() {
