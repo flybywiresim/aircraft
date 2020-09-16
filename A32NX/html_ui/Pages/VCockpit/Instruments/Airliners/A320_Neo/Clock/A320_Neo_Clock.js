@@ -109,9 +109,9 @@ class A320_Neo_Clock extends BaseAirliners {
         return "";
     }
     getUTCDate() {
-        const Day = SimVar.GetGlobalVarValue("ZULU DAY OF MONTH", "number");
-        const Month = `${SimVar.GetGlobalVarValue("ZULU MONTH OF YEAR", "number")}`.padStart(2,'0');
-        return `${Month}.${Day}`;
+        const day = SimVar.GetGlobalVarValue("ZULU DAY OF MONTH", "number");
+        const month = `${SimVar.GetGlobalVarValue("ZULU MONTH OF YEAR", "number")}`.padStart(2,'0');
+        return `${month}.${day}`;
     }
 
     getUTCYear() {
