@@ -50,8 +50,9 @@ a320-neo-atc {
   height: 100%;
   position: relative;
   overflow: hidden;
+  border: 10px solid rgba(25, 40, 58, 0.219);
   background-color: rgba(39, 10, 43, 0.548); 
-  padding: 22px;
+  padding: 18px;
   background-clip:content-box; }
   a320-neo-atc svg {
     width: 100%;
