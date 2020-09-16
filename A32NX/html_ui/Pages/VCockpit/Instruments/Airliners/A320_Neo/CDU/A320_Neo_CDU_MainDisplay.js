@@ -25,6 +25,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     }
     Init() {
         super.Init();
+        this.defaultInputErrorMessage = "NOT ALLOWED";
         this.onDir = () => { CDUDirectToPage.ShowPage(this); };
         this.onProg = () => { CDUProgressPage.ShowPage(this); };
         this.onPerf = () => { CDUPerformancePage.ShowPage(this); };
@@ -33,7 +34,52 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this.onFpln = () => { CDUFlightPlanPage.ShowPage(this); };
         this.onRad = () => { CDUNavRadioPage.ShowPage(this); };
         this.onFuel = () => { CDUFuelPredPage.ShowPage(this); };
-        CDUIdentPage.ShowPage(this);
+        let mcduStartPage = SimVar.GetSimVarValue("L:A320_NEO_CDU_START_PAGE", "number");
+	        if (mcduStartPage < 1) {
+	            if (mcduStartPage < 1) {
+	                CDUIdentPage.ShowPage(this);
+	            }
+	            else if (mcduStartPage === 10) {
+	                CDUDirectToPage.ShowPage(this);
+	            }
+	            else if (mcduStartPage === 20) {
+	                CDUProgressPage.ShowPage(this);
+	            }
+	            else if (mcduStartPage === 30) {
+	                CDUPerformancePage.ShowPage(this);
+	            }
+	            else if (mcduStartPage === 31) {
+	                CDUPerformancePage.ShowTAKEOFFPage(this);
+	            }
+	            else if (mcduStartPage === 32) {
+	                CDUPerformancePage.ShowCLBPage(this);
+	            }
+	            else if (mcduStartPage === 33) {
+	                CDUPerformancePage.ShowCRZPage(this);
+	            }
+	            else if (mcduStartPage === 34) {
+	                CDUPerformancePage.ShowDESPage(this);
+	            }
+	            else if (mcduStartPage === 35) {
+	                CDUPerformancePage.ShowAPPRPage(this);
+	            }
+	            else if (mcduStartPage === 40) {
+	                CDUInitPage.ShowPage1(this);
+	            }
+	            else if (mcduStartPage === 50) {
+	                CDUDataIndexPage.ShowPage(this);
+	            }
+	            else if (mcduStartPage === 60) {
+	                CDUFlightPlanPage.ShowPage(this);
+	            }
+	            else if (mcduStartPage === 70) {
+	                CDUNavRadioPage.ShowPage(this);
+	            }
+	            else if (mcduStartPage === 80) {
+	                CDUFuelPredPage.ShowPage(this);
+	            }
+	            ;
+	        }
         this.electricity = this.querySelector("#Electricity")
     }
     trySetFlapsTHS(s) {
@@ -138,7 +184,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                 maxSpeed = this.v2Speed + 10;
             }
         }
-        let flapsHandleIndex = SimVar.GetSimVarValue("FLAPS HANDLE INDEX", "Number");
+        let flapsHandleIndex = Simplane.getFlapsHandleIndex();
         if (flapsHandleIndex != 0) {
             return Math.min(maxSpeed, this.getFlapSpeed());
         }
@@ -238,7 +284,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         Coherent.call("AP_ALT_VAR_SET_ENGLISH", 1, Simplane.getAutoPilotDisplayedAltitudeLockValue(), this._forceNextAltitudeUpdate);
         Coherent.call("AP_ALT_VAR_SET_ENGLISH", 2, Simplane.getAutoPilotDisplayedAltitudeLockValue(), this._forceNextAltitudeUpdate);
         if (!Simplane.getAutoPilotGlideslopeHold()) {
-            requestAnimationFrame(() => {
+            this.requestCall(() => {
                 SimVar.SetSimVarValue("L:A320_NEO_FCU_FORCE_IDLE_VS", "Number", 1);
             });
         }
@@ -250,9 +296,15 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             this._onModeSelectedSpeed();
         }
         if (_event === "MODE_MANAGED_SPEED") {
+            if (this.flightPlanManager.getWaypointsCount() === 0) {
+                return;
+            }
             this._onModeManagedSpeed();
         }
         if (_event === "MODE_SELECTED_HEADING") {
+            if (this.flightPlanManager.getWaypointsCount() === 0) {
+                return;
+            }
             if (Simplane.getAutoPilotHeadingManaged()) {
                 if (SimVar.GetSimVarValue("L:A320_FCU_SHOW_SELECTED_HEADING", "number") === 0) {
                     let currentHeading = Simplane.getHeadingMagnetic();
@@ -262,6 +314,9 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             this._onModeSelectedHeading();
         }
         if (_event === "MODE_MANAGED_HEADING") {
+            if (this.flightPlanManager.getWaypointsCount() === 0) {
+                return;
+            }
             this._onModeManagedHeading();
         }
         if (_event === "MODE_SELECTED_ALTITUDE") {
@@ -479,7 +534,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             runwayCoef = Utils.Clamp(f, 0, 1);
         }
 
-        const flapsHandleIndex = this.flaps || SimVar.GetSimVarValue("FLAPS HANDLE INDEX", "Number");
+        const flapsHandleIndex = this.flaps || Simplane.getFlapsHandleIndex();
 
         let vSpeed = min * (1 - runwayCoef) + max * runwayCoef;
         vSpeed *= dWeightCoef;
@@ -544,7 +599,27 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         SimVar.SetSimVarValue("L:AIRLINER_V2_SPEED", "Knots", nextV2);
     }
 
-
+    getThrustTakeOffLimit() {
+        if (this.perfTOTemp <= 10) {
+            return 92.8;
+        }
+        if (this.perfTOTemp <= 40) {
+            return 92.8;
+        }
+        if (this.perfTOTemp <= 45) {
+            return 92.2;
+        }
+        if (this.perfTOTemp <= 50) {
+            return 90.5;
+        }
+        if (this.perfTOTemp <= 55) {
+            return 88.8;
+        }
+        return 88.4;
+    }
+    getThrustClimbLimit() {
+        return this.getThrustTakeOffLimit() - 8;
+    }
     isAirspeedManaged() {
         return SimVar.GetSimVarValue("AUTOPILOT SPEED SLOT INDEX", "number") === 2;
     }
@@ -585,6 +660,13 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                 this._forceNextAltitudeUpdate = true;
                 console.log("Enforce AP in Altitude Lock mode. Cause : AP Master Status has changed.");
                 SimVar.SetSimVarValue("L:A320_NEO_FCU_FORCE_IDLE_VS", "Number", 1);
+                if (this._apMasterStatus) {
+                    if (this.flightPlanManager.getWaypointsCount() === 0) {
+                        this._onModeSelectedAltitude();
+                        this._onModeSelectedHeading();
+                        this._onModeSelectedSpeed();
+                    }
+                }
             }
             if (apLogicOn) {
                 if (!Simplane.getAutoPilotFLCActive() && !SimVar.GetSimVarValue("AUTOPILOT AIRSPEED HOLD", "Boolean")) {
@@ -725,7 +807,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                     }
                 }
             }
-            if (Simplane.getAutoPilotAltitudeManaged() && SimVar.GetSimVarValue("L:A320_NE0_FCU_STATE", "number") != 1) {
+            if (Simplane.getAutoPilotAltitudeManaged() && SimVar.GetSimVarValue("L:A320_NEO_FCU_STATE", "number") != 1) {
                 let currentWaypointIndex = this.flightPlanManager.getActiveWaypointIndex();
                 if (currentWaypointIndex != this._lastRequestedFLCModeWaypointIndex) {
                     this._lastRequestedFLCModeWaypointIndex = currentWaypointIndex;
@@ -737,11 +819,25 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                 }
             }
             if (this.currentFlightPhase === FlightPhase.FLIGHT_PHASE_TAKEOFF) {
+                let n1 = this.getThrustTakeOffLimit() / 100;
+                SimVar.SetSimVarValue("AUTOPILOT THROTTLE MAX THRUST", "number", n1);
                 if (this.isAirspeedManaged()) {
                     // getCleanTakeOffSpeed is a final fallback and not truth to reality
                     const speed = isFinite(this.v2Speed) ? this.v2Speed + 10 : this.getCleanTakeOffSpeed();
                     this.setAPManagedSpeed(speed, Aircraft.A320_NEO);
                 }
+
+                //This breaks everything, not sure why (from 1.8.3 update)
+                /* let altitude = Simplane.getAltitudeAboveGround();
+                let n1 = 100;
+                if (altitude < this.thrustReductionAltitude) {
+                    n1 = this.getThrustTakeOffLimit() / 100;
+                }
+                else {
+                    n1 = this.getThrustClimbLimit() / 100;
+                }
+                SimVar.SetSimVarValue("AUTOPILOT THROTTLE MAX THRUST", "number", n1); */
+
             }
             else if (this.currentFlightPhase === FlightPhase.FLIGHT_PHASE_CLIMB) {
                 if (this.isAirspeedManaged()) {
@@ -756,6 +852,15 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                 }
                 if (this.isAltitudeManaged()) {
                 }
+                /* let altitude = Simplane.getAltitudeAboveGround();
+                let n1 = 100;
+                if (altitude < this.thrustReductionAltitude) {
+                    n1 = this.getThrustTakeOffLimit() / 100;
+                }
+                else {
+                    n1 = this.getThrustClimbLimit() / 100;
+                }
+                SimVar.SetSimVarValue("AUTOPILOT THROTTLE MAX THRUST", "number", n1); */
             }
             else if (this.currentFlightPhase === FlightPhase.FLIGHT_PHASE_DESCENT) {
                 if (this.isAirspeedManaged()) {
