@@ -114,8 +114,7 @@ class A320_Neo_Clock extends BaseAirliners {
     }
 
     getUTCYear() {
-        const Year = `${SimVar.GetGlobalVarValue("ZULU YEAR", "number")}`.substr(2,4);
-        return `${Year}`;
+        return SimVar.GetGlobalVarValue("ZULU YEAR", "number").toString().substr(2,4);
     }
     getLocalTime() {
         const value = SimVar.GetGlobalVarValue("LOCAL TIME", "seconds");
