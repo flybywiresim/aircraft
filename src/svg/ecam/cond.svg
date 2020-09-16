@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Generator: Adobe Illustrator 24.3.0, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
+<svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+	 viewBox="0 0 600 600" style="enable-background:new 0 0 600 600;" xml:space="preserve">
+<style type="text/css">
+	.st0{fill:none;stroke:#FFFFFF;stroke-width:2;stroke-miterlimit:10;}
+	.st1{fill:#FFFFFF;}
+	.st2{font-family:'B612-Regular';}
+	.st3{font-size:25.7753px;}
+	.st4{font-size:22.8472px;}
+	.st5{font-size:20.2832px;}
+	.st6{fill:#00C800;}
+	.st7{font-size:17.0304px;}
+	.st8{font-size:16.3427px;}
+	.st9{fill:none;stroke:#00C800;stroke-width:2;stroke-miterlimit:10;}
+</style>
+<rect width="600" height="600"/>
+<path class="st0" d="M97.67,128.79l18.75-6.85c1.68-0.61,3.11-1.74,4.1-3.23l2.49-3.74c1.3-1.95,3.12-3.49,5.25-4.45l15.8-7.11
+	c0.62-0.28,1.28-0.42,1.96-0.42h304.6c2.8,0,5.49,1.11,7.47,3.09L463,111"/>
+<line class="st0" x1="358" y1="134" x2="358" y2="174"/>
+<line class="st0" x1="230.89" y1="103" x2="230.89" y2="174"/>
+<text transform="matrix(0.9593 0 0 1 26 55.5532)" class="st1 st2 st3">COND</text>
+<line class="st0" x1="27.18" y1="59.5" x2="94" y2="59.5"/>
+<text transform="matrix(0.9593 0 0 1 473.2998 59.8896)" class="st1 st2 st4">TEMP:</text>
+<text transform="matrix(0.9593 0 0 1 150.3 128.7996)" class="st1 st2 st5">CKPT</text>
+<text transform="matrix(0.9593 0 0 1 275.3 128.7996)" class="st1 st2 st5">FWD</text>
+<text transform="matrix(0.9593 0 0 1 395.3 130.7996)" class="st1 st2 st5">AFT</text>
+<text transform="matrix(0.9593 0 0 1 281.3 152.7996)" class="st6 st2 st5">76</text>
+<text transform="matrix(0.9593 0 0 1 160.3 152.7996)" class="st6 st2 st5">80</text>
+<text transform="matrix(0.9593 0 0 1 165.2998 189.9541)" class="st6 st2 st7">64</text>
+<text transform="matrix(0.9593 0 0 1 179.2998 362.9541)" class="st6 st2 st7">76</text>
+<text transform="matrix(0.9593 0 0 1 146.2998 218.9541)" class="st1 st2 st7">C</text>
+<text transform="matrix(0.9593 0 0 1 133.2998 334.9541)" class="st1 st2 st7">FWD</text>
+<text transform="matrix(0.9593 0 0 1 199.2998 217.9541)" class="st1 st2 st7">H</text>
+<text transform="matrix(0.9593 0 0 1 286.2998 188.9541)" class="st6 st2 st7">68</text>
+<text transform="matrix(0.9593 0 0 1 402.2998 188.9541)" class="st6 st2 st7">76</text>
+<text transform="matrix(0.9593 0 0 1 398.3 153.7996)" class="st6 st2 st5">78</text>
+<text transform="matrix(0.9593 0 0 1 543.2998 59.1978)" class="st1 st2 st8">°F</text>
+<path class="st0" d="M101,160c0,0,26.17,14,45.58,14s13.43,0,13.43,0"/>
+<line class="st0" x1="195" y1="174" x2="280.94" y2="174"/>
+<line class="st0" x1="315.16" y1="174" x2="397.84" y2="174"/>
+<path class="st0" d="M431.2,174h22.39c2.22,0,4.35-0.89,5.92-2.46L465,166"/>
+<polyline class="st9" points="179,225 179,261 475,261 "/>
+<polyline class="st9" points="298.81,225 298.81,260.09 298.81,457.26 191,457.26 191,446.61 "/>
+<line class="st9" x1="416.6" y1="225" x2="416.6" y2="260.09"/>
+<path class="st0" d="M163,212c0,0,5-7,15-7s16,7,16,7"/>
+<text transform="matrix(0.9593 0 0 1 158.2998 438.9541)" class="st1 st2 st7">C</text>
+<text transform="matrix(0.9593 0 0 1 211.2998 437.9541)" class="st1 st2 st7">H</text>
+<path class="st0" d="M175,432c0,0,5-7,15-7s16,7,16,7"/>
+<line class="st0" x1="178" y1="197" x2="178" y2="205"/>
+<text transform="matrix(0.9593 0 0 1 266.2998 216.9541)" class="st1 st2 st7">C</text>
+<text transform="matrix(0.9593 0 0 1 319.2998 215.9541)" class="st1 st2 st7">H</text>
+<path class="st0" d="M283,210c0,0,5-7,15-7s16,7,16,7"/>
+<line class="st0" x1="298" y1="195" x2="298" y2="203"/>
+<text transform="matrix(0.9593 0 0 1 384.2998 215.9541)" class="st1 st2 st7">C</text>
+<text transform="matrix(0.9593 0 0 1 437.2998 214.9541)" class="st1 st2 st7">H</text>
+<text transform="matrix(0.9593 0 0 1 523.2998 252.9541)" class="st1 st2 st7">HOT</text>
+<text transform="matrix(0.9593 0 0 1 528.2998 273.9541)" class="st1 st2 st7">AIR</text>
+<path class="st0" d="M401,209c0,0,5-7,15-7s16,7,16,7"/>
+<line class="st0" x1="416" y1="194" x2="416" y2="202"/>
+<line class="st9" x1="190" y1="425" x2="190" y2="411.04"/>
+<line class="st9" x1="190" y1="380" x2="190" y2="366.04"/>
+<circle class="st9" cx="189.86" cy="395.01" r="15.5"/>
+<line class="st9" x1="189.86" y1="379.51" x2="189.86" y2="410.51"/>
+<line class="st9" x1="174.36" y1="395.01" x2="205.38" y2="395.01"/>
+<text transform="matrix(0.9593 0 0 1 179.2747 334.6258)" class="st6 st2 st7">80</text>
+<polyline class="st0" points="173.1,350.03 126.19,350.03 126.19,308 239,308 239,311.76 "/>
+<polyline class="st0" points="205.92,350.03 240,350.03 240,344.08 "/>
+<line class="st9" x1="255.02" y1="328" x2="270.63" y2="328"/>
+<circle class="st9" cx="239.5" cy="327.5" r="15.5"/>
+<line class="st9" x1="239.5" y1="312" x2="239.5" y2="343"/>
+<line class="st9" x1="224" y1="327.5" x2="255.02" y2="327.5"/>
+<line class="st9" x1="506.82" y1="261.36" x2="522.43" y2="261.36"/>
+<circle class="st9" cx="491.3" cy="260.86" r="15.5"/>
+<line class="st9" x1="491.3" y1="245.36" x2="491.3" y2="276.36"/>
+<line class="st9" x1="475.8" y1="260.86" x2="506.82" y2="260.86"/>
+</svg>

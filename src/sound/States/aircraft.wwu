@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<WwiseDocument Type="WorkUnit" ID="{87A0C03E-5FFD-4005-A0D0-08169986D5FA}" SchemaVersion="97">
+	<States>
+		<WorkUnit Name="aircraft" ID="{87A0C03E-5FFD-4005-A0D0-08169986D5FA}" PersistMode="Standalone">
+			<ChildrenList>
+				<StateGroup Name="VIEWPOINT" ID="{13BEFA7F-C929-4FAA-8B48-86589D04F1D6}">
+					<PropertyList>
+						<Property Name="DefaultTransitionTime" Type="Real64" Value="0.1"/>
+					</PropertyList>
+					<ChildrenList>
+						<State Name="None" ID="{232BE3B6-4A43-4CFD-8F19-E3A1D58580D1}"/>
+						<State Name="INSIDE" ID="{FFECDB48-6798-4725-AB04-DCC845B2904E}"/>
+						<State Name="OUTSIDE" ID="{A2B684CD-A8E1-4B6B-A69B-84CC4AD39406}"/>
+					</ChildrenList>
+					<TransitionList>
+						<Transition>
+							<StartState Name="OUTSIDE" ID="{A2B684CD-A8E1-4B6B-A69B-84CC4AD39406}"/>
+							<EndState Name="INSIDE" ID="{FFECDB48-6798-4725-AB04-DCC845B2904E}"/>
+							<Time>0.01</Time>
+							<IsShared>false</IsShared>
+						</Transition>
+					</TransitionList>
+				</StateGroup>
+			</ChildrenList>
+		</WorkUnit>
+	</States>
+</WwiseDocument>

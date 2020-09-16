@@ -1,0 +1,20 @@
+Event	ID	Name			Wwise Object Path	Notes
+	548293890	Play_Asobo_A320_NEO_cabin_crew_seats_takeoff			\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved\Play_Asobo_A320_NEO_cabin_crew_seats_takeoff	
+	1143436301	Play_Asobo_A320_NEO_light_switch_seatbelt			\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved\Play_Asobo_A320_NEO_light_switch_seatbelt	
+	1199592215	Play_Asobo_A320_NEO_cockpit_cabin_call_fwd			\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved\Play_Asobo_A320_NEO_cockpit_cabin_call_fwd	
+	1216914367	Play_Asobo_A320_NEO_cockpit_cabin_call_aft			\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved\Play_Asobo_A320_NEO_cockpit_cabin_call_aft	
+	2291548167	Play_Asobo_A320_NEO_cabin_crew_seats_landing			\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved\Play_Asobo_A320_NEO_cabin_crew_seats_landing	
+
+Effect plug-ins	ID	Name	Type				Notes
+	2532383457	rev_inside_default	Wwise RoomVerb			
+
+In Memory Audio	ID	Name	Audio source file		Wwise Object Path	Notes	Data Size
+	314189442	CAPTAIN-CABINCREW-SEATS-FOR-TAKEOFF_2	C:\Users\olive\Documents\GitHub\msfs-a320neo\src\sound\.cache\Windows\SFX\CAPTAIN-CABINCREW-SEATS-FOR-TAKEOFF_2_1E8ECBBC.wem		\Actor-Mixer Hierarchy\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved\cabin_crew_seats_takeoff\CAPTAIN-CABINCREW-SEATS-FOR-TAKEOFF_2		128685
+	344402026	CAPTAIN-CABINCREW-SEATS-FOR-TAKEOFF_3	C:\Users\olive\Documents\GitHub\msfs-a320neo\src\sound\.cache\Windows\SFX\CAPTAIN-CABINCREW-SEATS-FOR-TAKEOFF_3_1E8ECBBC.wem		\Actor-Mixer Hierarchy\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved\cabin_crew_seats_takeoff\CAPTAIN-CABINCREW-SEATS-FOR-TAKEOFF_3		120244
+	432822708	CAPTAIN-CABINCREW-SEATS-FOR-LANDING_2	C:\Users\olive\Documents\GitHub\msfs-a320neo\src\sound\.cache\Windows\SFX\CAPTAIN-CABINCREW-SEATS-FOR-LANDING_2_1E8ECBBC.wem		\Actor-Mixer Hierarchy\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved\cabin_crew_seats_landing\CAPTAIN-CABINCREW-SEATS-FOR-LANDING_2		163053
+	537738566	seatbelt	C:\Users\olive\Documents\GitHub\msfs-a320neo\src\sound\.cache\Windows\SFX\seatbelt_1E8ECBBC.wem		\Actor-Mixer Hierarchy\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved\seatbelt		12951
+	562791736	CAPTAIN-CABINCREW-SEATS-FOR-LANDING_3	C:\Users\olive\Documents\GitHub\msfs-a320neo\src\sound\.cache\Windows\SFX\CAPTAIN-CABINCREW-SEATS-FOR-LANDING_3_1E8ECBBC.wem		\Actor-Mixer Hierarchy\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved\cabin_crew_seats_landing\CAPTAIN-CABINCREW-SEATS-FOR-LANDING_3		139218
+	790202684	cabincrewbell	C:\Users\olive\Documents\GitHub\msfs-a320neo\src\sound\.cache\Windows\SFX\cabincrewbell_1E8ECBBC.wem		\Actor-Mixer Hierarchy\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved\cabincrewbell		43149
+	806003362	CAPTAIN-CABINCREW-SEATS-FOR-LANDING	C:\Users\olive\Documents\GitHub\msfs-a320neo\src\sound\.cache\Windows\SFX\CAPTAIN-CABINCREW-SEATS-FOR-LANDING_1E8ECBBC.wem		\Actor-Mixer Hierarchy\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved\cabin_crew_seats_landing\CAPTAIN-CABINCREW-SEATS-FOR-LANDING		139412
+	925710262	CAPTAIN-CABINCREW-SEATS-FOR-TAKEOFF	C:\Users\olive\Documents\GitHub\msfs-a320neo\src\sound\.cache\Windows\SFX\CAPTAIN-CABINCREW-SEATS-FOR-TAKEOFF_1E8ECBBC.wem		\Actor-Mixer Hierarchy\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved\cabin_crew_seats_takeoff\CAPTAIN-CABINCREW-SEATS-FOR-TAKEOFF		119376
+

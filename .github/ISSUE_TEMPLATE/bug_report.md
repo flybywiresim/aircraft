@@ -1,24 +1,46 @@
 ---
 name: Bug report
-about: Create a report to help us improve
+about: Create a report to help us improve the mod
 title: "[BUG]"
 labels: bug
 assignees: ''
 
 ---
 
+<!-- ⚠⚠ Do not delete this issue template! ⚠⚠ -->
+<!-- Issues that do not use the issue template are likely to be ignored and closed. -->
+
+
+**Mod Version**
+<!-- Either a release version or "master" for the latest master branch. -->
+
+
 **Describe the bug**
-A clear and concise description of what the bug is.
+<!-- A clear and concise description of what the bug is. -->
+
 
 **To Reproduce**
-Steps to reproduce the behavior:
-1. Go to '...'
+<!-- Steps to reproduce the behavior. -->
+<!-- We need to know how you encountered the bug to properly troubleshoot the issue. -->
+1.
+2.
+3.
+
 
 **Expected behavior**
-A clear and concise description of what you expected to happen.
+<!-- A clear and concise description of what you expected to happen. -->
 
-**Screenshots or Videos**
-If applicable, add screenshots or videos to help explain your problem.
+
+**Actual behavior**
+<!-- A clear and concise description of what actually happened. -->
+
+
+**References**
+<!-- If applicable, add screenshots or videos to help explain your problem. -->
+
 
 **Additional context**
-Add any other context about the problem here.
+<!-- Add any other context about the problem here. -->
+
+<!-- You may optionally provide your discord username, so that we may contact you directly about the issue. -->
+Discord username (if different from GitHub):

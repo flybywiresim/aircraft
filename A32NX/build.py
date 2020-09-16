@@ -1,47 +1,34 @@
 import os
 import json
-import sys
 
+project_directories = ["effects", "html_ui", "SimObjects", "ModelBehaviorDefs"]
 
-def check_prerequisites():
-    if sys.version_info[0] < 3 or sys.version_info[1] < 6:
-        raise Exception("Must be using Python 3.6 or later")
+content_entries = list()
+total_package_size = 0
 
+for project_directory in project_directories:
+    for directory_path, directory_names, file_names in os.walk(project_directory):
+        for file_name in file_names:
+            file_path = os.path.join(directory_path, file_name)
+            file_size = os.path.getsize(file_path)
+            file_date = 116444736000000000 + int(os.path.getmtime(file_path) * 10000000.0)
 
-def build_layout(project_dir):
-    layout_entries = []
-    for root, _, files in os.walk(project_dir):
-        for filename in files:
-            filepath = os.path.join(root, filename)
+            content_entry = {"path": file_path.replace(os.sep, "/"), "size": file_size, "date": file_date}
+            content_entries.append(content_entry)
 
-            if not filepath.endswith(".json") and not filepath.endswith(".py"):
-                rel_dir = os.path.relpath(root)
-                rel_file = str(os.path.join(rel_dir, filename))
-                if rel_file[0] == '.':
-                    rel_file = rel_file[2:]
+            total_package_size += file_size
 
-                print(" -- Processing " + rel_file)
-                entry = {}
-                entry["path"] = rel_file.replace('\\', '/')
-                entry["size"] = os.path.getsize(filepath)
-                entry["date"] = "132402817714110148"
-                layout_entries.append(entry)
+            print("Added file: " + file_path)
 
-    layout_entries.sort(key=lambda e: e["path"])
+layout_entries = {"content": content_entries}
 
-    return layout_entries
+layout_file = open("layout.json", "w")
+json.dump(layout_entries, layout_file, indent=4)
 
+manifest_file = open("manifest.json", "r")
 
-if __name__ == "__main__":
-    check_prerequisites()
+manifest_entries = json.load(manifest_file)
+manifest_entries["total_package_size"] = str(total_package_size).zfill(20)
 
-    cwd = os.getcwd()
-
-    layout_content = build_layout(cwd)
-
-    layout_json = {
-        "content": layout_content
-    }
-
-    with open("layout.json", "w") as outfile:
-        json.dump(layout_json, outfile, indent=4)
+manifest_file = open("manifest.json", "w")
+json.dump(manifest_entries, manifest_file, indent=4)

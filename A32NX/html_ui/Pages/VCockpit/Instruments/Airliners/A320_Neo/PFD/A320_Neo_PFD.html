@@ -1,0 +1,113 @@
+﻿<link rel="stylesheet" href="A320_Neo_PFD.css" />
+
+<script type="text/html" id="A320_Neo_PFD">
+    <glasscockpit-highlight id="highlight"></glasscockpit-highlight>
+    <div id="Mainframe">
+        <div id="Electricity" state="off">
+            <div id="HorizonContainer">
+                <jet-pfd-attitude-indicator id="Horizon" background="true"></jet-pfd-attitude-indicator>
+                <div id="GroundCursor">
+                    <svg viewBox="0 0 11 11">
+                        <line x1="4" y1="4" x2="0" y2="4"></line>
+                        <line x1="4" y1="4" x2="4" y2="0"></line>
+                        <line x1="6" y1="4" x2="10" y2="4"></line>
+                        <line x1="6" y1="4" x2="6" y2="0"></line>
+                        <line x1="4" y1="6" x2="0" y2="6"></line>
+                        <line x1="4" y1="6" x2="4" y2="10"></line>
+                        <line x1="6" y1="6" x2="10" y2="6"></line>
+                        <line x1="6" y1="6" x2="6" y2="10"></line>
+                    </svg>
+                </div>
+                <div id="GroundCursorLimits">
+                    <svg viewBox="0 0 600 600">
+                        <line x1="0" y1="0" x2="100" y2="0"></line>
+                        <line x1="0" y1="0" x2="0" y2="100"></line>
+                        <line x1="600" y1="0" x2="500" y2="0"></line>
+                        <line x1="600" y1="0" x2="600" y2="100"></line>
+                        <line x1="0" y1="600" x2="100" y2="600"></line>
+                        <line x1="0" y1="600" x2="0" y2="500"></line>
+                        <line x1="600" y1="600" x2="500" y2="600"></line>
+                        <line x1="600" y1="600" x2="600" y2="500"></line>
+                    </svg>
+                </div>
+                <div id="AttitudeFail">
+                    <div style="position: absolute; left: 0%; top: 0%; width: 100%; height: 100%; border: none;">
+                        <svg viewBox="0 0 600 600" style="position:absolute; top:0%; left: 0%; width: 100%; height:100%;">
+                            <rect fill="black" x="0" y="0" width="100%" height="100%"></rect>
+                            <text id="att_flash" fill="red" text-anchor="middle" x="45%" y="53%" font-size="25px">ATT</text>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <div id="InstrumentsContainer">
+                <jet-pfd-airspeed-indicator id="Airspeed"></jet-pfd-airspeed-indicator>
+                <jet-pfd-altimeter-indicator id="Altimeter"></jet-pfd-altimeter-indicator>
+                <jet-pfd-vspeed-indicator id="VSpeed"></jet-pfd-vspeed-indicator>
+                <div id="MiscFail">
+                    <div style="position: absolute; left: 0%; top: 0%; width: 100%; height: 100%; border: none;">
+                        <svg viewBox="0 0 600 600" style="position:absolute; top:0%; left: 0%; width: 100%; height:100%;">
+                            <text id="spd_flash" fill="red" text-anchor="middle" x="7%" y="53%" font-size="25px">SPD</text>
+                            <text id="alt_flash" fill="red" text-anchor="middle" x="79%" y="53%" font-size="25px">ALT</text>
+                            <g id="vs_flash">
+                                <text fill="red" text-anchor="middle" x="95%" y="48%" font-size="25px">V</text>
+                                <text fill="red" text-anchor="middle" x="95%" y="53%" font-size="25px">/</text>
+                                <text fill="red" text-anchor="middle" x="95%" y="58%" font-size="25px">S</text>
+                            </g>
+                        </svg>
+                    </div>
+                </div>
+                <jet-pfd-hs-indicator id="Compass"></jet-pfd-hs-indicator>
+                <div id="HeadingFail">
+                    <div style="transform: rotateX(0); position: absolute; border: none; top: 88%; left: 19%; width: 50%; height: 45%; z-index: 0;">
+                        <svg viewBox="0 0 600 600" width="100%" height="100%" overflow="visible">
+                            <rect fill="black" x="-5" y="-5" width="110%" height="110%"></rect>
+                            <rect fill="#343B51" stroke="red" stroke-width="2" x="0" y="10%" width="100%" height="110%"></rect>
+                            <text id="hdg_flash" fill="red" text-anchor="middle" x="50%" y="22%" font-size="50px">HDG</text>
+                        </svg>
+                    </div>
+                </div>
+                <airbus-fma id="FMA"></airbus-fma>
+                <jet-pfd-ils-indicator id="ILS"></jet-pfd-ils-indicator>
+            </div>
+            <div style="position: absolute; left: 0%; top: 0%; width: 100%; height: 100%; border: none; display: none;" id="SelfTestDiv">
+                <svg id="SelfTest" viewBox="0 0 600 600" style="position:absolute; top:0%; left: 0%; width: 100%; height:100%;">
+                    <rect fill="black" x="0" y="0" width="100%" height="100%"></rect>
+                    <text id="self_test_text" fill="green" text-anchor="middle" x="50%" y="50%" font-size="30px">SELF TEST IN PROGRESS</text>
+                    <text id="self_test_text2" fill="green" text-anchor="middle" x="50%" y="56%" font-size="30px">(MAX 40 SECONDS)</text>
+                </svg>
+            </div>
+        </div>
+    </div>
+</script>
+
+<script type="text/html" import-script="/JS/SimPlane.js"></script>
+
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Shared/Utils/RadioNav.js"></script>
+
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/Shared/Templates/Highlight/Highlight.js"></script>
+
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/Shared/LogicElements/FlightPlan.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/Shared/LogicElements/FlightPlanManager.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/Shared/LogicElements/GeoCalc.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/Shared/LogicElements/SearchField.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/Shared/LogicElements/Waypoint.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/Shared/LogicElements/NearestWaypoint.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/Shared/LogicElements/Approach.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/Shared/LogicElements/SelectableElement.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/Shared/LogicElements/ContextualMenu.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/Shared/LogicElements/Runway.js"></script>
+
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/Shared/NavSystem.js"></script>
+
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/A320_Neo/PFD/AirspeedIndicator.js"></script> <!-- MODIFIED -->
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/A320_Neo/PFD/AltimeterIndicator.js"></script> <!-- MODIFIED -->
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/Shared/PFD/HSIndicator.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/A320_Neo/PFD/AttitudeIndicator.js"></script> <!-- MODIFIED -->
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/A320_Neo/PFD/VerticalSpeedIndicator.js"></script> <!-- MODIFIED -->
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/A320_Neo/PFD/ILSIndicator.js"></script> <!-- MODIFIED -->
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/A320_Neo/PFD/Airbus_FMA.js"></script> <!-- MODIFIED -->
+
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/Shared/BaseAirliners.js"></script>
+
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/A320_Neo/PFD/A320_Neo_PFD.js"></script>

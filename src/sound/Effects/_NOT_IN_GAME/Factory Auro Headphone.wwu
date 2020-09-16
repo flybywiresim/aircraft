@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="utf-8"?>
+<WwiseDocument Type="WorkUnit" ID="{B3C352EE-53F0-4C95-BAA9-B8ECC0034D25}" SchemaVersion="97">
+	<Effects>
+		<WorkUnit Name="Factory Auro Headphone" ID="{B3C352EE-53F0-4C95-BAA9-B8ECC0034D25}" PersistMode="Standalone">
+			<ChildrenList>
+				<Effect Name="Dry_AHP" ID="{CCF3E23C-865B-4F0B-BD70-B5F62D29652B}" PluginName="Auro Headphone" CompanyID="263" PluginID="1100" PluginType="3">
+					<PropertyList>
+						<Property Name="ER_Delay" Type="Real32" Value="1"/>
+						<Property Name="ER_Level" Type="Real32" Value="-144"/>
+						<Property Name="Reverb_fcut" Type="Real32" Value="9945"/>
+						<Property Name="Reverb_level" Type="Real32" Value="-144"/>
+						<Property Name="Reverb_predelay" Type="Real32" Value="10"/>
+						<Property Name="Reverb_tr60" Type="Real32" Value="0.2"/>
+						<Property Name="Src_distance" Type="Real32" Value="1.5"/>
+						<Property Name="Wall_back" Type="Real32" Value="4.44"/>
+						<Property Name="Wall_bottom" Type="Real32" Value="1.75"/>
+						<Property Name="Wall_left" Type="Real32" Value="3.25"/>
+						<Property Name="Wall_right" Type="Real32" Value="3.75"/>
+					</PropertyList>
+				</Effect>
+				<Effect Name="Big_Church_AHP" ID="{21E40BE7-7B3A-4DE4-BC78-FA8EB81736CD}" PluginName="Auro Headphone" CompanyID="263" PluginID="1100" PluginType="3">
+					<PropertyList>
+						<Property Name="ER_Level" Type="Real32" Value="-9"/>
+						<Property Name="Reverb_alpha" Type="Real32" Value="0.69"/>
+						<Property Name="Reverb_fcut" Type="Real32" Value="4500"/>
+						<Property Name="Reverb_level" Type="Real32" Value="-15"/>
+						<Property Name="Reverb_predelay" Type="Real32" Value="32"/>
+						<Property Name="Reverb_tr60" Type="Real32" Value="2"/>
+						<Property Name="Src_distance" Type="Real32" Value="2"/>
+						<Property Name="Wall_back" Type="Real32" Value="4.44"/>
+						<Property Name="Wall_bottom" Type="Real32" Value="1"/>
+						<Property Name="Wall_front" Type="Real32" Value="3.95"/>
+						<Property Name="Wall_left" Type="Real32" Value="3.25"/>
+						<Property Name="Wall_right" Type="Real32" Value="3.75"/>
+					</PropertyList>
+				</Effect>
+				<Effect Name="Church_AHP" ID="{4421C0DA-3918-4BEA-944B-F70544E89F39}" PluginName="Auro Headphone" CompanyID="263" PluginID="1100" PluginType="3">
+					<PropertyList>
+						<Property Name="ER_Delay" Type="Real32" Value="1"/>
+						<Property Name="ER_Level" Type="Real32" Value="-3"/>
+						<Property Name="Reverb_fcut" Type="Real32" Value="6000"/>
+						<Property Name="Reverb_level" Type="Real32" Value="-18"/>
+						<Property Name="Reverb_predelay" Type="Real32" Value="40"/>
+						<Property Name="Reverb_tr60" Type="Real32" Value="2"/>
+						<Property Name="Wall_bottom" Type="Real32" Value="1.75"/>
+						<Property Name="Wall_left" Type="Real32" Value="3.25"/>
+						<Property Name="Wall_right" Type="Real32" Value="3.75"/>
+					</PropertyList>
+				</Effect>
+				<Effect Name="Large_Hall_AHP" ID="{1F253E66-2739-4432-8EAF-37CC14E8A754}" PluginName="Auro Headphone" CompanyID="263" PluginID="1100" PluginType="3">
+					<PropertyList>
+						<Property Name="ER_Level" Type="Real32" Value="-9"/>
+						<Property Name="Reverb_alpha" Type="Real32" Value="0.64"/>
+						<Property Name="Reverb_fcut" Type="Real32" Value="6000"/>
+						<Property Name="Reverb_level" Type="Real32" Value="-18"/>
+						<Property Name="Reverb_predelay" Type="Real32" Value="20"/>
+						<Property Name="Reverb_tr60" Type="Real32" Value="2"/>
+						<Property Name="Src_distance" Type="Real32" Value="2"/>
+						<Property Name="Wall_back" Type="Real32" Value="4.44"/>
+						<Property Name="Wall_bottom" Type="Real32" Value="1"/>
+						<Property Name="Wall_front" Type="Real32" Value="3.95"/>
+						<Property Name="Wall_left" Type="Real32" Value="3.25"/>
+						<Property Name="Wall_right" Type="Real32" Value="3.75"/>
+					</PropertyList>
+				</Effect>
+				<Effect Name="Big_Room_AHP" ID="{E9893773-ABD2-4F24-9EEC-71823BFC7B31}" PluginName="Auro Headphone" CompanyID="263" PluginID="1100" PluginType="3">
+					<PropertyList>
+						<Property Name="ER_Level" Type="Real32" Value="-3"/>
+						<Property Name="Reverb_level" Type="Real32" Value="-9"/>
+						<Property Name="Reverb_predelay" Type="Real32" Value="13"/>
+						<Property Name="Reverb_tr60" Type="Real32" Value="1.75"/>
+						<Property Name="Src_distance" Type="Real32" Value="2"/>
+					</PropertyList>
+				</Effect>
+				<Effect Name="Medium_Room_AHP" ID="{084C1341-345B-44C4-88FE-89EA007AEDB3}" PluginName="Auro Headphone" CompanyID="263" PluginID="1100" PluginType="3">
+					<PropertyList>
+						<Property Name="ER_Level" Type="Real32" Value="-3"/>
+						<Property Name="Reverb_level" Type="Real32" Value="-9"/>
+						<Property Name="Reverb_predelay" Type="Real32" Value="5"/>
+						<Property Name="Src_distance" Type="Real32" Value="2"/>
+					</PropertyList>
+				</Effect>
+				<Effect Name="Small_Room_AHP" ID="{BE3777F6-C43E-469A-8279-78AF961432F0}" PluginName="Auro Headphone" CompanyID="263" PluginID="1100" PluginType="3">
+					<PropertyList>
+						<Property Name="ER_Delay" Type="Real32" Value="1"/>
+						<Property Name="ER_Level" Type="Real32" Value="0"/>
+						<Property Name="Reverb_level" Type="Real32" Value="0"/>
+						<Property Name="Reverb_predelay" Type="Real32" Value="5"/>
+						<Property Name="Reverb_tr60" Type="Real32" Value="0.2"/>
+						<Property Name="Src_distance" Type="Real32" Value="2"/>
+					</PropertyList>
+				</Effect>
+				<Effect Name="Smal_Reflection_Room_AHP" ID="{32481BA0-DB95-4BA6-8A13-A9CD39E4FF6E}" PluginName="Auro Headphone" CompanyID="263" PluginID="1100" PluginType="3">
+					<PropertyList>
+						<Property Name="ER_Delay" Type="Real32" Value="1"/>
+						<Property Name="ER_Level" Type="Real32" Value="-9"/>
+						<Property Name="Level" Type="Real32" Value="4"/>
+						<Property Name="Reverb_fcut" Type="Real32" Value="9945"/>
+						<Property Name="Reverb_level" Type="Real32" Value="-144"/>
+						<Property Name="Reverb_predelay" Type="Real32" Value="10"/>
+						<Property Name="Reverb_tr60" Type="Real32" Value="0.2"/>
+						<Property Name="Src_distance" Type="Real32" Value="3"/>
+						<Property Name="Wall_back" Type="Real32" Value="4.44"/>
+						<Property Name="Wall_bottom" Type="Real32" Value="1"/>
+						<Property Name="Wall_front" Type="Real32" Value="3.81"/>
+						<Property Name="Wall_left" Type="Real32" Value="3.25"/>
+						<Property Name="Wall_right" Type="Real32" Value="3.75"/>
+						<Property Name="Wall_top" Type="Real32" Value="2"/>
+					</PropertyList>
+				</Effect>
+				<Effect Name="Small_Standard_Room_AHP" ID="{B68383D3-285F-4FA1-9E5B-7645AD089022}" PluginName="Auro Headphone" CompanyID="263" PluginID="1100" PluginType="3">
+					<PropertyList>
+						<Property Name="ER_Delay" Type="Real32" Value="1"/>
+						<Property Name="ER_Level" Type="Real32" Value="-10"/>
+						<Property Name="Reverb_alpha" Type="Real32" Value="0.06"/>
+						<Property Name="Reverb_fcut" Type="Real32" Value="3852"/>
+						<Property Name="Reverb_level" Type="Real32" Value="-3"/>
+						<Property Name="Reverb_predelay" Type="Real32" Value="10"/>
+						<Property Name="Reverb_tr60" Type="Real32" Value="0.5"/>
+						<Property Name="Src_distance" Type="Real32" Value="1.5"/>
+						<Property Name="Wall_back" Type="Real32" Value="4.44"/>
+						<Property Name="Wall_bottom" Type="Real32" Value="1"/>
+						<Property Name="Wall_front" Type="Real32" Value="3.81"/>
+						<Property Name="Wall_left" Type="Real32" Value="3.25"/>
+						<Property Name="Wall_right" Type="Real32" Value="3.75"/>
+						<Property Name="Wall_top" Type="Real32" Value="2"/>
+					</PropertyList>
+				</Effect>
+			</ChildrenList>
+		</WorkUnit>
+	</Effects>
+</WwiseDocument>

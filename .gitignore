@@ -1,0 +1,11 @@
+*
+!*/
+!/.vscode/**
+!/.github/**
+!/A32NX/**
+!/docs/**
+!/src/**
+!.gitignore
+!CODEOWNERS
+.DS_Store
+/src/sound/.cache

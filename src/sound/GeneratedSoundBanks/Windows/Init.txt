@@ -1,0 +1,405 @@
+Switch Group	ID	Name			Wwise Object Path	Notes
+	335191707	parking_brake			\levers\parking_brake	
+	350724691	aileron_left_movement			\flight_control\aileron_left_movement	
+	748307367	propeller_lever			\levers\propeller_lever	
+	906889442	mixture_lever			\levers\mixture_lever	
+	1235872788	flaps_lever_direction			\levers\flaps_lever_direction	
+	1300675030	flaps_right_move_generic			\flight_control\flaps_right_move_generic	
+	1551376142	flaps_lever_movement			\levers\flaps_lever_movement	
+	1586167713	gears_movement			\flight_control\gears_movement	
+	1677384734	pedals_movement			\levers\pedals_movement	
+	1679529309	lever_reverse_thrust			\levers\lever_reverse_thrust	
+	1844896876	yoke_x_movement			\levers\yoke_x_movement	
+	1845612916	aileron_right_movement			\flight_control\aileron_right_movement	
+	1891174899	cowlflaps_lever_position			\levers\cowlflaps_lever_position	
+	2253536988	lever_spoiler_movement			\levers\lever_spoiler_movement	
+	2262607145	left_gears_direction			\flight_control\left_gears_direction	
+	2494887037	gears_direction			\flight_control\gears_direction	
+	2519629830	flaps_left_up_down			\flight_control\flaps_left_up_down	
+	2525670351	yoke_y_movement			\levers\yoke_y_movement	
+	2685946057	rudder_movement			\flight_control\rudder_movement	
+	2757437141	water_rudder_movement			\flight_control\water_rudder_movement	
+	2775976461	elevator_movement			\flight_control\elevator_movement	
+	2784615739	flaps_right_up_down			\flight_control\flaps_right_up_down	
+	2856463398	exit_door_direction			\flight_control\exit_door_direction	
+	3183153134	throttle_lever_derived			\levers\throttle_lever_derived	
+	3436671897	flaps_left_move_generic			\flight_control\flaps_left_move_generic	
+	3459523122	right_gears_direction			\flight_control\right_gears_direction	
+	3568692327	canopy_movement			\flight_control\canopy_movement	
+	3628534847	throttle_movement			\levers\throttle_movement	
+	3714303081	surfaces			\surface\surfaces	Type of surface: 0 = Concrete 1 = Grass 2 = Water 3 = Grass_bumpy 4 = Asphalt 5 = Short_grass 6 = Long_grass 7 = Hard_turf 8 = Snow 9 = Ice 10 = Urban 11 = Forest 12 = Dirt 13 = Coral 14 = Gravel 15 = Oil_treated 16 = Steel_mats 17 = Bituminus 18 = Brick 19 = Macadam 20 = Planks 21 = Sand 22 = Shale 23 = Tarmac 24 = Wright_flyer_track 25 = last fsx 26 = ocean 27 = water 28 = pond 29 = lake 30 = river 31 = waste water 32 = paint 33 = erase_grass
+	3861039171	exit_door_movements			\flight_control\exit_door_movements	
+	3881857405	left_gears_movement			\flight_control\left_gears_movement	
+	4014844960	flaps_lever_position			\levers\flaps_lever_position	
+	4212759548	right_gears_movement			\flight_control\right_gears_movement	
+
+Switch	ID	Name	Switch Group			Notes
+	1758001241	push	parking_brake			
+	1908999728	pull	parking_brake			
+	788884573	stop	aileron_left_movement			
+	2129636626	movement	aileron_left_movement			
+	788884573	stop	propeller_lever			
+	2129636626	movement	propeller_lever			
+	788884573	stop	mixture_lever			
+	2129636626	movement	mixture_lever			
+	1878686274	drop	flaps_lever_direction			
+	2112858883	raise	flaps_lever_direction			
+	788884573	stop	flaps_right_move_generic			
+	2129636626	movement	flaps_right_move_generic			
+	788884573	stop	flaps_lever_movement			
+	2129636626	movement	flaps_lever_movement			
+	788884573	stop	gears_movement			
+	3011204530	move	gears_movement			
+	788884573	stop	pedals_movement			
+	3011204530	move	pedals_movement			
+	930712164	off	lever_reverse_thrust			
+	1651971902	on	lever_reverse_thrust			
+	788884573	stop	yoke_x_movement			
+	2129636626	movement	yoke_x_movement			
+	788884573	stop	aileron_right_movement			
+	2129636626	movement	aileron_right_movement			
+	788884573	stop	cowlflaps_lever_position			
+	2129636626	movement	cowlflaps_lever_position			
+	788884573	stop	lever_spoiler_movement			
+	2129636626	movement	lever_spoiler_movement			
+	1551306158	up	left_gears_direction			
+	2280510569	down	left_gears_direction			
+	1551306158	up	gears_direction			
+	2280510569	down	gears_direction			
+	1551306158	up	flaps_left_up_down			
+	2280510569	down	flaps_left_up_down			
+	788884573	stop	yoke_y_movement			
+	2129636626	movement	yoke_y_movement			
+	788884573	stop	rudder_movement			
+	2129636626	movement	rudder_movement			
+	1551306158	up	water_rudder_movement			
+	2280510569	down	water_rudder_movement			
+	788884573	stop	elevator_movement			
+	2129636626	movement	elevator_movement			
+	1551306158	up	flaps_right_up_down			
+	2280510569	down	flaps_right_up_down			
+	1451272583	close	exit_door_direction			
+	3072142513	open	exit_door_direction			
+	788884573	stop	throttle_lever_derived			
+	788884573	stop	flaps_left_move_generic			
+	2129636626	movement	flaps_left_move_generic			
+	1551306158	up	right_gears_direction			
+	2280510569	down	right_gears_direction			
+	1451272583	close	canopy_movement			
+	3072142513	open	canopy_movement			
+	788884573	stop	throttle_movement			
+	2129636626	movement	throttle_movement			
+	219065481	grass_bumpy	surfaces			3 = Grass_bumpy
+	344481046	ice	surfaces			9 = Ice
+	491961918	forest	surfaces			11 = Forest
+	503175660	hard_turf	surfaces			7 = Hard_turf
+	504532776	brick	surfaces			18 = Brick
+	624189772	lake	surfaces			
+	787898836	snow	surfaces			8 = Snow
+	803837735	sand	surfaces			21 = Sand
+	841620460	concrete	surfaces			0 = Concrete
+	931372080	long_grass	surfaces			6 = Long_grass
+	977851081	wright_flyer_track	surfaces			24 = Wright_flyer_track
+	1434743578	planks	surfaces			20 = Planks
+	1944232204	pond	surfaces			
+	2164569405	oil_treated	surfaces			15 = Oil_treated
+	2185786256	gravel	surfaces			14 = Gravel
+	2195636714	dirt	surfaces			12 = Dirt
+	2290614330	erase_grass	surfaces			
+	2451973012	coral	surfaces			13 = Coral
+	2654748154	water	surfaces			
+	2721746886	short_grass	surfaces			5 = Short_grass
+	2894837532	water_fsx	surfaces			2 = Water
+	2997730343	urban	surfaces			10 = Urban
+	3046889023	paint	surfaces			
+	3087554060	shale	surfaces			22 = Shale
+	3544038123	last_fsx	surfaces			
+	3546281853	bituminus	surfaces			17 = Bituminus
+	3546707615	macadam	surfaces			19 = Macadam
+	3605787649	river	surfaces			
+	3678910036	steel_mats	surfaces			16 = Steel_mats
+	3769881715	tarmac	surfaces			23 = Tarmac
+	3802555985	ocean	surfaces			
+	4169408098	asphalt	surfaces			4 = Asphalt
+	4192073153	waste_water	surfaces			
+	4248645337	grass	surfaces			1 = Grass
+	788884573	stop	exit_door_movements			
+	2129636626	movement	exit_door_movements			
+	788884573	stop	left_gears_movement			
+	3011204530	move	left_gears_movement			
+	788884573	stop	flaps_lever_position			
+	2129636626	movement	flaps_lever_position			
+	788884573	stop	right_gears_movement			
+	3011204530	move	right_gears_movement			
+
+State Group	ID	Name			Wwise Object Path	Notes
+	501856623	ACTIVITIES_FLOW_STATE			\flow_states\ACTIVITIES_FLOW_STATE	
+	926009373	GAME_RTC_STATE			\flow_states\GAME_RTC_STATE	
+	1614915587	ENDLEVEL_FLOW_STATE			\flow_states\ENDLEVEL_FLOW_STATE	
+	1775417280	GAME_FLOW_STATE			\flow_states\GAME_FLOW_STATE	
+	2682214721	DEFAULT_FLOW_STATE			\flow_states\DEFAULT_FLOW_STATE	
+	4018043625	MENU_FLOW_STATE			\flow_states\MENU_FLOW_STATE	
+	4185053780	VIEWPOINT			\aircraft\VIEWPOINT	
+
+State	ID	Name	State Group			Notes
+	636895100	NAT_GEO	ACTIVITIES_FLOW_STATE			
+	748895195	None	ACTIVITIES_FLOW_STATE			
+	897584739	VFR_CHALLENGE	ACTIVITIES_FLOW_STATE			
+	2251871486	BUSHTRIP	ACTIVITIES_FLOW_STATE			
+	2288825991	PRIVATE_FLIGHT	ACTIVITIES_FLOW_STATE			
+	2378245948	FREE_FLIGHT	ACTIVITIES_FLOW_STATE			
+	2742496556	SIGHTING	ACTIVITIES_FLOW_STATE			
+	2995574756	LANDING_CHALLENGE	ACTIVITIES_FLOW_STATE			
+	3750132932	COMMERCIAL_FLIGHT	ACTIVITIES_FLOW_STATE			
+	3762955427	TUTORIAL	ACTIVITIES_FLOW_STATE			
+	728939322	RTC	GAME_RTC_STATE			
+	748895195	None	GAME_RTC_STATE			
+	1591940009	RTC_IN_FLIGHT	GAME_RTC_STATE			
+	1761167878	NON_RTC	GAME_RTC_STATE			
+	748895195	None	ENDLEVEL_FLOW_STATE			
+	962446319	REWARD_SCREEN_CRASH	ENDLEVEL_FLOW_STATE			
+	1552746105	REWARD_SCREEN_FAILED	ENDLEVEL_FLOW_STATE			
+	1985034998	REWARD_SCREEN_WON	ENDLEVEL_FLOW_STATE			
+	2568653936	REWARD_SCREEN_NONE	ENDLEVEL_FLOW_STATE			
+	3213183853	REWARD_SCREEN_DEFAULT	ENDLEVEL_FLOW_STATE			
+	407484361	FREEFLIGHT	GAME_FLOW_STATE			
+	565529991	FINAL	GAME_FLOW_STATE			
+	748895195	None	GAME_FLOW_STATE			
+	856143216	CRUISE	GAME_FLOW_STATE			
+	981942172	PUSHBACK	GAME_FLOW_STATE			
+	1121922920	GATE	GAME_FLOW_STATE			
+	1125500713	INTRO	GAME_FLOW_STATE			
+	1325762608	HOLDSHORT	GAME_FLOW_STATE			
+	1596760925	DESCENT	GAME_FLOW_STATE			
+	1819394456	CLIMB	GAME_FLOW_STATE			
+	1857823434	TOUCHDOWN	GAME_FLOW_STATE			
+	2291412309	APPROACH	GAME_FLOW_STATE			
+	2837639985	TAXI	GAME_FLOW_STATE			
+	3015851369	GROUNDROLL	GAME_FLOW_STATE			
+	3965271245	RUNWAY	GAME_FLOW_STATE			
+	702482391	GAME	DEFAULT_FLOW_STATE			
+	748895195	None	DEFAULT_FLOW_STATE			
+	1054659462	ENDLEVEL	DEFAULT_FLOW_STATE			
+	1571531645	LOADING_TO_MENU	DEFAULT_FLOW_STATE			
+	1761500993	BOOT	DEFAULT_FLOW_STATE			
+	1928657066	LOADING_BOOT	DEFAULT_FLOW_STATE			
+	2607556080	MENU	DEFAULT_FLOW_STATE			
+	2930658582	LOADING_TO_GAME	DEFAULT_FLOW_STATE			
+	3092587493	PAUSE	DEFAULT_FLOW_STATE			
+	482361971	WORLDMAP	MENU_FLOW_STATE			
+	556785088	LOGO	MENU_FLOW_STATE			
+	748895195	None	MENU_FLOW_STATE			
+	1313304937	MARKET	MENU_FLOW_STATE			
+	2056233290	SHOWCASE	MENU_FLOW_STATE			
+	2192450996	HANGAR	MENU_FLOW_STATE			
+	2557865568	ADDONS	MENU_FLOW_STATE			
+	3161908922	MAIN	MENU_FLOW_STATE			
+	3448223925	HOMEPAGE	MENU_FLOW_STATE			
+	3540125970	PRESSSTART	MENU_FLOW_STATE			
+	4020296482	ACTIVITIES	MENU_FLOW_STATE			
+	4126331248	PROFILE	MENU_FLOW_STATE			
+	4141130937	OPTIONS	MENU_FLOW_STATE			
+	438105790	OUTSIDE	VIEWPOINT			
+	748895195	None	VIEWPOINT			
+	3553349781	INSIDE	VIEWPOINT			
+
+Custom State	ID	Name	State Group	Owner		Notes
+	9493417	REWARD_SCREEN_FAILED	ENDLEVEL_FLOW_STATE	\Master-Mixer Hierarchy\Default Work Unit\Master Audio Bus\game\game_aux		
+	17530326	REWARD_SCREEN_CRASH	ENDLEVEL_FLOW_STATE	\Master-Mixer Hierarchy\Default Work Unit\Master Audio Bus\game\game_aux		
+	105915711	REWARD_SCREEN_WON	ENDLEVEL_FLOW_STATE	\Master-Mixer Hierarchy\Default Work Unit\Master Audio Bus\game\game_sfx\aircraft_wwisedata		
+	107636127	MENU	DEFAULT_FLOW_STATE	\Master-Mixer Hierarchy\Default Work Unit\Master Audio Bus\game		
+	120042970	OUTSIDE	VIEWPOINT	\Master-Mixer Hierarchy\Default Work Unit\Master Audio Bus\game\game_aux\aux_inside		
+	122981579	REWARD_SCREEN_FAILED	ENDLEVEL_FLOW_STATE	\Master-Mixer Hierarchy\Default Work Unit\Master Audio Bus\game\game_sfx\environment		
+	149897605	BOOT	DEFAULT_FLOW_STATE	\Master-Mixer Hierarchy\Default Work Unit\Master_Headset_Bus		
+	152943450	LOADING_TO_MENU	DEFAULT_FLOW_STATE	\Master-Mixer Hierarchy\Default Work Unit\Master Audio Bus\game		
+	210164341	RTC	GAME_RTC_STATE	\Master-Mixer Hierarchy\Default Work Unit\Master_Headset_Bus\warnings		
+	213805669	REWARD_SCREEN_CRASH	ENDLEVEL_FLOW_STATE	\Master-Mixer Hierarchy\Default Work Unit\Master Audio Bus\game\game_sfx\aircraft_wwisedata		
+	246158027	LOADING_TO_GAME	DEFAULT_FLOW_STATE	\Master-Mixer Hierarchy\Default Work Unit\Master_Headset_Bus		
+	246170576	LOADING_TO_GAME	DEFAULT_FLOW_STATE	\Master-Mixer Hierarchy\Default Work Unit\Master Audio Bus\game		
+	311154593	REWARD_SCREEN_DEFAULT	ENDLEVEL_FLOW_STATE	\Master-Mixer Hierarchy\Default Work Unit\Master Audio Bus\game\game_sfx\aircraft_wwisedata		
+	342361762	REWARD_SCREEN_FAILED	ENDLEVEL_FLOW_STATE	\Master-Mixer Hierarchy\Default Work Unit\Master Audio Bus\game\game_sfx\aircraft_wwisedata		
+	381476381	PAUSE	DEFAULT_FLOW_STATE	\Master-Mixer Hierarchy\Default Work Unit\Master_Headset_Bus		
+	419478635	LOADING_BOOT	DEFAULT_FLOW_STATE	\Master-Mixer Hierarchy\Default Work Unit\Master_Headset_Bus		
+	419658000	REWARD_SCREEN_DEFAULT	ENDLEVEL_FLOW_STATE	\Master-Mixer Hierarchy\Default Work Unit\Master Audio Bus\game\game_sfx\environment		
+	451926365	BOOT	DEFAULT_FLOW_STATE	\Master-Mixer Hierarchy\Default Work Unit\Master Audio Bus\game		
+	470362362	ENDLEVEL	DEFAULT_FLOW_STATE	\Master-Mixer Hierarchy\Default Work Unit\Master_Headset_Bus		
+	476490331	ENDLEVEL	DEFAULT_FLOW_STATE	\Master-Mixer Hierarchy\Default Work Unit\Master Audio Bus\game		
+	587301890	REWARD_SCREEN_CRASH	ENDLEVEL_FLOW_STATE	\Master-Mixer Hierarchy\Default Work Unit\Master Audio Bus\game\game_sfx\environment		
+	678649230	RTC_IN_FLIGHT	GAME_RTC_STATE	\Master-Mixer Hierarchy\Default Work Unit\Master_Headset_Bus\warnings		
+	692783675	LOADING_TO_MENU	DEFAULT_FLOW_STATE	\Master-Mixer Hierarchy\Default Work Unit\Master_Headset_Bus		
+	710806259	PAUSE	DEFAULT_FLOW_STATE	\Master-Mixer Hierarchy\Default Work Unit\Master Audio Bus\game		
+	735759106	REWARD_SCREEN_WON	ENDLEVEL_FLOW_STATE	\Master-Mixer Hierarchy\Default Work Unit\Master Audio Bus\game\game_aux		
+	813844191	RTC	GAME_RTC_STATE	\Master-Mixer Hierarchy\Default Work Unit\Master Audio Bus\game\game_sfx\aircraft_wwisedata\aircraft_wwisedata_player\inside\warning_inside		
+	821849764	RTC_IN_FLIGHT	GAME_RTC_STATE	\Master-Mixer Hierarchy\Default Work Unit\Master Audio Bus\game		
+	981866551	RTC_IN_FLIGHT	GAME_RTC_STATE	\Master-Mixer Hierarchy\Default Work Unit\Master Audio Bus\game\game_sfx\aircraft_wwisedata\aircraft_wwisedata_player\inside\warning_inside		
+	1006125794	LOADING_BOOT	DEFAULT_FLOW_STATE	\Master-Mixer Hierarchy\Default Work Unit\Master Audio Bus\game		
+	1033889861	REWARD_SCREEN_WON	ENDLEVEL_FLOW_STATE	\Master-Mixer Hierarchy\Default Work Unit\Master Audio Bus\game\game_sfx\environment		
+	1047765260	REWARD_SCREEN_DEFAULT	ENDLEVEL_FLOW_STATE	\Master-Mixer Hierarchy\Default Work Unit\Master Audio Bus\game\game_aux		
+	1069206922	MENU	DEFAULT_FLOW_STATE	\Master-Mixer Hierarchy\Default Work Unit\Master_Headset_Bus		
+
+Game Parameter	ID	Name			Wwise Object Path	Notes
+	328924114	MIXER_WARNING_VOLUME			\gui\mixer\MIXER_WARNING_VOLUME	True if option is ON and viewopint outside
+	806364695	HEADPHONE_IN_COCKPIT			\gplay\HEADPHONE_IN_COCKPIT	0 if communication in default mode 0 if communication in headphone filter & viewpoint outside 1 if heaphone filter is set to on & viewpoint inside 1 if communication device is set to on  
+	1012293574	MIXER_ENGINE_VOLUME			\gui\mixer\MIXER_ENGINE_VOLUME	
+	1033908394	MIXER_MISCELLANEOUS_VOLUME			\gui\mixer\MIXER_MISCELLANEOUS_VOLUME	
+	1288733096	SC_AURAL_WARNING			\control_signal\sidechain\SC_AURAL_WARNING	
+	1324482047	MIXER_AIRCRAFT_AI_VOLUME			\gui\mixer\MIXER_AIRCRAFT_AI_VOLUME	
+	1479801155	MUTE_WARNING_OUTSIDE			\gui\MUTE_WARNING_OUTSIDE	
+	2025464895	SC_ENGINES			\control_signal\sidechain\SC_ENGINES	
+	2207392583	MIXER_ENVIRONMENT_VOLUME			\gui\mixer\MIXER_ENVIRONMENT_VOLUME	
+	2339006855	SC_VO			\control_signal\sidechain\SC_VO	
+	2586533568	SC_SFX_MID			\control_signal\sidechain\SC_SFX_MID	
+	2920878614	HEADPHONE_FILTER			\gplay\HEADPHONE_FILTER	0 headphone filter  off 1 headphone filter on
+	3028259178	SPP_DISTANCE			\engine\spp\SPP_DISTANCE	
+	3192538439	MIXER_COCKPIT_VOLUME			\gui\mixer\MIXER_COCKPIT_VOLUME	
+	3567933408	SC_SFX_THUNDER			\control_signal\sidechain\SC_SFX_THUNDER	
+	4194702645	ENV_COCKPIT_INSULATION			\environment\common\ENV_COCKPIT_INSULATION	
+
+Modulator LFO	ID	Name			Wwise Object Path	Notes
+	46816189	lfo_distance_modulator_propeller			\planes\lfo_distance_modulator_propeller	
+	48845564	lfo_distance_modulator_combustion			\planes\lfo_distance_modulator_combustion	
+	633635578	lfo_distance_modulator_jetwhine_far			\planes\lfo_distance_modulator_jetwhine_far	
+	696064162	lfo_distance_modulator_flanger			\planes\lfo_distance_modulator_flanger	
+	932133058	lfo_distance_modulator_jetwhine			\planes\lfo_distance_modulator_jetwhine	
+	1022998646	lfo_distance_modulator_combustion_far			\planes\lfo_distance_modulator_combustion_far	
+
+Modulator Envelope	ID	Name			Wwise Object Path	Notes
+	789323127	Modulator Envelope (Custom)				
+
+Audio Bus	ID	Name			Wwise Object Path	Notes
+	10182753	env_ambience			\Default Work Unit\Master Audio Bus\game\game_sfx\environment\env_ambience	
+	33744963	combustion_inside			\Default Work Unit\Master Audio Bus\game\game_sfx\aircraft_wwisedata\aircraft_wwisedata_player\inside\engine_inside\combustion_inside	
+	79922627	aircraft_wwisedata_player			\Default Work Unit\Master Audio Bus\game\game_sfx\aircraft_wwisedata\aircraft_wwisedata_player	
+	127503807	env_ambience_ambisonic			\Default Work Unit\Master Audio Bus\game\game_sfx\environment\env_ambience\env_ambience_ambisonic	
+	141468874	engine_inside			\Default Work Unit\Master Audio Bus\game\game_sfx\aircraft_wwisedata\aircraft_wwisedata_player\inside\engine_inside	
+	142579863	miscellaneous_outside			\Default Work Unit\Master Audio Bus\game\game_sfx\aircraft_wwisedata\aircraft_wwisedata_player\outside\miscellaneous_outside	
+	185095368	rattle_inside_generic			\Default Work Unit\Master Audio Bus\game\game_sfx\aircraft_wwisedata\aircraft_wwisedata_player\inside\rattles_inside\rattle_inside_generic	
+	191394544	rotor_ai			\Default Work Unit\Master Audio Bus\game\game_sfx\aircraft_wwisedata\aircraft_wwisedata_ai\engine_ai\rotor_ai	
+	257994322	miscellaneous_inside			\Default Work Unit\Master Audio Bus\game\game_sfx\aircraft_wwisedata\aircraft_wwisedata_player\inside\miscellaneous_inside	
+	277616486	jetwhine_inside			\Default Work Unit\Master Audio Bus\game\game_sfx\aircraft_wwisedata\aircraft_wwisedata_player\inside\engine_inside\jetwhine_inside	
+	279718392	combustion_outside			\Default Work Unit\Master Audio Bus\game\game_sfx\aircraft_wwisedata\aircraft_wwisedata_player\outside\engine_outside\combustion_outside	
+	309952163	rattles_ai			\Default Work Unit\Master Audio Bus\game\game_sfx\aircraft_wwisedata\aircraft_wwisedata_ai\rattles_ai	
+	324845948	grounds_inside_generic			\Default Work Unit\Master Audio Bus\game\game_sfx\aircraft_wwisedata\aircraft_wwisedata_player\inside\grounds_inside\grounds_inside_generic	
+	429248316	rain_ai			\Default Work Unit\Master Audio Bus\game\game_sfx\aircraft_wwisedata\aircraft_wwisedata_ai\rain_ai	
+	438105790	outside			\Default Work Unit\Master Audio Bus\game\game_sfx\aircraft_wwisedata\aircraft_wwisedata_player\outside	
+	503449455	propeller_inside_ambisonic			\Default Work Unit\Master Audio Bus\game\game_sfx\aircraft_wwisedata\aircraft_wwisedata_player\inside\engine_inside\propeller_inside\propeller_inside_ambisonic	
+	523563888	env_weather_thunder			\Default Work Unit\Master Audio Bus\game\game_sfx\environment\env_weather\env_weather_thunder	
+	570764930	grounds_inside			\Default Work Unit\Master Audio Bus\game\game_sfx\aircraft_wwisedata\aircraft_wwisedata_player\inside\grounds_inside	
+	622845711	engine_outside			\Default Work Unit\Master Audio Bus\game\game_sfx\aircraft_wwisedata\aircraft_wwisedata_player\outside\engine_outside	
+	646417916	warning_inside_generic			\Default Work Unit\Master Audio Bus\game\game_sfx\aircraft_wwisedata\aircraft_wwisedata_player\inside\warning_inside\warning_inside_generic	
+	700771074	warning_inside			\Default Work Unit\Master Audio Bus\game\game_sfx\aircraft_wwisedata\aircraft_wwisedata_player\inside\warning_inside	
+	702482391	game			\Default Work Unit\Master Audio Bus\game	
+	740322010	winds_outside			\Default Work Unit\Master Audio Bus\game\game_sfx\aircraft_wwisedata\aircraft_wwisedata_player\outside\winds_outside	
+	752697292	warning_inside_ambisonic			\Default Work Unit\Master Audio Bus\game\game_sfx\aircraft_wwisedata\aircraft_wwisedata_player\inside\warning_inside\warning_inside_ambisonic	
+	815321290	warnings			\Default Work Unit\Master_Headset_Bus\warnings	
+	826990683	winds_inside_generic			\Default Work Unit\Master Audio Bus\game\game_sfx\aircraft_wwisedata\aircraft_wwisedata_player\inside\winds_inside\winds_inside_generic	
+	842970940	rotor_inside_ambisonic			\Default Work Unit\Master Audio Bus\game\game_sfx\aircraft_wwisedata\aircraft_wwisedata_player\inside\engine_inside\rotor_inside\rotor_inside_ambisonic	
+	868413152	grounds_ai			\Default Work Unit\Master Audio Bus\game\game_sfx\aircraft_wwisedata\aircraft_wwisedata_ai\grounds_ai	
+	884491640	env_ambience_airports			\Default Work Unit\Master Audio Bus\game\game_sfx\environment\env_ambience\env_ambience_airports	
+	904316387	jetwhine_outside			\Default Work Unit\Master Audio Bus\game\game_sfx\aircraft_wwisedata\aircraft_wwisedata_player\outside\engine_outside\jetwhine_outside	
+	925736268	aux_inside			\Default Work Unit\Master Audio Bus\game\game_aux\aux_inside	
+	1071024731	env_weather			\Default Work Unit\Master Audio Bus\game\game_sfx\environment\env_weather	
+	1145949691	env_weather_custom			\Default Work Unit\Master Audio Bus\game\game_sfx\environment\env_weather\env_weather_custom	
+	1192269166	rattles_outside			\Default Work Unit\Master Audio Bus\game\game_sfx\aircraft_wwisedata\aircraft_wwisedata_player\outside\rattles_outside	
+	1206946791	propeller_ai			\Default Work Unit\Master Audio Bus\game\game_sfx\aircraft_wwisedata\aircraft_wwisedata_ai\engine_ai\propeller_ai	
+	1229948536	environment			\Default Work Unit\Master Audio Bus\game\game_sfx\environment	
+	1248535515	env_weather_precipitation			\Default Work Unit\Master Audio Bus\game\game_sfx\environment\env_weather\env_weather_precipitation	
+	1314679674	walla_outside			\Default Work Unit\Master Audio Bus\game\game_sfx\aircraft_wwisedata\aircraft_wwisedata_player\outside\walla_outside	
+	1352827000	rain_inside_generic			\Default Work Unit\Master Audio Bus\game\game_sfx\aircraft_wwisedata\aircraft_wwisedata_player\inside\rain_inside\rain_inside_generic	
+	1373265740	grounds_inside_ambisonic			\Default Work Unit\Master Audio Bus\game\game_sfx\aircraft_wwisedata\aircraft_wwisedata_player\inside\grounds_inside\grounds_inside_ambisonic	
+	1396985903	winds_ai			\Default Work Unit\Master Audio Bus\game\game_sfx\aircraft_wwisedata\aircraft_wwisedata_ai\winds_ai	
+	1402637413	rattles_inside			\Default Work Unit\Master Audio Bus\game\game_sfx\aircraft_wwisedata\aircraft_wwisedata_player\inside\rattles_inside	
+	1460906496	jetwhine_inside_ambisonic			\Default Work Unit\Master Audio Bus\game\game_sfx\aircraft_wwisedata\aircraft_wwisedata_player\inside\engine_inside\jetwhine_inside\jetwhine_inside_ambisonic	
+	1475543058	propeller_outside			\Default Work Unit\Master Audio Bus\game\game_sfx\aircraft_wwisedata\aircraft_wwisedata_player\outside\engine_outside\propeller_outside	
+	1715749244	env_ambience_road_traffic			\Default Work Unit\Master Audio Bus\game\game_sfx\environment\env_ambience\env_ambience_road_traffic	
+	1728532023	walla_inside_ambisonic			\Default Work Unit\Master Audio Bus\game\game_sfx\aircraft_wwisedata\aircraft_wwisedata_player\inside\walla_inside\walla_inside_ambisonic	
+	1732436329	jetwhine_outside_generic			\Default Work Unit\Master Audio Bus\game\game_sfx\aircraft_wwisedata\aircraft_wwisedata_player\outside\engine_outside\jetwhine_outside\jetwhine_outside_generic	
+	1736642064	instruments_inside			\Default Work Unit\Master Audio Bus\game\game_sfx\aircraft_wwisedata\aircraft_wwisedata_player\inside\instruments_inside	
+	1835685733	env_ambience_custom			\Default Work Unit\Master Audio Bus\game\game_sfx\environment\env_ambience\env_ambience_custom	
+	1930504242	rotor_inside			\Default Work Unit\Master Audio Bus\game\game_sfx\aircraft_wwisedata\aircraft_wwisedata_player\inside\engine_inside\rotor_inside	
+	1932523463	instrument_inside_generic			\Default Work Unit\Master Audio Bus\game\game_sfx\aircraft_wwisedata\aircraft_wwisedata_player\inside\instruments_inside\instrument_inside_generic	
+	1960530716	miscellaneous_inside_ambisonic			\Default Work Unit\Master Audio Bus\game\game_sfx\aircraft_wwisedata\aircraft_wwisedata_player\inside\miscellaneous_inside\miscellaneous_inside_ambisonic	
+	2070391975	warning_outside			\Default Work Unit\Master Audio Bus\game\game_sfx\aircraft_wwisedata\aircraft_wwisedata_player\outside\warning_outside	
+	2084472419	rain_outside			\Default Work Unit\Master Audio Bus\game\game_sfx\aircraft_wwisedata\aircraft_wwisedata_player\outside\rain_outside	
+	2133196684	warning_voice			\Default Work Unit\Master_Headset_Bus\warnings\warning_voice	
+	2197855225	winds_inside			\Default Work Unit\Master Audio Bus\game\game_sfx\aircraft_wwisedata\aircraft_wwisedata_player\inside\winds_inside	
+	2207139852	propeller_outside_generic			\Default Work Unit\Master Audio Bus\game\game_sfx\aircraft_wwisedata\aircraft_wwisedata_player\outside\engine_outside\propeller_outside\propeller_outside_generic	
+	2287420569	combustion_inside_ambisonic			\Default Work Unit\Master Audio Bus\game\game_sfx\aircraft_wwisedata\aircraft_wwisedata_player\inside\engine_inside\combustion_inside\combustion_inside_ambisonic	
+	2345655123	Master_Headset_Bus			\Default Work Unit\Master_Headset_Bus	
+	2373486617	walla_inside			\Default Work Unit\Master Audio Bus\game\game_sfx\aircraft_wwisedata\aircraft_wwisedata_player\inside\walla_inside	
+	2406532902	instruments_ai			\Default Work Unit\Master Audio Bus\game\game_sfx\aircraft_wwisedata\aircraft_wwisedata_ai\instruments_ai	
+	2428461952	rain_inside_ambisonic			\Default Work Unit\Master Audio Bus\game\game_sfx\aircraft_wwisedata\aircraft_wwisedata_player\inside\rain_inside\rain_inside_ambisonic	
+	2497764834	jetwhine_generic_ai			\Default Work Unit\Master Audio Bus\game\game_sfx\aircraft_wwisedata\aircraft_wwisedata_ai\engine_ai\jetwhine_ai\jetwhine_generic_ai	
+	2517442453	aux_outside			\Default Work Unit\Master Audio Bus\game\game_aux\aux_outside	
+	2578583116	env_ambience_airports_vehicles			\Default Work Unit\Master Audio Bus\game\game_sfx\environment\env_ambience\env_ambience_airports_vehicles	
+	2595609767	combustion_generic_ai			\Default Work Unit\Master Audio Bus\game\game_sfx\aircraft_wwisedata\aircraft_wwisedata_ai\engine_ai\combustion_ai\combustion_generic_ai	
+	2660702396	jetwhine_turbine_ai			\Default Work Unit\Master Audio Bus\game\game_sfx\aircraft_wwisedata\aircraft_wwisedata_ai\engine_ai\jetwhine_ai\jetwhine_turbine_ai	
+	2778823169	aircraft_wwisedata			\Default Work Unit\Master Audio Bus\game\game_sfx\aircraft_wwisedata	
+	2871036816	rattle_inside_ambisonic			\Default Work Unit\Master Audio Bus\game\game_sfx\aircraft_wwisedata\aircraft_wwisedata_player\inside\rattles_inside\rattle_inside_ambisonic	
+	2877058721	combustion_ai			\Default Work Unit\Master Audio Bus\game\game_sfx\aircraft_wwisedata\aircraft_wwisedata_ai\engine_ai\combustion_ai	
+	2880226385	propeller_inside			\Default Work Unit\Master Audio Bus\game\game_sfx\aircraft_wwisedata\aircraft_wwisedata_player\inside\engine_inside\propeller_inside	
+	2916344200	engine_ai			\Default Work Unit\Master Audio Bus\game\game_sfx\aircraft_wwisedata\aircraft_wwisedata_ai\engine_ai	
+	2965236493	combustion_turbine_ai			\Default Work Unit\Master Audio Bus\game\game_sfx\aircraft_wwisedata\aircraft_wwisedata_ai\engine_ai\combustion_ai\combustion_turbine_ai	
+	3000506812	jetwhine_ai			\Default Work Unit\Master Audio Bus\game\game_sfx\aircraft_wwisedata\aircraft_wwisedata_ai\engine_ai\jetwhine_ai	
+	3061640635	instrument_inside_ambisonic			\Default Work Unit\Master Audio Bus\game\game_sfx\aircraft_wwisedata\aircraft_wwisedata_player\inside\instruments_inside\instrument_inside_ambisonic	
+	3082359155	env_ambience_biomes			\Default Work Unit\Master Audio Bus\game\game_sfx\environment\env_ambience\env_ambience_biomes	
+	3195190449	env_weather_ambisonic			\Default Work Unit\Master Audio Bus\game\game_sfx\environment\env_weather\env_weather_ambisonic	
+	3300222473	combustion_inside_generic			\Default Work Unit\Master Audio Bus\game\game_sfx\aircraft_wwisedata\aircraft_wwisedata_player\inside\engine_inside\combustion_inside\combustion_inside_generic	
+	3301942502	rain_inside			\Default Work Unit\Master Audio Bus\game\game_sfx\aircraft_wwisedata\aircraft_wwisedata_player\inside\rain_inside	
+	3345363503	env_weather_wind_inside			\Default Work Unit\Master Audio Bus\game\game_sfx\environment\env_weather\env_weather_wind_inside	
+	3347308156	env_weather_wind_outside			\Default Work Unit\Master Audio Bus\game\game_sfx\environment\env_weather\env_weather_wind_outside	
+	3355598651	walla_inside_generic			\Default Work Unit\Master Audio Bus\game\game_sfx\aircraft_wwisedata\aircraft_wwisedata_player\inside\walla_inside\walla_inside_generic	
+	3365007143	grounds_outside			\Default Work Unit\Master Audio Bus\game\game_sfx\aircraft_wwisedata\aircraft_wwisedata_player\outside\grounds_outside	
+	3553349781	inside			\Default Work Unit\Master Audio Bus\game\game_sfx\aircraft_wwisedata\aircraft_wwisedata_player\inside	
+	3612411895	rotor_outside			\Default Work Unit\Master Audio Bus\game\game_sfx\aircraft_wwisedata\aircraft_wwisedata_player\outside\engine_outside\rotor_outside	
+	3624583984	game_aux			\Default Work Unit\Master Audio Bus\game\game_aux	
+	3636986689	instruments_outside			\Default Work Unit\Master Audio Bus\game\game_sfx\aircraft_wwisedata\aircraft_wwisedata_player\outside\instruments_outside	
+	3657403723	jetwhine_outside_turbine			\Default Work Unit\Master Audio Bus\game\game_sfx\aircraft_wwisedata\aircraft_wwisedata_player\outside\engine_outside\jetwhine_outside\jetwhine_outside_turbine	
+	3660562192	miscellaneous_ai			\Default Work Unit\Master Audio Bus\game\game_sfx\aircraft_wwisedata\aircraft_wwisedata_ai\miscellaneous_ai	
+	3672062747	game_sfx			\Default Work Unit\Master Audio Bus\game\game_sfx	
+	3678652918	warning_signal			\Default Work Unit\Master_Headset_Bus\warnings\warning_signal	
+	3703332428	combustion_outside_turbine			\Default Work Unit\Master Audio Bus\game\game_sfx\aircraft_wwisedata\aircraft_wwisedata_player\outside\engine_outside\combustion_outside\combustion_outside_turbine	
+	3716030094	combustion_outside_generic			\Default Work Unit\Master Audio Bus\game\game_sfx\aircraft_wwisedata\aircraft_wwisedata_player\outside\engine_outside\combustion_outside\combustion_outside_generic	
+	3727292239	walla_ai			\Default Work Unit\Master Audio Bus\game\game_sfx\aircraft_wwisedata\aircraft_wwisedata_ai\walla_ai	
+	3775981302	aircraft_wwisedata_ai			\Default Work Unit\Master Audio Bus\game\game_sfx\aircraft_wwisedata\aircraft_wwisedata_ai	
+	3803692087	Master Audio Bus			\Default Work Unit\Master Audio Bus	
+	3840590584	jetwhine_inside_generic			\Default Work Unit\Master Audio Bus\game\game_sfx\aircraft_wwisedata\aircraft_wwisedata_player\inside\engine_inside\jetwhine_inside\jetwhine_inside_generic	
+	3901746849	env_ambience_water			\Default Work Unit\Master Audio Bus\game\game_sfx\environment\env_ambience\env_ambience_water	
+	3906847520	env_ambience_urbanization			\Default Work Unit\Master Audio Bus\game\game_sfx\environment\env_ambience\env_ambience_urbanization	
+	3909608288	warning_ai			\Default Work Unit\Master Audio Bus\game\game_sfx\aircraft_wwisedata\aircraft_wwisedata_ai\warning_ai	
+	3984084332	rotor_inside_generic			\Default Work Unit\Master Audio Bus\game\game_sfx\aircraft_wwisedata\aircraft_wwisedata_player\inside\engine_inside\rotor_inside\rotor_inside_generic	
+	4030881699	propeller_inside_generic			\Default Work Unit\Master Audio Bus\game\game_sfx\aircraft_wwisedata\aircraft_wwisedata_player\inside\engine_inside\propeller_inside\propeller_inside_generic	
+	4071489356	miscellaneous_inside_generic			\Default Work Unit\Master Audio Bus\game\game_sfx\aircraft_wwisedata\aircraft_wwisedata_player\inside\miscellaneous_inside\miscellaneous_inside_generic	
+	4178885975	winds_inside_ambisonic			\Default Work Unit\Master Audio Bus\game\game_sfx\aircraft_wwisedata\aircraft_wwisedata_player\inside\winds_inside\winds_inside_ambisonic	
+
+Auxiliary Bus	ID	Name			Wwise Object Path	Notes
+	1214755710	rev_outdoor_custom_ai			\Default Work Unit\Master Audio Bus\game\game_aux\aux_outside\rev_outdoor_custom_ai	
+	1600286681	rev_outdoor_custom			\Default Work Unit\Master Audio Bus\game\game_aux\aux_outside\rev_outdoor_custom	
+	2069837898	rev_outdoor_aircraft			\Default Work Unit\Master Audio Bus\game\game_aux\aux_outside\rev_outdoor_aircraft	
+	3484564662	disto_overspeed			\Default Work Unit\Master Audio Bus\game\game_aux\disto_overspeed	
+	3722335303	rev_inside_custom			\Default Work Unit\Master Audio Bus\game\game_aux\aux_inside\rev_inside_custom	
+	3930462003	rev_outdoor_aircraft_low_end			\Default Work Unit\Master Audio Bus\game\game_aux\aux_outside\rev_outdoor_aircraft_low_end	
+
+Effect plug-ins	ID	Name	Type				Notes
+	347791571	eq_sc_aural_warning	Wwise Parametric EQ			
+	396110095	Wwise Peak Limiter (Custom)	Wwise Peak Limiter			
+	606628713	Wwise_Recorder_(Custom)	Wwise Recorder			
+	904460121	meter_sc_engines	Wwise Meter			
+	1008317238	flg_outdoor_aircraft_generic	Wwise Flanger			
+	1438353318	meter_sc_aural_warning	Wwise Meter			
+	1550574293	flg_outdoor_aircraft_low_end	Wwise Flanger			
+	1600286681	rev_outdoor_custom	Wwise Convolution Reverb			
+	2257073265	meter_sc_combustion	Wwise Meter			
+	2626479082	eq_sc_vo	Wwise Parametric EQ			
+	2663318487	aircraft_disto_overspeed	Wwise Guitar Distortion			
+	3004554342	meter_sc_thunder	Wwise Meter			
+	3659999185	eq_outdoor_aircraft_generic	Wwise Parametric EQ			
+	3930462003	rev_outdoor_aircraft_low_end	Wwise Convolution Reverb			
+	4216876873	rev_inside_generic_custom	Wwise Convolution Reverb			
+	4280681428	rev_outdoor_aircraft_generic	Wwise Convolution Reverb			
+
+Audio Devices	ID	Name	Type				Notes
+	1065201297	Headset	Communication			
+	2317455096	No_Output	No Output			
+	3859886410	System	System			
+
