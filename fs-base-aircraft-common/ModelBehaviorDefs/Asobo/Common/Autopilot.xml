@@ -830,11 +830,12 @@
 	<DefaultTemplateParameters>
 		<DEFAULT_NAME>Expedite</DEFAULT_NAME>
 		<PLANE_PREFIX></PLANE_PREFIX>
+		<TOOLTIPID>TT:COCKPIT.TOOLTIPS.INOP</TOOLTIPID>
 	</DefaultTemplateParameters>
 	<UseTemplate Name="ASOBO_AUTOPILOT_Push_Template">
 		<LEFT_SINGLE_CODE>(&gt;H:A320_Neo_EXPEDITE_MODE)</LEFT_SINGLE_CODE>
 		<EMISSIVE_CODE_ACTIVE>(A:AUTOPILOT SPEED SLOT INDEX, Number) 3 ==</EMISSIVE_CODE_ACTIVE> 
-		<!-- TODO <TOOLTIPID>%((A:AUTOPILOT NAV1 LOCK, bool))%{if}TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_VNAV_ON%{else}TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_VNAV_OFF%{end}</TOOLTIPID> -->
+		
 	</UseTemplate>
 </Template>
 
@@ -848,8 +849,6 @@
 			(A:AUTOPILOT MASTER, Bool) ! if{
 				(A:AUTOPILOT WING LEVELER, Bool) if{
 					(&gt;K:AP_WING_LEVELER_OFF)
-				}
-				(A:AUTOPILOT PITCH LEVELER, Bool) if{
 					(&gt;K:AP_PITCH_LEVELER_OFF)
 				}
 			}
@@ -918,6 +917,19 @@
 				<NO_INDICATOR>True</NO_INDICATOR>
 				<NO_TEXT_EMISSIVE>True</NO_TEXT_EMISSIVE>
 			</Case>
+			<Case Value="AS01B">
+				<LEFT_SINGLE_CODE>
+					(L:AS01B_AUTO_THROTTLE_ARM_STATE) ! (&gt;L:AS01B_AUTO_THROTTLE_ARM_STATE)
+					(L:AS01B_AUTO_THROTTLE_ARM_STATE) ! (A:AUTOPILOT THROTTLE ARM, Bool) and if{
+						(&gt;K:AUTO_THROTTLE_ARM)
+						(&gt;H:AS01B_FMC_1_AP_SPD)
+					}
+				</LEFT_SINGLE_CODE>
+				<TOGGLEABLE/>
+				<ANIM_CODE>(L:AS01B_AUTO_THROTTLE_ARM_STATE) 100 *</ANIM_CODE>
+				<NO_INDICATOR>True</NO_INDICATOR>
+				<NO_TEXT_EMISSIVE>True</NO_TEXT_EMISSIVE>
+			</Case>
 			<Default>
 				<LEFT_SINGLE_CODE>
 					#ID# (&gt;K:AUTO_THROTTLE_ARM)
@@ -938,6 +950,15 @@
 				<!-- Load Initial State - then states are not linked -->
 				<UPDATE_CODE>
 					(A:AUTOPILOT THROTTLE ARM#SIMVAR_ID_SUFFIX#, Bool) (&gt;L:XMLVAR_AUTO_THROTTLE_ARM_#ID#_STATE)
+				</UPDATE_CODE>
+				<UPDATE_ONCE>True</UPDATE_ONCE>
+			</UseTemplate>
+		</Case>
+		<Case Value="AS01B">
+			<UseTemplate Name="ASOBO_GT_Update">
+				<!-- Load Initial State - then states are not linked -->
+				<UPDATE_CODE>
+					(A:AUTOPILOT THROTTLE ARM, Bool) (&gt;L:AS01B_AUTO_THROTTLE_ARM_STATE)
 				</UPDATE_CODE>
 				<UPDATE_ONCE>True</UPDATE_ONCE>
 			</UseTemplate>
@@ -996,8 +1017,13 @@
 	<UseTemplate Name="ASOBO_AUTOPILOT_Push_Template">
 		<Switch Param="TYPE">
 			<Case Value="AS01B">
-				<LEFT_SINGLE_CODE>(&gt;H:AS01B_FMC_1_AP_SPD)</LEFT_SINGLE_CODE>
-				<EMISSIVE_CODE_ACTIVE>(L:AP_SPD_ACTIVE)</EMISSIVE_CODE_ACTIVE> 
+				<LEFT_SINGLE_CODE>
+					(L:AS01B_AUTO_THROTTLE_ARM_STATE) if{
+						(&gt;H:AS01B_FMC_1_AP_SPD)
+						(&gt;K:AUTO_THROTTLE_ARM)
+					}
+				</LEFT_SINGLE_CODE>
+				<EMISSIVE_CODE_ACTIVE>(A:AUTOPILOT THROTTLE ARM, Bool)</EMISSIVE_CODE_ACTIVE> 
 			</Case>
 			<Case Value="B747">
 				<LEFT_SINGLE_CODE>(&gt;H:B747_8_FMC_1_AP_SPD)</LEFT_SINGLE_CODE>
@@ -1290,9 +1316,9 @@
 			<Case Value="PUSH">
 				<UseTemplate Name="ASOBO_GT_Knob_Infinite_Push">
 					<ANIM_NAME_KNOB>#ANIM_NAME#</ANIM_NAME_KNOB>
-					<ANTICLOCKWISE_CODE>(L:XMLVAR_AirSpeedIsInMach) if{ 1 (&gt;K:AP_MACH_VAR_DEC) } els{ 1 (&gt;K:AP_SPD_VAR_DEC) } </ANTICLOCKWISE_CODE>
-					<CLOCKWISE_CODE>(L:XMLVAR_AirSpeedIsInMach) if{ 1 (&gt;K:AP_MACH_VAR_INC) } els{ 1 (&gt;K:AP_SPD_VAR_INC) } </CLOCKWISE_CODE>
-					<LEFT_SINGLE_CODE>(L:XMLVAR_AirSpeedIsInMach) ! (&gt;L:XMLVAR_AirSpeedIsInMach)</LEFT_SINGLE_CODE>
+					<ANTICLOCKWISE_CODE>(A:AUTOPILOT MANAGED SPEED IN MACH, Bool) if{ 1 (&gt;K:AP_MACH_VAR_DEC) } els{ 1 (&gt;K:AP_SPD_VAR_DEC) } </ANTICLOCKWISE_CODE>
+					<CLOCKWISE_CODE>(A:AUTOPILOT MANAGED SPEED IN MACH, Bool) if{ 1 (&gt;K:AP_MACH_VAR_INC) } els{ 1 (&gt;K:AP_SPD_VAR_INC) } </CLOCKWISE_CODE>
+					<LEFT_SINGLE_CODE>(&gt;K:AP_MANAGED_SPEED_IN_MACH_TOGGLE)</LEFT_SINGLE_CODE>
 					<WWISE_EVENT_1>autopilot_knob_push_button_on</WWISE_EVENT_1>
 					<WWISE_EVENT_2>autopilot_knob_push_button_off</WWISE_EVENT_2>
 				</UseTemplate>
@@ -1433,4 +1459,28 @@
 	<UseTemplate Name="ASOBO_AUTOPILOT_HUD_SubTemplate">
 	
 	</UseTemplate>
+</Template>
+
+<Template Name="ASOBO_AUTOPILOT_Switch_Altitude_Increment_Template">
+	<DefaultTemplateParameters>
+		<NODE_ID>AUTOPILOT_Switch_Altitude_Increment</NODE_ID>
+		<ANIM_NAME>AUTOPILOT_Switch_Altitude_Increment</ANIM_NAME>
+		<PART_ID>AUTOPILOT_Switch_Altitude_Increment</PART_ID>
+		<ANIMTIP_0>TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_ALTITUDE_INCREMENT_SET_1000</ANIMTIP_0>
+		<ANIMTIP_0_ON_CURSOR>TurnRight</ANIMTIP_0_ON_CURSOR>
+		<ANIMTIP_1>TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_ALTITUDE_INCREMENT_SET_100</ANIMTIP_1>
+		<ANIMTIP_1_ON_CURSOR>TurnLeft</ANIMTIP_1_ON_CURSOR>
+		<CURSOR>Animtip</CURSOR>
+	</DefaultTemplateParameters>
+	
+	<Update Once="True">
+		1000 (&gt;L:XMLVAR_Autopilot_Altitude_Increment)
+	</Update>
+	
+	<Component ID="#NODE_ID#" Node="#NODE_ID#"> 
+		<UseTemplate Name="ASOBO_GT_Switch_Code">
+			<LEFT_SINGLE_CODE>100 (L:XMLVAR_Autopilot_Altitude_Increment) == if{ 1000 (&gt;L:XMLVAR_Autopilot_Altitude_Increment) } els{ 100 (&gt;L:XMLVAR_Autopilot_Altitude_Increment) } </LEFT_SINGLE_CODE>
+			<ANIM_CODE>1000 (L:XMLVAR_Autopilot_Altitude_Increment) == 100 *</ANIM_CODE>
+		</UseTemplate>
+	</Component>
 </Template>

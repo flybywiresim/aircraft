@@ -1204,6 +1204,8 @@
 					2 (&gt;A:BUS LOOKUP INDEX, Number)
 					(A:CIRCUIT CONNECTION ON:17, Bool) l0 != if{ 17 2 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE) }
 					(A:CIRCUIT CONNECTION ON:20, Bool) l0 != if{ 20 2 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE) }
+					(A:CIRCUIT CONNECTION ON:21, Bool) l0 != if{ 21 2 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE) }
+					(A:CIRCUIT CONNECTION ON:22, Bool) l0 != if{ 22 2 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE) }
 				</UPDATE_CODE>
 			</UseTemplate>
 			
@@ -1576,6 +1578,8 @@
 				<Component ID="Overhead_Audio_Panel">
 					<OverrideTemplateParameters>
 						<EMISSIVE_CODE>0</EMISSIVE_CODE>
+						<NO_SEQ1/>
+						<NO_SEQ2/>
 					</OverrideTemplateParameters>
 					
 					<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
@@ -1598,9 +1602,6 @@
 					</UseTemplate>
 					<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
 						<NODE_ID>PUSH_OVHD_RADIO_ADF2</NODE_ID>
-					</UseTemplate>
-					<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
-						<NODE_ID>SWITCH_OVHD_RADIO_INT</NODE_ID>
 					</UseTemplate>
 					<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
 						<NODE_ID>PUSH_OVHD_RADIO_VOICE</NODE_ID>
@@ -1899,6 +1900,7 @@
 			<ID>1</ID>
 			<AP_COUNT>2</AP_COUNT>
 			<TYPE>EXCLUSIVE_AP</TYPE>
+			<TOOLTIPID>%((L:XMLVAR_Autopilot_1_Status, bool))%{if}TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_AP_ON%{else}TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_AP_OFF%{end}</TOOLTIPID>
 		</UseTemplate>
 		
 		<UseTemplate Name="ASOBO_AUTOPILOT_Push_Autopilot_Template">
@@ -1910,6 +1912,7 @@
 			<ID>2</ID>
 			<AP_COUNT>2</AP_COUNT>
 			<TYPE>EXCLUSIVE_AP</TYPE>
+			<TOOLTIPID>%((L:XMLVAR_Autopilot_2_Status, bool))%{if}TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_AP_ON%{else}TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_AP_OFF%{end}</TOOLTIPID>
 		</UseTemplate>
 		
 		<UseTemplate Name="ASOBO_AUTOPILOT_Push_AutoThrottle_Template">
@@ -1918,6 +1921,7 @@
 			<POTENTIOMETER>14</POTENTIOMETER>
 			<ACTIVE_NODE_ID>PUSH_AUTOPILOT_ATHR_SEQ1</ACTIVE_NODE_ID>
 			<EMISSIVE_NODE_ID>PUSH_AUTOPILOT_ATHR_SEQ2</EMISSIVE_NODE_ID>
+			<TOOLTIPID>%((A:AUTOPILOT THROTTLE ARM,Bool))%{if}TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_AUTOTHROTTLE_ARMED%{else}TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_AUTOTHROTTLE_OFF%{end}</TOOLTIPID>
 		</UseTemplate>
 	
 		<UseTemplate Name="ASOBO_AUTOPILOT_Push_Approach_Template">
@@ -1942,10 +1946,9 @@
 			<ANIM_NAME>PUSH_AUTOPILOT_METRICALT</ANIM_NAME>
 		</UseTemplate>	
 		
-		<UseTemplate Name="ASOBO_AIRBUS_Switch_Altitude_Increment_Template">
+		<UseTemplate Name="ASOBO_AUTOPILOT_Switch_Altitude_Increment_Template">
 			<NODE_ID>KNOB_AUTOPILOT_SELECTOR_ALT</NODE_ID>
 			<ANIM_NAME>KNOB_AUTOPILOT_SELECTOR_ALT</ANIM_NAME>
-			
 		</UseTemplate>
 	
 		<UseTemplate Name="ASOBO_AUTOPILOT_Knob_Altitude_Template">

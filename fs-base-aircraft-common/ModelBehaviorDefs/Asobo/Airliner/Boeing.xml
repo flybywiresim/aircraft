@@ -453,9 +453,6 @@
 	
 	<UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
 		<NODE_ID>#LED_NODE_ID#</NODE_ID>
-		<EMISSIVE_CODE>
-			#GROUP_INDEX# -1 &gt; if{ (L:#CURRENT_BUTTON_VAR_NAME#) #GROUP_INDEX# == } els{ 0 }
-		</EMISSIVE_CODE>
 	</UseTemplate>
 </Template>
 
@@ -842,7 +839,7 @@
 
 <Template Name="ASOBO_BOEING_Push_EICAS_Template">
 	<DefaultTemplateParameters>
-		<NODE_ID>BTN_MAIN_PANEL_H_003</NODE_ID>
+		<NODE_ID>DISPLAY_Push_EICAS</NODE_ID>
 	</DefaultTemplateParameters>
 	<UseTemplate Name="ASOBO_BOEING_Push_HTML_Generic_Template">
 		<SYSTEM_NAME>MFD</SYSTEM_NAME>

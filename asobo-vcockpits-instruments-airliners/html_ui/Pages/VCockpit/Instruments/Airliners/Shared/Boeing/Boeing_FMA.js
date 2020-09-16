@@ -114,16 +114,8 @@ var Boeing_FMA;
         }
         changeMode(_mode) {
             this.currentMode = _mode;
-            if (this.divElement != null) {
-                this.divElement.textContent = this.getCurrentModeText();
-                setTimeout(() => {
-                    let tmp = this.divElement.style.display === "none" ? "none" : "block";
-                    this.divElement.style.display = "none";
-                    requestAnimationFrame(() => {
-                        this.divElement.style.display = tmp;
-                    });
-                }, 100);
-            }
+            if (this.divElement != null)
+                this.divElement.innerHTML = "<span>" + this.getCurrentModeText() + "</span>";
             this.setHighlightVisibility(this.currentMode >= 0);
         }
         setHighlightVisibility(_show) {
@@ -158,6 +150,11 @@ var Boeing_FMA;
             if (!Simplane.getAutoPilotThrottleArmed()) {
                 return -1;
             }
+            if (this.fma.aircraft == Aircraft.AS01B) {
+                if (SimVar.GetSimVarValue("L:AP_SPD_ACTIVE", "number") === 0) {
+                    return -1;
+                }
+            }
             if (Simplane.getEngineThrottleMode(0) === ThrottleMode.TOGA) {
                 return 4;
             }
@@ -166,6 +163,12 @@ var Boeing_FMA;
             }
             if (Simplane.getEngineThrottleMode(0) === ThrottleMode.IDLE) {
                 return 1;
+            }
+            if (Simplane.getAutoPilotFLCActive() && Simplane.getAutopilotThrottle(1) < 30) {
+                return 1;
+            }
+            if (Simplane.getAutoPilotFLCActive() && Simplane.getVerticalSpeed() > 100) {
+                return 4;
             }
             if (Simplane.getEngineThrottleMode(0) === ThrottleMode.HOLD) {
                 return 0;
@@ -217,9 +220,6 @@ var Boeing_FMA;
     Boeing_FMA.Column1Top = Column1Top;
     class Column2Top extends Annunciation {
         getActiveMode() {
-            if (ApproachStatus.isRolloutActive) {
-                return 7;
-            }
             if (Simplane.getAutoPilotAPPRHold() && Simplane.getAutoPilotAPPRActive()) {
                 if (Simplane.getAutoPilotApproachType() == 10) {
                     return 1;
@@ -227,6 +227,9 @@ var Boeing_FMA;
                 else {
                     return 6;
                 }
+            }
+            if (ApproachStatus.isRolloutActive) {
+                return 7;
             }
             if (Simplane.getEngineThrottleMode(0) === ThrottleMode.TOGA) {
                 return 8;
@@ -363,16 +366,16 @@ var Boeing_FMA;
     Boeing_FMA.Column2Bottom = Column2Bottom;
     class Column3Top extends Annunciation {
         getActiveMode() {
-            if (Simplane.getEngineThrottleMode(0) === ThrottleMode.TOGA) {
-                return 6;
-            }
             if (Simplane.getAutoPilotAPPRHold() && Simplane.getAutoPilotGlideslopeHold() && Simplane.getAutoPilotGlideslopeActive() && Simplane.getAutoPilotAPPRActive()) {
                 if (Simplane.getAutoPilotApproachType() == 10) {
                     return 5;
                 }
+                else {
+                    return 4;
+                }
             }
-            if (Simplane.getAutoPilotAPPRHold() && Simplane.getAutoPilotGlideslopeHold() && Simplane.getAutoPilotGlideslopeActive() && Simplane.getAutoPilotAPPRActive()) {
-                return 4;
+            if (Simplane.getEngineThrottleMode(0) === ThrottleMode.TOGA) {
+                return 6;
             }
             if (SimVar.GetSimVarValue("L:AP_VNAV_ACTIVE", "number") === 1) {
                 if (Simplane.getAutoPilotAltitudeLockActive()) {
@@ -438,9 +441,9 @@ var Boeing_FMA;
                 if (Simplane.getAutoPilotApproachType() == 10) {
                     return 1;
                 }
-            }
-            if (Simplane.getAutoPilotAPPRHold() && Simplane.getAutoPilotGlideslopeHold() && !(Simplane.getAutoPilotGlideslopeActive() && Simplane.getAutoPilotAPPRActive())) {
-                return 2;
+                else {
+                    return 2;
+                }
             }
             if (SimVar.GetSimVarValue("L:AP_VNAV_ARMED", "number") === 1 && SimVar.GetSimVarValue("L:AP_VNAV_ACTIVE", "number") === 0) {
                 return 3;

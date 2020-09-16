@@ -56,6 +56,11 @@ class Boeing_FMC extends FMCMainDisplay {
                 }
             }
         };
+        let flapAngles = [0, 1, 5, 10, 15, 17, 18, 20, 25, 30];
+        let flapIndex = Simplane.getFlapsHandleIndex(true);
+        if (flapIndex >= 1) {
+            this._takeOffFlap = flapAngles[flapIndex];
+        }
     }
     onEvent(_event) {
         super.onEvent(_event);
@@ -137,6 +142,9 @@ class Boeing_FMC extends FMCMainDisplay {
         }
     }
     activateLNAV() {
+        if (this.flightPlanManager.getWaypointsCount() === 0) {
+            return;
+        }
         this._isLNAVArmed = true;
         SimVar.SetSimVarValue("L:AP_LNAV_ARMED", "number", 1);
         let altitude = Simplane.getAltitudeAboveGround();
@@ -180,6 +188,9 @@ class Boeing_FMC extends FMCMainDisplay {
         }
     }
     activateVNAV() {
+        if (this.flightPlanManager.getWaypointsCount() === 0) {
+            return;
+        }
         SimVar.SetSimVarValue("L:AP_VNAV_ARMED", "number", 1);
         this._isVNAVArmed = true;
         let altitude = Simplane.getAltitudeAboveGround();
@@ -470,6 +481,17 @@ class Boeing_FMC extends FMCMainDisplay {
     setBoeingDirectTo(directToWaypointIdent, directToWaypointIndex, callback = EmptyCallback.Boolean) {
         let waypoints = this.flightPlanManager.getWaypoints();
         let waypointIndex = waypoints.findIndex(w => { return w.ident === directToWaypointIdent; });
+        if (waypointIndex === -1) {
+            waypoints = this.flightPlanManager.getApproachWaypoints();
+            if (waypoints) {
+                let waypoint = waypoints.find(w => { return w.ident === directToWaypointIdent; });
+                if (waypoint) {
+                    return this.flightPlanManager.activateDirectTo(waypoint.icao, () => {
+                        return callback(true);
+                    });
+                }
+            }
+        }
         if (waypointIndex > -1) {
             this.setDepartureIndex(-1, () => {
                 let i = directToWaypointIndex;

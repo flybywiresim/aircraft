@@ -1,4 +1,7 @@
 class FMCDataManager {
+    constructor(_fmc) {
+        this.fmc = _fmc;
+    }
     IsValidLatLon(latLong) {
         if (latLong[0] === "N" || latLong[0] === "S") {
             if (isFinite(parseInt(latLong.substr(1, 2)))) {
@@ -88,7 +91,7 @@ class FMCDataManager {
         return new Promise((resolve) => {
             SimVar.SetSimVarValue("C:fs9gps:FlightPlanNewWaypointICAO", "string", waypoint.icao, "FMC").then(() => {
                 SimVar.SetSimVarValue("C:fs9gps:FlightPlanAddWaypoint", "number", lastWaypointIndex, "FMC").then(() => {
-                    window.requestAnimationFrame(() => {
+                    this.fmc.requestCall(() => {
                         resolve(true);
                     });
                 });

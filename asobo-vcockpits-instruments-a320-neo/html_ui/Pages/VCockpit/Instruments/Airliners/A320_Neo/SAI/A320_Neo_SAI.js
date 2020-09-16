@@ -37,10 +37,6 @@ class A320_Neo_SAI_AirspeedIndicator extends HTMLElement {
         this.yellowColor = "yellow";
         this.redColor = "red";
         this.fontSize = 25;
-        this.cursorScrollPosX = 0;
-        this.cursorScrollPosY = 0;
-        this.cursorScrollNbTexts = 3;
-        this.cursorScrollSpacing = 30;
         this.graduationScrollPosX = 0;
         this.graduationScrollPosY = 0;
         this.graduationSpacing = 10;
@@ -55,7 +51,6 @@ class A320_Neo_SAI_AirspeedIndicator extends HTMLElement {
     }
     construct() {
         Utils.RemoveAllChildren(this);
-        this.cursorScroller = new Avionics.Scroller(this.cursorScrollNbTexts, 1, false, 10);
         this.rootSVG = document.createElementNS(Avionics.SVG.NS, "svg");
         this.rootSVG.setAttribute("id", "ViewBox");
         this.rootSVG.setAttribute("viewBox", "0 0 250 500");
@@ -242,7 +237,6 @@ class A320_Neo_SAI_AirspeedIndicator extends HTMLElement {
         var indicatedSpeed = Simplane.getIndicatedSpeed();
         this.updateArcScrolling(indicatedSpeed);
         this.updateGraduationScrolling(indicatedSpeed);
-        this.updateCursorScrolling(indicatedSpeed);
     }
     arcToSVG(_value) {
         var pixels = (_value * this.graduationSpacing * (this.nbSecondaryGraduations + 1)) / 10;
@@ -285,32 +279,6 @@ class A320_Neo_SAI_AirspeedIndicator extends HTMLElement {
             }
         }
     }
-    updateCursorScrolling(_speed) {
-        if (this.cursorSVGScrollTexts) {
-            if (_speed < 20) {
-                this.cursorSVGMainText.textContent = "--";
-                for (var i = 0; i < this.cursorSVGScrollTexts.length; i++) {
-                    this.cursorSVGScrollTexts[i].textContent = "";
-                }
-            }
-            else {
-                var integral = Math.trunc(_speed / 10);
-                if (integral > 1)
-                    this.cursorSVGMainText.textContent = integral.toString();
-                this.cursorScroller.scroll(_speed);
-                var currentVal = this.cursorScroller.firstValue;
-                var currentY = this.cursorScrollPosY + this.cursorScroller.offsetY * this.cursorScrollSpacing;
-                for (var i = 0; i < this.cursorSVGScrollTexts.length; i++) {
-                    var posX = this.cursorScrollPosX;
-                    var posY = currentY;
-                    this.cursorSVGScrollTexts[i].textContent = currentVal.toString();
-                    this.cursorSVGScrollTexts[i].setAttribute("transform", "translate(" + posX.toString() + " " + posY.toString() + ")");
-                    currentY -= this.cursorScrollSpacing;
-                    currentVal = this.cursorScroller.nextValue;
-                }
-            }
-        }
-    }
 }
 customElements.define('a320-neo-sai-airspeed-indicator', A320_Neo_SAI_AirspeedIndicator);
 class A320_Neo_SAI_Altimeter extends NavSystemElement {
@@ -346,10 +314,6 @@ class A320_Neo_SAI_AltimeterIndicator extends HTMLElement {
     constructor() {
         super(...arguments);
         this.fontSize = 25;
-        this.cursorScrollPosX = 0;
-        this.cursorScrollPosY = 0;
-        this.cursorScrollNbTexts = 5;
-        this.cursorScrollSpacing = 48;
         this.graduationScrollPosX = 0;
         this.graduationScrollPosY = 0;
         this.nbPrimaryGraduations = 7;
@@ -358,8 +322,12 @@ class A320_Neo_SAI_AltimeterIndicator extends HTMLElement {
         this.graduationSpacing = 14;
     }
     connectedCallback() {
-        this.cursorScroller = new Avionics.Scroller(this.cursorScrollNbTexts, 20, true, 100);
         this.graduationScroller = new Avionics.Scroller(this.nbPrimaryGraduations, 500, true);
+        this.cursorIntegrals = new Array();
+        this.cursorIntegrals.push(new Avionics.AltitudeScroller(3, 65, 1, 10, 1000));
+        this.cursorIntegrals.push(new Avionics.AltitudeScroller(3, 65, 1, 10, 100));
+        this.cursorIntegrals.push(new Avionics.AltitudeScroller(3, 65, 1, 10, 10));
+        this.cursorDecimals = new Avionics.AltitudeScroller(3, 32, 10, 100);
         this.construct();
     }
     construct() {
@@ -465,44 +433,34 @@ class A320_Neo_SAI_AltimeterIndicator extends HTMLElement {
         this.cursorSVG.setAttribute("height", cursorHeight.toString());
         this.cursorSVG.setAttribute("viewBox", "0 4 " + cursorWidth + " " + cursorHeight);
         {
+            let _scale = 0.6;
             var trs = document.createElementNS(Avionics.SVG.NS, "g");
-            trs.setAttribute("transform", "scale(0.6)");
+            trs.setAttribute("transform", "scale(" + _scale + ")");
             this.cursorSVG.appendChild(trs);
             if (!this.cursorSVGShape)
                 this.cursorSVGShape = document.createElementNS(Avionics.SVG.NS, "path");
             this.cursorSVGShape.setAttribute("fill", "black");
-            this.cursorSVGShape.setAttribute("d", "M0 22 L65 22 L65 8 L140 8 L140 70 L65 70 L65 56 L0 56 Z");
+            this.cursorSVGShape.setAttribute("d", "M0 22 L65 22 L65 6 L140 6 L140 72 L65 72 L65 56 L0 56 Z");
             this.cursorSVGShape.setAttribute("stroke", "yellow");
             this.cursorSVGShape.setAttribute("stroke-width", "0.85");
             trs.appendChild(this.cursorSVGShape);
+            var _cursorWidth = (cursorWidth / _scale);
+            var _cursorHeight = (cursorHeight / _scale + 10);
             var _cursorPosX = 0;
-            var _cursorPosY = cursorHeight * 0.5 + 18;
-            if (!this.cursorSVGMainText)
-                this.cursorSVGMainText = document.createElementNS(Avionics.SVG.NS, "text");
-            this.cursorSVGMainText.setAttribute("width", _width.toString());
-            this.cursorSVGMainText.setAttribute("fill", "green");
-            this.cursorSVGMainText.setAttribute("font-size", (this.fontSize * 1.4).toString());
-            this.cursorSVGMainText.setAttribute("font-family", "Roboto-Bold");
-            this.cursorSVGMainText.setAttribute("text-anchor", "end");
-            this.cursorSVGMainText.setAttribute("alignment-baseline", "central");
-            this.cursorSVGMainText.setAttribute("transform", "translate(" + (_cursorPosX + 65).toString() + " " + _cursorPosY.toString() + ")");
-            trs.appendChild(this.cursorSVGMainText);
-            this.cursorScrollPosX = _cursorPosX + 118;
-            this.cursorScrollPosY = _cursorPosY;
-            this.cursorSVGScrollTexts = [];
-            for (var i = 0; i < this.cursorScrollNbTexts; i++) {
-                var text = document.createElementNS(Avionics.SVG.NS, "text");
-                text.setAttribute("width", _width.toString());
-                text.setAttribute("fill", "green");
-                text.setAttribute("font-size", (this.fontSize * 1.6).toString());
-                text.setAttribute("font-family", "Roboto-Bold");
-                text.setAttribute("text-anchor", "end");
-                text.setAttribute("alignment-baseline", "central");
-                this.cursorSVGScrollTexts.push(text);
+            var _cursorPosY = _cursorHeight * 0.5;
+            let integralsGroup = document.createElementNS(Avionics.SVG.NS, "svg");
+            integralsGroup.setAttribute("x", "0");
+            integralsGroup.setAttribute("y", "23");
+            integralsGroup.setAttribute("width", _cursorWidth.toString());
+            integralsGroup.setAttribute("height", (_cursorHeight - 43).toString());
+            integralsGroup.setAttribute("viewBox", "0 0 " + (_cursorWidth) + " " + (_cursorHeight));
+            trs.appendChild(integralsGroup);
+            {
+                this.cursorIntegrals[0].construct(integralsGroup, _cursorPosX - 22, _cursorPosY - 2, _width, "Roboto-Bold", this.fontSize * 3, "green");
+                this.cursorIntegrals[1].construct(integralsGroup, _cursorPosX + 24, _cursorPosY - 2, _width, "Roboto-Bold", this.fontSize * 3, "green");
+                this.cursorIntegrals[2].construct(integralsGroup, _cursorPosX + 70, _cursorPosY - 2, _width, "Roboto-Bold", this.fontSize * 3, "green");
             }
-            for (var i = 0; i < this.cursorSVGScrollTexts.length; i++) {
-                trs.appendChild(this.cursorSVGScrollTexts[i]);
-            }
+            this.cursorDecimals.construct(trs, _cursorPosX + 118, _cursorPosY, _width, "Roboto-Bold", this.fontSize * 1.6, "green");
             this.rootGroup.appendChild(this.cursorSVG);
         }
         var topBg = document.createElementNS(Avionics.SVG.NS, "rect");
@@ -563,26 +521,13 @@ class A320_Neo_SAI_AltimeterIndicator extends HTMLElement {
         }
     }
     updateCursorScrolling(_altitude) {
-        if (this.cursorSVGScrollTexts) {
-            var integral = Math.trunc(_altitude / 100);
-            if (Math.abs(integral) > 0)
-                this.cursorSVGMainText.textContent = integral.toString();
-            else
-                this.cursorSVGMainText.textContent = "";
-            this.cursorScroller.scroll(_altitude);
-            var currentVal = this.cursorScroller.firstValue;
-            var currentY = this.cursorScrollPosY + this.cursorScroller.offsetY * this.cursorScrollSpacing;
-            for (var i = 0; i < this.cursorSVGScrollTexts.length; i++) {
-                var posX = this.cursorScrollPosX;
-                var posY = Math.round(currentY);
-                if (currentVal == 0)
-                    this.cursorSVGScrollTexts[i].textContent = "00";
-                else
-                    this.cursorSVGScrollTexts[i].textContent = currentVal.toString();
-                this.cursorSVGScrollTexts[i].setAttribute("transform", "translate(" + posX.toString() + " " + posY.toString() + ")");
-                currentY -= this.cursorScrollSpacing;
-                currentVal = this.cursorScroller.nextValue;
-            }
+        if (this.cursorIntegrals) {
+            this.cursorIntegrals[0].update(_altitude, 10000, 10000);
+            this.cursorIntegrals[1].update(_altitude, 1000, 1000);
+            this.cursorIntegrals[2].update(_altitude, 100);
+        }
+        if (this.cursorDecimals) {
+            this.cursorDecimals.update(_altitude);
         }
     }
 }

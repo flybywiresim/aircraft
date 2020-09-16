@@ -966,10 +966,14 @@
 	</Template>
 	<!-- Base visibility template for turbines -->
 	<Template Name="ASOBO_ENGINE_Turbine_Visibility_Base_Template">
-		<Component ID="#NODE_ID#" Node="#NODE_ID#">
-			<UseTemplate Name="ASOBO_ENGINE_Turbine_#STATE#_Visibility_Template">
-			</UseTemplate>
-		</Component>
+		<Condition NotEmpty="NODE_ID">
+			<True>
+				<Component ID="#NODE_ID#" Node="#NODE_ID#">
+					<UseTemplate Name="ASOBO_ENGINE_Turbine_#STATE#_Visibility_Template">
+					</UseTemplate>
+				</Component>
+			</True>
+		</Condition>
 	</Template>
 	
 	<!-- COWL_FLAPS ##################################################### -->

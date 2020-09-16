@@ -224,13 +224,6 @@ class Jet_MFD_NDCompass extends Jet_NDCompass {
                 this.trackingGroup.setAttribute("id", "trackingGroup");
                 {
                     let rad = 5;
-                    this.trackingLine = document.createElementNS(Avionics.SVG.NS, "path");
-                    this.trackingLine.setAttribute("id", "trackingLine");
-                    this.trackingLine.setAttribute("d", "M50 50 v " + circleRadius.toString());
-                    this.trackingLine.setAttribute("fill", "transparent");
-                    this.trackingLine.setAttribute("stroke", "#ff00e0");
-                    this.trackingLine.setAttribute("stroke-width", "3");
-                    this.trackingGroup.appendChild(this.trackingLine);
                     this.trackingBug = document.createElementNS(Avionics.SVG.NS, "circle");
                     this.trackingBug.setAttribute("id", "trackingBug");
                     this.trackingBug.setAttribute("cx", "50");

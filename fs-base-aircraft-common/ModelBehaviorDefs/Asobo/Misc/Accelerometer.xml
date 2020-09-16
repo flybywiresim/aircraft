@@ -13,15 +13,15 @@
 <Template Name="ASOBO_Accelerometer_SubTemplate">
 	<DefaultTemplateParameters>
 		<ACCELEROMETER>INSTRUMENT_Accelerometer</ACCELEROMETER>
-		<SCREEN_NODE_ID>INSTRUMENT_Accelerometer_Screen#SUFFIX_ID#</SCREEN_NODE_ID>
-		<EMISSIVE_FAILURE>(A:CIRCUIT AVIONICS ON, Bool)</EMISSIVE_FAILURE>
+		<!-- <SCREEN_NODE_ID>INSTRUMENT_Accelerometer_Screen#SUFFIX_ID#</SCREEN_NODE_ID> -->
+		<!-- <EMISSIVE_FAILURE>(A:CIRCUIT AVIONICS ON, Bool)</EMISSIVE_FAILURE> -->
 	</DefaultTemplateParameters>
-	<Component ID="#SCREEN_NODE_ID#" Node="#SCREEN_NODE_ID#">
-		<UseTemplate Name="ASOBO_GT_Emissive_Gauge">
-			<EMISSIVE_CODE>(I:XMLVAR_#ACCELEROMETER#_CONTRAST_#ID#) 100 / 0.95 * 0.05 +</EMISSIVE_CODE>
-			<FAILURE>#EMISSIVE_FAILURE#</FAILURE>
-		</UseTemplate>
-	</Component>
+	<!-- <Component ID="#SCREEN_NODE_ID#" Node="#SCREEN_NODE_ID#"> -->
+		<!-- <UseTemplate Name="ASOBO_GT_Emissive_Gauge"> -->
+			<!-- <EMISSIVE_CODE>(I:XMLVAR_#ACCELEROMETER#_CONTRAST_#ID#) 100 / 0.95 * 0.05 +</EMISSIVE_CODE> -->
+			<!-- <FAILURE>#EMISSIVE_FAILURE#</FAILURE> -->
+		<!-- </UseTemplate> -->
+	<!-- </Component> -->
 	<Component ID="#ACCELEROMETER#_Interactions">
 		<UseTemplate Name="ASOBO_Accelerometer_Push_Button_Template">
 			<BTN_ID>clear</BTN_ID>

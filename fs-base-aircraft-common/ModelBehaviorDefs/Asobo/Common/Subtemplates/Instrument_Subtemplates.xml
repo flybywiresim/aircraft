@@ -566,6 +566,7 @@ NO_CAGE: Remove the cage interaction & behaviour
 					<False>
 						<WATCHER_FREQ>12</WATCHER_FREQ>
 						<UPDATE_SKIPPED_COUNT>(O:XMLVAR_UpdateSkippedCount)</UPDATE_SKIPPED_COUNT>
+						<IS_AVIONICS_ON>(A:CIRCUIT AVIONICS ON, Bool)</IS_AVIONICS_ON>
 						<FIRST_STEP>
 							0 (&gt;O:XMLVAR_GlideTargetPosition)
 							0 (&gt;O:XMLVAR_LocalizerTargetPosition)
@@ -597,7 +598,7 @@ NO_CAGE: Remove the cage interaction & behaviour
 				<False>
 					<Update Frequency="#WATCHER_FREQ#">
 						(* Avionics switch watcher *)
-						(A:CIRCUIT AVIONICS ON, Bool) sp0
+						#IS_AVIONICS_ON# sp0
 						l0 (O:XMLVAR_Avionics_ON) != if{
 							l0 if{
 								1 (&gt;O:XMLVAR_Needles_Init_Animation_Playing)

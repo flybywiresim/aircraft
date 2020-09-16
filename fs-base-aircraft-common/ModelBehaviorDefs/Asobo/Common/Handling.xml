@@ -1155,6 +1155,16 @@
 		<TOOLTIPID>TT:COCKPIT.TOOLTIPS.FLAPS</TOOLTIPID>
 	</DefaultTemplateParameters>
 	<Component ID="#NODE_ID#" Node="#NODE_ID#">
+		<Condition Valid="ANIM_NAME_BUTTON">
+			<UseTemplate Name="ASOBO_GT_Anim_Code">
+				<ANIM_NAME>#ANIM_NAME_BUTTON#</ANIM_NAME>
+				<ANIM_CODE>(O:_Interacting) 100 *</ANIM_CODE>
+				<Condition Check="BUTTON_ANIM_LAG">
+					<ANIM_LAG>#BUTTON_ANIM_LAG#</ANIM_LAG>
+				</Condition>
+				<ANIM_LENGTH>100</ANIM_LENGTH>
+			</UseTemplate>
+		</Condition>
 		<Condition Valid="USE_TRAJECTORY_DRAG_MODE">
 			<True>
 				<UseTemplate Name="ASOBO_GT_Lever_DraggingWheelLeftDrag_Axis">
@@ -1170,6 +1180,7 @@
 					<RELEASE_CODE>0 (&gt;O:XMLVAR_Interacting_With_Flaps)</RELEASE_CODE>
 					<POSITIVE_AXIS_CODE>(&gt;K:FLAPS_INCR)</POSITIVE_AXIS_CODE>
 					<NEGATIVE_AXIS_CODE>(&gt;K:FLAPS_DECR)</NEGATIVE_AXIS_CODE>
+					<DRAG_ANIM_NAME>#ANIM_NAME#</DRAG_ANIM_NAME>
 				</UseTemplate>
 			</True>
 			<False>

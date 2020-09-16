@@ -160,6 +160,7 @@ class A320_Neo_PFD_Attitude extends NavSystemElement {
             this.hsi.update(_deltaTime);
             var xyz = Simplane.getOrientationAxis();
             if (xyz) {
+                this.hsi.setAttribute("horizon", (xyz.pitch / Math.PI * 180).toString());
                 this.hsi.setAttribute("pitch", (xyz.pitch / Math.PI * 180).toString());
                 this.hsi.setAttribute("bank", (xyz.bank / Math.PI * 180).toString());
             }

@@ -167,4 +167,121 @@
 		<SPEED>#PERCENT_PER_SECOND# 2 *</SPEED>
 	</UseTemplate>
 </Template>
+
+<Template Name="ASOBO_Jetway_Wheel_Roll">
+	<DefaultTemplateParameters>
+		<ANIM_NAME>Wheel_Rotation</ANIM_NAME>
+		<WHEEL_RADIUS>0.5</WHEEL_RADIUS>
+	</DefaultTemplateParameters>
+
+	<UseTemplate Name="ASOBO_GT_Anim_Code">
+		<ANIM_CODE>(A:JETWAY WHEEL SPEED,meters per second) (A:ANIMATION DELTA TIME, seconds) * 2 pi * #WHEEL_RADIUS# * / 100 *</ANIM_CODE>
+		<ANIM_DELTA>1</ANIM_DELTA>
+		<ANIM_WRAP>1</ANIM_WRAP>
+		<ANIM_LENGTH>100</ANIM_LENGTH>
+	</UseTemplate>
+	
+</Template>
+
+<Template Name="ASOBO_Jetway_Wheel_Orientation">
+	<DefaultTemplateParameters>
+		<ANIM_NAME>Wheel_Orientation</ANIM_NAME>
+		<MIN_ANGLE>-90</MIN_ANGLE>
+		<MAX_ANGLE>90</MAX_ANGLE>
+		<MIN_TO_MAX>1</MIN_TO_MAX> <!-- 1 if the anim starts at min and ends at max -->
+		<SPEED>30</SPEED> <!-- degrees per sec -->
+		<SMOOTH_TIME_FACTOR>0.5</SMOOTH_TIME_FACTOR>
+	</DefaultTemplateParameters>
+
+	<UseTemplate Name="ASOBO_GT_Anim_Code">
+		<ANIM_CODE>
+		(* Target is in [-90,90]. Moves smoothed target to be closer *)
+		
+		(A:JETWAY WHEEL ORIENTATION TARGET,degrees) (O:XMLVAR_JetwayWheelOrientationTarget) - abs  90 &gt; if{
+			(O:XMLVAR_JetwayWheelOrientationTarget) (A:JETWAY WHEEL ORIENTATION TARGET,degrees) &gt; if{
+				(O:XMLVAR_JetwayWheelOrientationTarget) 180 - (&gt;O:XMLVAR_JetwayWheelOrientationTarget)
+			} els{
+				(O:XMLVAR_JetwayWheelOrientationTarget) 180 + (&gt;O:XMLVAR_JetwayWheelOrientationTarget)
+			}			
+		}
+		
+		(* Smooth the target to avoid wobble *)
+		
+		(A:ANIMATION DELTA TIME, seconds) #SMOOTH_TIME_FACTOR# / (&gt;O:XMLVAR_JetwayWheelOrientation_SmoothFactor)
+		(O:XMLVAR_JetwayWheelOrientation_SmoothFactor) 1 > if{ 1 (&gt;O:XMLVAR_JetwayWheelOrientation_SmoothFactor) }
+		(O:XMLVAR_JetwayWheelOrientationTarget) 1 (O:XMLVAR_JetwayWheelOrientation_SmoothFactor) - * (A:JETWAY WHEEL ORIENTATION TARGET,degrees) (O:XMLVAR_JetwayWheelOrientation_SmoothFactor) * + (&gt;O:XMLVAR_JetwayWheelOrientationTarget)
+		
+		(* Move the smoothed target to [-90,90] *)
+		
+		(O:XMLVAR_JetwayWheelOrientationTarget) 90 &gt; if{
+			(O:XMLVAR_JetwayWheelOrientationTarget) 180 - (&gt;O:XMLVAR_JetwayWheelOrientationTarget)
+		}
+		(O:XMLVAR_JetwayWheelOrientationTarget) -90 &lt; if{
+			(O:XMLVAR_JetwayWheelOrientationTarget) 180 + (&gt;O:XMLVAR_JetwayWheelOrientationTarget)
+		}
+		
+		(* Move the current to [-90,90] *)
+		
+		(A:JETWAY WHEEL ORIENTATION CURRENT,degrees) 90 &gt; if{
+			(A:JETWAY WHEEL ORIENTATION CURRENT,degrees) 180 - (&gt;A:JETWAY WHEEL ORIENTATION CURRENT,degrees)
+		}
+		(A:JETWAY WHEEL ORIENTATION CURRENT,degrees) -90 &lt; if{
+			(A:JETWAY WHEEL ORIENTATION CURRENT,degrees) 180 + (&gt;A:JETWAY WHEEL ORIENTATION CURRENT,degrees)
+		}
+		
+		(* Target is in [-90,90]. Moves current to be closer *)
+		
+		(O:XMLVAR_JetwayWheelOrientationTarget) (A:JETWAY WHEEL ORIENTATION CURRENT,degrees) - abs  90 &gt; if{
+			(A:JETWAY WHEEL ORIENTATION CURRENT,degrees) (O:XMLVAR_JetwayWheelOrientationTarget) &gt; if{
+				(A:JETWAY WHEEL ORIENTATION CURRENT,degrees) 180 - (&gt;A:JETWAY WHEEL ORIENTATION CURRENT,degrees)
+			} els{
+				(A:JETWAY WHEEL ORIENTATION CURRENT,degrees) 180 + (&gt;A:JETWAY WHEEL ORIENTATION CURRENT,degrees)
+			}			
+		}
+		
+		(* If target is close enough, match it with current, otherwise add the delta in the correct direction *)
+		
+		(O:XMLVAR_JetwayWheelOrientationTarget) (A:JETWAY WHEEL ORIENTATION CURRENT,degrees) - abs   (A:ANIMATION DELTA TIME, seconds) #SPEED# *  &lt; if{
+			(O:XMLVAR_JetwayWheelOrientationTarget) (&gt;A:JETWAY WHEEL ORIENTATION CURRENT,degrees)
+		}
+		els{
+			(A:JETWAY WHEEL ORIENTATION CURRENT,degrees) (O:XMLVAR_JetwayWheelOrientationTarget) &gt; if{
+				(A:JETWAY WHEEL ORIENTATION CURRENT,degrees)  (A:ANIMATION DELTA TIME, seconds) #SPEED# *  -  (&gt;A:JETWAY WHEEL ORIENTATION CURRENT,degrees)
+			} els{
+				(A:JETWAY WHEEL ORIENTATION CURRENT,degrees)  (A:ANIMATION DELTA TIME, seconds) #SPEED# *  +  (&gt;A:JETWAY WHEEL ORIENTATION CURRENT,degrees)
+			}
+		}
+
+		(* Move current back to [-180,180] *)
+		
+		(A:JETWAY WHEEL ORIENTATION CURRENT,degrees) 180 &gt; if{
+			(A:JETWAY WHEEL ORIENTATION CURRENT,degrees) 360 - (&gt;A:JETWAY WHEEL ORIENTATION CURRENT,degrees)
+		}
+		(A:JETWAY WHEEL ORIENTATION CURRENT,degrees) -180 &lt; if{
+			(A:JETWAY WHEEL ORIENTATION CURRENT,degrees) 360 + (&gt;A:JETWAY WHEEL ORIENTATION CURRENT,degrees)
+		}
+		
+		(* if anim is [-90,90] or [0,180], it is symmetric with a 180 deg rotation, so add +-180 to match the [min,max] interval (hopefully) *)
+		
+		(A:JETWAY WHEEL ORIENTATION CURRENT,degrees) #MAX_ANGLE# &gt; if{
+			(A:JETWAY WHEEL ORIENTATION CURRENT,degrees) 180 - (&gt;A:JETWAY WHEEL ORIENTATION CURRENT,degrees)
+		}
+		(A:JETWAY WHEEL ORIENTATION CURRENT,degrees) #MIN_ANGLE# &lt; if{
+			(A:JETWAY WHEEL ORIENTATION CURRENT,degrees) 180 + (&gt;A:JETWAY WHEEL ORIENTATION CURRENT,degrees)
+		}
+		
+		(* first frame of animation might be min_angle or max_angle, match the angle to frame accordingly *)
+		
+		#MIN_TO_MAX# 1 == if{
+			(A:JETWAY WHEEL ORIENTATION CURRENT,degrees) #MIN_ANGLE# - 100 #MAX_ANGLE# #MIN_ANGLE# - / *
+		}
+		els{
+			#MAX_ANGLE# (A:JETWAY WHEEL ORIENTATION CURRENT,degrees) - 100 #MAX_ANGLE# #MIN_ANGLE# - / *
+		}
+		</ANIM_CODE>
+		<ANIM_LENGTH>100</ANIM_LENGTH>
+	</UseTemplate>
+	
+</Template>
+
 	

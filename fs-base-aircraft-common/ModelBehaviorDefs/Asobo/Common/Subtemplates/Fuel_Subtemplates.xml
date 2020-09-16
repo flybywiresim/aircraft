@@ -1046,8 +1046,7 @@
 					</Case>
 					<Case Value="AS01B">
 						<SEQ2_EMISSIVE_CODE>
-							(A:FUELSYSTEM PUMP SWITCH:#ID#, Enum) 0 == (A:FUELSYSTEM TANK QUANTITY:#TANK_ID#, liter) 0 &gt; and
-							(A:FUELSYSTEM PUMP SWITCH:#ID#, Enum) 1 == (A:FUELSYSTEM TANK QUANTITY:#TANK_ID#, liter) 0 &gt; ! and or
+							(A:FUELSYSTEM LINE FUEL PRESSURE:#LINE_ID#, KPa) 0 ==
 						</SEQ2_EMISSIVE_CODE>
 					</Case>
 					<Default>

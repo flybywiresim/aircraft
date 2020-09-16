@@ -342,6 +342,7 @@ LIGHT_TYPE (text): light type (TAXI, STROBE, ..) in caps
 		<ANIMTIP_1>TT:COCKPIT.TOOLTIPS.LIGHTING_KNOB_LIGHT_GENERIC_INCREASE</ANIMTIP_1> 
 		<WWISE_EVENT>lighting_knob_generic</WWISE_EVENT>
 		<COUNT>10</COUNT>
+		<INIT_POTENTIOMETER_TO_SIMVAR>True</INIT_POTENTIOMETER_TO_SIMVAR>
 		<Condition Check="LIGHT_SIMVAR">
 			<CUSTOM_CONDITION_OFF></CUSTOM_CONDITION_OFF>
 			<INIT_VALUE>0</INIT_VALUE>
@@ -429,15 +430,17 @@ LIGHT_TYPE (text): light type (TAXI, STROBE, ..) in caps
 		</OverrideTemplateParameters>
 		<Condition Check="LIGHT_SIMVAR">
 			<True>
-				<UseTemplate Name="ASOBO_GT_Update">
-					<UPDATE_ONCE>True</UPDATE_ONCE>
-					<UPDATE_CODE>
-						#INIT_COUNTER#
-						(A:#LIGHT_SIMVAR#, Bool) ! if{
-							#INIT_VALUE# #SET_POTENTIOMETER_VALUE#
-						}
-					</UPDATE_CODE>
-				</UseTemplate>
+				<Condition Valid="INIT_POTENTIOMETER_TO_SIMVAR">
+					<UseTemplate Name="ASOBO_GT_Update">
+						<UPDATE_ONCE>True</UPDATE_ONCE>
+						<UPDATE_CODE>
+							#INIT_COUNTER#
+							(A:#LIGHT_SIMVAR#, Bool) ! if{
+								#INIT_VALUE# #SET_POTENTIOMETER_VALUE#
+							}
+						</UPDATE_CODE>
+					</UseTemplate>
+				</Condition>
 				<Condition Valid="POTENTIOMETER_MATCH_SIMVAR">
 					<UseTemplate Name="ASOBO_GT_Update">
 						<FREQUENCY>2</FREQUENCY>

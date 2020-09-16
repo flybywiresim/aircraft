@@ -50,6 +50,7 @@
     <Electric>
 		<Simvar name="CIRCUIT ON:56" unit="Boolean"/>
     </Electric>
+	<AlwaysUpdate>True</AlwaysUpdate>
   </Instrument>
   
   <Instrument>
@@ -57,6 +58,7 @@
     <Electric>
 		<Simvar name="CIRCUIT ON:57" unit="Boolean"/>
     </Electric>
+	<AlwaysUpdate>True</AlwaysUpdate>
   </Instrument>
 
   <Instrument>

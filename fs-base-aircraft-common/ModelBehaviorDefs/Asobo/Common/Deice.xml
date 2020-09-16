@@ -247,7 +247,7 @@
 			</Case>
 			<Default>
 				<UPDATE_CODE>
-					(A:PITOT HEAT SWITCH#ID#, Enum) 0 == if{
+					(A:PITOT HEAT SWITCH:#ID#, Enum) 0 == if{
 						#ID# (&gt;K:PITOT_HEAT_ON)
 					}
 				</UPDATE_CODE>

@@ -5122,9 +5122,9 @@
 				</Test>
 				<Test>
 					<TestValue>
-						<Operator OpType="GREATER">
+						<Operator OpType="LESS">
 							<Val SimVarName="ELECTRICAL BATTERY LOAD" Units="amperes"/>
-							<Val Value="-1"/>
+							<Val Value="1"/>
 						</Operator>
 					</TestValue>
 					<Instrument Id="HTML:G1000_MFD:Piston_Batt_M"/>
@@ -5997,6 +5997,7 @@
 				<Instrument Id="HTML:G1000_MFD:Piston_OilPressGauge"/>
 				<Instrument Id="HTML:AS1000_MFD:Piston_OilPressGauge"/>
 				<Instrument Id="HTML:G1000_PFD:Piston_OilPressGauge"/>
+				<Instrument Id="HTML:AS1000_PFD:Piston_OilPressGauge"/>
 				<Instrument Id="HTML:AS1000_PFD:OilPress"/>
 				<Instrument Id="HTML:AS1000_PFD:OilPsi_Gauge"/>
 				<Instrument Id="HTML:AS1000_MFD:OilPsi_Gauge"/>
@@ -6140,9 +6141,9 @@
 			<CheckpointDesc SubjectTT="TT:GAME.CHECKLIST_AMMETER" ExpectationTT="TT:GAME.CHECKLIST_CHECK"/>
 			<Test>
 				<TestValue>
-					<Operator OpType="GREATER">
+					<Operator OpType="LESS">
 						<Val SimVarName="ELECTRICAL BATTERY LOAD" Units="amperes"/>
-						<Val Value="-1"/>
+						<Val Value="1"/>
 					</Operator>
 				</TestValue>
 				<Instrument Id="HIGHLIGHT_VACAMP"/>

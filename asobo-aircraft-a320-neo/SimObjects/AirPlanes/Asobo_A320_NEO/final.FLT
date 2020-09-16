@@ -99,7 +99,7 @@ Autobrakes=2
 StandbyVacuum=False
 PropSync=False
 AutoFeatherSwitch=False
-FlightDirector=False
+FlightDirector=True
 PanelLights=False
 LaunchBarSwitch=False
 LaunchBarState=0
@@ -112,6 +112,7 @@ FoldingWingsState=0, 0
 XMLVAR_RMP_L_On=1
 XMLVAR_RMP_R_On=1
 XMLVAR_Baro1_Mode=1
+A320_NEO_CDU_START_PAGE=35
 
 [Gauges.0]
 KollsmanSetting=29.921342849731445313
