@@ -73,7 +73,6 @@ class A320_Neo_Clock extends BaseAirliners {
                 if (currentDisplayTime !== this.lastDisplayTime) {
                     this.lastDisplayTime = currentDisplayTime;
                     this.middleSelectorElem.textContent = currentDisplayTime;
-                    
                 }
                 if (currentDisplayTime2 !== this.lastDisplayTime2) {
                     this.lastDisplayTime2 = currentDisplayTime2;
