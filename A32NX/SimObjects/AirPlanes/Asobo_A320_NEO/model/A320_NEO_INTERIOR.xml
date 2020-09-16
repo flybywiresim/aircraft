@@ -588,7 +588,7 @@
 				(A:GENERAL ENG MIXTURE LEVER POSITION:1, Percent over 100) 0.9 &lt; if{ (&gt;K:MIXTURE1_RICH) }
 				(A:GENERAL ENG MIXTURE LEVER POSITION:2, Percent over 100) 0.9 &lt; if{ (&gt;K:MIXTURE2_RICH) }
 			</Update>
-			<UseTemplate Name="ASOBO_ENGINE_Switch_Engine_Mode_Template">
+			<UseTemplate Name="A32NX_ENGINE_MODE_SELECTOR_TEMPLATE">
 				<AIRBUS_TYPE/>
 				<ANIM_NAME>KNOB_ENGINES_MODE</ANIM_NAME>
 				<NODE_ID>KNOB_ENGINES_MODE</NODE_ID>
