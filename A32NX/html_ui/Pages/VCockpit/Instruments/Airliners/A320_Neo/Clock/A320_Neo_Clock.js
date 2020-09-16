@@ -66,7 +66,6 @@ class A320_Neo_Clock extends BaseAirliners {
 
                     currentDisplayTime = this.getUTCDate(); 
                     currentDisplayTime2 = this.getUTCYear(); 
-                    
                 } else {
                     currentDisplayTime = this.getUTCTime(); 
                     currentDisplayTime2 = this.getUTCSeconds(); 
