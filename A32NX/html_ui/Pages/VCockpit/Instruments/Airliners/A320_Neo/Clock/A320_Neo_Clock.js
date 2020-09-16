@@ -62,16 +62,16 @@ class A320_Neo_Clock extends BaseAirliners {
                 let currentDisplayTime = "";
                 let currentDisplayTime2 = "";
                 if (SimVar.GetSimVarValue("L:PUSH_CHRONO_SET", "Bool") === 1) {
-
                     currentDisplayTime = this.getUTCDate(); 
-                    currentDisplayTime2 = this.getUTCYear(); 
+                    currentDisplayTime2 = this.getUTCYear();                  
                 } else {
-                    currentDisplayTime = this.getUTCTime(); 
-                    currentDisplayTime2 = this.getUTCSeconds(); 
-                }
+                    let UTCTime = this.getUTCTime();
+                    currentDisplayTime = UTCTime.substr(0,5); 
+                    currentDisplayTime2 = UTCTime.substr(6,2);
+                } 
                 if (currentDisplayTime !== this.lastDisplayTime) {
                     this.lastDisplayTime = currentDisplayTime;
-                    this.middleSelectorElem.textContent = currentDisplayTime;
+                    this.middleSelectorElem.textContent = currentDisplayTime;                   
                 }
                 if (currentDisplayTime2 !== this.lastDisplayTime2) {
                     this.lastDisplayTime2 = currentDisplayTime2;
@@ -93,21 +93,11 @@ class A320_Neo_Clock extends BaseAirliners {
         if (value) {
             const seconds = Number.parseInt(value);
             const time = Utils.SecondsToDisplayTime(seconds, true, true, false);
-            return time.toString().substr(0,5);
+            return time.toString();
         }
         return "";
     }
-
-    getUTCSeconds() {
-        const value = SimVar.GetGlobalVarValue("ZULU TIME", "seconds");
-        if (value) {
-            const seconds = Number.parseInt(value);
-            const time = Utils.SecondsToDisplayTime(seconds, true, true, false);
-            return time.toString().substr(6,2);
-        }
-        return "";
-    }
-    getUTCDate() {
+   getUTCDate() {
         const day = SimVar.GetGlobalVarValue("ZULU DAY OF MONTH", "number");
         const month = `${SimVar.GetGlobalVarValue("ZULU MONTH OF YEAR", "number")}`.padStart(2,'0');
         return `${month}.${day}`;
