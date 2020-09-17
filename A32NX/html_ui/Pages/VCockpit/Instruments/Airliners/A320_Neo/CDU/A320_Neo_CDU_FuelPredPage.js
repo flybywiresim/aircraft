@@ -4,6 +4,7 @@ class CDUFuelPredPage {
         let isFlying = parseInt(SimVar.GetSimVarValue("GROUND VELOCITY", "knots")) > 30;
         let destIdentCell = "---";
         let destTimeCell = "";
+
         if (mcdu.flightPlanManager.getDestination()) {
             destIdentCell = mcdu.flightPlanManager.getDestination().ident;
             if (isFlying) {
@@ -12,7 +13,13 @@ class CDUFuelPredPage {
             else {
                 destTimeCell = FMCMainDisplay.secondsTohhmm(mcdu.flightPlanManager.getDestination().infos.totalTimeInFP);
             }
-        }
+        }        
+        let altIdentCell = "---";
+        let altTimeCell = "";
+        /**
+         * Retrieve alternate destination info
+         */
+        if (mcdu.flightPlanManager.get)
         let rteRsvWeightCell = "--.-";
         let rteRsvWeight = mcdu.getRouteReservedWeight();
         if (isFinite(rteRsvWeight)) {

@@ -6,7 +6,9 @@ class CDUInitPage {
         let costIndex = "---";
         if (mcdu.flightPlanManager.getOrigin() && mcdu.flightPlanManager.getOrigin().ident) {
             if (mcdu.flightPlanManager.getDestination() && mcdu.flightPlanManager.getDestination().ident) {
-                fromTo = mcdu.flightPlanManager.getOrigin().ident + "/" + mcdu.flightPlanManager.getDestination().ident + "[color]blue";
+                fromTo = mcdu.flightPlanManager.getOrigin().ident + "/" + mcdu.flightPlanManager.getDestination().ident + "[color]green";
+                mcdu.inOut("F-PLN DISCONTINUITY") //TODO check the logic on this for pre-existing flight
+
                 costIndex = "---[color]blue";
                 mcdu.onLeftInput[4] = () => {
                     let value = mcdu.inOut;
@@ -32,12 +34,12 @@ class CDUInitPage {
                 };
             }
         }
-        let coRoute = "NONE[color]blue";
+        let coRoute = "□□□□□□□□□□[color]red"; //Ref: FCOM 4.03.20 P3
         if (mcdu.coRoute) {
             coRoute = mcdu.coRoute + "[color]blue";
             ;
         }
-        let altDest = "-------[color]blue";
+        let altDest = "---- ------[color]blue"; // Ref: FCOM 4.03.20 P3
         if (mcdu.flightPlanManager.getDestination()) {
             altDest = "NONE[color]blue";
             if (mcdu.altDestination) {
@@ -89,17 +91,39 @@ class CDUInitPage {
                 }
             });
         };
+        /**
+         * If scratchpad is filled, attempt to update city pair
+         * else show route selection pair if city pair is displayed
+         * Ref: FCOM 4.03.20 P6
+         */
         mcdu.onRightInput[0] = () => {
-            let value = mcdu.inOut;
-            mcdu.clearUserInput();
-            mcdu.tryUpdateFromTo(value, (result) => {
+            if (mcdu.inOut) {
+                let value = mcdu.inOut;
+                mcdu.clearUserInput();
+                mcdu.tryUpdateFromTo(value, (result) => {
                 if (result) {                    
                     CDUPerformancePage.UpdateThrRedAccFromOrigin(mcdu);
                     
                     CDUAvailableFlightPlanPage.ShowPage(mcdu);
+                    }
+                });
+            } else if (mcdu.flightPlanManager.getOrigin() && mcdu.flightPlanManager.getOrigin().ident) {
+                if (mcdu.flightPlanManager.getDestination() && mcdu.flightPlanManager.getDestination().ident) {
+                    CDUAvailableFlightPlanPage.ShowPage(mcdu)
                 }
-            });
+            }
         };
+
+        /**
+         * If city pair is displayed show route selection page
+         * Ref: FCOM 4.03.20 P6 
+         */
+        mcdu.onLeftInput[1] = () => {
+            if (mcdu.flightPlanManager.getOrigin() && mcdu.flightPlanManager.getOrigin().ident) {
+                if (mcdu.flightPlanManager.getDestination() && mcdu.flightPlanManager.getDestination().ident) {
+                    CDUAvailableFlightPlanPage.ShowPage(mcdu)
+                }
+        }
         mcdu.onLeftInput[2] = () => {
             let value = mcdu.inOut;
             mcdu.clearUserInput();
