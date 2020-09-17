@@ -1820,7 +1820,7 @@ var A320_Neo_UpperECAM;
             super.update(_deltaTime);
             var slatsAngle = (SimVar.GetSimVarValue("LEADING EDGE FLAPS LEFT ANGLE", "degrees") + SimVar.GetSimVarValue("LEADING EDGE FLAPS RIGHT ANGLE", "degrees")) * 0.5;
             var flapsAngle = (SimVar.GetSimVarValue("TRAILING EDGE FLAPS LEFT ANGLE", "degrees") + SimVar.GetSimVarValue("TRAILING EDGE FLAPS RIGHT ANGLE", "degrees")) * 0.5;
-            var handleIndex = Simplane.getFlapsHandleIndex();
+            var handleIndex = Simplane.getFlapsHandleIndex(true);
             let slatsTargetIndex = handleIndex;
             let flapsTargetIndex = handleIndex;
             var slatsAngleChanged = (this.currentSlatsAngle != slatsAngle);
