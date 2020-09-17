@@ -22,7 +22,10 @@ class Jet_PFD_AttitudeIndicator extends HTMLElement {
             "flight_director-pitch",
             "flight_director-bank",
             "radio_altitude",
-            "decision_height"
+            "decision_height",
+            "compass",
+            "show_selected_hdg",
+            "ap_hdg"
         ];
     }
     static get observedAttributes() {
@@ -72,6 +75,7 @@ class Jet_PFD_AttitudeIndicator extends HTMLElement {
         this.horizonHeight = 300;
         this.attitudeHeight = 250;
         this.horizonToAttitudeRatio = this.attitudeHeight / this.horizonHeight;
+        const seperatorColor = "#e0e0e0";
 
         {
             this.horizon_root = document.createElementNS(Avionics.SVG.NS, "svg");
@@ -103,12 +107,47 @@ class Jet_PFD_AttitudeIndicator extends HTMLElement {
             this.horizonBottom.setAttribute("height", "3000");
             this.bottomPart.appendChild(this.horizonBottom);
             let separator = document.createElementNS(Avionics.SVG.NS, "rect");
-            separator.setAttribute("fill", "#e0e0e0");
+            separator.setAttribute("fill", seperatorColor);
             separator.setAttribute("x", "-1500");
             separator.setAttribute("y", "0");
             separator.setAttribute("width", "3000");
             separator.setAttribute("height", "3");
             this.bottomPart.appendChild(separator);
+        }
+        {
+            const primaryGraduations = 7;
+            const HSIndicatorWidth = 550;
+            const horizonWidth = 400;
+
+            // 50 is from HSIndicator.js, multiply by 2 as we only want primary ticks, not secondary
+            // use scaling factor with horizon and HS indicator width to match them up
+            this.graduationSpacing = 50 * 2 * (horizonWidth / HSIndicatorWidth);
+            this.compassInterval = 10; // 10 Degrees between ticks
+            this.compassTicks = document.createElementNS(Avionics.SVG.NS, "g");
+            this.compassTicks.setAttribute("y", "0");
+            this.bottomPart.appendChild(this.compassTicks);
+            
+            // Shift over by 3 ticks to make x = 0 the center of the horizon
+            const centerDelta = (3 * this.graduationSpacing);
+
+            for (let i = 0; i < primaryGraduations; i++) {
+                let graduation = document.createElementNS(Avionics.SVG.NS, "rect");
+                graduation.setAttribute("height", "15");
+                graduation.setAttribute("width", "3");
+                graduation.setAttribute("x", `${(i * this.graduationSpacing) - centerDelta}`);
+                graduation.setAttribute("y", "0");
+                graduation.setAttribute("fill", seperatorColor);
+                this.compassTicks.appendChild(graduation);
+            }
+
+            // Tick on top of seperator
+            this.compassSelectedHeading = document.createElementNS(Avionics.SVG.NS, "rect");
+            this.compassSelectedHeading.setAttribute("width", "3");
+            this.compassSelectedHeading.setAttribute("height", "33");
+            this.compassSelectedHeading.setAttribute("y", "-33");
+            this.compassSelectedHeading.setAttribute("x", "0");
+            this.compassSelectedHeading.setAttribute("fill", "#00F2FF");
+            this.bottomPart.appendChild(this.compassSelectedHeading);
         }
         {
             let pitchContainer = document.createElement("div");
@@ -269,11 +308,11 @@ class Jet_PFD_AttitudeIndicator extends HTMLElement {
             {
                 let topMask = document.createElementNS(Avionics.SVG.NS, "path");
                 topMask.setAttribute("d", "M 0 0 L 0 250 L 123 250 L 123 190 C 123 190, 143 120, 233 120 C 233 120, 323 120, 343 190 L 343 250 L 500 250 L 500 0 Z");
-                topMask.setAttribute("fill", "black");
+                topMask.setAttribute("fill", "url(#Backlight)");
                 this.masks.appendChild(topMask);
                 let bottomMask = document.createElementNS(Avionics.SVG.NS, "path");
                 bottomMask.setAttribute("d", "M 0 500 L 0 250 L 123 250 L 123 310 C 123 310, 143 380, 233 380 C 233 380, 323 380, 343 310 L 343 250 L 500 250 L 500 500 Z");
-                bottomMask.setAttribute("fill", "black");
+                bottomMask.setAttribute("fill", "url(#Backlight)");
                 this.masks.appendChild(bottomMask);
             }
         }
@@ -313,6 +352,7 @@ class Jet_PFD_AttitudeIndicator extends HTMLElement {
                     dash.setAttribute("y", (-radius - smallDashesHeight[i]).toString());
                     dash.setAttribute("height", smallDashesHeight[i].toString());
                     dash.setAttribute("width", smallDashesWidth[i].toString());
+                    dash.setAttribute("fill", "transparent");
                     dash.setAttribute("stroke", "white");
                     dash.setAttribute("stroke-width", "3");
                     dash.setAttribute("transform", "rotate(" + smallDashesAngle[i] + ",0,0)");
@@ -323,36 +363,41 @@ class Jet_PFD_AttitudeIndicator extends HTMLElement {
                 let cursors = document.createElementNS(Avionics.SVG.NS, "g");
                 {
                     let leftUpper = document.createElementNS(Avionics.SVG.NS, "path");
-                    leftUpper.setAttribute("d", "M-145 4 l0 -6 l55 0 l0 28 l-5 0 l0 -22 l-40 0 Z");
-                    leftUpper.setAttribute("fill", "black");
+                    leftUpper.setAttribute("d", "M-145 2 l0 -9 l62 0 l0 28 l-9 0 l0 -19 l-43 0 Z");
+                    leftUpper.setAttribute("fill", "url(#Backlight)");
                     leftUpper.setAttribute("stroke", "yellow");
-                    leftUpper.setAttribute("stroke-width", "1");
+                    leftUpper.setAttribute("stroke-width", "3");
                     leftUpper.setAttribute("stroke-opacity", "1.0");
                     cursors.appendChild(leftUpper);
                     let rightUpper = document.createElementNS(Avionics.SVG.NS, "path");
-                    rightUpper.setAttribute("d", "M140 4 l0 -6 l-55 0 l0 28 l5 0 l0 -22 l40 0 Z");
-                    rightUpper.setAttribute("fill", "black");
+                    rightUpper.setAttribute("d", "M145 2 l0 -9 l-62 0 l0 28 l9 0 l0 -19 l43 0 Z");
+                    rightUpper.setAttribute("fill", "url(#Backlight)");
                     rightUpper.setAttribute("stroke", "yellow");
-                    rightUpper.setAttribute("stroke-width", "1");
+                    rightUpper.setAttribute("stroke-width", "3");
                     rightUpper.setAttribute("stroke-opacity", "1.0");
                     cursors.appendChild(rightUpper);
-                    let centerRect = document.createElementNS(Avionics.SVG.NS, "rect");
-                    centerRect.setAttribute("x", "-4");
-                    centerRect.setAttribute("y", "-4");
-                    centerRect.setAttribute("height", "8");
-                    centerRect.setAttribute("width", "8");
-                    centerRect.setAttribute("stroke", "white");
-                    centerRect.setAttribute("stroke-width", "3");
-                    cursors.appendChild(centerRect);
+                    let centerRectFill = document.createElementNS(Avionics.SVG.NS, "rect");
+                    centerRectFill.setAttribute("x", "-4");
+                    centerRectFill.setAttribute("y", "-7");
+                    centerRectFill.setAttribute("height", "8");
+                    centerRectFill.setAttribute("width", "8");
+                    centerRectFill.setAttribute("fill", "url(#Backlight)");
+                    centerRectFill.setAttribute("stroke", "none");
+                    cursors.appendChild(centerRectFill);
+                    // The center rect yellow border is defined lower down so that it renders in front of the green FD bars
                 }
                 this.attitude_root.appendChild(cursors);
                 this.slipSkidTriangle = document.createElementNS(Avionics.SVG.NS, "path");
                 this.slipSkidTriangle.setAttribute("d", "M0 -170 l-13 20 l26 0 Z");
-                this.slipSkidTriangle.setAttribute("fill", "white");
+                this.slipSkidTriangle.setAttribute("fill", "transparent");
+                this.slipSkidTriangle.setAttribute("stroke", "yellow");
+                this.slipSkidTriangle.setAttribute("stroke-width", "3");
                 this.attitude_root.appendChild(this.slipSkidTriangle);
                 this.slipSkid = document.createElementNS(Avionics.SVG.NS, "path");
-                this.slipSkid.setAttribute("d", "M-20 -140 L-16 -146 L16 -146 L20 -140 Z");
-                this.slipSkid.setAttribute("fill", "white");
+                this.slipSkid.setAttribute("d", "M-19 -138 L-15 -144 L17 -144 L21 -138 Z");
+                this.slipSkid.setAttribute("fill", "transparent");
+                this.slipSkid.setAttribute("stroke", "yellow");
+                this.slipSkid.setAttribute("stroke-width", "3");
                 this.attitude_root.appendChild(this.slipSkid);
             }
             {
@@ -374,8 +419,24 @@ class Jet_PFD_AttitudeIndicator extends HTMLElement {
                 this.radioAltitudeGroup.appendChild(this.radioAltitude);
             }
         }
+
         this.flightDirector = new Jet_PFD_FlightDirector.A320_Neo_Handler();
         this.flightDirector.init(this.attitude_root);
+        
+        let cursorsFront = document.createElementNS(Avionics.SVG.NS, "g");
+        {
+            let centerRectBorder = document.createElementNS(Avionics.SVG.NS, "rect");
+            centerRectBorder.setAttribute("x", "-5");
+            centerRectBorder.setAttribute("y", "-8");
+            centerRectBorder.setAttribute("height", "10");
+            centerRectBorder.setAttribute("width", "10");
+            centerRectBorder.setAttribute("fill", "none");
+            centerRectBorder.setAttribute("stroke", "yellow");
+            centerRectBorder.setAttribute("stroke-width", "3");
+            cursorsFront.appendChild(centerRectBorder);
+        }
+        this.attitude_root.appendChild(cursorsFront);
+
         this.applyAttributes();
     }
     construct_B747_8() {
@@ -1346,6 +1407,15 @@ class Jet_PFD_AttitudeIndicator extends HTMLElement {
                     this.radioDecisionHeight.textContent = fastToFixed(val, 0);
                 }
                 break;
+            case "compass":
+                this.compass = parseFloat(newValue);
+                break;
+            case "show_selected_hdg":
+                this.showSelectedHdg = parseInt(newValue) == 1;
+                break;
+            case "ap_hdg":
+                this.apHdg = parseFloat(newValue);
+                break;
             default:
                 return;
         }
@@ -1376,6 +1446,20 @@ class Jet_PFD_AttitudeIndicator extends HTMLElement {
                 this.horizonTop.setAttribute("fill", "transparent");
                 this.horizonBottom.setAttribute("fill", "transparent");
             }
+        }
+        if (this.compassTicks) {
+            const scalar = (this.compass % this.compassInterval) / this.compassInterval;
+            const offset = scalar * this.graduationSpacing + 1;
+            this.compassTicks.setAttribute("transform", `translate(${-offset} 0)`);
+        }
+        if (this.compassSelectedHeading) {
+            let hdgDiff = this.apHdg - this.compass;
+            if (hdgDiff > 180) hdgDiff -= 360;
+            if (hdgDiff < -180) hdgDiff += 360;
+
+            const offset = (hdgDiff / this.compassInterval) * this.graduationSpacing;
+            this.compassSelectedHeading.setAttribute("transform", `translate(${offset - 1} 0)`);
+            this.compassSelectedHeading.setAttribute("opacity", this.showSelectedHdg ? "1" : "0");
         }
         if (this.cj4_FlightDirector != null) {
             if (this.cj4_FlightDirectorActive) {

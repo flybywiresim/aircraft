@@ -51,15 +51,15 @@
       stroke: lightgray;
       stroke-width: 2; }
     a320-neo-lower-ecam-fuel .FlowShape {
-      fill: black;
+      fill: rgba(13,20,35,1);
       stroke: green;
       stroke-width: 2; }
     a320-neo-lower-ecam-fuel .ValvePumpActive {
-      fill: black;
+      fill: rgba(13,20,35,1);
       stroke: green;
       stroke-width: 2; }
     a320-neo-lower-ecam-fuel .ValvePumpInactive {
-      fill: black;
+      fill: rgba(13,20,35,1);
       stroke: #db7200;
       stroke-width: 2; }
     a320-neo-lower-ecam-fuel text {

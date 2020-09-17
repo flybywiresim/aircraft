@@ -298,15 +298,23 @@
 		<Range LowerBound="0.1" />
 	    <WwiseRTPC SimVar="AMBIENT PRECIP RATE" Units="millimeters of water" Index="0" RTPCName="SIMVAR_AMBIENT_PRECIP_RATE"/> 
         <WwiseRTPC SimVar="AIRSPEED TRUE" Units="KNOTS" Index="0" RTPCName="SIMVAR_AIRSPEED_TRUE"/> 
-    </Sound> 	
+    </Sound>
+
+	<!-- CRC ==========================================================================================-->
     
+	<Sound WwiseData="true" WwiseEvent="CRC" ViewPoint="Inside" LocalVar="A32NX_MASTER_WARNING">
+		<Range LowerBound="0.5" />
+		<Requires SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1">
+			<Range LowerBound="28" />
+		</Requires>
+	</Sound>
+
   </SimVarSounds>   
   
 <!-- AvionicSounds ========================================================================================== --> 
   
   <AvionicSounds> 
-	<Sound WwiseData="true" WwiseEvent="tone_caution" ViewPoint="Inside"/>
-	<Sound WwiseData="true" WwiseEvent="tone_warning" ViewPoint="Inside" />
+	<Sound WwiseData="true" WwiseEvent="improved_tone_caution" ViewPoint="Inside"/>
 	<Sound WwiseData="true" WwiseEvent="tone_altitude_alert_default" ViewPoint="Inside"/>	
 	<Sound WwiseData="true" WwiseEvent="aural_stall" />
 	<Sound WwiseData="true" WwiseEvent="aural_pull_up" />

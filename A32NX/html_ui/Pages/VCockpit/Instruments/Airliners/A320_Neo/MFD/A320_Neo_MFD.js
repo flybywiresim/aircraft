@@ -67,6 +67,7 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
     }
     init() {
         super.init();
+        this.getDeltaTime = A32NX_Util.createDeltaTimeCalculator(this._lastTime);
         this.modeChangeMask = this.gps.getChildById("ModeChangeMask");
         this.rangeChangeMask = this.gps.getChildById("RangeChangeMask");
         this.map.instrument.setNPCAirplaneManagerTCASMode(true);
@@ -99,7 +100,8 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
 
         this.electricity = this.gps.getChildById("Electricity")
     }
-    onUpdate(_deltaTime) {
+    onUpdate() {
+        const _deltaTime = this.getDeltaTime();
         super.onUpdate(_deltaTime);
         this.updateMap(_deltaTime);
         this.updateNDInfo(_deltaTime);
@@ -128,8 +130,8 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
          * TODO: Seperate both MFD screens, currently if the FO changes its screen, it also tests the screen for the captain and vice versa
          **/
              
-        let selfTestCurrentKnobValueFO = SimVar.GetSimVarValue("LIGHT POTENTIOMETER:21", "number");
-        let selfTestCurrentKnobValueCAP = SimVar.GetSimVarValue("LIGHT POTENTIOMETER:19", "number");
+        let selfTestCurrentKnobValueFO = SimVar.GetSimVarValue("LIGHT POTENTIOMETER:91", "number");
+        let selfTestCurrentKnobValueCAP = SimVar.GetSimVarValue("LIGHT POTENTIOMETER:89", "number");
 
         const FOKnobChanged = (selfTestCurrentKnobValueFO >= 0.1 && this.selfTestLastKnobValueFO < 0.1);
         const CAPKnobChanged = (selfTestCurrentKnobValueCAP >= 0.1 && this.selfTestLastKnobValueCAP < 0.1);
@@ -245,9 +247,9 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
         var isTerrainVisible = this.map.instrument.mapConfigId == 1;
         var isWeatherVisible = !terrainOn && shouldShowWeather;
         if (isTerrainVisible || isWeatherVisible) {
-            this.setShowBingMap("true");
+            this.setShowBingMap(true);
         } else {
-            this.setShowBingMap("false");
+            this.setShowBingMap(false);
         }
 
         if (this.mapRange != mapRange) {
@@ -287,7 +289,15 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
     // The BingMap is used by the A320 to render terrain and weather,
     // but it also renders airports, which the real A320 does not.
     setShowBingMap(showBingMap) {
-        this.map.instrument.attributeChangedCallback("show-bing-map", null, showBingMap);
+        this.map.instrument.attributeChangedCallback("show-bing-map", null, showBingMap ? "true" : "false");
+		if (showBingMap) {
+			// Setting the visibility property manually, for some reason the setVisible function called by "attributeChangedCallback:show-bing-map" is not working properly when mixBlendMode is enabled.
+			this.map.instrument.bingMap.style.visibility = "visible";
+		}
+		else {
+			// Setting the visibility property manually, for some reason the setVisible function called by "attributeChangedCallback:show-bing-map" is not working properly when mixBlendMode is enabled.
+			this.map.instrument.bingMap.style.visibility = "hidden";
+		}
     }
     onEvent(_event) {
         switch (_event) {

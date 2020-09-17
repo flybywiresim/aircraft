@@ -1,16 +1,10 @@
 class Jet_PFD_AltimeterIndicator extends HTMLElement {
     constructor() {
         super(...arguments);
-        this.cursorOpacity = "1.0";
-        this.cursorTextColor = "rgb(36,255,0)";
         this.strokeSize = "3";
         this.fontSize = 25;
         this.refHeight = 0;
         this.borderSize = 0;
-        this.cursorScrollPosX = 0;
-        this.cursorScrollPosY = 0;
-        this.cursorScrollNbTexts = 5;
-        this.cursorScrollSpacing = 25;
         this.graduationScrollPosX = 0;
         this.graduationScrollPosY = 0;
         this.nbPrimaryGraduations = 7;
@@ -49,1013 +43,11 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
         this.groundLineSVGHeight = 0;
         this.thousandIndicator = null;
         this.targetAltitudeIndicatorSVGText = null;
+        this.cursorSVGAltitudeLevelShape = null;
+        this.cursorIntegrals = null;
+        this.cursorDecimals = null;
         this._delayedAltitude = 0;
-        if (this.aircraft == Aircraft.CJ4) {
-            this.construct_CJ4();
-        }
-        else if (this.aircraft == Aircraft.B747_8) {
-            this.construct_B747_8();
-        }
-        else if (this.aircraft == Aircraft.AS01B) {
-            this.construct_AS01B();
-        }
-        else {
-            this.construct_A320_Neo();
-        }
-    }
-    construct_CJ4() {
-        Utils.RemoveAllChildren(this);
-        this.rootSVG = document.createElementNS(Avionics.SVG.NS, "svg");
-        this.rootSVG.setAttribute("id", "ViewBox");
-        this.rootSVG.setAttribute("viewBox", "0 0 250 500");
-        var width = 140;
-        var height = 415;
-        var posX = width * 0.5;
-        var posY = 452.5;
-        var gradWidth = 110;
-        this.refHeight = height;
-        this.nbPrimaryGraduations = 7;
-        this.nbSecondaryGraduations = 0;
-        this.totalGraduations = this.nbPrimaryGraduations + ((this.nbPrimaryGraduations - 1) * this.nbSecondaryGraduations);
-        this.graduationSpacing = 90;
-        this.cursorScroller = new Avionics.Scroller(this.cursorScrollNbTexts, 10, true, 100);
-        this.graduationScroller = new Avionics.Scroller(this.nbPrimaryGraduations, 100, true);
-        if (!this.rootGroup) {
-            this.rootGroup = document.createElementNS(Avionics.SVG.NS, "g");
-            this.rootGroup.setAttribute("id", "Altimeter");
-        }
-        else {
-            Utils.RemoveAllChildren(this.rootGroup);
-        }
-        if (!this.pressureSVG)
-            this.pressureSVG = document.createElementNS(Avionics.SVG.NS, "text");
-        this.pressureSVG.textContent = "";
-        this.pressureSVG.setAttribute("x", (posX - 45).toString());
-        this.pressureSVG.setAttribute("y", (posY + 20).toString());
-        this.pressureSVG.setAttribute("fill", "cyan");
-        this.pressureSVG.setAttribute("font-size", (this.fontSize * 0.87).toString());
-        this.pressureSVG.setAttribute("font-family", "Roboto-Light");
-        this.pressureSVG.setAttribute("text-anchor", "center");
-        this.rootGroup.appendChild(this.pressureSVG);
-        posY -= height;
-        if (!this.centerSVG) {
-            this.centerSVG = document.createElementNS(Avionics.SVG.NS, "svg");
-            this.centerSVG.setAttribute("id", "CenterGroup");
-        }
-        else
-            Utils.RemoveAllChildren(this.centerSVG);
-        this.centerSVG.setAttribute("x", (posX - width * 0.5).toString());
-        this.centerSVG.setAttribute("y", posY.toString());
-        this.centerSVG.setAttribute("width", width.toString());
-        this.centerSVG.setAttribute("height", height.toString());
-        this.centerSVG.setAttribute("viewBox", "0 0 " + width + " " + height);
-        this.centerSVG.setAttribute("overflow", "hidden");
-        {
-            var _top = 0;
-            var _left = 0;
-            var _width = width;
-            var _height = height;
-            var bg = document.createElementNS(Avionics.SVG.NS, "rect");
-            bg.setAttribute("x", _left.toString());
-            bg.setAttribute("y", _top.toString());
-            bg.setAttribute("width", _width.toString());
-            bg.setAttribute("height", _height.toString());
-            bg.setAttribute("fill", "black");
-            bg.setAttribute("fill-opacity", "0.5");
-            this.centerSVG.appendChild(bg);
-            this.groundRibbonHasFixedHeight = true;
-            var groundRibbonPosX = _left;
-            var groundRibbonPosY = 0;
-            var groundRibbonWidth = _width;
-            var groundRibbonHeight = _height;
-            if (!this.groundRibbonSVG) {
-                this.groundRibbonSVG = document.createElementNS(Avionics.SVG.NS, "svg");
-                this.groundRibbonSVG.setAttribute("id", "GroundRibbonGroup");
-            }
-            else
-                Utils.RemoveAllChildren(this.groundRibbonSVG);
-            this.groundRibbonSVG.setAttribute("x", groundRibbonPosX.toString());
-            this.groundRibbonSVG.setAttribute("y", groundRibbonPosY.toString());
-            this.groundRibbonSVG.setAttribute("width", groundRibbonWidth.toString());
-            this.groundRibbonSVG.setAttribute("height", groundRibbonHeight.toString());
-            this.groundRibbonSVG.setAttribute("viewBox", "0 0 " + groundRibbonWidth + " " + groundRibbonHeight);
-            {
-                var dashHeight = 4;
-                var dashEndPos = _height;
-                var dashPos = -120;
-                while (dashPos < dashEndPos) {
-                    let dashLine = document.createElementNS(Avionics.SVG.NS, "rect");
-                    dashLine.setAttribute("x", "0");
-                    dashLine.setAttribute("y", dashPos.toString());
-                    dashLine.setAttribute("width", groundRibbonWidth.toString());
-                    dashLine.setAttribute("height", dashHeight.toString());
-                    dashLine.setAttribute("transform", "skewY(45)");
-                    dashLine.setAttribute("fill", "orange");
-                    this.groundRibbonSVG.appendChild(dashLine);
-                    dashPos += dashHeight * 6;
-                }
-                if (!this.groundRibbonSVGShape)
-                    this.groundRibbonSVGShape = document.createElementNS(Avionics.SVG.NS, "rect");
-                this.groundRibbonSVGShape.setAttribute("fill", "orange");
-                this.groundRibbonSVGShape.setAttribute("stroke", "orange");
-                this.groundRibbonSVGShape.setAttribute("stroke-width", "2");
-                this.groundRibbonSVGShape.setAttribute("width", groundRibbonWidth.toString());
-                this.groundRibbonSVGShape.setAttribute("height", "2");
-                this.groundRibbonSVGShape.setAttribute("x", "0");
-                this.groundRibbonSVG.appendChild(this.groundRibbonSVGShape);
-            }
-            this.centerSVG.appendChild(this.groundRibbonSVG);
-            this.graduationScrollPosX = _left + gradWidth;
-            this.graduationScrollPosY = _top + _height * 0.5;
-            for (var i = 0; i < this.totalGraduations; i++) {
-                var line = new Avionics.SVGGraduation();
-                line.IsPrimary = true;
-                if (this.nbSecondaryGraduations > 0 && (i % (this.nbSecondaryGraduations + 1)))
-                    line.IsPrimary = false;
-                var lineWidth = line.IsPrimary ? 15 : 4;
-                line.SVGLine = document.createElementNS(Avionics.SVG.NS, "rect");
-                line.SVGLine.setAttribute("x", "0");
-                line.SVGLine.setAttribute("width", lineWidth.toString());
-                line.SVGLine.setAttribute("height", "2");
-                line.SVGLine.setAttribute("fill", "white");
-                if (line.IsPrimary) {
-                    line.SVGText1 = document.createElementNS(Avionics.SVG.NS, "text");
-                    line.SVGText1.setAttribute("x", "-28");
-                    line.SVGText1.setAttribute("fill", "white");
-                    line.SVGText1.setAttribute("font-size", (this.fontSize * 1).toString());
-                    line.SVGText1.setAttribute("font-family", "Roboto-Light");
-                    line.SVGText1.setAttribute("text-anchor", "end");
-                    line.SVGText1.setAttribute("alignment-baseline", "central");
-                    line.SVGText2 = document.createElementNS(Avionics.SVG.NS, "text");
-                    line.SVGText2.setAttribute("x", "-28");
-                    line.SVGText2.setAttribute("fill", "white");
-                    line.SVGText2.setAttribute("font-size", (this.fontSize * 0.72).toString());
-                    line.SVGText2.setAttribute("font-family", "Roboto-Light");
-                    line.SVGText2.setAttribute("text-anchor", "start");
-                    line.SVGText2.setAttribute("alignment-baseline", "central");
-                }
-                this.graduations.push(line);
-            }
-            var graduationGroup = document.createElementNS(Avionics.SVG.NS, "g");
-            graduationGroup.setAttribute("id", "graduationGroup");
-            for (var i = 0; i < this.totalGraduations; i++) {
-                var line = this.graduations[i];
-                graduationGroup.appendChild(line.SVGLine);
-                if (line.SVGText1)
-                    graduationGroup.appendChild(line.SVGText1);
-                if (line.SVGText2)
-                    graduationGroup.appendChild(line.SVGText2);
-            }
-            this.centerSVG.appendChild(graduationGroup);
-            var cursorPosX = _left + 10;
-            var cursorPosY = _top + _height * 0.5;
-            var cursorWidth = width;
-            var cursorHeight = 80;
-            if (!this.cursorSVG) {
-                this.cursorSVG = document.createElementNS(Avionics.SVG.NS, "svg");
-                this.cursorSVG.setAttribute("id", "CursorGroup");
-            }
-            else
-                Utils.RemoveAllChildren(this.cursorSVG);
-            this.cursorSVG.setAttribute("x", cursorPosX.toString());
-            this.cursorSVG.setAttribute("y", (cursorPosY - cursorHeight * 0.5).toString());
-            this.cursorSVG.setAttribute("width", cursorWidth.toString());
-            this.cursorSVG.setAttribute("height", cursorHeight.toString());
-            this.cursorSVG.setAttribute("viewBox", "0 0 " + cursorWidth + " " + cursorHeight);
-            {
-                if (!this.cursorSVGShape)
-                    this.cursorSVGShape = document.createElementNS(Avionics.SVG.NS, "path");
-                this.cursorSVGShape.setAttribute("fill", "black");
-                this.cursorSVGShape.setAttribute("d", "M0 2 L95 2 L95 30 L105 40 L95 50 L95 78 L0 78 Z");
-                this.cursorSVGShape.setAttribute("stroke", "white");
-                this.cursorSVGShape.setAttribute("stroke-width", "0.85");
-                this.cursorSVG.appendChild(this.cursorSVGShape);
-                var _cursorPosX = -3;
-                var _cursorPosY = cursorHeight * 0.5;
-                if (!this.cursorSVGMainText)
-                    this.cursorSVGMainText = document.createElementNS(Avionics.SVG.NS, "text");
-                this.cursorSVGMainText.setAttribute("width", _width.toString());
-                this.cursorSVGMainText.setAttribute("fill", "green");
-                this.cursorSVGMainText.setAttribute("font-size", (this.fontSize * 1.25).toString());
-                this.cursorSVGMainText.setAttribute("font-family", "Roboto-Bold");
-                this.cursorSVGMainText.setAttribute("text-anchor", "end");
-                this.cursorSVGMainText.setAttribute("alignment-baseline", "central");
-                this.cursorSVGMainText.setAttribute("transform", "translate(" + (_cursorPosX + 65).toString() + " " + (_cursorPosY - 2).toString() + ")");
-                this.cursorSVG.appendChild(this.cursorSVGMainText);
-                this.cursorScrollPosX = _cursorPosX + 95;
-                this.cursorScrollPosY = _cursorPosY;
-                this.cursorSVGScrollTexts = [];
-                for (var i = 0; i < this.cursorScrollNbTexts; i++) {
-                    var text = document.createElementNS(Avionics.SVG.NS, "text");
-                    text.setAttribute("width", _width.toString());
-                    text.setAttribute("fill", "green");
-                    text.setAttribute("font-size", (this.fontSize * 0.95).toString());
-                    text.setAttribute("font-family", "Roboto-Bold");
-                    text.setAttribute("text-anchor", "end");
-                    text.setAttribute("alignment-baseline", "central");
-                    this.cursorSVGScrollTexts.push(text);
-                }
-                for (var i = 0; i < this.cursorSVGScrollTexts.length; i++) {
-                    this.cursorSVG.appendChild(this.cursorSVGScrollTexts[i]);
-                }
-                this.centerSVG.appendChild(this.cursorSVG);
-            }
-            var targetAltitudeIndicatorPosX = gradWidth - 13;
-            var targetAltitudeIndicatorPosY = _top + _height * 0.5;
-            var targetAltitudeIndicatorWidth = 100;
-            var targetAltitudeIndicatorHeight = 100;
-            if (!this.targetAltitudeIndicatorSVG) {
-                this.targetAltitudeIndicatorSVG = document.createElementNS(Avionics.SVG.NS, "svg");
-                this.targetAltitudeIndicatorSVG.setAttribute("id", "TargetAltitudeIndicator");
-            }
-            else
-                Utils.RemoveAllChildren(this.targetAltitudeIndicatorSVG);
-            this.targetAltitudeIndicatorSVG.setAttribute("x", targetAltitudeIndicatorPosX.toString());
-            this.targetAltitudeIndicatorSVG.setAttribute("y", (targetAltitudeIndicatorPosY - targetAltitudeIndicatorHeight * 0.5).toString());
-            this.targetAltitudeIndicatorSVG.setAttribute("width", targetAltitudeIndicatorWidth.toString());
-            this.targetAltitudeIndicatorSVG.setAttribute("height", targetAltitudeIndicatorHeight.toString());
-            this.targetAltitudeIndicatorSVG.setAttribute("viewBox", "0 0 100 100");
-            {
-                if (!this.targetAltitudeIndicatorSVGShape)
-                    this.targetAltitudeIndicatorSVGShape = document.createElementNS(Avionics.SVG.NS, "path");
-                this.targetAltitudeIndicatorSVGShape.setAttribute("fill", "none");
-                this.targetAltitudeIndicatorSVGShape.setAttribute("stroke", "cyan");
-                this.targetAltitudeIndicatorSVGShape.setAttribute("stroke-width", "2");
-                this.targetAltitudeIndicatorSVGShape.setAttribute("d", "M 10 10 L 40 10 L 40 90 L 10 90 L 10 58 L 18 50 L 10 42 Z");
-                this.targetAltitudeIndicatorSVG.appendChild(this.targetAltitudeIndicatorSVGShape);
-            }
-            this.centerSVG.appendChild(this.targetAltitudeIndicatorSVG);
-        }
-        this.rootGroup.appendChild(this.centerSVG);
-        this.targetAltitudeBgSVG = document.createElementNS(Avionics.SVG.NS, "rect");
-        this.targetAltitudeBgSVG.setAttribute("fill", "black");
-        this.targetAltitudeBgSVG.setAttribute("x", "5");
-        this.targetAltitudeBgSVG.setAttribute("y", (posY - 40).toString());
-        this.targetAltitudeBgSVG.setAttribute("width", "110");
-        this.targetAltitudeBgSVG.setAttribute("height", "35");
-        this.targetAltitudeBgSVG.setAttribute("fill", "black");
-        this.targetAltitudeBgSVG.setAttribute("fill-opacity", "0.5");
-        this.rootGroup.appendChild(this.targetAltitudeBgSVG);
-        this.targetAltitudeTextSVG1 = document.createElementNS(Avionics.SVG.NS, "text");
-        this.targetAltitudeTextSVG1.setAttribute("x", "85");
-        this.targetAltitudeTextSVG1.setAttribute("y", (posY - 10).toString());
-        this.targetAltitudeTextSVG1.setAttribute("fill", "cyan");
-        this.targetAltitudeTextSVG1.setAttribute("font-size", (this.fontSize * 1.3).toString());
-        this.targetAltitudeTextSVG1.setAttribute("font-family", "Roboto-Light");
-        this.targetAltitudeTextSVG1.setAttribute("text-anchor", "end");
-        this.targetAltitudeTextSVG1.setAttribute("alignment-baseline", "bottom");
-        this.rootGroup.appendChild(this.targetAltitudeTextSVG1);
-        this.targetAltitudeTextSVG2 = document.createElementNS(Avionics.SVG.NS, "text");
-        this.targetAltitudeTextSVG2.setAttribute("x", "85");
-        this.targetAltitudeTextSVG2.setAttribute("y", (posY - 10).toString());
-        this.targetAltitudeTextSVG2.setAttribute("width", _width.toString());
-        this.targetAltitudeTextSVG2.setAttribute("fill", "cyan");
-        this.targetAltitudeTextSVG2.setAttribute("font-size", (this.fontSize * 0.9).toString());
-        this.targetAltitudeTextSVG2.setAttribute("font-family", "Roboto-Light");
-        this.targetAltitudeTextSVG2.setAttribute("text-anchor", "start");
-        this.targetAltitudeTextSVG2.setAttribute("alignment-baseline", "bottom");
-        this.rootGroup.appendChild(this.targetAltitudeTextSVG2);
-        this.rootSVG.appendChild(this.rootGroup);
-        this.appendChild(this.rootSVG);
-    }
-    construct_B747_8() {
-        this.rootSVG = document.createElementNS(Avionics.SVG.NS, "svg");
-        this.rootSVG.setAttribute("id", "ViewBox");
-        this.rootSVG.setAttribute("viewBox", "0 0 250 800");
-        var posX = 100;
-        var posY = 0;
-        var width = 105;
-        var height = 640;
-        var arcWidth = 70;
-        this.refHeight = height;
-        this.nbSecondaryGraduations = 1;
-        this.totalGraduations = this.nbPrimaryGraduations + ((this.nbPrimaryGraduations - 1) * this.nbSecondaryGraduations);
-        this.graduationSpacing = 80;
-        this.graduationScroller = new Avionics.Scroller(this.nbPrimaryGraduations, 200, true);
-        this.cursorScroller = new Avionics.Scroller(this.cursorScrollNbTexts, 20, true, 100);
-        if (!this.rootGroup) {
-            this.rootGroup = document.createElementNS(Avionics.SVG.NS, "g");
-            this.rootGroup.setAttribute("id", "Altimeter");
-        }
-        else {
-            Utils.RemoveAllChildren(this.rootGroup);
-        }
-        var sideTextHeight = 70;
-        posY += sideTextHeight * 0.5;
-        this.targetAltitudeTextSVG1 = document.createElementNS(Avionics.SVG.NS, "text");
-        this.targetAltitudeTextSVG1.setAttribute("x", "115");
-        this.targetAltitudeTextSVG1.setAttribute("y", (posY + sideTextHeight * 0.5).toString());
-        this.targetAltitudeTextSVG1.setAttribute("fill", "#D570FF");
-        this.targetAltitudeTextSVG1.setAttribute("font-size", (this.fontSize * 1.6).toString());
-        this.targetAltitudeTextSVG1.setAttribute("font-family", "Roboto-Bold");
-        this.targetAltitudeTextSVG1.setAttribute("text-anchor", "end");
-        this.targetAltitudeTextSVG1.setAttribute("alignment-baseline", "bottom");
-        this.rootGroup.appendChild(this.targetAltitudeTextSVG1);
-        this.targetAltitudeTextSVG2 = document.createElementNS(Avionics.SVG.NS, "text");
-        this.targetAltitudeTextSVG2.setAttribute("x", "115");
-        this.targetAltitudeTextSVG2.setAttribute("y", (posY + sideTextHeight * 0.5).toString());
-        this.targetAltitudeTextSVG2.setAttribute("width", width.toString());
-        this.targetAltitudeTextSVG2.setAttribute("fill", "#D570FF");
-        this.targetAltitudeTextSVG2.setAttribute("font-size", (this.fontSize * 1.3).toString());
-        this.targetAltitudeTextSVG2.setAttribute("font-family", "Roboto-Bold");
-        this.targetAltitudeTextSVG2.setAttribute("text-anchor", "start");
-        this.targetAltitudeTextSVG2.setAttribute("alignment-baseline", "bottom");
-        this.rootGroup.appendChild(this.targetAltitudeTextSVG2);
-        posY += sideTextHeight * 0.835;
-        if (!this.centerSVG) {
-            this.centerSVG = document.createElementNS(Avionics.SVG.NS, "svg");
-            this.centerSVG.setAttribute("id", "CenterGroup");
-        }
-        else
-            Utils.RemoveAllChildren(this.centerSVG);
-        this.centerSVG.setAttribute("x", (posX - width * 0.5).toString());
-        this.centerSVG.setAttribute("y", posY.toString());
-        this.centerSVG.setAttribute("width", (width + arcWidth).toString());
-        this.centerSVG.setAttribute("height", height.toString());
-        this.centerSVG.setAttribute("viewBox", "0 0 " + (width + arcWidth) + " " + height);
-        {
-            var _top = 0;
-            var _left = 20;
-            var _width = width;
-            var _height = height;
-            var bg = document.createElementNS(Avionics.SVG.NS, "rect");
-            bg.setAttribute("x", _left.toString());
-            bg.setAttribute("y", _top.toString());
-            bg.setAttribute("width", _width.toString());
-            bg.setAttribute("height", _height.toString());
-            bg.setAttribute("fill", "#343B51");
-            this.centerSVG.appendChild(bg);
-            this.graduationScrollPosX = _left;
-            this.graduationScrollPosY = _top + _height * 0.5;
-            for (var i = 0; i < this.totalGraduations; i++) {
-                var line = new Avionics.SVGGraduation();
-                line.IsPrimary = true;
-                if (this.nbSecondaryGraduations > 0 && (i % (this.nbSecondaryGraduations + 1)))
-                    line.IsPrimary = false;
-                var lineWidth = (line.IsPrimary) ? 22 : 22;
-                var lineHeight = (line.IsPrimary) ? 3 : 3;
-                line.SVGLine = document.createElementNS(Avionics.SVG.NS, "rect");
-                line.SVGLine.setAttribute("x", "0");
-                line.SVGLine.setAttribute("width", lineWidth.toString());
-                line.SVGLine.setAttribute("height", lineHeight.toString());
-                line.SVGLine.setAttribute("fill", "white");
-                this.centerSVG.appendChild(line.SVGLine);
-                if (line.IsPrimary) {
-                    var xPos = lineWidth + 40;
-                    line.SVGText1 = document.createElementNS(Avionics.SVG.NS, "text");
-                    line.SVGText1.setAttribute("x", xPos.toString());
-                    line.SVGText1.setAttribute("y", "10");
-                    line.SVGText1.setAttribute("fill", "white");
-                    line.SVGText1.setAttribute("font-size", (this.fontSize * 1.15).toString());
-                    line.SVGText1.setAttribute("font-family", "Roboto-Bold");
-                    line.SVGText1.setAttribute("text-anchor", "end");
-                    line.SVGText1.setAttribute("alignment-baseline", "bottom");
-                    this.centerSVG.appendChild(line.SVGText1);
-                    line.SVGText2 = document.createElementNS(Avionics.SVG.NS, "text");
-                    line.SVGText2.setAttribute("x", xPos.toString());
-                    line.SVGText2.setAttribute("y", "10");
-                    line.SVGText2.setAttribute("fill", "white");
-                    line.SVGText2.setAttribute("font-size", (this.fontSize * 0.85).toString());
-                    line.SVGText2.setAttribute("font-family", "Roboto-Bold");
-                    line.SVGText2.setAttribute("text-anchor", "start");
-                    line.SVGText2.setAttribute("alignment-baseline", "bottom");
-                    this.centerSVG.appendChild(line.SVGText2);
-                }
-                this.graduations.push(line);
-            }
-            this.groundRibbonHasFixedHeight = true;
-            var groundRibbonPosX = _left;
-            var groundRibbonPosY = 0;
-            var groundRibbonWidth = _width;
-            var groundRibbonHeight = 40;
-            if (!this.groundRibbonSVG) {
-                this.groundRibbonSVG = document.createElementNS(Avionics.SVG.NS, "svg");
-                this.groundRibbonSVG.setAttribute("id", "GroundRibbonGroup");
-            }
-            else
-                Utils.RemoveAllChildren(this.groundRibbonSVG);
-            this.groundRibbonSVG.setAttribute("x", groundRibbonPosX.toString());
-            this.groundRibbonSVG.setAttribute("y", groundRibbonPosY.toString());
-            this.groundRibbonSVG.setAttribute("width", groundRibbonWidth.toString());
-            this.groundRibbonSVG.setAttribute("height", groundRibbonHeight.toString());
-            this.groundRibbonSVG.setAttribute("viewBox", "0 0 " + groundRibbonWidth + " " + groundRibbonHeight);
-            {
-                var dashHeight = 5;
-                var dashEndPos = _height;
-                var dashPos = -100;
-                while (dashPos < (dashEndPos - dashHeight * 2)) {
-                    let dashLine = document.createElementNS(Avionics.SVG.NS, "rect");
-                    dashLine.setAttribute("x", "0");
-                    dashLine.setAttribute("y", dashPos.toString());
-                    dashLine.setAttribute("width", groundRibbonWidth.toString());
-                    dashLine.setAttribute("height", dashHeight.toString());
-                    dashLine.setAttribute("transform", "skewY(45)");
-                    dashLine.setAttribute("fill", "orange");
-                    this.groundRibbonSVG.appendChild(dashLine);
-                    dashPos += dashHeight * 2;
-                }
-                if (!this.groundRibbonSVGShape)
-                    this.groundRibbonSVGShape = document.createElementNS(Avionics.SVG.NS, "rect");
-                this.groundRibbonSVGShape.setAttribute("fill", "orange");
-                this.groundRibbonSVGShape.setAttribute("stroke", "orange");
-                this.groundRibbonSVGShape.setAttribute("stroke-width", "2");
-                this.groundRibbonSVGShape.setAttribute("width", groundRibbonWidth.toString());
-                this.groundRibbonSVGShape.setAttribute("height", "5");
-                this.groundRibbonSVGShape.setAttribute("x", "0");
-                this.groundRibbonSVG.appendChild(this.groundRibbonSVGShape);
-            }
-            this.centerSVG.appendChild(this.groundRibbonSVG);
-            let singleLineHeight = 500 * this.graduationSpacing * (this.nbSecondaryGraduations + 1) / this.graduationScroller.increment;
-            let groundStripPosX = _left;
-            let groundStripPosY = 0;
-            let groundStripWidth = width;
-            this.groundLineSVGHeight = singleLineHeight * 2;
-            if (!this.groundLineSVG) {
-                this.groundLineSVG = document.createElementNS(Avionics.SVG.NS, "svg");
-                this.groundLineSVG.setAttribute("id", "GroundLineGroup");
-            }
-            else
-                Utils.RemoveAllChildren(this.groundLineSVG);
-            this.groundLineSVG.setAttribute("x", groundStripPosX.toString());
-            this.groundLineSVG.setAttribute("y", groundStripPosY.toString());
-            this.groundLineSVG.setAttribute("width", groundStripWidth.toString());
-            this.groundLineSVG.setAttribute("height", this.groundLineSVGHeight.toString());
-            this.groundLineSVG.setAttribute("viewBox", "0 0 " + groundStripWidth + " " + this.groundLineSVGHeight);
-            {
-                let whiteLine = document.createElementNS(Avionics.SVG.NS, "rect");
-                whiteLine.setAttribute("fill", "white");
-                whiteLine.setAttribute("x", "0");
-                whiteLine.setAttribute("y", "0");
-                whiteLine.setAttribute("width", "5");
-                whiteLine.setAttribute("height", singleLineHeight.toString());
-                this.groundLineSVG.appendChild(whiteLine);
-                let amberLine = document.createElementNS(Avionics.SVG.NS, "rect");
-                amberLine.setAttribute("fill", "orange");
-                amberLine.setAttribute("x", "0");
-                amberLine.setAttribute("y", singleLineHeight.toString());
-                amberLine.setAttribute("width", "5");
-                amberLine.setAttribute("height", singleLineHeight.toString());
-                this.groundLineSVG.appendChild(amberLine);
-            }
-            this.centerSVG.appendChild(this.groundLineSVG);
-            this.thousandIndicator = document.createElementNS(Avionics.SVG.NS, "g");
-            this.thousandIndicator.setAttribute("id", "thousandGroup");
-            {
-                let topLine = document.createElementNS(Avionics.SVG.NS, "line");
-                topLine.setAttribute("x1", (_left + 5).toString());
-                topLine.setAttribute("y1", "-18");
-                topLine.setAttribute("x2", _width.toString());
-                topLine.setAttribute("y2", "-18");
-                topLine.setAttribute("stroke", "white");
-                topLine.setAttribute("stroke-width", "3");
-                this.thousandIndicator.appendChild(topLine);
-                let bottomLine = document.createElementNS(Avionics.SVG.NS, "line");
-                bottomLine.setAttribute("x1", (_left + 5).toString());
-                bottomLine.setAttribute("y1", "18");
-                bottomLine.setAttribute("x2", _width.toString());
-                bottomLine.setAttribute("y2", "18");
-                bottomLine.setAttribute("stroke", "white");
-                bottomLine.setAttribute("stroke-width", "3");
-                this.thousandIndicator.appendChild(bottomLine);
-            }
-            this.centerSVG.appendChild(this.thousandIndicator);
-            var targetAltitudeIndicatorWidth = 100;
-            var targetAltitudeIndicatorHeight = 100;
-            var targetAltitudeIndicatorPosX = 0;
-            if (!this.targetAltitudeIndicatorSVG) {
-                this.targetAltitudeIndicatorSVG = document.createElementNS(Avionics.SVG.NS, "svg");
-                this.targetAltitudeIndicatorSVG.setAttribute("id", "TargetAltitudeIndicator");
-            }
-            else
-                Utils.RemoveAllChildren(this.targetAltitudeIndicatorSVG);
-            this.targetAltitudeIndicatorSVG.setAttribute("x", targetAltitudeIndicatorPosX.toString());
-            this.targetAltitudeIndicatorSVG.setAttribute("width", targetAltitudeIndicatorWidth.toString());
-            this.targetAltitudeIndicatorSVG.setAttribute("height", targetAltitudeIndicatorHeight.toString());
-            this.targetAltitudeIndicatorSVG.setAttribute("viewBox", "0 0 100 100");
-            {
-                if (!this.targetAltitudeIndicatorSVGShape)
-                    this.targetAltitudeIndicatorSVGShape = document.createElementNS(Avionics.SVG.NS, "path");
-                this.targetAltitudeIndicatorSVGShape.setAttribute("fill", "none");
-                this.targetAltitudeIndicatorSVGShape.setAttribute("stroke", "#D570FF");
-                this.targetAltitudeIndicatorSVGShape.setAttribute("stroke-width", "2");
-                this.targetAltitudeIndicatorSVGShape.setAttribute("d", "M 10 10 L 50 10 L 50 90 L 10 90 L 10 60 L 18 50 L 10 40 Z");
-                this.targetAltitudeIndicatorSVG.appendChild(this.targetAltitudeIndicatorSVGShape);
-            }
-            this.centerSVG.appendChild(this.targetAltitudeIndicatorSVG);
-            var cursorPosX = _left + 15;
-            var cursorPosY = _top + _height * 0.5 + 2;
-            var cursorWidth = width + arcWidth;
-            var cursorHeight = 80;
-            if (!this.cursorSVG) {
-                this.cursorSVG = document.createElementNS(Avionics.SVG.NS, "svg");
-                this.cursorSVG.setAttribute("id", "CursorGroup");
-            }
-            else
-                Utils.RemoveAllChildren(this.cursorSVG);
-            this.cursorSVG.setAttribute("x", cursorPosX.toString());
-            this.cursorSVG.setAttribute("y", (cursorPosY - cursorHeight * 0.5).toString());
-            this.cursorSVG.setAttribute("width", cursorWidth.toString());
-            this.cursorSVG.setAttribute("height", cursorHeight.toString());
-            this.cursorSVG.setAttribute("viewBox", "0 0 " + cursorWidth + " " + cursorHeight);
-            {
-                var _cursorPosX = 21;
-                var _cursorPosY = cursorHeight * 0.5;
-                if (!this.cursorSVGShape)
-                    this.cursorSVGShape = document.createElementNS(Avionics.SVG.NS, "path");
-                this.cursorSVGShape.setAttribute("fill", "black");
-                this.cursorSVGShape.setAttribute("d", "M 15 0 L 130 0 L 130 80 L 15 80 L 15 53 L 0 40 L 15 27 Z");
-                this.cursorSVGShape.setAttribute("stroke", "white");
-                this.cursorSVGShape.setAttribute("stroke-width", this.strokeSize);
-                this.cursorSVG.appendChild(this.cursorSVGShape);
-                if (!this.cursorSVGMainText)
-                    this.cursorSVGMainText = document.createElementNS(Avionics.SVG.NS, "text");
-                this.cursorSVGMainText.setAttribute("width", _width.toString());
-                this.cursorSVGMainText.setAttribute("fill", "white");
-                this.cursorSVGMainText.setAttribute("font-size", (this.fontSize * 1.6).toString());
-                this.cursorSVGMainText.setAttribute("font-family", "Roboto-Bold");
-                this.cursorSVGMainText.setAttribute("text-anchor", "end");
-                this.cursorSVGMainText.setAttribute("alignment-baseline", "central");
-                this.cursorSVGMainText.setAttribute("transform", "translate(" + (_cursorPosX + 69).toString() + " " + _cursorPosY.toString() + ")");
-                this.cursorSVG.appendChild(this.cursorSVGMainText);
-                this.cursorScrollPosX = _cursorPosX + 104;
-                this.cursorScrollPosY = _cursorPosY;
-                this.cursorSVGScrollTexts = [];
-                for (var i = 0; i < this.cursorScrollNbTexts; i++) {
-                    var text = document.createElementNS(Avionics.SVG.NS, "text");
-                    text.setAttribute("width", _width.toString());
-                    text.setAttribute("fill", "white");
-                    text.setAttribute("font-size", (this.fontSize * 1.15).toString());
-                    text.setAttribute("font-family", "Roboto-Bold");
-                    text.setAttribute("text-anchor", "end");
-                    text.setAttribute("alignment-baseline", "central");
-                    this.cursorSVGScrollTexts.push(text);
-                }
-                for (var i = 0; i < this.cursorSVGScrollTexts.length; i++) {
-                    this.cursorSVG.appendChild(this.cursorSVGScrollTexts[i]);
-                }
-            }
-            this.centerSVG.appendChild(this.cursorSVG);
-        }
-        this.rootGroup.appendChild(this.centerSVG);
-        let mtrsGroup = document.createElementNS(Avionics.SVG.NS, "g");
-        mtrsGroup.setAttribute("id", "MetersGroup");
-        {
-            this.mtrsSelectedGroup = document.createElementNS(Avionics.SVG.NS, "g");
-            this.mtrsSelectedGroup.setAttribute("id", "SelectedGroup");
-            {
-                this.mtrsSelectedSVGText = document.createElementNS(Avionics.SVG.NS, "text");
-                this.mtrsSelectedSVGText.setAttribute("x", "158");
-                this.mtrsSelectedSVGText.setAttribute("y", (sideTextHeight * 0.5).toString());
-                this.mtrsSelectedSVGText.setAttribute("fill", "#D570FF");
-                this.mtrsSelectedSVGText.setAttribute("font-size", (this.fontSize * 1.2).toString());
-                this.mtrsSelectedSVGText.setAttribute("font-family", "Roboto-Bold");
-                this.mtrsSelectedSVGText.setAttribute("text-anchor", "end");
-                this.mtrsSelectedSVGText.setAttribute("alignment-baseline", "bottom");
-                this.mtrsSelectedGroup.appendChild(this.mtrsSelectedSVGText);
-                var mtrsSelectedSVGUnit = document.createElementNS(Avionics.SVG.NS, "text");
-                mtrsSelectedSVGUnit.textContent = "M";
-                mtrsSelectedSVGUnit.setAttribute("x", "158");
-                mtrsSelectedSVGUnit.setAttribute("y", (sideTextHeight * 0.5).toString());
-                mtrsSelectedSVGUnit.setAttribute("fill", "cyan");
-                mtrsSelectedSVGUnit.setAttribute("font-size", (this.fontSize * 0.9).toString());
-                mtrsSelectedSVGUnit.setAttribute("font-family", "Roboto-Bold");
-                mtrsSelectedSVGUnit.setAttribute("text-anchor", "start");
-                mtrsSelectedSVGUnit.setAttribute("alignment-baseline", "bottom");
-                this.mtrsSelectedGroup.appendChild(mtrsSelectedSVGUnit);
-            }
-            mtrsGroup.appendChild(this.mtrsSelectedGroup);
-            var mtrsCursorPosX = _left + 62.5;
-            var mtrsCursorPosY = _top + _height * 0.558;
-            var mtrsCursorWidth = width + arcWidth;
-            var mtrsCursorHeight = 36;
-            this.mtrsCursorGroup = document.createElementNS(Avionics.SVG.NS, "svg");
-            this.mtrsCursorGroup.setAttribute("id", "MetersCursorGroup");
-            this.mtrsCursorGroup.setAttribute("x", mtrsCursorPosX.toString());
-            this.mtrsCursorGroup.setAttribute("y", (mtrsCursorPosY - mtrsCursorHeight * 0.5).toString());
-            this.mtrsCursorGroup.setAttribute("width", mtrsCursorWidth.toString());
-            this.mtrsCursorGroup.setAttribute("height", mtrsCursorHeight.toString());
-            this.mtrsCursorGroup.setAttribute("viewBox", "0 0 " + mtrsCursorWidth + " " + mtrsCursorHeight);
-            {
-                var mtrsCursorSVGShape = document.createElementNS(Avionics.SVG.NS, "path");
-                mtrsCursorSVGShape.setAttribute("fill", "black");
-                mtrsCursorSVGShape.setAttribute("d", "M 15 0 L 130 0 L 130 36 L 15 36 Z");
-                mtrsCursorSVGShape.setAttribute("stroke", "white");
-                mtrsCursorSVGShape.setAttribute("stroke-width", this.strokeSize);
-                this.mtrsCursorGroup.appendChild(mtrsCursorSVGShape);
-                this.mtrsCursorSVGText = document.createElementNS(Avionics.SVG.NS, "text");
-                this.mtrsCursorSVGText.setAttribute("x", "110");
-                this.mtrsCursorSVGText.setAttribute("y", (mtrsCursorHeight * 0.84).toString());
-                this.mtrsCursorSVGText.setAttribute("fill", "white");
-                this.mtrsCursorSVGText.setAttribute("font-size", (this.fontSize * 1.2).toString());
-                this.mtrsCursorSVGText.setAttribute("font-family", "Roboto-Bold");
-                this.mtrsCursorSVGText.setAttribute("text-anchor", "end");
-                this.mtrsCursorSVGText.setAttribute("alignment-baseline", "bottom");
-                this.mtrsCursorGroup.appendChild(this.mtrsCursorSVGText);
-                let mtrsCursorSVGUnit = document.createElementNS(Avionics.SVG.NS, "text");
-                mtrsCursorSVGUnit.textContent = "M";
-                mtrsCursorSVGUnit.setAttribute("x", "110");
-                mtrsCursorSVGUnit.setAttribute("y", (mtrsCursorHeight * 0.84).toString());
-                mtrsCursorSVGUnit.setAttribute("fill", "cyan");
-                mtrsCursorSVGUnit.setAttribute("font-size", (this.fontSize * 0.9).toString());
-                mtrsCursorSVGUnit.setAttribute("font-family", "Roboto-Bold");
-                mtrsCursorSVGUnit.setAttribute("text-anchor", "start");
-                mtrsCursorSVGUnit.setAttribute("alignment-baseline", "bottom");
-                this.mtrsCursorGroup.appendChild(mtrsCursorSVGUnit);
-            }
-            mtrsGroup.appendChild(this.mtrsCursorGroup);
-        }
-        this.rootGroup.appendChild(mtrsGroup);
-        if (!this.pressureSVG)
-            this.pressureSVG = document.createElementNS(Avionics.SVG.NS, "text");
-        this.pressureSVG.textContent = "";
-        this.pressureSVG.setAttribute("x", "170");
-        this.pressureSVG.setAttribute("y", (posY + height + sideTextHeight * 0.5).toString());
-        this.pressureSVG.setAttribute("fill", "#24F000");
-        this.pressureSVG.setAttribute("font-size", (this.fontSize * 1.0).toString());
-        this.pressureSVG.setAttribute("font-family", "Roboto-Bold");
-        this.pressureSVG.setAttribute("text-anchor", "end");
-        this.pressureSVG.setAttribute("alignment-baseline", "central");
-        this.pressureSVG.setAttribute("letter-spacing", "-3px");
-        this.rootGroup.appendChild(this.pressureSVG);
-        this.rootSVG.appendChild(this.rootGroup);
-        this.appendChild(this.rootSVG);
-    }
-    construct_AS01B() {
-        this.rootSVG = document.createElementNS(Avionics.SVG.NS, "svg");
-        this.rootSVG.setAttribute("id", "ViewBox");
-        this.rootSVG.setAttribute("viewBox", "0 0 250 800");
-        var posX = 100;
-        var posY = 30;
-        var width = 105;
-        var height = 640;
-        var arcWidth = 70;
-        this.refHeight = height;
-        this.nbSecondaryGraduations = 1;
-        this.totalGraduations = this.nbPrimaryGraduations + ((this.nbPrimaryGraduations - 1) * this.nbSecondaryGraduations);
-        this.graduationSpacing = 80;
-        this.graduationScroller = new Avionics.Scroller(this.nbPrimaryGraduations, 200, true);
-        this.cursorScroller = new Avionics.Scroller(this.cursorScrollNbTexts, 20, true, 100);
-        if (!this.rootGroup) {
-            this.rootGroup = document.createElementNS(Avionics.SVG.NS, "g");
-            this.rootGroup.setAttribute("id", "Altimeter");
-        }
-        else {
-            Utils.RemoveAllChildren(this.rootGroup);
-        }
-        var sideTextHeight = 75;
-        this.targetAltitudeBgSVG = document.createElementNS(Avionics.SVG.NS, "rect");
-        this.targetAltitudeBgSVG.setAttribute("x", "67.5");
-        this.targetAltitudeBgSVG.setAttribute("y", (posY + 15).toString());
-        this.targetAltitudeBgSVG.setAttribute("width", "105");
-        this.targetAltitudeBgSVG.setAttribute("height", "44");
-        this.targetAltitudeBgSVG.setAttribute("fill", "black");
-        this.rootGroup.appendChild(this.targetAltitudeBgSVG);
-        this.targetAltitudeTextSVG1 = document.createElementNS(Avionics.SVG.NS, "text");
-        this.targetAltitudeTextSVG1.setAttribute("x", "115");
-        this.targetAltitudeTextSVG1.setAttribute("y", (posY + sideTextHeight * 0.5 + 12).toString());
-        this.targetAltitudeTextSVG1.setAttribute("fill", "#D570FF");
-        this.targetAltitudeTextSVG1.setAttribute("font-size", (this.fontSize * 1.55).toString());
-        this.targetAltitudeTextSVG1.setAttribute("font-family", "Roboto-Bold");
-        this.targetAltitudeTextSVG1.setAttribute("text-anchor", "end");
-        this.targetAltitudeTextSVG1.setAttribute("alignment-baseline", "bottom");
-        this.rootGroup.appendChild(this.targetAltitudeTextSVG1);
-        this.targetAltitudeTextSVG2 = document.createElementNS(Avionics.SVG.NS, "text");
-        this.targetAltitudeTextSVG2.setAttribute("x", "115");
-        this.targetAltitudeTextSVG2.setAttribute("y", (posY + sideTextHeight * 0.5 + 12).toString());
-        this.targetAltitudeTextSVG2.setAttribute("width", width.toString());
-        this.targetAltitudeTextSVG2.setAttribute("fill", "#D570FF");
-        this.targetAltitudeTextSVG2.setAttribute("font-size", (this.fontSize * 1.25).toString());
-        this.targetAltitudeTextSVG2.setAttribute("font-family", "Roboto-Bold");
-        this.targetAltitudeTextSVG2.setAttribute("text-anchor", "start");
-        this.targetAltitudeTextSVG2.setAttribute("alignment-baseline", "bottom");
-        this.rootGroup.appendChild(this.targetAltitudeTextSVG2);
-        posY += sideTextHeight;
-        if (!this.centerSVG) {
-            this.centerSVG = document.createElementNS(Avionics.SVG.NS, "svg");
-            this.centerSVG.setAttribute("id", "CenterGroup");
-        }
-        else
-            Utils.RemoveAllChildren(this.centerSVG);
-        this.centerSVG.setAttribute("x", (posX - width * 0.5).toString());
-        this.centerSVG.setAttribute("y", posY.toString());
-        this.centerSVG.setAttribute("width", (width + arcWidth).toString());
-        this.centerSVG.setAttribute("height", height.toString());
-        this.centerSVG.setAttribute("viewBox", "0 0 " + (width + arcWidth) + " " + height);
-        {
-            var _top = 0;
-            var _left = 20;
-            var _width = width;
-            var _height = height;
-            var bg = document.createElementNS(Avionics.SVG.NS, "rect");
-            bg.setAttribute("x", _left.toString());
-            bg.setAttribute("y", _top.toString());
-            bg.setAttribute("width", _width.toString());
-            bg.setAttribute("height", _height.toString());
-            bg.setAttribute("fill", "black");
-            bg.setAttribute("fill-opacity", "0.3");
-            this.centerSVG.appendChild(bg);
-            this.graduationScrollPosX = _left;
-            this.graduationScrollPosY = _top + _height * 0.5;
-            for (var i = 0; i < this.totalGraduations; i++) {
-                var line = new Avionics.SVGGraduation();
-                line.IsPrimary = true;
-                if (this.nbSecondaryGraduations > 0 && (i % (this.nbSecondaryGraduations + 1)))
-                    line.IsPrimary = false;
-                var lineWidth = (line.IsPrimary) ? 22 : 22;
-                var lineHeight = (line.IsPrimary) ? 3 : 3;
-                line.SVGLine = document.createElementNS(Avionics.SVG.NS, "rect");
-                line.SVGLine.setAttribute("x", "0");
-                line.SVGLine.setAttribute("width", lineWidth.toString());
-                line.SVGLine.setAttribute("height", lineHeight.toString());
-                line.SVGLine.setAttribute("fill", "white");
-                this.centerSVG.appendChild(line.SVGLine);
-                if (line.IsPrimary) {
-                    var xPos = lineWidth + 40;
-                    line.SVGText1 = document.createElementNS(Avionics.SVG.NS, "text");
-                    line.SVGText1.setAttribute("x", xPos.toString());
-                    line.SVGText1.setAttribute("y", "10");
-                    line.SVGText1.setAttribute("fill", "white");
-                    line.SVGText1.setAttribute("font-size", (this.fontSize * 1.15).toString());
-                    line.SVGText1.setAttribute("font-family", "Roboto-Bold");
-                    line.SVGText1.setAttribute("text-anchor", "end");
-                    line.SVGText1.setAttribute("alignment-baseline", "bottom");
-                    this.centerSVG.appendChild(line.SVGText1);
-                    line.SVGText2 = document.createElementNS(Avionics.SVG.NS, "text");
-                    line.SVGText2.setAttribute("x", xPos.toString());
-                    line.SVGText2.setAttribute("y", "10");
-                    line.SVGText2.setAttribute("fill", "white");
-                    line.SVGText2.setAttribute("font-size", (this.fontSize * 0.85).toString());
-                    line.SVGText2.setAttribute("font-family", "Roboto-Bold");
-                    line.SVGText2.setAttribute("text-anchor", "start");
-                    line.SVGText2.setAttribute("alignment-baseline", "bottom");
-                    this.centerSVG.appendChild(line.SVGText2);
-                }
-                this.graduations.push(line);
-            }
-            this.groundRibbonHasFixedHeight = true;
-            var groundRibbonPosX = _left;
-            var groundRibbonPosY = 0;
-            var groundRibbonWidth = _width;
-            var groundRibbonHeight = 40;
-            if (!this.groundRibbonSVG) {
-                this.groundRibbonSVG = document.createElementNS(Avionics.SVG.NS, "svg");
-                this.groundRibbonSVG.setAttribute("id", "GroundRibbonGroup");
-            }
-            else
-                Utils.RemoveAllChildren(this.groundRibbonSVG);
-            this.groundRibbonSVG.setAttribute("x", groundRibbonPosX.toString());
-            this.groundRibbonSVG.setAttribute("y", groundRibbonPosY.toString());
-            this.groundRibbonSVG.setAttribute("width", groundRibbonWidth.toString());
-            this.groundRibbonSVG.setAttribute("height", groundRibbonHeight.toString());
-            this.groundRibbonSVG.setAttribute("viewBox", "0 0 " + groundRibbonWidth + " " + groundRibbonHeight);
-            {
-                var dashHeight = 5;
-                var dashEndPos = _height;
-                var dashPos = -100;
-                while (dashPos < (dashEndPos - dashHeight * 2)) {
-                    let dashLine = document.createElementNS(Avionics.SVG.NS, "rect");
-                    dashLine.setAttribute("x", "0");
-                    dashLine.setAttribute("y", dashPos.toString());
-                    dashLine.setAttribute("width", groundRibbonWidth.toString());
-                    dashLine.setAttribute("height", dashHeight.toString());
-                    dashLine.setAttribute("transform", "skewY(45)");
-                    dashLine.setAttribute("fill", "orange");
-                    this.groundRibbonSVG.appendChild(dashLine);
-                    dashPos += dashHeight * 2;
-                }
-                if (!this.groundRibbonSVGShape)
-                    this.groundRibbonSVGShape = document.createElementNS(Avionics.SVG.NS, "rect");
-                this.groundRibbonSVGShape.setAttribute("fill", "orange");
-                this.groundRibbonSVGShape.setAttribute("stroke", "orange");
-                this.groundRibbonSVGShape.setAttribute("stroke-width", "2");
-                this.groundRibbonSVGShape.setAttribute("width", groundRibbonWidth.toString());
-                this.groundRibbonSVGShape.setAttribute("height", "5");
-                this.groundRibbonSVGShape.setAttribute("x", "0");
-                this.groundRibbonSVG.appendChild(this.groundRibbonSVGShape);
-            }
-            this.centerSVG.appendChild(this.groundRibbonSVG);
-            let singleLineHeight = 500 * this.graduationSpacing * (this.nbSecondaryGraduations + 1) / this.graduationScroller.increment;
-            let groundStripPosX = _left;
-            let groundStripPosY = 0;
-            let groundStripWidth = width;
-            this.groundLineSVGHeight = singleLineHeight * 2;
-            if (!this.groundLineSVG) {
-                this.groundLineSVG = document.createElementNS(Avionics.SVG.NS, "svg");
-                this.groundLineSVG.setAttribute("id", "GroundLineGroup");
-            }
-            else
-                Utils.RemoveAllChildren(this.groundLineSVG);
-            this.groundLineSVG.setAttribute("x", groundStripPosX.toString());
-            this.groundLineSVG.setAttribute("y", groundStripPosY.toString());
-            this.groundLineSVG.setAttribute("width", groundStripWidth.toString());
-            this.groundLineSVG.setAttribute("height", this.groundLineSVGHeight.toString());
-            this.groundLineSVG.setAttribute("viewBox", "0 0 " + groundStripWidth + " " + this.groundLineSVGHeight);
-            {
-                let whiteLine = document.createElementNS(Avionics.SVG.NS, "rect");
-                whiteLine.setAttribute("fill", "white");
-                whiteLine.setAttribute("x", "0");
-                whiteLine.setAttribute("y", "0");
-                whiteLine.setAttribute("width", "5");
-                whiteLine.setAttribute("height", singleLineHeight.toString());
-                this.groundLineSVG.appendChild(whiteLine);
-                let amberLine = document.createElementNS(Avionics.SVG.NS, "rect");
-                amberLine.setAttribute("fill", "orange");
-                amberLine.setAttribute("x", "0");
-                amberLine.setAttribute("y", singleLineHeight.toString());
-                amberLine.setAttribute("width", "5");
-                amberLine.setAttribute("height", singleLineHeight.toString());
-                this.groundLineSVG.appendChild(amberLine);
-            }
-            this.centerSVG.appendChild(this.groundLineSVG);
-            this.thousandIndicator = document.createElementNS(Avionics.SVG.NS, "g");
-            this.thousandIndicator.setAttribute("id", "thousandGroup");
-            {
-                let topLine = document.createElementNS(Avionics.SVG.NS, "line");
-                topLine.setAttribute("x1", (_left + 5).toString());
-                topLine.setAttribute("y1", "-18");
-                topLine.setAttribute("x2", _width.toString());
-                topLine.setAttribute("y2", "-18");
-                topLine.setAttribute("stroke", "white");
-                topLine.setAttribute("stroke-width", "3");
-                this.thousandIndicator.appendChild(topLine);
-                let bottomLine = document.createElementNS(Avionics.SVG.NS, "line");
-                bottomLine.setAttribute("x1", (_left + 5).toString());
-                bottomLine.setAttribute("y1", "18");
-                bottomLine.setAttribute("x2", _width.toString());
-                bottomLine.setAttribute("y2", "18");
-                bottomLine.setAttribute("stroke", "white");
-                bottomLine.setAttribute("stroke-width", "3");
-                this.thousandIndicator.appendChild(bottomLine);
-            }
-            this.centerSVG.appendChild(this.thousandIndicator);
-            var targetAltitudeIndicatorWidth = 100;
-            var targetAltitudeIndicatorHeight = 100;
-            var targetAltitudeIndicatorPosX = 0;
-            if (!this.targetAltitudeIndicatorSVG) {
-                this.targetAltitudeIndicatorSVG = document.createElementNS(Avionics.SVG.NS, "svg");
-                this.targetAltitudeIndicatorSVG.setAttribute("id", "TargetAltitudeIndicator");
-            }
-            else
-                Utils.RemoveAllChildren(this.targetAltitudeIndicatorSVG);
-            this.targetAltitudeIndicatorSVG.setAttribute("x", targetAltitudeIndicatorPosX.toString());
-            this.targetAltitudeIndicatorSVG.setAttribute("width", targetAltitudeIndicatorWidth.toString());
-            this.targetAltitudeIndicatorSVG.setAttribute("height", targetAltitudeIndicatorHeight.toString());
-            this.targetAltitudeIndicatorSVG.setAttribute("viewBox", "0 0 100 100");
-            {
-                if (!this.targetAltitudeIndicatorSVGShape)
-                    this.targetAltitudeIndicatorSVGShape = document.createElementNS(Avionics.SVG.NS, "path");
-                this.targetAltitudeIndicatorSVGShape.setAttribute("fill", "none");
-                this.targetAltitudeIndicatorSVGShape.setAttribute("stroke", "#D570FF");
-                this.targetAltitudeIndicatorSVGShape.setAttribute("stroke-width", "2");
-                this.targetAltitudeIndicatorSVGShape.setAttribute("d", "M 10 20 L 55 20 L 55 80 L 10 80 L 10 60 L 18 50 L 10 40 Z");
-                this.targetAltitudeIndicatorSVG.appendChild(this.targetAltitudeIndicatorSVGShape);
-            }
-            this.centerSVG.appendChild(this.targetAltitudeIndicatorSVG);
-            var cursorPosX = _left + 15;
-            var cursorPosY = _top + _height * 0.5 + 2;
-            var cursorWidth = width + arcWidth;
-            var cursorHeight = 80;
-            if (!this.cursorSVG) {
-                this.cursorSVG = document.createElementNS(Avionics.SVG.NS, "svg");
-                this.cursorSVG.setAttribute("id", "CursorGroup");
-            }
-            else
-                Utils.RemoveAllChildren(this.cursorSVG);
-            this.cursorSVG.setAttribute("x", cursorPosX.toString());
-            this.cursorSVG.setAttribute("y", (cursorPosY - cursorHeight * 0.5).toString());
-            this.cursorSVG.setAttribute("width", cursorWidth.toString());
-            this.cursorSVG.setAttribute("height", cursorHeight.toString());
-            this.cursorSVG.setAttribute("viewBox", "0 0 " + cursorWidth + " " + cursorHeight);
-            {
-                var _cursorPosX = 21;
-                var _cursorPosY = cursorHeight * 0.5;
-                if (!this.cursorSVGShape)
-                    this.cursorSVGShape = document.createElementNS(Avionics.SVG.NS, "path");
-                this.cursorSVGShape.setAttribute("fill", "black");
-                this.cursorSVGShape.setAttribute("d", "M 15 0 L 130 0 L 130 80 L 15 80 L 15 53 L 0 40 L 15 27 Z");
-                this.cursorSVGShape.setAttribute("stroke", "white");
-                this.cursorSVGShape.setAttribute("stroke-width", this.strokeSize);
-                this.cursorSVG.appendChild(this.cursorSVGShape);
-                if (!this.cursorSVGMainText)
-                    this.cursorSVGMainText = document.createElementNS(Avionics.SVG.NS, "text");
-                this.cursorSVGMainText.setAttribute("width", _width.toString());
-                this.cursorSVGMainText.setAttribute("fill", "white");
-                this.cursorSVGMainText.setAttribute("font-size", (this.fontSize * 1.6).toString());
-                this.cursorSVGMainText.setAttribute("font-family", "Roboto-Bold");
-                this.cursorSVGMainText.setAttribute("text-anchor", "end");
-                this.cursorSVGMainText.setAttribute("alignment-baseline", "central");
-                this.cursorSVGMainText.setAttribute("transform", "translate(" + (_cursorPosX + 69).toString() + " " + _cursorPosY.toString() + ")");
-                this.cursorSVG.appendChild(this.cursorSVGMainText);
-                this.cursorScrollPosX = _cursorPosX + 104;
-                this.cursorScrollPosY = _cursorPosY;
-                this.cursorSVGScrollTexts = [];
-                for (var i = 0; i < this.cursorScrollNbTexts; i++) {
-                    var text = document.createElementNS(Avionics.SVG.NS, "text");
-                    text.setAttribute("width", _width.toString());
-                    text.setAttribute("fill", "white");
-                    text.setAttribute("font-size", (this.fontSize * 1.15).toString());
-                    text.setAttribute("font-family", "Roboto-Bold");
-                    text.setAttribute("text-anchor", "end");
-                    text.setAttribute("alignment-baseline", "central");
-                    this.cursorSVGScrollTexts.push(text);
-                }
-                for (var i = 0; i < this.cursorSVGScrollTexts.length; i++) {
-                    this.cursorSVG.appendChild(this.cursorSVGScrollTexts[i]);
-                }
-            }
-            this.centerSVG.appendChild(this.cursorSVG);
-        }
-        this.rootGroup.appendChild(this.centerSVG);
-        let mtrsGroup = document.createElementNS(Avionics.SVG.NS, "g");
-        mtrsGroup.setAttribute("id", "MetersGroup");
-        {
-            this.mtrsSelectedGroup = document.createElementNS(Avionics.SVG.NS, "g");
-            this.mtrsSelectedGroup.setAttribute("id", "SelectedGroup");
-            {
-                let bg = document.createElementNS(Avionics.SVG.NS, "rect");
-                bg.setAttribute("x", "67");
-                bg.setAttribute("y", "0");
-                bg.setAttribute("width", "105");
-                bg.setAttribute("height", "30");
-                bg.setAttribute("fill", "black");
-                bg.setAttribute("fill-opacity", "0.5");
-                this.mtrsSelectedGroup.appendChild(bg);
-                this.mtrsSelectedSVGText = document.createElementNS(Avionics.SVG.NS, "text");
-                this.mtrsSelectedSVGText.setAttribute("x", "158");
-                this.mtrsSelectedSVGText.setAttribute("y", "25");
-                this.mtrsSelectedSVGText.setAttribute("fill", "#D570FF");
-                this.mtrsSelectedSVGText.setAttribute("font-size", (this.fontSize * 1.2).toString());
-                this.mtrsSelectedSVGText.setAttribute("font-family", "Roboto-Bold");
-                this.mtrsSelectedSVGText.setAttribute("text-anchor", "end");
-                this.mtrsSelectedSVGText.setAttribute("alignment-baseline", "bottom");
-                this.mtrsSelectedGroup.appendChild(this.mtrsSelectedSVGText);
-                var mtrsSelectedSVGUnit = document.createElementNS(Avionics.SVG.NS, "text");
-                mtrsSelectedSVGUnit.textContent = "M";
-                mtrsSelectedSVGUnit.setAttribute("x", "158");
-                mtrsSelectedSVGUnit.setAttribute("y", "25");
-                mtrsSelectedSVGUnit.setAttribute("fill", "cyan");
-                mtrsSelectedSVGUnit.setAttribute("font-size", (this.fontSize * 0.9).toString());
-                mtrsSelectedSVGUnit.setAttribute("font-family", "Roboto-Bold");
-                mtrsSelectedSVGUnit.setAttribute("text-anchor", "start");
-                mtrsSelectedSVGUnit.setAttribute("alignment-baseline", "bottom");
-                this.mtrsSelectedGroup.appendChild(mtrsSelectedSVGUnit);
-            }
-            mtrsGroup.appendChild(this.mtrsSelectedGroup);
-            var mtrsCursorPosX = _left + 62.5;
-            var mtrsCursorPosY = _top + _height * 0.578;
-            var mtrsCursorWidth = width + arcWidth;
-            var mtrsCursorHeight = 36;
-            this.mtrsCursorGroup = document.createElementNS(Avionics.SVG.NS, "svg");
-            this.mtrsCursorGroup.setAttribute("id", "MetersCursorGroup");
-            this.mtrsCursorGroup.setAttribute("x", mtrsCursorPosX.toString());
-            this.mtrsCursorGroup.setAttribute("y", (mtrsCursorPosY - mtrsCursorHeight * 0.5).toString());
-            this.mtrsCursorGroup.setAttribute("width", mtrsCursorWidth.toString());
-            this.mtrsCursorGroup.setAttribute("height", mtrsCursorHeight.toString());
-            this.mtrsCursorGroup.setAttribute("viewBox", "0 0 " + mtrsCursorWidth + " " + mtrsCursorHeight);
-            {
-                var mtrsCursorSVGShape = document.createElementNS(Avionics.SVG.NS, "path");
-                mtrsCursorSVGShape.setAttribute("fill", "black");
-                mtrsCursorSVGShape.setAttribute("d", "M 15 0 L 130 0 L 130 36 L 15 36 Z");
-                mtrsCursorSVGShape.setAttribute("stroke", "white");
-                mtrsCursorSVGShape.setAttribute("stroke-width", this.strokeSize);
-                this.mtrsCursorGroup.appendChild(mtrsCursorSVGShape);
-                this.mtrsCursorSVGText = document.createElementNS(Avionics.SVG.NS, "text");
-                this.mtrsCursorSVGText.setAttribute("x", "110");
-                this.mtrsCursorSVGText.setAttribute("y", (mtrsCursorHeight * 0.84).toString());
-                this.mtrsCursorSVGText.setAttribute("fill", "white");
-                this.mtrsCursorSVGText.setAttribute("font-size", (this.fontSize * 1.2).toString());
-                this.mtrsCursorSVGText.setAttribute("font-family", "Roboto-Bold");
-                this.mtrsCursorSVGText.setAttribute("text-anchor", "end");
-                this.mtrsCursorSVGText.setAttribute("alignment-baseline", "bottom");
-                this.mtrsCursorGroup.appendChild(this.mtrsCursorSVGText);
-                let mtrsCursorSVGUnit = document.createElementNS(Avionics.SVG.NS, "text");
-                mtrsCursorSVGUnit.textContent = "M";
-                mtrsCursorSVGUnit.setAttribute("x", "110");
-                mtrsCursorSVGUnit.setAttribute("y", (mtrsCursorHeight * 0.84).toString());
-                mtrsCursorSVGUnit.setAttribute("fill", "cyan");
-                mtrsCursorSVGUnit.setAttribute("font-size", (this.fontSize * 0.9).toString());
-                mtrsCursorSVGUnit.setAttribute("font-family", "Roboto-Bold");
-                mtrsCursorSVGUnit.setAttribute("text-anchor", "start");
-                mtrsCursorSVGUnit.setAttribute("alignment-baseline", "bottom");
-                this.mtrsCursorGroup.appendChild(mtrsCursorSVGUnit);
-            }
-            mtrsGroup.appendChild(this.mtrsCursorGroup);
-        }
-        this.rootGroup.appendChild(mtrsGroup);
-        if (!this.pressureSVG)
-            this.pressureSVG = document.createElementNS(Avionics.SVG.NS, "text");
-        this.pressureSVG.textContent = "---";
-        this.pressureSVG.setAttribute("x", "130");
-        this.pressureSVG.setAttribute("y", (posY + height + sideTextHeight * 0.5 - 5).toString());
-        this.pressureSVG.setAttribute("fill", "#24F000");
-        this.pressureSVG.setAttribute("font-size", (this.fontSize * 1.15).toString());
-        this.pressureSVG.setAttribute("font-family", "Roboto-Light");
-        this.pressureSVG.setAttribute("text-anchor", "middle");
-        this.pressureSVG.setAttribute("alignment-baseline", "central");
-        this.pressureSVG.setAttribute("letter-spacing", "-3px");
-        this.rootGroup.appendChild(this.pressureSVG);
-        this.rootSVG.appendChild(this.rootGroup);
-        this.appendChild(this.rootSVG);
+        this.construct_A320_Neo();
     }
     //------------------------------------------------------------- A 320 NEO -------------------------------------------------------------------------------------------------
     construct_A320_Neo() {
@@ -1070,8 +62,12 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
         var arcWidth = 40;
         this.refHeight = height;
         this.borderSize = 5;
-        this.cursorScroller = new Avionics.Scroller(this.cursorScrollNbTexts, 20, true, 100);
         this.graduationScroller = new Avionics.Scroller(this.nbPrimaryGraduations, 500, true);
+        this.cursorIntegrals = new Array();
+        this.cursorIntegrals.push(new A32NX_Avionics.AltitudeScroller(3, 75, 1, 10, 1000));
+        this.cursorIntegrals.push(new A32NX_Avionics.AltitudeScroller(3, 75, 1, 10, 100));
+        this.cursorIntegrals.push(new A32NX_Avionics.AltitudeScroller(3, 75, 1, 10, 10));
+        this.cursorDecimals = new A32NX_Avionics.AltitudeScroller(5, 25, 20, 100);
         if (!this.rootGroup) {
             this.rootGroup = document.createElementNS(Avionics.SVG.NS, "g");
             this.rootGroup.setAttribute("id", "Altimeter");
@@ -1221,7 +217,7 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
                 textBg.setAttribute("y", "35");
                 textBg.setAttribute("width", (_width + 2).toString());
                 textBg.setAttribute("height", "30");
-                textBg.setAttribute("fill", "black");
+                textBg.setAttribute("fill", "url(#Backlight)");
                 this.targetAltitudeIndicatorSVG.appendChild(textBg);
                 this.targetAltitudeIndicatorSVGText = document.createElementNS(Avionics.SVG.NS, "text");
                 this.targetAltitudeIndicatorSVGText.textContent = "35000";
@@ -1251,44 +247,29 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
             this.cursorSVG.setAttribute("height", cursorHeight.toString());
             this.cursorSVG.setAttribute("viewBox", "0 0 " + cursorWidth + " " + cursorHeight);
             {
-                var _cursorPosX = 5;
-                var _cursorPosY = cursorHeight * 0.5 - 2;
+                var _cursorPosY = cursorHeight * 0.5;
                 if (!this.cursorSVGShape)
                     this.cursorSVGShape = document.createElementNS(Avionics.SVG.NS, "path");
-                this.cursorSVGShape.setAttribute("fill", "black");
+                this.cursorSVGShape.setAttribute("fill", "url(#Backlight)");
                 this.cursorSVGShape.setAttribute("fill-opacity", this.cursorOpacity);
                 this.cursorSVGShape.setAttribute("d", "M 0 17.5 L 77 17.5 L 77 0 L 116 0 L 116 80 L 77 80 L 77 62.5 L 0 62.5 M 0 17.5 Z");//M 0 17.5 L 77 17.5 L 77 0 L 115 0 L 115 80 L 77 80 L 77 62.5 L 0 62.5 Z
                 this.cursorSVGShape.setAttribute("stroke", "yellow");
                 this.cursorSVGShape.setAttribute("stroke-width", this.strokeSize);//"3"
                 this.cursorSVG.appendChild(this.cursorSVGShape);
-                if (!this.cursorSVGMainText)
-                    this.cursorSVGMainText = document.createElementNS(Avionics.SVG.NS, "text");
-                this.cursorSVGMainText.setAttribute("width", _width.toString());
-                this.cursorSVGMainText.setAttribute("fill", this.cursorTextColor);
-                this.cursorSVGMainText.setAttribute("font-size", (this.fontSize * 1.7).toString());
-                this.cursorSVGMainText.setAttribute("font-family", "Roboto-Bold");
-                this.cursorSVGMainText.setAttribute("text-anchor", "end");
-                this.cursorSVGMainText.setAttribute("alignment-baseline", "central");
-                this.cursorSVGMainText.setAttribute("transform", "translate(" + (_cursorPosX + 74).toString() + " " + _cursorPosY.toString() + ")");
-                this.cursorSVG.appendChild(this.cursorSVGMainText);
-                this.cursorScrollPosX = _cursorPosX + 109;
-                this.cursorScrollPosY = _cursorPosY;
-                if (!this.cursorSVGScrollTexts) {
-                    this.cursorSVGScrollTexts = [];
-                    for (var i = 0; i < this.cursorScrollNbTexts; i++) {
-                        var text = document.createElementNS(Avionics.SVG.NS, "text");
-                        text.setAttribute("width", _width.toString());
-                        text.setAttribute("fill", this.cursorTextColor);
-                        text.setAttribute("font-size", (this.fontSize * 1.15).toString());
-                        text.setAttribute("font-family", "Roboto-Bold");
-                        text.setAttribute("text-anchor", "end");
-                        text.setAttribute("alignment-baseline", "central");
-                        this.cursorSVGScrollTexts.push(text);
-                    }
+                let integralsGroup = document.createElementNS(Avionics.SVG.NS, "svg");
+                this.cursorIntegralsGroup = integralsGroup;
+                integralsGroup.setAttribute("x", "0");
+                integralsGroup.setAttribute("y", "20");
+                integralsGroup.setAttribute("width", cursorWidth.toString());
+                integralsGroup.setAttribute("height", 40);
+                integralsGroup.setAttribute("viewBox", "0 0 " + cursorWidth + " " + cursorHeight);
+                this.cursorSVG.appendChild(integralsGroup);
+                {
+                    this.cursorIntegrals[0].construct(integralsGroup, 1, _cursorPosY  + 4, _width, "Roboto-Bold", this.fontSize * 3.5, "rgb(36,255,0)");
+                    this.cursorIntegrals[1].construct(integralsGroup, 52, _cursorPosY + 4, _width, "Roboto-Bold", this.fontSize * 3.5, "rgb(36,255,0)");
+                    this.cursorIntegrals[2].construct(integralsGroup, 103, _cursorPosY + 4, _width, "Roboto-Bold", this.fontSize * 3.5, "rgb(36,255,0)");
                 }
-                for (var i = 0; i < this.cursorSVGScrollTexts.length; i++) {
-                    this.cursorSVG.appendChild(this.cursorSVGScrollTexts[i]);
-                }
+                this.cursorDecimals.construct(this.cursorSVG, 114, _cursorPosY - 2, _width, "Roboto-Bold", this.fontSize * 1.15, "rgb(36,255,0)");
             }
             this.centerSVG.appendChild(this.cursorSVG);
             if (!this.targetAltitudeText) {
@@ -1332,7 +313,7 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
         this.STDpressureSVGShape.setAttribute("width", "63");
         this.STDpressureSVGShape.setAttribute("height", "38");//36
         this.rootGroup.appendChild(this.STDpressureSVGShape);
-        
+
         //  added separate white Legend for pressure display
         if (!this.pressureSVGLegend)
             this.pressureSVGLegend = document.createElementNS(Avionics.SVG.NS, "text");
@@ -1363,33 +344,32 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
         this.appendChild(this.rootSVG);
     }
     update(_dTime) {
-        var altitude = Simplane.getAltitude();
-        
+        var indicatedAltitude = Simplane.getAltitude();
+
         // This stuff makes the altimeter do a smooth rise to the actual altitude after alignment reaches a certain point
         const desiredDisplayedAltitude = SimVar.GetSimVarValue("L:A32NX_ADIRS_PFD_ALIGNED_FIRST", "Bool") === 0
             ? 0
-            : altitude;
+            : indicatedAltitude;
         const delta = desiredDisplayedAltitude - this._delayedAltitude;
         if (Math.abs(delta) > 0.01) {
             this._delayedAltitude += delta * (4 * (_dTime / 1000));
-            altitude = this._delayedAltitude;
+            indicatedAltitude = this._delayedAltitude;
         }
 
-        var groundReference = altitude - Simplane.getAltitudeAboveGround();
+        var groundReference = indicatedAltitude - Simplane.getAltitudeAboveGround();
         var baroMode = Simplane.getPressureSelectedMode(this.aircraft);
         var selectedAltitude;
-        if (this.aircraft === Aircraft.AS01B || this.aircraft === Aircraft.B747_8) {
-            selectedAltitude = Simplane.getAutoPilotDisplayedAltitudeLockValue();
+        if (this.aircraft === Aircraft.AS01B || this.aircraft === Aircraft.B747_8 || this.aircraft === Aircraft.A320_NEO) {
+            selectedAltitude = Math.max(0, Simplane.getAutoPilotDisplayedAltitudeLockValue());
+        } else {
+            selectedAltitude = Math.max(0, Simplane.getAutoPilotAltitudeLockValue());
         }
-        else {
-            selectedAltitude = Simplane.getAutoPilotDisplayedAltitudeLockValue(Simplane.getAutoPilotAltitudeLockUnits());
-        }
-        this.updateGraduationScrolling(altitude);
-        this.updateCursorScrolling(altitude);
-        this.updateGroundReference(altitude, groundReference);
-        this.updateTargetAltitude(altitude, selectedAltitude, baroMode);
+        this.updateGraduationScrolling(indicatedAltitude);
+        this.updateCursorScrolling(indicatedAltitude);
+        this.updateGroundReference(indicatedAltitude, groundReference);
+        this.updateTargetAltitude(indicatedAltitude, selectedAltitude, baroMode);
         this.updateBaroPressure(baroMode);
-        this.updateMtrs(altitude, selectedAltitude);
+        this.updateMtrs(indicatedAltitude, selectedAltitude);
         this.updateFail();
     }
     updateMtrs(_altitude, _selected) {
@@ -1477,7 +457,7 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
             var currentY = this.graduationScrollPosY + this.graduationScroller.offsetY * this.graduationSpacing * (this.nbSecondaryGraduations + 1);
             for (var i = 0; i < this.totalGraduations; i++) {
                 var posX = this.graduationScrollPosX;
-                var posY = Math.round(currentY);
+                var posY = currentY;
                 this.graduations[i].SVGLine.setAttribute("transform", "translate(" + posX.toString() + " " + posY.toString() + ")");
                 if (this.graduations[i].SVGText1) {
                     var roundedVal = 0;
@@ -1508,7 +488,7 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
                         }
                         if (this.aircraft == Aircraft.B747_8 || this.aircraft == Aircraft.AS01B) {
                             this.graduations[i].SVGText2.textContent = Utils.leadingZeros(modulo, 3);
-                        } else { 
+                        } else {
                             this.graduations[i].SVGText2.textContent = Utils.leadingZeros(modulo, 2);
                         }
                     }
@@ -1528,29 +508,17 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
             this.thousandIndicator.setAttribute("visibility", (showThousandIndicator) ? "visible" : "hidden");
     }
     updateCursorScrolling(_altitude) {
-        if (this.cursorSVGScrollTexts) {
-            var integral = Math.trunc(_altitude / 100);
-            if (this.aircraft == Aircraft.CJ4 || this.aircraft == Aircraft.B747_8 || this.aircraft == Aircraft.AS01B) {
-                this.cursorSVGMainText.textContent = Utils.leadingZeros(integral, 3);
-            }
-            else {
-                this.cursorSVGMainText.textContent = integral.toString();
-            }
-            this.cursorScroller.scroll(_altitude);
-            var currentVal = this.cursorScroller.firstValue;
-            var currentY = this.cursorScrollPosY + this.cursorScroller.offsetY * this.cursorScrollSpacing;
-            for (var i = 0; i < this.cursorSVGScrollTexts.length; i++) {
-                var posX = this.cursorScrollPosX;
-                var posY = Math.round(currentY);
-                if (currentVal == 0)
-                    this.cursorSVGScrollTexts[i].textContent = "00";
-                else
-                    this.cursorSVGScrollTexts[i].textContent = currentVal.toString();
-                this.cursorSVGScrollTexts[i].setAttribute("transform", "translate(" + posX.toString() + " " + posY.toString() + ")");
-                currentY -= this.cursorScrollSpacing;
-                currentVal = this.cursorScroller.nextValue;
-            }
+        if (this.cursorIntegrals) {
+            let hideZeros = (this.aircraft == Aircraft.A320_NEO) ? true : false;
+            this.cursorIntegrals[0].update(_altitude, 10000, (hideZeros) ? 10000 : undefined);
+            this.cursorIntegrals[1].update(_altitude, 1000, (hideZeros) ? 1000 : undefined);
+            this.cursorIntegrals[2].update(_altitude, 100);
         }
+        if (this.cursorDecimals) {
+            this.cursorDecimals.update(_altitude);
+        }
+        if (this.cursorSVGAltitudeLevelShape)
+            this.cursorSVGAltitudeLevelShape.classList.toggle("hide", _altitude >= 10000);
     }
     valueToSvg(current, target) {
         var _top = 0;
@@ -1695,6 +663,7 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
             SimVar.SetSimVarValue("L:HUD_AP_SELECTED_ALTITUDE", "Number", this.hudAPAltitude);
         }
     }
+
     updateFail() {
         var failed = !(SimVar.GetSimVarValue("L:A32NX_ADIRS_PFD_ALIGNED_FIRST", "Bool") == 1);
         if (!failed) {
@@ -1702,9 +671,10 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
             this.topLine.setAttribute("stroke", "white");
             this.bottomLine.setAttribute("stroke", "white");
             this.cursorSVGShape.setAttribute("stroke", "yellow");
-            this.cursorSVGMainText.setAttribute("visibility", "visible");
+            this.cursorIntegralsGroup.setAttribute("visibility", "visible");
+            this.cursorDecimals.setAttribute("visibility", "visible");
             // Code to add if visibilty issues with this part
-            
+
             // if (this.pressureSVG) {
             //     this.pressureSVGLegend.setAttribute("visibility", "visible");
             //     this.pressureSVG.setAttribute("visibility", "visible");
@@ -1720,15 +690,16 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
             this.cursorSVGShape.setAttribute("stroke", "transparent");
             if (this.targetAltitudeTextSVG1) this.targetAltitudeTextSVG1.setAttribute("visibility", "hidden");
             if (this.targetAltitudeTextSVG2) this.targetAltitudeTextSVG2.setAttribute("visibility", "hidden");
-            this.cursorSVGMainText.setAttribute("visibility", "hidden");
+            this.cursorIntegralsGroup.setAttribute("visibility", "hidden");
+            this.cursorDecimals.setAttribute("visibility", "hidden");
             if (this.targetAltitudeText) this.targetAltitudeText.textContent = "";
             if (this.pressureSVG) this.pressureSVG.setAttribute("visibility", "hidden");
-            // JZ Added
             if (this.pressureSVGLegend) this.pressureSVGLegend.setAttribute("visibility", "hidden");
             if (this.STDpressureSVG) this.STDpressureSVG.setAttribute("visibility", "hidden");
             if (this.STDpressureSVGShape)this.STDpressureSVGShape.setAttribute("visibility", "hidden");
             this.targetAltitudeIndicatorSVG.setAttribute("visibility", "hidden");
         }
+
         if (this.groundRibbonSVGShape) this.groundRibbonSVG.setAttribute("style", failed ? "display:none" : "");
         if (this.cursorSVGScrollTexts) {
             for (let st of this.cursorSVGScrollTexts) {

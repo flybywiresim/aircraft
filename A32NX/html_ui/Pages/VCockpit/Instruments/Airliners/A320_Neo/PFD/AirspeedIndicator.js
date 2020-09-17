@@ -6,10 +6,6 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
         this.machVisible = false;
         this.machSpeed = 0;
         this.refHeight = 0;
-        this.cursorScrollPosX = 0;
-        this.cursorScrollPosY = 0;
-        this.cursorScrollSpacing = 30;
-        this.cursorScrollNbTexts = 3;
         this.targetSpeedPointerHeight = 0;
         this.stripHeight = 0;
         this.stripBorderSize = 0;
@@ -53,9 +49,6 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
         Utils.RemoveAllChildren(this);
         this.machPrefixSVG = null;
         this.machValueSVG = null;
-        this.cursorSVGMainText = null;
-        this.cursorSVGScrollTexts = null;
-        this.cursorScroller = null;
         this.targetSpeedSVG = null;
         this.targetSpeedBgSVG = null;
         this.targetSpeedIconSVG = null;
@@ -90,1135 +83,7 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
         this.stripBorderSize = 0;
         this.stripOffsetX = 0;
         this.altOver20k = false;
-        if (this.aircraft == Aircraft.CJ4)
-            this.construct_CJ4();
-        else if (this.aircraft == Aircraft.B747_8)
-            this.construct_B747_8();
-        else if (this.aircraft == Aircraft.AS01B)
-            this.construct_AS01B();
-        else
-            this.construct_A320_Neo();
-    }
-    construct_CJ4() {
-        this.cursorScroller = new Avionics.Scroller(this.cursorScrollNbTexts, 1, false, 10);
-        this.rootSVG = document.createElementNS(Avionics.SVG.NS, "svg");
-        this.rootSVG.setAttribute("id", "ViewBox");
-        this.rootSVG.setAttribute("viewBox", "0 0 250 500");
-        var width = 140;
-        var height = 415;
-        var posX = width * 0.5;
-        var posY = 452.5;
-        var gradWidth = 90;
-        this.refHeight = height;
-        this.graduationSpacing = 27.5;
-        this.graduationScroller = new Avionics.Scroller(this.nbPrimaryGraduations, 10);
-        if (!this.rootGroup) {
-            this.rootGroup = document.createElementNS(Avionics.SVG.NS, "g");
-            this.rootGroup.setAttribute("id", "Airspeed");
-        }
-        else {
-            Utils.RemoveAllChildren(this.rootGroup);
-        }
-        {
-            this.machPrefixSVG = document.createElementNS(Avionics.SVG.NS, "text");
-            this.machPrefixSVG.textContent = "M.";
-            this.machPrefixSVG.setAttribute("x", (posX - 20).toString());
-            this.machPrefixSVG.setAttribute("y", (posY + 32).toString());
-            this.machPrefixSVG.setAttribute("fill", "cyan");
-            this.machPrefixSVG.setAttribute("font-size", (this.fontSize * 1.1).toString());
-            this.machPrefixSVG.setAttribute("font-family", "Roboto-Light");
-            this.machPrefixSVG.setAttribute("text-anchor", "end");
-            this.machPrefixSVG.setAttribute("alignment-baseline", "top");
-            this.rootGroup.appendChild(this.machPrefixSVG);
-            this.machValueSVG = document.createElementNS(Avionics.SVG.NS, "text");
-            this.machValueSVG.textContent = "422";
-            this.machValueSVG.setAttribute("x", (posX - 18).toString());
-            this.machValueSVG.setAttribute("y", (posY + 32).toString());
-            this.machValueSVG.setAttribute("fill", "cyan");
-            this.machValueSVG.setAttribute("font-size", (this.fontSize * 1.0).toString());
-            this.machValueSVG.setAttribute("font-family", "Roboto-Light");
-            this.machValueSVG.setAttribute("text-anchor", "start");
-            this.machPrefixSVG.setAttribute("alignment-baseline", "top");
-            this.rootGroup.appendChild(this.machValueSVG);
-        }
-        posY -= height;
-        if (!this.centerSVG) {
-            this.centerSVG = document.createElementNS(Avionics.SVG.NS, "svg");
-            this.centerSVG.setAttribute("id", "CenterGroup");
-        }
-        else
-            Utils.RemoveAllChildren(this.centerSVG);
-        this.centerSVG.setAttribute("x", (posX - width * 0.5).toString());
-        this.centerSVG.setAttribute("y", posY.toString());
-        this.centerSVG.setAttribute("width", width.toString());
-        this.centerSVG.setAttribute("height", height.toString());
-        this.centerSVG.setAttribute("viewBox", "0 0 " + width + " " + height);
-        {
-            var _top = 0;
-            var _left = 0;
-            var _width = width;
-            var _height = height;
-            var bg = document.createElementNS(Avionics.SVG.NS, "rect");
-            bg.setAttribute("x", _left.toString());
-            bg.setAttribute("y", _top.toString());
-            bg.setAttribute("width", _width.toString());
-            bg.setAttribute("height", _height.toString());
-            bg.setAttribute("fill", "black");
-            bg.setAttribute("fill-opacity", "0.5");
-            this.centerSVG.appendChild(bg);
-            var graduationGroup = document.createElementNS(Avionics.SVG.NS, "g");
-            graduationGroup.setAttribute("id", "Graduations");
-            {
-                this.graduationScrollPosX = _left + gradWidth;
-                this.graduationScrollPosY = _top + _height * 0.5;
-                this.graduations = [];
-                for (var i = 0; i < this.totalGraduations; i++) {
-                    var line = new Avionics.SVGGraduation();
-                    line.IsPrimary = (i % (this.nbSecondaryGraduations + 1)) ? false : true;
-                    var lineWidth = line.IsPrimary ? 20 : 8;
-                    var lineHeight = line.IsPrimary ? 2 : 2;
-                    var linePosX = -lineWidth;
-                    line.SVGLine = document.createElementNS(Avionics.SVG.NS, "rect");
-                    line.SVGLine.setAttribute("x", linePosX.toString());
-                    line.SVGLine.setAttribute("width", lineWidth.toString());
-                    line.SVGLine.setAttribute("height", lineHeight.toString());
-                    line.SVGLine.setAttribute("fill", "white");
-                    if (line.IsPrimary) {
-                        line.SVGText1 = document.createElementNS(Avionics.SVG.NS, "text");
-                        line.SVGText1.setAttribute("x", (linePosX - 8).toString());
-                        line.SVGText1.setAttribute("fill", "white");
-                        line.SVGText1.setAttribute("font-size", (this.fontSize * 0.75).toString());
-                        line.SVGText1.setAttribute("font-family", "Roboto-Light");
-                        line.SVGText1.setAttribute("text-anchor", "end");
-                        line.SVGText1.setAttribute("alignment-baseline", "central");
-                    }
-                    this.graduations.push(line);
-                }
-                this.graduationVLine = document.createElementNS(Avionics.SVG.NS, "line");
-                this.graduationVLine.setAttribute("x1", this.graduationScrollPosX.toString());
-                this.graduationVLine.setAttribute("y1", "0");
-                this.graduationVLine.setAttribute("x2", this.graduationScrollPosX.toString());
-                this.graduationVLine.setAttribute("y2", "0");
-                this.graduationVLine.setAttribute("stroke", "white");
-                this.graduationVLine.setAttribute("stroke-width", "2");
-                for (var i = 0; i < this.totalGraduations; i++) {
-                    var line = this.graduations[i];
-                    graduationGroup.appendChild(line.SVGLine);
-                    if (line.SVGText1) {
-                        graduationGroup.appendChild(line.SVGText1);
-                    }
-                }
-                graduationGroup.appendChild(this.graduationVLine);
-                this.centerSVG.appendChild(graduationGroup);
-            }
-            var cursorPosX = _left - 18;
-            var cursorPosY = _top + _height * 0.5 + 2;
-            var cursorWidth = width;
-            var cursorHeight = 64;
-            if (!this.cursorSVG) {
-                this.cursorSVG = document.createElementNS(Avionics.SVG.NS, "svg");
-                this.cursorSVG.setAttribute("id", "CursorGroup");
-            }
-            else
-                Utils.RemoveAllChildren(this.cursorSVG);
-            this.cursorSVG.setAttribute("x", cursorPosX.toString());
-            this.cursorSVG.setAttribute("y", (cursorPosY - cursorHeight * 0.5).toString());
-            this.cursorSVG.setAttribute("width", cursorWidth.toString());
-            this.cursorSVG.setAttribute("height", cursorHeight.toString());
-            this.cursorSVG.setAttribute("viewBox", "0 7 " + cursorWidth + " " + cursorHeight);
-            {
-                if (!this.cursorSVGShape)
-                    this.cursorSVGShape = document.createElementNS(Avionics.SVG.NS, "path");
-                this.cursorSVGShape.setAttribute("fill", "black");
-                this.cursorSVGShape.setAttribute("d", "M24 22 L62 22 L62 8 L86 8 L86 28 L105 39 L86 50 L86 70 L62 70 L62 56 L24 56 Z");
-                this.cursorSVGShape.setAttribute("stroke", "white");
-                this.cursorSVGShape.setAttribute("stroke-width", "0.85");
-                this.cursorSVG.appendChild(this.cursorSVGShape);
-                var _cursorPosX = -2;
-                var _cursorPosY = cursorHeight * 0.5 + 7;
-                if (!this.cursorSVGMainText)
-                    this.cursorSVGMainText = document.createElementNS(Avionics.SVG.NS, "text");
-                this.cursorSVGMainText.setAttribute("width", _width.toString());
-                this.cursorSVGMainText.setAttribute("fill", "green");
-                this.cursorSVGMainText.setAttribute("font-size", (this.fontSize * 1.2).toString());
-                this.cursorSVGMainText.setAttribute("font-family", "Roboto-Bold");
-                this.cursorSVGMainText.setAttribute("text-anchor", "end");
-                this.cursorSVGMainText.setAttribute("alignment-baseline", "central");
-                this.cursorSVGMainText.setAttribute("transform", "translate(" + (_cursorPosX + 65).toString() + " " + (_cursorPosY - 2).toString() + ")");
-                this.cursorSVG.appendChild(this.cursorSVGMainText);
-                this.cursorScrollPosX = _cursorPosX + 86;
-                this.cursorScrollPosY = _cursorPosY - 2;
-                if (!this.cursorSVGScrollTexts) {
-                    this.cursorSVGScrollTexts = [];
-                    for (var i = 0; i < this.cursorScrollNbTexts; i++) {
-                        var text = document.createElementNS(Avionics.SVG.NS, "text");
-                        text.setAttribute("width", _width.toString());
-                        text.setAttribute("fill", "green");
-                        text.setAttribute("font-size", (this.fontSize * 1.4).toString());
-                        text.setAttribute("font-family", "Roboto-Bold");
-                        text.setAttribute("text-anchor", "end");
-                        text.setAttribute("alignment-baseline", "central");
-                        this.cursorSVGScrollTexts.push(text);
-                    }
-                }
-                for (var i = 0; i < this.cursorSVGScrollTexts.length; i++) {
-                    this.cursorSVG.appendChild(this.cursorSVGScrollTexts[i]);
-                }
-            }
-            if (!this.speedTrendArrowSVG) {
-                this.speedTrendArrowSVG = document.createElementNS(Avionics.SVG.NS, "svg");
-                this.speedTrendArrowSVG.setAttribute("id", "SpeedTrendArrowGroup");
-            }
-            else
-                Utils.RemoveAllChildren(this.speedTrendArrowSVG);
-            this.speedTrendArrowSVG.setAttribute("x", "68");
-            this.speedTrendArrowSVG.setAttribute("y", "0");
-            this.speedTrendArrowSVG.setAttribute("width", "250");
-            this.speedTrendArrowSVG.setAttribute("height", height.toString());
-            this.speedTrendArrowSVG.setAttribute("viewBox", "0 0 250 " + height.toString());
-            {
-                if (!this.speedTrendArrowSVGShape)
-                    this.speedTrendArrowSVGShape = document.createElementNS(Avionics.SVG.NS, "path");
-                this.speedTrendArrowSVGShape.setAttribute("fill", "none");
-                this.speedTrendArrowSVGShape.setAttribute("stroke", "magenta");
-                this.speedTrendArrowSVGShape.setAttribute("stroke-width", "2");
-                this.speedTrendArrowSVG.appendChild(this.speedTrendArrowSVGShape);
-                let dash = document.createElementNS(Avionics.SVG.NS, "line");
-                dash.setAttribute("x1", "55");
-                dash.setAttribute("y1", (height * 0.5).toString());
-                dash.setAttribute("x2", "71");
-                dash.setAttribute("y2", (height * 0.5).toString());
-                dash.setAttribute("stroke", "white");
-                dash.setAttribute("stroke-width", "3");
-                this.speedTrendArrowSVG.appendChild(dash);
-            }
-            var stripViewPosX = _left + gradWidth + 2;
-            var stripViewPosY = this.stripBorderSize;
-            var stripViewWidth = width;
-            var stripViewHeight = _height - this.stripBorderSize * 2;
-            if (!this.stripsSVG) {
-                this.stripsSVG = document.createElementNS(Avionics.SVG.NS, "svg");
-                this.stripsSVG.setAttribute("id", "StripsGroup");
-            }
-            else
-                Utils.RemoveAllChildren(this.stripsSVG);
-            this.stripsSVG.setAttribute("x", stripViewPosX.toFixed(0));
-            this.stripsSVG.setAttribute("y", stripViewPosY.toFixed(0));
-            this.stripsSVG.setAttribute("width", stripViewWidth.toFixed(0));
-            this.stripsSVG.setAttribute("height", stripViewHeight.toFixed(0));
-            this.stripsSVG.setAttribute("viewBox", "0 0 " + stripViewWidth + " " + stripViewHeight);
-            {
-                this.stripHeight = stripViewHeight * 3;
-                this.vMaxStripSVG = document.createElementNS(Avionics.SVG.NS, "g");
-                this.vMaxStripSVG.setAttribute("id", "VMax");
-                {
-                    let stripWidth = 9;
-                    let shape = document.createElementNS(Avionics.SVG.NS, "path");
-                    shape.setAttribute("fill", "red");
-                    shape.setAttribute("d", "M 0 0 l " + stripWidth + " 0 l 0 " + (this.stripHeight) + " l " + (-stripWidth) + " 0 Z");
-                    this.vMaxStripSVG.appendChild(shape);
-                }
-                this.stripsSVG.appendChild(this.vMaxStripSVG);
-                this.stallStripSVG = document.createElementNS(Avionics.SVG.NS, "g");
-                this.stallStripSVG.setAttribute("id", "Stall");
-                {
-                    let stripWidth = 9;
-                    let shape = document.createElementNS(Avionics.SVG.NS, "path");
-                    shape.setAttribute("fill", "red");
-                    shape.setAttribute("d", "M 0 0 l " + stripWidth + " 0 l 0 " + (this.stripHeight) + " l " + (-stripWidth) + " 0 Z");
-                    this.stallStripSVG.appendChild(shape);
-                }
-                this.stripsSVG.appendChild(this.stallStripSVG);
-            }
-            var targetSpeedPointerPosX = _left + gradWidth;
-            var targetSpeedPointerPosY = _top + _height * 0.5;
-            var targetSpeedPointerWidth = width;
-            this.targetSpeedPointerHeight = 47;
-            this.targetSpeedPointerSVG = document.createElementNS(Avionics.SVG.NS, "svg");
-            this.targetSpeedPointerSVG.setAttribute("id", "TargetSpeedPointerGroup");
-            this.targetSpeedPointerSVG.setAttribute("x", targetSpeedPointerPosX.toString());
-            this.targetSpeedPointerSVG.setAttribute("y", (targetSpeedPointerPosY - this.targetSpeedPointerHeight * 0.5).toString());
-            this.targetSpeedPointerSVG.setAttribute("width", targetSpeedPointerWidth.toString());
-            this.targetSpeedPointerSVG.setAttribute("height", this.targetSpeedPointerHeight.toString());
-            this.targetSpeedPointerSVG.setAttribute("viewBox", "0 0 " + targetSpeedPointerWidth + " " + this.targetSpeedPointerHeight);
-            {
-                let shape = document.createElementNS(Avionics.SVG.NS, "path");
-                shape.setAttribute("fill", "none");
-                shape.setAttribute("stroke", "cyan");
-                shape.setAttribute("stroke-width", "2");
-                shape.setAttribute("d", "M 0 22 L 25 10 L 46 10 L 46 34 L 25 34 Z");
-                this.targetSpeedPointerSVG.appendChild(shape);
-            }
-            var speedMarkersPosX = _left + gradWidth;
-            var speedMarkersPosY = 0;
-            this.speedMarkersWidth = width;
-            this.speedMarkersHeight = 70;
-            this.createSpeedMarker("1", speedMarkersPosX, speedMarkersPosY, this.updateMarkerV1, 0.8, 0.9, "cyan", false);
-            this.createSpeedMarker("R", speedMarkersPosX, speedMarkersPosY, this.updateMarkerVR, 0.8, 0.9, "cyan", false);
-            this.createSpeedMarker("2", speedMarkersPosX, speedMarkersPosY, this.updateMarkerV2, 0.8, 0.9, "cyan", false);
-            this.createSpeedMarker("RF", speedMarkersPosX, speedMarkersPosY, this.updateMarkerVRef, 0.8, 0.9, "cyan", false);
-            this.createSpeedMarker("T", speedMarkersPosX, speedMarkersPosY, this.updateMarkerVX, 0.8, 0.9, "cyan", false);
-            this.centerSVG.appendChild(this.stripsSVG);
-            this.centerSVG.appendChild(this.speedMarkerSVG);
-            this.centerSVG.appendChild(this.targetSpeedPointerSVG);
-            this.centerSVG.appendChild(this.cursorSVG);
-            this.centerSVG.appendChild(this.speedTrendArrowSVG);
-        }
-        this.rootGroup.appendChild(this.centerSVG);
-        this.vSpeedSVG = document.createElementNS(Avionics.SVG.NS, "g");
-        this.vSpeedSVG.setAttribute("id", "VSpeeds");
-        {
-            let speedX = posX - 62;
-            let speedY = posY + height - 18;
-            let title = document.createElementNS(Avionics.SVG.NS, "text");
-            title.textContent = "V1";
-            title.setAttribute("x", speedX.toString());
-            title.setAttribute("y", speedY.toString());
-            title.setAttribute("fill", "magenta");
-            title.setAttribute("font-size", (this.fontSize * 0.8).toString());
-            title.setAttribute("font-family", "Roboto-Bold");
-            title.setAttribute("text-anchor", "start");
-            title.setAttribute("alignment-baseline", "central");
-            this.vSpeedSVG.appendChild(title);
-            this.v1Speed = document.createElementNS(Avionics.SVG.NS, "text");
-            this.v1Speed.setAttribute("x", (speedX + 30).toString());
-            this.v1Speed.setAttribute("y", speedY.toString());
-            this.v1Speed.setAttribute("fill", "magenta");
-            this.v1Speed.setAttribute("font-size", (this.fontSize * 0.8).toString());
-            this.v1Speed.setAttribute("font-family", "Roboto-Bold");
-            this.v1Speed.setAttribute("text-anchor", "start");
-            this.v1Speed.setAttribute("alignment-baseline", "central");
-            this.vSpeedSVG.appendChild(this.v1Speed);
-            speedY -= 25;
-            title = document.createElementNS(Avionics.SVG.NS, "text");
-            title.textContent = "VR";
-            title.setAttribute("x", speedX.toString());
-            title.setAttribute("y", speedY.toString());
-            title.setAttribute("fill", "magenta");
-            title.setAttribute("font-size", (this.fontSize * 0.8).toString());
-            title.setAttribute("font-family", "Roboto-Bold");
-            title.setAttribute("text-anchor", "start");
-            title.setAttribute("alignment-baseline", "central");
-            this.vSpeedSVG.appendChild(title);
-            this.vRSpeed = document.createElementNS(Avionics.SVG.NS, "text");
-            this.vRSpeed.setAttribute("x", (speedX + 30).toString());
-            this.vRSpeed.setAttribute("y", speedY.toString());
-            this.vRSpeed.setAttribute("fill", "magenta");
-            this.vRSpeed.setAttribute("font-size", (this.fontSize * 0.8).toString());
-            this.vRSpeed.setAttribute("font-family", "Roboto-Bold");
-            this.vRSpeed.setAttribute("text-anchor", "start");
-            this.vRSpeed.setAttribute("alignment-baseline", "central");
-            this.vSpeedSVG.appendChild(this.vRSpeed);
-            speedY -= 25;
-            title = document.createElementNS(Avionics.SVG.NS, "text");
-            title.textContent = "V2";
-            title.setAttribute("x", speedX.toString());
-            title.setAttribute("y", speedY.toString());
-            title.setAttribute("fill", "magenta");
-            title.setAttribute("font-size", (this.fontSize * 0.8).toString());
-            title.setAttribute("font-family", "Roboto-Bold");
-            title.setAttribute("text-anchor", "start");
-            title.setAttribute("alignment-baseline", "central");
-            this.vSpeedSVG.appendChild(title);
-            this.v2Speed = document.createElementNS(Avionics.SVG.NS, "text");
-            this.v2Speed.setAttribute("x", (speedX + 30).toString());
-            this.v2Speed.setAttribute("y", speedY.toString());
-            this.v2Speed.setAttribute("fill", "magenta");
-            this.v2Speed.setAttribute("font-size", (this.fontSize * 0.8).toString());
-            this.v2Speed.setAttribute("font-family", "Roboto-Bold");
-            this.v2Speed.setAttribute("text-anchor", "start");
-            this.v2Speed.setAttribute("alignment-baseline", "central");
-            this.vSpeedSVG.appendChild(this.v2Speed);
-            speedY -= 25;
-            title = document.createElementNS(Avionics.SVG.NS, "text");
-            title.textContent = "VT";
-            title.setAttribute("x", speedX.toString());
-            title.setAttribute("y", speedY.toString());
-            title.setAttribute("fill", "magenta");
-            title.setAttribute("font-size", (this.fontSize * 0.8).toString());
-            title.setAttribute("font-family", "Roboto-Bold");
-            title.setAttribute("text-anchor", "start");
-            title.setAttribute("alignment-baseline", "central");
-            this.vSpeedSVG.appendChild(title);
-            this.vXSpeed = document.createElementNS(Avionics.SVG.NS, "text");
-            this.vXSpeed.setAttribute("x", (speedX + 30).toString());
-            this.vXSpeed.setAttribute("y", speedY.toString());
-            this.vXSpeed.setAttribute("fill", "magenta");
-            this.vXSpeed.setAttribute("font-size", (this.fontSize * 0.8).toString());
-            this.vXSpeed.setAttribute("font-family", "Roboto-Bold");
-            this.vXSpeed.setAttribute("text-anchor", "start");
-            this.vXSpeed.setAttribute("alignment-baseline", "central");
-            this.vSpeedSVG.appendChild(this.vXSpeed);
-        }
-        this.rootGroup.appendChild(this.vSpeedSVG);
-        this.targetSpeedIconSVG = document.createElementNS(Avionics.SVG.NS, "path");
-        this.targetSpeedIconSVG.setAttribute("fill", "black");
-        this.targetSpeedIconSVG.setAttribute("d", "M13 22 l15 -8 l15 0 l0 16 l-15 0 l-15 -8 Z");
-        this.targetSpeedIconSVG.setAttribute("fill", "none");
-        this.targetSpeedIconSVG.setAttribute("stroke", "cyan");
-        this.targetSpeedIconSVG.setAttribute("stroke-width", "0.85");
-        this.rootGroup.appendChild(this.targetSpeedIconSVG);
-        this.targetSpeedSVG = document.createElementNS(Avionics.SVG.NS, "text");
-        this.targetSpeedSVG.textContent = "260";
-        this.targetSpeedSVG.setAttribute("x", (posX - 20).toString());
-        this.targetSpeedSVG.setAttribute("y", (posY - 8).toString());
-        this.targetSpeedSVG.setAttribute("fill", "green");
-        this.targetSpeedSVG.setAttribute("font-size", (this.fontSize * 0.9).toString());
-        this.targetSpeedSVG.setAttribute("font-family", "Roboto-Bold");
-        this.targetSpeedSVG.setAttribute("text-anchor", "start");
-        this.rootGroup.appendChild(this.targetSpeedSVG);
-        this.rootSVG.appendChild(this.rootGroup);
-        this.appendChild(this.rootSVG);
-    }
-    construct_B747_8() {
-        this.rootSVG = document.createElementNS(Avionics.SVG.NS, "svg");
-        this.rootSVG.setAttribute("id", "ViewBox");
-        this.rootSVG.setAttribute("viewBox", "0 0 250 800");
-        var posX = 100;
-        var posY = 0;
-        var width = 105;
-        var height = 640;
-        var arcWidth = 100;
-        this.refHeight = height;
-        this.stripOffsetX = -2;
-        this.graduationSpacing = 54;
-        this.graduationScroller = new Avionics.Scroller(this.nbPrimaryGraduations, 20);
-        this.cursorScrollSpacing = 37;
-        this.cursorScroller = new Avionics.Scroller(this.cursorScrollNbTexts, 1, false, 10);
-        if (!this.rootGroup) {
-            this.rootGroup = document.createElementNS(Avionics.SVG.NS, "g");
-            this.rootGroup.setAttribute("id", "Airspeed");
-        }
-        else {
-            Utils.RemoveAllChildren(this.rootGroup);
-        }
-        var sideTextHeight = 75;
-        if (!this.targetSpeedSVG)
-            this.targetSpeedSVG = document.createElementNS(Avionics.SVG.NS, "text");
-        this.targetSpeedSVG.textContent = ".000";
-        this.targetSpeedSVG.setAttribute("x", (posX + 10).toString());
-        this.targetSpeedSVG.setAttribute("y", (posY + sideTextHeight * 0.5).toString());
-        this.targetSpeedSVG.setAttribute("fill", "#D570FF");
-        this.targetSpeedSVG.setAttribute("font-size", (this.fontSize * 1.6).toString());
-        this.targetSpeedSVG.setAttribute("font-family", "Roboto-Bold");
-        this.targetSpeedSVG.setAttribute("text-anchor", "middle");
-        this.targetSpeedSVG.setAttribute("alignment-baseline", "central");
-        this.rootGroup.appendChild(this.targetSpeedSVG);
-        posY += sideTextHeight;
-        if (!this.centerSVG) {
-            this.centerSVG = document.createElementNS(Avionics.SVG.NS, "svg");
-            this.centerSVG.setAttribute("id", "CenterGroup");
-        }
-        else
-            Utils.RemoveAllChildren(this.centerSVG);
-        this.centerSVG.setAttribute("x", (posX - width * 0.5).toString());
-        this.centerSVG.setAttribute("y", posY.toString());
-        this.centerSVG.setAttribute("width", (width + arcWidth).toString());
-        this.centerSVG.setAttribute("height", height.toString());
-        this.centerSVG.setAttribute("viewBox", "0 0 " + (width + arcWidth) + " " + height);
-        {
-            var _top = 0;
-            var _left = 7;
-            var _width = width;
-            var _height = height;
-            var bg = document.createElementNS(Avionics.SVG.NS, "rect");
-            bg.setAttribute("x", _left.toString());
-            bg.setAttribute("y", _top.toString());
-            bg.setAttribute("width", _width.toString());
-            bg.setAttribute("height", _height.toString());
-            bg.setAttribute("fill", "#343B51");
-            this.centerSVG.appendChild(bg);
-            var graduationGroup = document.createElementNS(Avionics.SVG.NS, "g");
-            graduationGroup.setAttribute("id", "Graduations");
-            {
-                this.graduationScrollPosX = _left + _width;
-                this.graduationScrollPosY = _top + _height * 0.5;
-                this.graduations = [];
-                for (var i = 0; i < this.totalGraduations; i++) {
-                    var line = new Avionics.SVGGraduation();
-                    line.IsPrimary = (i % (this.nbSecondaryGraduations + 1)) ? false : true;
-                    var lineWidth = line.IsPrimary ? 22 : 22;
-                    var lineHeight = line.IsPrimary ? 3 : 3;
-                    var linePosX = -lineWidth;
-                    line.SVGLine = document.createElementNS(Avionics.SVG.NS, "rect");
-                    line.SVGLine.setAttribute("x", linePosX.toString());
-                    line.SVGLine.setAttribute("width", lineWidth.toString());
-                    line.SVGLine.setAttribute("height", lineHeight.toString());
-                    line.SVGLine.setAttribute("fill", "white");
-                    if (line.IsPrimary) {
-                        line.SVGText1 = document.createElementNS(Avionics.SVG.NS, "text");
-                        line.SVGText1.setAttribute("x", (linePosX - 10).toString());
-                        line.SVGText1.setAttribute("fill", "white");
-                        line.SVGText1.setAttribute("font-size", (this.fontSize * 1.1).toString());
-                        line.SVGText1.setAttribute("font-family", "Roboto-Bold");
-                        line.SVGText1.setAttribute("text-anchor", "end");
-                        line.SVGText1.setAttribute("alignment-baseline", "central");
-                    }
-                    this.graduations.push(line);
-                }
-                for (var i = 0; i < this.totalGraduations; i++) {
-                    var line = this.graduations[i];
-                    graduationGroup.appendChild(line.SVGLine);
-                    if (line.SVGText1) {
-                        graduationGroup.appendChild(line.SVGText1);
-                    }
-                }
-                this.centerSVG.appendChild(graduationGroup);
-            }
-            var cursorPosX = _left - 7;
-            var cursorPosY = _top + _height * 0.5 + 3;
-            var cursorWidth = width;
-            var cursorHeight = 76;
-            if (!this.cursorSVG) {
-                this.cursorSVG = document.createElementNS(Avionics.SVG.NS, "svg");
-                this.cursorSVG.setAttribute("id", "CursorGroup");
-            }
-            else
-                Utils.RemoveAllChildren(this.cursorSVG);
-            this.cursorSVG.setAttribute("x", cursorPosX.toString());
-            this.cursorSVG.setAttribute("y", (cursorPosY - cursorHeight * 0.5).toString());
-            this.cursorSVG.setAttribute("width", cursorWidth.toString());
-            this.cursorSVG.setAttribute("height", cursorHeight.toString());
-            this.cursorSVG.setAttribute("viewBox", "0 2 " + cursorWidth + " " + cursorHeight);
-            {
-                if (!this.cursorSVGShape)
-                    this.cursorSVGShape = document.createElementNS(Avionics.SVG.NS, "path");
-                this.cursorSVGShape.setAttribute("fill", "black");
-                this.cursorSVGShape.setAttribute("d", "M2 2 L76 2 L76 28 L88 38 L76 50 L76 78 L2 78 Z");
-                this.cursorSVGShape.setAttribute("stroke", "white");
-                this.cursorSVGShape.setAttribute("stroke-width", "0.85");
-                this.cursorSVG.appendChild(this.cursorSVGShape);
-                var _cursorPosX = -14;
-                var _cursorPosY = cursorHeight * 0.5;
-                if (!this.cursorSVGMainText)
-                    this.cursorSVGMainText = document.createElementNS(Avionics.SVG.NS, "text");
-                this.cursorSVGMainText.setAttribute("width", _width.toString());
-                this.cursorSVGMainText.setAttribute("fill", "white");
-                this.cursorSVGMainText.setAttribute("font-size", (this.fontSize * 1.5).toString());
-                this.cursorSVGMainText.setAttribute("font-family", "Roboto-Bold");
-                this.cursorSVGMainText.setAttribute("text-anchor", "end");
-                this.cursorSVGMainText.setAttribute("alignment-baseline", "central");
-                this.cursorSVGMainText.setAttribute("transform", "translate(" + (_cursorPosX + 65).toString() + " " + (_cursorPosY).toString() + ")");
-                this.cursorSVG.appendChild(this.cursorSVGMainText);
-                this.cursorScrollPosX = _cursorPosX + 87;
-                this.cursorScrollPosY = _cursorPosY;
-                if (!this.cursorSVGScrollTexts) {
-                    this.cursorSVGScrollTexts = [];
-                    for (var i = 0; i < this.cursorScrollNbTexts; i++) {
-                        var text = document.createElementNS(Avionics.SVG.NS, "text");
-                        text.setAttribute("width", _width.toString());
-                        text.setAttribute("fill", "white");
-                        text.setAttribute("font-size", (this.fontSize * 1.5).toString());
-                        text.setAttribute("font-family", "Roboto-Bold");
-                        text.setAttribute("text-anchor", "end");
-                        text.setAttribute("alignment-baseline", "central");
-                        this.cursorSVGScrollTexts.push(text);
-                    }
-                }
-                for (var i = 0; i < this.cursorSVGScrollTexts.length; i++) {
-                    this.cursorSVG.appendChild(this.cursorSVGScrollTexts[i]);
-                }
-            }
-            if (!this.speedTrendArrowSVG) {
-                this.speedTrendArrowSVG = document.createElementNS(Avionics.SVG.NS, "svg");
-                this.speedTrendArrowSVG.setAttribute("id", "SpeedTrendArrowGroup");
-            }
-            else
-                Utils.RemoveAllChildren(this.speedTrendArrowSVG);
-            this.speedTrendArrowSVG.setAttribute("x", "18");
-            this.speedTrendArrowSVG.setAttribute("y", "0");
-            this.speedTrendArrowSVG.setAttribute("width", "250");
-            this.speedTrendArrowSVG.setAttribute("height", height.toString());
-            this.speedTrendArrowSVG.setAttribute("viewBox", "0 0 250 " + height.toString());
-            {
-                if (!this.speedTrendArrowSVGShape)
-                    this.speedTrendArrowSVGShape = document.createElementNS(Avionics.SVG.NS, "path");
-                this.speedTrendArrowSVGShape.setAttribute("fill", "none");
-                this.speedTrendArrowSVGShape.setAttribute("stroke", "green");
-                this.speedTrendArrowSVGShape.setAttribute("stroke-width", "2");
-                this.speedTrendArrowSVG.appendChild(this.speedTrendArrowSVGShape);
-            }
-            var stripViewPosX = _left + _width;
-            var stripViewPosY = this.stripBorderSize;
-            var stripViewWidth = width;
-            var stripViewHeight = _height - this.stripBorderSize * 2;
-            if (!this.stripsSVG) {
-                this.stripsSVG = document.createElementNS(Avionics.SVG.NS, "svg");
-                this.stripsSVG.setAttribute("id", "StripsGroup");
-            }
-            else
-                Utils.RemoveAllChildren(this.stripsSVG);
-            this.stripsSVG.setAttribute("x", stripViewPosX.toFixed(0));
-            this.stripsSVG.setAttribute("y", stripViewPosY.toFixed(0));
-            this.stripsSVG.setAttribute("width", stripViewWidth.toFixed(0));
-            this.stripsSVG.setAttribute("height", stripViewHeight.toFixed(0));
-            this.stripsSVG.setAttribute("viewBox", "0 0 " + stripViewWidth + " " + stripViewHeight);
-            {
-                this.stripHeight = stripViewHeight * 3;
-                this.vMaxStripSVG = document.createElementNS(Avionics.SVG.NS, "g");
-                this.vMaxStripSVG.setAttribute("id", "VMax");
-                {
-                    let stripWidth = 14;
-                    let shape = document.createElementNS(Avionics.SVG.NS, "path");
-                    shape.setAttribute("fill", "black");
-                    shape.setAttribute("stroke", "none");
-                    shape.setAttribute("d", "M 0 0 l " + stripWidth + " 0 l 0 " + (this.stripHeight) + " l " + (-stripWidth) + " 0 Z");
-                    this.vMaxStripSVG.appendChild(shape);
-                    let dashHeight = stripWidth * 1.0;
-                    let dashSpacing = dashHeight * 1.15;
-                    let y = this.stripHeight - dashHeight;
-                    while (y > 0) {
-                        let rect = document.createElementNS(Avionics.SVG.NS, "rect");
-                        rect.setAttribute("fill", "red");
-                        rect.setAttribute("x", "0");
-                        rect.setAttribute("y", y.toString());
-                        rect.setAttribute("width", stripWidth.toString());
-                        rect.setAttribute("height", dashHeight.toString());
-                        this.vMaxStripSVG.appendChild(rect);
-                        y -= dashHeight + dashSpacing;
-                    }
-                }
-                this.stripsSVG.appendChild(this.vMaxStripSVG);
-                this.stallProtMinStripSVG = document.createElementNS(Avionics.SVG.NS, "g");
-                this.stallProtMinStripSVG.setAttribute("id", "StallProtMin");
-                {
-                    let stripWidth = 9;
-                    let shape = document.createElementNS(Avionics.SVG.NS, "path");
-                    shape.setAttribute("fill", "none");
-                    shape.setAttribute("stroke", "orange");
-                    shape.setAttribute("stroke-width", "3");
-                    shape.setAttribute("d", "M 0 0 l " + stripWidth + " 0 l 0 " + (this.stripHeight) + " l " + (-stripWidth) + " 0 Z");
-                    this.stallProtMinStripSVG.appendChild(shape);
-                }
-                this.stripsSVG.appendChild(this.stallProtMinStripSVG);
-                this.stallProtMaxStripSVG = document.createElementNS(Avionics.SVG.NS, "g");
-                this.stallProtMaxStripSVG.setAttribute("id", "StallProtMax");
-                {
-                    let stripWidth = 14;
-                    let shape = document.createElementNS(Avionics.SVG.NS, "path");
-                    shape.setAttribute("fill", "black");
-                    shape.setAttribute("stroke", "none");
-                    shape.setAttribute("d", "M 0 0 l " + stripWidth + " 0 l 0 " + (this.stripHeight) + " l " + (-stripWidth) + " 0 Z");
-                    this.stallProtMaxStripSVG.appendChild(shape);
-                    let dashHeight = stripWidth * 1.0;
-                    let dashSpacing = dashHeight * 1.15;
-                    let y = 0;
-                    while (y < this.stripHeight) {
-                        let rect = document.createElementNS(Avionics.SVG.NS, "rect");
-                        rect.setAttribute("fill", "red");
-                        rect.setAttribute("x", "0");
-                        rect.setAttribute("y", y.toString());
-                        rect.setAttribute("width", stripWidth.toString());
-                        rect.setAttribute("height", dashHeight.toString());
-                        this.stallProtMaxStripSVG.appendChild(rect);
-                        y += dashHeight + dashSpacing;
-                    }
-                }
-                this.stripsSVG.appendChild(this.stallProtMaxStripSVG);
-            }
-            this.speedNotSetSVG = document.createElementNS(Avionics.SVG.NS, "g");
-            this.speedNotSetSVG.setAttribute("id", "speedNotSet");
-            {
-                let textPosX = _left + _width * 1.25;
-                let textPosY = _top + _height * 0.325;
-                let textSpace = 25;
-                let text = document.createElementNS(Avionics.SVG.NS, "text");
-                text.textContent = "NO";
-                text.setAttribute("x", textPosX.toString());
-                text.setAttribute("y", textPosY.toString());
-                text.setAttribute("fill", "orange");
-                text.setAttribute("font-size", (this.fontSize * 1.0).toString());
-                text.setAttribute("font-family", "Roboto-Bold");
-                text.setAttribute("text-anchor", "middle");
-                text.setAttribute("alignment-baseline", "central");
-                this.speedNotSetSVG.appendChild(text);
-                textPosY += textSpace;
-                text = document.createElementNS(Avionics.SVG.NS, "text");
-                text.textContent = "V";
-                text.setAttribute("x", textPosX.toString());
-                text.setAttribute("y", textPosY.toString());
-                text.setAttribute("fill", "orange");
-                text.setAttribute("font-size", (this.fontSize * 1.0).toString());
-                text.setAttribute("font-family", "Roboto-Bold");
-                text.setAttribute("text-anchor", "middle");
-                text.setAttribute("alignment-baseline", "central");
-                this.speedNotSetSVG.appendChild(text);
-                textPosY += textSpace;
-                text = document.createElementNS(Avionics.SVG.NS, "text");
-                text.textContent = "S";
-                text.setAttribute("x", textPosX.toString());
-                text.setAttribute("y", textPosY.toString());
-                text.setAttribute("fill", "orange");
-                text.setAttribute("font-size", (this.fontSize * 1.0).toString());
-                text.setAttribute("font-family", "Roboto-Bold");
-                text.setAttribute("text-anchor", "middle");
-                text.setAttribute("alignment-baseline", "central");
-                this.speedNotSetSVG.appendChild(text);
-                textPosY += textSpace;
-                text = document.createElementNS(Avionics.SVG.NS, "text");
-                text.textContent = "P";
-                text.setAttribute("x", textPosX.toString());
-                text.setAttribute("y", textPosY.toString());
-                text.setAttribute("fill", "orange");
-                text.setAttribute("font-size", (this.fontSize * 1.0).toString());
-                text.setAttribute("font-family", "Roboto-Bold");
-                text.setAttribute("text-anchor", "middle");
-                text.setAttribute("alignment-baseline", "central");
-                this.speedNotSetSVG.appendChild(text);
-                textPosY += textSpace;
-                text = document.createElementNS(Avionics.SVG.NS, "text");
-                text.textContent = "D";
-                text.setAttribute("x", textPosX.toString());
-                text.setAttribute("y", textPosY.toString());
-                text.setAttribute("fill", "orange");
-                text.setAttribute("font-size", (this.fontSize * 1.0).toString());
-                text.setAttribute("font-family", "Roboto-Bold");
-                text.setAttribute("text-anchor", "middle");
-                text.setAttribute("alignment-baseline", "central");
-                this.speedNotSetSVG.appendChild(text);
-            }
-            var targetSpeedPointerPosX = _left + _width * 0.77;
-            var targetSpeedPointerPosY = _top + _height * 0.5;
-            var targetSpeedPointerWidth = width;
-            this.targetSpeedPointerHeight = 46;
-            this.targetSpeedPointerSVG = document.createElementNS(Avionics.SVG.NS, "svg");
-            this.targetSpeedPointerSVG.setAttribute("id", "TargetSpeedPointerGroup");
-            this.targetSpeedPointerSVG.setAttribute("x", targetSpeedPointerPosX.toString());
-            this.targetSpeedPointerSVG.setAttribute("y", (targetSpeedPointerPosY - this.targetSpeedPointerHeight * 0.5).toString());
-            this.targetSpeedPointerSVG.setAttribute("width", targetSpeedPointerWidth.toString());
-            this.targetSpeedPointerSVG.setAttribute("height", this.targetSpeedPointerHeight.toString());
-            this.targetSpeedPointerSVG.setAttribute("viewBox", "0 0 " + targetSpeedPointerWidth + " " + this.targetSpeedPointerHeight);
-            {
-                let shape = document.createElementNS(Avionics.SVG.NS, "path");
-                shape.setAttribute("fill", "none");
-                shape.setAttribute("stroke", "#D570FF");
-                shape.setAttribute("stroke-width", "2");
-                shape.setAttribute("d", "M 0 22 L 25 10 L 52 10 L 52 34 L 25 34 Z");
-                this.targetSpeedPointerSVG.appendChild(shape);
-            }
-            var speedMarkersPosX = _left + _width - 5;
-            var speedMarkersPosY = 0;
-            this.speedMarkersWidth = width;
-            this.speedMarkersHeight = 70;
-            let nbHandles = Simplane.getFlapsNbHandles();
-            for (let i = 0; i < nbHandles; i++) {
-                this.createSpeedMarker("", speedMarkersPosX, speedMarkersPosY, this.updateMarkerFlap, 0.8, 0.9, "#24F000", false, [i]);
-            }
-            this.createSpeedMarker("V1", speedMarkersPosX, speedMarkersPosY, this.updateMarkerV1, 0.8, 0.9, "#24F000");
-            this.createSpeedMarker("VR", speedMarkersPosX, speedMarkersPosY, this.updateMarkerVR, 0.8, 0.9, "#24F000");
-            this.createSpeedMarker("V2", speedMarkersPosX, speedMarkersPosY, this.updateMarkerV2, 0.8, 0.9, "#24F000");
-            this.createSpeedMarker("REF", speedMarkersPosX, speedMarkersPosY, this.updateMarkerVRef, 0.8, 0.9, "#24F000");
-            this.centerSVG.appendChild(this.stripsSVG);
-            this.centerSVG.appendChild(this.speedNotSetSVG);
-            this.centerSVG.appendChild(this.speedMarkerSVG);
-            this.centerSVG.appendChild(this.targetSpeedPointerSVG);
-            this.centerSVG.appendChild(this.cursorSVG);
-            this.centerSVG.appendChild(this.speedTrendArrowSVG);
-        }
-        this.rootGroup.appendChild(this.centerSVG);
-        {
-            this.machPrefixSVG = document.createElementNS(Avionics.SVG.NS, "text");
-            this.machPrefixSVG.textContent = ".";
-            this.machPrefixSVG.setAttribute("x", (posX - 4).toString());
-            this.machPrefixSVG.setAttribute("y", (posY + height + sideTextHeight * 0.65).toString());
-            this.machPrefixSVG.setAttribute("fill", "white");
-            this.machPrefixSVG.setAttribute("font-size", (this.fontSize * 1.1).toString());
-            this.machPrefixSVG.setAttribute("font-family", "Roboto-Bold");
-            this.machPrefixSVG.setAttribute("text-anchor", "end");
-            this.machPrefixSVG.setAttribute("alignment-baseline", "top");
-            this.rootGroup.appendChild(this.machPrefixSVG);
-            this.machValueSVG = document.createElementNS(Avionics.SVG.NS, "text");
-            this.machValueSVG.textContent = "000";
-            this.machValueSVG.setAttribute("x", (posX).toString());
-            this.machValueSVG.setAttribute("y", (posY + height + sideTextHeight * 0.65).toString());
-            this.machValueSVG.setAttribute("fill", "white");
-            this.machValueSVG.setAttribute("font-size", (this.fontSize * 1.25).toString());
-            this.machValueSVG.setAttribute("font-family", "Roboto-Bold");
-            this.machValueSVG.setAttribute("text-anchor", "start");
-            this.machValueSVG.setAttribute("alignment-baseline", "top");
-            this.rootGroup.appendChild(this.machValueSVG);
-        }
-        this.rootSVG.appendChild(this.rootGroup);
-        this.appendChild(this.rootSVG);
-    }
-    construct_AS01B() {
-        this.rootSVG = document.createElementNS(Avionics.SVG.NS, "svg");
-        this.rootSVG.setAttribute("id", "ViewBox");
-        this.rootSVG.setAttribute("viewBox", "0 0 250 800");
-        var posX = 100;
-        var posY = 0;
-        var width = 105;
-        var height = 640;
-        var arcWidth = 35;
-        this.refHeight = height;
-        this.stripOffsetX = -2;
-        this.graduationSpacing = 54;
-        this.graduationScroller = new Avionics.Scroller(this.nbPrimaryGraduations, 20);
-        this.cursorScrollSpacing = 37;
-        this.cursorScroller = new Avionics.Scroller(this.cursorScrollNbTexts, 1, false, 10);
-        if (!this.rootGroup) {
-            this.rootGroup = document.createElementNS(Avionics.SVG.NS, "g");
-            this.rootGroup.setAttribute("id", "Airspeed");
-        }
-        else {
-            Utils.RemoveAllChildren(this.rootGroup);
-        }
-        var sideTextHeight = 80;
-        this.targetSpeedBgSVG = document.createElementNS(Avionics.SVG.NS, "rect");
-        this.targetSpeedBgSVG.setAttribute("x", "90");
-        this.targetSpeedBgSVG.setAttribute("y", "20");
-        this.targetSpeedBgSVG.setAttribute("width", "80");
-        this.targetSpeedBgSVG.setAttribute("height", "45");
-        this.targetSpeedBgSVG.setAttribute("fill", "black");
-        this.rootGroup.appendChild(this.targetSpeedBgSVG);
-        if (!this.targetSpeedSVG)
-            this.targetSpeedSVG = document.createElementNS(Avionics.SVG.NS, "text");
-        this.targetSpeedSVG.textContent = ".000";
-        this.targetSpeedSVG.setAttribute("x", "165");
-        this.targetSpeedSVG.setAttribute("y", (posY + sideTextHeight * 0.5).toString());
-        this.targetSpeedSVG.setAttribute("fill", "#D570FF");
-        this.targetSpeedSVG.setAttribute("font-size", (this.fontSize * 1.5).toString());
-        this.targetSpeedSVG.setAttribute("font-family", "Roboto-bold");
-        this.targetSpeedSVG.setAttribute("text-anchor", "end");
-        this.targetSpeedSVG.setAttribute("alignment-baseline", "central");
-        this.rootGroup.appendChild(this.targetSpeedSVG);
-        posY += sideTextHeight;
-        if (!this.centerSVG) {
-            this.centerSVG = document.createElementNS(Avionics.SVG.NS, "svg");
-            this.centerSVG.setAttribute("id", "CenterGroup");
-        }
-        else
-            Utils.RemoveAllChildren(this.centerSVG);
-        this.centerSVG.setAttribute("x", (posX - width * 0.5).toString());
-        this.centerSVG.setAttribute("y", posY.toString());
-        this.centerSVG.setAttribute("width", (width + 30 + arcWidth).toString());
-        this.centerSVG.setAttribute("height", height.toString());
-        this.centerSVG.setAttribute("viewBox", "0 0 " + (width + arcWidth) + " " + height);
-        {
-            var _top = 0;
-            var _left = 7;
-            var _width = width;
-            var _height = height;
-            var bg = document.createElementNS(Avionics.SVG.NS, "rect");
-            bg.setAttribute("x", _left.toString());
-            bg.setAttribute("y", _top.toString());
-            bg.setAttribute("width", _width.toString());
-            bg.setAttribute("height", _height.toString());
-            bg.setAttribute("fill", "black");
-            bg.setAttribute("fill-opacity", "0.3");
-            this.centerSVG.appendChild(bg);
-            var graduationGroup = document.createElementNS(Avionics.SVG.NS, "g");
-            graduationGroup.setAttribute("id", "Graduations");
-            {
-                this.graduationScrollPosX = _left + _width;
-                this.graduationScrollPosY = _top + _height * 0.505;
-                this.graduations = [];
-                for (var i = 0; i < this.totalGraduations; i++) {
-                    var line = new Avionics.SVGGraduation();
-                    line.IsPrimary = (i % (this.nbSecondaryGraduations + 1)) ? false : true;
-                    var lineWidth = line.IsPrimary ? 22 : 22;
-                    var lineHeight = line.IsPrimary ? 3 : 3;
-                    var linePosX = -lineWidth;
-                    line.SVGLine = document.createElementNS(Avionics.SVG.NS, "rect");
-                    line.SVGLine.setAttribute("x", linePosX.toString());
-                    line.SVGLine.setAttribute("width", lineWidth.toString());
-                    line.SVGLine.setAttribute("height", lineHeight.toString());
-                    line.SVGLine.setAttribute("fill", "white");
-                    if (line.IsPrimary) {
-                        line.SVGText1 = document.createElementNS(Avionics.SVG.NS, "text");
-                        line.SVGText1.setAttribute("x", (linePosX - 10).toString());
-                        line.SVGText1.setAttribute("fill", "white");
-                        line.SVGText1.setAttribute("font-size", (this.fontSize * 1.1).toString());
-                        line.SVGText1.setAttribute("font-family", "Roboto-Bold");
-                        line.SVGText1.setAttribute("text-anchor", "end");
-                        line.SVGText1.setAttribute("alignment-baseline", "central");
-                    }
-                    this.graduations.push(line);
-                }
-                for (var i = 0; i < this.totalGraduations; i++) {
-                    var line = this.graduations[i];
-                    graduationGroup.appendChild(line.SVGLine);
-                    if (line.SVGText1) {
-                        graduationGroup.appendChild(line.SVGText1);
-                    }
-                }
-                this.centerSVG.appendChild(graduationGroup);
-            }
-            var cursorPosX = _left - 7;
-            var cursorPosY = _top + _height * 0.5 + 7;
-            var cursorWidth = width;
-            var cursorHeight = 76;
-            if (!this.cursorSVG) {
-                this.cursorSVG = document.createElementNS(Avionics.SVG.NS, "svg");
-                this.cursorSVG.setAttribute("id", "CursorGroup");
-            }
-            else
-                Utils.RemoveAllChildren(this.cursorSVG);
-            this.cursorSVG.setAttribute("x", cursorPosX.toString());
-            this.cursorSVG.setAttribute("y", (cursorPosY - cursorHeight * 0.5).toString());
-            this.cursorSVG.setAttribute("width", cursorWidth.toString());
-            this.cursorSVG.setAttribute("height", cursorHeight.toString());
-            this.cursorSVG.setAttribute("viewBox", "0 2 " + cursorWidth + " " + cursorHeight);
-            {
-                if (!this.cursorSVGShape)
-                    this.cursorSVGShape = document.createElementNS(Avionics.SVG.NS, "path");
-                this.cursorSVGShape.setAttribute("fill", "black");
-                this.cursorSVGShape.setAttribute("d", "M2 2 L76 2 L76 28 L88 38 L76 50 L76 78 L2 78 Z");
-                this.cursorSVGShape.setAttribute("stroke", "white");
-                this.cursorSVGShape.setAttribute("stroke-width", "0.85");
-                this.cursorSVG.appendChild(this.cursorSVGShape);
-                var _cursorPosX = -14;
-                var _cursorPosY = cursorHeight * 0.5;
-                if (!this.cursorSVGMainText)
-                    this.cursorSVGMainText = document.createElementNS(Avionics.SVG.NS, "text");
-                this.cursorSVGMainText.setAttribute("width", _width.toString());
-                this.cursorSVGMainText.setAttribute("fill", "white");
-                this.cursorSVGMainText.setAttribute("font-size", (this.fontSize * 1.5).toString());
-                this.cursorSVGMainText.setAttribute("font-family", "Roboto-Bold");
-                this.cursorSVGMainText.setAttribute("text-anchor", "end");
-                this.cursorSVGMainText.setAttribute("alignment-baseline", "central");
-                this.cursorSVGMainText.setAttribute("transform", "translate(" + (_cursorPosX + 65).toString() + " " + (_cursorPosY).toString() + ")");
-                this.cursorSVG.appendChild(this.cursorSVGMainText);
-                this.cursorScrollPosX = _cursorPosX + 87;
-                this.cursorScrollPosY = _cursorPosY;
-                if (!this.cursorSVGScrollTexts) {
-                    this.cursorSVGScrollTexts = [];
-                    for (var i = 0; i < this.cursorScrollNbTexts; i++) {
-                        var text = document.createElementNS(Avionics.SVG.NS, "text");
-                        text.setAttribute("width", _width.toString());
-                        text.setAttribute("fill", "white");
-                        text.setAttribute("font-size", (this.fontSize * 1.5).toString());
-                        text.setAttribute("font-family", "Roboto-Bold");
-                        text.setAttribute("text-anchor", "end");
-                        text.setAttribute("alignment-baseline", "central");
-                        this.cursorSVGScrollTexts.push(text);
-                    }
-                }
-                for (var i = 0; i < this.cursorSVGScrollTexts.length; i++) {
-                    this.cursorSVG.appendChild(this.cursorSVGScrollTexts[i]);
-                }
-            }
-            this.speedNotSetSVG = document.createElementNS(Avionics.SVG.NS, "g");
-            this.speedNotSetSVG.setAttribute("id", "speedNotSet");
-            {
-                let textPosX = _left + _width * 1.25;
-                let textPosY = _top + _height * 0.325;
-                let textSpace = 25;
-                let text = document.createElementNS(Avionics.SVG.NS, "text");
-                text.textContent = "NO";
-                text.setAttribute("x", textPosX.toString());
-                text.setAttribute("y", textPosY.toString());
-                text.setAttribute("fill", "orange");
-                text.setAttribute("font-size", (this.fontSize * 1.0).toString());
-                text.setAttribute("font-family", "Roboto-Bold");
-                text.setAttribute("text-anchor", "middle");
-                text.setAttribute("alignment-baseline", "central");
-                this.speedNotSetSVG.appendChild(text);
-                textPosY += textSpace;
-                text = document.createElementNS(Avionics.SVG.NS, "text");
-                text.textContent = "V";
-                text.setAttribute("x", textPosX.toString());
-                text.setAttribute("y", textPosY.toString());
-                text.setAttribute("fill", "orange");
-                text.setAttribute("font-size", (this.fontSize * 1.0).toString());
-                text.setAttribute("font-family", "Roboto-Bold");
-                text.setAttribute("text-anchor", "middle");
-                text.setAttribute("alignment-baseline", "central");
-                this.speedNotSetSVG.appendChild(text);
-                textPosY += textSpace;
-                text = document.createElementNS(Avionics.SVG.NS, "text");
-                text.textContent = "S";
-                text.setAttribute("x", textPosX.toString());
-                text.setAttribute("y", textPosY.toString());
-                text.setAttribute("fill", "orange");
-                text.setAttribute("font-size", (this.fontSize * 1.0).toString());
-                text.setAttribute("font-family", "Roboto-Bold");
-                text.setAttribute("text-anchor", "middle");
-                text.setAttribute("alignment-baseline", "central");
-                this.speedNotSetSVG.appendChild(text);
-                textPosY += textSpace;
-                text = document.createElementNS(Avionics.SVG.NS, "text");
-                text.textContent = "P";
-                text.setAttribute("x", textPosX.toString());
-                text.setAttribute("y", textPosY.toString());
-                text.setAttribute("fill", "orange");
-                text.setAttribute("font-size", (this.fontSize * 1.0).toString());
-                text.setAttribute("font-family", "Roboto-Bold");
-                text.setAttribute("text-anchor", "middle");
-                text.setAttribute("alignment-baseline", "central");
-                this.speedNotSetSVG.appendChild(text);
-                textPosY += textSpace;
-                text = document.createElementNS(Avionics.SVG.NS, "text");
-                text.textContent = "D";
-                text.setAttribute("x", textPosX.toString());
-                text.setAttribute("y", textPosY.toString());
-                text.setAttribute("fill", "orange");
-                text.setAttribute("font-size", (this.fontSize * 1.0).toString());
-                text.setAttribute("font-family", "Roboto-Bold");
-                text.setAttribute("text-anchor", "middle");
-                text.setAttribute("alignment-baseline", "central");
-                this.speedNotSetSVG.appendChild(text);
-            }
-            var targetSpeedPointerPosX = _left + _width * 0.77;
-            var targetSpeedPointerPosY = _top + _height * 0.5;
-            var targetSpeedPointerWidth = width;
-            this.targetSpeedPointerHeight = 40;
-            this.targetSpeedPointerSVG = document.createElementNS(Avionics.SVG.NS, "svg");
-            this.targetSpeedPointerSVG.setAttribute("id", "TargetSpeedPointerGroup");
-            this.targetSpeedPointerSVG.setAttribute("x", targetSpeedPointerPosX.toString());
-            this.targetSpeedPointerSVG.setAttribute("y", (targetSpeedPointerPosY - this.targetSpeedPointerHeight * 0.5).toString());
-            this.targetSpeedPointerSVG.setAttribute("width", targetSpeedPointerWidth.toString());
-            this.targetSpeedPointerSVG.setAttribute("height", this.targetSpeedPointerHeight.toString());
-            this.targetSpeedPointerSVG.setAttribute("viewBox", "0 0 " + targetSpeedPointerWidth + " " + this.targetSpeedPointerHeight);
-            {
-                let shape = document.createElementNS(Avionics.SVG.NS, "path");
-                shape.setAttribute("fill", "none");
-                shape.setAttribute("stroke", "#D570FF");
-                shape.setAttribute("stroke-width", "2");
-                shape.setAttribute("d", "M 0 22 L 25 10 L 52 10 L 52 34 L 25 34 Z");
-                this.targetSpeedPointerSVG.appendChild(shape);
-            }
-            if (!this.speedTrendArrowSVG) {
-                this.speedTrendArrowSVG = document.createElementNS(Avionics.SVG.NS, "svg");
-                this.speedTrendArrowSVG.setAttribute("id", "SpeedTrendArrowGroup");
-            }
-            else
-                Utils.RemoveAllChildren(this.speedTrendArrowSVG);
-            this.speedTrendArrowSVG.setAttribute("x", "18");
-            this.speedTrendArrowSVG.setAttribute("y", "0");
-            this.speedTrendArrowSVG.setAttribute("width", "250");
-            this.speedTrendArrowSVG.setAttribute("height", height.toString());
-            this.speedTrendArrowSVG.setAttribute("viewBox", "0 0 250 " + height.toString());
-            {
-                if (!this.speedTrendArrowSVGShape)
-                    this.speedTrendArrowSVGShape = document.createElementNS(Avionics.SVG.NS, "path");
-                this.speedTrendArrowSVGShape.setAttribute("fill", "none");
-                this.speedTrendArrowSVGShape.setAttribute("stroke", "green");
-                this.speedTrendArrowSVGShape.setAttribute("stroke-width", "2");
-                this.speedTrendArrowSVG.appendChild(this.speedTrendArrowSVGShape);
-            }
-            var stripViewPosX = _left + _width;
-            var stripViewPosY = this.stripBorderSize;
-            var stripViewWidth = width;
-            var stripViewHeight = _height - this.stripBorderSize * 2;
-            if (!this.stripsSVG) {
-                this.stripsSVG = document.createElementNS(Avionics.SVG.NS, "svg");
-                this.stripsSVG.setAttribute("id", "StripsGroup");
-            }
-            else
-                Utils.RemoveAllChildren(this.stripsSVG);
-            this.stripsSVG.setAttribute("x", stripViewPosX.toFixed(0));
-            this.stripsSVG.setAttribute("y", stripViewPosY.toFixed(0));
-            this.stripsSVG.setAttribute("width", stripViewWidth.toFixed(0));
-            this.stripsSVG.setAttribute("height", stripViewHeight.toFixed(0));
-            this.stripsSVG.setAttribute("viewBox", "0 0 " + stripViewWidth + " " + stripViewHeight);
-            {
-                this.stripHeight = stripViewHeight * 3;
-                this.vMaxStripSVG = document.createElementNS(Avionics.SVG.NS, "g");
-                this.vMaxStripSVG.setAttribute("id", "VMax");
-                {
-                    let stripWidth = 14;
-                    let shape = document.createElementNS(Avionics.SVG.NS, "path");
-                    shape.setAttribute("fill", "black");
-                    shape.setAttribute("stroke", "none");
-                    shape.setAttribute("d", "M 0 0 l " + stripWidth + " 0 l 0 " + (this.stripHeight) + " l " + (-stripWidth) + " 0 Z");
-                    this.vMaxStripSVG.appendChild(shape);
-                    let dashHeight = stripWidth * 1.0;
-                    let dashSpacing = dashHeight * 1.15;
-                    let y = this.stripHeight - dashHeight;
-                    while (y > 0) {
-                        let rect = document.createElementNS(Avionics.SVG.NS, "rect");
-                        rect.setAttribute("fill", "red");
-                        rect.setAttribute("x", "0");
-                        rect.setAttribute("y", y.toString());
-                        rect.setAttribute("width", stripWidth.toString());
-                        rect.setAttribute("height", dashHeight.toString());
-                        this.vMaxStripSVG.appendChild(rect);
-                        y -= dashHeight + dashSpacing;
-                    }
-                }
-                this.stripsSVG.appendChild(this.vMaxStripSVG);
-                this.stallProtMinStripSVG = document.createElementNS(Avionics.SVG.NS, "g");
-                this.stallProtMinStripSVG.setAttribute("id", "StallProtMin");
-                {
-                    let stripWidth = 9;
-                    let shape = document.createElementNS(Avionics.SVG.NS, "path");
-                    shape.setAttribute("fill", "none");
-                    shape.setAttribute("stroke", "orange");
-                    shape.setAttribute("stroke-width", "3");
-                    shape.setAttribute("d", "M 0 0 l " + stripWidth + " 0 l 0 " + (this.stripHeight) + " l " + (-stripWidth) + " 0 Z");
-                    this.stallProtMinStripSVG.appendChild(shape);
-                }
-                this.stripsSVG.appendChild(this.stallProtMinStripSVG);
-                this.stallProtMaxStripSVG = document.createElementNS(Avionics.SVG.NS, "g");
-                this.stallProtMaxStripSVG.setAttribute("id", "StallProtMax");
-                {
-                    let stripWidth = 14;
-                    let shape = document.createElementNS(Avionics.SVG.NS, "path");
-                    shape.setAttribute("fill", "black");
-                    shape.setAttribute("stroke", "none");
-                    shape.setAttribute("d", "M 0 0 l " + stripWidth + " 0 l 0 " + (this.stripHeight) + " l " + (-stripWidth) + " 0 Z");
-                    this.stallProtMaxStripSVG.appendChild(shape);
-                    let dashHeight = stripWidth * 1.0;
-                    let dashSpacing = dashHeight * 1.15;
-                    let y = 0;
-                    while (y < this.stripHeight) {
-                        let rect = document.createElementNS(Avionics.SVG.NS, "rect");
-                        rect.setAttribute("fill", "red");
-                        rect.setAttribute("x", "0");
-                        rect.setAttribute("y", y.toString());
-                        rect.setAttribute("width", stripWidth.toString());
-                        rect.setAttribute("height", dashHeight.toString());
-                        this.stallProtMaxStripSVG.appendChild(rect);
-                        y += dashHeight + dashSpacing;
-                    }
-                }
-                this.stripsSVG.appendChild(this.stallProtMaxStripSVG);
-            }
-            var speedMarkersPosX = _left + _width - 5;
-            var speedMarkersPosY = 0;
-            this.speedMarkersWidth = width;
-            this.speedMarkersHeight = 70;
-            let nbHandles = Simplane.getFlapsNbHandles();
-            for (let i = 0; i < nbHandles; i++) {
-                this.createSpeedMarker("", speedMarkersPosX, speedMarkersPosY, this.updateMarkerFlap, 0.8, 1, "#24F000", false, [i]);
-            }
-            this.createSpeedMarker("V1", speedMarkersPosX, speedMarkersPosY, this.updateMarkerV1, 0.8, 1, "#24F000");
-            this.createSpeedMarker("VR", speedMarkersPosX, speedMarkersPosY, this.updateMarkerVR, 0.8, 1, "#24F000");
-            this.createSpeedMarker("V2", speedMarkersPosX, speedMarkersPosY, this.updateMarkerV2, 0.8, 1, "#24F000");
-            this.createSpeedMarker("REF", speedMarkersPosX, speedMarkersPosY, this.updateMarkerVRef, 0.8, 1, "#24F000");
-            this.centerSVG.appendChild(this.stripsSVG);
-            this.centerSVG.appendChild(this.speedNotSetSVG);
-            this.centerSVG.appendChild(this.cursorSVG);
-            this.centerSVG.appendChild(this.speedMarkerSVG);
-            this.centerSVG.appendChild(this.targetSpeedPointerSVG);
-            this.centerSVG.appendChild(this.speedTrendArrowSVG);
-        }
-        this.rootGroup.appendChild(this.centerSVG);
-        {
-            this.machPrefixSVG = document.createElementNS(Avionics.SVG.NS, "text");
-            this.machPrefixSVG.textContent = ".";
-            this.machPrefixSVG.setAttribute("x", (posX + 8).toString());
-            this.machPrefixSVG.setAttribute("y", (posY + height + sideTextHeight * 0.58).toString());
-            this.machPrefixSVG.setAttribute("fill", "white");
-            this.machPrefixSVG.setAttribute("font-size", (this.fontSize * 1.1).toString());
-            this.machPrefixSVG.setAttribute("font-family", "Roboto-Bold");
-            this.machPrefixSVG.setAttribute("text-anchor", "end");
-            this.machPrefixSVG.setAttribute("alignment-baseline", "top");
-            this.rootGroup.appendChild(this.machPrefixSVG);
-            this.machValueSVG = document.createElementNS(Avionics.SVG.NS, "text");
-            this.machValueSVG.textContent = "000";
-            this.machValueSVG.setAttribute("x", (posX + 12).toString());
-            this.machValueSVG.setAttribute("y", (posY + height + sideTextHeight * 0.58).toString());
-            this.machValueSVG.setAttribute("fill", "white");
-            this.machValueSVG.setAttribute("font-size", (this.fontSize * 1.25).toString());
-            this.machValueSVG.setAttribute("font-family", "Roboto-Bold");
-            this.machValueSVG.setAttribute("text-anchor", "start");
-            this.machValueSVG.setAttribute("alignment-baseline", "top");
-            this.rootGroup.appendChild(this.machValueSVG);
-        }
-        this.rootSVG.appendChild(this.rootGroup);
-        this.appendChild(this.rootSVG);
+        this.construct_A320_Neo();
     }
     construct_A320_Neo() {
         this.rootSVG = document.createElementNS(Avionics.SVG.NS, "svg");
@@ -1539,7 +404,7 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
                 {
                     let stripWidth = 14;
                     let shape = document.createElementNS(Avionics.SVG.NS, "path");
-                    shape.setAttribute("fill", "black");
+                    shape.setAttribute("fill", "url(#Backlight)");
                     shape.setAttribute("stroke", "red");
                     shape.setAttribute("d", "M 0 0 l " + stripWidth + " 0 l 0 " + (this.stripHeight) + " l " + (-stripWidth) + " 0 Z");
                     this.vMaxStripSVG.appendChild(shape);
@@ -1563,7 +428,7 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
                 {
                     let stripWidth = 9;
                     let shape = document.createElementNS(Avionics.SVG.NS, "path");
-                    shape.setAttribute("fill", "black");
+                    shape.setAttribute("fill", "url(#Backlight)");
                     shape.setAttribute("stroke", "orange");
                     shape.setAttribute("d", "M 0 0 l " + stripWidth + " 0 l 0 " + (this.stripHeight) + " l " + (-stripWidth) + " 0 Z");
                     this.vLSStripSVG.appendChild(shape);
@@ -1574,7 +439,7 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
                 {
                     let stripWidth = 14;
                     let shape = document.createElementNS(Avionics.SVG.NS, "path");
-                    shape.setAttribute("fill", "black");
+                    shape.setAttribute("fill", "url(#Backlight)");
                     shape.setAttribute("stroke", "orange");
                     shape.setAttribute("d", "M 0 0 l " + stripWidth + " 0 l 0 " + (this.stripHeight) + " l " + (-stripWidth) + " 0 Z");
                     this.stallProtMinStripSVG.appendChild(shape);
@@ -1706,16 +571,15 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
         let indicatedSpeed = Simplane.getIndicatedSpeed();
         if (!this.altOver20k && Simplane.getAltitude() >= 20000)
             this.altOver20k = true;
-        this.updateArcScrolling(indicatedSpeed);
         this.updateGraduationScrolling(indicatedSpeed);
-        this.updateCursorScrolling(indicatedSpeed);
         let iasAcceleration = this.computeIAS(indicatedSpeed);
         let speedTrend = iasAcceleration;
         let crossSpeed = SimVar.GetGameVarValue("AIRCRAFT CROSSOVER SPEED", "Knots");
         let cruiseMach = SimVar.GetGameVarValue("AIRCRAFT CRUISE MACH", "mach");
         let crossSpeedFactor = Simplane.getCrossoverSpeedFactor(crossSpeed, cruiseMach);
         let nextFlapSpeed = Simplane.getNextFlapsExtendSpeed(this.aircraft) * crossSpeedFactor;
-        let maxSpeed = Simplane.getMaxSpeed(this.aircraft) * crossSpeedFactor;
+        // Value used to draw the red VMAX barber pole
+        let maxSpeed = A32NX_Selectors.VMAX();
         let greenDot = Simplane.getGreenDotSpeed() * crossSpeedFactor;
         let lowestSelectableSpeed = Simplane.getLowestSelectableSpeed();
         let stallProtectionMin = Simplane.getStallProtectionMinSpeed();
@@ -1811,12 +675,12 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
             this._lastIASTime = newIASTime;
             return;
         }
-        
+
         let frameIASAcceleration = (newIASTime.ias - this._lastIASTime.ias) / (newIASTime.t - this._lastIASTime.t);
-        
+
         frameIASAcceleration = Math.min(frameIASAcceleration, 10);
         frameIASAcceleration = Math.max(frameIASAcceleration, -10);
-        
+
         if (isFinite(frameIASAcceleration)) {
             // Low pass filter for accel : https://en.wikipedia.org/wiki/Low-pass_filter
             this._computedIASAcceleration += this._accelAlpha * (frameIASAcceleration - this._computedIASAcceleration);
@@ -1851,7 +715,7 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
             if (this.aircraft == Aircraft.B747_8 || this.aircraft == Aircraft.AS01B) {
                 if ((!this.machVisible && this.machSpeed >= 0.4) || (this.machVisible && this.machSpeed >= 0.35)) {
                     var fixedMach = this.machSpeed.toFixed(3);
-                    var radixPos = fixedMach.indexOf('.');
+                    var radixPos = fixedMach.indexOf(".");
                     this.machPrefixSVG.textContent = ".";
                     this.machValueSVG.textContent = fixedMach.slice(radixPos + 1);
                     this.machVisible = true;
@@ -1866,7 +730,7 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
             else if (this.aircraft == Aircraft.CJ4) {
                 if ((!this.machVisible && this.machSpeed >= 0.4) || (this.machVisible && this.machSpeed >= 0.35)) {
                     var fixedMach = this.machSpeed.toFixed(3);
-                    var radixPos = fixedMach.indexOf('.');
+                    var radixPos = fixedMach.indexOf(".");
                     this.machPrefixSVG.textContent = ".";
                     this.machValueSVG.textContent = fixedMach.slice(radixPos + 1);
                     this.machVisible = true;
@@ -1875,7 +739,7 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
             else {
                 var fixedMach = this.machSpeed.toFixed(3);
                 if ((!this.machVisible && this.machSpeed >= 0.5) || (this.machVisible && this.machSpeed >= 0.45)) {
-                    var radixPos = fixedMach.indexOf('.');
+                    var radixPos = fixedMach.indexOf(".");
                     this.machValueSVG.textContent = fixedMach.slice(radixPos + 1);
                     this.machVisible = true;
                 }
@@ -1950,41 +814,6 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
                 var offsetY = (Math.min((startVal - this.graduationMinValue), 0) / 10) * this.graduationSpacing * (this.nbSecondaryGraduations) * factor;
                 this.graduationVLine.setAttribute("y1", Math.ceil(startY + offsetY).toString());
                 this.graduationVLine.setAttribute("y2", Math.floor(currentY + offsetY).toString());
-            }
-        }
-    }
-    updateArcScrolling(_speed) {
-        if (this.arcs) {
-            var offset = this.arcToSVG(_speed);
-            for (var i = 0; i < this.arcs.length; i++) {
-                this.arcs[i].setAttribute("transform", "translate(0 " + offset.toString() + ")");
-            }
-        }
-    }
-    updateCursorScrolling(_speed) {
-        if (this.cursorSVGScrollTexts) {
-            if (_speed < this.graduationMinValue && this.aircraft != Aircraft.B747_8 && this.aircraft != Aircraft.AS01B) {
-                this.cursorSVGMainText.textContent = "--";
-                for (var i = 0; i < this.cursorSVGScrollTexts.length; i++) {
-                    this.cursorSVGScrollTexts[i].textContent = "";
-                }
-            }
-            else {
-                let speed = Math.max(_speed, this.graduationMinValue);
-                var integral = Math.trunc(speed / 10);
-                if (integral > 1)
-                    this.cursorSVGMainText.textContent = integral.toString();
-                this.cursorScroller.scroll(speed);
-                var currentVal = this.cursorScroller.firstValue;
-                var currentY = this.cursorScrollPosY + this.cursorScroller.offsetY * this.cursorScrollSpacing;
-                for (var i = 0; i < this.cursorSVGScrollTexts.length; i++) {
-                    var posX = this.cursorScrollPosX;
-                    var posY = currentY;
-                    this.cursorSVGScrollTexts[i].textContent = currentVal.toString();
-                    this.cursorSVGScrollTexts[i].setAttribute("transform", "translate(" + posX.toString() + " " + posY.toString() + ")");
-                    currentY -= this.cursorScrollSpacing;
-                    currentVal = this.cursorScroller.nextValue;
-                }
             }
         }
     }
@@ -2130,7 +959,7 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
                         let machAirspeed = Simplane.getAutoPilotMachHoldValue();
                         if (machAirspeed < 1.0) {
                             var fixedMach = machAirspeed.toFixed(3);
-                            var radixPos = fixedMach.indexOf('.');
+                            var radixPos = fixedMach.indexOf(".");
                             this.targetSpeedSVG.textContent = fixedMach.slice(radixPos);
                         }
                         else {
@@ -2165,9 +994,9 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
             if (this.targetSpeedPointerSVG && hidePointer)
                 this.targetSpeedPointerSVG.setAttribute("visibility", "hidden");
             if (this.targetSpeedBgSVG)
-                this.targetSpeedBgSVG.classList.toggle('hide', hideText);
+                this.targetSpeedBgSVG.classList.toggle("hide", hideText);
             if (this.targetSpeedIconSVG)
-                this.targetSpeedIconSVG.classList.toggle('hide', hideText);
+                this.targetSpeedIconSVG.classList.toggle("hide", hideText);
             if (Simplane.getIsGrounded() && Simplane.getV1Airspeed() <= 0 && Simplane.getVRAirspeed() <= 0 && Simplane.getV2Airspeed() <= 0) {
                 takeOffSpeedNotSet = true;
             }
@@ -2254,7 +1083,7 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
     updateMarkerF(_marker, currentAirspeed) {
         let hideMarker = true;
         let phase = Simplane.getCurrentFlightPhase();
-        let flapsHandleIndex = SimVar.GetSimVarValue("FLAPS HANDLE INDEX", "Number");
+        let flapsHandleIndex = Simplane.getFlapsHandleIndex();
         if (flapsHandleIndex == 2 || flapsHandleIndex == 3) {
             let flapSpeed = 0;
             if (phase == FlightPhase.FLIGHT_PHASE_TAKEOFF || phase == FlightPhase.FLIGHT_PHASE_CLIMB || phase == FlightPhase.FLIGHT_PHASE_GOAROUND) {
@@ -2279,7 +1108,7 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
     updateMarkerS(_marker, currentAirspeed) {
         let hideMarker = true;
         let phase = Simplane.getCurrentFlightPhase();
-        let flapsHandleIndex = SimVar.GetSimVarValue("FLAPS HANDLE INDEX", "Number");
+        let flapsHandleIndex = Simplane.getFlapsHandleIndex();
         if (flapsHandleIndex == 1) {
             let slatSpeed = 0;
             if (phase == FlightPhase.FLIGHT_PHASE_TAKEOFF || phase == FlightPhase.FLIGHT_PHASE_CLIMB || phase == FlightPhase.FLIGHT_PHASE_GOAROUND) {
@@ -2406,7 +1235,7 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
     updateMarkerFlap(_marker, currentAirspeed) {
         let hideMarker = true;
         let phase = Simplane.getCurrentFlightPhase();
-        let flapsHandleIndex = SimVar.GetSimVarValue("FLAPS HANDLE INDEX", "Number");
+        let flapsHandleIndex = Simplane.getFlapsHandleIndex();
         let markerHandleIndex = _marker.params[0];
         if (markerHandleIndex == flapsHandleIndex || markerHandleIndex == (flapsHandleIndex - 1)) {
             if (phase >= FlightPhase.FLIGHT_PHASE_TAKEOFF && ((phase != FlightPhase.FLIGHT_PHASE_CLIMB && phase != FlightPhase.FLIGHT_PHASE_CRUISE) || !this.altOver20k)) {
