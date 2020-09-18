@@ -73,7 +73,7 @@ class CDUInitPage {
         }
         
         mcdu.setTemplate([
-            ["INIT →"],
+            ["INIT ⇄"],
             ["CO RTE", "FROM/TO"],
             [coRoute, fromTo],
             ["ALTN/CO RTE"],
@@ -182,62 +182,9 @@ class CDUInitPage {
     }
     static ShowPage2(mcdu) {
         mcdu.clearDisplay();
-        let taxiFuelCell = "-.-";
-        if (isFinite(mcdu.taxiFuelWeight)) {
-            taxiFuelCell = mcdu.taxiFuelWeight.toFixed(1);
-        }
-        mcdu.onLeftInput[0] = async () => {
-            let value = mcdu.inOut;
-            mcdu.clearUserInput();
-            if (await mcdu.trySetTaxiFuelWeight(value)) {
-                CDUInitPage.updateTowIfNeeded(mcdu);
-                CDUInitPage.ShowPage2(mcdu);
-            }
-        };
-        let tripWeightCell = "--.-";
-        if (isFinite(mcdu.getTotalTripFuelCons())) {
-            console.log("TRIP " + mcdu.getTotalTripFuelCons());
-            tripWeightCell = mcdu.getTotalTripFuelCons().toFixed(1);
-        }
-        let tripTimeCell = "----";
-        if (isFinite(mcdu.getTotalTripTime())) {
-            console.log("TIME " + mcdu.getTotalTripTime());
-            tripTimeCell = FMCMainDisplay.secondsTohhmm(mcdu.getTotalTripTime());
-        }
-        let rteRsvWeightCell = "--.-";
-        let rteRsvWeight = mcdu.getRouteReservedWeight();
-        if (isFinite(rteRsvWeight)) {
-            rteRsvWeightCell = rteRsvWeight.toFixed(1);
-        }
-        let rteRsvPercentCell = "-.-";
-        let rteRsvPercent = mcdu.getRouteReservedPercent();
-        if (isFinite(rteRsvPercent)) {
-            rteRsvPercentCell = rteRsvPercent.toFixed(1);
-        }
-        mcdu.onLeftInput[2] = async () => {
-            let value = mcdu.inOut;
-            mcdu.clearUserInput();
-            if (await mcdu.trySetRouteReservedFuel(value)) {
-                CDUInitPage.ShowPage2(mcdu);
-            }
-        };
-        let rteFinalWeightCell = "--.-";
-        let rteFinalWeight = mcdu.getRouteFinalFuelWeight();
-        if (isFinite(rteFinalWeight)) {
-            rteFinalWeightCell = rteFinalWeight.toFixed(1);
-        }
-        let rteFinalTimeCell = "----";
-        let rteFinalTime = mcdu.getRouteFinalFuelTime();
-        if (isFinite(rteFinalTime)) {
-            rteFinalTimeCell = FMCMainDisplay.secondsTohhmm(rteFinalTime);
-        }
-        mcdu.onLeftInput[4] = async () => {
-            let value = mcdu.inOut;
-            mcdu.clearUserInput();
-            if (await mcdu.trySetRouteFinalFuel(value)) {
-                CDUInitPage.ShowPage2(mcdu);
-            }
-        };
+
+        let initBTitle = "INIT ⇄"
+
         let zfwColor = "[color]red";
         let zfwCell = "□□□.□";
         let zfwCgCell = " /--.-";
@@ -256,9 +203,11 @@ class CDUInitPage {
                 CDUInitPage.ShowPage2(mcdu);
             }
         };
+
         let blockFuel = "□□.□[color]red";
         if (isFinite(mcdu.blockFuel)) {
             blockFuel = mcdu.blockFuel.toFixed(1) + "[color]blue";
+            initBTitle = "INIT FUEL PREDICTION ⇄"
         }
         mcdu.onRightInput[1] = async () => {
             let value = mcdu.inOut;
@@ -268,27 +217,100 @@ class CDUInitPage {
                 CDUInitPage.ShowPage2(mcdu);
             }
         };
-        let towCell = "---.-";
-        let lwCell = "---.-";
-        if (isFinite(mcdu.takeOffWeight)) {
-            towCell = mcdu.takeOffWeight.toFixed(1);
+
+        let taxiFuelCell = "0.2";
+        if (isFinite(mcdu.taxiFuelWeight)) {
+            taxiFuelCell = mcdu.taxiFuelWeight.toFixed(1);
         }
-        if (isFinite(mcdu.landingWeight)) {
-            lwCell = mcdu.landingWeight.toFixed(1);
-        }
-        let tripWindCell = "---.-";
-        if (isFinite(mcdu.averageWind)) {
-            tripWindCell = mcdu.averageWind.toFixed(1);
-        }
-        mcdu.onRightInput[4] = async () => {
+        mcdu.onLeftInput[0] = async () => {
             let value = mcdu.inOut;
             mcdu.clearUserInput();
-            if (await mcdu.trySetAverageWind(value)) {
+            if (await mcdu.trySetTaxiFuelWeight(value)) {
+                CDUInitPage.updateTowIfNeeded(mcdu);
                 CDUInitPage.ShowPage2(mcdu);
             }
         };
+
+        let rteRsvPercentCell = "5.0";
+        let rteRsvPercent = mcdu.getRouteReservedPercent();
+        if (isFinite(rteRsvPercent)) {
+            rteRsvPercentCell = rteRsvPercent.toFixed(1);
+        }
+        mcdu.onLeftInput[2] = async () => {
+            let value = mcdu.inOut;
+            mcdu.clearUserInput();
+            if (await mcdu.trySetRouteReservedFuel(value)) {
+                CDUInitPage.ShowPage2(mcdu);
+            }
+        };
+
+        let rteFinalTimeCell = "0030";
+        let rteFinalTime = mcdu.getRouteFinalFuelTime();
+        if (isFinite(rteFinalTime)) {
+            rteFinalTimeCell = FMCMainDisplay.secondsTohhmm(rteFinalTime);
+        }
+        mcdu.onLeftInput[4] = async () => {
+            let value = mcdu.inOut;
+            mcdu.clearUserInput();
+            if (await mcdu.trySetRouteFinalFuel(value)) {
+                CDUInitPage.ShowPage2(mcdu);
+            }
+        };
+
+        let tripWeightCell = "--.-";
+        let tripTimeCell = "----";
+
+        let rteRsvWeightCell = "--.-";
+        let rteFinalWeightCell = "--.-";
+
+        let towCell = "---.-";
+        let lwCell = "---.-";
+
+        let tripWindCell = "---.-";
+        // The below three are required for fuel prediction to occur
+        if (isFinite(mcdu.blockFuel) && isFinite(mcdu.zeroFuelWeightMassCenter) && isFinite(mcdu.zeroFuelWeight)) {
+            
+            if (isFinite(mcdu.getTotalTripFuelCons())) {
+                console.log("TRIP " + mcdu.getTotalTripFuelCons());
+                tripWeightCell = mcdu.getTotalTripFuelCons().toFixed(1);
+            }
+            
+            if (isFinite(mcdu.getTotalTripTime())) {
+                console.log("TIME " + mcdu.getTotalTripTime());
+                tripTimeCell = FMCMainDisplay.secondsTohhmm(mcdu.getTotalTripTime());
+            }
+            
+            let rteRsvWeight = mcdu.getRouteReservedWeight();
+            if (isFinite(rteRsvWeight)) {
+                rteRsvWeightCell = rteRsvWeight.toFixed(1);
+            }
+            
+            let rteFinalWeight = mcdu.getRouteFinalFuelWeight();
+            if (isFinite(rteFinalWeight)) {
+                rteFinalWeightCell = rteFinalWeight.toFixed(1);
+            }
+            
+            if (isFinite(mcdu.takeOffWeight)) {
+                towCell = mcdu.takeOffWeight.toFixed(1);
+            }
+            if (isFinite(mcdu.landingWeight)) {
+                lwCell = mcdu.landingWeight.toFixed(1);
+            }
+            
+            if (isFinite(mcdu.averageWind)) {
+                tripWindCell = mcdu.averageWind.toFixed(1);
+            }
+            mcdu.onRightInput[4] = async () => {
+                let value = mcdu.inOut;
+                mcdu.clearUserInput();
+                if (await mcdu.trySetAverageWind(value)) {
+                    CDUInitPage.ShowPage2(mcdu);
+                }
+            };
+        }
+        
         mcdu.setTemplate([
-            ["INIT →"],
+            [initBTitle],
             ["TAXI", "ZFW /ZFWCG"],
             [taxiFuelCell + "[color]blue", zfwCell + zfwCgCell + zfwColor],
             ["TRIP/TIME", "BLOCK"],
