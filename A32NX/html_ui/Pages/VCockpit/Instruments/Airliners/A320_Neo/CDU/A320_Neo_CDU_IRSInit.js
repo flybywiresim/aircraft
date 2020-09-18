@@ -1,9 +1,9 @@
 class CDUIRSInit {
-    static ShowPage(mcdu, lon, originAirportLat, originAirportLon) {
+    static ShowPage(mcdu, lon, originAirportLat, originAirportLon, referenceName, originAirportCoordinates) {
         mcdu.clearDisplay();
         mcdu.setTitle('IRS INIT');
         const checkAligned = SimVar.GetSimVarValue("L:A320_Neo_ADIRS_STATE", "Number");
-        const emptyIRSGpsString = "--°--.--/---°--.--"
+        const emptyIRSGpsString = "--°--.--/---°--.--";
         const arrowupdwn = "↑↓";
         let larrowupdwn = arrowupdwn;
         let rarrowupdwn = "";
@@ -21,6 +21,11 @@ class CDUIRSInit {
             originAirportLon = CDUInitPage.ConvertDDToDMS(airportCoordinates['long'], true);
             originAirportLat['sec'] = Math.ceil(Number(originAirportLat['sec'] / 100));
             originAirportLon['sec'] = Math.ceil(Number(originAirportLon['sec'] / 100));
+            referenceName = mcdu.flightPlanManager.getOrigin().ident + " [color]green";
+            originAirportCoordinates = JSON.stringify(originAirportLat) + JSON.stringify(originAirportLon);
+        }
+        if (originAirportCoordinates == JSON.stringify(originAirportLat) + JSON.stringify(originAirportLon)) {
+            referenceName = mcdu.flightPlanManager.getOrigin().ident + " [color]green";
         }
         const currentGPSLat = CDUInitPage.ConvertDDToDMS(SimVar.GetSimVarValue("GPS POSITION LAT", "degree latitude"), false);
         const currentGPSLon = CDUInitPage.ConvertDDToDMS(SimVar.GetSimVarValue("GPS POSITION LON", "degree longitude"), true);
@@ -70,7 +75,7 @@ class CDUIRSInit {
         mcdu.setTemplate([
             ["IRS INIT"],
             ["LAT" + larrowupdwn , rarrowupdwn + "LONG", "REFERENCE",],
-            ['{IrsInitFont}' + originAirportLat['deg'] + '°{IrsInitFontEnd}' + originAirportLat['min'] + '.' + originAirportLat['sec'] + '[s-text]{IrsInitFont}' + originAirportLat['dir'] + "{IrsInitFontEnd} [color]blue", '{IrsInitFont}' + originAirportLon['deg'] + '°{IrsInitFontEnd}' + originAirportLon['min'] + '.' + originAirportLon['sec'] + '[s-text]{IrsInitFont}' + originAirportLon['dir'] + "{IrsInitFontEnd} [color]blue", mcdu.flightPlanManager.getOrigin().ident + " [color]green"],
+            ['{IrsInitFont}' + originAirportLat['deg'] + '°{IrsInitFontEnd}' + originAirportLat['min'] + '.' + originAirportLat['sec'] + '[s-text]{IrsInitFont}' + originAirportLat['dir'] + "{IrsInitFontEnd} [color]blue", '{IrsInitFont}' + originAirportLon['deg'] + '°{IrsInitFontEnd}' + originAirportLon['min'] + '.' + originAirportLon['sec'] + '[s-text]{IrsInitFont}' + originAirportLon['dir'] + "{IrsInitFontEnd} [color]blue", referenceName ],
             ["LAT", "LONG", "GPS POSITION"],
             GPSPosAlign,
             ["", "", statusIRS1],
@@ -82,7 +87,7 @@ class CDUIRSInit {
             [],
             ["<RETURN", alignMsg]
         ]);
-        
+
         // IRS Font is different we loop over keywords to set correct font since at the moment we cannot adapt FMCMainDisplay.js to allow for extra keywords
         mcdu._lineElements.forEach(function (ele) {
             ele.forEach(function (el) {
@@ -117,11 +122,11 @@ class CDUIRSInit {
         };
 
         mcdu.onUp = () => {
+            referenceName = "----"
             let activeReference = originAirportLat;
             if (lon) {
                 activeReference = originAirportLon;
             }
-            console.log(activeReference['deg'])
             if (activeReference['deg'] >= 90 && !lon || activeReference['deg'] >= 180 && lon) {
                 mcdu.showErrorMessage("INVALID ENTRY");
             } else {
@@ -140,6 +145,7 @@ class CDUIRSInit {
         };
 
         mcdu.onDown = () => {
+            referenceName = "----"
             let activeReference = originAirportLat;
             if (lon) {
                 activeReference = originAirportLon;
@@ -164,7 +170,9 @@ class CDUIRSInit {
         function autoRefresh() {
             setTimeout(() => {
                 if (mcdu.getTitle() == 'IRS INIT') {
-                    CDUIRSInit.ShowPage(mcdu, lon = lon, originAirportLat=originAirportLat, originAirportLon=originAirportLon);
+                    CDUIRSInit.ShowPage(mcdu, lon = lon,
+                        originAirportLat=originAirportLat, originAirportLon=originAirportLon,
+                        referenceName=referenceName, originAirportCoordinates=originAirportCoordinates);
                 }
             }, 1000);
         }
