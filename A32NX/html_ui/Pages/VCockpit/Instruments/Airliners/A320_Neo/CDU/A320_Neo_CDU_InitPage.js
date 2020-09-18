@@ -53,7 +53,7 @@ class CDUInitPage {
         let alignOption;
 
         if (mcdu.flightPlanManager.getOrigin()) {
-            alignOption = "IRS INIT>"
+            alignOption = "IRS INIT>";
         }
         let flightNo = SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string", "FMC");
         if (!flightNo) {

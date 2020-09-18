@@ -1,5 +1,5 @@
 class CDUIRSInit {
-    static ShowPage(mcdu, lon) {
+    static ShowPage(mcdu, lon, originAirportLat, originAirportLon) {
         mcdu.clearDisplay();
         mcdu.setTitle('IRS INIT');
         const checkAligned = SimVar.GetSimVarValue("L:A320_Neo_ADIRS_STATE", "Number");
@@ -15,9 +15,13 @@ class CDUIRSInit {
         let statusIRS2;
         let statusIRS3;
         // Ref coordinates are taken based on origin airport
-        const airportCoordinates = mcdu.flightPlanManager.getOrigin().infos.coordinates;
-        const originAirportLat = CDUInitPage.ConvertDDToDMS(airportCoordinates['lat'], false);
-        const originAirportLon = CDUInitPage.ConvertDDToDMS(airportCoordinates['long'], true);
+        if (!originAirportLat && !originAirportLon) {
+            const airportCoordinates = mcdu.flightPlanManager.getOrigin().infos.coordinates;
+            originAirportLat = CDUInitPage.ConvertDDToDMS(airportCoordinates['lat'], false);
+            originAirportLon = CDUInitPage.ConvertDDToDMS(airportCoordinates['long'], true);
+            originAirportLat['sec'] = Math.ceil(Number(originAirportLat['sec'] / 100));
+            originAirportLon['sec'] = Math.ceil(Number(originAirportLon['sec'] / 100));
+        }
         const currentGPSLat = CDUInitPage.ConvertDDToDMS(SimVar.GetSimVarValue("GPS POSITION LAT", "degree latitude"), false);
         const currentGPSLon = CDUInitPage.ConvertDDToDMS(SimVar.GetSimVarValue("GPS POSITION LON", "degree longitude"), true);
         let alignMsg = "ALIGN ON REF →[color]blue";
@@ -66,7 +70,7 @@ class CDUIRSInit {
         mcdu.setTemplate([
             ["IRS INIT"],
             ["LAT" + larrowupdwn , rarrowupdwn + "LONG", "REFERENCE",],
-            ['{IrsInitFont}' + originAirportLat['deg'] + '°{IrsInitFontEnd}' + originAirportLat['min'] + '.' + Math.ceil(Number(originAirportLat['sec'] / 100)) + '[s-text]{IrsInitFont}' + originAirportLat['dir'] + "{IrsInitFontEnd} [color]blue", '{IrsInitFont}' + originAirportLon['deg'] + '°{IrsInitFontEnd}' + originAirportLon['min'] + '.' + Math.ceil(Number(originAirportLon['sec'] / 100)) + '[s-text]{IrsInitFont}' + originAirportLon['dir'] + "{IrsInitFontEnd} [color]blue", mcdu.flightPlanManager.getOrigin().ident + " [color]green"],
+            ['{IrsInitFont}' + originAirportLat['deg'] + '°{IrsInitFontEnd}' + originAirportLat['min'] + '.' + originAirportLat['sec'] + '[s-text]{IrsInitFont}' + originAirportLat['dir'] + "{IrsInitFontEnd} [color]blue", '{IrsInitFont}' + originAirportLon['deg'] + '°{IrsInitFontEnd}' + originAirportLon['min'] + '.' + originAirportLon['sec'] + '[s-text]{IrsInitFont}' + originAirportLon['dir'] + "{IrsInitFontEnd} [color]blue", mcdu.flightPlanManager.getOrigin().ident + " [color]green"],
             ["LAT", "LONG", "GPS POSITION"],
             GPSPosAlign,
             ["", "", statusIRS1],
@@ -112,15 +116,57 @@ class CDUIRSInit {
             }
         };
 
+        mcdu.onUp = () => {
+            let activeReference = originAirportLat;
+            if (lon) {
+                activeReference = originAirportLon;
+            }
+            console.log(activeReference['deg'])
+            if (activeReference['deg'] >= 90 && !lon || activeReference['deg'] >= 180 && lon) {
+                mcdu.showErrorMessage("INVALID ENTRY");
+            } else {
+                activeReference['sec'] = activeReference['sec'] + 1
+                if (activeReference['sec'] >= 9) {
+                    // Must be converted to string, if not correct padding does not occur
+                    activeReference['min'] = CDUInitPage.pad(Number(activeReference['min'].toString()) + 1, 2, 0);
+                    activeReference['sec'] = 0;
+                }
+                if (activeReference['min'] >= 60) {
+                    activeReference['min'] = 0;
+                    // Must be converted to string, if not correct padding does not occur
+                    activeReference['deg'] = (!lon) ? activeReference['deg'] + 1 : CDUInitPage.pad(Number(activeReference['deg'].toString()) + 1, 3, 0);
+                }
+            }
+        };
+
+        mcdu.onDown = () => {
+            let activeReference = originAirportLat;
+            if (lon) {
+                activeReference = originAirportLon;
+            }
+            if (activeReference['deg'] <= -90 && !lon || activeReference['deg'] <= -180 && lon) {
+                mcdu.showErrorMessage("INVALID ENTRY");
+            } else {
+                activeReference['sec'] = activeReference['sec'] - 1
+                if (activeReference['sec'] < 0) {
+                    activeReference['min'] = CDUInitPage.pad(Number(activeReference['min'].toString()) - 1, 2, 0);
+                    activeReference['sec'] = 9;
+                }
+                if (activeReference['min'] < 0) {
+                    activeReference['min'] = 59;
+                    activeReference['deg'] = (!lon) ? activeReference['deg'] - 1 : CDUInitPage.pad(Number(activeReference['deg'].toString()) - 1, 3, 0);
+                }
+            }
+        };
 
         // This page auto-refreshes based on source material. Function will stop auto-refreshing when page has been changed.
         autoRefresh();
         function autoRefresh() {
             setTimeout(() => {
                 if (mcdu.getTitle() == 'IRS INIT') {
-                    CDUIRSInit.ShowPage(mcdu, lon = lon);
+                    CDUIRSInit.ShowPage(mcdu, lon = lon, originAirportLat=originAirportLat, originAirportLon=originAirportLon);
                 }
-            }, 2000);
+            }, 1000);
         }
 
     }
