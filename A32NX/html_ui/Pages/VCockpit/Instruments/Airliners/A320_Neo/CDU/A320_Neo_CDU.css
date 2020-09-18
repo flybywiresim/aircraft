@@ -109,6 +109,18 @@ a320-neo-cdu-main-display::after {
 .red {
   color: #ff886d; }
 
+  /**
+  * Colors for the MCDU based on THALES FM2
+  **/
+.magenta {
+  color: #00FFFF;}
+
+.amber {
+  color: #FF9A00}
+
+.green1 {
+  color: #00FF00}
+
 fmc-main-display::before {
   content: " ";
   display: block;

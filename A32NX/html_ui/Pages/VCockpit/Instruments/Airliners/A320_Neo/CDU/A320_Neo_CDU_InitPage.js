@@ -1,32 +1,34 @@
 class CDUInitPage {
     static ShowPage1(mcdu) {
         mcdu.clearDisplay();
-        let fromTo = "□□□□/□□□□[color]red";
-        let cruiseFlTemp = "----- /---°";
+        let fromTo = "□□□□/□□□□[color]red"; //Ref: THALES FM2
+        let coRoute = "□□□□□□□□□□[color]red"; //Ref: THALES FM2
+        let flightNo = "□□□□□□□□[color]red"; //Ref: THALES FM2
+        let altDest = "----/------"; // Ref: THALES FM2
+        let lat = "----.-"; //Ref: Thales FM2
+        let long = "-----.--"; //Ref: Thales FM2
         let costIndex = "---";
-        let altDest = "---- ------[color]blue"; // Ref: FCOM 4.03.20 P3
-        let flightNo = "□□□□□□□□[color]blue"; //Red: FCOM 4.03.20 P3
-        let lat = "----.--"; //Color needs to be set
-        let long = "-----.--"; //Color needs to be set
+        let cruiseFlTemp = "----- /---°";
 
         if (mcdu.flightPlanManager.getOrigin() && mcdu.flightPlanManager.getOrigin().ident) {
             if (mcdu.flightPlanManager.getDestination() && mcdu.flightPlanManager.getDestination().ident) {
-                
-                fromTo = mcdu.flightPlanManager.getOrigin().ident + "/" + mcdu.flightPlanManager.getDestination().ident + "[color]green";
-                mcdu.inOut("F-PLN DISCONTINUITY") //TODO check the logic on this for pre-existing flight
 
-                flightNo = SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string", "FMC");
+                fromTo = mcdu.flightPlanManager.getOrigin().ident + "/" + mcdu.flightPlanManager.getDestination().ident + "[color]blue";
+                if (coRoute == "□□□□□□□□□□[color]red") coRoute = "NONE[color]blue" //Check if coroute exists
+
+                //Need code to set the SimVarValue if user inputs FlNo
+                if (SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string", "FMC")) flightNo = SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string", "FMC")+"[color]blue";
 
                 console.log(mcdu.flightPlanManager.getOrigin()); //Is this needed?
                 if (mcdu.flightPlanManager.getOrigin() && mcdu.flightPlanManager.getOrigin().infos && mcdu.flightPlanManager.getOrigin().infos.coordinates) {
                     lat = mcdu.flightPlanManager.getOrigin().infos.coordinates.latToDegreeString() + "[color]blue";
                     long = mcdu.flightPlanManager.getOrigin().infos.coordinates.longToDegreeString() + "[color]blue";
                 }
+
+                costIndex = "□□□[color]red";
                 if (mcdu.costIndex) {
                     costIndex = mcdu.costIndex + "[color]blue";
                 }
-
-                costIndex = "---[color]blue";
                 mcdu.onLeftInput[4] = () => {
                     let value = mcdu.inOut;
                     mcdu.clearUserInput();
@@ -35,7 +37,7 @@ class CDUInitPage {
                     }
                 };
 
-                cruiseFlTemp = "□□□□□ /□□□[color]red";
+                cruiseFlTemp = "□□□□□ /□□□°[color]red";
                 if (mcdu.cruiseFlightLevel) {
                     let temp = mcdu.tempCurve.evaluate(mcdu.cruiseFlightLevel);
                     if (isFinite(mcdu.cruiseTemperature)) {
@@ -43,7 +45,6 @@ class CDUInitPage {
                     }
                     cruiseFlTemp = "FL" + mcdu.cruiseFlightLevel.toFixed(0).padStart(3, "0") + " /" + temp.toFixed(0) + "°[color]blue";
                 }
-
                 mcdu.onLeftInput[5] = () => {
                     let value = mcdu.inOut;
                     mcdu.clearUserInput();
@@ -66,10 +67,9 @@ class CDUInitPage {
                 };
             }
         }
-        let coRoute = "□□□□□□□□□□[color]blue"; //Ref: FCOM 4.03.20 P3
+        
         if (mcdu.coRoute) {
             coRoute = mcdu.coRoute + "[color]blue";
-            ;
         }
         
         mcdu.setTemplate([
@@ -80,7 +80,7 @@ class CDUInitPage {
             [altDest],
             ["FLT NBR"],
             [flightNo + "[color]blue"],
-            ["LAT", "LONG"],
+            [latText, lonText],
             [lat, long],
             ["COST INDEX"],
             [costIndex, "WIND>"],
@@ -109,7 +109,6 @@ class CDUInitPage {
                 mcdu.tryUpdateFromTo(value, (result) => {
                 if (result) {                    
                     CDUPerformancePage.UpdateThrRedAccFromOrigin(mcdu);
-                    
                     CDUAvailableFlightPlanPage.ShowPage(mcdu);
                     }
                 });
@@ -140,6 +139,27 @@ class CDUInitPage {
                 }
             });
         };
+
+        // Enable skewing of the LAT
+        //* Skewing doesn't actually work
+        let latText = "LAT"
+        if (mcdu._latSelected)  latText = "LAT ⇅"
+        mcdu.onLeftInput[3] = () => {
+            mcdu._latSelected = true;
+            mcdu._lonSelected = false;
+            CDUInitPage.ShowPage1(mcdu)
+        }
+
+        // Enable Skewing of the LON
+        //* Skewing doesn't actually work
+        let lonText = "LON"
+        if (mcdu._lonSelected) lonText = "LON ⇅"
+        mcdu.onRightInput[3] = () => {
+            mcdu._lonSelected = true;
+            mcdu._latSelected = false;
+            CDUInitPage.ShowPage1(mcdu) 
+        }
+
         mcdu.onPrevPage = () => {
             CDUInitPage.ShowPage2(mcdu);
         };

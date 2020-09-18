@@ -11,6 +11,10 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this._hasReachedTopOfDescent = false;
         this._apCooldown = 500;
         this._lastRequestedFLCModeWaypointIndex = -1;
+
+        // Track whether Lat or Lon is selected for adjustment
+        this._latSelected = False;
+        this._lonSelected = False;
     }
     get templateID() { return "A320_Neo_CDU"; }
     connectedCallback() {
