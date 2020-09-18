@@ -21,6 +21,9 @@ class CDUIRSInit {
             originAirportLon = CDUInitPage.ConvertDDToDMS(airportCoordinates['long'], true);
             originAirportLat['sec'] = Math.ceil(Number(originAirportLat['sec'] / 100));
             originAirportLon['sec'] = Math.ceil(Number(originAirportLon['sec'] / 100));
+            // Must be string for consistency since leading 0's are not allowed in Number
+            originAirportLat['min'] = originAirportLat['min'].toString();
+            originAirportLon['min'] = originAirportLon['min'].toString();
             referenceName = mcdu.flightPlanManager.getOrigin().ident + " [color]green";
             originAirportCoordinates = JSON.stringify(originAirportLat) + JSON.stringify(originAirportLon);
         }
@@ -132,14 +135,12 @@ class CDUIRSInit {
             } else {
                 activeReference['sec'] = activeReference['sec'] + 1
                 if (activeReference['sec'] >= 9) {
-                    // Must be converted to string, if not correct padding does not occur
-                    activeReference['min'] = CDUInitPage.pad(Number(activeReference['min'].toString()) + 1, 2, 0);
+                    activeReference['min'] = CDUInitPage.pad(Number(activeReference['min']) + 1, 2, 0);
                     activeReference['sec'] = 0;
                 }
                 if (activeReference['min'] >= 60) {
-                    activeReference['min'] = 0;
-                    // Must be converted to string, if not correct padding does not occur
-                    activeReference['deg'] = (!lon) ? activeReference['deg'] + 1 : CDUInitPage.pad(Number(activeReference['deg'].toString()) + 1, 3, 0);
+                    activeReference['min'] = CDUInitPage.pad(0, 2, 0);
+                    activeReference['deg'] = (!lon) ? activeReference['deg'] + 1 : CDUInitPage.pad(Number(activeReference['deg']) + 1, 3, 0);
                 }
             }
         };
@@ -155,12 +156,12 @@ class CDUIRSInit {
             } else {
                 activeReference['sec'] = activeReference['sec'] - 1
                 if (activeReference['sec'] < 0) {
-                    activeReference['min'] = CDUInitPage.pad(Number(activeReference['min'].toString()) - 1, 2, 0);
+                    activeReference['min'] = CDUInitPage.pad(Number(activeReference['min']) - 1, 2, 0);
                     activeReference['sec'] = 9;
                 }
                 if (activeReference['min'] < 0) {
                     activeReference['min'] = 59;
-                    activeReference['deg'] = (!lon) ? activeReference['deg'] - 1 : CDUInitPage.pad(Number(activeReference['deg'].toString()) - 1, 3, 0);
+                    activeReference['deg'] = (!lon) ? activeReference['deg'] - 1 : CDUInitPage.pad(Number(activeReference['deg']) - 1, 3, 0);
                 }
             }
         };
