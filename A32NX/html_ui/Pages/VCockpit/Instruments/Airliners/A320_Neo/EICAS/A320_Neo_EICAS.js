@@ -59,10 +59,6 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         this.ecamFCTLTimer = -1;
 
         this.changePage("FUEL"); // MODIFIED
-        if (this.isTopScreen) {
-            this.A32NXCore = new A32NX_Core();
-            this.A32NXCore.init();
-        }
 
         this.lastAPUMasterState = 0; // MODIFIED
         this.ApuAboveThresholdTimer = -1; // MODIFIED
@@ -85,7 +81,6 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         this.electricity = this.querySelector("#Electricity");
         this.changePage("DOOR"); // MODIFIED
         this.changePage("DOOR"); // This should get the ECAM into the "unselected" state
-        this.localVarUpdater = new LocalVarUpdater();
 
         SimVar.SetSimVarValue("LIGHT POTENTIOMETER:7","FLOAT64",0);
         SimVar.SetSimVarValue("LIGHT POTENTIOMETER:14","FLOAT64",0);
@@ -101,10 +96,6 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
     }
     onUpdate(_deltaTime) {
         super.onUpdate(_deltaTime);
-        if (this.isTopScreen) {
-            this.A32NXCore.update(_deltaTime);
-            this.localVarUpdater.update();
-        }
         this.updateAnnunciations();
         this.updateScreenState();
 

@@ -1,13 +1,30 @@
 class A32NX_Core {
     constructor() {
-        console.log('A32NX_Core constructed');
-        this.apu = new A32NX_APU();
+        this.lastTime = 0;
+        this.modules = [
+            new A32NX_APU(),
+            new LocalVarUpdater(),
+        ]
     }
-    init() {
-        console.log('A32NX_Core init');
-        this.apu.init();
+
+    init(startTime) {
+        this.lastTime = startTime;
+        this.modules.forEach(module => {
+            if (typeof module.init === 'function') {
+                module.init();
+            }
+        })
     }
-    update(_deltaTime) {
-        this.apu.update(_deltaTime);
+
+    beforeUpdate() {
+        const now = Date.now()
+        this.deltaTime = now - this.lastTime;
+        this.lastTime = now;
+    }
+    update() {
+        this.beforeUpdate();
+        this.modules.forEach(module => {
+            module.update(this.deltaTime);
+        })
     }
 }

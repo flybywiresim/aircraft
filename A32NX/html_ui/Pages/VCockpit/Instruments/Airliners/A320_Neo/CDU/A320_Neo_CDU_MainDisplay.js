@@ -25,6 +25,9 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     }
     Init() {
         super.Init();
+        this.A32NXCore = new A32NX_Core();
+        this.A32NXCore.init(this._lastTime);
+
         this.onDir = () => { CDUDirectToPage.ShowPage(this); };
         this.onProg = () => { CDUProgressPage.ShowPage(this); };
         this.onPerf = () => { CDUPerformancePage.ShowPage(this); };
@@ -116,6 +119,9 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     }
     Update() {
         super.Update();
+
+        this.A32NXCore.update(_deltaTime);
+
         this.updateAutopilot();
         this.updateADIRS();
 
