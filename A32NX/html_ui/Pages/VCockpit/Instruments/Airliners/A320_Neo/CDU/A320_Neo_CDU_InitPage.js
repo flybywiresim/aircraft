@@ -166,6 +166,15 @@ class CDUInitPage {
         mcdu.onNextPage = () => {
             CDUInitPage.ShowPage2(mcdu);
         };
+
+        // TODO this 
+        mcdu.onDown = () => {
+
+        }
+
+        mcdu.onUp = () => {
+
+        }
         Coherent.trigger("AP_ALT_VAL_SET", 4200);
         Coherent.trigger("AP_VS_VAL_SET", 300);
         Coherent.trigger("AP_HDG_VAL_SET", 180);
