@@ -147,7 +147,7 @@
 		</UseTemplate>
 	</Component>
 	<Component ID="ENGINE">
-		<UseTemplate Name="ASOBO_ENGINE_Turbine_Template">
+		<UseTemplate Name="A32NX_ENGINE_Turbine_Template">
 			<ID>1</ID>
 			<ANIM_NODE_ID>N1_1_anim</ANIM_NODE_ID>
 			<ANIM_NAME>N1_1_anim</ANIM_NAME>
@@ -155,7 +155,7 @@
 			<SLOW_NODE_ID>PROP_SLOW_LEFT</SLOW_NODE_ID>
 			<BLURRED_NODE_ID>PROP_BLURRED_LEFT</BLURRED_NODE_ID>
 		</UseTemplate>
-		<UseTemplate Name="ASOBO_ENGINE_Turbine_Template">
+		<UseTemplate Name="A32NX_ENGINE_Turbine_Template">
 			<ID>2</ID>
 			<ANIM_NODE_ID>N1_2_anim</ANIM_NODE_ID>
 			<ANIM_NAME>N1_2_anim</ANIM_NAME>
