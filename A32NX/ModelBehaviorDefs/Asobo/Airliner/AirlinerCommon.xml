@@ -10,7 +10,7 @@
 		<WWISE_EVENT_2>atc_push_button_off</WWISE_EVENT_2>
 		<NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
 	</DefaultTemplateParameters>
-	
+
 	<Component ID="#NODE_ID#" Node="#NODE_ID#">
 		<UseTemplate Name="ASOBO_GT_Push_Button">
 			<ANIM_NAME>#ANIM_NAME_BUTTON#</ANIM_NAME>
@@ -43,7 +43,7 @@
 		<BUTTON_ID>0</BUTTON_ID>
 		<SEQ1_SUFFIX>_SEQ1</SEQ1_SUFFIX>
 	</DefaultTemplateParameters>
-	
+
 	<UseTemplate Name="ASOBO_AIRLINER_ATC_BUTTON_Template">
 	</UseTemplate>
 </Template>
@@ -101,6 +101,8 @@
 				<ENUM_VAL_STBY>1</ENUM_VAL_STBY>
 				<ENUM_VAL_ALT>4</ENUM_VAL_ALT>
 				<ENUM_VAL_ON>3</ENUM_VAL_ON>
+				<KNOB_XPNDR_NODE_ID>#KNOB_XPNDR_NAME#</KNOB_XPNDR_NODE_ID>
+				<KNOB_XPNDR_ANIM_NAME>#KNOB_XPNDR_NAME#</KNOB_XPNDR_ANIM_NAME>
 			</Case>
 			<Case Value="AIRBUS">
 				<CHECK_VAL_STBY>1 == (I:XMLVAR_Auto) ! and</CHECK_VAL_STBY>
@@ -135,48 +137,10 @@
 	</Component>
 	<Switch Param="TYPE">
 		<Case Value="BOEING">
-			<Component ID="#KNOB_XPNDR_NAME#" Node="#KNOB_XPNDR_NAME#">
-				<UseTemplate Name="ASOBO_GT_Switch_5States">
-					<ANIM_NAME>#KNOB_XPNDR_NAME#</ANIM_NAME>
-					<SWITCH_DIRECTION>Horizontal</SWITCH_DIRECTION>
-					<LEFTARROW>TurnLeft</LEFTARROW>
-					<RIGHTARROW>TurnRight</RIGHTARROW>
-					<CODE_POS_0>
-						#ENUM_VAL_STBY# #SET_TRANSPONDER_STATE# 
-						0 (&gt;I:XMLVAR_IDENT_Shutdown_Time)
-						0 (&gt;L:XMLVAR_Transponder_Mode)
-					</CODE_POS_0>
-					<CODE_POS_1>
-						#ENUM_VAL_ALT# #SET_TRANSPONDER_STATE# 
-						1 (&gt;L:XMLVAR_Transponder_Mode)
-					</CODE_POS_1>
-					<CODE_POS_2>
-						#ENUM_VAL_ALT# #SET_TRANSPONDER_STATE# 
-						2 (&gt;L:XMLVAR_Transponder_Mode)
-					</CODE_POS_2>
-					<CODE_POS_3>
-						#ENUM_VAL_ALT# #SET_TRANSPONDER_STATE# 
-						3 (&gt;L:XMLVAR_Transponder_Mode)
-					</CODE_POS_3>
-					<CODE_POS_4>
-						#ENUM_VAL_ON# #SET_TRANSPONDER_STATE# 
-						0 (&gt;L:XMLVAR_Transponder_Mode)
-					</CODE_POS_4>
-					<STATE0_TEST>#GET_TRANSPONDER_STATE# #ENUM_VAL_STBY# ==</STATE0_TEST>
-					<STATE1_TEST>#GET_TRANSPONDER_STATE# #ENUM_VAL_ALT# == (L:XMLVAR_Transponder_Mode) 1 == and</STATE1_TEST>
-					<STATE2_TEST>#GET_TRANSPONDER_STATE# #ENUM_VAL_ALT# == (L:XMLVAR_Transponder_Mode) 2 == and</STATE2_TEST>
-					<STATE3_TEST>#GET_TRANSPONDER_STATE# #ENUM_VAL_ALT# == (L:XMLVAR_Transponder_Mode) 3 == and</STATE3_TEST>
-					<STATE4_TEST>#GET_TRANSPONDER_STATE# #ENUM_VAL_ON# ==</STATE4_TEST>
-					
-					<ANIMTIP_0>TT:COCKPIT.TOOLTIPS.XPDR_SBY</ANIMTIP_0>
-					<ANIMTIP_1>TT:COCKPIT.TOOLTIPS.XPDR_XPDR</ANIMTIP_1>
-					<ANIMTIP_2>TT:COCKPIT.TOOLTIPS.XPDR_TA_ONLY</ANIMTIP_2>
-					<ANIMTIP_3>TT:COCKPIT.TOOLTIPS.XPDR_TA_RA</ANIMTIP_3>
-					<ANIMTIP_4>TT:COCKPIT.TOOLTIPS.XPDR_ALT_RPTG_OFF</ANIMTIP_4>
-					
-				</UseTemplate>
-				<PartID>TRANSPONDER_KNOB</PartID>
-			</Component>
+			<UseTemplate Name="ASOBO_AIRLINER_ATC_Transponder_Mode_Knob_Template">
+				<NODE_ID>#KNOB_XPNDR_NODE_ID#</NODE_ID>
+				<ANIM_NAME>#KNOB_XPNDR_ANIM_NAME#</ANIM_NAME>
+			</UseTemplate>
 			<UseTemplate Name="ASOBO_AIRLINER_ATC_NUMBER_BUTTON_Template">
 				<BUTTON_NAME>#KNOB_IDENT_NAME#</BUTTON_NAME>
 				<BUTTON_ID>IDENT</BUTTON_ID>
@@ -194,7 +158,7 @@
 				<DefaultTemplateParameters>
 					<UPDATE_AUTO_TRANSPONDER_STATE>
 						(I:XMLVAR_Auto) if{
-							(A:GENERAL ENG COMBUSTION:1, Bool) 
+							(A:GENERAL ENG COMBUSTION:1, Bool)
 							(A:GENERAL ENG COMBUSTION:2, Bool) or if{
 								#ENUM_VAL_ON# #SET_TRANSPONDER_STATE#
 							} els{
@@ -210,12 +174,12 @@
 					<!-- This is kind of a hack to allow us to initialize this value from the .flt files -->
 					<!-- Feel free to replace if a better solution is found -->
 					<Update Once="True">
-						(L:XMLVAR_ALT_MODE_REQUESTED) (&gt;I:XMLVAR_ALT_MODE_REQUESTED) 
+						(L:XMLVAR_ALT_MODE_REQUESTED) (&gt;I:XMLVAR_ALT_MODE_REQUESTED)
 						#UPDATE_AUTO_TRANSPONDER_STATE#
 					</Update>
 					<UseTemplate Name="ASOBO_GT_Switch_Code">
 						<LEFT_SINGLE_CODE>
-							(I:XMLVAR_ALT_MODE_REQUESTED) ! (&gt;I:XMLVAR_ALT_MODE_REQUESTED) 
+							(I:XMLVAR_ALT_MODE_REQUESTED) ! (&gt;I:XMLVAR_ALT_MODE_REQUESTED)
 							#UPDATE_AUTO_TRANSPONDER_STATE#
 						</LEFT_SINGLE_CODE>
 						<ANIM_CODE>(I:XMLVAR_ALT_MODE_REQUESTED) 100 *</ANIM_CODE>
@@ -228,7 +192,7 @@
 					<!-- This is kind of a hack to allow us to initialize this value from the .flt files -->
 					<!-- Feel free to replace if a better solution is found -->
 					<Update Once="True">
-						(L:XMLVAR_Auto) (&gt;I:XMLVAR_Auto) 
+						(L:XMLVAR_Auto) (&gt;I:XMLVAR_Auto)
 						#UPDATE_AUTO_TRANSPONDER_STATE#
 					</Update>
 					<UseTemplate Name="ASOBO_GT_Switch_3States">
@@ -237,7 +201,7 @@
 						<RIGHTARROW>TurnRight</RIGHTARROW>
 						<CODE_POS_#POS_STBY#>0 (&gt;I:XMLVAR_Auto) #ENUM_VAL_STBY# #SET_TRANSPONDER_STATE#</CODE_POS_#POS_STBY#>
 						<CODE_POS_#POS_AUTO#>
-							1 (&gt;I:XMLVAR_Auto) 
+							1 (&gt;I:XMLVAR_Auto)
 							#UPDATE_AUTO_TRANSPONDER_STATE#
 						</CODE_POS_#POS_AUTO#>
 						<CODE_POS_#POS_ON#>0 (&gt;I:XMLVAR_Auto) #ENUM_VAL_ON# #SET_TRANSPONDER_STATE#</CODE_POS_#POS_ON#>
@@ -256,20 +220,79 @@
 	</Switch>
 </Template>
 
+<Template Name="ASOBO_AIRLINER_ATC_Transponder_Mode_Knob_Template">
+	<DefaultTemplateParameters>
+		<NODE_ID>AIRLINER_ATC_Transponder_Mode_Knob</NODE_ID>
+		<ANIM_NAME>AIRLINER_ATC_Transponder_Mode_Knob</ANIM_NAME>
+		<SET_TRANSPONDER_STATE>(&gt;A:TRANSPONDER STATE:1, Enum)</SET_TRANSPONDER_STATE>
+		<GET_TRANSPONDER_STATE>(A:TRANSPONDER STATE:1, Enum)</GET_TRANSPONDER_STATE>
+		<ENUM_VAL_STBY>1</ENUM_VAL_STBY>
+		<ENUM_VAL_ALT>4</ENUM_VAL_ALT>
+		<ENUM_VAL_ON>3</ENUM_VAL_ON>
+		<CODE_POS_STBY>0</CODE_POS_STBY>
+		<CODE_POS_XPNDR>1</CODE_POS_XPNDR>
+		<CODE_POS_TA>2</CODE_POS_TA>
+		<CODE_POS_TARA>3</CODE_POS_TARA>
+		<CODE_POS_ALT>4</CODE_POS_ALT>
+	</DefaultTemplateParameters>
+
+	<Component ID="#NODE_ID#" Node="#NODE_ID#">
+		<UseTemplate Name="ASOBO_GT_Switch_5States">
+			<SWITCH_DIRECTION>Horizontal</SWITCH_DIRECTION>
+			<LEFTARROW>TurnLeft</LEFTARROW>
+			<RIGHTARROW>TurnRight</RIGHTARROW>
+			<CODE_POS_#CODE_POS_STBY#>
+				#ENUM_VAL_STBY# #SET_TRANSPONDER_STATE#
+				0 (&gt;I:XMLVAR_IDENT_Shutdown_Time)
+				0 (&gt;L:XMLVAR_Transponder_Mode)
+			</CODE_POS_#CODE_POS_STBY#>
+			<CODE_POS_#CODE_POS_XPNDR#>
+				#ENUM_VAL_ALT# #SET_TRANSPONDER_STATE#
+				1 (&gt;L:XMLVAR_Transponder_Mode)
+			</CODE_POS_#CODE_POS_XPNDR#>
+			<CODE_POS_#CODE_POS_TA#>
+				#ENUM_VAL_ALT# #SET_TRANSPONDER_STATE#
+				2 (&gt;L:XMLVAR_Transponder_Mode)
+			</CODE_POS_#CODE_POS_TA#>
+			<CODE_POS_#CODE_POS_TARA#>
+				#ENUM_VAL_ALT# #SET_TRANSPONDER_STATE#
+				3 (&gt;L:XMLVAR_Transponder_Mode)
+			</CODE_POS_#CODE_POS_TARA#>
+			<CODE_POS_#CODE_POS_ALT#>
+				#ENUM_VAL_ON# #SET_TRANSPONDER_STATE#
+				0 (&gt;L:XMLVAR_Transponder_Mode)
+			</CODE_POS_#CODE_POS_ALT#>
+			<STATE#CODE_POS_STBY#_TEST>#GET_TRANSPONDER_STATE# #ENUM_VAL_STBY# ==</STATE#CODE_POS_STBY#_TEST>
+			<STATE#CODE_POS_XPNDR#_TEST>#GET_TRANSPONDER_STATE# #ENUM_VAL_ALT# == (L:XMLVAR_Transponder_Mode) 1 == and</STATE#CODE_POS_XPNDR#_TEST>
+			<STATE#CODE_POS_TA#_TEST>#GET_TRANSPONDER_STATE# #ENUM_VAL_ALT# == (L:XMLVAR_Transponder_Mode) 2 == and</STATE#CODE_POS_TA#_TEST>
+			<STATE#CODE_POS_TARA#_TEST>#GET_TRANSPONDER_STATE# #ENUM_VAL_ALT# == (L:XMLVAR_Transponder_Mode) 3 == and</STATE#CODE_POS_TARA#_TEST>
+			<STATE#CODE_POS_ALT#_TEST>#GET_TRANSPONDER_STATE# #ENUM_VAL_ON# ==</STATE#CODE_POS_ALT#_TEST>
+
+			<ANIMTIP_#CODE_POS_STBY#>TT:COCKPIT.TOOLTIPS.XPDR_SBY</ANIMTIP_#CODE_POS_STBY#>
+			<ANIMTIP_#CODE_POS_XPNDR#>TT:COCKPIT.TOOLTIPS.XPDR_XPDR</ANIMTIP_#CODE_POS_XPNDR#>
+			<ANIMTIP_#CODE_POS_TA#>TT:COCKPIT.TOOLTIPS.XPDR_TA_ONLY</ANIMTIP_#CODE_POS_TA#>
+			<ANIMTIP_#CODE_POS_TARA#>TT:COCKPIT.TOOLTIPS.XPDR_TA_RA</ANIMTIP_#CODE_POS_TARA#>
+			<ANIMTIP_#CODE_POS_ALT#>TT:COCKPIT.TOOLTIPS.XPDR_ALT_RPTG_OFF</ANIMTIP_#CODE_POS_ALT#>
+
+		</UseTemplate>
+		<PartID>TRANSPONDER_KNOB</PartID>
+	</Component>
+</Template>
+
 <Template Name="ASOBO_AIRLINER_Update_Shutdown_Lights_On_Takeoff">
 	<DefaultTemplateParameters>
 		<LIGHT_TYPE_1></LIGHT_TYPE_1>
 		<LIGHT_TYPE_2></LIGHT_TYPE_2>
 		<LIGHT_TYPE_3></LIGHT_TYPE_3>
 	</DefaultTemplateParameters>
-	
+
 	<UseTemplate Name="ASOBO_GT_Helper_Recursive_Param_Builder">
 		<PARAM_REPEATED_START>0 (&gt;K:</PARAM_REPEATED_START>
 		<PARAM_REPEATED_END>)
 		</PARAM_REPEATED_END>
 		<PARAM_NAME>UPDATE_CODE</PARAM_NAME>
 		<PARAM_START>
-			(A:SIM ON GROUND, Bool) s1 ! (O:XMLVAR_IsOnGround) and if{ 
+			(A:SIM ON GROUND, Bool) s1 ! (O:XMLVAR_IsOnGround) and if{
 		</PARAM_START>
 		<PARAM_END>
 			}
@@ -290,7 +313,7 @@
 				</Condition>
 			</True>
 		</Condition>
-		
+
 		<EXIT_TEMPLATE>ASOBO_GT_Update</EXIT_TEMPLATE>
 		<FREQUENCY>1</FREQUENCY>
 	</UseTemplate>
@@ -301,14 +324,14 @@
 		<POTENTIOMETER_AIR_VALUE>0</POTENTIOMETER_AIR_VALUE>
 		<POTENTIOMETER_GROUND_VALUE>100</POTENTIOMETER_GROUND_VALUE>
 	</DefaultTemplateParameters>
-	
+
 	<!-- XMLVAR_IsOnGround value : 0 = Not Init, 1 = False, 2 = True -->
 	<UseTemplate Name="ASOBO_GT_Update">
 		<UPDATE_CODE>
-			(A:SIM ON GROUND, Bool) s1 ! (O:XMLVAR_IsOnGround) 1 != and if{ 
+			(A:SIM ON GROUND, Bool) s1 ! (O:XMLVAR_IsOnGround) 1 != and if{
 				#POTENTIOMETER_AIR_VALUE# #POTENTIOMETER# (&gt;K:2:LIGHT_POTENTIOMETER_SET)
 			} els{
-				l1 (O:XMLVAR_IsOnGround) 2 != and if{ 
+				l1 (O:XMLVAR_IsOnGround) 2 != and if{
 					#POTENTIOMETER_GROUND_VALUE# #POTENTIOMETER# (&gt;K:2:LIGHT_POTENTIOMETER_SET)
 				}
 			}
@@ -323,14 +346,14 @@
 		<POTENTIOMETER_GEAR_UP_VALUE>50</POTENTIOMETER_GEAR_UP_VALUE>
 		<POTENTIOMETER_GEAR_DOWN_VALUE>100</POTENTIOMETER_GEAR_DOWN_VALUE>
 	</DefaultTemplateParameters>
-	
+
 	<!-- XMLVAR_IsGearDown value : 0 = Not Init, 1 = False, 2 = True -->
 	<UseTemplate Name="ASOBO_GT_Update">
 		<UPDATE_CODE>
-			(A:GEAR HANDLE POSITION, Bool) s1 ! (O:XMLVAR_IsGearDown) 1 != and if{ 
+			(A:GEAR HANDLE POSITION, Bool) s1 ! (O:XMLVAR_IsGearDown) 1 != and if{
 				#POTENTIOMETER_GEAR_UP_VALUE# #POTENTIOMETER# (&gt;K:2:LIGHT_POTENTIOMETER_SET)
 			} els{
-				l1 (O:XMLVAR_IsGearDown) 2 != and if{ 
+				l1 (O:XMLVAR_IsGearDown) 2 != and if{
 					#POTENTIOMETER_GEAR_DOWN_VALUE# #POTENTIOMETER# (&gt;K:2:LIGHT_POTENTIOMETER_SET)
 				}
 			}
@@ -375,7 +398,7 @@
 		<OFF_TOOLTIP>COCKPIT.TOOLTIPS.EFIS_PANEL_#BTN_ID#_INFO_TURN_ON</OFF_TOOLTIP>
 		<ONOFF_VARIABLE>L:BTN_#BTN_ID#_FILTER_ACTIVE</ONOFF_VARIABLE>
 	</DefaultTemplateParameters>
-	
+
 	<UseTemplate Name="ASOBO_AIRLINER_SubNodes_Setter_Template">
 		<TEMPLATE_TO_CALL>ASOBO_GT_Push_Button_Airliner</TEMPLATE_TO_CALL>
 		<LEFT_SINGLE_CODE>(&gt;H:#PLANE_PREFIX#_MFD_BTN_#BTN_ID#) (&gt;H:#PLANE_PREFIX#_PFD_BTN_#BTN_ID#) and</LEFT_SINGLE_CODE>
@@ -388,7 +411,7 @@
 	<DefaultTemplateParameters>
 		<ID>1</ID>
 	</DefaultTemplateParameters>
-	
+
 	<UseTemplate Name="ASOBO_AIRLINER_Knob_ND_Cursor_SubTemplate">
 	</UseTemplate>
 </Template>
@@ -423,13 +446,13 @@
 			</Case>
 		</Switch>
 	</DefaultTemplateParameters>
-	
+
 	<Component ID="#NODE_ID#_Group">
-		<Component ID="#NODE_ID#" Node="#NODE_ID#"> 
+		<Component ID="#NODE_ID#" Node="#NODE_ID#">
 			<UseTemplate Name="ASOBO_GT_Knob_Infinite">
 			</UseTemplate>
 		</Component>
-		
+
 		<Condition Valid="LEFT_SINGLE_CODE">
 			<True>
 				<Component ID="#BUTTON_NODE_ID#" Node="#BUTTON_NODE_ID#">
@@ -446,7 +469,7 @@
 	<DefaultTemplateParameters>
 		<ID>1</ID>
 	</DefaultTemplateParameters>
-	
+
 	<UseTemplate Name="ASOBO_AIRLINER_Knob_ND_SubTemplate">
 	</UseTemplate>
 </Template>
@@ -501,17 +524,17 @@
 			</Case>
 		</Switch>
 	</DefaultTemplateParameters>
-	
+
 	<Component ID="#NODE_ID#_Group">
-		<Component ID="#NODE_ID#" Node="#NODE_ID#"> 
+		<Component ID="#NODE_ID#" Node="#NODE_ID#">
 			<UseTemplate Name="ASOBO_GT_Switch_#KNOB_NUM_STATE#States">
 				<SWITCH_DIRECTION>Horizontal</SWITCH_DIRECTION>
 				<ARROW_TYPE>Curved</ARROW_TYPE>
 				<SWITCH_POSITION_TYPE>#KNOB_POSITION_TYPE#</SWITCH_POSITION_TYPE>
-				<SWITCH_POSITION_VAR>#KNOB_POSITION_VAR#</SWITCH_POSITION_VAR>		
+				<SWITCH_POSITION_VAR>#KNOB_POSITION_VAR#</SWITCH_POSITION_VAR>
 			</UseTemplate>
 		</Component>
-		
+
 		<Condition Valid="LEFT_SINGLE_CODE">
 			<True>
 				<Component ID="#BUTTON_NODE_ID#" Node="#BUTTON_NODE_ID#">
@@ -526,7 +549,7 @@
 						<ANIMTIP_1></ANIMTIP_1>
 						<ANIMTIP_2></ANIMTIP_2>
 						<ANIMTIP_3></ANIMTIP_3>
-						<ANIMTIP_4></ANIMTIP_4>		
+						<ANIMTIP_4></ANIMTIP_4>
 					</UseTemplate>
 				</Component>
 			</True>
@@ -538,7 +561,7 @@
 	<DefaultTemplateParameters>
 		<ID>1</ID>
 	</DefaultTemplateParameters>
-	
+
 	<UseTemplate Name="ASOBO_AIRLINER_Knob_ND_Range_SubTemplate">
 	</UseTemplate>
 </Template>
@@ -550,7 +573,7 @@
 		<PART_ID>AIRLINER_Knob_Autopilot_ND_Range</PART_ID>
 		<BUTTON_NODE_ID>AIRLINER_Knob_Autopilot_ND_Range_#ID#_Push</BUTTON_NODE_ID>
 		<BUTTON_ANIM_NAME>AIRLINER_Knob_Autopilot_ND_Range_#ID#_Push</BUTTON_ANIM_NAME>
-		<WWISE_EVENT>autopilot_knob</WWISE_EVENT>	
+		<WWISE_EVENT>autopilot_knob</WWISE_EVENT>
 		<WWISE_EVENT_1>autopilot_knob_push_button_on</WWISE_EVENT_1>
 		<NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
 		<WWISE_EVENT_2>autopilot_knob_push_button_off</WWISE_EVENT_2>
@@ -625,9 +648,9 @@
 			</Case>
 		</Switch>
 	</DefaultTemplateParameters>
-	
+
 	<Component ID="#NODE_ID#_Group">
-		<Component ID="#NODE_ID#" Node="#NODE_ID#"> 
+		<Component ID="#NODE_ID#" Node="#NODE_ID#">
 			<Condition Check="KNOB_NUM_STATE">
 				<True>
 					<UseTemplate Name="ASOBO_GT_Switch_XStates">
@@ -640,11 +663,11 @@
 				</True>
 				<False>
 					<UseTemplate Name="ASOBO_GT_Knob_Infinite">
-					</UseTemplate>	
+					</UseTemplate>
 				</False>
 			</Condition>
 		</Component>
-		
+
 		<Condition Valid="LEFT_SINGLE_CODE">
 			<True>
 				<Component ID="#BUTTON_NODE_ID#" Node="#BUTTON_NODE_ID#">
@@ -678,7 +701,7 @@
 	<DefaultTemplateParameters>
 		<ID>1</ID>
 	</DefaultTemplateParameters>
-	
+
 	<UseTemplate Name="ASOBO_AIRLINER_Switch_Baro_Selector_SubTemplate">
 	</UseTemplate>
 </Template>
@@ -689,13 +712,13 @@
 		<ANIM_NAME>AIRLINER_Switch_Baro_Selector_#ID#</ANIM_NAME>
 		<PART_ID>AIRLINER_Switch_Baro_Selector</PART_ID>
 		<ID>1</ID>
-		<WWISE_EVENT_1>autopilot_baro_selector_button_on</WWISE_EVENT_1>		
+		<WWISE_EVENT_1>autopilot_baro_selector_button_on</WWISE_EVENT_1>
 		<WWISE_EVENT_2>autopilot_baro_selector_button_off</WWISE_EVENT_2>
 		<ANIMTIP_0>TT:COCKPIT.TOOLTIPS.BARO_SET_UNIT_TO_HPA</ANIMTIP_0>
 		<ANIMTIP_1>TT:COCKPIT.TOOLTIPS.BARO_SET_UNIT_TO_HG</ANIMTIP_1>
 	</DefaultTemplateParameters>
-	
-	<Component ID="#NODE_ID#" Node="#NODE_ID#"> 
+
+	<Component ID="#NODE_ID#" Node="#NODE_ID#">
 		<UseTemplate Name="ASOBO_GT_Switch_Code">
 			<LEFT_SINGLE_CODE>(L:XMLVAR_Baro_Selector_HPA_#ID#) ! (&gt;L:XMLVAR_Baro_Selector_HPA_#ID#)</LEFT_SINGLE_CODE>
 			<ANIM_CODE>(L:XMLVAR_Baro_Selector_HPA_#ID#) 100 *</ANIM_CODE>
@@ -711,7 +734,7 @@
 	</DefaultTemplateParameters>
 	<OverrideTemplateParameters>
 	</OverrideTemplateParameters>
-	
+
 	<UseTemplate Name="ASOBO_GT_Helper_Suffix_ID_Appender">
 		<TEMPLATE_TO_CALL>ASOBO_AIRLINER_Audio_Panel_SubTemplate</TEMPLATE_TO_CALL>
 	</UseTemplate>
@@ -752,8 +775,14 @@
 				<DONT_OVERRIDE_BASE_EMISSIVE>False</DONT_OVERRIDE_BASE_EMISSIVE>
 				<SEQ2_EMISSIVE_CODE>1</SEQ2_EMISSIVE_CODE>
 				<KNOB_TEMPLATE>ASOBO_GT_Knob_Finite_Switch</KNOB_TEMPLATE>
+				<ANIM_CODE_PARAM_NAME>ANIM_CODE_SWITCH</ANIM_CODE_PARAM_NAME>
 			</Case>
 			<Case Value="BOEING">
+				<SEQ2_EMISSIVE_CODE>0</SEQ2_EMISSIVE_CODE>
+				<KNOB_TEMPLATE>ASOBO_GT_Knob_Finite_Code</KNOB_TEMPLATE>
+				<ANIM_CODE_PARAM_NAME>ANIM_CODE</ANIM_CODE_PARAM_NAME>
+			</Case>
+			<Case Value="AS01B">
 				<SEQ2_EMISSIVE_CODE>0</SEQ2_EMISSIVE_CODE>
 				<KNOB_TEMPLATE>ASOBO_GT_Knob_Finite_Code</KNOB_TEMPLATE>
 				<ANIM_CODE_PARAM_NAME>ANIM_CODE</ANIM_CODE_PARAM_NAME>
@@ -764,7 +793,7 @@
 	</DefaultTemplateParameters>
 	<OverrideTemplateParameters>
 	</OverrideTemplateParameters>
-	
+
 	<UseTemplate Name="ASOBO_AIRLINER_Audio_Volume_Knob_Template">
 		<NODE_ID>#NODE_ID_RECEIVER_VHF_L#</NODE_ID>
 		<NODE_ID_LIGHT>#NODE_ID_LIGHT_RECEIVER_VHF_L#</NODE_ID_LIGHT>
@@ -800,8 +829,8 @@
 		<TRANSMIT_ID>1</TRANSMIT_ID>
 		<TOOLTIP_LEFT>TT:COCKPIT.TOOLTIPS.TRANSMITTER_VHF_C_VOLUME_DEC</TOOLTIP_LEFT>
 		<TOOLTIP_RIGHT>TT:COCKPIT.TOOLTIPS.TRANSMITTER_VHF_C_VOLUME_INC</TOOLTIP_RIGHT>
-		<TOOLTIP_HAND>TT:COCKPIT.TOOLTIPS.TRANSMITTER_VHF_C_AUDIO_TOGGLE</TOOLTIP_HAND>		
-		<TOOLTIP_PB>TT:COCKPIT.TOOLTIPS.TRANSMITTER_SELECT_VHF_C</TOOLTIP_PB>	
+		<TOOLTIP_HAND>TT:COCKPIT.TOOLTIPS.TRANSMITTER_VHF_C_AUDIO_TOGGLE</TOOLTIP_HAND>
+		<TOOLTIP_PB>TT:COCKPIT.TOOLTIPS.TRANSMITTER_SELECT_VHF_C</TOOLTIP_PB>
 	</UseTemplate>
 	<UseTemplate Name="ASOBO_AIRLINER_Audio_Volume_Knob_Template">
 		<NODE_ID>#NODE_ID_RECEIVER_VHF_R#</NODE_ID>
@@ -820,7 +849,7 @@
 
 		<TOOLTIP_LEFT>TT:COCKPIT.TOOLTIPS.TRANSMITTER_VHF_R_VOLUME_DEC</TOOLTIP_LEFT>
 		<TOOLTIP_RIGHT>TT:COCKPIT.TOOLTIPS.TRANSMITTER_VHF_R_VOLUME_INC</TOOLTIP_RIGHT>
-		<TOOLTIP_HAND>TT:COCKPIT.TOOLTIPS.TRANSMITTER_VHF_R_AUDIO_TOGGLE</TOOLTIP_HAND>		
+		<TOOLTIP_HAND>TT:COCKPIT.TOOLTIPS.TRANSMITTER_VHF_R_AUDIO_TOGGLE</TOOLTIP_HAND>
 		<TOOLTIP_PB>TT:COCKPIT.TOOLTIPS.TRANSMITTER_SELECT_VHF_R</TOOLTIP_PB>
 	</UseTemplate>
 </Template>
@@ -869,6 +898,11 @@
 				<NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
 				<WWISE_EVENT_2>audioreceiver_knob_push_button_off</WWISE_EVENT_2>
 				<NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
+				<Switch Param="TYPE">
+					<Case Value="AS01B">
+						<POTENTIOMETER></POTENTIOMETER>
+					</Case>
+				</Switch>
 			</UseTemplate>
 		</False>
 	</Condition>
@@ -892,26 +926,30 @@
 			<KNOB_ANIM_CODE>(L:XMLVAR_COM_#ID#_Volume_#FREQ_ID#) 100 *</KNOB_ANIM_CODE>
 			<CLOCKWISE_CODE>(L:XMLVAR_COM_#ID#_Volume_#FREQ_ID#) #VOLUME_INCREMENT# + 1 min (&gt;L:XMLVAR_COM_#ID#_Volume_#FREQ_ID#) 1 (&gt;I:XMLVAR_COM_UpdateVolumes)</CLOCKWISE_CODE>
 			<ANTICLOCKWISE_CODE>(L:XMLVAR_COM_#ID#_Volume_#FREQ_ID#) #VOLUME_INCREMENT# - 0 max (&gt;L:XMLVAR_COM_#ID#_Volume_#FREQ_ID#) 1 (&gt;I:XMLVAR_COM_UpdateVolumes)</ANTICLOCKWISE_CODE>
-			<#ANIM_CODE_PARAM_NAME#>
-				(L:XMLVAR_COM_#ID#_#FREQ_ID#_Switch_Down)
-				#Button_ID# (L:XMLVAR_COM_Transmit_Channel) == or 100 *
-			</#ANIM_CODE_PARAM_NAME#>
+			<Condition NotEmpty="ANIM_CODE_PARAM_NAME">
+				<True>
+					<#ANIM_CODE_PARAM_NAME#>
+						(L:XMLVAR_COM_#ID#_#FREQ_ID#_Switch_Down)
+						#Button_ID# (L:XMLVAR_COM_Transmit_Channel) == or 100 *
+					</#ANIM_CODE_PARAM_NAME#>
+				</True>
+			</Condition>
 			<ANIM_NAME_PUSH>#ANIM_NAME_SWITCH#</ANIM_NAME_PUSH>
 			<LEFT_SINGLE_CODE>
 				#Button_ID# (L:XMLVAR_COM_Transmit_Channel) != if{
 					(L:XMLVAR_COM_#ID#_#FREQ_ID#_Switch_Down) ! (&gt;L:XMLVAR_COM_#ID#_#FREQ_ID#_Switch_Down)
 					1 (&gt;I:XMLVAR_COM_UpdateReceivers)
-				} 
+				}
 			</LEFT_SINGLE_CODE>
 			<WWISE_EVENT_1>audioreceiver_push_button_on</WWISE_EVENT_1>
 			<NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
-			<WWISE_EVENT_2>audioreceiver_push_button_off</WWISE_EVENT_2>	
+			<WWISE_EVENT_2>audioreceiver_push_button_off</WWISE_EVENT_2>
 			<NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
-			<WWISE_EVENT>audioreceiver_knob</WWISE_EVENT>	
+			<WWISE_EVENT>audioreceiver_knob</WWISE_EVENT>
 			<COUNT>36</COUNT>
 		</UseTemplate>
 	</Component>
-	
+
 
 	<Switch Param="TYPE">
 		<Case Value="BOEING">
@@ -920,8 +958,15 @@
 				<EMISSIVE_CODE>#TRANSMIT_EMISSIVE_CODE#</EMISSIVE_CODE>
 			</UseTemplate>
 		</Case>
+		<Case Value="AS01B">
+			<UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
+				<NODE_ID>#NODE_ID_LED#</NODE_ID>
+				<EMISSIVE_CODE>#TRANSMIT_EMISSIVE_CODE#</EMISSIVE_CODE>
+				<POTENTIOMETER></POTENTIOMETER>
+			</UseTemplate>
+		</Case>
 	</Switch>
-	
+
 	<Condition Valid="NO_LIGHT">
 		<False>
 			<Component ID="#NODE_ID_LIGHT#_Light" Node="#NODE_ID_LIGHT#">
@@ -936,26 +981,26 @@
 <Template Name="ASOBO_AIRLINER_Audio_Panel_Updater">
 	<!-- This Panel takes input from the 3 audio panels and sets the simvars to the value it should have based on it -->
 	<!-- Simvar is ON if any Panel sets it to ON, Volume is the Max of the 3 panels -->
-	
+
 	<UseTemplate Name="ASOBO_GT_Update">
 		<FREQUENCY>1</FREQUENCY>
 		<UPDATE_CODE>
 			(A:COM RECEIVE:1, Bool) sp1
 			(A:COM RECEIVE:2, Bool) sp2
 			(A:COM RECEIVE:3, Bool) sp3
-			
+
 			(L:XMLVAR_COM_1_VHF_L_Switch_Down) (L:XMLVAR_COM_2_VHF_L_Switch_Down) (L:XMLVAR_COM_3_VHF_L_Switch_Down) or or sp4
 			(L:XMLVAR_COM_1_VHF_C_Switch_Down) (L:XMLVAR_COM_2_VHF_C_Switch_Down) (L:XMLVAR_COM_3_VHF_C_Switch_Down) or or sp5
 			(L:XMLVAR_COM_1_VHF_R_Switch_Down) (L:XMLVAR_COM_2_VHF_R_Switch_Down) (L:XMLVAR_COM_3_VHF_R_Switch_Down) or or sp6
-			
+
 			(A:COM VOLUME:1, Percent over 100) sp7
 			(A:COM VOLUME:2, Percent over 100) sp8
 			(A:COM VOLUME:3, Percent over 100) sp9
-			
+
 			(L:XMLVAR_COM_1_Volume_VHF_L) (L:XMLVAR_COM_2_Volume_VHF_L) (L:XMLVAR_COM_3_Volume_VHF_L) max max sp10
 			(L:XMLVAR_COM_1_Volume_VHF_C) (L:XMLVAR_COM_2_Volume_VHF_C) (L:XMLVAR_COM_3_Volume_VHF_C) max max sp11
 			(L:XMLVAR_COM_1_Volume_VHF_R) (L:XMLVAR_COM_2_Volume_VHF_R) (L:XMLVAR_COM_3_Volume_VHF_R) max max sp12
-			
+
 			(* Check if the Simvars have been toggled externaly *)
 			(I:XMLVAR_COM_UpdateReceivers) if{
 				l4 (&gt;K:COM1_RECEIVE_SELECT)
@@ -1009,7 +1054,7 @@
 					}
 				}
 			}
-			
+
 			l4 (&gt;O:XMLVAR_COM_1_Receive_PreviousValue)
 			l5 (&gt;O:XMLVAR_COM_2_Receive_PreviousValue)
 			l6 (&gt;O:XMLVAR_COM_3_Receive_PreviousValue)

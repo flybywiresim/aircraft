@@ -535,27 +535,6 @@
 	</Component>
 </Template>
 
-<Template Name="ASOBO_AIRBUS_Switch_Altitude_Increment_Template">
-	<DefaultTemplateParameters>
-		<NODE_ID>AIRBUS_Switch_Altitude_Increment</NODE_ID>
-		<ANIM_NAME>AIRBUS_Switch_Altitude_Increment</ANIM_NAME>
-		<PART_ID>AIRBUS_Switch_Altitude_Increment</PART_ID>
-		<ANIMTIP_0>TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_ALTITUDE_INCREMENT_SET_1000</ANIMTIP_0>
-		<ANIMTIP_1>TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_ALTITUDE_INCREMENT_SET_100</ANIMTIP_1>
-	</DefaultTemplateParameters>
-
-	<Update Once="True">
-		1000 (&gt;L:XMLVAR_Autopilot_Altitude_Increment)
-	</Update>
-
-	<Component ID="#NODE_ID#" Node="#NODE_ID#">
-		<UseTemplate Name="ASOBO_GT_Switch_Code">
-			<LEFT_SINGLE_CODE>100 (L:XMLVAR_Autopilot_Altitude_Increment) == if{ 1000 (&gt;L:XMLVAR_Autopilot_Altitude_Increment) } els{ 100 (&gt;L:XMLVAR_Autopilot_Altitude_Increment) } </LEFT_SINGLE_CODE>
-			<ANIM_CODE>1000 (L:XMLVAR_Autopilot_Altitude_Increment) == 100 *</ANIM_CODE>
-		</UseTemplate>
-	</Component>
-</Template>
-
 <Template Name="ASOBO_AIRBUS_Push_Transfer_Template">
 	<DefaultTemplateParameters>
 		<NODE_ID>AIRBUS_Push_Transfer</NODE_ID>
@@ -1383,7 +1362,7 @@
 				}
 			}
 		</Update>
-	
+
 		<UseTemplate Name = "ASOBO_GT_Anim_Code">
 			<Condition Check="OVERRIDE_ANIM_CODE">
 				<True>
@@ -1436,7 +1415,7 @@
 			}
 		}
 	</Update>
-	
+
 	<UseTemplate Name = "ASOBO_GT_Anim_Code">
 		<Condition Check="OVERRIDE_ANIM_CODE">
 			<True>

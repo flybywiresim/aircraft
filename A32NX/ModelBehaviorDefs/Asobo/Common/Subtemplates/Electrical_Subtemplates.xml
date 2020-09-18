@@ -5,7 +5,7 @@
 		<ANIM_NAME>ELECTRICAL_Switch_Engine_Bleed_#ID#</ANIM_NAME>
 		<NODE_ID>ELECTRICAL_Switch_Engine_Bleed_#ID#</NODE_ID>
 		<PART_ID>ELECTRICAL_Switch_Engine_Bleed</PART_ID>
-		
+
 		<FAULT_NODE_ID>ELECTRICAL_Switch_Engine_Bleed_Fault_#ID#</FAULT_NODE_ID>
 		<OFF_NODE_ID>ELECTRICAL_Switch_Engine_Bleed_Off_#ID#</OFF_NODE_ID>
 		<WWISE_EVENT_1>engine_bleed_switch_on</WWISE_EVENT_1>
@@ -20,7 +20,7 @@
 			<Case Value="BOEING">
 				<TOOLTIPID>%((A:BLEED AIR ENGINE:#ID#, Bool) !)%{if}TT:COCKPIT.TOOLTIPS.PRESSURIZATION_PANEL_ENGINE_#ID#_BLEED_TURN_ON%{else}TT:COCKPIT.TOOLTIPS.PRESSURIZATION_PANEL_ENGINE_#ID#_BLEED_TURN_OFF%{end}</TOOLTIPID>
 			</Case>
-		</Switch>	
+		</Switch>
 	</DefaultTemplateParameters>
 	<OverrideTemplateParameters>
 		<LEFT_SINGLE_CODE>#ID# (&gt;K:ENGINE_BLEED_AIR_SOURCE_TOGGLE)</LEFT_SINGLE_CODE>
@@ -37,7 +37,7 @@
 			</Case>
 		</Switch>
 	</OverrideTemplateParameters>
-	
+
 	<Condition Check="IS_AIRLINER" Match="True">
 		<True>
 			<UseTemplate Name="ASOBO_GT_Push_Button_Airliner">
@@ -50,14 +50,14 @@
 			</Component>
 		</False>
 	</Condition>
-</Template>	
+</Template>
 
 <Template Name="ASOBO_ELECTRICAL_Switch_APU_Bleed_SubTemplate"> <!-- TODO -->
 	<DefaultTemplateParameters>
 		<ANIM_NAME>ELECTRICAL_Switch_APU_Bleed</ANIM_NAME>
 		<NODE_ID>ELECTRICAL_Switch_APU_Bleed</NODE_ID>
 		<PART_ID>ELECTRICAL_Switch_APU_Bleed</PART_ID>
-		
+
 		<FAULT_NODE_ID>ELECTRICAL_Switch_APU_Bleed_Fault</FAULT_NODE_ID>
 		<ON_NODE_ID>ELECTRICAL_Switch_APU_Bleed_On</ON_NODE_ID>
 		<WWISE_EVENT_1>apu_bleed_switch_on</WWISE_EVENT_1>
@@ -91,7 +91,7 @@
 			</Case>
 		</Switch>
 	</OverrideTemplateParameters>
-	
+
 	<Condition Check="IS_AIRLINER" Match="True">
 		<True>
 			<UseTemplate Name="ASOBO_GT_Push_Button_Airliner">
@@ -104,17 +104,17 @@
 			</Component>
 		</False>
 	</Condition>
-</Template>	
+</Template>
 
 <Template Name="ASOBO_ELECTRICAL_Switch_APU_Starter_SubTemplate">
 	<DefaultTemplateParameters>
 		<ANIM_NAME>ELECTRICAL_Switch_APU_Starter</ANIM_NAME>
 		<NODE_ID>ELECTRICAL_Switch_APU_Starter</NODE_ID>
 		<PART_ID>ELECTRICAL_Switch_APU_Starter</PART_ID>
-		
+
 		<AVAIL_NODE_ID>ELECTRICAL_Switch_APU_Starter_Avail</AVAIL_NODE_ID>
 		<ON_NODE_ID>ELECTRICAL_Switch_APU_Starter_On</ON_NODE_ID>
-		
+
 		<EXTRA_CONDITION>1</EXTRA_CONDITION>
 		<AVAIL_PERCENTAGE>95</AVAIL_PERCENTAGE>
 		<WWISE_EVENT>starter_apu_switch</WWISE_EVENT>
@@ -125,7 +125,7 @@
 		<SWITCH_POSITION_TYPE>O</SWITCH_POSITION_TYPE>
 		<SWITCH_POSITION_VAR>SwitchState</SWITCH_POSITION_VAR>
 	</DefaultTemplateParameters>
-	
+
 	<Switch Param="TYPE">
 		<Case Value="AIRBUS">
 			<UseTemplate Name="ASOBO_GT_Push_Button_Airliner">
@@ -161,7 +161,7 @@
 		<Default>
 		</Default>
 	</Switch>
-	
+
 	<Condition Valid="ACTIVE_FUEL_PUMP_ON_RPM">
 		<True>
 			<UseTemplate Name="ASOBO_GT_Update">
@@ -172,14 +172,14 @@
 			</UseTemplate>
 		</True>
 	</Condition>
-</Template>	
+</Template>
 
 <Template Name="ASOBO_ELECTRICAL_Switch_APU_Generator_SubTemplate">
 	<DefaultTemplateParameters>
 		<ANIM_NAME>ELECTRICAL_Switch_APU_Generator</ANIM_NAME>
 		<NODE_ID>ELECTRICAL_Switch_APU_Generator</NODE_ID>
 		<PART_ID>ELECTRICAL_Switch_APU_Generator</PART_ID>
-		
+
 		<FAULT_NODE_ID>ELECTRICAL_Switch_APU_Generator_Fault</FAULT_NODE_ID>
 		<OFF_NODE_ID>ELECTRICAL_Switch_APU_Generator_Off</OFF_NODE_ID>
 		<WWISE_EVENT>apu_generator_switch</WWISE_EVENT>
@@ -187,7 +187,7 @@
 		<WWISE_EVENT_2>apu_generator_switch_off</WWISE_EVENT_2>
 		<NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
 		<NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
-				
+
 		<POST_CLICK_CODE></POST_CLICK_CODE>
 	</DefaultTemplateParameters>
 	<OverrideTemplateParameters>
@@ -216,7 +216,7 @@
 			</Default>
 		</Switch>
 	</OverrideTemplateParameters>
-	
+
 	<Condition Check="IS_AIRLINER" Match="True">
 		<True>
 			<UseTemplate Name="ASOBO_GT_Push_Button_Airliner">
@@ -268,7 +268,7 @@
 			</Switch>
 		</False>
 	</Condition>
-</Template>	
+</Template>
 
 
 <Template Name="ASOBO_ELECTRICAL_Switch_Alternator_SubTemplate">
@@ -281,7 +281,7 @@
 		<WWISE_EVENT_2>alternator_switch_off</WWISE_EVENT_2>
 		<!-- Moving it in "default" of the switch param <Condition Check="NUM_STATES" Match="2">
 			<True>
-				<HELPID>HELPID_GAUGE_ALTERNATOR_SWITCH</HELPID>					
+				<HELPID>HELPID_GAUGE_ALTERNATOR_SWITCH</HELPID>
 				<ANIMTIP_0>TT:COCKPIT.TOOLTIPS.MASTER_SWITCH_ALT_OFF</ANIMTIP_0>
 				<ANIMTIP_1>TT:COCKPIT.TOOLTIPS.MASTER_SWITCH_ALT_ON</ANIMTIP_1>
 			</True>
@@ -289,7 +289,7 @@
 				<HELPID>HELPID_GAUGE_ALTERNATOR_SWITCH</HELPID>
 				<ANIMTIP_0>TT:COCKPIT.TOOLTIPS.ALTERNATOR_RESET</ANIMTIP_0>
 				<ANIMTIP_1>TT:COCKPIT.TOOLTIPS.ALTERNATOR_ON</ANIMTIP_1>
-				<ANIMTIP_2>TT:COCKPIT.TOOLTIPS.ALTERNATOR_TRIP</ANIMTIP_2>	
+				<ANIMTIP_2>TT:COCKPIT.TOOLTIPS.ALTERNATOR_TRIP</ANIMTIP_2>
 			</False>
 		</Condition> -->
 
@@ -327,7 +327,7 @@
 			<Default> <!-- test -->
 					<Condition Check="NUM_STATES" Match="2">
 						<True>
-							<HELPID>HELPID_GAUGE_ALTERNATOR_SWITCH</HELPID>					
+							<HELPID>HELPID_GAUGE_ALTERNATOR_SWITCH</HELPID>
 							<ANIMTIP_0>TT:COCKPIT.TOOLTIPS.MASTER_SWITCH_ALT_OFF</ANIMTIP_0>
 							<ANIMTIP_1>TT:COCKPIT.TOOLTIPS.MASTER_SWITCH_ALT_ON</ANIMTIP_1>
 						</True>
@@ -335,9 +335,9 @@
 							<HELPID>HELPID_GAUGE_ALTERNATOR_SWITCH</HELPID>
 							<ANIMTIP_0>TT:COCKPIT.TOOLTIPS.ALTERNATOR_RESET</ANIMTIP_0>
 							<ANIMTIP_1>TT:COCKPIT.TOOLTIPS.ALTERNATOR_ON</ANIMTIP_1>
-							<ANIMTIP_2>TT:COCKPIT.TOOLTIPS.ALTERNATOR_TRIP</ANIMTIP_2>	
+							<ANIMTIP_2>TT:COCKPIT.TOOLTIPS.ALTERNATOR_TRIP</ANIMTIP_2>
 						</False>
-					</Condition>			
+					</Condition>
 			</Default><!-- /test -->
 		</Switch>
 
@@ -364,7 +364,7 @@
 			</Default>
 		</Switch>
 	</OverrideTemplateParameters>
-	
+
 	<Condition Check="IS_AIRLINER" Match="True">
 		<True>
 			<UseTemplate Name="ASOBO_GT_Push_Button_Airliner">
@@ -470,7 +470,7 @@
 			</Component>
 		</False>
 	</Condition>
-</Template>	
+</Template>
 
 <Template Name="ASOBO_ELECTRICAL_Switch_ExternalPower_SubTemplate">
 	<DefaultTemplateParameters>
@@ -527,11 +527,16 @@
 			</Case>
 			<Case Value="BOEING">
 				<IS_AIRLINER>True</IS_AIRLINER>
-				<POST_CLICK_CODE>#POST_CLICK_CODE# (A:EXTERNAL POWER ON:#ID#, Bool) if{ #ID# 0 (&gt;K:2:APU_GENERATOR_SWITCH_SET) } </POST_CLICK_CODE>
+				<POST_CLICK_CODE>
+					#POST_CLICK_CODE#
+					(A:EXTERNAL POWER AVAILABLE:#ID#, Bool) (A:EXTERNAL POWER ON:#ID#, Bool) and if{
+						(A:EXTERNAL POWER ON:#ID#, Bool) if{ #ID# 0 (&gt;K:2:APU_GENERATOR_SWITCH_SET) }
+					}
+				</POST_CLICK_CODE>
 				<Condition Valid="SWAP_SEQ_CONDITION">
 					<True>
 						<SEQ1_EMISSIVE_CODE>(A:EXTERNAL POWER AVAILABLE:#ID#, Bool) (A:EXTERNAL POWER ON:#ID#, Bool) and</SEQ1_EMISSIVE_CODE>
-						<SEQ2_EMISSIVE_CODE>(A:EXTERNAL POWER AVAILABLE:#ID#, Bool) (A:EXTERNAL POWER ON:#ID#, Bool) !						and</SEQ2_EMISSIVE_CODE>
+						<SEQ2_EMISSIVE_CODE>(A:EXTERNAL POWER AVAILABLE:#ID#, Bool) (A:EXTERNAL POWER ON:#ID#, Bool) ! and</SEQ2_EMISSIVE_CODE>
 					</True>
 					<False>
 						<SEQ1_EMISSIVE_CODE>(A:EXTERNAL POWER AVAILABLE:#ID#, Bool) (A:EXTERNAL POWER ON:#ID#, Bool) ! and</SEQ1_EMISSIVE_CODE>
@@ -541,7 +546,7 @@
 			</Case>
 		</Switch>
 	</OverrideTemplateParameters>
-	
+
 	<Condition Check="IS_AIRLINER" Match="True">
 		<True>
 			<UseTemplate Name="ASOBO_GT_Push_Button_Airliner">
@@ -552,7 +557,7 @@
 				<NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
 			</UseTemplate>
 		</True>
-		<False>			
+		<False>
 			<Condition Check="USE_SIMPLE_ON_OFF_NO_COVER">
 				<True>
 					<Component ID="#NODE_ID#" Node="#NODE_ID#">
@@ -569,7 +574,7 @@
 						<Update Frequency="0.1">
 							(O:IsInit) ! if{
 								1 (&gt;O:IsInit)
-								(A:EXTERNAL POWER ON:#ID#, Bool) if{ #ID# (&gt;K:TOGGLE_EXTERNAL_POWER) } 
+								(A:EXTERNAL POWER ON:#ID#, Bool) if{ #ID# (&gt;K:TOGGLE_EXTERNAL_POWER) }
 								#INIT_CONNECTIONS_STATE#
 							}
 						</Update>
@@ -582,19 +587,19 @@
 							<COVER_VAR_NAME>XMLVAR_ELECTRICAL_ExternalPower_CoverOpened</COVER_VAR_NAME>
 							<NUM_STATES>3</NUM_STATES>
 							<FORCED_OFF_CODE>
-								(A:EXTERNAL POWER ON:#ID#, Bool) if{ #ID# (&gt;K:TOGGLE_EXTERNAL_POWER) } 
+								(A:EXTERNAL POWER ON:#ID#, Bool) if{ #ID# (&gt;K:TOGGLE_EXTERNAL_POWER) }
 								#REFRESH_CONNECTIONS_STATE_OFF#
 							</FORCED_OFF_CODE>
 							<CODE_POS_0>
-								(A:EXTERNAL POWER ON:#ID#, Bool) ! if{ #ID# (&gt;K:TOGGLE_EXTERNAL_POWER) } 
+								(A:EXTERNAL POWER ON:#ID#, Bool) ! if{ #ID# (&gt;K:TOGGLE_EXTERNAL_POWER) }
 								#REFRESH_CONNECTIONS_STATE_BUS#
 							</CODE_POS_0>
 							<CODE_POS_1>
-								(A:EXTERNAL POWER ON:#ID#, Bool) ! if{ #ID# (&gt;K:TOGGLE_EXTERNAL_POWER) } 
+								(A:EXTERNAL POWER ON:#ID#, Bool) ! if{ #ID# (&gt;K:TOGGLE_EXTERNAL_POWER) }
 								#REFRESH_CONNECTIONS_STATE_STARTER#
 							</CODE_POS_1>
 							<CODE_POS_2>
-								(A:EXTERNAL POWER ON:#ID#, Bool) if{ #ID# (&gt;K:TOGGLE_EXTERNAL_POWER) } 
+								(A:EXTERNAL POWER ON:#ID#, Bool) if{ #ID# (&gt;K:TOGGLE_EXTERNAL_POWER) }
 								#REFRESH_CONNECTIONS_STATE_OFF#
 							</CODE_POS_2>
 							<WWISE_EVENT>externalpower_switch</WWISE_EVENT>
@@ -604,7 +609,7 @@
 			</Condition>
 		</False>
 	</Condition>
-</Template>	
+</Template>
 
 <Template Name="ASOBO_ELECTRICAL_Push_BatteryCharge_SubTemplate">
 	<DefaultTemplateParameters>
@@ -619,13 +624,13 @@
 		<UseTemplate Name="ASOBO_GT_Update">
 			<FREQUENCY>5</FREQUENCY>
 			<UPDATE_CODE>
-				#CHARGE_BUS_ID# (&gt;A:BUS LOOKUP INDEX, Number) (A:BUS CONNECTION ON:#HOT_BATTERY_BUS_ID#, Bool)				
+				#CHARGE_BUS_ID# (&gt;A:BUS LOOKUP INDEX, Number) (A:BUS CONNECTION ON:#HOT_BATTERY_BUS_ID#, Bool)
 				(L:XMLVAR_BatteryChargeDisabled_#ID#) == if{
 						#CHARGE_BUS_ID# #HOT_BATTERY_BUS_ID# (&gt;K:2:ELECTRICAL_BUS_TO_BUS_CONNECTION_TOGGLE)
 				}
 			</UPDATE_CODE>
 		</UseTemplate>
-		
+
 		<UseTemplate Name = "ASOBO_GT_Push_Button_Airliner">
 			<LEFT_SINGLE_CODE>(L:XMLVAR_BatteryChargeDisabled_#ID#) ! (&gt;L:XMLVAR_BatteryChargeDisabled_#ID#)</LEFT_SINGLE_CODE>
 			<SEQ1_EMISSIVE_CODE>0</SEQ1_EMISSIVE_CODE>
@@ -641,7 +646,7 @@
 		<ANIM_NAME_LOCK>ELECTRICAL_Switch_Battery_Master_#ID#_Lock</ANIM_NAME_LOCK>
 		<NODE_ID_LOCK>ELECTRICAL_Switch_Battery_Master_#ID#_Lock</NODE_ID_LOCK>
 		<PART_ID>ELECTRICAL_Switch_Battery_Master</PART_ID>
-		
+
 		<FAULT_NODE_ID>ELECTRICAL_Switch_Battery_Master_Fault_#ID#</FAULT_NODE_ID>
 		<OFF_NODE_ID>ELECTRICAL_Switch_Battery_Master_Off_#ID#</OFF_NODE_ID>
 		<ON_NODE_ID>ELECTRICAL_Switch_Battery_Master_On_#ID#</ON_NODE_ID>
@@ -664,7 +669,7 @@
 				<TOOLTIPID>%(#BATTERY_BUS_ID# (&gt;A:BUS LOOKUP INDEX, Number) (A:BUS CONNECTION ON:#HOT_BATTERY_BUS_ID#, Bool) !)%{if}TT:COCKPIT.TOOLTIPS.MASTER_SWITCH_BAT_#ID#_OFF%{else}TT:COCKPIT.TOOLTIPS.MASTER_SWITCH_BAT_#ID#_ON%{end}</TOOLTIPID>
 			</Case>
 		</Switch>
-		
+
 		<ANIMTIP_0>TT:COCKPIT.TOOLTIPS.MASTER_SWITCH_BAT_OFF</ANIMTIP_0>
 		<ANIMTIP_1>TT:COCKPIT.TOOLTIPS.MASTER_SWITCH_BAT_ON</ANIMTIP_1>
 	</DefaultTemplateParameters>
@@ -730,7 +735,7 @@
 			</Default>
 		</Switch>
 	</OverrideTemplateParameters>
-	
+
 	<Condition Check="IS_AIRLINER" Match="True">
 		<True>
 			<Condition Check="BATTERY_BUS_ID">
@@ -738,13 +743,13 @@
 					<UseTemplate Name="ASOBO_GT_Helper_Recursive_Param_Builder">
 						<EXIT_TEMPLATE>ASOBO_GT_Update</EXIT_TEMPLATE>
 						<PARAM_NAME>UPDATE_CODE</PARAM_NAME>
-						<PARAM_START> 
+						<PARAM_START>
 						(* Prevent Battery from being shut down, instead disconnect it from bus *)
 						</PARAM_START>
 						<PARAM_REPEATED_START>(A:ELECTRICAL MASTER BATTERY:</PARAM_REPEATED_START>
 						<PARAM_REPEATED_END>, Bool) ! if{ </PARAM_REPEATED_END>
 						<PARAM_REPEATED_2_START>
-							#BATTERY_BUS_ID# (&gt;A:BUS LOOKUP INDEX, Number) (A:BUS CONNECTION ON:#HOT_BATTERY_BUS_ID#, Bool) if{ 
+							#BATTERY_BUS_ID# (&gt;A:BUS LOOKUP INDEX, Number) (A:BUS CONNECTION ON:#HOT_BATTERY_BUS_ID#, Bool) if{
 								#BATTERY_BUS_ID# #HOT_BATTERY_BUS_ID# (&gt;K:2:ELECTRICAL_BUS_TO_BUS_CONNECTION_TOGGLE)
 							}
 						</PARAM_REPEATED_2_START>
@@ -814,7 +819,7 @@
 								(O:_Last_XMLVAR_Essential_Bus_ON) (L:XMLVAR_Essential_Bus_ON) != (A:ELECTRICAL MASTER BATTERY:#ID#, Bool) and if{
 									#REFRESH_ESSENTIAL_BUS_CONNECTIONS#
 								} els{
-									(L:XMLVAR_Essential_Bus_ON) (&gt;O:_Last_XMLVAR_Essential_Bus_ON)								
+									(L:XMLVAR_Essential_Bus_ON) (&gt;O:_Last_XMLVAR_Essential_Bus_ON)
 								}
 							</UPDATE_CODE>
 							<FREQUENCY>5</FREQUENCY>
@@ -862,7 +867,7 @@
 						<ENSURE_VARIABLE_CONSISTENCY/>
 						<OPEN_COVER_CONDITION>(I:XMLVAR_ELECTRICAL_Battery_CoverON) ! (A:ELECTRICAL MASTER BATTERY:#ID#, Bool) and</OPEN_COVER_CONDITION>
 						<FORCED_OFF_CODE>
-							(A:ELECTRICAL MASTER BATTERY:#ID#, Bool) if{ #ID# (&gt;K:TOGGLE_MASTER_BATTERY) #ON_TOGGLE_MASTER_BATTERY# } 
+							(A:ELECTRICAL MASTER BATTERY:#ID#, Bool) if{ #ID# (&gt;K:TOGGLE_MASTER_BATTERY) #ON_TOGGLE_MASTER_BATTERY# }
 						</FORCED_OFF_CODE>
 						<OVERRIDE_TOGGLE_CODE>#ID# (&gt;K:TOGGLE_MASTER_BATTERY) #ON_TOGGLE_MASTER_BATTERY#</OVERRIDE_TOGGLE_CODE>
 						<SWITCH_ANIM_CODE>(A:ELECTRICAL MASTER BATTERY:#ID#, Bool) 100 *</SWITCH_ANIM_CODE>
@@ -885,13 +890,13 @@
 			</Switch>
 		</False>
 	</Condition>
-</Template>	
+</Template>
 
 <Template Name="ASOBO_ELECTRICAL_Emissive_Battery_Discharge_SubTemplate">
 	<DefaultTemplateParameters>
 		<NODE_ID>ELECTRICAL_Emissive_Battery_Discharge_#ID#</NODE_ID>
 	</DefaultTemplateParameters>
-	
+
 	<UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
 		<EMISSIVE_CODE>(A:ELECTRICAL BATTERY LOAD:#ID#, Amps) 0 &gt;</EMISSIVE_CODE>
 	</UseTemplate>
@@ -1019,7 +1024,7 @@
 						#STATE_COND#
 					</STATE#INDEX_OFF#_TEST>
 					<STATE#INDEX_LEFT#_TEST>
-						(A:RECIP ENG LEFT MAGNETO:#ID#, Bool) 
+						(A:RECIP ENG LEFT MAGNETO:#ID#, Bool)
 						(A:RECIP ENG RIGHT MAGNETO:#ID#, Bool) ! and
 						#STATE_COND#
 					</STATE#INDEX_LEFT#_TEST>
@@ -1029,7 +1034,7 @@
 						#STATE_COND#
 					</STATE#INDEX_RIGHT#_TEST>
 					<STATE#INDEX_BOTH#_TEST>
-						(A:RECIP ENG LEFT MAGNETO:#ID#, Bool) 
+						(A:RECIP ENG LEFT MAGNETO:#ID#, Bool)
 						(A:RECIP ENG RIGHT MAGNETO:#ID#, Bool) and
 						#STATE_COND#
 					</STATE#INDEX_BOTH#_TEST>
@@ -1040,7 +1045,7 @@
 					</Condition>
 					<WWISE_EVENT>magneto_switch</WWISE_EVENT>
 				</UseTemplate>
-				
+
 			</Default>
 		</Switch>
 	</Component>
@@ -1095,7 +1100,7 @@
 			</Switch>
 			<WWISE_EVENT_1>starter_push_button_on</WWISE_EVENT_1>
 			<WWISE_EVENT_2>starter_push_button_off</WWISE_EVENT_2>
-		</UseTemplate>	
+		</UseTemplate>
 	</Component>
 </Template>
 
@@ -1116,14 +1121,14 @@
 				<POS_OFF>0</POS_OFF>
 				<POS_ON>1</POS_ON>
 				<POS_START>2</POS_START>
-				<SWITCH_DIRECTION>Horizontal</SWITCH_DIRECTION>		
+				<SWITCH_DIRECTION>Horizontal</SWITCH_DIRECTION>
 				<ARROW_TYPE>Curved</ARROW_TYPE>
 			</Case>
 		</Switch>
-		<WWISE_EVENT>electrical_master_knob</WWISE_EVENT>	
+		<WWISE_EVENT>electrical_master_knob</WWISE_EVENT>
 	</DefaultTemplateParameters>
 	<Switch Param="SWITCH_TYPE">
-		<Case Value="OFF_ON_START">		
+		<Case Value="OFF_ON_START">
 			<Component ID="#NODE_ID#" Node="#NODE_ID#">
 				<UseTemplate Name="ASOBO_GT_Switch_3States">
 					<MOMENTARY_SWITCH/>
@@ -1227,7 +1232,7 @@
 			</Component>
 		</Condition>
 	</Component>
-</Template>	
+</Template>
 
 <Template Name="ASOBO_ELECTRICAL_Switch_Alternator_STBY_SubTemplate">
 	<DefaultTemplateParameters>
@@ -1252,7 +1257,7 @@
 				<EMISSIVE_CODE>#SOURCE_BUS_ID# (&gt;A:BUS LOOKUP INDEX, Number) (A:BUS CONNECTION ON:#DESTINATION_BUS#, Bool) #DEFAULT_EMISSIVE# *</EMISSIVE_CODE>
 			</UseTemplate>
 		</Component>
-	</Condition>	
+	</Condition>
 </Template>
 
 <!-- Required: SOURCE_BUS_ID & AVIONICS_BUS_ID (found in system.xml) -->
@@ -1336,11 +1341,11 @@
 							(O:XMLVAR_AVIONICS_1_ON) (O:XMLVAR_AVIONICS_1_ExpectedState) != if{
 								#AVIONICS_BUS_ID_1# #SOURCE_BUS_ID_1# (&gt;K:2:ELECTRICAL_BUS_TO_BUS_CONNECTION_TOGGLE)
 								(A:CIRCUIT SWITCH ON:#AVIONICS_CIRCUIT_ID_1#, bool) (O:XMLVAR_AVIONICS_1_ExpectedState) != if{
-									#AVIONICS_CIRCUIT_ID_1# (&gt;K:ELECTRICAL_CIRCUIT_TOGGLE)							
+									#AVIONICS_CIRCUIT_ID_1# (&gt;K:ELECTRICAL_CIRCUIT_TOGGLE)
 								}
 								(O:XMLVAR_AVIONICS_1_ExpectedState) (&gt;O:XMLVAR_AVIONICS_1_ON)
 							}
-							(O:XMLVAR_AVIONICS_2_ON) (O:XMLVAR_AVIONICS_2_ExpectedState) != if{						
+							(O:XMLVAR_AVIONICS_2_ON) (O:XMLVAR_AVIONICS_2_ExpectedState) != if{
 								#AVIONICS_BUS_ID_2# #SOURCE_BUS_ID_2# (&gt;K:2:ELECTRICAL_BUS_TO_BUS_CONNECTION_TOGGLE)
 								(A:CIRCUIT SWITCH ON:#AVIONICS_CIRCUIT_ID_2#, bool) (O:XMLVAR_AVIONICS_2_ExpectedState) != if{
 									#AVIONICS_CIRCUIT_ID_2# (&gt;K:ELECTRICAL_CIRCUIT_TOGGLE)
@@ -1384,8 +1389,8 @@
 				</LEFT_SINGLE_CODE>
 			</False>
 		</Condition>
-			
-			
+
+
 	</DefaultTemplateParameters>
 	<Component ID="#NODE_ID#_#ID#" Node="#NODE_ID#">
 		<Switch Param="SWITCH_TYPE">
@@ -1533,7 +1538,7 @@
 			</Default>
 		</Switch>
 	</OverrideTemplateParameters>
-	
+
 	<Condition Check="IS_AIRLINER" Match="True">
 		<True>
 			<UseTemplate Name="ASOBO_GT_Push_Button_Airliner">
@@ -1600,7 +1605,7 @@
 				</False>
 			</Condition>
 		</UseTemplate>
-	</Component>	
+	</Component>
 </Template>
 
 <Template Name="ASOBO_ELECTRICAL_Emissive_Bus_SubTemplate">
