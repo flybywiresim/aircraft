@@ -120,7 +120,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     Update() {
         super.Update();
 
-        this.A32NXCore.update(_deltaTime);
+        this.A32NXCore.update();
 
         this.updateAutopilot();
         this.updateADIRS();
