@@ -270,7 +270,7 @@
          <Instrument Id="Fire_test_eng2"/>
       </Checkpoint>
       <Checkpoint Id="A320_CPREP1_AUDIO_SWITCHING">
-         <CheckpointDesc SubjectTT="TT:Audio Switching Panel (INOP)" ExpectationTT="TT:NORMAL" />
+         <CheckpointDesc SubjectTT="TT:Audio Switching Panel" ExpectationTT="TT:NORMAL" />
       </Checkpoint>
       <Checkpoint Id="A320_CPREP1_PA_RECEPTION">
          <CheckpointDesc SubjectTT="TT:PA Reception Knob (INOP)" ExpectationTT="TT:SET" />
@@ -401,7 +401,7 @@
          <Instrument Id="AIRBUS_Push_Heading_Track"/>
       </Checkpoint>
       <Checkpoint Id="A320_CPREP1_ALT_WIN">
-         <CheckpointDesc SubjectTT="TT:ALT Windows" ExpectationTT="TT:INIT CLIMB CLEARANCE ALTITUDE" />
+         <CheckpointDesc SubjectTT="TT:ALT Window" ExpectationTT="TT:INIT CLIMB CLEARANCE ALTITUDE" />
       </Checkpoint>
       <Checkpoint Id="A320_CPREP1_LATERAL_CONSOLE_SPACER">
          <CheckpointDesc SubjectTT="TT:Lateral Console" ExpectationTT="TT:" />
@@ -414,7 +414,7 @@
          <Instrument Id="Crew_Supply"/>
       </Checkpoint>
       <Checkpoint Id="A320_CPREP1_INT_RECEPTION_KNOB">
-         <CheckpointDesc SubjectTT="TT:INT Reception Knob" ExpectationTT="TT:PRESS OUT-ADJUST" />
+         <CheckpointDesc SubjectTT="TT:INT Reception Knob (INOP)" ExpectationTT="TT:PRESS OUT-ADJUST" />
       </Checkpoint>
       <Checkpoint Id="A320_CPREP1_FCU">
          <CheckpointDesc SubjectTT="TT:FCU" ExpectationTT="TT:" />
@@ -1324,7 +1324,7 @@
          <Instrument Id="ENGINE_Switch_Engine_Mode" />
       </Checkpoint>
       <Checkpoint Id="A320_ILSAPPR_SEATBELT">
-         <CheckpointDesc SubjectTT="TT:Seatbelt Signs" ExpectationTT="TT:ON/AUTO" />
+         <CheckpointDesc SubjectTT="TT:Seatbelt Signs" ExpectationTT="TT:ON" />
          <Instrument Id="Seatbelt_Switch"/>
       </Checkpoint>
       <Checkpoint Id="A320_ILSAPPR_APPR_PHRASE">
@@ -1351,7 +1351,7 @@
          <CheckpointDesc SubjectTT="TT:Navigation Accuracy" ExpectationTT="TT:MONITOR (HIGH)" />
       </Checkpoint>
       <Checkpoint Id="A320_ILSAPPR_RADAR_TILT">
-         <CheckpointDesc SubjectTT="TT:Weather Radar Tilt" ExpectationTT="TT:ADJUST" />
+         <CheckpointDesc SubjectTT="TT:Weather Radar Tilt (INOP)" ExpectationTT="TT:ADJUST" />
       </Checkpoint>
       <Checkpoint Id="A320_ILSAPPR_APPR_CHECKLIST">
          <CheckpointDesc SubjectTT="TT:Approach Checklist" ExpectationTT="TT:COMPLETE" />
@@ -1837,8 +1837,8 @@
       <Checkpoint Id="A320_AFTERLANDING_ATC">
          <CheckpointDesc SubjectTT="TT:ATC" ExpectationTT="TT:STBY/OFF" />
       </Checkpoint>
-      <Checkpoint Id="A320_AFTERLANDING_TCAM_MODE_SEL">
-         <CheckpointDesc SubjectTT="TT:TCAM Mode Selector (INOP)" ExpectationTT="TT:STBY" />
+      <Checkpoint Id="A320_AFTERLANDING_TCAS_MODE_SEL">
+         <CheckpointDesc SubjectTT="TT:TCAS Mode Selector" ExpectationTT="TT:STBY" />
       </Checkpoint>
       <Checkpoint Id="A320_AFTERLANDING_RADAR">
          <CheckpointDesc SubjectTT="TT:Weather Radar" ExpectationTT="TT:OFF/STBY" />
