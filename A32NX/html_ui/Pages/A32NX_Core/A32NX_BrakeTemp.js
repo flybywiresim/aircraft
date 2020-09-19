@@ -123,9 +123,16 @@ class A32NX_BrakeTemp {
             currentBrakeTemps[3] -= _deltaTime/1000 * this.getRandomArbitrary(0.8, 1.2) * this.calculateDeltaCoolDown(deltaTemp3, airspeed, GearRightExtended);
         }
 
+        let brakesHot = 0;
+
         // Set simvars
         for (var i = 0; i < currentBrakeTemps.length; ++i) {
             SimVar.SetSimVarValue(`L:A32NX_BRAKE_TEMPERATURE_${i + 1}`, "celsius", currentBrakeTemps[i])
+            if (currentBrakeTemps[i] > 300) {
+                brakesHot = 1;
+            }
         }
+
+        SimVar.SetSimVarValue("L:A32NX_BRAKES_HOT", "Bool", brakesHot);
     }
 }
