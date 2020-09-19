@@ -83,7 +83,7 @@
 		<ID_ENG_2>2</ID_ENG_2>
 		<VALUE_POS_1>19</VALUE_POS_1><!-- FUEL selector for ENG 1 -->
 		<VALUE_POS_2>20</VALUE_POS_2><!-- FUEL selector for ENG 2 -->
-		<WWISE_EVENT>fuel_crossfeed_switch</WWISE_EVENT>	
+		<WWISE_EVENT>fuel_crossfeed_switch</WWISE_EVENT>
 		<Condition Check="USE_FUEL_SELECTOR_SET">
 			<False>
 				<CIRCUIT_ID_PUMP_1>1</CIRCUIT_ID_PUMP_1>
@@ -162,7 +162,7 @@
 						(A:FUEL TANK SELECTOR:#ID_ENG_2#, enum) #VALUE_POS_2# == and
 					</STATE1_TEST>
 					<STATE2_TEST>
-						(A:FUEL TANK SELECTOR:#ID_ENG_1#, enum) #VALUE_POS_1# == 
+						(A:FUEL TANK SELECTOR:#ID_ENG_1#, enum) #VALUE_POS_1# ==
 						(A:FUEL TANK SELECTOR:#ID_ENG_2#, enum) #VALUE_POS_1# == and
 					</STATE2_TEST>
 				</UseTemplate>
@@ -173,8 +173,8 @@
 					<Update Frequency="2">
 						#VALUE_POS_1# (&gt;K:#KEY_FUEL_SELECTOR_SET_1#)
 						#VALUE_POS_2# (&gt;K:#KEY_FUEL_SELECTOR_SET_2#)
-						(A:FUEL SELECTED TRANSFER MODE, Enum) 5 != if{ 
-							(&gt;K:SET_FUEL_TRANSFER_CUSTOM) 
+						(A:FUEL SELECTED TRANSFER MODE, Enum) 5 != if{
+							(&gt;K:SET_FUEL_TRANSFER_CUSTOM)
 						}
 					</Update>
 				</Condition>
@@ -222,7 +222,7 @@
 	<DefaultTemplateParameters>
 		<ANIM_NAME>FUEL_Switch_Cutoff_#ID#</ANIM_NAME>
 		<NODE_ID>FUEL_Switch_Cutoff_#ID#</NODE_ID>
-		<PART_ID>FUEL_Switch_Cutoff_Crossfeed</PART_ID>		
+		<PART_ID>FUEL_Switch_Cutoff_Crossfeed</PART_ID>
 		<Condition Check="USE_BLOCKER">
 			<BLOCKER_NODE_ID>FUEL_Switch_Off_Blocker_#ID#</BLOCKER_NODE_ID>
 			<BLOCKER_ANIM_NAME>FUEL_Switch_Off_Blocker_#ID#</BLOCKER_ANIM_NAME>
@@ -250,7 +250,7 @@
 		<ANIMTIP_0>TT:COCKPIT.TOOLTIPS.FUEL_SWITCH_CUTOFF_XFEED_ON</ANIMTIP_0>
 		<ANIMTIP_1>TT:COCKPIT.TOOLTIPS.FUEL_SWITCH_CUTOFF_XFEED_XFEED</ANIMTIP_1>
 		<ANIMTIP_2>TT:COCKPIT.TOOLTIPS.FUEL_SWITCH_CUTOFF_XFEED_OFF</ANIMTIP_2>
-		
+
 	</DefaultTemplateParameters>
 	<Component ID="#NODE_ID#" Node="#NODE_ID#">
 		<UseTemplate Name="ASOBO_GT_Switch_3States">
@@ -259,13 +259,13 @@
 			<CODE_POS_0>
 				(*UP*)
 				(A:FUEL TANK SELECTOR:#ID#, enum) #FUEL_SELECTOR_ENUM_POS_UP# != if{
-					#VALUE_POS_UP# (&gt;K:#KEY_POS_UP#) 
+					#VALUE_POS_UP# (&gt;K:#KEY_POS_UP#)
 				}
 			</CODE_POS_0>
 			<CODE_POS_1>
 				(*CROSSFEED*)
 				(A:FUEL TANK SELECTOR:#ID#, enum) #FUEL_SELECTOR_ENUM_POS_CROSSFEED# != if{
-					#VALUE_POS_CROSSFEED# (&gt;K:#KEY_POS_CROSSFEED#) 
+					#VALUE_POS_CROSSFEED# (&gt;K:#KEY_POS_CROSSFEED#)
 				}
 			</CODE_POS_1>
 			<CODE_POS_2>
@@ -342,7 +342,7 @@
 					(A:FUEL SELECTED TRANSFER MODE, Enum) 5 == and
 					100 *
 				</ANIM_CODE>
-			</False> 
+			</False>
 		</Condition>
 		<ANIMTIP_0>TT:COCKPIT.TOOLTIPS.FUEL_TRANSFERT_OFF</ANIMTIP_0>
 		<ANIMTIP_1>TT:COCKPIT.TOOLTIPS.FUEL_TRANSFERT_ON</ANIMTIP_1>
@@ -366,8 +366,8 @@
 				(A:CIRCUIT SWITCH ON:#CIRCUIT_ID#, Bool) ! if{
 					#CIRCUIT_ID# (&gt;K:ELECTRICAL_CIRCUIT_TOGGLE)
 				}
-				(A:FUEL SELECTED TRANSFER MODE, Enum) 5 != if{ 
-					(&gt;K:SET_FUEL_TRANSFER_CUSTOM) 
+				(A:FUEL SELECTED TRANSFER MODE, Enum) 5 != if{
+					(&gt;K:SET_FUEL_TRANSFER_CUSTOM)
 				}
 			</Update>
 		</Condition>
@@ -381,8 +381,8 @@
 				<False>
 					<LEFT_SINGLE_CODE>
 						#ID# (&gt;K:FUEL_TRANSFER_CUSTOM_INDEX_TOGGLE)
-						(A:FUEL SELECTED TRANSFER MODE, Enum) 5 != if{ 
-							(&gt;K:SET_FUEL_TRANSFER_CUSTOM) 
+						(A:FUEL SELECTED TRANSFER MODE, Enum) 5 != if{
+							(&gt;K:SET_FUEL_TRANSFER_CUSTOM)
 						}
 					</LEFT_SINGLE_CODE>
 				</False>
@@ -396,7 +396,7 @@
 		<ANIM_NAME>FUEL_Knob_Selector_#ID#</ANIM_NAME>
 		<NODE_ID>FUEL_Knob_Selector_#ID#</NODE_ID>
 		<PART_ID>FUEL_Selector</PART_ID>
-		<ANIMREF_ID>0</ANIMREF_ID>		
+		<ANIMREF_ID>0</ANIMREF_ID>
 		<Condition Check="ID" Match="1">
 			<True>
 				<KEY_FUEL_SELECTOR_SET>FUEL_SELECTOR_SET</KEY_FUEL_SELECTOR_SET>
@@ -585,10 +585,10 @@
 		#FUEL_TANK_SELECTOR_POS_20# #FUEL_TANK_SELECTOR_POS_19#
 		#FUEL_TANK_SELECTOR_POS_18# #FUEL_TANK_SELECTOR_POS_17# #FUEL_TANK_SELECTOR_POS_16#
 		#FUEL_TANK_SELECTOR_POS_15# #FUEL_TANK_SELECTOR_POS_14# #FUEL_TANK_SELECTOR_POS_13#
-		#FUEL_TANK_SELECTOR_POS_12# #FUEL_TANK_SELECTOR_POS_11# #FUEL_TANK_SELECTOR_POS_10# 
-		#FUEL_TANK_SELECTOR_POS_9# #FUEL_TANK_SELECTOR_POS_8# #FUEL_TANK_SELECTOR_POS_7# 
-		#FUEL_TANK_SELECTOR_POS_6# #FUEL_TANK_SELECTOR_POS_5# #FUEL_TANK_SELECTOR_POS_4# 
-		#FUEL_TANK_SELECTOR_POS_3# #FUEL_TANK_SELECTOR_POS_2# #FUEL_TANK_SELECTOR_POS_1# 
+		#FUEL_TANK_SELECTOR_POS_12# #FUEL_TANK_SELECTOR_POS_11# #FUEL_TANK_SELECTOR_POS_10#
+		#FUEL_TANK_SELECTOR_POS_9# #FUEL_TANK_SELECTOR_POS_8# #FUEL_TANK_SELECTOR_POS_7#
+		#FUEL_TANK_SELECTOR_POS_6# #FUEL_TANK_SELECTOR_POS_5# #FUEL_TANK_SELECTOR_POS_4#
+		#FUEL_TANK_SELECTOR_POS_3# #FUEL_TANK_SELECTOR_POS_2# #FUEL_TANK_SELECTOR_POS_1#
 		#FUEL_TANK_SELECTOR_POS_OFF# 21
 		(A:FUEL TANK SELECTOR:#ID#, enum) case (&gt;O:SwitchPosition)
 	</Update>
@@ -597,10 +597,10 @@
 			#FUEL_TANK_SELECTOR_POS_20# #FUEL_TANK_SELECTOR_POS_19#
 			#FUEL_TANK_SELECTOR_POS_18# #FUEL_TANK_SELECTOR_POS_17# #FUEL_TANK_SELECTOR_POS_16#
 			#FUEL_TANK_SELECTOR_POS_15# #FUEL_TANK_SELECTOR_POS_14# #FUEL_TANK_SELECTOR_POS_13#
-			#FUEL_TANK_SELECTOR_POS_12# #FUEL_TANK_SELECTOR_POS_11# #FUEL_TANK_SELECTOR_POS_10# 
-			#FUEL_TANK_SELECTOR_POS_9# #FUEL_TANK_SELECTOR_POS_8# #FUEL_TANK_SELECTOR_POS_7# 
-			#FUEL_TANK_SELECTOR_POS_6# #FUEL_TANK_SELECTOR_POS_5# #FUEL_TANK_SELECTOR_POS_4# 
-			#FUEL_TANK_SELECTOR_POS_3# #FUEL_TANK_SELECTOR_POS_2# #FUEL_TANK_SELECTOR_POS_1# 
+			#FUEL_TANK_SELECTOR_POS_12# #FUEL_TANK_SELECTOR_POS_11# #FUEL_TANK_SELECTOR_POS_10#
+			#FUEL_TANK_SELECTOR_POS_9# #FUEL_TANK_SELECTOR_POS_8# #FUEL_TANK_SELECTOR_POS_7#
+			#FUEL_TANK_SELECTOR_POS_6# #FUEL_TANK_SELECTOR_POS_5# #FUEL_TANK_SELECTOR_POS_4#
+			#FUEL_TANK_SELECTOR_POS_3# #FUEL_TANK_SELECTOR_POS_2# #FUEL_TANK_SELECTOR_POS_1#
 			#FUEL_TANK_SELECTOR_POS_OFF# 21
 			(A:FUEL TANK SELECTOR:#ID#, enum) case s0 (O:SwitchPosition) != if{ l0 (&gt;O:SwitchPosition) } l0 #ANIM_CODE_POSITION_CALC#
 		</ANIM_CODE>
@@ -622,22 +622,22 @@
 				<DRAG_CODE>(M:DragPercent) #MAX_STATE# * near (&gt;O:SwitchPosition)</DRAG_CODE>
 				<DOWN_CODE>1 (&gt;O:XMLVAR_InteractingWithFuelSelector)</DOWN_CODE>
 				<RELEASE_CODE>
-					0 (&gt;O:XMLVAR_InteractingWithFuelSelector) 
+					0 (&gt;O:XMLVAR_InteractingWithFuelSelector)
 					(M:RelativeX) (O:_LastPos) - abs 0.001 &lt; if{
 						(M:RelativeX) 0 &gt; if{ g1 } els{ g2 }
 					}
 				</RELEASE_CODE>
 				<CALLBACKCODE>
-					#FUEL_SEL_ENUM_VAL_3# #FUEL_SEL_ENUM_VAL_2# #FUEL_SEL_ENUM_VAL_1# #FUEL_SEL_ENUM_VAL_0# #NUM_STATES# 
-					(O:SwitchPosition) case (&gt;K:#KEY_FUEL_SELECTOR_SET#) 
+					#FUEL_SEL_ENUM_VAL_3# #FUEL_SEL_ENUM_VAL_2# #FUEL_SEL_ENUM_VAL_1# #FUEL_SEL_ENUM_VAL_0# #NUM_STATES#
+					(O:SwitchPosition) case (&gt;K:#KEY_FUEL_SELECTOR_SET#)
 					#CALLBACKCODE#
 				</CALLBACKCODE>
 			</True>
 			<False>
 				<CALLBACKCODE>
 					:3
-					#FUEL_SEL_ENUM_VAL_3# #FUEL_SEL_ENUM_VAL_2# #FUEL_SEL_ENUM_VAL_1# #FUEL_SEL_ENUM_VAL_0# #NUM_STATES# 
-					(O:SwitchPosition) case (&gt;K:#KEY_FUEL_SELECTOR_SET#) 
+					#FUEL_SEL_ENUM_VAL_3# #FUEL_SEL_ENUM_VAL_2# #FUEL_SEL_ENUM_VAL_1# #FUEL_SEL_ENUM_VAL_0# #NUM_STATES#
+					(O:SwitchPosition) case (&gt;K:#KEY_FUEL_SELECTOR_SET#)
 					#CALLBACKCODE#
 					quit
 				</CALLBACKCODE>
@@ -655,8 +655,8 @@
 	</Condition>
 	<Condition Valid="USE_TRAJECTORY_DRAG_MODE">
 		<UseTemplate Name="ASOBO_GT_AnimTriggers_SoundEvents_Same">
-			<WWISE_EVENT>fuel_selector_lever</WWISE_EVENT> 
-			<COUNT>2</COUNT>    
+			<WWISE_EVENT>fuel_selector_lever</WWISE_EVENT>
+			<COUNT>2</COUNT>
 		</UseTemplate>
 	</Condition>
 </Template>
@@ -722,7 +722,7 @@
 				<VAR_SCOPE>O</VAR_SCOPE>
 			</Case>
 		</Switch>
-		
+
 		<Condition Check="INTERACTION" Match="Push">
 				<True>
 					<TOOLTIPID>%((A:GENERAL ENG FUEL PUMP SWITCH:#ID#, Bool))%{if}TT:COCKPIT.TOOLTIPS.FUEL_BOOST_ON_#ID#%{else}TT:COCKPIT.TOOLTIPS.FUEL_BOOST_OFF_#ID#%{end}</TOOLTIPID>
@@ -772,10 +772,10 @@
 					<SEQ1_EMISSIVE_CODE>(A:GENERAL ENG FUEL PUMP SWITCH EX1:#ID#, Bool) 1 ==</SEQ1_EMISSIVE_CODE>
 					<SEQ2_EMISSIVE_CODE>(A:GENERAL ENG FUEL PUMP SWITCH EX1:#ID#, Bool) 2 ==</SEQ2_EMISSIVE_CODE>
 					<LEFT_SINGLE_CODE>
-						(A:GENERAL ENG FUEL PUMP SWITCH EX1:#ID#, Bool) 2 != if{ 
-							2 (&gt;K:ELECT_FUEL_PUMP#ID#_SET) 
-						} els{ 
-							1 (&gt;K:ELECT_FUEL_PUMP#ID#_SET) 
+						(A:GENERAL ENG FUEL PUMP SWITCH EX1:#ID#, Bool) 2 != if{
+							2 (&gt;K:ELECT_FUEL_PUMP#ID#_SET)
+						} els{
+							1 (&gt;K:ELECT_FUEL_PUMP#ID#_SET)
 						}
 					</LEFT_SINGLE_CODE>
 				</UseTemplate>
@@ -855,7 +855,7 @@
 		<NODE_ID>FUEL_Lever_Mixture_#ID#</NODE_ID>
 		<PART_ID>FUEL_Mixture</PART_ID>
 	</DefaultTemplateParameters>
-	
+
 	<UseTemplate Name="ASOBO_FUEL_Lever_Mixture_SubTemplate2">
 	</UseTemplate>
 </Template>
@@ -1007,15 +1007,15 @@
 		<SEQ1_EMISSIVE_CODE>(A:GENERAL ENG MIXTURE LEVER POSITION:#ID#, Percent) 0 &gt;</SEQ1_EMISSIVE_CODE>
 		<SEQ2_EMISSIVE_CODE>(A:GENERAL ENG MIXTURE LEVER POSITION:#ID#, Percent) 0 == #ADDIONAL_CHECK#</SEQ2_EMISSIVE_CODE>
 		<LEFT_SINGLE_CODE>
-			(A:GENERAL ENG MIXTURE LEVER POSITION:#ID#, Percent) 0 &gt; if{ 
+			(A:GENERAL ENG MIXTURE LEVER POSITION:#ID#, Percent) 0 &gt; if{
 				(&gt;K:MIXTURE#ID#_LEAN)
 				(A:GENERAL ENG FUEL VALVE:#ID#, Bool) if{ (&gt;K:TOGGLE_FUEL_VALVE_ENG#ID#) }
 				(A:TURB ENG IGNITION SWITCH EX1:#ID#, enum) 1 == if{ 0 (&gt;K:TURBINE_IGNITION_SWITCH_SET#ID#) }
-			} els{ 
-				(&gt;K:MIXTURE#ID#_RICH) 
+			} els{
+				(&gt;K:MIXTURE#ID#_RICH)
 				(A:GENERAL ENG FUEL VALVE:#ID#, Bool) ! if{ (&gt;K:TOGGLE_FUEL_VALVE_ENG#ID#) }
 				(A:TURB ENG IGNITION SWITCH EX1:#ID#, enum) 0 == if{ 1 (&gt;K:TURBINE_IGNITION_SWITCH_SET#ID#) }
-			} 
+			}
 		</LEFT_SINGLE_CODE>
 	</UseTemplate>
 </Template>
@@ -1026,7 +1026,7 @@
 		<ANIM_NAME>FUEL_Push_Pump_#ID#</ANIM_NAME>
 		<PART_ID>FUEL_Push_Pump</PART_ID>
 		<LEFT_SINGLE_CODE/>
-		
+
 		<Switch Param="TYPE">
 			<Case Value="AIRBUS">
 				<SEQ1_EMISSIVE_CODE>(L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 ==</SEQ1_EMISSIVE_CODE>
@@ -1035,7 +1035,7 @@
 				<WWISE_EVENT_1>fuel_pump_push_button_on</WWISE_EVENT_1>
 				<WWISE_EVENT_2>fuel_pump_push_button_off</WWISE_EVENT_2>
 				<NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
-				<NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>	
+				<NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
 				<TOOLTIPID>%((A:FUELSYSTEM PUMP SWITCH:#ID#, Enum) 0 ==)%{if}TT:#OFF_TOOLTIP#%{else}TT:#ON_TOOLTIP#%{end}</TOOLTIPID> <!-- use <OFF_TOOLTIP></OFF_TOOLTIP> <ON_TOOLTIP></ON_TOOLTIP> to define tooltips -->
 			</Case>
 			<Case Value="BOEING">
@@ -1046,8 +1046,7 @@
 					</Case>
 					<Case Value="AS01B">
 						<SEQ2_EMISSIVE_CODE>
-							(A:FUELSYSTEM PUMP SWITCH:#ID#, Enum) 0 == (A:FUELSYSTEM TANK QUANTITY:#TANK_ID#, liter) 0 &gt; and
-							(A:FUELSYSTEM PUMP SWITCH:#ID#, Enum) 1 == (A:FUELSYSTEM TANK QUANTITY:#TANK_ID#, liter) 0 &gt; ! and or
+							(A:FUELSYSTEM LINE FUEL PRESSURE:#LINE_ID#, KPa) 0 ==
 						</SEQ2_EMISSIVE_CODE>
 					</Case>
 					<Default>
@@ -1068,7 +1067,7 @@
 				<WWISE_EVENT_1>fuel_pump_push_button_on</WWISE_EVENT_1>
 				<WWISE_EVENT_2>fuel_pump_push_button_off</WWISE_EVENT_2>
 				<NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
-				<NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>	
+				<NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
 				<TOOLTIPID>%((A:FUELSYSTEM PUMP SWITCH:#ID#, Enum) 0 ==)%{if}TT:#OFF_TOOLTIP#%{else}TT:#ON_TOOLTIP#%{end}</TOOLTIPID> <!-- use <OFF_TOOLTIP></OFF_TOOLTIP> <ON_TOOLTIP></ON_TOOLTIP> to define tooltips -->
 			</Case>
 			<Default>
@@ -1090,7 +1089,7 @@
 	</DefaultTemplateParameters>
 	<OverrideTemplateParameters>
 	</OverrideTemplateParameters>
-	
+
 	<UseTemplate Name="ASOBO_GT_Helper_Recursive_Param_Builder">
 		<EXIT_TEMPLATE>#TEMPLATE_TO_CALL#</EXIT_TEMPLATE>
 		<PARAM_NAME>LEFT_SINGLE_CODE</PARAM_NAME>
@@ -1104,7 +1103,7 @@
 		<NODE_ID>FUEL_Push_Valve_#ID#</NODE_ID>
 		<ANIM_NAME>FUEL_Push_Valve_#ID#</ANIM_NAME>
 		<LEFT_SINGLE_CODE/>
-		
+
 		<Switch Param="TYPE">
 			<Case Value="AIRBUS">
 				<TEMPLATE_TO_CALL>ASOBO_GT_Push_Button_Airliner</TEMPLATE_TO_CALL>
@@ -1160,7 +1159,7 @@
 			</True>
 		</Condition>
 	</DefaultTemplateParameters>
-	
+
 	<UseTemplate Name="ASOBO_GT_Helper_Recursive_Param_Builder">
 		<EXIT_TEMPLATE>#TEMPLATE_TO_CALL#</EXIT_TEMPLATE>
 		<PARAM_NAME>LEFT_SINGLE_CODE</PARAM_NAME>
@@ -1181,14 +1180,14 @@
 		<WWISE_EVENT_1>fuel_valve_switch_on</WWISE_EVENT_1>
 		<WWISE_EVENT_2>fuel_valve_switch_off</WWISE_EVENT_2>
 	</DefaultTemplateParameters>
-	
+
 	<UseTemplate Name="ASOBO_GT_Helper_Recursive_Param_Builder">
 		<EXIT_TEMPLATE>ASOBO_GT_Component_Switch_Code</EXIT_TEMPLATE>
 		<PARAM_NAME>LEFT_SINGLE_CODE</PARAM_NAME>
 		<PARAM_REPEATED_END> (&gt;K:FUELSYSTEM_VALVE_TOGGLE) </PARAM_REPEATED_END>
 		<ANIM_CODE>(A:FUELSYSTEM VALVE SWITCH:#ID#, Bool) 0 != 100 *</ANIM_CODE>
 	</UseTemplate>
-	
+
 	<Condition Check="COVER_NODE_ID">
 		<True>
 			<Component ID="#COVER_NODE_ID#" Node="#COVER_NODE_ID#">
@@ -1224,7 +1223,7 @@
 		<WWISE_EVENT_1>fuel_pump_push_button_on</WWISE_EVENT_1>
 		<WWISE_EVENT_2>fuel_pump_push_button_off</WWISE_EVENT_2>
 		<NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
-		<NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>	
+		<NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
 		<Condition Check="POTENTIOMETER">
 			<True>
 				<POTENTIOMETER_SEQ1>#POTENTIOMETER#</POTENTIOMETER_SEQ1>
@@ -1238,7 +1237,7 @@
 			</True>
 		</Condition>
 	</DefaultTemplateParameters>
-	
+
 	<UseTemplate Name="ASOBO_GT_Helper_Recursive_Param_Builder">
 		<EXIT_TEMPLATE>#TEMPLATE_TO_CALL#</EXIT_TEMPLATE>
 		<PARAM_NAME>LEFT_SINGLE_CODE</PARAM_NAME>
@@ -1262,7 +1261,7 @@
 			</Case>
 		</Switch>
 	</DefaultTemplateParameters>
-	
+
 	<UseTemplate Name="ASOBO_GT_Push_Button_Airliner">
 		<LEFT_SINGLE_CODE/>
 	</UseTemplate>

@@ -36,6 +36,66 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         CDUIdentPage.ShowPage(this);
         this.electricity = this.querySelector("#Electricity")
     }
+    trySetFlapsTHS(s) {
+        if (s) {
+            let validEntry = false;
+            let nextFlaps = this.flaps
+            let nextThs = this.ths
+            let [flaps, ths] = s.split("/");
+
+            // Parse flaps
+            if (flaps && flaps.length > 0) {
+                if (!/^\d+$/.test(flaps)) {
+                    this.showErrorMessage("FORMAT ERROR");
+                    return false;
+                }
+
+                let vFlaps = parseInt(flaps);
+                if (isFinite(vFlaps) && vFlaps > 0 && vFlaps < 4) {
+                    nextFlaps = vFlaps;
+                    validEntry = true;
+                }
+            }
+
+            // Parse THS
+            if (ths) {
+                if (!/^((UP|DN)(\d?\.?\d)|(\d?\.?\d)(UP|DN))$/.test(ths)) {
+                    this.showErrorMessage("FORMAT ERROR");
+                    return false;
+                }
+
+                let direction = null
+                ths = ths.replace(/(UP|DN)/g, (substr) => {
+                    direction = substr
+                    return ''
+                })
+
+                if (direction) {
+                    const vThs = parseFloat(ths.trim())
+                    if (isFinite(vThs) && vThs >= 0.0 && vThs <= 2.5) {
+
+                        if (vThs === 0.0) {
+                            // DN0.0 should be corrected to UP0.0
+                            direction = 'UP'
+                        }
+
+                        nextThs = `${direction}${vThs.toFixed(1)}`;
+                        validEntry = true;
+                    }
+                }
+            }
+
+            // Commit changes.
+            if (validEntry) {
+                this.flaps = nextFlaps
+                this.ths = nextThs
+                return true;
+            }
+        }
+
+        this.showErrorMessage("INVALID ENTRY");
+        return false;
+      }
     onPowerOn() {
         super.onPowerOn();
         if (Simplane.getAutoPilotAirspeedManaged()) {
@@ -46,7 +106,13 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         }
         this._onModeManagedHeading();
         this._onModeManagedAltitude();
+
+        CDUPerformancePage.UpdateThrRedAccFromOrigin(this);
+
         SimVar.SetSimVarValue("K:VS_SLOT_INDEX_SET", "number", 1);
+
+        this.taxiFuelWeight = 0.2;
+        CDUInitPage.updateTowIfNeeded(this);
     }
     Update() {
         super.Update();
@@ -92,9 +158,43 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         let dWeight = (this.getWeight() - 47) / (78 - 47);
         return 154 + 44 * dWeight;
     }
-    getCleanTakeOffSpeed() {
-        let dWeight = (this.getWeight() - 47) / (78 - 47);
-        return 170 + 51 * dWeight;
+
+    /**
+     * Get aircraft takeoff and approach green dot speed
+     * Calculation:
+     * Gross weight in thousandths (KG) * 2 + 85 when below FL200
+     * @returns {number}
+     */
+    getPerfGreenDotSpeed() {
+        return ((this.getGrossWeight('kg') / 1000) * 2) + 85;
+    }
+
+    /**
+     * Get the gross weight of the aircraft from the addition
+     * of the ZFW, fuel and payload.
+     * @param unit
+     * @returns {number}
+     */
+    getGrossWeight(unit) {
+        const fuelWeight = SimVar.GetSimVarValue("FUEL TOTAL QUANTITY WEIGHT", unit);
+        const emptyWeight = SimVar.GetSimVarValue("EMPTY WEIGHT", unit);
+        const payloadWeight = this.getPayloadWeight(unit);
+        return Math.round(emptyWeight + fuelWeight + payloadWeight);
+    }
+
+    /**
+     * Get the payload of the aircraft, taking in to account each
+     * payload station
+     * @param unit
+     * @returns {number}
+     */
+    getPayloadWeight(unit) {
+        const payloadCount = SimVar.GetSimVarValue("PAYLOAD STATION COUNT", "number");
+        let payloadWeight = 0;
+        for (let i = 1; i <= payloadCount; i++) {
+            payloadWeight += SimVar.GetSimVarValue(`PAYLOAD STATION WEIGHT:${i}`, unit);
+        }
+        return payloadWeight;
     }
     _onModeSelectedSpeed() {
         if (SimVar.GetSimVarValue("L:A320_FCU_SHOW_SELECTED_SPEED", "number") === 0) {
@@ -638,7 +738,8 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             }
             if (this.currentFlightPhase === FlightPhase.FLIGHT_PHASE_TAKEOFF) {
                 if (this.isAirspeedManaged()) {
-                    let speed = this.getCleanTakeOffSpeed();
+                    // getCleanTakeOffSpeed is a final fallback and not truth to reality
+                    const speed = isFinite(this.v2Speed) ? this.v2Speed + 10 : this.getCleanTakeOffSpeed();
                     this.setAPManagedSpeed(speed, Aircraft.A320_NEO);
                 }
             }
@@ -762,7 +863,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             this.landingResetTimer -= deltaTime/1000;
             if (this.landingResetTimer <= 0) {
                 this.landingResetTimer = null;
-                this.currentFlightPhase = 0;
+                this.currentFlightPhase = 2;
                 SimVar.SetSimVarValue("L:A32NX_Preflight_Complete", "Bool", 0);
                 SimVar.SetSimVarValue("L:A32NX_TO_CONFIG_NORMAL", "Bool", 0);
                 CDUIdentPage.ShowPage(this);
