@@ -6,7 +6,7 @@ const WHEEL_RPM_THRESHOLD = 10;
 /**
  * Scale factor for heat up
  */
-const HEAT_UP_SCALE = 0.00008;
+const HEAT_UP_SCALE = 0.000035;
 
 /**
  * Scale factor for cool down
@@ -87,15 +87,15 @@ class A32NX_BrakeTemp {
             const deltaHeatUpWheelSet1 = (_deltaTime / 1000) * this.calculateHeatUp(currentBrakeLeft, wheelSet1Rpm);
 
             if (currentBrakeLeft > 0) {
-                currentBrakeTemps[0] += this.getRandomArbitrary(0.7, 1.3) * deltaHeatUpWheelSet1;
-                currentBrakeTemps[1] += this.getRandomArbitrary(0.7, 1.3) * deltaHeatUpWheelSet1;
+                currentBrakeTemps[0] += this.getRandomArbitrary(0.5, 1.5) * deltaHeatUpWheelSet1;
+                currentBrakeTemps[1] += this.getRandomArbitrary(0.5, 1.5) * deltaHeatUpWheelSet1;
             }
 
             const deltaHeatUpWheelSet2 = (_deltaTime / 1000) * this.calculateHeatUp(currentBrakeLeft, wheelSet2Rpm);
 
             if (currentBrakeRight > 0) {
-                currentBrakeTemps[2] += this.getRandomArbitrary(0.7, 1.3) * deltaHeatUpWheelSet2;
-                currentBrakeTemps[3] += this.getRandomArbitrary(0.7, 1.3) * deltaHeatUpWheelSet2;
+                currentBrakeTemps[2] += this.getRandomArbitrary(0.5, 1.5) * deltaHeatUpWheelSet2;
+                currentBrakeTemps[3] += this.getRandomArbitrary(0.5, 1.5) * deltaHeatUpWheelSet2;
             }
         }
 
