@@ -104,10 +104,12 @@ var A320_Neo_LowerECAM_WHEEL;
                 }
             }
 
-            if (max >= 300) {
-                this.BrakeTempsText[maxIndex].setAttribute("class", "WHEELBRAKEWARNING");
-            } else {
-                this.BrakeTempsText[maxIndex].setAttribute("class", "WHEELTempPrecentage");
+            for (var i = 0; i < this.BrakeTempsText.length; i++) {
+                if (i === maxIndex && max > 300) {
+                    this.BrakeTempsText[i].setAttribute("class", "WHEELBRAKEWARNING");
+                } else {
+                    this.BrakeTempsText[i].setAttribute("class", "WHEELTempPrecentage");
+                }
             }
         }
 
