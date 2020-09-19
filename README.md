@@ -1,4 +1,4 @@
-# FlyByWire A32NX - Dev Build 0.2.0
+# FlyByWire A32NX
 
 # Important
 
