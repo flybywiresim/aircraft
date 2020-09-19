@@ -494,9 +494,6 @@ class CDUPerformancePage {
                 if (mcdu.currentFlightPhase === CDUPerformancePage._lastPhase) {
                     CDUPerformancePage.ShowAPPRPage(mcdu);
                 }
-                else {
-                    CDUPerformancePage.ShowPage(mcdu);
-                }
             }
         };
         let titleColor = "white";
