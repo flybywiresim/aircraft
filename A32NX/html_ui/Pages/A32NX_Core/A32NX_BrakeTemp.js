@@ -110,16 +110,16 @@ class A32NX_BrakeTemp {
         const deltaTemp3 = currentBrakeTemps[3] - ambientTemperature;
 
         // Apply cool down for each temperature
-        if (deltaTemp0 > MIN_TEMP_DELTA) {
+        if (Math.abs(deltaTemp0) > MIN_TEMP_DELTA) {
             currentBrakeTemps[0] -= _deltaTime/1000 * this.getRandomArbitrary(0.8, 1.2) * this.calculateDeltaCoolDown(deltaTemp0, airspeed, GearLeftExtended);
         }
-        if (deltaTemp1 > MIN_TEMP_DELTA) {
+        if (Math.abs(deltaTemp1) > MIN_TEMP_DELTA) {
             currentBrakeTemps[1] -= _deltaTime/1000 * this.getRandomArbitrary(0.8, 1.2) * this.calculateDeltaCoolDown(deltaTemp1, airspeed, GearLeftExtended);
         }
-        if (deltaTemp2 > MIN_TEMP_DELTA) {
+        if (Math.abs(deltaTemp2) > MIN_TEMP_DELTA) {
             currentBrakeTemps[2] -= _deltaTime/1000 * this.getRandomArbitrary(0.8, 1.2) * this.calculateDeltaCoolDown(deltaTemp2, airspeed, GearRightExtended);
         }
-        if (deltaTemp3 > MIN_TEMP_DELTA) {
+        if (Math.abs(deltaTemp3) > MIN_TEMP_DELTA) {
             currentBrakeTemps[3] -= _deltaTime/1000 * this.getRandomArbitrary(0.8, 1.2) * this.calculateDeltaCoolDown(deltaTemp3, airspeed, GearRightExtended);
         }
 
