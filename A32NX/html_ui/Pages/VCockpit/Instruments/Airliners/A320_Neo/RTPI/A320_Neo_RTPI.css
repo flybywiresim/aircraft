@@ -19,7 +19,8 @@
   width: 100%;
   height: 100%; }
   #Electricity[state=off] {
-    display: none; }
+    display: none; 
+    background-color: black;}
 
 @font-face {
   font-family: "Roboto";
@@ -50,7 +51,7 @@ a320-neo-rtpi {
   height: 100%;
   position: relative;
   overflow: hidden;
-  background-color: rgba(32, 19, 2, 0.884);  }
+  }
   a320-neo-rtpi svg {
     width: 105%;
     height: 100%; }
@@ -66,8 +67,9 @@ a320-neo-rtpi {
     width: 105%;
     height: 100%;
     left: -5%;
-    top: -6%; }
-    a320-neo-rtpi #Content #Direction {
+    top: -6%;
+    background-color: rgba(32, 19, 2, 0.884);}
+  a320-neo-rtpi #Content #Direction {
       text-anchor: start; 
       left: -10%;}
     a320-neo-rtpi #Content #Value {
