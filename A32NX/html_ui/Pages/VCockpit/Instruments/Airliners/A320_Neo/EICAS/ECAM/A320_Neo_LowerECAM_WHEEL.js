@@ -31,10 +31,11 @@ var A320_Neo_LowerECAM_WHEEL;
             this.lastSkiddState = -1;
 
             // Brake Temp Precentage
-            this.BrakeTemp1 = this.querySelector("#WheelTemp1");
-            this.BrakeTemp2 = this.querySelector("#WheelTemp2");
-            this.BrakeTemp3 = this.querySelector("#WheelTemp3");
-            this.BrakeTemp4 = this.querySelector("#WheelTemp4");
+            this.BrakeTempsText = [this.querySelector("#WheelTemp1"), this.querySelector("#WheelTemp2"), this.querySelector("#WheelTemp3"),
+                this.querySelector("#WheelTemp4")];
+
+            this.CurrentBrakeTemps = [SimVar.GetSimVarValue("L:A32NX_BRAKE_TEMPERATURE_1", "celsius"), SimVar.GetSimVarValue("L:A32NX_BRAKE_TEMPERATURE_2", "celsius"),
+                SimVar.GetSimVarValue("L:A32NX_BRAKE_TEMPERATURE_3", "celsius"), SimVar.GetSimVarValue("L:A32NX_BRAKE_TEMPERATURE_4", "celsius")]
 
             this.autoBrakeIndicator = this.querySelector("#autobrake");
             this.autoBrakeIndicator.setAttribute("visibility", "hidden");
@@ -93,23 +94,20 @@ var A320_Neo_LowerECAM_WHEEL;
         }
 
         updateTempColor(_deltaTime) {
-            if (this.currentBrake1Temp <= 100 || this.currentBrake2Temp <= 100 || this.currentBrake3Temp <= 100 || this.currentBrake4Temp <= 100) {
-                this.BrakeTemp1.setAttribute("class", "WHEELTempPrecentage");
-                this.BrakeTemp2.setAttribute("class", "WHEELTempPrecentage");
-                this.BrakeTemp3.setAttribute("class", "WHEELTempPrecentage");
-                this.BrakeTemp4.setAttribute("class", "WHEELTempPrecentage");
+            let max = this.CurrentBrakeTemps[0];
+            let maxIndex = 0;
+
+            for (var i = 1; i < this.CurrentBrakeTemps.length; i++) {
+                if (this.CurrentBrakeTemps[i] > max) {
+                    maxIndex = i;
+                    max = this.CurrentBrakeTemps[i];
+                }
             }
-            if (this.currentBrake1Temp >= 300 || this.currentBrake2Temp >= 300 || this.currentBrake3Temp >= 300 || this.currentBrake4Temp >= 300) {
-                this.BrakeTemp1.setAttribute("class", "WHEELBRAKEWARNING");
-                this.BrakeTemp2.setAttribute("class", "WHEELBRAKEWARNING");
-                this.BrakeTemp3.setAttribute("class", "WHEELBRAKEWARNING");
-                this.BrakeTemp4.setAttribute("class", "WHEELBRAKEWARNING");
-            }
-            if (this.currentBrake1Temp >= 500 || this.currentBrake2Temp >= 500 || this.currentBrake3Temp >= 500 || this.currentBrake4Temp >= 500) {
-                this.BrakeTemp1.setAttribute("class", "WHEELBRAKERED");
-                this.BrakeTemp2.setAttribute("class", "WHEELBRAKERED");
-                this.BrakeTemp3.setAttribute("class", "WHEELBRAKERED");
-                this.BrakeTemp4.setAttribute("class", "WHEELBRAKERED");
+
+            if (max >= 300) {
+                this.BrakeTempsText[maxIndex].setAttribute("class", "WHEELBRAKEWARNING");
+            } else {
+                this.BrakeTempsText[maxIndex].setAttribute("class", "WHEELTempPrecentage");
             }
         }
 
@@ -300,15 +298,10 @@ var A320_Neo_LowerECAM_WHEEL;
         }
 
         updateBrakeTemp(_deltaTime) {
-            this.currentBrake1Temp = Math.round(SimVar.GetSimVarValue("L:A32NX_BRAKE_TEMPERATURE_1", "celsius"));
-            this.currentBrake2Temp = Math.round(SimVar.GetSimVarValue("L:A32NX_BRAKE_TEMPERATURE_2", "celsius"));
-            this.currentBrake3Temp = Math.round(SimVar.GetSimVarValue("L:A32NX_BRAKE_TEMPERATURE_3", "celsius"));
-            this.currentBrake4Temp = Math.round(SimVar.GetSimVarValue("L:A32NX_BRAKE_TEMPERATURE_4", "celsius"));
-
-            this.BrakeTemp1.textContent = this.currentBrake1Temp
-            this.BrakeTemp2.textContent = this.currentBrake2Temp
-            this.BrakeTemp3.textContent = this.currentBrake3Temp
-            this.BrakeTemp4.textContent = this.currentBrake4Temp
+            for (var i = 0; i < this.CurrentBrakeTemps.length; i++) {
+                this.CurrentBrakeTemps[i] = SimVar.GetSimVarValue(`L:A32NX_BRAKE_TEMPERATURE_${i+1}`, "celsius");
+                this.BrakeTempsText[i].textContent = Math.round(this.CurrentBrakeTemps[i] / 5) * 5;
+            }
         }
 
         _checkBrakesPressure() {
