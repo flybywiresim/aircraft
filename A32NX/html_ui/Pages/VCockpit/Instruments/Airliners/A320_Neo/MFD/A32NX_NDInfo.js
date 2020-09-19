@@ -326,7 +326,7 @@ class Jet_MFD_NDInfo extends HTMLElement {
                       else
                           ils = this.gps.radioNav.getILSBeacon(this._navSource);
                       let suffix = "";
-                      if (ils.id == 1 || ils.id == 2 || this._navSource == 1) {
+                      if (ils.id == 1 || ils.id == 3 || this._navSource == 1) {
                           if (this.aircraft == Aircraft.A320_NEO || this.aircraft == Aircraft.CJ4)
                               suffix = "1";
                           else

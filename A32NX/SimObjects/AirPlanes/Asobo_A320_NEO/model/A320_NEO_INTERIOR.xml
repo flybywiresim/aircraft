@@ -1226,10 +1226,10 @@
 				<SWITCH_POSITION_VAR>XMLVAR_SWITCH_OVHD_INTLT_NOSMOKING_Position</SWITCH_POSITION_VAR>
 				<LIGHT_TYPE>NO_SMOKING</LIGHT_TYPE>
 				<ANIMTIP_1_ON_PERCENT>0.5</ANIMTIP_1_ON_PERCENT>
-				<!-- TODO: Figure out what the actual tooltips are or how to add them. -->
-				<ANIMTIP_0>Turn OFF no smoking signs</ANIMTIP_0>
-				<ANIMTIP_1>Set no smoking signs to AUTO</ANIMTIP_1>
-				<ANIMTIP_2>Turn ON no smoking signs</ANIMTIP_2>
+				<!-- TODO: Figure out how to add custom TT in .locPak and .loc files. -->
+				<ANIMTIP_0>TT:COCKPIT.TOOLTIPS.LIGHTS_NOSMOKE_ON</ANIMTIP_0>
+				<ANIMTIP_1>Set "no smoke" prompt light to AUTO</ANIMTIP_1>
+				<ANIMTIP_2>TT:COCKPIT.TOOLTIPS.LIGHTS_NOSMOKE_OFF</ANIMTIP_2>
 				<WWISE_EVENT>double_light_switch</WWISE_EVENT>
 			</UseTemplate>
 
@@ -2024,7 +2024,7 @@
 			<ANIM_NAME>PUSH_AUTOPILOT_SPDMACH_L</ANIM_NAME>
 			<NO_INDICATOR>True</NO_INDICATOR>
 			<NO_TEXT_EMISSIVE>True</NO_TEXT_EMISSIVE>
-
+			<TYPE>AIRBUS</TYPE>
 		</UseTemplate>
 
 		<UseTemplate Name="ASOBO_AUTOPILOT_Knob_SpeedMach_Template">
@@ -2076,6 +2076,7 @@
 			<ID>1</ID>
 			<AP_COUNT>2</AP_COUNT>
 			<TYPE>EXCLUSIVE_AP</TYPE>
+			<TOOLTIPID>%((L:XMLVAR_Autopilot_1_Status, bool))%{if}TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_AP_ON%{else}TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_AP_OFF%{end}</TOOLTIPID>
 		</UseTemplate>
 
 		<UseTemplate Name="ASOBO_AUTOPILOT_Push_Autopilot_Template">
@@ -2088,6 +2089,7 @@
 			<ID>2</ID>
 			<AP_COUNT>2</AP_COUNT>
 			<TYPE>EXCLUSIVE_AP</TYPE>
+			<TOOLTIPID>%((L:XMLVAR_Autopilot_2_Status, bool))%{if}TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_AP_ON%{else}TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_AP_OFF%{end}</TOOLTIPID>
 		</UseTemplate>
 
 		<UseTemplate Name="ASOBO_AUTOPILOT_Push_AutoThrottle_Template">
@@ -2096,6 +2098,7 @@
 			<POTENTIOMETER>14</POTENTIOMETER>
 			<ACTIVE_NODE_ID>PUSH_AUTOPILOT_ATHR_SEQ1</ACTIVE_NODE_ID>
 			<EMISSIVE_NODE_ID>PUSH_AUTOPILOT_ATHR_SEQ2</EMISSIVE_NODE_ID>
+			<TOOLTIPID>%((A:AUTOPILOT THROTTLE ARM,Bool))%{if}TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_AUTOTHROTTLE_ARMED%{else}TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_AUTOTHROTTLE_OFF%{end}</TOOLTIPID>
 		</UseTemplate>
 
 		<UseTemplate Name="ASOBO_AUTOPILOT_Push_Approach_Template">
@@ -2120,7 +2123,7 @@
 			<ANIM_NAME>PUSH_AUTOPILOT_METRICALT</ANIM_NAME>
 		</UseTemplate>
 
-		<UseTemplate Name="ASOBO_AIRBUS_Switch_Altitude_Increment_Template">
+		<UseTemplate Name="ASOBO_AUTOPILOT_Switch_Altitude_Increment_Template">
 			<NODE_ID>KNOB_AUTOPILOT_SELECTOR_ALT</NODE_ID>
 			<ANIM_NAME>KNOB_AUTOPILOT_SELECTOR_ALT</ANIM_NAME>
 
