@@ -4,6 +4,8 @@
 
 ### Please follow ALL steps in this README if you encounter any issues with installation before seeking support.
 
+### The current master branch now contains a fix for the engine #1 shutoff bug introduced in the MSFS 1.8.3 update
+
 ## About
 The A32NX Project is a community driven open source project to create a free Airbus A320neo in Microsoft Flight Simulator that is as close to reality as possible. It aims to enhance the default A320neo by improving the systems depth and functionality to bring it up to payware-level, all for free.
 
@@ -154,11 +156,12 @@ After making any changes to files inside the `A32NX` directory, ensure you run t
 - **[ECAM]** Removed INOP property from all ECAM page buttons
 
 ## Known Issues (Please note that most issues are being worked on and some of them may even be fixed in the dev branch)
+- Captain's PFD may occasionally turn off during flight
 - No Smoking switch doesn't use full range of motion.
-- T.O Config is not fully functional yet.
-- F/CTL page does not have working rudder and speedbrake integration
+- F/CTL page does not have working speedbrake integration
 - BLEED page is not fully functional
-- Automatic ECAM page switching should not light up ECAM buttons
+- Automatic ECAM page switching has minor bugs
+- APU/Engine fire covers cannot be retracted once opened
  
 
 ## FAQ
