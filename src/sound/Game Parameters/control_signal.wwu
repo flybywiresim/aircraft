@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<WwiseDocument Type="WorkUnit" ID="{5643FBF5-8C78-49CB-8A2A-A4513C92F617}" SchemaVersion="97">
+	<GameParameters>
+		<WorkUnit Name="control_signal" ID="{5643FBF5-8C78-49CB-8A2A-A4513C92F617}" PersistMode="Standalone">
+			<PropertyList>
+				<Property Name="Color" Type="int16" Value="6"/>
+				<Property Name="OverrideColor" Type="bool" Value="True"/>
+			</PropertyList>
+			<ChildrenList>
+				<Folder Name="sidechain" ID="{984DF171-F8C7-4EBB-97ED-6E8CE7DA14B3}" ShortID="783362607">
+					<ChildrenList>
+						<GameParameter Name="SC_SFX_HIGH" ID="{4B470CB9-0164-481C-A974-54025F8EEEF7}">
+							<PropertyList>
+								<Property Name="InitialValue" Type="Real64" Value="-32"/>
+								<Property Name="Max" Type="Real64" Value="0"/>
+								<Property Name="Min" Type="Real64" Value="-32"/>
+							</PropertyList>
+						</GameParameter>
+						<GameParameter Name="SC_SFX_MID" ID="{8D5BC668-290A-40CB-A7CE-0E7CB037DA98}">
+							<PropertyList>
+								<Property Name="FilterTimeDown" Type="Real64" Value="2"/>
+								<Property Name="FilterTimeUp" Type="Real64" Value="2"/>
+								<Property Name="InitialValue" Type="Real64" Value="-32"/>
+								<Property Name="Max" Type="Real64" Value="0"/>
+								<Property Name="Min" Type="Real64" Value="-32"/>
+								<Property Name="RTPCRamping" Type="int16" Value="2"/>
+							</PropertyList>
+						</GameParameter>
+						<GameParameter Name="SC_VO" ID="{B6839AC9-E419-435D-8213-6AF5526276DA}">
+							<PropertyList>
+								<Property Name="InitialValue" Type="Real64" Value="-48"/>
+								<Property Name="Max" Type="Real64" Value="0"/>
+								<Property Name="Min" Type="Real64" Value="-48"/>
+							</PropertyList>
+						</GameParameter>
+						<GameParameter Name="SC_SFX_THUNDER" ID="{80D5FA58-121E-4DBE-B40D-B0C428D874B1}">
+							<PropertyList>
+								<Property Name="InitialValue" Type="Real64" Value="-48"/>
+								<Property Name="Max" Type="Real64" Value="0"/>
+								<Property Name="Min" Type="Real64" Value="-48"/>
+							</PropertyList>
+						</GameParameter>
+						<GameParameter Name="SC_RADIO_NOISE" ID="{B8C946C8-805D-4CBC-817E-0803C07FEAF9}">
+							<PropertyList>
+								<Property Name="InitialValue" Type="Real64" Value="-48"/>
+								<Property Name="Max" Type="Real64" Value="0"/>
+								<Property Name="Min" Type="Real64" Value="-48"/>
+							</PropertyList>
+						</GameParameter>
+						<GameParameter Name="SC_AURAL_WARNING" ID="{97119893-2912-4259-A0FB-B324273D4B99}">
+							<PropertyList>
+								<Property Name="InitialValue" Type="Real64" Value="-48"/>
+								<Property Name="Max" Type="Real64" Value="0"/>
+								<Property Name="Min" Type="Real64" Value="-48"/>
+							</PropertyList>
+						</GameParameter>
+						<GameParameter Name="SC_ENGINES" ID="{172BD2BB-5DD1-4B2D-8EE4-FC278557ACAA}">
+							<PropertyList>
+								<Property Name="FilterTimeDown" Type="Real64" Value="0.2"/>
+								<Property Name="FilterTimeUp" Type="Real64" Value="0.2"/>
+								<Property Name="InitialValue" Type="Real64" Value="-48"/>
+								<Property Name="Max" Type="Real64" Value="0"/>
+								<Property Name="Min" Type="Real64" Value="-48"/>
+							</PropertyList>
+						</GameParameter>
+						<GameParameter Name="SC_COMBUSTION" ID="{014CF58C-B34F-443D-8C94-7A18C9B9F512}">
+							<PropertyList>
+								<Property Name="InitialValue" Type="Real64" Value="0"/>
+								<Property Name="Max" Type="Real64" Value="0"/>
+								<Property Name="Min" Type="Real64" Value="-96"/>
+							</PropertyList>
+						</GameParameter>
+					</ChildrenList>
+				</Folder>
+			</ChildrenList>
+		</WorkUnit>
+	</GameParameters>
+</WwiseDocument>

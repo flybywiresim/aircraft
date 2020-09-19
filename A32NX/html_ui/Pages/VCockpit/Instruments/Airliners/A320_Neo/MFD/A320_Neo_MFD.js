@@ -53,6 +53,7 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
         this.mapRange = -1;
         this.mapConfigId = 0;
         this.modeChangeTimer = -1;
+        this.rangeChangeTimer = -1;
         this.headingSelected = false;
         this.showILS = false;
         this.map = new A320_Neo_MFD_Map();
@@ -67,6 +68,7 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
     init() {
         super.init();
         this.modeChangeMask = this.gps.getChildById("ModeChangeMask");
+        this.rangeChangeMask = this.gps.getChildById("RangeChangeMask");
         this.map.instrument.setNPCAirplaneManagerTCASMode(true);
         this.map.instrument.showRoads = false;
         this.map.instrument.showObstacles = false;
@@ -87,12 +89,79 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
         this.showILS = SimVar.GetSimVarValue("L:BTN_LS_FILTER_ACTIVE", "bool");
         this.compass.showILS(this.showILS);
         this.info.showILS(this.showILS);
+
+        //SELF TEST
+        this.selfTestDiv = document.querySelector("#SelfTestDiv");
+        this.selfTestTimerStarted = false;
+        this.selfTestTimer = -1;
+        this.selfTestLastKnobValueFO = 1;
+        this.selfTestLastKnobValueCAP = 1;
+
+        this.electricity = this.gps.getChildById("Electricity")
     }
     onUpdate(_deltaTime) {
         super.onUpdate(_deltaTime);
         this.updateMap(_deltaTime);
         this.updateNDInfo(_deltaTime);
+
+        if (SimVar.GetSimVarValue("L:A320_Neo_ADIRS_STATE", "Enum") != 2) {
+            document.querySelector("#GPSPrimary").setAttribute("visibility", "hidden");
+            document.querySelector("#GPSPrimaryLost").setAttribute("visibility", "visible");
+        } else {
+            document.querySelector("#GPSPrimary").setAttribute("visibility", "visible");
+            document.querySelector("#GPSPrimaryLost").setAttribute("visibility", "hidden");
+        }
+
+        if (SimVar.GetSimVarValue("L:A320_Neo_ADIRS_STATE", "Enum") != 2 && !this.map.planMode && this.modeChangeTimer == -1) {
+            document.querySelector("#MapFail").setAttribute("visibility", "visible");
+            document.querySelector("#Map").setAttribute("style", "display:none");
+        } else {
+            document.querySelector("#MapFail").setAttribute("visibility", "hidden");
+            document.querySelector("#Map").setAttribute("style", "");
+        }
+
+        const ACPowerStateChange = SimVar.GetSimVarValue("L:ACPowerStateChange","Bool");
+        const ACPowerAvailable = SimVar.GetSimVarValue("L:ACPowerAvailable","Bool");
+        
+         /**
+         * Self test on MFD screen
+         * TODO: Seperate both MFD screens, currently if the FO changes its screen, it also tests the screen for the captain and vice versa
+         **/
+             
+        let selfTestCurrentKnobValueFO = SimVar.GetSimVarValue("LIGHT POTENTIOMETER:21", "number");
+        let selfTestCurrentKnobValueCAP = SimVar.GetSimVarValue("LIGHT POTENTIOMETER:19", "number");
+
+        const FOKnobChanged = (selfTestCurrentKnobValueFO >= 0.1 && this.selfTestLastKnobValueFO < 0.1);
+        const CAPKnobChanged = (selfTestCurrentKnobValueCAP >= 0.1 && this.selfTestLastKnobValueCAP < 0.1);
+        
+        if((FOKnobChanged || CAPKnobChanged || ACPowerStateChange) && ACPowerAvailable && !this.selfTestTimerStarted) {
+            this.selfTestDiv.style.display = "block";
+            this.selfTestTimer = 14.25;
+            this.selfTestTimerStarted = true;
+        }
+        
+        if (this.selfTestTimer >= 0) {
+            this.selfTestTimer -= _deltaTime / 1000;
+            if (this.selfTestTimer <= 0) {
+                this.selfTestDiv.style.display = "none";
+                this.selfTestTimerStarted = false;
+            }
+        }
+        
+        this.selfTestLastKnobValueFO = selfTestCurrentKnobValueFO
+        this.selfTestLastKnobValueCAP = selfTestCurrentKnobValueCAP
+
+        this.updateScreenState();        
     }
+
+    updateScreenState() {
+        if (SimVar.GetSimVarValue("L:ACPowerAvailable","bool")) {
+            this.electricity.style.display = "block";
+        } else {
+            this.electricity.style.display = "none";
+        }
+    }
+
     _updateNDFiltersStatuses() {
         SimVar.SetSimVarValue("L:BTN_CSTR_FILTER_ACTIVE", "number", this.map.instrument.showConstraints ? 1 : 0);
         SimVar.SetSimVarValue("L:BTN_VORD_FILTER_ACTIVE", "number", this.map.instrument.showVORs ? 1 : 0);
@@ -108,11 +177,19 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
                 this.modeChangeTimer = -1;
             }
         }
+        if (this.rangeChangeMask && this.rangeChangeTimer >= 0) {
+            this.rangeChangeTimer -= _deltaTime / 1000;
+            if (this.rangeChangeTimer <= 0) {
+                this.rangeChangeMask.style.display = "none";
+                this.rangeChangeTimer = -1;
+            }
+        }
         var wxRadarOn = (SimVar.GetSimVarValue("L:XMLVAR_A320_WeatherRadar_Sys", "number") != 1) ? true : false;
         var wxRadarMode = SimVar.GetSimVarValue("L:XMLVAR_A320_WeatherRadar_Mode", "number");
         var terrainOn = SimVar.GetSimVarValue("L:BTN_TERRONND_ACTIVE", "number");
         var mapMode = SimVar.GetSimVarValue("L:A320_Neo_MFD_NAV_MODE", "number");
         var mapRange = SimVar.GetSimVarValue("L:A320_Neo_MFD_Range", "number");
+        var shouldShowWeather = wxRadarOn && wxRadarMode != 3;
         if (this.wxRadarOn != wxRadarOn || this.terrainOn != terrainOn || this.wxRadarMode != wxRadarMode || this.mapMode != mapMode) {
             this.wxRadarOn = wxRadarOn;
             this.wxRadarMode = wxRadarMode;
@@ -122,7 +199,7 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
             if (this.terrainOn) {
                 this.mapConfigId = 1;
             }
-            else if (this.wxRadarOn && this.wxRadarMode != 3) {
+            else if (shouldShowWeather) {
                 this.showWeather();
             }
             else {
@@ -160,10 +237,28 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
                 }
                 break;
         }
+
+        // This code shows the BingMap only when either weather or terrain are
+        // supposed to be shown.
+        // When neither weather nor terrain are supposed to be shown,
+        // the BingMap will be hidden.
+        var isTerrainVisible = this.map.instrument.mapConfigId == 1;
+        var isWeatherVisible = !terrainOn && shouldShowWeather;
+        if (isTerrainVisible || isWeatherVisible) {
+            this.setShowBingMap("true");
+        } else {
+            this.setShowBingMap("false");
+        }
+
         if (this.mapRange != mapRange) {
             this.mapRange = mapRange;
             this.map.instrument.setZoom(this.mapRange);
             this.compass.svg.mapRange = this.map.zoomRanges[this.mapRange];
+
+            if (this.rangeChangeMask) {
+                this.rangeChangeMask.style.display = "block";
+                this.rangeChangeTimer = 0.5;
+            }
         }
         let selected = Simplane.getAutoPilotHeadingSelected();
         if (selected != this.headingSelected) {
@@ -188,6 +283,11 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
         }
         this.map.updateTopOfDescent();
         this.map.updateTopOfClimb();
+    }
+    // The BingMap is used by the A320 to render terrain and weather,
+    // but it also renders airports, which the real A320 does not.
+    setShowBingMap(showBingMap) {
+        this.map.instrument.attributeChangedCallback("show-bing-map", null, showBingMap);
     }
     onEvent(_event) {
         switch (_event) {
@@ -366,6 +466,7 @@ class A320_Neo_MFD_Map extends MapInstrumentElement {
         switch (display) {
             case Jet_NDCompass_Display.ROSE:
                 {
+                    this.planMode = false;
                     this.instrument.zoomRanges = this.getAdaptiveRanges(4.5);
                     this.instrument.style.top = "0%";
                     this.instrument.rotateWithPlane(true);
@@ -375,6 +476,7 @@ class A320_Neo_MFD_Map extends MapInstrumentElement {
                 }
             case Jet_NDCompass_Display.ARC:
                 {
+                    this.planMode = false;
                     this.instrument.zoomRanges = this.getAdaptiveRanges(2.3);
                     this.instrument.style.top = "24%";
                     this.instrument.rotateWithPlane(true);
@@ -384,6 +486,7 @@ class A320_Neo_MFD_Map extends MapInstrumentElement {
                 }
             case Jet_NDCompass_Display.PLAN:
                 {
+                    this.planMode = true;
                     this.instrument.zoomRanges = this.getAdaptiveRanges(4.5);
                     this.instrument.style.top = "0%";
                     this.instrument.rotateWithPlane(false);
@@ -392,6 +495,7 @@ class A320_Neo_MFD_Map extends MapInstrumentElement {
                     break;
                 }
             default:
+                this.planMode = false;
                 this.instrument.style.top = "0%";
                 this.instrument.rotateWithPlane(false);
                 this.instrument.centerOnActiveWaypoint(false);
@@ -466,6 +570,30 @@ class A320_Neo_MFD_NDInfo extends NavSystemElement {
         if (this.ndInfo != null) {
             this.ndInfo.update(_deltaTime);
         }
+        var ADIRSState = SimVar.GetSimVarValue("L:A320_Neo_ADIRS_STATE", "Enum");
+        var groundSpeed = Math.round(Simplane.getGroundSpeed());
+        var gs = this.ndInfo.querySelector("#GS_Value");
+        var tas = this.ndInfo.querySelector("#TAS_Value");
+        var wd = this.ndInfo.querySelector("#Wind_Direction");
+        var ws = this.ndInfo.querySelector("#Wind_Strength");
+        var wa = this.ndInfo.querySelector("#Wind_Arrow");
+        var wptg = this.ndInfo.querySelector("#Waypoint_Group");
+        if (ADIRSState != 2 || groundSpeed <= 100) {
+            //Hide TAS, and wind info
+            tas.textContent = "---";
+            wd.textContent = "---";
+            ws.textContent = "---";
+            wa.setAttribute("visibility", "hidden");
+        }else {
+            wa.setAttribute("visibility", "visible");
+        }
+        if (ADIRSState != 2){
+            gs.textContent = "---";
+        }else {
+            gs.textContent = groundSpeed.toString().padStart(3);
+        }
+        //Hide waypoint when ADIRS not aligned
+        wptg.setAttribute("visibility", (ADIRSState != 2) ? "hidden" : "visible");
     }
     onExit() {
     }

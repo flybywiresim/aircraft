@@ -1,0 +1,190 @@
+﻿/** This mixin makes a single line element fit exactly on the Roboto font for easier integration. */
+:root {
+  --bodyHeightScale: 1; }
+
+@keyframes TemporaryShow {
+  0%, 100% {
+    visibility: visible; } }
+
+@keyframes TemporaryHide {
+  0%, 100% {
+    visibility: hidden; } }
+
+#SystemTesting {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  text-align: center;
+  justify-content: center;
+}
+
+#highlight {
+  position: absolute;
+  height: 100%;
+  width: 100%;
+  z-index: 10; }
+
+#Mainframe {
+  width: 100%;
+  height: 100%; }
+
+#Electricity {
+  width: 100%;
+  height: 100%; }
+
+#Electricity[state=off] {
+  display: none; }
+
+@font-face {
+  font-family: "Roboto";
+  src: url("/Fonts/RobotoMono-Medium.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal; }
+
+@font-face {
+  font-family: "Roboto-Light";
+  src: url("/Fonts/RobotoMono-Light.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal; }
+
+@font-face {
+  font-family: "Roboto-Bold";
+  src: url("/Fonts/RobotoMono-Bold.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal; }
+
+@font-face {
+  font-family: "Consolas";
+  src: url("/Fonts/consola.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal; }
+
+/*
+@font-face {
+    font-family: "Not Courier Sans";
+    src: url("/Fonts/NotCourierSans.otf") format('opentype');
+    font-weight: normal;
+    font-style: normal;
+}
+*/
+span:empty:before {
+  content: " "; }
+
+a320-neo-cdu-main-display {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background-color: #0e0d08;
+  color: white;
+  font-family: "Not Courier Sans", "Consolas";
+  font-size: 6.46vw;
+  color: white; }
+
+/*
+a320-neo-cdu-main-display::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: repeating-linear-gradient(rgba(255, 255, 255, 0), rgba(0, 0, 0, 0.3) 1px, rgba(255, 255, 255, 0) 3px);
+  z-index: inherit;
+}
+*/
+.white {
+  color: white; }
+
+.blue {
+  color: #99ceff; }
+
+.yellow {
+  color: #f9dd02; }
+
+.green {
+  color: #1daa05; }
+
+.red {
+  color: #ff886d; }
+
+fmc-main-display::before {
+  content: " ";
+  display: block;
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+  z-index: 2;
+  background-size: 100% 2px, 3px 100%;
+  pointer-events: none; }
+
+#header {
+  height: 8.1%;
+  margin-top: 4%;
+  margin-bottom: 0%;
+  display: block;
+  text-align: center; }
+
+#page-info {
+  display: block;
+  text-align: right;
+  position: absolute;
+  top: 5%;
+  right: 5%; }
+
+.s-text {
+  font-size: 4.8vw;
+  letter-spacing: 0.9vw; }
+
+.label {
+  height: 5%;
+  margin: 0; }
+
+.label-left {
+  position: absolute;
+  left: 4.5%;
+  width: 100%;
+  text-align: left; }
+
+.label-right {
+  position: absolute;
+  right: 5.5%;
+  width: 100%;
+  text-align: right; }
+
+.label-center {
+  position: absolute;
+  left: 0px;
+  width: 100%;
+  text-align: center; }
+
+.line {
+  height: 8.1%;
+  margin: 0; }
+
+.line-left {
+  position: absolute;
+  left: 4%;
+  width: 100%;
+  text-align: left; }
+
+.line-right {
+  position: absolute;
+  right: 6%;
+  width: 100%;
+  text-align: right; }
+
+.line-center {
+  position: absolute;
+  left: 0px;
+  width: 100%;
+  text-align: center; }
+
+#in-out {
+  padding-left: 4%;
+}
+

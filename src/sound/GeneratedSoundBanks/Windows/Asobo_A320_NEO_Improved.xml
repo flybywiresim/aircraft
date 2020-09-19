@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<SoundBanksInfo Platform="Windows" BasePlatform="Windows" SchemaVersion="12" SoundbankVersion="135">
+	<RootPaths>
+		<ProjectRoot>C:\Users\olive\Documents\GitHub\msfs-a320neo\src\sound\</ProjectRoot>
+		<SourceFilesRoot>C:\Users\olive\Documents\GitHub\msfs-a320neo\src\sound\.cache\Windows\</SourceFilesRoot>
+		<SoundBanksRoot>C:\Users\olive\Documents\GitHub\msfs-a320neo\src\sound\GeneratedSoundBanks\Windows\</SoundBanksRoot>
+		<ExternalSourcesInputFile></ExternalSourcesInputFile>
+		<ExternalSourcesOutputRoot>C:\Users\olive\Documents\GitHub\msfs-a320neo\src\sound\GeneratedSoundBanks\Windows</ExternalSourcesOutputRoot>
+	</RootPaths>
+	<SoundBanks>
+		<SoundBank Id="3414319756" GUID="{210EF042-45E5-4AF4-AE40-FE92FA016F27}" Language="SFX">
+			<ObjectPath>\SoundBanks\Asobo_A320_NEO_Improved\Asobo_A320_NEO_Improved</ObjectPath>
+			<ShortName>Asobo_A320_NEO_Improved</ShortName>
+			<Path>Asobo_A320_NEO_Improved.bnk</Path>
+			<IncludedEvents>
+				<Event Id="2291548167" Name="Play_Asobo_A320_NEO_cabin_crew_seats_landing" ObjectPath="\Events\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved\Play_Asobo_A320_NEO_cabin_crew_seats_landing" GUID="{F7584ADC-7A6D-46D9-8164-981947243F26}" MaxAttenuation="3.000000" DurationType="OneShot" DurationMin="6.127347" DurationMax="6.911020">
+					<IncludedMemoryFiles>
+						<File Id="432822708" Language="SFX">
+							<ShortName>CAPTAIN-CABINCREW-SEATS-FOR-LANDING_2.wav</ShortName>
+							<Path>SFX\CAPTAIN-CABINCREW-SEATS-FOR-LANDING_2_1E8ECBBC.wem</Path>
+						</File>
+						<File Id="562791736" Language="SFX">
+							<ShortName>CAPTAIN-CABINCREW-SEATS-FOR-LANDING_3.wav</ShortName>
+							<Path>SFX\CAPTAIN-CABINCREW-SEATS-FOR-LANDING_3_1E8ECBBC.wem</Path>
+						</File>
+						<File Id="806003362" Language="SFX">
+							<ShortName>CAPTAIN-CABINCREW-SEATS-FOR-LANDING.wav</ShortName>
+							<Path>SFX\CAPTAIN-CABINCREW-SEATS-FOR-LANDING_1E8ECBBC.wem</Path>
+						</File>
+					</IncludedMemoryFiles>
+				</Event>
+				<Event Id="548293890" Name="Play_Asobo_A320_NEO_cabin_crew_seats_takeoff" ObjectPath="\Events\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved\Play_Asobo_A320_NEO_cabin_crew_seats_takeoff" GUID="{0A48C314-7353-4B5A-ABA9-FF01B7DB37D6}" MaxAttenuation="3.000000" DurationType="OneShot" DurationMin="5.552653" DurationMax="5.683265">
+					<IncludedMemoryFiles>
+						<File Id="314189442" Language="SFX">
+							<ShortName>CAPTAIN-CABINCREW-SEATS-FOR-TAKEOFF_2.wav</ShortName>
+							<Path>SFX\CAPTAIN-CABINCREW-SEATS-FOR-TAKEOFF_2_1E8ECBBC.wem</Path>
+						</File>
+						<File Id="344402026" Language="SFX">
+							<ShortName>CAPTAIN-CABINCREW-SEATS-FOR-TAKEOFF_3.wav</ShortName>
+							<Path>SFX\CAPTAIN-CABINCREW-SEATS-FOR-TAKEOFF_3_1E8ECBBC.wem</Path>
+						</File>
+						<File Id="925710262" Language="SFX">
+							<ShortName>CAPTAIN-CABINCREW-SEATS-FOR-TAKEOFF.wav</ShortName>
+							<Path>SFX\CAPTAIN-CABINCREW-SEATS-FOR-TAKEOFF_1E8ECBBC.wem</Path>
+						</File>
+					</IncludedMemoryFiles>
+				</Event>
+				<Event Id="1216914367" Name="Play_Asobo_A320_NEO_cockpit_cabin_call_aft" ObjectPath="\Events\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved\Play_Asobo_A320_NEO_cockpit_cabin_call_aft" GUID="{D9D1B1AD-43F3-4218-84B3-70417CCC74F2}" MaxAttenuation="3.000000" DurationType="OneShot" DurationMin="2.029683" DurationMax="2.029683">
+					<IncludedMemoryFiles>
+						<File Id="790202684" Language="SFX">
+							<ShortName>cabincrewbell.wav</ShortName>
+							<Path>SFX\cabincrewbell_1E8ECBBC.wem</Path>
+						</File>
+					</IncludedMemoryFiles>
+				</Event>
+				<Event Id="1199592215" Name="Play_Asobo_A320_NEO_cockpit_cabin_call_fwd" ObjectPath="\Events\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved\Play_Asobo_A320_NEO_cockpit_cabin_call_fwd" GUID="{9DE4AF9A-E81F-4A93-8C1D-3E93DCBBFEC5}" MaxAttenuation="3.000000" DurationType="OneShot" DurationMin="2.029683" DurationMax="2.029683">
+					<IncludedMemoryFiles>
+						<File Id="790202684" Language="SFX">
+							<ShortName>cabincrewbell.wav</ShortName>
+							<Path>SFX\cabincrewbell_1E8ECBBC.wem</Path>
+						</File>
+					</IncludedMemoryFiles>
+				</Event>
+				<Event Id="1143436301" Name="Play_Asobo_A320_NEO_light_switch_seatbelt" ObjectPath="\Events\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved\Play_Asobo_A320_NEO_light_switch_seatbelt" GUID="{FCAF9BD1-3F13-4779-BD27-5C7D4BAE4AC9}" MaxAttenuation="3.000000" DurationType="OneShot" DurationMin="1.102404" DurationMax="1.102404">
+					<IncludedMemoryFiles>
+						<File Id="537738566" Language="SFX">
+							<ShortName>seatbelt.wav</ShortName>
+							<Path>SFX\seatbelt_1E8ECBBC.wem</Path>
+						</File>
+					</IncludedMemoryFiles>
+				</Event>
+			</IncludedEvents>
+		</SoundBank>
+	</SoundBanks>
+</SoundBanksInfo>

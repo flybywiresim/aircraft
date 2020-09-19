@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="utf-8"?>
+<WwiseDocument Type="WorkUnit" ID="{376391DF-96A3-44BD-A3C5-873889DA464C}" SchemaVersion="97">
+	<States>
+		<WorkUnit Name="flow_states" ID="{376391DF-96A3-44BD-A3C5-873889DA464C}" PersistMode="Standalone">
+			<ChildrenList>
+				<StateGroup Name="DEFAULT_FLOW_STATE" ID="{C5711B7A-DF1B-4400-80E1-933484C0A2E8}">
+					<ChildrenList>
+						<State Name="None" ID="{2D705A26-764C-4D17-9A49-CE701C39EFD8}"/>
+						<State Name="MENU" ID="{2403C52D-582A-493B-A5A3-8D9B8BDEE1EC}"/>
+						<State Name="GAME" ID="{DF619BCA-B056-40F5-9D05-88C7EDCD1A12}"/>
+						<State Name="PAUSE" ID="{366B42C8-2CCF-4F2D-A4B5-9DE1EDD070C6}"/>
+						<State Name="ENDLEVEL" ID="{D38529B4-4BB6-4F30-AB40-8D1D0DE227F5}"/>
+						<State Name="BOOT" ID="{2AAC60C8-F3AA-401B-928F-5D3D2A9FAE6D}"/>
+						<State Name="LOADING_BOOT" ID="{F9AA50E1-8B1C-4173-A6AD-D7F0E17B6D8D}"/>
+						<State Name="LOADING_TO_GAME" ID="{71B09082-6658-4F5D-AC80-C850773CB0E9}"/>
+						<State Name="LOADING_TO_MENU" ID="{817F653E-7170-4138-92E7-487F380CC767}"/>
+					</ChildrenList>
+					<TransitionList>
+						<Transition>
+							<StartState Name="LOADING_TO_GAME" ID="{71B09082-6658-4F5D-AC80-C850773CB0E9}"/>
+							<EndState Name="GAME" ID="{DF619BCA-B056-40F5-9D05-88C7EDCD1A12}"/>
+							<Time>5</Time>
+							<IsShared>false</IsShared>
+						</Transition>
+						<Transition>
+							<StartState Name="GAME" ID="{DF619BCA-B056-40F5-9D05-88C7EDCD1A12}"/>
+							<EndState Name="PAUSE" ID="{366B42C8-2CCF-4F2D-A4B5-9DE1EDD070C6}"/>
+							<Time>0.1</Time>
+							<IsShared>false</IsShared>
+						</Transition>
+					</TransitionList>
+				</StateGroup>
+				<StateGroup Name="GAME_FLOW_STATE" ID="{DCCAE4FF-22D5-4261-B7DE-1C83883D895C}">
+					<ChildrenList>
+						<State Name="None" ID="{25949F45-2C0A-4CC8-BA0D-8D4519C3394B}"/>
+						<State Name="GATE" ID="{42F237C3-D3C2-42B5-9EA2-52D673F5B24F}"/>
+						<State Name="PUSHBACK" ID="{7DEDF325-44E0-427A-B671-306F94C12457}"/>
+						<State Name="TAXI" ID="{AD9AF76C-A42B-4830-9ADF-793C4108FEA3}"/>
+						<State Name="RUNWAY" ID="{6C819E78-DA83-4F76-AF0C-CDC3E31735C8}"/>
+						<State Name="INTRO" ID="{1265906B-9A31-4CEF-90B2-66A2A894AFA5}"/>
+						<State Name="CLIMB" ID="{9763E2CA-5E70-40B6-A0B9-C8C70ECD1BF9}"/>
+						<State Name="CRUISE" ID="{F99A6781-A30E-43E6-B01F-D2F40CBB8036}"/>
+						<State Name="DESCENT" ID="{46715CF8-F9C6-49B9-8708-C6B547E551C9}"/>
+						<State Name="APPROACH" ID="{B619AC67-BE5A-4BAF-9471-9DB7D4C2F189}"/>
+						<State Name="FINAL" ID="{663FEC8A-73E0-4112-8BA8-A71C81BF2694}"/>
+						<State Name="TOUCHDOWN" ID="{BAEAE132-B41C-4853-A5A3-F10C3D12F786}"/>
+						<State Name="GROUNDROLL" ID="{C1D7DB6E-D4F7-4781-9C53-AE7463C0194C}"/>
+						<State Name="FREEFLIGHT" ID="{A709E666-21E1-4D0E-93B2-2EEDEC08F8A2}"/>
+						<State Name="HOLDSHORT" ID="{1B02BA9C-9C55-4106-B81E-0F8B7D266835}"/>
+					</ChildrenList>
+				</StateGroup>
+				<StateGroup Name="ENDLEVEL_FLOW_STATE" ID="{96AB77D5-D8B5-4D20-B991-E3960F759AEE}">
+					<PropertyList>
+						<Property Name="DefaultTransitionTime" Type="Real64" Value="0.5"/>
+					</PropertyList>
+					<ChildrenList>
+						<State Name="None" ID="{DDE9B53E-E315-41F3-A819-948118D280CC}"/>
+						<State Name="REWARD_SCREEN_FAILED" ID="{BF218781-8E3F-4321-A206-9C72D15CBA99}"/>
+						<State Name="REWARD_SCREEN_WON" ID="{ECBB188F-0E76-44C3-95A3-9650EF503B16}"/>
+						<State Name="REWARD_SCREEN_DEFAULT" ID="{BDFB91B6-AAEA-4730-BD62-7435B23249D9}"/>
+						<State Name="REWARD_SCREEN_NONE" ID="{8BF4F4B6-C739-4C90-8FBE-3169FF65C9D0}"/>
+						<State Name="REWARD_SCREEN_CRASH" ID="{F60B25F6-FD6F-45D6-ADD8-84CB35DCD809}"/>
+					</ChildrenList>
+				</StateGroup>
+				<StateGroup Name="MENU_FLOW_STATE" ID="{A2696039-F077-4AA0-915A-712D323DD11E}">
+					<ChildrenList>
+						<State Name="None" ID="{0870443B-1A58-4168-8A3C-3C00D5414AC4}"/>
+						<State Name="ACTIVITIES" ID="{E6CC8EB0-BB84-4716-85B9-3386850556D4}"/>
+						<State Name="ADDONS" ID="{241ABEFD-3F72-47EC-896F-11742F8A7FE7}"/>
+						<State Name="HANGAR" ID="{A55CC8C2-BB2A-4EEA-8BB1-E37BA1AC126C}"/>
+						<State Name="HOMEPAGE" ID="{E1437F9B-6594-4F69-A6F5-A1F59650E2D8}"/>
+						<State Name="LOGO" ID="{A2355211-7EE4-4C1D-AC41-7411F10C13C1}"/>
+						<State Name="MAIN" ID="{C4F8B7F6-FECC-4C12-A7CE-9A06D82DDE76}"/>
+						<State Name="MARKET" ID="{CFBBF438-6974-40BB-AAAA-1BC1F25F3F5E}"/>
+						<State Name="OPTIONS" ID="{59C7D369-C941-43E9-87BD-FA8F62853F19}"/>
+						<State Name="PRESSSTART" ID="{94425324-8418-46DB-ABF4-6EA38C8A6657}"/>
+						<State Name="PROFILE" ID="{DA8EF03D-463A-4369-8C7C-C793E864EC91}"/>
+						<State Name="SHOWCASE" ID="{7164C297-1386-48FA-8623-857898CDC06E}"/>
+						<State Name="WORLDMAP" ID="{B4577529-6154-495E-98EC-D3FB7E715E20}"/>
+					</ChildrenList>
+				</StateGroup>
+				<StateGroup Name="ACTIVITIES_FLOW_STATE" ID="{E117FAB8-99B0-4232-B361-945D05F6A4B8}">
+					<ChildrenList>
+						<State Name="None" ID="{1AEDEEC3-E96D-4F96-8CD7-893AEF3B5762}"/>
+						<State Name="LANDING_CHALLENGE" ID="{A3A6664D-8C56-4FA7-9BD5-3C3CF266659B}"/>
+						<State Name="VFR_CHALLENGE" ID="{28343658-8708-4377-B93E-37A5C4DBB8B1}"/>
+						<State Name="NAT_GEO" ID="{282BFEBB-74F4-47CC-A1EB-31B4FF3410D4}"/>
+						<State Name="COMMERCIAL_FLIGHT" ID="{3F715748-DA19-4D02-96ED-91712276A6EB}"/>
+						<State Name="FREE_FLIGHT" ID="{B38A63B1-79FE-4A9C-B9D7-449FA997C39D}"/>
+						<State Name="PRIVATE_FLIGHT" ID="{53E4753E-65BF-4958-A0DB-AA78B96908D8}"/>
+						<State Name="BUSHTRIP" ID="{576172B6-BB39-47D0-A9A8-E2C3AB39F3D5}"/>
+						<State Name="SIGHTING" ID="{B0DF1EDE-92F7-4E08-896C-080B652D92BC}"/>
+						<State Name="TUTORIAL" ID="{F574B2F3-778C-4154-8169-A918356887D1}"/>
+					</ChildrenList>
+				</StateGroup>
+				<StateGroup Name="GAME_RTC_STATE" ID="{8F9DED8C-5DFF-40BF-96FA-FDC9B3EA9731}">
+					<PropertyList>
+						<Property Name="DefaultTransitionTime" Type="Real64" Value="0.5"/>
+					</PropertyList>
+					<ChildrenList>
+						<State Name="None" ID="{BC32103A-C448-4758-832C-A1A98AA4A7DA}"/>
+						<State Name="RTC" ID="{A9C00A6A-E3BD-46E6-8901-721E9A4934F4}"/>
+						<State Name="NON_RTC" ID="{CB538277-8A64-4B92-8BF1-8577C456A216}"/>
+						<State Name="RTC_IN_FLIGHT" ID="{BD4BB856-67E5-46BF-A8A6-3D5F643CDE45}"/>
+					</ChildrenList>
+					<TransitionList>
+						<Transition>
+							<StartState Name="NON_RTC" ID="{CB538277-8A64-4B92-8BF1-8577C456A216}"/>
+							<EndState Name="RTC" ID="{A9C00A6A-E3BD-46E6-8901-721E9A4934F4}"/>
+							<Time>0.1</Time>
+							<IsShared>false</IsShared>
+						</Transition>
+						<Transition>
+							<StartState Name="RTC_IN_FLIGHT" ID="{BD4BB856-67E5-46BF-A8A6-3D5F643CDE45}"/>
+							<EndState Name="NON_RTC" ID="{CB538277-8A64-4B92-8BF1-8577C456A216}"/>
+							<Time>3</Time>
+							<IsShared>false</IsShared>
+						</Transition>
+					</TransitionList>
+				</StateGroup>
+			</ChildrenList>
+		</WorkUnit>
+	</States>
+</WwiseDocument>

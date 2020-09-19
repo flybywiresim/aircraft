@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<WwiseDocument Type="WorkUnit" ID="{9A929272-DABD-4CC3-A61C-0D226D2CD79B}" SchemaVersion="97">
+	<Effects>
+		<WorkUnit Name="flanger" ID="{9A929272-DABD-4CC3-A61C-0D226D2CD79B}" PersistMode="Standalone">
+			<ChildrenList>
+				<Effect Name="flg_outdoor_aircraft_generic" ID="{A2B3EAFB-8CF6-47FA-A88A-59AD9BDE1D70}" PluginName="Wwise Flanger" CompanyID="0" PluginID="125" PluginType="3">
+					<PropertyList>
+						<Property Name="DelayTime" Type="Real32" Value="0.8"/>
+						<Property Name="DryLevel" Type="Real32" Value="0.24"/>
+						<Property Name="FeedBackLevel" Type="Real32" Value="-0.1"/>
+						<Property Name="FeedForwardLevel" Type="Real32" Value="0.2"/>
+						<Property Name="ModDepth" Type="Real32" Value="100"/>
+						<Property Name="ModFrequency" Type="Real32" Value="0.02">
+							<RTPCList>
+								<RTPC Name="" ID="{E33205B6-4BDA-4363-856C-055BD1A2CD87}" ShortID="876938038">
+									<ReferenceList>
+										<Reference Name="ControlInput">
+											<ObjectRef Name="lfo_distance_modulator_flanger" ID="{9677D021-E8BD-4590-84B7-E8FF8F07340E}" WorkUnitID="{C9AD9230-3C00-4E5E-9A98-CBFFD5B51131}"/>
+										</Reference>
+									</ReferenceList>
+									<Curve Name="" ID="{CD1B1015-6D12-4D50-A7D9-49B24CD3DE60}">
+										<PropertyList>
+											<Property Name="Flags" Type="int32" Value="5"/>
+										</PropertyList>
+										<PointList>
+											<Point>
+												<XPos>0</XPos>
+												<YPos>0.01</YPos>
+												<Flags>21</Flags>
+											</Point>
+											<Point>
+												<XPos>1</XPos>
+												<YPos>0.2</YPos>
+												<Flags>53</Flags>
+											</Point>
+										</PointList>
+									</Curve>
+								</RTPC>
+							</RTPCList>
+						</Property>
+						<Property Name="ModPWM" Type="Real32" Value="27"/>
+						<Property Name="ModSmoothing" Type="Real32" Value="20"/>
+						<Property Name="OutputLevel" Type="Real32" Value="9"/>
+						<Property Name="ProcessCenter" Type="bool" Value="True"/>
+					</PropertyList>
+				</Effect>
+				<Effect Name="flg_outdoor_aircraft_low_end" ID="{4DE5DD17-5A99-4D75-99E1-B91F983D3895}" PluginName="Wwise Flanger" CompanyID="0" PluginID="125" PluginType="3">
+					<PropertyList>
+						<Property Name="DelayTime" Type="Real32" Value="0.8"/>
+						<Property Name="DryLevel" Type="Real32" Value="0.3"/>
+						<Property Name="EnableLFO" Type="bool" Value="False"/>
+						<Property Name="FeedBackLevel" Type="Real32" Value="0.01"/>
+						<Property Name="FeedForwardLevel" Type="Real32" Value="0.1"/>
+						<Property Name="ModDepth" Type="Real32" Value="100"/>
+						<Property Name="ModFrequency" Type="Real32" Value="0.02">
+							<RTPCList>
+								<RTPC Name="" ID="{4466F643-48EA-41DA-9823-75CC5010A906}" ShortID="743982723">
+									<ReferenceList>
+										<Reference Name="ControlInput">
+											<ObjectRef Name="lfo_distance_modulator_flanger" ID="{9677D021-E8BD-4590-84B7-E8FF8F07340E}" WorkUnitID="{C9AD9230-3C00-4E5E-9A98-CBFFD5B51131}"/>
+										</Reference>
+									</ReferenceList>
+									<Curve Name="" ID="{FA20CE2E-78F8-4BB7-9462-426EE450A4A9}">
+										<PropertyList>
+											<Property Name="Flags" Type="int32" Value="5"/>
+										</PropertyList>
+										<PointList>
+											<Point>
+												<XPos>0</XPos>
+												<YPos>0.01</YPos>
+												<Flags>21</Flags>
+											</Point>
+											<Point>
+												<XPos>1</XPos>
+												<YPos>0.2</YPos>
+												<Flags>53</Flags>
+											</Point>
+										</PointList>
+									</Curve>
+								</RTPC>
+							</RTPCList>
+						</Property>
+						<Property Name="ModPWM" Type="Real32" Value="27"/>
+						<Property Name="ModSmoothing" Type="Real32" Value="20"/>
+						<Property Name="OutputLevel" Type="Real32" Value="9"/>
+						<Property Name="ProcessCenter" Type="bool" Value="True"/>
+					</PropertyList>
+				</Effect>
+			</ChildrenList>
+		</WorkUnit>
+	</Effects>
+</WwiseDocument>
