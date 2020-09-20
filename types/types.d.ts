@@ -36,6 +36,12 @@ declare global {
 
         getAutoPilotMachModeActive(): number
         getEngineActive(_engineIndex: number): number
+        getEngineThrottle(_engineIndex: number): number
+        getEngineThrottleMaxThrust(_engineIndex: number): number
+        getEngineCommandedN1(_engineIndex: number): number
+
+        //Seems to implement caching behaviour, can be overridden with forceSimVarCall
+        getFlapsHandleIndex(forceSimVarCall?: boolean): number
     };
 
     const Utils: {
