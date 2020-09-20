@@ -49,7 +49,7 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
     }
     Init() {
         super.Init();
-
+        this.getDeltaTime = A32NX_Util.createDeltaTimeCalculator(this.lastTime);
         this.currentPage = -1;
 
         this.pageNameWhenUnselected = "DOOR";
@@ -76,7 +76,7 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         this.bottomSelfTestLastKnobValue = 1;
 
         // Using ternary in case the LVar is undefined
-        this.ACPowerLastState = SimVar.GetSimVarValue('L:A32NX_COLD_AND_DARK_SPAWN', 'Bool') ? 0 : 1;
+        this.ACPowerLastState = SimVar.GetSimVarValue("L:A32NX_COLD_AND_DARK_SPAWN", "Bool") ? 0 : 1;
 
         this.electricity = this.querySelector("#Electricity");
         this.changePage("DOOR"); // MODIFIED
@@ -94,7 +94,9 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         SimVar.SetSimVarValue("LIGHT POTENTIOMETER:22","FLOAT64",0.1);
         SimVar.SetSimVarValue("LIGHT POTENTIOMETER:23","FLOAT64",0.1);
     }
-    onUpdate(_deltaTime) {
+    onUpdate() {
+        const _deltaTime = this.getDeltaTime();
+
         super.onUpdate(_deltaTime);
         this.updateAnnunciations();
         this.updateScreenState();
@@ -184,7 +186,7 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         const leftThrottleDetent = Simplane.getEngineThrottleMode(0);
         const rightThrottleDetent = Simplane.getEngineThrottleMode(1);
         const highestThrottleDetent = (leftThrottleDetent >= rightThrottleDetent) ? leftThrottleDetent : rightThrottleDetent;
-        const ToPowerSet = (highestThrottleDetent == ThrottleMode.TOGA || highestThrottleDetent == ThrottleMode.FLEX_MCT) && SimVar.GetSimVarValue("ENG N1 RPM:1", "Percent") > 15 && SimVar.GetSimVarValue("ENG N1 RPM:2", "Percent") > 15
+        const ToPowerSet = (highestThrottleDetent == ThrottleMode.TOGA || highestThrottleDetent == ThrottleMode.FLEX_MCT) && SimVar.GetSimVarValue("ENG N1 RPM:1", "Percent") > 15 && SimVar.GetSimVarValue("ENG N1 RPM:2", "Percent") > 15;
         const APUPctRPM = SimVar.GetSimVarValue("APU PCT RPM", "percent");
         const EngModeSel = SimVar.GetSimVarValue("L:XMLVAR_ENG_MODE_SEL", "number");
         const spoilerOrFlapsDeployed = SimVar.GetSimVarValue("FLAPS HANDLE INDEX", "number") != 0 || SimVar.GetSimVarValue("SPOILERS HANDLE POSITION", "percent") != 0;
@@ -259,7 +261,7 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
                 9: "WHEEL",
                 10: "FTCL",
                 11: "STS"
-            }
+            };
 
             this.pageNameWhenUnselected = ECAMPageIndices[sFailPage];
         }
