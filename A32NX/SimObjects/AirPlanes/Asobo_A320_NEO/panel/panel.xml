@@ -1,7 +1,7 @@
 <PlaneHTMLConfig>
-  
+
   <SoundSourceNode>AS1000_MFD</SoundSourceNode>
-  
+
   <Instrument>
     <Name>A320_Neo_PFD</Name>
     <SyntheticVision>True</SyntheticVision>
@@ -30,33 +30,35 @@
 		<Simvar name="CIRCUIT ON:53" unit="Boolean"/>
     </Electric>
   </Instrument>
-  
+
   <Instrument>
     <Name>A320_Neo_EICAS_1</Name>
     <Electric>
 		<Simvar name="CIRCUIT ON:54" unit="Boolean"/>
     </Electric>
   </Instrument>
-  
+
   <Instrument>
     <Name>A320_Neo_EICAS_2</Name>
     <Electric>
 		<Simvar name="CIRCUIT ON:55" unit="Boolean"/>
     </Electric>
   </Instrument>
-  
+
   <Instrument>
     <Name>A320_Neo_CDU</Name>
     <Electric>
 		<Simvar name="CIRCUIT ON:56" unit="Boolean"/>
     </Electric>
+		<AlwaysUpdate>True</AlwaysUpdate>
   </Instrument>
-  
+
   <Instrument>
     <Name>A320_Neo_FCU</Name>
     <Electric>
 		<Simvar name="CIRCUIT ON:57" unit="Boolean"/>
     </Electric>
+		<AlwaysUpdate>True</AlwaysUpdate>
   </Instrument>
 
   <Instrument>
@@ -116,7 +118,7 @@
 
   	</Annunciations>
 	<!-- Voices Alerts -->
-  
+
 	<VoicesAlerts>
 		<Alert>
 			<Type>SoundOnly</Type>
@@ -147,7 +149,7 @@
 				</StateMachine>
 			</Condition>
 		</Alert>
-		
+
 		<Alert>
 			<Type>SoundOnly</Type>
 			<SoundEvent>aural_retard</SoundEvent>
@@ -177,7 +179,7 @@
 				</StateMachine>
 			</Condition>
 		</Alert>
-		
+
 		<Alert>
 			<Type>SoundOnly</Type>
 			<SoundEvent>aural_20ft</SoundEvent>
@@ -207,7 +209,7 @@
 				</StateMachine>
 			</Condition>
 		</Alert>
-		
+
 		<Alert>
 			<Type>SoundOnly</Type>
 			<SoundEvent>aural_30ft</SoundEvent>
@@ -237,7 +239,7 @@
 				</StateMachine>
 			</Condition>
 		</Alert>
-		
+
 		<Alert>
 			<Type>SoundOnly</Type>
 			<SoundEvent>aural_40ft</SoundEvent>
@@ -267,7 +269,7 @@
 				</StateMachine>
 			</Condition>
 		</Alert>
-		
+
 		<Alert>
 			<Type>SoundOnly</Type>
 			<SoundEvent>aural_50ft</SoundEvent>
@@ -297,7 +299,7 @@
 				</StateMachine>
 			</Condition>
 		</Alert>
-		
+
 		<Alert>
 			<Type>SoundOnly</Type>
 			<SoundEvent>aural_60ft</SoundEvent>
@@ -327,7 +329,7 @@
 				</StateMachine>
 			</Condition>
 		</Alert>
-		
+
 		<Alert>
 			<Type>SoundOnly</Type>
 			<SoundEvent>aural_70ft</SoundEvent>
@@ -357,7 +359,7 @@
 				</StateMachine>
 			</Condition>
 		</Alert>
-		
+
 		<Alert>
 			<Type>SoundOnly</Type>
 			<SoundEvent>aural_100ft</SoundEvent>
@@ -387,7 +389,7 @@
 				</StateMachine>
 			</Condition>
 		</Alert>
-		
+
 		<Alert>
 			<Type>SoundOnly</Type>
 			<SoundEvent>aural_200ft</SoundEvent>
@@ -417,7 +419,7 @@
 				</StateMachine>
 			</Condition>
 		</Alert>
-		
+
 		<Alert>
 			<Type>SoundOnly</Type>
 			<SoundEvent>aural_300ft</SoundEvent>
@@ -447,7 +449,7 @@
 				</StateMachine>
 			</Condition>
 		</Alert>
-		
+
 		<Alert>
 			<Type>SoundOnly</Type>
 			<SoundEvent>aural_400ft</SoundEvent>
@@ -477,7 +479,7 @@
 				</StateMachine>
 			</Condition>
 		</Alert>
-		
+
 		<Alert>
 			<Type>SoundOnly</Type>
 			<SoundEvent>aural_500ft</SoundEvent>
@@ -507,7 +509,7 @@
 				</StateMachine>
 			</Condition>
 		</Alert>
-		
+
 		<Alert>
 			<Type>SoundOnly</Type>
 			<SoundEvent>aural_1000ft</SoundEvent>
@@ -537,7 +539,7 @@
 				</StateMachine>
 			</Condition>
 		</Alert>
-		
+
 		<Alert>
 			<Type>SoundOnly</Type>
 			<SoundEvent>aural_2500ft</SoundEvent>
@@ -567,7 +569,7 @@
 				</StateMachine>
 			</Condition>
 		</Alert>
-		
+
 		<Alert>
 			<Type>Warning</Type>
 			<SoundEvent>aural_stall</SoundEvent>
