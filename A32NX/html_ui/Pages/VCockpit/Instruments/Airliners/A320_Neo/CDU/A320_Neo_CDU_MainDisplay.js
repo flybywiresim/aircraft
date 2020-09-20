@@ -799,8 +799,8 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         if (this.currentFlightPhase === FlightPhase.FLIGHT_PHASE_TAKEOFF && airSpeed > 80) {
             const planeAltitudeMsl = Simplane.getAltitude();
             let accelerationAltitudeMsl = (this.accelerationAltitude || this.thrustReductionAltitude);
-            
-            if (!accelerationAltitudeMsl) {     
+
+            if (!accelerationAltitudeMsl) {
                 if (!this.climbTransitionGroundAltitude) {
                     const origin = this.flightPlanManager.getOrigin();
                     if (origin) {
@@ -811,10 +811,10 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                         this.climbTransitionGroundAltitude = (parseInt(SimVar.GetSimVarValue("GROUND ALTITUDE", "feet")) || 0);
                     }
                 }
-                
+
                 accelerationAltitudeMsl = this.climbTransitionGroundAltitude + 1500;
             }
-            
+
             if (planeAltitudeMsl > accelerationAltitudeMsl) {
                 this.currentFlightPhase = FlightPhase.FLIGHT_PHASE_CLIMB;
                 this.climbTransitionGroundAltitude = null;
