@@ -29,22 +29,8 @@ class Jet_PFD_ILSIndicator extends HTMLElement {
     construct() {
         Utils.RemoveAllChildren(this);
         this.InfoGroup = null;
-        if (this.aircraft == Aircraft.CJ4) {
-            this.construct_CJ4();
-        }
-        else if (this.aircraft == Aircraft.B747_8) {
-            this.construct_B747_8();
-        }
-        else if (this.aircraft == Aircraft.AS01B) {
-            this.construct_AS01B();
-        }
-        else {
             this.construct_A320_Neo();
         }
-    }
-    construct_CJ4() { }
-    construct_B747_8() { }
-    construct_AS01B() { }
     construct_A320_Neo() {
         var posX = 0;
         var posY = 0;
