@@ -13,7 +13,7 @@ class CDUPositionMonitorPage {
             [""],
             ["MIX IRS", currPos + "[color]green"],
             ["IRS1", "IRS3", "IRS2"],
-            ["NAV 0.0", "NAV 0.0", "NAV 0.0"],
+            ["NAV 0.0[color]green", "NAV 0.0[color]green", "NAV 0.0[color]green"],
             ["", "SEL"],
             ["←FREEZE[color]blue", "NAVAIDS>"]
         ]);
