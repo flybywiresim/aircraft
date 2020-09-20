@@ -881,12 +881,6 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     }
     updateADIRS() {
 
-        //Get the time since last update
-        var now = Date.now();
-        if (this.lastTime == null) this.lastTime = now;
-        var deltaTime = now - this.lastTime;
-        this.lastTime = now;
-
         var AllADIRSOn = ((SimVar.GetSimVarValue("L:A320_Neo_ADIRS_KNOB_1", "Enum") >= 1) && (SimVar.GetSimVarValue("L:A320_Neo_ADIRS_KNOB_2", "Enum") >= 1) && (SimVar.GetSimVarValue("L:A320_Neo_ADIRS_KNOB_3", "Enum") >= 1));
         var SomeADIRSOn = ((SimVar.GetSimVarValue("L:A320_Neo_ADIRS_KNOB_1", "Enum") >= 1) || (SimVar.GetSimVarValue("L:A320_Neo_ADIRS_KNOB_2", "Enum") >= 1) || (SimVar.GetSimVarValue("L:A320_Neo_ADIRS_KNOB_3", "Enum") >= 1));
         var ADIRSState = SimVar.GetSimVarValue("L:A320_Neo_ADIRS_STATE", "Enum");
@@ -916,7 +910,17 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
 
         if (ADIRSState == 1 && SimVar.GetSimVarValue("L:A320_Neo_ADIRS_IN_ALIGN", "Bool") == 1) {
             if (ADIRSTimer > 0) {
-                ADIRSTimer -= deltaTime/1000;
+                //Get the time since last update
+                let ztime = SimVar.GetGlobalVarValue("ZULU TIME", "Seconds");
+                var now = Number.parseInt(ztime);
+                if (this.lastTime == null) this.lastTime = now;
+
+                // calculate time ellapsed since last run
+                var deltaTime = now - this.lastTime;
+                this.lastTime = now;
+
+                // update timer
+                ADIRSTimer -= deltaTime;
                 SimVar.SetSimVarValue("L:A320_Neo_ADIRS_TIME", "Seconds", ADIRSTimer);
                 const ADIRSTimerStartTime = SimVar.GetSimVarValue("L:A32NX_Neo_ADIRS_START_TIME", "Seconds");
                 const secondsIntoAlignment = ADIRSTimerStartTime - ADIRSTimer;
