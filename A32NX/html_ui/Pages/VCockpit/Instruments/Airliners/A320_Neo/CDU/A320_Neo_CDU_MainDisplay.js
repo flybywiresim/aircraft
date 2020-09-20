@@ -36,6 +36,66 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         CDUIdentPage.ShowPage(this);
         this.electricity = this.querySelector("#Electricity")
     }
+    trySetFlapsTHS(s) {
+        if (s) {
+            let validEntry = false;
+            let nextFlaps = this.flaps
+            let nextThs = this.ths
+            let [flaps, ths] = s.split("/");
+
+            // Parse flaps
+            if (flaps && flaps.length > 0) {
+                if (!/^\d+$/.test(flaps)) {
+                    this.showErrorMessage("FORMAT ERROR");
+                    return false;
+                }
+
+                let vFlaps = parseInt(flaps);
+                if (isFinite(vFlaps) && vFlaps > 0 && vFlaps < 4) {
+                    nextFlaps = vFlaps;
+                    validEntry = true;
+                }
+            }
+
+            // Parse THS
+            if (ths) {
+                if (!/^((UP|DN)(\d?\.?\d)|(\d?\.?\d)(UP|DN))$/.test(ths)) {
+                    this.showErrorMessage("FORMAT ERROR");
+                    return false;
+                }
+
+                let direction = null
+                ths = ths.replace(/(UP|DN)/g, (substr) => {
+                    direction = substr
+                    return ''
+                })
+
+                if (direction) {
+                    const vThs = parseFloat(ths.trim())
+                    if (isFinite(vThs) && vThs >= 0.0 && vThs <= 2.5) {
+
+                        if (vThs === 0.0) {
+                            // DN0.0 should be corrected to UP0.0
+                            direction = 'UP'
+                        }
+
+                        nextThs = `${direction}${vThs.toFixed(1)}`;
+                        validEntry = true;
+                    }
+                }
+            }
+
+            // Commit changes.
+            if (validEntry) {
+                this.flaps = nextFlaps
+                this.ths = nextThs
+                return true;
+            }
+        }
+
+        this.showErrorMessage("INVALID ENTRY");
+        return false;
+      }
     onPowerOn() {
         super.onPowerOn();
         if (Simplane.getAutoPilotAirspeedManaged()) {
@@ -48,7 +108,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this._onModeManagedAltitude();
 
         CDUPerformancePage.UpdateThrRedAccFromOrigin(this);
-        
+
         SimVar.SetSimVarValue("K:VS_SLOT_INDEX_SET", "number", 1);
 
         this.taxiFuelWeight = 0.2;
@@ -678,7 +738,8 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             }
             if (this.currentFlightPhase === FlightPhase.FLIGHT_PHASE_TAKEOFF) {
                 if (this.isAirspeedManaged()) {
-                    let speed = this.getCleanTakeOffSpeed();
+                    // getCleanTakeOffSpeed is a final fallback and not truth to reality
+                    const speed = isFinite(this.v2Speed) ? this.v2Speed + 10 : this.getCleanTakeOffSpeed();
                     this.setAPManagedSpeed(speed, Aircraft.A320_NEO);
                 }
             }

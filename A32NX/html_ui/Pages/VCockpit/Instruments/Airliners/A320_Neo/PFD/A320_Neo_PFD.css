@@ -92,7 +92,7 @@ a320-neo-pfd-element {
       a320-neo-pfd-element #Mainframe #HorizonContainer #Horizon {
         position: absolute;
         left: 15%;
-        top: 21%;
+        top: 20.5%;
         width: 58%;
         height: 48%;
         border: none;
@@ -133,7 +133,7 @@ a320-neo-pfd-element {
       a320-neo-pfd-element #Mainframe #InstrumentsContainer #Airspeed {
         transform: rotateX(0);
         position: absolute;
-        top: 20.4%;
+        top: 20.25%;
         left: -4%;
         width: 28%;
         height: 100%; }
@@ -141,7 +141,7 @@ a320-neo-pfd-element {
         transform: rotateX(0);
         position: absolute;
         border: none;
-        top: 18%;
+        top: 17.5%;
         left: 92%;
         width: 28%;
         height: 100%;
@@ -319,7 +319,7 @@ a320-neo-pfd-element {
         transform: rotateX(0);
         position: absolute;
         border: none;
-        top: 0%;
+        top: 0.2%;
         left: 0%;
         width: 100%;
         height: 100%;
