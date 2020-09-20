@@ -6,10 +6,6 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
         this.machVisible = false;
         this.machSpeed = 0;
         this.refHeight = 0;
-        this.cursorScrollPosX = 0;
-        this.cursorScrollPosY = 0;
-        this.cursorScrollSpacing = 30;
-        this.cursorScrollNbTexts = 3;
         this.targetSpeedPointerHeight = 0;
         this.stripHeight = 0;
         this.stripBorderSize = 0;
@@ -53,9 +49,6 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
         Utils.RemoveAllChildren(this);
         this.machPrefixSVG = null;
         this.machValueSVG = null;
-        this.cursorSVGMainText = null;
-        this.cursorSVGScrollTexts = null;
-        this.cursorScroller = null;
         this.targetSpeedSVG = null;
         this.targetSpeedBgSVG = null;
         this.targetSpeedIconSVG = null;
@@ -578,9 +571,7 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
         let indicatedSpeed = Simplane.getIndicatedSpeed();
         if (!this.altOver20k && Simplane.getAltitude() >= 20000)
             this.altOver20k = true;
-        this.updateArcScrolling(indicatedSpeed);
         this.updateGraduationScrolling(indicatedSpeed);
-        this.updateCursorScrolling(indicatedSpeed);
         let iasAcceleration = this.computeIAS(indicatedSpeed);
         let speedTrend = iasAcceleration;
         let crossSpeed = SimVar.GetGameVarValue("AIRCRAFT CROSSOVER SPEED", "Knots");
@@ -822,41 +813,6 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
                 var offsetY = (Math.min((startVal - this.graduationMinValue), 0) / 10) * this.graduationSpacing * (this.nbSecondaryGraduations) * factor;
                 this.graduationVLine.setAttribute("y1", Math.ceil(startY + offsetY).toString());
                 this.graduationVLine.setAttribute("y2", Math.floor(currentY + offsetY).toString());
-            }
-        }
-    }
-    updateArcScrolling(_speed) {
-        if (this.arcs) {
-            var offset = this.arcToSVG(_speed);
-            for (var i = 0; i < this.arcs.length; i++) {
-                this.arcs[i].setAttribute("transform", "translate(0 " + offset.toString() + ")");
-            }
-        }
-    }
-    updateCursorScrolling(_speed) {
-        if (this.cursorSVGScrollTexts) {
-            if (_speed < this.graduationMinValue && this.aircraft != Aircraft.B747_8 && this.aircraft != Aircraft.AS01B) {
-                this.cursorSVGMainText.textContent = "--";
-                for (var i = 0; i < this.cursorSVGScrollTexts.length; i++) {
-                    this.cursorSVGScrollTexts[i].textContent = "";
-                }
-            }
-            else {
-                let speed = Math.max(_speed, this.graduationMinValue);
-                var integral = Math.trunc(speed / 10);
-                if (integral > 1)
-                    this.cursorSVGMainText.textContent = integral.toString();
-                this.cursorScroller.scroll(speed);
-                var currentVal = this.cursorScroller.firstValue;
-                var currentY = this.cursorScrollPosY + this.cursorScroller.offsetY * this.cursorScrollSpacing;
-                for (var i = 0; i < this.cursorSVGScrollTexts.length; i++) {
-                    var posX = this.cursorScrollPosX;
-                    var posY = currentY;
-                    this.cursorSVGScrollTexts[i].textContent = currentVal.toString();
-                    this.cursorSVGScrollTexts[i].setAttribute("transform", "translate(" + posX.toString() + " " + posY.toString() + ")");
-                    currentY -= this.cursorScrollSpacing;
-                    currentVal = this.cursorScroller.nextValue;
-                }
             }
         }
     }
