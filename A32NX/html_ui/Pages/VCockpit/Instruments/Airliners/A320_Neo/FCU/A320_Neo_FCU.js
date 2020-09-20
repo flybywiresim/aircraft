@@ -34,13 +34,6 @@ class A320_Neo_FCU extends BaseAirliners {
         super.onFlightStart();
         if (this.mainPage)
             this.mainPage.onFlightStart();
-
-        // A workaround to allow us to default the FD to on when spawning on runway
-        if (SimVar.GetSimVarValue("L:A32NX_AUTOPILOT_FLIGHT_DIRECTOR_DEFAULT", "Bool") === 1) {
-            if (SimVar.GetSimVarValue("A:AUTOPILOT FLIGHT DIRECTOR ACTIVE:1", "Bool") === 0) {
-                SimVar.SetSimVarValue("K:TOGGLE_FLIGHT_DIRECTOR", "Bool", 1);
-            }
-        }
     }
 }
 class A320_Neo_FCU_MainElement extends NavSystemElement {
