@@ -8,7 +8,8 @@
       "AIRCRAFT.UI_VARIATION": "Airbus",
       "COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_HDG_TUNING_LEFT": "Adjust selected heading to the left (%((A:AUTOPILOT HEADING LOCK DIR:1,degrees))%!d!°)",
       "COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_HDG_TUNING_RIGHT": "Adjust selected heading to the right  (%((A:AUTOPILOT HEADING LOCK DIR:1,degrees))%!d!°)",
-      "COCKPIT.TOOLTIPS.CHRONO_RST": "Reset chronometer"
+      "COCKPIT.TOOLTIPS.CHRONO_RST": "Reset chronometer",
+      "COCKPIT.TOOLTIPS.LIGHTS_NOSMOKE_AUTO": "Set \"no smoke\" prompt light to AUTO"
     }
   }
 }
