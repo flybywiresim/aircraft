@@ -1,6 +1,6 @@
 const A32NX_Util = {};
 
-A32NX_Util.createDeltaTimeCalculator = (startTime) => {
+A32NX_Util.createDeltaTimeCalculator = ( startTime = Date.now() ) => {
   let lastTime = startTime;
 
   return () => {

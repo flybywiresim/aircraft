@@ -49,7 +49,7 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
     }
     Init() {
         super.Init();
-        this.getDeltaTime = A32NX_Util.createDeltaTimeCalculator(this.lastTime);
+        this.getDeltaTime = A32NX_Util.createDeltaTimeCalculator(this._lastTime);
         this.currentPage = -1;
 
         this.pageNameWhenUnselected = "DOOR";
