@@ -116,6 +116,34 @@
 						</Action>
 					</ChildrenList>
 				</Event>
+				<Event Name="Play_Asobo_A320_NEO_CRC" ID="{2667E241-B918-4FFE-8429-759F90BA78A1}">
+					<ChildrenList>
+						<Action Name="" ID="{848DCB24-6346-4E20-9EFC-4B7BC190D2AD}" ShortID="940870529">
+							<PropertyList>
+								<Property Name="ActionType" Type="int16" Value="1"/>
+							</PropertyList>
+							<ReferenceList>
+								<Reference Name="Target">
+									<ObjectRef Name="CRC" ID="{5E7473BD-B6F1-46BD-8EBA-3564DDA9ABAD}" WorkUnitID="{27D32D8D-6C92-4542-9BFC-F0D08111F92F}"/>
+								</Reference>
+							</ReferenceList>
+						</Action>
+					</ChildrenList>
+				</Event>
+				<Event Name="Play_Asobo_A320_NEO_improved_tone_caution" ID="{C3F82F3D-BFFD-44F5-AF60-2625B748917D}">
+					<ChildrenList>
+						<Action Name="" ID="{4E0D47DA-FF24-43ED-9F0B-B71C3B922D78}" ShortID="746295824">
+							<PropertyList>
+								<Property Name="ActionType" Type="int16" Value="1"/>
+							</PropertyList>
+							<ReferenceList>
+								<Reference Name="Target">
+									<ObjectRef Name="improved_tone_caution" ID="{88367DBC-CDA3-4230-AA00-35D25D05D8E5}" WorkUnitID="{27D32D8D-6C92-4542-9BFC-F0D08111F92F}"/>
+								</Reference>
+							</ReferenceList>
+						</Action>
+					</ChildrenList>
+				</Event>
 			</ChildrenList>
 		</WorkUnit>
 	</Events>
