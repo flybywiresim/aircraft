@@ -68,6 +68,7 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         this.ApuAboveThresholdTimer = -1; // MODIFIED
         this.MainEngineStarterOffTimer = -1;
         this.CrzCondTimer = 60;
+        this.PrevFailPage = -1;
 
         this.topSelfTestDiv = this.querySelector("#TopSelfTest");
         this.topSelfTestTimer = -1;
@@ -244,7 +245,7 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
             }
         } else if ((ToPowerSet || !Simplane.getIsGrounded()) && !crzCond && this.minPageIndexWhenUnselected <= 2) {
             this.pageNameWhenUnselected = "ENG";
-        } else if (crzCond && !(isGearExtended && altitude < 16000) && this.minPageIndexWhenUnselected <= 3) {
+        } else if (crzCond && !(isGearExtended && altitude < 16000)) {
             this.pageNameWhenUnselected = "CRZ";
             this.minPageIndexWhenUnselected = 3;
         } else if (isGearExtended && (altitude < 16000)) {
@@ -254,7 +255,7 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
 
         const sFailPage = SimVar.GetSimVarValue("L:A32NX_ECAM_SFAIL", "Enum");
 
-        if (sFailPage != -1) {
+        if (sFailPage != -1 && sFailPage != this.PrevFailPage) {
             const ECAMPageIndices = {
                 0: "ENG",
                 1: "BLEED",
@@ -270,7 +271,11 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
                 11: "STS"
             }
 
-            this.pageNameWhenUnselected = ECAMPageIndices[sFailPage];
+            this.changePage(ECAMPageIndices[sFailPage]);
+
+        }
+        if (sFailPage != this.PrevFailPage) {
+            this.PrevFailPage = sFailPage;
         }
 
         // switch page when desired page was changed
