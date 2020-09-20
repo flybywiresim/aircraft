@@ -257,10 +257,11 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
                 this.cursorSVGShape.setAttribute("stroke-width", this.strokeSize);//"3"
                 this.cursorSVG.appendChild(this.cursorSVGShape);
                 let integralsGroup = document.createElementNS(Avionics.SVG.NS, "svg");
+                this.cursorIntegralsGroup = integralsGroup;
                 integralsGroup.setAttribute("x", "0");
                 integralsGroup.setAttribute("y", "20");
                 integralsGroup.setAttribute("width", cursorWidth.toString());
-                integralsGroup.setAttribute("height", 40)
+                integralsGroup.setAttribute("height", 40);
                 integralsGroup.setAttribute("viewBox", "0 0 " + cursorWidth + " " + cursorHeight);
                 this.cursorSVG.appendChild(integralsGroup);
                 {
@@ -517,7 +518,7 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
             this.cursorDecimals.update(_altitude);
         }
         if (this.cursorSVGAltitudeLevelShape)
-            this.cursorSVGAltitudeLevelShape.classList.toggle('hide', _altitude >= 10000);
+            this.cursorSVGAltitudeLevelShape.classList.toggle("hide", _altitude >= 10000);
     }
     valueToSvg(current, target) {
         var _top = 0;
@@ -662,6 +663,7 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
             SimVar.SetSimVarValue("L:HUD_AP_SELECTED_ALTITUDE", "Number", this.hudAPAltitude);
         }
     }
+
     updateFail() {
         var failed = !(SimVar.GetSimVarValue("L:A32NX_ADIRS_PFD_ALIGNED_FIRST", "Bool") == 1);
         if (!failed) {
@@ -669,7 +671,7 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
             this.topLine.setAttribute("stroke", "white");
             this.bottomLine.setAttribute("stroke", "white");
             this.cursorSVGShape.setAttribute("stroke", "yellow");
-            this.cursorIntegrals.forEach((cursor) => cursor.setAttribute("visibility", "visible"));
+            this.cursorIntegralsGroup.setAttribute("visibility", "visible");
             this.cursorDecimals.setAttribute("visibility", "visible");
             // Code to add if visibilty issues with this part
 
@@ -688,7 +690,7 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
             this.cursorSVGShape.setAttribute("stroke", "transparent");
             if (this.targetAltitudeTextSVG1) this.targetAltitudeTextSVG1.setAttribute("visibility", "hidden");
             if (this.targetAltitudeTextSVG2) this.targetAltitudeTextSVG2.setAttribute("visibility", "hidden");
-            this.cursorIntegrals.forEach((cursor) => cursor.setAttribute("visibility", "hidden"));
+            this.cursorIntegralsGroup.setAttribute("visibility", "hidden");
             this.cursorDecimals.setAttribute("visibility", "hidden");
             if (this.targetAltitudeText) this.targetAltitudeText.textContent = "";
             if (this.pressureSVG) this.pressureSVG.setAttribute("visibility", "hidden");
@@ -697,6 +699,7 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
             if (this.STDpressureSVGShape)this.STDpressureSVGShape.setAttribute("visibility", "hidden");
             this.targetAltitudeIndicatorSVG.setAttribute("visibility", "hidden");
         }
+
         if (this.groundRibbonSVGShape) this.groundRibbonSVG.setAttribute("style", failed ? "display:none" : "");
         if (this.cursorSVGScrollTexts) {
             for (let st of this.cursorSVGScrollTexts) {
