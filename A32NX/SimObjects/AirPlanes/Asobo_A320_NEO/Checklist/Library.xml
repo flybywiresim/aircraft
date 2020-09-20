@@ -188,24 +188,24 @@
       <Checkpoint Id="A320_CPREP1_ADIRS">
          <CheckpointDesc SubjectTT="TT:ADIRS" ExpectationTT="TT:NAV" />
          <Instrument Id="ADIRS_Knob" />
-         <!--<Test> (I have no idea why this doesn't work, help.)
+         <Test>
             <TestValue>
                <Operator OpType="AND">
                   <Operator OpType="EQUAL">
-                     <Val SimVarName="A320_Neo_ADIRS_KNOB_1" Units="Enum"/>
+                     <Val Code="(L:A320_Neo_ADIRS_KNOB_1)" Units="Enum"/>
                      <Val Value="1"/>
                   </Operator>
                   <Operator OpType="EQUAL">
-                     <Val SimVarName="A320_Neo_ADIRS_KNOB_2" Units="Enum"/>
+                     <Val Code="(L:A320_Neo_ADIRS_KNOB_2)" Units="Enum"/>
                      <Val Value="1"/>
                   </Operator>
                   <Operator OpType="EQUAL">
-                     <Val SimVarName="A320_Neo_ADIRS_KNOB_3" Units="Enum"/>
+                     <Val Code="(L:A320_Neo_ADIRS_KNOB_3)" Units="Enum"/>
                      <Val Value="1"/>
                   </Operator>
                </Operator>
             </TestValue>
-         </Test>-->
+         </Test>
       </Checkpoint>
       <Checkpoint Id="A320_CPREP1_EXT_LIGHTS">
          <CheckpointDesc SubjectTT="TT:Exterior Lights" ExpectationTT="TT:As required" />
@@ -213,21 +213,38 @@
       <Checkpoint Id="A320_CPREP1_NO_SMOKING">
          <CheckpointDesc SubjectTT="TT:No Smoking Signs" ExpectationTT="TT:AUTO" />
          <Instrument Id="Smoking_Switch"/>
-         <!--
-                  <Test>
+         <Test>
             <TestValue>
-                  <Val SimVarName="CABIN NO SMOKING ALERT SWITCH" Units="Boolean"/>
+               <Operator OpType="EQUAL">
+                  <Val Code="(L:XMLVAR_SWITCH_OVHD_INTLT_NOSMOKING_Position)"/>
+                  <Val Value="1"/>
+               </Operator>
             </TestValue>
-            <Action Copilot="True" Condition="TestValueFalse" Once="true" EventID="CABIN_NO_SMOKING_ALERT_SWITCH_TOGGLE"/>
-         </Test>-->
+         </Test>
       </Checkpoint>
       <Checkpoint Id="A320_CPREP1_SEATBELTS">
          <CheckpointDesc SubjectTT="TT:Seatbelt Signs" ExpectationTT="TT:ON" />
          <Instrument Id="Seatbelt_Switch"/>
+         <Test>
+            <TestValue>
+               <Operator OpType="EQUAL">
+                  <Val Code="(L:XMLVAR_SWITCH_OVHD_INTLT_SEATBELT_Position)"/>
+                  <Val Value="1"/>
+               </Operator>
+            </TestValue>
+         </Test>
       </Checkpoint>
       <Checkpoint Id="A320_CPREP1_EMERGENCY_EXIT">
          <CheckpointDesc SubjectTT="TT:Emergency Exit Lights" ExpectationTT="TT:ARM" />
          <Instrument Id="Emergency_Exit_Switch"/>
+         <Test>
+            <TestValue>
+               <Operator OpType="EQUAL">
+                  <Val Code="(L:XMLVAR_SWITCH_OVHD_INTLT_EMEREXIT_Position)"/>
+                  <Val Value="1"/>
+               </Operator>
+            </TestValue>
+         </Test>
       </Checkpoint>
       <Checkpoint Id="A320_CPREP1_LANDING_ELEVATION">
          <CheckpointDesc SubjectTT="TT:Landing Elevation (INOP)" ExpectationTT="TT:AUTO" />
@@ -475,6 +492,15 @@
       </Checkpoint>
       <Checkpoint Id="A320_CPREP1_WXR_WINDSHEAR">
          <CheckpointDesc SubjectTT="TT:WXR: Windshear Switch" ExpectationTT="TT:OFF" />
+         <Instrument Id="PWS_Switch"/>
+         <Test>
+            <TestValue>
+               <Operator OpType="EQUAL">
+                  <Val Code="(L:A32NX_SWITCH_RADAR_PWS_Position)"/>
+                  <Val Value="0"/>
+               </Operator>
+            </TestValue>
+         </Test>
       </Checkpoint>
       <Checkpoint Id="A320_CPREP1_WXR_GAIN">
          <CheckpointDesc SubjectTT="TT:WXR: Gain (INOP)" ExpectationTT="TT:AUTO" />
@@ -899,6 +925,15 @@
       </Checkpoint>
       <Checkpoint Id="A320_TAXI_PRED_WINDSHEAR_SYS">
          <CheckpointDesc SubjectTT="TT:Predictive Windshear System" ExpectationTT="TT:AUTO" />
+         <Instrument Id="PWS_Switch"/>
+         <Test>
+            <TestValue>
+               <Operator OpType="EQUAL">
+                  <Val Code="(L:A32NX_SWITCH_RADAR_PWS_Position)"/>
+                  <Val Value="1"/>
+               </Operator>
+            </TestValue>
+         </Test>
       </Checkpoint>
       <Checkpoint Id="A320_TAXI_SQUAWK">
          <CheckpointDesc SubjectTT="TT:Squawk Code" ExpectationTT="TT:CONFIRM" />
@@ -1290,7 +1325,6 @@
       <Checkpoint Id="A320_DESCENT_SEATBELT_SIGNS">
          <CheckpointDesc SubjectTT="TT:Seatbelt Signs" ExpectationTT="TT:AS REQUIRED" />
          <Instrument Id="Seatbelt_Switch"/>
-
       </Checkpoint>
       <Checkpoint Id="A320_DESCENT_EFIS_OPTION">
          <CheckpointDesc SubjectTT="TT:EFIS Option" ExpectationTT="TT:CSTR" />
@@ -1326,6 +1360,14 @@
       <Checkpoint Id="A320_ILSAPPR_SEATBELT">
          <CheckpointDesc SubjectTT="TT:Seatbelt Signs" ExpectationTT="TT:ON" />
          <Instrument Id="Seatbelt_Switch"/>
+         <Test>
+            <TestValue>
+               <Operator OpType="EQUAL">
+                  <Val Code="(L:XMLVAR_SWITCH_OVHD_INTLT_SEATBELT_Position)"/>
+                  <Val Value="1"/>
+               </Operator>
+            </TestValue>
+         </Test>
       </Checkpoint>
       <Checkpoint Id="A320_ILSAPPR_APPR_PHRASE">
          <CheckpointDesc SubjectTT="TT:Approach Phase" ExpectationTT="TT:CHECK/ACTIVATE" />
@@ -1513,8 +1555,16 @@
          <Instrument Id="ENGINE_Switch_Engine_Mode" />
       </Checkpoint>
       <Checkpoint Id="A320_NONPAPPR_SEATBELT">
-         <CheckpointDesc SubjectTT="TT:Seatbelt Signs" ExpectationTT="TT:ON/AUTO" />
+         <CheckpointDesc SubjectTT="TT:Seatbelt Signs" ExpectationTT="TT:ON" />
          <Instrument Id="Seatbelt_Switch"/>
+         <Test>
+            <TestValue>
+               <Operator OpType="EQUAL">
+                  <Val Code="(L:XMLVAR_SWITCH_OVHD_INTLT_SEATBELT_Position)"/>
+                  <Val Value="1"/>
+               </Operator>
+            </TestValue>
+         </Test>
       </Checkpoint>
       <Checkpoint Id="A320_NONPAPPR_APPROACH_PHASE">
          <CheckpointDesc SubjectTT="TT:Approach Phase" ExpectationTT="TT:CHECK/ACTIVATE" />
@@ -1845,6 +1895,15 @@
       </Checkpoint>
       <Checkpoint Id="A320_AFTERLANDING_WXR_PWS">
          <CheckpointDesc SubjectTT="TT:Predictive Windshear System" ExpectationTT="TT:OFF" />
+         <Instrument Id="PWS_Switch"/>
+         <Test>
+            <TestValue>
+               <Operator OpType="EQUAL">
+                  <Val Code="(L:A32NX_SWITCH_RADAR_PWS_Position)"/>
+                  <Val Value="0"/>
+               </Operator>
+            </TestValue>
+         </Test>
       </Checkpoint>
       <Checkpoint Id="A320_AFTERLANDING_BRAKE_TEMP">
          <CheckpointDesc SubjectTT="TT:Brake Temperature" ExpectationTT="TT:CHECK" />
@@ -1958,6 +2017,24 @@
       <Checkpoint Id="A320_SECURE_ADIRS">
          <CheckpointDesc SubjectTT="TT:ADIRS 1+2+3" ExpectationTT="TT:OFF" />
          <Instrument Id="ADIRS_Knob" />
+         <Test>
+            <TestValue>
+               <Operator OpType="AND">
+                  <Operator OpType="EQUAL">
+                     <Val Code="(L:A320_Neo_ADIRS_KNOB_1)" Units="Enum"/>
+                     <Val Value="0"/>
+                  </Operator>
+                  <Operator OpType="EQUAL">
+                     <Val Code="(L:A320_Neo_ADIRS_KNOB_2)" Units="Enum"/>
+                     <Val Value="0"/>
+                  </Operator>
+                  <Operator OpType="EQUAL">
+                     <Val Code="(L:A320_Neo_ADIRS_KNOB_3)" Units="Enum"/>
+                     <Val Value="0"/>
+                  </Operator>
+               </Operator>
+            </TestValue>
+         </Test>
       </Checkpoint>
       <Checkpoint Id="A320_SECURE_EXT_LIGHTS">
          <CheckpointDesc SubjectTT="TT:Exterior Lights" ExpectationTT="TT:OFF" />
@@ -1991,10 +2068,26 @@
       <Checkpoint Id="A320_SECURE_EMERGENCY_EXIT_LIGHTS">
          <CheckpointDesc SubjectTT="TT:Emergency Exit Lights" ExpectationTT="TT:OFF" />
          <Instrument Id="Emergency_Exit_Switch"/>
+         <Test>
+            <TestValue>
+               <Operator OpType="EQUAL">
+                  <Val Code="(L:XMLVAR_SWITCH_OVHD_INTLT_EMEREXIT_Position)"/>
+                  <Val Value="2"/>
+               </Operator>
+            </TestValue>
+         </Test>
       </Checkpoint>
       <Checkpoint Id="A320_SECURE_NO_SMOKING">
          <CheckpointDesc SubjectTT="TT:No Smoking" ExpectationTT="TT:OFF" />
          <Instrument Id="Smoking_Switch"/>
+         <Test>
+            <TestValue>
+               <Operator OpType="EQUAL">
+                  <Val Code="(L:XMLVAR_SWITCH_OVHD_INTLT_NOSMOKING_Position)"/>
+                  <Val Value="2"/>
+               </Operator>
+            </TestValue>
+         </Test>
       </Checkpoint>
       <Checkpoint Id="A320_SECURE_EXT_POWER">
          <CheckpointDesc SubjectTT="TT:External Power" ExpectationTT="TT:AS REQUIRED" />
