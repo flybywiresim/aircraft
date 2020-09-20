@@ -276,8 +276,9 @@ class CDUInitPage {
         let lwCell = "---.-";
 
         let tripWindCell = "---.-";
-        // The below three are required for fuel prediction to occur
-        if (isFinite(mcdu.blockFuel) && isFinite(mcdu.zeroFuelWeightMassCenter) && isFinite(mcdu.zeroFuelWeight)) {
+        // The below three are required for fuel prediction to occur as-well as an active flight plan and a FL
+        if (isFinite(mcdu.blockFuel) && isFinite(mcdu.zeroFuelWeightMassCenter) && isFinite(mcdu.zeroFuelWeight)
+         && mcdu.cruiseFlightLevel && (mcdu.flightPlanManager.getWaypointsCount() > 0)) {
             
             if (isFinite(mcdu.getTotalTripFuelCons())) {
                 console.log("TRIP " + mcdu.getTotalTripFuelCons());
