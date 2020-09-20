@@ -118,6 +118,7 @@ class A320_Neo_FCU_Component {
         }
     }
     constructor(_gps, _divName) {
+        this.gps = _gps;
         this.divRef = _gps.getChildById(_divName);
         this.textValue = this.getTextElement("Value");
         this.init();
@@ -140,29 +141,42 @@ class A320_Neo_FCU_Speed extends A320_Neo_FCU_Component {
     init() {
         this.textSPD = this.getTextElement("SPD");
         this.textMACH = this.getTextElement("MACH");
-        this.decimalPoint = this.getElement("circle", "DEC_PNT");
+        this.decimalPoint1 = this.getElement("circle", "DEC_PNT1");
+        this.decimalPoint2 = this.getElement("circle", "DEC_PNT2");
+        this.decimalPoint3 = this.getElement("circle", "DEC_PNT3");
         this.illuminator = this.getElement("circle", "Illuminator");
-        this.refresh(false, false, false, false, 0);
+        this.refresh(false, false, false, false, 0, 0, true);
     }
     update(_deltaTime) {
         let showSelectedSpeed = SimVar.GetSimVarValue("L:A320_FCU_SHOW_SELECTED_SPEED", "number") === 1;
         let isManaged = Simplane.getAutoPilotAirspeedManaged();
         let isMachActive = Simplane.getAutoPilotMachModeActive();
-        this.refresh(true, isManaged, showSelectedSpeed, isMachActive, (isMachActive) ? Simplane.getAutoPilotSelectedMachHoldValue() * 100 : Simplane.getAutoPilotSelectedAirspeedHoldValue());
+        this.refresh(true, isManaged, showSelectedSpeed, isMachActive, (isMachActive) ? Simplane.getAutoPilotSelectedMachHoldValue() * 100 : Simplane.getAutoPilotSelectedAirspeedHoldValue(), SimVar.GetSimVarValue("L:XMLVAR_LTS_Test", "Bool"));
     }
-    refresh(_isActive, _isManaged, _showSelectedSpeed, _machActive, _value, _force = false) {
-        if ((_isActive != this.isActive) || (_isManaged != this.isManaged) || (_showSelectedSpeed != this.showSelectedSpeed) || (_value != this.currentValue) || _force) {
+    refresh(_isActive, _isManaged, _showSelectedSpeed, _machActive, _value, _lightsTest, _force = false) {
+        if ((_isActive != this.isActive) || (_isManaged != this.isManaged) || (_showSelectedSpeed != this.showSelectedSpeed) || (_value != this.currentValue) || (_lightsTest !== this.lightsTest) || _force) {
             this.isActive = _isActive;
             this.isManaged = _isManaged;
             this.showSelectedSpeed = _showSelectedSpeed;
             this.currentValue = _value;
             this.setTextElementActive(this.textSPD, !_machActive);
             this.setTextElementActive(this.textMACH, _machActive);
+            this.lightsTest = _lightsTest;
+            if (this.lightsTest) {
+                this.setElementVisibility(this.illuminator, true);
+                this.setElementVisibility(this.decimalPoint1, true);
+                this.setElementVisibility(this.decimalPoint2, true);
+                this.setElementVisibility(this.decimalPoint3, true);
+                this.textValueContent = "888";
+                this.setTextElementActive(this.textSPD, true);
+                this.setTextElementActive(this.textMACH, true);
+                return;
+            }
             if (!this.isManaged) {
                 var value = Math.round(Math.max(this.currentValue, 0));
                 this.textValueContent = value.toString().padStart(3, "0");
                 this.setElementVisibility(this.illuminator, false);
-                this.setElementVisibility(this.decimalPoint, _machActive);
+                this.setElementVisibility(this.decimalPoint2, _machActive);
             }
             else if (this.isManaged) {
                 if (this.showSelectedSpeed) {
@@ -174,7 +188,9 @@ class A320_Neo_FCU_Speed extends A320_Neo_FCU_Component {
                 }
             }
             this.setElementVisibility(this.illuminator, this.isManaged);
-            this.setElementVisibility(this.decimalPoint, _machActive);
+            this.setElementVisibility(this.decimalPoint1, false);
+            this.setElementVisibility(this.decimalPoint2, _machActive);
+            this.setElementVisibility(this.decimalPoint3, false);
         }
     }
 }
@@ -186,8 +202,12 @@ class A320_Neo_FCU_Heading extends A320_Neo_FCU_Component {
     init() {
         this.textHDG = this.getTextElement("HDG");
         this.textTRK = this.getTextElement("TRK");
+        this.textLAT = this.getTextElement("LAT");
+        this.decimalPoint1 = this.getElement("circle", "DEC_PNT1");
+        this.decimalPoint2 = this.getElement("circle", "DEC_PNT2");
+        this.decimalPoint3 = this.getElement("circle", "DEC_PNT3");
         this.illuminator = this.getElement("circle", "Illuminator");
-        this.refresh(false, false, false, false, 0, true);
+        this.refresh(false, false, false, false, 0, 0, true);
     }
     onFlightStart() {
         super.onFlightStart();
@@ -212,22 +232,23 @@ class A320_Neo_FCU_Heading extends A320_Neo_FCU_Component {
                 showSelectedHeading = false;
             }
         }
+        const lightsTest = SimVar.GetSimVarValue("L:XMLVAR_LTS_Test", "Bool");
         if (isLateralModeActive) {
-            this.refresh(false, isManaged, isTRKMode, showSelectedHeading, 0);
+            this.refresh(false, isManaged, isTRKMode, showSelectedHeading, 0, lightsTest);
         }
         else {
             {
                 if (isTRKMode) {
-                    this.refresh(true, isManaged, true, showSelectedHeading, Simplane.getAutoPilotTrackAngle());
+                    this.refresh(true, isManaged, true, showSelectedHeading, Simplane.getAutoPilotTrackAngle(), lightsTest);
                 }
                 else {
-                    this.refresh(true, isManaged, false, showSelectedHeading, Simplane.getAutoPilotSelectedHeadingLockValue(false));
+                    this.refresh(true, isManaged, false, showSelectedHeading, Simplane.getAutoPilotSelectedHeadingLockValue(false), lightsTest);
                 }
             }
         }
     }
-    refresh(_isActive, _isManaged, _isTRKMode, _showSelectedHeading, _value, _force = false) {
-        if ((_isActive != this.isActive) || _isManaged != this.isManaged || (_isTRKMode != this.isTRKMode) || (_showSelectedHeading != this.showSelectedHeading) || (_value != this.currentValue) || _force) {
+    refresh(_isActive, _isManaged, _isTRKMode, _showSelectedHeading, _value, _lightsTest, _force = false) {
+        if ((_isActive != this.isActive) || _isManaged != this.isManaged || (_isTRKMode != this.isTRKMode) || (_showSelectedHeading != this.showSelectedHeading) || (_value != this.currentValue) || (_lightsTest !== this.lightsTest) || _force) {
             if (_isManaged != this.isManaged)
                 this.onManagedChanged(_isManaged);
             if (_value != this.currentValue)
@@ -241,13 +262,25 @@ class A320_Neo_FCU_Heading extends A320_Neo_FCU_Component {
             this.currentValue = _value;
             this.setTextElementActive(this.textHDG, !this.isTRKMode);
             this.setTextElementActive(this.textTRK, this.isTRKMode);
+            this.lightsTest = _lightsTest;
+            if (this.lightsTest) {
+                this.setTextElementActive(this.textHDG, true);
+                this.setTextElementActive(this.textTRK, true);
+                this.setTextElementActive(this.textLAT, true);
+                this.textValueContent = "888";
+                this.setElementVisibility(this.illuminator, true);
+                this.setElementVisibility(this.decimalPoint1, true);
+                this.setElementVisibility(this.decimalPoint2, true);
+                this.setElementVisibility(this.decimalPoint3, true);
+                return;
+            }
             if (!this.isManaged) {
-                var value = Math.floor(Math.max(this.currentValue, 0));
+                var value = Math.round(Math.max(this.currentValue, 0));
                 this.textValueContent = value.toString().padStart(3, "0");
             }
             else if (this.isManaged) {
                 if (this.showSelectedHeading) {
-                    var value = Math.floor(Math.max(this.currentValue, 0));
+                    var value = Math.round(Math.max(this.currentValue, 0));
                     this.textValueContent = value.toString().padStart(3, "0");
                 }
                 else {
@@ -255,6 +288,9 @@ class A320_Neo_FCU_Heading extends A320_Neo_FCU_Component {
                 }
             }
             this.setElementVisibility(this.illuminator, this.isManaged);
+            this.setElementVisibility(this.decimalPoint1, false);
+            this.setElementVisibility(this.decimalPoint2, false);
+            this.setElementVisibility(this.decimalPoint3, false);
         }
     }
     onManagedChanged(_newValue) {
@@ -283,14 +319,22 @@ class A320_Neo_FCU_Mode extends A320_Neo_FCU_Component {
         this.textVS = this.getTextElement("VS");
         this.textTRK = this.getTextElement("TRK");
         this.textFPA = this.getTextElement("FPA");
-        this.refresh(false, true);
+        this.refresh(false, 0, true);
     }
     update(_deltaTime) {
-        this.refresh(Simplane.getAutoPilotTRKFPAModeActive());
+        this.refresh(Simplane.getAutoPilotTRKFPAModeActive(), SimVar.GetSimVarValue("L:XMLVAR_LTS_Test", "Bool"));
     }
-    refresh(_isTRKFPADisplayMode, _force = false) {
-        if ((_isTRKFPADisplayMode != this.isTRKFPADisplayMode) || _force) {
+    refresh(_isTRKFPADisplayMode, _lightsTest, _force = false) {
+        if ((_isTRKFPADisplayMode != this.isTRKFPADisplayMode) || (_lightsTest !== this.lightsTest) || _force) {
             this.isTRKFPADisplayMode = _isTRKFPADisplayMode;
+            this.lightsTest = _lightsTest;
+            if (this.lightsTest) {
+                this.setTextElementActive(this.textHDG, true);
+                this.setTextElementActive(this.textVS, true);
+                this.setTextElementActive(this.textTRK, true);
+                this.setTextElementActive(this.textFPA, true);
+                return;
+            }
             this.setTextElementActive(this.textHDG, !this.isTRKFPADisplayMode);
             this.setTextElementActive(this.textVS, !this.isTRKFPADisplayMode);
             this.setTextElementActive(this.textTRK, this.isTRKFPADisplayMode);
@@ -313,35 +357,41 @@ class A320_Neo_FCU_Altitude extends A320_Neo_FCU_Component {
         else
             initValue = Math.round(initValue / 100) * 100;
         Coherent.call("AP_ALT_VAR_SET_ENGLISH", 1, initValue, true);
-        this.refresh(false, false, initValue, true);
+        this.refresh(false, false, initValue, 0, true);
     }
     reboot() {
         this.init();
     }
     update(_deltaTime) {
-        this.refresh(Simplane.getAutoPilotActive(), Simplane.getAutoPilotAltitudeManaged(), Simplane.getAutoPilotDisplayedAltitudeLockValue(Simplane.getAutoPilotAltitudeLockUnits()));
+        this.refresh(Simplane.getAutoPilotActive(), Simplane.getAutoPilotAltitudeManaged(), Simplane.getAutoPilotDisplayedAltitudeLockValue(Simplane.getAutoPilotAltitudeLockUnits()), SimVar.GetSimVarValue("L:XMLVAR_LTS_Test", "Bool"));
     }
-    refresh(_isActive, _isManaged, _value, _force = false) {
-        if ((_isActive != this.isActive) || (_isManaged != this.isManaged) || (_value != this.currentValue) || _force) {
+    refresh(_isActive, _isManaged, _value, _lightsTest, _force = false) {
+        if ((_isActive != this.isActive) || (_isManaged != this.isManaged) || (_value != this.currentValue) || (_lightsTest !== this.lightsTest) || _force) {
             this.isActive = _isActive;
             this.isManaged = _isManaged;
             this.currentValue = _value;
+            this.lightsTest = _lightsTest;
+            if (this.lightsTest) {
+                this.textValueContent = "88888";
+                this.setElementVisibility(this.illuminator, true);
+                return;
+            }
             var value = Math.floor(Math.max(this.currentValue, 100));
             this.textValueContent = value.toString().padStart(5, "0");
             this.setElementVisibility(this.illuminator, this.isManaged);
-			if (!_isManaged) {
-				if ((Simplane.getAutoPilotAltitudeSelected() || Simplane.getAutoPilotAltitudeArmed()) && (Simplane.getAutoPilotFlightDirectorActive(1) || Simplane.getAutoPilotFlightDirectorActive(2)) && (Simplane.getAutoPilotActive(1)|| Simplane.getAutoPilotActive(2))) {
-					let targetAltitude = Simplane.getAutoPilotAltitudeLockValue("feets");
-					let altitude = Simplane.getAltitude();
-					if (altitude > targetAltitude + 100 || altitude < targetAltitude - 100) {
-						if (!Simplane.getAutoPilotGlideslopeHold()) {
-							SimVar.SetSimVarValue("L:A320_NEO_FCU_FORCE_IDLE_VS", "Number", 1);
-						}
-						Coherent.call("AP_ALT_VAR_SET_ENGLISH", 1, Simplane.getAutoPilotDisplayedAltitudeLockValue(), true);
-						SimVar.SetSimVarValue("K:ALTITUDE_SLOT_INDEX_SET", "number", 1);
-					}
-				}
-			}
+            if (!_isManaged) {
+                if ((Simplane.getAutoPilotAltitudeSelected() || Simplane.getAutoPilotAltitudeArmed()) && (Simplane.getAutoPilotFlightDirectorActive(1) || Simplane.getAutoPilotFlightDirectorActive(2)) && (Simplane.getAutoPilotActive(1) || Simplane.getAutoPilotActive(2))) {
+                    let targetAltitude = Simplane.getAutoPilotAltitudeLockValue("feets");
+                    let altitude = Simplane.getAltitude();
+                    if (altitude > targetAltitude + 100 || altitude < targetAltitude - 100) {
+                        if (!Simplane.getAutoPilotGlideslopeHold()) {
+                            SimVar.SetSimVarValue("L:A320_NEO_FCU_FORCE_IDLE_VS", "Number", 1);
+                        }
+                        Coherent.call("AP_ALT_VAR_SET_ENGLISH", 1, Simplane.getAutoPilotDisplayedAltitudeLockValue(), true);
+                        SimVar.SetSimVarValue("K:ALTITUDE_SLOT_INDEX_SET", "number", 1);
+                    }
+                }
+            }
         }
     }
 }
@@ -372,7 +422,7 @@ class A320_Neo_FCU_VerticalSpeed extends A320_Neo_FCU_Component {
         this.isActive = false;
         this.isFPAMode = false;
         this._enterIdleState();
-        this.refresh(false, false, 0, true);
+        this.refresh(false, false, 0, 0, true);
     }
     onFlightStart() {
         super.onFlightStart();
@@ -405,7 +455,7 @@ class A320_Neo_FCU_VerticalSpeed extends A320_Neo_FCU_Component {
             }, 10000);
         }
         else if (this.currentState === A320_Neo_FCU_VSpeed_State.Flying || this.currentState === A320_Neo_FCU_VSpeed_State.Zeroing) {
-            requestAnimationFrame(() => {
+            this.gps.requestCall(() => {
                 this.currentState = A320_Neo_FCU_VSpeed_State.Flying;
                 let selectedValue = Simplane.getAutoPilotSelectedVerticalSpeedHoldValue();
                 Coherent.call("AP_VS_VAR_SET_ENGLISH", 1, selectedValue);
@@ -454,7 +504,7 @@ class A320_Neo_FCU_VerticalSpeed extends A320_Neo_FCU_Component {
         this.currentState = A320_Neo_FCU_VSpeed_State.Idle;
         this.forceUpdate = true;
         let currentAirspeedHold = Simplane.getAutoPilotAirspeedHoldValue();
-        requestAnimationFrame(() => {
+        this.gps.requestCall(() => {
             if (Simplane.getAutoPilotAirspeedManaged()) {
                 Coherent.call("AP_SPD_VAR_SET", 2, currentAirspeedHold);
             }
@@ -478,10 +528,12 @@ class A320_Neo_FCU_VerticalSpeed extends A320_Neo_FCU_Component {
                 let targetAirspeed = Simplane.getAutoPilotVerticalSpeedHoldValue();
                 if (deltaAltitude * targetAirspeed < 1) {
                     this.currentState = A320_Neo_FCU_VSpeed_State.Idle;
+                    this._enterIdleState();
                     this.forceUpdate = true;
                 }
-                if (Math.abs(deltaAltitude) < 100) {
+                if (Math.abs(deltaAltitude) < 200) {
                     this.currentState = A320_Neo_FCU_VSpeed_State.Idle;
+                    this._enterIdleState();
                     this.forceUpdate = true;
                 }
             }
@@ -493,19 +545,28 @@ class A320_Neo_FCU_VerticalSpeed extends A320_Neo_FCU_Component {
         if (this._debug-- < 0 || this.forceUpdate) {
             this._debug = 300;
         }
+        const lightsTest = SimVar.GetSimVarValue("L:XMLVAR_LTS_Test", "Bool");
         if (Simplane.getAutoPilotTRKFPAModeActive()) {
-            this.refresh(true, true, -Simplane.getAutoPilotFlightPathAngle(), this.forceUpdate);
+            this.refresh(true, true, -Simplane.getAutoPilotFlightPathAngle(), lightsTest, this.forceUpdate);
         }
         else {
-            this.refresh(true, false, Simplane.getAutoPilotSelectedVerticalSpeedHoldValue(), this.forceUpdate);
+            this.refresh(true, false, Simplane.getAutoPilotSelectedVerticalSpeedHoldValue(), lightsTest, this.forceUpdate);
         }
         this.forceUpdate = false;
     }
-    refresh(_isActive, _isFPAMode, _value, _force = false) {
-        if ((_isActive != this.isActive) || (_isFPAMode != this.isFPAMode) || (_value != this.currentValue) || _force) {
+    refresh(_isActive, _isFPAMode, _value, _lightsTest, _force = false) {
+        if ((_isActive != this.isActive) || (_isFPAMode != this.isFPAMode) || (_value != this.currentValue) || (_lightsTest !== this.lightsTest) || _force) {
             this.isActive = _isActive;
             this.isFPAMode = _isFPAMode;
             this.currentValue = _value;
+            this.lightsTest = _lightsTest;
+            if (this.lightsTest) {
+                this.setTextElementActive(this.textVS, true);
+                this.setTextElementActive(this.textFPA, true);
+                this.textValueContent = "+8888";
+                this.setElementVisibility(this.decimalPoint, true);
+                return;
+            }
             this.setTextElementActive(this.textVS, !this.isFPAMode);
             this.setTextElementActive(this.textFPA, this.isFPAMode);
             if (this.isActive && this.currentState != A320_Neo_FCU_VSpeed_State.Idle) {
@@ -603,18 +664,28 @@ class A320_Neo_FCU_Pressure extends A320_Neo_FCU_Component {
         this.textQFE = this.getTextElement("QFE");
         this.textQNH = this.getTextElement("QNH");
         this.decimalPoint = this.getElement("circle", "DEC_PNT");
-        this.refresh("QFE", true, 0, true);
+        this.refresh("QFE", true, 0, 0, true);
     }
     update(_deltaTime) {
         var units = Simplane.getPressureSelectedUnits();
         var mode = Simplane.getPressureSelectedMode(Aircraft.A320_NEO);
-        this.refresh(mode, (units != "millibar"), Simplane.getPressureValue(units));
+        this.refresh(mode, (units != "millibar"), Simplane.getPressureValue(units), SimVar.GetSimVarValue("L:XMLVAR_LTS_Test", "Bool"));
     }
-    refresh(_mode, _isHGUnit, _value, _force = false) {
-        if ((_mode != this.currentMode) || (_isHGUnit != this.isHGUnit) || (_value != this.currentValue) || _force) {
+    refresh(_mode, _isHGUnit, _value, _lightsTest, _force = false) {
+        if ((_mode != this.currentMode) || (_isHGUnit != this.isHGUnit) || (_value != this.currentValue) || (_lightsTest !== this.lightsTest) || _force) {
             this.currentMode = _mode;
             this.isHGUnit = _isHGUnit;
             this.currentValue = _value;
+            this.lightsTest = _lightsTest;
+            if (this.lightsTest) {
+                this.standardElem.style.display = "none";
+                this.selectedElem.style.display = "block";
+                this.setTextElementActive(this.textQFE, true);
+                this.setTextElementActive(this.textQNH, true);
+                this.textValueContent = "8888";
+                this.setElementVisibility(this.decimalPoint, true);
+                return;
+            }
             if (this.currentMode == "STD") {
                 this.standardElem.style.display = "block";
                 this.selectedElem.style.display = "none";
