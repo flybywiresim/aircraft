@@ -1595,8 +1595,8 @@ var A320_Neo_UpperECAM;
             super.update(_deltaTime);
             if (Simplane.getEngineActive(0) || Simplane.getEngineActive(1)) {
                 var throttleMode = Math.max(Simplane.getEngineThrottleMode(0), Simplane.getEngineThrottleMode(1));
+                var throttleValue = Simplane.getEngineThrottleMaxThrust(1);
                 if (Simplane.getCurrentFlightPhase() < FlightPhase.FLIGHT_PHASE_CLIMB) {
-                    var throttleValue = Math.max(Simplane.getEngineThrottle(0), Simplane.getEngineThrottle(1));
                     if (throttleMode == ThrottleMode.FLEX_MCT) {
                         this.setThrottle(true, throttleValue, throttleMode, true);
                         var flexTemp = Simplane.getFlexTemperature();
@@ -1608,7 +1608,7 @@ var A320_Neo_UpperECAM;
                     }
                 }
                 else {
-                    this.setThrottle(true, Math.max(Simplane.getEngineCommandedN1(0), Simplane.getEngineCommandedN1(1)), throttleMode);
+                    this.setThrottle(true, throttleValue, throttleMode);
                     this.setFlexTemperature(false);
                 }
             }
@@ -1820,7 +1820,7 @@ var A320_Neo_UpperECAM;
             super.update(_deltaTime);
             var slatsAngle = (SimVar.GetSimVarValue("LEADING EDGE FLAPS LEFT ANGLE", "degrees") + SimVar.GetSimVarValue("LEADING EDGE FLAPS RIGHT ANGLE", "degrees")) * 0.5;
             var flapsAngle = (SimVar.GetSimVarValue("TRAILING EDGE FLAPS LEFT ANGLE", "degrees") + SimVar.GetSimVarValue("TRAILING EDGE FLAPS RIGHT ANGLE", "degrees")) * 0.5;
-            var handleIndex = SimVar.GetSimVarValue("FLAPS HANDLE INDEX", "number");
+            var handleIndex = Simplane.getFlapsHandleIndex(true);
             let slatsTargetIndex = handleIndex;
             let flapsTargetIndex = handleIndex;
             var slatsAngleChanged = (this.currentSlatsAngle != slatsAngle);
@@ -1900,7 +1900,7 @@ var A320_Neo_UpperECAM;
                             }
                         case 4:
                             {
-                                this.currentStateText.textContent = "F";
+                                this.currentStateText.textContent = "FULL";
                                 break;
                             }
                         default:
