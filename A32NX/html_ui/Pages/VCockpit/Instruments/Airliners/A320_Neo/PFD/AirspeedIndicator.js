@@ -83,7 +83,7 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
         this.stripBorderSize = 0;
         this.stripOffsetX = 0;
         this.altOver20k = false;
-            this.construct_A320_Neo();
+        this.construct_A320_Neo();
     }
     construct_A320_Neo() {
         this.rootSVG = document.createElementNS(Avionics.SVG.NS, "svg");
@@ -674,12 +674,12 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
             this._lastIASTime = newIASTime;
             return;
         }
-        
+
         let frameIASAcceleration = (newIASTime.ias - this._lastIASTime.ias) / (newIASTime.t - this._lastIASTime.t);
-        
+
         frameIASAcceleration = Math.min(frameIASAcceleration, 10);
         frameIASAcceleration = Math.max(frameIASAcceleration, -10);
-        
+
         if (isFinite(frameIASAcceleration)) {
             // Low pass filter for accel : https://en.wikipedia.org/wiki/Low-pass_filter
             this._computedIASAcceleration += this._accelAlpha * (frameIASAcceleration - this._computedIASAcceleration);
@@ -714,7 +714,7 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
             if (this.aircraft == Aircraft.B747_8 || this.aircraft == Aircraft.AS01B) {
                 if ((!this.machVisible && this.machSpeed >= 0.4) || (this.machVisible && this.machSpeed >= 0.35)) {
                     var fixedMach = this.machSpeed.toFixed(3);
-                    var radixPos = fixedMach.indexOf('.');
+                    var radixPos = fixedMach.indexOf(".");
                     this.machPrefixSVG.textContent = ".";
                     this.machValueSVG.textContent = fixedMach.slice(radixPos + 1);
                     this.machVisible = true;
@@ -729,7 +729,7 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
             else if (this.aircraft == Aircraft.CJ4) {
                 if ((!this.machVisible && this.machSpeed >= 0.4) || (this.machVisible && this.machSpeed >= 0.35)) {
                     var fixedMach = this.machSpeed.toFixed(3);
-                    var radixPos = fixedMach.indexOf('.');
+                    var radixPos = fixedMach.indexOf(".");
                     this.machPrefixSVG.textContent = ".";
                     this.machValueSVG.textContent = fixedMach.slice(radixPos + 1);
                     this.machVisible = true;
@@ -738,7 +738,7 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
             else {
                 var fixedMach = this.machSpeed.toFixed(3);
                 if ((!this.machVisible && this.machSpeed >= 0.5) || (this.machVisible && this.machSpeed >= 0.45)) {
-                    var radixPos = fixedMach.indexOf('.');
+                    var radixPos = fixedMach.indexOf(".");
                     this.machValueSVG.textContent = fixedMach.slice(radixPos + 1);
                     this.machVisible = true;
                 }
@@ -958,7 +958,7 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
                         let machAirspeed = Simplane.getAutoPilotMachHoldValue();
                         if (machAirspeed < 1.0) {
                             var fixedMach = machAirspeed.toFixed(3);
-                            var radixPos = fixedMach.indexOf('.');
+                            var radixPos = fixedMach.indexOf(".");
                             this.targetSpeedSVG.textContent = fixedMach.slice(radixPos);
                         }
                         else {
@@ -993,9 +993,9 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
             if (this.targetSpeedPointerSVG && hidePointer)
                 this.targetSpeedPointerSVG.setAttribute("visibility", "hidden");
             if (this.targetSpeedBgSVG)
-                this.targetSpeedBgSVG.classList.toggle('hide', hideText);
+                this.targetSpeedBgSVG.classList.toggle("hide", hideText);
             if (this.targetSpeedIconSVG)
-                this.targetSpeedIconSVG.classList.toggle('hide', hideText);
+                this.targetSpeedIconSVG.classList.toggle("hide", hideText);
             if (Simplane.getIsGrounded() && Simplane.getV1Airspeed() <= 0 && Simplane.getVRAirspeed() <= 0 && Simplane.getV2Airspeed() <= 0) {
                 takeOffSpeedNotSet = true;
             }
@@ -1082,7 +1082,7 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
     updateMarkerF(_marker, currentAirspeed) {
         let hideMarker = true;
         let phase = Simplane.getCurrentFlightPhase();
-        let flapsHandleIndex = SimVar.GetSimVarValue("FLAPS HANDLE INDEX", "Number");
+        let flapsHandleIndex = Simplane.getFlapsHandleIndex();
         if (flapsHandleIndex == 2 || flapsHandleIndex == 3) {
             let flapSpeed = 0;
             if (phase == FlightPhase.FLIGHT_PHASE_TAKEOFF || phase == FlightPhase.FLIGHT_PHASE_CLIMB || phase == FlightPhase.FLIGHT_PHASE_GOAROUND) {
@@ -1107,7 +1107,7 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
     updateMarkerS(_marker, currentAirspeed) {
         let hideMarker = true;
         let phase = Simplane.getCurrentFlightPhase();
-        let flapsHandleIndex = SimVar.GetSimVarValue("FLAPS HANDLE INDEX", "Number");
+        let flapsHandleIndex = Simplane.getFlapsHandleIndex();
         if (flapsHandleIndex == 1) {
             let slatSpeed = 0;
             if (phase == FlightPhase.FLIGHT_PHASE_TAKEOFF || phase == FlightPhase.FLIGHT_PHASE_CLIMB || phase == FlightPhase.FLIGHT_PHASE_GOAROUND) {
@@ -1234,7 +1234,7 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
     updateMarkerFlap(_marker, currentAirspeed) {
         let hideMarker = true;
         let phase = Simplane.getCurrentFlightPhase();
-        let flapsHandleIndex = SimVar.GetSimVarValue("FLAPS HANDLE INDEX", "Number");
+        let flapsHandleIndex = Simplane.getFlapsHandleIndex();
         let markerHandleIndex = _marker.params[0];
         if (markerHandleIndex == flapsHandleIndex || markerHandleIndex == (flapsHandleIndex - 1)) {
             if (phase >= FlightPhase.FLIGHT_PHASE_TAKEOFF && ((phase != FlightPhase.FLIGHT_PHASE_CLIMB && phase != FlightPhase.FLIGHT_PHASE_CRUISE) || !this.altOver20k)) {
