@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <SoundBanksInfo Platform="Windows" BasePlatform="Windows" SchemaVersion="12" SoundbankVersion="135">
 	<RootPaths>
-		<ProjectRoot>C:\Users\olive\Documents\GitHub\msfs-a320neo\src\sound\</ProjectRoot>
-		<SourceFilesRoot>C:\Users\olive\Documents\GitHub\msfs-a320neo\src\sound\.cache\Windows\</SourceFilesRoot>
-		<SoundBanksRoot>C:\Users\olive\Documents\GitHub\msfs-a320neo\src\sound\GeneratedSoundBanks\Windows\</SoundBanksRoot>
+		<ProjectRoot>C:\Users\olive\Documents\GitHub\a32nx\src\sound\</ProjectRoot>
+		<SourceFilesRoot>C:\Users\olive\Documents\GitHub\a32nx\src\sound\.cache\Windows\</SourceFilesRoot>
+		<SoundBanksRoot>C:\Users\olive\Documents\GitHub\a32nx\src\sound\GeneratedSoundBanks\Windows\</SoundBanksRoot>
 		<ExternalSourcesInputFile></ExternalSourcesInputFile>
-		<ExternalSourcesOutputRoot>C:\Users\olive\Documents\GitHub\msfs-a320neo\src\sound\GeneratedSoundBanks\Windows</ExternalSourcesOutputRoot>
+		<ExternalSourcesOutputRoot>C:\Users\olive\Documents\GitHub\a32nx\src\sound\GeneratedSoundBanks\Windows</ExternalSourcesOutputRoot>
 	</RootPaths>
 	<SoundBanks>
 		<SoundBank Id="3414319756" GUID="{210EF042-45E5-4AF4-AE40-FE92FA016F27}" Language="SFX">
@@ -17,15 +17,15 @@
 					<IncludedMemoryFiles>
 						<File Id="432822708" Language="SFX">
 							<ShortName>CAPTAIN-CABINCREW-SEATS-FOR-LANDING_2.wav</ShortName>
-							<Path>SFX\CAPTAIN-CABINCREW-SEATS-FOR-LANDING_2_1E8ECBBC.wem</Path>
+							<Path>SFX\CAPTAIN-CABINCREW-SEATS-FOR-LANDING_2_78BD8C0F.wem</Path>
 						</File>
 						<File Id="562791736" Language="SFX">
 							<ShortName>CAPTAIN-CABINCREW-SEATS-FOR-LANDING_3.wav</ShortName>
-							<Path>SFX\CAPTAIN-CABINCREW-SEATS-FOR-LANDING_3_1E8ECBBC.wem</Path>
+							<Path>SFX\CAPTAIN-CABINCREW-SEATS-FOR-LANDING_3_78BD8C0F.wem</Path>
 						</File>
 						<File Id="806003362" Language="SFX">
 							<ShortName>CAPTAIN-CABINCREW-SEATS-FOR-LANDING.wav</ShortName>
-							<Path>SFX\CAPTAIN-CABINCREW-SEATS-FOR-LANDING_1E8ECBBC.wem</Path>
+							<Path>SFX\CAPTAIN-CABINCREW-SEATS-FOR-LANDING_78BD8C0F.wem</Path>
 						</File>
 					</IncludedMemoryFiles>
 				</Event>
@@ -33,15 +33,15 @@
 					<IncludedMemoryFiles>
 						<File Id="314189442" Language="SFX">
 							<ShortName>CAPTAIN-CABINCREW-SEATS-FOR-TAKEOFF_2.wav</ShortName>
-							<Path>SFX\CAPTAIN-CABINCREW-SEATS-FOR-TAKEOFF_2_1E8ECBBC.wem</Path>
+							<Path>SFX\CAPTAIN-CABINCREW-SEATS-FOR-TAKEOFF_2_78BD8C0F.wem</Path>
 						</File>
 						<File Id="344402026" Language="SFX">
 							<ShortName>CAPTAIN-CABINCREW-SEATS-FOR-TAKEOFF_3.wav</ShortName>
-							<Path>SFX\CAPTAIN-CABINCREW-SEATS-FOR-TAKEOFF_3_1E8ECBBC.wem</Path>
+							<Path>SFX\CAPTAIN-CABINCREW-SEATS-FOR-TAKEOFF_3_78BD8C0F.wem</Path>
 						</File>
 						<File Id="925710262" Language="SFX">
 							<ShortName>CAPTAIN-CABINCREW-SEATS-FOR-TAKEOFF.wav</ShortName>
-							<Path>SFX\CAPTAIN-CABINCREW-SEATS-FOR-TAKEOFF_1E8ECBBC.wem</Path>
+							<Path>SFX\CAPTAIN-CABINCREW-SEATS-FOR-TAKEOFF_78BD8C0F.wem</Path>
 						</File>
 					</IncludedMemoryFiles>
 				</Event>
@@ -49,7 +49,7 @@
 					<IncludedMemoryFiles>
 						<File Id="790202684" Language="SFX">
 							<ShortName>cabincrewbell.wav</ShortName>
-							<Path>SFX\cabincrewbell_1E8ECBBC.wem</Path>
+							<Path>SFX\cabincrewbell_78BD8C0F.wem</Path>
 						</File>
 					</IncludedMemoryFiles>
 				</Event>
@@ -57,7 +57,23 @@
 					<IncludedMemoryFiles>
 						<File Id="790202684" Language="SFX">
 							<ShortName>cabincrewbell.wav</ShortName>
-							<Path>SFX\cabincrewbell_1E8ECBBC.wem</Path>
+							<Path>SFX\cabincrewbell_78BD8C0F.wem</Path>
+						</File>
+					</IncludedMemoryFiles>
+				</Event>
+				<Event Id="2836225853" Name="Play_Asobo_A320_NEO_CRC" ObjectPath="\Events\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved\Play_Asobo_A320_NEO_CRC" GUID="{2667E241-B918-4FFE-8429-759F90BA78A1}" MaxAttenuation="3.000000" DurationType="Infinite">
+					<IncludedMemoryFiles>
+						<File Id="549534682" Language="SFX">
+							<ShortName>CRC.wav</ShortName>
+							<Path>SFX\CRC_5286F9B8.wem</Path>
+						</File>
+					</IncludedMemoryFiles>
+				</Event>
+				<Event Id="39660050" Name="Play_Asobo_A320_NEO_improved_tone_caution" ObjectPath="\Events\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved\Play_Asobo_A320_NEO_improved_tone_caution" GUID="{C3F82F3D-BFFD-44F5-AF60-2625B748917D}" MaxAttenuation="3.000000" DurationType="OneShot" DurationMin="0.500000" DurationMax="0.500000">
+					<IncludedMemoryFiles>
+						<File Id="522173839" Language="SFX">
+							<ShortName>single_chime.wav</ShortName>
+							<Path>SFX\single_chime_78BD8C0F.wem</Path>
 						</File>
 					</IncludedMemoryFiles>
 				</Event>
@@ -65,7 +81,7 @@
 					<IncludedMemoryFiles>
 						<File Id="537738566" Language="SFX">
 							<ShortName>seatbelt.wav</ShortName>
-							<Path>SFX\seatbelt_1E8ECBBC.wem</Path>
+							<Path>SFX\seatbelt_78BD8C0F.wem</Path>
 						</File>
 					</IncludedMemoryFiles>
 				</Event>
