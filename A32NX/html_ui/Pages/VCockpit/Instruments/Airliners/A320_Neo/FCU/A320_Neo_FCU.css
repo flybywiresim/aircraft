@@ -74,7 +74,7 @@
 a320-neo-fcu-element {
   width: 100%;
   height: 100%;
-  background-color: black;
+  background-color: rgba(17, 10, 1, 0.884);
   font-family: Roboto-Bold;
   position: relative;
   overflow: hidden; }
@@ -88,7 +88,7 @@ a320-neo-fcu-element {
       height: 8%;
       display: block;
       position: absolute;
-      background-color: black; }
+      background-color: rgba(17, 10, 1, 0.884); }
       a320-neo-fcu-element #Mainframe #LargeScreen #Speed {
         width: 20%;
         height: 100%;
@@ -125,7 +125,7 @@ a320-neo-fcu-element {
       display: block;
       position: absolute;
       top: 8%;
-      background-color: black; }
+      background-color: rgba(17, 10, 1, 0.884);}
       a320-neo-fcu-element #Mainframe #SmallScreen #Selected, a320-neo-fcu-element #Mainframe #SmallScreen #Standar {
         width: 100%;
         height: 100%;
