@@ -68,6 +68,7 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         this.ApuAboveThresholdTimer = -1; // MODIFIED
         this.MainEngineStarterOffTimer = -1;
         this.CrzCondTimer = 60;
+        this.PrevFailPage = -1;
 
         this.topSelfTestDiv = this.querySelector("#TopSelfTest");
         this.topSelfTestTimer = -1;
@@ -269,14 +270,22 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
                 10: "FTCL",
                 11: "STS"
             }
-
             this.pageNameWhenUnselected = ECAMPageIndices[sFailPage];
+
+            // Disable user selected page when new failure detected
+            if (this.PrevFailPage !== sFailPage) {
+                this.currentPage = -1;
+                SimVar.SetSimVarValue("L:XMLVAR_ECAM_CURRENT_PAGE", "number", -1);
+            }
+        }
+        
+        // switch page when desired page was changed, or new Failure detected
+        if ((this.pageNameWhenUnselected != prevPage && this.currentPage == -1) || (this.PrevFailPage !== sFailPage)) {
+            this.SwitchToPageName(this.LOWER_SCREEN_GROUP_NAME, this.pageNameWhenUnselected);
+
         }
 
-        // switch page when desired page was changed
-        if (this.pageNameWhenUnselected != prevPage && this.currentPage == -1) {
-            this.SwitchToPageName(this.LOWER_SCREEN_GROUP_NAME, this.pageNameWhenUnselected);
-        }
+        this.PrevFailPage = sFailPage;
 
         // modification ends here
     }
