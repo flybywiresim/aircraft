@@ -45,7 +45,7 @@ class Jet_MFD_NDCompass extends Jet_NDCompass {
                 let topMask = document.createElementNS(Avionics.SVG.NS, "path");
                 topMask.setAttribute("d", "M0 " + -maskHeight + ", L" + circleRadius * 2 + " " + -maskHeight + ", L" + circleRadius * 2 + " " + circleRadius + ", A 25 25 0 1 0 0, " + circleRadius + "Z");
                 topMask.setAttribute("transform", "translate(" + (50 - circleRadius) + ", " + (50 - circleRadius) + ")");
-                topMask.setAttribute("fill", "black");
+                topMask.setAttribute("fill", "url(#MFDBacklight)");
                 this.arcMaskGroup.appendChild(topMask);
             }
             this.arcRangeGroup = document.createElementNS(Avionics.SVG.NS, "g");

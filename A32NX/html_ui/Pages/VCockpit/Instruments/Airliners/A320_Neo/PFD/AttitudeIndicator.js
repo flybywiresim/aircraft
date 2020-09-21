@@ -269,11 +269,11 @@ class Jet_PFD_AttitudeIndicator extends HTMLElement {
             {
                 let topMask = document.createElementNS(Avionics.SVG.NS, "path");
                 topMask.setAttribute("d", "M 0 0 L 0 250 L 123 250 L 123 190 C 123 190, 143 120, 233 120 C 233 120, 323 120, 343 190 L 343 250 L 500 250 L 500 0 Z");
-                topMask.setAttribute("fill", "black");
+                topMask.setAttribute("fill", "url(#Backlight)");
                 this.masks.appendChild(topMask);
                 let bottomMask = document.createElementNS(Avionics.SVG.NS, "path");
                 bottomMask.setAttribute("d", "M 0 500 L 0 250 L 123 250 L 123 310 C 123 310, 143 380, 233 380 C 233 380, 323 380, 343 310 L 343 250 L 500 250 L 500 500 Z");
-                bottomMask.setAttribute("fill", "black");
+                bottomMask.setAttribute("fill", "url(#Backlight)");
                 this.masks.appendChild(bottomMask);
             }
         }
