@@ -4,7 +4,7 @@
 
 ### Please follow ALL steps in this README if you encounter any issues with installation before seeking support.
 
-### The current master branch now contains a fix for the engine #1 shutoff bug introduced in the MSFS 1.8.3 update. Download [here](https://github.com/flybywiresim/a32nx/archive/master.zip).
+### The current master branch now contains a fix for the engine #1 shutoff bug, FCU mach bug, and PFD random shutoff bug introduced in the MSFS 1.8.3 update. Download [here](https://github.com/flybywiresim/a32nx/archive/master.zip).
 
 ## About
 The A32NX Project is a community driven open source project to create a free Airbus A320neo in Microsoft Flight Simulator that is as close to reality as possible. It aims to enhance the default A320neo by improving the systems depth and functionality to bring it up to payware-level, all for free.
