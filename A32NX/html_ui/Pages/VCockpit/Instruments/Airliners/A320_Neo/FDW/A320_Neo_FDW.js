@@ -334,6 +334,8 @@ class A320_Neo_FDW extends BaseAirliners {
                 this.valueTexts[1].textContent = "888.888";
             }
             return;
+        } else if (lightsTestChanged) {
+            this.frequencyHandlers.forEach(x => x.needRefresh = true);
         }
 
         var needShowValues = (isOn && (this.currentFrequencyType != A320_Neo_RadioManagement.FREQUENCY_TYPE.NONE));
