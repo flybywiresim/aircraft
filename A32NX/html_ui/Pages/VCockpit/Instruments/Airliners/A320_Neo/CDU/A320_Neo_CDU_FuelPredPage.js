@@ -19,7 +19,7 @@ class CDUFuelPredPage {
         /**
          * Retrieve alternate destination info
          */
-        if (mcdu.flightPlanManager.get)
+        //if (mcdu.flightPlanManager.get)
         let rteRsvWeightCell = "--.-";
         let rteRsvWeight = mcdu.getRouteReservedWeight();
         if (isFinite(rteRsvWeight)) {
