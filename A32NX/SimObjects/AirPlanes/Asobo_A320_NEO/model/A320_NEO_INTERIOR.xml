@@ -1454,7 +1454,7 @@
 			</Component>
 
 			<UseTemplate Name="ASOBO_LIGHTING_Switch_Light_Cabin_Template">
-				<POTENTIOMETER>77</POTENTIOMETER>
+				<POTENTIOMETER>7</POTENTIOMETER>
 				<DIMMER/>
 				<NODE_ID>SWITCH_OVHD_INTLT_DOME</NODE_ID>
 				<ANIM_NAME>SWITCH_OVHD_INTLT_DOME</ANIM_NAME>
@@ -1470,7 +1470,7 @@
 
 			<UseTemplate Name="ASOBO_LIGHTING_Cabin_Emissive_Template">
 				<NODE_ID>LIGHTS_Overhead</NODE_ID>
-				<POTENTIOMETER>77</POTENTIOMETER>
+				<POTENTIOMETER>7</POTENTIOMETER>
 			</Component>
 			<CameraTitle>Overhead</CameraTitle>
 		</Component>

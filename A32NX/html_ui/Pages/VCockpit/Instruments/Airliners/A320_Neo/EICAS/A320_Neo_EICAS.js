@@ -87,7 +87,7 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         this.changePage("DOOR"); // This should get the ECAM into the "unselected" state
         this.localVarUpdater = new LocalVarUpdater();
 
-        SimVar.SetSimVarValue("LIGHT POTENTIOMETER:77","FLOAT64",0);
+        SimVar.SetSimVarValue("LIGHT POTENTIOMETER:7","FLOAT64",0);
         SimVar.SetSimVarValue("LIGHT POTENTIOMETER:84","FLOAT64",0);
         SimVar.SetSimVarValue("LIGHT POTENTIOMETER:85","FLOAT64",0);
         SimVar.SetSimVarValue("LIGHT POTENTIOMETER:86","FLOAT64",0);
