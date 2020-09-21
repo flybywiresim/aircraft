@@ -38,7 +38,6 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this.onRad = () => { CDUNavRadioPage.ShowPage(this); };
         this.onFuel = () => { CDUFuelPredPage.ShowPage(this); };
         CDUIdentPage.ShowPage(this);
-        this.electricity = this.querySelector("#Electricity")
         this.electricity = this.querySelector("#Electricity");
         this.climbTransitionGroundAltitude = null;
 
