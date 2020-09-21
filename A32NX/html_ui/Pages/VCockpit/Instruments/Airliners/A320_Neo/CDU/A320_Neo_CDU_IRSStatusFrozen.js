@@ -1,10 +1,6 @@
-class CDUIRSStatus {
+class CDUIRSStatusFrozen {
     static ShowPage(mcdu, index) {
         mcdu.clearDisplay()
-        mcdu.refreshPageCallback = () => {
-            CDUIRSStatus.ShowPage(mcdu, index);
-        }
-        SimVar.SetSimVarValue("L:FMC_UPDATE_CURRENT_PAGE", "number", 1);
         let currPos = new LatLong(SimVar.GetSimVarValue("GPS POSITION LAT", "degree latitude"),
                                   SimVar.GetSimVarValue("GPS POSITION LON", "degree longitude")).toShortDegreeString();
         let GROUNDSPEED = SimVar.GetSimVarValue("GPS GROUND SPEED", "Meters per second") || "0";
@@ -13,8 +9,12 @@ class CDUIRSStatus {
         let MHDG = SimVar.GetSimVarValue("GPS GROUND TRUE TRACK", "radians") || "000";
         let WIND_DIR = SimVar.GetSimVarValue("AMBIENT WIND DIRECTION", "Degrees") || "000";
         let WIND_VELOCITY = SimVar.GetSimVarValue("AMBIENT WIND VELOCITY", "Knots") || "00";
+        var UTC_SECONDS  = Math.floor(SimVar.GetGlobalVarValue("ZULU TIME", "seconds"));
+        var hours = Math.floor(UTC_SECONDS / 3600) || 0
+        var minutes = Math.floor(UTC_SECONDS % 3600 / 60) || 0
+        var hhmm = `${hours.toString().padStart(2, "0") || "00"}${minutes.toString().padStart(2, "0") || "00"}`
         mcdu.setTemplate([
-            [`IRS${index}`],
+            [`IRS${index} FROZEN AT ${hhmm}`],
             ["POSITION"],
             [`${currPos}[color]green`],
             ["TTRK", "GS"],
@@ -26,18 +26,19 @@ class CDUIRSStatus {
             ["GPIRS POSITION"],
             [`${currPos}[color]green`],
             ["", ""],
-            ["←FREEZE[color]blue", `${index<3 ? "NEXT IRS>" : "RETURN>"}`]
+            ["←UNFREEZE[color]blue", `${index<3 ? "NEXT IRS>" : "RETURN>"}`]
         ])
 
         mcdu.onLeftInput[5] = () => {
-            CDUIRSStatusFrozen.ShowPage(mcdu, index);
+            CDUIRSStatus.ShowPage(mcdu, index)
         }
 
         mcdu.onRightInput[5] = () => {
-            if (index>2) {
-                CDUIRSMonitor.ShowPage(mcdu);
-            } else {
-                this.ShowPage(mcdu, index+1)
+            if(index>2) {
+                CDUIRSMonitor.ShowPage(mcdu)
+            }
+            else {
+                CDUIRSStatus.ShowPage(mcdu, index+1)
             }
         }
     }
