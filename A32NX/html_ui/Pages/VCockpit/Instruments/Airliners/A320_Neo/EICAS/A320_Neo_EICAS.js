@@ -68,7 +68,6 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         this.ApuAboveThresholdTimer = -1; // MODIFIED
         this.MainEngineStarterOffTimer = -1;
         this.CrzCondTimer = 60;
-        this.PrevFailPage = -1;
 
         this.topSelfTestDiv = this.querySelector("#TopSelfTest");
         this.topSelfTestTimer = -1;
@@ -255,7 +254,7 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
 
         const sFailPage = SimVar.GetSimVarValue("L:A32NX_ECAM_SFAIL", "Enum");
 
-        if (sFailPage != -1 && sFailPage != this.PrevFailPage) {
+        if (sFailPage != -1) {
             const ECAMPageIndices = {
                 0: "ENG",
                 1: "BLEED",
@@ -271,11 +270,7 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
                 11: "STS"
             }
 
-            this.changePage(ECAMPageIndices[sFailPage]);
-
-        }
-        if (sFailPage != this.PrevFailPage) {
-            this.PrevFailPage = sFailPage;
+            this.pageNameWhenUnselected = ECAMPageIndices[sFailPage];
         }
 
         // switch page when desired page was changed
