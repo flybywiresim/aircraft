@@ -13,7 +13,7 @@ class CDUInitPage {
         if (mcdu.flightPlanManager.getOrigin() && mcdu.flightPlanManager.getOrigin().ident) {
             if (mcdu.flightPlanManager.getDestination() && mcdu.flightPlanManager.getDestination().ident) {
                 fromTo = mcdu.flightPlanManager.getOrigin().ident + "/" + mcdu.flightPlanManager.getDestination().ident + "[color]blue";
-                if (coRoute == "□□□□□□□□□□[color]red") coRoute = "NONE[color]blue"; //Check if coroute exists
+                if (coRoute.includes("□□□□□□□□□□[color]red")) coRoute = "NONE[color]blue"; //Check if coroute exists
 
                 //Need code to set the SimVarValue if user inputs FlNo
                 if (SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string", "FMC")) flightNo = SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string", "FMC") + "[color]blue";
@@ -70,22 +70,6 @@ class CDUInitPage {
         if (mcdu.coRoute) {
             coRoute = mcdu.coRoute + "[color]blue";
         }
-
-        mcdu.setTemplate([
-            ["INIT ⇄"],
-            ["CO RTE", "FROM/TO"],
-            [coRoute, fromTo],
-            ["ALTN/CO RTE"],
-            [altDest],
-            ["FLT NBR"],
-            [flightNo + "[color]blue"],
-            [latText, lonText],
-            [lat, long],
-            ["COST INDEX"],
-            [costIndex, "WIND>"],
-            ["CRZ FL/TEMP", "TROPO"],
-            [cruiseFlTemp, "36090[color]blue"],
-        ]);
 
         mcdu.onLeftInput[0] = () => {
             let value = mcdu.inOut;
@@ -158,6 +142,22 @@ class CDUInitPage {
             mcdu._latSelected = false;
             CDUInitPage.ShowPage1(mcdu);
         };
+
+        mcdu.setTemplate([
+            ["INIT ⇄"],
+            ["CO RTE", "FROM/TO"],
+            [coRoute, fromTo],
+            ["ALTN/CO RTE"],
+            [altDest],
+            ["FLT NBR"],
+            [flightNo + "[color]blue"],
+            [latText, lonText],
+            [lat, long],
+            ["COST INDEX"],
+            [costIndex, "WIND>"],
+            ["CRZ FL/TEMP", "TROPO"],
+            [cruiseFlTemp, "36090[color]blue"],
+        ]);
 
         mcdu.onPrevPage = () => {
             CDUInitPage.ShowPage2(mcdu);
