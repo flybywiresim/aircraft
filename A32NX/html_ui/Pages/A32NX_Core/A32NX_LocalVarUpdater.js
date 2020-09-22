@@ -3,7 +3,7 @@
 // The selector calculates the new value based on other simvars and some logic.
 // The updater compares the new value from the selector with the current value from the local simvar,
 // and then updates the local simvar if it changed.
-class LocalVarUpdater {
+class A32NX_LocalVarUpdater {
     constructor() {
         this.updaters = [
             {
