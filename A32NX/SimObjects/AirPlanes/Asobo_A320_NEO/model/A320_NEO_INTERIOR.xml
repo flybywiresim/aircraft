@@ -2260,40 +2260,6 @@
 			<POTENTIOMETER>85</POTENTIOMETER>
 		</UseTemplate>
 
-		<Component ID="ECAM_Push_Dummies">
-			<DefaultTemplateParameters>
-				<SEQ1_EMISSIVE_DRIVES_VISIBILITY>False</SEQ1_EMISSIVE_DRIVES_VISIBILITY>
-				<SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
-			</DefaultTemplateParameters>
-
-			<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
-				<NODE_ID>PUSH_ECAM_ALL</NODE_ID>
-				<POTENTIOMETER_SEQ1>85</POTENTIOMETER_SEQ1>
-				<ONLY_SEQ1/>
-			</UseTemplate>
-
-			<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
-				<NODE_ID>PUSH_ECAM_CLR</NODE_ID>
-				<POTENTIOMETER_SEQ1>85</POTENTIOMETER_SEQ1>
-			</UseTemplate>
-
-			<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
-				<NODE_ID>PUSH_ECAM_STS</NODE_ID>
-				<POTENTIOMETER_SEQ1>85</POTENTIOMETER_SEQ1>
-			</UseTemplate>
-
-			<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
-				<NODE_ID>PUSH_ECAM_RCL</NODE_ID>
-				<POTENTIOMETER_SEQ1>85</POTENTIOMETER_SEQ1>
-				<ONLY_SEQ1/>
-			</UseTemplate>
-
-			<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
-				<NODE_ID>PUSH_ECAM_CLR2</NODE_ID>
-				<POTENTIOMETER_SEQ1>85</POTENTIOMETER_SEQ1>
-			</UseTemplate>
-		</Component>
-
 		<CameraTitle>ECAM</CameraTitle>
 	</Component>
 
@@ -2985,9 +2951,6 @@
 		</UseTemplate>
 		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
 			<NODE_ID>PUSH_ECAM_EMERCANC</NODE_ID>
-		</UseTemplate>
-		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-			<NODE_ID>PUSH_ECAM_ALL</NODE_ID>
 		</UseTemplate>
 		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
 			<NODE_ID>PUSH_RADIOL_SEL</NODE_ID>
