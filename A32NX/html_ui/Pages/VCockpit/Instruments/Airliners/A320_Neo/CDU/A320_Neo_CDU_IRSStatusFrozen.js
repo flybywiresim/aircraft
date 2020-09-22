@@ -1,5 +1,5 @@
 class CDUIRSStatusFrozen {
-    static ShowPage(mcdu, index) {
+    static ShowPage(mcdu, index, wind_dir) {
         mcdu.clearDisplay()
         let currPos = new LatLong(SimVar.GetSimVarValue("GPS POSITION LAT", "degree latitude"),
                                   SimVar.GetSimVarValue("GPS POSITION LON", "degree longitude")).toShortDegreeString();
@@ -17,7 +17,6 @@ class CDUIRSStatusFrozen {
         let THDG = SimVar.GetSimVarValue("GPS GROUND TRUE HEADING", "radians") || "000";
         let TTRK = SimVar.GetSimVarValue("GPS GROUND MAGNETIC TRACK", "radians") || "000";
         let MHDG = SimVar.GetSimVarValue("GPS GROUND TRUE TRACK", "radians") || "000";
-        let WIND_DIR = SimVar.GetSimVarValue("AMBIENT WIND DIRECTION", "Degrees") || "000";
         let WIND_VELOCITY = SimVar.GetSimVarValue("AMBIENT WIND VELOCITY", "Knots") || "00";
         var UTC_SECONDS  = Math.floor(SimVar.GetGlobalVarValue("ZULU TIME", "seconds"));
         var hours = Math.floor(UTC_SECONDS / 3600) || 0
@@ -33,7 +32,7 @@ class CDUIRSStatusFrozen {
             [`THDG`, "MHDG"],
             [`${Math.round(THDG)}[color]green`, `${Math.round(MHDG)}[color]green`],
             ["WIND", "GPIRS ACCUR"],
-            [`${Math.round(WIND_DIR)}°/${Math.round(WIND_VELOCITY)}[color]green`, `200FT[color]green`],
+            [`${Math.round(wind_dir)}°/${Math.round(WIND_VELOCITY)}[color]green`, `200FT[color]green`],
             ["GPIRS POSITION"],
             [`${currPos}[color]green`],
             ["", ""],
