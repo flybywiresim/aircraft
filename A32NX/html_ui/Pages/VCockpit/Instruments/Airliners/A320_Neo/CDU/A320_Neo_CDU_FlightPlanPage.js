@@ -165,10 +165,14 @@ class CDUFlightPlanPage {
                 }
             }
             else if (index < waypointsWithDiscontinuities.length - 1) {
+                let prevWaypoint;
                 let waypoint;
                 let fpIndex = 0;
                 if (waypointsWithDiscontinuities[index]) {
                     waypoint = waypointsWithDiscontinuities[index].wp;
+                    if (waypointsWithDiscontinuities[index - 1]) {
+                        prevWaypoint = waypointsWithDiscontinuities[index - 1].wp;
+                    }
                     fpIndex = waypointsWithDiscontinuities[index].fpIndex;
                 }
                 if (!waypoint) {
@@ -198,7 +202,14 @@ class CDUFlightPlanPage {
                         }
                     }
                     if (i < rowsCount - 1) {
-                        rows[2 * i] = [waypoint.infos.airwayIdentInFP, waypoint.cumulativeDistanceInFP.toFixed(0)];
+                        let airwayName = "";
+                        if (prevWaypoint && waypoint) {
+                            let airway = IntersectionInfo.GetCommonAirway(prevWaypoint, waypoint);
+                            if (airway) {
+                                airwayName = airway.name;
+                            }
+                        }
+                        rows[2 * i] = [airwayName, waypoint.cumulativeDistanceInFP.toFixed(0)];
                         let speedConstraint = "---";
                         console.log(waypoint.speedConstraint);
                         if (waypoint.speedConstraint > 10) {
@@ -252,7 +263,10 @@ class CDUFlightPlanPage {
                             lastAltitudeConstraint = altitudeConstraint;
                         }
                         let color = "blue";
-                        if (waypoint === mcdu.flightPlanManager.getActiveWaypoint()) {
+                        if (mcdu.flightPlanManager.getCurrentFlightPlanIndex() === 1) {
+                            color = "yellow";
+                        }
+                        else if (waypoint === mcdu.flightPlanManager.getActiveWaypoint()) {
                             color = "green";
                         }
                         rows[2 * i + 1] = [waypoint.ident + "[color]" + color, speedConstraint + "/" + altitudeConstraint + "[s-text][color]" + color, timeCell + "[color]" + color];

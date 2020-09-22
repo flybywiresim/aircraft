@@ -88,16 +88,16 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         this.localVarUpdater = new LocalVarUpdater();
 
         SimVar.SetSimVarValue("LIGHT POTENTIOMETER:7","FLOAT64",0);
-        SimVar.SetSimVarValue("LIGHT POTENTIOMETER:14","FLOAT64",0);
-        SimVar.SetSimVarValue("LIGHT POTENTIOMETER:15","FLOAT64",0);
-        SimVar.SetSimVarValue("LIGHT POTENTIOMETER:16","FLOAT64",0);
-        SimVar.SetSimVarValue("LIGHT POTENTIOMETER:17","FLOAT64",0.1);
-        SimVar.SetSimVarValue("LIGHT POTENTIOMETER:18","FLOAT64",0.1);
-        SimVar.SetSimVarValue("LIGHT POTENTIOMETER:19","FLOAT64",0.1);
-        SimVar.SetSimVarValue("LIGHT POTENTIOMETER:20","FLOAT64",0.1);
-        SimVar.SetSimVarValue("LIGHT POTENTIOMETER:21","FLOAT64",0.1);
-        SimVar.SetSimVarValue("LIGHT POTENTIOMETER:22","FLOAT64",0.1);
-        SimVar.SetSimVarValue("LIGHT POTENTIOMETER:23","FLOAT64",0.1);
+        SimVar.SetSimVarValue("LIGHT POTENTIOMETER:84","FLOAT64",0);
+        SimVar.SetSimVarValue("LIGHT POTENTIOMETER:85","FLOAT64",0);
+        SimVar.SetSimVarValue("LIGHT POTENTIOMETER:86","FLOAT64",0);
+        SimVar.SetSimVarValue("LIGHT POTENTIOMETER:87","FLOAT64",0.1);
+        SimVar.SetSimVarValue("LIGHT POTENTIOMETER:88","FLOAT64",0.1);
+        SimVar.SetSimVarValue("LIGHT POTENTIOMETER:89","FLOAT64",0.1);
+        SimVar.SetSimVarValue("LIGHT POTENTIOMETER:90","FLOAT64",0.1);
+        SimVar.SetSimVarValue("LIGHT POTENTIOMETER:91","FLOAT64",0.1);
+        SimVar.SetSimVarValue("LIGHT POTENTIOMETER:92","FLOAT64",0.1);
+        SimVar.SetSimVarValue("LIGHT POTENTIOMETER:93","FLOAT64",0.1);
     }
     onUpdate(_deltaTime) {
         super.onUpdate(_deltaTime);
@@ -138,7 +138,7 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
          * Self test on top ECAM screen
          **/
 
-        let topSelfTestCurrentKnobValue = SimVar.GetSimVarValue("LIGHT POTENTIOMETER:22", "number");
+        let topSelfTestCurrentKnobValue = SimVar.GetSimVarValue("LIGHT POTENTIOMETER:92", "number");
 
         if(((topSelfTestCurrentKnobValue >= 0.1 && this.topSelfTestLastKnobValue < 0.1) || ACPowerStateChange) && isACPowerAvailable && !this.topSelfTestTimerStarted) {
             this.topSelfTestDiv.style.display = "block";
@@ -160,7 +160,7 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
          * Self test on bottom ECAM screen
          **/
 
-        let bottomSelfTestCurrentKnobValue = SimVar.GetSimVarValue("LIGHT POTENTIOMETER:23", "number");
+        let bottomSelfTestCurrentKnobValue = SimVar.GetSimVarValue("LIGHT POTENTIOMETER:93", "number");
 
         if(((bottomSelfTestCurrentKnobValue >= 0.1 && this.bottomSelfTestLastKnobValue < 0.1) || ACPowerStateChange) && isACPowerAvailable && !this.bottomSelfTestTimerStarted) {
             this.bottomSelfTestDiv.style.display = "block";
