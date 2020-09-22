@@ -10,9 +10,9 @@ class CDUPositionMonitorPage {
         mcdu.setTemplate([
             ["POSITION MONITOR"],
             [""],
-            ["FMGC1", currPos + "[color]green"],
+            ["FMS1", currPos + "[color]green"],
             ["", "", "3IRS/GPS"],
-            ["FMGC2", currPos + "[color]green"],
+            ["FMS2", currPos + "[color]green"],
             ["", "", "3IRS/GPS"],
             ["GPIRS", currPos + "[color]green"],
             [""],
