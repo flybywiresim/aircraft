@@ -2271,12 +2271,6 @@
 				<POTENTIOMETER_SEQ1>85</POTENTIOMETER_SEQ1>
 				<ONLY_SEQ1/>
 			</UseTemplate>
-
-			<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
-				<NODE_ID>PUSH_ECAM_RCL</NODE_ID>
-				<POTENTIOMETER_SEQ1>85</POTENTIOMETER_SEQ1>
-				<ONLY_SEQ1/>
-			</UseTemplate>
 		</Component>
 
 		<CameraTitle>ECAM</CameraTitle>
