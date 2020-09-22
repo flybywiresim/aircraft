@@ -73,15 +73,6 @@ var A320_Neo_UpperECAM;
             if (secs > 0) return mins;
             else return -1;
         }
-        getLimitSpeed() {
-            const currentIAS = Simplane.getIndicatedSpeed();
-            const gearDownLimit = SimVar.GetSimVarValue("GEAR HANDLE POSITION", "Bool") == 1 && currentIAS >= 284;
-            const getIsOverspeed = Simplane.getFlapsLimitSpeed(this.aircraft, Simplane.getFlapsHandleIndex()) + 4;
-             
-            if (currentIAS >= getIsOverspeed || gearDownLimit){
-                return true;
-            }
-        }
         engineFailed(_engine) {
             return (this.getCachedSimVar("ENG FAILED:"+_engine, "Bool") == 1) && !this.getCachedSimVar("ENG ON FIRE:"+_engine) && !Simplane.getIsGrounded();
         }
@@ -395,9 +386,7 @@ var A320_Neo_UpperECAM;
                             {
                                 message: "",
                                 level: 3,
-                                isActive: () => {
-                                    return this.getLimitSpeed();
-                                },
+                                isActive: () => Simplane.getIndicatedSpeed() > (A32NX_Selectors.VMAX() + 4),
                             },
                         ]
                     },
