@@ -890,7 +890,7 @@
 	<UseTemplate Name="ASOBO_ECAM_PAGE_BUTTON_Template">
 		<BASE_NAME>STS</BASE_NAME>
 		<GROUP_INDEX>11</GROUP_INDEX> <!--Change to positive to activate-->
-		<TOOLTIPID>Display STS informations on ECAM</TOOLTIPID>
+		<TOOLTIPID>Display STS information on ECAM</TOOLTIPID>
 	</UseTemplate>
 
 	<UseTemplate Name="ASOBO_ECAM_BUTTON_Template">
