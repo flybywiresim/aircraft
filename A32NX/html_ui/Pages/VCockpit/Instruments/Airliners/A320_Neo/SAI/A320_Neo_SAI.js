@@ -70,11 +70,11 @@ class A320_Neo_SAI_AirspeedIndicator extends HTMLElement {
         }
         var topMask = document.createElementNS(Avionics.SVG.NS, "path");
         topMask.setAttribute("d", "M0 0 l118 0 l0 30 q-118 2 -118 50 Z");
-        topMask.setAttribute("fill", "black");
+        topMask.setAttribute("fill", "url(#SAIBacklight)");
         this.rootGroup.appendChild(topMask);
         var bottomMask = document.createElementNS(Avionics.SVG.NS, "path");
         bottomMask.setAttribute("d", "M0 250 l118 0 l0 -35 q-118 -2 -118 -50 Z");
-        bottomMask.setAttribute("fill", "black");
+        bottomMask.setAttribute("fill", "url(#SAIBacklight)");
         this.rootGroup.appendChild(bottomMask);
         if (!this.centerSVG) {
             this.centerSVG = document.createElementNS(Avionics.SVG.NS, "svg");
@@ -97,7 +97,7 @@ class A320_Neo_SAI_AirspeedIndicator extends HTMLElement {
             bg.setAttribute("y", _top.toString());
             bg.setAttribute("width", _width.toString());
             bg.setAttribute("height", _height.toString());
-            bg.setAttribute("fill", "black");
+            bg.setAttribute("fill", "url(#SAIBacklight)");
             this.centerSVG.appendChild(bg);
             if (this.airspeeds) {
                 var arcGroup = document.createElementNS(Avionics.SVG.NS, "g");
@@ -210,7 +210,7 @@ class A320_Neo_SAI_AirspeedIndicator extends HTMLElement {
             rect.setAttribute("y", "0");
             rect.setAttribute("width", cursorWidth.toString());
             rect.setAttribute("height", cursorHeight.toString());
-            rect.setAttribute("fill", "black");
+            rect.setAttribute("fill", "url(#SAIBacklight)");
             this.cursorSVG.appendChild(rect);
             if (!this.cursorSVGShape)
                 this.cursorSVGShape = document.createElementNS(Avionics.SVG.NS, "path");
@@ -224,14 +224,14 @@ class A320_Neo_SAI_AirspeedIndicator extends HTMLElement {
         topBg.setAttribute("y", (_top - 5).toString());
         topBg.setAttribute("width", "125");
         topBg.setAttribute("height", "35");
-        topBg.setAttribute("fill", "black");
+        topBg.setAttribute("fill", "url(#SAIBacklight)");
         this.rootGroup.appendChild(topBg);
         var bottomBg = document.createElementNS(Avionics.SVG.NS, "rect");
         bottomBg.setAttribute("x", _left.toString());
         bottomBg.setAttribute("y", (_top + _height - 35).toString());
         bottomBg.setAttribute("width", "125");
         bottomBg.setAttribute("height", "40");
-        bottomBg.setAttribute("fill", "black");
+        bottomBg.setAttribute("fill", "url(#SAIBacklight)");
         this.rootGroup.appendChild(bottomBg);
         this.rootSVG.appendChild(this.rootGroup);
         this.appendChild(this.rootSVG);
@@ -358,11 +358,11 @@ class A320_Neo_SAI_AltimeterIndicator extends HTMLElement {
             Utils.RemoveAllChildren(this.centerSVG);
         var topMask = document.createElementNS(Avionics.SVG.NS, "path");
         topMask.setAttribute("d", "M0 0 l0 30 q118 2 118 50 l0 -80 Z");
-        topMask.setAttribute("fill", "black");
+        topMask.setAttribute("fill", "url(#SAIBacklight)");
         this.rootGroup.appendChild(topMask);
         var bottomMask = document.createElementNS(Avionics.SVG.NS, "path");
         bottomMask.setAttribute("d", "M0 250 l0 -35 q118 -2 118 -50 l0 85 Z");
-        bottomMask.setAttribute("fill", "black");
+        bottomMask.setAttribute("fill", "url(#SAIBacklight)");
         this.rootGroup.appendChild(bottomMask);
         this.centerSVG.setAttribute("x", posX.toString());
         this.centerSVG.setAttribute("y", posY.toString());
@@ -380,7 +380,7 @@ class A320_Neo_SAI_AltimeterIndicator extends HTMLElement {
             bg.setAttribute("y", _top.toString());
             bg.setAttribute("width", _width.toString());
             bg.setAttribute("height", _height.toString());
-            bg.setAttribute("fill", "black");
+            bg.setAttribute("fill", "url(#SAIBacklight)");
             this.centerSVG.appendChild(bg);
             this.graduationScrollPosX = _left;
             this.graduationScrollPosY = _top + _height * 0.5;
@@ -443,7 +443,7 @@ class A320_Neo_SAI_AltimeterIndicator extends HTMLElement {
             this.cursorSVG.appendChild(trs);
             if (!this.cursorSVGShape)
                 this.cursorSVGShape = document.createElementNS(Avionics.SVG.NS, "path");
-            this.cursorSVGShape.setAttribute("fill", "black");
+            this.cursorSVGShape.setAttribute("fill", "url(#SAIBacklight)");
             this.cursorSVGShape.setAttribute("d", "M0 22 L65 22 L65 6 L140 6 L140 72 L65 72 L65 56 L0 56 Z");
             this.cursorSVGShape.setAttribute("stroke", "yellow");
             this.cursorSVGShape.setAttribute("stroke-width", "0.85");
@@ -472,14 +472,14 @@ class A320_Neo_SAI_AltimeterIndicator extends HTMLElement {
         topBg.setAttribute("y", (_top - 5).toString());
         topBg.setAttribute("width", "125");
         topBg.setAttribute("height", "35");
-        topBg.setAttribute("fill", "black");
+        topBg.setAttribute("fill", "url(#SAIBacklight)");
         this.rootGroup.appendChild(topBg);
         var bottomBg = document.createElementNS(Avionics.SVG.NS, "rect");
         bottomBg.setAttribute("x", (_left - 40).toString());
         bottomBg.setAttribute("y", (_top + _height - 35).toString());
         bottomBg.setAttribute("width", "125");
         bottomBg.setAttribute("height", "40");
-        bottomBg.setAttribute("fill", "black");
+        bottomBg.setAttribute("fill", "url(#SAIBacklight)");
         this.rootGroup.appendChild(bottomBg);
         this.rootSVG.appendChild(this.rootGroup);
         this.appendChild(this.rootSVG);
@@ -799,14 +799,14 @@ class A320_Neo_SAI_AttitudeIndicator extends HTMLElement {
                 this.attitude_root.appendChild(cursors);
                 let leftUpper = document.createElementNS(Avionics.SVG.NS, "path");
                 leftUpper.setAttribute("d", "M-90 0 l0 -6 l55 0 l0 28 l-5 0 l0 -22 l-40 0 Z");
-                leftUpper.setAttribute("fill", "black");
+                leftUpper.setAttribute("fill", "url(#SAIBacklight)");
                 leftUpper.setAttribute("stroke", "yellow");
                 leftUpper.setAttribute("stroke-width", "0.7");
                 leftUpper.setAttribute("stroke-opacity", "1.0");
                 cursors.appendChild(leftUpper);
                 let rightUpper = document.createElementNS(Avionics.SVG.NS, "path");
                 rightUpper.setAttribute("d", "M90 0 l0 -6 l-55 0 l0 28 l5 0 l0 -22 l40 0 Z");
-                rightUpper.setAttribute("fill", "black");
+                rightUpper.setAttribute("fill", "url(#SAIBacklight)");
                 rightUpper.setAttribute("stroke", "yellow");
                 rightUpper.setAttribute("stroke-width", "0.7");
                 rightUpper.setAttribute("stroke-opacity", "1.0");
@@ -821,13 +821,13 @@ class A320_Neo_SAI_AttitudeIndicator extends HTMLElement {
                 cursors.appendChild(centerRect);
                 this.slipSkidTriangle = document.createElementNS(Avionics.SVG.NS, "path");
                 this.slipSkidTriangle.setAttribute("d", "M0 -170 l-13 20 l26 0 Z");
-                this.slipSkidTriangle.setAttribute("fill", "black");
+                this.slipSkidTriangle.setAttribute("fill", "url(#SAIBacklight)");
                 this.slipSkidTriangle.setAttribute("stroke", "white");
                 this.slipSkidTriangle.setAttribute("stroke-width", "1");
                 this.attitude_root.appendChild(this.slipSkidTriangle);
                 this.slipSkid = document.createElementNS(Avionics.SVG.NS, "path");
                 this.slipSkid.setAttribute("d", "M-20 -140 L-16 -146 L16 -146 L20 -140 Z");
-                this.slipSkid.setAttribute("fill", "black");
+                this.slipSkid.setAttribute("fill", "url(#SAIBacklight)");
                 this.slipSkid.setAttribute("stroke", "white");
                 this.slipSkid.setAttribute("stroke-width", "1");
                 this.attitude_root.appendChild(this.slipSkid);
