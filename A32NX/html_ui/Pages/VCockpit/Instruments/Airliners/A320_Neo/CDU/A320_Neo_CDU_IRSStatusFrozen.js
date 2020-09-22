@@ -3,6 +3,10 @@ class CDUIRSStatusFrozen {
         mcdu.clearDisplay()
         let currPos = new LatLong(SimVar.GetSimVarValue("GPS POSITION LAT", "degree latitude"),
                                   SimVar.GetSimVarValue("GPS POSITION LON", "degree longitude")).toShortDegreeString();
+        let currPosSplit = currPos.split("N")
+        let latStr = currPosSplit[0]
+        let lonStr = currPosSplit[1]
+        currPos = latStr + "N/" + lonStr
         let GROUNDSPEED = SimVar.GetSimVarValue("GPS GROUND SPEED", "Meters per second") || "0";
         let THDG = SimVar.GetSimVarValue("GPS GROUND TRUE HEADING", "radians") || "000";
         let TTRK = SimVar.GetSimVarValue("GPS GROUND MAGNETIC TRACK", "radians") || "000";

@@ -1,6 +1,11 @@
 class CDUGPSMonitor {
     static ShowPage(mcdu, merit1, merit2, sat1, sat2) {
-        let currPos = new LatLong(SimVar.GetSimVarValue("GPS POSITION LAT", "degree latitude"), SimVar.GetSimVarValue("GPS POSITION LON", "degree longitude")).toShortDegreeString();
+        let currPos = new LatLong(SimVar.GetSimVarValue("GPS POSITION LAT", "degree latitude"), 
+                                  SimVar.GetSimVarValue("GPS POSITION LON", "degree longitude")).toShortDegreeString();
+        let currPosSplit = currPos.split("N")
+        let latStr = currPosSplit[0]
+        let lonStr = currPosSplit[1]
+        currPos = latStr + "N/" + lonStr
         let TTRK = SimVar.GetSimVarValue("GPS GROUND MAGNETIC TRACK", "radians") || "000";
         let GROUNDSPEED = SimVar.GetSimVarValue("GPS GROUND SPEED", "Meters per second") || "0";
         let ALTITUDE = SimVar.GetSimVarValue("INDICATED ALTITUDE", "Feet") || "0";
