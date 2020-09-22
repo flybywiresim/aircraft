@@ -115,7 +115,7 @@ class A320_Neo_PFD_MainPage extends NavSystemPage {
         }
 
         const IsOnGround = SimVar.GetSimVarValue("SIM ON GROUND", "Bool");
-        const isAnyEngineSwitchOn = SimVar.GetSimVarValue("GENERAL ENG STARTER:1", "Bool") || SimVar.GetSimVarValue("GENERAL ENG STARTER:2", "Bool");
+        const isAnyEngineSwitchOn = SimVar.GetSimVarValue("FUELSYSTEM VALVE SWITCH:6", "Bool") || SimVar.GetSimVarValue("FUELSYSTEM VALVE SWITCH:7", "Bool");
 
         if (IsOnGround && isAnyEngineSwitchOn) {
             this.groundCursor.style.display = "block";
