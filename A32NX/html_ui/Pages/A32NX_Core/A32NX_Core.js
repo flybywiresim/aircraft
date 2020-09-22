@@ -2,9 +2,10 @@ class A32NX_Core {
     constructor() {
         this.getDeltaTime = null;
         this.modules = [
+            new A32NX_ADIRS(),
             new A32NX_APU(),
             new A32NX_BrakeTemp(),
-            new LocalVarUpdater(),
+            new A32NX_LocalVarUpdater(),
         ];
     }
 
