@@ -3,10 +3,16 @@ class CDUIRSStatusFrozen {
         mcdu.clearDisplay()
         let currPos = new LatLong(SimVar.GetSimVarValue("GPS POSITION LAT", "degree latitude"),
                                   SimVar.GetSimVarValue("GPS POSITION LON", "degree longitude")).toShortDegreeString();
-        let currPosSplit = currPos.split("N")
+        if (currPos.includes("N")) {
+            var currPosSplit = currPos.split("N")
+            var sep = "N/"
+        } else {
+            var currPosSplit = currPos.split("S")
+            var sep = "S/"
+        }
         let latStr = currPosSplit[0]
         let lonStr = currPosSplit[1]
-        currPos = latStr + "N/" + lonStr
+        currPos = latStr + sep + lonStr
         let GROUNDSPEED = SimVar.GetSimVarValue("GPS GROUND SPEED", "Meters per second") || "0";
         let THDG = SimVar.GetSimVarValue("GPS GROUND TRUE HEADING", "radians") || "000";
         let TTRK = SimVar.GetSimVarValue("GPS GROUND MAGNETIC TRACK", "radians") || "000";
@@ -17,6 +23,7 @@ class CDUIRSStatusFrozen {
         var hours = Math.floor(UTC_SECONDS / 3600) || 0
         var minutes = Math.floor(UTC_SECONDS % 3600 / 60) || 0
         var hhmm = `${hours.toString().padStart(2, "0") || "00"}${minutes.toString().padStart(2, "0") || "00"}`
+
         mcdu.setTemplate([
             [`IRS${index} FROZEN AT ${hhmm}`],
             ["POSITION"],
