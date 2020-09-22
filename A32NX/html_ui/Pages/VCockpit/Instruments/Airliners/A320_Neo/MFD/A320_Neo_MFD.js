@@ -128,8 +128,8 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
          * TODO: Seperate both MFD screens, currently if the FO changes its screen, it also tests the screen for the captain and vice versa
          **/
              
-        let selfTestCurrentKnobValueFO = SimVar.GetSimVarValue("LIGHT POTENTIOMETER:21", "number");
-        let selfTestCurrentKnobValueCAP = SimVar.GetSimVarValue("LIGHT POTENTIOMETER:19", "number");
+        let selfTestCurrentKnobValueFO = SimVar.GetSimVarValue("LIGHT POTENTIOMETER:91", "number");
+        let selfTestCurrentKnobValueCAP = SimVar.GetSimVarValue("LIGHT POTENTIOMETER:89", "number");
 
         const FOKnobChanged = (selfTestCurrentKnobValueFO >= 0.1 && this.selfTestLastKnobValueFO < 0.1);
         const CAPKnobChanged = (selfTestCurrentKnobValueCAP >= 0.1 && this.selfTestLastKnobValueCAP < 0.1);

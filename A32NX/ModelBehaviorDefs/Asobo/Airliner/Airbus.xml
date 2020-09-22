@@ -1241,7 +1241,7 @@
 </Template>
 
 <Template Name="ASOBO_AIRLINER_SIGNS_LIGHT_Template">
-	<UseTemplate Name="ASOBO_GT_Push_Button_Airliner">
+	<UseTemplate Name="ASOBO_GT_Push_Button_Airliner_Dummy">
 		<SEQ1_EMISSIVE_CODE>0</SEQ1_EMISSIVE_CODE>
 		<SEQ2_EMISSIVE_CODE>(L:XMLVAR_SWITCH_OVHD_INTLT_EMEREXIT_Position) 2 == (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or</SEQ2_EMISSIVE_CODE>
 	</UseTemplate>
@@ -1476,4 +1476,69 @@
 		<SEQ1_EMISSIVE_CODE>(L:A32NX_COCKPIT_DOOR_LOCKED, Bool) 0 == (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or</SEQ1_EMISSIVE_CODE>
 		<SEQ2_EMISSIVE_CODE>(L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 ==</SEQ2_EMISSIVE_CODE>
 	</UseTemplate>
+</Template>
+
+<Template Name="A32NX_ENGINE_MODE_SELECTOR_TEMPLATE">
+    <DefaultTemplateParameters>
+        <ENGINE_COUNT>2</ENGINE_COUNT>
+    </DefaultTemplateParameters>
+    <UseTemplate Name="A32NX_ENGINE_MODE_SELECTOR_SUBTEMPLATE">
+        <ENGINE_CURRENT>#ENGINE_COUNT#</ENGINE_CURRENT>
+    </UseTemplate>
+</Template>
+
+<Template Name="A32NX_ENGINE_MODE_SELECTOR_SUBTEMPLATE">
+    <DefaultTemplateParameters>
+        <NODE_ID>ENGINE_Switch_Engine_Mode</NODE_ID>
+        <ANIM_NAME>ENGINE_Switch_Engine_Mode</ANIM_NAME>
+        <PART_ID>ENGINE_Switch_Engine_Mode</PART_ID>
+        <SWITCH_DIRECTION>Horizontal</SWITCH_DIRECTION>
+        <ARROW_TYPE>Curved</ARROW_TYPE>
+        <CODE_POS_1></CODE_POS_1>
+        <CODE_POS_2></CODE_POS_2>
+        <SWITCH_POSITION_TYPE>L</SWITCH_POSITION_TYPE>
+        <SWITCH_POSITION_VAR>XMLVAR_ENG_MODE_SEL</SWITCH_POSITION_VAR>
+        <STATE0_TEST>1</STATE0_TEST>
+        <STATE1_TEST>1</STATE1_TEST>
+        <STATE2_TEST>1</STATE2_TEST>
+        <WWISE_EVENT>engine_mode_switch</WWISE_EVENT>
+    </DefaultTemplateParameters>
+    <Condition>
+        <Test>
+            <Greater>
+                <Value>ENGINE_CURRENT</Value>
+                <Number>0</Number>
+            </Greater>
+        </Test>
+        <True>
+            <UseTemplate Name="A32NX_ENGINE_MODE_SELECTOR_SUBTEMPLATE">
+                <CODE_POS_1>
+                    1 (&gt;K:TURBINE_IGNITION_SWITCH_SET#ENGINE_CURRENT#)
+                    #CODE_POS_1#
+                </CODE_POS_1>
+                <CODE_POS_2>
+                    2 (&gt;K:TURBINE_IGNITION_SWITCH_SET#ENGINE_CURRENT#)
+                    #CODE_POS_2#
+                </CODE_POS_2>
+
+                <STATE0_TEST> (A:TURB ENG IGNITION SWITCH EX1:#ENGINE_CURRENT#, Enum) 0 == #STATE0_TEST# and</STATE0_TEST>
+                <STATE1_TEST> (A:TURB ENG IGNITION SWITCH EX1:#ENGINE_CURRENT#, Enum) 1 == #STATE1_TEST# and</STATE1_TEST>
+                <STATE2_TEST> (A:TURB ENG IGNITION SWITCH EX1:#ENGINE_CURRENT#, Enum) 2 == #STATE2_TEST# and</STATE2_TEST>
+                <ENGINE_CURRENT Process="Int">#ENGINE_CURRENT# 1 -</ENGINE_CURRENT>
+            </UseTemplate>
+        </True>
+        <False>
+            <Component ID="#NODE_ID#" Node="#NODE_ID#">
+                <UseTemplate Name="ASOBO_GT_Switch_3States">
+                    <CODE_POS_0>
+                        0 (&gt;K:TURBINE_IGNITION_SWITCH_SET)
+                    </CODE_POS_0>
+                    <CODE_POS_2>
+                        #CODE_POS_2#
+                        (&gt;H:A320_Neo_EICAS_2_Ignition_Start)
+                    </CODE_POS_2>
+                </UseTemplate>
+            </Component>
+        </False>
+    </Condition>
 </Template>

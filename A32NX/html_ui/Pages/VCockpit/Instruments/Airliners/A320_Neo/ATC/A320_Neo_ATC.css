@@ -19,7 +19,8 @@
   width: 100%;
   height: 100%; }
   #Electricity[state=off] {
-    display: none; }
+    display: none; 
+background-color: black;}
 
 @font-face {
   font-family: "Roboto";
@@ -50,15 +51,17 @@ a320-neo-atc {
   height: 100%;
   position: relative;
   overflow: hidden;
-  background-color: black; }
+  border: 10px solid rgba(25, 40, 58, 0.219);
+  padding: 18px;
+  background-clip:content-box; }
   a320-neo-atc svg {
     width: 100%;
     height: 100%; }
   a320-neo-atc text {
     font-family: Digital;
-    font-size: 110px;
+    font-size: 80px;
     text-anchor: end;
-    fill: #985d1c;
+    fill: #5f482e;
     letter-spacing: 22px;
     alignment-baseline: central; }
   a320-neo-atc #Content {
@@ -66,5 +69,6 @@ a320-neo-atc {
     width: 100%;
     height: 100%;
     left: 0%;
-    top: 0%; }
+    top: 0%;
+    background-color: rgba(39, 10, 43, 0.548); }
 
