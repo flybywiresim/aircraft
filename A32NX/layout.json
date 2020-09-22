@@ -76,11 +76,6 @@
             "date": 132451088359260752
         },
         {
-            "path": "effects/LIGHT_A32NX_StrobeDouble.fx",
-            "size": 2486,
-            "date": 132450386319971728
-        },
-        {
             "path": "effects/LIGHT_A32NX_TakeOff.fx",
             "size": 1284,
             "date": 132451967996896460
@@ -733,7 +728,7 @@
         {
             "path": "SimObjects/AirPlanes/Asobo_A320_NEO/systems.cfg",
             "size": 19082,
-            "date": 132451996166835642
+            "date": 132452180470339928
         },
         {
             "path": "SimObjects/AirPlanes/Asobo_A320_NEO/taxi.flt",
