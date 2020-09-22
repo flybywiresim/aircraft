@@ -64,6 +64,7 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         this.ApuAboveThresholdTimer = -1; // MODIFIED
         this.MainEngineStarterOffTimer = -1;
         this.CrzCondTimer = 60;
+        this.PrevFailPage = -1;
 
         this.topSelfTestDiv = this.querySelector("#TopSelfTest");
         this.topSelfTestTimer = -1;
@@ -83,16 +84,16 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         this.changePage("DOOR"); // This should get the ECAM into the "unselected" state
 
         SimVar.SetSimVarValue("LIGHT POTENTIOMETER:7","FLOAT64",0);
-        SimVar.SetSimVarValue("LIGHT POTENTIOMETER:14","FLOAT64",0);
-        SimVar.SetSimVarValue("LIGHT POTENTIOMETER:15","FLOAT64",0);
-        SimVar.SetSimVarValue("LIGHT POTENTIOMETER:16","FLOAT64",0);
-        SimVar.SetSimVarValue("LIGHT POTENTIOMETER:17","FLOAT64",0.1);
-        SimVar.SetSimVarValue("LIGHT POTENTIOMETER:18","FLOAT64",0.1);
-        SimVar.SetSimVarValue("LIGHT POTENTIOMETER:19","FLOAT64",0.1);
-        SimVar.SetSimVarValue("LIGHT POTENTIOMETER:20","FLOAT64",0.1);
-        SimVar.SetSimVarValue("LIGHT POTENTIOMETER:21","FLOAT64",0.1);
-        SimVar.SetSimVarValue("LIGHT POTENTIOMETER:22","FLOAT64",0.1);
-        SimVar.SetSimVarValue("LIGHT POTENTIOMETER:23","FLOAT64",0.1);
+        SimVar.SetSimVarValue("LIGHT POTENTIOMETER:84","FLOAT64",0);
+        SimVar.SetSimVarValue("LIGHT POTENTIOMETER:85","FLOAT64",0);
+        SimVar.SetSimVarValue("LIGHT POTENTIOMETER:86","FLOAT64",0);
+        SimVar.SetSimVarValue("LIGHT POTENTIOMETER:87","FLOAT64",0.1);
+        SimVar.SetSimVarValue("LIGHT POTENTIOMETER:88","FLOAT64",0.1);
+        SimVar.SetSimVarValue("LIGHT POTENTIOMETER:89","FLOAT64",0.1);
+        SimVar.SetSimVarValue("LIGHT POTENTIOMETER:90","FLOAT64",0.1);
+        SimVar.SetSimVarValue("LIGHT POTENTIOMETER:91","FLOAT64",0.1);
+        SimVar.SetSimVarValue("LIGHT POTENTIOMETER:92","FLOAT64",0.1);
+        SimVar.SetSimVarValue("LIGHT POTENTIOMETER:93","FLOAT64",0.1);
     }
     onUpdate() {
         const _deltaTime = this.getDeltaTime();
@@ -131,7 +132,7 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
          * Self test on top ECAM screen
          **/
 
-        let topSelfTestCurrentKnobValue = SimVar.GetSimVarValue("LIGHT POTENTIOMETER:22", "number");
+        let topSelfTestCurrentKnobValue = SimVar.GetSimVarValue("LIGHT POTENTIOMETER:92", "number");
 
         if(((topSelfTestCurrentKnobValue >= 0.1 && this.topSelfTestLastKnobValue < 0.1) || ACPowerStateChange) && isACPowerAvailable && !this.topSelfTestTimerStarted) {
             this.topSelfTestDiv.style.display = "block";
@@ -153,7 +154,7 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
          * Self test on bottom ECAM screen
          **/
 
-        let bottomSelfTestCurrentKnobValue = SimVar.GetSimVarValue("LIGHT POTENTIOMETER:23", "number");
+        let bottomSelfTestCurrentKnobValue = SimVar.GetSimVarValue("LIGHT POTENTIOMETER:93", "number");
 
         if(((bottomSelfTestCurrentKnobValue >= 0.1 && this.bottomSelfTestLastKnobValue < 0.1) || ACPowerStateChange) && isACPowerAvailable && !this.bottomSelfTestTimerStarted) {
             this.bottomSelfTestDiv.style.display = "block";
@@ -237,7 +238,7 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
             }
         } else if ((ToPowerSet || !Simplane.getIsGrounded()) && !crzCond && this.minPageIndexWhenUnselected <= 2) {
             this.pageNameWhenUnselected = "ENG";
-        } else if (crzCond && !(isGearExtended && altitude < 16000) && this.minPageIndexWhenUnselected <= 3) {
+        } else if (crzCond && !(isGearExtended && altitude < 16000)) {
             this.pageNameWhenUnselected = "CRZ";
             this.minPageIndexWhenUnselected = 3;
         } else if (isGearExtended && (altitude < 16000)) {
@@ -264,12 +265,21 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
             };
 
             this.pageNameWhenUnselected = ECAMPageIndices[sFailPage];
+
+            // Disable user selected page when new failure detected
+            if (this.PrevFailPage !== sFailPage) {
+                this.currentPage = -1;
+                SimVar.SetSimVarValue("L:XMLVAR_ECAM_CURRENT_PAGE", "number", -1);
+            }
         }
 
-        // switch page when desired page was changed
-        if (this.pageNameWhenUnselected != prevPage) {
+        // switch page when desired page was changed, or new Failure detected
+        if ((this.pageNameWhenUnselected != prevPage && this.currentPage == -1) || (this.PrevFailPage !== sFailPage)) {
             this.SwitchToPageName(this.LOWER_SCREEN_GROUP_NAME, this.pageNameWhenUnselected);
+
         }
+
+        this.PrevFailPage = sFailPage;
 
         // modification ends here
     }

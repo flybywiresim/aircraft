@@ -47,6 +47,12 @@ class NavSystem extends BaseInstrument {
             this.currFlightPlanManager.registerListener();
         }
         this.currFlightPlan = new FlightPlan(this);
+        if (typeof g_modDebugMgr != "undefined") {
+            g_modDebugMgr.AddConsole(null);
+        }
+        Include.addScript("/JS/debug.js", function () {
+            g_modDebugMgr.AddConsole(null);
+        });
     }
     disconnectedCallback() {
         super.disconnectedCallback();

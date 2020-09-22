@@ -110,13 +110,13 @@ TailhookState=0
 FoldingWingsHandle=False
 FoldingWingsState=0, 0
 Potentiometer.7=0.5
-Potentiometer.14=0.5
-Potentiometer.15=0.5
-Potentiometer.17=0.5
-Potentiometer.18=0.5
-Potentiometer.19=0.5
-Potentiometer.20=0.5
-Potentiometer.21=0.5
+Potentiometer.84=0.5
+Potentiometer.85=0.5
+Potentiometer.87=0.5
+Potentiometer.88=0.5
+Potentiometer.89=0.5
+Potentiometer.90=0.5
+Potentiometer.91=0.5
 
 [LocalVars.0]
 XMLVAR_RMP_L_On=1

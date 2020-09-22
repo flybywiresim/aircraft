@@ -45,6 +45,27 @@ class CDUAvailableArrivalsPage {
                 }
             }
             else {
+                let matchingArrivals = [];
+                if (selectedApproach) {
+                    let selectedRunway = selectedApproach.runway;
+                    for (let i = 0; i < airportInfo.arrivals.length; i++) {
+                        let arrival = airportInfo.arrivals[i];
+                        for (let j = 0; j < arrival.runwayTransitions.length; j++) {
+                            let runwayTransition = arrival.runwayTransitions[j];
+                            if (runwayTransition) {
+                                if (runwayTransition.name.indexOf(selectedRunway) != -1) {
+                                    matchingArrivals.push({ arrival: arrival, arrivalIndex: i });
+                                }
+                            }
+                        }
+                    }
+                }
+                else {
+                    for (let i = 0; i < airportInfo.arrivals.length; i++) {
+                        let arrival = airportInfo.arrivals[i];
+                        matchingArrivals.push({ arrival: arrival, arrivalIndex: i });
+                    }
+                }
                 for (let i = 0; i < 3; i++) {
                     let index = i + pageCurrent;
                     if (index === 0) {
@@ -61,15 +82,16 @@ class CDUAvailableArrivalsPage {
                     }
                     else {
                         index--;
-                        let star = airportInfo.arrivals[index];
-                        if (star) {
+                        if (matchingArrivals[index]) {
+                            let star = matchingArrivals[index].arrival;
+                            let starIndex = matchingArrivals[index].arrivalIndex;
                             let color = "blue";
-                            if (selectedStarIndex === index) {
+                            if (selectedStarIndex === starIndex) {
                                 color = "green";
                             }
                             rows[2 * i] = ["←" + star.name + "[color]" + color];
                             mcdu.onLeftInput[i + 2] = () => {
-                                mcdu.setArrivalProcIndex(index, () => {
+                                mcdu.setArrivalProcIndex(starIndex, () => {
                                     if (mcdu.flightPlanManager.getApproachIndex() > -1) {
                                         CDUAvailableArrivalsPage.ShowViasPage(mcdu, airport);
                                     }

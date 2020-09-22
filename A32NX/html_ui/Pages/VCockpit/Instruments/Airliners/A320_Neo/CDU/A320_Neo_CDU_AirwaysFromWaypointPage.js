@@ -2,7 +2,7 @@ class A320_Neo_CDU_AirwaysFromWaypointPage {
     static ShowPage(mcdu, waypoint, offset = 0, pendingAirway) {
         mcdu.clearDisplay();
         let rows = [["----"], [""], [""], [""], [""]];
-        let allRows = A320_Neo_CDU_AirwaysFromWaypointPage._GetAllRows(mcdu);
+        let allRows = A320_Neo_CDU_AirwaysFromWaypointPage._GetAllRows(mcdu, waypoint);
         let page = (2 + (Math.floor(offset / 4)));
         let pageCount = (Math.floor(allRows.length / 4) + 2);
         let rowBottomLabel = [""];
@@ -47,7 +47,7 @@ class A320_Neo_CDU_AirwaysFromWaypointPage {
                         if (value.length > 0) {
                             mcdu.clearUserInput();
                             let lastWaypoint = mcdu.flightPlanManager.getWaypoints()[mcdu.flightPlanManager.getEnRouteWaypointsLastIndex()];
-                            if (lastWaypoint.infos instanceof IntersectionInfo) {
+                            if (lastWaypoint) {
                                 let airway = lastWaypoint.infos.airways.find(a => { return a.name === value; });
                                 if (airway) {
                                     A320_Neo_CDU_AirwaysFromWaypointPage.ShowPage(mcdu, waypoint, offset, airway);
@@ -94,8 +94,9 @@ class A320_Neo_CDU_AirwaysFromWaypointPage {
             rowBottomLine
         ]);
     }
-    static _GetAllRows(fmc) {
+    static _GetAllRows(fmc, waypoint) {
         let allRows = [];
+        let doInsert = false;
         let flightPlan = fmc.flightPlanManager;
         if (flightPlan) {
             let departure = flightPlan.getDeparture();
@@ -112,12 +113,19 @@ class A320_Neo_CDU_AirwaysFromWaypointPage {
                 let wp = routeWaypoints[i];
                 let next = routeWaypoints[i + 1];
                 if (wp) {
-                    let prevAirway = IntersectionInfo.GetCommonAirway(prev, wp);
-                    if (!prevAirway) {
-                        allRows.push(["DIRECT", wp.ident]);
+                    if (doInsert) {
+                        let prevAirway = IntersectionInfo.GetCommonAirway(prev, wp);
+                        if (!prevAirway) {
+                            allRows.push(["DIRECT", wp.ident]);
+                        }
+                        else {
+                            allRows.push([prevAirway.name, wp.ident]);
+                        }
                     }
                     else {
-                        allRows.push([prevAirway.name, wp.ident]);
+                        if (wp.icao === waypoint.icao) {
+                            doInsert = true;
+                        }
                     }
                 }
             }
