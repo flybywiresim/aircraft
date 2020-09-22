@@ -1,16 +1,20 @@
 class CDUPosFrozen {
     static ShowPage(mcdu, currPos) {
         mcdu.clearDisplay();
+        var UTC_SECONDS  = Math.floor(SimVar.GetGlobalVarValue("ZULU TIME", "seconds"));
+        var hours = Math.floor(UTC_SECONDS / 3600) || 0
+        var minutes = Math.floor(UTC_SECONDS % 3600 / 60) || 0
+        var hhmm = `${hours.toString().padStart(2, "0") || "00"}${minutes.toString().padStart(2, "0") || "00"}`
         mcdu.setTemplate([
-            [`POSITION FROZEN`],
+            [`POSITION FROZEN AT ${hhmm}`],
             [""],
-            ["FMGC1", `${currPos}[color]green`],
+            ["FMS1", `${currPos}[color]green`],
             ["", "", "3IRS/GPS"],
-            ["FMGC2", `${currPos}[color]green`],
+            ["FMS2", `${currPos}[color]green`],
             ["", "", "3IRS/GPS"],
             ["GPIRS", `${currPos}[color]green`],
             [""],
-            ["MIXIRS", `${currPos}[color]green`],
+            ["MIX IRS", `${currPos}[color]green`],
             ["IRS1", "IRS3", "IRS2"],
             ["NAV 0.0[color]green", "NAV 0.0[color]green", "NAV 0.0[color]green"],
             ["", "SEL"],

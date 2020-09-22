@@ -1,5 +1,6 @@
-class CDUIRSStatus {
-    static ShowPage(mcdu, index, prev_wind_dir) {
+class CDUIRSStatusFrozen {
+    static ShowPage(mcdu, index, wind_dir) {
+        mcdu.clearDisplay()
         let currPos = new LatLong(SimVar.GetSimVarValue("GPS POSITION LAT", "degree latitude"),
                                   SimVar.GetSimVarValue("GPS POSITION LON", "degree longitude")).toShortDegreeString();
         if (currPos.includes("N")) {
@@ -16,27 +17,14 @@ class CDUIRSStatus {
         let THDG = SimVar.GetSimVarValue("GPS GROUND TRUE HEADING", "radians") || "000";
         let TTRK = SimVar.GetSimVarValue("GPS GROUND MAGNETIC TRACK", "radians") || "000";
         let MHDG = SimVar.GetSimVarValue("GPS GROUND TRUE TRACK", "radians") || "000";
-        let WIND_VELOCITY = SimVar.GetSimVarValue("AMBIENT WIND VELOCITY", "Knots") || "00"
-        // wind direction smoothing like A32NX_NDInfo.js:setWind()
-        let wind_dir = Math.round(Simplane.getWindDirection())
-        if (typeof(prev_wind_dir) == "undefined") {
-            prev_wind_dir = wind_dir
-        }
-        let startAngle = prev_wind_dir
-        let endAngle = wind_dir
-        let delta = endAngle - startAngle
-        if (delta > 180) {
-            startAngle += 360
-        }
-        else if (delta < -180) {
-            endAngle += 360
-        }
-        let smoothedAngle = Utils.SmoothSin(startAngle, endAngle, 0.25, mcdu._deltaTime / 1000)
-        wind_dir = smoothedAngle % 360
-        
-        mcdu.clearDisplay()
+        let WIND_VELOCITY = SimVar.GetSimVarValue("AMBIENT WIND VELOCITY", "Knots") || "00";
+        var UTC_SECONDS  = Math.floor(SimVar.GetGlobalVarValue("ZULU TIME", "seconds"));
+        var hours = Math.floor(UTC_SECONDS / 3600) || 0
+        var minutes = Math.floor(UTC_SECONDS % 3600 / 60) || 0
+        var hhmm = `${hours.toString().padStart(2, "0") || "00"}${minutes.toString().padStart(2, "0") || "00"}`
+
         mcdu.setTemplate([
-            [`IRS${index}`],
+            [`IRS${index} FROZEN AT ${hhmm}`],
             ["POSITION"],
             [`${currPos}[color]green`],
             ["TTRK", "GS"],
@@ -48,24 +36,20 @@ class CDUIRSStatus {
             ["GPIRS POSITION"],
             [`${currPos}[color]green`],
             ["", ""],
-            ["←FREEZE[color]blue", `${index<3 ? "NEXT IRS>" : "RETURN>"}`]
+            ["←UNFREEZE[color]blue", `${index<3 ? "NEXT IRS>" : "RETURN>"}`]
         ])
 
         mcdu.onLeftInput[5] = () => {
-            CDUIRSStatusFrozen.ShowPage(mcdu, index, wind_dir);
+            CDUIRSStatus.ShowPage(mcdu, index)
         }
 
         mcdu.onRightInput[5] = () => {
-            if (index > 2) {
-                CDUIRSMonitor.ShowPage(mcdu);
-            } else {
-                this.ShowPage(mcdu, index+1)
+            if(index>2) {
+                CDUIRSMonitor.ShowPage(mcdu)
+            }
+            else {
+                CDUIRSStatus.ShowPage(mcdu, index+1)
             }
         }
-
-        mcdu.refreshPageCallback = () => {
-            CDUIRSStatus.ShowPage(mcdu, index, wind_dir);
-        }
-        SimVar.SetSimVarValue("L:FMC_UPDATE_CURRENT_PAGE", "number", 1);
     }
 }
