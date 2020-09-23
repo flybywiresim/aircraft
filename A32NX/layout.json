@@ -122,8 +122,13 @@
         },
         {
             "path": "html_ui/Pages/A32NX_Core/A32NX_Core.js",
-            "size": 420,
-            "date": 132451967997076624
+            "size": 1172,
+            "date": 132453276200509384
+        },
+        {
+            "path": "html_ui/Pages/A32NX_Core/A32NX_Electricity.js",
+            "size": 851,
+            "date": 132453276200519392
         },
         {
             "path": "html_ui/Pages/A32NX_Core/README.md",
@@ -352,18 +357,18 @@
         },
         {
             "path": "html_ui/Pages/VCockpit/Instruments/Airliners/A320_Neo/EICAS/A320_Neo_EICAS.css",
-            "size": 6751,
-            "date": 132452949243713252
+            "size": 6749,
+            "date": 132452953290189082
         },
         {
             "path": "html_ui/Pages/VCockpit/Instruments/Airliners/A320_Neo/EICAS/A320_Neo_EICAS.html",
-            "size": 7394,
-            "date": 132452548275284772
+            "size": 7471,
+            "date": 132453276200529404
         },
         {
             "path": "html_ui/Pages/VCockpit/Instruments/Airliners/A320_Neo/EICAS/A320_Neo_EICAS.js",
-            "size": 19508,
-            "date": 132451967997276806
+            "size": 19582,
+            "date": 132453276200529404
         },
         {
             "path": "html_ui/Pages/VCockpit/Instruments/Airliners/A320_Neo/EICAS/A32NX_LocalVarUpdater.js",
@@ -587,8 +592,8 @@
         },
         {
             "path": "html_ui/Pages/VCockpit/Instruments/Airliners/A320_Neo/MFD/A320_Neo_MFD.js",
-            "size": 26864,
-            "date": 132451967997466980
+            "size": 27032,
+            "date": 132452953290058956
         },
         {
             "path": "html_ui/Pages/VCockpit/Instruments/Airliners/A320_Neo/MFD/A32NX_NDCompass.js",
@@ -732,8 +737,8 @@
         },
         {
             "path": "SimObjects/AirPlanes/Asobo_A320_NEO/systems.cfg",
-            "size": 19082,
-            "date": 132452950269960432
+            "size": 19208,
+            "date": 132453276200499374
         },
         {
             "path": "SimObjects/AirPlanes/Asobo_A320_NEO/taxi.flt",

@@ -190,6 +190,9 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
         var mapMode = SimVar.GetSimVarValue("L:A320_Neo_MFD_NAV_MODE", "number");
         var mapRange = SimVar.GetSimVarValue("L:A320_Neo_MFD_Range", "number");
         var shouldShowWeather = wxRadarOn && wxRadarMode != 3;
+		
+		//Added blend mode changes here to make the blend effect for both Terrain and Weather radar.
+		this.map.instrument.bingMap.m_imgElement.style.mixBlendMode = 'lighten';
         if (this.wxRadarOn != wxRadarOn || this.terrainOn != terrainOn || this.wxRadarMode != wxRadarMode || this.mapMode != mapMode) {
             this.wxRadarOn = wxRadarOn;
             this.wxRadarMode = wxRadarMode;
@@ -244,10 +247,12 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
         // the BingMap will be hidden.
         var isTerrainVisible = this.map.instrument.mapConfigId == 1;
         var isWeatherVisible = !terrainOn && shouldShowWeather;
-        if (isTerrainVisible || isWeatherVisible) {
-            this.setShowBingMap("true");
-        } else {
-            this.setShowBingMap("false");
+        if (isTerrainVisible || isWeatherVisible) {			
+            this.setShowBingMap("true");			
+        } else {			
+			//For some reason, the below function is not hiding the bing map even though we pass "false" value for the show-bing-map argument.
+			//After commenting the below function, the terrain/weather radar is properly disappearing when turned off.
+            //this.setShowBingMap("false");			
         }
 
         if (this.mapRange != mapRange) {
@@ -506,8 +511,10 @@ class A320_Neo_MFD_Map extends MapInstrumentElement {
     showWeather() {
         this.instrument.showWeatherWithGPS(EWeatherRadar.HORIZONTAL, Math.PI * 2.0);
         this.instrument.setBingMapStyle("5.5%", "5.5%", "89%", "89%");
-        // This makes it so the black background blends in with the backlight background
-        this.instrument.bingMap.m_imgElement.style.mixBlendMode = 'lighten';
+        // This makes it so the black background blends in with the backlight background.
+		    // Moved the below line to a common location above, just to make it consistent for both terrain/weather radar.
+		
+        //this.instrument.bingMap.m_imgElement.style.mixBlendMode = 'lighten';
     }
     hideWeather() {
         if (this.instrument.getWeather() != EWeatherRadar.OFF) {
