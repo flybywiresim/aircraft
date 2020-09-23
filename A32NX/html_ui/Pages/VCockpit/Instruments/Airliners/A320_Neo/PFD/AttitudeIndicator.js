@@ -24,7 +24,8 @@ class Jet_PFD_AttitudeIndicator extends HTMLElement {
             "radio_altitude",
             "decision_height",
             "compass",
-            "fdActive"
+            "show_selected_hdg",
+            "ap_hdg"
         ];
     }
     static get observedAttributes() {
@@ -74,6 +75,7 @@ class Jet_PFD_AttitudeIndicator extends HTMLElement {
         this.horizonHeight = 300;
         this.attitudeHeight = 250;
         this.horizonToAttitudeRatio = this.attitudeHeight / this.horizonHeight;
+        const seperatorColor = "#e0e0e0";
 
         {
             this.horizon_root = document.createElementNS(Avionics.SVG.NS, "svg");
@@ -105,7 +107,7 @@ class Jet_PFD_AttitudeIndicator extends HTMLElement {
             this.horizonBottom.setAttribute("height", "3000");
             this.bottomPart.appendChild(this.horizonBottom);
             let separator = document.createElementNS(Avionics.SVG.NS, "rect");
-            separator.setAttribute("fill", "#e0e0e0");
+            separator.setAttribute("fill", seperatorColor);
             separator.setAttribute("x", "-1500");
             separator.setAttribute("y", "0");
             separator.setAttribute("width", "3000");
@@ -113,16 +115,16 @@ class Jet_PFD_AttitudeIndicator extends HTMLElement {
             this.bottomPart.appendChild(separator);
         }
         {
-            const primaryGraduations = 6;
+            const primaryGraduations = 7;
             const HSIndicatorWidth = 550;
             const horizonWidth = 400;
 
-            // 50 is from HSIndicator.js
+            // 50 is from HSIndicator.js, multiply by 2 as we only want primary ticks, not secondary
             // use scaling factor with horizon and HS indicator width to match them up
-            this.graduationSpacing = 100 * (horizonWidth / HSIndicatorWidth);
+            this.graduationSpacing = 50 * 2 * (horizonWidth / HSIndicatorWidth);
             this.compassInterval = 10; // 10 Degrees between ticks
             this.compassTicks = document.createElementNS(Avionics.SVG.NS, "g");
-            this.compassTicks.setAttribute("y", "1");
+            this.compassTicks.setAttribute("y", "0");
             this.bottomPart.appendChild(this.compassTicks);
             
             // Shift over by 3 ticks to make x = 0 the center of the horizon
@@ -134,16 +136,17 @@ class Jet_PFD_AttitudeIndicator extends HTMLElement {
                 graduation.setAttribute("width", "3");
                 graduation.setAttribute("x", `${(i * this.graduationSpacing) - centerDelta}`);
                 graduation.setAttribute("y", "0");
-                graduation.setAttribute("fill", "#e0e0e0");
+                graduation.setAttribute("fill", seperatorColor);
                 this.compassTicks.appendChild(graduation);
             }
 
+            // Tick on top of seperator
             this.compassSelectedHeading = document.createElementNS(Avionics.SVG.NS, "rect");
             this.compassSelectedHeading.setAttribute("width", "3");
             this.compassSelectedHeading.setAttribute("height", "33");
             this.compassSelectedHeading.setAttribute("y", "-33");
-            this.compassSelectedHeading.setAttribute("x", "-33");
-            this.compassSelectedHeading.setAttribute("fill", "#e0e0e0");
+            this.compassSelectedHeading.setAttribute("x", "0");
+            this.compassSelectedHeading.setAttribute("fill", "#00F2FF");
             this.bottomPart.appendChild(this.compassSelectedHeading);
         }
         {
@@ -1343,7 +1346,6 @@ class Jet_PFD_AttitudeIndicator extends HTMLElement {
         this.applyAttributes();
     }
     attributeChangedCallback(name, oldValue, newValue) {
-        console.log(name);
         if (oldValue == newValue)
             return;
         switch (name) {
@@ -1386,9 +1388,11 @@ class Jet_PFD_AttitudeIndicator extends HTMLElement {
             case "compass":
                 this.compass = parseFloat(newValue);
                 break;
-            case "fdActive":
-                console.log(parseInt(newValue));
-                this.fdActive = parseInt(newValue) == 1;
+            case "show_selected_hdg":
+                this.showSelectedHdg = parseInt(newValue) == 1;
+                break;
+            case "ap_hdg":
+                this.apHdg = parseFloat(newValue);
                 break;
             default:
                 return;
@@ -1423,11 +1427,17 @@ class Jet_PFD_AttitudeIndicator extends HTMLElement {
         }
         if (this.compassTicks) {
             const scalar = (this.compass % this.compassInterval) / this.compassInterval;
-            const delta = scalar * this.graduationSpacing + 1;
-            this.compassTicks.setAttribute("transform", `translate(${-delta} 0)`);
+            const offset = scalar * this.graduationSpacing + 1;
+            this.compassTicks.setAttribute("transform", `translate(${-offset} 0)`);
         }
         if (this.compassSelectedHeading) {
-            this.compassSelectedHeading.setAttribute("opacity", this.fdActive ? "1" : "0");
+            let hdgDiff = this.apHdg - this.compass;
+            if (hdgDiff > 180) hdgDiff -= 360;
+            if (hdgDiff < -180) hdgDiff += 360;
+
+            const offset = (hdgDiff / this.compassInterval) * this.graduationSpacing;
+            this.compassSelectedHeading.setAttribute("transform", `translate(${offset - 1} 0)`);
+            this.compassSelectedHeading.setAttribute("opacity", this.showSelectedHdg ? "1" : "0");
         }
         if (this.cj4_FlightDirector != null) {
             if (this.cj4_FlightDirectorActive) {
