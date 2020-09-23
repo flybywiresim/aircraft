@@ -506,6 +506,8 @@ class A320_Neo_MFD_Map extends MapInstrumentElement {
     showWeather() {
         this.instrument.showWeatherWithGPS(EWeatherRadar.HORIZONTAL, Math.PI * 2.0);
         this.instrument.setBingMapStyle("5.5%", "5.5%", "89%", "89%");
+        // This makes it so the black background blends in with the backlight background
+        this.instrument.bingMap.m_imgElement.style.mixBlendMode = 'lighten';
     }
     hideWeather() {
         if (this.instrument.getWeather() != EWeatherRadar.OFF) {
