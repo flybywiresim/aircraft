@@ -9,6 +9,7 @@ class CDUInitPage {
         let long = "-----.--"; //Ref: Thales FM2
         let costIndex = "---";
         let cruiseFlTemp = "----- /---°";
+        let cruiseEntered = false;
 
         if (mcdu.flightPlanManager.getOrigin() && mcdu.flightPlanManager.getOrigin().ident) {
             if (mcdu.flightPlanManager.getDestination() && mcdu.flightPlanManager.getDestination().ident) {
@@ -16,12 +17,18 @@ class CDUInitPage {
                 if (coRoute.includes("□□□□□□□□□□[color]red")) coRoute = "NONE[color]blue"; //Check if coroute exists
 
                 //Need code to set the SimVarValue if user inputs FlNo
-                if (SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string", "FMC")) flightNo = SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string", "FMC") + "[color]blue";
+                if (SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string", "FMC")) {
+                    flightNo = SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string", "FMC") + "[color]blue";
+                }
 
                 console.log(mcdu.flightPlanManager.getOrigin()); //Is this needed?
-                if (mcdu.flightPlanManager.getOrigin() && mcdu.flightPlanManager.getOrigin().infos && mcdu.flightPlanManager.getOrigin().infos.coordinates) {
-                    lat = mcdu.flightPlanManager.getOrigin().infos.coordinates.latToDegreeString() + "[color]blue";
-                    long = mcdu.flightPlanManager.getOrigin().infos.coordinates.longToDegreeString() + "[color]blue";
+                if (mcdu.flightPlanManager.getOrigin().infos.coordinates) {
+                    // Credit to Externoak for proper LAT and LONG formatting
+                    const airportCoordinates = mcdu.flightPlanManager.getOrigin().infos.coordinates;
+                    const originAirportLat = this.ConvertDDToDMS(airportCoordinates['lat'], false);
+                    const originAirportLon = this.ConvertDDToDMS(airportCoordinates['long'], true);
+                    lat = originAirportLat['deg'] + '°' + originAirportLat['min'] + '.' + Math.ceil(Number(originAirportLat['sec'] / 10)) + originAirportLat['dir'] + "[color]blue";
+                    long = originAirportLon['deg'] + '°' + originAirportLon['min'] + '.' + Math.ceil(Number(originAirportLon['sec'] / 10)) + originAirportLon['dir'] + "[color]blue";
                 }
 
                 costIndex = "□□□[color]red";
@@ -37,14 +44,18 @@ class CDUInitPage {
                 };
 
                 cruiseFlTemp = "□□□□□ /□□□°[color]red";
-                if (mcdu.cruiseFlightLevel) {
-                    let temp = mcdu.tempCurve.evaluate(mcdu.cruiseFlightLevel);
-                    if (isFinite(mcdu.cruiseTemperature)) {
-                        temp = mcdu.cruiseTemperature;
+                if (cruiseEntered) { //This is done so pilot enters a FL first, rather than using the computed one
+                    if (mcdu.cruiseFlightLevel) {
+                        let temp = mcdu.tempCurve.evaluate(mcdu.cruiseFlightLevel);
+                        if (isFinite(mcdu.cruiseTemperature)) {
+                            temp = mcdu.cruiseTemperature;
+                        }
+                        cruiseFlTemp = "FL" + mcdu.cruiseFlightLevel.toFixed(0).padStart(3, "0") + " /" + temp.toFixed(0) + "°[color]blue";
                     }
-                    cruiseFlTemp = "FL" + mcdu.cruiseFlightLevel.toFixed(0).padStart(3, "0") + " /" + temp.toFixed(0) + "°[color]blue";
                 }
+
                 mcdu.onLeftInput[5] = () => {
+                    cruiseEntered = true;
                     let value = mcdu.inOut;
                     mcdu.clearUserInput();
                     if (mcdu.setCruiseFlightLevelAndTemperature(value)) {
@@ -52,16 +63,20 @@ class CDUInitPage {
                     }
                 };
 
-                // Since CoRte isn't implemented, AltDest defaults to None Ref: FCOM 4.03.20
+                // Since CoRte isn't implemented, AltDest defaults to None Ref: FCOM 4.03.20 *Old Version
                 altDest = "NONE[color]blue";
                 if (mcdu.altDestination) {
                     altDest = mcdu.altDestination.ident + "[color]blue";
                 }
                 mcdu.onLeftInput[1] = async () => {
                     let value = mcdu.inOut;
-                    mcdu.clearUserInput();
-                    if (await mcdu.tryUpdateAltDestination(value)) {
-                        CDUInitPage.ShowPage1(mcdu);
+                    if (altDest.includes("NONE") || value) {
+                        mcdu.clearUserInput();
+                        if (await mcdu.tryUpdateAltDestination(value)) {
+                            CDUInitPage.ShowPage1(mcdu);
+                        }
+                    } else {
+                        CDUAvailableFlightPlanPage.ShowPage(mcdu);
                     }
                 };
             }
@@ -126,7 +141,7 @@ class CDUInitPage {
         // Enable skewing of the LAT
         //* Skewing doesn't actually work
         let latText = "LAT";
-        if (mcdu._latSelected) latText = "LAT ⇅";
+        if (mcdu._latSelected) latText = "LAT ↑↓";
         mcdu.onLeftInput[3] = () => {
             mcdu._latSelected = true;
             mcdu._lonSelected = false;
@@ -136,7 +151,7 @@ class CDUInitPage {
         // Enable Skewing of the LON
         //* Skewing doesn't actually work
         let lonText = "LON";
-        if (mcdu._lonSelected) lonText = "LON ⇅";
+        if (mcdu._lonSelected) lonText = "LON ↑↓";
         mcdu.onRightInput[3] = () => {
             mcdu._lonSelected = true;
             mcdu._latSelected = false;
@@ -144,7 +159,7 @@ class CDUInitPage {
         };
 
         mcdu.setTemplate([
-            ["INIT ⇄"],
+            ["INIT ⇆(1) ⮂(2) ⮀(3)"],
             ["CO RTE", "FROM/TO"],
             [coRoute, fromTo],
             ["ALTN/CO RTE"],
@@ -186,9 +201,10 @@ class CDUInitPage {
 
         let initBTitle = "INIT ⇄";
 
+        // TODO prevent sim from entering ZFWCG until pilot enters
         let zfwColor = "[color]red";
         let zfwCell = "□□.□";
-        let zfwCgCell = " /□□.□";
+        let zfwCgCell = " □□.□";
         if (isFinite(mcdu.zeroFuelWeight)) {
             zfwCell = mcdu.zeroFuelWeight.toFixed(1);
             zfwColor = "[color]blue";
@@ -207,7 +223,7 @@ class CDUInitPage {
                     (isFinite(mcdu.zeroFuelWeight) ? mcdu.zeroFuelWeight.toFixed(1) : "") +
                     "/" +
                     (isFinite(mcdu.zeroFuelWeightMassCenter) ? mcdu.zeroFuelWeightMassCenter.toFixed(1) : "");
-            } else if (await mcdu.trySetZeroFuelWeightZFWCG(value)) {
+            } else if (await mcdu.tryParseZeroFuelWeightZFWCG(value)) {
                 CDUInitPage.updateTowIfNeeded(mcdu);
                 CDUInitPage.ShowPage2(mcdu);
             }
@@ -328,8 +344,8 @@ class CDUInitPage {
 
         mcdu.setTemplate([
             [initBTitle],
-            ["TAXI", "ZFW /ZFWCG"],
-            [taxiFuelCell + "[color]blue", zfwCell + zfwCgCell + zfwColor],
+            ["TAXI", "ZFWCG /ZFW"], // Reference Thales FM2
+            [taxiFuelCell + "[color]blue", zfwCgCell + "/" + zfwCell + zfwColor],
             ["TRIP/TIME", "BLOCK"],
             [tripWeightCell + " /" + tripTimeCell + tripColor, blockFuel],
             ["RTE RSV /%"],
@@ -347,6 +363,31 @@ class CDUInitPage {
         mcdu.onNextPage = () => {
             CDUInitPage.ShowPage1(mcdu);
         };
+    }
+
+    // Credits to Externoak for this
+    static ConvertDDToDMS(deg, lng) {
+        // converts decimal degrees to degrees minutes seconds
+        const M=0|(deg%1)*60e7;
+        let degree;
+        if (lng) {
+            degree = this.pad(0 | (deg < 0 ? deg = -deg:deg), 3, 0)
+        } else {
+            degree = 0 | (deg < 0 ? deg = -deg:deg);
+        }
+        return {
+            dir : deg<0 ? lng ? 'W':'S' : lng ? 'E':'N',
+            deg : degree,
+            min : Math.abs(0|M/1e7),
+            sec : Math.abs((0|M/1e6%1*6e4)/100)
+        };
+    }
+
+    // Credits to Externoak for this
+    static pad(n, width, filler) {
+        // returns value with size 3, i.e n=1 width=3 filler=. -> "..1"
+        n = n + '';
+        return n.length >= width ? n : new Array(width - n.length + 1).join(filler) + n;
     }
 }
 //# sourceMappingURL=A320_Neo_CDU_InitPage.js.map

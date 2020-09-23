@@ -91,6 +91,31 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             g_modDebugMgr.AddConsole(null);
         });
     }
+
+    tryParseZeroFuelWeightZFWCG(s) {
+        let zfw = 0;
+        let zfwcg = 0;
+        if (s) {
+            if (s.includes("/")) {
+                let sSplit = s.split("/")
+                zfw = parseFloat(sSplit[1])
+                zfwcg = parseFloat(sSplit[0])
+            } else {
+                zfwcg = parseFloat(s)
+            }
+        }
+        if (zfw > 0 && zfwcg > 0) {
+            return this.trySetZeroFuelWeightZFWCG(zfw + "/" + zfwcg)
+        } else if (zfw > 0) {
+            this.setZeroFuelWeight(zfw.toString())
+            return true
+        } else if (zfwcg > 0) {
+            this.setZeroFuelCG(zfwcg.toString())
+            return true
+        }
+        this.showErrorMessage(this.defaultInputErrorMessage)
+        return false
+    }
     trySetFlapsTHS(s) {
         if (s) {
             let validEntry = false;
