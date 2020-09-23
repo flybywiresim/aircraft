@@ -12,9 +12,6 @@ class A320_Neo_PFD extends BaseAirliners {
                 new A320_Neo_PFD_MainPage()
             ]),
         ];
-        Include.addScript("/JS/debug.js", function () {
-            g_modDebugMgr.AddConsole(null);
-        });
         this.maxUpdateBudget = 12;
     }
     disconnectedCallback() {
