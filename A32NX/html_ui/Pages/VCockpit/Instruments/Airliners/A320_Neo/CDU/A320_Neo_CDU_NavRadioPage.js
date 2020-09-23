@@ -22,14 +22,14 @@ class CDUNavRadioPage {
                 if (isFinite(numValue) && numValue >= 108 && numValue <= 117.95 && RadioNav.isHz50Compliant(numValue)) {
                     mcdu.vor1Frequency = numValue;
                     if (mcdu.isRadioNavActive()) {
-                        requestAnimationFrame(() => {
+                        mcdu.requestCall(() => {
                             CDUNavRadioPage.ShowPage(mcdu);
                         });
                     }
                     else {
                         mcdu.radioNav.setVORStandbyFrequency(1, numValue).then(() => {
                             mcdu.radioNav.swapVORFrequencies(1);
-                            requestAnimationFrame(() => {
+                            mcdu.requestCall(() => {
                                 CDUNavRadioPage.ShowPage(mcdu);
                             });
                         });
@@ -40,7 +40,7 @@ class CDUNavRadioPage {
                     CDUNavRadioPage.ShowPage(mcdu);
                 }
                 else {
-                    mcdu.showErrorMessage("INVALID ENTRY");
+                    mcdu.showErrorMessage(mcdu.defaultInputErrorMessage);
                 }
             };
             vor1CourseCell = "[]";
@@ -54,13 +54,13 @@ class CDUNavRadioPage {
                 if (isFinite(numValue) && numValue >= 0 && numValue < 360) {
                     SimVar.SetSimVarValue("K:VOR1_SET", "number", numValue).then(() => {
                         mcdu.vor1Course = numValue;
-                        requestAnimationFrame(() => {
+                        mcdu.requestCall(() => {
                             CDUNavRadioPage.ShowPage(mcdu);
                         });
                     });
                 }
                 else {
-                    mcdu.showErrorMessage("INVALID ENTRY");
+                    mcdu.showErrorMessage(mcdu.defaultInputErrorMessage);
                 }
             };
             ilsFrequencyCell = "[]/ ";
@@ -97,13 +97,13 @@ class CDUNavRadioPage {
                 if (isFinite(numValue) && numValue >= 100 && numValue <= 1699.9) {
                     SimVar.SetSimVarValue("K:ADF_COMPLETE_SET", "Frequency ADF BCD32", Avionics.Utils.make_adf_bcd32(numValue * 1000)).then(() => {
                         mcdu.adf1Frequency = numValue;
-                        requestAnimationFrame(() => {
+                        mcdu.requestCall(() => {
                             CDUNavRadioPage.ShowPage(mcdu);
                         });
                     });
                 }
                 else {
-                    mcdu.showErrorMessage("INVALID ENTRY");
+                    mcdu.showErrorMessage(mcdu.defaultInputErrorMessage);
                 }
             };
         }
@@ -122,14 +122,14 @@ class CDUNavRadioPage {
                 if (isFinite(numValue) && numValue >= 108 && numValue <= 117.95 && RadioNav.isHz50Compliant(numValue)) {
                     mcdu.vor2Frequency = numValue;
                     if (mcdu.isRadioNavActive()) {
-                        requestAnimationFrame(() => {
+                        mcdu.requestCall(() => {
                             CDUNavRadioPage.ShowPage(mcdu);
                         });
                     }
                     else {
                         mcdu.radioNav.setVORStandbyFrequency(2, numValue).then(() => {
                             mcdu.radioNav.swapVORFrequencies(2);
-                            requestAnimationFrame(() => {
+                            mcdu.requestCall(() => {
                                 CDUNavRadioPage.ShowPage(mcdu);
                             });
                         });
@@ -140,7 +140,7 @@ class CDUNavRadioPage {
                     CDUNavRadioPage.ShowPage(mcdu);
                 }
                 else {
-                    mcdu.showErrorMessage("INVALID ENTRY");
+                    mcdu.showErrorMessage(mcdu.defaultInputErrorMessage);
                 }
             };
             vor2CourseCell = "[]";
@@ -154,13 +154,13 @@ class CDUNavRadioPage {
                 if (isFinite(numValue) && numValue >= 0 && numValue < 360) {
                     SimVar.SetSimVarValue("K:VOR2_SET", "number", numValue).then(() => {
                         mcdu.vor2Course = numValue;
-                        requestAnimationFrame(() => {
+                        mcdu.requestCall(() => {
                             CDUNavRadioPage.ShowPage(mcdu);
                         });
                     });
                 }
                 else {
-                    mcdu.showErrorMessage("INVALID ENTRY");
+                    mcdu.showErrorMessage(mcdu.defaultInputErrorMessage);
                 }
             };
             adf2FrequencyCell = "[.]/[]";
@@ -174,13 +174,13 @@ class CDUNavRadioPage {
                 if (isFinite(numValue) && numValue >= 100 && numValue <= 1699.9) {
                     SimVar.SetSimVarValue("K:ADF2_COMPLETE_SET", "Frequency ADF BCD32", Avionics.Utils.make_adf_bcd32(numValue * 1000)).then(() => {
                         mcdu.adf2Frequency = numValue;
-                        requestAnimationFrame(() => {
+                        mcdu.requestCall(() => {
                             CDUNavRadioPage.ShowPage(mcdu);
                         });
                     });
                 }
                 else {
-                    mcdu.showErrorMessage("INVALID ENTRY");
+                    mcdu.showErrorMessage(mcdu.defaultInputErrorMessage);
                 }
             };
         }

@@ -494,9 +494,6 @@ class CDUPerformancePage {
                 if (mcdu.currentFlightPhase === CDUPerformancePage._lastPhase) {
                     CDUPerformancePage.ShowAPPRPage(mcdu);
                 }
-                else {
-                    CDUPerformancePage.ShowPage(mcdu);
-                }
             }
         };
         let titleColor = "white";
@@ -674,6 +671,9 @@ class CDUPerformancePage {
 
         mcdu.thrustReductionAltitude = thrRedAccAltitude;
         mcdu.accelerationAltitude = thrRedAccAltitude;
+
+        SimVar.SetSimVarValue("L:AIRLINER_THR_RED_ALT", "Number", thrRedAccAltitude || 0);
+        SimVar.SetSimVarValue("L:AIRLINER_ACC_ALT", "Number", thrRedAccAltitude || 0);
     }
 }
 CDUPerformancePage._timer = 0;
