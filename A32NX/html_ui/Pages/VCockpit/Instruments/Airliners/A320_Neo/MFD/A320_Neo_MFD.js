@@ -190,9 +190,7 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
         var mapMode = SimVar.GetSimVarValue("L:A320_Neo_MFD_NAV_MODE", "number");
         var mapRange = SimVar.GetSimVarValue("L:A320_Neo_MFD_Range", "number");
         var shouldShowWeather = wxRadarOn && wxRadarMode != 3;
-		
-		//Added blend mode changes here to make the blend effect for both Terrain and Weather radar.
-		this.map.instrument.bingMap.m_imgElement.style.mixBlendMode = 'lighten';
+				
         if (this.wxRadarOn != wxRadarOn || this.terrainOn != terrainOn || this.wxRadarMode != wxRadarMode || this.mapMode != mapMode) {
             this.wxRadarOn = wxRadarOn;
             this.wxRadarMode = wxRadarMode;
@@ -250,9 +248,8 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
         if (isTerrainVisible || isWeatherVisible) {			
             this.setShowBingMap("true");			
         } else {			
-			//For some reason, the below function is not hiding the bing map even though we pass "false" value for the show-bing-map argument.
-			//After commenting the below function, the terrain/weather radar is properly disappearing when turned off.
-            //this.setShowBingMap("false");			
+			
+            this.setShowBingMap("false");			
         }
 
         if (this.mapRange != mapRange) {
@@ -293,6 +290,17 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
     // but it also renders airports, which the real A320 does not.
     setShowBingMap(showBingMap) {
         this.map.instrument.attributeChangedCallback("show-bing-map", null, showBingMap);
+		if(showBingMap == "true")
+		{			
+			this.map.instrument.bingMap.m_imgElement.style.mixBlendMode = 'lighten';			
+			//Setting the visibility property manually, for some reason the setVisible function called by "attributeChangedCallback:show-bing-map" is not working properly when mixBlendMode is enabled.
+			this.map.instrument.bingMap.style.visibility="visible";
+		}
+		else
+		{
+			//Setting the visibility property manually, for some reason the setVisible function called by "attributeChangedCallback:show-bing-map" is not working properly when mixBlendMode is enabled.
+			this.map.instrument.bingMap.style.visibility="hidden";
+		}	
     }
     onEvent(_event) {
         switch (_event) {
@@ -512,7 +520,7 @@ class A320_Neo_MFD_Map extends MapInstrumentElement {
         this.instrument.showWeatherWithGPS(EWeatherRadar.HORIZONTAL, Math.PI * 2.0);
         this.instrument.setBingMapStyle("5.5%", "5.5%", "89%", "89%");
         // This makes it so the black background blends in with the backlight background.
-		    // Moved the below line to a common location above, just to make it consistent for both terrain/weather radar.
+		// Moved the below line to a common location above, just to make it consistent for both terrain/weather radar.
 		
         //this.instrument.bingMap.m_imgElement.style.mixBlendMode = 'lighten';
     }
