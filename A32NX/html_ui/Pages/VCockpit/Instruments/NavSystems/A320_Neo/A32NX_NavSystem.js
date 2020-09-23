@@ -1445,6 +1445,7 @@ class MapInstrumentElement extends NavSystemElement {
     onTemplateLoaded() {
         this.instrument.init(this.gps);
         this.instrumentLoaded = true;
+        this.instrument.bingMap.m_imgElement.style.mixBlendMode = 'lighten';
     }
     setGPS(_gps) {
         super.setGPS(_gps);
