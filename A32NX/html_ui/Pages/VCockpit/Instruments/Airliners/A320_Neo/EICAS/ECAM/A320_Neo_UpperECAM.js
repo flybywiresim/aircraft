@@ -53,6 +53,7 @@ var A320_Neo_UpperECAM;
             this.allPanels = [];
             this.simVarCache = {};
             this.frameCount = 0;
+            this._aircraft = Aircraft.A320_NEO;
         }
         get templateID() { return "UpperECAMTemplate"; }
         connectedCallback() {
@@ -379,6 +380,16 @@ var A320_Neo_UpperECAM;
                         ]
                     },
                     //Airborne
+                    {
+                        name: "OVERSPEED",
+                        messages: [
+                            {
+                                message: "",
+                                level: 3,
+                                isActive: () => Simplane.getIndicatedSpeed() > (A32NX_Selectors.VMAX() + 4),
+                            },
+                        ]
+                    },
                     {
                         name: "ENG 1 FIRE",
                         messages: [

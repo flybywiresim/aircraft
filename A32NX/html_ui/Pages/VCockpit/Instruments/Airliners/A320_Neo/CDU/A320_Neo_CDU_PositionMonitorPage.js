@@ -1,19 +1,35 @@
 class CDUPositionMonitorPage {
     static ShowPage(mcdu) {
         mcdu.clearDisplay();
-        let currPos = new LatLong(SimVar.GetSimVarValue("GPS POSITION LAT", "degree latitude"), SimVar.GetSimVarValue("GPS POSITION LON", "degree longitude")).toShortDegreeString();
+        mcdu.refreshPageCallback = () => {
+            CDUPositionMonitorPage.ShowPage(mcdu);
+        };
+        SimVar.SetSimVarValue("L:FMC_UPDATE_CURRENT_PAGE", "number", 1);
+        let currPos = new LatLong(SimVar.GetSimVarValue("GPS POSITION LAT", "degree latitude"),
+                                  SimVar.GetSimVarValue("GPS POSITION LON", "degree longitude")).toShortDegreeString();
+        if (currPos.includes("N")) {
+            var currPosSplit = currPos.split("N")
+            var sep = "N/"
+        } else {
+            var currPosSplit = currPos.split("S")
+            var sep = "S/"
+        }
+        let latStr = currPosSplit[0]
+        let lonStr = currPosSplit[1]
+        currPos = latStr + sep + lonStr                        
+
         mcdu.setTemplate([
             ["POSITION MONITOR"],
             [""],
-            ["FMGC1", currPos + "[color]green"],
+            ["FMS1", currPos + "[color]green"],
             ["", "", "3IRS/GPS"],
-            ["FMGC2", currPos + "[color]green"],
+            ["FMS2", currPos + "[color]green"],
             ["", "", "3IRS/GPS"],
             ["GPIRS", currPos + "[color]green"],
             [""],
             ["MIX IRS", currPos + "[color]green"],
             ["IRS1", "IRS3", "IRS2"],
-            ["NAV 0.0", "NAV 0.0", "NAV 0.0"],
+            ["NAV 0.0[color]green", "NAV 0.0[color]green", "NAV 0.0[color]green"],
             ["", "SEL"],
             ["←FREEZE[color]blue", "NAVAIDS>"]
         ]);
