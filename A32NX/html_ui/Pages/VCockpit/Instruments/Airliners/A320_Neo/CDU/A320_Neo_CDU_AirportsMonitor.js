@@ -115,7 +115,7 @@ class CDUAirportsMonitor {
             this.user_ap_line = [
                 `${this.user_ap.infos.ident}[color]green`,
                 `${this.eta5}[color]green`,
-                `${this.brng5.toString().padStart(3, "0")}__${this.dist5.toString().padStart(5, "_")}[color]green`]
+                `${this.brng5.toString().padStart(3, "0")}°_${this.dist5.toString().padStart(5, "_")}[color]green`]
         }
 
         // display data on MCDU
@@ -126,19 +126,19 @@ class CDUAirportsMonitor {
                 ["", "UTC", "BRG DIST"],
                 [`${this.icao1}[color]green`,
                 `${this.eta1}[color]green`,
-                `${this.brng1.toString().padStart(3, "0")}__${this.dist1.toString().padStart(5, "_")}[color]green`],
+                `${this.brng1.toString().padStart(3, "0")}°_${this.dist1.toString().padStart(5, "_")}[color]green`],
                 [""],
                 [`${this.icao2}[color]green`,
                 `${this.eta2}[color]green`,
-                `${this.brng2.toString().padStart(3, "0")}__${this.dist2.toString().padStart(5, "_")}[color]green`],
+                `${this.brng2.toString().padStart(3, "0")}°_${this.dist2.toString().padStart(5, "_")}[color]green`],
                 [""],
                 [`${this.icao3}[color]green`,
                 `${this.eta3}[color]green`,
-                `${this.brng3.toString().padStart(3, "0")}__${this.dist3.toString().padStart(5, "_")}[color]green`],
+                `${this.brng3.toString().padStart(3, "0")}°_${this.dist3.toString().padStart(5, "_")}[color]green`],
                 [""],
                 [`${this.icao4}[color]green`,
                 `${this.eta4}[color]green`,
-                `${this.brng4.toString().padStart(3, "0")}__${this.dist4.toString().padStart(5, "_")}[color]green`],
+                `${this.brng4.toString().padStart(3, "0")}°_${this.dist4.toString().padStart(5, "_")}[color]green`],
                 [""],
                 this.user_ap_line,
                 ["", "", this.frozen ? "LIST FROZEN" : ""],
