@@ -28,7 +28,7 @@ var A32NX_Avionics;
         setAttribute(attribute, value) {
             this.allTexts.forEach((text) => {
                 text.setAttribute(attribute, value);
-            })
+            });
         }
         clear(_value = "") {
             this.update(0);

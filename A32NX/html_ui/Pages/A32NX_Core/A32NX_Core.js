@@ -1,22 +1,36 @@
 class A32NX_Core {
     constructor() {
-        console.log('A32NX_Core constructed');
-        this.apu = new A32NX_APU();
-        this.brakeTemp = new A32NX_BrakeTemp();
-        this.electricity = new A32NX_Electricity();
+        this.modules = [
+            new A32NX_ADIRS(),
+            new A32NX_APU(),
+            new A32NX_BrakeTemp(),
+            new A32NX_Electricity(),
+            new A32NX_LocalVarUpdater(),
+        ];
     }
-    init() {
-        console.log('A32NX_Core init');
-        this.apu.init();
-        this.brakeTemp.init();
-        this.electricity.init();
+
+    init(startTime) {
         this.ACPowerStateChange = false;
+        this.getDeltaTime = A32NX_Util.createDeltaTimeCalculator(startTime);
+        this.modules.forEach(module => {
+            if (typeof module.init === "function") {
+                module.init();
+            }
+        });
+        this.isInit = true;
     }
-    update(_deltaTime) {
+
+    update() {
+        if (!this.isInit) {
+            return;
+        }
+
         this.updateACPowerStateChange();
-        this.apu.update(_deltaTime, this);
-        this.brakeTemp.update(_deltaTime, this);
-        this.electricity.update(_deltaTime, this);
+
+        const deltaTime = this.getDeltaTime();
+        this.modules.forEach(module => {
+            module.update(deltaTime, this);
+        });
     }
     updateACPowerStateChange() {
         const engineOn = Simplane.getEngineActive(0) || Simplane.getEngineActive(1);

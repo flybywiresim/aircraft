@@ -67,6 +67,7 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
     }
     init() {
         super.init();
+        this.getDeltaTime = A32NX_Util.createDeltaTimeCalculator(this._lastTime);
         this.modeChangeMask = this.gps.getChildById("ModeChangeMask");
         this.rangeChangeMask = this.gps.getChildById("RangeChangeMask");
         this.map.instrument.setNPCAirplaneManagerTCASMode(true);
@@ -99,7 +100,8 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
 
         this.electricity = this.gps.getChildById("Electricity")
     }
-    onUpdate(_deltaTime) {
+    onUpdate() {
+        const _deltaTime = this.getDeltaTime();
         super.onUpdate(_deltaTime);
         this.updateMap(_deltaTime);
         this.updateNDInfo(_deltaTime);
