@@ -142,7 +142,7 @@ class CDUAirportsMonitor {
                 `${this.brng4.toString().padStart(3, "0")}__${this.dist4.toString().padStart(5, "_")}[color]green`],
                 [""],
                 this.user_ap_line,
-                ["", "", this.frozen ? "PAGE FROZEN" : ""],
+                ["", "", this.frozen ? "LIST FROZEN" : ""],
                 [this.frozen ? "←UNFREEZE[color]blue" : "←FREEZE[color]blue", "EFOB/WIND>"]
             ])
 
