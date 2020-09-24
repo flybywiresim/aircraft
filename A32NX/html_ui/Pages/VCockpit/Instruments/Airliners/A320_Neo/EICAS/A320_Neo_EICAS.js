@@ -49,7 +49,7 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
     }
     Init() {
         super.Init();
-
+        this.getDeltaTime = A32NX_Util.createDeltaTimeCalculator(this._lastTime);
         this.currentPage = -1;
 
         this.pageNameWhenUnselected = "DOOR";
@@ -59,10 +59,6 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         this.ecamFCTLTimer = -1;
 
         this.changePage("FUEL"); // MODIFIED
-        if (this.isTopScreen) {
-            this.A32NXCore = new A32NX_Core();
-            this.A32NXCore.init();
-        }
 
         this.lastAPUMasterState = 0; // MODIFIED
         this.ApuAboveThresholdTimer = -1; // MODIFIED
@@ -81,12 +77,11 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         this.bottomSelfTestLastKnobValue = 1;
 
         // Using ternary in case the LVar is undefined
-        this.ACPowerLastState = SimVar.GetSimVarValue('L:A32NX_COLD_AND_DARK_SPAWN', 'Bool') ? 0 : 1;
+        this.ACPowerLastState = SimVar.GetSimVarValue("L:A32NX_COLD_AND_DARK_SPAWN", "Bool") ? 0 : 1;
 
         this.electricity = this.querySelector("#Electricity");
         this.changePage("DOOR"); // MODIFIED
         this.changePage("DOOR"); // This should get the ECAM into the "unselected" state
-        this.localVarUpdater = new LocalVarUpdater();
 
         SimVar.SetSimVarValue("LIGHT POTENTIOMETER:7","FLOAT64",0);
         SimVar.SetSimVarValue("LIGHT POTENTIOMETER:84","FLOAT64",0);
@@ -100,15 +95,14 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         SimVar.SetSimVarValue("LIGHT POTENTIOMETER:92","FLOAT64",0.1);
         SimVar.SetSimVarValue("LIGHT POTENTIOMETER:93","FLOAT64",0.1);
     }
-    onUpdate(_deltaTime) {
+    onUpdate() {
+        const _deltaTime = this.getDeltaTime();
+
         super.onUpdate(_deltaTime);
-        if (this.isTopScreen) {
-            this.A32NXCore.update(_deltaTime);
-            this.localVarUpdater.update();
-        }
         this.updateAnnunciations();
         this.updateScreenState();
 
+        // TODO Move anything dependent on ac power change to A32NX_Core
         const engineOn = Simplane.getEngineActive(0) || Simplane.getEngineActive(1);
         const externalPowerOn = SimVar.GetSimVarValue("EXTERNAL POWER AVAILABLE:1", "Bool") === 1 && SimVar.GetSimVarValue("EXTERNAL POWER ON", "Bool") === 1;
         const apuOn = SimVar.GetSimVarValue("L:APU_GEN_ONLINE", "bool");
@@ -194,7 +188,7 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         const leftThrottleDetent = Simplane.getEngineThrottleMode(0);
         const rightThrottleDetent = Simplane.getEngineThrottleMode(1);
         const highestThrottleDetent = (leftThrottleDetent >= rightThrottleDetent) ? leftThrottleDetent : rightThrottleDetent;
-        const ToPowerSet = (highestThrottleDetent == ThrottleMode.TOGA || highestThrottleDetent == ThrottleMode.FLEX_MCT) && SimVar.GetSimVarValue("ENG N1 RPM:1", "Percent") > 15 && SimVar.GetSimVarValue("ENG N1 RPM:2", "Percent") > 15
+        const ToPowerSet = (highestThrottleDetent == ThrottleMode.TOGA || highestThrottleDetent == ThrottleMode.FLEX_MCT) && SimVar.GetSimVarValue("ENG N1 RPM:1", "Percent") > 15 && SimVar.GetSimVarValue("ENG N1 RPM:2", "Percent") > 15;
         const APUPctRPM = SimVar.GetSimVarValue("APU PCT RPM", "percent");
         const EngModeSel = SimVar.GetSimVarValue("L:XMLVAR_ENG_MODE_SEL", "number");
         const spoilerOrFlapsDeployed = SimVar.GetSimVarValue("FLAPS HANDLE INDEX", "number") != 0 || SimVar.GetSimVarValue("SPOILERS HANDLE POSITION", "percent") != 0;
@@ -269,7 +263,8 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
                 9: "WHEEL",
                 10: "FTCL",
                 11: "STS"
-            }
+            };
+
             this.pageNameWhenUnselected = ECAMPageIndices[sFailPage];
 
             // Disable user selected page when new failure detected
@@ -278,7 +273,7 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
                 SimVar.SetSimVarValue("L:XMLVAR_ECAM_CURRENT_PAGE", "number", -1);
             }
         }
-        
+
         // switch page when desired page was changed, or new Failure detected
         if ((this.pageNameWhenUnselected != prevPage && this.currentPage == -1) || (this.PrevFailPage !== sFailPage)) {
             this.SwitchToPageName(this.LOWER_SCREEN_GROUP_NAME, this.pageNameWhenUnselected);

@@ -25,6 +25,9 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     }
     Init() {
         super.Init();
+        this.A32NXCore = new A32NX_Core();
+        this.A32NXCore.init(this._lastTime);
+
         this.defaultInputErrorMessage = "NOT ALLOWED";
         this.onDir = () => { CDUDirectToPage.ShowPage(this); };
         this.onProg = () => { CDUProgressPage.ShowPage(this); };
@@ -80,14 +83,14 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
 	            }
 	            ;
 	        }
-        this.electricity = this.querySelector("#Electricity")
+        this.electricity = this.querySelector("#Electricity");
         this.climbTransitionGroundAltitude = null;
     }
     trySetFlapsTHS(s) {
         if (s) {
             let validEntry = false;
-            let nextFlaps = this.flaps
-            let nextThs = this.ths
+            let nextFlaps = this.flaps;
+            let nextThs = this.ths;
             let [flaps, ths] = s.split("/");
 
             // Parse flaps
@@ -111,19 +114,19 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                     return false;
                 }
 
-                let direction = null
+                let direction = null;
                 ths = ths.replace(/(UP|DN)/g, (substr) => {
-                    direction = substr
-                    return ''
-                })
+                    direction = substr;
+                    return "";
+                });
 
                 if (direction) {
-                    const vThs = parseFloat(ths.trim())
+                    const vThs = parseFloat(ths.trim());
                     if (isFinite(vThs) && vThs >= 0.0 && vThs <= 2.5) {
 
                         if (vThs === 0.0) {
                             // DN0.0 should be corrected to UP0.0
-                            direction = 'UP'
+                            direction = "UP";
                         }
 
                         nextThs = `${direction}${vThs.toFixed(1)}`;
@@ -134,8 +137,8 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
 
             // Commit changes.
             if (validEntry) {
-                this.flaps = nextFlaps
-                this.ths = nextThs
+                this.flaps = nextFlaps;
+                this.ths = nextThs;
                 return true;
             }
         }
@@ -163,8 +166,10 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     }
     Update() {
         super.Update();
+
+        this.A32NXCore.update();
+
         this.updateAutopilot();
-        this.updateADIRS();
 
         this.updateScreenState();
     }
@@ -213,7 +218,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
      * @returns {number}
      */
     getPerfGreenDotSpeed() {
-        return ((this.getGrossWeight('kg') / 1000) * 2) + 85;
+        return ((this.getGrossWeight("kg") / 1000) * 2) + 85;
     }
 
     /**
@@ -485,7 +490,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     }
 
     _getTempIndex() {
-        const temp = SimVar.GetSimVarValue("AMBIENT TEMPERATURE", "celsius")
+        const temp = SimVar.GetSimVarValue("AMBIENT TEMPERATURE", "celsius");
         if (temp < -10)
             return 0;
         if (temp < 0)
@@ -552,13 +557,13 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         let min = A320_Neo_CDU_MainDisplay._v1sConf1[tempIndex][0];
         let max = A320_Neo_CDU_MainDisplay._v1sConf1[tempIndex][1];
 
-        return this._getVSpeed(dWeightCoef, min, max)
+        return this._getVSpeed(dWeightCoef, min, max);
     }
     _computeV1Speed() {
         // computeV1Speed is called by inherited class so it must remain,
         // but we need the calculation logic so that sits in it's own function now.
-        const nextV1 = this._getV1Speed()
-        this.v1Speed = nextV1
+        const nextV1 = this._getV1Speed();
+        this.v1Speed = nextV1;
         SimVar.SetSimVarValue("L:AIRLINER_V1_SPEED", "Knots", nextV1);
     }
 
@@ -571,13 +576,13 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         let min = A320_Neo_CDU_MainDisplay._vRsConf1[tempIndex][0];
         let max = A320_Neo_CDU_MainDisplay._vRsConf1[tempIndex][1];
 
-        return this._getVSpeed(dWeightCoef, min, max)
+        return this._getVSpeed(dWeightCoef, min, max);
      }
     _computeVRSpeed() {
         // computeVRSpeed is called by inherited class so it must remain,
         // but we need the calculation logic so that sits in it's own function now.
-        const nextVR = this._getVRSpeed()
-        this.vRSpeed = nextVR
+        const nextVR = this._getVRSpeed();
+        this.vRSpeed = nextVR;
         SimVar.SetSimVarValue("L:AIRLINER_VR_SPEED", "Knots", nextVR);
     }
 
@@ -590,13 +595,13 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         let min = A320_Neo_CDU_MainDisplay._v2sConf1[tempIndex][0];
         let max = A320_Neo_CDU_MainDisplay._v2sConf1[tempIndex][1];
 
-        return this._getVSpeed(dWeightCoef, min, max)
+        return this._getVSpeed(dWeightCoef, min, max);
     }
     _computeV2Speed() {
         // computeV2Speed is called by inherited class so it must remain,
         // but we need the calculation logic so that sits in it's own function now.
-        const nextV2 = this._getV2Speed()
-        this.v2Speed = nextV2
+        const nextV2 = this._getV2Speed();
+        this.v2Speed = nextV2;
         SimVar.SetSimVarValue("L:AIRLINER_V2_SPEED", "Knots", nextV2);
     }
 
@@ -1002,72 +1007,6 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             this.onFlightPhaseChanged();
             SimVar.SetSimVarValue("L:A32NX_CABIN_READY", "Bool", 0);
         }
-    }
-    updateADIRS() {
-
-        //Get the time since last update
-        var now = Date.now();
-        if (this.lastTime == null) this.lastTime = now;
-        var deltaTime = now - this.lastTime;
-        this.lastTime = now;
-
-        var AllADIRSOn = ((SimVar.GetSimVarValue("L:A320_Neo_ADIRS_KNOB_1", "Enum") >= 1) && (SimVar.GetSimVarValue("L:A320_Neo_ADIRS_KNOB_2", "Enum") >= 1) && (SimVar.GetSimVarValue("L:A320_Neo_ADIRS_KNOB_3", "Enum") >= 1));
-        var SomeADIRSOn = ((SimVar.GetSimVarValue("L:A320_Neo_ADIRS_KNOB_1", "Enum") >= 1) || (SimVar.GetSimVarValue("L:A320_Neo_ADIRS_KNOB_2", "Enum") >= 1) || (SimVar.GetSimVarValue("L:A320_Neo_ADIRS_KNOB_3", "Enum") >= 1));
-        var ADIRSState = SimVar.GetSimVarValue("L:A320_Neo_ADIRS_STATE", "Enum");
-        var ADIRSTimer = SimVar.GetSimVarValue("L:A320_Neo_ADIRS_TIME", "Seconds");
-
-        if (!SomeADIRSOn && ADIRSState != 0) {
-            //Turn off ADIRS
-            SimVar.SetSimVarValue("L:A320_Neo_ADIRS_STATE", "Enum", 0);
-            SimVar.SetSimVarValue("L:A320_Neo_ADIRS_IN_ALIGN", "Bool", 0);
-            SimVar.SetSimVarValue("L:A32NX_ADIRS_PFD_ALIGNED_FIRST", "Bool", 0);
-            SimVar.SetSimVarValue("L:A32NX_ADIRS_PFD_ALIGNED_ATT", "Bool", 0);
-            ADIRSState = 0;
-        }
-
-        if (AllADIRSOn && ADIRSState == 0) {
-            //Start ADIRS Alignment
-            SimVar.SetSimVarValue("L:A320_Neo_ADIRS_STATE", "Enum", 1);
-            SimVar.SetSimVarValue("L:A320_Neo_ADIRS_IN_ALIGN", "Bool", 1); // DELETE AFTER MCDU IRS INIT IS IMPLEMENTED
-            SimVar.SetSimVarValue("L:A32NX_ADIRS_PFD_ALIGNED_FIRST", "Bool", 0);
-            SimVar.SetSimVarValue("L:A32NX_ADIRS_PFD_ALIGNED_ATT", "Bool", 0);
-            ADIRSState = 1;
-            let currentLatitude = SimVar.GetSimVarValue("GPS POSITION LAT", "degree latitude")
-            ADIRSTimer = (Math.pow(currentLatitude, 2) * 0.095) + 310; //ADIRS ALIGN TIME DEPENDING ON LATITUDE.
-            SimVar.SetSimVarValue("L:A320_Neo_ADIRS_TIME", "Seconds", ADIRSTimer);
-            SimVar.SetSimVarValue("L:A32NX_Neo_ADIRS_START_TIME", "Seconds", ADIRSTimer);
-        }
-
-        if (ADIRSState == 1 && SimVar.GetSimVarValue("L:A320_Neo_ADIRS_IN_ALIGN", "Bool") == 1) {
-            if (ADIRSTimer > 0) {
-                ADIRSTimer -= deltaTime/1000;
-                SimVar.SetSimVarValue("L:A320_Neo_ADIRS_TIME", "Seconds", ADIRSTimer);
-                const ADIRSTimerStartTime = SimVar.GetSimVarValue("L:A32NX_Neo_ADIRS_START_TIME", "Seconds");
-                const secondsIntoAlignment = ADIRSTimerStartTime - ADIRSTimer;
-                if (SimVar.GetSimVarValue("L:A32NX_ADIRS_PFD_ALIGNED_FIRST", "Bool") == 0 && secondsIntoAlignment > 18) {
-                    SimVar.SetSimVarValue("L:A32NX_ADIRS_PFD_ALIGNED_FIRST", "Bool", 1);
-                }
-                if (SimVar.GetSimVarValue("L:A32NX_ADIRS_PFD_ALIGNED_ATT", "Bool") == 0 && secondsIntoAlignment > 28) {
-                    SimVar.SetSimVarValue("L:A32NX_ADIRS_PFD_ALIGNED_ATT", "Bool", 1);
-                }
-                if (ADIRSTimer <= 0) {
-                    //ADIRS Alignment Completed
-                    SimVar.SetSimVarValue("L:A320_Neo_ADIRS_STATE", "Enum", 2);
-                    SimVar.SetSimVarValue("L:A320_Neo_ADIRS_IN_ALIGN", "Bool", 0);
-                }
-            }
-        }
-
-        if (ADIRSState == 2) {
-            SimVar.SetSimVarValue("L:A32NX_ADIRS_PFD_ALIGNED_FIRST", "Bool", 1);
-            SimVar.SetSimVarValue("L:A32NX_ADIRS_PFD_ALIGNED_ATT", "Bool", 1);
-        }
-
-        //Align light
-        SimVar.SetSimVarValue("L:A320_Neo_ADIRS_ALIGN_LIGHT_1", "Bool", (SimVar.GetSimVarValue("L:A320_Neo_ADIRS_KNOB_1", "Enum") == 1 && ADIRSState != 2) );
-        SimVar.SetSimVarValue("L:A320_Neo_ADIRS_ALIGN_LIGHT_2", "Bool", (SimVar.GetSimVarValue("L:A320_Neo_ADIRS_KNOB_2", "Enum") == 1 && ADIRSState != 2) );
-        SimVar.SetSimVarValue("L:A320_Neo_ADIRS_ALIGN_LIGHT_3", "Bool", (SimVar.GetSimVarValue("L:A320_Neo_ADIRS_KNOB_3", "Enum") == 1 && ADIRSState != 2) );
-
     }
 }
 A320_Neo_CDU_MainDisplay._v1sConf1 = [

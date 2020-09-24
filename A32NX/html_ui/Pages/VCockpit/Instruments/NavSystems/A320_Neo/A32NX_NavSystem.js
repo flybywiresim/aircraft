@@ -1445,6 +1445,8 @@ class MapInstrumentElement extends NavSystemElement {
     onTemplateLoaded() {
         this.instrument.init(this.gps);
         this.instrumentLoaded = true;
+        // This makes the black parts of the bing map blend perfectly with the backlight in weather and terrain modes
+        this.instrument.bingMap.m_imgElement.style.mixBlendMode = 'lighten';
     }
     setGPS(_gps) {
         super.setGPS(_gps);
