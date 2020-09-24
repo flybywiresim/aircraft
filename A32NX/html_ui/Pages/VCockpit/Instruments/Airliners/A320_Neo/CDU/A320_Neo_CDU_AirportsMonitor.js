@@ -9,6 +9,7 @@ class CDUAirportsMonitor {
         if (reset) {
             this.user_ap = undefined
             this.frozen = false
+            this.page2 = false
             this.total_delta_t = 0
         }
 
@@ -26,6 +27,8 @@ class CDUAirportsMonitor {
 
             this.lat = SimVar.GetSimVarValue("PLANE LATITUDE", "degree latitude");
             this.lon = SimVar.GetSimVarValue("PLANE LONGITUDE", "degree longitude");
+            this.fob_kg = Simplane.getTotalFuel()
+            this.fuel_flow_kg_per_s = SimVar.GetSimVarValue("ENG FUEL FLOW PPH SSL", "kilograms per second")
             SimVar.SetSimVarValue("C:fs9gps:NearestAirportCurrentLatitude", "degree latitude", this.lat)
             SimVar.SetSimVarValue("C:fs9gps:NearestAirportCurrentLongitude", "degree longitude", this.lon)
             SimVar.SetSimVarValue("C:fs9gps:NearestAirportMaximumItems", "number", max_num_ap)
@@ -97,8 +100,18 @@ class CDUAirportsMonitor {
         this.eta3 = `${h3.toString().padStart(2, "0") || "00"}${m3.toString().padStart(2, "0") || "00"}`
         this.eta4 = `${h4.toString().padStart(2, "0") || "00"}${m4.toString().padStart(2, "0") || "00"}`
 
+        // EFOBs
+        this.efob1 = Math.max(0, (this.fob_kg - (this.fuel_flow_kg_per_s * eta1_s)) / 1000).toFixed(1)
+        this.efob2 = Math.max(0, (this.fob_kg - (this.fuel_flow_kg_per_s * eta2_s)) / 1000).toFixed(1)
+        this.efob3 = Math.max(0, (this.fob_kg - (this.fuel_flow_kg_per_s * eta3_s)) / 1000).toFixed(1)
+        this.efob4 = Math.max(0, (this.fob_kg - (this.fuel_flow_kg_per_s * eta4_s)) / 1000).toFixed(1)
+
         if (!this.user_ap) {
-            this.user_ap_line = ["[][color]blue", ""]
+            if (this.page2) {
+                this.user_ap_line = [""]
+            } else {
+                this.user_ap_line = ["[][color]blue", ""]
+            }
         } else if (this.total_delta_t === 0) {
             // calculate values for user selected airport
             SimVar.SetSimVarValue("C:fs9gps:GeoCalcLatitude1", "degree", this.lat)
@@ -112,43 +125,79 @@ class CDUAirportsMonitor {
             const h5 = Math.floor(utc5_s / s_per_h) || 0
             const m5 = Math.floor(utc5_s % s_per_h / 60) || 0
             this.eta5 = `${h5.toString().padStart(2, "0") || "00"}${m5.toString().padStart(2, "0") || "00"}`
-            this.user_ap_line = [
-                `${this.user_ap.infos.ident}[color]green`,
-                `${this.eta5}[color]green`,
-                `${this.brng5.toString().padStart(3, "0")}°_${this.dist5.toString().padStart(5, "_")}[color]green`]
+            this.efob5 = Math.max(0, (this.fob_kg - (this.fuel_flow_kg_per_s * eta5_s)) / 1000).toFixed(1)
+            if (this.page2) {
+                this.user_ap_line = [
+                    `${this.user_ap.infos.ident}[color]green`,
+                    `---[color]green`,
+                    `${this.efob5.toString().padStart(3, "_")}[color]green`
+                ]
+            } else {
+                this.user_ap_line = [
+                    `${this.user_ap.infos.ident}[color]green`,
+                    `${this.eta5}[color]green`,
+                    `${this.brng5.toString().padStart(3, "0")}°_${this.dist5.toString().padStart(5, "_")}[color]green`
+                ]
+            }
         }
 
         // display data on MCDU
         if (this.icao1) {
             mcdu.clearDisplay()
-            mcdu.setTemplate([
-                ["CLOSEST AIRPORTS"],
-                ["", "UTC", "BRG DIST"],
-                [`${this.icao1}[color]green`,
-                `${this.eta1}[color]green`,
-                `${this.brng1.toString().padStart(3, "0")}°_${this.dist1.toString().padStart(5, "_")}[color]green`],
-                [""],
-                [`${this.icao2}[color]green`,
-                `${this.eta2}[color]green`,
-                `${this.brng2.toString().padStart(3, "0")}°_${this.dist2.toString().padStart(5, "_")}[color]green`],
-                [""],
-                [`${this.icao3}[color]green`,
-                `${this.eta3}[color]green`,
-                `${this.brng3.toString().padStart(3, "0")}°_${this.dist3.toString().padStart(5, "_")}[color]green`],
-                [""],
-                [`${this.icao4}[color]green`,
-                `${this.eta4}[color]green`,
-                `${this.brng4.toString().padStart(3, "0")}°_${this.dist4.toString().padStart(5, "_")}[color]green`],
-                [""],
-                this.user_ap_line,
-                ["", "", this.frozen ? "LIST FROZEN" : ""],
-                [this.frozen ? "←UNFREEZE[color]blue" : "←FREEZE[color]blue", "EFOB/WIND>"]
-            ])
+            if (this.page2) {
+                mcdu.setTemplate([
+                    ["CLOSEST AIRPORTS"],
+                    ["", "EFF WIND", "EFOB"],
+                    [`${this.icao1}[color]green`,
+                    `---[color]green`,
+                    `${this.efob1.toString().padStart(3, "_")}[color]green`],
+                    [""],
+                    [`${this.icao2}[color]green`,
+                    `---[color]green`,
+                    `${this.efob2.toString().padStart(3, "_")}[color]green`],
+                    [""],
+                    [`${this.icao3}[color]green`,
+                    `---[color]green`,
+                    `${this.efob3.toString().padStart(3, "_")}[color]green`],
+                    [""],
+                    [`${this.icao4}[color]green`,
+                    `---[color]green`,
+                    `${this.efob4.toString().padStart(3, "_")}[color]green`],
+                    [""],
+                    this.user_ap_line,
+                    ["", "", this.frozen ? "LIST FROZEN" : ""],
+                    ["<RETURN"]
+                ])
+            } else {
+                mcdu.setTemplate([
+                    ["CLOSEST AIRPORTS"],
+                    ["", "UTC", "BRG DIST"],
+                    [`${this.icao1}[color]green`,
+                    `${this.eta1}[color]green`,
+                    `${this.brng1.toString().padStart(3, "0")}°_${this.dist1.toString().padStart(5, "_")}[color]green`],
+                    [""],
+                    [`${this.icao2}[color]green`,
+                    `${this.eta2}[color]green`,
+                    `${this.brng2.toString().padStart(3, "0")}°_${this.dist2.toString().padStart(5, "_")}[color]green`],
+                    [""],
+                    [`${this.icao3}[color]green`,
+                    `${this.eta3}[color]green`,
+                    `${this.brng3.toString().padStart(3, "0")}°_${this.dist3.toString().padStart(5, "_")}[color]green`],
+                    [""],
+                    [`${this.icao4}[color]green`,
+                    `${this.eta4}[color]green`,
+                    `${this.brng4.toString().padStart(3, "0")}°_${this.dist4.toString().padStart(5, "_")}[color]green`],
+                    [""],
+                    this.user_ap_line,
+                    ["", "", this.frozen ? "LIST FROZEN" : ""],
+                    [this.frozen ? "←UNFREEZE[color]blue" : "←FREEZE[color]blue", "EFOB/WIND>"]
+                ])
 
-            // force spaces to emulate 4 columns
-            mcdu._labelElements[0][2].innerHTML = "BRG&nbsp;&nbsp;&nbsp;DIST"
-            for (var i = 0; i < (this.user_ap ? 5 : 4); i++) {
-                mcdu._lineElements[i][2].innerHTML = mcdu._lineElements[i][2].innerHTML.replace(/_/g, "&nbsp;")
+                // force spaces to emulate 4 columns
+                mcdu._labelElements[0][2].innerHTML = "BRG&nbsp;&nbsp;&nbsp;DIST"
+                for (var i = 0; i < (this.user_ap ? 5 : 4); i++) {
+                    mcdu._lineElements[i][2].innerHTML = mcdu._lineElements[i][2].innerHTML.replace(/_/g, "&nbsp;")
+                }
             }
         }
 
@@ -160,35 +209,46 @@ class CDUAirportsMonitor {
             SimVar.SetSimVarValue("L:FMC_UPDATE_CURRENT_PAGE", "number", 1)
         }
 
-        // user-selected 5th airport
-        mcdu.onLeftInput[4] = () => {
-            if (!this.user_ap && mcdu.inOut !== '' && mcdu.inOut !== mcdu.clrValue) {
-                const ap = mcdu.inOut
-                // GetAirportByIdent returns a Waypoint in the callback,
-                // which interally uses FacilityLoader (and further down calls Coherence)
-                mcdu.dataManager.GetAirportByIdent(ap).then((ap_data) => {
-                    if (ap_data) {
-                        this.user_ap = ap_data
-                        mcdu.clearUserInput()
-                        // trigger data update next frame
-                        this.total_delta_t = update_ival_ms
-                        this.ShowPage(mcdu)
-                    } else {
-                        mcdu.showErrorMessage("NOT IN DATABASE")
-                    }
-                })
+        // user-selected 5th airport (only possible to set on page 1)
+        if (!this.page2) {
+            mcdu.onLeftInput[4] = () => {
+                if (!this.user_ap && mcdu.inOut !== '' && mcdu.inOut !== mcdu.clrValue) {
+                    const ap = mcdu.inOut
+                    // GetAirportByIdent returns a Waypoint in the callback,
+                    // which interally uses FacilityLoader (and further down calls Coherence)
+                    mcdu.dataManager.GetAirportByIdent(ap).then((ap_data) => {
+                        if (ap_data) {
+                            this.user_ap = ap_data
+                            mcdu.clearUserInput()
+                            // trigger data update next frame
+                            this.total_delta_t = update_ival_ms
+                            this.ShowPage(mcdu)
+                        } else {
+                            mcdu.showErrorMessage("NOT IN DATABASE")
+                        }
+                    })
+                }
             }
         }
 
         // toggle freeze
         mcdu.onLeftInput[5] = () => {
             this.frozen = !this.frozen
+            this.page2 = false
             // trigger data update next frame
             this.total_delta_t = update_ival_ms
             this.ShowPage(mcdu)
         }
 
-        // TODO EFOB/WIND
-        mcdu.onRightInput[5] = () => {}
+        // EFOB/WIND
+        if (!this.page2) {
+            mcdu.onRightInput[5] = () => {
+                this.page2 = true
+                this.frozen = true
+                // trigger data update next frame
+                this.total_delta_t = update_ival_ms
+                this.ShowPage(mcdu)
+            }
+        }
     }
 }
