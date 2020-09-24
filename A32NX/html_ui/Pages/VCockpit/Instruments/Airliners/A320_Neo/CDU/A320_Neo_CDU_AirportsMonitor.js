@@ -65,8 +65,8 @@ class CDUAirportsMonitor {
             this.total_delta_t = 0
         }
 
-        let s_per_h = 3600
-        let s_per_d = s_per_h * 24
+        const s_per_h = 3600
+        const s_per_d = s_per_h * 24
 
         // ETA offset in seconds
         var eta1_s = Math.round(this.dist1 / this.gs * s_per_h)
