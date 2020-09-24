@@ -29,7 +29,7 @@ class A32NX_Core {
 
         const deltaTime = this.getDeltaTime();
         this.modules.forEach(module => {
-            module.update(deltaTime);
+            module.update(deltaTime, this);
         });
     }
     updateACPowerStateChange() {
