@@ -1,0 +1,1000 @@
+San Pedro Sula, Honduras	1001						518,736	...	...	...	ESDF 	2003-07-01	
+Bucaramanga, Colombia	1002						...	...	518,351	154	ESDF 	2006-07-01	(47)
+Bhavnagar, India	1003						510,958	...	517,578	...	CDFC 	2001-03-01	(53)
+Conghua, China	1004						517,552	...	...	...	CDJC 	2000-11-01	
+Changwon, South Korea	1005						517,410	293	...	...	CDFC 	2000-11-01	
+Mianzhu, China	1006						515,830	...	...	...	CDJC 	2000-11-01	
+Pohang, South Korea	1007						515,714	1,126	...	...	CDFC 	2000-11-01	
+Tucson (AZ), United States	1008						515,526	583	...	...	ESDJ 	2005-07-01	(16),(17)
+Taicang, China	1009						515,063	...	...	...	CDJC 	2000-11-01	
+Matsuyama, Japan	1010						514,937	429	...	...	CDFC 	2005-10-01	(61),(62),(63)
+Hannover, Germany	1011						514,718	204	...	...	ESDJ 	1999-07-01	
+Guntur, India	1012						514,707	30	...	...	CDFC 	2001-03-01	(53)
+Lin'an, China	1013						514,238	...	...	...	CDJC 	2000-11-01	
+Higashiosaka, Japan	1014						513,821	62	...	...	CDFC 	2005-10-01	(61),(62),(63)
+Wanning, China	1015						513,604	...	...	...	CDJC 	2000-11-01	
+Mar del Plata, Argentina	1016						512,880	...	...	...	CDFC 	1991-10-15	
+Ryazan, Russia	1017						512,744	...	...	...	ESDJ 	2006-07-01	(95),(96)
+Quilmes, Argentina	1018						511,234	...	...	...	CDFC 	1991-10-15	
+Tomsk, Russia	1019						491,442	...	511,064	...	ESDJ 	2006-07-01	(95),(96)
+Linhe, China	1020						510,965	...	...	...	CDJC 	2000-11-01	
+Chibi, China	1021						510,926	...	...	...	CDJC 	2000-11-01	
+Jos, Nigeria	1022						510,300	...	...	...	CDFC 	1991-11-26	
+Penza, Russia	1023						509,597	...	...	...	ESDJ 	2006-07-01	(95),(96)
+Laohekou, China	1024						509,468	...	...	...	CDJC 	2000-11-01	
+Wenchang, China	1025						509,271	...	...	...	CDJC 	2000-11-01	
+Juiz de Fora, Brazil	1026						509,125	1,424	...	...	ESDF 	2005-07-01	(11)
+Zhijiang, China	1027						508,835	...	...	...	CDJC 	2000-11-01	
+Newcastle, Australia	1028						508,597	4,050	...	...	ESDJ 	2005-06-30	(106)
+Pinghu, China	1029						507,899	...	...	...	CDJC 	2000-11-01	
+Zhaoqing, China	1030						507,834	...	...	...	CDJC 	2000-11-01	
+Naberezhnye Tchelny, Russia	1031						506,778	...	...	...	ESDJ 	2006-07-01	(95),(96)
+Qingyuan, China	1032						506,680	...	...	...	CDJC 	2000-11-01	
+Tula, Russia	1033						506,495	...	...	...	ESDJ 	2006-07-01	(95),(96)
+Belgaum, India	1034						399,600	142	506,235	155	CDFC 	2001-03-01	(53)
+Pondicherry, India	1035						220,749	20	505,715	67	CDFC 	2001-03-01	(53)
+Aracaju, Brazil	1036						505,286	151	...	...	ESDF 	2005-07-01	(11)
+Pasig, Philippines	1037						505,058	48	...	...	CDJC 	2000-10-01	
+Mykolayiv (Nikolaevskaya oblast), Ukraine	1038						504,516	112	...	...	ESDJ 	2005-01-01	
+Ibagué, Colombia	1039						...	...	504,089	1,439	ESDF 	2006-07-01	(47)
+Hanzhong, China	1040						503,871	...	...	...	CDJC 	2000-11-01	
+Tlaxcala, Mexico	1041						...	...	503,693	...	ESDJ 	2006-07-01	(12),(13)
+Chuxiong, China	1042						503,682	...	...	...	CDJC 	2000-11-01	
+Denpasar, Indonesia	1043						502,873	124	...	...	ESDF 	2003-07-01	
+Lipetsk, Russia	1044						502,735	...	...	...	ESDJ 	2006-07-01	(95),(96)
+Dengta, China	1045						502,149	...	...	...	CDJC 	2000-11-01	
+Tuxtla Gutiérrez, Mexico	1046						...	...	501,681	...	ESDJ 	2006-07-01	(12),(13)
+Songkhla, Thailand	1047						...	...	501,406	7,394	ESDJ 	2006-07-01	
+Mariupol, Ukraine	1048						479,045	134	501,158	200	ESDJ 	2005-01-01	
+Danjiangkou, China	1049						501,126	...	...	...	CDJC 	2000-11-01	
+Chiclayo, Peru	1050						500,561	...	...	...	CDFC 	2005-07-18	(49)
+COPENHAGEN, Denmark	1051						500,543	88	...	...	ESDJ 	2006-07-01	
+Penglai, China	1052						500,408	...	...	...	CDJC 	2000-11-01	
+Oaxaca de Juárez, Mexico	1053						...	...	500,338	...	ESDJ 	2006-07-01	(12),(13)
+Aba, Nigeria	1054						500,183	...	...	...	CDFC 	1991-11-26	
+Astrakhan, Russia	1055						499,570	...	...	...	ESDJ 	2006-07-01	(95),(96)
+MACAO, China : Macao SAR	1056						498,852	29	...	...	ESDJ 	2006-07-01	
+Eskisehir, Turkey	1057						498,836	...	...	...	ESDF 	2003-07-01	
+Shishi, China	1058						498,786	...	...	...	CDJC 	2000-11-01	
+Kannur, India	1059						...	...	498,175	145	CDFC 	2001-03-01	(53)
+Ananindeua, Brazil	1060						498,095	485	...	...	ESDF 	2005-07-01	(11)
+Bokaro Steel City, India	1061						394,173	163	497,855	183	CDFC 	2001-03-01	(53)
+SAN SALVADOR, El Salvador	1062						497,844	886	...	...	ESDF 	2003-07-01	(11)
+Kolhapur, India	1063						485,183	67	497,554	67	CDFC 	2001-03-01	(53)
+Xinzhou, China	1064						496,608	...	...	...	CDJC 	2000-11-01	
+Joinville, Brazil	1065						496,051	1,080	...	...	ESDF 	2005-07-01	(11)
+Dangyang, China	1066						495,946	...	...	...	CDJC 	2000-11-01	
+Londrina, Brazil	1067						495,696	2,129	...	...	ESDF 	2005-07-01	(11)
+Hebi, China	1068						495,336	...	...	...	CDJC 	2000-11-01	
+Ganzhou, China	1069						494,600	...	...	...	CDJC 	2000-11-01	
+Hamadan, Iran	1070						494,378	...	...	...	ESDJ 	2003-07-01	
+Yucheng, China	1071						494,301	...	...	...	CDJC 	2000-11-01	
+Albuquerque (NM), United States	1072						494,236	479	...	...	ESDJ 	2005-07-01	(16),(17)
+Agadir, Morocco	1073						494,000	...	...	...	ESDF 	2003-07-01	(4)
+Chuzhou, China	1074						493,735	...	...	...	CDJC 	2000-11-01	
+Genève, Switzerland	1075						178,722	16	493,445	457	ESDJ 	2006-07-01	
+Durgapur, India	1076						492,996	154	...	...	CDFC 	2001-03-01	(53)
+Siping, China	1077						492,841	...	...	...	CDJC 	2000-11-01	
+Surakarta, Indonesia	1078						492,325	44	...	...	ESDF 	2003-07-01	
+Gomel, Belarus	1079						...	...	492,032	118	ESDF 	2006-07-01	
+Ajmer, India	1080						485,197	242	490,138	...	CDFC 	2001-03-01	(53)
+Leipzig, Germany	1081						489,532	176	...	...	ESDJ 	1999-07-01	
+Kirov, Russia	1082						467,361	...	489,236	...	ESDJ 	2006-07-01	(95),(96)
+Belford Roxo, Brazil	1083						489,002	...	...	...	ESDF 	2005-07-01	(11)
+Nanping, China	1084						488,818	...	...	...	CDJC 	2000-11-01	
+Luhansk, Ukraine	1085						449,314	120	488,290	269	ESDJ 	2005-01-01	
+Al-Sharjah, United Arab Emirates	1086						488,000	...	...	...	ESDF 	2002-07-01	
+Shuangyashan, China	1087						487,294	...	...	...	CDJC 	2000-11-01	
+Qitaihe, China	1088						486,704	...	...	...	CDJC 	2000-11-01	
+Zhangye, China	1089						486,688	...	...	...	CDJC 	2000-11-01	
+Nürnberg, Germany	1090						486,628	186	...	...	ESDJ 	1999-07-01	
+Bâle, Switzerland	1091						163,930	24	486,146	481	ESDJ 	2006-07-01	
+Oujda, Morocco	1092						486,000	...	...	...	ESDF 	2003-07-01	(4)
+Erbil, Iraq	1093						485,968	...	...	...	CDFC 	1987-10-17	
+Valenzuela, Philippines	1094						485,433	47	...	...	CDJC 	2000-10-01	
+Hongjiang, China	1095						485,061	...	...	...	CDJC 	2000-11-01	
+Baicheng, China	1096						484,979	...	...	...	CDJC 	2000-11-01	
+Raurkela, India	1097						224,601	133	484,292	157	CDFC 	2001-03-01	(53)
+PANAMA CITY, Panama	1098						484,261	107	...	...	ESDF 	2000-07-01	(14)
+Barcelona-Puerto La Cruz, Venezuela	1099						484,149	707	...	...	ESDF 	1998-07-01	
+Huanghua, China	1100						483,273	...	...	...	CDJC 	2000-11-01	
+Pontianak, Indonesia	1101						483,224	108	...	...	ESDF 	2003-07-01	
+Himeji, Japan	1102						482,304	276	...	...	CDFC 	2005-10-01	(61),(62),(63)
+Sanya, China	1103						482,296	...	...	...	CDJC 	2000-11-01	
+Orizaba, Mexico	1104						...	...	481,444	...	ESDJ 	2006-07-01	(12),(13)
+Dunhua, China	1105						480,834	...	...	...	CDJC 	2000-11-01	
+Kawaguchi, Japan	1106						480,079	56	...	...	CDFC 	2005-10-01	(61),(62),(63)
+Durango (Victoria de Durango), Mexico	1107						479,450	...	...	...	ESDJ 	2006-07-01	(12),(13)
+Jian'ou, China	1108						478,651	...	...	...	CDJC 	2000-11-01	
+Tombouctou, Mali	1109						476,793	...	...	...	CDJC 	1998-04-01	
+Niterói, Brazil	1110						476,669	131	...	...	ESDF 	2005-07-01	(11)
+Dresden, Germany	1111						476,668	237	...	...	ESDJ 	1999-07-01	
+Arak, Iran	1112						476,568	...	...	...	ESDJ 	2003-07-01	
+Soledad, Colombia	1113						...	...	476,335	67	ESDF 	2006-07-01	(47)
+Chaoyang (Liaoning), China	1114						475,038	...	...	...	CDJC 	2000-11-01	
+Shahe, China	1115						474,260	...	...	...	CDJC 	2000-11-01	
+Jiaohe, China	1116						474,109	...	...	...	CDJC 	2000-11-01	
+Long Beach (CA), United States	1117						474,014	132	...	...	ESDJ 	2005-07-01	(16),(17),(19)
+Jiangshan, China	1118						473,222	...	...	...	CDJC 	2000-11-01	
+Jian (Jiangxi), China	1119						473,113	...	...	...	CDJC 	2000-11-01	
+Anda, China	1120						473,091	...	...	...	CDJC 	2000-11-01	
+Jiande, China	1121						473,062	...	...	...	CDJC 	2000-11-01	
+Ulhasnagar, India	1122						472,943	22	...	...	CDFC 	2001-03-01	(53)
+Las Piñas, Philippines	1123						472,780	33	...	...	CDJC 	2000-10-01	
+Matsudo, Japan	1124						472,579	61	...	...	CDFC 	2005-10-01	(61),(62),(63)
+Port Said, Egypt	1125						472,335	...	...	...	CDFC 	1996-11-19	
+Yuanping, China	1126						471,853	...	...	...	CDJC 	2000-11-01	
+Gaoping, China	1127						471,671	...	...	...	CDJC 	2000-11-01	
+Fenghua, China	1128						471,558	...	...	...	CDJC 	2000-11-01	
+Makati, Philippines	1129						471,379	18	...	...	CDJC 	2000-10-01	
+Qingzhen, China	1130						471,305	...	...	...	CDJC 	2000-11-01	
+Siliguri, India	1131						470,275	16	...	...	CDFC 	2001-03-01	(53)
+Kurashiki, Japan	1132						469,377	354	...	...	CDFC 	2005-10-01	(61),(62),(63)
+Ipoh, Malaysia	1133						382,853	...	468,841	...	CDFC 	1991-08-14	
+Lanus, Argentina	1134						468,561	...	...	...	CDFC 	1991-10-15	
+Taguig, Philippines	1135						467,375	...	...	...	CDJC 	2000-10-01	
+Nan'gong, China	1136						467,356	...	...	...	CDJC 	2000-11-01	
+Al-Kamishli, Syria	1137						467,120	...	...	...	ESDF 	2000-07-01	
+Sao Joao de Meriti, Brazil	1138						466,996	...	...	...	ESDF 	2005-07-01	(11)
+Ichikawa, Japan	1139						466,608	57	...	...	CDFC 	2005-10-01	(61),(62),(63)
+London, Canada	1140						...	...	465,720	2,333	ESDJ 	2006-07-01	
+Nishinomiya, Japan	1141						465,337	99	...	...	CDFC 	2005-10-01	(61),(62),(63)
+Constantine (Qacentina), Algeria	1142						465,021	...	...	...	CDJC 	1998-06-25	
+Enping, China	1143						464,898	...	...	...	CDJC 	2000-11-01	
+Weihui, China	1144						464,371	...	...	...	CDJC 	2000-11-01	
+Adhamiyah, Iraq	1145						464,151	...	...	...	CDFC 	1987-10-17	
+Kitchener, Canada	1146						...	...	463,644	827	ESDJ 	2006-07-01	
+Duyun, China	1147						463,426	...	...	...	CDJC 	2000-11-01	
+Jhansi, India	1148						383,248	48	463,281	83	CDFC 	2001-03-01	(53)
+Amagasaki, Japan	1149						462,647	50	...	...	CDFC 	2005-10-01	(61),(62),(63)
+Oita, Japan	1150						462,317	501	...	...	CDFC 	2005-10-01	(61),(62),(63)
+Liaoyuan, China	1151						462,233	...	...	...	CDJC 	2000-11-01	
+Cagayan de Oro, Philippines	1152						461,877	413	...	...	CDJC 	2000-10-01	
+Antwerpen (Anvers), Belgium	1153						461,496	2,256	...	...	ESDJ 	2006-01-01	(80)
+Brighton/Worthing/Littlehampton, United Kingdom	1154						...	...	461,181	...	ESDF 	2001-04-29	(99)
+Fresno (CA), United States	1155						461,116	277	...	...	ESDJ 	2005-07-01	(16),(17)
+Baiyin, China	1156						460,982	...	...	...	CDJC 	2000-11-01	
+Tonghua, China	1157						460,148	...	...	...	CDJC 	2000-11-01	
+Maracay, Venezuela	1158						458,761	169	...	...	ESDF 	1998-07-01	
+Sargodha, Pakistan	1159						458,440	...	...	...	CDFC 	1998-03-02	(66)
+Utsunomiya, Japan	1160						457,673	312	...	...	CDFC 	2005-10-01	(61),(62),(63)
+Gdansk, Poland	1161						457,630	266	...	...	ESDF 	2006-07-01	(94)
+Sanhe, China	1162						456,882	...	...	...	CDJC 	2000-11-01	
+Sacramento (CA), United States	1163						456,441	252	...	...	ESDJ 	2005-07-01	(16),(17)
+Pingliang, China	1164						454,996	...	...	...	CDJC 	2000-11-01	
+New Orleans (LA), United States	1165						454,863	438	...	...	ESDJ 	2005-07-01	(16),(17)
+Kanazawa, Japan	1166						454,607	468	...	...	CDFC 	2005-10-01	(61),(62),(63)
+Zhangjiajie, China	1167						453,723	...	...	...	CDJC 	2000-11-01	
+Cheboksary, Russia	1168						441,836	...	453,494	...	ESDJ 	2006-07-01	(95),(96)
+Gejiu, China	1169						453,311	...	...	...	CDJC 	2000-11-01	
+Aparecida de Goiania, Brazil	1170						453,104	...	...	...	ESDF 	2005-07-01	(11)
+Saharanpur, India	1171						452,925	25	...	...	CDFC 	2001-03-01	(53)
+Cleveland (OH), United States	1172						452,208	201	...	...	ESDJ 	2005-07-01	(16),(17)
+Mixco, Guatemala	1173						452,134	99	...	...	ESDF 	2001-07-01	
+BANGUI, Central African Republic	1174						451,690	...	...	...	CDFC 	1988-08-12	
+Yulin (Shaanxi), China	1175						451,337	...	...	...	CDJC 	2000-11-01	
+LOME, Togo	1176						450,000	...	...	...	ESDF 	1990-07-01	
+Qionghai, China	1177						449,845	...	...	...	CDJC 	2000-11-01	
+Paranaque, Philippines	1178						449,811	47	...	...	CDJC 	2000-10-01	
+Edinburgh, United Kingdom	1179						...	...	448,624	...	ESDF 	2001-04-29	(99),(102)
+Linxiang, China	1180						448,452	...	...	...	CDJC 	2000-11-01	
+Puyang, China	1181						448,290	...	...	...	CDJC 	2000-11-01	
+Sangli-Miraj-Kupwad, India	1182						436,639	...	447,632	...	CDFC 	2001-03-01	(53)
+Qinyang, China	1183						446,404	...	...	...	CDJC 	2000-11-01	
+Pereira, Colombia	1184						...	...	446,269	702	ESDF 	2006-07-01	(47)
+Karaganda, Kazakhstan	1185						446,139	...	...	...	ESDF 	2006-01-01	
+Kansas City (MO), United States	1186						444,965	813	...	...	ESDJ 	2005-07-01	(16),(17)
+Lyon, France	1187						444,852	48	...	...	CDJC 	1999-03-08	(82),(83),(85)
+Jingdezhen, China	1188						444,720	...	...	...	CDJC 	2000-11-01	
+Jambi, Indonesia	1189						444,551	205	...	...	ESDF 	2003-07-01	
+Huadian, China	1190						444,415	...	...	...	CDJC 	2000-11-01	
+Putian, China	1191						443,926	...	...	...	CDJC 	2000-11-01	
+Jinghong, China	1192						443,672	...	...	...	CDJC 	2000-11-01	
+Cangzhou, China	1193						443,561	...	...	...	CDJC 	2000-11-01	
+Mesa (AZ), United States	1194						442,780	336	...	...	ESDJ 	2005-07-01	(16),(17),(26)
+Nagasaki, Japan	1195						442,699	339	...	...	CDFC 	2005-10-01	(61),(62),(63)
+Beian, China	1196						442,474	...	...	...	CDJC 	2000-11-01	
+Portsmouth, United Kingdom	1197						...	...	442,252	...	ESDF 	2001-04-29	(99)
+Bhatpara, India	1198						441,956	16	...	...	CDFC 	2001-03-01	(53)
+Johore Bharu, Malaysia	1199						328,436	...	441,703	...	CDFC 	1991-08-14	
+Tabuk, Saudi Arabia	1200						441,351	...	...	...	CDFC 	2004-09-15	
+Leicester, United Kingdom	1201						...	...	441,213	...	ESDF 	2001-04-29	(99)
+Taonan, China	1202						441,096	...	...	...	CDJC 	2000-11-01	
+Sanshui, China	1203						440,119	...	...	...	CDJC 	2000-11-01	
+Xinle, China	1204						439,644	...	...	...	CDJC 	2000-11-01	
+Virginia Beach (VA), United States	1205						438,415	643	...	...	ESDJ 	2005-07-01	(16),(17)
+Mishan, China	1206						438,277	...	...	...	CDJC 	2000-11-01	
+Ning'an, China	1207						437,328	...	...	...	CDJC 	2000-11-01	
+Chengde, China	1208						437,251	...	...	...	CDJC 	2000-11-01	
+Bryansk, Russia	1209						418,097	...	436,508	...	ESDJ 	2006-07-01	(95),(96)
+Hailin, China	1210						435,677	...	...	...	CDJC 	2000-11-01	
+Gulbarga, India	1211						427,929	...	435,631	43	CDFC 	2001-03-01	(53)
+Bobo Dioulasso, Burkina Faso	1212						435,543	...	...	...	CDJC 	2006-12-09	
+Masan, South Korea	1213						434,371	329	...	...	CDFC 	2000-11-01	
+Tieling, China	1214						433,799	...	...	...	CDJC 	2000-11-01	
+Kaili, China	1215						433,236	...	...	...	CDJC 	2000-11-01	
+Ogbomosho, Nigeria	1216						433,030	...	...	...	CDFC 	1991-11-26	
+Shifang, China	1217						432,579	...	...	...	CDJC 	2000-11-01	
+Yanji, China	1218						432,339	...	...	...	CDJC 	2000-11-01	
+Yazd, Iran	1219						432,233	...	...	...	ESDJ 	2003-07-01	
+Firozabad, India	1220						278,801	9	432,213	12	CDFC 	2001-03-01	(53)
+Tirunelveli, India	1221						411,298	15	431,603	87	CDFC 	2001-03-01	(53)
+Zarqa, Jordan	1222						431,278	...	...	...	ESDF 	31-12-2006	
+Matamoros, Mexico	1223						...	...	430,923	...	ESDJ 	2006-07-01	(12),(13)
+Ujjain, India	1224						429,933	...	430,669	92	CDFC 	2001-03-01	(53)
+Nanded, India	1225						430,598	21	...	...	CDFC 	2001-03-01	(53)
+Daan, China	1226						430,512	...	...	...	CDJC 	2000-11-01	
+Campos dos Goytacazes, Brazil	1227						429,667	4,536	...	...	ESDF 	2005-07-01	(11)
+Balikpapan, Indonesia	1228						429,568	503	...	...	ESDF 	2003-07-01	
+Bacolod, Philippines	1229						429,076	156	...	...	CDJC 	2000-10-01	
+Wuhai, China	1230						427,553	...	...	...	CDJC 	2000-11-01	
+SAN JUAN, Puerto Rico	1231						426,618	124	...	...	ESDJ 	2006-07-01	(15)
+Yokosuka, Japan	1232						426,178	101	...	...	CDFC 	2005-10-01	(61),(62),(63)
+Santiago de Cuba, Cuba	1233						425,990	...	...	...	ESDF 	2006-07-01	
+BRATISLAVA, Slovakia	1234						425,609	383	...	...	ESDJ 	2006-07-01	
+Jinhua, China	1235						424,859	...	...	...	CDJC 	2000-11-01	
+Matola, Mozambique	1236						424,662	...	...	...	CDFC 	1997-08-01	
+Lechang, China	1237						423,444	...	...	...	CDJC 	2000-11-01	
+Coatzacoalcos, Mexico	1238						...	...	423,095	...	ESDJ 	2006-07-01	(12),(13)
+Emeishan, China	1239						423,070	...	...	...	CDJC 	2000-11-01	
+Kaliningrad (Kaliningradskaya oblast), Russia	1240						423,007	...	...	...	ESDJ 	2006-07-01	(95),(96)
+Hengshui, China	1241						422,761	...	...	...	CDJC 	2000-11-01	
+Fangchenggang, China	1242						422,514	...	...	...	CDJC 	2000-11-01	
+Santa Marta, Colombia	1243						...	...	421,703	2,369	ESDF 	2006-07-01	(47)
+Sialkote, Pakistan	1244						421,502	...	...	...	CDFC 	1998-03-02	(66)
+Yongji, China	1245						421,244	...	...	...	CDJC 	2000-11-01	
+Toyama, Japan	1246						421,239	1,242	...	...	CDFC 	2005-10-01	(61),(62),(63)
+DOHA, Qatar	1247						...	...	421,164	...	ESDF 	2006-07-01	
+Fujin, China	1248						420,579	...	...	...	CDJC 	2000-11-01	
+Kirkuk, Iraq	1249						418,624	...	...	...	CDFC 	1987-10-17	
+LIBREVILLE, Gabon	1250						362,386	...	418,616	...	CDFC 	1993-07-31	
+Fukuyama, Japan	1251						418,509	461	...	...	CDFC 	2005-10-01	(61),(62),(63)
+Santos, Brazil	1252						418,375	725	...	...	ESDF 	2005-07-01	(11)
+Cheonan, South Korea	1253						417,835	637	...	...	CDFC 	2000-11-01	
+Suez, Egypt	1254						417,527	...	...	...	CDFC 	1996-11-19	
+Murcia, Spain	1255						416,996	8,865	...	...	ESDJ 	2006-01-01	(98)
+Utrecht, Netherlands	1256						280,949	96	416,093	168	ESDJ 	2006-01-01	(93)
+Makyivka, Ukraine	1257						374,301	161	415,715	460	ESDJ 	2005-01-01	
+Sao José do Rio Prêto, Brazil	1258						415,508	586	...	...	ESDF 	2005-07-01	(11)
+Omaha (NE), United States	1259						414,521	304	...	...	ESDJ 	2005-07-01	(16),(17)
+Xiaoyi, China	1260						414,154	...	...	...	CDJC 	2000-11-01	
+Mauá, Brazil	1261						413,943	...	...	...	ESDF 	2005-07-01	(11)
+Soacha, Colombia	1262						...	...	412,922	187	ESDF 	2006-07-01	(47)
+Malatya, Turkey	1263						412,724	...	...	...	ESDF 	2003-07-01	
+Manado, Indonesia	1264						412,425	157	...	...	ESDF 	2003-07-01	
+Toyota, Japan	1265						412,141	918	...	...	CDFC 	2005-10-01	(61),(62),(63)
+Caxias do Sul, Brazil	1266						412,053	1,601	...	...	ESDF 	2005-07-01	(11)
+Magnitogorsk, Russia	1267						411,861	...	...	...	ESDJ 	2006-07-01	(95),(96)
+General Santos, Philippines	1268						411,822	402	...	...	CDJC 	2000-10-01	
+Sanliurfa, Turkey	1269						411,159	...	...	...	ESDF 	2003-07-01	
+Ivanovo, Russia	1270						411,012	...	...	...	ESDJ 	2006-07-01	(95),(96)
+Szczecin, Poland	1271						410,809	301	...	...	ESDF 	2006-07-01	(94)
+Sihui, China	1272						409,804	...	...	...	CDJC 	2000-11-01	
+Gaza, Palestine, Occupied Territory	1273						409,680	...	...	...	ESDF 	2006-07-01	
+Shanwei, China	1274						409,677	...	...	...	CDJC 	2000-11-01	
+Lianzhou, China	1275						409,360	...	...	...	CDJC 	2000-11-01	
+Malegaon, India	1276						409,190	13	...	...	CDFC 	2001-03-01	(53)
+Zhalantun, China	1277						409,051	...	...	...	CDJC 	2000-11-01	
+Yuxi, China	1278						409,044	...	...	...	CDJC 	2000-11-01	
+Bahawalpur, Pakistan	1279						408,395	...	...	...	CDFC 	1998-03-02	(66)
+Rajahmundry, India	1280						313,347	52	408,341	64	CDFC 	2001-03-01	(53)
+Enugu, Nigeria	1281						407,756	...	...	...	CDFC 	1991-11-26	
+Betim, Brazil	1282						407,003	376	...	...	ESDF 	2005-07-01	(11)
+ASHGABAT, Turkmenistan	1283						407,000	...	...	...	ESDF 	1990-07-01	
+General San Martín, Argentina	1284						406,809	...	...	...	CDFC 	1991-10-15	
+Florianópolis, Brazil	1285						406,564	440	...	...	ESDF 	2005-07-01	(11)
+Santa Fé, Argentina	1286						353,063	...	406,388	...	CDFC 	1991-10-15	
+Basra, Iraq	1287						406,296	...	...	...	CDFC 	1987-10-17	
+Huangshan, China	1288						406,200	...	...	...	CDJC 	2000-11-01	
+Yakeshi, China	1289						405,806	...	...	...	CDJC 	2000-11-01	
+Heshan (Guangdong), China	1290						405,779	...	...	...	CDJC 	2000-11-01	
+Kursk, Russia	1291						405,705	...	...	...	ESDJ 	2006-07-01	(95),(96)
+Tver, Russia	1292						405,573	...	...	...	ESDJ 	2006-07-01	(95),(96)
+Machida, Japan	1293						405,534	72	...	...	CDFC 	2005-10-01	(61),(62),(63)
+Pietermaritzburg, South Africa	1294						405,385	...	...	...	CDFC 	1996-10-10	
+Vila Velha, Brazil	1295						405,374	...	...	...	ESDF 	2005-07-01	(11)
+Nellore, India	1296						378,947	48	404,922	...	CDFC 	2001-03-01	(53)
+Shuangliao, China	1297						404,499	...	...	...	CDJC 	2000-11-01	
+Tongchuan, China	1298						404,257	...	...	...	CDJC 	2000-11-01	
+Hirakata, Japan	1299						404,044	65	...	...	CDFC 	2005-10-01	(61),(62),(63)
+Yan'an, China	1300						403,868	...	...	...	CDJC 	2000-11-01	
+Ningde, China	1301						400,293	...	...	...	CDJC 	2000-11-01	
+Sochi, Russia	1302						330,264	...	400,166	...	ESDJ 	2006-07-01	(95),(96)
+Huambo, Angola	1303						...	...	400,000	...	ESDF 	1993-07-01	
+Akola, India	1304						399,978	23	...	...	CDFC 	2001-03-01	(53)
+Gifu, Japan	1305						399,931	195	...	...	CDFC 	2005-10-01	(61),(62),(63)
+Ruichang, China	1306						398,844	...	...	...	CDJC 	2000-11-01	
+Loudi, China	1307						398,577	...	...	...	CDJC 	2000-11-01	
+Adan, Yemen	1308						398,294	...	...	...	CDFC 	16-12-1994	
+Luquan, China	1309						397,449	...	...	...	CDJC 	2000-11-01	
+Beira, Mozambique	1310						397,368	...	...	...	CDFC 	1997-08-01	
+St. Catharines, Canada	1311						...	...	396,754	1,406	ESDJ 	2006-07-01	
+TALLINN, Estonia	1312						396,523	158	...	...	ESDF 	2006-07-01	
+Erzurum, Turkey	1313						396,092	...	...	...	ESDF 	2003-07-01	
+Fujisawa, Japan	1314						396,014	70	...	...	CDFC 	2005-10-01	(61),(62),(63)
+Diadema, Brazil	1315						395,333	...	...	...	ESDF 	2005-07-01	(11)
+Oakland (CA), United States	1316						395,274	145	...	...	ESDJ 	2005-07-01	(16),(17),(24)
+El-Mahalla El-Kubra, Egypt	1317						394,924	...	...	...	CDFC 	1996-11-19	
+Gao, Mali	1318						394,594	...	...	...	CDJC 	1998-04-01	
+Serra, Brazil	1319						394,370	549	...	...	ESDF 	2005-07-01	(11)
+Gaya, India	1320						383,197	29	394,185	32	CDFC 	2001-03-01	(53)
+TIRANA, Albania	1321						392,863	31	...	...	ESDF 	2003-07-01	(77)
+Bochum, Germany	1322						392,830	145	...	...	ESDJ 	1999-07-01	
+Yogyakarta, Indonesia	1323						392,239	33	...	...	ESDF 	2003-07-01	
+South Dum Dum, India	1324						392,150	11	...	...	CDFC 	2001-03-01	(53)
+Namangan, Uzbekistan	1325						391,297	...	...	...	ESDF 	2001-07-01	
+Marikina, Philippines	1326						391,170	22	...	...	CDJC 	2000-10-01	
+Erode, India	1327						151,184	8	391,169	132	CDFC 	2001-03-01	(53)
+Ardabil, Iran	1328						390,682	...	...	...	ESDJ 	2003-07-01	
+Villa Nueva, Guatemala	1329						390,329	114	...	...	ESDF 	2001-07-01	
+Villavicencio, Colombia	1330						...	...	390,293	1,328	ESDF 	2006-07-01	(47)
+Toulouse, France	1331						390,174	118	...	...	CDJC 	1999-03-08	(82),(83)
+Carapicuíba, Brazil	1332						389,634	...	...	...	ESDF 	2005-07-01	(11)
+Udaipur, India	1333						389,317	64	...	...	CDFC 	2001-03-01	(53)
+Maheshtala, India	1334						389,214	...	...	...	CDFC 	2001-03-01	(53)
+Rajshahi, Bangladesh	1335						...	...	388,811	97	CDFC 	2001-01-22	
+Hami, China	1336						388,714	...	...	...	CDJC 	2000-11-01	
+Pasto, Colombia	1337						...	...	388,347	1,181	ESDF 	2006-07-01	(47)
+Vellore, India	1338						177,413	12	388,211	62	CDFC 	2001-03-01	(53)
+Olinda, Brazil	1339						387,494	...	...	...	ESDF 	2005-07-01	(11)
+Changji, China	1340						387,169	...	...	...	CDJC 	2000-11-01	
+Fenyang, China	1341						387,046	...	...	...	CDJC 	2000-11-01	
+Hancheng, China	1342						387,041	...	...	...	CDJC 	2000-11-01	
+Toyonaka, Japan	1343						386,623	36	...	...	CDFC 	2005-10-01	(61),(62),(63)
+Yidu, China	1344						385,779	...	...	...	CDJC 	2000-11-01	
+Thessaloniki, Greece	1345						385,406	...	...	...	CDJC 	2001-03-18	(86)
+Montería, Colombia	1346						...	...	384,937	3,043	ESDF 	2006-07-01	(47)
+Dazhou, China	1347						384,525	...	...	...	CDJC 	2000-11-01	
+Bournemouth, United Kingdom	1348						...	...	383,713	...	ESDF 	2001-04-29	(99)
+Keelung, China	1349						383,272	...	...	...	ESDF 	1999-07-01	
+DJIBOUTI, Djibouti	1350						383,000	...	...	...	ESDF 	1995-07-01	
+Da Nang, Viet Nam	1351						382,674	...	...	...	ESDF 	1992-07-01	
+Tulsa (OK), United States	1352						382,457	509	...	...	ESDJ 	2005-07-01	(16),(17)
+Halifax, Canada	1353						...	...	382,203	5,496	ESDJ 	2006-07-01	
+Kuerle, China	1354						381,943	...	...	...	CDJC 	2000-11-01	
+Ningguo, China	1355						381,842	...	...	...	CDJC 	2000-11-01	
+Manizales, Colombia	1356						...	...	381,752	477	ESDF 	2006-07-01	(47)
+Wuzhou, China	1357						381,043	...	...	...	CDJC 	2000-11-01	
+Porto Velho, Brazil	1358						380,974	...	...	...	ESDF 	2005-07-01	(11)
+Kashiwa, Japan	1359						380,963	115	...	...	CDFC 	2005-10-01	(61),(62),(63)
+Bello, Colombia	1360						...	...	380,324	151	ESDF 	2006-07-01	(47)
+Kollam, India	1361						361,441	41	379,975	68	CDFC 	2001-03-01	(53)
+Campina Grande, Brazil	1362						379,871	970	...	...	ESDF 	2005-07-01	(11)
+Vereeniging, South Africa	1363						379,638	...	...	...	CDFC 	1996-10-10	
+Chiang Mai, Thailand	1364						...	...	379,391	20,107	ESDJ 	2006-07-01	
+Muntinlupa, Philippines	1365						379,310	40	...	...	CDJC 	2000-10-01	
+An'guo, China	1366						378,830	...	...	...	CDJC 	2000-11-01	
+ABUJA, Nigeria	1367						107,069	...	378,671	...	CDFC 	1991-11-26	
+Nizhny Tagil, Russia	1368						378,626	...	...	...	ESDJ 	2006-07-01	(95),(96)
+Villahermosa, Mexico	1369						...	...	378,618	...	ESDJ 	2006-07-01	(12),(13)
+Nagano, Japan	1370						378,512	731	...	...	CDFC 	2005-10-01	(61),(62),(63)
+Buraydah, Saudi Arabia	1371						378,422	...	...	...	CDFC 	2004-09-15	
+Samsun, Turkey	1372						377,927	...	...	...	ESDF 	2003-07-01	
+Honolulu (HI), United States	1373						377,379	222	...	...	ESDJ 	2005-07-01	(16),(17)
+Las Palmas de Gran Canaria, Spain	1374						377,056	1,005	...	...	ESDJ 	2006-01-01	(98)
+PalmasdeGranCanaria, Spain	1375						377,056	...	...	...	ESDJ 	2006-01-01	(98)
+Sevastopol, Ukraine	1376						338,508	55	376,645	866	ESDJ 	2005-01-01	
+WELLINGTON, New Zealand	1377						187,700	290	375,600	447	ESDJ 	2006-07-01	(107),(108),(109)
+Wakayama, Japan	1378						375,591	209	...	...	CDFC 	2005-10-01	(61),(62),(63)
+Ulan-Ude, Russia	1379						345,398	...	375,168	...	ESDJ 	2006-07-01	(95),(96)
+Palma de Mallorca, Spain	1380						375,048	2,008	...	...	ESDJ 	2006-01-01	(98)
+Christchurch, New Zealand	1381						361,800	1,540	374,500	608	ESDJ 	2006-07-01	(107),(108),(109)
+Jizhou, China	1382						373,825	...	...	...	CDJC 	2000-11-01	
+Huanggang, China	1383						373,568	...	...	...	CDJC 	2000-11-01	
+Xuchang, China	1384						373,387	...	...	...	CDJC 	2000-11-01	
+Bologna, Italy	1385						373,384	141	...	...	ESDJ 	2006-07-01	
+Jiexiu, China	1386						372,993	...	...	...	CDJC 	2000-11-01	
+Tanta, Egypt	1387						372,893	...	...	...	CDFC 	1996-11-19	
+Nanxiong, China	1388						372,844	...	...	...	CDJC 	2000-11-01	
+Khamis Mushayt, Saudi Arabia	1389						372,695	...	...	...	CDFC 	2004-09-15	
+Toyohashi, Japan	1390						372,479	261	...	...	CDFC 	2005-10-01	(61),(62),(63)
+Moji das Cruzes, Brazil	1391						372,419	749	...	...	ESDF 	2005-07-01	(11)
+Ichinomiya, Japan	1392						371,687	114	...	...	CDFC 	2005-10-01	(61),(62),(63)
+Ndola, Zambia	1393						371,221	1,103	...	...	ESDF 	2000-07-01	
+Salta, Argentina	1394						367,550	...	370,904	...	CDFC 	1991-10-15	
+Nara, Japan	1395						370,102	277	...	...	CDFC 	2005-10-01	(61),(62),(63)
+Oyo, Nigeria	1396						369,894	...	...	...	CDFC 	1991-11-26	
+Colorado Springs (CO), United States	1397						369,815	493	...	...	ESDJ 	2005-07-01	(16),(17)
+Reading/Wokingham, United Kingdom	1398						...	...	369,804	...	ESDF 	2001-04-29	(99)
+Mansûra, Egypt	1399						369,409	...	...	...	CDFC 	1996-11-19	
+Wuppertal, Germany	1400						368,993	168	...	...	ESDJ 	1999-07-01	
+Kakinada, India	1401						289,920	39	368,672	58	CDFC 	2001-03-01	(53)
+Jalgaon, India	1402						368,579	62	...	...	CDFC 	2001-03-01	(53)
+Hejin, China	1403						368,572	...	...	...	CDJC 	2000-11-01	
+Mogilev, Belarus	1404						368,481	108	...	...	ESDF 	2006-07-01	
+Klang, Malaysia	1405						243,355	...	368,379	...	CDFC 	1991-08-14	
+Macapá, Brazil	1406						368,367	...	...	...	ESDF 	2005-07-01	(11)
+Brno, Czech Republic	1407						366,904	230	...	...	ESDJ 	2005-07-01	
+Piracicaba, Brazil	1408						366,442	1,426	...	...	ESDF 	2005-07-01	(11)
+Firenze, Italy	1409						366,434	102	...	...	ESDJ 	2006-07-01	
+Iloilo, Philippines	1410						366,391	56	...	...	CDJC 	2000-10-01	
+Benoni, South Africa	1411						366,343	...	...	...	CDFC 	1996-10-10	
+Udon Thani, Thailand	1412						...	...	366,222	11,730	ESDJ 	2006-07-01	
+Teesside, United Kingdom	1413						...	...	365,323	...	ESDF 	2001-04-29	(99)
+Bydgoszcz, Poland	1414						364,953	175	...	...	ESDF 	2006-07-01	(94)
+Valledupar, Colombia	1415						...	...	364,264	4,225	ESDF 	2006-07-01	(47)
+Sulamaniya, Iraq	1416						364,096	...	...	...	CDFC 	1987-10-17	
+Davangere, India	1417						363,780	...	...	...	CDFC 	2001-03-01	(53)
+Chaozhou, China	1418						363,582	...	...	...	CDJC 	2000-11-01	
+Warri, Nigeria	1419						363,382	...	...	...	CDFC 	1991-11-26	
+Arlington (TX), United States	1420						362,805	246	...	...	ESDJ 	2005-07-01	(16),(17),(20)
+Tongling, China	1421						362,477	...	...	...	CDJC 	2000-11-01	
+Kitwe, Zambia	1422						362,423	777	...	...	ESDF 	2000-07-01	
+The Potteries, United Kingdom	1423						...	...	362,403	...	ESDF 	2001-04-29	(99)
+Bouake, Côte d'Ivoire	1424						329,850	...	362,192	...	CDFC 	1988-03-01	
+Piura, Peru	1425						361,832	...	...	...	CDFC 	2005-07-18	(49)
+BEIRUT, Lebanon	1426						361,366	...	...	...	ESDF 	31-12-2006	
+Samarkand, Uzbekistan	1427						361,339	...	...	...	ESDF 	2001-07-01	
+Cariacica, Brazil	1428						361,058	279	...	...	ESDF 	2005-07-01	(11)
+Misurata, Libya	1429						360,000	...	...	...	ESDJ 	1990-07-01	
+Kaunas, Lithuania	1430						359,374	157	...	...	ESDJ 	2006-07-01	
+Stavropol, Russia	1431						359,072	...	359,269	...	ESDJ 	2006-07-01	(95),(96)
+Hsinchu, China	1432						359,087	...	...	...	ESDF 	1999-07-01	
+Vinnytsya, Ukraine	1433						358,403	56	...	...	ESDJ 	2005-01-01	
+Dongfang, China	1434						358,318	...	...	...	CDJC 	2000-11-01	
+ASMARA, Eritrea	1435						358,100	...	...	...	ESDF 	1990-07-01	
+Simpheropol, Ukraine	1436						336,250	49	357,999	90	ESDJ 	2005-01-01	
+Yi'ning, China	1437						357,519	...	...	...	CDJC 	2000-11-01	
+Bauru, Brazil	1438						356,680	702	...	...	ESDF 	2005-07-01	(11)
+Iquitos, Peru	1439						356,549	...	...	...	CDFC 	2005-07-18	(49)
+Nuevo Laredo, Mexico	1440						...	...	355,666	...	ESDJ 	2006-07-01	(12),(13)
+Wuzhong, China	1441						355,442	...	...	...	CDJC 	2000-11-01	
+Uijeongbu (Eujeongbu), South Korea	1442						355,380	81	...	...	CDFC 	2000-11-01	
+Arkhangelsk, Russia	1443						349,175	...	355,198	...	ESDJ 	2006-07-01	(95),(96)
+Asahikawa, Japan	1444						355,004	748	...	...	CDFC 	2005-10-01	(61),(62),(63)
+Pasay, Philippines	1445						354,908	14	...	...	CDJC 	2000-10-01	
+Kahramanmaras, Turkey	1446						354,891	...	...	...	ESDF 	2003-07-01	
+Wichita (KS), United States	1447						354,865	391	...	...	ESDJ 	2005-07-01	(16),(17)
+Okazaki, Japan	1448						354,704	227	...	...	CDFC 	2005-10-01	(61),(62),(63)
+Tieli, China	1449						354,601	...	...	...	CDJC 	2000-11-01	
+Iwaki, Japan	1450						354,492	1,231	...	...	CDFC 	2005-10-01	(61),(62),(63)
+Meizhou, China	1451						354,302	...	...	...	CDJC 	2000-11-01	
+Lublin, Poland	1452						354,272	147	...	...	ESDF 	2006-07-01	(94)
+Bilbao, Spain	1453						354,145	413	...	...	ESDJ 	2006-01-01	(98)
+Panipat, India	1454						261,665	21	353,983	...	CDFC 	2001-03-01	(53)
+Suita, Japan	1455						353,885	36	...	...	CDFC 	2005-10-01	(61),(62),(63)
+Kherson, Ukraine	1456						315,676	58	353,128	304	ESDJ 	2005-01-01	
+Itaquaquecetuba, Brazil	1457						352,755	...	...	...	ESDF 	2005-07-01	(11)
+Abeokuta, Nigeria	1458						352,735	...	...	...	CDFC 	1991-11-26	
+San Juan, Argentina	1459						119,423	...	352,691	...	CDFC 	1991-10-15	
+Annaba, Algeria	1460						352,523	...	...	...	CDJC 	1998-06-25	
+Huaying, China	1461						352,257	...	...	...	CDJC 	2000-11-01	
+Vitebsk, Belarus	1462						...	...	352,247	96	ESDF 	2006-07-01	
+Takatsuki, Japan	1463						351,826	105	...	...	CDFC 	2005-10-01	(61),(62),(63)
+Zixing, China	1464						351,581	...	...	...	CDJC 	2000-11-01	
+Petaling Jaya, Malaysia	1465						254,350	...	350,995	...	CDFC 	1991-08-14	
+Bloemfontein, South Africa	1466						350,504	...	...	...	CDFC 	1996-10-10	
+Onitsha, Nigeria	1467						350,280	...	...	...	CDFC 	1991-11-26	
+Bhagalpur, India	1468						340,349	30	349,709	31	CDFC 	2001-03-01	(53)
+Fife, United Kingdom	1469						...	...	349,429	...	ESDF 	2001-04-29	(99)
+Al-Rayyan, Qatar	1470						...	...	349,046	...	ESDF 	2006-07-01	
+Montes Claros, Brazil	1471						348,991	4,135	...	...	ESDF 	2005-07-01	(11)
+Jundiaí, Brazil	1472						348,621	432	...	...	ESDF 	2005-07-01	(11)
+Panihati, India	1473						348,379	19	...	...	CDFC 	2001-03-01	(53)
+Lishui, China	1474						348,241	...	...	...	CDJC 	2000-11-01	
+Ahmednagar, India	1475						307,455	18	347,396	30	CDFC 	2001-03-01	(53)
+Manukau, New Zealand	1476						347,100	683	...	...	ESDJ 	2006-07-01	(107),(108),(109)
+Irapuato, Mexico	1477						346,706	...	...	...	ESDJ 	2006-07-01	(12),(13)
+Huaihua, China	1478						346,522	...	...	...	CDJC 	2000-11-01	
+Pelotas, Brazil	1479						346,452	1,924	...	...	ESDF 	2005-07-01	(11)
+Jiuquan, China	1480						346,258	...	...	...	CDJC 	2000-11-01	
+Zanjan, Iran	1481						346,253	...	...	...	ESDJ 	2003-07-01	
+Belgorod, Russia	1482						346,194	...	...	...	ESDJ 	2006-07-01	(95),(96)
+Kathlehong, South Africa	1483						344,803	...	...	...	CDFC 	1996-10-10	
+SAN JOSE, Costa Rica	1484						344,747	45	...	...	ESDJ 	2006-07-01	
+Kempton Park, South Africa	1485						344,426	...	...	...	CDFC 	1996-10-10	
+Oshawa, Canada	1486						...	...	344,374	903	ESDJ 	2006-07-01	
+Avellaneda, Argentina	1487						344,024	...	...	...	CDFC 	1991-10-15	
+BERNE, Switzerland	1488						122,178	52	343,789	493	ESDJ 	2006-07-01	
+Assyût, Egypt	1489						343,662	...	...	...	CDFC 	1996-11-19	
+Nice, France	1490						343,166	72	...	...	CDJC 	1999-03-08	(82),(83)
+Plovdiv, Bulgaria	1491						342,768	...	...	...	ESDF 	2006-07-01	(47),(81)
+Kaluga, Russia	1492						328,300	...	342,234	...	ESDJ 	2006-07-01	(95),(96)
+Antofagasta, Chile	1493						341,942	...	...	...	ESDF 	2006-06-30	
+Mataram, Indonesia	1494						341,770	61	...	...	ESDF 	2003-07-01	
+Gumi (Kumi), South Korea	1495						341,550	127	...	...	CDFC 	2000-11-01	
+Raleigh (NC), United States	1496						341,530	339	...	...	ESDJ 	2005-07-01	(16),(17)
+Dhule, India	1497						341,473	46	...	...	CDFC 	2001-03-01	(53)
+Kashi (Xinjiang), China	1498						340,640	...	...	...	CDJC 	2000-11-01	
+Baise, China	1499						340,483	...	...	...	CDJC 	2000-11-01	
+Santa Ana (CA), United States	1500						340,368	70	...	...	ESDJ 	2005-07-01	(16),(17),(19)
+Vladimir, Russia	1501						340,267	...	...	...	ESDJ 	2006-07-01	(95),(96)
+Jinju (Chinju), South Korea	1502						339,791	712	...	...	CDFC 	2000-11-01	
+Umlazi, South Africa	1503						339,715	...	...	...	CDFC 	1996-10-10	
+Lengshuijiang, China	1504						339,701	...	...	...	CDJC 	2000-11-01	
+Malabon, Philippines	1505						338,855	...	...	...	CDJC 	2000-10-01	
+Koriyama, Japan	1506						338,834	757	...	...	CDFC 	2005-10-01	(61),(62),(63)
+Wudalianchi, China	1507						338,689	...	...	...	CDJC 	2000-11-01	
+Andizhan, Uzbekistan	1508						338,366	...	...	...	ESDF 	2001-07-01	
+Zhumadian, China	1509						338,036	...	...	...	CDJC 	2000-11-01	
+Takamatsu, Japan	1510						337,902	274	...	...	CDFC 	2005-10-01	(61),(62),(63)
+Luxi (Yunnan), China	1511						337,406	...	...	...	CDJC 	2000-11-01	
+Sanming, China	1512						337,105	...	...	...	CDJC 	2000-11-01	
+Coventry/Bedworth, United Kingdom	1513						...	...	336,452	...	ESDF 	2001-04-29	(99)
+Rajpur Sonarpur, India	1514						336,390	...	...	...	CDFC 	2001-03-01	(53)
+Carrefour, Haiti	1515						336,222	23	...	...	ESDJ 	1999-07-01	
+Tokorozawa, Japan	1516						336,100	72	...	...	CDFC 	2005-10-01	(61),(62),(63)
+Taraz, Kazakhstan	1517						336,057	...	...	...	ESDF 	2006-01-01	
+Khouribga, Morocco	1518						336,000	...	...	...	ESDF 	2003-07-01	(4)
+Buenaventura, Colombia	1519						...	...	335,644	6,785	ESDF 	2006-07-01	(47)
+Sukkur, Pakistan	1520						335,551	...	...	...	CDFC 	1998-03-02	(66)
+Surat Thani, Thailand	1521						...	...	335,445	12,892	ESDJ 	2006-07-01	
+Baishan, China	1522						335,400	...	...	...	CDJC 	2000-11-01	
+Yong'an, China	1523						334,852	...	...	...	CDJC 	2000-11-01	
+Yaan, China	1524						334,475	...	...	...	CDJC 	2000-11-01	
+Kaesong, North Korea	1525						334,433	...	...	...	CDFC 	31-12-1993	
+Victoria, Canada	1526						...	...	334,332	695	ESDJ 	2006-07-01	
+Gwangmyeong (Kwangmyong), South Korea	1527						334,089	38	...	...	CDFC 	2000-11-01	
+Kawagoe, Japan	1528						333,795	109	...	...	CDFC 	2005-10-01	(61),(62),(63)
+Ciudad del Este, Paraguay	1529						223,350	57	333,535	...	CDFC 	2002-08-28	
+Kochi, Japan	1530						333,484	264	...	...	CDFC 	2005-10-01	(61),(62),(63)
+Canoas, Brazil	1531						333,322	...	...	...	ESDF 	2005-07-01	(11)
+Akita, Japan	1532						333,109	906	...	...	CDFC 	2005-10-01	(61),(62),(63)
+Basilan, Philippines	1533						332,828	...	...	...	CDJC 	2000-10-01	
+Windsor, Canada	1534						...	...	332,066	1,023	ESDJ 	2006-07-01	
+Gimhae (Kimhae), South Korea	1535						331,979	463	...	...	CDFC 	2000-11-01	
+Anaheim (CA), United States	1536						331,804	127	...	...	ESDJ 	2005-07-01	(16),(17),(19)
+San Miguelito, Panama	1537						331,692	50	...	...	ESDF 	2000-07-01	(14)
+Muzaffarnagar, India	1538						316,452	...	331,403	12	CDFC 	2001-03-01	(53)
+Vladikavkaz (Osetinskaya ASSR), Russia	1539						313,914	...	331,126	...	ESDJ 	2006-07-01	(95),(96)
+Bilaspur, India	1540						265,178	36	330,291	46	CDFC 	2001-03-01	(53)
+Thrissur, India	1541						317,474	...	330,067	88	CDFC 	2001-03-01	(53)
+Sokoto, Nigeria	1542						329,639	...	...	...	CDFC 	1991-11-26	
+Sao Vicente, Brazil	1543						329,370	...	...	...	ESDF 	2005-07-01	(11)
+Chimbote, Peru	1544						328,386	...	...	...	CDFC 	2005-07-18	(49)
+Kurgan, Russia	1545						328,206	...	...	...	ESDJ 	2006-07-01	(95),(96)
+Franca, Brazil	1546						328,121	...	...	...	ESDF 	2005-07-01	(11)
+Al-Ayn, United Arab Emirates	1547						328,000	...	...	...	ESDF 	2002-07-01	
+Sanandaj, Iran	1548						327,969	...	...	...	ESDJ 	2003-07-01	
+Cardiff, United Kingdom	1549						...	...	327,706	...	ESDF 	2001-04-29	(99),(101)
+Shangrao, China	1550						327,703	...	...	...	CDJC 	2000-11-01	
+Khon Kaen, Thailand	1551						...	...	326,474	10,886	ESDJ 	2006-07-01	
+Cuzco, Peru	1552						326,405	...	...	...	CDFC 	2005-07-18	(49)
+Sinuiji, North Korea	1553						326,011	...	...	...	CDFC 	31-12-1993	
+Bari, Italy	1554						325,984	116	...	...	ESDJ 	2006-07-01	
+CANBERRA, Australia	1555						325,405	810	...	...	ESDJ 	2005-06-30	(105)
+Orel, Russia	1556						324,458	...	...	...	ESDJ 	2006-07-01	(95),(96)
+Maringá, Brazil	1557						324,397	490	...	...	ESDF 	2005-07-01	(11)
+Van, Turkey	1558						324,352	...	...	...	ESDF 	2003-07-01	
+Zhoukou, China	1559						323,738	...	...	...	CDJC 	2000-11-01	
+Iksan (Iri), South Korea	1560						323,687	507	...	...	CDFC 	2000-11-01	
+Saransk, Russia	1561						296,243	...	323,330	...	ESDJ 	2006-07-01	(95),(96)
+Patiala, India	1562						302,870	...	323,309	...	CDFC 	2001-03-01	(53)
+Shahjahanpur, India	1563						297,932	13	323,166	23	CDFC 	2001-03-01	(53)
+Ribeirao das Neves, Brazil	1564						322,969	...	...	...	ESDF 	2005-07-01	(11)
+Córdoba, Spain	1565						322,867	12,533	...	...	ESDJ 	2006-01-01	(98)
+Alicante, Spain	1566						322,431	2,008	...	...	ESDJ 	2006-01-01	(98)
+Eindhoven, Netherlands	1567						209,172	88	322,410	199	ESDJ 	2006-01-01	(93)
+Pachuca (de Soto), Mexico	1568						...	...	321,799	...	ESDJ 	2006-07-01	(12),(13)
+Bielefeld, Germany	1569						321,125	258	...	...	ESDJ 	1999-07-01	
+North Lanarkshire, United Kingdom	1570						...	...	321,067	...	ESDF 	2001-04-29	(99)
+Celaya, Mexico	1571						320,881	...	...	...	ESDJ 	2006-07-01	(12),(13)
+Kurnool, India	1572						267,739	15	320,619	46	CDFC 	2001-03-01	(53)
+Grodno, Belarus	1573						320,166	93	...	...	ESDF 	2006-07-01	
+Valladolid, Spain	1574						319,943	1,975	...	...	ESDJ 	2006-01-01	(98)
+Birkenhead, United Kingdom	1575						...	...	319,675	...	ESDF 	2001-04-29	(99)
+Neiva, Colombia	1576						...	...	319,253	1,468	ESDF 	2006-07-01	(47)
+Murmansk, Russia	1577						319,244	...	...	...	ESDJ 	2006-07-01	(95),(96)
+Mathura, India	1578						298,827	9	319,235	22	CDFC 	2001-03-01	(53)
+Anápolis, Brazil	1579						318,808	...	...	...	ESDF 	2005-07-01	(11)
+Volzhsky, Russia	1580						307,893	...	318,784	...	ESDJ 	2006-07-01	(95),(96)
+Maebashi, Japan	1581						318,584	241	...	...	CDFC 	2005-10-01	(61),(62),(63)
+Hechi, China	1582						318,348	...	...	...	CDJC 	2000-11-01	
+Jianyang (Fujian), China	1583						317,848	...	...	...	CDJC 	2000-11-01	
+Smolensk, Russia	1584						317,821	...	...	...	ESDJ 	2006-07-01	(95),(96)
+Xifeng, China	1585						317,669	...	...	...	CDJC 	2000-11-01	
+Ta'izz, Yemen	1586						317,571	...	...	...	CDFC 	16-12-1994	
+Vitória, Brazil	1587						317,085	...	...	...	ESDF 	2005-07-01	(11)
+Bellary, India	1588						317,000	66	...	...	CDFC 	2001-03-01	(53)
+Pittsburgh (PA), United States	1589						316,718	144	...	...	ESDJ 	2005-07-01	(16),(17)
+Iasi, Romania	1590						316,716	94	...	...	ESDJ 	2006-07-01	
+Koshigaya, Japan	1591						315,792	60	...	...	CDFC 	2005-10-01	(61),(62),(63)
+Korba, India	1592						315,695	35	...	...	CDFC 	2001-03-01	(53)
+Bandar-e-Abbas, Iran	1593						315,075	...	...	...	ESDJ 	2003-07-01	
+Kamarhati, India	1594						314,334	11	...	...	CDFC 	2001-03-01	(53)
+Shizuishan, China	1595						314,296	...	...	...	CDJC 	2000-11-01	
+Khayelitsa, South Africa	1596						314,239	...	...	...	CDFC 	1996-10-10	
+NoviSad, Serbia	1597						248,241	103	314,192	699	ESDJ 	2006-06-30	(97)
+Rio Branco, Brazil	1598						314,127	...	...	...	ESDF 	2005-07-01	(11)
+Meixian, China	1599						313,821	...	...	...	CDJC 	2000-11-01	
+Caucaia, Brazil	1600						313,584	1,293	...	...	ESDF 	2005-07-01	(11)
+Khoramabad, Iran	1601						313,177	...	...	...	ESDJ 	2003-07-01	
+Wugang (Henan), China	1602						313,089	...	...	...	CDJC 	2000-11-01	
+Okene, Nigeria	1603						312,775	...	...	...	CDFC 	1991-11-26	
+Pathum Thani, Thailand	1604						...	...	312,411	1,526	ESDJ 	2006-07-01	
+Naha, Japan	1605						312,393	39	...	...	CDFC 	2005-10-01	(61),(62),(63)
+Varna, Bulgaria	1606						311,630	...	...	...	ESDF 	2006-07-01	(47),(81)
+Hulin, China	1607						311,509	...	...	...	CDJC 	2000-11-01	
+Aomori, Japan	1608						311,508	825	...	...	CDFC 	2005-10-01	(61),(62),(63)
+Calabar, Nigeria	1609						310,839	...	...	...	CDFC 	1991-11-26	
+Ostrava, Czech Republic	1610						310,681	214	...	...	ESDJ 	2005-07-01	
+Petrópolis, Brazil	1611						310,216	771	...	...	ESDF 	2005-07-01	(11)
+Miyazaki, Japan	1612						310,123	287	...	...	CDFC 	2005-10-01	(61),(62),(63)
+Muling, China	1613						310,096	...	...	...	CDJC 	2000-11-01	
+Lausanne, Switzerland	1614						117,388	41	310,028	312	ESDJ 	2006-07-01	
+Sagar, India	1615						232,321	36	309,164	52	CDFC 	2001-03-01	(53)
+Foz do Iguaçu, Brazil	1616						309,113	596	...	...	ESDF 	2005-07-01	(11)
+Najaf, Iraq	1617						309,010	...	...	...	CDFC 	1987-10-17	
+Cincinnati (OH), United States	1618						308,728	202	...	...	ESDJ 	2005-07-01	(16),(17)
+Tongren, China	1619						308,583	...	...	...	CDJC 	2000-11-01	
+Port Sudan, Sudan	1620						308,195	...	...	...	CDFC 	1993-04-15	
+Cherepovets, Russia	1621						308,115	...	...	...	ESDJ 	2006-07-01	(95),(96)
+Mannheim, Germany	1622						307,730	145	...	...	ESDJ 	1999-07-01	
+Qazvin, Iran	1623						306,984	...	...	...	ESDJ 	2003-07-01	
+Huancayo, Peru	1624						306,954	...	...	...	CDFC 	2005-07-18	(49)
+Camagüey, Cuba	1625						306,702	...	...	...	ESDF 	2006-07-01	
+Yamunanagar, India	1626						189,587	16	306,640	42	CDFC 	2001-03-01	(53)
+Kurume, Japan	1627						306,434	230	...	...	CDFC 	2005-10-01	(61),(62),(63)
+Chita, Russia	1628						306,018	...	306,404	...	ESDJ 	2006-07-01	(95),(96)
+Cluj-Napoca, Romania	1629						305,620	180	...	...	ESDJ 	2006-07-01	
+Constanta, Romania	1630						305,550	127	...	...	ESDJ 	2006-07-01	
+Muzaffarpur, India	1631						305,465	26	...	...	CDFC 	2001-03-01	(53)
+Guarujá, Brazil	1632						305,171	...	...	...	ESDF 	2005-07-01	(11)
+Ponta Grossa, Brazil	1633						304,973	2,212	...	...	ESDF 	2005-07-01	(11)
+Pavlodar, Kazakhstan	1634						304,809	...	...	...	ESDF 	2006-01-01	
+Southampton, United Kingdom	1635						...	...	304,400	...	ESDF 	2001-04-29	(99)
+Jincheng, China	1636						304,221	...	...	...	CDJC 	2000-11-01	
+Luohe, China	1637						304,105	...	...	...	CDJC 	2000-11-01	
+Cuenca, Ecuador	1638						303,994	47	...	...	ESDF 	2003-07-01	
+Yokkaichi, Japan	1639						303,845	205	...	...	CDFC 	2005-10-01	(61),(62),(63)
+Ganja, Azerbaijan	1640						303,800	110	...	...	ESDF 	2004-07-01	
+Timisoara, Romania	1641						303,796	49	...	...	ESDJ 	2006-07-01	
+Tepic, Mexico	1642						...	...	303,613	...	ESDJ 	2006-07-01	(12),(13)
+Nampula, Mozambique	1643						303,346	...	...	...	CDFC 	1997-08-01	
+Yeosu, South Korea	1644						303,233	45	...	...	CDFC 	2000-11-01	
+Poltava, Ukraine	1645						302,939	77	...	...	ESDJ 	2005-01-01	
+Catania, Italy	1646						302,854	181	...	...	ESDJ 	2006-07-01	
+Tirupati, India	1647						227,657	16	302,678	20	CDFC 	2001-03-01	(53)
+Ambattur, India	1648						302,492	...	...	...	CDFC 	2001-03-01	(53)
+Brest, Belarus	1649						302,348	75	...	...	ESDF 	2006-07-01	
+South Lanarkshire, United Kingdom	1650						...	...	302,216	...	ESDF 	2001-04-29	(99)
+Otsu, Japan	1651						301,672	302	...	...	CDFC 	2005-10-01	(61),(62),(63)
+Yangzhong, China	1652						301,672	...	...	...	CDJC 	2000-11-01	
+Barcelona, Venezuela	1653						301,595	463	...	...	ESDF 	1998-07-01	
+Kingston-upon-Hull, United Kingdom	1654						...	...	301,416	...	ESDF 	2001-04-29	(99)
+Toledo (OH), United States	1655						301,285	209	...	...	ESDJ 	2005-07-01	(16),(17)
+Gaoming, China	1656						301,041	...	...	...	CDJC 	2000-11-01	
+Craiova, Romania	1657						300,587	81	...	...	ESDJ 	2006-07-01	
+Wonsan, North Korea	1658						300,148	...	...	...	CDFC 	31-12-1993	
+Latur, India	1659						299,828	21	...	...	CDFC 	2001-03-01	(53)
+Paulista, Brazil	1660						299,744	...	...	...	ESDF 	2005-07-01	(11)
+San Isidro, Argentina	1661						299,023	...	...	...	CDFC 	1991-10-15	
+Blumenou, Brazil	1662						298,603	509	...	...	ESDF 	2005-07-01	(11)
+Horlivka, Ukraine	1663						276,873	162	298,514	399	ESDJ 	2005-01-01	
+Al-Hudaydah (Hodeidah), Yemen	1664						298,452	...	...	...	CDFC 	16-12-1994	
+Dexing, China	1665						297,784	...	...	...	CDJC 	2000-11-01	
+Chandrapur, India	1666						297,612	56	...	...	CDFC 	2001-03-01	(53)
+Aurora (CO), United States	1667						297,235	379	...	...	ESDJ 	2005-07-01	(16),(17),(21)
+Kerbala, Iraq	1668						296,705	...	...	...	CDFC 	1987-10-17	
+Galati, Romania	1669						296,697	246	...	...	ESDJ 	2006-07-01	
+Naltchik, Russia	1670						270,898	...	296,620	...	ESDJ 	2006-07-01	(95),(96)
+Kharagpur, India	1671						207,984	91	296,323	125	CDFC 	2001-03-01	(53)
+Kasugai, Japan	1672						295,802	93	...	...	CDFC 	2005-10-01	(61),(62),(63)
+Bakersfield (CA), United States	1673						295,536	304	...	...	ESDJ 	2005-07-01	(16),(17)
+Denizli, Turkey	1674						295,319	...	...	...	ESDF 	2003-07-01	
+Bialystok, Poland	1675						295,210	102	...	...	ESDF 	2006-07-01	(94)
+Anning, China	1676						295,173	...	...	...	CDJC 	2000-11-01	
+NEW DELHI, India	1677						294,783	...	...	...	CDFC 	2001-03-01	(53),(56),(57)
+Chernihiv, Ukraine	1678						294,677	49	...	...	ESDJ 	2005-01-01	
+Rohtak, India	1679						286,773	28	294,537	...	CDFC 	2001-03-01	(53)
+Vologda, Russia	1680						286,623	...	294,311	...	ESDJ 	2006-07-01	(95),(96)
+Jishou, China	1681						294,297	...	...	...	CDJC 	2000-11-01	
+Århus, Denmark	1682						294,273	469	...	...	ESDJ 	2006-07-01	
+Hakodate, Japan	1683						294,264	678	...	...	CDFC 	2005-10-01	(61),(62),(63)
+Noida, India	1684						293,908	90	...	...	CDFC 	2001-03-01	(53)
+Jhang, Pakistan	1685						293,366	...	...	...	CDFC 	1998-03-02	(66)
+Vigo, Spain	1686						293,255	...	...	...	ESDJ 	2006-01-01	(98)
+Garoua, Cameroon	1687						293,081	...	...	...	ESDF 	1998-07-01	
+Fuquan, China	1688						292,720	...	...	...	CDJC 	2000-11-01	
+Resistencia, Argentina	1689						229,212	...	292,287	...	CDFC 	1991-10-15	
+Viña del Mar, Chile	1690						292,062	...	...	...	ESDF 	2006-06-30	
+Kaiyuan (Yunnan), China	1691						292,039	...	...	...	CDJC 	2000-11-01	
+Sumgayit, Azerbaijan	1692						291,600	80	...	...	ESDF 	2004-07-01	
+Cherkasy, Ukraine	1693						290,796	60	291,570	76	ESDJ 	2005-01-01	
+Akashi, Japan	1694						291,027	49	...	...	CDFC 	2005-10-01	(61),(62),(63)
+Fukushima, Japan	1695						290,869	746	...	...	CDFC 	2005-10-01	(61),(62),(63)
+Shimonoseki, Japan	1696						290,693	716	...	...	CDFC 	2005-10-01	(61),(62),(63)
+Kukatpalle, India	1697						290,591	...	...	...	CDFC 	2001-03-01	(53)
+Soyapango, El Salvador	1698						290,412	30	...	...	ESDF 	2003-07-01	(11)
+Surgut, Russia	1699						290,221	...	...	...	ESDJ 	2006-07-01	(95),(96)
+Riverside (CA), United States	1700						290,086	205	...	...	ESDJ 	2005-07-01	(16),(17)
+Kulti, India	1701						290,057	...	...	...	CDFC 	2001-03-01	(53)
+Vitória da Conquista, Brazil	1702						290,042	3,743	...	...	ESDF 	2005-07-01	(11)
+Brahmapur, India	1703						289,724	80	...	...	CDFC 	2001-03-01	(53)
+Vicente López, Argentina	1704						289,505	...	...	...	CDFC 	1991-10-15	
+Sanmenxia, China	1705						288,746	...	...	...	CDJC 	2000-11-01	
+Ust-Kamenogorsk, Kazakhstan	1706						288,509	...	...	...	ESDF 	2006-01-01	
+Shaowu, China	1707						288,401	...	...	...	CDJC 	2000-11-01	
+Al-Hufuf, Saudi Arabia	1708						287,841	...	...	...	CDFC 	2004-09-15	
+Kindia, Guinea	1709						...	...	287,607	...	CDFC 	1996-01-12	
+Morioka, Japan	1710						287,192	489	...	...	CDFC 	2005-10-01	(61),(62),(63)
+Nizamabad, India	1711						286,956	37	...	...	CDFC 	2001-03-01	(53)
+Stockton (CA), United States	1712						286,926	147	...	...	ESDJ 	2005-07-01	(16),(17)
+Palmira, Colombia	1713						...	...	286,355	1,044	ESDF 	2006-07-01	(47)
+Quzhou, China	1714						286,271	...	...	...	CDJC 	2000-11-01	
+Barddhaman, India	1715						285,871	23	...	...	CDFC 	2001-03-01	(53)
+Ichalakaranji, India	1716						257,572	30	285,795	38	CDFC 	2001-03-01	(53)
+Kuitun, China	1717						285,299	...	...	...	CDJC 	2000-11-01	
+Uberaba, Brazil	1718						285,094	4,524	...	...	ESDF 	2005-07-01	(11)
+Al-Mubarraz, Saudi Arabia	1719						285,067	...	...	...	CDFC 	2004-09-15	
+Iligan, Philippines	1720						285,061	673	...	...	CDJC 	2000-10-01	
+Sumy, Ukraine	1721						281,396	62	284,227	127	ESDJ 	2005-01-01	
+Cascavel, Brazil	1722						284,083	2,074	...	...	ESDF 	2005-07-01	(11)
+Delmas, Haiti	1723						284,079	26	...	...	ESDJ 	1999-07-01	
+Sakarya, Turkey	1724						283,516	...	...	...	ESDF 	2003-07-01	
+Corpus Christi (TX), United States	1725						283,474	412	...	...	ESDJ 	2005-07-01	(16),(17)
+Caruaru, Brazil	1726						283,152	936	...	...	ESDF 	2005-07-01	(11)
+Tambov, Russia	1727						283,144	...	...	...	ESDJ 	2006-07-01	(95),(96)
+Tongi, Bangladesh	1728						...	...	283,099	30	CDFC 	2001-01-22	
+Gebze, Turkey	1729						282,938	...	...	...	ESDF 	2003-07-01	
+Nzérékoré, Guinea	1730						...	...	282,772	...	CDFC 	1996-01-12	
+Alappuzha, India	1731						177,079	70	282,727	84	CDFC 	2001-03-01	(53)
+Armenia, Colombia	1732						...	...	282,534	115	ESDF 	2006-07-01	(47)
+Ciudad Victoria, Mexico	1733						282,527	...	...	...	ESDJ 	2006-07-01	(12),(13)
+GABORONE, Botswana	1734						186,007	169	282,150	...	CDFC 	2001-08-17	
+Buonmathuot, Viet Nam	1735						282,095	...	...	...	ESDF 	1992-07-01	
+Gelsenkirchen, Germany	1736						281,979	105	...	...	ESDJ 	1999-07-01	
+Semipalatinsk, Kazakhstan	1737						281,814	...	...	...	ESDF 	2006-01-01	
+Elazig, Turkey	1738						281,560	...	...	...	ESDF 	2003-07-01	
+Rampur, India	1739						281,549	20	...	...	CDFC 	2001-03-01	(53)
+Novorossiysk, Russia	1740						229,931	...	281,468	...	ESDJ 	2006-07-01	(95),(96)
+Brasov, Romania	1741						281,375	267	...	...	ESDJ 	2006-07-01	
+Newark (NJ), United States	1742						280,666	62	...	...	ESDJ 	2005-07-01	(16),(17),(32)
+Susano, Brazil	1743						280,318	...	...	...	ESDF 	2005-07-01	(11)
+Sheikhu Pura, Pakistan	1744						280,263	...	...	...	CDFC 	1998-03-02	(66)
+Ichihara, Japan	1745						280,255	368	...	...	CDFC 	2005-10-01	(61),(62),(63)
+Bhilwara, India	1746						280,185	118	...	...	CDFC 	2001-03-01	(53)
+Zuwarah, Libya	1747						280,000	...	...	...	ESDJ 	1990-07-01	
+GEORGETOWN, Guyana	1748						...	...	280,000	...	ESDF 	2001-07-01	
+Jeju (Cheju), South Korea	1749						279,996	255	...	...	CDFC 	2000-11-01	
+Buffalo (NY), United States	1750						279,745	105	...	...	ESDJ 	2005-07-01	(16),(17)
+Limeira, Brazil	1751						279,554	...	...	...	ESDF 	2005-07-01	(11)
+Roodepoort, South Africa	1752						279,340	...	...	...	CDFC 	1996-10-10	
+Ciudad Bolívar, Venezuela	1753						278,525	5,851	...	...	ESDF 	1998-07-01	
+Mandaluyong, Philippines	1754						278,474	9	...	...	CDJC 	2000-10-01	
+Abadan, Iran	1755						277,998	...	...	...	ESDJ 	2003-07-01	
+Kuching, Malaysia	1756						148,059	...	277,905	...	CDFC 	1991-08-14	
+Batman, Turkey	1757						277,349	...	...	...	ESDF 	2003-07-01	
+Karlsruhe, Germany	1758						277,204	173	...	...	ESDJ 	1999-07-01	
+Zhytomyr, Ukraine	1759						276,618	55	...	...	ESDJ 	2005-01-01	
+Belfast, United Kingdom	1760						...	...	276,459	...	ESDF 	2001-04-29	(99),(100)
+Santarém, Brazil	1761						276,074	...	...	...	ESDF 	2005-07-01	(11)
+San Bernardo, Chile	1762						276,016	...	...	...	ESDF 	2006-06-30	
+Gyeongju (Kyongju), South Korea	1763						275,842	1,324	...	...	CDFC 	2000-11-01	
+Yoshkar-ola, Russia	1764						250,605	...	275,454	...	ESDJ 	2006-07-01	(95),(96)
+St. Paul (MN), United States	1765						275,150	135	...	...	ESDJ 	2005-07-01	(16),(17),(38)
+Valparaíso, Chile	1766						275,063	...	...	...	ESDF 	2006-06-30	
+Anchorage (AK), United States	1767						275,043	4,396	...	...	ESDJ 	2005-07-01	(16),(17)
+Huozhou, China	1768						274,955	...	...	...	CDJC 	2000-11-01	
+Wollongong, Australia	1769						274,838	1,090	...	...	ESDJ 	2005-06-30	(106)
+Holguín, Cuba	1770						274,805	...	...	...	ESDF 	2006-07-01	
+Gijón, Spain	1771						274,472	...	...	...	ESDJ 	2006-01-01	(98)
+Shimoga, India	1772						274,105	...	...	...	CDFC 	2001-03-01	(53)
+Kostroma, Russia	1773						273,933	...	...	...	ESDJ 	2006-07-01	(95),(96)
+Islam Shahr (Qasemabad), Iran	1774						273,520	...	...	...	ESDJ 	2003-07-01	
+Yao, Japan	1775						273,487	42	...	...	CDFC 	2005-10-01	(61),(62),(63)
+Cirebon, Indonesia	1776						273,311	37	...	...	ESDF 	2003-07-01	
+Phyongsong, North Korea	1777						272,934	...	...	...	CDFC 	31-12-1993	
+Gunsan (Kunsan), South Korea	1778						272,715	388	...	...	CDFC 	2000-11-01	
+Jining (Inner Mongolia), China	1779						272,448	...	...	...	CDJC 	2000-11-01	
+Mérida, Venezuela	1780						272,437	482	...	...	ESDF 	1998-07-01	
+Komsomolsk-na-Amure, Russia	1781						272,429	...	...	...	ESDJ 	2006-07-01	(95),(96)
+San Cristóbal, Venezuela	1782						272,374	248	...	...	ESDF 	1998-07-01	
+Pekalongan, Indonesia	1783						272,208	45	...	...	ESDF 	2003-07-01	
+Rajarhat Gopalpur, India	1784						271,781	...	...	...	CDFC 	2001-03-01	(53)
+Taubaté, Brazil	1785						271,660	...	...	...	ESDF 	2005-07-01	(11)
+Gravatai, Brazil	1786						270,763	...	...	...	ESDF 	2005-07-01	(11)
+Swansea, United Kingdom	1787						...	...	270,506	...	ESDF 	2001-04-29	(99)
+Nantes, France	1788						270,474	65	...	...	CDJC 	1999-03-08	(82),(83)
+Larkana, Pakistan	1789						270,283	...	...	...	CDFC 	1998-03-02	(66)
+Kelamayi, China	1790						270,232	...	...	...	CDJC 	2000-11-01	
+Santa Maria, Brazil	1791						270,073	3,279	...	...	ESDF 	2005-07-01	(11)
+Sukabumi, Indonesia	1792						269,987	48	...	...	ESDF 	2003-07-01	
+Banda Aceh, Indonesia	1793						269,943	61	...	...	ESDF 	2003-07-01	
+Nakhon Si Thammarat, Thailand	1794						...	...	269,433	9,942	ESDJ 	2006-07-01	
+Southend, United Kingdom	1795						...	...	269,415	...	ESDF 	2001-04-29	(99)
+Venezia, Italy	1796						269,357	416	...	...	ESDJ 	2006-07-01	
+Wulanhaote, China	1797						269,162	...	...	...	CDJC 	2000-11-01	
+Irbid, Jordan	1798						269,140	...	...	...	ESDF 	31-12-2006	
+Hilla, Iraq	1799						268,834	...	...	...	CDFC 	1987-10-17	
+Wiesbaden, Germany	1800						268,716	204	...	...	ESDJ 	1999-07-01	
+Wonju, South Korea	1801						268,352	865	...	...	CDFC 	2000-11-01	
+Lexington-Fayette (KY), United States	1802						268,080	737	...	...	ESDJ 	2005-07-01	(16),(17)
+Ibaraki, Japan	1803						267,961	77	...	...	CDFC 	2005-10-01	(61),(62),(63)
+Shillong, India	1804						132,876	10	267,881	25	CDFC 	2001-03-01	(53)
+Tokushima, Japan	1805						267,833	191	...	...	CDFC 	2005-10-01	(61),(62),(63)
+Angeles, Philippines	1806						267,788	60	...	...	CDJC 	2000-10-01	
+Monclova, Mexico	1807						...	...	267,575	...	ESDJ 	2006-07-01	(12),(13)
+Zagazig, Egypt	1808						267,469	...	...	...	CDFC 	1996-11-19	
+Butuan, Philippines	1809						267,279	816	...	...	CDJC 	2000-10-01	
+Kakogawa, Japan	1810						267,100	139	...	...	CDFC 	2005-10-01	(61),(62),(63)
+Ha'il, Saudi Arabia	1811						267,005	...	...	...	CDFC 	2004-09-15	
+Darbhanga, India	1812						266,834	19	...	...	CDFC 	2001-03-01	(53)
+Haifa, Israel	1813						266,662	64	...	...	ESDJ 	2006-07-01	
+San Pedro de Macoris, Dominican Republic	1814						266,629	...	...	...	ESDF 	2001-07-01	
+Taganrog, Russia	1815						266,511	...	...	...	ESDJ 	2006-07-01	(95),(96)
+Nasariya, Iraq	1816						265,937	...	...	...	CDFC 	1987-10-17	
+Suncheon, South Korea	1817						265,930	907	...	...	CDFC 	2000-11-01	
+Sterlitamak, Russia	1818						265,854	...	...	...	ESDJ 	2006-07-01	(95),(96)
+Alwar, India	1819						260,245	...	265,850	58	CDFC 	2001-03-01	(53)
+Petrozavodsk, Russia	1820						265,663	...	...	...	ESDJ 	2006-07-01	(95),(96)
+Cumaná, Venezuela	1821						265,621	405	...	...	ESDF 	1998-07-01	
+Barueri, Brazil	1822						265,549	...	...	...	ESDF 	2005-07-01	(11)
+Zhangping, China	1823						264,757	...	...	...	CDJC 	2000-11-01	
+Münster (Westf.), Germany	1824						264,670	303	...	...	ESDJ 	1999-07-01	
+Chiayi, China	1825						264,286	...	...	...	ESDF 	1999-07-01	
+Fengzhen, China	1826						264,204	...	...	...	CDJC 	2000-11-01	
+Gunpo (Kunpo), South Korea	1827						263,760	36	...	...	CDFC 	2000-11-01	
+Mönchengladbach, Germany	1828						263,697	170	...	...	ESDJ 	1999-07-01	
+Strasbourg, France	1829						263,682	78	...	...	CDJC 	1999-03-08	(82),(83),(84)
+Dasarahalli, India	1830						263,636	...	...	...	CDFC 	2001-03-01	(53)
+Santiago del Estero, Argentina	1831						189,947	...	263,471	...	CDFC 	1991-10-15	
+Yakutsk, Russia	1832						242,414	...	263,451	...	ESDJ 	2006-07-01	(95),(96)
+Chemnitz, Germany	1833						263,222	176	...	...	ESDJ 	1999-07-01	
+Boksburg, South Africa	1834						263,179	...	...	...	CDFC 	1996-10-10	
+Hisar, India	1835						256,810	45	263,070	49	CDFC 	2001-03-01	(53)
+Mito, Japan	1836						262,603	217	...	...	CDFC 	2005-10-01	(61),(62),(63)
+Tarlac, Philippines	1837						262,481	...	...	...	CDJC 	2000-10-01	
+Hailaer, China	1838						262,184	...	...	...	CDJC 	2000-11-01	
+Maturín, Venezuela	1839						262,167	...	...	...	ESDF 	1998-07-01	
+L.B. Nagar, India	1840						261,987	...	...	...	CDFC 	2001-03-01	(53)
+Viamao, Brazil	1841						261,971	...	...	...	ESDF 	2005-07-01	(11)
+Yunfu, China	1842						261,636	...	...	...	CDJC 	2000-11-01	
+Bally, India	1843						261,575	12	...	...	CDFC 	2001-03-01	(53)
+Santa Ana, El Salvador	1844						261,568	400	...	...	ESDF 	2003-07-01	(11)
+Longjing, China	1845						261,551	...	...	...	CDJC 	2000-11-01	
+Kankan, Guinea	1846						...	...	261,341	...	CDFC 	1996-01-12	
+Sao José dos Pinhais, Brazil	1847						261,125	923	...	...	ESDF 	2005-07-01	(11)
+Blackpool, United Kingdom	1848						...	...	261,088	...	ESDF 	2001-04-29	(99)
+Cuddapah, India	1849						125,725	42	260,899	78	CDFC 	2001-03-01	(53)
+Faiyûm, Egypt	1850						260,830	...	...	...	CDFC 	1996-11-19	
+Bahía Blanca, Argentina	1851						260,096	...	...	...	CDFC 	1991-10-15	
+Verona, Italy	1852						260,049	207	...	...	ESDJ 	2006-07-01	
+Petrolina, Brazil	1853						260,004	6,116	...	...	ESDF 	2005-07-01	(11)
+Dzerzhinsk (Novgorodskaya oblast), Russia	1854						251,197	...	259,982	...	ESDJ 	2006-07-01	(95),(96)
+Ratchaburi, Thailand	1855						...	...	259,981	5,196	ESDJ 	2006-07-01	
+Mandaue, Philippines	1856						259,728	12	...	...	CDJC 	2000-10-01	
+Popayán, Colombia	1857						...	...	259,690	464	ESDF 	2006-07-01	(47)
+Governador Valadares, Brazil	1858						259,405	2,447	...	...	ESDF 	2005-07-01	(11)
+Katsina, Nigeria	1859						259,315	...	...	...	CDFC 	1991-11-26	
+San Miguel, El Salvador	1860						259,197	594	...	...	ESDF 	2003-07-01	(11)
+Parbhani, India	1861						259,170	58	...	...	CDFC 	2001-03-01	(53)
+Hiratsuka, Japan	1862						258,958	68	...	...	CDFC 	2005-10-01	(61),(62),(63)
+Gajuwaka, India	1863						258,944	...	...	...	CDFC 	2001-03-01	(53)
+Nôvo Hamburgo, Brazil	1864						258,754	...	...	...	ESDF 	2005-07-01	(11)
+Volta Redonda, Brazil	1865						258,145	...	...	...	ESDF 	2005-07-01	(11)
+Corrientes, Argentina	1866						258,103	...	...	...	CDFC 	1991-10-15	
+Aktobe, Kazakhstan	1867						258,014	...	...	...	ESDF 	2006-01-01	
+Sivas, Turkey	1868						256,914	...	...	...	ESDF 	2003-07-01	
+Floridablanca, Colombia	1869						...	...	256,281	101	ESDF 	2006-07-01	(47)
+Thiès, Senegal	1870						256,113	...	...	...	ESDF 	1999-07-01	
+Yamagata, Japan	1871						256,012	381	...	...	CDFC 	2005-10-01	(61),(62),(63)
+Dnieprodzerzhynsk, Ukraine	1872						248,980	84	255,882	138	ESDJ 	2005-01-01	
+Ismailia, Egypt	1873						255,134	...	...	...	CDFC 	1996-11-19	
+Augsburg, Germany	1874						254,867	147	...	...	ESDJ 	1999-07-01	
+Várzea Grande, Brazil	1875						254,736	900	...	...	ESDF 	2005-07-01	(11)
+Bengkulu, Indonesia	1876						254,693	145	...	...	ESDF 	2003-07-01	
+Halle, Germany	1877						254,360	135	...	...	ESDJ 	1999-07-01	
+NIS, Serbia	1878						181,317	43	254,164	597	ESDJ 	2006-06-30	(97)
+PORT MORESBY, Papua New Guinea	1879						254,158	...	...	...	CDFC 	2000-07-09	
+Sariwon, North Korea	1880						254,146	...	...	...	CDFC 	31-12-1993	
+Ubon Ratchathani, Thailand	1881						...	...	254,091	15,745	ESDJ 	2006-07-01	
+Bratsk, Russia	1882						254,018	...	...	...	ESDJ 	2006-07-01	(95),(96)
+Bijapur, India	1883						245,946	...	253,307	75	CDFC 	2001-03-01	(53)
+Kirovohrad, Ukraine	1884						245,226	59	253,256	74	ESDJ 	2005-01-01	
+Khmelnytskiy (Hmilnyk), Ukraine	1885						253,068	50	...	...	ESDJ 	2005-01-01	
+Sari, Iran	1886						253,052	...	...	...	ESDJ 	2003-07-01	
+Dongsheng, China	1887						252,566	...	...	...	CDJC 	2000-11-01	
+Chuncheon, South Korea	1888						252,547	1,117	...	...	CDFC 	2000-11-01	
+Gdynia, Poland	1889						252,443	135	...	...	ESDF 	2006-07-01	(94)
+Baguio, Philippines	1890						252,386	58	...	...	CDJC 	2000-10-01	
+Fukui, Japan	1891						252,220	341	...	...	CDFC 	2005-10-01	(61),(62),(63)
+Junagadh, India	1892						168,686	...	252,138	...	CDFC 	2001-03-01	(53)
+Kediri, Indonesia	1893						252,126	63	...	...	ESDF 	2003-07-01	
+Bamenda, Cameroon	1894						252,083	...	...	...	ESDF 	1998-07-01	
+Gujrat, Pakistan	1895						251,792	...	...	...	CDFC 	1998-03-02	(66)
+Chishui, China	1896						251,780	...	...	...	CDJC 	2000-11-01	
+Tulufan, China	1897						251,652	...	...	...	CDJC 	2000-11-01	
+Orsk, Russia	1898						246,540	...	251,006	...	ESDJ 	2006-07-01	(95),(96)
+Kure, Japan	1899						251,003	353	...	...	CDFC 	2005-10-01	(61),(62),(63)
+Oshogbo, Nigeria	1900						250,951	...	...	...	CDFC 	1991-11-26	
+Baranagar, India	1901						250,615	7	...	...	CDFC 	2001-03-01	(53)
+Mokpo, South Korea	1902						250,480	46	...	...	CDFC 	2000-11-01	
+Longquan, China	1903						250,398	...	...	...	CDJC 	2000-11-01	
+Plano (TX), United States	1904						250,096	186	...	...	ESDJ 	2005-07-01	(16),(17),(20)
+Osh, Kyrgyzstan	1905						223,700	...	249,900	182	ESDJ 	2006-07-01	
+Lingwu, China	1906						249,890	...	...	...	CDJC 	2000-11-01	
+Leiden, Netherlands	1907						118,069	22	249,769	87	ESDJ 	2006-01-01	(93)
+Boa Vista, Brazil	1908						249,655	...	...	...	ESDF 	2005-07-01	(11)
+Labé, Guinea	1909						...	...	249,515	...	CDFC 	1996-01-12	
+Alajuela, Costa Rica	1910						249,121	388	...	...	ESDJ 	2006-07-01	
+St. Petersburg (FL), United States	1911						249,079	159	...	...	ESDJ 	2005-07-01	(16),(17),(29)
+Phra Nakhon Si Ayutthaya, Thailand	1912						...	...	249,049	2,557	ESDJ 	2006-07-01	
+Pucallpa, Peru	1913						248,878	...	...	...	CDFC 	2005-07-18	(49)
+Sfax, Tunisia	1914						248,800	...	...	...	ESDF 	1998-07-01	
+Qingtongxia, China	1915						248,640	...	...	...	CDJC 	2000-11-01	
+Tumkur, India	1916						248,592	...	...	...	CDFC 	2001-03-01	(53)
+Russiefa, Jordan	1917						248,512	...	...	...	ESDF 	31-12-2006	
+Hospitalet de Llobregat, Spain	1918						248,150	...	...	...	ESDJ 	2006-01-01	(98)
+LJUBLJANA, Slovenia	1919						246,472	164	248,139	171	ESDJ 	2006-06-30	
+Sasebo, Japan	1920						248,041	308	...	...	CDFC 	2005-10-01	(61),(62),(63)
+Batangas, Philippines	1921						247,588	283	...	...	CDJC 	2000-10-01	
+Temuco, Chile	1922						247,275	...	...	...	ESDF 	2006-06-30	
+SUCRE, Bolivia	1923						247,259	...	...	...	ESDF 	2006-07-01	(45)
+Najran (Aba as-Suud), Saudi Arabia	1924						246,880	...	...	...	CDFC 	2004-09-15	
+Shakhty, Russia	1925						246,806	...	...	...	ESDJ 	2006-07-01	(95),(96)
+Batna, Algeria	1926						246,800	...	...	...	CDJC 	1998-06-25	
+Braunschweig, Germany	1927						246,322	192	...	...	ESDJ 	1999-07-01	
+Saraburi, Thailand	1928						...	...	246,295	3,576	ESDJ 	2006-07-01	
+Czestochowa, Poland	1929						246,129	160	...	...	ESDF 	2006-07-01	(94)
+Imphal, India	1930						217,275	33	245,967	37	CDFC 	2001-03-01	(53)
+Mardan, Pakistan	1931						245,926	...	...	...	CDFC 	1998-03-02	(66)
+Embu, Brazil	1932						245,855	...	...	...	ESDF 	2005-07-01	(11)
+Messina, Italy	1933						245,741	211	...	...	ESDJ 	2006-07-01	
+Fuchu, Japan	1934						245,623	29	...	...	CDFC 	2005-10-01	(61),(62),(63)
+Dordrecht, Netherlands	1935						118,821	80	245,482	158	ESDJ 	2006-01-01	(93)
+Praia Grande, Brazil	1936						245,386	...	...	...	ESDF 	2005-07-01	(11)
+Kasur, Pakistan	1937						245,321	...	...	...	CDFC 	1998-03-02	(66)
+Takasaki, Japan	1938						245,100	111	...	...	CDFC 	2005-10-01	(61),(62),(63)
+Angarsk, Russia	1939						244,919	...	...	...	ESDJ 	2006-07-01	(95),(96)
+Kashan, Iran	1940						244,877	...	...	...	ESDJ 	2003-07-01	
+Hachinohe, Japan	1941						244,700	305	...	...	CDFC 	2005-10-01	(61),(62),(63)
+Suqian, China	1942						244,651	...	...	...	CDJC 	2000-11-01	
+Syktivkar, Russia	1943						229,247	...	244,645	...	ESDJ 	2006-07-01	(95),(96)
+Graz, Austria	1944						244,604	128	...	...	ESDJ 	2006-01-01	(78),(79)
+Majnoon, Iraq	1945						244,545	...	...	...	CDFC 	1987-10-17	
+Rivne, Ukraine	1946						244,448	40	...	...	ESDJ 	2005-01-01	
+Borujerd, Iran	1947						244,205	...	...	...	ESDJ 	2003-07-01	
+Aachen, Germany	1948						243,825	161	...	...	ESDJ 	1999-07-01	
+Plymouth, United Kingdom	1949						...	...	243,795	...	ESDF 	2001-04-29	(99)
+Bergen, Norway	1950						243,389	445	...	...	ESDJ 	2006-07-01	
+Anantapur, India	1951						220,951	...	243,359	...	CDFC 	2001-03-01	(53)
+Aldershot, United Kingdom	1952						...	...	243,344	...	ESDF 	2001-04-29	(99)
+Coruña(A), Spain	1953						243,320	...	...	...	ESDJ 	2006-01-01	(98)
+La Coruña, Spain	1954						243,320	376	...	...	ESDJ 	2006-01-01	(98)
+Jinshi, China	1955						243,242	...	...	...	CDJC 	2000-11-01	
+PARAMARIBO, Suriname	1956						...	...	242,946	182	CDFC 	2004-08-02	
+Thoothukkudi (Tuticorin), India	1957						216,058	13	242,860	140	CDFC 	2001-03-01	(53)
+Farrukhabad-cum-Fategarh, India	1958						227,876	17	242,558	21	CDFC 	2001-03-01	(53)
+Huayin, China	1959						242,488	...	...	...	CDJC 	2000-11-01	
+Tegal, Indonesia	1960						242,423	35	...	...	ESDF 	2003-07-01	
+Neyagawa, Japan	1961						241,816	25	...	...	CDFC 	2005-10-01	(61),(62),(63)
+Krefeld, Germany	1962						241,769	138	...	...	ESDJ 	1999-07-01	
+Dezful, Iran	1963						241,544	...	...	...	ESDJ 	2003-07-01	
+Sincelejo, Colombia	1964						...	...	241,456	292	ESDF 	2006-07-01	(47)
+Nizhenvartovsk, Russia	1965						241,402	...	...	...	ESDJ 	2006-07-01	(95),(96)
+Narayanganj, Bangladesh	1966						...	...	241,393	13	CDFC 	2001-01-22	
+Chiang Rai, Thailand	1967						...	...	241,328	11,678	ESDJ 	2006-07-01	
+Rangpur, Bangladesh	1968						...	...	241,310	51	CDFC 	2001-01-22	
+Gorgan, Iran	1969						241,085	...	...	...	ESDJ 	2003-07-01	
+Juàzeiro do Norte, Brazil	1970						240,638	...	...	...	ESDF 	2005-07-01	(11)
+Jian (Jilin), China	1971						239,849	...	...	...	CDJC 	2000-11-01	
+Tiefa, China	1972						239,636	...	...	...	CDJC 	2000-11-01	
+Jersey City (NJ), United States	1973						239,614	39	...	...	ESDJ 	2005-07-01	(16),(17),(32)
+Glendale (AZ), United States	1974						239,435	149	...	...	ESDJ 	2005-07-01	(16),(17),(26)
+Lincoln (NE), United States	1975						239,213	210	...	...	ESDJ 	2005-07-01	(16),(17)
+Habra, India	1976						127,695	18	239,170	37	CDFC 	2001-03-01	(53)
+Akure, Nigeria	1977						239,124	...	...	...	CDFC 	1991-11-26	
+Itagüi, Colombia	1978						...	...	239,053	17	ESDF 	2006-07-01	(47)
+Kasukabe, Japan	1979						238,506	66	...	...	CDFC 	2005-10-01	(61),(62),(63)
+Chernivtsy, Ukraine	1980						238,492	71	...	...	ESDJ 	2005-01-01	
+Granada, Spain	1981						237,929	882	...	...	ESDJ 	2006-01-01	(98)
+Sumaré, Brazil	1982						237,900	208	...	...	ESDF 	2005-07-01	(11)
+Tembisa, South Africa	1983						237,676	...	...	...	CDFC 	1996-10-10	
+Bukhara, Uzbekistan	1984						237,361	...	...	...	ESDF 	2001-07-01	
+Dire Dawa, Ethiopia	1985						237,012	18	...	...	ESDF 	2002-07-01	
+Magé, Brazil	1986						237,000	744	...	...	ESDF 	2005-07-01	(11)
+Derby, United Kingdom	1987						...	...	236,738	...	ESDF 	2001-04-29	(99)
+Ramagundam, India	1988						235,540	28	236,623	...	CDFC 	2001-03-01	(53)
+Fuji, Japan	1989						236,474	214	...	...	CDFC 	2005-10-01	(61),(62),(63)
+Qods, Iran	1990						236,463	...	...	...	ESDJ 	2003-07-01	
+Ipatinga, Brazil	1991						236,463	231	...	...	ESDF 	2005-07-01	(11)
+Nagaoka, Japan	1992						236,344	526	...	...	CDFC 	2005-10-01	(61),(62),(63)
+Luton/Dunstable, United Kingdom	1993						...	...	236,318	...	ESDF 	2001-04-29	(99)
+Soka, Japan	1994						236,316	27	...	...	CDFC 	2005-10-01	(61),(62),(63)
+Lishi, China	1995						235,678	...	...	...	CDJC 	2000-11-01	
+Karradah Sharqiyah, Iraq	1996						235,554	...	...	...	CDFC 	1987-10-17	
+Jalna, India	1997						235,529	82	...	...	CDFC 	2001-03-01	(53)
+Saskatoon, Canada	1998						...	...	235,464	5,192	ESDJ 	2006-07-01	
+BUJUMBURA, Burundi	1999						235,440	...	...	...	CDFC 	1990-08-16	
+Zacatecas, Mexico	2000						...	...	235,325	...	ESDJ 	2006-07-01	(12),(13)

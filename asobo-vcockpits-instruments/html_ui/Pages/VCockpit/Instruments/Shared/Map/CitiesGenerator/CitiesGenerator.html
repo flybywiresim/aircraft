@@ -1,0 +1,44 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Cities Generator</title>
+    <script src="../Cities/City.js"></script>
+    <script src="../Cities/Cities.js"></script>
+    <script src="CitiesGenerator.js"></script>
+    <script>
+        function download(filename, text) {
+            var element = document.createElement('a');
+            element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+            element.setAttribute('download', filename);
+
+            element.style.display = 'none';
+            document.body.appendChild(element);
+
+            element.click();
+
+            document.body.removeChild(element);
+        }
+
+        window.addEventListener(
+            "load",
+            async () => {
+                let cities = await CitiesGenerator.ExtractCities();
+                let largeCities = await CitiesGenerator.GetLargeCities();
+                let mediumCities = await CitiesGenerator.GetMediumCities();
+                CitiesGenerator.MarkSize(cities, largeCities, 0);
+                CitiesGenerator.MarkSize(cities, mediumCities, 1);
+                document.getElementById("to-json").onclick = () => {
+                    download("cities.json", JSON.stringify(cities));
+                }
+            }
+        );
+    </script>
+</head>
+<body>
+    <div id="output">
+
+    </div>
+    <button id="to-json">Download cities.json</button>
+</body>
+</html>

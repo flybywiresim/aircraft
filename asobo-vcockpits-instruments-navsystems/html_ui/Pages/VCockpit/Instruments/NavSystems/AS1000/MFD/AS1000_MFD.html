@@ -1,0 +1,967 @@
+﻿<script type="text/html" id="AS1000_MFD">
+    <glasscockpit-highlight id="highlight"></glasscockpit-highlight>
+    <div id="Mainframe">
+        <div id="Electricity" state="off">
+            <div id="Console">Initializing System...</div>
+            <img id="Splash" src="/Pages/VCockpit/Instruments/NavSystems/Shared/Images/Logo/Garmin.svg" />
+            <img id="Validate" src="/Pages/VCockpit/Instruments/NavSystems/Shared/Images/Logo/MFD_Startup_G1000.png" />
+            <div id="CenterDisplay">
+                <div id="MainDisplayArea">
+                    <div id="LeftInfos">
+                        <engine-display id="ED"></engine-display>
+                    </div>
+                    <div id="RightInfos" state="Map">
+                        <div id="Map">
+                            <map-instrument id="MapInstrument" bing-id="MFD" config-path="/Pages/VCockpit/Instruments/NavSystems/AS1000/MFD/" hide-flightplan-if-bushtrip="true"></map-instrument>
+                            <glasscockpit-wind-data id="WindData"></glasscockpit-wind-data>
+                        </div>
+
+                        <div id="AirportInfos" state="Infos1">
+                            <div id="Infos1">
+                                <div id="AirportInfos1_Map"></div>
+                                <div id="rightPanel">
+                                    <div id="Airport">
+                                        <div class="top">AIRPORT</div>
+                                        <div class="bottom">
+                                            <div class="flex">
+                                                <div class="Blinking" id="AirportInfos1_Ident">____</div>
+                                                <div id="AirportInfos1_Symbol"></div>
+                                                <div id="AirportInfos1_Type">Unknown</div>
+                                            </div>
+                                            <div id="AirportInfos1_FacilityName">____________________</div>
+                                            <div id="AirportInfos1_City">____________________</div>
+                                            <div class="flex">
+                                                <div id="AirportInfos1_Region">__________</div>
+                                                <div id="AirportInfos1_Elevation">____FT</div>
+                                            </div>
+                                            <div class="flex">
+                                                <div id="AirportLatLon">
+                                                    <div id="AirportInfos1_Latitude">_ __°__.__'</div>
+                                                    <div id="AirportInfos1_Longitude">____°__.__'</div>
+                                                </div>
+                                                <div id="AirportInfos1_FuelAvailable"></div>
+                                            </div>
+                                            <div id="AirportInfos1_TimeZone">UTC__</div>
+                                        </div>
+                                    </div>
+                                    <div id="Runways">
+                                        <div class="top">RUNWAYS</div>
+                                        <div class="bottom">
+                                            <div class="Blinking" id="AirportInfos1_RunwayName">__-__</div>
+                                            <div id="AirportInfos1_RunwaySize">____FT x ___FT</div>
+                                            <div id="AirportInfos1_RunwaySurfaceType">____________________</div>
+                                            <div id="AirportInfos1_RunwayLights">____________________</div>
+                                        </div>
+                                    </div>
+                                    <div id="Frequencies">
+                                        <div class="top">FREQUENCIES</div>
+                                        <div id="SliderAndElems" class="bottom">
+                                            <div id="AirportInfos1_Frequencies">
+                                                <div id="AirportInfos1_Frequency1"></div>
+                                                <div id="AirportInfos1_Frequency2"></div>
+                                                <div id="AirportInfos1_Frequency3"></div>
+                                                <div id="AirportInfos1_Frequency4"></div>
+                                                <div id="AirportInfos1_Frequency5"></div>
+                                                <div id="AirportInfos1_Frequency6"></div>
+                                                <div id="AirportInfos1_Frequency7"></div>
+                                            </div>
+                                            <div id="Slider" state="Active">
+                                                <div id="SliderCursor"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="Infos2">
+                                <div id="AirportInfos">
+                                    <div id="title">AIRPORT</div>
+                                    <div id="infos">
+                                        <div id="topLine">
+                                            <div class="Blinking" id="AirportInfos2_ident">KHLC</div>
+                                            <div id="AirportInfos2_symbol"></div>
+                                            <div id="AirportInfos2_type">PUBLIC</div>
+                                        </div>
+                                        <div id="AirportInfos2_facility">HILL CITY MUN</div>
+                                        <div id="AirportInfos2_city">HILL CITY KS</div>
+                                    </div>
+                                </div>
+                                <div id="AirportMap">
+                                </div>
+                                <div id="DirectoryInfos">
+                                    <div id="title">AIRPORT DIRECTORY</div>
+                                    <div id="AirportInfos2_directory">
+
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="SystemSetup">
+                            <div class="column">
+                                <div class="Category">
+                                    <div class="title">COM CONFIG</div>
+                                    <div class="content">
+                                        <div class="element">
+                                            <div class="name">CHANNEL SPACING</div>
+                                            <div id="Setup_ChannelConfig" class="value Selectable">25.0 kHz</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="column"></div>
+                            <div class="column"></div>
+                        </div>
+
+                        <div id="Nrst_Airport" class="NrstPage">
+                            <div class="Map">
+
+                            </div>
+
+                            <div class="RightInfos">
+                                <div id="NrstAirportList" class="SubPart">
+                                    <div class="Title">
+                                        NEAREST AIRPORTS
+                                    </div>
+                                    <div class="Content SliderContainer">
+                                        <table id="Nrst_AirportList">
+                                            <tr class="SizeSetter">
+                                                <td></td>
+                                                <td></td>
+                                                <td></td>
+                                                <td></td>
+                                                <td></td>
+                                            </tr>
+                                            <tr class="L1"></tr>
+                                            <tr class="L2"></tr>
+                                            <tr class="L3"></tr>
+                                            <tr class="L4"></tr>
+                                            <tr class="L5"></tr>
+                                        </table>
+                                        <div class="Slider">
+                                            <div class="SliderCursor"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div id="NrstAirportInfos" class="SubPart">
+                                    <div class="Title">
+                                        INFORMATION
+                                    </div>
+                                    <div class="Content">
+                                        <div class="Facility"></div>
+                                        <div class="City"></div>
+                                        <div class="Elevation"></div>
+                                    </div>
+                                </div>
+                                <div id="NrstAirportRunways" class="SubPart">
+                                    <div class="Title">
+                                        RUNWAYS
+                                    </div>
+                                    <div class="Content">
+                                        <div class="Rwy_Designation"></div>
+                                        <div class="Rwy_Surface"></div>
+                                        <div class="Rwy_Length"></div>
+                                        <div class="Rwy_x">x</div>
+                                        <div class="Rwy_Width"></div>
+                                    </div>
+                                </div>
+                                <div id="NrstAirportFreqs" class="SubPart">
+                                    <div class="Title">
+                                        FREQUENCIES
+                                    </div>
+                                    <div class="Content SliderContainer">
+                                        <table id="Nrst_AirportFreqList">
+                                            <tr class="SizeSetter">
+                                                <td></td>
+                                                <td></td>
+                                            </tr>
+                                            <tr class="L1"></tr>
+                                            <tr class="L2"></tr>
+                                            <tr class="L3"></tr>
+                                        </table>
+                                        <div class="Slider">
+                                            <div class="SliderCursor"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div id="NrstAirportApproaches" class="SubPart">
+                                    <div class="Title">
+                                        APPROACHES
+                                    </div>
+                                    <div class="Content SliderContainer">
+                                        <table id="Nrst_AirportApproachesList">
+                                            <tr class="SizeSetter">
+                                                <td></td>
+                                            </tr>
+                                            <tr class="L1"></tr>
+                                            <tr class="L2"></tr>
+                                            <tr class="L3"></tr>
+                                        </table>
+                                        <div class="Slider">
+                                            <div class="SliderCursor"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="Nrst_VOR" class="NrstPage">
+                            <div class="Map">
+
+                            </div>
+
+                            <div class="RightInfos">
+                                <div id="NrstVORList" class="SubPart">
+                                    <div class="Title">
+                                        NEAREST VOR
+                                    </div>
+                                    <div class="Content SliderContainer">
+                                        <table id="Nrst_VORList">
+                                            <tr class="SizeSetter">
+                                                <td></td>
+                                                <td></td>
+                                                <td></td>
+                                                <td></td>
+                                                <td></td>
+                                            </tr>
+                                            <tr class="L1"></tr>
+                                            <tr class="L2"></tr>
+                                            <tr class="L3"></tr>
+                                            <tr class="L4"></tr>
+                                            <tr class="L5"></tr>
+                                            <tr class="L6"></tr>
+                                            <tr class="L7"></tr>
+                                            <tr class="L8"></tr>
+                                            <tr class="L9"></tr>
+                                            <tr class="L10"></tr>
+                                            <tr class="L11"></tr>
+                                        </table>
+                                        <div class="Slider">
+                                            <div class="SliderCursor"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div id="NrstVORInfos" class="SubPart">
+                                    <div class="Title">
+                                        INFORMATION
+                                    </div>
+                                    <div class="Content">
+                                        <div class="Facility"></div>
+                                        <div class="City"></div>
+                                        <div class="Class"></div>
+                                        <div class="MagVar"></div>
+                                        <div class="Latitude"></div>
+                                        <div class="Longitude"></div>
+                                    </div>
+                                </div>
+                                <div id="NrstVORFrequency" class="SubPart">
+                                    <div class="Title">
+                                        FREQUENCY
+                                    </div>
+                                    <div class="Content">
+                                        <div class="Frequency"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="Nrst_NDB" class="NrstPage">
+                            <div class="Map">
+
+                            </div>
+
+                            <div class="RightInfos">
+                                <div id="NrstNDBList" class="SubPart">
+                                    <div class="Title">
+                                        NEAREST NDB
+                                    </div>
+                                    <div class="Content SliderContainer">
+                                        <table id="Nrst_NDBList">
+                                            <tr class="SizeSetter">
+                                                <td></td>
+                                                <td></td>
+                                                <td></td>
+                                                <td></td>
+                                                <td></td>
+                                            </tr>
+                                            <tr class="L1"></tr>
+                                            <tr class="L2"></tr>
+                                            <tr class="L3"></tr>
+                                            <tr class="L4"></tr>
+                                            <tr class="L5"></tr>
+                                            <tr class="L6"></tr>
+                                            <tr class="L7"></tr>
+                                            <tr class="L8"></tr>
+                                            <tr class="L9"></tr>
+                                            <tr class="L10"></tr>
+                                            <tr class="L11"></tr>
+                                        </table>
+                                        <div class="Slider">
+                                            <div class="SliderCursor"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div id="NrstNDBInfos" class="SubPart">
+                                    <div class="Title">
+                                        INFORMATION
+                                    </div>
+                                    <div class="Content">
+                                        <div class="Facility"></div>
+                                        <div class="City"></div>
+                                        <div class="Class"></div>
+                                        <div class="Latitude"></div>
+                                        <div class="Longitude"></div>
+                                    </div>
+                                </div>
+                                <div id="NrstNDBFrequency" class="SubPart">
+                                    <div class="Title">
+                                        FREQUENCY
+                                    </div>
+                                    <div class="Content">
+                                        <div class="Frequency"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="Nrst_Intersections" class="NrstPage">
+                            <div class="Map">
+
+                            </div>
+
+                            <div class="RightInfos">
+                                <div id="NrstINTList" class="SubPart">
+                                    <div class="Title">
+                                        NEAREST INT
+                                    </div>
+                                    <div class="Content SliderContainer">
+                                        <table id="Nrst_INTList">
+                                            <tr class="SizeSetter">
+                                                <td></td>
+                                                <td></td>
+                                                <td></td>
+                                                <td></td>
+                                                <td></td>
+                                            </tr>
+                                            <tr class="L1"></tr>
+                                            <tr class="L2"></tr>
+                                            <tr class="L3"></tr>
+                                            <tr class="L4"></tr>
+                                            <tr class="L5"></tr>
+                                            <tr class="L6"></tr>
+                                            <tr class="L7"></tr>
+                                            <tr class="L8"></tr>
+                                            <tr class="L9"></tr>
+                                            <tr class="L10"></tr>
+                                            <tr class="L11"></tr>
+                                        </table>
+                                        <div class="Slider">
+                                            <div class="SliderCursor"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div id="NrstINTInfos" class="SubPart">
+                                    <div class="Title">
+                                        INFORMATION
+                                    </div>
+                                    <div class="Content">
+                                        <div class="Latitude"></div>
+                                        <div class="Longitude"></div>
+                                    </div>
+                                </div>
+                                <div id="NrstINTVorReference" class="SubPart">
+                                    <div class="Title">
+                                        REFERENCE VOR
+                                    </div>
+                                    <div class="Content">
+                                        <div class="VorIdent"></div>
+                                        <img class="VorSymbol" />
+                                        <div class="VorFreq"></div>
+                                        <div class="VorBearing"></div>
+                                        <div class="VorDistance"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="ActiveFlightPlan">
+                            <div class="Map">
+
+                            </div>
+
+                            <div class="RightInfos">
+                                <div class="SubPart ActiveFPL">
+                                    <div class="Title">ACTIVE FLIGHT PLAN</div>
+                                    <div class="Content">
+                                        <div class="BlueValue" id="AFPL_Name">______ / ______</div>
+                                        <div class="SliderContainer">
+                                            <table>
+                                                <thead>
+                                                    <tr>
+                                                        <th></th>
+                                                        <th>DTK</th>
+                                                        <th>DIS</th>
+                                                        <th>ALT</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr class="SizeSetter">
+                                                        <td>
+                                                            <div class="ArrowContainer">
+                                                                <svg id="CurrentLegArrowSVG" height="1000" width="200" xmlns="http://www.w3.org/2000/svg">
+                                                                    <path id="CurrentLegArrow" d="M0, 0 Z" fill="magenta" />
+                                                                </svg>
+                                                            </div>
+                                                        </td>
+                                                        <td></td>
+                                                        <td></td>
+                                                        <td></td>
+                                                    </tr>
+                                                    <tr class="L1"></tr>
+                                                    <tr class="L2"></tr>
+                                                    <tr class="L3"></tr>
+                                                    <tr class="L4"></tr>
+                                                    <tr class="L5"></tr>
+                                                    <tr class="L6"></tr>
+                                                    <tr class="L7"></tr>
+                                                    <tr class="L8"></tr>
+                                                    <tr class="L9"></tr>
+                                                    <tr class="L10"></tr>
+                                                    <tr class="L11"></tr>
+                                                </tbody>
+                                            </table>
+                                            <div class="Slider" state="Inactive">
+                                                <div class="SliderCursor">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="SubPart CurrentVnvProfile">
+                                    <div class="Title">CURRENT VNV PROFILE</div>
+                                    <div class="Content">
+
+                                    </div>
+                                </div>
+                                <div class="SubPart SelectedWaypointWeather">
+                                    <div class="Title">SELECTED WAYPOINT WEATHER</div>
+                                    <div class="Content">
+
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div id="PageSelection" class="PopupWindow" state="Inactive">
+                    <div id="Pages"></div>
+                    <table id="PageGroupsTable">
+                        <tr id="PageGroups"></tr>
+                    </table>
+                </div>
+                <div id="DirectToWindow" class="PopupWindow" state="Inactive">
+                    <div id="mainInfos">
+                        <div class="top">
+                            <div>Direct To</div>
+                            <div>IDENT, FACILITY, CITY</div>
+                        </div>
+                        <div class="bottom">
+                            <div>
+                                <span class="Blinking" id="DRCTIdent">____</span>
+                                <span id="DRCTSymbol"></span>
+                                <span id="DRCTRegion"></span>
+                            </div>
+                            <div class="Blinking" id="DRCTFacility"></div>
+                            <div id="DRCTCity"></div>
+                        </div>
+                    </div>
+                    <div id="vnav">
+                        <div class="top">VNAV</div>
+                        <div class="bottom">
+                            <div id="DRCTVnavHeight">_____FT</div>
+                            <div id="DRCTVnavDistance">+0NM</div>
+                        </div>
+                    </div>
+                    <div id="map">
+                        <div class="top">MAP</div>
+                        <div id="DRCTMap"></div>
+                    </div>
+                    <div id="location">
+                        <div class="top">LOCATION</div>
+                        <div class="bottom">
+                            <div>BRG</div>
+                            <div id="DRCTBearing"></div>
+                            <div>DIS</div>
+                            <div id="DRCTDistance"></div>
+                        </div>
+                    </div>
+                    <div id="course">
+                        <div class="top">COURSE</div>
+                        <div class="bottom" id="DRCTDesiredCourse"></div>
+                    </div>
+                    <div class="Blinking" id="DRCTActivateButton">ACTIVATE?</div>
+                    <div class="Blinking" id="DRCTHoldButton">HOLD?</div>
+                    <div id="DRCTSelectionWindow" class="PopupWindow" state="Inactive">
+                        <div id="titlePart">
+                            <span id="Title" class="Blinking">FPL</span>
+                        </div>
+                        <div id="ElementListAndSlider">
+                            <div id="ElementList">
+                                <div id="DRCTSelectElem1" class="Blinking"></div>
+                                <div id="DRCTSelectElem2" class="Blinking"></div>
+                                <div id="DRCTSelectElem3" class="Blinking"></div>
+                                <div id="DRCTSelectElem4" class="Blinking"></div>
+                            </div>
+                            <div id="Slider" state="Active">
+                                <div id="SliderCursor"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div id="WaypointsWindows" class="PopupWindow" state="Inactive">
+                    <div>WAYPOINT INFORMATION</div>
+                    <div id="mainInfos">
+                        <div class="top">
+                            <div>IDENT, FACILITY, CITY</div>
+                        </div>
+                        <div class="bottom">
+                            <img id="WPTSymbol" />
+                            <div>
+                                <span id="WPTIdent">____</span>
+                            </div>
+                            <div id="WPTFacility">_______________</div>
+                            <div id="WPTCity">_______________</div>
+                        </div>
+                    </div>
+                    <div id="map">
+                        <div id="MapTitle">MAP</div>
+                        <div id="WPTMap"></div>
+                    </div>
+                    <div id="location">
+                        <div class="top">LOCATION</div>
+                        <div class="bottom">
+                            <div id="left">
+                                <div>BRG <span id="WPTBearing">___°</span></div>
+                                <div>DIS <span id="WPTDistance">__._NM</span></div>
+                            </div>
+                            <div id="right">
+                                <div id="WPTRegion">__________</div>
+                                <div id="WPTLatitude">_ __°__.__'</div>
+                                <div id="WPTLongitude">____°__.__'</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="BotText">Press "ENT" to accept</div>
+                </div>
+                <div id="DuplicateWaypointWindow" class="PopupWindow" state="Inactive">
+                    <div class="SubPart Waypoint">
+                        <div class="Title">WAYPOINT</div>
+                        <div class="Content">
+                            <div class="Ident"></div>
+                        </div>
+                    </div>
+                    <div class="SubPart Duplicates">
+                        <div class="Title">DUPLICATES</div>
+                        <div class="Content">
+                            <div id="Duplicates_List">
+                                <div class="Line L1"></div>
+                                <div class="Line L2"></div>
+                                <div class="Line L3"></div>
+                                <div class="Line L4"></div>
+                                <div class="Line L5"></div>
+                            </div>
+                            <div class="Slider" state="Inactive">
+                                <div class="SliderCursor"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="SubPart Informations">
+                        <div class="Title">INFORMATION</div>
+                        <div class="Content">
+                            <div class="Name"></div>
+                            <div class="Latitude"></div>
+                            <div class="Longitude"></div>
+                            <div class="Bearing"></div>
+                            <div class="Distance"></div>
+                        </div>
+                    </div>
+                </div>
+                <div id="ProceduresWindow" class="PopupWindow" state="Inactive">
+                    <div>PROCEDURES</div>
+                    <div class="SubPart">
+                        <div class="Title">OPTIONS</div>
+                        <div class="Content">
+                            <div class="Blinking" state="Greyed" id="Proc_ActivateVTF">ACTIVATE VECTOR-TO-FINAL</div>
+                            <div class="Blinking" id="Proc_ActivateApproach">ACTIVATE APPROACH</div>
+                            <div class="Blinking" state="Greyed" id="Proc_ActivateMissedApproach">ACTIVATE MISSED APPROACH</div>
+                            <div class="Blinking" id="Proc_SelectApproach">SELECT APPROACH</div>
+                            <div class="Blinking" state="Greyed" id="Proc_SelectArrival">SELECT ARRIVAL</div>
+                            <div class="Blinking" state="Greyed" id="Proc_SelectDeparture">SELECT DEPARTURE</div>
+                        </div>
+                    </div>
+                    <div class="SubPart">
+                        <div class="Title">LOADED</div>
+                        <div class="Content">
+                            <div class="title">APPROACH:</div>
+                            <div class="value" id="Proc_loadedApproach">____-</div>
+                            <div class="title">ARRIVAL:</div>
+                            <div class="value" id="Proc_loadedArrival">____-</div>
+                            <div class="title">DEPARTURE:</div>
+                            <div class="value" id="Proc_loadedDeparture">____-</div>
+                        </div>
+                    </div>
+                </div>
+                <div id="ApproachSelection" class="PopupWindow" state="Inactive">
+                    <div class="SubPart Airport">
+                        <div class="Title">AIRPORT</div>
+                        <div class="Content">
+                            <div class="airportTop">
+                                <div class="Blinking" id="Approach_AirportID">_____</div>
+                                <img id="Approach_AirportLogo"/>
+                                <div id="Approach_AirportType">UNKNOWN</div>
+                            </div>
+                            <div class="Blinking" id="Approach_AirportName">____________</div>
+                            <div class="Blinking" id="Approach_AirportCity">____________</div>
+                        </div>
+                    </div>
+                    <div class="SubPart Channel">
+                        <div class="Title">APPROACH CHANNEL</div>
+                        <div class="Content">
+                            <div class="white">CHANNEL</div>
+                            <div class="value" id="Approach_Channel">_____</div>
+                            <div class="white short">ID</div>
+                            <div class="value" id="Approach_Id">_____</div>
+                        </div>
+                    </div>
+                    <div class="SubPart Approach">
+                        <div class="Title">APPROACH</div>
+                        <div class="Content">
+                            <div class="Blinking value" id="Approach_Approach">NONE</div>
+                        </div>
+                    </div>
+                    <div class="SubPart Transition">
+                        <div class="Title">TRANSITION</div>
+                        <div class="Content">
+                            <div class="Blinking value" id="Approach_Transition">NONE</div>
+                        </div>
+                    </div>
+                    <div class="SubPart Minimums">
+                        <div class="Title">MINIMUMS</div>
+                        <div class="Content">
+                            <div class="value" id="Approach_MinimumsState">OFF</div>
+                            <div class="value" id="Approach_MinimumsValue">_____FT</div>
+                        </div>
+                    </div>
+                    <div class="SubPart PrimaryFrequency">
+                        <div class="Title">PRIMARY FREQUENCY</div>
+                        <div class="Content">
+                            <div class="value" id="Approach_FrequencyName">___</div>
+                            <div class="value" id="Approach_FrequencyValue">___.__</div>
+                        </div>
+                    </div>
+                    <div class="SubPart Sequence">
+                        <div class="Title">SEQUENCE</div>
+                        <div id="Approach_Sequence" class="Content SliderContainer">
+                            <table id="Approach_SequenceTable">
+                                <tr class="SizeSetter">
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                </tr>
+                                <tr class="L1"></tr>
+                                <tr class="L2"></tr>
+                                <tr class="L3"></tr>
+                                <tr class="L4"></tr>
+                            </table>
+                            <div class="Slider">
+                                <div class="SliderCursor"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="Approach_ApproachList" class="SubMenu" state="Inactive">
+
+                    </div>
+                    <div id="Approach_TransitionList" class="SubMenu" state="Inactive">
+
+                    </div>
+                    <div><span class="Blinking" id="Approach_LoadButton">LOAD?</span> OR <span class="Blinking" id="Approach_ActivateButton">ACTIVATE?</span></div>
+                </div>
+                <div id="ArrivalSelection" class="PopupWindow" state="Inactive">
+                    <div class="SubPart Airport">
+                        <div class="Title">AIRPORT</div>
+                        <div class="Content">
+                            <div class="airportTop">
+                                <div class="Blinking" id="Arrival_AirportID">_____</div>
+                                <img id="Arrival_AirportLogo"/>
+                                <div id="Arrival_AirportType">UNKNOWN</div>
+                            </div>
+                            <div class="Blinking" id="Arrival_AirportName">____________</div>
+                            <div class="Blinking" id="Arrival_AirportCity">____________</div>
+                        </div>
+                    </div>
+                    <div class="SubPart Arrival">
+                        <div class="Title">Arrival</div>
+                        <div class="Content">
+                            <div class="Blinking value" id="Arrival_Arrival">NONE</div>
+                        </div>
+                    </div>
+                    <div class="SubPart Transition">
+                        <div class="Title">TRANSITION</div>
+                        <div class="Content">
+                            <div class="Blinking value" id="Arrival_Transition">NONE</div>
+                        </div>
+                    </div>
+                    <div class="SubPart Runway">
+                        <div class="Title">RUNWAY</div>
+                        <div class="Content">
+                            <div class="Blinking value" id="Arrival_Runway">NONE</div>
+                        </div>
+                    </div>
+                    <div class="SubPart Sequence">
+                        <div class="Title">SEQUENCE</div>
+                        <div id="Arrival_Sequence" class="Content SliderContainer">
+                            <table id="Arrival_SequenceTable">
+                                <tr class="SizeSetter">
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                </tr>
+                                <tr class="L1"></tr>
+                                <tr class="L2"></tr>
+                                <tr class="L3"></tr>
+                                <tr class="L4"></tr>
+                                <tr class="L5"></tr>
+                                <tr class="L6"></tr>
+                            </table>
+                            <div class="Slider">
+                                <div class="SliderCursor"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="Arrival_ArrivalList" class="SubMenu" state="Inactive">
+                        <div class="L1 Blinking"></div>
+                        <div class="L2 Blinking"></div>
+                        <div class="L3 Blinking"></div>
+                        <div class="L4 Blinking"></div>
+                        <div class="L5 Blinking"></div>
+                        <div class="L6 Blinking"></div>
+                        <div class="L7 Blinking"></div>
+                        <div class="L8 Blinking"></div>
+                        <div class="L9 Blinking"></div>
+                        <div class="L10 Blinking"></div>
+                        <div class="Slider">
+                            <div class="SliderCursor"></div>
+                        </div>
+                    </div>
+                    <div id="Arrival_TransitionList" class="SubMenu" state="Inactive">
+
+                    </div>
+                    <div id="Arrival_RunwayList" class="SubMenu" state="Inactive">
+
+                    </div>
+                    <div><span class="Blinking" id="Arrival_LoadButton">LOAD?</span></div>
+                </div>
+                <div id="DepartureSelection" class="PopupWindow" state="Inactive">
+                    <div class="SubPart Airport">
+                        <div class="Title">AIRPORT</div>
+                        <div class="Content">
+                            <div class="airportTop">
+                                <div class="Blinking" id="Departure_AirportID">_____</div>
+                                <img id="Departure_AirportLogo"/>
+                                <div id="Departure_AirportType">UNKNOWN</div>
+                            </div>
+                            <div class="Blinking" id="Departure_AirportName">____________</div>
+                            <div class="Blinking" id="Departure_AirportCity">____________</div>
+                        </div>
+                    </div>
+                    <div class="SubPart Departure">
+                        <div class="Title">Departure</div>
+                        <div class="Content">
+                            <div class="Blinking value" id="Departure_Departure">NONE</div>
+                        </div>
+                    </div>
+                    <div class="SubPart Transition">
+                        <div class="Title">TRANSITION</div>
+                        <div class="Content">
+                            <div class="Blinking value" id="Departure_Transition">NONE</div>
+                        </div>
+                    </div>
+                    <div class="SubPart Runway">
+                        <div class="Title">RUNWAY</div>
+                        <div class="Content">
+                            <div class="Blinking value" id="Departure_Runway">NONE</div>
+                        </div>
+                    </div>
+                    <div class="SubPart Sequence">
+                        <div class="Title">SEQUENCE</div>
+                        <div id="Departure_Sequence" class="Content SliderContainer">
+                            <table id="Departure_SequenceTable">
+                                <tr class="SizeSetter">
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                </tr>
+                                <tr class="L1"></tr>
+                                <tr class="L2"></tr>
+                                <tr class="L3"></tr>
+                                <tr class="L4"></tr>
+                                <tr class="L5"></tr>
+                                <tr class="L6"></tr>
+                            </table>
+                            <div class="Slider">
+                                <div class="SliderCursor"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="Departure_DepartureList" class="SubMenu" state="Inactive">
+                        <div class="L1 Blinking"></div>
+                        <div class="L2 Blinking"></div>
+                        <div class="L3 Blinking"></div>
+                        <div class="L4 Blinking"></div>
+                        <div class="L5 Blinking"></div>
+                        <div class="L6 Blinking"></div>
+                        <div class="L7 Blinking"></div>
+                        <div class="L8 Blinking"></div>
+                        <div class="L9 Blinking"></div>
+                        <div class="L10 Blinking"></div>
+                        <div class="Slider">
+                            <div class="SliderCursor"></div>
+                        </div>
+                    </div>
+                    <div id="Departure_TransitionList" class="SubMenu" state="Inactive">
+
+                    </div>
+                    <div id="Departure_RunwayList" class="SubMenu" state="Inactive">
+
+                    </div>
+                    <div><span class="Blinking" id="Departure_LoadButton">LOAD?</span></div>
+                </div>
+            </div>
+
+            <div id="NavBox">
+                <div id="Left">
+                    <div id="Nav1">
+                        <div>NAV1</div>
+                        <div class="Selectable" id="Nav1_StdBy">--</div>
+                        <div id="Nav1_DoubleArrow"><img src="/Pages/VCockpit/Instruments/NavSystems/Shared/Images/Misc/DoubleArrow.svg" /></div>
+                        <div id="Nav1_Active">--</div>
+                        <div id="Nav1_Ident" class="ident"></div>
+                    </div>
+                    <div id="Nav2">
+                        <div>NAV2</div>
+                        <div class="Selectable" id="Nav2_StdBy">--</div>
+                        <div id="Nav2_DoubleArrow"><img src="/Pages/VCockpit/Instruments/NavSystems/Shared/Images/Misc/DoubleArrow.svg" /></div>
+                        <div id="Nav2_Active">--</div>
+                        <div id="Nav2_Ident" class="ident"></div>
+                    </div>
+                </div>
+
+                <div id="Center">
+                    <div id="top">
+                        <div>GS</div>
+                        <div id="GroundSpeed"></div>
+                        <div>DTK</div>
+                        <div id="DesiredTrack"></div>
+                        <div>TRK</div>
+                        <div id="CurrentTrack"></div>
+                        <div>ETE</div>
+                        <div id="ETE"></div>
+                    </div>
+                    <div id="bottom"><span id="CurrentPageDisplay">MAP - NAVIGATION MAP</span></div>
+                </div>
+
+                <div id="Right">
+                    <div id="Com1">
+                        <div id="Com1_Active">--</div>
+                        <div id="Com1_DoubleArrow"><img src="/Pages/VCockpit/Instruments/NavSystems/Shared/Images/Misc/DoubleArrow.svg" /></div>
+                        <div class="Selectable" id="Com1_StdBy">--</div>
+                        <div>COM 1</div>
+                    </div>
+                    <div id="Com2">
+                        <div id="Com2_Active">--</div>
+                        <div id="Com2_DoubleArrow"><img src="/Pages/VCockpit/Instruments/NavSystems/Shared/Images/Misc/DoubleArrow.svg" /></div>
+                        <div class="Selectable" id="Com2_StdBy">--</div>
+                        <div>COM 2</div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="SoftKeys">
+                <div id="Key1" class="SoftKey"></div>
+                <div id="Key2" class="SoftKey"></div>
+                <div id="Key3" class="SoftKey">MAP</div>
+                <div id="Key4" class="SoftKey"></div>
+                <div id="Key5" class="SoftKey"></div>
+                <div id="Key6" class="SoftKey"></div>
+                <div id="Key7" class="SoftKey"></div>
+                <div id="Key8" class="SoftKey"></div>
+                <div id="Key9" class="SoftKey"></div>
+                <div id="Key10" class="SoftKey">DCLTR</div>
+                <div id="Key11" class="SoftKey"></div>
+                <div id="Key12" class="SoftKey end"></div>
+            </div>
+
+            <div id="ContextualMenu" state="Inactive">
+                <div id="ContextualMenuContent">
+                    <div id="ContextualMenuTitle">EXAMPLE MENU</div>
+                    <div id="ContextualMenuMainArea">
+                        <div id="subTitle">OPTIONS</div>
+                        <div id="ContextualMenuElements">
+                            <div class="ContextualMenuElement" state="Inactive">Inactive?</div>
+                            <div class="ContextualMenuElement" state="Selected">Selected?</div>
+                            <div class="ContextualMenuElement" state="Unselected">Unselected?</div>
+                        </div>
+                        <div id="SliderMenu" state="Active">
+                            <div id="SliderMenuCursor"></div>
+                        </div>
+                    </div>
+                </div>
+                <div id="SubText">
+                    Press the FMS CRSR knob to return to base page
+                </div>
+            </div>
+        </div>
+    </div>
+</script>
+
+<link rel="stylesheet" href="AS1000_MFD.css" />
+
+<script type="text/html" import-script="/JS/SimPlane.js"></script>
+
+<script type="text/html" import-template="/Pages/VCockpit/Instruments/Shared/Map/MapInstrument.html"></script>
+
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/Shared/Templates/Highlight/Highlight.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/Shared/Templates/WindDataDisplay/WindDataDisplay.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/Shared/Templates/XMLEngineDisplay/XMLEngineDisplay.js"></script>
+
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/Shared/LogicElements/FlightPlan.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/Shared/LogicElements/FlightPlanManager.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/Shared/LogicElements/GeoCalc.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/Shared/LogicElements/SearchField.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/Shared/LogicElements/Waypoint.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/Shared/LogicElements/Runway.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/Shared/LogicElements/Approach.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/Shared/LogicElements/NearestWaypoint.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/Shared/LogicElements/SelectableElement.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/Shared/LogicElements/ContextualMenu.js"></script>
+
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Shared/Gauges/AbstractGauge.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Shared/Gauges/CircularGauge.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Shared/Gauges/HorizontalGauge.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Shared/Gauges/DoubleHorizontalGauge.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Shared/Gauges/VerticalGauge.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Shared/Gauges/FlapsGauge.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Shared/Gauges/AilTrimGauge.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Shared/Gauges/ElevTrimGauge.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Shared/Gauges/RudderTrimGauge.js"></script>
+
+<script type="text/html" import-template="/Pages/VCockpit/Instruments/NavSystems/AS1000/Shared/Templates/EngineDisplay.html"></script>
+
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/Shared/NavSystem.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/Shared/CommonPFD_MFD.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/Shared/LogicElements/GaugeElement.js"></script>
+
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/AS1000/Shared/BaseAS1000.js"></script>
+
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/AS1000/MFD/AS1000_MFD.js"></script>

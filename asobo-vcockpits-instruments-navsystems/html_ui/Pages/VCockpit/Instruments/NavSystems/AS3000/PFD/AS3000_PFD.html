@@ -1,0 +1,233 @@
+﻿<script type="text/html" id="AS3000_PFD">
+    <glasscockpit-highlight id="highlight"></glasscockpit-highlight>
+    <div id="Mainframe">
+        <div id="Electricity" state="off">
+            <div id="Console">Initializing System...</div>
+            <img id="Splash" src="/Pages/VCockpit/Instruments/NavSystems/Shared/Images/Logo/Garmin.svg" />
+            <div id="HorizonContainer">
+                <map-instrument id="SyntheticVision" bing-mode="horizon" bing-id="PFD_SyntheticVision" show-overlay="false" config-path="/Pages/VCockpit/Instruments/NavSystems/AS3000/PFD/"></map-instrument>
+                <glasscockpit-attitude-indicator id="Horizon" background="false"></glasscockpit-attitude-indicator>
+            </div>
+
+            <div id="InstrumentsContainer">
+
+                <div id="InnerMap">
+                    <map-instrument bing-id="PFD_InnerMap" config-path="/Pages/VCockpit/Instruments/NavSystems/AS3000/PFD/InnerMapConfig/"></map-instrument>
+                </div>
+
+                <!-- <glasscockpit-vertical-speed-indicator id="VSpeed"></glasscockpit-vertical-speed-indicator> -->
+                <glasscockpit-altimeter id="Altimeter"></glasscockpit-altimeter>
+                <glasscockpit-airspeed-indicator id="Airspeed"></glasscockpit-airspeed-indicator>
+
+                <glasscockpit-hsi id="Compass"></glasscockpit-hsi>
+
+                <glasscockpit-wind-data id="WindData"></glasscockpit-wind-data>
+                <glasscockpit-aoa-indicator id="AoA" displayed="true"></glasscockpit-aoa-indicator>
+
+                <!--<iframe id="Map" src="/Pages/Minimap/Minimap.html"></iframe>-->
+
+                <div id="MarkerBeacon">M</div>
+
+                <div id="Warnings" state="Hidden">
+                    <span id="WarningsContent">PULL UP</span>
+                </div>
+
+                <div id="Annunciations" state="Hidden">
+                    <div id="newAnnunciations"></div>
+                    <div id="acknowledged"></div>
+                </div>
+
+                <div id="AutopilotInfos">
+                    <div class="Left">
+                        <div id="AP_LateralActive">ROL</div>
+                        <div id="AP_LateralArmed">FMS</div>
+                    </div>
+                    <div class="Center">
+                        <div id="AP_Status">AP</div>
+                        <div id="AP_YDStatus">YD</div>
+                        <div id="AP_FDIndicatorArrow">
+                            <svg id="arrow" width="100%" viewBox="0 0 50 20">
+                                <polygon points="0,10 10,0 10,12 50,12 50,8 10,8 10,20" fill="green"></polygon>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="Right">
+                        <div id="AP_VerticalActive">V VS</div>
+                        <div id="AP_ModeReference">-200FPM</div>
+                        <div id="AP_Armed">ALTS</div>
+                        <div id="AP_ArmedReference">PATH</div>
+                    </div>
+                </div>
+
+                <div id="ComInfos">
+                    <div id="ActiveCom">COM1</div>
+                    <div id="ActiveComFreq"></div>
+                    <div id="ActiveComName"></div>
+                </div>
+
+                <div id="NavFreqInfos">
+                    <div id="ActiveNav">NAV1</div>
+                    <div id="ActiveNavName"></div>
+                    <div id="ActiveNavFreq"></div>
+                </div>
+
+                <div id="NavInfos">
+                    <div id="FromWP"></div>
+                    <div id="LegSymbol"></div>
+                    <div id="ToWP"></div>
+                    <div id="BottomInfos">
+                        <div class="title">DIS</div>
+                        <div class="value" id="DisValue"></div>
+                        <div class="title">BRG</div>
+                        <div class="value" id="BrgValue"></div>
+                    </div>
+                </div>
+
+                <div id="Minimums" state="Inactive">
+                    <div id="Minimums_Source">
+                        BARO<br />MIN
+                    </div>
+                    <div id="Minimums_Value">
+                        1280<span class="unit">FT</span>
+                    </div>
+                </div>
+
+                <div id="RadarAltitude" state="Inactive">
+                    <div id="RA_Title">
+                        RA
+                    </div>
+                    <div id="RA_Value">
+                        1080
+                    </div>
+                </div>
+
+                <div id="BottomBar">
+                    <svg id="Background" width="100%" viewBox="0 0 1500 90">
+                        <path d="M0 0 L0 90 L1500 90 L1500 0 L910 0 Q750 165 590 0 Z" fill="#1a1d21"></path>
+                    </svg>
+                    <div class="LeftGroup">
+                        <div id="TAS">
+                            <div id="TAS_Title" class="left">TAS</div>
+                            <div id="TAS_Value" class="right"></div>
+                        </div>
+                        <div id="OAT">
+                            <div id="OAT_Title" class="left">OAT</div>
+                            <div id="OAT_Value" class="right"></div>
+                        </div>
+                        <div id="GS">
+                            <div id="GS_Title" class="left">GS</div>
+                            <div id="GS_Value" class="right"></div>
+                        </div>
+                        <div id="ISA">
+                            <div id="ISA_Title" class="left">ISA</div>
+                            <div id="ISA_Value" class="right"></div>
+                        </div>
+                    </div>
+                    <div class="RightGroup">
+                        <div id="TMR">
+                            <div id="TMR_Title" class="left">TMR</div>
+                            <div id="TMR_Value" class="right">__:__:__</div>
+                        </div>
+                        <div id="UTC">
+                            <div id="UTC_Title" class="left">UTC</div>
+                            <div id="UTC_Value" class="right">00:00:00</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="SoftKeys">
+                    <div id="Key1" class="SoftKey">
+                        <div class="Title"></div>
+                        <div class="Value"></div>
+                        <div class="Status"></div>
+                    </div>
+                    <div id="Key2" class="SoftKey">
+                        <div class="Title"></div>
+                        <div class="Value"></div>
+                        <div class="Status"></div>
+                    </div>
+                    <div id="Key3" class="SoftKey">
+                        <div class="Title"></div>
+                        <div class="Value"></div>
+                        <div class="Status"></div>
+                    </div>
+                    <div id="Key4" class="SoftKey">
+                        <div class="Title"></div>
+                        <div class="Value"></div>
+                        <div class="Status"></div>
+                    </div>
+                    <div id="Key5" class="SoftKey">
+                        <div class="Title"></div>
+                        <div class="Value"></div>
+                        <div class="Status"></div>
+                    </div>
+                    <div id="Key6" class="SoftKey">
+                        <div class="Title"></div>
+                        <div class="Value"></div>
+                        <div class="Status"></div>
+                    </div>
+                    <div id="Key7" class="SoftKey">
+                        <div class="Title"></div>
+                        <div class="Value"></div>
+                        <div class="Status"></div>
+                    </div>
+                    <div id="Key8" class="SoftKey">
+                        <div class="Title"></div>
+                        <div class="Value"></div>
+                        <div class="Status"></div>
+                    </div>
+                    <div id="Key9" class="SoftKey">
+                        <div class="Title"></div>
+                        <div class="Value"></div>
+                        <div class="Status"></div>
+                    </div>
+                    <div id="Key10" class="SoftKey">
+                        <div class="Title"></div>
+                        <div class="Value"></div>
+                        <div class="Status"></div>
+                    </div>
+                    <div id="Key11" class="SoftKey">
+                        <div class="Title"></div>
+                        <div class="Value"></div>
+                        <div class="Status"></div>
+                    </div>
+                    <div id="Key12" class="SoftKey end">
+                        <div class="Title"></div>
+                        <div class="Value"></div>
+                        <div class="Status"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</script>
+
+<link rel="stylesheet" href="AS3000_PFD.css" />
+
+<script type="text/html" import-script="/JS/SimPlane.js"></script>
+
+<script type="text/html" import-template="/Pages/VCockpit/Instruments/Shared/Map/MapInstrument.html"></script>
+
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/Shared/Templates/HSIndicator/HSIndicator.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/Shared/Templates/Altimeter/Altimeter.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/Shared/Templates/AngleOfAttackIndicator/AngleOfAttackIndicator.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/Shared/Templates/AirspeedIndicator/AirspeedIndicator.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/Shared/Templates/WindDataDisplay/WindDataDisplay.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/Shared/Templates/AttitudeIndicator/AttitudeIndicator.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/Shared/Templates/VerticalSpeedIndicator/VerticalSpeedIndicator.js"></script>
+
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/Shared/LogicElements/FlightPlan.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/Shared/LogicElements/FlightPlanManager.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/Shared/LogicElements/GeoCalc.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/Shared/LogicElements/SearchField.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/Shared/LogicElements/Waypoint.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/Shared/LogicElements/NearestWaypoint.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/Shared/LogicElements/Approach.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/Shared/LogicElements/SelectableElement.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/Shared/LogicElements/ContextualMenu.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/Shared/LogicElements/Runway.js"></script>
+
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/Shared/NavSystem.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/Shared/CommonPFD_MFD.js"></script>
+
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/AS3000/PFD/AS3000_PFD.js"></script>

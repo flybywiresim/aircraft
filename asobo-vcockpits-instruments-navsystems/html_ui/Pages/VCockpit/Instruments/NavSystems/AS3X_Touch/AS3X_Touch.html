@@ -1,0 +1,1471 @@
+﻿<script type="text/html" id="AS3X_Touch">
+    <glasscockpit-highlight id="highlight"></glasscockpit-highlight>
+    <div id="Mainframe">
+        <div id="Electricity" state="off">
+            <img id="Splash" src="/Pages/VCockpit/Instruments/NavSystems/Shared/Images/Logo/Garmin.svg" />
+            <div id="TopBar">
+                <div class="Button big" id="xpdr_btn">
+                    <div class="title">XPDR</div>
+                    <div id="xpdr_code">1200</div>
+                    <div id="xpdr_mode">GND</div>
+                </div>
+                <div class="Button" id="ident_btn">
+                    <div class="title">IDENT</div>
+                    <div class="statusBar"></div>
+                </div>
+                <div class="valueDisplay">
+                    <div class="title">WPT</div>
+                    <div class="value" id="wpt">____</div>
+                </div>
+                <div class="valueDisplay">
+                    <div class="title">BRG</div>
+                    <div class="value" id="brg">___°m</div>
+                </div>
+                <div class="valueDisplay">
+                    <div class="title">DIST</div>
+                    <div class="value" id="dist">__._nm</div>
+                </div>
+                <div class="valueDisplay">
+                    <div class="title">ETE</div>
+                    <div class="value" id="ete">__:__</div>
+                </div>
+                <div class="valueDisplay">
+                    <div class="title">GS</div>
+                    <div class="value" id="gs">0.0kt</div>
+                </div>
+                <div class="valueDisplay">
+                    <div class="title">TRK</div>
+                    <div class="value" id="trk">___°m</div>
+                </div>
+                <div class="Button" id="audio_btn">
+                    <div class="title">Audio</div>
+                </div>
+                <div class="Button big" id="com_active_btn">
+                    <div class="title">COM 1</div>
+                    <div id="com_active"></div>
+                    <div id="com_active_ident"></div>
+                </div>
+                <div class="Button big" id="com_standby_btn">
+                    <div class="title">STBY</div>
+                    <div id="com_standby"></div>
+                    <div id="com_standby_ident"></div>
+                </div>
+                <div class="Button" id="full_split_switch_button">
+                    <div class="title">Full</div>
+                </div>
+            </div>
+            <div id="MainDisplay" state="Half" Mode="PFD">
+                <div id="PFD">
+                    <div id="HorizonContainer">
+                        <map-instrument class="PFDMap SplitMap" show-bing-map="false" id="SyntheticVision" bing-mode="horizon" bing-id="PFD_SyntheticVision" show-overlay="false" config-path="/Pages/VCockpit/Instruments/NavSystems/AS3000/PFD/"></map-instrument>
+                        <glasscockpit-attitude-indicator id="Horizon" bank_size_ratio="-37" background="false"></glasscockpit-attitude-indicator>
+                    </div>
+                    <glasscockpit-altimeter id="Altimeter"></glasscockpit-altimeter>
+                    <glasscockpit-airspeed-indicator id="Airspeed"></glasscockpit-airspeed-indicator>
+                    <glasscockpit-hsi id="Compass"></glasscockpit-hsi>
+                    <glasscockpit-elevator-trim id="ElevatorTrim"></glasscockpit-elevator-trim>
+
+                    <div id="RadarAltitude" state="Inactive">
+                        <div id="RA_Title">
+                            RA
+                        </div>
+                        <div id="RA_Value">
+                            1080
+                        </div>
+                    </div>
+
+                    <div id="AutopilotInfos">
+                        <div class="Left">
+                            <div id="AP_LateralActive">ROL</div>
+                            <div id="AP_LateralArmed">FMS</div>
+                        </div>
+                        <div class="Center">
+                            <div id="AP_Status">AP</div>
+                            <div id="AP_YDStatus">YD</div>
+                            <div id="AP_FDIndicatorArrow">
+                                <!-- No FD Indicator on AS3X Touch -->
+                            </div>
+                        </div>
+                        <div class="Right">
+                            <div id="AP_VerticalActive">V VS</div>
+                            <div id="AP_ModeReference">-200FPM</div>
+                            <div id="AP_Armed">ALTS</div>
+                            <div id="AP_ArmedReference">PATH</div>
+                        </div>
+                    </div>
+                    <div id="Warnings" state="Hidden">
+                        <span id="WarningsContent">PULL UP</span>
+                    </div>
+                </div>
+                <div id="MainMFD">
+                    <div id="MainMFD_MapElements">
+                        <map-instrument class="MFDMap" show-bing-map="false" id="MainMFD_Map" bing-id="MFD_Main" config-path="/Pages/VCockpit/Instruments/NavSystems/AS1000/MFD/" show-flightplan="true" hide-flightplan-if-bushtrip="true"></map-instrument>
+                        <svg class="mapLess" viewBox="-2 -2 54 54">
+                            <circle r="25" cx="25" cy="25" fill="#bbbbbb" stroke="#444444" stroke-width="2" />
+                            <polygon points="45,22 45,28 5,28 5,22" fill="white" stroke="black" />
+                        </svg>
+                        <svg class="mapPlus" viewBox="-2 -2 54 54">
+                            <circle r="25" cx="25" cy="25" fill="#bbbbbb" stroke="#444444" stroke-width="2" />
+                            <polygon points="22,5 28,5 28,22 45,22 45,28 28,28 28,45 22,45 22,28 5,28 5,22 22,22" fill="white" stroke="black" />
+                        </svg>
+                        <div class="mapCenter">
+                            <img src="/Pages/VCockpit/Instruments/Shared/Map/Images/Outlined/ICON_MAP_PLANE.svg" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="MFD" state="Half">
+                <div id="PagesContainer" state="XPDR">
+                    <div id="Map" class="page">
+                        <div id="Map_Elements">
+                            <map-instrument id="MapInstrument" bing-id="MFD" config-path="/Pages/VCockpit/Instruments/NavSystems/AS1000/MFD/" show-flightplan="true" hide-flightplan-if-bushtrip="true"></map-instrument>
+                            <svg class="mapLess" viewBox="-2 -2 54 54">
+                                <circle r="25" cx="25" cy="25" fill="#bbbbbb" stroke="#444444" stroke-width="2" />
+                                <polygon points="45,22 45,28 5,28 5,22" fill="white" stroke="black" />
+                            </svg>
+                            <svg class="mapPlus" viewBox="-2 -2 54 54">
+                                <circle r="25" cx="25" cy="25" fill="#bbbbbb" stroke="#444444" stroke-width="2" />
+                                <polygon points="22,5 28,5 28,22 45,22 45,28 28,28 28,45 22,45 22,28 5,28 5,22 22,22" fill="white" stroke="black" />
+                            </svg>
+                            <div class="mapCenter">
+                                <img src="/Pages/VCockpit/Instruments/Shared/Map/Images/Outlined/ICON_MAP_PLANE.svg" />
+                            </div>
+                        </div>
+                    </div>
+                    <div id="FPL" class="page">
+                        <div id="Afpl_Map"></div>
+                        <div id="flightPlan" displayedMenu="None">
+                            <table id="AFPL_WayPointsTable">
+                                <thead>
+                                    <tr>
+                                        <th id="AFPL_Name">______/______</th>
+                                        <th id="AFPL_HAlt">ALT</th>
+                                        <th id="AFPL_HDtkDis">DTK/DIS</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="AFPL_WaypointsBody">
+                                    <tr id="SizeSetter">
+                                        <td>
+                                            <svg id="CurrentLegArrowSVG" xmlns="http://www.w3.org/2000/svg">
+                                                <path id="CurrentLegArrow" d="M0, 0 Z" fill="magenta" />
+                                            </svg>
+                                        </td>
+                                        <td></td>
+                                        <td></td>
+                                    </tr>
+                                    <tr id="AFPL_Origin">
+                                        <td colspan="3">
+                                            <div class="gradientButton">
+                                                <div class="mainValue"></div>
+                                                <div class="mainText">Add Origin</div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr id="AFPL_OriginWaypoint">
+                                        <td>
+                                            <div class="gradientButton Waypoint">
+                                                <div class="mainValue"></div>
+                                                <div class="title"></div>
+                                                <img class="symbol">
+                                            </div>
+                                        </td>
+                                        <td></td>
+                                        <td></td>
+                                    </tr>
+                                    <tr id="AFPL_EnRoute">
+                                        <td colspan="3">
+                                            <div class="gradientButton">
+                                                <div class="mainValue">Enroute</div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr id="AFPL_EnRouteAdd">
+                                        <td colspan="2" class="LeftButton">
+                                            <div class="gradientButton" id="AddEnrouteButton">
+                                                <div class="mainText">Add Enroute Waypoint</div>
+                                                <div class="mainValue"></div>
+                                            </div>
+                                        </td>
+                                        <td class="DoneButton">
+                                            <div class="gradientButton" id="AddEnrouteDone">
+                                                <div class="mainText">Done</div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr id="AFPL_Destination">
+                                        <td colspan="3">
+                                            <div class="gradientButton">
+                                                <div class="mainValue"></div>
+                                                <div class="mainText">Add Destination</div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr id="AFPL_DestinationWaypoint">
+                                        <td>
+                                            <div class="gradientButton Waypoint">
+                                                <div class="mainValue"></div>
+                                                <div class="title"></div>
+                                                <img class="symbol">
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="gradientButton">
+                                                <div class="mainValue">_____FT</div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="DTK"></div>
+                                            <div class="DIS"></div>
+                                        </td>
+                                    </tr>
+                                    <tr id="AFPL_Approach">
+                                        <td colspan="3">
+                                            <div class="gradientButton">
+                                                <div class="mainValue"></div>
+                                                <div class="mainText"></div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <table id="AFPL_WaypointButtonsTable" class="HalfMenu" state="Active">
+                                <tr>
+                                    <td>
+                                        <div class="gradientButton" id="AFPL_InsertBefore_Button">
+                                            <div class="mainText">Insert Before</div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="gradientButton" id="AFPL_InsertAfter_Button">
+                                            <div class="mainText">Insert After</div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <div class="gradientButton" id="AFPL_Drct_Button">
+                                            <div class="mainText">Direct To</div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="gradientButton" id="AFPL_ActivateLegTo_Button">
+                                            <div class="mainText">Activate Leg to Waypoint</div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <div class="gradientButton" id="AFPL_RemoveWaypoint_Button">
+                                            <div class="mainText">Remove Waypoint</div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="gradientButton" id="AFPL_FlyOverWaypoint_Button" state="Hidden">
+                                            <div class="mainText">Fly Over Waypoint</div>
+                                            <div class="statusBar"></div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </table>
+                            <table id="AFPL_DestinationButtonsTable" class="HalfMenu" state="Active">
+                                <tr>
+                                    <td>
+                                        <div class="gradientButton" id="AFPL_SelectDest_Button">
+                                            <div class="mainText">Select Destination Airport</div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="gradientButton" id="AFPL_DestWaypointInfo_Button" state="Hidden">
+                                            <div class="mainText">Waypoint Info</div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <div class="gradientButton" id="AFPL_SelectArrivalRunway_Button" state="Hidden">
+                                            <div class="mainText">Select Arrival Runway</div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="gradientButton" id="AFPL_SelectArrival_Button" state="Hidden">
+                                            <div class="mainText">Select Arrival</div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <div class="gradientButton" id="AFPL_SelectApproach_Button" state="Hidden">
+                                            <div class="mainText">Select Approach</div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="gradientButton" id="AFPL_RemoveDestAirport_Button" state="Hidden">
+                                            <div class="mainText">Remove Destination Airport</div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </table>
+                            <table id="AFPL_OriginButtonsTable" class="HalfMenu" state="Active">
+                                <tr>
+                                    <td>
+                                        <div class="gradientButton" id="AFPL_SelectOrigin_Button">
+                                            <div class="mainText">Select Origin Airport</div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="gradientButton" id="AFPL_OriginWaypointInfo_Button" state="Hidden">
+                                            <div class="mainText">Waypoint Info</div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <div class="gradientButton" id="AFPL_SelectDepartureRunway_Button" state="Hidden">
+                                            <div class="mainText">Select Departure Runway</div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="gradientButton" id="AFPL_SelectDeparture_Button" state="Hidden">
+                                            <div class="mainText">Select Departure</div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <div class="gradientButton" id="AFPL_RemoveOriginAirport_Button" state="Hidden">
+                                            <div class="mainText">Remove Origin Airport</div>
+                                        </div>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                    <div id="Procedures" class="page">
+                        <div class="gradientButton" id="Procedures_Departure">
+                            <div class="title">Departure</div>
+                            <div class="value">____</div>
+                        </div>
+                        <div class="gradientButton" id="Procedures_Arrival">
+                            <div class="title">Arrival</div>
+                            <div class="value">____</div>
+                        </div>
+                        <div class="gradientButton" id="Procedures_Approach">
+                            <div class="title">Approach</div>
+                            <div class="value">____</div>
+                        </div>
+                        <div class="gradientButton" id="Procedures_ActivateApproach">
+                            <div class="title">Activate Approach</div>
+                        </div>
+                        <div class="gradientButton" id="Procedures_ActivateVectorsToFinal" state="Hidden">
+                            <div class="title">Activate Vectors To Final</div>
+                        </div>
+                        <div class="gradientButton" id="Procedures_ActivateMissedApproach" state="Hidden">
+                            <div class="title">Activate Missed Approach</div>
+                        </div>
+                    </div>
+                    <div id="NearestAirport" class="page">
+                        <div class="NrstContainer">
+                            <table class="NearestList">
+                                <thead>
+                                    <tr>
+                                        <th>Airport</th>
+                                        <th>BRG</th>
+                                        <th>DIS</th>
+                                        <th>APPR/RWY</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr id="SizeSetter">
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <table class="SelectionMenu" state="Inactive">
+                                <tr>
+                                    <td>
+                                        <div class="gradientButton" id="NrstAirport_Drct">
+                                            <div class="mainText"><img class="DrctImg" src="/Pages/VCockpit/Instruments/NavSystems/Shared/Images/TSC/Icons/ICON_MAP_DIRECT_TO_1.png" /></div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <div class="gradientButton" id="NrstAirport_InsertInFpl">
+                                            <div class="mainText">Insert in Flight Plan</div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <div class="gradientButton" id="NrstAirport_AirportInfo" state="Hidden">
+                                            <div class="mainText">Airport Info</div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                    <div id="NearestIntersection" class="page">
+                        <div class="NrstContainer">
+                            <table class="NearestList">
+                                <thead>
+                                    <tr>
+                                        <th>Intersection</th>
+                                        <th>BRG</th>
+                                        <th>DIS</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr id="SizeSetter">
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <table class="SelectionMenu" state="Inactive">
+                                <tr>
+                                    <td>
+                                        <div class="gradientButton" id="NrstIntersection_Drct">
+                                            <div class="mainText"><img class="DrctImg" src="/Pages/VCockpit/Instruments/NavSystems/Shared/Images/TSC/Icons/ICON_MAP_DIRECT_TO_1.png" /></div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <div class="gradientButton" id="NrstIntersection_InsertInFpl">
+                                            <div class="mainText">Insert in Flight Plan</div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <div class="gradientButton" id="NrstIntersection_AirportInfo" state="Hidden">
+                                            <div class="mainText">Intersection Info</div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                    <div id="NearestVOR" class="page">
+                        <div class="NrstContainer">
+                            <table class="NearestList">
+                                <thead>
+                                    <tr>
+                                        <th>VOR</th>
+                                        <th>BRG</th>
+                                        <th>DIS</th>
+                                        <th>Frequency</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr id="SizeSetter">
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <table class="SelectionMenu" state="Inactive">
+                                <tr>
+                                    <td>
+                                        <div class="gradientButton" id="NrstVOR_Drct">
+                                            <div class="mainText"><img class="DrctImg" src="/Pages/VCockpit/Instruments/NavSystems/Shared/Images/TSC/Icons/ICON_MAP_DIRECT_TO_1.png" /></div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <div class="gradientButton" id="NrstVOR_InsertInFpl">
+                                            <div class="mainText">Insert in Flight Plan</div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <div class="gradientButton" id="NrstVOR_AirportInfo" state="Hidden">
+                                            <div class="mainText">VOR Info</div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                    <div id="NearestNDB" class="page">
+                        <div class="NrstContainer">
+                            <table class="NearestList">
+                                <thead>
+                                    <tr>
+                                        <th>NDB</th>
+                                        <th>BRG</th>
+                                        <th>DIS</th>
+                                        <th>Frequency</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr id="SizeSetter">
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <table class="SelectionMenu" state="Inactive">
+                                <tr>
+                                    <td>
+                                        <div class="gradientButton" id="NrstNDB_Drct">
+                                            <div class="mainText"><img class="DrctImg" src="/Pages/VCockpit/Instruments/NavSystems/Shared/Images/TSC/Icons/ICON_MAP_DIRECT_TO_1.png" /></div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <div class="gradientButton" id="NrstNDB_InsertInFpl">
+                                            <div class="mainText">Insert in Flight Plan</div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <div class="gradientButton" id="NrstNDB_AirportInfo" state="Hidden">
+                                            <div class="mainText">NDB Info</div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div id="MFD_BottomBar">
+                    <div id="currentPage">
+                        <span id="currentPageName"></span>
+                    </div>
+                    <div id="pageList"></div>
+                </div>
+                <div id="PageMenu" class="popup" state="Inactive">
+                    <div class="WindowTitle">Select Page</div>
+                    <div class="menuElements">
+                    </div>
+                </div>
+                <div id="XPDR" class="popup" state="Inactive">
+                    <div class="WindowTitle">Transponder</div>
+                    <div id="transponder_ModeSelect">
+                        <div id="transponder_ModeSelectTitle">Mode</div>
+                        <div id="buttonsList">
+                            <div class="gradientButton" id="transponder_Stby">
+                                <div class="mainText">STBY</div>
+                                <div class="statusBar"></div>
+                            </div>
+                            <div class="gradientButton" id="transponder_On">
+                                <div class="mainText">ON</div>
+                                <div class="statusBar"></div>
+                            </div>
+                            <div class="gradientButton status" id="transponder_Alt" state="Active">
+                                <div class="mainText">ALT</div>
+                                <div class="statusBar"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="transponder_CodeDisplay">
+                        <span id="transponder_Code">0123</span>
+                    </div>
+                    <div class="gradientButton" id="transponder_Bksp">
+                        <img class="img" src="/Pages/VCockpit/Instruments/NavSystems/Shared/Images/TSC/Icons/ICON_MAP_BKSP.png" />
+                        <div class="title">BKSP</div>
+                    </div>
+                    <table id="transponder_NumberKeyboard">
+                        <tr>
+                            <td> <div class="roundButton" id="transponder_0">0</div> </td>
+                            <td> <div class="roundButton" id="transponder_1">1</div> </td>
+                            <td> <div class="roundButton" id="transponder_2">2</div> </td>
+                            <td> <div class="roundButton" id="transponder_3">3</div> </td>
+                        </tr>
+                        <tr>
+                            <td> <div class="roundButton" id="transponder_4">4</div> </td>
+                            <td> <div class="roundButton" id="transponder_5">5</div> </td>
+                            <td> <div class="roundButton" id="transponder_6">6</div> </td>
+                            <td> <div class="roundButton" id="transponder_7">7</div> </td>
+                        </tr>
+                    </table>
+                    <div class="gradientButton" id="transponder_Vfr">
+                        <div class="mainText">VFR</div>
+                    </div>
+                    <div class="gradientButton" id="transponder_Cancel">
+                        <img class="img" src="/Pages/VCockpit/Instruments/NavSystems/Shared/Images/TSC/Icons/ICON_MAP_BUTTONBAR_BACK_1.png" />
+                        <div class="title">Cancel</div>
+                    </div>
+                    <div class="gradientButton" id="transponder_Enter">
+                        <img class="img" src="/Pages/VCockpit/Instruments/NavSystems/Shared/Images/TSC/Icons/ICON_MAP_ENTER.png" />
+                        <div class="title">Enter</div>
+                    </div>
+                </div>
+                <div id="COM" class="popup" state="Inactive">
+                    <div class="WindowTitle">COM Standby Frequency</div>
+                    <div id="com_FreqDisplay">
+                        <span id="com_frequency">124.850</span>
+                    </div>
+                    <div class="gradientButton" id="com_Bksp">
+                        <img class="img" src="/Pages/VCockpit/Instruments/NavSystems/Shared/Images/TSC/Icons/ICON_MAP_BKSP.png" />
+                        <div class="title">BKSP</div>
+                    </div>
+                    <table id="Com_NumbersKeyboard">
+                        <tr>
+                            <td> <div class="roundButton" id="NK_1">1</div> </td>
+                            <td> <div class="roundButton" id="NK_2">2</div> </td>
+                            <td> <div class="roundButton" id="NK_3">3</div> </td>
+                        </tr>
+                        <tr>
+                            <td> <div class="roundButton" id="NK_4">4</div> </td>
+                            <td> <div class="roundButton" id="NK_5">5</div> </td>
+                            <td> <div class="roundButton" id="NK_6">6</div> </td>
+                        </tr>
+                        <tr>
+                            <td> <div class="roundButton" id="NK_7">7</div> </td>
+                            <td> <div class="roundButton" id="NK_8">8</div> </td>
+                            <td> <div class="roundButton" id="NK_9">9</div> </td>
+                        </tr>
+                        <tr>
+                            <td></td>
+                            <td> <div class="roundButton" id="NK_0">0</div> </td>
+                            <td></td>
+                        </tr>
+                    </table>
+                    <div class="gradientButton" id="Com_Cancel">
+                        <img class="img" src="/Pages/VCockpit/Instruments/NavSystems/Shared/Images/TSC/Icons/ICON_MAP_BUTTONBAR_BACK_1.png" />
+                        <div class="title">Cancel</div>
+                    </div>
+                    <div class="gradientButton" id="Com_XFR">
+                        <img class="img_small" src="/Pages/VCockpit/Instruments/NavSystems/Shared/Images/Misc/DoubleArrowVerticalWhite.svg" />
+                        <div class="title">XFER</div>
+                    </div>
+                    <div class="gradientButton" id="Com_Enter">
+                        <img class="img" src="/Pages/VCockpit/Instruments/NavSystems/Shared/Images/TSC/Icons/ICON_MAP_ENTER.png" />
+                        <div class="title">Enter</div>
+                    </div>
+                </div>
+                <div id="DirectTo" class="popup" state="Inactive">
+                    <div class="gradientButton" id="SelectedWaypoint">
+                        <div class="mainText">SELECT WAYPOINT</div>
+                        <div class="mainValue"></div>
+                        <div class="title"></div>
+                        <img class="waypointSymbol" />
+                    </div>
+                    <div id="TopInfos">
+                        <div id="Location">
+                            <div id="DRCT_City"></div>
+                            <div id="DRCT_Region"></div>
+                        </div>
+                        <div id="Bearing">
+                            <div>BRG</div>
+                            <div id="DRCT_Bearing">___°</div>
+                        </div>
+                        <div id="Distance">
+                            <div>DIS</div>
+                            <div id="DRCT_Distance">___._NM</div>
+                        </div>
+                    </div>
+                    <div id="TopLine">
+                        <div class="gradientButton" id="DRCT_VNavAltButton" state="Hidden">
+                            <div class="mainText">VNAV Altitude</div>
+                            <div class="mainValue">_____FT</div>
+                        </div>
+                        <div class="gradientButton" id="DRCT_VNavOffsetButton" state="Hidden">
+                            <div class="mainText">VNAV Offset</div>
+                            <div class="mainValue">0NM</div>
+                        </div>
+                    </div>
+                    <div id="MiddleLine">
+                        <div class="gradientButton" id="DRCT_CrsButton" state="Hidden">
+                            <div class="mainText">Course</div>
+                            <div class="mainValue">090°</div>
+                        </div>
+                        <div class="gradientButton" id="DRCT_HoldButton" state="Hidden">
+                            <div class="mainText">Hold</div>
+                            <div class="mainValue">---</div>
+                        </div>
+                    </div>
+                    <div id="bottomLine">
+                        <div class="gradientButton" id="DRCT_CancelButton">
+                            <div class="mainText">Cancel <img class="DrctImg" src="/Pages/VCockpit/Instruments/NavSystems/Shared/Images/TSC/Icons/ICON_MAP_DIRECT_TO_1.png" /></div>
+                            <div class="mainValue">______</div>
+                        </div>
+                        <div class="gradientButton" id="DRCT_ActivateInsertInFP" state="Hidden">
+                            <div class="mainText">Activate and Insert in Flight Plan</div>
+                        </div>
+                        <div class="gradientButton" id="DRCT_ActivateDirect">
+                            <div class="mainText">Activate <img class="DrctImg" src="/Pages/VCockpit/Instruments/NavSystems/Shared/Images/TSC/Icons/ICON_MAP_DIRECT_TO_1.png" /></div>
+                            <div class="mainValue">______</div>
+                        </div>
+                    </div>
+                </div>
+                <div id="AudioPanel" class="popup">
+                    <div class="WindowTitle">AUDIO / Intercom</div>
+                    <div id="AudioPanel_tabs">
+                        <div class="gradientButton" id="AudioPanel_RadiosTab" state="Selected">
+                            <div class="value">Radios</div>
+                        </div>
+                        <div class="gradientButton" id="AudioPanel_IntercomTab" state="Hidden">
+                            <div class="value">Intercom</div>
+                        </div>
+                        <div class="gradientButton" id="AudioPanel_PhoneMediaTab" state="Hidden">
+                            <div class="value">Phone &amp; Media</div>
+                        </div>
+                        <div class="gradientButton" id="AudioPanel_MusicInputTab" state="Hidden">
+                            <div class="value">Music Input</div>
+                        </div>
+                    </div>
+                    <div id="AudioPanel_tabContent" state="radios">
+                        <div class="TabContent radios">
+                            <div class="comRadios">
+                                <div class="title">COM Radios</div>
+                                <div class="gradientButton" id="AudioPanel_Com1">
+                                    <div class="title">COM 1</div>
+                                    <div class="statusBar"></div>
+                                </div>
+                                <div class="gradientButton" id="AudioPanel_Com2">
+                                    <div class="title">COM 2</div>
+                                    <div class="statusBar"></div>
+                                </div>
+                                <div class="gradientButton" id="AudioPanel_Com1Mic">
+                                    <div class="title">COM 1 MIC</div>
+                                    <div class="statusBar"></div>
+                                </div>
+                                <div class="gradientButton" id="AudioPanel_Com2Mic">
+                                    <div class="title">COM 2 MIC</div>
+                                    <div class="statusBar"></div>
+                                </div>
+                                <div class="gradientButton" id="AudioPanel_SplitCom" state="Hidden">
+                                    <div class="title">Split COM</div>
+                                    <div class="statusBar"></div>
+                                </div>
+                            </div>
+                            <div class="navRadios">
+                                <div class="title">NAV Radios</div>
+                                <div class="gradientButton" id="AudioPanel_Nav1">
+                                    <div class="title">NAV 1</div>
+                                    <div class="statusBar"></div>
+                                </div>
+                                <div class="gradientButton" id="AudioPanel_Nav2">
+                                    <div class="title">NAV 2</div>
+                                    <div class="statusBar"></div>
+                                </div>
+                            </div>
+                            <div class="gradientButton" id="AudioPanel_Speaker">
+                                <div class="title">Speaker</div>
+                                <div class="statusBar"></div>
+                            </div>
+                            <div class="gradientButton" id="AudioPanel_Back" state="Hidden">
+                                <div class="title">Back</div>
+                                <img class="img" />
+                            </div>
+                            <div class="gradientButton" id="AudioPanel_Play" state="Hidden">
+                                <div class="title">Play</div>
+                                <img class="img" />
+                            </div>
+                            <div class="gradientButton" id="AudioPanel_MoreOptions" state="Hidden">
+                                <div class="title">More Options...</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="popup" id="fullKeyboard" state="Inactive" keyboard="Letters">
+                    <div id="topLine">
+                        <div id="EditText"><span class="NoEdit">______</span></div>
+                        <div id="Infos">
+                            <span id="InfosContent">Waypoint Identifier Lookup</span>
+                            <img id="InfosSymbol" />
+                        </div>
+                    </div>
+                    <table id="Keyboard_LetterTable" state="Inactive">
+                        <tr>
+                            <td>
+                                <div class="gradientButton" id="K_A">
+                                    <div class="mainText">A</div>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="gradientButton" id="K_B">
+                                    <div class="mainText">B</div>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="gradientButton" id="K_Find" state="Hidden">
+                                    <img class="img" src="/Pages/VCockpit/Instruments/NavSystems/Shared/Images/TSC/Icons/ICON_MAP_FIND.png" />
+                                    <div class="title">Find</div>
+                                </div>
+                            </td>
+                            <td colspan="2" class="Double">
+                                <div class="gradientButton" id="K_SwitchToNum">
+                                    <div class="mainText">123...</div>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="gradientButton" id="K_Bksp">
+                                    <img class="img" src="/Pages/VCockpit/Instruments/NavSystems/Shared/Images/TSC/Icons/ICON_MAP_BKSP.png" />
+                                    <div class="title">BKSP</div>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <div class="gradientButton" id="K_C">
+                                    <div class="mainText">C</div>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="gradientButton" id="K_D">
+                                    <div class="mainText">D</div>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="gradientButton" id="K_E">
+                                    <div class="mainText">E</div>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="gradientButton" id="K_F">
+                                    <div class="mainText">F</div>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="gradientButton" id="K_G">
+                                    <div class="mainText">G</div>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="gradientButton" id="K_H">
+                                    <div class="mainText">H</div>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <div class="gradientButton" id="K_I">
+                                    <div class="mainText">I</div>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="gradientButton" id="K_J">
+                                    <div class="mainText">J</div>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="gradientButton" id="K_K">
+                                    <div class="mainText">K</div>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="gradientButton" id="K_L">
+                                    <div class="mainText">L</div>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="gradientButton" id="K_M">
+                                    <div class="mainText">M</div>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="gradientButton" id="K_N">
+                                    <div class="mainText">N</div>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <div class="gradientButton" id="K_O">
+                                    <div class="mainText">O</div>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="gradientButton" id="K_P">
+                                    <div class="mainText">P</div>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="gradientButton" id="K_Q">
+                                    <div class="mainText">Q</div>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="gradientButton" id="K_R">
+                                    <div class="mainText">R</div>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="gradientButton" id="K_S">
+                                    <div class="mainText">S</div>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="gradientButton" id="K_T">
+                                    <div class="mainText">T</div>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <div class="gradientButton" id="K_U">
+                                    <div class="mainText">U</div>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="gradientButton" id="K_V">
+                                    <div class="mainText">V</div>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="gradientButton" id="K_W">
+                                    <div class="mainText">W</div>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="gradientButton" id="K_X">
+                                    <div class="mainText">X</div>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="gradientButton" id="K_Y">
+                                    <div class="mainText">Y</div>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="gradientButton" id="K_Z">
+                                    <div class="mainText">Z</div>
+                                </div>
+                            </td>
+                        </tr>
+                    </table>
+                    <table id="Keyboard_NumberTable" state="Inactive">
+                        <tr>
+                            <td></td>
+                            <td></td>
+                            <td>
+                                <div class="gradientButton" id="KN_Find" state="Hidden">
+                                    <img class="img" src="/Pages/VCockpit/Instruments/NavSystems/Shared/Images/TSC/Icons/ICON_MAP_FIND.png" />
+                                    <div class="title">Find</div>
+                                </div>
+                            </td>
+                            <td colspan="2" class="Double">
+                                <div class="gradientButton" id="KN_SwitchToLetters">
+                                    <div class="mainText">ABC...</div>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="gradientButton" id="KN_Bksp">
+                                    <img class="img" src="/Pages/VCockpit/Instruments/NavSystems/Shared/Images/TSC/Icons/ICON_MAP_BKSP.png" />
+                                    <div class="title">BKSP</div>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <div class="gradientButton" id="KN_N">
+                                    <div class="mainText">N</div>
+                                </div>
+                            </td>
+                            <td></td>
+                            <td>
+                                <div class="gradientButton" id="KN_1">
+                                    <div class="mainText">1</div>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="gradientButton" id="KN_2">
+                                    <div class="mainText">2</div>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="gradientButton" id="KN_3">
+                                    <div class="mainText">3</div>
+                                </div>
+                            </td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <div class="gradientButton" id="KN_S">
+                                    <div class="mainText">S</div>
+                                </div>
+                            </td>
+                            <td></td>
+                            <td>
+                                <div class="gradientButton" id="KN_4">
+                                    <div class="mainText">4</div>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="gradientButton" id="KN_5">
+                                    <div class="mainText">5</div>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="gradientButton" id="KN_6">
+                                    <div class="mainText">6</div>
+                                </div>
+                            </td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <div class="gradientButton" id="KN_E">
+                                    <div class="mainText">E</div>
+                                </div>
+                            </td>
+                            <td></td>
+                            <td>
+                                <div class="gradientButton" id="KN_7">
+                                    <div class="mainText">7</div>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="gradientButton" id="KN_8">
+                                    <div class="mainText">8</div>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="gradientButton" id="KN_9">
+                                    <div class="mainText">9</div>
+                                </div>
+                            </td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <div class="gradientButton" id="KN_W">
+                                    <div class="mainText">W</div>
+                                </div>
+                            </td>
+                            <td></td>
+                            <td></td>
+                            <td>
+                                <div class="gradientButton" id="KN_0">
+                                    <div class="mainText">0</div>
+                                </div>
+                            </td>
+                            <td></td>
+                            <td>
+                                <div class="gradientButton" id="KN_SPC" state="Hidden">
+                                    <div class="mainText">SPC</div>
+                                </div>
+                            </td>
+                        </tr>
+                    </table>
+                    <div class="gradientButton" id="FK_Cancel">
+                        <img class="img" src="/Pages/VCockpit/Instruments/NavSystems/Shared/Images/TSC/Icons/ICON_MAP_BUTTONBAR_BACK_1.png" />
+                        <div class="title">Cancel</div>
+                    </div>
+                    <div class="gradientButton" id="FK_Enter">
+                        <img class="img" src="/Pages/VCockpit/Instruments/NavSystems/Shared/Images/TSC/Icons/ICON_MAP_ENTER.png" />
+                        <div class="title">Enter</div>
+                    </div>
+                </div>
+                <div class="popup" id="frequencyKeyboard" state="Inactive">
+                    <div class="WindowTitle">NAV1</div>
+                    <div id="topLine">
+                        <div>
+                            <div id="FK_ActiveFreqLine">Active Freq: <span id="FK_ActiveFrequency">116.40</span></div>
+                            <div id="FK_FreqDisplay">
+                                <span class="StbyFreq">117.95</span>
+                            </div>
+                        </div>
+                        <div class="gradientButton" id="FK_Bksp">
+                            <img class="img" src="/Pages/VCockpit/Instruments/NavSystems/Shared/Images/TSC/Icons/ICON_MAP_BKSP.png" />
+                            <div class="title">BKSP</div>
+                        </div>
+                    </div>
+                    <table id="KeyBoard">
+                        <tr>
+                            <td> <div class="roundButton" id="FK_1">1</div> </td>
+                            <td> <div class="roundButton" id="FK_2">2</div> </td>
+                            <td> <div class="roundButton" id="FK_3">3</div> </td>
+                        </tr>
+                        <tr>
+                            <td> <div class="roundButton" id="FK_4">4</div> </td>
+                            <td> <div class="roundButton" id="FK_5">5</div> </td>
+                            <td> <div class="roundButton" id="FK_6">6</div> </td>
+                        </tr>
+                        <tr>
+                            <td> <div class="roundButton" id="FK_7">7</div> </td>
+                            <td> <div class="roundButton" id="FK_8">8</div> </td>
+                            <td> <div class="roundButton" id="FK_9">9</div> </td>
+                        </tr>
+                        <tr>
+                            <td></td>
+                            <td> <div class="roundButton" id="FK_0">0</div> </td>
+                            <td></td>
+                        </tr>
+                    </table>
+                    <div class="gradientButton" id="FK_Cancel">
+                        <img class="img" src="/Pages/VCockpit/Instruments/NavSystems/Shared/Images/TSC/Icons/ICON_MAP_BUTTONBAR_BACK_1.png" />
+                        <div class="title">Cancel</div>
+                    </div>
+                    <div class="gradientButton" id="FK_Xfer">
+                        <img class="img_small" src="/Pages/VCockpit/Instruments/NavSystems/Shared/Images/Misc/DoubleArrowVerticalWhite.svg" />
+                        <div class="title">XFER</div>
+                    </div>
+                    <div class="gradientButton" id="FK_Enter">
+                        <img class="img" src="/Pages/VCockpit/Instruments/NavSystems/Shared/Images/TSC/Icons/ICON_MAP_ENTER.png" />
+                        <div class="title">Enter</div>
+                    </div>
+                </div>
+                <div class="popup" id="timeKeyboard" state="Inactive">
+                    <div class="WindowTitle">Enter Time</div>
+                    <div id="TK_TimeDisplay">
+                        00:00:00
+                    </div>
+                    <div class="gradientButton" id="TK_Bksp">
+                        <img class="img" src="/Pages/VCockpit/Instruments/NavSystems/Shared/Images/TSC/Icons/ICON_MAP_BKSP.png" />
+                        <div class="title">BKSP</div>
+                    </div>
+                    <table id="KeyBoard">
+                        <tr>
+                            <td> <div class="roundButton" id="TK_1">1</div> </td>
+                            <td> <div class="roundButton" id="TK_2">2</div> </td>
+                            <td> <div class="roundButton" id="TK_3">3</div> </td>
+                        </tr>
+                        <tr>
+                            <td> <div class="roundButton" id="TK_4">4</div> </td>
+                            <td> <div class="roundButton" id="TK_5">5</div> </td>
+                            <td> <div class="roundButton" id="TK_6">6</div> </td>
+                        </tr>
+                        <tr>
+                            <td> <div class="roundButton" id="TK_7">7</div> </td>
+                            <td> <div class="roundButton" id="TK_8">8</div> </td>
+                            <td> <div class="roundButton" id="TK_9">9</div> </td>
+                        </tr>
+                        <tr>
+                            <td></td>
+                            <td> <div class="roundButton" id="TK_0">0</div> </td>
+                            <td></td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="popup" id="altitudeKeyboard" state="Inactive">
+                    <div class="WindowTitle">Enter Altitude</div>
+                    <div id="AK_Display">
+                        _____FT
+                    </div>
+                    <div class="gradientButton" id="AK_Bksp">
+                        <img class="img" src="/Pages/VCockpit/Instruments/NavSystems/Shared/Images/TSC/Icons/ICON_MAP_BKSP.png" />
+                        <div class="title">BKSP</div>
+                    </div>
+                    <table id="KeyBoard">
+                        <tr>
+                            <td> <div class="roundButton" id="AK_1">1</div> </td>
+                            <td> <div class="roundButton" id="AK_2">2</div> </td>
+                            <td> <div class="roundButton" id="AK_3">3</div> </td>
+                        </tr>
+                        <tr>
+                            <td> <div class="roundButton" id="AK_4">4</div> </td>
+                            <td> <div class="roundButton" id="AK_5">5</div> </td>
+                            <td> <div class="roundButton" id="AK_6">6</div> </td>
+                        </tr>
+                        <tr>
+                            <td> <div class="roundButton" id="AK_7">7</div> </td>
+                            <td> <div class="roundButton" id="AK_8">8</div> </td>
+                            <td> <div class="roundButton" id="AK_9">9</div> </td>
+                        </tr>
+                        <tr>
+                            <td></td>
+                            <td> <div class="roundButton" id="AK_0">0</div> </td>
+                            <td></td>
+                        </tr>
+                    </table>
+                    <div class="gradientButton" id="AK_Cancel">
+                        <img class="img" src="/Pages/VCockpit/Instruments/NavSystems/Shared/Images/TSC/Icons/ICON_MAP_BUTTONBAR_BACK_1.png" />
+                        <div class="title">Cancel</div>
+                    </div>
+                    <div class="gradientButton" id="AK_Enter">
+                        <img class="img" src="/Pages/VCockpit/Instruments/NavSystems/Shared/Images/TSC/Icons/ICON_MAP_ENTER.png" />
+                        <div class="title">Enter</div>
+                    </div>
+                </div>
+                <div class="popup" id="WaypointDuplicateWindow" state="Inactive">
+                    <div class="WindowTitle">Waypoint Duplicates</div>
+                    <div id="WPDup_SearchTitle">Search Results for ""</div>
+                    <div class="Container">
+                        <table id="WPDup_WayPointsTable">
+                            <thead>
+                                <tr>
+                                    <th></th>
+                                    <th>Bearing</th>
+                                    <th>Distance</th>
+                                </tr>
+                            </thead>
+                            <tbody id="WPDup_WaypointsBody">
+                                <tr id="SizeSetter">
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="popup" id="DepartureSelection" state="Inactive">
+                    <div class="gradientButton" id="Departure_Airport">
+                        <div class="title">Airport</div>
+                        <div class="ident">____</div>
+                        <div class="name">____</div>
+                        <img class="logo" />
+                    </div>
+                    <div class="gradientButton" id="Departure_Departure">
+                        <div class="title">Departure</div>
+                        <div class="value">____</div>
+                    </div>
+                    <div class="gradientButton" id="Departure_Transition">
+                        <div class="title">Transition</div>
+                        <div class="value">____</div>
+                    </div>
+                    <div class="gradientButton" id="Departure_Runway">
+                        <div class="title">Runway</div>
+                        <div class="value">____</div>
+                    </div>
+                    <div id="Departure_Options">
+                        <div class="title">Departure Options</div>
+                        <div class="gradientButton" id="Departure_Preview" state="Hidden">
+                            <div class="title">Preview</div>
+                            <div class="value">Off</div>
+                        </div>
+                        <div class="gradientButton" id="Departure_FilterBy" state="Hidden">
+                            <div class="title">Filter by</div>
+                            <div class="value">Runway</div>
+                        </div>
+                        <div class="gradientButton" id="Departure_Remove">
+                            <div class="title">Remove</div>
+                        </div>
+                        <div class="gradientButton" id="Departure_Load">
+                            <div class="title">Load</div>
+                        </div>
+                    </div>
+                    <div id="Departure_Sequence">
+                        <div class="title">Sequence</div>
+                        <div class="content"></div>
+                    </div>
+                </div>
+                <div class="popup" id="ArrivalSelection" state="Inactive">
+                    <div class="gradientButton" id="Arrival_Airport">
+                        <div class="title">Airport</div>
+                        <div class="ident">____</div>
+                        <div class="name">____</div>
+                        <img class="logo" />
+                    </div>
+                    <div class="gradientButton" id="Arrival_Arrival">
+                        <div class="title">Arrival</div>
+                        <div class="value">____</div>
+                    </div>
+                    <div class="gradientButton" id="Arrival_Transition">
+                        <div class="title">Transition</div>
+                        <div class="value">____</div>
+                    </div>
+                    <div class="gradientButton" id="Arrival_Runway">
+                        <div class="title">Runway</div>
+                        <div class="value">____</div>
+                    </div>
+                    <div id="Arrival_Options">
+                        <div class="title">Arrival Options</div>
+                        <div class="gradientButton" id="Arrival_Preview" state="Hidden">
+                            <div class="title">Preview</div>
+                            <div class="value">Off</div>
+                        </div>
+                        <div class="gradientButton" id="Arrival_FilterBy" state="Hidden">
+                            <div class="title">Filter by</div>
+                            <div class="value">Runway</div>
+                        </div>
+                        <div class="gradientButton" id="Arrival_Remove">
+                            <div class="title">Remove</div>
+                        </div>
+                        <div class="gradientButton" id="Arrival_Load">
+                            <div class="title">Load</div>
+                        </div>
+                    </div>
+                    <div id="Arrival_Sequence">
+                        <div class="title">Sequence</div>
+                        <div class="content"></div>
+                    </div>
+                </div>
+                <div class="popup" id="ApproachSelection" state="Inactive">
+                    <div class="gradientButton" id="Approach_Airport">
+                        <div class="title">Airport</div>
+                        <div class="ident">____</div>
+                        <div class="name">____</div>
+                        <img class="logo" />
+                    </div>
+                    <div class="gradientButton" id="Approach_Approach">
+                        <div class="title">Approach</div>
+                        <div class="value">____</div>
+                    </div>
+                    <div class="gradientButton" id="Approach_Transition">
+                        <div class="title">Transition</div>
+                        <div class="value">____</div>
+                    </div>
+                    <div class="gradientButton" id="Approach_Minimums" state="Hidden">
+                        <div class="title">Minimums</div>
+                        <div class="state">Off</div>
+                        <div class="value">_____M</div>
+                    </div>
+                    <div class="gradientButton" id="Approach_PrimaryFrequency" state="Hidden">
+                        <div class="title">Primary Frequency</div>
+                        <div class="value">BD 110.30</div>
+                    </div>
+                    <div id="Approach_Options">
+                        <div class="title">Approach Options</div>
+                        <div class="gradientButton" id="Approach_Preview" state="Hidden">
+                            <div class="title">Preview</div>
+                            <div class="value">Off</div>
+                        </div>
+                        <div class="gradientButton" id="Approach_Remove">
+                            <div class="title">Remove</div>
+                        </div>
+                        <div class="gradientButton" id="Approach_Load">
+                            <div class="title">Load</div>
+                        </div>
+                        <div class="gradientButton" id="Approach_LoadAndActivate">
+                            <div class="title">Load &amp; Activate</div>
+                        </div>
+                    </div>
+                    <div id="Approach_Sequence">
+                        <div class="title">Sequence</div>
+                        <div class="content"></div>
+                    </div>
+                </div>
+                <div class="popup" id="PFD_Menu">
+                    <div class="title">PFD Options</div>
+                    <div id="cdi_source" class="subpart">
+                        <div class="title">CDI Source</div>
+                        <div class="gradientButton" id="cdi_source_Button">
+                            <div class="mainText">GPS</div>
+                        </div>
+                    </div>
+                    <!--<div id="inset_windows" class="subpart">
+                        <div class="title">Inset Windows</div>
+                        <div class="gradientButton" id="left_inset_button" state="Hidden">
+                            <div class="mainText">Map</div>
+                        </div>
+                        <div class="gradientButton" id="right_inset_button" state="Hidden">
+                            <div class="mainText">Flight Plan</div>
+                        </div>
+                    </div> -->
+                    <div id="bearing_pointers" class="subpart">
+                        <div class="title">Bearing Pointers</div>
+                        <div class="gradientButton" id="left_bearing_button">
+                            <div class="mainText">GPS</div>
+                        </div>
+                        <div class="gradientButton" id="right_bearing_button">
+                            <div class="mainText">Nearest Airport</div>
+                        </div>
+                    </div>
+                    <div id="timer" class="subpart">
+                        <div class="title">Timer</div>
+                        <div class="gradientButton" id="timer_startStop_button">
+                            <div class="topTitle">Start</div>
+                            <div class="value">00:00:00</div>
+                        </div>
+                        <div class="gradientButton" id="timer_reset_button">
+                            <div class="mainText">Reset</div>
+                        </div>
+                    </div>
+                    <!-- <div id="minimums" class="subpart">
+                        <div class="title">Minimums</div>
+                        <div class="gradientButton" id="minimums_set_button" state="Hidden">
+                            <div class="mainText">Set...</div>
+                        </div>
+                    </div> -->
+                </div>
+                <div class="popup Transparent" id="insertBeforeWaypointWindow" state="Inactive">
+                    <div class="WindowTitle">Insert Before Waypoint</div>
+                    <div class="Container">
+                        <div class="WayPoints">
+                            <div class="EndButtonLine">
+                                <div class="gradientButton" id="EndButton">
+                                    <div class="mainValue">
+                                        Insert at End
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="popup" id="SelectionList" state="Inactive">
+                    <div class="WindowTitle"></div>
+                    <div class="content">
+                    </div>
+                </div>
+            </div>
+            <div id="EngineInfos">
+                <glasscockpit-xmlenginedisplay id="Engine"></glasscockpit-xmlenginedisplay>
+            </div>
+            <div id="BottomBar">
+                <div id="LeftKnobInfos">
+                    <div id="LeftInnerKnobText">Heading</div>
+                    <svg id="LeftKnobSvg" height="100%" viewBox="0 0 100 100">
+                        <rect x="5" y="47.5" height="5" width="45" fill="aqua" />
+                        <circle r="10" cx="50" cy="50" fill="aqua" />
+                        <path d="M30 40 A22 22 0 1 1 30 60" stroke="aqua" stroke-width="5" fill="None" />
+                        <rect x="72" y="47.5" height="5" width="23" fill="aqua" />
+                    </svg>
+                    <div id="LeftOuterKnobText">Altitude</div>
+                </div>
+                <div id="CentralInfos">
+                    <div>TMR</div>
+                    <div id="botLine_Timer">__:__</div>
+                    <div>OAT</div>
+                    <div id="botLine_Oat">__°C</div>
+                    <div>LCL</div>
+                    <div id="botLine_LocalTime">__:__:__</div>
+                </div>
+                <div id="RightKnobInfos">
+                    <div id="RightInnerKnobText"></div>
+                    <svg id="RightKnobSvg" height="100%" viewBox="0 0 100 100">
+                        <rect x="5" y="47.5" height="5" width="45" fill="aqua" />
+                        <circle r="10" cx="50" cy="50" fill="aqua" />
+                        <path d="M30 40 A22 22 0 1 1 30 60" stroke="aqua" stroke-width="5" fill="None" />
+                        <rect x="72" y="47.5" height="5" width="23" fill="aqua" />
+                    </svg>
+                    <div id="RightOuterKnobText">Baro</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</script>
+
+<link rel="stylesheet" href="AS3X_Touch.css" />
+
+<script type="text/html" import-script="/JS/SimPlane.js"></script>
+
+<script type="text/html" import-template="/Pages/VCockpit/Instruments/Shared/Map/MapInstrument.html"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/Shared/Templates/XMLEngineDisplay/XMLEngineDisplay.js"></script>
+
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/Shared/Templates/HSIndicator/HSIndicator.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/Shared/Templates/Altimeter/Altimeter.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/Shared/Templates/AngleOfAttackIndicator/AngleOfAttackIndicator.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/Shared/Templates/AirspeedIndicator/AirspeedIndicator.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/Shared/Templates/WindDataDisplay/WindDataDisplay.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/Shared/Templates/AttitudeIndicator/AttitudeIndicator.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/Shared/Templates/VerticalSpeedIndicator/VerticalSpeedIndicator.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/Shared/Templates/ElevatorTrim/ElevatorTrim.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/Shared/Templates/Highlight/Highlight.js"></script>
+
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/Shared/LogicElements/FlightPlan.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/Shared/LogicElements/FlightPlanManager.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/Shared/LogicElements/GeoCalc.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/Shared/LogicElements/SearchField.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/Shared/LogicElements/Waypoint.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/Shared/LogicElements/NearestWaypoint.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/Shared/LogicElements/Approach.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/Shared/LogicElements/SelectableElement.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/Shared/LogicElements/ContextualMenu.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/Shared/LogicElements/Runway.js"></script>
+
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/Shared/NavSystem.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/Shared/CommonPFD_MFD.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/Shared/NavSystemTouch.js"></script>
+
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/AS3X_Touch/AS3X_Touch.js"></script>

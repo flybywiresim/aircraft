@@ -1,0 +1,109 @@
+﻿<link rel="stylesheet" href="./EngineDisplay.css" />
+
+<script type="text/html" id="PistonEngineTemplate">
+    <circular-gauge class="Piston_RPMGauge"></circular-gauge>
+    <horizontal-gauge class="Piston_FFlowGauge"></horizontal-gauge>
+    <horizontal-gauge class="Piston_OilPressGauge"></horizontal-gauge>
+    <horizontal-gauge class="Piston_OilTempGauge"></horizontal-gauge>
+    <horizontal-gauge class="Piston_EgtGauge"></horizontal-gauge>
+</script>
+
+<script type="text/html" id="TurboEngineTemplate">
+    <circular-gauge class="Turbo_TorqueGauge"></circular-gauge>
+    <circular-gauge class="Turbo_RPMGauge"></circular-gauge>
+    <circular-gauge class="Turbo_NgGauge"></circular-gauge>
+    <circular-gauge class="Turbo_IttGauge"></circular-gauge>
+    <horizontal-gauge class="Turbo_OilPressGauge"></horizontal-gauge>
+    <horizontal-gauge class="Turbo_OilTempGauge"></horizontal-gauge>
+    <div class="Turbo_Title">CAS</div>
+    <div class="Turbo_CAS">
+        <div id="Annunciations" state="Hidden">
+        </div>
+    </div>
+</script>
+
+<script type="text/html" id="EngineDisplayTemplate">
+    <div id="PistonEngine">
+        <div id="PistonEnginesPanel"></div>
+        <div id="PistonSharedPanel">
+            <horizontal-gauge id="Piston_VacGauge"></horizontal-gauge>
+            <double-horizontal-gauge id="Piston_FuelGauge"></double-horizontal-gauge>
+            <div class="Space"></div>
+            <div class="Piston_Row">
+                <div class="Piston_RowText">ENG</div>
+                <div class="Piston_RowText" id="Piston_EngineHours"></div>
+                <div class="Piston_RowText">HRS</div>
+            </div>
+            <div class="Space"></div>
+            <div class="Piston_Title">-ELECTRICAL-</div>
+            <div class="Piston_Row">
+                <div class="Piston_RowText">M</div>
+                <div class="Piston_RowText">BUS</div>
+                <div class="Piston_RowText">E</div>
+            </div>
+            <div class="Piston_Row">
+                <div class="Piston_RowText" id="Piston_Bus_M"></div>
+                <div class="Piston_RowText">VOLTS</div>
+                <div class="Piston_RowText" id="Piston_Bus_E"></div>
+            </div>
+            <div class="Space"></div>
+            <div class="Piston_Row">
+                <div class="Piston_RowText">M</div>
+                <div class="Piston_RowText">BATT</div>
+                <div class="Piston_RowText">S</div>
+            </div>
+            <div class="Piston_Row">
+                <div class="Piston_RowText" id="Piston_Batt_M"></div>
+                <div class="Piston_RowText">AMPS</div>
+                <div class="Piston_RowText" id="Piston_Batt_S"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="TurboEngine">
+        <div id="TurboSharedPanel">
+            <div id="Turbo_CabinPress">
+                <div id="Turbo_CabinPressTitle">CABIN PRESS</div>
+                <div id="Turbo_CabinPressTopGauges">
+                    <div id="Turbo_CabinPressLeft">
+                        <div id="Turbo_AltTitle">ALT FT</div>
+                        <vertical-gauge id="Turbo_AltGauge"></vertical-gauge>
+                    </div>
+                    <div id="Turbo_CabinPressRight">
+                        <div id="Turbo_RateTitle">RATE FPM</div>
+                        <vertical-gauge id="Turbo_RateGauge"></vertical-gauge>
+                    </div>
+                </div>
+                <horizontal-gauge id="Turbo_DiffPsiGauge"></horizontal-gauge>
+            </div>
+            <div id="Turbo_OxyPsi">
+                <div id="OxyPsiTitle">OXY PSI</div>
+                <div id="OxyPsiValue">1900</div>
+            </div>
+            <div id="Turbo_Fuel">
+                <div id="Turbo_FuelTitle">L FUEL QTY R</div>
+                <vertical-gauge id="Turbo_FuelGaugeLeft"></vertical-gauge>
+                <vertical-gauge id="Turbo_FuelGaugeRight"></vertical-gauge>
+                <div class="Space"></div>
+            </div>
+            <div id="Turbo_Electrical">
+                <div class="Turbo_Title">ELECTRICAL</div>
+                <horizontal-gauge fixed-font-size="12vh" id="Turbo_AmpGauge1"></horizontal-gauge>
+                <horizontal-gauge fixed-font-size="12vh" id="Turbo_AmpGauge2"></horizontal-gauge>
+                <horizontal-gauge fixed-font-size="12vh" id="Turbo_VoltsGauge1"></horizontal-gauge>
+                <horizontal-gauge fixed-font-size="12vh" id="Turbo_VoltsGauge2"></horizontal-gauge>
+            </div>
+            <div id="Turbo_FlapsTrims">
+                <div class="Turbo_Title">TRIMS</div>
+                <elev-trim-gauge id="Turbo_ElevTrim"></elev-trim-gauge>
+                <rudder-trim-gauge id="Turbo_RudderTrim"></rudder-trim-gauge>
+                <ail-trim-gauge id="Turbo_AilTrim"></ail-trim-gauge>
+                <flaps-gauge id="Turbo_Flaps"></flaps-gauge>
+            </div>
+        </div>
+    </div>
+
+    <glasscockpit-xmlenginedisplay id="XMLEngineDisplay" />
+</script>
+
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/AS1000/Shared/Templates/EngineDisplay.js"></script>

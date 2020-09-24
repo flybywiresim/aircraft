@@ -1,0 +1,110 @@
+{
+  "waypointLabelFontSize": 70,
+  "waypointLabelFontFamily": "Consolas",
+  "waypointLabelColor": "#FFFFFF",
+  "waypointLabelStrokeColor": "#3f3f3f",
+  "waypointLabelStrokeWidth": 0,
+  "waypointLabelUseBackground": true,
+  "waypointLabelBackgroundColor": "#3f4851",
+  "waypointLabelBackgroundStrokeColor": "black",
+  "waypointLabelBackgroundStrokeWidth": 0,
+  "waypointLabelBackgroundPadding": "4 9 4 9",
+  "waypointLabelDistance": 12,
+  "waypointIconSize": 250,
+
+  "cityLabelFontSize": 60,
+  "cityLabelFontFamily": "Consolas",
+  "cityLabelColor": "#black",
+  "cityLabelStrokeColor": "#3f3f3f",
+  "cityLabelStrokeWidth": 0,
+  "cityLabelUseBackground": false,
+  "cityLabelBackgroundColor": "white",
+  "cityLabelBackgroundStrokeColor": "red",
+  "cityLabelBackgroundStrokeWidth": 10,
+  "cityLabelBackgroundPadding": "7 12 0 12",
+  "cityLabelDistance": 0.45,
+  "cityIconSize": 90,
+
+  "airplaneIconSize": 250,
+  "airplaneIcon1": "ICON_MAP_PLANE",
+  "airplaneIcon2": "ICON_MAP_PLANE",
+
+  "imagesDir": "/Pages/VCockpit/Instruments/Shared/Map/Images/Outlined/",
+  "delay": 1,
+
+  "runwayFillColor": "white",
+  "runwayStrokeColor": "gray",
+  "runwayStrokeWidth": 3,
+  "runwayCornerRadius": 8,
+  "runwayMinimalWidth": 16,
+
+  "latLonStrokeColor": "gray",
+  "latLonStrokeWidth": 1,
+  "latLonLabelFontFamily": "Consolas",
+  "latLonLabelFontSize": 14,
+  "latLonLabelColor": "white",
+  "latLonLabelStrokeColor": "none",
+  "latLonLabelStrokeWidth": 0,
+
+  "flightPlanActiveLegColor": "#ed008c",
+  "flightPlanActiveLegWidth": 6,
+  "flightPlanActiveLegStrokeColor": "#3f3f3f",
+  "flightPlanActiveLegStrokeWidth": 7,
+  "flightPlanNonActiveLegColor": "#ffffff",
+  "flightPlanNonActiveLegWidth": 6,
+  "flightPlanNonActiveLegStrokeColor": "#3f3f3f",
+  "flightPlanNonActiveLegStrokeWidth": 7,
+
+  "roadMotorWayColor": "#7a7a7a",
+  "roadMotorWayWidth": 3,
+  "roadTrunkColor": "#7a7a7a",
+  "roadTrunkWidth": 2,
+  "roadPrimaryColor": "#7a7a7a",
+  "roadPrimaryWidth": 1,
+
+  "railwayStrokeColor": "gray",
+  "railwayWidth": 2,
+  "railwayDashLength": 6,
+
+  "netBingTextureResolution": 1024,
+  "netBingAltitudeColors1": [],
+  "netBingWaterColor1": "#184b77",
+  "netBingHeightColor1": [
+    {
+      "alt": 0,
+      "color": "#6DA36C"
+    },
+    {
+      "alt": 1500,
+      "color": "#9CAF57"
+    },
+    {
+      "alt": 6000,
+      "color": "#c8b46e"
+    },
+    {
+      "alt": 8000,
+      "color": "#b0975b"
+    },
+    {
+      "alt": 10000,
+      "color": "#9a7c48"
+    },
+    {
+      "alt": 13000,
+      "color": "#906a3b"
+    },
+    {
+      "alt": 16000,
+      "color": "#7b5936"
+    },
+    {
+      "alt": 24000,
+      "color": "#5a462e"
+    },
+    {
+      "alt": 32000,
+      "color": "#abb0b5"
+    }
+  ]
+}

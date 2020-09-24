@@ -1,0 +1,74 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <title>Test SVG</title>
+
+    <script src="HSIndicator/HSIndicator.js"></script>
+
+    <script>
+        var rot = 0;
+        var head = 0;
+        var course = 0;
+        var deviation = -1;
+        var variation = 0.05;
+
+        window.onload = () => {
+            let hsi = document.getElementById("hsi");
+
+            setInterval(
+                () => {
+                    let hsi = document.getElementById("hsi");
+                    let rotElem = document.getElementById("rot");
+                    let headElem = document.getElementById("head");
+
+                    hsi.setAttribute("rotation", rot);
+                    hsi.setAttribute("heading_bug_rotation", head);
+                    hsi.setAttribute("course", course);
+                    hsi.setAttribute("course_deviation", deviation);
+                    hsi.setAttribute("show_dme", "true");
+                    hsi.setAttribute("show_bearing1", "true");
+                    hsi.setAttribute("show_bearing2", "true");
+                    hsi.setAttribute("bearing2_bearing", course/0.78);
+
+                    rot = ((rot + 1) % 360);
+                    head = ((head + 2) % 360);
+                    course = ((course + 3) % 360);
+                    deviation = deviation + variation;
+                    if (deviation >= 1) {
+                        variation = -0.05;
+                    }
+                    if (deviation <= -1) {
+                        variation = 0.05;
+                    }
+                },
+                35
+            )
+        }
+    </script>
+    <style>
+        @font-face {
+            font-family: "Roboto-Bold";
+            src: url("/Fonts/RobotoMono-Bold.ttf") format('truetype');
+            font-weight: normal;
+            font-style: normal;
+        }
+        body {
+            background-color: moccasin;
+        }
+        #hsi {
+            margin-left: 300px;
+            margin-top: 300px;
+            display: block;
+            width: 307px;
+            height: 307px;
+        }
+    </style>
+</head>
+
+<body>
+    <glasscockpit-hsi id="hsi"></glasscockpit-hsi>
+</body>
+
+</html>

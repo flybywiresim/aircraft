@@ -1,0 +1,18 @@
+﻿{
+  "waypointLabelFontSize": "10px",
+  "waypointIconSize": 10,
+  "airplaneIconSize": 32,
+  "imagesDir": "../../../NavSystems/Shared/Images/",
+  "runwayFillColor": "white",
+  "runwayStrokeColor": "red",
+  "runwayStrokeWidth": 3,
+  "runwayCornerRadius": 8,
+  "runwayMinimalWidth": 16,
+  "latLonStrokeColor": "gray",
+  "latLonStrokeWidth": 1,
+  "latLonLabelFontFamily": "Consolas",
+  "latLonLabelFontSize": 12,
+  "latLonLabelColor": "gray",
+  "latLonLabelStrokeColor": "black",
+  "latLonLabelStrokeWidth": 6
+}

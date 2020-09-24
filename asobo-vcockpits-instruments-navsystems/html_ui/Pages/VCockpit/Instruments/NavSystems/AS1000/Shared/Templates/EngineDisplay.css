@@ -1,0 +1,286 @@
+﻿:root {
+  --bodyHeightScale: 1; }
+
+@keyframes TemporaryShow {
+  0%, 100% {
+    visibility: visible; } }
+
+@keyframes TemporaryHide {
+  0%, 100% {
+    visibility: hidden; } }
+
+#highlight {
+  position: absolute;
+  height: 100%;
+  width: 100%;
+  z-index: 10; }
+
+#Electricity {
+  width: 100%;
+  height: 100%; }
+  #Electricity[state=off] {
+    display: none; }
+
+@font-face {
+  font-family: "Roboto";
+  src: url("/Fonts/RobotoMono-Medium.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal; }
+
+@font-face {
+  font-family: "Roboto-Light";
+  src: url("/Fonts/RobotoMono-Light.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal; }
+
+@font-face {
+  font-family: "Roboto-Bold";
+  src: url("/Fonts/RobotoMono-Bold.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal; }
+
+engine-display #PistonEngine {
+  width: 100%;
+  height: 100%;
+  text-align: left; }
+  engine-display #PistonEngine piston-engine {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center; }
+    engine-display #PistonEngine piston-engine + piston-engine {
+      margin-left: 2%; }
+  engine-display #PistonEngine #PistonEnginesPanel {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: space-around; }
+  engine-display #PistonEngine #PistonSharedPanel {
+    position: absolute;
+    top: 47%;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center; }
+  engine-display #PistonEngine circular-gauge {
+    display: inline-block;
+    width: 100%;
+    height: 15%;
+    max-width: calc(var(--viewportWidthRatio) * 13.0208333333vw); }
+  engine-display #PistonEngine horizontal-gauge {
+    display: inline-block;
+    width: 100%;
+    height: 7%;
+    max-width: calc(var(--viewportWidthRatio) * 13.0208333333vw); }
+  engine-display #PistonEngine double-horizontal-gauge {
+    display: inline-block;
+    width: 80%; }
+  engine-display #PistonEngine vertical-gauge {
+    display: inline-block;
+    width: 40%;
+    height: 20%;
+    max-width: calc(var(--viewportWidthRatio) * 13.0208333333vw); }
+  engine-display #PistonEngine .Space {
+    height: calc(var(--viewportHeightRatio) * (60px / 21.6) * var(--currentPageHeight) / 100); }
+  engine-display #PistonEngine .Piston_Title {
+    text-align: center;
+    font-size: calc( 1.8 * 1vh * var(--bodyHeightScale)); }
+  engine-display #PistonEngine .Piston_Row {
+    width: 100%;
+    height: 3.5%;
+    display: flex;
+    justify-content: space-around; }
+
+engine-display #TurboEngine {
+  display: flex;
+  position: relative;
+  left: 0%;
+  width: 100%;
+  height: 100%;
+  text-align: center; }
+  engine-display #TurboEngine turbo-engine {
+    width: 100%;
+    height: 100%;
+    padding: 2%; }
+  engine-display #TurboEngine #TurboSharedPanel {
+    height: 100%;
+    width: 100%;
+    padding: 2%; }
+    engine-display #TurboEngine #TurboSharedPanel #Turbo_CabinPressTitle {
+      text-align: center; }
+    engine-display #TurboEngine #TurboSharedPanel #Turbo_CabinPress {
+      height: 25%; }
+      engine-display #TurboEngine #TurboSharedPanel #Turbo_CabinPress #Turbo_CabinPressTopGauges {
+        display: flex;
+        height: 60%; }
+        engine-display #TurboEngine #TurboSharedPanel #Turbo_CabinPress #Turbo_CabinPressTopGauges #Turbo_CabinPressLeft {
+          width: 50%;
+          height: 100%; }
+          engine-display #TurboEngine #TurboSharedPanel #Turbo_CabinPress #Turbo_CabinPressTopGauges #Turbo_CabinPressLeft #Turbo_AltTitle {
+            text-align: center;
+            font-size: calc( 1.4 * 1vh * var(--bodyHeightScale));
+            height: 15%; }
+          engine-display #TurboEngine #TurboSharedPanel #Turbo_CabinPress #Turbo_CabinPressTopGauges #Turbo_CabinPressLeft #Turbo_AltGauge {
+            width: 100%;
+            height: 85%; }
+        engine-display #TurboEngine #TurboSharedPanel #Turbo_CabinPress #Turbo_CabinPressTopGauges #Turbo_CabinPressRight {
+          width: 50%;
+          height: 100%; }
+          engine-display #TurboEngine #TurboSharedPanel #Turbo_CabinPress #Turbo_CabinPressTopGauges #Turbo_CabinPressRight #Turbo_RateTitle {
+            text-align: center;
+            font-size: calc( 1.4 * 1vh * var(--bodyHeightScale));
+            height: 15%; }
+          engine-display #TurboEngine #TurboSharedPanel #Turbo_CabinPress #Turbo_CabinPressTopGauges #Turbo_CabinPressRight #Turbo_RateGauge {
+            width: 100%;
+            height: 85%; }
+      engine-display #TurboEngine #TurboSharedPanel #Turbo_CabinPress horizontal-gauge {
+        width: 80%;
+        height: 25%; }
+    engine-display #TurboEngine #TurboSharedPanel #Turbo_OxyPsi {
+      position: relative;
+      height: 3%;
+      font-size: 1.5vh; }
+      engine-display #TurboEngine #TurboSharedPanel #Turbo_OxyPsi #OxyPsiTitle {
+        text-align: left;
+        position: absolute;
+        left: 0%;
+        color: white; }
+      engine-display #TurboEngine #TurboSharedPanel #Turbo_OxyPsi #OxyPsiValue {
+        text-align: right;
+        position: absolute;
+        right: 0%;
+        color: green; }
+    engine-display #TurboEngine #TurboSharedPanel #Turbo_Fuel {
+      height: 15%; }
+      engine-display #TurboEngine #TurboSharedPanel #Turbo_Fuel vertical-gauge {
+        display: inline-block;
+        width: 45%;
+        height: 85%; }
+    engine-display #TurboEngine #TurboSharedPanel #Turbo_Electrical {
+      height: 15%;
+      margin-bottom: 30%;
+      position: relative; }
+      engine-display #TurboEngine #TurboSharedPanel #Turbo_Electrical horizontal-gauge {
+        position: absolute;
+        display: inline-block;
+        width: 48%;
+        height: 50%; }
+      engine-display #TurboEngine #TurboSharedPanel #Turbo_Electrical #Turbo_AmpGauge1 {
+        top: -85%;
+        left: 0%; }
+      engine-display #TurboEngine #TurboSharedPanel #Turbo_Electrical #Turbo_AmpGauge2 {
+        top: -85%;
+        left: 50%; }
+      engine-display #TurboEngine #TurboSharedPanel #Turbo_Electrical #Turbo_VoltsGauge1 {
+        top: -35%;
+        left: 0%; }
+      engine-display #TurboEngine #TurboSharedPanel #Turbo_Electrical #Turbo_VoltsGauge2 {
+        top: -35%;
+        left: 50%; }
+    engine-display #TurboEngine #TurboSharedPanel #Turbo_FlapsTrims {
+      transform: rotateX(0);
+      position: relative;
+      height: 30%; }
+      engine-display #TurboEngine #TurboSharedPanel #Turbo_FlapsTrims #Turbo_ElevTrim {
+        position: absolute;
+        width: 50%;
+        height: 55%;
+        top: 10%;
+        left: 0%; }
+      engine-display #TurboEngine #TurboSharedPanel #Turbo_FlapsTrims #Turbo_RudderTrim {
+        position: absolute;
+        width: 40%;
+        height: 20%;
+        bottom: 67.5%;
+        right: 0%; }
+      engine-display #TurboEngine #TurboSharedPanel #Turbo_FlapsTrims #Turbo_AilTrim {
+        position: absolute;
+        width: 50%;
+        height: 27.5%;
+        top: 27.5%;
+        right: 0%; }
+      engine-display #TurboEngine #TurboSharedPanel #Turbo_FlapsTrims #Turbo_Flaps {
+        position: absolute;
+        width: 100%;
+        height: 35%;
+        left: 0%;
+        bottom: 0%; }
+  engine-display #TurboEngine #Turbo_FuelTitle {
+    font-size: calc( 1.8 * 1vh * var(--bodyHeightScale)); }
+  engine-display #TurboEngine .Turbo_Title {
+    text-align: center;
+    font-size: calc( 1.8 * 1vh * var(--bodyHeightScale)); }
+  engine-display #TurboEngine .Space {
+    height: calc(var(--viewportHeightRatio) * (60px / 21.6) * var(--currentPageHeight) / 100); }
+  engine-display #TurboEngine #Annunciations div {
+    font-size: 1.6vh;
+    text-align: left;
+    margin-bottom: 1px; }
+  engine-display #TurboEngine #Annunciations .Warning, engine-display #TurboEngine #Annunciations .Warning_Blink {
+    color: red; }
+  engine-display #TurboEngine #Annunciations .Caution, engine-display #TurboEngine #Annunciations .Caution_Blink {
+    color: yellow; }
+  engine-display #TurboEngine #Annunciations[state=Blink] .Warning_Blink {
+    color: white;
+    background-color: red; }
+  engine-display #TurboEngine #Annunciations[state=Blink] .Caution_Blink {
+    color: black;
+    background-color: yellow; }
+  engine-display #TurboEngine circular-gauge {
+    display: inline-block;
+    width: 90%;
+    margin-left: 5%;
+    height: 13%; }
+  engine-display #TurboEngine horizontal-gauge {
+    display: inline-block;
+    width: 100%;
+    height: 7%; }
+  engine-display #TurboEngine double-horizontal-gauge {
+    display: inline-block;
+    width: 100%; }
+  engine-display #TurboEngine vertical-gauge {
+    display: inline-block;
+    width: 40%;
+    height: 20%; }
+
+engine-display #XMLEngineDisplay {
+  width: 100%; }
+
+@keyframes AlertBlink {
+  0%, 49% {
+    background-color: white;
+    color: red;
+    fill: red; }
+  51%, 100% {
+    background-color: red;
+    color: white;
+    fill: white; } }
+
+@keyframes AlertBlinkBackground {
+  0%, 49% {
+    fill: white; }
+  51%, 100% {
+    fill: red; } }
+  engine-display #XMLEngineDisplay > * {
+    transform: rotateX(0);
+    display: block;
+    width: 100%; }
+  engine-display #XMLEngineDisplay .Column {
+    transform: rotateX(0);
+    display: flex;
+    height: auto; }
+    engine-display #XMLEngineDisplay .Column > * {
+      transform: rotateX(0);
+      display: block;
+      width: 100%; }
+  engine-display #XMLEngineDisplay *[state=Alert] *[AlertBlink=Text], engine-display #XMLEngineDisplay .Column *[state=Alert] *[AlertBlink=Text] {
+    animation: AlertBlink 1s infinite; }
+  engine-display #XMLEngineDisplay *[state=Alert] *[AlertBlink=Background], engine-display #XMLEngineDisplay .Column *[state=Alert] *[AlertBlink=Background] {
+    animation: AlertBlinkBackground 1s infinite;
+    fill-opacity: 1; }
+  engine-display #XMLEngineDisplay *[state=Alert] *[AlertBlink=Red], engine-display #XMLEngineDisplay .Column *[state=Alert] *[AlertBlink=Red] {
+    fill: red; }
+

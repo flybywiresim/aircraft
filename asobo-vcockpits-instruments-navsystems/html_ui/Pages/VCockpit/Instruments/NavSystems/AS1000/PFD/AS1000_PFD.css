@@ -1,0 +1,1532 @@
+﻿:root {
+  --bodyHeightScale: 1; }
+
+@keyframes TemporaryShow {
+  0%, 100% {
+    visibility: visible; } }
+
+@keyframes TemporaryHide {
+  0%, 100% {
+    visibility: hidden; } }
+
+#highlight {
+  position: absolute;
+  height: 100%;
+  width: 100%;
+  z-index: 10; }
+
+#Electricity {
+  width: 100%;
+  height: 100%; }
+  #Electricity[state=off] {
+    display: none; }
+
+@font-face {
+  font-family: "Roboto";
+  src: url("/Fonts/RobotoMono-Medium.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal; }
+
+@font-face {
+  font-family: "Roboto-Light";
+  src: url("/Fonts/RobotoMono-Light.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal; }
+
+@font-face {
+  font-family: "Roboto-Bold";
+  src: url("/Fonts/RobotoMono-Bold.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal; }
+
+#Mainframe {
+  --refWidth: 1024;
+  --refHeight: 768; }
+
+as1000-pfd-element {
+  width: 100%;
+  height: 100%;
+  background-color: black;
+  font-family: Roboto-Bold;
+  position: relative;
+  overflow: hidden;
+  z-index: -10; }
+  as1000-pfd-element #Console {
+    position: absolute;
+    visibility: hidden;
+    width: 100%;
+    height: 100%;
+    background-color: black;
+    color: white;
+    font-size: 4vh;
+    z-index: 1000; }
+  as1000-pfd-element #Splash {
+    position: absolute;
+    visibility: hidden;
+    width: 100%;
+    height: 100%;
+    background-color: black;
+    z-index: 1000; }
+  as1000-pfd-element #Electricity {
+    width: 100%;
+    height: 100%; }
+    as1000-pfd-element #Electricity[state=off] {
+      display: none; }
+    as1000-pfd-element #Electricity[state=init] {
+      /*
+            // Animation sequence which look alike the real instrument. Removing this for now
+            #VSpeed,
+            #Compass,
+            #Altimeter,
+            #Airspeed,
+            #SoftKeys {
+                animation: TemporaryHide 6s 1;
+            }
+
+            #XPDRTimeBox,
+            #OAT {
+                animation: TemporaryHide 6.3s 1;
+            }
+
+            #InnerMap,
+            #WindData,
+            #HorizonContainer {
+                animation: TemporaryHide 6.5s 1;
+            }
+            */ }
+      as1000-pfd-element #Electricity[state=init] #Console {
+        animation: TemporaryShow 3.5s 1; }
+      as1000-pfd-element #Electricity[state=init] #Splash {
+        animation: TemporaryShow 3.5s 1;
+        animation-delay: 2.5s; }
+      as1000-pfd-element #Electricity[state=init] #NavBox {
+        animation: TemporaryHide 5.5s 1; }
+    as1000-pfd-element #Electricity[state=Backup] #InnerMap {
+      right: 0% !important;
+      height: 30% !important;
+      bottom: 7% !important;
+      width: 29.8% !important;
+      left: auto !important; }
+    as1000-pfd-element #Electricity[state=Backup] #EngineDisplay {
+      display: block !important; }
+  as1000-pfd-element .PopupWindow {
+    visibility: hidden; }
+    as1000-pfd-element .PopupWindow[state=Active] {
+      visibility: inherit; }
+  as1000-pfd-element #Mainframe {
+    width: 100%;
+    height: 100%;
+    display: block;
+    position: relative; }
+    as1000-pfd-element #Mainframe #HorizonContainer {
+      transform: rotateX(0);
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      z-index: -6;
+      border: none;
+      overflow: hidden; }
+      as1000-pfd-element #Mainframe #HorizonContainer #Horizon {
+        position: absolute;
+        left: 23.2%;
+        top: 8.5%;
+        width: 47%;
+        height: 41%;
+        border: none; }
+      as1000-pfd-element #Mainframe #HorizonContainer #SyntheticVision {
+        left: -13.5%;
+        top: -24.5%;
+        width: 120%;
+        height: 120%;
+        z-index: -3;
+        display: none;
+        /* Map position (left and top) is set in mapConfig.json file (see SvgMapConfig.ts) (makes it editable at runtime) */ }
+        as1000-pfd-element #Mainframe #HorizonContainer #SyntheticVision #MapSVG, as1000-pfd-element #Mainframe #HorizonContainer #SyntheticVision #road-network-canvas, as1000-pfd-element #Mainframe #HorizonContainer #SyntheticVision #MapRange, as1000-pfd-element #Mainframe #HorizonContainer #SyntheticVision #MapOrientation {
+          transform: rotateX(0);
+          display: none; }
+        as1000-pfd-element #Mainframe #HorizonContainer #SyntheticVision bing-map {
+          transform: rotateX(0);
+          position: absolute;
+          left: 0px;
+          top: 0px;
+          width: 100%;
+          height: 100%; }
+    as1000-pfd-element #Mainframe #InstrumentsContainer {
+      transform: rotateX(0);
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+      /*<div id="AlertsWindow" class="PopupWindow" state="Active">
+                    <div id="title">ALERTS</div>
+                    <div id="ElementListAndSlider">
+                        <div id="Elements">
+                            <div id="Alerts1"></div>
+                            <div id="Alerts2"></div>
+                            <div id="Alerts3"></div>
+                        </div>
+                        <div id="Slider" state="Active">
+                            <div id="SliderCursor"></div>
+                        </div>
+                    </div>
+                </div>*/ }
+      as1000-pfd-element #Mainframe #InstrumentsContainer #SVG_Main {
+        transform: rotateX(0);
+        position: absolute;
+        top: -1%;
+        width: 100%;
+        height: 100%;
+        border: none; }
+      as1000-pfd-element #Mainframe #InstrumentsContainer #InnerMap {
+        transform: rotateX(0);
+        position: absolute;
+        left: 1vh;
+        bottom: 8vh;
+        width: 29vh;
+        height: 30vh;
+        top: auto;
+        background-color: black;
+        border: 0.4vh solid white; }
+        as1000-pfd-element #Mainframe #InstrumentsContainer #InnerMap #MapOrientation, as1000-pfd-element #Mainframe #InstrumentsContainer #InnerMap #MapRange {
+          width: 7vh;
+          height: 2vh; }
+        as1000-pfd-element #Mainframe #InstrumentsContainer #InnerMap #MapCursor {
+          height: 9%; }
+      as1000-pfd-element #Mainframe #InstrumentsContainer #Altimeter {
+        transform: rotateX(0);
+        position: absolute;
+        top: 11%;
+        height: 50%;
+        right: 8%; }
+      as1000-pfd-element #Mainframe #InstrumentsContainer #Airspeed {
+        transform: rotateX(0);
+        position: absolute;
+        top: 11%;
+        height: 50%;
+        left: 7%; }
+      as1000-pfd-element #Mainframe #InstrumentsContainer #VSpeed {
+        transform: rotateX(0);
+        position: absolute;
+        border: none;
+        left: 65.2%;
+        top: 15%;
+        height: 41%;
+        z-index: 0; }
+      as1000-pfd-element #Mainframe #InstrumentsContainer #Compass, as1000-pfd-element #Mainframe #InstrumentsContainer #ArcCompass {
+        transform: rotateX(0);
+        position: absolute;
+        border: none;
+        left: 23.2%;
+        bottom: 4.2%;
+        width: 46.8%;
+        height: 46.8%;
+        z-index: 0; }
+        as1000-pfd-element #Mainframe #InstrumentsContainer #Compass[state=Inactive], as1000-pfd-element #Mainframe #InstrumentsContainer #ArcCompass[state=Inactive] {
+          display: none; }
+      as1000-pfd-element #Mainframe #InstrumentsContainer #WindData {
+        position: absolute;
+        top: 57%;
+        left: 26%;
+        height: 6%;
+        width: 8%; }
+      as1000-pfd-element #Mainframe #InstrumentsContainer #MarkerBeacon {
+        position: absolute;
+        bottom: 82%;
+        width: 4vh;
+        height: 4vh;
+        right: 30%;
+        text-align: center;
+        line-height: 4vh;
+        font-size: 3.5vh;
+        color: black;
+        display: none; }
+        as1000-pfd-element #Mainframe #InstrumentsContainer #MarkerBeacon[state=O] {
+          display: block;
+          background-color: #36c8d2; }
+        as1000-pfd-element #Mainframe #InstrumentsContainer #MarkerBeacon[state=M] {
+          display: block;
+          background-color: yellow; }
+        as1000-pfd-element #Mainframe #InstrumentsContainer #MarkerBeacon[state=I] {
+          display: block;
+          background-color: white; }
+      as1000-pfd-element #Mainframe #InstrumentsContainer #Minimums {
+        position: absolute;
+        left: 59%;
+        bottom: 37%;
+        height: 6%;
+        width: 10%;
+        background-color: #1a1d21;
+        font-size: 2vh;
+        vertical-align: central; }
+        as1000-pfd-element #Mainframe #InstrumentsContainer #Minimums #Minimums_Source {
+          position: absolute;
+          width: 100%;
+          height: 40%;
+          top: 0%;
+          text-align: center; }
+        as1000-pfd-element #Mainframe #InstrumentsContainer #Minimums #Minimums_Value {
+          position: absolute;
+          width: 100%;
+          height: 60%;
+          bottom: 0%;
+          text-align: center;
+          font-size: 3vh;
+          line-height: 3vh;
+          color: #36c8d2; }
+          as1000-pfd-element #Mainframe #InstrumentsContainer #Minimums #Minimums_Value[state=near] {
+            color: white; }
+          as1000-pfd-element #Mainframe #InstrumentsContainer #Minimums #Minimums_Value[state=low] {
+            color: yellow; }
+          as1000-pfd-element #Mainframe #InstrumentsContainer #Minimums #Minimums_Value .unit {
+            font-size: 2vh; }
+        as1000-pfd-element #Mainframe #InstrumentsContainer #Minimums[state=Inactive] {
+          display: none; }
+      as1000-pfd-element #Mainframe #InstrumentsContainer #RadarAltitude {
+        position: absolute;
+        left: 58%;
+        bottom: 50%;
+        height: 5%;
+        width: 10%;
+        background-color: #1a1d21;
+        vertical-align: central; }
+        as1000-pfd-element #Mainframe #InstrumentsContainer #RadarAltitude #RA_Title {
+          position: absolute;
+          width: 35%;
+          height: 100%;
+          left: 0%;
+          font-size: 3vh;
+          text-align: center;
+          line-height: 5vh; }
+        as1000-pfd-element #Mainframe #InstrumentsContainer #RadarAltitude #RA_Value {
+          position: absolute;
+          width: 65%;
+          height: 100%;
+          right: 0%;
+          text-align: center;
+          font-size: 3.2vh;
+          line-height: 5vh; }
+        as1000-pfd-element #Mainframe #InstrumentsContainer #RadarAltitude[state=Inactive] {
+          display: none; }
+      as1000-pfd-element #Mainframe #InstrumentsContainer #Map {
+        transform: rotateX(0);
+        position: absolute;
+        left: 0%;
+        top: 63.5%;
+        width: 23%;
+        height: 29%;
+        z-index: 0;
+        border: 2px solid; }
+      as1000-pfd-element #Mainframe #InstrumentsContainer #Warnings {
+        position: absolute;
+        width: 10%;
+        height: 3.7%;
+        left: 58%;
+        top: 9%;
+        text-align: center;
+        z-index: 100; }
+
+@keyframes RedWarning {
+  0%, 45% {
+    background-color: red;
+    color: white; }
+  55%, 100% {
+    background-color: white;
+    color: red; } }
+
+@keyframes YellowWarning {
+  0%, 45% {
+    background-color: yellow;
+    color: black; }
+  55%, 100% {
+    background-color: black;
+    color: yellow; } }
+
+@keyframes WhiteWarning {
+  0%, 45% {
+    background-color: White;
+    color: black; }
+  55%, 100% {
+    background-color: black;
+    color: white; } }
+        as1000-pfd-element #Mainframe #InstrumentsContainer #Warnings[state=Red] {
+          animation: RedWarning 1s 5;
+          background-color: red;
+          color: white; }
+        as1000-pfd-element #Mainframe #InstrumentsContainer #Warnings[state=Yellow] {
+          animation: YellowWarning 1s 5;
+          background-color: black;
+          color: yellow; }
+        as1000-pfd-element #Mainframe #InstrumentsContainer #Warnings[state=White] {
+          animation: WhiteWarning 1s 5;
+          background-color: white;
+          color: black; }
+        as1000-pfd-element #Mainframe #InstrumentsContainer #Warnings[state=Hidden] {
+          display: none; }
+        as1000-pfd-element #Mainframe #InstrumentsContainer #Warnings #WarningsContent {
+          font-size: 2.5vh; }
+      as1000-pfd-element #Mainframe #InstrumentsContainer #Annunciations {
+        transform: rotateX(0);
+        position: absolute;
+        right: 0%;
+        bottom: 38%;
+        width: 13%;
+        z-index: 0;
+        border: none;
+        background-color: #1a1d21;
+        font-size: calc( 1.8 * 1vh * var(--bodyHeightScale));
+        line-height: calc( 1.5 * 1vh * var(--bodyHeightScale));
+        padding: 0.5%;
+        padding-bottom: 0%;
+        padding-top: 0.8%; }
+        as1000-pfd-element #Mainframe #InstrumentsContainer #Annunciations[state=Hidden] {
+          height: calc( 16.5 * 1vh * var(--bodyHeightScale));
+          visibility: hidden; }
+        as1000-pfd-element #Mainframe #InstrumentsContainer #Annunciations #newAnnunciations[state=Bordered] {
+          border-bottom: solid 0.3vh white;
+          margin-bottom: calc( 1 * 1vh * var(--bodyHeightScale)); }
+        as1000-pfd-element #Mainframe #InstrumentsContainer #Annunciations .Warning {
+          color: red; }
+        as1000-pfd-element #Mainframe #InstrumentsContainer #Annunciations .Caution {
+          color: yellow; }
+        as1000-pfd-element #Mainframe #InstrumentsContainer #Annunciations .Advisory {
+          color: white; }
+      as1000-pfd-element #Mainframe #InstrumentsContainer #NavBox {
+        transform: rotateX(0);
+        position: absolute;
+        background-color: #1a1d21;
+        display: flex;
+        width: 100%;
+        height: 7.5%; }
+        as1000-pfd-element #Mainframe #InstrumentsContainer #NavBox #Left {
+          width: 29%;
+          height: 100%; }
+          as1000-pfd-element #Mainframe #InstrumentsContainer #NavBox #Left .ident {
+            width: 15%; }
+          as1000-pfd-element #Mainframe #InstrumentsContainer #NavBox #Left #Nav1 {
+            width: 98%;
+            height: 50%;
+            display: flex;
+            justify-content: space-between;
+            font-size: calc( 2.6 * 1vh * var(--bodyHeightScale)); }
+          as1000-pfd-element #Mainframe #InstrumentsContainer #NavBox #Left #Nav2 {
+            width: 98%;
+            height: 50%;
+            display: flex;
+            justify-content: space-between;
+            font-size: calc( 2.6 * 1vh * var(--bodyHeightScale)); }
+          as1000-pfd-element #Mainframe #InstrumentsContainer #NavBox #Left #Nav1_Active[state=green], as1000-pfd-element #Mainframe #InstrumentsContainer #NavBox #Left #Nav2_Active[state=green] {
+            color: #10c210; }
+        as1000-pfd-element #Mainframe #InstrumentsContainer #NavBox #Center {
+          width: 47%;
+          height: 100%;
+          border-left: 0.6vh solid;
+          border-right: 0.6vh solid;
+          line-height: calc( 3 * 1vh * var(--bodyHeightScale));
+          font-size: calc( 2.8 * 1vh * var(--bodyHeightScale));
+          vertical-align: central; }
+          as1000-pfd-element #Mainframe #InstrumentsContainer #NavBox #Center #top {
+            width: 100%;
+            height: 50%;
+            border-bottom: 0.6vh solid;
+            display: flex; }
+            as1000-pfd-element #Mainframe #InstrumentsContainer #NavBox #Center #top #left {
+              height: 100%;
+              width: 45%;
+              display: flex;
+              color: magenta; }
+              as1000-pfd-element #Mainframe #InstrumentsContainer #NavBox #Center #top #left #CurrentLegFrom {
+                width: 40%;
+                text-align: right; }
+              as1000-pfd-element #Mainframe #InstrumentsContainer #NavBox #Center #top #left #CurrentLegTo {
+                width: 40%;
+                text-align: left; }
+              as1000-pfd-element #Mainframe #InstrumentsContainer #NavBox #Center #top #left #CurrentLegSymbol {
+                width: 19%;
+                text-align: center; }
+                as1000-pfd-element #Mainframe #InstrumentsContainer #NavBox #Center #top #left #CurrentLegSymbol img {
+                  height: calc( 2.4 * 1vh * var(--bodyHeightScale)); }
+            as1000-pfd-element #Mainframe #InstrumentsContainer #NavBox #Center #top #right {
+              height: 100%;
+              width: 54%;
+              border-left: 0.6vh solid;
+              display: flex; }
+              as1000-pfd-element #Mainframe #InstrumentsContainer #NavBox #Center #top #right div {
+                padding-left: 1%;
+                text-align: center; }
+              as1000-pfd-element #Mainframe #InstrumentsContainer #NavBox #Center #top #right #CurrentLegDistance {
+                color: magenta;
+                width: 42%; }
+              as1000-pfd-element #Mainframe #InstrumentsContainer #NavBox #Center #top #right #CurrentLegBearing {
+                color: magenta;
+                width: 24%; }
+          as1000-pfd-element #Mainframe #InstrumentsContainer #NavBox #Center #bottom {
+            width: 100%;
+            height: 50%;
+            display: flex;
+            font-size: 3vh; }
+            as1000-pfd-element #Mainframe #InstrumentsContainer #NavBox #Center #bottom #AP_Left {
+              width: 25%;
+              display: flex; }
+              as1000-pfd-element #Mainframe #InstrumentsContainer #NavBox #Center #bottom #AP_Left #AP_Lateral_Armed {
+                width: 50%;
+                text-align: center; }
+              as1000-pfd-element #Mainframe #InstrumentsContainer #NavBox #Center #bottom #AP_Left #AP_Lateral_Active {
+                width: 50%;
+                color: green;
+                text-align: center; }
+            as1000-pfd-element #Mainframe #InstrumentsContainer #NavBox #Center #bottom #AP_Center {
+              display: flex;
+              width: 15%;
+              border-left: 0.6vh solid;
+              border-right: 0.6vh solid; }
+              as1000-pfd-element #Mainframe #InstrumentsContainer #NavBox #Center #bottom #AP_Center #AP_Status {
+                width: 50%;
+                text-align: center;
+                color: green; }
+            as1000-pfd-element #Mainframe #InstrumentsContainer #NavBox #Center #bottom #AP_Right {
+              display: flex;
+              width: 54%; }
+              as1000-pfd-element #Mainframe #InstrumentsContainer #NavBox #Center #bottom #AP_Right #AP_Vertical_Active {
+                width: 15%;
+                color: green;
+                text-align: center; }
+              as1000-pfd-element #Mainframe #InstrumentsContainer #NavBox #Center #bottom #AP_Right #AP_Vertical_ReferenceArrow {
+                width: 10%; }
+              as1000-pfd-element #Mainframe #InstrumentsContainer #NavBox #Center #bottom #AP_Right #AP_Vertical_Reference {
+                width: 40%;
+                color: green;
+                text-align: center; }
+              as1000-pfd-element #Mainframe #InstrumentsContainer #NavBox #Center #bottom #AP_Right #AP_Vertical_Armed {
+                width: 30%;
+                text-align: center; }
+        as1000-pfd-element #Mainframe #InstrumentsContainer #NavBox #Right {
+          min-width: 25%;
+          height: 100%; }
+          as1000-pfd-element #Mainframe #InstrumentsContainer #NavBox #Right #Com1 {
+            width: 100%;
+            height: 50%;
+            display: flex;
+            justify-content: space-between;
+            font-size: calc( 2.6 * 1vh * var(--bodyHeightScale)); }
+          as1000-pfd-element #Mainframe #InstrumentsContainer #NavBox #Right #Com2 {
+            width: 100%;
+            height: 50%;
+            display: flex;
+            justify-content: space-between;
+            font-size: calc( 2.6 * 1vh * var(--bodyHeightScale)); }
+        as1000-pfd-element #Mainframe #InstrumentsContainer #NavBox .Selectable[state="selected"] {
+          background-color: white;
+          color: #1a1d21; }
+        as1000-pfd-element #Mainframe #InstrumentsContainer #NavBox .Selectable[state="unselected"] {
+          padding: calc(var(--viewportHeightRatio) * (1px / 21.6) * var(--currentPageHeight) / 100); }
+      as1000-pfd-element #Mainframe #InstrumentsContainer #XPDRTimeBox {
+        transform: rotateX(0);
+        position: absolute;
+        background-color: #1a1d21;
+        width: 29.8%;
+        height: 3.5%;
+        padding-left: 1%;
+        right: 0%;
+        bottom: 4%; }
+        as1000-pfd-element #Mainframe #InstrumentsContainer #XPDRTimeBox div {
+          display: inline-block;
+          background-color: #1a1d21;
+          font-size: calc( 2.5 * 1vh * var(--bodyHeightScale));
+          vertical-align: central; }
+        as1000-pfd-element #Mainframe #InstrumentsContainer #XPDRTimeBox .green {
+          color: green; }
+      as1000-pfd-element #Mainframe #InstrumentsContainer #DirectToWindow {
+        position: absolute;
+        right: 0%;
+        height: 30%;
+        bottom: 7%;
+        width: 29.8%;
+        background-color: #1a1d21;
+        font-size: calc( 2.5 * 1vh * var(--bodyHeightScale)); }
+        as1000-pfd-element #Mainframe #InstrumentsContainer #DirectToWindow .unit {
+          font-size: calc( 1.75 * 1vh * var(--bodyHeightScale)); }
+        as1000-pfd-element #Mainframe #InstrumentsContainer #DirectToWindow .Blinking[state=Blink], as1000-pfd-element #Mainframe #InstrumentsContainer #DirectToWindow .Blinking[state=Selected] {
+          background-color: aquamarine;
+          color: black; }
+        as1000-pfd-element #Mainframe #InstrumentsContainer #DirectToWindow #drctTitle {
+          color: aqua;
+          text-align: center;
+          position: absolute;
+          width: 100%;
+          top: 0px;
+          height: 12%; }
+        as1000-pfd-element #Mainframe #InstrumentsContainer #DirectToWindow #mainInfos {
+          background-color: #1a1d21;
+          color: aqua;
+          position: absolute;
+          width: 95%;
+          left: 2.5%;
+          top: 13%;
+          height: 30%;
+          border-top: 0.6vh solid white; }
+        as1000-pfd-element #Mainframe #InstrumentsContainer #DirectToWindow #vnav {
+          background-color: #1a1d21;
+          color: white;
+          position: absolute;
+          width: 95%;
+          left: 2.5%;
+          top: 44%;
+          height: 13%;
+          border-top: 0.6vh solid white; }
+          as1000-pfd-element #Mainframe #InstrumentsContainer #DirectToWindow #vnav span {
+            color: aqua; }
+          as1000-pfd-element #Mainframe #InstrumentsContainer #DirectToWindow #vnav div {
+            display: inline-block;
+            width: 45%; }
+        as1000-pfd-element #Mainframe #InstrumentsContainer #DirectToWindow #location {
+          background-color: #1a1d21;
+          color: white;
+          position: absolute;
+          width: 95%;
+          left: 2.5%;
+          top: 58%;
+          height: 25%;
+          color: white;
+          border-top: 0.6vh solid white; }
+          as1000-pfd-element #Mainframe #InstrumentsContainer #DirectToWindow #location div div {
+            display: inline-block;
+            width: 22%; }
+          as1000-pfd-element #Mainframe #InstrumentsContainer #DirectToWindow #location #Crsline {
+            position: absolute;
+            bottom: 0%;
+            left: 0%; }
+          as1000-pfd-element #Mainframe #InstrumentsContainer #DirectToWindow #location #DRCTBearing, as1000-pfd-element #Mainframe #InstrumentsContainer #DirectToWindow #location #DRCTDistance, as1000-pfd-element #Mainframe #InstrumentsContainer #DirectToWindow #location #DRCTDesiredCourse {
+            color: aqua; }
+        as1000-pfd-element #Mainframe #InstrumentsContainer #DirectToWindow #DRCTActivateButton {
+          position: absolute;
+          text-align: center;
+          width: 40%;
+          bottom: 1%;
+          left: 2.5%;
+          height: 15%;
+          font-size: calc( 3 * 1vh * var(--bodyHeightScale)); }
+        as1000-pfd-element #Mainframe #InstrumentsContainer #DirectToWindow #DRCTHoldButton {
+          position: absolute;
+          text-align: center;
+          bottom: 1%;
+          right: 2.5%;
+          width: 30%;
+          height: 15%;
+          font-size: calc( 3 * 1vh * var(--bodyHeightScale)); }
+        as1000-pfd-element #Mainframe #InstrumentsContainer #DirectToWindow #DRCTSelectionWindow {
+          position: absolute;
+          top: 26%;
+          left: 3%;
+          background-color: grey;
+          width: 13vw;
+          height: calc( 20 * 1vh * var(--bodyHeightScale));
+          border: 1px solid white;
+          padding: 2px;
+          color: aqua; }
+          as1000-pfd-element #Mainframe #InstrumentsContainer #DirectToWindow #DRCTSelectionWindow #titlePart {
+            text-align: center;
+            border: 1px solid white;
+            background-color: #1a1d21;
+            height: 20%; }
+          as1000-pfd-element #Mainframe #InstrumentsContainer #DirectToWindow #DRCTSelectionWindow #ElementListAndSlider {
+            position: relative;
+            padding-right: 15px;
+            border: 1px solid white;
+            background-color: #1a1d21;
+            height: 79%; }
+            as1000-pfd-element #Mainframe #InstrumentsContainer #DirectToWindow #DRCTSelectionWindow #ElementListAndSlider #ElementList .Blinking {
+              height: calc( 3 * 1vh * var(--bodyHeightScale));
+              width: 100%; }
+            as1000-pfd-element #Mainframe #InstrumentsContainer #DirectToWindow #DRCTSelectionWindow #ElementListAndSlider #Slider {
+              position: absolute;
+              background-color: darkgrey;
+              right: 1%;
+              top: 5%;
+              height: 90%;
+              width: 4px; }
+              as1000-pfd-element #Mainframe #InstrumentsContainer #DirectToWindow #DRCTSelectionWindow #ElementListAndSlider #Slider[state=Active] {
+                visibility: inherit; }
+              as1000-pfd-element #Mainframe #InstrumentsContainer #DirectToWindow #DRCTSelectionWindow #ElementListAndSlider #Slider[state=Inactive] {
+                visibility: hidden; }
+              as1000-pfd-element #Mainframe #InstrumentsContainer #DirectToWindow #DRCTSelectionWindow #ElementListAndSlider #Slider #SliderCursor {
+                position: absolute;
+                background-color: white;
+                width: 100%; }
+      as1000-pfd-element #Mainframe #InstrumentsContainer #ActiveFlightPlan {
+        position: absolute;
+        right: 0%;
+        height: 30%;
+        bottom: 7%;
+        width: 29.8%;
+        background-color: #1a1d21; }
+        as1000-pfd-element #Mainframe #InstrumentsContainer #ActiveFlightPlan .BlueValue {
+          text-align: left;
+          color: aqua; }
+        as1000-pfd-element #Mainframe #InstrumentsContainer #ActiveFlightPlan .WhiteValue {
+          text-align: left;
+          color: white; }
+        as1000-pfd-element #Mainframe #InstrumentsContainer #ActiveFlightPlan .SubPart {
+          margin-top: 1vh;
+          width: 90%;
+          margin-left: 5%;
+          background-color: black; }
+          as1000-pfd-element #Mainframe #InstrumentsContainer #ActiveFlightPlan .SubPart .Title {
+            height: 3vh;
+            width: 100%;
+            color: white;
+            font-size: 2vh;
+            background-color: #1a1d21; }
+          as1000-pfd-element #Mainframe #InstrumentsContainer #ActiveFlightPlan .SubPart .Content {
+            width: 100%;
+            padding: 0.5vh;
+            overflow: hidden; }
+        as1000-pfd-element #Mainframe #InstrumentsContainer #ActiveFlightPlan .ActiveFPL {
+          height: 55%; }
+          as1000-pfd-element #Mainframe #InstrumentsContainer #ActiveFlightPlan .ActiveFPL .SelectableElement {
+            color: aqua; }
+          as1000-pfd-element #Mainframe #InstrumentsContainer #ActiveFlightPlan .ActiveFPL .SelectableWhite {
+            color: white; }
+          as1000-pfd-element #Mainframe #InstrumentsContainer #ActiveFlightPlan .ActiveFPL table {
+            width: 95%;
+            overflow: visible; }
+            as1000-pfd-element #Mainframe #InstrumentsContainer #ActiveFlightPlan .ActiveFPL table th {
+              text-align: center; }
+            as1000-pfd-element #Mainframe #InstrumentsContainer #ActiveFlightPlan .ActiveFPL table thead, as1000-pfd-element #Mainframe #InstrumentsContainer #ActiveFlightPlan .ActiveFPL table tbody {
+              width: 100%;
+              overflow: visible; }
+            as1000-pfd-element #Mainframe #InstrumentsContainer #ActiveFlightPlan .ActiveFPL table tr[state="Selected"] .SelectableElement {
+              color: black;
+              background-color: aqua; }
+            as1000-pfd-element #Mainframe #InstrumentsContainer #ActiveFlightPlan .ActiveFPL table tr[state="Selected"] .SelectableWhite {
+              color: black;
+              background-color: white; }
+            as1000-pfd-element #Mainframe #InstrumentsContainer #ActiveFlightPlan .ActiveFPL table tr .SelectableElement[state="Selected"], as1000-pfd-element #Mainframe #InstrumentsContainer #ActiveFlightPlan .ActiveFPL table tr .SelectableElement[state=Blink], as1000-pfd-element #Mainframe #InstrumentsContainer #ActiveFlightPlan .ActiveFPL table tr .Blinking[state="Selected"], as1000-pfd-element #Mainframe #InstrumentsContainer #ActiveFlightPlan .ActiveFPL table tr .Blinking[state=Blink] {
+              color: black;
+              background-color: aqua; }
+            as1000-pfd-element #Mainframe #InstrumentsContainer #ActiveFlightPlan .ActiveFPL table tr .SelectableWhite[state="Selected"] {
+              color: black;
+              background-color: white; }
+            as1000-pfd-element #Mainframe #InstrumentsContainer #ActiveFlightPlan .ActiveFPL table tr .altitudeConstraint {
+              color: white; }
+              as1000-pfd-element #Mainframe #InstrumentsContainer #ActiveFlightPlan .ActiveFPL table tr .altitudeConstraint[altitudeMode=Manual] {
+                color: aqua; }
+              as1000-pfd-element #Mainframe #InstrumentsContainer #ActiveFlightPlan .ActiveFPL table tr .altitudeConstraint[altitudeMode=Subdued] {
+                color: aqua;
+                -webkit-mask: url(/Pages/VCockpit/Instruments/NavSystems/Shared/Images/SubduedMask.png);
+                -webkit-mask-repeat: repeat; }
+            as1000-pfd-element #Mainframe #InstrumentsContainer #ActiveFlightPlan .ActiveFPL table tr, as1000-pfd-element #Mainframe #InstrumentsContainer #ActiveFlightPlan .ActiveFPL table td {
+              height: 3.2vh; }
+            as1000-pfd-element #Mainframe #InstrumentsContainer #ActiveFlightPlan .ActiveFPL table tbody tr td {
+              text-align: right; }
+            as1000-pfd-element #Mainframe #InstrumentsContainer #ActiveFlightPlan .ActiveFPL table tbody tr td:first-child {
+              text-align: left;
+              padding-left: 2vw; }
+            as1000-pfd-element #Mainframe #InstrumentsContainer #ActiveFlightPlan .ActiveFPL table thead tr th:nth-child(1), as1000-pfd-element #Mainframe #InstrumentsContainer #ActiveFlightPlan .ActiveFPL table tbody tr:first-child td:nth-child(1) {
+              width: 40%; }
+            as1000-pfd-element #Mainframe #InstrumentsContainer #ActiveFlightPlan .ActiveFPL table thead tr th:nth-child(2), as1000-pfd-element #Mainframe #InstrumentsContainer #ActiveFlightPlan .ActiveFPL table tbody tr:first-child td:nth-child(2) {
+              width: 15%; }
+            as1000-pfd-element #Mainframe #InstrumentsContainer #ActiveFlightPlan .ActiveFPL table thead tr th:nth-child(3), as1000-pfd-element #Mainframe #InstrumentsContainer #ActiveFlightPlan .ActiveFPL table tbody tr:first-child td:nth-child(3) {
+              width: 20%; }
+            as1000-pfd-element #Mainframe #InstrumentsContainer #ActiveFlightPlan .ActiveFPL table thead tr th:nth-child(4), as1000-pfd-element #Mainframe #InstrumentsContainer #ActiveFlightPlan .ActiveFPL table tbody tr:first-child td:nth-child(4) {
+              width: 20%; }
+            as1000-pfd-element #Mainframe #InstrumentsContainer #ActiveFlightPlan .ActiveFPL table .SizeSetter, as1000-pfd-element #Mainframe #InstrumentsContainer #ActiveFlightPlan .ActiveFPL table .SizeSetter td {
+              height: 0vh;
+              overflow: visible;
+              position: relative; }
+              as1000-pfd-element #Mainframe #InstrumentsContainer #ActiveFlightPlan .ActiveFPL table .SizeSetter .ArrowContainer, as1000-pfd-element #Mainframe #InstrumentsContainer #ActiveFlightPlan .ActiveFPL table .SizeSetter td .ArrowContainer {
+                position: absolute;
+                left: 0px;
+                top: 0px;
+                width: 0px;
+                height: 0px;
+                overflow: visible; }
+                as1000-pfd-element #Mainframe #InstrumentsContainer #ActiveFlightPlan .ActiveFPL table .SizeSetter .ArrowContainer .CurrentLegArrowSVG, as1000-pfd-element #Mainframe #InstrumentsContainer #ActiveFlightPlan .ActiveFPL table .SizeSetter td .ArrowContainer .CurrentLegArrowSVG {
+                  position: absolute;
+                  left: 0px;
+                  top: 0px;
+                  width: 0px;
+                  height: 0px;
+                  overflow: visible; }
+                as1000-pfd-element #Mainframe #InstrumentsContainer #ActiveFlightPlan .ActiveFPL table .SizeSetter .ArrowContainer img, as1000-pfd-element #Mainframe #InstrumentsContainer #ActiveFlightPlan .ActiveFPL table .SizeSetter td .ArrowContainer img {
+                  z-index: 1; }
+        as1000-pfd-element #Mainframe #InstrumentsContainer #ActiveFlightPlan .SliderContainer {
+          position: relative;
+          width: 100%; }
+          as1000-pfd-element #Mainframe #InstrumentsContainer #ActiveFlightPlan .SliderContainer .Slider {
+            position: absolute;
+            background-color: #1a1d21;
+            right: 1%;
+            top: 10%;
+            height: 90%;
+            width: 4px; }
+            as1000-pfd-element #Mainframe #InstrumentsContainer #ActiveFlightPlan .SliderContainer .Slider[state=Active] {
+              visibility: inherit; }
+            as1000-pfd-element #Mainframe #InstrumentsContainer #ActiveFlightPlan .SliderContainer .Slider[state=Inactive] {
+              visibility: hidden; }
+            as1000-pfd-element #Mainframe #InstrumentsContainer #ActiveFlightPlan .SliderContainer .Slider .SliderCursor {
+              position: absolute;
+              background-color: white;
+              width: 100%; }
+      as1000-pfd-element #Mainframe #InstrumentsContainer #ProceduresWindow {
+        position: absolute;
+        right: 0%;
+        height: 30%;
+        bottom: 7%;
+        width: 29.8%;
+        background-color: #1a1d21;
+        font-size: 2.5vh; }
+        as1000-pfd-element #Mainframe #InstrumentsContainer #ProceduresWindow .Blinking[state=Blink], as1000-pfd-element #Mainframe #InstrumentsContainer #ProceduresWindow .Blinking[state=Selected] {
+          background-color: #36c8d2;
+          color: #1a1d21; }
+        as1000-pfd-element #Mainframe #InstrumentsContainer #ProceduresWindow .Blinking[state=Greyed] {
+          color: dimgray; }
+        as1000-pfd-element #Mainframe #InstrumentsContainer #ProceduresWindow .SubPart {
+          margin-top: 1vh;
+          width: 90%;
+          margin-left: 5%;
+          background-color: black;
+          position: relative;
+          text-align: left; }
+          as1000-pfd-element #Mainframe #InstrumentsContainer #ProceduresWindow .SubPart .Title {
+            height: 3vh;
+            width: 100%;
+            color: white;
+            font-size: 2vh;
+            background-color: #1a1d21; }
+          as1000-pfd-element #Mainframe #InstrumentsContainer #ProceduresWindow .SubPart .Content {
+            position: relative;
+            width: 100%;
+            padding: 0.5vh;
+            overflow: hidden;
+            color: #36c8d2;
+            height: 100%; }
+            as1000-pfd-element #Mainframe #InstrumentsContainer #ProceduresWindow .SubPart .Content .title {
+              color: white; }
+      as1000-pfd-element #Mainframe #InstrumentsContainer #ApproachSelection {
+        position: absolute;
+        right: 0%;
+        height: 30%;
+        bottom: 7%;
+        width: 29.8%;
+        background-color: #1a1d21;
+        font-size: 2.5vh; }
+        as1000-pfd-element #Mainframe #InstrumentsContainer #ApproachSelection .Blinking[state=Blink], as1000-pfd-element #Mainframe #InstrumentsContainer #ApproachSelection .Blinking[state=Selected] {
+          background-color: #36c8d2;
+          color: #1a1d21; }
+        as1000-pfd-element #Mainframe #InstrumentsContainer #ApproachSelection .Blinking[state=Greyed] {
+          color: dimgray; }
+        as1000-pfd-element #Mainframe #InstrumentsContainer #ApproachSelection .SubPart {
+          margin-top: 1vh;
+          width: 90%;
+          margin-left: 5%;
+          background-color: black;
+          position: relative;
+          text-align: left; }
+          as1000-pfd-element #Mainframe #InstrumentsContainer #ApproachSelection .SubPart .Title {
+            height: 3vh;
+            width: 100%;
+            font-size: 2vh;
+            background-color: #1a1d21;
+            text-align: center; }
+          as1000-pfd-element #Mainframe #InstrumentsContainer #ApproachSelection .SubPart .Content {
+            position: relative;
+            width: 100%;
+            padding: 0.5vh;
+            overflow: hidden;
+            color: #36c8d2;
+            height: 100%; }
+            as1000-pfd-element #Mainframe #InstrumentsContainer #ApproachSelection .SubPart .Content .title {
+              color: white; }
+        as1000-pfd-element #Mainframe #InstrumentsContainer #ApproachSelection .Airport .Content {
+          height: 20vh; }
+        as1000-pfd-element #Mainframe #InstrumentsContainer #ApproachSelection .Airport .airportTop {
+          position: relative;
+          top: -1vh;
+          height: 3vh; }
+          as1000-pfd-element #Mainframe #InstrumentsContainer #ApproachSelection .Airport .airportTop > div {
+            display: inline-block;
+            width: 40%; }
+          as1000-pfd-element #Mainframe #InstrumentsContainer #ApproachSelection .Airport .airportTop img {
+            width: 4vh;
+            position: relative;
+            top: 1vh; }
+        as1000-pfd-element #Mainframe #InstrumentsContainer #ApproachSelection .Airport #Approach_AirportName {
+          overflow: hidden; }
+        as1000-pfd-element #Mainframe #InstrumentsContainer #ApproachSelection #Approach_ChannelGroup {
+          position: absolute;
+          top: 3vh;
+          right: 2vh; }
+        as1000-pfd-element #Mainframe #InstrumentsContainer #ApproachSelection .elemGroup > div {
+          margin-right: 1vh;
+          display: inline-block; }
+        as1000-pfd-element #Mainframe #InstrumentsContainer #ApproachSelection .endLine {
+          text-align: center; }
+        as1000-pfd-element #Mainframe #InstrumentsContainer #ApproachSelection .white {
+          color: white; }
+        as1000-pfd-element #Mainframe #InstrumentsContainer #ApproachSelection .SubMenu {
+          position: absolute;
+          bottom: 0vh;
+          left: 10%;
+          background-color: black;
+          width: 80%;
+          border: 0.2vh solid white;
+          padding-top: 2vh;
+          padding-bottom: 2vh;
+          display: none;
+          font-size: 1.8vh; }
+          as1000-pfd-element #Mainframe #InstrumentsContainer #ApproachSelection .SubMenu[state=Active] {
+            display: block; }
+          as1000-pfd-element #Mainframe #InstrumentsContainer #ApproachSelection .SubMenu > div {
+            margin-left: 2vh;
+            margin-right: 2vh;
+            width: auto; }
+      as1000-pfd-element #Mainframe #InstrumentsContainer #ArrivalSelection {
+        position: absolute;
+        right: 0%;
+        height: 30%;
+        bottom: 7%;
+        width: 29.8%;
+        background-color: #1a1d21;
+        font-size: 2.5vh; }
+        as1000-pfd-element #Mainframe #InstrumentsContainer #ArrivalSelection .Blinking[state=Blink], as1000-pfd-element #Mainframe #InstrumentsContainer #ArrivalSelection .Blinking[state=Selected] {
+          background-color: #36c8d2;
+          color: #1a1d21; }
+        as1000-pfd-element #Mainframe #InstrumentsContainer #ArrivalSelection .Blinking[state=Greyed] {
+          color: dimgray; }
+        as1000-pfd-element #Mainframe #InstrumentsContainer #ArrivalSelection .SubPart {
+          margin-top: 1vh;
+          width: 90%;
+          margin-left: 5%;
+          background-color: black;
+          position: relative;
+          text-align: left; }
+          as1000-pfd-element #Mainframe #InstrumentsContainer #ArrivalSelection .SubPart .Title {
+            height: 3vh;
+            width: 100%;
+            font-size: 2vh;
+            background-color: #1a1d21;
+            text-align: center; }
+          as1000-pfd-element #Mainframe #InstrumentsContainer #ArrivalSelection .SubPart .Content {
+            position: relative;
+            width: 100%;
+            padding: 0.5vh;
+            overflow: hidden;
+            color: #36c8d2;
+            height: 100%; }
+            as1000-pfd-element #Mainframe #InstrumentsContainer #ArrivalSelection .SubPart .Content .title {
+              color: white; }
+        as1000-pfd-element #Mainframe #InstrumentsContainer #ArrivalSelection .Airport .Content {
+          height: 17vh; }
+        as1000-pfd-element #Mainframe #InstrumentsContainer #ArrivalSelection .Airport .airportTop {
+          position: relative;
+          top: -1vh;
+          height: 3vh; }
+          as1000-pfd-element #Mainframe #InstrumentsContainer #ArrivalSelection .Airport .airportTop > div {
+            display: inline-block;
+            width: 40%; }
+          as1000-pfd-element #Mainframe #InstrumentsContainer #ArrivalSelection .Airport .airportTop img {
+            width: 4vh;
+            position: relative;
+            top: 1vh; }
+        as1000-pfd-element #Mainframe #InstrumentsContainer #ArrivalSelection .Airport #Approach_AirportName {
+          overflow: hidden; }
+        as1000-pfd-element #Mainframe #InstrumentsContainer #ArrivalSelection .elemGroup > div {
+          margin-right: 1vh;
+          display: inline-block; }
+        as1000-pfd-element #Mainframe #InstrumentsContainer #ArrivalSelection .endLine {
+          text-align: center; }
+        as1000-pfd-element #Mainframe #InstrumentsContainer #ArrivalSelection .white {
+          color: white; }
+        as1000-pfd-element #Mainframe #InstrumentsContainer #ArrivalSelection .SubMenu {
+          position: absolute;
+          bottom: 0vh;
+          left: 10%;
+          background-color: black;
+          width: 80%;
+          border: 0.2vh solid white;
+          padding-top: 2vh;
+          padding-bottom: 2vh;
+          display: none;
+          font-size: 1.8vh; }
+          as1000-pfd-element #Mainframe #InstrumentsContainer #ArrivalSelection .SubMenu[state=Active] {
+            display: block; }
+          as1000-pfd-element #Mainframe #InstrumentsContainer #ArrivalSelection .SubMenu > div {
+            margin-left: 2vh;
+            margin-right: 2vh;
+            width: auto; }
+      as1000-pfd-element #Mainframe #InstrumentsContainer #DepartureSelection {
+        position: absolute;
+        right: 0%;
+        height: 30%;
+        bottom: 7%;
+        width: 29.8%;
+        background-color: #1a1d21;
+        font-size: 2.5vh; }
+        as1000-pfd-element #Mainframe #InstrumentsContainer #DepartureSelection .Blinking[state=Blink], as1000-pfd-element #Mainframe #InstrumentsContainer #DepartureSelection .Blinking[state=Selected] {
+          background-color: #36c8d2;
+          color: #1a1d21; }
+        as1000-pfd-element #Mainframe #InstrumentsContainer #DepartureSelection .Blinking[state=Greyed] {
+          color: dimgray; }
+        as1000-pfd-element #Mainframe #InstrumentsContainer #DepartureSelection .SubPart {
+          margin-top: 1vh;
+          width: 90%;
+          margin-left: 5%;
+          background-color: black;
+          position: relative;
+          text-align: left; }
+          as1000-pfd-element #Mainframe #InstrumentsContainer #DepartureSelection .SubPart .Title {
+            height: 3vh;
+            width: 100%;
+            font-size: 2vh;
+            background-color: #1a1d21;
+            text-align: center; }
+          as1000-pfd-element #Mainframe #InstrumentsContainer #DepartureSelection .SubPart .Content {
+            position: relative;
+            width: 100%;
+            padding: 0.5vh;
+            overflow: hidden;
+            color: #36c8d2;
+            height: 100%; }
+            as1000-pfd-element #Mainframe #InstrumentsContainer #DepartureSelection .SubPart .Content .title {
+              color: white; }
+        as1000-pfd-element #Mainframe #InstrumentsContainer #DepartureSelection .Airport .Content {
+          height: 17vh; }
+        as1000-pfd-element #Mainframe #InstrumentsContainer #DepartureSelection .Airport .airportTop {
+          position: relative;
+          top: -1vh;
+          height: 3vh; }
+          as1000-pfd-element #Mainframe #InstrumentsContainer #DepartureSelection .Airport .airportTop > div {
+            display: inline-block;
+            width: 40%; }
+          as1000-pfd-element #Mainframe #InstrumentsContainer #DepartureSelection .Airport .airportTop img {
+            width: 4vh;
+            position: relative;
+            top: 1vh; }
+        as1000-pfd-element #Mainframe #InstrumentsContainer #DepartureSelection .Airport #Departure_AirportName {
+          overflow: hidden; }
+        as1000-pfd-element #Mainframe #InstrumentsContainer #DepartureSelection .elemGroup > div {
+          margin-right: 1vh;
+          display: inline-block; }
+        as1000-pfd-element #Mainframe #InstrumentsContainer #DepartureSelection .endLine {
+          text-align: center; }
+        as1000-pfd-element #Mainframe #InstrumentsContainer #DepartureSelection .white {
+          color: white; }
+        as1000-pfd-element #Mainframe #InstrumentsContainer #DepartureSelection .SubMenu {
+          position: absolute;
+          bottom: 0vh;
+          left: 10%;
+          background-color: black;
+          width: 80%;
+          border: 0.2vh solid white;
+          padding-top: 2vh;
+          padding-bottom: 2vh;
+          display: none;
+          font-size: 1.8vh; }
+          as1000-pfd-element #Mainframe #InstrumentsContainer #DepartureSelection .SubMenu[state=Active] {
+            display: block; }
+          as1000-pfd-element #Mainframe #InstrumentsContainer #DepartureSelection .SubMenu > div {
+            margin-left: 2vh;
+            margin-right: 2vh;
+            width: auto; }
+      as1000-pfd-element #Mainframe #InstrumentsContainer #WaypointsWindows {
+        position: absolute;
+        right: 0%;
+        height: 30%;
+        bottom: 7%;
+        width: 29.8%;
+        font-size: calc( 2 * 1vh * var(--bodyHeightScale));
+        background-color: #1a1d21; }
+        as1000-pfd-element #Mainframe #InstrumentsContainer #WaypointsWindows .Blinking[state=Blink], as1000-pfd-element #Mainframe #InstrumentsContainer #WaypointsWindows .Blinking[state=Selected] {
+          background-color: #36c8d2;
+          color: #1a1d21; }
+        as1000-pfd-element #Mainframe #InstrumentsContainer #WaypointsWindows .top {
+          background-color: #1a1d21;
+          color: white;
+          width: 100%; }
+        as1000-pfd-element #Mainframe #InstrumentsContainer #WaypointsWindows .bottom {
+          text-align: left; }
+        as1000-pfd-element #Mainframe #InstrumentsContainer #WaypointsWindows #mainInfos {
+          background-color: black;
+          color: #36c8d2;
+          position: absolute;
+          width: 90%;
+          top: 10%;
+          left: 5%;
+          height: 35%; }
+          as1000-pfd-element #Mainframe #InstrumentsContainer #WaypointsWindows #mainInfos .top {
+            height: 3vh; }
+          as1000-pfd-element #Mainframe #InstrumentsContainer #WaypointsWindows #mainInfos .bottom {
+            position: relative;
+            height: calc(100% - 3vh); }
+            as1000-pfd-element #Mainframe #InstrumentsContainer #WaypointsWindows #mainInfos .bottom #WPTSymbol {
+              position: absolute;
+              top: 4%;
+              right: 4%;
+              width: 15%; }
+        as1000-pfd-element #Mainframe #InstrumentsContainer #WaypointsWindows #location {
+          background-color: black;
+          color: #36c8d2;
+          position: absolute;
+          width: 90%;
+          top: 50%;
+          left: 5%;
+          height: 30%;
+          color: white; }
+          as1000-pfd-element #Mainframe #InstrumentsContainer #WaypointsWindows #location #WPTBearing, as1000-pfd-element #Mainframe #InstrumentsContainer #WaypointsWindows #location #WPTDistance {
+            color: #36c8d2; }
+          as1000-pfd-element #Mainframe #InstrumentsContainer #WaypointsWindows #location .top {
+            height: 3vh; }
+          as1000-pfd-element #Mainframe #InstrumentsContainer #WaypointsWindows #location .bottom {
+            display: flex;
+            height: calc(100% - 3vh); }
+            as1000-pfd-element #Mainframe #InstrumentsContainer #WaypointsWindows #location .bottom #left {
+              width: 60%; }
+            as1000-pfd-element #Mainframe #InstrumentsContainer #WaypointsWindows #location .bottom #right {
+              width: 49%;
+              color: #36c8d2;
+              line-height: 2vh; }
+        as1000-pfd-element #Mainframe #InstrumentsContainer #WaypointsWindows #BotText {
+          position: absolute;
+          width: 100%;
+          text-align: center;
+          bottom: 2vh; }
+      as1000-pfd-element #Mainframe #InstrumentsContainer #DuplicateWaypointWindow {
+        position: absolute;
+        right: 0%;
+        height: 30%;
+        bottom: 7%;
+        width: 29.8%;
+        background-color: #1a1d21;
+        font-size: 2.2vh; }
+        as1000-pfd-element #Mainframe #InstrumentsContainer #DuplicateWaypointWindow .Blinking[state=Blink], as1000-pfd-element #Mainframe #InstrumentsContainer #DuplicateWaypointWindow .Blinking[state=Selected] {
+          background-color: #36c8d2;
+          color: #1a1d21; }
+        as1000-pfd-element #Mainframe #InstrumentsContainer #DuplicateWaypointWindow .SubPart {
+          margin-top: 1vh;
+          width: 90%;
+          margin-left: 5%;
+          background-color: black;
+          position: relative; }
+          as1000-pfd-element #Mainframe #InstrumentsContainer #DuplicateWaypointWindow .SubPart .Title {
+            height: 2vh;
+            width: 100%;
+            color: white;
+            font-size: 2vh;
+            background-color: #1a1d21; }
+          as1000-pfd-element #Mainframe #InstrumentsContainer #DuplicateWaypointWindow .SubPart .Content {
+            position: relative;
+            width: 100%;
+            padding: 0.5vh;
+            overflow: hidden;
+            color: #36c8d2;
+            height: 100%; }
+        as1000-pfd-element #Mainframe #InstrumentsContainer #DuplicateWaypointWindow .Waypoint {
+          height: 16%; }
+          as1000-pfd-element #Mainframe #InstrumentsContainer #DuplicateWaypointWindow .Waypoint .ident {
+            position: absolute;
+            left: 0.5vh; }
+        as1000-pfd-element #Mainframe #InstrumentsContainer #DuplicateWaypointWindow .Duplicates {
+          height: 43%; }
+          as1000-pfd-element #Mainframe #InstrumentsContainer #DuplicateWaypointWindow .Duplicates .Content .Line {
+            height: 2vh;
+            font-size: 2vh;
+            line-height: 2vh; }
+            as1000-pfd-element #Mainframe #InstrumentsContainer #DuplicateWaypointWindow .Duplicates .Content .Line div {
+              width: 30%;
+              display: inline-block;
+              text-align: left; }
+            as1000-pfd-element #Mainframe #InstrumentsContainer #DuplicateWaypointWindow .Duplicates .Content .Line img {
+              height: 2vh;
+              margin-right: 10%; }
+            as1000-pfd-element #Mainframe #InstrumentsContainer #DuplicateWaypointWindow .Duplicates .Content .Line[state="Selected"] {
+              background-color: #36c8d2;
+              color: #1a1d21; }
+          as1000-pfd-element #Mainframe #InstrumentsContainer #DuplicateWaypointWindow .Duplicates .Content .Slider {
+            position: absolute;
+            background-color: #1a1d21;
+            right: 1%;
+            top: 5%;
+            height: 80%;
+            width: 4px; }
+            as1000-pfd-element #Mainframe #InstrumentsContainer #DuplicateWaypointWindow .Duplicates .Content .Slider[state=Active] {
+              visibility: inherit; }
+            as1000-pfd-element #Mainframe #InstrumentsContainer #DuplicateWaypointWindow .Duplicates .Content .Slider[state=Inactive] {
+              visibility: hidden; }
+            as1000-pfd-element #Mainframe #InstrumentsContainer #DuplicateWaypointWindow .Duplicates .Content .Slider .SliderCursor {
+              position: absolute;
+              background-color: white;
+              width: 100%; }
+        as1000-pfd-element #Mainframe #InstrumentsContainer #DuplicateWaypointWindow .Informations {
+          height: 32%; }
+          as1000-pfd-element #Mainframe #InstrumentsContainer #DuplicateWaypointWindow .Informations .Name {
+            position: absolute;
+            left: 0.5vh;
+            top: 0.5vh;
+            white-space: pre-line; }
+          as1000-pfd-element #Mainframe #InstrumentsContainer #DuplicateWaypointWindow .Informations .Latitude {
+            position: absolute;
+            left: 0.5vh;
+            bottom: 4vh; }
+          as1000-pfd-element #Mainframe #InstrumentsContainer #DuplicateWaypointWindow .Informations .Longitude {
+            position: absolute;
+            left: 0.5vh;
+            bottom: 2vh; }
+          as1000-pfd-element #Mainframe #InstrumentsContainer #DuplicateWaypointWindow .Informations .Bearing {
+            position: absolute;
+            right: 0.5vh;
+            bottom: 7vh; }
+          as1000-pfd-element #Mainframe #InstrumentsContainer #DuplicateWaypointWindow .Informations .Distance {
+            position: absolute;
+            right: 0.5vh;
+            bottom: 4vh; }
+      as1000-pfd-element #Mainframe #InstrumentsContainer #EngineDisplay {
+        transform: rotateX(0);
+        position: absolute;
+        left: 0%;
+        top: 7.5%;
+        width: 15%;
+        height: 92.5%;
+        background-color: #1a1d21;
+        display: none; }
+        as1000-pfd-element #Mainframe #InstrumentsContainer #EngineDisplay #ED {
+          width: 100%;
+          height: 100%;
+          position: relative;
+          display: block; }
+        as1000-pfd-element #Mainframe #InstrumentsContainer #EngineDisplay[state=piston] #TurboEngine {
+          display: none; }
+        as1000-pfd-element #Mainframe #InstrumentsContainer #EngineDisplay[state=piston] #XMLEngineDisplay {
+          display: none; }
+        as1000-pfd-element #Mainframe #InstrumentsContainer #EngineDisplay[state=turbo] {
+          width: 35%; }
+          as1000-pfd-element #Mainframe #InstrumentsContainer #EngineDisplay[state=turbo] #PistonEngine {
+            display: none; }
+          as1000-pfd-element #Mainframe #InstrumentsContainer #EngineDisplay[state=turbo] #XMLEngineDisplay {
+            display: none; }
+        as1000-pfd-element #Mainframe #InstrumentsContainer #EngineDisplay[state=XML] #TurboEngine {
+          display: none; }
+        as1000-pfd-element #Mainframe #InstrumentsContainer #EngineDisplay[state=XML] #PistonEngine {
+          display: none; }
+      as1000-pfd-element #Mainframe #InstrumentsContainer #TmrRefWindow {
+        position: absolute;
+        right: 0%;
+        height: 30%;
+        bottom: 7%;
+        width: 29.8%;
+        background-color: #1a1d21;
+        color: aqua;
+        font-size: calc( 2.5 * 1vh * var(--bodyHeightScale));
+        text-align: center; }
+        as1000-pfd-element #Mainframe #InstrumentsContainer #TmrRefWindow .Blinking[state=Blink], as1000-pfd-element #Mainframe #InstrumentsContainer #TmrRefWindow .Blinking[state=Selected] {
+          background-color: aquamarine;
+          color: black; }
+        as1000-pfd-element #Mainframe #InstrumentsContainer #TmrRefWindow #tmrTitle {
+          border-top: none; }
+        as1000-pfd-element #Mainframe #InstrumentsContainer #TmrRefWindow .subpart {
+          border-top: 0.6vh solid white;
+          padding: 0.7vh; }
+        as1000-pfd-element #Mainframe #InstrumentsContainer #TmrRefWindow .line {
+          display: flex;
+          width: 100%; }
+          as1000-pfd-element #Mainframe #InstrumentsContainer #TmrRefWindow .line div {
+            width: 33%; }
+          as1000-pfd-element #Mainframe #InstrumentsContainer #TmrRefWindow .line #tmrTitle {
+            width: 25%; }
+          as1000-pfd-element #Mainframe #InstrumentsContainer #TmrRefWindow .line #tmrTime {
+            width: 35%; }
+          as1000-pfd-element #Mainframe #InstrumentsContainer #TmrRefWindow .line #tmrDirection {
+            width: 15%; }
+          as1000-pfd-element #Mainframe #InstrumentsContainer #TmrRefWindow .line #tmrStart {
+            width: 25%; }
+        as1000-pfd-element #Mainframe #InstrumentsContainer #TmrRefWindow .white {
+          color: white; }
+      as1000-pfd-element #Mainframe #InstrumentsContainer #SoftKeys {
+        position: absolute;
+        background-color: #1a1d21;
+        display: flex;
+        width: 100%;
+        height: 4%;
+        top: 96%;
+        font-size: calc( 2.2 * 1vh * var(--bodyHeightScale));
+        text-align: center; }
+        as1000-pfd-element #Mainframe #InstrumentsContainer #SoftKeys .SoftKey {
+          position: relative;
+          width: 8.4%;
+          height: 100%;
+          border-right: 0.5vh solid white;
+          padding-top: calc(var(--viewportHeightRatio) * (8px / 21.6) * var(--currentPageHeight) / 100); }
+          as1000-pfd-element #Mainframe #InstrumentsContainer #SoftKeys .SoftKey[state=White] {
+            color: #1a1d21;
+            background-color: white; }
+          as1000-pfd-element #Mainframe #InstrumentsContainer #SoftKeys .SoftKey[state=Greyed] {
+            color: #1a1d21; }
+          as1000-pfd-element #Mainframe #InstrumentsContainer #SoftKeys .SoftKey[state=AdvisoryAlert] {
+            color: #1a1d21;
+            background-color: white; }
+          as1000-pfd-element #Mainframe #InstrumentsContainer #SoftKeys .SoftKey[state=YellowAlert] {
+            color: #1a1d21;
+            background-color: yellow; }
+          as1000-pfd-element #Mainframe #InstrumentsContainer #SoftKeys .SoftKey[state=RedAlert] {
+            color: white;
+            background-color: red; }
+        as1000-pfd-element #Mainframe #InstrumentsContainer #SoftKeys .end {
+          border: none;
+          width: 8.7%; }
+      as1000-pfd-element #Mainframe #InstrumentsContainer #OAT {
+        position: absolute;
+        background-color: #1a1d21;
+        display: flex;
+        left: 0%;
+        bottom: 4%;
+        width: 15%;
+        padding-left: 1%;
+        padding-right: 1%;
+        font-size: calc( 2.6 * 1vh * var(--bodyHeightScale));
+        height: 3.5%;
+        justify-content: space-between; }
+        as1000-pfd-element #Mainframe #InstrumentsContainer #OAT #OAT_Title {
+          width: 40%;
+          color: white; }
+        as1000-pfd-element #Mainframe #InstrumentsContainer #OAT #OAT_Value {
+          width: 59%;
+          color: white; }
+      as1000-pfd-element #Mainframe #InstrumentsContainer #NearestAirports {
+        position: absolute;
+        right: 0%;
+        height: 30%;
+        bottom: 7%;
+        width: 29.8%;
+        background-color: #1a1d21;
+        font-size: calc( 2.4 * 1vh * var(--bodyHeightScale));
+        color: aqua; }
+        as1000-pfd-element #Mainframe #InstrumentsContainer #NearestAirports #title {
+          text-align: center;
+          height: 15%; }
+        as1000-pfd-element #Mainframe #InstrumentsContainer #NearestAirports #ElementListAndSlider {
+          height: 85%;
+          width: 100%;
+          position: relative; }
+          as1000-pfd-element #Mainframe #InstrumentsContainer #NearestAirports #ElementListAndSlider #ElementList {
+            color: inherit;
+            font-size: inherit;
+            height: 100%;
+            width: 93%;
+            text-align: left;
+            margin-left: 2%;
+            margin-right: 5%; }
+            as1000-pfd-element #Mainframe #InstrumentsContainer #NearestAirports #ElementListAndSlider #ElementList .topLine {
+              border-top: 0.6vh solid white; }
+            as1000-pfd-element #Mainframe #InstrumentsContainer #NearestAirports #ElementListAndSlider #ElementList .imgSizeS {
+              width: calc( 2.7 * 1vh * var(--bodyHeightScale));
+              height: calc( 2.7 * 1vh * var(--bodyHeightScale)); }
+            as1000-pfd-element #Mainframe #InstrumentsContainer #NearestAirports #ElementListAndSlider #ElementList tr td {
+              color: aqua; }
+            as1000-pfd-element #Mainframe #InstrumentsContainer #NearestAirports #ElementListAndSlider #ElementList tr .white {
+              color: white; }
+            as1000-pfd-element #Mainframe #InstrumentsContainer #NearestAirports #ElementListAndSlider #ElementList tr .end {
+              text-align: right; }
+            as1000-pfd-element #Mainframe #InstrumentsContainer #NearestAirports #ElementListAndSlider #ElementList tr[state=Blink] .Blinking, as1000-pfd-element #Mainframe #InstrumentsContainer #NearestAirports #ElementListAndSlider #ElementList tr[state=Selected] .Blinking {
+              background-color: aquamarine;
+              color: black; }
+            as1000-pfd-element #Mainframe #InstrumentsContainer #NearestAirports #ElementListAndSlider #ElementList .Blinking[state=Blink], as1000-pfd-element #Mainframe #InstrumentsContainer #NearestAirports #ElementListAndSlider #ElementList .Blinking[state=Selected] {
+              background-color: aquamarine;
+              color: black; }
+          as1000-pfd-element #Mainframe #InstrumentsContainer #NearestAirports #ElementListAndSlider #Slider {
+            position: absolute;
+            background-color: darkgrey;
+            right: 2%;
+            top: 5%;
+            height: 90%;
+            width: 4px; }
+            as1000-pfd-element #Mainframe #InstrumentsContainer #NearestAirports #ElementListAndSlider #Slider[state=Active] {
+              visibility: inherit; }
+            as1000-pfd-element #Mainframe #InstrumentsContainer #NearestAirports #ElementListAndSlider #Slider[state=Inactive] {
+              visibility: hidden; }
+            as1000-pfd-element #Mainframe #InstrumentsContainer #NearestAirports #ElementListAndSlider #Slider #SliderCursor {
+              position: absolute;
+              background-color: white;
+              width: 100%; }
+      as1000-pfd-element #Mainframe #InstrumentsContainer #AirportInfos {
+        position: absolute;
+        right: 0%;
+        height: 30%;
+        bottom: 7%;
+        width: 29.8%;
+        background-color: #1a1d21;
+        font-size: calc( 2.7 * 1vh * var(--bodyHeightScale));
+        color: aqua; }
+        as1000-pfd-element #Mainframe #InstrumentsContainer #AirportInfos #title {
+          text-align: center;
+          border-bottom: 0.6vh solid white;
+          width: 90%;
+          margin-left: 5%;
+          font-size: calc( 2.4 * 1vh * var(--bodyHeightScale)); }
+        as1000-pfd-element #Mainframe #InstrumentsContainer #AirportInfos #top {
+          width: 95%;
+          margin-left: 2.5%;
+          border-bottom: 0.6vh solid white; }
+          as1000-pfd-element #Mainframe #InstrumentsContainer #AirportInfos #top #topLine div {
+            display: inline-block;
+            width: 30%; }
+          as1000-pfd-element #Mainframe #InstrumentsContainer #AirportInfos #top #topLine #city {
+            width: 60%; }
+        as1000-pfd-element #Mainframe #InstrumentsContainer #AirportInfos #middle {
+          width: 95%;
+          margin-left: 2.5%; }
+          as1000-pfd-element #Mainframe #InstrumentsContainer #AirportInfos #middle #topLine div {
+            display: inline-block;
+            width: 32%; }
+            as1000-pfd-element #Mainframe #InstrumentsContainer #AirportInfos #middle #topLine div #type {
+              text-align: left; }
+            as1000-pfd-element #Mainframe #InstrumentsContainer #AirportInfos #middle #topLine div #timeZone {
+              text-align: center; }
+            as1000-pfd-element #Mainframe #InstrumentsContainer #AirportInfos #middle #topLine div #runwayLength {
+              text-align: right; }
+        as1000-pfd-element #Mainframe #InstrumentsContainer #AirportInfos #bottom {
+          margin-top: 5%;
+          width: 95%;
+          margin-left: 2.5%; }
+        as1000-pfd-element #Mainframe #InstrumentsContainer #AirportInfos #backButton {
+          color: white;
+          position: absolute;
+          right: 2.5%;
+          bottom: 10%; }
+          as1000-pfd-element #Mainframe #InstrumentsContainer #AirportInfos #backButton[state=Blink], as1000-pfd-element #Mainframe #InstrumentsContainer #AirportInfos #backButton[state=Selected] {
+            background-color: white;
+            color: black; }
+      as1000-pfd-element #Mainframe #InstrumentsContainer #AdfDme {
+        position: absolute;
+        right: 0%;
+        height: 30%;
+        bottom: 7%;
+        width: 29.8%;
+        background-color: #1a1d21;
+        font-size: calc( 2.7 * 1vh * var(--bodyHeightScale));
+        color: aqua;
+        padding-left: 1%;
+        padding-right: 1%; }
+        as1000-pfd-element #Mainframe #InstrumentsContainer #AdfDme #title {
+          text-align: center; }
+        as1000-pfd-element #Mainframe #InstrumentsContainer #AdfDme #ADF {
+          border-top: 0.4vh solid white;
+          border-bottom: 0.4vh solid white; }
+          as1000-pfd-element #Mainframe #InstrumentsContainer #AdfDme #ADF #adfTitle {
+            color: white; }
+          as1000-pfd-element #Mainframe #InstrumentsContainer #AdfDme #ADF #topLine {
+            display: flex; }
+            as1000-pfd-element #Mainframe #InstrumentsContainer #AdfDme #ADF #topLine #ActiveAdfFreq {
+              margin-left: 15%; }
+            as1000-pfd-element #Mainframe #InstrumentsContainer #AdfDme #ADF #topLine #adfDoubleArrow {
+              margin-left: 3%;
+              margin-right: 3%; }
+          as1000-pfd-element #Mainframe #InstrumentsContainer #AdfDme #ADF #botLine {
+            display: flex; }
+            as1000-pfd-element #Mainframe #InstrumentsContainer #AdfDme #ADF #botLine #adfModeText {
+              color: white;
+              margin-left: 19%;
+              margin-right: 2%; }
+            as1000-pfd-element #Mainframe #InstrumentsContainer #AdfDme #ADF #botLine #adfMode {
+              width: 25%; }
+            as1000-pfd-element #Mainframe #InstrumentsContainer #AdfDme #ADF #botLine #VolText {
+              color: white;
+              margin-left: 2%;
+              margin-right: 2%; }
+        as1000-pfd-element #Mainframe #InstrumentsContainer #AdfDme #DME {
+          display: flex;
+          border-bottom: 0.4vh solid white; }
+          as1000-pfd-element #Mainframe #InstrumentsContainer #AdfDme #DME #dmeTitle {
+            color: white; }
+          as1000-pfd-element #Mainframe #InstrumentsContainer #AdfDme #DME #dmeModeText {
+            color: white;
+            margin-left: 5%;
+            margin-right: 2%; }
+        as1000-pfd-element #Mainframe #InstrumentsContainer #AdfDme #indicationText {
+          position: absolute;
+          text-align: center;
+          width: 100%;
+          bottom: 10%;
+          color: white; }
+        as1000-pfd-element #Mainframe #InstrumentsContainer #AdfDme .Blinking[state=Blink], as1000-pfd-element #Mainframe #InstrumentsContainer #AdfDme .Blinking[state=Selected] {
+          background-color: aqua;
+          color: #1a1d21; }
+      as1000-pfd-element #Mainframe #InstrumentsContainer #AlertsWindow {
+        position: absolute;
+        right: 0%;
+        height: 30%;
+        bottom: 7%;
+        width: 29.8%;
+        background-color: #1a1d21;
+        font-size: calc( 2.5 * 1vh * var(--bodyHeightScale));
+        color: aqua;
+        padding-left: 1%;
+        padding-right: 1%; }
+        as1000-pfd-element #Mainframe #InstrumentsContainer #AlertsWindow #title {
+          text-align: center;
+          width: 100%;
+          border-bottom: 0.4vh solid white; }
+        as1000-pfd-element #Mainframe #InstrumentsContainer #AlertsWindow #ElementListAndSlider {
+          height: 85%;
+          width: 100%;
+          position: relative; }
+          as1000-pfd-element #Mainframe #InstrumentsContainer #AlertsWindow #ElementListAndSlider #Elements {
+            height: 100%;
+            width: 90%;
+            color: white; }
+            as1000-pfd-element #Mainframe #InstrumentsContainer #AlertsWindow #ElementListAndSlider #Elements #Alert1, as1000-pfd-element #Mainframe #InstrumentsContainer #AlertsWindow #ElementListAndSlider #Elements #Alert2, as1000-pfd-element #Mainframe #InstrumentsContainer #AlertsWindow #ElementListAndSlider #Elements #Alert3 {
+              height: 33%;
+              border-bottom: 0.4vh solid white; }
+          as1000-pfd-element #Mainframe #InstrumentsContainer #AlertsWindow #ElementListAndSlider #Slider {
+            position: absolute;
+            background-color: darkgrey;
+            right: 2%;
+            top: 5%;
+            height: 90%;
+            width: 4px; }
+            as1000-pfd-element #Mainframe #InstrumentsContainer #AlertsWindow #ElementListAndSlider #Slider[state=Active] {
+              visibility: inherit; }
+            as1000-pfd-element #Mainframe #InstrumentsContainer #AlertsWindow #ElementListAndSlider #Slider[state=Inactive] {
+              visibility: hidden; }
+            as1000-pfd-element #Mainframe #InstrumentsContainer #AlertsWindow #ElementListAndSlider #Slider #SliderCursor {
+              position: absolute;
+              background-color: white;
+              width: 100%; }
+      as1000-pfd-element #Mainframe #InstrumentsContainer #ContextualMenu {
+        position: absolute;
+        background-color: #1a1d21;
+        right: 0%;
+        bottom: 7%;
+        width: 29.8%;
+        font-size: calc( 2.6 * 1vh * var(--bodyHeightScale)); }
+        as1000-pfd-element #Mainframe #InstrumentsContainer #ContextualMenu[state=Inactive] {
+          visibility: hidden; }
+        as1000-pfd-element #Mainframe #InstrumentsContainer #ContextualMenu #ContextualMenuContent {
+          width: 100%;
+          height: 100%; }
+          as1000-pfd-element #Mainframe #InstrumentsContainer #ContextualMenu #ContextualMenuContent #ContextualMenuTitle {
+            color: white;
+            text-align: center;
+            margin: calc( 1 * 1vh * var(--bodyHeightScale)); }
+          as1000-pfd-element #Mainframe #InstrumentsContainer #ContextualMenu #ContextualMenuContent #ContextualMenuMainArea {
+            background-color: #1a1d21;
+            width: 90%;
+            margin-left: 5.5%;
+            border: 1px solid white; }
+            as1000-pfd-element #Mainframe #InstrumentsContainer #ContextualMenu #ContextualMenuContent #ContextualMenuMainArea #subTitle {
+              color: white;
+              background-color: dimgray;
+              font-size: calc( 2.3 * 1vh * var(--bodyHeightScale));
+              padding-left: 3vw; }
+            as1000-pfd-element #Mainframe #InstrumentsContainer #ContextualMenu #ContextualMenuContent #ContextualMenuMainArea #ContextualMenuElements {
+              color: aquamarine;
+              width: 100%; }
+              as1000-pfd-element #Mainframe #InstrumentsContainer #ContextualMenu #ContextualMenuContent #ContextualMenuMainArea #ContextualMenuElements .ContextualMenuElement[state=Inactive] {
+                color: dimgray; }
+              as1000-pfd-element #Mainframe #InstrumentsContainer #ContextualMenu #ContextualMenuContent #ContextualMenuMainArea #ContextualMenuElements .ContextualMenuElement[state=Selected] {
+                background-color: aquamarine;
+                color: black; }
+        as1000-pfd-element #Mainframe #InstrumentsContainer #ContextualMenu #SubText {
+          width: 90%;
+          margin-left: 5.5%;
+          margin-top: 2%;
+          margin-bottom: 2%;
+          text-align: center; }
+

@@ -1,0 +1,1677 @@
+﻿:root {
+  --bodyHeightScale: 1; }
+
+@keyframes TemporaryShow {
+  0%, 100% {
+    visibility: visible; } }
+
+@keyframes TemporaryHide {
+  0%, 100% {
+    visibility: hidden; } }
+
+#highlight {
+  position: absolute;
+  height: 100%;
+  width: 100%;
+  z-index: 10; }
+
+#Electricity {
+  width: 100%;
+  height: 100%; }
+  #Electricity[state=off] {
+    display: none; }
+
+@font-face {
+  font-family: "Roboto";
+  src: url("/Fonts/RobotoMono-Medium.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal; }
+
+@font-face {
+  font-family: "Roboto-Light";
+  src: url("/Fonts/RobotoMono-Light.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal; }
+
+@font-face {
+  font-family: "Roboto-Bold";
+  src: url("/Fonts/RobotoMono-Bold.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal; }
+
+#Mainframe {
+  --refWidth: 1024;
+  --refHeight: 768; }
+
+as1000-mfd-element {
+  width: 100%;
+  height: 100%;
+  background-color: black;
+  font-family: Roboto-Bold;
+  overflow: hidden; }
+  as1000-mfd-element #Console {
+    position: absolute;
+    visibility: hidden;
+    width: 100%;
+    height: 100%;
+    background-color: black;
+    color: white;
+    font-size: 4vh;
+    z-index: 1000; }
+  as1000-mfd-element #Splash {
+    position: absolute;
+    visibility: hidden;
+    width: 100%;
+    height: 100%;
+    background-color: black;
+    z-index: 1000; }
+  as1000-mfd-element #Validate {
+    position: absolute;
+    visibility: hidden;
+    width: 100%;
+    height: 100%;
+    background-color: black;
+    z-index: 999; }
+  as1000-mfd-element #Electricity {
+    width: 100%;
+    height: 100%; }
+    as1000-mfd-element #Electricity[state=off] {
+      display: none; }
+    as1000-mfd-element #Electricity[state=init] #Console {
+      animation: TemporaryShow 3.5s 1; }
+    as1000-mfd-element #Electricity[state=init] #Splash {
+      animation: TemporaryShow 3.5s 1;
+      animation-delay: 2.5s; }
+    as1000-mfd-element #Electricity[state=init] #Validate {
+      animation: TemporaryHide 5.5s 1;
+      visibility: visible; }
+    as1000-mfd-element #Electricity[state=initWaitingValidation] #Validate {
+      visibility: visible; }
+  as1000-mfd-element #highlight {
+    position: absolute;
+    height: 100%;
+    width: 100%;
+    z-index: 10; }
+  as1000-mfd-element .PopupWindow {
+    visibility: hidden; }
+    as1000-mfd-element .PopupWindow[state=Active] {
+      visibility: inherit; }
+  as1000-mfd-element #Mainframe {
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+    position: relative; }
+    as1000-mfd-element #Mainframe #Electricity {
+      position: relative; }
+      as1000-mfd-element #Mainframe #Electricity #Compass {
+        transform: rotateX(0);
+        position: absolute;
+        border: none;
+        left: 10%;
+        top: -3.5%;
+        width: 80%;
+        height: 100%; }
+      as1000-mfd-element #Mainframe #Electricity #NavBox {
+        transform: rotateX(0);
+        position: absolute;
+        background-color: #1a1d21;
+        display: flex;
+        width: 100%;
+        height: 7.5%; }
+        as1000-mfd-element #Mainframe #Electricity #NavBox #Left {
+          width: 28%;
+          height: 100%; }
+          as1000-mfd-element #Mainframe #Electricity #NavBox #Left .ident {
+            width: 15%; }
+          as1000-mfd-element #Mainframe #Electricity #NavBox #Left #Nav1 {
+            width: 98%;
+            height: 50%;
+            display: flex;
+            justify-content: space-between;
+            font-size: calc( 2.5 * 1vh * var(--bodyHeightScale)); }
+          as1000-mfd-element #Mainframe #Electricity #NavBox #Left #Nav2 {
+            width: 98%;
+            height: 50%;
+            display: flex;
+            justify-content: space-between;
+            font-size: calc( 2.5 * 1vh * var(--bodyHeightScale)); }
+        as1000-mfd-element #Mainframe #Electricity #NavBox #Center {
+          width: 47%;
+          height: 100%;
+          border-left: 0.6vh solid;
+          border-right: 0.6vh solid; }
+          as1000-mfd-element #Mainframe #Electricity #NavBox #Center #top {
+            width: 100%;
+            height: 50%;
+            border-bottom: 0.6vh solid;
+            display: flex;
+            font-size: calc( 2.5 * 1vh * var(--bodyHeightScale)); }
+            as1000-mfd-element #Mainframe #Electricity #NavBox #Center #top div {
+              width: 12%; }
+            as1000-mfd-element #Mainframe #Electricity #NavBox #Center #top #GroundSpeed, as1000-mfd-element #Mainframe #Electricity #NavBox #Center #top #DesiredTrack, as1000-mfd-element #Mainframe #Electricity #NavBox #Center #top #CurrentTrack, as1000-mfd-element #Mainframe #Electricity #NavBox #Center #top #ETE {
+              color: magenta; }
+          as1000-mfd-element #Mainframe #Electricity #NavBox #Center #bottom {
+            width: 100%;
+            height: 50%;
+            color: #36c8d2;
+            text-align: center;
+            font-size: calc( 2.5 * 1vh * var(--bodyHeightScale)); }
+        as1000-mfd-element #Mainframe #Electricity #NavBox #Right {
+          width: 25%;
+          height: 100%; }
+          as1000-mfd-element #Mainframe #Electricity #NavBox #Right #Com1 {
+            width: 100%;
+            height: 50%;
+            display: flex;
+            justify-content: space-between;
+            font-size: calc( 2.5 * 1vh * var(--bodyHeightScale)); }
+          as1000-mfd-element #Mainframe #Electricity #NavBox #Right #Com2 {
+            width: 100%;
+            height: 50%;
+            display: flex;
+            justify-content: space-between;
+            font-size: calc( 2.5 * 1vh * var(--bodyHeightScale)); }
+        as1000-mfd-element #Mainframe #Electricity #NavBox .Selectable[state="selected"] {
+          background-color: white;
+          color: #1a1d21; }
+        as1000-mfd-element #Mainframe #Electricity #NavBox .Selectable[state="unselected"] {
+          padding: calc(var(--viewportHeightRatio) * (1px / 21.6) * var(--currentPageHeight) / 100); }
+      as1000-mfd-element #Mainframe #Electricity #SoftKeys {
+        position: absolute;
+        background-color: #1a1d21;
+        display: flex;
+        width: 100%;
+        height: 4%;
+        top: 96%;
+        font-size: calc( 2.2 * 1vh * var(--bodyHeightScale));
+        text-align: center;
+        white-space: nowrap; }
+        as1000-mfd-element #Mainframe #Electricity #SoftKeys .SoftKey {
+          position: relative;
+          width: 8.4%;
+          height: 100%;
+          border-right: 0.5vh solid white;
+          padding-top: calc(var(--viewportHeightRatio) * (8px / 21.6) * var(--currentPageHeight) / 100); }
+          as1000-mfd-element #Mainframe #Electricity #SoftKeys .SoftKey[state=White] {
+            color: #1a1d21;
+            background-color: white; }
+          as1000-mfd-element #Mainframe #Electricity #SoftKeys .SoftKey[state=Greyed] {
+            color: #1a1d21; }
+        as1000-mfd-element #Mainframe #Electricity #SoftKeys .end {
+          border: none;
+          width: 8.7%; }
+      as1000-mfd-element #Mainframe #Electricity #CenterDisplay {
+        position: absolute;
+        height: 89.5%;
+        width: 100%;
+        top: 7.5%;
+        font-size: calc( 2 * 1vh * var(--bodyHeightScale));
+        text-align: center; }
+        as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea {
+          position: absolute;
+          height: 100%;
+          width: 100%;
+          display: flex; }
+          as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #LeftInfos {
+            transform: rotateX(0);
+            left: 0%;
+            width: 20%;
+            height: 100%;
+            background-color: #1a1d21;
+            position: relative; }
+            as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #LeftInfos #ED {
+              width: 100%;
+              height: 100%;
+              position: relative;
+              display: block; }
+            as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #LeftInfos[state=piston] #TurboEngine {
+              display: none; }
+            as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #LeftInfos[state=piston] #XMLEngineDisplay {
+              display: none; }
+            as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #LeftInfos[state=turbo] {
+              width: 35%; }
+              as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #LeftInfos[state=turbo] #PistonEngine {
+                display: none; }
+              as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #LeftInfos[state=turbo] #XMLEngineDisplay {
+                display: none; }
+            as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #LeftInfos[state=XML] #TurboEngine {
+              display: none; }
+            as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #LeftInfos[state=XML] #PistonEngine {
+              display: none; }
+          as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos {
+            transform: rotateX(0);
+            height: 100%;
+            width: 100%;
+            position: relative; }
+            as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #Map, as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #AirportInfos, as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #ActiveFlightPlan, as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #SystemSetup, as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #Nrst_Airport, as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #Nrst_VOR, as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #Nrst_NDB, as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #Nrst_Intersections {
+              position: absolute;
+              height: 100%;
+              width: 100%;
+              height: 100%;
+              top: 0%;
+              left: 0%;
+              display: none; }
+            as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos[state=Map] #Map,
+            as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos[state=AirportInfos] #AirportInfos,
+            as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos[state=ActiveFlightPlan] #ActiveFlightPlan,
+            as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos[state=SystemSetup] #SystemSetup,
+            as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos[state=Nrst_Airport] #Nrst_Airport,
+            as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos[state=Nrst_VOR] #Nrst_VOR,
+            as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos[state=Nrst_NDB] #Nrst_NDB,
+            as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos[state=Nrst_Intersections] #Nrst_Intersections {
+              display: block; }
+            as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #Map {
+              /* Map position (left and top) is set in mapConfig.json file (see SvgMapConfig.ts) (makes it editable at runtime) */
+              /* Map position (left and top) is set in mapConfig.json file (see SvgMapConfig.ts) (makes it editable at runtime) */ }
+              as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #Map #MapOrientation {
+                position: absolute;
+                top: 0%;
+                right: 0%;
+                width: 10%;
+                height: calc( 3 * 1vh * var(--bodyHeightScale));
+                background-color: #1a1d21;
+                color: white; }
+              as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #Map #WindData {
+                position: absolute;
+                top: 0%;
+                width: 7%;
+                right: 10%; }
+              as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #Map #MapRange {
+                position: absolute;
+                bottom: 0%;
+                right: 0%;
+                width: 7%;
+                height: 4vh;
+                background-color: #1a1d21;
+                color: #36c8d2;
+                display: flex;
+                font-size: 2.4vh; }
+                as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #Map #MapRange .Align {
+                  width: 50%;
+                  text-align: right; }
+                as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #Map #MapRange .unit {
+                  font-size: 1.5vh;
+                  line-height: 1.2vh;
+                  text-align: left; }
+              as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #Map #MapSVG, as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #Map #road-network-canvas {
+                transform: rotateX(0);
+                position: absolute; }
+              as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #Map bing-map {
+                transform: rotateX(0);
+                position: absolute;
+                left: 0px;
+                top: 0px;
+                width: 100%;
+                height: 100%; }
+            as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #AirportInfos #Infos1, as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #AirportInfos #Infos2 {
+              position: absolute;
+              width: 100%;
+              height: 100%;
+              display: none; }
+            as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #AirportInfos[state=Infos1] #Infos1,
+            as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #AirportInfos[state=Infos2] #Infos2 {
+              display: block; }
+            as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #AirportInfos #Infos1 #AirportInfos1_Map {
+              transform: rotate(0);
+              position: absolute;
+              left: 0%;
+              height: 100%;
+              width: 66%; }
+            as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #AirportInfos #Infos1 #rightPanel {
+              position: absolute;
+              right: 0%;
+              width: 34%;
+              height: 100%;
+              background-color: #1a1d21;
+              font-size: calc( 2.5 * 1vh * var(--bodyHeightScale)); }
+              as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #AirportInfos #Infos1 #rightPanel .Blinking[state=Blink], as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #AirportInfos #Infos1 #rightPanel .Blinking[state=Selected] {
+                background-color: #36c8d2;
+                color: #1a1d21; }
+              as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #AirportInfos #Infos1 #rightPanel div[state=Blink] .Blinking, as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #AirportInfos #Infos1 #rightPanel div[state=Selected] .Blinking {
+                background-color: #36c8d2;
+                color: black; }
+              as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #AirportInfos #Infos1 #rightPanel .top {
+                background-color: #1a1d21;
+                color: white;
+                width: 100%;
+                font-size: calc( 2 * 1vh * var(--bodyHeightScale));
+                text-align: left;
+                padding-left: 10%; }
+              as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #AirportInfos #Infos1 #rightPanel .bottom {
+                text-align: left;
+                background-color: black; }
+              as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #AirportInfos #Infos1 #rightPanel .flex {
+                display: flex; }
+              as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #AirportInfos #Infos1 #rightPanel #Airport {
+                width: 96%;
+                height: 30%;
+                margin: 2%;
+                color: #36c8d2; }
+                as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #AirportInfos #Infos1 #rightPanel #Airport #AirportInfos1_FacilityName, as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #AirportInfos #Infos1 #rightPanel #Airport AirportInfos1_City, as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #AirportInfos #Infos1 #rightPanel #Airport #AirportInfos1_TimeZone {
+                  width: 100%;
+                  height: 10%; }
+                as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #AirportInfos #Infos1 #rightPanel #Airport #AirportInfos1_Region, as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #AirportInfos #Infos1 #rightPanel #Airport #AirportInfos1_Ident {
+                  width: 50%;
+                  height: 10%; }
+                as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #AirportInfos #Infos1 #rightPanel #Airport #AirportLatLon {
+                  width: 50%;
+                  height: 15%; }
+              as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #AirportInfos #Infos1 #rightPanel #Runways {
+                width: 96%;
+                height: 20%;
+                margin: 2%;
+                color: #36c8d2; }
+              as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #AirportInfos #Infos1 #rightPanel #Frequencies {
+                width: 96%;
+                height: 40%;
+                margin: 2%;
+                color: #36c8d2; }
+                as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #AirportInfos #Infos1 #rightPanel #Frequencies .top {
+                  height: 10%; }
+                as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #AirportInfos #Infos1 #rightPanel #Frequencies .bottom {
+                  height: 90%; }
+                as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #AirportInfos #Infos1 #rightPanel #Frequencies #SliderAndElems {
+                  position: relative; }
+                  as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #AirportInfos #Infos1 #rightPanel #Frequencies #SliderAndElems #AirportInfos1_Frequencies {
+                    height: 100%; }
+                    as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #AirportInfos #Infos1 #rightPanel #Frequencies #SliderAndElems #AirportInfos1_Frequencies .Freq {
+                      display: flex;
+                      height: 14%; }
+                      as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #AirportInfos #Infos1 #rightPanel #Frequencies #SliderAndElems #AirportInfos1_Frequencies .Freq .Name {
+                        width: 50%;
+                        height: 14%; }
+                      as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #AirportInfos #Infos1 #rightPanel #Frequencies #SliderAndElems #AirportInfos1_Frequencies .Freq .Value {
+                        text-align: right;
+                        width: 45%;
+                        height: 14%;
+                        padding-right: 4%; }
+                    as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #AirportInfos #Infos1 #rightPanel #Frequencies #SliderAndElems #AirportInfos1_Frequencies #AirportInfos1_Frequency1,
+                    as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #AirportInfos #Infos1 #rightPanel #Frequencies #SliderAndElems #AirportInfos1_Frequencies #AirportInfos1_Frequency2,
+                    as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #AirportInfos #Infos1 #rightPanel #Frequencies #SliderAndElems #AirportInfos1_Frequencies #AirportInfos1_Frequency3,
+                    as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #AirportInfos #Infos1 #rightPanel #Frequencies #SliderAndElems #AirportInfos1_Frequencies #AirportInfos1_Frequency4,
+                    as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #AirportInfos #Infos1 #rightPanel #Frequencies #SliderAndElems #AirportInfos1_Frequencies #AirportInfos1_Frequency5,
+                    as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #AirportInfos #Infos1 #rightPanel #Frequencies #SliderAndElems #AirportInfos1_Frequencies #AirportInfos1_Frequency6,
+                    as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #AirportInfos #Infos1 #rightPanel #Frequencies #SliderAndElems #AirportInfos1_Frequencies #AirportInfos1_Frequency7 {
+                      height: 14%; }
+                      as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #AirportInfos #Infos1 #rightPanel #Frequencies #SliderAndElems #AirportInfos1_Frequencies #AirportInfos1_Frequency1[state=Blink] .Blinking, as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #AirportInfos #Infos1 #rightPanel #Frequencies #SliderAndElems #AirportInfos1_Frequencies #AirportInfos1_Frequency1[state=Selected] .Blinking,
+                      as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #AirportInfos #Infos1 #rightPanel #Frequencies #SliderAndElems #AirportInfos1_Frequencies #AirportInfos1_Frequency2[state=Blink] .Blinking,
+                      as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #AirportInfos #Infos1 #rightPanel #Frequencies #SliderAndElems #AirportInfos1_Frequencies #AirportInfos1_Frequency2[state=Selected] .Blinking,
+                      as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #AirportInfos #Infos1 #rightPanel #Frequencies #SliderAndElems #AirportInfos1_Frequencies #AirportInfos1_Frequency3[state=Blink] .Blinking,
+                      as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #AirportInfos #Infos1 #rightPanel #Frequencies #SliderAndElems #AirportInfos1_Frequencies #AirportInfos1_Frequency3[state=Selected] .Blinking,
+                      as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #AirportInfos #Infos1 #rightPanel #Frequencies #SliderAndElems #AirportInfos1_Frequencies #AirportInfos1_Frequency4[state=Blink] .Blinking,
+                      as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #AirportInfos #Infos1 #rightPanel #Frequencies #SliderAndElems #AirportInfos1_Frequencies #AirportInfos1_Frequency4[state=Selected] .Blinking,
+                      as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #AirportInfos #Infos1 #rightPanel #Frequencies #SliderAndElems #AirportInfos1_Frequencies #AirportInfos1_Frequency5[state=Blink] .Blinking,
+                      as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #AirportInfos #Infos1 #rightPanel #Frequencies #SliderAndElems #AirportInfos1_Frequencies #AirportInfos1_Frequency5[state=Selected] .Blinking,
+                      as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #AirportInfos #Infos1 #rightPanel #Frequencies #SliderAndElems #AirportInfos1_Frequencies #AirportInfos1_Frequency6[state=Blink] .Blinking,
+                      as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #AirportInfos #Infos1 #rightPanel #Frequencies #SliderAndElems #AirportInfos1_Frequencies #AirportInfos1_Frequency6[state=Selected] .Blinking,
+                      as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #AirportInfos #Infos1 #rightPanel #Frequencies #SliderAndElems #AirportInfos1_Frequencies #AirportInfos1_Frequency7[state=Blink] .Blinking,
+                      as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #AirportInfos #Infos1 #rightPanel #Frequencies #SliderAndElems #AirportInfos1_Frequencies #AirportInfos1_Frequency7[state=Selected] .Blinking {
+                        color: #1a1d21;
+                        background-color: #36c8d2; }
+                  as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #AirportInfos #Infos1 #rightPanel #Frequencies #SliderAndElems #Slider {
+                    position: absolute;
+                    background-color: darkgrey;
+                    right: 1%;
+                    top: 5%;
+                    height: 90%;
+                    width: 4px; }
+                    as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #AirportInfos #Infos1 #rightPanel #Frequencies #SliderAndElems #Slider[state=Active] {
+                      visibility: inherit; }
+                    as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #AirportInfos #Infos1 #rightPanel #Frequencies #SliderAndElems #Slider[state=Inactive] {
+                      visibility: hidden; }
+                    as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #AirportInfos #Infos1 #rightPanel #Frequencies #SliderAndElems #Slider #SliderCursor {
+                      position: absolute;
+                      background-color: white;
+                      width: 100%; }
+            as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #AirportInfos #Infos2 {
+              background-color: #1a1d21; }
+              as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #AirportInfos #Infos2 .Blinking[state=Blink], as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #AirportInfos #Infos2 .Blinking[state=Selected] {
+                background-color: #36c8d2;
+                color: #1a1d21; }
+              as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #AirportInfos #Infos2 #AirportInfos {
+                position: absolute;
+                width: 49%;
+                height: 18%;
+                top: 1%;
+                left: 1%; }
+                as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #AirportInfos #Infos2 #AirportInfos #title {
+                  position: absolute;
+                  left: 10%;
+                  top: 0%;
+                  height: calc( 3 * 1vh * var(--bodyHeightScale));
+                  color: white; }
+                as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #AirportInfos #Infos2 #AirportInfos #infos {
+                  position: absolute;
+                  top: calc( 3 * 1vh * var(--bodyHeightScale));
+                  left: 0%;
+                  height: 80%;
+                  width: 100%;
+                  background-color: black;
+                  text-align: left;
+                  color: #36c8d2;
+                  font-size: calc( 2.5 * 1vh * var(--bodyHeightScale)); }
+                  as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #AirportInfos #Infos2 #AirportInfos #infos #topLine, as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #AirportInfos #Infos2 #AirportInfos #infos #AirportInfos2_facility, as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #AirportInfos #Infos2 #AirportInfos #infos #AirportInfos2_city {
+                    height: 32%; }
+                  as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #AirportInfos #Infos2 #AirportInfos #infos #topLine {
+                    display: flex; }
+                    as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #AirportInfos #Infos2 #AirportInfos #infos #topLine div {
+                      width: 32%; }
+              as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #AirportInfos #Infos2 #AirportMap {
+                position: absolute;
+                width: 49%;
+                height: 79%;
+                bottom: 1%;
+                left: 1%;
+                background-color: black; }
+              as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #AirportInfos #Infos2 #DirectoryInfos {
+                position: absolute;
+                width: 48%;
+                height: 98%;
+                top: 1%;
+                right: 1%;
+                right: 1%; }
+                as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #AirportInfos #Infos2 #DirectoryInfos #title {
+                  position: absolute;
+                  left: 10%;
+                  top: 0%;
+                  height: calc( 3 * 1vh * var(--bodyHeightScale));
+                  color: white; }
+                as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #AirportInfos #Infos2 #DirectoryInfos #AirportInfos2_directory {
+                  position: absolute;
+                  top: calc( 3 * 1vh * var(--bodyHeightScale));
+                  bottom: 0%;
+                  left: 0%;
+                  width: 100%;
+                  background-color: black; }
+            as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #ActiveFlightPlan .Map {
+              position: absolute;
+              width: 50%;
+              height: 100%;
+              background-color: black;
+              left: 0%;
+              top: 0%;
+              transform: rotate(0); }
+            as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #ActiveFlightPlan .RightInfos {
+              position: absolute;
+              width: 50%;
+              height: 100%;
+              background-color: #1a1d21;
+              right: 0%;
+              top: 0%; }
+              as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #ActiveFlightPlan .RightInfos .BlueValue {
+                text-align: left;
+                color: aqua; }
+              as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #ActiveFlightPlan .RightInfos .WhiteValue {
+                text-align: left;
+                color: white; }
+              as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #ActiveFlightPlan .RightInfos .SubPart {
+                margin-top: 1vh;
+                width: 90%;
+                margin-left: 5%;
+                background-color: black; }
+                as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #ActiveFlightPlan .RightInfos .SubPart .Title {
+                  height: 3vh;
+                  width: 100%;
+                  color: white;
+                  font-size: 2vh;
+                  background-color: #1a1d21; }
+                as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #ActiveFlightPlan .RightInfos .SubPart .Content {
+                  width: 100%;
+                  padding: 0.5vh;
+                  overflow: hidden; }
+              as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #ActiveFlightPlan .RightInfos .ActiveFPL {
+                height: 55%; }
+                as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #ActiveFlightPlan .RightInfos .ActiveFPL .SelectableElement {
+                  color: aqua; }
+                as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #ActiveFlightPlan .RightInfos .ActiveFPL .SelectableWhite {
+                  color: white; }
+                as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #ActiveFlightPlan .RightInfos .ActiveFPL table {
+                  width: 95%;
+                  overflow: visible; }
+                  as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #ActiveFlightPlan .RightInfos .ActiveFPL table th {
+                    text-align: center; }
+                  as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #ActiveFlightPlan .RightInfos .ActiveFPL table thead, as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #ActiveFlightPlan .RightInfos .ActiveFPL table tbody {
+                    width: 100%;
+                    overflow: visible; }
+                  as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #ActiveFlightPlan .RightInfos .ActiveFPL table tr[state="Selected"] .SelectableElement {
+                    color: black;
+                    background-color: aqua; }
+                  as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #ActiveFlightPlan .RightInfos .ActiveFPL table tr[state="Selected"] .SelectableWhite {
+                    color: black;
+                    background-color: white; }
+                  as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #ActiveFlightPlan .RightInfos .ActiveFPL table tr .SelectableElement[state="Selected"], as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #ActiveFlightPlan .RightInfos .ActiveFPL table tr .SelectableElement[state=Blink], as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #ActiveFlightPlan .RightInfos .ActiveFPL table tr .Blinking[state="Selected"], as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #ActiveFlightPlan .RightInfos .ActiveFPL table tr .Blinking[state=Blink] {
+                    color: black;
+                    background-color: aqua; }
+                  as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #ActiveFlightPlan .RightInfos .ActiveFPL table tr .SelectableWhite[state="Selected"] {
+                    color: black;
+                    background-color: white; }
+                  as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #ActiveFlightPlan .RightInfos .ActiveFPL table tr .altitudeConstraint {
+                    color: white; }
+                    as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #ActiveFlightPlan .RightInfos .ActiveFPL table tr .altitudeConstraint[altitudeMode=Manual] {
+                      color: aqua; }
+                    as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #ActiveFlightPlan .RightInfos .ActiveFPL table tr .altitudeConstraint[altitudeMode=Subdued] {
+                      color: aqua;
+                      -webkit-mask: url(/Pages/VCockpit/Instruments/NavSystems/Shared/Images/SubduedMask.png);
+                      -webkit-mask-repeat: repeat; }
+                  as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #ActiveFlightPlan .RightInfos .ActiveFPL table tr, as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #ActiveFlightPlan .RightInfos .ActiveFPL table td {
+                    height: 3.2vh; }
+                  as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #ActiveFlightPlan .RightInfos .ActiveFPL table tbody tr td {
+                    text-align: right; }
+                  as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #ActiveFlightPlan .RightInfos .ActiveFPL table tbody tr td:first-child {
+                    text-align: left;
+                    padding-left: 2vw; }
+                  as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #ActiveFlightPlan .RightInfos .ActiveFPL table thead tr th:nth-child(1), as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #ActiveFlightPlan .RightInfos .ActiveFPL table tbody tr:first-child td:nth-child(1) {
+                    width: 40%; }
+                  as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #ActiveFlightPlan .RightInfos .ActiveFPL table thead tr th:nth-child(2), as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #ActiveFlightPlan .RightInfos .ActiveFPL table tbody tr:first-child td:nth-child(2) {
+                    width: 15%; }
+                  as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #ActiveFlightPlan .RightInfos .ActiveFPL table thead tr th:nth-child(3), as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #ActiveFlightPlan .RightInfos .ActiveFPL table tbody tr:first-child td:nth-child(3) {
+                    width: 20%; }
+                  as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #ActiveFlightPlan .RightInfos .ActiveFPL table thead tr th:nth-child(4), as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #ActiveFlightPlan .RightInfos .ActiveFPL table tbody tr:first-child td:nth-child(4) {
+                    width: 20%; }
+                  as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #ActiveFlightPlan .RightInfos .ActiveFPL table .SizeSetter, as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #ActiveFlightPlan .RightInfos .ActiveFPL table .SizeSetter td {
+                    height: 0vh;
+                    overflow: visible;
+                    position: relative; }
+                    as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #ActiveFlightPlan .RightInfos .ActiveFPL table .SizeSetter .ArrowContainer, as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #ActiveFlightPlan .RightInfos .ActiveFPL table .SizeSetter td .ArrowContainer {
+                      position: absolute;
+                      left: 0px;
+                      top: 0px;
+                      width: 0px;
+                      height: 0px;
+                      overflow: visible; }
+                      as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #ActiveFlightPlan .RightInfos .ActiveFPL table .SizeSetter .ArrowContainer .CurrentLegArrowSVG, as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #ActiveFlightPlan .RightInfos .ActiveFPL table .SizeSetter td .ArrowContainer .CurrentLegArrowSVG {
+                        position: absolute;
+                        left: 0px;
+                        top: 0px;
+                        width: 0px;
+                        height: 0px;
+                        overflow: visible; }
+                      as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #ActiveFlightPlan .RightInfos .ActiveFPL table .SizeSetter .ArrowContainer img, as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #ActiveFlightPlan .RightInfos .ActiveFPL table .SizeSetter td .ArrowContainer img {
+                        z-index: 1; }
+              as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #ActiveFlightPlan .RightInfos .CurrentVnvProfile {
+                height: 20%; }
+              as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #ActiveFlightPlan .RightInfos .SelectedWaypointWeather {
+                height: 15%; }
+              as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #ActiveFlightPlan .RightInfos .SliderContainer {
+                position: relative;
+                width: 100%; }
+                as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #ActiveFlightPlan .RightInfos .SliderContainer .Slider {
+                  position: absolute;
+                  background-color: #1a1d21;
+                  right: 1%;
+                  top: 10%;
+                  height: 90%;
+                  width: 4px; }
+                  as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #ActiveFlightPlan .RightInfos .SliderContainer .Slider[state=Active] {
+                    visibility: inherit; }
+                  as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #ActiveFlightPlan .RightInfos .SliderContainer .Slider[state=Inactive] {
+                    visibility: hidden; }
+                  as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #ActiveFlightPlan .RightInfos .SliderContainer .Slider .SliderCursor {
+                    position: absolute;
+                    background-color: white;
+                    width: 100%; }
+            as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #SystemSetup {
+              position: absolute;
+              height: 100%;
+              width: 100%;
+              background-color: #1a1d21;
+              padding: 4vh; }
+              as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #SystemSetup .column {
+                width: 32%;
+                display: flex; }
+                as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #SystemSetup .column .Category {
+                  position: relative;
+                  width: 100%; }
+                as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #SystemSetup .column .title {
+                  color: white;
+                  width: 100%;
+                  text-align: center;
+                  height: 3vh; }
+                as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #SystemSetup .column .content {
+                  top: 3vh;
+                  bottom: 0vh;
+                  background-color: black;
+                  border: 0.4vh solid grey;
+                  padding: 0.5vh; }
+                  as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #SystemSetup .column .content .element {
+                    position: relative;
+                    height: 3vh; }
+                    as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #SystemSetup .column .content .element .name {
+                      position: absolute;
+                      left: 0vh;
+                      color: white; }
+                    as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #SystemSetup .column .content .element .value {
+                      position: absolute;
+                      right: 0vh;
+                      color: aqua;
+                      text-align: right; }
+                      as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #SystemSetup .column .content .element .value[state=Blink], as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #SystemSetup .column .content .element .value[state=Selected] {
+                        background-color: aqua;
+                        color: black; }
+            as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos .NrstPage .Map {
+              position: absolute;
+              height: 100%;
+              width: 65%;
+              left: 0%;
+              top: 0%;
+              transform: rotate(0); }
+            as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos .NrstPage .RightInfos {
+              position: absolute;
+              height: 100%;
+              width: 35%;
+              right: 0%;
+              top: 0%;
+              background-color: #1a1d21; }
+              as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos .NrstPage .RightInfos .SubPart {
+                width: 90%;
+                margin-left: 5%;
+                background-color: black;
+                position: relative; }
+                as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos .NrstPage .RightInfos .SubPart .Title {
+                  height: 3vh;
+                  width: 100%;
+                  color: white;
+                  font-size: 2vh;
+                  background-color: #1a1d21; }
+                as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos .NrstPage .RightInfos .SubPart .Content {
+                  height: auto;
+                  color: #36c8d2; }
+              as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos .NrstPage .RightInfos tr[state="Selected"] .SelectableElement {
+                color: black;
+                background-color: aqua; }
+              as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos .NrstPage .RightInfos tr[state="Selected"] .SelectableWhite {
+                color: black;
+                background-color: white; }
+            as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos .NrstPage .SliderContainer {
+              position: relative;
+              width: 100%; }
+              as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos .NrstPage .SliderContainer .Slider {
+                position: absolute;
+                background-color: #1a1d21;
+                right: 1%;
+                top: 5%;
+                height: 90%;
+                width: 4px; }
+                as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos .NrstPage .SliderContainer .Slider[state=Active] {
+                  visibility: inherit; }
+                as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos .NrstPage .SliderContainer .Slider[state=Inactive] {
+                  visibility: hidden; }
+                as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos .NrstPage .SliderContainer .Slider .SliderCursor {
+                  position: absolute;
+                  background-color: white;
+                  width: 100%; }
+            as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #Nrst_Airport #NrstAirportList {
+              height: 32%; }
+              as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #Nrst_Airport #NrstAirportList #Nrst_AirportList {
+                width: 95%;
+                font-size: 2.5vh; }
+                as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #Nrst_Airport #NrstAirportList #Nrst_AirportList img {
+                  height: 4vh; }
+              as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #Nrst_Airport #NrstAirportList .SizeSetter td:nth-child(1) {
+                width: 5%; }
+              as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #Nrst_Airport #NrstAirportList .SizeSetter td:nth-child(2) {
+                width: 25%; }
+              as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #Nrst_Airport #NrstAirportList .SizeSetter td:nth-child(3) {
+                width: 20%; }
+              as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #Nrst_Airport #NrstAirportList .SizeSetter td:nth-child(4) {
+                width: 20%; }
+              as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #Nrst_Airport #NrstAirportList .SizeSetter td:nth-child(5) {
+                width: 20%; }
+            as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #Nrst_Airport #NrstAirportInfos {
+              height: 12%;
+              font-size: 2.5vh; }
+              as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #Nrst_Airport #NrstAirportInfos .Facility {
+                position: absolute;
+                bottom: 3.5vh;
+                left: 1vw;
+                width: 90%;
+                white-space: nowrap;
+                overflow: hidden;
+                text-align: left; }
+              as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #Nrst_Airport #NrstAirportInfos .City {
+                position: absolute;
+                bottom: 1vh;
+                left: 1vw;
+                width: 70%;
+                white-space: nowrap;
+                overflow: hidden;
+                text-align: left; }
+              as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #Nrst_Airport #NrstAirportInfos .Elevation {
+                position: absolute;
+                bottom: 1vh;
+                right: 1vw; }
+            as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #Nrst_Airport #NrstAirportRunways {
+              height: 12%;
+              font-size: 2.5vh; }
+              as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #Nrst_Airport #NrstAirportRunways .Rwy_Designation {
+                position: absolute;
+                bottom: 3.5vh;
+                left: 1vw; }
+                as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #Nrst_Airport #NrstAirportRunways .Rwy_Designation[State=Selected] {
+                  color: black;
+                  background-color: #36c8d2; }
+              as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #Nrst_Airport #NrstAirportRunways .Rwy_Surface {
+                position: absolute;
+                bottom: 3.5vh;
+                right: 1vw; }
+              as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #Nrst_Airport #NrstAirportRunways .Rwy_Length {
+                position: absolute;
+                bottom: 1vh;
+                left: 1vw; }
+              as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #Nrst_Airport #NrstAirportRunways .Rwy_x {
+                position: absolute;
+                bottom: 1vh;
+                left: 10vw; }
+              as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #Nrst_Airport #NrstAirportRunways .Rwy_Width {
+                position: absolute;
+                bottom: 1vh;
+                left: 12vw; }
+            as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #Nrst_Airport #NrstAirportFreqs {
+              height: 18%; }
+              as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #Nrst_Airport #NrstAirportFreqs #Nrst_AirportFreqList {
+                width: 90%;
+                margin-left: 5%;
+                font-size: 2.5vh; }
+                as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #Nrst_Airport #NrstAirportFreqs #Nrst_AirportFreqList tr td:nth-child(1) {
+                  text-align: left;
+                  width: 70%; }
+                as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #Nrst_Airport #NrstAirportFreqs #Nrst_AirportFreqList tr td:nth-child(2) {
+                  text-align: right;
+                  width: 30%; }
+            as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #Nrst_Airport #NrstAirportApproaches {
+              height: 18%; }
+              as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #Nrst_Airport #NrstAirportApproaches #Nrst_AirportApproachesList {
+                width: 90%;
+                margin-left: 5%;
+                font-size: 2.5vh; }
+                as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #Nrst_Airport #NrstAirportApproaches #Nrst_AirportApproachesList td {
+                  width: 100%; }
+                as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #Nrst_Airport #NrstAirportApproaches #Nrst_AirportApproachesList tr td:nth-child(1) {
+                  text-align: left; }
+                as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #Nrst_Airport #NrstAirportApproaches #Nrst_AirportApproachesList tr td:nth-child(2) {
+                  text-align: right; }
+            as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #Nrst_Airport #NrstAirportApproaches {
+              height: 18%; }
+            as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #Nrst_VOR #NrstVORList {
+              height: 63%; }
+              as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #Nrst_VOR #NrstVORList #Nrst_VORList {
+                width: 95%;
+                font-size: 2.5vh; }
+                as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #Nrst_VOR #NrstVORList #Nrst_VORList img {
+                  height: 3.8vh; }
+            as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #Nrst_VOR #NrstVORInfos {
+              height: 21.5%;
+              font-size: 2.5vh; }
+              as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #Nrst_VOR #NrstVORInfos .Facility {
+                position: absolute;
+                left: 1vw;
+                top: 3vh;
+                width: 90%;
+                white-space: nowrap;
+                overflow: hidden;
+                text-align: left; }
+              as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #Nrst_VOR #NrstVORInfos .City {
+                position: absolute;
+                left: 1vw;
+                bottom: 9.5vh;
+                width: 90%;
+                white-space: nowrap;
+                overflow: hidden;
+                text-align: left; }
+              as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #Nrst_VOR #NrstVORInfos .Class {
+                position: absolute;
+                left: 1vw;
+                bottom: 6.5vh; }
+              as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #Nrst_VOR #NrstVORInfos .MagVar {
+                position: absolute;
+                left: 15vw;
+                bottom: 6.5vh; }
+              as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #Nrst_VOR #NrstVORInfos .Latitude {
+                position: absolute;
+                left: 1vw;
+                bottom: 3.5vh; }
+              as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #Nrst_VOR #NrstVORInfos .Longitude {
+                position: absolute;
+                left: 1vw;
+                bottom: 1vh; }
+            as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #Nrst_VOR #NrstVORFrequency {
+              height: 10%;
+              font-size: 2.5vh; }
+              as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #Nrst_VOR #NrstVORFrequency .Frequency {
+                position: absolute;
+                left: 1vw;
+                bottom: 2vh; }
+                as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #Nrst_VOR #NrstVORFrequency .Frequency[State=Selected] {
+                  color: black;
+                  background-color: #36c8d2; }
+            as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #Nrst_NDB #NrstNDBList {
+              height: 63%; }
+              as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #Nrst_NDB #NrstNDBList #Nrst_NDBList {
+                width: 95%;
+                font-size: 2.5vh; }
+                as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #Nrst_NDB #NrstNDBList #Nrst_NDBList img {
+                  height: 3.8vh; }
+            as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #Nrst_NDB #NrstNDBInfos {
+              height: 21.5%;
+              font-size: 2.5vh; }
+              as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #Nrst_NDB #NrstNDBInfos .Facility {
+                position: absolute;
+                left: 1vw;
+                top: 3vh;
+                width: 90%;
+                white-space: nowrap;
+                overflow: hidden;
+                text-align: left; }
+              as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #Nrst_NDB #NrstNDBInfos .City {
+                position: absolute;
+                left: 1vw;
+                bottom: 9.5vh;
+                width: 90%;
+                white-space: nowrap;
+                overflow: hidden;
+                text-align: left; }
+              as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #Nrst_NDB #NrstNDBInfos .Class {
+                position: absolute;
+                left: 1vw;
+                bottom: 6.5vh; }
+              as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #Nrst_NDB #NrstNDBInfos .Latitude {
+                position: absolute;
+                left: 1vw;
+                bottom: 3.5vh; }
+              as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #Nrst_NDB #NrstNDBInfos .Longitude {
+                position: absolute;
+                left: 1vw;
+                bottom: 1vh; }
+            as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #Nrst_NDB #NrstNDBFrequency {
+              height: 10%;
+              font-size: 2.5vh; }
+              as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #Nrst_NDB #NrstNDBFrequency .Frequency {
+                position: absolute;
+                left: 1vw;
+                bottom: 2vh; }
+                as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #Nrst_NDB #NrstNDBFrequency .Frequency[State=Selected] {
+                  color: black;
+                  background-color: #36c8d2; }
+            as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #Nrst_Intersections #NrstINTList {
+              height: 63%; }
+              as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #Nrst_Intersections #NrstINTList #Nrst_INTList {
+                width: 95%;
+                font-size: 2.5vh; }
+                as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #Nrst_Intersections #NrstINTList #Nrst_INTList img {
+                  height: 3.8vh; }
+            as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #Nrst_Intersections #NrstINTInfos {
+              height: 12%;
+              font-size: 2.5vh; }
+              as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #Nrst_Intersections #NrstINTInfos .Latitude {
+                position: absolute;
+                left: 1vw;
+                bottom: 3.5vh; }
+              as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #Nrst_Intersections #NrstINTInfos .Longitude {
+                position: absolute;
+                left: 1vw;
+                bottom: 1vh; }
+            as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #Nrst_Intersections #NrstINTVorReference {
+              height: 12%;
+              font-size: 2.5vh; }
+              as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #Nrst_Intersections #NrstINTVorReference .VorIdent {
+                position: absolute;
+                bottom: 3.5vh;
+                left: 1vw; }
+              as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #Nrst_Intersections #NrstINTVorReference .VorSymbol {
+                position: absolute;
+                height: 3vh;
+                top: 3.5vh;
+                left: 6vw; }
+              as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #Nrst_Intersections #NrstINTVorReference .VorFreq {
+                position: absolute;
+                bottom: 3.5vh;
+                left: 15vw; }
+              as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #Nrst_Intersections #NrstINTVorReference .VorBearing {
+                position: absolute;
+                bottom: 1vh;
+                left: 3vw; }
+              as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #Nrst_Intersections #NrstINTVorReference .VorDistance {
+                position: absolute;
+                bottom: 1vh;
+                left: 15vw; }
+        as1000-mfd-element #Mainframe #Electricity #CenterDisplay #PageSelection {
+          position: absolute;
+          bottom: 0%;
+          right: 0%;
+          width: 20vw;
+          background-color: #1a1d21; }
+          as1000-mfd-element #Mainframe #Electricity #CenterDisplay #PageSelection #Pages {
+            width: 100%; }
+            as1000-mfd-element #Mainframe #Electricity #CenterDisplay #PageSelection #Pages div {
+              width: 100%;
+              color: grey;
+              text-align: left; }
+              as1000-mfd-element #Mainframe #Electricity #CenterDisplay #PageSelection #Pages div[state=Selected] {
+                color: #36c8d2; }
+          as1000-mfd-element #Mainframe #Electricity #CenterDisplay #PageSelection table {
+            border: none; }
+            as1000-mfd-element #Mainframe #Electricity #CenterDisplay #PageSelection table tr {
+              border: none; }
+              as1000-mfd-element #Mainframe #Electricity #CenterDisplay #PageSelection table tr td {
+                height: calc( 5 * 1vh * var(--bodyHeightScale));
+                color: grey; }
+                as1000-mfd-element #Mainframe #Electricity #CenterDisplay #PageSelection table tr td[state=Selected] {
+                  color: #36c8d2;
+                  border: none; }
+        as1000-mfd-element #Mainframe #Electricity #CenterDisplay #DirectToWindow {
+          position: absolute;
+          right: 0%;
+          height: 100%;
+          width: 35%;
+          background-color: #1a1d21;
+          font-size: calc( 2 * 1vh * var(--bodyHeightScale)); }
+          as1000-mfd-element #Mainframe #Electricity #CenterDisplay #DirectToWindow .Blinking[state=Blink], as1000-mfd-element #Mainframe #Electricity #CenterDisplay #DirectToWindow .Blinking[state=Selected] {
+            background-color: #36c8d2;
+            color: #1a1d21; }
+          as1000-mfd-element #Mainframe #Electricity #CenterDisplay #DirectToWindow .top {
+            background-color: #1a1d21;
+            color: white;
+            width: 100%; }
+          as1000-mfd-element #Mainframe #Electricity #CenterDisplay #DirectToWindow .bottom {
+            text-align: left; }
+          as1000-mfd-element #Mainframe #Electricity #CenterDisplay #DirectToWindow #mainInfos {
+            background-color: black;
+            color: #36c8d2;
+            position: absolute;
+            width: 90%;
+            top: 0%;
+            left: 5%;
+            height: 25%; }
+            as1000-mfd-element #Mainframe #Electricity #CenterDisplay #DirectToWindow #mainInfos .top {
+              height: 30%; }
+          as1000-mfd-element #Mainframe #Electricity #CenterDisplay #DirectToWindow #vnav {
+            background-color: black;
+            color: #36c8d2;
+            position: absolute;
+            width: 90%;
+            top: 26%;
+            left: 5%;
+            height: 10%; }
+            as1000-mfd-element #Mainframe #Electricity #CenterDisplay #DirectToWindow #vnav .top {
+              height: 38%; }
+            as1000-mfd-element #Mainframe #Electricity #CenterDisplay #DirectToWindow #vnav .bottom {
+              display: flex; }
+              as1000-mfd-element #Mainframe #Electricity #CenterDisplay #DirectToWindow #vnav .bottom div {
+                width: 49%; }
+          as1000-mfd-element #Mainframe #Electricity #CenterDisplay #DirectToWindow #map {
+            background-color: black;
+            color: #36c8d2;
+            position: absolute;
+            width: 90%;
+            top: 37%;
+            left: 5%;
+            height: 30%; }
+            as1000-mfd-element #Mainframe #Electricity #CenterDisplay #DirectToWindow #map .top {
+              height: 15%; }
+          as1000-mfd-element #Mainframe #Electricity #CenterDisplay #DirectToWindow #location {
+            background-color: black;
+            color: #36c8d2;
+            position: absolute;
+            width: 90%;
+            top: 68%;
+            left: 5%;
+            height: 10%;
+            color: white; }
+            as1000-mfd-element #Mainframe #Electricity #CenterDisplay #DirectToWindow #location #DRCTBearing, as1000-mfd-element #Mainframe #Electricity #CenterDisplay #DirectToWindow #location #DRCTDistance {
+              color: #36c8d2; }
+            as1000-mfd-element #Mainframe #Electricity #CenterDisplay #DirectToWindow #location .top {
+              height: 35%; }
+            as1000-mfd-element #Mainframe #Electricity #CenterDisplay #DirectToWindow #location .bottom {
+              display: flex; }
+              as1000-mfd-element #Mainframe #Electricity #CenterDisplay #DirectToWindow #location .bottom div {
+                width: 24%; }
+          as1000-mfd-element #Mainframe #Electricity #CenterDisplay #DirectToWindow #course {
+            background-color: black;
+            color: #36c8d2;
+            position: absolute;
+            width: 40%;
+            top: 79%;
+            left: 5%;
+            height: 10%; }
+            as1000-mfd-element #Mainframe #Electricity #CenterDisplay #DirectToWindow #course .top {
+              height: 50%; }
+          as1000-mfd-element #Mainframe #Electricity #CenterDisplay #DirectToWindow #DRCTActivateButton {
+            position: absolute;
+            width: 40%;
+            top: 85%;
+            right: 5%;
+            height: 5%;
+            background-color: black; }
+            as1000-mfd-element #Mainframe #Electricity #CenterDisplay #DirectToWindow #DRCTActivateButton[state=Blink], as1000-mfd-element #Mainframe #Electricity #CenterDisplay #DirectToWindow #DRCTActivateButton[state=Selected] {
+              background-color: white;
+              color: black; }
+          as1000-mfd-element #Mainframe #Electricity #CenterDisplay #DirectToWindow #DRCTHoldButton {
+            position: absolute;
+            top: 91%;
+            right: 5%;
+            width: 40%;
+            height: 5%;
+            background-color: black; }
+            as1000-mfd-element #Mainframe #Electricity #CenterDisplay #DirectToWindow #DRCTHoldButton[state=Blink], as1000-mfd-element #Mainframe #Electricity #CenterDisplay #DirectToWindow #DRCTHoldButton[state=Selected] {
+              background-color: white;
+              color: black; }
+          as1000-mfd-element #Mainframe #Electricity #CenterDisplay #DirectToWindow #DRCTSelectionWindow {
+            position: absolute;
+            top: 12%;
+            left: 3%;
+            background-color: grey;
+            width: 13vw;
+            height: calc( 20 * 1vh * var(--bodyHeightScale));
+            border: 1px solid white;
+            padding: 2px;
+            color: aqua; }
+            as1000-mfd-element #Mainframe #Electricity #CenterDisplay #DirectToWindow #DRCTSelectionWindow #titlePart {
+              text-align: center;
+              border: 1px solid white;
+              background-color: #1a1d21;
+              height: 20%; }
+            as1000-mfd-element #Mainframe #Electricity #CenterDisplay #DirectToWindow #DRCTSelectionWindow #ElementListAndSlider {
+              position: relative;
+              padding-right: 15px;
+              border: 1px solid white;
+              background-color: #1a1d21;
+              height: 79%; }
+              as1000-mfd-element #Mainframe #Electricity #CenterDisplay #DirectToWindow #DRCTSelectionWindow #ElementListAndSlider #ElementList {
+                text-align: left; }
+                as1000-mfd-element #Mainframe #Electricity #CenterDisplay #DirectToWindow #DRCTSelectionWindow #ElementListAndSlider #ElementList .Blinking {
+                  height: calc( 3 * 1vh * var(--bodyHeightScale));
+                  width: 100%; }
+              as1000-mfd-element #Mainframe #Electricity #CenterDisplay #DirectToWindow #DRCTSelectionWindow #ElementListAndSlider #Slider {
+                position: absolute;
+                background-color: darkgrey;
+                right: 1%;
+                top: 5%;
+                height: 90%;
+                width: 4px; }
+                as1000-mfd-element #Mainframe #Electricity #CenterDisplay #DirectToWindow #DRCTSelectionWindow #ElementListAndSlider #Slider[state=Active] {
+                  visibility: inherit; }
+                as1000-mfd-element #Mainframe #Electricity #CenterDisplay #DirectToWindow #DRCTSelectionWindow #ElementListAndSlider #Slider[state=Inactive] {
+                  visibility: hidden; }
+                as1000-mfd-element #Mainframe #Electricity #CenterDisplay #DirectToWindow #DRCTSelectionWindow #ElementListAndSlider #Slider #SliderCursor {
+                  position: absolute;
+                  background-color: white;
+                  width: 100%; }
+        as1000-mfd-element #Mainframe #Electricity #CenterDisplay #WaypointsWindows {
+          position: absolute;
+          right: 0%;
+          height: 100%;
+          width: 35%;
+          background-color: #1a1d21;
+          font-size: calc( 2 * 1vh * var(--bodyHeightScale)); }
+          as1000-mfd-element #Mainframe #Electricity #CenterDisplay #WaypointsWindows .Blinking[state=Blink], as1000-mfd-element #Mainframe #Electricity #CenterDisplay #WaypointsWindows .Blinking[state=Selected] {
+            background-color: #36c8d2;
+            color: #1a1d21; }
+          as1000-mfd-element #Mainframe #Electricity #CenterDisplay #WaypointsWindows .top {
+            background-color: #1a1d21;
+            color: white;
+            width: 100%; }
+          as1000-mfd-element #Mainframe #Electricity #CenterDisplay #WaypointsWindows .bottom {
+            text-align: left; }
+          as1000-mfd-element #Mainframe #Electricity #CenterDisplay #WaypointsWindows #mainInfos {
+            background-color: black;
+            color: #36c8d2;
+            position: absolute;
+            width: 90%;
+            top: 5%;
+            left: 5%;
+            height: 22%; }
+            as1000-mfd-element #Mainframe #Electricity #CenterDisplay #WaypointsWindows #mainInfos .top {
+              height: 15%; }
+            as1000-mfd-element #Mainframe #Electricity #CenterDisplay #WaypointsWindows #mainInfos .bottom {
+              position: relative; }
+              as1000-mfd-element #Mainframe #Electricity #CenterDisplay #WaypointsWindows #mainInfos .bottom #WPTSymbol {
+                position: absolute;
+                top: 4%;
+                right: 4%;
+                width: 15%; }
+          as1000-mfd-element #Mainframe #Electricity #CenterDisplay #WaypointsWindows #map {
+            background-color: black;
+            color: #36c8d2;
+            position: absolute;
+            width: 90%;
+            top: 28%;
+            left: 5%;
+            height: 50%; }
+            as1000-mfd-element #Mainframe #Electricity #CenterDisplay #WaypointsWindows #map #MapTitle {
+              position: absolute;
+              color: white;
+              background-color: #1a1d21;
+              top: -1%;
+              height: 3vh;
+              left: 10%;
+              padding-left: 1vw;
+              padding-right: 1vw; }
+          as1000-mfd-element #Mainframe #Electricity #CenterDisplay #WaypointsWindows #location {
+            background-color: black;
+            color: #36c8d2;
+            position: absolute;
+            width: 90%;
+            top: 79%;
+            left: 5%;
+            height: 15%;
+            color: white; }
+            as1000-mfd-element #Mainframe #Electricity #CenterDisplay #WaypointsWindows #location #WPTBearing, as1000-mfd-element #Mainframe #Electricity #CenterDisplay #WaypointsWindows #location #WPTDistance {
+              color: #36c8d2; }
+            as1000-mfd-element #Mainframe #Electricity #CenterDisplay #WaypointsWindows #location .top {
+              height: 20%; }
+            as1000-mfd-element #Mainframe #Electricity #CenterDisplay #WaypointsWindows #location .bottom {
+              display: flex; }
+              as1000-mfd-element #Mainframe #Electricity #CenterDisplay #WaypointsWindows #location .bottom #left {
+                width: 60%; }
+              as1000-mfd-element #Mainframe #Electricity #CenterDisplay #WaypointsWindows #location .bottom #right {
+                width: 49%;
+                color: #36c8d2; }
+          as1000-mfd-element #Mainframe #Electricity #CenterDisplay #WaypointsWindows #BotText {
+            position: absolute;
+            width: 100%;
+            text-align: center;
+            bottom: 2vh; }
+        as1000-mfd-element #Mainframe #Electricity #CenterDisplay #DuplicateWaypointWindow {
+          position: absolute;
+          right: 0%;
+          height: 100%;
+          width: 35%;
+          background-color: #1a1d21;
+          font-size: 2.5vh; }
+          as1000-mfd-element #Mainframe #Electricity #CenterDisplay #DuplicateWaypointWindow .Blinking[state=Blink], as1000-mfd-element #Mainframe #Electricity #CenterDisplay #DuplicateWaypointWindow .Blinking[state=Selected] {
+            background-color: #36c8d2;
+            color: #1a1d21; }
+          as1000-mfd-element #Mainframe #Electricity #CenterDisplay #DuplicateWaypointWindow .SubPart {
+            margin-top: 1vh;
+            width: 90%;
+            margin-left: 5%;
+            background-color: black;
+            position: relative; }
+            as1000-mfd-element #Mainframe #Electricity #CenterDisplay #DuplicateWaypointWindow .SubPart .Title {
+              height: 3vh;
+              width: 100%;
+              color: white;
+              font-size: 2vh;
+              background-color: #1a1d21; }
+            as1000-mfd-element #Mainframe #Electricity #CenterDisplay #DuplicateWaypointWindow .SubPart .Content {
+              position: relative;
+              width: 100%;
+              padding: 0.5vh;
+              overflow: hidden;
+              color: #36c8d2;
+              height: 100%; }
+          as1000-mfd-element #Mainframe #Electricity #CenterDisplay #DuplicateWaypointWindow .Waypoint {
+            height: 8%; }
+            as1000-mfd-element #Mainframe #Electricity #CenterDisplay #DuplicateWaypointWindow .Waypoint .ident {
+              position: absolute;
+              left: 0.5vh; }
+          as1000-mfd-element #Mainframe #Electricity #CenterDisplay #DuplicateWaypointWindow .Duplicates {
+            height: 30%; }
+            as1000-mfd-element #Mainframe #Electricity #CenterDisplay #DuplicateWaypointWindow .Duplicates .Content .Line {
+              height: 4.5vh; }
+              as1000-mfd-element #Mainframe #Electricity #CenterDisplay #DuplicateWaypointWindow .Duplicates .Content .Line div {
+                width: 30%;
+                display: inline-block;
+                text-align: left; }
+              as1000-mfd-element #Mainframe #Electricity #CenterDisplay #DuplicateWaypointWindow .Duplicates .Content .Line img {
+                height: 4vh;
+                margin-right: 10%; }
+              as1000-mfd-element #Mainframe #Electricity #CenterDisplay #DuplicateWaypointWindow .Duplicates .Content .Line[state="Selected"] {
+                background-color: #36c8d2;
+                color: #1a1d21; }
+            as1000-mfd-element #Mainframe #Electricity #CenterDisplay #DuplicateWaypointWindow .Duplicates .Content .Slider {
+              position: absolute;
+              background-color: #1a1d21;
+              right: 1%;
+              top: 5%;
+              height: 80%;
+              width: 4px; }
+              as1000-mfd-element #Mainframe #Electricity #CenterDisplay #DuplicateWaypointWindow .Duplicates .Content .Slider[state=Active] {
+                visibility: inherit; }
+              as1000-mfd-element #Mainframe #Electricity #CenterDisplay #DuplicateWaypointWindow .Duplicates .Content .Slider[state=Inactive] {
+                visibility: hidden; }
+              as1000-mfd-element #Mainframe #Electricity #CenterDisplay #DuplicateWaypointWindow .Duplicates .Content .Slider .SliderCursor {
+                position: absolute;
+                background-color: white;
+                width: 100%; }
+          as1000-mfd-element #Mainframe #Electricity #CenterDisplay #DuplicateWaypointWindow .Informations {
+            height: 30%; }
+            as1000-mfd-element #Mainframe #Electricity #CenterDisplay #DuplicateWaypointWindow .Informations .Name {
+              position: absolute;
+              left: 0.5vh;
+              top: 0.5vh;
+              white-space: pre-line; }
+            as1000-mfd-element #Mainframe #Electricity #CenterDisplay #DuplicateWaypointWindow .Informations .Latitude {
+              position: absolute;
+              left: 0.5vh;
+              bottom: 7vh; }
+            as1000-mfd-element #Mainframe #Electricity #CenterDisplay #DuplicateWaypointWindow .Informations .Longitude {
+              position: absolute;
+              left: 0.5vh;
+              bottom: 4vh; }
+            as1000-mfd-element #Mainframe #Electricity #CenterDisplay #DuplicateWaypointWindow .Informations .Bearing {
+              position: absolute;
+              right: 0.5vh;
+              bottom: 7vh; }
+            as1000-mfd-element #Mainframe #Electricity #CenterDisplay #DuplicateWaypointWindow .Informations .Distance {
+              position: absolute;
+              right: 0.5vh;
+              bottom: 4vh; }
+        as1000-mfd-element #Mainframe #Electricity #CenterDisplay #ProceduresWindow {
+          position: absolute;
+          right: 0%;
+          height: 100%;
+          width: 35%;
+          background-color: #1a1d21;
+          font-size: 2.5vh; }
+          as1000-mfd-element #Mainframe #Electricity #CenterDisplay #ProceduresWindow .Blinking[state=Blink], as1000-mfd-element #Mainframe #Electricity #CenterDisplay #ProceduresWindow .Blinking[state=Selected] {
+            background-color: #36c8d2;
+            color: #1a1d21; }
+          as1000-mfd-element #Mainframe #Electricity #CenterDisplay #ProceduresWindow .Blinking[state=Greyed] {
+            color: dimgray; }
+          as1000-mfd-element #Mainframe #Electricity #CenterDisplay #ProceduresWindow .SubPart {
+            margin-top: 1vh;
+            width: 90%;
+            margin-left: 5%;
+            background-color: black;
+            position: relative;
+            text-align: left; }
+            as1000-mfd-element #Mainframe #Electricity #CenterDisplay #ProceduresWindow .SubPart .Title {
+              height: 3vh;
+              width: 100%;
+              color: white;
+              font-size: 2vh;
+              background-color: #1a1d21; }
+            as1000-mfd-element #Mainframe #Electricity #CenterDisplay #ProceduresWindow .SubPart .Content {
+              position: relative;
+              width: 100%;
+              padding: 0.5vh;
+              overflow: hidden;
+              color: #36c8d2;
+              height: 100%; }
+              as1000-mfd-element #Mainframe #Electricity #CenterDisplay #ProceduresWindow .SubPart .Content .title {
+                color: white; }
+        as1000-mfd-element #Mainframe #Electricity #CenterDisplay #ApproachSelection {
+          position: absolute;
+          right: 0%;
+          height: 100%;
+          width: 35%;
+          background-color: #1a1d21;
+          font-size: 2.5vh; }
+          as1000-mfd-element #Mainframe #Electricity #CenterDisplay #ApproachSelection .Blinking[state=Blink], as1000-mfd-element #Mainframe #Electricity #CenterDisplay #ApproachSelection .Blinking[state=Selected] {
+            background-color: #36c8d2;
+            color: #1a1d21; }
+          as1000-mfd-element #Mainframe #Electricity #CenterDisplay #ApproachSelection .Blinking[state=Greyed] {
+            color: dimgray; }
+          as1000-mfd-element #Mainframe #Electricity #CenterDisplay #ApproachSelection .SubPart {
+            margin-top: 1vh;
+            width: 90%;
+            margin-left: 5%;
+            background-color: black;
+            position: relative;
+            text-align: left; }
+            as1000-mfd-element #Mainframe #Electricity #CenterDisplay #ApproachSelection .SubPart .Title {
+              height: 3vh;
+              width: 100%;
+              color: white;
+              font-size: 2vh;
+              background-color: #1a1d21; }
+            as1000-mfd-element #Mainframe #Electricity #CenterDisplay #ApproachSelection .SubPart .Content {
+              position: relative;
+              width: 100%;
+              padding: 0.5vh;
+              overflow: hidden;
+              color: #36c8d2;
+              height: 100%; }
+              as1000-mfd-element #Mainframe #Electricity #CenterDisplay #ApproachSelection .SubPart .Content .title {
+                color: white; }
+              as1000-mfd-element #Mainframe #Electricity #CenterDisplay #ApproachSelection .SubPart .Content > div {
+                height: 4vh;
+                line-height: 4vh; }
+          as1000-mfd-element #Mainframe #Electricity #CenterDisplay #ApproachSelection .Airport .Content {
+            height: 12vh; }
+          as1000-mfd-element #Mainframe #Electricity #CenterDisplay #ApproachSelection .Airport .airportTop {
+            position: relative;
+            top: -1vh;
+            height: 4vh; }
+            as1000-mfd-element #Mainframe #Electricity #CenterDisplay #ApproachSelection .Airport .airportTop > div {
+              display: inline-block;
+              width: 40%; }
+            as1000-mfd-element #Mainframe #Electricity #CenterDisplay #ApproachSelection .Airport .airportTop img {
+              width: 4vh;
+              position: relative;
+              top: 1vh; }
+          as1000-mfd-element #Mainframe #Electricity #CenterDisplay #ApproachSelection .Airport #Approach_AirportName {
+            height: 4vh;
+            overflow: hidden; }
+          as1000-mfd-element #Mainframe #Electricity #CenterDisplay #ApproachSelection .Channel {
+            white-space: nowrap; }
+            as1000-mfd-element #Mainframe #Electricity #CenterDisplay #ApproachSelection .Channel .Content {
+              height: 4vh; }
+            as1000-mfd-element #Mainframe #Electricity #CenterDisplay #ApproachSelection .Channel .Content > div {
+              display: inline-block;
+              width: 25%; }
+            as1000-mfd-element #Mainframe #Electricity #CenterDisplay #ApproachSelection .Channel .white {
+              color: white; }
+            as1000-mfd-element #Mainframe #Electricity #CenterDisplay #ApproachSelection .Channel .short {
+              width: 15% !important; }
+          as1000-mfd-element #Mainframe #Electricity #CenterDisplay #ApproachSelection .Approach .Content {
+            height: 4vh; }
+          as1000-mfd-element #Mainframe #Electricity #CenterDisplay #ApproachSelection .Transition .Content {
+            height: 4vh; }
+          as1000-mfd-element #Mainframe #Electricity #CenterDisplay #ApproachSelection .Minimums {
+            position: relative; }
+            as1000-mfd-element #Mainframe #Electricity #CenterDisplay #ApproachSelection .Minimums .Content {
+              height: 4vh; }
+            as1000-mfd-element #Mainframe #Electricity #CenterDisplay #ApproachSelection .Minimums #Approach_MinimumsValue {
+              position: absolute;
+              right: 5%;
+              top: 0%; }
+          as1000-mfd-element #Mainframe #Electricity #CenterDisplay #ApproachSelection .PrimaryFrequency {
+            position: relative; }
+            as1000-mfd-element #Mainframe #Electricity #CenterDisplay #ApproachSelection .PrimaryFrequency .Content {
+              height: 4vh; }
+            as1000-mfd-element #Mainframe #Electricity #CenterDisplay #ApproachSelection .PrimaryFrequency #Approach_FrequencyValue {
+              position: absolute;
+              right: 5%;
+              top: 0%; }
+          as1000-mfd-element #Mainframe #Electricity #CenterDisplay #ApproachSelection .Sequence .Content {
+            height: 16vh; }
+          as1000-mfd-element #Mainframe #Electricity #CenterDisplay #ApproachSelection .Sequence .SizeSetter td:nth-child(1) {
+            width: 10vh; }
+          as1000-mfd-element #Mainframe #Electricity #CenterDisplay #ApproachSelection .Sequence .SizeSetter td:nth-child(2) {
+            width: 4vh; }
+          as1000-mfd-element #Mainframe #Electricity #CenterDisplay #ApproachSelection .Sequence .SizeSetter td:nth-child(3) {
+            width: 4vh; }
+          as1000-mfd-element #Mainframe #Electricity #CenterDisplay #ApproachSelection .Sequence .SizeSetter td:nth-child(4) {
+            width: 8vh; }
+          as1000-mfd-element #Mainframe #Electricity #CenterDisplay #ApproachSelection .Sequence .SizeSetter td:nth-child(5) {
+            width: 8vh; }
+          as1000-mfd-element #Mainframe #Electricity #CenterDisplay #ApproachSelection .Sequence tr[state=Blink] .Blinking, as1000-mfd-element #Mainframe #Electricity #CenterDisplay #ApproachSelection .Sequence tr[state=Selected] .Blinking {
+            background-color: #36c8d2;
+            color: #1a1d21; }
+          as1000-mfd-element #Mainframe #Electricity #CenterDisplay #ApproachSelection #Approach_LoadButton, as1000-mfd-element #Mainframe #Electricity #CenterDisplay #ApproachSelection #Approach_ActivateButton {
+            color: #36c8d2; }
+          as1000-mfd-element #Mainframe #Electricity #CenterDisplay #ApproachSelection .SubMenu {
+            position: absolute;
+            background-color: #1a1d21;
+            border: 0.5vh outset black;
+            color: #36c8d2;
+            text-align: left;
+            padding-left: 2vh;
+            min-width: 25vh; }
+            as1000-mfd-element #Mainframe #Electricity #CenterDisplay #ApproachSelection .SubMenu[state="Inactive"] {
+              display: none; }
+            as1000-mfd-element #Mainframe #Electricity #CenterDisplay #ApproachSelection .SubMenu > div[state=Inactive] {
+              display: none; }
+          as1000-mfd-element #Mainframe #Electricity #CenterDisplay #ApproachSelection #Approach_ApproachList {
+            top: 30vh;
+            left: 5vh; }
+          as1000-mfd-element #Mainframe #Electricity #CenterDisplay #ApproachSelection #Approach_TransitionList {
+            top: 35vh;
+            left: 5vh; }
+        as1000-mfd-element #Mainframe #Electricity #CenterDisplay #ArrivalSelection {
+          position: absolute;
+          right: 0%;
+          height: 100%;
+          width: 35%;
+          background-color: #1a1d21;
+          font-size: 2.5vh; }
+          as1000-mfd-element #Mainframe #Electricity #CenterDisplay #ArrivalSelection .Blinking[state=Blink], as1000-mfd-element #Mainframe #Electricity #CenterDisplay #ArrivalSelection .Blinking[state=Selected] {
+            background-color: #36c8d2;
+            color: #1a1d21; }
+          as1000-mfd-element #Mainframe #Electricity #CenterDisplay #ArrivalSelection .Blinking[state=Greyed] {
+            color: dimgray; }
+          as1000-mfd-element #Mainframe #Electricity #CenterDisplay #ArrivalSelection .SubPart {
+            margin-top: 1vh;
+            width: 90%;
+            margin-left: 5%;
+            background-color: black;
+            position: relative;
+            text-align: left; }
+            as1000-mfd-element #Mainframe #Electricity #CenterDisplay #ArrivalSelection .SubPart .Title {
+              height: 3vh;
+              width: 100%;
+              color: white;
+              font-size: 2vh;
+              background-color: #1a1d21; }
+            as1000-mfd-element #Mainframe #Electricity #CenterDisplay #ArrivalSelection .SubPart .Content {
+              position: relative;
+              width: 100%;
+              padding: 0.5vh;
+              overflow: hidden;
+              color: #36c8d2;
+              height: 100%; }
+              as1000-mfd-element #Mainframe #Electricity #CenterDisplay #ArrivalSelection .SubPart .Content .title {
+                color: white; }
+              as1000-mfd-element #Mainframe #Electricity #CenterDisplay #ArrivalSelection .SubPart .Content > div {
+                height: 4vh;
+                line-height: 4vh; }
+          as1000-mfd-element #Mainframe #Electricity #CenterDisplay #ArrivalSelection .Airport .Content {
+            height: 12vh; }
+          as1000-mfd-element #Mainframe #Electricity #CenterDisplay #ArrivalSelection .Airport .airportTop {
+            position: relative;
+            top: -1vh;
+            height: 4vh; }
+            as1000-mfd-element #Mainframe #Electricity #CenterDisplay #ArrivalSelection .Airport .airportTop > div {
+              display: inline-block;
+              width: 40%; }
+            as1000-mfd-element #Mainframe #Electricity #CenterDisplay #ArrivalSelection .Airport .airportTop img {
+              width: 4vh;
+              position: relative;
+              top: 1vh; }
+          as1000-mfd-element #Mainframe #Electricity #CenterDisplay #ArrivalSelection .Airport #Arrival_AirportName {
+            height: 4vh;
+            overflow: hidden; }
+          as1000-mfd-element #Mainframe #Electricity #CenterDisplay #ArrivalSelection .Arrival .Content {
+            height: 4vh; }
+          as1000-mfd-element #Mainframe #Electricity #CenterDisplay #ArrivalSelection .Transition .Content {
+            height: 4vh; }
+          as1000-mfd-element #Mainframe #Electricity #CenterDisplay #ArrivalSelection .Runway .Content {
+            height: 4vh; }
+          as1000-mfd-element #Mainframe #Electricity #CenterDisplay #ArrivalSelection .Sequence .Content {
+            height: 24vh; }
+          as1000-mfd-element #Mainframe #Electricity #CenterDisplay #ArrivalSelection .Sequence .SizeSetter td:nth-child(1) {
+            width: 18vh; }
+          as1000-mfd-element #Mainframe #Electricity #CenterDisplay #ArrivalSelection .Sequence .SizeSetter td:nth-child(2) {
+            width: 8vh; }
+          as1000-mfd-element #Mainframe #Electricity #CenterDisplay #ArrivalSelection .Sequence .SizeSetter td:nth-child(3) {
+            width: 8vh; }
+          as1000-mfd-element #Mainframe #Electricity #CenterDisplay #ArrivalSelection .Sequence tr[state=Blink] .Blinking, as1000-mfd-element #Mainframe #Electricity #CenterDisplay #ArrivalSelection .Sequence tr[state=Selected] .Blinking {
+            background-color: #36c8d2;
+            color: #1a1d21; }
+          as1000-mfd-element #Mainframe #Electricity #CenterDisplay #ArrivalSelection #Arrival_LoadButton {
+            color: #36c8d2; }
+            as1000-mfd-element #Mainframe #Electricity #CenterDisplay #ArrivalSelection #Arrival_LoadButton[state=Blink], as1000-mfd-element #Mainframe #Electricity #CenterDisplay #ArrivalSelection #Arrival_LoadButton[state=Selected] {
+              color: #1a1d21; }
+          as1000-mfd-element #Mainframe #Electricity #CenterDisplay #ArrivalSelection .SubMenu {
+            position: absolute;
+            background-color: #1a1d21;
+            border: 0.5vh outset black;
+            color: #36c8d2;
+            text-align: left;
+            padding-left: 2vh;
+            min-width: 25vh; }
+            as1000-mfd-element #Mainframe #Electricity #CenterDisplay #ArrivalSelection .SubMenu[state="Inactive"] {
+              display: none; }
+            as1000-mfd-element #Mainframe #Electricity #CenterDisplay #ArrivalSelection .SubMenu > div[state=Inactive] {
+              display: none; }
+          as1000-mfd-element #Mainframe #Electricity #CenterDisplay #ArrivalSelection #Arrival_ArrivalList {
+            top: 21vh;
+            left: 5vh; }
+            as1000-mfd-element #Mainframe #Electricity #CenterDisplay #ArrivalSelection #Arrival_ArrivalList .Slider {
+              background-color: #424242; }
+          as1000-mfd-element #Mainframe #Electricity #CenterDisplay #ArrivalSelection #Arrival_TransitionList {
+            top: 26vh;
+            left: 5vh; }
+          as1000-mfd-element #Mainframe #Electricity #CenterDisplay #ArrivalSelection #Arrival_RunwayList {
+            top: 31vh;
+            left: 5vh; }
+        as1000-mfd-element #Mainframe #Electricity #CenterDisplay #DepartureSelection {
+          position: absolute;
+          right: 0%;
+          height: 100%;
+          width: 35%;
+          background-color: #1a1d21;
+          font-size: 2.5vh; }
+          as1000-mfd-element #Mainframe #Electricity #CenterDisplay #DepartureSelection .Blinking[state=Blink], as1000-mfd-element #Mainframe #Electricity #CenterDisplay #DepartureSelection .Blinking[state=Selected] {
+            background-color: #36c8d2;
+            color: #1a1d21; }
+          as1000-mfd-element #Mainframe #Electricity #CenterDisplay #DepartureSelection .Blinking[state=Greyed] {
+            color: dimgray; }
+          as1000-mfd-element #Mainframe #Electricity #CenterDisplay #DepartureSelection .SubPart {
+            margin-top: 1vh;
+            width: 90%;
+            margin-left: 5%;
+            background-color: black;
+            position: relative;
+            text-align: left; }
+            as1000-mfd-element #Mainframe #Electricity #CenterDisplay #DepartureSelection .SubPart .Title {
+              height: 3vh;
+              width: 100%;
+              color: white;
+              font-size: 2vh;
+              background-color: #1a1d21; }
+            as1000-mfd-element #Mainframe #Electricity #CenterDisplay #DepartureSelection .SubPart .Content {
+              position: relative;
+              width: 100%;
+              padding: 0.5vh;
+              overflow: hidden;
+              color: #36c8d2;
+              height: 100%; }
+              as1000-mfd-element #Mainframe #Electricity #CenterDisplay #DepartureSelection .SubPart .Content .title {
+                color: white; }
+              as1000-mfd-element #Mainframe #Electricity #CenterDisplay #DepartureSelection .SubPart .Content > div {
+                height: 4vh;
+                line-height: 4vh; }
+          as1000-mfd-element #Mainframe #Electricity #CenterDisplay #DepartureSelection .Airport .Content {
+            height: 12vh; }
+          as1000-mfd-element #Mainframe #Electricity #CenterDisplay #DepartureSelection .Airport .airportTop {
+            position: relative;
+            top: -1vh;
+            height: 4vh; }
+            as1000-mfd-element #Mainframe #Electricity #CenterDisplay #DepartureSelection .Airport .airportTop > div {
+              display: inline-block;
+              width: 40%; }
+            as1000-mfd-element #Mainframe #Electricity #CenterDisplay #DepartureSelection .Airport .airportTop img {
+              width: 4vh;
+              position: relative;
+              top: 1vh; }
+          as1000-mfd-element #Mainframe #Electricity #CenterDisplay #DepartureSelection .Airport #Departure_AirportName {
+            height: 4vh;
+            overflow: hidden; }
+          as1000-mfd-element #Mainframe #Electricity #CenterDisplay #DepartureSelection .Departure .Content {
+            height: 4vh; }
+          as1000-mfd-element #Mainframe #Electricity #CenterDisplay #DepartureSelection .Transition .Content {
+            height: 4vh; }
+          as1000-mfd-element #Mainframe #Electricity #CenterDisplay #DepartureSelection .Runway .Content {
+            height: 4vh; }
+          as1000-mfd-element #Mainframe #Electricity #CenterDisplay #DepartureSelection .Sequence .Content {
+            height: 24vh; }
+          as1000-mfd-element #Mainframe #Electricity #CenterDisplay #DepartureSelection .Sequence .SizeSetter td:nth-child(1) {
+            width: 18vh; }
+          as1000-mfd-element #Mainframe #Electricity #CenterDisplay #DepartureSelection .Sequence .SizeSetter td:nth-child(2) {
+            width: 8vh; }
+          as1000-mfd-element #Mainframe #Electricity #CenterDisplay #DepartureSelection .Sequence .SizeSetter td:nth-child(3) {
+            width: 8vh; }
+          as1000-mfd-element #Mainframe #Electricity #CenterDisplay #DepartureSelection .Sequence tr[state=Blink] .Blinking, as1000-mfd-element #Mainframe #Electricity #CenterDisplay #DepartureSelection .Sequence tr[state=Selected] .Blinking {
+            background-color: #36c8d2;
+            color: #1a1d21; }
+          as1000-mfd-element #Mainframe #Electricity #CenterDisplay #DepartureSelection #Departure_LoadButton {
+            color: #36c8d2; }
+            as1000-mfd-element #Mainframe #Electricity #CenterDisplay #DepartureSelection #Departure_LoadButton[state=Blink], as1000-mfd-element #Mainframe #Electricity #CenterDisplay #DepartureSelection #Departure_LoadButton[state=Selected] {
+              color: #1a1d21; }
+          as1000-mfd-element #Mainframe #Electricity #CenterDisplay #DepartureSelection .SubMenu {
+            position: absolute;
+            background-color: #1a1d21;
+            border: 0.5vh outset black;
+            color: #36c8d2;
+            text-align: left;
+            padding-left: 2vh;
+            min-width: 25vh; }
+            as1000-mfd-element #Mainframe #Electricity #CenterDisplay #DepartureSelection .SubMenu[state="Inactive"] {
+              display: none; }
+            as1000-mfd-element #Mainframe #Electricity #CenterDisplay #DepartureSelection .SubMenu > div[state=Inactive] {
+              display: none; }
+          as1000-mfd-element #Mainframe #Electricity #CenterDisplay #DepartureSelection #Departure_DepartureList {
+            top: 21vh;
+            left: 5vh; }
+            as1000-mfd-element #Mainframe #Electricity #CenterDisplay #DepartureSelection #Departure_DepartureList .Slider {
+              background-color: #424242; }
+          as1000-mfd-element #Mainframe #Electricity #CenterDisplay #DepartureSelection #Departure_TransitionList {
+            top: 26vh;
+            left: 5vh; }
+          as1000-mfd-element #Mainframe #Electricity #CenterDisplay #DepartureSelection #Departure_RunwayList {
+            top: 31vh;
+            left: 5vh; }
+      as1000-mfd-element #Mainframe #Electricity #ContextualMenu {
+        transform: rotateX(0);
+        position: absolute;
+        background-color: #1a1d21;
+        right: 0%;
+        top: 7.5%;
+        width: 35%;
+        border: 0.5vh outset black;
+        font-size: calc( 2.7 * 1vh * var(--bodyHeightScale)); }
+        as1000-mfd-element #Mainframe #Electricity #ContextualMenu[state=Inactive] {
+          visibility: hidden; }
+        as1000-mfd-element #Mainframe #Electricity #ContextualMenu #ContextualMenuContent {
+          width: 100%;
+          height: 100%; }
+          as1000-mfd-element #Mainframe #Electricity #ContextualMenu #ContextualMenuContent #ContextualMenuTitle {
+            color: white;
+            text-align: center;
+            margin: calc( 1 * 1vh * var(--bodyHeightScale)); }
+          as1000-mfd-element #Mainframe #Electricity #ContextualMenu #ContextualMenuContent #ContextualMenuMainArea {
+            background-color: black;
+            width: 90%;
+            margin-left: 5.5%; }
+            as1000-mfd-element #Mainframe #Electricity #ContextualMenu #ContextualMenuContent #ContextualMenuMainArea #subTitle {
+              color: white;
+              background-color: #1a1d21;
+              font-size: calc( 2.3 * 1vh * var(--bodyHeightScale));
+              padding-left: 3vw; }
+            as1000-mfd-element #Mainframe #Electricity #ContextualMenu #ContextualMenuContent #ContextualMenuMainArea #ContextualMenuElements {
+              color: #36c8d2;
+              width: 100%; }
+              as1000-mfd-element #Mainframe #Electricity #ContextualMenu #ContextualMenuContent #ContextualMenuMainArea #ContextualMenuElements .ContextualMenuElement[state=Inactive] {
+                color: dimgray; }
+
+@keyframes BlinkMenu {
+  0%, 45% {
+    background-color: #36c8d2;
+    color: black; }
+  55%, 100% {
+    background-color: black;
+    color: #36c8d2; } }
+              as1000-mfd-element #Mainframe #Electricity #ContextualMenu #ContextualMenuContent #ContextualMenuMainArea #ContextualMenuElements .ContextualMenuElement[state=Selected] {
+                animation: BlinkMenu 1s infinite; }
+        as1000-mfd-element #Mainframe #Electricity #ContextualMenu #SubText {
+          width: 90%;
+          margin-left: 5.5%;
+          margin-top: 2%;
+          margin-bottom: 2%;
+          text-align: center; }
+  as1000-mfd-element #map {
+    position: absolute;
+    left: 0;
+    top: -11.5%;
+    width: 100%; }
+  as1000-mfd-element .Slider {
+    position: absolute;
+    background-color: #1a1d21;
+    right: 1%;
+    top: 5%;
+    height: 80%;
+    width: 1vh; }
+    as1000-mfd-element .Slider[state=Active] {
+      visibility: inherit; }
+    as1000-mfd-element .Slider[state=Inactive] {
+      visibility: hidden; }
+    as1000-mfd-element .Slider .SliderCursor {
+      position: absolute;
+      background-color: white;
+      width: 100%; }
+

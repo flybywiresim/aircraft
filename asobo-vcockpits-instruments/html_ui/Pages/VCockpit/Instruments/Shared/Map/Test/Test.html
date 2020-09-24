@@ -1,0 +1,59 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Test</title>
+    <script src="../../../../../../JS/common.js"></script>
+    <script src="../../../../../../JS/SortedList.js"></script>
+    <script src="../../NavSystems/Shared/LogicElements/Runway.js"></script>
+    <script src="../SvgMap.js"></script>
+    <script src="../Canvas/CanvasUtils.js"></script>
+    <script src="./MapTest.js"></script>
+
+    <script type="text/html" id="MapTest">
+    </script>
+        
+    <script>
+        window.onload = () => {
+            let canvas = document.getElementById("canvas");
+            canvas.width = 800;
+            canvas.height = 800;
+            let image = new Image();
+            image.src = "image.png";
+            image.onload = () => {
+                canvas.getContext("2d").drawImage(image, 0, 0);
+                CanvasUtils.BlurCanvas(canvas, 2);
+                CanvasUtils.BlurCanvas(canvas, 2);
+                CanvasUtils.BlurCanvas(canvas, 2);
+                CanvasUtils.BlurCanvas(canvas, 2);
+                CanvasUtils.BlurCanvas(canvas, 2);
+                CanvasUtils.BlurCanvas(canvas, 2);
+                CanvasUtils.AlphaThresholdCanvas(canvas, 127);
+            }
+        }
+    </script>
+    <style>
+        #frame {
+            width: 600px;
+            height: 400px;
+        }
+
+        #MapSVG {
+            background: black;
+        }
+
+        #roads {
+            filter: blur(5px);
+        }
+    </style>
+</head>
+<body>
+    <map-test>
+        <canvas id="canvas"></canvas>
+        <div id="frame">
+            <svg id="pouet-pouet">
+            </svg>
+        </div>
+    </map-test>
+</body>
+</html>

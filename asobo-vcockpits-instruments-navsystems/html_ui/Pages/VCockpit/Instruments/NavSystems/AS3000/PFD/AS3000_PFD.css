@@ -1,0 +1,845 @@
+﻿:root {
+  --bodyHeightScale: 1; }
+
+@keyframes TemporaryShow {
+  0%, 100% {
+    visibility: visible; } }
+
+@keyframes TemporaryHide {
+  0%, 100% {
+    visibility: hidden; } }
+
+#highlight {
+  position: absolute;
+  height: 100%;
+  width: 100%;
+  z-index: 10; }
+
+#Electricity {
+  width: 100%;
+  height: 100%; }
+  #Electricity[state=off] {
+    display: none; }
+
+@font-face {
+  font-family: "Roboto";
+  src: url("/Fonts/RobotoMono-Medium.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal; }
+
+@font-face {
+  font-family: "Roboto-Light";
+  src: url("/Fonts/RobotoMono-Light.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal; }
+
+@font-face {
+  font-family: "Roboto-Bold";
+  src: url("/Fonts/RobotoMono-Bold.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal; }
+
+#Mainframe {
+  --refWidth: 1024;
+  --refHeight: 768; }
+
+as3000-pfd-element {
+  width: 100%;
+  height: 100%;
+  background-color: black;
+  font-family: Roboto-Bold;
+  position: relative;
+  overflow: hidden;
+  z-index: -10; }
+  as3000-pfd-element #Console {
+    position: absolute;
+    visibility: hidden;
+    width: 100%;
+    height: 100%;
+    background-color: black;
+    color: white;
+    font-size: 4vh;
+    z-index: 1000; }
+  as3000-pfd-element #Splash {
+    position: absolute;
+    visibility: hidden;
+    width: 100%;
+    height: 100%;
+    background-color: black;
+    z-index: 1000; }
+  as3000-pfd-element #Electricity {
+    width: 100%;
+    height: 100%; }
+    as3000-pfd-element #Electricity[state=off] {
+      display: none; }
+    as3000-pfd-element #Electricity[state=init] {
+      /*
+            // Animation sequence which look alike the real instrument. Removing this for now
+            #VSpeed,
+            #Compass,
+            #Airspeed,
+            #Altimeter,
+            #SoftKeys,
+            #AutopilotInfos,
+            #ComInfos,
+            #BottomBar,
+            #WindData {
+                animation: TemporaryHide 6s 1;
+            }
+
+            #XPDRTimeBox,
+            #AoA,
+            #LeftGroup {
+                animation: TemporaryHide 6.3s 1;
+            }
+
+            #HorizonContainer {
+                animation: TemporaryHide 6.5s 1;
+            }
+            */ }
+      as3000-pfd-element #Electricity[state=init] #Console {
+        animation: TemporaryShow 3.5s 1; }
+      as3000-pfd-element #Electricity[state=init] #Splash {
+        animation: TemporaryShow 3.5s 1;
+        animation-delay: 2.5s; }
+      as3000-pfd-element #Electricity[state=init] #NavBox {
+        animation: TemporaryHide 5.5s 1; }
+    as3000-pfd-element #Electricity[displaystyle=NoSoftkeys] #InstrumentsContainer #SoftKeys {
+      display: none; }
+    as3000-pfd-element #Electricity[displaystyle=NoSoftkeys] #InstrumentsContainer #Compass {
+      bottom: 1.85%; }
+    as3000-pfd-element #Electricity[displaystyle=NoSoftkeys] #InstrumentsContainer #BottomBar {
+      bottom: 0%; }
+    as3000-pfd-element #Electricity[displaystyle=NoSoftkeys] #InstrumentsContainer #WindData {
+      top: 64.15%; }
+  as3000-pfd-element .PopupWindow {
+    visibility: hidden; }
+    as3000-pfd-element .PopupWindow[state=Active] {
+      visibility: inherit; }
+  as3000-pfd-element #Mainframe {
+    width: 100%;
+    height: 100%;
+    display: block;
+    position: relative; }
+    as3000-pfd-element #Mainframe #HorizonContainer {
+      transform: rotateX(0);
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      z-index: -6;
+      border: none;
+      overflow: hidden; }
+      as3000-pfd-element #Mainframe #HorizonContainer #Horizon {
+        position: absolute;
+        left: 35%;
+        top: 8.5%;
+        width: 30%;
+        height: 42%;
+        border: none; }
+      as3000-pfd-element #Mainframe #HorizonContainer #SyntheticVision {
+        left: 0%;
+        top: -40.5%;
+        width: 100%;
+        height: 152%;
+        z-index: -3;
+        display: block;
+        /* Map position (left and top) is set in mapConfig.json file (see SvgMapConfig.ts) (makes it editable at runtime) */ }
+        as3000-pfd-element #Mainframe #HorizonContainer #SyntheticVision #MapSVG, as3000-pfd-element #Mainframe #HorizonContainer #SyntheticVision #road-network-canvas, as3000-pfd-element #Mainframe #HorizonContainer #SyntheticVision #MapRange, as3000-pfd-element #Mainframe #HorizonContainer #SyntheticVision #MapOrientation {
+          transform: rotateX(0);
+          display: none; }
+        as3000-pfd-element #Mainframe #HorizonContainer #SyntheticVision bing-map {
+          transform: rotateX(0);
+          position: absolute;
+          left: 0px;
+          top: 0px;
+          width: 100%;
+          height: 100%; }
+    as3000-pfd-element #Mainframe #InstrumentsContainer {
+      transform: rotateX(0);
+      width: 100%;
+      height: 100%;
+      z-index: 0; }
+      as3000-pfd-element #Mainframe #InstrumentsContainer #InnerMap {
+        transform: rotateX(0);
+        position: absolute;
+        left: 1vh;
+        bottom: 18%;
+        width: 26vh;
+        height: 26vh;
+        top: auto;
+        background-color: black;
+        border: 0.4vh solid white;
+        font-size: 2.5vh; }
+        as3000-pfd-element #Mainframe #InstrumentsContainer #InnerMap #MapOrientation {
+          width: 14vh;
+          height: 4vh;
+          text-align: center; }
+        as3000-pfd-element #Mainframe #InstrumentsContainer #InnerMap #MapRange {
+          width: 8vh;
+          height: 4vh; }
+        as3000-pfd-element #Mainframe #InstrumentsContainer #InnerMap #MapCursor {
+          height: 9%; }
+      as3000-pfd-element #Mainframe #InstrumentsContainer #Altimeter {
+        transform: rotateX(0);
+        position: absolute;
+        bottom: 36%;
+        width: 19%;
+        left: 70%; }
+      as3000-pfd-element #Mainframe #InstrumentsContainer #Airspeed {
+        transform: rotateX(0);
+        position: absolute;
+        bottom: 36%;
+        width: 12.5%;
+        right: 70%; }
+      as3000-pfd-element #Mainframe #InstrumentsContainer #Compass {
+        transform: rotateX(0);
+        position: absolute;
+        border: none;
+        left: 32%;
+        right: 32%;
+        bottom: 9%;
+        z-index: 1; }
+      as3000-pfd-element #Mainframe #InstrumentsContainer #WindData {
+        position: absolute;
+        top: 57%;
+        left: 30%;
+        height: 6%;
+        width: 9%; }
+      as3000-pfd-element #Mainframe #InstrumentsContainer #AoA {
+        position: absolute;
+        right: 72.5%;
+        bottom: 19%;
+        width: 10%; }
+      as3000-pfd-element #Mainframe #InstrumentsContainer #Map {
+        transform: rotateX(0);
+        position: absolute;
+        left: 0%;
+        top: 63.5%;
+        width: 23%;
+        height: 29%;
+        z-index: 0;
+        border: 2px solid; }
+      as3000-pfd-element #Mainframe #InstrumentsContainer #MarkerBeacon {
+        position: absolute;
+        bottom: 84%;
+        width: 4vh;
+        height: 4vh;
+        right: 28%;
+        text-align: center;
+        line-height: 4vh;
+        font-size: 3.5vh;
+        color: black;
+        display: none; }
+        as3000-pfd-element #Mainframe #InstrumentsContainer #MarkerBeacon[state=O] {
+          display: block;
+          background-color: #36c8d2; }
+        as3000-pfd-element #Mainframe #InstrumentsContainer #MarkerBeacon[state=M] {
+          display: block;
+          background-color: yellow; }
+        as3000-pfd-element #Mainframe #InstrumentsContainer #MarkerBeacon[state=I] {
+          display: block;
+          background-color: white; }
+      as3000-pfd-element #Mainframe #InstrumentsContainer #Warnings {
+        position: absolute;
+        width: 10%;
+        height: 3.7%;
+        left: 58%;
+        top: 9%;
+        text-align: center;
+        z-index: 100; }
+
+@keyframes RedWarning {
+  0%, 45% {
+    background-color: red;
+    color: white; }
+  55%, 100% {
+    background-color: white;
+    color: red; } }
+
+@keyframes YellowWarning {
+  0%, 45% {
+    background-color: yellow;
+    color: black; }
+  55%, 100% {
+    background-color: black;
+    color: yellow; } }
+
+@keyframes WhiteWarning {
+  0%, 45% {
+    background-color: White;
+    color: black; }
+  55%, 100% {
+    background-color: black;
+    color: white; } }
+        as3000-pfd-element #Mainframe #InstrumentsContainer #Warnings[state=Red] {
+          animation: RedWarning 1s 5;
+          background-color: red;
+          color: white; }
+        as3000-pfd-element #Mainframe #InstrumentsContainer #Warnings[state=Yellow] {
+          animation: YellowWarning 1s 5;
+          background-color: black;
+          color: yellow; }
+        as3000-pfd-element #Mainframe #InstrumentsContainer #Warnings[state=White] {
+          animation: WhiteWarning 1s 5;
+          background-color: white;
+          color: black; }
+        as3000-pfd-element #Mainframe #InstrumentsContainer #Warnings[state=Hidden] {
+          display: none; }
+        as3000-pfd-element #Mainframe #InstrumentsContainer #Warnings #WarningsContent {
+          font-size: 2.5vh; }
+      as3000-pfd-element #Mainframe #InstrumentsContainer #Annunciations {
+        transform: rotateX(0);
+        position: absolute;
+        right: 0%;
+        bottom: 38%;
+        width: 13%;
+        z-index: 0;
+        border: none;
+        background-color: #1a1d21;
+        font-size: calc( 1.8 * 1vh * var(--bodyHeightScale));
+        line-height: calc( 1.5 * 1vh * var(--bodyHeightScale));
+        padding: 0.5%;
+        padding-bottom: 0%;
+        padding-top: 0.8%; }
+        as3000-pfd-element #Mainframe #InstrumentsContainer #Annunciations[state=Hidden] {
+          display: none; }
+        as3000-pfd-element #Mainframe #InstrumentsContainer #Annunciations #newAnnunciations[state=Bordered] {
+          border-bottom: solid 0.3vh white;
+          margin-bottom: calc( 1 * 1vh * var(--bodyHeightScale)); }
+        as3000-pfd-element #Mainframe #InstrumentsContainer #Annunciations .Warning {
+          color: red; }
+        as3000-pfd-element #Mainframe #InstrumentsContainer #Annunciations .Caution {
+          color: yellow; }
+      as3000-pfd-element #Mainframe #InstrumentsContainer #XPDRTimeBox {
+        transform: rotateX(0);
+        position: absolute;
+        background-color: #1a1d21;
+        width: 29.8%;
+        height: 3.5%;
+        padding-left: 1%;
+        right: 0%;
+        bottom: 4%; }
+        as3000-pfd-element #Mainframe #InstrumentsContainer #XPDRTimeBox div {
+          display: inline-block;
+          background-color: #1a1d21;
+          font-size: calc( 2.5 * 1vh * var(--bodyHeightScale));
+          vertical-align: central; }
+        as3000-pfd-element #Mainframe #InstrumentsContainer #XPDRTimeBox .green {
+          color: green; }
+      as3000-pfd-element #Mainframe #InstrumentsContainer #DirectToWindow {
+        position: absolute;
+        right: 0%;
+        height: 30%;
+        bottom: 7%;
+        width: 29.8%;
+        background-color: #1a1d21;
+        font-size: calc( 2.5 * 1vh * var(--bodyHeightScale)); }
+        as3000-pfd-element #Mainframe #InstrumentsContainer #DirectToWindow .unit {
+          font-size: calc( 1.75 * 1vh * var(--bodyHeightScale)); }
+        as3000-pfd-element #Mainframe #InstrumentsContainer #DirectToWindow .Blinking[state=Blink], as3000-pfd-element #Mainframe #InstrumentsContainer #DirectToWindow .Blinking[state=Selected] {
+          background-color: aquamarine;
+          color: black; }
+        as3000-pfd-element #Mainframe #InstrumentsContainer #DirectToWindow #drctTitle {
+          color: aqua;
+          text-align: center;
+          position: absolute;
+          width: 100%;
+          top: 0px;
+          height: 12%; }
+        as3000-pfd-element #Mainframe #InstrumentsContainer #DirectToWindow #mainInfos {
+          background-color: #1a1d21;
+          color: aqua;
+          position: absolute;
+          width: 95%;
+          left: 2.5%;
+          top: 13%;
+          height: 30%;
+          border-top: 0.6vh solid white; }
+        as3000-pfd-element #Mainframe #InstrumentsContainer #DirectToWindow #vnav {
+          background-color: #1a1d21;
+          color: white;
+          position: absolute;
+          width: 95%;
+          left: 2.5%;
+          top: 44%;
+          height: 13%;
+          border-top: 0.6vh solid white; }
+          as3000-pfd-element #Mainframe #InstrumentsContainer #DirectToWindow #vnav span {
+            color: aqua; }
+          as3000-pfd-element #Mainframe #InstrumentsContainer #DirectToWindow #vnav div {
+            display: inline-block;
+            width: 45%; }
+        as3000-pfd-element #Mainframe #InstrumentsContainer #DirectToWindow #location {
+          background-color: #1a1d21;
+          color: white;
+          position: absolute;
+          width: 95%;
+          left: 2.5%;
+          top: 58%;
+          height: 25%;
+          color: white;
+          border-top: 0.6vh solid white; }
+          as3000-pfd-element #Mainframe #InstrumentsContainer #DirectToWindow #location div div {
+            display: inline-block;
+            width: 22%; }
+          as3000-pfd-element #Mainframe #InstrumentsContainer #DirectToWindow #location #Crsline {
+            position: absolute;
+            bottom: 0%;
+            left: 0%; }
+          as3000-pfd-element #Mainframe #InstrumentsContainer #DirectToWindow #location #DRCTBearing, as3000-pfd-element #Mainframe #InstrumentsContainer #DirectToWindow #location #DRCTDistance, as3000-pfd-element #Mainframe #InstrumentsContainer #DirectToWindow #location #DRCTDesiredCourse {
+            color: aqua; }
+        as3000-pfd-element #Mainframe #InstrumentsContainer #DirectToWindow #DRCTActivateButton {
+          position: absolute;
+          text-align: center;
+          width: 40%;
+          bottom: 1%;
+          left: 2.5%;
+          height: 15%;
+          font-size: calc( 3 * 1vh * var(--bodyHeightScale)); }
+        as3000-pfd-element #Mainframe #InstrumentsContainer #DirectToWindow #DRCTHoldButton {
+          position: absolute;
+          text-align: center;
+          bottom: 1%;
+          right: 2.5%;
+          width: 30%;
+          height: 15%;
+          font-size: calc( 3 * 1vh * var(--bodyHeightScale)); }
+        as3000-pfd-element #Mainframe #InstrumentsContainer #DirectToWindow #DRCTSelectionWindow {
+          position: absolute;
+          top: 26%;
+          left: 3%;
+          background-color: grey;
+          width: 13vw;
+          height: calc( 20 * 1vh * var(--bodyHeightScale));
+          border: 1px solid white;
+          padding: 2px;
+          color: aqua; }
+          as3000-pfd-element #Mainframe #InstrumentsContainer #DirectToWindow #DRCTSelectionWindow #titlePart {
+            text-align: center;
+            border: 1px solid white;
+            background-color: #1a1d21;
+            height: 20%; }
+          as3000-pfd-element #Mainframe #InstrumentsContainer #DirectToWindow #DRCTSelectionWindow #ElementListAndSlider {
+            position: relative;
+            padding-right: 15px;
+            border: 1px solid white;
+            background-color: #1a1d21;
+            height: 79%; }
+            as3000-pfd-element #Mainframe #InstrumentsContainer #DirectToWindow #DRCTSelectionWindow #ElementListAndSlider #ElementList .Blinking {
+              height: calc( 3 * 1vh * var(--bodyHeightScale));
+              width: 100%; }
+            as3000-pfd-element #Mainframe #InstrumentsContainer #DirectToWindow #DRCTSelectionWindow #ElementListAndSlider #Slider {
+              position: absolute;
+              background-color: darkgrey;
+              right: 1%;
+              top: 5%;
+              height: 90%;
+              width: 4px; }
+              as3000-pfd-element #Mainframe #InstrumentsContainer #DirectToWindow #DRCTSelectionWindow #ElementListAndSlider #Slider[state=Active] {
+                visibility: inherit; }
+              as3000-pfd-element #Mainframe #InstrumentsContainer #DirectToWindow #DRCTSelectionWindow #ElementListAndSlider #Slider[state=Inactive] {
+                visibility: hidden; }
+              as3000-pfd-element #Mainframe #InstrumentsContainer #DirectToWindow #DRCTSelectionWindow #ElementListAndSlider #Slider #SliderCursor {
+                position: absolute;
+                background-color: white;
+                width: 100%; }
+      as3000-pfd-element #Mainframe #InstrumentsContainer #AutopilotInfos {
+        position: absolute;
+        width: 34%;
+        height: 8%;
+        top: 0%;
+        left: 33%;
+        background-color: #1a1d21;
+        border-radius: 0% 0% 1.5vh 1.5vh; }
+        as3000-pfd-element #Mainframe #InstrumentsContainer #AutopilotInfos .Left {
+          position: absolute;
+          width: 24%;
+          height: 100%;
+          left: 0%; }
+          as3000-pfd-element #Mainframe #InstrumentsContainer #AutopilotInfos .Left #AP_LateralActive {
+            position: absolute;
+            width: 100%;
+            color: green;
+            font-size: 3.5vh;
+            top: 1%;
+            text-align: center; }
+          as3000-pfd-element #Mainframe #InstrumentsContainer #AutopilotInfos .Left #AP_LateralArmed {
+            position: absolute;
+            width: 100%;
+            color: white;
+            font-size: 3vh;
+            bottom: 8%;
+            text-align: center; }
+        as3000-pfd-element #Mainframe #InstrumentsContainer #AutopilotInfos .Center {
+          border-left: 0.4vh solid white;
+          border-right: 0.4vh solid white;
+          width: 24%;
+          height: 100%;
+          position: absolute;
+          left: 25%; }
+          as3000-pfd-element #Mainframe #InstrumentsContainer #AutopilotInfos .Center #AP_Status {
+            position: absolute;
+            width: 50%;
+            color: green;
+            font-size: 3.5vh;
+            top: 1%;
+            left: 0%;
+            text-align: center; }
+          as3000-pfd-element #Mainframe #InstrumentsContainer #AutopilotInfos .Center #AP_YDStatus {
+            position: absolute;
+            width: 50%;
+            color: green;
+            font-size: 3.5vh;
+            top: 1%;
+            right: 0%;
+            text-align: center; }
+          as3000-pfd-element #Mainframe #InstrumentsContainer #AutopilotInfos .Center #AP_FDIndicatorArrow {
+            position: absolute;
+            width: 50%;
+            left: 25%;
+            bottom: 10%; }
+            as3000-pfd-element #Mainframe #InstrumentsContainer #AutopilotInfos .Center #AP_FDIndicatorArrow[state=Inactive] {
+              display: none; }
+        as3000-pfd-element #Mainframe #InstrumentsContainer #AutopilotInfos .Right {
+          width: 52%;
+          height: 100%;
+          position: absolute;
+          right: 0%; }
+          as3000-pfd-element #Mainframe #InstrumentsContainer #AutopilotInfos .Right #AP_VerticalActive {
+            position: absolute;
+            width: 50%;
+            color: green;
+            font-size: 3.5vh;
+            top: 1%;
+            left: 0%;
+            text-align: center; }
+          as3000-pfd-element #Mainframe #InstrumentsContainer #AutopilotInfos .Right #AP_ModeReference {
+            position: absolute;
+            width: 50%;
+            color: green;
+            font-size: 3vh;
+            top: 1%;
+            right: 0%;
+            text-align: center; }
+          as3000-pfd-element #Mainframe #InstrumentsContainer #AutopilotInfos .Right #AP_Armed {
+            position: absolute;
+            width: 50%;
+            color: white;
+            font-size: 3vh;
+            bottom: 8%;
+            left: 0%;
+            text-align: center; }
+          as3000-pfd-element #Mainframe #InstrumentsContainer #AutopilotInfos .Right #AP_ArmedReference {
+            position: absolute;
+            width: 50%;
+            color: white;
+            font-size: 3vh;
+            bottom: 8%;
+            right: 0%;
+            text-align: center; }
+      as3000-pfd-element #Mainframe #InstrumentsContainer #ComInfos {
+        position: absolute;
+        right: 0%;
+        top: 0%;
+        height: 8%;
+        width: 12%;
+        background-color: #1a1d21;
+        border-radius: 0% 0% 0% 1.5vh;
+        font-size: 2.5vh; }
+        as3000-pfd-element #Mainframe #InstrumentsContainer #ComInfos #ActiveCom {
+          position: absolute;
+          height: 50%;
+          width: 45%;
+          top: 0%;
+          left: 5%;
+          text-align: left; }
+        as3000-pfd-element #Mainframe #InstrumentsContainer #ComInfos #ActiveComFreq {
+          color: green;
+          position: absolute;
+          height: 50%;
+          top: 0%;
+          right: 5%;
+          text-align: right; }
+        as3000-pfd-element #Mainframe #InstrumentsContainer #ComInfos #ActiveComName {
+          position: absolute;
+          height: 50%;
+          width: 90%;
+          bottom: 0%;
+          left: 5%;
+          text-align: center; }
+      as3000-pfd-element #Mainframe #InstrumentsContainer #NavInfos {
+        position: absolute;
+        width: 25%;
+        left: 66%;
+        bottom: 27%;
+        height: 8%;
+        background-color: #1a1d21;
+        font-size: 3vh; }
+        as3000-pfd-element #Mainframe #InstrumentsContainer #NavInfos #FromWP {
+          position: absolute;
+          top: 5%;
+          left: 5%;
+          width: 30%;
+          min-width: 30%;
+          height: 60%; }
+        as3000-pfd-element #Mainframe #InstrumentsContainer #NavInfos #LegSymbol {
+          position: absolute;
+          top: 5%;
+          left: 43%;
+          right: 43%;
+          height: 60%;
+          text-align: center; }
+          as3000-pfd-element #Mainframe #InstrumentsContainer #NavInfos #LegSymbol img {
+            display: inline-block;
+            width: 100%; }
+        as3000-pfd-element #Mainframe #InstrumentsContainer #NavInfos #ToWP {
+          position: absolute;
+          top: 5%;
+          right: 5%;
+          width: 30%;
+          min-width: 30%;
+          height: 60%; }
+        as3000-pfd-element #Mainframe #InstrumentsContainer #NavInfos #BottomInfos {
+          position: absolute;
+          bottom: 5%;
+          width: 100%;
+          height: 40%;
+          font-size: 2.4vh;
+          display: flex;
+          justify-content: center; }
+          as3000-pfd-element #Mainframe #InstrumentsContainer #NavInfos #BottomInfos .value {
+            color: #d12bc7;
+            text-align: center;
+            margin-left: 2%;
+            margin-right: 2%; }
+          as3000-pfd-element #Mainframe #InstrumentsContainer #NavInfos #BottomInfos .title {
+            text-align: center;
+            margin-left: 2%;
+            margin-right: 2%; }
+      as3000-pfd-element #Mainframe #InstrumentsContainer #NavFreqInfos {
+        position: absolute;
+        left: 69%;
+        bottom: 21%;
+        width: 17%;
+        height: 4%;
+        background-color: #1a1d21;
+        font-size: 2.5vh; }
+        as3000-pfd-element #Mainframe #InstrumentsContainer #NavFreqInfos[state="Inactive"] {
+          display: none; }
+        as3000-pfd-element #Mainframe #InstrumentsContainer #NavFreqInfos #ActiveNav {
+          position: absolute;
+          height: 50%;
+          width: 35%;
+          top: 0%;
+          left: 5%;
+          text-align: left; }
+        as3000-pfd-element #Mainframe #InstrumentsContainer #NavFreqInfos #ActiveNavFreq {
+          color: green;
+          position: absolute;
+          height: 50%;
+          width: 35%;
+          top: 0%;
+          right: 5%;
+          text-align: right; }
+        as3000-pfd-element #Mainframe #InstrumentsContainer #NavFreqInfos #ActiveNavName {
+          color: green;
+          position: absolute;
+          height: 50%;
+          width: 30%;
+          top: 0%;
+          left: 35%;
+          text-align: center; }
+      as3000-pfd-element #Mainframe #InstrumentsContainer #Minimums {
+        position: absolute;
+        left: 61%;
+        bottom: 37%;
+        height: 6%;
+        width: 11%;
+        background-color: #1a1d21;
+        font-size: 2vh;
+        vertical-align: central; }
+        as3000-pfd-element #Mainframe #InstrumentsContainer #Minimums #Minimums_Source {
+          position: absolute;
+          width: 35%;
+          height: 100%;
+          left: 0%;
+          text-align: center; }
+        as3000-pfd-element #Mainframe #InstrumentsContainer #Minimums #Minimums_Value {
+          position: absolute;
+          width: 65%;
+          height: 100%;
+          right: 0%;
+          text-align: center;
+          font-size: 3vh;
+          line-height: 5vh;
+          color: #36c8d2; }
+          as3000-pfd-element #Mainframe #InstrumentsContainer #Minimums #Minimums_Value[state=near] {
+            color: white; }
+          as3000-pfd-element #Mainframe #InstrumentsContainer #Minimums #Minimums_Value[state=low] {
+            color: yellow; }
+          as3000-pfd-element #Mainframe #InstrumentsContainer #Minimums #Minimums_Value .unit {
+            font-size: 2vh; }
+        as3000-pfd-element #Mainframe #InstrumentsContainer #Minimums[state=Inactive] {
+          display: none; }
+      as3000-pfd-element #Mainframe #InstrumentsContainer #RadarAltitude {
+        position: absolute;
+        left: 60%;
+        bottom: 50%;
+        height: 5%;
+        width: 8%;
+        background-color: #1a1d21;
+        vertical-align: central; }
+        as3000-pfd-element #Mainframe #InstrumentsContainer #RadarAltitude #RA_Title {
+          position: absolute;
+          width: 35%;
+          height: 100%;
+          left: 0%;
+          font-size: 3vh;
+          text-align: center;
+          line-height: 5vh; }
+        as3000-pfd-element #Mainframe #InstrumentsContainer #RadarAltitude #RA_Value {
+          position: absolute;
+          width: 65%;
+          height: 100%;
+          right: 0%;
+          text-align: center;
+          font-size: 3.4vh;
+          line-height: 5vh; }
+        as3000-pfd-element #Mainframe #InstrumentsContainer #RadarAltitude[state=Inactive] {
+          display: none; }
+      as3000-pfd-element #Mainframe #InstrumentsContainer #BottomBar {
+        position: absolute;
+        bottom: 7.15%;
+        height: 10%;
+        width: 101%;
+        left: -0.5%;
+        line-height: 5vh; }
+        as3000-pfd-element #Mainframe #InstrumentsContainer #BottomBar #Background {
+          position: absolute;
+          width: 100%;
+          height: 100%; }
+        as3000-pfd-element #Mainframe #InstrumentsContainer #BottomBar .LeftGroup {
+          position: absolute;
+          height: 100%;
+          left: 0.5%;
+          width: 21%;
+          z-index: 1; }
+          as3000-pfd-element #Mainframe #InstrumentsContainer #BottomBar .LeftGroup .left {
+            position: absolute;
+            width: 24%;
+            left: 6%;
+            font-size: 2.5vh; }
+          as3000-pfd-element #Mainframe #InstrumentsContainer #BottomBar .LeftGroup .right {
+            position: absolute;
+            right: 6%;
+            text-align: right;
+            width: 64%;
+            font-size: 3vh; }
+          as3000-pfd-element #Mainframe #InstrumentsContainer #BottomBar .LeftGroup #TAS {
+            position: absolute;
+            height: 50%;
+            width: 50%;
+            left: 0%;
+            top: 0%; }
+          as3000-pfd-element #Mainframe #InstrumentsContainer #BottomBar .LeftGroup #OAT {
+            position: absolute;
+            height: 50%;
+            width: 50%;
+            right: 0%;
+            top: 0%;
+            border-left: 0.4vh solid white; }
+          as3000-pfd-element #Mainframe #InstrumentsContainer #BottomBar .LeftGroup #GS {
+            position: absolute;
+            height: 50%;
+            width: 50%;
+            left: 0%;
+            bottom: 0%; }
+          as3000-pfd-element #Mainframe #InstrumentsContainer #BottomBar .LeftGroup #ISA {
+            position: absolute;
+            height: 50%;
+            width: 50%;
+            right: 0%;
+            bottom: 0%;
+            border-left: 0.4vh solid white; }
+        as3000-pfd-element #Mainframe #InstrumentsContainer #BottomBar .RightGroup {
+          position: absolute;
+          height: 100%;
+          left: 70%;
+          width: 17%;
+          z-index: 1; }
+          as3000-pfd-element #Mainframe #InstrumentsContainer #BottomBar .RightGroup .left {
+            position: absolute;
+            width: 20%;
+            font-size: 2.5vh; }
+          as3000-pfd-element #Mainframe #InstrumentsContainer #BottomBar .RightGroup .right {
+            position: absolute;
+            text-align: right;
+            width: 80%;
+            font-size: 3vh; }
+          as3000-pfd-element #Mainframe #InstrumentsContainer #BottomBar .RightGroup #TMR {
+            position: absolute;
+            height: 50%;
+            width: 100%;
+            top: 0%; }
+          as3000-pfd-element #Mainframe #InstrumentsContainer #BottomBar .RightGroup #UTC {
+            position: absolute;
+            height: 50%;
+            width: 100%;
+            bottom: 0%; }
+      as3000-pfd-element #Mainframe #InstrumentsContainer #SoftKeys {
+        position: absolute;
+        background-color: #1a1d21;
+        display: flex;
+        width: 100%;
+        height: 7.5%;
+        bottom: 0%;
+        font-size: 2vh;
+        text-align: center;
+        border-top: 0.4vh solid white; }
+        as3000-pfd-element #Mainframe #InstrumentsContainer #SoftKeys .SoftKey {
+          position: relative;
+          width: 8.3%;
+          height: 100%;
+          border-right: 0.6vh solid;
+          padding-top: calc(var(--viewportHeightRatio) * (8px / 21.6) * var(--currentPageHeight) / 100); }
+          as3000-pfd-element #Mainframe #InstrumentsContainer #SoftKeys .SoftKey[state=White] {
+            color: #1a1d21;
+            background-color: white; }
+          as3000-pfd-element #Mainframe #InstrumentsContainer #SoftKeys .SoftKey[state=AdvisoryAlert] {
+            color: #1a1d21;
+            background-color: white; }
+          as3000-pfd-element #Mainframe #InstrumentsContainer #SoftKeys .SoftKey[state=YellowAlert] {
+            color: #1a1d21;
+            background-color: yellow; }
+          as3000-pfd-element #Mainframe #InstrumentsContainer #SoftKeys .SoftKey[state=RedAlert] {
+            color: white;
+            background-color: red; }
+          as3000-pfd-element #Mainframe #InstrumentsContainer #SoftKeys .SoftKey .Title {
+            position: absolute;
+            width: 95%;
+            left: 2.5%;
+            height: 90%; }
+          as3000-pfd-element #Mainframe #InstrumentsContainer #SoftKeys .SoftKey .Value {
+            position: absolute;
+            height: 50%;
+            width: 95%;
+            left: 2.5%;
+            bottom: 0%;
+            color: #36c8d2; }
+          as3000-pfd-element #Mainframe #InstrumentsContainer #SoftKeys .SoftKey .Status {
+            position: absolute;
+            width: 80%;
+            left: 10%;
+            height: 10%;
+            bottom: 10%;
+            display: none; }
+            as3000-pfd-element #Mainframe #InstrumentsContainer #SoftKeys .SoftKey .Status[state=Active] {
+              display: block;
+              background-color: lawngreen; }
+            as3000-pfd-element #Mainframe #InstrumentsContainer #SoftKeys .SoftKey .Status[state=Inactive] {
+              display: block;
+              background-color: black; }
+        as3000-pfd-element #Mainframe #InstrumentsContainer #SoftKeys .end {
+          border: none;
+          width: 8.7%; }
+

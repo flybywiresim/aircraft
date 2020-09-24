@@ -1,0 +1,116 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <title>Test SVG Indicator</title>
+    <script src="../AbstractGauge.js"></script>
+    <script src="../CircularGauge.js"></script>
+    <script src="../HorizontalGauge.js"></script>
+    <script src="../VerticalGauge.js"></script>
+    <script>
+        window.onload = () => {
+            let e = document.getElementById("test-circular-gauge");
+            e.setAttribute("max-value", 1000);
+            e.setAttribute("red-start", 600);
+            e.setAttribute("red-end", 900);
+
+            let et = document.getElementById("test-circular-gauge-tilted");
+            et.setAttribute("tilt", -45);
+            et.setAttribute("angular-size", 270);
+            et.setAttribute("max-value", 1000);
+            et.setAttribute("red-start", 600);
+            et.setAttribute("red-end", 900);
+
+            let et2 = document.getElementById("test-circular-gauge-tilted-2");
+            et2.setAttribute("tilt", -90);
+            et2.setAttribute("angular-size", 225);
+            et2.setAttribute("steps-count", 10);
+
+            let cg4 = document.getElementById("test-circular-gauge-4");
+            cg4.setAttribute("tilt", 0);
+            cg4.setAttribute("angular-size", 135);
+            cg4.setAttribute("max-value", 1000);
+            cg4.setAttribute("red-start", 500);
+            cg4.setAttribute("red-end", 1000);
+
+            let cg5 = document.getElementById("test-circular-gauge-5");
+            cg5.setAttribute("tilt", 0);
+            cg5.setAttribute("steps-count", 20);
+            cg5.setAttribute("angular-size", 225);
+            cg5.setAttribute("max-value", 1000);
+            cg5.setAttribute("green-start", 0);
+            cg5.setAttribute("green-end", 200);
+            cg5.setAttribute("yellow-start", 200);
+            cg5.setAttribute("yellow-end", 400);
+            cg5.setAttribute("red-start", 400);
+            cg5.setAttribute("red-end", 600);
+            cg5.setAttribute("limit-low", 200);
+            cg5.setAttribute("limit-high", 600);
+
+            let h = document.getElementById("test-horizontal-gauge");
+            h.setAttribute("amplitude", 300);
+            h.setAttribute("red-start", 100);
+            h.setAttribute("red-end", 150);
+            h.setAttribute("steps-count", 30);
+
+            let hL = document.getElementById("test-horizontal-limit-gauge");
+            hL.setAttribute("min-value", -50);
+            hL.setAttribute("max-value", 250);
+            hL.setAttribute("red-start", 0);
+            hL.setAttribute("red-end", 0);
+            hL.setAttribute("limit-low", 0);
+            hL.setAttribute("limit-high", 220);
+
+            let v = document.getElementById("test-vertical-gauge");
+            v.setAttribute("red-start", 100);
+            v.setAttribute("red-end", 180);
+
+            setInterval(
+                () => {
+                    let e = document.getElementById("test-circular-gauge");
+                    e.setAttribute("value", Math.random() * 1000);
+
+                    let h = document.getElementById("test-horizontal-gauge");
+                    h.setAttribute("value", Math.random() * 180);
+
+                    let hL = document.getElementById("test-horizontal-limit-gauge");
+                    hL.setAttribute("value", Math.random() * 300 - 50);
+
+                    let v = document.getElementById("test-vertical-gauge");
+                    v.setAttribute("value", Math.random() * 180);
+                },
+                1000
+            )
+        }
+    </script>
+    <style>
+        body {
+            background-color: black;
+        }
+
+        .gauge {
+            margin: 20px;
+            display: inline-block;
+            width: 200px;
+            height: 200px;
+        }
+
+        .gauge-base {
+            stroke: white;
+        }
+    </style>
+</head>
+
+<body>
+    <circular-gauge id="test-circular-gauge" class="gauge"></circular-gauge>
+    <circular-gauge id="test-circular-gauge-tilted" class="gauge"></circular-gauge>
+    <circular-gauge id="test-circular-gauge-tilted-2" class="gauge"></circular-gauge>
+    <circular-gauge id="test-circular-gauge-4" class="gauge"></circular-gauge>
+    <circular-gauge id="test-circular-gauge-5" class="gauge"></circular-gauge>
+    <horizontal-gauge id="test-horizontal-gauge" class="gauge"></horizontal-gauge>
+    <horizontal-gauge id="test-horizontal-limit-gauge" class="gauge"></horizontal-gauge>
+    <vertical-gauge id="test-vertical-gauge" class="gauge"></vertical-gauge>
+</body>
+
+</html>

@@ -1,0 +1,915 @@
+﻿<script type="text/html" id="AS430">
+    <div id="Mainframe">
+        <div id="Electricity" state="off">
+            <div id="TopDisplay">
+                <div class="Align" id="RadioPart">
+                    <div id="ComDisplay">
+                        COM
+                        <div class="ActiveFreq" id="ComActive"><span class="FrecDecimals"></span></div>
+                        <div class="StandbyFreq" id="ComStandby" state="Selected"><span class="FrecDecimals"></span></div>
+                    </div>
+                    <div id="VlocDisplay">
+                        VLOC
+                        <div class="ActiveFreq" id="VlocActive"><span class="FrecDecimals"></span></div>
+                        <div class="StandbyFreq" id="VlocStandby"><span class="FrecDecimals"></span></div>
+                    </div>
+                    <div id="BotRadioPartTop"></div>
+                    <div id="BotRadioPartMid"></div>
+                    <div id="BotRadioPartBot"></div>
+                </div>
+                <div class="Align" id="GpsPart" state="DefaultNav">
+                    <div id="DefaultNav">
+                        <div id="CDI">
+                            <div id="CDIBackground"><img src="/Pages/VCockpit/Instruments/NavSystems/Shared/Images/GPS/430_CDI.bmp" /></div>
+                            <div id="ToFrom"><img src="/Pages/VCockpit/Instruments/NavSystems/Shared/Images/GPS/430_TO.bmp" /></div>
+                            <div id="CDICursor"> </div>
+                            <div id="CDIBotLeft">1.0</div>
+                            <div id="CDIBotRight">1.0</div>
+                        </div>
+                        <div id="CurrActiveBranch">
+                            <div class="Align" id="CurrBranchFrom"></div>
+                            <div class="Align" id="CurrBranchArrow"><img src="/Pages/VCockpit/Instruments/NavSystems/Shared/Images/GPS/course_to.bmp" class="imgSizeM" /> </div>
+                            <div class="Align" id="CurrBranchTo"></div>
+                        </div>
+                        <div id="NavParamTitlesTop">
+                            <div class="Third"><span class="SelectableTitle" id="DNName1">DIS</span></div><div class="Third"><span class="SelectableTitle" id="DNName2">DTK</span></div><div class="Third"><span class="SelectableTitle" id="DNName3">BRG</span></div>
+                        </div>
+                        <div id="NavParams">
+                            <div id="topNavParams">
+                                <div class="Third" id="DNDisplay1"><div class="Align" id="DNValue1"></div><div class="Align unit" id="DNUnit1"></div></div>
+                                <div class="Third" id="DNDisplay2"><div class="Align" id="DNValue2"></div><div class="Align unit" id="DNUnit2"></div></div>
+                                <div class="Third" id="DNDisplay3"><div class="Align" id="DNValue3"></div><div class="Align unit" id="DNUnit3"></div></div>
+                            </div>
+                            <div id="BotNavParams">
+                                <div class="Third" id="DNDisplay4"><div class="Align" id="DNValue4"></div><div class="Align unit" id="DNUnit4"></div></div>
+                                <div class="Third" id="DNDisplay5"><div class="Align" id="DNValue5"></div><div class="Align unit" id="DNUnit5"></div></div>
+                                <div class="Third" id="DNDisplay6"><div class="Align" id="DNValue6"></div><div class="Align unit" id="DNUnit6"></div></div>
+                            </div>
+                        </div>
+                        <div id="NavParamTitlesBot">
+                            <div class="Third"><span class="SelectableTitle" id="DNName4">GS</span></div><div class="Third"><span class="SelectableTitle" id="DNName5">TRK</span></div><div class="Third"><span class="SelectableTitle" id="DNName6">ETE</span></div>
+                        </div>
+                    </div>
+                    <div id="Map">
+                        <map-instrument class="Align" id="MapInstrument" bing-id="AS430" show-overlay="false" show-flightplan="true" show-traffic="false" hide-flightplan-if-bushtrip="true" config-path="/Pages/VCockpit/Instruments/NavSystems/GPS/AS430/"></map-instrument>
+                        <div class="Align" id="RightDisplay">
+                            <div>WPT</div>
+                            <div class="Display">
+                                <div id="WPT"></div>
+                            </div>
+                            <div>DTK</div>
+                            <div class="Display">
+                                <div class="Align" id="DTKMap"></div><div class="Align unit">o<br />M</div>
+                            </div>
+                            <div>DIS</div>
+                            <div class="Display">
+                                <div class="Align" id="DISMap"></div><div class="Align unit">n<br />m</div>
+                            </div>
+                            <div>GS</div>
+                            <div class="Display">
+                                <div class="Align" id="GSMap"></div><div class="Align unit">k<br />t</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="Terrain">
+                        <div id="TerrainMap"></div>
+                        <div id="TerrainIndicator">TERRAIN</div>
+                        <div id="TerrainHeadingIndicator">TRK</div>
+                        <div id="TerrainAltitudeIndicator">
+                            <div id="TerrainAltitudeTitle">HSL (G)</div>
+                            <div id="TerrainAltitudeDisplay"><div class="Align" id="TerrainAltitudeValue">1080</div><div class="Align unit">f<br />t</div></div>
+                        </div>
+                        <div id="TerrainRangeField"><div class="Align" id="TerrainRangeFieldValue">10</div><div class="Align unit">n<br />m</div></div>
+                    </div>
+                    <div id="ComNav">
+                        <div id="ComNavTop">
+                            <div class="Align" id="TerrainStatus">ARRIVAL</div>
+                            <div class="Align" id="TerrainSelectedDisplay">
+                                <div class="Align SelectableElement" id="TerrainCode"></div>
+                                <div class="Align" id="TerrainTypeLogo"></div>
+                                <div class="Align" id="TerrainType">Public</div>
+                            </div>
+                        </div>
+                        <div id="ComNavMainAndSlider">
+                            <div id="ComNavMain">
+                                <div id="ComNavFrequency_0"></div>
+                                <div id="ComNavFrequency_1"></div>
+                                <div id="ComNavFrequency_2"></div>
+                                <div id="ComNavFrequency_3"></div>
+                                <div id="ComNavFrequency_4"></div>
+                            </div>
+                            <div id="ComNavSlider" state="active">
+                                <div id="ComNavSliderCursor"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="Position">
+                        <div class="Value" id="Compass">
+                            <div id="CompassBackground">
+                                <img src="/Pages/VCockpit/Instruments/NavSystems/Shared/Images/GPS/430_trk_card.bmp" width="830" height="37" />
+                            </div>
+                            <img id="CompassArrow" src="/Pages/VCockpit/Instruments/NavSystems/Shared/Images/GPS/430_trk_need.bmp" />
+                        </div>
+                        <div>
+                            <div class="Third Title SelectableTitle" id="PositionInfos1_Title">TRK</div>
+                            <div class="Third Title SelectableTitle" id="PositionInfos2_Title">GS</div>
+                            <div class="Third Title SelectableTitle" id="PositionInfos3_Title">ALT</div>
+                        </div>
+                        <div id="PositionInfos">
+                            <div class="Third Value"><div class="Align" id="PositionInfos1_Value"></div><div class="Align unit" id="PositionInfos1_Unit"></div></div>
+                            <div class="Third Value"><div class="Align" id="PositionInfos2_Value"></div><div class="Align unit" id="PositionInfos2_Unit"></div></div>
+                            <div class="Third Value"><div class="Align" id="PositionInfos3_Value"></div><div class="Align unit" id="PositionInfos3_Unit"></div></div>
+                        </div>
+                        <div>
+                            <div class="Half Title" id="PositionTitle">POSITION</div>
+                            <div class="Half Title" id="TimeTitle">TIME</div>
+                        </div>
+                        <div id="PositionPosTimeValues">
+                            <div class="Half Value">
+                                <div id="PositionValueNS"></div>
+                                <div id="PositionValueEW"></div>
+                            </div>
+                            <div class="Half Value" id="PositionTime"><div class="Align" id="TimeValue"></div><div class="Align unit">L<br />C</div></div>
+                        </div>
+                        <div>
+                            <div class="Align Title FixedSizeS SelectableTitle" id="PositionRefType"></div>
+                            <div class="Align Value SelectableElement" id="PositionRefID"></div>
+                            <div class="Align Title FixedSizeS SelectableTitle" id="PositionRefMode"></div>
+                            <div class="Align Value FixedSizeM"><div class="Align" id="PositionRefBearing">042</div> <div class="Align unit">O<br />M</div></div>
+                            <div class="Align Value FixedSizeL"><div class="Align" id="PositionRefDistance">0.9</div> <div class="Align unit">n<br />m</div></div>
+                        </div>
+                    </div>
+                    <div id="Satellite">
+
+                    </div>
+                    <div id="VNav">
+                        <div class="WhiteTitle">VERTICAL NAVIGATION</div>
+                        <div class="Title">TARGET ALTITUDE</div>
+                        <div class="Value">
+                            <div class="Align" id="TargetAltitudeValue">1000</div><div class="Align unit">f<br />t</div><div class="Align" id="AltitudeReference">Above Wpt</div>
+                        </div>
+                        <div class="Title">TARGET POSITION</div>
+                        <div class="Value">
+                            <div class="Align" id="TargetDistance">4.0</div><div class="Align unit">n<br />m</div><div class="Align" id="TargetReference">Before KOKC</div>
+                        </div>
+                    </div>
+                    <div id="DRCT">
+                        <div class="WhiteTitle">SELECT <img src="/Pages/VCockpit/Instruments/NavSystems/Shared/Images/GPS/direct_to_white.bmp" /> WAYPOINT</div>
+                        <div class="Value" id="DRCTMainInfos">
+                            <div>
+                                <div class="Align SelectableElement" id="DRCTIcao"></div>
+                                <div class="Align" id="DRCTAirportPrivateLogo"></div>
+                                <div class="Align" id="DRCTRegion"></div>
+                            </div>
+                            <div id="DRCTFacilityName"></div>
+                            <div id="DRCTCity"></div>
+                        </div>
+                        <div class="FullWidth" id="MidLine">
+                            <div class="Align Title">FPL</div>
+                            <div class="Align Value SizedS SelectableElement" id="DRCTFpl"></div>
+                            <div class="Align RightAlign">
+                                <div class="Align Title">NRST</div>
+                                <div class="Align Value SizedS SelectableElement" id="DRCTNrst"></div>
+                            </div>
+                        </div>
+                        <div class="FullWidth">
+                            <div class="Align Value SizedL">
+                                <div id="DRCTPosNS">N 31°19.28'</div>
+                                <div id="DRCTPosEW">W085°26.98'</div>
+                            </div>
+                            <div class="Align RightAlign">
+                                <div>
+                                    <div class="Align Title">CRS</div>
+                                    <div class="Align Value SizedS"><div class="Align" id="DRCTCrs"></div><div class="Align unit">o<br />M</div></div>
+                                </div>
+                                <div>
+                                    <div class="SelectableWhiteTitle" id="DRCTActivate">Activate?</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="FlightPlanEdit">
+                        <div class="WhiteTitle">ACTIVE FLIGHT PLAN</div>
+                        <div>
+                            <div class="Align Value" id="FlightPlanNumber">00</div>
+                            <div class="Align Value Fill" id="FlightPlanName"></div>
+                        </div>
+                        <div class="SliderContainer">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th class="Title">WAYPOINT</th>
+                                        <th class="Title">CUM</th>
+                                        <th class="Title">DIS</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="FPLEditListAndSlider" class="SliderContainer">
+                                    <tr class="SizeSetter">
+                                        <td>
+                                            <div class="ArrowContainer">
+                                                <svg id="CurrentLegArrowSVG" height="1000" width="200" xmlns="http://www.w3.org/2000/svg">
+                                                    <path id="CurrentLegArrow" d="M0, 0 Z" fill="magenta" />
+                                                </svg>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr class="L1"></tr>
+                                    <tr class="L2"></tr>
+                                    <tr class="L3"></tr>
+                                    <tr class="L4"></tr>
+                                </tbody>
+                            </table>
+                            <div id="FPLEditSlider" class="Slider" state="Incative">
+                                <div id="FPLEditSliderCursor" class="SliderCursor"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="WaypointSelection">
+                        <div class="Title Center">WAYPOINT INFORMATION</div>
+                        <div class="Value FullWidth" id="WPSInfos">
+                            <div>
+                                <div id="WPSIdent" class="Align">BQS</div>
+                                <div id="WPSIdent2" class="Align">N CEN USA</div>
+                            </div>
+                            <div id="WPSFacility1">BRAYMER</div>
+                            <div id="WPSFacility2">BRAYMER MO</div>
+                        </div>
+                        <div>
+                            <div class="Align Value Half">
+                                <div id="WPSPosNS">N 39°37.84'</div>
+                                <div id="WPSPosEW">W093°52.52'</div>
+                            </div>
+                            <div class="Align Half Title">
+                                PRESS <span class="Bordered">ENT</span> TO ACCEPT
+                            </div>
+                        </div>
+                    </div>
+                    <div id="Procedures">
+                        <div class="WhiteTitle">PROCEDURES</div>
+                        <div class="Value">
+                            <div id="ActivateVTF" state="Inactive">Activate Vector-To-Final?</div>
+                            <div id="ActivateApproach" class="SelectableElement">Activate Approach?</div>
+                            <div id="SelectApproach" class="SelectableElement">Select Approach?</div>
+                            <div id="SelectArrival" class="SelectableElement">Select Arrival?</div>
+                            <div id="SelectDeparture" class="SelectableElement">Select Departure?</div>
+                        </div>
+                    </div>
+
+                    <!--<div id="ApproachSelection">
+        <div>
+            <div class="Align WhiteTitle">APT</div>
+            <div class="Align Value" id="APRSAPInfos"><span id="APRSAirportIdent">KCOU</span> <span id="APRSAirportPrivate">Public</span></div>
+        </div>
+        <div>
+            <div class="Align">
+                <div id="APRSMap">
+
+                </div>
+            </div>
+            <div class="Align" id="RightPart">
+                <div class="Title">APR</div>
+                <div class="Value" id="APRSApproach">ILS 02</div>
+                <div class="Title">TRANS</div>
+                <div class="Value" id="APRSTransition">VECTORS</div>
+                <div class="SelectableWhiteTitle" id="APRSLoad">Load?</div>
+                <div class="SelectableWhiteTitle" id="APRSActivate">Activate?</div>
+            </div>
+        </div>
+    </div> -->
+
+                    <div id="ApproachSelection">
+                        <div class="topLine">
+                            <div class="Align WhiteTitle">APT</div>
+                            <div class="Align Value" id="Approach_APTInfos">
+                                <span id="Approach_AirportID">KCOU</span>
+                                <img id="Approach_AirportLogo" />
+                                <span id="Approach_AirportType">Public</span>
+                            </div>
+                        </div>
+                        <div class="map">
+
+                        </div>
+                        <div class="RightPart">
+                            <div class="Title">APR</div>
+                            <div class="Value SelectableElement" id="Approach_Approach">NONE</div>
+                            <div class="Title">TRANS</div>
+                            <div class="Value SelectableElement" id="Approach_Transition">NONE</div>
+                            <div class="SelectableWhiteTitle" id="Approach_LoadButton">Load?</div>
+                            <div class="SelectableWhiteTitle" id="Approach_ActivateButton">Activate?</div>
+                        </div>
+                        <div id="Approach_ApproachList" class="SubMenu" state="Inactive">
+                            <div class="InnerBorder">
+                                <div class="title">APR</div>
+                                <div class="SliderContainer">
+                                    <div class="SelectableWhite L1"></div>
+                                    <div class="SelectableWhite L2"></div>
+                                    <div class="SelectableWhite L3"></div>
+                                    <div class="SelectableWhite L4"></div>
+                                    <div class="SelectableWhite L5"></div>
+                                    <div class="SelectableWhite L6"></div>
+                                    <div class="Slider" state="Inactive">
+                                        <div class="SliderCursor"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="Approach_TransitionList" class="SubMenu" state="Inactive">
+                            <div class="InnerBorder">
+                                <div class="title">TRANS</div>
+                                <div class="SliderContainer">
+                                    <div class="SelectableWhite L1"></div>
+                                    <div class="SelectableWhite L2"></div>
+                                    <div class="SelectableWhite L3"></div>
+                                    <div class="SelectableWhite L4"></div>
+                                    <div class="SelectableWhite L5"></div>
+                                    <div class="SelectableWhite L6"></div>
+                                    <div class="Slider" state="Inactive">
+                                        <div class="SliderCursor"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="ArrivalSelection">
+                        <div class="topLine">
+                            <div class="Align WhiteTitle">APT</div>
+                            <div class="Align Value" id="Arrival_APTInfos">
+                                <span id="Arrival_AirportID">KCOU</span>
+                                <img id="Arrival_AirportLogo" />
+                                <span id="Arrival_AirportType">Public</span>
+                            </div>
+                        </div>
+                        <div class="map">
+
+                        </div>
+                        <div class="RightPart">
+                            <div class="Title">ARRIVAL</div>
+                            <div class="Value SelectableElement" id="Arrival_Arrival">NONE</div>
+                            <div class="Title">TRANS</div>
+                            <div class="Value SelectableElement" id="Arrival_Transition">NONE</div>
+                            <div class="Title">RUNWAY</div>
+                            <div class="Value SelectableElement" id="Arrival_Runway">NONE</div>
+                            <div class="SelectableWhiteTitle" id="Arrival_LoadButton">Load?</div>
+                        </div>
+                        <div id="Arrival_ArrivalList" class="SubMenu" state="Inactive">
+                            <div class="InnerBorder">
+                                <div class="title">ARRIVAL</div>
+                                <div class="SliderContainer">
+                                    <div class="SelectableWhite L1"></div>
+                                    <div class="SelectableWhite L2"></div>
+                                    <div class="SelectableWhite L3"></div>
+                                    <div class="SelectableWhite L4"></div>
+                                    <div class="SelectableWhite L5"></div>
+                                    <div class="SelectableWhite L6"></div>
+                                    <div class="Slider" state="Inactive">
+                                        <div class="SliderCursor"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="Arrival_RunwayList" class="SubMenu" state="Inactive">
+                            <div class="InnerBorder">
+                                <div class="title">RUNWAY</div>
+                                <div class="SliderContainer">
+                                    <div class="SelectableWhite L1"></div>
+                                    <div class="SelectableWhite L2"></div>
+                                    <div class="SelectableWhite L3"></div>
+                                    <div class="SelectableWhite L4"></div>
+                                    <div class="SelectableWhite L5"></div>
+                                    <div class="SelectableWhite L6"></div>
+                                    <div class="Slider" state="Inactive">
+                                        <div class="SliderCursor"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="Arrival_TransitionList" class="SubMenu" state="Inactive">
+                            <div class="InnerBorder">
+                                <div class="title">TRANS</div>
+                                <div class="SliderContainer">
+                                    <div class="SelectableWhite L1"></div>
+                                    <div class="SelectableWhite L2"></div>
+                                    <div class="SelectableWhite L3"></div>
+                                    <div class="SelectableWhite L4"></div>
+                                    <div class="SelectableWhite L5"></div>
+                                    <div class="SelectableWhite L6"></div>
+                                    <div class="Slider" state="Inactive">
+                                        <div class="SliderCursor"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="DepartureSelection">
+                        <div class="topLine">
+                            <div class="Align WhiteTitle">APT</div>
+                            <div class="Align Value" id="Departure_APTInfos">
+                                <span id="Departure_AirportID">KCOU</span>
+                                <img id="Departure_AirportLogo" />
+                                <span id="Departure_AirportType">Public</span>
+                            </div>
+                        </div>
+                        <div class="map">
+
+                        </div>
+                        <div class="RightPart">
+                            <div class="Title">DEPARTURE</div>
+                            <div class="Value SelectableElement" id="Departure_Departure">NONE</div>
+                            <div class="Title">TRANS</div>
+                            <div class="Value SelectableElement" id="Departure_Transition">NONE</div>
+                            <div class="Title">RUNWAY</div>
+                            <div class="Value SelectableElement" id="Departure_Runway">NONE</div>
+                            <div class="SelectableWhiteTitle" id="Departure_LoadButton">Load?</div>
+                        </div>
+                        <div id="Departure_DepartureList" class="SubMenu" state="Inactive">
+                            <div class="InnerBorder">
+                                <div class="title">DEPARTURE</div>
+                                <div class="SliderContainer">
+                                    <div class="SelectableWhite L1"></div>
+                                    <div class="SelectableWhite L2"></div>
+                                    <div class="SelectableWhite L3"></div>
+                                    <div class="SelectableWhite L4"></div>
+                                    <div class="SelectableWhite L5"></div>
+                                    <div class="SelectableWhite L6"></div>
+                                    <div class="Slider" state="Inactive">
+                                        <div class="SliderCursor"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="Departure_RunwayList" class="SubMenu" state="Inactive">
+                            <div class="InnerBorder">
+                                <div class="title">RUNWAY</div>
+                                <div class="SliderContainer">
+                                    <div class="SelectableWhite L1"></div>
+                                    <div class="SelectableWhite L2"></div>
+                                    <div class="SelectableWhite L3"></div>
+                                    <div class="SelectableWhite L4"></div>
+                                    <div class="SelectableWhite L5"></div>
+                                    <div class="SelectableWhite L6"></div>
+                                    <div class="Slider" state="Inactive">
+                                        <div class="SliderCursor"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="Departure_TransitionList" class="SubMenu" state="Inactive">
+                            <div class="InnerBorder">
+                                <div class="title">TRANS</div>
+                                <div class="SliderContainer">
+                                    <div class="SelectableWhite L1"></div>
+                                    <div class="SelectableWhite L2"></div>
+                                    <div class="SelectableWhite L3"></div>
+                                    <div class="SelectableWhite L4"></div>
+                                    <div class="SelectableWhite L5"></div>
+                                    <div class="SelectableWhite L6"></div>
+                                    <div class="Slider" state="Inactive">
+                                        <div class="SliderCursor"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="FPLCatalog">
+
+                    </div>
+                    <div id="AirportLocation">
+                        <div>
+                            <div class="Align WhiteTitle">APT</div>
+                            <div class="Align Value AirportDisplay">
+                                <div class="Align SelectableElement" id="APTLocIdent">KPHX</div>
+                                <div class="Align" id="APTLocPrivateLogo"></div>
+                                <div class="Align AirportPrivate" id="APTLocPrivate">Public</div>
+                            </div>
+                            <div class="Title">FACILITY &amp; CITY NAME</div>
+                            <div class="Value SizedXL">
+                                <div id="APTLocFacilityName">PHOENIX SKY HARBOR INTL</div>
+                                <div id="APTLocCity">PHOENIX AZ</div>
+                            </div>
+                            <table>
+                                <tr>
+                                    <td class="Title">POSITION</td>
+                                    <td class="Title">ELEV</td>
+                                    <td class="Title">FUEL</td>
+                                </tr>
+                                <tr>
+                                    <td class="Value SizedL">
+                                        <div id="APTLocPositionNS">N 33°26.16'</div>
+                                        <div id="APTLocPositionEW">W112°00.57'</div>
+                                    </td>
+                                    <td class="Value SizedM">
+                                        <div class="Align" id="APTLocElev">1130</div>
+                                        <div class="Align unit">f<br />t</div>
+                                    </td>
+                                    <td class="Value SizedM">
+                                        <div class="Align" id="APTLocFuel">Avgas Jet</div>
+                                    </td>
+                                </tr>
+                            </table>
+                            <div>
+                                <div class="Align Title">APR</div>
+                                <div class="Align Value SizedS" id="APTLocBestApproach">ILS</div>
+                                <div class="Align Title">RADAR</div>
+                                <div class="Align Value SizedS" id="APTLocRadar">Yes</div>
+                                <div class="Align Title">ARSPC</div>
+                                <div class="Align Value SizedS" id="APTLocAirspaceType">B</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="AirportRunway">
+                        <div>
+                            <div class="Align WhiteTitle">APT</div>
+                            <div class="Align Value AirportDisplay">
+                                <div class="Align SelectableElement" id="APTRwyIdent">KPHX</div>
+                                <div class="Align" id="APTRwyPrivateLogo"></div>
+                                <div class="Align AirportPrivate" id="APTRwyPrivate">Public</div>
+                            </div>
+                        </div>
+                        <div style="position:relative; width:77vw;">
+                            <canvas class="Align" id="APTRwyMap"></canvas>
+                            <div class="Align" id="RightInfos">
+                                <div class="Title">RUNWAY</div>
+                                <div class="Value SelectableElement SizedM" id="APTRwyName">08R-26L</div>
+                                <div class="Title">INFO</div>
+                                <div class="Value SizedL">
+                                    <div>
+                                        <div class="Align" id="APTRwyLength">11000</div>
+                                        <div class="Align unit">f<br />t</div>
+                                    </div>
+                                    <div style="text-align:right">
+                                        <div class="Align">X</div>
+                                        <div class="Align" id="APTRwyWidth">150</div>
+                                        <div class="Align unit">f<br />t</div>
+                                    </div>
+                                    <div id="APTRwySurface">Hard Srfc</div>
+                                    <div id="APTRwyLighting">Full Time</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="AirportFrequency">
+                        <div>
+                            <div class="Align WhiteTitle">APT</div>
+                            <div class="Align Value AirportDisplay">
+                                <div class="Align SelectableElement" id="APTFreqIdent">KPHX</div>
+                                <div class="Align" id="APTFreqLogo"></div>
+                                <div class="Align AirportPrivate" id="APTFreqPrivate">Public</div>
+                            </div>
+                        </div>
+                        <div id="APTFreqMainAndSlider">
+                            <div id="APTFreqMain">
+                                <div id="APTFrequency_0"></div>
+                                <div id="APTFrequency_1"></div>
+                                <div id="APTFrequency_2"></div>
+                                <div id="APTFrequency_3"></div>
+                                <div id="APTFrequency_4"></div>
+                            </div>
+                            <div id="APTFreqSlider" state="active">
+                                <div id="APTFreqSliderCursor"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="AirportApproach">
+                        <div>
+                            <div class="Align WhiteTitle">APT</div>
+                            <div class="Align Value AirportDisplay">
+                                <div class="Align SelectableElement" id="APTApproachIdent">KPHX</div>
+                                <div class="Align" id="APTApproachPrivateLogo"></div>
+                                <div class="Align AirportPrivate" id="APTApproachPrivate">Public</div>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="Align">
+                                <div id="APTApproachMap">
+
+                                </div>
+                            </div>
+                            <div class="Align" id="RightPart">
+                                <div class="Title">APR</div>
+                                <div class="Value SelectableElement" id="APTApproachApproach">ILS 02</div>
+                                <div class="Title">TRANS</div>
+                                <div class="Value SelectableElement" id="APTApproachTransition">VECTORS</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="Intersection">
+                        <div>
+                            <div class="Align WhiteTitle">INT</div>
+                            <div class="Align Value AirportDisplay">
+                                <div class="Align SelectableElement" id="INTIdent">OTTER</div>
+                                <div class="Align" id="INTSymbol"></div>
+                            </div>
+                            <div class="Align Half VTop">
+                                <div class="Title">REGION</div>
+                                <div class="Value SizedS" id="INTRegion">N CEN USA</div>
+                                <div class="Title">POSITION</div>
+                                <div class="Value SizedL">
+                                    <div id="INTPosNS">N 38°51.50'</div>
+                                    <div id="INTPosEW">W095°32.01'</div>
+                                </div>
+                            </div>
+                            <div class="Align Half VTop">
+                                <div class="Title">NEAREST VOR</div>
+                                <table>
+                                    <tr>
+                                        <td colspan="2" class="Value">
+                                            <div class="Align" id="INTNearestVOR">TOP</div>
+                                            <div class="Align" id="INTNearestVORSymbol"></div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="Value">
+                                            <div class="Title">RAD</div>
+                                            <div>
+                                                <div class="Align" id="INTRadialFromNearVOR">173</div>
+                                                <div class="Align unit">o<br />M</div>
+                                            </div>
+                                        </td>
+                                        <td class="Value">
+                                            <div class="Title">DIS</div>
+                                            <div>
+                                                <div class="Align" id="INTDistanceFromNearVOR">16.7</div>
+                                                <div class="Align unit">n<br />m</div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="NDB">
+                        <div class="Align WhiteTitle">NDB</div>
+                        <div class="Align Value AirportDisplay">
+                            <div class="Align SelectableElement" id="NDBIdent">AM</div>
+                            <div class="Align" id="NDBSymbol"></div>
+                        </div>
+                        <div class="Title">FACILITY, CITY &amp; REGION</div>
+                        <div class="Value SizedL">
+                            <div id="NDBFacility">PICNY</div>
+                            <div id="NDBCity">TAMPA FL</div>
+                            <div id="NDBRegion">SE USA</div>
+                        </div>
+                        <div>
+                            <div class="Align Half">
+                                <div class="Title">POSITION</div>
+                                <div class="Value SizedM">
+                                    <div id="NDBLatitude">N 27°51.68'</div>
+                                    <div id="NDBLongitude">W082°32.75'</div>
+                                </div>
+                            </div>
+                            <div class="Align Half">
+                                <div class="Title">FREQ</div>
+                                <div class="Value SizedM">
+                                    <div id="NDBFrequency">388.0</div>
+                                    <div id="NDBWeatherBroadcast">Wx Brdcst</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="VOR">
+                        <div class="Align WhiteTitle">VOR</div>
+                        <div class="Align Value AirportDisplay">
+                            <div class="Align SelectableElement" id="VORIdent">POM</div>
+                            <div class="Align" id="VORSymbol"></div>
+                        </div>
+                        <div class="Title">FACILITY, CITY &amp; REGION</div>
+                        <div class="Value SizedL" style="position:relative">
+                            <div id="VORFacility">POMONA</div>
+                            <div id="VORCity">POMONA CA</div>
+                            <div id="VORRegion">SW USA</div>
+                            <div class="Value" id="MagneticVar">
+                                <div class="Align Title">VAR</div>
+                                <div class="Align" id="VORMagneticDeviation">E015°</div>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="Align Half">
+                                <div class="Title">POSITION</div>
+                                <div class="Value SizedM">
+                                    <div id="VORLatitude">N 34°04.70'</div>
+                                    <div id="VORLongitude">W117°47.22'</div>
+                                </div>
+                            </div>
+                            <div class="Align Half">
+                                <div class="Title">FREQ</div>
+                                <div class="Value SizedM">
+                                    <div id="VORFrequency">110.40</div>
+                                    <div id="VORWeatherBroadcast">Wx Brdcst</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="NRSTAirport">
+                        <div class="WhiteTitle">NEAREST AIRPORT</div>
+                        <div id="Content" class="SliderContainer">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th class="Title" colspan="2">APT</th>
+                                        <th class="Title">BRG</th>
+                                        <th class="Title">DIS</th>
+                                        <th class="Title">APR</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="Value" id="NRSTAirportBodyTable">
+                                    <tr id="NRSTAirport_0"><td></td><td></td><td></td><td></td><td></td></tr>
+                                    <tr id="NRSTAirport_Freq_0"><td></td><td></td><td></td><td></td><td></td></tr>
+                                    <tr id="NRSTAirport_1"><td></td><td></td><td></td><td></td><td></td></tr>
+                                    <tr id="NRSTAirport_Freq_1"><td></td><td></td><td></td><td></td><td></td></tr>
+                                    <tr id="NRSTAirport_2"><td></td><td></td><td></td><td></td><td></td></tr>
+                                    <tr id="NRSTAirport_Freq_2"><td></td><td></td><td></td><td></td><td></td></tr>
+                                </tbody>
+                            </table>
+                            <div class="Slider" id="SliderNRSTAirport" state="Active">
+                                <div class="SliderCursor" id="SliderNRSTAirportCursor"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="NRSTIntersection">
+                        <div class="WhiteTitle">NEAREST INTERSECTION</div>
+                        <div class="SliderContainer">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th class="Title" colspan="2">INT</th>
+                                        <th class="Title">BRG</th>
+                                        <th class="Title">DIS</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="Value" id="NRSTIntersectionBodyTable">
+                                    <tr id="NRST_Intersection_0"><td></td><td></td><td></td><td></td></tr>
+                                    <tr id="NRST_Intersection_1"><td></td><td></td><td></td><td></td></tr>
+                                    <tr id="NRST_Intersection_2"><td></td><td></td><td></td><td></td></tr>
+                                    <tr id="NRST_Intersection_3"><td></td><td></td><td></td><td></td></tr>
+                                    <tr id="NRST_Intersection_4"><td></td><td></td><td></td><td></td></tr>
+                                </tbody>
+                            </table>
+                            <div class="Slider" id="SliderNRSTIntersection" state="Active">
+                                <div class="SliderCursor" id="SliderNRSTIntersectionCursor"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="NRSTNDB">
+                        <div class="WhiteTitle">NEAREST NDB</div>
+                        <div class="SliderContainer">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th class="Title" colspan="2">NDB</th>
+                                        <th class="Title">BRG</th>
+                                        <th class="Title">DIS</th>
+                                        <th class="Title">FREQ</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="Value" id="NRSTNDBBodyTable">
+                                    <tr id="NRST_NDB_0"><td></td><td></td><td></td><td></td><td></td></tr>
+                                    <tr id="NRST_NDB_1"><td></td><td></td><td></td><td></td><td></td></tr>
+                                    <tr id="NRST_NDB_2"><td></td><td></td><td></td><td></td><td></td></tr>
+                                    <tr id="NRST_NDB_3"><td></td><td></td><td></td><td></td><td></td></tr>
+                                    <tr id="NRST_NDB_4"><td></td><td></td><td></td><td></td><td></td></tr>
+                                </tbody>
+                            </table>
+                            <div class="Slider" id="SliderNRSTNDB" state="Active">
+                                <div class="SliderCursor" id="SliderNRSTNDBCursor"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="NRSTVOR">
+                        <div class="WhiteTitle">NEAREST VOR</div>
+                        <div class="SliderContainer">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th class="Title" colspan="2">VOR</th>
+                                        <th class="Title">BRG</th>
+                                        <th class="Title">DIS</th>
+                                        <th class="Title">FREQ</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="Value" id="NRSTVORBodyTable">
+                                    <tr id="NRST_VOR_0"><td></td><td></td><td></td><td></td><td></td></tr>
+                                    <tr id="NRST_VOR_1"><td></td><td></td><td></td><td></td><td></td></tr>
+                                    <tr id="NRST_VOR_2"><td></td><td></td><td></td><td></td><td></td></tr>
+                                    <tr id="NRST_VOR_3"><td></td><td></td><td></td><td></td><td></td></tr>
+                                    <tr id="NRST_VOR_4"><td></td><td></td><td></td><td></td><td></td></tr>
+                                </tbody>
+                            </table>
+                            <div class="Slider" id="SliderNRSTVOR" state="Active">
+                                <div class="SliderCursor" id="SliderNRSTVORCursor"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="NRSTAirspace">
+                        <div class="WhiteTitle">NEAREST AIRSPACE</div>
+                        <div class="Value" id="NRSTAirspaceList">
+                            <div class="BotBorder">
+                                <div id="NRST_Airspace_Name_1">____________________</div>
+                                <div id="NRST_Airspace_Status_1">___________________</div>
+                            </div>
+                            <div class="BotBorder">
+                                <div id="NRST_Airspace_Name_2">____________________</div>
+                                <div id="NRST_Airspace_Status_2">___________________</div>
+                            </div>
+                            <div>
+                                <div id="NRST_Airspace_Name_3">____________________</div>
+                                <div id="NRST_Airspace_Status_3">___________________</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="COMSetup">
+                        <div class="WhiteTitle">COM SETUP</div>
+                        <div id="channelSpacing">
+                            <div class="title">CHANNEL SPACING</div>
+                            <div class="value" id="ChannelSpacing_Value">25.0 KHZ</div>
+                        </div>
+                    </div>
+                    <div id="MSG">
+                        <div class="WhiteTitle">MESSAGES</div>
+                        <div class="Value" id="Messages"></div>
+                    </div>
+                    <div id="DuplicateWaypointWindow" class="PopupWindow" state="Inactive">
+                        <div class="internalBorder">
+                            <div class="title">
+                                DUPLICATE WAYPOINTS
+                            </div>
+                            <div class="Ident"></div>
+                            <div id="Duplicates_Container">
+                                <div id="Duplicates_List">
+                                    <div class="Line L1"></div>
+                                    <div class="Line L2"></div>
+                                    <div class="Line L3"></div>
+                                    <div class="Line L4"></div>
+                                    <div class="Line L5"></div>
+                                </div>
+                                <div class="Slider" state="Inactive">
+                                    <div class="SliderCursor"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="ContextualMenu" state="Inactive">
+                        <div id="ContextualMenuWhiteBorder">
+                            <div id="ContextualMenuContent">
+                                <div id="ContextualMenuTitle">EXAMPLE MENU</div>
+                                <div id="ContextualMenuSeparator"></div>
+                                <div id="ContextualMenuMainArea">
+                                    <div id="ContextualMenuElements">
+                                        <div class="ContextualMenuElement" state="Inactive">Inactive?</div>
+                                        <div class="ContextualMenuElement" state="Selected">Selected?</div>
+                                        <div class="ContextualMenuElement" state="Unselected">Unselected?</div>
+                                    </div>
+                                    <div id="SliderMenu" state="Active">
+                                        <div id="SliderMenuCursor"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="BotDisplay">
+                <div class="Align" id="LeftBot">
+                    <div class="Align" id="Gps">GPS</div> <div id="MsgAlert">MSG</div>
+                </div>
+                <div class="Align" id="RightBot">
+                    <div class="Align" id="MenuTitle">NAV</div>
+                    <div class="Align" id="PagePos">
+                        <div class="PageSelect" state="Active"></div><div class="PageSelect" state="Inactive"></div><div class="PageSelect" state="Inactive"></div><div class="PageSelect" state="Inactive"></div><div class="PageSelect" state="Inactive"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</script>
+
+<link rel="stylesheet" href="AS430.css" />
+
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/Shared/NavSystem.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/Shared/CommonPFD_MFD.js"></script>
+
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/Shared/LogicElements/ContextualMenu.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/Shared/LogicElements/SelectableElement.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/Shared/LogicElements/CustomValue.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/Shared/LogicElements/FlightPlan.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/Shared/LogicElements/FlightPlanManager.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/Shared/LogicElements/GeoCalc.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/Shared/LogicElements/SearchField.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/Shared/LogicElements/Waypoint.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/Shared/LogicElements/Runway.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/Shared/LogicElements/Approach.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/Shared/LogicElements/NearestWaypoint.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/Shared/LogicElements/Messages.js"></script>
+
+<script type="text/html" import-template="/Pages/VCockpit/Instruments/Shared/Map/MapInstrument.html"></script>
+
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/GPS/Shared/BaseGPS.js"></script>
+
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/GPS/AS430/AS430.js"></script>

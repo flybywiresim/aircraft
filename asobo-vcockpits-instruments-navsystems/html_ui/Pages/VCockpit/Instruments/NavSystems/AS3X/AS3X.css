@@ -1,0 +1,1533 @@
+﻿:root {
+  --bodyHeightScale: 1; }
+
+@keyframes TemporaryShow {
+  0%, 100% {
+    visibility: visible; } }
+
+@keyframes TemporaryHide {
+  0%, 100% {
+    visibility: hidden; } }
+
+#highlight {
+  position: absolute;
+  height: 100%;
+  width: 100%;
+  z-index: 10; }
+
+#Electricity {
+  width: 100%;
+  height: 100%; }
+  #Electricity[state=off] {
+    display: none; }
+
+@font-face {
+  font-family: "Roboto";
+  src: url("/Fonts/RobotoMono-Medium.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal; }
+
+@font-face {
+  font-family: "Roboto-Light";
+  src: url("/Fonts/RobotoMono-Light.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal; }
+
+@font-face {
+  font-family: "Roboto-Bold";
+  src: url("/Fonts/RobotoMono-Bold.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal; }
+
+as3x-element {
+  font-family: Roboto-Bold; }
+  as3x-element #highlight {
+    pointer-events: none;
+    z-index: 10000; }
+  as3x-element #Electricity {
+    background-color: #1a1d21; }
+    as3x-element #Electricity[state=off] {
+      display: none; }
+    as3x-element #Electricity[state=init] #Splash {
+      animation: TemporaryShow 4s 1; }
+  as3x-element #Splash {
+    position: absolute;
+    visibility: hidden;
+    width: 100%;
+    height: 100%;
+    background-color: black;
+    z-index: 1000; }
+  as3x-element #Content #TopBar {
+    position: absolute;
+    top: 0%;
+    width: 100%;
+    height: 4%;
+    border-bottom: 0.4vh solid white;
+    display: flex; }
+    as3x-element #Content #TopBar .infoBox {
+      position: relative;
+      width: 25%;
+      font-size: 2vh;
+      line-height: 4vh; }
+      as3x-element #Content #TopBar .infoBox .title {
+        position: absolute;
+        height: 100%;
+        width: 30%;
+        left: 0%;
+        text-align: right; }
+      as3x-element #Content #TopBar .infoBox .value {
+        position: absolute;
+        height: 100%;
+        width: 65%;
+        right: 0%;
+        color: magenta; }
+  as3x-element #Content #Engine {
+    position: absolute;
+    top: 4%;
+    width: 100%;
+    height: 15%;
+    padding-top: 5%;
+    border-bottom: 0.4vh solid white; }
+
+@keyframes AlertBlink {
+  0%, 49% {
+    background-color: white;
+    color: red;
+    fill: red; }
+  51%, 100% {
+    background-color: red;
+    color: white;
+    fill: white; } }
+
+@keyframes AlertBlinkBackground {
+  0%, 49% {
+    fill: white; }
+  51%, 100% {
+    fill: red; } }
+    as3x-element #Content #Engine *[state=Alert] *[AlertBlink=Text], as3x-element #Content #Engine .Column *[state=Alert] *[AlertBlink=Text] {
+      animation: AlertBlink 1s infinite; }
+    as3x-element #Content #Engine *[state=Alert] *[AlertBlink=Background], as3x-element #Content #Engine .Column *[state=Alert] *[AlertBlink=Background] {
+      animation: AlertBlinkBackground 1s infinite;
+      fill-opacity: 1; }
+    as3x-element #Content #Engine *[state=Alert] *[AlertBlink=Red], as3x-element #Content #Engine .Column *[state=Alert] *[AlertBlink=Red] {
+      fill: red; }
+  as3x-element #Content #popUpContainer {
+    position: absolute;
+    top: 19%;
+    width: 100%;
+    height: 77%; }
+    as3x-element #Content #popUpContainer .PopupWindow {
+      display: none; }
+      as3x-element #Content #popUpContainer .PopupWindow[state=Active] {
+        display: block; }
+    as3x-element #Content #popUpContainer #DirectToWindow {
+      position: absolute;
+      left: 15%;
+      top: 20%;
+      height: 60%;
+      width: 70%;
+      background-color: #1a1d21;
+      font-size: 2.5vh;
+      border: 0.2vh solid white;
+      border-radius: 2vh; }
+      as3x-element #Content #popUpContainer #DirectToWindow .Blinking[state=Blink], as3x-element #Content #popUpContainer #DirectToWindow .Blinking[state=Selected] {
+        background-color: #36c8d2;
+        color: #1a1d21; }
+      as3x-element #Content #popUpContainer #DirectToWindow .top {
+        background-color: #1a1d21;
+        color: white;
+        width: 100%; }
+      as3x-element #Content #popUpContainer #DirectToWindow .bottom {
+        text-align: left; }
+      as3x-element #Content #popUpContainer #DirectToWindow #mainInfos {
+        background-color: black;
+        color: #36c8d2;
+        position: absolute;
+        width: 90%;
+        top: 0%;
+        left: 5%;
+        height: 40%; }
+      as3x-element #Content #popUpContainer #DirectToWindow #vnav {
+        background-color: black;
+        color: #36c8d2;
+        position: absolute;
+        width: 90%;
+        top: 42%;
+        left: 5%;
+        height: 18%; }
+        as3x-element #Content #popUpContainer #DirectToWindow #vnav .bottom {
+          display: flex; }
+          as3x-element #Content #popUpContainer #DirectToWindow #vnav .bottom div {
+            width: 49%; }
+      as3x-element #Content #popUpContainer #DirectToWindow #location {
+        background-color: black;
+        color: #36c8d2;
+        position: absolute;
+        width: 90%;
+        top: 62%;
+        left: 5%;
+        height: 16%;
+        color: white; }
+        as3x-element #Content #popUpContainer #DirectToWindow #location #DRCTBearing, as3x-element #Content #popUpContainer #DirectToWindow #location #DRCTDistance {
+          color: #36c8d2; }
+        as3x-element #Content #popUpContainer #DirectToWindow #location .bottom {
+          display: flex; }
+          as3x-element #Content #popUpContainer #DirectToWindow #location .bottom div {
+            width: 24%; }
+          as3x-element #Content #popUpContainer #DirectToWindow #location .bottom #DRCTDistance {
+            text-align: right; }
+      as3x-element #Content #popUpContainer #DirectToWindow #course {
+        background-color: black;
+        color: #36c8d2;
+        position: absolute;
+        width: 40%;
+        top: 79%;
+        left: 5%;
+        height: 16%; }
+      as3x-element #Content #popUpContainer #DirectToWindow #DRCTActivateButton {
+        position: absolute;
+        width: 40%;
+        top: 80%;
+        right: 5%;
+        height: 8%;
+        background-color: black; }
+        as3x-element #Content #popUpContainer #DirectToWindow #DRCTActivateButton[state=Blink], as3x-element #Content #popUpContainer #DirectToWindow #DRCTActivateButton[state=Selected] {
+          background-color: white;
+          color: black; }
+      as3x-element #Content #popUpContainer #DirectToWindow #DRCTHoldButton {
+        position: absolute;
+        top: 89%;
+        right: 5%;
+        width: 40%;
+        height: 8%;
+        background-color: black; }
+        as3x-element #Content #popUpContainer #DirectToWindow #DRCTHoldButton[state=Blink], as3x-element #Content #popUpContainer #DirectToWindow #DRCTHoldButton[state=Selected] {
+          background-color: white;
+          color: black; }
+      as3x-element #Content #popUpContainer #DirectToWindow #DRCTSelectionWindow {
+        position: absolute;
+        top: 12%;
+        left: 3%;
+        background-color: grey;
+        width: 13vw;
+        height: calc( 20 * 1vh * var(--bodyHeightScale));
+        border: 1px solid white;
+        padding: 2px;
+        color: aqua; }
+        as3x-element #Content #popUpContainer #DirectToWindow #DRCTSelectionWindow #titlePart {
+          text-align: center;
+          border: 1px solid white;
+          background-color: #1a1d21;
+          height: 20%; }
+        as3x-element #Content #popUpContainer #DirectToWindow #DRCTSelectionWindow #ElementListAndSlider {
+          position: relative;
+          padding-right: 15px;
+          border: 1px solid white;
+          background-color: #1a1d21;
+          height: 79%; }
+          as3x-element #Content #popUpContainer #DirectToWindow #DRCTSelectionWindow #ElementListAndSlider #ElementList {
+            text-align: left; }
+            as3x-element #Content #popUpContainer #DirectToWindow #DRCTSelectionWindow #ElementListAndSlider #ElementList .Blinking {
+              height: calc( 3 * 1vh * var(--bodyHeightScale));
+              width: 100%; }
+          as3x-element #Content #popUpContainer #DirectToWindow #DRCTSelectionWindow #ElementListAndSlider #Slider {
+            position: absolute;
+            background-color: darkgrey;
+            right: 1%;
+            top: 5%;
+            height: 90%;
+            width: 4px; }
+            as3x-element #Content #popUpContainer #DirectToWindow #DRCTSelectionWindow #ElementListAndSlider #Slider[state=Active] {
+              visibility: inherit; }
+            as3x-element #Content #popUpContainer #DirectToWindow #DRCTSelectionWindow #ElementListAndSlider #Slider[state=Inactive] {
+              visibility: hidden; }
+            as3x-element #Content #popUpContainer #DirectToWindow #DRCTSelectionWindow #ElementListAndSlider #Slider #SliderCursor {
+              position: absolute;
+              background-color: white;
+              width: 100%; }
+    as3x-element #Content #popUpContainer #ContextualMenu {
+      position: absolute;
+      left: 15%;
+      top: 20%;
+      height: 60%;
+      width: 70%;
+      background-color: #1a1d21;
+      font-size: 2.5vh;
+      border: 0.2vh solid white;
+      border-radius: 2vh; }
+      as3x-element #Content #popUpContainer #ContextualMenu[state=Inactive] {
+        visibility: hidden; }
+      as3x-element #Content #popUpContainer #ContextualMenu #ContextualMenuContent {
+        width: 100%;
+        height: 100%; }
+        as3x-element #Content #popUpContainer #ContextualMenu #ContextualMenuContent #ContextualMenuTitle {
+          color: white;
+          text-align: center;
+          margin: calc( 1 * 1vh * var(--bodyHeightScale)); }
+        as3x-element #Content #popUpContainer #ContextualMenu #ContextualMenuContent #ContextualMenuMainArea {
+          background-color: #1a1d21;
+          width: 90%;
+          margin-left: 5.5%;
+          border: 1px solid white; }
+          as3x-element #Content #popUpContainer #ContextualMenu #ContextualMenuContent #ContextualMenuMainArea #subTitle {
+            color: white;
+            background-color: dimgray;
+            font-size: calc( 2.3 * 1vh * var(--bodyHeightScale));
+            padding-left: 3vw; }
+          as3x-element #Content #popUpContainer #ContextualMenu #ContextualMenuContent #ContextualMenuMainArea #ContextualMenuElements {
+            color: aquamarine;
+            width: 100%; }
+            as3x-element #Content #popUpContainer #ContextualMenu #ContextualMenuContent #ContextualMenuMainArea #ContextualMenuElements .ContextualMenuElement[state=Inactive] {
+              color: dimgray; }
+            as3x-element #Content #popUpContainer #ContextualMenu #ContextualMenuContent #ContextualMenuMainArea #ContextualMenuElements .ContextualMenuElement[state=Selected] {
+              background-color: aquamarine;
+              color: black; }
+    as3x-element #Content #popUpContainer #ProceduresWindow {
+      position: absolute;
+      left: 15%;
+      top: 12.5%;
+      height: 75%;
+      width: 70%;
+      background-color: #1a1d21;
+      font-size: 2.5vh;
+      border: 0.2vh solid white;
+      border-radius: 2vh; }
+      as3x-element #Content #popUpContainer #ProceduresWindow .title {
+        text-align: center; }
+      as3x-element #Content #popUpContainer #ProceduresWindow .Blinking[state=Blink], as3x-element #Content #popUpContainer #ProceduresWindow .Blinking[state=Selected] {
+        background-color: #36c8d2;
+        color: #1a1d21; }
+      as3x-element #Content #popUpContainer #ProceduresWindow .Blinking[state=Greyed] {
+        color: dimgray; }
+      as3x-element #Content #popUpContainer #ProceduresWindow .SubPart {
+        margin-top: 1vh;
+        width: 90%;
+        margin-left: 5%;
+        background-color: black;
+        position: relative;
+        text-align: left; }
+        as3x-element #Content #popUpContainer #ProceduresWindow .SubPart .Title {
+          height: 3vh;
+          width: 100%;
+          color: white;
+          font-size: 2vh;
+          background-color: #1a1d21; }
+        as3x-element #Content #popUpContainer #ProceduresWindow .SubPart .Content {
+          position: relative;
+          width: 100%;
+          padding: 0.5vh;
+          overflow: hidden;
+          color: #36c8d2;
+          height: 100%; }
+          as3x-element #Content #popUpContainer #ProceduresWindow .SubPart .Content .title {
+            color: white; }
+    as3x-element #Content #popUpContainer #ApproachSelection {
+      position: absolute;
+      left: 15%;
+      top: 7.5%;
+      height: 85%;
+      width: 70%;
+      background-color: #1a1d21;
+      font-size: 2.5vh;
+      border: 0.2vh solid white;
+      border-radius: 2vh; }
+      as3x-element #Content #popUpContainer #ApproachSelection .Blinking[state=Blink], as3x-element #Content #popUpContainer #ApproachSelection .Blinking[state=Selected] {
+        background-color: #36c8d2;
+        color: #1a1d21; }
+      as3x-element #Content #popUpContainer #ApproachSelection .Blinking[state=Greyed] {
+        color: dimgray; }
+      as3x-element #Content #popUpContainer #ApproachSelection .SubPart {
+        margin-top: 1vh;
+        width: 90%;
+        margin-left: 5%;
+        background-color: black;
+        position: relative;
+        text-align: left; }
+        as3x-element #Content #popUpContainer #ApproachSelection .SubPart .Title {
+          height: 3vh;
+          width: 100%;
+          color: white;
+          font-size: 2vh;
+          background-color: #1a1d21; }
+        as3x-element #Content #popUpContainer #ApproachSelection .SubPart .Content {
+          position: relative;
+          width: 100%;
+          padding: 0.5vh;
+          overflow: hidden;
+          color: #36c8d2;
+          height: 100%; }
+          as3x-element #Content #popUpContainer #ApproachSelection .SubPart .Content .title {
+            color: white; }
+          as3x-element #Content #popUpContainer #ApproachSelection .SubPart .Content > div {
+            height: 4vh;
+            line-height: 4vh; }
+      as3x-element #Content #popUpContainer #ApproachSelection .Airport .Content {
+        height: 12vh; }
+      as3x-element #Content #popUpContainer #ApproachSelection .Airport .airportTop {
+        position: relative;
+        top: -1vh;
+        height: 4vh; }
+        as3x-element #Content #popUpContainer #ApproachSelection .Airport .airportTop > div {
+          display: inline-block;
+          width: 40%; }
+        as3x-element #Content #popUpContainer #ApproachSelection .Airport .airportTop img {
+          width: 4vh;
+          position: relative;
+          top: 1vh; }
+      as3x-element #Content #popUpContainer #ApproachSelection .Airport #Approach_AirportName {
+        height: 4vh;
+        overflow: hidden; }
+      as3x-element #Content #popUpContainer #ApproachSelection .Approach .Content {
+        height: 4vh; }
+      as3x-element #Content #popUpContainer #ApproachSelection .Transition .Content {
+        height: 4vh; }
+      as3x-element #Content #popUpContainer #ApproachSelection .PrimaryFrequency {
+        position: relative; }
+        as3x-element #Content #popUpContainer #ApproachSelection .PrimaryFrequency .Content {
+          height: 4vh; }
+        as3x-element #Content #popUpContainer #ApproachSelection .PrimaryFrequency #Approach_FrequencyValue {
+          position: absolute;
+          right: 5%;
+          top: 0%; }
+      as3x-element #Content #popUpContainer #ApproachSelection .Sequence .Content {
+        height: 16vh; }
+      as3x-element #Content #popUpContainer #ApproachSelection .Sequence .SizeSetter td:nth-child(1) {
+        width: 10vh; }
+      as3x-element #Content #popUpContainer #ApproachSelection .Sequence .SizeSetter td:nth-child(2) {
+        width: 4vh; }
+      as3x-element #Content #popUpContainer #ApproachSelection .Sequence .SizeSetter td:nth-child(3) {
+        width: 4vh; }
+      as3x-element #Content #popUpContainer #ApproachSelection .Sequence .SizeSetter td:nth-child(4) {
+        width: 8vh; }
+      as3x-element #Content #popUpContainer #ApproachSelection .Sequence .SizeSetter td:nth-child(5) {
+        width: 8vh; }
+      as3x-element #Content #popUpContainer #ApproachSelection .Sequence tr[state=Blink] .Blinking, as3x-element #Content #popUpContainer #ApproachSelection .Sequence tr[state=Selected] .Blinking {
+        background-color: #36c8d2;
+        color: #1a1d21; }
+      as3x-element #Content #popUpContainer #ApproachSelection .endLine {
+        text-align: center; }
+      as3x-element #Content #popUpContainer #ApproachSelection #Approach_LoadButton, as3x-element #Content #popUpContainer #ApproachSelection #Approach_ActivateButton {
+        color: #36c8d2; }
+      as3x-element #Content #popUpContainer #ApproachSelection .SubMenu {
+        position: absolute;
+        background-color: #1a1d21;
+        border: 0.5vh outset black;
+        color: #36c8d2;
+        text-align: left;
+        padding-left: 2vh;
+        min-width: 25vh; }
+        as3x-element #Content #popUpContainer #ApproachSelection .SubMenu[state="Inactive"] {
+          display: none; }
+        as3x-element #Content #popUpContainer #ApproachSelection .SubMenu > div[state=Inactive] {
+          display: none; }
+      as3x-element #Content #popUpContainer #ApproachSelection #Approach_ApproachList {
+        top: 30vh;
+        left: 5vh; }
+      as3x-element #Content #popUpContainer #ApproachSelection #Approach_TransitionList {
+        top: 35vh;
+        left: 5vh; }
+    as3x-element #Content #popUpContainer #ArrivalSelection {
+      position: absolute;
+      left: 15%;
+      top: 5%;
+      height: 90%;
+      width: 70%;
+      background-color: #1a1d21;
+      font-size: 2.5vh;
+      border: 0.2vh solid white;
+      border-radius: 2vh; }
+      as3x-element #Content #popUpContainer #ArrivalSelection .Blinking[state=Blink], as3x-element #Content #popUpContainer #ArrivalSelection .Blinking[state=Selected] {
+        background-color: #36c8d2;
+        color: #1a1d21; }
+      as3x-element #Content #popUpContainer #ArrivalSelection .Blinking[state=Greyed] {
+        color: dimgray; }
+      as3x-element #Content #popUpContainer #ArrivalSelection .SubPart {
+        margin-top: 1vh;
+        width: 90%;
+        margin-left: 5%;
+        background-color: black;
+        position: relative;
+        text-align: left; }
+        as3x-element #Content #popUpContainer #ArrivalSelection .SubPart .Title {
+          height: 3vh;
+          width: 100%;
+          color: white;
+          font-size: 2vh;
+          background-color: #1a1d21; }
+        as3x-element #Content #popUpContainer #ArrivalSelection .SubPart .Content {
+          position: relative;
+          width: 100%;
+          padding: 0.5vh;
+          overflow: hidden;
+          color: #36c8d2;
+          height: 100%; }
+          as3x-element #Content #popUpContainer #ArrivalSelection .SubPart .Content .title {
+            color: white; }
+          as3x-element #Content #popUpContainer #ArrivalSelection .SubPart .Content > div {
+            height: 4vh;
+            line-height: 4vh; }
+      as3x-element #Content #popUpContainer #ArrivalSelection .Airport .Content {
+        height: 12vh; }
+      as3x-element #Content #popUpContainer #ArrivalSelection .Airport .airportTop {
+        position: relative;
+        top: -1vh;
+        height: 4vh; }
+        as3x-element #Content #popUpContainer #ArrivalSelection .Airport .airportTop > div {
+          display: inline-block;
+          width: 40%; }
+        as3x-element #Content #popUpContainer #ArrivalSelection .Airport .airportTop img {
+          width: 4vh;
+          position: relative;
+          top: 1vh; }
+      as3x-element #Content #popUpContainer #ArrivalSelection .Airport #Arrival_AirportName {
+        height: 4vh;
+        overflow: hidden; }
+      as3x-element #Content #popUpContainer #ArrivalSelection .Arrival .Content {
+        height: 4vh; }
+      as3x-element #Content #popUpContainer #ArrivalSelection .Transition .Content {
+        height: 4vh; }
+      as3x-element #Content #popUpContainer #ArrivalSelection .Runway .Content {
+        height: 4vh; }
+      as3x-element #Content #popUpContainer #ArrivalSelection .Sequence .Content {
+        height: 20vh; }
+      as3x-element #Content #popUpContainer #ArrivalSelection .Sequence .SizeSetter td:nth-child(1) {
+        width: 18vh; }
+      as3x-element #Content #popUpContainer #ArrivalSelection .Sequence .SizeSetter td:nth-child(2) {
+        width: 8vh; }
+      as3x-element #Content #popUpContainer #ArrivalSelection .Sequence .SizeSetter td:nth-child(3) {
+        width: 8vh; }
+      as3x-element #Content #popUpContainer #ArrivalSelection .Sequence tr[state=Blink] .Blinking, as3x-element #Content #popUpContainer #ArrivalSelection .Sequence tr[state=Selected] .Blinking {
+        background-color: #36c8d2;
+        color: #1a1d21; }
+      as3x-element #Content #popUpContainer #ArrivalSelection .endLine {
+        text-align: center; }
+      as3x-element #Content #popUpContainer #ArrivalSelection #Arrival_LoadButton {
+        color: #36c8d2; }
+        as3x-element #Content #popUpContainer #ArrivalSelection #Arrival_LoadButton[state=Blink], as3x-element #Content #popUpContainer #ArrivalSelection #Arrival_LoadButton[state=Selected] {
+          color: #1a1d21; }
+      as3x-element #Content #popUpContainer #ArrivalSelection .SubMenu {
+        position: absolute;
+        background-color: #1a1d21;
+        border: 0.5vh outset black;
+        color: #36c8d2;
+        text-align: left;
+        padding-left: 2vh;
+        min-width: 25vh; }
+        as3x-element #Content #popUpContainer #ArrivalSelection .SubMenu[state="Inactive"] {
+          display: none; }
+        as3x-element #Content #popUpContainer #ArrivalSelection .SubMenu > div[state=Inactive] {
+          display: none; }
+      as3x-element #Content #popUpContainer #ArrivalSelection #Arrival_ArrivalList {
+        top: 21vh;
+        left: 5vh; }
+        as3x-element #Content #popUpContainer #ArrivalSelection #Arrival_ArrivalList .Slider {
+          background-color: #424242; }
+      as3x-element #Content #popUpContainer #ArrivalSelection #Arrival_TransitionList {
+        top: 26vh;
+        left: 5vh; }
+      as3x-element #Content #popUpContainer #ArrivalSelection #Arrival_RunwayList {
+        top: 31vh;
+        left: 5vh; }
+    as3x-element #Content #popUpContainer #DepartureSelection {
+      position: absolute;
+      left: 15%;
+      top: 5%;
+      height: 90%;
+      width: 70%;
+      background-color: #1a1d21;
+      font-size: 2.5vh;
+      border: 0.2vh solid white;
+      border-radius: 2vh; }
+      as3x-element #Content #popUpContainer #DepartureSelection .Blinking[state=Blink], as3x-element #Content #popUpContainer #DepartureSelection .Blinking[state=Selected] {
+        background-color: #36c8d2;
+        color: #1a1d21; }
+      as3x-element #Content #popUpContainer #DepartureSelection .Blinking[state=Greyed] {
+        color: dimgray; }
+      as3x-element #Content #popUpContainer #DepartureSelection .SubPart {
+        margin-top: 1vh;
+        width: 90%;
+        margin-left: 5%;
+        background-color: black;
+        position: relative;
+        text-align: left; }
+        as3x-element #Content #popUpContainer #DepartureSelection .SubPart .Title {
+          height: 3vh;
+          width: 100%;
+          color: white;
+          font-size: 2vh;
+          background-color: #1a1d21; }
+        as3x-element #Content #popUpContainer #DepartureSelection .SubPart .Content {
+          position: relative;
+          width: 100%;
+          padding: 0.5vh;
+          overflow: hidden;
+          color: #36c8d2;
+          height: 100%; }
+          as3x-element #Content #popUpContainer #DepartureSelection .SubPart .Content .title {
+            color: white; }
+          as3x-element #Content #popUpContainer #DepartureSelection .SubPart .Content > div {
+            height: 4vh;
+            line-height: 4vh; }
+      as3x-element #Content #popUpContainer #DepartureSelection .Airport .Content {
+        height: 12vh; }
+      as3x-element #Content #popUpContainer #DepartureSelection .Airport .airportTop {
+        position: relative;
+        top: -1vh;
+        height: 4vh; }
+        as3x-element #Content #popUpContainer #DepartureSelection .Airport .airportTop > div {
+          display: inline-block;
+          width: 40%; }
+        as3x-element #Content #popUpContainer #DepartureSelection .Airport .airportTop img {
+          width: 4vh;
+          position: relative;
+          top: 1vh; }
+      as3x-element #Content #popUpContainer #DepartureSelection .Airport #Departure_AirportName {
+        height: 4vh;
+        overflow: hidden; }
+      as3x-element #Content #popUpContainer #DepartureSelection .Departure .Content {
+        height: 4vh; }
+      as3x-element #Content #popUpContainer #DepartureSelection .Transition .Content {
+        height: 4vh; }
+      as3x-element #Content #popUpContainer #DepartureSelection .Runway .Content {
+        height: 4vh; }
+      as3x-element #Content #popUpContainer #DepartureSelection .Sequence .Content {
+        height: 20vh; }
+      as3x-element #Content #popUpContainer #DepartureSelection .Sequence .SizeSetter td:nth-child(1) {
+        width: 18vh; }
+      as3x-element #Content #popUpContainer #DepartureSelection .Sequence .SizeSetter td:nth-child(2) {
+        width: 8vh; }
+      as3x-element #Content #popUpContainer #DepartureSelection .Sequence .SizeSetter td:nth-child(3) {
+        width: 8vh; }
+      as3x-element #Content #popUpContainer #DepartureSelection .Sequence tr[state=Blink] .Blinking, as3x-element #Content #popUpContainer #DepartureSelection .Sequence tr[state=Selected] .Blinking {
+        background-color: #36c8d2;
+        color: #1a1d21; }
+      as3x-element #Content #popUpContainer #DepartureSelection .endLine {
+        text-align: center; }
+      as3x-element #Content #popUpContainer #DepartureSelection #Departure_LoadButton {
+        color: #36c8d2; }
+        as3x-element #Content #popUpContainer #DepartureSelection #Departure_LoadButton[state=Blink], as3x-element #Content #popUpContainer #DepartureSelection #Departure_LoadButton[state=Selected] {
+          color: #1a1d21; }
+      as3x-element #Content #popUpContainer #DepartureSelection .SubMenu {
+        position: absolute;
+        background-color: #1a1d21;
+        border: 0.5vh outset black;
+        color: #36c8d2;
+        text-align: left;
+        padding-left: 2vh;
+        min-width: 25vh; }
+        as3x-element #Content #popUpContainer #DepartureSelection .SubMenu[state="Inactive"] {
+          display: none; }
+        as3x-element #Content #popUpContainer #DepartureSelection .SubMenu > div[state=Inactive] {
+          display: none; }
+      as3x-element #Content #popUpContainer #DepartureSelection #Departure_DepartureList {
+        top: 21vh;
+        left: 5vh; }
+        as3x-element #Content #popUpContainer #DepartureSelection #Departure_DepartureList .Slider {
+          background-color: #424242; }
+      as3x-element #Content #popUpContainer #DepartureSelection #Departure_TransitionList {
+        top: 26vh;
+        left: 5vh; }
+      as3x-element #Content #popUpContainer #DepartureSelection #Departure_RunwayList {
+        top: 31vh;
+        left: 5vh; }
+    as3x-element #Content #popUpContainer #WaypointsWindows {
+      position: absolute;
+      left: 20%;
+      top: 20%;
+      height: 60%;
+      width: 60%;
+      background-color: #1a1d21;
+      font-size: calc( 2 * 1vh * var(--bodyHeightScale));
+      border: 0.2vh solid white;
+      border-radius: 2vh; }
+      as3x-element #Content #popUpContainer #WaypointsWindows .title {
+        text-align: center; }
+      as3x-element #Content #popUpContainer #WaypointsWindows .Blinking[state=Blink], as3x-element #Content #popUpContainer #WaypointsWindows .Blinking[state=Selected] {
+        background-color: #36c8d2;
+        color: #1a1d21; }
+      as3x-element #Content #popUpContainer #WaypointsWindows .top {
+        background-color: #1a1d21;
+        color: white;
+        width: 100%;
+        text-align: center; }
+      as3x-element #Content #popUpContainer #WaypointsWindows .bottom {
+        text-align: left; }
+      as3x-element #Content #popUpContainer #WaypointsWindows #mainInfos {
+        background-color: black;
+        color: #36c8d2;
+        position: absolute;
+        width: 90%;
+        top: 5%;
+        left: 5%;
+        height: 55%; }
+        as3x-element #Content #popUpContainer #WaypointsWindows #mainInfos .top {
+          height: 15%; }
+        as3x-element #Content #popUpContainer #WaypointsWindows #mainInfos .bottom {
+          position: relative; }
+          as3x-element #Content #popUpContainer #WaypointsWindows #mainInfos .bottom #WPTSymbol {
+            position: absolute;
+            top: 4%;
+            right: 4%;
+            width: 15%; }
+      as3x-element #Content #popUpContainer #WaypointsWindows #location {
+        background-color: black;
+        color: #36c8d2;
+        position: absolute;
+        width: 90%;
+        top: 60%;
+        left: 5%;
+        height: 30%;
+        color: white; }
+        as3x-element #Content #popUpContainer #WaypointsWindows #location #WPTBearing, as3x-element #Content #popUpContainer #WaypointsWindows #location #WPTDistance {
+          color: #36c8d2; }
+        as3x-element #Content #popUpContainer #WaypointsWindows #location .top {
+          height: 20%; }
+        as3x-element #Content #popUpContainer #WaypointsWindows #location .bottom {
+          display: flex; }
+          as3x-element #Content #popUpContainer #WaypointsWindows #location .bottom #left {
+            width: 60%; }
+          as3x-element #Content #popUpContainer #WaypointsWindows #location .bottom #right {
+            width: 49%;
+            color: #36c8d2; }
+      as3x-element #Content #popUpContainer #WaypointsWindows #BotText {
+        position: absolute;
+        width: 100%;
+        text-align: center;
+        bottom: 2vh; }
+    as3x-element #Content #popUpContainer #DuplicateWaypointWindow {
+      position: absolute;
+      left: 15%;
+      top: 15%;
+      height: 70%;
+      width: 70%;
+      background-color: #1a1d21;
+      font-size: 2.5vh;
+      border: 0.2vh solid white;
+      border-radius: 2vh; }
+      as3x-element #Content #popUpContainer #DuplicateWaypointWindow .Blinking[state=Blink], as3x-element #Content #popUpContainer #DuplicateWaypointWindow .Blinking[state=Selected] {
+        background-color: #36c8d2;
+        color: #1a1d21; }
+      as3x-element #Content #popUpContainer #DuplicateWaypointWindow .SubPart {
+        margin-top: 1vh;
+        width: 90%;
+        margin-left: 5%;
+        background-color: black;
+        position: relative; }
+        as3x-element #Content #popUpContainer #DuplicateWaypointWindow .SubPart .Title {
+          height: 3vh;
+          width: 100%;
+          color: white;
+          font-size: 2vh;
+          background-color: #1a1d21; }
+        as3x-element #Content #popUpContainer #DuplicateWaypointWindow .SubPart .Content {
+          position: relative;
+          width: 100%;
+          padding: 0.5vh;
+          overflow: hidden;
+          color: #36c8d2;
+          height: 100%; }
+      as3x-element #Content #popUpContainer #DuplicateWaypointWindow .Waypoint {
+        height: 3vh; }
+        as3x-element #Content #popUpContainer #DuplicateWaypointWindow .Waypoint .ident {
+          position: absolute;
+          left: 0.5vh; }
+      as3x-element #Content #popUpContainer #DuplicateWaypointWindow .Duplicates {
+        height: 27vh; }
+        as3x-element #Content #popUpContainer #DuplicateWaypointWindow .Duplicates .Content .Line {
+          height: 4.5vh; }
+          as3x-element #Content #popUpContainer #DuplicateWaypointWindow .Duplicates .Content .Line div {
+            width: 30%;
+            display: inline-block;
+            text-align: left; }
+          as3x-element #Content #popUpContainer #DuplicateWaypointWindow .Duplicates .Content .Line img {
+            height: 4vh;
+            margin-right: 10%; }
+          as3x-element #Content #popUpContainer #DuplicateWaypointWindow .Duplicates .Content .Line[state="Selected"] {
+            background-color: #36c8d2;
+            color: #1a1d21; }
+        as3x-element #Content #popUpContainer #DuplicateWaypointWindow .Duplicates .Content .Slider {
+          position: absolute;
+          background-color: #1a1d21;
+          right: 1%;
+          top: 5%;
+          height: 80%;
+          width: 4px; }
+          as3x-element #Content #popUpContainer #DuplicateWaypointWindow .Duplicates .Content .Slider[state=Active] {
+            visibility: inherit; }
+          as3x-element #Content #popUpContainer #DuplicateWaypointWindow .Duplicates .Content .Slider[state=Inactive] {
+            visibility: hidden; }
+          as3x-element #Content #popUpContainer #DuplicateWaypointWindow .Duplicates .Content .Slider .SliderCursor {
+            position: absolute;
+            background-color: white;
+            width: 100%; }
+      as3x-element #Content #popUpContainer #DuplicateWaypointWindow .Informations {
+        height: 30%; }
+        as3x-element #Content #popUpContainer #DuplicateWaypointWindow .Informations .Name {
+          position: absolute;
+          left: 0.5vh;
+          top: 0.5vh;
+          white-space: pre-line; }
+        as3x-element #Content #popUpContainer #DuplicateWaypointWindow .Informations .Latitude {
+          position: absolute;
+          left: 0.5vh;
+          bottom: 7vh; }
+        as3x-element #Content #popUpContainer #DuplicateWaypointWindow .Informations .Longitude {
+          position: absolute;
+          left: 0.5vh;
+          bottom: 4vh; }
+        as3x-element #Content #popUpContainer #DuplicateWaypointWindow .Informations .Bearing {
+          position: absolute;
+          right: 0.5vh;
+          bottom: 7vh; }
+        as3x-element #Content #popUpContainer #DuplicateWaypointWindow .Informations .Distance {
+          position: absolute;
+          right: 0.5vh;
+          bottom: 4vh; }
+  as3x-element #Content #PFD {
+    position: absolute;
+    top: 19%;
+    width: 100%;
+    height: 40%; }
+    as3x-element #Content #PFD #HorizonContainer {
+      transform: rotateX(0);
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      z-index: -6;
+      border: none;
+      overflow: hidden; }
+      as3x-element #Content #PFD #HorizonContainer #Horizon {
+        position: absolute;
+        left: 10%;
+        right: 10%;
+        top: calc(4.8vh + 4.6%);
+        width: auto;
+        height: 23vh;
+        border: none; }
+      as3x-element #Content #PFD #HorizonContainer #SyntheticVision {
+        left: -42vh;
+        top: calc(-52vh + 4.6%);
+        width: 144vh;
+        height: 144vh;
+        z-index: -3;
+        display: block; }
+        as3x-element #Content #PFD #HorizonContainer #SyntheticVision #MapSVG, as3x-element #Content #PFD #HorizonContainer #SyntheticVision #road-network-canvas, as3x-element #Content #PFD #HorizonContainer #SyntheticVision #MapRange, as3x-element #Content #PFD #HorizonContainer #SyntheticVision #MapOrientation {
+          transform: rotateX(0);
+          display: none; }
+        as3x-element #Content #PFD #HorizonContainer #SyntheticVision bing-map {
+          transform: rotateX(0);
+          position: absolute;
+          left: 0px;
+          top: 0px;
+          width: 100%;
+          height: 100%; }
+    as3x-element #Content #PFD #Altimeter {
+      position: absolute;
+      top: 4.6%;
+      right: 0%;
+      height: 40vh; }
+      as3x-element #Content #PFD #Altimeter svg {
+        position: absolute;
+        right: 0%;
+        width: auto; }
+    as3x-element #Content #PFD #Airspeed {
+      position: absolute;
+      top: 6%;
+      left: -9.1%;
+      height: 40vh; }
+    as3x-element #Content #PFD #HSI {
+      display: none;
+      position: absolute;
+      bottom: 0%;
+      left: 0%;
+      right: 0%;
+      height: 52%; }
+    as3x-element #Content #PFD #OAT {
+      display: none;
+      position: absolute;
+      height: 4vh;
+      width: 19%;
+      left: 0%;
+      bottom: 0%;
+      background-color: #1a1d21; }
+      as3x-element #Content #PFD #OAT .title {
+        position: absolute;
+        left: 5%;
+        line-height: 4vh;
+        font-size: 2vh;
+        color: grey; }
+      as3x-element #Content #PFD #OAT #OAT_Value {
+        position: absolute;
+        right: 5%;
+        color: magenta;
+        line-height: 4vh;
+        font-size: 2.5vh; }
+    as3x-element #Content #PFD #LCL {
+      display: none;
+      position: absolute;
+      height: 4vh;
+      width: 30%;
+      right: 0%;
+      bottom: 0%;
+      background-color: #1a1d21; }
+      as3x-element #Content #PFD #LCL .title {
+        position: absolute;
+        left: 5%;
+        line-height: 4vh;
+        font-size: 2vh;
+        color: grey; }
+      as3x-element #Content #PFD #LCL #LCL_Value {
+        position: absolute;
+        right: 5%;
+        color: magenta;
+        line-height: 4vh;
+        font-size: 2.5vh; }
+    as3x-element #Content #PFD #Compass {
+      position: absolute;
+      top: 0%;
+      left: 0%;
+      right: 0%; }
+    as3x-element #Content #PFD #CDI {
+      position: absolute;
+      left: 32%;
+      right: 32%;
+      top: 36vh; }
+    as3x-element #Content #PFD #GS {
+      position: absolute;
+      height: 4vh;
+      width: 19%;
+      left: 0%;
+      top: 4.6%;
+      background-color: #1a1d21; }
+      as3x-element #Content #PFD #GS .title {
+        position: absolute;
+        left: 5%;
+        line-height: 4vh;
+        font-size: 2vh;
+        color: grey; }
+      as3x-element #Content #PFD #GS #GS_Value {
+        position: absolute;
+        right: 5%;
+        color: magenta;
+        line-height: 4vh;
+        font-size: 2.5vh; }
+    as3x-element #Content #PFD #AutopilotInfos {
+      position: absolute;
+      top: 4.6%;
+      left: 19%;
+      right: 24%;
+      background: rgba(26, 29, 33, 0.25);
+      font-size: 2vh;
+      height: 3%; }
+      as3x-element #Content #PFD #AutopilotInfos #AP_Status {
+        position: absolute;
+        left: 0%;
+        width: 10%;
+        height: 100%;
+        border-right: 0.4vh solid white;
+        text-align: center;
+        color: green; }
+      as3x-element #Content #PFD #AutopilotInfos #AP_LateralActive {
+        position: absolute;
+        left: 10%;
+        width: 20%;
+        height: 100%;
+        text-align: center;
+        color: green; }
+      as3x-element #Content #PFD #AutopilotInfos #AP_VerticalActive {
+        position: absolute;
+        right: 50%;
+        width: 20%;
+        height: 100%;
+        border-left: 0.4vh solid white;
+        text-align: center;
+        color: green; }
+      as3x-element #Content #PFD #AutopilotInfos #AP_ModeReference {
+        position: absolute;
+        right: 20%;
+        width: 30%;
+        height: 100%;
+        text-align: center;
+        color: green; }
+      as3x-element #Content #PFD #AutopilotInfos #AP_Armed {
+        position: absolute;
+        right: 0%;
+        width: 20%;
+        height: 100%;
+        text-align: center; }
+  as3x-element #Content #MFD {
+    position: absolute;
+    top: 59%;
+    width: 100%;
+    height: 37%; }
+    as3x-element #Content #MFD .Page {
+      position: absolute;
+      width: 100%;
+      height: calc(100% - 4vh);
+      display: none; }
+    as3x-element #Content #MFD #PageInfos {
+      position: absolute;
+      height: 4vh;
+      bottom: 0%;
+      width: 100%;
+      font-size: 2.5vh;
+      background-color: #1a1d21; }
+      as3x-element #Content #MFD #PageInfos #currentPage {
+        position: absolute;
+        width: 45%;
+        left: 5%;
+        height: 100%; }
+        as3x-element #Content #MFD #PageInfos #currentPage #currentPageName {
+          width: 100%; }
+      as3x-element #Content #MFD #PageInfos #pageList {
+        position: absolute;
+        width: 50%;
+        right: 0%;
+        height: 100%;
+        display: flex; }
+        as3x-element #Content #MFD #PageInfos #pageList .pageElem {
+          margin-left: 1vh; }
+          as3x-element #Content #MFD #PageInfos #pageList .pageElem[state=Active] {
+            color: black;
+            background-color: aqua; }
+    as3x-element #Content #MFD[state=Map] #Map,
+    as3x-element #Content #MFD[state=ActiveFlightPlan] #ActiveFlightPlan,
+    as3x-element #Content #MFD[state=Nrst_Airport] #Nrst_Airport,
+    as3x-element #Content #MFD[state=Nrst_VOR] #Nrst_VOR,
+    as3x-element #Content #MFD[state=Nrst_NDB] #Nrst_NDB,
+    as3x-element #Content #MFD[state=Nrst_Intersections] #Nrst_Intersections {
+      display: block; }
+    as3x-element #Content #MFD[state=PFD] #PageInfos {
+      display: none; }
+    as3x-element #Content #MFD #Map {
+      /* Map position (left and top) is set in mapConfig.json file (see SvgMapConfig.ts) (makes it editable at runtime) */
+      /* Map position (left and top) is set in mapConfig.json file (see SvgMapConfig.ts) (makes it editable at runtime) */ }
+      as3x-element #Content #MFD #Map #MapOrientation {
+        position: absolute;
+        top: 0%;
+        right: 0%;
+        width: 20%;
+        height: calc( 3 * 1vh * var(--bodyHeightScale));
+        background-color: #1a1d21;
+        color: white;
+        text-align: center;
+        font-size: 2vh; }
+      as3x-element #Content #MFD #Map #MapRange {
+        position: absolute;
+        bottom: 0%;
+        right: 0%;
+        width: 15%;
+        height: 4vh;
+        background-color: #1a1d21;
+        color: #36c8d2;
+        display: flex;
+        font-size: 3vh; }
+        as3x-element #Content #MFD #Map #MapRange .Align {
+          width: 50%;
+          text-align: right; }
+        as3x-element #Content #MFD #Map #MapRange .unit {
+          font-size: 2vh;
+          line-height: 1.6vh;
+          text-align: left; }
+      as3x-element #Content #MFD #Map #MapSVG, as3x-element #Content #MFD #Map #road-network-canvas {
+        transform: rotateX(0);
+        position: absolute; }
+      as3x-element #Content #MFD #Map bing-map {
+        transform: rotateX(0);
+        position: absolute;
+        left: 0px;
+        top: 0px;
+        width: 100%;
+        height: 100%; }
+    as3x-element #Content #MFD #ActiveFlightPlan {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      background-color: #1a1d21;
+      right: 0%;
+      top: 0%;
+      font-size: 2.5vh; }
+      as3x-element #Content #MFD #ActiveFlightPlan .BlueValue {
+        text-align: left;
+        color: aqua; }
+      as3x-element #Content #MFD #ActiveFlightPlan .WhiteValue {
+        text-align: left;
+        color: white; }
+      as3x-element #Content #MFD #ActiveFlightPlan .SubPart {
+        margin-top: 1vh;
+        width: 90%;
+        margin-left: 5%;
+        background-color: black; }
+        as3x-element #Content #MFD #ActiveFlightPlan .SubPart .Title {
+          height: 3vh;
+          width: 100%;
+          color: white;
+          font-size: 2vh;
+          background-color: #1a1d21; }
+        as3x-element #Content #MFD #ActiveFlightPlan .SubPart .Content {
+          height: calc(100% - 3vh);
+          width: 100%;
+          padding: 0.5vh;
+          overflow: hidden; }
+      as3x-element #Content #MFD #ActiveFlightPlan .ActiveFPL {
+        height: 90%; }
+        as3x-element #Content #MFD #ActiveFlightPlan .ActiveFPL .SelectableElement {
+          color: aqua; }
+        as3x-element #Content #MFD #ActiveFlightPlan .ActiveFPL .SelectableWhite {
+          color: white; }
+        as3x-element #Content #MFD #ActiveFlightPlan .ActiveFPL table {
+          width: 95%;
+          overflow: visible; }
+          as3x-element #Content #MFD #ActiveFlightPlan .ActiveFPL table th {
+            text-align: center; }
+          as3x-element #Content #MFD #ActiveFlightPlan .ActiveFPL table thead, as3x-element #Content #MFD #ActiveFlightPlan .ActiveFPL table tbody {
+            width: 100%;
+            overflow: visible; }
+          as3x-element #Content #MFD #ActiveFlightPlan .ActiveFPL table tr[state="Selected"] .SelectableElement {
+            color: black;
+            background-color: aqua; }
+          as3x-element #Content #MFD #ActiveFlightPlan .ActiveFPL table tr[state="Selected"] .SelectableWhite {
+            color: black;
+            background-color: white; }
+          as3x-element #Content #MFD #ActiveFlightPlan .ActiveFPL table tr .SelectableElement[state="Selected"], as3x-element #Content #MFD #ActiveFlightPlan .ActiveFPL table tr .SelectableElement[state=Blink], as3x-element #Content #MFD #ActiveFlightPlan .ActiveFPL table tr .Blinking[state="Selected"], as3x-element #Content #MFD #ActiveFlightPlan .ActiveFPL table tr .Blinking[state=Blink] {
+            color: black;
+            background-color: aqua; }
+          as3x-element #Content #MFD #ActiveFlightPlan .ActiveFPL table tr .SelectableWhite[state="Selected"] {
+            color: black;
+            background-color: white; }
+          as3x-element #Content #MFD #ActiveFlightPlan .ActiveFPL table tr .altitudeConstraint {
+            color: white; }
+            as3x-element #Content #MFD #ActiveFlightPlan .ActiveFPL table tr .altitudeConstraint[altitudeMode=Manual] {
+              color: aqua; }
+            as3x-element #Content #MFD #ActiveFlightPlan .ActiveFPL table tr .altitudeConstraint[altitudeMode=Subdued] {
+              color: aqua;
+              -webkit-mask: url(/Pages/VCockpit/Instruments/NavSystems/Shared/Images/SubduedMask.png);
+              -webkit-mask-repeat: repeat; }
+          as3x-element #Content #MFD #ActiveFlightPlan .ActiveFPL table tr, as3x-element #Content #MFD #ActiveFlightPlan .ActiveFPL table td {
+            height: 3.2vh; }
+          as3x-element #Content #MFD #ActiveFlightPlan .ActiveFPL table tbody tr td {
+            text-align: right; }
+          as3x-element #Content #MFD #ActiveFlightPlan .ActiveFPL table tbody tr td:first-child {
+            text-align: left;
+            padding-left: 5vw; }
+          as3x-element #Content #MFD #ActiveFlightPlan .ActiveFPL table thead tr th:nth-child(1), as3x-element #Content #MFD #ActiveFlightPlan .ActiveFPL table tbody tr:first-child td:nth-child(1) {
+            width: 40%; }
+          as3x-element #Content #MFD #ActiveFlightPlan .ActiveFPL table thead tr th:nth-child(2), as3x-element #Content #MFD #ActiveFlightPlan .ActiveFPL table tbody tr:first-child td:nth-child(2) {
+            width: 15%; }
+          as3x-element #Content #MFD #ActiveFlightPlan .ActiveFPL table thead tr th:nth-child(3), as3x-element #Content #MFD #ActiveFlightPlan .ActiveFPL table tbody tr:first-child td:nth-child(3) {
+            width: 20%; }
+          as3x-element #Content #MFD #ActiveFlightPlan .ActiveFPL table thead tr th:nth-child(4), as3x-element #Content #MFD #ActiveFlightPlan .ActiveFPL table tbody tr:first-child td:nth-child(4) {
+            width: 20%; }
+          as3x-element #Content #MFD #ActiveFlightPlan .ActiveFPL table .SizeSetter, as3x-element #Content #MFD #ActiveFlightPlan .ActiveFPL table .SizeSetter td {
+            height: 0vh;
+            overflow: visible;
+            position: relative; }
+            as3x-element #Content #MFD #ActiveFlightPlan .ActiveFPL table .SizeSetter .ArrowContainer, as3x-element #Content #MFD #ActiveFlightPlan .ActiveFPL table .SizeSetter td .ArrowContainer {
+              position: absolute;
+              left: 0px;
+              top: 0px;
+              width: 0px;
+              height: 0px;
+              overflow: visible; }
+              as3x-element #Content #MFD #ActiveFlightPlan .ActiveFPL table .SizeSetter .ArrowContainer .CurrentLegArrowSVG, as3x-element #Content #MFD #ActiveFlightPlan .ActiveFPL table .SizeSetter td .ArrowContainer .CurrentLegArrowSVG {
+                position: absolute;
+                left: 0px;
+                top: 0px;
+                width: 0px;
+                height: 0px;
+                overflow: visible; }
+              as3x-element #Content #MFD #ActiveFlightPlan .ActiveFPL table .SizeSetter .ArrowContainer img, as3x-element #Content #MFD #ActiveFlightPlan .ActiveFPL table .SizeSetter td .ArrowContainer img {
+                z-index: 1; }
+      as3x-element #Content #MFD #ActiveFlightPlan .SliderContainer {
+        position: relative;
+        width: 100%;
+        height: 100%; }
+        as3x-element #Content #MFD #ActiveFlightPlan .SliderContainer .Slider {
+          position: absolute;
+          background-color: #1a1d21;
+          right: 1%;
+          top: 10%;
+          height: 90%;
+          width: 4px; }
+          as3x-element #Content #MFD #ActiveFlightPlan .SliderContainer .Slider[state=Active] {
+            visibility: inherit; }
+          as3x-element #Content #MFD #ActiveFlightPlan .SliderContainer .Slider[state=Inactive] {
+            visibility: hidden; }
+          as3x-element #Content #MFD #ActiveFlightPlan .SliderContainer .Slider .SliderCursor {
+            position: absolute;
+            background-color: white;
+            width: 100%; }
+    as3x-element #Content #MFD .NrstPage {
+      position: absolute;
+      height: 100%;
+      width: 100%;
+      right: 0%;
+      top: 0%;
+      background-color: #1a1d21; }
+      as3x-element #Content #MFD .NrstPage .SubPart {
+        width: 90%;
+        margin-left: 5%;
+        background-color: black;
+        position: relative; }
+        as3x-element #Content #MFD .NrstPage .SubPart .Title {
+          height: 3vh;
+          width: 100%;
+          color: white;
+          font-size: 2vh;
+          background-color: #1a1d21; }
+        as3x-element #Content #MFD .NrstPage .SubPart .Content {
+          height: auto;
+          color: #36c8d2; }
+      as3x-element #Content #MFD .NrstPage tr[state="Selected"] .SelectableElement {
+        color: black;
+        background-color: aqua; }
+      as3x-element #Content #MFD .NrstPage tr[state="Selected"] .SelectableWhite {
+        color: black;
+        background-color: white; }
+      as3x-element #Content #MFD .NrstPage .SliderContainer {
+        position: relative;
+        width: 100%; }
+        as3x-element #Content #MFD .NrstPage .SliderContainer .Slider {
+          position: absolute;
+          background-color: #1a1d21;
+          right: 1%;
+          top: 5%;
+          height: 90%;
+          width: 4px; }
+          as3x-element #Content #MFD .NrstPage .SliderContainer .Slider[state=Active] {
+            visibility: inherit; }
+          as3x-element #Content #MFD .NrstPage .SliderContainer .Slider[state=Inactive] {
+            visibility: hidden; }
+          as3x-element #Content #MFD .NrstPage .SliderContainer .Slider .SliderCursor {
+            position: absolute;
+            background-color: white;
+            width: 100%; }
+    as3x-element #Content #MFD #Nrst_Airport #NrstAirportList {
+      height: 32%; }
+      as3x-element #Content #MFD #Nrst_Airport #NrstAirportList #Nrst_AirportList {
+        width: 95%;
+        font-size: 2.5vh; }
+        as3x-element #Content #MFD #Nrst_Airport #NrstAirportList #Nrst_AirportList img {
+          height: 3.5vh; }
+      as3x-element #Content #MFD #Nrst_Airport #NrstAirportList .SizeSetter td:nth-child(1) {
+        width: 5%; }
+      as3x-element #Content #MFD #Nrst_Airport #NrstAirportList .SizeSetter td:nth-child(2) {
+        width: 25%; }
+      as3x-element #Content #MFD #Nrst_Airport #NrstAirportList .SizeSetter td:nth-child(3) {
+        width: 20%; }
+      as3x-element #Content #MFD #Nrst_Airport #NrstAirportList .SizeSetter td:nth-child(4) {
+        width: 20%; }
+      as3x-element #Content #MFD #Nrst_Airport #NrstAirportList .SizeSetter td:nth-child(5) {
+        width: 20%; }
+    as3x-element #Content #MFD #Nrst_Airport #NrstAirportInfos {
+      height: 12%;
+      font-size: 2.5vh; }
+      as3x-element #Content #MFD #Nrst_Airport #NrstAirportInfos .Facility {
+        position: absolute;
+        bottom: 3.5vh;
+        left: 1vw;
+        width: 90%;
+        white-space: nowrap;
+        overflow: hidden;
+        text-align: left; }
+      as3x-element #Content #MFD #Nrst_Airport #NrstAirportInfos .City {
+        position: absolute;
+        bottom: 1vh;
+        left: 1vw;
+        width: 70%;
+        white-space: nowrap;
+        overflow: hidden;
+        text-align: left; }
+      as3x-element #Content #MFD #Nrst_Airport #NrstAirportInfos .Elevation {
+        position: absolute;
+        bottom: 1vh;
+        right: 1vw; }
+    as3x-element #Content #MFD #Nrst_Airport #NrstAirportRunways {
+      height: 12%;
+      font-size: 2.5vh; }
+      as3x-element #Content #MFD #Nrst_Airport #NrstAirportRunways .Rwy_Designation {
+        position: absolute;
+        bottom: 3.5vh;
+        left: 1vw; }
+        as3x-element #Content #MFD #Nrst_Airport #NrstAirportRunways .Rwy_Designation[State=Selected] {
+          color: black;
+          background-color: #36c8d2; }
+      as3x-element #Content #MFD #Nrst_Airport #NrstAirportRunways .Rwy_Surface {
+        position: absolute;
+        bottom: 3.5vh;
+        right: 1vw; }
+      as3x-element #Content #MFD #Nrst_Airport #NrstAirportRunways .Rwy_Length {
+        position: absolute;
+        bottom: 1vh;
+        left: 1vw; }
+      as3x-element #Content #MFD #Nrst_Airport #NrstAirportRunways .Rwy_x {
+        position: absolute;
+        bottom: 1vh;
+        left: 20vw; }
+      as3x-element #Content #MFD #Nrst_Airport #NrstAirportRunways .Rwy_Width {
+        position: absolute;
+        bottom: 1vh;
+        left: 24vw; }
+    as3x-element #Content #MFD #Nrst_Airport #NrstAirportFreqs {
+      height: 18%; }
+      as3x-element #Content #MFD #Nrst_Airport #NrstAirportFreqs #Nrst_AirportFreqList {
+        width: 90%;
+        margin-left: 5%;
+        font-size: 2.5vh; }
+        as3x-element #Content #MFD #Nrst_Airport #NrstAirportFreqs #Nrst_AirportFreqList tr td:nth-child(1) {
+          text-align: left;
+          width: 75%; }
+        as3x-element #Content #MFD #Nrst_Airport #NrstAirportFreqs #Nrst_AirportFreqList tr td:nth-child(2) {
+          text-align: right;
+          width: 25%; }
+    as3x-element #Content #MFD #Nrst_Airport #NrstAirportApproaches {
+      height: 18%; }
+      as3x-element #Content #MFD #Nrst_Airport #NrstAirportApproaches #Nrst_AirportApproachesList {
+        width: 90%;
+        margin-left: 5%;
+        font-size: 2.5vh; }
+        as3x-element #Content #MFD #Nrst_Airport #NrstAirportApproaches #Nrst_AirportApproachesList tr td:nth-child(1) {
+          text-align: left;
+          width: 100%; }
+    as3x-element #Content #MFD #Nrst_VOR #NrstVORList {
+      height: 63%; }
+      as3x-element #Content #MFD #Nrst_VOR #NrstVORList #Nrst_VORList {
+        width: 95%;
+        font-size: 2.5vh; }
+        as3x-element #Content #MFD #Nrst_VOR #NrstVORList #Nrst_VORList img {
+          height: 3.5vh; }
+    as3x-element #Content #MFD #Nrst_VOR #NrstVORInfos {
+      height: 21.5%;
+      font-size: 2.5vh; }
+      as3x-element #Content #MFD #Nrst_VOR #NrstVORInfos .Facility {
+        position: absolute;
+        left: 1vw;
+        top: 3vh;
+        width: 90%;
+        white-space: nowrap;
+        overflow: hidden;
+        text-align: left; }
+      as3x-element #Content #MFD #Nrst_VOR #NrstVORInfos .City {
+        position: absolute;
+        left: 1vw;
+        bottom: 9.5vh;
+        width: 90%;
+        white-space: nowrap;
+        overflow: hidden;
+        text-align: left; }
+      as3x-element #Content #MFD #Nrst_VOR #NrstVORInfos .Class {
+        position: absolute;
+        left: 1vw;
+        bottom: 6.5vh; }
+      as3x-element #Content #MFD #Nrst_VOR #NrstVORInfos .MagVar {
+        position: absolute;
+        left: 35vw;
+        bottom: 6.5vh; }
+      as3x-element #Content #MFD #Nrst_VOR #NrstVORInfos .Latitude {
+        position: absolute;
+        left: 1vw;
+        bottom: 3.5vh; }
+      as3x-element #Content #MFD #Nrst_VOR #NrstVORInfos .Longitude {
+        position: absolute;
+        left: 1vw;
+        bottom: 1vh; }
+    as3x-element #Content #MFD #Nrst_VOR #NrstVORFrequency {
+      height: 10%;
+      font-size: 2.5vh; }
+      as3x-element #Content #MFD #Nrst_VOR #NrstVORFrequency .Frequency {
+        position: absolute;
+        left: 1vw;
+        bottom: 1vh; }
+        as3x-element #Content #MFD #Nrst_VOR #NrstVORFrequency .Frequency[State=Selected] {
+          color: black;
+          background-color: #36c8d2; }
+    as3x-element #Content #MFD #Nrst_NDB #NrstNDBList {
+      height: 63%; }
+      as3x-element #Content #MFD #Nrst_NDB #NrstNDBList #Nrst_NDBList {
+        width: 95%;
+        font-size: 2.5vh; }
+        as3x-element #Content #MFD #Nrst_NDB #NrstNDBList #Nrst_NDBList img {
+          height: 3.5vh; }
+    as3x-element #Content #MFD #Nrst_NDB #NrstNDBInfos {
+      height: 21.5%;
+      font-size: 2.5vh; }
+      as3x-element #Content #MFD #Nrst_NDB #NrstNDBInfos .Facility {
+        position: absolute;
+        left: 1vw;
+        top: 3vh;
+        width: 90%;
+        white-space: nowrap;
+        overflow: hidden;
+        text-align: left; }
+      as3x-element #Content #MFD #Nrst_NDB #NrstNDBInfos .City {
+        position: absolute;
+        left: 1vw;
+        bottom: 9.5vh;
+        width: 90%;
+        white-space: nowrap;
+        overflow: hidden;
+        text-align: left; }
+      as3x-element #Content #MFD #Nrst_NDB #NrstNDBInfos .Class {
+        position: absolute;
+        left: 1vw;
+        bottom: 6.5vh; }
+      as3x-element #Content #MFD #Nrst_NDB #NrstNDBInfos .Latitude {
+        position: absolute;
+        left: 1vw;
+        bottom: 3.5vh; }
+      as3x-element #Content #MFD #Nrst_NDB #NrstNDBInfos .Longitude {
+        position: absolute;
+        left: 1vw;
+        bottom: 1vh; }
+    as3x-element #Content #MFD #Nrst_NDB #NrstNDBFrequency {
+      height: 10%;
+      font-size: 2.5vh; }
+      as3x-element #Content #MFD #Nrst_NDB #NrstNDBFrequency .Frequency {
+        position: absolute;
+        left: 1vw;
+        bottom: 1vh; }
+        as3x-element #Content #MFD #Nrst_NDB #NrstNDBFrequency .Frequency[State=Selected] {
+          color: black;
+          background-color: #36c8d2; }
+    as3x-element #Content #MFD #Nrst_Intersections #NrstINTList {
+      height: 63%; }
+      as3x-element #Content #MFD #Nrst_Intersections #NrstINTList #Nrst_INTList {
+        width: 95%;
+        font-size: 2.5vh; }
+        as3x-element #Content #MFD #Nrst_Intersections #NrstINTList #Nrst_INTList img {
+          height: 3.5vh; }
+    as3x-element #Content #MFD #Nrst_Intersections #NrstINTInfos {
+      height: 12%;
+      font-size: 2.5vh; }
+      as3x-element #Content #MFD #Nrst_Intersections #NrstINTInfos .Latitude {
+        position: absolute;
+        left: 1vw;
+        bottom: 3.5vh; }
+      as3x-element #Content #MFD #Nrst_Intersections #NrstINTInfos .Longitude {
+        position: absolute;
+        left: 1vw;
+        bottom: 1vh; }
+    as3x-element #Content #MFD #Nrst_Intersections #NrstINTVorReference {
+      height: 12%;
+      font-size: 2.5vh; }
+      as3x-element #Content #MFD #Nrst_Intersections #NrstINTVorReference .VorIdent {
+        position: absolute;
+        bottom: 3.5vh;
+        left: 1vw; }
+      as3x-element #Content #MFD #Nrst_Intersections #NrstINTVorReference .VorSymbol {
+        position: absolute;
+        height: 3vh;
+        top: 3.5vh;
+        left: 6vw; }
+      as3x-element #Content #MFD #Nrst_Intersections #NrstINTVorReference .VorFreq {
+        position: absolute;
+        bottom: 3.5vh;
+        left: 15vw; }
+      as3x-element #Content #MFD #Nrst_Intersections #NrstINTVorReference .VorBearing {
+        position: absolute;
+        bottom: 1vh;
+        left: 3vw; }
+      as3x-element #Content #MFD #Nrst_Intersections #NrstINTVorReference .VorDistance {
+        position: absolute;
+        bottom: 1vh;
+        left: 15vw; }
+  as3x-element #Content #Softkeys {
+    position: absolute;
+    top: 96%;
+    width: 100%;
+    height: 4%;
+    display: flex;
+    border-top: 0.4vh solid white; }
+    as3x-element #Content #Softkeys .softkey {
+      height: 100%;
+      width: 20%;
+      border-left: 0.2vh solid white;
+      border-right: 0.2vh solid white;
+      text-align: center;
+      font-size: 2vh;
+      line-height: 4vh; }
+      as3x-element #Content #Softkeys .softkey[state=Active] {
+        color: #1a1d21;
+        background-color: #d6d6d6; }
+    as3x-element #Content #Softkeys #Key1 {
+      border-left: none; }
+    as3x-element #Content #Softkeys #Key5 {
+      border-right: none; }
+  as3x-element #Content[state=PFD] #PFD {
+    top: 4%;
+    height: 92%; }
+    as3x-element #Content[state=PFD] #PFD #HSI {
+      display: block; }
+    as3x-element #Content[state=PFD] #PFD #OAT {
+      display: block; }
+    as3x-element #Content[state=PFD] #PFD #LCL {
+      display: block; }
+  as3x-element #Content[state=PFD] #MFD {
+    top: 48.2%;
+    height: 47.7%;
+    background-color: none; }
+    as3x-element #Content[state=PFD] #MFD #Nrst_Airport #NrstAirportList {
+      height: 35%; }
+    as3x-element #Content[state=PFD] #MFD #Nrst_Airport #NrstAirportInfos {
+      height: 20%; }
+    as3x-element #Content[state=PFD] #MFD #Nrst_Airport #NrstAirportRunways {
+      height: 20%; }
+    as3x-element #Content[state=PFD] #MFD #Nrst_Airport #NrstAirportFreqs {
+      height: 15%; }
+    as3x-element #Content[state=PFD] #MFD #Nrst_Airport #NrstAirportApproaches {
+      display: none; }
+    as3x-element #Content[state=PFD] #MFD #Nrst_VOR #NrstVORList {
+      height: 50%; }
+      as3x-element #Content[state=PFD] #MFD #Nrst_VOR #NrstVORList #Nrst_VORList img {
+        height: 2.5vh; }
+    as3x-element #Content[state=PFD] #MFD #Nrst_VOR #NrstVORInfos {
+      height: 27%; }
+    as3x-element #Content[state=PFD] #MFD #Nrst_VOR #NrstVORFrequency {
+      height: 20%; }
+      as3x-element #Content[state=PFD] #MFD #Nrst_VOR #NrstVORFrequency .Frequency {
+        line-height: 6vh;
+        position: relative; }
+    as3x-element #Content[state=PFD] #MFD #Nrst_NDB #NrstNDBList {
+      height: 50%; }
+      as3x-element #Content[state=PFD] #MFD #Nrst_NDB #NrstNDBList #Nrst_NDBList img {
+        height: 2.5vh; }
+    as3x-element #Content[state=PFD] #MFD #Nrst_NDB #NrstNDBInfos {
+      height: 27%; }
+    as3x-element #Content[state=PFD] #MFD #Nrst_NDB #NrstNDBFrequency {
+      height: 20%; }
+      as3x-element #Content[state=PFD] #MFD #Nrst_NDB #NrstNDBFrequency .Frequency {
+        line-height: 6vh;
+        position: relative; }
+    as3x-element #Content[state=PFD] #MFD #Nrst_Intersections #NrstINTList {
+      height: 50%; }
+      as3x-element #Content[state=PFD] #MFD #Nrst_Intersections #NrstINTList #Nrst_INTList img {
+        height: 2.5vh; }
+    as3x-element #Content[state=PFD] #MFD #Nrst_Intersections #NrstINTInfos {
+      height: 20%; }
+    as3x-element #Content[state=PFD] #MFD #Nrst_Intersections #NrstINTVorReference {
+      height: 20%; }
+      as3x-element #Content[state=PFD] #MFD #Nrst_Intersections #NrstINTVorReference .Frequency {
+        line-height: 6vh;
+        position: relative; }
+  as3x-element #Content[state=PFD] #popUpContainer {
+    top: 47%;
+    height: 50%; }
+    as3x-element #Content[state=PFD] #popUpContainer #WaypointsWindows, as3x-element #Content[state=PFD] #popUpContainer #DirectToWindow {
+      top: 10%;
+      height: 80%; }
+    as3x-element #Content[state=PFD] #popUpContainer #ApproachSelection, as3x-element #Content[state=PFD] #popUpContainer #DepartureSelection, as3x-element #Content[state=PFD] #popUpContainer #ArrivalSelection {
+      top: 5%;
+      height: 90%; }
+      as3x-element #Content[state=PFD] #popUpContainer #ApproachSelection .SubMenu, as3x-element #Content[state=PFD] #popUpContainer #DepartureSelection .SubMenu, as3x-element #Content[state=PFD] #popUpContainer #ArrivalSelection .SubMenu {
+        top: auto !important;
+        bottom: 2vh !important; }
+    as3x-element #Content[state=PFD] #popUpContainer #ProceduresWindow #currentProcedures {
+      display: none; }
+  as3x-element #Content[state=PFD] #Engine {
+    display: none; }
+  as3x-element #Content[state=MFD] #MFD {
+    top: 19%;
+    height: 77%; }
+  as3x-element #Content[state=MFD] #PFD {
+    display: none; }
+

@@ -1,0 +1,99 @@
+﻿<script type="text/html" id="AS3000_MFD">
+    <glasscockpit-highlight id="highlight"></glasscockpit-highlight>
+    <div id="Mainframe">
+        <div id="Electricity" state="off">
+            <div id="Console">Initializing System...</div>
+            <img id="Splash" src="/Pages/VCockpit/Instruments/NavSystems/Shared/Images/Logo/Garmin.svg" />
+            <img id="Validate" src="/Pages/VCockpit/Instruments/NavSystems/Shared/Images/Logo/MFD_Startup_G3000.png" />
+            <div id="CenterDisplay">
+                <div id="ComFreq">
+                    <div id="COM1">
+                        <div class="Active">
+                            <div class="Title">COM1</div>
+                            <div class="Value" id="Com1_Active"></div>
+                        </div>
+                        <div class="Stby">
+                            <div class="Title">STBY</div>
+                            <div class="Value" id="Com1_Stby"></div>
+                        </div>
+                    </div>
+                    <div id="COM2">
+                        <div class="Active">
+                            <div class="Title">COM2</div>
+                            <div class="Value" id="Com2_Active"></div>
+                        </div>
+                        <div class="Stby">
+                            <div class="Title">STBY</div>
+                            <div class="Value" id="Com2_Stby"></div>
+                        </div>
+                    </div>
+                </div>
+                <div id="LeftInfos">
+                    <as3000-engine-display id="ED"></as3000-engine-display>
+                </div>
+                <div id="RightInfos">
+                    <div id="TopRight">
+                        <div class="title">GS</div>
+                        <div class="value" id="GS">___KT</div>
+                        <div class="title">DTK</div>
+                        <div class="value" id="DTK">___°</div>
+                        <div class="title">TRK</div>
+                        <div class="value" id="TRK">___°</div>
+                        <div class="title">ETE</div>
+                        <div class="value" id="ETE">__:__</div>
+                        <div class="title">BRG</div>
+                        <div class="value" id="BRG">___°</div>
+                        <div class="title">DIS</div>
+                        <div class="value" id="DIS">__._NM</div>
+                        <div class="title">MSA</div>
+                        <div class="value" id="MSA">____FT</div>
+                        <div class="title">ETA</div>
+                        <div class="value" id="ETA">__:__UTC</div>
+                    </div>
+                    <div id="Map">
+                        <map-instrument id="MapInstrument" bing-id="MFD" config-path="/Pages/VCockpit/Instruments/NavSystems/AS3000/MFD/" hide-flightplan-if-bushtrip="true"></map-instrument>
+                        <glasscockpit-wind-data id="WindData"></glasscockpit-wind-data>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</script>
+
+<link rel="stylesheet" href="AS3000_MFD.css" />
+
+<script type="text/html" import-script="/JS/SimPlane.js"></script>
+
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/Shared/Templates/Highlight/highlight.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/Shared/Templates/WindDataDisplay/WindDataDisplay.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/Shared/Templates/XMLEngineDisplay/XMLEngineDisplay.js"></script>
+
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/Shared/LogicElements/FlightPlan.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/Shared/LogicElements/FlightPlanManager.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/Shared/LogicElements/GeoCalc.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/Shared/LogicElements/SearchField.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/Shared/LogicElements/Waypoint.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/Shared/LogicElements/Runway.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/Shared/LogicElements/Approach.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/Shared/LogicElements/NearestWaypoint.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/Shared/LogicElements/SelectableElement.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/Shared/LogicElements/ContextualMenu.js"></script>
+
+<script type="text/html" import-template="/Pages/VCockpit/Instruments/Shared/Map/MapInstrument.html"></script>
+
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Shared/Gauges/AbstractGauge.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Shared/Gauges/CircularGauge.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Shared/Gauges/HorizontalGauge.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Shared/Gauges/VerticalGauge.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Shared/Gauges/FlapsGauge.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Shared/Gauges/AilTrimGauge.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Shared/Gauges/ElevTrimGauge.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Shared/Gauges/RudderTrimGauge.js"></script>
+
+<script type="text/html" import-template="/Pages/VCockpit/Instruments/NavSystems/AS3000/Templates/EngineDisplay.html"></script>
+
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/Shared/NavSystem.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/Shared/CommonPFD_MFD.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/Shared/LogicElements/GaugeElement.js"></script>
+
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/AS3000/MFD/AS3000_MFD.js"></script>

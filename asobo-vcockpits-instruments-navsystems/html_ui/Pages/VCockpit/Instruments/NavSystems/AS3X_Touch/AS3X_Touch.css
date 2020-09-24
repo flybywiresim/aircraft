@@ -1,0 +1,2350 @@
+﻿:root {
+  --bodyHeightScale: 1; }
+
+@keyframes TemporaryShow {
+  0%, 100% {
+    visibility: visible; } }
+
+@keyframes TemporaryHide {
+  0%, 100% {
+    visibility: hidden; } }
+
+#highlight {
+  position: absolute;
+  height: 100%;
+  width: 100%;
+  z-index: 10; }
+
+#Electricity {
+  width: 100%;
+  height: 100%; }
+  #Electricity[state=off] {
+    display: none; }
+
+@font-face {
+  font-family: "Roboto";
+  src: url("/Fonts/RobotoMono-Medium.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal; }
+
+@font-face {
+  font-family: "Roboto-Light";
+  src: url("/Fonts/RobotoMono-Light.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal; }
+
+@font-face {
+  font-family: "Roboto-Bold";
+  src: url("/Fonts/RobotoMono-Bold.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal; }
+
+@keyframes SelectedCharBlinkFreqEdit {
+  0%, 40% {
+    background-color: aqua;
+    color: black; }
+  60%, 100% {
+    background-color: none;
+    color: aqua; } }
+
+as3x-touch-element {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  font-family: Roboto-Bold;
+  background-color: black; }
+  as3x-touch-element #highlight {
+    pointer-events: none;
+    z-index: 10000; }
+  as3x-touch-element #Electricity[state=off] {
+    display: none; }
+  as3x-touch-element #Electricity[state=init] #Splash {
+    animation: TemporaryShow 4s 1; }
+  as3x-touch-element #Splash {
+    position: absolute;
+    visibility: hidden;
+    width: 100%;
+    height: 100%;
+    background-color: black;
+    z-index: 1000; }
+  as3x-touch-element #TopBar {
+    position: absolute;
+    top: 0%;
+    width: 100%;
+    height: 10%;
+    border-bottom: 0.3vh solid white;
+    display: flex; }
+    as3x-touch-element #TopBar .Button, as3x-touch-element #TopBar .valueDisplay {
+      position: relative;
+      width: 7%;
+      font-size: 3vh;
+      height: 90%;
+      margin: 0.5vh;
+      border: 0.2vh solid #333333;
+      border-radius: 1vh;
+      overflow: hidden; }
+      as3x-touch-element #TopBar .Button .title, as3x-touch-element #TopBar .valueDisplay .title {
+        color: white;
+        text-align: center;
+        position: absolute;
+        top: 2%;
+        width: 100%; }
+    as3x-touch-element #TopBar .big {
+      width: 11%; }
+    as3x-touch-element #TopBar .valueDisplay .value {
+      position: absolute;
+      bottom: 2%;
+      text-align: center;
+      width: 100%;
+      color: magenta; }
+    as3x-touch-element #TopBar .Button {
+      background: linear-gradient(#0093d0, rgba(0, 147, 208, 0) 60%);
+      text-align: center; }
+      as3x-touch-element #TopBar .Button[state=Inactive] {
+        visibility: hidden; }
+      as3x-touch-element #TopBar .Button[state=Greyed] {
+        filter: grayscale(100%) brightness(40%); }
+        as3x-touch-element #TopBar .Button[state=Greyed]:Hover:Active {
+          background-color: black !important; }
+      as3x-touch-element #TopBar .Button[state=Hidden] {
+        display: none !important; }
+      as3x-touch-element #TopBar .Button[state=Invisible] {
+        visibility: hidden !important; }
+      as3x-touch-element #TopBar .Button:Hover:Active {
+        background-color: #0093d0; }
+      as3x-touch-element #TopBar .Button .statusBar {
+        position: absolute;
+        width: 80%;
+        height: 5%;
+        background-color: grey;
+        left: 10%;
+        bottom: 30%; }
+        as3x-touch-element #TopBar .Button .statusBar[state=Active] {
+          background-color: lawngreen; }
+    as3x-touch-element #TopBar #com_standby_btn, as3x-touch-element #TopBar #com_active_btn {
+      text-align: center; }
+      as3x-touch-element #TopBar #com_standby_btn .title, as3x-touch-element #TopBar #com_active_btn .title {
+        font-size: 2.5vh; }
+      as3x-touch-element #TopBar #com_standby_btn #com_standby, as3x-touch-element #TopBar #com_active_btn #com_standby {
+        color: aqua; }
+      as3x-touch-element #TopBar #com_standby_btn #com_active, as3x-touch-element #TopBar #com_active_btn #com_active {
+        color: lawngreen; }
+      as3x-touch-element #TopBar #com_standby_btn #com_standby, as3x-touch-element #TopBar #com_standby_btn #com_active, as3x-touch-element #TopBar #com_active_btn #com_standby, as3x-touch-element #TopBar #com_active_btn #com_active {
+        position: absolute;
+        top: 30%;
+        width: 100%; }
+      as3x-touch-element #TopBar #com_standby_btn #com_standby_ident, as3x-touch-element #TopBar #com_standby_btn #com_active_ident, as3x-touch-element #TopBar #com_active_btn #com_standby_ident, as3x-touch-element #TopBar #com_active_btn #com_active_ident {
+        position: absolute;
+        font-size: 2vh;
+        bottom: 0%;
+        width: 100%; }
+    as3x-touch-element #TopBar #xpdr_btn #xpdr_code {
+      position: absolute;
+      bottom: 2%;
+      left: 7%;
+      text-align: left;
+      font-size: 3.5vh;
+      color: lawngreen; }
+    as3x-touch-element #TopBar #xpdr_btn #xpdr_mode {
+      position: absolute;
+      bottom: 6%;
+      right: 7%;
+      text-align: right;
+      font-size: 2.5vh;
+      color: lawngreen; }
+  as3x-touch-element #MainDisplay {
+    position: absolute;
+    left: 0%;
+    bottom: 4%;
+    top: 10%;
+    width: 42.5%;
+    border-right: 0.3vh solid white;
+    z-index: 0; }
+  as3x-touch-element #PFD #HorizonContainer {
+    transform: rotateX(0);
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    z-index: -6;
+    border: none;
+    overflow: hidden; }
+    as3x-touch-element #PFD #HorizonContainer #Horizon {
+      position: absolute;
+      left: 30%;
+      right: 30%;
+      top: 16.5%;
+      width: auto;
+      height: 24%;
+      border: none; }
+    as3x-touch-element #PFD #HorizonContainer #SyntheticVision {
+      left: -40vh;
+      top: -51vh;
+      width: 160vh;
+      height: 160vh;
+      z-index: -3;
+      display: block; }
+      as3x-touch-element #PFD #HorizonContainer #SyntheticVision #MapSVG, as3x-touch-element #PFD #HorizonContainer #SyntheticVision #road-network-canvas, as3x-touch-element #PFD #HorizonContainer #SyntheticVision #MapRange, as3x-touch-element #PFD #HorizonContainer #SyntheticVision #MapOrientation {
+        transform: rotateX(0);
+        display: none; }
+      as3x-touch-element #PFD #HorizonContainer #SyntheticVision bing-map {
+        transform: rotateX(0);
+        position: absolute;
+        left: 0px;
+        top: 0px;
+        width: 100%;
+        height: 100%; }
+  as3x-touch-element #PFD #Airspeed {
+    position: absolute;
+    height: 45%;
+    right: calc(50% + 10vh);
+    top: 11.5%; }
+  as3x-touch-element #PFD #Altimeter {
+    position: absolute;
+    height: 45%;
+    left: calc(50% + 12vh);
+    top: 10%; }
+  as3x-touch-element #PFD #RadarAltitude {
+    position: absolute;
+    left: calc(50% + 2vh);
+    bottom: 50%;
+    height: 5%;
+    width: 8vw;
+    background-color: #1a1d21;
+    vertical-align: central; }
+    as3x-touch-element #PFD #RadarAltitude #RA_Title {
+      position: absolute;
+      width: 35%;
+      height: 100%;
+      left: 0%;
+      font-size: 3vh;
+      text-align: center;
+      line-height: 5vh; }
+    as3x-touch-element #PFD #RadarAltitude #RA_Value {
+      position: absolute;
+      width: 65%;
+      height: 100%;
+      right: 0%;
+      text-align: center;
+      font-size: 3.2vh;
+      line-height: 5vh; }
+    as3x-touch-element #PFD #RadarAltitude[state=Inactive] {
+      display: none; }
+  as3x-touch-element #PFD #Compass {
+    position: absolute;
+    left: 18%;
+    right: 18%;
+    top: 55%;
+    bottom: 2%;
+    width: auto;
+    height: auto; }
+  as3x-touch-element #PFD #ElevatorTrim {
+    position: absolute;
+    right: calc(50% + 13vh);
+    bottom: 12%;
+    height: 12vh; }
+    as3x-touch-element #PFD #ElevatorTrim svg {
+      height: 100%; }
+  as3x-touch-element #PFD #AutopilotInfos {
+    position: absolute;
+    width: 40vh;
+    height: 8%;
+    top: 0%;
+    left: calc(50% - 20vh);
+    background-color: #1a1d21;
+    border-radius: 0% 0% 1.5vh 1.5vh; }
+    as3x-touch-element #PFD #AutopilotInfos .Left {
+      position: absolute;
+      width: 24%;
+      height: 100%;
+      left: 0%; }
+      as3x-touch-element #PFD #AutopilotInfos .Left #AP_LateralActive {
+        position: absolute;
+        width: 100%;
+        color: green;
+        font-size: 3vh;
+        top: 1%;
+        text-align: center; }
+      as3x-touch-element #PFD #AutopilotInfos .Left #AP_LateralArmed {
+        position: absolute;
+        width: 100%;
+        color: white;
+        font-size: 2.5vh;
+        bottom: 8%;
+        text-align: center; }
+    as3x-touch-element #PFD #AutopilotInfos .Center {
+      border-left: 0.4vh solid white;
+      border-right: 0.4vh solid white;
+      width: 24%;
+      height: 100%;
+      position: absolute;
+      left: 25%; }
+      as3x-touch-element #PFD #AutopilotInfos .Center #AP_Status {
+        position: absolute;
+        width: 50%;
+        color: green;
+        font-size: 3vh;
+        top: 1%;
+        left: 0%;
+        text-align: center; }
+      as3x-touch-element #PFD #AutopilotInfos .Center #AP_YDStatus {
+        position: absolute;
+        width: 50%;
+        color: green;
+        font-size: 3vh;
+        top: 1%;
+        right: 0%;
+        text-align: center; }
+      as3x-touch-element #PFD #AutopilotInfos .Center #AP_FDIndicatorArrow {
+        position: absolute;
+        width: 50%;
+        left: 25%;
+        bottom: 10%; }
+        as3x-touch-element #PFD #AutopilotInfos .Center #AP_FDIndicatorArrow[state=Inactive] {
+          display: none; }
+    as3x-touch-element #PFD #AutopilotInfos .Right {
+      width: 52%;
+      height: 100%;
+      position: absolute;
+      right: 0%; }
+      as3x-touch-element #PFD #AutopilotInfos .Right #AP_VerticalActive {
+        position: absolute;
+        width: 50%;
+        color: green;
+        font-size: 3vh;
+        top: 1%;
+        left: 0%;
+        text-align: center; }
+      as3x-touch-element #PFD #AutopilotInfos .Right #AP_ModeReference {
+        position: absolute;
+        width: 50%;
+        color: green;
+        font-size: 2.5vh;
+        top: 1%;
+        right: 0%;
+        text-align: center; }
+      as3x-touch-element #PFD #AutopilotInfos .Right #AP_Armed {
+        position: absolute;
+        width: 50%;
+        color: white;
+        font-size: 2.5vh;
+        bottom: 8%;
+        left: 0%;
+        text-align: center; }
+      as3x-touch-element #PFD #AutopilotInfos .Right #AP_ArmedReference {
+        position: absolute;
+        width: 50%;
+        color: white;
+        font-size: 2.5vh;
+        bottom: 8%;
+        right: 0%;
+        text-align: center; }
+  as3x-touch-element #PFD #Warnings {
+    position: absolute;
+    width: 15vh;
+    height: 3.7%;
+    right: 50%;
+    top: 9%;
+    text-align: center;
+    z-index: 100; }
+
+@keyframes RedWarning {
+  0%, 45% {
+    background-color: red;
+    color: white; }
+  55%, 100% {
+    background-color: white;
+    color: red; } }
+
+@keyframes YellowWarning {
+  0%, 45% {
+    background-color: yellow;
+    color: black; }
+  55%, 100% {
+    background-color: black;
+    color: yellow; } }
+
+@keyframes WhiteWarning {
+  0%, 45% {
+    background-color: White;
+    color: black; }
+  55%, 100% {
+    background-color: black;
+    color: white; } }
+    as3x-touch-element #PFD #Warnings[state=Red] {
+      animation: RedWarning 1s 5;
+      background-color: red;
+      color: white; }
+    as3x-touch-element #PFD #Warnings[state=Yellow] {
+      animation: YellowWarning 1s 5;
+      background-color: black;
+      color: yellow; }
+    as3x-touch-element #PFD #Warnings[state=White] {
+      animation: WhiteWarning 1s 5;
+      background-color: white;
+      color: black; }
+    as3x-touch-element #PFD #Warnings[state=Hidden] {
+      display: none; }
+    as3x-touch-element #PFD #Warnings #WarningsContent {
+      font-size: 2.5vh; }
+  as3x-touch-element #MFD {
+    position: absolute;
+    right: 15%;
+    bottom: 4%;
+    top: 10%;
+    width: 42.5%;
+    background-color: black;
+    border-left: 0.2vh solid white;
+    z-index: 1; }
+    as3x-touch-element #MFD[state=Hide] {
+      transition: right 0.5s;
+      right: -27.5%; }
+    as3x-touch-element #MFD[state=Half] {
+      transition: right 0.5s; }
+    as3x-touch-element #MFD[state=HideNoEngine] {
+      transition: right 0.5s;
+      right: -42.5%; }
+    as3x-touch-element #MFD[state=HalfNoEngine] {
+      transition: right 0.5s;
+      right: 0%; }
+    as3x-touch-element #MFD #MFD_BottomBar {
+      position: absolute;
+      bottom: 0%;
+      height: 5%;
+      width: 100%;
+      font-size: 2.5vh; }
+      as3x-touch-element #MFD #MFD_BottomBar #currentPage {
+        position: absolute;
+        width: 40%;
+        height: 100%;
+        text-align: center; }
+        as3x-touch-element #MFD #MFD_BottomBar #currentPage #currentPageName {
+          width: 100%; }
+      as3x-touch-element #MFD #MFD_BottomBar #pageList {
+        position: absolute;
+        width: 60%;
+        right: 0%;
+        height: 100%;
+        display: flex; }
+        as3x-touch-element #MFD #MFD_BottomBar #pageList .page {
+          margin-left: 1vh; }
+          as3x-touch-element #MFD #MFD_BottomBar #pageList .page[state=Selected] {
+            color: black;
+            background-color: aqua; }
+    as3x-touch-element #MFD #PagesContainer {
+      position: absolute;
+      top: 0%;
+      left: 0%;
+      right: 0%;
+      bottom: 5%;
+      width: auto;
+      height: auto; }
+      as3x-touch-element #MFD #PagesContainer .page {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        display: none; }
+      as3x-touch-element #MFD #PagesContainer[state=Map] #Map,
+      as3x-touch-element #MFD #PagesContainer[state=FPL] #FPL,
+      as3x-touch-element #MFD #PagesContainer[state=Procedures] #Procedures,
+      as3x-touch-element #MFD #PagesContainer[state=NearestAirport] #NearestAirport,
+      as3x-touch-element #MFD #PagesContainer[state=NearestVOR] #NearestVOR,
+      as3x-touch-element #MFD #PagesContainer[state=NearestNDB] #NearestNDB,
+      as3x-touch-element #MFD #PagesContainer[state=NearestIntersection] #NearestIntersection {
+        display: block; }
+      as3x-touch-element #MFD #PagesContainer #FPL #Afpl_Map {
+        position: absolute;
+        height: calc(40% - 1vh);
+        left: 0.5vh;
+        right: 0.5vh;
+        top: 0.5vh;
+        width: auto;
+        border: 0.2vh solid #333333;
+        border-radius: 1vh; }
+      as3x-touch-element #MFD #PagesContainer #FPL #flightPlan {
+        position: absolute;
+        width: 100%;
+        top: 40%;
+        height: 60%;
+        border: 0.4vh solid white; }
+
+@keyframes rightEnter {
+  0% {
+    right: -29.5vw; }
+  100% {
+    right: 0vw; } }
+
+@keyframes rightExit {
+  0% {
+    right: 0vw;
+    visibility: visible; }
+  100% {
+    right: -29.5vw;
+    visibility: hidden; } }
+        as3x-touch-element #MFD #PagesContainer #FPL #flightPlan .HalfMenu {
+          visibility: hidden; }
+        as3x-touch-element #MFD #PagesContainer #FPL #flightPlan[displayedMenu=Waypoint] #AFPL_WaypointButtonsTable,
+        as3x-touch-element #MFD #PagesContainer #FPL #flightPlan[displayedMenu=Destination] #AFPL_DestinationButtonsTable,
+        as3x-touch-element #MFD #PagesContainer #FPL #flightPlan[displayedMenu=Origin] #AFPL_OriginButtonsTable {
+          visibility: visible;
+          animation: rightEnter 0.5s; }
+        as3x-touch-element #MFD #PagesContainer #FPL #flightPlan #AFPL_Origin[state=SelectedWP],
+        as3x-touch-element #MFD #PagesContainer #FPL #flightPlan #AFPL_EnRoute[state=SelectedWP],
+        as3x-touch-element #MFD #PagesContainer #FPL #flightPlan #AFPL_Destination[state=SelectedWP] {
+          background-color: #0093d0; }
+        as3x-touch-element #MFD #PagesContainer #FPL #flightPlan #AFPL_WayPointsTable {
+          width: 100%;
+          height: 100%;
+          border: 0.4vh solid white;
+          border-collapse: collapse; }
+          as3x-touch-element #MFD #PagesContainer #FPL #flightPlan #AFPL_WayPointsTable thead {
+            display: block;
+            color: white;
+            font-size: 3vh;
+            height: 7vh;
+            width: 97%;
+            border-bottom: 0.4vh solid white;
+            padding-right: 3%; }
+          as3x-touch-element #MFD #PagesContainer #FPL #flightPlan #AFPL_WayPointsTable tbody {
+            display: block;
+            overflow-y: scroll;
+            overflow-x: hidden;
+            height: 41vh;
+            width: 97%;
+            position: relative;
+            padding-right: 1.75%; }
+            as3x-touch-element #MFD #PagesContainer #FPL #flightPlan #AFPL_WayPointsTable tbody::-webkit-scrollbar {
+              width: 0.5vw; }
+            as3x-touch-element #MFD #PagesContainer #FPL #flightPlan #AFPL_WayPointsTable tbody::-webkit-scrollbar-track {
+              background: none; }
+            as3x-touch-element #MFD #PagesContainer #FPL #flightPlan #AFPL_WayPointsTable tbody::-webkit-scrollbar-thumb {
+              background: white; }
+            as3x-touch-element #MFD #PagesContainer #FPL #flightPlan #AFPL_WayPointsTable tbody tr[state="Selected"] {
+              background-color: #0093d0; }
+            as3x-touch-element #MFD #PagesContainer #FPL #flightPlan #AFPL_WayPointsTable tbody tr[state=Inactive] {
+              display: none; }
+            as3x-touch-element #MFD #PagesContainer #FPL #flightPlan #AFPL_WayPointsTable tbody tr[state=CurrentLeg] .Waypoint .mainValue, as3x-touch-element #MFD #PagesContainer #FPL #flightPlan #AFPL_WayPointsTable tbody tr[state=CurrentLeg] .Waypoint .title {
+              color: magenta; }
+            as3x-touch-element #MFD #PagesContainer #FPL #flightPlan #AFPL_WayPointsTable tbody tr[state=CurrentLeg] .DTK, as3x-touch-element #MFD #PagesContainer #FPL #flightPlan #AFPL_WayPointsTable tbody tr[state=CurrentLeg] .DIS {
+              color: magenta; }
+            as3x-touch-element #MFD #PagesContainer #FPL #flightPlan #AFPL_WayPointsTable tbody tr, as3x-touch-element #MFD #PagesContainer #FPL #flightPlan #AFPL_WayPointsTable tbody td {
+              height: 13.5vh;
+              position: relative; }
+            as3x-touch-element #MFD #PagesContainer #FPL #flightPlan #AFPL_WayPointsTable tbody .gradientButton {
+              position: absolute;
+              top: 0.4vh;
+              left: 0.4vh;
+              bottom: 0.4vh;
+              right: 0.4vh;
+              height: auto;
+              width: auto; }
+              as3x-touch-element #MFD #PagesContainer #FPL #flightPlan #AFPL_WayPointsTable tbody .gradientButton .mainValue {
+                color: white;
+                font-size: 3vh; }
+                as3x-touch-element #MFD #PagesContainer #FPL #flightPlan #AFPL_WayPointsTable tbody .gradientButton .mainValue[altitudeMode=Manual] {
+                  color: aqua; }
+                as3x-touch-element #MFD #PagesContainer #FPL #flightPlan #AFPL_WayPointsTable tbody .gradientButton .mainValue[altitudeMode=Subdued] {
+                  color: darkcyan;
+                  -webkit-mask: url(/Pages/VCockpit/Instruments/NavSystems/Shared/Images/SubduedMask.png);
+                  -webkit-mask-repeat: repeat; }
+              as3x-touch-element #MFD #PagesContainer #FPL #flightPlan #AFPL_WayPointsTable tbody .gradientButton .mainText {
+                font-size: 3vh; }
+            as3x-touch-element #MFD #PagesContainer #FPL #flightPlan #AFPL_WayPointsTable tbody .Waypoint .mainValue {
+              position: absolute;
+              text-align: left;
+              left: 10%;
+              top: 5%; }
+            as3x-touch-element #MFD #PagesContainer #FPL #flightPlan #AFPL_WayPointsTable tbody .Waypoint .title {
+              position: absolute;
+              text-align: left;
+              left: 10%;
+              bottom: 10%;
+              width: 80%;
+              font-size: 2.5vh;
+              line-height: 2.5vh; }
+            as3x-touch-element #MFD #PagesContainer #FPL #flightPlan #AFPL_WayPointsTable tbody .Waypoint .symbol {
+              position: absolute;
+              right: 0%;
+              top: 0%; }
+            as3x-touch-element #MFD #PagesContainer #FPL #flightPlan #AFPL_WayPointsTable tbody .Waypoint[state=SelectedWP] {
+              background-color: #0093d0; }
+            as3x-touch-element #MFD #PagesContainer #FPL #flightPlan #AFPL_WayPointsTable tbody .DTK {
+              position: absolute;
+              right: 5%;
+              top: 10%;
+              font-size: 3vh;
+              color: white;
+              text-align: right; }
+            as3x-touch-element #MFD #PagesContainer #FPL #flightPlan #AFPL_WayPointsTable tbody .DIS {
+              position: absolute;
+              right: 5%;
+              bottom: 10%;
+              font-size: 3vh;
+              color: white;
+              text-align: right; }
+            as3x-touch-element #MFD #PagesContainer #FPL #flightPlan #AFPL_WayPointsTable tbody #CurrentLegArrowSVG {
+              position: absolute;
+              left: 0%;
+              top: 0%;
+              height: 100%;
+              width: 100%;
+              z-index: 1; }
+            as3x-touch-element #MFD #PagesContainer #FPL #flightPlan #AFPL_WayPointsTable tbody #AFPL_EnRouteAdd[state="Inactive"] {
+              display: none; }
+          as3x-touch-element #MFD #PagesContainer #FPL #flightPlan #AFPL_WayPointsTable thead tr th:nth-child(1), as3x-touch-element #MFD #PagesContainer #FPL #flightPlan #AFPL_WayPointsTable tbody tr:first-child td:nth-child(1) {
+            width: 35vw; }
+          as3x-touch-element #MFD #PagesContainer #FPL #flightPlan #AFPL_WayPointsTable thead tr th:nth-child(2), as3x-touch-element #MFD #PagesContainer #FPL #flightPlan #AFPL_WayPointsTable tbody tr:first-child td:nth-child(2) {
+            width: 20vw; }
+          as3x-touch-element #MFD #PagesContainer #FPL #flightPlan #AFPL_WayPointsTable thead tr th:nth-child(3), as3x-touch-element #MFD #PagesContainer #FPL #flightPlan #AFPL_WayPointsTable tbody tr:first-child td:nth-child(3) {
+            width: 20vw; }
+          as3x-touch-element #MFD #PagesContainer #FPL #flightPlan #AFPL_WayPointsTable #SizeSetter, as3x-touch-element #MFD #PagesContainer #FPL #flightPlan #AFPL_WayPointsTable #SizeSetter td {
+            border: none;
+            height: 2px;
+            overflow: visible; }
+          as3x-touch-element #MFD #PagesContainer #FPL #flightPlan #AFPL_WayPointsTable #SizeSetter #CurrentLegArrowSVG {
+            overflow: visible; }
+          as3x-touch-element #MFD #PagesContainer #FPL #flightPlan #AFPL_WayPointsTable td {
+            border: 0.4vh solid white; }
+        as3x-touch-element #MFD #PagesContainer #FPL #flightPlan .HalfMenu {
+          position: absolute;
+          right: 0vw;
+          top: 0%;
+          height: 100%;
+          border-collapse: collapse;
+          background-color: black;
+          width: 31.25vw; }
+          as3x-touch-element #MFD #PagesContainer #FPL #flightPlan .HalfMenu tbody {
+            height: 100%; }
+          as3x-touch-element #MFD #PagesContainer #FPL #flightPlan .HalfMenu tr {
+            height: 20%; }
+            as3x-touch-element #MFD #PagesContainer #FPL #flightPlan .HalfMenu tr td {
+              border: 0.4vh solid white;
+              height: 20%;
+              width: 50%; }
+              as3x-touch-element #MFD #PagesContainer #FPL #flightPlan .HalfMenu tr td .gradientButton {
+                margin: 2%;
+                height: 96%;
+                width: 96%; }
+                as3x-touch-element #MFD #PagesContainer #FPL #flightPlan .HalfMenu tr td .gradientButton .statusBar {
+                  bottom: 20%; }
+                as3x-touch-element #MFD #PagesContainer #FPL #flightPlan .HalfMenu tr td .gradientButton .mainText {
+                  font-size: 3.5vh;
+                  line-height: 4vh; }
+    as3x-touch-element #MFD #Procedures .gradientButton .title {
+      top: 10%;
+      font-size: 3vh;
+      line-height: 3.5vh; }
+    as3x-touch-element #MFD #Procedures .gradientButton .value {
+      position: absolute;
+      bottom: 10%;
+      width: 100%;
+      color: aqua;
+      font-size: 3.5vh; }
+    as3x-touch-element #MFD #Procedures #Procedures_Departure {
+      position: absolute;
+      width: 60%;
+      height: 20%;
+      left: 20%;
+      top: 5%; }
+    as3x-touch-element #MFD #Procedures #Procedures_Arrival {
+      position: absolute;
+      width: 60%;
+      height: 20%;
+      left: 20%;
+      top: 30%; }
+    as3x-touch-element #MFD #Procedures #Procedures_Approach {
+      position: absolute;
+      width: 60%;
+      height: 20%;
+      left: 20%;
+      top: 55%; }
+    as3x-touch-element #MFD #Procedures #Procedures_ActivateApproach {
+      position: absolute;
+      width: 25%;
+      height: 20%;
+      left: 7.5%;
+      top: 80%; }
+    as3x-touch-element #MFD #Procedures #Procedures_ActivateVectorsToFinal {
+      position: absolute;
+      width: 25%;
+      height: 20%;
+      left: 37.5%;
+      top: 80%; }
+    as3x-touch-element #MFD #Procedures #Procedures_ActivateMissedApproach {
+      position: absolute;
+      width: 25%;
+      height: 20%;
+      right: 7.5%;
+      top: 80%; }
+    as3x-touch-element #MFD #DepartureSelection .gradientButton .title {
+      top: 10%;
+      font-size: 3vh; }
+    as3x-touch-element #MFD #DepartureSelection .gradientButton .value {
+      position: absolute;
+      bottom: 15%;
+      color: aqua;
+      font-size: 3.5vh;
+      width: 100%;
+      text-align: center; }
+    as3x-touch-element #MFD #DepartureSelection #Departure_Airport {
+      position: absolute;
+      top: 5%;
+      left: 2.5%;
+      width: 30%;
+      height: 20%; }
+      as3x-touch-element #MFD #DepartureSelection #Departure_Airport .ident {
+        position: absolute;
+        bottom: 35%;
+        color: aqua;
+        font-size: 3.5vh;
+        width: 100%;
+        text-align: center; }
+      as3x-touch-element #MFD #DepartureSelection #Departure_Airport .name {
+        position: absolute;
+        bottom: 5%;
+        font-size: 2vh;
+        width: 100%;
+        overflow: hidden;
+        text-align: center; }
+    as3x-touch-element #MFD #DepartureSelection #Departure_Departure {
+      position: absolute;
+      top: 5%;
+      left: 35%;
+      right: 35%;
+      width: auto;
+      height: 20%; }
+    as3x-touch-element #MFD #DepartureSelection #Departure_Transition {
+      position: absolute;
+      top: 5%;
+      right: 2.5%;
+      width: 30%;
+      height: 20%; }
+    as3x-touch-element #MFD #DepartureSelection #Departure_Runway {
+      position: absolute;
+      width: 30%;
+      height: 20%;
+      left: 17.5%;
+      top: 27.5%; }
+    as3x-touch-element #MFD #DepartureSelection #Departure_Options {
+      position: absolute;
+      width: 62.5%;
+      left: 2.5%;
+      height: 50%;
+      top: 50%;
+      border: 0.4vh solid white; }
+      as3x-touch-element #MFD #DepartureSelection #Departure_Options .title {
+        position: absolute;
+        top: 2%;
+        width: 100%;
+        text-align: center;
+        font-size: 3vh; }
+      as3x-touch-element #MFD #DepartureSelection #Departure_Options .gradientButton .title {
+        top: 15%; }
+      as3x-touch-element #MFD #DepartureSelection #Departure_Options #Departure_Preview {
+        position: absolute;
+        top: 17.5%;
+        left: 2.5%;
+        height: 40%;
+        width: 42.5%; }
+      as3x-touch-element #MFD #DepartureSelection #Departure_Options #Departure_FilterBy {
+        position: absolute;
+        top: 17.5%;
+        right: 2.5%;
+        height: 40%;
+        width: 42.5%; }
+      as3x-touch-element #MFD #DepartureSelection #Departure_Options #Departure_Remove {
+        position: absolute;
+        bottom: 2.5%;
+        left: 2.5%;
+        height: 40%;
+        width: 42.5%; }
+      as3x-touch-element #MFD #DepartureSelection #Departure_Options #Departure_Load {
+        position: absolute;
+        bottom: 2.5%;
+        right: 2.5%;
+        height: 40%;
+        width: 42.5%; }
+    as3x-touch-element #MFD #DepartureSelection #Departure_Sequence {
+      position: absolute;
+      right: 2.5%;
+      width: 30%;
+      top: 27.5%;
+      height: 72.5%;
+      border: 0.4vh solid white; }
+      as3x-touch-element #MFD #DepartureSelection #Departure_Sequence .title {
+        position: absolute;
+        width: 100%;
+        font-size: 3vh;
+        text-align: center; }
+      as3x-touch-element #MFD #DepartureSelection #Departure_Sequence .content {
+        position: absolute;
+        top: 10%;
+        width: 100%;
+        height: 90%;
+        font-size: 2.5vh;
+        margin-left: 0.5vh;
+        overflow-y: scroll; }
+    as3x-touch-element #MFD #ArrivalSelection .gradientButton .title {
+      top: 10%;
+      font-size: 3vh; }
+    as3x-touch-element #MFD #ArrivalSelection .gradientButton .value {
+      position: absolute;
+      bottom: 15%;
+      color: aqua;
+      font-size: 3.5vh;
+      width: 100%;
+      text-align: center; }
+    as3x-touch-element #MFD #ArrivalSelection #Arrival_Airport {
+      position: absolute;
+      top: 5%;
+      left: 2.5%;
+      width: 30%;
+      height: 20%; }
+      as3x-touch-element #MFD #ArrivalSelection #Arrival_Airport .ident {
+        position: absolute;
+        bottom: 35%;
+        color: aqua;
+        font-size: 3.5vh;
+        width: 100%;
+        text-align: center; }
+      as3x-touch-element #MFD #ArrivalSelection #Arrival_Airport .name {
+        position: absolute;
+        bottom: 5%;
+        font-size: 2vh;
+        width: 100%;
+        overflow: hidden;
+        text-align: center; }
+    as3x-touch-element #MFD #ArrivalSelection #Arrival_Arrival {
+      position: absolute;
+      top: 5%;
+      left: 35%;
+      right: 35%;
+      width: auto;
+      height: 20%; }
+    as3x-touch-element #MFD #ArrivalSelection #Arrival_Transition {
+      position: absolute;
+      top: 5%;
+      right: 2.5%;
+      width: 30%;
+      height: 20%; }
+    as3x-touch-element #MFD #ArrivalSelection #Arrival_Runway {
+      position: absolute;
+      width: 30%;
+      height: 20%;
+      left: 17.5%;
+      top: 27.5%; }
+    as3x-touch-element #MFD #ArrivalSelection #Arrival_Options {
+      position: absolute;
+      width: 62.5%;
+      left: 2.5%;
+      height: 50%;
+      top: 50%;
+      border: 0.4vh solid white; }
+      as3x-touch-element #MFD #ArrivalSelection #Arrival_Options .title {
+        position: absolute;
+        top: 2%;
+        width: 100%;
+        text-align: center;
+        font-size: 2.5vh; }
+      as3x-touch-element #MFD #ArrivalSelection #Arrival_Options .gradientButton .title {
+        top: 15%; }
+      as3x-touch-element #MFD #ArrivalSelection #Arrival_Options #Arrival_Preview {
+        position: absolute;
+        top: 17.5%;
+        left: 2.5%;
+        height: 40%;
+        width: 42.5%; }
+      as3x-touch-element #MFD #ArrivalSelection #Arrival_Options #Arrival_FilterBy {
+        position: absolute;
+        top: 17.5%;
+        right: 2.5%;
+        height: 40%;
+        width: 42.5%; }
+      as3x-touch-element #MFD #ArrivalSelection #Arrival_Options #Arrival_Remove {
+        position: absolute;
+        bottom: 2.5%;
+        left: 2.5%;
+        height: 40%;
+        width: 42.5%; }
+      as3x-touch-element #MFD #ArrivalSelection #Arrival_Options #Arrival_Load {
+        position: absolute;
+        bottom: 2.5%;
+        right: 2.5%;
+        height: 40%;
+        width: 42.5%; }
+    as3x-touch-element #MFD #ArrivalSelection #Arrival_Sequence {
+      position: absolute;
+      right: 2.5%;
+      width: 30%;
+      top: 27.5%;
+      height: 72.5%;
+      border: 0.4vh solid white; }
+      as3x-touch-element #MFD #ArrivalSelection #Arrival_Sequence .title {
+        position: absolute;
+        width: 100%;
+        font-size: 3vh;
+        text-align: center; }
+      as3x-touch-element #MFD #ArrivalSelection #Arrival_Sequence .content {
+        position: absolute;
+        top: 10%;
+        width: 100%;
+        height: 90%;
+        font-size: 2.5vh;
+        margin-left: 0.5vh;
+        overflow-y: scroll; }
+    as3x-touch-element #MFD #ApproachSelection .gradientButton .title {
+      top: 10%;
+      font-size: 3vh; }
+    as3x-touch-element #MFD #ApproachSelection .gradientButton .value {
+      position: absolute;
+      bottom: 15%;
+      color: aqua;
+      font-size: 3.5vh;
+      width: 100%;
+      text-align: center; }
+    as3x-touch-element #MFD #ApproachSelection #Approach_Airport {
+      position: absolute;
+      top: 5%;
+      left: 2.5%;
+      width: 30%;
+      height: 20%; }
+      as3x-touch-element #MFD #ApproachSelection #Approach_Airport .ident {
+        position: absolute;
+        bottom: 25%;
+        color: aqua;
+        font-size: 3.5vh;
+        width: 100%;
+        text-align: center; }
+      as3x-touch-element #MFD #ApproachSelection #Approach_Airport .name {
+        position: absolute;
+        bottom: 5%;
+        font-size: 2vh;
+        width: 100%;
+        overflow: hidden;
+        text-align: center; }
+    as3x-touch-element #MFD #ApproachSelection #Approach_Approach {
+      position: absolute;
+      top: 5%;
+      left: 35%;
+      right: 35%;
+      width: auto;
+      height: 20%; }
+    as3x-touch-element #MFD #ApproachSelection #Approach_Transition {
+      position: absolute;
+      top: 5%;
+      right: 2.5%;
+      width: 30%;
+      height: 20%; }
+    as3x-touch-element #MFD #ApproachSelection #Approach_Minimums {
+      position: absolute;
+      width: 30%;
+      height: 20%;
+      left: 2.5%;
+      top: 27.5%; }
+      as3x-touch-element #MFD #ApproachSelection #Approach_Minimums .state {
+        position: absolute;
+        font-size: 2.5vh;
+        top: 35%;
+        width: 100%;
+        text-align: center; }
+      as3x-touch-element #MFD #ApproachSelection #Approach_Minimums .value {
+        font-size: 3vh; }
+    as3x-touch-element #MFD #ApproachSelection #Approach_PrimaryFrequency {
+      position: absolute;
+      width: 30%;
+      height: 20%;
+      left: 35%;
+      top: 27.5%; }
+      as3x-touch-element #MFD #ApproachSelection #Approach_PrimaryFrequency .value {
+        color: white; }
+    as3x-touch-element #MFD #ApproachSelection #Approach_Options {
+      position: absolute;
+      width: 62.5%;
+      left: 2.5%;
+      height: 50%;
+      top: 50%;
+      border: 0.4vh solid white; }
+      as3x-touch-element #MFD #ApproachSelection #Approach_Options .title {
+        position: absolute;
+        top: 2%;
+        width: 100%;
+        text-align: center;
+        font-size: 3vh; }
+      as3x-touch-element #MFD #ApproachSelection #Approach_Options .gradientButton .title {
+        top: 15%; }
+      as3x-touch-element #MFD #ApproachSelection #Approach_Options #Approach_Preview {
+        position: absolute;
+        top: 17.5%;
+        left: 15%;
+        height: 40%;
+        width: 70%; }
+      as3x-touch-element #MFD #ApproachSelection #Approach_Options #Approach_Remove {
+        position: absolute;
+        bottom: 2.5%;
+        left: 2.5%;
+        height: 40%;
+        width: 30%; }
+      as3x-touch-element #MFD #ApproachSelection #Approach_Options #Approach_Load {
+        position: absolute;
+        bottom: 2.5%;
+        right: 35%;
+        left: 35%;
+        height: 40%;
+        width: 30%; }
+      as3x-touch-element #MFD #ApproachSelection #Approach_Options #Approach_LoadAndActivate {
+        position: absolute;
+        bottom: 2.5%;
+        right: 2.5%;
+        height: 40%;
+        width: 30%; }
+    as3x-touch-element #MFD #ApproachSelection #Approach_Sequence {
+      position: absolute;
+      right: 2.5%;
+      width: 30%;
+      top: 27.5%;
+      height: 72.5%;
+      border: 0.4vh solid white; }
+      as3x-touch-element #MFD #ApproachSelection #Approach_Sequence .title {
+        position: absolute;
+        width: 100%;
+        font-size: 3vh;
+        text-align: center; }
+      as3x-touch-element #MFD #ApproachSelection #Approach_Sequence .content {
+        position: absolute;
+        top: 10%;
+        width: 100%;
+        height: 90%;
+        font-size: 2vh;
+        margin-left: 0.5vh;
+        overflow-y: scroll; }
+    as3x-touch-element #MFD .NrstContainer {
+      width: 100%;
+      height: 90%;
+      position: relative; }
+      as3x-touch-element #MFD .NrstContainer .NearestList {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        top: 0%;
+        bottom: 0%;
+        left: 0%;
+        right: 0%;
+        border: 0.4vh solid white;
+        border-collapse: collapse;
+        color: white;
+        text-align: center;
+        font-size: 2.5vh; }
+        as3x-touch-element #MFD .NrstContainer .NearestList .gradientButton {
+          position: absolute;
+          top: 0.4vh;
+          left: 0.4vh;
+          bottom: 0.4vh;
+          right: 0.4vh;
+          height: auto;
+          width: auto; }
+          as3x-touch-element #MFD .NrstContainer .NearestList .gradientButton .mainValue {
+            position: absolute;
+            text-align: left;
+            left: 5%;
+            top: 5%;
+            color: white;
+            font-size: 3vh; }
+          as3x-touch-element #MFD .NrstContainer .NearestList .gradientButton .title {
+            position: absolute;
+            text-align: left;
+            left: 5%;
+            bottom: 5%;
+            width: 90%;
+            height: 7vh;
+            overflow: hidden;
+            font-size: 2.3vh; }
+          as3x-touch-element #MFD .NrstContainer .NearestList .gradientButton .symbol {
+            position: absolute;
+            right: 0%;
+            top: 0%; }
+          as3x-touch-element #MFD .NrstContainer .NearestList .gradientButton .mainNumber {
+            font-size: 2.5vh;
+            padding: 0%;
+            margin: 0%;
+            margin-top: 3vh;
+            width: 100%;
+            text-align: center; }
+          as3x-touch-element #MFD .NrstContainer .NearestList .gradientButton[state=SelectedWP] {
+            background-color: #0093d0; }
+        as3x-touch-element #MFD .NrstContainer .NearestList thead {
+          display: block;
+          color: white;
+          font-size: 3vh;
+          height: 7vh;
+          width: 97%;
+          border-bottom: 0.4vh solid white;
+          padding-right: 3%; }
+        as3x-touch-element #MFD .NrstContainer .NearestList tbody {
+          display: block;
+          overflow-y: scroll;
+          overflow-x: hidden;
+          height: 74vh;
+          width: 97%;
+          position: relative;
+          padding-right: 1.75%; }
+          as3x-touch-element #MFD .NrstContainer .NearestList tbody::-webkit-scrollbar {
+            width: 0.5vw; }
+          as3x-touch-element #MFD .NrstContainer .NearestList tbody::-webkit-scrollbar-track {
+            background: none; }
+          as3x-touch-element #MFD .NrstContainer .NearestList tbody::-webkit-scrollbar-thumb {
+            background: white; }
+          as3x-touch-element #MFD .NrstContainer .NearestList tbody tr[state=Inactive] {
+            display: none; }
+          as3x-touch-element #MFD .NrstContainer .NearestList tbody tr, as3x-touch-element #MFD .NrstContainer .NearestList tbody td {
+            height: 15.4vh;
+            position: relative; }
+          as3x-touch-element #MFD .NrstContainer .NearestList tbody td {
+            border-bottom: 0.4vh solid white; }
+          as3x-touch-element #MFD .NrstContainer .NearestList tbody tr td:first-child {
+            border-right: 0.4vh solid white; }
+        as3x-touch-element #MFD .NrstContainer .NearestList #SizeSetter, as3x-touch-element #MFD .NrstContainer .NearestList #SizeSetter td {
+          border: none;
+          height: 0vh;
+          overflow: visible; }
+      as3x-touch-element #MFD .NrstContainer .SelectionMenu {
+        position: absolute;
+        height: 100%;
+        width: 30%;
+        top: 0%;
+        right: -0.75%;
+        bottom: 0%;
+        background-color: black;
+        border: 0.4vh solid white; }
+
+@keyframes rightEnter {
+  0% {
+    right: -100%; }
+  100% {
+    right: -0.75%; } }
+        as3x-touch-element #MFD .NrstContainer .SelectionMenu[state=Inactive] {
+          display: none; }
+        as3x-touch-element #MFD .NrstContainer .SelectionMenu[state=Active] {
+          animation: rightEnter 0.5s 1; }
+        as3x-touch-element #MFD .NrstContainer .SelectionMenu tr, as3x-touch-element #MFD .NrstContainer .SelectionMenu td {
+          width: 100%;
+          height: 20%;
+          position: relative; }
+          as3x-touch-element #MFD .NrstContainer .SelectionMenu tr .gradientButton, as3x-touch-element #MFD .NrstContainer .SelectionMenu td .gradientButton {
+            position: absolute;
+            height: auto;
+            width: auto;
+            top: 2%;
+            left: 2%;
+            right: 2%;
+            bottom: 2%; }
+            as3x-touch-element #MFD .NrstContainer .SelectionMenu tr .gradientButton .statusBar, as3x-touch-element #MFD .NrstContainer .SelectionMenu td .gradientButton .statusBar {
+              bottom: 20%; }
+            as3x-touch-element #MFD .NrstContainer .SelectionMenu tr .gradientButton .mainText, as3x-touch-element #MFD .NrstContainer .SelectionMenu td .gradientButton .mainText {
+              margin-top: 5%;
+              font-size: 2.3vh;
+              line-height: 3vh; }
+    as3x-touch-element #MFD #NearestAirport {
+      width: 100%;
+      height: 100%; }
+      as3x-touch-element #MFD #NearestAirport .NearestList thead tr th:nth-child(1), as3x-touch-element #MFD #NearestAirport .NearestList tbody tr:first-child td:nth-child(1) {
+        width: 25vh; }
+      as3x-touch-element #MFD #NearestAirport .NearestList thead tr th:nth-child(2), as3x-touch-element #MFD #NearestAirport .NearestList tbody tr:first-child td:nth-child(2) {
+        width: 12.5vh; }
+      as3x-touch-element #MFD #NearestAirport .NearestList thead tr th:nth-child(3), as3x-touch-element #MFD #NearestAirport .NearestList tbody tr:first-child td:nth-child(3) {
+        width: 12.5vh; }
+      as3x-touch-element #MFD #NearestAirport .NearestList thead tr th:nth-child(4), as3x-touch-element #MFD #NearestAirport .NearestList tbody tr:first-child td:nth-child(4) {
+        width: 12.5vh; }
+    as3x-touch-element #MFD #NearestIntersection {
+      width: 100%;
+      height: 100%; }
+      as3x-touch-element #MFD #NearestIntersection .NearestList thead tr th:nth-child(1), as3x-touch-element #MFD #NearestIntersection .NearestList tbody tr:first-child td:nth-child(1) {
+        width: 25vh; }
+      as3x-touch-element #MFD #NearestIntersection .NearestList thead tr th:nth-child(2), as3x-touch-element #MFD #NearestIntersection .NearestList tbody tr:first-child td:nth-child(2) {
+        width: 20vh; }
+      as3x-touch-element #MFD #NearestIntersection .NearestList thead tr th:nth-child(3), as3x-touch-element #MFD #NearestIntersection .NearestList tbody tr:first-child td:nth-child(3) {
+        width: 20vh; }
+    as3x-touch-element #MFD #NearestVOR {
+      width: 100%;
+      height: 100%; }
+      as3x-touch-element #MFD #NearestVOR .NearestList tr td:last-child {
+        border-right: 0.4vh solid white;
+        border-left: 0.4vh solid white; }
+      as3x-touch-element #MFD #NearestVOR .NearestList thead tr th:nth-child(1), as3x-touch-element #MFD #NearestVOR .NearestList tbody tr:first-child td:nth-child(1) {
+        width: 25vh; }
+      as3x-touch-element #MFD #NearestVOR .NearestList thead tr th:nth-child(2), as3x-touch-element #MFD #NearestVOR .NearestList tbody tr:first-child td:nth-child(2) {
+        width: 10vh; }
+      as3x-touch-element #MFD #NearestVOR .NearestList thead tr th:nth-child(3), as3x-touch-element #MFD #NearestVOR .NearestList tbody tr:first-child td:nth-child(3) {
+        width: 10vh; }
+      as3x-touch-element #MFD #NearestVOR .NearestList thead tr th:nth-child(4), as3x-touch-element #MFD #NearestVOR .NearestList tbody tr:first-child td:nth-child(4) {
+        width: 20vh; }
+    as3x-touch-element #MFD #NearestNDB {
+      width: 100%;
+      height: 100%; }
+      as3x-touch-element #MFD #NearestNDB .symbol {
+        max-height: 4.5vh !important; }
+      as3x-touch-element #MFD #NearestNDB .NearestList thead tr th:nth-child(1), as3x-touch-element #MFD #NearestNDB .NearestList tbody tr:first-child td:nth-child(1) {
+        width: 35vw; }
+      as3x-touch-element #MFD #NearestNDB .NearestList thead tr th:nth-child(2), as3x-touch-element #MFD #NearestNDB .NearestList tbody tr:first-child td:nth-child(2) {
+        width: 20vw; }
+      as3x-touch-element #MFD #NearestNDB .NearestList thead tr th:nth-child(3), as3x-touch-element #MFD #NearestNDB .NearestList tbody tr:first-child td:nth-child(3) {
+        width: 20vw; }
+      as3x-touch-element #MFD #NearestNDB .NearestList thead tr th:nth-child(4), as3x-touch-element #MFD #NearestNDB .NearestList tbody tr:first-child td:nth-child(4) {
+        width: 20vw; }
+    as3x-touch-element #MFD .popup {
+      position: absolute;
+      top: 0%;
+      left: 0%;
+      right: 0%;
+      bottom: 0%;
+      width: auto;
+      height: auto;
+      display: none;
+      background-color: black;
+      z-index: 2; }
+      as3x-touch-element #MFD .popup[state=Active] {
+        display: block; }
+      as3x-touch-element #MFD .popup .WindowTitle {
+        font-size: 3vh;
+        width: 100%;
+        text-align: center;
+        position: absolute;
+        top: 2%; }
+    as3x-touch-element #MFD #PageMenu .menuElements {
+      position: absolute;
+      height: 90%;
+      top: 10%;
+      width: 100%;
+      text-align: center;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      align-items: center; }
+    as3x-touch-element #MFD #PageMenu .gradientButton {
+      width: 15vh;
+      min-width: 15vh;
+      height: 15vh; }
+      as3x-touch-element #MFD #PageMenu .gradientButton .title {
+        font-size: 2.1vh;
+        line-height: 2.1vh; }
+    as3x-touch-element #MFD #AudioPanel #AudioPanel_tabs {
+      position: absolute;
+      top: 10%;
+      width: 100%;
+      height: 10%; }
+      as3x-touch-element #MFD #AudioPanel #AudioPanel_tabs .gradientButton {
+        width: 24%;
+        height: 100%; }
+        as3x-touch-element #MFD #AudioPanel #AudioPanel_tabs .gradientButton[state=Selected] {
+          background: none;
+          background-color: white; }
+          as3x-touch-element #MFD #AudioPanel #AudioPanel_tabs .gradientButton[state=Selected] .value {
+            color: black; }
+      as3x-touch-element #MFD #AudioPanel #AudioPanel_tabs #AudioPanel_RadiosTab {
+        position: absolute;
+        left: 1%; }
+      as3x-touch-element #MFD #AudioPanel #AudioPanel_tabs #AudioPanel_IntercomTab {
+        position: absolute;
+        left: 25.25%; }
+      as3x-touch-element #MFD #AudioPanel #AudioPanel_tabs #AudioPanel_PhoneMediaTab {
+        position: absolute;
+        right: 25.25%; }
+      as3x-touch-element #MFD #AudioPanel #AudioPanel_tabs #AudioPanel_MusicInputTab {
+        position: absolute;
+        right: 1%; }
+    as3x-touch-element #MFD #AudioPanel #AudioPanel_tabContent {
+      position: absolute;
+      top: 20%;
+      height: 80%;
+      width: 100%;
+      border: 0.4vh solid grey; }
+      as3x-touch-element #MFD #AudioPanel #AudioPanel_tabContent .TabContent {
+        position: absolute;
+        width: 100%;
+        height: 100%; }
+      as3x-touch-element #MFD #AudioPanel #AudioPanel_tabContent .radios .gradientButton .statusBar {
+        bottom: 20%; }
+      as3x-touch-element #MFD #AudioPanel #AudioPanel_tabContent .radios .gradientButton .title {
+        position: absolute;
+        top: 2%;
+        height: 10%;
+        width: 100%;
+        text-align: center;
+        font-size: 3vh; }
+      as3x-touch-element #MFD #AudioPanel #AudioPanel_tabContent .radios .comRadios {
+        position: absolute;
+        left: 5%;
+        top: 5%;
+        height: 70%;
+        width: 50%;
+        border: 0.4vh solid grey; }
+        as3x-touch-element #MFD #AudioPanel #AudioPanel_tabContent .radios .comRadios .title {
+          position: absolute;
+          top: 2%;
+          height: 10%;
+          width: 100%;
+          text-align: center;
+          font-size: 3.5vh; }
+        as3x-touch-element #MFD #AudioPanel #AudioPanel_tabContent .radios .comRadios #AudioPanel_Com1 {
+          position: absolute;
+          top: 15%;
+          height: 25%;
+          width: 40%;
+          left: 6.66%; }
+        as3x-touch-element #MFD #AudioPanel #AudioPanel_tabContent .radios .comRadios #AudioPanel_Com2 {
+          position: absolute;
+          top: 15%;
+          height: 25%;
+          width: 40%;
+          right: 6.66%; }
+        as3x-touch-element #MFD #AudioPanel #AudioPanel_tabContent .radios .comRadios #AudioPanel_Com1Mic {
+          position: absolute;
+          top: 42.5%;
+          height: 25%;
+          width: 40%;
+          left: 6.66%; }
+        as3x-touch-element #MFD #AudioPanel #AudioPanel_tabContent .radios .comRadios #AudioPanel_Com2Mic {
+          position: absolute;
+          top: 42.5%;
+          height: 25%;
+          width: 40%;
+          right: 6.66%; }
+        as3x-touch-element #MFD #AudioPanel #AudioPanel_tabContent .radios .comRadios #AudioPanel_SplitCom {
+          position: absolute;
+          top: 70%;
+          height: 25%;
+          left: 30%;
+          right: 30%;
+          width: auto; }
+      as3x-touch-element #MFD #AudioPanel #AudioPanel_tabContent .radios .navRadios {
+        position: absolute;
+        right: 5%;
+        top: 5%;
+        height: 50%;
+        width: 35%;
+        border: 0.4vh solid grey; }
+        as3x-touch-element #MFD #AudioPanel #AudioPanel_tabContent .radios .navRadios .title {
+          position: absolute;
+          top: 2%;
+          height: 10%;
+          width: 100%;
+          text-align: center;
+          font-size: 3.5vh; }
+        as3x-touch-element #MFD #AudioPanel #AudioPanel_tabContent .radios .navRadios #AudioPanel_Nav1 {
+          position: absolute;
+          top: 20%;
+          left: 15%;
+          right: 15%;
+          width: auto;
+          height: 35%; }
+        as3x-touch-element #MFD #AudioPanel #AudioPanel_tabContent .radios .navRadios #AudioPanel_Nav2 {
+          position: absolute;
+          bottom: 2.5%;
+          left: 15%;
+          right: 15%;
+          width: auto;
+          height: 35%; }
+      as3x-touch-element #MFD #AudioPanel #AudioPanel_tabContent .radios #AudioPanel_Speaker {
+        position: absolute;
+        right: 7.5%;
+        bottom: 25%;
+        width: 25%; }
+      as3x-touch-element #MFD #AudioPanel #AudioPanel_tabContent .radios #AudioPanel_Back {
+        position: absolute;
+        left: 7.5%;
+        bottom: 5%;
+        width: 20%; }
+      as3x-touch-element #MFD #AudioPanel #AudioPanel_tabContent .radios #AudioPanel_Play {
+        position: absolute;
+        left: 30%;
+        bottom: 5%;
+        width: 20%; }
+      as3x-touch-element #MFD #AudioPanel #AudioPanel_tabContent .radios #AudioPanel_MoreOptions {
+        position: absolute;
+        right: 7.5%;
+        bottom: 5%;
+        width: 25%; }
+        as3x-touch-element #MFD #AudioPanel #AudioPanel_tabContent .radios #AudioPanel_MoreOptions .title {
+          font-size: 2.5vh; }
+    as3x-touch-element #MFD #XPDR #transponder_ModeSelect {
+      position: absolute;
+      bottom: 18%;
+      width: 100%; }
+      as3x-touch-element #MFD #XPDR #transponder_ModeSelect #transponder_ModeSelectTitle {
+        width: 100%;
+        color: white;
+        font-size: 3vh;
+        text-align: center; }
+      as3x-touch-element #MFD #XPDR #transponder_ModeSelect .mainText {
+        font-size: 3.5vh; }
+      as3x-touch-element #MFD #XPDR #transponder_ModeSelect #buttonsList {
+        width: 100%;
+        display: flex; }
+      as3x-touch-element #MFD #XPDR #transponder_ModeSelect .gradientButton {
+        width: 32%; }
+    as3x-touch-element #MFD #XPDR #transponder_CodeDisplay {
+      position: absolute;
+      right: 30%;
+      top: 10%;
+      background-color: #212121;
+      height: 12.3%;
+      width: 40%;
+      text-align: center; }
+      as3x-touch-element #MFD #XPDR #transponder_CodeDisplay #transponder_Code {
+        font-size: 8vh;
+        color: black; }
+        as3x-touch-element #MFD #XPDR #transponder_CodeDisplay #transponder_Code .Writed, as3x-touch-element #MFD #XPDR #transponder_CodeDisplay #transponder_Code .ToWrite {
+          background-color: none;
+          color: aqua; }
+        as3x-touch-element #MFD #XPDR #transponder_CodeDisplay #transponder_Code .Writing {
+          animation: SelectedCharBlinkFreqEdit 1s infinite;
+          min-width: 0.5vw;
+          min-height: 8vh;
+          display: inline-block; }
+        as3x-touch-element #MFD #XPDR #transponder_CodeDisplay #transponder_Code .Fixed {
+          background-color: aqua; }
+    as3x-touch-element #MFD #XPDR #transponder_Bksp {
+      position: absolute;
+      right: 2%;
+      top: 10%; }
+    as3x-touch-element #MFD #XPDR #transponder_NumberKeyboard {
+      position: absolute;
+      right: 2%;
+      left: 2%;
+      width: auto;
+      top: 25%; }
+      as3x-touch-element #MFD #XPDR #transponder_NumberKeyboard .roundButton {
+        width: 15vh;
+        height: 15vh;
+        line-height: 12vh;
+        display: inline-block;
+        margin: 0.5vh; }
+    as3x-touch-element #MFD #XPDR #transponder_ActiveTransponder {
+      position: absolute;
+      left: 25%;
+      bottom: 0%; }
+    as3x-touch-element #MFD #XPDR #transponder_Vfr {
+      position: absolute;
+      left: 2%;
+      top: 10%; }
+    as3x-touch-element #MFD #XPDR #transponder_Cancel {
+      position: absolute;
+      left: 2%;
+      bottom: 2%;
+      width: 30%; }
+    as3x-touch-element #MFD #XPDR #transponder_Enter {
+      position: absolute;
+      right: 2%;
+      bottom: 2%;
+      width: 30%; }
+    as3x-touch-element #MFD #frequencyKeyboard #FK_ActiveFreqLine {
+      position: absolute;
+      right: 30%;
+      top: 8%;
+      height: 9.2%;
+      width: 40%;
+      text-align: center;
+      font-size: 2vh; }
+    as3x-touch-element #MFD #frequencyKeyboard #FK_FreqDisplay {
+      position: absolute;
+      right: 30%;
+      top: 13%;
+      background-color: #212121;
+      height: 9.2%;
+      width: 40%;
+      text-align: center;
+      font-size: 6vh; }
+      as3x-touch-element #MFD #frequencyKeyboard #FK_FreqDisplay .StbyFreq {
+        color: black; }
+      as3x-touch-element #MFD #frequencyKeyboard #FK_FreqDisplay .Writed, as3x-touch-element #MFD #frequencyKeyboard #FK_FreqDisplay .ToWrite {
+        background-color: none;
+        color: aqua; }
+      as3x-touch-element #MFD #frequencyKeyboard #FK_FreqDisplay .Writing {
+        animation: SelectedCharBlinkFreqEdit 1s infinite;
+        min-width: 0.5vw;
+        min-height: 6vh;
+        display: inline-block; }
+      as3x-touch-element #MFD #frequencyKeyboard #FK_FreqDisplay .Fixed {
+        background-color: aqua; }
+    as3x-touch-element #MFD #frequencyKeyboard #FK_Bksp {
+      position: absolute;
+      right: 2%;
+      top: 10%; }
+    as3x-touch-element #MFD #frequencyKeyboard #KeyBoard {
+      position: absolute;
+      bottom: 18%;
+      width: 50%;
+      left: 25%;
+      right: 25%; }
+    as3x-touch-element #MFD #frequencyKeyboard #FK_Cancel {
+      position: absolute;
+      bottom: 2%;
+      left: 2%; }
+    as3x-touch-element #MFD #frequencyKeyboard #FK_Xfer {
+      position: absolute;
+      bottom: 2%;
+      right: 27%; }
+    as3x-touch-element #MFD #frequencyKeyboard #FK_Enter {
+      position: absolute;
+      bottom: 2%;
+      right: 2%; }
+    as3x-touch-element #MFD #DirectTo #SelectedWaypoint {
+      width: 100%;
+      height: 15vh; }
+      as3x-touch-element #MFD #DirectTo #SelectedWaypoint .mainValue {
+        position: absolute;
+        left: 2%;
+        top: 0%;
+        text-align: left;
+        color: aqua;
+        font-size: 6vh; }
+      as3x-touch-element #MFD #DirectTo #SelectedWaypoint .title {
+        position: absolute;
+        left: 2%;
+        bottom: 0%;
+        text-align: left;
+        font-size: 4.5vh; }
+    as3x-touch-element #MFD #DirectTo #TopInfos #Location {
+      width: 48%;
+      margin-left: 2%; }
+    as3x-touch-element #MFD #DirectTo #TopInfos #Bearing {
+      width: 20%; }
+    as3x-touch-element #MFD #DirectTo #TopInfos #Distance {
+      width: 25%; }
+    as3x-touch-element #MFD #DirectTo #TopInfos div {
+      display: inline-block;
+      width: 30%; }
+      as3x-touch-element #MFD #DirectTo #TopInfos div div {
+        display: block;
+        color: white;
+        font-size: 4vh;
+        width: 100%; }
+    as3x-touch-element #MFD #DirectTo #TopLine,
+    as3x-touch-element #MFD #DirectTo #MiddleLine {
+      position: relative;
+      width: 100%;
+      height: 16vh; }
+      as3x-touch-element #MFD #DirectTo #TopLine .gradientButton,
+      as3x-touch-element #MFD #DirectTo #MiddleLine .gradientButton {
+        position: absolute;
+        top: 0%;
+        display: inline-block;
+        text-align: center;
+        width: 48%;
+        height: 15vh; }
+      as3x-touch-element #MFD #DirectTo #TopLine .gradientButton:first-child,
+      as3x-touch-element #MFD #DirectTo #MiddleLine .gradientButton:first-child {
+        left: 1%; }
+      as3x-touch-element #MFD #DirectTo #TopLine .gradientButton:last-child,
+      as3x-touch-element #MFD #DirectTo #MiddleLine .gradientButton:last-child {
+        right: 1%; }
+      as3x-touch-element #MFD #DirectTo #TopLine .mainValue,
+      as3x-touch-element #MFD #DirectTo #MiddleLine .mainValue {
+        font-size: 4vh;
+        color: aqua; }
+    as3x-touch-element #MFD #DirectTo #bottomLine {
+      width: 100%;
+      height: 30vh;
+      position: relative; }
+      as3x-touch-element #MFD #DirectTo #bottomLine .gradientButton {
+        display: inline-block;
+        text-align: center;
+        height: 20vh; }
+        as3x-touch-element #MFD #DirectTo #bottomLine .gradientButton .mainValue {
+          font-size: 4vh;
+          color: white; }
+      as3x-touch-element #MFD #DirectTo #bottomLine #DRCT_ActivateDirect {
+        position: absolute;
+        top: 0%;
+        right: 0%;
+        width: 29%; }
+        as3x-touch-element #MFD #DirectTo #bottomLine #DRCT_ActivateDirect .DrctImg {
+          vertical-align: middle;
+          padding-bottom: 1vh; }
+      as3x-touch-element #MFD #DirectTo #bottomLine #DRCT_CancelButton {
+        position: absolute;
+        top: 0%;
+        left: 0%;
+        width: 29%; }
+        as3x-touch-element #MFD #DirectTo #bottomLine #DRCT_CancelButton .DrctImg {
+          vertical-align: middle;
+          padding-bottom: 1vh; }
+      as3x-touch-element #MFD #DirectTo #bottomLine #DRCT_ActivateInsertInFP {
+        position: absolute;
+        top: 0%;
+        left: 30%;
+        width: 39%; }
+    as3x-touch-element #MFD #timeKeyboard #TK_Bksp, as3x-touch-element #MFD #timeKeyboard #SK_Bksp, as3x-touch-element #MFD #timeKeyboard #AK_Bksp, as3x-touch-element #MFD #speedKeyboard #TK_Bksp, as3x-touch-element #MFD #speedKeyboard #SK_Bksp, as3x-touch-element #MFD #speedKeyboard #AK_Bksp, as3x-touch-element #MFD #altitudeKeyboard #TK_Bksp, as3x-touch-element #MFD #altitudeKeyboard #SK_Bksp, as3x-touch-element #MFD #altitudeKeyboard #AK_Bksp {
+      position: absolute;
+      width: 20%;
+      right: 5%; }
+    as3x-touch-element #MFD #timeKeyboard #TK_TimeDisplay, as3x-touch-element #MFD #timeKeyboard #SK_Display, as3x-touch-element #MFD #timeKeyboard #AK_Display, as3x-touch-element #MFD #speedKeyboard #TK_TimeDisplay, as3x-touch-element #MFD #speedKeyboard #SK_Display, as3x-touch-element #MFD #speedKeyboard #AK_Display, as3x-touch-element #MFD #altitudeKeyboard #TK_TimeDisplay, as3x-touch-element #MFD #altitudeKeyboard #SK_Display, as3x-touch-element #MFD #altitudeKeyboard #AK_Display {
+      position: absolute;
+      width: 30%;
+      left: 35%;
+      top: 10%;
+      background-color: grey;
+      margin: 0.6vh;
+      padding-top: 0.6vh;
+      text-align: center;
+      font-size: 4.2vh; }
+      as3x-touch-element #MFD #timeKeyboard #TK_TimeDisplay .Writed, as3x-touch-element #MFD #timeKeyboard #SK_Display .Writed, as3x-touch-element #MFD #timeKeyboard #AK_Display .Writed, as3x-touch-element #MFD #speedKeyboard #TK_TimeDisplay .Writed, as3x-touch-element #MFD #speedKeyboard #SK_Display .Writed, as3x-touch-element #MFD #speedKeyboard #AK_Display .Writed, as3x-touch-element #MFD #altitudeKeyboard #TK_TimeDisplay .Writed, as3x-touch-element #MFD #altitudeKeyboard #SK_Display .Writed, as3x-touch-element #MFD #altitudeKeyboard #AK_Display .Writed {
+        background-color: none;
+        color: aqua; }
+      as3x-touch-element #MFD #timeKeyboard #TK_TimeDisplay .ToWrite, as3x-touch-element #MFD #timeKeyboard #SK_Display .ToWrite, as3x-touch-element #MFD #timeKeyboard #AK_Display .ToWrite, as3x-touch-element #MFD #speedKeyboard #TK_TimeDisplay .ToWrite, as3x-touch-element #MFD #speedKeyboard #SK_Display .ToWrite, as3x-touch-element #MFD #speedKeyboard #AK_Display .ToWrite, as3x-touch-element #MFD #altitudeKeyboard #TK_TimeDisplay .ToWrite, as3x-touch-element #MFD #altitudeKeyboard #SK_Display .ToWrite, as3x-touch-element #MFD #altitudeKeyboard #AK_Display .ToWrite {
+        background-color: none;
+        color: dimgray; }
+      as3x-touch-element #MFD #timeKeyboard #TK_TimeDisplay .Writing, as3x-touch-element #MFD #timeKeyboard #SK_Display .Writing, as3x-touch-element #MFD #timeKeyboard #AK_Display .Writing, as3x-touch-element #MFD #speedKeyboard #TK_TimeDisplay .Writing, as3x-touch-element #MFD #speedKeyboard #SK_Display .Writing, as3x-touch-element #MFD #speedKeyboard #AK_Display .Writing, as3x-touch-element #MFD #altitudeKeyboard #TK_TimeDisplay .Writing, as3x-touch-element #MFD #altitudeKeyboard #SK_Display .Writing, as3x-touch-element #MFD #altitudeKeyboard #AK_Display .Writing {
+        animation: SelectedCharBlinkFreqEdit 1s infinite;
+        min-width: 0.5vw;
+        min-height: 3.6vh;
+        display: inline-block; }
+      as3x-touch-element #MFD #timeKeyboard #TK_TimeDisplay .Fixed, as3x-touch-element #MFD #timeKeyboard #SK_Display .Fixed, as3x-touch-element #MFD #timeKeyboard #AK_Display .Fixed, as3x-touch-element #MFD #speedKeyboard #TK_TimeDisplay .Fixed, as3x-touch-element #MFD #speedKeyboard #SK_Display .Fixed, as3x-touch-element #MFD #speedKeyboard #AK_Display .Fixed, as3x-touch-element #MFD #altitudeKeyboard #TK_TimeDisplay .Fixed, as3x-touch-element #MFD #altitudeKeyboard #SK_Display .Fixed, as3x-touch-element #MFD #altitudeKeyboard #AK_Display .Fixed {
+        background-color: aqua; }
+    as3x-touch-element #MFD #timeKeyboard #KeyBoard, as3x-touch-element #MFD #speedKeyboard #KeyBoard, as3x-touch-element #MFD #altitudeKeyboard #KeyBoard {
+      position: absolute;
+      top: 20%;
+      height: 60%;
+      width: 60%;
+      left: 23%; }
+      as3x-touch-element #MFD #timeKeyboard #KeyBoard .roundButton, as3x-touch-element #MFD #speedKeyboard #KeyBoard .roundButton, as3x-touch-element #MFD #altitudeKeyboard #KeyBoard .roundButton {
+        width: 9vh;
+        height: 9vh;
+        line-height: 9vh;
+        display: inline-block; }
+      as3x-touch-element #MFD #timeKeyboard #KeyBoard .gradientButton, as3x-touch-element #MFD #speedKeyboard #KeyBoard .gradientButton, as3x-touch-element #MFD #altitudeKeyboard #KeyBoard .gradientButton {
+        width: 9vh;
+        height: 9vh; }
+      as3x-touch-element #MFD #timeKeyboard #KeyBoard td, as3x-touch-element #MFD #speedKeyboard #KeyBoard td, as3x-touch-element #MFD #altitudeKeyboard #KeyBoard td {
+        width: 33.33%; }
+    as3x-touch-element #MFD #timeKeyboard #AK_Cancel, as3x-touch-element #MFD #speedKeyboard #AK_Cancel, as3x-touch-element #MFD #altitudeKeyboard #AK_Cancel {
+      position: absolute;
+      bottom: 2%;
+      left: 2%; }
+    as3x-touch-element #MFD #timeKeyboard #AK_Enter, as3x-touch-element #MFD #speedKeyboard #AK_Enter, as3x-touch-element #MFD #altitudeKeyboard #AK_Enter {
+      position: absolute;
+      bottom: 2%;
+      right: 2%; }
+    as3x-touch-element #MFD #fullKeyboard #Keyboard_LetterTable,
+    as3x-touch-element #MFD #fullKeyboard #Keyboard_NumberTable {
+      display: none; }
+    as3x-touch-element #MFD #fullKeyboard[keyboard=Letters] #Keyboard_LetterTable,
+    as3x-touch-element #MFD #fullKeyboard[keyboard=Numbers] #Keyboard_NumberTable {
+      display: inherit; }
+    as3x-touch-element #MFD #fullKeyboard #topLine {
+      position: absolute;
+      top: 0%;
+      left: 0%;
+      height: 5vh;
+      width: 100%; }
+      as3x-touch-element #MFD #fullKeyboard #topLine #EditText {
+        position: absolute;
+        left: 1%;
+        height: 100%;
+        width: 28%;
+        background-color: gray;
+        font-size: 4vh;
+        line-height: 5vh;
+        padding-left: 2%;
+        color: black; }
+        as3x-touch-element #MFD #fullKeyboard #topLine #EditText .NoEdit {
+          background-color: aqua; }
+        as3x-touch-element #MFD #fullKeyboard #topLine #EditText .Writed {
+          background-color: none;
+          color: aqua; }
+        as3x-touch-element #MFD #fullKeyboard #topLine #EditText .ToWrite {
+          background-color: none;
+          color: dimgray; }
+        as3x-touch-element #MFD #fullKeyboard #topLine #EditText .Writing {
+          animation: SelectedCharBlinkFreqEdit 1s infinite;
+          min-width: 0.5vw;
+          min-height: 4vh;
+          display: inline-block; }
+      as3x-touch-element #MFD #fullKeyboard #topLine #Infos {
+        position: absolute;
+        left: 32%;
+        height: 100%;
+        width: 68%;
+        color: white;
+        font-size: 2.5vh;
+        vertical-align: bottom; }
+        as3x-touch-element #MFD #fullKeyboard #topLine #Infos #InfosContent {
+          position: absolute;
+          bottom: 0%;
+          vertical-align: bottom;
+          width: 92%; }
+        as3x-touch-element #MFD #fullKeyboard #topLine #Infos #InfosSymbol {
+          position: absolute;
+          bottom: 0%;
+          vertical-align: bottom;
+          width: 8%;
+          right: 0%; }
+    as3x-touch-element #MFD #fullKeyboard #Keyboard_LetterTable,
+    as3x-touch-element #MFD #fullKeyboard #Keyboard_NumberTable {
+      position: absolute;
+      top: 6vh;
+      left: 0%;
+      width: 100%;
+      height: 75vh; }
+      as3x-touch-element #MFD #fullKeyboard #Keyboard_LetterTable tr,
+      as3x-touch-element #MFD #fullKeyboard #Keyboard_NumberTable tr {
+        height: 12vh; }
+        as3x-touch-element #MFD #fullKeyboard #Keyboard_LetterTable tr td,
+        as3x-touch-element #MFD #fullKeyboard #Keyboard_NumberTable tr td {
+          height: 13vh;
+          width: 12vw; }
+        as3x-touch-element #MFD #fullKeyboard #Keyboard_LetterTable tr .Double,
+        as3x-touch-element #MFD #fullKeyboard #Keyboard_NumberTable tr .Double {
+          width: 24vw; }
+      as3x-touch-element #MFD #fullKeyboard #Keyboard_LetterTable .gradientButton,
+      as3x-touch-element #MFD #fullKeyboard #Keyboard_NumberTable .gradientButton {
+        height: 8vh;
+        width: 10vh; }
+        as3x-touch-element #MFD #fullKeyboard #Keyboard_LetterTable .gradientButton .mainText,
+        as3x-touch-element #MFD #fullKeyboard #Keyboard_NumberTable .gradientButton .mainText {
+          display: inline;
+          font-size: 4vh;
+          vertical-align: central; }
+        as3x-touch-element #MFD #fullKeyboard #Keyboard_LetterTable .gradientButton .title,
+        as3x-touch-element #MFD #fullKeyboard #Keyboard_NumberTable .gradientButton .title {
+          font-size: 3vh; }
+      as3x-touch-element #MFD #fullKeyboard #Keyboard_LetterTable #K_SwitchToNum,
+      as3x-touch-element #MFD #fullKeyboard #Keyboard_LetterTable #KN_SwitchToLetters,
+      as3x-touch-element #MFD #fullKeyboard #Keyboard_NumberTable #K_SwitchToNum,
+      as3x-touch-element #MFD #fullKeyboard #Keyboard_NumberTable #KN_SwitchToLetters {
+        width: 20vh; }
+    as3x-touch-element #MFD #fullKeyboard #FK_Cancel {
+      position: absolute;
+      left: 2%;
+      bottom: 2%;
+      width: 30%; }
+    as3x-touch-element #MFD #fullKeyboard #FK_Enter {
+      position: absolute;
+      right: 2%;
+      bottom: 2%;
+      width: 30%; }
+    as3x-touch-element #MFD #PFD_Menu .title {
+      position: absolute;
+      width: 100%;
+      top: 0%;
+      text-align: center;
+      font-size: 3vh; }
+    as3x-touch-element #MFD #PFD_Menu .subpart {
+      position: absolute;
+      border: 0.4vh solid white; }
+      as3x-touch-element #MFD #PFD_Menu .subpart .title {
+        position: absolute;
+        width: 100%;
+        top: 1vh; }
+      as3x-touch-element #MFD #PFD_Menu .subpart .gradientButton {
+        position: absolute;
+        bottom: 0.5vh;
+        height: 10vh; }
+        as3x-touch-element #MFD #PFD_Menu .subpart .gradientButton .mainText {
+          position: absolute;
+          font-size: 3vh;
+          width: 100%;
+          text-align: center; }
+    as3x-touch-element #MFD #PFD_Menu #cdi_source {
+      top: 5%;
+      left: 30%;
+      right: 30%;
+      width: auto;
+      height: 20%; }
+      as3x-touch-element #MFD #PFD_Menu #cdi_source .gradientButton {
+        left: 10%;
+        right: 10%;
+        width: auto; }
+    as3x-touch-element #MFD #PFD_Menu #inset_windows {
+      top: 27%;
+      left: 5%;
+      right: 5%;
+      height: 20%;
+      width: auto; }
+      as3x-touch-element #MFD #PFD_Menu #inset_windows #left_inset_button {
+        position: absolute;
+        left: 2%;
+        width: 45%; }
+      as3x-touch-element #MFD #PFD_Menu #inset_windows #right_inset_button {
+        position: absolute;
+        right: 2%;
+        width: 45%; }
+    as3x-touch-element #MFD #PFD_Menu #bearing_pointers {
+      top: 49%;
+      height: 20%;
+      left: 5%;
+      right: 5%;
+      width: auto; }
+      as3x-touch-element #MFD #PFD_Menu #bearing_pointers #left_bearing_button {
+        left: 2%;
+        width: 45%; }
+      as3x-touch-element #MFD #PFD_Menu #bearing_pointers #right_bearing_button {
+        right: 2%;
+        width: 45%; }
+    as3x-touch-element #MFD #PFD_Menu #timer {
+      top: 71%;
+      height: 20%;
+      left: 5%;
+      right: 35%;
+      width: auto; }
+      as3x-touch-element #MFD #PFD_Menu #timer #timer_startStop_button {
+        left: 2%;
+        width: 55%; }
+        as3x-touch-element #MFD #PFD_Menu #timer #timer_startStop_button .topTitle {
+          position: absolute;
+          width: 100%;
+          text-align: center;
+          top: 5%;
+          font-size: 2.5vh; }
+        as3x-touch-element #MFD #PFD_Menu #timer #timer_startStop_button .value {
+          position: absolute;
+          width: 100%;
+          text-align: center;
+          bottom: 15%;
+          font-size: 3.5vh; }
+      as3x-touch-element #MFD #PFD_Menu #timer #timer_reset_button {
+        right: 2%;
+        width: 35%; }
+    as3x-touch-element #MFD #PFD_Menu #minimums {
+      top: 71%;
+      height: 20%;
+      left: 67.5%;
+      right: 5%;
+      width: auto; }
+      as3x-touch-element #MFD #PFD_Menu #minimums .gradientButton {
+        left: 5%;
+        right: 5%;
+        width: auto; }
+  as3x-touch-element #WaypointDuplicateWindow {
+    color: white;
+    font-size: 3vh;
+    position: relative; }
+    as3x-touch-element #WaypointDuplicateWindow .WindowTitle {
+      width: 70%;
+      padding-left: 15%;
+      background-color: black; }
+    as3x-touch-element #WaypointDuplicateWindow #WPDup_SearchTitle {
+      position: absolute;
+      top: 7%;
+      height: 10%;
+      width: 100%;
+      font-size: 2.5vh; }
+    as3x-touch-element #WaypointDuplicateWindow thead tr th:nth-child(1), as3x-touch-element #WaypointDuplicateWindow tbody tr:first-child td:nth-child(1) {
+      width: 26vh; }
+    as3x-touch-element #WaypointDuplicateWindow thead tr th:nth-child(2), as3x-touch-element #WaypointDuplicateWindow tbody tr:first-child td:nth-child(2) {
+      width: 14vh; }
+    as3x-touch-element #WaypointDuplicateWindow thead tr th:nth-child(3), as3x-touch-element #WaypointDuplicateWindow tbody tr:first-child td:nth-child(3) {
+      width: 18.5vh; }
+    as3x-touch-element #WaypointDuplicateWindow table {
+      position: absolute;
+      width: 95%;
+      height: 67vh;
+      top: 15%;
+      bottom: 0%;
+      left: 2.5%;
+      right: 2.5%;
+      border: 0.4vh solid white;
+      border-collapse: collapse;
+      color: white;
+      text-align: center;
+      font-size: 3vh; }
+      as3x-touch-element #WaypointDuplicateWindow table thead {
+        display: block;
+        color: white;
+        font-size: 3vh;
+        height: 7vh;
+        width: 100%;
+        border: 0.4vh solid white;
+        padding-right: 3%; }
+      as3x-touch-element #WaypointDuplicateWindow table tbody {
+        display: block;
+        overflow-y: scroll;
+        overflow-x: hidden;
+        height: 60vh;
+        width: 97%;
+        position: relative;
+        padding-right: 1.75%; }
+        as3x-touch-element #WaypointDuplicateWindow table tbody::-webkit-scrollbar {
+          width: 0.5vw; }
+        as3x-touch-element #WaypointDuplicateWindow table tbody::-webkit-scrollbar-track {
+          background: none; }
+        as3x-touch-element #WaypointDuplicateWindow table tbody::-webkit-scrollbar-thumb {
+          background: white; }
+        as3x-touch-element #WaypointDuplicateWindow table tbody #SizeSetter, as3x-touch-element #WaypointDuplicateWindow table tbody #SizeSetter td {
+          border: none;
+          height: 0vh; }
+        as3x-touch-element #WaypointDuplicateWindow table tbody tr, as3x-touch-element #WaypointDuplicateWindow table tbody td {
+          height: 12vh;
+          position: relative; }
+          as3x-touch-element #WaypointDuplicateWindow table tbody tr .gradientButton, as3x-touch-element #WaypointDuplicateWindow table tbody td .gradientButton {
+            position: absolute;
+            top: 0.5vh;
+            left: 0.5vh;
+            right: 0.5vh;
+            bottom: 0.5vh;
+            width: auto;
+            height: auto;
+            overflow: hidden; }
+            as3x-touch-element #WaypointDuplicateWindow table tbody tr .gradientButton .Ident, as3x-touch-element #WaypointDuplicateWindow table tbody td .gradientButton .Ident {
+              position: absolute;
+              top: 0vh;
+              left: 1vh;
+              font-size: 3vh; }
+            as3x-touch-element #WaypointDuplicateWindow table tbody tr .gradientButton .Logo, as3x-touch-element #WaypointDuplicateWindow table tbody td .gradientButton .Logo {
+              position: absolute;
+              top: 1vh;
+              right: 1vh;
+              height: 5vh; }
+            as3x-touch-element #WaypointDuplicateWindow table tbody tr .gradientButton .Name, as3x-touch-element #WaypointDuplicateWindow table tbody td .gradientButton .Name {
+              position: absolute;
+              top: 6.5vh;
+              left: 1vh;
+              font-size: 2vh;
+              white-space: pre-line;
+              text-align: left; }
+            as3x-touch-element #WaypointDuplicateWindow table tbody tr .gradientButton .City, as3x-touch-element #WaypointDuplicateWindow table tbody td .gradientButton .City {
+              position: absolute;
+              top: 10vh;
+              left: 1vh;
+              font-size: .5vh;
+              white-space: nowrap; }
+        as3x-touch-element #WaypointDuplicateWindow table tbody tr[state=Inactive] {
+          display: none; }
+        as3x-touch-element #WaypointDuplicateWindow table tbody td {
+          border-top: 0.4vh solid white;
+          border-bottom: 0.4vh solid white; }
+          as3x-touch-element #WaypointDuplicateWindow table tbody td[state=Inactive] {
+            display: none; }
+        as3x-touch-element #WaypointDuplicateWindow table tbody tr td:first-child {
+          border-left: 0.4vh solid white;
+          border-right: 0.4vh solid white; }
+    as3x-touch-element #WaypointDuplicateWindow .BearingArrow {
+      position: absolute;
+      left: 10%;
+      top: 20%;
+      height: 5vh; }
+    as3x-touch-element #WaypointDuplicateWindow .BearingText {
+      position: absolute;
+      top: 20%;
+      right: 0%; }
+    as3x-touch-element #WaypointDuplicateWindow .Distance {
+      position: absolute;
+      top: 20%;
+      left: 30%; }
+  as3x-touch-element #MainDisplay[state=Half] {
+    transition: width 0.5s; }
+    as3x-touch-element #MainDisplay[state=Half] #PFD #HorizonContainer #SyntheticVision {
+      transition: left 0.5s; }
+    as3x-touch-element #MainDisplay[state=Half] #MainMFD #MainMFD_MapElements {
+      transition: left 0.5s;
+      left: -21.25vw; }
+      as3x-touch-element #MainDisplay[state=Half] #MainMFD #MainMFD_MapElements .mapPlus, as3x-touch-element #MainDisplay[state=Half] #MainMFD #MainMFD_MapElements .mapLess, as3x-touch-element #MainDisplay[state=Half] #MainMFD #MainMFD_MapElements .mapCenter {
+        transition: right 0.5s;
+        right: 22.25vw; }
+      as3x-touch-element #MainDisplay[state=Half] #MainMFD #MainMFD_MapElements #MapOrientation, as3x-touch-element #MainDisplay[state=Half] #MainMFD #MainMFD_MapElements #MapRange {
+        transition: right 0.5s;
+        right: 21.25vw; }
+  as3x-touch-element #MainDisplay[state=HalfNoEngine] {
+    width: 57.5%;
+    transition: width 0.5s; }
+    as3x-touch-element #MainDisplay[state=HalfNoEngine] #PFD #HorizonContainer #SyntheticVision {
+      transition: left 0.5s;
+      left: -34vh; }
+  as3x-touch-element #MainDisplay[state=Full] {
+    right: 15%;
+    left: 0%;
+    height: auto;
+    width: 85%;
+    transition: width 0.5s; }
+    as3x-touch-element #MainDisplay[state=Full] #PFD #HorizonContainer #SyntheticVision {
+      transition: left 0.5s;
+      left: -12vh; }
+    as3x-touch-element #MainDisplay[state=Full] #MainMFD #MainMFD_MapElements {
+      transition: left 0.5s;
+      left: 0vh; }
+    as3x-touch-element #MainDisplay[state=Full] #MainMFD .mapPlus, as3x-touch-element #MainDisplay[state=Full] #MainMFD .mapLess, as3x-touch-element #MainDisplay[state=Full] #MainMFD .mapCenter {
+      transition: right 0.5s; }
+    as3x-touch-element #MainDisplay[state=Full] #MainMFD #MapOrientation, as3x-touch-element #MainDisplay[state=Full] #MainMFD #MapRange {
+      transition: right 0.5s; }
+  as3x-touch-element #MainDisplay[state=FullNoEngine] {
+    right: 0%;
+    left: 0%;
+    height: auto;
+    width: 100%;
+    transition: width 0.5s; }
+    as3x-touch-element #MainDisplay[state=FullNoEngine] #PFD #HorizonContainer #SyntheticVision {
+      transition: left 0.5s;
+      left: 0vh; }
+  as3x-touch-element #PFD, as3x-touch-element #MainMFD {
+    width: 100%;
+    height: 100%; }
+  as3x-touch-element #EngineInfos {
+    position: absolute;
+    right: 0%;
+    width: 15%;
+    top: 10%;
+    bottom: 4%;
+    height: auto;
+    border-left: 0.3vh solid white;
+    background-color: black;
+    z-index: 2; }
+    as3x-touch-element #EngineInfos #Engine {
+      width: 100%;
+      height: 100%; }
+
+@keyframes AlertBlink {
+  0%, 49% {
+    background-color: white;
+    color: red;
+    fill: red; }
+  51%, 100% {
+    background-color: red;
+    color: white;
+    fill: white; } }
+
+@keyframes AlertBlinkBackground {
+  0%, 49% {
+    fill: white; }
+  51%, 100% {
+    fill: red; } }
+      as3x-touch-element #EngineInfos #Engine *[state=Alert] *[AlertBlink=Text], as3x-touch-element #EngineInfos #Engine .Column *[state=Alert] *[AlertBlink=Text] {
+        animation: AlertBlink 1s infinite; }
+      as3x-touch-element #EngineInfos #Engine *[state=Alert] *[AlertBlink=Background], as3x-touch-element #EngineInfos #Engine .Column *[state=Alert] *[AlertBlink=Background] {
+        animation: AlertBlinkBackground 1s infinite;
+        fill-opacity: 1; }
+      as3x-touch-element #EngineInfos #Engine *[state=Alert] *[AlertBlink=Red], as3x-touch-element #EngineInfos #Engine .Column *[state=Alert] *[AlertBlink=Red] {
+        fill: red; }
+    as3x-touch-element #EngineInfos[state=Hidden] {
+      display: none; }
+  as3x-touch-element #BottomBar {
+    position: absolute;
+    bottom: 0%;
+    height: 4%;
+    width: 100%;
+    border-top: 0.3vh solid white;
+    line-height: 3.5vh;
+    font-size: 2.5vh; }
+    as3x-touch-element #BottomBar #LeftKnobInfos {
+      position: absolute;
+      left: 2%;
+      display: flex;
+      height: 100%; }
+    as3x-touch-element #BottomBar #CentralInfos {
+      position: absolute;
+      left: 35%;
+      right: 35%;
+      width: 30%;
+      display: flex; }
+      as3x-touch-element #BottomBar #CentralInfos div {
+        flex: auto; }
+    as3x-touch-element #BottomBar #RightKnobInfos {
+      position: absolute;
+      right: 2%;
+      display: flex;
+      height: 100%; }
+  as3x-touch-element .gradientButton {
+    position: relative;
+    width: 7%;
+    font-size: 3vh;
+    height: 90%;
+    margin: 0.5vh;
+    border: 0.2vh solid #333333;
+    border-radius: 1vh;
+    background: linear-gradient(#0093d0, rgba(0, 147, 208, 0) 60%);
+    width: 12vh;
+    height: 12vh;
+    text-align: center; }
+    as3x-touch-element .gradientButton[state=Inactive] {
+      visibility: hidden; }
+    as3x-touch-element .gradientButton[state=Greyed] {
+      filter: grayscale(100%) brightness(40%); }
+      as3x-touch-element .gradientButton[state=Greyed]:Hover:Active {
+        background-color: black !important; }
+    as3x-touch-element .gradientButton[state=Hidden] {
+      display: none !important; }
+    as3x-touch-element .gradientButton[state=Invisible] {
+      visibility: hidden !important; }
+    as3x-touch-element .gradientButton .img {
+      height: 60%;
+      max-width: 60%;
+      margin-top: 5%;
+      display: inline-block; }
+    as3x-touch-element .gradientButton .img_small {
+      height: 40%;
+      max-width: 40%;
+      margin-top: 5%;
+      display: inline-block; }
+    as3x-touch-element .gradientButton .lowerImg {
+      height: 60%;
+      max-width: 60%;
+      display: inline-block;
+      margin-top: 20%; }
+    as3x-touch-element .gradientButton .centerImg {
+      height: 40%;
+      max-width: 60%;
+      display: inline-block;
+      margin-top: 14%; }
+    as3x-touch-element .gradientButton .lowerValue {
+      position: absolute;
+      top: 42%;
+      width: 90%;
+      left: 5%;
+      font-size: 4vh;
+      color: aqua; }
+    as3x-touch-element .gradientButton .title {
+      position: absolute;
+      height: 40%;
+      width: 100%;
+      bottom: 0%;
+      text-align: center;
+      color: white;
+      font-size: 3.5vh;
+      line-height: 3.5vh;
+      background: none;
+      vertical-align: bottom; }
+    as3x-touch-element .gradientButton .upperTitle {
+      position: absolute;
+      height: 40%;
+      width: 100%;
+      top: 5%;
+      text-align: center;
+      color: white;
+      font-size: 3.5vh;
+      line-height: 3.5vh;
+      background: none;
+      vertical-align: bottom; }
+    as3x-touch-element .gradientButton .topText {
+      color: white;
+      text-align: left;
+      font-size: 3vh;
+      margin-left: 8%; }
+    as3x-touch-element .gradientButton .mainNumber {
+      color: white;
+      text-align: justify;
+      font-size: 7vh;
+      margin-left: 8%; }
+    as3x-touch-element .gradientButton .mainText {
+      color: white;
+      text-align: center;
+      font-size: 4vh; }
+    as3x-touch-element .gradientButton .statusText {
+      color: aqua;
+      font-size: 5vh; }
+    as3x-touch-element .gradientButton .statusBar {
+      position: absolute;
+      width: 80%;
+      height: 5%;
+      background-color: grey;
+      left: 10%;
+      bottom: 30%; }
+      as3x-touch-element .gradientButton .statusBar[state=Active] {
+        background-color: lawngreen; }
+    as3x-touch-element .gradientButton[state=Active] .mainNumber {
+      color: lawngreen; }
+    as3x-touch-element .gradientButton[state=Active] .statusBar {
+      background-color: lawngreen; }
+    as3x-touch-element .gradientButton[state=Selected] .mainNumber {
+      color: aqua; }
+      as3x-touch-element .gradientButton[state=Selected] .mainNumber .Writing {
+        color: dimgray;
+        min-width: 5px;
+        min-height: 7vh;
+        display: inline-block; }
+        as3x-touch-element .gradientButton[state=Selected] .mainNumber .Writing[state=Blink] {
+          background-color: aqua; }
+      as3x-touch-element .gradientButton[state=Selected] .mainNumber .ToWrite {
+        color: dimgray; }
+    as3x-touch-element .gradientButton[state=White] {
+      background: none;
+      background-color: white; }
+      as3x-touch-element .gradientButton[state=White] .mainText {
+        color: black; }
+    as3x-touch-element .gradientButton:Hover:Active {
+      background-color: #0093d0; }
+  as3x-touch-element .roundButton {
+    border-radius: 50%;
+    background: linear-gradient(#0093d0, rgba(0, 147, 208, 0) 60%);
+    color: white;
+    font-size: 4vh;
+    text-align: center;
+    width: 12vh;
+    height: 12vh; }
+    as3x-touch-element .roundButton:Hover:Active {
+      background-color: #0093d0; }
+  as3x-touch-element .line {
+    width: 100%;
+    text-align: center; }
+    as3x-touch-element .line > * {
+      display: inline-block; }
+  as3x-touch-element #MainMFD_MapElements {
+    width: 85vw; }
+  as3x-touch-element #Map_Elements {
+    width: 100%; }
+  as3x-touch-element #Map_Elements, as3x-touch-element #MainMFD_MapElements {
+    position: absolute;
+    height: 100%;
+    /* Map position (left and top) is set in mapConfig.json file (see SvgMapConfig.ts) (makes it editable at runtime) */
+    /* Map position (left and top) is set in mapConfig.json file (see SvgMapConfig.ts) (makes it editable at runtime) */ }
+    as3x-touch-element #Map_Elements .mapLess, as3x-touch-element #MainMFD_MapElements .mapLess {
+      position: absolute;
+      right: 1vh;
+      top: 4vh;
+      height: 5vh;
+      width: 5vh; }
+      as3x-touch-element #Map_Elements .mapLess:Hover:Active circle, as3x-touch-element #MainMFD_MapElements .mapLess:Hover:Active circle {
+        fill: #0093d0; }
+    as3x-touch-element #Map_Elements .mapPlus, as3x-touch-element #MainMFD_MapElements .mapPlus {
+      position: absolute;
+      right: 1vh;
+      top: 10vh;
+      height: 5vh;
+      width: 5vh; }
+      as3x-touch-element #Map_Elements .mapPlus:Hover:Active circle, as3x-touch-element #MainMFD_MapElements .mapPlus:Hover:Active circle {
+        fill: #0093d0; }
+    as3x-touch-element #Map_Elements .mapCenter, as3x-touch-element #MainMFD_MapElements .mapCenter {
+      position: absolute;
+      right: 1vh;
+      top: 16vh;
+      height: 5vh;
+      width: 5vh;
+      background-color: rgba(20, 20, 20, 0.4);
+      border: 0.3vh solid #444444;
+      border-radius: 1vh;
+      display: none; }
+      as3x-touch-element #Map_Elements .mapCenter img, as3x-touch-element #MainMFD_MapElements .mapCenter img {
+        width: 100%;
+        height: 100%; }
+      as3x-touch-element #Map_Elements .mapCenter:Hover:Active, as3x-touch-element #MainMFD_MapElements .mapCenter:Hover:Active {
+        background-color: #0093d0; }
+      as3x-touch-element #Map_Elements .mapCenter[state=Active], as3x-touch-element #MainMFD_MapElements .mapCenter[state=Active] {
+        display: block; }
+    as3x-touch-element #Map_Elements #MapOrientation, as3x-touch-element #MainMFD_MapElements #MapOrientation {
+      position: absolute;
+      top: 0%;
+      right: 0%;
+      width: 15%;
+      height: calc( 3 * 1vh * var(--bodyHeightScale));
+      background-color: #1a1d21;
+      color: white;
+      text-align: center; }
+    as3x-touch-element #Map_Elements #MapRange, as3x-touch-element #MainMFD_MapElements #MapRange {
+      position: absolute;
+      bottom: 0%;
+      right: 0%;
+      width: 15%;
+      height: 4vh;
+      background-color: #1a1d21;
+      color: #36c8d2;
+      display: flex;
+      font-size: 2.4vh; }
+      as3x-touch-element #Map_Elements #MapRange .Align, as3x-touch-element #MainMFD_MapElements #MapRange .Align {
+        width: 50%;
+        text-align: right; }
+      as3x-touch-element #Map_Elements #MapRange .unit, as3x-touch-element #MainMFD_MapElements #MapRange .unit {
+        font-size: 1.5vh;
+        line-height: 1.2vh;
+        text-align: left; }
+    as3x-touch-element #Map_Elements #MapSVG, as3x-touch-element #Map_Elements #road-network-canvas, as3x-touch-element #MainMFD_MapElements #MapSVG, as3x-touch-element #MainMFD_MapElements #road-network-canvas {
+      transform: rotateX(0);
+      position: absolute; }
+    as3x-touch-element #Map_Elements bing-map, as3x-touch-element #MainMFD_MapElements bing-map {
+      transform: rotateX(0);
+      position: absolute;
+      left: 0px;
+      top: 0px;
+      width: 100%;
+      height: 100%; }
+  as3x-touch-element #insertBeforeWaypointWindow .WindowTitle {
+    width: 70%;
+    padding-left: 15%;
+    background-color: black; }
+  as3x-touch-element #insertBeforeWaypointWindow .Container {
+    position: absolute;
+    background-color: black;
+    overflow-y: scroll;
+    width: 90%;
+    height: 66.8vh;
+    top: 10%;
+    left: 5%;
+    padding-right: 0.35vw;
+    border: 0.2vh solid white;
+    border-right: 0.4vh solid white;
+    border-collapse: collapse; }
+    as3x-touch-element #insertBeforeWaypointWindow .Container::-webkit-scrollbar {
+      width: 0.5vw; }
+    as3x-touch-element #insertBeforeWaypointWindow .Container::-webkit-scrollbar-track {
+      background: none; }
+    as3x-touch-element #insertBeforeWaypointWindow .Container::-webkit-scrollbar-thumb {
+      background: white; }
+    as3x-touch-element #insertBeforeWaypointWindow .Container .line, as3x-touch-element #insertBeforeWaypointWindow .Container .EndButtonLine {
+      width: 100%;
+      height: 16.6vh;
+      position: relative;
+      border: 0.2vh solid white;
+      border-right: 0.4vh solid white; }
+      as3x-touch-element #insertBeforeWaypointWindow .Container .line[state=Inactive], as3x-touch-element #insertBeforeWaypointWindow .Container .EndButtonLine[state=Inactive] {
+        display: none; }
+      as3x-touch-element #insertBeforeWaypointWindow .Container .line .gradientButton, as3x-touch-element #insertBeforeWaypointWindow .Container .EndButtonLine .gradientButton {
+        position: absolute;
+        left: 0.5vh;
+        right: 0.5vh;
+        top: 0.5vh;
+        bottom: 0.5vh;
+        width: auto;
+        height: auto; }
+        as3x-touch-element #insertBeforeWaypointWindow .Container .line .gradientButton .mainValue, as3x-touch-element #insertBeforeWaypointWindow .Container .EndButtonLine .gradientButton .mainValue {
+          position: absolute;
+          text-align: left;
+          left: 10%;
+          top: 5%;
+          color: white;
+          font-size: 4vh; }
+        as3x-touch-element #insertBeforeWaypointWindow .Container .line .gradientButton .title, as3x-touch-element #insertBeforeWaypointWindow .Container .EndButtonLine .gradientButton .title {
+          position: absolute;
+          text-align: left;
+          left: 10%;
+          bottom: 10%;
+          width: 80%; }
+        as3x-touch-element #insertBeforeWaypointWindow .Container .line .gradientButton .symbol, as3x-touch-element #insertBeforeWaypointWindow .Container .EndButtonLine .gradientButton .symbol {
+          position: absolute;
+          right: 0%;
+          top: 0%; }
+    as3x-touch-element #insertBeforeWaypointWindow .Container .EndButtonLine {
+      height: 17vh; }
+  as3x-touch-element #SelectionList .content {
+    position: absolute;
+    left: 10%;
+    right: 10%;
+    width: auto;
+    top: 15%;
+    height: 85%;
+    overflow-y: scroll;
+    overflow-x: hidden; }
+    as3x-touch-element #SelectionList .content::-webkit-scrollbar {
+      width: 0.5vw; }
+    as3x-touch-element #SelectionList .content::-webkit-scrollbar-track {
+      background: none; }
+    as3x-touch-element #SelectionList .content::-webkit-scrollbar-thumb {
+      background: white; }
+    as3x-touch-element #SelectionList .content .gradientButton {
+      height: 20%;
+      width: 100%; }
+      as3x-touch-element #SelectionList .content .gradientButton .value {
+        font-size: 4vh; }
+      as3x-touch-element #SelectionList .content .gradientButton[state=Inactive] {
+        display: none; }
+  as3x-touch-element #Annunciations div {
+    font-size: 1.6vh;
+    text-align: left;
+    margin-bottom: 1px; }
+  as3x-touch-element #Annunciations .Warning, as3x-touch-element #Annunciations .Warning_Blink {
+    color: red; }
+  as3x-touch-element #Annunciations .Caution, as3x-touch-element #Annunciations .Caution_Blink {
+    color: yellow; }
+  as3x-touch-element #Annunciations[state=Blink] .Warning_Blink {
+    color: white;
+    background-color: red; }
+  as3x-touch-element #Annunciations[state=Blink] .Caution_Blink {
+    color: black;
+    background-color: yellow; }
+  as3x-touch-element[instrumentstyle=e330] #MainDisplay #PFD #HorizonContainer #SyntheticVision {
+    left: -54vh; }
+
