@@ -23,14 +23,14 @@ class CDUAirportsMonitor {
             ap_line_batch.add("C:fs9gps:NearestAirportCurrentICAO", "string", "string")
             ap_line_batch.add("C:fs9gps:NearestAirportCurrentDistance", "nautical miles", "number")
             ap_line_batch.add("C:fs9gps:NearestAirportCurrentTrueBearing", "degrees", "number")
-    
+
             this.lat = SimVar.GetSimVarValue("PLANE LATITUDE", "degree latitude");
             this.lon = SimVar.GetSimVarValue("PLANE LONGITUDE", "degree longitude");
             SimVar.SetSimVarValue("C:fs9gps:NearestAirportCurrentLatitude", "degree latitude", this.lat)
             SimVar.SetSimVarValue("C:fs9gps:NearestAirportCurrentLongitude", "degree longitude", this.lon)
             SimVar.SetSimVarValue("C:fs9gps:NearestAirportMaximumItems", "number", max_num_ap)
             SimVar.SetSimVarValue("C:fs9gps:NearestAirportMaximumDistance", "nautical miles", max_dist_miles)
-    
+
             SimVar.GetSimVarArrayValues(ap_line_batch, function (_Values) {
                 // sometimes we get only one value,
                 // in which case the display will not be cleared and redrawn
@@ -44,7 +44,6 @@ class CDUAirportsMonitor {
                     this.dist3 = Math.round(parseFloat(_Values[2][3]))
                     this.dist4 = Math.round(parseFloat(_Values[3][3]))
                     // values are jumpy! mitigated by slow update rate, as only about every 30th value is erroneous
-                    console.log(_Values[0][4])
                     this.magvar = SimVar.GetSimVarValue("MAGVAR", "degree")
                     this.brng1 = Math.round(parseFloat(_Values[0][4]) - this.magvar)
                     this.brng2 = Math.round(parseFloat(_Values[1][4]) - this.magvar)
@@ -65,7 +64,7 @@ class CDUAirportsMonitor {
 
             this.total_delta_t = 0
         }
-        
+
         let s_per_h = 3600
         let s_per_d = s_per_h * 24
 
@@ -158,9 +157,9 @@ class CDUAirportsMonitor {
             mcdu.refreshPageCallback = () => {
                 this.ShowPage(mcdu)
             }
-            SimVar.SetSimVarValue("L:FMC_UPDATE_CURRENT_PAGE", "number", 1)    
+            SimVar.SetSimVarValue("L:FMC_UPDATE_CURRENT_PAGE", "number", 1)
         }
-        
+
         // user-selected 5th airport
         mcdu.onLeftInput[4] = () => {
             if (!this.user_ap && mcdu.inOut !== '' && mcdu.inOut !== mcdu.clrValue) {
