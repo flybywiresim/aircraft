@@ -2,7 +2,7 @@ class CDUAirportsMonitor {
     static ShowPage(mcdu, reset = false) {
 
         // one delta t unit is about 1.5 ms it seems
-        var update_ival_ms = 1000
+        const update_ival_ms = 1000
 
         this.total_delta_t += mcdu._deltaTime
 
@@ -13,11 +13,11 @@ class CDUAirportsMonitor {
         }
 
         // we want the closest 4 APs with unlimited distance
-        var max_num_ap = 4
-        var max_dist_miles = 100000
+        const max_num_ap = 4
+        const max_dist_miles = 100000
 
         if (this.total_delta_t >= update_ival_ms || !this.icao1) {
-            var ap_line_batch = new SimVar.SimVarBatch("C:fs9gps:NearestAirportItemsNumber", "C:fs9gps:NearestAirportCurrentLine")
+            const ap_line_batch = new SimVar.SimVarBatch("C:fs9gps:NearestAirportItemsNumber", "C:fs9gps:NearestAirportCurrentLine")
             ap_line_batch.add("C:fs9gps:NearestAirportSelectedLatitude", "degree latitude")
             ap_line_batch.add("C:fs9gps:NearestAirportSelectedLongitude", "degree longitude")
             ap_line_batch.add("C:fs9gps:NearestAirportCurrentICAO", "string", "string")
@@ -69,27 +69,27 @@ class CDUAirportsMonitor {
         const s_per_d = s_per_h * 24
 
         // ETA offset in seconds
-        var eta1_s = Math.round(this.dist1 / this.gs * s_per_h)
-        var eta2_s = Math.round(this.dist2 / this.gs * s_per_h)
-        var eta3_s = Math.round(this.dist3 / this.gs * s_per_h)
-        var eta4_s = Math.round(this.dist4 / this.gs * s_per_h)
+        const eta1_s = Math.round(this.dist1 / this.gs * s_per_h)
+        const eta2_s = Math.round(this.dist2 / this.gs * s_per_h)
+        const eta3_s = Math.round(this.dist3 / this.gs * s_per_h)
+        const eta4_s = Math.round(this.dist4 / this.gs * s_per_h)
 
         // absolute ETA in seconds
-        var utc_s  = Math.floor(SimVar.GetGlobalVarValue("ZULU TIME", "seconds"))
-        var utc1_s = (utc_s + eta1_s) % s_per_d
-        var utc2_s = (utc_s + eta2_s) % s_per_d
-        var utc3_s = (utc_s + eta3_s) % s_per_d
-        var utc4_s = (utc_s + eta4_s) % s_per_d
+        const utc_s  = Math.floor(SimVar.GetGlobalVarValue("ZULU TIME", "seconds"))
+        const utc1_s = (utc_s + eta1_s) % s_per_d
+        const utc2_s = (utc_s + eta2_s) % s_per_d
+        const utc3_s = (utc_s + eta3_s) % s_per_d
+        const utc4_s = (utc_s + eta4_s) % s_per_d
 
         // components for ETAs in HHMM format
-        var h1 = Math.floor(utc1_s / s_per_h) || 0
-        var h2 = Math.floor(utc2_s / s_per_h) || 0
-        var h3 = Math.floor(utc3_s / s_per_h) || 0
-        var h4 = Math.floor(utc4_s / s_per_h) || 0
-        var m1 = Math.floor(utc1_s % s_per_h / 60) || 0
-        var m2 = Math.floor(utc2_s % s_per_h / 60) || 0
-        var m3 = Math.floor(utc3_s % s_per_h / 60) || 0
-        var m4 = Math.floor(utc4_s % s_per_h / 60) || 0
+        const h1 = Math.floor(utc1_s / s_per_h) || 0
+        const h2 = Math.floor(utc2_s / s_per_h) || 0
+        const h3 = Math.floor(utc3_s / s_per_h) || 0
+        const h4 = Math.floor(utc4_s / s_per_h) || 0
+        const m1 = Math.floor(utc1_s % s_per_h / 60) || 0
+        const m2 = Math.floor(utc2_s % s_per_h / 60) || 0
+        const m3 = Math.floor(utc3_s % s_per_h / 60) || 0
+        const m4 = Math.floor(utc4_s % s_per_h / 60) || 0
 
         // ETA HHMM strings
         this.eta1 = `${h1.toString().padStart(2, "0") || "00"}${m1.toString().padStart(2, "0") || "00"}`
@@ -107,10 +107,10 @@ class CDUAirportsMonitor {
             SimVar.SetSimVarValue("C:fs9gps:GeoCalcLongitude2", "degree", this.user_ap.infos.long)
             this.brng5 = Math.round(SimVar.GetSimVarValue("C:fs9gps:GeoCalcBearing", "degree") - this.magvar)
             this.dist5 = Math.round(SimVar.GetSimVarValue("C:fs9gps:GeoCalcDistance", "nautical miles"))
-            var eta5_s = Math.round(this.dist5 / this.gs * s_per_h)
-            var utc5_s = (utc_s + eta5_s) % s_per_d
-            var h5 = Math.floor(utc5_s / s_per_h) || 0
-            var m5 = Math.floor(utc5_s % s_per_h / 60) || 0
+            const eta5_s = Math.round(this.dist5 / this.gs * s_per_h)
+            const utc5_s = (utc_s + eta5_s) % s_per_d
+            const h5 = Math.floor(utc5_s / s_per_h) || 0
+            const m5 = Math.floor(utc5_s % s_per_h / 60) || 0
             this.eta5 = `${h5.toString().padStart(2, "0") || "00"}${m5.toString().padStart(2, "0") || "00"}`
             this.user_ap_line = [
                 `${this.user_ap.infos.ident}[color]green`,
