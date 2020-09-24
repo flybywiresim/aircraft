@@ -129,8 +129,8 @@ class A320_Neo_PFD_MainPage extends NavSystemPage {
             this.groundCursorLimits.style.display = "none";
         }
 
-        const YokeXPosition = 40.9 + (15 * SimVar.GetSimVarValue("YOKE X POSITION", "Position"));
-        const YokeYPosition = 47.7 - (15 * SimVar.GetSimVarValue("YOKE Y POSITION", "Position"));
+        const YokeXPosition = 40.45 + (18.4 * SimVar.GetSimVarValue("YOKE X POSITION", "Position"));
+        const YokeYPosition = 47.95 - (14.45 * SimVar.GetSimVarValue("YOKE Y POSITION", "Position"));
 
         this.groundCursor.style.left = YokeXPosition.toString() + "%";
         this.groundCursor.style.top = YokeYPosition.toString() + "%";
