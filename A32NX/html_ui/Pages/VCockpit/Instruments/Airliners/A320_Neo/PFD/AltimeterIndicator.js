@@ -217,7 +217,7 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
                 textBg.setAttribute("y", "35");
                 textBg.setAttribute("width", (_width + 2).toString());
                 textBg.setAttribute("height", "30");
-                textBg.setAttribute("fill", "black");
+                textBg.setAttribute("fill", "url(#Backlight)");
                 this.targetAltitudeIndicatorSVG.appendChild(textBg);
                 this.targetAltitudeIndicatorSVGText = document.createElementNS(Avionics.SVG.NS, "text");
                 this.targetAltitudeIndicatorSVGText.textContent = "35000";

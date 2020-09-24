@@ -313,6 +313,7 @@ class Jet_PFD_AttitudeIndicator extends HTMLElement {
                     dash.setAttribute("y", (-radius - smallDashesHeight[i]).toString());
                     dash.setAttribute("height", smallDashesHeight[i].toString());
                     dash.setAttribute("width", smallDashesWidth[i].toString());
+                    dash.setAttribute("fill", "transparent");
                     dash.setAttribute("stroke", "white");
                     dash.setAttribute("stroke-width", "3");
                     dash.setAttribute("transform", "rotate(" + smallDashesAngle[i] + ",0,0)");
@@ -324,14 +325,14 @@ class Jet_PFD_AttitudeIndicator extends HTMLElement {
                 {
                     let leftUpper = document.createElementNS(Avionics.SVG.NS, "path");
                     leftUpper.setAttribute("d", "M-145 4 l0 -6 l55 0 l0 28 l-5 0 l0 -22 l-40 0 Z");
-                    leftUpper.setAttribute("fill", "black");
+                    leftUpper.setAttribute("fill", "url(#Backlight)");
                     leftUpper.setAttribute("stroke", "yellow");
                     leftUpper.setAttribute("stroke-width", "1");
                     leftUpper.setAttribute("stroke-opacity", "1.0");
                     cursors.appendChild(leftUpper);
                     let rightUpper = document.createElementNS(Avionics.SVG.NS, "path");
                     rightUpper.setAttribute("d", "M140 4 l0 -6 l-55 0 l0 28 l5 0 l0 -22 l40 0 Z");
-                    rightUpper.setAttribute("fill", "black");
+                    rightUpper.setAttribute("fill", "url(#Backlight)");
                     rightUpper.setAttribute("stroke", "yellow");
                     rightUpper.setAttribute("stroke-width", "1");
                     rightUpper.setAttribute("stroke-opacity", "1.0");
@@ -341,18 +342,23 @@ class Jet_PFD_AttitudeIndicator extends HTMLElement {
                     centerRect.setAttribute("y", "-4");
                     centerRect.setAttribute("height", "8");
                     centerRect.setAttribute("width", "8");
-                    centerRect.setAttribute("stroke", "white");
+                    centerRect.setAttribute("fill", "url(#Backlight)");
+                    centerRect.setAttribute("stroke", "yellow");
                     centerRect.setAttribute("stroke-width", "3");
                     cursors.appendChild(centerRect);
                 }
                 this.attitude_root.appendChild(cursors);
                 this.slipSkidTriangle = document.createElementNS(Avionics.SVG.NS, "path");
                 this.slipSkidTriangle.setAttribute("d", "M0 -170 l-13 20 l26 0 Z");
-                this.slipSkidTriangle.setAttribute("fill", "white");
+                this.slipSkidTriangle.setAttribute("fill", "transparent");
+                this.slipSkidTriangle.setAttribute("stroke", "yellow");
+                this.slipSkidTriangle.setAttribute("stroke-width", "3");
                 this.attitude_root.appendChild(this.slipSkidTriangle);
                 this.slipSkid = document.createElementNS(Avionics.SVG.NS, "path");
-                this.slipSkid.setAttribute("d", "M-20 -140 L-16 -146 L16 -146 L20 -140 Z");
-                this.slipSkid.setAttribute("fill", "white");
+                this.slipSkid.setAttribute("d", "M-19 -138 L-15 -144 L17 -144 L21 -138 Z");
+                this.slipSkid.setAttribute("fill", "transparent");
+                this.slipSkid.setAttribute("stroke", "yellow");
+                this.slipSkid.setAttribute("stroke-width", "3");
                 this.attitude_root.appendChild(this.slipSkid);
             }
             {
