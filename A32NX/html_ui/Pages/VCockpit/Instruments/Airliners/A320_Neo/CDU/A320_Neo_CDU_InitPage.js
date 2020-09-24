@@ -2,9 +2,9 @@ class CDUInitPage {
     static ShowPage1(mcdu) {
         mcdu.clearDisplay();
         // TODO fix LSK ALT when NONE
-        let fromTo = "□□□□/□□□□[color]red"; //Ref: THALES FM2
-        let coRoute = "□□□□□□□□□□[color]red"; //Ref: THALES FM2
-        let flightNo = "□□□□□□□□[color]red"; //Ref: THALES FM2
+        let fromTo = "{amberFront}□□□□/□□□□{amberEnd}"; //Ref: THALES FM2
+        let coRoute = "{amberFront}□□□□□□□□□□{amberEnd}"; //Ref: THALES FM2
+        let flightNo = "{amberFront}□□□□□□□□{amberEnd}"; //Ref: THALES FM2
         let altDest = "----/------"; // Ref: THALES FM2
         let lat = "----.-"; //Ref: Thales FM2
         let long = "-----.--"; //Ref: Thales FM2
@@ -13,12 +13,12 @@ class CDUInitPage {
 
         if (mcdu.flightPlanManager.getOrigin() && mcdu.flightPlanManager.getOrigin().ident) {
             if (mcdu.flightPlanManager.getDestination() && mcdu.flightPlanManager.getDestination().ident) {
-                fromTo = mcdu.flightPlanManager.getOrigin().ident + "/" + mcdu.flightPlanManager.getDestination().ident + "[color]blue";
-                if (coRoute.includes("□□□□□□□□□□[color]red")) coRoute = "NONE[color]blue"; //Check if coroute exists
+                fromTo =  "{magentaFront}" + mcdu.flightPlanManager.getOrigin().ident + "/" + mcdu.flightPlanManager.getDestination().ident + "{magentaEnd}";
+                if (coRoute.includes("{amberFront}□□□□□□□□□□{amberEnd}")) coRoute = "{magentaFront}NONE{magentaEnd}"; //Check if coroute exists
 
                 //Need code to set the SimVarValue if user inputs FlNo
                 if (SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string", "FMC")) {
-                    flightNo = SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string", "FMC") + "[color]blue";
+                    flightNo = "{magentaFront}" + SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string", "FMC") + "{magentaEnd}";
                 }
 
                 if (mcdu.flightPlanManager.getOrigin().infos.coordinates) {
@@ -26,14 +26,13 @@ class CDUInitPage {
                     const airportCoordinates = mcdu.flightPlanManager.getOrigin().infos.coordinates;
                     const originAirportLat = this.ConvertDDToDMS(airportCoordinates["lat"], false);
                     const originAirportLon = this.ConvertDDToDMS(airportCoordinates["long"], true);
-                    lat = originAirportLat["deg"] + "°" + originAirportLat["min"] + "." + Math.ceil(Number(originAirportLat["sec"] / 10)) + originAirportLat["dir"] + "[color]blue";
-                    long =
-                        originAirportLon["deg"] + "°" + originAirportLon["min"] + "." + Math.ceil(Number(originAirportLon["sec"] / 10)) + originAirportLon["dir"] + "[color]blue";
+                    lat = "{magentaFront}" + originAirportLat["deg"] + "°" + originAirportLat["min"] + "." + Math.ceil(Number(originAirportLat["sec"] / 10)) + originAirportLat["dir"] + "{magentaEnd}";
+                    long = "{magentaFront}" + originAirportLon["deg"] + "°" + originAirportLon["min"] + "." + Math.ceil(Number(originAirportLon["sec"] / 10)) + originAirportLon["dir"] + "{magentaEnd}";
                 }
 
-                costIndex = "□□□[color]red";
+                costIndex = "{amberFront}□□□{amberEnd}";
                 if (mcdu.costIndex) {
-                    costIndex = mcdu.costIndex + "[color]blue";
+                    costIndex = "{magentaFront}" + mcdu.costIndex + "{magentaEnd}";
                 }
                 mcdu.onLeftInput[4] = () => {
                     let value = mcdu.inOut;
@@ -43,7 +42,7 @@ class CDUInitPage {
                     }
                 };
 
-                cruiseFlTemp = "□□□□□ /□□□°[color]red";
+                cruiseFlTemp = "{amberFront}□□□□□ /□□□°{amberEnd}";
                 if (mcdu._cruiseEntered) {
                     //This is done so pilot enters a FL first, rather than using the computed one
                     if (mcdu.cruiseFlightLevel) {
@@ -51,7 +50,7 @@ class CDUInitPage {
                         if (isFinite(mcdu.cruiseTemperature)) {
                             temp = mcdu.cruiseTemperature;
                         }
-                        cruiseFlTemp = "FL" + mcdu.cruiseFlightLevel.toFixed(0).padStart(3, "0") + " /" + temp.toFixed(0) + "°[color]blue";
+                        cruiseFlTemp = "{magentaFront}" +"FL" + mcdu.cruiseFlightLevel.toFixed(0).padStart(3, "0") + " /" + temp.toFixed(0) + "°{magentaEnd}";
                     }
                 }
                 mcdu.onLeftInput[5] = () => {
@@ -64,9 +63,9 @@ class CDUInitPage {
                 };
 
                 // Since CoRte isn't implemented, AltDest defaults to None Ref: FCOM 4.03.20 *Old Version
-                altDest = "NONE[color]blue";
+                altDest = "{magentaFront}NONE{magentaEnd}";
                 if (mcdu.altDestination) {
-                    altDest = mcdu.altDestination.ident + "[color]blue";
+                    altDest = "{magentaFront}" + mcdu.altDestination.ident + "{magentaEnd}";
                 }
                 mcdu.onLeftInput[1] = async () => {
                     let value = mcdu.inOut;
@@ -83,7 +82,7 @@ class CDUInitPage {
         }
 
         if (mcdu.coRoute) {
-            coRoute = mcdu.coRoute + "[color]blue";
+            coRoute = "{magentaFront}"+ mcdu.coRoute + "{magentaEnd}";
         }
 
         mcdu.onLeftInput[0] = () => {
@@ -155,14 +154,38 @@ class CDUInitPage {
             ["ALTN/CO RTE"],
             [altDest],
             ["FLT NBR"],
-            [flightNo + "[color]blue"],
+            ["{magentaFront}" + flightNo + "{magentaEnd}"],
             [latText, lonText],
             [lat, long],
             ["COST INDEX"],
             [costIndex, "WIND>"],
             ["CRZ FL/TEMP", "TROPO"],
-            [cruiseFlTemp, "36090[color]blue"],
+            [cruiseFlTemp, "{magentaFront}36090{magentaEnd}"],
         ]);
+
+        mcdu._lineElements.forEach(function (ele) {
+            ele.forEach(function (el) {
+                if (el != null) {
+                    let newHtml = el;
+                    if (newHtml != null) {
+                        newHtml = newHtml.innerHTML.replace(/{amberFront}/g, '<span class=\'amber\'>');
+                        newHtml = newHtml.replace(/{amberEnd}/g, '</span>');
+                        el.innerHTML = newHtml;
+                    }
+                }})
+        });
+
+        mcdu._lineElements.forEach(function (ele) {
+            ele.forEach(function (el) {
+                if (el != null) {
+                    let newHtml = el;
+                    if (newHtml != null) {
+                        newHtml = newHtml.innerHTML.replace(/{magentaFront}/g, '<span class=\'magenta\'>');
+                        newHtml = newHtml.replace(/{magentaEnd}/g, '</span>');
+                        el.innerHTML = newHtml;
+                    }
+                }})
+        });
 
         mcdu.onPrevPage = () => {
             CDUInitPage.ShowPage2(mcdu);
