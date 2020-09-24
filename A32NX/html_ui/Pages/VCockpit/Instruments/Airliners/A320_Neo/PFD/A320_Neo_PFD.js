@@ -297,6 +297,13 @@ class A320_Neo_PFD_Attitude extends NavSystemElement {
         if (this.hsi) {
             this.hsi.update(_deltaTime);
 
+            const flightDirectorActive = SimVar.GetSimVarValue(`AUTOPILOT FLIGHT DIRECTOR ACTIVE:1`, "bool");
+            const apHeadingModeSelected = Simplane.getAutoPilotHeadingSelected();
+            const fcuShowHdg = SimVar.GetSimVarValue("L:A320_FCU_SHOW_SELECTED_HEADING", "number");
+            const showSelectedHdg = !flightDirectorActive && (fcuShowHdg || apHeadingModeSelected);
+
+            const selectedHeading = Simplane.getAutoPilotSelectedHeadingLockValue(false);
+            const compass = SimVar.GetSimVarValue("PLANE HEADING DEGREES MAGNETIC", "degree");
             const xyz = Simplane.getOrientationAxis();
 
             if (xyz) {
@@ -308,6 +315,9 @@ class A320_Neo_PFD_Attitude extends NavSystemElement {
             this.hsi.setAttribute("slip_skid", Simplane.getInclinometer().toString());
             this.hsi.setAttribute("radio_altitude", Simplane.getAltitudeAboveGround().toString());
             this.hsi.setAttribute("radio_decision_height", this.gps.radioNav.getRadioDecisionHeight().toString());
+            this.hsi.setAttribute("compass", compass.toString());
+            this.hsi.setAttribute("show_selected_hdg", showSelectedHdg.toString());
+            this.hsi.setAttribute("ap_hdg", selectedHeading.toString());
         }
     }
     onExit() {
