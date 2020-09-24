@@ -45,7 +45,7 @@ class Jet_MFD_NDCompass extends Jet_NDCompass {
                 let topMask = document.createElementNS(Avionics.SVG.NS, "path");
                 topMask.setAttribute("d", "M0 " + -maskHeight + ", L" + circleRadius * 2 + " " + -maskHeight + ", L" + circleRadius * 2 + " " + circleRadius + ", A 25 25 0 1 0 0, " + circleRadius + "Z");
                 topMask.setAttribute("transform", "translate(" + (50 - circleRadius) + ", " + (50 - circleRadius) + ")");
-                topMask.setAttribute("fill", "black");
+                topMask.setAttribute("fill", "url(#Backlight)");
                 this.arcMaskGroup.appendChild(topMask);
             }
             this.arcRangeGroup = document.createElementNS(Avionics.SVG.NS, "g");
@@ -166,6 +166,7 @@ class Jet_MFD_NDCompass extends Jet_NDCompass {
                     this.trackingBug.setAttribute("points", p1 + " " + p2 + " " + p3 + " " + p4);
                     this.trackingBug.setAttribute("stroke", "#00FF21");
                     this.trackingBug.setAttribute("stroke-width", "2");
+                    this.trackingBug.setAttribute("fill", "transparent");
                     this.trackingGroup.appendChild(this.trackingBug);
                 }
                 this.rotatingCircle.appendChild(this.trackingGroup);
@@ -482,6 +483,7 @@ class Jet_MFD_NDCompass extends Jet_NDCompass {
                         CDICircle.setAttribute("r", "10");
                         CDICircle.setAttribute("stroke", "white");
                         CDICircle.setAttribute("stroke-width", "2");
+                        CDICircle.setAttribute("fill", "url(#Backlight)");
                         this.course.appendChild(CDICircle);
                     }
                 }
@@ -509,6 +511,7 @@ class Jet_MFD_NDCompass extends Jet_NDCompass {
                 this.trackingBug.setAttribute("points", p1 + " " + p2 + " " + p3 + " " + p4);
                 this.trackingBug.setAttribute("stroke", "#00FF21");
                 this.trackingBug.setAttribute("stroke-width", "2");
+                this.trackingBug.setAttribute("fill", "transparent");
                 this.trackingGroup.appendChild(this.trackingBug);
             }
             this.rotatingCircle.appendChild(this.trackingGroup);
@@ -572,6 +575,7 @@ class Jet_MFD_NDCompass extends Jet_NDCompass {
                     glideSlopeDot.setAttribute("r", "10");
                     glideSlopeDot.setAttribute("stroke", "white");
                     glideSlopeDot.setAttribute("stroke-width", "2");
+                    glideSlopeDot.setAttribute("fill", "transparent");
                     this.glideSlopeGroup.appendChild(glideSlopeDot);
                 }
             }

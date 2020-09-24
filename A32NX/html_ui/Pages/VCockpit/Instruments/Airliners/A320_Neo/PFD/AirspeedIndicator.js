@@ -404,7 +404,7 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
                 {
                     let stripWidth = 14;
                     let shape = document.createElementNS(Avionics.SVG.NS, "path");
-                    shape.setAttribute("fill", "black");
+                    shape.setAttribute("fill", "url(#Backlight)");
                     shape.setAttribute("stroke", "red");
                     shape.setAttribute("d", "M 0 0 l " + stripWidth + " 0 l 0 " + (this.stripHeight) + " l " + (-stripWidth) + " 0 Z");
                     this.vMaxStripSVG.appendChild(shape);
@@ -428,7 +428,7 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
                 {
                     let stripWidth = 9;
                     let shape = document.createElementNS(Avionics.SVG.NS, "path");
-                    shape.setAttribute("fill", "black");
+                    shape.setAttribute("fill", "url(#Backlight)");
                     shape.setAttribute("stroke", "orange");
                     shape.setAttribute("d", "M 0 0 l " + stripWidth + " 0 l 0 " + (this.stripHeight) + " l " + (-stripWidth) + " 0 Z");
                     this.vLSStripSVG.appendChild(shape);
@@ -439,7 +439,7 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
                 {
                     let stripWidth = 14;
                     let shape = document.createElementNS(Avionics.SVG.NS, "path");
-                    shape.setAttribute("fill", "black");
+                    shape.setAttribute("fill", "url(#Backlight)");
                     shape.setAttribute("stroke", "orange");
                     shape.setAttribute("d", "M 0 0 l " + stripWidth + " 0 l 0 " + (this.stripHeight) + " l " + (-stripWidth) + " 0 Z");
                     this.stallProtMinStripSVG.appendChild(shape);

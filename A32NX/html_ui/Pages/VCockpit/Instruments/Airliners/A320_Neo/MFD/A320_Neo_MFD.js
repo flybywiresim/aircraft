@@ -245,9 +245,9 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
         var isTerrainVisible = this.map.instrument.mapConfigId == 1;
         var isWeatherVisible = !terrainOn && shouldShowWeather;
         if (isTerrainVisible || isWeatherVisible) {
-            this.setShowBingMap("true");
+            this.setShowBingMap(true);
         } else {
-            this.setShowBingMap("false");
+            this.setShowBingMap(false);
         }
 
         if (this.mapRange != mapRange) {
@@ -287,7 +287,15 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
     // The BingMap is used by the A320 to render terrain and weather,
     // but it also renders airports, which the real A320 does not.
     setShowBingMap(showBingMap) {
-        this.map.instrument.attributeChangedCallback("show-bing-map", null, showBingMap);
+        this.map.instrument.attributeChangedCallback("show-bing-map", null, showBingMap ? "true" : "false");
+		if (showBingMap) {
+			// Setting the visibility property manually, for some reason the setVisible function called by "attributeChangedCallback:show-bing-map" is not working properly when mixBlendMode is enabled.
+			this.map.instrument.bingMap.style.visibility = "visible";
+		}
+		else {
+			// Setting the visibility property manually, for some reason the setVisible function called by "attributeChangedCallback:show-bing-map" is not working properly when mixBlendMode is enabled.
+			this.map.instrument.bingMap.style.visibility = "hidden";
+		}
     }
     onEvent(_event) {
         switch (_event) {

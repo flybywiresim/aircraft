@@ -652,7 +652,7 @@ class Jet_PFD_VerticalSpeedIndicator extends HTMLElement {
             this.cursorSVGTextBg.setAttribute("y", (this.cursorPosY1 - this.cursorBgOffsetY).toString());
             this.cursorSVGTextBg.setAttribute("width", cursorBgWidth.toString());
             this.cursorSVGTextBg.setAttribute("height", cursorBgHeight.toString());
-            this.cursorSVGTextBg.setAttribute("fill", "black");
+            this.cursorSVGTextBg.setAttribute("fill", "url(#Backlight)");
             this.cursorSVGGroup.appendChild(this.cursorSVGTextBg);
             this.cursorSVGText = document.createElementNS(Avionics.SVG.NS, "text");
             this.cursorSVGText.textContent = "17";
