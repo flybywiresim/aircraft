@@ -18,6 +18,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this._zeroFuelWeightZFWCGEntered = false;
         this._cruiseEntered = false;
         this._blockFuelEntered = false;
+        this._windDir = "HD"
     }
     get templateID() { return "A320_Neo_CDU"; }
     connectedCallback() {
@@ -96,6 +97,66 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         Include.addScript("/JS/debug.js", function () {
             g_modDebugMgr.AddConsole(null);
         });
+    }
+
+    /**
+     * Need to refactor this absolute slop
+     * @param s
+     * @returns {boolean|Promise<boolean>}
+     */
+    tryParseAverageWind(s) {
+        let wind = 0;
+        if (s.includes("HD")) {
+            wind = parseFloat(s.split("HD")[1])
+            this._windDir = "HD"
+            if (isFinite(wind)) return this.trySetAverageWind(wind)
+            else {
+                this.showErrorMessage("FORMAT ERROR")
+                return false
+            }
+        } else if (s.includes("H")) {
+            wind = parseFloat(s.split("H")[1])
+            this._windDir = "HD"
+            if (isFinite(wind)) return this.trySetAverageWind(wind)
+            else {
+                this.showErrorMessage("FORMAT ERROR")
+                return false
+            }
+        } else if (s.includes("-")) {
+            wind = parseFloat(s.split("-")[1])
+            this._windDir = "HD"
+            if (isFinite(wind)) return this.trySetAverageWind(wind)
+            else {
+                this.showErrorMessage("FORMAT ERROR")
+                return false
+            }
+        } else if (s.includes("TL")) {
+            wind = parseFloat(s.split("TL")[1])
+            this._windDir = "TL"
+            if (isFinite(wind)) return this.trySetAverageWind(wind)
+            else {
+                this.showErrorMessage("FORMAT ERROR")
+                return false
+            }
+        } else if (s.includes("T")) {
+            wind = parseFloat(s.split("T")[1])
+            this._windDir = "TL"
+            if (isFinite(wind)) return this.trySetAverageWind(wind)
+            else {
+                this.showErrorMessage("FORMAT ERROR")
+                return false
+            }
+        } else { // Until the +- button the MCDU actually shows a plus sign
+            wind = parseFloat(s)
+            this._windDir = "TL"
+            if (isFinite(wind)) return this.trySetAverageWind(wind)
+            else {
+                this.showErrorMessage("FORMAT ERROR")
+                return false
+            }
+        }
+        this.showErrorMessage("FORMAT ERROR")
+        return false
     }
 
     tryParseZeroFuelWeightZFWCG(s) {
