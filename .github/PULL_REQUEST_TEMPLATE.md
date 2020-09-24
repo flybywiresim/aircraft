@@ -17,7 +17,3 @@ Fixes #[issue_no]
 
 <!-- You may optionally provide your discord username, so that we may contact you directly about the issue. -->
 Discord username (if different from GitHub):
-
-Was this working before/when did the issue start occurring?
-
-Is this a problem in the vanilla unmodded game?
