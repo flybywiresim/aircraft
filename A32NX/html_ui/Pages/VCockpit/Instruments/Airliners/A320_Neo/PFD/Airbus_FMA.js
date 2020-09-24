@@ -190,7 +190,7 @@ var Airbus_FMA;
         }
         init() {
             super.init();
-            this.highlightStyle = Airbus_FMA.HIGHLIGHT_STYLE.FULL;
+            this.highlightStyle = Airbus_FMA.HIGHLIGHT_STYLE.NONE;
             this.hideHighlight();
             if (this.subLeft != null) {
                 this.subLeft.init();
@@ -276,11 +276,7 @@ var Airbus_FMA;
                                 break;
                             }
                     }
-                    var styleStr;
-                    if (this.divRef.id === "Row1")
-                        styleStr = "solid 2px " + colour;
-                    else
-                        styleStr = colour;
+                    const styleStr = "solid 2px " + colour;
                     this.divRef.style.borderLeft = styleStr;
                     this.divRef.style.borderRight = styleStr;
                     if (showTop) {
@@ -777,6 +773,7 @@ var Airbus_FMA;
             return "Column2";
         }
         initChild() {
+            this.setRowHighlightStyle(0, Airbus_FMA.HIGHLIGHT_STYLE.FULL);
             this.currentRow1State = Column2.ROW_1_STATE.NONE;
             this.currentRow2State = Column2.ROW_2_STATE.NONE;
         }
@@ -1224,6 +1221,7 @@ var Airbus_FMA;
             return "Column3";
         }
         initChild() {
+            this.setRowHighlightStyle(0, Airbus_FMA.HIGHLIGHT_STYLE.FULL);
             this.currentRow1State = Column3.ROW_1_STATE.NONE;
             this.currentRow2State = Column3.ROW_2_STATE.NONE;
         }
@@ -1483,6 +1481,8 @@ var Airbus_FMA;
             return "Column4";
         }
         initChild() {
+            this.setRowHighlightStyle(0, Airbus_FMA.HIGHLIGHT_STYLE.OPEN_BOTTOM);
+            this.setRowHighlightStyle(1, Airbus_FMA.HIGHLIGHT_STYLE.OPEN_TOP);
             this.currentRow1State = Column4.ROW_1_STATE.NONE;
             this.currentRow2State = Column4.ROW_2_STATE.NONE;
             this.currentRow3State = Column4.ROW_3_STATE.NONE;
@@ -1627,6 +1627,8 @@ var Airbus_FMA;
             return "Column5";
         }
         initChild() {
+            this.setRowHighlightStyle(0, Airbus_FMA.HIGHLIGHT_STYLE.FULL);
+            this.setRowHighlightStyle(2, Airbus_FMA.HIGHLIGHT_STYLE.FULL);
             this.currentRow1State = Column5.ROW_1_STATE.NONE;
             this.currentRow2State = Column5.ROW_2_STATE.NONE;
             this.currentRow3State = Column5.ROW_3_STATE.NONE;
