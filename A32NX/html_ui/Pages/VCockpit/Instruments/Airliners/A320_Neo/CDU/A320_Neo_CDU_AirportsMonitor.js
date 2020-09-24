@@ -163,7 +163,7 @@ class CDUAirportsMonitor {
         // user-selected 5th airport
         mcdu.onLeftInput[4] = () => {
             if (!this.user_ap && mcdu.inOut !== '' && mcdu.inOut !== mcdu.clrValue) {
-                let ap = mcdu.inOut
+                const ap = mcdu.inOut
                 // GetAirportByIdent returns a Waypoint in the callback,
                 // which interally uses FacilityLoader (and further down calls Coherence)
                 mcdu.dataManager.GetAirportByIdent(ap).then((ap_data) => {
