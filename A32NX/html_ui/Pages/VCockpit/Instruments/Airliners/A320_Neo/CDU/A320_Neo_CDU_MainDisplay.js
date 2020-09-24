@@ -12,9 +12,12 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this._apCooldown = 500;
         this._lastRequestedFLCModeWaypointIndex = -1;
 
-        // Track whether Lat or Lon is selected for adjustment
+
         this._latSelected = false;
         this._lonSelected = false;
+        this._zeroFuelWeightZFWCGEntered = false;
+        this._cruiseEntered = false;
+        this._blockFuelEntered = false;
     }
     get templateID() { return "A320_Neo_CDU"; }
     connectedCallback() {
@@ -98,24 +101,31 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         if (s) {
             if (s.includes("/")) {
                 let sSplit = s.split("/")
-                zfw = parseFloat(sSplit[1])
-                zfwcg = parseFloat(sSplit[0])
+                zfw = parseFloat(sSplit[0])
+                zfwcg = parseFloat(sSplit[1])
             } else {
                 zfwcg = parseFloat(s)
             }
         }
         if (zfw > 0 && zfwcg > 0) {
+            this._zeroFuelWeightZFWCGEntered = true
             return this.trySetZeroFuelWeightZFWCG(zfw + "/" + zfwcg)
-        } else if (zfw > 0) {
-            this.setZeroFuelWeight(zfw.toString())
-            return true
-        } else if (zfwcg > 0) {
-            this.setZeroFuelCG(zfwcg.toString())
-            return true
+        } if (this._zeroFuelWeightZFWCGEntered) {
+            if (zfw > 0) {
+                this.setZeroFuelWeight(zfw.toString())
+                return true
+            } else if (zfwcg > 0) {
+                this.setZeroFuelCG(zfwcg.toString())
+                return true
+            }
+        } else {
+            this.showErrorMessage("FORMAT ERROR")
+            return false;
         }
         this.showErrorMessage(this.defaultInputErrorMessage)
         return false
     }
+
     trySetFlapsTHS(s) {
         if (s) {
             let validEntry = false;
