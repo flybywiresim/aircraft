@@ -1,6 +1,7 @@
 class CDUInitPage {
     static ShowPage1(mcdu) {
         mcdu.clearDisplay();
+        // TODO fix LSK ALT when NONE
         let fromTo = "□□□□/□□□□[color]red"; //Ref: THALES FM2
         let coRoute = "□□□□□□□□□□[color]red"; //Ref: THALES FM2
         let flightNo = "□□□□□□□□[color]red"; //Ref: THALES FM2
@@ -23,10 +24,11 @@ class CDUInitPage {
                 if (mcdu.flightPlanManager.getOrigin().infos.coordinates) {
                     // Credit to Externoak for proper LAT and LONG formatting
                     const airportCoordinates = mcdu.flightPlanManager.getOrigin().infos.coordinates;
-                    const originAirportLat = this.ConvertDDToDMS(airportCoordinates['lat'], false);
-                    const originAirportLon = this.ConvertDDToDMS(airportCoordinates['long'], true);
-                    lat = originAirportLat['deg'] + '°' + originAirportLat['min'] + '.' + Math.ceil(Number(originAirportLat['sec'] / 10)) + originAirportLat['dir'] + "[color]blue";
-                    long = originAirportLon['deg'] + '°' + originAirportLon['min'] + '.' + Math.ceil(Number(originAirportLon['sec'] / 10)) + originAirportLon['dir'] + "[color]blue";
+                    const originAirportLat = this.ConvertDDToDMS(airportCoordinates["lat"], false);
+                    const originAirportLon = this.ConvertDDToDMS(airportCoordinates["long"], true);
+                    lat = originAirportLat["deg"] + "°" + originAirportLat["min"] + "." + Math.ceil(Number(originAirportLat["sec"] / 10)) + originAirportLat["dir"] + "[color]blue";
+                    long =
+                        originAirportLon["deg"] + "°" + originAirportLon["min"] + "." + Math.ceil(Number(originAirportLon["sec"] / 10)) + originAirportLon["dir"] + "[color]blue";
                 }
 
                 costIndex = "□□□[color]red";
@@ -42,7 +44,8 @@ class CDUInitPage {
                 };
 
                 cruiseFlTemp = "□□□□□ /□□□°[color]red";
-                if (mcdu._cruiseEntered) { //This is done so pilot enters a FL first, rather than using the computed one
+                if (mcdu._cruiseEntered) {
+                    //This is done so pilot enters a FL first, rather than using the computed one
                     if (mcdu.cruiseFlightLevel) {
                         let temp = mcdu.tempCurve.evaluate(mcdu.cruiseFlightLevel);
                         if (isFinite(mcdu.cruiseTemperature)) {
@@ -67,12 +70,12 @@ class CDUInitPage {
                 }
                 mcdu.onLeftInput[1] = async () => {
                     let value = mcdu.inOut;
-                    if (altDest.includes("NONE") || value) {
+                    if (altDest.includes("NONE") || value !== "") {
                         mcdu.clearUserInput();
                         if (await mcdu.tryUpdateAltDestination(value)) {
                             CDUInitPage.ShowPage1(mcdu);
                         }
-                    } else {
+                    } else if (altDest.includes("NONE")) {
                         CDUAvailableFlightPlanPage.ShowPage(mcdu);
                     }
                 };
@@ -98,7 +101,8 @@ class CDUInitPage {
          * Ref: FCOM 4.03.20 P6
          */
         mcdu.onRightInput[0] = () => {
-            if (mcdu.inOut) {
+            let value = mcdu.inOut;
+            if (value !== "") {
                 let value = mcdu.inOut;
                 mcdu.clearUserInput();
                 mcdu.tryUpdateFromTo(value, (result) => {
@@ -114,17 +118,6 @@ class CDUInitPage {
             }
         };
 
-        /**
-         * If city pair is displayed show route selection page
-         * Ref: FCOM 4.03.20 P6
-         */
-        mcdu.onLeftInput[1] = () => {
-            if (mcdu.flightPlanManager.getOrigin() && mcdu.flightPlanManager.getOrigin().ident) {
-                if (mcdu.flightPlanManager.getDestination() && mcdu.flightPlanManager.getDestination().ident) {
-                    CDUAvailableFlightPlanPage.ShowPage(mcdu);
-                }
-            }
-        };
         mcdu.onLeftInput[2] = () => {
             let value = mcdu.inOut;
             mcdu.clearUserInput();
@@ -198,7 +191,7 @@ class CDUInitPage {
 
         let initBTitle = "INIT ←";
         let fuelPlanTitle = "";
-        let fuelPlanColor = "[color]red"
+        let fuelPlanColor = "[color]red";
 
         let zfwColor = "[color]red";
         let zfwCell = "□□.□";
@@ -209,7 +202,7 @@ class CDUInitPage {
                 zfwColor = "[color]blue";
             }
             if (isFinite(mcdu.zeroFuelWeightMassCenter)) {
-                zfwCgCell = " /" + mcdu.zeroFuelWeightMassCenter.toFixed(1);
+                zfwCgCell = mcdu.zeroFuelWeightMassCenter.toFixed(1);
             }
             if (isFinite(mcdu.zeroFuelWeight) && isFinite(mcdu.zeroFuelWeightMassCenter)) {
                 zfwColor = "[color]blue";
@@ -247,7 +240,7 @@ class CDUInitPage {
 
         let towCell = "---.-";
         let lwCell = "---.-";
-        let towLwColor = "[color]white"
+        let towLwColor = "[color]white";
 
         let taxiFuelCell = "0.2";
         if (isFinite(mcdu.taxiFuelWeight)) {
@@ -290,9 +283,8 @@ class CDUInitPage {
         let extraTimeCell = "----";
         let extraColor = "[color]white";
 
-        let minDestFob = "---.-"
+        let minDestFob = "---.-";
         let minDestFobColor = "[color]white";
-
 
         let tripWindCell = "---.-";
         // The below three are required for fuel prediction to occur as-well as an active flight plan and a FL
@@ -334,10 +326,15 @@ class CDUInitPage {
                 //finalColor = "[color]blue"; // This is here until color splitting can be figured out
             }
 
-            if (isFinite(mcdu.takeOffWeight) && isFinite(mcdu.landingWeight)) {
+            mcdu.takeOffWeight = mcdu.zeroFuelWeight + mcdu.blockFuel - mcdu.taxiFuelWeight;
+            console.log("Takeoff weight =" + mcdu.takeOffWeight);
+            if (isFinite(mcdu.takeOffWeight)) {
                 towCell = mcdu.takeOffWeight.toFixed(1);
+                towLwColor = "[color]green";
+            }
+
+            if (isFinite(mcdu.landingWeight)) {
                 lwCell = mcdu.landingWeight.toFixed(1);
-                towLwColor = "[color]green"
             }
 
             if (isFinite(mcdu.averageWind)) {
@@ -351,12 +348,8 @@ class CDUInitPage {
                 }
             };
 
-            extraWeightCell = parseFloat(blockFuel) - (
-                parseFloat(taxiFuelCell) +
-                parseFloat(taxiFuelCell) +
-                parseFloat(rteRsvWeightCell) +
-                parseFloat(minDestFob))
-            extraColor = "[color]green"
+            extraWeightCell = parseFloat(blockFuel) - (parseFloat(taxiFuelCell) + parseFloat(taxiFuelCell) + parseFloat(rteRsvWeightCell) + parseFloat(minDestFob));
+            extraColor = "[color]green";
         }
 
         mcdu.setTemplate([
@@ -385,25 +378,25 @@ class CDUInitPage {
     // Credits to Externoak for this
     static ConvertDDToDMS(deg, lng) {
         // converts decimal degrees to degrees minutes seconds
-        const M=0|(deg%1)*60e7;
+        const M = 0 | ((deg % 1) * 60e7);
         let degree;
         if (lng) {
-            degree = this.pad(0 | (deg < 0 ? deg = -deg:deg), 3, 0)
+            degree = this.pad(0 | (deg < 0 ? (deg = -deg) : deg), 3, 0);
         } else {
-            degree = 0 | (deg < 0 ? deg = -deg:deg);
+            degree = 0 | (deg < 0 ? (deg = -deg) : deg);
         }
         return {
-            dir : deg<0 ? lng ? 'W':'S' : lng ? 'E':'N',
-            deg : degree,
-            min : Math.abs(0|M/1e7),
-            sec : Math.abs((0|M/1e6%1*6e4)/100)
+            dir: deg < 0 ? (lng ? "W" : "S") : lng ? "E" : "N",
+            deg: degree,
+            min: Math.abs(0 | (M / 1e7)),
+            sec: Math.abs((0 | (((M / 1e6) % 1) * 6e4)) / 100),
         };
     }
 
     // Credits to Externoak for this
     static pad(n, width, filler) {
         // returns value with size 3, i.e n=1 width=3 filler=. -> "..1"
-        n = n + '';
+        n = n + "";
         return n.length >= width ? n : new Array(width - n.length + 1).join(filler) + n;
     }
 }

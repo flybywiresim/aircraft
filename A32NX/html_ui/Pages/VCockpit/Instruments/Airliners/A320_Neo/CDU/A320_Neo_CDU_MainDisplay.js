@@ -107,13 +107,14 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                 zfw = parseFloat(sSplit[0])
                 zfwcg = parseFloat(sSplit[1])
             } else {
-                zfwcg = parseFloat(s)
+                zfw = parseFloat(s)
             }
         }
         if (zfw > 0 && zfwcg > 0) {
             this._zeroFuelWeightZFWCGEntered = true
-            return this.trySetZeroFuelWeightZFWCG(zfw + "/" + zfwcg)
-        } if (this._zeroFuelWeightZFWCGEntered) {
+            return this.trySetZeroFuelWeightZFWCG(s)
+        }
+        if (this._zeroFuelWeightZFWCGEntered) {
             if (zfw > 0) {
                 this.setZeroFuelWeight(zfw.toString())
                 return true
