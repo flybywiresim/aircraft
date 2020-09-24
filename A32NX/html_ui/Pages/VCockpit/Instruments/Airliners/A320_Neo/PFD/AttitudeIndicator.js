@@ -363,22 +363,22 @@ class Jet_PFD_AttitudeIndicator extends HTMLElement {
                 let cursors = document.createElementNS(Avionics.SVG.NS, "g");
                 {
                     let leftUpper = document.createElementNS(Avionics.SVG.NS, "path");
-                    leftUpper.setAttribute("d", "M-145 4 l0 -6 l55 0 l0 28 l-5 0 l0 -22 l-40 0 Z");
+                    leftUpper.setAttribute("d", "M-145 2 l0 -8 l62 0 l0 28 l-8 0 l0 -20 l-44 0 Z");
                     leftUpper.setAttribute("fill", "url(#Backlight)");
                     leftUpper.setAttribute("stroke", "yellow");
-                    leftUpper.setAttribute("stroke-width", "1");
+                    leftUpper.setAttribute("stroke-width", "3");
                     leftUpper.setAttribute("stroke-opacity", "1.0");
                     cursors.appendChild(leftUpper);
                     let rightUpper = document.createElementNS(Avionics.SVG.NS, "path");
-                    rightUpper.setAttribute("d", "M140 4 l0 -6 l-55 0 l0 28 l5 0 l0 -22 l40 0 Z");
+                    rightUpper.setAttribute("d", "M145 2 l0 -8 l-62 0 l0 28 l8 0 l0 -20 l44 0 Z");
                     rightUpper.setAttribute("fill", "url(#Backlight)");
                     rightUpper.setAttribute("stroke", "yellow");
-                    rightUpper.setAttribute("stroke-width", "1");
+                    rightUpper.setAttribute("stroke-width", "3");
                     rightUpper.setAttribute("stroke-opacity", "1.0");
                     cursors.appendChild(rightUpper);
                     let centerRect = document.createElementNS(Avionics.SVG.NS, "rect");
                     centerRect.setAttribute("x", "-4");
-                    centerRect.setAttribute("y", "-4");
+                    centerRect.setAttribute("y", "-6");
                     centerRect.setAttribute("height", "8");
                     centerRect.setAttribute("width", "8");
                     centerRect.setAttribute("fill", "url(#Backlight)");
