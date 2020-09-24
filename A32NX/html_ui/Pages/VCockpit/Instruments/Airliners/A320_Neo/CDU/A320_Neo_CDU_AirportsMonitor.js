@@ -1,5 +1,5 @@
 class CDUAirportsMonitor {
-    static ShowPage(mcdu, reset=false) {
+    static ShowPage(mcdu, reset = false) {
 
         // one delta t unit is about 1.5 ms it seems
         var update_ival_ms = 1000
