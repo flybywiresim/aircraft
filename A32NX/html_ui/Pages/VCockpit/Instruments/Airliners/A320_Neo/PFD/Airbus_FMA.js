@@ -207,9 +207,27 @@ var Airbus_FMA;
                     this.hideHighlight();
                 }
             }
+            // Temporary fix for FMA blinking until css animations work again
+            if (this.blink) {
+                if (Math.sin((Date.now() / 1000) * Math.PI * 2) > 0) {
+                    if (this.blinkIsVisible) {
+                        this.blinkIsVisible = false;
+                        this.divRef.style.visibility = 'hidden';
+                    }
+                } else {
+                    if (!this.blinkIsVisible) {
+                        this.blinkIsVisible = true;
+                        this.divRef.style.visibility = 'visible';
+                    }
+                }
+            }
         }
         setMainText(_text, _style) {
             var changed = this.setText(_text, _style);
+            this.blink = _style === Airbus_FMA.MODE_STATE.ACTIVE_BLINK;
+            if (!this.blink) {
+                this.divRef.style.visibility = 'visible';
+            }
             if (_text.length <= 0) {
                 this.hideHighlight();
             }
