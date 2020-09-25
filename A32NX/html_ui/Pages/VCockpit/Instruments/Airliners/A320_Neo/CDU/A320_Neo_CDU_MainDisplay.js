@@ -155,8 +155,6 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                 return false
             }
         }
-        this.showErrorMessage("FORMAT ERROR")
-        return false
     }
 
     tryParseZeroFuelWeightZFWCG(s) {
