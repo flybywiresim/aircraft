@@ -442,7 +442,7 @@ class CDUPerformancePage {
         }
         let bottomRowLabels = ["PREV", "NEXT"];
         let bottomRowCells = ["<PHASE", "PHASE>"];
-        if (mcdu.currentFlightPhase === FlightPhase.FLIGHT_PHASE_CLIMB) {
+        if (mcdu.currentFlightPhase === FlightPhase.FLIGHT_PHASE_DESCENT) {
             if (confirmAppr) {
                 bottomRowLabels[0] = "CONFIRM[color]red";
                 bottomRowCells[0] = "←APPR PHASE[color]red";
