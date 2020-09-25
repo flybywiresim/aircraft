@@ -1,10 +1,12 @@
 import os
+import sys
 import json
 
 root_dir = "."
 root_ctrl_excl = ["build.py", "layout.json", "manifest.json"]
 project_directories = [root_dir, "effects", "html_ui", "SimObjects", "ModelBehaviorDefs"]
 
+manifest_entries = None
 content_entries = list()
 total_package_size = 0
 
@@ -35,13 +37,18 @@ for project_directory in project_directories:
 
 layout_entries = {"content": content_entries}
 
-layout_file = open("layout.json", "w")
-json.dump(layout_entries, layout_file, indent=4)
+if content_entries:
+    with open("layout.json", "w") as layout_file:
+        json.dump(layout_entries, layout_file, indent=4)
+else:
+    print("Error: layout.json not updated", file=sys.stderr)
 
-manifest_file = open("manifest.json", "r")
+with open("manifest.json", "r") as manifest_file:
+    manifest_entries = json.load(manifest_file)
+    manifest_entries["total_package_size"] = str(total_package_size).zfill(20)
 
-manifest_entries = json.load(manifest_file)
-manifest_entries["total_package_size"] = str(total_package_size).zfill(20)
-
-manifest_file = open("manifest.json", "w")
-json.dump(manifest_entries, manifest_file, indent=4)
+if manifest_entries:
+    with open("manifest.json", "w") as manifest_file:
+        json.dump(manifest_entries, manifest_file, indent=4)
+else:
+    print("Error: manifest.json not updated", file=sys.stderr)
