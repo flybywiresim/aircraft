@@ -110,6 +110,9 @@ a320-neo-cdu-main-display::after {
 .red {
   color: #ff886d; }
 
+.magenta {
+  color: #ff6dff; }
+
 fmc-main-display::before {
   content: " ";
   display: block;
