@@ -215,10 +215,12 @@ class A320_Neo_PFD_VSpeed extends NavSystemElement {
         this.vsi = this.gps.getChildById("VSpeed");
         this.vsi.aircraft = Aircraft.A320_NEO;
         this.vsi.gps = this.gps;
+        this.getDeltaTime = A32NX_Util.createDeltaTimeCalculator(this._lastTime);
     }
     onEnter() {
     }
-    onUpdate(_deltaTime) {
+    onUpdate() {
+        const _deltaTime = this.getDeltaTime();
         var vSpeed = Math.round(Simplane.getVerticalSpeed());
         this.vsi.setAttribute("vspeed", vSpeed.toString());
         if (Simplane.getAutoPilotVerticalSpeedHoldActive()) {
@@ -243,10 +245,12 @@ class A320_Neo_PFD_Airspeed extends NavSystemElement {
         this.airspeed = this.gps.getChildById("Airspeed");
         this.airspeed.aircraft = Aircraft.A320_NEO;
         this.airspeed.gps = this.gps;
+        this.getDeltaTime = A32NX_Util.createDeltaTimeCalculator(this._lastTime);
     }
     onEnter() {
     }
-    onUpdate(_deltaTime) {
+    onUpdate() {
+        const _deltaTime = this.getDeltaTime();
         this.airspeed.update(_deltaTime);
     }
     onExit() {
@@ -262,10 +266,12 @@ class A320_Neo_PFD_Altimeter extends NavSystemElement {
         this.altimeter = this.gps.getChildById("Altimeter");
         this.altimeter.aircraft = Aircraft.A320_NEO;
         this.altimeter.gps = this.gps;
+        this.getDeltaTime = A32NX_Util.createDeltaTimeCalculator(this._lastTime);
     }
     onEnter() {
     }
-    onUpdate(_deltaTime) {
+    onUpdate() {
+        const _deltaTime = this.getDeltaTime();
         this.altimeter.update(_deltaTime);
     }
     onExit() {
@@ -290,10 +296,12 @@ class A320_Neo_PFD_Attitude extends NavSystemElement {
         this.hsi = this.gps.getChildById("Horizon");
         this.hsi.aircraft = Aircraft.A320_NEO;
         this.hsi.gps = this.gps;
+        this.getDeltaTime = A32NX_Util.createDeltaTimeCalculator(this._lastTime);
     }
     onEnter() {
     }
-    onUpdate(_deltaTime) {
+    onUpdate() {
+        const _deltaTime = this.getDeltaTime();
         if (this.hsi) {
             this.hsi.update(_deltaTime);
 
@@ -330,10 +338,12 @@ class A320_Neo_PFD_Compass extends NavSystemElement {
         this.hsi = this.gps.getChildById("Compass");
         this.hsi.aircraft = Aircraft.A320_NEO;
         this.hsi.gps = this.gps;
+        this.getDeltaTime = A32NX_Util.createDeltaTimeCalculator(this._lastTime);
     }
     onEnter() {
     }
-    onUpdate(_deltaTime) {
+    onUpdate() {
+        const _deltaTime = this.getDeltaTime();
         this.hsi.update(_deltaTime);
     }
     onExit() {
@@ -352,10 +362,12 @@ class A320_Neo_PFD_NavStatus extends NavSystemElement {
         this.fma.aircraft = Aircraft.A320_NEO;
         this.fma.gps = this.gps;
         this.isInitialized = true;
+        this.getDeltaTime = A32NX_Util.createDeltaTimeCalculator(this._lastTime);
     }
     onEnter() {
     }
-    onUpdate(_deltaTime) {
+    onUpdate() {
+        const _deltaTime = this.getDeltaTime();
         if (this.fma != null) {
             this.fma.update(_deltaTime);
         }
@@ -370,10 +382,12 @@ class A320_Neo_PFD_ILS extends NavSystemElement {
         this.ils = this.gps.getChildById("ILS");
         this.ils.aircraft = Aircraft.A320_NEO;
         this.ils.gps = this.gps;
+        this.getDeltaTime = A32NX_Util.createDeltaTimeCalculator(this._lastTime);
     }
     onEnter() {
     }
-    onUpdate(_deltaTime) {
+    onUpdate() {
+        const _deltaTime = this.getDeltaTime();
         if (this.ils) {
             this.ils.update(_deltaTime);
         }

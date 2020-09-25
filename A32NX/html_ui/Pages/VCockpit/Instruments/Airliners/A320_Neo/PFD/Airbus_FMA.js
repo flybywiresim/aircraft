@@ -191,6 +191,7 @@ var Airbus_FMA;
         init() {
             super.init();
             this.highlightStyle = Airbus_FMA.HIGHLIGHT_STYLE.NONE;
+            this.highlightPermanent = false;
             this.hideHighlight();
             if (this.subLeft != null) {
                 this.subLeft.init();
@@ -200,15 +201,33 @@ var Airbus_FMA;
             }
         }
         update(_deltaTime) {
-            if (this.highlightTime > 0) {
+            if (!this.highlightPermanent && this.highlightTime > 0) {
                 this.highlightTime -= _deltaTime;
                 if (this.highlightTime <= 0) {
                     this.hideHighlight();
                 }
             }
+            // Temporary fix for FMA blinking until css animations work again
+            if (this.blink) {
+                if (Math.sin((Date.now() / 1000) * Math.PI * 2) > 0) {
+                    if (this.blinkIsVisible) {
+                        this.blinkIsVisible = false;
+                        this.divRef.style.visibility = 'hidden';
+                    }
+                } else {
+                    if (!this.blinkIsVisible) {
+                        this.blinkIsVisible = true;
+                        this.divRef.style.visibility = 'visible';
+                    }
+                }
+            }
         }
         setMainText(_text, _style) {
             var changed = this.setText(_text, _style);
+            this.blink = _style === Airbus_FMA.MODE_STATE.ACTIVE_BLINK;
+            if (!this.blink) {
+                this.divRef.style.visibility = 'visible';
+            }
             if (_text.length <= 0) {
                 this.hideHighlight();
             }
@@ -238,8 +257,9 @@ var Airbus_FMA;
                 this.subRight.setText(_textRight, _styleRight);
             }
         }
-        setHighlightStyle(_highlightStyle) {
+        setHighlightStyle(_highlightStyle, _permanent = false) {
             this.highlightStyle = _highlightStyle;
+            this.highlightPermanent = _permanent;
         }
         showHighlight() {
             if (this.divRef != null) {
@@ -303,6 +323,7 @@ var Airbus_FMA;
                 this.divRef.style.borderBottom = "none";
             }
             this.highlightTime = 0;
+            this.highlightPermanent = false;
         }
     }
     Airbus_FMA.Row = Row;
@@ -340,11 +361,11 @@ var Airbus_FMA;
             }
             this.updateChild(_deltaTime);
         }
-        setRowHighlightStyle(_row, _highlightStyle) {
+        setRowHighlightStyle(_row, _highlightStyle, _permanent = false) {
             if (this.rows != null) {
                 if ((_row >= 0) && (_row < this.rows.length)) {
                     if (this.rows[_row] != null) {
-                        this.rows[_row].setHighlightStyle(_highlightStyle);
+                        this.rows[_row].setHighlightStyle(_highlightStyle, _permanent);
                     }
                 }
             }
@@ -391,22 +412,22 @@ var Airbus_FMA;
                 switch (this.currentRow1And2State) {
                     case Column1.ROW_1_2_STATE.MANTOGA:
                         {
-                            this.setRowHighlightStyle(0, Airbus_FMA.HIGHLIGHT_STYLE.OPEN_BOTTOM);
-                            this.setRowHighlightStyle(1, Airbus_FMA.HIGHLIGHT_STYLE.OPEN_TOP);
+                            this.setRowHighlightStyle(0, Airbus_FMA.HIGHLIGHT_STYLE.OPEN_BOTTOM, true);
+                            this.setRowHighlightStyle(1, Airbus_FMA.HIGHLIGHT_STYLE.OPEN_TOP, true);
                             this.setRowText(0, "MAN", Airbus_FMA.MODE_STATE.STATUS);
                             this.setRowText(1, "TOGA", Airbus_FMA.MODE_STATE.STATUS);
                             break;
                         }
                     case Column1.ROW_1_2_STATE.TOGA:
                         {
-                            this.setRowHighlightStyle(0, Airbus_FMA.HIGHLIGHT_STYLE.FULL);
+                            this.setRowHighlightStyle(0, Airbus_FMA.HIGHLIGHT_STYLE.FULL, true);
                             this.setRowText(0, "TOGA", Airbus_FMA.MODE_STATE.STATUS);
                             break;
                         }
                     case Column1.ROW_1_2_STATE.MANFLX:
                         {
-                            this.setRowHighlightStyle(0, Airbus_FMA.HIGHLIGHT_STYLE.OPEN_BOTTOM);
-                            this.setRowHighlightStyle(1, Airbus_FMA.HIGHLIGHT_STYLE.OPEN_TOP);
+                            this.setRowHighlightStyle(0, Airbus_FMA.HIGHLIGHT_STYLE.OPEN_BOTTOM, true);
+                            this.setRowHighlightStyle(1, Airbus_FMA.HIGHLIGHT_STYLE.OPEN_TOP, true);
                             this.setRowText(0, "MAN", Airbus_FMA.MODE_STATE.STATUS);
                             let temperatureText = Airbus_FMA.CurrentPlaneState.flexTemperature >= 0 ? "+" : "-";
                             temperatureText += Airbus_FMA.CurrentPlaneState.flexTemperature.toFixed(0);
@@ -415,16 +436,16 @@ var Airbus_FMA;
                         }
                     case Column1.ROW_1_2_STATE.MANMCT:
                         {
-                            this.setRowHighlightStyle(0, Airbus_FMA.HIGHLIGHT_STYLE.OPEN_BOTTOM);
-                            this.setRowHighlightStyle(1, Airbus_FMA.HIGHLIGHT_STYLE.OPEN_TOP);
+                            this.setRowHighlightStyle(0, Airbus_FMA.HIGHLIGHT_STYLE.OPEN_BOTTOM, true);
+                            this.setRowHighlightStyle(1, Airbus_FMA.HIGHLIGHT_STYLE.OPEN_TOP, true);
                             this.setRowText(0, "MAN", Airbus_FMA.MODE_STATE.STATUS);
                             this.setRowText(1, "MCT", Airbus_FMA.MODE_STATE.STATUS);
                             break;
                         }
                     case Column1.ROW_1_2_STATE.MANTHR:
                         {
-                            this.setRowHighlightStyle(0, Airbus_FMA.HIGHLIGHT_STYLE.OPEN_BOTTOM_WARNING);
-                            this.setRowHighlightStyle(1, Airbus_FMA.HIGHLIGHT_STYLE.OPEN_TOP_WARNING);
+                            this.setRowHighlightStyle(0, Airbus_FMA.HIGHLIGHT_STYLE.OPEN_BOTTOM_WARNING, true);
+                            this.setRowHighlightStyle(1, Airbus_FMA.HIGHLIGHT_STYLE.OPEN_TOP_WARNING, true);
                             this.setRowText(0, "MAN", Airbus_FMA.MODE_STATE.STATUS);
                             this.setRowText(1, "THR", Airbus_FMA.MODE_STATE.STATUS);
                             break;
@@ -455,13 +476,13 @@ var Airbus_FMA;
                         }
                     case Column1.ROW_1_2_STATE.AFLOOR:
                         {
-                            this.setRowHighlightStyle(0, Airbus_FMA.HIGHLIGHT_STYLE.FULL_WARNING);
+                            this.setRowHighlightStyle(0, Airbus_FMA.HIGHLIGHT_STYLE.FULL_WARNING, true);
                             this.setRowText(0, "A.FLOOR", Airbus_FMA.MODE_STATE.ENGAGED);
                             break;
                         }
                     case Column1.ROW_1_2_STATE.TOGALK:
                         {
-                            this.setRowHighlightStyle(0, Airbus_FMA.HIGHLIGHT_STYLE.FULL_WARNING);
+                            this.setRowHighlightStyle(0, Airbus_FMA.HIGHLIGHT_STYLE.FULL_WARNING, true);
                             this.setRowText(0, "TOGA LK", Airbus_FMA.MODE_STATE.ENGAGED);
                             break;
                         }
