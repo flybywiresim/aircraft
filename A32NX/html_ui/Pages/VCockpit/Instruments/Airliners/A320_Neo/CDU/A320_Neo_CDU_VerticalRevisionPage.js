@@ -15,10 +15,10 @@ class CDUVerticalRevisionPage {
             let extra = "---.-";
             let climbSpeedLimit = "250";
             let climbAltLimit = "FL100";
-            let speedConstraint = "*[   ]";
+            let speedConstraint = "*[ ]";
             if (waypoint.speedConstraint > 10)
                 speedConstraint = waypoint.speedConstraint.toFixed(0);
-            let altitudeConstraint = "[   ]*";
+            let altitudeConstraint = "[ ]*";
             if (waypoint.legAltitudeDescription !== 0) {
                 if (waypoint.legAltitudeDescription === 1) {
                     altitudeConstraint = waypoint.legAltitude1.toFixed(0);
@@ -38,9 +38,9 @@ class CDUVerticalRevisionPage {
                 [" EFOB=" + efob,  "EXTRA=" + extra],
                 [""],
                 [" CLB SPD LIM", ""],
-                [climbSpeedLimit + "/" + climbAltLimit + "[color]blue", "RTA>"],
+                [climbSpeedLimit + "/" + climbAltLimit + "[color]magenta", "RTA>"],
                 [" SPD CSTR", "ALT CSTR "],
-                [speedConstraint + "[color]blue", altitudeConstraint + "[color]blue"],
+                [speedConstraint + "[color]" + (speedConstraint == "*[ ]" ? "blue" : "magenta"), altitudeConstraint + "[color]" + (altitudeConstraint == "[ ]*" ? "blue" : "magenta")],
                 ["", ""],
                 ["", ""],
                 [""],
