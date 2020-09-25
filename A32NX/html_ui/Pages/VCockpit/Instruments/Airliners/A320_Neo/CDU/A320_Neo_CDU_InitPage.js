@@ -93,7 +93,9 @@ class CDUInitPage {
             let value = mcdu.inOut;
             mcdu.clearUserInput();
             mcdu.tryUpdateFromTo(value, (result) => {
-                if (result) {
+                if (result) {                    
+                    CDUPerformancePage.UpdateThrRedAccFromOrigin(mcdu);
+                    
                     CDUAvailableFlightPlanPage.ShowPage(mcdu);
                 }
             });
@@ -187,7 +189,7 @@ class CDUInitPage {
         };
         let zfwColor = "[color]red";
         let zfwCell = "□□□.□";
-        let zfwCgCell = " /--.-";
+        let zfwCgCell = " /□□.□";
         if (isFinite(mcdu.zeroFuelWeight)) {
             zfwCell = mcdu.zeroFuelWeight.toFixed(1);
             zfwColor = "[color]blue";
@@ -195,10 +197,16 @@ class CDUInitPage {
         if (isFinite(mcdu.zeroFuelWeightMassCenter)) {
             zfwCgCell = " /" + mcdu.zeroFuelWeightMassCenter.toFixed(1);
         }
+        if (isFinite(mcdu.zeroFuelWeight) && isFinite(mcdu.zeroFuelWeightMassCenter)) {
+            zfwColor = "[color]blue";
+        }
         mcdu.onRightInput[0] = async () => {
             let value = mcdu.inOut;
             mcdu.clearUserInput();
-            if (await mcdu.trySetZeroFuelWeightZFWCG(value)) {
+            if (value === "") {
+                mcdu.inOut = (isFinite(mcdu.zeroFuelWeight) ? mcdu.zeroFuelWeight.toFixed(1) : "") + "/" + (isFinite(mcdu.zeroFuelWeightMassCenter) ? mcdu.zeroFuelWeightMassCenter.toFixed(1) : "");
+            }
+            else if (await mcdu.trySetZeroFuelWeightZFWCG(value)) {
                 CDUInitPage.updateTowIfNeeded(mcdu);
                 CDUInitPage.ShowPage2(mcdu);
             }

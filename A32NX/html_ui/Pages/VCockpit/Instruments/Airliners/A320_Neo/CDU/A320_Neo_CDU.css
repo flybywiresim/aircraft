@@ -32,7 +32,9 @@
 
 #Electricity {
   width: 100%;
-  height: 100%; }
+  height: 100%; 
+  background:radial-gradient(ellipse at center, rgba(13,20,35,1) 0%,rgba(13,20,35,1) 100%);
+  }
 
 #Electricity[state=off] {
   display: none; }
@@ -76,7 +78,6 @@ a320-neo-cdu-main-display {
   position: absolute;
   width: 100%;
   height: 100%;
-  background-color: #0e0d08;
   color: white;
   font-family: "Not Courier Sans", "Consolas";
   font-size: 6.46vw;

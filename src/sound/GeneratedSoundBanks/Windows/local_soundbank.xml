@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <SoundBanksInfo Platform="Windows" BasePlatform="Windows" SchemaVersion="12" SoundbankVersion="135">
 	<RootPaths>
-		<ProjectRoot>C:\Users\olive\Documents\GitHub\msfs-a320neo\src\sound\</ProjectRoot>
-		<SourceFilesRoot>C:\Users\olive\Documents\GitHub\msfs-a320neo\src\sound\.cache\Windows\</SourceFilesRoot>
-		<SoundBanksRoot>C:\Users\olive\Documents\GitHub\msfs-a320neo\src\sound\GeneratedSoundBanks\Windows\</SoundBanksRoot>
+		<ProjectRoot>C:\Users\olive\Documents\GitHub\a32nx\src\sound\</ProjectRoot>
+		<SourceFilesRoot>C:\Users\olive\Documents\GitHub\a32nx\src\sound\.cache\Windows\</SourceFilesRoot>
+		<SoundBanksRoot>C:\Users\olive\Documents\GitHub\a32nx\src\sound\GeneratedSoundBanks\Windows\</SoundBanksRoot>
 		<ExternalSourcesInputFile></ExternalSourcesInputFile>
-		<ExternalSourcesOutputRoot>C:\Users\olive\Documents\GitHub\msfs-a320neo\src\sound\GeneratedSoundBanks\Windows</ExternalSourcesOutputRoot>
+		<ExternalSourcesOutputRoot>C:\Users\olive\Documents\GitHub\a32nx\src\sound\GeneratedSoundBanks\Windows</ExternalSourcesOutputRoot>
 	</RootPaths>
 	<SoundBanks>
 		<SoundBank Id="2933379036" GUID="{D8066183-E2C0-4006-B99A-91E46B8ACA5F}" Language="SFX">

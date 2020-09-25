@@ -1,0 +1,74 @@
+﻿:root {
+  --bodyHeightScale: 1; }
+
+@keyframes TemporaryShow {
+  0%, 100% {
+    visibility: visible; } }
+
+@keyframes TemporaryHide {
+  0%, 100% {
+    visibility: hidden; } }
+
+#highlight {
+  position: absolute;
+  height: 100%;
+  width: 100%;
+  z-index: 10; }
+
+#Electricity {
+  width: 100%;
+  height: 100%; }
+  #Electricity[state=off] {
+    display: none; 
+background-color: black;}
+
+@font-face {
+  font-family: "Roboto";
+  src: url("/Fonts/RobotoMono-Medium.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal; }
+
+@font-face {
+  font-family: "Roboto-Light";
+  src: url("/Fonts/RobotoMono-Light.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal; }
+
+@font-face {
+  font-family: "Roboto-Bold";
+  src: url("/Fonts/RobotoMono-Bold.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal; }
+
+@font-face {
+  font-family: "Digital";
+  src: url("/Pages/VCockpit/Instruments/Shared/Fonts/digital.ttf") format("truetype");
+  font-weight: 900;
+  font-style: normal; }
+
+a320-neo-atc {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  overflow: hidden;
+  border: 10px solid rgba(25, 40, 58, 0.219);
+  padding: 18px;
+  background-clip:content-box; }
+  a320-neo-atc svg {
+    width: 100%;
+    height: 100%; }
+  a320-neo-atc text {
+    font-family: Digital;
+    font-size: 80px;
+    text-anchor: end;
+    fill: #5f482e;
+    letter-spacing: 22px;
+    alignment-baseline: central; }
+  a320-neo-atc #Content {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    left: 0%;
+    top: 0%;
+    background-color: rgba(39, 10, 43, 0.548); }
+

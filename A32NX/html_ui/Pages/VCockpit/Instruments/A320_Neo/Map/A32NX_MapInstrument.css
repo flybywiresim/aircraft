@@ -1,0 +1,77 @@
+﻿:root {
+  --bodyHeightScale: 1; }
+
+@keyframes TemporaryShow {
+  0%, 100% {
+    visibility: visible; } }
+
+@keyframes TemporaryHide {
+  0%, 100% {
+    visibility: hidden; } }
+
+#highlight {
+  position: absolute;
+  height: 100%;
+  width: 100%;
+  z-index: 10; }
+
+#Electricity {
+  width: 100%;
+  height: 100%; }
+  #Electricity[state=off] {
+    display: none; }
+
+map-instrument {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0%;
+  left: 0%;
+  display: block;
+  overflow: hidden;
+  /* Map position (left and top) is set in mapConfig.json file (see SvgMapConfig.ts) (makes it editable at runtime) */
+  /* Map position (left and top) is set in mapConfig.json file (see SvgMapConfig.ts) (makes it editable at runtime) */ }
+  map-instrument #MapOrientation {
+    position: absolute;
+    top: 0%;
+    right: 0%;
+    width: 13%;
+    height: calc( 2.5 * 1vh * var(--bodyHeightScale));
+    background-color: #1a1d21;
+    color: white; }
+  map-instrument #MapRange {
+    position: absolute;
+    bottom: 0%;
+    right: 0%;
+    width: 5%;
+    height: calc( 6 * 1vh * var(--bodyHeightScale));
+    background-color: #1a1d21;
+    color: aquamarine;
+    text-align: center; }
+  map-instrument #MapSVG, map-instrument #road-network-canvas {
+    transform: rotateX(0);
+    position: absolute; }
+  map-instrument bing-map {
+    transform: rotateX(0);
+    position: absolute; }
+  map-instrument #MapCursor {
+    position: absolute;
+    left: 50%;
+    top: 50%; }
+
+@keyframes cursorblink {
+  0%, 40% {
+    fill: white;
+    stroke: black; }
+  60%, 100% {
+    fill: black;
+    stroke: white; } }
+    map-instrument #MapCursor polygon {
+      animation: cursorblink 1s infinite; }
+  map-instrument #WeatherSVG {
+    position: absolute;
+    top: 0%;
+    left: 0%;
+    width: 100%;
+    height: 100%; }
+

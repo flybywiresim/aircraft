@@ -6,6 +6,7 @@ class A320_Neo_Clock extends BaseAirliners {
         this.lastChronoState = null;
         this.lastChronoTime = null;
         this.lastDisplayTime = null;
+        this.lastDisplayTime2 = null;
         this.lastFlightTime = null;
         this.lastLocalTime = 0;
         this.lastResetVal = null;
@@ -15,6 +16,7 @@ class A320_Neo_Clock extends BaseAirliners {
         super.connectedCallback();
         this.topSelectorElem = this.getChildById("TopSelectorValue");
         this.middleSelectorElem = this.getChildById("MiddleSelectorValue");
+        this.middleSelectorElem2 = this.getChildById("MiddleSelectorValue2");
         this.bottomSelectorElem = this.getChildById("BottomSelectorValue");
     }
     disconnectedCallback() {
@@ -26,6 +28,9 @@ class A320_Neo_Clock extends BaseAirliners {
         super.Update();
         if (this.CanUpdate()) {
             const absTime = SimVar.GetGlobalVarValue("ABSOLUTE TIME", "Seconds")
+            const lightsTest = SimVar.GetSimVarValue("L:XMLVAR_LTS_Test", "Bool");
+            const lightsTestChanged = lightsTest !== this.lightsTest;
+            this.lightsTest = lightsTest;
 
             const chronoState = SimVar.GetSimVarValue("L:PUSH_CHRONO_CHR", "Bool");
             if (chronoState !== this.lastChronoState) {
@@ -49,26 +54,52 @@ class A320_Neo_Clock extends BaseAirliners {
             }
 
             if (this.topSelectorElem) {
-                const chronoTime = this.getChronoTime();
-                if (chronoTime !== this.lastChronoTime) {
-                    this.lastChronoTime = chronoTime
-                    this.topSelectorElem.textContent = chronoTime
+                if (lightsTest) {
+                    this.topSelectorElem.textContent = "88:88";
+                } else {
+                    const chronoTime = this.getChronoTime();
+                    if (chronoTime !== this.lastChronoTime || lightsTestChanged) {
+                        this.lastChronoTime = chronoTime
+                        this.topSelectorElem.textContent = chronoTime
+                    }
                 }
             }
 
             if (this.middleSelectorElem) {
-                const currentDisplayTime = SimVar.GetSimVarValue("L:PUSH_CHRONO_SET", "Bool") ? this.getUTCDate() : this.getUTCTime()
-                if (currentDisplayTime !== this.lastDisplayTime) {
-                    this.lastDisplayTime = currentDisplayTime;
-                    this.middleSelectorElem.textContent = currentDisplayTime;
+                if (lightsTest) {
+                    this.middleSelectorElem.textContent = "88:88";
+                    this.middleSelectorElem2.textContent = "88";
+                } else {
+                    let currentDisplayTime = "";
+                    let currentDisplayTime2 = "";
+                    if (SimVar.GetSimVarValue("L:PUSH_CHRONO_SET", "Bool") === 1) {
+                        currentDisplayTime = this.getUTCDate();
+                        currentDisplayTime2 = this.getUTCYear();
+                    } else {
+                        const UTCTime = this.getUTCTime();
+                        currentDisplayTime = UTCTime.substr(0,5); 
+                        currentDisplayTime2 = UTCTime.substr(6,2);
+                    } 
+                    if (currentDisplayTime !== this.lastDisplayTime || lightsTestChanged) {
+                        this.lastDisplayTime = currentDisplayTime;
+                        this.middleSelectorElem.textContent = currentDisplayTime;
+                    }
+                    if (currentDisplayTime2 !== this.lastDisplayTime2 || lightsTestChanged) {
+                        this.lastDisplayTime2 = currentDisplayTime2;
+                        this.middleSelectorElem2.textContent = currentDisplayTime2;
+                    }
                 }
             }
 
             if (this.bottomSelectorElem) {
-                const currentFlightTime = this.getFlightTime();
-                if (currentFlightTime !== this.lastFlightTime) {
-                    this.lastFlightTime = currentFlightTime;
-                    this.bottomSelectorElem.textContent = currentFlightTime;
+                if (lightsTest) {
+                    this.bottomSelectorElem.textContent = "88:88";
+                } else {
+                    const currentFlightTime = this.getFlightTime();
+                    if (currentFlightTime !== this.lastFlightTime || lightsTestChanged) {
+                        this.lastFlightTime = currentFlightTime;
+                        this.bottomSelectorElem.textContent = currentFlightTime;
+                    }
                 }
             }
         }
@@ -82,21 +113,21 @@ class A320_Neo_Clock extends BaseAirliners {
         }
         return "";
     }
-
     getUTCDate() {
-        const Day = SimVar.GetGlobalVarValue("ZULU DAY OF MONTH", "number")
-        const Month = SimVar.GetGlobalVarValue("ZULU MONTH OF YEAR", "number")
-        const Year = `${SimVar.GetGlobalVarValue("ZULU YEAR", "number")}`.substr(2,4)
-
-        return `${Day}.${Month}.${Year}`
+        const day = SimVar.GetGlobalVarValue("ZULU DAY OF MONTH", "number");
+        const month = `${SimVar.GetGlobalVarValue("ZULU MONTH OF YEAR", "number")}`.padStart(2,'0');
+        return `${month}:${day}`;
     }
 
+    getUTCYear() {
+        return SimVar.GetGlobalVarValue("ZULU YEAR", "number").toString().substr(2,4);
+    }
     getLocalTime() {
         const value = SimVar.GetGlobalVarValue("LOCAL TIME", "seconds");
         if (value) {
             const seconds = Number.parseInt(value);
             const time = Utils.SecondsToDisplayTime(seconds, true, false, false);
-            return time.toString();
+            return time.toString().substr(0,5);
         }
         return "";
     }

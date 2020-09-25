@@ -29,22 +29,8 @@ class Jet_PFD_ILSIndicator extends HTMLElement {
     construct() {
         Utils.RemoveAllChildren(this);
         this.InfoGroup = null;
-        if (this.aircraft == Aircraft.CJ4) {
-            this.construct_CJ4();
-        }
-        else if (this.aircraft == Aircraft.B747_8) {
-            this.construct_B747_8();
-        }
-        else if (this.aircraft == Aircraft.AS01B) {
-            this.construct_AS01B();
-        }
-        else {
-            this.construct_A320_Neo();
-        }
+        this.construct_A320_Neo();
     }
-    construct_CJ4() { }
-    construct_B747_8() { }
-    construct_AS01B() { }
     construct_A320_Neo() {
         var posX = 0;
         var posY = 0;
@@ -245,37 +231,10 @@ class Jet_PFD_ILSIndicator extends HTMLElement {
         }
         if (this.gsVisible || this.locVisible || this.infoVisible) {
             let localizer = this.gps.radioNav.getBestILSBeacon();
-            let isApproachLoaded = SimVar.GetSimVarValue("GPS IS APPROACH LOADED", "bool");
-            let approachType = SimVar.GetSimVarValue("GPS APPROACH APPROACH TYPE", "Enum");
+            let isApproachLoaded = Simplane.getAutoPilotApproachLoaded();
+            let approachType = Simplane.getAutoPilotApproachType();
             if (this.gs_cursorGroup && this.gsVisible) {
-                if ((!isApproachLoaded || approachType == 4) && localizer.id > 0 && SimVar.GetSimVarValue("NAV HAS GLIDE SLOPE:" + localizer.id, "Bool")) {
-                    let gsi = -SimVar.GetSimVarValue("NAV GSI:" + localizer.id, "number") / 127.0;
-                    let delta = (gsi + 1.0) * 0.5;
-                    let y = this.gs_cursorMinY + (this.gs_cursorMaxY - this.gs_cursorMinY) * delta;
-                    if (y >= 220 && y <= 230 || SimVar.GetSimVarValue("L:A32NX_OFF_GS", "bool") == 0) {
-                        SimVar.SetSimVarValue("L:A32NX_OFF_GS", "bool", 0);
-                    }
-                    if (y < 105 || y > 340) {
-                        SimVar.SetSimVarValue("L:A32NX_OFF_GS", "bool", 1);
-                    }
-                    y = Math.min(this.gs_cursorMinY, Math.max(this.gs_cursorMaxY, y));
-                    this.gs_cursorGroup.setAttribute("transform", "translate(" + this.gs_cursorPosX + ", " + y + ")");
-                    if (delta >= 0.95) {
-                        this.gs_cursorShapeUp.setAttribute("visibility", "visible");
-                        this.gs_cursorShapeDown.setAttribute("visibility", "hidden");
-                    }
-                    else if (delta <= 0.05) {
-                        this.gs_cursorShapeUp.setAttribute("visibility", "hidden");
-                        this.gs_cursorShapeDown.setAttribute("visibility", "visible");
-                    }
-                    else {
-                        this.gs_cursorShapeUp.setAttribute("visibility", "visible");
-                        this.gs_cursorShapeDown.setAttribute("visibility", "visible");
-                    }
-                    this.gs_glidePathCursorUp.setAttribute("visibility", "hidden");
-                    this.gs_glidePathCursorDown.setAttribute("visibility", "hidden");
-                }
-                else if (approachType == 10) {
+                if (isApproachLoaded && approachType == 10) {
                     let gsi = -SimVar.GetSimVarValue("GPS VERTICAL ERROR", "meters");
                     let delta = 0.5 + (gsi / 150.0) / 2;
                     let y = this.gs_cursorMinY + (this.gs_cursorMaxY - this.gs_cursorMinY) * delta;
@@ -301,8 +260,27 @@ class Jet_PFD_ILSIndicator extends HTMLElement {
                     }
                     this.gs_cursorShapeUp.setAttribute("visibility", "hidden");
                     this.gs_cursorShapeDown.setAttribute("visibility", "hidden");
-                }
-                else {
+                } else if (localizer.id > 0 && SimVar.GetSimVarValue("NAV HAS GLIDE SLOPE:" + localizer.id, "Bool")) {
+                    let gsi = -SimVar.GetSimVarValue("NAV GSI:" + localizer.id, "number") / 127.0;
+                    let delta = (gsi + 1.0) * 0.5;
+                    let y = this.gs_cursorMinY + (this.gs_cursorMaxY - this.gs_cursorMinY) * delta;
+                    y = Math.min(this.gs_cursorMinY, Math.max(this.gs_cursorMaxY, y));
+                    this.gs_cursorGroup.setAttribute("transform", "translate(" + this.gs_cursorPosX + ", " + y + ")");
+                    if (delta >= 0.95) {
+                        this.gs_cursorShapeUp.setAttribute("visibility", "visible");
+                        this.gs_cursorShapeDown.setAttribute("visibility", "hidden");
+                    }
+                    else if (delta <= 0.05) {
+                        this.gs_cursorShapeUp.setAttribute("visibility", "hidden");
+                        this.gs_cursorShapeDown.setAttribute("visibility", "visible");
+                    }
+                    else {
+                        this.gs_cursorShapeUp.setAttribute("visibility", "visible");
+                        this.gs_cursorShapeDown.setAttribute("visibility", "visible");
+                    }
+                    this.gs_glidePathCursorUp.setAttribute("visibility", "hidden");
+                    this.gs_glidePathCursorDown.setAttribute("visibility", "hidden");
+                } else {
                     this.gs_cursorShapeUp.setAttribute("visibility", "hidden");
                     this.gs_cursorShapeDown.setAttribute("visibility", "hidden");
                     this.gs_glidePathCursorUp.setAttribute("visibility", "hidden");
@@ -310,7 +288,7 @@ class Jet_PFD_ILSIndicator extends HTMLElement {
                 }
             }
             if (this.loc_cursorGroup && this.locVisible) {
-                if ((!isApproachLoaded || approachType == 4) && localizer.id > 0) {
+                if ((!isApproachLoaded || approachType != 10) && localizer.id > 0) {
                     let cdi = SimVar.GetSimVarValue("NAV CDI:" + localizer.id, "number") / 127.0;
                     let delta = (cdi + 1.0) * 0.5;
                     let x = this.loc_cursorMinX + (this.loc_cursorMaxX - this.loc_cursorMinX) * delta;
