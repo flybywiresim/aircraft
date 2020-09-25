@@ -1,24 +1,37 @@
 import os
 import json
 
-project_directories = ["effects", "html_ui", "SimObjects", "ModelBehaviorDefs"]
+root_dir = "."
+root_ctrl_excl = ["build.py", "layout.json", "manifest.json"]
+project_directories = [root_dir, "effects", "html_ui", "SimObjects", "ModelBehaviorDefs"]
 
 content_entries = list()
 total_package_size = 0
 
 for project_directory in project_directories:
-    for directory_path, directory_names, file_names in os.walk(project_directory):
-        for file_name in file_names:
-            file_path = os.path.join(directory_path, file_name)
-            file_size = os.path.getsize(file_path)
-            file_date = 116444736000000000 + int(os.path.getmtime(file_path) * 10000000.0)
+    if (project_directory is root_dir):
+        for file_name in os.listdir(project_directory):
+            if not os.path.isdir(file_name) and file_name not in root_ctrl_excl:
+                file_size = os.path.getsize(file_name)
+                file_date = 116444736000000000 + int(os.path.getmtime(file_name) * 10000000.0)
 
-            content_entry = {"path": file_path.replace(os.sep, "/"), "size": file_size, "date": file_date}
-            content_entries.append(content_entry)
+                content_entry = {"path": file_name, "size": file_size, "date": file_date}
+                content_entries.append(content_entry)
 
-            total_package_size += file_size
+                print("Added file: " + file_name)
+    else:
+        for directory_path, directory_names, file_names in os.walk(project_directory):
+            for file_name in file_names:
+                file_path = os.path.join(directory_path, file_name)
+                file_size = os.path.getsize(file_path)
+                file_date = 116444736000000000 + int(os.path.getmtime(file_path) * 10000000.0)
 
-            print("Added file: " + file_path)
+                content_entry = {"path": file_path.replace(os.sep, "/"), "size": file_size, "date": file_date}
+                content_entries.append(content_entry)
+
+                total_package_size += file_size
+
+                print("Added file: " + file_path)
 
 layout_entries = {"content": content_entries}
 
