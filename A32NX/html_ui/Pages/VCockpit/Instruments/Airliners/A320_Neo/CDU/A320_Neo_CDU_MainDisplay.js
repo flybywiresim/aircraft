@@ -1029,6 +1029,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             }
 
             if (planeAltitudeMsl > accelerationAltitudeMsl) {
+                console.log('switching to FLIGHT_PHASE_CLIMB: ' + JSON.stringify({planeAltitudeMsl, accelerationAltitudeMsl, prevPhase: this.currentFlightPhase}, null, 2));
                 this.currentFlightPhase = FlightPhase.FLIGHT_PHASE_CLIMB;
                 this.climbTransitionGroundAltitude = null;
             }
@@ -1039,23 +1040,26 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             const cruiseFlightLevel = this.cruiseFlightLevel * 100;
             if (isFinite(cruiseFlightLevel)) {
                 if (altitude >= 0.96 * cruiseFlightLevel) {
+                    console.log('switching to FLIGHT_PHASE_CRUISE: ' + JSON.stringify({altitude, cruiseFlightLevel, prevPhase: this.currentFlightPhase}, null, 2));
                     this.currentFlightPhase = FlightPhase.FLIGHT_PHASE_CRUISE;
                     Coherent.call("GENERAL_ENG_THROTTLE_MANAGED_MODE_SET", ThrottleMode.AUTO);
                 }
             }
         }
-        //Default Asobo logic
+        //(Mostly) Default Asobo logic
         if (this.currentFlightPhase === FlightPhase.FLIGHT_PHASE_CRUISE) {
             const altitude = SimVar.GetSimVarValue("PLANE ALTITUDE", "feets");
-            const cruiseFlightLevel = this.cruiseFlightLevel;
+            const cruiseFlightLevel = this.cruiseFlightLevel * 100;
             if (isFinite(cruiseFlightLevel)) {
                 if (altitude < 0.94 * cruiseFlightLevel) {
+                    console.log('switching to FLIGHT_PHASE_DESCENT: ' + JSON.stringify({altitude, cruiseFlightLevel, prevPhase: this.currentFlightPhase}, null, 2));
                     this.currentFlightPhase = FlightPhase.FLIGHT_PHASE_DESCENT;
                     Coherent.call("GENERAL_ENG_THROTTLE_MANAGED_MODE_SET", ThrottleMode.AUTO);
                 }
             }
         }
         //Default Asobo logic
+        // Switches from any phase to APPR if less than 40 distance(?) from DEST
         if (this.flightPlanManager.getActiveWaypoint() === this.flightPlanManager.getDestination()) {
             if (SimVar.GetSimVarValue("L:FLIGHTPLAN_USE_DECEL_WAYPOINT", "number") != 1) {
                 const lat = SimVar.GetSimVarValue("PLANE LATITUDE", "degree latitude");
@@ -1066,12 +1070,14 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                     this.connectIls();
                     this.flightPlanManager.activateApproach();
                     if (this.currentFlightPhase != FlightPhase.FLIGHT_PHASE_APPROACH) {
+                        console.log('switching to tryGoInApproachPhase: ' + JSON.stringify({lat, long, dist, prevPhase: this.currentFlightPhase}, null, 2));
                         this.tryGoInApproachPhase();
                     }
                 }
             }
         }
         //Default Asobo logic
+        // Switches from any phase to APPR if less than 3 distance(?) from DECEL
         if (SimVar.GetSimVarValue("L:FLIGHTPLAN_USE_DECEL_WAYPOINT", "number") === 1) {
             if (this.currentFlightPhase != FlightPhase.FLIGHT_PHASE_APPROACH) {
                 if (this.flightPlanManager.decelWaypoint) {
@@ -1080,6 +1086,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                     const planeLla = new LatLongAlt(lat, long);
                     const dist = Avionics.Utils.computeGreatCircleDistance(this.flightPlanManager.decelWaypoint.infos.coordinates, planeLla);
                     if (dist < 3) {
+                        console.log('switching to tryGoInApproachPhase (AT DECEL): ' + JSON.stringify({lat, long, dist, prevPhase: this.currentFlightPhase}, null, 2));
                         console.log("Switching into approach. DECEL lat : " + lat + " long " + long);
                         this.tryGoInApproachPhase();
                     }
