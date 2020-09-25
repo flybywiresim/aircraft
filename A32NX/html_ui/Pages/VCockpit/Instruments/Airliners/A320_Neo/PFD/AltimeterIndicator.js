@@ -352,7 +352,7 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
             : indicatedAltitude;
         const delta = desiredDisplayedAltitude - this._delayedAltitude;
         if (Math.abs(delta) > 0.01) {
-            this._delayedAltitude += delta * (4 * (_dTime / 1000));
+            this._delayedAltitude += delta * Math.min(1, (4 * (_dTime / 1000)));
             indicatedAltitude = this._delayedAltitude;
         }
 
