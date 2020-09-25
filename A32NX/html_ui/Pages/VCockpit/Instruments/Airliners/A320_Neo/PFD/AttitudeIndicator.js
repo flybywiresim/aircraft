@@ -56,7 +56,10 @@ class Jet_PFD_AttitudeIndicator extends HTMLElement {
     }
     construct() {
         this.destroyLayout();
+        this.construct_A320_Neo();
+    }
 
+    construct_A320_Neo() {
         let pitchFactor = -7;
         this.pitchAngleFactor = pitchFactor;
         this.pitchGradFactor = 1.0;
