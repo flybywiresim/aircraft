@@ -958,61 +958,24 @@ class A320_Neo_SAI_SelfTest extends NavSystemElement {
     isReady() {
         return true;
     }
-    onUpdate(_deltaTime) {
+    onUpdate() {
+         // Delta time mitigation strategy
+         const curTime = Date.now();
+         const localDeltaTime = curTime - this._lastTime;
+         this._lastTime = curTime;
 
-        // Delta time mitigation strategy
-        const curTime = Date.now();
-        const localDeltaTime = curTime - this._lastTime;
-        this._lastTime = curTime;
-
-        const ac_pwr = SimVar.GetSimVarValue("L:ACPowerAvailable", "bool");
-        const dc_pwr = SimVar.GetSimVarValue("L:DCPowerAvailable", "bool");
-        const cold_dark = SimVar.GetSimVarValue('L:A32NX_COLD_AND_DARK_SPAWN', 'Bool');
-        const complete = this.selfTestElement.complete;
-
-        if ((ac_pwr || dc_pwr) && !complete) {
-            this.selfTestElement.update(localDeltaTime);
-        }
-        if (!ac_pwr && !dc_pwr) {
-            // TODO: More realistic/advanced Behaviour when power is lost
-            this.selfTestElement.resetTimer();
-        }
-
-        if (!cold_dark && ac_pwr && dc_pwr) {
-            // TODO: better way of doing this not on loop
-            this.selfTestElement.finishTest();
-        }
-
-    }
-    onExit() {
-    }
-    onEvent(_event) {
-    }
-}
-
-
-class A320_Neo_SAI_Brightness extends NavSystemElement {
-    init(root) {
-        this.selfTestElement = this.gps.getChildById("SelfTest");
-        this.baroPlusState = null;
-        this.baroMinusState = null;
-    }
-    onEnter() {
-    }
-    isReady() {
-        return true;
-    }
-    onUpdate(_deltaTime) {
-
+        const brightness = SimVar.GetSimVarValue("L:A32NX_BARO_BRIGHTNESS","number");
+        const bright_gran = 0.05;
         const baro_plus = SimVar.GetSimVarValue("L:PUSH_BARO_PLUS", "Bool");
         const baro_minus = SimVar.GetSimVarValue("L:PUSH_BARO_MINUS", "Bool");
+
         if (baro_plus !== this.baroPlusState) {
             this.baroPlusState = baro_plus;
-            console.log("BUTTON PRESSED");
+            (brightness < 1) ? SimVar.SetSimVarValue("L:A32NX_BARO_BRIGHTNESS","number", brightness + bright_gran): 0;
         }
         if (baro_minus !== this.baroMinusState) {
             this.baroMinusState = baro_minus;
-            console.log("BUTTON PRESSED");
+            (brightness > 0) ? SimVar.SetSimVarValue("L:A32NX_BARO_BRIGHTNESS","number", brightness - bright_gran) : 0;
         }
 
         const ac_pwr = SimVar.GetSimVarValue("L:ACPowerAvailable", "bool");

@@ -887,6 +887,11 @@
 
 		<Component ID="Standby_Indicator">
 
+			<UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
+				<NODE_ID>DYN_SCREEN</NODE_ID>	<!-- TODO: Model change required to not affect brake/clock-->
+				<EMISSIVE_CODE>(L:A32NX_BARO_BRIGHTNESS, Percent over 100)</EMISSIVE_CODE>
+			</UseTemplate>
+
 			<UseTemplate Name="ASOBO_AUTOPILOT_Knob_Baro_Template">
 				<ANIM_NAME>AUTOPILOT_Knob_Baro</ANIM_NAME>
 				<NODE_ID>AUTOPILOT_Knob_Baro</NODE_ID>
