@@ -536,14 +536,11 @@ class FlightPlanManager {
         return this._gpsActiveWaypointIndex;
     }
     getActiveWaypoint(forceSimVarCall = false) {
-        if (!this.isActiveApproach()) {
-            let index = this.getGPSActiveWaypointIndex(forceSimVarCall);
-            let waypoint = this.getWaypoints()[index];
-            if (waypoint) {
-                return waypoint;
-            }
-        }
         let ident = this.getActiveWaypointIdent(forceSimVarCall);
+        if (!this.isActiveApproach()) {
+            let waypointIndex = this.getWaypoints().findIndex(w => { return (w && w.ident === ident); });
+            return this.getWaypoints()[waypointIndex];
+        }
         if (this.isActiveApproach()) {
             let waypoint = this.getApproachWaypoints().find(w => { return (w && w.ident === ident); });
             return waypoint;
