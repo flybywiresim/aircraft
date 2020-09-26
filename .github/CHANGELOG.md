@@ -4,6 +4,7 @@
 <!-- Use the following format below -->
 <!--  1. [Changed Area] Title of changes - @github username (Name)  -->
 ## Changes from 2020/10 to 2020/11
+1. [ND] Change ND Sizing - @nathaninnes (Nathan Innes)
 
 ## Changes from 2020/09 to 2020/10
 
