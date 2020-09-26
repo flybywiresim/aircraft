@@ -743,6 +743,9 @@ var Airbus_FMA;
             return false;
         }
         IsActive_LVRMCT() {
+            // Disabling the LVR MCT FMA until it can be properly implemented
+            // It requires the pre flight phase to be implemented, which it is not yet
+            return false;
             const inTakeoff = (Airbus_FMA.CurrentPlaneState.flightPhase == FlightPhase.FLIGHT_PHASE_TAKEOFF);
             const inGoAround = (Airbus_FMA.CurrentPlaneState.flightPhase == FlightPhase.FLIGHT_PHASE_GOAROUND);
 
