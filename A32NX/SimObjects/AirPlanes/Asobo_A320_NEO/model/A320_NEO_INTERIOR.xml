@@ -934,24 +934,29 @@
 					<SEQ1_EMISSIVE_DRIVES_VISIBILITY>False</SEQ1_EMISSIVE_DRIVES_VISIBILITY>
 				</DefaultTemplateParameters>
 
-				<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
+				<UseTemplate Name="A32NX_Push_BARO_Dummy_Template">
 					<NODE_ID>PUSH_BARO_BUGS</NODE_ID>
+					<POTENTIOMETER>85</POTENTIOMETER>
 					<ONLY_SEQ1/>
 				</UseTemplate>
-				<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
+				<UseTemplate Name="A32NX_Push_BARO_Dummy_Template">
 					<NODE_ID>PUSH_BARO_LS</NODE_ID>
+					<POTENTIOMETER>85</POTENTIOMETER>
 					<ONLY_SEQ1/>
 				</UseTemplate>
 				<UseTemplate Name="A32NX_Push_BARO_PLUS_Template">
 					<NODE_ID>PUSH_BARO_PLUS</NODE_ID>
+					<POTENTIOMETER>85</POTENTIOMETER>
 					<ONLY_SEQ1/>
 				</UseTemplate>
 				<UseTemplate Name="A32NX_Push_BARO_MINUS_Template">
 					<NODE_ID>PUSH_BARO_MINUS</NODE_ID>
+					<POTENTIOMETER>85</POTENTIOMETER>
 					<ONLY_SEQ1/>
 				</UseTemplate>
-				<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
+				<UseTemplate Name="A32NX_Push_BARO_Dummy_Template">
 					<NODE_ID>PUSH_BARO_RST</NODE_ID>
+					<POTENTIOMETER>85</POTENTIOMETER>
 					<ONLY_SEQ1/>
 				</UseTemplate>
 			</Component>
@@ -2846,7 +2851,6 @@
 		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
 			<NODE_ID>PUSH_BARO_MINUS</NODE_ID>
 		</UseTemplate>
-		-->
 		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
 			<NODE_ID>PUSH_BARO_BUGS</NODE_ID>
 		</UseTemplate>
@@ -2856,6 +2860,7 @@
 		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
 			<NODE_ID>PUSH_BARO_RST</NODE_ID>
 		</UseTemplate>
+		-->
 		<!-- Landing Light Indicators
 		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
 			<NODE_ID>PUSH_AUTOBKR_LDGGEAR_1</NODE_ID>
