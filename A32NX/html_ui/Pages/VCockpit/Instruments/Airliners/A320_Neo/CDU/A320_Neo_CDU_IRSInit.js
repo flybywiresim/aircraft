@@ -27,23 +27,33 @@ class CDUIRSInit {
             referenceName = mcdu.flightPlanManager.getOrigin().ident + " [color]green";
             originAirportCoordinates = JSON.stringify(originAirportLat) + JSON.stringify(originAirportLon);
         }
-        if (originAirportCoordinates == JSON.stringify(originAirportLat) + JSON.stringify(originAirportLon)) {
+        if (originAirportCoordinates === JSON.stringify(originAirportLat) + JSON.stringify(originAirportLon)) {
             referenceName = mcdu.flightPlanManager.getOrigin().ident + " [color]green";
         }
         const currentGPSLat = CDUInitPage.ConvertDDToDMS(SimVar.GetSimVarValue("GPS POSITION LAT", "degree latitude"), false);
         const currentGPSLon = CDUInitPage.ConvertDDToDMS(SimVar.GetSimVarValue("GPS POSITION LON", "degree longitude"), true);
-        let alignMsg = "ALIGN ON REF →[color]blue";
-        let GPSPosAlign = ["--°--.--", "--°--.--", " "];
-        if (SimVar.GetSimVarValue("L:A320_Neo_ADIRS_KNOB_1", "Enum") || SimVar.GetSimVarValue("L:A320_Neo_ADIRS_KNOB_2", "Enum") || SimVar.GetSimVarValue("L:A320_Neo_ADIRS_KNOB_3", "Enum")) {
-            GPSPosAlign = ['{IrsInitFont}' + currentGPSLat['deg'] + '°{IrsInitFontEnd}' + currentGPSLat['min'] + '.' + Math.ceil(Number(currentGPSLat['sec'] / 100)) + '[s-text]{IrsInitFont}' + currentGPSLat['dir'] + "{IrsInitFontEnd} [color]green", '{IrsInitFont}' + currentGPSLon['deg'] + '°{IrsInitFontEnd}' + currentGPSLon['min'] + '.' + Math.ceil(Number(currentGPSLon['sec'] / 100)) + '[s-text]{IrsInitFont}' + currentGPSLon['dir'] + "{IrsInitFontEnd} [color]green", ""];
-            if (!SimVar.GetSimVarValue("A32NX_ADIRS_PFD_ALIGNED_FIRST", "boolean") && !SimVar.GetSimVarValue("L:A320_Neo_ADIRS_IN_ALIGN", "Bool") && checkAligned == 1) {
-                alignMsg = "CONFIRM ALIGN* [color]red";
+        let alignMsg;
+        let GPSPosAlign;
+        let IRSAlignOnPos = "{IrsInitFont}" + currentGPSLat['deg'] + '°{IrsInitFontEnd}' + currentGPSLat['min'] + '.' + Math.ceil(Number(currentGPSLat['sec'] / 100)) + '[s-text]{IrsInitFont}' + currentGPSLat['dir'] + '/{IrsInitFontEnd}{IrsInitFont}' + currentGPSLon['deg'] + '°{IrsInitFontEnd}' + currentGPSLon['min'] + '.' + Math.ceil(Number(currentGPSLon['sec'] / 100)) + '{IrsInitFont}' +  currentGPSLon['dir'] + '{IrsInitFontEnd}';
+        let originAirportTitle;
+        let GPSPosTitle;
+        let originAirportString;
+        if (checkAligned !== 2) {
+            GPSPosTitle = ["LAT", "LONG", "GPS POSITION"];
+            originAirportTitle = ["LAT" + larrowupdwn , rarrowupdwn + "LONG", "REFERENCE"];
+            alignMsg = "ALIGN ON REF →[color]blue";
+            GPSPosAlign = ["--°--.--", "--°--.--", " "];
+            originAirportString = ['{IrsInitFont}' + originAirportLat['deg'] + '°{IrsInitFontEnd}' + originAirportLat['min'] + '.' + originAirportLat['sec'] + '[s-text]{IrsInitFont}' + originAirportLat['dir'] + "{IrsInitFontEnd} [color]blue", '{IrsInitFont}' + originAirportLon['deg'] + '°{IrsInitFontEnd}' + originAirportLon['min'] + '.' + originAirportLon['sec'] + '[s-text]{IrsInitFont}' + originAirportLon['dir'] + "{IrsInitFontEnd} [color]blue", referenceName];
+            if (SimVar.GetSimVarValue("L:A320_Neo_ADIRS_KNOB_1", "Enum") || SimVar.GetSimVarValue("L:A320_Neo_ADIRS_KNOB_2", "Enum") || SimVar.GetSimVarValue("L:A320_Neo_ADIRS_KNOB_3", "Enum")) {
+                GPSPosAlign = ['{IrsInitFont}' + currentGPSLat['deg'] + '°{IrsInitFontEnd}' + currentGPSLat['min'] + '.' + Math.ceil(Number(currentGPSLat['sec'] / 100)) + '[s-text]{IrsInitFont}' + currentGPSLat['dir'] + "{IrsInitFontEnd} [color]green", '{IrsInitFont}' + currentGPSLon['deg'] + '°{IrsInitFontEnd}' + currentGPSLon['min'] + '.' + Math.ceil(Number(currentGPSLon['sec'] / 100)) + '[s-text]{IrsInitFont}' + currentGPSLon['dir'] + "{IrsInitFontEnd} [color]green", ""];
+                if (!SimVar.GetSimVarValue("A32NX_ADIRS_PFD_ALIGNED_FIRST", "boolean") && !SimVar.GetSimVarValue("L:A320_Neo_ADIRS_IN_ALIGN", "Bool") && checkAligned === 1) {
+                    alignMsg = "CONFIRM ALIGN* [color]red";
+                }
             }
         }
-        let IRSAlignOnPos = "{IrsInitFont}" + currentGPSLat['deg'] + '°{IrsInitFontEnd}' + currentGPSLat['min'] + '.' + Math.ceil(Number(currentGPSLat['sec'] / 100)) + '[s-text]{IrsInitFont}' + currentGPSLat['dir'] + '/{IrsInitFontEnd}{IrsInitFont}' + currentGPSLon['deg'] + '°{IrsInitFontEnd}' + currentGPSLon['min'] + '.' + Math.ceil(Number(currentGPSLon['sec'] / 100)) + '{IrsInitFont}' +  currentGPSLon['dir'] + '{IrsInitFontEnd}';
         let IRS1GpsString = emptyIRSGpsString;
-        if (SimVar.GetSimVarValue("L:A320_Neo_ADIRS_KNOB_1", "Enum") == 1) {
-            if (checkAligned == 2) {
+        if (SimVar.GetSimVarValue("L:A320_Neo_ADIRS_KNOB_1", "Enum") === 1) {
+            if (checkAligned === 2) {
                 statusIRS1 = "IRS1 ALIGNED ON GPS";
             } else {
                 statusIRS1 = "IRS1 ALIGNING ON GPS";
@@ -53,8 +63,8 @@ class CDUIRSInit {
             statusIRS1 = "IRS1 OFF";
         }
         let IRS2GpsString = emptyIRSGpsString;
-        if (SimVar.GetSimVarValue("L:A320_Neo_ADIRS_KNOB_2", "Enum") == 1) {
-            if (checkAligned == 2) {
+        if (SimVar.GetSimVarValue("L:A320_Neo_ADIRS_KNOB_2", "Enum") === 1) {
+            if (checkAligned === 2) {
                 statusIRS2 = "IRS2 ALIGNED ON GPS";
             } else {
                 statusIRS2 = "IRS2 ALIGNING ON GPS";
@@ -64,8 +74,8 @@ class CDUIRSInit {
             statusIRS2 = "IRS2 OFF";
         }
         let IRS3GpsString = emptyIRSGpsString;
-        if (SimVar.GetSimVarValue("L:A320_Neo_ADIRS_KNOB_3", "Enum") == 1) {
-            if (checkAligned == 2) {
+        if (SimVar.GetSimVarValue("L:A320_Neo_ADIRS_KNOB_3", "Enum") === 1) {
+            if (checkAligned === 2) {
                 statusIRS3 = "IRS3 ALIGNED ON GPS";
             } else {
                 statusIRS3 = "IRS3 ALIGNING ON GPS";
@@ -77,9 +87,9 @@ class CDUIRSInit {
 
         mcdu.setTemplate([
             ["IRS INIT"],
-            ["LAT" + larrowupdwn , rarrowupdwn + "LONG", "REFERENCE",],
-            ['{IrsInitFont}' + originAirportLat['deg'] + '°{IrsInitFontEnd}' + originAirportLat['min'] + '.' + originAirportLat['sec'] + '[s-text]{IrsInitFont}' + originAirportLat['dir'] + "{IrsInitFontEnd} [color]blue", '{IrsInitFont}' + originAirportLon['deg'] + '°{IrsInitFontEnd}' + originAirportLon['min'] + '.' + originAirportLon['sec'] + '[s-text]{IrsInitFont}' + originAirportLon['dir'] + "{IrsInitFontEnd} [color]blue", referenceName ],
-            ["LAT", "LONG", "GPS POSITION"],
+            originAirportTitle,
+            originAirportString,
+            GPSPosTitle,
             GPSPosAlign,
             ["", "", statusIRS1],
             ["", "", IRS1GpsString],
@@ -170,7 +180,7 @@ class CDUIRSInit {
         autoRefresh();
         function autoRefresh() {
             setTimeout(() => {
-                if (mcdu.getTitle() == 'IRS INIT') {
+                if (mcdu.getTitle() === 'IRS INIT') {
                     CDUIRSInit.ShowPage(mcdu, lon = lon,
                         originAirportLat=originAirportLat, originAirportLon=originAirportLon,
                         referenceName=referenceName, originAirportCoordinates=originAirportCoordinates);
