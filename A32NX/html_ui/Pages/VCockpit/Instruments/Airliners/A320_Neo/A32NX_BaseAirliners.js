@@ -179,6 +179,7 @@ var Airliners;
             this.IndependentElements = new NavSystemElementGroup([]);
             this.selector = _selector;
             this.element = this.IndependentElements;
+            this.getDeltaTime = A32NX_Util.createDeltaTimeCalculator(this._lastTime);
         }
         init() {
             super.init();
@@ -187,7 +188,8 @@ var Airliners;
                 this.screen = root.querySelector(this.selector);
             }
         }
-        onUpdate(_deltaTime) {
+        onUpdate() {
+            const _deltaTime = this.getDeltaTime();
             super.onUpdate(_deltaTime);
             if (this.screen != null) {
                 this.screen.update(_deltaTime);
@@ -216,13 +218,15 @@ var Airliners;
             if (root != null) {
                 this.page = root.querySelector(this.selector);
             }
+            this.getDeltaTime = A32NX_Util.createDeltaTimeCalculator(this._lastTime);
         }
         onEnter() {
             if (this.page != null) {
                 this.page.style.display = "block";
             }
         }
-        onUpdate(_deltaTime) {
+        onUpdate() {
+            const _deltaTime = this.getDeltaTime();
             if (this.page != null) {
                 this.page.update(_deltaTime);
             }
