@@ -93,10 +93,6 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
 	        }
         this.electricity = this.querySelector("#Electricity");
         this.climbTransitionGroundAltitude = null;
-
-        Include.addScript("/JS/debug.js", function () {
-            g_modDebugMgr.AddConsole(null);
-        });
     }
 
     /**

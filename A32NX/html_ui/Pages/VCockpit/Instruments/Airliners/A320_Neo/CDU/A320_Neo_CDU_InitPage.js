@@ -262,7 +262,7 @@ class CDUInitPage {
         let lwCell = "---.-";
         let towLwColor = "[color]white";
 
-        let taxiFuelCell = 0.2;
+        let taxiFuelCell = "0.2";
         if (isFinite(mcdu.taxiFuelWeight)) {
             taxiFuelCell = mcdu.taxiFuelWeight.toFixed(1) ;
         }
