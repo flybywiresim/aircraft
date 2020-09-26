@@ -188,6 +188,8 @@ Potentiometer.88=0.5
 Potentiometer.89=0.5
 Potentiometer.90=0.5
 Potentiometer.91=0.5
+Potentiometer.92=0.5
+Potentiometer.93=0.5
 
 [AutoPilot.0]
 MasterSwitch=False
