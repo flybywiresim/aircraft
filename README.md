@@ -1,5 +1,7 @@
 # FlyByWire A32NX
 
+[![Discord](https://img.shields.io/discord/738864299392630914.svg?label=&logo=discord&logoColor=ffffff&color=7389D8&labelColor=6A7EC2)](https://discord.gg/UjzuHMU)
+
 # Important
 
 ### Please follow ALL steps in this README if you encounter any issues with installation before seeking support.
@@ -32,17 +34,9 @@ If the aforementioned methods do not work:
 * You can find your community folder by going into FS2020 general options and enabling developer mode. You will see a menu appear on top. Go to tools and virtual file system. Click on watch bases and your community folder will be listed in one of the folders.
 * Please make sure you're copying the "A32NX" folder into your community package folder, NOT the "flybywiresim-a32nx" folder.
 
-## Developing
+## Contributing
 
-The A32NX package only contains files which have been modified from the original package. If you wish to work on a file that isn't present in the development branch, simply copy it over from the latest Asobo branch. Please DO NOT add, modify, or delete files from the Asobo branch.
-
-Join our Discord server to find out about the latest updates and discuss ongoing development.
-
-[![Discord](https://img.shields.io/discord/738864299392630914.svg?label=&logo=discord&logoColor=ffffff&color=7389D8&labelColor=6A7EC2)](https://discord.gg/UjzuHMU)
-
-### Committing changes
-
-After making any changes to files inside the `A32NX` directory, ensure you run the `build.py` script to regenerate the `layout.json` as necessary. There's also a CI check to ensure this has been done.
+See [Contributing.md](.github/Contributing.md)
 
 ## Changelog
 
