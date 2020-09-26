@@ -22,13 +22,16 @@ class CDUInitPage {
                 }
 
                 if (mcdu.flightPlanManager.getOrigin().infos.coordinates) {
-                    // Credit to Externoak for proper LAT and LONG formatting
+                    /*  Commented out until #677 is merged
                     const airportCoordinates = mcdu.flightPlanManager.getOrigin().infos.coordinates;
                     const originAirportLat = this.ConvertDDToDMS(airportCoordinates["lat"], false);
                     const originAirportLon = this.ConvertDDToDMS(airportCoordinates["long"], true);
                     lat = originAirportLat["deg"] + "°" + originAirportLat["min"] + "." + Math.ceil(Number(originAirportLat["sec"] / 10)) + originAirportLat["dir"] + "[color]blue";
                     long =
                         originAirportLon["deg"] + "°" + originAirportLon["min"] + "." + Math.ceil(Number(originAirportLon["sec"] / 10)) + originAirportLon["dir"] + "[color]blue";
+                     */
+                    lat = mcdu.flightPlanManager.getOrigin().infos.coordinates.latToDegreeString() + "[color]blue";
+                    long = mcdu.flightPlanManager.getOrigin().infos.coordinates.longToDegreeString() + "[color]blue";
                 }
 
                 costIndex = "□□□[color]red";
@@ -259,9 +262,9 @@ class CDUInitPage {
         let lwCell = "---.-";
         let towLwColor = "[color]white";
 
-        let taxiFuelCell = "{smallFront}0.2{smallEnd}";
+        let taxiFuelCell = 0.2;
         if (isFinite(mcdu.taxiFuelWeight)) {
-            taxiFuelCell = "{smallFront}" + mcdu.taxiFuelWeight.toFixed(1) + "{smallEnd}";
+            taxiFuelCell = mcdu.taxiFuelWeight.toFixed(1) ;
         }
         mcdu.onLeftInput[0] = async () => {
             let value = mcdu.inOut;
@@ -277,7 +280,7 @@ class CDUInitPage {
         let tripColor = "[color]white";
 
         let rteRsvWeightCell = "--.-";
-        let rteRsvPercentCell = "{magentaFront}5.0{magentaEnd}";
+        let rteRsvPercentCell = 5.0;
         let rteRsvColor = "[color]white";
 
         let altnWeightCell = "--.-";
@@ -285,7 +288,7 @@ class CDUInitPage {
         let altnColor = "[color]white";
 
         let finalWeightCell = "--.-";
-        let finalTimeCell = "{magentaFront}0030{magentaEnd}";
+        let finalTimeCell = "0030";
         let finalColor = "[color]white";
 
         mcdu.onLeftInput[4] = async () => {
@@ -324,7 +327,7 @@ class CDUInitPage {
             }
 
             if (isFinite(mcdu.getRouteReservedWeight()) && isFinite(mcdu.getRouteReservedPercent())) {
-                rteRsvWeightCell = "{smallFront}" + mcdu.getRouteReservedWeight().toFixed(1) + "{smallEnd}";
+                rteRsvWeightCell = mcdu.getRouteReservedWeight().toFixed(1) ;
                 rteRsvPercentCell = mcdu.getRouteReservedPercent().toFixed(1);
                 rteRsvColor = "[color]blue";
             }
@@ -339,7 +342,7 @@ class CDUInitPage {
             //TODO Compute code to determine ALTN WEIGHT & TIME
 
             if (isFinite(mcdu.getRouteFinalFuelWeight()) && isFinite(mcdu.getRouteFinalFuelTime())) {
-                finalWeightCell = "{smallFront}" + mcdu.getRouteFinalFuelWeight().toFixed(1) + "{smallEnd}";
+                finalWeightCell = mcdu.getRouteFinalFuelWeight().toFixed(1);
                 finalTimeCell = FMCMainDisplay.secondsTohhmm(mcdu.getRouteFinalFuelTime());
                 finalColor = "[color]blue";
             }
@@ -373,7 +376,7 @@ class CDUInitPage {
 
             // TODO calculate minDestFob
 
-            // This shouldn't appear until I implement fuel calcs but I'll leave it in
+            // TODO insert small font when this can actually be calculated
             extraWeightCell = parseFloat(blockFuel) - (parseFloat(taxiFuelCell) + parseFloat(taxiFuelCell) + parseFloat(rteRsvWeightCell) + parseFloat(minDestFob));
             extraColor = "[color]green";
             if (!isFinite(extraWeightCell)) {
@@ -385,7 +388,7 @@ class CDUInitPage {
         mcdu.setTemplate([
             [initBTitle],
             ["TAXI", "ZFW /ZFWCG"], // Reference Honeywell FMS
-            ["{smallFront}" + taxiFuelCell + "{smallEnd}" + "[color]blue", zfwCell + "/" + zfwCgCell + zfwColor],
+            [taxiFuelCell + "[color]blue", zfwCell + "/" + zfwCgCell + zfwColor],
             ["TRIP/TIME", "BLOCK"],
             [tripWeightCell + "/" + tripTimeCell + tripColor, blockFuel],
             ["RTE RSV /%", fuelPlanTitle + fuelPlanColor],
@@ -397,19 +400,6 @@ class CDUInitPage {
             ["MIN DEST FOB", "EXTRA /TIME"],
             [minDestFob + minDestFobColor, extraWeightCell + "/" + extraTimeCell + extraColor],
         ]);
-
-        mcdu._lineElements.forEach(function (ele) {
-            ele.forEach(function (el) {
-                if (el != null) {
-                    let newHtml = el;
-                    if (newHtml != null) {
-                        newHtml = newHtml.innerHTML.replace(/{magentaFront}/g, "<span class='blue'>");
-                        newHtml = newHtml.replace(/{magentaEnd}/g, "</span>");
-                        el.innerHTML = newHtml;
-                    }
-                }
-            });
-        });
 
         mcdu._lineElements.forEach(function (ele) {
             ele.forEach(function (el) {
