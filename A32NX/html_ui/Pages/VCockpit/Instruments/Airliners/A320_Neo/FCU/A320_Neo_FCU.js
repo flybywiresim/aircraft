@@ -111,6 +111,7 @@ class A320_Neo_FCU_Component {
         }
     }
     constructor(_gps, _divName) {
+        this.gps = _gps;
         this.divRef = _gps.getChildById(_divName);
         this.textValue = this.getTextElement("Value");
         this.init();
@@ -267,12 +268,12 @@ class A320_Neo_FCU_Heading extends A320_Neo_FCU_Component {
                 return;
             }
             if (!this.isManaged) {
-                var value = Math.floor(Math.max(this.currentValue, 0));
+                var value = Math.round(Math.max(this.currentValue, 0));
                 this.textValueContent = value.toString().padStart(3, "0");
             }
             else if (this.isManaged) {
                 if (this.showSelectedHeading) {
-                    var value = Math.floor(Math.max(this.currentValue, 0));
+                    var value = Math.round(Math.max(this.currentValue, 0));
                     this.textValueContent = value.toString().padStart(3, "0");
                 }
                 else {
@@ -447,7 +448,7 @@ class A320_Neo_FCU_VerticalSpeed extends A320_Neo_FCU_Component {
             }, 10000);
         }
         else if (this.currentState === A320_Neo_FCU_VSpeed_State.Flying || this.currentState === A320_Neo_FCU_VSpeed_State.Zeroing) {
-            requestAnimationFrame(() => {
+            this.gps.requestCall(() => {
                 this.currentState = A320_Neo_FCU_VSpeed_State.Flying;
                 let selectedValue = Simplane.getAutoPilotSelectedVerticalSpeedHoldValue();
                 Coherent.call("AP_VS_VAR_SET_ENGLISH", 1, selectedValue);
@@ -496,7 +497,7 @@ class A320_Neo_FCU_VerticalSpeed extends A320_Neo_FCU_Component {
         this.currentState = A320_Neo_FCU_VSpeed_State.Idle;
         this.forceUpdate = true;
         let currentAirspeedHold = Simplane.getAutoPilotAirspeedHoldValue();
-        requestAnimationFrame(() => {
+        this.gps.requestCall(() => {
             if (Simplane.getAutoPilotAirspeedManaged()) {
                 Coherent.call("AP_SPD_VAR_SET", 2, currentAirspeedHold);
             }
@@ -520,10 +521,12 @@ class A320_Neo_FCU_VerticalSpeed extends A320_Neo_FCU_Component {
                 let targetAirspeed = Simplane.getAutoPilotVerticalSpeedHoldValue();
                 if (deltaAltitude * targetAirspeed < 1) {
                     this.currentState = A320_Neo_FCU_VSpeed_State.Idle;
+                    this._enterIdleState();
                     this.forceUpdate = true;
                 }
-                if (Math.abs(deltaAltitude) < 100) {
+                if (Math.abs(deltaAltitude) < 200) {
                     this.currentState = A320_Neo_FCU_VSpeed_State.Idle;
+                    this._enterIdleState();
                     this.forceUpdate = true;
                 }
             }
