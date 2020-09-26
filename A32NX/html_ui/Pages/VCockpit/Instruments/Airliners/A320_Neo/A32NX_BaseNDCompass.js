@@ -187,7 +187,9 @@ class Jet_NDCompass extends HTMLElement {
         this.updateCompass(_deltaTime);
         this.updateNavigationInfo();
         this.updateMapRange();
-        if (this.updateFail) this.updateFail();
+
+        // Moved to A32NX_NDCompass.update()
+        // if (this.updateFail) this.updateFail();
     }
     updateCompass(_deltaTime) {
         var simHeading = SimVar.GetSimVarValue("PLANE HEADING DEGREES MAGNETIC", "degree");
@@ -532,8 +534,8 @@ class Jet_NDCompass extends HTMLElement {
                         }
                     case 4:
                         {
-                            if (SimVar.GetSimVarValue("ADF SIGNAL:1", "number")) {
-                                this.setAttribute("bearing2_bearing", ((SimVar.GetSimVarValue("ADF RADIAL:1", "degree") + compass) % 360).toString());
+                            if (SimVar.GetSimVarValue("ADF SIGNAL:2", "number")) {
+                                this.setAttribute("bearing2_bearing", ((SimVar.GetSimVarValue("ADF RADIAL:2", "degree") + compass) % 360).toString());
                             }
                             else {
                                 this.setAttribute("bearing2_bearing", "");

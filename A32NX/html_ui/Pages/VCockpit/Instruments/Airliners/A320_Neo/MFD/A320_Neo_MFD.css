@@ -251,9 +251,13 @@
       a320-neo-mfd-element #Mainframe #VORDMENavaids #Unit {
         font-size: calc( 2.5 * 1vh * var(--bodyHeightScale));
         fill: cyan; }
-      a320-neo-mfd-element #Mainframe #VORDMENavaids #Arrow {
+      a320-neo-mfd-element #Mainframe #VORDMENavaids #Arrow-Left {
         fill: none;
-        stroke: white;
+        /* stroke: white; */
+        stroke-width: 6px; }
+      a320-neo-mfd-element #Mainframe #VORDMENavaids #Arrow-Right {
+        fill: none;
+        /* stroke: white; */
         stroke-width: 6px; }
       a320-neo-mfd-element #Mainframe #Symbols {
         top: 79%;
