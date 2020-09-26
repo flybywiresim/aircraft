@@ -645,7 +645,7 @@ class Jet_MFD_NDCompass extends Jet_NDCompass {
      */
     updateNavAid() {
         // Don't show arrows if ADIRS not ready
-        var failed = SimVar.GetSimVarValue("L:A320_Neo_ADIRS_STATE", "Enum") != 2;
+        const failed = SimVar.GetSimVarValue("L:A320_Neo_ADIRS_STATE", "Enum") != 2;
         if (failed) {
             this.setAttribute("show_bearing1", "false");
             this.setAttribute("show_bearing2", "false");
