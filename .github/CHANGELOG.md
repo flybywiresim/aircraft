@@ -7,5 +7,5 @@
 
 1. [General] Add CHANGELOG.md - @nathaninnes (Nathan Innes)
 2. [ECAM] Improved Upper ECAM Visuals - @wpine215 (Iceman)
-1. [MCDU] Added IRS Init page - @externoak (Externo)
+1. [CDU] Added IRS Init page - @externoak (Externo)
 
