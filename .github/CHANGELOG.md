@@ -8,3 +8,7 @@
 1. [General] Add CHANGELOG.md - @nathaninnes (Nathan Innes)
 2. [ECAM] Improved Upper ECAM Visuals - @wpine215 (Iceman)
 1. [CDU] Corrected MCDU flight phase - @aryeng (ryeng)
+<<<<<<< HEAD
+
+=======
+>>>>>>> 368676ef45c529b456b8fe077eea78bfde505dc4
