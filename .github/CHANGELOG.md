@@ -7,4 +7,4 @@
 
 1. [General] Add CHANGELOG.md - @nathaninnes (Nathan Innes)
 2. [ECAM] Improved Upper ECAM Visuals - @wpine215 (Iceman)
-
+1. [TEXTURES] Changed roughness of glareshield
