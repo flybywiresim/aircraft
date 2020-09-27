@@ -37,15 +37,12 @@ class Jet_PFD_HSIndicator extends HTMLElement {
             this.ILSOffscreenGroup.setAttribute("visibility", "hidden");
         }
     }
+    
     construct() {
         Utils.RemoveAllChildren(this);
-        if (this.aircraft == Aircraft.B747_8 || this.aircraft == Aircraft.AS01B) {
-            this.construct_B747_8();
-        }
-        else {
-            this.construct_A320_Neo();
-        }
+        this.construct_A320_Neo();
     }
+    
     construct_A320_Neo() {
         this.rootSVG = document.createElementNS(Avionics.SVG.NS, "svg");
         this.rootSVG.setAttribute("id", "ViewBox");
@@ -254,10 +251,7 @@ class Jet_PFD_HSIndicator extends HTMLElement {
         this.appendChild(this.rootSVG);
     }
     update(dTime) {
-        if (this.rotatingCompass)
-            this.updateCircle();
-        else
-            this.updateRibbon();
+        this.updateRibbon();
     }
     updateRibbon() {
         var compass = SimVar.GetSimVarValue("PLANE HEADING DEGREES MAGNETIC", "degree");
@@ -338,37 +332,6 @@ class Jet_PFD_HSIndicator extends HTMLElement {
                     this.ILSBeaconGroup.setAttribute("visibility", "hidden");
                 }
             }
-        }
-    }
-    updateCircle() {
-        var compass = SimVar.GetSimVarValue("PLANE HEADING DEGREES MAGNETIC", "degree");
-        if (this.rotatingCompass) {
-            this.rotatingCompass.setAttribute("transform", "rotate(" + (-compass) + " " + this.rotatingCompassX + " " + this.rotatingCompassY + ")");
-        }
-        if (this.selectedHeadingGroup) {
-            var autoPilotActive = true;
-            if (autoPilotActive) {
-                var selectedHeading = SimVar.GetSimVarValue("AUTOPILOT HEADING LOCK DIR", "Degree");
-                var delta = compass - selectedHeading;
-                this.selectedHeadingGroup.setAttribute("transform", "rotate(" + (-delta) + " " + this.rotatingCompassX + " " + this.rotatingCompassY + ")");
-                this.selectedHeadingGroup.setAttribute("visibility", "visible");
-                this.selectedHeadingText.textContent = Math.round(selectedHeading) + "H";
-                let headingLocked = Simplane.getAutoPilotHeadingLockActive();
-                if (this.selectedHeadingLine)
-                    this.selectedHeadingLine.classList.toggle('hide', headingLocked);
-            }
-            else {
-                this.selectedHeadingGroup.setAttribute("visibility", "hidden");
-                this.selectedHeadingText.textContent = "";
-            }
-        }
-        if (this.currentTrackGroup) {
-            var track = SimVar.GetSimVarValue("GPS GROUND MAGNETIC TRACK", "degree");
-            var groundSpeed = SimVar.GetSimVarValue("GPS GROUND SPEED", "knots");
-            if (groundSpeed <= 10)
-                track = compass;
-            var delta = compass - track;
-            this.currentTrackGroup.setAttribute("transform", "rotate(" + (-delta) + " " + this.rotatingCompassX + " " + this.rotatingCompassY + ")");
         }
     }
 }
