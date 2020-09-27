@@ -420,7 +420,14 @@ class Jet_MFD_NDCompass extends Jet_NDCompass {
                 this.courseGroup.appendChild(this.bearing1);
                 let arrow = document.createElementNS(Avionics.SVG.NS, "path");
                 arrow.setAttribute("d", "M 500 835 L 499 785 H 530 L 500 736 V 665 V 736 L 470 785 H 499 M 500 246 L 500 335 M 500 194 L 530 246 H 500 M 500 194 V 168 V 194 L 470 246 H 500"); // Arrow modified
-                arrow.setAttribute("stroke", "white");
+                
+                // Fix ADF arrows turns white when changing ND mode
+                if (Simplane.getAutoPilotNavAidState(1, 1) === NAV_AID_STATE.ADF) {
+                    arrow.setAttribute("stroke", "lime");
+                } else {
+                    arrow.setAttribute("stroke", "white");
+                }
+
                 arrow.setAttribute("stroke-width", "5");
                 arrow.setAttribute("fill", "none");
                 this.bearing1.appendChild(arrow);
@@ -432,7 +439,14 @@ class Jet_MFD_NDCompass extends Jet_NDCompass {
                 this.courseGroup.appendChild(this.bearing2);
                 arrow = document.createElementNS(Avionics.SVG.NS, "path");
                 arrow.setAttribute("d", "M 500 832 L 500 736 M 485 665 L 485 736 H 515 L 515 665 M 500 168 L 500 246 L 531 293 H 515 M 500 246 L 469 293 H 485 M 485 292 L 485 335 M 515 292 L 515 335"); // Arrow modified
-                arrow.setAttribute("stroke", "white");
+                
+                // Fix ADF arrows turns white when changing ND mode
+                if (Simplane.getAutoPilotNavAidState(1, 2) === NAV_AID_STATE.ADF) {
+                    arrow.setAttribute("stroke", "lime");
+                } else {
+                    arrow.setAttribute("stroke", "white");
+                }
+
                 arrow.setAttribute("stroke-width", "5");
                 arrow.setAttribute("fill", "none");
                 this.bearing2.appendChild(arrow);
