@@ -6,3 +6,5 @@
 ## Changes from 2020/09 to 2020/10
 
 1. [General] Add CHANGELOG.md - @nathaninnes (Nathan Innes)
+2. [ECAM] Improved Upper ECAM Visuals - @wpine215 (Iceman)
+
