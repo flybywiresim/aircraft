@@ -48,6 +48,7 @@ a320-neo-lower-ecam-apu {
 :root .WhiteBox {
   stroke: #ffffff;
   stroke-width: 2;
+  fill:rgba(13,20,35,1);
 }
 :root #APUGenParams {
   fill: var(--ecamDefaultColour);

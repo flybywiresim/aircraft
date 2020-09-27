@@ -58,6 +58,7 @@ class A320_Neo_PFD_MainPage extends NavSystemPage {
     init() {
         super.init();
 
+        this.getDeltaTime = A32NX_Util.createDeltaTimeCalculator(this._lastTime);
         this.showILS = SimVar.GetSimVarValue("L:BTN_LS_FILTER_ACTIVE", "bool");
         this.ils.showILS(this.showILS);
         this.compass.showILS(this.showILS);
@@ -92,8 +93,10 @@ class A320_Neo_PFD_MainPage extends NavSystemPage {
 
         this.electricity = document.querySelector('#Electricity')
     }
-    onUpdate(_deltaTime) {
-        super.onUpdate();
+    onUpdate() {
+        const _deltaTime = this.getDeltaTime();
+
+        super.onUpdate(_deltaTime);
         if (!this.hasInitialized) return;
         this.flashTimer -= _deltaTime/1000;
         if (this.flashTimer <= 0) {
@@ -126,8 +129,8 @@ class A320_Neo_PFD_MainPage extends NavSystemPage {
             this.groundCursorLimits.style.display = "none";
         }
 
-        const YokeXPosition = 40.9 + (15 * SimVar.GetSimVarValue("YOKE X POSITION", "Position"));
-        const YokeYPosition = 47.7 - (15 * SimVar.GetSimVarValue("YOKE Y POSITION", "Position"));
+        const YokeXPosition = 40.45 + (18.4 * SimVar.GetSimVarValue("YOKE X POSITION", "Position"));
+        const YokeYPosition = 47.95 - (14.45 * SimVar.GetSimVarValue("YOKE Y POSITION", "Position"));
 
         this.groundCursor.style.left = YokeXPosition.toString() + "%";
         this.groundCursor.style.top = YokeYPosition.toString() + "%";
@@ -212,10 +215,12 @@ class A320_Neo_PFD_VSpeed extends NavSystemElement {
         this.vsi = this.gps.getChildById("VSpeed");
         this.vsi.aircraft = Aircraft.A320_NEO;
         this.vsi.gps = this.gps;
+        this.getDeltaTime = A32NX_Util.createDeltaTimeCalculator(this._lastTime);
     }
     onEnter() {
     }
-    onUpdate(_deltaTime) {
+    onUpdate() {
+        const _deltaTime = this.getDeltaTime();
         var vSpeed = Math.round(Simplane.getVerticalSpeed());
         this.vsi.setAttribute("vspeed", vSpeed.toString());
         if (Simplane.getAutoPilotVerticalSpeedHoldActive()) {
@@ -240,10 +245,12 @@ class A320_Neo_PFD_Airspeed extends NavSystemElement {
         this.airspeed = this.gps.getChildById("Airspeed");
         this.airspeed.aircraft = Aircraft.A320_NEO;
         this.airspeed.gps = this.gps;
+        this.getDeltaTime = A32NX_Util.createDeltaTimeCalculator(this._lastTime);
     }
     onEnter() {
     }
-    onUpdate(_deltaTime) {
+    onUpdate() {
+        const _deltaTime = this.getDeltaTime();
         this.airspeed.update(_deltaTime);
     }
     onExit() {
@@ -259,10 +266,12 @@ class A320_Neo_PFD_Altimeter extends NavSystemElement {
         this.altimeter = this.gps.getChildById("Altimeter");
         this.altimeter.aircraft = Aircraft.A320_NEO;
         this.altimeter.gps = this.gps;
+        this.getDeltaTime = A32NX_Util.createDeltaTimeCalculator(this._lastTime);
     }
     onEnter() {
     }
-    onUpdate(_deltaTime) {
+    onUpdate() {
+        const _deltaTime = this.getDeltaTime();
         this.altimeter.update(_deltaTime);
     }
     onExit() {
@@ -287,13 +296,22 @@ class A320_Neo_PFD_Attitude extends NavSystemElement {
         this.hsi = this.gps.getChildById("Horizon");
         this.hsi.aircraft = Aircraft.A320_NEO;
         this.hsi.gps = this.gps;
+        this.getDeltaTime = A32NX_Util.createDeltaTimeCalculator(this._lastTime);
     }
     onEnter() {
     }
-    onUpdate(_deltaTime) {
+    onUpdate() {
+        const _deltaTime = this.getDeltaTime();
         if (this.hsi) {
             this.hsi.update(_deltaTime);
 
+            const flightDirectorActive = SimVar.GetSimVarValue(`AUTOPILOT FLIGHT DIRECTOR ACTIVE:1`, "bool");
+            const apHeadingModeSelected = Simplane.getAutoPilotHeadingSelected();
+            const fcuShowHdg = SimVar.GetSimVarValue("L:A320_FCU_SHOW_SELECTED_HEADING", "number");
+            const showSelectedHdg = !flightDirectorActive && (fcuShowHdg || apHeadingModeSelected);
+
+            const selectedHeading = Simplane.getAutoPilotSelectedHeadingLockValue(false);
+            const compass = SimVar.GetSimVarValue("PLANE HEADING DEGREES MAGNETIC", "degree");
             const xyz = Simplane.getOrientationAxis();
 
             if (xyz) {
@@ -305,6 +323,9 @@ class A320_Neo_PFD_Attitude extends NavSystemElement {
             this.hsi.setAttribute("slip_skid", Simplane.getInclinometer().toString());
             this.hsi.setAttribute("radio_altitude", Simplane.getAltitudeAboveGround().toString());
             this.hsi.setAttribute("radio_decision_height", this.gps.radioNav.getRadioDecisionHeight().toString());
+            this.hsi.setAttribute("compass", compass.toString());
+            this.hsi.setAttribute("show_selected_hdg", showSelectedHdg.toString());
+            this.hsi.setAttribute("ap_hdg", selectedHeading.toString());
         }
     }
     onExit() {
@@ -317,10 +338,12 @@ class A320_Neo_PFD_Compass extends NavSystemElement {
         this.hsi = this.gps.getChildById("Compass");
         this.hsi.aircraft = Aircraft.A320_NEO;
         this.hsi.gps = this.gps;
+        this.getDeltaTime = A32NX_Util.createDeltaTimeCalculator(this._lastTime);
     }
     onEnter() {
     }
-    onUpdate(_deltaTime) {
+    onUpdate() {
+        const _deltaTime = this.getDeltaTime();
         this.hsi.update(_deltaTime);
     }
     onExit() {
@@ -339,10 +362,12 @@ class A320_Neo_PFD_NavStatus extends NavSystemElement {
         this.fma.aircraft = Aircraft.A320_NEO;
         this.fma.gps = this.gps;
         this.isInitialized = true;
+        this.getDeltaTime = A32NX_Util.createDeltaTimeCalculator(this._lastTime);
     }
     onEnter() {
     }
-    onUpdate(_deltaTime) {
+    onUpdate() {
+        const _deltaTime = this.getDeltaTime();
         if (this.fma != null) {
             this.fma.update(_deltaTime);
         }
@@ -357,10 +382,12 @@ class A320_Neo_PFD_ILS extends NavSystemElement {
         this.ils = this.gps.getChildById("ILS");
         this.ils.aircraft = Aircraft.A320_NEO;
         this.ils.gps = this.gps;
+        this.getDeltaTime = A32NX_Util.createDeltaTimeCalculator(this._lastTime);
     }
     onEnter() {
     }
-    onUpdate(_deltaTime) {
+    onUpdate() {
+        const _deltaTime = this.getDeltaTime();
         if (this.ils) {
             this.ils.update(_deltaTime);
         }

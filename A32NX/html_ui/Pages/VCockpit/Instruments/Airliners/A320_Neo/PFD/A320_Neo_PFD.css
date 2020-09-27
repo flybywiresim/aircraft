@@ -62,14 +62,15 @@ text {
 a320-neo-pfd-element {
   width: 100%;
   height: 100%;
-  background-color: black;
+  background-color: transparent !important;
   font-family: "Liberation Mono" !important;
   position: relative;
   overflow: hidden;
   z-index: -10; }
   a320-neo-pfd-element #Electricity {
     width: 100%;
-    height: 100%; }
+    height: 100%; 
+	background-color:transparent !important;}
     a320-neo-pfd-element #Electricity[state=off] {
       display: none; }
   a320-neo-pfd-element .PopupWindow {
@@ -80,6 +81,7 @@ a320-neo-pfd-element {
     width: 100%;
     height: 100%;
     display: block;
+	background-color:transparent !important;
     position: relative; }
     a320-neo-pfd-element #Mainframe #HorizonContainer {
       transform: rotateX(0);
@@ -88,6 +90,7 @@ a320-neo-pfd-element {
       height: 100%;
       z-index: -6;
       border: none;
+	  background-color:transparent !important;
       overflow: hidden; }
       a320-neo-pfd-element #Mainframe #HorizonContainer #Horizon {
         position: absolute;
@@ -96,6 +99,7 @@ a320-neo-pfd-element {
         width: 58%;
         height: 48%;
         border: none;
+		background-color:transparent !important;
         transform: scale(0.9); }
       a320-neo-pfd-element #Mainframe #HorizonContainer #GroundCursor {
         position: absolute;
@@ -106,17 +110,18 @@ a320-neo-pfd-element {
         border: none;
         display: block; }
         a320-neo-pfd-element #Mainframe #HorizonContainer #GroundCursor svg line {
+          stroke-width: 2.6;
           stroke: white; }
       a320-neo-pfd-element #Mainframe #HorizonContainer #GroundCursorLimits {
         position: absolute;
-        left: 25%;
-        top: 35%;
+        left: 25.1%;
+        top: 36.7%;
         width: 37.5%;
         height: 10%;
         border: none;
         display: block; }
         a320-neo-pfd-element #Mainframe #HorizonContainer #GroundCursorLimits svg line {
-          stroke-width: 10;
+          stroke-width: 14;
           stroke: white; }
     a320-neo-pfd-element #Mainframe #InstrumentsContainer {
       transform: rotateX(0);
@@ -158,7 +163,7 @@ a320-neo-pfd-element {
       a320-neo-pfd-element #Mainframe #InstrumentsContainer #FMA {
         transform: rotateX(0);
         position: absolute;
-        background-color: black;
+        background-color: transparent;
         display: flex;
         width: 100%;
         height: 14%;
@@ -302,13 +307,13 @@ a320-neo-pfd-element {
           left: 22%;
           width: 36%;
           height: 100%;
-          background-color: black; }
+          background-color: rgba(13,20,35,1); }
         a320-neo-pfd-element #Mainframe #InstrumentsContainer #FMA #SpecialMessages div {
           position: absolute;
           width: 36%;
           bottom: 0%;
           height: 34%;
-          background-color: black; }
+          background-color: rgba(13,20,35,1); }
         a320-neo-pfd-element #Mainframe #InstrumentsContainer #FMA #SpecialMessages #Msg1 {
           left: 2%; }
         a320-neo-pfd-element #Mainframe #InstrumentsContainer #FMA #SpecialMessages #Msg2 {

@@ -224,7 +224,7 @@ class CDUFlightPlanPage {
                         let altitudeConstraint = "---";
                         if (waypoint.legAltitudeDescription !== 0) {
                             if (mcdu.transitionAltitude >= 100 && waypoint.legAltitude1 > mcdu.transitionAltitude)
-                                altitudeConstraint = "FL" + (waypoint.legAltitude1.toFixed(0) / 100);
+                                altitudeConstraint = "FL" + (waypoint.legAltitude1 / 100).toFixed(0);
                             else
                                 altitudeConstraint = waypoint.legAltitude1.toFixed(0);
                             if (waypoint.legAltitudeDescription === 1) {

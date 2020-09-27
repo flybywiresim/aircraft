@@ -217,7 +217,7 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
                 textBg.setAttribute("y", "35");
                 textBg.setAttribute("width", (_width + 2).toString());
                 textBg.setAttribute("height", "30");
-                textBg.setAttribute("fill", "black");
+                textBg.setAttribute("fill", "url(#Backlight)");
                 this.targetAltitudeIndicatorSVG.appendChild(textBg);
                 this.targetAltitudeIndicatorSVGText = document.createElementNS(Avionics.SVG.NS, "text");
                 this.targetAltitudeIndicatorSVGText.textContent = "35000";
@@ -250,7 +250,7 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
                 var _cursorPosY = cursorHeight * 0.5;
                 if (!this.cursorSVGShape)
                     this.cursorSVGShape = document.createElementNS(Avionics.SVG.NS, "path");
-                this.cursorSVGShape.setAttribute("fill", "black");
+                this.cursorSVGShape.setAttribute("fill", "url(#Backlight)");
                 this.cursorSVGShape.setAttribute("fill-opacity", this.cursorOpacity);
                 this.cursorSVGShape.setAttribute("d", "M 0 17.5 L 77 17.5 L 77 0 L 116 0 L 116 80 L 77 80 L 77 62.5 L 0 62.5 M 0 17.5 Z");//M 0 17.5 L 77 17.5 L 77 0 L 115 0 L 115 80 L 77 80 L 77 62.5 L 0 62.5 Z
                 this.cursorSVGShape.setAttribute("stroke", "yellow");
@@ -352,7 +352,7 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
             : indicatedAltitude;
         const delta = desiredDisplayedAltitude - this._delayedAltitude;
         if (Math.abs(delta) > 0.01) {
-            this._delayedAltitude += delta * (4 * (_dTime / 1000));
+            this._delayedAltitude += delta * Math.min(1, (4 * (_dTime / 1000)));
             indicatedAltitude = this._delayedAltitude;
         }
 
@@ -667,12 +667,12 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
     updateFail() {
         var failed = !(SimVar.GetSimVarValue("L:A32NX_ADIRS_PFD_ALIGNED_FIRST", "Bool") == 1);
         if (!failed) {
-            this.bg.setAttribute("stroke", "transparent");
             this.topLine.setAttribute("stroke", "white");
             this.bottomLine.setAttribute("stroke", "white");
             this.cursorSVGShape.setAttribute("stroke", "yellow");
             this.cursorIntegralsGroup.setAttribute("visibility", "visible");
             this.cursorDecimals.setAttribute("visibility", "visible");
+            this.verticalLine.setAttribute("stroke", "white");
             // Code to add if visibilty issues with this part
 
             // if (this.pressureSVG) {
@@ -684,7 +684,6 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
             // this.STDpressureSVGShape.setAttribute("visibility", "visible");
             // }
         } else {
-            this.bg.setAttribute("stroke", "red");
             this.topLine.setAttribute("stroke", "red");
             this.bottomLine.setAttribute("stroke", "red");
             this.cursorSVGShape.setAttribute("stroke", "transparent");
@@ -698,6 +697,7 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
             if (this.STDpressureSVG) this.STDpressureSVG.setAttribute("visibility", "hidden");
             if (this.STDpressureSVGShape)this.STDpressureSVGShape.setAttribute("visibility", "hidden");
             this.targetAltitudeIndicatorSVG.setAttribute("visibility", "hidden");
+            this.verticalLine.setAttribute("stroke", "red");
         }
 
         if (this.groundRibbonSVGShape) this.groundRibbonSVG.setAttribute("style", failed ? "display:none" : "");
