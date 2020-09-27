@@ -890,21 +890,21 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         const rightThrottleDetent = Simplane.getEngineThrottleMode(1);
         const highestThrottleDetent = (leftThrottleDetent >= rightThrottleDetent) ? leftThrottleDetent : rightThrottleDetent;
 
-		//Changes from TAXI PHASE to PREFLIGHT PHASE after engine shutdown // From taxi phase or after landing and not in goaround phase (goaround currently not implemented)
+		//Changes from TAXI PHASE to PREFLIGHT PHASE after engine shutdown //
 		if (this.currentFlightPhase == 1 || this.currentFlightPhase == 6){
 			if (SimVar.GetSimVarValue("ENG N1 RPM:1", "Percent") < 15 && SimVar.GetSimVarValue("ENG N1 RPM:2", "Percent") < 15){
 				this.currentFlightPhase = FlightPhase.FLIGHT_PHASE_PREFLIGHT;
 			}
 		}
 
-		//Changes from PREFLIGHT PHASE to TAXI PHASE after engine startup
+		//Changes from PREFLIGHT to TAXI PHASE after engine startup
 		if (this.currentFlightPhase == 0){
 			if (SimVar.GetSimVarValue("ENG N1 RPM:1", "Percent") > 15 && SimVar.GetSimVarValue("ENG N1 RPM:2", "Percent") > 15){
 				this.currentFlightPhase = FlightPhase.FLIGHT_PHASE_TAXI;
 			}
 		}
 
-        //End preflight when takeoff power is applied and engines are running
+        //Changes from TAXI to TAKEOFF PHASE and completes "preflight" when takeoff power is applied and engines are running
         if (this.currentFlightPhase <= 2) {
             if ((highestThrottleDetent == ThrottleMode.TOGA || highestThrottleDetent == ThrottleMode.FLEX_MCT) && SimVar.GetSimVarValue("ENG N1 RPM:1", "Percent") > 15 && SimVar.GetSimVarValue("ENG N1 RPM:2", "Percent") > 15) {
                 SimVar.SetSimVarValue("L:A32NX_Preflight_Complete", "Bool", 1);
