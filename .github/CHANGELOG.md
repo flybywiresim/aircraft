@@ -7,4 +7,5 @@
 
 1. [General] Add CHANGELOG.md - @nathaninnes (Nathan Innes)
 2. [ECAM] Improved Upper ECAM Visuals - @wpine215 (Iceman)
+3. [CDU] Fixed a crash when trying to replace a waypoint in the flight plan - @lousybyte (lousybyte)
 
