@@ -49,7 +49,7 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
     }
     Init() {
         super.Init();
-
+        this.getDeltaTime = A32NX_Util.createDeltaTimeCalculator(this._lastTime);
         this.currentPage = -1;
 
         this.pageNameWhenUnselected = "DOOR";
@@ -59,59 +59,54 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         this.ecamFCTLTimer = -1;
 
         this.changePage("FUEL"); // MODIFIED
-        if (this.isTopScreen) {
-            this.A32NXCore = new A32NX_Core();
-            this.A32NXCore.init();
-        }
 
         this.lastAPUMasterState = 0; // MODIFIED
         this.ApuAboveThresholdTimer = -1; // MODIFIED
         this.MainEngineStarterOffTimer = -1;
         this.CrzCondTimer = 60;
+        this.PrevFailPage = -1;
 
         this.topSelfTestDiv = this.querySelector("#TopSelfTest");
         this.topSelfTestTimer = -1;
         this.topSelfTestTimerStarted = false;
         this.topSelfTestLastKnobValue = 1;
-        
+
         this.bottomSelfTestDiv = this.querySelector("#BottomSelfTest");
         this.bottomSelfTestTimer = -1;
         this.bottomSelfTestTimerStarted = false;
         this.bottomSelfTestLastKnobValue = 1;
-        
+
         // Using ternary in case the LVar is undefined
-        this.ACPowerLastState = SimVar.GetSimVarValue('L:A32NX_COLD_AND_DARK_SPAWN', 'Bool') ? 0 : 1;
+        this.ACPowerLastState = SimVar.GetSimVarValue("L:A32NX_COLD_AND_DARK_SPAWN", "Bool") ? 0 : 1;
 
         this.electricity = this.querySelector("#Electricity");
         this.changePage("DOOR"); // MODIFIED
         this.changePage("DOOR"); // This should get the ECAM into the "unselected" state
-        this.localVarUpdater = new LocalVarUpdater();
-        
+
         SimVar.SetSimVarValue("LIGHT POTENTIOMETER:7","FLOAT64",0);
-        SimVar.SetSimVarValue("LIGHT POTENTIOMETER:14","FLOAT64",0);
-        SimVar.SetSimVarValue("LIGHT POTENTIOMETER:15","FLOAT64",0);
-        SimVar.SetSimVarValue("LIGHT POTENTIOMETER:16","FLOAT64",0);        
-        SimVar.SetSimVarValue("LIGHT POTENTIOMETER:17","FLOAT64",0);
-        SimVar.SetSimVarValue("LIGHT POTENTIOMETER:18","FLOAT64",0);
-        SimVar.SetSimVarValue("LIGHT POTENTIOMETER:19","FLOAT64",0);
-        SimVar.SetSimVarValue("LIGHT POTENTIOMETER:20","FLOAT64",0);
-        SimVar.SetSimVarValue("LIGHT POTENTIOMETER:21","FLOAT64",0);
-        SimVar.SetSimVarValue("LIGHT POTENTIOMETER:22","FLOAT64",0);
-        SimVar.SetSimVarValue("LIGHT POTENTIOMETER:23","FLOAT64",0);
+        SimVar.SetSimVarValue("LIGHT POTENTIOMETER:84","FLOAT64",0);
+        SimVar.SetSimVarValue("LIGHT POTENTIOMETER:85","FLOAT64",0);
+        SimVar.SetSimVarValue("LIGHT POTENTIOMETER:86","FLOAT64",0);
+        SimVar.SetSimVarValue("LIGHT POTENTIOMETER:87","FLOAT64",0.1);
+        SimVar.SetSimVarValue("LIGHT POTENTIOMETER:88","FLOAT64",0.1);
+        SimVar.SetSimVarValue("LIGHT POTENTIOMETER:89","FLOAT64",0.1);
+        SimVar.SetSimVarValue("LIGHT POTENTIOMETER:90","FLOAT64",0.1);
+        SimVar.SetSimVarValue("LIGHT POTENTIOMETER:91","FLOAT64",0.1);
+        SimVar.SetSimVarValue("LIGHT POTENTIOMETER:92","FLOAT64",0.1);
+        SimVar.SetSimVarValue("LIGHT POTENTIOMETER:93","FLOAT64",0.1);
     }
-    onUpdate(_deltaTime) {
+    onUpdate() {
+        const _deltaTime = this.getDeltaTime();
+
         super.onUpdate(_deltaTime);
-        if (this.isTopScreen) {
-            this.A32NXCore.update(_deltaTime);
-            this.localVarUpdater.update();
-        }
         this.updateAnnunciations();
         this.updateScreenState();
-        
+
+        // TODO Move anything dependent on ac power change to A32NX_Core
         const engineOn = Simplane.getEngineActive(0) || Simplane.getEngineActive(1);
-        const externalPower = SimVar.GetSimVarValue("EXTERNAL POWER ON", "bool");
+        const externalPowerOn = SimVar.GetSimVarValue("EXTERNAL POWER AVAILABLE:1", "Bool") === 1 && SimVar.GetSimVarValue("EXTERNAL POWER ON", "Bool") === 1;
         const apuOn = SimVar.GetSimVarValue("L:APU_GEN_ONLINE", "bool");
-        const isACPowerAvailable = engineOn || apuOn || externalPower;
+        const isACPowerAvailable = engineOn || apuOn || externalPowerOn;
         var DCBus = false;
 
         const ACPowerStateChange = (isACPowerAvailable != this.ACPowerLastState);
@@ -137,15 +132,15 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         /**
          * Self test on top ECAM screen
          **/
-        
-        let topSelfTestCurrentKnobValue = SimVar.GetSimVarValue("LIGHT POTENTIOMETER:22", "number");
-        
+
+        let topSelfTestCurrentKnobValue = SimVar.GetSimVarValue("LIGHT POTENTIOMETER:92", "number");
+
         if(((topSelfTestCurrentKnobValue >= 0.1 && this.topSelfTestLastKnobValue < 0.1) || ACPowerStateChange) && isACPowerAvailable && !this.topSelfTestTimerStarted) {
             this.topSelfTestDiv.style.display = "block";
             this.topSelfTestTimer = 14.25;
             this.topSelfTestTimerStarted = true;
         }
-        
+
         if (this.topSelfTestTimer >= 0) {
             this.topSelfTestTimer -= _deltaTime / 1000;
             if (this.topSelfTestTimer <= 0) {
@@ -153,21 +148,21 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
                 this.topSelfTestTimerStarted = false;
             }
         }
-        
+
         this.topSelfTestLastKnobValue = topSelfTestCurrentKnobValue;
 
         /**
          * Self test on bottom ECAM screen
          **/
-        
-        let bottomSelfTestCurrentKnobValue = SimVar.GetSimVarValue("LIGHT POTENTIOMETER:23", "number");
-        
+
+        let bottomSelfTestCurrentKnobValue = SimVar.GetSimVarValue("LIGHT POTENTIOMETER:93", "number");
+
         if(((bottomSelfTestCurrentKnobValue >= 0.1 && this.bottomSelfTestLastKnobValue < 0.1) || ACPowerStateChange) && isACPowerAvailable && !this.bottomSelfTestTimerStarted) {
             this.bottomSelfTestDiv.style.display = "block";
             this.bottomSelfTestTimer = 14.25;
             this.bottomSelfTestTimerStarted = true;
         }
-        
+
         if (this.bottomSelfTestTimer >= 0) {
             this.bottomSelfTestTimer -= _deltaTime / 1000;
             if (this.bottomSelfTestTimer <= 0) {
@@ -175,7 +170,7 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
                 this.bottomSelfTestTimerStarted = false;
             }
         }
-        
+
         this.bottomSelfTestLastKnobValue = bottomSelfTestCurrentKnobValue;
 
         this.ACPowerLastState = isACPowerAvailable;
@@ -193,7 +188,7 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         const leftThrottleDetent = Simplane.getEngineThrottleMode(0);
         const rightThrottleDetent = Simplane.getEngineThrottleMode(1);
         const highestThrottleDetent = (leftThrottleDetent >= rightThrottleDetent) ? leftThrottleDetent : rightThrottleDetent;
-        const ToPowerSet = (highestThrottleDetent == ThrottleMode.TOGA || highestThrottleDetent == ThrottleMode.FLEX_MCT) && SimVar.GetSimVarValue("ENG N1 RPM:1", "Percent") > 15 && SimVar.GetSimVarValue("ENG N1 RPM:2", "Percent") > 15
+        const ToPowerSet = (highestThrottleDetent == ThrottleMode.TOGA || highestThrottleDetent == ThrottleMode.FLEX_MCT) && SimVar.GetSimVarValue("ENG N1 RPM:1", "Percent") > 15 && SimVar.GetSimVarValue("ENG N1 RPM:2", "Percent") > 15;
         const APUPctRPM = SimVar.GetSimVarValue("APU PCT RPM", "percent");
         const EngModeSel = SimVar.GetSimVarValue("L:XMLVAR_ENG_MODE_SEL", "number");
         const spoilerOrFlapsDeployed = SimVar.GetSimVarValue("FLAPS HANDLE INDEX", "number") != 0 || SimVar.GetSimVarValue("SPOILERS HANDLE POSITION", "percent") != 0;
@@ -244,7 +239,7 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
             }
         } else if ((ToPowerSet || !Simplane.getIsGrounded()) && !crzCond && this.minPageIndexWhenUnselected <= 2) {
             this.pageNameWhenUnselected = "ENG";
-        } else if (crzCond && !(isGearExtended && altitude < 16000) && this.minPageIndexWhenUnselected <= 3) {
+        } else if (crzCond && !(isGearExtended && altitude < 16000)) {
             this.pageNameWhenUnselected = "CRZ";
             this.minPageIndexWhenUnselected = 3;
         } else if (isGearExtended && (altitude < 16000)) {
@@ -268,15 +263,24 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
                 9: "WHEEL",
                 10: "FTCL",
                 11: "STS"
-            }
+            };
 
             this.pageNameWhenUnselected = ECAMPageIndices[sFailPage];
+
+            // Disable user selected page when new failure detected
+            if (this.PrevFailPage !== sFailPage) {
+                this.currentPage = -1;
+                SimVar.SetSimVarValue("L:XMLVAR_ECAM_CURRENT_PAGE", "number", -1);
+            }
         }
 
-        // switch page when desired page was changed
-        if (this.pageNameWhenUnselected != prevPage) {
+        // switch page when desired page was changed, or new Failure detected
+        if ((this.pageNameWhenUnselected != prevPage && this.currentPage == -1) || (this.PrevFailPage !== sFailPage)) {
             this.SwitchToPageName(this.LOWER_SCREEN_GROUP_NAME, this.pageNameWhenUnselected);
+
         }
+
+        this.PrevFailPage = sFailPage;
 
         // modification ends here
     }

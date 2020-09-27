@@ -148,7 +148,7 @@ class CDUPerformancePage {
             sltRetrCell = slatSpeed.toFixed(0) + "[color]green";
         }
         let cleanCell = "---";
-        let cleanSpeed = mcdu.getCleanTakeOffSpeed();
+        let cleanSpeed = mcdu.getPerfGreenDotSpeed();
         if (isFinite(cleanSpeed)) {
             cleanCell = cleanSpeed.toFixed(0) + "[color]green";
         }
@@ -442,7 +442,7 @@ class CDUPerformancePage {
         }
         let bottomRowLabels = ["PREV", "NEXT"];
         let bottomRowCells = ["<PHASE", "PHASE>"];
-        if (mcdu.currentFlightPhase === FlightPhase.FLIGHT_PHASE_CLIMB) {
+        if (mcdu.currentFlightPhase === FlightPhase.FLIGHT_PHASE_DESCENT) {
             if (confirmAppr) {
                 bottomRowLabels[0] = "CONFIRM[color]red";
                 bottomRowCells[0] = "←APPR PHASE[color]red";
@@ -493,9 +493,6 @@ class CDUPerformancePage {
             if (CDUPerformancePage._timer >= 100) {
                 if (mcdu.currentFlightPhase === CDUPerformancePage._lastPhase) {
                     CDUPerformancePage.ShowAPPRPage(mcdu);
-                }
-                else {
-                    CDUPerformancePage.ShowPage(mcdu);
                 }
             }
         };
@@ -606,7 +603,7 @@ class CDUPerformancePage {
             sltRetrCell = slatSpeed.toFixed(0) + "[color]green";
         }
         let cleanCell = "---";
-        let cleanSpeed = mcdu.getCleanApproachSpeed();
+        let cleanSpeed = mcdu.getPerfGreenDotSpeed();
         if (isFinite(cleanSpeed)) {
             cleanCell = cleanSpeed.toFixed(0) + "[color]green";
         }
@@ -674,6 +671,9 @@ class CDUPerformancePage {
 
         mcdu.thrustReductionAltitude = thrRedAccAltitude;
         mcdu.accelerationAltitude = thrRedAccAltitude;
+
+        SimVar.SetSimVarValue("L:AIRLINER_THR_RED_ALT", "Number", thrRedAccAltitude || 0);
+        SimVar.SetSimVarValue("L:AIRLINER_ACC_ALT", "Number", thrRedAccAltitude || 0);
     }
 }
 CDUPerformancePage._timer = 0;

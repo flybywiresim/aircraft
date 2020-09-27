@@ -25,3 +25,6 @@ assignees: ''
 
 **Additional context**
 <!-- Add any other context about the feature request here. -->
+
+<!-- You may optionally provide your discord username, so that we may contact you directly about the issue. -->
+Discord username (if different from GitHub):

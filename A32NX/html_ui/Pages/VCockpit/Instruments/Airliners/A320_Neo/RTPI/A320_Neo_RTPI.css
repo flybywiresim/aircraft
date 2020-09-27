@@ -1,0 +1,78 @@
+﻿:root {
+  --bodyHeightScale: 1; }
+
+@keyframes TemporaryShow {
+  0%, 100% {
+    visibility: visible; } }
+
+@keyframes TemporaryHide {
+  0%, 100% {
+    visibility: hidden; } }
+
+#highlight {
+  position: absolute;
+  height: 100%;
+  width: 100%;
+  z-index: 10; }
+
+#Electricity {
+  width: 100%;
+  height: 100%; }
+  #Electricity[state=off] {
+    display: none; 
+    background-color: black;}
+
+@font-face {
+  font-family: "Roboto";
+  src: url("/Fonts/RobotoMono-Medium.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal; }
+
+@font-face {
+  font-family: "Roboto-Light";
+  src: url("/Fonts/RobotoMono-Light.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal; }
+
+@font-face {
+  font-family: "Roboto-Bold";
+  src: url("/Fonts/RobotoMono-Bold.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal; }
+
+@font-face {
+  font-family: "Digital";
+  src: url("/Pages/VCockpit/Instruments/Shared/Fonts/digital.ttf") format("truetype");
+  font-weight: 900;
+  font-style: normal; }
+
+a320-neo-rtpi {
+  width: 110%;
+  height: 100%;
+  position: relative;
+  overflow: hidden;
+  }
+  a320-neo-rtpi svg {
+    width: 105%;
+    height: 100%; }
+  a320-neo-rtpi text {
+    font-family: Digital;
+    font-size: 150px;
+    fill: #5f482e;
+    /* fill: #985d1c; */
+    letter-spacing: -5px;
+    alignment-baseline: central; }
+  a320-neo-rtpi #Content {
+    position: absolute;
+    width: 105%;
+    height: 100%;
+    left: -5%;
+    top: -6%;
+    background-color: rgba(32, 19, 2, 0.884);}
+  a320-neo-rtpi #Content #Direction {
+      text-anchor: start; 
+      left: -10%;}
+    a320-neo-rtpi #Content #Value {
+      text-anchor: end; 
+      right: -8%;}
+
