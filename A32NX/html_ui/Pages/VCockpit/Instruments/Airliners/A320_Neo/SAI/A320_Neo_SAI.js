@@ -950,8 +950,8 @@ customElements.define('a320-neo-sai-pressure-indicator', A320_Neo_SAI_PressureIn
 
 class A320_Neo_SAI_SelfTest extends NavSystemElement {
     init(root) {
-        this._lastTime = Date.now();
         this.selfTestElement = this.gps.getChildById("SelfTest");
+        this.getDeltaTime = A32NX_Util.createDeltaTimeCalculator();
     }
     onEnter() {
     }
@@ -959,10 +959,7 @@ class A320_Neo_SAI_SelfTest extends NavSystemElement {
         return true;
     }
     onUpdate() {
-         // Delta time mitigation strategy
-         const curTime = Date.now();
-         const localDeltaTime = curTime - this._lastTime;
-         this._lastTime = curTime;
+        const _deltaTime = this.getDeltaTime();
 
         const brightness = SimVar.GetSimVarValue("L:A32NX_BARO_BRIGHTNESS","number");
         const bright_gran = 0.05;
@@ -971,11 +968,15 @@ class A320_Neo_SAI_SelfTest extends NavSystemElement {
 
         if (baro_plus !== this.baroPlusState) {
             this.baroPlusState = baro_plus;
-            (brightness < 1) ? SimVar.SetSimVarValue("L:A32NX_BARO_BRIGHTNESS","number", brightness + bright_gran): 0;
+            if (brightness < 1) {
+                SimVar.SetSimVarValue("L:A32NX_BARO_BRIGHTNESS","number", brightness + bright_gran);
+            }
         }
         if (baro_minus !== this.baroMinusState) {
             this.baroMinusState = baro_minus;
-            (brightness > 0) ? SimVar.SetSimVarValue("L:A32NX_BARO_BRIGHTNESS","number", brightness - bright_gran) : 0;
+            if (brightness >= bright_gran) {
+                SimVar.SetSimVarValue("L:A32NX_BARO_BRIGHTNESS","number", brightness - bright_gran);
+            }
         }
 
         const ac_pwr = SimVar.GetSimVarValue("L:ACPowerAvailable", "bool");
@@ -985,7 +986,7 @@ class A320_Neo_SAI_SelfTest extends NavSystemElement {
         const complete = this.selfTestElement.complete;
 
         if ((ac_pwr || dc_pwr) && !complete) {
-            this.selfTestElement.update(localDeltaTime);
+            this.selfTestElement.update(_deltaTime);
         }
         if (!ac_pwr && !dc_pwr) {
             // TODO: More realistic/advanced Behaviour when power is lost
