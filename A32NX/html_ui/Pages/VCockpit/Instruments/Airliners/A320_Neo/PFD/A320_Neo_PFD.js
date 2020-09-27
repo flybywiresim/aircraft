@@ -58,8 +58,11 @@ class A320_Neo_PFD_MainPage extends NavSystemPage {
     init() {
         super.init();
 
+        const url = document.getElementsByTagName("a320-neo-pfd-element")[0].getAttribute("url");
+        const index = parseInt(url.substring(url.length-1));
+
         this.getDeltaTime = A32NX_Util.createDeltaTimeCalculator(this._lastTime);
-        this.showILS = SimVar.GetSimVarValue("L:BTN_LS_FILTER_ACTIVE", "bool");
+        this.showILS = SimVar.GetSimVarValue(`L:BTN_LS_${index}_FILTER_ACTIVE`, "bool");
         this.ils.showILS(this.showILS);
         this.compass.showILS(this.showILS);
 
@@ -159,24 +162,20 @@ class A320_Neo_PFD_MainPage extends NavSystemPage {
 
         const ACPowerStateChange = SimVar.GetSimVarValue("L:ACPowerStateChange","Bool");
         const ACPowerAvailable = SimVar.GetSimVarValue("L:ACPowerAvailable","Bool");
+        
+        const url = document.getElementsByTagName("a320-neo-pfd-element")[0].getAttribute("url");
+        const index = parseInt(url.substring(url.length-1));
+        const displayIndex = index == 1 ? 88 : 90;
 
-        /**
-         * Self test on PFD screen
-         * TODO: Seperate both PFD screens, currently if the FO changes its screen, it also tests the screen for the captain and vice versa.
-         **/
-
-        let selfTestCurrentKnobValueFO = SimVar.GetSimVarValue("LIGHT POTENTIOMETER:90", "number");
-        let selfTestCurrentKnobValueCAP = SimVar.GetSimVarValue("LIGHT POTENTIOMETER:88", "number");
-
-        const FOKnobChanged = (selfTestCurrentKnobValueFO >= 0.1 && this.selfTestLastKnobValueFO < 0.1);
-        const CAPKnobChanged = (selfTestCurrentKnobValueCAP >= 0.1 && this.selfTestLastKnobValueCAP < 0.1);
-
-        if((FOKnobChanged || CAPKnobChanged || ACPowerStateChange) && ACPowerAvailable && !this.selfTestTimerStarted) {
+        const selfTestCurrentKnobValue = SimVar.GetSimVarValue("LIGHT POTENTIOMETER:"+displayIndex, "number");
+        const KnobChanged = (selfTestCurrentKnobValue >= 0.1 && this.selfTestLastKnobValue < 0.1);
+        
+        if((KnobChanged || ACPowerStateChange) && ACPowerAvailable && !this.selfTestTimerStarted) {
             this.selfTestDiv.style.display = "block";
             this.selfTestTimer = 14.25;
             this.selfTestTimerStarted = true;
         }
-
+        
         if (this.selfTestTimer >= 0) {
             this.selfTestTimer -= _deltaTime / 1000;
             if (this.selfTestTimer <= 0) {
@@ -184,17 +183,18 @@ class A320_Neo_PFD_MainPage extends NavSystemPage {
                 this.selfTestTimerStarted = false;
             }
         }
-
-        this.selfTestLastKnobValueFO = selfTestCurrentKnobValueFO
-        this.selfTestLastKnobValueCAP = selfTestCurrentKnobValueCAP
-
+        
+        this.selfTestLastKnobValue = selfTestCurrentKnobValue;
         this.updateScreenState();
     }
     onEvent(_event) {
+        const url = document.getElementsByTagName("a320-neo-pfd-element")[0].getAttribute("url");
+        const index = parseInt(url.substring(url.length-1));
         switch (_event) {
-            case "BTN_LS":
+            case `BTN_LS_${index}`:
+                
                 this.showILS = !this.showILS;
-                SimVar.SetSimVarValue("L:BTN_LS_FILTER_ACTIVE", "number", this.showILS ? 1 : 0);
+                SimVar.SetSimVarValue(`L:BTN_LS_${index}_FILTER_ACTIVE`, "number", this.showILS ? 1 : 0);
                 this.ils.showILS(this.showILS);
                 this.compass.showILS(this.showILS);
                 break;
