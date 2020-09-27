@@ -10,7 +10,7 @@ class CDUAvailableFlightPlanPage {
         mcdu.setTemplate([
             [fromTo],
             [""],
-            ["NONE"],
+            ["NONE[color]green"],
             [""],
             [""],
             [""],

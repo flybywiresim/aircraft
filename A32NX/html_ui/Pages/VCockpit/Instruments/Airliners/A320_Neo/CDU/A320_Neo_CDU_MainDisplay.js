@@ -95,6 +95,17 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this.climbTransitionGroundAltitude = null;
     }
 
+    insertSmallFontSpan() {
+        this._lineElements.forEach((row) => {
+            row.forEach((column) => {
+                if (column != null) {
+                    column.innerHTML = column.innerHTML.replace(/{smallFront}/g, "<span class='s-text'>");
+                    column.innerHTML = column.innerHTML.replace(/{smallEnd}/g, "</span>");
+                }
+            })
+        })
+    }
+
     /**
      * Need to refactor this absolute slop
      * @param s
