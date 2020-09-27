@@ -7,4 +7,4 @@
 
 1. [General] Add CHANGELOG.md - @nathaninnes (Nathan Innes)
 2. [ECAM] Improved Upper ECAM Visuals - @wpine215 (Iceman)
-
+3. [PFD] Remove code related to unrelevant aircraft - @1Revenger1 (Avery Black)
