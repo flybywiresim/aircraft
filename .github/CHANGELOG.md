@@ -13,3 +13,4 @@
 6. [ECAM] Decreased length and thickness of inner markers on N1 and EGT gauges - @wpine215 (Iceman)
 7. [ECAM] Modified upper ECAM thrust state indicator position and text alignment - @wpine215 (Iceman)
 8. [ECAM] Modified upper ECAM separator position and thickness; added rounded line ends - @wpine215 (Iceman)
+9. [ECAM] Modified spacing between engine and text elements on upper ECAM
