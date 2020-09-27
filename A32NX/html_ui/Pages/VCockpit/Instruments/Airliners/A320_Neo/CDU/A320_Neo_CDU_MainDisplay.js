@@ -890,13 +890,6 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         const rightThrottleDetent = Simplane.getEngineThrottleMode(1);
         const highestThrottleDetent = (leftThrottleDetent >= rightThrottleDetent) ? leftThrottleDetent : rightThrottleDetent;
 
-		//Changes from TAXI PHASE to PREFLIGHT PHASE after engine shutdown // for future turnaround implementation
-		if (this.currentFlightPhase == 1 || this.currentFlightPhase == 6){
-			if (SimVar.GetSimVarValue("ENG N1 RPM:1", "Percent") < 15 && SimVar.GetSimVarValue("ENG N1 RPM:2", "Percent") < 15){
-				this.currentFlightPhase = FlightPhase.FLIGHT_PHASE_PREFLIGHT;
-			}
-		}
-
 		//Changes from PREFLIGHT to TAXI PHASE after engine startup
 		if (this.currentFlightPhase == 0){
 			if (SimVar.GetSimVarValue("ENG N1 RPM:1", "Percent") > 15 && SimVar.GetSimVarValue("ENG N1 RPM:2", "Percent") > 15){
