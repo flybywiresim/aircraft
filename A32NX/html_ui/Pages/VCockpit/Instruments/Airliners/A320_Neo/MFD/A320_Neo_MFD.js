@@ -64,6 +64,10 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
             this.compass,
             this.info
         ]);
+		this.chronoAcc = 0;
+		this.chronoStart = 0;		
+		this.AP_ChronoBtnStateL_Prev = 0;
+		this.AP_ChronoBtnStateR_Prev = 0;
     }
     init() {
         super.init();
@@ -97,8 +101,43 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
         this.selfTestTimer = -1;
         this.selfTestLastKnobValueFO = 1;
         this.selfTestLastKnobValueCAP = 1;
-
+		
+		//CHRONO
+		SimVar.SetSimVarValue("L:AUTOPILOT_CHRONO_STATE", "number", 0);
+		this.chronoDiv = document.querySelector("#div_Chrono");
+		this.text_chrono_prefix = document.querySelector("#text_chrono_prefix");
+		this.text_chrono_HRSymbol = document.querySelector("#text_chrono_HRSymbol");
+		this.text_chrono_suffix = document.querySelector("#text_chrono_suffix");
+		this.IsChronoDisplayed = 0;
         this.electricity = this.gps.getChildById("Electricity")
+    }
+	 displayChronoTime() {
+        const totalSeconds = this.chronoSeconds
+		window.console.log("Total Seconds : " + totalSeconds);
+        if (this.chronoStart || totalSeconds > 0) {
+            const hours = Math.floor(totalSeconds / 3600).toString().padStart(2, '0');
+            const minutes = Math.floor((totalSeconds % 3600) / 60).toString().padStart(2, '0');
+            if (hours === "00") {
+                const seconds = Math.floor(totalSeconds % 60).toString().padStart(2, '0');
+				this.text_chrono_prefix.innerHTML = minutes + "'";
+				this.text_chrono_HRSymbol.innerHTML = "";
+				this.text_chrono_suffix.innerHTML = seconds + '"';
+            } else {
+				this.text_chrono_prefix.innerHTML = hours;
+				this.text_chrono_HRSymbol.innerHTML = "H";
+				this.text_chrono_suffix.innerHTML = minutes + "'";
+            }
+        }
+        return "";
+    }
+    get chronoSeconds () {
+        let totalSeconds = this.chronoAcc
+        if (this.chronoStart) {
+			window.console.log("getchronoSeconds");
+            totalSeconds += SimVar.GetGlobalVarValue("ABSOLUTE TIME", "Seconds") - this.chronoStart
+			window.console.log("getchronoSeconds Total Seconds : " + totalSeconds);
+        }
+        return Math.max(totalSeconds, 0)
     }
     onUpdate() {
         const _deltaTime = this.getDeltaTime();
@@ -109,9 +148,39 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
         if (SimVar.GetSimVarValue("L:A320_Neo_ADIRS_STATE", "Enum") != 2) {
             document.querySelector("#GPSPrimary").setAttribute("visibility", "hidden");
             document.querySelector("#GPSPrimaryLost").setAttribute("visibility", "visible");
+			document.querySelector("#rect_GPSPrimary").setAttribute("visibility", "visible");
+			
+			//Simvar to find out if the GPS messages have been already acknowledged in the FCU by clicking the CLR button.
+			var GPSPrimAck = SimVar.GetSimVarValue("L:GPSPrimaryAcknowledged", "bool");
+			//Getting the current GPS value to compare whether if the GPS is lost in the middle (After Aligns)
+			//OR The aircraft is started from the very first time.
+			var GPSPrimaryCurrVal = SimVar.GetSimVarValue("L:GPSPrimary", "bool");
+			if(GPSPrimaryCurrVal && GPSPrimAck) //Resetting the acknowledged flag, if the GPS flag changed in the middle.
+			{
+				SimVar.SetSimVarValue("L:GPSPrimaryAcknowledged", "bool", 0);
+			}
+			SimVar.SetSimVarValue("L:GPSPrimary", "bool", 0);			
         } else {
-            document.querySelector("#GPSPrimary").setAttribute("visibility", "visible");
             document.querySelector("#GPSPrimaryLost").setAttribute("visibility", "hidden");
+			var GPSPrimAck = SimVar.GetSimVarValue("L:GPSPrimaryAcknowledged", "bool");
+			var GPSPrimaryCurrVal = SimVar.GetSimVarValue("L:GPSPrimary", "bool");
+			if(!GPSPrimaryCurrVal && GPSPrimAck) //Resetting the acknowledged flag, if the GPS flag changed in the middle.
+			{
+				SimVar.SetSimVarValue("L:GPSPrimaryAcknowledged", "bool", 0);
+			}
+			
+			//Clearing the ND message if the message displayed in the FMC is acknowledged by pressing the CLR button.
+			if(!GPSPrimAck)
+			{
+            document.querySelector("#GPSPrimary").setAttribute("visibility", "visible");
+				document.querySelector("#rect_GPSPrimary").setAttribute("visibility", "visible");
+			}
+			else
+			{
+				document.querySelector("#rect_GPSPrimary").setAttribute("visibility", "hidden");
+				document.querySelector("#GPSPrimary").setAttribute("visibility", "hidden");
+			}
+			SimVar.SetSimVarValue("L:GPSPrimary", "bool", 1);
         }
 
         if (SimVar.GetSimVarValue("L:A320_Neo_ADIRS_STATE", "Enum") != 2 && !this.map.planMode && this.modeChangeTimer == -1) {
@@ -152,6 +221,76 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
         
         this.selfTestLastKnobValueFO = selfTestCurrentKnobValueFO
         this.selfTestLastKnobValueCAP = selfTestCurrentKnobValueCAP
+		
+		//ND Chrono Logic
+		//Copied the based logic from the Clock functionality.
+		
+		var AP_ChronoBtnStateL = SimVar.GetSimVarValue("L:PUSH_AUTOPILOT_CHRONO_L", "bool");
+		var AP_ChronoBtnStateR = SimVar.GetSimVarValue("L:PUSH_AUTOPILOT_CHRONO_R", "bool");					
+		var AP_ChronoBtnState = AP_ChronoBtnStateL; //Gets the chrono button position after it is pressed.
+		
+		//Synchronizing L+R Chrono Buttons, since L & R ND displays are currently synchronized		
+		if(this.AP_ChronoBtnStateL_Prev!=AP_ChronoBtnStateL)
+		{
+			SimVar.SetSimVarValue("L:PUSH_AUTOPILOT_CHRONO_R", "bool",AP_ChronoBtnStateL);
+			AP_ChronoBtnStateR = AP_ChronoBtnStateL;
+			this.AP_ChronoBtnStateL_Prev=AP_ChronoBtnStateL;
+			AP_ChronoBtnState = AP_ChronoBtnStateL;
+		}
+		else if(this.AP_ChronoBtnStateR_Prev!=AP_ChronoBtnStateR)
+		{
+			SimVar.SetSimVarValue("L:PUSH_AUTOPILOT_CHRONO_L", "bool",AP_ChronoBtnStateR);
+			AP_ChronoBtnStateL = AP_ChronoBtnStateR;
+			this.AP_ChronoBtnStateR_Prev=AP_ChronoBtnStateR;
+			AP_ChronoBtnState = AP_ChronoBtnStateR;
+		}
+		//Chrono button on the FCU panel works a bit different to the Chrono is the clock. For e.g. 
+		//1st Push starts the timer. 
+		//2nd Push Stops the Chrono. 
+		//3rd Push Clears the Chrono.
+		//Chrono State simvar is used to handle thes above states.
+		var AP_IsChronoState = SimVar.GetSimVarValue("L:AUTOPILOT_CHRONO_STATE", "number");
+		var Chrono_absTime = SimVar.GetGlobalVarValue("ABSOLUTE TIME", "Seconds");
+		//If Chrono button is pushed on
+		if(this.selfTestDiv.style.display == "none")
+		{
+		if(AP_ChronoBtnState){
+			if(AP_IsChronoState == 2) //Hide & Clear the chrono if it is already stopped.
+			{
+				this.chronoDiv.setAttribute("style", "display:none");
+				SimVar.SetSimVarValue("L:AUTOPILOT_CHRONO_STATE", "number", 3);	
+				SimVar.SetSimVarValue("L:PUSH_AUTOPILOT_CHRONO_L", "bool", 0);	
+				SimVar.SetSimVarValue("L:PUSH_AUTOPILOT_CHRONO_R", "bool", 0);					
+				this.chronoStart = 0;
+                this.chronoAcc = 0;
+				this.IsChronoDisplayed = 0;
+			}
+			else //Display and start the timer.
+			{		
+				window.console.log("Chrono Started");
+				this.chronoDiv.setAttribute("style", "display:block");
+				this.IsChronoDisplayed = 1;
+				SimVar.SetSimVarValue("L:AUTOPILOT_CHRONO_STATE", "number", 1);	
+				if(this.chronoStart == 0)
+				{
+					this.chronoStart = Chrono_absTime;
+				}
+				this.displayChronoTime();
+			}			
+		}
+		else //Chrono button is pushed OFF
+		{			
+			if(AP_IsChronoState != 3 && this.IsChronoDisplayed) //Will stop the timer ONLY if it is visible on screen
+			{
+				SimVar.SetSimVarValue("L:AUTOPILOT_CHRONO_STATE", "number", 2);							
+			}
+		}
+		}
+		else
+		{
+			SimVar.SetSimVarValue("L:PUSH_AUTOPILOT_CHRONO_L", "bool", 0);
+			SimVar.SetSimVarValue("L:PUSH_AUTOPILOT_CHRONO_R", "bool", 0);	
+		}
 
         this.updateScreenState();        
     }
