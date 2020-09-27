@@ -6,3 +6,4 @@
 ## Changes from 2020/09 to 2020/10
 
 1. [General] Add CHANGELOG.md - @nathaninnes (Nathan Innes)
+2. [Misc] Added standby instrument brightness adjustment - @2hwk (2Cas#1022 on discord)
