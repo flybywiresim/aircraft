@@ -84,7 +84,8 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
         this.map.instrument.smallAirportMaxRange = Infinity;
         this.map.instrument.medAirportMaxRange = Infinity;
         this.map.instrument.largeAirportMaxRange = Infinity;
-        SimVar.SetSimVarValue("L:A320_Neo_MFD_NAV_MODE", "number", 3);
+        SimVar.SetSimVarValue("L:A320_Neo_MFD_NAV_MODE_1", "number", 3);
+        SimVar.SetSimVarValue("L:A320_Neo_MFD_NAV_MODE_2", "number", 3);
         SimVar.SetSimVarValue("L:XMLVAR_A320_WeatherRadar_Sys", "number", 1);
         this.showILS = SimVar.GetSimVarValue("L:BTN_LS_FILTER_ACTIVE", "bool");
         this.compass.showILS(this.showILS);
@@ -163,11 +164,13 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
     }
 
     _updateNDFiltersStatuses() {
-        SimVar.SetSimVarValue("L:BTN_CSTR_FILTER_ACTIVE", "number", this.map.instrument.showConstraints ? 1 : 0);
-        SimVar.SetSimVarValue("L:BTN_VORD_FILTER_ACTIVE", "number", this.map.instrument.showVORs ? 1 : 0);
-        SimVar.SetSimVarValue("L:BTN_WPT_FILTER_ACTIVE", "number", this.map.instrument.showIntersections ? 1 : 0);
-        SimVar.SetSimVarValue("L:BTN_NDB_FILTER_ACTIVE", "number", this.map.instrument.showNDBs ? 1 : 0);
-        SimVar.SetSimVarValue("L:BTN_ARPT_FILTER_ACTIVE", "number", this.map.instrument.showAirports ? 1 : 0);
+        const url = document.getElementsByTagName("a320-neo-mfd-element")[0].getAttribute("url");
+        const index = parseInt(url.substring(url.length-1));
+        SimVar.SetSimVarValue("L:BTN_CSTR_"+index+"_FILTER_ACTIVE", "number", this.map.instrument.showConstraints ? 1 : 0);
+        SimVar.SetSimVarValue("L:BTN_VORD_"+index+"_FILTER_ACTIVE", "number", this.map.instrument.showVORs ? 1 : 0);
+        SimVar.SetSimVarValue("L:BTN_WPT_"+index+"_FILTER_ACTIVE", "number", this.map.instrument.showIntersections ? 1 : 0);
+        SimVar.SetSimVarValue("L:BTN_NDB_"+index+"_FILTER_ACTIVE", "number", this.map.instrument.showNDBs ? 1 : 0);
+        SimVar.SetSimVarValue("L:BTN_ARPT_"+index+"_FILTER_ACTIVE", "number", this.map.instrument.showAirports ? 1 : 0);
     }
     updateMap(_deltaTime) {
         if (this.modeChangeMask && this.modeChangeTimer >= 0) {
@@ -184,11 +187,13 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
                 this.rangeChangeTimer = -1;
             }
         }
+        const url = document.getElementsByTagName("a320-neo-mfd-element")[0].getAttribute("url");
+        const index = parseInt(url.substring(url.length-1));
         var wxRadarOn = (SimVar.GetSimVarValue("L:XMLVAR_A320_WeatherRadar_Sys", "number") != 1) ? true : false;
         var wxRadarMode = SimVar.GetSimVarValue("L:XMLVAR_A320_WeatherRadar_Mode", "number");
-        var terrainOn = SimVar.GetSimVarValue("L:BTN_TERRONND_ACTIVE", "number");
-        var mapMode = SimVar.GetSimVarValue("L:A320_Neo_MFD_NAV_MODE", "number");
-        var mapRange = SimVar.GetSimVarValue("L:A320_Neo_MFD_Range", "number");
+        var terrainOn = SimVar.GetSimVarValue("L:BTN_TERRONND_ACTIVE_"+index, "number");
+        var mapMode = SimVar.GetSimVarValue("L:A320_Neo_MFD_NAV_MODE_"+index, "number");
+        var mapRange = SimVar.GetSimVarValue("L:A320_Neo_MFD_Range_"+index, "number");
         var shouldShowWeather = wxRadarOn && wxRadarMode != 3;
         if (this.wxRadarOn != wxRadarOn || this.terrainOn != terrainOn || this.wxRadarMode != wxRadarMode || this.mapMode != mapMode) {
             this.wxRadarOn = wxRadarOn;
