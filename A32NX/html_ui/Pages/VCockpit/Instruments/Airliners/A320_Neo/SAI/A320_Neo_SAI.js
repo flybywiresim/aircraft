@@ -1032,6 +1032,7 @@ class A320_Neo_SAI_SelfTestTimer extends HTMLElement {
         this.selfTestSVG.style.left = "0%";
         this.selfTestSVG.style.width = "100%";
         this.selfTestSVG.style.height = "100%";
+        this.selfTestSVG.style.backgroundColor = "rgba(13,20,35,1)";
         this.selfTestDiv.appendChild(this.selfTestSVG);
 
         const st_spd = document.createElementNS(Avionics.SVG.NS, "rect");

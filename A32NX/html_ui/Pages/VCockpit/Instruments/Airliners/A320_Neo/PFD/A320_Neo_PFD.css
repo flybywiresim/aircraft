@@ -307,13 +307,13 @@ a320-neo-pfd-element {
           left: 22%;
           width: 36%;
           height: 100%;
-          background-color: transparent; }
+          background-color: rgba(13,20,35,1); }
         a320-neo-pfd-element #Mainframe #InstrumentsContainer #FMA #SpecialMessages div {
           position: absolute;
           width: 36%;
           bottom: 0%;
           height: 34%;
-          background-color: transparent; }
+          background-color: rgba(13,20,35,1); }
         a320-neo-pfd-element #Mainframe #InstrumentsContainer #FMA #SpecialMessages #Msg1 {
           left: 2%; }
         a320-neo-pfd-element #Mainframe #InstrumentsContainer #FMA #SpecialMessages #Msg2 {

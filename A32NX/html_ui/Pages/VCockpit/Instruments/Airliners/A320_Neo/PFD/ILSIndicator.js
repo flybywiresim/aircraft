@@ -264,6 +264,12 @@ class Jet_PFD_ILSIndicator extends HTMLElement {
                     let gsi = -SimVar.GetSimVarValue("NAV GSI:" + localizer.id, "number") / 127.0;
                     let delta = (gsi + 1.0) * 0.5;
                     let y = this.gs_cursorMinY + (this.gs_cursorMaxY - this.gs_cursorMinY) * delta;
+                    if (y >= 220 && y <= 230 || SimVar.GetSimVarValue("L:A32NX_OFF_GS", "bool") == 0) {
+                        SimVar.SetSimVarValue("L:A32NX_OFF_GS", "bool", 0);
+                    }
+                    if (y < 105 || y > 340) {
+                        SimVar.SetSimVarValue("L:A32NX_OFF_GS", "bool", 1);
+                    }
                     y = Math.min(this.gs_cursorMinY, Math.max(this.gs_cursorMaxY, y));
                     this.gs_cursorGroup.setAttribute("transform", "translate(" + this.gs_cursorPosX + ", " + y + ")");
                     if (delta >= 0.95) {
