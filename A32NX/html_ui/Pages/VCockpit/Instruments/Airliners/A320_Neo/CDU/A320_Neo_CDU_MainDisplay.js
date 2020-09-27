@@ -85,6 +85,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
 	        }
         this.electricity = this.querySelector("#Electricity");
         this.climbTransitionGroundAltitude = null;
+		this.currentFlightPhase = FlightPhase.FLIGHT_PHASE_PREFLIGHT;
     }
     trySetFlapsTHS(s) {
         if (s) {
@@ -889,7 +890,19 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         const rightThrottleDetent = Simplane.getEngineThrottleMode(1);
         const highestThrottleDetent = (leftThrottleDetent >= rightThrottleDetent) ? leftThrottleDetent : rightThrottleDetent;
 
+		//Changes from TAXI PHASE to PREFLIGHT PHASE after engine shutdown // From taxi phase or after landing and not in goaround phase (goaround currently not implemented)
+		if (this.currentFlightPhase == 1 || this.currentFlightPhase == 6){
+			if (SimVar.GetSimVarValue("ENG N1 RPM:1", "Percent") < 15 && SimVar.GetSimVarValue("ENG N1 RPM:2", "Percent") < 15){
+				this.currentFlightPhase = FlightPhase.FLIGHT_PHASE_PREFLIGHT;
+			}
+		}
 
+		//Changes from PREFLIGHT PHASE to TAXI PHASE after engine startup
+		if (this.currentFlightPhase == 0){
+			if (SimVar.GetSimVarValue("ENG N1 RPM:1", "Percent") > 15 && SimVar.GetSimVarValue("ENG N1 RPM:2", "Percent") > 15){
+				this.currentFlightPhase = FlightPhase.FLIGHT_PHASE_TAXI;
+			}
+		}
 
         //End preflight when takeoff power is applied and engines are running
         if (this.currentFlightPhase <= 2) {
