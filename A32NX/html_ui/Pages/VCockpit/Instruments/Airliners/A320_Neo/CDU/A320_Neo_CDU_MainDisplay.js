@@ -980,10 +980,11 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                 if (dist < 40) {
                     this.connectIls();
                     this.flightPlanManager.activateApproach();
-                    if (this.currentFlightPhase != FlightPhase.FLIGHT_PHASE_APPROACH) {
-                        console.log('switching to tryGoInApproachPhase: ' + JSON.stringify({lat, long, dist, prevPhase: this.currentFlightPhase}, null, 2));
-                        this.tryGoInApproachPhase();
-                    }
+					// commented out this part as it does not work very well with approaches that pass alongside airport (sometimes activates APPROACH FLIGHT PHASE way too early)
+//                    if (this.currentFlightPhase != FlightPhase.FLIGHT_PHASE_APPROACH) {
+//                        console.log('switching to tryGoInApproachPhase: ' + JSON.stringify({lat, long, dist, prevPhase: this.currentFlightPhase}, null, 2));
+//                        this.tryGoInApproachPhase();
+//                    }
                 }
             }
         }
