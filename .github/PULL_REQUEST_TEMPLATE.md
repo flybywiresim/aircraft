@@ -7,10 +7,12 @@ Fixes #[issue_no]
 **Summary of Changes**
 <!-- Please provide a summary of changes for this pull request, ensuring all changes are explained. -->
 
-
 **Screenshots (if necessary)**
 <!-- If your PR includes visual changes, screenshots from before and after your change should always be included. -->
+<!-- Please make best efforts to provide useful before and after screenshots. They should match camera angle, zoom, size, time of day, etc. -->
 
+**References**
+<!-- You should be making changes based on some kind reference (manuals, videos, IRL photos). P3D/xplane/fsx references will only be accepted if we believe that one cannot reasonably obtain a better source. Please post screenshots of the references you used. Ask around in the discord for how to find references for what you are working on. Exceptions will probably be made for IRL A320 pilots and engineers. -->
 
 **Additional context**
 <!-- Add any other context about the pull request here. -->
