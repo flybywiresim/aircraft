@@ -46,6 +46,32 @@ var A320_Neo_UpperECAM;
         return circleElement;
     }
     A320_Neo_UpperECAM.createSVGCircle = createSVGCircle;
+    function createSlatParallelogram(_class, _cx, _cy) {
+        var parElement = document.createElementNS(Avionics.SVG.NS, "polygon");
+        const _w = 5;
+        const _h = 6;
+        const _ox = 2;
+        const _oy = 1;
+        let _ppoints = String(_cx - _w) + "," + String(_cy - _oy) + " " + String(_cx - _w - _ox) + "," + String(_cy + _h) + " " + String(_cx + _w) + "," + String(_cy + _oy) + " " + String(_cx + _w + _ox) + "," + String(_cy - _h);
+        parElement.setAttribute("class", _class);
+        parElement.setAttribute("points", _ppoints);
+        return parElement;
+    }
+    A320_Neo_UpperECAM.createSlatParallelogram = createSlatParallelogram;
+    function createFlapParallelogram(_class, _cx, _cy) {
+        var parElement = document.createElementNS(Avionics.SVG.NS, "polygon");
+        const _w = 4;
+        const _h = 5;
+        const _ox = 2;
+        const _oy = -3;
+        let _ppoints = String(_cx - _w) + "," + String(_cy - _oy) + " " + String(_cx - _w - _ox) + "," + String(_cy - _h) + " " + String(_cx + _w) + "," + String(_cy + _oy) + " " + String(_cx + _w + _ox) + "," + String(_cy + _h);
+        parElement.setAttribute("class", _class);
+        parElement.setAttribute("points", _ppoints);
+        return parElement;
+    }
+    A320_Neo_UpperECAM.createFlapParallelogram = createFlapParallelogram;
+    
+    
     class Display extends Airliners.EICASTemplateElement {
         constructor() {
             super();
@@ -1358,7 +1384,7 @@ var A320_Neo_UpperECAM;
             gaugeDef.cursorLength = 0.4;
             gaugeDef.currentValuePos.x = 0.75;
             gaugeDef.currentValuePos.y = 0.5;
-            gaugeDef.currentValueBorderWidth = 0.5;
+            gaugeDef.currentValueBorderWidth = 0.55;
             gaugeDef.dangerRange[0] = gaugeDef.minRedValue;
             gaugeDef.dangerRange[1] = gaugeDef.maxRedValue;
             gaugeDef.dangerMinDynamicFunction = this.getModeEGTMax.bind(this);
@@ -1381,7 +1407,7 @@ var A320_Neo_UpperECAM;
             gaugeDef.minRedValue = A320_Neo_UpperECAM.Definitions.MIN_GAUGE_N1_RED;
             gaugeDef.currentValuePos.x = 1.0;
             gaugeDef.currentValuePos.y = 0.75;
-            gaugeDef.currentValueBorderWidth = 0.55;
+            gaugeDef.currentValueBorderWidth = 0.68;
             gaugeDef.outerIndicatorFunction = this.getN1GaugeThrottleValue.bind(this);
             gaugeDef.outerDynamicArcFunction = this.getN1GaugeAutopilotThrottleValues.bind(this);
             gaugeDef.extraMessageFunction = this.getN1GaugeExtraMessage.bind(this);
@@ -1483,12 +1509,13 @@ var A320_Neo_UpperECAM;
                 var line = document.createElementNS(Avionics.SVG.NS, "line");
                 line.setAttribute("x1", this.getLineX1());
                 line.setAttribute("x2", this.getLineX2());
-                line.setAttribute("y1", "85%");
-                line.setAttribute("y2", "70%");
-                line.style.stroke = "rgb(60, 60, 60)";
-                line.style.strokeWidth = "2";
+                line.setAttribute("y1", "72%");
+                line.setAttribute("y2", "58%");
+                line.setAttribute("stroke-linecap", "round")
+                line.style.stroke = "rgb(255, 255, 255)";
+                line.style.strokeWidth = "4";
                 _svgRoot.appendChild(line);
-                this.valueText = A320_Neo_UpperECAM.createSVGText("--.-", "Value", this.getValueTextX(), "100%", "bottom");
+                this.valueText = A320_Neo_UpperECAM.createSVGText("--.-", "Value", this.getValueTextX(), "88%", "bottom");
                 _svgRoot.appendChild(this.valueText);
             }
             this.refresh(false, 0, 0, true);
@@ -1512,21 +1539,21 @@ var A320_Neo_UpperECAM;
     }
     A320_Neo_UpperECAM.LinesStyleComponent_Base = LinesStyleComponent_Base;
     class LinesStyleComponent_Left extends LinesStyleComponent_Base {
-        getLineX1() { return "37%"; }
-        getLineX2() { return "43%"; }
-        getValueTextX() { return "25%"; }
+        getLineX1() { return "34%"; }
+        getLineX2() { return "42%"; }
+        getValueTextX() { return "18%"; }
     }
     A320_Neo_UpperECAM.LinesStyleComponent_Left = LinesStyleComponent_Left;
     class LinesStyleComponent_Right extends LinesStyleComponent_Base {
-        getLineX1() { return "63%"; }
-        getLineX2() { return "57%"; }
-        getValueTextX() { return "75%"; }
+        getLineX1() { return "66%"; }
+        getLineX2() { return "58%"; }
+        getValueTextX() { return "82%"; }
     }
     A320_Neo_UpperECAM.LinesStyleComponent_Right = LinesStyleComponent_Right;
     class LinesStyleInfo {
         constructor(_divMain, _bottomValue) {
             var svgRoot = document.createElementNS(Avionics.SVG.NS, "svg");
-            svgRoot.appendChild(A320_Neo_UpperECAM.createSVGText(this.getTitle(), "Title", "50%", "75%", "bottom"));
+            svgRoot.appendChild(A320_Neo_UpperECAM.createSVGText(this.getTitle(), "Title", "50%", "65%", "bottom"));
             svgRoot.appendChild(A320_Neo_UpperECAM.createSVGText(this.getUnit(), "Unit", "50%", "100%", "bottom"));
             this.leftComponent = new LinesStyleComponent_Left(svgRoot);
             this.rightComponent = new LinesStyleComponent_Right(svgRoot);
@@ -1663,7 +1690,7 @@ var A320_Neo_UpperECAM;
                                 }
                             case ThrottleMode.CLIMB:
                                 {
-                                    this.throttleState.textContent = "CL";
+                                    this.throttleState.textContent = "CLB";
                                     break;
                                 }
                             case ThrottleMode.AUTO:
@@ -1725,7 +1752,7 @@ var A320_Neo_UpperECAM;
         constructor() {
             super(...arguments);
             this.viewBoxSize = new Vec2(500, 125);
-            this.dotSize = 4;
+            this.dotSize = 5;
             this.slatArrowPathD = "m20,-12 l-31,6 l0,17, l23,-5 l10,-20";
             this.slatDotPositions = [
                 new Vec2(160, 37),
@@ -1803,10 +1830,10 @@ var A320_Neo_UpperECAM;
             this.hideOnInactiveGroup.appendChild(this.currentStateText);
             var dotSizeStr = this.dotSize.toString();
             for (var i = 1; i < this.slatDotPositions.length; ++i) {
-                this.hideOnInactiveGroup.appendChild(A320_Neo_UpperECAM.createSVGCircle("dot", dotSizeStr, this.slatDotPositions[i].x.toString(), this.slatDotPositions[i].y.toString()));
+                this.hideOnInactiveGroup.appendChild(A320_Neo_UpperECAM.createSlatParallelogram("dot", this.slatDotPositions[i].x, this.slatDotPositions[i].y));
             }
             for (var i = 1; i < this.flapDotPositions.length; ++i) {
-                this.hideOnInactiveGroup.appendChild(A320_Neo_UpperECAM.createSVGCircle("dot", dotSizeStr, this.flapDotPositions[i].x.toString(), this.flapDotPositions[i].y.toString()));
+                this.hideOnInactiveGroup.appendChild(A320_Neo_UpperECAM.createFlapParallelogram("dot", this.flapDotPositions[i].x, this.flapDotPositions[i].y));
             }
             this.deactivate();
             this.cockpitSettings = SimVar.GetGameVarValue("", "GlassCockpitSettings");

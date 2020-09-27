@@ -44,7 +44,7 @@ var A320_Neo_ECAM_Common;
             return (this.viewBoxSize.x * 0.5 * 0.975);
         }
         get graduationInnerLineEndOffset() {
-            return (this.mainArcRadius * 0.875);
+            return (this.mainArcRadius * 0.9);
         }
         get graduationOuterLineEndOffset() {
             return (this.mainArcRadius * 1.175);
@@ -203,9 +203,9 @@ var A320_Neo_ECAM_Common;
             this.rootSVG.appendChild(this.currentValueText);
             if (_gaugeDefinition.currentValueBorderWidth > 0) {
                 var borderWidth = this.viewBoxSize.x * _gaugeDefinition.currentValueBorderWidth;
-                var borderHeight = this.currentValueBorderHeight;
+                var borderHeight = this.currentValueBorderHeight * 1.2;
                 var borderPosX = textPosX - (borderWidth * 0.95);
-                var borderPosY = textPosY - (borderHeight * 0.5);
+                var borderPosY = textPosY - (borderHeight * 0.55);
                 var currentValueBorder = document.createElementNS(Avionics.SVG.NS, "rect");
                 currentValueBorder.id = "CurrentValueBorder";
                 currentValueBorder.setAttribute("x", borderPosX.toString());

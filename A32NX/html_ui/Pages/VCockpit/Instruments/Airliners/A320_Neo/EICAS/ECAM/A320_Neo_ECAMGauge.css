@@ -59,7 +59,7 @@ a320-neo-ecam-gauge {
       height: 100%; }
       a320-neo-ecam-gauge #RootSVG #CursorGroup line {
         stroke: var(--ecamValueColour);
-        stroke-width: 4; }
+        stroke-width: 2; }
       a320-neo-ecam-gauge #RootSVG #CursorGroup path {
         fill: none;
         stroke: var(--ecamDefaultColour);
@@ -87,21 +87,21 @@ a320-neo-ecam-gauge {
       text-anchor: end; }
     a320-neo-ecam-gauge #RootSVG #CurrentValue.active {
       fill: var(--ecamValueColour);
-      font-size: 15px; }
+      font-size: 20px; }
     a320-neo-ecam-gauge #RootSVG #CurrentValue.warning {
       fill: var(--ecamWarningColour);
-      font-size: 15px; }
+      font-size: 20px; }
     a320-neo-ecam-gauge #RootSVG #CurrentValue.danger {
       fill: var(--ecamDangerColour);
-      font-size: 15px; }
+      font-size: 20px; }
     a320-neo-ecam-gauge #RootSVG #CurrentValue.inactive {
       fill: var(--ecamInactiveColour);
       font-size: 20px;
       letter-spacing: 5px; }
     a320-neo-ecam-gauge #RootSVG #CurrentValueBorder {
       fill: none;
-      stroke: grey;
-      stroke-width: 3px; }
+      stroke: lightblue;
+      stroke-width: 2px; }
     a320-neo-ecam-gauge #RootSVG #ExtraMessage {
       width: 100%;
       height: 100%; }

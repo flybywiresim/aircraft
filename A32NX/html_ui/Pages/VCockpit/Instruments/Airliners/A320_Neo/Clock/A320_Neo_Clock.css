@@ -86,7 +86,7 @@ a320-neo-clock-element {
         width: 95%;
         text-align: right;
         /* font-kerning: none; Note: this one is in stdby for a new font */
-        color: white; }
+        color: rgba(155, 148, 148, 0.911); }
       a320-neo-clock-element #Mainframe #MiddleSelector #MiddleSelectorValue2 {
           font-family: Alarm-Clock;
           font-size: 65px;
