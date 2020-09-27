@@ -7,6 +7,4 @@
 
 1. [General] Add CHANGELOG.md - @nathaninnes (Nathan Innes)
 2. [ECAM] Improved Upper ECAM Visuals - @wpine215 (Iceman)
-1. [MFD] Add DME distances - @blitzcaster (bltzcstr)
-1. [MFD] Add VOR/ADF arrows - @blitzcaster (bltzcstr)
-1. [systems.cfg] Add adf.2 to make ADF2 functional - @blitzcaster (bltzcstr)
+1. [MFD] Add DME distances, VOR/ADF needles and functioning ADF2 - @blitzcaster (bltzcstr)
