@@ -16,6 +16,7 @@
   --ecamUnitsColour: #01b8b8;
   --ecamValueColour: #00b300;
   --ecamWarningColour: #db7200;
+  --ecamAmberColour: #ffbf00;
   --ecamDoorWarningColour: #fd8000;
   --ecamDangerColour: red;
   --ecamInactiveColour: #db7200;
@@ -36,11 +37,11 @@
 a320-neo-lower-ecam-door {
   display: block;
   position: absolute;
-  top: 0%;
+  top: -3%;
   bottom: 5%;
-  left: 5%;
-  width: 90%;
-  height: 90%; }
+  left: 0%;
+  width: 100%;
+  height: 100%; }
   a320-neo-lower-ecam-door text {
     text-anchor: middle;
     alignment-baseline: central; }
@@ -52,6 +53,11 @@ a320-neo-lower-ecam-door {
 
   a320-neo-lower-ecam-door .DoorShape {
     fill: transparent;
+    stroke: var(--ecamValueColour);
+    stroke-width: 2; }
+
+  a320-neo-lower-ecam-door .DoorActiveShape {
+    fill: var(--ecamValueColour);
     stroke: var(--ecamValueColour);
     stroke-width: 2; }
 
@@ -74,11 +80,22 @@ a320-neo-lower-ecam-door {
   a320-neo-lower-ecam-door text.Note {
     font-size: 12pt;
     fill: var(--ecamDefaultColour); }
+  a320-neo-lower-ecam-door text.NoteLarge {
+    font-size: 15pt;
+    word-spacing: -4px;
+    fill: var(--ecamDefaultColour); }
+  a320-neo-lower-ecam-door text.NoteLargeAmber {
+    font-size: 15pt;
+    word-spacing: -4px;
+    fill: var(--ecamAmberColour); }
   a320-neo-lower-ecam-door text.Unit {
-    font-size: 12pt;
+    font-size: 14pt;
     fill: var(--ecamUnitsColour); }
   a320-neo-lower-ecam-door text.Value {
     font-size: 16pt;
+    fill: var(--ecamValueColour); }
+  a320-neo-lower-ecam-door text.ValueSmall {
+    font-size: 14pt;
     fill: var(--ecamValueColour); }
   a320-neo-lower-ecam-door text.Warning {
     font-size: 18px;
