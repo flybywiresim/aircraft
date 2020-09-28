@@ -12,3 +12,4 @@
 5. [CDU] Fixed a crash when trying to replace a waypoint in the flight plan - @lousybyte (lousybyte)
 6. [EXTERIOR] Fixed issue in engine rotation animation that made it rotate too quickly - @lukecologne (lukecologne)
 7. [PFD] Remove code related to unrelevant aircraft - @1Revenger1 (Avery Black)
+1. [MISC] Separated Captian and F/O displays - @tyler58546 (tyler58546)
