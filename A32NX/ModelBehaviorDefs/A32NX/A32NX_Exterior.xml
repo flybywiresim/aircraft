@@ -4,8 +4,8 @@
     <Template Name="A32NX_ENGINE_Turbine_Template">
         <DefaultTemplateParameters>
             <ID>1</ID>
-            <MIN_N1_PCT_FOR_SLOW>0.5</MIN_N1_PCT_FOR_SLOW>
-            <MIN_N1_PCT_FOR_BLUR>5.5</MIN_N1_PCT_FOR_BLUR>
+            <MIN_N1_PCT_FOR_SLOW>7</MIN_N1_PCT_FOR_SLOW>
+            <MIN_N1_PCT_FOR_BLUR>15</MIN_N1_PCT_FOR_BLUR>
             <FROSTED>False</FROSTED>
         </DefaultTemplateParameters>
         <UseTemplate Name="A32NX_ENGINE_Turbine_SubTemplate"></UseTemplate>
@@ -57,8 +57,8 @@
 
     <Template Name="A32NX_ENGINE_Turbine_Rotation_Template">
         <UseTemplate Name="ASOBO_GT_Anim">
-            <!-- 3894 is the max rated N1 of the LEAP, times 6 is from RPM to deg/s. This seems a bit fast, so we reduce it a bit. -->
-            <ANIM_CODE>0.3 6 3894 (A:TURB ENG N1:#ID#, Percent) (A:ANIMATION DELTA TIME, seconds) * * * *</ANIM_CODE>
+            <!-- 3894 is the max rated N1 of the LEAP, times 6 is from RPM to deg/s, times 0.01 because percentages -->
+            <ANIM_CODE>0.01 6 3894 (A:TURB ENG N1:#ID#, Percent) (A:ANIMATION DELTA TIME, seconds) * * * *</ANIM_CODE>
             <ANIM_LENGTH>360</ANIM_LENGTH>
             <ANIM_WRAP>1</ANIM_WRAP>
             <ANIM_DELTA>1</ANIM_DELTA>

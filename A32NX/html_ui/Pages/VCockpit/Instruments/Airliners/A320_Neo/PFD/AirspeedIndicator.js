@@ -690,21 +690,9 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
         return this._computedIASAcceleration * 10;
     }
     getAutopilotMode() {
-        if (this.aircraft == Aircraft.A320_NEO) {
             if (Simplane.getAutoPilotAirspeedHoldActive())
                 return AutopilotMode.SELECTED;
             return AutopilotMode.MANAGED;
-        }
-        else if (this.aircraft == Aircraft.B747_8 || this.aircraft == Aircraft.AS01B) {
-            if (Simplane.getAutoPilotAirspeedHoldActive())
-                return AutopilotMode.HOLD;
-            else {
-                return AutopilotMode.SELECTED;
-            }
-        }
-        else {
-            return AutopilotMode.SELECTED;
-        }
     }
     updateMachSpeed(dTime) {
         if (this.machPrefixSVG && this.machValueSVG) {
@@ -712,40 +700,15 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
             this.machSpeed = Utils.SmoothSin(this.machSpeed, trueMach, 0.25, dTime / 1000);
             if (this.machSpeed > 0.998)
                 this.machSpeed = 0.998;
-            if (this.aircraft == Aircraft.B747_8 || this.aircraft == Aircraft.AS01B) {
-                if ((!this.machVisible && this.machSpeed >= 0.4) || (this.machVisible && this.machSpeed >= 0.35)) {
-                    var fixedMach = this.machSpeed.toFixed(3);
-                    var radixPos = fixedMach.indexOf(".");
-                    this.machPrefixSVG.textContent = ".";
-                    this.machValueSVG.textContent = fixedMach.slice(radixPos + 1);
-                    this.machVisible = true;
-                }
-                else {
-                    var groundSpeed = Math.round(Simplane.getGroundSpeed());
-                    this.machPrefixSVG.textContent = "GS";
-                    this.machValueSVG.textContent = Utils.leadingZeros(groundSpeed, 3);
-                    this.machVisible = true;
-                }
-            }
-            else if (this.aircraft == Aircraft.CJ4) {
-                if ((!this.machVisible && this.machSpeed >= 0.4) || (this.machVisible && this.machSpeed >= 0.35)) {
-                    var fixedMach = this.machSpeed.toFixed(3);
-                    var radixPos = fixedMach.indexOf(".");
-                    this.machPrefixSVG.textContent = ".";
-                    this.machValueSVG.textContent = fixedMach.slice(radixPos + 1);
-                    this.machVisible = true;
-                }
+            
+            var fixedMach = this.machSpeed.toFixed(3);
+            if ((!this.machVisible && this.machSpeed >= 0.5) || (this.machVisible && this.machSpeed >= 0.45)) {
+                var radixPos = fixedMach.indexOf(".");
+                this.machValueSVG.textContent = fixedMach.slice(radixPos + 1);
+                this.machVisible = true;
             }
             else {
-                var fixedMach = this.machSpeed.toFixed(3);
-                if ((!this.machVisible && this.machSpeed >= 0.5) || (this.machVisible && this.machSpeed >= 0.45)) {
-                    var radixPos = fixedMach.indexOf(".");
-                    this.machValueSVG.textContent = fixedMach.slice(radixPos + 1);
-                    this.machVisible = true;
-                }
-                else {
-                    this.machVisible = false;
-                }
+                this.machVisible = false;
             }
         }
         if (this.machVisible) {
@@ -860,147 +823,92 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
     updateTargetSpeeds(currentAirspeed) {
         let takeOffSpeedNotSet = false;
         let hudSpeed = -1;
-        if (this.aircraft == Aircraft.A320_NEO) {
-            let hideBluePointer = true;
-            let hideBlueText = true;
-            {
-                let blueAirspeed = 0;
-                if (Simplane.getV1Airspeed() < 0) {
-                    let isSelected = Simplane.getAutoPilotAirspeedSelected();
-                    if (isSelected) {
-                        if (Simplane.getAutoPilotMachModeActive())
-                            blueAirspeed = SimVar.GetGameVarValue("FROM MACH TO KIAS", "number", Simplane.getAutoPilotMachHoldValue());
-                        else
-                            blueAirspeed = Simplane.getAutoPilotAirspeedHoldValue();
-                    }
-                }
-                if (blueAirspeed > this.graduationMinValue) {
-                    let blueSpeedPosY = this.valueToSvg(currentAirspeed, blueAirspeed);
-                    let blueSpeedHeight = 44;
-                    if (blueSpeedPosY > 0) {
-                        if (this.blueSpeedSVG) {
-                            this.blueSpeedSVG.setAttribute("visibility", "visible");
-                            this.blueSpeedSVG.setAttribute("y", (blueSpeedPosY - blueSpeedHeight * 0.5).toString());
-                        }
-                        hideBluePointer = false;
-                    }
-                    else if (SimVar.GetSimVarValue("L:A32NX_ADIRS_PFD_ALIGNED_FIRST", "Bool") == 1) {
-                        hideBlueText = false;
-                    }
-                    hudSpeed = blueAirspeed;
-                }
-                if (this.blueSpeedSVG && hideBluePointer) {
-                    this.blueSpeedSVG.setAttribute("visibility", "hidden");
-                }
-                if (this.blueSpeedText) {
-                    if (hideBlueText) {
-                        this.blueSpeedText.setAttribute("visibility", "hidden");
-                    }
-                    else {
-                        this.blueSpeedText.setAttribute("visibility", "visible");
-                        this.blueSpeedText.textContent = blueAirspeed.toFixed(0);
-                    }
+        let hideBluePointer = true;
+        let hideBlueText = true;
+        {
+            let blueAirspeed = 0;
+            if (Simplane.getV1Airspeed() < 0) {
+                let isSelected = Simplane.getAutoPilotAirspeedSelected();
+                if (isSelected) {
+                    if (Simplane.getAutoPilotMachModeActive())
+                        blueAirspeed = SimVar.GetGameVarValue("FROM MACH TO KIAS", "number", Simplane.getAutoPilotMachHoldValue());
+                    else
+                        blueAirspeed = Simplane.getAutoPilotAirspeedHoldValue();
                 }
             }
-            let hideRedPointer = true;
-            let hideRedText = true;
-            {
-                let redAirspeed = Simplane.getV2Airspeed();
-                if (redAirspeed < 0) {
-                    let isManaged = Simplane.getAutoPilotAirspeedManaged();
-                    if (isManaged) {
-                        if (Simplane.getAutoPilotMachModeActive())
-                            redAirspeed = SimVar.GetGameVarValue("FROM MACH TO KIAS", "number", Simplane.getAutoPilotMachHoldValue());
-                        else
-                            redAirspeed = Simplane.getAutoPilotAirspeedHoldValue();
+            if (blueAirspeed > this.graduationMinValue) {
+                let blueSpeedPosY = this.valueToSvg(currentAirspeed, blueAirspeed);
+                let blueSpeedHeight = 44;
+                if (blueSpeedPosY > 0) {
+                    if (this.blueSpeedSVG) {
+                        this.blueSpeedSVG.setAttribute("visibility", "visible");
+                        this.blueSpeedSVG.setAttribute("y", (blueSpeedPosY - blueSpeedHeight * 0.5).toString());
                     }
+                    hideBluePointer = false;
                 }
-                if (redAirspeed > this.graduationMinValue) {
-                    let redSpeedPosY = this.valueToSvg(currentAirspeed, redAirspeed);
-                    let redSpeedHeight = 44;
-                    if (redSpeedPosY > 0) {
-                        if (this.redSpeedSVG) {
-                            this.redSpeedSVG.setAttribute("visibility", "visible");
-                            this.redSpeedSVG.setAttribute("y", (redSpeedPosY - redSpeedHeight * 0.5).toString());
-                        }
-                        hideRedPointer = false;
-                    }
-                    else {
-                        hideRedText = false;
-                    }
-                    hudSpeed = redAirspeed;
+                else if (SimVar.GetSimVarValue("L:A32NX_ADIRS_PFD_ALIGNED_FIRST", "Bool") == 1) {
+                    hideBlueText = false;
                 }
-                if (this.redSpeedSVG && hideRedPointer) {
-                    this.redSpeedSVG.setAttribute("visibility", "hidden");
-                }
-                if (this.redSpeedText) {
-                    if (hideRedText) {
-                        this.redSpeedText.setAttribute("visibility", "hidden");
-                    }
-                    else {
-                        this.redSpeedText.setAttribute("visibility", "visible");
-                        this.redSpeedText.textContent = redAirspeed.toFixed(0);
-                    }
-                }
+                hudSpeed = blueAirspeed;
             }
-            if (hideRedPointer && hideRedText && hideBluePointer && hideBlueText) {
-                takeOffSpeedNotSet = true;
+            if (this.blueSpeedSVG && hideBluePointer) {
+                this.blueSpeedSVG.setAttribute("visibility", "hidden");
             }
-        }
-        else {
-            let hideText = true;
-            let hidePointer = true;
-            if (this.targetSpeedSVG) {
-                var APMode = this.getAutopilotMode();
-                if (APMode != AutopilotMode.MANAGED) {
-                    let selectedAirspeed = 0;
-                    var machMode = Simplane.getAutoPilotMachModeActive();
-                    if (machMode) {
-                        let machAirspeed = Simplane.getAutoPilotMachHoldValue();
-                        if (machAirspeed < 1.0) {
-                            var fixedMach = machAirspeed.toFixed(3);
-                            var radixPos = fixedMach.indexOf(".");
-                            this.targetSpeedSVG.textContent = fixedMach.slice(radixPos);
-                        }
-                        else {
-                            this.targetSpeedSVG.textContent = machAirspeed.toFixed(1);
-                        }
-                        selectedAirspeed = SimVar.GetGameVarValue("FROM MACH TO KIAS", "number", machAirspeed);
-                    }
-                    else {
-                        selectedAirspeed = Simplane.getAutoPilotAirspeedHoldValue();
-                        this.targetSpeedSVG.textContent = Utils.leadingZeros(Math.round(selectedAirspeed), 3);
-                    }
-                    if (selectedAirspeed >= this.graduationMinValue) {
-                        let pointerPosY = this.valueToSvg(currentAirspeed, selectedAirspeed);
-                        if (pointerPosY > 0) {
-                            if (this.targetSpeedPointerSVG) {
-                                this.targetSpeedPointerSVG.setAttribute("visibility", "visible");
-                                this.targetSpeedPointerSVG.setAttribute("y", (pointerPosY - this.targetSpeedPointerHeight * 0.5).toString());
-                            }
-                            hidePointer = false;
-                        }
-                        hudSpeed = selectedAirspeed;
-                        hideText = false;
-                    }
-                    else {
-                        this.targetSpeedSVG.textContent = "";
-                    }
+            if (this.blueSpeedText) {
+                if (hideBlueText) {
+                    this.blueSpeedText.setAttribute("visibility", "hidden");
                 }
                 else {
-                    this.targetSpeedSVG.textContent = "";
+                    this.blueSpeedText.setAttribute("visibility", "visible");
+                    this.blueSpeedText.textContent = blueAirspeed.toFixed(0);
                 }
             }
-            if (this.targetSpeedPointerSVG && hidePointer)
-                this.targetSpeedPointerSVG.setAttribute("visibility", "hidden");
-            if (this.targetSpeedBgSVG)
-                this.targetSpeedBgSVG.classList.toggle("hide", hideText);
-            if (this.targetSpeedIconSVG)
-                this.targetSpeedIconSVG.classList.toggle("hide", hideText);
-            if (Simplane.getIsGrounded() && Simplane.getV1Airspeed() <= 0 && Simplane.getVRAirspeed() <= 0 && Simplane.getV2Airspeed() <= 0) {
-                takeOffSpeedNotSet = true;
+        }
+        let hideRedPointer = true;
+        let hideRedText = true;
+        {
+            let redAirspeed = Simplane.getV2Airspeed();
+            if (redAirspeed < 0) {
+                let isManaged = Simplane.getAutoPilotAirspeedManaged();
+                if (isManaged) {
+                    if (Simplane.getAutoPilotMachModeActive())
+                        redAirspeed = SimVar.GetGameVarValue("FROM MACH TO KIAS", "number", Simplane.getAutoPilotMachHoldValue());
+                    else
+                        redAirspeed = Simplane.getAutoPilotAirspeedHoldValue();
+                }
+            }
+            if (redAirspeed > this.graduationMinValue) {
+                let redSpeedPosY = this.valueToSvg(currentAirspeed, redAirspeed);
+                let redSpeedHeight = 44;
+                if (redSpeedPosY > 0) {
+                    if (this.redSpeedSVG) {
+                        this.redSpeedSVG.setAttribute("visibility", "visible");
+                        this.redSpeedSVG.setAttribute("y", (redSpeedPosY - redSpeedHeight * 0.5).toString());
+                    }
+                    hideRedPointer = false;
+                }
+                else {
+                    hideRedText = false;
+                }
+                hudSpeed = redAirspeed;
+            }
+            if (this.redSpeedSVG && hideRedPointer) {
+                this.redSpeedSVG.setAttribute("visibility", "hidden");
+            }
+            if (this.redSpeedText) {
+                if (hideRedText) {
+                    this.redSpeedText.setAttribute("visibility", "hidden");
+                }
+                else {
+                    this.redSpeedText.setAttribute("visibility", "visible");
+                    this.redSpeedText.textContent = redAirspeed.toFixed(0);
+                }
             }
         }
+        if (hideRedPointer && hideRedText && hideBluePointer && hideBlueText) {
+            takeOffSpeedNotSet = true;
+        }
+        
         if (this.speedNotSetSVG) {
             this.speedNotSetSVG.setAttribute("visibility", (takeOffSpeedNotSet) ? "visible" : "hidden");
         }
