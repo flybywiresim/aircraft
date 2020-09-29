@@ -920,7 +920,6 @@ class NavSystem extends BaseInstrument {
             this.alwaysUpdateList.push(_element);
     }
 }
-NavSystem.useSvgImages = false;
 NavSystem.maxTimeUpdateAllTime = 0;
 NavSystem.maxTimeUpdate = 0;
 NavSystem.mediumMaxTimeUpdate = 0;

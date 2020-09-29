@@ -138,10 +138,10 @@ a320-neo-pfd-element {
       a320-neo-pfd-element #Mainframe #InstrumentsContainer #Airspeed {
         transform: rotateX(0);
         position: absolute;
-        top: 20.25%;
+        top: 17.5%;
         left: -4%;
-        width: 28%;
-        height: 100%; }
+        width: 24%;
+        height: 67.5%; }
       a320-neo-pfd-element #Mainframe #InstrumentsContainer #VSpeed {
         transform: rotateX(0);
         position: absolute;
