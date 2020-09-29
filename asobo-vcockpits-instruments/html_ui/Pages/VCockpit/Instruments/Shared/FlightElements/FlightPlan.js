@@ -168,7 +168,7 @@ class FlightPlanAlternate {
                         let icao = SimVar.GetSimVarValue("C:fs9gps:FlightPlanWaypointICAO", "string", this.instrument.instrumentIdentifier);
                         let waypoint = this.waypoints.find(wp => { return wp && wp.icao === icao; });
                         if (!waypoint && icao !== "") {
-                            waypoint = await FacilityLoader.Instance.getFacility(icao);
+                            waypoint = await this.instrument.facilityLoader.getFacility(icao);
                         }
                         if (!waypoint) {
                             waypoint = new WayPoint(this.instrument);

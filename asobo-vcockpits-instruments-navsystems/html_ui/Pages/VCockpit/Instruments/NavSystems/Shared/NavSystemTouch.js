@@ -535,7 +535,7 @@ class NavSystemTouch_FullKeyboard extends NavSystemElement {
             }
             else {
                 if (this.lastIcao != icao) {
-                    FacilityLoader.Instance.getFacilityCB(icao, (waypoint) => {
+                    this.gps.facilityLoader.getFacilityCB(icao, (waypoint) => {
                         this.currentWaypoint = waypoint;
                         if (waypoint) {
                             let infos = this.currentWaypoint.infos;
@@ -1701,7 +1701,7 @@ class NavSystemTouch_DirectTo extends NavSystemElement {
         if (_icao != "") {
             this.CurrentWaypoint = new WayPoint(this.gps);
             this.CurrentWaypoint.type = _icao.charAt(0);
-            FacilityLoader.Instance.getFacilityCB(_icao, (wp) => {
+            this.gps.facilityLoader.getFacilityCB(_icao, (wp) => {
                 this.CurrentWaypoint = wp;
                 this.onLoadEnd();
             });

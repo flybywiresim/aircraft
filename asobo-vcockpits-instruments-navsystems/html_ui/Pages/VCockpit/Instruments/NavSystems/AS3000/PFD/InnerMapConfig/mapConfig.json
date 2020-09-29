@@ -29,7 +29,7 @@
   "airplaneIcon1": "ICON_MAP_PLANE",
   "airplaneIcon2": "ICON_MAP_PLANE",
 
-  "imagesDir": "./Instruments/Shared/Map/Images/Outlined/",
+  "imagesDir": "/Pages/VCockpit/Instruments/Shared/Map/Images/Outlined/",
   "delay": 1,
 
   "runwayFillColor": "white",

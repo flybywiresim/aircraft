@@ -13,7 +13,7 @@ class SvgNearestIntersectionElement extends SvgWaypointElement {
         if (!fName) {
             fName = "ICON_MAP_INTERSECTION.svg";
         }
-        if (NavSystem.useSvgImages) {
+        if (BaseInstrument.useSvgImages) {
             return fName;
         }
         return fName.replace(".svg", ".png");

@@ -1,2 +1,4 @@
-<Include File="Generic.xml"/>
-<Include File="Common\Index.xml"/>
+<ModelBehaviors>
+	<Include RelativeFile="Generic.xml"/>
+	<Include RelativeFile="Common\Index.xml"/>
+</ModelBehaviors>

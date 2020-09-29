@@ -34,7 +34,7 @@ class SvgNearestNDBElement extends SvgWaypointElement {
                 fName = "ICON_MAP_NDB_WAYPOINT.svg";
             }
         }
-        if (NavSystem.useSvgImages) {
+        if (BaseInstrument.useSvgImages) {
             return fName;
         }
         return fName.replace(".svg", ".png");

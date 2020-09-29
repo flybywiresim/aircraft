@@ -343,6 +343,7 @@ class PFD_Compass extends NavSystemElement {
         this.displayArc = true;
         this.hasLocBeenEntered = false;
         this.hasLocBeenActivated = false;
+        this.ifTimer = 0;
         this.hsiElemId = _hsiElemId;
         this.arcHsiElemId = _arcHsiElemId;
     }
@@ -378,16 +379,27 @@ class PFD_Compass extends NavSystemElement {
         else {
             SimVar.SetSimVarValue("L:GPS_Current_Phase", "number", 3);
         }
-        if (this.gps.currFlightPlanManager.isActiveApproach() && this.gps.currFlightPlanManager.getActiveWaypointIndex() != -1 && Simplane.getAutoPilotApproachType() == 4) {
-            if (this.gps.currFlightPlanManager.getActiveWaypointIndex() >= this.gps.currFlightPlanManager.getApproachWaypoints().length - 2 && !this.hasLocBeenEntered) {
-                let frequency = this.gps.currFlightPlanManager.getApproachNavFrequency();
-                if (isFinite(frequency)) {
-                    SimVar.SetSimVarValue("K:NAV1_RADIO_SWAP", "number", 0);
-                    SimVar.SetSimVarValue("K:NAV1_RADIO_SET_HZ", "hertz", frequency * 1000000);
-                    this.hasLocBeenEntered = true;
-                }
+        if (this.ifTimer <= 0) {
+            this.ifTimer = 2000;
+            if (this.gps.currFlightPlanManager.isActiveApproach()) {
+                this.gps.currFlightPlanManager.getApproachIfIcao((value) => {
+                    this.ifIcao = value;
+                });
             }
-            else if (this.gps.currFlightPlanManager.getActiveWaypointIndex() == this.gps.currFlightPlanManager.getApproachWaypoints().length - 1 && !this.hasLocBeenActivated) {
+        }
+        else {
+            this.ifTimer -= this.gps.deltaTime;
+        }
+        if (this.gps.currFlightPlanManager.isActiveApproach() && this.gps.currFlightPlanManager.getActiveWaypointIndex() != -1 && Simplane.getAutoPilotApproachType() == 4) {
+            if (((this.ifIcao && this.ifIcao != "" && this.ifIcao == this.gps.currFlightPlanManager.getActiveWaypoint().icao) || (this.gps.currFlightPlanManager.getActiveWaypointIndex() >= this.gps.currFlightPlanManager.getApproachWaypoints().length - 2)) && !this.hasLocBeenEntered) {
+                let approachFrequency = this.gps.currFlightPlanManager.getApproachNavFrequency();
+                if (!isNaN(approachFrequency)) {
+                    SimVar.SetSimVarValue("K:NAV1_RADIO_SWAP", "number", 0);
+                    SimVar.SetSimVarValue("K:NAV1_RADIO_SET_HZ", "hertz", approachFrequency * 1000000);
+                }
+                this.hasLocBeenEntered = true;
+            }
+            else if (((this.ifIcao && this.ifIcao != "" && this.ifIcao == this.gps.currFlightPlanManager.getApproachWaypoints()[this.gps.currFlightPlanManager.getActiveWaypointIndex() - 1].icao && this.hasLocBeenEntered) || (this.gps.currFlightPlanManager.getActiveWaypointIndex() == this.gps.currFlightPlanManager.getApproachWaypoints().length - 1)) && !this.hasLocBeenActivated) {
                 if (SimVar.GetSimVarValue("GPS DRIVES NAV1", "boolean")) {
                     SimVar.SetSimVarValue("K:TOGGLE_GPS_DRIVES_NAV1", "number", 0);
                 }
@@ -2003,9 +2015,18 @@ class MFD_ActiveFlightPlan_Element extends NavSystemElement {
         this.activateLeg(this.lines[this.fplSelectable.getIndex()].getIndex());
         this.gps.SwitchToInteractionState(1);
     }
-    activateLeg(_index) {
+    activateLeg(_index, _approach = false) {
         console.log("CommonPFD_MFD.ts > Activate leg for index " + _index);
-        this.gps.currFlightPlanManager.setActiveWaypointIndex(_index);
+        if (_approach) {
+            let icao = this.gps.currFlightPlanManager.getApproachWaypoints()[_index].icao;
+            this.gps.currFlightPlanManager.activateApproach(() => {
+                let index = this.gps.currFlightPlanManager.getApproachWaypoints().findIndex(w => { return w.infos && w.infos.icao === icao; });
+                this.gps.currFlightPlanManager.setActiveWaypointIndex(index);
+            });
+        }
+        else {
+            this.gps.currFlightPlanManager.setActiveWaypointIndex(_index);
+        }
     }
     isCurrentlySelectedNotALeg() {
         return this.lines[this.fplSelectable.getIndex()].getType() == MFD_WaypointType.empty;
@@ -2055,7 +2076,7 @@ class MFD_Waypoints extends NavSystemElement {
         }
         this.icaoSearchField.Update();
         var infos = this.icaoSearchField.getUpdatedInfos();
-        if (infos && infos.icao != "") {
+        if (infos && (infos.icao != "" || infos.ident != "")) {
             this.facilityElement.textContent = infos.name;
             this.cityElement.textContent = infos.city;
             this.regionElement.textContent = infos.region;

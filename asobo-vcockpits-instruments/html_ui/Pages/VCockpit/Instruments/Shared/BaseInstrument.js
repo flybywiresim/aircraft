@@ -4,6 +4,8 @@ class BaseInstrument extends TemplateElement {
         this.urlConfig = new URLConfig();
         this.xmlConfigLoading = false;
         this.frameCount = 0;
+        this.highlightList = [];
+        this.backgroundList = [];
         this._lastTime = 0;
         this._isConnected = false;
         this._isInitialized = false;
@@ -11,9 +13,7 @@ class BaseInstrument extends TemplateElement {
         this._gameState = GameState.ingame;
         this._deltaTime = 0;
         this._alwaysUpdate = false;
-        this.highlightList = [];
-        this.backgroundList = [];
-        this.pendingCalls = [];
+        this._pendingCalls = [];
         this.dataMetaManager = new DataReadMetaManager();
     }
     get initialized() { return this._isInitialized; }
@@ -23,6 +23,11 @@ class BaseInstrument extends TemplateElement {
     get IsGlassCockpit() { return false; }
     get isPrimary() { return (this.urlConfig.index == null || this.urlConfig.index == 1); }
     get deltaTime() { return this._deltaTime; }
+    get facilityLoader() {
+        if (!this._facilityLoader)
+            this._facilityLoader = new FacilityLoader(this);
+        return this._facilityLoader;
+    }
     connectedCallback() {
         super.connectedCallback();
         this.electricity = this.getChildById("Electricity");
@@ -239,31 +244,26 @@ class BaseInstrument extends TemplateElement {
         if (this.urlConfig.style)
             this.setAttribute("instrumentstyle", this.urlConfig.style);
     }
-    requestCall(_func) {
-        this.pendingCalls.push(_func);
-    }
     beforeUpdate() {
-        {
-            var curTime = Date.now();
-            this._deltaTime = curTime - this._lastTime;
-            this._lastTime = curTime;
-        }
-        {
-            let length = this.pendingCalls.length;
-            if (length > 10)
-                console.warn("Many pending calls this frame (" + length + ")");
-            for (let i = 0; i < length; i++) {
-                this.pendingCalls[i]();
-            }
-            this.pendingCalls.splice(0, length);
-        }
+        var curTime = Date.now();
+        this._deltaTime = curTime - this._lastTime;
+        this._lastTime = curTime;
+        this.updatePendingCalls();
     }
     Update() {
         this.dataMetaManager.UpdateAll();
         this.updateHighlight();
+        if (this._facilityLoader) {
+            this._facilityLoader.update();
+        }
     }
     afterUpdate() {
         this.frameCount++;
+    }
+    doUpdate() {
+        this.beforeUpdate();
+        this.Update();
+        this.afterUpdate();
     }
     CanUpdate() {
         var quality = this.getQuality();
@@ -360,9 +360,9 @@ class BaseInstrument extends TemplateElement {
         if (xmlPath) {
             this.xmlConfigLoading = true;
             var xmlRequest = new XMLHttpRequest();
-            xmlRequest.onreadystatechange = function (_NavSystem) {
+            xmlRequest.onreadystatechange = function (_instrument) {
                 if (this.readyState === XMLHttpRequest.DONE && this.status === 200) {
-                    _NavSystem.onXMLConfigLoaded(this);
+                    _instrument.onXMLConfigLoaded(this);
                 }
             }.bind(xmlRequest, this);
             xmlRequest.open("GET", xmlPath, true);
@@ -429,8 +429,19 @@ class BaseInstrument extends TemplateElement {
             }
         }
     }
+    requestCall(_func) {
+        this._pendingCalls.push(_func);
+    }
+    updatePendingCalls() {
+        let length = this._pendingCalls.length;
+        for (let i = 0; i < length; i++) {
+            this._pendingCalls[i]();
+        }
+        this._pendingCalls.splice(0, length);
+    }
 }
 BaseInstrument.allInstrumentsLoaded = false;
+BaseInstrument.useSvgImages = false;
 class URLConfig {
 }
 var Quality;

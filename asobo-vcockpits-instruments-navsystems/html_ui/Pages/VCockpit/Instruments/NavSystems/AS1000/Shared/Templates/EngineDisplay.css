@@ -181,7 +181,6 @@ engine-display #TurboEngine {
         top: -35%;
         left: 50%; }
     engine-display #TurboEngine #TurboSharedPanel #Turbo_FlapsTrims {
-      transform: rotateX(0);
       position: relative;
       height: 30%; }
       engine-display #TurboEngine #TurboSharedPanel #Turbo_FlapsTrims #Turbo_ElevTrim {
@@ -265,15 +264,12 @@ engine-display #XMLEngineDisplay {
   51%, 100% {
     fill: red; } }
   engine-display #XMLEngineDisplay > * {
-    transform: rotateX(0);
     display: block;
     width: 100%; }
   engine-display #XMLEngineDisplay .Column {
-    transform: rotateX(0);
     display: flex;
     height: auto; }
     engine-display #XMLEngineDisplay .Column > * {
-      transform: rotateX(0);
       display: block;
       width: 100%; }
   engine-display #XMLEngineDisplay *[state=Alert] *[AlertBlink=Text], engine-display #XMLEngineDisplay .Column *[state=Alert] *[AlertBlink=Text] {

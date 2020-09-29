@@ -778,7 +778,7 @@ class AS3000_TSC_AirportInfo extends NavSystemElement {
         if (_icao != "") {
             this.airport = new WayPoint(this.gps);
             this.airport.type = "A";
-            FacilityLoader.Instance.getFacilityCB(_icao, (wp) => {
+            this.gps.facilityLoader.getFacilityCB(_icao, (wp) => {
                 this.airport = wp;
                 this.onLoadEnd();
             });

@@ -73,7 +73,7 @@ class NearestAirport extends NearestWaypoint {
         else if (this.airportClass === 5) {
             fName = "ICON_MAP_AIRPORT_PRIVATE_PINK.svg";
         }
-        if (NavSystem.useSvgImages) {
+        if (BaseInstrument.useSvgImages) {
             return fName;
         }
         return fName.replace(".svg", ".png");
@@ -339,7 +339,7 @@ class NearestIntersection extends NearestWaypoint {
         return this._svgMapElement;
     }
     imageFileName() {
-        if (NavSystem.useSvgImages) {
+        if (BaseInstrument.useSvgImages) {
             return "ICON_MAP_INTERSECTION.svg";
         }
         return "ICON_MAP_INTERSECTION.png";
@@ -440,7 +440,7 @@ class NearestNDB extends NearestWaypoint {
         else {
             fName = "ICON_MAP_NDB_WAYPOINT.svg";
         }
-        if (NavSystem.useSvgImages) {
+        if (BaseInstrument.useSvgImages) {
             return fName;
         }
         return fName.replace(".svg", ".png");
@@ -563,7 +563,7 @@ class NearestVOR extends NearestWaypoint {
             case 6:
                 fName = "ICON_MAP_VOR.svg";
         }
-        if (NavSystem.useSvgImages) {
+        if (BaseInstrument.useSvgImages) {
             return fName;
         }
         return fName.replace(".svg", ".png");

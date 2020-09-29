@@ -1,1 +1,3 @@
-<Include File="Generic\\Index.xml"/>
+<ModelBehaviors>
+	<Include RelativeFile="Generic\\Index.xml"/>
+</ModelBehaviors>

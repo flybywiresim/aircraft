@@ -49,19 +49,16 @@ class NearestAirspacesLoader {
 }
 class FacilityLoader {
     constructor(_instrument) {
+        this.pendingRequests = [];
         this.loadingFacilities = [];
         this.loadedFacilities = [];
         this.loadedAirwayDatas = new Map();
         this._isRegistered = false;
         this._isCompletelyRegistered = false;
+        this._maxSimultaneousCoherentCalls = 20;
+        this._pendingGetFacilityCoherentCall = [];
         this.instrument = _instrument;
-    }
-    static get Instance() {
-        if (!FacilityLoader._Instance) {
-            FacilityLoader._Instance = new FacilityLoader(null);
-            FacilityLoader._Instance.registerListener();
-        }
-        return FacilityLoader._Instance;
+        this.registerListener();
     }
     registerListener() {
         if (this._isRegistered) {
@@ -85,6 +82,18 @@ class FacilityLoader {
             this._isCompletelyRegistered = true;
         });
     }
+    update() {
+        if (this._pendingGetFacilityCoherentCall.length > 0) {
+            for (let i = 0; i < 5; i++) {
+                if (this.loadingFacilities.length < this._maxSimultaneousCoherentCalls) {
+                    let coherentCall = this._pendingGetFacilityCoherentCall.splice(0, 1)[0];
+                    if (coherentCall) {
+                        coherentCall();
+                    }
+                }
+            }
+        }
+    }
     addFacility(_data) {
         _data.icaoTrimed = _data.icao.trim();
         this.loadedFacilities.push(_data);
@@ -93,7 +102,7 @@ class FacilityLoader {
         }
     }
     getFacilityCB(icao, callback) {
-        if (this._isCompletelyRegistered) {
+        if (this._isCompletelyRegistered && this.loadingFacilities.length < this._maxSimultaneousCoherentCalls) {
             this.getFacilityDataCB(icao, (data) => {
                 let waypoint;
                 if (data) {
@@ -108,7 +117,7 @@ class FacilityLoader {
             });
         }
         else {
-            requestAnimationFrame(this.getFacilityCB.bind(this, icao, callback));
+            this._pendingGetFacilityCoherentCall.push(this.getFacilityCB.bind(this, icao, callback));
         }
     }
     async waitRegistration() {
@@ -120,7 +129,7 @@ class FacilityLoader {
                             resolve();
                         }
                         else {
-                            requestAnimationFrame(f);
+                            this.instrument.requestCall(f);
                         }
                     };
                     f();
@@ -130,13 +139,11 @@ class FacilityLoader {
         }
     }
     async getFacility(icao) {
-        await this.waitRegistration();
-        let data = await this.getFacilityData(icao);
-        if (data) {
-            let waypoint = new WayPoint(this.instrument);
-            await waypoint.SetFromIFacility(data);
-            return waypoint;
-        }
+        return new Promise(resolve => {
+            return this.getFacilityCB(icao, (wp) => {
+                resolve(wp);
+            });
+        });
     }
     getFacilityDataCB(icao, callback) {
         if (this._isCompletelyRegistered) {
@@ -161,27 +168,15 @@ class FacilityLoader {
             }
         }
         else {
-            requestAnimationFrame(this.getFacilityDataCB.bind(this, icao, callback));
+            this._pendingGetFacilityCoherentCall.push(this.getFacilityDataCB.bind(this, icao, callback));
         }
     }
     async getFacilityData(icao) {
-        await this.waitRegistration();
-        if (!icao) {
-            return undefined;
-        }
-        let typeChar = icao[0];
-        if (typeChar === "W") {
-            return this.getIntersectionData(icao);
-        }
-        else if (typeChar === "A") {
-            return this.getAirportData(icao);
-        }
-        else if (typeChar === "V") {
-            return this.getVorData(icao);
-        }
-        else if (typeChar === "N") {
-            return this.getNdbData(icao);
-        }
+        return new Promise(resolve => {
+            return this.getFacilityDataCB(icao, data => {
+                resolve(data);
+            });
+        });
     }
     async getAirport(icao) {
         await this.waitRegistration();
@@ -193,7 +188,7 @@ class FacilityLoader {
         }
     }
     getAirportDataCB(icao, callback) {
-        if (this._isCompletelyRegistered) {
+        if (this._isCompletelyRegistered && this.loadingFacilities.length < this._maxSimultaneousCoherentCalls) {
             icao = icao.trim();
             let airport = this.loadedFacilities.find(f => { return f.icaoTrimed === icao && (f.routes === undefined); });
             if (airport) {
@@ -231,14 +226,14 @@ class FacilityLoader {
                         callback(undefined);
                     }
                     else {
-                        requestAnimationFrame(checkDataLoaded);
+                        this.instrument.requestCall(checkDataLoaded);
                     }
                 }
             };
             checkDataLoaded();
         }
         else {
-            requestAnimationFrame(this.getAirportDataCB.bind(this, icao, callback));
+            this.instrument.requestCall(this.getAirportDataCB.bind(this, icao, callback));
         }
     }
     async getAirportData(icao) {
@@ -276,7 +271,7 @@ class FacilityLoader {
                         resolve(undefined);
                     }
                     else {
-                        requestAnimationFrame(loadedAirportCallback);
+                        this.instrument.requestCall(loadedAirportCallback);
                     }
                 }
             };
@@ -353,7 +348,7 @@ class FacilityLoader {
                         resolve(datas);
                     }
                     else {
-                        requestAnimationFrame(loadedAirportsCallback);
+                        this.instrument.requestCall(loadedAirportsCallback);
                     }
                 }
             };
@@ -361,7 +356,10 @@ class FacilityLoader {
         });
     }
     getIntersectionDataCB(icao, callback) {
-        if (this._isCompletelyRegistered) {
+        if (icao == "") {
+            return null;
+        }
+        if (this._isCompletelyRegistered && this.loadingFacilities.length < this._maxSimultaneousCoherentCalls) {
             icao = icao.trim();
             let intersection = this.loadedFacilities.find(f => {
                 return (f.icaoTrimed === icao) && (f.routes != undefined);
@@ -387,7 +385,7 @@ class FacilityLoader {
                 }
                 else {
                     attempts++;
-                    if (attempts > 1000) {
+                    if (attempts > 10) {
                         this.addFacility({
                             icao: icao,
                             icaoTrimed: "",
@@ -405,14 +403,14 @@ class FacilityLoader {
                         callback(undefined);
                     }
                     else {
-                        requestAnimationFrame(checkDataLoaded);
+                        this.instrument.requestCall(checkDataLoaded);
                     }
                 }
             };
             checkDataLoaded();
         }
         else {
-            requestAnimationFrame(this.getIntersectionDataCB.bind(this, icao, callback));
+            this.instrument.requestCall(this.getIntersectionDataCB.bind(this, icao, callback));
         }
     }
     async getIntersectionData(icao) {
@@ -452,7 +450,7 @@ class FacilityLoader {
                         resolve(undefined);
                     }
                     else {
-                        requestAnimationFrame(loadedIntersectionCallback);
+                        this.instrument.requestCall(loadedIntersectionCallback);
                     }
                 }
             };
@@ -541,7 +539,7 @@ class FacilityLoader {
                         resolve(datas);
                     }
                     else {
-                        requestAnimationFrame(loadedIntersectionsCallback);
+                        this.instrument.requestCall(loadedIntersectionsCallback);
                     }
                 }
             };
@@ -549,7 +547,7 @@ class FacilityLoader {
         });
     }
     getNdbDataCB(icao, callback) {
-        if (this._isCompletelyRegistered) {
+        if (this._isCompletelyRegistered && this.loadingFacilities.length < this._maxSimultaneousCoherentCalls) {
             icao = icao.trim();
             let ndb = this.loadedFacilities.find(f => { return f.icaoTrimed === icao && (f.routes === undefined); });
             if (ndb) {
@@ -574,7 +572,7 @@ class FacilityLoader {
                 }
                 else {
                     attempts++;
-                    if (attempts > 1000) {
+                    if (attempts > 10) {
                         let n = this.loadingFacilities.indexOf(icao);
                         if (n >= 0) {
                             this.loadingFacilities.splice(n, 1);
@@ -582,14 +580,14 @@ class FacilityLoader {
                         callback(undefined);
                     }
                     else {
-                        requestAnimationFrame(checkDataLoaded);
+                        this.instrument.requestCall(checkDataLoaded);
                     }
                 }
             };
             checkDataLoaded();
         }
         else {
-            requestAnimationFrame(this.getNdbDataCB.bind(this, icao, callback));
+            this.instrument.requestCall(this.getNdbDataCB.bind(this, icao, callback));
         }
     }
     getNdbWaypointDataCB(icao, callback) {
@@ -623,7 +621,7 @@ class FacilityLoader {
                 }
                 else {
                     attempts++;
-                    if (attempts > 1000) {
+                    if (attempts > 10) {
                         let n = this.loadingFacilities.indexOf(icao);
                         if (n >= 0) {
                             this.loadingFacilities.splice(n, 1);
@@ -631,7 +629,7 @@ class FacilityLoader {
                         resolve(undefined);
                     }
                     else {
-                        requestAnimationFrame(loadedNdbCallback);
+                        this.instrument.requestCall(loadedNdbCallback);
                     }
                 }
             };
@@ -707,7 +705,7 @@ class FacilityLoader {
                         resolve(datas);
                     }
                     else {
-                        requestAnimationFrame(loadedNdbsCallback);
+                        this.instrument.requestCall(loadedNdbsCallback);
                     }
                 }
             };
@@ -715,7 +713,7 @@ class FacilityLoader {
         });
     }
     getVorDataCB(icao, callback) {
-        if (this._isCompletelyRegistered) {
+        if (this._isCompletelyRegistered && this.loadingFacilities.length < this._maxSimultaneousCoherentCalls) {
             icao = icao.trim();
             let vor = this.loadedFacilities.find(f => { return f.icaoTrimed === icao && (f.routes === undefined); });
             if (vor) {
@@ -740,7 +738,7 @@ class FacilityLoader {
                 }
                 else {
                     attempts++;
-                    if (attempts > 1000) {
+                    if (attempts > 10) {
                         let n = this.loadingFacilities.indexOf(icao);
                         if (n >= 0) {
                             this.loadingFacilities.splice(n, 1);
@@ -748,14 +746,14 @@ class FacilityLoader {
                         callback(undefined);
                     }
                     else {
-                        requestAnimationFrame(checkDataLoaded);
+                        this.instrument.requestCall(checkDataLoaded);
                     }
                 }
             };
             checkDataLoaded();
         }
         else {
-            requestAnimationFrame(this.getVorDataCB.bind(this, icao, callback));
+            this.instrument.requestCall(this.getVorDataCB.bind(this, icao, callback));
         }
     }
     getVorWaypointDataCB(icao, callback) {
@@ -789,7 +787,7 @@ class FacilityLoader {
                 }
                 else {
                     attempts++;
-                    if (attempts > 1000) {
+                    if (attempts > 10) {
                         let n = this.loadingFacilities.indexOf(icao);
                         if (n >= 0) {
                             this.loadingFacilities.splice(n, 1);
@@ -797,7 +795,7 @@ class FacilityLoader {
                         resolve(undefined);
                     }
                     else {
-                        requestAnimationFrame(loadedVorCallback);
+                        this.instrument.requestCall(loadedVorCallback);
                     }
                 }
             };
@@ -873,7 +871,7 @@ class FacilityLoader {
                         resolve(datas);
                     }
                     else {
-                        requestAnimationFrame(loadedVorsCallback);
+                        this.instrument.requestCall(loadedVorsCallback);
                     }
                 }
             };
@@ -1227,7 +1225,7 @@ class NDBLoader extends WaypointLoader {
         };
         this.createWaypointCallback = async (icao) => {
             return new Promise(resolve => {
-                FacilityLoader.Instance.getFacilityCB(icao, resolve);
+                this.instrument.facilityLoader.getFacilityCB(icao, resolve);
             });
         };
         this.createWaypointsCallback = async (icaos) => {
@@ -1240,7 +1238,7 @@ class NDBLoader extends WaypointLoader {
                     }
                 }
             }
-            return FacilityLoader.Instance.getNdbs(icaosToLoad);
+            return this.instrument.facilityLoader.getNdbs(icaosToLoad);
         };
     }
 }
@@ -1270,7 +1268,7 @@ class VORLoader extends WaypointLoader {
         };
         this.createWaypointCallback = async (icao) => {
             return new Promise(resolve => {
-                FacilityLoader.Instance.getFacilityCB(icao, resolve);
+                this.instrument.facilityLoader.getFacilityCB(icao, resolve);
             });
         };
         this.createWaypointsCallback = async (icaos) => {
@@ -1283,7 +1281,7 @@ class VORLoader extends WaypointLoader {
                     }
                 }
             }
-            return FacilityLoader.Instance.getVors(icaosToLoad);
+            return this.instrument.facilityLoader.getVors(icaosToLoad);
         };
     }
 }
@@ -1329,7 +1327,7 @@ class IntersectionLoader extends WaypointLoader {
         };
         this.createWaypointCallback = async (icao) => {
             return new Promise(resolve => {
-                FacilityLoader.Instance.getFacilityCB(icao, resolve);
+                this.instrument.facilityLoader.getFacilityCB(icao, resolve);
             });
         };
         this.createWaypointsCallback = async (icaos) => {
@@ -1342,7 +1340,7 @@ class IntersectionLoader extends WaypointLoader {
                     }
                 }
             }
-            return FacilityLoader.Instance.getIntersections(icaosToLoad);
+            return this.instrument.facilityLoader.getIntersections(icaosToLoad);
         };
     }
 }
@@ -1376,20 +1374,9 @@ class AirportLoader extends WaypointLoader {
             airport.fuel2 = SimVar.GetSimVarValue("C:fs9gps:NearestAirportCurrentFuel2", "string", this.instrument.instrumentIdentifier + "-loader");
             airport.towered = SimVar.GetSimVarValue("C:fs9gps:NearestAirportCurrentTowered", "Boolean", this.instrument.instrumentIdentifier + "-loader");
             let departuresCount = SimVar.GetSimVarValue("C:fs9gps:NearestAirportDeparturesNumber", "number", this.instrument.instrumentIdentifier + "-loader");
-            let getDepartureWaypoint = async (lineIndex) => {
-                return new Promise(resolve => {
-                    SimVar.SetSimVarValue("C:fs9gps:NearestAirportDepartureCurrentWaypoint", "number", lineIndex, this.instrument.instrumentIdentifier + "-loader").then(() => {
-                        this.instrument.requestCall(() => {
-                            let waypointIcao = SimVar.GetSimVarValue("C:fs9gps:NearestAirportDepartureWaypointICAO", "string", this.instrument.instrumentIdentifier + "-loader");
-                            resolve(waypointIcao);
-                        });
-                    });
-                });
-            };
             let getDeparture = async (lineIndex) => {
                 return new Promise(resolve => {
                     SimVar.SetSimVarValue("C:fs9gps:NearestAirportCurrentDeparture", "number", lineIndex, this.instrument.instrumentIdentifier + "-loader").then(async () => {
-                        let departureName = SimVar.GetSimVarValue("C:fs9gps:NearestAirportDepartureName", "string", this.instrument.instrumentIdentifier + "-loader");
                         let departureWaypointsCount = SimVar.GetSimVarValue("C:fs9gps:NearestAirportDepartureWaypointsNumber", "number", this.instrument.instrumentIdentifier + "-loader");
                         for (let i = 0; i < departureWaypointsCount; i++) {
                         }
@@ -1404,7 +1391,7 @@ class AirportLoader extends WaypointLoader {
         };
         this.createWaypointCallback = async (icao) => {
             return new Promise(resolve => {
-                FacilityLoader.Instance.getFacilityCB(icao, resolve);
+                this.instrument.facilityLoader.getFacilityCB(icao, resolve);
             });
         };
         this.createWaypointsCallback = async (icaos) => {
@@ -1417,7 +1404,7 @@ class AirportLoader extends WaypointLoader {
                     }
                 }
             }
-            return FacilityLoader.Instance.getAirports(icaosToLoad);
+            return this.instrument.facilityLoader.getAirports(icaosToLoad);
         };
     }
 }

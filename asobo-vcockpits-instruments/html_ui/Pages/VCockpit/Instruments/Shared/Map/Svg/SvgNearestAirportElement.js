@@ -40,7 +40,7 @@ class SvgNearestAirportElement extends SvgWaypointElement {
         else {
             fName = "ICON_MAP_AIRPORT8.svg";
         }
-        if (NavSystem.useSvgImages) {
+        if (BaseInstrument.useSvgImages) {
             return fName;
         }
         return fName.replace(".svg", ".png");

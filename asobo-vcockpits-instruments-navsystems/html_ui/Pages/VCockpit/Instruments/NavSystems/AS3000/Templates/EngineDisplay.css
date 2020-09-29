@@ -178,7 +178,6 @@ as3000-engine-display #TurboEngine {
         top: -35%;
         left: 50%; }
     as3000-engine-display #TurboEngine #TurboSharedPanel #Turbo_FlapsTrims {
-      transform: rotateX(0);
       position: relative;
       height: 30%; }
       as3000-engine-display #TurboEngine #TurboSharedPanel #Turbo_FlapsTrims #Turbo_ElevTrim {
@@ -265,14 +264,11 @@ as3000-engine-display #XMLEngineDisplay {
   51%, 100% {
     fill: red; } }
   as3000-engine-display #XMLEngineDisplay > * {
-    transform: rotateX(0);
     display: block;
     width: 100%; }
   as3000-engine-display #XMLEngineDisplay .Column {
-    transform: rotateX(0);
     height: auto; }
     as3000-engine-display #XMLEngineDisplay .Column > * {
-      transform: rotateX(0);
       display: block;
       width: 100%; }
   as3000-engine-display #XMLEngineDisplay *[state=Alert] *[AlertBlink=Text], as3000-engine-display #XMLEngineDisplay .Column *[state=Alert] *[AlertBlink=Text] {

@@ -105,14 +105,6 @@ as3000-mfd-element {
     position: relative; }
     as3000-mfd-element #Mainframe #Electricity {
       position: relative; }
-      as3000-mfd-element #Mainframe #Electricity #Compass {
-        transform: rotateX(0);
-        position: absolute;
-        border: none;
-        left: 10%;
-        top: -3.5%;
-        width: 80%;
-        height: 100%; }
       as3000-mfd-element #Mainframe #Electricity #CenterDisplay {
         position: absolute;
         height: 100%;

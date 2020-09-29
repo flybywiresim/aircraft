@@ -41,7 +41,7 @@ class SvgNearestVORElement extends SvgWaypointElement {
                     fName = "ICON_MAP_VOR.svg";
             }
         }
-        if (NavSystem.useSvgImages) {
+        if (BaseInstrument.useSvgImages) {
             return fName;
         }
         return fName.replace(".svg", ".png");

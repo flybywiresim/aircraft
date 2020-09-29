@@ -22,7 +22,7 @@ class SearchFieldWaypointICAO {
             this.lastIcao = icao;
             if (ident != this.lastIdent) {
                 this.wayPoint = null;
-                FacilityLoader.Instance.getFacilityCB(icao, (waypoint) => {
+                this.instrument.facilityLoader.getFacilityCB(icao, (waypoint) => {
                     if (waypoint) {
                         if (waypoint.infos.icao == this.lastIcao) {
                             this.wayPoint = waypoint;
@@ -73,7 +73,7 @@ class SearchFieldWaypointICAO {
                 ident = this.wayPoint.infos.ident;
             }
             else {
-                FacilityLoader.Instance.getFacilityCB(this.lastIcao, (waypoint) => {
+                this.instrument.facilityLoader.getFacilityCB(this.lastIcao, (waypoint) => {
                     this.wayPoint = waypoint;
                 });
                 ident = "_____";
@@ -85,7 +85,7 @@ class SearchFieldWaypointICAO {
     }
     SetWaypoint(_type, _icao) {
         this.lastIcao = _icao;
-        FacilityLoader.Instance.getFacilityCB(_icao, (waypoint) => {
+        this.instrument.facilityLoader.getFacilityCB(_icao, (waypoint) => {
             if (waypoint) {
                 this.wayPoint = waypoint;
             }
@@ -136,7 +136,7 @@ class SearchFieldWaypointICAO {
         SimVar.SetSimVarValue("C:fs9gps:IcaoSearchAdvanceCharacter", "number", -1, this.instrument.instrumentIdentifier);
     }
     Validate() {
-        FacilityLoader.Instance.getFacilityCB(SimVar.GetSimVarValue("C:fs9gps:IcaoSearchCurrentIcao", "string", this.instrument.instrumentIdentifier), (waypoint) => {
+        this.instrument.facilityLoader.getFacilityCB(SimVar.GetSimVarValue("C:fs9gps:IcaoSearchCurrentIcao", "string", this.instrument.instrumentIdentifier), (waypoint) => {
             if (waypoint) {
                 this.wayPoint = waypoint;
             }
@@ -148,7 +148,7 @@ class SearchFieldWaypointICAO {
                     SimVar.GetSimVarArrayValues(this.batch, function (_Values) {
                         this.duplicates = [];
                         for (var i = 0; i < _Values.length; i++) {
-                            let waypoint = new WayPoint(this.instrument.instrumentIdentifier);
+                            let waypoint = new WayPoint(this.instrument);
                             waypoint.type = _Values[i][0];
                             waypoint.SetIdent(_Values[i][2]);
                             waypoint.SetICAO(_Values[i][1]);

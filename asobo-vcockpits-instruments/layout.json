@@ -3,12 +3,52 @@
     {
       "path": "html_ui/Pages/VCockpit/Instruments/Shared/BaseInstrument.css",
       "size": 359,
-      "date": 132441483363750146
+      "date": 132453637117120222
     },
     {
       "path": "html_ui/Pages/VCockpit/Instruments/Shared/BaseInstrument.js",
-      "size": 17167,
-      "date": 132442481381358105
+      "size": 17467,
+      "date": 132453631635521657
+    },
+    {
+      "path": "html_ui/Pages/VCockpit/Instruments/Shared/FlightElements/Approach.js",
+      "size": 306,
+      "date": 132453631633871710
+    },
+    {
+      "path": "html_ui/Pages/VCockpit/Instruments/Shared/FlightElements/FlightPlan.js",
+      "size": 14098,
+      "date": 132453631634541686
+    },
+    {
+      "path": "html_ui/Pages/VCockpit/Instruments/Shared/FlightElements/FlightPlanManager.js",
+      "size": 60846,
+      "date": 132453631635211669
+    },
+    {
+      "path": "html_ui/Pages/VCockpit/Instruments/Shared/FlightElements/GeoCalc.js",
+      "size": 1897,
+      "date": 132453631633911705
+    },
+    {
+      "path": "html_ui/Pages/VCockpit/Instruments/Shared/FlightElements/NearestWaypoint.js",
+      "size": 37144,
+      "date": 132453631634341697
+    },
+    {
+      "path": "html_ui/Pages/VCockpit/Instruments/Shared/FlightElements/Runway.js",
+      "size": 4476,
+      "date": 132453631635281662
+    },
+    {
+      "path": "html_ui/Pages/VCockpit/Instruments/Shared/FlightElements/Waypoint.js",
+      "size": 32299,
+      "date": 132453631633111538
+    },
+    {
+      "path": "html_ui/Pages/VCockpit/Instruments/Shared/FlightElements/WaypointLoader.js",
+      "size": 62634,
+      "date": 132453631633831711
     },
     {
       "path": "html_ui/Pages/VCockpit/Instruments/Shared/Fonts/digital.ttf",
@@ -28,42 +68,42 @@
     {
       "path": "html_ui/Pages/VCockpit/Instruments/Shared/Gauges/AbstractGauge.js",
       "size": 11426,
-      "date": 132442481373360274
+      "date": 132453631627156423
     },
     {
       "path": "html_ui/Pages/VCockpit/Instruments/Shared/Gauges/AilTrimGauge.js",
       "size": 3259,
-      "date": 132442481373470267
+      "date": 132453631627216424
     },
     {
       "path": "html_ui/Pages/VCockpit/Instruments/Shared/Gauges/CircularGauge.js",
       "size": 17435,
-      "date": 132442481373850254
+      "date": 132453631627446417
     },
     {
       "path": "html_ui/Pages/VCockpit/Instruments/Shared/Gauges/DoubleHorizontalGauge.js",
       "size": 11898,
-      "date": 132442481374530232
+      "date": 132453631627896399
     },
     {
       "path": "html_ui/Pages/VCockpit/Instruments/Shared/Gauges/ElevTrimGauge.js",
       "size": 3881,
-      "date": 132442481373960246
+      "date": 132453631627506410
     },
     {
       "path": "html_ui/Pages/VCockpit/Instruments/Shared/Gauges/FlapsGauge.js",
       "size": 3384,
-      "date": 132442481374070246
+      "date": 132453631627586416
     },
     {
       "path": "html_ui/Pages/VCockpit/Instruments/Shared/Gauges/HorizontalGauge.js",
       "size": 10735,
-      "date": 132442481374260242
+      "date": 132453631627746406
     },
     {
       "path": "html_ui/Pages/VCockpit/Instruments/Shared/Gauges/RudderTrimGauge.js",
       "size": 3801,
-      "date": 132442481374620234
+      "date": 132453631627976394
     },
     {
       "path": "html_ui/Pages/VCockpit/Instruments/Shared/Gauges/Test/Test.html",
@@ -73,17 +113,17 @@
     {
       "path": "html_ui/Pages/VCockpit/Instruments/Shared/Gauges/VerticalGauge.js",
       "size": 10012,
-      "date": 132442481374790231
+      "date": 132453631628126390
     },
     {
       "path": "html_ui/Pages/VCockpit/Instruments/Shared/Map/Canvas/CanvasUtils.js",
       "size": 2030,
-      "date": 132442481374880226
+      "date": 132453631628206386
     },
     {
       "path": "html_ui/Pages/VCockpit/Instruments/Shared/Map/Cities/Cities.js",
       "size": 108,
-      "date": 132442481375050218
+      "date": 132453631628356387
     },
     {
       "path": "html_ui/Pages/VCockpit/Instruments/Shared/Map/Cities/cities.json",
@@ -93,7 +133,7 @@
     {
       "path": "html_ui/Pages/VCockpit/Instruments/Shared/Map/Cities/City.js",
       "size": 227,
-      "date": 132442481375120215
+      "date": 132453631628386382
     },
     {
       "path": "html_ui/Pages/VCockpit/Instruments/Shared/Map/CitiesGenerator/CitiesGenerator.html",
@@ -103,7 +143,7 @@
     {
       "path": "html_ui/Pages/VCockpit/Instruments/Shared/Map/CitiesGenerator/CitiesGenerator.js",
       "size": 6598,
-      "date": 132442481375010219
+      "date": 132453631628326386
     },
     {
       "path": "html_ui/Pages/VCockpit/Instruments/Shared/Map/CitiesGenerator/large_cities.txt",
@@ -687,138 +727,138 @@
     },
     {
       "path": "html_ui/Pages/VCockpit/Instruments/Shared/Map/MapInstrument.css",
-      "size": 1788,
-      "date": 132441483371275777
+      "size": 1734,
+      "date": 132453637124499992
     },
     {
       "path": "html_ui/Pages/VCockpit/Instruments/Shared/Map/MapInstrument.html",
-      "size": 4517,
-      "date": 132440507234305230
+      "size": 5189,
+      "date": 132451821670474456
     },
     {
       "path": "html_ui/Pages/VCockpit/Instruments/Shared/Map/MapInstrument.js",
-      "size": 63620,
-      "date": 132442481380127926
+      "size": 63557,
+      "date": 132453631632131559
     },
     {
       "path": "html_ui/Pages/VCockpit/Instruments/Shared/Map/Svg/SvgAirlinerElement.js",
       "size": 4249,
-      "date": 132442481375340209
+      "date": 132453631628586375
     },
     {
       "path": "html_ui/Pages/VCockpit/Instruments/Shared/Map/Svg/SvgAirplaneElement.js",
       "size": 14265,
-      "date": 132442481376050191
+      "date": 132453631628776371
     },
     {
       "path": "html_ui/Pages/VCockpit/Instruments/Shared/Map/Svg/SvgAirportElement.js",
       "size": 4517,
-      "date": 132442481376150186
+      "date": 132453631628866369
     },
     {
       "path": "html_ui/Pages/VCockpit/Instruments/Shared/Map/Svg/SvgAirspaceElement.js",
       "size": 7533,
-      "date": 132442481376630174
+      "date": 132453631629006365
     },
     {
       "path": "html_ui/Pages/VCockpit/Instruments/Shared/Map/Svg/SvgAirwayElement.js",
       "size": 1376,
-      "date": 132442481376690177
+      "date": 132453631629056364
     },
     {
       "path": "html_ui/Pages/VCockpit/Instruments/Shared/Map/Svg/SvgCityElement.js",
       "size": 4283,
-      "date": 132442481376770172
+      "date": 132453631629141439
     },
     {
       "path": "html_ui/Pages/VCockpit/Instruments/Shared/Map/Svg/SvgCityManager.js",
       "size": 2564,
-      "date": 132442481376840172
+      "date": 132453631629191436
     },
     {
       "path": "html_ui/Pages/VCockpit/Instruments/Shared/Map/Svg/SvgConstraintElement.js",
       "size": 10063,
-      "date": 132442481379172556
+      "date": 132453631631161371
     },
     {
       "path": "html_ui/Pages/VCockpit/Instruments/Shared/Map/Svg/SvgFlightPlanElement.js",
-      "size": 25879,
-      "date": 132442481377230154
+      "size": 26077,
+      "date": 132453631629511425
     },
     {
       "path": "html_ui/Pages/VCockpit/Instruments/Shared/Map/Svg/SvgLatLonElement.js",
       "size": 5624,
-      "date": 132442481377905808
+      "date": 132453631630061407
     },
     {
       "path": "html_ui/Pages/VCockpit/Instruments/Shared/Map/Svg/SvgMap.js",
       "size": 22093,
-      "date": 132442481377605392
+      "date": 132453631629791416
     },
     {
       "path": "html_ui/Pages/VCockpit/Instruments/Shared/Map/Svg/SvgMapConfig.js",
       "size": 11992,
-      "date": 132442481377805925
+      "date": 132453631629951411
     },
     {
       "path": "html_ui/Pages/VCockpit/Instruments/Shared/Map/Svg/SvgMapElement.js",
       "size": 2856,
-      "date": 132442481375200214
+      "date": 132453631628476383
     },
     {
       "path": "html_ui/Pages/VCockpit/Instruments/Shared/Map/Svg/SvgMaskElement.js",
       "size": 2620,
-      "date": 132442481379237724
+      "date": 132453631631221376
     },
     {
       "path": "html_ui/Pages/VCockpit/Instruments/Shared/Map/Svg/SvgNearestAirportElement.js",
-      "size": 1470,
-      "date": 132442481377955794
+      "size": 1475,
+      "date": 132453631630101406
     },
     {
       "path": "html_ui/Pages/VCockpit/Instruments/Shared/Map/Svg/SvgNearestIntersectionElement.js",
-      "size": 636,
-      "date": 132442481378015804
+      "size": 641,
+      "date": 132453631630131405
     },
     {
       "path": "html_ui/Pages/VCockpit/Instruments/Shared/Map/Svg/SvgNearestNDBElement.js",
-      "size": 1132,
-      "date": 132442481378055794
+      "size": 1137,
+      "date": 132453631630181402
     },
     {
       "path": "html_ui/Pages/VCockpit/Instruments/Shared/Map/Svg/SvgNearestVORElement.js",
-      "size": 1388,
-      "date": 132442481378130882
+      "size": 1393,
+      "date": 132453631630221406
     },
     {
       "path": "html_ui/Pages/VCockpit/Instruments/Shared/Map/Svg/SvgObstacleElement.js",
       "size": 3147,
-      "date": 132442481378215970
+      "date": 132453631630291399
     },
     {
       "path": "html_ui/Pages/VCockpit/Instruments/Shared/Map/Svg/SvgRailwayElement.js",
       "size": 1782,
-      "date": 132442481378295957
+      "date": 132453631630341405
     },
     {
       "path": "html_ui/Pages/VCockpit/Instruments/Shared/Map/Svg/SvgRoadElement.js",
       "size": 4370,
-      "date": 132442481378415957
+      "date": 132453631630481393
     },
     {
       "path": "html_ui/Pages/VCockpit/Instruments/Shared/Map/Svg/SvgRoadNetworkElement.js",
       "size": 22438,
-      "date": 132442481378732372
+      "date": 132453631630771387
     },
     {
       "path": "html_ui/Pages/VCockpit/Instruments/Shared/Map/Svg/SvgTextManager.js",
       "size": 2407,
-      "date": 132442481378792369
+      "date": 132453631630831382
     },
     {
       "path": "html_ui/Pages/VCockpit/Instruments/Shared/Map/Svg/SvgWaypointElement.js",
-      "size": 11716,
-      "date": 132442481378942369
+      "size": 11836,
+      "date": 132453631631001384
     },
     {
       "path": "html_ui/Pages/VCockpit/Instruments/Shared/Map/Test/mapConfig.json",
@@ -828,27 +868,27 @@
     {
       "path": "html_ui/Pages/VCockpit/Instruments/Shared/Map/Test/MapTest.js",
       "size": 2887,
-      "date": 132442481380217924
+      "date": 132453631632201559
     },
     {
       "path": "html_ui/Pages/VCockpit/Instruments/Shared/Map/Test/Test.html",
-      "size": 1711,
-      "date": 132440507236025178
+      "size": 1701,
+      "date": 132451821670984442
     },
     {
       "path": "html_ui/Pages/VCockpit/Instruments/Shared/Utils/DataReadManager.js",
       "size": 2060,
-      "date": 132442481380277922
+      "date": 132453631632251557
     },
     {
       "path": "html_ui/Pages/VCockpit/Instruments/Shared/Utils/RadioNav.js",
       "size": 12397,
-      "date": 132442481380578127
+      "date": 132453631632411554
     },
     {
       "path": "html_ui/Pages/VCockpit/Instruments/Shared/Utils/XMLLogic.js",
       "size": 29284,
-      "date": 132442481381068110
+      "date": 132453631632731546
     }
   ]
 }

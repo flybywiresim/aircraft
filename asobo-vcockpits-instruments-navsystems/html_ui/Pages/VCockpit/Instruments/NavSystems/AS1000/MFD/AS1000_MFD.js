@@ -311,6 +311,21 @@ class AS1000_MFD_ApproachWaypointLine extends MFD_ApproachWaypointLine {
     constructor(waypoint, index, _element) {
         super(waypoint, index, _element);
         this.mapMenu = new AS1000_MapMenu();
+        this.softKeys = new SoftKeysMenu();
+        this.softKeys.elements = [
+            new SoftKeyElement("ENGINE"),
+            new SoftKeyElement(""),
+            new SoftKeyElement("MAP", this.mapMenu.open.bind(this.mapMenu)),
+            new SoftKeyElement(""),
+            new SoftKeyElement(""),
+            new SoftKeyElement(""),
+            new SoftKeyElement(""),
+            new SoftKeyElement(""),
+            new SoftKeyElement(""),
+            new SoftKeyElement("ACT LEG", this.element.activateLeg.bind(this.element, this.index, true)),
+            new SoftKeyElement(""),
+            new SoftKeyElement(""),
+        ];
         this.mapMenu.init(this, this.element.gps);
     }
 }

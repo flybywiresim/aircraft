@@ -81,8 +81,10 @@ class SvgFlightPlanElement extends SvgMapElement {
         let lastLat = NaN;
         let lastLong = NaN;
         let departureRunwayCase;
+        let activeWaypointIndex = -1;
         if (this.source) {
             let l = this.source.getWaypointsCount();
+            activeWaypointIndex = this.source.getActiveWaypointIndex(false, true);
             let doLastLeg = true;
             if (this.source.getApproach() && this.source.getApproach().transitions.length > 0) {
                 doLastLeg = false;
@@ -99,7 +101,7 @@ class SvgFlightPlanElement extends SvgMapElement {
                 first = 1;
             }
             else if (this.hideReachedWaypoints) {
-                first = Math.max(0, this.source.getActiveWaypointIndex() - 1);
+                first = Math.max(0, activeWaypointIndex - 1);
             }
             let approach = this.source.getApproach();
             let last = (this.source.isActiveApproach() && approach) ? 0 : this.source.getLastIndexBeforeApproach();
@@ -307,10 +309,12 @@ class SvgFlightPlanElement extends SvgMapElement {
                 if (p1x !== p2x || p1y !== p2y) {
                     let isHighlit = false;
                     if (!this._isDashed && this.highlightActiveLeg) {
-                        if (p2.refWP.ident === this.source.getActiveWaypointIdent()) {
-                            isHighlit = true;
+                        if (this.source.getActiveWaypoint(false, true)) {
+                            if (p2.refWP.ident === this.source.getActiveWaypoint(false, true).ident) {
+                                isHighlit = true;
+                            }
                         }
-                        else if (this.source.getActiveWaypointIndex() <= 1 && p2.refWPIndex <= this.source.getActiveWaypointIndex()) {
+                        else if (activeWaypointIndex <= 1 && p2.refWPIndex <= activeWaypointIndex) {
                             isHighlit = true;
                         }
                     }

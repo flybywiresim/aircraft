@@ -1,5 +1,5 @@
-
-<Include Path="Asobo\Generic.xml"/>
+<ModelBehaviors>
+	<Include ModelBehaviorFile="Asobo\Generic.xml"/>
 
 <Template Name="ASOBO_FMC_Common_Params_Template">
 	<DefaultTemplateParameters>
@@ -1856,6 +1856,7 @@
 <Template Name="ASOBO_FMC_Screen">
 	<DefaultTemplateParameters>
 		<NODE_ID_SCREEN>#FMC_NAME#_Screen#SUFFIX_ID#</NODE_ID_SCREEN>
+		<PART_ID>SCREEN_FMC</PART_ID>
 	</DefaultTemplateParameters>
 	<EditableTemplateParameters>
 		<AddParams>
@@ -1868,6 +1869,11 @@
 			<DONT_OVERRIDE_BASE_EMISSIVE>False</DONT_OVERRIDE_BASE_EMISSIVE>
 			<EMISSIVE_CODE>(I:XMLVAR_MCDU_#ID#_Brightness)</EMISSIVE_CODE>
 		</UseTemplate>
+		<Condition Valid="CAMERA_TITLE">
+			<True>
+				<CameraTitle>#CAMERA_TITLE#</CameraTitle>
+			</True>
+		</Condition>
 	</Component>
 </Template>
 
@@ -1907,3 +1913,4 @@
 		</False>
 	</Condition>
 </Template>
+</ModelBehaviors>

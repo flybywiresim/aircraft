@@ -82,7 +82,11 @@ class SvgWaypointElement extends SvgMapElement {
         ctx.font = fontSize + "px " + map.config.waypointLabelFontFamily;
         this._textWidth = ctx.measureText(text).width;
         this._textHeight = fontSize * 0.675;
-        let ident = FlightPlanManager.DEBUG_INSTANCE.getActiveWaypointIdent();
+        let ident;
+        let activeWaypoint = FlightPlanManager.DEBUG_INSTANCE.getActiveWaypoint(false, true);
+        if (activeWaypoint) {
+            ident = activeWaypoint.ident;
+        }
         let isActiveWaypoint = this.source.ident === ident;
         this._refreshLabel(map, isActiveWaypoint);
         this._image = document.createElementNS(Avionics.SVG.NS, "image");

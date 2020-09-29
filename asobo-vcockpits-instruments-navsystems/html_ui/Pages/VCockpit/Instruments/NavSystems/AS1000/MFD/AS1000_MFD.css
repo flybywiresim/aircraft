@@ -105,16 +105,7 @@ as1000-mfd-element {
     position: relative; }
     as1000-mfd-element #Mainframe #Electricity {
       position: relative; }
-      as1000-mfd-element #Mainframe #Electricity #Compass {
-        transform: rotateX(0);
-        position: absolute;
-        border: none;
-        left: 10%;
-        top: -3.5%;
-        width: 80%;
-        height: 100%; }
       as1000-mfd-element #Mainframe #Electricity #NavBox {
-        transform: rotateX(0);
         position: absolute;
         background-color: #1a1d21;
         display: flex;
@@ -318,7 +309,8 @@ as1000-mfd-element {
               position: absolute;
               left: 0%;
               height: 100%;
-              width: 66%; }
+              width: 66%;
+              transform: rotateX(0); }
             as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #AirportInfos #Infos1 #rightPanel {
               position: absolute;
               right: 0%;
@@ -464,7 +456,8 @@ as1000-mfd-element {
                 height: 79%;
                 bottom: 1%;
                 left: 1%;
-                background-color: black; }
+                background-color: black;
+                transform: rotateX(0); }
               as1000-mfd-element #Mainframe #Electricity #CenterDisplay #MainDisplayArea #RightInfos #AirportInfos #Infos2 #DirectoryInfos {
                 position: absolute;
                 width: 48%;

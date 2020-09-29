@@ -131,14 +131,14 @@ boeing-fma.AS01B_HUD {
     color: lime; }
   boeing-fma.AS01B_HUD .middle {
     font-size: 25px;
-    color: white; }
-  boeing-fma.AS01B_HUD #Column2 .top, boeing-fma.AS01B_HUD #Column2 .middle {
-    border-left: 2px solid green;
-    border-right: 2px solid green; }
-  boeing-fma.AS01B_HUD #Column2 .bottom {
-    top: 240%;
-    font-size: 28px; }
-  boeing-fma.AS01B_HUD #Column2 #COL2_BOTTOM_ARROWS {
-    top: 240%;
-    fill: lime; }
+    color: lime; }
+  boeing-fma.AS01B_HUD #Column2 {
+    border-left: 2px solid lime;
+    border-right: 2px solid lime; }
+    boeing-fma.AS01B_HUD #Column2 .bottom {
+      top: 110%;
+      font-size: 28px; }
+    boeing-fma.AS01B_HUD #Column2 #COL2_BOTTOM_ARROWS {
+      top: 110%;
+      fill: lime; }
 

@@ -13,6 +13,7 @@ class Jet_PFD_AttitudeIndicator extends HTMLElement {
         this.horizonTopColor = "";
         this.horizonBottomColor = "";
         this.horizonVisible = true;
+        this.isHud = false;
         this._aircraft = Aircraft.A320_NEO;
     }
     static get dynamicAttributes() {
@@ -31,6 +32,7 @@ class Jet_PFD_AttitudeIndicator extends HTMLElement {
     static get observedAttributes() {
         return this.dynamicAttributes.concat([
             "background",
+            "hud"
         ]);
     }
     get aircraft() {
@@ -71,7 +73,7 @@ class Jet_PFD_AttitudeIndicator extends HTMLElement {
     construct_A320_Neo() {
         let pitchFactor = -7;
         this.pitchAngleFactor = pitchFactor;
-        this.horizonAngleFactor = pitchFactor * 1.2;
+        this.horizonAngleFactor = pitchFactor;
         {
             this.horizon_root = document.createElementNS(Avionics.SVG.NS, "svg");
             this.horizon_root.setAttribute("id", "Background");
@@ -104,7 +106,7 @@ class Jet_PFD_AttitudeIndicator extends HTMLElement {
                 this.horizon_bottom_bg.setAttribute("height", "3000");
                 this.horizon_bottom.appendChild(this.horizon_bottom_bg);
                 let separator = document.createElementNS(Avionics.SVG.NS, "rect");
-                separator.setAttribute("fill", "#e0e0e0");
+                separator.setAttribute("fill", "white");
                 separator.setAttribute("x", "-1500");
                 separator.setAttribute("y", "-3");
                 separator.setAttribute("width", "3000");
@@ -383,7 +385,7 @@ class Jet_PFD_AttitudeIndicator extends HTMLElement {
     construct_B747_8() {
         let pitchFactor = -6.5;
         this.pitchAngleFactor = pitchFactor;
-        this.horizonAngleFactor = pitchFactor * 1.2;
+        this.horizonAngleFactor = pitchFactor;
         {
             this.horizon_root = document.createElementNS(Avionics.SVG.NS, "svg");
             this.horizon_root.setAttribute("id", "Background");
@@ -416,7 +418,7 @@ class Jet_PFD_AttitudeIndicator extends HTMLElement {
                 this.horizon_bottom_bg.setAttribute("height", "3000");
                 this.horizon_bottom.appendChild(this.horizon_bottom_bg);
                 let separator = document.createElementNS(Avionics.SVG.NS, "rect");
-                separator.setAttribute("fill", "#e0e0e0");
+                separator.setAttribute("fill", "white");
                 separator.setAttribute("x", "-1500");
                 separator.setAttribute("y", "-3");
                 separator.setAttribute("width", "3000");
@@ -698,53 +700,54 @@ class Jet_PFD_AttitudeIndicator extends HTMLElement {
         this.applyAttributes();
     }
     construct_AS01B() {
-        let pitchFactor = -6.5;
+        let pitchFactor = (this.isHud) ? -30 : -6.5;
         this.pitchAngleFactor = pitchFactor;
-        this.horizonAngleFactor = pitchFactor * 1.2;
+        this.horizonAngleFactor = (this.isHud) ? pitchFactor * 1.1 : pitchFactor;
         {
             this.horizon_root = document.createElementNS(Avionics.SVG.NS, "svg");
             this.horizon_root.setAttribute("id", "Background");
             this.horizon_root.setAttribute("width", "100%");
             this.horizon_root.setAttribute("height", "100%");
             this.horizon_root.setAttribute("viewBox", "-200 -200 400 300");
-            this.horizon_root.setAttribute("x", "-100");
-            this.horizon_root.setAttribute("y", "-100");
             this.horizon_root.setAttribute("overflow", "visible");
-            this.horizon_root.setAttribute("style", "position:absolute; z-index: -3; width: 100%; height:100%;");
-            this.horizon_root.setAttribute("transform", "translate(0, 100)");
+            this.horizon_root.setAttribute("style", "position:absolute; z-index:-3; width:100%; height:100%;");
             this.appendChild(this.horizon_root);
-            this.horizonTopColor = "#0B3B82";
-            this.horizonBottomColor = "#4F371E";
-            this.horizon_top_bg = document.createElementNS(Avionics.SVG.NS, "rect");
-            this.horizon_top_bg.setAttribute("fill", (this.horizonVisible) ? this.horizonTopColor : "transparent");
-            this.horizon_top_bg.setAttribute("x", "-1000");
-            this.horizon_top_bg.setAttribute("y", "-1000");
-            this.horizon_top_bg.setAttribute("width", "2000");
-            this.horizon_top_bg.setAttribute("height", "2000");
-            this.horizon_root.appendChild(this.horizon_top_bg);
+            this.horizonTopColor = (this.horizonVisible && !this.isHud) ? "#0B3B82" : "transparent";
+            this.horizonBottomColor = (this.horizonVisible && !this.isHud) ? "#4F371E" : "transparent";
+            if (!this.isHud) {
+                this.horizon_top_bg = document.createElementNS(Avionics.SVG.NS, "rect");
+                this.horizon_top_bg.setAttribute("fill", this.horizonTopColor);
+                this.horizon_top_bg.setAttribute("x", "-1000");
+                this.horizon_top_bg.setAttribute("y", "-1000");
+                this.horizon_top_bg.setAttribute("width", "2000");
+                this.horizon_top_bg.setAttribute("height", "2000");
+                this.horizon_root.appendChild(this.horizon_top_bg);
+            }
             this.horizon_bottom = document.createElementNS(Avionics.SVG.NS, "g");
             this.horizon_root.appendChild(this.horizon_bottom);
             {
-                this.horizon_bottom_bg = document.createElementNS(Avionics.SVG.NS, "rect");
-                this.horizon_bottom_bg.setAttribute("fill", (this.horizonVisible) ? this.horizonBottomColor : "transparent");
-                this.horizon_bottom_bg.setAttribute("x", "-1500");
-                this.horizon_bottom_bg.setAttribute("y", "0");
-                this.horizon_bottom_bg.setAttribute("width", "3000");
-                this.horizon_bottom_bg.setAttribute("height", "3000");
-                this.horizon_bottom.appendChild(this.horizon_bottom_bg);
+                if (!this.isHud) {
+                    this.horizon_bottom_bg = document.createElementNS(Avionics.SVG.NS, "rect");
+                    this.horizon_bottom_bg.setAttribute("fill", this.horizonBottomColor);
+                    this.horizon_bottom_bg.setAttribute("x", "-1500");
+                    this.horizon_bottom_bg.setAttribute("y", "0");
+                    this.horizon_bottom_bg.setAttribute("width", "3000");
+                    this.horizon_bottom_bg.setAttribute("height", "3000");
+                    this.horizon_bottom.appendChild(this.horizon_bottom_bg);
+                }
                 let separator = document.createElementNS(Avionics.SVG.NS, "rect");
-                separator.setAttribute("fill", "#e0e0e0");
-                separator.setAttribute("x", "-1500");
-                separator.setAttribute("y", "-3");
-                separator.setAttribute("width", "3000");
-                separator.setAttribute("height", "6");
+                separator.setAttribute("fill", (this.isHud) ? "lime" : "white");
+                separator.setAttribute("x", (this.isHud) ? "-400" : "-1500");
+                separator.setAttribute("y", "-90");
+                separator.setAttribute("width", (this.isHud) ? "765" : "3000");
+                separator.setAttribute("height", (this.isHud) ? "3" : "6");
                 this.horizon_bottom.appendChild(separator);
             }
         }
         {
             let pitchContainer = document.createElement("div");
             pitchContainer.setAttribute("id", "Pitch");
-            pitchContainer.style.top = "-14%";
+            pitchContainer.style.top = (this.isHud) ? "-42.5%" : "-14%";
             pitchContainer.style.left = "-10%";
             pitchContainer.style.width = "120%";
             pitchContainer.style.height = "120%";
@@ -760,10 +763,10 @@ class Jet_PFD_AttitudeIndicator extends HTMLElement {
             {
                 this.pitch_root = document.createElementNS(Avionics.SVG.NS, "g");
                 pitchSvg.appendChild(this.pitch_root);
-                var x = -115;
-                var y = -120;
-                var w = 230;
-                var h = 280;
+                var x = (this.isHud) ? -130 : -115;
+                var y = (this.isHud) ? -100 : -120;
+                var w = (this.isHud) ? 260 : 230;
+                var h = (this.isHud) ? 310 : 280;
                 let attitudePitchContainer = document.createElementNS(Avionics.SVG.NS, "svg");
                 attitudePitchContainer.setAttribute("width", w.toString());
                 attitudePitchContainer.setAttribute("height", h.toString());
@@ -774,116 +777,190 @@ class Jet_PFD_AttitudeIndicator extends HTMLElement {
                 this.pitch_root.appendChild(attitudePitchContainer);
                 this.attitude_pitch = document.createElementNS(Avionics.SVG.NS, "g");
                 attitudePitchContainer.appendChild(this.attitude_pitch);
-                let maxDash = 80;
-                let fullPrecisionLowerLimit = -25;
-                let fullPrecisionUpperLimit = 25;
-                let halfPrecisionLowerLimit = -30;
-                let halfPrecisionUpperLimit = 45;
-                let unusualAttitudeLowerLimit = -30;
-                let unusualAttitudeUpperLimit = 50;
-                let bigWidth = 120;
-                let bigHeight = 3;
-                let mediumWidth = 60;
-                let mediumHeight = 3;
-                let smallWidth = 40;
-                let smallHeight = 2;
-                let fontSize = 20;
-                let angle = -maxDash;
-                let nextAngle;
-                let width;
-                let height;
-                let text;
-                while (angle <= maxDash) {
-                    if (angle % 10 == 0) {
+                if (this.isHud) {
+                    let maxDash = 80;
+                    let bigWidth = 120;
+                    let bigHeight = 3;
+                    let fontSize = 20;
+                    let angle = -maxDash;
+                    let nextAngle;
+                    let width;
+                    let height;
+                    while (angle <= maxDash) {
                         width = bigWidth;
                         height = bigHeight;
-                        text = true;
-                        if (angle >= fullPrecisionLowerLimit && angle < fullPrecisionUpperLimit) {
-                            nextAngle = angle + 2.5;
-                        }
-                        else if (angle >= halfPrecisionLowerLimit && angle < halfPrecisionUpperLimit) {
-                            nextAngle = angle + 5;
-                        }
-                        else {
-                            nextAngle = angle + 10;
-                        }
-                    }
-                    else {
-                        if (angle % 5 == 0) {
-                            width = mediumWidth;
-                            height = mediumHeight;
-                            text = false;
-                            if (angle >= fullPrecisionLowerLimit && angle < fullPrecisionUpperLimit) {
-                                nextAngle = angle + 2.5;
-                            }
-                            else {
-                                nextAngle = angle + 5;
-                            }
-                        }
-                        else {
-                            width = smallWidth;
-                            height = smallHeight;
-                            nextAngle = angle + 2.5;
-                            text = false;
-                        }
-                    }
-                    if (angle != 0) {
-                        let rect = document.createElementNS(Avionics.SVG.NS, "rect");
-                        rect.setAttribute("fill", "white");
-                        rect.setAttribute("x", (-width / 2).toString());
-                        rect.setAttribute("y", (pitchFactor * angle - height / 2).toString());
-                        rect.setAttribute("width", width.toString());
-                        rect.setAttribute("height", height.toString());
-                        this.attitude_pitch.appendChild(rect);
-                        if (text) {
+                        nextAngle = angle + 5;
+                        if (angle != 0) {
                             let leftText = document.createElementNS(Avionics.SVG.NS, "text");
-                            leftText.textContent = Math.abs(angle).toString();
-                            leftText.setAttribute("x", ((-width / 2) - 5).toString());
+                            leftText.textContent = angle.toString();
+                            leftText.setAttribute("x", ((-width / 2) - 35).toString());
                             leftText.setAttribute("y", (pitchFactor * angle - height / 2 + fontSize / 2).toString());
                             leftText.setAttribute("text-anchor", "end");
                             leftText.setAttribute("font-size", fontSize.toString());
-                            leftText.setAttribute("font-family", "Roboto-Light");
-                            leftText.setAttribute("fill", "white");
+                            leftText.setAttribute("font-family", "Roboto-Bold");
+                            leftText.setAttribute("fill", "lime");
                             this.attitude_pitch.appendChild(leftText);
+                            let leftHLine = document.createElementNS(Avionics.SVG.NS, "line");
+                            leftHLine.setAttribute("x1", ((-width / 2) - 30).toString());
+                            leftHLine.setAttribute("y1", (pitchFactor * angle - height / 2).toString());
+                            leftHLine.setAttribute("x2", "-35");
+                            leftHLine.setAttribute("y2", (pitchFactor * angle - height / 2).toString());
+                            leftHLine.setAttribute("stroke", "lime");
+                            leftHLine.setAttribute("stroke-width", "3");
+                            if (angle < 0)
+                                leftHLine.setAttribute("stroke-dasharray", "18 2");
+                            this.attitude_pitch.appendChild(leftHLine);
+                            let leftVLine = document.createElementNS(Avionics.SVG.NS, "line");
+                            leftVLine.setAttribute("x1", ((-width / 2) - 30).toString());
+                            leftVLine.setAttribute("y1", (pitchFactor * angle - height / 2).toString());
+                            leftVLine.setAttribute("x2", ((-width / 2) - 30).toString());
+                            leftVLine.setAttribute("y2", ((angle > 0) ? (pitchFactor * angle - height / 2 + 8) : (pitchFactor * angle - height / 2 - 8)).toString());
+                            leftVLine.setAttribute("stroke", "lime");
+                            leftVLine.setAttribute("stroke-width", "3");
+                            this.attitude_pitch.appendChild(leftVLine);
                             let rightText = document.createElementNS(Avionics.SVG.NS, "text");
-                            rightText.textContent = Math.abs(angle).toString();
-                            rightText.setAttribute("x", ((width / 2) + 5).toString());
+                            rightText.textContent = angle.toString();
+                            rightText.setAttribute("x", ((width / 2) + 35).toString());
                             rightText.setAttribute("y", (pitchFactor * angle - height / 2 + fontSize / 2).toString());
                             rightText.setAttribute("text-anchor", "start");
                             rightText.setAttribute("font-size", fontSize.toString());
-                            rightText.setAttribute("font-family", "Roboto-Light");
-                            rightText.setAttribute("fill", "white");
+                            rightText.setAttribute("font-family", "Roboto-Bold");
+                            rightText.setAttribute("fill", "lime");
                             this.attitude_pitch.appendChild(rightText);
+                            let rightHLine = document.createElementNS(Avionics.SVG.NS, "line");
+                            rightHLine.setAttribute("x1", ((width / 2) + 30).toString());
+                            rightHLine.setAttribute("y1", (pitchFactor * angle - height / 2).toString());
+                            rightHLine.setAttribute("x2", "35");
+                            rightHLine.setAttribute("y2", (pitchFactor * angle - height / 2).toString());
+                            rightHLine.setAttribute("stroke", "lime");
+                            rightHLine.setAttribute("stroke-width", "3");
+                            if (angle < 0)
+                                rightHLine.setAttribute("stroke-dasharray", "18 2");
+                            this.attitude_pitch.appendChild(rightHLine);
+                            let rightVLine = document.createElementNS(Avionics.SVG.NS, "line");
+                            rightVLine.setAttribute("x1", ((width / 2) + 30).toString());
+                            rightVLine.setAttribute("y1", (pitchFactor * angle - height / 2).toString());
+                            rightVLine.setAttribute("x2", ((width / 2) + 30).toString());
+                            rightVLine.setAttribute("y2", ((angle > 0) ? (pitchFactor * angle - height / 2 + 8) : (pitchFactor * angle - height / 2 - 8)).toString());
+                            rightVLine.setAttribute("stroke", "lime");
+                            rightVLine.setAttribute("stroke-width", "3");
+                            this.attitude_pitch.appendChild(rightVLine);
                         }
-                        if (angle < unusualAttitudeLowerLimit) {
-                            let chevron = document.createElementNS(Avionics.SVG.NS, "path");
-                            let path = "M" + -smallWidth / 2 + " " + (pitchFactor * nextAngle - bigHeight / 2) + " l" + smallWidth + "  0 ";
-                            path += "L" + bigWidth / 2 + " " + (pitchFactor * angle - bigHeight / 2) + " l" + -smallWidth + " 0 ";
-                            path += "L0 " + (pitchFactor * nextAngle + 20) + " ";
-                            path += "L" + (-bigWidth / 2 + smallWidth) + " " + (pitchFactor * angle - bigHeight / 2) + " l" + -smallWidth + " 0 Z";
-                            chevron.setAttribute("d", path);
-                            chevron.setAttribute("fill", "red");
-                            this.attitude_pitch.appendChild(chevron);
-                        }
-                        if (angle >= unusualAttitudeUpperLimit && nextAngle <= maxDash) {
-                            let chevron = document.createElementNS(Avionics.SVG.NS, "path");
-                            let path = "M" + -smallWidth / 2 + " " + (pitchFactor * angle - bigHeight / 2) + " l" + smallWidth + "  0 ";
-                            path += "L" + (bigWidth / 2) + " " + (pitchFactor * nextAngle + bigHeight / 2) + " l" + -smallWidth + " 0 ";
-                            path += "L0 " + (pitchFactor * angle - 20) + " ";
-                            path += "L" + (-bigWidth / 2 + smallWidth) + " " + (pitchFactor * nextAngle + bigHeight / 2) + " l" + -smallWidth + " 0 Z";
-                            chevron.setAttribute("d", path);
-                            chevron.setAttribute("fill", "red");
-                            this.attitude_pitch.appendChild(chevron);
-                        }
+                        angle = nextAngle;
                     }
-                    angle = nextAngle;
+                }
+                else {
+                    let maxDash = 80;
+                    let fullPrecisionLowerLimit = -25;
+                    let fullPrecisionUpperLimit = 25;
+                    let halfPrecisionLowerLimit = -30;
+                    let halfPrecisionUpperLimit = 45;
+                    let unusualAttitudeLowerLimit = -30;
+                    let unusualAttitudeUpperLimit = 50;
+                    let bigWidth = 120;
+                    let bigHeight = 3;
+                    let mediumWidth = 60;
+                    let mediumHeight = 3;
+                    let smallWidth = 40;
+                    let smallHeight = 2;
+                    let fontSize = 20;
+                    let angle = -maxDash;
+                    let nextAngle;
+                    let width;
+                    let height;
+                    let text;
+                    while (angle <= maxDash) {
+                        if (angle % 10 == 0) {
+                            width = bigWidth;
+                            height = bigHeight;
+                            text = true;
+                            if (angle >= fullPrecisionLowerLimit && angle < fullPrecisionUpperLimit) {
+                                nextAngle = angle + 2.5;
+                            }
+                            else if (angle >= halfPrecisionLowerLimit && angle < halfPrecisionUpperLimit) {
+                                nextAngle = angle + 5;
+                            }
+                            else {
+                                nextAngle = angle + 10;
+                            }
+                        }
+                        else {
+                            if (angle % 5 == 0) {
+                                width = mediumWidth;
+                                height = mediumHeight;
+                                text = false;
+                                if (angle >= fullPrecisionLowerLimit && angle < fullPrecisionUpperLimit) {
+                                    nextAngle = angle + 2.5;
+                                }
+                                else {
+                                    nextAngle = angle + 5;
+                                }
+                            }
+                            else {
+                                width = smallWidth;
+                                height = smallHeight;
+                                nextAngle = angle + 2.5;
+                                text = false;
+                            }
+                        }
+                        if (angle != 0) {
+                            let rect = document.createElementNS(Avionics.SVG.NS, "rect");
+                            rect.setAttribute("fill", "white");
+                            rect.setAttribute("x", (-width / 2).toString());
+                            rect.setAttribute("y", (pitchFactor * angle - height / 2).toString());
+                            rect.setAttribute("width", width.toString());
+                            rect.setAttribute("height", height.toString());
+                            this.attitude_pitch.appendChild(rect);
+                            if (text) {
+                                let leftText = document.createElementNS(Avionics.SVG.NS, "text");
+                                leftText.textContent = Math.abs(angle).toString();
+                                leftText.setAttribute("x", ((-width / 2) - 5).toString());
+                                leftText.setAttribute("y", (pitchFactor * angle - height / 2 + fontSize / 2).toString());
+                                leftText.setAttribute("text-anchor", "end");
+                                leftText.setAttribute("font-size", fontSize.toString());
+                                leftText.setAttribute("font-family", "Roboto-Light");
+                                leftText.setAttribute("fill", "white");
+                                this.attitude_pitch.appendChild(leftText);
+                                let rightText = document.createElementNS(Avionics.SVG.NS, "text");
+                                rightText.textContent = Math.abs(angle).toString();
+                                rightText.setAttribute("x", ((width / 2) + 5).toString());
+                                rightText.setAttribute("y", (pitchFactor * angle - height / 2 + fontSize / 2).toString());
+                                rightText.setAttribute("text-anchor", "start");
+                                rightText.setAttribute("font-size", fontSize.toString());
+                                rightText.setAttribute("font-family", "Roboto-Light");
+                                rightText.setAttribute("fill", "white");
+                                this.attitude_pitch.appendChild(rightText);
+                            }
+                            if (angle < unusualAttitudeLowerLimit) {
+                                let chevron = document.createElementNS(Avionics.SVG.NS, "path");
+                                let path = "M" + -smallWidth / 2 + " " + (pitchFactor * nextAngle - bigHeight / 2) + " l" + smallWidth + "  0 ";
+                                path += "L" + bigWidth / 2 + " " + (pitchFactor * angle - bigHeight / 2) + " l" + -smallWidth + " 0 ";
+                                path += "L0 " + (pitchFactor * nextAngle + 20) + " ";
+                                path += "L" + (-bigWidth / 2 + smallWidth) + " " + (pitchFactor * angle - bigHeight / 2) + " l" + -smallWidth + " 0 Z";
+                                chevron.setAttribute("d", path);
+                                chevron.setAttribute("fill", "red");
+                                this.attitude_pitch.appendChild(chevron);
+                            }
+                            else if (angle >= unusualAttitudeUpperLimit && nextAngle <= maxDash) {
+                                let chevron = document.createElementNS(Avionics.SVG.NS, "path");
+                                let path = "M" + -smallWidth / 2 + " " + (pitchFactor * angle - bigHeight / 2) + " l" + smallWidth + "  0 ";
+                                path += "L" + (bigWidth / 2) + " " + (pitchFactor * nextAngle + bigHeight / 2) + " l" + -smallWidth + " 0 ";
+                                path += "L0 " + (pitchFactor * angle - 20) + " ";
+                                path += "L" + (-bigWidth / 2 + smallWidth) + " " + (pitchFactor * nextAngle + bigHeight / 2) + " l" + -smallWidth + " 0 Z";
+                                chevron.setAttribute("d", path);
+                                chevron.setAttribute("fill", "red");
+                                this.attitude_pitch.appendChild(chevron);
+                            }
+                        }
+                        angle = nextAngle;
+                    }
                 }
             }
         }
         {
             let attitudeContainer = document.createElement("div");
             attitudeContainer.setAttribute("id", "Attitude");
-            attitudeContainer.style.top = "-13%";
+            attitudeContainer.style.top = (this.isHud) ? "-40%" : "-13%";
             attitudeContainer.style.left = "-10%";
             attitudeContainer.style.width = "120%";
             attitudeContainer.style.height = "120%";
@@ -901,10 +978,18 @@ class Jet_PFD_AttitudeIndicator extends HTMLElement {
                 this.attitude_root.appendChild(this.attitude_bank);
                 let topTriangle = document.createElementNS(Avionics.SVG.NS, "path");
                 topTriangle.setAttribute("d", "M0 -152 l-8 -12 l16 0 Z");
-                topTriangle.setAttribute("fill", "white");
+                topTriangle.setAttribute("fill", (this.isHud) ? "lime" : "white");
                 this.attitude_bank.appendChild(topTriangle);
-                let smallDashesAngle = [-60, -45, -30, -20, -10, 10, 20, 30, 45, 60];
-                let smallDashesHeight = [26, 13, 26, 13, 13, 13, 13, 26, 13, 26];
+                let smallDashesAngle;
+                let smallDashesHeight;
+                if (this.isHud) {
+                    smallDashesAngle = [-30, -20, -10, 10, 20, 30];
+                    smallDashesHeight = [13, 13, 13, 13, 13, 13];
+                }
+                else {
+                    smallDashesAngle = [-60, -45, -30, -20, -10, 10, 20, 30, 45, 60];
+                    smallDashesHeight = [26, 13, 26, 13, 13, 13, 13, 26, 13, 26];
+                }
                 let radius = 150;
                 for (let i = 0; i < smallDashesAngle.length; i++) {
                     let dash = document.createElementNS(Avionics.SVG.NS, "line");
@@ -912,7 +997,7 @@ class Jet_PFD_AttitudeIndicator extends HTMLElement {
                     dash.setAttribute("y1", (-radius).toString());
                     dash.setAttribute("x2", "0");
                     dash.setAttribute("y2", (-radius - smallDashesHeight[i]).toString());
-                    dash.setAttribute("stroke", "white");
+                    dash.setAttribute("stroke", (this.isHud) ? "lime" : "white");
                     dash.setAttribute("stroke-width", "3");
                     dash.setAttribute("transform", "rotate(" + smallDashesAngle[i] + ",0,0)");
                     this.attitude_bank.appendChild(dash);
@@ -921,42 +1006,52 @@ class Jet_PFD_AttitudeIndicator extends HTMLElement {
             {
                 let cursors = document.createElementNS(Avionics.SVG.NS, "g");
                 this.attitude_root.appendChild(cursors);
-                let leftUpper = document.createElementNS(Avionics.SVG.NS, "path");
-                leftUpper.setAttribute("d", "M-125 2 l0 -6 l55 0 l0 28 l-5 0 l0 -22 l-40 0 Z");
-                leftUpper.setAttribute("fill", "black");
-                leftUpper.setAttribute("stroke", "white");
-                leftUpper.setAttribute("stroke-width", "1");
-                leftUpper.setAttribute("stroke-opacity", "1.0");
-                cursors.appendChild(leftUpper);
-                let rightUpper = document.createElementNS(Avionics.SVG.NS, "path");
-                rightUpper.setAttribute("d", "M125 2 l0 -6 l-55 0 l0 28 l5 0 l0 -22 l40 0 Z");
-                rightUpper.setAttribute("fill", "black");
-                rightUpper.setAttribute("stroke", "white");
-                rightUpper.setAttribute("stroke-width", "1");
-                rightUpper.setAttribute("stroke-opacity", "1.0");
-                cursors.appendChild(rightUpper);
-                let centerRect = document.createElementNS(Avionics.SVG.NS, "rect");
-                centerRect.setAttribute("x", "-4");
-                centerRect.setAttribute("y", "-5");
-                centerRect.setAttribute("height", "8");
-                centerRect.setAttribute("width", "8");
-                centerRect.setAttribute("stroke", "white");
-                centerRect.setAttribute("stroke-width", "3");
-                cursors.appendChild(centerRect);
+                if (this.isHud) {
+                    let planeSymbol = document.createElementNS(Avionics.SVG.NS, "path");
+                    planeSymbol.setAttribute("d", "M-45 -7 l40 0 l5 5 l5 -5 l40 0 l0 7 l-40 0 l-5 5 l-5 -5 l-40 0 Z");
+                    planeSymbol.setAttribute("fill", "transparent");
+                    planeSymbol.setAttribute("stroke", "lime");
+                    planeSymbol.setAttribute("stroke-width", "2.5");
+                    cursors.appendChild(planeSymbol);
+                }
+                else {
+                    let leftUpper = document.createElementNS(Avionics.SVG.NS, "path");
+                    leftUpper.setAttribute("d", "M-125 2 l0 -6 l55 0 l0 28 l-5 0 l0 -22 l-40 0 Z");
+                    leftUpper.setAttribute("fill", "black");
+                    leftUpper.setAttribute("stroke", "white");
+                    leftUpper.setAttribute("stroke-width", "1");
+                    leftUpper.setAttribute("stroke-opacity", "1.0");
+                    cursors.appendChild(leftUpper);
+                    let rightUpper = document.createElementNS(Avionics.SVG.NS, "path");
+                    rightUpper.setAttribute("d", "M125 2 l0 -6 l-55 0 l0 28 l5 0 l0 -22 l40 0 Z");
+                    rightUpper.setAttribute("fill", "black");
+                    rightUpper.setAttribute("stroke", "white");
+                    rightUpper.setAttribute("stroke-width", "1");
+                    rightUpper.setAttribute("stroke-opacity", "1.0");
+                    cursors.appendChild(rightUpper);
+                    let centerRect = document.createElementNS(Avionics.SVG.NS, "rect");
+                    centerRect.setAttribute("x", "-4");
+                    centerRect.setAttribute("y", "-5");
+                    centerRect.setAttribute("height", "8");
+                    centerRect.setAttribute("width", "8");
+                    centerRect.setAttribute("stroke", "white");
+                    centerRect.setAttribute("stroke-width", "3");
+                    cursors.appendChild(centerRect);
+                }
                 this.slipSkidTriangle = document.createElementNS(Avionics.SVG.NS, "path");
                 this.slipSkidTriangle.setAttribute("d", "M0 -149 l-13 18 l26 0 Z");
                 this.slipSkidTriangle.setAttribute("fill", "transparent");
-                this.slipSkidTriangle.setAttribute("stroke", "white");
+                this.slipSkidTriangle.setAttribute("stroke", (this.isHud) ? "lime" : "white");
                 this.slipSkidTriangle.setAttribute("stroke-width", "1.5");
                 this.attitude_root.appendChild(this.slipSkidTriangle);
                 this.slipSkid = document.createElementNS(Avionics.SVG.NS, "path");
                 this.slipSkid.setAttribute("d", "M-14 -122 L-14 -128 L14 -128 L14 -122 Z");
                 this.slipSkid.setAttribute("fill", "transparent");
-                this.slipSkid.setAttribute("stroke", "white");
+                this.slipSkid.setAttribute("stroke", (this.isHud) ? "lime" : "white");
                 this.slipSkid.setAttribute("stroke-width", "1.5");
                 this.attitude_root.appendChild(this.slipSkid);
             }
-            {
+            if (!this.isHud) {
                 this.radioAltitudeGroup = document.createElementNS(Avionics.SVG.NS, "g");
                 this.radioAltitudeGroup.setAttribute("id", "RadioAltitude");
                 this.attitude_root.appendChild(this.radioAltitudeGroup);
@@ -990,7 +1085,7 @@ class Jet_PFD_AttitudeIndicator extends HTMLElement {
     construct_CJ4() {
         let pitchFactor = -7;
         this.pitchAngleFactor = pitchFactor;
-        this.horizonAngleFactor = pitchFactor * 1.65;
+        this.horizonAngleFactor = pitchFactor * 1.67;
         {
             this.horizon_root = document.createElementNS(Avionics.SVG.NS, "svg");
             this.horizon_root.setAttribute("id", "Background");
@@ -1023,7 +1118,7 @@ class Jet_PFD_AttitudeIndicator extends HTMLElement {
                 this.horizon_bottom_bg.setAttribute("height", "3000");
                 this.horizon_bottom.appendChild(this.horizon_bottom_bg);
                 let separator = document.createElementNS(Avionics.SVG.NS, "rect");
-                separator.setAttribute("fill", "#e0e0e0");
+                separator.setAttribute("fill", "white");
                 separator.setAttribute("x", "-1500");
                 separator.setAttribute("y", "-3");
                 separator.setAttribute("width", "3000");
@@ -1318,16 +1413,6 @@ class Jet_PFD_AttitudeIndicator extends HTMLElement {
             this.slipSkidTriangle.setAttribute("transform", "rotate(" + this.bankAngle + ", 0, 0)");
         if (this.radioAltitude && this.radioAltitudeRotate)
             this.radioAltitude.setAttribute("transform", "rotate(" + this.bankAngle + ", 0, 0)");
-        if (this.horizon_top_bg) {
-            if (this.horizonVisible) {
-                this.horizon_top_bg.setAttribute("fill", this.horizonTopColor);
-                this.horizon_bottom_bg.setAttribute("fill", this.horizonBottomColor);
-            }
-            else {
-                this.horizon_top_bg.setAttribute("fill", "transparent");
-                this.horizon_bottom_bg.setAttribute("fill", "transparent");
-            }
-        }
         if (this.cj4_FlightDirector != null) {
             if (this.cj4_FlightDirectorActive) {
                 this.cj4_FlightDirector.setAttribute("transform", "rotate(" + (-this.cj4_FlightDirectorBank) + ") translate(0 " + ((this.pitchAngle - this.cj4_FlightDirectorPitch) * this.pitchAngleFactor) + ")");
@@ -1354,11 +1439,11 @@ class Jet_PFD_AttitudeIndicator extends HTMLElement {
             case "slip_skid":
                 this.slipSkidValue = parseFloat(newValue);
                 break;
+            case "hud":
+                this.isHud = newValue == "true";
+                break;
             case "background":
-                if (newValue == "false")
-                    this.horizonVisible = false;
-                else
-                    this.horizonVisible = true;
+                this.horizonVisible = newValue == "true";
                 break;
             case "flight_director-active":
                 this.cj4_FlightDirectorActive = newValue == "true";

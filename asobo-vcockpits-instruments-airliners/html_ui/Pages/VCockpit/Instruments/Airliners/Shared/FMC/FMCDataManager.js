@@ -47,7 +47,7 @@ class FMCDataManager {
             return undefined;
         }
         let icao = "A      " + ident.toLocaleUpperCase();
-        let airportWaypoint = await FacilityLoader.Instance.getAirport(icao);
+        let airportWaypoint = await this.fmc.facilityLoader.getAirport(icao);
         return airportWaypoint;
     }
     async GetWaypointsByIdent(ident) {
@@ -72,7 +72,7 @@ class FMCDataManager {
                         return new Promise((resolve) => {
                             SimVar.SetSimVarValue("C:fs9gps:IcaoSearchMatchedIcao", "number", index, "FMC").then(async () => {
                                 let icao = SimVar.GetSimVarValue("C:fs9gps:IcaoSearchCurrentIcao", "string", "FMC");
-                                let waypoint = await FacilityLoader.Instance.getFacility(icao);
+                                let waypoint = await this.fmc.facilityLoader.getFacility(icao);
                                 resolve(waypoint);
                             });
                         });

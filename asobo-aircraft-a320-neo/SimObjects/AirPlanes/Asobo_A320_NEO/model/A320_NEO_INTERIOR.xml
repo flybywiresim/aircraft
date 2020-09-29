@@ -10,13 +10,12 @@
 		<LOD minSize="20" ModelFile="A320_NEO_INTERIOR_LOD03.gltf"/>
 		<LOD minSize="10" ModelFile="A320_NEO_INTERIOR_LOD04.gltf"/>
 	</LODS>
-</ModelInfo>
-<ModelBehaviors>
-	<Include Path="Asobo\Common.xml"/>
-	<Include Path="Asobo\Airliner\AirlinerCommon.xml"/>
-	<Include Path="Asobo\Airliner\FMC.xml"/>
-	<Include Path="Asobo\Airliner\GlassCockpit.xml"/>
-	<Include Path="Asobo\Airliner\Airbus.xml"/>
+	<Behaviors>
+		<Include ModelBehaviorFile="Asobo\Common.xml"/>
+		<Include ModelBehaviorFile="Asobo\Airliner\AirlinerCommon.xml"/>
+		<Include ModelBehaviorFile="Asobo\Airliner\FMC.xml"/>
+		<Include ModelBehaviorFile="Asobo\Airliner\GlassCockpit.xml"/>
+		<Include ModelBehaviorFile="Asobo\Airliner\Airbus.xml"/>
 
 <!-- RETROECLAIRAGE #############################################################################################################-->	
 	<Component ID="MCDU">
@@ -168,6 +167,7 @@
 			<NODE_ID_BRT_DIM_SEQ1>PUSH_MCDUL_BRT_SEQ1</NODE_ID_BRT_DIM_SEQ1>
 			<NODE_ID_BRT_DIM_SEQ2>PUSH_MCDUL_DIM_SEQ1</NODE_ID_BRT_DIM_SEQ2>
 			<NODE_ID_SCREEN>SCREEN_MCDUL</NODE_ID_SCREEN>
+			<CAMERA_TITLE>ECAM</CAMERA_TITLE>
 		</UseTemplate>
 		<UseTemplate Name="ASOBO_FMC_A320">
 			<ID>2</ID>
@@ -727,6 +727,8 @@
 			<UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
 				<NODE_ID>SCREEN_PFD_L</NODE_ID>
 				<POTENTIOMETER>18</POTENTIOMETER>
+				<PART_ID>SCREEN_PFD1</PART_ID>
+				<CAMERA_TITLE>PFD</CAMERA_TITLE>
 			</UseTemplate>	
 			
 			<UseTemplate Name="ASOBO_LIGHTING_Knob_Potentiometer_Template">
@@ -741,6 +743,8 @@
 			<UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
 				<NODE_ID>SCREEN_MFD_L</NODE_ID>
 				<POTENTIOMETER>19</POTENTIOMETER>
+				<PART_ID>SCREEN_MFD1</PART_ID>
+				<CAMERA_TITLE>MFD</CAMERA_TITLE>
 			</UseTemplate>	
 		</Component>
 		
@@ -757,6 +761,7 @@
 			<UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
 				<NODE_ID>SCREEN_PFD_R</NODE_ID>
 				<POTENTIOMETER>20</POTENTIOMETER>
+				<PART_ID>SCREEN_PFD2</PART_ID>
 			</UseTemplate>	
 			
 			<UseTemplate Name="ASOBO_LIGHTING_Knob_Potentiometer_Template">
@@ -771,6 +776,7 @@
 			<UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
 				<NODE_ID>SCREEN_MFD_R</NODE_ID>
 				<POTENTIOMETER>21</POTENTIOMETER>
+				<PART_ID>SCREEN_MFD2</PART_ID>
 			</UseTemplate>
 		</Component>	
 	</Component>
@@ -1020,6 +1026,8 @@
 			<UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
 				<NODE_ID>SCREEN_EICAS1</NODE_ID>
 				<POTENTIOMETER>22</POTENTIOMETER>
+				<PART_ID>SCREEN_EICAS1</PART_ID>
+				<CAMERA_TITLE>ECAM</CAMERA_TITLE>
 			</UseTemplate>	
 			<UseTemplate Name="ASOBO_LIGHTING_Knob_Potentiometer_Template">
 				<POTENTIOMETER>23</POTENTIOMETER>
@@ -1032,6 +1040,8 @@
 			<UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
 				<NODE_ID>SCREEN_EICAS2</NODE_ID>
 				<POTENTIOMETER>23</POTENTIOMETER>
+				<PART_ID>SCREEN_EICAS2</PART_ID>
+				<CAMERA_TITLE>ECAM</CAMERA_TITLE>
 			</UseTemplate>	
 		</Component>
 	</Component>
@@ -1886,10 +1896,6 @@
 			<ANIM_NAME>PUSH_AUTOPILOT_HDGTRK</ANIM_NAME>
 		</UseTemplate>	
 		-->
-		
-		<UseTemplate Name="ASOBO_AUTOPILOT_Update_Autopilot_Match_Simvar">
-			<AP_COUNT>2</AP_COUNT>
-		</UseTemplate>
 		
 		<UseTemplate Name="ASOBO_AUTOPILOT_Push_Autopilot_Template">
 			<NODE_ID>PUSH_AUTOPILOT_AP1</NODE_ID>
@@ -3248,4 +3254,5 @@
 		</UseTemplate>
 	</Component>
 	
-</ModelBehaviors>
+	</Behaviors>
+</ModelInfo>

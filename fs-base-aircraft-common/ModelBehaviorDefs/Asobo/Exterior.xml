@@ -1,711 +1,712 @@
-<Include File="Common.xml"/>
+<ModelBehaviors>
+	<Include RelativeFile="Common.xml"/>
 
-<!-------------------------- DO NOT USE OLD TEMPLATES, SEE BELOW FOR NEW VERSIONS ------------------------------------------------------------------->
+	<!-------------------------- DO NOT USE OLD TEMPLATES, SEE BELOW FOR NEW VERSIONS ------------------------------------------------------------------->
 
-<!-- Propeller ############################################################# -->
-<Template Name="ASOBO_Propeller_Anim_Rotation_Template">
-	<UseTemplate Name="ASOBO_GT_Anim_Sim">
-		<ANIM_SIMVAR>PROP ROTATION ANGLE:#ID#</ANIM_SIMVAR>
-		<ANIM_SIMVAR_UNITS>degrees</ANIM_SIMVAR_UNITS>
-		<ANIM_LENGTH>360</ANIM_LENGTH>
-	</UseTemplate>
-</Template>
-<Template Name="ASOBO_Propeller_Visibility_Base_Template">
-	<DefaultTemplateParameters>
-		<RECURSIVE_ID>2</RECURSIVE_ID>
-	</DefaultTemplateParameters>
-	<Component ID="#NODE_ID#" Node="#NODE_ID#">
-		<UseTemplate Name="ASOBO_Propeller_#STATE#_Visibility_Template">
+	<!-- Propeller ############################################################# -->
+	<Template Name="ASOBO_Propeller_Anim_Rotation_Template">
+		<UseTemplate Name="ASOBO_GT_Anim_Sim">
+			<ANIM_SIMVAR>PROP ROTATION ANGLE:#ID#</ANIM_SIMVAR>
+			<ANIM_SIMVAR_UNITS>degrees</ANIM_SIMVAR_UNITS>
+			<ANIM_LENGTH>360</ANIM_LENGTH>
 		</UseTemplate>
-	</Component>
-	<Condition Valid="NODE_ID#RECURSIVE_ID#">
-		<UseTemplate Name="ASOBO_Propeller_Visibility_Base_Template">
-			<RECURSIVE_ID Process="Int">#RECURSIVE_ID# 1 +</RECURSIVE_ID>
-			<NODE_ID Process="Param">NODE_ID#RECURSIVE_ID#</NODE_ID>
-		</UseTemplate>
-	</Condition>
-</Template>
-<Template Name="ASOBO_Propeller_Still_Visibility_Template">
-	<UseTemplate Name="ASOBO_GT_Visibility_Code">
-		<VISIBILITY_CODE>(A:PROP RPM:#ID#, rpm) #MIN_RPM_FOR_SLOW# &lt;</VISIBILITY_CODE>
-	</UseTemplate>
-</Template>
-<Template Name="ASOBO_Propeller_Slow_Visibility_Template">
-	<UseTemplate Name="ASOBO_GT_Visibility_Code">
-		<VISIBILITY_CODE>
-				(A:PROP RPM:#ID#, rpm) #MIN_RPM_FOR_SLOW# &gt;
-				(A:PROP RPM:#ID#, rpm) #MIN_RPM_FOR_BLUR# &lt; and
-		</VISIBILITY_CODE>
-	</UseTemplate>
-</Template>
-<Template Name="ASOBO_Propeller_Blurred_Visibility_Template">
-	<UseTemplate Name="ASOBO_GT_Visibility_Code">
-		<VISIBILITY_CODE>(A:PROP RPM:#ID#, rpm) #MIN_RPM_FOR_BLUR# &gt;</VISIBILITY_CODE>
-	</UseTemplate>
-</Template>
-	
-<Template Name="ASOBO_Propeller_Basic_Template">
-	<DefaultTemplateParameters>
-		<ID>1</ID>
-		<MIN_RPM_FOR_SLOW>143</MIN_RPM_FOR_SLOW>
-		<MIN_RPM_FOR_BLUR>287.5</MIN_RPM_FOR_BLUR>
-		<FROSTED>True</FROSTED>
-		<SIDE_BLUR>True</SIDE_BLUR>
-	</DefaultTemplateParameters>
-	<UseTemplate Name="ASOBO_Propeller_Basic_SubTemplate">
-	</UseTemplate>
-</Template>
-
-<Template Name="ASOBO_Propeller_Basic_SubTemplate">
-	<DefaultTemplateParameters>
-		<ANIM_NODE_ID>prop#ID#_anim</ANIM_NODE_ID>
-		<ANIM_NAME>prop#ID#_anim</ANIM_NAME>
-		<STILL_NODE_ID>prop#ID#_still</STILL_NODE_ID>
-		<SLOW_NODE_ID>prop#ID#_slow</SLOW_NODE_ID>
-		<PROP_BLURRED_NODE_ID>prop#ID#_blurred</PROP_BLURRED_NODE_ID>
-		<CONE_BLURRED_NODE_ID>cone#ID#_blurred</CONE_BLURRED_NODE_ID>
-		<Condition Valid="FROSTED">
-			<FROSTED_BLURRED_NODE_ID>cone#ID#_blurred_frosted</FROSTED_BLURRED_NODE_ID>
-			<FROSTED_STILL_NODE_ID>prop#ID#_still_frosted</FROSTED_STILL_NODE_ID>
-			<FROSTED_SLOW_NODE_ID>prop#ID#_slow_frosted</FROSTED_SLOW_NODE_ID>
-			<FROST_SUFFIX_BLADES>_Frost</FROST_SUFFIX_BLADES>
-		</Condition>
-		<Condition Valid="SIDE_BLUR">
-			<PROP_SIDE_BLURRED_NODE_ID>side_prop#ID#_blurred</PROP_SIDE_BLURRED_NODE_ID>
-		</Condition>
-	</DefaultTemplateParameters>
-	<Component ID="#ANIM_NODE_ID#" Node="#ANIM_NODE_ID#">
-		<UseTemplate Name="ASOBO_Propeller_Anim_Rotation_Template"></UseTemplate>
-	</Component>
-	<UseTemplate Name="ASOBO_Propeller_Visibility_Base_Template">
-		<STATE>Still</STATE>
-		<NODE_ID>#STILL_NODE_ID#</NODE_ID>
-		<Condition Valid="FROSTED">
-			<True>
-				<NODE_ID2>#FROSTED_STILL_NODE_ID#</NODE_ID2>
-				<Condition Valid="STILL_NODE_ID_BLADE_1">
-					<NODE_ID3>#STILL_NODE_ID_BLADE_1#</NODE_ID3>
-					<NODE_ID4>#STILL_NODE_ID_BLADE_1##FROST_SUFFIX_BLADES#</NODE_ID4>
-				</Condition>
-				<Condition Valid="STILL_NODE_ID_BLADE_2">
-					<NODE_ID5>#STILL_NODE_ID_BLADE_2#</NODE_ID5>
-					<NODE_ID6>#STILL_NODE_ID_BLADE_2##FROST_SUFFIX_BLADES#</NODE_ID6>
-				</Condition>
-				<Condition Valid="STILL_NODE_ID_BLADE_3">
-					<NODE_ID7>#STILL_NODE_ID_BLADE_3#</NODE_ID7>
-					<NODE_ID8>#STILL_NODE_ID_BLADE_3##FROST_SUFFIX_BLADES#</NODE_ID8>
-				</Condition>
-				<Condition Valid="STILL_NODE_ID_BLADE_4">
-					<NODE_ID7>#STILL_NODE_ID_BLADE_4#</NODE_ID7>
-					<NODE_ID8>#STILL_NODE_ID_BLADE_4##FROST_SUFFIX_BLADES#</NODE_ID8>
-				</Condition>
-			</True>
-			<False>
-				<Condition Valid="STILL_NODE_ID_BLADE_1">
-					<NODE_ID2>#STILL_NODE_ID_BLADE_1#</NODE_ID2>
-				</Condition>
-				<Condition Valid="STILL_NODE_ID_BLADE_2">
-					<NODE_ID3>#STILL_NODE_ID_BLADE_2#</NODE_ID3>
-				</Condition>
-				<Condition Valid="STILL_NODE_ID_BLADE_3">
-					<NODE_ID4>#STILL_NODE_ID_BLADE_3#</NODE_ID4>
-				</Condition>
-				<Condition Valid="STILL_NODE_ID_BLADE_4">
-					<NODE_ID5>#STILL_NODE_ID_BLADE_4#</NODE_ID5>
-				</Condition>
-			</False>
-		</Condition>
-		</UseTemplate>
-	<UseTemplate Name="ASOBO_Propeller_Visibility_Base_Template">
-		<STATE>Slow</STATE>
-		<NODE_ID>#SLOW_NODE_ID#</NODE_ID>
-		<Condition Valid="FROSTED">
-			<NODE_ID2>#FROSTED_SLOW_NODE_ID#</NODE_ID2>
-		</Condition>
-		</UseTemplate>
-	<UseTemplate Name="ASOBO_Propeller_Visibility_Base_Template">
-		<STATE>Blurred</STATE>
-		<NODE_ID>#CONE_BLURRED_NODE_ID#</NODE_ID>
-		<NODE_ID2>#PROP_BLURRED_NODE_ID#</NODE_ID2>
-		<Condition Valid="FROSTED">
-			<True>
-				<NODE_ID3>#FROSTED_BLURRED_NODE_ID#</NODE_ID3>
-				<Condition Valid="SIDE_BLUR">
-					<NODE_ID4>#PROP_SIDE_BLURRED_NODE_ID#</NODE_ID4>
-				</Condition>
-			</True>
-			<False>
-				<Condition Valid="SIDE_BLUR">
-					<NODE_ID3>#PROP_SIDE_BLURRED_NODE_ID#</NODE_ID3>
-				</Condition>
-			</False>
-		</Condition>
-		</UseTemplate>
-</Template>
-
-<Template Name="ASOBO_EXTERIOR_Jet_Turbine_Anim_Rotation_Template">
-	<UseTemplate Name="ASOBO_GT_Anim">
-		<ANIM_CODE>(A:GENERAL ENG RPM:#ID#, degrees per second) (A:ANIMATION DELTA TIME, seconds) *</ANIM_CODE>
-		<ANIM_LENGTH>360</ANIM_LENGTH>
-		<ANIM_WRAP>1</ANIM_WRAP>
-		<ANIM_DELTA>1</ANIM_DELTA>
-	</UseTemplate>
-</Template>
-<Template Name="ASOBO_EXTERIOR_Jet_Turbine_Still_Visibility_Template">
-	<UseTemplate Name="ASOBO_GT_Visibility">
-		<VISIBILITY_CODE> (A:GENERAL ENG RPM:#ID#, rpm) #MIN_RPM_FOR_SLOW# &lt; </VISIBILITY_CODE>
-	</UseTemplate>
-</Template>
-<Template Name="ASOBO_EXTERIOR_Jet_Turbine_Slow_Visibility_Template">
-	<UseTemplate Name="ASOBO_GT_Visibility">
-		<VISIBILITY_CODE>
-			(A:GENERAL ENG RPM:#ID#, rpm) #MIN_RPM_FOR_SLOW# &gt;
-			(A:GENERAL ENG RPM:#ID#, rpm) #MIN_RPM_FOR_BLUR# &lt; and
-		</VISIBILITY_CODE>
-	</UseTemplate>
-</Template>
-<Template Name="ASOBO_EXTERIOR_Jet_Turbine_Blurred_Visibility_Template">
-	<UseTemplate Name="ASOBO_GT_Visibility">
-		<VISIBILITY_CODE>(A:GENERAL ENG RPM:#ID#, rpm) #MIN_RPM_FOR_BLUR# &gt;</VISIBILITY_CODE>
-	</UseTemplate>
-</Template>
-	
-<Template Name="ASOBO_EXTERIOR_Jet_Turbine_Template">
-	<DefaultTemplateParameters>
-		<ANIM_NODE_ID>N1_#ID#_anim</ANIM_NODE_ID>
-		<ANIM_NAME>N1_#ID#_anim</ANIM_NAME>
-		<STILL_NODE_ID>N1_#ID#_still</STILL_NODE_ID>
-		<SLOW_NODE_ID>N1_#ID#_slow</SLOW_NODE_ID>
-		<BLURRED_NODE_ID>N1_#ID#_blurred</BLURRED_NODE_ID>
-		<MIN_RPM_FOR_SLOW>188</MIN_RPM_FOR_SLOW>
-		<MIN_RPM_FOR_BLUR>375</MIN_RPM_FOR_BLUR>
-	</DefaultTemplateParameters>
-	
-	<Component ID="Jet_Turbine_#ID#_anim" Node="#ANIM_NODE_ID#">
-		<UseTemplate Name="ASOBO_EXTERIOR_Jet_Turbine_Anim_Rotation_Template">
-		</UseTemplate>
-	</Component>
-	<Component ID="Jet_Turbine_#ID#_still" Node="#STILL_NODE_ID#">
-		<UseTemplate Name="ASOBO_EXTERIOR_Jet_Turbine_Still_Visibility_Template">
-		</UseTemplate>
-	</Component>
-	<Component ID="Jet_Turbine_#ID#_slow" Node="#SLOW_NODE_ID#">
-		<UseTemplate Name="ASOBO_EXTERIOR_Jet_Turbine_Slow_Visibility_Template">
-		</UseTemplate>
-	</Component>
-	<Component ID="Jet_Turbine_#ID#_blurred" Node="#BLURRED_NODE_ID#">
-		<UseTemplate Name="ASOBO_EXTERIOR_Jet_Turbine_Blurred_Visibility_Template">
-		</UseTemplate>
-	</Component>
-</Template>
-
-<Template Name="ASOBO_EXTERIOR_Turbine_Thrust_Reverser_Template">
-	<DefaultTemplateParameters>
-		<ID>1</ID>
-	</DefaultTemplateParameters>
-	
-	<UseTemplate Name="ASOBO_EXTERIOR_Turbine_Thrust_Reverser_SubTemplate">
-	</UseTemplate>
-</Template>
-
-<Template Name="ASOBO_EXTERIOR_Turbine_Thrust_Reverser_SubTemplate">
-	<DefaultTemplateParameters>
-		<ANIM_NAME>thrust_rev_#ID#</ANIM_NAME>
-	</DefaultTemplateParameters>
-	
-	<UseTemplate Name="ASOBO_GT_Anim">
-		<ANIM_SIMVAR>TURB ENG REVERSE NOZZLE PERCENT:#ID#</ANIM_SIMVAR>
-		<ANIM_SIMVAR_UNITS>Percent</ANIM_SIMVAR_UNITS>
-	</UseTemplate>
-</Template>
-
-<!-- Gears ############################################################## -->
-
-<Template Name="ASOBO_EXTERIOR_Gear_Template">
-	<DefaultTemplateParameters>
-		<ID>0</ID>
-	</DefaultTemplateParameters>
-
-	<UseTemplate Name="ASOBO_GT_Anim_Sim">
-		<ANIM_SIMVAR>GEAR ANIMATION POSITION:#ID#</ANIM_SIMVAR>
-		<ANIM_SIMVAR_UNITS>percent</ANIM_SIMVAR_UNITS>
-	</UseTemplate>
-</Template>
-
-<!-- Gears ############################################################## -->
-
-<Template Name="ASOBO_EXTERIOR_Tire_Anim">
-	<UseTemplate Name="ASOBO_GT_Anim">
-		<ANIM_SIMVAR>#ANIM_SIDE# WHEEL ROTATION ANGLE</ANIM_SIMVAR>
-		<ANIM_SIMVAR_UNITS>degrees</ANIM_SIMVAR_UNITS>
-		<ANIM_LENGTH>360</ANIM_LENGTH>
-		<ANIM_WRAP>1</ANIM_WRAP>
-	</UseTemplate>
-</Template>
-
-<Template Name="ASOBO_EXTERIOR_Tires_L_Template">
-	<DefaultTemplateParameters>
-		<ANIM_SIDE>LEFT</ANIM_SIDE>
-		<ANIM_SIDE_SHORTHAND>l</ANIM_SIDE_SHORTHAND>
-	</DefaultTemplateParameters>
-
-	<UseTemplate Name="ASOBO_Tire_Template_Base">
-	</UseTemplate>
-</Template>
-
-<Template Name="ASOBO_EXTERIOR_Tires_R_Template">
-	<DefaultTemplateParameters>
-		<ANIM_SIDE>RIGHT</ANIM_SIDE>
-		<ANIM_SIDE_SHORTHAND>r</ANIM_SIDE_SHORTHAND>
-	</DefaultTemplateParameters>
-
-	<UseTemplate Name="ASOBO_Tire_Template_Base">
-	</UseTemplate>
-</Template>
-
-<Template Name="ASOBO_EXTERIOR_Tires_C_Template">
-	<DefaultTemplateParameters>
-		<ANIM_SIDE>CENTER</ANIM_SIDE>
-		<ANIM_SIDE_SHORTHAND>c</ANIM_SIDE_SHORTHAND>
-	</DefaultTemplateParameters>
-
-	<UseTemplate Name="ASOBO_Tire_Template_Base">
-	</UseTemplate>
-</Template>
-
-<Template Name="ASOBO_Tire_Template_Base">
-	<DefaultTemplateParameters>
-		<RPM_LIMIT>400</RPM_LIMIT>
-		<ANIM_NAME>#ANIM_SIDE_SHORTHAND#_tire_anim</ANIM_NAME>
-		<NODE_ID_STILL>#ANIM_SIDE#_WHEEL_STILL</NODE_ID_STILL>
-		<NODE_ID_BLURRED>#ANIM_SIDE#_WHEEL_BLURRED</NODE_ID_BLURRED>
-	</DefaultTemplateParameters>
-	
-	<Condition Check="NO_ANIMATION">
-		<False>
-			<UseTemplate Name="ASOBO_EXTERIOR_Tire_Anim">
+	</Template>
+	<Template Name="ASOBO_Propeller_Visibility_Base_Template">
+		<DefaultTemplateParameters>
+			<RECURSIVE_ID>2</RECURSIVE_ID>
+		</DefaultTemplateParameters>
+		<Component ID="#NODE_ID#" Node="#NODE_ID#">
+			<UseTemplate Name="ASOBO_Propeller_#STATE#_Visibility_Template">
 			</UseTemplate>
-		</False>
-	</Condition>
-	
-	<Component ID="#NODE_ID_STILL#" Node="#NODE_ID_STILL#">
-		<UseTemplate Name="ASOBO_GT_Visibility">
-			<VISIBILITY_CODE>(A:#ANIM_SIDE# WHEEL RPM, rpm) #RPM_LIMIT# &gt; if{ 0 } els{ 1 }</VISIBILITY_CODE>
+		</Component>
+		<Condition Valid="NODE_ID#RECURSIVE_ID#">
+			<UseTemplate Name="ASOBO_Propeller_Visibility_Base_Template">
+				<RECURSIVE_ID Process="Int">#RECURSIVE_ID# 1 +</RECURSIVE_ID>
+				<NODE_ID Process="Param">NODE_ID#RECURSIVE_ID#</NODE_ID>
+			</UseTemplate>
+		</Condition>
+	</Template>
+	<Template Name="ASOBO_Propeller_Still_Visibility_Template">
+		<UseTemplate Name="ASOBO_GT_Visibility_Code">
+			<VISIBILITY_CODE>(A:PROP RPM:#ID#, rpm) #MIN_RPM_FOR_SLOW# &lt;</VISIBILITY_CODE>
 		</UseTemplate>
-	</Component>
-	<Component ID="#NODE_ID_BLURRED#" Node="#NODE_ID_BLURRED#">
-		<UseTemplate Name="ASOBO_GT_Visibility">
-			<VISIBILITY_CODE>(A:#ANIM_SIDE# WHEEL RPM, rpm) #RPM_LIMIT# &gt; if{ 1 } els{ 0 }</VISIBILITY_CODE>
+	</Template>
+	<Template Name="ASOBO_Propeller_Slow_Visibility_Template">
+		<UseTemplate Name="ASOBO_GT_Visibility_Code">
+			<VISIBILITY_CODE>
+					(A:PROP RPM:#ID#, rpm) #MIN_RPM_FOR_SLOW# &gt;
+					(A:PROP RPM:#ID#, rpm) #MIN_RPM_FOR_BLUR# &lt; and
+			</VISIBILITY_CODE>
 		</UseTemplate>
-	</Component>
-	
-	<Condition Check="NODE_ID_STILL_2">
-		<True>
-			<Component ID="#NODE_ID_STILL_2#" Node="#NODE_ID_STILL_2#">
-				<UseTemplate Name="ASOBO_GT_Visibility">
-					<VISIBILITY_CODE>(A:#ANIM_SIDE# WHEEL RPM, rpm) #RPM_LIMIT# &gt; if{ 0 } els{ 1 }</VISIBILITY_CODE>
+	</Template>
+	<Template Name="ASOBO_Propeller_Blurred_Visibility_Template">
+		<UseTemplate Name="ASOBO_GT_Visibility_Code">
+			<VISIBILITY_CODE>(A:PROP RPM:#ID#, rpm) #MIN_RPM_FOR_BLUR# &gt;</VISIBILITY_CODE>
+		</UseTemplate>
+	</Template>
+		
+	<Template Name="ASOBO_Propeller_Basic_Template">
+		<DefaultTemplateParameters>
+			<ID>1</ID>
+			<MIN_RPM_FOR_SLOW>143</MIN_RPM_FOR_SLOW>
+			<MIN_RPM_FOR_BLUR>287.5</MIN_RPM_FOR_BLUR>
+			<FROSTED>True</FROSTED>
+			<SIDE_BLUR>True</SIDE_BLUR>
+		</DefaultTemplateParameters>
+		<UseTemplate Name="ASOBO_Propeller_Basic_SubTemplate">
+		</UseTemplate>
+	</Template>
+
+	<Template Name="ASOBO_Propeller_Basic_SubTemplate">
+		<DefaultTemplateParameters>
+			<ANIM_NODE_ID>prop#ID#_anim</ANIM_NODE_ID>
+			<ANIM_NAME>prop#ID#_anim</ANIM_NAME>
+			<STILL_NODE_ID>prop#ID#_still</STILL_NODE_ID>
+			<SLOW_NODE_ID>prop#ID#_slow</SLOW_NODE_ID>
+			<PROP_BLURRED_NODE_ID>prop#ID#_blurred</PROP_BLURRED_NODE_ID>
+			<CONE_BLURRED_NODE_ID>cone#ID#_blurred</CONE_BLURRED_NODE_ID>
+			<Condition Valid="FROSTED">
+				<FROSTED_BLURRED_NODE_ID>cone#ID#_blurred_frosted</FROSTED_BLURRED_NODE_ID>
+				<FROSTED_STILL_NODE_ID>prop#ID#_still_frosted</FROSTED_STILL_NODE_ID>
+				<FROSTED_SLOW_NODE_ID>prop#ID#_slow_frosted</FROSTED_SLOW_NODE_ID>
+				<FROST_SUFFIX_BLADES>_Frost</FROST_SUFFIX_BLADES>
+			</Condition>
+			<Condition Valid="SIDE_BLUR">
+				<PROP_SIDE_BLURRED_NODE_ID>side_prop#ID#_blurred</PROP_SIDE_BLURRED_NODE_ID>
+			</Condition>
+		</DefaultTemplateParameters>
+		<Component ID="#ANIM_NODE_ID#" Node="#ANIM_NODE_ID#">
+			<UseTemplate Name="ASOBO_Propeller_Anim_Rotation_Template"></UseTemplate>
+		</Component>
+		<UseTemplate Name="ASOBO_Propeller_Visibility_Base_Template">
+			<STATE>Still</STATE>
+			<NODE_ID>#STILL_NODE_ID#</NODE_ID>
+			<Condition Valid="FROSTED">
+				<True>
+					<NODE_ID2>#FROSTED_STILL_NODE_ID#</NODE_ID2>
+					<Condition Valid="STILL_NODE_ID_BLADE_1">
+						<NODE_ID3>#STILL_NODE_ID_BLADE_1#</NODE_ID3>
+						<NODE_ID4>#STILL_NODE_ID_BLADE_1##FROST_SUFFIX_BLADES#</NODE_ID4>
+					</Condition>
+					<Condition Valid="STILL_NODE_ID_BLADE_2">
+						<NODE_ID5>#STILL_NODE_ID_BLADE_2#</NODE_ID5>
+						<NODE_ID6>#STILL_NODE_ID_BLADE_2##FROST_SUFFIX_BLADES#</NODE_ID6>
+					</Condition>
+					<Condition Valid="STILL_NODE_ID_BLADE_3">
+						<NODE_ID7>#STILL_NODE_ID_BLADE_3#</NODE_ID7>
+						<NODE_ID8>#STILL_NODE_ID_BLADE_3##FROST_SUFFIX_BLADES#</NODE_ID8>
+					</Condition>
+					<Condition Valid="STILL_NODE_ID_BLADE_4">
+						<NODE_ID7>#STILL_NODE_ID_BLADE_4#</NODE_ID7>
+						<NODE_ID8>#STILL_NODE_ID_BLADE_4##FROST_SUFFIX_BLADES#</NODE_ID8>
+					</Condition>
+				</True>
+				<False>
+					<Condition Valid="STILL_NODE_ID_BLADE_1">
+						<NODE_ID2>#STILL_NODE_ID_BLADE_1#</NODE_ID2>
+					</Condition>
+					<Condition Valid="STILL_NODE_ID_BLADE_2">
+						<NODE_ID3>#STILL_NODE_ID_BLADE_2#</NODE_ID3>
+					</Condition>
+					<Condition Valid="STILL_NODE_ID_BLADE_3">
+						<NODE_ID4>#STILL_NODE_ID_BLADE_3#</NODE_ID4>
+					</Condition>
+					<Condition Valid="STILL_NODE_ID_BLADE_4">
+						<NODE_ID5>#STILL_NODE_ID_BLADE_4#</NODE_ID5>
+					</Condition>
+				</False>
+			</Condition>
+			</UseTemplate>
+		<UseTemplate Name="ASOBO_Propeller_Visibility_Base_Template">
+			<STATE>Slow</STATE>
+			<NODE_ID>#SLOW_NODE_ID#</NODE_ID>
+			<Condition Valid="FROSTED">
+				<NODE_ID2>#FROSTED_SLOW_NODE_ID#</NODE_ID2>
+			</Condition>
+			</UseTemplate>
+		<UseTemplate Name="ASOBO_Propeller_Visibility_Base_Template">
+			<STATE>Blurred</STATE>
+			<NODE_ID>#CONE_BLURRED_NODE_ID#</NODE_ID>
+			<NODE_ID2>#PROP_BLURRED_NODE_ID#</NODE_ID2>
+			<Condition Valid="FROSTED">
+				<True>
+					<NODE_ID3>#FROSTED_BLURRED_NODE_ID#</NODE_ID3>
+					<Condition Valid="SIDE_BLUR">
+						<NODE_ID4>#PROP_SIDE_BLURRED_NODE_ID#</NODE_ID4>
+					</Condition>
+				</True>
+				<False>
+					<Condition Valid="SIDE_BLUR">
+						<NODE_ID3>#PROP_SIDE_BLURRED_NODE_ID#</NODE_ID3>
+					</Condition>
+				</False>
+			</Condition>
+			</UseTemplate>
+	</Template>
+
+	<Template Name="ASOBO_EXTERIOR_Jet_Turbine_Anim_Rotation_Template">
+		<UseTemplate Name="ASOBO_GT_Anim">
+			<ANIM_CODE>(A:GENERAL ENG RPM:#ID#, degrees per second) (A:ANIMATION DELTA TIME, seconds) *</ANIM_CODE>
+			<ANIM_LENGTH>360</ANIM_LENGTH>
+			<ANIM_WRAP>1</ANIM_WRAP>
+			<ANIM_DELTA>1</ANIM_DELTA>
+		</UseTemplate>
+	</Template>
+	<Template Name="ASOBO_EXTERIOR_Jet_Turbine_Still_Visibility_Template">
+		<UseTemplate Name="ASOBO_GT_Visibility">
+			<VISIBILITY_CODE> (A:GENERAL ENG RPM:#ID#, rpm) #MIN_RPM_FOR_SLOW# &lt; </VISIBILITY_CODE>
+		</UseTemplate>
+	</Template>
+	<Template Name="ASOBO_EXTERIOR_Jet_Turbine_Slow_Visibility_Template">
+		<UseTemplate Name="ASOBO_GT_Visibility">
+			<VISIBILITY_CODE>
+				(A:GENERAL ENG RPM:#ID#, rpm) #MIN_RPM_FOR_SLOW# &gt;
+				(A:GENERAL ENG RPM:#ID#, rpm) #MIN_RPM_FOR_BLUR# &lt; and
+			</VISIBILITY_CODE>
+		</UseTemplate>
+	</Template>
+	<Template Name="ASOBO_EXTERIOR_Jet_Turbine_Blurred_Visibility_Template">
+		<UseTemplate Name="ASOBO_GT_Visibility">
+			<VISIBILITY_CODE>(A:GENERAL ENG RPM:#ID#, rpm) #MIN_RPM_FOR_BLUR# &gt;</VISIBILITY_CODE>
+		</UseTemplate>
+	</Template>
+		
+	<Template Name="ASOBO_EXTERIOR_Jet_Turbine_Template">
+		<DefaultTemplateParameters>
+			<ANIM_NODE_ID>N1_#ID#_anim</ANIM_NODE_ID>
+			<ANIM_NAME>N1_#ID#_anim</ANIM_NAME>
+			<STILL_NODE_ID>N1_#ID#_still</STILL_NODE_ID>
+			<SLOW_NODE_ID>N1_#ID#_slow</SLOW_NODE_ID>
+			<BLURRED_NODE_ID>N1_#ID#_blurred</BLURRED_NODE_ID>
+			<MIN_RPM_FOR_SLOW>188</MIN_RPM_FOR_SLOW>
+			<MIN_RPM_FOR_BLUR>375</MIN_RPM_FOR_BLUR>
+		</DefaultTemplateParameters>
+		
+		<Component ID="Jet_Turbine_#ID#_anim" Node="#ANIM_NODE_ID#">
+			<UseTemplate Name="ASOBO_EXTERIOR_Jet_Turbine_Anim_Rotation_Template">
+			</UseTemplate>
+		</Component>
+		<Component ID="Jet_Turbine_#ID#_still" Node="#STILL_NODE_ID#">
+			<UseTemplate Name="ASOBO_EXTERIOR_Jet_Turbine_Still_Visibility_Template">
+			</UseTemplate>
+		</Component>
+		<Component ID="Jet_Turbine_#ID#_slow" Node="#SLOW_NODE_ID#">
+			<UseTemplate Name="ASOBO_EXTERIOR_Jet_Turbine_Slow_Visibility_Template">
+			</UseTemplate>
+		</Component>
+		<Component ID="Jet_Turbine_#ID#_blurred" Node="#BLURRED_NODE_ID#">
+			<UseTemplate Name="ASOBO_EXTERIOR_Jet_Turbine_Blurred_Visibility_Template">
+			</UseTemplate>
+		</Component>
+	</Template>
+
+	<Template Name="ASOBO_EXTERIOR_Turbine_Thrust_Reverser_Template">
+		<DefaultTemplateParameters>
+			<ID>1</ID>
+		</DefaultTemplateParameters>
+		
+		<UseTemplate Name="ASOBO_EXTERIOR_Turbine_Thrust_Reverser_SubTemplate">
+		</UseTemplate>
+	</Template>
+
+	<Template Name="ASOBO_EXTERIOR_Turbine_Thrust_Reverser_SubTemplate">
+		<DefaultTemplateParameters>
+			<ANIM_NAME>thrust_rev_#ID#</ANIM_NAME>
+		</DefaultTemplateParameters>
+		
+		<UseTemplate Name="ASOBO_GT_Anim">
+			<ANIM_SIMVAR>TURB ENG REVERSE NOZZLE PERCENT:#ID#</ANIM_SIMVAR>
+			<ANIM_SIMVAR_UNITS>Percent</ANIM_SIMVAR_UNITS>
+		</UseTemplate>
+	</Template>
+
+	<!-- Gears ############################################################## -->
+
+	<Template Name="ASOBO_EXTERIOR_Gear_Template">
+		<DefaultTemplateParameters>
+			<ID>0</ID>
+		</DefaultTemplateParameters>
+
+		<UseTemplate Name="ASOBO_GT_Anim_Sim">
+			<ANIM_SIMVAR>GEAR ANIMATION POSITION:#ID#</ANIM_SIMVAR>
+			<ANIM_SIMVAR_UNITS>percent</ANIM_SIMVAR_UNITS>
+		</UseTemplate>
+	</Template>
+
+	<!-- Gears ############################################################## -->
+
+	<Template Name="ASOBO_EXTERIOR_Tire_Anim">
+		<UseTemplate Name="ASOBO_GT_Anim">
+			<ANIM_SIMVAR>#ANIM_SIDE# WHEEL ROTATION ANGLE</ANIM_SIMVAR>
+			<ANIM_SIMVAR_UNITS>degrees</ANIM_SIMVAR_UNITS>
+			<ANIM_LENGTH>360</ANIM_LENGTH>
+			<ANIM_WRAP>1</ANIM_WRAP>
+		</UseTemplate>
+	</Template>
+
+	<Template Name="ASOBO_EXTERIOR_Tires_L_Template">
+		<DefaultTemplateParameters>
+			<ANIM_SIDE>LEFT</ANIM_SIDE>
+			<ANIM_SIDE_SHORTHAND>l</ANIM_SIDE_SHORTHAND>
+		</DefaultTemplateParameters>
+
+		<UseTemplate Name="ASOBO_Tire_Template_Base">
+		</UseTemplate>
+	</Template>
+
+	<Template Name="ASOBO_EXTERIOR_Tires_R_Template">
+		<DefaultTemplateParameters>
+			<ANIM_SIDE>RIGHT</ANIM_SIDE>
+			<ANIM_SIDE_SHORTHAND>r</ANIM_SIDE_SHORTHAND>
+		</DefaultTemplateParameters>
+
+		<UseTemplate Name="ASOBO_Tire_Template_Base">
+		</UseTemplate>
+	</Template>
+
+	<Template Name="ASOBO_EXTERIOR_Tires_C_Template">
+		<DefaultTemplateParameters>
+			<ANIM_SIDE>CENTER</ANIM_SIDE>
+			<ANIM_SIDE_SHORTHAND>c</ANIM_SIDE_SHORTHAND>
+		</DefaultTemplateParameters>
+
+		<UseTemplate Name="ASOBO_Tire_Template_Base">
+		</UseTemplate>
+	</Template>
+
+	<Template Name="ASOBO_Tire_Template_Base">
+		<DefaultTemplateParameters>
+			<RPM_LIMIT>400</RPM_LIMIT>
+			<ANIM_NAME>#ANIM_SIDE_SHORTHAND#_tire_anim</ANIM_NAME>
+			<NODE_ID_STILL>#ANIM_SIDE#_WHEEL_STILL</NODE_ID_STILL>
+			<NODE_ID_BLURRED>#ANIM_SIDE#_WHEEL_BLURRED</NODE_ID_BLURRED>
+		</DefaultTemplateParameters>
+		
+		<Condition Check="NO_ANIMATION">
+			<False>
+				<UseTemplate Name="ASOBO_EXTERIOR_Tire_Anim">
 				</UseTemplate>
-			</Component>
-		</True>
-	</Condition>
-	<Condition Check="NODE_ID_BLURRED_2">
-		<True>
-			<Component ID="#NODE_ID_BLURRED_2#" Node="#NODE_ID_BLURRED_2#">
-				<UseTemplate Name="ASOBO_GT_Visibility">
-					<VISIBILITY_CODE>(A:#ANIM_SIDE# WHEEL RPM, rpm) #RPM_LIMIT# &gt; if{ 1 } els{ 0 }</VISIBILITY_CODE>
+			</False>
+		</Condition>
+		
+		<Component ID="#NODE_ID_STILL#" Node="#NODE_ID_STILL#">
+			<UseTemplate Name="ASOBO_GT_Visibility">
+				<VISIBILITY_CODE>(A:#ANIM_SIDE# WHEEL RPM, rpm) #RPM_LIMIT# &gt; if{ 0 } els{ 1 }</VISIBILITY_CODE>
+			</UseTemplate>
+		</Component>
+		<Component ID="#NODE_ID_BLURRED#" Node="#NODE_ID_BLURRED#">
+			<UseTemplate Name="ASOBO_GT_Visibility">
+				<VISIBILITY_CODE>(A:#ANIM_SIDE# WHEEL RPM, rpm) #RPM_LIMIT# &gt; if{ 1 } els{ 0 }</VISIBILITY_CODE>
+			</UseTemplate>
+		</Component>
+		
+		<Condition Check="NODE_ID_STILL_2">
+			<True>
+				<Component ID="#NODE_ID_STILL_2#" Node="#NODE_ID_STILL_2#">
+					<UseTemplate Name="ASOBO_GT_Visibility">
+						<VISIBILITY_CODE>(A:#ANIM_SIDE# WHEEL RPM, rpm) #RPM_LIMIT# &gt; if{ 0 } els{ 1 }</VISIBILITY_CODE>
+					</UseTemplate>
+				</Component>
+			</True>
+		</Condition>
+		<Condition Check="NODE_ID_BLURRED_2">
+			<True>
+				<Component ID="#NODE_ID_BLURRED_2#" Node="#NODE_ID_BLURRED_2#">
+					<UseTemplate Name="ASOBO_GT_Visibility">
+						<VISIBILITY_CODE>(A:#ANIM_SIDE# WHEEL RPM, rpm) #RPM_LIMIT# &gt; if{ 1 } els{ 0 }</VISIBILITY_CODE>
+					</UseTemplate>
+				</Component>
+			</True>
+		</Condition>
+	</Template>
+
+	<Template Name="ASOBO_EXTERIOR_Gear_Steering_Template">
+		<DefaultTemplateParameters>
+			<ANIM_NAME>EXTERIOR_Gear_Steering</ANIM_NAME>
+			<ID>0</ID>
+		</DefaultTemplateParameters>
+
+		<UseTemplate Name="ASOBO_GT_Anim">
+			<ANIM_CODE>(A:GEAR STEER ANGLE:#ID#, degrees) dnor </ANIM_CODE>
+			<ANIM_LENGTH>360</ANIM_LENGTH>
+			<ANIM_WRAP>True</ANIM_WRAP>
+		</UseTemplate>
+	</Template>
+
+	<!-- Ailerons ############################################################## -->
+
+	<Template Name="ASOBO_Ailerons_Template">
+		<DefaultTemplateParameters>
+			<ANIM_NAME_LEFT>l_aileron_percent_key</ANIM_NAME_LEFT>
+			<ANIM_NAME_RIGHT>r_aileron_percent_key</ANIM_NAME_RIGHT>
+		</DefaultTemplateParameters>
+		<Condition Check="INTEGRATED_TRIM">
+			<True>
+				<UseTemplate Name="ASOBO_GT_Anim">
+					<ANIM_NAME>#ANIM_NAME_LEFT#</ANIM_NAME>
+					<ANIM_CODE>(A:AILERON LEFT DEFLECTION PCT, Percent) 1.25 * (A:AILERON TRIM PCT, Percent) + 100 min -100 max 0.5 * 50 +</ANIM_CODE>
 				</UseTemplate>
-			</Component>
-		</True>
-	</Condition>
-</Template>
+				<UseTemplate Name="ASOBO_GT_Anim">
+					<ANIM_NAME>#ANIM_NAME_RIGHT#</ANIM_NAME>
+					<ANIM_CODE>(A:AILERON RIGHT DEFLECTION PCT, Percent) 1.25 * (A:AILERON TRIM PCT, Percent) + 100 min -100 max 0.5 * 50 +</ANIM_CODE>
+				</UseTemplate>
+			</True>
+			<False>
+				<Animation name="#ANIM_NAME_LEFT#" guid="" length="100" type="Sim" typeParam="AutoPlay">
+					<Parameter>
+						<Sim>
+							<Variable>AILERON LEFT DEFLECTION PCT</Variable>
+							<Units>percent</Units> <!-- [-100, 100] -->
+							<Scale>0.5</Scale> <!-- [-100, 100] * 0.5 => [-50, 50] (length 100) -->
+							<Bias>50</Bias> <!-- [-50, 50] + 50 => [0, 100] -->
+						</Sim>
+					</Parameter>
+				</Animation>
+				<Animation name="#ANIM_NAME_RIGHT#" guid="" length="100" type="Sim" typeParam="AutoPlay">
+					<Parameter>
+						<Sim>
+							<Variable>AILERON RIGHT DEFLECTION PCT</Variable>
+							<Units>percent</Units> <!-- [-100, 100] -->
+							<Scale>0.5</Scale> <!-- [-100, 100] * 0.5 => [-50, 50] (length 100) -->
+							<Bias>50</Bias> <!-- [-50, 50] + 50 => [0, 100] -->
+						</Sim>
+					</Parameter>
+				</Animation>
+			</False>
+		</Condition>
+	</Template>
 
-<Template Name="ASOBO_EXTERIOR_Gear_Steering_Template">
-	<DefaultTemplateParameters>
-		<ANIM_NAME>EXTERIOR_Gear_Steering</ANIM_NAME>
-		<ID>0</ID>
-	</DefaultTemplateParameters>
+	<Template Name="ASOBO_Trimtab_Aileron_Template">
+		<DefaultTemplateParameters>
+			<ANIM_NAME>trimtab_aileron</ANIM_NAME>
+		</DefaultTemplateParameters>
 
-	<UseTemplate Name="ASOBO_GT_Anim">
-		<ANIM_CODE>(A:GEAR STEER ANGLE:#ID#, degrees) dnor </ANIM_CODE>
-		<ANIM_LENGTH>360</ANIM_LENGTH>
-		<ANIM_WRAP>True</ANIM_WRAP>
-	</UseTemplate>
-</Template>
+		<Animation name="#ANIM_NAME#" guid="" length="100" type="Sim" typeParam="AutoPlay">
+			<Parameter>
+				<Sim>
+					<Variable>AILERON TRIM PCT</Variable>
+					<Units>percent</Units> <!-- [-100, 100] -->
+					<Scale>0.5</Scale> <!-- [-100, 100] * 0.5 => [-50, 50] (length 100) -->
+					<Bias>50</Bias> <!-- [-50, 50] + 50 => [0, 100] -->
+				</Sim>
+			</Parameter>
+		</Animation>
+	</Template>
 
-<!-- Ailerons ############################################################## -->
+	<Template Name="ASOBO_EXTERIOR_Spoilers_Template">
+		<DefaultTemplateParameters>
+			<ANIM_NAME_LEFT>l_spoiler_key</ANIM_NAME_LEFT>
+			<ANIM_NAME_RIGHT>r_spoiler_key</ANIM_NAME_RIGHT>
+		</DefaultTemplateParameters>
 
-<Template Name="ASOBO_Ailerons_Template">
-	<DefaultTemplateParameters>
-		<ANIM_NAME_LEFT>l_aileron_percent_key</ANIM_NAME_LEFT>
-		<ANIM_NAME_RIGHT>r_aileron_percent_key</ANIM_NAME_RIGHT>
-	</DefaultTemplateParameters>
-	<Condition Check="INTEGRATED_TRIM">
-		<True>
+		<Component ID="Spoilers">
 			<UseTemplate Name="ASOBO_GT_Anim">
 				<ANIM_NAME>#ANIM_NAME_LEFT#</ANIM_NAME>
-				<ANIM_CODE>(A:AILERON LEFT DEFLECTION PCT, Percent) 1.25 * (A:AILERON TRIM PCT, Percent) + 100 min -100 max 0.5 * 50 +</ANIM_CODE>
+				<ANIM_SIMVAR>SPOILERS LEFT POSITION</ANIM_SIMVAR>
+				<ANIM_SIMVAR_UNITS>Percent</ANIM_SIMVAR_UNITS>
 			</UseTemplate>
 			<UseTemplate Name="ASOBO_GT_Anim">
 				<ANIM_NAME>#ANIM_NAME_RIGHT#</ANIM_NAME>
-				<ANIM_CODE>(A:AILERON RIGHT DEFLECTION PCT, Percent) 1.25 * (A:AILERON TRIM PCT, Percent) + 100 min -100 max 0.5 * 50 +</ANIM_CODE>
+				<ANIM_SIMVAR>SPOILERS RIGHT POSITION</ANIM_SIMVAR>
+				<ANIM_SIMVAR_UNITS>Percent</ANIM_SIMVAR_UNITS>
 			</UseTemplate>
-		</True>
-		<False>
-			<Animation name="#ANIM_NAME_LEFT#" guid="" length="100" type="Sim" typeParam="AutoPlay">
-				<Parameter>
-					<Sim>
-						<Variable>AILERON LEFT DEFLECTION PCT</Variable>
-						<Units>percent</Units> <!-- [-100, 100] -->
-						<Scale>0.5</Scale> <!-- [-100, 100] * 0.5 => [-50, 50] (length 100) -->
-						<Bias>50</Bias> <!-- [-50, 50] + 50 => [0, 100] -->
-					</Sim>
-				</Parameter>
-			</Animation>
-			<Animation name="#ANIM_NAME_RIGHT#" guid="" length="100" type="Sim" typeParam="AutoPlay">
-				<Parameter>
-					<Sim>
-						<Variable>AILERON RIGHT DEFLECTION PCT</Variable>
-						<Units>percent</Units> <!-- [-100, 100] -->
-						<Scale>0.5</Scale> <!-- [-100, 100] * 0.5 => [-50, 50] (length 100) -->
-						<Bias>50</Bias> <!-- [-50, 50] + 50 => [0, 100] -->
-					</Sim>
-				</Parameter>
-			</Animation>
-		</False>
-	</Condition>
-</Template>
+		</Component>
+	</Template>
 
-<Template Name="ASOBO_Trimtab_Aileron_Template">
-	<DefaultTemplateParameters>
-		<ANIM_NAME>trimtab_aileron</ANIM_NAME>
-	</DefaultTemplateParameters>
+	<!-- Elevators ############################################################# -->
 
-	<Animation name="#ANIM_NAME#" guid="" length="100" type="Sim" typeParam="AutoPlay">
-		<Parameter>
-			<Sim>
-				<Variable>AILERON TRIM PCT</Variable>
-				<Units>percent</Units> <!-- [-100, 100] -->
-				<Scale>0.5</Scale> <!-- [-100, 100] * 0.5 => [-50, 50] (length 100) -->
-				<Bias>50</Bias> <!-- [-50, 50] + 50 => [0, 100] -->
-			</Sim>
-		</Parameter>
-	</Animation>
-</Template>
+	<Template Name="ASOBO_Elevators_Template">
+		<DefaultTemplateParameters>
+			<ANIM_NAME>elevator_percent_key</ANIM_NAME>
+		</DefaultTemplateParameters>
 
-<Template Name="ASOBO_EXTERIOR_Spoilers_Template">
-	<DefaultTemplateParameters>
-		<ANIM_NAME_LEFT>l_spoiler_key</ANIM_NAME_LEFT>
-		<ANIM_NAME_RIGHT>r_spoiler_key</ANIM_NAME_RIGHT>
-	</DefaultTemplateParameters>
+		<Animation name="#ANIM_NAME#" guid="" length="100" type="Sim" typeParam="AutoPlay">
+			<Parameter>
+				<Sim>
+					<Variable>ELEVATOR DEFLECTION PCT</Variable>
+					<Units>percent</Units> <!-- [-100, 100] -->
+					<Scale>0.5</Scale> <!-- [-100, 100] * 0.5 => [-50, 50] (length 100) -->
+					<Bias>50</Bias> <!-- [-50, 50] + 50 => [0, 100] -->
+				</Sim>
+			</Parameter>
+		</Animation>
+	</Template>
 
-	<Component ID="Spoilers">
+	<Template Name="ASOBO_Trimtab_Elevator_Template">
+		<DefaultTemplateParameters>
+			<ANIM_NAME>trimtab_elevator</ANIM_NAME>
+		</DefaultTemplateParameters>
+
+		<Animation name="#ANIM_NAME#" guid="" length="100" type="Sim" typeParam="AutoPlay">
+			<Parameter>
+				<Sim>
+					<Variable>ELEVATOR TRIM PCT</Variable>
+					<Units>percent</Units> <!-- [-100, 100] -->
+					<Scale>0.5</Scale> <!-- [-100, 100] * 0.5 => [-50, 50] (length 100) -->
+					<Bias>50</Bias> <!-- [-50, 50] + 50 => [0, 100] -->
+				</Sim>
+			</Parameter>
+		</Animation>
+	</Template>
+
+	<Template Name="ASOBO_Trimtab_Elevator_CounterTrim_Template">
+		<DefaultTemplateParameters>
+			<ANIM_NAME>trimtab_elevator_key</ANIM_NAME>
+		</DefaultTemplateParameters>
+
+		<UseTemplate Name="ASOBO_GT_Anim_Code">
+			<ANIM_CODE>(A:ELEVATOR DEFLECTION PCT, percent) -0.25 * (A:ELEVATOR TRIM PCT, percent) 0.75 * + 0.5 * 50 +</ANIM_CODE>
+		</UseTemplate>
+	</Template>
+
+
+	<!-- Rudder ################################################################ -->
+
+	<Template Name="ASOBO_Rudder_Template">
+		<DefaultTemplateParameters>
+			<ANIM_NAME>rudder_percent_key</ANIM_NAME>
+		</DefaultTemplateParameters>
+
+		<Condition Check="INTEGRATED_TRIM">
+			<True>
+				<UseTemplate Name="ASOBO_GT_Anim">
+					<ANIM_CODE>(A:RUDDER TRIM PCT, Percent) 0.25 * (A:RUDDER DEFLECTION PCT, Percent) 1.25 * + 100 min -100 max 0.5 * 50 +</ANIM_CODE>
+				</UseTemplate>
+			</True>
+			<False>
+				<UseTemplate Name="ASOBO_GT_Anim">
+					<ANIM_SIMVAR>RUDDER DEFLECTION PCT</ANIM_SIMVAR>
+					<ANIM_SIMVAR_UNITS>percent</ANIM_SIMVAR_UNITS>
+					<ANIM_SIMVAR_SCALE>0.5</ANIM_SIMVAR_SCALE>
+					<ANIM_SIMVAR_BIAS>50</ANIM_SIMVAR_BIAS>
+				</UseTemplate>
+			</False>
+		</Condition>
+	</Template>
+
+	<Template Name="ASOBO_Trimtab_Rudder_Template">
+		<DefaultTemplateParameters>
+			<ANIM_NAME>trimtab_rudder</ANIM_NAME>
+		</DefaultTemplateParameters>
+
+		<Animation name="#ANIM_NAME#" guid="" length="100" type="Sim" typeParam="AutoPlay">
+			<Parameter>
+				<Sim>
+					<Variable>RUDDER TRIM PCT</Variable>
+					<Units>percent</Units> <!-- [-100, 100] -->
+					<Scale>0.5</Scale> <!-- [-100, 100] * 0.5 => [-50, 50] (length 100) -->
+					<Bias>50</Bias> <!-- [-50, 50] + 50 => [0, 100] -->
+				</Sim>
+			</Parameter>
+		</Animation>
+	</Template>
+
+
+	<!-- Flaps ################################################################# -->
+
+	<Template Name="ASOBO_Flaps_Template">
+		<DefaultTemplateParameters>
+			<ANIM_NAME_LEFT>l_flap_percent_key</ANIM_NAME_LEFT>
+			<ANIM_NAME_RIGHT>r_flap_percent_key</ANIM_NAME_RIGHT>
+		</DefaultTemplateParameters>
+
 		<UseTemplate Name="ASOBO_GT_Anim">
 			<ANIM_NAME>#ANIM_NAME_LEFT#</ANIM_NAME>
-			<ANIM_SIMVAR>SPOILERS LEFT POSITION</ANIM_SIMVAR>
+			<ANIM_LENGTH>100</ANIM_LENGTH>
+			<ANIM_SIMVAR>TRAILING EDGE FLAPS LEFT PERCENT</ANIM_SIMVAR>
 			<ANIM_SIMVAR_UNITS>Percent</ANIM_SIMVAR_UNITS>
 		</UseTemplate>
 		<UseTemplate Name="ASOBO_GT_Anim">
 			<ANIM_NAME>#ANIM_NAME_RIGHT#</ANIM_NAME>
-			<ANIM_SIMVAR>SPOILERS RIGHT POSITION</ANIM_SIMVAR>
+			<ANIM_LENGTH>100</ANIM_LENGTH>
+			<ANIM_SIMVAR>TRAILING EDGE FLAPS RIGHT PERCENT</ANIM_SIMVAR>
+			<ANIM_SIMVAR_UNITS>Percent</ANIM_SIMLEFTVAR_UNITS>
+		</UseTemplate>
+	</Template>
+
+	<!-- Slats ################################################################# -->
+
+	<Template Name="ASOBO_Slats_Template">
+		<DefaultTemplateParameters>
+			<ANIM_NAME_LEFT>l_slat_percent_key</ANIM_NAME_LEFT>
+			<ANIM_NAME_RIGHT>r_slat_percent_key</ANIM_NAME_RIGHT>
+		</DefaultTemplateParameters>
+
+		<UseTemplate Name="ASOBO_GT_Anim">
+			<ANIM_NAME>#ANIM_NAME_LEFT#</ANIM_NAME>
+			<ANIM_LENGTH>100</ANIM_LENGTH>
+			<ANIM_SIMVAR>LEADING EDGE FLAPS LEFT PERCENT</ANIM_SIMVAR>
 			<ANIM_SIMVAR_UNITS>Percent</ANIM_SIMVAR_UNITS>
 		</UseTemplate>
-	</Component>
-</Template>
-
-<!-- Elevators ############################################################# -->
-
-<Template Name="ASOBO_Elevators_Template">
-	<DefaultTemplateParameters>
-		<ANIM_NAME>elevator_percent_key</ANIM_NAME>
-	</DefaultTemplateParameters>
-
-	<Animation name="#ANIM_NAME#" guid="" length="100" type="Sim" typeParam="AutoPlay">
-		<Parameter>
-			<Sim>
-				<Variable>ELEVATOR DEFLECTION PCT</Variable>
-				<Units>percent</Units> <!-- [-100, 100] -->
-				<Scale>0.5</Scale> <!-- [-100, 100] * 0.5 => [-50, 50] (length 100) -->
-				<Bias>50</Bias> <!-- [-50, 50] + 50 => [0, 100] -->
-			</Sim>
-		</Parameter>
-	</Animation>
-</Template>
-
-<Template Name="ASOBO_Trimtab_Elevator_Template">
-	<DefaultTemplateParameters>
-		<ANIM_NAME>trimtab_elevator</ANIM_NAME>
-	</DefaultTemplateParameters>
-
-	<Animation name="#ANIM_NAME#" guid="" length="100" type="Sim" typeParam="AutoPlay">
-		<Parameter>
-			<Sim>
-				<Variable>ELEVATOR TRIM PCT</Variable>
-				<Units>percent</Units> <!-- [-100, 100] -->
-				<Scale>0.5</Scale> <!-- [-100, 100] * 0.5 => [-50, 50] (length 100) -->
-				<Bias>50</Bias> <!-- [-50, 50] + 50 => [0, 100] -->
-			</Sim>
-		</Parameter>
-	</Animation>
-</Template>
-
-<Template Name="ASOBO_Trimtab_Elevator_CounterTrim_Template">
-	<DefaultTemplateParameters>
-		<ANIM_NAME>trimtab_elevator_key</ANIM_NAME>
-	</DefaultTemplateParameters>
-
-	<UseTemplate Name="ASOBO_GT_Anim_Code">
-		<ANIM_CODE>(A:ELEVATOR DEFLECTION PCT, percent) -0.25 * (A:ELEVATOR TRIM PCT, percent) 0.75 * + 0.5 * 50 +</ANIM_CODE>
-	</UseTemplate>
-</Template>
+		<UseTemplate Name="ASOBO_GT_Anim">
+			<ANIM_NAME>#ANIM_NAME_RIGHT#</ANIM_NAME>
+			<ANIM_LENGTH>100</ANIM_LENGTH>
+			<ANIM_SIMVAR>LEADING EDGE FLAPS RIGHT PERCENT</ANIM_SIMVAR>
+			<ANIM_SIMVAR_UNITS>Percent</ANIM_SIMLEFTVAR_UNITS>
+		</UseTemplate>
+	</Template>
 
 
-<!-- Rudder ################################################################ -->
+	<!-- Spoilers ############################################################## -->
 
-<Template Name="ASOBO_Rudder_Template">
-	<DefaultTemplateParameters>
-		<ANIM_NAME>rudder_percent_key</ANIM_NAME>
-	</DefaultTemplateParameters>
+	<Template Name="ASOBO_Spoilers_Template">
+		<DefaultTemplateParameters>
+			<ANIM_NAME_LEFT>l_spoiler_key</ANIM_NAME_LEFT>
+			<ANIM_NAME_RIGHT>r_spoiler_key</ANIM_NAME_RIGHT>
+		</DefaultTemplateParameters>
 
-	<Condition Check="INTEGRATED_TRIM">
-		<True>
-			<UseTemplate Name="ASOBO_GT_Anim">
-				<ANIM_CODE>(A:RUDDER TRIM PCT, Percent) 0.25 * (A:RUDDER DEFLECTION PCT, Percent) 1.25 * + 100 min -100 max 0.5 * 50 +</ANIM_CODE>
+		<Animation name="#ANIM_NAME_LEFT#" guid="" length="100" type="Sim" typeParam="AutoPlay">
+			<Parameter>
+				<Sim>
+					<Variable>SPOILERS LEFT POSITION</Variable>
+					<Units>percent</Units> <!-- [0, 100] -->
+				</Sim>
+			</Parameter>
+		</Animation>
+		<Animation name="#ANIM_NAME_RIGHT#" guid="" length="100" type="Sim" typeParam="AutoPlay">
+			<Parameter>
+				<Sim>
+					<Variable>SPOILERS RIGHT POSITION</Variable>
+					<Units>percent</Units> <!-- [0, 100] -->
+				</Sim>
+			</Parameter>
+		</Animation>
+	</Template>
+
+
+	<!-- Protections ########################################################### -->
+
+	<Template Name="ASOBO_Protections_Visibility_Template">
+
+		<Visibility>
+			<Parameter>
+				<Sim>
+					<Variable>PLANE IN PARKING STATE</Variable>
+					<Units>bool</Units>
+				</Sim>
+			</Parameter>
+		</Visibility>
+	</Template>
+
+	<Template Name="ASOBO_Visible_In_Hangar_Only">
+		<DefaultTemplateParameters>
+			<RECURSIVE_ID>2</RECURSIVE_ID>
+		</DefaultTemplateParameters>
+		<Component ID="#NODE_ID#" Node="#NODE_ID#">
+			<UseTemplate Name="ASOBO_GT_Visibility_Sim">
+				<VISIBILITY_SIMVAR>PLANE IN PARKING STATE</VISIBILITY_SIMVAR>
+				<VISIBILITY_SIMVAR_UNITS>Bool</VISIBILITY_SIMVAR_UNITS>
 			</UseTemplate>
-		</True>
-		<False>
-			<UseTemplate Name="ASOBO_GT_Anim">
-				<ANIM_SIMVAR>RUDDER DEFLECTION PCT</ANIM_SIMVAR>
-				<ANIM_SIMVAR_UNITS>percent</ANIM_SIMVAR_UNITS>
-				<ANIM_SIMVAR_SCALE>0.5</ANIM_SIMVAR_SCALE>
-				<ANIM_SIMVAR_BIAS>50</ANIM_SIMVAR_BIAS>
+		</Component>
+		<Condition Valid="NODE_ID#RECURSIVE_ID#">
+			<UseTemplate Name="ASOBO_Visible_In_Hangar_Only">
+				<RECURSIVE_ID Process="Int">#RECURSIVE_ID# 1 +</RECURSIVE_ID>
+				<NODE_ID Process="Param">NODE_ID#RECURSIVE_ID#</NODE_ID>
 			</UseTemplate>
-		</False>
-	</Condition>
-</Template>
-
-<Template Name="ASOBO_Trimtab_Rudder_Template">
-	<DefaultTemplateParameters>
-		<ANIM_NAME>trimtab_rudder</ANIM_NAME>
-	</DefaultTemplateParameters>
-
-	<Animation name="#ANIM_NAME#" guid="" length="100" type="Sim" typeParam="AutoPlay">
-		<Parameter>
-			<Sim>
-				<Variable>RUDDER TRIM PCT</Variable>
-				<Units>percent</Units> <!-- [-100, 100] -->
-				<Scale>0.5</Scale> <!-- [-100, 100] * 0.5 => [-50, 50] (length 100) -->
-				<Bias>50</Bias> <!-- [-50, 50] + 50 => [0, 100] -->
-			</Sim>
-		</Parameter>
-	</Animation>
-</Template>
-
-
-<!-- Flaps ################################################################# -->
-
-<Template Name="ASOBO_Flaps_Template">
-	<DefaultTemplateParameters>
-		<ANIM_NAME_LEFT>l_flap_percent_key</ANIM_NAME_LEFT>
-		<ANIM_NAME_RIGHT>r_flap_percent_key</ANIM_NAME_RIGHT>
-	</DefaultTemplateParameters>
-
-	<UseTemplate Name="ASOBO_GT_Anim">
-		<ANIM_NAME>#ANIM_NAME_LEFT#</ANIM_NAME>
-		<ANIM_LENGTH>100</ANIM_LENGTH>
-		<ANIM_SIMVAR>TRAILING EDGE FLAPS LEFT PERCENT</ANIM_SIMVAR>
-		<ANIM_SIMVAR_UNITS>Percent</ANIM_SIMVAR_UNITS>
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_GT_Anim">
-		<ANIM_NAME>#ANIM_NAME_RIGHT#</ANIM_NAME>
-		<ANIM_LENGTH>100</ANIM_LENGTH>
-		<ANIM_SIMVAR>TRAILING EDGE FLAPS RIGHT PERCENT</ANIM_SIMVAR>
-		<ANIM_SIMVAR_UNITS>Percent</ANIM_SIMLEFTVAR_UNITS>
-	</UseTemplate>
-</Template>
-
-<!-- Slats ################################################################# -->
-
-<Template Name="ASOBO_Slats_Template">
-	<DefaultTemplateParameters>
-		<ANIM_NAME_LEFT>l_slat_percent_key</ANIM_NAME_LEFT>
-		<ANIM_NAME_RIGHT>r_slat_percent_key</ANIM_NAME_RIGHT>
-	</DefaultTemplateParameters>
-
-	<UseTemplate Name="ASOBO_GT_Anim">
-		<ANIM_NAME>#ANIM_NAME_LEFT#</ANIM_NAME>
-		<ANIM_LENGTH>100</ANIM_LENGTH>
-		<ANIM_SIMVAR>LEADING EDGE FLAPS LEFT PERCENT</ANIM_SIMVAR>
-		<ANIM_SIMVAR_UNITS>Percent</ANIM_SIMVAR_UNITS>
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_GT_Anim">
-		<ANIM_NAME>#ANIM_NAME_RIGHT#</ANIM_NAME>
-		<ANIM_LENGTH>100</ANIM_LENGTH>
-		<ANIM_SIMVAR>LEADING EDGE FLAPS RIGHT PERCENT</ANIM_SIMVAR>
-		<ANIM_SIMVAR_UNITS>Percent</ANIM_SIMLEFTVAR_UNITS>
-	</UseTemplate>
-</Template>
-
-
-<!-- Spoilers ############################################################## -->
-
-<Template Name="ASOBO_Spoilers_Template">
-	<DefaultTemplateParameters>
-		<ANIM_NAME_LEFT>l_spoiler_key</ANIM_NAME_LEFT>
-		<ANIM_NAME_RIGHT>r_spoiler_key</ANIM_NAME_RIGHT>
-	</DefaultTemplateParameters>
-
-	<Animation name="#ANIM_NAME_LEFT#" guid="" length="100" type="Sim" typeParam="AutoPlay">
-		<Parameter>
-			<Sim>
-				<Variable>SPOILERS LEFT POSITION</Variable>
-				<Units>percent</Units> <!-- [0, 100] -->
-			</Sim>
-		</Parameter>
-	</Animation>
-	<Animation name="#ANIM_NAME_RIGHT#" guid="" length="100" type="Sim" typeParam="AutoPlay">
-		<Parameter>
-			<Sim>
-				<Variable>SPOILERS RIGHT POSITION</Variable>
-				<Units>percent</Units> <!-- [0, 100] -->
-			</Sim>
-		</Parameter>
-	</Animation>
-</Template>
-
-
-<!-- Protections ########################################################### -->
-
-<Template Name="ASOBO_Protections_Visibility_Template">
-
-	<Visibility>
-		<Parameter>
-			<Sim>
-				<Variable>PLANE IN PARKING STATE</Variable>
-				<Units>bool</Units>
-			</Sim>
-		</Parameter>
-	</Visibility>
-</Template>
-
-<Template Name="ASOBO_Visible_In_Hangar_Only">
-	<DefaultTemplateParameters>
-		<RECURSIVE_ID>2</RECURSIVE_ID>
-	</DefaultTemplateParameters>
-	<Component ID="#NODE_ID#" Node="#NODE_ID#">
-		<UseTemplate Name="ASOBO_GT_Visibility_Sim">
-			<VISIBILITY_SIMVAR>PLANE IN PARKING STATE</VISIBILITY_SIMVAR>
-			<VISIBILITY_SIMVAR_UNITS>Bool</VISIBILITY_SIMVAR_UNITS>
-		</UseTemplate>
-	</Component>
-	<Condition Valid="NODE_ID#RECURSIVE_ID#">
-		<UseTemplate Name="ASOBO_Visible_In_Hangar_Only">
-			<RECURSIVE_ID Process="Int">#RECURSIVE_ID# 1 +</RECURSIVE_ID>
-			<NODE_ID Process="Param">NODE_ID#RECURSIVE_ID#</NODE_ID>
-		</UseTemplate>
-	</Condition>
-</Template>
-
-<!-- Exterior lights ########################################################### --> 
-<!-- handles multiple lights indexes (ex: <LANDING>Landing_Left</LANDING> <LANDING2>Landing_Right</LANDING2> -->
-<Template Name="ASOBO_Exterior_Lights">
-	<DefaultTemplateParameters>
-		<NO_POTENTIOMETER_FACTOR>True</NO_POTENTIOMETER_FACTOR>
-	</DefaultTemplateParameters>
-	<Condition Valid="LANDING">
-		<UseTemplate Name="ASOBO_Exterior_Light_Template">
-			<TYPE>LANDING</TYPE>
-		</UseTemplate>
-	</Condition>
-	<Condition Valid="TAXI">
-		<UseTemplate Name="ASOBO_Exterior_Light_Template">
-			<TYPE>TAXI</TYPE>
-		</UseTemplate>
-	</Condition>
-	<Condition Valid="STROBE">
-		<UseTemplate Name="ASOBO_Exterior_Light_Template">
-			<TYPE>STROBE</TYPE>
-		</UseTemplate>
-	</Condition>
-	<Condition Valid="NAV">
-		<UseTemplate Name="ASOBO_Exterior_Light_Template">
-			<TYPE>NAV</TYPE>
-		</UseTemplate>
-	</Condition>
-	<Condition Valid="BEACON">
-		<UseTemplate Name="ASOBO_Exterior_Light_Template">
-			<TYPE>BEACON</TYPE>
-		</UseTemplate>
-	</Condition>
-	<Condition Valid="WING">
-		<UseTemplate Name="ASOBO_Exterior_Light_Template">
-			<TYPE>WING</TYPE>
-		</UseTemplate>
-	</Condition>
-</Template>
-
-<!-- Process first node_id from type -->
-<Template Name="ASOBO_Exterior_Light_Template">
-	<UseTemplate Name="ASOBO_Exterior_Light_SubTemplate">
-		<NODE_ID Process="Param">#TYPE#</NODE_ID>
-		<ID>1</ID>
-	</UseTemplate>
-</Template>
-
-<!-- To specify light index for simvar : #TYPE##ID#_SIMVAR_INDEX (ex:<LANDING2_SIMVAR_INDEX>1</LANDING2_SIMVAR_INDEX>)-->
-<Template Name="ASOBO_Exterior_Light_SubTemplate">
-	<DefaultTemplateParameters>
-		<RECURSIVE_ID>2</RECURSIVE_ID>
-	</DefaultTemplateParameters>
-	<OverrideTemplateParameters>
-		<Condition Valid="#TYPE##ID#_SIMVAR_INDEX">
-			<NO_SIMVAR_INDEX>True</NO_SIMVAR_INDEX>
-			<SIMVAR_INDEX Process="Param">#TYPE##ID#_SIMVAR_INDEX</SIMVAR_INDEX>
 		</Condition>
-	</OverrideTemplateParameters>
-	<Component ID="#NODE_ID#" Node="#NODE_ID#">
-		<UseTemplate Name="ASOBO_LIGHTING_Emissive_SubTemplate">
-			<SIMVAR_LIGHT>LIGHT #TYPE#</SIMVAR_LIGHT>
-			<SIMVAR_LIGHT_ON>LIGHT #TYPE# ON</SIMVAR_LIGHT_ON>
-			<Condition Valid="NO_SIMVAR_INDEX">
-				<False>
-					<SIMVAR_INDEX>#ID#</SIMVAR_INDEX>
-				</False>
-			</Condition>
-		</UseTemplate>
-	</Component>
-	<Condition Valid="#TYPE##RECURSIVE_ID#">
+	</Template>
+
+	<!-- Exterior lights ########################################################### --> 
+	<!-- handles multiple lights indexes (ex: <LANDING>Landing_Left</LANDING> <LANDING2>Landing_Right</LANDING2> -->
+	<Template Name="ASOBO_Exterior_Lights">
+		<DefaultTemplateParameters>
+			<NO_POTENTIOMETER_FACTOR>True</NO_POTENTIOMETER_FACTOR>
+		</DefaultTemplateParameters>
+		<Condition Valid="LANDING">
+			<UseTemplate Name="ASOBO_Exterior_Light_Template">
+				<TYPE>LANDING</TYPE>
+			</UseTemplate>
+		</Condition>
+		<Condition Valid="TAXI">
+			<UseTemplate Name="ASOBO_Exterior_Light_Template">
+				<TYPE>TAXI</TYPE>
+			</UseTemplate>
+		</Condition>
+		<Condition Valid="STROBE">
+			<UseTemplate Name="ASOBO_Exterior_Light_Template">
+				<TYPE>STROBE</TYPE>
+			</UseTemplate>
+		</Condition>
+		<Condition Valid="NAV">
+			<UseTemplate Name="ASOBO_Exterior_Light_Template">
+				<TYPE>NAV</TYPE>
+			</UseTemplate>
+		</Condition>
+		<Condition Valid="BEACON">
+			<UseTemplate Name="ASOBO_Exterior_Light_Template">
+				<TYPE>BEACON</TYPE>
+			</UseTemplate>
+		</Condition>
+		<Condition Valid="WING">
+			<UseTemplate Name="ASOBO_Exterior_Light_Template">
+				<TYPE>WING</TYPE>
+			</UseTemplate>
+		</Condition>
+	</Template>
+
+	<!-- Process first node_id from type -->
+	<Template Name="ASOBO_Exterior_Light_Template">
 		<UseTemplate Name="ASOBO_Exterior_Light_SubTemplate">
-			<RECURSIVE_ID Process="Int">#RECURSIVE_ID# 1 +</RECURSIVE_ID>
-			<NODE_ID Process="Param">#TYPE##RECURSIVE_ID#</NODE_ID>
-			<ID>#RECURSIVE_ID#</ID>
+			<NODE_ID Process="Param">#TYPE#</NODE_ID>
+			<ID>1</ID>
 		</UseTemplate>
-	</Condition>
-</Template>
+	</Template>
 
-<!-- Cowl flaps -->
-<Template Name="ASOBO_Cowl_Flaps_Template">
-	<DefaultTemplateParameters>
-		<ID>1</ID>
-	</DefaultTemplateParameters>
-	<UseTemplate Name="ASOBO_Cowl_Flaps_SubTemplate">
-	</UseTemplate>
-</Template>
-<Template Name="ASOBO_Cowl_Flaps_SubTemplate">
-	<DefaultTemplateParameters>
-		<ANIM_NAME>cowl_flap#ID#_percent_key</ANIM_NAME>
-	</DefaultTemplateParameters>
-	<UseTemplate Name="ASOBO_GT_Anim">
-		<ANIM_NAME>#ANIM_NAME#</ANIM_NAME>
-		<ANIM_LENGTH>100</ANIM_LENGTH>
-		<ANIM_SIMVAR>RECIP ENG COWL FLAP POSITION:#ID#</ANIM_SIMVAR>
-		<ANIM_SIMVAR_UNITS>Percent</ANIM_SIMVAR_UNITS>
-	</UseTemplate>
-</Template>
+	<!-- To specify light index for simvar : #TYPE##ID#_SIMVAR_INDEX (ex:<LANDING2_SIMVAR_INDEX>1</LANDING2_SIMVAR_INDEX>)-->
+	<Template Name="ASOBO_Exterior_Light_SubTemplate">
+		<DefaultTemplateParameters>
+			<RECURSIVE_ID>2</RECURSIVE_ID>
+		</DefaultTemplateParameters>
+		<OverrideTemplateParameters>
+			<Condition Valid="#TYPE##ID#_SIMVAR_INDEX">
+				<NO_SIMVAR_INDEX>True</NO_SIMVAR_INDEX>
+				<SIMVAR_INDEX Process="Param">#TYPE##ID#_SIMVAR_INDEX</SIMVAR_INDEX>
+			</Condition>
+		</OverrideTemplateParameters>
+		<Component ID="#NODE_ID#" Node="#NODE_ID#">
+			<UseTemplate Name="ASOBO_LIGHTING_Emissive_SubTemplate">
+				<SIMVAR_LIGHT>LIGHT #TYPE#</SIMVAR_LIGHT>
+				<SIMVAR_LIGHT_ON>LIGHT #TYPE# ON</SIMVAR_LIGHT_ON>
+				<Condition Valid="NO_SIMVAR_INDEX">
+					<False>
+						<SIMVAR_INDEX>#ID#</SIMVAR_INDEX>
+					</False>
+				</Condition>
+			</UseTemplate>
+		</Component>
+		<Condition Valid="#TYPE##RECURSIVE_ID#">
+			<UseTemplate Name="ASOBO_Exterior_Light_SubTemplate">
+				<RECURSIVE_ID Process="Int">#RECURSIVE_ID# 1 +</RECURSIVE_ID>
+				<NODE_ID Process="Param">#TYPE##RECURSIVE_ID#</NODE_ID>
+				<ID>#RECURSIVE_ID#</ID>
+			</UseTemplate>
+		</Condition>
+	</Template>
 
-<!----------------------------------------------------------------------------------------------------------------------------->
-<!------------------------ New "Cleaner" version (not deleting the old one as long as it is in use ---------------------------->
+	<!-- Cowl flaps -->
+	<Template Name="ASOBO_Cowl_Flaps_Template">
+		<DefaultTemplateParameters>
+			<ID>1</ID>
+		</DefaultTemplateParameters>
+		<UseTemplate Name="ASOBO_Cowl_Flaps_SubTemplate">
+		</UseTemplate>
+	</Template>
+	<Template Name="ASOBO_Cowl_Flaps_SubTemplate">
+		<DefaultTemplateParameters>
+			<ANIM_NAME>cowl_flap#ID#_percent_key</ANIM_NAME>
+		</DefaultTemplateParameters>
+		<UseTemplate Name="ASOBO_GT_Anim">
+			<ANIM_NAME>#ANIM_NAME#</ANIM_NAME>
+			<ANIM_LENGTH>100</ANIM_LENGTH>
+			<ANIM_SIMVAR>RECIP ENG COWL FLAP POSITION:#ID#</ANIM_SIMVAR>
+			<ANIM_SIMVAR_UNITS>Percent</ANIM_SIMVAR_UNITS>
+		</UseTemplate>
+	</Template>
 
-<!-- ENGINE ############################################################# -->
+	<!----------------------------------------------------------------------------------------------------------------------------->
+	<!------------------------ New "Cleaner" version (not deleting the old one as long as it is in use ---------------------------->
+
+	<!-- ENGINE ############################################################# -->
 	<!-- PROPELLER ###################################################### -->
 	<!-- Animate a propeller with different mesh depending on RPM (optional frost meshes and side blur, opt-in by default)(ID is used to identify which engine to look for) -->
 	<Template Name="ASOBO_ENGINE_Propeller_Template">
@@ -1696,3 +1697,4 @@
 			</UseTemplate>
 		</Component>
 	</Template>
+</ModelBehaviors>
