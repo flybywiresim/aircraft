@@ -74,7 +74,7 @@ A: We don't know, since it depends on many factors. We'll however announce it ea
 
 **Q: How do I join the team?**
 
-A: Join our Discord server and either select your role from the bot at #roles.
+A: Head over to [Contributing.md](.github/Contributing.md) and join our Discord to get started.
 
 **Q: Is it payware?**
 
