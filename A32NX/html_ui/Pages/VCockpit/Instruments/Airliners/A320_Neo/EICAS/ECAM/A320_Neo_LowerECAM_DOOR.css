@@ -16,7 +16,6 @@
   --ecamUnitsColour: #01b8b8;
   --ecamValueColour: #00b300;
   --ecamWarningColour: #db7200;
-  --ecamAmberColour: #ffbf00;
   --ecamDoorWarningColour: #fd8000;
   --ecamDangerColour: red;
   --ecamInactiveColour: #db7200;
@@ -87,7 +86,7 @@ a320-neo-lower-ecam-door {
   a320-neo-lower-ecam-door text.NoteLargeAmber {
     font-size: 15pt;
     word-spacing: -4px;
-    fill: var(--ecamAmberColour); }
+    fill: var(--ecamWarningColour); }
   a320-neo-lower-ecam-door text.Unit {
     font-size: 14pt;
     fill: var(--ecamUnitsColour); }
