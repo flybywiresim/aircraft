@@ -187,9 +187,7 @@ class CDUInitPage {
         let zfwCell = "□□.□";
         let zfwCgCell = " □□.□";
 
-        let zfwnCGEntered = SimVar.GetSimVarValue("L:A32NX_ZEROFUELCGENTERED", "boolean");
-
-        if (zfwnCGEntered) {
+        if (mcdu._zeroFuelWeightZFWCGEntered) {
             if (isFinite(mcdu.zeroFuelWeight)) {
                 zfwCell = mcdu.zeroFuelWeight.toFixed(1);
                 zfwColor = "[color]blue";
@@ -209,7 +207,7 @@ class CDUInitPage {
                     (isFinite(mcdu.zeroFuelWeight) ? mcdu.zeroFuelWeight.toFixed(1) : "") +
                     "/" +
                     (isFinite(mcdu.zeroFuelWeightMassCenter) ? mcdu.zeroFuelWeightMassCenter.toFixed(1) : "");
-            } else if (await mcdu.tryParseZeroFuelWeightZFWCG(value)) {
+            } else if (await mcdu.trySetZeroFuelWeightZFWCG(value)) {
                 CDUInitPage.updateTowIfNeeded(mcdu);
                 CDUInitPage.ShowPage2(mcdu);
             }
@@ -284,7 +282,7 @@ class CDUInitPage {
         let tripWindCell = mcdu._windDir + "000";
         let tripWindColor = "[color]blue";
 
-        if (zfwnCGEntered && blockFuel === "□□.□") {
+        if (mcdu._zeroFuelWeightZFWCGEntered && blockFuel === "□□.□") {
             fuelPlanTopTitle = "FUEL ";
             fuelPlanBottomTitle = "PLANNING→";
         }
@@ -295,7 +293,7 @@ class CDUInitPage {
             isFinite(mcdu.zeroFuelWeight) &&
             mcdu.cruiseFlightLevel &&
             mcdu.flightPlanManager.getWaypointsCount() > 0 &&
-            zfwnCGEntered &&
+            mcdu._zeroFuelWeightZFWCGEntered &&
             mcdu._blockFuelEntered
         ) {
             initBTitle = "INIT FUEL PREDICTION ↔";

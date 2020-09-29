@@ -35,7 +35,6 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         super.Init();
         this.A32NXCore = new A32NX_Core();
         this.A32NXCore.init(this._lastTime);
-        SimVar.SetSimVarValue("L:A32NX_ZEROFUELCGENTERED", "boolean", false);
 
         this.defaultInputErrorMessage = "NOT ALLOWED";
         this.onDir = () => { CDUDirectToPage.ShowPage(this); };

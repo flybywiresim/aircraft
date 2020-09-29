@@ -69,6 +69,9 @@ class FMCMainDisplay extends BaseAirliners {
         this._checkFlightPlan = 0;
         this._smoothedTargetHeading = NaN;
         this._smootherTargetPitch = NaN;
+
+        this._zeroFuelWeightZFWCGEntered = false;
+        this._windDir = "HD"
     }
     static approachTypeStringToIndex(approachType) {
         approachType = approachType.trim();
@@ -1233,8 +1236,8 @@ class FMCMainDisplay extends BaseAirliners {
             }
         }
         if (zfw > 0 && zfwcg > 0) {
-            SimVar.SetSimVarValue("L:A32NX_ZEROFUELCGENTERED", "boolean", true);
-            this.zeroFuelWeight(zfw.toString());
+            this._zeroFuelWeightZFWCGEntered = true;
+            this.setZeroFuelWeight(zfw.toString());
             this.setZeroFuelCG(zfwcg.toString());
 
             this.updateTakeOffTrim();
@@ -1242,7 +1245,7 @@ class FMCMainDisplay extends BaseAirliners {
             this.updateCleanApproachSpeed();
             return true;
         }
-        if (SimVar.GetSimVarValue("L:A32NX_ZEROFUELCGENTERED", "boolean")) {
+        if (this._zeroFuelWeightZFWCGEntered) {
             if (zfw > 0) this.setZeroFuelWeight(zfw.toString());
             else if (zfwcg > 0) this.setZeroFuelCG(zfwcg.toString());
 
@@ -1356,7 +1359,7 @@ class FMCMainDisplay extends BaseAirliners {
 
     // If anyone wants to refactor this please do
     async trySetAverageWind(s) {
-        let wind = 0;
+        let wind;
         if (s.includes("HD")) {
             wind = parseFloat(s.split("HD")[1]);
             this._windDir = "HD";
@@ -1419,15 +1422,6 @@ class FMCMainDisplay extends BaseAirliners {
                 return false;
             }
         }
-
-        /*
-        let value = parseFloat(s);
-        if (isFinite(value)) {
-            this.averageWind = value;
-            return true;
-        }
-        this.showErrorMessage(this.defaultInputErrorMessage);
-        return false;*/
     }
     setPerfCrzWind(s) {
         let heading = NaN;
