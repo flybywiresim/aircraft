@@ -46,153 +46,153 @@
 		<Node>Engine_PIVOT_RIGHT_1</Node> <!-- the right wing engine pivot node closest to the center -->
 		<Node>Engine_PIVOT_RIGHT_2</Node> <!-- the right wing engine pivot node furthest from the center -->
 	</NodeAnimation>
+	<Behaviors>
+		<Include ModelBehaviorFile="Asobo\Exterior.xml"/>
+		<Include Path="A32NX\A32NX_Exterior.xml"/>
+		<Component ID="LIGHTING">
+			<UseTemplate Name="ASOBO_LIGHTING_Exterior_Retractable_Light_Template">
+				<LIGHT_TYPE>LANDING</LIGHT_TYPE>
+				<ID>1</ID>
+				<ANIM_NAME>opening_landing_light</ANIM_NAME>
+			</UseTemplate>
+			<UseTemplate Name="ASOBO_LIGHTING_Exterior_Retractable_Light_Template">
+				<LIGHT_TYPE>LANDING</LIGHT_TYPE>
+				<ID>2</ID>
+				<ANIM_NAME>opening_landing_light</ANIM_NAME>
+			</UseTemplate>
+		</Component>
+		<Component ID="HANDLING">
+			<UseTemplate Name="ASOBO_HANDLING_Elevator_Template">
+				<ANIM_NAME>elevator_percent_key</ANIM_NAME>
+			</UseTemplate>
+			<UseTemplate Name="ASOBO_HANDLING_Slats_Template">
+				<ANIM_NAME_LEFT>l_slat_percent_key</ANIM_NAME_LEFT>
+				<ANIM_NAME_RIGHT>r_slat_percent_key</ANIM_NAME_RIGHT>
+			</UseTemplate>
+			<UseTemplate Name="ASOBO_HANDLING_Elevator_Template">
+				<TRIM_ONLY>True</TRIM_ONLY>
+				<ANIM_NAME_TRIM>trimtab_elevator_key</ANIM_NAME_TRIM>
+			</UseTemplate>
+			<UseTemplate Name="ASOBO_HANDLING_Aileron_Template">
+				<ANIM_NAME_LEFT>l_aileron_percent_key</ANIM_NAME_LEFT>
+				<ANIM_NAME_RIGHT>r_aileron_percent_key</ANIM_NAME_RIGHT>
+			</UseTemplate>
+			<UseTemplate Name="ASOBO_HANDLING_Rudder_Template">
+				<ANIM_NAME>rudder_percent_key</ANIM_NAME>
+				<USE_INTEGRATED_TRIM>True</USE_INTEGRATED_TRIM>
+			</UseTemplate>
+			<UseTemplate Name="ASOBO_HANDLING_Spoilers_Template">
+				<ANIM_NAME_LEFT>l_spoiler_key</ANIM_NAME_LEFT>
+				<ANIM_NAME_RIGHT>r_spoiler_key</ANIM_NAME_RIGHT>
+				<!-- ANIM_EVENTS -->
+				<ANIM_EVENT_EFFECT_NAME>CAM_SPOILERS</ANIM_EVENT_EFFECT_NAME>
+				<NORMALIZED_TIME>0.5</NORMALIZED_TIME>
+				<DIRECTION>Both</DIRECTION>
+			</UseTemplate>
+			<UseTemplate Name="ASOBO_HANDLING_Flaps_Template">
+				<ANIM_NAME_LEFT>l_flap_percent_key</ANIM_NAME_LEFT>
+				<ANIM_NAME_RIGHT>r_flap_percent_key</ANIM_NAME_RIGHT>
+				<!-- ANIM_EVENTS -->
+				<ANIM_EVENT_EFFECT_NAME_1>CAM_FLAPS01</ANIM_EVENT_EFFECT_NAME_1>
+				<NORMALIZED_TIME_1>0.01</NORMALIZED_TIME_1>
+				<DIRECTION_1>Both</DIRECTION_1>
+				<ANIM_EVENT_EFFECT_NAME_2>CAM_FLAPS02</ANIM_EVENT_EFFECT_NAME_2>
+				<NORMALIZED_TIME_2>0.15</NORMALIZED_TIME_2>
+				<DIRECTION_2>Both</DIRECTION_2>
+				<ANIM_EVENT_EFFECT_NAME_3>CAM_FLAPS03</ANIM_EVENT_EFFECT_NAME_3>
+				<NORMALIZED_TIME_3>0.29</NORMALIZED_TIME_3>
+				<DIRECTION_3>Both</DIRECTION_3>
+				<ANIM_EVENT_EFFECT_NAME_4>CAM_FLAPS04</ANIM_EVENT_EFFECT_NAME_4>
+				<NORMALIZED_TIME_4>0.43</NORMALIZED_TIME_4>
+				<DIRECTION_4>Both</DIRECTION_4>
+				<ANIM_EVENT_EFFECT_NAME_5>CAM_FLAPS05</ANIM_EVENT_EFFECT_NAME_5>
+				<NORMALIZED_TIME_5>0.58</NORMALIZED_TIME_5>
+				<DIRECTION_5>Both</DIRECTION_5>
+			</UseTemplate>
+			<UseTemplate Name="ASOBO_HANDLING_Wipers_Template">
+				<CIRCUIT_ID_WIPERS>77</CIRCUIT_ID_WIPERS>
+			</UseTemplate>
+		</Component>
+		<Component ID="GEARS">
+			<UseTemplate Name="ASOBO_GEAR_Center_Template">
+				<ANIM_NAME>c_gear</ANIM_NAME>
+			</UseTemplate>
+			<UseTemplate Name="ASOBO_GEAR_Left_Template">
+				<ANIM_NAME>l_gear</ANIM_NAME>
+			</UseTemplate>
+			<UseTemplate Name="ASOBO_GEAR_Right_Template">
+				<ANIM_NAME>r_gear</ANIM_NAME>
+				<!-- ANIM EVENTS -->
+				<ANIM_EVENT_EFFECT_NAME>CAM_LANDINGGEARS</ANIM_EVENT_EFFECT_NAME>
+				<NORMALIZED_TIME>0.5</NORMALIZED_TIME>
+				<DIRECTION>Both</DIRECTION>
+			</UseTemplate>
+			<UseTemplate Name="ASOBO_GEAR_Center_Tire_Template">
+				<ANIM_NAME>c_tire_anim</ANIM_NAME>
+				<NODE_ID_STILL>WHEELS_C</NODE_ID_STILL>
+				<NODE_ID_BLURRED>C_WHEELS_BLURRED</NODE_ID_BLURRED>
+			</UseTemplate>
+			<UseTemplate Name="ASOBO_GEAR_Left_Tire_Template">
+				<ANIM_NAME>l_tire_anim</ANIM_NAME>
+				<NODE_ID_STILL>WHEEL_LEFT</NODE_ID_STILL>
+				<NODE_ID_BLURRED>WHEEL_LEFT_BLURRED</NODE_ID_BLURRED>
+			</UseTemplate>
+			<UseTemplate Name="ASOBO_GEAR_Right_Tire_Template">
+				<ANIM_NAME>r_tire_anim</ANIM_NAME>
+				<NODE_ID_STILL>WHEEL_RIGHT</NODE_ID_STILL>
+				<NODE_ID_BLURRED>WHEEL_RIGHT_BLURRED</NODE_ID_BLURRED>
+			</UseTemplate>
+			<UseTemplate Name="ASOBO_GEAR_Steering_Template">
+				<ANIM_NAME>c_wheel</ANIM_NAME>
+			</UseTemplate>
+		</Component>
+		<Component ID="ENGINE">
+			<UseTemplate Name="A32NX_ENGINE_Turbine_Template">
+				<ID>1</ID>
+				<ANIM_NODE_ID>N1_1_anim</ANIM_NODE_ID>
+				<ANIM_NAME>N1_1_anim</ANIM_NAME>
+				<STILL_NODE_ID>PROP_STILL_LEFT</STILL_NODE_ID>
+				<SLOW_NODE_ID>PROP_SLOW_LEFT</SLOW_NODE_ID>
+				<BLURRED_NODE_ID>PROP_BLURRED_LEFT</BLURRED_NODE_ID>
+			</UseTemplate>
+			<UseTemplate Name="A32NX_ENGINE_Turbine_Template">
+				<ID>2</ID>
+				<ANIM_NODE_ID>N1_2_anim</ANIM_NODE_ID>
+				<ANIM_NAME>N1_2_anim</ANIM_NAME>
+				<STILL_NODE_ID>PROP_STILL_RIGHT</STILL_NODE_ID>
+				<SLOW_NODE_ID>PROP_SLOW_RIGHT</SLOW_NODE_ID>
+				<BLURRED_NODE_ID>PROP_BLURRED_RIGHT</BLURRED_NODE_ID>
+			</UseTemplate>
+			<UseTemplate Name="ASOBO_ENGINE_Turbine_ReverseThrust_Template">
+				<ID>1</ID>
+				<ANIM_NAME>thrust_rev_1</ANIM_NAME>
+			</UseTemplate>
+			<UseTemplate Name="ASOBO_ENGINE_Turbine_ReverseThrust_Template">
+				<ID>2</ID>
+				<ANIM_NAME>thrust_rev_2</ANIM_NAME>
+			</UseTemplate>
+		</Component>
+		<Component ID="INTERACTIVE_POINTS">
+			<UseTemplate Name="ASOBO_DOOR_InteractivePoint_Template">
+				<ID>5</ID>
+				<ANIM_NAME>door_cargo</ANIM_NAME>
+			</UseTemplate>
+			<UseTemplate Name="ASOBO_DOOR_InteractivePoint_Template">
+				<ID>0</ID>
+				<ANIM_NAME>door_passenger</ANIM_NAME>
+			</UseTemplate>
+			<UseTemplate Name="ASOBO_DOOR_InteractivePoint_Template">
+				<ID>3</ID>
+				<ANIM_NAME>door_rear</ANIM_NAME>
+			</UseTemplate>
+			<UseTemplate Name="ASOBO_FuelHose_InteractivePoint_Template">
+				<ID>9</ID>
+				<NODE_ID>GROUND_FUELPIPE</NODE_ID>
+			</UseTemplate>
+			<UseTemplate Name="ASOBO_FuelHose_InteractivePoint_Template">
+				<ID>8</ID>
+				<NODE_ID>GROUND_GPUPIPE</NODE_ID>
+			</UseTemplate>
+		</Component>
+	</Behaviors>
 </ModelInfo>
-<ModelBehaviors>
-	<Include Path="Asobo\Exterior.xml"/>
-    <Include Path="A32NX\A32NX_Exterior.xml"/>
-	<Component ID="LIGHTING">
-		<UseTemplate Name="ASOBO_LIGHTING_Exterior_Retractable_Light_Template">
-			<LIGHT_TYPE>LANDING</LIGHT_TYPE>
-			<ID>1</ID>
-			<ANIM_NAME>opening_landing_light</ANIM_NAME>
-		</UseTemplate>
-		<UseTemplate Name="ASOBO_LIGHTING_Exterior_Retractable_Light_Template">
-			<LIGHT_TYPE>LANDING</LIGHT_TYPE>
-			<ID>2</ID>
-			<ANIM_NAME>opening_landing_light</ANIM_NAME>
-		</UseTemplate>
-	</Component>
-	<Component ID="HANDLING">
-		<UseTemplate Name="ASOBO_HANDLING_Elevator_Template">
-			<ANIM_NAME>elevator_percent_key</ANIM_NAME>
-		</UseTemplate>
-		<UseTemplate Name="ASOBO_HANDLING_Slats_Template">
-			<ANIM_NAME_LEFT>l_slat_percent_key</ANIM_NAME_LEFT>
-			<ANIM_NAME_RIGHT>r_slat_percent_key</ANIM_NAME_RIGHT>
-		</UseTemplate>
-		<UseTemplate Name="ASOBO_HANDLING_Elevator_Template">
-			<TRIM_ONLY>True</TRIM_ONLY>
-			<ANIM_NAME_TRIM>trimtab_elevator_key</ANIM_NAME_TRIM>
-		</UseTemplate>
-		<UseTemplate Name="ASOBO_HANDLING_Aileron_Template">
-			<ANIM_NAME_LEFT>l_aileron_percent_key</ANIM_NAME_LEFT>
-			<ANIM_NAME_RIGHT>r_aileron_percent_key</ANIM_NAME_RIGHT>
-		</UseTemplate>
-		<UseTemplate Name="ASOBO_HANDLING_Rudder_Template">
-			<ANIM_NAME>rudder_percent_key</ANIM_NAME>
-			<USE_INTEGRATED_TRIM>True</USE_INTEGRATED_TRIM>
-		</UseTemplate>
-		<UseTemplate Name="ASOBO_HANDLING_Spoilers_Template">
-			<ANIM_NAME_LEFT>l_spoiler_key</ANIM_NAME_LEFT>
-			<ANIM_NAME_RIGHT>r_spoiler_key</ANIM_NAME_RIGHT>
-			<!-- ANIM_EVENTS -->
-			<ANIM_EVENT_EFFECT_NAME>CAM_SPOILERS</ANIM_EVENT_EFFECT_NAME>
-			<NORMALIZED_TIME>0.5</NORMALIZED_TIME>
-			<DIRECTION>Both</DIRECTION>
-		</UseTemplate>
-		<UseTemplate Name="ASOBO_HANDLING_Flaps_Template">
-			<ANIM_NAME_LEFT>l_flap_percent_key</ANIM_NAME_LEFT>
-			<ANIM_NAME_RIGHT>r_flap_percent_key</ANIM_NAME_RIGHT>
-			<!-- ANIM_EVENTS -->
-			<ANIM_EVENT_EFFECT_NAME_1>CAM_FLAPS01</ANIM_EVENT_EFFECT_NAME_1>
-			<NORMALIZED_TIME_1>0.01</NORMALIZED_TIME_1>
-			<DIRECTION_1>Both</DIRECTION_1>
-			<ANIM_EVENT_EFFECT_NAME_2>CAM_FLAPS02</ANIM_EVENT_EFFECT_NAME_2>
-			<NORMALIZED_TIME_2>0.15</NORMALIZED_TIME_2>
-			<DIRECTION_2>Both</DIRECTION_2>
-			<ANIM_EVENT_EFFECT_NAME_3>CAM_FLAPS03</ANIM_EVENT_EFFECT_NAME_3>
-			<NORMALIZED_TIME_3>0.29</NORMALIZED_TIME_3>
-			<DIRECTION_3>Both</DIRECTION_3>
-			<ANIM_EVENT_EFFECT_NAME_4>CAM_FLAPS04</ANIM_EVENT_EFFECT_NAME_4>
-			<NORMALIZED_TIME_4>0.43</NORMALIZED_TIME_4>
-			<DIRECTION_4>Both</DIRECTION_4>
-			<ANIM_EVENT_EFFECT_NAME_5>CAM_FLAPS05</ANIM_EVENT_EFFECT_NAME_5>
-			<NORMALIZED_TIME_5>0.58</NORMALIZED_TIME_5>
-			<DIRECTION_5>Both</DIRECTION_5>
-		</UseTemplate>
-		<UseTemplate Name="ASOBO_HANDLING_Wipers_Template">
-			<CIRCUIT_ID_WIPERS>77</CIRCUIT_ID_WIPERS>
-		</UseTemplate>
-	</Component>
-	<Component ID="GEARS">
-		<UseTemplate Name="ASOBO_GEAR_Center_Template">
-			<ANIM_NAME>c_gear</ANIM_NAME>
-		</UseTemplate>
-		<UseTemplate Name="ASOBO_GEAR_Left_Template">
-			<ANIM_NAME>l_gear</ANIM_NAME>
-		</UseTemplate>
-		<UseTemplate Name="ASOBO_GEAR_Right_Template">
-			<ANIM_NAME>r_gear</ANIM_NAME>
-			<!-- ANIM EVENTS -->
-			<ANIM_EVENT_EFFECT_NAME>CAM_LANDINGGEARS</ANIM_EVENT_EFFECT_NAME>
-			<NORMALIZED_TIME>0.5</NORMALIZED_TIME>
-			<DIRECTION>Both</DIRECTION>
-		</UseTemplate>
-		<UseTemplate Name="ASOBO_GEAR_Center_Tire_Template">
-			<ANIM_NAME>c_tire_anim</ANIM_NAME>
-			<NODE_ID_STILL>WHEELS_C</NODE_ID_STILL>
-			<NODE_ID_BLURRED>C_WHEELS_BLURRED</NODE_ID_BLURRED>
-		</UseTemplate>
-		<UseTemplate Name="ASOBO_GEAR_Left_Tire_Template">
-			<ANIM_NAME>l_tire_anim</ANIM_NAME>
-			<NODE_ID_STILL>WHEEL_LEFT</NODE_ID_STILL>
-			<NODE_ID_BLURRED>WHEEL_LEFT_BLURRED</NODE_ID_BLURRED>
-		</UseTemplate>
-		<UseTemplate Name="ASOBO_GEAR_Right_Tire_Template">
-			<ANIM_NAME>r_tire_anim</ANIM_NAME>
-			<NODE_ID_STILL>WHEEL_RIGHT</NODE_ID_STILL>
-			<NODE_ID_BLURRED>WHEEL_RIGHT_BLURRED</NODE_ID_BLURRED>
-		</UseTemplate>
-		<UseTemplate Name="ASOBO_GEAR_Steering_Template">
-			<ANIM_NAME>c_wheel</ANIM_NAME>
-		</UseTemplate>
-	</Component>
-	<Component ID="ENGINE">
-		<UseTemplate Name="A32NX_ENGINE_Turbine_Template">
-			<ID>1</ID>
-			<ANIM_NODE_ID>N1_1_anim</ANIM_NODE_ID>
-			<ANIM_NAME>N1_1_anim</ANIM_NAME>
-			<STILL_NODE_ID>PROP_STILL_LEFT</STILL_NODE_ID>
-			<SLOW_NODE_ID>PROP_SLOW_LEFT</SLOW_NODE_ID>
-			<BLURRED_NODE_ID>PROP_BLURRED_LEFT</BLURRED_NODE_ID>
-		</UseTemplate>
-		<UseTemplate Name="A32NX_ENGINE_Turbine_Template">
-			<ID>2</ID>
-			<ANIM_NODE_ID>N1_2_anim</ANIM_NODE_ID>
-			<ANIM_NAME>N1_2_anim</ANIM_NAME>
-			<STILL_NODE_ID>PROP_STILL_RIGHT</STILL_NODE_ID>
-			<SLOW_NODE_ID>PROP_SLOW_RIGHT</SLOW_NODE_ID>
-			<BLURRED_NODE_ID>PROP_BLURRED_RIGHT</BLURRED_NODE_ID>
-		</UseTemplate>
-		<UseTemplate Name="ASOBO_ENGINE_Turbine_ReverseThrust_Template">
-			<ID>1</ID>
-			<ANIM_NAME>thrust_rev_1</ANIM_NAME>
-		</UseTemplate>
-		<UseTemplate Name="ASOBO_ENGINE_Turbine_ReverseThrust_Template">
-			<ID>2</ID>
-			<ANIM_NAME>thrust_rev_2</ANIM_NAME>
-		</UseTemplate>
-	</Component>
-	<Component ID="INTERACTIVE_POINTS">
-		<UseTemplate Name="ASOBO_DOOR_InteractivePoint_Template">
-			<ID>5</ID>
-			<ANIM_NAME>door_cargo</ANIM_NAME>
-		</UseTemplate>
-		<UseTemplate Name="ASOBO_DOOR_InteractivePoint_Template">
-			<ID>0</ID>
-			<ANIM_NAME>door_passenger</ANIM_NAME>
-		</UseTemplate>
-		<UseTemplate Name="ASOBO_DOOR_InteractivePoint_Template">
-			<ID>3</ID>
-			<ANIM_NAME>door_rear</ANIM_NAME>
-		</UseTemplate>
-		<UseTemplate Name="ASOBO_FuelHose_InteractivePoint_Template">
-			<ID>9</ID>
-			<NODE_ID>GROUND_FUELPIPE</NODE_ID>
-		</UseTemplate>
-		<UseTemplate Name="ASOBO_FuelHose_InteractivePoint_Template">
-			<ID>8</ID>
-			<NODE_ID>GROUND_GPUPIPE</NODE_ID>
-		</UseTemplate>
-	</Component>
-</ModelBehaviors>
