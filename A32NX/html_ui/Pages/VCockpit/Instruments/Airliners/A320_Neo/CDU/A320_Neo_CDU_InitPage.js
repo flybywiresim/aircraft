@@ -186,7 +186,10 @@ class CDUInitPage {
         let zfwColor = "[color]red";
         let zfwCell = "□□.□";
         let zfwCgCell = " □□.□";
-        if (mcdu._zeroFuelWeightZFWCGEntered) {
+
+        let zfwnCGEntered = SimVar.GetSimVarValue("L:A32NX_ZEROFUELCGENTERED", "boolean");
+
+        if (zfwnCGEntered) {
             if (isFinite(mcdu.zeroFuelWeight)) {
                 zfwCell = mcdu.zeroFuelWeight.toFixed(1);
                 zfwColor = "[color]blue";
@@ -281,7 +284,7 @@ class CDUInitPage {
         let tripWindCell = mcdu._windDir + "000";
         let tripWindColor = "[color]blue";
 
-        if (mcdu._zeroFuelWeightZFWCGEntered && blockFuel === "□□.□") {
+        if (zfwnCGEntered && blockFuel === "□□.□") {
             fuelPlanTopTitle = "FUEL ";
             fuelPlanBottomTitle = "PLANNING→";
         }
@@ -292,7 +295,7 @@ class CDUInitPage {
             isFinite(mcdu.zeroFuelWeight) &&
             mcdu.cruiseFlightLevel &&
             mcdu.flightPlanManager.getWaypointsCount() > 0 &&
-            mcdu._zeroFuelWeightZFWCGEntered &&
+            zfwnCGEntered &&
             mcdu._blockFuelEntered
         ) {
             initBTitle = "INIT FUEL PREDICTION ↔";
@@ -353,7 +356,7 @@ class CDUInitPage {
             mcdu.onRightInput[4] = async () => {
                 let value = mcdu.inOut;
                 mcdu.clearUserInput();
-                if (await mcdu.tryParseAverageWind(value)) {
+                if (await mcdu.trySetAverageWind(value)) {
                     CDUInitPage.ShowPage2(mcdu);
                 }
             };

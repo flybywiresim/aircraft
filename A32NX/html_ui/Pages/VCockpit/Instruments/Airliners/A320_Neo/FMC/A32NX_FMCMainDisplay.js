@@ -1218,35 +1218,42 @@ class FMCMainDisplay extends BaseAirliners {
         this.showErrorMessage(this.defaultInputErrorMessage);
         callback(false);
     }
-    async trySetZeroFuelWeightZFWCG(input, useLbs = false) {
-        let zfw = NaN;
-        let zfwcg = NaN;
-        if (input) {
-            let inputSplit = input.split("/");
-            zfw = parseFloat(inputSplit[0]);
-            if (useLbs && !isNaN(zfw)) {
-                zfw = zfw / 2.204623;
+
+    // Why would we ever use lbs?
+    async trySetZeroFuelWeightZFWCG(s, useLbs = false) {
+        let zfw = 0;
+        let zfwcg = 0;
+        if (s) {
+            if (s.includes("/")) {
+                let sSplit = s.split("/");
+                zfw = parseFloat(sSplit[0]);
+                zfwcg = parseFloat(sSplit[1]);
+            } else {
+                zfw = parseFloat(s);
             }
-            zfwcg = parseFloat(inputSplit[1]);
         }
-        if (isNaN(zfwcg)) {
-            this.updateZFWCG();
-            zfwcg = this.zeroFuelWeightMassCenter;
-        }
-        if (isFinite(zfw) || isFinite(zfwcg)) {
-            if (isFinite(zfw)) {
-                this.zeroFuelWeight = zfw;
-            }
-            if (isFinite(zfwcg) && zfwcg != this.zeroFuelWeightMassCenter) {
-                this.zeroFuelWeightMassCenter = zfwcg;
-            }
+        if (zfw > 0 && zfwcg > 0) {
+            SimVar.SetSimVarValue("L:A32NX_ZEROFUELCGENTERED", "boolean", true);
+            this.zeroFuelWeight(zfw.toString());
+            this.setZeroFuelCG(zfwcg.toString());
+
             this.updateTakeOffTrim();
             this.updateCleanTakeOffSpeed();
             this.updateCleanApproachSpeed();
             return true;
         }
-        this.showErrorMessage(this.defaultInputErrorMessage);
-        return false;
+        if (SimVar.GetSimVarValue("L:A32NX_ZEROFUELCGENTERED", "boolean")) {
+            if (zfw > 0) this.setZeroFuelWeight(zfw.toString());
+            else if (zfwcg > 0) this.setZeroFuelCG(zfwcg.toString());
+
+            this.updateTakeOffTrim();
+            this.updateCleanTakeOffSpeed();
+            this.updateCleanApproachSpeed();
+            return true;
+        } else {
+            this.showErrorMessage("FORMAT ERROR");
+            return false;
+        }
     }
 
     async setZeroFuel() {
@@ -1346,14 +1353,81 @@ class FMCMainDisplay extends BaseAirliners {
         this.showErrorMessage(this.defaultInputErrorMessage);
         return false;
     }
+
+    // If anyone wants to refactor this please do
     async trySetAverageWind(s) {
+        let wind = 0;
+        if (s.includes("HD")) {
+            wind = parseFloat(s.split("HD")[1]);
+            this._windDir = "HD";
+            if (isFinite(wind)) {
+                this.averageWind = wind;
+                return true;
+            } else {
+                this.showErrorMessage("FORMAT ERROR");
+                return false;
+            }
+        } else if (s.includes("H")) {
+            wind = parseFloat(s.split("H")[1]);
+            this._windDir = "HD";
+            if (isFinite(wind)) {
+                this.averageWind = wind;
+                return true;
+            } else {
+                this.showErrorMessage("FORMAT ERROR");
+                return false;
+            }
+        } else if (s.includes("-")) {
+            wind = parseFloat(s.split("-")[1]);
+            this._windDir = "HD";
+            if (isFinite(wind)) {
+                this.averageWind = wind;
+                return true;
+            } else {
+                this.showErrorMessage("FORMAT ERROR");
+                return false;
+            }
+        } else if (s.includes("TL")) {
+            wind = parseFloat(s.split("TL")[1]);
+            this._windDir = "TL";
+            if (isFinite(wind)) {
+                this.averageWind = wind;
+                return true;
+            } else {
+                this.showErrorMessage("FORMAT ERROR");
+                return false;
+            }
+        } else if (s.includes("T")) {
+            wind = parseFloat(s.split("T")[1]);
+            this._windDir = "TL";
+            if (isFinite(wind)) {
+                this.averageWind = wind;
+                return true;
+            } else {
+                this.showErrorMessage("FORMAT ERROR");
+                return false;
+            }
+        } else {
+            // Until the +- button the MCDU actually shows a plus sign
+            wind = parseFloat(s);
+            this._windDir = "TL";
+            if (isFinite(wind)) {
+                this.averageWind = wind;
+                return true;
+            } else {
+                this.showErrorMessage("FORMAT ERROR");
+                return false;
+            }
+        }
+
+        /*
         let value = parseFloat(s);
         if (isFinite(value)) {
             this.averageWind = value;
             return true;
         }
         this.showErrorMessage(this.defaultInputErrorMessage);
-        return false;
+        return false;*/
     }
     setPerfCrzWind(s) {
         let heading = NaN;
