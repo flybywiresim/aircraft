@@ -10,6 +10,7 @@ class Jet_PFD_AttitudeIndicator extends HTMLElement {
         this.horizonTopColor = "";
         this.horizonBottomColor = "";
         this.horizonVisible = true;
+        this.isHud = false;
         this._aircraft = Aircraft.A320_NEO;
     }
     static get dynamicAttributes() {
@@ -31,6 +32,7 @@ class Jet_PFD_AttitudeIndicator extends HTMLElement {
     static get observedAttributes() {
         return this.dynamicAttributes.concat([
             "background",
+            "hud"
         ]);
     }
     get aircraft() {
@@ -446,16 +448,6 @@ class Jet_PFD_AttitudeIndicator extends HTMLElement {
             this.slipSkidTriangle.setAttribute("transform", "rotate(" + this.bankAngle + ", 0, 0)");
         if (this.radioAltitude && this.radioAltitudeRotate)
             this.radioAltitude.setAttribute("transform", "rotate(" + this.bankAngle + ", 0, 0)");
-        if (this.horizon_top_bg) {
-            if (this.horizonVisible) {
-                this.horizon_top_bg.setAttribute("fill", this.horizonTopColor);
-                this.horizon_bottom_bg.setAttribute("fill", this.horizonBottomColor);
-            }
-            else {
-                this.horizon_top_bg.setAttribute("fill", "transparent");
-                this.horizon_bottom_bg.setAttribute("fill", "transparent");
-            }
-        }
         if (this.compassTicks) {
             const scalar = (this.compass % this.compassInterval) / this.compassInterval;
             const offset = scalar * this.graduationSpacing + 1;
@@ -487,11 +479,11 @@ class Jet_PFD_AttitudeIndicator extends HTMLElement {
             case "slip_skid":
                 this.slipSkidValue = parseFloat(newValue);
                 break;
+            case "hud":
+                this.isHud = newValue == "true";
+                break;
             case "background":
-                if (newValue == "false")
-                    this.horizonVisible = false;
-                else
-                    this.horizonVisible = true;
+                this.horizonVisible = newValue == "true";
                 break;
             case "radio_altitude":
                 if (this.radioAltitude) {
