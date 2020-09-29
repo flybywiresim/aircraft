@@ -9,17 +9,13 @@ class CDUFuelPredPage {
             destIdentCell = mcdu.flightPlanManager.getDestination().ident;
             if (isFlying) {
                 destTimeCell = FMCMainDisplay.secondsTohhmm(mcdu.flightPlanManager.getDestination().infos.etaInFP);
-            }
-            else {
+            } else {
                 destTimeCell = FMCMainDisplay.secondsTohhmm(mcdu.flightPlanManager.getDestination().infos.totalTimeInFP);
             }
-        }        
+        }
         let altIdentCell = "---";
         let altTimeCell = "";
-        /**
-         * Retrieve alternate destination info
-         */
-        //if (mcdu.flightPlanManager.get)
+
         let rteRsvWeightCell = "--.-";
         let rteRsvWeight = mcdu.getRouteReservedWeight();
         if (isFinite(rteRsvWeight)) {
@@ -60,7 +56,7 @@ class CDUFuelPredPage {
             ["FINAL /TIME", "GW/ CG"],
             [""],
             ["MIN DEST FOB", "EXTRA /TIME"],
-            [""]
+            [""],
         ]);
     }
 }

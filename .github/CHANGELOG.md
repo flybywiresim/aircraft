@@ -9,5 +9,5 @@
 
 1. [General] Add CHANGELOG.md - @nathaninnes (Nathan Innes)
 2. [ECAM] Improved Upper ECAM Visuals - @wpine215 (Iceman)
-   X. [CDU] Revised INIT A Page - @lucky38i (Lucky38i)
-   X. [CDU] Revised INIT B Page - @lucky38i (lucky38i)
+3. [CDU] Revised INIT A Page - @lucky38i (Lucky38i)
+4. [CDU] Revised INIT B Page - @lucky38i (lucky38i)

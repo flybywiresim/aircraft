@@ -135,7 +135,7 @@ class CDUInitPage {
         };
 
         mcdu.setTemplate([
-            ["INIT →"], //Need to find the right unicode for left/right arrow
+            ["INIT ↔"], //Need to find the right unicode for left/right arrow
             ["CO RTE", "FROM/TO"],
             [coRoute, fromTo],
             ["ALTN/CO RTE"],
@@ -150,7 +150,7 @@ class CDUInitPage {
             [cruiseFlTemp, "{smallFront}36090{smallEnd}[color]blue"],
         ]);
 
-        mcdu.insertSmallFontSpan()
+        mcdu.insertSmallFontSpan();
 
         mcdu.onPrevPage = () => {
             CDUInitPage.ShowPage2(mcdu);
@@ -177,7 +177,7 @@ class CDUInitPage {
     static ShowPage2(mcdu) {
         mcdu.clearDisplay();
 
-        let initBTitle = "INIT ←";
+        let initBTitle = "INIT ↔";
 
         let fuelPlanTopTitle = "";
         let fuelPlanBottomTitle = "";
@@ -213,11 +213,11 @@ class CDUInitPage {
         };
 
         let blockFuel = "□□.□";
-        let blockFuelColor = "[color]red"
+        let blockFuelColor = "[color]red";
         if (mcdu._blockFuelEntered) {
             if (isFinite(mcdu.blockFuel)) {
                 blockFuel = mcdu.blockFuel.toFixed(1);
-                blockFuelColor = "[color]blue"
+                blockFuelColor = "[color]blue";
             }
         }
         mcdu.onRightInput[1] = async () => {
@@ -236,7 +236,7 @@ class CDUInitPage {
 
         let taxiFuelCell = "{smallFront}0.4{smallEnd}";
         if (isFinite(mcdu.taxiFuelWeight)) {
-            taxiFuelCell = mcdu.taxiFuelWeight.toFixed(1) ;
+            taxiFuelCell = mcdu.taxiFuelWeight.toFixed(1);
         }
         mcdu.onLeftInput[0] = async () => {
             let value = mcdu.inOut;
@@ -281,8 +281,7 @@ class CDUInitPage {
         let tripWindCell = mcdu._windDir + "000";
         let tripWindColor = "[color]blue";
 
-        if (mcdu._zeroFuelWeightZFWCGEntered &&
-            blockFuel === "□□.□") {
+        if (mcdu._zeroFuelWeightZFWCGEntered && blockFuel === "□□.□") {
             fuelPlanTopTitle = "FUEL ";
             fuelPlanBottomTitle = "PLANNING→";
         }
@@ -296,7 +295,7 @@ class CDUInitPage {
             mcdu._zeroFuelWeightZFWCGEntered &&
             mcdu._blockFuelEntered
         ) {
-            initBTitle = "INIT FUEL PREDICTION ←";
+            initBTitle = "INIT FUEL PREDICTION ↔";
             taxiFuelCell = "0.2";
 
             if (isFinite(mcdu.blockFuel)) {
@@ -324,7 +323,7 @@ class CDUInitPage {
             };
 
             //TODO Compute  ALTN WEIGHT & TIME, this is a placeholder value
-            altnWeightCell = "__{smallFront}{greenFront}0.0{greenEnd}{smallEnd}"
+            altnWeightCell = "__{smallFront}{greenFront}0.0{greenEnd}{smallEnd}";
 
             if (isFinite(mcdu.getRouteFinalFuelWeight()) && isFinite(mcdu.getRouteFinalFuelTime())) {
                 finalWeightCell = "{smallFront}" + mcdu.getRouteFinalFuelWeight().toFixed(1) + "{smallEnd}";
@@ -334,7 +333,7 @@ class CDUInitPage {
 
             // TODO compute final weight and time, this is a place holder value
             finalWeightCell = "__{smallFront}" + "0.0" + "{smallEnd}";
-            finalColor = "[color]blue"
+            finalColor = "[color]blue";
 
             mcdu.takeOffWeight = mcdu.zeroFuelWeight + mcdu.blockFuel - mcdu.taxiFuelWeight;
             console.log("Takeoff weight =" + mcdu.takeOffWeight);
@@ -360,14 +359,14 @@ class CDUInitPage {
             };
 
             // TODO calculate minDestFob, this is a placeholder value
-            minDestFob = "__{smallFront}0.0{smallEnd}"
-            minDestFobColor = "[color]blue"
+            minDestFob = "__{smallFront}0.0{smallEnd}";
+            minDestFobColor = "[color]blue";
 
             // TODO calculate extra weight and time, this is a plceholder value
             // extraWeightCell = parseFloat(blockFuel) - (parseFloat(taxiFuelCell) + parseFloat(taxiFuelCell) + parseFloat(rteRsvWeightCell) + parseFloat(minDestFob));
             extraColor = "[color]green";
-            extraWeightCell = "{smallFront}0.0"
-            extraTimeCell = "0000{smallEnd}"
+            extraWeightCell = "{smallFront}0.0";
+            extraTimeCell = "0000{smallEnd}";
         }
 
         mcdu.setTemplate([
@@ -377,7 +376,7 @@ class CDUInitPage {
             ["TRIP  /TIME", "BLOCK"],
             [tripWeightCell + "/" + tripTimeCell + tripColor, blockFuel + blockFuelColor],
             ["RTE RSV/%", fuelPlanTopTitle + fuelPlanColor],
-            [rteRsvWeightCell + "/" + rteRsvPercentCell + rteRsvColor, fuelPlanBottomTitle+fuelPlanColor],
+            [rteRsvWeightCell + "/" + rteRsvPercentCell + rteRsvColor, fuelPlanBottomTitle + fuelPlanColor],
             ["ALTN  /TIME", "TOW/___LW"],
             [altnWeightCell + "/" + altnTimeCell + altnColor, towCell + "/" + lwCell + towLwColor],
             ["FINAL/TIME", "TRIP WIND"],
@@ -402,11 +401,11 @@ class CDUInitPage {
 
         // Add required spacing to line elements
         for (let i = 1; i <= 5; i++) {
-            mcdu._lineElements[i][0].innerHTML = mcdu._lineElements[i][0].innerHTML.replace(/_/g, "&nbsp;")
+            mcdu._lineElements[i][0].innerHTML = mcdu._lineElements[i][0].innerHTML.replace(/_/g, "&nbsp;");
         }
 
         // Add required spacing to TOW/LW title element
-        mcdu._labelElements[3][1].innerHTML = mcdu._labelElements[3][1].innerHTML.replace(/_/g, "&nbsp;")
+        mcdu._labelElements[3][1].innerHTML = mcdu._labelElements[3][1].innerHTML.replace(/_/g, "&nbsp;");
 
         // It infact does not work
         mcdu.onPlusMinus = () => {
