@@ -573,17 +573,26 @@ class FlightPlanManager {
             if (this._gpsActiveWaypointIndex != gpsActiveWaypointIndex) {
                 this._gpsActiveWaypointIndexHasChanged = true;
                 this._gpsActiveWaypointIndex = gpsActiveWaypointIndex;
-            }  
-        this._timeLastActiveWaypointIndexSimVarCall = t;
-    }
+            }
+            this._timeLastActiveWaypointIndexSimVarCall = t;
+        }
         return this._gpsActiveWaypointIndex;
     }
-    getActiveWaypoint(forceSimVarCall = false) {
-        let ident = this.getActiveWaypointIdent(forceSimVarCall);
-        if (!this.isActiveApproach()) {
-            let waypointIndex = this.getWaypoints().findIndex(w => { return (w && w.ident === ident); });
-            return this.getWaypoints()[waypointIndex];
+    getActiveWaypoint(forceSimVarCall = false, useCorrection = false) {
+        if (useCorrection && this._isGoingTowardPreviousActiveWaypoint) {
+            return this.getPreviousActiveWaypoint(forceSimVarCall);
         }
+        if (!this.isActiveApproach()) {
+            let index = this.getGPSActiveWaypointIndex(forceSimVarCall);
+            let waypoint = this.getWaypoints()[index];
+            if (waypoint) {
+                if (useCorrection && (this._activeWaypointIdentHasChanged || this._gpsActiveWaypointIndexHasChanged)) {
+                    return this.getPreviousActiveWaypoint(forceSimVarCall);
+                }
+                return waypoint;
+            }
+        }
+        let ident = this.getActiveWaypointIdent(forceSimVarCall);
         if (this.isActiveApproach()) {
             let waypoint = this.getApproachWaypoints().find(w => { return (w && w.ident === ident); });
             return waypoint;
