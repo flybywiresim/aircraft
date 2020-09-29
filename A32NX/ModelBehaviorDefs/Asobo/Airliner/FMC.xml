@@ -967,7 +967,7 @@
 
 		<UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
 			<NODE_ID>#NODE_ID_DSPL#</NODE_ID>
-			<EMISSIVE_CODE>0</EMISSIVE_CODE>			<!-- TODO-->
+			<EMISSIVE_CODE>0</EMISSIVE_CODE><!-- TODO-->
 		</UseTemplate>
 	</Template>
 
@@ -983,7 +983,7 @@
 
 		<UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
 			<NODE_ID>#NODE_ID_FAIL#</NODE_ID>
-			<EMISSIVE_CODE>0</EMISSIVE_CODE>			<!-- TODO-->
+			<EMISSIVE_CODE>0</EMISSIVE_CODE><!-- TODO-->
 		</UseTemplate>
 	</Template>
 
@@ -1000,7 +1000,7 @@
 
 		<UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
 			<NODE_ID>#NODE_ID_MSG#</NODE_ID>
-			<EMISSIVE_CODE>0</EMISSIVE_CODE>			<!-- TODO-->
+			<EMISSIVE_CODE>0</EMISSIVE_CODE><!-- TODO-->
 		</UseTemplate>
 	</Template>
 
@@ -1017,7 +1017,7 @@
 
 		<UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
 			<NODE_ID>#NODE_ID_OFST#</NODE_ID>
-			<EMISSIVE_CODE>0</EMISSIVE_CODE>			<!-- TODO-->
+			<EMISSIVE_CODE>0</EMISSIVE_CODE><!-- TODO-->
 		</UseTemplate>
 	</Template>
 

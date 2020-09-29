@@ -509,7 +509,7 @@
 
 		<Component ID="#NODE_ID#" Node="#NODE_ID#">
 			<UseTemplate Name="ASOBO_GT_Push_Button">
-				<LEFT_SINGLE_CODE>(L:XMLVAR_TRK_FPA_MODE_ACTIVE) ! (&gt;L:XMLVAR_TRK_FPA_MODE_ACTIVE)</LEFT_SINGLE_CODE>				<!-- TODO -->
+				<LEFT_SINGLE_CODE>(L:XMLVAR_TRK_FPA_MODE_ACTIVE) ! (&gt;L:XMLVAR_TRK_FPA_MODE_ACTIVE)</LEFT_SINGLE_CODE><!-- TODO -->
 			</UseTemplate>
 		</Component>
 	</Template>
@@ -531,7 +531,7 @@
 
 		<Component ID="#NODE_ID#" Node="#NODE_ID#">
 			<UseTemplate Name="ASOBO_GT_Push_Button">
-				<LEFT_SINGLE_CODE>0</LEFT_SINGLE_CODE>				<!-- TODO -->
+				<LEFT_SINGLE_CODE>0</LEFT_SINGLE_CODE><!-- TODO -->
 			</UseTemplate>
 		</Component>
 	</Template>
@@ -548,7 +548,7 @@
 
 		<Component ID="#NODE_ID#" Node="#NODE_ID#">
 			<UseTemplate Name="ASOBO_GT_Push_Button">
-				<LEFT_SINGLE_CODE>0</LEFT_SINGLE_CODE>				<!-- TODO -->
+				<LEFT_SINGLE_CODE>0</LEFT_SINGLE_CODE><!-- TODO -->
 			</UseTemplate>
 		</Component>
 	</Template>
@@ -815,28 +815,28 @@
 		<UseTemplate Name="ASOBO_ECAM_PAGE_BUTTON_Template">
 			<BASE_NAME>BLEED</BASE_NAME>
 			<PART_ID>ECAM_BLEED</PART_ID>
-			<GROUP_INDEX>1</GROUP_INDEX>			<!--Change to positive to activate-->
+			<GROUP_INDEX>1</GROUP_INDEX> <!--Change to positive to activate-->
 			<TOOLTIPID>TT:COCKPIT.TOOLTIPS.PUSH_ECAM_BLEED</TOOLTIPID>
 		</UseTemplate>
 
 		<UseTemplate Name="ASOBO_ECAM_PAGE_BUTTON_Template">
 			<BASE_NAME>PRESS</BASE_NAME>
 			<PART_ID>ECAM_PRESS</PART_ID>
-			<GROUP_INDEX>2</GROUP_INDEX>			<!--Change to positive to activate-->
+			<GROUP_INDEX>2</GROUP_INDEX> <!--Change to positive to activate-->
 			<TOOLTIPID>TT:COCKPIT.TOOLTIPS.PUSH_ECAM_PRESS</TOOLTIPID>
 		</UseTemplate>
 
 		<UseTemplate Name="ASOBO_ECAM_PAGE_BUTTON_Template">
 			<BASE_NAME>ELEC</BASE_NAME>
 			<PART_ID>ECAM_ELEC</PART_ID>
-			<GROUP_INDEX>3</GROUP_INDEX>			<!--Change to positive to activate-->
+			<GROUP_INDEX>3</GROUP_INDEX> <!--Change to positive to activate-->
 			<TOOLTIPID>TT:COCKPIT.TOOLTIPS.PUSH_ECAM_ELEC</TOOLTIPID>
 		</UseTemplate>
 
 		<UseTemplate Name="ASOBO_ECAM_PAGE_BUTTON_Template">
 			<BASE_NAME>HYD</BASE_NAME>
 			<PART_ID>ECAM_HYD</PART_ID>
-			<GROUP_INDEX>4</GROUP_INDEX>			<!--Change to positive to activate-->
+			<GROUP_INDEX>4</GROUP_INDEX> <!--Change to positive to activate-->
 			<TOOLTIPID>TT:COCKPIT.TOOLTIPS.PUSH_ECAM_HYD</TOOLTIPID>
 		</UseTemplate>
 
@@ -850,35 +850,35 @@
 		<UseTemplate Name="ASOBO_ECAM_PAGE_BUTTON_Template">
 			<BASE_NAME>APU</BASE_NAME>
 			<PART_ID>ECAM_APU</PART_ID>
-			<GROUP_INDEX>6</GROUP_INDEX>			<!--Change to positive to activate-->
+			<GROUP_INDEX>6</GROUP_INDEX> <!--Change to positive to activate-->
 			<TOOLTIPID>TT:COCKPIT.TOOLTIPS.PUSH_ECAM_APU</TOOLTIPID>
 		</UseTemplate>
 
 		<UseTemplate Name="ASOBO_ECAM_PAGE_BUTTON_Template">
 			<BASE_NAME>COND</BASE_NAME>
 			<PART_ID>ECAM_COND</PART_ID>
-			<GROUP_INDEX>7</GROUP_INDEX>			<!--Change to positive to activate-->
+			<GROUP_INDEX>7</GROUP_INDEX> <!--Change to positive to activate-->
 			<TOOLTIPID>TT:COCKPIT.TOOLTIPS.PUSH_ECAM_COND</TOOLTIPID>
 		</UseTemplate>
 
 		<UseTemplate Name="ASOBO_ECAM_PAGE_BUTTON_Template">
 			<BASE_NAME>DOOR</BASE_NAME>
 			<PART_ID>ECAM_DOOR</PART_ID>
-			<GROUP_INDEX>8</GROUP_INDEX>			<!--Change to positive to activate-->
+			<GROUP_INDEX>8</GROUP_INDEX> <!--Change to positive to activate-->
 			<TOOLTIPID>TT:COCKPIT.TOOLTIPS.PUSH_ECAM_DOOR</TOOLTIPID>
 		</UseTemplate>
 
 		<UseTemplate Name="ASOBO_ECAM_PAGE_BUTTON_Template">
 			<BASE_NAME>WHEEL</BASE_NAME>
 			<PART_ID>ECAM_WHEEL</PART_ID>
-			<GROUP_INDEX>9</GROUP_INDEX>			<!--Change to positive to activate-->
+			<GROUP_INDEX>9</GROUP_INDEX> <!--Change to positive to activate-->
 			<TOOLTIPID>TT:COCKPIT.TOOLTIPS.PUSH_ECAM_WHEEL</TOOLTIPID>
 		</UseTemplate>
 
 		<UseTemplate Name="ASOBO_ECAM_PAGE_BUTTON_Template">
 			<BASE_NAME>FTCL</BASE_NAME>
 			<PART_ID>ECAM_FCTL</PART_ID>
-			<GROUP_INDEX>10</GROUP_INDEX>			<!--Change to positive to activate-->
+			<GROUP_INDEX>10</GROUP_INDEX> <!--Change to positive to activate-->
 			<TOOLTIPID>TT:COCKPIT.TOOLTIPS.PUSH_ECAM_FCTL</TOOLTIPID>
 		</UseTemplate>
 
@@ -890,7 +890,7 @@
 
 		<UseTemplate Name="ASOBO_ECAM_PAGE_BUTTON_Template">
 			<BASE_NAME>STS</BASE_NAME>
-			<GROUP_INDEX>11</GROUP_INDEX>			<!--Change to positive to activate-->
+			<GROUP_INDEX>11</GROUP_INDEX> <!--Change to positive to activate-->
 			<TOOLTIPID>Display STS informations on ECAM</TOOLTIPID>
 		</UseTemplate>
 
@@ -953,7 +953,7 @@
 		<UseTemplate Name="ASOBO_AIRLINER_SubNodes_Setter_Template">
 			<TEMPLATE_TO_CALL>ASOBO_GT_Push_Button_Airliner</TEMPLATE_TO_CALL>
 			<LEFT_SINGLE_CODE>#EXTRA_CONDITION# if{ #LEFT_SINGLE_CODE# #ID# (&gt;K:FUELSYSTEM_VALVE_TOGGLE) }</LEFT_SINGLE_CODE>
-			<TOOLTIPID>%((A:FUELSYSTEM VALVE SWITCH:#ID#, Bool) !)%{if}TT:#OFF_TOOLTIP#%{else}TT:#ON_TOOLTIP#%{end}</TOOLTIPID>			<!-- use <OFF_TOOLTIP></OFF_TOOLTIP> <ON_TOOLTIP></ON_TOOLTIP> to define tooltips -->
+			<TOOLTIPID>%((A:FUELSYSTEM VALVE SWITCH:#ID#, Bool) !)%{if}TT:#OFF_TOOLTIP#%{else}TT:#ON_TOOLTIP#%{end}</TOOLTIPID> <!-- use <OFF_TOOLTIP></OFF_TOOLTIP> <ON_TOOLTIP></ON_TOOLTIP> to define tooltips -->
 		</UseTemplate>
 	</Template>
 

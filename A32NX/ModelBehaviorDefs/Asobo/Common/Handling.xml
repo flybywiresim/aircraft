@@ -1222,7 +1222,7 @@
 					<ANIMTIP_1_ON_PERCENT>-1.0</ANIMTIP_1_ON_PERCENT>
 					<!-- Trim_Base configuration -->
 					<TRIM_NAME>AileronTrim</TRIM_NAME>
-					<TRIM_LIMIT>10</TRIM_LIMIT>					<!-- hardcoded in cpp -->
+					<TRIM_LIMIT>10</TRIM_LIMIT><!-- hardcoded in cpp -->
 					<GET_TRIM>(A:AILERON TRIM PCT, percent)</GET_TRIM>
 					<SET_TRIM>(&gt;K:AILERON_TRIM_SET_EX1)</SET_TRIM>
 				</UseTemplate>

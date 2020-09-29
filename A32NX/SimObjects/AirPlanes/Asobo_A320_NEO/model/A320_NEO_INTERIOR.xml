@@ -533,7 +533,7 @@
 				<DOUBLE_WHEEL/>
 				<REPEAT_ANIM>5</REPEAT_ANIM>
 				<DRAG_AXIS_SCALE>20</DRAG_AXIS_SCALE>
-				<DRAG_MIN_VALUE>-4854</DRAG_MIN_VALUE>				<!-- Limit to -4.5 deg -->
+				<DRAG_MIN_VALUE>-4854</DRAG_MIN_VALUE>			<!-- Limit to -4.5 deg -->
 
 			</UseTemplate>
 
@@ -757,8 +757,8 @@
 
 				<UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
 					<NODE_ID>SCREEN_PFD_L</NODE_ID>
-					<PART_ID>PFD</PART_ID>
 					<POTENTIOMETER>88</POTENTIOMETER>
+					<PART_ID>SCREEN_PFD1</PART_ID>
 					<CAMERA_TITLE>PFD</CAMERA_TITLE>
 				</UseTemplate>
 
@@ -811,7 +811,6 @@
 					<NODE_ID>SCREEN_MFD_R</NODE_ID>
 					<POTENTIOMETER>91</POTENTIOMETER>
 					<PART_ID>SCREEN_MFD2</PART_ID>
-
 				</UseTemplate>
 			</Component>
 			<CameraTitle>Pilot</CameraTitle>
@@ -2514,14 +2513,14 @@
 
 				<UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
 					<NODE_ID>SCREEN_COM_L</NODE_ID>
-					<EMISSIVE_CODE>0.5</EMISSIVE_CODE>					<!-- TODO - Make this editable with a knob -->
+					<EMISSIVE_CODE>0.5</EMISSIVE_CODE>				<!-- TODO - Make this editable with a knob -->
 				</UseTemplate>
 			</Component>
 			<Component ID="Radio_Right">
 
 				<UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
 					<NODE_ID>SCREEN_COM_R</NODE_ID>
-					<EMISSIVE_CODE>0.5</EMISSIVE_CODE>					<!-- TODO - Make this editable with a knob -->
+					<EMISSIVE_CODE>0.5</EMISSIVE_CODE>				<!-- TODO - Make this editable with a knob -->
 				</UseTemplate>
 			</Component>
 			<Component ID="Switching_Panel">

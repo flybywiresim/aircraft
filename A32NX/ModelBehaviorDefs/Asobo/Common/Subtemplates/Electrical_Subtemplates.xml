@@ -1,6 +1,5 @@
 <ModelBehaviors>
-
-	<Template Name="ASOBO_ELECTRICAL_Switch_Engine_Bleed_SubTemplate">		<!-- TODO -->
+	<Template Name="ASOBO_ELECTRICAL_Switch_Engine_Bleed_SubTemplate"> <!-- TODO -->
 		<DefaultTemplateParameters>
 			<ANIM_NAME>ELECTRICAL_Switch_Engine_Bleed_#ID#</ANIM_NAME>
 			<NODE_ID>ELECTRICAL_Switch_Engine_Bleed_#ID#</NODE_ID>
@@ -52,7 +51,7 @@
 		</Condition>
 	</Template>
 
-	<Template Name="ASOBO_ELECTRICAL_Switch_APU_Bleed_SubTemplate">		<!-- TODO -->
+	<Template Name="ASOBO_ELECTRICAL_Switch_APU_Bleed_SubTemplate"> <!-- TODO -->
 		<DefaultTemplateParameters>
 			<ANIM_NAME>ELECTRICAL_Switch_APU_Bleed</ANIM_NAME>
 			<NODE_ID>ELECTRICAL_Switch_APU_Bleed</NODE_ID>
@@ -324,7 +323,7 @@
 						</False>
 					</Condition>
 				</Case>
-				<Default>					<!-- test -->
+				<Default> <!-- test -->
 					<Condition Check="NUM_STATES" Match="2">
 						<True>
 							<HELPID>HELPID_GAUGE_ALTERNATOR_SWITCH</HELPID>
@@ -338,7 +337,7 @@
 							<ANIMTIP_2>TT:COCKPIT.TOOLTIPS.ALTERNATOR_TRIP</ANIMTIP_2>
 						</False>
 					</Condition>
-				</Default>				<!-- /test -->
+				</Default><!-- /test -->
 			</Switch>
 
 		</DefaultTemplateParameters>
@@ -1359,7 +1358,7 @@
 							<COMPOSITE>2</COMPOSITE>
 							<ANIMTIP_0>TT:COCKPIT.TOOLTIPS.AVIONICS_MASTER_SWITCH_OFF</ANIMTIP_0>
 							<ANIMTIP_1>TT:COCKPIT.TOOLTIPS.AVIONICS_MASTER_SWITCH_ON</ANIMTIP_1>
-							<ANIMTIP_2>TT:COCKPIT.TOOLTIPS.AVIONICS_MASTER_SWITCH_DISPATCH</ANIMTIP_2>							<!-- A CHECK : "dispatch" = used in CJ4, if we have "composite" wording used in another plane, replace it here and specify "dispatch" in CJ4 -->
+							<ANIMTIP_2>TT:COCKPIT.TOOLTIPS.AVIONICS_MASTER_SWITCH_DISPATCH</ANIMTIP_2> <!-- A CHECK : "dispatch" = used in CJ4, if we have "composite" wording used in another plane, replace it here and specify "dispatch" in CJ4 -->
 						</Case>
 					</Switch>
 				</True>
@@ -1417,7 +1416,7 @@
 						</False>
 					</Condition>
 				</Case>
-				<Case Value="ON_OFF_COMPOSITE">					<!-- ONLY for multi_bus: turn on bus_#ID_COMPOSITE# only -->
+				<Case Value="ON_OFF_COMPOSITE"><!-- ONLY for multi_bus: turn on bus_#ID_COMPOSITE# only -->
 					<Update Once="True">
 					#INIT_CODE#
 					</Update>

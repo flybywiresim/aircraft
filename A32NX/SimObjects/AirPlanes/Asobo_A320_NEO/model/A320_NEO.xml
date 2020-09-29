@@ -33,18 +33,18 @@
 		<!-- 	9	:	the left wing engine pivot node furthest from the center 			-->
 		<!-- 	10	:	the right wing engine pivot node closest to the center 				-->
 		<!-- 	11	:	the right wing engine pivot node furthest from the center 			-->
-		<Node>WING_BONE_LEFT_01</Node>		<!-- the left wing bone closest to the center 		-->
-		<Node>WING_BONE_LEFT_02</Node>		<!-- in between -->
-		<Node>WING_BONE_LEFT_03</Node>		<!-- in between -->
-		<Node>WING_BONE_LEFT_04</Node>		<!-- the left wing bone furthest from the center -->
-		<Node>WING_BONE_RIGHT_01</Node>		<!-- the right wing bone closest to the center -->
-		<Node>WING_BONE_RIGHT_02</Node>		<!-- in between -->
-		<Node>WING_BONE_RIGHT_03</Node>		<!-- in between -->
-		<Node>WING_BONE_RIGHT_04</Node>		<!-- the right wing bone furthest from the center -->
-		<Node>Engine_PIVOT_LEFT_1</Node>		<!-- the left wing engine pivot node closest to the center -->
-		<Node>Engine_PIVOT_LEFT_2</Node>		<!-- the left wing engine pivot node furthest from the center -->
-		<Node>Engine_PIVOT_RIGHT_1</Node>		<!-- the right wing engine pivot node closest to the center -->
-		<Node>Engine_PIVOT_RIGHT_2</Node>		<!-- the right wing engine pivot node furthest from the center -->
+		<Node>WING_BONE_LEFT_01</Node> <!-- the left wing bone closest to the center 		-->
+		<Node>WING_BONE_LEFT_02</Node> <!-- in between -->
+		<Node>WING_BONE_LEFT_03</Node> <!-- in between -->
+		<Node>WING_BONE_LEFT_04</Node> <!-- the left wing bone furthest from the center -->
+		<Node>WING_BONE_RIGHT_01</Node> <!-- the right wing bone closest to the center -->
+		<Node>WING_BONE_RIGHT_02</Node> <!-- in between -->
+		<Node>WING_BONE_RIGHT_03</Node> <!-- in between -->
+		<Node>WING_BONE_RIGHT_04</Node> <!-- the right wing bone furthest from the center -->
+		<Node>Engine_PIVOT_LEFT_1</Node> <!-- the left wing engine pivot node closest to the center -->
+		<Node>Engine_PIVOT_LEFT_2</Node> <!-- the left wing engine pivot node furthest from the center -->
+		<Node>Engine_PIVOT_RIGHT_1</Node> <!-- the right wing engine pivot node closest to the center -->
+		<Node>Engine_PIVOT_RIGHT_2</Node> <!-- the right wing engine pivot node furthest from the center -->
 	</NodeAnimation>
 	<Behaviors>
 		<Include ModelBehaviorFile="Asobo\Exterior.xml"/>
@@ -194,4 +194,5 @@
 				<NODE_ID>GROUND_GPUPIPE</NODE_ID>
 			</UseTemplate>
 		</Component>
-	</ModelBehaviors>
+	</Behaviors>
+</ModelInfo>
