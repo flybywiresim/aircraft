@@ -49,10 +49,8 @@ map-instrument {
     color: aquamarine;
     text-align: center; }
   map-instrument #MapSVG, map-instrument #road-network-canvas {
-    transform: rotateX(0);
     position: absolute; }
   map-instrument bing-map {
-    transform: rotateX(0);
     position: absolute; }
   map-instrument #MapCursor {
     position: absolute;
