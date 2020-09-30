@@ -1,6 +1,8 @@
 class Jet_MFD_NDCompass extends Jet_NDCompass {
     constructor() {
         super();
+        this._lastNavAid1State = NAV_AID_STATE.OFF;
+        this._lastNavAid2State = NAV_AID_STATE.OFF;
     }
     connectedCallback() {
         super.connectedCallback();
@@ -411,26 +413,44 @@ class Jet_MFD_NDCompass extends Jet_NDCompass {
             this.courseGroup.setAttribute("id", "CourseInfo");
             this.rotatingCircle.appendChild(this.courseGroup);
             {
+                // VOR/ADF Bearing 1
                 this.bearing1 = document.createElementNS(Avionics.SVG.NS, "g");
                 this.bearing1.setAttribute("id", "bearing1");
                 this.bearing1.setAttribute("visibility", "hidden");
                 this.courseGroup.appendChild(this.bearing1);
                 let arrow = document.createElementNS(Avionics.SVG.NS, "path");
-                arrow.setAttribute("d", "M500 960 L500 800 M500 40 L500 200 M500 80 L570 150 M500 80 L430 150");
-                arrow.setAttribute("stroke", "#36c8d2");
-                arrow.setAttribute("stroke-width", "10");
+                arrow.setAttribute("d", "M 500 835 L 499 785 H 530 L 500 736 V 665 V 736 L 470 785 H 499 M 500 246 L 500 335 M 500 194 L 530 246 H 500 M 500 194 V 168 V 194 L 470 246 H 500"); // Arrow modified
+                
+                // Fix ADF arrows turns white when changing ND mode
+                if (Simplane.getAutoPilotNavAidState(1, 1) === NAV_AID_STATE.ADF) {
+                    arrow.setAttribute("stroke", "lime");
+                } else {
+                    arrow.setAttribute("stroke", "white");
+                }
+
+                arrow.setAttribute("stroke-width", "5");
                 arrow.setAttribute("fill", "none");
                 this.bearing1.appendChild(arrow);
+
+                // VOR/ADF Bearing 2
                 this.bearing2 = document.createElementNS(Avionics.SVG.NS, "g");
                 this.bearing2.setAttribute("id", "bearing2");
                 this.bearing2.setAttribute("visibility", "hidden");
                 this.courseGroup.appendChild(this.bearing2);
                 arrow = document.createElementNS(Avionics.SVG.NS, "path");
-                arrow.setAttribute("d", "M500 960 L500 920 M470 800 L470 900 Q500 960 530 900 L530 800 M500 40 L500 80 L570 150 M500 80 L430 150 M470 110 L470 200 M530 110 L530 200");
-                arrow.setAttribute("stroke", "#36c8d2");
-                arrow.setAttribute("stroke-width", "10");
+                arrow.setAttribute("d", "M 500 832 L 500 736 M 485 665 L 485 736 H 515 L 515 665 M 500 168 L 500 246 L 531 293 H 515 M 500 246 L 469 293 H 485 M 485 292 L 485 335 M 515 292 L 515 335"); // Arrow modified
+                
+                // Fix ADF arrows turns white when changing ND mode
+                if (Simplane.getAutoPilotNavAidState(1, 2) === NAV_AID_STATE.ADF) {
+                    arrow.setAttribute("stroke", "lime");
+                } else {
+                    arrow.setAttribute("stroke", "white");
+                }
+
+                arrow.setAttribute("stroke-width", "5");
                 arrow.setAttribute("fill", "none");
                 this.bearing2.appendChild(arrow);
+
                 this.course = document.createElementNS(Avionics.SVG.NS, "g");
                 this.course.setAttribute("id", "course");
                 this.courseGroup.appendChild(this.course);
@@ -494,7 +514,14 @@ class Jet_MFD_NDCompass extends Jet_NDCompass {
                 this.bearingCircle.setAttribute("stroke", "white");
                 this.bearingCircle.setAttribute("stroke-width", "0.8");
                 this.bearingCircle.setAttribute("fill-opacity", "0");
-                this.bearingCircle.setAttribute("visibility", "hidden");
+                
+                // Set visibility depending on selected NavAid
+                if (this.isBearing1Displayed || this.isBearing2Displayed) {
+                    this.bearingCircle.setAttribute("visibility", "visible");
+                } else {
+                    this.bearingCircle.setAttribute("visibility", "hidden");
+                }
+
                 this.courseGroup.appendChild(this.bearingCircle);
             }
             this.trackingGroup = document.createElementNS(Avionics.SVG.NS, "g");
@@ -625,6 +652,112 @@ class Jet_MFD_NDCompass extends Jet_NDCompass {
         if (this.headingGroup) this.headingGroup.setAttribute("visibility", failed ? "hidden" : "visible");
         if (this.selectedHeadingGroup) this.selectedHeadingGroup.setAttribute("visibility", failed ? "hidden" : "visible");
         if (this.neutralLine) this.neutralLine.setAttribute("visibility", failed ? "hidden" : "visible");
+    }
+
+    /**
+     * Updates navigation aid arrows such as VOR or ADF bearings
+     */
+    updateNavAid() {
+        // Don't show arrows if ADIRS not ready
+        const failed = SimVar.GetSimVarValue("L:A320_Neo_ADIRS_STATE", "Enum") != 2;
+        if (failed) {
+            this.setAttribute("show_bearing1", "false");
+            this.setAttribute("show_bearing2", "false");
+            this._lastNavAid1State = NAV_AID_STATE.OFF;
+            this._lastNavAid2State = NAV_AID_STATE.OFF;
+            return
+        }
+
+        // Navigation 1
+        let navAid1State = Simplane.getAutoPilotNavAidState(1, 1);
+        if (this._lastNavAid1State != navAid1State) {
+            switch (navAid1State) {
+                case NAV_AID_STATE.OFF:
+                    this.logic_brg1Source = 0;
+                    this.setAttribute("show_bearing1", "false");
+
+                    // Workaround bearing arrow displayed incorrectly
+                    this.setAttribute("bearing1_bearing", "1");
+                    this.setAttribute("bearing1_bearing", "");
+                    break;
+                case NAV_AID_STATE.VOR:
+                    this.logic_brg1Source = 1;
+                    this.bearing1.querySelectorAll('path')[0].setAttribute("stroke", "white");
+                    document.getElementById('Arrow-Left').setAttribute("stroke", "white");
+                    this.setAttribute("show_bearing1", "true");
+
+                    // Workaround bearing arrow displayed incorrectly
+                    this.setAttribute("bearing1_bearing", "1");
+                    this.setAttribute("bearing1_bearing", "");
+                    break;
+                case NAV_AID_STATE.ADF:
+                    this.logic_brg1Source = 4;
+                    this.bearing1.querySelectorAll('path')[0].setAttribute("stroke", "lime");
+                    document.getElementById('Arrow-Left').setAttribute("stroke", "lime");
+                    this.setAttribute("show_bearing1", "true");
+
+                    // Workaround bearing arrow displayed incorrectly
+                    if (!SimVar.GetSimVarValue("ADF SIGNAL:1", "number")) {
+                        this.setAttribute("bearing1_bearing", "1");
+                        this.setAttribute("bearing1_bearing", "");
+                    }
+                    break;
+            }
+            this._lastNavAid1State = navAid1State;
+        }
+
+        // Navigation 2
+        let navAid2State = Simplane.getAutoPilotNavAidState(1, 2);
+        if (this._lastNavAid2State != navAid2State) {
+            switch (navAid2State) {
+                case NAV_AID_STATE.OFF:
+                    this.logic_brg2Source = 0;
+                    this.setAttribute("show_bearing2", "false");
+
+                    // Workaround bearing arrow displayed incorrectly
+                    this.setAttribute("bearing2_bearing", "1");
+                    this.setAttribute("bearing2_bearing", "");
+                    break;
+                case NAV_AID_STATE.VOR:
+                    this.logic_brg2Source = 2;
+                    this.bearing2.querySelectorAll('path')[0].setAttribute("stroke", "white");
+                    document.getElementById('Arrow-Right').setAttribute("stroke", "white");
+                    this.setAttribute("show_bearing2", "true");
+                    
+                    // Workaround bearing arrow displayed incorrectly
+                    this.setAttribute("bearing2_bearing", "1");
+                    this.setAttribute("bearing2_bearing", "");
+                    break;
+                case NAV_AID_STATE.ADF:
+                    this.logic_brg2Source = 4;
+                    this.bearing2.querySelectorAll('path')[0].setAttribute("stroke", "lime");
+                    document.getElementById('Arrow-Right').setAttribute("stroke", "lime");
+                    this.setAttribute("show_bearing2", "true");
+
+                    // Workaround bearing arrow displayed incorrectly
+                    if (!SimVar.GetSimVarValue("ADF SIGNAL:2", "number")) {
+                        this.setAttribute("bearing2_bearing", "1");
+                        this.setAttribute("bearing2_bearing", "");
+                    }
+                    break;
+            }
+            this._lastNavAid2State = navAid2State;
+        }
+    }
+
+    /**
+     * Override `Jet_NDCompass.update` to add additonal update operations
+     * 
+     * @param {number} _deltaTime the time passed between current and previous frame
+     */
+    update(_deltaTime) {
+        // Update parent class state
+        super.update(_deltaTime);
+
+        this.updateNavAid();
+
+        // Update fail last to overwrite every other updates
+        this.updateFail();
     }
 }
 customElements.define("jet-mfd-nd-compass", Jet_MFD_NDCompass);

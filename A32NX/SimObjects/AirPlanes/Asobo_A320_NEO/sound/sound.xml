@@ -150,10 +150,16 @@
     </Sound>
 	
     <Sound WwiseData="true" WwiseEvent="flaps_left" NodeName="WING_FLAP_01_LEFT" SimVar="TRAILING EDGE FLAPS LEFT PERCENT" Units="PERCENT" Index="0" FadeOutType="2" FadeOutTime="0.2">
+	  <Requires SimVar="FLAP DAMAGE BY SPEED" Units="BOOL" Index="0">
+        <Range UpperBound="0" />
+      </Requires>
 	  <WwiseRTPC SimVar="TRAILING EDGE FLAPS LEFT PERCENT" Units="PERCENT" Derived="true" Index="0" RTPCName="SIMVAR_TRAILING_EDGE_FLAPS_LEFT_PERCENT_DERIVED" />
     </Sound>
     
-    <Sound WwiseData="true" WwiseEvent="flaps_right" NodeName="WING_FLAP_01_RIGHT" SimVar="TRAILING EDGE FLAPS RIGHT PERCENT" Units="PERCENT" Index="0" FadeOutType="2" FadeOutTime="0.2"> 
+    <Sound WwiseData="true" WwiseEvent="flaps_right" NodeName="WING_FLAP_01_RIGHT" SimVar="TRAILING EDGE FLAPS RIGHT PERCENT" Units="PERCENT" Index="0" FadeOutType="2" FadeOutTime="0.2">
+	  <Requires SimVar="FLAP DAMAGE BY SPEED" Units="BOOL" Index="0">
+        <Range UpperBound="0" />
+      </Requires>
 	  <WwiseRTPC SimVar="TRAILING EDGE FLAPS RIGHT PERCENT" Units="PERCENT" Derived="true" Index="0" RTPCName="SIMVAR_TRAILING_EDGE_FLAPS_RIGHT_PERCENT_DERIVED" />
     </Sound>
     
