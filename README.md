@@ -66,24 +66,20 @@ A: This project modifies the default A320 Neo from Asobo, therefore all liveries
 
 **Q: When will it be released?**
 
-A: The project is an ongoing rolling release. You can download the latest (stable) version from the master branch of this repository!
+A: The project is an ongoing rolling release. You can download the latest stable version from released or the latest Developer version from the Master branch! (Developer version is classed as unstable and not advised)
 
 **Q: When is the next update?**
 
-A: We don't know, since it depends on many factors. We'll however announce it each time there's an update! We are currently working on a visual roadmap to let you know what latest features we are working on!
+A: We don't know, since it depends on many factors. We'll however announce it each time there's an update!
 
 **Q: How do I join the team?**
 
-A: Join our Discord server and either select your role from the bot at #roles , or you DM inaxair#1819.
+A: Head over to [Contributing.md](.github/Contributing.md) and join our Discord to get started.
 
 **Q: Is it payware?**
 
 A: No, it is a completely free aircraft, open-source.
 
-**Q: What is the roadmap/progress?**
-
-A: You can follow our current progress on the trello: https://trello.com/b/z3jimJLq/study-level-a320neo
-
 **Q: How do we report bugs?**
 
-A: If the bug is related to features introduced by our mod, please open a GitHub issue with a thorough description of it, and screenshots if necessary. Otherwise, you have two options: Report it on the discord server at #bugs, or fill this form (that will be directly linked to the dev attention) :https://docs.google.com/forms/d/e/1FAIpQLSe6Bdx8x8mFmOmBoAipYoazfeomrJ8cri55NBn32MBRqIW4nA/viewform?usp=sf_link
+A: Report bugs to us in the Discord server, under the #help channel.

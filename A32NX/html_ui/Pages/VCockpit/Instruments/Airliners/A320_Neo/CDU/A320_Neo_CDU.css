@@ -2,6 +2,12 @@
 :root {
   --bodyHeightScale: 1; }
 
+#highlight {
+  position: absolute;
+  height: 100%;
+  width: 100%;
+  z-index: 10; }
+
 @keyframes TemporaryShow {
   0%, 100% {
     visibility: visible; } }

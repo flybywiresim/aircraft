@@ -30,6 +30,7 @@ class Jet_NDCompass extends HTMLElement {
         this.isBearing2Displayed = false;
         this._showILS = false;
         this._fullscreen = true;
+        this.isHud = false;
         this.logic_brg1Source = 0;
         this.logic_brg2Source = 0;
         this._displayMode = Jet_NDCompass_Display.NONE;
@@ -61,7 +62,9 @@ class Jet_NDCompass extends HTMLElement {
         ];
     }
     static get observedAttributes() {
-        return this.dynamicAttributes.concat([]);
+        return this.dynamicAttributes.concat([
+            "hud"
+        ]);
     }
     get displayMode() {
         return this._displayMode;
@@ -187,7 +190,9 @@ class Jet_NDCompass extends HTMLElement {
         this.updateCompass(_deltaTime);
         this.updateNavigationInfo();
         this.updateMapRange();
-        if (this.updateFail) this.updateFail();
+
+        // Moved to A32NX_NDCompass.update()
+        // if (this.updateFail) this.updateFail();
     }
     updateCompass(_deltaTime) {
         var simHeading = SimVar.GetSimVarValue("PLANE HEADING DEGREES MAGNETIC", "degree");
@@ -532,8 +537,8 @@ class Jet_NDCompass extends HTMLElement {
                         }
                     case 4:
                         {
-                            if (SimVar.GetSimVarValue("ADF SIGNAL:1", "number")) {
-                                this.setAttribute("bearing2_bearing", ((SimVar.GetSimVarValue("ADF RADIAL:1", "degree") + compass) % 360).toString());
+                            if (SimVar.GetSimVarValue("ADF SIGNAL:2", "number")) {
+                                this.setAttribute("bearing2_bearing", ((SimVar.GetSimVarValue("ADF RADIAL:2", "degree") + compass) % 360).toString());
                             }
                             else {
                                 this.setAttribute("bearing2_bearing", "");
@@ -693,6 +698,9 @@ class Jet_NDCompass extends HTMLElement {
                         this.bearing2.setAttribute("visibility", "hidden");
                     }
                 }
+                break;
+            case "hud":
+                this.isHud = newValue == "true";
                 break;
         }
     }

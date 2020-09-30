@@ -283,7 +283,7 @@ class CDUInitPage {
             const M=0|(deg%1)*60e7;
             let degree;
             if (lng) {
-                degree = this.pad(0 | (deg < 0 ? deg = -deg:deg), 3, 0)
+                degree = 0 | (deg < 0 ? deg = -deg:deg).toString().padStart(3, "0")
             } else {
                 degree = 0 | (deg < 0 ? deg = -deg:deg);
             }
@@ -293,12 +293,6 @@ class CDUInitPage {
                 min : Math.abs(0|M/1e7),
                 sec : Math.abs((0|M/1e6%1*6e4)/100)
             };
-    }
-
-    static pad(n, width, filler) {
-            // returns value with size 3, i.e n=1 width=3 filler=. -> "..1"
-            n = n + '';
-            return n.length >= width ? n : new Array(width - n.length + 1).join(filler) + n;
     }
 }
 //# sourceMappingURL=A320_Neo_CDU_InitPage.js.map

@@ -14,18 +14,21 @@ var A320_Neo_BAT;
         }
         Update() {
             super.Update();
-            if ((this.batTexts != null) && (this.batTexts.length == 2) && (this.batValues != null) && (this.batValues.length == 2)) {
 
-                for (var i = 0; i < 2; ++i) {
-                    if (this.batTexts[i] != null) {
-                        var batValue = SimVar.GetSimVarValue("ELECTRICAL BATTERY BUS VOLTAGE", "Volts");
-                        if (batValue != this.batValues[i]) {
-                            this.batValues[i] = batValue;
-                            this.batTexts[i].textContent = this.batValues[i].toFixed(1);
-                        }
-                    }
+            const lightsTest = SimVar.GetSimVarValue("L:XMLVAR_LTS_Test", "Bool");
+            this.lightsTest = lightsTest;
+
+            if (lightsTest){
+                for (let i = 0; i < 2; ++i) {
+                    this.batTexts[i].textContent = "88.8";
                 }
-            }
+            }else {
+                for (let i = 0; i < 2; ++i) {
+                    const batValue = SimVar.GetSimVarValue("ELECTRICAL BATTERY BUS VOLTAGE", "Volts");
+                    this.batValues[i] = batValue;
+                    this.batTexts[i].textContent = this.batValues[i].toFixed(1);
+                }
+            }  
         }
     }
     A320_Neo_BAT.Display = Display;

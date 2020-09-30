@@ -145,12 +145,13 @@ class CDUIRSInit {
             } else {
                 activeReference['sec'] = activeReference['sec'] + 1
                 if (activeReference['sec'] >= 9) {
-                    activeReference['min'] = CDUInitPage.pad(Number(activeReference['min']) + 1, 2, 0);
+                    activeReference['min'] = (Number(activeReference['min']) + 1).toString().padStart(2, "0");
                     activeReference['sec'] = 0;
                 }
                 if (activeReference['min'] >= 60) {
-                    activeReference['min'] = CDUInitPage.pad(0, 2, 0);
-                    activeReference['deg'] = (!lon) ? activeReference['deg'] + 1 : CDUInitPage.pad(Number(activeReference['deg']) + 1, 3, 0);
+                    activeReference['min'] = (0).toString().padStart(2, "0");
+                    activeReference['deg'] = (!lon) ? activeReference['deg'] + 1 : (Number(activeReference['deg']) + 1).toString().padStart(3, "0");
+                    // activeReference['deg'] = (!lon) ? activeReference['deg'] + 1 : CDUInitPage.pad(Number(activeReference['deg']) + 1, 3, 0);
                 }
             }
         };
@@ -166,12 +167,12 @@ class CDUIRSInit {
             } else {
                 activeReference['sec'] = activeReference['sec'] - 1
                 if (activeReference['sec'] < 0) {
-                    activeReference['min'] = CDUInitPage.pad(Number(activeReference['min']) - 1, 2, 0);
+                    activeReference['min'] = (Number(activeReference['min']) - 1).toString().padStart(2, "0");
                     activeReference['sec'] = 9;
                 }
                 if (activeReference['min'] < 0) {
                     activeReference['min'] = 59;
-                    activeReference['deg'] = (!lon) ? activeReference['deg'] - 1 : CDUInitPage.pad(Number(activeReference['deg']) - 1, 3, 0);
+                    activeReference['deg'] = (!lon) ? activeReference['deg'] - 1 : (Number(activeReference['deg']) - 1).toString().padStart(3, "0");
                 }
             }
         };

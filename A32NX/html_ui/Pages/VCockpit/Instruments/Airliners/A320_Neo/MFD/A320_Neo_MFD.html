@@ -82,9 +82,9 @@
                             <text id="State" x="50%" y="16%" alignment-baseline="middle"></text>
                             <text id="ID" x="42.5%" y="50%" alignment-baseline="middle"></text>
                             <text id="Mode" x="67.5%" y="50%" alignment-baseline="middle"></text>
-                            <text id="Distance" x="50%" y="84%" alignment-baseline="middle">--</text>
-                            <text id="Unit" x="75%" y="84%" alignment-baseline="middle">nm</text>
-                            <path id="Arrow" d="M0,25 L0,0 L-15,0 L0,-25 L0,-35 M0,-25 L15,0 L0,0" transform="translate(40 55)" />
+                            <text id="Distance" x="42.5%" y="80%" alignment-baseline="middle">--</text> <!-- MODIFIED -->
+                            <text id="Unit" x="67.5%" y="80%" alignment-baseline="middle">nm</text> <!-- MODIFIED -->
+                            <path id="Arrow-Left" d="M0,25 L0,0 L-15,0 L0,-25 L0,-35 M0,-25 L15,0 L0,0" transform="translate(40 55)" />
                         </svg>
                     </div>
 
@@ -93,9 +93,9 @@
                             <text id="State" x="50%" y="16%" alignment-baseline="middle"></text>
                             <text id="ID" x="42.5%" y="50%" alignment-baseline="middle"></text>
                             <text id="Mode" x="67.5%" y="50%" alignment-baseline="middle"></text>
-                            <text id="Distance" x="25%" y="84%" alignment-baseline="middle">--</text>
-                            <text id="Unit" x="50%" y="84%" alignment-baseline="middle">nm</text>
-                            <path id="Arrow" d="M-8,25 L-8,0 L-15,0 L0,-25 L0,-35 M0,-25 L15,0 L8,0 L8,25" transform="translate(280 55)" />
+                            <text id="Distance" x="42.5%" y="80%" alignment-baseline="middle">--</text> <!-- MODIFIED -->
+                            <text id="Unit" x="67.5%" y="80%" alignment-baseline="middle">nm</text> <!-- MODIFIED -->
+                            <path id="Arrow-Right" d="M-8,25 L-8,0 L-15,0 L0,-25 L0,-35 M0,-25 L15,0 L8,0 L8,25" transform="translate(280 55)" />
                         </svg>
                     </div>
                 </div>
@@ -143,33 +143,13 @@
 <script type="text/html" import-script="/Pages/VCockpit/Instruments/Shared/Utils/RadioNav.js"></script>
 
 <script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/Shared/Templates/Highlight/Highlight.js"></script>
-<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/Shared/Templates/WindDataDisplay/WindDataDisplay.js"></script>
 
-<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/Shared/LogicElements/FlightPlan.js"></script>
-<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/Shared/LogicElements/FlightPlanManager.js"></script>
-<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/Shared/LogicElements/GeoCalc.js"></script>
-<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/Shared/LogicElements/SearchField.js"></script>
-<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/Shared/LogicElements/Waypoint.js"></script>
-<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/Shared/LogicElements/Runway.js"></script>
-<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/Shared/LogicElements/Approach.js"></script>
-<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/Shared/LogicElements/NearestWaypoint.js"></script>
 <script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/Shared/LogicElements/SelectableElement.js"></script>
-<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/Shared/LogicElements/ContextualMenu.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/Shared/LogicElements/SearchField.js"></script>
 
 <script type="text/html" import-template="/Pages/VCockpit/Instruments/A320_Neo/Map/A32NX_MapInstrument.html"></script>
 
-<script type="text/html" import-script="/Pages/VCockpit/Instruments/Shared/Gauges/AbstractGauge.js"></script>
-<script type="text/html" import-script="/Pages/VCockpit/Instruments/Shared/Gauges/CircularGauge.js"></script>
-<script type="text/html" import-script="/Pages/VCockpit/Instruments/Shared/Gauges/HorizontalGauge.js"></script>
-<script type="text/html" import-script="/Pages/VCockpit/Instruments/Shared/Gauges/VerticalGauge.js"></script>
-<script type="text/html" import-script="/Pages/VCockpit/Instruments/Shared/Gauges/FlapsGauge.js"></script>
-<script type="text/html" import-script="/Pages/VCockpit/Instruments/Shared/Gauges/AilTrimGauge.js"></script>
-<script type="text/html" import-script="/Pages/VCockpit/Instruments/Shared/Gauges/ElevTrimGauge.js"></script>
-<script type="text/html" import-script="/Pages/VCockpit/Instruments/Shared/Gauges/RudderTrimGauge.js"></script>
-
 <script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/A320_Neo/A32NX_NavSystem.js"></script>
-
-<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/Shared/LogicElements/GaugeElement.js"></script>
 
 <script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/A320_Neo/A32NX_BaseAirliners.js"></script>
 <script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/A320_Neo/A32NX_BaseNDCompass.js"></script> <!-- MODIFIED -->
