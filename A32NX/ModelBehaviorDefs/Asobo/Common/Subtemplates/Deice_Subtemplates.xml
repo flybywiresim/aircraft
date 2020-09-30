@@ -1,133 +1,133 @@
+<ModelBehaviors>
 
+	<Template Name="ASOBO_DEICE_Switch_Engine_SubTemplate">
+		<DefaultTemplateParameters>
+			<NODE_ID>DEICE_#INTERACTION#_Engine_#ID#</NODE_ID>
+			<ANIM_NAME>DEICE_#INTERACTION#_Engine_#ID#</ANIM_NAME>
+			<PART_ID>DEICE_Engine</PART_ID>
+			<Switch Param="TYPE">
+				<Case Value="BOEING">
+					<ANIMREF_ID>0</ANIMREF_ID>
+					<ANIMTIP_0_ON_PERCENT>0</ANIMTIP_0_ON_PERCENT>
+					<ANIMTIP_1_ON_PERCENT>.5</ANIMTIP_1_ON_PERCENT>
+					<ANIMTIP_2_ON_PERCENT>1</ANIMTIP_2_ON_PERCENT>
+					<ANIMTIP_0>TT:COCKPIT.TOOLTIPS.ENG_#ID#_ANTI_ICE_TURN_OFF</ANIMTIP_0>
+					<ANIMTIP_1>TT:COCKPIT.TOOLTIPS.ENG_#ID#_ANTI_ICE_SET_AUTO</ANIMTIP_1>
+					<ANIMTIP_2>TT:COCKPIT.TOOLTIPS.ENG_#ID#_ANTI_ICE_TURN_ON</ANIMTIP_2>
 
-<Template Name="ASOBO_DEICE_Switch_Engine_SubTemplate">
-	<DefaultTemplateParameters>
-		<NODE_ID>DEICE_#INTERACTION#_Engine_#ID#</NODE_ID>
-		<ANIM_NAME>DEICE_#INTERACTION#_Engine_#ID#</ANIM_NAME>
-		<PART_ID>DEICE_Engine</PART_ID>
-		<Switch Param="TYPE">
-			<Case Value="BOEING">
-				<ANIMREF_ID>0</ANIMREF_ID>
-				<ANIMTIP_0_ON_PERCENT>0</ANIMTIP_0_ON_PERCENT>
-				<ANIMTIP_1_ON_PERCENT>.5</ANIMTIP_1_ON_PERCENT>
-				<ANIMTIP_2_ON_PERCENT>1</ANIMTIP_2_ON_PERCENT>
-				<ANIMTIP_0>TT:COCKPIT.TOOLTIPS.ENG_#ID#_ANTI_ICE_TURN_OFF</ANIMTIP_0>
-				<ANIMTIP_1>TT:COCKPIT.TOOLTIPS.ENG_#ID#_ANTI_ICE_SET_AUTO</ANIMTIP_1>
-				<ANIMTIP_2>TT:COCKPIT.TOOLTIPS.ENG_#ID#_ANTI_ICE_TURN_ON</ANIMTIP_2>
-
-			</Case>
-			<Case Value="AS02A">
-			<TOOLTIPID>%((A:ENG ANTI ICE:#ID#, Bool))%{if}TT:COCKPIT.TOOLTIPS.ENG_#ID#_ANTI_ICE_TURN_OFF %{else}TT:COCKPIT.TOOLTIPS.ENG_#ID#_ANTI_ICE_TURN_ON%{end}</TOOLTIPID>
-			</Case>
-			<Default>
-				<HELPID>HELPID_CESS_CARB_HEAT</HELPID>
-				<TOOLTIPID>%((A:ENG ANTI ICE:#ID#, Bool))%{if}TT:COCKPIT.TOOLTIPS.DEICE_PUSH_ENG_ONLY_ON_#ID# %{else}TT:COCKPIT.TOOLTIPS.DEICE_PUSH_ENG_ONLY_OFF_#ID#%{end}</TOOLTIPID>
-			</Default>
-		</Switch>
-		<WWISE_EVENT>deice_engine_knob</WWISE_EVENT>
-		<WWISE_EVENT_1>deice_engine_switch_on</WWISE_EVENT_1>
-		<WWISE_EVENT_2>deice_engine_switch_off</WWISE_EVENT_2>
-		<NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
-		<NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
+				</Case>
+				<Case Value="AS02A">
+					<TOOLTIPID>%((A:ENG ANTI ICE:#ID#, Bool))%{if}TT:COCKPIT.TOOLTIPS.ENG_#ID#_ANTI_ICE_TURN_OFF %{else}TT:COCKPIT.TOOLTIPS.ENG_#ID#_ANTI_ICE_TURN_ON%{end}</TOOLTIPID>
+				</Case>
+				<Default>
+					<HELPID>HELPID_CESS_CARB_HEAT</HELPID>
+					<TOOLTIPID>%((A:ENG ANTI ICE:#ID#, Bool))%{if}TT:COCKPIT.TOOLTIPS.DEICE_PUSH_ENG_ONLY_ON_#ID# %{else}TT:COCKPIT.TOOLTIPS.DEICE_PUSH_ENG_ONLY_OFF_#ID#%{end}</TOOLTIPID>
+				</Default>
+			</Switch>
+			<WWISE_EVENT>deice_engine_knob</WWISE_EVENT>
+			<WWISE_EVENT_1>deice_engine_switch_on</WWISE_EVENT_1>
+			<WWISE_EVENT_2>deice_engine_switch_off</WWISE_EVENT_2>
+			<NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
+			<NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
+			<Switch param="INTERACTION">
+				<Case Value="Push">
+					<Switch param="DECALS_TYPE">
+						<Case Value="FaultOn">
+							<SEQ1_EMISSIVE_CODE>(L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 ==</SEQ1_EMISSIVE_CODE>
+							<SEQ2_EMISSIVE_CODE>(A:ENG ANTI ICE:#ID#, Bool) (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or</SEQ2_EMISSIVE_CODE>
+						</Case>
+						<Default>
+							<SEQ1_EMISSIVE_CODE>(A:ENG ANTI ICE:#ID#, Bool) (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or</SEQ1_EMISSIVE_CODE>
+							<SEQ2_EMISSIVE_CODE>(A:ENG ANTI ICE:#ID#, Bool) ! (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or</SEQ2_EMISSIVE_CODE>
+						</Default>
+					</Switch>
+				</Case>
+				<Case Value="Knob">
+					<SWITCH_DIRECTION>Horizontal</SWITCH_DIRECTION>
+				</Case>
+			</Switch>
+		</DefaultTemplateParameters>
 		<Switch param="INTERACTION">
 			<Case Value="Push">
-				<Switch param="DECALS_TYPE">
-					<Case Value="FaultOn">
-						<SEQ1_EMISSIVE_CODE>(L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 ==</SEQ1_EMISSIVE_CODE>
-						<SEQ2_EMISSIVE_CODE>(A:ENG ANTI ICE:#ID#, Bool) (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or</SEQ2_EMISSIVE_CODE>
-					</Case>
-					<Default>
-						<SEQ1_EMISSIVE_CODE>(A:ENG ANTI ICE:#ID#, Bool) (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or</SEQ1_EMISSIVE_CODE>
-						<SEQ2_EMISSIVE_CODE>(A:ENG ANTI ICE:#ID#, Bool) ! (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or</SEQ2_EMISSIVE_CODE>
-					</Default>
-				</Switch>
+				<UseTemplate Name="ASOBO_GT_Push_Button_Airliner">
+					<ANIM_SIMVAR>ENG ANTI ICE:#ID#</ANIM_SIMVAR>
+					<LEFT_SINGLE_CODE>
+					(&gt;K:ANTI_ICE_TOGGLE_ENG#ID#)
+					</LEFT_SINGLE_CODE>
+				</UseTemplate>
 			</Case>
 			<Case Value="Knob">
-				<SWITCH_DIRECTION>Horizontal</SWITCH_DIRECTION>
-			</Case>
-		</Switch>
-	</DefaultTemplateParameters>
-	<Switch param="INTERACTION">
-		<Case Value="Push">
-			<UseTemplate Name="ASOBO_GT_Push_Button_Airliner">
-				<ANIM_SIMVAR>ENG ANTI ICE:#ID#</ANIM_SIMVAR>
-				<LEFT_SINGLE_CODE>
-					(&gt;K:ANTI_ICE_TOGGLE_ENG#ID#)
-				</LEFT_SINGLE_CODE>
-			</UseTemplate>
-		</Case>
-		<Case Value="Knob">
-			<Component ID="#NODE_ID#" Node="#NODE_ID#">
-				<Condition NotEmpty="INIT">
-					<UseTemplate Name="ASOBO_GT_Update">
-						<UPDATE_ONCE>True</UPDATE_ONCE>
-						<UPDATE_CODE>#INIT#</UPDATE_CODE>
-					</UseTemplate>
-				</Condition>
-				<UseTemplate Name="ASOBO_GT_Switch_3States">
-					<CODE_POS_0>
+				<Component ID="#NODE_ID#" Node="#NODE_ID#">
+					<Condition NotEmpty="INIT">
+						<UseTemplate Name="ASOBO_GT_Update">
+							<UPDATE_ONCE>True</UPDATE_ONCE>
+							<UPDATE_CODE>#INIT#</UPDATE_CODE>
+						</UseTemplate>
+					</Condition>
+					<UseTemplate Name="ASOBO_GT_Switch_3States">
+						<CODE_POS_0>
 						(* OFF *)
 						0 (&gt;O:_IsAuto)
 						(A:ENG ANTI ICE:#ID#, Bool) if{ (&gt;K:ANTI_ICE_TOGGLE_ENG#ID#) }
-					</CODE_POS_0>
-					<CODE_POS_1>
+						</CODE_POS_0>
+						<CODE_POS_1>
 						(* AUTO *)
 						1 (&gt;O:_IsAuto)
 						(A:ENG ANTI ICE:#ID#, Bool) ! if{ (&gt;K:ANTI_ICE_TOGGLE_ENG#ID#) }
-					</CODE_POS_1>
-					<CODE_POS_2>
+						</CODE_POS_1>
+						<CODE_POS_2>
 						(* ON *)
 						0 (&gt;O:_IsAuto)
 						(A:ENG ANTI ICE:#ID#, Bool) ! if{ (&gt;K:ANTI_ICE_TOGGLE_ENG#ID#) }
-					</CODE_POS_2>
-					<STATE0_TEST>(A:ENG ANTI ICE:#ID#, Bool) !</STATE0_TEST>
-					<STATE1_TEST>(O:_IsAuto) (A:ENG ANTI ICE:#ID#, Bool) and</STATE1_TEST>
-					<STATE2_TEST>(O:_IsAuto) ! (A:ENG ANTI ICE:#ID#, Bool) and</STATE2_TEST>
-				</UseTemplate>
-			</Component>
-		</Case>
-		<Default>
-			<Component ID="#NODE_ID#" Node="#NODE_ID#">
-				<UseTemplate Name="ASOBO_GT_Switch">
-					<ANIM_SIMVAR>ENG ANTI ICE:#ID#</ANIM_SIMVAR>
-					<EVENTID>ANTI_ICE_TOGGLE_ENG#ID#</EVENTID>
-				</UseTemplate>
-			</Component>
-		</Default>
-	</Switch>
-</Template>
-
-<Template Name="ASOBO_DEICE_Lever_Engine_SubTemplate">
-	<DefaultTemplateParameters>
-		<NODE_ID>DEICE_Lever_Engine_#ID#</NODE_ID>
-		<PART_ID>DEICE_Engine_#ID#</PART_ID>
-		<TOOLTIPID>%((A:GENERAL ENG ANTI ICE POSITION:#ID#, percent) s0 0 >)%{if}TT:COCKPIT.TOOLTIPS.CARBURATOR_CONTROL %{else}TT:COCKPIT.TOOLTIPS.CARBURATOR_CONTROL_COLD%{end}</TOOLTIPID>
-	</DefaultTemplateParameters>
-	<Component ID="#NODE_ID#" Node="#NODE_ID#">
-		<UseTemplate Name="ASOBO_GT_Lever_DraggingYAxis_EventsSet">
-			<ANIM_LENGTH>100</ANIM_LENGTH>
-			<ANIM_SIMVAR>GENERAL ENG ANTI ICE POSITION:#ID#</ANIM_SIMVAR>
-			<ANIM_SIMVAR_UNITS>percent</ANIM_SIMVAR_UNITS>
-			<DRAG_EVENTID_SET>ANTI_ICE_GRADUAL_SET_ENG#ID#</DRAG_EVENTID_SET>
-			<WWISE_EVENT_1>deice_engine_lever_on</WWISE_EVENT_1>
-			<WWISE_EVENT_2>deice_engine_lever_off</WWISE_EVENT_2>
-		</UseTemplate>
-	</Component>
-</Template>
-<Template Name="ASOBO_DEICE_Switch_Pitot_SubTemplate">
-	<DefaultTemplateParameters>
-		<Switch param="INTERACTION">
-			<Case Value="Push">
-				<ONLY_SEQ1/>
-				<SEQ1_EMISSIVE_CODE>(L:XMLVAR_Pitot_#ID#)</SEQ1_EMISSIVE_CODE>
+						</CODE_POS_2>
+						<STATE0_TEST>(A:ENG ANTI ICE:#ID#, Bool) !</STATE0_TEST>
+						<STATE1_TEST>(O:_IsAuto) (A:ENG ANTI ICE:#ID#, Bool) and</STATE1_TEST>
+						<STATE2_TEST>(O:_IsAuto) ! (A:ENG ANTI ICE:#ID#, Bool) and</STATE2_TEST>
+					</UseTemplate>
+				</Component>
 			</Case>
 			<Default>
-				<ANIM_CODE>
-					(L:XMLVAR_Pitot_#ID#) 100 *
-				</ANIM_CODE>
+				<Component ID="#NODE_ID#" Node="#NODE_ID#">
+					<UseTemplate Name="ASOBO_GT_Switch">
+						<ANIM_SIMVAR>ENG ANTI ICE:#ID#</ANIM_SIMVAR>
+						<EVENTID>ANTI_ICE_TOGGLE_ENG#ID#</EVENTID>
+					</UseTemplate>
+				</Component>
 			</Default>
 		</Switch>
-		<LEFT_SINGLE_CODE>
+	</Template>
+
+	<Template Name="ASOBO_DEICE_Lever_Engine_SubTemplate">
+		<DefaultTemplateParameters>
+			<NODE_ID>DEICE_Lever_Engine_#ID#</NODE_ID>
+			<PART_ID>DEICE_Engine_#ID#</PART_ID>
+			<TOOLTIPID>%((A:GENERAL ENG ANTI ICE POSITION:#ID#, percent) s0 0 >)%{if}TT:COCKPIT.TOOLTIPS.CARBURATOR_CONTROL %{else}TT:COCKPIT.TOOLTIPS.CARBURATOR_CONTROL_COLD%{end}</TOOLTIPID>
+		</DefaultTemplateParameters>
+		<Component ID="#NODE_ID#" Node="#NODE_ID#">
+			<UseTemplate Name="ASOBO_GT_Lever_DraggingYAxis_EventsSet">
+				<ANIM_LENGTH>100</ANIM_LENGTH>
+				<ANIM_SIMVAR>GENERAL ENG ANTI ICE POSITION:#ID#</ANIM_SIMVAR>
+				<ANIM_SIMVAR_UNITS>percent</ANIM_SIMVAR_UNITS>
+				<DRAG_EVENTID_SET>ANTI_ICE_GRADUAL_SET_ENG#ID#</DRAG_EVENTID_SET>
+				<WWISE_EVENT_1>deice_engine_lever_on</WWISE_EVENT_1>
+				<WWISE_EVENT_2>deice_engine_lever_off</WWISE_EVENT_2>
+			</UseTemplate>
+		</Component>
+	</Template>
+	<Template Name="ASOBO_DEICE_Switch_Pitot_SubTemplate">
+		<DefaultTemplateParameters>
+			<Switch param="INTERACTION">
+				<Case Value="Push">
+					<ONLY_SEQ1/>
+					<SEQ1_EMISSIVE_CODE>(L:XMLVAR_Pitot_#ID#)</SEQ1_EMISSIVE_CODE>
+				</Case>
+				<Default>
+					<ANIM_CODE>
+					(L:XMLVAR_Pitot_#ID#) 100 *
+					</ANIM_CODE>
+				</Default>
+			</Switch>
+			<LEFT_SINGLE_CODE>
 			(L:XMLVAR_Pitot_#ID#) ! (&gt;L:XMLVAR_Pitot_#ID#)
 
 			(L:XMLVAR_Pitot_1) !
@@ -136,136 +136,136 @@
 			if{
 				(&gt;K:PITOT_HEAT_TOGGLE)
 			}
-		</LEFT_SINGLE_CODE>
-	</DefaultTemplateParameters>
-	<Switch param="INTERACTION">
-		<Case Value="Push">
-			<UseTemplate Name="ASOBO_GT_Push_Button_Airliner">
-			</UseTemplate>
-		</Case>
-		<Default>
-			<Component ID="#NODE_ID#" Node="#NODE_ID#">
-				<UseTemplate Name="ASOBO_GT_Switch_Code">
-				</UseTemplate>
-			</Component>
-		</Default>
-	</Switch>
-</Template>
-
-<Template Name="ASOBO_DEICE_Switch_Light_SubTemplate">
-	<DefaultTemplateParameters>
-		<NODE_ID>DEICE_Switch_Light_#TARGET_ID#_#ID#</NODE_ID>
-	</DefaultTemplateParameters>
-	<Component ID="#NODE_ID#" Node="#NODE_ID#">
-		<UseTemplate Name="ASOBO_GT_Emissive_Gauge">
-			<EMISSIVE_CODE>
-				(L:XMLVAR_LTS_Test)
-				#EMISSIVE_CODE# or
-			</EMISSIVE_CODE>
-		</UseTemplate>
-	</Component>
-</Template>
-
-<Template Name="ASOBO_DEICE_Switch_Airframe_SubTemplate">
-	<DefaultTemplateParameters>
-		<Condition Check="ID">
-			<True>
-				<ANIM_NAME>DEICE_#INTERACTION#_Airframe_#ID#</ANIM_NAME>
-				<NODE_ID>DEICE_#INTERACTION#_Airframe_#ID#</NODE_ID>
-			</True>
-			<False>
-				<ANIM_NAME>DEICE_#INTERACTION#_Airframe</ANIM_NAME>
-				<NODE_ID>DEICE_#INTERACTION#_Airframe</NODE_ID>
-			</False>
-			<OTHER_PART_ID>DEICE_Switch_Airframe</OTHER_PART_ID>
-		</Condition>
-		<Switch Param="SWITCH_TYPE">
-			<Case Value="ON_OFF">
-				<NUM_STATES>2</NUM_STATES>
-				<ANIMTIP_1>TT:COCKPIT.TOOLTIPS.PANEL_DEICE_SWITCH_ON</ANIMTIP_1>
-				<ANIMTIP_0>TT:COCKPIT.TOOLTIPS.PANEL_DEICE_SWITCH_OFF</ANIMTIP_0>
-			</Case>
-			<Case Value="ON_NORM_OFF">
-				<NUM_STATES>3</NUM_STATES>
-				<POS_ON>0</POS_ON>
-				<POS_NORM>1</POS_NORM>
-				<POS_OFF>2</POS_OFF>
-			</Case>
-			<Case Value="OFF_AUTO_ON">
-				<NUM_STATES>3</NUM_STATES>
-				<POS_OFF>0</POS_OFF>
-				<POS_AUTO>1</POS_AUTO>
-				<POS_ON>2</POS_ON>
-			</Case>
-			<Case Value="SINGLE_OFF_MANUAL">
-				<NUM_STATES>3</NUM_STATES>
-				<ANIMTIP_0>TT:COCKPIT.TOOLTIPS.SURFACE_DEICE_SINGLE</ANIMTIP_0>
-				<ANIMTIP_1>TT:COCKPIT.TOOLTIPS.SURFACE_DEICE_OFF</ANIMTIP_1>
-				<ANIMTIP_2>TT:COCKPIT.TOOLTIPS.SURFACE_DEICE_MANUAL</ANIMTIP_2>
-			</Case>
-		</Switch>
+			</LEFT_SINGLE_CODE>
+		</DefaultTemplateParameters>
 		<Switch param="INTERACTION">
 			<Case Value="Push">
-				<Switch param="DECALS_TYPE">
-					<Case Value="FaultOn">
-						<SEQ1_EMISSIVE_CODE>(L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 ==</SEQ1_EMISSIVE_CODE>
-						<SEQ2_EMISSIVE_CODE>(A:STRUCTURAL DEICE SWITCH, Bool) (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or</SEQ2_EMISSIVE_CODE>
-						<TOOLTIPID>%((A:STRUCTURAL DEICE SWITCH, Bool))%{if}TT:COCKPIT.TOOLTIPS.DEICE_WING_ENG_ON_1%{else}TT:COCKPIT.TOOLTIPS.DEICE_WING_ENG_OFF_1%{end}</TOOLTIPID>
-					</Case>
-					<Default>
-						<Condition Check="ID">
-							<True>
-								<SEQ1_EMISSIVE_CODE>(L:XMLVAR_Airframe_#ID#) (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or</SEQ1_EMISSIVE_CODE>
-								<SEQ2_EMISSIVE_CODE>(L:XMLVAR_Airframe_#ID#) ! (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or</SEQ2_EMISSIVE_CODE>
-								<TOOLTIPID>%((L:XMLVAR_Airframe_#ID#))%{if}TT:COCKPIT.TOOLTIPS.DEICE_WING_ENG_ON_#ID#%{else}TT:COCKPIT.TOOLTIPS.DEICE_WING_ENG_OFF_#ID#%{end}</TOOLTIPID>
-							</True>
-							<False>
-								<SEQ1_EMISSIVE_CODE>(L:XMLVAR_Airframe_1) (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or</SEQ1_EMISSIVE_CODE>
-								<SEQ2_EMISSIVE_CODE>(L:XMLVAR_Airframe_1) ! (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or</SEQ2_EMISSIVE_CODE>
-								<TOOLTIPID>%((L:XMLVAR_Airframe_1))%{if}TT:COCKPIT.TOOLTIPS.DEICE_WING_ENG_ON_1%{else}TT:COCKPIT.TOOLTIPS.DEICE_WING_ENG_OFF_1%{end}</TOOLTIPID>
-							</False>
-						</Condition>
-					</Default>
-				</Switch>
+				<UseTemplate Name="ASOBO_GT_Push_Button_Airliner">
+				</UseTemplate>
 			</Case>
+			<Default>
+				<Component ID="#NODE_ID#" Node="#NODE_ID#">
+					<UseTemplate Name="ASOBO_GT_Switch_Code">
+					</UseTemplate>
+				</Component>
+			</Default>
 		</Switch>
-		<WWISE_EVENT>deice_airframe_switch</WWISE_EVENT>
-		<WWISE_EVENT_1>deice_airframe_switch_on</WWISE_EVENT_1>
-		<WWISE_EVENT_2>deice_airframe_switch_off</WWISE_EVENT_2>
-		<NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
-		<NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
-		<Condition Valid="SYNC_WITH_WINDSHIELD_STATE">
-			<SYNC_WINDSHIELD_STATE>
+	</Template>
+
+	<Template Name="ASOBO_DEICE_Switch_Light_SubTemplate">
+		<DefaultTemplateParameters>
+			<NODE_ID>DEICE_Switch_Light_#TARGET_ID#_#ID#</NODE_ID>
+		</DefaultTemplateParameters>
+		<Component ID="#NODE_ID#" Node="#NODE_ID#">
+			<UseTemplate Name="ASOBO_GT_Emissive_Gauge">
+				<EMISSIVE_CODE>
+				(L:XMLVAR_LTS_Test)
+				#EMISSIVE_CODE# or
+				</EMISSIVE_CODE>
+			</UseTemplate>
+		</Component>
+	</Template>
+
+	<Template Name="ASOBO_DEICE_Switch_Airframe_SubTemplate">
+		<DefaultTemplateParameters>
+			<Condition Check="ID">
+				<True>
+					<ANIM_NAME>DEICE_#INTERACTION#_Airframe_#ID#</ANIM_NAME>
+					<NODE_ID>DEICE_#INTERACTION#_Airframe_#ID#</NODE_ID>
+				</True>
+				<False>
+					<ANIM_NAME>DEICE_#INTERACTION#_Airframe</ANIM_NAME>
+					<NODE_ID>DEICE_#INTERACTION#_Airframe</NODE_ID>
+				</False>
+				<OTHER_PART_ID>DEICE_Switch_Airframe</OTHER_PART_ID>
+			</Condition>
+			<Switch Param="SWITCH_TYPE">
+				<Case Value="ON_OFF">
+					<NUM_STATES>2</NUM_STATES>
+					<ANIMTIP_1>TT:COCKPIT.TOOLTIPS.PANEL_DEICE_SWITCH_ON</ANIMTIP_1>
+					<ANIMTIP_0>TT:COCKPIT.TOOLTIPS.PANEL_DEICE_SWITCH_OFF</ANIMTIP_0>
+				</Case>
+				<Case Value="ON_NORM_OFF">
+					<NUM_STATES>3</NUM_STATES>
+					<POS_ON>0</POS_ON>
+					<POS_NORM>1</POS_NORM>
+					<POS_OFF>2</POS_OFF>
+				</Case>
+				<Case Value="OFF_AUTO_ON">
+					<NUM_STATES>3</NUM_STATES>
+					<POS_OFF>0</POS_OFF>
+					<POS_AUTO>1</POS_AUTO>
+					<POS_ON>2</POS_ON>
+				</Case>
+				<Case Value="SINGLE_OFF_MANUAL">
+					<NUM_STATES>3</NUM_STATES>
+					<ANIMTIP_0>TT:COCKPIT.TOOLTIPS.SURFACE_DEICE_SINGLE</ANIMTIP_0>
+					<ANIMTIP_1>TT:COCKPIT.TOOLTIPS.SURFACE_DEICE_OFF</ANIMTIP_1>
+					<ANIMTIP_2>TT:COCKPIT.TOOLTIPS.SURFACE_DEICE_MANUAL</ANIMTIP_2>
+				</Case>
+			</Switch>
+			<Switch param="INTERACTION">
+				<Case Value="Push">
+					<Switch param="DECALS_TYPE">
+						<Case Value="FaultOn">
+							<SEQ1_EMISSIVE_CODE>(L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 ==</SEQ1_EMISSIVE_CODE>
+							<SEQ2_EMISSIVE_CODE>(A:STRUCTURAL DEICE SWITCH, Bool) (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or</SEQ2_EMISSIVE_CODE>
+							<TOOLTIPID>%((A:STRUCTURAL DEICE SWITCH, Bool))%{if}TT:COCKPIT.TOOLTIPS.DEICE_WING_ENG_ON_1%{else}TT:COCKPIT.TOOLTIPS.DEICE_WING_ENG_OFF_1%{end}</TOOLTIPID>
+						</Case>
+						<Default>
+							<Condition Check="ID">
+								<True>
+									<SEQ1_EMISSIVE_CODE>(L:XMLVAR_Airframe_#ID#) (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or</SEQ1_EMISSIVE_CODE>
+									<SEQ2_EMISSIVE_CODE>(L:XMLVAR_Airframe_#ID#) ! (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or</SEQ2_EMISSIVE_CODE>
+									<TOOLTIPID>%((L:XMLVAR_Airframe_#ID#))%{if}TT:COCKPIT.TOOLTIPS.DEICE_WING_ENG_ON_#ID#%{else}TT:COCKPIT.TOOLTIPS.DEICE_WING_ENG_OFF_#ID#%{end}</TOOLTIPID>
+								</True>
+								<False>
+									<SEQ1_EMISSIVE_CODE>(L:XMLVAR_Airframe_1) (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or</SEQ1_EMISSIVE_CODE>
+									<SEQ2_EMISSIVE_CODE>(L:XMLVAR_Airframe_1) ! (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or</SEQ2_EMISSIVE_CODE>
+									<TOOLTIPID>%((L:XMLVAR_Airframe_1))%{if}TT:COCKPIT.TOOLTIPS.DEICE_WING_ENG_ON_1%{else}TT:COCKPIT.TOOLTIPS.DEICE_WING_ENG_OFF_1%{end}</TOOLTIPID>
+								</False>
+							</Condition>
+						</Default>
+					</Switch>
+				</Case>
+			</Switch>
+			<WWISE_EVENT>deice_airframe_switch</WWISE_EVENT>
+			<WWISE_EVENT_1>deice_airframe_switch_on</WWISE_EVENT_1>
+			<WWISE_EVENT_2>deice_airframe_switch_off</WWISE_EVENT_2>
+			<NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
+			<NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
+			<Condition Valid="SYNC_WITH_WINDSHIELD_STATE">
+				<SYNC_WINDSHIELD_STATE>
 				(A:STRUCTURAL DEICE SWITCH, Bool) (A:WINDSHIELD DEICE SWITCH, Bool) != if{
 					(&gt;K:WINDSHIELD_DEICE_TOGGLE)
 				}
-			</SYNC_WINDSHIELD_STATE>
-		</Condition>
-		<ON_TOGGLE_STATE/>
-	</DefaultTemplateParameters>
-	<OverrideTemplateParameters>
-		<Condition Valid="SYNC_WITH_WINDSHIELD_STATE">
-			<True>
-				<ON_TOGGLE_STATE>#SYNC_WINDSHIELD_STATE#</ON_TOGGLE_STATE>
-			</True>
-		</Condition>
-	</OverrideTemplateParameters>
-
-	<Switch Param="NUM_STATES">
-		<Case Value="2">
+				</SYNC_WINDSHIELD_STATE>
+			</Condition>
+			<ON_TOGGLE_STATE/>
+		</DefaultTemplateParameters>
+		<OverrideTemplateParameters>
 			<Condition Valid="SYNC_WITH_WINDSHIELD_STATE">
 				<True>
-					<UseTemplate Name="ASOBO_GT_Update">
-						<UPDATE_CODE>#SYNC_WINDSHIELD_STATE#</UPDATE_CODE>
-					</UseTemplate>
+					<ON_TOGGLE_STATE>#SYNC_WINDSHIELD_STATE#</ON_TOGGLE_STATE>
 				</True>
 			</Condition>
-			<Switch param="INTERACTION">
-				<Case Value="Push">
-					<UseTemplate Name="ASOBO_GT_Push_Button_Airliner">
-						<Condition Check="ID">
-							<True>
-								<LEFT_SINGLE_CODE>
+		</OverrideTemplateParameters>
+
+		<Switch Param="NUM_STATES">
+			<Case Value="2">
+				<Condition Valid="SYNC_WITH_WINDSHIELD_STATE">
+					<True>
+						<UseTemplate Name="ASOBO_GT_Update">
+							<UPDATE_CODE>#SYNC_WINDSHIELD_STATE#</UPDATE_CODE>
+						</UseTemplate>
+					</True>
+				</Condition>
+				<Switch param="INTERACTION">
+					<Case Value="Push">
+						<UseTemplate Name="ASOBO_GT_Push_Button_Airliner">
+							<Condition Check="ID">
+								<True>
+									<LEFT_SINGLE_CODE>
 									(L:XMLVAR_Airframe_#ID#) ! (&gt;L:XMLVAR_Airframe_#ID#)
 
 									(L:XMLVAR_Airframe_1) !
@@ -275,251 +275,251 @@
 										(&gt;K:TOGGLE_STRUCTURAL_DEICE)
 										#ON_TOGGLE_STATE#
 									}
-								</LEFT_SINGLE_CODE>
-							</True>
-							<False>
-								<LEFT_SINGLE_CODE>(&gt;K:TOGGLE_STRUCTURAL_DEICE) #ON_TOGGLE_STATE#</LEFT_SINGLE_CODE>
-							</False>
-						</Condition>
-					</UseTemplate>
-				</Case>
-				<Default>
-					<Component ID="#NODE_ID#" Node="#NODE_ID#">
-						<UseTemplate Name="ASOBO_GT_Switch_Code">
-							<ANIM_CODE>
+									</LEFT_SINGLE_CODE>
+								</True>
+								<False>
+									<LEFT_SINGLE_CODE>(&gt;K:TOGGLE_STRUCTURAL_DEICE) #ON_TOGGLE_STATE#</LEFT_SINGLE_CODE>
+								</False>
+							</Condition>
+						</UseTemplate>
+					</Case>
+					<Default>
+						<Component ID="#NODE_ID#" Node="#NODE_ID#">
+							<UseTemplate Name="ASOBO_GT_Switch_Code">
+								<ANIM_CODE>
 								(A:STRUCTURAL DEICE SWITCH, Bool) 100 *
-							</ANIM_CODE>
-							<LEFT_SINGLE_CODE>
+								</ANIM_CODE>
+								<LEFT_SINGLE_CODE>
 								(&gt;K:TOGGLE_STRUCTURAL_DEICE)
 								(A:STRUCTURAL DEICE SWITCH, Bool) (&gt;L:XMLVAR_IsDeiceAirFrame)
 								#ON_TOGGLE_STATE#
-							</LEFT_SINGLE_CODE>
+								</LEFT_SINGLE_CODE>
+							</UseTemplate>
+						</Component>
+					</Default>
+				</Switch>
+			</Case>
+			<Case Value="3">
+				<Component ID="#NODE_ID#" Node="#NODE_ID#">
+					<Condition NotEmpty="INIT">
+						<UseTemplate Name="ASOBO_GT_Update">
+							<UPDATE_ONCE>True</UPDATE_ONCE>
+							<UPDATE_CODE>#INIT#</UPDATE_CODE>
 						</UseTemplate>
-					</Component>
-				</Default>
-			</Switch>
-		</Case>
-		<Case Value="3">
-			<Component ID="#NODE_ID#" Node="#NODE_ID#">
-				<Condition NotEmpty="INIT">
-					<UseTemplate Name="ASOBO_GT_Update">
-						<UPDATE_ONCE>True</UPDATE_ONCE>
-						<UPDATE_CODE>#INIT#</UPDATE_CODE>
-					</UseTemplate>
-				</Condition>
-				<UseTemplate Name="ASOBO_GT_Switch_3States">
-					<Switch Param="SWITCH_TYPE">
-						<Case Value="ON_NORM_OFF">
-							<CODE_POS_#POS_ON#>
+					</Condition>
+					<UseTemplate Name="ASOBO_GT_Switch_3States">
+						<Switch Param="SWITCH_TYPE">
+							<Case Value="ON_NORM_OFF">
+								<CODE_POS_#POS_ON#>
 								(A:STRUCTURAL DEICE SWITCH, Bool) ! if{ (&gt;K:TOGGLE_STRUCTURAL_DEICE) }
 								1 (&gt;L:XMLVAR_IsDeiceAirFrame)
 								0 (&gt;O:XMLVAR_Norm)
-							</CODE_POS_#POS_ON#>
-							<CODE_POS_#POS_NORM#>
+								</CODE_POS_#POS_ON#>
+								<CODE_POS_#POS_NORM#>
 								1 (&gt;O:XMLVAR_Norm)
 								(A:STRUCTURAL DEICE SWITCH, Bool) ! if{ (&gt;K:TOGGLE_STRUCTURAL_DEICE) }
 								0 (&gt;L:XMLVAR_IsDeiceAirFrame)
-							</CODE_POS_#POS_NORM#>
-							<CODE_POS_#POS_OFF#>
+								</CODE_POS_#POS_NORM#>
+								<CODE_POS_#POS_OFF#>
 								(A:STRUCTURAL DEICE SWITCH, Bool) if{ (&gt;K:TOGGLE_STRUCTURAL_DEICE) }
 								0 (&gt;L:XMLVAR_IsDeiceAirFrame)
 								0 (&gt;O:XMLVAR_Norm)
-							</CODE_POS_#POS_OFF#>
-							<STATE#POS_ON#_TEST>
+								</CODE_POS_#POS_OFF#>
+								<STATE#POS_ON#_TEST>
 								(A:STRUCTURAL DEICE SWITCH, Bool) (O:XMLVAR_Norm) ! and
-							</STATE#POS_ON#_TEST>
-							<STATE#POS_NORM#_TEST>
+								</STATE#POS_ON#_TEST>
+								<STATE#POS_NORM#_TEST>
 								(A:STRUCTURAL DEICE SWITCH, Bool) (O:XMLVAR_Norm) and
-							</STATE#POS_NORM#_TEST>
-							<STATE#POS_OFF#_TEST>
+								</STATE#POS_NORM#_TEST>
+								<STATE#POS_OFF#_TEST>
 								(A:STRUCTURAL DEICE SWITCH, Bool) !
-							</STATE#POS_OFF#_TEST>
-						</Case>
-						<Case Value="OFF_AUTO_ON">
-							<CODE_POS_#POS_OFF#>
+								</STATE#POS_OFF#_TEST>
+							</Case>
+							<Case Value="OFF_AUTO_ON">
+								<CODE_POS_#POS_OFF#>
 								(A:STRUCTURAL DEICE SWITCH, Enum) 0 != if{ (&gt;K:TOGGLE_STRUCTURAL_DEICE) }
 								0 (&gt;L:XMLVAR_DeiceAirFrame_Auto)
-							</CODE_POS_#POS_OFF#>
-							<CODE_POS_#POS_AUTO#>
+								</CODE_POS_#POS_OFF#>
+								<CODE_POS_#POS_AUTO#>
 								(A:STRUCTURAL DEICE SWITCH, Enum) 0 == if{ (&gt;K:TOGGLE_STRUCTURAL_DEICE) }
 								1 (&gt;L:XMLVAR_DeiceAirFrame_Auto)
-							</CODE_POS_#POS_AUTO#>
-							<CODE_POS_#POS_ON#>
+								</CODE_POS_#POS_AUTO#>
+								<CODE_POS_#POS_ON#>
 								(A:STRUCTURAL DEICE SWITCH, Enum) 0 == if{ (&gt;K:TOGGLE_STRUCTURAL_DEICE) }
 								0 (&gt;L:XMLVAR_DeiceAirFrame_Auto)
-							</CODE_POS_#POS_ON#>
-							<STATE#POS_OFF#_TEST>
+								</CODE_POS_#POS_ON#>
+								<STATE#POS_OFF#_TEST>
 								(A:STRUCTURAL DEICE SWITCH, Enum) 0 ==
-							</STATE#POS_OFF#_TEST>
-							<STATE#POS_AUTO#_TEST>
+								</STATE#POS_OFF#_TEST>
+								<STATE#POS_AUTO#_TEST>
 								(A:STRUCTURAL DEICE SWITCH, Enum) 2 == (L:XMLVAR_DeiceAirFrame_Auto) or
-							</STATE#POS_AUTO#_TEST>
-							<STATE#POS_ON#_TEST>
+								</STATE#POS_AUTO#_TEST>
+								<STATE#POS_ON#_TEST>
 								(A:STRUCTURAL DEICE SWITCH, Enum) 1 == (L:XMLVAR_DeiceAirFrame_Auto) ! and
-							</STATE#POS_ON#_TEST>
-						</Case>
-						<Case Value="SINGLE_OFF_MANUAL">
-							<MOMENTARY_SWITCH/>
-							<SWITCH_POSITION_TYPE_ISDOWN>L</SWITCH_POSITION_TYPE_ISDOWN>
-							<SWITCH_POSITION_VAR_ISDOWN>XMLVAR_DEICE_Aircraft_IsHeld</SWITCH_POSITION_VAR_ISDOWN>
-							<STATE_MAX_TIMER>0.1</STATE_MAX_TIMER>
-							<STATE0_TIMER>0.1</STATE0_TIMER>
-							<CODE_POS_RETURN>
+								</STATE#POS_ON#_TEST>
+							</Case>
+							<Case Value="SINGLE_OFF_MANUAL">
+								<MOMENTARY_SWITCH/>
+								<SWITCH_POSITION_TYPE_ISDOWN>L</SWITCH_POSITION_TYPE_ISDOWN>
+								<SWITCH_POSITION_VAR_ISDOWN>XMLVAR_DEICE_Aircraft_IsHeld</SWITCH_POSITION_VAR_ISDOWN>
+								<STATE_MAX_TIMER>0.1</STATE_MAX_TIMER>
+								<STATE0_TIMER>0.1</STATE0_TIMER>
+								<CODE_POS_RETURN>
 								0 (&gt;O:XMLVAR_MANUAL)
 								(A:STRUCTURAL DEICE SWITCH, Bool) if{ (&gt;K:TOGGLE_STRUCTURAL_DEICE) }
 								0 (&gt;L:XMLVAR_IsDeiceAirFrame)
-							</CODE_POS_RETURN>
-							<CODE_POS_0>
+								</CODE_POS_RETURN>
+								<CODE_POS_0>
 								(A:STRUCTURAL DEICE SWITCH, Bool) ! if{ (&gt;K:TOGGLE_STRUCTURAL_DEICE) }
 								1 (&gt;L:XMLVAR_IsDeiceAirFrame)
 								0 (&gt;O:XMLVAR_MANUAL)
-							</CODE_POS_0>
-							<CODE_POS_1>
+								</CODE_POS_0>
+								<CODE_POS_1>
 								0 (&gt;O:XMLVAR_MANUAL)
 								(A:STRUCTURAL DEICE SWITCH, Bool) if{ (&gt;K:TOGGLE_STRUCTURAL_DEICE) }
 								0 (&gt;L:XMLVAR_IsDeiceAirFrame)
-							</CODE_POS_1>
-							<CODE_POS_2>
+								</CODE_POS_1>
+								<CODE_POS_2>
 								(A:STRUCTURAL DEICE SWITCH, Bool) ! if{ (&gt;K:TOGGLE_STRUCTURAL_DEICE) }
 								0 (&gt;L:XMLVAR_IsDeiceAirFrame)
 								1 (&gt;L:XMLVAR_IsDeiceAirFrame)
 								1 (&gt;O:XMLVAR_MANUAL)
-							</CODE_POS_2>
-							<STATE0_TEST>
+								</CODE_POS_2>
+								<STATE0_TEST>
 								(A:STRUCTURAL DEICE SWITCH, Bool) (O:XMLVAR_MANUAL) ! and
-							</STATE0_TEST>
-							<STATE1_TEST>
+								</STATE0_TEST>
+								<STATE1_TEST>
 								(A:STRUCTURAL DEICE SWITCH, Bool) ! (O:XMLVAR_MANUAL) ! and
-							</STATE1_TEST>
-							<STATE2_TEST>
+								</STATE1_TEST>
+								<STATE2_TEST>
 								(A:STRUCTURAL DEICE SWITCH, Bool) (O:XMLVAR_MANUAL) and
-							</STATE2_TEST>
-						</Case>
-					</Condition>
-				</UseTemplate>
-			</Component>
-		</Case>
-	</Switch>
-</Template>
-
-<Template Name="ASOBO_DEICE_Switch_Propeller_SubTemplate">
-	<DefaultTemplateParameters>
-		<NODE_ID>DEICE_Switch_Propeller_#ID#</NODE_ID>
-		<ANIM_NAME>DEICE_Switch_Propeller_#ID#</ANIM_NAME>
-		<PART_ID>DEICE_Switch_Propeller</PART_ID>
-		<WWISE_EVENT_1>deice_propeller_switch_on</WWISE_EVENT_1>
-		<WWISE_EVENT_2>deice_propeller_switch_off</WWISE_EVENT_2>
-		<ON_TOOLTIP>COCKPIT.TOOLTIPS.PANEL_DEICE_PROP_DEICE_ON</ON_TOOLTIP>
-		<OFF_TOOLTIP>COCKPIT.TOOLTIPS.PANEL_DEICE_PROP_DEICE_OFF</OFF_TOOLTIP>
-	</DefaultTemplateParameters>
-
-	<Condition Check="INTERACTION" Match="Push">
-		<True>
-			<UseTemplate Name="ASOBO_GT_Push_Button_Airliner">
-				<SEQ1_EMISSIVE_CODE>0</SEQ1_EMISSIVE_CODE>
-				<SEQ2_EMISSIVE_CODE>(A:PROP DEICE SWITCH:#ID#, Bool)</SEQ2_EMISSIVE_CODE>
-				<ANIM_SIMVAR>ENG ANTI ICE:#ID#</ANIM_SIMVAR>
-				<LEFT_SINGLE_CODE>
-					#ID# (&gt;K:TOGGLE_PROPELLER_DEICE)
-				</LEFT_SINGLE_CODE>
-				<TOOLTIPID>%((A:PROP DEICE SWITCH:#ID#, Bool) !)%{if}TT:#OFF_TOOLTIP#%{else}TT:#ON_TOOLTIP#%{end}</TOOLTIPID>
-			</UseTemplate>
-		</True>
-		<False>
-			<Component ID="#NODE_ID#" Node="#NODE_ID#">
-				<Condition Check="MOMENTARY_SWITCH">
-					<True>
-						<UseTemplate Name="ASOBO_GT_Switch_2States">
-							<MOMENTARY_SWITCH/>
-							<SWITCH_POSITION_TYPE_ISDOWN>L</SWITCH_POSITION_TYPE_ISDOWN>
-							<SWITCH_POSITION_VAR_ISDOWN>XMLVAR_DEICE_Propeller_IsHeld</SWITCH_POSITION_VAR_ISDOWN>
-							<STATE_MAX_TIMER>0</STATE_MAX_TIMER>
-							<STATE0_TIMER>0.1</STATE0_TIMER>
-							<CODE_POS_RETURN>(A:PROP DEICE SWITCH:1, Bool) if{ (&gt;K:TOGGLE_PROPELLER_DEICE) }</CODE_POS_RETURN>
-							<CODE_POS_0>(A:PROP DEICE SWITCH:1, Bool) ! if{ (&gt;K:TOGGLE_PROPELLER_DEICE) }</CODE_POS_0>
-							<CODE_POS_1>(A:PROP DEICE SWITCH:1, Bool) if{ (&gt;K:TOGGLE_PROPELLER_DEICE) }</CODE_POS_1>
-							<STATE0_TEST>(A:PROP DEICE SWITCH:1, Bool)</STATE0_TEST>
-							<STATE1_TEST>(A:PROP DEICE SWITCH:1, Bool) !</STATE1_TEST>
-						</UseTemplate>
-					</True>
-					<False>
-						<UseTemplate Name="ASOBO_GT_Switch_Code">
-							<Switch Param="SWITCH_TYPE">
-								<Case Value="ON_OFF">
-									<ANIM_CODE>
-										(A:PROP DEICE SWITCH:1, Bool) 100 *
-									</ANIM_CODE>
-									<LEFT_SINGLE_CODE>
-										(&gt;K:TOGGLE_PROPELLER_DEICE)
-									</LEFT_SINGLE_CODE>
-									<ANIMTIP_1>TT:#ON_TOOLTIP#</ANIMTIP_1>
-									<ANIMTIP_0>TT:#OFF_TOOLTIP#</ANIMTIP_0>
-								</Case>
-							</Switch>
-						</UseTemplate>
-					</False>
-				</Condition>
-			</Component>
-		</False>
-	</Condition>
-</Template>
-
-<Template Name="ASOBO_DEICE_Switch_Windshield_SubTemplate">
-	<DefaultTemplateParameters>
-		<NODE_ID>DEICE_Switch_Windshield_#ID#</NODE_ID>
-		<ANIM_NAME>DEICE_Switch_Windshield_#ID#</ANIM_NAME>
-		<Switch Param="SWITCH_TYPE">
-			<Case Value="B747">
-				<WWISE_EVENT_1>deice_windshield_switch_on</WWISE_EVENT_1>
-				<WWISE_EVENT_2>deice_windshield_switch_off</WWISE_EVENT_2>
-				<ANIMTIP_1>TT:COCKPIT.TOOLTIPS.PANEL_DEICE_WINDSHIELD_DEICE_ON</ANIMTIP_1>
-				<ANIMTIP_0>TT:COCKPIT.TOOLTIPS.PANEL_DEICE_WINDSHIELD_DEICE_OFF</ANIMTIP_0>
-				<VAR_NAME>XMLVAR_DeiceWindshield_#ID#</VAR_NAME>
-				<VAR_SCOPE>I</VAR_SCOPE>
-			</Case>
-			<Case Value="AIRBUS">
-				<WWISE_EVENT_1>deice_windshield_switch_on</WWISE_EVENT_1>
-				<WWISE_EVENT_2>deice_windshield_switch_off</WWISE_EVENT_2>
-				<ANIMTIP_1>TT:COCKPIT.TOOLTIPS.PANEL_DEICE_WINDSHIELD_DEICE_ON</ANIMTIP_1>
-				<ANIMTIP_0>TT:COCKPIT.TOOLTIPS.PANEL_DEICE_WINDSHIELD_DEICE_OFF</ANIMTIP_0>
-				<VAR_NAME>XMLVAR_DeiceWindshield_#ID#</VAR_NAME>
-				<VAR_SCOPE>I</VAR_SCOPE>
-			</Case>
-			<Case Value="ON_OFF">
-				<WWISE_EVENT_1>deice_windshield_switch_on</WWISE_EVENT_1>
-				<WWISE_EVENT_2>deice_windshield_switch_off</WWISE_EVENT_2>
-				<ANIMTIP_1>TT:COCKPIT.TOOLTIPS.PANEL_DEICE_WINDSHIELD_DEICE_ON</ANIMTIP_1>
-				<ANIMTIP_0>TT:COCKPIT.TOOLTIPS.PANEL_DEICE_WINDSHIELD_DEICE_OFF</ANIMTIP_0>
-				<VAR_NAME>XMLVAR_DeiceWindshield_#ID#</VAR_NAME>
-				<VAR_SCOPE>I</VAR_SCOPE>
-			</Case>
-			<Case Value="NORM_OFF_HIGH">
-				<DEFAULT_POS>1</DEFAULT_POS>
-				<SWITCH_POSITION_TYPE>I</SWITCH_POSITION_TYPE>
-				<SWITCH_POSITION_VAR>XMLVAR_DeiceWindshield_#ID#</SWITCH_POSITION_VAR>
-				<ANIMTIP_0>TT:COCKPIT.TOOLTIPS.PANEL_DEICE_WINDSHIELD_DEICE_HIGH</ANIMTIP_0>
-				<ANIMTIP_1>TT:COCKPIT.TOOLTIPS.PANEL_DEICE_WINDSHIELD_DEICE_ON</ANIMTIP_1>
-				<ANIMTIP_2>TT:COCKPIT.TOOLTIPS.PANEL_DEICE_WINDSHIELD_DEICE_NORMAL</ANIMTIP_2>
-				<WWISE_EVENT>deice_windshield_switch</WWISE_EVENT>
-				<NORM>0</NORM>
-				<OFF>1</OFF>
-				<HIGH>2</HIGH>
+								</STATE2_TEST>
+							</Case>
+						</Condition>
+					</UseTemplate>
+				</Component>
 			</Case>
 		</Switch>
-		<PART_ID>DEICE_Switch_Windshield</PART_ID>
-	</DefaultTemplateParameters>
-	<Component ID="#NODE_ID#" Node="#NODE_ID#">
-		<Switch Param="SWITCH_TYPE">
-			<Case Value="AIRBUS">
-				<UseTemplate Name="ASOBO_GT_Update">
-					<FREQUENCY>1</FREQUENCY>
-					<UPDATE_CODE>
+	</Template>
+
+	<Template Name="ASOBO_DEICE_Switch_Propeller_SubTemplate">
+		<DefaultTemplateParameters>
+			<NODE_ID>DEICE_Switch_Propeller_#ID#</NODE_ID>
+			<ANIM_NAME>DEICE_Switch_Propeller_#ID#</ANIM_NAME>
+			<PART_ID>DEICE_Switch_Propeller</PART_ID>
+			<WWISE_EVENT_1>deice_propeller_switch_on</WWISE_EVENT_1>
+			<WWISE_EVENT_2>deice_propeller_switch_off</WWISE_EVENT_2>
+			<ON_TOOLTIP>COCKPIT.TOOLTIPS.PANEL_DEICE_PROP_DEICE_ON</ON_TOOLTIP>
+			<OFF_TOOLTIP>COCKPIT.TOOLTIPS.PANEL_DEICE_PROP_DEICE_OFF</OFF_TOOLTIP>
+		</DefaultTemplateParameters>
+
+		<Condition Check="INTERACTION" Match="Push">
+			<True>
+				<UseTemplate Name="ASOBO_GT_Push_Button_Airliner">
+					<SEQ1_EMISSIVE_CODE>0</SEQ1_EMISSIVE_CODE>
+					<SEQ2_EMISSIVE_CODE>(A:PROP DEICE SWITCH:#ID#, Bool)</SEQ2_EMISSIVE_CODE>
+					<ANIM_SIMVAR>ENG ANTI ICE:#ID#</ANIM_SIMVAR>
+					<LEFT_SINGLE_CODE>
+					#ID# (&gt;K:TOGGLE_PROPELLER_DEICE)
+					</LEFT_SINGLE_CODE>
+					<TOOLTIPID>%((A:PROP DEICE SWITCH:#ID#, Bool) !)%{if}TT:#OFF_TOOLTIP#%{else}TT:#ON_TOOLTIP#%{end}</TOOLTIPID>
+				</UseTemplate>
+			</True>
+			<False>
+				<Component ID="#NODE_ID#" Node="#NODE_ID#">
+					<Condition Check="MOMENTARY_SWITCH">
+						<True>
+							<UseTemplate Name="ASOBO_GT_Switch_2States">
+								<MOMENTARY_SWITCH/>
+								<SWITCH_POSITION_TYPE_ISDOWN>L</SWITCH_POSITION_TYPE_ISDOWN>
+								<SWITCH_POSITION_VAR_ISDOWN>XMLVAR_DEICE_Propeller_IsHeld</SWITCH_POSITION_VAR_ISDOWN>
+								<STATE_MAX_TIMER>0</STATE_MAX_TIMER>
+								<STATE0_TIMER>0.1</STATE0_TIMER>
+								<CODE_POS_RETURN>(A:PROP DEICE SWITCH:1, Bool) if{ (&gt;K:TOGGLE_PROPELLER_DEICE) }</CODE_POS_RETURN>
+								<CODE_POS_0>(A:PROP DEICE SWITCH:1, Bool) ! if{ (&gt;K:TOGGLE_PROPELLER_DEICE) }</CODE_POS_0>
+								<CODE_POS_1>(A:PROP DEICE SWITCH:1, Bool) if{ (&gt;K:TOGGLE_PROPELLER_DEICE) }</CODE_POS_1>
+								<STATE0_TEST>(A:PROP DEICE SWITCH:1, Bool)</STATE0_TEST>
+								<STATE1_TEST>(A:PROP DEICE SWITCH:1, Bool) !</STATE1_TEST>
+							</UseTemplate>
+						</True>
+						<False>
+							<UseTemplate Name="ASOBO_GT_Switch_Code">
+								<Switch Param="SWITCH_TYPE">
+									<Case Value="ON_OFF">
+										<ANIM_CODE>
+										(A:PROP DEICE SWITCH:1, Bool) 100 *
+										</ANIM_CODE>
+										<LEFT_SINGLE_CODE>
+										(&gt;K:TOGGLE_PROPELLER_DEICE)
+										</LEFT_SINGLE_CODE>
+										<ANIMTIP_1>TT:#ON_TOOLTIP#</ANIMTIP_1>
+										<ANIMTIP_0>TT:#OFF_TOOLTIP#</ANIMTIP_0>
+									</Case>
+								</Switch>
+							</UseTemplate>
+						</False>
+					</Condition>
+				</Component>
+			</False>
+		</Condition>
+	</Template>
+
+	<Template Name="ASOBO_DEICE_Switch_Windshield_SubTemplate">
+		<DefaultTemplateParameters>
+			<NODE_ID>DEICE_Switch_Windshield_#ID#</NODE_ID>
+			<ANIM_NAME>DEICE_Switch_Windshield_#ID#</ANIM_NAME>
+			<Switch Param="SWITCH_TYPE">
+				<Case Value="B747">
+					<WWISE_EVENT_1>deice_windshield_switch_on</WWISE_EVENT_1>
+					<WWISE_EVENT_2>deice_windshield_switch_off</WWISE_EVENT_2>
+					<ANIMTIP_1>TT:COCKPIT.TOOLTIPS.PANEL_DEICE_WINDSHIELD_DEICE_ON</ANIMTIP_1>
+					<ANIMTIP_0>TT:COCKPIT.TOOLTIPS.PANEL_DEICE_WINDSHIELD_DEICE_OFF</ANIMTIP_0>
+					<VAR_NAME>XMLVAR_DeiceWindshield_#ID#</VAR_NAME>
+					<VAR_SCOPE>I</VAR_SCOPE>
+				</Case>
+				<Case Value="AIRBUS">
+					<WWISE_EVENT_1>deice_windshield_switch_on</WWISE_EVENT_1>
+					<WWISE_EVENT_2>deice_windshield_switch_off</WWISE_EVENT_2>
+					<ANIMTIP_1>TT:COCKPIT.TOOLTIPS.PANEL_DEICE_WINDSHIELD_DEICE_ON</ANIMTIP_1>
+					<ANIMTIP_0>TT:COCKPIT.TOOLTIPS.PANEL_DEICE_WINDSHIELD_DEICE_OFF</ANIMTIP_0>
+					<VAR_NAME>XMLVAR_DeiceWindshield_#ID#</VAR_NAME>
+					<VAR_SCOPE>I</VAR_SCOPE>
+				</Case>
+				<Case Value="ON_OFF">
+					<WWISE_EVENT_1>deice_windshield_switch_on</WWISE_EVENT_1>
+					<WWISE_EVENT_2>deice_windshield_switch_off</WWISE_EVENT_2>
+					<ANIMTIP_1>TT:COCKPIT.TOOLTIPS.PANEL_DEICE_WINDSHIELD_DEICE_ON</ANIMTIP_1>
+					<ANIMTIP_0>TT:COCKPIT.TOOLTIPS.PANEL_DEICE_WINDSHIELD_DEICE_OFF</ANIMTIP_0>
+					<VAR_NAME>XMLVAR_DeiceWindshield_#ID#</VAR_NAME>
+					<VAR_SCOPE>I</VAR_SCOPE>
+				</Case>
+				<Case Value="NORM_OFF_HIGH">
+					<DEFAULT_POS>1</DEFAULT_POS>
+					<SWITCH_POSITION_TYPE>I</SWITCH_POSITION_TYPE>
+					<SWITCH_POSITION_VAR>XMLVAR_DeiceWindshield_#ID#</SWITCH_POSITION_VAR>
+					<ANIMTIP_0>TT:COCKPIT.TOOLTIPS.PANEL_DEICE_WINDSHIELD_DEICE_HIGH</ANIMTIP_0>
+					<ANIMTIP_1>TT:COCKPIT.TOOLTIPS.PANEL_DEICE_WINDSHIELD_DEICE_ON</ANIMTIP_1>
+					<ANIMTIP_2>TT:COCKPIT.TOOLTIPS.PANEL_DEICE_WINDSHIELD_DEICE_NORMAL</ANIMTIP_2>
+					<WWISE_EVENT>deice_windshield_switch</WWISE_EVENT>
+					<NORM>0</NORM>
+					<OFF>1</OFF>
+					<HIGH>2</HIGH>
+				</Case>
+			</Switch>
+			<PART_ID>DEICE_Switch_Windshield</PART_ID>
+		</DefaultTemplateParameters>
+		<Component ID="#NODE_ID#" Node="#NODE_ID#">
+			<Switch Param="SWITCH_TYPE">
+				<Case Value="AIRBUS">
+					<UseTemplate Name="ASOBO_GT_Update">
+						<FREQUENCY>1</FREQUENCY>
+						<UPDATE_CODE>
 						(A:WINDSHIELD DEICE SWITCH, Enum) 0 == if{ (&gt;K:WINDSHIELD_DEICE_TOGGLE) }
 						(A:PITOT HEAT SWITCH, Enum) 0 == if{ (&gt;K:PITOT_HEAT_TOGGLE) }
-					</UPDATE_CODE>
-				</UseTemplate>
-				<UseTemplate Name="ASOBO_GT_Push_Button_Airliner">
-					<LEFT_SINGLE_CODE>
+						</UPDATE_CODE>
+					</UseTemplate>
+					<UseTemplate Name="ASOBO_GT_Push_Button_Airliner">
+						<LEFT_SINGLE_CODE>
 						(A:WINDSHIELD DEICE SWITCH, Enum) 2 == if{
 							1 (&gt;K:WINDSHIELD_DEICE_SET)
 						} els{
@@ -530,56 +530,57 @@
 						} els{
 							2 (&gt;K:PITOT_HEAT_SET)
 						}
-					</LEFT_SINGLE_CODE>
-					<SEQ1_EMISSIVE_CODE>0</SEQ1_EMISSIVE_CODE>
-					<SEQ2_EMISSIVE_CODE>(A:PITOT HEAT SWITCH, Enum) 1 == (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or</SEQ2_EMISSIVE_CODE>
-					<SEQ2_CODE_DRIVES_DOWN_STATE>False</SEQ2_CODE_DRIVES_DOWN_STATE>
-					<DOWN_STATE_CODE>(A:PITOT HEAT SWITCH, Enum) 1 ==</DOWN_STATE_CODE>
-				</UseTemplate>
-			</Case>
-			<Case Value="B747">
-				<UseTemplate Name="ASOBO_GT_Push_Button_Airliner">
-					<LEFT_SINGLE_CODE>(&gt;K:WINDSHIELD_DEICE_TOGGLE)</LEFT_SINGLE_CODE>
-					<ANIM_CODE>(A:WINDSHIELD DEICE SWITCH, Bool) 100 *</ANIM_CODE>
-					<SEQ1_EMISSIVE_CODE>(A:WINDSHIELD DEICE SWITCH, Enum) 1 ==</SEQ1_EMISSIVE_CODE>
-					<SEQ2_EMISSIVE_CODE>(A:WINDSHIELD DEICE SWITCH, Enum) 1 !=</SEQ2_EMISSIVE_CODE>
-				</UseTemplate>
-			</Case>
-			<Case Value="ON_OFF">
-				<UseTemplate Name="ASOBO_GT_Switch_Code">
-					<LEFT_SINGLE_CODE>(&gt;K:WINDSHIELD_DEICE_TOGGLE)</LEFT_SINGLE_CODE>
-					<ANIM_CODE>(A:WINDSHIELD DEICE SWITCH, Bool) 100 *</ANIM_CODE>
-				</UseTemplate>
-			</Case>
-			<Case Value="NORM_OFF_HIGH">
-				<Update Once="True">
+						</LEFT_SINGLE_CODE>
+						<SEQ1_EMISSIVE_CODE>0</SEQ1_EMISSIVE_CODE>
+						<SEQ2_EMISSIVE_CODE>(A:PITOT HEAT SWITCH, Enum) 1 == (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or</SEQ2_EMISSIVE_CODE>
+						<SEQ2_CODE_DRIVES_DOWN_STATE>False</SEQ2_CODE_DRIVES_DOWN_STATE>
+						<DOWN_STATE_CODE>(A:PITOT HEAT SWITCH, Enum) 1 ==</DOWN_STATE_CODE>
+					</UseTemplate>
+				</Case>
+				<Case Value="B747">
+					<UseTemplate Name="ASOBO_GT_Push_Button_Airliner">
+						<LEFT_SINGLE_CODE>(&gt;K:WINDSHIELD_DEICE_TOGGLE)</LEFT_SINGLE_CODE>
+						<ANIM_CODE>(A:WINDSHIELD DEICE SWITCH, Bool) 100 *</ANIM_CODE>
+						<SEQ1_EMISSIVE_CODE>(A:WINDSHIELD DEICE SWITCH, Enum) 1 ==</SEQ1_EMISSIVE_CODE>
+						<SEQ2_EMISSIVE_CODE>(A:WINDSHIELD DEICE SWITCH, Enum) 1 !=</SEQ2_EMISSIVE_CODE>
+					</UseTemplate>
+				</Case>
+				<Case Value="ON_OFF">
+					<UseTemplate Name="ASOBO_GT_Switch_Code">
+						<LEFT_SINGLE_CODE>(&gt;K:WINDSHIELD_DEICE_TOGGLE)</LEFT_SINGLE_CODE>
+						<ANIM_CODE>(A:WINDSHIELD DEICE SWITCH, Bool) 100 *</ANIM_CODE>
+					</UseTemplate>
+				</Case>
+				<Case Value="NORM_OFF_HIGH">
+					<Update Once="True">
 					#NORM# #OFF# (A:WINDSHIELD DEICE SWITCH, Bool) ? (&gt;#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#)
-				</Update>
-				<UseTemplate Name="ASOBO_GT_Update">
-					<UPDATE_CODE>
+					</Update>
+					<UseTemplate Name="ASOBO_GT_Update">
+						<UPDATE_CODE>
 						#OFF# (#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#) != (A:WINDSHIELD DEICE SWITCH, Bool) ! and if{
 							(&gt;K:WINDSHIELD_DEICE_TOGGLE)
 						}
-					</UPDATE_CODE>
-				</UseTemplate>
-				<UseTemplate Name="ASOBO_GT_Switch_3States">
-					<CODE_POS_#NORM#>
+						</UPDATE_CODE>
+					</UseTemplate>
+					<UseTemplate Name="ASOBO_GT_Switch_3States">
+						<CODE_POS_#NORM#>
 						#NORM# (&gt;#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#)
 						(A:WINDSHIELD DEICE SWITCH, Bool) ! if{ (&gt;K:WINDSHIELD_DEICE_TOGGLE) }
-					</CODE_POS_#NORM#>
-					<CODE_POS_#OFF#>
+						</CODE_POS_#NORM#>
+						<CODE_POS_#OFF#>
 						#OFF# (&gt;#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#)
 						(A:WINDSHIELD DEICE SWITCH, Bool) if{ (&gt;K:WINDSHIELD_DEICE_TOGGLE) }
-					</CODE_POS_#OFF#>
-					<CODE_POS_#HIGH#>
+						</CODE_POS_#OFF#>
+						<CODE_POS_#HIGH#>
 						#HIGH# (&gt;#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#)
 						(A:WINDSHIELD DEICE SWITCH, Bool) ! if{ (&gt;K:WINDSHIELD_DEICE_TOGGLE) }
-					</CODE_POS_#HIGH#>
-					<STATE#NORM#_TEST>#NORM# (#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#) ==</STATE#NORM#_TEST>
-					<STATE#OFF#_TEST>#OFF# (#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#) ==</STATE#OFF#_TEST>
-					<STATE#HIGH#_TEST>#HIGH# (#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#) ==</STATE#HIGH#_TEST>
-				</UseTemplate>
-			</Case>
-		</Switch>
-	</Component>
-</Template>
+						</CODE_POS_#HIGH#>
+						<STATE#NORM#_TEST>#NORM# (#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#) ==</STATE#NORM#_TEST>
+						<STATE#OFF#_TEST>#OFF# (#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#) ==</STATE#OFF#_TEST>
+						<STATE#HIGH#_TEST>#HIGH# (#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#) ==</STATE#HIGH#_TEST>
+					</UseTemplate>
+				</Case>
+			</Switch>
+		</Component>
+	</Template>
+</ModelBehaviors>

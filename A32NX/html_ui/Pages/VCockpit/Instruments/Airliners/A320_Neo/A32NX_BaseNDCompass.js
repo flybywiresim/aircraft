@@ -30,6 +30,7 @@ class Jet_NDCompass extends HTMLElement {
         this.isBearing2Displayed = false;
         this._showILS = false;
         this._fullscreen = true;
+        this.isHud = false;
         this.logic_brg1Source = 0;
         this.logic_brg2Source = 0;
         this._displayMode = Jet_NDCompass_Display.NONE;
@@ -61,7 +62,9 @@ class Jet_NDCompass extends HTMLElement {
         ];
     }
     static get observedAttributes() {
-        return this.dynamicAttributes.concat([]);
+        return this.dynamicAttributes.concat([
+            "hud"
+        ]);
     }
     get displayMode() {
         return this._displayMode;
@@ -695,6 +698,9 @@ class Jet_NDCompass extends HTMLElement {
                         this.bearing2.setAttribute("visibility", "hidden");
                     }
                 }
+                break;
+            case "hud":
+                this.isHud = newValue == "true";
                 break;
         }
     }
