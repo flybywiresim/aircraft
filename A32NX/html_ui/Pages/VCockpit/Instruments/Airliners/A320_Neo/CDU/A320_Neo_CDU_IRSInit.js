@@ -151,7 +151,6 @@ class CDUIRSInit {
                 if (activeReference['min'] >= 60) {
                     activeReference['min'] = (0).toString().padStart(2, "0");
                     activeReference['deg'] = (!lon) ? activeReference['deg'] + 1 : (Number(activeReference['deg']) + 1).toString().padStart(3, "0");
-                    // activeReference['deg'] = (!lon) ? activeReference['deg'] + 1 : CDUInitPage.pad(Number(activeReference['deg']) + 1, 3, 0);
                 }
             }
         };
