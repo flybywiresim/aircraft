@@ -15,7 +15,11 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
         this.groundLineSVGHeight = 0;
         this.mtrsVisible = false;
         this.hudAPAltitude = 0;
+        this.isHud = false;
         this._aircraft = Aircraft.A320_NEO;
+    }
+    static get observedAttributes() {
+        return ["hud"];
     }
     get aircraft() {
         return this._aircraft;
@@ -28,6 +32,15 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
     }
     connectedCallback() {
         this.construct();
+    }
+    attributeChangedCallback(name, oldValue, newValue) {
+        if (oldValue == newValue)
+            return;
+        switch (name) {
+            case "hud":
+                this.isHud = newValue == "true";
+                break;
+        }
     }
     showMTRS(_active) {
         this.mtrsVisible = _active;

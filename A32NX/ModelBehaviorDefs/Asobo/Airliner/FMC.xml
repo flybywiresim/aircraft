@@ -1,1776 +1,1776 @@
+<ModelBehaviors>
+	<Include ModelBehaviorFile="Asobo\Generic.xml"/>
 
-<Include Path="Asobo\Generic.xml"/>
+	<Template Name="ASOBO_FMC_Common_Params_Template">
+		<DefaultTemplateParameters>
+			<DONT_OVERRIDE_BASE_EMISSIVE>True</DONT_OVERRIDE_BASE_EMISSIVE>
+			<SEQ1_EMISSIVE_DRIVES_VISIBILITY>False</SEQ1_EMISSIVE_DRIVES_VISIBILITY>
+			<WWISE_EVENT_1>fmc_push_button_on</WWISE_EVENT_1>
+			<WWISE_EVENT_2>fmc_push_button_off</WWISE_EVENT_2>
+			<NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
+			<NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
+			<NO_SEQ2/>
+		</DefaultTemplateParameters>
 
-<Template Name="ASOBO_FMC_Common_Params_Template">
-	<DefaultTemplateParameters>
-		<DONT_OVERRIDE_BASE_EMISSIVE>True</DONT_OVERRIDE_BASE_EMISSIVE>
-		<SEQ1_EMISSIVE_DRIVES_VISIBILITY>False</SEQ1_EMISSIVE_DRIVES_VISIBILITY>
-		<WWISE_EVENT_1>fmc_push_button_on</WWISE_EVENT_1>  
-		<WWISE_EVENT_2>fmc_push_button_off</WWISE_EVENT_2> 
-		<NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
-		<NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
-		<NO_SEQ2/>
-	</DefaultTemplateParameters>
-	
-	<UseTemplate Name="#TEMPLATE_TO_CALL#">
-	</UseTemplate>
-</Template>
+		<UseTemplate Name="#TEMPLATE_TO_CALL#">
+		</UseTemplate>
+	</Template>
 
-<Template Name="ASOBO_FMC_B747">
-	<DefaultTemplateParameters>
-		<ID>1</ID>
-		<WWISE_EVENT_1>fmc_push_button_on</WWISE_EVENT_1>
-		<WWISE_EVENT_2>fmc_push_button_off</WWISE_EVENT_2>
-		<NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
-		<NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
-		<FMC_NAME>CDU</FMC_NAME>
-	</DefaultTemplateParameters>
-	
-	<UseTemplate Name="ASOBO_GT_Helper_Suffix_ID_Appender">
-		<TEMPLATE_TO_CALL>ASOBO_FMC_B747_SubTemplate</TEMPLATE_TO_CALL>
-		<TYPE>B747</TYPE>
-	</UseTemplate>
-</Template>
+	<Template Name="ASOBO_FMC_B747">
+		<DefaultTemplateParameters>
+			<ID>1</ID>
+			<WWISE_EVENT_1>fmc_push_button_on</WWISE_EVENT_1>
+			<WWISE_EVENT_2>fmc_push_button_off</WWISE_EVENT_2>
+			<NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
+			<NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
+			<FMC_NAME>CDU</FMC_NAME>
+		</DefaultTemplateParameters>
 
-<Template Name="ASOBO_FMC_B747_SubTemplate">
-	<UseTemplate Name="ASOBO_FMC_Common_Params_Template">
-		<TEMPLATE_TO_CALL>ASOBO_FMC_B747_SubTemplate2</TEMPLATE_TO_CALL>
-	</UseTemplate>
-</Template>
+		<UseTemplate Name="ASOBO_GT_Helper_Suffix_ID_Appender">
+			<TEMPLATE_TO_CALL>ASOBO_FMC_B747_SubTemplate</TEMPLATE_TO_CALL>
+			<TYPE>B747</TYPE>
+		</UseTemplate>
+	</Template>
 
-<Template Name="ASOBO_FMC_B747_SubTemplate2">
-	<UseTemplate Name="ASOBO_FMC_Push_Init_Template">
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_RTE_Template">
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_DEP_ARR_Template">
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_ATC_Template">
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_VNAV_Template">
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_BRT_DIM_Template">
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_FIX_Template">
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_LEGS_Template">
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_HOLD_Template">
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_FMC_COMM_Template">
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_PROG_Template">
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_EXEC_Template">
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_MENU_Template">
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_NAV_RAD_Template">
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_PREV_PAGE_Template">
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_NEXT_PAGE_Template">
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_SP_Template">
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_DEL_Template">
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_CLR_Template">
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_DIV_Template">
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_Screen_Option_Left_Template">
-		<BTN_ID>1</BTN_ID>
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_Screen_Option_Left_Template">
-		<BTN_ID>2</BTN_ID>
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_Screen_Option_Left_Template">
-		<BTN_ID>3</BTN_ID>
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_Screen_Option_Left_Template">
-		<BTN_ID>4</BTN_ID>
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_Screen_Option_Left_Template">
-		<BTN_ID>5</BTN_ID>
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_Screen_Option_Left_Template">
-		<BTN_ID>6</BTN_ID>
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_Screen_Option_Right_Template">
-		<BTN_ID>1</BTN_ID>
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_Screen_Option_Right_Template">
-		<BTN_ID>2</BTN_ID>
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_Screen_Option_Right_Template">
-		<BTN_ID>3</BTN_ID>
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_Screen_Option_Right_Template">
-		<BTN_ID>4</BTN_ID>
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_Screen_Option_Right_Template">
-		<BTN_ID>5</BTN_ID>
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_Screen_Option_Right_Template">
-		<BTN_ID>6</BTN_ID>
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Characters_SubTemplate">
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Numbers_SubTemplate">
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_Dot_Template">
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_PLUSMINUS_Template">
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Emissive_DSPL_Template">
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Emissive_FAIL_Template">
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Emissive_MSG_Template">
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Emissive_OFST_Template">
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Emissive_EXEC_Template">
-	</UseTemplate>
-</Template>
+	<Template Name="ASOBO_FMC_B747_SubTemplate">
+		<UseTemplate Name="ASOBO_FMC_Common_Params_Template">
+			<TEMPLATE_TO_CALL>ASOBO_FMC_B747_SubTemplate2</TEMPLATE_TO_CALL>
+		</UseTemplate>
+	</Template>
 
-<Template Name="ASOBO_FMC_AS01B">
-	<DefaultTemplateParameters>
-		<ID>1</ID>
-		<FMC_NAME>CDU</FMC_NAME>
-	</DefaultTemplateParameters>
-	
-	<UseTemplate Name="ASOBO_GT_Helper_Suffix_ID_Appender">
-		<TEMPLATE_TO_CALL>ASOBO_FMC_AS01B_SubTemplate</TEMPLATE_TO_CALL>
-		<TYPE>AS01B</TYPE>
-	</UseTemplate>
-</Template>
+	<Template Name="ASOBO_FMC_B747_SubTemplate2">
+		<UseTemplate Name="ASOBO_FMC_Push_Init_Template">
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_RTE_Template">
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_DEP_ARR_Template">
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_ATC_Template">
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_VNAV_Template">
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_BRT_DIM_Template">
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_FIX_Template">
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_LEGS_Template">
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_HOLD_Template">
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_FMC_COMM_Template">
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_PROG_Template">
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_EXEC_Template">
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_MENU_Template">
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_NAV_RAD_Template">
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_PREV_PAGE_Template">
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_NEXT_PAGE_Template">
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_SP_Template">
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_DEL_Template">
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_CLR_Template">
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_DIV_Template">
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_Screen_Option_Left_Template">
+			<BTN_ID>1</BTN_ID>
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_Screen_Option_Left_Template">
+			<BTN_ID>2</BTN_ID>
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_Screen_Option_Left_Template">
+			<BTN_ID>3</BTN_ID>
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_Screen_Option_Left_Template">
+			<BTN_ID>4</BTN_ID>
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_Screen_Option_Left_Template">
+			<BTN_ID>5</BTN_ID>
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_Screen_Option_Left_Template">
+			<BTN_ID>6</BTN_ID>
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_Screen_Option_Right_Template">
+			<BTN_ID>1</BTN_ID>
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_Screen_Option_Right_Template">
+			<BTN_ID>2</BTN_ID>
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_Screen_Option_Right_Template">
+			<BTN_ID>3</BTN_ID>
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_Screen_Option_Right_Template">
+			<BTN_ID>4</BTN_ID>
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_Screen_Option_Right_Template">
+			<BTN_ID>5</BTN_ID>
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_Screen_Option_Right_Template">
+			<BTN_ID>6</BTN_ID>
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Characters_SubTemplate">
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Numbers_SubTemplate">
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_Dot_Template">
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_PLUSMINUS_Template">
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Emissive_DSPL_Template">
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Emissive_FAIL_Template">
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Emissive_MSG_Template">
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Emissive_OFST_Template">
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Emissive_EXEC_Template">
+		</UseTemplate>
+	</Template>
 
-<Template Name="ASOBO_FMC_AS01B_SubTemplate">
-	<UseTemplate Name="ASOBO_FMC_Common_Params_Template">
-		<TEMPLATE_TO_CALL>ASOBO_FMC_AS01B_SubTemplate2</TEMPLATE_TO_CALL>
-	</UseTemplate>
-</Template>
+	<Template Name="ASOBO_FMC_AS01B">
+		<DefaultTemplateParameters>
+			<ID>1</ID>
+			<FMC_NAME>CDU</FMC_NAME>
+		</DefaultTemplateParameters>
 
-<Template Name="ASOBO_FMC_AS01B_SubTemplate2">
-	<UseTemplate Name="ASOBO_FMC_Push_SYS_Template">
-		<INOP_BUTTONS>True</INOP_BUTTONS>
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_CDU_Template">
-		<INOP_BUTTONS>True</INOP_BUTTONS>
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_INFO_Template">
-		<INOP_BUTTONS>True</INOP_BUTTONS>
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_CHKL_Template">
-		<INOP_BUTTONS>True</INOP_BUTTONS>
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_COMM_Template">
-		<INOP_BUTTONS>True</INOP_BUTTONS>
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_HD_Template">
-		<INOP_BUTTONS>True</INOP_BUTTONS>
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Characters_SubTemplate">
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Numbers_SubTemplate">
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_ENTER_Template">
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_Dot_Template">
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_PLUSMINUS_Template">
-	</UseTemplate>
-	
-	<UseTemplate Name="ASOBO_FMC_Push_SP_Template">
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_DEL_Template">
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_DIV_Template">
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_CLR_Template">
-	</UseTemplate>
-	
-	<UseTemplate Name="ASOBO_FMC_Push_PREV_PAGE_Template">
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_NEXT_PAGE_Template">
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_EXEC_Template">
-	</UseTemplate>
-	
-	<UseTemplate Name="ASOBO_FMC_Knob_Cursor">
-	</UseTemplate>
-</Template>
+		<UseTemplate Name="ASOBO_GT_Helper_Suffix_ID_Appender">
+			<TEMPLATE_TO_CALL>ASOBO_FMC_AS01B_SubTemplate</TEMPLATE_TO_CALL>
+			<TYPE>AS01B</TYPE>
+		</UseTemplate>
+	</Template>
 
-<Template Name="ASOBO_FMC_A320">
-	<DefaultTemplateParameters>
-		<ID>1</ID>
-		<FMC_NAME>CDU</FMC_NAME>
-	</DefaultTemplateParameters>
-	
-	<UseTemplate Name="ASOBO_GT_Helper_Suffix_ID_Appender">
-		<TEMPLATE_TO_CALL>ASOBO_FMC_A320_SubTemplate</TEMPLATE_TO_CALL>
-		<TYPE>A320</TYPE>
-	</UseTemplate>
-</Template>
+	<Template Name="ASOBO_FMC_AS01B_SubTemplate">
+		<UseTemplate Name="ASOBO_FMC_Common_Params_Template">
+			<TEMPLATE_TO_CALL>ASOBO_FMC_AS01B_SubTemplate2</TEMPLATE_TO_CALL>
+		</UseTemplate>
+	</Template>
 
-<Template Name="ASOBO_FMC_A320_SubTemplate">
-	<UseTemplate Name="ASOBO_FMC_Common_Params_Template">
-		<TEMPLATE_TO_CALL>ASOBO_FMC_A320_SubTemplate2</TEMPLATE_TO_CALL>
-	</UseTemplate>
-</Template>
+	<Template Name="ASOBO_FMC_AS01B_SubTemplate2">
+		<UseTemplate Name="ASOBO_FMC_Push_SYS_Template">
+			<INOP_BUTTONS>True</INOP_BUTTONS>
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_CDU_Template">
+			<INOP_BUTTONS>True</INOP_BUTTONS>
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_INFO_Template">
+			<INOP_BUTTONS>True</INOP_BUTTONS>
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_CHKL_Template">
+			<INOP_BUTTONS>True</INOP_BUTTONS>
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_COMM_Template">
+			<INOP_BUTTONS>True</INOP_BUTTONS>
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_HD_Template">
+			<INOP_BUTTONS>True</INOP_BUTTONS>
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Characters_SubTemplate">
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Numbers_SubTemplate">
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_ENTER_Template">
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_Dot_Template">
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_PLUSMINUS_Template">
+		</UseTemplate>
 
-<Template Name="ASOBO_FMC_A320_SubTemplate2">
-	<UseTemplate Name="ASOBO_FMC_Push_DIR_Template">
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_PROG_Template">
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_PERF_Template">
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_Init_Template">
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_DATA_Template">
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_FPLN_Template">
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_NAV_RAD_Template">
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_FUEL_PRED_Template">
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_SEC_FPLN_Template">
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_ATC_COMM_Template">
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_MCDU_MENU_Template">
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_AIRPORT_Template">
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_UP_Template">
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_DOWN_Template">
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_PREV_PAGE_Template">
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_NEXT_PAGE_Template">
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_Screen_Option_Left_Template">
-		<BTN_ID>1</BTN_ID>
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_Screen_Option_Left_Template">
-		<BTN_ID>2</BTN_ID>
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_Screen_Option_Left_Template">
-		<BTN_ID>3</BTN_ID>
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_Screen_Option_Left_Template">
-		<BTN_ID>4</BTN_ID>
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_Screen_Option_Left_Template">
-		<BTN_ID>5</BTN_ID>
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_Screen_Option_Left_Template">
-		<BTN_ID>6</BTN_ID>
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_Screen_Option_Right_Template">
-		<BTN_ID>1</BTN_ID>
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_Screen_Option_Right_Template">
-		<BTN_ID>2</BTN_ID>
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_Screen_Option_Right_Template">
-		<BTN_ID>3</BTN_ID>
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_Screen_Option_Right_Template">
-		<BTN_ID>4</BTN_ID>
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_Screen_Option_Right_Template">
-		<BTN_ID>5</BTN_ID>
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_Screen_Option_Right_Template">
-		<BTN_ID>6</BTN_ID>
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Characters_SubTemplate">
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Numbers_SubTemplate">
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_Dot_Template">
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_PLUSMINUS_Template">
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_SP_Template">
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_DIV_Template">
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_OVFY_Template">
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_CLR_Template">
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_BRT_DIM_Template">
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Screen">
-	</UseTemplate>
-</Template>
+		<UseTemplate Name="ASOBO_FMC_Push_SP_Template">
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_DEL_Template">
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_DIV_Template">
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_CLR_Template">
+		</UseTemplate>
 
-<Template Name="ASOBO_FMC_CJ4">
-	<DefaultTemplateParameters>
-		<ID>1</ID>
-		<FMC_NAME>CDU</FMC_NAME>
-	</DefaultTemplateParameters>
-	
-	<UseTemplate Name="ASOBO_GT_Helper_Suffix_ID_Appender">
-		<TEMPLATE_TO_CALL>ASOBO_FMC_CJ4_SubTemplate</TEMPLATE_TO_CALL>
-		<TYPE>CJ4</TYPE>
-	</UseTemplate>
-</Template>
+		<UseTemplate Name="ASOBO_FMC_Push_PREV_PAGE_Template">
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_NEXT_PAGE_Template">
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_EXEC_Template">
+		</UseTemplate>
 
-<Template Name="ASOBO_FMC_CJ4_SubTemplate">
-	<UseTemplate Name="ASOBO_FMC_Common_Params_Template">
-		<TEMPLATE_TO_CALL>ASOBO_FMC_CJ4_SubTemplate2</TEMPLATE_TO_CALL>
-	</UseTemplate>
-</Template>
+		<UseTemplate Name="ASOBO_FMC_Knob_Cursor">
+		</UseTemplate>
+	</Template>
 
-<Template Name="ASOBO_FMC_CJ4_SubTemplate2">
-	<UseTemplate Name="ASOBO_FMC_Push_MSG_Template">
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_DIR_Template">
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_IDX_Template">
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_TUN_Template">
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_FPLN_Template">
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_LEGS_Template">
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_DEP_ARR_Template">
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_PERF_Template">
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_DSPL_MENU_Template">
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_MFD_ADV_Template">
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_MFD_DATA_Template">
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_PREV_PAGE_Template">
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_NEXT_PAGE_Template">
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_EXEC_Template">
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_CLR_Template">
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_BRT_DIM_Template">
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_Screen_Option_Left_Template">
-		<BTN_ID>1</BTN_ID>
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_Screen_Option_Left_Template">
-		<BTN_ID>2</BTN_ID>
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_Screen_Option_Left_Template">
-		<BTN_ID>3</BTN_ID>
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_Screen_Option_Left_Template">
-		<BTN_ID>4</BTN_ID>
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_Screen_Option_Left_Template">
-		<BTN_ID>5</BTN_ID>
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_Screen_Option_Left_Template">
-		<BTN_ID>6</BTN_ID>
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_Screen_Option_Right_Template">
-		<BTN_ID>1</BTN_ID>
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_Screen_Option_Right_Template">
-		<BTN_ID>2</BTN_ID>
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_Screen_Option_Right_Template">
-		<BTN_ID>3</BTN_ID>
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_Screen_Option_Right_Template">
-		<BTN_ID>4</BTN_ID>
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_Screen_Option_Right_Template">
-		<BTN_ID>5</BTN_ID>
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_Screen_Option_Right_Template">
-		<BTN_ID>6</BTN_ID>
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Characters_SubTemplate">
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Numbers_SubTemplate">
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_Dot_Template">
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_PLUSMINUS_Template">
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_SP_Template">
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_DIV_Template">
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Screen">
-	</UseTemplate>
-</Template>
+	<Template Name="ASOBO_FMC_A320">
+		<DefaultTemplateParameters>
+			<ID>1</ID>
+			<FMC_NAME>CDU</FMC_NAME>
+		</DefaultTemplateParameters>
 
-<Template Name="ASOBO_FMC_AS02A">
-	<DefaultTemplateParameters>
-		<ID>1</ID>
-		<FMC_NAME>CDU</FMC_NAME>
-	</DefaultTemplateParameters>
-	
-	<UseTemplate Name="ASOBO_GT_Helper_Suffix_ID_Appender">
-		<TEMPLATE_TO_CALL>ASOBO_FMC_AS02A_SubTemplate</TEMPLATE_TO_CALL>
-		<TYPE>AS02A</TYPE>
-	</UseTemplate>
-</Template>
+		<UseTemplate Name="ASOBO_GT_Helper_Suffix_ID_Appender">
+			<TEMPLATE_TO_CALL>ASOBO_FMC_A320_SubTemplate</TEMPLATE_TO_CALL>
+			<TYPE>A320</TYPE>
+		</UseTemplate>
+	</Template>
 
-<Template Name="ASOBO_FMC_AS02A_SubTemplate">
-	<UseTemplate Name="ASOBO_FMC_Common_Params_Template">
-		<TEMPLATE_TO_CALL>ASOBO_FMC_AS02A_SubTemplate2</TEMPLATE_TO_CALL>
-	</UseTemplate>
-</Template>
+	<Template Name="ASOBO_FMC_A320_SubTemplate">
+		<UseTemplate Name="ASOBO_FMC_Common_Params_Template">
+			<TEMPLATE_TO_CALL>ASOBO_FMC_A320_SubTemplate2</TEMPLATE_TO_CALL>
+		</UseTemplate>
+	</Template>
 
-<Template Name="ASOBO_FMC_AS02A_SubTemplate2">
-	<UseTemplate Name="ASOBO_FMC_Push_DSPL_MENU_Template">
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_PREV_PAGE_Template">
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_NEXT_PAGE_Template">
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_RMS_Template">
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_FPLN_Template">
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_DTO_Template">
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_PERF_Template">
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_MSG_Template">
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_EXEC_Template">
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_PROG_Template">
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_DATA_Template">
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_VNAV_Template">
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_MRK_Template">
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_BRT_DIM_Template">
-		<SPLIT_BRT_DIM>True</SPLIT_BRT_DIM>
-	</UseTemplate>
-	
-	<UseTemplate Name="ASOBO_FMC_Push_Screen_Option_Left_Template">
-		<BTN_ID>1</BTN_ID>
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_Screen_Option_Left_Template">
-		<BTN_ID>2</BTN_ID>
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_Screen_Option_Left_Template">
-		<BTN_ID>3</BTN_ID>
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_Screen_Option_Left_Template">
-		<BTN_ID>4</BTN_ID>
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_Screen_Option_Left_Template">
-		<BTN_ID>5</BTN_ID>
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_Screen_Option_Left_Template">
-		<BTN_ID>6</BTN_ID>
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_Screen_Option_Right_Template">
-		<BTN_ID>1</BTN_ID>
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_Screen_Option_Right_Template">
-		<BTN_ID>2</BTN_ID>
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_Screen_Option_Right_Template">
-		<BTN_ID>3</BTN_ID>
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_Screen_Option_Right_Template">
-		<BTN_ID>4</BTN_ID>
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_Screen_Option_Right_Template">
-		<BTN_ID>5</BTN_ID>
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_Screen_Option_Right_Template">
-		<BTN_ID>6</BTN_ID>
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Characters_SubTemplate">
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Numbers_SubTemplate">
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_Dot_Template">
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_PLUSMINUS_Template">
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_SP_Template">
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_DIV_Template">
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_CLR_Template">
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Screen">
-	</UseTemplate>
-</Template>
+	<Template Name="ASOBO_FMC_A320_SubTemplate2">
+		<UseTemplate Name="ASOBO_FMC_Push_DIR_Template">
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_PROG_Template">
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_PERF_Template">
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_Init_Template">
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_DATA_Template">
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_FPLN_Template">
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_NAV_RAD_Template">
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_FUEL_PRED_Template">
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_SEC_FPLN_Template">
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_ATC_COMM_Template">
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_MCDU_MENU_Template">
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_AIRPORT_Template">
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_UP_Template">
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_DOWN_Template">
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_PREV_PAGE_Template">
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_NEXT_PAGE_Template">
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_Screen_Option_Left_Template">
+			<BTN_ID>1</BTN_ID>
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_Screen_Option_Left_Template">
+			<BTN_ID>2</BTN_ID>
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_Screen_Option_Left_Template">
+			<BTN_ID>3</BTN_ID>
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_Screen_Option_Left_Template">
+			<BTN_ID>4</BTN_ID>
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_Screen_Option_Left_Template">
+			<BTN_ID>5</BTN_ID>
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_Screen_Option_Left_Template">
+			<BTN_ID>6</BTN_ID>
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_Screen_Option_Right_Template">
+			<BTN_ID>1</BTN_ID>
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_Screen_Option_Right_Template">
+			<BTN_ID>2</BTN_ID>
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_Screen_Option_Right_Template">
+			<BTN_ID>3</BTN_ID>
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_Screen_Option_Right_Template">
+			<BTN_ID>4</BTN_ID>
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_Screen_Option_Right_Template">
+			<BTN_ID>5</BTN_ID>
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_Screen_Option_Right_Template">
+			<BTN_ID>6</BTN_ID>
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Characters_SubTemplate">
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Numbers_SubTemplate">
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_Dot_Template">
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_PLUSMINUS_Template">
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_SP_Template">
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_DIV_Template">
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_OVFY_Template">
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_CLR_Template">
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_BRT_DIM_Template">
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Screen">
+		</UseTemplate>
+	</Template>
 
-<Template Name="ASOBO_FMC_PushButton">
-	<DefaultTemplateParameters>
-		<Switch Param="TYPE">
-			<Case Value="A320">
-				<PREFIX>A320_Neo_CDU</PREFIX>
-			</Case>
-			<Case Value="B747">
-				<PREFIX>B747_8_FMC</PREFIX>
-			</Case>
-			<Case Value="AS01B">
-				<PREFIX>AS01B_FMC</PREFIX>
-			</Case>
-			<Case Value="AS02A">
-				<PREFIX>AS02A_FMC</PREFIX>
-			</Case>
-			<Case Value="CJ4">
-				<PREFIX>CJ4_FMC</PREFIX>
-			</Case>
-		</Switch>
-	</DefaultTemplateParameters>
+	<Template Name="ASOBO_FMC_CJ4">
+		<DefaultTemplateParameters>
+			<ID>1</ID>
+			<FMC_NAME>CDU</FMC_NAME>
+		</DefaultTemplateParameters>
 
-	<Component ID="#NODE_ID#" Node="#NODE_ID#">
-		<Condition Valid="INOP_BUTTONS">
-			<True>
-				<UseTemplate Name="ASOBO_GT_Push_Button_Airliner_Dummy">
-					<IS_INOP>True</IS_INOP>
-				</UseTemplate>
-			</True>
-			<False>
-				<UseTemplate Name="ASOBO_GT_Push_Button_Airliner">
-					<LEFT_SINGLE_CODE>(&gt;H:#PREFIX#_#ID#_BTN_#HTML_EVENT_ID#)</LEFT_SINGLE_CODE>
-				</UseTemplate>
-			</False>
-		</Condition>
-	</Component>
-</Template>
+		<UseTemplate Name="ASOBO_GT_Helper_Suffix_ID_Appender">
+			<TEMPLATE_TO_CALL>ASOBO_FMC_CJ4_SubTemplate</TEMPLATE_TO_CALL>
+			<TYPE>CJ4</TYPE>
+		</UseTemplate>
+	</Template>
 
-<Template Name="ASOBO_FMC_Push_Init_Template">
-	<DefaultTemplateParameters>
-		<NODE_ID_INIT>#FMC_NAME#_Push_Init#SUFFIX_ID#</NODE_ID_INIT>
-		<ANIM_NAME_INIT>#FMC_NAME#_Push_Init#SUFFIX_ID#</ANIM_NAME_INIT>
-	</DefaultTemplateParameters>
-	<EditableTemplateParameters>
-		<AddParams>
+	<Template Name="ASOBO_FMC_CJ4_SubTemplate">
+		<UseTemplate Name="ASOBO_FMC_Common_Params_Template">
+			<TEMPLATE_TO_CALL>ASOBO_FMC_CJ4_SubTemplate2</TEMPLATE_TO_CALL>
+		</UseTemplate>
+	</Template>
+
+	<Template Name="ASOBO_FMC_CJ4_SubTemplate2">
+		<UseTemplate Name="ASOBO_FMC_Push_MSG_Template">
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_DIR_Template">
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_IDX_Template">
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_TUN_Template">
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_FPLN_Template">
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_LEGS_Template">
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_DEP_ARR_Template">
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_PERF_Template">
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_DSPL_MENU_Template">
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_MFD_ADV_Template">
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_MFD_DATA_Template">
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_PREV_PAGE_Template">
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_NEXT_PAGE_Template">
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_EXEC_Template">
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_CLR_Template">
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_BRT_DIM_Template">
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_Screen_Option_Left_Template">
+			<BTN_ID>1</BTN_ID>
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_Screen_Option_Left_Template">
+			<BTN_ID>2</BTN_ID>
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_Screen_Option_Left_Template">
+			<BTN_ID>3</BTN_ID>
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_Screen_Option_Left_Template">
+			<BTN_ID>4</BTN_ID>
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_Screen_Option_Left_Template">
+			<BTN_ID>5</BTN_ID>
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_Screen_Option_Left_Template">
+			<BTN_ID>6</BTN_ID>
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_Screen_Option_Right_Template">
+			<BTN_ID>1</BTN_ID>
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_Screen_Option_Right_Template">
+			<BTN_ID>2</BTN_ID>
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_Screen_Option_Right_Template">
+			<BTN_ID>3</BTN_ID>
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_Screen_Option_Right_Template">
+			<BTN_ID>4</BTN_ID>
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_Screen_Option_Right_Template">
+			<BTN_ID>5</BTN_ID>
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_Screen_Option_Right_Template">
+			<BTN_ID>6</BTN_ID>
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Characters_SubTemplate">
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Numbers_SubTemplate">
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_Dot_Template">
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_PLUSMINUS_Template">
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_SP_Template">
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_DIV_Template">
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Screen">
+		</UseTemplate>
+	</Template>
+
+	<Template Name="ASOBO_FMC_AS02A">
+		<DefaultTemplateParameters>
+			<ID>1</ID>
+			<FMC_NAME>CDU</FMC_NAME>
+		</DefaultTemplateParameters>
+
+		<UseTemplate Name="ASOBO_GT_Helper_Suffix_ID_Appender">
+			<TEMPLATE_TO_CALL>ASOBO_FMC_AS02A_SubTemplate</TEMPLATE_TO_CALL>
+			<TYPE>AS02A</TYPE>
+		</UseTemplate>
+	</Template>
+
+	<Template Name="ASOBO_FMC_AS02A_SubTemplate">
+		<UseTemplate Name="ASOBO_FMC_Common_Params_Template">
+			<TEMPLATE_TO_CALL>ASOBO_FMC_AS02A_SubTemplate2</TEMPLATE_TO_CALL>
+		</UseTemplate>
+	</Template>
+
+	<Template Name="ASOBO_FMC_AS02A_SubTemplate2">
+		<UseTemplate Name="ASOBO_FMC_Push_DSPL_MENU_Template">
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_PREV_PAGE_Template">
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_NEXT_PAGE_Template">
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_RMS_Template">
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_FPLN_Template">
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_DTO_Template">
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_PERF_Template">
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_MSG_Template">
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_EXEC_Template">
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_PROG_Template">
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_DATA_Template">
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_VNAV_Template">
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_MRK_Template">
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_BRT_DIM_Template">
+			<SPLIT_BRT_DIM>True</SPLIT_BRT_DIM>
+		</UseTemplate>
+
+		<UseTemplate Name="ASOBO_FMC_Push_Screen_Option_Left_Template">
+			<BTN_ID>1</BTN_ID>
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_Screen_Option_Left_Template">
+			<BTN_ID>2</BTN_ID>
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_Screen_Option_Left_Template">
+			<BTN_ID>3</BTN_ID>
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_Screen_Option_Left_Template">
+			<BTN_ID>4</BTN_ID>
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_Screen_Option_Left_Template">
+			<BTN_ID>5</BTN_ID>
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_Screen_Option_Left_Template">
+			<BTN_ID>6</BTN_ID>
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_Screen_Option_Right_Template">
+			<BTN_ID>1</BTN_ID>
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_Screen_Option_Right_Template">
+			<BTN_ID>2</BTN_ID>
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_Screen_Option_Right_Template">
+			<BTN_ID>3</BTN_ID>
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_Screen_Option_Right_Template">
+			<BTN_ID>4</BTN_ID>
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_Screen_Option_Right_Template">
+			<BTN_ID>5</BTN_ID>
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_Screen_Option_Right_Template">
+			<BTN_ID>6</BTN_ID>
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Characters_SubTemplate">
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Numbers_SubTemplate">
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_Dot_Template">
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_PLUSMINUS_Template">
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_SP_Template">
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_DIV_Template">
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_CLR_Template">
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Screen">
+		</UseTemplate>
+	</Template>
+
+	<Template Name="ASOBO_FMC_PushButton">
+		<DefaultTemplateParameters>
+			<Switch Param="TYPE">
+				<Case Value="A320">
+					<PREFIX>A320_Neo_CDU</PREFIX>
+				</Case>
+				<Case Value="B747">
+					<PREFIX>B747_8_FMC</PREFIX>
+				</Case>
+				<Case Value="AS01B">
+					<PREFIX>AS01B_FMC</PREFIX>
+				</Case>
+				<Case Value="AS02A">
+					<PREFIX>AS02A_FMC</PREFIX>
+				</Case>
+				<Case Value="CJ4">
+					<PREFIX>CJ4_FMC</PREFIX>
+				</Case>
+			</Switch>
+		</DefaultTemplateParameters>
+
+		<Component ID="#NODE_ID#" Node="#NODE_ID#">
+			<Condition Valid="INOP_BUTTONS">
+				<True>
+					<UseTemplate Name="ASOBO_GT_Push_Button_Airliner_Dummy">
+						<IS_INOP>True</IS_INOP>
+					</UseTemplate>
+				</True>
+				<False>
+					<UseTemplate Name="ASOBO_GT_Push_Button_Airliner">
+						<LEFT_SINGLE_CODE>(&gt;H:#PREFIX#_#ID#_BTN_#HTML_EVENT_ID#)</LEFT_SINGLE_CODE>
+					</UseTemplate>
+				</False>
+			</Condition>
+		</Component>
+	</Template>
+
+	<Template Name="ASOBO_FMC_Push_Init_Template">
+		<DefaultTemplateParameters>
 			<NODE_ID_INIT>#FMC_NAME#_Push_Init#SUFFIX_ID#</NODE_ID_INIT>
 			<ANIM_NAME_INIT>#FMC_NAME#_Push_Init#SUFFIX_ID#</ANIM_NAME_INIT>
-		</AddParams>
-	</EditableTemplateParameters>
-	
-	<UseTemplate Name="ASOBO_FMC_PushButton">
-		<HTML_EVENT_ID>INIT</HTML_EVENT_ID>
-		<NODE_ID>#NODE_ID_INIT#</NODE_ID>
-		<ANIM_NAME>#ANIM_NAME_INIT#</ANIM_NAME>
-	</UseTemplate>
-</Template>
-
-<Template Name="ASOBO_FMC_Push_RTE_Template">
-	<DefaultTemplateParameters>
-		<NODE_ID_RTE>#FMC_NAME#_Push_RTE#SUFFIX_ID#</NODE_ID_RTE>
-		<ANIM_NAME_RTE>#FMC_NAME#_Push_RTE#SUFFIX_ID#</ANIM_NAME_RTE>
-	</DefaultTemplateParameters>
-	<EditableTemplateParameters>
-		<AddParams>
-			<NODE_ID_RTE></NODE_ID_RTE>
-			<ANIM_NAME_RTE></ANIM_NAME_RTE>
-		</AddParams>
-	</EditableTemplateParameters>
-	
-	<UseTemplate Name="ASOBO_FMC_PushButton">
-		<HTML_EVENT_ID>RTE</HTML_EVENT_ID>
-		<NODE_ID>#NODE_ID_RTE#</NODE_ID>
-		<ANIM_NAME>#ANIM_NAME_RTE#</ANIM_NAME>
-	</UseTemplate>
-</Template>
-
-<Template Name="ASOBO_FMC_Push_DEP_ARR_Template">
-	<DefaultTemplateParameters>
-		<NODE_ID_DEP_ARR>#FMC_NAME#_Push_DEP_ARR#SUFFIX_ID#</NODE_ID_DEP_ARR>
-		<ANIM_NAME_DEP_ARR>#FMC_NAME#_Push_DEP_ARR#SUFFIX_ID#</ANIM_NAME_DEP_ARR>
-	</DefaultTemplateParameters>
-	<EditableTemplateParameters>
-		<AddParams>
-			<NODE_ID_DEP_ARR></NODE_ID_DEP_ARR>
-			<ANIM_NAME_DEP_ARR></ANIM_NAME_DEP_ARR>
-		</AddParams>
-	</EditableTemplateParameters>
-	
-	<UseTemplate Name="ASOBO_FMC_PushButton">
-		<HTML_EVENT_ID>DEPARR</HTML_EVENT_ID>
-		<NODE_ID>#NODE_ID_DEP_ARR#</NODE_ID>
-		<ANIM_NAME>#ANIM_NAME_DEP_ARR#</ANIM_NAME>
-	</UseTemplate>
-</Template>
-
-<Template Name="ASOBO_FMC_Push_ATC_Template">
-	<DefaultTemplateParameters>
-		<NODE_ID_ATC>#FMC_NAME#_Push_ATC#SUFFIX_ID#</NODE_ID_ATC>
-		<ANIM_NAME_ATC>#FMC_NAME#_Push_ATC#SUFFIX_ID#</ANIM_NAME_ATC>
-	</DefaultTemplateParameters>
-	<EditableTemplateParameters>
-		<AddParams>
-			<NODE_ID_ATC></NODE_ID_ATC>
-			<ANIM_NAME_ATC></ANIM_NAME_ATC>
-		</AddParams>
-	</EditableTemplateParameters>
-	
-	<UseTemplate Name="ASOBO_FMC_PushButton">
-		<HTML_EVENT_ID>ATC</HTML_EVENT_ID>
-		<NODE_ID>#NODE_ID_ATC#</NODE_ID>
-		<ANIM_NAME>#ANIM_NAME_ATC#</ANIM_NAME>
-	</UseTemplate>
-</Template>
-
-<Template Name="ASOBO_FMC_Push_VNAV_Template">
-	<DefaultTemplateParameters>
-		<NODE_ID_VNAV>#FMC_NAME#_Push_VNAV#SUFFIX_ID#</NODE_ID_VNAV>
-		<ANIM_NAME_VNAV>#FMC_NAME#_Push_VNAV#SUFFIX_ID#</ANIM_NAME_VNAV>
-	</DefaultTemplateParameters>
-	<EditableTemplateParameters>
-		<AddParams>
-			<NODE_ID_VNAV></NODE_ID_VNAV>
-			<ANIM_NAME_VNAV></ANIM_NAME_VNAV>
-		</AddParams>
-	</EditableTemplateParameters>
-	
-	<UseTemplate Name="ASOBO_FMC_PushButton">
-		<HTML_EVENT_ID>VNAV</HTML_EVENT_ID>
-		<NODE_ID>#NODE_ID_VNAV#</NODE_ID>
-		<ANIM_NAME>#ANIM_NAME_VNAV#</ANIM_NAME>
-	</UseTemplate>
-</Template>
-
-<Template Name="ASOBO_FMC_Push_BRT_Template">
-	<DefaultTemplateParameters>
-		<NODE_ID_BRT>#FMC_NAME#_Push_BRT#SUFFIX_ID#</NODE_ID_BRT>
-		<ANIM_NAME_BRT>#FMC_NAME#_Push_BRT#SUFFIX_ID#</ANIM_NAME_BRT>
-	</DefaultTemplateParameters>
-	<EditableTemplateParameters>
-		<AddParams>
-			<NODE_ID_BRT></NODE_ID_BRT>
-			<ANIM_NAME_BRT></ANIM_NAME_BRT>
-		</AddParams>
-	</EditableTemplateParameters>
-	
-	<UseTemplate Name="ASOBO_FMC_PushButton">
-		<HTML_EVENT_ID>BRT</HTML_EVENT_ID>
-		<NODE_ID>#NODE_ID_BRT#</NODE_ID>
-		<ANIM_NAME>#ANIM_NAME_BRT#</ANIM_NAME>
-	</UseTemplate>
-</Template>
-
-<Template Name="ASOBO_FMC_Push_FIX_Template">
-	<DefaultTemplateParameters>
-		<NODE_ID_FIX>#FMC_NAME#_Push_FIX#SUFFIX_ID#</NODE_ID_FIX>
-		<ANIM_NAME_FIX>#FMC_NAME#_Push_FIX#SUFFIX_ID#</ANIM_NAME_FIX>
-	</DefaultTemplateParameters>
-	<EditableTemplateParameters>
-		<AddParams>
-			<NODE_ID_FIX></NODE_ID_FIX>
-			<ANIM_NAME_FIX></ANIM_NAME_FIX>
-		</AddParams>
-	</EditableTemplateParameters>
-	
-	<UseTemplate Name="ASOBO_FMC_PushButton">
-		<HTML_EVENT_ID>FIX</HTML_EVENT_ID>
-		<NODE_ID>#NODE_ID_FIX#</NODE_ID>
-		<ANIM_NAME>#ANIM_NAME_FIX#</ANIM_NAME>
-	</UseTemplate>
-</Template>
-
-<Template Name="ASOBO_FMC_Push_LEGS_Template">
-	<DefaultTemplateParameters>
-		<NODE_ID_LEGS>#FMC_NAME#_Push_LEGS#SUFFIX_ID#</NODE_ID_LEGS>
-		<ANIM_NAME_LEGS>#FMC_NAME#_Push_LEGS#SUFFIX_ID#</ANIM_NAME_LEGS>
-	</DefaultTemplateParameters>
-	<EditableTemplateParameters>
-		<AddParams>
-			<NODE_ID_LEGS></NODE_ID_LEGS>
-			<ANIM_NAME_LEGS></ANIM_NAME_LEGS>
-		</AddParams>
-	</EditableTemplateParameters>
-	
-	<UseTemplate Name="ASOBO_FMC_PushButton">
-		<HTML_EVENT_ID>LEGS</HTML_EVENT_ID>
-		<NODE_ID>#NODE_ID_LEGS#</NODE_ID>
-		<ANIM_NAME>#ANIM_NAME_LEGS#</ANIM_NAME>
-	</UseTemplate>
-</Template>
-
-<Template Name="ASOBO_FMC_Push_HOLD_Template">
-	<DefaultTemplateParameters>
-		<NODE_ID_HOLD>#FMC_NAME#_Push_HOLD#SUFFIX_ID#</NODE_ID_HOLD>
-		<ANIM_NAME_HOLD>#FMC_NAME#_Push_HOLD#SUFFIX_ID#</ANIM_NAME_HOLD>
-	</DefaultTemplateParameters>
-	<EditableTemplateParameters>
-		<AddParams>
-			<NODE_ID_HOLD></NODE_ID_HOLD>
-			<ANIM_NAME_HOLD></ANIM_NAME_HOLD>
-		</AddParams>
-	</EditableTemplateParameters>
-	
-	<UseTemplate Name="ASOBO_FMC_PushButton">
-		<HTML_EVENT_ID>HOLD</HTML_EVENT_ID>
-		<NODE_ID>#NODE_ID_HOLD#</NODE_ID>
-		<ANIM_NAME>#ANIM_NAME_HOLD#</ANIM_NAME>
-	</UseTemplate>
-</Template>
-
-<Template Name="ASOBO_FMC_Push_FMC_COMM_Template">
-	<DefaultTemplateParameters>
-		<NODE_ID_FMC_COMM>#FMC_NAME#_Push_FMC_COMM#SUFFIX_ID#</NODE_ID_FMC_COMM>
-		<ANIM_NAME_FMC_COMM>#FMC_NAME#_Push_FMC_COMM#SUFFIX_ID#</ANIM_NAME_FMC_COMM>
-	</DefaultTemplateParameters>
-	<EditableTemplateParameters>
-		<AddParams>
-			<NODE_ID_FMC_COMM></NODE_ID_FMC_COMM>
-			<ANIM_NAME_FMC_COMM></ANIM_NAME_FMC_COMM>
-		</AddParams>
-	</EditableTemplateParameters>
-	
-	<UseTemplate Name="ASOBO_FMC_PushButton">
-		<HTML_EVENT_ID>FMCCOMM</HTML_EVENT_ID>
-		<NODE_ID>#NODE_ID_FMC_COMM#</NODE_ID>
-		<ANIM_NAME>#ANIM_NAME_FMC_COMM#</ANIM_NAME>
-	</UseTemplate>
-</Template>
-
-<Template Name="ASOBO_FMC_Push_PROG_Template">
-	<DefaultTemplateParameters>
-		<NODE_ID_PROG>#FMC_NAME#_Push_PROG#SUFFIX_ID#</NODE_ID_PROG>
-		<ANIM_NAME_PROG>#FMC_NAME#_Push_PROG#SUFFIX_ID#</ANIM_NAME_PROG>
-	</DefaultTemplateParameters>
-	<EditableTemplateParameters>
-		<AddParams>
-			<NODE_ID_PROG></NODE_ID_PROG>
-			<ANIM_NAME_PROG></ANIM_NAME_PROG>
-		</AddParams>
-	</EditableTemplateParameters>
-	
-	<UseTemplate Name="ASOBO_FMC_PushButton">
-		<HTML_EVENT_ID>PROG</HTML_EVENT_ID>
-		<NODE_ID>#NODE_ID_PROG#</NODE_ID>
-		<ANIM_NAME>#ANIM_NAME_PROG#</ANIM_NAME>
-	</UseTemplate>
-</Template>
-
-<Template Name="ASOBO_FMC_Push_EXEC_Template">
-	<DefaultTemplateParameters>
-		<NODE_ID_EXEC>#FMC_NAME#_Push_EXEC#SUFFIX_ID#</NODE_ID_EXEC>
-		<ANIM_NAME_EXEC>#FMC_NAME#_Push_EXEC#SUFFIX_ID#</ANIM_NAME_EXEC>
-	</DefaultTemplateParameters>
-	<EditableTemplateParameters>
-		<AddParams>
-			<NODE_ID_EXEC></NODE_ID_EXEC>
-			<ANIM_NAME_EXEC></ANIM_NAME_EXEC>
-		</AddParams>
-	</EditableTemplateParameters>
-	
-	<UseTemplate Name="ASOBO_FMC_PushButton">
-		<HTML_EVENT_ID>EXEC</HTML_EVENT_ID>
-		<NODE_ID>#NODE_ID_EXEC#</NODE_ID>
-		<ANIM_NAME>#ANIM_NAME_EXEC#</ANIM_NAME>
-	</UseTemplate>
-</Template>
-
-<Template Name="ASOBO_FMC_Emissive_EXEC_Template">
-	<DefaultTemplateParameters>
-		<NODE_ID_EMISSIVE_EXEC>#FMC_NAME#_Emissive_EXEC#SUFFIX_ID#</NODE_ID_EMISSIVE_EXEC>
-	</DefaultTemplateParameters>
-	<EditableTemplateParameters>
-		<AddParams>
-			<NODE_ID_EMISSIVE_EXEC></NODE_ID_EMISSIVE_EXEC>
-		</AddParams>
-	</EditableTemplateParameters>
-	
-	<UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
-		<NODE_ID>#NODE_ID_EMISSIVE_EXEC#</NODE_ID>
-		<SIMVAR_POWER_SETTING></SIMVAR_POWER_SETTING>
-		<POTENTIOMETER></POTENTIOMETER>
-		<FAILURE>1</FAILURE>
-		<EMISSIVE_CODE>(L:FMC_EXEC_ACTIVE)</EMISSIVE_CODE> 
-	</UseTemplate>
-</Template>
-
-
-<Template Name="ASOBO_FMC_Push_MENU_Template">
-	<DefaultTemplateParameters>
-		<NODE_ID_MENU>#FMC_NAME#_Push_MENU#SUFFIX_ID#</NODE_ID_MENU>
-		<ANIM_NAME_MENU>#FMC_NAME#_Push_MENU#SUFFIX_ID#</ANIM_NAME_MENU>
-	</DefaultTemplateParameters>
-	<EditableTemplateParameters>
-		<AddParams>
-			<NODE_ID_MENU></NODE_ID_MENU>
-			<ANIM_NAME_MENU></ANIM_NAME_MENU>
-		</AddParams>
-	</EditableTemplateParameters>
-	
-	<UseTemplate Name="ASOBO_FMC_PushButton">
-		<HTML_EVENT_ID>MENU</HTML_EVENT_ID>
-		<NODE_ID>#NODE_ID_MENU#</NODE_ID>
-		<ANIM_NAME>#ANIM_NAME_MENU#</ANIM_NAME>
-	</UseTemplate>
-</Template>
-
-<Template Name="ASOBO_FMC_Push_NAV_RAD_Template">
-	<DefaultTemplateParameters>
-		<NODE_ID_NAV_RAD>#FMC_NAME#_Push_NAV_RAD#SUFFIX_ID#</NODE_ID_NAV_RAD>
-		<ANIM_NAME_NAV_RAD>#FMC_NAME#_Push_NAV_RAD#SUFFIX_ID#</ANIM_NAME_NAV_RAD>
-	</DefaultTemplateParameters>
-	<EditableTemplateParameters>
-		<AddParams>
-			<NODE_ID_NAV_RAD></NODE_ID_NAV_RAD>
-			<ANIM_NAME_NAV_RAD></ANIM_NAME_NAV_RAD>
-		</AddParams>
-	</EditableTemplateParameters>
-	
-	<UseTemplate Name="ASOBO_FMC_PushButton">
-		<HTML_EVENT_ID>NAVRAD</HTML_EVENT_ID>
-		<NODE_ID>#NODE_ID_NAV_RAD#</NODE_ID>
-		<ANIM_NAME>#ANIM_NAME_NAV_RAD#</ANIM_NAME>
-	</UseTemplate>
-</Template>
-
-<Template Name="ASOBO_FMC_Push_PREV_PAGE_Template">
-	<DefaultTemplateParameters>
-		<NODE_ID_PREV_PAGE>#FMC_NAME#_Push_PREV_PAGE#SUFFIX_ID#</NODE_ID_PREV_PAGE>
-		<ANIM_NAME_PREV_PAGE>#FMC_NAME#_Push_PREV_PAGE#SUFFIX_ID#</ANIM_NAME_PREV_PAGE>
-	</DefaultTemplateParameters>
-	<EditableTemplateParameters>
-		<AddParams>
-			<NODE_ID_PREV_PAGE></NODE_ID_PREV_PAGE>
-			<ANIM_NAME_PREV_PAGE></ANIM_NAME_PREV_PAGE>
-		</AddParams>
-	</EditableTemplateParameters>
-	
-	<UseTemplate Name="ASOBO_FMC_PushButton">
-		<HTML_EVENT_ID>PREVPAGE</HTML_EVENT_ID>
-		<NODE_ID>#NODE_ID_PREV_PAGE#</NODE_ID>
-		<ANIM_NAME>#ANIM_NAME_PREV_PAGE#</ANIM_NAME>
-	</UseTemplate>
-</Template>
-
-<Template Name="ASOBO_FMC_Push_NEXT_PAGE_Template">
-	<DefaultTemplateParameters>
-		<NODE_ID_NEXT_PAGE>#FMC_NAME#_Push_NEXT_PAGE#SUFFIX_ID#</NODE_ID_NEXT_PAGE>
-		<ANIM_NAME_NEXT_PAGE>#FMC_NAME#_Push_NEXT_PAGE#SUFFIX_ID#</ANIM_NAME_NEXT_PAGE>
-	</DefaultTemplateParameters>
-	<EditableTemplateParameters>
-		<AddParams>
-			<NODE_ID_NEXT_PAGE></NODE_ID_NEXT_PAGE>
-			<ANIM_NAME_NEXT_PAGE></ANIM_NAME_NEXT_PAGE>
-		</AddParams>
-	</EditableTemplateParameters>
-	
-	<UseTemplate Name="ASOBO_FMC_PushButton">
-		<HTML_EVENT_ID>NEXTPAGE</HTML_EVENT_ID>
-		<NODE_ID>#NODE_ID_NEXT_PAGE#</NODE_ID>
-		<ANIM_NAME>#ANIM_NAME_NEXT_PAGE#</ANIM_NAME>
-	</UseTemplate>
-</Template>
-
-<Template Name="ASOBO_FMC_Push_SP_Template">
-	<DefaultTemplateParameters>
-		<NODE_ID_SP>#FMC_NAME#_Push_SP#SUFFIX_ID#</NODE_ID_SP>
-		<ANIM_NAME_SP>#FMC_NAME#_Push_SP#SUFFIX_ID#</ANIM_NAME_SP>
-	</DefaultTemplateParameters>
-	<EditableTemplateParameters>
-		<AddParams>
-			<NODE_ID_SP></NODE_ID_SP>
-			<ANIM_NAME_SP></ANIM_NAME_SP>
-		</AddParams>
-	</EditableTemplateParameters>
-	
-	<UseTemplate Name="ASOBO_FMC_PushButton">
-		<HTML_EVENT_ID>SP</HTML_EVENT_ID>
-		<NODE_ID>#NODE_ID_SP#</NODE_ID>
-		<ANIM_NAME>#ANIM_NAME_SP#</ANIM_NAME>
-	</UseTemplate>
-</Template>
-
-<Template Name="ASOBO_FMC_Push_DEL_Template">
-	<DefaultTemplateParameters>
-		<NODE_ID_DEL>#FMC_NAME#_Push_DEL#SUFFIX_ID#</NODE_ID_DEL>
-		<ANIM_NAME_DEL>#FMC_NAME#_Push_DEL#SUFFIX_ID#</ANIM_NAME_DEL>
-	</DefaultTemplateParameters>
-	<EditableTemplateParameters>
-		<AddParams>
-			<NODE_ID_DEL></NODE_ID_DEL>
-			<ANIM_NAME_DEL></ANIM_NAME_DEL>
-		</AddParams>
-	</EditableTemplateParameters>
-	
-	<UseTemplate Name="ASOBO_FMC_PushButton">
-		<HTML_EVENT_ID>DEL</HTML_EVENT_ID>
-		<NODE_ID>#NODE_ID_DEL#</NODE_ID>
-		<ANIM_NAME>#ANIM_NAME_DEL#</ANIM_NAME>
-	</UseTemplate>
-</Template>
-
-<Template Name="ASOBO_FMC_Push_CLR_Template">
-	<DefaultTemplateParameters>
-		<NODE_ID_CLR>#FMC_NAME#_Push_CLR#SUFFIX_ID#</NODE_ID_CLR>
-		<ANIM_NAME_CLR>#FMC_NAME#_Push_CLR#SUFFIX_ID#</ANIM_NAME_CLR>
-	</DefaultTemplateParameters>
-	<EditableTemplateParameters>
-		<AddParams>
-			<NODE_ID_CLR></NODE_ID_CLR>
-			<ANIM_NAME_CLR></ANIM_NAME_CLR>
-		</AddParams>
-	</EditableTemplateParameters>
-	
-	<UseTemplate Name="ASOBO_FMC_PushButton">
-		<HTML_EVENT_ID>CLR</HTML_EVENT_ID>
-		<NODE_ID>#NODE_ID_CLR#</NODE_ID>
-		<ANIM_NAME>#ANIM_NAME_CLR#</ANIM_NAME>
-	</UseTemplate>
-</Template>
-
-<Template Name="ASOBO_FMC_Push_DIV_Template">
-	<DefaultTemplateParameters>
-		<NODE_ID_DIV>#FMC_NAME#_Push_DIV#SUFFIX_ID#</NODE_ID_DIV>
-		<ANIM_NAME_DIV>#FMC_NAME#_Push_DIV#SUFFIX_ID#</ANIM_NAME_DIV>
-	</DefaultTemplateParameters>
-	<EditableTemplateParameters>
-		<AddParams>
-			<NODE_ID_DIV></NODE_ID_DIV>
-			<ANIM_NAME_DIV></ANIM_NAME_DIV>
-		</AddParams>
-	</EditableTemplateParameters>
-	
-	<UseTemplate Name="ASOBO_FMC_PushButton">
-		<HTML_EVENT_ID>DIV</HTML_EVENT_ID>
-		<NODE_ID>#NODE_ID_DIV#</NODE_ID>
-		<ANIM_NAME>#ANIM_NAME_DIV#</ANIM_NAME>
-	</UseTemplate>
-</Template>
-
-<Template Name="ASOBO_FMC_Emissive_DSPL_Template">
-	<DefaultTemplateParameters>
-		<NODE_ID_DSPL>#FMC_NAME#_Emissive_DSPL#SUFFIX_ID#</NODE_ID_DSPL>
-	</DefaultTemplateParameters>
-	<EditableTemplateParameters>
-		<AddParams>
-			<NODE_ID_DSPL></NODE_ID_DSPL>
-		</AddParams>
-	</EditableTemplateParameters>
-	
-	<UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
-		<NODE_ID>#NODE_ID_DSPL#</NODE_ID>
-		<EMISSIVE_CODE>0</EMISSIVE_CODE><!-- TODO-->
-	</UseTemplate>
-</Template>
-
-<Template Name="ASOBO_FMC_Emissive_FAIL_Template">
-	<DefaultTemplateParameters>
-		<NODE_ID_FAIL>#FMC_NAME#_Emissive_FAIL#SUFFIX_ID#</NODE_ID_FAIL>
-	</DefaultTemplateParameters>
-	<EditableTemplateParameters>
-		<AddParams>
-			<NODE_ID_FAIL></NODE_ID_FAIL>
-		</AddParams>
-	</EditableTemplateParameters>
-	
-	<UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
-		<NODE_ID>#NODE_ID_FAIL#</NODE_ID>
-		<EMISSIVE_CODE>0</EMISSIVE_CODE><!-- TODO-->
-	</UseTemplate>
-</Template>
-
-
-<Template Name="ASOBO_FMC_Emissive_MSG_Template">
-	<DefaultTemplateParameters>
-		<NODE_ID_MSG>#FMC_NAME#_Emissive_MSG#SUFFIX_ID#</NODE_ID_MSG>
-	</DefaultTemplateParameters>
-	<EditableTemplateParameters>
-		<AddParams>
-			<NODE_ID_MSG></NODE_ID_MSG>
-		</AddParams>
-	</EditableTemplateParameters>
-	
-	<UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
-		<NODE_ID>#NODE_ID_MSG#</NODE_ID>
-		<EMISSIVE_CODE>0</EMISSIVE_CODE><!-- TODO-->
-	</UseTemplate>
-</Template>
-
-
-<Template Name="ASOBO_FMC_Emissive_OFST_Template">
-	<DefaultTemplateParameters>
-		<NODE_ID_OFST>#FMC_NAME#_Emissive_OFST#SUFFIX_ID#</NODE_ID_OFST>
-	</DefaultTemplateParameters>
-	<EditableTemplateParameters>
-		<AddParams>
-			<NODE_ID_OFST></NODE_ID_OFST>
-		</AddParams>
-	</EditableTemplateParameters>
-	
-	<UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
-		<NODE_ID>#NODE_ID_OFST#</NODE_ID>
-		<EMISSIVE_CODE>0</EMISSIVE_CODE><!-- TODO-->
-	</UseTemplate>
-</Template>
-
-<Template Name="ASOBO_FMC_Push_Screen_Option_Left_Template">
-	<DefaultTemplateParameters>
-		<NODE_ID_L#BTN_ID#>#FMC_NAME#_Push_L#BTN_ID##SUFFIX_ID#</NODE_ID_L#BTN_ID#>
-		<ANIM_NAME_L#BTN_ID#>#FMC_NAME#_Push_L#BTN_ID##SUFFIX_ID#</ANIM_NAME_L#BTN_ID#>
-	</DefaultTemplateParameters>
-	
-	<UseTemplate Name="ASOBO_FMC_PushButton">
-		<HTML_EVENT_ID>L#BTN_ID#</HTML_EVENT_ID>
-		<NODE_ID Process="Param">NODE_ID_L#BTN_ID#</NODE_ID>
-		<ANIM_NAME Process="Param">ANIM_NAME_L#BTN_ID#</ANIM_NAME>
-	</UseTemplate>
-</Template>
-
-<Template Name="ASOBO_FMC_Push_Screen_Option_Right_Template">
-	<DefaultTemplateParameters>
-		<NODE_ID_R#BTN_ID#>#FMC_NAME#_Push_R#BTN_ID##SUFFIX_ID#</NODE_ID_R#BTN_ID#>
-		<ANIM_NAME_R#BTN_ID#>#FMC_NAME#_Push_R#BTN_ID##SUFFIX_ID#</ANIM_NAME_R#BTN_ID#>
-	</DefaultTemplateParameters>
-	
-	<UseTemplate Name="ASOBO_FMC_PushButton">
-		<HTML_EVENT_ID>R#BTN_ID#</HTML_EVENT_ID>
-		<NODE_ID Process="Param">NODE_ID_R#BTN_ID#</NODE_ID>
-		<ANIM_NAME Process="Param">ANIM_NAME_R#BTN_ID#</ANIM_NAME>
-	</UseTemplate>
-</Template>
-
-<Template Name="ASOBO_FMC_Push_Character_Template">
-	<DefaultTemplateParameters>
-		<NODE_ID_#BTN_ID#>#FMC_NAME#_Push_#BTN_ID##SUFFIX_ID#</NODE_ID_#BTN_ID#>
-		<ANIM_NAME_#BTN_ID#>#FMC_NAME#_Push_#BTN_ID##SUFFIX_ID#</ANIM_NAME_#BTN_ID#>
-	</DefaultTemplateParameters>
-	
-	<UseTemplate Name="ASOBO_FMC_PushButton">
-		<HTML_EVENT_ID>#BTN_ID#</HTML_EVENT_ID>
-		<NODE_ID Process="Param">NODE_ID_#BTN_ID#</NODE_ID>
-		<ANIM_NAME Process="Param">ANIM_NAME_#BTN_ID#</ANIM_NAME>
-	</UseTemplate>
-</Template>
-
-<Template Name="ASOBO_FMC_Characters_SubTemplate">
-	<UseTemplate Name="ASOBO_FMC_Push_Character_Template">
-		<BTN_ID>A</BTN_ID>
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_Character_Template">
-		<BTN_ID>B</BTN_ID>
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_Character_Template">
-		<BTN_ID>C</BTN_ID>
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_Character_Template">
-		<BTN_ID>D</BTN_ID>
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_Character_Template">
-		<BTN_ID>E</BTN_ID>
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_Character_Template">
-		<BTN_ID>F</BTN_ID>
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_Character_Template">
-		<BTN_ID>G</BTN_ID>
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_Character_Template">
-		<BTN_ID>H</BTN_ID>
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_Character_Template">
-		<BTN_ID>I</BTN_ID>
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_Character_Template">
-		<BTN_ID>J</BTN_ID>
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_Character_Template">
-		<BTN_ID>K</BTN_ID>
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_Character_Template">
-		<BTN_ID>L</BTN_ID>
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_Character_Template">
-		<BTN_ID>M</BTN_ID>
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_Character_Template">
-		<BTN_ID>N</BTN_ID>
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_Character_Template">
-		<BTN_ID>O</BTN_ID>
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_Character_Template">
-		<BTN_ID>P</BTN_ID>
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_Character_Template">
-		<BTN_ID>Q</BTN_ID>
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_Character_Template">
-		<BTN_ID>R</BTN_ID>
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_Character_Template">
-		<BTN_ID>S</BTN_ID>
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_Character_Template">
-		<BTN_ID>T</BTN_ID>
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_Character_Template">
-		<BTN_ID>U</BTN_ID>
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_Character_Template">
-		<BTN_ID>V</BTN_ID>
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_Character_Template">
-		<BTN_ID>W</BTN_ID>
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_Character_Template">
-		<BTN_ID>X</BTN_ID>
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_Character_Template">
-		<BTN_ID>Y</BTN_ID>
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_Character_Template">
-		<BTN_ID>Z</BTN_ID>
-	</UseTemplate>
-</Template>
-<Template Name="ASOBO_FMC_Numbers_SubTemplate">
-	<UseTemplate Name="ASOBO_FMC_Push_Character_Template">
-		<BTN_ID>0</BTN_ID>
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_Character_Template">
-		<BTN_ID>1</BTN_ID>
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_Character_Template">
-		<BTN_ID>2</BTN_ID>
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_Character_Template">
-		<BTN_ID>3</BTN_ID>
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_Character_Template">
-		<BTN_ID>4</BTN_ID>
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_Character_Template">
-		<BTN_ID>5</BTN_ID>
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_Character_Template">
-		<BTN_ID>6</BTN_ID>
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_Character_Template">
-		<BTN_ID>7</BTN_ID>
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_Character_Template">
-		<BTN_ID>8</BTN_ID>
-	</UseTemplate>
-	<UseTemplate Name="ASOBO_FMC_Push_Character_Template">
-		<BTN_ID>9</BTN_ID>
-	</UseTemplate>
-</Template>
-
-<Template Name="ASOBO_FMC_Push_Dot_Template">
-	<DefaultTemplateParameters>
-		<NODE_ID_DOT>#FMC_NAME#_Push_Dot#SUFFIX_ID#</NODE_ID_DOT>
-		<ANIM_NAME_DOT>#FMC_NAME#_Push_Dot#SUFFIX_ID#</ANIM_NAME_DOT>
-	</DefaultTemplateParameters>
-	<EditableTemplateParameters>
-		<AddParams>
-			<NODE_ID_DOT></NODE_ID_DOT>
-			<ANIM_NAME_DOT></ANIM_NAME_DOT>
-		</AddParams>
-	</EditableTemplateParameters>
-	
-	<UseTemplate Name="ASOBO_FMC_PushButton">
-		<HTML_EVENT_ID>DOT</HTML_EVENT_ID>
-		<NODE_ID>#NODE_ID_DOT#</NODE_ID>
-		<ANIM_NAME>#ANIM_NAME_DOT#</ANIM_NAME>
-	</UseTemplate>
-</Template>
-
-<Template Name="ASOBO_FMC_Push_PLUSMINUS_Template">
-	<DefaultTemplateParameters>
-		<NODE_ID_PLUSMINUS>#FMC_NAME#_Push_PLUSMINUS#SUFFIX_ID#</NODE_ID_PLUSMINUS>
-		<ANIM_NAME_PLUSMINUS>#FMC_NAME#_Push_PLUSMINUS#SUFFIX_ID#</ANIM_NAME_PLUSMINUS>
-	</DefaultTemplateParameters>
-	<EditableTemplateParameters>
-		<AddParams>
-			<NODE_ID_PLUSMINUS></NODE_ID_PLUSMINUS>
-			<ANIM_NAME_PLUSMINUS></ANIM_NAME_PLUSMINUS>
-		</AddParams>
-	</EditableTemplateParameters>
-	
-	<UseTemplate Name="ASOBO_FMC_PushButton">
-		<HTML_EVENT_ID>PLUSMINUS</HTML_EVENT_ID>
-		<NODE_ID>#NODE_ID_PLUSMINUS#</NODE_ID>
-		<ANIM_NAME>#ANIM_NAME_PLUSMINUS#</ANIM_NAME>
-	</UseTemplate>
-</Template>
-
-<Template Name="ASOBO_FMC_Push_ENTER_Template">
-	<DefaultTemplateParameters>
-		<NODE_ID_ENTER>#FMC_NAME#_Push_ENTER#SUFFIX_ID#</NODE_ID_ENTER>
-		<ANIM_NAME_ENTER>#FMC_NAME#_Push_ENTER#SUFFIX_ID#</ANIM_NAME_ENTER>
-	</DefaultTemplateParameters>
-	<EditableTemplateParameters>
-		<AddParams>
-			<NODE_ID_ENTER></NODE_ID_ENTER>
-			<ANIM_NAME_ENTER></ANIM_NAME_ENTER>
-		</AddParams>
-	</EditableTemplateParameters>
-	
-	<UseTemplate Name="ASOBO_FMC_PushButton">
-		<HTML_EVENT_ID>ENTER</HTML_EVENT_ID>
-		<NODE_ID>#NODE_ID_ENTER#</NODE_ID>
-		<ANIM_NAME>#ANIM_NAME_ENTER#</ANIM_NAME>
-	</UseTemplate>
-</Template>
-
-<Template Name="ASOBO_FMC_Push_DIR_Template">
-	<DefaultTemplateParameters>
-		<NODE_ID_DIR>#FMC_NAME#_Push_DIR#SUFFIX_ID#</NODE_ID_DIR>
-		<ANIM_NAME_DIR>#FMC_NAME#_Push_DIR#SUFFIX_ID#</ANIM_NAME_DIR>
-	</DefaultTemplateParameters>
-	<EditableTemplateParameters>
-		<AddParams>
-			<NODE_ID_DIR></NODE_ID_DIR>
-			<ANIM_NAME_DIR></ANIM_NAME_DIR>
-		</AddParams>
-	</EditableTemplateParameters>
-	
-	<UseTemplate Name="ASOBO_FMC_PushButton">
-		<HTML_EVENT_ID>DIR</HTML_EVENT_ID>
-		<NODE_ID>#NODE_ID_DIR#</NODE_ID>
-		<ANIM_NAME>#ANIM_NAME_DIR#</ANIM_NAME>
-	</UseTemplate>
-</Template>
-
-<Template Name="ASOBO_FMC_Push_PERF_Template">
-	<DefaultTemplateParameters>
-		<NODE_ID_PERF>#FMC_NAME#_Push_PERF#SUFFIX_ID#</NODE_ID_PERF>
-		<ANIM_NAME_PERF>#FMC_NAME#_Push_PERF#SUFFIX_ID#</ANIM_NAME_PERF>
-	</DefaultTemplateParameters>
-	<EditableTemplateParameters>
-		<AddParams>
-			<NODE_ID_PERF></NODE_ID_PERF>
-			<ANIM_NAME_PERF></ANIM_NAME_PERF>
-		</AddParams>
-	</EditableTemplateParameters>
-	
-	<UseTemplate Name="ASOBO_FMC_PushButton">
-		<HTML_EVENT_ID>PERF</HTML_EVENT_ID>
-		<NODE_ID>#NODE_ID_PERF#</NODE_ID>
-		<ANIM_NAME>#ANIM_NAME_PERF#</ANIM_NAME>
-	</UseTemplate>
-</Template>
-
-<Template Name="ASOBO_FMC_Push_DATA_Template">
-	<DefaultTemplateParameters>
-		<NODE_ID_DATA>#FMC_NAME#_Push_DATA#SUFFIX_ID#</NODE_ID_DATA>
-		<ANIM_NAME_DATA>#FMC_NAME#_Push_DATA#SUFFIX_ID#</ANIM_NAME_DATA>
-	</DefaultTemplateParameters>
-	<EditableTemplateParameters>
-		<AddParams>
-			<NODE_ID_DATA></NODE_ID_DATA>
-			<ANIM_NAME_DATA></ANIM_NAME_DATA>
-		</AddParams>
-	</EditableTemplateParameters>
-	
-	<UseTemplate Name="ASOBO_FMC_PushButton">
-		<HTML_EVENT_ID>DATA</HTML_EVENT_ID>
-		<NODE_ID>#NODE_ID_DATA#</NODE_ID>
-		<ANIM_NAME>#ANIM_NAME_DATA#</ANIM_NAME>
-	</UseTemplate>
-</Template>
-
-<Template Name="ASOBO_FMC_Push_FPLN_Template">
-	<DefaultTemplateParameters>
-		<NODE_ID_FPLN>#FMC_NAME#_Push_FPLN#SUFFIX_ID#</NODE_ID_FPLN>
-		<ANIM_NAME_FPLN>#FMC_NAME#_Push_FPLN#SUFFIX_ID#</ANIM_NAME_FPLN>
-	</DefaultTemplateParameters>
-	<EditableTemplateParameters>
-		<AddParams>
-			<NODE_ID_FPLN></NODE_ID_FPLN>
-			<ANIM_NAME_FPLN></ANIM_NAME_FPLN>
-		</AddParams>
-	</EditableTemplateParameters>
-	
-	<UseTemplate Name="ASOBO_FMC_PushButton">
-		<HTML_EVENT_ID>FPLN</HTML_EVENT_ID>
-		<NODE_ID>#NODE_ID_FPLN#</NODE_ID>
-		<ANIM_NAME>#ANIM_NAME_FPLN#</ANIM_NAME>
-	</UseTemplate>
-</Template>
-
-<Template Name="ASOBO_FMC_Push_FUEL_PRED_Template">
-	<DefaultTemplateParameters>
-		<NODE_ID_FUEL_PRED>#FMC_NAME#_Push_FUEL_PRED#SUFFIX_ID#</NODE_ID_FUEL_PRED>
-		<ANIM_NAME_FUEL_PRED>#FMC_NAME#_Push_FUEL_PRED#SUFFIX_ID#</ANIM_NAME_FUEL_PRED>
-	</DefaultTemplateParameters>
-	<EditableTemplateParameters>
-		<AddParams>
-			<NODE_ID_FUEL_PRED></NODE_ID_FUEL_PRED>
-			<ANIM_NAME_FUEL_PRED></ANIM_NAME_FUEL_PRED>
-		</AddParams>
-	</EditableTemplateParameters>
-	
-	<UseTemplate Name="ASOBO_FMC_PushButton">
-		<HTML_EVENT_ID>FUEL</HTML_EVENT_ID>
-		<NODE_ID>#NODE_ID_FUEL_PRED#</NODE_ID>
-		<ANIM_NAME>#ANIM_NAME_FUEL_PRED#</ANIM_NAME>
-	</UseTemplate>
-</Template>
-
-<Template Name="ASOBO_FMC_Push_SEC_FPLN_Template">
-	<DefaultTemplateParameters>
-		<NODE_ID_SEC_FPLN>#FMC_NAME#_Push_SEC_FPLN#SUFFIX_ID#</NODE_ID_SEC_FPLN>
-		<ANIM_NAME_SEC_FPLN>#FMC_NAME#_Push_SEC_FPLN#SUFFIX_ID#</ANIM_NAME_SEC_FPLN>
-	</DefaultTemplateParameters>
-	<EditableTemplateParameters>
-		<AddParams>
-			<NODE_ID_SEC_FPLN></NODE_ID_SEC_FPLN>
-			<ANIM_NAME_SEC_FPLN></ANIM_NAME_SEC_FPLN>
-		</AddParams>
-	</EditableTemplateParameters>
-	
-	<UseTemplate Name="ASOBO_FMC_PushButton">
-		<HTML_EVENT_ID>SEC</HTML_EVENT_ID>
-		<NODE_ID>#NODE_ID_SEC_FPLN#</NODE_ID>
-		<ANIM_NAME>#ANIM_NAME_SEC_FPLN#</ANIM_NAME>
-	</UseTemplate>
-</Template>
-
-<Template Name="ASOBO_FMC_Push_ATC_COMM_Template">
-	<DefaultTemplateParameters>
-		<NODE_ID_ATC_COMM>#FMC_NAME#_Push_ATC_COMM#SUFFIX_ID#</NODE_ID_ATC_COMM>
-		<ANIM_NAME_ATC_COMM>#FMC_NAME#_Push_ATC_COMM#SUFFIX_ID#</ANIM_NAME_ATC_COMM>
-	</DefaultTemplateParameters>
-	<EditableTemplateParameters>
-		<AddParams>
-			<NODE_ID_ATC_COMM></NODE_ID_ATC_COMM>
-			<ANIM_NAME_ATC_COMM></ANIM_NAME_ATC_COMM>
-		</AddParams>
-	</EditableTemplateParameters>
-	
-	<UseTemplate Name="ASOBO_FMC_PushButton">
-		<HTML_EVENT_ID>ATC</HTML_EVENT_ID>
-		<NODE_ID>#NODE_ID_ATC_COMM#</NODE_ID>
-		<ANIM_NAME>#ANIM_NAME_ATC_COMM#</ANIM_NAME>
-	</UseTemplate>
-</Template>
-
-<Template Name="ASOBO_FMC_Push_MCDU_MENU_Template">
-	<DefaultTemplateParameters>
-		<NODE_ID_MCDU_MENU>#FMC_NAME#_Push_MCDU_MENU#SUFFIX_ID#</NODE_ID_MCDU_MENU>
-		<ANIM_NAME_MCDU_MENU>#FMC_NAME#_Push_MCDU_MENU#SUFFIX_ID#</ANIM_NAME_MCDU_MENU>
-	</DefaultTemplateParameters>
-	<EditableTemplateParameters>
-		<AddParams>
-			<NODE_ID_MCDU_MENU></NODE_ID_MCDU_MENU>
-			<ANIM_NAME_MCDU_MENU></ANIM_NAME_MCDU_MENU>
-		</AddParams>
-	</EditableTemplateParameters>
-	
-	<UseTemplate Name="ASOBO_FMC_PushButton">
-		<HTML_EVENT_ID>MENU</HTML_EVENT_ID>
-		<NODE_ID>#NODE_ID_MCDU_MENU#</NODE_ID>
-		<ANIM_NAME>#ANIM_NAME_MCDU_MENU#</ANIM_NAME>
-	</UseTemplate>
-</Template>
-
-<Template Name="ASOBO_FMC_Push_AIRPORT_Template">
-	<DefaultTemplateParameters>
-		<NODE_ID_AIRPORT>#FMC_NAME#_Push_AIRPORT#SUFFIX_ID#</NODE_ID_AIRPORT>
-		<ANIM_NAME_AIRPORT>#FMC_NAME#_Push_AIRPORT#SUFFIX_ID#</ANIM_NAME_AIRPORT>
-	</DefaultTemplateParameters>
-	<EditableTemplateParameters>
-		<AddParams>
-			<NODE_ID_AIRPORT></NODE_ID_AIRPORT>
-			<ANIM_NAME_AIRPORT></ANIM_NAME_AIRPORT>
-		</AddParams>
-	</EditableTemplateParameters>
-	
-	<UseTemplate Name="ASOBO_FMC_PushButton">
-		<HTML_EVENT_ID>AIRPORT</HTML_EVENT_ID>
-		<NODE_ID>#NODE_ID_AIRPORT#</NODE_ID>
-		<ANIM_NAME>#ANIM_NAME_AIRPORT#</ANIM_NAME>
-	</UseTemplate>
-</Template>
-
-<Template Name="ASOBO_FMC_Push_UP_Template">
-	<DefaultTemplateParameters>
-		<NODE_ID_UP>#FMC_NAME#_Push_UP#SUFFIX_ID#</NODE_ID_UP>
-		<ANIM_NAME_UP>#FMC_NAME#_Push_UP#SUFFIX_ID#</ANIM_NAME_UP>
-	</DefaultTemplateParameters>
-	<EditableTemplateParameters>
-		<AddParams>
-			<NODE_ID_UP></NODE_ID_UP>
-			<ANIM_NAME_UP></ANIM_NAME_UP>
-		</AddParams>
-	</EditableTemplateParameters>
-	
-	<UseTemplate Name="ASOBO_FMC_PushButton">
-		<HTML_EVENT_ID>UP</HTML_EVENT_ID>
-		<NODE_ID>#NODE_ID_UP#</NODE_ID>
-		<ANIM_NAME>#ANIM_NAME_UP#</ANIM_NAME>
-	</UseTemplate>
-</Template>
-
-<Template Name="ASOBO_FMC_Push_DOWN_Template">
-	<DefaultTemplateParameters>
-		<NODE_ID_DOWN>#FMC_NAME#_Push_DOWN#SUFFIX_ID#</NODE_ID_DOWN>
-		<ANIM_NAME_DOWN>#FMC_NAME#_Push_DOWN#SUFFIX_ID#</ANIM_NAME_DOWN>
-	</DefaultTemplateParameters>
-	<EditableTemplateParameters>
-		<AddParams>
-			<NODE_ID_DOWN></NODE_ID_DOWN>
-			<ANIM_NAME_DOWN></ANIM_NAME_DOWN>
-		</AddParams>
-	</EditableTemplateParameters>
-	
-	<UseTemplate Name="ASOBO_FMC_PushButton">
-		<HTML_EVENT_ID>DOWN</HTML_EVENT_ID>
-		<NODE_ID>#NODE_ID_DOWN#</NODE_ID>
-		<ANIM_NAME>#ANIM_NAME_DOWN#</ANIM_NAME>
-	</UseTemplate>
-</Template>
-
-<Template Name="ASOBO_FMC_Push_OVFY_Template">
-	<DefaultTemplateParameters>
-		<NODE_ID_OVFY>#FMC_NAME#_Push_OVFY#SUFFIX_ID#</NODE_ID_OVFY>
-		<ANIM_NAME_OVFY>#FMC_NAME#_Push_OVFY#SUFFIX_ID#</ANIM_NAME_OVFY>
-	</DefaultTemplateParameters>
-	<EditableTemplateParameters>
-		<AddParams>
-			<NODE_ID_OVFY></NODE_ID_OVFY>
-			<ANIM_NAME_OVFY></ANIM_NAME_OVFY>
-		</AddParams>
-	</EditableTemplateParameters>
-	
-	<UseTemplate Name="ASOBO_FMC_PushButton">
-		<HTML_EVENT_ID>OVFY</HTML_EVENT_ID>
-		<NODE_ID>#NODE_ID_OVFY#</NODE_ID>
-		<ANIM_NAME>#ANIM_NAME_OVFY#</ANIM_NAME>
-	</UseTemplate>
-</Template>
-
-<Template Name="ASOBO_FMC_Push_SYS_Template">
-	<DefaultTemplateParameters>
-		<NODE_ID_SYS>#FMC_NAME#_Push_SYS#SUFFIX_ID#</NODE_ID_SYS>
-		<ANIM_NAME_SYS>#FMC_NAME#_Push_SYS#SUFFIX_ID#</ANIM_NAME_SYS>
-	</DefaultTemplateParameters>
-	<EditableTemplateParameters>
-		<AddParams>
-			<NODE_ID_SYS></NODE_ID_SYS>
-			<ANIM_NAME_SYS></ANIM_NAME_SYS>
-		</AddParams>
-	</EditableTemplateParameters>
-	
-	<UseTemplate Name="ASOBO_FMC_PushButton">
-		<HTML_EVENT_ID>SYS</HTML_EVENT_ID>
-		<NODE_ID>#NODE_ID_SYS#</NODE_ID>
-		<ANIM_NAME>#ANIM_NAME_SYS#</ANIM_NAME>
-	</UseTemplate>
-</Template>
-
-<Template Name="ASOBO_FMC_Push_CDU_Template">
-	<DefaultTemplateParameters>
-		<NODE_ID_CDU>#FMC_NAME#_Push_CDU#SUFFIX_ID#</NODE_ID_CDU>
-		<ANIM_NAME_CDU>#FMC_NAME#_Push_CDU#SUFFIX_ID#</ANIM_NAME_CDU>
-	</DefaultTemplateParameters>
-	<EditableTemplateParameters>
-		<AddParams>
-			<NODE_ID_CDU></NODE_ID_CDU>
-			<ANIM_NAME_CDU></ANIM_NAME_CDU>
-		</AddParams>
-	</EditableTemplateParameters>
-	
-	<UseTemplate Name="ASOBO_FMC_PushButton">
-		<HTML_EVENT_ID>CDU</HTML_EVENT_ID>
-		<NODE_ID>#NODE_ID_CDU#</NODE_ID>
-		<ANIM_NAME>#ANIM_NAME_CDU#</ANIM_NAME>
-	</UseTemplate>
-</Template>
-
-<Template Name="ASOBO_FMC_Push_INFO_Template">
-	<DefaultTemplateParameters>
-		<NODE_ID_INFO>#FMC_NAME#_Push_INFO#SUFFIX_ID#</NODE_ID_INFO>
-		<ANIM_NAME_INFO>#FMC_NAME#_Push_INFO#SUFFIX_ID#</ANIM_NAME_INFO>
-	</DefaultTemplateParameters>
-	<EditableTemplateParameters>
-		<AddParams>
-			<NODE_ID_INFO></NODE_ID_INFO>
-			<ANIM_NAME_INFO></ANIM_NAME_INFO>
-		</AddParams>
-	</EditableTemplateParameters>
-	
-	<UseTemplate Name="ASOBO_FMC_PushButton">
-		<HTML_EVENT_ID>INFO</HTML_EVENT_ID>
-		<NODE_ID>#NODE_ID_INFO#</NODE_ID>
-		<ANIM_NAME>#ANIM_NAME_INFO#</ANIM_NAME>
-	</UseTemplate>
-</Template>
-
-<Template Name="ASOBO_FMC_Push_CHKL_Template">
-	<DefaultTemplateParameters>
-		<NODE_ID_CHKL>#FMC_NAME#_Push_CHKL#SUFFIX_ID#</NODE_ID_CHKL>
-		<ANIM_NAME_CHKL>#FMC_NAME#_Push_CHKL#SUFFIX_ID#</ANIM_NAME_CHKL>
-	</DefaultTemplateParameters>
-	<EditableTemplateParameters>
-		<AddParams>
-			<NODE_ID_CHKL></NODE_ID_CHKL>
-			<ANIM_NAME_CHKL></ANIM_NAME_CHKL>
-		</AddParams>
-	</EditableTemplateParameters>
-	
-	<UseTemplate Name="ASOBO_FMC_PushButton">
-		<HTML_EVENT_ID>CHKL</HTML_EVENT_ID>
-		<NODE_ID>#NODE_ID_CHKL#</NODE_ID>
-		<ANIM_NAME>#ANIM_NAME_CHKL#</ANIM_NAME>
-	</UseTemplate>
-</Template>
-
-<Template Name="ASOBO_FMC_Push_COMM_Template">
-	<DefaultTemplateParameters>
-		<NODE_ID_COMM>#FMC_NAME#_Push_COMM#SUFFIX_ID#</NODE_ID_COMM>
-		<ANIM_NAME_COMM>#FMC_NAME#_Push_COMM#SUFFIX_ID#</ANIM_NAME_COMM>
-	</DefaultTemplateParameters>
-	<EditableTemplateParameters>
-		<AddParams>
-			<NODE_ID_COMM></NODE_ID_COMM>
-			<ANIM_NAME_COMM></ANIM_NAME_COMM>
-		</AddParams>
-	</EditableTemplateParameters>
-	
-	<UseTemplate Name="ASOBO_FMC_PushButton">
-		<HTML_EVENT_ID>COMM</HTML_EVENT_ID>
-		<NODE_ID>#NODE_ID_COMM#</NODE_ID>
-		<ANIM_NAME>#ANIM_NAME_COMM#</ANIM_NAME>
-	</UseTemplate>
-</Template>
-
-<Template Name="ASOBO_FMC_Push_HD_Template">
-	<DefaultTemplateParameters>
-		<NODE_ID_HD>#FMC_NAME#_Push_HD#SUFFIX_ID#</NODE_ID_HD>
-		<ANIM_NAME_HD>#FMC_NAME#_Push_HD#SUFFIX_ID#</ANIM_NAME_HD>
-	</DefaultTemplateParameters>
-	<EditableTemplateParameters>
-		<AddParams>
-			<NODE_ID_HD></NODE_ID_HD>
-			<ANIM_NAME_HD></ANIM_NAME_HD>
-		</AddParams>
-	</EditableTemplateParameters>
-	
-	<UseTemplate Name="ASOBO_FMC_PushButton">
-		<HTML_EVENT_ID>HD</HTML_EVENT_ID>
-		<NODE_ID>#NODE_ID_HD#</NODE_ID>
-		<ANIM_NAME>#ANIM_NAME_HD#</ANIM_NAME>
-	</UseTemplate>
-</Template>
-
-<Template Name="ASOBO_FMC_Push_MFD_DATA_Template">
-	<DefaultTemplateParameters>
-		<NODE_ID_MFD_DATA>#FMC_NAME#_Push_MFD_DATA#SUFFIX_ID#</NODE_ID_MFD_DATA>
-		<ANIM_NAME_MFD_DATA>#FMC_NAME#_Push_MFD_DATA#SUFFIX_ID#</ANIM_NAME_MFD_DATA>
-	</DefaultTemplateParameters>
-	<EditableTemplateParameters>
-		<AddParams>
-			<NODE_ID_MFD_DATA></NODE_ID_MFD_DATA>
-			<ANIM_NAME_MFD_DATA></ANIM_NAME_MFD_DATA>
-		</AddParams>
-	</EditableTemplateParameters>
-	
-	<UseTemplate Name="ASOBO_FMC_PushButton">
-		<HTML_EVENT_ID>MFD_DATA</HTML_EVENT_ID>
-		<NODE_ID>#NODE_ID_MFD_DATA#</NODE_ID>
-		<ANIM_NAME>#ANIM_NAME_MFD_DATA#</ANIM_NAME>
-	</UseTemplate>
-</Template>
-
-<Template Name="ASOBO_FMC_Push_MFD_ADV_Template">
-	<DefaultTemplateParameters>
-		<NODE_ID_MFD_ADV>#FMC_NAME#_Push_MFD_ADV#SUFFIX_ID#</NODE_ID_MFD_ADV>
-		<ANIM_NAME_MFD_ADV>#FMC_NAME#_Push_MFD_ADV#SUFFIX_ID#</ANIM_NAME_MFD_ADV>
-	</DefaultTemplateParameters>
-	<EditableTemplateParameters>
-		<AddParams>
-			<NODE_ID_MFD_ADV></NODE_ID_MFD_ADV>
-			<ANIM_NAME_MFD_ADV></ANIM_NAME_MFD_ADV>
-		</AddParams>
-	</EditableTemplateParameters>
-	
-	<UseTemplate Name="ASOBO_FMC_PushButton">
-		<HTML_EVENT_ID>MFD_ADV</HTML_EVENT_ID>
-		<NODE_ID>#NODE_ID_MFD_ADV#</NODE_ID>
-		<ANIM_NAME>#ANIM_NAME_MFD_ADV#</ANIM_NAME>
-	</UseTemplate>
-</Template>
-
-<Template Name="ASOBO_FMC_Push_DSPL_MENU_Template">
-	<DefaultTemplateParameters>
-		<NODE_ID_DSPL_MENU>#FMC_NAME#_Push_DSPL_MENU#SUFFIX_ID#</NODE_ID_DSPL_MENU>
-		<ANIM_NAME_DSPL_MENU>#FMC_NAME#_Push_DSPL_MENU#SUFFIX_ID#</ANIM_NAME_DSPL_MENU>
-	</DefaultTemplateParameters>
-	<EditableTemplateParameters>
-		<AddParams>
-			<NODE_ID_DSPL_MENU></NODE_ID_DSPL_MENU>
-			<ANIM_NAME_DSPL_MENU></ANIM_NAME_DSPL_MENU>
-		</AddParams>
-	</EditableTemplateParameters>
-	
-	<UseTemplate Name="ASOBO_FMC_PushButton">
-		<HTML_EVENT_ID>DSPL_MENU</HTML_EVENT_ID>
-		<NODE_ID>#NODE_ID_DSPL_MENU#</NODE_ID>
-		<ANIM_NAME>#ANIM_NAME_DSPL_MENU#</ANIM_NAME>
-	</UseTemplate>
-</Template>
-
-<Template Name="ASOBO_FMC_Push_TUN_Template">
-	<DefaultTemplateParameters>
-		<NODE_ID_TUN>#FMC_NAME#_Push_TUN#SUFFIX_ID#</NODE_ID_TUN>
-		<ANIM_NAME_TUN>#FMC_NAME#_Push_TUN#SUFFIX_ID#</ANIM_NAME_TUN>
-	</DefaultTemplateParameters>
-	<EditableTemplateParameters>
-		<AddParams>
-			<NODE_ID_TUN></NODE_ID_TUN>
-			<ANIM_NAME_TUN></ANIM_NAME_TUN>
-		</AddParams>
-	</EditableTemplateParameters>
-	
-	<UseTemplate Name="ASOBO_FMC_PushButton">
-		<HTML_EVENT_ID>TUN</HTML_EVENT_ID>
-		<NODE_ID>#NODE_ID_TUN#</NODE_ID>
-		<ANIM_NAME>#ANIM_NAME_TUN#</ANIM_NAME>
-	</UseTemplate>
-</Template>
-
-<Template Name="ASOBO_FMC_Push_IDX_Template">
-	<DefaultTemplateParameters>
-		<NODE_ID_IDX>#FMC_NAME#_Push_IDX#SUFFIX_ID#</NODE_ID_IDX>
-		<ANIM_NAME_IDX>#FMC_NAME#_Push_IDX#SUFFIX_ID#</ANIM_NAME_IDX>
-	</DefaultTemplateParameters>
-	<EditableTemplateParameters>
-		<AddParams>
-			<NODE_ID_IDX></NODE_ID_IDX>
-			<ANIM_NAME_IDX></ANIM_NAME_IDX>
-		</AddParams>
-	</EditableTemplateParameters>
-	
-	<UseTemplate Name="ASOBO_FMC_PushButton">
-		<HTML_EVENT_ID>IDX</HTML_EVENT_ID>
-		<NODE_ID>#NODE_ID_IDX#</NODE_ID>
-		<ANIM_NAME>#ANIM_NAME_IDX#</ANIM_NAME>
-	</UseTemplate>
-</Template>
-
-<Template Name="ASOBO_FMC_Push_MSG_Template">
-	<DefaultTemplateParameters>
-		<NODE_ID_MSG>#FMC_NAME#_Push_MSG#SUFFIX_ID#</NODE_ID_MSG>
-		<ANIM_NAME_MSG>#FMC_NAME#_Push_MSG#SUFFIX_ID#</ANIM_NAME_MSG>
-	</DefaultTemplateParameters>
-	<EditableTemplateParameters>
-		<AddParams>
-			<NODE_ID_MSG></NODE_ID_MSG>
-			<ANIM_NAME_MSG></ANIM_NAME_MSG>
-		</AddParams>
-	</EditableTemplateParameters>
-	
-	<UseTemplate Name="ASOBO_FMC_PushButton">
-		<HTML_EVENT_ID>MSG</HTML_EVENT_ID>
-		<NODE_ID>#NODE_ID_MSG#</NODE_ID>
-		<ANIM_NAME>#ANIM_NAME_MSG#</ANIM_NAME>
-	</UseTemplate>
-</Template>
-
-<Template Name="ASOBO_FMC_Push_RMS_Template">
-	<DefaultTemplateParameters>
-		<NODE_ID_RMS>#FMC_NAME#_Push_RMS#SUFFIX_ID#</NODE_ID_RMS>
-		<ANIM_NAME_RMS>#FMC_NAME#_Push_RMS#SUFFIX_ID#</ANIM_NAME_RMS>
-	</DefaultTemplateParameters>
-	<EditableTemplateParameters>
-		<AddParams>
-			<NODE_ID_RMS></NODE_ID_RMS>
-			<ANIM_NAME_RMS></ANIM_NAME_RMS>
-		</AddParams>
-	</EditableTemplateParameters>
-	
-	<UseTemplate Name="ASOBO_FMC_PushButton">
-		<HTML_EVENT_ID>RMS</HTML_EVENT_ID>
-		<NODE_ID>#NODE_ID_RMS#</NODE_ID>
-		<ANIM_NAME>#ANIM_NAME_RMS#</ANIM_NAME>
-	</UseTemplate>
-</Template>
-
-<Template Name="ASOBO_FMC_Push_MRK_Template">
-	<DefaultTemplateParameters>
-		<NODE_ID_MRK>#FMC_NAME#_Push_MRK#SUFFIX_ID#</NODE_ID_MRK>
-		<ANIM_NAME_MRK>#FMC_NAME#_Push_MRK#SUFFIX_ID#</ANIM_NAME_MRK>
-	</DefaultTemplateParameters>
-	<EditableTemplateParameters>
-		<AddParams>
-			<NODE_ID_MRK></NODE_ID_MRK>
-			<ANIM_NAME_MRK></ANIM_NAME_MRK>
-		</AddParams>
-	</EditableTemplateParameters>
-	
-	<UseTemplate Name="ASOBO_FMC_PushButton">
-		<HTML_EVENT_ID>MRK</HTML_EVENT_ID>
-		<NODE_ID>#NODE_ID_MRK#</NODE_ID>
-		<ANIM_NAME>#ANIM_NAME_MRK#</ANIM_NAME>
-	</UseTemplate>
-</Template>
-
-
-<Template Name="ASOBO_FMC_Push_DTO_Template">
-	<DefaultTemplateParameters>
-		<NODE_ID_DTO>#FMC_NAME#_Push_DTO#SUFFIX_ID#</NODE_ID_DTO>
-		<ANIM_NAME_DTO>#FMC_NAME#_Push_DTO#SUFFIX_ID#</ANIM_NAME_DTO>
-	</DefaultTemplateParameters>
-	<EditableTemplateParameters>
-		<AddParams>
-			<NODE_ID_DTO></NODE_ID_DTO>
-			<ANIM_NAME_DTO></ANIM_NAME_DTO>
-		</AddParams>
-	</EditableTemplateParameters>
-	
-	<UseTemplate Name="ASOBO_FMC_PushButton">
-		<HTML_EVENT_ID>DTO</HTML_EVENT_ID>
-		<NODE_ID>#NODE_ID_DTO#</NODE_ID>
-		<ANIM_NAME>#ANIM_NAME_DTO#</ANIM_NAME>
-	</UseTemplate>
-</Template>
-
-<Template Name="ASOBO_FMC_Push_BRT_DIM_Template">
-	<DefaultTemplateParameters>
-		<NODE_ID_BRT_DIM>#FMC_NAME#_Push_BRT_DIM#SUFFIX_ID#</NODE_ID_BRT_DIM>
-		<ANIM_NAME_BRT_DIM>#FMC_NAME#_Push_BRT_DIM#SUFFIX_ID#</ANIM_NAME_BRT_DIM>
-		<Condition Valid="SPLIT_BRT_DIM">
-			<True>
-				<NODE_ID_BRT_DIM>#FMC_NAME#_Push_BRT_TOP#SUFFIX_ID#</NODE_ID_BRT_DIM>
-				<ANIM_NAME_BRT_DIM>#FMC_NAME#_Push_BRT_TOP#SUFFIX_ID#</ANIM_NAME_BRT_DIM>
-				<NODE_ID_BRT_DIM_2>#FMC_NAME#_Push_BRT_DOWN#SUFFIX_ID#</NODE_ID_BRT_DIM_2>
-				<ANIM_NAME_BRT_DIM_2>#FMC_NAME#_Push_BRT_DOWN#SUFFIX_ID#</ANIM_NAME_BRT_DIM_2>
-			</True>
-		</Condition>
-		<NODE_ID_BRT_DIM_SEQ1>#FMC_NAME#_Push_BRT_DIM#SUFFIX_ID#_SEQ1</NODE_ID_BRT_DIM_SEQ1>
-		<NODE_ID_BRT_DIM_SEQ2>#FMC_NAME#_Push_BRT_DIM#SUFFIX_ID#_SEQ2</NODE_ID_BRT_DIM_SEQ2>
-		<WWISE_EVENT_1>fmc_push_button_on</WWISE_EVENT_1>  
-		<WWISE_EVENT_2>fmc_push_button_off</WWISE_EVENT_2> 
-		<NORMALIZED_TIME_1>0.3</NORMALIZED_TIME_1>	
-		<NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>	
-	</DefaultTemplateParameters>
-	<EditableTemplateParameters>
-		<AddParams>
-			<NODE_ID_BRT_DIM></NODE_ID_BRT_DIM>
-			<ANIM_NAME_BRT_DIM></ANIM_NAME_BRT_DIM>
-		</AddParams>
-	</EditableTemplateParameters>
-
-	<Condition Valid="POTENTIOMETER">
+		</DefaultTemplateParameters>
+		<EditableTemplateParameters>
+			<AddParams>
+				<NODE_ID_INIT>#FMC_NAME#_Push_Init#SUFFIX_ID#</NODE_ID_INIT>
+				<ANIM_NAME_INIT>#FMC_NAME#_Push_Init#SUFFIX_ID#</ANIM_NAME_INIT>
+			</AddParams>
+		</EditableTemplateParameters>
+
+		<UseTemplate Name="ASOBO_FMC_PushButton">
+			<HTML_EVENT_ID>INIT</HTML_EVENT_ID>
+			<NODE_ID>#NODE_ID_INIT#</NODE_ID>
+			<ANIM_NAME>#ANIM_NAME_INIT#</ANIM_NAME>
+		</UseTemplate>
+	</Template>
+
+	<Template Name="ASOBO_FMC_Push_RTE_Template">
+		<DefaultTemplateParameters>
+			<NODE_ID_RTE>#FMC_NAME#_Push_RTE#SUFFIX_ID#</NODE_ID_RTE>
+			<ANIM_NAME_RTE>#FMC_NAME#_Push_RTE#SUFFIX_ID#</ANIM_NAME_RTE>
+		</DefaultTemplateParameters>
+		<EditableTemplateParameters>
+			<AddParams>
+				<NODE_ID_RTE></NODE_ID_RTE>
+				<ANIM_NAME_RTE></ANIM_NAME_RTE>
+			</AddParams>
+		</EditableTemplateParameters>
+
+		<UseTemplate Name="ASOBO_FMC_PushButton">
+			<HTML_EVENT_ID>RTE</HTML_EVENT_ID>
+			<NODE_ID>#NODE_ID_RTE#</NODE_ID>
+			<ANIM_NAME>#ANIM_NAME_RTE#</ANIM_NAME>
+		</UseTemplate>
+	</Template>
+
+	<Template Name="ASOBO_FMC_Push_DEP_ARR_Template">
+		<DefaultTemplateParameters>
+			<NODE_ID_DEP_ARR>#FMC_NAME#_Push_DEP_ARR#SUFFIX_ID#</NODE_ID_DEP_ARR>
+			<ANIM_NAME_DEP_ARR>#FMC_NAME#_Push_DEP_ARR#SUFFIX_ID#</ANIM_NAME_DEP_ARR>
+		</DefaultTemplateParameters>
+		<EditableTemplateParameters>
+			<AddParams>
+				<NODE_ID_DEP_ARR></NODE_ID_DEP_ARR>
+				<ANIM_NAME_DEP_ARR></ANIM_NAME_DEP_ARR>
+			</AddParams>
+		</EditableTemplateParameters>
+
+		<UseTemplate Name="ASOBO_FMC_PushButton">
+			<HTML_EVENT_ID>DEPARR</HTML_EVENT_ID>
+			<NODE_ID>#NODE_ID_DEP_ARR#</NODE_ID>
+			<ANIM_NAME>#ANIM_NAME_DEP_ARR#</ANIM_NAME>
+		</UseTemplate>
+	</Template>
+
+	<Template Name="ASOBO_FMC_Push_ATC_Template">
+		<DefaultTemplateParameters>
+			<NODE_ID_ATC>#FMC_NAME#_Push_ATC#SUFFIX_ID#</NODE_ID_ATC>
+			<ANIM_NAME_ATC>#FMC_NAME#_Push_ATC#SUFFIX_ID#</ANIM_NAME_ATC>
+		</DefaultTemplateParameters>
+		<EditableTemplateParameters>
+			<AddParams>
+				<NODE_ID_ATC></NODE_ID_ATC>
+				<ANIM_NAME_ATC></ANIM_NAME_ATC>
+			</AddParams>
+		</EditableTemplateParameters>
+
+		<UseTemplate Name="ASOBO_FMC_PushButton">
+			<HTML_EVENT_ID>ATC</HTML_EVENT_ID>
+			<NODE_ID>#NODE_ID_ATC#</NODE_ID>
+			<ANIM_NAME>#ANIM_NAME_ATC#</ANIM_NAME>
+		</UseTemplate>
+	</Template>
+
+	<Template Name="ASOBO_FMC_Push_VNAV_Template">
+		<DefaultTemplateParameters>
+			<NODE_ID_VNAV>#FMC_NAME#_Push_VNAV#SUFFIX_ID#</NODE_ID_VNAV>
+			<ANIM_NAME_VNAV>#FMC_NAME#_Push_VNAV#SUFFIX_ID#</ANIM_NAME_VNAV>
+		</DefaultTemplateParameters>
+		<EditableTemplateParameters>
+			<AddParams>
+				<NODE_ID_VNAV></NODE_ID_VNAV>
+				<ANIM_NAME_VNAV></ANIM_NAME_VNAV>
+			</AddParams>
+		</EditableTemplateParameters>
+
+		<UseTemplate Name="ASOBO_FMC_PushButton">
+			<HTML_EVENT_ID>VNAV</HTML_EVENT_ID>
+			<NODE_ID>#NODE_ID_VNAV#</NODE_ID>
+			<ANIM_NAME>#ANIM_NAME_VNAV#</ANIM_NAME>
+		</UseTemplate>
+	</Template>
+
+	<Template Name="ASOBO_FMC_Push_BRT_Template">
+		<DefaultTemplateParameters>
+			<NODE_ID_BRT>#FMC_NAME#_Push_BRT#SUFFIX_ID#</NODE_ID_BRT>
+			<ANIM_NAME_BRT>#FMC_NAME#_Push_BRT#SUFFIX_ID#</ANIM_NAME_BRT>
+		</DefaultTemplateParameters>
+		<EditableTemplateParameters>
+			<AddParams>
+				<NODE_ID_BRT></NODE_ID_BRT>
+				<ANIM_NAME_BRT></ANIM_NAME_BRT>
+			</AddParams>
+		</EditableTemplateParameters>
+
+		<UseTemplate Name="ASOBO_FMC_PushButton">
+			<HTML_EVENT_ID>BRT</HTML_EVENT_ID>
+			<NODE_ID>#NODE_ID_BRT#</NODE_ID>
+			<ANIM_NAME>#ANIM_NAME_BRT#</ANIM_NAME>
+		</UseTemplate>
+	</Template>
+
+	<Template Name="ASOBO_FMC_Push_FIX_Template">
+		<DefaultTemplateParameters>
+			<NODE_ID_FIX>#FMC_NAME#_Push_FIX#SUFFIX_ID#</NODE_ID_FIX>
+			<ANIM_NAME_FIX>#FMC_NAME#_Push_FIX#SUFFIX_ID#</ANIM_NAME_FIX>
+		</DefaultTemplateParameters>
+		<EditableTemplateParameters>
+			<AddParams>
+				<NODE_ID_FIX></NODE_ID_FIX>
+				<ANIM_NAME_FIX></ANIM_NAME_FIX>
+			</AddParams>
+		</EditableTemplateParameters>
+
+		<UseTemplate Name="ASOBO_FMC_PushButton">
+			<HTML_EVENT_ID>FIX</HTML_EVENT_ID>
+			<NODE_ID>#NODE_ID_FIX#</NODE_ID>
+			<ANIM_NAME>#ANIM_NAME_FIX#</ANIM_NAME>
+		</UseTemplate>
+	</Template>
+
+	<Template Name="ASOBO_FMC_Push_LEGS_Template">
+		<DefaultTemplateParameters>
+			<NODE_ID_LEGS>#FMC_NAME#_Push_LEGS#SUFFIX_ID#</NODE_ID_LEGS>
+			<ANIM_NAME_LEGS>#FMC_NAME#_Push_LEGS#SUFFIX_ID#</ANIM_NAME_LEGS>
+		</DefaultTemplateParameters>
+		<EditableTemplateParameters>
+			<AddParams>
+				<NODE_ID_LEGS></NODE_ID_LEGS>
+				<ANIM_NAME_LEGS></ANIM_NAME_LEGS>
+			</AddParams>
+		</EditableTemplateParameters>
+
+		<UseTemplate Name="ASOBO_FMC_PushButton">
+			<HTML_EVENT_ID>LEGS</HTML_EVENT_ID>
+			<NODE_ID>#NODE_ID_LEGS#</NODE_ID>
+			<ANIM_NAME>#ANIM_NAME_LEGS#</ANIM_NAME>
+		</UseTemplate>
+	</Template>
+
+	<Template Name="ASOBO_FMC_Push_HOLD_Template">
+		<DefaultTemplateParameters>
+			<NODE_ID_HOLD>#FMC_NAME#_Push_HOLD#SUFFIX_ID#</NODE_ID_HOLD>
+			<ANIM_NAME_HOLD>#FMC_NAME#_Push_HOLD#SUFFIX_ID#</ANIM_NAME_HOLD>
+		</DefaultTemplateParameters>
+		<EditableTemplateParameters>
+			<AddParams>
+				<NODE_ID_HOLD></NODE_ID_HOLD>
+				<ANIM_NAME_HOLD></ANIM_NAME_HOLD>
+			</AddParams>
+		</EditableTemplateParameters>
+
+		<UseTemplate Name="ASOBO_FMC_PushButton">
+			<HTML_EVENT_ID>HOLD</HTML_EVENT_ID>
+			<NODE_ID>#NODE_ID_HOLD#</NODE_ID>
+			<ANIM_NAME>#ANIM_NAME_HOLD#</ANIM_NAME>
+		</UseTemplate>
+	</Template>
+
+	<Template Name="ASOBO_FMC_Push_FMC_COMM_Template">
+		<DefaultTemplateParameters>
+			<NODE_ID_FMC_COMM>#FMC_NAME#_Push_FMC_COMM#SUFFIX_ID#</NODE_ID_FMC_COMM>
+			<ANIM_NAME_FMC_COMM>#FMC_NAME#_Push_FMC_COMM#SUFFIX_ID#</ANIM_NAME_FMC_COMM>
+		</DefaultTemplateParameters>
+		<EditableTemplateParameters>
+			<AddParams>
+				<NODE_ID_FMC_COMM></NODE_ID_FMC_COMM>
+				<ANIM_NAME_FMC_COMM></ANIM_NAME_FMC_COMM>
+			</AddParams>
+		</EditableTemplateParameters>
+
+		<UseTemplate Name="ASOBO_FMC_PushButton">
+			<HTML_EVENT_ID>FMCCOMM</HTML_EVENT_ID>
+			<NODE_ID>#NODE_ID_FMC_COMM#</NODE_ID>
+			<ANIM_NAME>#ANIM_NAME_FMC_COMM#</ANIM_NAME>
+		</UseTemplate>
+	</Template>
+
+	<Template Name="ASOBO_FMC_Push_PROG_Template">
+		<DefaultTemplateParameters>
+			<NODE_ID_PROG>#FMC_NAME#_Push_PROG#SUFFIX_ID#</NODE_ID_PROG>
+			<ANIM_NAME_PROG>#FMC_NAME#_Push_PROG#SUFFIX_ID#</ANIM_NAME_PROG>
+		</DefaultTemplateParameters>
+		<EditableTemplateParameters>
+			<AddParams>
+				<NODE_ID_PROG></NODE_ID_PROG>
+				<ANIM_NAME_PROG></ANIM_NAME_PROG>
+			</AddParams>
+		</EditableTemplateParameters>
+
+		<UseTemplate Name="ASOBO_FMC_PushButton">
+			<HTML_EVENT_ID>PROG</HTML_EVENT_ID>
+			<NODE_ID>#NODE_ID_PROG#</NODE_ID>
+			<ANIM_NAME>#ANIM_NAME_PROG#</ANIM_NAME>
+		</UseTemplate>
+	</Template>
+
+	<Template Name="ASOBO_FMC_Push_EXEC_Template">
+		<DefaultTemplateParameters>
+			<NODE_ID_EXEC>#FMC_NAME#_Push_EXEC#SUFFIX_ID#</NODE_ID_EXEC>
+			<ANIM_NAME_EXEC>#FMC_NAME#_Push_EXEC#SUFFIX_ID#</ANIM_NAME_EXEC>
+		</DefaultTemplateParameters>
+		<EditableTemplateParameters>
+			<AddParams>
+				<NODE_ID_EXEC></NODE_ID_EXEC>
+				<ANIM_NAME_EXEC></ANIM_NAME_EXEC>
+			</AddParams>
+		</EditableTemplateParameters>
+
+		<UseTemplate Name="ASOBO_FMC_PushButton">
+			<HTML_EVENT_ID>EXEC</HTML_EVENT_ID>
+			<NODE_ID>#NODE_ID_EXEC#</NODE_ID>
+			<ANIM_NAME>#ANIM_NAME_EXEC#</ANIM_NAME>
+		</UseTemplate>
+	</Template>
+
+	<Template Name="ASOBO_FMC_Emissive_EXEC_Template">
+		<DefaultTemplateParameters>
+			<NODE_ID_EMISSIVE_EXEC>#FMC_NAME#_Emissive_EXEC#SUFFIX_ID#</NODE_ID_EMISSIVE_EXEC>
+		</DefaultTemplateParameters>
+		<EditableTemplateParameters>
+			<AddParams>
+				<NODE_ID_EMISSIVE_EXEC></NODE_ID_EMISSIVE_EXEC>
+			</AddParams>
+		</EditableTemplateParameters>
+
+		<UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
+			<NODE_ID>#NODE_ID_EMISSIVE_EXEC#</NODE_ID>
+			<SIMVAR_POWER_SETTING></SIMVAR_POWER_SETTING>
+			<POTENTIOMETER></POTENTIOMETER>
+			<FAILURE>1</FAILURE>
+			<EMISSIVE_CODE>(L:FMC_EXEC_ACTIVE)</EMISSIVE_CODE>
+		</UseTemplate>
+	</Template>
+
+
+	<Template Name="ASOBO_FMC_Push_MENU_Template">
+		<DefaultTemplateParameters>
+			<NODE_ID_MENU>#FMC_NAME#_Push_MENU#SUFFIX_ID#</NODE_ID_MENU>
+			<ANIM_NAME_MENU>#FMC_NAME#_Push_MENU#SUFFIX_ID#</ANIM_NAME_MENU>
+		</DefaultTemplateParameters>
+		<EditableTemplateParameters>
+			<AddParams>
+				<NODE_ID_MENU></NODE_ID_MENU>
+				<ANIM_NAME_MENU></ANIM_NAME_MENU>
+			</AddParams>
+		</EditableTemplateParameters>
+
+		<UseTemplate Name="ASOBO_FMC_PushButton">
+			<HTML_EVENT_ID>MENU</HTML_EVENT_ID>
+			<NODE_ID>#NODE_ID_MENU#</NODE_ID>
+			<ANIM_NAME>#ANIM_NAME_MENU#</ANIM_NAME>
+		</UseTemplate>
+	</Template>
+
+	<Template Name="ASOBO_FMC_Push_NAV_RAD_Template">
+		<DefaultTemplateParameters>
+			<NODE_ID_NAV_RAD>#FMC_NAME#_Push_NAV_RAD#SUFFIX_ID#</NODE_ID_NAV_RAD>
+			<ANIM_NAME_NAV_RAD>#FMC_NAME#_Push_NAV_RAD#SUFFIX_ID#</ANIM_NAME_NAV_RAD>
+		</DefaultTemplateParameters>
+		<EditableTemplateParameters>
+			<AddParams>
+				<NODE_ID_NAV_RAD></NODE_ID_NAV_RAD>
+				<ANIM_NAME_NAV_RAD></ANIM_NAME_NAV_RAD>
+			</AddParams>
+		</EditableTemplateParameters>
+
+		<UseTemplate Name="ASOBO_FMC_PushButton">
+			<HTML_EVENT_ID>NAVRAD</HTML_EVENT_ID>
+			<NODE_ID>#NODE_ID_NAV_RAD#</NODE_ID>
+			<ANIM_NAME>#ANIM_NAME_NAV_RAD#</ANIM_NAME>
+		</UseTemplate>
+	</Template>
+
+	<Template Name="ASOBO_FMC_Push_PREV_PAGE_Template">
+		<DefaultTemplateParameters>
+			<NODE_ID_PREV_PAGE>#FMC_NAME#_Push_PREV_PAGE#SUFFIX_ID#</NODE_ID_PREV_PAGE>
+			<ANIM_NAME_PREV_PAGE>#FMC_NAME#_Push_PREV_PAGE#SUFFIX_ID#</ANIM_NAME_PREV_PAGE>
+		</DefaultTemplateParameters>
+		<EditableTemplateParameters>
+			<AddParams>
+				<NODE_ID_PREV_PAGE></NODE_ID_PREV_PAGE>
+				<ANIM_NAME_PREV_PAGE></ANIM_NAME_PREV_PAGE>
+			</AddParams>
+		</EditableTemplateParameters>
+
+		<UseTemplate Name="ASOBO_FMC_PushButton">
+			<HTML_EVENT_ID>PREVPAGE</HTML_EVENT_ID>
+			<NODE_ID>#NODE_ID_PREV_PAGE#</NODE_ID>
+			<ANIM_NAME>#ANIM_NAME_PREV_PAGE#</ANIM_NAME>
+		</UseTemplate>
+	</Template>
+
+	<Template Name="ASOBO_FMC_Push_NEXT_PAGE_Template">
+		<DefaultTemplateParameters>
+			<NODE_ID_NEXT_PAGE>#FMC_NAME#_Push_NEXT_PAGE#SUFFIX_ID#</NODE_ID_NEXT_PAGE>
+			<ANIM_NAME_NEXT_PAGE>#FMC_NAME#_Push_NEXT_PAGE#SUFFIX_ID#</ANIM_NAME_NEXT_PAGE>
+		</DefaultTemplateParameters>
+		<EditableTemplateParameters>
+			<AddParams>
+				<NODE_ID_NEXT_PAGE></NODE_ID_NEXT_PAGE>
+				<ANIM_NAME_NEXT_PAGE></ANIM_NAME_NEXT_PAGE>
+			</AddParams>
+		</EditableTemplateParameters>
+
+		<UseTemplate Name="ASOBO_FMC_PushButton">
+			<HTML_EVENT_ID>NEXTPAGE</HTML_EVENT_ID>
+			<NODE_ID>#NODE_ID_NEXT_PAGE#</NODE_ID>
+			<ANIM_NAME>#ANIM_NAME_NEXT_PAGE#</ANIM_NAME>
+		</UseTemplate>
+	</Template>
+
+	<Template Name="ASOBO_FMC_Push_SP_Template">
+		<DefaultTemplateParameters>
+			<NODE_ID_SP>#FMC_NAME#_Push_SP#SUFFIX_ID#</NODE_ID_SP>
+			<ANIM_NAME_SP>#FMC_NAME#_Push_SP#SUFFIX_ID#</ANIM_NAME_SP>
+		</DefaultTemplateParameters>
+		<EditableTemplateParameters>
+			<AddParams>
+				<NODE_ID_SP></NODE_ID_SP>
+				<ANIM_NAME_SP></ANIM_NAME_SP>
+			</AddParams>
+		</EditableTemplateParameters>
+
+		<UseTemplate Name="ASOBO_FMC_PushButton">
+			<HTML_EVENT_ID>SP</HTML_EVENT_ID>
+			<NODE_ID>#NODE_ID_SP#</NODE_ID>
+			<ANIM_NAME>#ANIM_NAME_SP#</ANIM_NAME>
+		</UseTemplate>
+	</Template>
+
+	<Template Name="ASOBO_FMC_Push_DEL_Template">
+		<DefaultTemplateParameters>
+			<NODE_ID_DEL>#FMC_NAME#_Push_DEL#SUFFIX_ID#</NODE_ID_DEL>
+			<ANIM_NAME_DEL>#FMC_NAME#_Push_DEL#SUFFIX_ID#</ANIM_NAME_DEL>
+		</DefaultTemplateParameters>
+		<EditableTemplateParameters>
+			<AddParams>
+				<NODE_ID_DEL></NODE_ID_DEL>
+				<ANIM_NAME_DEL></ANIM_NAME_DEL>
+			</AddParams>
+		</EditableTemplateParameters>
+
+		<UseTemplate Name="ASOBO_FMC_PushButton">
+			<HTML_EVENT_ID>DEL</HTML_EVENT_ID>
+			<NODE_ID>#NODE_ID_DEL#</NODE_ID>
+			<ANIM_NAME>#ANIM_NAME_DEL#</ANIM_NAME>
+		</UseTemplate>
+	</Template>
+
+	<Template Name="ASOBO_FMC_Push_CLR_Template">
+		<DefaultTemplateParameters>
+			<NODE_ID_CLR>#FMC_NAME#_Push_CLR#SUFFIX_ID#</NODE_ID_CLR>
+			<ANIM_NAME_CLR>#FMC_NAME#_Push_CLR#SUFFIX_ID#</ANIM_NAME_CLR>
+		</DefaultTemplateParameters>
+		<EditableTemplateParameters>
+			<AddParams>
+				<NODE_ID_CLR></NODE_ID_CLR>
+				<ANIM_NAME_CLR></ANIM_NAME_CLR>
+			</AddParams>
+		</EditableTemplateParameters>
+
+		<UseTemplate Name="ASOBO_FMC_PushButton">
+			<HTML_EVENT_ID>CLR</HTML_EVENT_ID>
+			<NODE_ID>#NODE_ID_CLR#</NODE_ID>
+			<ANIM_NAME>#ANIM_NAME_CLR#</ANIM_NAME>
+		</UseTemplate>
+	</Template>
+
+	<Template Name="ASOBO_FMC_Push_DIV_Template">
+		<DefaultTemplateParameters>
+			<NODE_ID_DIV>#FMC_NAME#_Push_DIV#SUFFIX_ID#</NODE_ID_DIV>
+			<ANIM_NAME_DIV>#FMC_NAME#_Push_DIV#SUFFIX_ID#</ANIM_NAME_DIV>
+		</DefaultTemplateParameters>
+		<EditableTemplateParameters>
+			<AddParams>
+				<NODE_ID_DIV></NODE_ID_DIV>
+				<ANIM_NAME_DIV></ANIM_NAME_DIV>
+			</AddParams>
+		</EditableTemplateParameters>
+
+		<UseTemplate Name="ASOBO_FMC_PushButton">
+			<HTML_EVENT_ID>DIV</HTML_EVENT_ID>
+			<NODE_ID>#NODE_ID_DIV#</NODE_ID>
+			<ANIM_NAME>#ANIM_NAME_DIV#</ANIM_NAME>
+		</UseTemplate>
+	</Template>
+
+	<Template Name="ASOBO_FMC_Emissive_DSPL_Template">
+		<DefaultTemplateParameters>
+			<NODE_ID_DSPL>#FMC_NAME#_Emissive_DSPL#SUFFIX_ID#</NODE_ID_DSPL>
+		</DefaultTemplateParameters>
+		<EditableTemplateParameters>
+			<AddParams>
+				<NODE_ID_DSPL></NODE_ID_DSPL>
+			</AddParams>
+		</EditableTemplateParameters>
+
+		<UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
+			<NODE_ID>#NODE_ID_DSPL#</NODE_ID>
+			<EMISSIVE_CODE>0</EMISSIVE_CODE><!-- TODO-->
+		</UseTemplate>
+	</Template>
+
+	<Template Name="ASOBO_FMC_Emissive_FAIL_Template">
+		<DefaultTemplateParameters>
+			<NODE_ID_FAIL>#FMC_NAME#_Emissive_FAIL#SUFFIX_ID#</NODE_ID_FAIL>
+		</DefaultTemplateParameters>
+		<EditableTemplateParameters>
+			<AddParams>
+				<NODE_ID_FAIL></NODE_ID_FAIL>
+			</AddParams>
+		</EditableTemplateParameters>
+
+		<UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
+			<NODE_ID>#NODE_ID_FAIL#</NODE_ID>
+			<EMISSIVE_CODE>0</EMISSIVE_CODE><!-- TODO-->
+		</UseTemplate>
+	</Template>
+
+
+	<Template Name="ASOBO_FMC_Emissive_MSG_Template">
+		<DefaultTemplateParameters>
+			<NODE_ID_MSG>#FMC_NAME#_Emissive_MSG#SUFFIX_ID#</NODE_ID_MSG>
+		</DefaultTemplateParameters>
+		<EditableTemplateParameters>
+			<AddParams>
+				<NODE_ID_MSG></NODE_ID_MSG>
+			</AddParams>
+		</EditableTemplateParameters>
+
+		<UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
+			<NODE_ID>#NODE_ID_MSG#</NODE_ID>
+			<EMISSIVE_CODE>0</EMISSIVE_CODE><!-- TODO-->
+		</UseTemplate>
+	</Template>
+
+
+	<Template Name="ASOBO_FMC_Emissive_OFST_Template">
+		<DefaultTemplateParameters>
+			<NODE_ID_OFST>#FMC_NAME#_Emissive_OFST#SUFFIX_ID#</NODE_ID_OFST>
+		</DefaultTemplateParameters>
+		<EditableTemplateParameters>
+			<AddParams>
+				<NODE_ID_OFST></NODE_ID_OFST>
+			</AddParams>
+		</EditableTemplateParameters>
+
+		<UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
+			<NODE_ID>#NODE_ID_OFST#</NODE_ID>
+			<EMISSIVE_CODE>0</EMISSIVE_CODE><!-- TODO-->
+		</UseTemplate>
+	</Template>
+
+	<Template Name="ASOBO_FMC_Push_Screen_Option_Left_Template">
+		<DefaultTemplateParameters>
+			<NODE_ID_L#BTN_ID#>#FMC_NAME#_Push_L#BTN_ID##SUFFIX_ID#</NODE_ID_L#BTN_ID#>
+			<ANIM_NAME_L#BTN_ID#>#FMC_NAME#_Push_L#BTN_ID##SUFFIX_ID#</ANIM_NAME_L#BTN_ID#>
+		</DefaultTemplateParameters>
+
+		<UseTemplate Name="ASOBO_FMC_PushButton">
+			<HTML_EVENT_ID>L#BTN_ID#</HTML_EVENT_ID>
+			<NODE_ID Process="Param">NODE_ID_L#BTN_ID#</NODE_ID>
+			<ANIM_NAME Process="Param">ANIM_NAME_L#BTN_ID#</ANIM_NAME>
+		</UseTemplate>
+	</Template>
+
+	<Template Name="ASOBO_FMC_Push_Screen_Option_Right_Template">
+		<DefaultTemplateParameters>
+			<NODE_ID_R#BTN_ID#>#FMC_NAME#_Push_R#BTN_ID##SUFFIX_ID#</NODE_ID_R#BTN_ID#>
+			<ANIM_NAME_R#BTN_ID#>#FMC_NAME#_Push_R#BTN_ID##SUFFIX_ID#</ANIM_NAME_R#BTN_ID#>
+		</DefaultTemplateParameters>
+
+		<UseTemplate Name="ASOBO_FMC_PushButton">
+			<HTML_EVENT_ID>R#BTN_ID#</HTML_EVENT_ID>
+			<NODE_ID Process="Param">NODE_ID_R#BTN_ID#</NODE_ID>
+			<ANIM_NAME Process="Param">ANIM_NAME_R#BTN_ID#</ANIM_NAME>
+		</UseTemplate>
+	</Template>
+
+	<Template Name="ASOBO_FMC_Push_Character_Template">
+		<DefaultTemplateParameters>
+			<NODE_ID_#BTN_ID#>#FMC_NAME#_Push_#BTN_ID##SUFFIX_ID#</NODE_ID_#BTN_ID#>
+			<ANIM_NAME_#BTN_ID#>#FMC_NAME#_Push_#BTN_ID##SUFFIX_ID#</ANIM_NAME_#BTN_ID#>
+		</DefaultTemplateParameters>
+
+		<UseTemplate Name="ASOBO_FMC_PushButton">
+			<HTML_EVENT_ID>#BTN_ID#</HTML_EVENT_ID>
+			<NODE_ID Process="Param">NODE_ID_#BTN_ID#</NODE_ID>
+			<ANIM_NAME Process="Param">ANIM_NAME_#BTN_ID#</ANIM_NAME>
+		</UseTemplate>
+	</Template>
+
+	<Template Name="ASOBO_FMC_Characters_SubTemplate">
+		<UseTemplate Name="ASOBO_FMC_Push_Character_Template">
+			<BTN_ID>A</BTN_ID>
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_Character_Template">
+			<BTN_ID>B</BTN_ID>
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_Character_Template">
+			<BTN_ID>C</BTN_ID>
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_Character_Template">
+			<BTN_ID>D</BTN_ID>
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_Character_Template">
+			<BTN_ID>E</BTN_ID>
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_Character_Template">
+			<BTN_ID>F</BTN_ID>
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_Character_Template">
+			<BTN_ID>G</BTN_ID>
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_Character_Template">
+			<BTN_ID>H</BTN_ID>
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_Character_Template">
+			<BTN_ID>I</BTN_ID>
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_Character_Template">
+			<BTN_ID>J</BTN_ID>
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_Character_Template">
+			<BTN_ID>K</BTN_ID>
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_Character_Template">
+			<BTN_ID>L</BTN_ID>
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_Character_Template">
+			<BTN_ID>M</BTN_ID>
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_Character_Template">
+			<BTN_ID>N</BTN_ID>
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_Character_Template">
+			<BTN_ID>O</BTN_ID>
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_Character_Template">
+			<BTN_ID>P</BTN_ID>
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_Character_Template">
+			<BTN_ID>Q</BTN_ID>
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_Character_Template">
+			<BTN_ID>R</BTN_ID>
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_Character_Template">
+			<BTN_ID>S</BTN_ID>
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_Character_Template">
+			<BTN_ID>T</BTN_ID>
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_Character_Template">
+			<BTN_ID>U</BTN_ID>
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_Character_Template">
+			<BTN_ID>V</BTN_ID>
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_Character_Template">
+			<BTN_ID>W</BTN_ID>
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_Character_Template">
+			<BTN_ID>X</BTN_ID>
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_Character_Template">
+			<BTN_ID>Y</BTN_ID>
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_Character_Template">
+			<BTN_ID>Z</BTN_ID>
+		</UseTemplate>
+	</Template>
+	<Template Name="ASOBO_FMC_Numbers_SubTemplate">
+		<UseTemplate Name="ASOBO_FMC_Push_Character_Template">
+			<BTN_ID>0</BTN_ID>
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_Character_Template">
+			<BTN_ID>1</BTN_ID>
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_Character_Template">
+			<BTN_ID>2</BTN_ID>
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_Character_Template">
+			<BTN_ID>3</BTN_ID>
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_Character_Template">
+			<BTN_ID>4</BTN_ID>
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_Character_Template">
+			<BTN_ID>5</BTN_ID>
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_Character_Template">
+			<BTN_ID>6</BTN_ID>
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_Character_Template">
+			<BTN_ID>7</BTN_ID>
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_Character_Template">
+			<BTN_ID>8</BTN_ID>
+		</UseTemplate>
+		<UseTemplate Name="ASOBO_FMC_Push_Character_Template">
+			<BTN_ID>9</BTN_ID>
+		</UseTemplate>
+	</Template>
+
+	<Template Name="ASOBO_FMC_Push_Dot_Template">
+		<DefaultTemplateParameters>
+			<NODE_ID_DOT>#FMC_NAME#_Push_Dot#SUFFIX_ID#</NODE_ID_DOT>
+			<ANIM_NAME_DOT>#FMC_NAME#_Push_Dot#SUFFIX_ID#</ANIM_NAME_DOT>
+		</DefaultTemplateParameters>
+		<EditableTemplateParameters>
+			<AddParams>
+				<NODE_ID_DOT></NODE_ID_DOT>
+				<ANIM_NAME_DOT></ANIM_NAME_DOT>
+			</AddParams>
+		</EditableTemplateParameters>
+
+		<UseTemplate Name="ASOBO_FMC_PushButton">
+			<HTML_EVENT_ID>DOT</HTML_EVENT_ID>
+			<NODE_ID>#NODE_ID_DOT#</NODE_ID>
+			<ANIM_NAME>#ANIM_NAME_DOT#</ANIM_NAME>
+		</UseTemplate>
+	</Template>
+
+	<Template Name="ASOBO_FMC_Push_PLUSMINUS_Template">
+		<DefaultTemplateParameters>
+			<NODE_ID_PLUSMINUS>#FMC_NAME#_Push_PLUSMINUS#SUFFIX_ID#</NODE_ID_PLUSMINUS>
+			<ANIM_NAME_PLUSMINUS>#FMC_NAME#_Push_PLUSMINUS#SUFFIX_ID#</ANIM_NAME_PLUSMINUS>
+		</DefaultTemplateParameters>
+		<EditableTemplateParameters>
+			<AddParams>
+				<NODE_ID_PLUSMINUS></NODE_ID_PLUSMINUS>
+				<ANIM_NAME_PLUSMINUS></ANIM_NAME_PLUSMINUS>
+			</AddParams>
+		</EditableTemplateParameters>
+
+		<UseTemplate Name="ASOBO_FMC_PushButton">
+			<HTML_EVENT_ID>PLUSMINUS</HTML_EVENT_ID>
+			<NODE_ID>#NODE_ID_PLUSMINUS#</NODE_ID>
+			<ANIM_NAME>#ANIM_NAME_PLUSMINUS#</ANIM_NAME>
+		</UseTemplate>
+	</Template>
+
+	<Template Name="ASOBO_FMC_Push_ENTER_Template">
+		<DefaultTemplateParameters>
+			<NODE_ID_ENTER>#FMC_NAME#_Push_ENTER#SUFFIX_ID#</NODE_ID_ENTER>
+			<ANIM_NAME_ENTER>#FMC_NAME#_Push_ENTER#SUFFIX_ID#</ANIM_NAME_ENTER>
+		</DefaultTemplateParameters>
+		<EditableTemplateParameters>
+			<AddParams>
+				<NODE_ID_ENTER></NODE_ID_ENTER>
+				<ANIM_NAME_ENTER></ANIM_NAME_ENTER>
+			</AddParams>
+		</EditableTemplateParameters>
+
+		<UseTemplate Name="ASOBO_FMC_PushButton">
+			<HTML_EVENT_ID>ENTER</HTML_EVENT_ID>
+			<NODE_ID>#NODE_ID_ENTER#</NODE_ID>
+			<ANIM_NAME>#ANIM_NAME_ENTER#</ANIM_NAME>
+		</UseTemplate>
+	</Template>
+
+	<Template Name="ASOBO_FMC_Push_DIR_Template">
+		<DefaultTemplateParameters>
+			<NODE_ID_DIR>#FMC_NAME#_Push_DIR#SUFFIX_ID#</NODE_ID_DIR>
+			<ANIM_NAME_DIR>#FMC_NAME#_Push_DIR#SUFFIX_ID#</ANIM_NAME_DIR>
+		</DefaultTemplateParameters>
+		<EditableTemplateParameters>
+			<AddParams>
+				<NODE_ID_DIR></NODE_ID_DIR>
+				<ANIM_NAME_DIR></ANIM_NAME_DIR>
+			</AddParams>
+		</EditableTemplateParameters>
+
+		<UseTemplate Name="ASOBO_FMC_PushButton">
+			<HTML_EVENT_ID>DIR</HTML_EVENT_ID>
+			<NODE_ID>#NODE_ID_DIR#</NODE_ID>
+			<ANIM_NAME>#ANIM_NAME_DIR#</ANIM_NAME>
+		</UseTemplate>
+	</Template>
+
+	<Template Name="ASOBO_FMC_Push_PERF_Template">
+		<DefaultTemplateParameters>
+			<NODE_ID_PERF>#FMC_NAME#_Push_PERF#SUFFIX_ID#</NODE_ID_PERF>
+			<ANIM_NAME_PERF>#FMC_NAME#_Push_PERF#SUFFIX_ID#</ANIM_NAME_PERF>
+		</DefaultTemplateParameters>
+		<EditableTemplateParameters>
+			<AddParams>
+				<NODE_ID_PERF></NODE_ID_PERF>
+				<ANIM_NAME_PERF></ANIM_NAME_PERF>
+			</AddParams>
+		</EditableTemplateParameters>
+
+		<UseTemplate Name="ASOBO_FMC_PushButton">
+			<HTML_EVENT_ID>PERF</HTML_EVENT_ID>
+			<NODE_ID>#NODE_ID_PERF#</NODE_ID>
+			<ANIM_NAME>#ANIM_NAME_PERF#</ANIM_NAME>
+		</UseTemplate>
+	</Template>
+
+	<Template Name="ASOBO_FMC_Push_DATA_Template">
+		<DefaultTemplateParameters>
+			<NODE_ID_DATA>#FMC_NAME#_Push_DATA#SUFFIX_ID#</NODE_ID_DATA>
+			<ANIM_NAME_DATA>#FMC_NAME#_Push_DATA#SUFFIX_ID#</ANIM_NAME_DATA>
+		</DefaultTemplateParameters>
+		<EditableTemplateParameters>
+			<AddParams>
+				<NODE_ID_DATA></NODE_ID_DATA>
+				<ANIM_NAME_DATA></ANIM_NAME_DATA>
+			</AddParams>
+		</EditableTemplateParameters>
+
+		<UseTemplate Name="ASOBO_FMC_PushButton">
+			<HTML_EVENT_ID>DATA</HTML_EVENT_ID>
+			<NODE_ID>#NODE_ID_DATA#</NODE_ID>
+			<ANIM_NAME>#ANIM_NAME_DATA#</ANIM_NAME>
+		</UseTemplate>
+	</Template>
+
+	<Template Name="ASOBO_FMC_Push_FPLN_Template">
+		<DefaultTemplateParameters>
+			<NODE_ID_FPLN>#FMC_NAME#_Push_FPLN#SUFFIX_ID#</NODE_ID_FPLN>
+			<ANIM_NAME_FPLN>#FMC_NAME#_Push_FPLN#SUFFIX_ID#</ANIM_NAME_FPLN>
+		</DefaultTemplateParameters>
+		<EditableTemplateParameters>
+			<AddParams>
+				<NODE_ID_FPLN></NODE_ID_FPLN>
+				<ANIM_NAME_FPLN></ANIM_NAME_FPLN>
+			</AddParams>
+		</EditableTemplateParameters>
+
+		<UseTemplate Name="ASOBO_FMC_PushButton">
+			<HTML_EVENT_ID>FPLN</HTML_EVENT_ID>
+			<NODE_ID>#NODE_ID_FPLN#</NODE_ID>
+			<ANIM_NAME>#ANIM_NAME_FPLN#</ANIM_NAME>
+		</UseTemplate>
+	</Template>
+
+	<Template Name="ASOBO_FMC_Push_FUEL_PRED_Template">
+		<DefaultTemplateParameters>
+			<NODE_ID_FUEL_PRED>#FMC_NAME#_Push_FUEL_PRED#SUFFIX_ID#</NODE_ID_FUEL_PRED>
+			<ANIM_NAME_FUEL_PRED>#FMC_NAME#_Push_FUEL_PRED#SUFFIX_ID#</ANIM_NAME_FUEL_PRED>
+		</DefaultTemplateParameters>
+		<EditableTemplateParameters>
+			<AddParams>
+				<NODE_ID_FUEL_PRED></NODE_ID_FUEL_PRED>
+				<ANIM_NAME_FUEL_PRED></ANIM_NAME_FUEL_PRED>
+			</AddParams>
+		</EditableTemplateParameters>
+
+		<UseTemplate Name="ASOBO_FMC_PushButton">
+			<HTML_EVENT_ID>FUEL</HTML_EVENT_ID>
+			<NODE_ID>#NODE_ID_FUEL_PRED#</NODE_ID>
+			<ANIM_NAME>#ANIM_NAME_FUEL_PRED#</ANIM_NAME>
+		</UseTemplate>
+	</Template>
+
+	<Template Name="ASOBO_FMC_Push_SEC_FPLN_Template">
+		<DefaultTemplateParameters>
+			<NODE_ID_SEC_FPLN>#FMC_NAME#_Push_SEC_FPLN#SUFFIX_ID#</NODE_ID_SEC_FPLN>
+			<ANIM_NAME_SEC_FPLN>#FMC_NAME#_Push_SEC_FPLN#SUFFIX_ID#</ANIM_NAME_SEC_FPLN>
+		</DefaultTemplateParameters>
+		<EditableTemplateParameters>
+			<AddParams>
+				<NODE_ID_SEC_FPLN></NODE_ID_SEC_FPLN>
+				<ANIM_NAME_SEC_FPLN></ANIM_NAME_SEC_FPLN>
+			</AddParams>
+		</EditableTemplateParameters>
+
+		<UseTemplate Name="ASOBO_FMC_PushButton">
+			<HTML_EVENT_ID>SEC</HTML_EVENT_ID>
+			<NODE_ID>#NODE_ID_SEC_FPLN#</NODE_ID>
+			<ANIM_NAME>#ANIM_NAME_SEC_FPLN#</ANIM_NAME>
+		</UseTemplate>
+	</Template>
+
+	<Template Name="ASOBO_FMC_Push_ATC_COMM_Template">
+		<DefaultTemplateParameters>
+			<NODE_ID_ATC_COMM>#FMC_NAME#_Push_ATC_COMM#SUFFIX_ID#</NODE_ID_ATC_COMM>
+			<ANIM_NAME_ATC_COMM>#FMC_NAME#_Push_ATC_COMM#SUFFIX_ID#</ANIM_NAME_ATC_COMM>
+		</DefaultTemplateParameters>
+		<EditableTemplateParameters>
+			<AddParams>
+				<NODE_ID_ATC_COMM></NODE_ID_ATC_COMM>
+				<ANIM_NAME_ATC_COMM></ANIM_NAME_ATC_COMM>
+			</AddParams>
+		</EditableTemplateParameters>
+
+		<UseTemplate Name="ASOBO_FMC_PushButton">
+			<HTML_EVENT_ID>ATC</HTML_EVENT_ID>
+			<NODE_ID>#NODE_ID_ATC_COMM#</NODE_ID>
+			<ANIM_NAME>#ANIM_NAME_ATC_COMM#</ANIM_NAME>
+		</UseTemplate>
+	</Template>
+
+	<Template Name="ASOBO_FMC_Push_MCDU_MENU_Template">
+		<DefaultTemplateParameters>
+			<NODE_ID_MCDU_MENU>#FMC_NAME#_Push_MCDU_MENU#SUFFIX_ID#</NODE_ID_MCDU_MENU>
+			<ANIM_NAME_MCDU_MENU>#FMC_NAME#_Push_MCDU_MENU#SUFFIX_ID#</ANIM_NAME_MCDU_MENU>
+		</DefaultTemplateParameters>
+		<EditableTemplateParameters>
+			<AddParams>
+				<NODE_ID_MCDU_MENU></NODE_ID_MCDU_MENU>
+				<ANIM_NAME_MCDU_MENU></ANIM_NAME_MCDU_MENU>
+			</AddParams>
+		</EditableTemplateParameters>
+
+		<UseTemplate Name="ASOBO_FMC_PushButton">
+			<HTML_EVENT_ID>MENU</HTML_EVENT_ID>
+			<NODE_ID>#NODE_ID_MCDU_MENU#</NODE_ID>
+			<ANIM_NAME>#ANIM_NAME_MCDU_MENU#</ANIM_NAME>
+		</UseTemplate>
+	</Template>
+
+	<Template Name="ASOBO_FMC_Push_AIRPORT_Template">
+		<DefaultTemplateParameters>
+			<NODE_ID_AIRPORT>#FMC_NAME#_Push_AIRPORT#SUFFIX_ID#</NODE_ID_AIRPORT>
+			<ANIM_NAME_AIRPORT>#FMC_NAME#_Push_AIRPORT#SUFFIX_ID#</ANIM_NAME_AIRPORT>
+		</DefaultTemplateParameters>
+		<EditableTemplateParameters>
+			<AddParams>
+				<NODE_ID_AIRPORT></NODE_ID_AIRPORT>
+				<ANIM_NAME_AIRPORT></ANIM_NAME_AIRPORT>
+			</AddParams>
+		</EditableTemplateParameters>
+
+		<UseTemplate Name="ASOBO_FMC_PushButton">
+			<HTML_EVENT_ID>AIRPORT</HTML_EVENT_ID>
+			<NODE_ID>#NODE_ID_AIRPORT#</NODE_ID>
+			<ANIM_NAME>#ANIM_NAME_AIRPORT#</ANIM_NAME>
+		</UseTemplate>
+	</Template>
+
+	<Template Name="ASOBO_FMC_Push_UP_Template">
+		<DefaultTemplateParameters>
+			<NODE_ID_UP>#FMC_NAME#_Push_UP#SUFFIX_ID#</NODE_ID_UP>
+			<ANIM_NAME_UP>#FMC_NAME#_Push_UP#SUFFIX_ID#</ANIM_NAME_UP>
+		</DefaultTemplateParameters>
+		<EditableTemplateParameters>
+			<AddParams>
+				<NODE_ID_UP></NODE_ID_UP>
+				<ANIM_NAME_UP></ANIM_NAME_UP>
+			</AddParams>
+		</EditableTemplateParameters>
+
+		<UseTemplate Name="ASOBO_FMC_PushButton">
+			<HTML_EVENT_ID>UP</HTML_EVENT_ID>
+			<NODE_ID>#NODE_ID_UP#</NODE_ID>
+			<ANIM_NAME>#ANIM_NAME_UP#</ANIM_NAME>
+		</UseTemplate>
+	</Template>
+
+	<Template Name="ASOBO_FMC_Push_DOWN_Template">
+		<DefaultTemplateParameters>
+			<NODE_ID_DOWN>#FMC_NAME#_Push_DOWN#SUFFIX_ID#</NODE_ID_DOWN>
+			<ANIM_NAME_DOWN>#FMC_NAME#_Push_DOWN#SUFFIX_ID#</ANIM_NAME_DOWN>
+		</DefaultTemplateParameters>
+		<EditableTemplateParameters>
+			<AddParams>
+				<NODE_ID_DOWN></NODE_ID_DOWN>
+				<ANIM_NAME_DOWN></ANIM_NAME_DOWN>
+			</AddParams>
+		</EditableTemplateParameters>
+
+		<UseTemplate Name="ASOBO_FMC_PushButton">
+			<HTML_EVENT_ID>DOWN</HTML_EVENT_ID>
+			<NODE_ID>#NODE_ID_DOWN#</NODE_ID>
+			<ANIM_NAME>#ANIM_NAME_DOWN#</ANIM_NAME>
+		</UseTemplate>
+	</Template>
+
+	<Template Name="ASOBO_FMC_Push_OVFY_Template">
+		<DefaultTemplateParameters>
+			<NODE_ID_OVFY>#FMC_NAME#_Push_OVFY#SUFFIX_ID#</NODE_ID_OVFY>
+			<ANIM_NAME_OVFY>#FMC_NAME#_Push_OVFY#SUFFIX_ID#</ANIM_NAME_OVFY>
+		</DefaultTemplateParameters>
+		<EditableTemplateParameters>
+			<AddParams>
+				<NODE_ID_OVFY></NODE_ID_OVFY>
+				<ANIM_NAME_OVFY></ANIM_NAME_OVFY>
+			</AddParams>
+		</EditableTemplateParameters>
+
+		<UseTemplate Name="ASOBO_FMC_PushButton">
+			<HTML_EVENT_ID>OVFY</HTML_EVENT_ID>
+			<NODE_ID>#NODE_ID_OVFY#</NODE_ID>
+			<ANIM_NAME>#ANIM_NAME_OVFY#</ANIM_NAME>
+		</UseTemplate>
+	</Template>
+
+	<Template Name="ASOBO_FMC_Push_SYS_Template">
+		<DefaultTemplateParameters>
+			<NODE_ID_SYS>#FMC_NAME#_Push_SYS#SUFFIX_ID#</NODE_ID_SYS>
+			<ANIM_NAME_SYS>#FMC_NAME#_Push_SYS#SUFFIX_ID#</ANIM_NAME_SYS>
+		</DefaultTemplateParameters>
+		<EditableTemplateParameters>
+			<AddParams>
+				<NODE_ID_SYS></NODE_ID_SYS>
+				<ANIM_NAME_SYS></ANIM_NAME_SYS>
+			</AddParams>
+		</EditableTemplateParameters>
+
+		<UseTemplate Name="ASOBO_FMC_PushButton">
+			<HTML_EVENT_ID>SYS</HTML_EVENT_ID>
+			<NODE_ID>#NODE_ID_SYS#</NODE_ID>
+			<ANIM_NAME>#ANIM_NAME_SYS#</ANIM_NAME>
+		</UseTemplate>
+	</Template>
+
+	<Template Name="ASOBO_FMC_Push_CDU_Template">
+		<DefaultTemplateParameters>
+			<NODE_ID_CDU>#FMC_NAME#_Push_CDU#SUFFIX_ID#</NODE_ID_CDU>
+			<ANIM_NAME_CDU>#FMC_NAME#_Push_CDU#SUFFIX_ID#</ANIM_NAME_CDU>
+		</DefaultTemplateParameters>
+		<EditableTemplateParameters>
+			<AddParams>
+				<NODE_ID_CDU></NODE_ID_CDU>
+				<ANIM_NAME_CDU></ANIM_NAME_CDU>
+			</AddParams>
+		</EditableTemplateParameters>
+
+		<UseTemplate Name="ASOBO_FMC_PushButton">
+			<HTML_EVENT_ID>CDU</HTML_EVENT_ID>
+			<NODE_ID>#NODE_ID_CDU#</NODE_ID>
+			<ANIM_NAME>#ANIM_NAME_CDU#</ANIM_NAME>
+		</UseTemplate>
+	</Template>
+
+	<Template Name="ASOBO_FMC_Push_INFO_Template">
+		<DefaultTemplateParameters>
+			<NODE_ID_INFO>#FMC_NAME#_Push_INFO#SUFFIX_ID#</NODE_ID_INFO>
+			<ANIM_NAME_INFO>#FMC_NAME#_Push_INFO#SUFFIX_ID#</ANIM_NAME_INFO>
+		</DefaultTemplateParameters>
+		<EditableTemplateParameters>
+			<AddParams>
+				<NODE_ID_INFO></NODE_ID_INFO>
+				<ANIM_NAME_INFO></ANIM_NAME_INFO>
+			</AddParams>
+		</EditableTemplateParameters>
+
+		<UseTemplate Name="ASOBO_FMC_PushButton">
+			<HTML_EVENT_ID>INFO</HTML_EVENT_ID>
+			<NODE_ID>#NODE_ID_INFO#</NODE_ID>
+			<ANIM_NAME>#ANIM_NAME_INFO#</ANIM_NAME>
+		</UseTemplate>
+	</Template>
+
+	<Template Name="ASOBO_FMC_Push_CHKL_Template">
+		<DefaultTemplateParameters>
+			<NODE_ID_CHKL>#FMC_NAME#_Push_CHKL#SUFFIX_ID#</NODE_ID_CHKL>
+			<ANIM_NAME_CHKL>#FMC_NAME#_Push_CHKL#SUFFIX_ID#</ANIM_NAME_CHKL>
+		</DefaultTemplateParameters>
+		<EditableTemplateParameters>
+			<AddParams>
+				<NODE_ID_CHKL></NODE_ID_CHKL>
+				<ANIM_NAME_CHKL></ANIM_NAME_CHKL>
+			</AddParams>
+		</EditableTemplateParameters>
+
+		<UseTemplate Name="ASOBO_FMC_PushButton">
+			<HTML_EVENT_ID>CHKL</HTML_EVENT_ID>
+			<NODE_ID>#NODE_ID_CHKL#</NODE_ID>
+			<ANIM_NAME>#ANIM_NAME_CHKL#</ANIM_NAME>
+		</UseTemplate>
+	</Template>
+
+	<Template Name="ASOBO_FMC_Push_COMM_Template">
+		<DefaultTemplateParameters>
+			<NODE_ID_COMM>#FMC_NAME#_Push_COMM#SUFFIX_ID#</NODE_ID_COMM>
+			<ANIM_NAME_COMM>#FMC_NAME#_Push_COMM#SUFFIX_ID#</ANIM_NAME_COMM>
+		</DefaultTemplateParameters>
+		<EditableTemplateParameters>
+			<AddParams>
+				<NODE_ID_COMM></NODE_ID_COMM>
+				<ANIM_NAME_COMM></ANIM_NAME_COMM>
+			</AddParams>
+		</EditableTemplateParameters>
+
+		<UseTemplate Name="ASOBO_FMC_PushButton">
+			<HTML_EVENT_ID>COMM</HTML_EVENT_ID>
+			<NODE_ID>#NODE_ID_COMM#</NODE_ID>
+			<ANIM_NAME>#ANIM_NAME_COMM#</ANIM_NAME>
+		</UseTemplate>
+	</Template>
+
+	<Template Name="ASOBO_FMC_Push_HD_Template">
+		<DefaultTemplateParameters>
+			<NODE_ID_HD>#FMC_NAME#_Push_HD#SUFFIX_ID#</NODE_ID_HD>
+			<ANIM_NAME_HD>#FMC_NAME#_Push_HD#SUFFIX_ID#</ANIM_NAME_HD>
+		</DefaultTemplateParameters>
+		<EditableTemplateParameters>
+			<AddParams>
+				<NODE_ID_HD></NODE_ID_HD>
+				<ANIM_NAME_HD></ANIM_NAME_HD>
+			</AddParams>
+		</EditableTemplateParameters>
+
+		<UseTemplate Name="ASOBO_FMC_PushButton">
+			<HTML_EVENT_ID>HD</HTML_EVENT_ID>
+			<NODE_ID>#NODE_ID_HD#</NODE_ID>
+			<ANIM_NAME>#ANIM_NAME_HD#</ANIM_NAME>
+		</UseTemplate>
+	</Template>
+
+	<Template Name="ASOBO_FMC_Push_MFD_DATA_Template">
+		<DefaultTemplateParameters>
+			<NODE_ID_MFD_DATA>#FMC_NAME#_Push_MFD_DATA#SUFFIX_ID#</NODE_ID_MFD_DATA>
+			<ANIM_NAME_MFD_DATA>#FMC_NAME#_Push_MFD_DATA#SUFFIX_ID#</ANIM_NAME_MFD_DATA>
+		</DefaultTemplateParameters>
+		<EditableTemplateParameters>
+			<AddParams>
+				<NODE_ID_MFD_DATA></NODE_ID_MFD_DATA>
+				<ANIM_NAME_MFD_DATA></ANIM_NAME_MFD_DATA>
+			</AddParams>
+		</EditableTemplateParameters>
+
+		<UseTemplate Name="ASOBO_FMC_PushButton">
+			<HTML_EVENT_ID>MFD_DATA</HTML_EVENT_ID>
+			<NODE_ID>#NODE_ID_MFD_DATA#</NODE_ID>
+			<ANIM_NAME>#ANIM_NAME_MFD_DATA#</ANIM_NAME>
+		</UseTemplate>
+	</Template>
+
+	<Template Name="ASOBO_FMC_Push_MFD_ADV_Template">
+		<DefaultTemplateParameters>
+			<NODE_ID_MFD_ADV>#FMC_NAME#_Push_MFD_ADV#SUFFIX_ID#</NODE_ID_MFD_ADV>
+			<ANIM_NAME_MFD_ADV>#FMC_NAME#_Push_MFD_ADV#SUFFIX_ID#</ANIM_NAME_MFD_ADV>
+		</DefaultTemplateParameters>
+		<EditableTemplateParameters>
+			<AddParams>
+				<NODE_ID_MFD_ADV></NODE_ID_MFD_ADV>
+				<ANIM_NAME_MFD_ADV></ANIM_NAME_MFD_ADV>
+			</AddParams>
+		</EditableTemplateParameters>
+
+		<UseTemplate Name="ASOBO_FMC_PushButton">
+			<HTML_EVENT_ID>MFD_ADV</HTML_EVENT_ID>
+			<NODE_ID>#NODE_ID_MFD_ADV#</NODE_ID>
+			<ANIM_NAME>#ANIM_NAME_MFD_ADV#</ANIM_NAME>
+		</UseTemplate>
+	</Template>
+
+	<Template Name="ASOBO_FMC_Push_DSPL_MENU_Template">
+		<DefaultTemplateParameters>
+			<NODE_ID_DSPL_MENU>#FMC_NAME#_Push_DSPL_MENU#SUFFIX_ID#</NODE_ID_DSPL_MENU>
+			<ANIM_NAME_DSPL_MENU>#FMC_NAME#_Push_DSPL_MENU#SUFFIX_ID#</ANIM_NAME_DSPL_MENU>
+		</DefaultTemplateParameters>
+		<EditableTemplateParameters>
+			<AddParams>
+				<NODE_ID_DSPL_MENU></NODE_ID_DSPL_MENU>
+				<ANIM_NAME_DSPL_MENU></ANIM_NAME_DSPL_MENU>
+			</AddParams>
+		</EditableTemplateParameters>
+
+		<UseTemplate Name="ASOBO_FMC_PushButton">
+			<HTML_EVENT_ID>DSPL_MENU</HTML_EVENT_ID>
+			<NODE_ID>#NODE_ID_DSPL_MENU#</NODE_ID>
+			<ANIM_NAME>#ANIM_NAME_DSPL_MENU#</ANIM_NAME>
+		</UseTemplate>
+	</Template>
+
+	<Template Name="ASOBO_FMC_Push_TUN_Template">
+		<DefaultTemplateParameters>
+			<NODE_ID_TUN>#FMC_NAME#_Push_TUN#SUFFIX_ID#</NODE_ID_TUN>
+			<ANIM_NAME_TUN>#FMC_NAME#_Push_TUN#SUFFIX_ID#</ANIM_NAME_TUN>
+		</DefaultTemplateParameters>
+		<EditableTemplateParameters>
+			<AddParams>
+				<NODE_ID_TUN></NODE_ID_TUN>
+				<ANIM_NAME_TUN></ANIM_NAME_TUN>
+			</AddParams>
+		</EditableTemplateParameters>
+
+		<UseTemplate Name="ASOBO_FMC_PushButton">
+			<HTML_EVENT_ID>TUN</HTML_EVENT_ID>
+			<NODE_ID>#NODE_ID_TUN#</NODE_ID>
+			<ANIM_NAME>#ANIM_NAME_TUN#</ANIM_NAME>
+		</UseTemplate>
+	</Template>
+
+	<Template Name="ASOBO_FMC_Push_IDX_Template">
+		<DefaultTemplateParameters>
+			<NODE_ID_IDX>#FMC_NAME#_Push_IDX#SUFFIX_ID#</NODE_ID_IDX>
+			<ANIM_NAME_IDX>#FMC_NAME#_Push_IDX#SUFFIX_ID#</ANIM_NAME_IDX>
+		</DefaultTemplateParameters>
+		<EditableTemplateParameters>
+			<AddParams>
+				<NODE_ID_IDX></NODE_ID_IDX>
+				<ANIM_NAME_IDX></ANIM_NAME_IDX>
+			</AddParams>
+		</EditableTemplateParameters>
+
+		<UseTemplate Name="ASOBO_FMC_PushButton">
+			<HTML_EVENT_ID>IDX</HTML_EVENT_ID>
+			<NODE_ID>#NODE_ID_IDX#</NODE_ID>
+			<ANIM_NAME>#ANIM_NAME_IDX#</ANIM_NAME>
+		</UseTemplate>
+	</Template>
+
+	<Template Name="ASOBO_FMC_Push_MSG_Template">
+		<DefaultTemplateParameters>
+			<NODE_ID_MSG>#FMC_NAME#_Push_MSG#SUFFIX_ID#</NODE_ID_MSG>
+			<ANIM_NAME_MSG>#FMC_NAME#_Push_MSG#SUFFIX_ID#</ANIM_NAME_MSG>
+		</DefaultTemplateParameters>
+		<EditableTemplateParameters>
+			<AddParams>
+				<NODE_ID_MSG></NODE_ID_MSG>
+				<ANIM_NAME_MSG></ANIM_NAME_MSG>
+			</AddParams>
+		</EditableTemplateParameters>
+
+		<UseTemplate Name="ASOBO_FMC_PushButton">
+			<HTML_EVENT_ID>MSG</HTML_EVENT_ID>
+			<NODE_ID>#NODE_ID_MSG#</NODE_ID>
+			<ANIM_NAME>#ANIM_NAME_MSG#</ANIM_NAME>
+		</UseTemplate>
+	</Template>
+
+	<Template Name="ASOBO_FMC_Push_RMS_Template">
+		<DefaultTemplateParameters>
+			<NODE_ID_RMS>#FMC_NAME#_Push_RMS#SUFFIX_ID#</NODE_ID_RMS>
+			<ANIM_NAME_RMS>#FMC_NAME#_Push_RMS#SUFFIX_ID#</ANIM_NAME_RMS>
+		</DefaultTemplateParameters>
+		<EditableTemplateParameters>
+			<AddParams>
+				<NODE_ID_RMS></NODE_ID_RMS>
+				<ANIM_NAME_RMS></ANIM_NAME_RMS>
+			</AddParams>
+		</EditableTemplateParameters>
+
+		<UseTemplate Name="ASOBO_FMC_PushButton">
+			<HTML_EVENT_ID>RMS</HTML_EVENT_ID>
+			<NODE_ID>#NODE_ID_RMS#</NODE_ID>
+			<ANIM_NAME>#ANIM_NAME_RMS#</ANIM_NAME>
+		</UseTemplate>
+	</Template>
+
+	<Template Name="ASOBO_FMC_Push_MRK_Template">
+		<DefaultTemplateParameters>
+			<NODE_ID_MRK>#FMC_NAME#_Push_MRK#SUFFIX_ID#</NODE_ID_MRK>
+			<ANIM_NAME_MRK>#FMC_NAME#_Push_MRK#SUFFIX_ID#</ANIM_NAME_MRK>
+		</DefaultTemplateParameters>
+		<EditableTemplateParameters>
+			<AddParams>
+				<NODE_ID_MRK></NODE_ID_MRK>
+				<ANIM_NAME_MRK></ANIM_NAME_MRK>
+			</AddParams>
+		</EditableTemplateParameters>
+
+		<UseTemplate Name="ASOBO_FMC_PushButton">
+			<HTML_EVENT_ID>MRK</HTML_EVENT_ID>
+			<NODE_ID>#NODE_ID_MRK#</NODE_ID>
+			<ANIM_NAME>#ANIM_NAME_MRK#</ANIM_NAME>
+		</UseTemplate>
+	</Template>
+
+
+	<Template Name="ASOBO_FMC_Push_DTO_Template">
+		<DefaultTemplateParameters>
+			<NODE_ID_DTO>#FMC_NAME#_Push_DTO#SUFFIX_ID#</NODE_ID_DTO>
+			<ANIM_NAME_DTO>#FMC_NAME#_Push_DTO#SUFFIX_ID#</ANIM_NAME_DTO>
+		</DefaultTemplateParameters>
+		<EditableTemplateParameters>
+			<AddParams>
+				<NODE_ID_DTO></NODE_ID_DTO>
+				<ANIM_NAME_DTO></ANIM_NAME_DTO>
+			</AddParams>
+		</EditableTemplateParameters>
+
+		<UseTemplate Name="ASOBO_FMC_PushButton">
+			<HTML_EVENT_ID>DTO</HTML_EVENT_ID>
+			<NODE_ID>#NODE_ID_DTO#</NODE_ID>
+			<ANIM_NAME>#ANIM_NAME_DTO#</ANIM_NAME>
+		</UseTemplate>
+	</Template>
+
+	<Template Name="ASOBO_FMC_Push_BRT_DIM_Template">
+		<DefaultTemplateParameters>
+			<NODE_ID_BRT_DIM>#FMC_NAME#_Push_BRT_DIM#SUFFIX_ID#</NODE_ID_BRT_DIM>
+			<ANIM_NAME_BRT_DIM>#FMC_NAME#_Push_BRT_DIM#SUFFIX_ID#</ANIM_NAME_BRT_DIM>
+			<Condition Valid="SPLIT_BRT_DIM">
+				<True>
+					<NODE_ID_BRT_DIM>#FMC_NAME#_Push_BRT_TOP#SUFFIX_ID#</NODE_ID_BRT_DIM>
+					<ANIM_NAME_BRT_DIM>#FMC_NAME#_Push_BRT_TOP#SUFFIX_ID#</ANIM_NAME_BRT_DIM>
+					<NODE_ID_BRT_DIM_2>#FMC_NAME#_Push_BRT_DOWN#SUFFIX_ID#</NODE_ID_BRT_DIM_2>
+					<ANIM_NAME_BRT_DIM_2>#FMC_NAME#_Push_BRT_DOWN#SUFFIX_ID#</ANIM_NAME_BRT_DIM_2>
+				</True>
+			</Condition>
+			<NODE_ID_BRT_DIM_SEQ1>#FMC_NAME#_Push_BRT_DIM#SUFFIX_ID#_SEQ1</NODE_ID_BRT_DIM_SEQ1>
+			<NODE_ID_BRT_DIM_SEQ2>#FMC_NAME#_Push_BRT_DIM#SUFFIX_ID#_SEQ2</NODE_ID_BRT_DIM_SEQ2>
+			<WWISE_EVENT_1>fmc_push_button_on</WWISE_EVENT_1>
+			<WWISE_EVENT_2>fmc_push_button_off</WWISE_EVENT_2>
+			<NORMALIZED_TIME_1>0.3</NORMALIZED_TIME_1>
+			<NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
+		</DefaultTemplateParameters>
+		<EditableTemplateParameters>
+			<AddParams>
+				<NODE_ID_BRT_DIM></NODE_ID_BRT_DIM>
+				<ANIM_NAME_BRT_DIM></ANIM_NAME_BRT_DIM>
+			</AddParams>
+		</EditableTemplateParameters>
+
+		<Condition Valid="POTENTIOMETER">
 			<True>
 				<Update Once="True">
 					(A:LIGHT POTENTIOMETER:#POTENTIOMETER#, Percent over 100) 0.1 max (&gt;I:XMLVAR_MCDU_#ID#_Brightness)
@@ -1783,127 +1783,134 @@
 			</False>
 		</Condition>
 
-	<Condition Valid="NODE_ID_BRT_DIM_2">
-		<True>
-			<UseTemplate Name="ASOBO_GT_Push_Button_Airliner">
-				<LEFT_SINGLE_CODE_REPEAT_FREQUENCY>4</LEFT_SINGLE_CODE_REPEAT_FREQUENCY>
-				<NODE_ID>#NODE_ID_BRT_DIM#</NODE_ID>
-				<ANIM_NAME>#ANIM_NAME_BRT_DIM#</ANIM_NAME>
-				<LEFT_SINGLE_CODE>
-					(I:XMLVAR_MCDU_#ID#_Brightness) 0.03 + 1 min (&gt;I:XMLVAR_MCDU_#ID#_Brightness)
-				</LEFT_SINGLE_CODE>	  
-			</UseTemplate>
-			<UseTemplate Name="ASOBO_GT_Push_Button_Airliner">
-				<LEFT_SINGLE_CODE_REPEAT_FREQUENCY>4</LEFT_SINGLE_CODE_REPEAT_FREQUENCY>
-				<NODE_ID>#NODE_ID_BRT_DIM_2#</NODE_ID>
-				<ANIM_NAME>#ANIM_NAME_BRT_DIM_2#</ANIM_NAME>
-				<LEFT_SINGLE_CODE>
-					(I:XMLVAR_MCDU_#ID#_Brightness) 0.03 - 0.05 max (&gt;I:XMLVAR_MCDU_#ID#_Brightness)
-				</LEFT_SINGLE_CODE>  
-			</UseTemplate>
-		</True>
-		<False>
-			<Component ID="#NODE_ID_BRT_DIM#" Node="#NODE_ID_BRT_DIM#">
-				<UseTemplate Name="ASOBO_GT_Switch_3States">
-					<UPARROW/>
-					<DOWNARROW/>
-					<LEFTARROW/>
-					<RIGHTARROW/>
-					<CURSOR>Hand</CURSOR>
+		<Condition Valid="NODE_ID_BRT_DIM_2">
+			<True>
+				<UseTemplate Name="ASOBO_GT_Push_Button_Airliner">
+					<LEFT_SINGLE_CODE_REPEAT_FREQUENCY>4</LEFT_SINGLE_CODE_REPEAT_FREQUENCY>
+					<NODE_ID>#NODE_ID_BRT_DIM#</NODE_ID>
 					<ANIM_NAME>#ANIM_NAME_BRT_DIM#</ANIM_NAME>
-					<CODE_POS_0>
-						(I:XMLVAR_MCDU_#ID#_Brightness) 0.03 + 1 min (&gt;I:XMLVAR_MCDU_#ID#_Brightness)
-					</CODE_POS_0>
-					<CODE_POS_2>
-						(I:XMLVAR_MCDU_#ID#_Brightness) 0.03 - 0.05 max (&gt;I:XMLVAR_MCDU_#ID#_Brightness)
-					</CODE_POS_2>
-					<STATE_MAX_TIMER>0.01</STATE_MAX_TIMER>
-					<STATE0_TIMER>0.01</STATE0_TIMER>
-					<MOMENTARY_REPEAT_FREQUENCY>5</MOMENTARY_REPEAT_FREQUENCY>
-					<MOMENTARY_SWITCH/>
-					<Condition Valid="BRT_DIM_SWITCH_DIRECTION">
-						<SWITCH_DIRECTION>#BRT_DIM_SWITCH_DIRECTION#</SWITCH_DIRECTION>
-					</Condition>
-					<Condition Valid="BRT_DIM_INVERT_ANIM">
-						<INVERT_ANIM>#BRT_DIM_INVERT_ANIM#</INVERT_ANIM>
-					</Condition>
-					<WWISE_EVENT>fmc_push_button_on</WWISE_EVENT> 
+					<LEFT_SINGLE_CODE>
+					(I:XMLVAR_MCDU_#ID#_Brightness) 0.03 + 1 min (&gt;I:XMLVAR_MCDU_#ID#_Brightness)
+					</LEFT_SINGLE_CODE>
 				</UseTemplate>
-			</Component>
-		</False>
-	</Condition>
-	
-	<Condition Valid="NO_BRT_DIM_EMISSIVE">
-		<False>
-			<Condition Valid="POTENTIOMETER">
+				<UseTemplate Name="ASOBO_GT_Push_Button_Airliner">
+					<LEFT_SINGLE_CODE_REPEAT_FREQUENCY>4</LEFT_SINGLE_CODE_REPEAT_FREQUENCY>
+					<NODE_ID>#NODE_ID_BRT_DIM_2#</NODE_ID>
+					<ANIM_NAME>#ANIM_NAME_BRT_DIM_2#</ANIM_NAME>
+					<LEFT_SINGLE_CODE>
+					(I:XMLVAR_MCDU_#ID#_Brightness) 0.03 - 0.05 max (&gt;I:XMLVAR_MCDU_#ID#_Brightness)
+					</LEFT_SINGLE_CODE>
+				</UseTemplate>
+			</True>
+			<False>
+				<Component ID="#NODE_ID_BRT_DIM#" Node="#NODE_ID_BRT_DIM#">
+					<UseTemplate Name="ASOBO_GT_Switch_3States">
+						<UPARROW/>
+						<DOWNARROW/>
+						<LEFTARROW/>
+						<RIGHTARROW/>
+						<CURSOR>Hand</CURSOR>
+						<ANIM_NAME>#ANIM_NAME_BRT_DIM#</ANIM_NAME>
+						<CODE_POS_0>
+						(I:XMLVAR_MCDU_#ID#_Brightness) 0.03 + 1 min (&gt;I:XMLVAR_MCDU_#ID#_Brightness)
+						</CODE_POS_0>
+						<CODE_POS_2>
+						(I:XMLVAR_MCDU_#ID#_Brightness) 0.03 - 0.05 max (&gt;I:XMLVAR_MCDU_#ID#_Brightness)
+						</CODE_POS_2>
+						<STATE_MAX_TIMER>0.01</STATE_MAX_TIMER>
+						<STATE0_TIMER>0.01</STATE0_TIMER>
+						<MOMENTARY_REPEAT_FREQUENCY>5</MOMENTARY_REPEAT_FREQUENCY>
+						<MOMENTARY_SWITCH/>
+						<Condition Valid="BRT_DIM_SWITCH_DIRECTION">
+							<SWITCH_DIRECTION>#BRT_DIM_SWITCH_DIRECTION#</SWITCH_DIRECTION>
+						</Condition>
+						<Condition Valid="BRT_DIM_INVERT_ANIM">
+							<INVERT_ANIM>#BRT_DIM_INVERT_ANIM#</INVERT_ANIM>
+						</Condition>
+						<WWISE_EVENT>fmc_push_button_on</WWISE_EVENT>
+					</UseTemplate>
+				</Component>
+			</False>
+		</Condition>
+
+		<Condition Valid="NO_BRT_DIM_EMISSIVE">
+			<False>
+				<Condition Valid="POTENTIOMETER">
+					<True>
+						<Component ID="#NODE_ID_BRT_DIM_SEQ1#_S1" Node="#NODE_ID_BRT_DIM_SEQ1#">
+							<UseTemplate Name="ASOBO_GT_Emissive_Gauge">
+								<EMISSIVE_CODE>(A:LIGHT POTENTIOMETER:#POTENTIOMETER#, Percent over 100)</EMISSIVE_CODE>
+							</UseTemplate>
+						</Component>
+						<Component ID="#NODE_ID_BRT_DIM_SEQ2#_S2" Node="#NODE_ID_BRT_DIM_SEQ2#">
+							<UseTemplate Name="ASOBO_GT_Emissive_Gauge">
+								<EMISSIVE_CODE>(A:LIGHT POTENTIOMETER:#POTENTIOMETER#, Percent over 100)</EMISSIVE_CODE>
+							</UseTemplate>
+						</Component>
+					</True>
+				</Condition>
+			</False>
+		</Condition>
+	</Template>
+
+	<Template Name="ASOBO_FMC_Screen">
+		<DefaultTemplateParameters>
+			<NODE_ID_SCREEN>#FMC_NAME#_Screen#SUFFIX_ID#</NODE_ID_SCREEN>
+			<PART_ID>SCREEN_FMC</PART_ID>
+		</DefaultTemplateParameters>
+		<EditableTemplateParameters>
+			<AddParams>
+				<NODE_ID_SCREEN></NODE_ID_SCREEN>
+			</AddParams>
+		</EditableTemplateParameters>
+
+		<Component ID="#NODE_ID_SCREEN#" Node="#NODE_ID_SCREEN#">
+			<UseTemplate Name="ASOBO_GT_Emissive_Gauge">
+				<DONT_OVERRIDE_BASE_EMISSIVE>False</DONT_OVERRIDE_BASE_EMISSIVE>
+				<EMISSIVE_CODE>(I:XMLVAR_MCDU_#ID#_Brightness)</EMISSIVE_CODE>
+			</UseTemplate>
+			<Condition Valid="CAMERA_TITLE">
 				<True>
-					<Component ID="#NODE_ID_BRT_DIM_SEQ1#_S1" Node="#NODE_ID_BRT_DIM_SEQ1#">
-						<UseTemplate Name="ASOBO_GT_Emissive_Gauge">
-							<EMISSIVE_CODE>(A:LIGHT POTENTIOMETER:#POTENTIOMETER#, Percent over 100)</EMISSIVE_CODE>
-						</UseTemplate>
-					</Component>
-					<Component ID="#NODE_ID_BRT_DIM_SEQ2#_S2" Node="#NODE_ID_BRT_DIM_SEQ2#">
-						<UseTemplate Name="ASOBO_GT_Emissive_Gauge">
-							<EMISSIVE_CODE>(A:LIGHT POTENTIOMETER:#POTENTIOMETER#, Percent over 100)</EMISSIVE_CODE>
-						</UseTemplate>
-					</Component>
+					<CameraTitle>#CAMERA_TITLE#</CameraTitle>
 				</True>
 			</Condition>
-		</False>
-	</Condition>
-</Template>
-
-<Template Name="ASOBO_FMC_Screen">
-	<DefaultTemplateParameters>
-		<NODE_ID_SCREEN>#FMC_NAME#_Screen#SUFFIX_ID#</NODE_ID_SCREEN>
-	</DefaultTemplateParameters>
-	<EditableTemplateParameters>
-		<AddParams>
-			<NODE_ID_SCREEN></NODE_ID_SCREEN>
-		</AddParams>
-	</EditableTemplateParameters>
-	
-	<Component ID="#NODE_ID_SCREEN#" Node="#NODE_ID_SCREEN#">
-		<UseTemplate Name="ASOBO_GT_Emissive_Gauge">
-			<DONT_OVERRIDE_BASE_EMISSIVE>False</DONT_OVERRIDE_BASE_EMISSIVE>
-			<EMISSIVE_CODE>(I:XMLVAR_MCDU_#ID#_Brightness)</EMISSIVE_CODE>
-		</UseTemplate>
-	</Component>
-</Template>
+		</Component>
+	</Template>
 
 
-<Template Name="ASOBO_FMC_Knob_Cursor">
-	<DefaultTemplateParameters>
-		<NODE_ID_CURSOR>#FMC_NAME#_Knob_Cursor#SUFFIX_ID#</NODE_ID_CURSOR>
-		<ANIM_NAME_CURSOR>#FMC_NAME#_Knob_Cursor#SUFFIX_ID#</ANIM_NAME_CURSOR>
-		<WWISE_EVENT>fmc_knob</WWISE_EVENT>
-		<COUNT>36</COUNT>
-		<!-- <ANIM_NAME_CURSOR_PUSH>#FMC_NAME#_Knob_Cursor_Push_#ID#</ANIM_NAME_CURSOR_PUSH> -->
-	</DefaultTemplateParameters>
-	<EditableTemplateParameters>
-		<AddParams>
-			<NODE_ID_CURSOR></NODE_ID_CURSOR>
-			<ANIM_NAME_CURSOR></ANIM_NAME_CURSOR>
-		</AddParams>
-	</EditableTemplateParameters>
-	
-	<Condition Valid="INOP_BUTTONS">
-		<True>
-			<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-				<NODE_ID>#NODE_ID_CURSOR#</NODE_ID>
-			</UseTemplate>
-		</True>
-		<False>
-			<Component ID="#NODE_ID_CURSOR#" Node="#NODE_ID_CURSOR#">
-				<UseTemplate Name="ASOBO_GT_Knob_Infinite">
-					<ANIM_NAME>#ANIM_NAME_CURSOR#</ANIM_NAME>
-					<!-- <ANIM_NAME_PUSH>#ANIM_NAME_CURSOR_PUSH#</ANIM_NAME_PUSH> -->
-					<CLOCKWISE_CODE>0</CLOCKWISE_CODE>
-					<ANTICLOCKWISE_CODE>0</ANTICLOCKWISE_CODE>
-					<LEFT_SINGLE_CODE>0</LEFT_SINGLE_CODE>
-					<!-- Not Yet Implemented -->
+	<Template Name="ASOBO_FMC_Knob_Cursor">
+		<DefaultTemplateParameters>
+			<NODE_ID_CURSOR>#FMC_NAME#_Knob_Cursor#SUFFIX_ID#</NODE_ID_CURSOR>
+			<ANIM_NAME_CURSOR>#FMC_NAME#_Knob_Cursor#SUFFIX_ID#</ANIM_NAME_CURSOR>
+			<WWISE_EVENT>fmc_knob</WWISE_EVENT>
+			<COUNT>36</COUNT>
+			<!-- <ANIM_NAME_CURSOR_PUSH>#FMC_NAME#_Knob_Cursor_Push_#ID#</ANIM_NAME_CURSOR_PUSH> -->
+		</DefaultTemplateParameters>
+		<EditableTemplateParameters>
+			<AddParams>
+				<NODE_ID_CURSOR></NODE_ID_CURSOR>
+				<ANIM_NAME_CURSOR></ANIM_NAME_CURSOR>
+			</AddParams>
+		</EditableTemplateParameters>
+
+		<Condition Valid="INOP_BUTTONS">
+			<True>
+				<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
+					<NODE_ID>#NODE_ID_CURSOR#</NODE_ID>
 				</UseTemplate>
-			</Component>
-		</False>
-	</Condition>
-</Template>
+			</True>
+			<False>
+				<Component ID="#NODE_ID_CURSOR#" Node="#NODE_ID_CURSOR#">
+					<UseTemplate Name="ASOBO_GT_Knob_Infinite">
+						<ANIM_NAME>#ANIM_NAME_CURSOR#</ANIM_NAME>
+						<!-- <ANIM_NAME_PUSH>#ANIM_NAME_CURSOR_PUSH#</ANIM_NAME_PUSH> -->
+						<CLOCKWISE_CODE>0</CLOCKWISE_CODE>
+						<ANTICLOCKWISE_CODE>0</ANTICLOCKWISE_CODE>
+						<LEFT_SINGLE_CODE>0</LEFT_SINGLE_CODE>
+						<!-- Not Yet Implemented -->
+					</UseTemplate>
+				</Component>
+			</False>
+		</Condition>
+	</Template>
+</ModelBehaviors>
