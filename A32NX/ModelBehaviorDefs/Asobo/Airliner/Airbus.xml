@@ -1615,7 +1615,7 @@
 		</Condition>
 	</Template>
 
-	<Template Name="ASOBO_AIRBUS_Push_EFISGPWS_Template">
+	<Template Name="A32NX_AIRBUS_Push_EFISGPWS_Template">
 		<UseTemplate Name="ASOBO_GT_Push_Button_Airliner_Dummy">
 			<ANIM_NAME>#NODE_ID#</ANIM_NAME>
 			<WWISE_EVENT_1>master_apu_switch_on</WWISE_EVENT_1>
