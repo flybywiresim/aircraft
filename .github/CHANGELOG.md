@@ -15,3 +15,4 @@
 8. [ECAM] Lower ECAM DOOR Page Colour Fix - @nathaninnes (Nathan Innes)
 9. [ND] Add DME distances, VOR/ADF needles and functioning ADF2 - @blitzcaster (bltzcstr)
 10. [OVHD] Fixed Battery Indicator Colour - @nathaninnes (Nathan Innes)
+1. [GPWS] Added Pull Up, Sink Rate, Dont sink GPWS with Default Sounds & Added (Too low) terrain, flaps and gear without Sounds (Future PR by Boris) - @oliverpope03 (Oliver Pope)
