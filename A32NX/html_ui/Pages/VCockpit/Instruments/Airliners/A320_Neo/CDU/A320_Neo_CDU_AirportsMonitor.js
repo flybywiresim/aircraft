@@ -212,7 +212,18 @@ class CDUAirportsMonitor {
         // user-selected 5th airport (only possible to set on page 1)
         if (!this.page2) {
             mcdu.onLeftInput[4] = () => {
-                if (!this.user_ap && mcdu.inOut !== '' && mcdu.inOut !== mcdu.clrValue) {
+                if (this.user_ap) {
+                    if (mcdu.inOut === FMCMainDisplay.clrValue) {
+                        this.user_ap = undefined
+                        mcdu.clearUserInput()
+                        // trigger data update next frame
+                        this.total_delta_t = update_ival_ms
+                        this.ShowPage(mcdu)
+                    } else {
+                        console.log(`"${mcdu.inOut}"`)
+                        console.log(`"${FMCMainDisplay.clrValue}"`)
+                    }
+                } else if (mcdu.inOut !== '' && mcdu.inOut !== FMCMainDisplay.clrValue) {
                     const ap = mcdu.inOut
                     // GetAirportByIdent returns a Waypoint in the callback,
                     // which interally uses FacilityLoader (and further down calls Coherence)
@@ -222,6 +233,7 @@ class CDUAirportsMonitor {
                             mcdu.clearUserInput()
                             // trigger data update next frame
                             this.total_delta_t = update_ival_ms
+                            this.frozen = false
                             this.ShowPage(mcdu)
                         } else {
                             mcdu.showErrorMessage("NOT IN DATABASE")
