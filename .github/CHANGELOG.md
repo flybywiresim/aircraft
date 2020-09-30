@@ -14,5 +14,5 @@
 7. [PFD] Remove code related to unrelevant aircraft - @1Revenger1 (Avery Black)
 8. [ECAM] Lower ECAM DOOR Page Colour Fix - @nathaninnes (Nathan Innes)
 9. [ND] Add DME distances, VOR/ADF needles and functioning ADF2 - @blitzcaster (bltzcstr)
-1. [OVHD] Fixed Battery Indicator Colour - @nathaninnes (Nathan Innes)
+10. [OVHD] Fixed Battery Indicator Colour - @nathaninnes (Nathan Innes)
 1. [CDU] Add "Closest Airports" page - @lhoenig (Lukas Hoenig)
