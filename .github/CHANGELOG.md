@@ -12,3 +12,6 @@
 5. [CDU] Fixed a crash when trying to replace a waypoint in the flight plan - @lousybyte (lousybyte)
 6. [EXTERIOR] Fixed issue in engine rotation animation that made it rotate too quickly - @lukecologne (lukecologne)
 7. [PFD] Remove code related to unrelevant aircraft - @1Revenger1 (Avery Black)
+8. [ECAM] Lower ECAM DOOR Page Colour Fix - @nathaninnes (Nathan Innes)
+9. [ND] Add DME distances, VOR/ADF needles and functioning ADF2 - @blitzcaster (bltzcstr)
+1. [OVHD] Fixed Battery Indicator Colour - @nathaninnes (Nathan Innes)

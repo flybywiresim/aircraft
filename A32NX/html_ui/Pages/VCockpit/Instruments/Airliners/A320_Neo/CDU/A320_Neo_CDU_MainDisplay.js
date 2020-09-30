@@ -187,7 +187,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         if (isFinite(this.v2Speed)) {
             let altitude = Simplane.getAltitude();
             if (altitude < this.thrustReductionAltitude) {
-                maxSpeed = this.v2Speed + 10;
+                maxSpeed = this.v2Speed + 50;
             }
         }
         let flapsHandleIndex = Simplane.getFlapsHandleIndex();
