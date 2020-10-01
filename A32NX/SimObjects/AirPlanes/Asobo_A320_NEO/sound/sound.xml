@@ -40,10 +40,10 @@
 	<Sound WwiseEvent="CENTER_TOUCHDOWN" BreakOnStop="false" WwiseData="false" FadeOutType="2" FadeOutTime="0.5" FileName="nosetouch" />
 
 	
-	<Sound WwiseEvent="LEFT_TOUCHDOWN" BreakOnStop="false" WwiseData="false" FadeOutType="2" FadeOutTime="0.5" FileName="lefttouch1,lefttouch2,nosetouch2" />
+	<Sound WwiseEvent="LEFT_TOUCHDOWN" BreakOnStop="false" WwiseData="false" FadeOutType="2" FadeOutTime="0.5" FileName="lefttouch1,lefttouch2,hardtouch1,hardtouch2" />
 
 	
-	<Sound WwiseEvent="RIGHT_TOUCHDOWN" BreakOnStop="false" WwiseData="false" FadeOutType="2" FadeOutTime="0.5" FileName="nosetouch2,righttouch1,righttouch2" />
+	<Sound WwiseEvent="RIGHT_TOUCHDOWN" BreakOnStop="false" WwiseData="false" FadeOutType="2" FadeOutTime="0.5" FileName="righttouch1,righttouch2,hardtouch1,hardtouch2" />
 	
 	
 	
