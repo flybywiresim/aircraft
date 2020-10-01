@@ -14,3 +14,4 @@
 7. [PFD] Remove code related to unrelevant aircraft - @1Revenger1 (Avery Black)
 8. [ECAM] Lower ECAM DOOR Page Colour Fix - @nathaninnes (Nathan Innes)
 9. [ND] Add DME distances, VOR/ADF needles and functioning ADF2 - @blitzcaster (bltzcstr)
+1. [CDU] Fixed certain STARs not showing on arrivals page - @tyler58546 (tyler58546)
