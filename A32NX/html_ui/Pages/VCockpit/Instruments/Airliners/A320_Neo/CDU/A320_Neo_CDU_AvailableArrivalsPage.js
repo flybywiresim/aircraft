@@ -48,7 +48,8 @@ class CDUAvailableArrivalsPage {
                 let matchingArrivals = [];
                 if (selectedApproach) {
                     let selectedRunway = selectedApproach.runway;
-                    for (let i = 0; i < airportInfo.arrivals.length; i++) {
+                    //for some reason there is a duplicate of every STAR. the /2 will prevent these duplicates from showing.
+                    for (let i = 0; i < airportInfo.arrivals.length/2; i++) {
                         let arrival = airportInfo.arrivals[i];
                         for (let j = 0; j < arrival.runwayTransitions.length; j++) {
                             let runwayTransition = arrival.runwayTransitions[j];
@@ -57,6 +58,10 @@ class CDUAvailableArrivalsPage {
                                     matchingArrivals.push({ arrival: arrival, arrivalIndex: i });
                                 }
                             }
+                        }
+                        //add the arrival even if it isn't runway specific
+                        if (!arrival.runwayTransitions.length) {
+                            matchingArrivals.push({ arrival: arrival, arrivalIndex: i });
                         }
                     }
                 }
