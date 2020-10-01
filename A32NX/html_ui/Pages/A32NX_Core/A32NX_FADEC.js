@@ -11,11 +11,15 @@ class A32NX_FADEC {
     update(_deltaTime) {
         const dcAvail = SimVar.GetSimVarValue("L:DCPowerAvailable", "Bool");
         const masterState = SimVar.GetSimVarValue("FUELSYSTEM VALVE SWITCH:"+(this.engine+5), "Bool");
+        const ignitionState = SimVar.GetSimVarValue("L:XMLVAR_ENG_MODE_SEL", "Enum") == 2;
         if (this.lastDCState != dcAvail && dcAvail == 1) {
             this.fadecTimer = 5*60;
         }
         if (this.lastMasterState != masterState) {
             this.fadecTimer = 5*60;
+        }
+        if (this.lastIgnitionState != ignitionState && !ignitionState) {
+            this.fadecTimer = 30;
         }
         this.fadecTimer -= _deltaTime/1000;
         this.updateSimVars();
@@ -24,6 +28,7 @@ class A32NX_FADEC {
     updateSimVars() {
         this.lastDCState = SimVar.GetSimVarValue("L:DCPowerAvailable", "Bool");
         this.lastMasterState = SimVar.GetSimVarValue("FUELSYSTEM VALVE SWITCH:"+(this.engine+5), "Bool");
+        this.lastIgnitionState = SimVar.GetSimVarValue("L:XMLVAR_ENG_MODE_SEL", "Enum") == 2;
         SimVar.SetSimVarValue("L:A32NX_FADEC_POWERED_ENG"+this.engine, "Bool", this.isPowered() ? 1 : 0);
     }
 
