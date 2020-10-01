@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <SoundBanksInfo Platform="Windows" BasePlatform="Windows" SchemaVersion="12" SoundbankVersion="135">
 	<RootPaths>
-		<ProjectRoot>C:\Users\olive\Documents\GitHub\a32nx\src\sound\</ProjectRoot>
-		<SourceFilesRoot>C:\Users\olive\Documents\GitHub\a32nx\src\sound\.cache\Windows\</SourceFilesRoot>
-		<SoundBanksRoot>C:\Users\olive\Documents\GitHub\a32nx\src\sound\GeneratedSoundBanks\Windows\</SoundBanksRoot>
+		<ProjectRoot>H:\sound\</ProjectRoot>
+		<SourceFilesRoot>H:\sound\.cache\Windows\</SourceFilesRoot>
+		<SoundBanksRoot>H:\sound\GeneratedSoundBanks\Windows\</SoundBanksRoot>
 		<ExternalSourcesInputFile></ExternalSourcesInputFile>
-		<ExternalSourcesOutputRoot>C:\Users\olive\Documents\GitHub\a32nx\src\sound\GeneratedSoundBanks\Windows</ExternalSourcesOutputRoot>
+		<ExternalSourcesOutputRoot>H:\sound\GeneratedSoundBanks\Windows</ExternalSourcesOutputRoot>
 	</RootPaths>
 	<SoundBanks>
 		<SoundBank Id="1355168291" GUID="{701ECBBD-9C7B-4030-8CDB-749EE5D1C7B9}" Language="SFX">
@@ -20,20 +20,6 @@
 				<AuxBus Id="3722335303" Name="rev_inside_custom" ObjectPath="\Master-Mixer Hierarchy\Default Work Unit\Master Audio Bus\game\game_aux\aux_inside\rev_inside_custom" GUID="{0144F838-F9D8-480E-A1A7-B07D86A7F342}"/>
 				<AuxBus Id="3930462003" Name="rev_outdoor_aircraft_low_end" ObjectPath="\Master-Mixer Hierarchy\Default Work Unit\Master Audio Bus\game\game_aux\aux_outside\rev_outdoor_aircraft_low_end" GUID="{A0E63B80-12BA-4344-A23E-1CF56C5A4BEF}"/>
 			</IncludedAuxBusses>
-			<ExcludedMemoryFiles>
-				<File Id="74039724" Language="SFX">
-					<ShortName>AE_DistantBuilding_MicsFar.wav</ShortName>
-					<Path>Plugins\Wwise Convolution Reverb\AE_DistantBuilding_MicsFar_28E70600.wem</Path>
-				</File>
-				<File Id="231298282" Language="SFX">
-					<ShortName>IR_ATR42-600_AT4022.wav</ShortName>
-					<Path>Plugins\Wwise Convolution Reverb\IR_ATR42-600_AT4022_BB01EA9C.wem</Path>
-				</File>
-				<File Id="879285817" Language="SFX">
-					<ShortName>AE_DistantBuilding_MicsFar.wav</ShortName>
-					<Path>Plugins\Wwise Convolution Reverb\AE_DistantBuilding_MicsFar_7B6DC981.wem</Path>
-				</File>
-			</ExcludedMemoryFiles>
 			<GameParameters>
 				<GameParameter Id="328924114" Name="MIXER_WARNING_VOLUME" ObjectPath="\Game Parameters\gui\mixer\MIXER_WARNING_VOLUME" GUID="{7908D602-FD8B-404A-B644-22EAB86A3A13}"/>
 				<GameParameter Id="806364695" Name="HEADPHONE_IN_COCKPIT" ObjectPath="\Game Parameters\gplay\HEADPHONE_IN_COCKPIT" GUID="{6A96F2B7-4E69-4D2C-83CD-07F89DB80F92}"/>
