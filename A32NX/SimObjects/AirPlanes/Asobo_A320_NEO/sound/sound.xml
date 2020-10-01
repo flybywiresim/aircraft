@@ -157,7 +157,7 @@
 
 	<!-- GROUND ROLL AND RATTLES ========================================================================================== --> 
 
-	<Sound WwiseData="true" WwiseEvent="GROLL" ViewPoint="Inside" SimVar="SIM ON GROUND" Units="BOOLEAN" Index="0">
+	<Sound WwiseData="true" WwiseEvent="GROLL" ViewPoint="Inside" FadeOutType="2" FadeOutTime="1" SimVar="SIM ON GROUND" Units="BOOLEAN" Index="0">
      <Range LowerBound="1.0" />
 	 <Requires SimVar="GEAR TOTAL PCT EXTENDED" Units="PERCENT" Index="0">
      <Range LowerBound="1" />
@@ -193,7 +193,7 @@
 	<WwiseRTPC SimVar="GROUND VELOCITY" Units="KNOTS" Index="0" RTPCName="SIMVAR_GROUND_VELOCITY" />
     </Sound> 
 
-	<Sound WwiseData="true" WwiseEvent="ROLLRATTLE2" ViewPoint="Inside" SimVar="SIM ON GROUND" Units="BOOLEAN" Index="0">
+	<Sound WwiseData="true" WwiseEvent="ROLLRATTLE2" ViewPoint="Inside" FadeOutType="2" FadeOutTime="1" SimVar="SIM ON GROUND" Units="BOOLEAN" Index="0">
      <Range LowerBound="1.0" />
 	 <Requires SimVar="GEAR TOTAL PCT EXTENDED" Units="PERCENT" Index="0">
      <Range LowerBound="1" />
