@@ -175,10 +175,6 @@
 	
 	<Sound WwiseData="true" WwiseEvent="NWheelSpinAboveGround" ViewPoint="Inside" Continuous="false" SimVar="SIM ON GROUND" Units="BOOLEAN" Index="0" >
 	<Range UpperBound="0" />
-	Range LowerBound="1.0" />
-	 <Requires SimVar="GEAR TOTAL PCT EXTENDED" Units="PERCENT" Index="0">
-    	 <Range LowerBound="1" />
-     	</Requires>
 	</Sound>
 	
 	<Sound WwiseData="true" WwiseEvent="taxirattle" ViewPoint="Inside" SimVar="SIM ON GROUND" Units="BOOLEAN" Index="0">
