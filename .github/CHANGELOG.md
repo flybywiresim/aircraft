@@ -5,7 +5,7 @@
 <!--  1. [Changed Area] Title of changes - @github username (Name)  -->
 ## Changes from 2020/10 to 2020/11
 
-
+1. [Sounds] Added new sounds for fuel pumps, flaps, ground roll and rattles, touchdowns, wind, ext power relay, avionics fans, and chimes on startup - @hotshotp (Boris)
 
 ## Changes from 2020/09 to 2020/10
 
@@ -20,4 +20,3 @@
 9. [ND] Add DME distances, VOR/ADF needles and functioning ADF2 - @blitzcaster (bltzcstr)
 10. [OVHD] Fixed Battery Indicator Colour - @nathaninnes (Nathan Innes)
 11. [MISC] Removed Fuel Patch from MSFS Update 1.8.3 - @nathaninnes (Nathan Innes)
-1. [Sounds] Added new sounds for fuel pumps, flaps, ground roll and rattles, touchdowns, wind, ext power relay clunk, CIDs chimes on startup and avionics ventillation - @hotshotp (Boris)
