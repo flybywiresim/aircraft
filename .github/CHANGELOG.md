@@ -7,6 +7,7 @@
 1. [ND] Change ND Sizing - @nathaninnes (Nathan Innes)
 
 1. [GPWS] Added Pull Up, Sink Rate, Dont sink GPWS with Default Sounds & Added (Too low) terrain, flaps and gear without Sounds (Future PR by Boris) - @oliverpope03 (Oliver Pope)
+2. [CHECKLISTS] Added several situations from QRH to checklists - FBI#7771
 
 ## Changes from 2020/09 to 2020/10
 
