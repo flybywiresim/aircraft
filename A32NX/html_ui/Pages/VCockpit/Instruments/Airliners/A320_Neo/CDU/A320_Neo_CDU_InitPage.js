@@ -349,7 +349,8 @@ class CDUInitPage {
             tripWindCell = "{smallFront}" + mcdu._windDir + "000" + "{smallEnd}";
             tripWindColor = "[color]blue";
             if (isFinite(mcdu.averageWind)) {
-                tripWindCell = "{smallFront}" + mcdu._windDir + this.pad(mcdu.averageWind.toFixed(0), 3, "0") + "{smallEnd}";
+                tripWindCell = "{smallFront}" + mcdu._windDir + mcdu.averageWind.toFixed(0).padStart(3, "0") + "{smallEnd}";
+
             }
             mcdu.onRightInput[4] = async () => {
                 let value = mcdu.inOut;
@@ -419,31 +420,6 @@ class CDUInitPage {
         mcdu.onNextPage = () => {
             CDUInitPage.ShowPage1(mcdu);
         };
-    }
-
-    // Credits to Externoak for this
-    static ConvertDDToDMS(deg, lng) {
-        // converts decimal degrees to degrees minutes seconds
-        const M = 0 | ((deg % 1) * 60e7);
-        let degree;
-        if (lng) {
-            degree = this.pad(0 | (deg < 0 ? (deg = -deg) : deg), 3, 0);
-        } else {
-            degree = 0 | (deg < 0 ? (deg = -deg) : deg);
-        }
-        return {
-            dir: deg < 0 ? (lng ? "W" : "S") : lng ? "E" : "N",
-            deg: degree,
-            min: Math.abs(0 | (M / 1e7)),
-            sec: Math.abs((0 | (((M / 1e6) % 1) * 6e4)) / 100),
-        };
-    }
-
-    // Credits to Externoak for this
-    static pad(n, width, filler) {
-        // returns value with size 3, i.e n=1 width=3 filler=. -> "..1"
-        n = n + "";
-        return n.length >= width ? n : new Array(width - n.length + 1).join(filler) + n;
     }
 }
 //# sourceMappingURL=A320_Neo_CDU_InitPage.js.map
