@@ -28,7 +28,7 @@ Y Offset=0.0, 0.0
 Z Offset=0.0, 0.0
 
 [Particle.0]
-Lifetime=0.1, 0.1
+Lifetime=0.09, 0.09
 Type=19
 X Scale=0.15, 0.15
 Y Scale=0.15, 0.15
@@ -71,7 +71,7 @@ MinProjSize= 0.4
 Type=spot
 Size=0.06
 Range=40.0
-Intensity=1.0
+Intensity=4.0
 Softness=0.0
 SpotInner=50.0
 SpotOuter=90.0
@@ -80,7 +80,7 @@ ScatDir=0.0
 
 [Emitter.1]
 Lifetime=0.0, 0.0
-Delay=0.2, 0.2
+Delay=0.13, 0.13
 Bounce=0.0
 Light=1
 No Interpolate=1
@@ -100,7 +100,7 @@ Y Offset=0.0, 0.0
 Z Offset=0.0, 0.0
 
 [Particle.1]
-Lifetime=0.1, 0.1
+Lifetime=0.09, 0.09
 Type=19
 X Scale=0.15, 0.15
 Y Scale=0.15, 0.15
@@ -136,7 +136,7 @@ MinProjSize= 0.2
 Type=spot
 Size=0.06
 Range=40.0
-Intensity=1.0
+Intensity=4.0
 Softness=0.0
 SpotInner=50.0
 SpotOuter=90.0
