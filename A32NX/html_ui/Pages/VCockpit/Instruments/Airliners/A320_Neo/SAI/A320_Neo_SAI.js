@@ -970,6 +970,24 @@ class A320_Neo_SAI_SelfTest extends NavSystemElement {
         const cold_dark = SimVar.GetSimVarValue('L:A32NX_COLD_AND_DARK_SPAWN', 'Bool');
         const complete = this.selfTestElement.complete;
 
+        const brightness = SimVar.GetSimVarValue("L:A32NX_BARO_BRIGHTNESS","number");
+        const bright_gran = 0.05;
+        const baro_plus = SimVar.GetSimVarValue("L:PUSH_BARO_PLUS", "Bool");
+        const baro_minus = SimVar.GetSimVarValue("L:PUSH_BARO_MINUS", "Bool");
+
+        if (baro_plus !== this.baroPlusState) {
+            this.baroPlusState = baro_plus;
+            if (brightness < 1) {
+                SimVar.SetSimVarValue("L:A32NX_BARO_BRIGHTNESS","number", brightness + bright_gran);
+            }
+        }
+        if (baro_minus !== this.baroMinusState) {
+            this.baroMinusState = baro_minus;
+            if (brightness >= bright_gran) {
+                SimVar.SetSimVarValue("L:A32NX_BARO_BRIGHTNESS","number", brightness - bright_gran);
+            }
+        }
+
         if ((ac_pwr || dc_pwr) && !complete) {
             this.selfTestElement.update(localDeltaTime);
         }
