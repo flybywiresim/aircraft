@@ -7,7 +7,6 @@ class A320_Neo_SAI extends BaseAirliners {
         this.addIndependentElementContainer(new NavSystemElementContainer("Horizon", "Horizon", new A320_Neo_SAI_Attitude()));
         this.addIndependentElementContainer(new NavSystemElementContainer("SelfTest", "SelfTest", new A320_Neo_SAI_SelfTest()));
         this.addIndependentElementContainer(new NavSystemElementContainer("Pressure", "Pressure", new A320_Neo_SAI_Pressure()));
-        this.addIndependentElementContainer(new NavSystemElementContainer("LandingSys", "LandingSys", new A320_Neo_SAI_SelfTest()));
     }
     Update() {
         super.Update();
@@ -1000,11 +999,6 @@ class A320_Neo_SAI_SelfTest extends NavSystemElement {
             // TODO: better way of doing this not on loop
             this.selfTestElement.finishTest();
         }
-
-    }
-    onExit() {
-    }
-    onEvent(_event) {
     }
 }
 class A320_Neo_SAI_SelfTestTimer extends HTMLElement {
@@ -1150,7 +1144,6 @@ class A320_Neo_SAI_SelfTestTimer extends HTMLElement {
             this.finishTest();
         }
     }
-
     resetTimer() {
         if (this.testTimer > this.start_time) return;
         this.testTimer = Math.floor(Math.random() * 3) + this.start_time;
@@ -1176,8 +1169,7 @@ class A320_Neo_SAI_LandingSys extends NavSystemElement {
     isReady() {
         return true;
     }
-    onUpdate() {
-
+    onUpdate(_deltaTime) {
     }
     onExit() {
     }
