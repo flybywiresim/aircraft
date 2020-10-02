@@ -901,6 +901,11 @@
 			</UseTemplate>
 
 			<Component ID="Standby_Indicator">
+				<!-- TODO: Model change required to not affect brake/clock-->
+                <UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
+                    <NODE_ID>DYN_SCREEN</NODE_ID>
+                    <EMISSIVE_CODE>(L:A32NX_BARO_BRIGHTNESS, Percent over 100)</EMISSIVE_CODE>
+                </UseTemplate>
 
 				<UseTemplate Name="ASOBO_AUTOPILOT_Knob_Baro_Template">
 					<ANIM_NAME>AUTOPILOT_Knob_Baro</ANIM_NAME>
@@ -943,23 +948,23 @@
 						<SEQ1_EMISSIVE_DRIVES_VISIBILITY>False</SEQ1_EMISSIVE_DRIVES_VISIBILITY>
 					</DefaultTemplateParameters>
 
-					<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
+					<UseTemplate Name="A32NX_Push_BARO_Dummy_Template">
 						<NODE_ID>PUSH_BARO_BUGS</NODE_ID>
 						<ONLY_SEQ1/>
 					</UseTemplate>
-					<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
+					<UseTemplate Name="A32NX_Push_BARO_Dummy_Template">
 						<NODE_ID>PUSH_BARO_LS</NODE_ID>
 						<ONLY_SEQ1/>
 					</UseTemplate>
-					<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
+					<UseTemplate Name="A32NX_Push_BARO_PLUS_Template">
 						<NODE_ID>PUSH_BARO_PLUS</NODE_ID>
 						<ONLY_SEQ1/>
 					</UseTemplate>
-					<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
+					<UseTemplate Name="A32NX_Push_BARO_MINUS_Template">
 						<NODE_ID>PUSH_BARO_MINUS</NODE_ID>
 						<ONLY_SEQ1/>
 					</UseTemplate>
-					<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
+					<UseTemplate Name="A32NX_Push_BARO_Dummy_Template">
 						<NODE_ID>PUSH_BARO_RST</NODE_ID>
 						<ONLY_SEQ1/>
 					</UseTemplate>
@@ -2844,6 +2849,7 @@
 			<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
 				<NODE_ID>KNOB_RIGHT</NODE_ID>
 			</UseTemplate>
+			<!--
 			<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
 				<NODE_ID>PUSH_BARO_PLUS</NODE_ID>
 			</UseTemplate>
@@ -2859,6 +2865,7 @@
 			<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
 				<NODE_ID>PUSH_BARO_RST</NODE_ID>
 			</UseTemplate>
+			-->
 			<!-- Landing Light Indicators
 		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
 			<NODE_ID>PUSH_AUTOBKR_LDGGEAR_1</NODE_ID>
