@@ -103,19 +103,15 @@
             <Range LowerBound="1.0" />
         </Sound>
  
-        <Sound WwiseData="true" WwiseEvent="avionics_ventilation" FadeOutType="2" FadeOutTime="4" SimVar="CIRCUIT ON" Index="52" Units="BOOLEAN">
-            <Range LowerBound="1.0" />
-            <Requires SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1">
-                <Range LowerBound="28" />
-            </Requires>
-        </Sound>
+        <Sound WwiseEvent="AVvent" WwiseData="true" Continuous="false" ApplyCockpitReverb="true" SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1" >
+	    <Range LowerBound="28" />
+	    <WwiseRTPC SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1" RTPCName="SIMVAR_ELECTRICAL_MAIN_BUS_VOLTAGE_A4_R4" />
+	</Sound>
  
-        <Sound WwiseData="true" WwiseEvent="avionics_start" Continuous="false" ViewPoint="Inside" NodeName="LIGHTS_AUTOPILOT" SimVar="CIRCUIT ON" Index="52" Units="BOOLEAN">
-            <Range LowerBound="1.0" />
-            <Requires SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1">
-                <Range LowerBound="28" />
-            </Requires>
-        </Sound>
+      	 <Sound WwiseEvent="AVventloop" WwiseData="true" ApplyCockpitReverb="true" FadeOutType="2" FadeOutTime="4" SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1" >
+	    <Range LowerBound="28" />
+	    <WwiseRTPC SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1" RTPCName="SIMVAR_ELECTRICAL_MAIN_BUS_VOLTAGE_A4_R4" />
+	</Sound>
  
         <Sound WwiseData="true" WwiseEvent="apu_bleed_on" FadeOutType="2" FadeOutTime="3" SimVar="BLEED AIR APU" Units="BOOL" Index="0">
             <Range LowerBound="1.0" />
@@ -131,6 +127,28 @@
             </Requires>
         </Sound>
  
+	<Sound WwiseEvent="CIDSchimes" WwiseData="true" Continuous="false" ApplyCockpitReverb="true" SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1" >
+	    <Range LowerBound="24" />
+	 <WwiseRTPC SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1" RTPCName="SIMVAR_ELECTRICAL_MAIN_BUS_VOLTAGE_A4_R4" />
+	
+	</Sound>
+	
+	<Sound WwiseEvent="FMGCtest" WwiseData="true" Continuous="false" ApplyCockpitReverb="true" SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1" >
+	    <Range LowerBound="28" />
+	    <WwiseRTPC SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1" RTPCName="SIMVAR_ELECTRICAL_MAIN_BUS_VOLTAGE_A4_R4" />
+	</Sound>
+
+	<Sound WwiseEvent="Loudrelay" WwiseData="true" Continuous="false" ApplyCockpitReverb="true" SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1" >
+	    <Range LowerBound="28" />
+	</Sound>
+
+	
+	<Sound WwiseEvent="startbeep" WwiseData="true" Continuous="false" ApplyCockpitReverb="true" SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1" >
+	    <Range LowerBound="28" />
+	    <WwiseRTPC SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1" RTPCName="SIMVAR_ELECTRICAL_MAIN_BUS_VOLTAGE_A4_R4" />
+		
+	</Sound>
+
         <!-- FUEL PUMP SOUNDS ========================================================================================== -->
  
         <Sound WwiseEvent="Fuelpump" WwiseData="true" Continuous="true" SimVar="FUELSYSTEM PUMP ACTIVE" Units="BOOL" Index="2">
@@ -175,7 +193,7 @@
             <Range LowerBound="1.0" />
             <Requires SimVar="GEAR TOTAL PCT EXTENDED" Units="PERCENT" Index="0">
                 <Range LowerBound="1" />
-            </Requires>
+	</Requires>
             <WwiseRTPC SimVar="GROUND VELOCITY" Units="KNOTS" Index="0" RTPCName="SIMVAR_GROUND_VELOCITY" />
         </Sound>
  
