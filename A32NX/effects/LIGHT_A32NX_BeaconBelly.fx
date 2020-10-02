@@ -62,12 +62,12 @@ NearFade= 12.0
 MinProjSize=0.4
 
 [LightAttributes.0]
-Type=omni
+Type=spot
 Size=0.06
 Range=13.0
 Intensity=2.0
 Softness=0.0
-SpotInner=0.0
-SpotOuter=0.0
+SpotInner=85.5
+SpotOuter=93.3
 Volumetric=1
 ScatDir=0.0
