@@ -18,9 +18,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this._blockFuelEntered = false;
         this._windDir = "HD";
     }
-    get templateID() {
-        return "A320_Neo_CDU";
-    }
+    get templateID() { return "A320_Neo_CDU"; }
     connectedCallback() {
         super.connectedCallback();
         RegisterViewListener("JS_LISTENER_KEYEVENT", () => {
@@ -45,38 +43,51 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this.onFpln = () => { CDUFlightPlanPage.ShowPage(this); };
         this.onRad = () => { CDUNavRadioPage.ShowPage(this); };
         this.onFuel = () => { CDUFuelPredPage.ShowPage(this); };
-        
         let mcduStartPage = SimVar.GetSimVarValue("L:A320_NEO_CDU_START_PAGE", "number");
         if (mcduStartPage < 1) {
             if (mcduStartPage < 1) {
                 CDUIdentPage.ShowPage(this);
-            } else if (mcduStartPage === 10) {
+            }
+            else if (mcduStartPage === 10) {
                 CDUDirectToPage.ShowPage(this);
-            } else if (mcduStartPage === 20) {
+            }
+            else if (mcduStartPage === 20) {
                 CDUProgressPage.ShowPage(this);
-            } else if (mcduStartPage === 30) {
+            }
+            else if (mcduStartPage === 30) {
                 CDUPerformancePage.ShowPage(this);
-            } else if (mcduStartPage === 31) {
+            }
+            else if (mcduStartPage === 31) {
                 CDUPerformancePage.ShowTAKEOFFPage(this);
-            } else if (mcduStartPage === 32) {
+            }
+            else if (mcduStartPage === 32) {
                 CDUPerformancePage.ShowCLBPage(this);
-            } else if (mcduStartPage === 33) {
+            }
+            else if (mcduStartPage === 33) {
                 CDUPerformancePage.ShowCRZPage(this);
-            } else if (mcduStartPage === 34) {
+            }
+            else if (mcduStartPage === 34) {
                 CDUPerformancePage.ShowDESPage(this);
-            } else if (mcduStartPage === 35) {
+            }
+            else if (mcduStartPage === 35) {
                 CDUPerformancePage.ShowAPPRPage(this);
-            } else if (mcduStartPage === 40) {
+            }
+            else if (mcduStartPage === 40) {
                 CDUInitPage.ShowPage1(this);
-            } else if (mcduStartPage === 50) {
+            }
+            else if (mcduStartPage === 50) {
                 CDUDataIndexPage.ShowPage(this);
-            } else if (mcduStartPage === 60) {
+            }
+            else if (mcduStartPage === 60) {
                 CDUFlightPlanPage.ShowPage(this);
-            } else if (mcduStartPage === 70) {
+            }
+            else if (mcduStartPage === 70) {
                 CDUNavRadioPage.ShowPage(this);
-            } else if (mcduStartPage === 80) {
+            }
+            else if (mcduStartPage === 80) {
                 CDUFuelPredPage.ShowPage(this);
             }
+            ;
         }
         this.electricity = this.querySelector("#Electricity");
         this.climbTransitionGroundAltitude = null;
@@ -130,6 +141,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                 if (direction) {
                     const vThs = parseFloat(ths.trim());
                     if (isFinite(vThs) && vThs >= 0.0 && vThs <= 2.5) {
+
                         if (vThs === 0.0) {
                             // DN0.0 should be corrected to UP0.0
                             direction = "UP";
@@ -151,12 +163,13 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
 
         this.showErrorMessage("INVALID ENTRY");
         return false;
-    }
+      }
     onPowerOn() {
         super.onPowerOn();
         if (Simplane.getAutoPilotAirspeedManaged()) {
             this._onModeManagedSpeed();
-        } else if (Simplane.getAutoPilotAirspeedSelected()) {
+        }
+        else if (Simplane.getAutoPilotAirspeedSelected()) {
             this._onModeSelectedSpeed();
         }
         this._onModeManagedHeading();
@@ -180,7 +193,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     }
 
     updateScreenState() {
-        if (SimVar.GetSimVarValue("L:ACPowerAvailable", "bool")) {
+        if (SimVar.GetSimVarValue("L:ACPowerAvailable","bool")) {
             this.electricity.style.display = "block";
         } else {
             this.electricity.style.display = "none";
@@ -223,7 +236,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
      * @returns {number}
      */
     getPerfGreenDotSpeed() {
-        return (this.getGrossWeight("kg") / 1000) * 2 + 85;
+        return ((this.getGrossWeight("kg") / 1000) * 2) + 85;
     }
 
     /**
@@ -357,12 +370,14 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                 this.setAPSelectedSpeed(this.preSelectedClbSpeed, Aircraft.A320_NEO);
                 SimVar.SetSimVarValue("K:SPEED_SLOT_INDEX_SET", "number", 1);
             }
-        } else if (this.currentFlightPhase === FlightPhase.FLIGHT_PHASE_CRUISE) {
+        }
+        else if (this.currentFlightPhase === FlightPhase.FLIGHT_PHASE_CRUISE) {
             if (isFinite(this.preSelectedCrzSpeed)) {
                 this.setAPSelectedSpeed(this.preSelectedCrzSpeed, Aircraft.A320_NEO);
                 SimVar.SetSimVarValue("K:SPEED_SLOT_INDEX_SET", "number", 1);
             }
-        } else if (this.currentFlightPhase === FlightPhase.FLIGHT_PHASE_DESCENT) {
+        }
+        else if (this.currentFlightPhase === FlightPhase.FLIGHT_PHASE_DESCENT) {
             if (isFinite(this.preSelectedDesSpeed)) {
                 this.setAPSelectedSpeed(this.preSelectedDesSpeed, Aircraft.A320_NEO);
                 SimVar.SetSimVarValue("K:SPEED_SLOT_INDEX_SET", "number", 1);
@@ -375,81 +390,97 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                 this.onDir();
             }
             return true;
-        } else if (input === "PROG") {
+        }
+        else if (input === "PROG") {
             if (this.onProg) {
                 this.onProg();
             }
             return true;
-        } else if (input === "PERF") {
+        }
+        else if (input === "PERF") {
             if (this.onPerf) {
                 this.onPerf();
             }
             return true;
-        } else if (input === "INIT") {
+        }
+        else if (input === "INIT") {
             if (this.onInit) {
                 this.onInit();
             }
             return true;
-        } else if (input === "DATA") {
+        }
+        else if (input === "DATA") {
             if (this.onData) {
                 this.onData();
             }
             return true;
-        } else if (input === "FPLN") {
+        }
+        else if (input === "FPLN") {
             if (this.onFpln) {
                 this.onFpln();
             }
             return true;
-        } else if (input === "RAD") {
+        }
+        else if (input === "RAD") {
             if (this.onRad) {
                 this.onRad();
             }
             return true;
-        } else if (input === "FUEL") {
+        }
+        else if (input === "FUEL") {
             if (this.onFuel) {
                 this.onFuel();
             }
             return true;
-        } else if (input === "SEC") {
+        }
+        else if (input === "SEC") {
             if (this.onSec) {
                 this.onSec();
             }
             return true;
-        } else if (input === "ATC") {
+        }
+        else if (input === "ATC") {
             if (this.onAtc) {
                 this.onAtc();
             }
             return true;
-        } else if (input === "MCDU") {
+        }
+        else if (input === "MCDU") {
             if (this.onMcdu) {
                 this.onMcdu();
             }
             return true;
-        } else if (input === "AIRPORT") {
+        }
+        else if (input === "AIRPORT") {
             if (this.onAirport) {
                 this.onAirport();
             }
             return true;
-        } else if (input === "UP") {
+        }
+        else if (input === "UP") {
             if (this.onUp) {
                 this.onUp();
             }
             return true;
-        } else if (input === "DOWN") {
+        }
+        else if (input === "DOWN") {
             if (this.onDown) {
                 this.onDown();
             }
             return true;
-        } else if (input === "LEFT") {
+        }
+        else if (input === "LEFT") {
             if (this.onLeft) {
                 this.onLeft();
             }
             return true;
-        } else if (input === "RIGHT") {
+        }
+        else if (input === "RIGHT") {
             if (this.onRight) {
                 this.onRight();
             }
-        } else if (input === "OVFY") {
+        }
+        else if (input === "OVFY") {
             if (this.onOvfy) {
                 this.onOvfy();
             }
@@ -478,29 +509,48 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
 
     _getTempIndex() {
         const temp = SimVar.GetSimVarValue("AMBIENT TEMPERATURE", "celsius");
-        if (temp < -10) return 0;
-        if (temp < 0) return 1;
-        if (temp < 10) return 2;
-        if (temp < 20) return 3;
-        if (temp < 30) return 4;
-        if (temp < 40) return 5;
-        if (temp < 43) return 6;
-        if (temp < 45) return 7;
-        if (temp < 47) return 8;
-        if (temp < 49) return 9;
-        if (temp < 51) return 10;
-        if (temp < 53) return 11;
-        if (temp < 55) return 12;
-        if (temp < 57) return 13;
-        if (temp < 59) return 14;
-        if (temp < 61) return 15;
-        if (temp < 63) return 16;
-        if (temp < 65) return 17;
-        if (temp < 66) return 18;
+        if (temp < -10)
+            return 0;
+        if (temp < 0)
+            return 1;
+        if (temp < 10)
+            return 2;
+        if (temp < 20)
+            return 3;
+        if (temp < 30)
+            return 4;
+        if (temp < 40)
+            return 5;
+        if (temp < 43)
+            return 6;
+        if (temp < 45)
+            return 7;
+        if (temp < 47)
+            return 8;
+        if (temp < 49)
+            return 9;
+        if (temp < 51)
+            return 10;
+        if (temp < 53)
+            return 11;
+        if (temp < 55)
+            return 12;
+        if (temp < 57)
+            return 13;
+        if (temp < 59)
+            return 14;
+        if (temp < 61)
+            return 15;
+        if (temp < 63)
+            return 16;
+        if (temp < 65)
+            return 17;
+        if (temp < 66)
+            return 18;
         return 19;
     }
 
-    _getVSpeed(dWeightCoef, min, max) {
+    _getVSpeed (dWeightCoef, min, max) {
         let runwayCoef = 1.0;
         const runway = this.flightPlanManager.getDepartureRunway() || this.flightPlanManager.getDetectedCurrentRunway();
         if (runway) {
@@ -516,7 +566,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         return Math.round(vSpeed);
     }
 
-    _getV1Speed() {
+    _getV1Speed () {
         let dWeightCoef = (this.getWeight(true) - 100) / (175 - 100);
         dWeightCoef = Utils.Clamp(dWeightCoef, 0, 1);
         dWeightCoef = 0.7 + (1.0 - 0.7) * dWeightCoef;
@@ -545,7 +595,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         let max = A320_Neo_CDU_MainDisplay._vRsConf1[tempIndex][1];
 
         return this._getVSpeed(dWeightCoef, min, max);
-    }
+     }
     _computeVRSpeed() {
         // computeVRSpeed is called by inherited class so it must remain,
         // but we need the calculation logic so that sits in it's own function now.
@@ -609,7 +659,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     updateAutopilot() {
         let now = performance.now();
         let dt = now - this._lastUpdateAPTime;
-        let apLogicOn = this._apMasterStatus || Simplane.getAutoPilotFlightDirectorActive(1);
+        let apLogicOn = (this._apMasterStatus || Simplane.getAutoPilotFlightDirectorActive(1));
         this._lastUpdateAPTime = now;
         if (isFinite(dt)) {
             this.updateAutopilotCooldown -= dt;
@@ -630,7 +680,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             let currentApMasterStatus = SimVar.GetSimVarValue("AUTOPILOT MASTER", "boolean");
             if (currentApMasterStatus != this._apMasterStatus) {
                 this._apMasterStatus = currentApMasterStatus;
-                apLogicOn = this._apMasterStatus || Simplane.getAutoPilotFlightDirectorActive(1);
+                apLogicOn = (this._apMasterStatus || Simplane.getAutoPilotFlightDirectorActive(1));
                 this._forceNextAltitudeUpdate = true;
                 console.log("Enforce AP in Altitude Lock mode. Cause : AP Master Status has changed.");
                 SimVar.SetSimVarValue("L:A320_NEO_FCU_FORCE_IDLE_VS", "Number", 1);
@@ -685,7 +735,8 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                 SimVar.SetSimVarValue("L:AIRLINER_FMS_LAT_TOP_CLIMB", "number", topOfClimbLlaHeading.lla.lat);
                 SimVar.SetSimVarValue("L:AIRLINER_FMS_LONG_TOP_CLIMB", "number", topOfClimbLlaHeading.lla.long);
                 SimVar.SetSimVarValue("L:AIRLINER_FMS_HEADING_TOP_CLIMB", "number", topOfClimbLlaHeading.heading);
-            } else {
+            }
+            else {
                 SimVar.SetSimVarValue("L:AIRLINER_FMS_SHOW_TOP_CLIMB", "number", 0);
             }
             SimVar.SetSimVarValue("SIMVAR_AUTOPILOT_AIRSPEED_MIN_CALCULATED", "knots", Simplane.getStallProtectionMinSpeed());
@@ -725,20 +776,20 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                         SimVar.SetSimVarValue("L:AIRLINER_FMS_LAT_TOP_DSCNT", "number", topOfDescentLat);
                         SimVar.SetSimVarValue("L:AIRLINER_FMS_LONG_TOP_DSCNT", "number", topOfDescentLong);
                         SimVar.SetSimVarValue("L:AIRLINER_FMS_HEADING_TOP_DSCNT", "number", topOfDescentHeading);
-                    } else {
+                    }
+                    else {
                         SimVar.SetSimVarValue("L:AIRLINER_FMS_SHOW_TOP_DSCNT", "number", 0);
                     }
                     let selectedAltitude = Simplane.getAutoPilotSelectedAltitudeLockValue("feet");
-                    if (
-                        !this.flightPlanManager.getIsDirectTo() &&
+                    if (!this.flightPlanManager.getIsDirectTo() &&
                         isFinite(nextWaypoint.legAltitude1) &&
                         nextWaypoint.legAltitude1 < 20000 &&
-                        nextWaypoint.legAltitude1 > selectedAltitude
-                    ) {
+                        nextWaypoint.legAltitude1 > selectedAltitude) {
                         Coherent.call("AP_ALT_VAR_SET_ENGLISH", 2, nextWaypoint.legAltitude1, this._forceNextAltitudeUpdate);
                         this._forceNextAltitudeUpdate = false;
                         SimVar.SetSimVarValue("L:AP_CURRENT_TARGET_ALTITUDE_IS_CONSTRAINT", "number", 1);
-                    } else {
+                    }
+                    else {
                         let altitude = Simplane.getAutoPilotSelectedAltitudeLockValue("feet");
                         if (isFinite(altitude)) {
                             Coherent.call("AP_ALT_VAR_SET_ENGLISH", 2, altitude, this._forceNextAltitudeUpdate);
@@ -746,7 +797,8 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                             SimVar.SetSimVarValue("L:AP_CURRENT_TARGET_ALTITUDE_IS_CONSTRAINT", "number", 0);
                         }
                     }
-                } else {
+                }
+                else {
                     let altitude = Simplane.getAutoPilotSelectedAltitudeLockValue("feet");
                     if (isFinite(altitude)) {
                         Coherent.call("AP_ALT_VAR_SET_ENGLISH", 2, altitude, this._forceNextAltitudeUpdate);
@@ -769,8 +821,9 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                     let absPathAngle = 180 - Math.abs(pathAngle);
                     let airspeed = Simplane.getIndicatedSpeed();
                     if (airspeed < 400) {
-                        let turnRadius = (airspeed * 360) / ((1091 * 0.36) / airspeed) / 3600 / 2 / Math.PI;
+                        let turnRadius = airspeed * 360 / (1091 * 0.36 / airspeed) / 3600 / 2 / Math.PI;
                         let activateDistance = Math.pow(90 / absPathAngle, 1.6) * turnRadius * 1.2;
+                        ;
                         let distanceToActive = Avionics.Utils.computeGreatCircleDistance(planeCoordinates, activeWaypoint.infos.coordinates);
                         if (distanceToActive < activateDistance) {
                             this.flightPlanManager.setActiveWaypointIndex(this.flightPlanManager.getActiveWaypointIndex() + 1);
@@ -808,12 +861,15 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                     n1 = this.getThrustClimbLimit() / 100;
                 }
                 SimVar.SetSimVarValue("AUTOPILOT THROTTLE MAX THRUST", "number", n1); */
-            } else if (this.currentFlightPhase === FlightPhase.FLIGHT_PHASE_CLIMB) {
+
+            }
+            else if (this.currentFlightPhase === FlightPhase.FLIGHT_PHASE_CLIMB) {
                 if (this.isAirspeedManaged()) {
                     let speed = this.getClbManagedSpeed();
                     this.setAPManagedSpeed(speed, Aircraft.A320_NEO);
                 }
-            } else if (this.currentFlightPhase === FlightPhase.FLIGHT_PHASE_CRUISE) {
+            }
+            else if (this.currentFlightPhase === FlightPhase.FLIGHT_PHASE_CRUISE) {
                 if (this.isAirspeedManaged()) {
                     let speed = this.getCrzManagedSpeed();
                     this.setAPManagedSpeed(speed, Aircraft.A320_NEO);
@@ -829,12 +885,14 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                     n1 = this.getThrustClimbLimit() / 100;
                 }
                 SimVar.SetSimVarValue("AUTOPILOT THROTTLE MAX THRUST", "number", n1); */
-            } else if (this.currentFlightPhase === FlightPhase.FLIGHT_PHASE_DESCENT) {
+            }
+            else if (this.currentFlightPhase === FlightPhase.FLIGHT_PHASE_DESCENT) {
                 if (this.isAirspeedManaged()) {
                     let speed = this.getDesManagedSpeed();
                     this.setAPManagedSpeed(speed, Aircraft.A320_NEO);
                 }
-            } else if (this.currentFlightPhase === FlightPhase.FLIGHT_PHASE_APPROACH) {
+            }
+            else if (this.currentFlightPhase === FlightPhase.FLIGHT_PHASE_APPROACH) {
                 if (this.isAirspeedManaged()) {
                     let speed = this.getManagedApproachSpeed();
                     this.setAPManagedSpeed(speed, Aircraft.A320_NEO);
@@ -847,15 +905,13 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         const airSpeed = SimVar.GetSimVarValue("AIRSPEED TRUE", "knots");
         const leftThrottleDetent = Simplane.getEngineThrottleMode(0);
         const rightThrottleDetent = Simplane.getEngineThrottleMode(1);
-        const highestThrottleDetent = leftThrottleDetent >= rightThrottleDetent ? leftThrottleDetent : rightThrottleDetent;
+        const highestThrottleDetent = (leftThrottleDetent >= rightThrottleDetent) ? leftThrottleDetent : rightThrottleDetent;
+
+
 
         //End preflight when takeoff power is applied and engines are running
         if (this.currentFlightPhase <= 2) {
-            if (
-                (highestThrottleDetent == ThrottleMode.TOGA || highestThrottleDetent == ThrottleMode.FLEX_MCT) &&
-                SimVar.GetSimVarValue("ENG N1 RPM:1", "Percent") > 15 &&
-                SimVar.GetSimVarValue("ENG N1 RPM:2", "Percent") > 15
-            ) {
+            if ((highestThrottleDetent == ThrottleMode.TOGA || highestThrottleDetent == ThrottleMode.FLEX_MCT) && SimVar.GetSimVarValue("ENG N1 RPM:1", "Percent") > 15 && SimVar.GetSimVarValue("ENG N1 RPM:2", "Percent") > 15) {
                 SimVar.SetSimVarValue("L:A32NX_Preflight_Complete", "Bool", 1);
             }
         }
@@ -870,7 +926,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         //Changes to climb phase when acceleration altitude is reached
         if (this.currentFlightPhase === FlightPhase.FLIGHT_PHASE_TAKEOFF && airSpeed > 80) {
             const planeAltitudeMsl = Simplane.getAltitude();
-            let accelerationAltitudeMsl = this.accelerationAltitude || this.thrustReductionAltitude;
+            let accelerationAltitudeMsl = (this.accelerationAltitude || this.thrustReductionAltitude);
 
             if (!accelerationAltitudeMsl) {
                 if (!this.climbTransitionGroundAltitude) {
@@ -880,7 +936,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                     }
 
                     if (!this.climbTransitionGroundAltitude) {
-                        this.climbTransitionGroundAltitude = parseInt(SimVar.GetSimVarValue("GROUND ALTITUDE", "feet")) || 0;
+                        this.climbTransitionGroundAltitude = (parseInt(SimVar.GetSimVarValue("GROUND ALTITUDE", "feet")) || 0);
                     }
                 }
 
@@ -888,7 +944,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             }
 
             if (planeAltitudeMsl > accelerationAltitudeMsl) {
-                console.log("switching to FLIGHT_PHASE_CLIMB: " + JSON.stringify({ planeAltitudeMsl, accelerationAltitudeMsl, prevPhase: this.currentFlightPhase }, null, 2));
+                console.log('switching to FLIGHT_PHASE_CLIMB: ' + JSON.stringify({planeAltitudeMsl, accelerationAltitudeMsl, prevPhase: this.currentFlightPhase}, null, 2));
                 this.currentFlightPhase = FlightPhase.FLIGHT_PHASE_CLIMB;
                 this.climbTransitionGroundAltitude = null;
             }
@@ -899,7 +955,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             const cruiseFlightLevel = this.cruiseFlightLevel * 100;
             if (isFinite(cruiseFlightLevel)) {
                 if (altitude >= 0.96 * cruiseFlightLevel) {
-                    console.log("switching to FLIGHT_PHASE_CRUISE: " + JSON.stringify({ altitude, cruiseFlightLevel, prevPhase: this.currentFlightPhase }, null, 2));
+                    console.log('switching to FLIGHT_PHASE_CRUISE: ' + JSON.stringify({altitude, cruiseFlightLevel, prevPhase: this.currentFlightPhase}, null, 2));
                     this.currentFlightPhase = FlightPhase.FLIGHT_PHASE_CRUISE;
                     Coherent.call("GENERAL_ENG_THROTTLE_MANAGED_MODE_SET", ThrottleMode.AUTO);
                 }
@@ -911,7 +967,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             const cruiseFlightLevel = this.cruiseFlightLevel * 100;
             if (isFinite(cruiseFlightLevel)) {
                 if (altitude < 0.94 * cruiseFlightLevel) {
-                    console.log("switching to FLIGHT_PHASE_DESCENT: " + JSON.stringify({ altitude, cruiseFlightLevel, prevPhase: this.currentFlightPhase }, null, 2));
+                    console.log('switching to FLIGHT_PHASE_DESCENT: ' + JSON.stringify({altitude, cruiseFlightLevel, prevPhase: this.currentFlightPhase}, null, 2));
                     this.currentFlightPhase = FlightPhase.FLIGHT_PHASE_DESCENT;
                     Coherent.call("GENERAL_ENG_THROTTLE_MANAGED_MODE_SET", ThrottleMode.AUTO);
                 }
@@ -929,7 +985,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                     this.connectIls();
                     this.flightPlanManager.activateApproach();
                     if (this.currentFlightPhase != FlightPhase.FLIGHT_PHASE_APPROACH) {
-                        console.log("switching to tryGoInApproachPhase: " + JSON.stringify({ lat, long, dist, prevPhase: this.currentFlightPhase }, null, 2));
+                        console.log('switching to tryGoInApproachPhase: ' + JSON.stringify({lat, long, dist, prevPhase: this.currentFlightPhase}, null, 2));
                         this.tryGoInApproachPhase();
                     }
                 }
@@ -945,7 +1001,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                     const planeLla = new LatLongAlt(lat, long);
                     const dist = Avionics.Utils.computeGreatCircleDistance(this.flightPlanManager.decelWaypoint.infos.coordinates, planeLla);
                     if (dist < 3) {
-                        console.log("switching to tryGoInApproachPhase (AT DECEL): " + JSON.stringify({ lat, long, dist, prevPhase: this.currentFlightPhase }, null, 2));
+                        console.log('switching to tryGoInApproachPhase (AT DECEL): ' + JSON.stringify({lat, long, dist, prevPhase: this.currentFlightPhase}, null, 2));
                         console.log("Switching into approach. DECEL lat : " + lat + " long " + long);
                         this.tryGoInApproachPhase();
                     }
@@ -958,7 +1014,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             if (this.lastPhaseUpdateTime == null) this.lastPhaseUpdateTime = Date.now();
             const deltaTime = Date.now() - this.lastPhaseUpdateTime;
             this.lastPhaseUpdateTime = Date.now();
-            this.landingResetTimer -= deltaTime / 1000;
+            this.landingResetTimer -= deltaTime/1000;
             if (this.landingResetTimer <= 0) {
                 this.landingResetTimer = null;
                 this.currentFlightPhase = 2;
