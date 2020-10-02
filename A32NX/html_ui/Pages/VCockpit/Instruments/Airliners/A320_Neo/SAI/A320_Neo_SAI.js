@@ -7,6 +7,7 @@ class A320_Neo_SAI extends BaseAirliners {
         this.addIndependentElementContainer(new NavSystemElementContainer("Horizon", "Horizon", new A320_Neo_SAI_Attitude()));
         this.addIndependentElementContainer(new NavSystemElementContainer("SelfTest", "SelfTest", new A320_Neo_SAI_SelfTest()));
         this.addIndependentElementContainer(new NavSystemElementContainer("Pressure", "Pressure", new A320_Neo_SAI_Pressure()));
+        this.addIndependentElementContainer(new NavSystemElementContainer("LandingSys", "LandingSys", new A320_Neo_SAI_SelfTest()));
     }
     Update() {
         super.Update();
@@ -959,7 +960,6 @@ class A320_Neo_SAI_SelfTest extends NavSystemElement {
         return true;
     }
     onUpdate(_deltaTime) {
-
         // Delta time mitigation strategy
         const curTime = Date.now();
         const localDeltaTime = curTime - this._lastTime;
@@ -1148,8 +1148,37 @@ class A320_Neo_SAI_SelfTestTimer extends HTMLElement {
         this.complete = true;
     }
 }
-
 customElements.define('a320-neo-sai-self-test', A320_Neo_SAI_SelfTestTimer);
+
+class A320_Neo_SAI_LandingSys extends NavSystemElement {
+    init(root) {
+    }
+    onEnter() {
+    }
+    isReady() {
+        return true;
+    }
+    onUpdate() {
+
+    }
+    onExit() {
+    }
+    onEvent(_event) {
+    }
+}
+
+class A320_Neo_SAI_LandingSysIndicator extends HTMLElement {
+    connectedCallback() {
+        this.construct();
+    }
+
+    construct() {
+        Utils.RemoveAllChildren(this);
+
+    }
+}
+
+customElements.define('a320-neo-sai-landingsys-indicator', A320_Neo_SAI_LandingSysIndicator);
 
 registerInstrument("a320-neo-sai", A320_Neo_SAI);
 //# sourceMappingURL=A320_Neo_SAI.js.map
