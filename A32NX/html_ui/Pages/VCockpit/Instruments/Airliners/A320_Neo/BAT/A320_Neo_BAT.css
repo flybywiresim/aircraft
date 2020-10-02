@@ -60,10 +60,11 @@ a320-neo-bat {
     height: 100%; }
   a320-neo-bat text {
     font-family: Digital;
-    fill: #66767a; }
+    fill: #db7200; }
   a320-neo-bat text.value {
-    font-size: 50px;
+    font-size: 60px;
     text-anchor: end; }
   a320-neo-bat text.unit {
-    font-size: 30px;
+    font-size: 25px;
+    font-family: 'Roboto-Bold';
     text-anchor: start; }

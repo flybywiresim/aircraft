@@ -21,6 +21,7 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
         this.nbSecondaryGraduations = 1;
         this.totalGraduations = this.nbPrimaryGraduations + ((this.nbPrimaryGraduations - 1) * this.nbSecondaryGraduations);
         this.hudAPSpeed = 0;
+        this.isHud = false;
         this.altOver20k = false;
         this._aircraft = Aircraft.A320_NEO;
         this._computedIASAcceleration = 0;
@@ -33,6 +34,9 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
         this._lastMaxSpeedOverrideTime = 0;
         this._smoothFactor = 0.5;
     }
+    static get observedAttributes() {
+        return ["hud"];
+    }
     get aircraft() {
         return this._aircraft;
     }
@@ -44,6 +48,15 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
     }
     connectedCallback() {
         this.construct();
+    }
+    attributeChangedCallback(name, oldValue, newValue) {
+        if (oldValue == newValue)
+            return;
+        switch (name) {
+            case "hud":
+                this.isHud = newValue == "true";
+                break;
+        }
     }
     construct() {
         Utils.RemoveAllChildren(this);
@@ -88,9 +101,9 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
     construct_A320_Neo() {
         this.rootSVG = document.createElementNS(Avionics.SVG.NS, "svg");
         this.rootSVG.setAttribute("id", "ViewBox");
-        this.rootSVG.setAttribute("viewBox", "0 0 250 650");
-        var posX = 100;
-        var posY = 35;
+        this.rootSVG.setAttribute("viewBox", "0 0 215 605");
+        var posX = 94;
+        var posY = 60;
         var width = 105;
         var height = 480;
         var arcWidth = 40;
@@ -493,7 +506,7 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
             this.machPrefixSVG.setAttribute("x", (posX - 10).toString());
             this.machPrefixSVG.setAttribute("y", (posY + height + 45).toString());
             this.machPrefixSVG.setAttribute("fill", "rgb(36,255,0)");
-            this.machPrefixSVG.setAttribute("font-size", (this.fontSize * 1.25).toString());
+            this.machPrefixSVG.setAttribute("font-size", (this.fontSize * 1.4).toString());
             this.machPrefixSVG.setAttribute("font-family", "Roboto-Bold");
             this.machPrefixSVG.setAttribute("text-anchor", "end");
             this.machPrefixSVG.setAttribute("alignment-baseline", "central");
@@ -503,7 +516,7 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
             this.machValueSVG.setAttribute("x", (posX - 10).toString());
             this.machValueSVG.setAttribute("y", (posY + height + 45).toString());
             this.machValueSVG.setAttribute("fill", "rgb(36,255,0)");
-            this.machValueSVG.setAttribute("font-size", (this.fontSize * 1.25).toString());
+            this.machValueSVG.setAttribute("font-size", (this.fontSize * 1.4).toString());
             this.machValueSVG.setAttribute("font-family", "Roboto-Bold");
             this.machValueSVG.setAttribute("text-anchor", "start");
             this.machValueSVG.setAttribute("alignment-baseline", "central");
