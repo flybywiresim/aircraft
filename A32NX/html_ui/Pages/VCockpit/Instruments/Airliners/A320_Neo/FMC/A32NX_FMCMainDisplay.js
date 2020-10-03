@@ -71,6 +71,7 @@ class FMCMainDisplay extends BaseAirliners {
         this._smootherTargetPitch = NaN;
 
         this._zeroFuelWeightZFWCGEntered = false;
+        this._taxiEntered = false;
         this._windDir = "HD"
     }
     static approachTypeStringToIndex(approachType) {
@@ -1095,6 +1096,7 @@ class FMCMainDisplay extends BaseAirliners {
             this.showErrorMessage("FORMAT ERROR");
             return false;
         }
+        this._taxiEntered = true;
         let value = parseFloat(s);
         if (isFinite(value) && value >= 0) {
             this.taxiFuelWeight = value;
