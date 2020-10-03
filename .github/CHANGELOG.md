@@ -5,7 +5,7 @@
 <!--  1. [Changed Area] Title of changes - @github username (Name)  -->
 ## Changes from 2020/10 to 2020/11
 
-1. [Sounds] Added new sounds for fuel pumps, flaps, ground roll and rattles, touchdowns, wind, ext power relay, avionics fans, and chimes on startup - @hotshotp (Boris)
+1. [Sounds] Added new sounds for fuel pumps, flaps, ground roll and rattles, touchdowns, wind, ext power relay, avionics fans, chimes on startup - @hotshotp (Boris)
 
 ## Changes from 2020/09 to 2020/10
 
