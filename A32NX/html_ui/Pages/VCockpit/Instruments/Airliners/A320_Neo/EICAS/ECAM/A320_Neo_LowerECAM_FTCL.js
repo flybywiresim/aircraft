@@ -51,16 +51,16 @@ let A320_Neo_LowerECAM_FTCL;
             this.rudderRightMaxAngle = this.querySelector("#rudderRightMaxAngle");
 
             // Spoiler arrows
-            this.spoiler_a5l = this.querySelector("#a5l");
-            this.spoiler_a4l = this.querySelector("#a4l");
-            this.spoiler_a3l = this.querySelector("#a3l");
-            this.spoiler_a2l = this.querySelector("#a2l");
-            this.spoiler_a1l = this.querySelector("#a1l");
-            this.spoiler_a5r = this.querySelector("#a5r");
-            this.spoiler_a4r = this.querySelector("#a4r");
-            this.spoiler_a3r = this.querySelector("#a3r");
-            this.spoiler_a2r = this.querySelector("#a2r");
-            this.spoiler_a1r = this.querySelector("#a1r");
+            this.spoiler_arrow5_left = this.querySelector("#arrow5_left");
+            this.spoiler_arrow4_left = this.querySelector("#arrow4_left");
+            this.spoiler_arrow3_left = this.querySelector("#arrow3_left");
+            this.spoiler_arrow2_left = this.querySelector("#arrow2_left");
+            this.spoiler_arrow1_left = this.querySelector("#arrow1_left");
+            this.spoiler_arrow5_right = this.querySelector("#arrow5_right");
+            this.spoiler_arrow4_right = this.querySelector("#arrow4_right");
+            this.spoiler_arrow3_right = this.querySelector("#arrow3_right");
+            this.spoiler_arrow2_right = this.querySelector("#arrow2_right");
+            this.spoiler_arrow1_right = this.querySelector("#arrow1_right");
 
             // Spoiler text
             this.spoilertext = this.querySelector("#speedbrake_text");
@@ -199,16 +199,16 @@ let A320_Neo_LowerECAM_FTCL;
             if (this.hydraulicsAvailable) {
                 // Show hydraulic numbers and hide everything else
                 this.spoilertext.setAttribute("visibility", "visible");
-                this.spoiler_a5l.setAttribute("visibility", "hidden");
-                this.spoiler_a4l.setAttribute("visibility", "hidden");
-                this.spoiler_a3l.setAttribute("visibility", "hidden");
-                this.spoiler_a2l.setAttribute("visibility", "hidden");
-                this.spoiler_a1l.setAttribute("visibility", "hidden");
-                this.spoiler_a5r.setAttribute("visibility", "hidden");
-                this.spoiler_a4r.setAttribute("visibility", "hidden");
-                this.spoiler_a3r.setAttribute("visibility", "hidden");
-                this.spoiler_a2r.setAttribute("visibility", "hidden");
-                this.spoiler_a1r.setAttribute("visibility", "hidden");
+                this.spoiler_arrow5_left.setAttribute("visibility", "hidden");
+                this.spoiler_arrow4_left.setAttribute("visibility", "hidden");
+                this.spoiler_arrow3_left.setAttribute("visibility", "hidden");
+                this.spoiler_arrow2_left.setAttribute("visibility", "hidden");
+                this.spoiler_arrow1_left.setAttribute("visibility", "hidden");
+                this.spoiler_arrow5_right.setAttribute("visibility", "hidden");
+                this.spoiler_arrow4_right.setAttribute("visibility", "hidden");
+                this.spoiler_arrow3_right.setAttribute("visibility", "hidden");
+                this.spoiler_arrow2_right.setAttribute("visibility", "hidden");
+                this.spoiler_arrow1_right.setAttribute("visibility", "hidden");
             } else {
                 // Update spoiler variables
                 const spoilersArmed = SimVar.GetSimVarValue("SPOILERS ARMED", "boolean");
@@ -224,57 +224,55 @@ let A320_Neo_LowerECAM_FTCL;
 
                 // Update left speedbrakes and aileron
                 if (leftSpoilerDeflectPct > 0.07) {
-                    console.log("left aileron pct: " + String(leftAileronDeflectPct));
-                    console.log("left splr pct: " + String(leftSpoilerDeflectPct));
                     if (leftAileronDeflectPct < -0.05) {
-                        this.spoiler_a5l.setAttribute("visibility", "visible");
+                        this.spoiler_arrow5_left.setAttribute("visibility", "visible");
                     } else {
-                        this.spoiler_a5l.setAttribute("visibility", "hidden");
+                        this.spoiler_arrow5_left.setAttribute("visibility", "hidden");
                     }
-                    this.spoiler_a4l.setAttribute("visibility", "visible");
-                    this.spoiler_a3l.setAttribute("visibility", "visible");
-                    this.spoiler_a2l.setAttribute("visibility", "visible");
+                    this.spoiler_arrow4_left.setAttribute("visibility", "visible");
+                    this.spoiler_arrow3_left.setAttribute("visibility", "visible");
+                    this.spoiler_arrow2_left.setAttribute("visibility", "visible");
                 } else {
-                    this.spoiler_a5l.setAttribute("visibility", "hidden");
-                    this.spoiler_a4l.setAttribute("visibility", "hidden");
-                    this.spoiler_a3l.setAttribute("visibility", "hidden");
-                    this.spoiler_a2l.setAttribute("visibility", "hidden");
+                    this.spoiler_arrow5_left.setAttribute("visibility", "hidden");
+                    this.spoiler_arrow4_left.setAttribute("visibility", "hidden");
+                    this.spoiler_arrow3_left.setAttribute("visibility", "hidden");
+                    this.spoiler_arrow2_left.setAttribute("visibility", "hidden");
                 }
 
                 // Update right speedbrakes and aileron
                 if (rightSpoilerDeflectPct > 0.07) {
                     if (rightAileronDeflectPct > 0.05) {
-                        this.spoiler_a5r.setAttribute("visibility", "visible");
+                        this.spoiler_arrow5_right.setAttribute("visibility", "visible");
                     } else {
-                        this.spoiler_a5r.setAttribute("visibility", "hidden");
+                        this.spoiler_arrow5_right.setAttribute("visibility", "hidden");
                     }
-                    this.spoiler_a4r.setAttribute("visibility", "visible");
-                    this.spoiler_a3r.setAttribute("visibility", "visible");
-                    this.spoiler_a2r.setAttribute("visibility", "visible");
+                    this.spoiler_arrow4_right.setAttribute("visibility", "visible");
+                    this.spoiler_arrow3_right.setAttribute("visibility", "visible");
+                    this.spoiler_arrow2_right.setAttribute("visibility", "visible");
                 } else {
-                    this.spoiler_a5r.setAttribute("visibility", "hidden");
-                    this.spoiler_a4r.setAttribute("visibility", "hidden");
-                    this.spoiler_a3r.setAttribute("visibility", "hidden");
-                    this.spoiler_a2r.setAttribute("visibility", "hidden");
+                    this.spoiler_arrow5_right.setAttribute("visibility", "hidden");
+                    this.spoiler_arrow4_right.setAttribute("visibility", "hidden");
+                    this.spoiler_arrow3_right.setAttribute("visibility", "hidden");
+                    this.spoiler_arrow2_right.setAttribute("visibility", "hidden");
                 }
 
                 // Ground spoilers deployed
                 if (spoilersArmed && planeOnGround && gspeed > 45 && eng1_mode <= 2 && eng2_mode <= 2) {
                     if (leftSpoilerDeflectPct > 0.0625) {
-                        this.spoiler_a1l.setAttribute("visibility", "visible");
-                        this.spoiler_a5l.setAttribute("visibility", "visible");
+                        this.spoiler_arrow1_left.setAttribute("visibility", "visible");
+                        this.spoiler_arrow5_left.setAttribute("visibility", "visible");
                     } else {
-                        this.spoiler_a1l.setAttribute("visibility", "hidden");
+                        this.spoiler_arrow1_left.setAttribute("visibility", "hidden");
                     }
                     if (rightSpoilerDeflectPct > 0.0625) {
-                        this.spoiler_a1r.setAttribute("visibility", "visible");
-                        this.spoiler_a5r.setAttribute("visibility", "visible");
+                        this.spoiler_arrow1_right.setAttribute("visibility", "visible");
+                        this.spoiler_arrow5_right.setAttribute("visibility", "visible");
                     } else {
-                        this.spoiler_a1r.setAttribute("visibility", "hidden");
+                        this.spoiler_arrow1_right.setAttribute("visibility", "hidden");
                     }
                 } else {
-                    this.spoiler_a1l.setAttribute("visibility", "hidden");
-                    this.spoiler_a1r.setAttribute("visibility", "hidden");
+                    this.spoiler_arrow1_left.setAttribute("visibility", "hidden");
+                    this.spoiler_arrow1_right.setAttribute("visibility", "hidden");
                 }
             }  
         }

@@ -10,6 +10,8 @@
 
 1. [Sounds] Added new sounds for fuel pumps, flaps, ground roll and rattles, touchdowns, and wind - @hotshotp (Boris)
 
+4. [ECAM] ELAC/SEC warning color fix, added spoiler functionality to ECAM page - @wpine215 (Iceman)
+
 ## Changes from 2020/09 to 2020/10
 
 1. [General] Add CHANGELOG.md - @nathaninnes (Nathan Innes)
@@ -23,4 +25,3 @@
 9. [ND] Add DME distances, VOR/ADF needles and functioning ADF2 - @blitzcaster (bltzcstr)
 10. [OVHD] Fixed Battery Indicator Colour - @nathaninnes (Nathan Innes)
 11. [MISC] Removed Fuel Patch from MSFS Update 1.8.3 - @nathaninnes (Nathan Innes)
-12. [ECAM] ELAC/SEC warning color fix, added spoiler functionality to ECAM page - @wpine215 (Iceman)
