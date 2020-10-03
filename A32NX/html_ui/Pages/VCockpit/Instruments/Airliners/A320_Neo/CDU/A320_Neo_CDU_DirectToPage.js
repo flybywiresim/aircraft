@@ -1,12 +1,16 @@
 class CDUDirectToPage {
     static ShowPage(mcdu, directWaypoint, wptsListIndex = 0) {
         mcdu.clearDisplay();
-        let directWaypointCell = " ";
+        let directWaypointCell = "[][color]blue";
+        let pageTitle = "DIR TO";
+        let dirETA = "----";
+        let dirDist = "---";
+        let directToLabel = "DIRECT TO[color]blue";
         if (directWaypoint) {
-            directWaypointCell = directWaypoint.ident;
+            directWaypointCell = directWaypoint.ident + "[color]yellow";
         }
         else if (mcdu.flightPlanManager.getDirectToTarget()) {
-            directWaypointCell = mcdu.flightPlanManager.getDirectToTarget().ident;
+            directWaypointCell = "[\xa0\xa0\xa0\xa0\xa0][color]blue";
         }
         let waypointsCell = ["", "", "", "", ""];
         let iMax = 5;
@@ -15,6 +19,8 @@ class CDUDirectToPage {
             iMax--;
             eraseLabel = "DIR TO[color]red";
             waypointsCell[4] = "←ERASE[color]red";
+            dirDist += "[color]yellow";
+            dirETA += "[color]yellow";
             mcdu.onLeftInput[5] = () => {
                 SimVar.SetSimVarValue("L:A320_NEO_PREVIEW_DIRECT_TO", "number", 0);
                 CDUDirectToPage.ShowPage(mcdu);
@@ -61,8 +67,19 @@ class CDUDirectToPage {
         let insertLabel = "";
         let insertLine = "";
         if (directWaypoint) {
-            insertLabel = "TMPY[color]red";
-            insertLine = "DIRECT*[color]red";
+
+            const getDist = () => {
+                let dist = mcdu.flightPlanManager.getDistanceToWaypoint(directWaypoint);
+                dist = Math.round(dist);
+                return dist;
+            }
+
+            insertLabel = "DIR TO[color]red";
+            insertLine = "INSERT*[color]red";
+            pageTitle = "DIR TO[color]yellow";
+            directToLabel = "DIRECT TO[color]yellow";
+            dirETA = "0000[color]yellow";
+            dirDist = getDist() + "[color]yellow";
             mcdu.onRightInput[5] = () => {
                 mcdu.activateDirectToWaypoint(directWaypoint, () => {
                     SimVar.SetSimVarValue("L:A320_NEO_PREVIEW_DIRECT_TO", "number", 0);
@@ -71,13 +88,13 @@ class CDUDirectToPage {
             };
         }
         mcdu.setTemplate([
-            ["DIR TO"],
+            [pageTitle],
             ["WAYPOINT", "DIST", "UTC"],
-            ["[" + directWaypointCell + "][color]blue", "---", "----"],
+            ["\xa0" + directWaypointCell, dirDist, dirETA],
             ["F-PLN WPTS"],
-            [waypointsCell[0], "DIRECT TO[color]blue"],
+            [waypointsCell[0], directToLabel],
             ["", "WITH"],
-            [waypointsCell[1], "ABEAM PTS[color]blue"],
+            [waypointsCell[1], "ABEAM PTS→[color]blue"],
             ["", "RADIAL IN"],
             [waypointsCell[2], "[ ]°[color]blue"],
             ["", "RADIAL OUT"],

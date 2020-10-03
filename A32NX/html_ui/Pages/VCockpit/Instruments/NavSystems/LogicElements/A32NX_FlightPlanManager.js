@@ -630,6 +630,15 @@ class FlightPlanManager {
         }
         return 0;
     }
+    getDistanceToWaypoint(waypoint) {
+        let lat = SimVar.GetSimVarValue("PLANE LATITUDE", "degree latitude");
+        let long = SimVar.GetSimVarValue("PLANE LONGITUDE", "degree longitude");
+        let ll = new LatLong(lat, long);
+        if (waypoint && waypoint.infos) {
+            return Avionics.Utils.computeDistance(ll, waypoint.infos.coordinates);
+        }
+        return 0;
+    }
     getBearingToActiveWaypoint() {
         let lat = SimVar.GetSimVarValue("PLANE LATITUDE", "degree latitude");
         let long = SimVar.GetSimVarValue("PLANE LONGITUDE", "degree longitude");
