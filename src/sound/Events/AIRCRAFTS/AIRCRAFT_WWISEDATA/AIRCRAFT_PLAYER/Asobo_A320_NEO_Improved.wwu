@@ -312,6 +312,104 @@
 						</Action>
 					</ChildrenList>
 				</Event>
+				<Event Name="Play_Asobo_A320_NEO_CIDSchimes" ID="{96A3AC41-9738-479B-B623-5865F22ED5EE}">
+					<ChildrenList>
+						<Action Name="" ID="{F16ED7CA-A396-471A-A4CB-B06C56DE8569}" ShortID="244571525">
+							<PropertyList>
+								<Property Name="ActionType" Type="int16" Value="1"/>
+							</PropertyList>
+							<ReferenceList>
+								<Reference Name="Target">
+									<ObjectRef Name="CIDS Chimes" ID="{2CF58673-88DA-432C-A5DF-B1EC10F82903}" WorkUnitID="{27D32D8D-6C92-4542-9BFC-F0D08111F92F}"/>
+								</Reference>
+							</ReferenceList>
+						</Action>
+					</ChildrenList>
+				</Event>
+				<Event Name="Play_Asobo_A320_NEO_FMGCtest" ID="{4A5C5E88-FB36-48DF-907B-E5A4518B4306}">
+					<ChildrenList>
+						<Action Name="" ID="{3D3AC075-019B-45F1-ABC5-A2F3AF29490B}" ShortID="627960243">
+							<PropertyList>
+								<Property Name="ActionType" Type="int16" Value="1"/>
+							</PropertyList>
+							<ReferenceList>
+								<Reference Name="Target">
+									<ObjectRef Name="FMGCtest" ID="{8502B61E-84C6-4E30-AFDB-61C6B28C5679}" WorkUnitID="{27D32D8D-6C92-4542-9BFC-F0D08111F92F}"/>
+								</Reference>
+							</ReferenceList>
+						</Action>
+					</ChildrenList>
+				</Event>
+				<Event Name="Play_Asobo_A320_NEO_Loudrelay" ID="{2CFF959F-2372-4585-B8EB-299BB4AE0CB3}">
+					<ChildrenList>
+						<Action Name="" ID="{2481862D-156F-46AD-BF81-9DC762618535}" ShortID="569221885">
+							<PropertyList>
+								<Property Name="ActionType" Type="int16" Value="1"/>
+							</PropertyList>
+							<ReferenceList>
+								<Reference Name="Target">
+									<ObjectRef Name="Airbus_Power_Startup" ID="{F117383A-451E-46F1-967C-72C624B1B09C}" WorkUnitID="{27D32D8D-6C92-4542-9BFC-F0D08111F92F}"/>
+								</Reference>
+							</ReferenceList>
+						</Action>
+					</ChildrenList>
+				</Event>
+				<Event Name="Play_Asobo_A320_NEO_startbeep" ID="{B1B6FA5F-5C11-4E83-89CB-38BAE27423C8}">
+					<ChildrenList>
+						<Action Name="" ID="{6830448F-B864-4F70-9A0A-935B596F87CB}" ShortID="136067982">
+							<PropertyList>
+								<Property Name="ActionType" Type="int16" Value="1"/>
+							</PropertyList>
+							<ReferenceList>
+								<Reference Name="Target">
+									<ObjectRef Name="beepstart" ID="{9D5884D8-8943-405F-9176-032D864E1640}" WorkUnitID="{27D32D8D-6C92-4542-9BFC-F0D08111F92F}"/>
+								</Reference>
+							</ReferenceList>
+						</Action>
+					</ChildrenList>
+				</Event>
+				<Event Name="Play_Asobo_A320_NEO_AVvent" ID="{5176C94E-BF8F-4378-8764-6F11C0C195E3}">
+					<ChildrenList>
+						<Action Name="" ID="{F2D4F399-6765-4F1F-A2EB-12F236974A44}" ShortID="239419340">
+							<PropertyList>
+								<Property Name="ActionType" Type="int16" Value="1"/>
+							</PropertyList>
+							<ReferenceList>
+								<Reference Name="Target">
+									<ObjectRef Name="blowerstart" ID="{E05DFCBA-4D0C-4F5F-97BA-5FFFD2D7EE4A}" WorkUnitID="{27D32D8D-6C92-4542-9BFC-F0D08111F92F}"/>
+								</Reference>
+							</ReferenceList>
+						</Action>
+					</ChildrenList>
+				</Event>
+				<Event Name="Play_Asobo_A320_NEO_AVventloop" ID="{DA11F500-E798-41AA-82B5-EA7D231270A3}">
+					<ChildrenList>
+						<Action Name="" ID="{DBF20FBB-F340-46BC-80F2-F32DCBB665ED}" ShortID="434889694">
+							<PropertyList>
+								<Property Name="ActionType" Type="int16" Value="1"/>
+							</PropertyList>
+							<ReferenceList>
+								<Reference Name="Target">
+									<ObjectRef Name="Avionics" ID="{72CB778B-F869-4848-992D-50E0DD42485D}" WorkUnitID="{27D32D8D-6C92-4542-9BFC-F0D08111F92F}"/>
+								</Reference>
+							</ReferenceList>
+						</Action>
+					</ChildrenList>
+				</Event>
+				<Event Name="Play_Asobo_A320_NEO_batrelay" ID="{F7F5867E-03F4-4756-8DF3-A197017B59C4}">
+					<ChildrenList>
+						<Action Name="" ID="{4A2928DD-C86A-43C6-BDEE-7556EAC0414C}" ShortID="62352438">
+							<PropertyList>
+								<Property Name="ActionType" Type="int16" Value="1"/>
+							</PropertyList>
+							<ReferenceList>
+								<Reference Name="Target">
+									<ObjectRef Name="batteryrelay" ID="{68A1C375-F84E-472E-951F-6B6563EC94DC}" WorkUnitID="{27D32D8D-6C92-4542-9BFC-F0D08111F92F}"/>
+								</Reference>
+							</ReferenceList>
+						</Action>
+					</ChildrenList>
+				</Event>
 			</ChildrenList>
 		</WorkUnit>
 	</Events>

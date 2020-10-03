@@ -3,44 +3,64 @@ Event	ID	Name			Wwise Object Path	Notes
 	276993210	Play_Asobo_A320_NEO_ROLLRATTLE			\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved\Play_Asobo_A320_NEO_ROLLRATTLE	
 	548293890	Play_Asobo_A320_NEO_cabin_crew_seats_takeoff			\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved\Play_Asobo_A320_NEO_cabin_crew_seats_takeoff	
 	886207320	Play_Asobo_A320_NEO_NWheelSpinAboveGround			\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved\Play_Asobo_A320_NEO_NWheelSpinAboveGround	
+	1054525165	Play_Asobo_A320_NEO_CIDSchimes			\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved\Play_Asobo_A320_NEO_CIDSchimes	
 	1143436301	Play_Asobo_A320_NEO_light_switch_seatbelt			\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved\Play_Asobo_A320_NEO_light_switch_seatbelt	
 	1163974770	Play_Asobo_A320_NEO_Geardownwind			\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved\Play_Asobo_A320_NEO_Geardownwind	
 	1199592215	Play_Asobo_A320_NEO_cockpit_cabin_call_fwd			\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved\Play_Asobo_A320_NEO_cockpit_cabin_call_fwd	
 	1216914367	Play_Asobo_A320_NEO_cockpit_cabin_call_aft			\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved\Play_Asobo_A320_NEO_cockpit_cabin_call_aft	
 	2073073335	Play_Asobo_A320_NEO_taxirattle			\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved\Play_Asobo_A320_NEO_taxirattle	
+	2141756415	Play_Asobo_A320_NEO_AVventloop			\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved\Play_Asobo_A320_NEO_AVventloop	
 	2291548167	Play_Asobo_A320_NEO_cabin_crew_seats_landing			\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved\Play_Asobo_A320_NEO_cabin_crew_seats_landing	
+	2328628459	Play_Asobo_A320_NEO_startbeep			\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved\Play_Asobo_A320_NEO_startbeep	
 	2383051621	Play_Asobo_A320_NEO_Betterwind			\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved\Play_Asobo_A320_NEO_Betterwind	
 	2692782905	Play_Asobo_A320_NEO_Taxibump			\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved\Play_Asobo_A320_NEO_Taxibump	
+	2822123028	Play_Asobo_A320_NEO_Loudrelay			\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved\Play_Asobo_A320_NEO_Loudrelay	
 	2836225853	Play_Asobo_A320_NEO_CRC			\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved\Play_Asobo_A320_NEO_CRC	
+	2883622772	Play_Asobo_A320_NEO_FMGCtest			\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved\Play_Asobo_A320_NEO_FMGCtest	
 	3063011407	Play_Asobo_A320_NEO_Fuelpump			\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved\Play_Asobo_A320_NEO_Fuelpump	
 	3079676156	Play_Asobo_A320_NEO_ROLLRATTLE2			\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved\Play_Asobo_A320_NEO_ROLLRATTLE2	
+	3576698749	Play_Asobo_A320_NEO_AVvent			\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved\Play_Asobo_A320_NEO_AVvent	
 	3751190317	Play_Asobo_A320_NEO_GROLL			\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved\Play_Asobo_A320_NEO_GROLL	
+	4189686749	Play_Asobo_A320_NEO_batrelay			\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved\Play_Asobo_A320_NEO_batrelay	
 
 Game Parameter	ID	Name			Wwise Object Path	Notes
 	1091068139	SIMVAR_WHEEL_RPM			\simvar\grounds\SIMVAR_WHEEL_RPM	Wheel rpm. Index is 0 = center 1 = left 2 = right 3 = aux  Unit = Rpm
+	1330391311	SIMVAR_ELECTRICAL_MAIN_BUS_VOLTAGE_A4_R4			\simvar\instruments\customs\SIMVAR_ELECTRICAL_MAIN_BUS_VOLTAGE_A4_R4	Main bus voltage  Unit : Volts
 	1649214721	SIMVAR_GROUND_VELOCITY			\simvar\physic\SIMVAR_GROUND_VELOCITY	Speed relative to the earths surface  Unit : Knots
 	2919001772	SIMVAR_AIRSPEED_TRUE			\simvar\physic\SIMVAR_AIRSPEED_TRUE	True airspeed  Unit : Knots
 	3852284635	SIMVAR_AIRSPEED_INDICATED			\simvar\physic\SIMVAR_AIRSPEED_INDICATED	Indicated airspeed  Unit : Knots
 
 In Memory Audio	ID	Name	Audio source file		Wwise Object Path	Notes	Data Size
 	57183032	fuelpumps	H:\sound\.cache\Windows\SFX\fuelpumps_5B60A4F0.wem		\Actor-Mixer Hierarchy\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved\fuelpumps		670179
-	146631458	wind	H:\sound\.cache\Windows\SFX\wind_A2E62443.wem		\Actor-Mixer Hierarchy\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved\wind		1572974
+	98244844	crclick	H:\sound\.cache\Windows\SFX\crclick_1E8ECBBC.wem		\Actor-Mixer Hierarchy\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved\FMGCtest\crclick		34145
+	152824243	triple_clic	H:\sound\.cache\Windows\SFX\triple_clic_1E8ECBBC.wem		\Actor-Mixer Hierarchy\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved\FMGCtest\triple_clic		11029
+	242796214	batteryrelay	H:\sound\.cache\Windows\SFX\batteryrelay_1E8ECBBC.wem		\Actor-Mixer Hierarchy\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved\batteryrelay		14649
+	299332985	blowerstart	H:\sound\.cache\Windows\SFX\blowerstart_1E8ECBBC.wem		\Actor-Mixer Hierarchy\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved\blowerstart		232237
+	299391330	rollrattle2	H:\sound\.cache\Windows\SFX\rollrattle2_E8137CDF.wem		\Actor-Mixer Hierarchy\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved\rollrattle2		542239
 	304699896	taxirattle1	H:\sound\.cache\Windows\SFX\taxirattle1_1E8ECBBC.wem		\Actor-Mixer Hierarchy\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved\taxirattle\taxirattle1		38969
 	305035624	rattle	H:\sound\.cache\Windows\SFX\rattle_0F8B6264.wem		\Actor-Mixer Hierarchy\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved\rattle		946617
 	314189442	CAPTAIN-CABINCREW-SEATS-FOR-TAKEOFF_2	H:\sound\.cache\Windows\SFX\CAPTAIN-CABINCREW-SEATS-FOR-TAKEOFF_2_78BD8C0F.wem		\Actor-Mixer Hierarchy\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved\cabin_crew_seats_takeoff\CAPTAIN-CABINCREW-SEATS-FOR-TAKEOFF_2		128719
 	344402026	CAPTAIN-CABINCREW-SEATS-FOR-TAKEOFF_3	H:\sound\.cache\Windows\SFX\CAPTAIN-CABINCREW-SEATS-FOR-TAKEOFF_3_78BD8C0F.wem		\Actor-Mixer Hierarchy\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved\cabin_crew_seats_takeoff\CAPTAIN-CABINCREW-SEATS-FOR-TAKEOFF_3		120278
+	430374098	beepstart	H:\sound\.cache\Windows\SFX\beepstart_1E8ECBBC.wem		\Actor-Mixer Hierarchy\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved\beepstart		16462
 	432631009	taxibump	H:\sound\.cache\Windows\SFX\taxibump_1E8ECBBC.wem		\Actor-Mixer Hierarchy\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved\taxibump		8290
 	432822708	CAPTAIN-CABINCREW-SEATS-FOR-LANDING_2	H:\sound\.cache\Windows\SFX\CAPTAIN-CABINCREW-SEATS-FOR-LANDING_2_78BD8C0F.wem		\Actor-Mixer Hierarchy\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved\cabin_crew_seats_landing\CAPTAIN-CABINCREW-SEATS-FOR-LANDING_2		163087
+	444422604	5chimes	H:\sound\.cache\Windows\SFX\5chimes_1E8ECBBC.wem		\Actor-Mixer Hierarchy\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved\CIDS Chimes\5chimes		134222
 	502547356	taxirattle2	H:\sound\.cache\Windows\SFX\taxirattle2_1E8ECBBC.wem		\Actor-Mixer Hierarchy\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved\taxirattle\taxirattle2		85419
+	510913524	gearwind	H:\sound\.cache\Windows\SFX\wind_0FD0F842.wem		\Actor-Mixer Hierarchy\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved\gearwind		1455261
 	522173839	improved_tone_caution	H:\sound\.cache\Windows\SFX\single_chime_78BD8C0F.wem		\Actor-Mixer Hierarchy\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved\improved_tone_caution		8259
 	537738566	seatbelt	H:\sound\.cache\Windows\SFX\seatbelt_78BD8C0F.wem		\Actor-Mixer Hierarchy\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved\seatbelt		12985
 	549534682	CRC	H:\sound\.cache\Windows\SFX\CRC_5286F9B8.wem		\Actor-Mixer Hierarchy\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved\CRC		28881
 	562791736	CAPTAIN-CABINCREW-SEATS-FOR-LANDING_3	H:\sound\.cache\Windows\SFX\CAPTAIN-CABINCREW-SEATS-FOR-LANDING_3_78BD8C0F.wem		\Actor-Mixer Hierarchy\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved\cabin_crew_seats_landing\CAPTAIN-CABINCREW-SEATS-FOR-LANDING_3		139252
-	684073691	gearwind	H:\sound\.cache\Windows\SFX\wind_2AAC8F71.wem		\Actor-Mixer Hierarchy\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved\gearwind		1572974
+	643339371	4chimes	H:\sound\.cache\Windows\SFX\4chimes_1E8ECBBC.wem		\Actor-Mixer Hierarchy\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved\CIDS Chimes\4chimes		103200
+	655189032	3chimes	H:\sound\.cache\Windows\SFX\3chimes_1E8ECBBC.wem		\Actor-Mixer Hierarchy\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved\CIDS Chimes\3chimes		73600
+	710725752	6chimes	H:\sound\.cache\Windows\SFX\6chimes_1E8ECBBC.wem		\Actor-Mixer Hierarchy\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved\CIDS Chimes\6chimes		164320
+	713462689	Airbus_Power_Startup	H:\sound\.cache\Windows\SFX\Airbus_Power_Startup_1E8ECBBC.wem		\Actor-Mixer Hierarchy\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved\Airbus_Power_Startup		34567
 	790202684	cabincrewbell	H:\sound\.cache\Windows\SFX\cabincrewbell_78BD8C0F.wem		\Actor-Mixer Hierarchy\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved\cabincrewbell		43183
 	806003362	CAPTAIN-CABINCREW-SEATS-FOR-LANDING	H:\sound\.cache\Windows\SFX\CAPTAIN-CABINCREW-SEATS-FOR-LANDING_78BD8C0F.wem		\Actor-Mixer Hierarchy\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved\cabin_crew_seats_landing\CAPTAIN-CABINCREW-SEATS-FOR-LANDING		139446
 	904953473	groundrollback	H:\sound\.cache\Windows\SFX\groundrollback_8D8CAEEF.wem		\Actor-Mixer Hierarchy\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved\groundrollback		1242549
 	925710262	CAPTAIN-CABINCREW-SEATS-FOR-TAKEOFF	H:\sound\.cache\Windows\SFX\CAPTAIN-CABINCREW-SEATS-FOR-TAKEOFF_78BD8C0F.wem		\Actor-Mixer Hierarchy\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved\cabin_crew_seats_takeoff\CAPTAIN-CABINCREW-SEATS-FOR-TAKEOFF		119410
-	1036214451	rollrattle2	H:\sound\.cache\Windows\SFX\rollrattle2_E8CCE5FD.wem		\Actor-Mixer Hierarchy\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved\rollrattle2		542239
-	1071026338	nosewheelrollaboveground	H:\sound\.cache\Windows\SFX\nosewheelrollaboveground_1E8ECBBC.wem		\Actor-Mixer Hierarchy\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved\nosewheelrollaboveground		122525
+	983975468	Avionics	H:\sound\.cache\Windows\SFX\Avionics_89DC6E16.wem		\Actor-Mixer Hierarchy\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved\Avionics		138380
+	1010339073	2chimes	H:\sound\.cache\Windows\SFX\2chimes_1E8ECBBC.wem		\Actor-Mixer Hierarchy\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved\CIDS Chimes\2chimes		43521
+	1028032883	wind	H:\sound\.cache\Windows\SFX\wind_BB0A5B19.wem		\Actor-Mixer Hierarchy\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved\wind		1455261
+	1071026338	nosewheelrollaboveground	H:\sound\.cache\Windows\SFX\nosewheelrollaboveground_1E8ECBBC.wem		\Actor-Mixer Hierarchy\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved\nosewheelrollaboveground		163013
 

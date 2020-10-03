@@ -3,6 +3,8 @@
 <!-- Always use "1." at the start instead of "2. " or "X. " as GitHub will auto renumber everything. -->
 <!-- Use the following format below -->
 <!--  1. [Changed Area] Title of changes - @github username (Name)  -->
+
+
 ## Changes from 2020/09 to 2020/10
 1. [General] Add CHANGELOG.md - @nathaninnes (Nathan Innes)
 2. [ECAM] Improved Upper ECAM Visuals - @wpine215 (Iceman)
@@ -22,3 +24,4 @@
 3. [Sounds] Added new sounds for fuel pumps, flaps, ground roll and rattles, touchdowns, and wind - @hotshotp (Boris)
 4. [ND] Hide the aircraft indicator in PLAN mode while ADIRS are not aligned - @lousybyte (lousybyte)
 5. [LIGHTS] Improved Strobe, Nav and beacon lights - @lukecologne (lukecologne)
+6. [Sounds] Added new startup sounds - @hotshotp (Boris)
