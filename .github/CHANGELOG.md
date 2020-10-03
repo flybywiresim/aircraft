@@ -10,6 +10,7 @@
 4. [ND] Hide the aircraft indicator in PLAN mode while ADIRS are not aligned - @lousybyte (lousybyte)
 5. [LIGHTS] Improved Strobe, Nav and beacon lights - @lukecologne (lukecologne)
 6. [Sounds] Added new startup sounds - @hotshotp (Boris)
+1. [CDU] Corrected MCDU flight phase - @aryeng (ryeng)
 
 ## Changes from 2020/09 to 2020/10
 1. [General] Add CHANGELOG.md - @nathaninnes (Nathan Innes)
@@ -23,4 +24,4 @@
 9. [ND] Add DME distances, VOR/ADF needles and functioning ADF2 - @blitzcaster (bltzcstr)
 10. [OVHD] Fixed Battery Indicator Colour - @nathaninnes (Nathan Innes)
 11. [MISC] Removed Fuel Patch from MSFS Update 1.8.3 - @nathaninnes (Nathan Innes)
-1. [CDU] Corrected MCDU flight phase - @aryeng (ryeng)
+
