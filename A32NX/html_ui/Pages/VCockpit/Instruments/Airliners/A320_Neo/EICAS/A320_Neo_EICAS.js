@@ -94,6 +94,10 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         SimVar.SetSimVarValue("LIGHT POTENTIOMETER:91","FLOAT64",0.1);
         SimVar.SetSimVarValue("LIGHT POTENTIOMETER:92","FLOAT64",0.1);
         SimVar.SetSimVarValue("LIGHT POTENTIOMETER:93","FLOAT64",0.1);
+
+        Include.addScript("/JS/debug.js", function () {
+            g_modDebugMgr.AddConsole(null);
+        });
     }
     onUpdate() {
         const _deltaTime = this.getDeltaTime();

@@ -1,3 +1,4 @@
+<<<<<<< Updated upstream
 {
     "creator": "Iceman",
     "release_notes": {
@@ -30,4 +31,38 @@
     "total_package_size": "00000000000105425327",
     "minimum_game_version": "1.7.12",
     "manufacturer": "Airbus"
+=======
+{
+    "creator": "Iceman",
+    "release_notes": {
+        "neutral": {
+            "LastUpdate": "",
+            "OlderHistory": ""
+        }
+    },
+    "package_version": "0.1.51",
+    "title": "A320NX",
+    "dependencies": [
+        {
+            "package_version": "0.1.51",
+            "name": "asobo-aircraft-a320-neo"
+        },
+        {
+            "package_version": "0.1.38",
+            "name": "asobo-vcockpits-instruments-a320-neo"
+        },
+        {
+            "package_version": "0.1.13",
+            "name": "asobo-vcockpits-instruments-airliners"
+        },
+        {
+            "package_version": "0.1.61",
+            "name": "fs-base-aircraft-common"
+        }
+    ],
+    "content_type": "AIRCRAFT",
+    "total_package_size": "00000000000105391728",
+    "minimum_game_version": "1.7.12",
+    "manufacturer": "Airbus"
+>>>>>>> Stashed changes
 }
