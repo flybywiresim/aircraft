@@ -106,7 +106,9 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
         this.updateMap(_deltaTime);
         this.updateNDInfo(_deltaTime);
 
-        if (SimVar.GetSimVarValue("L:A320_Neo_ADIRS_STATE", "Enum") != 2) {
+        let ADIRSState = SimVar.GetSimVarValue("L:A320_Neo_ADIRS_STATE", "Enum");
+
+        if (ADIRSState != 2) {
             document.querySelector("#GPSPrimary").setAttribute("visibility", "hidden");
             document.querySelector("#GPSPrimaryLost").setAttribute("visibility", "visible");
         } else {
@@ -114,13 +116,16 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
             document.querySelector("#GPSPrimaryLost").setAttribute("visibility", "hidden");
         }
 
-        if (SimVar.GetSimVarValue("L:A320_Neo_ADIRS_STATE", "Enum") != 2 && !this.map.planMode && this.modeChangeTimer == -1) {
+        if (ADIRSState != 2 && !this.map.planMode && this.modeChangeTimer == -1) {
             document.querySelector("#MapFail").setAttribute("visibility", "visible");
             document.querySelector("#Map").setAttribute("style", "display:none");
         } else {
             document.querySelector("#MapFail").setAttribute("visibility", "hidden");
             document.querySelector("#Map").setAttribute("style", "");
         }
+
+        if (this.map.planMode)
+            this.map.instrument.airplaneIconElement._image.setAttribute("visibility", ADIRSState != 2 ? "hidden" : "visible");
 
         const ACPowerStateChange = SimVar.GetSimVarValue("L:ACPowerStateChange","Bool");
         const ACPowerAvailable = SimVar.GetSimVarValue("L:ACPowerAvailable","Bool");
