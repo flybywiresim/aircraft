@@ -1291,14 +1291,7 @@
 			<ANIM_NAME>#NODE_ID#</ANIM_NAME>
 			<WWISE_EVENT_1>master_apu_switch_on</WWISE_EVENT_1>
 			<WWISE_EVENT_2>master_apu_switch_off</WWISE_EVENT_2>
-			<Condition Check="WAIT_FOR_ALIGN_TIME">
-				<True>
-					<SEQ1_EMISSIVE_CODE>(L:#NODE_ID#, Bool) ! (L:A320_Neo_ADIRS_STATE, Enum) 0 == (L:A320_Neo_ADIRS_STATE, Enum) 1 == (L:A320_Neo_ADIRS_TIME, seconds) #WAIT_FOR_ALIGN_TIME# &gt; and or and (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or</SEQ1_EMISSIVE_CODE>
-				</True>
-				<False>
-					<SEQ1_EMISSIVE_CODE>(L:A320_Neo_ADIRS_STATE, Enum) 2 != (L:#NODE_ID#, Bool) ! and (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or</SEQ1_EMISSIVE_CODE>
-				</False>
-			</Condition>
+			<SEQ1_EMISSIVE_CODE>(L:#NODE_ID#, Bool) ! (L:#NODE_ID#_FAULT, Bool) and (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or</SEQ1_EMISSIVE_CODE>
 			<SEQ2_EMISSIVE_CODE>(L:#NODE_ID#, Bool) (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or</SEQ2_EMISSIVE_CODE>
 			<LEFT_SINGLE_CODE>(L:#NODE_ID#) ! (>L:#NODE_ID#)</LEFT_SINGLE_CODE>
 		</UseTemplate>
@@ -1620,5 +1613,16 @@
 				</Component>
 			</False>
 		</Condition>
+	</Template>
+
+	<Template Name="A32NX_AIRBUS_Push_EFISGPWS_Template">
+		<UseTemplate Name="ASOBO_GT_Push_Button_Airliner_Dummy">
+			<ANIM_NAME>#NODE_ID#</ANIM_NAME>
+			<WWISE_EVENT_1>master_apu_switch_on</WWISE_EVENT_1>
+			<WWISE_EVENT_2>master_apu_switch_off</WWISE_EVENT_2>
+			<SEQ1_EMISSIVE_CODE>(L:GPWS_PULL_UP, Bool) (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or</SEQ1_EMISSIVE_CODE>
+			<SEQ2_EMISSIVE_CODE>(L:GPWS_SINK_RATE, Bool) (L:GPWS_DONT_SINK, Bool) (L:GPWS_TOO_LOW, Enum) ! 0 == or or (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or</SEQ2_EMISSIVE_CODE>
+			<LEFT_SINGLE_CODE>1 (>L:GPWS_TEST)</LEFT_SINGLE_CODE>
+		</UseTemplate>
 	</Template>
 </ModelBehaviors>

@@ -890,6 +890,16 @@
 				<BLOCK_SEQ1>1</BLOCK_SEQ1>
 			</UseTemplate>
 
+			<UseTemplate Name="A32NX_AIRBUS_Push_EFISGPWS_Template">
+				<NODE_ID>PUSH_EFIS_CS_GPWS</NODE_ID>
+				<ANIM_NAME>PUSH_EFIS_CS_GPWS</ANIM_NAME>
+			</UseTemplate>
+
+			<UseTemplate Name="A32NX_AIRBUS_Push_EFISGPWS_Template">
+				<NODE_ID>PUSH_EFIS_FO_GPWS</NODE_ID>
+				<ANIM_NAME>PUSH_EFIS_FO_GPWS</ANIM_NAME>
+			</UseTemplate>
+
 			<Component ID="Standby_Indicator">
 
 				<UseTemplate Name="ASOBO_AUTOPILOT_Knob_Baro_Template">
@@ -925,12 +935,6 @@
 				<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
 					<NODE_ID>PUSH_AUTOPILOT_AUTOLAND_R</NODE_ID>
 					<ONLY_SEQ1/>
-				</UseTemplate>
-				<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
-					<NODE_ID>PUSH_EFIS_CS_GPWS</NODE_ID>
-				</UseTemplate>
-				<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
-					<NODE_ID>PUSH_EFIS_FO_GPWS</NODE_ID>
 				</UseTemplate>
 
 				<Component ID="BARO">
@@ -2763,12 +2767,10 @@
 				<UseTemplate Name="A32NX_AIRLINER_GPWS_ALIGN_Template">
 					<NODE_ID>PUSH_OVHD_GPWS_TERR</NODE_ID>
 					<TOOLTIPID>(INOP) TERR</TOOLTIPID>
-					<WAIT_FOR_ALIGN_TIME>120 0.055 (A:GPS POSITION LAT, degree latitude) 2 pow * +</WAIT_FOR_ALIGN_TIME>
 				</UseTemplate>
 				<UseTemplate Name="A32NX_AIRLINER_GPWS_ALIGN_Template">
 					<NODE_ID>PUSH_OVHD_GPWS_SYS</NODE_ID>
-					<TOOLTIPID>(INOP) SYS</TOOLTIPID>
-					<WAIT_FOR_ALIGN_TIME>305 0.095 (A:GPS POSITION LAT, degree latitude) 2 pow * + (A:GPS POSITION LAT, degree latitude) 2 / -</WAIT_FOR_ALIGN_TIME>
+					<TOOLTIPID>SYS</TOOLTIPID>
 				</UseTemplate>
 				<UseTemplate Name="ASOBO_AIRLINER_GPWS_Template">
 					<NODE_ID>PUSH_OVHD_GPWS_GSMODE</NODE_ID>
@@ -2777,7 +2779,7 @@
 				<UseTemplate Name="ASOBO_AIRLINER_GPWS_Template">
 					<NODE_ID>PUSH_OVHD_GPWS_FLAP</NODE_ID>
 					<PART_ID>GPWS_Flap</PART_ID>
-					<TOOLTIPID>(INOP) Flap Mode</TOOLTIPID>
+					<TOOLTIPID>Flap Mode</TOOLTIPID>
 				</UseTemplate>
 				<UseTemplate Name="ASOBO_AIRLINER_GPWS_Template">
 					<NODE_ID>PUSH_OVHD_GPWS_LDG</NODE_ID>
