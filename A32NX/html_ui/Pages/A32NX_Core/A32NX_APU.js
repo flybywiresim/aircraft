@@ -6,30 +6,11 @@ class A32NX_APU {
         console.log('A32NX_APU init');
         SimVar.SetSimVarValue("L:APU_FLAP_OPEN", "Percent", 0);
         this.lastAPUBleedState = -1;
-
-        // FIX FOR 1.8.3 UPDATE
-        SimVar.SetSimVarValue("L:A32NX_FUEL_FIX_APPLIED", "Enum", -1);
     }
     update(_deltaTime) {
         const currentAPUMasterState = SimVar.GetSimVarValue("A:FUELSYSTEM VALVE SWITCH:8", "Bool");
         const apuFlapOpenPercent = SimVar.GetSimVarValue("L:APU_FLAP_OPEN", "Percent");
         const APUPctRPM = SimVar.GetSimVarValue("APU PCT RPM", "percent");
-
-        //////////////////////////
-        // FIX FOR 1.8.3 UPDATE //
-        //////////////////////////
-        if (currentAPUMasterState === 1 && APUPctRPM > 10 && APUPctRPM < 90) {
-            SimVar.SetSimVarValue("L:A32NX_FUEL_FIX_APPLIED", "Enum", 0);
-        }
-        const center_qty = SimVar.GetSimVarValue("FUEL TANK CENTER QUANTITY", "Gallons");
-        const fix_applied = SimVar.GetSimVarValue("L:A32NX_FUEL_FIX_APPLIED", "Enum");
-        if (currentAPUMasterState === 0 && APUPctRPM < 90 && APUPctRPM > 10 && fix_applied == 0 && center_qty < 40) {
-                SimVar.SetSimVarValue("FUEL TANK CENTER QUANTITY", "Gallons", 40);
-                SimVar.SetSimVarValue("L:A32NX_FUEL_FIX_APPLIED", "Enum", -1);
-        }
-        //////////////////////////
-        ///////// END FIX ////////
-        //////////////////////////
 
         if (apuFlapOpenPercent === 100 && SimVar.GetSimVarValue("A:APU SWITCH", "Bool") === 0) {
             const apuFuelsystemValveOpen = SimVar.GetSimVarValue("A:FUELSYSTEM VALVE OPEN:8", "Percent");
