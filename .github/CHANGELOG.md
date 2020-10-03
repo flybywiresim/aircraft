@@ -5,7 +5,6 @@
 <!--  1. [Changed Area] Title of changes - @github username (Name)  -->
 
 ## Changes from 2020/09 to 2020/10
-
 1. [General] Add CHANGELOG.md - @nathaninnes (Nathan Innes)
 2. [ECAM] Improved Upper ECAM Visuals - @wpine215 (Iceman)
 3. [TEXTURES] Changed roughness of glareshield - @Pleasure (Pleasure)
@@ -23,4 +22,5 @@
 2. [GPWS] Added Pull Up, Sink Rate, Dont sink GPWS with Default Sounds & Added (Too low) terrain, flaps and gear without Sounds (Future PR by Boris) - @oliverpope03 (Oliver Pope)
 3. [Sounds] Added new sounds for fuel pumps, flaps, ground roll and rattles, touchdowns, and wind - @hotshotp (Boris)
 4. [ND] Hide the aircraft indicator in PLAN mode while ADIRS are not aligned - @lousybyte (lousybyte)
-1. [Sounds] Added new startup sounds - @hotshotp (Boris)
+5. [LIGHTS] Improved Strobe, Nav and beacon lights - @lukecologne (lukecologne)
+6. [Sounds] Added new startup sounds - @hotshotp (Boris)
