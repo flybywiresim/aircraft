@@ -44,8 +44,11 @@ var A320_Neo_LowerECAM_BLEED;
                 return;
             }
 
-            var currentEngineBleedState = [SimVar.GetSimVarValue("BLEED AIR ENGINE:1", "Bool"), SimVar.GetSimVarValue("BLEED AIR ENGINE:2", "Bool")]
-            var currentApuN = SimVar.GetSimVarValue("APU PCT RPM", "percent")
+            let currentEngineBleedState = [SimVar.GetSimVarValue("BLEED AIR ENGINE:1", "Bool"), SimVar.GetSimVarValue("BLEED AIR ENGINE:2", "Bool")]
+            let currentApuN = SimVar.GetSimVarValue("APU PCT RPM", "percent")
+
+            let eng1Running = SimVar.GetSimVarValue("ENG COMBUSTION:1", "bool")
+            let eng2Running = SimVar.GetSimVarValue("ENG COMBUSTION:2", "bool")
 
             if (!this.apuProvidesBleed && (currentApuN > 0.94)) {
                 this.apuBleedStartTimer = 2
@@ -59,7 +62,7 @@ var A320_Neo_LowerECAM_BLEED;
                 }
             }
             
-            if (currentEngineBleedState[0] === 1) {
+            if (currentEngineBleedState[0] === 1 && eng1Running) {
                 this.leftEngineHp[0].setAttribute("visibility", "visible");
                 this.leftEngineHp[1].setAttribute("visibility", "hidden");
                 this.leftEngineIp[0].setAttribute("visibility", "visible");
@@ -70,7 +73,7 @@ var A320_Neo_LowerECAM_BLEED;
                 this.leftEngineIp[0].setAttribute("visibility", "hidden")
                 this.leftEngineIp[1].setAttribute("visibility", "visible")
             }
-            if (currentEngineBleedState[1] === 1) {
+            if (currentEngineBleedState[1] === 1 && eng2Running) {
                 this.rightEngineHp[0].setAttribute("visibility", "visible");
                 this.rightEngineHp[1].setAttribute("visibility", "hidden");
                 this.rightEngineIp[0].setAttribute("visibility", "visible");
@@ -133,7 +136,7 @@ var A320_Neo_LowerECAM_BLEED;
             }
 
             //find ram air state
-            let currentRamState = SimVar.GetSimVarValue("L:A32NX_AIRCOND_RAMAIR_TOGGLE", "bool")
+            const currentRamState = SimVar.GetSimVarValue("L:A32NX_AIRCOND_RAMAIR_TOGGLE", "bool")
 
             if(currentRamState) {
                 this.ramAir[0].setAttribute("visibility", "hidden")
@@ -144,7 +147,7 @@ var A320_Neo_LowerECAM_BLEED;
             }
 
             //find pack flow state
-            let currentPackFlow = SimVar.GetSimVarValue("L:A32NX_KNOB_OVHD_AIRCOND_PACKFLOW_Position", "Position(0-2)")
+            const currentPackFlow = SimVar.GetSimVarValue("L:A32NX_KNOB_OVHD_AIRCOND_PACKFLOW_Position", "Position(0-2)")
 
             if(currentPackFlow == 0){
                  this.packFlow[0].setAttribute("visibility", "visible")
@@ -166,8 +169,6 @@ var A320_Neo_LowerECAM_BLEED;
                                                           SimVar.GetSimVarValue("L:A320_Neo_AIRCOND_LVL_2", "Position(0-6)"),
                                                           SimVar.GetSimVarValue("L:A320_Neo_AIRCOND_LVL_3", "Position(0-6)")]))
             
-            let eng1Running = SimVar.GetSimVarValue("ENG COMBUSTION:1", "bool")
-            let eng2Running = SimVar.GetSimVarValue("ENG COMBUSTION:2", "bool")
 
             let eng1TMP = SimVar.GetSimVarValue("ENG EXHAUST GAS TEMPERATURE:1", "Rankine")      
             let eng1PSI = parseInt(SimVar.GetSimVarValue("TURB ENG BLEED AIR:1", "Ratio (0-16384)")/2)
@@ -180,6 +181,7 @@ var A320_Neo_LowerECAM_BLEED;
             let packTMPComputedIn = [(parseInt(((eng1TMP - 491.67) * (5 / 9)) * this.packInMultiplier)),
                                      (parseInt(((eng2TMP - 491.67) * (5 / 9)) * this.packInMultiplier)),
                                      (parseInt(this.apuBleedTemperature * this.packInMultiplierApu))]
+
             let packTMPComputedOut = [(parseInt(((eng1TMP - 491.67) * (5 / 9)) * this.packOutMultiplier)),
                                       (parseInt(((eng2TMP - 491.67) * (5 / 9)) * this.packOutMultiplier)),
                                       (parseInt(this.apuBleedTemperature * this.packOutMultiplierApu))]
@@ -192,10 +194,7 @@ var A320_Neo_LowerECAM_BLEED;
             this.packOutMultiplier += packTemperatureVariation[0] * this.temperatureVariationSpeed
             this.packOutMultiplierApu += packTemperatureVariation[1] * this.temperatureVariationSpeed
 
-            
-            
-            if (currentEngineBleedState[0] && eng1Running){
-		        
+            if (currentEngineBleedState[0] && eng1Running){ 
                 this.querySelector("#eng1-bleed-tmp").textContent = eng1TMPcomputed
                 this.querySelector("#eng1-bleed-psi").textContent = eng1PSI
             } else {
@@ -218,8 +217,7 @@ var A320_Neo_LowerECAM_BLEED;
             }
 
             if (currentEngineBleedState[1] && eng2Running){
-		
-                this.querySelector("#eng2-bleed-tmp").textContent = eng1TMPcomputed
+                this.querySelector("#eng2-bleed-tmp").textContent = eng2TMPcomputed
                 this.querySelector("#eng2-bleed-psi").textContent = eng2PSI  
             } else {
                 this.querySelector("#eng2-bleed-tmp").textContent = "XXX"
