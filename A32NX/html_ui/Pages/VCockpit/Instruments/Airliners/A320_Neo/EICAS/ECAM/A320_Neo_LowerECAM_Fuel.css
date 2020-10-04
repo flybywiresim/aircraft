@@ -54,15 +54,15 @@
     a320-neo-lower-ecam-fuel .FlowShape {
       fill: rgba(13,20,35,1);
       stroke: green;
-      stroke-width: 4; }
+      stroke-width: 3; }
     a320-neo-lower-ecam-fuel .ValvePumpActive {
       fill: rgba(13,20,35,1);
       stroke: green;
-      stroke-width: 4; }
+      stroke-width: 3; }
     a320-neo-lower-ecam-fuel .ValvePumpInactive {
       fill: rgba(13,20,35,1);
       stroke: #db7200;
-      stroke-width: 4; }
+      stroke-width: 3; }
     a320-neo-lower-ecam-fuel text {
       font-family: Roboto-Bold;
       font-size: 20px; }
@@ -73,11 +73,12 @@
     a320-neo-lower-ecam-fuel text.Unit {
       fill: #009696; }
     a320-neo-lower-ecam-fuel text.Large {
+      font-weight: bold;
       font-size: 22px; }
     a320-neo-lower-ecam-fuel text.XLarge {
       font-size: 25px; }
     a320-neo-lower-ecam-fuel text.Small {
-      font-size: 18px; }
+      font-size: 20px; }
     a320-neo-lower-ecam-fuel #APU text {
       font-size: 18px;
       fill: white;

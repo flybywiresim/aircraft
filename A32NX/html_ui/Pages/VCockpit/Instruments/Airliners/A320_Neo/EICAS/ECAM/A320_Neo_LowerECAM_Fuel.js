@@ -51,8 +51,6 @@ var A320_Neo_LowerECAM_Fuel;
             this.allToggleElements.push(new JetFuelToggleElement(this, "#rightValve", "FUELSYSTEM VALVE SWITCH:7", "FUELSYSTEM VALVE OPEN:7"));
             this.allToggleElements.push(new JetFuelToggleElement(this, "#leftPump1", "FUELSYSTEM PUMP SWITCH:2", "FUELSYSTEM PUMP ACTIVE:2"));
             this.allToggleElements.push(new JetFuelToggleElement(this, "#leftPump2", "FUELSYSTEM PUMP SWITCH:5", "FUELSYSTEM PUMP ACTIVE:5"));
-            this.allToggleElements.push(new JetFuelToggleElement(this, "#middlePump1", "FUELSYSTEM PUMP SWITCH:1", "FUELSYSTEM PUMP ACTIVE:1"));
-            this.allToggleElements.push(new JetFuelToggleElement(this, "#middlePump2", "FUELSYSTEM PUMP SWITCH:4", "FUELSYSTEM PUMP ACTIVE:4"));
             this.allToggleElements.push(new JetFuelToggleElement(this, "#rightPump1", "FUELSYSTEM PUMP SWITCH:3", "FUELSYSTEM PUMP ACTIVE:3"));
             this.allToggleElements.push(new JetFuelToggleElement(this, "#rightPump2", "FUELSYSTEM PUMP SWITCH:6", "FUELSYSTEM PUMP ACTIVE:6"));
             this.middleFuelValue = this.querySelector("#middleFuelValue");
@@ -73,6 +71,12 @@ var A320_Neo_LowerECAM_Fuel;
             this.fuelLevels = SimVar.GetGameVarValue("AIRCRAFT INITIAL FUEL LEVELS", "FuelLevels");
             this.apuElement = this.querySelector("#APU");
             this.setAPUState(false, false, true);
+            this.middlePump1 = this.querySelector("#middlePump1");
+            this.middlePump2 = this.querySelector("#middlePump2");
+            this.middlePump1_On = this.querySelector("#middlePump1_On");
+            this.middlePump2_On = this.querySelector("#middlePump2_On");
+            this.middlePump1_Off = this.querySelector("#middlePump1_Off");
+            this.middlePump2_Off = this.querySelector("#middlePump2_Off");
             this.isInitialised = true;
         }
         update(_deltaTime) {
@@ -96,6 +100,47 @@ var A320_Neo_LowerECAM_Fuel;
                     this.allToggleElements[i].refresh();
                 }
             }
+
+            const centerTankQty = SimVar.GetSimVarValue("FUEL TANK CENTER QUANTITY", "gallons");
+            const leftCenterPumpOn = SimVar.GetSimVarValue("FUELSYSTEM PUMP SWITCH:1", "boolean");
+            const rightCenterPumpOn = SimVar.GetSimVarValue("FUELSYSTEM PUMP SWITCH:4", "boolean");
+            const leftCenterPumpActive = SimVar.GetSimVarValue("FUELSYSTEM PUMP ACTIVE:1", "boolean");
+            const rightCenterPumpActive = SimVar.GetSimVarValue("FUELSYSTEM PUMP ACTIVE:4", "boolean");
+
+            if (leftCenterPumpOn) {
+                this.middlePump1.setAttribute("class", "ValvePumpActive");
+                if (centerTankQty <= 10 || !leftCenterPumpActive) {
+                    this.middlePump1_Off.setAttribute("class", "ValvePumpActive");
+                    this.middlePump1_Off.setAttribute("visibility", "visible");
+                    this.middlePump1_On.setAttribute("visibility", "hidden");
+                } else {
+                    this.middlePump1_Off.setAttribute("visibility", "hidden");
+                    this.middlePump1_On.setAttribute("visibility", "visible");
+                }
+            } else {
+                this.middlePump1.setAttribute("class", "ValvePumpInactive");
+                this.middlePump1_Off.setAttribute("class", "ValvePumpInactive");
+                this.middlePump1_Off.setAttribute("visibility", "visible");                
+                this.middlePump1_On.setAttribute("visibility", "hidden");
+            }
+
+            if (rightCenterPumpOn) {
+                this.middlePump2.setAttribute("class", "ValvePumpActive");
+                if (centerTankQty <= 10 || !rightCenterPumpActive) {
+                    this.middlePump2_Off.setAttribute("class", "ValvePumpActive");
+                    this.middlePump2_Off.setAttribute("visibility", "visible");
+                    this.middlePump2_On.setAttribute("visibility", "hidden");
+                } else {
+                    this.middlePump2_Off.setAttribute("visibility", "hidden");
+                    this.middlePump2_On.setAttribute("visibility", "visible");
+                }
+            } else {
+                this.middlePump2.setAttribute("class", "ValvePumpInactive");
+                this.middlePump2_Off.setAttribute("class", "ValvePumpInactive");
+                this.middlePump2_Off.setAttribute("visibility", "visible");                
+                this.middlePump2_On.setAttribute("visibility", "hidden");
+            }
+            
             if (isInMetric) {
                 this.FOBUnit.textContent = "KG";
                 this.fuelFlowUnit.textContent = "KG/MIN";
