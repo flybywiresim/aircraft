@@ -32,22 +32,22 @@ var A320_Neo_LowerECAM_BLEED;
             this.apuBleedStartTimer = -1
 
             this.engTempMultiplier = 0.35
-            this.packInMultiplier = 0.11
+            this.packInMultiplier = 0.20
             this.packOutMultiplier1 = 0.055
             this.packOutMultiplier2 = 0.055
-            this.packInMultiplierApu = 0.2
+            this.packInMultiplierApu = 0.4
             this.packOutMultiplierApu = 0.1
             this.temperatureVariationSpeed = 0.01
-        //part of the placeholder logic
+            //part of the placeholder logic
             this.packIndicators = [(this.querySelector("#pack-out-temp-indicator-0")), (this.querySelector("#pack-out-temp-indicator-1")),
-                                    (this.querySelector("#pack-out-temp-indicator-2")), (this.querySelector("#pack-out-temp-indicator-3")),
-                                    (this.querySelector("#pack-out-temp-indicator-4")), (this.querySelector("#pack-out-temp-indicator-5")), 
-                                    (this.querySelector("#pack-out-temp-indicator-6")), ]
+            (this.querySelector("#pack-out-temp-indicator-2")), (this.querySelector("#pack-out-temp-indicator-3")),
+            (this.querySelector("#pack-out-temp-indicator-4")), (this.querySelector("#pack-out-temp-indicator-5")),
+            (this.querySelector("#pack-out-temp-indicator-6")),]
 
 
-        }   
+        }
         //part of the placeholder logic
-        setPackIndicators(p0, p1, p2, p3, p4, p5, p6){
+        setPackIndicators(p0, p1, p2, p3, p4, p5, p6) {
             if (p0) {
                 this.packIndicators[0].setAttribute("visibility", "visible")
                 this.packIndicators[1].setAttribute("visibility", "hidden")
@@ -56,7 +56,7 @@ var A320_Neo_LowerECAM_BLEED;
                 this.packIndicators[4].setAttribute("visibility", "hidden")
                 this.packIndicators[5].setAttribute("visibility", "hidden")
                 this.packIndicators[6].setAttribute("visibility", "hidden")
-            } else if (p1){
+            } else if (p1) {
                 this.packIndicators[0].setAttribute("visibility", "hidden")
                 this.packIndicators[1].setAttribute("visibility", "visible")
                 this.packIndicators[2].setAttribute("visibility", "hidden")
@@ -64,7 +64,7 @@ var A320_Neo_LowerECAM_BLEED;
                 this.packIndicators[4].setAttribute("visibility", "hidden")
                 this.packIndicators[5].setAttribute("visibility", "hidden")
                 this.packIndicators[6].setAttribute("visibility", "hidden")
-            } else if (p2){
+            } else if (p2) {
                 this.packIndicators[0].setAttribute("visibility", "hidden")
                 this.packIndicators[1].setAttribute("visibility", "hidden")
                 this.packIndicators[2].setAttribute("visibility", "visible")
@@ -72,7 +72,7 @@ var A320_Neo_LowerECAM_BLEED;
                 this.packIndicators[4].setAttribute("visibility", "hidden")
                 this.packIndicators[5].setAttribute("visibility", "hidden")
                 this.packIndicators[6].setAttribute("visibility", "hidden")
-            } else if (p3){
+            } else if (p3) {
                 this.packIndicators[0].setAttribute("visibility", "hidden")
                 this.packIndicators[1].setAttribute("visibility", "hidden")
                 this.packIndicators[2].setAttribute("visibility", "hidden")
@@ -80,7 +80,7 @@ var A320_Neo_LowerECAM_BLEED;
                 this.packIndicators[4].setAttribute("visibility", "hidden")
                 this.packIndicators[5].setAttribute("visibility", "hidden")
                 this.packIndicators[6].setAttribute("visibility", "hidden")
-            } else if (p4){
+            } else if (p4) {
                 this.packIndicators[0].setAttribute("visibility", "hidden")
                 this.packIndicators[1].setAttribute("visibility", "hidden")
                 this.packIndicators[2].setAttribute("visibility", "hidden")
@@ -88,7 +88,7 @@ var A320_Neo_LowerECAM_BLEED;
                 this.packIndicators[4].setAttribute("visibility", "visible")
                 this.packIndicators[5].setAttribute("visibility", "hidden")
                 this.packIndicators[6].setAttribute("visibility", "hidden")
-            } else if (p5){
+            } else if (p5) {
                 this.packIndicators[0].setAttribute("visibility", "hidden")
                 this.packIndicators[1].setAttribute("visibility", "hidden")
                 this.packIndicators[2].setAttribute("visibility", "hidden")
@@ -96,7 +96,7 @@ var A320_Neo_LowerECAM_BLEED;
                 this.packIndicators[4].setAttribute("visibility", "hidden")
                 this.packIndicators[5].setAttribute("visibility", "visible")
                 this.packIndicators[6].setAttribute("visibility", "hidden")
-            } else if (p6){
+            } else if (p6) {
                 this.packIndicators[0].setAttribute("visibility", "hidden")
                 this.packIndicators[1].setAttribute("visibility", "hidden")
                 this.packIndicators[2].setAttribute("visibility", "hidden")
@@ -123,13 +123,13 @@ var A320_Neo_LowerECAM_BLEED;
             }
 
             if (this.apuBleedStartTimer >= 0) {
-                this.apuBleedStartTimer -= _deltaTime/1000
+                this.apuBleedStartTimer -= _deltaTime / 1000
                 if (this.apuBleedStartTimer < 0) {
                     this.apuProvidesBleed = true
                     this.querySelector("#apu-connecting-line").setAttribute("style", "stroke:008000")
                 }
             }
-            
+
             if (currentEngineBleedState[0] === 1 && eng1Running) {
                 this.leftEngineHp[0].setAttribute("visibility", "visible");
                 this.leftEngineHp[1].setAttribute("visibility", "hidden");
@@ -167,7 +167,7 @@ var A320_Neo_LowerECAM_BLEED;
             //find left pack status
             const currentLeftPackState = SimVar.GetSimVarValue("L:A32NX_AIRCOND_PACK1_TOGGLE", "bool")
 
-            if(currentLeftPackState){
+            if (currentLeftPackState) {
                 this.leftPack[0].setAttribute("visibility", "visible")
                 this.leftPack[1].setAttribute("visibility", "hidden")
             } else {
@@ -178,7 +178,7 @@ var A320_Neo_LowerECAM_BLEED;
             //find right pack status
             const currentRightPackState = SimVar.GetSimVarValue("L:A32NX_AIRCOND_PACK2_TOGGLE", "bool")
 
-            if(currentRightPackState){
+            if (currentRightPackState) {
                 this.rightPack[0].setAttribute("visibility", "visible")
                 this.rightPack[1].setAttribute("visibility", "hidden")
             } else {
@@ -189,11 +189,11 @@ var A320_Neo_LowerECAM_BLEED;
             //find xbleed switch state
             const currentXbleedState = SimVar.GetSimVarValue("L:A32NX_KNOB_OVHD_AIRCOND_XBLEED_Position", "Position(0-2)")
 
-            if(currentXbleedState == 2 ){
+            if (currentXbleedState == 2) {
                 SimVar.SetSimVarValue("L:x_bleed_valve", "bool", 1)
                 this.xBleed[0].setAttribute("visibility", "visible")
                 this.xBleed[1].setAttribute("visibility", "hidden")
-            } else if(currentApuBleedSate && currentXbleedState == 1){
+            } else if (currentApuBleedSate && currentXbleedState == 1) {
                 SimVar.SetSimVarValue("L:x_bleed_valve", "bool", 1)
                 this.xBleed[0].setAttribute("visibility", "visible")
                 this.xBleed[1].setAttribute("visibility", "hidden")
@@ -206,7 +206,7 @@ var A320_Neo_LowerECAM_BLEED;
             //find ram air state
             const currentRamState = SimVar.GetSimVarValue("L:A32NX_AIRCOND_RAMAIR_TOGGLE", "bool")
 
-            if(currentRamState) {
+            if (currentRamState) {
                 this.ramAir[0].setAttribute("visibility", "hidden")
                 this.ramAir[1].setAttribute("visibility", "visible")
             } else {
@@ -217,34 +217,34 @@ var A320_Neo_LowerECAM_BLEED;
             //find pack flow state
             const currentPackFlow = SimVar.GetSimVarValue("L:A32NX_KNOB_OVHD_AIRCOND_PACKFLOW_Position", "Position(0-2)")
 
-            if(currentPackFlow == 0){
-                 this.packFlow[0].setAttribute("visibility", "visible")
-                 this.packFlow[1].setAttribute("visibility", "hidden")
-                 this.packFlow[2].setAttribute("visibility", "hidden")
-            } else if(currentPackFlow == 1) {
-                 this.packFlow[0].setAttribute("visibility", "hidden")
-                 this.packFlow[1].setAttribute("visibility", "visible")
-                 this.packFlow[2].setAttribute("visibility", "hidden")
+            if (currentPackFlow == 0) {
+                this.packFlow[0].setAttribute("visibility", "visible")
+                this.packFlow[1].setAttribute("visibility", "hidden")
+                this.packFlow[2].setAttribute("visibility", "hidden")
+            } else if (currentPackFlow == 1) {
+                this.packFlow[0].setAttribute("visibility", "hidden")
+                this.packFlow[1].setAttribute("visibility", "visible")
+                this.packFlow[2].setAttribute("visibility", "hidden")
             } else {
-                 this.packFlow[0].setAttribute("visibility", "hidden")
-                 this.packFlow[1].setAttribute("visibility", "hidden")
-                 this.packFlow[2].setAttribute("visibility", "visible")
+                this.packFlow[0].setAttribute("visibility", "hidden")
+                this.packFlow[1].setAttribute("visibility", "hidden")
+                this.packFlow[2].setAttribute("visibility", "visible")
             }
 
             //placeholder logic for the bleed page temperatures and pressures, to be replaced/updated/removed when the cond-packs system is implemented
 
-            let packRequestedlvl = Math.min(...[SimVar.GetSimVarValue("L:A320_Neo_AIRCOND_LVL_1", "Position(0-6)"),
-                                                SimVar.GetSimVarValue("L:A320_Neo_AIRCOND_LVL_2", "Position(0-6)"),
-                                                SimVar.GetSimVarValue("L:A320_Neo_AIRCOND_LVL_3", "Position(0-6)")])
+            const packRequestedlvl = Math.min(...[SimVar.GetSimVarValue("L:A320_Neo_AIRCOND_LVL_1", "Position(0-6)"),
+                                                  SimVar.GetSimVarValue("L:A320_Neo_AIRCOND_LVL_2", "Position(0-6)"),
+                                                  SimVar.GetSimVarValue("L:A320_Neo_AIRCOND_LVL_3", "Position(0-6)")])
 
-            let packRequestedTemp = 18 + (2 * packRequestedlvl)
-            
-            let eng1TMP = SimVar.GetSimVarValue("ENG EXHAUST GAS TEMPERATURE:1", "Rankine")      
-            let eng1PSI = parseInt(SimVar.GetSimVarValue("TURB ENG BLEED AIR:1", "Ratio (0-16384)")/2)
+            const packRequestedTemp = 18 + (2 * packRequestedlvl)
+
+            const eng1TMP = SimVar.GetSimVarValue("ENG EXHAUST GAS TEMPERATURE:1", "Rankine")
+            let eng1PSI = parseInt(SimVar.GetSimVarValue("TURB ENG BLEED AIR:1", "Ratio (0-16384)") / 2)
             let eng1TMPcomputed = parseInt(((eng1TMP - 491.67) * (5 / 9)) * this.engTempMultiplier)
 
-            let eng2TMP = SimVar.GetSimVarValue("ENG EXHAUST GAS TEMPERATURE:2", "Rankine")
-            let eng2PSI = parseInt(SimVar.GetSimVarValue("TURB ENG BLEED AIR:2", "Ratio (0-16384)")/2)
+            const eng2TMP = SimVar.GetSimVarValue("ENG EXHAUST GAS TEMPERATURE:2", "Rankine")
+            let eng2PSI = parseInt(SimVar.GetSimVarValue("TURB ENG BLEED AIR:2", "Ratio (0-16384)") / 2)
             let eng2TMPcomputed = parseInt(((eng2TMP - 491.67) * (5 / 9)) * this.engTempMultiplier)
 
             let packTMPComputedIn = [(parseInt(((eng1TMP - 491.67) * (5 / 9)) * this.packInMultiplier)),
@@ -255,41 +255,41 @@ var A320_Neo_LowerECAM_BLEED;
                                       (parseInt(((eng2TMP - 491.67) * (5 / 9)) * this.packOutMultiplier2)),
                                       (parseInt(this.apuBleedTemperature * this.packOutMultiplierApu))]
 
-            let packTemperatureVariation = [((((packRequestedTemp / packTMPComputedOut[0]) * this.packOutMultiplier1) - this.packOutMultiplier1)), 
+            let packTemperatureVariation = [((((packRequestedTemp / packTMPComputedOut[0]) * this.packOutMultiplier1) - this.packOutMultiplier1)),
                                             ((((packRequestedTemp / packTMPComputedOut[1]) * this.packOutMultiplier2) - this.packOutMultiplier2)),
-                                            ((((packRequestedTemp / packTMPComputedOut[2]) * this.packOutMultiplierApu) - this.packOutMultiplierApu))] 
-            
-            let xBleedValveOpen = SimVar.GetSimVarValue("L:x_bleed_valve","bool")
+                                            ((((packRequestedTemp / packTMPComputedOut[2]) * this.packOutMultiplierApu) - this.packOutMultiplierApu))]
+
+            const xBleedValveOpen = SimVar.GetSimVarValue("L:x_bleed_valve", "bool")
 
             this.packOutMultiplier1 += packTemperatureVariation[0] * (this.temperatureVariationSpeed * (0.8 + (currentPackFlow * 0.2)))
             this.packOutMultiplier2 += packTemperatureVariation[1] * (this.temperatureVariationSpeed * (0.8 + (currentPackFlow * 0.2)))
             this.packOutMultiplierApu += packTemperatureVariation[2] * (this.temperatureVariationSpeed * (0.8 + (currentPackFlow * 0.2)))
-            
-            switch(packRequestedlvl) {
+
+            switch (packRequestedlvl) {
                 case 0:
-                    this.setPackIndicators(1,0,0,0,0,0,0)
+                    this.setPackIndicators(1, 0, 0, 0, 0, 0, 0)
                     break;
                 case 1:
-                    this.setPackIndicators(0,1,0,0,0,0,0)
+                    this.setPackIndicators(0, 1, 0, 0, 0, 0, 0)
                     break;
                 case 2:
-                    this.setPackIndicators(0,0,1,0,0,0,0)
+                    this.setPackIndicators(0, 0, 1, 0, 0, 0, 0)
                     break;
                 case 3:
-                    this.setPackIndicators(0,0,0,1,0,0,0)
+                    this.setPackIndicators(0, 0, 0, 1, 0, 0, 0)
                     break;
                 case 4:
-                    this.setPackIndicators(0,0,0,0,1,0,0)
+                    this.setPackIndicators(0, 0, 0, 0, 1, 0, 0)
                     break;
                 case 5:
-                    this.setPackIndicators(0,0,0,0,0,1,0)
+                    this.setPackIndicators(0, 0, 0, 0, 0, 1, 0)
                     break;
                 case 6:
-                    this.setPackIndicators(0,0,0,0,0,0,1)
+                    this.setPackIndicators(0, 0, 0, 0, 0, 0, 1)
                     break;
             }
 
-            if (currentEngineBleedState[0] && eng1Running){ 
+            if (currentEngineBleedState[0] && eng1Running) {
                 this.querySelector("#eng1-bleed-tmp").textContent = eng1TMPcomputed
                 this.querySelector("#eng1-bleed-psi").textContent = eng1PSI
             } else {
@@ -297,13 +297,13 @@ var A320_Neo_LowerECAM_BLEED;
                 this.querySelector("#eng1-bleed-psi").textContent = "xx"
             }
 
-            if (currentLeftPackState && currentEngineBleedState[0] && eng1Running){
+            if (currentLeftPackState && currentEngineBleedState[0] && eng1Running) {
                 this.querySelector("#left-pack-in").textContent = packTMPComputedIn[0]
                 this.querySelector("#left-pack-out").textContent = packTMPComputedOut[0]
-            } else if (currentLeftPackState && xBleedValveOpen && eng2Running && currentEngineBleedState[1]){
+            } else if (currentLeftPackState && xBleedValveOpen && eng2Running && currentEngineBleedState[1]) {
                 this.querySelector("#left-pack-in").textContent = packTMPComputedIn[1]
                 this.querySelector("#left-pack-out").textContent = packTMPComputedOut[1]
-            } else if (currentLeftPackState && currentApuBleedSate && this.apuProvidesBleed){
+            } else if (currentLeftPackState && currentApuBleedSate && this.apuProvidesBleed) {
                 this.querySelector("#left-pack-in").textContent = packTMPComputedIn[2]
                 this.querySelector("#left-pack-out").textContent = packTMPComputedOut[2]
             } else {
@@ -311,28 +311,28 @@ var A320_Neo_LowerECAM_BLEED;
                 this.querySelector("#left-pack-out").textContent = "xx"
             }
 
-            if (currentEngineBleedState[1] && eng2Running){
+            if (currentEngineBleedState[1] && eng2Running) {
                 this.querySelector("#eng2-bleed-tmp").textContent = eng2TMPcomputed
-                this.querySelector("#eng2-bleed-psi").textContent = eng2PSI  
+                this.querySelector("#eng2-bleed-psi").textContent = eng2PSI
             } else {
                 this.querySelector("#eng2-bleed-tmp").textContent = "XXX"
                 this.querySelector("#eng2-bleed-psi").textContent = "xx"
             }
 
-            if (currentRightPackState && currentEngineBleedState[1] && eng2Running ){          
-                this.querySelector("#right-pack-in").textContent = packTMPComputedIn[1] 
+            if (currentRightPackState && currentEngineBleedState[1] && eng2Running) {
+                this.querySelector("#right-pack-in").textContent = packTMPComputedIn[1]
                 this.querySelector("#right-pack-out").textContent = packTMPComputedOut[1]
             } else if (currentRightPackState && xBleedValveOpen && eng1Running && currentEngineBleedState[0]) {
                 this.querySelector("#right-pack-in").textContent = packTMPComputedIn[0]
-                this.querySelector("#right-pack-out").textContent = packTMPComputedOut[0] 
-            } else if (currentRightPackState && currentApuBleedSate && xBleedValveOpen && this.apuProvidesBleed){
+                this.querySelector("#right-pack-out").textContent = packTMPComputedOut[0]
+            } else if (currentRightPackState && currentApuBleedSate && xBleedValveOpen && this.apuProvidesBleed) {
                 this.querySelector("#right-pack-in").textContent = packTMPComputedIn[2]
                 this.querySelector("#right-pack-out").textContent = packTMPComputedOut[2]
             } else {
                 this.querySelector("#right-pack-in").textContent = "xx"
                 this.querySelector("#right-pack-out").textContent = "xx"
-            } 
-            
+            }
+
         }
     }
     A320_Neo_LowerECAM_BLEED.Page = Page;
