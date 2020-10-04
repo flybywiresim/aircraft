@@ -965,7 +965,7 @@
 						<NODE_ID>PUSH_BARO_MINUS</NODE_ID>
 						<ONLY_SEQ1/>
 					</UseTemplate>
-					<UseTemplate Name="A32NX_Push_BARO_Dummy_Template">
+					<UseTemplate Name="A32NX_Push_BARO_RST_Template">
 						<NODE_ID>PUSH_BARO_RST</NODE_ID>
 						<ONLY_SEQ1/>
 					</UseTemplate>

@@ -967,21 +967,24 @@ class A320_Neo_SAI_Brightness extends NavSystemElement {
 
         const brightness = SimVar.GetSimVarValue("L:A32NX_BARO_BRIGHTNESS","number");
         const bright_gran = 0.05;
+        const minimum = 0.15;
         const baro_plus = SimVar.GetSimVarValue("L:PUSH_BARO_PLUS", "Bool");
         const baro_minus = SimVar.GetSimVarValue("L:PUSH_BARO_MINUS", "Bool");
 
         if (baro_plus !== this.baroPlusState) {
             this.baroPlusState = baro_plus;
             if (brightness < 1) {
-                SimVar.SetSimVarValue("L:A32NX_BARO_BRIGHTNESS","number", brightness + bright_gran);
-                this.brightnessElement.updateBrightness();  //TODO: Remove line on model update
+                const new_brightness = brightness + bright_gran;
+                SimVar.SetSimVarValue("L:A32NX_BARO_BRIGHTNESS","number", new_brightness);
+                this.brightnessElement.updateBrightness(new_brightness);  //TODO: Remove line on model update
             }
         }
         if (baro_minus !== this.baroMinusState) {
             this.baroMinusState = baro_minus;
-            if (brightness >= bright_gran) {
-                SimVar.SetSimVarValue("L:A32NX_BARO_BRIGHTNESS","number", brightness - bright_gran);
-                this.brightnessElement.updateBrightness();  //TODO: Remove line on model update
+            if (brightness > minimum ) {
+                const new_brightness = brightness - bright_gran;
+                SimVar.SetSimVarValue("L:A32NX_BARO_BRIGHTNESS","number", new_brightness);
+                this.brightnessElement.updateBrightness(new_brightness);  //TODO: Remove line on model update
             }
         }
         //this.brightnessElement.update(_deltaTime);
@@ -1003,7 +1006,7 @@ class A320_Neo_SAI_BrightnessBox extends HTMLElement {
     construct() {
         Utils.RemoveAllChildren(this);
         // TODO: Remove when model change arrives
-        const brightness_init = 0;
+        const brightness_init = SimVar.GetSimVarValue("L:A32NX_BARO_BRIGHTNESS","number");
         const opacity = 1.0 - brightness_init;
 
         this.brightnessDiv = document.createElement("div");
@@ -1030,8 +1033,7 @@ class A320_Neo_SAI_BrightnessBox extends HTMLElement {
         this.brightnessDiv.appendChild(this.brightnessSVG);
     }
 
-    updateBrightness() {
-        const brightness = SimVar.GetSimVarValue("L:A32NX_BARO_BRIGHTNESS","number");
+    updateBrightness(brightness) {
         const opacity = 1.0 - brightness;
         this.brightnessSVG.style.backgroundColor = "rgba(0,0,0," + opacity + ")";
     }
