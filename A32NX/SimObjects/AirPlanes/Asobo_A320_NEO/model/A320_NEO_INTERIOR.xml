@@ -901,11 +901,12 @@
 			</UseTemplate>
 
 			<Component ID="Standby_Indicator">
-				<!-- TODO: Model change required to not affect brake/clock-->
+				<!-- TODO: Model change required to not affect brake/clock - Uncomment when this is done -->
+				<!--
                 <UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
                     <NODE_ID>DYN_SCREEN</NODE_ID>
                     <EMISSIVE_CODE>(L:A32NX_BARO_BRIGHTNESS, Percent over 100)</EMISSIVE_CODE>
-                </UseTemplate>
+                </UseTemplate> -->
 
 				<UseTemplate Name="ASOBO_AUTOPILOT_Knob_Baro_Template">
 					<ANIM_NAME>AUTOPILOT_Knob_Baro</ANIM_NAME>
@@ -1918,7 +1919,7 @@
 					<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
 						<NODE_ID>PUSH_OVHD_CARGOSMOKE_FWD2</NODE_ID>
 						<ONLY_SEQ1/>
-					</UseTemplate>					
+					</UseTemplate>
 					<UseTemplate Name="ASOBO_GT_Push_Button_Airliner">
 						<NODE_ID>PUSH_OVHD_VENTILATION_BLOWER</NODE_ID>
 						<ANIM_NAME>PUSH_OVHD_VENTILATION_BLOWER</ANIM_NAME>

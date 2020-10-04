@@ -6,6 +6,7 @@ class A320_Neo_SAI extends BaseAirliners {
         this.addIndependentElementContainer(new NavSystemElementContainer("Airspeed", "Airspeed", new A320_Neo_SAI_Airspeed()));
         this.addIndependentElementContainer(new NavSystemElementContainer("Horizon", "Horizon", new A320_Neo_SAI_Attitude()));
         this.addIndependentElementContainer(new NavSystemElementContainer("SelfTest", "SelfTest", new A320_Neo_SAI_SelfTest()));
+        this.addIndependentElementContainer(new NavSystemElementContainer("Brightness", "Brightness", new A320_Neo_SAI_Brightness()));
         this.addIndependentElementContainer(new NavSystemElementContainer("AttReset", "AttReset", new A320_Neo_SAI_AttReset()));
         this.addIndependentElementContainer(new NavSystemElementContainer("Bugs", "Bugs", new A320_Neo_SAI_Bugs()));
         this.addIndependentElementContainer(new NavSystemElementContainer("Pressure", "Pressure", new A320_Neo_SAI_Pressure()));
@@ -953,6 +954,91 @@ class A320_Neo_SAI_PressureIndicator extends HTMLElement {
 }
 customElements.define('a320-neo-sai-pressure-indicator', A320_Neo_SAI_PressureIndicator);
 
+class A320_Neo_SAI_Brightness extends NavSystemElement {
+    init(root) {
+        this.brightnessElement = this.gps.getChildById("Brightness");
+    }
+    onEnter() {
+    }
+    isReady() {
+        return true;
+    }
+    onUpdate(_deltaTime) {
+
+        const brightness = SimVar.GetSimVarValue("L:A32NX_BARO_BRIGHTNESS","number");
+        const bright_gran = 0.05;
+        const baro_plus = SimVar.GetSimVarValue("L:PUSH_BARO_PLUS", "Bool");
+        const baro_minus = SimVar.GetSimVarValue("L:PUSH_BARO_MINUS", "Bool");
+
+        if (baro_plus !== this.baroPlusState) {
+            this.baroPlusState = baro_plus;
+            if (brightness < 1) {
+                SimVar.SetSimVarValue("L:A32NX_BARO_BRIGHTNESS","number", brightness + bright_gran);
+                this.brightnessElement.updateBrightness();  //TODO: Remove line on model update
+            }
+        }
+        if (baro_minus !== this.baroMinusState) {
+            this.baroMinusState = baro_minus;
+            if (brightness >= bright_gran) {
+                SimVar.SetSimVarValue("L:A32NX_BARO_BRIGHTNESS","number", brightness - bright_gran);
+                this.brightnessElement.updateBrightness();  //TODO: Remove line on model update
+            }
+        }
+        //this.brightnessElement.update(_deltaTime);
+    }
+    onExit() {
+    }
+    onEvent(_event) {
+    }
+}
+
+class A320_Neo_SAI_BrightnessBox extends HTMLElement {
+    connectedCallback() {
+        this.construct();
+    }
+
+    update(dTime) {
+
+    }
+    construct() {
+        Utils.RemoveAllChildren(this);
+        // TODO: Remove when model change arrives
+        const brightness_init = 0;
+        const opacity = 1.0 - brightness_init;
+
+        this.brightnessDiv = document.createElement("div");
+        this.brightnessDiv.id = "BrightnessDiv";
+        this.brightnessDiv.setAttribute("border", "none");
+        this.brightnessDiv.setAttribute("position", "absolute");
+        this.brightnessDiv.setAttribute("display", "block");
+        this.brightnessDiv.setAttribute("top", "0%");
+        this.brightnessDiv.setAttribute("left", "0%");
+        this.brightnessDiv.setAttribute("width", "100%");
+        this.brightnessDiv.setAttribute("height", "100%");
+        this.appendChild(this.brightnessDiv);
+
+        this.brightnessSVG = document.createElementNS(Avionics.SVG.NS, "svg");
+        this.brightnessSVG.setAttribute("id", "BrightnessSVG");
+        this.brightnessSVG.setAttribute("viewBox", "0 0 600 600");
+        this.brightnessSVG.style.position = "absolute";
+        this.brightnessSVG.style.top = "0%";
+        this.brightnessSVG.style.left = "0%";
+        this.brightnessSVG.style.width = "100%";
+        this.brightnessSVG.style.height = "100%";
+        this.brightnessSVG.style.backgroundColor = "rgba(0,0,0," + opacity + ")";
+        this.brightnessSVG.style.zIndex = "3";
+        this.brightnessDiv.appendChild(this.brightnessSVG);
+    }
+
+    updateBrightness() {
+        const brightness = SimVar.GetSimVarValue("L:A32NX_BARO_BRIGHTNESS","number");
+        const opacity = 1.0 - brightness;
+        this.brightnessSVG.style.backgroundColor = "rgba(0,0,0," + opacity + ")";
+    }
+}
+
+customElements.define('a320-neo-sai-brightness', A320_Neo_SAI_BrightnessBox);
+
 class A320_Neo_SAI_SelfTest extends NavSystemElement {
 
     init(root) {
@@ -966,24 +1052,6 @@ class A320_Neo_SAI_SelfTest extends NavSystemElement {
     }
     onUpdate(_deltaTime) {
         const _dTime = this.getDeltaTime();
-
-        const brightness = SimVar.GetSimVarValue("L:A32NX_BARO_BRIGHTNESS","number");
-        const bright_gran = 0.05;
-        const baro_plus = SimVar.GetSimVarValue("L:PUSH_BARO_PLUS", "Bool");
-        const baro_minus = SimVar.GetSimVarValue("L:PUSH_BARO_MINUS", "Bool");
-
-        if (baro_plus !== this.baroPlusState) {
-            this.baroPlusState = baro_plus;
-            if (brightness < 1) {
-                SimVar.SetSimVarValue("L:A32NX_BARO_BRIGHTNESS","number", brightness + bright_gran);
-            }
-        }
-        if (baro_minus !== this.baroMinusState) {
-            this.baroMinusState = baro_minus;
-            if (brightness >= bright_gran) {
-                SimVar.SetSimVarValue("L:A32NX_BARO_BRIGHTNESS","number", brightness - bright_gran);
-            }
-        }
 
         const ac_pwr = SimVar.GetSimVarValue("L:ACPowerAvailable", "bool");
         const dc_pwr = SimVar.GetSimVarValue("L:DCPowerAvailable", "bool");
@@ -1209,7 +1277,7 @@ class A320_Neo_SAI_AttResetIndicator extends HTMLElement {
         const boxHeight = 7;
         const boxWidth = 30;
         const boxRow = 64;
-        const txt_off_x = 1;
+        const txt_off_x = 1.5;
         const txt_off_y = 6;
 
         this.attResetDiv = document.createElement("div");
@@ -1253,6 +1321,7 @@ class A320_Neo_SAI_AttResetIndicator extends HTMLElement {
         this.st_att_txt.setAttribute("x", att_x + txt_off_x + "%");
         this.st_att_txt.setAttribute("y", boxRow + txt_off_y + "%");
         this.attResetSVG.appendChild(this.st_att_txt);
+
     }
 
     update(dTime) {
