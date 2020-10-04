@@ -13,6 +13,7 @@
 7. [ECAM] ELAC/SEC warning color fix, added spoiler functionality to ECAM page - @wpine215 (Iceman)
 8. [OVHD] Implemented missing functionality for multiple overhead buttons and switches - @wpine215 (Iceman)
 1. [ECAM] Improved APU ECAM visuals - @wpine215 (Iceman)
+1. [TEXTURES] changed texture of glareshield and added details
 
 ## Changes from 2020/09 to 2020/10
 1. [General] Add CHANGELOG.md - @nathaninnes (Nathan Innes)
