@@ -191,8 +191,9 @@ var A320_Neo_LowerECAM_BLEED;
             
             let xBleedValveOpen = SimVar.GetSimVarValue("L:x_bleed_valve","bool")
 
-            this.packOutMultiplier += packTemperatureVariation[0] * this.temperatureVariationSpeed
-            this.packOutMultiplierApu += packTemperatureVariation[1] * this.temperatureVariationSpeed
+            this.packOutMultiplier += packTemperatureVariation[0] * (this.temperatureVariationSpeed * (0.8 + (currentPackFlow * 0.2)))
+            this.packOutMultiplierApu += packTemperatureVariation[1] * (this.temperatureVariationSpeed * (0.8 + (currentPackFlow * 0.2)))
+            
 
             if (currentEngineBleedState[0] && eng1Running){ 
                 this.querySelector("#eng1-bleed-tmp").textContent = eng1TMPcomputed
