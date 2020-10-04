@@ -169,7 +169,7 @@ var A320_Neo_LowerECAM_BLEED;
             }
 
             if(currentEngineBleedState[0] && eng1Running){
-                this.querySelector("#eng1-bleed-tmp").textContent = parseInt(((eng1TMP - 491.67) * (5 / 9)) / 4)
+                this.querySelector("#eng1-bleed-tmp").textContent = parseInt(((eng1TMP - 491.67) * (5 / 9)) / 3.5)
                 this.querySelector("#eng1-bleed-psi").textContent = parseInt(eng1PSI)
                 } else {
                 this.querySelector("#eng1-bleed-tmp").textContent = "XXX"
@@ -192,7 +192,7 @@ var A320_Neo_LowerECAM_BLEED;
             }
 
             if(currentEngineBleedState[1] && eng2Running){
-                this.querySelector("#eng2-bleed-tmp").textContent = parseInt(((eng2TMP - 491.67) * (5 / 9)) / 4)
+                this.querySelector("#eng2-bleed-tmp").textContent = parseInt(((eng2TMP - 491.67) * (5 / 9)) / 3.5)
                 this.querySelector("#eng2-bleed-psi").textContent = parseInt(eng2PSI)    
             } else {
                 this.querySelector("#eng2-bleed-tmp").textContent = "XXX"
