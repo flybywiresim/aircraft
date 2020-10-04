@@ -80,13 +80,15 @@
     a320-neo-lower-ecam-fuel text.Small {
       font-size: 20px; }
     a320-neo-lower-ecam-fuel #APU text {
-      font-size: 18px;
+      font-size: 20px;
       fill: white;
       stroke-width: 0; }
-    a320-neo-lower-ecam-fuel #APU line {
+    a320-neo-lower-ecam-fuel #APU path {
       stroke-width: 3; }
     a320-neo-lower-ecam-fuel #APU.active {
       stroke: green; }
+    a320-neo-lower-ecam-fuel #APU.active text {
+      fill: green !important; }
     a320-neo-lower-ecam-fuel #APU.warning {
       stroke: #db7200; }
     a320-neo-lower-ecam-fuel #APU.inactive {

@@ -70,6 +70,7 @@ var A320_Neo_LowerECAM_Fuel;
             this.gallonToPounds = SimVar.GetSimVarValue("FUEL WEIGHT PER GALLON", "lbs");
             this.fuelLevels = SimVar.GetGameVarValue("AIRCRAFT INITIAL FUEL LEVELS", "FuelLevels");
             this.apuElement = this.querySelector("#APU");
+            this.apuLineElement = this.querySelector("#apuFuelLine");
             this.setAPUState(false, false, true);
             this.middlePump1 = this.querySelector("#middlePump1");
             this.middlePump2 = this.querySelector("#middlePump2");
@@ -151,7 +152,7 @@ var A320_Neo_LowerECAM_Fuel;
                 this.fuelFlowUnit.textContent = "LBS/MIN";
                 this.middleFuelUnit.textContent = "LBS";
             }
-            this.setAPUState(SimVar.GetSimVarValue("FUELSYSTEM PUMP SWITCH:7", "Bool"), SimVar.GetSimVarValue("FUELSYSTEM PUMP ACTIVE:7", "Bool"));
+            this.setAPUState(SimVar.GetSimVarValue("FUELSYSTEM VALVE SWITCH:8", "Bool"), SimVar.GetSimVarValue("FUELSYSTEM VALVE OPEN:8", "Bool"));
         }
         onEvent(_event) {
             switch (_event) {
@@ -189,9 +190,8 @@ var A320_Neo_LowerECAM_Fuel;
                 this.apuOn = _isOn;
                 this.apuActive = _isActive;
                 if (this.apuElement != null) {
-                    {
-                        this.apuElement.setAttribute("class", this.apuOn ? "active" : "inactive");
-                    }
+                    this.apuElement.setAttribute("class", this.apuOn ? "active" : "inactive");
+                    this.apuLineElement.setAttribute("visibility", this.apuOn ? "visible" : "hidden");
                 }
             }
         }
