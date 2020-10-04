@@ -28,7 +28,15 @@ var A320_Neo_LowerECAM_BLEED;
             this.ramAir = [this.querySelector("#ram-air-on"), this.querySelector("#ram-air-off")]
             this.packFlow = [this.querySelector("#pack-flow-low"), this.querySelector("#pack-flow-normal"), this.querySelector("#pack-flow-high")]
             this.apuProvidesBleed = false
+            this.apuBleedTemperature = 250
             this.apuBleedStartTimer = -1
+
+            this.engTempMultiplier = 0.35
+            this.packInMultiplier = 0.11
+            this.packOutMultiplier = 0.055
+            this.packInMultiplierApu = 0.2
+            this.packOutMultiplierApu = 0.1
+            this.temperatureVariationSpeed = 0.01
 
         }   
         update(_deltaTime) {
@@ -75,7 +83,7 @@ var A320_Neo_LowerECAM_BLEED;
             }
 
             //find if the APU bleed is on
-            var currentApuBleedSate = SimVar.GetSimVarValue("BLEED AIR APU", "Bool")
+            const currentApuBleedSate = SimVar.GetSimVarValue("BLEED AIR APU", "Bool")
 
             if (currentApuBleedSate) {
                 this.apuBleedIndication[0].setAttribute("visibility", 'visible')
@@ -86,7 +94,7 @@ var A320_Neo_LowerECAM_BLEED;
             }
 
             //find left pack status
-            var currentLeftPackState = SimVar.GetSimVarValue("L:A32NX_AIRCOND_PACK1_TOGGLE", "bool")
+            const currentLeftPackState = SimVar.GetSimVarValue("L:A32NX_AIRCOND_PACK1_TOGGLE", "bool")
 
             if(currentLeftPackState){
                 this.leftPack[0].setAttribute("visibility", "visible")
@@ -97,7 +105,7 @@ var A320_Neo_LowerECAM_BLEED;
             }
 
             //find right pack status
-            var currentRightPackState = SimVar.GetSimVarValue("L:A32NX_AIRCOND_PACK2_TOGGLE", "bool")
+            const currentRightPackState = SimVar.GetSimVarValue("L:A32NX_AIRCOND_PACK2_TOGGLE", "bool")
 
             if(currentRightPackState){
                 this.rightPack[0].setAttribute("visibility", "visible")
@@ -108,21 +116,24 @@ var A320_Neo_LowerECAM_BLEED;
             }
 
             //find xbleed switch state
-            var currentXbleedState = SimVar.GetSimVarValue("L:A32NX_KNOB_OVHD_AIRCOND_XBLEED_Position", "Position(0-2)")
+            const currentXbleedState = SimVar.GetSimVarValue("L:A32NX_KNOB_OVHD_AIRCOND_XBLEED_Position", "Position(0-2)")
 
             if(currentXbleedState == 2 ){
+                SimVar.SetSimVarValue("L:x_bleed_valve", "bool", 1)
                 this.xBleed[0].setAttribute("visibility", "visible")
                 this.xBleed[1].setAttribute("visibility", "hidden")
             } else if(currentApuBleedSate && currentXbleedState == 1){
+                SimVar.SetSimVarValue("L:x_bleed_valve", "bool", 1)
                 this.xBleed[0].setAttribute("visibility", "visible")
                 this.xBleed[1].setAttribute("visibility", "hidden")
             } else {
+                SimVar.SetSimVarValue("L:x_bleed_valve", "bool", 0)
                 this.xBleed[0].setAttribute("visibility", "hidden")
                 this.xBleed[1].setAttribute("visibility", "visible")
             }
 
             //find ram air state
-            var currentRamState = SimVar.GetSimVarValue("L:A32NX_AIRCOND_RAMAIR_TOGGLE", "bool")
+            let currentRamState = SimVar.GetSimVarValue("L:A32NX_AIRCOND_RAMAIR_TOGGLE", "bool")
 
             if(currentRamState) {
                 this.ramAir[0].setAttribute("visibility", "hidden")
@@ -132,8 +143,8 @@ var A320_Neo_LowerECAM_BLEED;
                 this.ramAir[1].setAttribute("visibility", "hidden")
             }
 
-             //find pack flow state
-             var currentPackFlow = SimVar.GetSimVarValue("L:A32NX_KNOB_OVHD_AIRCOND_PACKFLOW_Position", "Position(0-2)")
+            //find pack flow state
+            let currentPackFlow = SimVar.GetSimVarValue("L:A32NX_KNOB_OVHD_AIRCOND_PACKFLOW_Position", "Position(0-2)")
 
             if(currentPackFlow == 0){
                  this.packFlow[0].setAttribute("visibility", "visible")
@@ -149,70 +160,86 @@ var A320_Neo_LowerECAM_BLEED;
                  this.packFlow[2].setAttribute("visibility", "visible")
             }
 
-            //mock logic for the bleed page temperatures and pressures, to be replaced/updated/removed when the cond-packs system is implemented
+            //placeholder logic for the bleed page temperatures and pressures, to be replaced/updated/removed when the cond-packs system is implemented
 
-            var eng1Running = SimVar.GetSimVarValue("ENG COMBUSTION:1", "bool")
-            var eng2Running = SimVar.GetSimVarValue("ENG COMBUSTION:2", "bool")
+            let packRequestedTemp = 18 + (2* Math.min(...[SimVar.GetSimVarValue("L:A320_Neo_AIRCOND_LVL_1", "Position(0-6)"),
+                                                          SimVar.GetSimVarValue("L:A320_Neo_AIRCOND_LVL_2", "Position(0-6)"),
+                                                          SimVar.GetSimVarValue("L:A320_Neo_AIRCOND_LVL_3", "Position(0-6)")]))
+            
+            let eng1Running = SimVar.GetSimVarValue("ENG COMBUSTION:1", "bool")
+            let eng2Running = SimVar.GetSimVarValue("ENG COMBUSTION:2", "bool")
 
-            var eng1TMP = SimVar.GetSimVarValue("ENG EXHAUST GAS TEMPERATURE:1", "Rankine")      
-            var eng1PSI = SimVar.GetSimVarValue("TURB ENG BLEED AIR:1", "Ratio (0-16384)")
+            let eng1TMP = SimVar.GetSimVarValue("ENG EXHAUST GAS TEMPERATURE:1", "Rankine")      
+            let eng1PSI = parseInt(SimVar.GetSimVarValue("TURB ENG BLEED AIR:1", "Ratio (0-16384)")/2)
+            let eng1TMPcomputed = parseInt(((eng1TMP - 491.67) * (5 / 9)) * this.engTempMultiplier)
 
-            var eng2TMP = SimVar.GetSimVarValue("ENG EXHAUST GAS TEMPERATURE:2", "Rankine")
-            var eng2PSI = SimVar.GetSimVarValue("TURB ENG BLEED AIR:2", "Ratio (0-16384)")
+            let eng2TMP = SimVar.GetSimVarValue("ENG EXHAUST GAS TEMPERATURE:2", "Rankine")
+            let eng2PSI = parseInt(SimVar.GetSimVarValue("TURB ENG BLEED AIR:2", "Ratio (0-16384)")/2)
+            let eng2TMPcomputed = parseInt(((eng2TMP - 491.67) * (5 / 9)) * this.engTempMultiplier)
 
-            var xBleedValveOpen = false
+            let packTMPComputedIn = [(parseInt(((eng1TMP - 491.67) * (5 / 9)) * this.packInMultiplier)),
+                                     (parseInt(((eng2TMP - 491.67) * (5 / 9)) * this.packInMultiplier)),
+                                     (parseInt(this.apuBleedTemperature * this.packInMultiplierApu))]
+            let packTMPComputedOut = [(parseInt(((eng1TMP - 491.67) * (5 / 9)) * this.packOutMultiplier)),
+                                      (parseInt(((eng2TMP - 491.67) * (5 / 9)) * this.packOutMultiplier)),
+                                      (parseInt(this.apuBleedTemperature * this.packOutMultiplierApu))]
 
-            if((currentXbleedState == 2 || (currentXbleedState == 1 && currentApuBleedSate))){
-                xBleedValveOpen = true
-            }else{
-                xBleedValveOpen = false
-            }
+            let packTemperatureVariation = [((((packRequestedTemp / packTMPComputedOut[0]) * this.packOutMultiplier) - this.packOutMultiplier)),
+                                            ((((packRequestedTemp / packTMPComputedOut[2]) * this.packOutMultiplierApu) - this.packOutMultiplierApu))] 
+            
+            let xBleedValveOpen = SimVar.GetSimVarValue("L:x_bleed_valve","bool")
 
-            if(currentEngineBleedState[0] && eng1Running){
-                this.querySelector("#eng1-bleed-tmp").textContent = parseInt(((eng1TMP - 491.67) * (5 / 9)) / 3.5)
-                this.querySelector("#eng1-bleed-psi").textContent = parseInt(eng1PSI)
-                } else {
+            this.packOutMultiplier += packTemperatureVariation[0] * this.temperatureVariationSpeed
+            this.packOutMultiplierApu += packTemperatureVariation[1] * this.temperatureVariationSpeed
+
+            
+            
+            if (currentEngineBleedState[0] && eng1Running){
+		        
+                this.querySelector("#eng1-bleed-tmp").textContent = eng1TMPcomputed
+                this.querySelector("#eng1-bleed-psi").textContent = eng1PSI
+            } else {
                 this.querySelector("#eng1-bleed-tmp").textContent = "XXX"
                 this.querySelector("#eng1-bleed-psi").textContent = "xx"
             }
 
-            if(currentLeftPackState && currentEngineBleedState[0] && eng1Running){
-                this.querySelector("#left-pack-in").textContent = parseInt(((eng1TMP - 491.67) * (5 / 9)) / 9)
-                this.querySelector("#left-pack-out").textContent = parseInt(((eng1TMP - 491.67) * (5 / 9)) / 20)
-                console.log("catch")
+            if (currentLeftPackState && currentEngineBleedState[0] && eng1Running){
+                this.querySelector("#left-pack-in").textContent = packTMPComputedIn[0]
+                this.querySelector("#left-pack-out").textContent = packTMPComputedOut[0]
             } else if (currentLeftPackState && xBleedValveOpen && eng2Running && currentEngineBleedState[1]){
-                this.querySelector("#left-pack-in").textContent = parseInt(((eng2TMP - 491.67) * (5 / 9)) / 9)
-                this.querySelector("#left-pack-out").textContent = parseInt(((eng2TMP - 491.67) * (5 / 9)) / 20)
-            } else if (currentLeftPackState && currentApuBleedSate  && this.apuProvidesBleed){
-                this.querySelector("#left-pack-in").textContent = parseInt(400 / 7)
-                this.querySelector("#left-pack-out").textContent = parseInt(400 / 18)
+                this.querySelector("#left-pack-in").textContent = packTMPComputedIn[1]
+                this.querySelector("#left-pack-out").textContent = packTMPComputedOut[1]
+            } else if (currentLeftPackState && currentApuBleedSate && this.apuProvidesBleed){
+                this.querySelector("#left-pack-in").textContent = packTMPComputedIn[2]
+                this.querySelector("#left-pack-out").textContent = packTMPComputedOut[2]
             } else {
                 this.querySelector("#left-pack-in").textContent = "xx"
                 this.querySelector("#left-pack-out").textContent = "xx"
             }
 
-            if(currentEngineBleedState[1] && eng2Running){
-                this.querySelector("#eng2-bleed-tmp").textContent = parseInt(((eng2TMP - 491.67) * (5 / 9)) / 3.5)
-                this.querySelector("#eng2-bleed-psi").textContent = parseInt(eng2PSI)    
+            if (currentEngineBleedState[1] && eng2Running){
+		
+                this.querySelector("#eng2-bleed-tmp").textContent = eng1TMPcomputed
+                this.querySelector("#eng2-bleed-psi").textContent = eng2PSI  
             } else {
                 this.querySelector("#eng2-bleed-tmp").textContent = "XXX"
                 this.querySelector("#eng2-bleed-psi").textContent = "xx"
             }
 
-            if(currentRightPackState && currentEngineBleedState[1] && eng2Running ){          
-                this.querySelector("#right-pack-in").textContent = parseInt(((eng2TMP - 491.67) * (5 / 9)) / 9) 
-                this.querySelector("#right-pack-out").textContent = parseInt(((eng2TMP - 491.67) * (5 / 9)) / 20) 
+            if (currentRightPackState && currentEngineBleedState[1] && eng2Running ){          
+                this.querySelector("#right-pack-in").textContent = packTMPComputedIn[1] 
+                this.querySelector("#right-pack-out").textContent = packTMPComputedOut[1]
             } else if (currentRightPackState && xBleedValveOpen && eng1Running && currentEngineBleedState[0]) {
-                this.querySelector("#right-pack-in").textContent = parseInt(((eng1TMP - 491.67) * (5 / 9)) / 9) 
-                this.querySelector("#right-pack-out").textContent = parseInt(((eng1TMP - 491.67) * (5 / 9)) / 20) 
+                this.querySelector("#right-pack-in").textContent = packTMPComputedIn[0]
+                this.querySelector("#right-pack-out").textContent = packTMPComputedOut[0] 
             } else if (currentRightPackState && currentApuBleedSate && xBleedValveOpen && this.apuProvidesBleed){
-                this.querySelector("#right-pack-in").textContent = parseInt(400 / 7)
-                this.querySelector("#right-pack-out").textContent = parseInt(400 / 18)
+                this.querySelector("#right-pack-in").textContent = packTMPComputedIn[2]
+                this.querySelector("#right-pack-out").textContent = packTMPComputedOut[2]
             } else {
                 this.querySelector("#right-pack-in").textContent = "xx"
                 this.querySelector("#right-pack-out").textContent = "xx"
             } 
-             //end of mock logic
+            
         }
     }
     A320_Neo_LowerECAM_BLEED.Page = Page;
