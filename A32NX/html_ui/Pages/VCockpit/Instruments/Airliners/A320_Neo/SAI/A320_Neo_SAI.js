@@ -1044,8 +1044,8 @@ customElements.define('a320-neo-sai-brightness', A320_Neo_SAI_BrightnessBox);
 class A320_Neo_SAI_SelfTest extends NavSystemElement {
 
     init(root) {
-        this.getDeltaTime = A32NX_Util.createDeltaTimeCalculator();
         this.selfTestElement = this.gps.getChildById("SelfTest");
+        this.getDeltaTime = A32NX_Util.createDeltaTimeCalculator();
     }
     onEnter() {
     }
@@ -1058,6 +1058,7 @@ class A320_Neo_SAI_SelfTest extends NavSystemElement {
         const ac_pwr = SimVar.GetSimVarValue("L:ACPowerAvailable", "bool");
         const dc_pwr = SimVar.GetSimVarValue("L:DCPowerAvailable", "bool");
         const cold_dark = SimVar.GetSimVarValue('L:A32NX_COLD_AND_DARK_SPAWN', 'Bool');
+
         const complete = this.selfTestElement.complete;
 
         if ((ac_pwr || dc_pwr) && !complete) {
@@ -1074,6 +1075,7 @@ class A320_Neo_SAI_SelfTest extends NavSystemElement {
         }
     }
 }
+
 class A320_Neo_SAI_SelfTestTimer extends HTMLElement {
 
     connectedCallback() {
