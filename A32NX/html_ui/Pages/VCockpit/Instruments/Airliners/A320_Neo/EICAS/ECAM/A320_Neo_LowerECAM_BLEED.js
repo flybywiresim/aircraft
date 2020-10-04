@@ -240,12 +240,12 @@ var A320_Neo_LowerECAM_BLEED;
             const packRequestedTemp = 18 + (2 * packRequestedlvl)
 
             const eng1TMP = SimVar.GetSimVarValue("ENG EXHAUST GAS TEMPERATURE:1", "Rankine")
-            let eng1PSI = parseInt(SimVar.GetSimVarValue("TURB ENG BLEED AIR:1", "Ratio (0-16384)") / 2)
-            let eng1TMPcomputed = parseInt(((eng1TMP - 491.67) * (5 / 9)) * this.engTempMultiplier)
+            const eng1PSI = parseInt(SimVar.GetSimVarValue("TURB ENG BLEED AIR:1", "Ratio (0-16384)") / 2)
+            const eng1TMPcomputed = parseInt(((eng1TMP - 491.67) * (5 / 9)) * this.engTempMultiplier)
 
             const eng2TMP = SimVar.GetSimVarValue("ENG EXHAUST GAS TEMPERATURE:2", "Rankine")
-            let eng2PSI = parseInt(SimVar.GetSimVarValue("TURB ENG BLEED AIR:2", "Ratio (0-16384)") / 2)
-            let eng2TMPcomputed = parseInt(((eng2TMP - 491.67) * (5 / 9)) * this.engTempMultiplier)
+            const eng2PSI = parseInt(SimVar.GetSimVarValue("TURB ENG BLEED AIR:2", "Ratio (0-16384)") / 2)
+            const eng2TMPcomputed = parseInt(((eng2TMP - 491.67) * (5 / 9)) * this.engTempMultiplier)
 
             let packTMPComputedIn = [(parseInt(((eng1TMP - 491.67) * (5 / 9)) * this.packInMultiplier)),
                                      (parseInt(((eng2TMP - 491.67) * (5 / 9)) * this.packInMultiplier)),
@@ -332,6 +332,8 @@ var A320_Neo_LowerECAM_BLEED;
                 this.querySelector("#right-pack-in").textContent = "xx"
                 this.querySelector("#right-pack-out").textContent = "xx"
             }
+
+            //end of placeholder logic
 
         }
     }
