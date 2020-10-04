@@ -1022,7 +1022,7 @@
       </Checkpoint>
       <Checkpoint Id="A320_TO_PFD_ND">
          <CheckpointDesc SubjectTT="TT:PFD/ND" ExpectationTT="TT:CHECK" />
-         <!--<Instrument Id="PFD"/> (Causes the PFD to be white after being highlighted)-->
+         <!--<Instrument Id="SCREEN_PFD1"/> (Causes the PFD to be white after being highlighted)-->
       </Checkpoint>
       <Checkpoint Id="A320_TO_TAKEOFF_N1">
          <CheckpointDesc SubjectTT="TT:At 80kts: Takeoff N1" ExpectationTT="TT:CHECK" />

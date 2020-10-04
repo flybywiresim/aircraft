@@ -349,14 +349,14 @@ class MapInstrument extends ISvgMapRootElement {
         }
         if (this.gps) {
             if (!this.gps.currFlightPlanManager) {
-                this.gps.currFlightPlanManager = new FlightPlanManager(this.gps);
+                this.gps.currFlightPlanManager = new FlightPlanManager(this.instrument);
                 this.gps.currFlightPlanManager.registerListener();
             }
             this.gps.addEventListener("FlightStart", this.onFlightStart.bind(this));
         }
         else {
             if (!this._flightPlanManager) {
-                this._flightPlanManager = new FlightPlanManager(null);
+                this._flightPlanManager = new FlightPlanManager(this.instrument);
                 this._flightPlanManager.registerListener();
             }
         }
@@ -436,7 +436,6 @@ class MapInstrument extends ISvgMapRootElement {
             this.tmpFlightPlanElement.flightPlanIndex = 1;
             this.directToElement = new SvgBackOnTrackElement();
             Coherent.call("RESET_ROAD_ITERATOR");
-            FacilityLoader.Instance.registerListener();
             this.addEventListener("mousedown", this.OnMouseDown.bind(this));
             this.addEventListener("mousemove", this.OnMouseMove.bind(this));
             this.addEventListener("mouseup", this.OnMouseUp.bind(this));
@@ -921,7 +920,7 @@ class MapInstrument extends ISvgMapRootElement {
         this.updateVisibility();
         this.updateSize(true);
         if (this.selfManagedInstrument) {
-            this.instrument.dataMetaManager.UpdateAll();
+            this.instrument.doUpdate();
         }
         if (this.wpt) {
             var wpId = SimVar.GetSimVarValue("GPS WP NEXT ID", "string");

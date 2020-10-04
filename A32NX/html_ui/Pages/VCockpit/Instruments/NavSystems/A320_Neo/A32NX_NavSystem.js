@@ -43,7 +43,7 @@ class NavSystem extends BaseInstrument {
         this.menuSlider = this.getChildById("SliderMenu");
         this.menuSliderCursor = this.getChildById("SliderMenuCursor");
         if (!this.currFlightPlanManager) {
-            this.currFlightPlanManager = new FlightPlanManager();
+            this.currFlightPlanManager = new FlightPlanManager(this);
             this.currFlightPlanManager.registerListener();
         }
         this.currFlightPlan = new FlightPlan(this);
@@ -920,7 +920,6 @@ class NavSystem extends BaseInstrument {
             this.alwaysUpdateList.push(_element);
     }
 }
-NavSystem.useSvgImages = false;
 NavSystem.maxTimeUpdateAllTime = 0;
 NavSystem.maxTimeUpdate = 0;
 NavSystem.mediumMaxTimeUpdate = 0;

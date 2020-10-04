@@ -40,6 +40,12 @@ class CDUPerformancePage {
         if (selectedRunway) {
             runway = Avionics.Utils.formatRunway(selectedRunway.designation);
         }
+        else {
+            let predictedRunway = mcdu.flightPlanManager.getDetectedCurrentRunway();
+            if (predictedRunway) {
+                runway = Avionics.Utils.formatRunway(predictedRunway.designation);
+            }
+        }
         let v1 = "□□□[color]red";
         if (mcdu.v1Speed) {
             v1 = mcdu.v1Speed + "[color]blue";
@@ -665,8 +671,8 @@ class CDUPerformancePage {
     }
     static UpdateThrRedAccFromOrigin(mcdu) {
         const origin = mcdu.flightPlanManager.getOrigin();
-        const thrRedAccAltitude = origin && origin.altitudeinFP 
-            ? origin.altitudeinFP + 1500 
+        const thrRedAccAltitude = origin && origin.altitudeinFP
+            ? origin.altitudeinFP + 1500
             : undefined;
 
         mcdu.thrustReductionAltitude = thrRedAccAltitude;

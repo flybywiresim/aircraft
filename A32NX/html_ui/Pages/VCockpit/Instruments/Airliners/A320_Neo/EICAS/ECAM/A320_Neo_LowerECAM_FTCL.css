@@ -67,7 +67,7 @@ a320-neo-lower-ecam-ftcl .MainShape {
 
 a320-neo-lower-ecam-ftcl .MainShapeWarning {
     fill: transparent;
-    stroke: var(--ecamDangerColour);
+    stroke: var(--ecamWarningColour);
     stroke-width: 2;
 }
 
@@ -137,7 +137,7 @@ a320-neo-lower-ecam-ftcl text.Value15 {
 
 a320-neo-lower-ecam-ftcl text.Value15Warning {
     font-size: 15pt;
-    fill: var(--ecamDangerColour);
+    fill: var(--ecamWarningColour);
 }
 
 a320-neo-lower-ecam-ftcl text.ValueWhite {
