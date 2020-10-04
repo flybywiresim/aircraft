@@ -184,7 +184,7 @@ var A320_Neo_LowerECAM_BLEED;
                 this.querySelector("#left-pack-in").textContent = parseInt(((eng2TMP - 491.67) * (5 / 9)) / 9)
                 this.querySelector("#left-pack-out").textContent = parseInt(((eng2TMP - 491.67) * (5 / 9)) / 18)
             } else if (currentLeftPackState && currentApuBleedSate){
-                this.querySelector("#left-pack-in").textContent = parseInt(400 / 9)
+                this.querySelector("#left-pack-in").textContent = parseInt(400 / 7)
                 this.querySelector("#left-pack-out").textContent = parseInt(400 / 18)
             } else {
                 this.querySelector("#left-pack-in").textContent = "xx"
@@ -206,7 +206,7 @@ var A320_Neo_LowerECAM_BLEED;
                 this.querySelector("#right-pack-in").textContent = parseInt(((eng1TMP - 491.67) * (5 / 9)) / 9) 
                 this.querySelector("#right-pack-out").textContent = parseInt(((eng1TMP - 491.67) * (5 / 9)) / 18) 
             } else if (currentRightPackState && currentApuBleedSate && xBleedValveOpen){
-                this.querySelector("#right-pack-in").textContent = parseInt(400 / 9)
+                this.querySelector("#right-pack-in").textContent = parseInt(400 / 7)
                 this.querySelector("#right-pack-out").textContent = parseInt(400 / 18)
             } else {
                 this.querySelector("#right-pack-in").textContent = "xx"
