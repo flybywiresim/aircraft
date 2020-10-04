@@ -1613,18 +1613,17 @@
 	</Template>
 
 	<Template Name="A32NX_AIRBUS_PACK_SELECTOR_TEMPLATE">
-			<Component ID="#NODE_ID#" Node="#NODE_ID#">
-				<UseTemplate Name="ASOBO_GT_Switch_3States">
-					<WWISE_EVENT>engine_mode_switch</WWISE_EVENT>
-					<ANIM_NAME>#NODE_ID#</ANIM_NAME>
-					<SWITCH_DIRECTION>Horizontal</SWITCH_DIRECTION>
-					<ARROW_TYPE>Curved</ARROW_TYPE>
-					<SWITCH_POSITION_TYPE>L</SWITCH_POSITION_TYPE>
-					<SWITCH_POSITION_VAR>A32NX_#NODE_ID#_Position</SWITCH_POSITION_VAR>
-				</UseTemplate>
-			</Component>
-		</Template>
-	</ModelBehaviors>
+		<Component ID="#NODE_ID#" Node="#NODE_ID#">
+			<UseTemplate Name="ASOBO_GT_Switch_3States">
+				<WWISE_EVENT>engine_mode_switch</WWISE_EVENT>
+				<ANIM_NAME>#NODE_ID#</ANIM_NAME>
+				<SWITCH_DIRECTION>Horizontal</SWITCH_DIRECTION>
+				<ARROW_TYPE>Curved</ARROW_TYPE>
+				<SWITCH_POSITION_TYPE>L</SWITCH_POSITION_TYPE>
+				<SWITCH_POSITION_VAR>A32NX_#NODE_ID#_Position</SWITCH_POSITION_VAR>
+			</UseTemplate>
+		</Component>
+	</Template>
 
 	<Template Name="A32NX_Push_BARO_PLUS_Template">
 		<Component ID="#NODE_ID#" Node="#NODE_ID#">
