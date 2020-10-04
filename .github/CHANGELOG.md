@@ -15,6 +15,8 @@
 1. [ECAM] Improved APU ECAM visuals - @wpine215 (Iceman)
 1. [TEXTURES] changed texture of glareshield and added details
 
+1. [ECAM] Improved Fuel ECAM visuals and corrected center pump inconsistency - @wpine215 (Iceman)
+
 ## Changes from 2020/09 to 2020/10
 1. [General] Add CHANGELOG.md - @nathaninnes (Nathan Innes)
 2. [ECAM] Improved Upper ECAM Visuals - @wpine215 (Iceman)
