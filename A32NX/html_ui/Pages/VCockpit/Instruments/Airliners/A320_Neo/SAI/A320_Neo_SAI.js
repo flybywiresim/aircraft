@@ -995,7 +995,7 @@ class A320_Neo_SAI_SelfTest extends NavSystemElement {
             this.selfTestElement.resetTimer();
         }
 
-        if (!cold_dark && ac_pwr && dc_pwr) {
+        if (!complete && !cold_dark && ac_pwr && dc_pwr) {
             // TODO: better way of doing this not on loop
             this.selfTestElement.finishTest();
         }
@@ -1018,9 +1018,9 @@ class A320_Neo_SAI_SelfTestTimer extends HTMLElement {
         const boxRow3 = 64;
         const txt_off = 6;
 
-        this.start_time = 73;
+        this.start_time = 90;
         this.complete = false;
-        this.testTimer = Math.floor(Math.random() * 3) + this.start_time;
+        this.testTimer = this.start_time;
 
         this.hide_inst_div = document.querySelector("#SelfTestHider");
         this.hide_inst_div.style.display = "none";
@@ -1146,7 +1146,7 @@ class A320_Neo_SAI_SelfTestTimer extends HTMLElement {
     }
     resetTimer() {
         if (this.testTimer > this.start_time) return;
-        this.testTimer = Math.floor(Math.random() * 3) + this.start_time;
+        this.testTimer = this.start_time;
         this.complete = false;
         this.hide_inst_div.style.display = "none";
         this.selfTestDiv.style.display = "block";
