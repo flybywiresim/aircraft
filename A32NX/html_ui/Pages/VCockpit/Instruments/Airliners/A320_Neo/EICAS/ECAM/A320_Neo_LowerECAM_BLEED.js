@@ -33,7 +33,8 @@ var A320_Neo_LowerECAM_BLEED;
 
             this.engTempMultiplier = 0.35
             this.packInMultiplier = 0.11
-            this.packOutMultiplier = 0.055
+            this.packOutMultiplier1 = 0.055
+            this.packOutMultiplier2 = 0.055
             this.packInMultiplierApu = 0.2
             this.packOutMultiplierApu = 0.1
             this.temperatureVariationSpeed = 0.01
@@ -250,17 +251,19 @@ var A320_Neo_LowerECAM_BLEED;
                                      (parseInt(((eng2TMP - 491.67) * (5 / 9)) * this.packInMultiplier)),
                                      (parseInt(this.apuBleedTemperature * this.packInMultiplierApu))]
 
-            let packTMPComputedOut = [(parseInt(((eng1TMP - 491.67) * (5 / 9)) * this.packOutMultiplier)),
-                                      (parseInt(((eng2TMP - 491.67) * (5 / 9)) * this.packOutMultiplier)),
+            let packTMPComputedOut = [(parseInt(((eng1TMP - 491.67) * (5 / 9)) * this.packOutMultiplier1)),
+                                      (parseInt(((eng2TMP - 491.67) * (5 / 9)) * this.packOutMultiplier2)),
                                       (parseInt(this.apuBleedTemperature * this.packOutMultiplierApu))]
 
-            let packTemperatureVariation = [((((packRequestedTemp / packTMPComputedOut[0]) * this.packOutMultiplier) - this.packOutMultiplier)),
+            let packTemperatureVariation = [((((packRequestedTemp / packTMPComputedOut[0]) * this.packOutMultiplier1) - this.packOutMultiplier1)), 
+                                            ((((packRequestedTemp / packTMPComputedOut[1]) * this.packOutMultiplier2) - this.packOutMultiplier2)),
                                             ((((packRequestedTemp / packTMPComputedOut[2]) * this.packOutMultiplierApu) - this.packOutMultiplierApu))] 
             
             let xBleedValveOpen = SimVar.GetSimVarValue("L:x_bleed_valve","bool")
 
-            this.packOutMultiplier += packTemperatureVariation[0] * (this.temperatureVariationSpeed * (0.8 + (currentPackFlow * 0.2)))
-            this.packOutMultiplierApu += packTemperatureVariation[1] * (this.temperatureVariationSpeed * (0.8 + (currentPackFlow * 0.2)))
+            this.packOutMultiplier1 += packTemperatureVariation[0] * (this.temperatureVariationSpeed * (0.8 + (currentPackFlow * 0.2)))
+            this.packOutMultiplier2 += packTemperatureVariation[1] * (this.temperatureVariationSpeed * (0.8 + (currentPackFlow * 0.2)))
+            this.packOutMultiplierApu += packTemperatureVariation[2] * (this.temperatureVariationSpeed * (0.8 + (currentPackFlow * 0.2)))
             
             switch(packRequestedlvl) {
                 case 0:
