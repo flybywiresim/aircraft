@@ -780,18 +780,6 @@
 				</UseTemplate>
 			</Component>
 
-<<<<<<< HEAD
-			<UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
-				<NODE_ID>DYN_SCREEN</NODE_ID>	<!-- TODO: Model change required to not affect brake/clock-->
-				<EMISSIVE_CODE>(L:A32NX_BARO_BRIGHTNESS, Percent over 100)</EMISSIVE_CODE>
-			</UseTemplate>
-
-			<UseTemplate Name="ASOBO_AUTOPILOT_Knob_Baro_Template">
-				<ANIM_NAME>AUTOPILOT_Knob_Baro</ANIM_NAME>
-				<NODE_ID>AUTOPILOT_Knob_Baro</NODE_ID>
-				<ID>3</ID>
-				<BARO_ID>2</BARO_ID>
-=======
 			<Component ID="Screens_Right">
 				<UseTemplate Name="ASOBO_LIGHTING_Knob_Potentiometer_Template">
 					<POTENTIOMETER>90</POTENTIOMETER>
@@ -802,7 +790,6 @@
 					<ANIMTIP_0>TT:COCKPIT.TOOLTIPS.LIGHTING_KNOB_R_PFD_DECREASE</ANIMTIP_0>
 					<ANIMTIP_0>TT:COCKPIT.TOOLTIPS.LIGHTING_KNOB_R_PFD_INCREASE</ANIMTIP_0>
 				</UseTemplate>
->>>>>>> sai-ls-1.9.3
 
 				<UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
 					<NODE_ID>SCREEN_PFD_R</NODE_ID>

@@ -671,8 +671,8 @@ class CDUPerformancePage {
     }
     static UpdateThrRedAccFromOrigin(mcdu) {
         const origin = mcdu.flightPlanManager.getOrigin();
-        const thrRedAccAltitude = origin && origin.altitudeinFP
-            ? origin.altitudeinFP + 1500
+        const thrRedAccAltitude = origin && origin.altitudeinFP 
+            ? origin.altitudeinFP + 1500 
             : undefined;
 
         mcdu.thrustReductionAltitude = thrRedAccAltitude;
