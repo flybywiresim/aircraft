@@ -37,8 +37,75 @@ var A320_Neo_LowerECAM_BLEED;
             this.packInMultiplierApu = 0.2
             this.packOutMultiplierApu = 0.1
             this.temperatureVariationSpeed = 0.01
+        //part of the placeholder logic
+            this.packIndicators = [(this.querySelector("#pack-out-temp-indicator-0")), (this.querySelector("#pack-out-temp-indicator-1")),
+                                    (this.querySelector("#pack-out-temp-indicator-2")), (this.querySelector("#pack-out-temp-indicator-3")),
+                                    (this.querySelector("#pack-out-temp-indicator-4")), (this.querySelector("#pack-out-temp-indicator-5")), 
+                                    (this.querySelector("#pack-out-temp-indicator-6")), ]
+
 
         }   
+        //part of the placeholder logic
+        setPackIndicators(p0, p1, p2, p3, p4, p5, p6){
+            if (p0) {
+                this.packIndicators[0].setAttribute("visibility", "visible")
+                this.packIndicators[1].setAttribute("visibility", "hidden")
+                this.packIndicators[2].setAttribute("visibility", "hidden")
+                this.packIndicators[3].setAttribute("visibility", "hidden")
+                this.packIndicators[4].setAttribute("visibility", "hidden")
+                this.packIndicators[5].setAttribute("visibility", "hidden")
+                this.packIndicators[6].setAttribute("visibility", "hidden")
+            } else if (p1){
+                this.packIndicators[0].setAttribute("visibility", "hidden")
+                this.packIndicators[1].setAttribute("visibility", "visible")
+                this.packIndicators[2].setAttribute("visibility", "hidden")
+                this.packIndicators[3].setAttribute("visibility", "hidden")
+                this.packIndicators[4].setAttribute("visibility", "hidden")
+                this.packIndicators[5].setAttribute("visibility", "hidden")
+                this.packIndicators[6].setAttribute("visibility", "hidden")
+            } else if (p2){
+                this.packIndicators[0].setAttribute("visibility", "hidden")
+                this.packIndicators[1].setAttribute("visibility", "hidden")
+                this.packIndicators[2].setAttribute("visibility", "visible")
+                this.packIndicators[3].setAttribute("visibility", "hidden")
+                this.packIndicators[4].setAttribute("visibility", "hidden")
+                this.packIndicators[5].setAttribute("visibility", "hidden")
+                this.packIndicators[6].setAttribute("visibility", "hidden")
+            } else if (p3){
+                this.packIndicators[0].setAttribute("visibility", "hidden")
+                this.packIndicators[1].setAttribute("visibility", "hidden")
+                this.packIndicators[2].setAttribute("visibility", "hidden")
+                this.packIndicators[3].setAttribute("visibility", "visible")
+                this.packIndicators[4].setAttribute("visibility", "hidden")
+                this.packIndicators[5].setAttribute("visibility", "hidden")
+                this.packIndicators[6].setAttribute("visibility", "hidden")
+            } else if (p4){
+                this.packIndicators[0].setAttribute("visibility", "hidden")
+                this.packIndicators[1].setAttribute("visibility", "hidden")
+                this.packIndicators[2].setAttribute("visibility", "hidden")
+                this.packIndicators[3].setAttribute("visibility", "hidden")
+                this.packIndicators[4].setAttribute("visibility", "visible")
+                this.packIndicators[5].setAttribute("visibility", "hidden")
+                this.packIndicators[6].setAttribute("visibility", "hidden")
+            } else if (p5){
+                this.packIndicators[0].setAttribute("visibility", "hidden")
+                this.packIndicators[1].setAttribute("visibility", "hidden")
+                this.packIndicators[2].setAttribute("visibility", "hidden")
+                this.packIndicators[3].setAttribute("visibility", "hidden")
+                this.packIndicators[4].setAttribute("visibility", "hidden")
+                this.packIndicators[5].setAttribute("visibility", "visible")
+                this.packIndicators[6].setAttribute("visibility", "hidden")
+            } else if (p6){
+                this.packIndicators[0].setAttribute("visibility", "hidden")
+                this.packIndicators[1].setAttribute("visibility", "hidden")
+                this.packIndicators[2].setAttribute("visibility", "hidden")
+                this.packIndicators[3].setAttribute("visibility", "hidden")
+                this.packIndicators[4].setAttribute("visibility", "hidden")
+                this.packIndicators[5].setAttribute("visibility", "hidden")
+                this.packIndicators[6].setAttribute("visibility", "visible")
+            }
+
+        }
         update(_deltaTime) {
             if (!this.isInitialised) {
                 return;
@@ -165,11 +232,12 @@ var A320_Neo_LowerECAM_BLEED;
 
             //placeholder logic for the bleed page temperatures and pressures, to be replaced/updated/removed when the cond-packs system is implemented
 
-            let packRequestedTemp = 18 + (2* Math.min(...[SimVar.GetSimVarValue("L:A320_Neo_AIRCOND_LVL_1", "Position(0-6)"),
-                                                          SimVar.GetSimVarValue("L:A320_Neo_AIRCOND_LVL_2", "Position(0-6)"),
-                                                          SimVar.GetSimVarValue("L:A320_Neo_AIRCOND_LVL_3", "Position(0-6)")]))
-            
+            let packRequestedlvl = Math.min(...[SimVar.GetSimVarValue("L:A320_Neo_AIRCOND_LVL_1", "Position(0-6)"),
+                                                SimVar.GetSimVarValue("L:A320_Neo_AIRCOND_LVL_2", "Position(0-6)"),
+                                                SimVar.GetSimVarValue("L:A320_Neo_AIRCOND_LVL_3", "Position(0-6)")])
 
+            let packRequestedTemp = 18 + (2 * packRequestedlvl)
+            
             let eng1TMP = SimVar.GetSimVarValue("ENG EXHAUST GAS TEMPERATURE:1", "Rankine")      
             let eng1PSI = parseInt(SimVar.GetSimVarValue("TURB ENG BLEED AIR:1", "Ratio (0-16384)")/2)
             let eng1TMPcomputed = parseInt(((eng1TMP - 491.67) * (5 / 9)) * this.engTempMultiplier)
@@ -194,6 +262,29 @@ var A320_Neo_LowerECAM_BLEED;
             this.packOutMultiplier += packTemperatureVariation[0] * (this.temperatureVariationSpeed * (0.8 + (currentPackFlow * 0.2)))
             this.packOutMultiplierApu += packTemperatureVariation[1] * (this.temperatureVariationSpeed * (0.8 + (currentPackFlow * 0.2)))
             
+            switch(packRequestedlvl) {
+                case 0:
+                    this.setPackIndicators(1,0,0,0,0,0,0)
+                    break;
+                case 1:
+                    this.setPackIndicators(0,1,0,0,0,0,0)
+                    break;
+                case 2:
+                    this.setPackIndicators(0,0,1,0,0,0,0)
+                    break;
+                case 3:
+                    this.setPackIndicators(0,0,0,1,0,0,0)
+                    break;
+                case 4:
+                    this.setPackIndicators(0,0,0,0,1,0,0)
+                    break;
+                case 5:
+                    this.setPackIndicators(0,0,0,0,0,1,0)
+                    break;
+                case 6:
+                    this.setPackIndicators(0,0,0,0,0,0,1)
+                    break;
+            }
 
             if (currentEngineBleedState[0] && eng1Running){ 
                 this.querySelector("#eng1-bleed-tmp").textContent = eng1TMPcomputed
