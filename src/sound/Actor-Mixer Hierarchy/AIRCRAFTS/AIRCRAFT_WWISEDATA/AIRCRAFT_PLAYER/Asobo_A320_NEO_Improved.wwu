@@ -62,6 +62,11 @@
 						<Property Name="3DPosition" Type="int16" Value="1"/>
 						<Property Name="3DSpatialization" Type="int16" Value="2"/>
 						<Property Name="EnableLoudnessNormalization" Type="bool" Value="True"/>
+						<Property Name="InitialDelay" Type="Real64">
+							<ValueList>
+								<Value>1</Value>
+							</ValueList>
+						</Property>
 						<Property Name="UseGameAuxSends" Type="bool" Value="True"/>
 					</PropertyList>
 					<ReferenceList>
@@ -437,7 +442,7 @@
 						<Property Name="IsLoopingEnabled" Type="bool" Value="True"/>
 						<Property Name="Volume" Type="Real64">
 							<ValueList>
-								<Value>-15</Value>
+								<Value>-10</Value>
 							</ValueList>
 						</Property>
 					</PropertyList>
@@ -670,6 +675,12 @@
 												<XPos>0</XPos>
 												<YPos>-200</YPos>
 												<Flags>5</Flags>
+												<SegmentShape>Exp1</SegmentShape>
+											</Point>
+											<Point>
+												<XPos>10.19607</XPos>
+												<YPos>-200</YPos>
+												<Flags>0</Flags>
 												<SegmentShape>Log3</SegmentShape>
 											</Point>
 											<Point>
@@ -1269,9 +1280,6 @@
 							</RTPCList>
 						</Property>
 						<Property Name="Volume" Type="Real64">
-							<ValueList>
-								<Value>5</Value>
-							</ValueList>
 							<RTPCList>
 								<RTPC Name="" ID="{089D521D-D3E0-4B91-AEDB-A535738F6F71}" ShortID="372989760">
 									<ReferenceList>
@@ -1296,9 +1304,10 @@
 												<SegmentShape>Exp1</SegmentShape>
 											</Point>
 											<Point>
-												<XPos>254.90196</XPos>
-												<YPos>-10.21089</YPos>
+												<XPos>256.20915</XPos>
+												<YPos>-11.01195</YPos>
 												<Flags>0</Flags>
+												<SegmentShape>Constant</SegmentShape>
 											</Point>
 											<Point>
 												<XPos>1000</XPos>
@@ -1322,8 +1331,8 @@
 					<ChildrenList>
 						<AudioFileSource Name="wind" ID="{8E7515F1-798B-44E7-8B92-6159AF9FAB02}">
 							<PropertyList>
-								<Property Name="LoopBegin" Type="Real64" Value="51.5741295712916"/>
-								<Property Name="LoopEnd" Type="Real64" Value="56.0116148472812"/>
+								<Property Name="LoopBegin" Type="Real64" Value="9.61972332557185"/>
+								<Property Name="LoopEnd" Type="Real64" Value="12.815953978907"/>
 								<Property Name="OverrideWavLoop" Type="bool" Value="True"/>
 								<Property Name="TrimBegin" Type="Real64" Value="-0.001"/>
 								<Property Name="TrimEnd" Type="Real64" Value="-0.001"/>
@@ -1338,6 +1347,11 @@
 				</Sound>
 				<Sound Name="rollrattle2" ID="{64CABB9B-95FA-4B44-9A23-064FF8A68953}" ShortID="922520424">
 					<PropertyList>
+						<Property Name="InitialDelay" Type="Real64">
+							<ValueList>
+								<Value>1</Value>
+							</ValueList>
+						</Property>
 						<Property Name="IsLoopingEnabled" Type="bool" Value="True"/>
 						<Property Name="Pitch" Type="int32">
 							<RTPCList>
@@ -1500,9 +1514,6 @@
 							</RTPCList>
 						</Property>
 						<Property Name="Volume" Type="Real64">
-							<ValueList>
-								<Value>5</Value>
-							</ValueList>
 							<RTPCList>
 								<RTPC Name="" ID="{131BA9B7-B4EF-4064-88DF-3D1FC215CA61}" ShortID="455394331">
 									<ReferenceList>
@@ -1641,6 +1652,638 @@
 					</ChildrenList>
 					<ActiveSourceList>
 						<ActiveSource Name="too-low-terrain" ID="{5296C6DD-DAFB-44BB-87D0-1F1772F1F9FE}" Platform="Linked"/>
+					</ActiveSourceList>
+				</Sound>
+				<RandomSequenceContainer Name="CIDS Chimes" ID="{2CF58673-88DA-432C-A5DF-B1EC10F82903}" ShortID="928717462">
+					<PropertyList>
+						<Property Name="InitialDelay" Type="Real64">
+							<ValueList>
+								<Value>3</Value>
+							</ValueList>
+						</Property>
+						<Property Name="Volume" Type="Real64">
+							<RTPCList>
+								<RTPC Name="" ID="{6E955ECA-D6DA-4667-81C8-CD5C49343CB6}" ShortID="258278531">
+									<ReferenceList>
+										<Reference Name="ControlInput">
+											<ObjectRef Name="SIMVAR_ELECTRICAL_MAIN_BUS_VOLTAGE_A4_R4" ID="{F4F99CFF-7335-4EE1-8D44-386B64FDF2F2}" WorkUnitID="{160297A3-539B-416D-BB27-309DA15AE344}"/>
+										</Reference>
+									</ReferenceList>
+									<Curve Name="" ID="{432A6947-9689-4DEB-BC5B-099233D4845D}">
+										<PropertyList>
+											<Property Name="Flags" Type="int32" Value="3"/>
+										</PropertyList>
+										<PointList>
+											<Point>
+												<XPos>0</XPos>
+												<YPos>-200</YPos>
+												<Flags>5</Flags>
+												<SegmentShape>Constant</SegmentShape>
+											</Point>
+											<Point>
+												<XPos>23.79084</XPos>
+												<YPos>0.19873</YPos>
+												<Flags>0</Flags>
+												<SegmentShape>Constant</SegmentShape>
+											</Point>
+											<Point>
+												<XPos>100</XPos>
+												<YPos>0</YPos>
+												<Flags>37</Flags>
+											</Point>
+										</PointList>
+									</Curve>
+								</RTPC>
+							</RTPCList>
+						</Property>
+					</PropertyList>
+					<ReferenceList>
+						<Reference Name="Conversion">
+							<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{72C899CE-308C-4CA7-87C0-8E1504B1D757}"/>
+						</Reference>
+						<Reference Name="OutputBus">
+							<ObjectRef Name="miscellaneous_inside" ID="{A94A7A7F-2F28-46C7-9158-EA25E9E42914}" WorkUnitID="{D8341C40-AF31-4D5B-9D65-E60D709F4609}"/>
+						</Reference>
+					</ReferenceList>
+					<ChildrenList>
+						<Sound Name="2chimes" ID="{8A9C1C83-E35C-469A-84FC-7BDC11D2C4C5}" ShortID="252722539">
+							<ReferenceList>
+								<Reference Name="Conversion">
+									<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{72C899CE-308C-4CA7-87C0-8E1504B1D757}"/>
+								</Reference>
+								<Reference Name="OutputBus">
+									<ObjectRef Name="Master Audio Bus" ID="{1514A4D8-1DA6-412A-A17E-75CA0C2149F3}" WorkUnitID="{D8341C40-AF31-4D5B-9D65-E60D709F4609}"/>
+								</Reference>
+							</ReferenceList>
+							<ChildrenList>
+								<AudioFileSource Name="2chimes" ID="{AC20E64E-2CB1-463F-BBC1-C037B11C6C77}">
+									<PropertyList>
+										<Property Name="LoopBegin" Type="Real64" Value="-0.001"/>
+										<Property Name="LoopEnd" Type="Real64" Value="-0.001"/>
+										<Property Name="TrimBegin" Type="Real64" Value="-0.001"/>
+										<Property Name="TrimEnd" Type="Real64" Value="-0.001"/>
+									</PropertyList>
+									<Language>SFX</Language>
+									<AudioFile>2chimes.wav</AudioFile>
+								</AudioFileSource>
+							</ChildrenList>
+							<ActiveSourceList>
+								<ActiveSource Name="2chimes" ID="{AC20E64E-2CB1-463F-BBC1-C037B11C6C77}" Platform="Linked"/>
+							</ActiveSourceList>
+						</Sound>
+						<Sound Name="3chimes" ID="{0E7D93D0-7EFD-49F8-9579-ABD1E1CD3795}" ShortID="90802313">
+							<ReferenceList>
+								<Reference Name="Conversion">
+									<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{72C899CE-308C-4CA7-87C0-8E1504B1D757}"/>
+								</Reference>
+								<Reference Name="OutputBus">
+									<ObjectRef Name="Master Audio Bus" ID="{1514A4D8-1DA6-412A-A17E-75CA0C2149F3}" WorkUnitID="{D8341C40-AF31-4D5B-9D65-E60D709F4609}"/>
+								</Reference>
+							</ReferenceList>
+							<ChildrenList>
+								<AudioFileSource Name="3chimes" ID="{2D157A9F-5EAE-48D6-8C0F-32995A764FF2}">
+									<PropertyList>
+										<Property Name="LoopBegin" Type="Real64" Value="-0.001"/>
+										<Property Name="LoopEnd" Type="Real64" Value="-0.001"/>
+										<Property Name="TrimBegin" Type="Real64" Value="-0.001"/>
+										<Property Name="TrimEnd" Type="Real64" Value="-0.001"/>
+									</PropertyList>
+									<Language>SFX</Language>
+									<AudioFile>3chimes.wav</AudioFile>
+								</AudioFileSource>
+							</ChildrenList>
+							<ActiveSourceList>
+								<ActiveSource Name="3chimes" ID="{2D157A9F-5EAE-48D6-8C0F-32995A764FF2}" Platform="Linked"/>
+							</ActiveSourceList>
+						</Sound>
+						<Sound Name="4chimes" ID="{0D7D9287-CC49-464E-9DF7-E752244FB490}" ShortID="558741446">
+							<ReferenceList>
+								<Reference Name="Conversion">
+									<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{72C899CE-308C-4CA7-87C0-8E1504B1D757}"/>
+								</Reference>
+								<Reference Name="OutputBus">
+									<ObjectRef Name="Master Audio Bus" ID="{1514A4D8-1DA6-412A-A17E-75CA0C2149F3}" WorkUnitID="{D8341C40-AF31-4D5B-9D65-E60D709F4609}"/>
+								</Reference>
+							</ReferenceList>
+							<ChildrenList>
+								<AudioFileSource Name="4chimes" ID="{7B787FA4-291E-464B-8D5E-68B4653D625F}">
+									<PropertyList>
+										<Property Name="LoopBegin" Type="Real64" Value="-0.001"/>
+										<Property Name="LoopEnd" Type="Real64" Value="-0.001"/>
+										<Property Name="TrimBegin" Type="Real64" Value="-0.001"/>
+										<Property Name="TrimEnd" Type="Real64" Value="-0.001"/>
+									</PropertyList>
+									<Language>SFX</Language>
+									<AudioFile>4chimes.wav</AudioFile>
+								</AudioFileSource>
+							</ChildrenList>
+							<ActiveSourceList>
+								<ActiveSource Name="4chimes" ID="{7B787FA4-291E-464B-8D5E-68B4653D625F}" Platform="Linked"/>
+							</ActiveSourceList>
+						</Sound>
+						<Sound Name="5chimes" ID="{42FFFC2D-91D5-4F66-A2AC-521104FFA163}" ShortID="12157452">
+							<ReferenceList>
+								<Reference Name="Conversion">
+									<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{72C899CE-308C-4CA7-87C0-8E1504B1D757}"/>
+								</Reference>
+								<Reference Name="OutputBus">
+									<ObjectRef Name="Master Audio Bus" ID="{1514A4D8-1DA6-412A-A17E-75CA0C2149F3}" WorkUnitID="{D8341C40-AF31-4D5B-9D65-E60D709F4609}"/>
+								</Reference>
+							</ReferenceList>
+							<ChildrenList>
+								<AudioFileSource Name="5chimes" ID="{CDDA0FE0-4BD8-4D6D-AAC1-61B59F3CD34A}">
+									<PropertyList>
+										<Property Name="LoopBegin" Type="Real64" Value="-0.001"/>
+										<Property Name="LoopEnd" Type="Real64" Value="-0.001"/>
+										<Property Name="TrimBegin" Type="Real64" Value="-0.001"/>
+										<Property Name="TrimEnd" Type="Real64" Value="-0.001"/>
+									</PropertyList>
+									<Language>SFX</Language>
+									<AudioFile>5chimes.wav</AudioFile>
+								</AudioFileSource>
+							</ChildrenList>
+							<ActiveSourceList>
+								<ActiveSource Name="5chimes" ID="{CDDA0FE0-4BD8-4D6D-AAC1-61B59F3CD34A}" Platform="Linked"/>
+							</ActiveSourceList>
+						</Sound>
+						<Sound Name="6chimes" ID="{82B43840-731F-4186-B789-58C4D2283D43}" ShortID="803504097">
+							<ReferenceList>
+								<Reference Name="Conversion">
+									<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{72C899CE-308C-4CA7-87C0-8E1504B1D757}"/>
+								</Reference>
+								<Reference Name="OutputBus">
+									<ObjectRef Name="Master Audio Bus" ID="{1514A4D8-1DA6-412A-A17E-75CA0C2149F3}" WorkUnitID="{D8341C40-AF31-4D5B-9D65-E60D709F4609}"/>
+								</Reference>
+							</ReferenceList>
+							<ChildrenList>
+								<AudioFileSource Name="6chimes" ID="{D46E8AE3-D7D8-42AB-81F0-D6DD1487849C}">
+									<PropertyList>
+										<Property Name="LoopBegin" Type="Real64" Value="-0.001"/>
+										<Property Name="LoopEnd" Type="Real64" Value="-0.001"/>
+										<Property Name="TrimBegin" Type="Real64" Value="-0.001"/>
+										<Property Name="TrimEnd" Type="Real64" Value="-0.001"/>
+									</PropertyList>
+									<Language>SFX</Language>
+									<AudioFile>6chimes.wav</AudioFile>
+								</AudioFileSource>
+							</ChildrenList>
+							<ActiveSourceList>
+								<ActiveSource Name="6chimes" ID="{D46E8AE3-D7D8-42AB-81F0-D6DD1487849C}" Platform="Linked"/>
+							</ActiveSourceList>
+						</Sound>
+					</ChildrenList>
+				</RandomSequenceContainer>
+				<Sound Name="Airbus_Power_Startup" ID="{F117383A-451E-46F1-967C-72C624B1B09C}" ShortID="109378735">
+					<PropertyList>
+						<Property Name="Volume" Type="Real64">
+							<ValueList>
+								<Value>10</Value>
+							</ValueList>
+						</Property>
+					</PropertyList>
+					<ReferenceList>
+						<Reference Name="Conversion">
+							<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{72C899CE-308C-4CA7-87C0-8E1504B1D757}"/>
+						</Reference>
+						<Reference Name="OutputBus">
+							<ObjectRef Name="instruments_inside" ID="{4D67557A-CB3C-4574-8DBC-4643E77C31BD}" WorkUnitID="{D8341C40-AF31-4D5B-9D65-E60D709F4609}"/>
+						</Reference>
+					</ReferenceList>
+					<ChildrenList>
+						<AudioFileSource Name="Airbus_Power_Startup" ID="{5E908317-BEAD-4679-88CF-AA87DDB7046C}">
+							<PropertyList>
+								<Property Name="LoopBegin" Type="Real64" Value="-0.001"/>
+								<Property Name="LoopEnd" Type="Real64" Value="-0.001"/>
+								<Property Name="TrimBegin" Type="Real64" Value="-0.001"/>
+								<Property Name="TrimEnd" Type="Real64" Value="-0.001"/>
+							</PropertyList>
+							<Language>SFX</Language>
+							<AudioFile>Airbus_Power_Startup.wav</AudioFile>
+						</AudioFileSource>
+					</ChildrenList>
+					<ActiveSourceList>
+						<ActiveSource Name="Airbus_Power_Startup" ID="{5E908317-BEAD-4679-88CF-AA87DDB7046C}" Platform="Linked"/>
+					</ActiveSourceList>
+				</Sound>
+				<RandomSequenceContainer Name="FMGCtest" ID="{8502B61E-84C6-4E30-AFDB-61C6B28C5679}" ShortID="47151270">
+					<PropertyList>
+						<Property Name="InitialDelay" Type="Real64">
+							<ValueList>
+								<Value>53.5</Value>
+							</ValueList>
+						</Property>
+						<Property Name="NormalOrShuffle" Type="int16" Value="0"/>
+						<Property Name="RandomAvoidRepeating" Type="bool" Value="False"/>
+						<Property Name="Volume" Type="Real64">
+							<RTPCList>
+								<RTPC Name="" ID="{21E51435-C007-4B3F-8DD9-F46B2FF01865}" ShortID="13208845">
+									<ReferenceList>
+										<Reference Name="ControlInput">
+											<ObjectRef Name="SIMVAR_ELECTRICAL_MAIN_BUS_VOLTAGE_A4_R4" ID="{F4F99CFF-7335-4EE1-8D44-386B64FDF2F2}" WorkUnitID="{160297A3-539B-416D-BB27-309DA15AE344}"/>
+										</Reference>
+									</ReferenceList>
+									<Curve Name="" ID="{E0DD872A-492E-439D-93FC-8310314C6E56}">
+										<PropertyList>
+											<Property Name="Flags" Type="int32" Value="3"/>
+										</PropertyList>
+										<PointList>
+											<Point>
+												<XPos>0</XPos>
+												<YPos>-200</YPos>
+												<Flags>5</Flags>
+											</Point>
+											<Point>
+												<XPos>27.5817</XPos>
+												<YPos>-200</YPos>
+												<Flags>0</Flags>
+											</Point>
+											<Point>
+												<XPos>27.5827</XPos>
+												<YPos>0.14137</YPos>
+												<Flags>0</Flags>
+											</Point>
+											<Point>
+												<XPos>100</XPos>
+												<YPos>0</YPos>
+												<Flags>37</Flags>
+											</Point>
+										</PointList>
+									</Curve>
+								</RTPC>
+							</RTPCList>
+						</Property>
+					</PropertyList>
+					<ReferenceList>
+						<Reference Name="Conversion">
+							<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{72C899CE-308C-4CA7-87C0-8E1504B1D757}"/>
+						</Reference>
+						<Reference Name="OutputBus">
+							<ObjectRef Name="warning_inside" ID="{4BCCE09B-10CD-460C-9056-AC161C7B29DD}" WorkUnitID="{D8341C40-AF31-4D5B-9D65-E60D709F4609}"/>
+						</Reference>
+					</ReferenceList>
+					<ChildrenList>
+						<Sound Name="triple_clic" ID="{13CB7143-F1BD-48BB-BEBA-9BAF80E9A91D}" ShortID="829216809">
+							<ReferenceList>
+								<Reference Name="Conversion">
+									<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{72C899CE-308C-4CA7-87C0-8E1504B1D757}"/>
+								</Reference>
+								<Reference Name="OutputBus">
+									<ObjectRef Name="Master Audio Bus" ID="{1514A4D8-1DA6-412A-A17E-75CA0C2149F3}" WorkUnitID="{D8341C40-AF31-4D5B-9D65-E60D709F4609}"/>
+								</Reference>
+							</ReferenceList>
+							<ChildrenList>
+								<AudioFileSource Name="triple_clic" ID="{03EF2387-CC60-4A8A-9F3F-56A3C83661F7}">
+									<PropertyList>
+										<Property Name="LoopBegin" Type="Real64" Value="-0.001"/>
+										<Property Name="LoopEnd" Type="Real64" Value="-0.001"/>
+										<Property Name="TrimBegin" Type="Real64" Value="-0.001"/>
+										<Property Name="TrimEnd" Type="Real64" Value="-0.001"/>
+									</PropertyList>
+									<Language>SFX</Language>
+									<AudioFile>triple_clic.wav</AudioFile>
+								</AudioFileSource>
+							</ChildrenList>
+							<ActiveSourceList>
+								<ActiveSource Name="triple_clic" ID="{03EF2387-CC60-4A8A-9F3F-56A3C83661F7}" Platform="Linked"/>
+							</ActiveSourceList>
+						</Sound>
+						<Sound Name="crclick" ID="{C455F0C7-839A-497B-9BB2-AD3DD8C1E91B}" ShortID="654644161">
+							<ReferenceList>
+								<Reference Name="Conversion">
+									<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{72C899CE-308C-4CA7-87C0-8E1504B1D757}"/>
+								</Reference>
+								<Reference Name="OutputBus">
+									<ObjectRef Name="Master Audio Bus" ID="{1514A4D8-1DA6-412A-A17E-75CA0C2149F3}" WorkUnitID="{D8341C40-AF31-4D5B-9D65-E60D709F4609}"/>
+								</Reference>
+							</ReferenceList>
+							<ChildrenList>
+								<AudioFileSource Name="crclick" ID="{960DB1A4-AD06-4DAD-B4A8-3CDEFB6D2E5E}">
+									<PropertyList>
+										<Property Name="LoopBegin" Type="Real64" Value="-0.001"/>
+										<Property Name="LoopEnd" Type="Real64" Value="-0.001"/>
+										<Property Name="TrimBegin" Type="Real64" Value="-0.001"/>
+										<Property Name="TrimEnd" Type="Real64" Value="-0.001"/>
+									</PropertyList>
+									<Language>SFX</Language>
+									<AudioFile>crclick.wav</AudioFile>
+								</AudioFileSource>
+							</ChildrenList>
+							<ActiveSourceList>
+								<ActiveSource Name="crclick" ID="{960DB1A4-AD06-4DAD-B4A8-3CDEFB6D2E5E}" Platform="Linked"/>
+							</ActiveSourceList>
+						</Sound>
+					</ChildrenList>
+				</RandomSequenceContainer>
+				<Sound Name="beepstart" ID="{9D5884D8-8943-405F-9176-032D864E1640}" ShortID="234505744">
+					<PropertyList>
+						<Property Name="InitialDelay" Type="Real64">
+							<ValueList>
+								<Value>2</Value>
+							</ValueList>
+						</Property>
+						<Property Name="Lowpass" Type="int16">
+							<RTPCList>
+								<RTPC Name="" ID="{1C675A82-32DE-425D-BAB5-B2387F6E7E21}" ShortID="454594126">
+									<ReferenceList>
+										<Reference Name="ControlInput">
+											<ObjectRef Name="SIMVAR_ELECTRICAL_MAIN_BUS_VOLTAGE_A4_R4" ID="{F4F99CFF-7335-4EE1-8D44-386B64FDF2F2}" WorkUnitID="{160297A3-539B-416D-BB27-309DA15AE344}"/>
+										</Reference>
+									</ReferenceList>
+									<Curve Name="" ID="{98FCDC22-06DC-4819-BA94-914D39A9B233}">
+										<PropertyList>
+											<Property Name="Flags" Type="int32" Value="65537"/>
+										</PropertyList>
+										<PointList>
+											<Point>
+												<XPos>0</XPos>
+												<YPos>33</YPos>
+												<Flags>5</Flags>
+												<SegmentShape>Constant</SegmentShape>
+											</Point>
+											<Point>
+												<XPos>100</XPos>
+												<YPos>0</YPos>
+												<Flags>37</Flags>
+											</Point>
+										</PointList>
+									</Curve>
+								</RTPC>
+							</RTPCList>
+						</Property>
+						<Property Name="Volume" Type="Real64">
+							<ValueList>
+								<Value>-20</Value>
+							</ValueList>
+							<RTPCList>
+								<RTPC Name="" ID="{D539B41B-CDD9-40A2-9F1C-4D1FCA120DCA}" ShortID="122855273">
+									<ReferenceList>
+										<Reference Name="ControlInput">
+											<ObjectRef Name="SIMVAR_ELECTRICAL_MAIN_BUS_VOLTAGE_A4_R4" ID="{F4F99CFF-7335-4EE1-8D44-386B64FDF2F2}" WorkUnitID="{160297A3-539B-416D-BB27-309DA15AE344}"/>
+										</Reference>
+									</ReferenceList>
+									<Curve Name="" ID="{64047F93-3A14-4D74-A3C5-0EA8D7145793}">
+										<PropertyList>
+											<Property Name="Flags" Type="int32" Value="3"/>
+										</PropertyList>
+										<PointList>
+											<Point>
+												<XPos>0</XPos>
+												<YPos>-200</YPos>
+												<Flags>5</Flags>
+												<SegmentShape>Constant</SegmentShape>
+											</Point>
+											<Point>
+												<XPos>25.75163</XPos>
+												<YPos>-0.21716</YPos>
+												<Flags>0</Flags>
+												<SegmentShape>Constant</SegmentShape>
+											</Point>
+											<Point>
+												<XPos>100</XPos>
+												<YPos>0</YPos>
+												<Flags>37</Flags>
+											</Point>
+										</PointList>
+									</Curve>
+								</RTPC>
+							</RTPCList>
+						</Property>
+					</PropertyList>
+					<ReferenceList>
+						<Reference Name="Conversion">
+							<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{72C899CE-308C-4CA7-87C0-8E1504B1D757}"/>
+						</Reference>
+						<Reference Name="OutputBus">
+							<ObjectRef Name="instruments_inside" ID="{4D67557A-CB3C-4574-8DBC-4643E77C31BD}" WorkUnitID="{D8341C40-AF31-4D5B-9D65-E60D709F4609}"/>
+						</Reference>
+					</ReferenceList>
+					<ChildrenList>
+						<AudioFileSource Name="beepstart" ID="{2330DEAB-B8DD-4550-9C68-E8CE637443F3}">
+							<PropertyList>
+								<Property Name="LoopBegin" Type="Real64" Value="-0.001"/>
+								<Property Name="LoopEnd" Type="Real64" Value="-0.001"/>
+								<Property Name="TrimBegin" Type="Real64" Value="-0.001"/>
+								<Property Name="TrimEnd" Type="Real64" Value="-0.001"/>
+							</PropertyList>
+							<Language>SFX</Language>
+							<AudioFile>beepstart.wav</AudioFile>
+						</AudioFileSource>
+					</ChildrenList>
+					<ActiveSourceList>
+						<ActiveSource Name="beepstart" ID="{2330DEAB-B8DD-4550-9C68-E8CE637443F3}" Platform="Linked"/>
+					</ActiveSourceList>
+				</Sound>
+				<Sound Name="blowerstart" ID="{E05DFCBA-4D0C-4F5F-97BA-5FFFD2D7EE4A}" ShortID="868463560">
+					<PropertyList>
+						<Property Name="InitialDelay" Type="Real64">
+							<ValueList>
+								<Value>3</Value>
+							</ValueList>
+						</Property>
+						<Property Name="Volume" Type="Real64">
+							<RTPCList>
+								<RTPC Name="" ID="{F71B2269-F5C2-4E68-BFE0-7712DE34123B}" ShortID="62491360">
+									<ReferenceList>
+										<Reference Name="ControlInput">
+											<ObjectRef Name="SIMVAR_ELECTRICAL_MAIN_BUS_VOLTAGE_A4_R4" ID="{F4F99CFF-7335-4EE1-8D44-386B64FDF2F2}" WorkUnitID="{160297A3-539B-416D-BB27-309DA15AE344}"/>
+										</Reference>
+									</ReferenceList>
+									<Curve Name="" ID="{51D884F5-2023-4FF5-A18E-7D6CDBF1857A}">
+										<PropertyList>
+											<Property Name="Flags" Type="int32" Value="3"/>
+										</PropertyList>
+										<PointList>
+											<Point>
+												<XPos>0</XPos>
+												<YPos>-200</YPos>
+												<Flags>5</Flags>
+												<SegmentShape>Constant</SegmentShape>
+											</Point>
+											<Point>
+												<XPos>26.79738</XPos>
+												<YPos>-0.90324</YPos>
+												<Flags>0</Flags>
+												<SegmentShape>Constant</SegmentShape>
+											</Point>
+											<Point>
+												<XPos>100</XPos>
+												<YPos>0</YPos>
+												<Flags>37</Flags>
+											</Point>
+										</PointList>
+									</Curve>
+								</RTPC>
+							</RTPCList>
+						</Property>
+					</PropertyList>
+					<ReferenceList>
+						<Reference Name="Conversion">
+							<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{72C899CE-308C-4CA7-87C0-8E1504B1D757}"/>
+						</Reference>
+						<Reference Name="OutputBus">
+							<ObjectRef Name="instruments_inside" ID="{4D67557A-CB3C-4574-8DBC-4643E77C31BD}" WorkUnitID="{D8341C40-AF31-4D5B-9D65-E60D709F4609}"/>
+						</Reference>
+					</ReferenceList>
+					<ChildrenList>
+						<AudioFileSource Name="blowerstart" ID="{36DC56D8-0E14-42B0-B3FA-8AF185E95D22}">
+							<PropertyList>
+								<Property Name="LoopBegin" Type="Real64" Value="-0.001"/>
+								<Property Name="LoopEnd" Type="Real64" Value="-0.001"/>
+								<Property Name="TrimBegin" Type="Real64" Value="-0.001"/>
+								<Property Name="TrimEnd" Type="Real64" Value="-0.001"/>
+							</PropertyList>
+							<Language>SFX</Language>
+							<AudioFile>blowerstart.wav</AudioFile>
+						</AudioFileSource>
+					</ChildrenList>
+					<ActiveSourceList>
+						<ActiveSource Name="blowerstart" ID="{36DC56D8-0E14-42B0-B3FA-8AF185E95D22}" Platform="Linked"/>
+					</ActiveSourceList>
+				</Sound>
+				<Sound Name="Avionics" ID="{72CB778B-F869-4848-992D-50E0DD42485D}" ShortID="648697516">
+					<PropertyList>
+						<Property Name="InitialDelay" Type="Real64">
+							<ValueList>
+								<Value>6</Value>
+							</ValueList>
+						</Property>
+						<Property Name="IsLoopingEnabled" Type="bool" Value="True"/>
+						<Property Name="Volume" Type="Real64">
+							<ValueList>
+								<Value>-20</Value>
+							</ValueList>
+							<RTPCList>
+								<RTPC Name="" ID="{A8356558-E96F-4F09-8758-5327FEEBC2CE}" ShortID="1070707789">
+									<ReferenceList>
+										<Reference Name="ControlInput">
+											<ObjectRef Name="SIMVAR_ELECTRICAL_MAIN_BUS_VOLTAGE_A4_R4" ID="{F4F99CFF-7335-4EE1-8D44-386B64FDF2F2}" WorkUnitID="{160297A3-539B-416D-BB27-309DA15AE344}"/>
+										</Reference>
+									</ReferenceList>
+									<Curve Name="" ID="{F3440B00-83C6-4A20-9CAD-3DAF44EEA694}">
+										<PropertyList>
+											<Property Name="Flags" Type="int32" Value="3"/>
+										</PropertyList>
+										<PointList>
+											<Point>
+												<XPos>0</XPos>
+												<YPos>-200</YPos>
+												<Flags>5</Flags>
+												<SegmentShape>Constant</SegmentShape>
+											</Point>
+											<Point>
+												<XPos>24.70589</XPos>
+												<YPos>-200</YPos>
+												<Flags>0</Flags>
+											</Point>
+											<Point>
+												<XPos>26.79738</XPos>
+												<YPos>1.26774</YPos>
+												<Flags>0</Flags>
+												<SegmentShape>Constant</SegmentShape>
+											</Point>
+											<Point>
+												<XPos>100</XPos>
+												<YPos>0</YPos>
+												<Flags>37</Flags>
+											</Point>
+										</PointList>
+									</Curve>
+								</RTPC>
+							</RTPCList>
+						</Property>
+					</PropertyList>
+					<ReferenceList>
+						<Reference Name="Conversion">
+							<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{72C899CE-308C-4CA7-87C0-8E1504B1D757}"/>
+						</Reference>
+						<Reference Name="OutputBus">
+							<ObjectRef Name="instruments_inside" ID="{4D67557A-CB3C-4574-8DBC-4643E77C31BD}" WorkUnitID="{D8341C40-AF31-4D5B-9D65-E60D709F4609}"/>
+						</Reference>
+					</ReferenceList>
+					<ChildrenList>
+						<AudioFileSource Name="Avionics" ID="{B352E694-D1C6-48BA-B3F5-19109F24BF8C}">
+							<PropertyList>
+								<Property Name="LoopBegin" Type="Real64" Value="-0.001"/>
+								<Property Name="LoopEnd" Type="Real64" Value="-0.001"/>
+								<Property Name="TrimBegin" Type="Real64" Value="-0.001"/>
+								<Property Name="TrimEnd" Type="Real64" Value="-0.001"/>
+							</PropertyList>
+							<Language>SFX</Language>
+							<AudioFile>Avionics.wav</AudioFile>
+						</AudioFileSource>
+					</ChildrenList>
+					<ActiveSourceList>
+						<ActiveSource Name="Avionics" ID="{B352E694-D1C6-48BA-B3F5-19109F24BF8C}" Platform="Linked"/>
+					</ActiveSourceList>
+				</Sound>
+				<Sound Name="batteryrelay" ID="{68A1C375-F84E-472E-951F-6B6563EC94DC}" ShortID="273605155">
+					<PropertyList>
+						<Property Name="InitialDelay" Type="Real64">
+							<ValueList>
+								<Value>1</Value>
+							</ValueList>
+						</Property>
+						<Property Name="Volume" Type="Real64">
+							<ValueList>
+								<Value>5</Value>
+							</ValueList>
+							<RTPCList>
+								<RTPC Name="" ID="{553B767A-68E8-46E8-BB24-14E56FFF0984}" ShortID="200258420">
+									<ReferenceList>
+										<Reference Name="ControlInput">
+											<ObjectRef Name="SIMVAR_ELECTRICAL_MAIN_BUS_VOLTAGE_A4_R4" ID="{F4F99CFF-7335-4EE1-8D44-386B64FDF2F2}" WorkUnitID="{160297A3-539B-416D-BB27-309DA15AE344}"/>
+										</Reference>
+									</ReferenceList>
+									<Curve Name="" ID="{9F5848DA-9A46-4DAD-B630-74AEE2D349D3}">
+										<PropertyList>
+											<Property Name="Flags" Type="int32" Value="3"/>
+										</PropertyList>
+										<PointList>
+											<Point>
+												<XPos>0</XPos>
+												<YPos>-200</YPos>
+												<Flags>5</Flags>
+												<SegmentShape>Constant</SegmentShape>
+											</Point>
+											<Point>
+												<XPos>23.39869</XPos>
+												<YPos>-0.21716</YPos>
+												<Flags>0</Flags>
+												<SegmentShape>Constant</SegmentShape>
+											</Point>
+											<Point>
+												<XPos>100</XPos>
+												<YPos>0</YPos>
+												<Flags>37</Flags>
+											</Point>
+										</PointList>
+									</Curve>
+								</RTPC>
+							</RTPCList>
+						</Property>
+					</PropertyList>
+					<ReferenceList>
+						<Reference Name="Conversion">
+							<ObjectRef Name="Default Conversion Settings" ID="{6D1B890C-9826-4384-BF07-C15223E9FB56}" WorkUnitID="{72C899CE-308C-4CA7-87C0-8E1504B1D757}"/>
+						</Reference>
+						<Reference Name="OutputBus">
+							<ObjectRef Name="instruments_inside" ID="{4D67557A-CB3C-4574-8DBC-4643E77C31BD}" WorkUnitID="{D8341C40-AF31-4D5B-9D65-E60D709F4609}"/>
+						</Reference>
+					</ReferenceList>
+					<ChildrenList>
+						<AudioFileSource Name="batteryrelay" ID="{74C024C5-EDB0-453A-A4A7-7F78E3807F86}">
+							<PropertyList>
+								<Property Name="LoopBegin" Type="Real64" Value="-0.001"/>
+								<Property Name="LoopEnd" Type="Real64" Value="-0.001"/>
+								<Property Name="TrimBegin" Type="Real64" Value="-0.001"/>
+								<Property Name="TrimEnd" Type="Real64" Value="-0.001"/>
+							</PropertyList>
+							<Language>SFX</Language>
+							<AudioFile>batteryrelay.wav</AudioFile>
+						</AudioFileSource>
+					</ChildrenList>
+					<ActiveSourceList>
+						<ActiveSource Name="batteryrelay" ID="{74C024C5-EDB0-453A-A4A7-7F78E3807F86}" Platform="Linked"/>
 					</ActiveSourceList>
 				</Sound>
 			</ChildrenList>
