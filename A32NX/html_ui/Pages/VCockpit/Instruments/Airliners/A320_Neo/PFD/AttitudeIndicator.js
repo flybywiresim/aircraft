@@ -825,6 +825,9 @@ var Jet_PFD_FlightDirector;
         }
         refreshActiveModes() {
             var fdActive = (Simplane.getAutoPilotFlightDirectorActive(1));
+            if (fdActive && Simplane.getIsGrounded() && (Simplane.getEngineThrottleMode(0) != ThrottleMode.TOGA || Simplane.getEngineThrottleMode(1) != ThrottleMode.TOGA)) {
+                fdActive = false;
+            }
             var trkfpaMode = Simplane.getAutoPilotTRKFPAModeActive();
             this.setModeActive(0, fdActive && !trkfpaMode);
             this.setModeActive(1, trkfpaMode);
