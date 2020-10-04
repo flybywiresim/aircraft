@@ -180,7 +180,7 @@ var A320_Neo_LowerECAM_BLEED;
                 this.querySelector("#left-pack-in").textContent = parseInt(((eng1TMP - 491.67) * (5 / 9)) / 9)
                 this.querySelector("#left-pack-out").textContent = parseInt(((eng1TMP - 491.67) * (5 / 9)) / 18)
                 console.log("catch")
-            } else if (currentLeftPackState && xBleedValveOpen && eng2Running){
+            } else if (currentLeftPackState && xBleedValveOpen && eng2Running && currentEngineBleedState[1]){
                 this.querySelector("#left-pack-in").textContent = parseInt(((eng2TMP - 491.67) * (5 / 9)) / 9)
                 this.querySelector("#left-pack-out").textContent = parseInt(((eng2TMP - 491.67) * (5 / 9)) / 18)
             } else if (currentLeftPackState && currentApuBleedSate){
@@ -202,7 +202,7 @@ var A320_Neo_LowerECAM_BLEED;
             if(currentRightPackState && currentEngineBleedState[1] && eng2Running ){          
                 this.querySelector("#right-pack-in").textContent = parseInt(((eng2TMP - 491.67) * (5 / 9)) / 9) 
                 this.querySelector("#right-pack-out").textContent = parseInt(((eng2TMP - 491.67) * (5 / 9)) / 18) 
-            } else if (currentRightPackState && xBleedValveOpen && eng1Running) {
+            } else if (currentRightPackState && xBleedValveOpen && eng1Running && currentEngineBleedState[0]) {
                 this.querySelector("#right-pack-in").textContent = parseInt(((eng1TMP - 491.67) * (5 / 9)) / 9) 
                 this.querySelector("#right-pack-out").textContent = parseInt(((eng1TMP - 491.67) * (5 / 9)) / 18) 
             } else if (currentRightPackState && currentApuBleedSate && xBleedValveOpen){
