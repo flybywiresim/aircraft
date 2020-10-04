@@ -638,7 +638,7 @@ var Jet_PFD_FlightDirector;
         }
         refresh(_deltaTime) {
             if (this.headingLine != null) {
-                if (Simplane.getAltitudeAboveGround() < 30) {
+                if (Simplane.getAltitudeAboveGround(true) < 30) {
                     this.headingLine.setAttribute("transform", "translate(" + 255 + ", 0)");
                 }
                 else {
