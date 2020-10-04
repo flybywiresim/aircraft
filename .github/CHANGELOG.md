@@ -10,6 +10,8 @@
 
 1. [Sounds] Added new sounds for fuel pumps, flaps, ground roll and rattles, touchdowns, and wind - @hotshotp (Boris)
 
+1. [ECAM] Improved Fuel ECAM visuals and corrected center pump inconsistency - @wpine215 (Iceman)
+
 ## Changes from 2020/09 to 2020/10
 
 1. [General] Add CHANGELOG.md - @nathaninnes (Nathan Innes)
