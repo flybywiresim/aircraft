@@ -11,6 +11,8 @@
 5. [LIGHTS] Improved Strobe, Nav and beacon lights - @lukecologne (lukecologne)
 6. [Sounds] Added new startup sounds - @hotshotp (Boris)
 
+4. [ECAM] ELAC/SEC warning color fix, added spoiler functionality to ECAM page - @wpine215 (Iceman)
+
 ## Changes from 2020/09 to 2020/10
 1. [General] Add CHANGELOG.md - @nathaninnes (Nathan Innes)
 2. [ECAM] Improved Upper ECAM Visuals - @wpine215 (Iceman)
