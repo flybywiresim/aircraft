@@ -987,7 +987,6 @@ class A320_Neo_SAI_Brightness extends NavSystemElement {
                 this.brightnessElement.updateBrightness(new_brightness);  //TODO: Remove line on model update
             }
         }
-        //this.brightnessElement.update(_deltaTime);
     }
     onExit() {
     }
@@ -1044,7 +1043,6 @@ customElements.define('a320-neo-sai-brightness', A320_Neo_SAI_BrightnessBox);
 class A320_Neo_SAI_SelfTest extends NavSystemElement {
 
     init(root) {
-        this.getDeltaTime = A32NX_Util.createDeltaTimeCalculator();
         this.selfTestElement = this.gps.getChildById("SelfTest");
         this.getDeltaTime = A32NX_Util.createDeltaTimeCalculator();
     }
