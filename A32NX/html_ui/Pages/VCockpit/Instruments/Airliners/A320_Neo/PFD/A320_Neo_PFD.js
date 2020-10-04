@@ -321,7 +321,7 @@ class A320_Neo_PFD_Attitude extends NavSystemElement {
             }
 
             this.hsi.setAttribute("slip_skid", Simplane.getInclinometer().toString());
-            this.hsi.setAttribute("radio_altitude", Simplane.getAltitudeAboveGround().toString());
+            this.hsi.setAttribute("radio_altitude", Simplane.getAltitudeAboveGround(true).toString());
             this.hsi.setAttribute("radio_decision_height", this.gps.radioNav.getRadioDecisionHeight().toString());
             this.hsi.setAttribute("compass", compass.toString());
             this.hsi.setAttribute("show_selected_hdg", showSelectedHdg.toString());
