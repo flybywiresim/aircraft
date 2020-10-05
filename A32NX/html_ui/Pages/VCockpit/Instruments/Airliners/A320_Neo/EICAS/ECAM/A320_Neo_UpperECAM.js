@@ -789,18 +789,6 @@ var A320_Neo_UpperECAM;
                             }
                         ]
                     },
-                    {
-                        name: "MDCU",
-                        messages: [
-                            {
-                                message: "CONFIRM IRS ALIGN",
-                                level: 2,
-                                isActive: () => {
-                                    return this.getCachedSimVar("L:A320_Neo_ADIRS_IN_ALIGN", "Enum") == 0 && this.getCachedSimVar("L:A320_Neo_ADIRS_STATE", "Enum") == 1;
-                                },
-                            },
-                        ]
-                    },
                 ],
                 normal: [
                     {
