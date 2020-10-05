@@ -12,11 +12,8 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this._apCooldown = 500;
         this._lastRequestedFLCModeWaypointIndex = -1;
 
-        this._latSelected = false;
-        this._lonSelected = false;
         this._cruiseEntered = false;
         this._blockFuelEntered = false;
-        this._windDir = "HD";
     }
     get templateID() { return "A320_Neo_CDU"; }
     connectedCallback() {

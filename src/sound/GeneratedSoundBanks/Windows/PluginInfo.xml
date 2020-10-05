@@ -5,7 +5,6 @@
 		<Plugin Name="Wwise Peak Limiter" ID="7208963" DLL="AkPeakLimiter"/>
 		<Plugin Name="Wwise Flanger" ID="8192003" DLL="AkFlanger"/>
 		<Plugin Name="Wwise Guitar Distortion" ID="8257539" DLL="AkGuitarDistortion"/>
-		<Plugin Name="Wwise Convolution Reverb" ID="8323075" DLL="AkConvolutionReverb"/>
 		<Plugin Name="Wwise Meter" ID="8454147" DLL="AkSoundEngineDLL"/>
 		<Plugin Name="Wwise Recorder" ID="8650755" DLL="AkRecorder"/>
 		<Plugin Name="System" ID="11403271" DLL="DefaultSink"/>

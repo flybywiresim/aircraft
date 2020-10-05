@@ -4,9 +4,17 @@
 <!-- Use the following format below -->
 <!--  1. [Changed Area] Title of changes - @github username (Name)  -->
 ## Changes from 2020/10 to 2020/11
+1. [ND] Change ND Sizing - @nathaninnes (Nathan Innes)
+2. [GPWS] Added Pull Up, Sink Rate, Dont sink GPWS with Default Sounds & Added (Too low) terrain, flaps and gear without Sounds (Future PR by Boris) - @oliverpope03 (Oliver Pope)
+3. [Sounds] Added new sounds for fuel pumps, flaps, ground roll and rattles, touchdowns, and wind - @hotshotp (Boris)
+4. [ND] Hide the aircraft indicator in PLAN mode while ADIRS are not aligned - @lousybyte (lousybyte)
+5. [LIGHTS] Improved Strobe, Nav and beacon lights - @lukecologne (lukecologne)
+6. [Sounds] Added new startup sounds - @hotshotp (Boris)
+7. [ECAM] ELAC/SEC warning color fix, added spoiler functionality to ECAM page - @wpine215 (Iceman)
+8. [OVHD] Implemented missing functionality for multiple overhead buttons and switches - @wpine215 (Iceman)
+1. [CDU] Revised INIT A & B Page - @lucky38i (Lucky38i)
 
 ## Changes from 2020/09 to 2020/10
-
 1. [General] Add CHANGELOG.md - @nathaninnes (Nathan Innes)
 2. [ECAM] Improved Upper ECAM Visuals - @wpine215 (Iceman)
 3. [TEXTURES] Changed roughness of glareshield - @Pleasure (Pleasure)
@@ -18,5 +26,6 @@
 9. [ND] Add DME distances, VOR/ADF needles and functioning ADF2 - @blitzcaster (bltzcstr)
 10. [OVHD] Fixed Battery Indicator Colour - @nathaninnes (Nathan Innes)
 11. [MISC] Removed Fuel Patch from MSFS Update 1.8.3 - @nathaninnes (Nathan Innes)
-1. [CDU] Revised INIT A Page - @lucky38i (Lucky38i)
-1. [CDU] Revised INIT B Page - @lucky38i (lucky38i)
+1. [OVHD] Fixed Battery Indicator Colour - @nathaninnes (Nathan Innes)
+10. [OVHD] Fixed Battery Indicator Colour - @nathaninnes (Nathan Innes)
+11. [MISC] Removed Fuel Patch from MSFS Update 1.8.3 - @nathaninnes (Nathan Innes)

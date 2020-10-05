@@ -237,7 +237,8 @@ class CDUInitPage {
 
         let taxiFuelCell = "{smallFront}0.4{smallEnd}";
         if (isFinite(mcdu.taxiFuelWeight)) {
-            taxiFuelCell = mcdu.taxiFuelWeight.toFixed(1);
+            if (mcdu._taxiEntered) taxiFuelCell = mcdu.taxiFuelWeight.toFixed(1);
+            else taxiFuelCell = "{smallFront}" + mcdu.taxiFuelWeight.toFixed(1) + "{smallEnd}";
         }
         mcdu.onLeftInput[0] = async () => {
             let value = mcdu.inOut;
@@ -297,7 +298,6 @@ class CDUInitPage {
             mcdu._blockFuelEntered
         ) {
             initBTitle = "INIT FUEL PREDICTION ↔";
-            taxiFuelCell = "0.2";
 
             if (isFinite(mcdu.blockFuel)) {
                 fuelPlanTopTitle = "";
