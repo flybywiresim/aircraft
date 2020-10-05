@@ -19,6 +19,7 @@
 1. [ECAM] Added engine FADEC power supply logic - @tyler58546 (tyler58546)
 1. [ECAM] Improved lower engine ECAM - @lousybyte (lousybyte)
 1. [CDU] Add "Closest Airports" page - @lhoenig (Lukas Hoenig)
+1. [PFD] Fixed FD bars appearing on PFD when on the ground - @Curtis-VL (Curtis)
 
 ## 2020/09
 1. [General] Add CHANGELOG.md - @nathaninnes (Nathan Innes)
