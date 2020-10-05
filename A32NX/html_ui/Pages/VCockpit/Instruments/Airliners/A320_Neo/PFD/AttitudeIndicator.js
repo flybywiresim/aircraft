@@ -638,15 +638,16 @@ var Jet_PFD_FlightDirector;
         }
         refresh(_deltaTime) {
             if (this.headingLine != null) {
-                let currentPlaneBank = Simplane.getBank();
-                let currentFDBank = Simplane.getFlightDirectorBank();
-                let altAboveGround = Simplane.getAltitudeAboveGround();
-                if (altAboveGround > 0 && altAboveGround < 10) {
-                    currentFDBank = 0;
+                if (Simplane.getAltitudeAboveGround(true) < 30) {
+                    this.headingLine.setAttribute("transform", "translate(" + 255 + ", 0)");
                 }
-                this._fdBank += (currentFDBank - this._fdBank) * Math.min(1.0, _deltaTime * 0.001);
-                var lineX = Math.max(-1.0, Math.min(1.0, (currentPlaneBank - this._fdBank) / this.getFDBankLimit())) * this.getFDBankDisplayLimit();
-                this.headingLine.setAttribute("transform", "translate(" + lineX + ", 0)");
+                else {
+                    let currentPlaneBank = Simplane.getBank();
+                    let currentFDBank = Simplane.getFlightDirectorBank();
+                    this._fdBank += (currentFDBank - this._fdBank) * Math.min(1.0, _deltaTime * 0.001);
+                    var lineX = Math.max(-1.0, Math.min(1.0, (currentPlaneBank - this._fdBank) / this.getFDBankLimit())) * this.getFDBankDisplayLimit();
+                    this.headingLine.setAttribute("transform", "translate(" + lineX + ", 0)");
+                }
             }
             if (this.pitchLine != null) {
                 let currentPlanePitch = Simplane.getPitch();
@@ -819,7 +820,12 @@ var Jet_PFD_FlightDirector;
             this.displayMode.push(new FPD_Airbus(_group));
         }
         refreshActiveModes() {
-            var fdActive = (Simplane.getAutoPilotFlightDirectorActive(1));
+            const url = document.getElementsByTagName("a320-neo-pfd-element")[0].getAttribute("url");
+            const index = parseInt(url.substring(url.length-1));
+            var fdActive = (Simplane.getAutoPilotFlightDirectorActive(index));
+            if (fdActive && Simplane.getIsGrounded() && (Simplane.getEngineThrottleMode(0) != ThrottleMode.TOGA || Simplane.getEngineThrottleMode(1) != ThrottleMode.TOGA)) {
+                fdActive = false;
+            }
             var trkfpaMode = Simplane.getAutoPilotTRKFPAModeActive();
             this.setModeActive(0, fdActive && !trkfpaMode);
             this.setModeActive(1, trkfpaMode);

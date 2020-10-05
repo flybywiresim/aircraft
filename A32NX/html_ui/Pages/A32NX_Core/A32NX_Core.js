@@ -6,6 +6,8 @@ class A32NX_Core {
             new A32NX_BrakeTemp(),
             new A32NX_Electricity(),
             new A32NX_LocalVarUpdater(),
+            new A32NX_FADEC(1),
+            new A32NX_FADEC(2),
             new A32NX_GPWS(),
         ];
     }
