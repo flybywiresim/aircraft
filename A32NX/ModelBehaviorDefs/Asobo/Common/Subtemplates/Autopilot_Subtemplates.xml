@@ -731,10 +731,18 @@
 					<Case Value="A320">
 						<UseTemplate Name="ASOBO_GT_Knob_Infinite_PushPull">
 							<ANTICLOCKWISE_CODE>
-								#BARO_ID# (&gt;K:KOHLSMAN_DEC)
+							    (L:XMLVAR_Baro_Selector_HPA_#BARO_ID#) if{ 
+							        #BARO_ID# (A:KOHLSMAN SETTING MB:1, mbars) -- 16 * (&gt;K:2:KOHLSMAN_SET)
+							    } els{ 
+							        #BARO_ID# (&gt;K:KOHLSMAN_DEC) 
+							    }
 							</ANTICLOCKWISE_CODE>
 							<CLOCKWISE_CODE>
-								#BARO_ID# (&gt;K:KOHLSMAN_INC)
+							    (L:XMLVAR_Baro_Selector_HPA_#BARO_ID#) if{ 
+							        #BARO_ID# (A:KOHLSMAN SETTING MB:1, mbars) ++ 16 * (&gt;K:2:KOHLSMAN_SET)
+							    } els{ 
+							        #BARO_ID# (&gt;K:KOHLSMAN_INC) 
+							    }
 							</CLOCKWISE_CODE>
 							<CLOCKWISE_CONDITION>(L:XMLVAR_Baro#BARO_ID#_Mode) #MODE_STD# !=</CLOCKWISE_CONDITION>
 							<ANTICLOCKWISE_CONDITION>(L:XMLVAR_Baro#BARO_ID#_Mode) #MODE_STD# !=</ANTICLOCKWISE_CONDITION>
