@@ -20,6 +20,7 @@
 1. [ECAM] Improved lower engine ECAM - @lousybyte (lousybyte)
 1. [CDU] Add "Closest Airports" page - @lhoenig (Lukas Hoenig)
 1. [PFD] Fixed FD bars appearing on PFD when on the ground - @Curtis-VL (Curtis)
+1. [Systems] Pitot heating should now be active while engines are running - @lousybyte (lousybyte)
 
 ## 2020/09
 1. [General] Add CHANGELOG.md - @nathaninnes (Nathan Innes)
