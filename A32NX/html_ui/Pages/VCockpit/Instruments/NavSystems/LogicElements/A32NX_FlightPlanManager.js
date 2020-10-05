@@ -582,9 +582,9 @@ class FlightPlanManager {
         if (useCorrection && this._isGoingTowardPreviousActiveWaypoint) {
             return this.getPreviousActiveWaypoint(forceSimVarCall);
         }
+        let ident = this.getActiveWaypointIdent(forceSimVarCall);
         if (!this.isActiveApproach()) {
-            let index = this.getGPSActiveWaypointIndex(forceSimVarCall);
-            let waypoint = this.getWaypoints()[index];
+            let waypoint = this.getWaypoints().find(w => { return (w && w.ident === ident); });
             if (waypoint) {
                 if (useCorrection && (this._activeWaypointIdentHasChanged || this._gpsActiveWaypointIndexHasChanged)) {
                     return this.getPreviousActiveWaypoint(forceSimVarCall);
@@ -592,7 +592,6 @@ class FlightPlanManager {
                 return waypoint;
             }
         }
-        let ident = this.getActiveWaypointIdent(forceSimVarCall);
         if (this.isActiveApproach()) {
             let waypoint = this.getApproachWaypoints().find(w => { return (w && w.ident === ident); });
             return waypoint;

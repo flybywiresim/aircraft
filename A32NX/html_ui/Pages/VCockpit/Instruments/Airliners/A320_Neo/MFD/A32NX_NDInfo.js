@@ -558,7 +558,7 @@ class VORDMENavAid {
                 if (showDistance) {
                     this.distanceText.textContent = fastToFixed(this.distanceValue, 1);
                 } else {
-                    this.distanceText.textContent = "---.-";
+                    this.distanceText.textContent = "---";
                 }
                 this.distanceText.style.display = displayStr;
             }
