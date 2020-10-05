@@ -17,6 +17,7 @@
 11. [ECAM] Improved Fuel ECAM visuals and corrected center pump inconsistency - @wpine215 (Iceman)
 12. [MISC] Separated Captian and F/O displays - @tyler58546 (tyler58546)
 13. [ECAM] Added engine FADEC power supply logic - @tyler58546 (tyler58546)
+14. [ECAM] Improved lower engine ECAM - @lousybyte (lousybyte)
 
 ## Changes from 2020/09 to 2020/10
 1. [General] Add CHANGELOG.md - @nathaninnes (Nathan Innes)
