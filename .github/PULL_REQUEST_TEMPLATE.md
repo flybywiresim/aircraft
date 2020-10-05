@@ -14,6 +14,9 @@ Fixes #[issue_no]
 **References**
 <!-- You should be making changes based on some kind reference (manuals, videos, IRL photos). P3D/xplane/fsx references will only be accepted if we believe that one cannot reasonably obtain a better source. Please post screenshots of the references you used. Ask around in the discord for how to find references for what you are working on. Exceptions will probably be made for IRL A320 pilots and engineers. -->
 
+<!-- If you are making a pull request related to the MCDU, please make sure you are ONLY referencing the Honeywell Pegasus Step 1A (Rev 0), 2009 edition manual. -->
+<!-- If you do not have this manual, please ask on our discord for assistance -->
+
 **Additional context**
 <!-- Add any other context about the pull request here. -->
 
