@@ -762,7 +762,7 @@ var A320_Neo_UpperECAM;
                     },
                     {
                         name: "BRAKES",
-                        messages: [
+                        messages : [
                             {
                                 message: "HOT",
                                 id: "brakes_hot",
@@ -779,6 +779,17 @@ var A320_Neo_UpperECAM;
                                     {
                                         style: "blue",
                                         message: "&nbsp;-DELAY T.O FOR COOL"
+                                    }
+                                ]
+                            },
+                            {
+                                message: "A/SKID N/WS OFF",
+                                level: 2,
+                                isActive: () => SimVar.GetSimVarValue("ANTISKID BRAKES ACTIVE", "Bool") === 0,
+                                actions: [
+                                    {
+                                        style: "blue",
+                                        message: "&nbsp;MAX BRK PR......1000PSI"
                                     }
                                 ]
                             }
