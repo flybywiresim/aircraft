@@ -820,7 +820,9 @@ var Jet_PFD_FlightDirector;
             this.displayMode.push(new FPD_Airbus(_group));
         }
         refreshActiveModes() {
-            var fdActive = (Simplane.getAutoPilotFlightDirectorActive(1));
+            const url = document.getElementsByTagName("a320-neo-pfd-element")[0].getAttribute("url");
+            const index = parseInt(url.substring(url.length-1));
+            var fdActive = (Simplane.getAutoPilotFlightDirectorActive(index));
             if (fdActive && Simplane.getIsGrounded() && (Simplane.getEngineThrottleMode(0) != ThrottleMode.TOGA || Simplane.getEngineThrottleMode(1) != ThrottleMode.TOGA)) {
                 fdActive = false;
             }
