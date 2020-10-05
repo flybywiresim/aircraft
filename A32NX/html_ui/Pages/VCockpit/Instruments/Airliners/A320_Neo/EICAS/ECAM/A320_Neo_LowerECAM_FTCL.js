@@ -45,10 +45,25 @@ let A320_Neo_LowerECAM_FTCL;
             this.leftElevatorCursor = this.querySelector("#leftElevatorCursor");
             this.rightElevatorCursor = this.querySelector("#rightElevatorCursor");
 
-            //Rudder
+            // Rudder
             this.rudderCursor = this.querySelector("#rudderCursor");
             this.rudderLeftMaxAngle = this.querySelector("#rudderLeftMaxAngle");
             this.rudderRightMaxAngle = this.querySelector("#rudderRightMaxAngle");
+
+            // Spoiler arrows
+            this.spoiler_arrow5_left = this.querySelector("#arrow5_left");
+            this.spoiler_arrow4_left = this.querySelector("#arrow4_left");
+            this.spoiler_arrow3_left = this.querySelector("#arrow3_left");
+            this.spoiler_arrow2_left = this.querySelector("#arrow2_left");
+            this.spoiler_arrow1_left = this.querySelector("#arrow1_left");
+            this.spoiler_arrow5_right = this.querySelector("#arrow5_right");
+            this.spoiler_arrow4_right = this.querySelector("#arrow4_right");
+            this.spoiler_arrow3_right = this.querySelector("#arrow3_right");
+            this.spoiler_arrow2_right = this.querySelector("#arrow2_right");
+            this.spoiler_arrow1_right = this.querySelector("#arrow1_right");
+
+            // Spoiler text
+            this.spoilertext = this.querySelector("#speedbrake_text");
 
             this.hydraulicsAvailable = true;
 
@@ -61,7 +76,6 @@ let A320_Neo_LowerECAM_FTCL;
             }
 
             // Update hydraulics available state
-
             const hydraulicsShouldBeAvailable = SimVar.GetSimVarValue("ENG COMBUSTION:1", "Bool") === 0 && SimVar.GetSimVarValue("ENG COMBUSTION:2", "Bool") === 0
 
             if (hydraulicsShouldBeAvailable !== this.hydraulicsAvailable) {
@@ -71,10 +85,10 @@ let A320_Neo_LowerECAM_FTCL;
             }
 
             // Update pitch trim
-
             let rawPitchTrim = SimVar.GetSimVarValue("ELEVATOR TRIM INDICATOR", "Position 16k") / 1213.6296;
 
-            if (rawPitchTrim > 16384.0) { // Cap pitch trim at 13.5 up, 4 down
+            // Cap pitch trim at 13.5 up, 4 down
+            if (rawPitchTrim > 16384.0) {
                 rawPitchTrim = 16384.0;
             } else if (rawPitchTrim < -4854) {
                 rawPitchTrim = -4854;
@@ -94,21 +108,18 @@ let A320_Neo_LowerECAM_FTCL;
             }
 
             // Update left aileron
-
             const leftAileronDeflectPct = SimVar.GetSimVarValue("AILERON LEFT DEFLECTION PCT", "percent over 100");
             let leftAileronDeflectPctNormalized = leftAileronDeflectPct * 54;
             let laCursorPath = "M73," + (204 + leftAileronDeflectPctNormalized) + " l15,-7 l0,14Z";
             this.leftAileronCursor.setAttribute("d", laCursorPath);
 
             // Update right aileron
-
             const rightAileronDeflectPct = SimVar.GetSimVarValue("AILERON RIGHT DEFLECTION PCT", "percent over 100");
             let rightAileronDeflectPctNormalized = rightAileronDeflectPct * 54;
             let raCursorPath = "M527," + (204 - rightAileronDeflectPctNormalized) + " l-15,-7 l0,14Z";
             this.rightAileronCursor.setAttribute("d", raCursorPath);
 
             // Update left/right elevators
-
             const elevatorDeflectPct = SimVar.GetSimVarValue("ELEVATOR DEFLECTION PCT", "percent over 100");
             let elevatorDeflectPctNormalized = elevatorDeflectPct * 52;
             let leCursorPath = "M169," + (398 - elevatorDeflectPctNormalized) + " l15,-7 l0,14Z";
@@ -117,13 +128,11 @@ let A320_Neo_LowerECAM_FTCL;
             this.rightElevatorCursor.setAttribute("d", reCursorPath);
 
             // Update rudder
-
             const rudderDeflectPct = SimVar.GetSimVarValue("RUDDER DEFLECTION PCT", "percent over 100");
             const rudderAngle = -rudderDeflectPct * 25;
             this.rudderCursor.setAttribute("transform", `rotate(${rudderAngle} 300 380)`);
 
-            //Update Rudder limits
-
+            // Update rudder limits
             const IndicatedAirspeed = SimVar.GetSimVarValue("AIRSPEED INDICATED", "knots");
             let MaxAngleNorm = 1;
             if(IndicatedAirspeed > 380){
@@ -136,7 +145,6 @@ let A320_Neo_LowerECAM_FTCL;
             this.rudderRightMaxAngle.setAttribute("transform", `rotate(${26.4 * (1-MaxAngleNorm)} 300 385)`)
 
             // Update ELAC's and SEC's
-
             const elac1_On = SimVar.GetSimVarValue("FLY BY WIRE ELAC SWITCH:1", "boolean");
             const elac2_On = SimVar.GetSimVarValue("FLY BY WIRE ELAC SWITCH:2", "boolean");
             const elac1_Failed = SimVar.GetSimVarValue("FLY BY WIRE ELAC FAILED:1", "boolean");
@@ -186,7 +194,87 @@ let A320_Neo_LowerECAM_FTCL;
             } else {
                 this.sec3Shape.setAttribute("class", "MainShapeWarning");
                 this.sec3Num.setAttribute("class", "Value15Warning");
-            }
+            } 
+
+            if (this.hydraulicsAvailable) {
+                // Show hydraulic numbers and hide everything else
+                this.spoilertext.setAttribute("visibility", "visible");
+                this.spoiler_arrow5_left.setAttribute("visibility", "hidden");
+                this.spoiler_arrow4_left.setAttribute("visibility", "hidden");
+                this.spoiler_arrow3_left.setAttribute("visibility", "hidden");
+                this.spoiler_arrow2_left.setAttribute("visibility", "hidden");
+                this.spoiler_arrow1_left.setAttribute("visibility", "hidden");
+                this.spoiler_arrow5_right.setAttribute("visibility", "hidden");
+                this.spoiler_arrow4_right.setAttribute("visibility", "hidden");
+                this.spoiler_arrow3_right.setAttribute("visibility", "hidden");
+                this.spoiler_arrow2_right.setAttribute("visibility", "hidden");
+                this.spoiler_arrow1_right.setAttribute("visibility", "hidden");
+            } else {
+                // Update spoiler variables
+                const spoilersArmed = SimVar.GetSimVarValue("SPOILERS ARMED", "boolean");
+                const leftSpoilerDeflectPct = SimVar.GetSimVarValue("SPOILERS LEFT POSITION", "percent over 100");
+                const rightSpoilerDeflectPct = SimVar.GetSimVarValue("SPOILERS RIGHT POSITION", "percent over 100");
+                const planeOnGround = SimVar.GetSimVarValue("SIM ON GROUND", "boolean");
+                const eng1_mode = SimVar.GetSimVarValue("GENERAL ENG THROTTLE MANAGED MODE:1", "number");
+                const eng2_mode = SimVar.GetSimVarValue("GENERAL ENG THROTTLE MANAGED MODE:2", "number");
+                const gspeed = SimVar.GetSimVarValue("SURFACE RELATIVE GROUND SPEED", "feet_per_second");
+
+                // Disable hydraulic numbers
+                this.spoilertext.setAttribute("visibility", "hidden");
+
+                // Update left speedbrakes and aileron
+                if (leftSpoilerDeflectPct > 0.07) {
+                    if (leftAileronDeflectPct < -0.05) {
+                        this.spoiler_arrow5_left.setAttribute("visibility", "visible");
+                    } else {
+                        this.spoiler_arrow5_left.setAttribute("visibility", "hidden");
+                    }
+                    this.spoiler_arrow4_left.setAttribute("visibility", "visible");
+                    this.spoiler_arrow3_left.setAttribute("visibility", "visible");
+                    this.spoiler_arrow2_left.setAttribute("visibility", "visible");
+                } else {
+                    this.spoiler_arrow5_left.setAttribute("visibility", "hidden");
+                    this.spoiler_arrow4_left.setAttribute("visibility", "hidden");
+                    this.spoiler_arrow3_left.setAttribute("visibility", "hidden");
+                    this.spoiler_arrow2_left.setAttribute("visibility", "hidden");
+                }
+
+                // Update right speedbrakes and aileron
+                if (rightSpoilerDeflectPct > 0.07) {
+                    if (rightAileronDeflectPct > 0.05) {
+                        this.spoiler_arrow5_right.setAttribute("visibility", "visible");
+                    } else {
+                        this.spoiler_arrow5_right.setAttribute("visibility", "hidden");
+                    }
+                    this.spoiler_arrow4_right.setAttribute("visibility", "visible");
+                    this.spoiler_arrow3_right.setAttribute("visibility", "visible");
+                    this.spoiler_arrow2_right.setAttribute("visibility", "visible");
+                } else {
+                    this.spoiler_arrow5_right.setAttribute("visibility", "hidden");
+                    this.spoiler_arrow4_right.setAttribute("visibility", "hidden");
+                    this.spoiler_arrow3_right.setAttribute("visibility", "hidden");
+                    this.spoiler_arrow2_right.setAttribute("visibility", "hidden");
+                }
+
+                // Ground spoilers deployed
+                if (spoilersArmed && planeOnGround && gspeed > 45 && eng1_mode <= 2 && eng2_mode <= 2) {
+                    if (leftSpoilerDeflectPct > 0.0625) {
+                        this.spoiler_arrow1_left.setAttribute("visibility", "visible");
+                        this.spoiler_arrow5_left.setAttribute("visibility", "visible");
+                    } else {
+                        this.spoiler_arrow1_left.setAttribute("visibility", "hidden");
+                    }
+                    if (rightSpoilerDeflectPct > 0.0625) {
+                        this.spoiler_arrow1_right.setAttribute("visibility", "visible");
+                        this.spoiler_arrow5_right.setAttribute("visibility", "visible");
+                    } else {
+                        this.spoiler_arrow1_right.setAttribute("visibility", "hidden");
+                    }
+                } else {
+                    this.spoiler_arrow1_left.setAttribute("visibility", "hidden");
+                    this.spoiler_arrow1_right.setAttribute("visibility", "hidden");
+                }
+            }  
         }
 
         /**
