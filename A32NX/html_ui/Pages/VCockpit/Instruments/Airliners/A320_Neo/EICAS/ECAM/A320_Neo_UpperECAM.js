@@ -1349,7 +1349,7 @@ var A320_Neo_UpperECAM;
         }
         update(_deltaTime) {
             if (this.allGauges != null) {
-                const active = SimVar.GetSimVarValue("L:A32NX_FADEC_POWERED_ENG"+(this.index+1), "Bool") == 1;
+                const active = SimVar.GetSimVarValue("L:A32NX_FADEC_POWERED_ENG"+(this.index + 1), "Bool") == 1;
                 for (var i = 0; i < this.allGauges.length; ++i) {
                     if (this.allGauges[i] != null) {
                         this.allGauges[i].active = active;
