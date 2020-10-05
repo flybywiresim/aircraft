@@ -136,6 +136,7 @@ var A320_Neo_LowerECAM_WHEEL;
                     ],
                     autobrake: {
                         element: this.querySelector("#autobrake-element"),
+                        title: this.querySelector("#autobrake-title"),
                         quantity: {
                             min: this.querySelector("#autobrake-quantity-min"),
                             med: this.querySelector("#autobrake-quantity-med"),
@@ -172,6 +173,9 @@ var A320_Neo_LowerECAM_WHEEL;
                     nwSteering: this.querySelector("#center-nw-steering"),
                     lgCtl: this.querySelector("#center-lg-ctl"),
                     antiSkid: this.querySelector("#center-anti-skid"),
+                    normBrk: this.querySelector("#center-norm-brk"),
+                    altnBrk: this.querySelector("#center-altn-brk"),
+                    accuOnly: this.querySelector("#center-accu-only"),
                 }
             }
 
@@ -264,9 +268,23 @@ var A320_Neo_LowerECAM_WHEEL;
             if (state) {
                 this.view.spoilers.numbers.forEach(number => this.hide(number));
                 this.view.spoilers.lines.forEach(line => this.makeGreen(line));
+
+                this.hide(this.view.center.normBrk);
+                this.hide(this.view.center.altnBrk);
+                this.hide(this.view.center.accuOnly);
+
+                this.hide(this.view.brakes.autobrake.title);
+                this.makeGreen(this.view.brakes.autobrake.title);
             } else {
                 this.view.spoilers.numbers.forEach(number => this.show(number));
                 this.view.spoilers.lines.forEach(line => this.makeAmber(line));
+
+                this.show(this.view.center.normBrk);
+                this.show(this.view.center.altnBrk);
+                this.show(this.view.center.accuOnly);
+
+                this.makeAmber(this.view.brakes.autobrake.title);
+                this.show(this.view.brakes.autobrake.title);
             }
         }
 
