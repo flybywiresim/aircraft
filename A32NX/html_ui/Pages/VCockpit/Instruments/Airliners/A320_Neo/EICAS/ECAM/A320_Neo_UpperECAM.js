@@ -1349,7 +1349,7 @@ var A320_Neo_UpperECAM;
         }
         update(_deltaTime) {
             if (this.allGauges != null) {
-                var active = A320_Neo_ECAM_Common.isEngineDisplayActive(this.index + 1);
+                const active = SimVar.GetSimVarValue("L:A32NX_FADEC_POWERED_ENG"+(this.index + 1), "Bool") == 1;
                 for (var i = 0; i < this.allGauges.length; ++i) {
                     if (this.allGauges[i] != null) {
                         this.allGauges[i].active = active;
@@ -1564,10 +1564,10 @@ var A320_Neo_UpperECAM;
         }
         update(_deltaTime) {
             if (this.leftComponent != null) {
-                this.leftComponent.refresh(A320_Neo_ECAM_Common.isEngineDisplayActive(1), this.getValue(1), this.getValueStringPrecision());
+                this.leftComponent.refresh((SimVar.GetSimVarValue("L:A32NX_FADEC_POWERED_ENG1", "Bool") == 1), this.getValue(1), this.getValueStringPrecision());
             }
             if (this.rightComponent != null) {
-                this.rightComponent.refresh(A320_Neo_ECAM_Common.isEngineDisplayActive(2), this.getValue(2), this.getValueStringPrecision());
+                this.rightComponent.refresh((SimVar.GetSimVarValue("L:A32NX_FADEC_POWERED_ENG2", "Bool") == 1), this.getValue(2), this.getValueStringPrecision());
             }
         }
         getValueStringPrecision() { return 0; }

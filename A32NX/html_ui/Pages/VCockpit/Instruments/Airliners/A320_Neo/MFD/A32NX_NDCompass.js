@@ -125,9 +125,9 @@ class Jet_MFD_NDCompass extends Jet_NDCompass {
                     for (let i = 0; i < dashSpacing; i++) {
                         let line = document.createElementNS(Avionics.SVG.NS, "line");
                         let bIsBig = (i % 2 == 0) ? true : false;
-                        let length = (bIsBig) ? 16 : 8.5;
+                        let length = (bIsBig) ? 17 : 8.5;
                         let lineStart = 50 + circleRadius;
-                        let lineEnd = 50 + circleRadius + length;
+                        let lineEnd = 55 + circleRadius + length;
                         let degrees = (radians / Math.PI) * 180;
                         line.setAttribute("x1", "50");
                         line.setAttribute("y1", lineStart.toString());
@@ -142,7 +142,7 @@ class Jet_MFD_NDCompass extends Jet_NDCompass {
                             text.setAttribute("x", "50");
                             text.setAttribute("y", (-(circleRadius - 50 + length + 10)).toString());
                             text.setAttribute("fill", "white");
-                            text.setAttribute("font-size", (i % 3 == 0) ? "28" : "20");
+                            text.setAttribute("font-size", (i % 3 == 0) ? "36" : "20");
                             text.setAttribute("font-family", "Roboto-Bold");
                             text.setAttribute("text-anchor", "middle");
                             text.setAttribute("alignment-baseline", "bottom");
