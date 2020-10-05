@@ -951,24 +951,29 @@
 						<SEQ1_EMISSIVE_DRIVES_VISIBILITY>False</SEQ1_EMISSIVE_DRIVES_VISIBILITY>
 					</DefaultTemplateParameters>
 
-					<UseTemplate Name="A32NX_Push_BARO_Dummy_Template">
+					<UseTemplate Name="A32NX_Push_BARO_Template">
 						<NODE_ID>PUSH_BARO_BUGS</NODE_ID>
+						<TOOLTIPID>Toggle ISI Bugs</TOOLTIPID>
 						<ONLY_SEQ1/>
 					</UseTemplate>
-					<UseTemplate Name="A32NX_Push_BARO_Dummy_Template">
+					<UseTemplate Name="A32NX_Push_BARO_Template">
 						<NODE_ID>PUSH_BARO_LS</NODE_ID>
+						<TOOLTIPID>Inop.</TOOLTIPID>
 						<ONLY_SEQ1/>
 					</UseTemplate>
-					<UseTemplate Name="A32NX_Push_BARO_PLUS_Template">
+					<UseTemplate Name="A32NX_Push_BARO_Template">
 						<NODE_ID>PUSH_BARO_PLUS</NODE_ID>
+						<TOOLTIPID>Increase ISI brightness</TOOLTIPID>
 						<ONLY_SEQ1/>
 					</UseTemplate>
-					<UseTemplate Name="A32NX_Push_BARO_MINUS_Template">
+					<UseTemplate Name="A32NX_Push_BARO_Template">
 						<NODE_ID>PUSH_BARO_MINUS</NODE_ID>
+						<TOOLTIPID>Decrease ISI brightness</TOOLTIPID>
 						<ONLY_SEQ1/>
 					</UseTemplate>
-					<UseTemplate Name="A32NX_Push_BARO_RST_Template">
+					<UseTemplate Name="A32NX_Push_BARO_Template">
 						<NODE_ID>PUSH_BARO_RST</NODE_ID>
+						<TOOLTIPID>Reset ISI Attitude</TOOLTIPID>
 						<ONLY_SEQ1/>
 					</UseTemplate>
 				</Component>
