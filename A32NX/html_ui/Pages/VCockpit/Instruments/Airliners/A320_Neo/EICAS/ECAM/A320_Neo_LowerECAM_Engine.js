@@ -50,30 +50,33 @@ var A320_Neo_LowerECAM_Engine;
             this.updateIGN();
         }
         updateIGN() {
-            var ignLeftTargetState = A320_Neo_LowerECAM_Engine.Definitions.IGN_STATE.NONE;
+            let ignLeftTargetState = A320_Neo_LowerECAM_Engine.Definitions.IGN_STATE.NONE;
             let engineStarting = (SimVar.GetSimVarValue("GENERAL ENG STARTER:1", "bool") === 1) ? true : false;
-            var n2Igniting = (SimVar.GetSimVarValue("TURB ENG IS IGNITING:1", "bool") === 1) ? true : false;
-            var n2Percent = SimVar.GetSimVarValue("ENG N2 RPM:1", "percent");
+            let n2Igniting = (SimVar.GetSimVarValue("TURB ENG IS IGNITING:1", "bool") === 1) ? true : false;
+            let n2Percent = SimVar.GetSimVarValue("ENG N2 RPM:1", "percent");
             if (engineStarting && n2Igniting && n2Percent > 18 && n2Percent < 55) {
-                if (this.ignRightCurrentState == A320_Neo_LowerECAM_Engine.Definitions.IGN_STATE.A)
+                if (this.ignRightCurrentState == A320_Neo_LowerECAM_Engine.Definitions.IGN_STATE.A) {
                     ignLeftTargetState = A320_Neo_LowerECAM_Engine.Definitions.IGN_STATE.B;
-                else
+                } else {
                     ignLeftTargetState = A320_Neo_LowerECAM_Engine.Definitions.IGN_STATE.A;
+                }
             }
-            var ignRightTargetState = A320_Neo_LowerECAM_Engine.Definitions.IGN_STATE.NONE;
+            let ignRightTargetState = A320_Neo_LowerECAM_Engine.Definitions.IGN_STATE.NONE;
             engineStarting = (SimVar.GetSimVarValue("GENERAL ENG STARTER:2", "bool") === 1) ? true : false;
             n2Igniting = (SimVar.GetSimVarValue("TURB ENG IS IGNITING:2", "bool") === 1) ? true : false;
             n2Percent = SimVar.GetSimVarValue("ENG N2 RPM:2", "percent");
             if (engineStarting && n2Igniting && n2Percent > 18 && n2Percent < 55) {
-                if (this.ignLeftCurrentState == A320_Neo_LowerECAM_Engine.Definitions.IGN_STATE.A)
+                if (this.ignLeftCurrentState == A320_Neo_LowerECAM_Engine.Definitions.IGN_STATE.A) {
                     ignRightTargetState = A320_Neo_LowerECAM_Engine.Definitions.IGN_STATE.B;
-                else
+                } else {
                     ignRightTargetState = A320_Neo_LowerECAM_Engine.Definitions.IGN_STATE.A;
+                }
             }
             var ignNeedRefreshTitle = false;
             if (ignLeftTargetState != this.ignLeftCurrentState) {
-                if (ignLeftTargetState != A320_Neo_LowerECAM_Engine.Definitions.IGN_STATE.NONE)
+                if (ignLeftTargetState != A320_Neo_LowerECAM_Engine.Definitions.IGN_STATE.NONE) {
                     this.ignLeftCurrentState = ignLeftTargetState;
+                }
                 if (this.ignLeftValueText != null) {
                     this.ignLeftValueText.textContent = this.getIGNStringFromState(ignLeftTargetState);
                 }
