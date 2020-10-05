@@ -161,3 +161,7 @@
 - A32NX_VENTILATION_CABFANS_TOGGLE
     - Bool
     - True if cabin fans on/auto
+
+- A32NX_PITOT_HEAT_AUTO
+    - Bool
+    - True if pitot heating auto
