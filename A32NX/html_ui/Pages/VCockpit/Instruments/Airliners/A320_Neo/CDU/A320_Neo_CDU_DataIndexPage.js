@@ -17,10 +17,6 @@ class CDUDataIndexPage {
             ["<POINT", "FUNCTION>"]
         ])
 
-        mcdu.onLeftInput[3] = () => {
-            CDUIdentPage.ShowPage(mcdu);
-        }
-
         mcdu.onLeftInput[0] = () => {
             CDUPositionMonitorPage.ShowPage(mcdu);
         }
@@ -31,6 +27,14 @@ class CDUDataIndexPage {
 
         mcdu.onLeftInput[2] = () => {
             CDUGPSMonitor.ShowPage(mcdu)
+        }
+
+        mcdu.onLeftInput[3] = () => {
+            CDUIdentPage.ShowPage(mcdu);
+        }
+
+        mcdu.onLeftInput[4] = () => {
+            CDUAirportsMonitor.ShowPage(mcdu, true)
         }
 
         mcdu.onNextPage = () => {

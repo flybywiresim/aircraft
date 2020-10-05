@@ -85,9 +85,12 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
         this.map.instrument.smallAirportMaxRange = Infinity;
         this.map.instrument.medAirportMaxRange = Infinity;
         this.map.instrument.largeAirportMaxRange = Infinity;
-        SimVar.SetSimVarValue("L:A320_Neo_MFD_NAV_MODE", "number", 3);
+        SimVar.SetSimVarValue("L:A320_Neo_MFD_NAV_MODE_1", "number", 3);
+        SimVar.SetSimVarValue("L:A320_Neo_MFD_NAV_MODE_2", "number", 3);
         SimVar.SetSimVarValue("L:XMLVAR_A320_WeatherRadar_Sys", "number", 1);
-        this.showILS = SimVar.GetSimVarValue("L:BTN_LS_FILTER_ACTIVE", "bool");
+        const url = document.getElementsByTagName("a320-neo-mfd-element")[0].getAttribute("url");
+        const index = parseInt(url.substring(url.length-1));
+        this.showILS = SimVar.GetSimVarValue(`L:BTN_LS_${index}_FILTER_ACTIVE`, "bool");
         this.compass.showILS(this.showILS);
         this.info.showILS(this.showILS);
 
@@ -130,18 +133,14 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
         const ACPowerStateChange = SimVar.GetSimVarValue("L:ACPowerStateChange","Bool");
         const ACPowerAvailable = SimVar.GetSimVarValue("L:ACPowerAvailable","Bool");
         
-         /**
-         * Self test on MFD screen
-         * TODO: Seperate both MFD screens, currently if the FO changes its screen, it also tests the screen for the captain and vice versa
-         **/
-             
-        let selfTestCurrentKnobValueFO = SimVar.GetSimVarValue("LIGHT POTENTIOMETER:91", "number");
-        let selfTestCurrentKnobValueCAP = SimVar.GetSimVarValue("LIGHT POTENTIOMETER:89", "number");
+        const url = document.getElementsByTagName("a320-neo-mfd-element")[0].getAttribute("url");
+        const index = parseInt(url.substring(url.length-1));
+        const displayIndex = index == 1 ? 89 : 91;
 
-        const FOKnobChanged = (selfTestCurrentKnobValueFO >= 0.1 && this.selfTestLastKnobValueFO < 0.1);
-        const CAPKnobChanged = (selfTestCurrentKnobValueCAP >= 0.1 && this.selfTestLastKnobValueCAP < 0.1);
+        const selfTestCurrentKnobValue = SimVar.GetSimVarValue("LIGHT POTENTIOMETER:"+displayIndex, "number");
+        const KnobChanged = (selfTestCurrentKnobValue >= 0.1 && this.selfTestLastKnobValue < 0.1);
         
-        if((FOKnobChanged || CAPKnobChanged || ACPowerStateChange) && ACPowerAvailable && !this.selfTestTimerStarted) {
+        if((KnobChanged || ACPowerStateChange) && ACPowerAvailable && !this.selfTestTimerStarted) {
             this.selfTestDiv.style.display = "block";
             this.selfTestTimer = 14.25;
             this.selfTestTimerStarted = true;
@@ -155,10 +154,8 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
             }
         }
         
-        this.selfTestLastKnobValueFO = selfTestCurrentKnobValueFO
-        this.selfTestLastKnobValueCAP = selfTestCurrentKnobValueCAP
-
-        this.updateScreenState();        
+        this.selfTestLastKnobValue = selfTestCurrentKnobValue;
+        this.updateScreenState();
     }
 
     updateScreenState() {
@@ -170,11 +167,13 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
     }
 
     _updateNDFiltersStatuses() {
-        SimVar.SetSimVarValue("L:BTN_CSTR_FILTER_ACTIVE", "number", this.map.instrument.showConstraints ? 1 : 0);
-        SimVar.SetSimVarValue("L:BTN_VORD_FILTER_ACTIVE", "number", this.map.instrument.showVORs ? 1 : 0);
-        SimVar.SetSimVarValue("L:BTN_WPT_FILTER_ACTIVE", "number", this.map.instrument.showIntersections ? 1 : 0);
-        SimVar.SetSimVarValue("L:BTN_NDB_FILTER_ACTIVE", "number", this.map.instrument.showNDBs ? 1 : 0);
-        SimVar.SetSimVarValue("L:BTN_ARPT_FILTER_ACTIVE", "number", this.map.instrument.showAirports ? 1 : 0);
+        const url = document.getElementsByTagName("a320-neo-mfd-element")[0].getAttribute("url");
+        const index = parseInt(url.substring(url.length-1));
+        SimVar.SetSimVarValue("L:BTN_CSTR_"+index+"_FILTER_ACTIVE", "number", this.map.instrument.showConstraints ? 1 : 0);
+        SimVar.SetSimVarValue("L:BTN_VORD_"+index+"_FILTER_ACTIVE", "number", this.map.instrument.showVORs ? 1 : 0);
+        SimVar.SetSimVarValue("L:BTN_WPT_"+index+"_FILTER_ACTIVE", "number", this.map.instrument.showIntersections ? 1 : 0);
+        SimVar.SetSimVarValue("L:BTN_NDB_"+index+"_FILTER_ACTIVE", "number", this.map.instrument.showNDBs ? 1 : 0);
+        SimVar.SetSimVarValue("L:BTN_ARPT_"+index+"_FILTER_ACTIVE", "number", this.map.instrument.showAirports ? 1 : 0);
     }
     updateMap(_deltaTime) {
         if (this.modeChangeMask && this.modeChangeTimer >= 0) {
@@ -191,11 +190,13 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
                 this.rangeChangeTimer = -1;
             }
         }
+        const url = document.getElementsByTagName("a320-neo-mfd-element")[0].getAttribute("url");
+        const index = parseInt(url.substring(url.length-1));
         var wxRadarOn = (SimVar.GetSimVarValue("L:XMLVAR_A320_WeatherRadar_Sys", "number") != 1) ? true : false;
         var wxRadarMode = SimVar.GetSimVarValue("L:XMLVAR_A320_WeatherRadar_Mode", "number");
-        var terrainOn = SimVar.GetSimVarValue("L:BTN_TERRONND_ACTIVE", "number");
-        var mapMode = SimVar.GetSimVarValue("L:A320_Neo_MFD_NAV_MODE", "number");
-        var mapRange = SimVar.GetSimVarValue("L:A320_Neo_MFD_Range", "number");
+        var terrainOn = SimVar.GetSimVarValue(`L:BTN_TERRONND_${index}_ACTIVE`, "number");
+        var mapMode = SimVar.GetSimVarValue("L:A320_Neo_MFD_NAV_MODE_"+index, "number");
+        var mapRange = SimVar.GetSimVarValue("L:A320_Neo_MFD_Range_"+index, "number");
         var shouldShowWeather = wxRadarOn && wxRadarMode != 3;
         if (this.wxRadarOn != wxRadarOn || this.terrainOn != terrainOn || this.wxRadarMode != wxRadarMode || this.mapMode != mapMode) {
             this.wxRadarOn = wxRadarOn;
@@ -305,8 +306,10 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
 		}
     }
     onEvent(_event) {
+        const url = document.getElementsByTagName("a320-neo-mfd-element")[0].getAttribute("url");
+        const index = parseInt(url.substring(url.length-1));
         switch (_event) {
-            case "BTN_CSTR":
+            case "BTN_CSTR_"+index:
                 this.map.instrument.showConstraints = !this.map.instrument.showConstraints;
                 this.map.instrument.showIntersections = false;
                 this.map.instrument.showNDBs = false;
@@ -314,7 +317,7 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
                 this.map.instrument.showVORs = false;
                 this._updateNDFiltersStatuses();
                 break;
-            case "BTN_VORD":
+            case "BTN_VORD_"+index:
                 this.map.instrument.showConstraints = false;
                 this.map.instrument.showIntersections = false;
                 this.map.instrument.showNDBs = false;
@@ -322,7 +325,7 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
                 this.map.instrument.showVORs = !this.map.instrument.showVORs;
                 this._updateNDFiltersStatuses();
                 break;
-            case "BTN_WPT":
+            case "BTN_WPT_"+index:
                 this.map.instrument.showConstraints = false;
                 this.map.instrument.showVORs = false;
                 this.map.instrument.showNDBs = false;
@@ -330,7 +333,7 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
                 this.map.instrument.showIntersections = !this.map.instrument.showIntersections;
                 this._updateNDFiltersStatuses();
                 break;
-            case "BTN_NDB":
+            case "BTN_NDB_"+index:
                 this.map.instrument.showConstraints = false;
                 this.map.instrument.showVORs = false;
                 this.map.instrument.showIntersections = false;
@@ -338,7 +341,7 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
                 this.map.instrument.showNDBs = !this.map.instrument.showNDBs;
                 this._updateNDFiltersStatuses();
                 break;
-            case "BTN_ARPT":
+            case "BTN_ARPT_"+index:
                 this.map.instrument.showConstraints = false;
                 this.map.instrument.showVORs = false;
                 this.map.instrument.showIntersections = false;
@@ -346,12 +349,11 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
                 this.map.instrument.showAirports = !this.map.instrument.showAirports;
                 this._updateNDFiltersStatuses();
                 break;
-            case "BTN_TERRONND":
-                SimVar.SetSimVarValue("L:BTN_TERRONND_ACTIVE", "number", (this.terrainOn) ? 0 : 1);
+            case "BTN_TERRONND_"+index:
+                SimVar.SetSimVarValue(`L:BTN_TERRONND_${index}_ACTIVE`, "number", (this.terrainOn) ? 0 : 1);
                 break;
-            case "BTN_LS":
+            case "BTN_LS_"+index:
                 this.showILS = !this.showILS;
-                SimVar.SetSimVarValue("L:BTN_LS_FILTER_ACTIVE", "number", this.showILS ? 1 : 0);
                 this.compass.showILS(this.showILS);
                 this.info.showILS(this.showILS);
                 break;
