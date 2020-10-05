@@ -26,6 +26,7 @@ var A320_Neo_LowerECAM_APU;
             this.APUGenLoad = this.querySelector("#APUGenLoad");
             this.APUVolts = this.querySelector("#APUGenVoltage");
             this.APUFrequency = this.querySelector("#APUGenFrequency");
+            this.APUGenTitle = this.querySelector("#APUGenParams");
 
             //Avail
             this.APUAvail = this.querySelector("#APUAvail_On");
@@ -59,6 +60,7 @@ var A320_Neo_LowerECAM_APU;
                 this.lastAPUMasterState = currentAPUMasterState;
                 if (currentAPUMasterState === 1) {
                     this.APUGenInfo.setAttribute("visibility", "visible");
+                    this.APUGenTitle.setAttribute("class", "APUGenTitle");
                 }
             }
 
@@ -106,6 +108,7 @@ var A320_Neo_LowerECAM_APU;
 
                 if (currentAPUMasterState === 0) {
                     this.APUGenInfo.setAttribute("visibility", "hidden");
+                    this.APUGenTitle.setAttribute("class", "APUGenTitleInactive");
                 }
             }
 
@@ -132,7 +135,8 @@ var A320_Neo_LowerECAM_APU;
 
             //APU N Gauge
             var gaugeDef1 = new A320_Neo_ECAM_Common.GaugeDefinition();
-            gaugeDef1.arcSize = 200;
+            gaugeDef1.arcSize = 180;
+            gaugeDef1.startAngle = -210;
             gaugeDef1.currentValuePrecision = 0;
             gaugeDef1.minValue = 0;
             gaugeDef1.maxValue = 110;
@@ -140,6 +144,8 @@ var A320_Neo_LowerECAM_APU;
             gaugeDef1.maxRedValue = 110;
             gaugeDef1.dangerRange[0] = 101;
             gaugeDef1.dangerRange[1] = 110;
+            gaugeDef1.currentValuePos.x = 0.8;
+            gaugeDef1.currentValuePos.y = 0.74;
             gaugeDef1.currentValueFunction = this.getAPUN.bind(this);
             this.apuNGauge = window.document.createElement("a320-neo-ecam-gauge");
             this.apuNGauge.id = "APU_N_Gauge";
@@ -154,14 +160,17 @@ var A320_Neo_LowerECAM_APU;
 
             //APU EGT Gauge
             var gaugeDef2 = new A320_Neo_ECAM_Common.GaugeDefinition();
-            gaugeDef2.arcSize = 220;
+            gaugeDef2.arcSize = 200;
+            gaugeDef2.startAngle = -210;
             gaugeDef2.currentValuePrecision = 0;
             gaugeDef2.minValue = 300;
-            gaugeDef2.maxValue = 1200;
+            gaugeDef2.maxValue = 1100;
             gaugeDef2.minRedValue = 1000;
-            gaugeDef2.maxRedValue = 1200;
+            gaugeDef2.maxRedValue = 1100;
             gaugeDef2.dangerRange[0] = 1000;
-            gaugeDef2.dangerRange[1] = 1200;
+            gaugeDef2.dangerRange[1] = 1100;
+            gaugeDef2.currentValuePos.x = 0.8;
+            gaugeDef2.currentValuePos.y = 0.74;
             gaugeDef2.currentValueFunction = this.getAPUEGT.bind(this);
             gaugeDef2.outerDynamicMarkerFunction = this.getAPUEGTWarn.bind(this,"EGTWarn");
             this.apuEGTGauge = window.document.createElement("a320-neo-ecam-gauge");
@@ -170,7 +179,7 @@ var A320_Neo_LowerECAM_APU;
             this.apuEGTGauge.addGraduation(300, true, "3");
             this.apuEGTGauge.addGraduation(700, true, "7");
             this.apuEGTGauge.addGraduation(1000, true, "10");
-            this.apuEGTGauge.addGraduation(1200,false,"",true,true,"EGTWarn");
+            this.apuEGTGauge.addGraduation(1100,false,"",true,true,"EGTWarn");
             this.apuEGTGauge.active = false
             if (_gaugeDiv != null) {
                 _gaugeDiv.appendChild(this.apuEGTGauge);
@@ -226,19 +235,19 @@ var A320_Neo_LowerECAM_APU;
             var ID_EGT = [];
             ID_EGT.push(_id);
             if(n < 11){
-                ID_EGT.push(1200);
+                ID_EGT.push(1100);
                 return ID_EGT;
             }
             else if(n <= 15){
-                ID_EGT.push(((-50*n)+1750));
+                ID_EGT.push(((-50*n)+1650));
                 return ID_EGT;
             }
             else if(n <= 65){
-                ID_EGT.push(((-3*n)+1045));
+                ID_EGT.push(((-3*n)+945));
                 return ID_EGT;
             }
             else{
-                ID_EGT.push(((-30/7*n)+1128.6));
+                ID_EGT.push(((-30/7*n)+1028.6));
                 return ID_EGT;
             }
         }
