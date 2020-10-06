@@ -249,7 +249,7 @@ var A320_Neo_ECAM_Common;
                 var start = new Vec2(this.center.x + (dir.x * this.mainArcRadius), this.center.y + (dir.y * this.mainArcRadius));
                 var end = new Vec2(this.center.x + (dir.x * this.graduationInnerLineEndOffset), this.center.y + (dir.y * this.graduationInnerLineEndOffset));
                 var marker = document.createElementNS(Avionics.SVG.NS, "line");
-                if(_setid){
+                if (_setid) {
                     marker.setAttribute("id",_idName);
                 }
                 marker.setAttribute("class", "InnerMarker");
@@ -321,10 +321,10 @@ var A320_Neo_ECAM_Common;
                     this.outerDynamicArcFunction(this.outerDynamicArcTargetValues);
                     this.refreshOuterDynamicArc(this.outerDynamicArcTargetValues[0], this.outerDynamicArcTargetValues[1]);
                 }
-                if(this.outerDynamicMarkerFunction != null) {
+                if (this.outerDynamicMarkerFunction != null) {
                     this.refreshOuterMarkerFunction(this.outerDynamicMarkerFunction());
                 }
-                if(this.dangerMinDynamicFunction != null) {
+                if (this.dangerMinDynamicFunction != null) {
                     this.refreshDangerMinFunction(this.dangerMinDynamicFunction());
                 }
             }
@@ -340,8 +340,8 @@ var A320_Neo_ECAM_Common;
             }
         }
         //accepts ID_EGT, _value[0] = _id, _value[1] = EGT
-        refreshOuterMarkerFunction(_value, _force = false){
-            if(_value[1] != this.outerMarkerValue){
+        refreshOuterMarkerFunction(_value, _force = false) {
+            if (_value[1] != this.outerMarkerValue) {
                 this.outerMarkerValue = _value[1];
                 var dir = this.valueToDir(_value[1]);
                 var start = new Vec2(this.center.x + (dir.x * this.mainArcRadius), this.center.y + (dir.y * this.mainArcRadius));
@@ -353,8 +353,8 @@ var A320_Neo_ECAM_Common;
                 marker.setAttribute("y2", end.y.toString());
             }
         }
-        refreshDangerMinFunction(_value, _force = false){
-            if(_value != this.dangerRange[0]){
+        refreshDangerMinFunction(_value, _force = false) {
+            if (_value != this.dangerRange[0]) {
                 this.dangerRange[0] = _value;
             }
         }
@@ -365,11 +365,9 @@ var A320_Neo_ECAM_Common;
                 var style = "";
                 if ((this.dangerRange[0] != this.dangerRange[1]) && (clampedValue >= this.dangerRange[0]) && (clampedValue <= this.dangerRange[1])) {
                     style = "danger";
-                }
-                else if ((this.warningRange[0] != this.warningRange[1]) && (clampedValue >= this.warningRange[0]) && (clampedValue <= this.warningRange[1])) {
+                } else if ((this.warningRange[0] != this.warningRange[1]) && (clampedValue >= this.warningRange[0]) && (clampedValue <= this.warningRange[1])) {
                     style = "warning";
-                }
-                else {
+                } else {
                     style = "active";
                 }
                 if (this.cursor != null) {

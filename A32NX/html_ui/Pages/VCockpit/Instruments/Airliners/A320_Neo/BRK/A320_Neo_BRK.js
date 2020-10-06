@@ -39,7 +39,9 @@ var A320_Neo_BRK;
         constructor() {
             super();
         }
-        get templateID() { return "A320_Neo_BRK"; }
+        get templateID() {
+            return "A320_Neo_BRK";
+        }
         connectedCallback() {
             super.connectedCallback();
             this.topGauge = new A320_Neo_BRK_Gauge(this.querySelector("#topGauge"), 0, 4);
@@ -73,35 +75,30 @@ var A320_Neo_BRK;
             if (this.topGauge != null) {
                 if (powerAvailable) {
                     this.topGauge.setValue(3);
-                }
-                else{
+                } else {
                     this.topGauge.setValue(0);
                 }
             }
-            
+
             if (this.leftGauge != null) {
                 if (powerAvailable) {
-                    if (currentPKGBrakeState !=0) {
+                    if (currentPKGBrakeState != 0) {
                         this.leftGauge.setValue(2);
+                    } else {
+                        this.leftGauge.setValue(2 * (SimVar.GetSimVarValue("BRAKE LEFT POSITION","SINT32") / 32000));
                     }
-                    else{
-                        this.leftGauge.setValue(2*(SimVar.GetSimVarValue("BRAKE LEFT POSITION","SINT32")/32000));
-                    }
-                }
-                else{
+                } else {
                     this.leftGauge.setValue(0);
                 }
             }
             if (this.rightGauge != null) {
                 if (powerAvailable) {
-                    if (currentPKGBrakeState !=0) {
+                    if (currentPKGBrakeState != 0) {
                         this.rightGauge.setValue(2);
+                    } else {
+                        this.rightGauge.setValue(2 * (SimVar.GetSimVarValue("BRAKE RIGHT POSITION","SINT32") / 32000));
                     }
-                    else{
-                        this.rightGauge.setValue(2*(SimVar.GetSimVarValue("BRAKE RIGHT POSITION","SINT32")/32000));
-                    }
-                }
-                else{
+                } else {
                     this.rightGauge.setValue(0);
                 }
             }
@@ -182,8 +179,7 @@ var A320_Neo_BRK;
                 if (_isShort) {
                     end.x += dir.x * A320_Neo_BRK_Definitions.Marker.LENGTH_SHORT;
                     end.y += dir.y * A320_Neo_BRK_Definitions.Marker.LENGTH_SHORT;
-                }
-                else {
+                } else {
                     end.x += dir.x * A320_Neo_BRK_Definitions.Marker.LENGTH_LONG;
                     end.y += dir.y * A320_Neo_BRK_Definitions.Marker.LENGTH_LONG;
                 }

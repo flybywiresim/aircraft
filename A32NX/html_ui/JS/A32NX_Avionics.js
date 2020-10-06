@@ -45,11 +45,9 @@ var A32NX_Avionics;
                 var posY = currentY;
                 if (currentVal <= 0 && _hideIfLower != undefined && Math.abs(_value) < _hideIfLower) {
                     this.allTexts[i].textContent = "";
-                }
-                else if (currentVal == 0 && this._moduloValue == 100) {
+                } else if (currentVal == 0 && this._moduloValue == 100) {
                     this.allTexts[i].textContent = "00";
-                }
-                else {
+                } else {
                     this.allTexts[i].textContent = Math.abs(currentVal).toString();
                 }
                 this.allTexts[i].setAttribute("transform", "translate(" + posX.toString() + " " + posY.toString() + ")");

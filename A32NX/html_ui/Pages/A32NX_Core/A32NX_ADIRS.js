@@ -1,5 +1,5 @@
 class A32NX_ADIRS {
-    init () {
+    init() {
 
     }
 
@@ -25,7 +25,7 @@ class A32NX_ADIRS {
             SimVar.SetSimVarValue("L:A32NX_ADIRS_PFD_ALIGNED_FIRST", "Bool", 0);
             SimVar.SetSimVarValue("L:A32NX_ADIRS_PFD_ALIGNED_ATT", "Bool", 0);
             ADIRSState = 1;
-            let currentLatitude = SimVar.GetSimVarValue("GPS POSITION LAT", "degree latitude");
+            const currentLatitude = SimVar.GetSimVarValue("GPS POSITION LAT", "degree latitude");
             ADIRSTimer = (Math.pow(currentLatitude, 2) * 0.095) + 310; // ADIRS ALIGN TIME DEPENDING ON LATITUDE.
             SimVar.SetSimVarValue("L:A320_Neo_ADIRS_TIME", "Seconds", ADIRSTimer);
             SimVar.SetSimVarValue("L:A32NX_Neo_ADIRS_START_TIME", "Seconds", ADIRSTimer);
@@ -33,7 +33,7 @@ class A32NX_ADIRS {
 
         if (ADIRSState == 1 && SimVar.GetSimVarValue("L:A320_Neo_ADIRS_IN_ALIGN", "Bool") == 1) {
             if (ADIRSTimer > 0) {
-                ADIRSTimer -= deltaTime/1000;
+                ADIRSTimer -= deltaTime / 1000;
                 SimVar.SetSimVarValue("L:A320_Neo_ADIRS_TIME", "Seconds", ADIRSTimer);
                 const ADIRSTimerStartTime = SimVar.GetSimVarValue("L:A32NX_Neo_ADIRS_START_TIME", "Seconds");
                 const secondsIntoAlignment = ADIRSTimerStartTime - ADIRSTimer;
@@ -57,9 +57,9 @@ class A32NX_ADIRS {
         }
 
         //Align light
-        SimVar.SetSimVarValue("L:A320_Neo_ADIRS_ALIGN_LIGHT_1", "Bool", (SimVar.GetSimVarValue("L:A320_Neo_ADIRS_KNOB_1", "Enum") == 1 && ADIRSState != 2) );
-        SimVar.SetSimVarValue("L:A320_Neo_ADIRS_ALIGN_LIGHT_2", "Bool", (SimVar.GetSimVarValue("L:A320_Neo_ADIRS_KNOB_2", "Enum") == 1 && ADIRSState != 2) );
-        SimVar.SetSimVarValue("L:A320_Neo_ADIRS_ALIGN_LIGHT_3", "Bool", (SimVar.GetSimVarValue("L:A320_Neo_ADIRS_KNOB_3", "Enum") == 1 && ADIRSState != 2) );
+        SimVar.SetSimVarValue("L:A320_Neo_ADIRS_ALIGN_LIGHT_1", "Bool", (SimVar.GetSimVarValue("L:A320_Neo_ADIRS_KNOB_1", "Enum") == 1 && ADIRSState != 2));
+        SimVar.SetSimVarValue("L:A320_Neo_ADIRS_ALIGN_LIGHT_2", "Bool", (SimVar.GetSimVarValue("L:A320_Neo_ADIRS_KNOB_2", "Enum") == 1 && ADIRSState != 2));
+        SimVar.SetSimVarValue("L:A320_Neo_ADIRS_ALIGN_LIGHT_3", "Bool", (SimVar.GetSimVarValue("L:A320_Neo_ADIRS_KNOB_3", "Enum") == 1 && ADIRSState != 2));
 
     }
 }

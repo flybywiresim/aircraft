@@ -5,7 +5,7 @@ var A320_Neo_LowerECAM_Engine;
     Definitions.MIN_GAUGE_OIL = 0;
     Definitions.MAX_GAUGE_OIL = 25;
     Definitions.MIN_GAUGE_PSI = 0;
-    Definitions.MAX_GAUGE_PSI = 130;       //updated from 100 to 130
+    Definitions.MAX_GAUGE_PSI = 130; //updated from 100 to 130
     Definitions.MIN_GAUGE_PSI_RED = 0;
     Definitions.MAX_GAUGE_PSI_RED = 17;
     Definitions.MAX_GAUGE_PSI_WARNING = 25;
@@ -22,7 +22,9 @@ var A320_Neo_LowerECAM_Engine;
             super();
             this.isInitialised = false;
         }
-        get templateID() { return "LowerECAMEngineTemplate"; }
+        get templateID() {
+            return "LowerECAMEngineTemplate";
+        }
         connectedCallback() {
             super.connectedCallback();
             TemplateElement.call(this, this.init.bind(this));
@@ -83,8 +85,9 @@ var A320_Neo_LowerECAM_Engine;
                 ignNeedRefreshTitle = true;
             }
             if (ignRightTargetState != this.ignRightCurrentState) {
-                if (ignRightTargetState != A320_Neo_LowerECAM_Engine.Definitions.IGN_STATE.NONE)
+                if (ignRightTargetState != A320_Neo_LowerECAM_Engine.Definitions.IGN_STATE.NONE) {
                     this.ignRightCurrentState = ignRightTargetState;
+                }
                 if (this.ignRightValueText != null) {
                     this.ignRightValueText.textContent = this.getIGNStringFromState(ignRightTargetState);
                 }
@@ -93,8 +96,7 @@ var A320_Neo_LowerECAM_Engine;
             if (ignNeedRefreshTitle && (this.ignTitleText != null)) {
                 if ((ignLeftTargetState != A320_Neo_LowerECAM_Engine.Definitions.IGN_STATE.NONE) || (ignRightTargetState != A320_Neo_LowerECAM_Engine.Definitions.IGN_STATE.NONE)) {
                     this.ignTitleText.textContent = "IGN";
-                }
-                else {
+                } else {
                     this.ignTitleText.textContent = "";
                 }
             }
@@ -102,21 +104,21 @@ var A320_Neo_LowerECAM_Engine;
         getIGNStringFromState(_state) {
             switch (_state) {
                 case A320_Neo_LowerECAM_Engine.Definitions.IGN_STATE.A:
-                    {
-                        return "A";
-                    }
+                {
+                    return "A";
+                }
                 case A320_Neo_LowerECAM_Engine.Definitions.IGN_STATE.B:
-                    {
-                        return "B";
-                    }
+                {
+                    return "B";
+                }
                 case A320_Neo_LowerECAM_Engine.Definitions.IGN_STATE.AB:
-                    {
-                        return "AB";
-                    }
+                {
+                    return "AB";
+                }
                 default:
-                    {
-                        return "";
-                    }
+                {
+                    return "";
+                }
             }
         }
         onEvent(_event) {
@@ -181,7 +183,7 @@ var A320_Neo_LowerECAM_Engine;
                 bleedPressure = SimVar.GetSimVarValue("L:APU_BLEED_PRESSURE", "psi");
             }
             this.setEngineBleedPressureValue(bleedPressure);
-                
+
             this.setEngineBleedValveState(SimVar.GetSimVarValue("GENERAL ENG STARTER:" + this.engineIndex, "bool"));
             this.setN1VibrationValue(SimVar.GetSimVarValue("TURB ENG VIBRATION:" + this.engineIndex, "Number"));
             this.setN2VibrationValue(SimVar.GetSimVarValue("TURB ENG VIBRATION:" + this.engineIndex, "Number")); // TODO: should have a different value than N1, currently API limited
@@ -217,8 +219,7 @@ var A320_Neo_LowerECAM_Engine;
                     this.oilTemperatureValueText.textContent = fastToFixed(this.oilTemperatureValue, 0);
                     if (this.oilTemperatureValue >= A320_Neo_LowerECAM_Engine.Definitions.MIN_OIL_TEMP_WARNING) {
                         this.oilTemperatureValueText.setAttribute("class", "Warning");
-                    }
-                    else {
+                    } else {
                         this.oilTemperatureValueText.setAttribute("class", "Value");
                     }
                 }
