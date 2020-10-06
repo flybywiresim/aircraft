@@ -1,6 +1,6 @@
 {
     "name": "a32nx",
-    "version": "0.3.5",
+    "version": "0.3.6",
     "scripts": {
         "lint": "eslint ./**/*.js",
         "lint-fix": "eslint ./**/*.js --fix"
