@@ -6,6 +6,7 @@
 !/docs/**
 !/src/**
 !.gitignore
+!.gitattributes
 !CODEOWNERS
 !package.json
 !package-lock.json
