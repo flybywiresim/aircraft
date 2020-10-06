@@ -24,24 +24,25 @@ jobs:
           rm ./build.py
           cd ..
           zip -r ./A32NX-master.zip ./A32NX/
-      # - name: Create Release
-      #   id: create_release
-      #   uses: actions/create-release@v1
-      #   env:
-      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      #   with:
-      #     tag_name: ${{ github.ref }}
-      #     release_name: Master Build ${{ github.ref }}
-      #     draft: false
-      #     prerelease: true
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Master Build ${{ github.ref }}
+          draft: false
+          prerelease: true
+      - run: echo ${{ steps.create_release.outputs.upload_url }}
       - name: Upload Release Asset
         id: upload-release-asset 
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          # upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps 
-          upload_url: https://uploads.github.com/repos/AdenFlorian/msfs-a320neo/releases/32238940/assets{?name,label}
+          upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps 
+          # upload_url: https://uploads.github.com/repos/AdenFlorian/msfs-a320neo/releases/32238940/assets{?name,label}
           asset_path: ./A32NX-master.zip
           asset_name: A32NX-master.zip
           asset_content_type: application/zip
