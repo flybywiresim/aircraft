@@ -21,6 +21,8 @@ jobs:
         run: |
           cd ./A32NX
           python3 build.py
+          cd ..
+          zip -r A32NX-master.zip ./A32NX/
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
@@ -38,6 +40,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps 
-          asset_path: ./my-artifact.zip
-          asset_name: my-artifact.zip
+          asset_path: ./A32NX-master.zip
+          asset_name: A32NX-master.zip
           asset_content_type: application/zip
