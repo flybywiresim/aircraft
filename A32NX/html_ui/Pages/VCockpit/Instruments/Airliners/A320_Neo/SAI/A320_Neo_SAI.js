@@ -274,6 +274,11 @@ class A320_Neo_SAI_AirspeedIndicator extends HTMLElement {
         this.bugs = bugs;
     }
     updateGraduationScrolling(_speed) {
+        this.small_bugs[0].setAttribute("y","-100");
+        this.small_bugs[1].setAttribute("y","-100");
+        this.small_bugs[2].setAttribute("y","-100");
+        this.small_bugs[3].setAttribute("y","-100");
+
         if (this.graduations) {
             if (this.bugs.length > 0) {
                 this.bugs.forEach((spd_bug, i) => {
@@ -498,7 +503,7 @@ class A320_Neo_SAI_AltimeterIndicator extends HTMLElement {
             this.cursorSVGShape.setAttribute("fill", "url(#SAIBacklight)");
             this.cursorSVGShape.setAttribute("d", "M0 22 L65 22 L65 6 L140 6 L140 72 L65 72 L65 56 L0 56 Z");
             this.cursorSVGShape.setAttribute("stroke", "yellow");
-            this.cursorSVGShape.setAttribute("stroke-width", "0.85");
+            this.cursorSVGShape.setAttribute("stroke-width", "1.5");
             trs.appendChild(this.cursorSVGShape);
             const _cursorWidth = (cursorWidth / _scale);
             const _cursorHeight = (cursorHeight / _scale + 10);
@@ -558,12 +563,16 @@ class A320_Neo_SAI_AltimeterIndicator extends HTMLElement {
         this.bugs = bugs;
     }
     updateGraduationScrolling(_altitude) {
+
+        this.cursorSVGShape.setAttribute("stroke", "yellow");
+        this.big_bugs[0].setAttribute("y", "-100");
+        this.big_bugs[1].setAttribute("y", "-100");
+        this.small_bugs[0].setAttribute("y", "-100");
+        this.small_bugs[1].setAttribute("y", "-100");
+
         if (this.graduations) {
             if (this.bugs.length > 0) {
                 this.bugs.forEach((alt_bug, i) => {
-                    this.big_bugs[i].setAttribute("y", "-100");
-                    this.small_bugs[i].setAttribute("y", "-100");
-
                     if (_altitude < (alt_bug + 1000) && _altitude > (alt_bug - 1000)) {
                         if (alt_bug % 500 === 0) {
                             this.big_bugs[i].setAttribute("x", "0");
@@ -582,6 +591,9 @@ class A320_Neo_SAI_AltimeterIndicator extends HTMLElement {
                             this.small_bugs[i].setAttribute("stroke-width", "4");
                             this.small_bugs[i].setAttribute("fill", "none");
                         }
+                    }
+                    if (_altitude < (alt_bug + 100) && _altitude > (alt_bug - 100)) {
+                        this.cursorSVGShape.setAttribute("stroke", "cyan");
                     }
                 });
             }
