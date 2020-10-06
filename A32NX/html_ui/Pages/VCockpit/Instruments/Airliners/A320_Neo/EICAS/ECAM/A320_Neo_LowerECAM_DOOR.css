@@ -1,104 +1,141 @@
 ﻿@font-face {
-  font-family: "B612Mono";
-  src: url("/Fonts/B612Mono-Regular.ttf") format("truetype");
-  font-weight: normal;
-  font-style: normal; }
+    font-family: "B612Mono";
+    src: url("/Fonts/B612Mono-Regular.ttf") format("truetype");
+    font-weight: normal;
+    font-style: normal;
+}
 
 @font-face {
-  font-family: "Liberation Mono";
-  src: url("/Fonts/LiberationMono.ttf") format("truetype");
-  font-weight: normal;
-  font-style: normal; }
+    font-family: "Liberation Mono";
+    src: url("/Fonts/LiberationMono.ttf") format("truetype");
+    font-weight: normal;
+    font-style: normal;
+}
 
 :root {
-  --ecamDefaultColour: white;
-  --ecamShapeColour: lightgray;
-  --ecamUnitsColour: #01b8b8;
-  --ecamValueColour: #00b300;
-  --ecamWarningColour: #db7200;
-  --ecamDoorWarningColour: #fd8000;
-  --ecamDangerColour: red;
-  --ecamInactiveColour: #db7200;
-  --ecamSeparatorsColour: white; }
-  :root .Separator {
+    --ecamDefaultColour: white;
+    --ecamShapeColour: lightgray;
+    --ecamUnitsColour: #01b8b8;
+    --ecamValueColour: #00b300;
+    --ecamWarningColour: #db7200;
+    --ecamDoorWarningColour: #fd8000;
+    --ecamDangerColour: red;
+    --ecamInactiveColour: #db7200;
+    --ecamSeparatorsColour: white;
+}
+
+:root .Separator {
     stroke: #3c3c3c;
     stroke-width: 4;
-    fill: none; }
-  :root div {
-    font-family: "Liberation Mono" !important; }
-  :root text {
-    font-family: "Liberation Mono" !important; }
-  :root #PageTitle {
+    fill: none;
+}
+
+:root div {
+    font-family: "Liberation Mono" !important;
+}
+
+:root text {
+    font-family: "Liberation Mono" !important;
+}
+
+:root #PageTitle {
     fill: var(--ecamDefaultColour);
     font-size: 25px;
-    text-decoration: underline; }
+    text-decoration: underline;
+}
 
 a320-neo-lower-ecam-door {
-  display: block;
-  position: absolute;
-  top: -3%;
-  bottom: 5%;
-  left: 0%;
-  width: 100%;
-  height: 100%; }
-  a320-neo-lower-ecam-door text {
-    text-anchor: middle;
-    alignment-baseline: central; }
+    display: block;
+    position: absolute;
+    top: -3%;
+    bottom: 5%;
+    left: 0%;
+    width: 100%;
+    height: 100%;
+}
 
-  a320-neo-lower-ecam-door .MainShape {
+a320-neo-lower-ecam-door text {
+    text-anchor: middle;
+    alignment-baseline: central;
+}
+
+a320-neo-lower-ecam-door .MainShape {
     fill: transparent;
     stroke: var(--ecamShapeColour);
-    stroke-width: 2; }
+    stroke-width: 2;
+}
 
-  a320-neo-lower-ecam-door .DoorShape {
+a320-neo-lower-ecam-door .DoorShape {
     fill: transparent;
     stroke: var(--ecamValueColour);
     stroke-width: 2; }
 
-  a320-neo-lower-ecam-door .DoorActiveShape {
-    fill: var(--ecamValueColour);
-    stroke: var(--ecamValueColour);
-    stroke-width: 2; }
+a320-neo-lower-ecam-door .DoorActiveShape {
+    fill: var(--ecamWarningColour);
+    stroke: var(--ecamWarningColour);
+    stroke-width: 2;
+}
 
-  a320-neo-lower-ecam-door .DoorWarningShape {
-    fill: var(--ecamDoorWarningColour);
-    stroke: var(--ecamDoorWarningColour);
-    stroke-width: 2; }
-  
-  a320-neo-lower-ecam-door .WarningShape {
+a320-neo-lower-ecam-door .DoorWarningShape {
+    fill: var(--ecamWarningColour);
+    stroke: var(--ecamWarningColour);
+    stroke-width: 2;
+}
+
+a320-neo-lower-ecam-door .WarningShape {
     fill: transparent;
     stroke: var(--ecamWarningColour);
-    stroke-width: 2; }
-  
-  a320-neo-lower-ecam-door text.Title {
+    stroke-width: 2;
+}
+
+a320-neo-lower-ecam-door text.Title {
     font-size: 25px;
-    fill: var(--ecamDefaultColour); }
-  a320-neo-lower-ecam-door text.Slide {
+    fill: var(--ecamDefaultColour);
+}
+
+a320-neo-lower-ecam-door text.Slide {
     font-size: 12pt;
-    fill: var(--ecamDefaultColour); }
-  a320-neo-lower-ecam-door text.Note {
+    fill: var(--ecamDefaultColour);
+}
+
+a320-neo-lower-ecam-door text.Note {
     font-size: 12pt;
-    fill: var(--ecamDefaultColour); }
-  a320-neo-lower-ecam-door text.NoteLarge {
+    fill: var(--ecamDefaultColour);
+}
+
+a320-neo-lower-ecam-door text.NoteLarge {
     font-size: 15pt;
     word-spacing: -4px;
-    fill: var(--ecamDefaultColour); }
-  a320-neo-lower-ecam-door text.NoteLargeAmber {
+    fill: var(--ecamDefaultColour);
+}
+
+a320-neo-lower-ecam-door text.NoteLargeAmber {
     font-size: 15pt;
     word-spacing: -4px;
-    fill: var(--ecamWarningColour); }
-  a320-neo-lower-ecam-door text.Unit {
+    fill: var(--ecamWarningColour);
+}
+
+a320-neo-lower-ecam-door text.Unit {
     font-size: 14pt;
-    fill: var(--ecamUnitsColour); }
-  a320-neo-lower-ecam-door text.Value {
+    fill: var(--ecamUnitsColour);
+}
+
+a320-neo-lower-ecam-door text.Value {
     font-size: 16pt;
-    fill: var(--ecamValueColour); }
-  a320-neo-lower-ecam-door text.ValueSmall {
+    fill: var(--ecamValueColour);
+}
+
+a320-neo-lower-ecam-door text.ValueSmall {
     font-size: 14pt;
-    fill: var(--ecamValueColour); }
-  a320-neo-lower-ecam-door text.Warning {
+    fill: var(--ecamValueColour);
+}
+
+a320-neo-lower-ecam-door text.Warning {
     font-size: 18px;
-    fill: var(--ecamWarningColour); }
-  a320-neo-lower-ecam-door text.DoorWarning {
+    fill: var(--ecamWarningColour);
+}
+
+a320-neo-lower-ecam-door text.DoorWarning {
     font-size: 12pt;
-    fill: var(--ecamDoorWarningColour); }
+    fill: var(--ecamDoorWarningColour);
+}
