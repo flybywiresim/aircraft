@@ -985,16 +985,16 @@ class A320_Neo_SAI_Brightness extends NavSystemElement {
                 if (this.bugsElement.getDisplay() === "none" && brightness < 1) {
                     const new_brightness = brightness + bright_gran;
                     SimVar.SetSimVarValue("L:A32NX_BARO_BRIGHTNESS","number", new_brightness);
-                    this.brightnessElement.updateBrightness(new_brightness);  //TODO: Remove line on model update
+                    this.brightnessElement.updateBrightness(new_brightness); //TODO: Remove line on model update
                 }
-            break;
+                break;
             case "BTN_BARO_MINUS":
                 if (this.bugsElement.getDisplay() === "none" && brightness > minimum) {
                     const new_brightness = brightness - bright_gran;
                     SimVar.SetSimVarValue("L:A32NX_BARO_BRIGHTNESS","number", new_brightness);
-                    this.brightnessElement.updateBrightness(new_brightness);  //TODO: Remove line on model update
+                    this.brightnessElement.updateBrightness(new_brightness); //TODO: Remove line on model update
                 }
-            break;
+                break;
         }
     }
 }
@@ -1183,8 +1183,8 @@ class A320_Neo_SAI_SelfTestTimer extends HTMLElement {
         selfTestSVG.appendChild(st_tmr);
 
         this.st_tmr_txt = document.createElementNS(Avionics.SVG.NS, "text");
-        this.st_tmr_txt.setAttribute("id", "TmrTestTxt")
-        this.st_tmr_txt.textContent = "INIT "+ Math.ceil(this.testTimer)  +"s";
+        this.st_tmr_txt.setAttribute("id", "TmrTestTxt");
+        this.st_tmr_txt.textContent = "INIT " + Math.ceil(this.testTimer) + "s";
         this.st_tmr_txt.setAttribute("font-family", "Roboto-Bold");
         this.st_tmr_txt.setAttribute("font-size", "37px");
         this.st_tmr_txt.setAttribute("fill", "#1f242d");
@@ -1274,7 +1274,7 @@ class A320_Neo_SAI_AttReset extends NavSystemElement {
                 if (this.bugsElement.getDisplay() === "none") {
                     this.attResetElement.startReset();
                 }
-            break;
+                break;
         }
     }
 }
@@ -1321,7 +1321,7 @@ class A320_Neo_SAI_AttResetIndicator extends HTMLElement {
         this.attResetDiv.appendChild(this.attResetSVG);
 
         const st_att = document.createElementNS(Avionics.SVG.NS, "rect");
-        st_att.setAttribute("id", "AttReset")
+        st_att.setAttribute("id", "AttReset");
         st_att.setAttribute("fill", "#afbb3a");
         st_att.setAttribute("x", att_x + "%");
         st_att.setAttribute("y", boxRow + "%");
@@ -1330,8 +1330,8 @@ class A320_Neo_SAI_AttResetIndicator extends HTMLElement {
         this.attResetSVG.appendChild(st_att);
 
         this.st_att_txt = document.createElementNS(Avionics.SVG.NS, "text");
-        this.st_att_txt.setAttribute("id", "AttResetTxt")
-        this.st_att_txt.textContent = "ATT "+ Math.ceil(this.resetTimer)  +"s";
+        this.st_att_txt.setAttribute("id", "AttResetTxt");
+        this.st_att_txt.textContent = "ATT " + Math.ceil(this.resetTimer) + "s";
         this.st_att_txt.setAttribute("font-family", "Roboto");
         this.st_att_txt.setAttribute("font-weight", "900");
         this.st_att_txt.setAttribute("font-size", "37px");
@@ -1343,7 +1343,9 @@ class A320_Neo_SAI_AttResetIndicator extends HTMLElement {
     }
 
     update(dTime) {
-        if (this.complete) return;
+        if (this.complete) {
+            return;
+        }
         if (this.resetTimer >= 0) {
             this.resetTimer -= dTime / 1000;
         }
@@ -1358,14 +1360,18 @@ class A320_Neo_SAI_AttResetIndicator extends HTMLElement {
     }
     startReset() {
         SimVar.SetSimVarValue("L:A32NX_BARO_ATT_RESET","Bool", true);
-        if (this.resetTimer > this.start_time) return;
+        if (this.resetTimer > this.start_time) {
+            return;
+        }
         this.resetTimer = this.start_time;
         this.attResetDiv.style.display = "block";
         this.complete = false;
     }
     finishReset() {
         SimVar.SetSimVarValue("L:A32NX_BARO_ATT_RESET","Bool", false);
-        if (this.complete) return;
+        if (this.complete) {
+            return;
+        }
         this.attResetDiv.style.display = "none";
         this.complete = true;
     }
@@ -1402,21 +1408,21 @@ class A320_Neo_SAI_Bugs extends NavSystemElement {
                 this.blink_status = false;
                 this.bugsElement.freezeBugBox(this.current_bug);
                 this.bugsElement.togglePage();
-            break;
+                break;
             case "BTN_BARO_PLUS":
                 this.blink_status = true;
                 if (this.bugsElement.getDisplay() !== "none") {
                     this.bugsElement.freezeBugBox(this.current_bug);
                     this.current_bug = (this.current_bug + 5) % 6;
                 }
-            break;
+                break;
             case "BTN_BARO_MINUS":
                 this.blink_status = true;
                 if (this.bugsElement.getDisplay() !== "none") {
                     this.bugsElement.freezeBugBox(this.current_bug);
-                    this.current_bug = (this.current_bug + 1 ) % 6;
+                    this.current_bug = (this.current_bug + 1) % 6;
                 }
-            break;
+                break;
             case "KNOB_BARO_C":
                 this.blink_status = true;
                 if (this.current_bug < 4) {
@@ -1424,7 +1430,7 @@ class A320_Neo_SAI_Bugs extends NavSystemElement {
                 } else {
                     this.bugsElement.setBug(this.current_bug, this.bugsElement.getBug(this.current_bug) + 100);
                 }
-            break;
+                break;
             case "KNOB_BARO_AC":
                 this.blink_status = true;
                 if (this.current_bug < 4) {
@@ -1432,11 +1438,11 @@ class A320_Neo_SAI_Bugs extends NavSystemElement {
                 } else {
                     this.bugsElement.setBug(this.current_bug, this.bugsElement.getBug(this.current_bug) - 100);
                 }
-            break;
+                break;
             case "BTN_BARO_RST":
                 this.bugsElement.freezeBugBox(this.current_bug);
                 this.bugsElement.toggleBug(this.current_bug);
-            break;
+                break;
         }
     }
 }
