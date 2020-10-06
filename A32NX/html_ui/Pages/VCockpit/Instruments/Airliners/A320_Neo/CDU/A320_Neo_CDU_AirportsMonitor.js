@@ -195,7 +195,7 @@ class CDUAirportsMonitor {
 
                 // force spaces to emulate 4 columns
                 mcdu._labelElements[0][2].innerHTML = "BRG&nbsp;&nbsp;&nbsp;DIST";
-                for (var i = 0; i < (this.user_ap ? 5 : 4); i++) {
+                for (let i = 0; i < (this.user_ap ? 5 : 4); i++) {
                     mcdu._lineElements[i][2].innerHTML = mcdu._lineElements[i][2].innerHTML.replace(/_/g, "&nbsp;");
                 }
             }

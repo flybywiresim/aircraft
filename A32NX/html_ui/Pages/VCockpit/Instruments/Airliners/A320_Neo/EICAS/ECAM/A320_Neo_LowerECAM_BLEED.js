@@ -31,8 +31,8 @@ var A320_Neo_LowerECAM_BLEED;
                 return;
             }
 
-            var currentEngineBleedState = [SimVar.GetSimVarValue("BLEED AIR ENGINE:1", "Bool"), SimVar.GetSimVarValue("BLEED AIR ENGINE:2", "Bool")];
-            var currentApuN = SimVar.GetSimVarValue("APU PCT RPM", "percent");
+            const currentEngineBleedState = [SimVar.GetSimVarValue("BLEED AIR ENGINE:1", "Bool"), SimVar.GetSimVarValue("BLEED AIR ENGINE:2", "Bool")];
+            const currentApuN = SimVar.GetSimVarValue("APU PCT RPM", "percent");
 
             if (!this.apuProvidesBleed && (currentApuN > 0.94)) {
                 this.apuBleedStartTimer = 2;
@@ -69,10 +69,8 @@ var A320_Neo_LowerECAM_BLEED;
                 this.rightEngineIp[1].setAttribute("visibility", "visible");
             }
 
-
-
             //find if the APU bleed is on
-            var currentApuBleedSate = SimVar.GetSimVarValue("BLEED AIR APU", "Bool");
+            const currentApuBleedSate = SimVar.GetSimVarValue("BLEED AIR APU", "Bool");
 
             if (currentApuBleedSate) {
                 this.apuBleedIndication[0].setAttribute("visibility", 'visible');

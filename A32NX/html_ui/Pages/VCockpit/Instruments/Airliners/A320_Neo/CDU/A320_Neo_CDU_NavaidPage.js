@@ -27,8 +27,7 @@ class CDUNavaidPage {
             const INPUT = mcdu.inOut;
             mcdu.clearUserInput();
 
-            var selectedWaypoint = mcdu.getOrSelectWaypointByIdent(INPUT, res => {
-
+            const selectedWaypoint = mcdu.getOrSelectWaypointByIdent(INPUT, res => {
 
                 if (res) {
                     mcdu.clearDisplay();

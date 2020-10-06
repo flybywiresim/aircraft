@@ -136,7 +136,7 @@ var A320_Neo_LowerECAM_APU;
             this.APUWarm = false;
 
             //APU N Gauge
-            var gaugeDef1 = new A320_Neo_ECAM_Common.GaugeDefinition();
+            const gaugeDef1 = new A320_Neo_ECAM_Common.GaugeDefinition();
             gaugeDef1.arcSize = 180;
             gaugeDef1.startAngle = -210;
             gaugeDef1.currentValuePrecision = 0;
@@ -161,7 +161,7 @@ var A320_Neo_LowerECAM_APU;
             }
 
             //APU EGT Gauge
-            var gaugeDef2 = new A320_Neo_ECAM_Common.GaugeDefinition();
+            const gaugeDef2 = new A320_Neo_ECAM_Common.GaugeDefinition();
             gaugeDef2.arcSize = 200;
             gaugeDef2.startAngle = -210;
             gaugeDef2.currentValuePrecision = 0;
@@ -196,7 +196,7 @@ var A320_Neo_LowerECAM_APU;
 
         update(_deltaTime) {
             //Update gauges
-            var currentAPUMasterState = SimVar.GetSimVarValue("FUELSYSTEM VALVE SWITCH:8", "Bool");
+            const currentAPUMasterState = SimVar.GetSimVarValue("FUELSYSTEM VALVE SWITCH:8", "Bool");
             if ((currentAPUMasterState !== this.lastAPUMasterState)) {
                 this.lastAPUMasterState = currentAPUMasterState;
                 if (currentAPUMasterState === 1) {
@@ -233,8 +233,8 @@ var A320_Neo_LowerECAM_APU;
 
         //function accepts ID of the marker and returns an array with ID and EGT
         getAPUEGTWarn(_id) {
-            var n = this.getAPUN();
-            var ID_EGT = [];
+            const n = this.getAPUN();
+            const ID_EGT = [];
             ID_EGT.push(_id);
             if (n < 11) {
                 ID_EGT.push(1100);
@@ -252,7 +252,7 @@ var A320_Neo_LowerECAM_APU;
         }
         //Calculates the APU EGT Based on the RPM, APU now reaches peak EGT of 765'C
         getAPUEGTRaw(startup) {
-            var n = this.getAPUN();
+            const n = this.getAPUN();
             if (startup) {
                 if (n < 10) {
                     return 10;
@@ -281,8 +281,8 @@ var A320_Neo_LowerECAM_APU;
         getAPUEGT() {
             const ambient = SimVar.GetSimVarValue("AMBIENT TEMPERATURE", "celsius");
 
-            var n = this.getAPUN();
-            var egt = (Math.round(this.getAPUEGTRaw(this.lastN <= n)));
+            const n = this.getAPUN();
+            const egt = (Math.round(this.getAPUEGTRaw(this.lastN <= n)));
             this.lastN = n;
             if (this.APUWarm && egt < 100) {
                 return 100;

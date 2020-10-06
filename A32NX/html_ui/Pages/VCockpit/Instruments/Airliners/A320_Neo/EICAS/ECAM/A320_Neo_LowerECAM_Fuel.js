@@ -99,7 +99,7 @@ var A320_Neo_LowerECAM_Fuel;
             this.updateQuantity(this.rightOuterTankValue, "FUEL TANK RIGHT AUX QUANTITY", factor);
             this.updateFuelFlow(factor);
             this.updateFuelConsumption(factor);
-            for (var i = 0; i < this.allToggleElements.length; ++i) {
+            for (let i = 0; i < this.allToggleElements.length; ++i) {
                 if (this.allToggleElements[i] != null) {
                     this.allToggleElements[i].refresh();
                 }
@@ -161,7 +161,7 @@ var A320_Neo_LowerECAM_Fuel;
             }
         }
         updateFuelFlow(_unitFactor) {
-            var totalFuelFlow = (SimVar.GetSimVarValue("ENG FUEL FLOW GPH:1", "gallons per hour") + SimVar.GetSimVarValue("ENG FUEL FLOW GPH:2", "gallons per hour")) * (_unitFactor / 60);
+            const totalFuelFlow = (SimVar.GetSimVarValue("ENG FUEL FLOW GPH:1", "gallons per hour") + SimVar.GetSimVarValue("ENG FUEL FLOW GPH:2", "gallons per hour")) * (_unitFactor / 60);
             this.fuelFlowValue.textContent = fastToFixed(totalFuelFlow, 0);
         }
         updateFuelConsumption(_unitFactor) {
@@ -181,7 +181,7 @@ var A320_Neo_LowerECAM_Fuel;
             }
         }
         updateQuantity(_elem, _simvar, _unitFactor) {
-            var quantity = SimVar.GetSimVarValue(_simvar, "gallons");
+            let quantity = SimVar.GetSimVarValue(_simvar, "gallons");
             quantity *= _unitFactor;
             quantity -= quantity % 20;
             _elem.textContent = fastToFixed(quantity, 0);

@@ -302,7 +302,7 @@ var A320_Neo_LowerECAM_WHEEL;
         }
 
         updateBrakeTemp(_deltaTime) {
-            for (var i = 0; i < this.CurrentBrakeTemps.length; i++) {
+            for (let i = 0; i < this.CurrentBrakeTemps.length; i++) {
                 this.CurrentBrakeTemps[i] = SimVar.GetSimVarValue(`L:A32NX_BRAKE_TEMPERATURE_${i + 1}`, "celsius");
                 this.BrakeTempsText[i].textContent = Math.round(this.CurrentBrakeTemps[i] / 5) * 5;
             }

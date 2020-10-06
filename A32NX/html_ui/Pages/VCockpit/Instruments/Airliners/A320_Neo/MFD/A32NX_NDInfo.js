@@ -127,9 +127,9 @@ class Jet_MFD_NDInfo extends HTMLElement {
         }
     }
     setWind(_windAngle, _windStrength, _planeAngle, _force = false) {
-        var refreshWindAngle = ((_windAngle != this.currentWindAngle) || _force);
-        var refreshWindStrength = ((_windStrength != this.currentWindStrength) || _force);
-        var refreshWindArrow = (refreshWindAngle || refreshWindStrength || (_planeAngle != this.currentPlaneAngle) || _force);
+        const refreshWindAngle = ((_windAngle != this.currentWindAngle) || _force);
+        const refreshWindStrength = ((_windStrength != this.currentWindStrength) || _force);
+        const refreshWindArrow = (refreshWindAngle || refreshWindStrength || (_planeAngle != this.currentPlaneAngle) || _force);
         const windStrongEnough = (this.currentWindStrength >= Jet_MFD_NDInfo.MIN_WIND_STRENGTH_FOR_ARROW_DISPLAY) ? true : false;
         if (refreshWindAngle) {
             let startAngle = this.currentWindAngle;
@@ -160,10 +160,10 @@ class Jet_MFD_NDInfo extends HTMLElement {
             this.currentPlaneAngle = _planeAngle;
             if (this.windArrow != null) {
                 {
-                    var arrowAngle = this.currentWindAngle - this.currentPlaneAngle;
+                    let arrowAngle = this.currentWindAngle - this.currentPlaneAngle;
                     arrowAngle += 180;
-                    var transformStr = this.windArrow.getAttribute("transform");
-                    var split = transformStr.split("rotate");
+                    const transformStr = this.windArrow.getAttribute("transform");
+                    const split = transformStr.split("rotate");
                     if ((split != null) && (split.length > 0)) {
                         this.windArrow.setAttribute("transform", split[0] + " rotate(" + arrowAngle + ")");
                     }
@@ -371,9 +371,9 @@ class Jet_MFD_NDInfo extends HTMLElement {
                 if (this._chronoStarted) {
                     this._chronoValue += this._dTime;
                 }
-                var hours = Math.floor(this._chronoValue / 3600);
-                var minutes = Math.floor((this._chronoValue - (hours * 3600)) / 60);
-                var seconds = Math.floor(this._chronoValue - (minutes * 60) - (hours * 3600));
+                const hours = Math.floor(this._chronoValue / 3600);
+                const minutes = Math.floor((this._chronoValue - (hours * 3600)) / 60);
+                const seconds = Math.floor(this._chronoValue - (minutes * 60) - (hours * 3600));
                 let val = "";
                 if (hours > 0) {
                     if (hours < 10) {
@@ -460,8 +460,8 @@ class VORDMENavAid {
     setState(_state, _force = false) {
         if ((_state != this.currentState) || _force) {
             this.currentState = _state;
-            var show = false;
-            var type = "";
+            let show = false;
+            let type = "";
             switch (this.currentState) {
                 case NAV_AID_STATE.ADF:
                 {
@@ -538,7 +538,7 @@ class VORDMENavAid {
     setMode(_state, _force = false) {
         if ((_state != this.currentMode) || _force) {
             this.currentMode = _state;
-            var mode = "";
+            let mode = "";
             switch (this.currentMode) {
                 case NAV_AID_MODE.MANUAL:
                 {
@@ -559,9 +559,9 @@ class VORDMENavAid {
     setDistanceValue(_value, _force = false) {
         if ((_value != this.distanceValue) || _force) {
             this.distanceValue = _value;
-            var showDistance = (this.distanceValue > 0);
+            const showDistance = (this.distanceValue > 0);
             // var displayStr = showDistance ? "block" : "none";
-            var displayStr = "block";
+            const displayStr = "block";
             if (this.distanceText != null) {
                 if (showDistance) {
                     this.distanceText.textContent = fastToFixed(this.distanceValue, 1);

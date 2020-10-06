@@ -4,7 +4,7 @@ var A320_Neo_LowerECAM_Status;
     }
     A320_Neo_LowerECAM_Status.Definitions = Definitions;
     function createDiv(_id, _class = "", _text = "") {
-        var div = document.createElement("div");
+        const div = document.createElement("div");
         if (_id.length > 0) {
             div.id = _id;
         }
@@ -22,8 +22,6 @@ var A320_Neo_LowerECAM_Status;
         isInop(_system) {
             return SimVar.GetSimVarValue("L:A32NX_ECAM_INOP_SYS_" + _system, "Bool");
         }
-
-
 
         constructor() {
             super();
@@ -392,7 +390,7 @@ class StatusMessagePanel extends A320_Neo_LowerECAM_Status.PanelBase {
     }
     init() {
         super.init();
-        for (var i = 0; i < this.maxLines; i++) {
+        for (let i = 0; i < this.maxLines; i++) {
             this.addDiv();
         }
     }
@@ -424,21 +422,21 @@ class StatusMessagePanel extends A320_Neo_LowerECAM_Status.PanelBase {
     }
     addLine(_style, _category, _message, _action, _alwaysShowCategory = false) {
         if (this.currentLine < this.maxLines) {
-            var div = this.allDivs[this.currentLine];
+            const div = this.allDivs[this.currentLine];
             div.innerHTML = "";
             div.className = _style;
             if (div != null) {
 
                 //Category
                 if (_category != null && (!this.activeCategories.includes(_category) || _alwaysShowCategory)) {
-                    var category = document.createElement("span");
+                    const category = document.createElement("span");
                     category.className = "Underline";
                     category.textContent = _category;
                     div.appendChild(category);
                 }
 
                 //Message
-                var message = document.createElement("span");
+                const message = document.createElement("span");
                 switch (_style) {
                     case "action":
                         var msgOutput = "-" + _message;
@@ -473,15 +471,14 @@ class StatusMessagePanel extends A320_Neo_LowerECAM_Status.PanelBase {
         this.currentLine++;
     }
 
-
     getActiveFailures() {
         const output = {};
         this.hasActiveFailures = false;
         this.hasWarnings = false;
         this.hasCautions = false;
-        for (var i = 0; i < this.messages.failures.length; i++) {
+        for (let i = 0; i < this.messages.failures.length; i++) {
             const messages = this.messages.failures[i].messages;
-            for (var n = 0; n < messages.length; n++) {
+            for (let n = 0; n < messages.length; n++) {
                 const message = messages[n];
                 if (message.id == null) {
                     message.id = `${i} ${n}`;

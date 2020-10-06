@@ -226,10 +226,10 @@ class A320_Neo_PFD_VSpeed extends NavSystemElement {
     }
     onUpdate() {
         const _deltaTime = this.getDeltaTime();
-        var vSpeed = Math.round(Simplane.getVerticalSpeed());
+        const vSpeed = Math.round(Simplane.getVerticalSpeed());
         this.vsi.setAttribute("vspeed", vSpeed.toString());
         if (Simplane.getAutoPilotVerticalSpeedHoldActive()) {
-            var selVSpeed = Math.round(Simplane.getAutoPilotVerticalSpeedHoldValue());
+            const selVSpeed = Math.round(Simplane.getAutoPilotVerticalSpeedHoldValue());
             this.vsi.setAttribute("selected_vspeed", selVSpeed.toString());
             this.vsi.setAttribute("selected_vspeed_active", "true");
         } else {

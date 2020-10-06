@@ -48,6 +48,8 @@
         "semi-spacing": "error",
         "no-mixed-spaces-and-tabs": "error",
         "no-multi-spaces": "error",
+        // There are too many vars that cant be autofixed
+        "no-var": "off",
         "prefer-const": [
             "error",
             {
@@ -60,6 +62,14 @@
         "eol-last": [
             "error",
             "never"
+        ],
+        "no-multiple-empty-lines": [
+            "error",
+            {
+                "max": 1,
+                "maxBOF": 0,
+                "maxEOF": 0
+            }
         ]
     }
 }

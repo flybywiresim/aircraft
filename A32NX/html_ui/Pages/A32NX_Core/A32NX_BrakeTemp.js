@@ -121,7 +121,7 @@ class A32NX_BrakeTemp {
         let brakesHot = 0;
 
         // Set simvars
-        for (var i = 0; i < currentBrakeTemps.length; ++i) {
+        for (let i = 0; i < currentBrakeTemps.length; ++i) {
             SimVar.SetSimVarValue(`L:A32NX_BRAKE_TEMPERATURE_${i + 1}`, "celsius", currentBrakeTemps[i]);
             if (currentBrakeTemps[i] > 300) {
                 brakesHot = 1;

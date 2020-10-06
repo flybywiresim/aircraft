@@ -29,7 +29,7 @@ class Jet_MFD_NDCompass extends Jet_NDCompass {
         this.root.setAttribute("height", "100%");
         this.root.setAttribute("viewBox", "-225 -215 550 516");
         this.appendChild(this.root);
-        var trsGroup = document.createElementNS(Avionics.SVG.NS, "g");
+        const trsGroup = document.createElementNS(Avionics.SVG.NS, "g");
         trsGroup.setAttribute("transform", "translate(0, 200)");
         this.root.appendChild(trsGroup);
         {
@@ -38,9 +38,9 @@ class Jet_MFD_NDCompass extends Jet_NDCompass {
             viewBox.setAttribute("y", "-475");
             viewBox.setAttribute("viewBox", "-225 -550 550 600");
             trsGroup.appendChild(viewBox);
-            var circleRadius = 425;
-            var dashSpacing = 72;
-            var maskHeight = 200;
+            const circleRadius = 425;
+            const dashSpacing = 72;
+            const maskHeight = 200;
             this.arcMaskGroup = document.createElementNS(Avionics.SVG.NS, "g");
             this.arcMaskGroup.setAttribute("id", "MaskGroup");
             viewBox.appendChild(this.arcMaskGroup);
@@ -158,12 +158,12 @@ class Jet_MFD_NDCompass extends Jet_NDCompass {
                 this.trackingGroup = document.createElementNS(Avionics.SVG.NS, "g");
                 this.trackingGroup.setAttribute("id", "trackingGroup");
                 {
-                    var halfw = 7;
-                    var halfh = 10;
-                    var p1 = (50) + ", " + (50 + circleRadius);
-                    var p2 = (50 + halfw) + ", " + (50 + circleRadius - halfh);
-                    var p3 = (50) + ", " + (50 + circleRadius - halfh * 2);
-                    var p4 = (50 - halfw) + ", " + (50 + circleRadius - halfh);
+                    const halfw = 7;
+                    const halfh = 10;
+                    const p1 = (50) + ", " + (50 + circleRadius);
+                    const p2 = (50 + halfw) + ", " + (50 + circleRadius - halfh);
+                    const p3 = (50) + ", " + (50 + circleRadius - halfh * 2);
+                    const p4 = (50 - halfw) + ", " + (50 + circleRadius - halfh);
                     this.trackingBug = document.createElementNS(Avionics.SVG.NS, "polygon");
                     this.trackingBug.setAttribute("id", "trackingBug");
                     this.trackingBug.setAttribute("points", p1 + " " + p2 + " " + p3 + " " + p4);
@@ -528,12 +528,12 @@ class Jet_MFD_NDCompass extends Jet_NDCompass {
             this.trackingGroup = document.createElementNS(Avionics.SVG.NS, "g");
             this.trackingGroup.setAttribute("id", "trackingGroup");
             {
-                var halfw = 13;
-                var halfh = 20;
-                var p1 = (500) + ", " + (500 - circleRadius);
-                var p2 = (500 + halfw) + ", " + (500 - circleRadius + halfh);
-                var p3 = (500) + ", " + (500 - circleRadius + halfh * 2);
-                var p4 = (500 - halfw) + ", " + (500 - circleRadius + halfh);
+                const halfw = 13;
+                const halfh = 20;
+                const p1 = (500) + ", " + (500 - circleRadius);
+                const p2 = (500 + halfw) + ", " + (500 - circleRadius + halfh);
+                const p3 = (500) + ", " + (500 - circleRadius + halfh * 2);
+                const p4 = (500 - halfw) + ", " + (500 - circleRadius + halfh);
                 this.trackingBug = document.createElementNS(Avionics.SVG.NS, "polygon");
                 this.trackingBug.setAttribute("id", "trackingBug");
                 this.trackingBug.setAttribute("points", p1 + " " + p2 + " " + p3 + " " + p4);
@@ -641,7 +641,7 @@ class Jet_MFD_NDCompass extends Jet_NDCompass {
     constructRose_AS01B() { }
     constructRose_CJ4() { }
     updateFail() {
-        var failed = SimVar.GetSimVarValue("L:A320_Neo_ADIRS_STATE", "Enum") != 2;
+        const failed = SimVar.GetSimVarValue("L:A320_Neo_ADIRS_STATE", "Enum") != 2;
         if (this.arcs) {
             for (const arc of this.arcs) {
                 arc.setAttribute("fill", failed ? "red" : "white");

@@ -74,7 +74,7 @@ var A320_Neo_LowerECAM_Engine;
                     ignRightTargetState = A320_Neo_LowerECAM_Engine.Definitions.IGN_STATE.A;
                 }
             }
-            var ignNeedRefreshTitle = false;
+            let ignNeedRefreshTitle = false;
             if (ignLeftTargetState != this.ignLeftCurrentState) {
                 if (ignLeftTargetState != A320_Neo_LowerECAM_Engine.Definitions.IGN_STATE.NONE) {
                     this.ignLeftCurrentState = ignLeftTargetState;
@@ -136,7 +136,7 @@ var A320_Neo_LowerECAM_Engine;
             this.engineBleedValveClosedLine = _startValveClosedLine;
             this.N1VibrationValueText = _N1VibrationValueText;
             this.N2VibrationValueText = _N2VibrationValueText;
-            var gaugeDef = new A320_Neo_ECAM_Common.GaugeDefinition();
+            const gaugeDef = new A320_Neo_ECAM_Common.GaugeDefinition();
             gaugeDef.startAngle = -180;
             gaugeDef.arcSize = 180;
             gaugeDef.currentValuePrecision = 0;
@@ -196,12 +196,12 @@ var A320_Neo_LowerECAM_Engine;
             }
         }
         getOilQuantity() {
-            var value = SimVar.GetSimVarValue("ENG OIL QUANTITY:" + this.engineIndex, "percent") * 0.01;
+            let value = SimVar.GetSimVarValue("ENG OIL QUANTITY:" + this.engineIndex, "percent") * 0.01;
             value *= A320_Neo_LowerECAM_Engine.Definitions.MAX_GAUGE_OIL;
             return value;
         }
         getOilPressure() {
-            var value = SimVar.GetSimVarValue("ENG OIL PRESSURE:" + this.engineIndex, "psi");
+            const value = SimVar.GetSimVarValue("ENG OIL PRESSURE:" + this.engineIndex, "psi");
             return value;
         }
         setFuelUsedValue(_value, _force = false) {

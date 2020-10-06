@@ -49,10 +49,10 @@ class Jet_PFD_HSIndicator extends HTMLElement {
         this.rootSVG.setAttribute("viewBox", "0 0 550 250");
         this.refStartX = 25;
         this.refWidth = 500;
-        var posX = this.refStartX;
-        var posY = 5;
-        var width = this.refWidth;
-        var height = 100;
+        const posX = this.refStartX;
+        const posY = 5;
+        const width = this.refWidth;
+        const height = 100;
         if (!this.rootGroup) {
             this.rootGroup = document.createElementNS(Avionics.SVG.NS, "g");
             this.rootGroup.setAttribute("id", "HS");
@@ -74,11 +74,11 @@ class Jet_PFD_HSIndicator extends HTMLElement {
         this.centerSVG.setAttribute("viewBox", "0 0 " + width + " " + height);
         this.rootGroup.appendChild(this.centerSVG);
         {
-            var _top = 35;
-            var _left = 0;
-            var _width = width;
-            var _height = 80;
-            var bg = document.createElementNS(Avionics.SVG.NS, "rect");
+            const _top = 35;
+            const _left = 0;
+            const _width = width;
+            const _height = 80;
+            const bg = document.createElementNS(Avionics.SVG.NS, "rect");
             bg.setAttribute("x", _left.toString());
             bg.setAttribute("y", _top.toString());
             bg.setAttribute("width", _width.toString());
@@ -88,7 +88,7 @@ class Jet_PFD_HSIndicator extends HTMLElement {
             bg.setAttribute("stroke-width", this.strokeSize.toString());
             bg.setAttribute("stroke-opacity", this.strokeOpacity);
             this.centerSVG.appendChild(bg);
-            var graduationGroup = document.createElementNS(Avionics.SVG.NS, "g");
+            const graduationGroup = document.createElementNS(Avionics.SVG.NS, "g");
             graduationGroup.setAttribute("id", "Graduations");
             {
                 this.graduationScrollPosX = _left + _width * 0.5;
@@ -98,9 +98,9 @@ class Jet_PFD_HSIndicator extends HTMLElement {
                     for (var i = 0; i < this.totalGraduations; i++) {
                         var line = new Avionics.SVGGraduation();
                         line.IsPrimary = (i % (this.nbSecondaryGraduations + 1)) ? false : true;
-                        var lineWidth = line.IsPrimary ? 5 : 5;
-                        var lineHeight = line.IsPrimary ? 25 : 12;
-                        var linePosY = 0;
+                        const lineWidth = line.IsPrimary ? 5 : 5;
+                        const lineHeight = line.IsPrimary ? 25 : 12;
+                        const linePosY = 0;
                         line.SVGLine = document.createElementNS(Avionics.SVG.NS, "rect");
                         line.SVGLine.setAttribute("y", linePosY.toString());
                         line.SVGLine.setAttribute("width", lineWidth.toString());
@@ -130,10 +130,10 @@ class Jet_PFD_HSIndicator extends HTMLElement {
             this.selectedHeadingGroup = document.createElementNS(Avionics.SVG.NS, "g");
             this.selectedHeadingGroup.setAttribute("id", "Heading");
             {
-                var headingPosX = _left + _width * 0.5 - 2;
-                var headingPosY = posY;
-                var headingWidth = 35;
-                var headingHeight = _height;
+                const headingPosX = _left + _width * 0.5 - 2;
+                const headingPosY = posY;
+                const headingWidth = 35;
+                const headingHeight = _height;
                 const headingSVG = document.createElementNS(Avionics.SVG.NS, "svg");
                 headingSVG.setAttribute("x", (headingPosX - headingWidth * 0.5).toString());
                 headingSVG.setAttribute("y", headingPosY.toString());
@@ -154,10 +154,10 @@ class Jet_PFD_HSIndicator extends HTMLElement {
             this.currentTrackGroup = document.createElementNS(Avionics.SVG.NS, "g");
             this.currentTrackGroup.setAttribute("id", "CurrentTrack");
             {
-                var trackPosX = _left + _width * 0.5;
-                var trackPosY = posY + 30;
-                var trackWidth = 28;
-                var trackHeight = _height;
+                const trackPosX = _left + _width * 0.5;
+                const trackPosY = posY + 30;
+                const trackWidth = 28;
+                const trackHeight = _height;
                 const trackSVG = document.createElementNS(Avionics.SVG.NS, "svg");
                 trackSVG.setAttribute("x", (trackPosX - trackWidth * 0.5).toString());
                 trackSVG.setAttribute("y", trackPosY.toString());
@@ -178,10 +178,10 @@ class Jet_PFD_HSIndicator extends HTMLElement {
             this.ILSBeaconGroup = document.createElementNS(Avionics.SVG.NS, "g");
             this.ILSBeaconGroup.setAttribute("id", "ILSBeacon");
             {
-                var ilsPosX = _left + _width * 0.5 + 2.5;
-                var ilsPosY = posY + 45;
-                var ilsWidth = 30;
-                var ilsHeight = _height;
+                const ilsPosX = _left + _width * 0.5 + 2.5;
+                const ilsPosY = posY + 45;
+                const ilsWidth = 30;
+                const ilsHeight = _height;
                 const ilsSVG = document.createElementNS(Avionics.SVG.NS, "svg");
                 ilsSVG.setAttribute("x", (ilsPosX - ilsWidth * 0.5).toString());
                 ilsSVG.setAttribute("y", ilsPosY.toString());
@@ -199,10 +199,10 @@ class Jet_PFD_HSIndicator extends HTMLElement {
                 this.ILSBeaconGroup.appendChild(ilsSVG);
             }
             this.centerSVG.appendChild(this.ILSBeaconGroup);
-            var cursorPosX = _left + _width * 0.5;
-            var cursorPosY = posY;
-            var cursorWidth = 35;
-            var cursorHeight = _height;
+            const cursorPosX = _left + _width * 0.5;
+            const cursorPosY = posY;
+            const cursorWidth = 35;
+            const cursorHeight = _height;
             if (!this.cursorSVG) {
                 this.cursorSVG = document.createElementNS(Avionics.SVG.NS, "svg");
                 this.cursorSVG.setAttribute("id", "CursorGroup");
@@ -253,19 +253,19 @@ class Jet_PFD_HSIndicator extends HTMLElement {
         this.updateRibbon();
     }
     updateRibbon() {
-        var compass = SimVar.GetSimVarValue("PLANE HEADING DEGREES MAGNETIC", "degree");
-        var selectedHeading = SimVar.GetSimVarValue("AUTOPILOT HEADING LOCK DIR", "degree");
-        var track = SimVar.GetSimVarValue("GPS GROUND MAGNETIC TRACK", "degree");
+        const compass = SimVar.GetSimVarValue("PLANE HEADING DEGREES MAGNETIC", "degree");
+        const selectedHeading = SimVar.GetSimVarValue("AUTOPILOT HEADING LOCK DIR", "degree");
+        const track = SimVar.GetSimVarValue("GPS GROUND MAGNETIC TRACK", "degree");
         if (this.graduations) {
             this.graduationScroller.scroll(compass);
-            var currentVal = this.graduationScroller.firstValue;
-            var currentX = this.graduationScrollPosX - this.graduationScroller.offsetY * this.graduationSpacing * (this.nbSecondaryGraduations + 1);
-            for (var i = 0; i < this.totalGraduations; i++) {
+            let currentVal = this.graduationScroller.firstValue;
+            let currentX = this.graduationScrollPosX - this.graduationScroller.offsetY * this.graduationSpacing * (this.nbSecondaryGraduations + 1);
+            for (let i = 0; i < this.totalGraduations; i++) {
                 var posX = currentX;
-                var posY = this.graduationScrollPosY;
+                const posY = this.graduationScrollPosY;
                 this.graduations[i].SVGLine.setAttribute("transform", "translate(" + posX.toString() + " " + posY.toString() + ")");
                 if (this.graduations[i].SVGText1) {
-                    var roundedVal = Math.floor(currentVal / 10);
+                    const roundedVal = Math.floor(currentVal / 10);
                     this.graduations[i].SVGText1.textContent = roundedVal.toString();
                     this.graduations[i].SVGText1.setAttribute("transform", "translate(" + posX.toString() + " " + posY.toString() + ")");
                     currentVal = this.graduationScroller.nextValue;
@@ -274,7 +274,7 @@ class Jet_PFD_HSIndicator extends HTMLElement {
             }
         }
         if (this.selectedHeadingGroup) {
-            var autoPilotActive = Simplane.getAutoPilotHeadingSelected();
+            const autoPilotActive = Simplane.getAutoPilotHeadingSelected();
             if (autoPilotActive) {
                 var delta = selectedHeading - compass;
                 if (delta > 180) {

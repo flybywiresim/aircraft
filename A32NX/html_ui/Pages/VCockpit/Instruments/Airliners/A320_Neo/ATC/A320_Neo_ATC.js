@@ -4,7 +4,7 @@ class A320_Neo_ATC extends Airliners.BaseATC {
     }
     onEvent(_event) {
         if (_event.indexOf("BTN_") >= 0) {
-            var buttonSuffix = _event.replace("BTN_", "");
+            const buttonSuffix = _event.replace("BTN_", "");
             if (buttonSuffix.charAt(0) == 'C') {
                 if (this.currentDigits[0] >= 0) {
                     if (this.bLastInputIsCLR) {
@@ -39,7 +39,7 @@ class A320_Neo_ATC extends Airliners.BaseATC {
                     }
                     slot = 0;
                 }
-                var buttonNumber = parseInt(buttonSuffix);
+                const buttonNumber = parseInt(buttonSuffix);
                 this.currentDigits[slot] = buttonNumber;
                 this.refreshValue();
                 if (slot == 3 && this.currentDigits[3] >= 0) {

@@ -32,10 +32,10 @@ class Jet_PFD_ILSIndicator extends HTMLElement {
         this.construct_A320_Neo();
     }
     construct_A320_Neo() {
-        var posX = 0;
-        var posY = 0;
-        var width = 500;
-        var height = 500;
+        let posX = 0;
+        let posY = 0;
+        let width = 500;
+        let height = 500;
         this.rootSVG = document.createElementNS(Avionics.SVG.NS, "svg");
         this.rootSVG.setAttribute("id", "ViewBox");
         this.rootSVG.setAttribute("viewBox", "0 0 " + width + " " + height);

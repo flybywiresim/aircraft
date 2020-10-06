@@ -191,11 +191,11 @@ class Jet_NDCompass extends HTMLElement {
         // if (this.updateFail) this.updateFail();
     }
     updateCompass(_deltaTime) {
-        var simHeading = SimVar.GetSimVarValue("PLANE HEADING DEGREES MAGNETIC", "degree");
-        var simSelectedHeading = SimVar.GetSimVarValue("AUTOPILOT HEADING LOCK DIR", "degree");
-        var simTrack = SimVar.GetSimVarValue("GPS GROUND MAGNETIC TRACK", "degree");
-        var simSelectedTrack = SimVar.GetSimVarValue("GPS WP DESIRED TRACK", "degree");
-        var simGroundSpeed = SimVar.GetSimVarValue("GPS GROUND SPEED", "knots");
+        const simHeading = SimVar.GetSimVarValue("PLANE HEADING DEGREES MAGNETIC", "degree");
+        const simSelectedHeading = SimVar.GetSimVarValue("AUTOPILOT HEADING LOCK DIR", "degree");
+        let simTrack = SimVar.GetSimVarValue("GPS GROUND MAGNETIC TRACK", "degree");
+        const simSelectedTrack = SimVar.GetSimVarValue("GPS WP DESIRED TRACK", "degree");
+        const simGroundSpeed = SimVar.GetSimVarValue("GPS GROUND SPEED", "knots");
         if (Simplane.getAutoPilotTRKModeActive() || Simplane.getAutoPilotTRKFPAModeActive()) {
             this._referenceMode = Jet_NDCompass_Reference.TRACK;
         } else {
@@ -208,7 +208,7 @@ class Jet_NDCompass extends HTMLElement {
             }
             this.lastSelectedHeading = Math.round(simSelectedHeading);
         }
-        var compass = 0;
+        let compass = 0;
         if (this.displayMode !== Jet_NDCompass_Display.PLAN) {
             if (this.referenceMode == Jet_NDCompass_Reference.TRACK) {
                 compass = simTrack;
@@ -232,7 +232,7 @@ class Jet_NDCompass extends HTMLElement {
                 compass = this._delayedCompass;
             }
 
-            var roundedCompass = fastToFixed(compass, 2);
+            const roundedCompass = fastToFixed(compass, 2);
             this.setAttribute("rotation", roundedCompass);
             if (this.currentRefGroup) {
                 this.currentRefGroup.classList.toggle('hide', false);
@@ -387,8 +387,8 @@ class Jet_NDCompass extends HTMLElement {
                 }
             }
         } else {
-            var selectedTrack = simSelectedTrack;
-            var roundedSelectedTrack = fastToFixed(selectedTrack, 3);
+            const selectedTrack = simSelectedTrack;
+            const roundedSelectedTrack = fastToFixed(selectedTrack, 3);
             this.setAttribute("selected_tracking_bug_rotation", roundedSelectedTrack);
             if (this.trackingLine) {
                 this.trackingLine.classList.toggle('hide', false);
@@ -409,19 +409,19 @@ class Jet_NDCompass extends HTMLElement {
                 this.headingGroup.classList.toggle('hide', false);
             }
         }
-        var heading = simHeading;
-        var roundedHeading = fastToFixed(heading, 3);
+        const heading = simHeading;
+        const roundedHeading = fastToFixed(heading, 3);
         this.setAttribute("heading_bug_rotation", roundedHeading);
         if (simGroundSpeed <= 10) {
             simTrack = simHeading;
         }
-        var roundedTracking = fastToFixed(simTrack, 3);
+        const roundedTracking = fastToFixed(simTrack, 3);
         this.setAttribute("tracking_bug_rotation", roundedTracking);
         if (this.ilsGroup) {
             if (this._showILS || this.navigationMode == Jet_NDCompass_Navigation.ILS) {
                 const localizer = this.gps.radioNav.getBestILSBeacon();
                 if (localizer.id > 0) {
-                    var roundedCourse = fastToFixed(localizer.course, 3);
+                    const roundedCourse = fastToFixed(localizer.course, 3);
                     this.setAttribute("ils_bug_rotation", roundedCourse);
                     this.ilsGroup.classList.toggle('hide', false);
                 } else {
@@ -439,7 +439,7 @@ class Jet_NDCompass extends HTMLElement {
                 const range = this.mapRange * this.mapRanges[i].factor;
                 if (range < 1.0 && this.mapRanges[i].removeInteger) {
                     const rangeText = (Math.floor(range * 100) / 100).toFixed(2);
-                    var radixPos = rangeText.indexOf('.');
+                    const radixPos = rangeText.indexOf('.');
                     this.mapRanges[i].text.textContent = rangeText.slice(radixPos);
                 } else {
                     this.mapRanges[i].text.textContent = range.toString();

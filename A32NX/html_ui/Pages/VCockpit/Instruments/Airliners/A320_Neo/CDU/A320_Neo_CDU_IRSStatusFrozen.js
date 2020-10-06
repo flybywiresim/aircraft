@@ -18,10 +18,10 @@ class CDUIRSStatusFrozen {
         const TTRK = SimVar.GetSimVarValue("GPS GROUND MAGNETIC TRACK", "radians") || "000";
         const MHDG = SimVar.GetSimVarValue("GPS GROUND TRUE TRACK", "radians") || "000";
         const WIND_VELOCITY = SimVar.GetSimVarValue("AMBIENT WIND VELOCITY", "Knots") || "00";
-        var UTC_SECONDS = Math.floor(SimVar.GetGlobalVarValue("ZULU TIME", "seconds"));
-        var hours = Math.floor(UTC_SECONDS / 3600) || 0;
-        var minutes = Math.floor(UTC_SECONDS % 3600 / 60) || 0;
-        var hhmm = `${hours.toString().padStart(2, "0") || "00"}${minutes.toString().padStart(2, "0") || "00"}`;
+        const UTC_SECONDS = Math.floor(SimVar.GetGlobalVarValue("ZULU TIME", "seconds"));
+        const hours = Math.floor(UTC_SECONDS / 3600) || 0;
+        const minutes = Math.floor(UTC_SECONDS % 3600 / 60) || 0;
+        const hhmm = `${hours.toString().padStart(2, "0") || "00"}${minutes.toString().padStart(2, "0") || "00"}`;
 
         mcdu.setTemplate([
             [`IRS${index} FROZEN AT ${hhmm}`],

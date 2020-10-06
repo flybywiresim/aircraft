@@ -11,7 +11,7 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
     }
     changePage(_pageName) {
         let pageName = _pageName.toUpperCase();
-        for (var i = 0; i < this.lowerScreenPages.length; i++) {
+        for (let i = 0; i < this.lowerScreenPages.length; i++) {
             if (this.lowerScreenPages[i].name == pageName) {
                 let pageIndex = i;
                 if (pageIndex == this.currentPage) {
@@ -113,7 +113,7 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         const externalPowerOn = SimVar.GetSimVarValue("EXTERNAL POWER AVAILABLE:1", "Bool") === 1 && SimVar.GetSimVarValue("EXTERNAL POWER ON", "Bool") === 1;
         const apuOn = SimVar.GetSimVarValue("L:APU_GEN_ONLINE", "bool");
         const isACPowerAvailable = engineOn || apuOn || externalPowerOn;
-        var DCBus = false;
+        let DCBus = false;
 
         const ACPowerStateChange = (isACPowerAvailable != this.ACPowerLastState);
         SimVar.SetSimVarValue("L:ACPowerStateChange","Bool",ACPowerStateChange);
@@ -121,7 +121,7 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         if (SimVar.GetSimVarValue("ELECTRICAL MAIN BUS VOLTAGE","Volts") >= 20) {
             DCBus = true;
         }
-        var isDCPowerAvailable = isACPowerAvailable || DCBus;
+        const isDCPowerAvailable = isACPowerAvailable || DCBus;
         if (isDCPowerAvailable) {
             SimVar.SetSimVarValue("L:DCPowerAvailable","bool",1); //True if any AC|DC bus is online
         } else {
@@ -180,8 +180,7 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         this.ACPowerLastState = isACPowerAvailable;
 
         // modification start here
-        var currentAPUMasterState = SimVar.GetSimVarValue("FUELSYSTEM VALVE SWITCH:8", "Bool");
-
+        const currentAPUMasterState = SimVar.GetSimVarValue("FUELSYSTEM VALVE SWITCH:8", "Bool");
 
         //Determine displayed page when no button is selected
         const prevPage = this.pageNameWhenUnselected;
@@ -310,7 +309,6 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
             // ----------- MODIFIED END --------------------//
 
             infoPanelManager.clearScreen(Airliners.EICAS_INFO_PANEL_ID.PRIMARY);
-
 
             if (this.warnings) {
                 const text = this.warnings.getCurrentWarningText();

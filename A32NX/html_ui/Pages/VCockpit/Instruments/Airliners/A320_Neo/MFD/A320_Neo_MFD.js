@@ -197,12 +197,12 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
         }
         const url = document.getElementsByTagName("a320-neo-mfd-element")[0].getAttribute("url");
         const index = parseInt(url.substring(url.length - 1));
-        var wxRadarOn = (SimVar.GetSimVarValue("L:XMLVAR_A320_WeatherRadar_Sys", "number") != 1) ? true : false;
-        var wxRadarMode = SimVar.GetSimVarValue("L:XMLVAR_A320_WeatherRadar_Mode", "number");
-        var terrainOn = SimVar.GetSimVarValue(`L:BTN_TERRONND_${index}_ACTIVE`, "number");
-        var mapMode = SimVar.GetSimVarValue("L:A320_Neo_MFD_NAV_MODE_" + index, "number");
-        var mapRange = SimVar.GetSimVarValue("L:A320_Neo_MFD_Range_" + index, "number");
-        var shouldShowWeather = wxRadarOn && wxRadarMode != 3;
+        const wxRadarOn = (SimVar.GetSimVarValue("L:XMLVAR_A320_WeatherRadar_Sys", "number") != 1) ? true : false;
+        const wxRadarMode = SimVar.GetSimVarValue("L:XMLVAR_A320_WeatherRadar_Mode", "number");
+        const terrainOn = SimVar.GetSimVarValue(`L:BTN_TERRONND_${index}_ACTIVE`, "number");
+        const mapMode = SimVar.GetSimVarValue("L:A320_Neo_MFD_NAV_MODE_" + index, "number");
+        const mapRange = SimVar.GetSimVarValue("L:A320_Neo_MFD_Range_" + index, "number");
+        const shouldShowWeather = wxRadarOn && wxRadarMode != 3;
         if (this.wxRadarOn != wxRadarOn || this.terrainOn != terrainOn || this.wxRadarMode != wxRadarMode || this.mapMode != mapMode) {
             this.wxRadarOn = wxRadarOn;
             this.wxRadarMode = wxRadarMode;
@@ -251,8 +251,8 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
         // supposed to be shown.
         // When neither weather nor terrain are supposed to be shown,
         // the BingMap will be hidden.
-        var isTerrainVisible = this.map.instrument.mapConfigId == 1;
-        var isWeatherVisible = !terrainOn && shouldShowWeather;
+        const isTerrainVisible = this.map.instrument.mapConfigId == 1;
+        const isWeatherVisible = !terrainOn && shouldShowWeather;
         if (isTerrainVisible || isWeatherVisible) {
             this.setShowBingMap(true);
         } else {
@@ -584,14 +584,14 @@ class A320_Neo_MFD_NDInfo extends NavSystemElement {
         if (this.ndInfo != null) {
             this.ndInfo.update(_deltaTime);
         }
-        var ADIRSState = SimVar.GetSimVarValue("L:A320_Neo_ADIRS_STATE", "Enum");
-        var groundSpeed = Math.round(Simplane.getGroundSpeed());
-        var gs = this.ndInfo.querySelector("#GS_Value");
-        var tas = this.ndInfo.querySelector("#TAS_Value");
-        var wd = this.ndInfo.querySelector("#Wind_Direction");
-        var ws = this.ndInfo.querySelector("#Wind_Strength");
-        var wa = this.ndInfo.querySelector("#Wind_Arrow");
-        var wptg = this.ndInfo.querySelector("#Waypoint_Group");
+        const ADIRSState = SimVar.GetSimVarValue("L:A320_Neo_ADIRS_STATE", "Enum");
+        const groundSpeed = Math.round(Simplane.getGroundSpeed());
+        const gs = this.ndInfo.querySelector("#GS_Value");
+        const tas = this.ndInfo.querySelector("#TAS_Value");
+        const wd = this.ndInfo.querySelector("#Wind_Direction");
+        const ws = this.ndInfo.querySelector("#Wind_Strength");
+        const wa = this.ndInfo.querySelector("#Wind_Arrow");
+        const wptg = this.ndInfo.querySelector("#Waypoint_Group");
         if (ADIRSState != 2 || groundSpeed <= 100) {
             //Hide TAS, and wind info
             tas.textContent = "---";
