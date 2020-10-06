@@ -14,6 +14,8 @@ class A320_Neo_SAI extends BaseAirliners {
     Update() {
         super.Update();
     }
+    onEvent(_event) {
+    }
 }
 
 class A320_Neo_SAI_Airspeed extends NavSystemElement {
@@ -957,6 +959,7 @@ customElements.define('a320-neo-sai-pressure-indicator', A320_Neo_SAI_PressureIn
 class A320_Neo_SAI_Brightness extends NavSystemElement {
     init(root) {
         this.brightnessElement = this.gps.getChildById("Brightness");
+        this.bugsElement = this.gps.getChildById("Bugs");
     }
     onEnter() {
     }
@@ -964,33 +967,29 @@ class A320_Neo_SAI_Brightness extends NavSystemElement {
         return true;
     }
     onUpdate(_deltaTime) {
-
-        const brightness = SimVar.GetSimVarValue("L:A32NX_BARO_BRIGHTNESS","number");
-        const bright_gran = 0.05;
-        const minimum = 0.15;
-        const baro_plus = SimVar.GetSimVarValue("L:PUSH_BARO_PLUS", "Bool");
-        const baro_minus = SimVar.GetSimVarValue("L:PUSH_BARO_MINUS", "Bool");
-
-        if (baro_plus !== this.baroPlusState) {
-            this.baroPlusState = baro_plus;
-            if (brightness < 1) {
-                const new_brightness = brightness + bright_gran;
-                SimVar.SetSimVarValue("L:A32NX_BARO_BRIGHTNESS","number", new_brightness);
-                this.brightnessElement.updateBrightness(new_brightness);  //TODO: Remove line on model update
-            }
-        }
-        if (baro_minus !== this.baroMinusState) {
-            this.baroMinusState = baro_minus;
-            if (brightness > minimum ) {
-                const new_brightness = brightness - bright_gran;
-                SimVar.SetSimVarValue("L:A32NX_BARO_BRIGHTNESS","number", new_brightness);
-                this.brightnessElement.updateBrightness(new_brightness);  //TODO: Remove line on model update
-            }
-        }
     }
     onExit() {
     }
     onEvent(_event) {
+        const brightness = SimVar.GetSimVarValue("L:A32NX_BARO_BRIGHTNESS","number");
+        const bright_gran = 0.05;
+        const minimum = 0.15;
+        switch (_event) {
+            case "BTN_BARO_PLUS":
+                if (this.bugsElement.getDisplay() === "none" && brightness < 1) {
+                    const new_brightness = brightness + bright_gran;
+                    SimVar.SetSimVarValue("L:A32NX_BARO_BRIGHTNESS","number", new_brightness);
+                    this.brightnessElement.updateBrightness(new_brightness);  //TODO: Remove line on model update
+                }
+            break;
+            case "BTN_BARO_MINUS":
+                if (this.bugsElement.getDisplay() === "none" && brightness > minimum) {
+                    const new_brightness = brightness - bright_gran;
+                    SimVar.SetSimVarValue("L:A32NX_BARO_BRIGHTNESS","number", new_brightness);
+                    this.brightnessElement.updateBrightness(new_brightness);  //TODO: Remove line on model update
+                }
+            break;
+        }
     }
 }
 
@@ -1041,10 +1040,18 @@ class A320_Neo_SAI_BrightnessBox extends HTMLElement {
 customElements.define('a320-neo-sai-brightness', A320_Neo_SAI_BrightnessBox);
 
 class A320_Neo_SAI_SelfTest extends NavSystemElement {
-
     init(root) {
+        this.check_count = 0;
         this.selfTestElement = this.gps.getChildById("SelfTest");
         this.getDeltaTime = A32NX_Util.createDeltaTimeCalculator();
+        this.cold_dark = SimVar.GetSimVarValue('L:A32NX_COLD_AND_DARK_SPAWN', 'Bool');
+        const ac_pwr = SimVar.GetSimVarValue("L:ACPowerAvailable", "bool");
+        const dc_pwr = SimVar.GetSimVarValue("L:DCPowerAvailable", "bool");
+
+        if (!this.cold_dark && ac_pwr && dc_pwr) {
+            this.selfTestElement.finishTest();
+        }
+
     }
     onEnter() {
     }
@@ -1056,22 +1063,22 @@ class A320_Neo_SAI_SelfTest extends NavSystemElement {
 
         const ac_pwr = SimVar.GetSimVarValue("L:ACPowerAvailable", "bool");
         const dc_pwr = SimVar.GetSimVarValue("L:DCPowerAvailable", "bool");
-        const cold_dark = SimVar.GetSimVarValue('L:A32NX_COLD_AND_DARK_SPAWN', 'Bool');
-
         const complete = this.selfTestElement.complete;
+        const check_interval = 10;
 
         if ((ac_pwr || dc_pwr) && !complete) {
             this.selfTestElement.update(_dTime);
         }
-        if (!ac_pwr && !dc_pwr) {
-            // TODO: More realistic/advanced Behaviour when power is lost
-            this.selfTestElement.resetTimer();
+        if (this.check_count % check_interval === 0) {
+            const airspeed = Simplane.getTrueSpeed();
+            if (!ac_pwr && !dc_pwr && airspeed < 50.0) {
+                // Airspeed > 50 knots, check every 10th frame
+                this.selfTestElement.resetTimer();
+            }
         }
-
-        if (!complete && !cold_dark && ac_pwr && dc_pwr) {
-            // TODO: better way of doing this not on loop
-            this.selfTestElement.finishTest();
-        }
+        this.check_count = (this.check_count + 1) % check_interval;
+    }
+    onEvent(_event) {
     }
 }
 
@@ -1236,7 +1243,7 @@ class A320_Neo_SAI_AttReset extends NavSystemElement {
 
     init(root) {
         this.attResetElement = this.gps.getChildById("AttReset");
-        this.resetState = SimVar.GetSimVarValue("L:PUSH_BARO_RST", "Bool");
+        this.bugsElement = this.gps.getChildById("Bugs");
         this.getDeltaTime = A32NX_Util.createDeltaTimeCalculator();
     }
     onEnter() {
@@ -1246,17 +1253,18 @@ class A320_Neo_SAI_AttReset extends NavSystemElement {
     }
     onUpdate(_deltaTime) {
         const _dTime = this.getDeltaTime();
-        const reset = SimVar.GetSimVarValue("L:PUSH_BARO_RST", "Bool");
-
-        if (reset !== this.resetState) {
-            this.resetState = reset;
-            this.attResetElement.startReset();
-        }
         this.attResetElement.update(_dTime);
     }
     onExit() {
     }
     onEvent(_event) {
+        switch (_event) {
+            case "BTN_BARO_RST":
+                if (this.bugsElement.getDisplay() === "none") {
+                    this.attResetElement.startReset();
+                }
+            break;
+        }
     }
 }
 
@@ -1269,7 +1277,6 @@ class A320_Neo_SAI_AttResetIndicator extends HTMLElement {
         Utils.RemoveAllChildren(this);
 
         this.complete = true;
-
         this.start_time = 10;
         this.resetTimer = this.start_time;
 
@@ -1334,8 +1341,7 @@ class A320_Neo_SAI_AttResetIndicator extends HTMLElement {
         }
         if (this.resetTimer > 9) {
             this.st_att_txt.textContent = "ATT " + Math.ceil(this.resetTimer) + "s";
-        }
-        else {
+        } else {
             this.st_att_txt.textContent = "ATT 0" + Math.ceil(this.resetTimer) + "s";
         }
     }
@@ -1357,8 +1363,11 @@ customElements.define('a320-neo-sai-att-reset-indicator', A320_Neo_SAI_AttResetI
 
 class A320_Neo_SAI_Bugs extends NavSystemElement {
     init(root) {
+        SimVar.SetSimVarValue("L:A32NX_BARO_BUGS_ACTIVE","Bool", false);
         this.bugsElement = this.gps.getChildById("Bugs");
-        this.resetState = SimVar.GetSimVarValue("L:PUSH_BARO_BUGS", "Bool");
+        this.blink_status = false;
+        this.current_bug = 0;
+        this.check_count = 0;
     }
     onEnter() {
     }
@@ -1366,15 +1375,58 @@ class A320_Neo_SAI_Bugs extends NavSystemElement {
         return true;
     }
     onUpdate(_deltaTime) {
-        const reset = SimVar.GetSimVarValue("L:PUSH_BARO_BUGS", "Bool");
-        if (reset !== this.resetState) {
-            this.resetState = reset;
-            this.bugsElement.toggle();
+        const check_interval = 5;
+        const blink_interval = 2;
+
+        if (this.blink_status && this.check_count != 0 && this.check_count % blink_interval) {
+            this.bugsElement.toggleBugBox(this.current_bug);
         }
+        this.check_count = (this.check_count + 1) % check_interval;
     }
     onExit() {
     }
     onEvent(_event) {
+        switch (_event) {
+            case "BTN_BARO_BUGS":
+                this.blink_status = false;
+                this.bugsElement.freezeBugBox(this.current_bug);
+                this.bugsElement.togglePage();
+            break;
+            case "BTN_BARO_PLUS":
+                this.blink_status = true;
+                if (this.bugsElement.getDisplay() !== "none") {
+                    this.bugsElement.freezeBugBox(this.current_bug);
+                    this.current_bug = (this.current_bug + 5) % 6;
+                }
+            break;
+            case "BTN_BARO_MINUS":
+                this.blink_status = true;
+                if (this.bugsElement.getDisplay() !== "none") {
+                    this.bugsElement.freezeBugBox(this.current_bug);
+                    this.current_bug = (this.current_bug + 1 ) % 6;
+                }
+            break;
+            case "KNOB_BARO_C":
+                this.blink_status = true;
+                if (this.current_bug < 4) {
+                    this.bugsElement.setBug(this.current_bug, this.bugsElement.getBug(this.current_bug) + 1);
+                } else {
+                    this.bugsElement.setBug(this.current_bug, this.bugsElement.getBug(this.current_bug) + 100);
+                }
+            break;
+            case "KNOB_BARO_AC":
+                this.blink_status = true;
+                if (this.current_bug < 4) {
+                    this.bugsElement.setBug(this.current_bug, this.bugsElement.getBug(this.current_bug) - 1);
+                } else {
+                    this.bugsElement.setBug(this.current_bug, this.bugsElement.getBug(this.current_bug) - 100);
+                }
+            break;
+            case "BTN_BARO_RST":
+                this.bugsElement.freezeBugBox(this.current_bug);
+                this.bugsElement.toggleBug(this.current_bug);
+            break;
+        }
     }
 }
 
@@ -1385,6 +1437,10 @@ class A320_Neo_SAI_BugsPage extends HTMLElement {
 
     construct() {
         Utils.RemoveAllChildren(this);
+
+        this.bugStatus = {};
+        this.bugBox = {};
+        this.bugTxt = {};
 
         this.bugsDiv = document.createElement("div");
         this.bugsDiv.id = "BugsDiv";
@@ -1407,7 +1463,7 @@ class A320_Neo_SAI_BugsPage extends HTMLElement {
         this.bugsSVG.style.width = "100%";
         this.bugsSVG.style.height = "100%";
         this.bugsSVG.style.zIndex = "2";
-        this.bugsSVG.style.backgroundColor = "rgba(0,0,0,1)";
+        this.bugsSVG.style.backgroundColor = "rgba(13,20,35,1)";
         this.bugsDiv.appendChild(this.bugsSVG);
 
         const bugsTitle = document.createElementNS(Avionics.SVG.NS, "text");
@@ -1427,16 +1483,16 @@ class A320_Neo_SAI_BugsPage extends HTMLElement {
         bugsExitTxt.setAttribute("font-weight", "100");
         bugsExitTxt.setAttribute("font-size", "36px");
         bugsExitTxt.setAttribute("fill", "#27AAE1");
-        bugsExitTxt.setAttribute("transform", "matrix(1 0 0 1 56.5 96)");
+        bugsExitTxt.setAttribute("transform", "matrix(1 0 0 1 56.5 86)");
         this.bugsSVG.appendChild(bugsExitTxt);
         const bugsExitLine = document.createElementNS(Avionics.SVG.NS, "line");
         bugsExitLine.setAttribute("id", "BugsExitLine");
         bugsExitLine.setAttribute("stroke", "#27AAE1");
-        bugsExitLine.setAttribute("stroke-width", "4");
+        bugsExitLine.setAttribute("stroke-width", "6");
         bugsExitLine.setAttribute("x1", "162");
         bugsExitLine.setAttribute("x2", "162");
         bugsExitLine.setAttribute("y1", "50");
-        bugsExitLine.setAttribute("y2", "102");
+        bugsExitLine.setAttribute("y2", "82");
         this.bugsSVG.appendChild(bugsExitLine);
         const bugsExitLineEnd = document.createElementNS(Avionics.SVG.NS, "polygon");
         bugsExitLineEnd.setAttribute("id", "BugsExitLineEnd");
@@ -1445,14 +1501,24 @@ class A320_Neo_SAI_BugsPage extends HTMLElement {
         this.bugsSVG.appendChild(bugsExitLineEnd);
 
         const bugsPlusSymbol = document.createElementNS(Avionics.SVG.NS, "text");
-        bugsPlusSymbol.setAttribute("id", "B ugsPlusSymbol");
+        bugsPlusSymbol.setAttribute("id", "BugsPlusSymbol");
         bugsPlusSymbol.textContent = "(+)";
         bugsPlusSymbol.setAttribute("font-family", "Roboto");
         bugsPlusSymbol.setAttribute("font-weight", "100");
-        bugsPlusSymbol.setAttribute("font-size", "32px");
+        bugsPlusSymbol.setAttribute("font-size", "24px");
         bugsPlusSymbol.setAttribute("fill", "white");
         bugsPlusSymbol.setAttribute("transform", "matrix(1 0 0 1 244.5 160)");
         this.bugsSVG.appendChild(bugsPlusSymbol);
+
+        const bugsMinusSymbol = document.createElementNS(Avionics.SVG.NS, "text");
+        bugsMinusSymbol.setAttribute("id", "BugsMinusSymbol");
+        bugsMinusSymbol.textContent = "(-)";
+        bugsMinusSymbol.setAttribute("font-family", "Roboto");
+        bugsMinusSymbol.setAttribute("font-weight", "100");
+        bugsMinusSymbol.setAttribute("font-size", "24px");
+        bugsMinusSymbol.setAttribute("fill", "white");
+        bugsMinusSymbol.setAttribute("transform", "matrix(1 0 0 1 140 237)");
+        this.bugsSVG.appendChild(bugsMinusSymbol);
 
         const bugsSpdHeadTxt = document.createElementNS(Avionics.SVG.NS, "text");
         bugsSpdHeadTxt.setAttribute("id", "BugsSpdHeader");
@@ -1464,167 +1530,174 @@ class A320_Neo_SAI_BugsPage extends HTMLElement {
         bugsSpdHeadTxt.setAttribute("transform", "matrix(1 0 0 1 152 150)");
         this.bugsSVG.appendChild(bugsSpdHeadTxt);
 
-        const bugsSpdLineRT = document.createElementNS(Avionics.SVG.NS, "line");
-        bugsSpdLineRT.setAttribute("id", "BugsSpdLineRT");
-        bugsSpdLineRT.setAttribute("stroke", "white");
-        bugsSpdLineRT.setAttribute("stroke-width", "4");
-        bugsSpdLineRT.setAttribute("x1", "237");
-        bugsSpdLineRT.setAttribute("x2", "424");
-        bugsSpdLineRT.setAttribute("y1", "182");
-        bugsSpdLineRT.setAttribute("y2", "182");
-        this.bugsSVG.appendChild(bugsSpdLineRT);
+        const bugLine = {};
+        const bugLineX = {};
 
-        const bugSpd1Status = document.createElementNS(Avionics.SVG.NS, "text");
-        bugSpd1Status.setAttribute("id", "BugsSpd1Status");
-        bugSpd1Status.textContent = "OFF";
-        bugSpd1Status.setAttribute("font-family", "Roboto");
-        bugSpd1Status.setAttribute("font-weight", "100");
-        bugSpd1Status.setAttribute("font-size", "36px");
-        bugSpd1Status.setAttribute("fill", "white");
-        bugSpd1Status.setAttribute("transform", "matrix(1 0 0 1 54 193)");
-        this.bugsSVG.appendChild(bugSpd1Status);
-        const bugsSpd1Box = document.createElementNS(Avionics.SVG.NS, "rect");
-        bugsSpd1Box.setAttribute("id", "BugsSpd1Box");
-        bugsSpd1Box.setAttribute("stroke", "white");
-        bugsSpd1Box.setAttribute("stroke-width", "4");
-        bugsSpd1Box.setAttribute("x", "143.25");
-        bugsSpd1Box.setAttribute("y", "160");
-        bugsSpd1Box.setAttribute("width", "93.75");
-        bugsSpd1Box.setAttribute("height", "44.25");
-        this.bugsSVG.appendChild(bugsSpd1Box);
-        const bugsSpd1Txt = document.createElementNS(Avionics.SVG.NS, "text");
-        bugsSpd1Txt.setAttribute("id", "BugsSpd1Txt");
-        bugsSpd1Txt.textContent = "030";
-        bugsSpd1Txt.setAttribute("font-family", "Roboto");
-        bugsSpd1Txt.setAttribute("font-weight", "100");
-        bugsSpd1Txt.setAttribute("font-size", "36px");
-        bugsSpd1Txt.setAttribute("fill", "white");
-        bugsSpd1Txt.setAttribute("transform", "matrix(1 0 0 1 157 195)");
-        this.bugsSVG.appendChild(bugsSpd1Txt);
+        bugLineX[0] = document.createElementNS(Avionics.SVG.NS, "line");
+        bugLineX[0].setAttribute("id", "BugsSpdLineX0");
+        bugLineX[0].setAttribute("stroke", "white");
+        bugLineX[0].setAttribute("stroke-width", "4");
+        bugLineX[0].setAttribute("x1", "237");
+        bugLineX[0].setAttribute("x2", "424");
+        bugLineX[0].setAttribute("y1", "182");
+        bugLineX[0].setAttribute("y2", "182");
+        this.bugsSVG.appendChild(bugLineX[0]);
 
-        const bugsSpdLine1 = document.createElementNS(Avionics.SVG.NS, "line");
-        bugsSpdLine1.setAttribute("id", "BugsSpdLine1");
-        bugsSpdLine1.setAttribute("stroke", "white");
-        bugsSpdLine1.setAttribute("stroke-width", "4");
-        bugsSpdLine1.setAttribute("x1", "190");
-        bugsSpdLine1.setAttribute("x2", "190");
-        bugsSpdLine1.setAttribute("y1", "204");
-        bugsSpdLine1.setAttribute("y2", "259");
-        this.bugsSVG.appendChild(bugsSpdLine1);
+        this.bugStatus[0] = document.createElementNS(Avionics.SVG.NS, "text");
+        this.bugStatus[0].setAttribute("id", "BugsSpd1Status");
+        this.bugStatus[0].textContent = "OFF";
+        this.bugStatus[0].style.display = "block";
+        this.bugStatus[0].setAttribute("font-family", "Roboto");
+        this.bugStatus[0].setAttribute("font-weight", "100");
+        this.bugStatus[0].setAttribute("font-size", "36px");
+        this.bugStatus[0].setAttribute("fill", "white");
+        this.bugStatus[0].setAttribute("transform", "matrix(1 0 0 1 54 193)");
+        this.bugsSVG.appendChild(this.bugStatus[0]);
+        this.bugBox[0] = document.createElementNS(Avionics.SVG.NS, "rect");
+        this.bugBox[0].setAttribute("id", "BugsSpd1Box");
+        this.bugBox[0].setAttribute("stroke", "white");
+        this.bugBox[0].setAttribute("stroke-width", "4");
+        this.bugBox[0].setAttribute("x", "143.25");
+        this.bugBox[0].setAttribute("y", "160");
+        this.bugBox[0].setAttribute("width", "93.75");
+        this.bugBox[0].setAttribute("height", "44.25");
+        this.bugsSVG.appendChild(this.bugBox[0]);
+        this.bugTxt[0] = document.createElementNS(Avionics.SVG.NS, "text");
+        this.bugTxt[0].setAttribute("id", "BugsSpd1Txt");
+        this.bugTxt[0].textContent = "030";
+        this.bugTxt[0].setAttribute("font-family", "Roboto");
+        this.bugTxt[0].setAttribute("font-weight", "100");
+        this.bugTxt[0].setAttribute("font-size", "36px");
+        this.bugTxt[0].setAttribute("fill", "white");
+        this.bugTxt[0].setAttribute("transform", "matrix(1 0 0 1 157 195)");
+        this.bugsSVG.appendChild(this.bugTxt[0]);
 
-        const bugSpd2Status = document.createElementNS(Avionics.SVG.NS, "text");
-        bugSpd2Status.setAttribute("id", "BugsSpd2Status");
-        bugSpd2Status.textContent = "OFF";
-        bugSpd2Status.setAttribute("font-family", "Roboto");
-        bugSpd2Status.setAttribute("font-weight", "100");
-        bugSpd2Status.setAttribute("font-size", "36px");
-        bugSpd2Status.setAttribute("fill", "white");
-        bugSpd2Status.setAttribute("transform", "matrix(1 0 0 1 54 294)");
-        this.bugsSVG.appendChild(bugSpd2Status);
-        const bugsSpd2Box = document.createElementNS(Avionics.SVG.NS, "rect");
-        bugsSpd2Box.setAttribute("id", "BugsSpd2Box");
-        bugsSpd2Box.setAttribute("stroke", "white");
-        bugsSpd2Box.setAttribute("stroke-width", "4");
-        bugsSpd2Box.setAttribute("x", "143.25");
-        bugsSpd2Box.setAttribute("y", "259");
-        bugsSpd2Box.setAttribute("width", "93.75");
-        bugsSpd2Box.setAttribute("height", "44.25");
-        this.bugsSVG.appendChild(bugsSpd2Box);
-        const bugsSpd2Txt = document.createElementNS(Avionics.SVG.NS, "text");
-        bugsSpd2Txt.setAttribute("id", "BugsSpd2Txt");
-        bugsSpd2Txt.textContent = "030";
-        bugsSpd2Txt.setAttribute("font-family", "Roboto");
-        bugsSpd2Txt.setAttribute("font-weight", "100");
-        bugsSpd2Txt.setAttribute("font-size", "36px");
-        bugsSpd2Txt.setAttribute("fill", "white");
-        bugsSpd2Txt.setAttribute("transform", "matrix(1 0 0 1 157 294)");
-        this.bugsSVG.appendChild(bugsSpd2Txt);
+        bugLine[0] = document.createElementNS(Avionics.SVG.NS, "line");
+        bugLine[0].setAttribute("id", "BugsSpdLine1");
+        bugLine[0].setAttribute("stroke", "white");
+        bugLine[0].setAttribute("stroke-width", "4");
+        bugLine[0].setAttribute("x1", "190");
+        bugLine[0].setAttribute("x2", "190");
+        bugLine[0].setAttribute("y1", "204");
+        bugLine[0].setAttribute("y2", "259");
+        this.bugsSVG.appendChild(bugLine[0]);
 
-        const bugsSpdLine2 = document.createElementNS(Avionics.SVG.NS, "line");
-        bugsSpdLine2.setAttribute("id", "BugsSpdLine2");
-        bugsSpdLine2.setAttribute("stroke", "white");
-        bugsSpdLine2.setAttribute("stroke-width", "4");
-        bugsSpdLine2.setAttribute("x1", "190");
-        bugsSpdLine2.setAttribute("x2", "190");
-        bugsSpdLine2.setAttribute("y1", "303");
-        bugsSpdLine2.setAttribute("y2", "358");
-        this.bugsSVG.appendChild(bugsSpdLine2);
+        this.bugStatus[1] = document.createElementNS(Avionics.SVG.NS, "text");
+        this.bugStatus[1].setAttribute("id", "BugsSpd2Status");
+        this.bugStatus[1].textContent = "OFF";
+        this.bugStatus[1].style.display = "block";
+        this.bugStatus[1].setAttribute("font-family", "Roboto");
+        this.bugStatus[1].setAttribute("font-weight", "100");
+        this.bugStatus[1].setAttribute("font-size", "36px");
+        this.bugStatus[1].setAttribute("fill", "white");
+        this.bugStatus[1].setAttribute("transform", "matrix(1 0 0 1 54 294)");
+        this.bugsSVG.appendChild(this.bugStatus[1]);
+        this.bugBox[1] = document.createElementNS(Avionics.SVG.NS, "rect");
+        this.bugBox[1].setAttribute("id", "BugsSpd2Box");
+        this.bugBox[1].setAttribute("stroke", "white");
+        this.bugBox[1].setAttribute("stroke-width", "4");
+        this.bugBox[1].setAttribute("x", "143.25");
+        this.bugBox[1].setAttribute("y", "259");
+        this.bugBox[1].setAttribute("width", "93.75");
+        this.bugBox[1].setAttribute("height", "44.25");
+        this.bugsSVG.appendChild(this.bugBox[1]);
+        this.bugTxt[1] = document.createElementNS(Avionics.SVG.NS, "text");
+        this.bugTxt[1].setAttribute("id", "BugsSpd2Txt");
+        this.bugTxt[1].textContent = "030";
+        this.bugTxt[1].setAttribute("font-family", "Roboto");
+        this.bugTxt[1].setAttribute("font-weight", "100");
+        this.bugTxt[1].setAttribute("font-size", "36px");
+        this.bugTxt[1].setAttribute("fill", "white");
+        this.bugTxt[1].setAttribute("transform", "matrix(1 0 0 1 157 294)");
+        this.bugsSVG.appendChild(this.bugTxt[1]);
 
-        const bugSpd3Status = document.createElementNS(Avionics.SVG.NS, "text");
-        bugSpd3Status.setAttribute("id", "BugsSpd3Status");
-        bugSpd3Status.textContent = "OFF";
-        bugSpd3Status.setAttribute("font-family", "Roboto");
-        bugSpd3Status.setAttribute("font-weight", "100");
-        bugSpd3Status.setAttribute("font-size", "36px");
-        bugSpd3Status.setAttribute("fill", "white");
-        bugSpd3Status.setAttribute("transform", "matrix(1 0 0 1 54 392)");
-        this.bugsSVG.appendChild(bugSpd3Status);
-        const bugsSpd3Box = document.createElementNS(Avionics.SVG.NS, "rect");
-        bugsSpd3Box.setAttribute("id", "BugsSpd3Box");
-        bugsSpd3Box.setAttribute("stroke", "white");
-        bugsSpd3Box.setAttribute("stroke-width", "4");
-        bugsSpd3Box.setAttribute("x", "143.25");
-        bugsSpd3Box.setAttribute("y", "359");
-        bugsSpd3Box.setAttribute("width", "93.75");
-        bugsSpd3Box.setAttribute("height", "44.25");
-        this.bugsSVG.appendChild(bugsSpd3Box);
-        const bugsSpd3Txt = document.createElementNS(Avionics.SVG.NS, "text");
-        bugsSpd3Txt.setAttribute("id", "BugsSpd3Txt");
-        bugsSpd3Txt.textContent = "030";
-        bugsSpd3Txt.setAttribute("font-family", "Roboto");
-        bugsSpd3Txt.setAttribute("font-weight", "100");
-        bugsSpd3Txt.setAttribute("font-size", "36px");
-        bugsSpd3Txt.setAttribute("fill", "white");
-        bugsSpd3Txt.setAttribute("transform", "matrix(1 0 0 1 157 392)");
-        this.bugsSVG.appendChild(bugsSpd3Txt);
+        bugLine[1] = document.createElementNS(Avionics.SVG.NS, "line");
+        bugLine[1].setAttribute("id", "BugsSpdLine2");
+        bugLine[1].setAttribute("stroke", "white");
+        bugLine[1].setAttribute("stroke-width", "4");
+        bugLine[1].setAttribute("x1", "190");
+        bugLine[1].setAttribute("x2", "190");
+        bugLine[1].setAttribute("y1", "303");
+        bugLine[1].setAttribute("y2", "358");
+        this.bugsSVG.appendChild(bugLine[1]);
 
-        const bugsSpdLine3 = document.createElementNS(Avionics.SVG.NS, "line");
-        bugsSpdLine3.setAttribute("id", "BugsSpdLine3");
-        bugsSpdLine3.setAttribute("stroke", "white");
-        bugsSpdLine3.setAttribute("stroke-width", "4");
-        bugsSpdLine3.setAttribute("x1", "190");
-        bugsSpdLine3.setAttribute("x2", "190");
-        bugsSpdLine3.setAttribute("y1", "402.5");
-        bugsSpdLine3.setAttribute("y2", "458");
-        this.bugsSVG.appendChild(bugsSpdLine3);
+        this.bugStatus[2] = document.createElementNS(Avionics.SVG.NS, "text");
+        this.bugStatus[2].setAttribute("id", "BugsSpd3Status");
+        this.bugStatus[2].textContent = "OFF";
+        this.bugStatus[2].style.display = "block";
+        this.bugStatus[2].setAttribute("font-family", "Roboto");
+        this.bugStatus[2].setAttribute("font-weight", "100");
+        this.bugStatus[2].setAttribute("font-size", "36px");
+        this.bugStatus[2].setAttribute("fill", "white");
+        this.bugStatus[2].setAttribute("transform", "matrix(1 0 0 1 54 392)");
+        this.bugsSVG.appendChild(this.bugStatus[2]);
+        this.bugBox[2] = document.createElementNS(Avionics.SVG.NS, "rect");
+        this.bugBox[2].setAttribute("id", "BugsSpd3Box");
+        this.bugBox[2].setAttribute("stroke", "white");
+        this.bugBox[2].setAttribute("stroke-width", "4");
+        this.bugBox[2].setAttribute("x", "143.25");
+        this.bugBox[2].setAttribute("y", "359");
+        this.bugBox[2].setAttribute("width", "93.75");
+        this.bugBox[2].setAttribute("height", "44.25");
+        this.bugsSVG.appendChild(this.bugBox[2]);
+        this.bugTxt[2] = document.createElementNS(Avionics.SVG.NS, "text");
+        this.bugTxt[2].setAttribute("id", "BugsSpd3Txt");
+        this.bugTxt[2].textContent = "030";
+        this.bugTxt[2].setAttribute("font-family", "Roboto");
+        this.bugTxt[2].setAttribute("font-weight", "100");
+        this.bugTxt[2].setAttribute("font-size", "36px");
+        this.bugTxt[2].setAttribute("fill", "white");
+        this.bugTxt[2].setAttribute("transform", "matrix(1 0 0 1 157 392)");
+        this.bugsSVG.appendChild(this.bugTxt[2]);
 
-        const bugsSpd4Status = document.createElementNS(Avionics.SVG.NS, "text");
-        bugsSpd4Status.setAttribute("id", "BugsSpd4Status");
-        bugsSpd4Status.textContent = "OFF";
-        bugsSpd4Status.setAttribute("font-family", "Roboto");
-        bugsSpd4Status.setAttribute("font-weight", "100");
-        bugsSpd4Status.setAttribute("font-size", "36px");
-        bugsSpd4Status.setAttribute("fill", "white");
-        bugsSpd4Status.setAttribute("transform", "matrix(1 0 0 1 54 492)");
-        this.bugsSVG.appendChild(bugsSpd4Status);
-        const bugsSpd4Box = document.createElementNS(Avionics.SVG.NS, "rect");
-        bugsSpd4Box.setAttribute("id", "BugsSpd4Box");
-        bugsSpd4Box.setAttribute("stroke", "white");
-        bugsSpd4Box.setAttribute("stroke-width", "4");
-        bugsSpd4Box.setAttribute("x", "143.25");
-        bugsSpd4Box.setAttribute("y", "459");
-        bugsSpd4Box.setAttribute("width", "93.75");
-        bugsSpd4Box.setAttribute("height", "44.25");
-        this.bugsSVG.appendChild(bugsSpd4Box);
-        const bugsSpd4Txt = document.createElementNS(Avionics.SVG.NS, "text");
-        bugsSpd4Txt.setAttribute("id", "BugsSpd4Txt");
-        bugsSpd4Txt.textContent = "030";
-        bugsSpd4Txt.setAttribute("font-family", "Roboto");
-        bugsSpd4Txt.setAttribute("font-weight", "100");
-        bugsSpd4Txt.setAttribute("font-size", "36px");
-        bugsSpd4Txt.setAttribute("fill", "white");
-        bugsSpd4Txt.setAttribute("transform", "matrix(1 0 0 1 157 492)");
-        this.bugsSVG.appendChild(bugsSpd4Txt);
+        bugLine[2] = document.createElementNS(Avionics.SVG.NS, "line");
+        bugLine[2].setAttribute("id", "BugsSpdLine3");
+        bugLine[2].setAttribute("stroke", "white");
+        bugLine[2].setAttribute("stroke-width", "4");
+        bugLine[2].setAttribute("x1", "190");
+        bugLine[2].setAttribute("x2", "190");
+        bugLine[2].setAttribute("y1", "402.5");
+        bugLine[2].setAttribute("y2", "458");
+        this.bugsSVG.appendChild(bugLine[2]);
 
-        const bugsSpdLineRB = document.createElementNS(Avionics.SVG.NS, "line");
-        bugsSpdLineRB.setAttribute("id", "BugsSpdLineRB");
-        bugsSpdLineRB.setAttribute("stroke", "white");
-        bugsSpdLineRB.setAttribute("stroke-width", "4");
-        bugsSpdLineRB.setAttribute("x1", "237");
-        bugsSpdLineRB.setAttribute("x2", "424");
-        bugsSpdLineRB.setAttribute("y1", "480");
-        bugsSpdLineRB.setAttribute("y2", "480");
-        this.bugsSVG.appendChild(bugsSpdLineRB);
+        this.bugStatus[3] = document.createElementNS(Avionics.SVG.NS, "text");
+        this.bugStatus[3].setAttribute("id", "BugsSpd4Status");
+        this.bugStatus[3].textContent = "OFF";
+        this.bugStatus[3].style.display = "block";
+        this.bugStatus[3].setAttribute("font-family", "Roboto");
+        this.bugStatus[3].setAttribute("font-weight", "100");
+        this.bugStatus[3].setAttribute("font-size", "36px");
+        this.bugStatus[3].setAttribute("fill", "white");
+        this.bugStatus[3].setAttribute("transform", "matrix(1 0 0 1 54 492)");
+        this.bugsSVG.appendChild(this.bugStatus[3]);
+        this.bugBox[3] = document.createElementNS(Avionics.SVG.NS, "rect");
+        this.bugBox[3].setAttribute("id", "BugsSpd4Box");
+        this.bugBox[3].setAttribute("stroke", "white");
+        this.bugBox[3].setAttribute("stroke-width", "4");
+        this.bugBox[3].setAttribute("x", "143.25");
+        this.bugBox[3].setAttribute("y", "459");
+        this.bugBox[3].setAttribute("width", "93.75");
+        this.bugBox[3].setAttribute("height", "44.25");
+        this.bugsSVG.appendChild(this.bugBox[3]);
+        this.bugTxt[3] = document.createElementNS(Avionics.SVG.NS, "text");
+        this.bugTxt[3].setAttribute("id", "BugsSpd4Txt");
+        this.bugTxt[3].textContent = "030";
+        this.bugTxt[3].setAttribute("font-family", "Roboto");
+        this.bugTxt[3].setAttribute("font-weight", "100");
+        this.bugTxt[3].setAttribute("font-size", "36px");
+        this.bugTxt[3].setAttribute("fill", "white");
+        this.bugTxt[3].setAttribute("transform", "matrix(1 0 0 1 157 492)");
+        this.bugsSVG.appendChild(this.bugTxt[3]);
+
+        bugLineX[1] = document.createElementNS(Avionics.SVG.NS, "line");
+        bugLineX[1].setAttribute("id", "BugsSpdLineX1");
+        bugLineX[1].setAttribute("stroke", "white");
+        bugLineX[1].setAttribute("stroke-width", "4");
+        bugLineX[1].setAttribute("x1", "237");
+        bugLineX[1].setAttribute("x2", "424");
+        bugLineX[1].setAttribute("y1", "480");
+        bugLineX[1].setAttribute("y2", "480");
+        this.bugsSVG.appendChild(bugLineX[1]);
 
         const bugsAltHeadTxt = document.createElementNS(Avionics.SVG.NS, "text");
         bugsAltHeadTxt.setAttribute("id", "BugsAltHeader");
@@ -1636,106 +1709,108 @@ class A320_Neo_SAI_BugsPage extends HTMLElement {
         bugsAltHeadTxt.setAttribute("transform", "matrix(1 0 0 1 387 150)");
         this.bugsSVG.appendChild(bugsAltHeadTxt);
 
-        const bugsAltLineUp = document.createElementNS(Avionics.SVG.NS, "line");
-        bugsAltLineUp.setAttribute("id", "BugsAltLineUp");
-        bugsAltLineUp.setAttribute("stroke", "white");
-        bugsAltLineUp.setAttribute("stroke-width", "4");
-        bugsAltLineUp.setAttribute("x1", "424");
-        bugsAltLineUp.setAttribute("x2", "424");
-        bugsAltLineUp.setAttribute("y1", "182");
-        bugsAltLineUp.setAttribute("y2", "259");
-        this.bugsSVG.appendChild(bugsAltLineUp);
+        bugLine[3] = document.createElementNS(Avionics.SVG.NS, "line");
+        bugLine[3].setAttribute("id", "BugsAltLine1");
+        bugLine[3].setAttribute("stroke", "white");
+        bugLine[3].setAttribute("stroke-width", "4");
+        bugLine[3].setAttribute("x1", "424");
+        bugLine[3].setAttribute("x2", "424");
+        bugLine[3].setAttribute("y1", "182");
+        bugLine[3].setAttribute("y2", "259");
+        this.bugsSVG.appendChild(bugLine[3]);
 
-        const bugsAlt1Status = document.createElementNS(Avionics.SVG.NS, "text");
-        bugsAlt1Status.setAttribute("id", "BugsAlt1Status");
-        bugsAlt1Status.textContent = "OFF";
-        bugsAlt1Status.setAttribute("font-family", "Roboto");
-        bugsAlt1Status.setAttribute("font-weight", "100");
-        bugsAlt1Status.setAttribute("font-size", "36px");
-        bugsAlt1Status.setAttribute("fill", "white");
-        bugsAlt1Status.setAttribute("transform", "matrix(1 0 0 1 500 294)");
-        this.bugsSVG.appendChild(bugsAlt1Status);
-        const bugsAlt1Box = document.createElementNS(Avionics.SVG.NS, "rect");
-        bugsAlt1Box.setAttribute("id", "BugsAlt1Box");
-        bugsAlt1Box.setAttribute("stroke", "white");
-        bugsAlt1Box.setAttribute("stroke-width", "4");
-        bugsAlt1Box.setAttribute("x", "365");
-        bugsAlt1Box.setAttribute("y", "259");
-        bugsAlt1Box.setAttribute("width", "120");
-        bugsAlt1Box.setAttribute("height", "44.25");
-        this.bugsSVG.appendChild(bugsAlt1Box);
-        const bugsAlt1Txt = document.createElementNS(Avionics.SVG.NS, "text");
-        bugsAlt1Txt.setAttribute("id", "BugsAlt1Txt");
-        bugsAlt1Txt.textContent = "00100";
-        bugsAlt1Txt.setAttribute("font-family", "Roboto");
-        bugsAlt1Txt.setAttribute("font-weight", "100");
-        bugsAlt1Txt.setAttribute("font-size", "36px");
-        bugsAlt1Txt.setAttribute("fill", "white");
-        bugsAlt1Txt.setAttribute("transform", "matrix(1 0 0 1 370 294)");
-        this.bugsSVG.appendChild(bugsAlt1Txt);
+        this.bugStatus[5] = document.createElementNS(Avionics.SVG.NS, "text");
+        this.bugStatus[5].setAttribute("id", "BugsAlt1Status");
+        this.bugStatus[5].textContent = "OFF";
+        this.bugStatus[5].style.display = "block";
+        this.bugStatus[5].setAttribute("font-family", "Roboto");
+        this.bugStatus[5].setAttribute("font-weight", "100");
+        this.bugStatus[5].setAttribute("font-size", "36px");
+        this.bugStatus[5].setAttribute("fill", "white");
+        this.bugStatus[5].setAttribute("transform", "matrix(1 0 0 1 500 294)");
+        this.bugsSVG.appendChild(this.bugStatus[5]);
+        this.bugBox[5] = document.createElementNS(Avionics.SVG.NS, "rect");
+        this.bugBox[5].setAttribute("id", "BugsAlt1Box");
+        this.bugBox[5].setAttribute("stroke", "white");
+        this.bugBox[5].setAttribute("stroke-width", "4");
+        this.bugBox[5].setAttribute("x", "365");
+        this.bugBox[5].setAttribute("y", "259");
+        this.bugBox[5].setAttribute("width", "120");
+        this.bugBox[5].setAttribute("height", "44.25");
+        this.bugsSVG.appendChild(this.bugBox[5]);
+        this.bugTxt[5] = document.createElementNS(Avionics.SVG.NS, "text");
+        this.bugTxt[5].setAttribute("id", "BugsAlt1Txt");
+        this.bugTxt[5].textContent = "00100";
+        this.bugTxt[5].setAttribute("font-family", "Roboto");
+        this.bugTxt[5].setAttribute("font-weight", "100");
+        this.bugTxt[5].setAttribute("font-size", "36px");
+        this.bugTxt[5].setAttribute("fill", "white");
+        this.bugTxt[5].setAttribute("transform", "matrix(1 0 0 1 370 294)");
+        this.bugsSVG.appendChild(this.bugTxt[5]);
 
-        const bugsAltLineMid = document.createElementNS(Avionics.SVG.NS, "line");
-        bugsAltLineMid.setAttribute("id", "BugsAltLineMid");
-        bugsAltLineMid.setAttribute("stroke", "white");
-        bugsAltLineMid.setAttribute("stroke-width", "4");
-        bugsAltLineMid.setAttribute("x1", "424");
-        bugsAltLineMid.setAttribute("x2", "424");
-        bugsAltLineMid.setAttribute("y1", "304");
-        bugsAltLineMid.setAttribute("y2", "358");
-        this.bugsSVG.appendChild(bugsAltLineMid);
+        bugLine[5] = document.createElementNS(Avionics.SVG.NS, "line");
+        bugLine[5].setAttribute("id", "BugsAltLineMid");
+        bugLine[5].setAttribute("stroke", "white");
+        bugLine[5].setAttribute("stroke-width", "4");
+        bugLine[5].setAttribute("x1", "424");
+        bugLine[5].setAttribute("x2", "424");
+        bugLine[5].setAttribute("y1", "304");
+        bugLine[5].setAttribute("y2", "358");
+        this.bugsSVG.appendChild(bugLine[5]);
 
-        const bugsAlt2Status = document.createElementNS(Avionics.SVG.NS, "text");
-        bugsAlt2Status.setAttribute("id", "BugsAlt2Status");
-        bugsAlt2Status.textContent = "OFF";
-        bugsAlt2Status.setAttribute("font-family", "Roboto");
-        bugsAlt2Status.setAttribute("font-weight", "100");
-        bugsAlt2Status.setAttribute("font-size", "36px");
-        bugsAlt2Status.setAttribute("fill", "white");
-        bugsAlt2Status.setAttribute("transform", "matrix(1 0 0 1 500 392)");
-        this.bugsSVG.appendChild(bugsAlt2Status);
-        const bugsAlt2Box = document.createElementNS(Avionics.SVG.NS, "rect");
-        bugsAlt2Box.setAttribute("id", "BugsAlt2Box");
-        bugsAlt2Box.setAttribute("stroke", "white");
-        bugsAlt2Box.setAttribute("stroke-width", "4");
-        bugsAlt2Box.setAttribute("x", "365");
-        bugsAlt2Box.setAttribute("y", "358");
-        bugsAlt2Box.setAttribute("width", "120");
-        bugsAlt2Box.setAttribute("height", "44.25");
-        this.bugsSVG.appendChild(bugsAlt2Box);
-        const bugsAlt2Txt = document.createElementNS(Avionics.SVG.NS, "text");
-        bugsAlt2Txt.setAttribute("id", "BugsAlt2Txt");
-        bugsAlt2Txt.textContent = "00100";
-        bugsAlt2Txt.setAttribute("font-family", "Roboto");
-        bugsAlt2Txt.setAttribute("font-weight", "100");
-        bugsAlt2Txt.setAttribute("font-size", "36px");
-        bugsAlt2Txt.setAttribute("fill", "white");
-        bugsAlt2Txt.setAttribute("transform", "matrix(1 0 0 1 370 392)");
-        this.bugsSVG.appendChild(bugsAlt2Txt);
+        this.bugStatus[4] = document.createElementNS(Avionics.SVG.NS, "text");
+        this.bugStatus[4].setAttribute("id", "BugsAlt2Status");
+        this.bugStatus[4].textContent = "OFF";
+        this.bugStatus[4].style.display = "block";
+        this.bugStatus[4].setAttribute("font-family", "Roboto");
+        this.bugStatus[4].setAttribute("font-weight", "100");
+        this.bugStatus[4].setAttribute("font-size", "36px");
+        this.bugStatus[4].setAttribute("fill", "white");
+        this.bugStatus[4].setAttribute("transform", "matrix(1 0 0 1 500 392)");
+        this.bugsSVG.appendChild(this.bugStatus[4]);
+        this.bugBox[4] = document.createElementNS(Avionics.SVG.NS, "rect");
+        this.bugBox[4].setAttribute("id", "BugsAlt2Box");
+        this.bugBox[4].setAttribute("stroke", "white");
+        this.bugBox[4].setAttribute("stroke-width", "4");
+        this.bugBox[4].setAttribute("x", "365");
+        this.bugBox[4].setAttribute("y", "358");
+        this.bugBox[4].setAttribute("width", "120");
+        this.bugBox[4].setAttribute("height", "44.25");
+        this.bugsSVG.appendChild(this.bugBox[4]);
+        this.bugTxt[4] = document.createElementNS(Avionics.SVG.NS, "text");
+        this.bugTxt[4].setAttribute("id", "BugsAlt2Txt");
+        this.bugTxt[4].textContent = "00100";
+        this.bugTxt[4].setAttribute("font-family", "Roboto");
+        this.bugTxt[4].setAttribute("font-weight", "100");
+        this.bugTxt[4].setAttribute("font-size", "36px");
+        this.bugTxt[4].setAttribute("fill", "white");
+        this.bugTxt[4].setAttribute("transform", "matrix(1 0 0 1 370 392)");
+        this.bugsSVG.appendChild(this.bugTxt[4]);
 
-        const bugsAltLineDown = document.createElementNS(Avionics.SVG.NS, "line");
-        bugsAltLineDown.setAttribute("id", "BugsAltLineDown");
-        bugsAltLineDown.setAttribute("stroke", "white");
-        bugsAltLineDown.setAttribute("stroke-width", "4");
-        bugsAltLineDown.setAttribute("x1", "424");
-        bugsAltLineDown.setAttribute("x2", "424");
-        bugsAltLineDown.setAttribute("y1", "402.5");
-        bugsAltLineDown.setAttribute("y2", "480");
-        this.bugsSVG.appendChild(bugsAltLineDown);
+        bugLine[4] = document.createElementNS(Avionics.SVG.NS, "line");
+        bugLine[4].setAttribute("id", "BugsAltLine1");
+        bugLine[4].setAttribute("stroke", "white");
+        bugLine[4].setAttribute("stroke-width", "4");
+        bugLine[4].setAttribute("x1", "424");
+        bugLine[4].setAttribute("x2", "424");
+        bugLine[4].setAttribute("y1", "402.5");
+        bugLine[4].setAttribute("y2", "480");
+        this.bugsSVG.appendChild(bugLine[4]);
 
         const bugsSelectTxt = document.createElementNS(Avionics.SVG.NS, "text");
         bugsSelectTxt.setAttribute("id", "BugsSelectTxt");
         bugsSelectTxt.textContent = "SET/SELECT";
         bugsSelectTxt.setAttribute("font-family", "Roboto");
         bugsSelectTxt.setAttribute("font-weight", "100");
-        bugsSelectTxt.setAttribute("font-size", "36px");
+        bugsSelectTxt.setAttribute("font-size", "38px");
         bugsSelectTxt.setAttribute("fill", "#27AAE1");
-        bugsSelectTxt.setAttribute("transform", "matrix(1 0 0 1 165.5 553)");
+        bugsSelectTxt.setAttribute("transform", "matrix(1 0 0 1 210 553)");
         this.bugsSVG.appendChild(bugsSelectTxt);
         const bugsSelectLine = document.createElementNS(Avionics.SVG.NS, "line");
         bugsSelectLine.setAttribute("id", "BugsSelectLine");
         bugsSelectLine.setAttribute("stroke", "#27AAE1");
         bugsSelectLine.setAttribute("stroke-width", "4");
-        bugsSelectLine.setAttribute("x1", "410");
+        bugsSelectLine.setAttribute("x1", "440");
         bugsSelectLine.setAttribute("x2", "460");
         bugsSelectLine.setAttribute("y1", "541");
         bugsSelectLine.setAttribute("y2", "541");
@@ -1745,14 +1820,68 @@ class A320_Neo_SAI_BugsPage extends HTMLElement {
         bugsSelectLineEnd.setAttribute("fill", "#27AAE1");
         bugsSelectLineEnd.setAttribute("points", "458,535 457.5,547 473.5,541");
         this.bugsSVG.appendChild(bugsSelectLineEnd);
-
     }
-    toggle() {
+
+    getBug(bug) {
+        return parseInt(this.bugTxt[bug].textContent);
+    }
+
+    setBug(bug, value) {
+        if (bug < 4) {
+            if (value < 30 || value > 520) {
+                return;
+            }
+            let txt = value.toString();
+            if (txt.length < 3) {
+                txt = "0" + txt;
+            }
+            this.bugTxt[bug].textContent = txt;
+        } else {
+            if (value < 100 || value > 50000) {
+                return;
+            }
+            let txt = value.toString();
+            if (txt.length < 4) {
+                txt = "0" + txt;
+            }
+            if (txt.length < 5) {
+                txt = "0" + txt;
+            }
+            this.bugTxt[bug].textContent = txt;
+        }
+    }
+
+    toggleBugBox(bug) {
+        if (this.bugBox[bug].style.display === "block") {
+            this.bugBox[bug].style.display = "none";
+        } else {
+            this.bugBox[bug].style.display = "block";
+        }
+    }
+
+    freezeBugBox(bug) {
+        if (this.bugBox[bug].style.display === "none") {
+            this.bugBox[bug].style.display = "block";
+        }
+    }
+    toggleBug(bug) {
+        if (this.bugStatus[bug].style.display === "block") {
+            this.bugStatus[bug].style.display = "none";
+        } else {
+            this.bugStatus[bug].style.display = "block";
+        }
+    }
+    togglePage() {
         if (this.bugsDiv.style.display === "block") {
+            SimVar.SetSimVarValue("L:A32NX_BARO_BUGS_ACTIVE","Bool", false);
             this.bugsDiv.style.display = "none";
         } else {
+            SimVar.SetSimVarValue("L:A32NX_BARO_BUGS_ACTIVE","Bool", true);
             this.bugsDiv.style.display = "block";
         }
+    }
+    getDisplay() {
+        return this.bugsDiv.style.display;
     }
 }
 
