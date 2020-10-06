@@ -165,3 +165,51 @@
 - A32NX_PITOT_HEAT_AUTO
     - Bool
     - True if pitot heating auto
+
+- A32NX_EMERELECPWR_GEN1_FAULT
+    - Bool
+    - True if generator 1 line fault
+
+- A32NX_EMERELECPWR_GEN1_TOGGLE
+    - Bool
+    - True if generator 1 line is off
+
+- A32NX_EMERELECPWR_RAT_FAULT
+    - Bool
+    - True if RAT elec power fault
+
+- A32NX_EVAC_COMMAND_FAULT
+    - Bool
+    - True if evac command fault
+
+- A32NX_EVAC_COMMAND_TOGGLE
+    - Bool
+    - True if evac command button is on
+
+- PUSH_OVHD_EVAC_HORN
+    - Bool
+    - True if evac horn cutout button is being pressed
+
+- A32NX_EVAC_CAPT_TOGGLE
+    - Bool
+    - True if evac switch set to CAPT
+
+- A32NX_KNOB_SWITCHING_1_Position
+    - ATT HDG
+    - Position (0-2)
+    - 0 is CAPT, 1 is NORM, 2 is F/O
+
+- A32NX_KNOB_SWITCHING_2_Position
+    - AIR DATA
+    - Position (0-2)
+    - 0 is CAPT, 1 is NORM, 2 is F/O
+
+- A32NX_KNOB_SWITCHING_3_Position
+    - EIS DMC
+    - Position (0-2)
+    - 0 is CAPT, 1 is NORM, 2 is F/O
+
+- A32NX_KNOB_SWITCHING_4_Position
+    - ECAM/ND XFR
+    - Position (0-2)
+    - 0 is CAPT, 1 is NORM, 2 is F/O
