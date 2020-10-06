@@ -388,15 +388,11 @@ Effect plug-ins	ID	Name	Type				Notes
 	1008317238	flg_outdoor_aircraft_generic	Wwise Flanger			
 	1438353318	meter_sc_aural_warning	Wwise Meter			
 	1550574293	flg_outdoor_aircraft_low_end	Wwise Flanger			
-	1600286681	rev_outdoor_custom	Wwise Convolution Reverb			
 	2257073265	meter_sc_combustion	Wwise Meter			
 	2626479082	eq_sc_vo	Wwise Parametric EQ			
 	2663318487	aircraft_disto_overspeed	Wwise Guitar Distortion			
 	3004554342	meter_sc_thunder	Wwise Meter			
 	3659999185	eq_outdoor_aircraft_generic	Wwise Parametric EQ			
-	3930462003	rev_outdoor_aircraft_low_end	Wwise Convolution Reverb			
-	4216876873	rev_inside_generic_custom	Wwise Convolution Reverb			
-	4280681428	rev_outdoor_aircraft_generic	Wwise Convolution Reverb			
 
 Audio Devices	ID	Name	Type				Notes
 	1065201297	Headset	Communication			

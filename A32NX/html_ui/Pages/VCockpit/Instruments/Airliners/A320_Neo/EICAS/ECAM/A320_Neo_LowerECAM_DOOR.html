@@ -3,8 +3,8 @@
 <script type="text/html" id="LowerECAMDOORTemplate">
     <svg viewBox="0 0 600 600" xmlns="http://www.w3.org/2000/svg">
         <g id="fuselage">
-            <path class="MainShape" d="M 265 475 l -3 -15 l 0 -340 C 260, 102 276, 52 300, 45"></path>
-            <path class="MainShape" d="M 335 475 l 3 -15 l 0 -340 C 340, 102 324, 52 300, 45"></path>
+            <path class="MainShape" d="M 267 473 l -5 -13 l 0 -340 C 260,102 276,52 300,40"></path>
+            <path class="MainShape" d="M 333 473 l 5 -13 l 0 -340 C 340,102 324,52 300,40"></path>
             <line class="MainShape" x1="262" y1="275" x2="160" y2="308"></line>
             <line class="MainShape" x1="338" y1="275" x2="440" y2="308"></line>
         </g>
@@ -15,28 +15,28 @@
             <path class="DoorShape" d="M317 102 l0 -15 l-9 0 l0 15Z"></path>
 
             <path class="DoorShape" d="M300 181 l0 10 l16 0 l0 -10Z"></path>
-            <path id="DoorFwdCargo" d="M338 221 l0 -20 l-18 0 l0 20Z"></path>
-            <path class="DoorShape" d="M338 384 l0 -20 l-18 0 l0 20Z"></path>
+            <path id="DoorFwdCargo" d="M336 221 l0 -20 l-18 0 l0 20Z"></path>
+            <path class="DoorShape" d="M336 384 l0 -20 l-18 0 l0 20Z"></path>
             <path class="DoorShape" d="M328 414 l0 -22 l-8 0 l0 22Z"></path>
         </g>
 
         <g id="slides">
-            <path id="DoorFrontLeft" d="M262 145 l0 -20 l12 0 l0 20Z"></path>
-            <path class="DoorShape" d="M338 145 l0 -20 l-12 0 l0 20Z"></path>
+            <path id="DoorFrontLeft" d="M264 145 l0 -20 l12 0 l0 20Z"></path>
+            <path class="DoorShape" d="M336 145 l0 -20 l-12 0 l0 20Z"></path>
 
-            <path class="DoorShape" d="M262 310 l0 -20 l12 0 l0 20Z"></path>
-            <path class="DoorShape" d="M338 310 l0 -20 l-12 0 l0 20Z"></path>
-            <path class="DoorShape" d="M262 344 l0 -20 l12 0 l0 20Z"></path>
-            <path class="DoorShape" d="M338 344 l0 -20 l-12 0 l0 20Z"></path>
+            <path class="DoorShape" d="M264 310 l0 -20 l12 0 l0 20Z"></path>
+            <path class="DoorShape" d="M336 310 l0 -20 l-12 0 l0 20Z"></path>
+            <path class="DoorShape" d="M264 344 l0 -20 l12 0 l0 20Z"></path>
+            <path class="DoorShape" d="M336 344 l0 -20 l-12 0 l0 20Z"></path>
 
-            <path class="DoorShape" d="M262 445 l0 -20 l12 0 l0 20Z"></path>
-            <path id="DoorBackRight" d="M338 445 l0 -20 l-12 0 l0 20Z"></path>
+            <path class="DoorShape" d="M264 445 l0 -20 l12 0 l0 20Z"></path>
+            <path id="DoorBackRight" d="M336 445 l0 -20 l-12 0 l0 20Z"></path>
         </g>
 
         <g id="dashes">
-            <path id="cabin1dash" class="DoorWarningShape" stroke-dasharray="10,10" d="M200, 138 l50 0"></path>
-            <path id="cabin4dash" class="DoorWarningShape" stroke-dasharray="10,10" d="M350, 438 l50 0"></path>
-            <path id="cargo1dash" class="DoorWarningShape" stroke-dasharray="10,10" d="M350, 214 l50 0"></path>
+            <path id="cabin1dash" class="WarningShape" stroke-dasharray="7,4" d="M138, 137 l121 0"></path>
+            <path id="cabin4dash" class="WarningShape" stroke-dasharray="7,4" d="M346, 437 l77 0"></path>
+            <path id="cargo1dash" class="WarningShape" stroke-dasharray="7,4" d="M346, 214 l77 0"></path>
         </g>
 
         <!--Texts-->
@@ -49,13 +49,14 @@
             <text id="slide5" class="Slide" x="232" y="438" text-anchor="middle" alignment-baseline="central">SLIDE</text>
             <text id="slide6" class="Slide" x="368" y="438" text-anchor="middle" alignment-baseline="central">SLIDE</text>
 
-            <text id="cabin1" class="DoorWarning" x="160" y="138" text-anchor="middle" alignment-baseline="central">CABIN</text>
-            <text id="cabin4" class="DoorWarning" x="440" y="438" text-anchor="middle" alignment-baseline="central">CABIN</text>
-            <text id="cargo1" class="DoorWarning" x="440" y="215" text-anchor="middle" alignment-baseline="central">CARGO</text>
+            <text id="cabin1" class="Warning" x="103" y="138" text-anchor="middle" alignment-baseline="central">CABIN</text>
+            <text id="cabin4" class="Warning" x="455" y="438" text-anchor="middle" alignment-baseline="central">CABIN</text>
+            <text id="cargo1" class="Warning" x="455" y="215" text-anchor="middle" alignment-baseline="central">CARGO</text>
 
-            <text id="oxy" class="Note" x="460" y="10" text-anchor="middle" alignment-baseline="central">OXY</text>
-            <text id="psi_val" class="Value" x="505" y="11" text-anchor="middle" alignment-baseline="central">1700</text>
-            <text id="psi_unit" class="Unit" x="550" y="10" text-anchor="middle" alignment-baseline="central">PSI</text>
+            <text id="oxy" class="NoteLarge" x="490" y="10" text-anchor="middle" alignment-baseline="central">CKPT OXY</text>
+            <text id="psi_val" class="Value" x="438" y="30" text-anchor="middle" alignment-baseline="central">1700</text>
+            <text id="psi_unit" class="Unit" x="486" y="31" text-anchor="middle" alignment-baseline="central">PSI</text>
+            <text id="psi_val_right" class="Value" x="534" y="30" text-anchor="middle" alignment-baseline="central">1700</text>
         </g>
     </svg>
 </script>

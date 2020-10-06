@@ -2,7 +2,7 @@
 name: Bug report
 about: Create a report to help us improve the mod
 title: "[BUG]"
-labels: bug
+labels: Bug
 assignees: ''
 
 ---
@@ -41,6 +41,10 @@ assignees: ''
 
 **Additional context**
 <!-- Add any other context about the problem here. -->
+
+Was this working before/when did the issue start occurring?
+
+Is this a problem in the vanilla unmodded game?
 
 <!-- You may optionally provide your discord username, so that we may contact you directly about the issue. -->
 Discord username (if different from GitHub):
