@@ -35,7 +35,6 @@ class CDUInitPage {
         let coRoute = "NONE[color]blue";
         if (mcdu.coRoute) {
             coRoute = mcdu.coRoute + "[color]blue";
-            ;
         }
         let altDest = "-------[color]blue";
         if (mcdu.flightPlanManager.getDestination()) {
@@ -51,16 +50,23 @@ class CDUInitPage {
                 }
             };
         }
+        let alignOption;
+
+        if (mcdu.flightPlanManager.getOrigin()) {
+            alignOption = "IRS INIT>";
+        }
         let flightNo = SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string", "FMC");
         if (!flightNo) {
             flightNo = "--------";
         }
         let lat = "----.--";
         let long = "-----.--";
-        console.log(mcdu.flightPlanManager.getOrigin());
         if (mcdu.flightPlanManager.getOrigin() && mcdu.flightPlanManager.getOrigin().infos && mcdu.flightPlanManager.getOrigin().infos.coordinates) {
-            lat = mcdu.flightPlanManager.getOrigin().infos.coordinates.latToDegreeString() + "[color]blue";
-            long = mcdu.flightPlanManager.getOrigin().infos.coordinates.longToDegreeString() + "[color]blue";
+            const airportCoordinates = mcdu.flightPlanManager.getOrigin().infos.coordinates;
+            const originAirportLat = this.ConvertDDToDMS(airportCoordinates['lat'], false);
+            const originAirportLon = this.ConvertDDToDMS(airportCoordinates['long'], true);
+            lat = originAirportLat['deg'] + '°' + originAirportLat['min'] + '.' + Math.ceil(Number(originAirportLat['sec'] / 10)) + originAirportLat['dir'] + "[color]blue";
+            long = originAirportLon['deg'] + '°' + originAirportLon['min'] + '.' + Math.ceil(Number(originAirportLon['sec'] / 10)) + originAirportLon['dir'] + "[color]blue";
         }
         if (mcdu.costIndex) {
             costIndex = mcdu.costIndex + "[color]blue";
@@ -72,7 +78,7 @@ class CDUInitPage {
             ["ALTN/CO RTE"],
             [altDest],
             ["FLT NBR"],
-            [flightNo + "[color]blue"],
+            [flightNo + "[color]blue", alignOption],
             ["LAT", "LONG"],
             [lat, long],
             ["COST INDEX"],
@@ -80,6 +86,7 @@ class CDUInitPage {
             ["CRZ FL/TEMP", "TROPO"],
             [cruiseFlTemp, "36090[color]blue"]
         ]);
+
         mcdu.onLeftInput[0] = () => {
             let value = mcdu.inOut;
             mcdu.clearUserInput();
@@ -99,6 +106,11 @@ class CDUInitPage {
                     CDUAvailableFlightPlanPage.ShowPage(mcdu);
                 }
             });
+        };
+        mcdu.onRightInput[2] = () => {
+            if (alignOption) {
+                CDUIRSInit.ShowPage(mcdu);
+            }
         };
         mcdu.onLeftInput[2] = () => {
             let value = mcdu.inOut;
@@ -263,6 +275,24 @@ class CDUInitPage {
         mcdu.onNextPage = () => {
             CDUInitPage.ShowPage1(mcdu);
         };
+    }
+
+    // Defining as static here to avoid duplicate code in CDUIRSInit
+    static ConvertDDToDMS(deg, lng) {
+            // converts decimal degrees to degrees minutes seconds
+            const M=0|(deg%1)*60e7;
+            let degree;
+            if (lng) {
+                degree = (0 | (deg < 0 ? deg = -deg:deg)).toString().padStart(3, "0");
+            } else {
+                degree = 0 | (deg < 0 ? deg = -deg:deg);
+            }
+            return {
+                dir : deg<0 ? lng ? 'W':'S' : lng ? 'E':'N',
+                deg : degree,
+                min : Math.abs(0|M/1e7),
+                sec : Math.abs((0|M/1e6%1*6e4)/100)
+            };
     }
 }
 //# sourceMappingURL=A320_Neo_CDU_InitPage.js.map

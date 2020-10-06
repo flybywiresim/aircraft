@@ -1677,21 +1677,77 @@
 						<NODE_ID>PUSH_OVHD_ADIRS_3</NODE_ID>
 						<ID>3</ID>
 					</UseTemplate>
-					<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
-						<NODE_ID>PUSH_OVHD_EVAC_COMMAND</NODE_ID>
-						<ONLY_SEQ1/>
+
+					<UseTemplate Name="ASOBO_GT_Switch_Dummy">
+						<NODE_ID>LOCK_OVHD_EVAC_COMMAND</NODE_ID>
+						<ANIM_NAME>LOCK_OVHD_EVAC_COMMAND</ANIM_NAME>
+						<WWISE_EVENT_1>apu_generator_switch_on</WWISE_EVENT_1>
+						<WWISE_EVENT_2>apu_generator_switch_off</WWISE_EVENT_2>
+						<LEFT_SINGLE_CODE>(L:A32NX_EVAC_COMMANDLOCK_TOGGLE) ! (>L:A32NX_EVAC_COMMANDLOCK_TOGGLE)</LEFT_SINGLE_CODE>
 					</UseTemplate>
-					<UseTemplate Name="ASOBO_GT_Anim">
+					<UseTemplate Name="ASOBO_GT_Push_Button_Airliner">
+						<NODE_ID>PUSH_OVHD_EVAC_COMMAND</NODE_ID>
+						<ANIM_NAME>PUSH_OVHD_EVAC_COMMAND</ANIM_NAME>
+						<SEQ1_EMISSIVE_CODE>(L:A32NX_EVAC_COMMAND_FAULT, Bool) (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or</SEQ1_EMISSIVE_CODE>
+						<SEQ2_EMISSIVE_CODE>(L:A32NX_EVAC_COMMAND_TOGGLE, Bool) ! (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or</SEQ2_EMISSIVE_CODE>
+						<WWISE_EVENT_1>apu_generator_switch_on</WWISE_EVENT_1>
+						<WWISE_EVENT_2>apu_generator_switch_off</WWISE_EVENT_2>
+						<NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
+						<NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
+						<TOOLTIPID>%((L:A32NX_EVAC_COMMAND_TOGGLE, Bool))%{if}Turn ON evacuation horn%{else}Turn OFF evacuation horn%{end}</TOOLTIPID>
+						<LEFT_SINGLE_CODE>(L:A32NX_EVAC_COMMAND_TOGGLE) ! (>L:A32NX_EVAC_COMMAND_TOGGLE)</LEFT_SINGLE_CODE>
+					</UseTemplate>
+					<UseTemplate Name="ASOBO_AIRLINER_CALLS_Template">
+						<NODE_ID>PUSH_OVHD_EVAC_HORN</NODE_ID>
+					</UseTemplate>
+					<UseTemplate Name="ASOBO_GT_Switch_Dummy">
+						<NODE_ID>SWITCH_OVHD_EVAC_CAPT</NODE_ID>
 						<ANIM_NAME>SWITCH_OVHD_EVAC_CAPT</ANIM_NAME>
 						<ANIM_CODE>100</ANIM_CODE>
+						<WWISE_EVENT_1>wing_light_switch_on</WWISE_EVENT_1>
+						<WWISE_EVENT_2>wing_light_switch_off</WWISE_EVENT_2>
+						<LEFT_SINGLE_CODE>(L:A32NX_EVAC_CAPT_TOGGLE) ! (>L:A32NX_EVAC_CAPT_TOGGLE)</LEFT_SINGLE_CODE>
 					</UseTemplate>
-					<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
+
+					<UseTemplate Name="ASOBO_GT_Switch_Dummy">
+						<NODE_ID>LOCK_OVHD_EMERELECPWR_EMERTEST</NODE_ID>
+						<ANIM_NAME>LOCK_OVHD_EMERELECPWR_EMERTEST</ANIM_NAME>
+						<WWISE_EVENT_1>apu_generator_switch_on</WWISE_EVENT_1>
+						<WWISE_EVENT_2>apu_generator_switch_off</WWISE_EVENT_2>
+						<LEFT_SINGLE_CODE>(L:A32NX_EMERELECPWR_EMERTESTLOCK_TOGGLE) ! (>L:A32NX_EMERELECPWR_EMERTESTLOCK_TOGGLE)</LEFT_SINGLE_CODE>
+					</UseTemplate>
+					<UseTemplate Name="ASOBO_GT_Push_Button_Airliner">
 						<NODE_ID>PUSH_OVHD_EMERELECPWR_GEN1</NODE_ID>
+						<ANIM_NAME>PUSH_OVHD_EMERELECPWR_GEN1</ANIM_NAME>
+						<SEQ1_EMISSIVE_CODE>(L:A32NX_EMERELECPWR_GEN1_FAULT, Bool) (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or</SEQ1_EMISSIVE_CODE>
+						<SEQ2_EMISSIVE_CODE>(L:A32NX_EMERELECPWR_GEN1_TOGGLE, Bool) ! (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or</SEQ2_EMISSIVE_CODE>
+						<WWISE_EVENT_1>apu_generator_switch_on</WWISE_EVENT_1>
+						<WWISE_EVENT_2>apu_generator_switch_off</WWISE_EVENT_2>
+						<NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
+						<NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
+						<TOOLTIPID>%((L:A32NX_EMERELECPWR_GEN1_TOGGLE, Bool))%{if}Turn OFF gen 1 line%{else}Turn ON gen 1 line%{end}</TOOLTIPID>
+						<LEFT_SINGLE_CODE>(L:A32NX_EMERELECPWR_GEN1_TOGGLE) ! (>L:A32NX_EMERELECPWR_GEN1_TOGGLE)</LEFT_SINGLE_CODE>
 					</UseTemplate>
-					<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
+					<UseTemplate Name="ASOBO_GT_Push_Button_Airliner">
 						<NODE_ID>PUSH_OVHD_EMERELECPWR_RAT</NODE_ID>
-						<BLOCK_SEQ2>1</BLOCK_SEQ2>
+						<ANIM_NAME></ANIM_NAME>
+						<SEQ1_EMISSIVE_CODE>(L:A32NX_EMERELECPWR_RAT_FAULT, Bool) (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or</SEQ1_EMISSIVE_CODE>
+						<SEQ2_EMISSIVE_CODE>1 ! (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or</SEQ2_EMISSIVE_CODE>
+						<WWISE_EVENT_1></WWISE_EVENT_1>
+						<WWISE_EVENT_2></WWISE_EVENT_2>
+						<NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
+						<NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
+						<TOOLTIPID>%((L:A32NX_EMERELECPWR_RAT_FAULT, Bool))%{if}RAT and emer gen FAULT%{else}RAT and emer gen NORMAL%{end}</TOOLTIPID>
+						<LEFT_SINGLE_CODE></LEFT_SINGLE_CODE>
 					</UseTemplate>
+					<UseTemplate Name="ASOBO_GT_Switch_Dummy">
+						<NODE_ID>LOCK_OVHD_EMERELECPWR_MANON</NODE_ID>
+						<ANIM_NAME>LOCK_OVHD_EMERELECPWR_MANON</ANIM_NAME>
+						<WWISE_EVENT_1>apu_generator_switch_on</WWISE_EVENT_1>
+						<WWISE_EVENT_2>apu_generator_switch_off</WWISE_EVENT_2>
+						<LEFT_SINGLE_CODE>(L:A32NX_EMERELECPWR_MANONLOCK_TOGGLE) ! (>L:A32NX_EMERELECPWR_MANONLOCK_TOGGLE)</LEFT_SINGLE_CODE>
+					</UseTemplate>
+
 					<UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
 						<NODE_ID>PUSH_OVHD_RCDR_GNDCTL</NODE_ID>
 						<BLOCK_SEQ1>1</BLOCK_SEQ1>
@@ -1788,7 +1844,7 @@
 						<WWISE_EVENT_2>apu_generator_switch_off</WWISE_EVENT_2>
 						<NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
 						<NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
-						<TOOLTIPID>%((L:A32NX_HYD_ELECPUMPY_TOGGLE, Bool))%{if}Turn OFF yellow elec hyd pump%{else}Turn ON yellow elec hyd pump%{end}</TOOLTIPID>
+						<TOOLTIPID>%((L:A32NX_HYD_ELECPUMPY_TOGGLE, Bool))%{if}Turn ON yellow elec hyd pump%{else}Turn OFF yellow elec hyd pump%{end}</TOOLTIPID>
 						<LEFT_SINGLE_CODE>(L:A32NX_HYD_ELECPUMPY_TOGGLE) ! (>L:A32NX_HYD_ELECPUMPY_TOGGLE)</LEFT_SINGLE_CODE>
 					</UseTemplate>
 					<UseTemplate Name="ASOBO_GT_Push_Button_Airliner">
@@ -2750,21 +2806,37 @@
 				</UseTemplate>
 			</Component>
 			<Component ID="Switching_Panel">
-				<UseTemplate Name="ASOBO_GT_Anim">
+				<UseTemplate Name="A32NX_AIRBUS_DATA_SWITCHING_TEMPLATE">
+					<Node_ID>KNOB_SWITCHING_1</Node_ID>
 					<ANIM_NAME>KNOB_SWITCHING_1</ANIM_NAME>
 					<ANIM_CODE>50</ANIM_CODE>
+					<ANIMTIP_0>Set ATT HDG to CAPT</ANIMTIP_0>
+					<ANIMTIP_1>Set ATT HDG to NORM</ANIMTIP_1>
+					<ANIMTIP_2>Set ATT HDG to F/O</ANIMTIP_2>
 				</UseTemplate>
-				<UseTemplate Name="ASOBO_GT_Anim">
+				<UseTemplate Name="A32NX_AIRBUS_DATA_SWITCHING_TEMPLATE">
+					<Node_ID>KNOB_SWITCHING_2</Node_ID>
 					<ANIM_NAME>KNOB_SWITCHING_2</ANIM_NAME>
 					<ANIM_CODE>50</ANIM_CODE>
+					<ANIMTIP_0>Set AIR DATA to CAPT</ANIMTIP_0>
+					<ANIMTIP_1>Set AIR DATA to NORM</ANIMTIP_1>
+					<ANIMTIP_2>Set AIR DATA to F/O</ANIMTIP_2>
 				</UseTemplate>
-				<UseTemplate Name="ASOBO_GT_Anim">
+				<UseTemplate Name="A32NX_AIRBUS_DATA_SWITCHING_TEMPLATE">
+					<Node_ID>KNOB_SWITCHING_3</Node_ID>
 					<ANIM_NAME>KNOB_SWITCHING_3</ANIM_NAME>
 					<ANIM_CODE>50</ANIM_CODE>
+					<ANIMTIP_0>Set EIS DMC to CAPT</ANIMTIP_0>
+					<ANIMTIP_1>Set EIS DMC to NORM</ANIMTIP_1>
+					<ANIMTIP_2>Set EIS DMC to F/O</ANIMTIP_2>
 				</UseTemplate>
-				<UseTemplate Name="ASOBO_GT_Anim">
+				<UseTemplate Name="A32NX_AIRBUS_DATA_SWITCHING_TEMPLATE">
+					<Node_ID>KNOB_SWITCHING_4</Node_ID>
 					<ANIM_NAME>KNOB_SWITCHING_4</ANIM_NAME>
 					<ANIM_CODE>50</ANIM_CODE>
+					<ANIMTIP_0>Set ECAM/ND XFR to CAPT</ANIMTIP_0>
+					<ANIMTIP_1>Set ECAM/ND XFR to NORM</ANIMTIP_1>
+					<ANIMTIP_2>Set ECAM/ND XFR to F/O</ANIMTIP_2>
 				</UseTemplate>
 			</Component>
 		</Component>
@@ -2968,14 +3040,22 @@
 					<NODE_ID>PUSH_OVHD_CARGOSMOKE_FWD1</NODE_ID>
 					<ID>SMOKE</ID>
 				</UseTemplate>
-				<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
+				<UseTemplate Name="ASOBO_GT_Switch_Dummy">
 					<NODE_ID>LOCK_OVHD_CARGOSMOKE_2</NODE_ID>
+					<ANIM_NAME>LOCK_OVHD_CARGOSMOKE_2</ANIM_NAME>
+					<WWISE_EVENT_1>apu_generator_switch_on</WWISE_EVENT_1>
+					<WWISE_EVENT_2>apu_generator_switch_off</WWISE_EVENT_2>
+					<LEFT_SINGLE_CODE>(L:A32NX_CARGOSMOKE_DISCH2LOCK_TOGGLE) ! (>L:A32NX_CARGOSMOKE_DISCH2LOCK_TOGGLE)</LEFT_SINGLE_CODE>
 				</UseTemplate>
 				<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
 					<NODE_ID>PUSH_OVHD_CARGOSMOKE_2</NODE_ID>
 				</UseTemplate>
-				<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
+				<UseTemplate Name="ASOBO_GT_Switch_Dummy">
 					<NODE_ID>LOCK_OVHD_CARGOSMOKE_1</NODE_ID>
+					<ANIM_NAME>LOCK_OVHD_CARGOSMOKE_1</ANIM_NAME>
+					<WWISE_EVENT_1>apu_generator_switch_on</WWISE_EVENT_1>
+					<WWISE_EVENT_2>apu_generator_switch_off</WWISE_EVENT_2>
+					<LEFT_SINGLE_CODE>(L:A32NX_CARGOSMOKE_DISCH1LOCK_TOGGLE) ! (>L:A32NX_CARGOSMOKE_DISCH1LOCK_TOGGLE)</LEFT_SINGLE_CODE>
 				</UseTemplate>
 				<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
 					<NODE_ID>PUSH_OVHD_CARGOSMOKE_1</NODE_ID>
@@ -3162,18 +3242,6 @@
 			</UseTemplate>
 			<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
 				<NODE_ID>PUSH_MPR_R2</NODE_ID>
-			</UseTemplate>
-			<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-				<NODE_ID>KNOB_SWITCHING_1</NODE_ID>
-			</UseTemplate>
-			<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-				<NODE_ID>KNOB_SWITCHING_2</NODE_ID>
-			</UseTemplate>
-			<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-				<NODE_ID>KNOB_SWITCHING_3</NODE_ID>
-			</UseTemplate>
-			<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-				<NODE_ID>KNOB_SWITCHING_4</NODE_ID>
 			</UseTemplate>
 			<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
 				<NODE_ID>LOCK_ECAM_EMERCANC</NODE_ID>
@@ -3401,28 +3469,7 @@
 				<NODE_ID>PUSH_OVHD_ADIRS_3</NODE_ID>
 			</UseTemplate>
 			<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-				<NODE_ID>LOCK_OVHD_EVAC_COMMAND</NODE_ID>
-			</UseTemplate>
-			<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-				<NODE_ID>PUSH_OVHD_EVAC_COMMAND</NODE_ID>
-			</UseTemplate>
-			<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-				<NODE_ID>PUSH_OVHD_EVAC_HORN</NODE_ID>
-			</UseTemplate>
-			<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-				<NODE_ID>SWITCH_OVHD_EVAC_CAPT</NODE_ID>
-			</UseTemplate>
-			<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-				<NODE_ID>LOCK_OVHD_EMERELECPWR_EMERTEST</NODE_ID>
-			</UseTemplate>
-			<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
 				<NODE_ID>PUSH_OVHD_EMERELECPWR_EMERTEST</NODE_ID>
-			</UseTemplate>
-			<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-				<NODE_ID>PUSH_OVHD_EMERELECPWR_RAT</NODE_ID>
-			</UseTemplate>
-			<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-				<NODE_ID>LOCK_OVHD_EMERELECPWR_MANON</NODE_ID>
 			</UseTemplate>
 			<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
 				<NODE_ID>PUSH_OVHD_EMERELECPWR_MANON</NODE_ID>
