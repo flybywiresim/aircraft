@@ -6,17 +6,17 @@ class CDUPositionMonitorPage {
         };
         SimVar.SetSimVarValue("L:FMC_UPDATE_CURRENT_PAGE", "number", 1);
         let currPos = new LatLong(SimVar.GetSimVarValue("GPS POSITION LAT", "degree latitude"),
-                                  SimVar.GetSimVarValue("GPS POSITION LON", "degree longitude")).toShortDegreeString();
+            SimVar.GetSimVarValue("GPS POSITION LON", "degree longitude")).toShortDegreeString();
         if (currPos.includes("N")) {
-            var currPosSplit = currPos.split("N")
-            var sep = "N/"
+            var currPosSplit = currPos.split("N");
+            var sep = "N/";
         } else {
-            var currPosSplit = currPos.split("S")
-            var sep = "S/"
+            var currPosSplit = currPos.split("S");
+            var sep = "S/";
         }
-        let latStr = currPosSplit[0]
-        let lonStr = currPosSplit[1]
-        currPos = latStr + sep + lonStr                        
+        const latStr = currPosSplit[0];
+        const lonStr = currPosSplit[1];
+        currPos = latStr + sep + lonStr;
 
         mcdu.setTemplate([
             ["POSITION MONITOR"],
@@ -34,13 +34,13 @@ class CDUPositionMonitorPage {
             ["←FREEZE[color]blue", "NAVAIDS>"]
         ]);
 
-        mcdu.onRightInput[5]= () => {
-            CDUSelectedNavaids.ShowPage(mcdu)
-        }
+        mcdu.onRightInput[5] = () => {
+            CDUSelectedNavaids.ShowPage(mcdu);
+        };
 
         mcdu.onLeftInput[5] = () => {
-            CDUPosFrozen.ShowPage(mcdu, currPos)
-        }
+            CDUPosFrozen.ShowPage(mcdu, currPos);
+        };
     }
 }
 //# sourceMappingURL=A320_Neo_CDU_PositionMonitorPage.js.map

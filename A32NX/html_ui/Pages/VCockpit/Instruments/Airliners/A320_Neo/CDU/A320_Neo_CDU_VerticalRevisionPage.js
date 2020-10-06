@@ -1,6 +1,6 @@
 class CDUVerticalRevisionPage {
     static ShowPage(mcdu, waypoint) {
-        let waypointInfo = waypoint.infos;
+        const waypointInfo = waypoint.infos;
         if (waypointInfo instanceof WayPointInfo) {
             mcdu.clearDisplay();
             let waypointIdent = "---";
@@ -11,13 +11,14 @@ class CDUVerticalRevisionPage {
             if (waypointInfo.coordinates) {
                 coordinates = waypointInfo.coordinates.toDegreeString();
             }
-            let efob = "---.-";
-            let extra = "---.-";
-            let climbSpeedLimit = "250";
-            let climbAltLimit = "FL100";
+            const efob = "---.-";
+            const extra = "---.-";
+            const climbSpeedLimit = "250";
+            const climbAltLimit = "FL100";
             let speedConstraint = "*[   ]";
-            if (waypoint.speedConstraint > 10)
+            if (waypoint.speedConstraint > 10) {
                 speedConstraint = waypoint.speedConstraint.toFixed(0);
+            }
             let altitudeConstraint = "[   ]*";
             if (waypoint.legAltitudeDescription !== 0) {
                 if (waypoint.legAltitudeDescription === 1) {
@@ -28,14 +29,13 @@ class CDUVerticalRevisionPage {
                 }
                 if (waypoint.legAltitudeDescription === 3) {
                     altitudeConstraint = "-" + waypoint.legAltitude1.toFixed(0);
-                }
-                else if (waypoint.legAltitudeDescription === 4) {
+                } else if (waypoint.legAltitudeDescription === 4) {
                     altitudeConstraint = ((waypoint.legAltitude1 + waypoint.legAltitude2) * 0.5).toFixed(0);
                 }
             }
             mcdu.setTemplate([
                 ["VERT REV AT " + waypointIdent],
-                [" EFOB=" + efob,  "EXTRA=" + extra],
+                [" EFOB=" + efob, "EXTRA=" + extra],
                 [""],
                 [" CLB SPD LIM", ""],
                 [climbSpeedLimit + "/" + climbAltLimit + "[color]blue", "RTA>"],
@@ -53,7 +53,7 @@ class CDUVerticalRevisionPage {
             mcdu.onLeftInput[1] = () => {}; // CLB SPD LIM
             mcdu.onRightInput[1] = () => {}; // RTA
             mcdu.onLeftInput[2] = async () => {
-                let value = parseInt(mcdu.inOut);
+                const value = parseInt(mcdu.inOut);
                 if (isFinite(value)) {
                     if (value >= 0) {
                         // NYI
@@ -62,7 +62,7 @@ class CDUVerticalRevisionPage {
                 mcdu.clearUserInput();
                 mcdu.showErrorMessage("NOT YET IMPLEMENTED");
             }; // SPD CSTR
-            mcdu.onRightInput[2] =  () => {
+            mcdu.onRightInput[2] = () => {
                 let value = mcdu.inOut;
                 /* API limited at this moment, no way to alter a waypoint except altitude
                 waypoint.legAltitudeDescription = 1;
@@ -84,13 +84,15 @@ class CDUVerticalRevisionPage {
                             this.ShowPage(mcdu, waypoint);
                         });
                     }
-                }
-                else
+                } else {
                     mcdu.showErrorMessage("INVALID ENTRY");
+                }
             }; // ALT CSTR
             mcdu.onLeftInput[4] = () => {}; // WIND
-            mcdu.onRightInput[4] = () => {}; // STEP ALTS 
-            mcdu.onLeftInput[5] = () => { CDUFlightPlanPage.ShowPage(mcdu); };
+            mcdu.onRightInput[4] = () => {}; // STEP ALTS
+            mcdu.onLeftInput[5] = () => {
+                CDUFlightPlanPage.ShowPage(mcdu);
+            };
         }
     }
 }

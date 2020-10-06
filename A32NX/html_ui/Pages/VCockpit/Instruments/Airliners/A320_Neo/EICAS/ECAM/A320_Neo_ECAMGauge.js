@@ -95,19 +95,19 @@ var A320_Neo_ECAM_Common;
             return this.isActive;
         }
         polarToCartesian(_centerX, _centerY, _radius, _angleInDegrees) {
-            var angleInRadians = _angleInDegrees * (Math.PI / 180.0);
+            const angleInRadians = _angleInDegrees * (Math.PI / 180.0);
             return new Vec2(_centerX + (_radius * Math.cos(angleInRadians)), _centerY + (_radius * Math.sin(angleInRadians)));
         }
         valueToAngle(_value, _radians) {
-            var valuePercentage = (_value - this.minValue) / (this.maxValue - this.minValue);
-            var angle = (this.startAngle + (valuePercentage * this.arcSize));
+            const valuePercentage = (_value - this.minValue) / (this.maxValue - this.minValue);
+            let angle = (this.startAngle + (valuePercentage * this.arcSize));
             if (_radians) {
                 angle *= (Math.PI / 180.0);
             }
             return angle;
         }
         valueToDir(_value) {
-            var angle = this.valueToAngle(_value, true);
+            const angle = this.valueToAngle(_value, true);
             return (new Vec2(Math.cos(angle), Math.sin(angle)));
         }
         init(_gaugeDefinition) {
@@ -137,20 +137,20 @@ var A320_Neo_ECAM_Common;
             this.mainArc = document.createElementNS(Avionics.SVG.NS, "path");
             this.mainArc.id = "MainArc";
             {
-                var startPos = this.polarToCartesian(this.center.x, this.center.y, this.mainArcRadius, this.endAngle);
-                var endPos = this.polarToCartesian(this.center.x, this.center.y, this.mainArcRadius, this.startAngle);
-                var largeArcFlag = ((this.endAngle - this.startAngle) <= 180) ? "0" : "1";
+                const startPos = this.polarToCartesian(this.center.x, this.center.y, this.mainArcRadius, this.endAngle);
+                const endPos = this.polarToCartesian(this.center.x, this.center.y, this.mainArcRadius, this.startAngle);
+                const largeArcFlag = ((this.endAngle - this.startAngle) <= 180) ? "0" : "1";
                 var d = ["M", startPos.x, startPos.y, "A", this.mainArcRadius, this.mainArcRadius, 0, largeArcFlag, 0, endPos.x, endPos.y].join(" ");
                 this.mainArc.setAttribute("d", d);
             }
             this.rootSVG.appendChild(this.mainArc);
             if (this.minRedValue != this.maxRedValue) {
-                var minRedDir = this.valueToDir(this.minRedValue);
-                var maxRedDir = this.valueToDir(this.maxRedValue);
-                var topRight = new Vec2(this.center.x + (maxRedDir.x * this.mainArcRadius), this.center.y + (maxRedDir.y * this.mainArcRadius));
-                var topLeft = new Vec2(this.center.x + (minRedDir.x * this.mainArcRadius), this.center.y + (minRedDir.y * this.mainArcRadius));
-                var bottomRight = new Vec2(this.center.x + (maxRedDir.x * this.redArcInnerRadius), this.center.y + (maxRedDir.y * this.redArcInnerRadius));
-                var bottomLeft = new Vec2(this.center.x + (minRedDir.x * this.redArcInnerRadius), this.center.y + (minRedDir.y * this.redArcInnerRadius));
+                const minRedDir = this.valueToDir(this.minRedValue);
+                const maxRedDir = this.valueToDir(this.maxRedValue);
+                const topRight = new Vec2(this.center.x + (maxRedDir.x * this.mainArcRadius), this.center.y + (maxRedDir.y * this.mainArcRadius));
+                const topLeft = new Vec2(this.center.x + (minRedDir.x * this.mainArcRadius), this.center.y + (minRedDir.y * this.mainArcRadius));
+                const bottomRight = new Vec2(this.center.x + (maxRedDir.x * this.redArcInnerRadius), this.center.y + (maxRedDir.y * this.redArcInnerRadius));
+                const bottomLeft = new Vec2(this.center.x + (minRedDir.x * this.redArcInnerRadius), this.center.y + (minRedDir.y * this.redArcInnerRadius));
                 var d = [
                     "M", topRight.x, topRight.y,
                     "A", this.mainArcRadius, this.mainArcRadius, 0, "0", 0, topLeft.x, topLeft.y,
@@ -167,7 +167,7 @@ var A320_Neo_ECAM_Common;
             this.graduationsGroup = document.createElementNS(Avionics.SVG.NS, "g");
             this.graduationsGroup.id = "GraduationsGroup";
             this.rootSVG.appendChild(this.graduationsGroup);
-            var cursorGroup = document.createElementNS(Avionics.SVG.NS, "g");
+            const cursorGroup = document.createElementNS(Avionics.SVG.NS, "g");
             cursorGroup.id = "CursorGroup";
             this.cursor = document.createElementNS(Avionics.SVG.NS, "line");
             this.cursor.setAttribute("x1", (this.mainArcRadius * (1 - _gaugeDefinition.cursorLength)).toString());
@@ -183,7 +183,7 @@ var A320_Neo_ECAM_Common;
             }
             if (this.outerIndicatorFunction != null) {
                 this.outerIndicatorObject = document.createElementNS(Avionics.SVG.NS, "path");
-                var radius = this.outerIndicatorRadius;
+                const radius = this.outerIndicatorRadius;
                 var d = [
                     "M", (this.mainArcRadius + this.outerIndicatorOffset), "0",
                     "a", radius, radius, "0 1 0", (radius * 2), "0",
@@ -193,8 +193,8 @@ var A320_Neo_ECAM_Common;
                 cursorGroup.appendChild(this.outerIndicatorObject);
             }
             this.rootSVG.appendChild(cursorGroup);
-            var textPosX = this.viewBoxSize.x * _gaugeDefinition.currentValuePos.x;
-            var textPosY = this.viewBoxSize.x * _gaugeDefinition.currentValuePos.y;
+            const textPosX = this.viewBoxSize.x * _gaugeDefinition.currentValuePos.x;
+            const textPosY = this.viewBoxSize.x * _gaugeDefinition.currentValuePos.y;
             this.currentValueText = document.createElementNS(Avionics.SVG.NS, "text");
             this.currentValueText.id = "CurrentValue";
             this.currentValueText.setAttribute("x", textPosX.toString());
@@ -202,11 +202,11 @@ var A320_Neo_ECAM_Common;
             this.currentValueText.setAttribute("alignment-baseline", "central");
             this.rootSVG.appendChild(this.currentValueText);
             if (_gaugeDefinition.currentValueBorderWidth > 0) {
-                var borderWidth = this.viewBoxSize.x * _gaugeDefinition.currentValueBorderWidth;
-                var borderHeight = this.currentValueBorderHeight * 1.2;
-                var borderPosX = textPosX - (borderWidth * 0.95);
-                var borderPosY = textPosY - (borderHeight * 0.55);
-                var currentValueBorder = document.createElementNS(Avionics.SVG.NS, "rect");
+                const borderWidth = this.viewBoxSize.x * _gaugeDefinition.currentValueBorderWidth;
+                const borderHeight = this.currentValueBorderHeight * 1.2;
+                const borderPosX = textPosX - (borderWidth * 0.95);
+                const borderPosY = textPosY - (borderHeight * 0.55);
+                const currentValueBorder = document.createElementNS(Avionics.SVG.NS, "rect");
                 currentValueBorder.id = "CurrentValueBorder";
                 currentValueBorder.setAttribute("x", borderPosX.toString());
                 currentValueBorder.setAttribute("y", borderPosY.toString());
@@ -215,7 +215,7 @@ var A320_Neo_ECAM_Common;
                 this.rootSVG.appendChild(currentValueBorder);
             }
             if (this.extraMessageFunction != null) {
-                var extraMessageGroup = document.createElementNS(Avionics.SVG.NS, "g");
+                const extraMessageGroup = document.createElementNS(Avionics.SVG.NS, "g");
                 extraMessageGroup.id = "ExtraMessage";
                 this.extraMessageBorder = document.createElementNS(Avionics.SVG.NS, "rect");
                 this.extraMessageBorder.setAttribute("x", this.extraMessageBorderPosX.toString());
@@ -244,12 +244,12 @@ var A320_Neo_ECAM_Common;
 
         //accepts two more parameters to set custom ID for dynamic markers
         addGraduation(_value, _showInnerMarker, _text = "", _showOuterMarker = false, _setid = false, _idName = "") {
-            var dir = this.valueToDir(_value);
+            const dir = this.valueToDir(_value);
             if (_showInnerMarker) {
                 var start = new Vec2(this.center.x + (dir.x * this.mainArcRadius), this.center.y + (dir.y * this.mainArcRadius));
                 var end = new Vec2(this.center.x + (dir.x * this.graduationInnerLineEndOffset), this.center.y + (dir.y * this.graduationInnerLineEndOffset));
                 var marker = document.createElementNS(Avionics.SVG.NS, "line");
-                if(_setid){
+                if (_setid) {
                     marker.setAttribute("id",_idName);
                 }
                 marker.setAttribute("class", "InnerMarker");
@@ -273,8 +273,8 @@ var A320_Neo_ECAM_Common;
                 this.graduationsGroup.appendChild(marker);
             }
             if (_text.length > 0) {
-                var pos = new Vec2(this.center.x + (dir.x * this.graduationTextOffset), this.center.y + (dir.y * this.graduationTextOffset));
-                var text = document.createElementNS(Avionics.SVG.NS, "text");
+                const pos = new Vec2(this.center.x + (dir.x * this.graduationTextOffset), this.center.y + (dir.y * this.graduationTextOffset));
+                const text = document.createElementNS(Avionics.SVG.NS, "text");
                 text.textContent = _text;
                 text.setAttribute("x", pos.x.toString());
                 text.setAttribute("y", pos.y.toString());
@@ -283,7 +283,7 @@ var A320_Neo_ECAM_Common;
             }
         }
         refreshActiveState() {
-            var style = this.isActive ? "active" : "inactive";
+            const style = this.isActive ? "active" : "inactive";
             if (this.mainArc != null) {
                 this.mainArc.setAttribute("class", style);
             }
@@ -321,18 +321,18 @@ var A320_Neo_ECAM_Common;
                     this.outerDynamicArcFunction(this.outerDynamicArcTargetValues);
                     this.refreshOuterDynamicArc(this.outerDynamicArcTargetValues[0], this.outerDynamicArcTargetValues[1]);
                 }
-                if(this.outerDynamicMarkerFunction != null) {
+                if (this.outerDynamicMarkerFunction != null) {
                     this.refreshOuterMarkerFunction(this.outerDynamicMarkerFunction());
                 }
-                if(this.dangerMinDynamicFunction != null) {
+                if (this.dangerMinDynamicFunction != null) {
                     this.refreshDangerMinFunction(this.dangerMinDynamicFunction());
                 }
             }
             if ((this.extraMessageFunction != null) && (this.extraMessageText != null) && (this.extraMessageBorder != null)) {
-                var extraMessage = this.isActive ? this.extraMessageFunction().toString() : "";
+                const extraMessage = this.isActive ? this.extraMessageFunction().toString() : "";
                 if (extraMessage != this.extraMessageString) {
                     this.extraMessageString = extraMessage;
-                    var style = (this.extraMessageString.length > 0) ? "active" : "inactive";
+                    const style = (this.extraMessageString.length > 0) ? "active" : "inactive";
                     this.extraMessageText.textContent = this.extraMessageString;
                     this.extraMessageText.setAttribute("class", style);
                     this.extraMessageBorder.setAttribute("class", style);
@@ -340,45 +340,43 @@ var A320_Neo_ECAM_Common;
             }
         }
         //accepts ID_EGT, _value[0] = _id, _value[1] = EGT
-        refreshOuterMarkerFunction(_value, _force = false){
-            if(_value[1] != this.outerMarkerValue){
+        refreshOuterMarkerFunction(_value, _force = false) {
+            if (_value[1] != this.outerMarkerValue) {
                 this.outerMarkerValue = _value[1];
-                var dir = this.valueToDir(_value[1]);
-                var start = new Vec2(this.center.x + (dir.x * this.mainArcRadius), this.center.y + (dir.y * this.mainArcRadius));
-                var end = new Vec2(this.center.x + (dir.x * this.graduationOuterLineEndOffset), this.center.y + (dir.y * this.graduationOuterLineEndOffset));
-                var marker = document.getElementById(_value[0]);
+                const dir = this.valueToDir(_value[1]);
+                const start = new Vec2(this.center.x + (dir.x * this.mainArcRadius), this.center.y + (dir.y * this.mainArcRadius));
+                const end = new Vec2(this.center.x + (dir.x * this.graduationOuterLineEndOffset), this.center.y + (dir.y * this.graduationOuterLineEndOffset));
+                const marker = document.getElementById(_value[0]);
                 marker.setAttribute("x1", start.x.toString());
                 marker.setAttribute("y1", start.y.toString());
                 marker.setAttribute("x2", end.x.toString());
                 marker.setAttribute("y2", end.y.toString());
             }
         }
-        refreshDangerMinFunction(_value, _force = false){
-            if(_value != this.dangerRange[0]){
+        refreshDangerMinFunction(_value, _force = false) {
+            if (_value != this.dangerRange[0]) {
                 this.dangerRange[0] = _value;
             }
         }
         refreshMainValue(_value, _force = false) {
             if ((_value != this.currentValue) || _force) {
                 this.currentValue = _value;
-                var clampedValue = Utils.Clamp(this.currentValue, this.minValue, this.maxValue);
-                var style = "";
+                const clampedValue = Utils.Clamp(this.currentValue, this.minValue, this.maxValue);
+                let style = "";
                 if ((this.dangerRange[0] != this.dangerRange[1]) && (clampedValue >= this.dangerRange[0]) && (clampedValue <= this.dangerRange[1])) {
                     style = "danger";
-                }
-                else if ((this.warningRange[0] != this.warningRange[1]) && (clampedValue >= this.warningRange[0]) && (clampedValue <= this.warningRange[1])) {
+                } else if ((this.warningRange[0] != this.warningRange[1]) && (clampedValue >= this.warningRange[0]) && (clampedValue <= this.warningRange[1])) {
                     style = "warning";
-                }
-                else {
+                } else {
                     style = "active";
                 }
                 if (this.cursor != null) {
-                    var angle = this.valueToAngle(clampedValue, false);
+                    const angle = this.valueToAngle(clampedValue, false);
                     this.cursor.setAttribute("transform", "rotate(" + angle + ")");
                     this.cursor.setAttribute("class", style);
                 }
                 if (this.currentValueText != null) {
-                    var strValue = this.currentValue.toFixed(this.currentValuePrecision);
+                    const strValue = this.currentValue.toFixed(this.currentValuePrecision);
                     this.currentValueText.textContent = strValue;
                     this.currentValueText.setAttribute("class", style);
                 }
@@ -388,7 +386,7 @@ var A320_Neo_ECAM_Common;
             if ((_value != this.outerIndicatorValue) || _force) {
                 this.outerIndicatorValue = _value;
                 if (this.outerIndicatorObject != null) {
-                    var angle = (this.startAngle + (this.outerIndicatorValue * this.arcSize));
+                    const angle = (this.startAngle + (this.outerIndicatorValue * this.arcSize));
                     this.outerIndicatorObject.setAttribute("transform", "rotate(" + angle + ")");
                 }
             }
@@ -397,15 +395,15 @@ var A320_Neo_ECAM_Common;
             if ((_start != this.outerDynamicArcCurrentValues[0]) || (_end != this.outerDynamicArcCurrentValues[1]) || _force) {
                 this.outerDynamicArcCurrentValues[0] = Utils.Clamp(_start, this.minValue, this.maxValue);
                 this.outerDynamicArcCurrentValues[1] = Utils.Clamp(_end, this.minValue, this.maxValue);
-                var d = "";
+                let d = "";
                 if (this.outerDynamicArcCurrentValues[0] != this.outerDynamicArcCurrentValues[1]) {
-                    var startAngle = this.valueToAngle(this.outerDynamicArcCurrentValues[0], true);
-                    var startX = this.center.x + (Math.cos(startAngle) * this.outerDynamicArcRadius);
-                    var startY = this.center.y + (Math.sin(startAngle) * this.outerDynamicArcRadius);
-                    var endAngle = this.valueToAngle(this.outerDynamicArcCurrentValues[1], true);
-                    var endX = this.center.x + (Math.cos(endAngle) * this.outerDynamicArcRadius);
-                    var endY = this.center.y + (Math.sin(endAngle) * this.outerDynamicArcRadius);
-                    var largeArcFlag = ((endAngle - startAngle) <= Math.PI) ? "0 0 0" : "0 1 0";
+                    const startAngle = this.valueToAngle(this.outerDynamicArcCurrentValues[0], true);
+                    const startX = this.center.x + (Math.cos(startAngle) * this.outerDynamicArcRadius);
+                    const startY = this.center.y + (Math.sin(startAngle) * this.outerDynamicArcRadius);
+                    const endAngle = this.valueToAngle(this.outerDynamicArcCurrentValues[1], true);
+                    const endX = this.center.x + (Math.cos(endAngle) * this.outerDynamicArcRadius);
+                    const endY = this.center.y + (Math.sin(endAngle) * this.outerDynamicArcRadius);
+                    const largeArcFlag = ((endAngle - startAngle) <= Math.PI) ? "0 0 0" : "0 1 0";
                     d = [
                         "M", endX, endY,
                         "A", this.outerDynamicArcRadius, this.outerDynamicArcRadius, largeArcFlag, startX, startY

@@ -8,7 +8,9 @@ var A320_Neo_LowerECAM_BLEED;
             super();
             this.isInitialised = false;
         }
-        get templateID() { return "LowerECAMBLEEDTemplate"; }
+        get templateID() {
+            return "LowerECAMBLEEDTemplate";
+        }
         connectedCallback() {
             super.connectedCallback();
             TemplateElement.call(this, this.init.bind(this));
@@ -16,6 +18,7 @@ var A320_Neo_LowerECAM_BLEED;
         init() {
 
             this.isInitialised = true;
+          
             // finding all html element for the display, first element of array is always the open on, the second is the closed one
             this.apuBleedIndication = [this.querySelector("#apu-switch-open"), this.querySelector("#apu-switch-closed")]
             this.leftEngineHp = [this.querySelector("#left-engine-hp-open"), this.querySelector("#left-engine-hp-closed")]
@@ -27,10 +30,15 @@ var A320_Neo_LowerECAM_BLEED;
             this.xBleed = [this.querySelector("#xbleed-connection-open"), this.querySelector("#xbleed-connection-closed")]
             this.ramAir = [this.querySelector("#ram-air-on"), this.querySelector("#ram-air-off")]
             this.packFlow = [this.querySelector("#pack-flow-low"), this.querySelector("#pack-flow-normal"), this.querySelector("#pack-flow-high")]
+            this.packIndicators = [(this.querySelector("#pack-out-temp-indicator-0")), (this.querySelector("#pack-out-temp-indicator-1")),
+                                   (this.querySelector("#pack-out-temp-indicator-2")), (this.querySelector("#pack-out-temp-indicator-3")),
+                                   (this.querySelector("#pack-out-temp-indicator-4")), (this.querySelector("#pack-out-temp-indicator-5")),
+                                   (this.querySelector("#pack-out-temp-indicator-6")),]
             this.apuProvidesBleed = false
             this.apuBleedTemperature = 250
             this.apuBleedStartTimer = -1
 
+            //placeholder logic for packs
             this.engTempMultiplier = 0.35
             this.packInMultiplier = 0.20
             this.packOutMultiplier1 = 0.055
@@ -38,15 +46,9 @@ var A320_Neo_LowerECAM_BLEED;
             this.packInMultiplierApu = 0.4
             this.packOutMultiplierApu = 0.1
             this.temperatureVariationSpeed = 0.01
-            //part of the placeholder logic
-            this.packIndicators = [(this.querySelector("#pack-out-temp-indicator-0")), (this.querySelector("#pack-out-temp-indicator-1")),
-            (this.querySelector("#pack-out-temp-indicator-2")), (this.querySelector("#pack-out-temp-indicator-3")),
-            (this.querySelector("#pack-out-temp-indicator-4")), (this.querySelector("#pack-out-temp-indicator-5")),
-            (this.querySelector("#pack-out-temp-indicator-6")),]
-
-
+            
         }
-        //part of the placeholder logic
+        //placeholder logic for packs
         setPackIndicators(p0, p1, p2, p3, p4, p5, p6) {
             if (p0) {
                 this.packIndicators[0].setAttribute("visibility", "visible")
@@ -105,7 +107,6 @@ var A320_Neo_LowerECAM_BLEED;
                 this.packIndicators[5].setAttribute("visibility", "hidden")
                 this.packIndicators[6].setAttribute("visibility", "visible")
             }
-
         }
         update(_deltaTime) {
             if (!this.isInitialised) {
@@ -119,27 +120,28 @@ var A320_Neo_LowerECAM_BLEED;
             let eng2Running = SimVar.GetSimVarValue("ENG COMBUSTION:2", "bool")
 
             if (!this.apuProvidesBleed && (currentApuN > 0.94)) {
-                this.apuBleedStartTimer = 2
+                this.apuBleedStartTimer = 2;
             }
 
             if (this.apuBleedStartTimer >= 0) {
                 this.apuBleedStartTimer -= _deltaTime / 1000
                 if (this.apuBleedStartTimer < 0) {
-                    this.apuProvidesBleed = true
-                    this.querySelector("#apu-connecting-line").setAttribute("style", "stroke:008000")
+                    this.apuProvidesBleed = true;
+                    this.querySelector("#apu-connecting-line").setAttribute("style", "stroke:008000");
                 }
             }
 
-            if (currentEngineBleedState[0] === 1 && eng1Running) {
+
+            if (currentEngineBleedState[0] === 1 && eng1Running)      
                 this.leftEngineHp[0].setAttribute("visibility", "visible");
                 this.leftEngineHp[1].setAttribute("visibility", "hidden");
                 this.leftEngineIp[0].setAttribute("visibility", "visible");
                 this.leftEngineIp[1].setAttribute("visibility", "hidden");
             } else {
-                this.leftEngineHp[0].setAttribute("visibility", "hidden")
-                this.leftEngineHp[1].setAttribute("visibility", "visible")
-                this.leftEngineIp[0].setAttribute("visibility", "hidden")
-                this.leftEngineIp[1].setAttribute("visibility", "visible")
+                this.leftEngineHp[0].setAttribute("visibility", "hidden");
+                this.leftEngineHp[1].setAttribute("visibility", "visible");
+                this.leftEngineIp[0].setAttribute("visibility", "hidden");
+                this.leftEngineIp[1].setAttribute("visibility", "visible");
             }
             if (currentEngineBleedState[1] === 1 && eng2Running) {
                 this.rightEngineHp[0].setAttribute("visibility", "visible");
@@ -147,21 +149,21 @@ var A320_Neo_LowerECAM_BLEED;
                 this.rightEngineIp[0].setAttribute("visibility", "visible");
                 this.rightEngineIp[1].setAttribute("visibility", "hidden");
             } else {
-                this.rightEngineHp[0].setAttribute("visibility", "hidden")
-                this.rightEngineHp[1].setAttribute("visibility", "visible")
-                this.rightEngineIp[0].setAttribute("visibility", "hidden")
-                this.rightEngineIp[1].setAttribute("visibility", "visible")
+                this.rightEngineHp[0].setAttribute("visibility", "hidden");
+                this.rightEngineHp[1].setAttribute("visibility", "visible");
+                this.rightEngineIp[0].setAttribute("visibility", "hidden");
+                this.rightEngineIp[1].setAttribute("visibility", "visible");
             }
 
             //find if the APU bleed is on
             const currentApuBleedSate = SimVar.GetSimVarValue("BLEED AIR APU", "Bool")
 
             if (currentApuBleedSate) {
-                this.apuBleedIndication[0].setAttribute("visibility", 'visible')
-                this.apuBleedIndication[1].setAttribute("visibility", "hidden")
+                this.apuBleedIndication[0].setAttribute("visibility", 'visible');
+                this.apuBleedIndication[1].setAttribute("visibility", "hidden");
             } else {
-                this.apuBleedIndication[0].setAttribute("visibility", "hidden")
-                this.apuBleedIndication[1].setAttribute("visibility", "visible")
+                this.apuBleedIndication[0].setAttribute("visibility", "hidden");
+                this.apuBleedIndication[1].setAttribute("visibility", "visible");
             }
 
             //find left pack status
