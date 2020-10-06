@@ -664,7 +664,9 @@ var Jet_PFD_FlightDirector;
                     currentFDPitch = currentPlanePitch;
                 }
                 this._fdPitch += (currentFDPitch - this._fdPitch) * Math.min(1.0, _deltaTime * 0.001);
-                var lineY = this.calculatePosYFromPitch(currentPlanePitch, this._fdPitch);
+                // Slight vertical adjustment so that the FD matches attitude indicator
+                const offsetY = -0.5;
+                const lineY = this.calculatePosYFromPitch(currentPlanePitch, this._fdPitch) + offsetY;
                 this.pitchLine.setAttribute("transform", "translate(0, " + lineY + ")");
             }
         }
