@@ -24,7 +24,7 @@ Fixes #[issue_no]
 Discord username (if different from GitHub):
 
 <!-- DO NOT DELETE THIS -->
-## How to download the artifact
+## How to download the PR for QA
 
 Every new commit to this PR will cause a new A32NX artifact to be created and uploaded.
 The build.py will have already been run with the latest changes, so no need to rerun it once you download the zip.
