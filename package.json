@@ -11,7 +11,7 @@
         }
     },
     "lint-staged": {
-        "*.{js}": "npm run lint"
+        "*.{js,jsx,ts,tsx}": "eslint --cache --fix"
     },
     "devDependencies": {
         "lint-staged": "10.4.0",
