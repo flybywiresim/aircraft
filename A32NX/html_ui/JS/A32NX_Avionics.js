@@ -13,8 +13,8 @@ var A32NX_Avionics;
             this.posX = _posX;
             this.posY = _posY;
             this.allTexts = [];
-            for (var i = 0; i < this._nbItems; i++) {
-                var text = document.createElementNS(Avionics.SVG.NS, "text");
+            for (let i = 0; i < this._nbItems; i++) {
+                const text = document.createElementNS(Avionics.SVG.NS, "text");
                 text.setAttribute("width", _width.toString());
                 text.setAttribute("fill", _fontColor);
                 text.setAttribute("font-size", _fontSize.toString());
@@ -32,24 +32,22 @@ var A32NX_Avionics;
         }
         clear(_value = "") {
             this.update(0);
-            for (var i = 0; i < this.allTexts.length; i++) {
+            for (let i = 0; i < this.allTexts.length; i++) {
                 this.allTexts[i].textContent = _value;
             }
         }
         update(_value, _divider = 1, _hideIfLower = undefined) {
             super.scroll(Math.abs(_value) / _divider);
-            var currentVal = this.firstValue;
-            var currentY = this.posY + this.offsetY * this.spacing;
-            for (var i = 0; i < this.allTexts.length; i++) {
-                var posX = this.posX;
-                var posY = currentY;
+            let currentVal = this.firstValue;
+            let currentY = this.posY + this.offsetY * this.spacing;
+            for (let i = 0; i < this.allTexts.length; i++) {
+                const posX = this.posX;
+                const posY = currentY;
                 if (currentVal <= 0 && _hideIfLower != undefined && Math.abs(_value) < _hideIfLower) {
                     this.allTexts[i].textContent = "";
-                }
-                else if (currentVal == 0 && this._moduloValue == 100) {
+                } else if (currentVal == 0 && this._moduloValue == 100) {
                     this.allTexts[i].textContent = "00";
-                }
-                else {
+                } else {
                     this.allTexts[i].textContent = Math.abs(currentVal).toString();
                 }
                 this.allTexts[i].setAttribute("transform", "translate(" + posX.toString() + " " + posY.toString() + ")");

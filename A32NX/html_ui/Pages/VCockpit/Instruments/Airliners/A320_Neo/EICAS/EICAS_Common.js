@@ -3,7 +3,9 @@ class EICASCommonDisplay extends Airliners.EICASTemplateElement {
         super();
         this.isInitialised = false;
     }
-    get templateID() { return "EICASCommonDisplayTemplate"; }
+    get templateID() {
+        return "EICASCommonDisplayTemplate";
+    }
     connectedCallback() {
         super.connectedCallback();
         TemplateElement.call(this, this.init.bind(this));
@@ -39,8 +41,7 @@ class EICASCommonDisplay extends Airliners.EICASTemplateElement {
         if (this.tatText != null) {
             if (this.currentTAT > 0) {
                 this.tatText.textContent = "+" + this.currentTAT.toString();
-            }
-            else {
+            } else {
                 this.tatText.textContent = this.currentTAT.toString();
             }
         }
@@ -52,19 +53,18 @@ class EICASCommonDisplay extends Airliners.EICASTemplateElement {
         if (this.satText != null) {
             if (this.currentSAT > 0) {
                 this.satText.textContent = "+" + this.currentSAT.toString();
-            }
-            else {
+            } else {
                 this.satText.textContent = this.currentSAT.toString();
             }
         }
         //}
     }
     refreshClock() {
-        var seconds = Math.floor(SimVar.GetGlobalVarValue("ZULU TIME", "seconds"));
+        const seconds = Math.floor(SimVar.GetGlobalVarValue("ZULU TIME", "seconds"));
         if (seconds != this.currentSeconds) {
             this.currentSeconds = seconds;
-            var hours = Math.floor(seconds / 3600);
-            var minutes = Math.floor((seconds - (hours * 3600)) / 60);
+            const hours = Math.floor(seconds / 3600);
+            const minutes = Math.floor((seconds - (hours * 3600)) / 60);
             if (minutes != this.currentMinutes) {
                 this.currentMinutes = minutes;
                 if (this.hoursText != null) {

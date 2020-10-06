@@ -1,13 +1,13 @@
 {
-    "creator": "FlyByWire Simulations",
+    "creator": "Iceman",
     "release_notes": {
         "neutral": {
             "LastUpdate": "",
             "OlderHistory": ""
         }
     },
-    "package_version": "0.3.1",
-    "title": "A32NX",
+    "package_version": "0.1.51",
+    "title": "A320NX",
     "dependencies": [
         {
             "package_version": "0.1.51",
@@ -27,7 +27,7 @@
         }
     ],
     "content_type": "AIRCRAFT",
-    "total_package_size": "00000000000143306327",
+    "total_package_size": "00000000000143286869",
     "minimum_game_version": "1.7.12",
     "manufacturer": "Airbus"
 }

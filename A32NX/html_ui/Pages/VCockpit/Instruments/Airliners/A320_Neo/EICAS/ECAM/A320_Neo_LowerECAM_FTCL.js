@@ -10,7 +10,9 @@ let A320_Neo_LowerECAM_FTCL;
             this.isInitialised = false;
         }
 
-        get templateID() { return "LowerECAMFTCLTemplate"; }
+        get templateID() {
+            return "LowerECAMFTCLTemplate";
+        }
 
         connectedCallback() {
             super.connectedCallback();
@@ -76,7 +78,7 @@ let A320_Neo_LowerECAM_FTCL;
             }
 
             // Update hydraulics available state
-            const hydraulicsShouldBeAvailable = SimVar.GetSimVarValue("ENG COMBUSTION:1", "Bool") === 0 && SimVar.GetSimVarValue("ENG COMBUSTION:2", "Bool") === 0
+            const hydraulicsShouldBeAvailable = SimVar.GetSimVarValue("ENG COMBUSTION:1", "Bool") === 0 && SimVar.GetSimVarValue("ENG COMBUSTION:2", "Bool") === 0;
 
             if (hydraulicsShouldBeAvailable !== this.hydraulicsAvailable) {
                 this.hydraulicsAvailable = hydraulicsShouldBeAvailable;
@@ -109,21 +111,21 @@ let A320_Neo_LowerECAM_FTCL;
 
             // Update left aileron
             const leftAileronDeflectPct = SimVar.GetSimVarValue("AILERON LEFT DEFLECTION PCT", "percent over 100");
-            let leftAileronDeflectPctNormalized = leftAileronDeflectPct * 54;
-            let laCursorPath = "M73," + (204 + leftAileronDeflectPctNormalized) + " l15,-7 l0,14Z";
+            const leftAileronDeflectPctNormalized = leftAileronDeflectPct * 54;
+            const laCursorPath = "M73," + (204 + leftAileronDeflectPctNormalized) + " l15,-7 l0,14Z";
             this.leftAileronCursor.setAttribute("d", laCursorPath);
 
             // Update right aileron
             const rightAileronDeflectPct = SimVar.GetSimVarValue("AILERON RIGHT DEFLECTION PCT", "percent over 100");
-            let rightAileronDeflectPctNormalized = rightAileronDeflectPct * 54;
-            let raCursorPath = "M527," + (204 - rightAileronDeflectPctNormalized) + " l-15,-7 l0,14Z";
+            const rightAileronDeflectPctNormalized = rightAileronDeflectPct * 54;
+            const raCursorPath = "M527," + (204 - rightAileronDeflectPctNormalized) + " l-15,-7 l0,14Z";
             this.rightAileronCursor.setAttribute("d", raCursorPath);
 
             // Update left/right elevators
             const elevatorDeflectPct = SimVar.GetSimVarValue("ELEVATOR DEFLECTION PCT", "percent over 100");
-            let elevatorDeflectPctNormalized = elevatorDeflectPct * 52;
-            let leCursorPath = "M169," + (398 - elevatorDeflectPctNormalized) + " l15,-7 l0,14Z";
-            let reCursorPath = "M431," + (398 - elevatorDeflectPctNormalized) + " l-15,-7 l0,14Z";
+            const elevatorDeflectPctNormalized = elevatorDeflectPct * 52;
+            const leCursorPath = "M169," + (398 - elevatorDeflectPctNormalized) + " l15,-7 l0,14Z";
+            const reCursorPath = "M431," + (398 - elevatorDeflectPctNormalized) + " l-15,-7 l0,14Z";
             this.leftElevatorCursor.setAttribute("d", leCursorPath);
             this.rightElevatorCursor.setAttribute("d", reCursorPath);
 
@@ -135,14 +137,14 @@ let A320_Neo_LowerECAM_FTCL;
             // Update rudder limits
             const IndicatedAirspeed = SimVar.GetSimVarValue("AIRSPEED INDICATED", "knots");
             let MaxAngleNorm = 1;
-            if(IndicatedAirspeed > 380){
+            if (IndicatedAirspeed > 380) {
                 MaxAngleNorm = 3.4 / 25;
-            } else if(IndicatedAirspeed > 160){
-                MaxAngleNorm = (69.2667 - 0.351818 * IndicatedAirspeed + 0.00047 * IndicatedAirspeed**2) / 25;
+            } else if (IndicatedAirspeed > 160) {
+                MaxAngleNorm = (69.2667 - 0.351818 * IndicatedAirspeed + 0.00047 * IndicatedAirspeed ** 2) / 25;
             }
 
-            this.rudderLeftMaxAngle.setAttribute("transform", `rotate(${-26.4 * (1-MaxAngleNorm)} 300 385)`)
-            this.rudderRightMaxAngle.setAttribute("transform", `rotate(${26.4 * (1-MaxAngleNorm)} 300 385)`)
+            this.rudderLeftMaxAngle.setAttribute("transform", `rotate(${-26.4 * (1 - MaxAngleNorm)} 300 385)`);
+            this.rudderRightMaxAngle.setAttribute("transform", `rotate(${26.4 * (1 - MaxAngleNorm)} 300 385)`);
 
             // Update ELAC's and SEC's
             const elac1_On = SimVar.GetSimVarValue("FLY BY WIRE ELAC SWITCH:1", "boolean");
@@ -194,7 +196,7 @@ let A320_Neo_LowerECAM_FTCL;
             } else {
                 this.sec3Shape.setAttribute("class", "MainShapeWarning");
                 this.sec3Num.setAttribute("class", "Value15Warning");
-            } 
+            }
 
             if (this.hydraulicsAvailable) {
                 // Show hydraulic numbers and hide everything else
@@ -274,7 +276,7 @@ let A320_Neo_LowerECAM_FTCL;
                     this.spoiler_arrow1_left.setAttribute("visibility", "hidden");
                     this.spoiler_arrow1_right.setAttribute("visibility", "hidden");
                 }
-            }  
+            }
         }
 
         /**
@@ -296,7 +298,7 @@ let A320_Neo_LowerECAM_FTCL;
             ];
 
             for (const elementName of shapeElements) {
-                const element = this.querySelector("#" + elementName)
+                const element = this.querySelector("#" + elementName);
 
                 for (const node of element.children) {
                     node.setAttribute("class", state ? "WarningShape" : "GreenShape");
@@ -315,7 +317,7 @@ let A320_Neo_LowerECAM_FTCL;
             ];
 
             for (const elementName of textElements) {
-                const element = this.querySelector("#" + elementName)
+                const element = this.querySelector("#" + elementName);
 
                 element.setAttribute("class", state ? "Warning" : "Value15");
             }
