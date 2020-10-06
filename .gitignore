@@ -1,0 +1,14 @@
+*
+!*/
+!/.vscode/**
+!/.github/**
+!/asobo-*/**
+!/fs-*/**
+!.gitignore
+!package.json
+!package-lock.json
+!.editorconfig
+!.eslintrc.json
+.DS_Store
+node_modules
+/src/sound/.cache
