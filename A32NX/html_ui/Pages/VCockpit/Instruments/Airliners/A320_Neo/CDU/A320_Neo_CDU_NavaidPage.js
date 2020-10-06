@@ -5,7 +5,7 @@
 
 class CDUNavaidPage {
     static ShowPage(mcdu) {
-        mcdu.clearDisplay()
+        mcdu.clearDisplay();
 
         mcdu.setTemplate([
             ["NAVAID"],
@@ -21,17 +21,16 @@ class CDUNavaidPage {
             [""],
             [""],
             [""]
-        ])
+        ]);
 
         mcdu.onLeftInput[0] = () => {
-            let INPUT = mcdu.inOut;
-            mcdu.clearUserInput()
+            const INPUT = mcdu.inOut;
+            mcdu.clearUserInput();
 
-            var selectedWaypoint = mcdu.getOrSelectWaypointByIdent(INPUT, res => {
+            const selectedWaypoint = mcdu.getOrSelectWaypointByIdent(INPUT, res => {
 
-
-                if(res) {
-                    mcdu.clearDisplay()
+                if (res) {
+                    mcdu.clearDisplay();
                     mcdu.setTemplate([
                         ["NAVAID"],
                         ["IDENT"],
@@ -46,12 +45,12 @@ class CDUNavaidPage {
                         [""],
                         [""],
                         [""]
-                    ])
-                    mcdu.inOut = Object.keys(res)
+                    ]);
+                    mcdu.inOut = Object.keys(res);
                 } else {
                     mcdu.inOut = "INVALID ENTRY";
                 }
-            })
-        }
+            });
+        };
     }
 }

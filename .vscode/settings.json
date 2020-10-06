@@ -1,0 +1,11 @@
+{
+    "eslint.lintTask.enable": true,
+    "eslint.format.enable": true,
+    "eslint.quiet": true,
+    "[javascript]": {
+        "editor.defaultFormatter": "dbaeumer.vscode-eslint"
+    },
+    "editor.codeActionsOnSave": {
+        "source.fixAll.eslint": true
+    }
+}

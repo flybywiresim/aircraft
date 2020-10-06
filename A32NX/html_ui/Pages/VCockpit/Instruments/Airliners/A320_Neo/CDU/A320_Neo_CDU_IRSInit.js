@@ -1,11 +1,11 @@
 class CDUIRSInit {
-    static ShowPage(mcdu, lon, originAirportLat, originAirportLon, referenceName, originAirportCoordinates, alignMsg="ALIGN ON REF →[color]blue") {
+    static ShowPage(mcdu, lon, originAirportLat, originAirportLon, referenceName, originAirportCoordinates, alignMsg = "ALIGN ON REF →[color]blue") {
         mcdu.clearDisplay();
         mcdu.setTitle('IRS INIT');
         const checkAligned = SimVar.GetSimVarValue("L:A320_Neo_ADIRS_STATE", "Number");
         if (checkAligned === 0) {
             SimVar.SetSimVarValue("L:A32XN_Neo_ADIRS_ALIGN_TYPE_REF", "Enum", 0);
-            alignMsg="ALIGN ON REF →[color]blue";
+            alignMsg = "ALIGN ON REF →[color]blue";
         }
         const emptyIRSGpsString = "--°--.--/---°--.--";
         const arrowupdwn = "↑↓";
@@ -52,12 +52,12 @@ class CDUIRSInit {
             }
         }
 
-        let IRSAlignOnPos = "{IrsInitFont}" + currentGPSLat['deg'] + '°{IrsInitFontEnd}' + currentGPSLat['min'] + '.' + Math.ceil(Number(currentGPSLat['sec'] / 100)) + '[s-text]{IrsInitFont}' + currentGPSLat['dir'] + '/{IrsInitFontEnd}{IrsInitFont}' + currentGPSLon['deg'] + '°{IrsInitFontEnd}' + currentGPSLon['min'] + '.' + Math.ceil(Number(currentGPSLon['sec'] / 100)) + '{IrsInitFont}' +  currentGPSLon['dir'] + '{IrsInitFontEnd}';
+        let IRSAlignOnPos = "{IrsInitFont}" + currentGPSLat['deg'] + '°{IrsInitFontEnd}' + currentGPSLat['min'] + '.' + Math.ceil(Number(currentGPSLat['sec'] / 100)) + '[s-text]{IrsInitFont}' + currentGPSLat['dir'] + '/{IrsInitFontEnd}{IrsInitFont}' + currentGPSLon['deg'] + '°{IrsInitFontEnd}' + currentGPSLon['min'] + '.' + Math.ceil(Number(currentGPSLon['sec'] / 100)) + '{IrsInitFont}' + currentGPSLon['dir'] + '{IrsInitFontEnd}';
         if (SimVar.GetSimVarValue("L:A32XN_Neo_ADIRS_ALIGN_TYPE_REF", "Enum") === 1) {
             alignMsg = "";
             alignType = "REF";
             if (checkAligned !== 2) {
-                IRSAlignOnPos = "{IrsInitFont}" + originAirportLat['deg'] + '°{IrsInitFontEnd}' + originAirportLat['min'] + '.' + originAirportLat['sec'] + '[s-text]{IrsInitFont}' + originAirportLat['dir'] + '/{IrsInitFontEnd}{IrsInitFont}' + originAirportLon['deg'] + '°{IrsInitFontEnd}' + originAirportLon['min'] + '.' + originAirportLon['sec'] + '{IrsInitFont}' +  originAirportLon['dir'] + '{IrsInitFontEnd}';
+                IRSAlignOnPos = "{IrsInitFont}" + originAirportLat['deg'] + '°{IrsInitFontEnd}' + originAirportLat['min'] + '.' + originAirportLat['sec'] + '[s-text]{IrsInitFont}' + originAirportLat['dir'] + '/{IrsInitFontEnd}{IrsInitFont}' + originAirportLon['deg'] + '°{IrsInitFontEnd}' + originAirportLon['min'] + '.' + originAirportLon['sec'] + '{IrsInitFont}' + originAirportLon['dir'] + '{IrsInitFontEnd}';
             }
         }
 
@@ -122,13 +122,14 @@ class CDUIRSInit {
         mcdu._lineElements.forEach(function (ele) {
             ele.forEach(function (el) {
                 if (el != null) {
-                let newHtml = el;
-                if (newHtml != null) {
-                    newHtml = newHtml.innerHTML.replace(/{IrsInitFont}/g, '<span class=\'irs-text\'>');
-                    newHtml = newHtml.replace(/{IrsInitFontEnd}/g, '</span>');
-                    el.innerHTML = newHtml;
+                    let newHtml = el;
+                    if (newHtml != null) {
+                        newHtml = newHtml.innerHTML.replace(/{IrsInitFont}/g, '<span class=\'irs-text\'>');
+                        newHtml = newHtml.replace(/{IrsInitFontEnd}/g, '</span>');
+                        el.innerHTML = newHtml;
+                    }
                 }
-            }})
+            });
         });
 
         mcdu.onLeftInput[0] = () => {
@@ -155,7 +156,7 @@ class CDUIRSInit {
 
         mcdu.onUp = () => {
             if (checkAligned !== 2 && SimVar.GetSimVarValue("L:A32XN_Neo_ADIRS_ALIGN_TYPE_REF", "Enum") !== 1) {
-                referenceName = "----"
+                referenceName = "----";
                 let activeReference = originAirportLat;
                 if (lon) {
                     activeReference = originAirportLon;
@@ -163,7 +164,7 @@ class CDUIRSInit {
                 if (activeReference['deg'] >= 90 && !lon || activeReference['deg'] >= 180 && lon) {
                     mcdu.showErrorMessage("INVALID ENTRY");
                 } else {
-                    activeReference['sec'] = activeReference['sec'] + 1
+                    activeReference['sec'] = activeReference['sec'] + 1;
                     if (activeReference['sec'] >= 9) {
                         activeReference['min'] = (Number(activeReference['min']) + 1).toString().padStart(2, "0");
                         activeReference['sec'] = 0;
@@ -178,7 +179,7 @@ class CDUIRSInit {
 
         mcdu.onDown = () => {
             if (checkAligned !== 2 && SimVar.GetSimVarValue("L:A32XN_Neo_ADIRS_ALIGN_TYPE_REF", "Enum") !== 1) {
-                referenceName = "----"
+                referenceName = "----";
                 let activeReference = originAirportLat;
                 if (lon) {
                     activeReference = originAirportLon;
@@ -186,7 +187,7 @@ class CDUIRSInit {
                 if (activeReference['deg'] <= -90 && !lon || activeReference['deg'] <= -180 && lon) {
                     mcdu.showErrorMessage("INVALID ENTRY");
                 } else {
-                    activeReference['sec'] = activeReference['sec'] - 1
+                    activeReference['sec'] = activeReference['sec'] - 1;
                     if (activeReference['sec'] < 0) {
                         activeReference['min'] = (Number(activeReference['min']) - 1).toString().padStart(2, "0");
                         activeReference['sec'] = 9;
@@ -205,9 +206,9 @@ class CDUIRSInit {
             setTimeout(() => {
                 if (mcdu.getTitle() === 'IRS INIT') {
                     CDUIRSInit.ShowPage(mcdu, lon = lon,
-                        originAirportLat=originAirportLat, originAirportLon=originAirportLon,
-                        referenceName=referenceName, originAirportCoordinates=originAirportCoordinates,
-                        alignMsg=alignMsg);
+                        originAirportLat = originAirportLat, originAirportLon = originAirportLon,
+                        referenceName = referenceName, originAirportCoordinates = originAirportCoordinates,
+                        alignMsg = alignMsg);
                 }
             }, 1000);
         }
