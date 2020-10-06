@@ -20,7 +20,9 @@
 1. [ECAM] Improved lower engine ECAM - @lousybyte (lousybyte)
 1. [CDU] Add "Closest Airports" page - @lhoenig (Lukas Hoenig)
 1. [PFD] Fixed FD bars appearing on PFD when on the ground - @Curtis-VL (Curtis)
-1. [ECAM] Made open doors on DOOR/OXY page amber instead of green @Benjozork (Benjamin Dupont)
+1. [CDU] Added IRS Init page - @externoak (Externo)
+1. [OVHD] Implement additional overhead button/switch functionality (EMER ELEC, EVAC, air data switching, etc.) - @wpine215 (Iceman)
+1. [ECAM] Made open doors on DOOR/OXY page amber instead of green - @Benjozork (Benjamin Dupont)
 
 ## 2020/09
 1. [General] Add CHANGELOG.md - @nathaninnes (Nathan Innes)
