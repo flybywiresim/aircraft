@@ -34,8 +34,9 @@ class CDUDirectToPage {
             });
         };
         let i = 0;
-        while (i < mcdu.flightPlanManager.getWaypointsCount() && i + wptsListIndex < mcdu.flightPlanManager.getWaypointsCount() && i < iMax) {
-            const waypoint = mcdu.flightPlanManager.getWaypoint(i + wptsListIndex);
+        let totalWaypointsCount = mcdu.flightPlanManager.getWaypointsCount() + mcdu.flightPlanManager.getArrivalWaypointsCount() + mcdu.flightPlanManager.getApproachWaypointsCount();
+        while (i < totalWaypointsCount && i + wptsListIndex < totalWaypointsCount && i < iMax) {
+            const waypoint = mcdu.flightPlanManager.getWaypoint(i + wptsListIndex, NaN, true);
             if (waypoint) {
                 waypointsCell[i] = "←" + waypoint.ident + "[color]blue";
                 if (waypointsCell[i]) {
@@ -85,7 +86,7 @@ class CDUDirectToPage {
         ]);
         mcdu.onUp = () => {
             wptsListIndex++;
-            wptsListIndex = Math.min(wptsListIndex, mcdu.flightPlanManager.getWaypointsCount() - 4);
+            wptsListIndex = Math.min(wptsListIndex, totalWaypointsCount - 5);
             CDUDirectToPage.ShowPage(mcdu, directWaypoint, wptsListIndex);
         };
         mcdu.onDown = () => {

@@ -4,6 +4,7 @@ class FlightPlanManager {
         this._approachWaypoints = [];
         this._departureWaypointSize = 0;
         this._arrivalWaypointSize = 0;
+        this._approachWaypointSize = 0;
         this._activeWaypointIndex = 0;
         this._onFlightPlanUpdateCallbacks = [];
         this.decelPrevIndex = -1;
@@ -295,6 +296,7 @@ class FlightPlanManager {
             this._arrivalProcIndex = flightPlanData.arrivalProcIndex;
             this._arrivalTransitionIndex = flightPlanData.arrivalEnRouteTransitionIndex;
             this._arrivalDiscontinuity = flightPlanData.arrivalDiscontinuity;
+            this._approachWaypointSize = Math.max(0, this._approachWaypoints.length);
             this._approachIndex = flightPlanData.approachIndex;
             this._approachTransitionIndex = flightPlanData.approachTransitionIndex;
             this._lastIndexBeforeApproach = flightPlanData.lastIndexBeforeApproach;
@@ -903,6 +905,9 @@ class FlightPlanManager {
     }
     getArrivalWaypointsCount() {
         return this._arrivalWaypointSize;
+    }
+    getApproachWaypointsCount() {
+        return this._approachWaypointSize;
     }
     getWaypoint(i, flightPlanIndex = NaN, considerApproachWaypoints) {
         if (isNaN(flightPlanIndex)) {
