@@ -3,7 +3,7 @@ class SvgCityManager {
         this.map = map;
         this.displayedCities = [];
         this._iterator = 0;
-        let request = new XMLHttpRequest();
+        const request = new XMLHttpRequest();
         request.overrideMimeType("application/json");
         request.onreadystatechange = () => {
             if (request.readyState === 4) {
@@ -17,27 +17,29 @@ class SvgCityManager {
     }
     update() {
         if (this.cities) {
-            let l = this.cities.cities.length;
-            let bottomLeft = this.map.bottomLeftCoordinates;
-            let topRight = this.map.topRightCoordinates;
+            const l = this.cities.cities.length;
+            const bottomLeft = this.map.bottomLeftCoordinates;
+            const topRight = this.map.topRightCoordinates;
             let i = 0;
-            let t0 = performance.now();
+            const t0 = performance.now();
             while (i++ < l && (performance.now() - t0) < 0.1) {
                 this._iterator = (this._iterator + 1) % l;
-                let city = this.cities.cities[this._iterator];
+                const city = this.cities.cities[this._iterator];
                 if (city.lat > bottomLeft.lat) {
                     if (city.lat < topRight.lat) {
                         if (city.long > bottomLeft.long) {
                             if (city.long < topRight.long) {
-                                let found = this.displayedCities.find((c) => { return c.name === city.name; });
+                                const found = this.displayedCities.find((c) => {
+                                    return c.name === city.name;
+                                });
                                 if (!found) {
-                                    let svgCityElement = new SvgCityElement();
+                                    const svgCityElement = new SvgCityElement();
                                     svgCityElement.name = city.name.replace("'", "");
                                     svgCityElement.lat = city.lat;
                                     svgCityElement.long = city.long;
                                     svgCityElement.size = city.size;
                                     svgCityElement.onDrawOutOfFrame = () => {
-                                        let index = this.displayedCities.indexOf(svgCityElement);
+                                        const index = this.displayedCities.indexOf(svgCityElement);
                                         if (index !== -1) {
                                             this.displayedCities.splice(index, 1);
                                         }

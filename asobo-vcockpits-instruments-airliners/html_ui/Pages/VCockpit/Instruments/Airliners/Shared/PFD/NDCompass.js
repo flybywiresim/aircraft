@@ -10,8 +10,9 @@ class Jet_PFD_NDCompass extends Jet_NDCompass {
     }
     constructArc() {
         super.constructArc();
-        if (this.aircraft == Aircraft.AS01B)
+        if (this.aircraft == Aircraft.AS01B) {
             this.constructArc_AS01B();
+        }
     }
     constructArc_AS01B() {
         this.destroyLayout();
@@ -24,7 +25,7 @@ class Jet_PFD_NDCompass extends Jet_NDCompass {
         trsGroup.setAttribute("transform", "translate(1, 160)");
         this.root.appendChild(trsGroup);
         {
-            let viewBox = document.createElementNS(Avionics.SVG.NS, "svg");
+            const viewBox = document.createElementNS(Avionics.SVG.NS, "svg");
             viewBox.setAttribute("x", "-225");
             viewBox.setAttribute("y", "-475");
             viewBox.setAttribute("viewBox", "-225 -550 550 600");
@@ -34,18 +35,18 @@ class Jet_PFD_NDCompass extends Jet_NDCompass {
             this.rotatingCircle = document.createElementNS(Avionics.SVG.NS, "g");
             this.rotatingCircle.setAttribute("id", "RotatingCicle");
             {
-                let circleGroup = document.createElementNS(Avionics.SVG.NS, "g");
+                const circleGroup = document.createElementNS(Avionics.SVG.NS, "g");
                 circleGroup.setAttribute("id", "CircleGroup");
                 this.rotatingCircle.appendChild(circleGroup);
                 let radians = 0;
                 for (let i = 0; i < dashSpacing; i++) {
-                    let line = document.createElementNS(Avionics.SVG.NS, "line");
-                    let bIsBig = (i % 2 == 0) ? true : false;
-                    let bHasNumber = (i % 6 == 0) ? true : false;
-                    let length = (bIsBig) ? 24 : 12;
-                    let lineStart = 50 + circleRadius;
-                    let lineEnd = 50 + circleRadius - length;
-                    let degrees = (radians / Math.PI) * 180;
+                    const line = document.createElementNS(Avionics.SVG.NS, "line");
+                    const bIsBig = (i % 2 == 0) ? true : false;
+                    const bHasNumber = (i % 6 == 0) ? true : false;
+                    const length = (bIsBig) ? 24 : 12;
+                    const lineStart = 50 + circleRadius;
+                    const lineEnd = 50 + circleRadius - length;
+                    const degrees = (radians / Math.PI) * 180;
                     line.setAttribute("x1", "50");
                     line.setAttribute("y1", lineStart.toString());
                     line.setAttribute("x2", "50");
@@ -54,7 +55,7 @@ class Jet_PFD_NDCompass extends Jet_NDCompass {
                     line.setAttribute("stroke", "white");
                     line.setAttribute("stroke-width", "3");
                     if (bIsBig && bHasNumber) {
-                        let text = document.createElementNS(Avionics.SVG.NS, "text");
+                        const text = document.createElementNS(Avionics.SVG.NS, "text");
                         text.textContent = fastToFixed(degrees / 10, 0);
                         text.setAttribute("x", "50");
                         text.setAttribute("y", (-(circleRadius - 50 - length - 30)).toString());
@@ -128,8 +129,8 @@ class Jet_PFD_NDCompass extends Jet_NDCompass {
             this.currentRefGroup = document.createElementNS(Avionics.SVG.NS, "g");
             this.currentRefGroup.setAttribute("id", "currentRefGroup");
             {
-                let centerX = 230;
-                let centerY = 130;
+                const centerX = 230;
+                const centerY = 130;
                 let posX;
                 posX = centerX - 50;
                 this.currentRefValue = document.createElementNS(Avionics.SVG.NS, "text");

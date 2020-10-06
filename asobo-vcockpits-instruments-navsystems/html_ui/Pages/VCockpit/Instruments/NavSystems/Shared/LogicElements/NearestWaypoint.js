@@ -37,40 +37,31 @@ class NearestAirport extends NearestWaypoint {
             if (this.towered) {
                 if (this.fuel1 !== "" || this.fuel2 !== "") {
                     fName = "ICON_MAP_AIRPORT_TOWERED_SERVICED_BLUE.svg";
-                }
-                else {
+                } else {
                     fName = "ICON_MAP_AIRPORT_TOWERED_NON_SERVICED_BLUE.svg";
                 }
-            }
-            else {
+            } else {
                 if (this.fuel1 !== "" || this.fuel2 !== "") {
                     fName = "ICON_MAP_AIRPORT_NON_TOWERED_SERVICED_PINK.svg";
-                }
-                else {
+                } else {
                     fName = "ICON_MAP_AIRPORT_NON_TOWERED_NON_SERVICED_PINK.svg";
                 }
             }
-        }
-        else if (this.airportClass === 2) {
+        } else if (this.airportClass === 2) {
             if (this.fuel1 !== "" || this.fuel2 !== "") {
                 fName = "ICON_MAP_AIRPORT7.svg";
-            }
-            else {
+            } else {
                 fName = "ICON_MAP_AIRPORT8.svg";
             }
-        }
-        else if (this.airportClass === 3) {
+        } else if (this.airportClass === 3) {
             if (this.towered) {
                 fName = "ICON_MAP_AIRPORT_TOWERED_SEAPLANE_CIV_BLUE.svg";
-            }
-            else {
+            } else {
                 fName = "ICON_MAP_AIRPORT_NON_TOWERED_SEAPLANE_CIV_PINK.svg";
             }
-        }
-        else if (this.airportClass === 4) {
+        } else if (this.airportClass === 4) {
             fName = "ICON_MAP_AIRPORT_HELIPORT_PINK.svg";
-        }
-        else if (this.airportClass === 5) {
+        } else if (this.airportClass === 5) {
             fName = "ICON_MAP_AIRPORT_PRIVATE_PINK.svg";
         }
         if (NavSystem.useSvgImages) {
@@ -109,8 +100,7 @@ class FullDataNearestAirportList {
         if (NearestAirportList.readManager.AddToQueue(this.instrument, this)) {
             this.loadState = 0;
             this.needUpdate = false;
-        }
-        else {
+        } else {
             this.needUpdate = true;
         }
     }
@@ -204,8 +194,7 @@ class NearestAirportList {
         if (NearestAirportList.readManager.AddToQueue(this.instrument, this)) {
             this.loadState = 0;
             this.needUpdate = false;
-        }
-        else {
+        } else {
             this.needUpdate = true;
         }
     }
@@ -217,13 +206,11 @@ class NearestAirportList {
             html += "<tr>";
             if (index > this.airports.length) {
                 html += "<td></td><td></td><td></td><td></td><td></td>";
-            }
-            else {
+            } else {
                 var logo = "";
                 if (this.airports[index].airportClass == 2 || this.airports[index].airportClass == 3) {
                     logo = "GPS/Airport_Soft.bmp";
-                }
-                else if (this.airports[index].airportClass == 1) {
+                } else if (this.airports[index].airportClass == 1) {
                     switch (Math.round((this.airports[index].longestRunwayDirection % 180) / 45.0)) {
                         case 0:
                         case 4:
@@ -239,11 +226,9 @@ class NearestAirportList {
                             logo = "GPS/Airport_Hard_NW_SE.bmp";
                             break;
                     }
-                }
-                else if (this.airports[index].airportClass == 4) {
+                } else if (this.airports[index].airportClass == 4) {
                     logo = "GPS/Helipad.bmp";
-                }
-                else if (this.airports[index].airportClass == 5) {
+                } else if (this.airports[index].airportClass == 5) {
                     logo = "GPS/Private_Airfield.bmp";
                 }
                 html += '<td class="SelectableElement" id="' + _prefix + "_" + i + '">' + this.airports[index].ident + '</td>';
@@ -256,8 +241,7 @@ class NearestAirportList {
             html += "<tr>";
             if (index > this.airports.length) {
                 html += "<td></td><td></td><td></td><td></td><td></td>";
-            }
-            else {
+            } else {
                 html += '<td>' + this.airports[index].frequencyName + '</td>';
                 html += '<td colspan="2" class="SelectableElement" id="' + _prefix + "_Freq_" + i + '">' + fastToFixed(this.airports[index].frequencyMHz, 3) + '</td>';
                 html += '<td>rwy</td>';
@@ -363,8 +347,7 @@ class NearestIntersectionList {
         if (NearestIntersectionList.readManager.AddToQueue(this.instrument, this)) {
             this.loadState = 0;
             this.needUpdate = false;
-        }
-        else {
+        } else {
             this.needUpdate = true;
         }
     }
@@ -376,8 +359,7 @@ class NearestIntersectionList {
             html += "<tr>";
             if (index > this.intersections.length) {
                 html += "<td></td><td></td><td></td><td></td>";
-            }
-            else {
+            } else {
                 html += '<td class="SelectableElement" id="' + _prefix + "_" + i + '">' + this.intersections[index].ident + '</td>';
                 html += '<td><img src="/Pages/VCockpit/Instruments/NavSystems/Shared/Images/' + this.intersections[index].imageFileName() + '"/></td>';
                 html += '<td>' + fastToFixed(this.intersections[index].bearing, 0) + '<div class="Align unit">o<br />M</div></td>';
@@ -436,8 +418,7 @@ class NearestNDB extends NearestWaypoint {
         let fName = "";
         if (this.ndbType === 1) {
             fName = "ICON_MAP_NDB_WAYPOINT.svg";
-        }
-        else {
+        } else {
             fName = "ICON_MAP_NDB_WAYPOINT.svg";
         }
         if (NavSystem.useSvgImages) {
@@ -466,8 +447,7 @@ class NearestNDBList {
         if (NearestNDBList.readManager.AddToQueue(this.instrument, this)) {
             this.loadState = 0;
             this.needUpdate = false;
-        }
-        else {
+        } else {
             this.needUpdate = true;
         }
     }
@@ -479,8 +459,7 @@ class NearestNDBList {
             html += "<tr>";
             if (index > this.ndbs.length) {
                 html += "<td></td><td></td><td></td><td></td><td></td>";
-            }
-            else {
+            } else {
                 html += '<td class="SelectableElement" id="' + _prefix + "_" + i + '">' + this.ndbs[index].ident + '</td>';
                 html += '<td><img src="/Pages/VCockpit/Instruments/NavSystems/Shared/Images/' + this.ndbs[index].imageFileName() + '"/></td>';
                 html += '<td>' + fastToFixed(this.ndbs[index].bearing, 0) + '<div class="Align unit">o<br />M</div></td>';
@@ -590,8 +569,7 @@ class NearestVORList {
         if (NearestVORList.readManager.AddToQueue(this.instrument, this)) {
             this.loadState = 0;
             this.needUpdate = false;
-        }
-        else {
+        } else {
             this.needUpdate = true;
         }
     }
@@ -603,8 +581,7 @@ class NearestVORList {
             html += "<tr>";
             if (index > this.vors.length) {
                 html += "<td></td><td></td><td></td><td></td><td></td>";
-            }
-            else {
+            } else {
                 html += '<td class="SelectableElement" id="' + _prefix + "_" + i + '">' + this.vors[index].ident + '</td>';
                 var image = this.vors[index].imageFileName();
                 html += '<td> <img src="/Pages/VCockpit/Instruments/NavSystems/Shared/Images/' + image + '"></td>';
@@ -706,8 +683,7 @@ class NearestAirspaceList {
         if (NearestAirspaceList.readManager.AddToQueue(this.instrument, this)) {
             this.loadState = 0;
             this.needUpdate = false;
-        }
-        else {
+        } else {
             this.needUpdate = true;
         }
     }

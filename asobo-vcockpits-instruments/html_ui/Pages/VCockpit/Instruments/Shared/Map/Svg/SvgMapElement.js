@@ -10,7 +10,7 @@ class SvgMapElementPerfProbe {
         if (this.count < 1000000) {
             this.count++;
         }
-        let invCount = 1 / this.count;
+        const invCount = 1 / this.count;
         this.mean *= 1 - invCount;
         this.mean += t * invCount;
         this.recentMax = Math.max(this.recentMax, t);
@@ -30,11 +30,9 @@ class SvgMapElement {
         let element;
         try {
             element = map.htmlRoot.querySelector("#" + this.id(map));
-        }
-        catch (error) {
+        } catch (error) {
             console.log("DOM 12 Exception with id '" + this.id(map) + "'");
-        }
-        finally {
+        } finally {
             if (element instanceof SVGElement) {
                 return element;
             }
@@ -52,8 +50,7 @@ class SvgMapElement {
                 this.svgElement = this.createDraw(map);
                 map.appendChild(this, this.svgElement);
             }
-        }
-        else {
+        } else {
             if (!this.svgElement.parentElement) {
                 map.appendChild(this, this.svgElement);
             }
@@ -61,8 +58,8 @@ class SvgMapElement {
         this.svgElement.removeAttribute("display");
         this.updateDraw(map);
         if (SvgMap.LOG_PERFS) {
-            let t = performance.now() - t0;
-            let className = this.constructor.name;
+            const t = performance.now() - t0;
+            const className = this.constructor.name;
             let probe = SvgMapElement.probes.get(className);
             if (!probe) {
                 probe = new SvgMapElementPerfProbe(className);
