@@ -3,8 +3,12 @@ class A320_Neo_PFD extends BaseAirliners {
         super();
         this.initDuration = 7000;
     }
-    get templateID() { return "A320_Neo_PFD"; }
-    get IsGlassCockpit() { return true; }
+    get templateID() {
+        return "A320_Neo_PFD";
+    }
+    get IsGlassCockpit() {
+        return true;
+    }
     connectedCallback() {
         super.connectedCallback();
         this.pageGroups = [
@@ -87,8 +91,7 @@ class A320_Neo_PFD_VSpeed extends NavSystemElement {
             var selVSpeed = Math.round(Simplane.getAutoPilotVerticalSpeedHoldValue());
             this.vsi.setAttribute("selected_vspeed", selVSpeed.toString());
             this.vsi.setAttribute("selected_vspeed_active", "true");
-        }
-        else {
+        } else {
             this.vsi.setAttribute("selected_vspeed_active", "false");
         }
     }

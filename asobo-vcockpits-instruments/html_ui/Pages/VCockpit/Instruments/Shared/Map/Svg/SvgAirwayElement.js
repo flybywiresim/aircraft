@@ -11,7 +11,7 @@ class SvgAirwayElement extends SvgMapElement {
         ;
     }
     createDraw(map) {
-        let shape = document.createElementNS(Avionics.SVG.NS, "line");
+        const shape = document.createElementNS(Avionics.SVG.NS, "line");
         shape.id = this.id(map);
         shape.classList.add("map-airway");
         shape.classList.add("map-airway-" + this.airwayType);
@@ -23,7 +23,7 @@ class SvgAirwayElement extends SvgMapElement {
         if (this.start && this.end) {
             map.coordinatesToXYToRef(this.start, this._tmpStart);
             map.coordinatesToXYToRef(this.end, this._tmpEnd);
-            let ctx = map.lineCanvas.getContext("2d");
+            const ctx = map.lineCanvas.getContext("2d");
             ctx.strokeStyle = "#3a7216";
             ctx.lineWidth = 3;
             ctx.beginPath();
