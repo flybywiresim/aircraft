@@ -102,7 +102,6 @@ class CDUIRSInit {
             statusIRS3 = "IRS3 OFF";
         }
 
-
         mcdu.setTemplate([
             ["IRS INIT"],
             originAirportTitle,
