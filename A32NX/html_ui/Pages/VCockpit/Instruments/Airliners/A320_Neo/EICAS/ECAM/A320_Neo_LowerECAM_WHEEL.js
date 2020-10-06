@@ -8,7 +8,9 @@ var A320_Neo_LowerECAM_WHEEL;
             super();
             this.isInitialised = false;
         }
-        get templateID() { return "LowerECAMWHEELTemplate"; }
+        get templateID() {
+            return "LowerECAMWHEELTemplate";
+        }
         connectedCallback() {
             super.connectedCallback();
             TemplateElement.call(this, this.init.bind(this));
@@ -35,11 +37,11 @@ var A320_Neo_LowerECAM_WHEEL;
                 this.querySelector("#WheelTemp4")];
 
             this.CurrentBrakeTemps = [SimVar.GetSimVarValue("L:A32NX_BRAKE_TEMPERATURE_1", "celsius"), SimVar.GetSimVarValue("L:A32NX_BRAKE_TEMPERATURE_2", "celsius"),
-                SimVar.GetSimVarValue("L:A32NX_BRAKE_TEMPERATURE_3", "celsius"), SimVar.GetSimVarValue("L:A32NX_BRAKE_TEMPERATURE_4", "celsius")]
+                SimVar.GetSimVarValue("L:A32NX_BRAKE_TEMPERATURE_3", "celsius"), SimVar.GetSimVarValue("L:A32NX_BRAKE_TEMPERATURE_4", "celsius")];
 
             this.autoBrakeIndicator = this.querySelector("#autobrake");
             this.autoBrakeIndicator.setAttribute("visibility", "hidden");
-            this.autoBrakeBlinker = this.querySelector("#blinkAutoBrake")
+            this.autoBrakeBlinker = this.querySelector("#blinkAutoBrake");
             this.autoBrakeBlinker.setAttribute("visibility", "hidden");
 
             // Spoiler
@@ -300,8 +302,8 @@ var A320_Neo_LowerECAM_WHEEL;
         }
 
         updateBrakeTemp(_deltaTime) {
-            for (var i = 0; i < this.CurrentBrakeTemps.length; i++) {
-                this.CurrentBrakeTemps[i] = SimVar.GetSimVarValue(`L:A32NX_BRAKE_TEMPERATURE_${i+1}`, "celsius");
+            for (let i = 0; i < this.CurrentBrakeTemps.length; i++) {
+                this.CurrentBrakeTemps[i] = SimVar.GetSimVarValue(`L:A32NX_BRAKE_TEMPERATURE_${i + 1}`, "celsius");
                 this.BrakeTempsText[i].textContent = Math.round(this.CurrentBrakeTemps[i] / 5) * 5;
             }
         }

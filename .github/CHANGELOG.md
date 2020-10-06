@@ -23,6 +23,7 @@
 1. [CDU] Added IRS Init page - @externoak (Externo)
 1. [OVHD] Implement additional overhead button/switch functionality (EMER ELEC, EVAC, air data switching, etc.) - @wpine215 (Iceman)
 1. [ECAM] Made open doors on DOOR/OXY page amber instead of green - @Benjozork (Benjamin Dupont)
+1. [PFD] Adjust vertical Flight Director offset - @veikkos (Veikko Soininen)
 1. [MISC] Added standby instrument brightness adjustment and attitude reset - @2hwk (2Cas#1022 on discord)
 1. [MISC] Added standby instrument bugs page and corrected standby instrument font and behaviour on power loss - @2hwk (2Cas#1022 on discord)
 
