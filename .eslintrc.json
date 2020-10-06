@@ -12,10 +12,11 @@
                 "SwitchCase": 1
             }
         ],
-        "linebreak-style": [
-            "error",
-            "unix"
-        ],
+        // "linebreak-style": [
+        //     "error",
+        //     "unix"
+        // ],
+        "linebreak-style": "off",
         // No quotes option is really fully consistent, so probably best to jsut not enforce either type
         "quotes": "off",
         "semi": [
