@@ -69,6 +69,7 @@
             "path": "effects/LIGHT_A32NX_CockpitSpotLarge.fx",
             "size": 1277,
             "date": 132464404989572976
+
         },
         {
             "path": "effects/LIGHT_A32NX_CockpitSpot.fx",
@@ -79,26 +80,31 @@
             "path": "effects/LIGHT_A32NX_A320_Pedestal.fx",
             "size": 1278,
             "date": 132464404989572976
+
         },
         {
             "path": "effects/LIGHT_A32NX_LogoLight.fx",
             "size": 1201,
             "date": 132464404989572976
+
         },
         {
             "path": "effects/LIGHT_A32NX_NavigationWhite.fx",
             "size": 1270,
             "date": 132464404989612976
+
         },
         {
             "path": "effects/LIGHT_A32NX_NavigationGreen.fx",
             "size": 1155,
             "date": 132464404989612976
+
         },
         {
             "path": "effects/LIGHT_A32NX_BeaconBelly.fx",
             "size": 1156,
             "date": 132464404989572976
+
         },
         {
             "path": "effects/LIGHT_A32NX_StrobeDoubleInner.fx",
@@ -109,6 +115,7 @@
             "path": "html_ui/Fonts/B612Mono-Regular.ttf",
             "size": 140292,
             "date": 132464404989612976
+
         },
         {
             "path": "html_ui/Fonts/LiberationMono.ttf.birdfont",
@@ -234,6 +241,7 @@
             "path": "html_ui/Pages/VCockpit/Instruments/Airliners/A320_Neo/EICAS/EICAS_Common.html",
             "size": 1715,
             "date": 132464404989812982
+
         },
         {
             "path": "html_ui/Pages/VCockpit/Instruments/Airliners/A320_Neo/EICAS/A320_Neo_EICAS.css",
@@ -893,6 +901,7 @@
         {
             "path": "SimObjects/AirPlanes/Asobo_A320_NEO/TEXTURE/A320NEO_COCKPIT_INPUTS02_ALBD.PNG.DDS.json",
             "size": 102,
+
             "date": 132464404983332770
         },
         {
