@@ -26,6 +26,7 @@ class A320_Neo_SAI_Airspeed extends NavSystemElement {
     }
     init(root) {
         this.airspeedElement = this.gps.getChildById("Airspeed");
+        this.bugsElement = this.gps.getChildById("Bugs");
     }
     onEnter() {
     }
@@ -38,6 +39,12 @@ class A320_Neo_SAI_Airspeed extends NavSystemElement {
     onExit() {
     }
     onEvent(_event) {
+        switch (_event) {
+            case "BTN_BARO_BUGS":
+                const bugs = this.bugsElement.getSpdBugs();
+                this.airspeedElement.updateBugs(bugs);
+                break;
+        }
     }
 }
 class A320_Neo_SAI_AirspeedIndicator extends HTMLElement {
@@ -54,6 +61,7 @@ class A320_Neo_SAI_AirspeedIndicator extends HTMLElement {
         this.nbPrimaryGraduations = 11;
         this.nbSecondaryGraduations = 3;
         this.totalGraduations = this.nbPrimaryGraduations + ((this.nbPrimaryGraduations - 1) * this.nbSecondaryGraduations);
+        this.bugs = [];
     }
     connectedCallback() {
         this.graduationScroller = new Avionics.Scroller(this.nbPrimaryGraduations, 20);
@@ -242,6 +250,15 @@ class A320_Neo_SAI_AirspeedIndicator extends HTMLElement {
         this.rootGroup.appendChild(bottomBg);
         this.rootSVG.appendChild(this.rootGroup);
         this.appendChild(this.rootSVG);
+        this.small_bugs = [];
+        this.small_bugs[0] = document.createElementNS(Avionics.SVG.NS, "rect");
+        this.small_bugs[1] = document.createElementNS(Avionics.SVG.NS, "rect");
+        this.small_bugs[2] = document.createElementNS(Avionics.SVG.NS, "rect");
+        this.small_bugs[3] = document.createElementNS(Avionics.SVG.NS, "rect");
+        this.centerSVG.appendChild(this.small_bugs[0]);
+        this.centerSVG.appendChild(this.small_bugs[1]);
+        this.centerSVG.appendChild(this.small_bugs[2]);
+        this.centerSVG.appendChild(this.small_bugs[3]);
     }
     update(dTime) {
         const indicatedSpeed = Simplane.getIndicatedSpeed();
@@ -252,8 +269,26 @@ class A320_Neo_SAI_AirspeedIndicator extends HTMLElement {
         const pixels = (_value * this.graduationSpacing * (this.nbSecondaryGraduations + 1)) / 10;
         return pixels;
     }
+
+    updateBugs(bugs) {
+        this.bugs = bugs;
+    }
     updateGraduationScrolling(_speed) {
         if (this.graduations) {
+            if (this.bugs.length > 0) {
+                this.bugs.forEach((spd_bug, i) => {
+                    if (_speed < (spd_bug + 60) && _speed > (spd_bug - 60)) {
+                        this.small_bugs[i].setAttribute("x", "35");
+                        this.small_bugs[i].setAttribute("y", String(125 - (spd_bug - _speed) / 5 * 10));
+                        this.small_bugs[i].setAttribute("width", "5");
+                        this.small_bugs[i].setAttribute("height", "1");
+                        this.small_bugs[i].setAttribute("stroke", "cyan");
+                        this.small_bugs[i].setAttribute("stroke-width", "3");
+                        this.small_bugs[i].setAttribute("fill", "none");
+                    }
+                });
+            }
+
             if (_speed < this.graduationMinValue) {
                 _speed = this.graduationMinValue;
             }
@@ -503,12 +538,8 @@ class A320_Neo_SAI_AltimeterIndicator extends HTMLElement {
 
         this.small_bug = document.createElementNS(Avionics.SVG.NS, "rect");
         this.centerSVG.appendChild(this.small_bug);
-        this.small_bug2 = document.createElementNS(Avionics.SVG.NS, "rect");
-        this.centerSVG.appendChild(this.small_bug2);
         this.big_bug = document.createElementNS(Avionics.SVG.NS, "rect");
         this.centerSVG.appendChild(this.big_bug);
-        this.big_bug2 = document.createElementNS(Avionics.SVG.NS, "rect");
-        this.centerSVG.appendChild(this.big_bug2);
     }
     update(_dTime) {
         const altitude = SimVar.GetSimVarValue("INDICATED ALTITUDE:2", "feet");
@@ -1880,6 +1911,16 @@ class A320_Neo_SAI_BugsPage extends HTMLElement {
         bugsSelectLineEnd.setAttribute("fill", "#27AAE1");
         bugsSelectLineEnd.setAttribute("points", "458,535 457.5,547 473.5,541");
         this.bugsSVG.appendChild(bugsSelectLineEnd);
+    }
+
+    getSpdBugs() {
+        const bugs = [];
+        for (i = 0; i < 4; i++) {
+            if (this.bugStatus[i].style.display !== "block") {
+                bugs.push(this.bugTxt[i].textContent);
+            }
+        }
+        return bugs;
     }
 
     getAltBugs() {
