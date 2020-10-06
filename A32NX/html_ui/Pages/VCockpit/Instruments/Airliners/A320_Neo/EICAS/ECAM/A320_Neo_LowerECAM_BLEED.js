@@ -254,16 +254,24 @@ var A320_Neo_LowerECAM_BLEED;
                 (parseInt(((eng2TMP - 491.67) * (5 / 9)) * this.packOutMultiplier2)),
                 (parseInt(this.apuBleedTemperature * this.packOutMultiplierApu))];
 
-            const packTemperatureVariation = [((((packRequestedTemp / packTMPComputedOut[0]) * this.packOutMultiplier1) - this.packOutMultiplier1)),
-                ((((packRequestedTemp / packTMPComputedOut[1]) * this.packOutMultiplier2) - this.packOutMultiplier2)),
-                ((((packRequestedTemp / packTMPComputedOut[2]) * this.packOutMultiplierApu) - this.packOutMultiplierApu))];
-
             const xBleedValveOpen = SimVar.GetSimVarValue("L:x_bleed_valve", "bool");
 
-            this.packOutMultiplier1 += packTemperatureVariation[0] * (this.temperatureVariationSpeed * (0.8 + (currentPackFlow * 0.2)));
-            this.packOutMultiplier2 += packTemperatureVariation[1] * (this.temperatureVariationSpeed * (0.8 + (currentPackFlow * 0.2)));
-            this.packOutMultiplierApu += packTemperatureVariation[2] * (this.temperatureVariationSpeed * (0.8 + (currentPackFlow * 0.2)));
+            let packTemperatureVariation1 = 0;
+            let packTemperatureVariation2 = 0;
 
+            if (eng1Running) {
+                packTemperatureVariation1 = ((((packRequestedTemp / packTMPComputedOut[0]) * this.packOutMultiplier1) - this.packOutMultiplier1));
+                this.packOutMultiplier1 += packTemperatureVariation1 * (this.temperatureVariationSpeed * (0.8 + (currentPackFlow * 0.2)));
+            }
+
+            if (eng2Running) {
+                packTemperatureVariation2 = ((((packRequestedTemp / packTMPComputedOut[1]) * this.packOutMultiplier2) - this.packOutMultiplier2));
+                this.packOutMultiplier2 += packTemperatureVariation2 * (this.temperatureVariationSpeed * (0.8 + (currentPackFlow * 0.2)));
+            }
+
+            const packTemperatureVariationAPU = ((((packRequestedTemp / packTMPComputedOut[2]) * this.packOutMultiplierApu) - this.packOutMultiplierApu));
+            this.packOutMultiplierApu += packTemperatureVariationAPU * (this.temperatureVariationSpeed * (0.8 + (currentPackFlow * 0.2)));
+            
             switch (packRequestedlvl) {
                 case 0:
                     this.setPackIndicators(1, 0, 0, 0, 0, 0, 0);
