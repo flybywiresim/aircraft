@@ -24,7 +24,6 @@ jobs:
         with:
           python-version: "3.x"
       - name: Generate layout.json and update manifest.json
-        uses: actions/upload-artifact@v2
         run: |
           cd ./A32NX
           python3 build.py
