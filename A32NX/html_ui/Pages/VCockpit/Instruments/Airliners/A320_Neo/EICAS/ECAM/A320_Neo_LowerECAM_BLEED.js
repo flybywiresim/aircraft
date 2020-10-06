@@ -30,9 +30,9 @@ var A320_Neo_LowerECAM_BLEED;
             this.ramAir = [this.querySelector("#ram-air-on"), this.querySelector("#ram-air-off")];
             this.packFlow = [this.querySelector("#pack-flow-low"), this.querySelector("#pack-flow-normal"), this.querySelector("#pack-flow-high")];
             this.packIndicators = [(this.querySelector("#pack-out-temp-indicator-0")), (this.querySelector("#pack-out-temp-indicator-1")),
-            (this.querySelector("#pack-out-temp-indicator-2")), (this.querySelector("#pack-out-temp-indicator-3")),
-            (this.querySelector("#pack-out-temp-indicator-4")), (this.querySelector("#pack-out-temp-indicator-5")),
-            (this.querySelector("#pack-out-temp-indicator-6")),];
+                (this.querySelector("#pack-out-temp-indicator-2")), (this.querySelector("#pack-out-temp-indicator-3")),
+                (this.querySelector("#pack-out-temp-indicator-4")), (this.querySelector("#pack-out-temp-indicator-5")),
+                (this.querySelector("#pack-out-temp-indicator-6")),];
             this.apuProvidesBleed = false;
             this.apuBleedTemperature = 250;
             this.apuBleedStartTimer = -1;
@@ -44,8 +44,7 @@ var A320_Neo_LowerECAM_BLEED;
             this.packOutMultiplier2 = 0.055;
             this.packInMultiplierApu = 0.4;
             this.packOutMultiplierApu = 0.1;
-            this.temperatureVariationSpeed = 0.01;
-  
+            this.temperatureVariationSpeed = 0.01;  
         }
         //placeholder logic for packs
         setPackIndicators(p0, p1, p2, p3, p4, p5, p6) {
@@ -123,7 +122,7 @@ var A320_Neo_LowerECAM_BLEED;
             }
 
             if (this.apuBleedStartTimer >= 0) {
-                this.apuBleedStartTimer -= _deltaTime / 1000
+                this.apuBleedStartTimer -= _deltaTime / 1000;
                 if (this.apuBleedStartTimer < 0) {
                     this.apuProvidesBleed = true;
                     this.querySelector("#apu-connecting-line").setAttribute("style", "stroke:008000");
@@ -154,7 +153,7 @@ var A320_Neo_LowerECAM_BLEED;
             }
 
             //find if the APU bleed is on
-            const currentApuBleedSate = SimVar.GetSimVarValue("BLEED AIR APU", "Bool")
+            const currentApuBleedSate = SimVar.GetSimVarValue("BLEED AIR APU", "Bool");
 
             if (currentApuBleedSate) {
                 this.apuBleedIndication[0].setAttribute("visibility", 'visible');
@@ -165,7 +164,7 @@ var A320_Neo_LowerECAM_BLEED;
             }
 
             //find left pack status
-            const currentLeftPackState = SimVar.GetSimVarValue("L:A32NX_AIRCOND_PACK1_TOGGLE", "bool")
+            const currentLeftPackState = SimVar.GetSimVarValue("L:A32NX_AIRCOND_PACK1_TOGGLE", "bool");
 
             if (currentLeftPackState) {
                 this.leftPack[0].setAttribute("visibility", "visible");
@@ -234,8 +233,8 @@ var A320_Neo_LowerECAM_BLEED;
             //placeholder logic for the bleed page temperatures and pressures, to be replaced/updated/removed when the cond-packs system is implemented
 
             const packRequestedlvl = Math.min(...[SimVar.GetSimVarValue("L:A320_Neo_AIRCOND_LVL_1", "Position(0-6)"),
-            SimVar.GetSimVarValue("L:A320_Neo_AIRCOND_LVL_2", "Position(0-6)"),
-            SimVar.GetSimVarValue("L:A320_Neo_AIRCOND_LVL_3", "Position(0-6)")]);
+                SimVar.GetSimVarValue("L:A320_Neo_AIRCOND_LVL_2", "Position(0-6)"),
+                SimVar.GetSimVarValue("L:A320_Neo_AIRCOND_LVL_3", "Position(0-6)")]);
 
             const packRequestedTemp = 18 + (2 * packRequestedlvl);
 
@@ -248,16 +247,16 @@ var A320_Neo_LowerECAM_BLEED;
             const eng2TMPcomputed = parseInt(((eng2TMP - 491.67) * (5 / 9)) * this.engTempMultiplier);
 
             const packTMPComputedIn = [(parseInt(((eng1TMP - 491.67) * (5 / 9)) * this.packInMultiplier)),
-            (parseInt(((eng2TMP - 491.67) * (5 / 9)) * this.packInMultiplier)),
-            (parseInt(this.apuBleedTemperature * this.packInMultiplierApu))];
+                (parseInt(((eng2TMP - 491.67) * (5 / 9)) * this.packInMultiplier)),
+                (parseInt(this.apuBleedTemperature * this.packInMultiplierApu))];
 
             const packTMPComputedOut = [(parseInt(((eng1TMP - 491.67) * (5 / 9)) * this.packOutMultiplier1)),
-            (parseInt(((eng2TMP - 491.67) * (5 / 9)) * this.packOutMultiplier2)),
-            (parseInt(this.apuBleedTemperature * this.packOutMultiplierApu))];
+                (parseInt(((eng2TMP - 491.67) * (5 / 9)) * this.packOutMultiplier2)),
+                (parseInt(this.apuBleedTemperature * this.packOutMultiplierApu))];
 
             const packTemperatureVariation = [((((packRequestedTemp / packTMPComputedOut[0]) * this.packOutMultiplier1) - this.packOutMultiplier1)),
-            ((((packRequestedTemp / packTMPComputedOut[1]) * this.packOutMultiplier2) - this.packOutMultiplier2)),
-            ((((packRequestedTemp / packTMPComputedOut[2]) * this.packOutMultiplierApu) - this.packOutMultiplierApu))];
+                ((((packRequestedTemp / packTMPComputedOut[1]) * this.packOutMultiplier2) - this.packOutMultiplier2)),
+                ((((packRequestedTemp / packTMPComputedOut[2]) * this.packOutMultiplierApu) - this.packOutMultiplierApu))];
 
             const xBleedValveOpen = SimVar.GetSimVarValue("L:x_bleed_valve", "bool");
 
