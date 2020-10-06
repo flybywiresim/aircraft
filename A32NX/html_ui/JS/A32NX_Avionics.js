@@ -13,6 +13,7 @@ var A32NX_Avionics;
             this.posX = _posX;
             this.posY = _posY;
             this.allTexts = [];
+
             for (let i = 0; i < this._nbItems; i++) {
                 const text = document.createElementNS(Avionics.SVG.NS, "text");
                 text.setAttribute("width", _width.toString());
