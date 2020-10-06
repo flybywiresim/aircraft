@@ -67,6 +67,8 @@
 1. [CDU] Allow inserting landing QNH in inHg - @pessip (Pessi Päivärinne)
 1. [CDU] Fix IRS coordinates always showing N/E - @beheh (Benedict Etzel)
 1. [General] Added location reporting for the live map - @nistei (Nistei)
+1. [CDU] Init A now showing computed values and simulated computational delays
+1. [CDU] Fuel Pred now showing computed values and refreshes when page is updating
 
 ## 0.4.0
 1. [General] Add CHANGELOG.md - @nathaninnes (Nathan Innes)
