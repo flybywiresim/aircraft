@@ -2,7 +2,8 @@
     "name": "a32nx",
     "version": "0.3.1",
     "scripts": {
-        "lint": "eslint ./**/*.js --fix"
+        "lint": "eslint ./**/*.js",
+        "lint-fix": "eslint ./**/*.js --fix"
     },
     "husky": {
         "hooks": {

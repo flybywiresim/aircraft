@@ -5,7 +5,7 @@ on:
       - master
 
 jobs:
-  main:
+  lint:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout source
