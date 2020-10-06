@@ -13,7 +13,9 @@ class CDUInitPage {
         if (mcdu.flightPlanManager.getOrigin() && mcdu.flightPlanManager.getOrigin().ident) {
             if (mcdu.flightPlanManager.getDestination() && mcdu.flightPlanManager.getDestination().ident) {
                 fromTo = mcdu.flightPlanManager.getOrigin().ident + "/" + mcdu.flightPlanManager.getDestination().ident + "[color]blue";
-                if (coRoute.includes("□□□□□□□□□□[color]red")) coRoute = ""; //Check if coroute exists
+                if (coRoute.includes("□□□□□□□□□□[color]red")) {
+                    coRoute = "";
+                }
 
                 //Need code to set the SimVarValue if user inputs FlNo
                 if (SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string", "FMC")) {
@@ -45,7 +47,7 @@ class CDUInitPage {
                 }
                 mcdu.onLeftInput[5] = () => {
                     mcdu._cruiseEntered = true;
-                    let value = mcdu.inOut;
+                    const value = mcdu.inOut;
                     mcdu.clearUserInput();
                     if (mcdu.setCruiseFlightLevelAndTemperature(value)) {
                         CDUInitPage.ShowPage1(mcdu);
@@ -62,7 +64,7 @@ class CDUInitPage {
                     altDest = mcdu.altDestination.ident + "[color]blue";
                 }
                 mcdu.onLeftInput[1] = async () => {
-                    let value = mcdu.inOut;
+                    const value = mcdu.inOut;
                     console.log("ALT value is: " + value);
                     switch (altDest) {
                         case "NONE":
@@ -90,7 +92,9 @@ class CDUInitPage {
             }
         }
 
-        if (mcdu.coRoute) coRoute = mcdu.coRoute + "[color]blue";
+        if (mcdu.coRoute) {
+            coRoute = mcdu.coRoute + "[color]blue";
+        }
         mcdu.onLeftInput[0] = () => {
             const value = mcdu.inOut;
             mcdu.clearUserInput();
@@ -107,9 +111,8 @@ class CDUInitPage {
          * Ref: FCOM 4.03.20 P6
          */
         mcdu.onRightInput[0] = () => {
-            let value = mcdu.inOut;
+            const value = mcdu.inOut;
             if (value !== "") {
-                let value = mcdu.inOut;
                 mcdu.clearUserInput();
                 mcdu.tryUpdateFromTo(value, (result) => {
                     if (result) {
@@ -182,7 +185,7 @@ class CDUInitPage {
 
         let fuelPlanTopTitle = "";
         let fuelPlanBottomTitle = "";
-        let fuelPlanColor = "[color]red";
+        const fuelPlanColor = "[color]red";
 
         let zfwColor = "[color]red";
         let zfwCell = "□□.□";
@@ -238,11 +241,14 @@ class CDUInitPage {
 
         let taxiFuelCell = "{smallFront}0.4{smallEnd}";
         if (isFinite(mcdu.taxiFuelWeight)) {
-            if (mcdu._taxiEntered) taxiFuelCell = mcdu.taxiFuelWeight.toFixed(1);
-            else taxiFuelCell = "{smallFront}" + mcdu.taxiFuelWeight.toFixed(1) + "{smallEnd}";
+            if (mcdu._taxiEntered) {
+                taxiFuelCell = mcdu.taxiFuelWeight.toFixed(1);
+            } else {
+                taxiFuelCell = "{smallFront}" + mcdu.taxiFuelWeight.toFixed(1) + "{smallEnd}";
+            }
         }
         mcdu.onLeftInput[0] = async () => {
-            let value = mcdu.inOut;
+            const value = mcdu.inOut;
             mcdu.clearUserInput();
             if (await mcdu.trySetTaxiFuelWeight(value)) {
                 CDUInitPage.updateTowIfNeeded(mcdu);
@@ -259,15 +265,15 @@ class CDUInitPage {
         let rteRsvColor = "[color]white";
 
         let altnWeightCell = "---.-";
-        let altnTimeCell = "----";
-        let altnColor = "[color]white";
+        const altnTimeCell = "----";
+        const altnColor = "[color]white";
 
         let finalWeightCell = "---.-";
         let finalTimeCell = "{blueFront}0045{blueEnd}";
         let finalColor = "[color]white";
 
         mcdu.onLeftInput[4] = async () => {
-            let value = mcdu.inOut;
+            const value = mcdu.inOut;
             mcdu.clearUserInput();
             if (await mcdu.trySetRouteFinalFuel(value)) {
                 CDUInitPage.ShowPage2(mcdu);
@@ -317,7 +323,7 @@ class CDUInitPage {
                 rteRsvColor = "[color]blue";
             }
             mcdu.onLeftInput[2] = async () => {
-                let value = mcdu.inOut;
+                const value = mcdu.inOut;
                 mcdu.clearUserInput();
                 if (await mcdu.trySetRouteReservedFuel(value)) {
                     CDUInitPage.ShowPage2(mcdu);
@@ -354,7 +360,7 @@ class CDUInitPage {
 
             }
             mcdu.onRightInput[4] = async () => {
-                let value = mcdu.inOut;
+                const value = mcdu.inOut;
                 mcdu.clearUserInput();
                 if (await mcdu.trySetAverageWind(value)) {
                     CDUInitPage.ShowPage2(mcdu);

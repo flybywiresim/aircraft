@@ -13,8 +13,9 @@ class CDUFuelPredPage {
             }
         }
 
-        let altIdentCell = "---";
-        let altTimeCell = "";
+        //TODO change these to lets later on
+        const altIdentCell = "---";
+        const altTimeCell = "";
 
         let rteRsvWeightCell = "--.-";
         const rteRsvWeight = mcdu.getRouteReservedWeight();
