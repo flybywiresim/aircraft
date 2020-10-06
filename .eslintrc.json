@@ -3,6 +3,7 @@
         "browser": true,
         "es2021": true
     },
+    // DO NOT CHANGE THIS FILE (unless you are an admin) (if admin, make sure you change the same file in the latest asobo branch as well)
     "rules": {
         "indent": [
             "error",
@@ -15,6 +16,7 @@
             "error",
             "unix"
         ],
+        // No quotes option is really fully consistent, so probably best to jsut not enforce either type
         "quotes": "off",
         "semi": [
             "error",
