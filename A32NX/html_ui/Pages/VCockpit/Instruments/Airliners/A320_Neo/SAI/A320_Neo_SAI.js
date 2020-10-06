@@ -299,6 +299,7 @@ class A320_Neo_SAI_Altimeter extends NavSystemElement {
     }
     init(root) {
         this.altimeterElement = this.gps.getChildById("Altimeter");
+        this.bugsElement = this.gps.getChildById("Bugs");
     }
     onEnter() {
     }
@@ -319,6 +320,10 @@ class A320_Neo_SAI_Altimeter extends NavSystemElement {
             case "BARO_DEC":
                 SimVar.SetSimVarValue("K:KOHLSMAN_DEC", "number", 1);
                 break;
+            case "BTN_BARO_BUGS":
+                const bugs = this.bugsElement.getAltBugs();
+                this.altimeterElement.updateBugs(bugs);
+                break;
         }
     }
 }
@@ -332,6 +337,7 @@ class A320_Neo_SAI_AltimeterIndicator extends HTMLElement {
         this.nbSecondaryGraduations = 4;
         this.totalGraduations = this.nbPrimaryGraduations + ((this.nbPrimaryGraduations - 1) * this.nbSecondaryGraduations);
         this.graduationSpacing = 14;
+        this.bugs = [];
     }
     connectedCallback() {
         this.graduationScroller = new Avionics.Scroller(this.nbPrimaryGraduations, 500, true);
@@ -494,14 +500,51 @@ class A320_Neo_SAI_AltimeterIndicator extends HTMLElement {
         this.rootGroup.appendChild(bottomBg);
         this.rootSVG.appendChild(this.rootGroup);
         this.appendChild(this.rootSVG);
+
+        this.small_bug = document.createElementNS(Avionics.SVG.NS, "rect");
+        this.centerSVG.appendChild(this.small_bug);
+        this.small_bug2 = document.createElementNS(Avionics.SVG.NS, "rect");
+        this.centerSVG.appendChild(this.small_bug2);
+        this.big_bug = document.createElementNS(Avionics.SVG.NS, "rect");
+        this.centerSVG.appendChild(this.big_bug);
+        this.big_bug2 = document.createElementNS(Avionics.SVG.NS, "rect");
+        this.centerSVG.appendChild(this.big_bug2);
     }
     update(_dTime) {
         const altitude = SimVar.GetSimVarValue("INDICATED ALTITUDE:2", "feet");
         this.updateGraduationScrolling(altitude);
         this.updateCursorScrolling(altitude);
     }
+
+    updateBugs(bugs) {
+        this.bugs = bugs;
+    }
     updateGraduationScrolling(_altitude) {
         if (this.graduations) {
+            if (this.bugs.length > 0) {
+                this.bugs.forEach(alt_bug => {
+                    if (_altitude < (alt_bug + 1000) && _altitude > (alt_bug - 1000)) {
+                        if (alt_bug % 500 === 0) {
+                            this.big_bug.setAttribute("x", "0");
+                            this.big_bug.setAttribute("y", String(115 - (alt_bug - _altitude) / 100 * 14));
+                            this.big_bug.setAttribute("width", "50");
+                            this.big_bug.setAttribute("height", "20");
+                            this.big_bug.setAttribute("stroke", "cyan");
+                            this.big_bug.setAttribute("stroke-width", "3");
+                            this.big_bug.setAttribute("fill", "none");
+                        } else {
+                            this.small_bug.setAttribute("x", "0");
+                            this.small_bug.setAttribute("y", String(124 - (alt_bug - _altitude) / 100 * 14));
+                            this.small_bug.setAttribute("width", "13");
+                            this.small_bug.setAttribute("height", "2");
+                            this.small_bug.setAttribute("stroke", "cyan");
+                            this.small_bug.setAttribute("stroke-width", "4");
+                            this.small_bug.setAttribute("fill", "none");
+
+                        }
+                    }
+                });
+            }
             this.graduationScroller.scroll(_altitude);
             let currentVal = this.graduationScroller.firstValue;
             let currentY = this.graduationScrollPosY + this.graduationScroller.offsetY * this.graduationSpacing * (this.nbSecondaryGraduations + 1);
@@ -1455,9 +1498,9 @@ class A320_Neo_SAI_BugsPage extends HTMLElement {
     construct() {
         Utils.RemoveAllChildren(this);
 
-        this.bugStatus = {};
-        this.bugBox = {};
-        this.bugTxt = {};
+        this.bugStatus = [];
+        this.bugBox = [];
+        this.bugTxt = [];
 
         this.bugsDiv = document.createElement("div");
         this.bugsDiv.id = "BugsDiv";
@@ -1547,8 +1590,8 @@ class A320_Neo_SAI_BugsPage extends HTMLElement {
         bugsSpdHeadTxt.setAttribute("transform", "matrix(1 0 0 1 152 150)");
         this.bugsSVG.appendChild(bugsSpdHeadTxt);
 
-        const bugLine = {};
-        const bugLineX = {};
+        const bugLine = [];
+        const bugLineX = [];
 
         bugLineX[0] = document.createElementNS(Avionics.SVG.NS, "line");
         bugLineX[0].setAttribute("id", "BugsSpdLineX0");
@@ -1837,6 +1880,16 @@ class A320_Neo_SAI_BugsPage extends HTMLElement {
         bugsSelectLineEnd.setAttribute("fill", "#27AAE1");
         bugsSelectLineEnd.setAttribute("points", "458,535 457.5,547 473.5,541");
         this.bugsSVG.appendChild(bugsSelectLineEnd);
+    }
+
+    getAltBugs() {
+        const bugs = [];
+        for (i = 4; i < Object.keys(this.bugStatus).length; i++) {
+            if (this.bugStatus[i].style.display !== "block") {
+                bugs.push(this.bugTxt[i].textContent);
+            }
+        }
+        return bugs;
     }
 
     getBug(bug) {
