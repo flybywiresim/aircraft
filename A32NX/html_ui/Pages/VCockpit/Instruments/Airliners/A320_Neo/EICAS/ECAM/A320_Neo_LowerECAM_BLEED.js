@@ -44,7 +44,7 @@ var A320_Neo_LowerECAM_BLEED;
             this.packOutMultiplier2 = 0.055;
             this.packInMultiplierApu = 0.4;
             this.packOutMultiplierApu = 0.1;
-            this.temperatureVariationSpeed = 0.01;  
+            this.temperatureVariationSpeed = 0.01;
         }
         //placeholder logic for packs
         setPackIndicators(p0, p1, p2, p3, p4, p5, p6) {
