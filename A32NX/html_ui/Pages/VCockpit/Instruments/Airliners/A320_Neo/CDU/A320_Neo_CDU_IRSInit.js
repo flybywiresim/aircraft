@@ -60,6 +60,14 @@ class CDUIRSInit {
                 IRSAlignOnPos = "{IrsInitFont}" + originAirportLat['deg'] + '°{IrsInitFontEnd}' + originAirportLat['min'] + '.' + originAirportLat['sec'] + '[s-text]{IrsInitFont}' + originAirportLat['dir'] + '/{IrsInitFontEnd}{IrsInitFont}' + originAirportLon['deg'] + '°{IrsInitFontEnd}' + originAirportLon['min'] + '.' + originAirportLon['sec'] + '{IrsInitFont}' +  originAirportLon['dir'] + '{IrsInitFontEnd}';
             }
         }
+
+        if (checkAligned === 2) {
+            alignMsg = "";
+            if (SimVar.GetSimVarValue("L:A32XN_Neo_ADIRS_ALIGN_TYPE_REF", "Enum") === 0) {
+                alignType = "GPS";
+            }
+        }
+
         let IRS1GpsString = emptyIRSGpsString;
         if (SimVar.GetSimVarValue("L:A320_Neo_ADIRS_KNOB_1", "Enum") === 1) {
             if (checkAligned === 2) {
@@ -94,9 +102,6 @@ class CDUIRSInit {
             statusIRS3 = "IRS3 OFF";
         }
 
-        if (checkAligned === 2) {
-            alignMsg = "";
-        }
 
         mcdu.setTemplate([
             ["IRS INIT"],
