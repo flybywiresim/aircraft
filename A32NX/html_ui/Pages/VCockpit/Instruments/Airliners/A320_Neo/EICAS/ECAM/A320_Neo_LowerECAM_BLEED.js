@@ -132,7 +132,7 @@ var A320_Neo_LowerECAM_BLEED;
             }
 
 
-            if (currentEngineBleedState[0] === 1 && eng1Running)      
+            if (currentEngineBleedState[0] === 1 && eng1Running) {      
                 this.leftEngineHp[0].setAttribute("visibility", "visible");
                 this.leftEngineHp[1].setAttribute("visibility", "hidden");
                 this.leftEngineIp[0].setAttribute("visibility", "visible");
