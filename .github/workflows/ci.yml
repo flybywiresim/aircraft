@@ -22,10 +22,10 @@ jobs:
         run: |
           cd ./A32NX
           python3 build.py
-      - uses: actions/upload-artifact@v2
-        with:
-          name: A32NX-master
-          path: ./A32NX/
+      # - uses: actions/upload-artifact@v2
+      #   with:
+      #     name: A32NX-master
+      #     path: ./A32NX/
       - name: Commit changes
         run: |
           ./.github/workflows/commit_layout_changes.sh
