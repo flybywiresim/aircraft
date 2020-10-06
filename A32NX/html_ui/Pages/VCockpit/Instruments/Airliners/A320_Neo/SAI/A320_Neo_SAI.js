@@ -536,10 +536,17 @@ class A320_Neo_SAI_AltimeterIndicator extends HTMLElement {
         this.rootSVG.appendChild(this.rootGroup);
         this.appendChild(this.rootSVG);
 
-        this.small_bug = document.createElementNS(Avionics.SVG.NS, "rect");
-        this.centerSVG.appendChild(this.small_bug);
-        this.big_bug = document.createElementNS(Avionics.SVG.NS, "rect");
-        this.centerSVG.appendChild(this.big_bug);
+        this.small_bugs = [];
+        this.small_bugs[0] = document.createElementNS(Avionics.SVG.NS, "rect");
+        this.small_bugs[1] = document.createElementNS(Avionics.SVG.NS, "rect");
+        this.centerSVG.appendChild(this.small_bugs[0]);
+        this.centerSVG.appendChild(this.small_bugs[1]);
+
+        this.big_bugs = [];
+        this.big_bugs[0] = document.createElementNS(Avionics.SVG.NS, "rect");
+        this.big_bugs[1] = document.createElementNS(Avionics.SVG.NS, "rect");
+        this.centerSVG.appendChild(this.big_bugs[0]);
+        this.centerSVG.appendChild(this.big_bugs[1]);
     }
     update(_dTime) {
         const altitude = SimVar.GetSimVarValue("INDICATED ALTITUDE:2", "feet");
@@ -553,25 +560,27 @@ class A320_Neo_SAI_AltimeterIndicator extends HTMLElement {
     updateGraduationScrolling(_altitude) {
         if (this.graduations) {
             if (this.bugs.length > 0) {
-                this.bugs.forEach(alt_bug => {
+                this.bugs.forEach((alt_bug, i) => {
+                    this.big_bugs[i].setAttribute("y", "-100");
+                    this.small_bugs[i].setAttribute("y", "-100");
+
                     if (_altitude < (alt_bug + 1000) && _altitude > (alt_bug - 1000)) {
                         if (alt_bug % 500 === 0) {
-                            this.big_bug.setAttribute("x", "0");
-                            this.big_bug.setAttribute("y", String(115 - (alt_bug - _altitude) / 100 * 14));
-                            this.big_bug.setAttribute("width", "50");
-                            this.big_bug.setAttribute("height", "20");
-                            this.big_bug.setAttribute("stroke", "cyan");
-                            this.big_bug.setAttribute("stroke-width", "3");
-                            this.big_bug.setAttribute("fill", "none");
+                            this.big_bugs[i].setAttribute("x", "0");
+                            this.big_bugs[i].setAttribute("y", String(115 - (alt_bug - _altitude) / 100 * 14));
+                            this.big_bugs[i].setAttribute("width", "50");
+                            this.big_bugs[i].setAttribute("height", "20");
+                            this.big_bugs[i].setAttribute("stroke", "cyan");
+                            this.big_bugs[i].setAttribute("stroke-width", "3");
+                            this.big_bugs[i].setAttribute("fill", "none");
                         } else {
-                            this.small_bug.setAttribute("x", "0");
-                            this.small_bug.setAttribute("y", String(124 - (alt_bug - _altitude) / 100 * 14));
-                            this.small_bug.setAttribute("width", "13");
-                            this.small_bug.setAttribute("height", "2");
-                            this.small_bug.setAttribute("stroke", "cyan");
-                            this.small_bug.setAttribute("stroke-width", "4");
-                            this.small_bug.setAttribute("fill", "none");
-
+                            this.small_bugs[i].setAttribute("x", "0");
+                            this.small_bugs[i].setAttribute("y", String(124 - (alt_bug - _altitude) / 100 * 14));
+                            this.small_bugs[i].setAttribute("width", "13");
+                            this.small_bugs[i].setAttribute("height", "2");
+                            this.small_bugs[i].setAttribute("stroke", "cyan");
+                            this.small_bugs[i].setAttribute("stroke-width", "4");
+                            this.small_bugs[i].setAttribute("fill", "none");
                         }
                     }
                 });
