@@ -3,7 +3,9 @@ class EICASCommonDisplay extends Airliners.EICASTemplateElement {
         super();
         this.isInitialised = false;
     }
-    get templateID() { return "EICASCommonDisplayTemplate"; }
+    get templateID() {
+        return "EICASCommonDisplayTemplate";
+    }
     connectedCallback() {
         super.connectedCallback();
         TemplateElement.call(this, this.init.bind(this));
@@ -38,8 +40,7 @@ class EICASCommonDisplay extends Airliners.EICASTemplateElement {
             if (this.tatText != null) {
                 if (this.currentTAT > 0) {
                     this.tatText.textContent = "+" + this.currentTAT.toString();
-                }
-                else {
+                } else {
                     this.tatText.textContent = this.currentTAT.toString();
                 }
             }
@@ -51,19 +52,18 @@ class EICASCommonDisplay extends Airliners.EICASTemplateElement {
             if (this.satText != null) {
                 if (this.currentSAT > 0) {
                     this.satText.textContent = "+" + this.currentSAT.toString();
-                }
-                else {
+                } else {
                     this.satText.textContent = this.currentSAT.toString();
                 }
             }
         }
     }
     refreshClock() {
-        var seconds = Math.floor(SimVar.GetGlobalVarValue("ZULU TIME", "seconds"));
+        const seconds = Math.floor(SimVar.GetGlobalVarValue("ZULU TIME", "seconds"));
         if (seconds != this.currentSeconds) {
             this.currentSeconds = seconds;
-            var hours = Math.floor(seconds / 3600);
-            var minutes = Math.floor((seconds - (hours * 3600)) / 60);
+            const hours = Math.floor(seconds / 3600);
+            const minutes = Math.floor((seconds - (hours * 3600)) / 60);
             if (minutes != this.currentMinutes) {
                 this.currentMinutes = minutes;
                 if (this.hoursText != null) {
@@ -77,16 +77,17 @@ class EICASCommonDisplay extends Airliners.EICASTemplateElement {
     }
     refreshGrossWeight(_force = false) {
         let gw = 0;
-        let isInMetric = BaseAirliners.unitIsMetric(Aircraft.A320_NEO);
+        const isInMetric = BaseAirliners.unitIsMetric(Aircraft.A320_NEO);
         if (isInMetric) {
             gw = Math.round(SimVar.GetSimVarValue("TOTAL WEIGHT", "kg"));
-            if (this.gwUnit)
+            if (this.gwUnit) {
                 this.gwUnit.textContent = "KG";
-        }
-        else {
+            }
+        } else {
             gw = Math.round(SimVar.GetSimVarValue("TOTAL WEIGHT", "lbs"));
-            if (this.gwUnit)
+            if (this.gwUnit) {
                 this.gwUnit.textContent = "LBS";
+            }
         }
         if ((gw != this.currentGW) || _force) {
             this.currentGW = gw;

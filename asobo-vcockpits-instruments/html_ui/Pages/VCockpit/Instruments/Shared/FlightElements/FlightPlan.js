@@ -32,7 +32,7 @@ class FlightPlan {
                 this.activeWayPoint = SimVar.GetSimVarValue("C:fs9gps:FlightPlanActiveWaypoint", "number");
                 this.isDirectTo = SimVar.GetSimVarValue("C:fs9gps:FlightPlanIsDirectTo", "Bool");
                 SimVar.GetSimVarArrayValues(this.waypointsBatch, function (_Values) {
-                    for (var i = 0; i < _Values.length; i++) {
+                    for (let i = 0; i < _Values.length; i++) {
                         if (!this.wayPoints[i]) {
                             this.wayPoints[i] = new WayPoint(this.instrument);
                         }
@@ -55,7 +55,7 @@ class FlightPlan {
                     this.approach.name = SimVar.GetSimVarValue("C:fs9gps:FlightPlanTitle", "string", this.instrument.instrumentIdentifier);
                     SimVar.GetSimVarArrayValues(this.approachBatch, function (_Values) {
                         this.approach.WayPoints = [];
-                        for (var i = 0; i < _Values.length; i++) {
+                        for (let i = 0; i < _Values.length; i++) {
                             this.approach.wayPoints.push(new ApproachWayPoint(this.gps));
                             this.approach.wayPoints[i].icao = _Values[i][0];
                             this.approach.wayPoints[i].name = _Values[i][1];
@@ -67,8 +67,7 @@ class FlightPlan {
                         }
                         this.loadState++;
                     }.bind(this), this.instrument.instrumentIdentifier);
-                }
-                else {
+                } else {
                     this.approach = null;
                     this.loadState++;
                 }
@@ -91,8 +90,8 @@ class FlightPlan {
         }.bind(this));
     }
     GetAirportList() {
-        var airports = [];
-        for (var i = 0; i < this.wayPoints.length; i++) {
+        const airports = [];
+        for (let i = 0; i < this.wayPoints.length; i++) {
             if (this.wayPoints[i].type == 'A') {
                 airports.push(this.wayPoints[i]);
             }
@@ -100,7 +99,7 @@ class FlightPlan {
         return airports;
     }
     FillHTMLElement(_element, _nbElemMax, _startIndex) {
-        var Html = "";
+        let Html = "";
         if (this.wayPoints.length > 0) {
             for (var i = _startIndex; i < Math.min(_startIndex + _nbElemMax, this.wayPoints.length); i++) {
                 let ident = this.wayPoints[i].GetInfos().ident;
@@ -124,12 +123,10 @@ class FlightPlan {
                     Html += '   <div class="Third"> <div class="Align">' + fastToFixed(this.approach.wayPoints[i].distanceInFP, 0) + '</div><div class="Align unit">n<br/> m </div></div>';
                     Html += '</div>';
                 }
-            }
-            else if (this.wayPoints.length && (_startIndex + 4) > this.wayPoints.length) {
+            } else if (this.wayPoints.length && (_startIndex + 4) > this.wayPoints.length) {
                 Html += '<div><div class="Third AlignLeft SelectableElement" id="FlightPlanElement_' + (this.wayPoints.length - _startIndex) + '"></div></div>';
             }
-        }
-        else {
+        } else {
             Html += '<div><div class="Third AlignLeft SelectableElement" id="FlightPlanElement_' + (this.wayPoints.length - _startIndex) + '"></div></div>';
         }
         _element.innerHTML = Html;
@@ -145,7 +142,7 @@ class FlightPlanAlternate {
         this.updating = false;
     }
     activeBearing() {
-        let activeWaypoint = this.waypoints[this.activeWaypoint];
+        const activeWaypoint = this.waypoints[this.activeWaypoint];
         if (activeWaypoint) {
             return activeWaypoint.bearingInFP;
         }
@@ -155,18 +152,20 @@ class FlightPlanAlternate {
             return;
         }
         this.updating = true;
-        let waypointsNumber = SimVar.GetSimVarValue("C:fs9gps:FlightPlanWaypointsNumber", "number", this.instrument.instrumentIdentifier);
+        const waypointsNumber = SimVar.GetSimVarValue("C:fs9gps:FlightPlanWaypointsNumber", "number", this.instrument.instrumentIdentifier);
         this.activeWaypoint = SimVar.GetSimVarValue("C:fs9gps:FlightPlanActiveWaypoint", "number", this.instrument.instrumentIdentifier);
         if (waypointsNumber === 0 || waypointsNumber === null) {
             this.updating = false;
             return;
         }
-        let getWaypoint = async (index) => {
+        const getWaypoint = async (index) => {
             return new Promise((resolve) => {
                 SimVar.SetSimVarValue("C:fs9gps:FlightPlanWaypointIndex", "number", index, this.instrument.instrumentIdentifier).then(() => {
                     this.instrument.requestCall(async () => {
-                        let icao = SimVar.GetSimVarValue("C:fs9gps:FlightPlanWaypointICAO", "string", this.instrument.instrumentIdentifier);
-                        let waypoint = this.waypoints.find(wp => { return wp && wp.icao === icao; });
+                        const icao = SimVar.GetSimVarValue("C:fs9gps:FlightPlanWaypointICAO", "string", this.instrument.instrumentIdentifier);
+                        let waypoint = this.waypoints.find(wp => {
+                            return wp && wp.icao === icao;
+                        });
                         if (!waypoint && icao !== "") {
                             waypoint = await this.instrument.facilityLoader.getFacility(icao);
                         }
@@ -179,14 +178,14 @@ class FlightPlanAlternate {
                             waypoint.infos.long = SimVar.GetSimVarValue("C:fs9gps:FlightPlanWaypointLongitude", "degree", this.instrument.instrumentIdentifier);
                         }
                         if (waypoint) {
-                            let timeInFP = SimVar.GetSimVarValue("C:fs9gps:FlightPlanWaypointETE", "second", this.instrument.instrumentIdentifier);
+                            const timeInFP = SimVar.GetSimVarValue("C:fs9gps:FlightPlanWaypointETE", "second", this.instrument.instrumentIdentifier);
                             waypoint.infos.timeInFP = timeInFP;
                             waypoint.infos.totalTimeInFP = timeInFP;
-                            let etaInFP = SimVar.GetSimVarValue("C:fs9gps:FlightPlanWaypointETA", "seconds", this.instrument.instrumentIdentifier);
+                            const etaInFP = SimVar.GetSimVarValue("C:fs9gps:FlightPlanWaypointETA", "seconds", this.instrument.instrumentIdentifier);
                             waypoint.infos.etaInFP = etaInFP;
-                            let distInFP = SimVar.GetSimVarValue("C:fs9gps:FlightPlanWaypointDistanceTotal", "meter", this.instrument.instrumentIdentifier);
+                            const distInFP = SimVar.GetSimVarValue("C:fs9gps:FlightPlanWaypointDistanceTotal", "meter", this.instrument.instrumentIdentifier);
                             waypoint.infos.totalDistInFP = distInFP / 1852;
-                            let fuelConsumption = SimVar.GetSimVarValue("C:fs9gps:FlightPlanWaypointEstimatedFuelConsumption", "gallons", this.instrument.instrumentIdentifier);
+                            const fuelConsumption = SimVar.GetSimVarValue("C:fs9gps:FlightPlanWaypointEstimatedFuelConsumption", "gallons", this.instrument.instrumentIdentifier);
                             waypoint.infos.fuelConsInFP = fuelConsumption;
                             waypoint.infos.totalFuelConsInFP = fuelConsumption;
                             waypoint.bearingInFP = SimVar.GetSimVarValue("C:fs9gps:FlightPlanWaypointMagneticHeading", "degree", this.instrument.instrumentIdentifier);
@@ -197,19 +196,19 @@ class FlightPlanAlternate {
                 });
             });
         };
-        let waypointOrigin = await getWaypoint(0);
+        const waypointOrigin = await getWaypoint(0);
         if (waypointOrigin) {
             this.origin = waypointOrigin;
         }
-        let newWaypoints = [];
+        const newWaypoints = [];
         for (let i = 1; i < waypointsNumber - 1; i++) {
-            let waypoint = await getWaypoint(i);
+            const waypoint = await getWaypoint(i);
             if (waypoint) {
                 newWaypoints.push(waypoint);
             }
         }
         this.routeWaypoints = newWaypoints;
-        let waypointDest = await getWaypoint(waypointsNumber - 1);
+        const waypointDest = await getWaypoint(waypointsNumber - 1);
         if (waypointDest) {
             this.dest = waypointDest;
         }
@@ -222,8 +221,8 @@ class FlightPlanAlternate {
             this.waypoints.push(this.dest);
         }
         for (let i = 1; i < this.waypoints.length; i++) {
-            let wp = this.waypoints[i];
-            let prevWp = this.waypoints[i - 1];
+            const wp = this.waypoints[i];
+            const prevWp = this.waypoints[i - 1];
             if (wp && prevWp) {
                 wp.infos.totalTimeInFP = wp.infos.timeInFP + prevWp.infos.totalTimeInFP;
                 wp.infos.totalFuelConsInFP = wp.infos.fuelConsInFP + prevWp.infos.totalFuelConsInFP;

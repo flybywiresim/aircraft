@@ -10,8 +10,9 @@ class Jet_PFD_NDCompass extends Jet_NDCompass {
     }
     constructArc() {
         super.constructArc();
-        if (this.aircraft == Aircraft.AS01B)
+        if (this.aircraft == Aircraft.AS01B) {
             this.constructArc_AS01B();
+        }
     }
     constructArc_AS01B() {
         this.destroyLayout();
@@ -20,19 +21,19 @@ class Jet_PFD_NDCompass extends Jet_NDCompass {
         this.root.setAttribute("height", "100%");
         this.root.setAttribute("viewBox", "-225 -215 900 516");
         this.appendChild(this.root);
-        var trsGroup = document.createElementNS(Avionics.SVG.NS, "g");
+        const trsGroup = document.createElementNS(Avionics.SVG.NS, "g");
         trsGroup.setAttribute("transform", "translate(1, 160)");
         this.root.appendChild(trsGroup);
         {
-            var viewBoxSize = "-225 -550 550 600";
-            var circleRadius = 425;
-            var dashSpacing = 72;
+            let viewBoxSize = "-225 -550 550 600";
+            let circleRadius = 425;
+            const dashSpacing = 72;
             if (this.isHud) {
                 viewBoxSize = "-275 -550 650 700";
                 circleRadius = 400;
                 this.rotatingCircleTrs = "translate(0 -125)";
             }
-            let viewBox = document.createElementNS(Avionics.SVG.NS, "svg");
+            const viewBox = document.createElementNS(Avionics.SVG.NS, "svg");
             viewBox.setAttribute("x", "-225");
             viewBox.setAttribute("y", "-475");
             viewBox.setAttribute("viewBox", viewBoxSize);
@@ -40,20 +41,21 @@ class Jet_PFD_NDCompass extends Jet_NDCompass {
             this.rotatingCircle = document.createElementNS(Avionics.SVG.NS, "g");
             this.rotatingCircle.setAttribute("id", "RotatingCicle");
             {
-                let circleGroup = document.createElementNS(Avionics.SVG.NS, "g");
+                const circleGroup = document.createElementNS(Avionics.SVG.NS, "g");
                 circleGroup.setAttribute("id", "CircleGroup");
                 this.rotatingCircle.appendChild(circleGroup);
                 let radians = 0;
                 for (let i = 0; i < dashSpacing; i++) {
-                    let line = document.createElementNS(Avionics.SVG.NS, "line");
-                    let bIsBig = (i % 2 == 0) ? true : false;
-                    let bHasNumber = (i % 6 == 0) ? true : false;
+                    const line = document.createElementNS(Avionics.SVG.NS, "line");
+                    const bIsBig = (i % 2 == 0) ? true : false;
+                    const bHasNumber = (i % 6 == 0) ? true : false;
                     let length = (bIsBig) ? 24 : 12;
-                    if (this.isHud)
+                    if (this.isHud) {
                         length *= 2;
-                    let lineStart = 50 + circleRadius;
-                    let lineEnd = lineStart - length;
-                    let degrees = (radians / Math.PI) * 180;
+                    }
+                    const lineStart = 50 + circleRadius;
+                    const lineEnd = lineStart - length;
+                    const degrees = (radians / Math.PI) * 180;
                     line.setAttribute("x1", "50");
                     line.setAttribute("y1", lineStart.toString());
                     line.setAttribute("x2", "50");
@@ -68,7 +70,7 @@ class Jet_PFD_NDCompass extends Jet_NDCompass {
                             textSize *= 1.5;
                             textOffset *= 1.5;
                         }
-                        let text = document.createElementNS(Avionics.SVG.NS, "text");
+                        const text = document.createElementNS(Avionics.SVG.NS, "text");
                         text.textContent = fastToFixed(degrees / 10, 0);
                         text.setAttribute("x", "50");
                         text.setAttribute("y", (-(circleRadius - 50 - length - textOffset)).toString());
@@ -142,8 +144,8 @@ class Jet_PFD_NDCompass extends Jet_NDCompass {
             this.currentRefGroup = document.createElementNS(Avionics.SVG.NS, "g");
             this.currentRefGroup.setAttribute("id", "currentRefGroup");
             {
-                let centerX = 230;
-                let centerY = 130;
+                const centerX = 230;
+                const centerY = 130;
                 let posX;
                 posX = centerX - 50;
                 this.currentRefValue = document.createElementNS(Avionics.SVG.NS, "text");

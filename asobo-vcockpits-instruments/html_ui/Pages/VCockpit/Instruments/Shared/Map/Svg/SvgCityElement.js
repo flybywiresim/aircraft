@@ -20,17 +20,16 @@ class SvgCityElement extends SvgMapElement {
         let fName = "ICON_MAP_MEDIUM_CITY.svg";
         if (this.size === CitySize.Small) {
             fName = "ICON_MAP_SMALL_CITY.svg";
-        }
-        else if (this.size === CitySize.Large) {
+        } else if (this.size === CitySize.Large) {
             fName = "ICON_MAP_LARGE_CITY.svg";
         }
         return fName;
     }
     createDraw(map) {
-        let container = document.createElementNS(Avionics.SVG.NS, "svg");
+        const container = document.createElementNS(Avionics.SVG.NS, "svg");
         container.id = this.id(map);
         container.setAttribute("overflow", "visible");
-        let text = document.createElementNS(Avionics.SVG.NS, "text");
+        const text = document.createElementNS(Avionics.SVG.NS, "text");
         text.classList.add("map-city-text");
         text.textContent = this.name;
         text.setAttribute("text-anchor", "middle");
@@ -44,8 +43,8 @@ class SvgCityElement extends SvgMapElement {
         container.appendChild(text);
         if (map.config.cityLabelUseBackground) {
             setTimeout(() => {
-                let bbox = text.getBBox();
-                let rect = document.createElementNS(Avionics.SVG.NS, "rect");
+                const bbox = text.getBBox();
+                const rect = document.createElementNS(Avionics.SVG.NS, "rect");
                 rect.classList.add("map-city-text-background");
                 rect.setAttribute("width", fastToFixed((bbox.width - 4 + map.config.cityLabelBackgroundPaddingRight + map.config.cityLabelBackgroundPaddingLeft), 0));
                 rect.setAttribute("height", fastToFixed(Math.max((bbox.height - 17 + map.config.cityLabelBackgroundPaddingTop + map.config.cityLabelBackgroundPaddingBottom), 1), 0));
@@ -57,8 +56,7 @@ class SvgCityElement extends SvgMapElement {
                 container.insertBefore(rect, text);
             }, 0);
         }
-        let image;
-        image = document.createElementNS(Avionics.SVG.NS, "image");
+        const image = document.createElementNS(Avionics.SVG.NS, "image");
         image.classList.add("map-city-icon");
         image.setAttribute("width", "100%");
         image.setAttribute("height", "100%");

@@ -6,7 +6,9 @@ var A320_Neo_BAT;
             this.batTexts = new Array(null, null);
             this.batValues = new Array(0, 0);
         }
-        get templateID() { return "A320_Neo_BAT"; }
+        get templateID() {
+            return "A320_Neo_BAT";
+        }
         connectedCallback() {
             super.connectedCallback();
             this.batTexts[0] = this.querySelector("#BAT1");
@@ -15,9 +17,9 @@ var A320_Neo_BAT;
         Update() {
             super.Update();
             if ((this.batTexts != null) && (this.batTexts.length == 2) && (this.batValues != null) && (this.batValues.length == 2)) {
-                for (var i = 0; i < 2; ++i) {
+                for (let i = 0; i < 2; ++i) {
                     if (this.batTexts[i] != null) {
-                        var batValue = SimVar.GetSimVarValue("ELECTRICAL MAIN BUS VOLTAGE:" + (10 + i), "Volts");
+                        const batValue = SimVar.GetSimVarValue("ELECTRICAL MAIN BUS VOLTAGE:" + (10 + i), "Volts");
                         if (batValue != this.batValues[i]) {
                             this.batValues[i] = batValue;
                             this.batTexts[i].textContent = this.batValues[i].toFixed(1);

@@ -95,7 +95,7 @@ class WindDataDisplay extends HTMLElement {
         {
             this.windDataNoData = document.createElementNS(Avionics.SVG.NS, "g");
             this.root.appendChild(this.windDataNoData);
-            let text = document.createElementNS(Avionics.SVG.NS, "text");
+            const text = document.createElementNS(Avionics.SVG.NS, "text");
             text.innerHTML = "NO WIND";
             text.setAttribute("fill", "white");
             text.setAttribute("x", "45");
@@ -104,7 +104,7 @@ class WindDataDisplay extends HTMLElement {
             text.setAttribute("font-family", "Roboto-Bold");
             text.setAttribute("text-anchor", "middle");
             this.windDataNoData.appendChild(text);
-            let text2 = document.createElementNS(Avionics.SVG.NS, "text");
+            const text2 = document.createElementNS(Avionics.SVG.NS, "text");
             text2.innerHTML = "DATA";
             text2.setAttribute("fill", "white");
             text2.setAttribute("x", "45");
@@ -116,8 +116,9 @@ class WindDataDisplay extends HTMLElement {
         }
     }
     attributeChangedCallback(name, oldValue, newValue) {
-        if (oldValue == newValue)
+        if (oldValue == newValue) {
             return;
+        }
         switch (name) {
             case "wind-mode":
                 let bg = "inherit";
@@ -171,19 +172,17 @@ class WindDataDisplay extends HTMLElement {
         }
     }
     updateO1() {
-        let velX = this.windSpeed * Math.sin(this.windDirection / 180 * Math.PI);
-        let velY = this.windSpeed * Math.cos(this.windDirection / 180 * Math.PI);
+        const velX = this.windSpeed * Math.sin(this.windDirection / 180 * Math.PI);
+        const velY = this.windSpeed * Math.cos(this.windDirection / 180 * Math.PI);
         if (velX > 0) {
             this.o1ArrowX.setAttribute("transform", "rotate(90, 22.5, 20)");
-        }
-        else {
+        } else {
             this.o1ArrowX.setAttribute("transform", "rotate(-90, 22.5, 20)");
         }
         this.o1TextX.textContent = fastToFixed(Math.abs(velX), 0);
         if (velY > 0) {
             this.o1ArrowY.setAttribute("transform", "rotate(0, 22.5, 20)");
-        }
-        else {
+        } else {
             this.o1ArrowY.setAttribute("transform", "rotate(180, 22.5, 20)");
         }
         this.o1TextY.textContent = fastToFixed(Math.abs(velY), 0);
