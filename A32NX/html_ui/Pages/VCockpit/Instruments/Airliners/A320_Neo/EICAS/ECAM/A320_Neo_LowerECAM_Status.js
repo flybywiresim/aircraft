@@ -81,6 +81,22 @@ var A320_Neo_LowerECAM_Status;
                         name: "",
                         messages: [
                             {
+                                message: "MAX BRK PR......1000PSI",
+                                style: "blue",
+                                isActive: () => this.isInop("ASKID_NWS"),
+                                actions: [
+                                    {
+                                        message: "LDG DIST PROC.....APPLY",
+                                        style: "blue"
+                                    },
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        name: "",
+                        messages: [
+                            {
                                 message: "CAT 3 SINGLE ONLY",
                                 style: "InfoIndication",
                                 isActive: () => {
@@ -94,7 +110,7 @@ var A320_Neo_LowerECAM_Status;
                                 ]
                             }
                         ]
-                    }
+                    },
                 ],
                 normal: []
             };
@@ -136,12 +152,6 @@ var A320_Neo_LowerECAM_Status;
                         message: "A/THR",
                         isActive: () => {
                             return this.isInop("ATHR");
-                        }
-                    },
-                    {
-                        message: "N/W. STEER",
-                        isActive: () => {
-                            return this.isInop("NS_STEER");
                         }
                     },
                     {
@@ -187,12 +197,6 @@ var A320_Neo_LowerECAM_Status;
                         }
                     },
                     {
-                        message: "AUTO BRK",
-                        isActive: () => {
-                            return this.isInop("AUTO_BRK");
-                        }
-                    },
-                    {
                         message: "CAP PR 1+2",
                         isActive: () => {
                             return this.isInop("CAB_PR_1") && this.isInop("CAB_PR_2");
@@ -229,17 +233,14 @@ var A320_Neo_LowerECAM_Status;
                         }
                     },
                     {
-                        message: "ANTI SKID",
-                        isActive: () => {
-                            return this.isInop("ANTI_SKID");
-                        }
-                    },
-                    //
-                    {
                         message: "WING A.ICE",
                         isActive: () => {
                             return this.isInop("WING_A_ICE");
                         }
+                    },
+                    {
+                        message: "CAT 3",
+                        isActive: () => this.isInop("CAT_3")
                     },
                     {
                         message: "CAT 3 DUAL",
@@ -312,7 +313,29 @@ var A320_Neo_LowerECAM_Status;
                         isActive: () => {
                             return this.isInop("TCAS");
                         }
-                    }
+                    },
+                    {
+                        message: "ANTI SKID",
+                        isActive: () => this.isInop("ANTI_SKID")
+                    },
+                    {
+                        message: "N/W STRG",
+                        isActive: () => this.isInop("NS_STEER")
+                    },
+                    {
+                        message: "NORM BRK",
+                        isActive: () => this.isInop("NORM_BRK")
+                    },
+                    {
+                        message: "ALTN BRK",
+                        isActive: () => this.isInop("ALTN_BRK")
+                    },
+                    {
+                        message: "AUTO BRK",
+                        isActive: () => {
+                            return this.isInop("AUTO_BRK");
+                        }
+                    },
                 ]
             };
             this.inopSystemsMessageArea = new A320_Neo_LowerECAM_Status.StatusMessagePanel(this, "inop-systems", 15, this.inopMessages);
