@@ -34,7 +34,7 @@ class CDUDirectToPage {
             });
         };
         let i = 0;
-        let totalWaypointsCount = mcdu.flightPlanManager.getWaypointsCount() + mcdu.flightPlanManager.getArrivalWaypointsCount() + mcdu.flightPlanManager.getApproachWaypointsCount();
+        const totalWaypointsCount = mcdu.flightPlanManager.getWaypointsCount() + mcdu.flightPlanManager.getArrivalWaypointsCount() + mcdu.flightPlanManager.getApproachWaypointsCount();
         while (i < totalWaypointsCount && i + wptsListIndex < totalWaypointsCount && i < iMax) {
             const waypoint = mcdu.flightPlanManager.getWaypoint(i + wptsListIndex, NaN, true);
             if (waypoint) {
