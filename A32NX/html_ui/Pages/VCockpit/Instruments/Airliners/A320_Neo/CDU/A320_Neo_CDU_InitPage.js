@@ -8,6 +8,7 @@ class CDUInitPage {
         let altDest = "----/----------";
         let costIndex = "---";
         let cruiseFlTemp = "----- /---°";
+        let alignOption;
 
         if (mcdu.flightPlanManager.getOrigin() && mcdu.flightPlanManager.getOrigin().ident) {
             if (mcdu.flightPlanManager.getDestination() && mcdu.flightPlanManager.getDestination().ident) {
@@ -24,7 +25,7 @@ class CDUInitPage {
                     costIndex = mcdu.costIndex + "[color]blue";
                 }
                 mcdu.onLeftInput[4] = () => {
-                    let value = mcdu.inOut;
+                    const value = mcdu.inOut;
                     mcdu.clearUserInput();
                     if (mcdu.tryUpdateCostIndex(value)) {
                         CDUInitPage.ShowPage1(mcdu);
@@ -51,15 +52,15 @@ class CDUInitPage {
                     }
                 };
 
-                // Since CoRte isn't implemented, AltDest defaults to None Ref: FCOM 4.03.20 *Old Version
+                if (mcdu.flightPlanManager.getOrigin()) {
+                    alignOption = "IRS INIT>";
+                }
+
+                // Since CoRte isn't implemented, AltDest defaults to None Ref: Ares's documents
                 altDest = "NONE[color]blue";
                 if (mcdu.altDestination) {
                     altDest = mcdu.altDestination.ident + "[color]blue";
                 }
-                /**
-                 * This is honestly a mess, but I was just focusing on making it work
-                 *
-                 */
                 mcdu.onLeftInput[1] = async () => {
                     let value = mcdu.inOut;
                     console.log("ALT value is: " + value);
@@ -90,9 +91,8 @@ class CDUInitPage {
         }
 
         if (mcdu.coRoute) coRoute = mcdu.coRoute + "[color]blue";
-
         mcdu.onLeftInput[0] = () => {
-            let value = mcdu.inOut;
+            const value = mcdu.inOut;
             mcdu.clearUserInput();
             mcdu.updateCoRoute(value, (result) => {
                 if (result) {
@@ -123,9 +123,13 @@ class CDUInitPage {
                 }
             }
         };
-
+        mcdu.onRightInput[2] = () => {
+            if (alignOption) {
+                CDUIRSInit.ShowPage(mcdu);
+            }
+        };
         mcdu.onLeftInput[2] = () => {
-            let value = mcdu.inOut;
+            const value = mcdu.inOut;
             mcdu.clearUserInput();
             mcdu.updateFlightNo(value, (result) => {
                 if (result) {
@@ -141,7 +145,7 @@ class CDUInitPage {
             ["ALTN/CO RTE"],
             [altDest],
             ["FLT NBR"],
-            [flightNo + "[color]blue"],
+            [flightNo + "[color]blue", alignOption],
             [],
             [],
             ["COST INDEX"],
@@ -158,9 +162,6 @@ class CDUInitPage {
         mcdu.onNextPage = () => {
             CDUInitPage.ShowPage2(mcdu);
         };
-
-        // TODO this
-        mcdu.onDown = () => {};
 
         mcdu.onUp = () => {};
         Coherent.trigger("AP_ALT_VAL_SET", 4200);
@@ -200,7 +201,7 @@ class CDUInitPage {
             }
         }
         mcdu.onRightInput[0] = async () => {
-            let value = mcdu.inOut;
+            const value = mcdu.inOut;
             mcdu.clearUserInput();
             if (value === "") {
                 mcdu.inOut =
@@ -222,7 +223,7 @@ class CDUInitPage {
             }
         }
         mcdu.onRightInput[1] = async () => {
-            let value = mcdu.inOut;
+            const value = mcdu.inOut;
             mcdu.clearUserInput();
             if (await mcdu.trySetBlockFuel(value)) {
                 mcdu._blockFuelEntered = true;
@@ -419,6 +420,24 @@ class CDUInitPage {
         };
         mcdu.onNextPage = () => {
             CDUInitPage.ShowPage1(mcdu);
+        };
+    }
+
+    // Defining as static here to avoid duplicate code in CDUIRSInit
+    static ConvertDDToDMS(deg, lng) {
+        // converts decimal degrees to degrees minutes seconds
+        const M = 0 | (deg % 1) * 60e7;
+        let degree;
+        if (lng) {
+            degree = (0 | (deg < 0 ? deg = -deg : deg)).toString().padStart(3, "0");
+        } else {
+            degree = 0 | (deg < 0 ? deg = -deg : deg);
+        }
+        return {
+            dir : deg < 0 ? lng ? 'W' : 'S' : lng ? 'E' : 'N',
+            deg : degree,
+            min : Math.abs(0 | M / 1e7),
+            sec : Math.abs((0 | M / 1e6 % 1 * 6e4) / 100)
         };
     }
 }

@@ -147,6 +147,12 @@ fmc-main-display::before {
   font-size: 4.8vw;
   letter-spacing: 0.9vw; }
 
+.irs-text {
+  font-weight: lighter;
+  font-size: 6.3vw;
+  letter-spacing: 0.5vw;
+}
+
 .label {
   height: 5%;
   margin: 0; }

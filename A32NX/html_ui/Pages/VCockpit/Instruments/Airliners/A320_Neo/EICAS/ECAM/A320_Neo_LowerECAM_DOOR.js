@@ -8,7 +8,9 @@ var A320_Neo_LowerECAM_DOOR;
             super();
             this.isInitialised = false;
         }
-        get templateID() { return "LowerECAMDOORTemplate"; }
+        get templateID() {
+            return "LowerECAMDOORTemplate";
+        }
         connectedCallback() {
             super.connectedCallback();
             TemplateElement.call(this, this.init.bind(this));

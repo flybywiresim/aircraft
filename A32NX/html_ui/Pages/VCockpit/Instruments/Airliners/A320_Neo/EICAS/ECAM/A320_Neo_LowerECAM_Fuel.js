@@ -40,7 +40,9 @@ var A320_Neo_LowerECAM_Fuel;
             this.isInitialised = false;
             this.allToggleElements = new Array();
         }
-        get templateID() { return "LowerECAMFuelTemplate"; }
+        get templateID() {
+            return "LowerECAMFuelTemplate";
+        }
         connectedCallback() {
             super.connectedCallback();
             TemplateElement.call(this, this.init.bind(this));
@@ -84,10 +86,11 @@ var A320_Neo_LowerECAM_Fuel;
             if (!this.isInitialised) {
                 return;
             }
-            let isInMetric = BaseAirliners.unitIsMetric(Aircraft.A320_NEO);
+            const isInMetric = BaseAirliners.unitIsMetric(Aircraft.A320_NEO);
             let factor = this.gallonToPounds;
-            if (isInMetric)
+            if (isInMetric) {
                 factor = this.gallonToKg;
+            }
             this.updateQuantity(this.FOBValue, "FUEL TOTAL QUANTITY", factor);
             this.updateQuantity(this.centerTankValue, "FUEL TANK CENTER QUANTITY", factor);
             this.updateQuantity(this.leftInnerTankValue, "FUEL TANK LEFT MAIN QUANTITY", factor);
@@ -96,7 +99,7 @@ var A320_Neo_LowerECAM_Fuel;
             this.updateQuantity(this.rightOuterTankValue, "FUEL TANK RIGHT AUX QUANTITY", factor);
             this.updateFuelFlow(factor);
             this.updateFuelConsumption(factor);
-            for (var i = 0; i < this.allToggleElements.length; ++i) {
+            for (let i = 0; i < this.allToggleElements.length; ++i) {
                 if (this.allToggleElements[i] != null) {
                     this.allToggleElements[i].refresh();
                 }
@@ -121,7 +124,7 @@ var A320_Neo_LowerECAM_Fuel;
             } else {
                 this.middlePump1.setAttribute("class", "ValvePumpInactive");
                 this.middlePump1_Off.setAttribute("class", "ValvePumpInactive");
-                this.middlePump1_Off.setAttribute("visibility", "visible");                
+                this.middlePump1_Off.setAttribute("visibility", "visible");
                 this.middlePump1_On.setAttribute("visibility", "hidden");
             }
 
@@ -138,16 +141,15 @@ var A320_Neo_LowerECAM_Fuel;
             } else {
                 this.middlePump2.setAttribute("class", "ValvePumpInactive");
                 this.middlePump2_Off.setAttribute("class", "ValvePumpInactive");
-                this.middlePump2_Off.setAttribute("visibility", "visible");                
+                this.middlePump2_Off.setAttribute("visibility", "visible");
                 this.middlePump2_On.setAttribute("visibility", "hidden");
             }
-            
+
             if (isInMetric) {
                 this.FOBUnit.textContent = "KG";
                 this.fuelFlowUnit.textContent = "KG/MIN";
                 this.middleFuelUnit.textContent = "KG";
-            }
-            else {
+            } else {
                 this.FOBUnit.textContent = "LBS";
                 this.fuelFlowUnit.textContent = "LBS/MIN";
                 this.middleFuelUnit.textContent = "LBS";
@@ -159,7 +161,7 @@ var A320_Neo_LowerECAM_Fuel;
             }
         }
         updateFuelFlow(_unitFactor) {
-            var totalFuelFlow = (SimVar.GetSimVarValue("ENG FUEL FLOW GPH:1", "gallons per hour") + SimVar.GetSimVarValue("ENG FUEL FLOW GPH:2", "gallons per hour")) * (_unitFactor / 60);
+            const totalFuelFlow = (SimVar.GetSimVarValue("ENG FUEL FLOW GPH:1", "gallons per hour") + SimVar.GetSimVarValue("ENG FUEL FLOW GPH:2", "gallons per hour")) * (_unitFactor / 60);
             this.fuelFlowValue.textContent = fastToFixed(totalFuelFlow, 0);
         }
         updateFuelConsumption(_unitFactor) {
@@ -174,13 +176,12 @@ var A320_Neo_LowerECAM_Fuel;
                 this.leftValveValue.textContent = fastToFixed(leftConsumptionShown, 0);
                 this.rightValveValue.textContent = fastToFixed(rightConsumptionShown, 0);
                 this.middleFuelValue.textContent = fastToFixed(totalConsumptionShown, 0);
-            }
-            else {
+            } else {
                 this.fuelLevels = SimVar.GetGameVarValue("AIRCRAFT INITIAL FUEL LEVELS", "FuelLevels");
             }
         }
         updateQuantity(_elem, _simvar, _unitFactor) {
-            var quantity = SimVar.GetSimVarValue(_simvar, "gallons");
+            let quantity = SimVar.GetSimVarValue(_simvar, "gallons");
             quantity *= _unitFactor;
             quantity -= quantity % 20;
             _elem.textContent = fastToFixed(quantity, 0);
@@ -199,4 +200,4 @@ var A320_Neo_LowerECAM_Fuel;
     A320_Neo_LowerECAM_Fuel.Page = Page;
 })(A320_Neo_LowerECAM_Fuel || (A320_Neo_LowerECAM_Fuel = {}));
 customElements.define("a320-neo-lower-ecam-fuel", A320_Neo_LowerECAM_Fuel.Page);
-//# sourceMappingURL=A320_Neo_LowerECAM_Fuel.js.map 
+//# sourceMappingURL=A320_Neo_LowerECAM_Fuel.js.map

@@ -1,6 +1,6 @@
 class CDUNewWaypoint {
     static ShowPage(mcdu) {
-        mcdu.clearDisplay()
+        mcdu.clearDisplay();
         mcdu.setTemplate([
             ["NEW WAYPOINT"],
             ["IDENT"],
@@ -15,10 +15,10 @@ class CDUNewWaypoint {
             ["", "RETURN>"],
             [""],
             [""]
-        ])
+        ]);
 
         mcdu.onRightInput[4] = () => {
-            CDUPilotsWaypoint.ShowPage(mcdu)
-        }
+            CDUPilotsWaypoint.ShowPage(mcdu);
+        };
     }
 }

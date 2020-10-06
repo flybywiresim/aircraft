@@ -20,6 +20,10 @@
 1. [ECAM] Improved lower engine ECAM - @lousybyte (lousybyte)
 1. [CDU] Add "Closest Airports" page - @lhoenig (Lukas Hoenig)
 1. [PFD] Fixed FD bars appearing on PFD when on the ground - @Curtis-VL (Curtis)
+1. [CDU] Added IRS Init page - @externoak (Externo)
+1. [OVHD] Implement additional overhead button/switch functionality (EMER ELEC, EVAC, air data switching, etc.) - @wpine215 (Iceman)
+1. [ECAM] Made open doors on DOOR/OXY page amber instead of green - @Benjozork (Benjamin Dupont)
+1. [PFD] Adjust vertical Flight Director offset - @veikkos (Veikko Soininen)
 1. [CDU] Revised blue, green and amber colors on CDU - @lucky38i (Lucky38i)
 1. [CDU] Revised INIT A & B Page - @lucky38i (Lucky38i)
 
