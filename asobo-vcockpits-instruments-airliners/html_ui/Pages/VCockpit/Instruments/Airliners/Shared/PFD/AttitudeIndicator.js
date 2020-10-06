@@ -144,10 +144,10 @@ class Jet_PFD_AttitudeIndicator extends HTMLElement {
                 borders.setAttribute("stroke-width", "3");
                 borders.setAttribute("stroke-opacity", "1");
                 this.pitch_root.appendChild(borders);
-                var x = -115;
-                var y = -122;
-                var w = 230;
-                var h = 235;
+                const x = -115;
+                const y = -122;
+                const w = 230;
+                const h = 235;
                 const attitudePitchContainer = document.createElementNS(Avionics.SVG.NS, "svg");
                 attitudePitchContainer.setAttribute("width", w.toString());
                 attitudePitchContainer.setAttribute("height", h.toString());
@@ -441,10 +441,10 @@ class Jet_PFD_AttitudeIndicator extends HTMLElement {
             {
                 this.pitch_root = document.createElementNS(Avionics.SVG.NS, "g");
                 pitchSvg.appendChild(this.pitch_root);
-                var x = -115;
-                var y = -120;
-                var w = 230;
-                var h = 265;
+                const x = -115;
+                const y = -120;
+                const w = 230;
+                const h = 265;
                 const attitudePitchContainer = document.createElementNS(Avionics.SVG.NS, "svg");
                 attitudePitchContainer.setAttribute("width", w.toString());
                 attitudePitchContainer.setAttribute("height", h.toString());
@@ -754,10 +754,10 @@ class Jet_PFD_AttitudeIndicator extends HTMLElement {
             {
                 this.pitch_root = document.createElementNS(Avionics.SVG.NS, "g");
                 pitchSvg.appendChild(this.pitch_root);
-                var x = (this.isHud) ? -130 : -115;
-                var y = (this.isHud) ? -100 : -120;
-                var w = (this.isHud) ? 260 : 230;
-                var h = (this.isHud) ? 310 : 280;
+                const x = (this.isHud) ? -130 : -115;
+                const y = (this.isHud) ? -100 : -120;
+                const w = (this.isHud) ? 260 : 230;
+                const h = (this.isHud) ? 310 : 280;
                 const attitudePitchContainer = document.createElementNS(Avionics.SVG.NS, "svg");
                 attitudePitchContainer.setAttribute("width", w.toString());
                 attitudePitchContainer.setAttribute("height", h.toString());
@@ -1130,10 +1130,10 @@ class Jet_PFD_AttitudeIndicator extends HTMLElement {
             {
                 this.pitch_root = document.createElementNS(Avionics.SVG.NS, "g");
                 pitchSvg.appendChild(this.pitch_root);
-                var x = -215;
-                var y = -175;
-                var w = 530;
-                var h = 365;
+                const x = -215;
+                const y = -175;
+                const w = 530;
+                const h = 365;
                 const attitudePitchContainer = document.createElementNS(Avionics.SVG.NS, "svg");
                 attitudePitchContainer.setAttribute("width", w.toString());
                 attitudePitchContainer.setAttribute("height", h.toString());
@@ -1462,7 +1462,7 @@ class Jet_PFD_AttitudeIndicator extends HTMLElement {
         }
     }
     updateRadioAltitude(_altitude) {
-        var xyz = Simplane.getOrientationAxis();
+        const xyz = Simplane.getOrientationAxis();
         const val = Math.floor(_altitude);
         if ((val <= 2500) && (Math.abs(xyz.bank) < Math.PI * 0.35)) {
             let textVal;
@@ -1516,26 +1516,26 @@ var Jet_PFD_FlightDirector;
             return this.isActive;
         }
         calculatePosXFromBank(_startBank, _targetBank) {
-            var bankDiff = _targetBank - _startBank;
-            var angleDiff = Math.abs(bankDiff) % 360;
+            const bankDiff = _targetBank - _startBank;
+            let angleDiff = Math.abs(bankDiff) % 360;
             if (angleDiff > 180) {
                 angleDiff = 360 - angleDiff;
             }
             if (angleDiff > DisplayBase.HEADING_MAX_ANGLE) {
                 angleDiff = DisplayBase.HEADING_MAX_ANGLE;
             }
-            var sign = (((bankDiff >= 0) && (bankDiff <= 180)) || ((bankDiff <= -180) && (bankDiff >= -360))) ? -1 : 1;
+            const sign = (((bankDiff >= 0) && (bankDiff <= 180)) || ((bankDiff <= -180) && (bankDiff >= -360))) ? -1 : 1;
             angleDiff *= sign;
-            var x = angleDiff * DisplayBase.HEADING_ANGLE_TO_POS;
+            const x = angleDiff * DisplayBase.HEADING_ANGLE_TO_POS;
             return x;
         }
         calculatePosYFromPitch(_startPitch, _targetPitch) {
-            var pitchDiff = _targetPitch - _startPitch;
-            var y = Utils.Clamp(pitchDiff * DisplayBase.PITCH_ANGLE_TO_POS, -DisplayBase.PITCH_MAX_POS_Y, DisplayBase.PITCH_MAX_POS_Y);
+            const pitchDiff = _targetPitch - _startPitch;
+            const y = Utils.Clamp(pitchDiff * DisplayBase.PITCH_ANGLE_TO_POS, -DisplayBase.PITCH_MAX_POS_Y, DisplayBase.PITCH_MAX_POS_Y);
             return y;
         }
         createCircle(_radius) {
-            var circle = document.createElementNS(Avionics.SVG.NS, "circle");
+            const circle = document.createElementNS(Avionics.SVG.NS, "circle");
             circle.setAttribute("cx", "0");
             circle.setAttribute("cy", "0");
             circle.setAttribute("r", _radius.toString());
@@ -1543,7 +1543,7 @@ var Jet_PFD_FlightDirector;
             return circle;
         }
         createLine(_x1, _y1, _x2, _y2) {
-            var line = document.createElementNS(Avionics.SVG.NS, "line");
+            const line = document.createElementNS(Avionics.SVG.NS, "line");
             line.setAttribute("x1", _x1.toString());
             line.setAttribute("y1", _y1.toString());
             line.setAttribute("x2", _x2.toString());
@@ -1579,7 +1579,7 @@ var Jet_PFD_FlightDirector;
             return "CommandBars";
         }
         create() {
-            var halfLineLength = this.getLineLength() * 0.5;
+            const halfLineLength = this.getLineLength() * 0.5;
             this.headingLine = this.createLine(0, -halfLineLength, 0, halfLineLength);
             this.group.appendChild(this.headingLine);
             this.pitchLine = this.createLine(-halfLineLength, 0, halfLineLength, 0);
@@ -1594,7 +1594,7 @@ var Jet_PFD_FlightDirector;
                     currentFDBank = 0;
                 }
                 this._fdBank += (currentFDBank - this._fdBank) * Math.min(1.0, _deltaTime * 0.001);
-                var lineX = Math.max(-1.0, Math.min(1.0, (currentPlaneBank - this._fdBank) / this.getFDBankLimit())) * this.getFDBankDisplayLimit();
+                const lineX = Math.max(-1.0, Math.min(1.0, (currentPlaneBank - this._fdBank) / this.getFDBankLimit())) * this.getFDBankDisplayLimit();
                 this.headingLine.setAttribute("transform", "translate(" + lineX + ", 0)");
             }
             if (this.pitchLine != null) {
@@ -1612,7 +1612,7 @@ var Jet_PFD_FlightDirector;
                     currentFDPitch = currentPlanePitch;
                 }
                 this._fdPitch += (currentFDPitch - this._fdPitch) * Math.min(1.0, _deltaTime * 0.001);
-                var lineY = this.calculatePosYFromPitch(currentPlanePitch, this._fdPitch);
+                const lineY = this.calculatePosYFromPitch(currentPlanePitch, this._fdPitch);
                 this.pitchLine.setAttribute("transform", "translate(0, " + lineY + ")");
             }
         }
@@ -1673,9 +1673,9 @@ var Jet_PFD_FlightDirector;
             return "PathVector";
         }
         create() {
-            var circleRadius = this.getCircleRadius();
-            var verticalLineLength = this.getVerticalLineLength();
-            var horizontalLineLength = this.getHorizontalLineLength();
+            const circleRadius = this.getCircleRadius();
+            const verticalLineLength = this.getVerticalLineLength();
+            const horizontalLineLength = this.getHorizontalLineLength();
             this.group.appendChild(this.createCircle(circleRadius));
             this.group.appendChild(this.createLine(-circleRadius, 0, -(circleRadius + horizontalLineLength), 0));
             this.group.appendChild(this.createLine(circleRadius, 0, (circleRadius + horizontalLineLength), 0));
@@ -1683,18 +1683,18 @@ var Jet_PFD_FlightDirector;
         }
         refresh(_deltaTime) {
             if (this.group != null) {
-                var originalBodyVelocityZ = SimVar.GetSimVarValue("VELOCITY BODY Z", "feet per second");
+                const originalBodyVelocityZ = SimVar.GetSimVarValue("VELOCITY BODY Z", "feet per second");
                 if (originalBodyVelocityZ >= PathVectorDisplay.MIN_SPEED_TO_DISPLAY) {
-                    var originalBodyVelocityX = SimVar.GetSimVarValue("VELOCITY BODY X", "feet per second");
-                    var originalBodyVelocityY = SimVar.GetSimVarValue("VELOCITY WORLD Y", "feet per second");
-                    var originalBodyVelocityXSquared = originalBodyVelocityX * originalBodyVelocityX;
-                    var originalBodyVelocityYSquared = originalBodyVelocityY * originalBodyVelocityY;
-                    var originalBodyVelocityZSquared = originalBodyVelocityZ * originalBodyVelocityZ;
-                    var currentHeading = 0;
+                    const originalBodyVelocityX = SimVar.GetSimVarValue("VELOCITY BODY X", "feet per second");
+                    const originalBodyVelocityY = SimVar.GetSimVarValue("VELOCITY WORLD Y", "feet per second");
+                    const originalBodyVelocityXSquared = originalBodyVelocityX * originalBodyVelocityX;
+                    const originalBodyVelocityYSquared = originalBodyVelocityY * originalBodyVelocityY;
+                    const originalBodyVelocityZSquared = originalBodyVelocityZ * originalBodyVelocityZ;
+                    let currentHeading = 0;
                     {
                         var bodyNorm = Math.sqrt(originalBodyVelocityXSquared + originalBodyVelocityZSquared);
                         var bodyNormInv = 1 / bodyNorm;
-                        var bodyVelocityX = originalBodyVelocityX * bodyNormInv;
+                        const bodyVelocityX = originalBodyVelocityX * bodyNormInv;
                         var bodyVelocityZ = originalBodyVelocityZ * bodyNormInv;
                         bodyNorm = Math.sqrt((bodyVelocityX * bodyVelocityX) + (bodyVelocityZ * bodyVelocityZ));
                         var angle = bodyVelocityZ / bodyNorm;
@@ -1704,11 +1704,11 @@ var Jet_PFD_FlightDirector;
                             currentHeading *= -1;
                         }
                     }
-                    var currentPitch = 0;
+                    let currentPitch = 0;
                     {
                         var bodyNorm = Math.sqrt(originalBodyVelocityYSquared + originalBodyVelocityZSquared);
                         var bodyNormInv = 1 / bodyNorm;
-                        var bodyVelocityY = originalBodyVelocityY * bodyNormInv;
+                        const bodyVelocityY = originalBodyVelocityY * bodyNormInv;
                         var bodyVelocityZ = originalBodyVelocityZ * bodyNormInv;
                         bodyNorm = Math.sqrt((bodyVelocityY * bodyVelocityY) + (bodyVelocityZ * bodyVelocityZ));
                         var angle = bodyVelocityZ / bodyNorm;
@@ -1718,8 +1718,8 @@ var Jet_PFD_FlightDirector;
                             currentPitch *= -1;
                         }
                     }
-                    var x = this.calculatePosXFromBank(currentHeading, 0);
-                    var y = this.calculatePosYFromPitch(currentPitch, 0);
+                    const x = this.calculatePosXFromBank(currentHeading, 0);
+                    const y = this.calculatePosYFromPitch(currentPitch, 0);
                     this.group.setAttribute("transform", "translate(" + x + ", " + y + ")");
                 } else {
                     this.group.setAttribute("transform", "translate(0, 0)");
@@ -1762,8 +1762,8 @@ var Jet_PFD_FlightDirector;
         }
         create() {
             this.group.appendChild(this.createCircle(FPD_Airbus.CIRCLE_RADIUS));
-            var path = document.createElementNS(Avionics.SVG.NS, "path");
-            var d = [
+            const path = document.createElementNS(Avionics.SVG.NS, "path");
+            const d = [
                 "M", -(FPD_Airbus.LINE_LENGTH * 0.5), ", 0",
                 " l", -FPD_Airbus.TRIANGLE_LENGTH, ",", -(FPD_Airbus.TRIANGLE_HEIGHT * 0.5),
                 " l0,", FPD_Airbus.TRIANGLE_HEIGHT,
@@ -1779,9 +1779,9 @@ var Jet_PFD_FlightDirector;
         }
         refresh(_deltaTime) {
             if (this.group != null) {
-                var x = this.calculatePosXFromBank(Simplane.getBank(), Simplane.getFlightDirectorBank());
-                var y = this.calculatePosYFromPitch(Simplane.getPitch(), Simplane.getFlightDirectorPitch());
-                var angle = -Simplane.getBank();
+                const x = this.calculatePosXFromBank(Simplane.getBank(), Simplane.getFlightDirectorBank());
+                const y = this.calculatePosYFromPitch(Simplane.getPitch(), Simplane.getFlightDirectorPitch());
+                const angle = -Simplane.getBank();
                 this.group.setAttribute("transform", "translate(" + x + ", " + y + ") rotate(" + angle + ")");
             }
         }
@@ -1798,8 +1798,8 @@ var Jet_PFD_FlightDirector;
             return "FlightPathAngle";
         }
         create() {
-            var path = document.createElementNS(Avionics.SVG.NS, "path");
-            var d = [
+            const path = document.createElementNS(Avionics.SVG.NS, "path");
+            const d = [
                 "M", -FPA_Boeing.LINE_OFFSET.x, ",", -FPA_Boeing.LINE_OFFSET.y,
                 " l", -FPA_Boeing.LINE_LENGTH, ",0",
                 " m0,", (FPA_Boeing.LINE_OFFSET.y * 2),
@@ -1815,7 +1815,7 @@ var Jet_PFD_FlightDirector;
         }
         refresh(_deltaTime) {
             if (this.group != null) {
-                var y = this.calculatePosYFromPitch(0, Simplane.getAutoPilotFlightPathAngle());
+                const y = this.calculatePosYFromPitch(0, Simplane.getAutoPilotFlightPathAngle());
                 this.group.setAttribute("transform", "translate(0, " + y + ") rotate(0)");
             }
         }
@@ -1835,7 +1835,7 @@ var Jet_PFD_FlightDirector;
             this.root = _root;
             if (this.root != null) {
                 this.initDefaultValues();
-                var group = document.createElementNS(Avionics.SVG.NS, "g");
+                const group = document.createElementNS(Avionics.SVG.NS, "g");
                 group.setAttribute("id", "FlightDirectorDisplay");
                 group.setAttribute("transform", "translate(0, " + this.fFDPitchOffset + ")");
                 this.createDisplayModes(group);
@@ -1844,7 +1844,7 @@ var Jet_PFD_FlightDirector;
         }
         refresh(_deltaTime) {
             this.refreshActiveModes();
-            for (var mode = 0; mode < this.displayMode.length; ++mode) {
+            for (let mode = 0; mode < this.displayMode.length; ++mode) {
                 if ((this.displayMode[mode] != null) && this.displayMode[mode].active) {
                     this.displayMode[mode].refresh(_deltaTime);
                 }
@@ -1864,8 +1864,8 @@ var Jet_PFD_FlightDirector;
             this.displayMode.push(new FPD_Airbus(_group));
         }
         refreshActiveModes() {
-            var fdActive = (Simplane.getAutoPilotFlightDirectorActive(1));
-            var trkfpaMode = Simplane.getAutoPilotTRKFPAModeActive();
+            const fdActive = (Simplane.getAutoPilotFlightDirectorActive(1));
+            const trkfpaMode = Simplane.getAutoPilotTRKFPAModeActive();
             this.setModeActive(0, fdActive && !trkfpaMode);
             this.setModeActive(1, trkfpaMode);
             this.setModeActive(2, fdActive && trkfpaMode);
@@ -1881,7 +1881,7 @@ var Jet_PFD_FlightDirector;
             this.displayMode.push(new FPV_Boeing(_group));
         }
         refreshActiveModes() {
-            var fdActive = (Simplane.getAutoPilotFlightDirectorActive(1));
+            const fdActive = (Simplane.getAutoPilotFlightDirectorActive(1));
             this.setModeActive(0, fdActive);
             this.setModeActive(1, fdActive && Simplane.getAutoPilotFPAModeActive());
         }
@@ -1897,8 +1897,8 @@ var Jet_PFD_FlightDirector;
             this.displayMode.push(new FPA_Boeing(_group));
         }
         refreshActiveModes() {
-            var fdActive = (Simplane.getAutoPilotFlightDirectorActive(1));
-            var fpaMode = Simplane.getAutoPilotFPAModeActive();
+            const fdActive = (Simplane.getAutoPilotFlightDirectorActive(1));
+            const fpaMode = Simplane.getAutoPilotFPAModeActive();
             this.setModeActive(0, fdActive);
             this.setModeActive(1, fdActive && fpaMode);
             this.setModeActive(2, fdActive && fpaMode);

@@ -3,6 +3,7 @@
         "browser": true,
         "es2021": true
     },
+    // DO NOT CHANGE THIS FILE (unless you are an admin) (if admin, make sure you change the same file in the latest asobo branch as well)
     "rules": {
         "indent": [
             "error",
@@ -15,6 +16,7 @@
             "error",
             "unix"
         ],
+        // No quotes option is really fully consistent, so probably best to jsut not enforce either type
         "quotes": "off",
         "semi": [
             "error",
@@ -46,6 +48,8 @@
         "semi-spacing": "error",
         "no-mixed-spaces-and-tabs": "error",
         "no-multi-spaces": "error",
+        // There are too many vars that cant be autofixed
+        "no-var": "off",
         "prefer-const": [
             "error",
             {
@@ -58,6 +62,14 @@
         "eol-last": [
             "error",
             "never"
+        ],
+        "no-multiple-empty-lines": [
+            "error",
+            {
+                "max": 1,
+                "maxBOF": 0,
+                "maxEOF": 0
+            }
         ]
     }
 }

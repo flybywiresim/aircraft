@@ -32,7 +32,7 @@ class NearestAirport extends NearestWaypoint {
         return this._svgMapElement;
     }
     imageFileName() {
-        var fName = "ICON_MAP_AIRPORT_UNKNOWN_PINK.svg";
+        let fName = "ICON_MAP_AIRPORT_UNKNOWN_PINK.svg";
         if (this.airportClass === 1) {
             if (this.towered) {
                 if (this.fuel1 !== "" || this.fuel2 !== "") {
@@ -105,7 +105,7 @@ class FullDataNearestAirportList {
         }
     }
     LoadData() {
-        var instrId = this.instrument.instrumentIdentifier;
+        const instrId = this.instrument.instrumentIdentifier;
         switch (this.loadState) {
             case 0:
                 this._referentialLat = SimVar.GetSimVarValue("GPS POSITION LAT", "degree latitude", instrId);
@@ -121,8 +121,8 @@ class FullDataNearestAirportList {
                     for (var j = 0; j < this.airports.length; j++) {
                         this.airports[j].toDelete = true;
                     }
-                    for (var i = 0; i < _Values.length; i++) {
-                        var found = false;
+                    for (let i = 0; i < _Values.length; i++) {
+                        let found = false;
                         for (var j = 0; j < this.airports.length && !found; j++) {
                             if (this.airports[j].GetInfos().icao == _Values[i][2]) {
                                 found = true;
@@ -135,7 +135,7 @@ class FullDataNearestAirportList {
                             }
                         }
                         if (!found) {
-                            var airport = new FullDataAirport(this.instrument);
+                            const airport = new FullDataAirport(this.instrument);
                             airport.toDelete = false;
                             airport.type = 'A';
                             airport.ident = _Values[i][3];
@@ -199,15 +199,15 @@ class NearestAirportList {
         }
     }
     GetTable(_startIndex, _prefix) {
-        var html = "";
-        var index;
-        for (var i = 0; i < 3; i++) {
+        let html = "";
+        let index;
+        for (let i = 0; i < 3; i++) {
             index = i + _startIndex;
             html += "<tr>";
             if (index > this.airports.length) {
                 html += "<td></td><td></td><td></td><td></td><td></td>";
             } else {
-                var logo = "";
+                let logo = "";
                 if (this.airports[index].airportClass == 2 || this.airports[index].airportClass == 3) {
                     logo = "GPS/Airport_Soft.bmp";
                 } else if (this.airports[index].airportClass == 1) {
@@ -252,7 +252,7 @@ class NearestAirportList {
         return html;
     }
     LoadData() {
-        var instrId = this.instrument.instrumentIdentifier;
+        const instrId = this.instrument.instrumentIdentifier;
         switch (this.loadState) {
             case 0:
                 SimVar.SetSimVarValue("C:fs9gps:NearestAirportCurrentLatitude", "degree latitude", SimVar.GetSimVarValue("GPS POSITION LAT", "degree latitude", instrId), instrId);
@@ -260,7 +260,7 @@ class NearestAirportList {
                 SimVar.SetSimVarValue("C:fs9gps:NearestAirportMaximumItems", "number", this.nbMax, instrId);
                 SimVar.SetSimVarValue("C:fs9gps:NearestAirportMaximumDistance", "nautical miles", this.milesDistance, instrId);
                 SimVar.GetSimVarArrayValues(this.airportLineBatch, function (_Values) {
-                    for (var i = 0; i < _Values.length; i++) {
+                    for (let i = 0; i < _Values.length; i++) {
                         if (this.airports.length < i + 1) {
                             this.airports.push(new NearestAirport(this.instrument));
                         }
@@ -282,7 +282,7 @@ class NearestAirportList {
                     }
                 }.bind(this), instrId);
                 SimVar.GetSimVarArrayValues(this.airportSelectedBatch, function (_Values) {
-                    for (var i = 0; i < _Values.length; i++) {
+                    for (let i = 0; i < _Values.length; i++) {
                         if (this.airports.length < i + 1) {
                             this.airports.push(new NearestAirport(this.instrument));
                         }
@@ -352,9 +352,9 @@ class NearestIntersectionList {
         }
     }
     GetTable(_startIndex, _prefix) {
-        var html = "";
-        var index;
-        for (var i = 0; i < 5; i++) {
+        let html = "";
+        let index;
+        for (let i = 0; i < 5; i++) {
             index = i + _startIndex;
             html += "<tr>";
             if (index > this.intersections.length) {
@@ -370,7 +370,7 @@ class NearestIntersectionList {
         return html;
     }
     LoadData() {
-        var instrId = this.instrument.instrumentIdentifier;
+        const instrId = this.instrument.instrumentIdentifier;
         switch (this.loadState) {
             case 0:
                 SimVar.SetSimVarValue("C:fs9gps:NearestIntersectionCurrentLatitude", "degree latitude", SimVar.GetSimVarValue("GPS POSITION LAT", "degree latitude", instrId), instrId);
@@ -382,8 +382,8 @@ class NearestIntersectionList {
             case 1:
                 SimVar.GetSimVarArrayValues(this.batch, function (_Values) {
                     this.intersections = [];
-                    for (var i = 0; i < _Values.length; i++) {
-                        var intersection = new NearestIntersection(instrId);
+                    for (let i = 0; i < _Values.length; i++) {
+                        const intersection = new NearestIntersection(instrId);
                         intersection.icao = _Values[i][0];
                         intersection.ident = _Values[i][1];
                         intersection.distance = _Values[i][2];
@@ -452,9 +452,9 @@ class NearestNDBList {
         }
     }
     GetTable(_startIndex, _prefix) {
-        var html = "";
-        var index;
-        for (var i = 0; i < 5; i++) {
+        let html = "";
+        let index;
+        for (let i = 0; i < 5; i++) {
             index = i + _startIndex;
             html += "<tr>";
             if (index > this.ndbs.length) {
@@ -471,7 +471,7 @@ class NearestNDBList {
         return html;
     }
     LoadData() {
-        var instrId = this.instrument.instrumentIdentifier;
+        const instrId = this.instrument.instrumentIdentifier;
         switch (this.loadState) {
             case 0:
                 SimVar.SetSimVarValue("C:fs9gps:NearestNdbCurrentLatitude", "degree latitude", SimVar.GetSimVarValue("GPS POSITION LAT", "degree latitude", instrId), instrId);
@@ -480,7 +480,7 @@ class NearestNDBList {
                 SimVar.SetSimVarValue("C:fs9gps:NearestNdbMaximumDistance", "nautical miles", this.milesDistance, instrId);
                 SimVar.GetSimVarArrayValues(this.ndbLinesBatch, function (_Values) {
                     this.ndbs = [];
-                    for (var i = 0; i < _Values.length; i++) {
+                    for (let i = 0; i < _Values.length; i++) {
                         if (i > this.ndbs.length - 1) {
                             this.ndbs.push(new NearestNDB(this.instrument));
                         }
@@ -497,7 +497,7 @@ class NearestNDBList {
                     this.loadState++;
                 }.bind(this), instrId);
                 SimVar.GetSimVarArrayValues(this.ndbSelectedBatch, function (_Values) {
-                    for (var i = 0; i < _Values.length; i++) {
+                    for (let i = 0; i < _Values.length; i++) {
                         if (i > this.ndbs.length - 1) {
                             this.ndbs.push(new NearestVOR(this.instrument));
                         }
@@ -574,16 +574,16 @@ class NearestVORList {
         }
     }
     GetTable(_startIndex, _prefix) {
-        var html = "";
-        var index;
-        for (var i = 0; i < 5; i++) {
+        let html = "";
+        let index;
+        for (let i = 0; i < 5; i++) {
             index = i + _startIndex;
             html += "<tr>";
             if (index > this.vors.length) {
                 html += "<td></td><td></td><td></td><td></td><td></td>";
             } else {
                 html += '<td class="SelectableElement" id="' + _prefix + "_" + i + '">' + this.vors[index].ident + '</td>';
-                var image = this.vors[index].imageFileName();
+                const image = this.vors[index].imageFileName();
                 html += '<td> <img src="/Pages/VCockpit/Instruments/NavSystems/Shared/Images/' + image + '"></td>';
                 html += '<td>' + fastToFixed(this.vors[index].bearing, 0) + '<div class="Align unit">o<br />M</div></td>';
                 html += '<td>' + fastToFixed(this.vors[index].distance, 1) + '<div class="Align unit">n<br />m</div></td>';
@@ -594,7 +594,7 @@ class NearestVORList {
         return html;
     }
     LoadData() {
-        var instrId = this.instrument.instrumentIdentifier;
+        const instrId = this.instrument.instrumentIdentifier;
         switch (this.loadState) {
             case 0:
                 SimVar.SetSimVarValue("C:fs9gps:NearestVorCurrentLatitude", "degree latitude", SimVar.GetSimVarValue("GPS POSITION LAT", "degree latitude", instrId), instrId);
@@ -602,7 +602,7 @@ class NearestVORList {
                 SimVar.SetSimVarValue("C:fs9gps:NearestVorMaximumItems", "number", this.nbMax, instrId);
                 SimVar.SetSimVarValue("C:fs9gps:NearestVorMaximumDistance", "nautical miles", this.milesDistance, instrId);
                 SimVar.GetSimVarArrayValues(this.vorLinesBatch, function (_Values) {
-                    for (var i = 0; i < _Values.length; i++) {
+                    for (let i = 0; i < _Values.length; i++) {
                         if (i > this.vors.length - 1) {
                             this.vors.push(new NearestVOR(this.instrument));
                         }
@@ -620,7 +620,7 @@ class NearestVORList {
                     this.loadState++;
                 }.bind(this), instrId);
                 SimVar.GetSimVarArrayValues(this.vorSelectedBatch, function (_Values) {
-                    for (var i = 0; i < _Values.length; i++) {
+                    for (let i = 0; i < _Values.length; i++) {
                         if (i > this.vors.length - 1) {
                             this.vors.push(new NearestVOR(this.instrument));
                         }
@@ -688,7 +688,7 @@ class NearestAirspaceList {
         }
     }
     LoadData() {
-        var instrId = this.instrument.instrumentIdentifier;
+        const instrId = this.instrument.instrumentIdentifier;
         switch (this.loadState) {
             case 0:
                 SimVar.SetSimVarValue("C:fs9gps:NearestAirspaceCurrentLatitude", "degree latitude", SimVar.GetSimVarValue("GPS POSITION LAT", "degree latitude", instrId), instrId);
@@ -707,8 +707,8 @@ class NearestAirspaceList {
             case 1:
                 SimVar.GetSimVarArrayValues(this.batch, function (_Values) {
                     this.airspaces = [];
-                    for (var i = 0; i < _Values.length && i < 100; i++) {
-                        var airspace = new NearestAirspace();
+                    for (let i = 0; i < _Values.length && i < 100; i++) {
+                        const airspace = new NearestAirspace();
                         airspace.name = Utils.Translate(_Values[i][0]);
                         airspace.ident = (airspace.name + "_" + i).replace(new RegExp(" ", "g"), "");
                         airspace.ident = airspace.ident.replace(new RegExp("/", "g"), "");
