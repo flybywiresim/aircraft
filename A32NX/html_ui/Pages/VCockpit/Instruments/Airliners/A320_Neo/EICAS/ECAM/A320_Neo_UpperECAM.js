@@ -96,7 +96,7 @@ var A320_Neo_UpperECAM;
         getADIRSMins() {
             const secs = SimVar.GetSimVarValue("L:A320_Neo_ADIRS_TIME", "seconds");
             const mins = Math.ceil(secs/60);
-            if (secs > 0) return mins;
+            if (secs > 0 && SimVar.GetSimVarValue("L:A320_Neo_ADIRS_IN_ALIGN", "Bool")) return mins;
             else return -1;
         }
         engineFailed(_engine) {
