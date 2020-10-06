@@ -9,7 +9,9 @@ var A320_Neo_LowerECAM_APU;
             super();
             this.isInitialised = false;
         }
-        get templateID() { return "LowerECAMAPUTemplate"; }
+        get templateID() {
+            return "LowerECAMAPUTemplate";
+        }
         connectedCallback() {
             super.connectedCallback();
             TemplateElement.call(this, this.init.bind(this));
@@ -69,9 +71,9 @@ var A320_Neo_LowerECAM_APU;
             const apuFlapOpenPercent = SimVar.GetSimVarValue("L:APU_FLAP_OPEN", "Percent");
 
             //Bleed
-            const currentAPUBleedState = SimVar.GetSimVarValue("BLEED AIR APU","Bool")
+            const currentAPUBleedState = SimVar.GetSimVarValue("BLEED AIR APU","Bool");
             if (currentAPUBleedState !== this.lastAPUBleedState) {
-                this.lastAPUBleedState = currentAPUBleedState
+                this.lastAPUBleedState = currentAPUBleedState;
                 if (currentAPUBleedState === 1) {
                     this.APUBleedOn.setAttribute("visibility", "visible");
                     this.APUBleedOff.setAttribute("visibility", "hidden");
@@ -134,7 +136,7 @@ var A320_Neo_LowerECAM_APU;
             this.APUWarm = false;
 
             //APU N Gauge
-            var gaugeDef1 = new A320_Neo_ECAM_Common.GaugeDefinition();
+            const gaugeDef1 = new A320_Neo_ECAM_Common.GaugeDefinition();
             gaugeDef1.arcSize = 180;
             gaugeDef1.startAngle = -210;
             gaugeDef1.currentValuePrecision = 0;
@@ -153,13 +155,13 @@ var A320_Neo_LowerECAM_APU;
             this.apuNGauge.addGraduation(0, true, "0");
             this.apuNGauge.addGraduation(50, true);
             this.apuNGauge.addGraduation(100, true, "10");
-            this.apuNGauge.active = false
+            this.apuNGauge.active = false;
             if (_gaugeDiv != null) {
                 _gaugeDiv.appendChild(this.apuNGauge);
             }
 
             //APU EGT Gauge
-            var gaugeDef2 = new A320_Neo_ECAM_Common.GaugeDefinition();
+            const gaugeDef2 = new A320_Neo_ECAM_Common.GaugeDefinition();
             gaugeDef2.arcSize = 200;
             gaugeDef2.startAngle = -210;
             gaugeDef2.currentValuePrecision = 0;
@@ -180,42 +182,42 @@ var A320_Neo_LowerECAM_APU;
             this.apuEGTGauge.addGraduation(700, true, "7");
             this.apuEGTGauge.addGraduation(1000, true, "10");
             this.apuEGTGauge.addGraduation(1100,false,"",true,true,"EGTWarn");
-            this.apuEGTGauge.active = false
+            this.apuEGTGauge.active = false;
             if (_gaugeDiv != null) {
                 _gaugeDiv.appendChild(this.apuEGTGauge);
             }
 
             // Last state tracking inits to -1 since we don't know what the state is.
             // The first update sets it correctly for us.
-            this.lastAPUMasterState = -1
-            this.apuShuttingDown = false
-            this.apuInactiveTimer = -1
+            this.lastAPUMasterState = -1;
+            this.apuShuttingDown = false;
+            this.apuInactiveTimer = -1;
         }
 
         update(_deltaTime) {
             //Update gauges
-            var currentAPUMasterState = SimVar.GetSimVarValue("FUELSYSTEM VALVE SWITCH:8", "Bool");
+            const currentAPUMasterState = SimVar.GetSimVarValue("FUELSYSTEM VALVE SWITCH:8", "Bool");
             if ((currentAPUMasterState !== this.lastAPUMasterState)) {
-                this.lastAPUMasterState = currentAPUMasterState
+                this.lastAPUMasterState = currentAPUMasterState;
                 if (currentAPUMasterState === 1) {
-                    this.apuInactiveTimer = 3
-                    this.apuShuttingDown = false
+                    this.apuInactiveTimer = 3;
+                    this.apuShuttingDown = false;
                 } else {
-                    this.apuShuttingDown = true
+                    this.apuShuttingDown = true;
                 }
             }
 
             if (this.apuShuttingDown && this.getAPUN() === 0) {
-                this.apuEGTGauge.active = false
-                this.apuNGauge.active = false
+                this.apuEGTGauge.active = false;
+                this.apuNGauge.active = false;
             }
 
             if (this.apuInactiveTimer >= 0) {
-                this.apuInactiveTimer -= _deltaTime/1000
+                this.apuInactiveTimer -= _deltaTime / 1000;
                 if (this.apuInactiveTimer <= 0) {
-                    this.apuInactiveTimer = -1
-                    this.apuEGTGauge.active = true
-                    this.apuNGauge.active = true
+                    this.apuInactiveTimer = -1;
+                    this.apuEGTGauge.active = true;
+                    this.apuNGauge.active = true;
                 }
             }
 
@@ -230,65 +232,64 @@ var A320_Neo_LowerECAM_APU;
         }
 
         //function accepts ID of the marker and returns an array with ID and EGT
-        getAPUEGTWarn(_id){
-            var n = this.getAPUN();
-            var ID_EGT = [];
+        getAPUEGTWarn(_id) {
+            const n = this.getAPUN();
+            const ID_EGT = [];
             ID_EGT.push(_id);
-            if(n < 11){
+            if (n < 11) {
                 ID_EGT.push(1100);
                 return ID_EGT;
-            }
-            else if(n <= 15){
-                ID_EGT.push(((-50*n)+1650));
+            } else if (n <= 15) {
+                ID_EGT.push(((-50 * n) + 1650));
                 return ID_EGT;
-            }
-            else if(n <= 65){
-                ID_EGT.push(((-3*n)+945));
+            } else if (n <= 65) {
+                ID_EGT.push(((-3 * n) + 945));
                 return ID_EGT;
-            }
-            else{
-                ID_EGT.push(((-30/7*n)+1028.6));
+            } else {
+                ID_EGT.push(((-30 / 7 * n) + 1028.6));
                 return ID_EGT;
             }
         }
         //Calculates the APU EGT Based on the RPM, APU now reaches peak EGT of 765'C
         getAPUEGTRaw(startup) {
-            var n = this.getAPUN();
+            const n = this.getAPUN();
             if (startup) {
                 if (n < 10) {
                     return 10;
-                } else if(n <= 14){
-                    return (90/6*n) - 140;
+                } else if (n <= 14) {
+                    return (90 / 6 * n) - 140;
                 } else if (n <= 20) {
-                    return (215/4*n) - 760;
-                } else if(n <= 32){
-                    return (420/11*n) - 481.8;
+                    return (215 / 4 * n) - 760;
+                } else if (n <= 32) {
+                    return (420 / 11 * n) - 481.8;
                 } else if (n <= 36) {
-                    return (20/3*n) + 525;
+                    return (20 / 3 * n) + 525;
                 } else if (n <= 43) {
-                    return (-15/6*n) + 888.3;
-                } else if(n <= 50){
-                    return (3*n) + 618;
-                } else if(n <= 74){
-                    return (-100/13*n) + 1152.3;
+                    return (-15 / 6 * n) + 888.3;
+                } else if (n <= 50) {
+                    return (3 * n) + 618;
+                } else if (n <= 74) {
+                    return (-100 / 13 * n) + 1152.3;
                 } else {
-                    return (-104/10*n) + 1430;
+                    return (-104 / 10 * n) + 1430;
                 }
             } else {
-                return (18/5*n) + 35;
+                return (18 / 5 * n) + 35;
             }
         }
 
         getAPUEGT() {
-            let ambient = SimVar.GetSimVarValue("AMBIENT TEMPERATURE", "celsius");
+            const ambient = SimVar.GetSimVarValue("AMBIENT TEMPERATURE", "celsius");
 
-            var n = this.getAPUN();
-            var egt = (Math.round(this.getAPUEGTRaw(this.lastN <= n)));
+            const n = this.getAPUN();
+            const egt = (Math.round(this.getAPUEGTRaw(this.lastN <= n)));
             this.lastN = n;
             if (this.APUWarm && egt < 100) {
                 return 100;
             } else {
-                if (n > 1) this.APUWarm = false;
+                if (n > 1) {
+                    this.APUWarm = false;
+                }
                 // range from getAPUEGTRaw is 10~900 C
                 return ambient + (egt - 10);
             }
