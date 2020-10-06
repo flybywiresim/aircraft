@@ -29,6 +29,6 @@ jobs:
           python3 build.py
       - uses: actions/upload-artifact@v2
         with:
-          name: A32NX
+          name: A32NX-PR
           path: ./A32NX/
 
