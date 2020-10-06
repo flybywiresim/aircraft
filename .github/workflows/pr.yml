@@ -1,0 +1,16 @@
+name: PR
+on:
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v2
+      - name: install
+        run: npm install
+      - name: lint
+        run: npm run lint

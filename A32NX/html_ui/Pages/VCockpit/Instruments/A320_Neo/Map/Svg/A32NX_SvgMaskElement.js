@@ -26,7 +26,7 @@ class SvgBottomMaskElement extends SvgMaskElement {
             this.name = (Math.random() * 10).toFixed(0).padStart(10, "0");
         }
         this.createDrawCallback = (map) => {
-            let rect = document.createElementNS(Avionics.SVG.NS, "rect");
+            const rect = document.createElementNS(Avionics.SVG.NS, "rect");
             rect.id = this.id(map);
             rect.setAttribute("x", offsetX.toString());
             rect.setAttribute("y", (530 + offsetY).toString());
@@ -55,14 +55,15 @@ class SvgPlanMaskElement extends SvgMaskElement {
             this.path.setAttribute("y", "0");
             this.path.setAttribute("fill", "url(#Backlight)");
             this.path.setAttribute("transform", "translate(" + offsetX + " " + offsetY + ")");
-            let d = "M 0,0 V 1000 H 1000 V 0 Z m 500,282.07812 c 44.58849,0.034 88.09441,13.74154 124.64648,39.27735 H 774.50781 V 778.27148 H 225.49219 V 321.35547 H 375.64062 C 412.1126,295.87541 455.50922,282.16887 500,282.07812 Z";
+            const d = "M 0,0 V 1000 H 1000 V 0 Z m 500,282.07812 c 44.58849,0.034 88.09441,13.74154 124.64648,39.27735 H 774.50781 V 778.27148 H 225.49219 V 321.35547 H 375.64062 C 412.1126,295.87541 455.50922,282.16887 500,282.07812 Z";
             this.path.setAttribute("d", d);
             return this.path;
         };
     }
     offset(offsetX, offsetY) {
-        if (this.path)
+        if (this.path) {
             this.path.setAttribute("transform", "translate(" + offsetX + " " + offsetY + ")");
+        }
     }
     id(map) {
         return "mask-" + this.name + "-map-" + map.index;
