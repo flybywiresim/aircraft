@@ -24,7 +24,8 @@
 1. [OVHD] Implement additional overhead button/switch functionality (EMER ELEC, EVAC, air data switching, etc.) - @wpine215 (Iceman)
 1. [ECAM] Made open doors on DOOR/OXY page amber instead of green - @Benjozork (Benjamin Dupont)
 1. [PFD] Adjust vertical Flight Director offset - @veikkos (Veikko Soininen)
-
+1. [PFD] Added the ability to display metric altitudes - @lousybyte (lousybyte)
+   
 ## 2020/09
 1. [General] Add CHANGELOG.md - @nathaninnes (Nathan Innes)
 1. [ECAM] Improved Upper ECAM Visuals - @wpine215 (Iceman)
