@@ -27,11 +27,7 @@
         }
     ],
     "content_type": "AIRCRAFT",
-<<<<<<< HEAD
     "total_package_size": "00000000000143306327",
-=======
-    "total_package_size": "00000000000143325509",
->>>>>>> 199c4ca0f1e732c806af60fe691f8bc64315ed86
     "minimum_game_version": "1.7.12",
     "manufacturer": "Airbus"
 }
