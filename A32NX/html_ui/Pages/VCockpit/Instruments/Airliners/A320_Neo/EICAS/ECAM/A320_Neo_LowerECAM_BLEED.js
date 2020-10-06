@@ -271,7 +271,7 @@ var A320_Neo_LowerECAM_BLEED;
 
             const packTemperatureVariationAPU = ((((packRequestedTemp / packTMPComputedOut[2]) * this.packOutMultiplierApu) - this.packOutMultiplierApu));
             this.packOutMultiplierApu += packTemperatureVariationAPU * (this.temperatureVariationSpeed * (0.8 + (currentPackFlow * 0.2)));
-            
+
             switch (packRequestedlvl) {
                 case 0:
                     this.setPackIndicators(1, 0, 0, 0, 0, 0, 0);
