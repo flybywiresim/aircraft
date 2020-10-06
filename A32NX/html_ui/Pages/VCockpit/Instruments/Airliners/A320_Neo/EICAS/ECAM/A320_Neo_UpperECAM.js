@@ -785,13 +785,22 @@ var A320_Neo_UpperECAM;
                             {
                                 message: "A/SKID N/WS OFF",
                                 level: 2,
+                                page: "WHEEL",
+                                inopSystems: [
+                                    "CAT_3_DUAL",
+                                    "ANTI_SKID",
+                                    "NS_STEER",
+                                    "NORM_BRK",
+                                    "AUTO_BRK",
+                                    "ASKID_NWS" // only as trigger for STS messages
+                                ],
                                 isActive: () => SimVar.GetSimVarValue("ANTISKID BRAKES ACTIVE", "Bool") === 0,
                                 actions: [
                                     {
                                         style: "blue",
                                         message: "&nbsp;MAX BRK PR......1000PSI"
                                     }
-                                ]
+                                ],
                             }
                         ]
                     },
