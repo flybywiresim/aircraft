@@ -1,6 +1,6 @@
 class CDUDataIndexPage {
     static ShowPage1(mcdu) {
-        mcdu.clearDisplay()
+        mcdu.clearDisplay();
         mcdu.setTemplate([
             ["DATA INDEX", "1", "2"],
             ["POSITION"],
@@ -15,37 +15,37 @@ class CDUDataIndexPage {
             ["<AIRPORTS", "FUNCTION>"],
             ["EQUITIME", "AOC"],
             ["<POINT", "FUNCTION>"]
-        ])
+        ]);
 
         mcdu.onLeftInput[0] = () => {
             CDUPositionMonitorPage.ShowPage(mcdu);
-        }
+        };
 
         mcdu.onLeftInput[1] = () => {
-            CDUIRSMonitor.ShowPage(mcdu)
-        }
+            CDUIRSMonitor.ShowPage(mcdu);
+        };
 
         mcdu.onLeftInput[2] = () => {
-            CDUGPSMonitor.ShowPage(mcdu)
-        }
+            CDUGPSMonitor.ShowPage(mcdu);
+        };
 
         mcdu.onLeftInput[3] = () => {
             CDUIdentPage.ShowPage(mcdu);
-        }
+        };
 
         mcdu.onLeftInput[4] = () => {
-            CDUAirportsMonitor.ShowPage(mcdu, true)
-        }
+            CDUAirportsMonitor.ShowPage(mcdu, true);
+        };
 
         mcdu.onNextPage = () => {
-            this.ShowPage2(mcdu)
-        }
+            this.ShowPage2(mcdu);
+        };
         mcdu.onPrevPage = () => {
-            this.ShowPage2(mcdu)
-        }
+            this.ShowPage2(mcdu);
+        };
     }
     static ShowPage2(mcdu) {
-        mcdu.clearDisplay()
+        mcdu.clearDisplay();
         mcdu.setTemplate([
             ["DATA INDEX", "2", "2"],
             ["", "PILOTS"],
@@ -60,27 +60,27 @@ class CDUDataIndexPage {
             ["<WINDS"],
             ["SEC F-PLAN", ""],
             ["<WINDS"]
-            
-        ])
+
+        ]);
 
         mcdu.onLeftInput[0] = () => {
-            CDUWaypointPage.ShowPage(mcdu)
-        }
+            CDUWaypointPage.ShowPage(mcdu);
+        };
 
         mcdu.onRightInput[0] = () => {
-            CDUPilotsWaypoint.ShowPage(mcdu)
-        }
+            CDUPilotsWaypoint.ShowPage(mcdu);
+        };
 
         mcdu.onLeftInput[1] = () => {
-            CDUNavaidPage.ShowPage(mcdu)
-        }
+            CDUNavaidPage.ShowPage(mcdu);
+        };
 
         mcdu.onNextPage = () => {
-            this.ShowPage1(mcdu)
-        }
+            this.ShowPage1(mcdu);
+        };
         mcdu.onPrevPage = () => {
-            this.ShowPage1(mcdu)
-        }
+            this.ShowPage1(mcdu);
+        };
     }
 }
 //# sourceMappingURL=A320_Neo_CDU_DataIndexPage.js.map
