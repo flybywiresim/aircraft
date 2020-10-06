@@ -229,7 +229,7 @@ class Jet_PFD_VerticalSpeedIndicator extends HTMLElement {
                 } else {
                     this.cursorPosY1 = this.cursorPosY2 + height;
                 }
-                let alert = false;
+                let alert = false; 
                 {
                     const altitude = Simplane.getAltitudeAboveGround();
                     if ((altitude < 2500 && altitude > 1000 && vSpeed <= -2000) || (altitude < 1000 && vSpeed <= -1200)) { //airbus alerts thresholds
