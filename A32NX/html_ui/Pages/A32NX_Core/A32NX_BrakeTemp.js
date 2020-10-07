@@ -11,9 +11,9 @@ const HEAT_UP_SCALE = 0.000035;
 /**
  * Scale factor for cool down
  */
-const BASE_COOL_DOWN_FACTOR = 0.008;
+const BASE_COOL_DOWN_FACTOR = 0.002;
 
-const BASE_SPEED = 0.2;
+const BASE_SPEED = 0.10;
 
 const SPEED_COOLDOWN_FACTOR = 0.08;
 
