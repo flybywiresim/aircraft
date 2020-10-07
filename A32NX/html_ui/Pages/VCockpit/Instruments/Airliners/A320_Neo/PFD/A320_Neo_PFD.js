@@ -105,6 +105,7 @@ class A320_Neo_PFD_MainPage extends NavSystemPage {
         const _deltaTime = this.getDeltaTime();
         const currentKnobValue = SimVar.GetSimVarValue("LIGHT POTENTIOMETER:" + this.pot_index, "number");
         if (currentKnobValue <= 0.0) {
+            this.selfTestLastKnobValue = currentKnobValue;
             return;
         }
         super.onUpdate(_deltaTime);
