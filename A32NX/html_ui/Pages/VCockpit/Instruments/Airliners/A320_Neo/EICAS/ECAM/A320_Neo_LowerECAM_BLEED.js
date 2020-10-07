@@ -238,7 +238,7 @@ var A320_Neo_LowerECAM_BLEED;
             if (!this.packOutMultiplier2) {
                 this.packOutMultiplier2 = 0.055;
             }
-            
+
             const packRequestedlvl = Math.min(...[SimVar.GetSimVarValue("L:A320_Neo_AIRCOND_LVL_1", "Position(0-6)"),
                 SimVar.GetSimVarValue("L:A320_Neo_AIRCOND_LVL_2", "Position(0-6)"),
                 SimVar.GetSimVarValue("L:A320_Neo_AIRCOND_LVL_3", "Position(0-6)")]);
@@ -265,8 +265,8 @@ var A320_Neo_LowerECAM_BLEED;
 
             let packTemperatureVariation1 = 0;
             let packTemperatureVariation2 = 0;
-        
-            if (eng1Running  && packRequestedTemp && packTMPComputedOut[0] && this.packOutMultiplier1  && this.temperatureVariationSpeed && currentPackFlow) {
+
+            if (eng1Running && packRequestedTemp && packTMPComputedOut[0] && this.packOutMultiplier1 && this.temperatureVariationSpeed && currentPackFlow) {
                 packTemperatureVariation1 = ((((packRequestedTemp / packTMPComputedOut[0]) * this.packOutMultiplier1) - this.packOutMultiplier1));
                 this.packOutMultiplier1 += packTemperatureVariation1 * (this.temperatureVariationSpeed * (0.8 + (currentPackFlow * 0.2)));
             }
