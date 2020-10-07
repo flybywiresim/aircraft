@@ -11,6 +11,7 @@
 !package-lock.json
 !.editorconfig
 !.eslintrc.json
+!manifest-base.json
 /A32NX/layout.json
 /A32NX/manifest.json
 .DS_Store
