@@ -3239,6 +3239,12 @@
 															<SegmentShape>Log3</SegmentShape>
 														</Point>
 														<Point>
+															<XPos>48.66562</XPos>
+															<YPos>-26.52487</YPos>
+															<Flags>0</Flags>
+															<SegmentShape>Exp3</SegmentShape>
+														</Point>
+														<Point>
 															<XPos>100</XPos>
 															<YPos>-200</YPos>
 															<Flags>37</Flags>
@@ -3391,8 +3397,8 @@
 															<SegmentShape>Log3</SegmentShape>
 														</Point>
 														<Point>
-															<XPos>100</XPos>
-															<YPos>-18</YPos>
+															<XPos>129.28245</XPos>
+															<YPos>0</YPos>
 															<Flags>0</Flags>
 															<SegmentShape>Exp3</SegmentShape>
 														</Point>
@@ -3856,7 +3862,7 @@
 											</ValueList>
 										</Property>
 										<Property Name="ConeOuterAngle" Type="int32" Value="295"/>
-										<Property Name="RadiusMax" Type="Real64" Value="5"/>
+										<Property Name="RadiusMax" Type="Real64" Value="50"/>
 									</PropertyList>
 									<CurveUsageInfoList>
 										<VolumeDryUsage>
@@ -3870,10 +3876,10 @@
 															<XPos>0</XPos>
 															<YPos>0</YPos>
 															<Flags>5</Flags>
-															<SegmentShape>SCurve</SegmentShape>
+															<SegmentShape>Exp3</SegmentShape>
 														</Point>
 														<Point>
-															<XPos>5</XPos>
+															<XPos>50</XPos>
 															<YPos>-200</YPos>
 															<Flags>37</Flags>
 														</Point>
@@ -3898,13 +3904,13 @@
 															<SegmentShape>SCurve</SegmentShape>
 														</Point>
 														<Point>
-															<XPos>2.5</XPos>
+															<XPos>25</XPos>
 															<YPos>-6</YPos>
 															<Flags>0</Flags>
 															<SegmentShape>SCurve</SegmentShape>
 														</Point>
 														<Point>
-															<XPos>5</XPos>
+															<XPos>50</XPos>
 															<YPos>-200</YPos>
 															<Flags>37</Flags>
 														</Point>
@@ -3926,13 +3932,13 @@
 															<SegmentShape>SCurve</SegmentShape>
 														</Point>
 														<Point>
-															<XPos>2.5</XPos>
+															<XPos>25</XPos>
 															<YPos>68</YPos>
 															<Flags>0</Flags>
 															<SegmentShape>SCurve</SegmentShape>
 														</Point>
 														<Point>
-															<XPos>5</XPos>
+															<XPos>50</XPos>
 															<YPos>68</YPos>
 															<Flags>37</Flags>
 														</Point>
@@ -3954,12 +3960,12 @@
 															<SegmentShape>SCurve</SegmentShape>
 														</Point>
 														<Point>
-															<XPos>2</XPos>
+															<XPos>20</XPos>
 															<YPos>25</YPos>
 															<Flags>0</Flags>
 														</Point>
 														<Point>
-															<XPos>5</XPos>
+															<XPos>50</XPos>
 															<YPos>32</YPos>
 															<Flags>37</Flags>
 														</Point>
@@ -3981,7 +3987,7 @@
 															<SegmentShape>Log3</SegmentShape>
 														</Point>
 														<Point>
-															<XPos>5</XPos>
+															<XPos>50</XPos>
 															<YPos>0</YPos>
 															<Flags>37</Flags>
 														</Point>
@@ -5415,7 +5421,7 @@
 						</Attenuation>
 						<Attenuation Name="aircraft_player_inside_3m" ID="{538CDAF5-4564-463A-A841-C73D21967E20}" ShortID="563836667">
 							<PropertyList>
-								<Property Name="RadiusMax" Type="Real64" Value="3"/>
+								<Property Name="RadiusMax" Type="Real64" Value="1"/>
 							</PropertyList>
 							<CurveUsageInfoList>
 								<VolumeDryUsage>
@@ -5429,11 +5435,11 @@
 													<XPos>0</XPos>
 													<YPos>0</YPos>
 													<Flags>5</Flags>
-													<SegmentShape>Exp3</SegmentShape>
+													<SegmentShape>Log3</SegmentShape>
 												</Point>
 												<Point>
-													<XPos>3</XPos>
-													<YPos>-0</YPos>
+													<XPos>1</XPos>
+													<YPos>-200</YPos>
 													<Flags>37</Flags>
 												</Point>
 											</PointList>
@@ -5457,19 +5463,19 @@
 													<SegmentShape>Exp3</SegmentShape>
 												</Point>
 												<Point>
-													<XPos>0.12381</XPos>
+													<XPos>0.04127</XPos>
 													<YPos>-0.00061</YPos>
 													<Flags>0</Flags>
 													<SegmentShape>Log3</SegmentShape>
 												</Point>
 												<Point>
-													<XPos>1.32273</XPos>
+													<XPos>0.44091</XPos>
 													<YPos>0</YPos>
 													<Flags>0</Flags>
 													<SegmentShape>Exp3</SegmentShape>
 												</Point>
 												<Point>
-													<XPos>3</XPos>
+													<XPos>1</XPos>
 													<YPos>-200</YPos>
 													<Flags>37</Flags>
 												</Point>
@@ -5496,7 +5502,7 @@
 													<Flags>5</Flags>
 												</Point>
 												<Point>
-													<XPos>3</XPos>
+													<XPos>1</XPos>
 													<YPos>0</YPos>
 													<Flags>37</Flags>
 												</Point>
@@ -5517,7 +5523,7 @@
 													<Flags>5</Flags>
 												</Point>
 												<Point>
-													<XPos>3</XPos>
+													<XPos>1</XPos>
 													<YPos>0</YPos>
 													<Flags>37</Flags>
 												</Point>

@@ -24,8 +24,14 @@
 1. [OVHD] Implement additional overhead button/switch functionality (EMER ELEC, EVAC, air data switching, etc.) - @wpine215 (Iceman)
 1. [ECAM] Made open doors on DOOR/OXY page amber instead of green - @Benjozork (Benjamin Dupont)
 1. [PFD] Adjust vertical Flight Director offset - @veikkos (Veikko Soininen)
+1. [PFD] Fix Radio altimeter only updating every second - @lukecologne (luke)
+1. [Systems] Pitot heating should now be active while engines are running - @lousybyte (lousybyte)
+1. [TEXTURES] Higher resoloution Mainpanel, fixed glareshield texture error - @Pleasure0102 (Pleasure)
+1. [ECAM] Overhauled WHEEL Page - @Benjozork (Benjamin Dupont)
+1. [Sounds] Added 3D emitters for all sounds
+1. [Sounds] Added sounds for Evac horn, emer cabin call, mech horn, gear extend/retract, and cargo door - @hotshotp (Boris)
 1. [PFD] Added the ability to display metric altitudes - @lousybyte (lousybyte)
-   
+
 ## 2020/09
 1. [General] Add CHANGELOG.md - @nathaninnes (Nathan Innes)
 1. [ECAM] Improved Upper ECAM Visuals - @wpine215 (Iceman)

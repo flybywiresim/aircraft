@@ -94,21 +94,18 @@
             <Range LowerBound="24" />
         </Sound>
 
-        <Sound WwiseData="true" WwiseEvent="battery_on_open" Continuous="false" ViewPoint="Inside" NodeName="PUSH_OVHD_ELEC_BAT1" SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1">
-            <Range LowerBound="24" />
-        </Sound>
 
         <Sound WwiseData="true" WwiseEvent="battery_idle" FadeOutType="2" FadeOutTime="4" SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1">
             <WwiseRTPC SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1" RTPCName="SIMVAR_ELECTRICAL_MAIN_BUS_VOLTAGE_A4_R4" />
             <Range LowerBound="1.0" />
         </Sound>
 
-        <Sound WwiseEvent="AVvent" WwiseData="true" Continuous="false" ApplyCockpitReverb="true" SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1">
+        <Sound WwiseEvent="AVvent" WwiseData="true" NodeName="PEDALS_LEFT" Continuous="false" ApplyCockpitReverb="true" SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1">
             <Range LowerBound="28" />
             <WwiseRTPC SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1" RTPCName="SIMVAR_ELECTRICAL_MAIN_BUS_VOLTAGE_A4_R4" />
         </Sound>
 
-        <Sound WwiseEvent="AVventloop" WwiseData="true" ViewPoint="Inside" ApplyCockpitReverb="true" FadeOutType="2" FadeOutTime="4" SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1">
+        <Sound WwiseEvent="AVventloop" WwiseData="true" NodeName="PEDALS_LEFT" ApplyCockpitReverb="true" FadeOutType="2" FadeOutTime="4" SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1">
             <Range LowerBound="28" />
             <WwiseRTPC SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1" RTPCName="SIMVAR_ELECTRICAL_MAIN_BUS_VOLTAGE_A4_R4" />
         </Sound>
@@ -127,18 +124,24 @@
             </Requires>
         </Sound>
 
-        <Sound WwiseEvent="CIDSchimes" WwiseData="true" Continuous="false" ApplyCockpitReverb="true" SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1">
+        <Sound WwiseEvent="CIDSchimes" WwiseData="true" NodeName="PUSH_OVHD_ELEC_BAT1" Continuous="false" ApplyCockpitReverb="true" SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1">
             <Range LowerBound="24" />
             <WwiseRTPC SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1" RTPCName="SIMVAR_ELECTRICAL_MAIN_BUS_VOLTAGE_A4_R4" />
         </Sound>
 
-        <Sound WwiseEvent="FMGCtest" WwiseData="true" Continuous="false" ApplyCockpitReverb="true" SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1">
+        <Sound WwiseEvent="FMGCtest" WwiseData="true" NodeName="PUSH_OVHD_ELEC_BAT1" Continuous="false" ApplyCockpitReverb="true" SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1">
             <Range LowerBound="28" />
             <WwiseRTPC SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1" RTPCName="SIMVAR_ELECTRICAL_MAIN_BUS_VOLTAGE_A4_R4" />
         </Sound>
 
-        <Sound WwiseEvent="Loudrelay" WwiseData="true" Continuous="false" ApplyCockpitReverb="true" SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1">
+        <Sound WwiseEvent="Loudrelay" WwiseData="true" NodeName="PUSH_OVHD_ELEC_BAT1" Continuous="false" ApplyCockpitReverb="true" SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1">
             <Range LowerBound="28" />
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="batteryrelay" Continuous="false" ViewPoint="Inside" NodeName="PUSH_OVHD_ELEC_BAT1" SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1">
+            <Range LowerBound="24" />
+            <WwiseRTPC SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1" RTPCName="SIMVAR_ELECTRICAL_MAIN_BUS_VOLTAGE" />
+
         </Sound>
 
 
@@ -148,21 +151,30 @@
 
         </Sound>
 
+        <Sound WwiseEvent="cargodoor" WwiseData="true" SimVar="INTERACTIVE POINT OPEN" Units="PERCENT" Index="5">
+            <Range LowerBound="0.01" />
+        </Sound>
+
+        <Sound WwiseEvent="cdoorclose" WwiseData="true" Continuous="false" SimVar="INTERACTIVE POINT OPEN" Units="PERCENT" Index="5">
+            <Range UpperBound="1" />
+        </Sound>
+
+
         <!-- FUEL PUMP SOUNDS ========================================================================================== -->
 
-        <Sound WwiseEvent="Fuelpump" WwiseData="true" Continuous="true" SimVar="FUELSYSTEM PUMP ACTIVE" Units="BOOL" Index="2">
+        <Sound WwiseEvent="Fuelpump" WwiseData="true" Continuous="true" NodeName="PUSH_OVHD_ELEC_BAT1" SimVar="FUELSYSTEM PUMP ACTIVE" Units="BOOL" Index="2">
             <Range LowerBound="1" />
         </Sound>
 
-        <Sound WwiseEvent="Fuelpump" WwiseData="true" Continuous="true" SimVar="FUELSYSTEM PUMP ACTIVE" Units="BOOL" Index="3">
+        <Sound WwiseEvent="Fuelpump" WwiseData="true" Continuous="true" NodeName="PUSH_OVHD_ELEC_BAT1" SimVar="FUELSYSTEM PUMP ACTIVE" Units="BOOL" Index="3">
             <Range LowerBound="1" />
         </Sound>
 
-        <Sound WwiseEvent="Fuelpump" WwiseData="true" Continuous="true" SimVar="FUELSYSTEM PUMP ACTIVE" Units="BOOL" Index="5">
+        <Sound WwiseEvent="Fuelpump" WwiseData="true" Continuous="true" NodeName="PUSH_OVHD_ELEC_BAT2" SimVar="FUELSYSTEM PUMP ACTIVE" Units="BOOL" Index="5">
             <Range LowerBound="1" />
         </Sound>
 
-        <Sound WwiseEvent="Fuelpump" WwiseData="true" Continuous="true" SimVar="FUELSYSTEM PUMP ACTIVE" Units="BOOL" Index="6">
+        <Sound WwiseEvent="Fuelpump" WwiseData="true" Continuous="true" NodeName="PUSH_OVHD_ELEC_BAT2" SimVar="FUELSYSTEM PUMP ACTIVE" Units="BOOL" Index="6">
             <Range LowerBound="1" />
         </Sound>
 
@@ -196,14 +208,6 @@
             <WwiseRTPC SimVar="GROUND VELOCITY" Units="KNOTS" Index="0" RTPCName="SIMVAR_GROUND_VELOCITY" />
         </Sound>
 
-        <Sound WwiseData="true" WwiseEvent="Taxibump" ViewPoint="Inside" SimVar="SIM ON GROUND" Units="BOOLEAN" Index="0">
-            <Range LowerBound="1.0" />
-            <Requires SimVar="GEAR TOTAL PCT EXTENDED" Units="PERCENT" Index="0">
-                <Range LowerBound="1" />
-            </Requires>
-            <WwiseRTPC SimVar="GROUND VELOCITY" Units="KNOTS" Index="0" RTPCName="SIMVAR_GROUND_VELOCITY" />
-        </Sound>
-
         <Sound WwiseData="true" WwiseEvent="ROLLRATTLE2" ViewPoint="Inside" FadeOutType="2" FadeOutTime="1" SimVar="SIM ON GROUND" Units="BOOLEAN" Index="0">
             <Range LowerBound="1.0" />
             <Requires SimVar="GEAR TOTAL PCT EXTENDED" Units="PERCENT" Index="0">
@@ -219,8 +223,8 @@
             <WwiseRTPC SimVar="AIRSPEED INDICATED" Units="KNOTS" Index="0" RTPCName="SIMVAR_AIRSPEED_INDICATED" />
         </Sound>
 
-        <Sound WwiseData="true" WwiseEvent="Geardownwind" Continuous="true" ViewPoint="Inside" FadeOutType="2" FadeOutTime="1" SimVar="GEAR TOTAL PCT EXTENDED" Units="PERCENT" Index="0">
-            <Range LowerBound="0.01" />
+        <Sound WwiseData="true" WwiseEvent="Geardownwind" Continuous="true" ViewPoint="Inside" FadeOutType="2" FadeOutTime="2" SimVar="GEAR TOTAL PCT EXTENDED" Units="PERCENT" Index="0">
+            <Range LowerBound="0.1" />
             <WwiseRTPC SimVar="AIRSPEED INDICATED" Units="KNOTS" Index="0" RTPCName="SIMVAR_AIRSPEED_INDICATED" />
         </Sound>
 
@@ -250,6 +254,12 @@
             <WwiseRTPC SimVar="GEAR TOTAL PCT EXTENDED" Units="PERCENT" Index="0" RTPCName="SIMVAR_GEAR_TOTAL_PCT_EXTENDED" />
             <WwiseRTPC SimVar="GEAR TOTAL PCT EXTENDED" Units="PERCENT" Derived="true" Index="0" RTPCName="SIMVAR_GEAR_TOTAL_PCT_EXTENDED_DERIVED" />
         </Sound>
+
+        <Sound WwiseEvent="gdown" WwiseData="true" FadeOutType="2" FadeOutTime="1" SimVar="GEAR TOTAL PCT EXTENDED" Units="PERCENT">
+            <Range LowerBound="0.1" UpperBound="0.9" />
+        </Sound>
+
+
 
         <!-- INSTRUMENTS FOLEYS  =========================================================================  -->
 
@@ -366,12 +376,31 @@
             </Requires>
         </Sound>
 
+        <Sound WwiseData="true" WwiseEvent="emercabincall" NodeName="PUSH_OVHD_ELEC_BAT1" LocalVar="A32NX_CALLS_EMER_ON" Continuous="false">
+            <Range LowerBound="1" />
+            <Requires SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1">
+                <Range LowerBound="28" />
+            </Requires>
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="mechhorn" NodeName="WHEELS_C" LocalVar="PUSH_OVHD_CALLS_MECH" Continuous="true">
+            <Range LowerBound="1" />
+        </Sound>
+
         <Sound WwiseData="true" WwiseEvent="cabin_crew_seats_takeoff" LocalVar="A32NX_TO_CONFIG_NORMAL" Continuous="false">
             <Range LowerBound="1" />
             <Requires LocalVar="A32NX_CABIN_READY">
                 <Range LowerBound="1" />
             </Requires>
         </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="evachorncockpit" NodeName="PUSH_OVHD_ELEC_BAT1" LocalVar="A32NX_EVAC_COMMAND_TOGGLE" Continuous="true">
+            <Range UpperBound="0" />
+            <Requires LocalVar="PUSH_OVHD_EVAC_HORN">
+                <Range UpperBound="0" />
+            </Requires>
+        </Sound>
+
 
         <Sound WwiseData="true" WwiseEvent="cabin_crew_seats_landing" LocalVar="A32NX_CABIN_READY" Continuous="false">
             <Range LowerBound="1" />
