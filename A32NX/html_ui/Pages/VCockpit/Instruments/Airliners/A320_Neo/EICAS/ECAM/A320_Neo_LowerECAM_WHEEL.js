@@ -144,6 +144,7 @@ var A320_Neo_LowerECAM_WHEEL;
                         },
                         setArmed(/** boolean */ state) {
                             this.element.setAttribute("visibility", state ? "visible" : "hidden")
+                            this.title.setAttribute("visibility", state ? "visible" : "hidden")
                             this.quantity.min.setAttribute("visibility", state ? "visible" : "hidden")
                             this.quantity.med.setAttribute("visibility", state ? "visible" : "hidden")
                             this.quantity.max.setAttribute("visibility", state ? "visible" : "hidden")
@@ -273,7 +274,6 @@ var A320_Neo_LowerECAM_WHEEL;
                 this.hide(this.view.center.altnBrk);
                 this.hide(this.view.center.accuOnly);
 
-                this.hide(this.view.brakes.autobrake.title);
                 this.makeGreen(this.view.brakes.autobrake.title);
             } else {
                 this.view.spoilers.numbers.forEach(number => this.show(number));
@@ -284,6 +284,9 @@ var A320_Neo_LowerECAM_WHEEL;
                 this.show(this.view.center.accuOnly);
 
                 this.makeAmber(this.view.brakes.autobrake.title);
+                this.makeAmber(this.view.brakes.autobrake.quantity.min);
+                this.makeAmber(this.view.brakes.autobrake.quantity.med);
+                this.makeAmber(this.view.brakes.autobrake.quantity.max);
                 this.show(this.view.brakes.autobrake.title);
             }
         }
