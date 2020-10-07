@@ -24,6 +24,8 @@
 1. [OVHD] Implement additional overhead button/switch functionality (EMER ELEC, EVAC, air data switching, etc.) - @wpine215 (Iceman)
 1. [ECAM] Made open doors on DOOR/OXY page amber instead of green - @Benjozork (Benjamin Dupont)
 1. [PFD] Adjust vertical Flight Director offset - @veikkos (Veikko Soininen)
+1. [PFD] Fix Radio altimeter only updating every second - @lukecologne (luke)
+1. [Systems] Pitot heating should now be active while engines are running - @lousybyte (lousybyte)
 
 ## 2020/09
 1. [General] Add CHANGELOG.md - @nathaninnes (Nathan Innes)
