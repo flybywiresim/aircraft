@@ -2,7 +2,7 @@
   "name": "a32nx",
   "version": "0.3.1",
   "scripts": {
-    "lint": "eslint **/*.js **/*.jsx **/*.ts **/*.tsx",
+    "lint": "eslint **/*.js",
     "lint-fix": "npm run lint -- --fix",
     "prettier": "prettier --write **/*.json **/*.yml"
   },
@@ -12,7 +12,7 @@
     }
   },
   "lint-staged": {
-    "*.{js,jsx,ts,tsx}": "eslint --cache --fix",
+    "*.{js}": "eslint --cache --fix",
     "*.{json,yml}": "prettier --write"
   },
   "devDependencies": {
