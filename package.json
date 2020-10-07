@@ -1,10 +1,12 @@
 {
-    "name": "msfs-a320neo-vanilla",
-    "version": "1.9.3",
-    "scripts": {
-        "lint": "eslint ./**/*.js --fix"
-    },
-    "devDependencies": {
-        "eslint": "7.10.0"
-    }
+  "name": "msfs-a320neo-vanilla",
+  "version": "1.9.3",
+  "scripts": {
+    "lint": "eslint ./**/*.js --fix",
+    "prettier": "prettier --write ./**/*.json"
+  },
+  "devDependencies": {
+    "eslint": "7.10.0",
+    "prettier": "2.1.2"
+  }
 }
