@@ -28,6 +28,7 @@
 1. [Systems] Pitot heating should now be active while engines are running - @lousybyte (lousybyte)
 1. [TEXTURES] Higher resoloution Mainpanel, fixed glareshield texture error - @Pleasure0102 (Pleasure)
 1. [ECAM] Overhauled WHEEL Page - @Benjozork (Benjamin Dupont)
+1. [CDU] Follow Green Dot speed on approach with flaps clean - @veikkos (Veikko Soininen)
 
 ## 2020/09
 1. [General] Add CHANGELOG.md - @nathaninnes (Nathan Innes)

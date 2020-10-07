@@ -872,11 +872,24 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                 }
             } else if (this.currentFlightPhase === FlightPhase.FLIGHT_PHASE_APPROACH) {
                 if (this.isAirspeedManaged()) {
-                    const speed = this.getManagedApproachSpeed();
+                    const speed = this.getManagedApproachSpeedMcdu();
                     this.setAPManagedSpeed(speed, Aircraft.A320_NEO);
                 }
             }
             this.updateAutopilotCooldown = this._apCooldown;
+        }
+    }
+    // Asobo's getManagedApproachSpeed uses incorrect getCleanApproachSpeed for flaps 0
+    getManagedApproachSpeedMcdu() {
+        const flapsHandleIndex = Simplane.getFlapsHandleIndex();
+        if (flapsHandleIndex === 0) {
+            return this.getPerfGreenDotSpeed();
+        } else if (flapsHandleIndex === 1) {
+            return this.getSlatApproachSpeed();
+        } else if (flapsHandleIndex === 2) {
+            return this.getFlapApproachSpeed();
+        } else {
+            return this.getVApp();
         }
     }
     checkUpdateFlightPhase() {
