@@ -112,7 +112,6 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
         const currentKnobValue = SimVar.GetSimVarValue("LIGHT POTENTIOMETER:" + displayIndex, "number");
 
         if (currentKnobValue > 0.0) {
-            console.log(currentKnobValue);
 
             const _deltaTime = this.getDeltaTime();
             super.onUpdate(_deltaTime);
