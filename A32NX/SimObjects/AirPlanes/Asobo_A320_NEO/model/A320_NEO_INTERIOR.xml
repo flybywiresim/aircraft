@@ -2907,11 +2907,13 @@
 		<!-- This section has been entirely modified 	-->
 
 		<Component ID="Chronometer">
-			<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
+			<UseTemplate Name="ASOBO_AIRBUS_Chronometer_Button">
 				<NODE_ID>PUSH_AUTOPILOT_CHRONO_L</NODE_ID>
+				<ANIM_NAME>PUSH_AUTOPILOT_CHRONO_L</ANIM_NAME>
 			</UseTemplate>
-			<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
+			<UseTemplate Name="ASOBO_AIRBUS_Chronometer_Button">
 				<NODE_ID>PUSH_AUTOPILOT_CHRONO_R</NODE_ID>
+				<ANIM_NAME>PUSH_AUTOPILOT_CHRONO_R</ANIM_NAME>
 			</UseTemplate>
 
 			<UseTemplate Name="ASOBO_AIRBUS_Chronometer_Button">
