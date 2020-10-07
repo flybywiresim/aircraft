@@ -271,13 +271,13 @@ class A320_Neo_SAI_AirspeedIndicator extends HTMLElement {
     }
 
     updateBugs(bugs) {
-        this.bugs = bugs;
-    }
-    updateGraduationScrolling(_speed) {
         this.small_bugs[0].setAttribute("y","-100");
         this.small_bugs[1].setAttribute("y","-100");
         this.small_bugs[2].setAttribute("y","-100");
         this.small_bugs[3].setAttribute("y","-100");
+        this.bugs = bugs;
+    }
+    updateGraduationScrolling(_speed) {
 
         if (this.graduations) {
             if (this.bugs.length > 0) {
@@ -560,17 +560,17 @@ class A320_Neo_SAI_AltimeterIndicator extends HTMLElement {
     }
 
     updateBugs(bugs) {
-        this.bugs = bugs;
-    }
-    updateGraduationScrolling(_altitude) {
-
-        this.cursorSVGShape.setAttribute("stroke", "yellow");
         this.big_bugs[0].setAttribute("y", "-100");
         this.big_bugs[1].setAttribute("y", "-100");
         this.small_bugs[0].setAttribute("y", "-100");
         this.small_bugs[1].setAttribute("y", "-100");
-
+        this.bugs = bugs;
+    }
+    updateGraduationScrolling(_altitude) {
         if (this.graduations) {
+            if (this.cursorSVGShape.style.stroke !== "yellow") {
+                this.cursorSVGShape.setAttribute("stroke", "yellow");
+            }
             if (this.bugs.length > 0) {
                 this.bugs.forEach((alt_bug, i) => {
                     if (_altitude < (alt_bug + 1000) && _altitude > (alt_bug - 1000)) {
@@ -592,7 +592,13 @@ class A320_Neo_SAI_AltimeterIndicator extends HTMLElement {
                             this.small_bugs[i].setAttribute("fill", "none");
                         }
                     }
-                    if (_altitude < (alt_bug + 100) && _altitude > (alt_bug - 100)) {
+                    const alt_n = parseInt(_altitude);
+                    const bug_n = parseInt(alt_bug);
+                    if ((alt_n < (bug_n + 100)) && (alt_n > (bug_n - 100))) {
+                        console.log("First :" + (alt_n < (bug_n + 100)));
+                        console.log("Second : " + (alt_n > (bug_n - 100)));
+                        console.log(alt_n);
+                        console.log(bug_n);
                         this.cursorSVGShape.setAttribute("stroke", "cyan");
                     }
                 });
