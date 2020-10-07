@@ -25,6 +25,9 @@
 1. [ECAM] Made open doors on DOOR/OXY page amber instead of green - @Benjozork (Benjamin Dupont)
 1. [PFD] Adjust vertical Flight Director offset - @veikkos (Veikko Soininen)
 1. [PFD] Fix Radio altimeter only updating every second - @lukecologne (luke)
+1. [Sounds] Created 3D emitters for every sound
+1. [Sounds] Added sounds for battery relay, cargo doors, and gear extension/retraction
+1. [Sounds] Added sounds for emergency cabin horn, mechanic horn, and evacuation horn
 
 ## 2020/09
 1. [General] Add CHANGELOG.md - @nathaninnes (Nathan Innes)
