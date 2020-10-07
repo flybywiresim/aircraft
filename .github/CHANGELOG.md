@@ -30,6 +30,8 @@
 1. [ECAM] Overhauled WHEEL Page - @Benjozork (Benjamin Dupont)
 1. [Sounds] Added 3D emitters for all sounds
 1. [Sounds] Added sounds for Evac horn, emer cabin call, mech horn, gear extend/retract, and cargo door - @hotshotp (Boris)
+1. [CDU] Revised blue, green and amber colors on CDU - @lucky38i (Lucky38i)
+1. [CDU] Revised INIT A & B Page - @lucky38i (Lucky38i)
 
 ## 2020/09
 1. [General] Add CHANGELOG.md - @nathaninnes (Nathan Innes)

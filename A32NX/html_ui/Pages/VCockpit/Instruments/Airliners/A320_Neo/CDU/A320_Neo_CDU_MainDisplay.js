@@ -11,6 +11,8 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this._hasReachedTopOfDescent = false;
         this._apCooldown = 500;
         this._lastRequestedFLCModeWaypointIndex = -1;
+        this._cruiseEntered = false;
+        this._blockFuelEntered = false;
         this._gpsprimaryack = 0;
     }
     get templateID() {
@@ -91,6 +93,18 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this.electricity = this.querySelector("#Electricity");
         this.climbTransitionGroundAltitude = null;
     }
+
+    insertSmallFontSpan() {
+        this._lineElements.forEach((row) => {
+            row.forEach((column) => {
+                if (column != null) {
+                    column.innerHTML = column.innerHTML.replace(/{smallFront}/g, "<span class='s-text'>");
+                    column.innerHTML = column.innerHTML.replace(/{smallEnd}/g, "</span>");
+                }
+            });
+        });
+    }
+
     trySetFlapsTHS(s) {
         if (s) {
             let validEntry = false;
