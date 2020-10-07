@@ -11,6 +11,8 @@
 !package-lock.json
 !.editorconfig
 !.eslintrc.json
+/A32NX/layout.json
+/A32NX/manifest.json
 .DS_Store
 node_modules
 /src/sound/.cache
