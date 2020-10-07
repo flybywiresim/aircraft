@@ -89,10 +89,10 @@ var A320_Neo_LowerECAM_WHEEL;
                             setFailed(/** boolean */ state) {
                                 if (state) {
                                     this.elements.forEach(it => it.setAttribute("visibility", "hidden"));
-                                    this.failedElements.forEach(it => it.setAttribute("visibility", "visible"))
+                                    this.failedElements.forEach(it => it.setAttribute("visibility", "visible"));
                                 } else {
-                                    this.elements.forEach(it => it.setAttribute("visibility", "visible"))
-                                    this.failedElements.forEach(it => it.setAttribute("visibility", "hidden"))
+                                    this.elements.forEach(it => it.setAttribute("visibility", "visible"));
+                                    this.failedElements.forEach(it => it.setAttribute("visibility", "hidden"));
                                 }
                             }
                         },
@@ -109,10 +109,10 @@ var A320_Neo_LowerECAM_WHEEL;
                             setFailed(/** boolean */ state) {
                                 if (state) {
                                     this.elements.forEach(it => it.setAttribute("visibility", "hidden"));
-                                    this.failedElements.forEach(it => it.setAttribute("visibility", "visible"))
+                                    this.failedElements.forEach(it => it.setAttribute("visibility", "visible"));
                                 } else {
-                                    this.elements.forEach(it => it.setAttribute("visibility", "visible"))
-                                    this.failedElements.forEach(it => it.setAttribute("visibility", "hidden"))
+                                    this.elements.forEach(it => it.setAttribute("visibility", "visible"));
+                                    this.failedElements.forEach(it => it.setAttribute("visibility", "hidden"));
                                 }
                             }
                         },
@@ -143,11 +143,11 @@ var A320_Neo_LowerECAM_WHEEL;
                             max: this.querySelector("#autobrake-quantity-max"),
                         },
                         setArmed(/** boolean */ state) {
-                            this.element.setAttribute("visibility", state ? "visible" : "hidden")
-                            this.title.setAttribute("visibility", state ? "visible" : "hidden")
-                            this.quantity.min.setAttribute("visibility", state ? "visible" : "hidden")
-                            this.quantity.med.setAttribute("visibility", state ? "visible" : "hidden")
-                            this.quantity.max.setAttribute("visibility", state ? "visible" : "hidden")
+                            this.element.setAttribute("visibility", state ? "visible" : "hidden");
+                            this.title.setAttribute("visibility", state ? "visible" : "hidden");
+                            this.quantity.min.setAttribute("visibility", state ? "visible" : "hidden");
+                            this.quantity.med.setAttribute("visibility", state ? "visible" : "hidden");
+                            this.quantity.max.setAttribute("visibility", state ? "visible" : "hidden");
                         },
                         switch(/** "min" | "med" | "max" */ mode) {
                             switch (mode) {
@@ -178,7 +178,7 @@ var A320_Neo_LowerECAM_WHEEL;
                     altnBrk: this.querySelector("#center-altn-brk"),
                     accuOnly: this.querySelector("#center-accu-only"),
                 }
-            }
+            };
 
             this.isInitialised = true;
 
@@ -256,7 +256,7 @@ var A320_Neo_LowerECAM_WHEEL;
         }
 
         updateHydraulicsAvailable(_deltaTime) {
-            const hydraulicsShouldBeAvailable = SimVar.GetSimVarValue("ENG COMBUSTION:1", "Bool") === 1 && SimVar.GetSimVarValue("ENG COMBUSTION:2", "Bool") === 1
+            const hydraulicsShouldBeAvailable = SimVar.GetSimVarValue("ENG COMBUSTION:1", "Bool") === 1 && SimVar.GetSimVarValue("ENG COMBUSTION:2", "Bool") === 1;
 
             if (hydraulicsShouldBeAvailable !== this.hydraulicsAvailable) {
                 this.hydraulicsAvailable = hydraulicsShouldBeAvailable;
@@ -331,14 +331,14 @@ var A320_Neo_LowerECAM_WHEEL;
 
                 if (maxIndex === i) {
                     if (this.currentDisplayedBrakeTemps[i] > BRAKE_AMBER_THRESHOLD) {
-                        this.view.brakes.indicators[i].classList.add("wheel-set-brake-temp-amber")
-                        this.view.brakes.indicators[i].classList.remove("wheel-set-brake-temp")
+                        this.view.brakes.indicators[i].classList.add("wheel-set-brake-temp-amber");
+                        this.view.brakes.indicators[i].classList.remove("wheel-set-brake-temp");
                     } else if (this.currentDisplayedBrakeTemps[i] > BRAKE_SHOW_HOTTEST_THRESHOLD) {
-                        this.view.brakes.indicators[i].classList.add("wheel-set-brake-temp")
-                        this.view.brakes.indicators[i].classList.remove("wheel-set-brake-temp-amber")
+                        this.view.brakes.indicators[i].classList.add("wheel-set-brake-temp");
+                        this.view.brakes.indicators[i].classList.remove("wheel-set-brake-temp-amber");
                     }
                 } else {
-                    this.view.brakes.indicators[i].classList.remove("wheel-set-brake-temp", "wheel-set-brake-temp-amber")
+                    this.view.brakes.indicators[i].classList.remove("wheel-set-brake-temp", "wheel-set-brake-temp-amber");
                 }
             }
         }
