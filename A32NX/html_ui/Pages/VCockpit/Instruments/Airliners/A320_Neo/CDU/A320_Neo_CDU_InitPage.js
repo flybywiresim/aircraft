@@ -188,7 +188,7 @@ class CDUInitPage {
         const fuelPlanColor = "[color]red";
 
         let zfwColor = "[color]red";
-        let zfwCell = "□□.□";
+        let zfwCell = "□□□.□";
         let zfwCgCell = " □□.□";
 
         if (mcdu._zeroFuelWeightZFWCGEntered) {
@@ -217,7 +217,7 @@ class CDUInitPage {
             }
         };
 
-        let blockFuel = "□□.□";
+        let blockFuel = "□□□.□";
         let blockFuelColor = "[color]red";
         if (mcdu._blockFuelEntered) {
             if (isFinite(mcdu.blockFuel)) {
