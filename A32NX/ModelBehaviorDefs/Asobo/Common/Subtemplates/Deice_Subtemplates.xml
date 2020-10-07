@@ -512,10 +512,15 @@
 			<Switch Param="SWITCH_TYPE">
 				<Case Value="AIRBUS">
 					<UseTemplate Name="ASOBO_GT_Update">
-						<FREQUENCY>1</FREQUENCY>
+						<FREQUENCY>0.33</FREQUENCY>
 						<UPDATE_CODE>
 						(A:WINDSHIELD DEICE SWITCH, Enum) 0 == if{ (&gt;K:WINDSHIELD_DEICE_TOGGLE) }
 						(A:PITOT HEAT SWITCH, Enum) 0 == if{ (&gt;K:PITOT_HEAT_TOGGLE) }
+						
+						(A:ENG COMBUSTION:1, Bool) (A:ENG COMBUSTION:2, Bool) or (A:PITOT HEAT, Bool) ! and if{
+						    #ID# (&gt;K:PITOT_HEAT_ON)                   
+						    1 (&gt;L:A32NX_PITOT_HEAT_AUTO) 
+						}
 						</UPDATE_CODE>
 					</UseTemplate>
 					<UseTemplate Name="ASOBO_GT_Push_Button_Airliner">
@@ -527,14 +532,15 @@
 						}
 						(A:PITOT HEAT SWITCH, Enum) 2 == if{
 							1 (&gt;K:PITOT_HEAT_SET)
+							0 (&gt;L:A32NX_PITOT_HEAT_AUTO)
 						} els{
 							2 (&gt;K:PITOT_HEAT_SET)
 						}
 						</LEFT_SINGLE_CODE>
 						<SEQ1_EMISSIVE_CODE>0</SEQ1_EMISSIVE_CODE>
-						<SEQ2_EMISSIVE_CODE>(A:PITOT HEAT SWITCH, Enum) 1 == (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or</SEQ2_EMISSIVE_CODE>
+						<SEQ2_EMISSIVE_CODE>(A:PITOT HEAT SWITCH, Enum) 1 == (L:A32NX_PITOT_HEAT_AUTO, Bool) ! and (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or</SEQ2_EMISSIVE_CODE>
 						<SEQ2_CODE_DRIVES_DOWN_STATE>False</SEQ2_CODE_DRIVES_DOWN_STATE>
-						<DOWN_STATE_CODE>(A:PITOT HEAT SWITCH, Enum) 1 ==</DOWN_STATE_CODE>
+						<DOWN_STATE_CODE>(A:PITOT HEAT SWITCH, Enum) 1 == (L:A32NX_PITOT_HEAT_AUTO, Bool) ! and</DOWN_STATE_CODE>
 					</UseTemplate>
 				</Case>
 				<Case Value="B747">
