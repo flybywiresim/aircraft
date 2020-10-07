@@ -30,6 +30,7 @@
 1. [ECAM] Overhauled WHEEL Page - @Benjozork (Benjamin Dupont)
 1. [Sounds] Added 3D emitters for all sounds
 1. [Sounds] Added sounds for Evac horn, emer cabin call, mech horn, gear extend/retract, and cargo door - @hotshotp (Boris)
+1. [ECAM] Fix ECAM wheel page being selected before all gears are downlocked - @lukecologne (luke)
 
 ## 2020/09
 1. [General] Add CHANGELOG.md - @nathaninnes (Nathan Innes)
