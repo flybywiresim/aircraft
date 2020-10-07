@@ -428,7 +428,7 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
     }
     update(_dTime) {
         let indicatedAltitude = Simplane.getAltitude();
-        this.showMTRS(SimVar.GetSimVarValue("L:A32NX_METRIC_ALT_TOGGLE", "bool"));
+        this.showMTRS(SimVar.GetSimVarValue("L:A32NX_METRIC_ALT_TOGGLE", "bool") && SimVar.GetSimVarValue("L:A32NX_ADIRS_PFD_ALIGNED_FIRST", "Bool"));
 
         // This stuff makes the altimeter do a smooth rise to the actual altitude after alignment reaches a certain point
         const desiredDisplayedAltitude = SimVar.GetSimVarValue("L:A32NX_ADIRS_PFD_ALIGNED_FIRST", "Bool") === 0
