@@ -106,8 +106,6 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
         this.selfTestDiv = document.querySelector("#SelfTestDiv");
         this.selfTestTimerStarted = false;
         this.selfTestTimer = -1;
-        this.selfTestLastKnobValueFO = 1;
-        this.selfTestLastKnobValueCAP = 1;
 
         //CHRONO
         SimVar.SetSimVarValue("L:AUTOPILOT_CHRONO_STATE", "number", 0);
@@ -222,9 +220,6 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
                 this.selfTestTimerStarted = false;
             }
         }
-
-        this.selfTestLastKnobValueFO = selfTestCurrentKnobValueFO;
-        this.selfTestLastKnobValueCAP = selfTestCurrentKnobValueCAP;
 
         //ND Chrono Logic
         //Copied the based logic from the Clock functionality.
