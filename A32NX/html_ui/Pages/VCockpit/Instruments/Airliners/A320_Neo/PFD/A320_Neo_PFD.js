@@ -104,92 +104,92 @@ class A320_Neo_PFD_MainPage extends NavSystemPage {
         const _deltaTime = this.getDeltaTime();
         const pot_index = this.disp_index == 1 ? 88 : 90;
         const currentKnobValue = SimVar.GetSimVarValue("LIGHT POTENTIOMETER:" + pot_index, "number");
-
-        if (currentKnobValue > 0.0) {
-            super.onUpdate(_deltaTime);
-            if (!this.hasInitialized) {
-                return;
-            }
-            this.flashTimer -= _deltaTime / 1000;
-            if (this.flashTimer <= 0) {
-                this.flashTimer = 1;
-                this.flashState = !this.flashState;
-            }
-            if (this.flashState) {
-                this.attFlash.setAttribute("visibility", "visible");
-                this.hdgFlash.setAttribute("visibility", "visible");
-                this.spdFlash.setAttribute("visibility", "visible");
-                this.altFlash.setAttribute("visibility", "visible");
-                this.vsFlash.setAttribute("visibility", "visible");
-            } else if (this.selfTestTimer > -5) {
-                this.attFlash.setAttribute("visibility", "hidden");
-                this.hdgFlash.setAttribute("visibility", "hidden");
-                this.spdFlash.setAttribute("visibility", "hidden");
-                this.altFlash.setAttribute("visibility", "hidden");
-                this.vsFlash.setAttribute("visibility", "hidden");
-            }
-
-            const IsOnGround = SimVar.GetSimVarValue("SIM ON GROUND", "Bool");
-            const isAnyEngineSwitchOn = SimVar.GetSimVarValue("FUELSYSTEM VALVE SWITCH:6", "Bool") || SimVar.GetSimVarValue("FUELSYSTEM VALVE SWITCH:7", "Bool");
-
-            if (IsOnGround && isAnyEngineSwitchOn) {
-                this.groundCursor.style.display = "block";
-                this.groundCursorLimits.style.display = "block";
-            } else {
-                this.groundCursor.style.display = "none";
-                this.groundCursorLimits.style.display = "none";
-            }
-
-            const YokeXPosition = 40.45 + (18.4 * SimVar.GetSimVarValue("YOKE X POSITION", "Position"));
-            const YokeYPosition = 47.95 - (14.45 * SimVar.GetSimVarValue("YOKE Y POSITION", "Position"));
-
-            this.groundCursor.style.left = YokeXPosition.toString() + "%";
-            this.groundCursor.style.top = YokeYPosition.toString() + "%";
-
-            const ADIRSState = SimVar.GetSimVarValue("L:A320_Neo_ADIRS_STATE", "Enum");
-            const PFDAlignedFirst = SimVar.GetSimVarValue("L:A32NX_ADIRS_PFD_ALIGNED_FIRST", "Bool");
-            const PFDAlignedATT = SimVar.GetSimVarValue("L:A32NX_ADIRS_PFD_ALIGNED_ATT", "Bool");
-
-            if (PFDAlignedFirst) {
-                this.miscFail.setAttribute("style", "display:none");
-            } else {
-                this.miscFail.setAttribute("style", "");
-            }
-
-            if (PFDAlignedATT) {
-                this.attitudeFail.setAttribute("style", "display:none");
-            } else {
-                this.attitudeFail.setAttribute("style", "");
-            }
-
-            if (ADIRSState == 2) {
-                this.headingFail.setAttribute("style", "display:none");
-            } else {
-                this.headingFail.setAttribute("style", "");
-            }
-
-            const ACPowerStateChange = SimVar.GetSimVarValue("L:ACPowerStateChange","Bool");
-            const ACPowerAvailable = SimVar.GetSimVarValue("L:ACPowerAvailable","Bool");
-
-            const KnobChanged = (currentKnobValue >= 0.1 && this.selfTestLastKnobValue < 0.1);
-
-            if ((KnobChanged || ACPowerStateChange) && ACPowerAvailable && !this.selfTestTimerStarted) {
-                this.selfTestDiv.style.display = "block";
-                this.selfTestTimer = 14.25;
-                this.selfTestTimerStarted = true;
-            }
-
-            if (this.selfTestTimer >= 0) {
-                this.selfTestTimer -= _deltaTime / 1000;
-                if (this.selfTestTimer <= 0) {
-                    this.selfTestDiv.style.display = "none";
-                    this.selfTestTimerStarted = false;
-                }
-            }
-
-            this.selfTestLastKnobValue = currentKnobValue;
-            this.updateScreenState();
+        if (currentKnobValue <= 0.0) {
+            return;
         }
+        super.onUpdate(_deltaTime);
+        if (!this.hasInitialized) {
+            return;
+        }
+        this.flashTimer -= _deltaTime / 1000;
+        if (this.flashTimer <= 0) {
+            this.flashTimer = 1;
+            this.flashState = !this.flashState;
+        }
+        if (this.flashState) {
+            this.attFlash.setAttribute("visibility", "visible");
+            this.hdgFlash.setAttribute("visibility", "visible");
+            this.spdFlash.setAttribute("visibility", "visible");
+            this.altFlash.setAttribute("visibility", "visible");
+            this.vsFlash.setAttribute("visibility", "visible");
+        } else if (this.selfTestTimer > -5) {
+            this.attFlash.setAttribute("visibility", "hidden");
+            this.hdgFlash.setAttribute("visibility", "hidden");
+            this.spdFlash.setAttribute("visibility", "hidden");
+            this.altFlash.setAttribute("visibility", "hidden");
+            this.vsFlash.setAttribute("visibility", "hidden");
+        }
+
+        const IsOnGround = SimVar.GetSimVarValue("SIM ON GROUND", "Bool");
+        const isAnyEngineSwitchOn = SimVar.GetSimVarValue("FUELSYSTEM VALVE SWITCH:6", "Bool") || SimVar.GetSimVarValue("FUELSYSTEM VALVE SWITCH:7", "Bool");
+
+        if (IsOnGround && isAnyEngineSwitchOn) {
+            this.groundCursor.style.display = "block";
+            this.groundCursorLimits.style.display = "block";
+        } else {
+            this.groundCursor.style.display = "none";
+            this.groundCursorLimits.style.display = "none";
+        }
+
+        const YokeXPosition = 40.45 + (18.4 * SimVar.GetSimVarValue("YOKE X POSITION", "Position"));
+        const YokeYPosition = 47.95 - (14.45 * SimVar.GetSimVarValue("YOKE Y POSITION", "Position"));
+
+        this.groundCursor.style.left = YokeXPosition.toString() + "%";
+        this.groundCursor.style.top = YokeYPosition.toString() + "%";
+
+        const ADIRSState = SimVar.GetSimVarValue("L:A320_Neo_ADIRS_STATE", "Enum");
+        const PFDAlignedFirst = SimVar.GetSimVarValue("L:A32NX_ADIRS_PFD_ALIGNED_FIRST", "Bool");
+        const PFDAlignedATT = SimVar.GetSimVarValue("L:A32NX_ADIRS_PFD_ALIGNED_ATT", "Bool");
+
+        if (PFDAlignedFirst) {
+            this.miscFail.setAttribute("style", "display:none");
+        } else {
+            this.miscFail.setAttribute("style", "");
+        }
+
+        if (PFDAlignedATT) {
+            this.attitudeFail.setAttribute("style", "display:none");
+        } else {
+            this.attitudeFail.setAttribute("style", "");
+        }
+
+        if (ADIRSState == 2) {
+            this.headingFail.setAttribute("style", "display:none");
+        } else {
+            this.headingFail.setAttribute("style", "");
+        }
+
+        const ACPowerStateChange = SimVar.GetSimVarValue("L:ACPowerStateChange","Bool");
+        const ACPowerAvailable = SimVar.GetSimVarValue("L:ACPowerAvailable","Bool");
+
+        const KnobChanged = (currentKnobValue >= 0.1 && this.selfTestLastKnobValue < 0.1);
+
+        if ((KnobChanged || ACPowerStateChange) && ACPowerAvailable && !this.selfTestTimerStarted) {
+            this.selfTestDiv.style.display = "block";
+            this.selfTestTimer = 14.25;
+            this.selfTestTimerStarted = true;
+        }
+
+        if (this.selfTestTimer >= 0) {
+            this.selfTestTimer -= _deltaTime / 1000;
+            if (this.selfTestTimer <= 0) {
+                this.selfTestDiv.style.display = "none";
+                this.selfTestTimerStarted = false;
+            }
+        }
+
+        this.selfTestLastKnobValue = currentKnobValue;
+        this.updateScreenState();
     }
     onEvent(_event) {
         switch (_event) {
@@ -227,17 +227,17 @@ class A320_Neo_PFD_VSpeed extends NavSystemElement {
         const _deltaTime = this.getDeltaTime();
         const pot_index = this.disp_index == 1 ? 88 : 90;
         const currentKnobValue = SimVar.GetSimVarValue("LIGHT POTENTIOMETER:" + pot_index, "number");
-
-        if (currentKnobValue > 0.0) {
-            const vSpeed = Math.round(Simplane.getVerticalSpeed());
-            this.vsi.setAttribute("vspeed", vSpeed.toString());
-            if (Simplane.getAutoPilotVerticalSpeedHoldActive()) {
-                const selVSpeed = Math.round(Simplane.getAutoPilotVerticalSpeedHoldValue());
-                this.vsi.setAttribute("selected_vspeed", selVSpeed.toString());
-                this.vsi.setAttribute("selected_vspeed_active", "true");
-            } else {
-                this.vsi.setAttribute("selected_vspeed_active", "false");
-            }
+        if (currentKnobValue <= 0.0) {
+            return;
+        }
+        const vSpeed = Math.round(Simplane.getVerticalSpeed());
+        this.vsi.setAttribute("vspeed", vSpeed.toString());
+        if (Simplane.getAutoPilotVerticalSpeedHoldActive()) {
+            const selVSpeed = Math.round(Simplane.getAutoPilotVerticalSpeedHoldValue());
+            this.vsi.setAttribute("selected_vspeed", selVSpeed.toString());
+            this.vsi.setAttribute("selected_vspeed_active", "true");
+        } else {
+            this.vsi.setAttribute("selected_vspeed_active", "false");
         }
     }
     onExit() {
@@ -263,9 +263,10 @@ class A320_Neo_PFD_Airspeed extends NavSystemElement {
         const _deltaTime = this.getDeltaTime();
         const pot_index = this.disp_index == 1 ? 88 : 90;
         const currentKnobValue = SimVar.GetSimVarValue("LIGHT POTENTIOMETER:" + pot_index, "number");
-        if (currentKnobValue > 0.0) {
-            this.airspeed.update(_deltaTime);
+        if (currentKnobValue <= 0.0) {
+            return;
         }
+        this.airspeed.update(_deltaTime);
     }
     onExit() {
     }
@@ -290,9 +291,10 @@ class A320_Neo_PFD_Altimeter extends NavSystemElement {
         const _deltaTime = this.getDeltaTime();
         const pot_index = this.disp_index == 1 ? 88 : 90;
         const currentKnobValue = SimVar.GetSimVarValue("LIGHT POTENTIOMETER:" + pot_index, "number");
-        if (currentKnobValue > 0.0) {
-            this.altimeter.update(_deltaTime);
+        if (currentKnobValue <= 0.0) {
+            return;
         }
+        this.altimeter.update(_deltaTime);
     }
     onExit() {
     }
@@ -326,32 +328,33 @@ class A320_Neo_PFD_Attitude extends NavSystemElement {
         const _deltaTime = this.getDeltaTime();
         const pot_index = this.disp_index == 1 ? 88 : 90;
         const currentKnobValue = SimVar.GetSimVarValue("LIGHT POTENTIOMETER:" + pot_index, "number");
-        if (currentKnobValue > 0.0) {
-            if (this.hsi) {
-                this.hsi.update(_deltaTime);
+        if (currentKnobValue <= 0.0) {
+            return;
+        }
+        if (this.hsi) {
+            this.hsi.update(_deltaTime);
 
-                const flightDirectorActive = SimVar.GetSimVarValue(`AUTOPILOT FLIGHT DIRECTOR ACTIVE:1`, "bool");
-                const apHeadingModeSelected = Simplane.getAutoPilotHeadingSelected();
-                const fcuShowHdg = SimVar.GetSimVarValue("L:A320_FCU_SHOW_SELECTED_HEADING", "number");
-                const showSelectedHdg = !flightDirectorActive && (fcuShowHdg || apHeadingModeSelected);
+            const flightDirectorActive = SimVar.GetSimVarValue(`AUTOPILOT FLIGHT DIRECTOR ACTIVE:1`, "bool");
+            const apHeadingModeSelected = Simplane.getAutoPilotHeadingSelected();
+            const fcuShowHdg = SimVar.GetSimVarValue("L:A320_FCU_SHOW_SELECTED_HEADING", "number");
+            const showSelectedHdg = !flightDirectorActive && (fcuShowHdg || apHeadingModeSelected);
 
-                const selectedHeading = Simplane.getAutoPilotSelectedHeadingLockValue(false);
-                const compass = SimVar.GetSimVarValue("PLANE HEADING DEGREES MAGNETIC", "degree");
-                const xyz = Simplane.getOrientationAxis();
+            const selectedHeading = Simplane.getAutoPilotSelectedHeadingLockValue(false);
+            const compass = SimVar.GetSimVarValue("PLANE HEADING DEGREES MAGNETIC", "degree");
+            const xyz = Simplane.getOrientationAxis();
 
-                if (xyz) {
-                    this.hsi.setAttribute("horizon", (xyz.pitch / Math.PI * 180).toString());
-                    this.hsi.setAttribute("pitch", (xyz.pitch / Math.PI * 180).toString());
-                    this.hsi.setAttribute("bank", (xyz.bank / Math.PI * 180).toString());
-                }
-
-                this.hsi.setAttribute("slip_skid", Simplane.getInclinometer().toString());
-                this.hsi.setAttribute("radio_altitude", Simplane.getAltitudeAboveGround().toString());
-                this.hsi.setAttribute("radio_decision_height", this.gps.radioNav.getRadioDecisionHeight().toString());
-                this.hsi.setAttribute("compass", compass.toString());
-                this.hsi.setAttribute("show_selected_hdg", showSelectedHdg.toString());
-                this.hsi.setAttribute("ap_hdg", selectedHeading.toString());
+            if (xyz) {
+                this.hsi.setAttribute("horizon", (xyz.pitch / Math.PI * 180).toString());
+                this.hsi.setAttribute("pitch", (xyz.pitch / Math.PI * 180).toString());
+                this.hsi.setAttribute("bank", (xyz.bank / Math.PI * 180).toString());
             }
+
+            this.hsi.setAttribute("slip_skid", Simplane.getInclinometer().toString());
+            this.hsi.setAttribute("radio_altitude", Simplane.getAltitudeAboveGround().toString());
+            this.hsi.setAttribute("radio_decision_height", this.gps.radioNav.getRadioDecisionHeight().toString());
+            this.hsi.setAttribute("compass", compass.toString());
+            this.hsi.setAttribute("show_selected_hdg", showSelectedHdg.toString());
+            this.hsi.setAttribute("ap_hdg", selectedHeading.toString());
         }
     }
     onExit() {
@@ -374,9 +377,10 @@ class A320_Neo_PFD_Compass extends NavSystemElement {
         const _deltaTime = this.getDeltaTime();
         const pot_index = this.disp_index == 1 ? 88 : 90;
         const currentKnobValue = SimVar.GetSimVarValue("LIGHT POTENTIOMETER:" + pot_index, "number");
-        if (currentKnobValue > 0.0) {
-            this.hsi.update(_deltaTime);
+        if (currentKnobValue <= 0.0) {
+            return;
         }
+        this.hsi.update(_deltaTime);
     }
     onExit() {
     }
@@ -404,10 +408,11 @@ class A320_Neo_PFD_NavStatus extends NavSystemElement {
         const _deltaTime = this.getDeltaTime();
         const pot_index = this.disp_index == 1 ? 88 : 90;
         const currentKnobValue = SimVar.GetSimVarValue("LIGHT POTENTIOMETER:" + pot_index, "number");
-        if (currentKnobValue > 0.0) {
-            if (this.fma != null) {
-                this.fma.update(_deltaTime);
-            }
+        if (currentKnobValue <= 0.0) {
+            return;
+        }
+        if (this.fma != null) {
+            this.fma.update(_deltaTime);
         }
     }
     onExit() {
@@ -430,10 +435,11 @@ class A320_Neo_PFD_ILS extends NavSystemElement {
         const _deltaTime = this.getDeltaTime();
         const pot_index = this.disp_index == 1 ? 88 : 90;
         const currentKnobValue = SimVar.GetSimVarValue("LIGHT POTENTIOMETER:" + pot_index, "number");
-        if (currentKnobValue > 0.0) {
-            if (this.ils) {
-                this.ils.update(_deltaTime);
-            }
+        if (currentKnobValue <= 0.0) {
+            return;
+        }
+        if (this.ils) {
+            this.ils.update(_deltaTime);
         }
     }
     onExit() {

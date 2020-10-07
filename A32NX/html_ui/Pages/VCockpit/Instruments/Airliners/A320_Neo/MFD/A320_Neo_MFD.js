@@ -110,58 +110,57 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
     onUpdate() {
         const pot_index = this.disp_index == 1 ? 89 : 91;
         const currentKnobValue = SimVar.GetSimVarValue("LIGHT POTENTIOMETER:" + pot_index, "number");
-
-        if (currentKnobValue > 0.0) {
-
-            const _deltaTime = this.getDeltaTime();
-            super.onUpdate(_deltaTime);
-            this.updateMap(_deltaTime);
-            this.updateNDInfo(_deltaTime);
-
-            const ADIRSState = SimVar.GetSimVarValue("L:A320_Neo_ADIRS_STATE", "Enum");
-
-            if (ADIRSState != 2) {
-                document.querySelector("#GPSPrimary").setAttribute("visibility", "hidden");
-                document.querySelector("#GPSPrimaryLost").setAttribute("visibility", "visible");
-            } else {
-                document.querySelector("#GPSPrimary").setAttribute("visibility", "visible");
-                document.querySelector("#GPSPrimaryLost").setAttribute("visibility", "hidden");
-            }
-
-            if (ADIRSState != 2 && !this.map.planMode && this.modeChangeTimer == -1) {
-                document.querySelector("#MapFail").setAttribute("visibility", "visible");
-                document.querySelector("#Map").setAttribute("style", "display:none");
-            } else {
-                document.querySelector("#MapFail").setAttribute("visibility", "hidden");
-                document.querySelector("#Map").setAttribute("style", "");
-            }
-
-            if (this.map.planMode) {
-                this.map.instrument.airplaneIconElement._image.setAttribute("visibility", ADIRSState != 2 ? "hidden" : "visible");
-            }
-
-            const ACPowerStateChange = SimVar.GetSimVarValue("L:ACPowerStateChange","Bool");
-            const ACPowerAvailable = SimVar.GetSimVarValue("L:ACPowerAvailable","Bool");
-
-            const KnobChanged = (currentKnobValue >= 0.1 && this.selfTestLastKnobValue < 0.1);
-
-            if ((KnobChanged || ACPowerStateChange) && ACPowerAvailable && !this.selfTestTimerStarted) {
-                this.selfTestDiv.style.display = "block";
-                this.selfTestTimer = 14.25;
-                this.selfTestTimerStarted = true;
-            }
-
-            if (this.selfTestTimer >= 0) {
-                this.selfTestTimer -= _deltaTime / 1000;
-                if (this.selfTestTimer <= 0) {
-                    this.selfTestDiv.style.display = "none";
-                    this.selfTestTimerStarted = false;
-                }
-            }
-
-            this.selfTestLastKnobValue = currentKnobValue;
-            this.updateScreenState();
+        if (currentKnobValue <= 0.0) {
+            return;
         }
+        const _deltaTime = this.getDeltaTime();
+        super.onUpdate(_deltaTime);
+        this.updateMap(_deltaTime);
+        this.updateNDInfo(_deltaTime);
+
+        const ADIRSState = SimVar.GetSimVarValue("L:A320_Neo_ADIRS_STATE", "Enum");
+
+        if (ADIRSState != 2) {
+            document.querySelector("#GPSPrimary").setAttribute("visibility", "hidden");
+            document.querySelector("#GPSPrimaryLost").setAttribute("visibility", "visible");
+        } else {
+            document.querySelector("#GPSPrimary").setAttribute("visibility", "visible");
+            document.querySelector("#GPSPrimaryLost").setAttribute("visibility", "hidden");
+        }
+
+        if (ADIRSState != 2 && !this.map.planMode && this.modeChangeTimer == -1) {
+            document.querySelector("#MapFail").setAttribute("visibility", "visible");
+            document.querySelector("#Map").setAttribute("style", "display:none");
+        } else {
+            document.querySelector("#MapFail").setAttribute("visibility", "hidden");
+            document.querySelector("#Map").setAttribute("style", "");
+        }
+
+        if (this.map.planMode) {
+            this.map.instrument.airplaneIconElement._image.setAttribute("visibility", ADIRSState != 2 ? "hidden" : "visible");
+        }
+
+        const ACPowerStateChange = SimVar.GetSimVarValue("L:ACPowerStateChange","Bool");
+        const ACPowerAvailable = SimVar.GetSimVarValue("L:ACPowerAvailable","Bool");
+
+        const KnobChanged = (currentKnobValue >= 0.1 && this.selfTestLastKnobValue < 0.1);
+
+        if ((KnobChanged || ACPowerStateChange) && ACPowerAvailable && !this.selfTestTimerStarted) {
+            this.selfTestDiv.style.display = "block";
+            this.selfTestTimer = 14.25;
+            this.selfTestTimerStarted = true;
+        }
+
+        if (this.selfTestTimer >= 0) {
+            this.selfTestTimer -= _deltaTime / 1000;
+            if (this.selfTestTimer <= 0) {
+                this.selfTestDiv.style.display = "none";
+                this.selfTestTimerStarted = false;
+            }
+        }
+
+        this.selfTestLastKnobValue = currentKnobValue;
+        this.updateScreenState();
     }
 
     updateScreenState() {
@@ -405,10 +404,10 @@ class A320_Neo_MFD_Compass extends NavSystemElement {
     onUpdate(_deltaTime) {
         const pot_index = this.disp_index == 1 ? 89 : 91;
         const currentKnobValue = SimVar.GetSimVarValue("LIGHT POTENTIOMETER:" + pot_index, "number");
-        console.log(pot_index);
-        if (currentKnobValue > 0.0) {
-            this.svg.update(_deltaTime);
+        if (currentKnobValue <= 0.0) {
+            return;
         }
+        this.svg.update(_deltaTime);
     }
     onExit() {
     }
@@ -587,35 +586,36 @@ class A320_Neo_MFD_NDInfo extends NavSystemElement {
     onUpdate(_deltaTime) {
         const pot_index = this.disp_index == 1 ? 89 : 91;
         const currentKnobValue = SimVar.GetSimVarValue("LIGHT POTENTIOMETER:" + pot_index, "number");
-        if (currentKnobValue > 0.0) {
-            if (this.ndInfo != null) {
-                this.ndInfo.update(_deltaTime);
-            }
-            const ADIRSState = SimVar.GetSimVarValue("L:A320_Neo_ADIRS_STATE", "Enum");
-            const groundSpeed = Math.round(Simplane.getGroundSpeed());
-            const gs = this.ndInfo.querySelector("#GS_Value");
-            const tas = this.ndInfo.querySelector("#TAS_Value");
-            const wd = this.ndInfo.querySelector("#Wind_Direction");
-            const ws = this.ndInfo.querySelector("#Wind_Strength");
-            const wa = this.ndInfo.querySelector("#Wind_Arrow");
-            const wptg = this.ndInfo.querySelector("#Waypoint_Group");
-            if (ADIRSState != 2 || groundSpeed <= 100) {
-                //Hide TAS, and wind info
-                tas.textContent = "---";
-                wd.textContent = "---";
-                ws.textContent = "---";
-                wa.setAttribute("visibility", "hidden");
-            } else {
-                wa.setAttribute("visibility", "visible");
-            }
-            if (ADIRSState != 2) {
-                gs.textContent = "---";
-            } else {
-                gs.textContent = groundSpeed.toString().padStart(3);
-            }
-            //Hide waypoint when ADIRS not aligned
-            wptg.setAttribute("visibility", (ADIRSState != 2) ? "hidden" : "visible");
+        if (currentKnobValue <= 0.0) {
+            return;
         }
+        if (this.ndInfo != null) {
+            this.ndInfo.update(_deltaTime);
+        }
+        const ADIRSState = SimVar.GetSimVarValue("L:A320_Neo_ADIRS_STATE", "Enum");
+        const groundSpeed = Math.round(Simplane.getGroundSpeed());
+        const gs = this.ndInfo.querySelector("#GS_Value");
+        const tas = this.ndInfo.querySelector("#TAS_Value");
+        const wd = this.ndInfo.querySelector("#Wind_Direction");
+        const ws = this.ndInfo.querySelector("#Wind_Strength");
+        const wa = this.ndInfo.querySelector("#Wind_Arrow");
+        const wptg = this.ndInfo.querySelector("#Waypoint_Group");
+        if (ADIRSState != 2 || groundSpeed <= 100) {
+            //Hide TAS, and wind info
+            tas.textContent = "---";
+            wd.textContent = "---";
+            ws.textContent = "---";
+            wa.setAttribute("visibility", "hidden");
+        } else {
+            wa.setAttribute("visibility", "visible");
+        }
+        if (ADIRSState != 2) {
+            gs.textContent = "---";
+        } else {
+            gs.textContent = groundSpeed.toString().padStart(3);
+        }
+        //Hide waypoint when ADIRS not aligned
+        wptg.setAttribute("visibility", (ADIRSState != 2) ? "hidden" : "visible");
     }
     onExit() {
     }
