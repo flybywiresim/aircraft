@@ -259,6 +259,14 @@ var A320_Neo_LowerECAM_BLEED;
             let packTemperatureVariation1 = 0;
             let packTemperatureVariation2 = 0;
 
+            if (!this.packOutMultiplier1) {
+                this.packOutMultiplier1 = 0.055;
+            }
+
+            if (!this.packOutMultiplier2) {
+                this.packOutMultiplier2 = 0.055;
+            }
+
             if (eng1Running) {
                 packTemperatureVariation1 = ((((packRequestedTemp / packTMPComputedOut[0]) * this.packOutMultiplier1) - this.packOutMultiplier1));
                 this.packOutMultiplier1 += packTemperatureVariation1 * (this.temperatureVariationSpeed * (0.8 + (currentPackFlow * 0.2)));
