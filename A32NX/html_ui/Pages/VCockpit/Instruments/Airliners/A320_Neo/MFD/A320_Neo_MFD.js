@@ -94,6 +94,7 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
         SimVar.SetSimVarValue("L:XMLVAR_A320_WeatherRadar_Sys", "number", 1);
         const url = document.getElementsByTagName("a320-neo-mfd-element")[0].getAttribute("url");
         this.disp_index = parseInt(url.substring(url.length - 1));
+        this.pot_index = this.disp_index == 1 ? 89 : 91;
         this.showILS = SimVar.GetSimVarValue(`L:BTN_LS_${this.disp_index}_FILTER_ACTIVE`, "bool");
         this.compass.showILS(this.showILS);
         this.info.showILS(this.showILS);
@@ -108,8 +109,7 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
         this.electricity = this.gps.getChildById("Electricity");
     }
     onUpdate() {
-        const pot_index = this.disp_index == 1 ? 89 : 91;
-        const currentKnobValue = SimVar.GetSimVarValue("LIGHT POTENTIOMETER:" + pot_index, "number");
+        const currentKnobValue = SimVar.GetSimVarValue("LIGHT POTENTIOMETER:" + this.pot_index, "number");
         if (currentKnobValue <= 0.0) {
             return;
         }
@@ -398,12 +398,12 @@ class A320_Neo_MFD_Compass extends NavSystemElement {
         this.svg.gps = this.gps;
         const url = document.getElementsByTagName("a320-neo-mfd-element")[0].getAttribute("url");
         this.disp_index = parseInt(url.substring(url.length - 1));
+        this.pot_index = this.disp_index == 1 ? 89 : 91;
     }
     onEnter() {
     }
     onUpdate(_deltaTime) {
-        const pot_index = this.disp_index == 1 ? 89 : 91;
-        const currentKnobValue = SimVar.GetSimVarValue("LIGHT POTENTIOMETER:" + pot_index, "number");
+        const currentKnobValue = SimVar.GetSimVarValue("LIGHT POTENTIOMETER:" + this.pot_index, "number");
         if (currentKnobValue <= 0.0) {
             return;
         }
@@ -580,12 +580,12 @@ class A320_Neo_MFD_NDInfo extends NavSystemElement {
         this.allSymbols.push(this.ndInfo.querySelector("#MAP"));
         const url = document.getElementsByTagName("a320-neo-mfd-element")[0].getAttribute("url");
         this.disp_index = parseInt(url.substring(url.length - 1));
+        this.pot_index = this.disp_index == 1 ? 89 : 91;
     }
     onEnter() {
     }
     onUpdate(_deltaTime) {
-        const pot_index = this.disp_index == 1 ? 89 : 91;
-        const currentKnobValue = SimVar.GetSimVarValue("LIGHT POTENTIOMETER:" + pot_index, "number");
+        const currentKnobValue = SimVar.GetSimVarValue("LIGHT POTENTIOMETER:" + this.pot_index, "number");
         if (currentKnobValue <= 0.0) {
             return;
         }
