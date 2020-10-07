@@ -108,8 +108,8 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
         this.electricity = this.gps.getChildById("Electricity");
     }
     onUpdate() {
-        const displayIndex = this.disp_index == 1 ? 89 : 91;
-        const currentKnobValue = SimVar.GetSimVarValue("LIGHT POTENTIOMETER:" + displayIndex, "number");
+        const pot_index = this.disp_index == 1 ? 89 : 91;
+        const currentKnobValue = SimVar.GetSimVarValue("LIGHT POTENTIOMETER:" + pot_index, "number");
 
         if (currentKnobValue > 0.0) {
 
@@ -397,12 +397,15 @@ class A320_Neo_MFD_Compass extends NavSystemElement {
         this.svg = this.gps.getChildById("Compass");
         this.svg.aircraft = Aircraft.A320_NEO;
         this.svg.gps = this.gps;
+        const url = document.getElementsByTagName("a320-neo-mfd-element")[0].getAttribute("url");
+        this.disp_index = parseInt(url.substring(url.length - 1));
     }
     onEnter() {
     }
     onUpdate(_deltaTime) {
-        const displayIndex = this.disp_index == 1 ? 89 : 91;
-        const currentKnobValue = SimVar.GetSimVarValue("LIGHT POTENTIOMETER:" + displayIndex, "number");
+        const pot_index = this.disp_index == 1 ? 89 : 91;
+        const currentKnobValue = SimVar.GetSimVarValue("LIGHT POTENTIOMETER:" + pot_index, "number");
+        console.log(pot_index);
         if (currentKnobValue > 0.0) {
             this.svg.update(_deltaTime);
         }
@@ -576,6 +579,8 @@ class A320_Neo_MFD_NDInfo extends NavSystemElement {
         this.allSymbols.push(this.ndInfo.querySelector("#WXRTURB"));
         this.allSymbols.push(this.ndInfo.querySelector("#TURB"));
         this.allSymbols.push(this.ndInfo.querySelector("#MAP"));
+        const url = document.getElementsByTagName("a320-neo-mfd-element")[0].getAttribute("url");
+        this.disp_index = parseInt(url.substring(url.length - 1));
     }
     onEnter() {
     }
