@@ -65,7 +65,6 @@ class CDUInitPage {
                 }
                 mcdu.onLeftInput[1] = async () => {
                     const value = mcdu.inOut;
-                    console.log("ALT value is: " + value);
                     switch (altDest) {
                         case "NONE":
                             if (value === "") {
@@ -344,7 +343,6 @@ class CDUInitPage {
             finalColor = "[color]blue";
 
             mcdu.takeOffWeight = mcdu.zeroFuelWeight + mcdu.blockFuel - mcdu.taxiFuelWeight;
-            console.log("Takeoff weight =" + mcdu.takeOffWeight);
             if (isFinite(mcdu.takeOffWeight)) {
                 towCell = mcdu.takeOffWeight.toFixed(1);
                 towLwColor = "[color]green";
@@ -418,7 +416,6 @@ class CDUInitPage {
 
         // It infact does not work
         mcdu.onPlusMinus = () => {
-            console.log("Plus Minus Works!!");
         };
 
         mcdu.onPrevPage = () => {

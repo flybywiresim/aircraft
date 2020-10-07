@@ -951,7 +951,6 @@ class FMCMainDisplay extends BaseAirliners {
                 } else {
                     flapSpeed = Simplane.getStallSpeedPredicted(flapsHandleIndex + 1) * 1.36;
                 }
-
             }
         }
         return flapSpeed;

@@ -12,11 +12,6 @@ class CDUFuelPredPage {
                 destTimeCell = FMCMainDisplay.secondsTohhmm(mcdu.flightPlanManager.getDestination().infos.totalTimeInFP);
             }
         }
-
-        //TODO change these to lets later on
-        const altIdentCell = "---";
-        const altTimeCell = "";
-
         let rteRsvWeightCell = "--.-";
         const rteRsvWeight = mcdu.getRouteReservedWeight();
         if (isFinite(rteRsvWeight)) {
