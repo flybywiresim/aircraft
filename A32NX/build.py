@@ -43,7 +43,7 @@ if content_entries:
 else:
     print("Error: layout.json not updated", file=sys.stderr)
 
-with open("../manifest-base.json", "r") as manifest_file:
+with open("manifest.json", "r") as manifest_file:
     manifest_entries = json.load(manifest_file)
     manifest_entries["total_package_size"] = str(total_package_size).zfill(20)
 
