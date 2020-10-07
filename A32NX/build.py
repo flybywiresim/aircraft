@@ -39,7 +39,7 @@ layout_entries = {"content": content_entries}
 
 if content_entries:
     with open("layout.json", "w") as layout_file:
-        json.dump(layout_entries, layout_file, indent=4)
+        json.dump(layout_entries, layout_file, indent=2)
 else:
     print("Error: layout.json not updated", file=sys.stderr)
 
@@ -49,6 +49,6 @@ with open("manifest.json", "r") as manifest_file:
 
 if manifest_entries:
     with open("manifest.json", "w") as manifest_file:
-        json.dump(manifest_entries, manifest_file, indent=4)
+        json.dump(manifest_entries, manifest_file, indent=2)
 else:
     print("Error: manifest.json not updated", file=sys.stderr)
