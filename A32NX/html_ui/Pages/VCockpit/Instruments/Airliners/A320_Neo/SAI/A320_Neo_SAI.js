@@ -595,10 +595,6 @@ class A320_Neo_SAI_AltimeterIndicator extends HTMLElement {
                     const alt_n = parseInt(_altitude);
                     const bug_n = parseInt(alt_bug);
                     if ((alt_n < (bug_n + 100)) && (alt_n > (bug_n - 100))) {
-                        console.log("First :" + (alt_n < (bug_n + 100)));
-                        console.log("Second : " + (alt_n > (bug_n - 100)));
-                        console.log(alt_n);
-                        console.log(bug_n);
                         this.cursorSVGShape.setAttribute("stroke", "cyan");
                     }
                 });
