@@ -1,36 +1,36 @@
 class CDUGPSMonitor {
     static ShowPage(mcdu, merit1, merit2, sat1, sat2) {
-        let currPos = new LatLong(SimVar.GetSimVarValue("GPS POSITION LAT", "degree latitude"), 
-                                  SimVar.GetSimVarValue("GPS POSITION LON", "degree longitude")).toShortDegreeString();
+        let currPos = new LatLong(SimVar.GetSimVarValue("GPS POSITION LAT", "degree latitude"),
+            SimVar.GetSimVarValue("GPS POSITION LON", "degree longitude")).toShortDegreeString();
         if (currPos.includes("N")) {
-            var currPosSplit = currPos.split("N")
-            var sep = "N/"
+            var currPosSplit = currPos.split("N");
+            var sep = "N/";
         } else {
-            var currPosSplit = currPos.split("S")
-            var sep = "S/"
+            var currPosSplit = currPos.split("S");
+            var sep = "S/";
         }
-        let latStr = currPosSplit[0]
-        let lonStr = currPosSplit[1]
-        currPos = latStr + sep + lonStr
-        let TTRK = SimVar.GetSimVarValue("GPS GROUND MAGNETIC TRACK", "radians") || "000";
-        let GROUNDSPEED = SimVar.GetSimVarValue("GPS GROUND SPEED", "Meters per second") || "0";
-        let ALTITUDE = SimVar.GetSimVarValue("INDICATED ALTITUDE", "Feet") || "0";
+        const latStr = currPosSplit[0];
+        const lonStr = currPosSplit[1];
+        currPos = latStr + sep + lonStr;
+        const TTRK = SimVar.GetSimVarValue("GPS GROUND MAGNETIC TRACK", "radians") || "000";
+        const GROUNDSPEED = SimVar.GetSimVarValue("GPS GROUND SPEED", "Meters per second") || "0";
+        const ALTITUDE = SimVar.GetSimVarValue("INDICATED ALTITUDE", "Feet") || "0";
 
-        var UTC_SECONDS  = Math.floor(SimVar.GetGlobalVarValue("ZULU TIME", "seconds"));
-        var hours = Math.floor(UTC_SECONDS / 3600) || 0
-        var minutes = Math.floor(UTC_SECONDS % 3600 / 60) || 0
-        var seconds = Math.floor(UTC_SECONDS % 3600 % 60) || 0
+        const UTC_SECONDS = Math.floor(SimVar.GetGlobalVarValue("ZULU TIME", "seconds"));
+        const hours = Math.floor(UTC_SECONDS / 3600) || 0;
+        const minutes = Math.floor(UTC_SECONDS % 3600 / 60) || 0;
+        const seconds = Math.floor(UTC_SECONDS % 3600 % 60) || 0;
 
-        var UTC = `${hours.toString().padStart(2, "0") || "00"}:${minutes.toString().padStart(2, "0") || "00"}:${seconds.toString().padStart(2, "0") || "00"}`
+        const UTC = `${hours.toString().padStart(2, "0") || "00"}:${minutes.toString().padStart(2, "0") || "00"}:${seconds.toString().padStart(2, "0") || "00"}`;
 
         if (typeof merit1 == 'undefined') {
             merit1 = Math.floor(Math.random() * 10) + 40;
             merit2 = Math.floor(Math.random() * 10) + 40;
-            sat1 = Math.floor(Math.random()*5) + 8;
-            sat2 = Math.floor(Math.random()*5) + 8;
+            sat1 = Math.floor(Math.random() * 5) + 8;
+            sat2 = Math.floor(Math.random() * 5) + 8;
         }
 
-        mcdu.clearDisplay()
+        mcdu.clearDisplay();
         // ideally, this would update with the same frequency (is it known?) as the A320 GPS
         mcdu.refreshPageCallback = () => {
             CDUGPSMonitor.ShowPage(mcdu, merit1, merit2, sat1, sat2);
@@ -51,6 +51,6 @@ class CDUGPSMonitor {
             [`${Math.round(TTRK)}[color]green`, `${Math.round(GROUNDSPEED)}[color]green`, `${UTC}[color]green`],
             ["MERIT", "MODE/SAT", "GPS ALT"],
             [`${merit2}FT[color]green`, `NAV/${sat2}[color]green`, `${Math.round(ALTITUDE)}[color]green`]
-        ])
+        ]);
     }
 }

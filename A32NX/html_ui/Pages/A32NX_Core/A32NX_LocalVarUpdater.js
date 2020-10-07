@@ -32,10 +32,14 @@ class A32NX_LocalVarUpdater {
         const noSmokingSwitch = SimVar.GetSimVarValue("L:XMLVAR_SWITCH_OVHD_INTLT_NOSMOKING_Position", "Position");
 
         // Switch is ON
-        if (noSmokingSwitch === 0) return true;
+        if (noSmokingSwitch === 0) {
+            return true;
+        }
 
         // Switch is AUTO and gear more than 50% down
-        if (noSmokingSwitch === 1 && gearPercent > 50) return true;
+        if (noSmokingSwitch === 1 && gearPercent > 50) {
+            return true;
+        }
 
         return false;
     }

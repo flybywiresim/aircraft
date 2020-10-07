@@ -2,6 +2,32 @@
 
 Welcome to the A32NX project repository. Thank you for your interest in contributing to the project. Full details and guidelines on how to ensure this project is managed well are included below.
 
+## Required software
+
+[git](https://git-scm.com/downloads)
+
+[nodejs v12+](https://nodejs.org/en/download/)
+
+[python 3.9+](https://www.python.org/downloads/)
+
+## Optional
+
+[vscode](https://code.visualstudio.com/download)
+
+[vscode eslint extension](https://marketplace.visualstudio.com/items?itemName=dbaeumer.vscode-eslint)
+
+It's recommended to set gitbash as your default shell in vscode
+
+## Cloning and setup
+
+`git clone https://github.com/flybywiresim/a32nx.git`
+
+`cd a32nx`
+
+`npm install`
+
+You will want to run `npm install` every time you pull or merge master into your branch
+
 ## Asobo branch
 
 The master branch only contains files which have been modified from the original package. If you wish to work on a file that isn't present in the master branch, simply copy it over from the latest Asobo branch, and add it in its own commit. Please DO NOT add, modify, or delete files from the Asobo branch.
@@ -48,6 +74,7 @@ If you wish to add a new feature or you spot a bug that you wish to fix, **pleas
 The work-flow for submitting a new pull request is designed to be simple, but also to ensure consistency from **all** contributors:
 * Fork the project into your personal space on GitHub.com.
 * Create a new branch (with a clear name of what is being changed).
+* Add changes to CHANGELOG.md with credits to yourself.
 * Commit your changes.
 * When writing commit messages make sure they are clear about what has been changed.
 * Push the commit(s) to your fork.
@@ -57,6 +84,8 @@ The work-flow for submitting a new pull request is designed to be simple, but al
 * Be prepared to answer any questions about your PR when it is reviewed for acceptance.
 
 **Please** keep your changes in a single PR as small as possible (relating to one issue) as this makes it easier to review and accept.  Large PRs with a small error will prevent the entire PR from being accepted.
+
+**Ensure** that you include a CHANGELOG with your PR.
 
 ## Expectations
 As contributors and maintainers of this project, we pledge to respect all people who contribute through reporting issues, posting feature requests, updating documentation, submitting pull requests or patches, and other activities.

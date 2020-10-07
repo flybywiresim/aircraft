@@ -2,6 +2,12 @@
 :root {
   --bodyHeightScale: 1; }
 
+#highlight {
+  position: absolute;
+  height: 100%;
+  width: 100%;
+  z-index: 10; }
+
 @keyframes TemporaryShow {
   0%, 100% {
     visibility: visible; } }
@@ -140,6 +146,12 @@ fmc-main-display::before {
 .s-text {
   font-size: 4.8vw;
   letter-spacing: 0.9vw; }
+
+.irs-text {
+  font-weight: lighter;
+  font-size: 6.3vw;
+  letter-spacing: 0.5vw;
+}
 
 .label {
   height: 5%;
