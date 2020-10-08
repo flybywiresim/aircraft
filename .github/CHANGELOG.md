@@ -37,6 +37,7 @@
 1. [ECAM] Fix ECAM wheel page being selected before all gears are downlocked - @lukecologne (luke)
 1. [MISC] Added standby instrument brightness adjustment and attitude reset - @2hwk (2Cas#1022 on discord)
 1. [MISC] Added standby instrument bugs page and corrected standby instrument font and behaviour on power loss - @2hwk (2Cas#1022 on discord)
+1. [PFD] Added the ability to display metric altitudes - @lousybyte (lousybyte)
 
 ## 2020/09
 1. [General] Add CHANGELOG.md - @nathaninnes (Nathan Innes)
