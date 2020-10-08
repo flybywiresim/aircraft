@@ -561,11 +561,37 @@
 				<Checkpoint ReferenceId="ENGINE_MODE_SELECTOR_NORMAL"/>
 			</Page>
 		</Step>
-
-
-
-
+		<!-- EMERGENCY -->
+		<Step ChecklistStepId="LANDING_GATE">
+			<Page SubjectTT="TT:ON GROUND EVACUATION (EMERGENCY)">
+				<Checkpoint ReferenceId="A320_EMERGENCY_PARKING_BRAKE"/>
+				<Checkpoint ReferenceId="A320_EMERGENCY_ATC"/>
+				<Checkpoint ReferenceId="A320_EMERGENCY_ENGINE_MASTER"/>
+				<Checkpoint ReferenceId="A320_EMERGENCY_CABINCREW"/>
+				<Checkpoint ReferenceId="A320_EMERGENCY_FIRE_ALERT"/>
+				<Checkpoint ReferenceId="A320_EMERGENCY_AGENTS"/>
+				<Checkpoint ReferenceId="A320_EMERGENCY_EVACUATION"/>
+			</Page>
+			<Page SubjectTT="TT:RUDDER JAM (EMERGENCY)">
+				<Block SubjectTT="FOR APPROACH">
+					<Checkpoint ReferenceId="A320_EMERGENCY_AUTOBRK"/>
+					<Checkpoint ReferenceId="A320_EMERGENCY_LANDING_CONFIG"/>
+					<Checkpoint ReferenceId="A320_EMERGENCY_SPEED_TRAJECTORY"/>
+					<Checkpoint ReferenceId="A320_EMERGENCY_LDG_DIST_PROC"/>
+				</Block>
+				<Block SubjectTT="ON GROUND">
+					<Checkpoint ReferenceId="A320_EMERGENCY_DIFFERENTIAL_BRAKING"/>
+				</Block> 
+			</Page>
+			<Page SubjectTT="TT:STABILIZER JAM (EMERGENCY)">
+				<Checkpoint ReferenceId="A320_EMERGENCY_AP"/>
+				<Checkpoint ReferenceId="A320_EMERGENCY_MAN_PITCH_TRIM"/>
+				<Block SubjectTT="APPR PROC">
+					<Checkpoint ReferenceId="A320_EMERGENCY_FOR_LDG"/>
+					<Checkpoint ReferenceId="A320_EMERGENCY_GPWS_LDG_FLAP"/>
+				</Block> 
+			</Page>
+		</Step>
 		<Step ChecklistStepId="LANDING_TAXI_IN"/>
-
 	</Checklist.Checklist>
 </SimBase.Document>

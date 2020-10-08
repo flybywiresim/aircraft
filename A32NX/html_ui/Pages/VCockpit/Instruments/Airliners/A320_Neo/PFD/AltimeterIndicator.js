@@ -309,8 +309,8 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
             this.STDpressureSVG = document.createElementNS(Avionics.SVG.NS, "text");
         }
         this.STDpressureSVG.textContent = "STD";
-        this.STDpressureSVG.setAttribute("x", "90");//90
-        this.STDpressureSVG.setAttribute("y", (posY + height + 90 - 36));// - (this.fontSize * 1.3)).toString());
+        this.STDpressureSVG.setAttribute("x", "97");
+        this.STDpressureSVG.setAttribute("y", (posY + height + 115 - 36));// - (this.fontSize * 1.3)).toString());
         this.STDpressureSVG.setAttribute("fill", "cyan");
         this.STDpressureSVG.setAttribute("font-size", (this.fontSize * 1.3).toString());//1.05
         this.STDpressureSVG.setAttribute("font-family", "Roboto-Light");
@@ -325,9 +325,8 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
         this.STDpressureSVGShape.setAttribute("fill", "none");
         this.STDpressureSVGShape.setAttribute("stroke", "yellow");
         this.STDpressureSVGShape.setAttribute("stroke-width", "3");
-
-        this.STDpressureSVGShape.setAttribute("x", "86");
-        this.STDpressureSVGShape.setAttribute("y", (posY + height + 90 - 56));//- height of STD font //1.05  - (this.fontSize * 1.3 + 3)).toString())
+        this.STDpressureSVGShape.setAttribute("x", "93");
+        this.STDpressureSVGShape.setAttribute("y", (posY + height + 113 - 56));//- height of STD font //1.05  - (this.fontSize * 1.3 + 3)).toString())
         this.STDpressureSVGShape.setAttribute("width", "63");
         this.STDpressureSVGShape.setAttribute("height", "38");//36
         this.rootGroup.appendChild(this.STDpressureSVGShape);
@@ -362,9 +361,74 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
         this.rootGroup.appendChild(this.pressureSVG);
         this.rootSVG.appendChild(this.rootGroup);
         this.appendChild(this.rootSVG);
+
+        // Metric ALT Display Selected
+        if (!this.mtrsSelectedGroup) {
+            this.mtrsSelectedGroup = document.createElement("div");
+            this.mtrsSelectedGroup.id = "mtrsSelectedGroup";
+        } else {
+            Utils.RemoveAllChildren(this.mtrsSelectedGroup);
+        }
+        this.mtrsSelectedGroup.style.fontSize = "45px";
+        this.mtrsSelectedGroup.style.position = "absolute";
+        this.mtrsSelectedGroup.style.top = "-30px";
+        this.mtrsSelectedGroup.style.left = "-150px";
+        this.appendChild(this.mtrsSelectedGroup);
+
+        // Metric ALT Display Cursor
+        if (!this.mtrsCursorGroup) {
+            this.mtrsCursorGroup = document.createElementNS(Avionics.SVG.NS, "svg");
+            this.mtrsCursorGroup.setAttribute("id", "mtrsSelectedGroup");
+        } else {
+            Utils.RemoveAllChildren(this.mtrsCursorGroup);
+        }
+
+        if (!this.mtrsCursorSVGText) {
+            this.mtrsCursorSVGText = document.createElementNS(Avionics.SVG.NS, "text");
+        }
+        this.mtrsCursorSVGText.textContent = "-----";
+        this.mtrsCursorSVGText.setAttribute("x", "153");
+        this.mtrsCursorSVGText.setAttribute("y", (posY + height + 159 - 36));
+        this.mtrsCursorSVGText.setAttribute("fill", "lime");
+        this.mtrsCursorSVGText.setAttribute("font-size", (this.fontSize * 1.3).toString());
+        this.mtrsCursorSVGText.setAttribute("font-family", "Roboto-Light");
+        this.mtrsCursorSVGText.setAttribute("text-anchor", "start");
+        this.mtrsCursorSVGText.setAttribute("alignment-baseline", "central");
+        this.mtrsCursorSVGText.setAttribute("letter-spacing", "-3px");
+        this.mtrsCursorSVGText.setAttribute("text-anchor", "end");
+        this.mtrsCursorGroup.appendChild(this.mtrsCursorSVGText);
+
+        if (!this.mtrsCursorSVGUnit) {
+            this.mtrsCursorSVGUnit = document.createElementNS(Avionics.SVG.NS, "text");
+        }
+        this.mtrsCursorSVGUnit.textContent = " M";
+        this.mtrsCursorSVGUnit.setAttribute("x", "162");
+        this.mtrsCursorSVGUnit.setAttribute("y", (posY + height + 159 - 36));
+        this.mtrsCursorSVGUnit.setAttribute("fill", "cyan");
+        this.mtrsCursorSVGUnit.setAttribute("font-size", (this.fontSize * 1.3).toString());
+        this.mtrsCursorSVGUnit.setAttribute("font-family", "Roboto-Light");
+        this.mtrsCursorSVGUnit.setAttribute("text-anchor", "start");
+        this.mtrsCursorSVGUnit.setAttribute("alignment-baseline", "central");
+        this.mtrsCursorSVGUnit.setAttribute("letter-spacing", "-3px");
+        this.mtrsCursorGroup.appendChild(this.mtrsCursorSVGUnit);
+
+        if (!this.mtrsCursorSVGBorder) {
+            this.mtrsCursorSVGBorder = document.createElementNS(Avionics.SVG.NS, "rect");
+        }
+        this.mtrsCursorSVGBorder.setAttribute("fill", "none");
+        this.mtrsCursorSVGBorder.setAttribute("stroke", "yellow");
+        this.mtrsCursorSVGBorder.setAttribute("stroke-width", "3");
+        this.mtrsCursorSVGBorder.setAttribute("x", "63");
+        this.mtrsCursorSVGBorder.setAttribute("y", (posY + height + 158 - 56));
+        this.mtrsCursorSVGBorder.setAttribute("width", "126");
+        this.mtrsCursorSVGBorder.setAttribute("height", "38");//36
+        this.mtrsCursorGroup.appendChild(this.mtrsCursorSVGBorder);
+
+        this.rootGroup.appendChild(this.mtrsCursorGroup);
     }
     update(_dTime) {
         let indicatedAltitude = Simplane.getAltitude();
+        this.showMTRS(SimVar.GetSimVarValue("L:A32NX_METRIC_ALT_TOGGLE", "bool") && SimVar.GetSimVarValue("L:A32NX_ADIRS_PFD_ALIGNED_FIRST", "Bool"));
 
         // This stuff makes the altimeter do a smooth rise to the actual altitude after alignment reaches a certain point
         const desiredDisplayedAltitude = SimVar.GetSimVarValue("L:A32NX_ADIRS_PFD_ALIGNED_FIRST", "Bool") === 0
@@ -396,13 +460,9 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
         if (this.mtrsVisible) {
             if (this.mtrsSelectedGroup) {
                 const APMode = this.getAutopilotMode();
-                if (APMode != AutopilotMode.MANAGED) {
-                    const meters = Math.round(_selected * 0.3048);
-                    this.mtrsSelectedSVGText.textContent = meters.toString();
-                    this.mtrsSelectedGroup.setAttribute("visibility", "visible");
-                } else {
-                    this.mtrsSelectedGroup.setAttribute("visibility", "hidden");
-                }
+                const meters = Math.round(_selected * 0.3048);
+                this.mtrsSelectedGroup.style.color = (APMode == AutopilotMode.SELECTED) ? "cyan" : "magenta";
+                this.mtrsSelectedGroup.textContent = meters.toString() + "M";
             }
             if (this.mtrsCursorGroup) {
                 const meters = Math.round(_altitude * 0.3048);
@@ -411,7 +471,7 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
             }
         } else {
             if (this.mtrsSelectedGroup) {
-                this.mtrsSelectedGroup.setAttribute("visibility", "hidden");
+                this.mtrsSelectedGroup.textContent = "";
             }
             if (this.mtrsCursorGroup) {
                 this.mtrsCursorGroup.setAttribute("visibility", "hidden");
