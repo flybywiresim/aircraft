@@ -3155,23 +3155,6 @@
 			<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
 				<NODE_ID>KNOB_RIGHT</NODE_ID>
 			</UseTemplate>
-			<!--
-			<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-				<NODE_ID>PUSH_BARO_PLUS</NODE_ID>
-			</UseTemplate>
-			<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-				<NODE_ID>PUSH_BARO_MINUS</NODE_ID>
-			</UseTemplate>
-			<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-				<NODE_ID>PUSH_BARO_BUGS</NODE_ID>
-			</UseTemplate>
-			<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-				<NODE_ID>PUSH_BARO_LS</NODE_ID>
-			</UseTemplate>
-			<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-				<NODE_ID>PUSH_BARO_RST</NODE_ID>
-			</UseTemplate>
-			-->
 			<!-- Landing Light Indicators
 		<UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
 			<NODE_ID>PUSH_AUTOBKR_LDGGEAR_1</NODE_ID>
