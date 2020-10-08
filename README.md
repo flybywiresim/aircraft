@@ -8,19 +8,26 @@ The A32NX Project is a community driven open source project to create a free Air
 
 ## Download
 
+### Mod Download & Installer
+
+Download the new mod installer where you can select either the Stable or Developer build, and install download and install the mod directly into your community folder, [download here.](https://github.com/Externoak/A32NX-installer/releases/download/v0.3/A32NX_Downloader.zip)
+
+
+### Traditional Method
+
 ### Latest Stable Release
 
 This is the recommended stable release, as it has been thoroughly tested.
 
-https://github.com/flybywiresim/a32nx/releases/latest/download/flybywiresim-a32nx.zip
+[Download stable release here.](https://github.com/flybywiresim/a32nx/releases/latest/download/flybywiresim-a32nx.zip)
 
-You can see the changelog on the releases page: https://github.com/flybywiresim/a32nx/releases
+You can see the changelog on the releases page: [View Here.](https://github.com/flybywiresim/a32nx/releases)
 
 ### Unstable Master Branch Build
 
 This has the latest features, but is much more unstable, use at your own risk.
 
-https://github.com/flybywiresim/a32nx/releases/download/vmaster/A32NX-master.zip
+[Download developer build here.](https://github.com/flybywiresim/a32nx/releases/download/vmaster/A32NX-master.zip)
 
 ## Installation
 
