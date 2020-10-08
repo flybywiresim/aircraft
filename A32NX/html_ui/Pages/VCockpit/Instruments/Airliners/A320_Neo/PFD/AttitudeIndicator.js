@@ -68,9 +68,9 @@ class Jet_PFD_AttitudeIndicator extends HTMLElement {
         }
 
         this.borders.setAttribute("x", "-200");
-        this.borders.setAttribute("y", y);
-        this.borders.setAttribute("width", w + 200);
-        this.borders.setAttribute("height", h);
+        this.borders.setAttribute("y", y.toString());
+        this.borders.setAttribute("width", (w + 200).toString());
+        this.borders.setAttribute("height", h.toString());
         this.borders.setAttribute("fill", "transparent");
         this.borders.setAttribute("stroke", "white");
         this.borders.setAttribute("stroke-width", "3");
@@ -96,8 +96,8 @@ class Jet_PFD_AttitudeIndicator extends HTMLElement {
         const pitchFactor = -7;
         this.pitchAngleFactor = pitchFactor;
         this.horizonAngleFactor = pitchFactor * 1.2;
-        this.horizonHeight = 300;
         this.attitudeHeight = 280;
+        this.horizonHeight = 360;
         this.horizonToAttitudeRatio = this.attitudeHeight / this.horizonHeight;
         const seperatorColor = "#e0e0e0";
         {
@@ -455,7 +455,7 @@ class Jet_PFD_AttitudeIndicator extends HTMLElement {
             this.attitude_pitch.setAttribute("transform", "translate(0," + (this.pitchAngle * this.pitchAngleFactor) + ")");
 
             const bRaVisible = this.radioAltitudeGroup.getAttribute("visibility") === 'visible';
-            const hPitchContainer = bRaVisible ? (this.attitudeHeight / 2) + (this.pitchAngle * this.pitchAngleFactor) + this.rAltitude : this.attitudeHeight;
+            const hPitchContainer = bRaVisible ? (this.attitudeHeight / 2) - 10 + (this.pitchAngle * this.pitchAngleFactor) + this.rAltitude : this.attitudeHeight;
             if (hPitchContainer <= this.attitudeHeight) {
                 this.setAttitudePitchContainer(hPitchContainer);
             }
