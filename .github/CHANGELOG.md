@@ -32,6 +32,7 @@
 1. [Sounds] Added sounds for Evac horn, emer cabin call, mech horn, gear extend/retract, and cargo door - @hotshotp (Boris)
 1. [CDU] Revised blue, green and amber colors on CDU - @lucky38i (Lucky38i)
 1. [CDU] Revised INIT A & B Page - @lucky38i (Lucky38i)
+1. [CDU] Fixed certain STARs not showing on arrivals page - @tyler58546 (tyler58546)
 
 ## 2020/09
 1. [General] Add CHANGELOG.md - @nathaninnes (Nathan Innes)
