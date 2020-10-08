@@ -434,6 +434,10 @@ class MapInstrument extends ISvgMapRootElement {
         this.cursorSvg = this.querySelector("#MapCursor");
         this.weatherSVG = this.querySelector("#WeatherSVG");
         window.document.addEventListener("OnVCockpitPanelAttributesChanged", this.updateVisibility.bind(this));
+        const url = document.getElementsByTagName("a320-neo-mfd-element")[0].getAttribute("url");
+        const dispIndex = parseInt(url.substring(url.length - 1));
+        this.potIndex = dispIndex === 1 ? 94 : 95;
+        this.prevWXBrightnessValue = SimVar.GetSimVarValue("LIGHT POTENTIOMETER:" + this.potIndex, "number");
         this.bIsInit = true;
     }
     onFlightStart() {
@@ -896,6 +900,11 @@ class MapInstrument extends ISvgMapRootElement {
     update() {
         this.updateVisibility();
         this.updateSize(true);
+        const WXBrightnessValue = SimVar.GetSimVarValue("LIGHT POTENTIOMETER:" + this.potIndex, "number");
+        if (this.prevWXBrightnessValue != WXBrightnessValue) {
+            this.bingMap.style.opacity = 0.4 + 0.6 * WXBrightnessValue;
+            this.prevWXBrightnessValue = WXBrightnessValue;
+        }
         if (this.selfManagedInstrument) {
             this.instrument.doUpdate();
         }

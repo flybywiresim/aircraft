@@ -46,6 +46,7 @@
 1. [ND] Fixed cyan heading bug not showing on ND in VOR and LS modes - @AdenFlorian (David Valachovic)
 1. [CDU] Improved the VERT REV page - @lousybyte (lousybyte)
 1. [PFD] Correct PFD attitude indicator onground/inflight - @MMontalto (PiCcy)
+1. [ND] Added WX/TERR on ND brightness knob, fix ND/PFD brightness tooltips - @lukecologne (luke)
 
 ## 2020/09
 1. [General] Add CHANGELOG.md - @nathaninnes (Nathan Innes)
