@@ -11,6 +11,9 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this._hasReachedTopOfDescent = false;
         this._apCooldown = 500;
         this._lastRequestedFLCModeWaypointIndex = -1;
+        this._cruiseEntered = false;
+        this._blockFuelEntered = false;
+        this._gpsprimaryack = 0;
     }
     get templateID() {
         return "A320_Neo_CDU";
@@ -90,6 +93,18 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this.electricity = this.querySelector("#Electricity");
         this.climbTransitionGroundAltitude = null;
     }
+
+    insertSmallFontSpan() {
+        this._lineElements.forEach((row) => {
+            row.forEach((column) => {
+                if (column != null) {
+                    column.innerHTML = column.innerHTML.replace(/{smallFront}/g, "<span class='s-text'>");
+                    column.innerHTML = column.innerHTML.replace(/{smallEnd}/g, "</span>");
+                }
+            });
+        });
+    }
+
     trySetFlapsTHS(s) {
         if (s) {
             let validEntry = false;
@@ -175,6 +190,52 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this.updateAutopilot();
 
         this.updateScreenState();
+
+        //Checking the GPS Primary State and displaying the message accordingly.
+        var GPSPrimary = SimVar.GetSimVarValue("L:GPSPrimary", "bool");
+        var GPSPrimaryAck = SimVar.GetSimVarValue("L:GPSPrimaryAcknowledged", "bool");
+        if (this.inOut.length <= 0) { //First Time When Aircraft Loaded
+            if (GPSPrimary && !GPSPrimaryAck) {
+                this.lastUserInput = "";
+                this.showErrorMessage("GPS PRIMARY");
+                this._inOutElement.style.color = "#ffffff";
+                SimVar.SetSimVarValue("L:GPSPrimaryMessageDisplayed", "bool", 1);
+            } else if (!GPSPrimaryAck && !GPSPrimary) {
+                this.lastUserInput = "";
+                this.showErrorMessage("GPS PRIMARY LOST");
+                this._inOutElement.style.color = "#FFBF00";
+                SimVar.SetSimVarValue("L:GPSPrimaryMessageDisplayed", "bool", 1);
+            } else {
+                if (this.inOut == "GPS PRIMARY" || this.inOut == "GPS PRIMARY LOST") { //Clear the GPS Messages if not cleared before
+                    this.showErrorMessage("");
+                }
+                this._inOutElement.style.color = "#ffffff";
+                SimVar.SetSimVarValue("L:GPSPrimaryMessageDisplayed", "bool", 0);
+            }
+        } else { //Subsequent Times - To handle the IRS Alignment changes in the middle of the session.
+            if (this.inOut != "GPS PRIMARY" && this.inOut != "GPS PRIMARY LOST") {
+                this._inOutElement.style.color = "#ffffff";
+                SimVar.SetSimVarValue("L:GPSPrimaryMessageDisplayed", "bool", 0);
+            } else {
+                if (GPSPrimary && !GPSPrimaryAck) {
+                    this.lastUserInput = "";
+                    this.showErrorMessage("GPS PRIMARY");
+                    this._inOutElement.style.color = "#ffffff";
+                    SimVar.SetSimVarValue("L:GPSPrimaryMessageDisplayed", "bool", 1);
+                } else if (!GPSPrimaryAck && !GPSPrimary) {
+                    this.lastUserInput = "";
+                    this.showErrorMessage("GPS PRIMARY LOST");
+                    this._inOutElement.style.color = "#FFBF00";
+                    SimVar.SetSimVarValue("L:GPSPrimaryMessageDisplayed", "bool", 1);
+                } else {
+                    if (this.inOut == "GPS PRIMARY" || this.inOut == "GPS PRIMARY LOST") { //Clear the GPS Messages if not cleared before
+                        this.showErrorMessage("");
+                    }
+                    this._inOutElement.style.color = "#ffffff";
+                    SimVar.SetSimVarValue("L:GPSPrimaryMessageDisplayed", "bool", 0);
+                }
+            }
+        }
     }
 
     updateScreenState() {
@@ -347,6 +408,19 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                 Coherent.call("HEADING_BUG_SET", 1, currentHeading);
             }
             SimVar.SetSimVarValue("L:A320_FCU_SHOW_SELECTED_HEADING", "number", 1);
+        }
+
+        //Clear event to set the acknowledged flag to 1, this in turn hides the GPS Primary Message in the ND.
+        if (_event === "1_BTN_CLR") {
+            var ack = SimVar.GetSimVarValue("L:GPSPrimaryAcknowledged", "bool");
+            var isGPSPrimaryMessageDisplayed = SimVar.GetSimVarValue("L:GPSPrimaryMessageDisplayed", "bool");
+            if (!ack && this._inOutElement.textContent == "" && isGPSPrimaryMessageDisplayed) {
+                SimVar.SetSimVarValue("L:GPSPrimaryAcknowledged", "bool", 1);
+                this.isDisplayingErrorMessage = false;
+                this.showErrorMessage("");
+                this._inOutElement.style.color = "#ffffff";
+                SimVar.SetSimVarValue("L:GPSPrimaryMessageDisplayed", "bool", 0);
+            }
         }
     }
     onFlightPhaseChanged() {
@@ -872,11 +946,24 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                 }
             } else if (this.currentFlightPhase === FlightPhase.FLIGHT_PHASE_APPROACH) {
                 if (this.isAirspeedManaged()) {
-                    const speed = this.getManagedApproachSpeed();
+                    const speed = this.getManagedApproachSpeedMcdu();
                     this.setAPManagedSpeed(speed, Aircraft.A320_NEO);
                 }
             }
             this.updateAutopilotCooldown = this._apCooldown;
+        }
+    }
+    // Asobo's getManagedApproachSpeed uses incorrect getCleanApproachSpeed for flaps 0
+    getManagedApproachSpeedMcdu() {
+        const flapsHandleIndex = Simplane.getFlapsHandleIndex();
+        if (flapsHandleIndex === 0) {
+            return this.getPerfGreenDotSpeed();
+        } else if (flapsHandleIndex === 1) {
+            return this.getSlatApproachSpeed();
+        } else if (flapsHandleIndex === 2) {
+            return this.getFlapApproachSpeed();
+        } else {
+            return this.getVApp();
         }
     }
     checkUpdateFlightPhase() {
