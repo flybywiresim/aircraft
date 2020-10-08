@@ -47,7 +47,7 @@ text {
   transform: translateX(-15)
 }
 
-
 .warning {
-  stroke: #db7200
+  fill:#db7200;
+  stroke:#db7200;
 }

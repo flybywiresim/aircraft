@@ -6,22 +6,19 @@
 
 <!-- <rect y="0" width="600" height="600" style="fill:url(#ECAMBacklight);"/> -->
 		<g>
-			<path class="st0" d="M2.4,506.31" />
+			<!--title-->		
 			<text x="63.3566" y="33.2644" t class="st1 s2 st3">BLEED</text>
 			<line class="st4" x1="28.61" y1="44.51" x2="97.17" y2="44.51" />
+
+			<!--<path class="warning st0" d="M2.4,506.31" />-->
+
+			<!--triangles above and line under them-->
 			<polyline class="st5" points="120.22,68.54 120.22,49.29 479.22,49.29 479.22,70.54 	" />
 			<polygon class="st5" points="180.29,43.54 173.36,43.54 176.83,37.54 180.29,31.54 183.76,37.54 187.22,43.54 	" />
 			<polygon class="st5" points="299.93,43.54 293.01,43.54 296.47,37.54 299.93,31.54 303.4,37.54 306.86,43.54 	" />
 			<polygon class="st5" points="419.93,43.54 413.01,43.54 416.47,37.54 419.93,31.54 423.4,37.54 426.86,43.54 	" />
-			<line class="st5" x1="120.65" y1="391.97" x2="120.65" y2="367.54" />
-			<line class="st5" x1="480.05" y1="392.21" x2="480.05" y2="367.21" />
-			<line class="st5" x1="120.65" y1="317.54" x2="120.65" y2="245.04" />
-			<line class="st5" x1="120.22" y1="276.29" x2="343.22" y2="276.29" />
-			<line class="st5" x1="374.22" y1="276.54" x2="480.22" y2="276.54" />
-			<line class="st5" x1="299.34" y1="276.54" x2="299.34" y2="330.42" />
-			<line id="apu-connecting-line" class="st5" style="stroke:#db7200" x1="299.09" y1="360.54" x2="299.09" y2="386.54" />
-			<line class="st5" x1="480.22" y1="317.54" x2="480.22" y2="244.83" />
-			<line class="st5" x1="300.2" y1="126.8" x2="300.23" y2="103.53" />
+			
+			<!--text-->
 			<text transform="matrix(1 0 0 1 300.5466 403.3845)" class="st1 st2 st6">APU</text>
 			<text transform="matrix(1 0 0 1 299.5466 146.3844)" class="st1 st2 st6">RAM</text>
 			<text id="left-pack-out" style="font-size: 24px;" transform="matrix(1 0 0 1 120.5466 96.3844)" class="st7 st2 st6">xx</text>
@@ -38,12 +35,23 @@
 			<text transform="matrix(1 0 0 1 209.5466 487.3845)" class="st1 st2 st6">HP</text>
 			<text transform="matrix(1 0 0 1 390.5466 487.3845)" class="st1 st2 st6">HP</text>
 			<text transform="matrix(1 0 0 1 432.5466 332.3845)" class="st8 st2 st6">PSI</text>	
-			<text transform="matrix(1 0 0 1 242.5466 314.3845)" class="st1 st2 st6">GND</text>
+			<text id="GND" transform="matrix(1 0 0 1 242.5466 314.3845)" class="st1 st2 st6">GND</text>
 			<text transform="matrix(1.22 0 0 1 300.5466 165.3846)" class="st1 st2 st6">AIR</text>
 
+			<!--central connecting lines and under temp boxes-->
+			<line class="st5" x1="120.65" y1="391.97" x2="120.65" y2="367.54" />
+			<line class="st5" x1="480.05" y1="392.21" x2="480.05" y2="367.21" />
+			<line id="center-line-1" class="st5" x1="120.65" y1="317.54" x2="120.65" y2="245.04" />
+			<line id="center-line-2" class="st5" x1="120.22" y1="276.29" x2="343.22" y2="276.29" />
+			<line id="center-line-3" class="st5" x1="374.22" y1="276.54" x2="480.22" y2="276.54" />
+			<line id="center-line-4" class="st5" x1="299.34" y1="276.54" x2="299.34" y2="330.42" />
+			<line id="center-line-5" class="st5" x1="480.22" y1="317.54" x2="480.22" y2="244.83" />
+			<line id="center-line-6" class="st5" x1="300.2" y1="126.8" x2="300.23" y2="103.53" />		
+			<line id="apu-connecting-line" class="st5" style="stroke:#db7200" x1="299.09" y1="360.54" x2="299.09" y2="386.54" />
+
 			<!--engine numbers-->
-			<text transform="matrix(1 0 0 1 66.1666 414.9644)" class="st1 st2 st6">1</text>
-			<text transform="matrix(1 0 0 1 546.1666 414.9644)" class="st1 st2 st6">2</text>	
+			<text id="eng-numb-1" transform="matrix(1 0 0 1 66.1666 414.9644)" class="st1 st2 st6">1</text>
+			<text id="eng-numb-2" transform="matrix(1 0 0 1 546.1666 414.9644)" class="st1 st2 st6">2</text>	
 			
 			<!--LO/HI next to packs-->
 			<text transform="matrix(1 0 0 1 411.1766 214.3244)" class="st1 st2 st6">L</text>
@@ -97,7 +105,10 @@
 			<rect x="98.22" y="317.54" class="st10" width="43" height="49" />
 			<rect x="458.72" y="318.04" class="st10" width="43" height="49" />
 
-			<polygon class="st9" points="242.89,283.54 247.36,291.29 251.83,299.04 242.89,299.04 233.94,299.04 238.41,291.29 	" />
+			<!--GND triangle-->
+			<polygon id="GND-triangle" class="st9" points="242.89,283.54 247.36,291.29 251.83,299.04 242.89,299.04 233.94,299.04 238.41,291.29 	" />
+
+			<!--valves-->
 			<circle class="st5" cx="120.49" cy="407.81" r="16" />
 
 			<circle class="st5" cx="299.49" cy="345.81" r="16" />
@@ -205,12 +216,14 @@
 
 				<g id="engine-connection">
 					<g id="left-engine-connection">
-						<line class="st5" x1="120.65" y1="468.46" x2="120.65" y2="424.97" />
-						<polyline class="st5" points="182.22,453.54 210.22,453.54 210.22,468.46" />
+						<line id="left-engine-connection-obj1" class="st5" x1="120.65" y1="468.46" x2="120.65" y2="424.97" />
+						<line id="left-engine-connection-obj2" class="st5" x1="182" y1="453" x2="210" y2="453" />
+						<line id="left-engine-connection-obj3" class="st5" x1="210" y1="453" x2="210" y2="468" />
 					</g>
 					<g id="right-engine-connection">
-						<polyline class="st5" points="390.22,468.54 390.22,453.54 418.05,453.54 	" />
-						<line class="st5" x1="480.05" y1="468.54" x2="480.05" y2="424.54" />
+						<line id="right-engine-connection-obj1" class="st5" x1="390" y1="453" x2="418" y2="453" />
+						<line id="right-engine-connection-obj2" class="st5" x1="390" y1="468" x2="390" y2="453" />
+						<line id="right-engine-connection-obj3" class="st5" x1="480.05" y1="468.54" x2="480.05" y2="424.54" />
 					</g>
 				</g>
 
