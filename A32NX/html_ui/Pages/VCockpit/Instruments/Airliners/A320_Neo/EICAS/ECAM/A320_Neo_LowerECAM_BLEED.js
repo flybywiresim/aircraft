@@ -35,6 +35,9 @@ var A320_Neo_LowerECAM_BLEED;
                 (this.querySelector("#pack-out-temp-indicator-6")),];
             this.centerLines = [this.querySelector("#center-line-1"), this.querySelector("#center-line-2"), this.querySelector("#center-line-3"),
                 this.querySelector("#center-line-4"), this.querySelector("#center-line-5"), this.querySelector("#center-line-6"),];
+            this.apuConnectingLine =  this.querySelector("#apu-connecting-line");
+            this.apuText = this.querySelector("#APUtext");
+            this.apuValve = this.querySelector("#apu-valve");
             this.gndText = this.querySelector("#GND");
             this.gndTriangle = this.querySelector("#GND-triangle");
             this.htmlEngNumb1 = this.querySelector("#eng-numb-1");    
@@ -81,6 +84,7 @@ var A320_Neo_LowerECAM_BLEED;
             this.packOutMultiplierApu = 0.1;
             this.temperatureVariationSpeed = 0.01;
         }
+        
         //placeholder logic for packs
         setPackIndicators(p0, p1, p2, p3, p4, p5, p6) {
             if (p0) {
@@ -287,12 +291,20 @@ var A320_Neo_LowerECAM_BLEED;
                 this.centerLines[3].setAttribute("visibility", "hidden");        
                 this.gndText.setAttribute("visibility", "hidden");
                 this.gndTriangle.setAttribute("visibility", "hidden");
+                this.apuBleedIndication[0].setAttribute("visibility", "hidden");
+                this.apuBleedIndication[1].setAttribute("visibility", "hidden");
+                this.apuConnectingLine.setAttribute("visibility", "hidden");
+                this.apuText.setAttribute("visibility", "hidden");
+                this.apuValve.setAttribute("visibility", "hidden");
             } else {             
                 this.centerLines[1].setAttribute("visibility", "visible");
                 this.centerLines[2].setAttribute("visibility", "visible");
                 this.centerLines[3].setAttribute("visibility", "visible");         
                 this.gndText.setAttribute("visibility", "visible");
                 this.gndTriangle.setAttribute("visibility", "visible");
+                this.apuConnectingLine.setAttribute("visibility", "visible");
+                this.apuText.setAttribute("visibility", "visible");
+                this.apuValve.setAttribute("visibility", "visible");
             }
 
             //find left pack status
