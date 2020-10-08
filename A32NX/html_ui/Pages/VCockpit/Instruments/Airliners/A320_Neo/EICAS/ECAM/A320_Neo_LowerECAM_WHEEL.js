@@ -275,6 +275,9 @@ var A320_Neo_LowerECAM_WHEEL;
                 this.hide(this.view.center.accuOnly);
 
                 this.makeGreen(this.view.brakes.autobrake.title);
+                this.makeGreen(this.view.brakes.autobrake.quantity.min);
+                this.makeGreen(this.view.brakes.autobrake.quantity.med);
+                this.makeGreen(this.view.brakes.autobrake.quantity.max);
             } else {
                 this.view.spoilers.numbers.forEach(number => this.show(number));
                 this.view.spoilers.lines.forEach(line => this.makeAmber(line));
