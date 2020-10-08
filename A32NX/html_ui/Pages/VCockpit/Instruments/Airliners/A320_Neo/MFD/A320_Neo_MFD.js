@@ -97,6 +97,7 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
         const url = document.getElementsByTagName("a320-neo-mfd-element")[0].getAttribute("url");
         // 1 is captain, 2 is first officer
         this.screenIndex = parseInt(url.substring(url.length - 1));
+        this.potIndex = this.screenIndex == 1 ? 89 : 91;
         this.isCaptainsND = this.screenIndex === 1;
         this.isFirstOfficersND = this.screenIndex === 1;
         this.side = this.isCaptainsND ? 'L' : 'R';
@@ -145,6 +146,11 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
         return Math.max(totalSeconds, 0);
     }
     onUpdate() {
+        const currentKnobValue = SimVar.GetSimVarValue("LIGHT POTENTIOMETER:" + this.potIndex, "number");
+        if (currentKnobValue <= 0.0) {
+            this.selfTestLastKnobValue = currentKnobValue;
+            return;
+        }
         const _deltaTime = this.getDeltaTime();
         super.onUpdate(_deltaTime);
         this.updateMap(_deltaTime);
@@ -200,10 +206,7 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
         const ACPowerStateChange = SimVar.GetSimVarValue("L:ACPowerStateChange","Bool");
         const ACPowerAvailable = SimVar.GetSimVarValue("L:ACPowerAvailable","Bool");
 
-        const displayIndex = this.isCaptainsND ? 89 : 91;
-
-        const selfTestCurrentKnobValue = SimVar.GetSimVarValue("LIGHT POTENTIOMETER:" + displayIndex, "number");
-        const KnobChanged = (selfTestCurrentKnobValue >= 0.1 && this.selfTestLastKnobValue < 0.1);
+        const KnobChanged = (currentKnobValue >= 0.1 && this.selfTestLastKnobValue < 0.1);
 
         if ((KnobChanged || ACPowerStateChange) && ACPowerAvailable && !this.selfTestTimerStarted) {
             this.selfTestDiv.style.display = "block";
@@ -271,7 +274,7 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
             }
         }
 
-        this.selfTestLastKnobValue = selfTestCurrentKnobValue;
+        this.selfTestLastKnobValue = currentKnobValue;
         this.updateScreenState();
     }
 
@@ -508,10 +511,17 @@ class A320_Neo_MFD_Compass extends NavSystemElement {
         this.svg = this.gps.getChildById("Compass");
         this.svg.aircraft = Aircraft.A320_NEO;
         this.svg.gps = this.gps;
+        const url = document.getElementsByTagName("a320-neo-mfd-element")[0].getAttribute("url");
+        this.screenIndex = parseInt(url.substring(url.length - 1));
+        this.potIndex = this.screenIndex == 1 ? 89 : 91;
     }
     onEnter() {
     }
     onUpdate(_deltaTime) {
+        const currentKnobValue = SimVar.GetSimVarValue("LIGHT POTENTIOMETER:" + this.potIndex, "number");
+        if (currentKnobValue <= 0.0) {
+            return;
+        }
         this.svg.update(_deltaTime);
     }
     onExit() {
@@ -683,10 +693,17 @@ class A320_Neo_MFD_NDInfo extends NavSystemElement {
         this.allSymbols.push(this.ndInfo.querySelector("#WXRTURB"));
         this.allSymbols.push(this.ndInfo.querySelector("#TURB"));
         this.allSymbols.push(this.ndInfo.querySelector("#MAP"));
+        const url = document.getElementsByTagName("a320-neo-mfd-element")[0].getAttribute("url");
+        this.screenIndex = parseInt(url.substring(url.length - 1));
+        this.potIndex = this.screenIndex == 1 ? 89 : 91;
     }
     onEnter() {
     }
     onUpdate(_deltaTime) {
+        const currentKnobValue = SimVar.GetSimVarValue("LIGHT POTENTIOMETER:" + this.potIndex, "number");
+        if (currentKnobValue <= 0.0) {
+            return;
+        }
         if (this.ndInfo != null) {
             this.ndInfo.update(_deltaTime);
         }
