@@ -28,6 +28,8 @@
 1. [Systems] Pitot heating should now be active while engines are running - @lousybyte (lousybyte)
 1. [TEXTURES] Higher resoloution Mainpanel, fixed glareshield texture error - @Pleasure0102 (Pleasure)
 1. [ECAM] Overhauled WHEEL Page - @Benjozork (Benjamin Dupont)
+1. [Sounds] Added 3D emitters for all sounds
+1. [Sounds] Added sounds for Evac horn, emer cabin call, mech horn, gear extend/retract, and cargo door - @hotshotp (Boris)
 1. [PFD] Correct PFD attitude indicator onground/inflight @MMontalto (PiCcy)
 
 ## 2020/09
