@@ -1074,6 +1074,8 @@ class FMCMainDisplay extends BaseAirliners {
         const base = Math.max(172, this.getVLS() + 5);
         return base + 40 * dWeight;
     }
+    // Overridden by getManagedApproachSpeedMcdu in A320_Neo_CDU_MainDisplay
+    // Not sure what to do with this
     getManagedApproachSpeed(flapsHandleIndex = NaN) {
         if (isNaN(flapsHandleIndex)) {
             flapsHandleIndex = Simplane.getFlapsHandleIndex();
@@ -2107,6 +2109,7 @@ class FMCMainDisplay extends BaseAirliners {
             }
         }
         if (this.currentFlightPhase === FlightPhase.FLIGHT_PHASE_APPROACH) {
+            // Is this LVar used by anything? It doesn't look like it...
             SimVar.SetSimVarValue("L:AIRLINER_MANAGED_APPROACH_SPEED", "number", this.getManagedApproachSpeed());
         }
         this.updateRadioNavState();
