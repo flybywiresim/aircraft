@@ -43,6 +43,7 @@
 1. [CDU] Updated HOLD Page to honeywell spec, PLAN page updated to show holds - @sepiroth887 (sepiroth887)
 1. [FCU] Fixed incrementing the QNH while in hPa mode - @lousybyte (lousybyte)
 1. [CDU] Follow Green Dot speed on approach with flaps clean - @veikkos (Veikko Soininen)
+1. [ND] Fixed cyan heading bug not showing on ND in VOR and LS modes - @AdenFlorian (David Valachovic)
 
 ## 2020/09
 1. [General] Add CHANGELOG.md - @nathaninnes (Nathan Innes)

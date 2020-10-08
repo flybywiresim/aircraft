@@ -262,14 +262,8 @@ class Jet_NDCompass extends HTMLElement {
                 if (this.trackingLine) {
                     this.trackingLine.classList.toggle('hide', !showTrackLine);
                 }
-                if (this.navigationMode == Jet_NDCompass_Navigation.NAV) {
-                    if (this.selectedHeadingGroup) {
-                        this.selectedHeadingGroup.classList.toggle('hide', !showSelectedHeading);
-                    }
-                } else {
-                    if (this.selectedHeadingGroup) {
-                        this.selectedHeadingGroup.classList.toggle('hide', true);
-                    }
+                if (this.selectedHeadingGroup) {
+                    this.selectedHeadingGroup.classList.toggle('hide', !showSelectedHeading);
                 }
                 if (this.selectedTrackGroup) {
                     this.selectedTrackGroup.classList.toggle('hide', true);
