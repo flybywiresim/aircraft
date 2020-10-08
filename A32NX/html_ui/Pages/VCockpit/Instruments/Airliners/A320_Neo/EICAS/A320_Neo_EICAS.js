@@ -186,7 +186,7 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         const prevPage = this.pageNameWhenUnselected;
 
         const altitude = Simplane.getAltitude();
-        const isGearExtended = SimVar.GetSimVarValue("GEAR HANDLE POSITION", "Bool");
+        const isGearExtended = SimVar.GetSimVarValue("GEAR TOTAL PCT EXTENDED", "percent") > 0.95;
         const currFlightPhase = SimVar.GetSimVarValue("L:AIRLINER_FLIGHT_PHASE", "number");
         const leftThrottleDetent = Simplane.getEngineThrottleMode(0);
         const rightThrottleDetent = Simplane.getEngineThrottleMode(1);
