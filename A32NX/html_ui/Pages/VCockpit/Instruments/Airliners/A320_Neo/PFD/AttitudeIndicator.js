@@ -49,7 +49,7 @@ class Jet_PFD_AttitudeIndicator extends HTMLElement {
     }
     setAttitudePitchContainer(h) {
         const x = -115;
-        const y = -(this.attitudeHeight / 2);
+        const y = -((this.attitudeHeight / 2) - 10);
         const w = 230;
 
         if (!this.attitudePitchContainer) {
@@ -68,7 +68,7 @@ class Jet_PFD_AttitudeIndicator extends HTMLElement {
         }
 
         this.borders.setAttribute("x", "-200");
-        this.borders.setAttribute("y", "-125");
+        this.borders.setAttribute("y", y);
         this.borders.setAttribute("width", w + 200);
         this.borders.setAttribute("height", h);
         this.borders.setAttribute("fill", "transparent");
@@ -97,7 +97,7 @@ class Jet_PFD_AttitudeIndicator extends HTMLElement {
         this.pitchAngleFactor = pitchFactor;
         this.horizonAngleFactor = pitchFactor * 1.2;
         this.horizonHeight = 300;
-        this.attitudeHeight = 250;
+        this.attitudeHeight = 280;
         this.horizonToAttitudeRatio = this.attitudeHeight / this.horizonHeight;
         const seperatorColor = "#e0e0e0";
         {
@@ -416,9 +416,9 @@ class Jet_PFD_AttitudeIndicator extends HTMLElement {
                 this.radioAltitude = document.createElementNS(Avionics.SVG.NS, "text");
                 this.radioAltitude.textContent = "";
                 this.radioAltitude.setAttribute("x", "0");
-                this.radioAltitude.setAttribute("y", "165");
+                this.radioAltitude.setAttribute("y", "175");
                 this.radioAltitude.setAttribute("text-anchor", "middle");
-                this.radioAltitude.setAttribute("font-size", "30");
+                // this.radioAltitude.setAttribute("font-size", "25");
                 this.radioAltitude.setAttribute("font-family", "Roboto-Bold");
                 this.radioAltitude.setAttribute("fill", "white");
                 this.radioAltitudeGroup.appendChild(this.radioAltitude);
@@ -454,13 +454,8 @@ class Jet_PFD_AttitudeIndicator extends HTMLElement {
         if (this.attitude_pitch) {
             this.attitude_pitch.setAttribute("transform", "translate(0," + (this.pitchAngle * this.pitchAngleFactor) + ")");
 
-            var hPitchContainer;
-            if (this.radioAltitudeGroup.getAttribute("visibility") === 'visible') {
-                hPitchContainer = (this.attitudeHeight / 2) + (this.pitchAngle * this.pitchAngleFactor) + this.rAltitude;
-            } else {
-                hPitchContainer = this.attitudeHeight;
-            }
-
+            const bRaVisible = this.radioAltitudeGroup.getAttribute("visibility") === 'visible';
+            const hPitchContainer = bRaVisible ? (this.attitudeHeight / 2) + (this.pitchAngle * this.pitchAngleFactor) + this.rAltitude : this.attitudeHeight;
             if (hPitchContainer <= this.attitudeHeight) {
                 this.setAttitudePitchContainer(hPitchContainer);
             }
@@ -556,7 +551,7 @@ class Jet_PFD_AttitudeIndicator extends HTMLElement {
 
         const xyz = Simplane.getOrientationAxis();
         const val = Math.floor(_altitude);
-        if ((val <= 2500) && (Math.abs(xyz.bank) < Math.PI * 0.35)) {
+        if ((val <= 2500) && (Math.abs(xyz.bank) < Math.PI * 0.25)) {
             let textVal;
             {
                 const absVal = Math.abs(val);
@@ -572,8 +567,10 @@ class Jet_PFD_AttitudeIndicator extends HTMLElement {
             if (this.radioAltitudeColorLimit > 0) {
                 if (val >= this.radioAltitudeColorLimit) {
                     this.radioAltitude.setAttribute("fill", this.radioAltitudeColorOk);
+                    this.radioAltitude.setAttribute("font-size", "25");
                 } else {
                     this.radioAltitude.setAttribute("fill", this.radioAltitudeColorBad);
+                    this.radioAltitude.setAttribute("font-size", "30");
                 }
             }
             this.radioAltitudeGroup.setAttribute("visibility", "visible");
