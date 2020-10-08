@@ -3,8 +3,12 @@ class A320_Neo_PFD extends BaseAirliners {
         super();
         this.initDuration = 7000;
     }
-    get templateID() { return "A320_Neo_PFD"; }
-    get IsGlassCockpit() { return true; }
+    get templateID() {
+        return "A320_Neo_PFD";
+    }
+    get IsGlassCockpit() {
+        return true;
+    }
     connectedCallback() {
         super.connectedCallback();
         this.pageGroups = [
@@ -58,8 +62,11 @@ class A320_Neo_PFD_MainPage extends NavSystemPage {
     init() {
         super.init();
 
+        const url = document.getElementsByTagName("a320-neo-pfd-element")[0].getAttribute("url");
+        const index = parseInt(url.substring(url.length - 1));
+
         this.getDeltaTime = A32NX_Util.createDeltaTimeCalculator(this._lastTime);
-        this.showILS = SimVar.GetSimVarValue("L:BTN_LS_FILTER_ACTIVE", "bool");
+        this.showILS = SimVar.GetSimVarValue(`L:BTN_LS_${index}_FILTER_ACTIVE`, "bool");
         this.ils.showILS(this.showILS);
         this.compass.showILS(this.showILS);
 
@@ -91,14 +98,16 @@ class A320_Neo_PFD_MainPage extends NavSystemPage {
         this.selfTestLastKnobValueFO = 1;
         this.selfTestLastKnobValueCAP = 1;
 
-        this.electricity = document.querySelector('#Electricity')
+        this.electricity = document.querySelector('#Electricity');
     }
     onUpdate() {
         const _deltaTime = this.getDeltaTime();
 
         super.onUpdate(_deltaTime);
-        if (!this.hasInitialized) return;
-        this.flashTimer -= _deltaTime/1000;
+        if (!this.hasInitialized) {
+            return;
+        }
+        this.flashTimer -= _deltaTime / 1000;
         if (this.flashTimer <= 0) {
             this.flashTimer = 1;
             this.flashState = !this.flashState;
@@ -123,8 +132,7 @@ class A320_Neo_PFD_MainPage extends NavSystemPage {
         if (IsOnGround && isAnyEngineSwitchOn) {
             this.groundCursor.style.display = "block";
             this.groundCursorLimits.style.display = "block";
-        }
-        else {
+        } else {
             this.groundCursor.style.display = "none";
             this.groundCursorLimits.style.display = "none";
         }
@@ -160,18 +168,14 @@ class A320_Neo_PFD_MainPage extends NavSystemPage {
         const ACPowerStateChange = SimVar.GetSimVarValue("L:ACPowerStateChange","Bool");
         const ACPowerAvailable = SimVar.GetSimVarValue("L:ACPowerAvailable","Bool");
 
-        /**
-         * Self test on PFD screen
-         * TODO: Seperate both PFD screens, currently if the FO changes its screen, it also tests the screen for the captain and vice versa.
-         **/
+        const url = document.getElementsByTagName("a320-neo-pfd-element")[0].getAttribute("url");
+        const index = parseInt(url.substring(url.length - 1));
+        const displayIndex = index == 1 ? 88 : 90;
 
-        let selfTestCurrentKnobValueFO = SimVar.GetSimVarValue("LIGHT POTENTIOMETER:90", "number");
-        let selfTestCurrentKnobValueCAP = SimVar.GetSimVarValue("LIGHT POTENTIOMETER:88", "number");
+        const selfTestCurrentKnobValue = SimVar.GetSimVarValue("LIGHT POTENTIOMETER:" + displayIndex, "number");
+        const KnobChanged = (selfTestCurrentKnobValue >= 0.1 && this.selfTestLastKnobValue < 0.1);
 
-        const FOKnobChanged = (selfTestCurrentKnobValueFO >= 0.1 && this.selfTestLastKnobValueFO < 0.1);
-        const CAPKnobChanged = (selfTestCurrentKnobValueCAP >= 0.1 && this.selfTestLastKnobValueCAP < 0.1);
-
-        if((FOKnobChanged || CAPKnobChanged || ACPowerStateChange) && ACPowerAvailable && !this.selfTestTimerStarted) {
+        if ((KnobChanged || ACPowerStateChange) && ACPowerAvailable && !this.selfTestTimerStarted) {
             this.selfTestDiv.style.display = "block";
             this.selfTestTimer = 14.25;
             this.selfTestTimerStarted = true;
@@ -185,16 +189,17 @@ class A320_Neo_PFD_MainPage extends NavSystemPage {
             }
         }
 
-        this.selfTestLastKnobValueFO = selfTestCurrentKnobValueFO
-        this.selfTestLastKnobValueCAP = selfTestCurrentKnobValueCAP
-
+        this.selfTestLastKnobValue = selfTestCurrentKnobValue;
         this.updateScreenState();
     }
     onEvent(_event) {
+        const url = document.getElementsByTagName("a320-neo-pfd-element")[0].getAttribute("url");
+        const index = parseInt(url.substring(url.length - 1));
         switch (_event) {
-            case "BTN_LS":
+            case `BTN_LS_${index}`:
+
                 this.showILS = !this.showILS;
-                SimVar.SetSimVarValue("L:BTN_LS_FILTER_ACTIVE", "number", this.showILS ? 1 : 0);
+                SimVar.SetSimVarValue(`L:BTN_LS_${index}_FILTER_ACTIVE`, "number", this.showILS ? 1 : 0);
                 this.ils.showILS(this.showILS);
                 this.compass.showILS(this.showILS);
                 break;
@@ -203,9 +208,9 @@ class A320_Neo_PFD_MainPage extends NavSystemPage {
 
     updateScreenState() {
         if (SimVar.GetSimVarValue("L:ACPowerAvailable","bool")) {
-            this.electricity.style.display = "block"
+            this.electricity.style.display = "block";
         } else {
-            this.electricity.style.display = "none"
+            this.electricity.style.display = "none";
         }
     }
 
@@ -221,14 +226,13 @@ class A320_Neo_PFD_VSpeed extends NavSystemElement {
     }
     onUpdate() {
         const _deltaTime = this.getDeltaTime();
-        var vSpeed = Math.round(Simplane.getVerticalSpeed());
+        const vSpeed = Math.round(Simplane.getVerticalSpeed());
         this.vsi.setAttribute("vspeed", vSpeed.toString());
         if (Simplane.getAutoPilotVerticalSpeedHoldActive()) {
-            var selVSpeed = Math.round(Simplane.getAutoPilotVerticalSpeedHoldValue());
+            const selVSpeed = Math.round(Simplane.getAutoPilotVerticalSpeedHoldValue());
             this.vsi.setAttribute("selected_vspeed", selVSpeed.toString());
             this.vsi.setAttribute("selected_vspeed_active", "true");
-        }
-        else {
+        } else {
             this.vsi.setAttribute("selected_vspeed_active", "false");
         }
     }
@@ -321,7 +325,7 @@ class A320_Neo_PFD_Attitude extends NavSystemElement {
             }
 
             this.hsi.setAttribute("slip_skid", Simplane.getInclinometer().toString());
-            this.hsi.setAttribute("radio_altitude", Simplane.getAltitudeAboveGround().toString());
+            this.hsi.setAttribute("radio_altitude", Simplane.getAltitudeAboveGround(true).toString());
             this.hsi.setAttribute("radio_decision_height", this.gps.radioNav.getRadioDecisionHeight().toString());
             this.hsi.setAttribute("compass", compass.toString());
             this.hsi.setAttribute("show_selected_hdg", showSelectedHdg.toString());

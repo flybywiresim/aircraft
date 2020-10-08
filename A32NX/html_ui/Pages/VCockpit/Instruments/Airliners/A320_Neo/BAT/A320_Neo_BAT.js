@@ -6,7 +6,9 @@ var A320_Neo_BAT;
             this.batTexts = new Array(null, null);
             this.batValues = new Array(0, 0);
         }
-        get templateID() { return "A320_Neo_BAT"; }
+        get templateID() {
+            return "A320_Neo_BAT";
+        }
         connectedCallback() {
             super.connectedCallback();
             this.batTexts[0] = this.querySelector("#BAT1");
@@ -18,17 +20,17 @@ var A320_Neo_BAT;
             const lightsTest = SimVar.GetSimVarValue("L:XMLVAR_LTS_Test", "Bool");
             this.lightsTest = lightsTest;
 
-            if (lightsTest){
+            if (lightsTest) {
                 for (let i = 0; i < 2; ++i) {
                     this.batTexts[i].textContent = "88.8";
                 }
-            }else {
+            } else {
                 for (let i = 0; i < 2; ++i) {
                     const batValue = SimVar.GetSimVarValue("ELECTRICAL BATTERY BUS VOLTAGE", "Volts");
                     this.batValues[i] = batValue;
                     this.batTexts[i].textContent = this.batValues[i].toFixed(1);
                 }
-            }  
+            }
         }
     }
     A320_Neo_BAT.Display = Display;

@@ -11,9 +11,9 @@ const HEAT_UP_SCALE = 0.000035;
 /**
  * Scale factor for cool down
  */
-const BASE_COOL_DOWN_FACTOR = 0.008;
+const BASE_COOL_DOWN_FACTOR = 0.002;
 
-const BASE_SPEED = 0.2;
+const BASE_SPEED = 0.10;
 
 const SPEED_COOLDOWN_FACTOR = 0.08;
 
@@ -61,7 +61,7 @@ class A32NX_BrakeTemp {
         const currentBrakeLeft = SimVar.GetSimVarValue("BRAKE LEFT POSITION", "position 32k");
         const currentBrakeRight = SimVar.GetSimVarValue("BRAKE RIGHT POSITION", "position 32k");
 
-        let currentBrakeTemps = [
+        const currentBrakeTemps = [
             SimVar.GetSimVarValue("L:A32NX_BRAKE_TEMPERATURE_1", "celsius"),
             SimVar.GetSimVarValue("L:A32NX_BRAKE_TEMPERATURE_2", "celsius"),
             SimVar.GetSimVarValue("L:A32NX_BRAKE_TEMPERATURE_3", "celsius"),
@@ -79,7 +79,7 @@ class A32NX_BrakeTemp {
 
         const wheelsAreSpinning = wheelSet1Rpm > WHEEL_RPM_THRESHOLD || wheelSet2Rpm > WHEEL_RPM_THRESHOLD;
 
-        const anyBrakePressed = currentBrakeLeft > 0 || currentBrakeRight > 0
+        const anyBrakePressed = currentBrakeLeft > 0 || currentBrakeRight > 0;
 
         if (anyBrakePressed && wheelsAreSpinning) {
             // Apply heat up for each temperature
@@ -106,23 +106,23 @@ class A32NX_BrakeTemp {
 
         // Apply cool down for each temperature
         if (Math.abs(deltaTemp0) > MIN_TEMP_DELTA) {
-            currentBrakeTemps[0] -= _deltaTime/1000 * this.getRandomArbitrary(0.8, 1.2) * this.calculateDeltaCoolDown(deltaTemp0, airspeed, GearLeftExtended);
+            currentBrakeTemps[0] -= _deltaTime / 1000 * this.getRandomArbitrary(0.8, 1.2) * this.calculateDeltaCoolDown(deltaTemp0, airspeed, GearLeftExtended);
         }
         if (Math.abs(deltaTemp1) > MIN_TEMP_DELTA) {
-            currentBrakeTemps[1] -= _deltaTime/1000 * this.getRandomArbitrary(0.8, 1.2) * this.calculateDeltaCoolDown(deltaTemp1, airspeed, GearLeftExtended);
+            currentBrakeTemps[1] -= _deltaTime / 1000 * this.getRandomArbitrary(0.8, 1.2) * this.calculateDeltaCoolDown(deltaTemp1, airspeed, GearLeftExtended);
         }
         if (Math.abs(deltaTemp2) > MIN_TEMP_DELTA) {
-            currentBrakeTemps[2] -= _deltaTime/1000 * this.getRandomArbitrary(0.8, 1.2) * this.calculateDeltaCoolDown(deltaTemp2, airspeed, GearRightExtended);
+            currentBrakeTemps[2] -= _deltaTime / 1000 * this.getRandomArbitrary(0.8, 1.2) * this.calculateDeltaCoolDown(deltaTemp2, airspeed, GearRightExtended);
         }
         if (Math.abs(deltaTemp3) > MIN_TEMP_DELTA) {
-            currentBrakeTemps[3] -= _deltaTime/1000 * this.getRandomArbitrary(0.8, 1.2) * this.calculateDeltaCoolDown(deltaTemp3, airspeed, GearRightExtended);
+            currentBrakeTemps[3] -= _deltaTime / 1000 * this.getRandomArbitrary(0.8, 1.2) * this.calculateDeltaCoolDown(deltaTemp3, airspeed, GearRightExtended);
         }
 
         let brakesHot = 0;
 
         // Set simvars
-        for (var i = 0; i < currentBrakeTemps.length; ++i) {
-            SimVar.SetSimVarValue(`L:A32NX_BRAKE_TEMPERATURE_${i + 1}`, "celsius", currentBrakeTemps[i])
+        for (let i = 0; i < currentBrakeTemps.length; ++i) {
+            SimVar.SetSimVarValue(`L:A32NX_BRAKE_TEMPERATURE_${i + 1}`, "celsius", currentBrakeTemps[i]);
             if (currentBrakeTemps[i] > 300) {
                 brakesHot = 1;
             }
