@@ -44,6 +44,8 @@
 1. [FCU] Fixed incrementing the QNH while in hPa mode - @lousybyte (lousybyte)
 1. [CDU] Follow Green Dot speed on approach with flaps clean - @veikkos (Veikko Soininen)
 1. [ND] Fixed cyan heading bug not showing on ND in VOR and LS modes - @AdenFlorian (David Valachovic)
+1. [CDU] Improved the VERT REV page - @lousybyte (lousybyte)
+1. [PFD] Correct PFD attitude indicator onground/inflight - @MMontalto (PiCcy)
 1. [ND] Added WX/TERR on ND brightness knob, fix ND/PFD brightness tooltips - @lukecologne (luke)
 
 ## 2020/09
@@ -58,3 +60,4 @@
 1. [ND] Add DME distances, VOR/ADF needles and functioning ADF2 - @blitzcaster (bltzcstr)
 1. [OVHD] Fixed Battery Indicator Colour - @nathaninnes (Nathan Innes)
 1. [MISC] Removed Fuel Patch from MSFS Update 1.8.3 - @nathaninnes (Nathan Innes)
+
