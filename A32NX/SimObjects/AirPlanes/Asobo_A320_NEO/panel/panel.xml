@@ -120,6 +120,68 @@
 	<!-- Voices Alerts -->
 
 	<VoicesAlerts>
+
+		<!-- Added -->
+		
+		<Alert>
+			<Type>SoundOnly</Type>
+			<SoundEvent>aural_pull_up</SoundEvent>
+			<Condition>
+				<Simvar name="L:GPWS_PULL_UP" unit="Bool"/>
+			</Condition>
+		</Alert>
+
+		<Alert>
+			<Type>SoundOnly</Type>
+			<SoundEvent>aural_sink_rate</SoundEvent>
+			<Condition>
+				<Simvar name="L:GPWS_SINK_RATE" unit="Bool"/>
+			</Condition>
+		</Alert>
+
+		<Alert>
+			<Type>SoundOnly</Type>
+			<SoundEvent>aural_dont_sink</SoundEvent>
+			<Condition>
+				<Simvar name="L:GPWS_DONT_SINK" unit="Bool"/>
+			</Condition>
+		</Alert>
+
+		<Alert>
+			<Type>SoundOnly</Type>
+			<SoundEvent>aural_too_low_gear</SoundEvent>
+			<Condition>
+				<Equal>
+					<Simvar name="L:GPWS_TOO_LOW" unit="Enum"/>
+					<Constant>2</Constant>
+				</Equal>
+			</Condition>
+		</Alert>
+
+		<Alert>
+			<Type>SoundOnly</Type>
+			<SoundEvent>aural_too_low_flaps</SoundEvent>
+			<Condition>
+				<Equal>
+					<Simvar name="L:GPWS_TOO_LOW" unit="Enum"/>
+					<Constant>3</Constant>
+				</Equal>
+			</Condition>
+		</Alert>
+
+		<Alert>
+			<Type>SoundOnly</Type>
+			<SoundEvent>aural_too_low_terrain</SoundEvent>
+			<Condition>
+				<Equal>
+					<Simvar name="L:GPWS_TOO_LOW" unit="Enum"/>
+					<Constant>1</Constant>
+				</Equal>
+			</Condition>
+		</Alert>
+
+		<!-- Default -->
+
 		<Alert>
 			<Type>SoundOnly</Type>
 			<SoundEvent>aural_5ft</SoundEvent>

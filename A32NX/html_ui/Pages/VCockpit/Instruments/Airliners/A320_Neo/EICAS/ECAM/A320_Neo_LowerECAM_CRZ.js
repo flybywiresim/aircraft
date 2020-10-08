@@ -14,7 +14,9 @@ var A320_Neo_LowerECAM_CRZ;
             super();
             this.isInitialised = false;
         }
-        get templateID() { return "LowerECAMCRZTemplate"; }
+        get templateID() {
+            return "LowerECAMCRZTemplate";
+        }
         connectedCallback() {
             super.connectedCallback();
             TemplateElement.call(this, this.init.bind(this));
@@ -64,19 +66,19 @@ var A320_Neo_LowerECAM_CRZ;
             this.AftTemp = this.querySelector("#AftTemp");
 
             // Initialize displayed values
-            this.LeftConsumptionDisplayed  = -1;
+            this.LeftConsumptionDisplayed = -1;
             this.RightConsumptionDisplayed = -1;
             this.TotalConsumptionDisplayed = -1;
 
-            this.OilQuantityLeftDisplayed  = -1;
+            this.OilQuantityLeftDisplayed = -1;
             this.OilQuantityRightDisplayed = -1;
 
-            this.VibN1LeftDisplayed  = -1;
+            this.VibN1LeftDisplayed = -1;
             this.VibN1RightDisplayed = -1;
 
             this.CabinVerticalSpeedDisplayed = -1;
-            this.CabinAltitudeDisplayed      = -1;
-            this.OutsidePressureDisplayed    = -1;
+            this.CabinAltitudeDisplayed = -1;
+            this.OutsidePressureDisplayed = -1;
 
             this.isInitialised = true;
         }
@@ -84,12 +86,12 @@ var A320_Neo_LowerECAM_CRZ;
             if (!this.isInitialised) {
                 return;
             }
-            
+
             // Fuel
             const leftConsumption = SimVar.GetSimVarValue("GENERAL ENG FUEL USED SINCE START:1", "gallon") * this.unitFactor * 0.001;
             const rightConsumption = SimVar.GetSimVarValue("GENERAL ENG FUEL USED SINCE START:2", "gallon") * this.unitFactor * 0.001;
 
-            const leftConsumptionShown  = fastToFixed(leftConsumption - (leftConsumption % 10), 0);
+            const leftConsumptionShown = fastToFixed(leftConsumption - (leftConsumption % 10), 0);
             const rightConsumptionShown = fastToFixed(rightConsumption - (rightConsumption % 10), 0);
 
             if ((leftConsumptionShown != this.LeftConsumptionDisplayed) || (rightConsumptionShown != this.RightConsumptionDisplayed)) {
@@ -98,7 +100,7 @@ var A320_Neo_LowerECAM_CRZ;
                 this.FuelUsedLeft.textContent = leftConsumptionShown;
                 this.FuelUsedRight.textContent = rightConsumptionShown;
 
-                this.LeftConsumptionDisplayed  = leftConsumptionShown;
+                this.LeftConsumptionDisplayed = leftConsumptionShown;
                 this.RightConsumptionDisplayed = rightConsumptionShown;
             }
 
@@ -123,7 +125,9 @@ var A320_Neo_LowerECAM_CRZ;
 
             // Engines
             value = SimVar.GetSimVarValue("TURB ENG VIBRATION:1", "Number");
-            if (value < 0) value = 0.0;
+            if (value < 0) {
+                value = 0.0;
+            }
             valueShown = fastToFixed(value, 1);
             if (valueShown != this.VibN1LeftDisplayed) {
                 const decimalSplit = value.toFixed(1).split(".", 2);
@@ -135,7 +139,9 @@ var A320_Neo_LowerECAM_CRZ;
             }
 
             value = SimVar.GetSimVarValue("TURB ENG VIBRATION:2", "Number");
-            if (value < 0) value = 0.0;
+            if (value < 0) {
+                value = 0.0;
+            }
             valueShown = fastToFixed(value, 1);
             if (valueShown != this.VibN1RightDisplayed) {
                 const decimalSplit = value.toFixed(1).split(".", 2);
@@ -153,7 +159,7 @@ var A320_Neo_LowerECAM_CRZ;
                 this.CabinVerticalSpeed.textContent = valueShown;
                 this.CabinVerticalSpeedDisplayed = valueShown;
             }
-            
+
             value = SimVar.GetSimVarValue("PRESSURIZATION CABIN ALTITUDE", "feet");
             valueShown = fastToFixed(value, 0);
             if (valueShown != this.CabinAltitudeDisplayed) {
@@ -179,7 +185,7 @@ var A320_Neo_LowerECAM_CRZ;
                 this.DeltaPressure.textContent = decimalSplit[0] + ".";
                 this.DeltaPressureDecimal.textContent = decimalSplit[1];
 
-                this.CabinAltitudeDisplayed   = valueShown;
+                this.CabinAltitudeDisplayed = valueShown;
                 this.OutsidePressureDisplayed = outsidePressureINHG;
             }
         }

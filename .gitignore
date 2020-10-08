@@ -7,5 +7,12 @@
 !/src/**
 !.gitignore
 !CODEOWNERS
+!package.json
+!package-lock.json
+!.editorconfig
+!.eslintrc.json
+!.prettierrc.json
+!.prettierignore
 .DS_Store
+node_modules
 /src/sound/.cache

@@ -1,10 +1,10 @@
 class CDUPosFrozen {
     static ShowPage(mcdu, currPos) {
         mcdu.clearDisplay();
-        var UTC_SECONDS  = Math.floor(SimVar.GetGlobalVarValue("ZULU TIME", "seconds"));
-        var hours = Math.floor(UTC_SECONDS / 3600) || 0
-        var minutes = Math.floor(UTC_SECONDS % 3600 / 60) || 0
-        var hhmm = `${hours.toString().padStart(2, "0") || "00"}${minutes.toString().padStart(2, "0") || "00"}`
+        const UTC_SECONDS = Math.floor(SimVar.GetGlobalVarValue("ZULU TIME", "seconds"));
+        const hours = Math.floor(UTC_SECONDS / 3600) || 0;
+        const minutes = Math.floor(UTC_SECONDS % 3600 / 60) || 0;
+        const hhmm = `${hours.toString().padStart(2, "0") || "00"}${minutes.toString().padStart(2, "0") || "00"}`;
         mcdu.setTemplate([
             [`POSITION FROZEN AT ${hhmm}`],
             [""],
@@ -19,14 +19,14 @@ class CDUPosFrozen {
             ["NAV 0.0[color]green", "NAV 0.0[color]green", "NAV 0.0[color]green"],
             ["", "SEL"],
             ["←UNFREEZE[color]blue", "NAVAIDS>"]
-        ])
+        ]);
 
         mcdu.onLeftInput[5] = () => {
-            CDUPositionMonitorPage.ShowPage(mcdu)
-        }
+            CDUPositionMonitorPage.ShowPage(mcdu);
+        };
 
         mcdu.onRightInput[5] = () => {
-            CDUSelectedNavaids.ShowPage(mcdu)
-        }
+            CDUSelectedNavaids.ShowPage(mcdu);
+        };
     }
 }

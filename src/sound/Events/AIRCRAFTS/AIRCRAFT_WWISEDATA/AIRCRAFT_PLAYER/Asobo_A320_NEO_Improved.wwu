@@ -144,6 +144,370 @@
 						</Action>
 					</ChildrenList>
 				</Event>
+				<Event Name="Play_Asobo_A320_NEO_Fuelpump" ID="{BF583B36-A7AB-4407-A7CE-C7073BDAF0A2}">
+					<ChildrenList>
+						<Action Name="" ID="{1F3B38F6-00FB-409E-A0DB-7C242E407ED9}" ShortID="492541090">
+							<PropertyList>
+								<Property Name="ActionType" Type="int16" Value="1"/>
+							</PropertyList>
+							<ReferenceList>
+								<Reference Name="Target">
+									<ObjectRef Name="fuelpumps" ID="{E36C9C29-6E5F-4A6E-A07C-F5853C8601A7}" WorkUnitID="{27D32D8D-6C92-4542-9BFC-F0D08111F92F}"/>
+								</Reference>
+							</ReferenceList>
+						</Action>
+					</ChildrenList>
+				</Event>
+				<Event Name="Play_Asobo_A320_NEO_GROLL" ID="{273CDDDF-ED47-4445-8C89-E01AC8265D34}">
+					<ChildrenList>
+						<Action Name="" ID="{EBEC87C4-2C5A-4501-B73B-DE61C6A43760}" ShortID="989848919">
+							<PropertyList>
+								<Property Name="ActionType" Type="int16" Value="1"/>
+							</PropertyList>
+							<ReferenceList>
+								<Reference Name="Target">
+									<ObjectRef Name="groundrollback" ID="{C5301662-885E-4252-A0C8-F4E2D04F0502}" WorkUnitID="{27D32D8D-6C92-4542-9BFC-F0D08111F92F}"/>
+								</Reference>
+							</ReferenceList>
+						</Action>
+					</ChildrenList>
+				</Event>
+				<Event Name="Play_Asobo_A320_NEO_ROLLRATTLE" ID="{4CB230B2-CCA7-4B1F-BFF2-A683A35C19A2}">
+					<ChildrenList>
+						<Action Name="" ID="{4D4CF0C8-D46E-4978-AF68-CC03C9FE1445}" ShortID="537303733">
+							<PropertyList>
+								<Property Name="ActionType" Type="int16" Value="1"/>
+							</PropertyList>
+							<ReferenceList>
+								<Reference Name="Target">
+									<ObjectRef Name="rattle" ID="{539D5A25-AB3C-4873-8371-67CE92F4C21B}" WorkUnitID="{27D32D8D-6C92-4542-9BFC-F0D08111F92F}"/>
+								</Reference>
+							</ReferenceList>
+						</Action>
+					</ChildrenList>
+				</Event>
+				<Event Name="Play_Asobo_A320_NEO_NWheelSpinAboveGround" ID="{BB75B6F0-D6EB-460D-B9BC-B5E3F3E62D1D}">
+					<ChildrenList>
+						<Action Name="" ID="{40CC023C-7363-4DC1-9DE3-EAABF0DEBD82}" ShortID="320339196">
+							<PropertyList>
+								<Property Name="ActionType" Type="int16" Value="1"/>
+							</PropertyList>
+							<ReferenceList>
+								<Reference Name="Target">
+									<ObjectRef Name="nosewheelrollaboveground" ID="{5216564B-1C27-4DFA-81F1-E8F2C4DE1647}" WorkUnitID="{27D32D8D-6C92-4542-9BFC-F0D08111F92F}"/>
+								</Reference>
+							</ReferenceList>
+						</Action>
+					</ChildrenList>
+				</Event>
+				<Event Name="Play_Asobo_A320_NEO_taxirattle" ID="{A315B1BB-3283-4D8D-B20D-24F78AF83B4E}">
+					<ChildrenList>
+						<Action Name="" ID="{44CD7921-251C-49A2-BA2E-6153A313D881}" ShortID="430282912">
+							<PropertyList>
+								<Property Name="ActionType" Type="int16" Value="1"/>
+							</PropertyList>
+							<ReferenceList>
+								<Reference Name="Target">
+									<ObjectRef Name="taxirattle" ID="{9B266226-F281-457F-A3EF-A1C7F4E6B9A6}" WorkUnitID="{27D32D8D-6C92-4542-9BFC-F0D08111F92F}"/>
+								</Reference>
+							</ReferenceList>
+						</Action>
+					</ChildrenList>
+				</Event>
+				<Event Name="Play_Asobo_A320_NEO_Betterwind" ID="{A929CABB-1B68-4D3D-88C5-45E54D3D089C}">
+					<ChildrenList>
+						<Action Name="" ID="{14A16F72-0093-4C42-9335-60C3650DFE7D}" ShortID="1039902741">
+							<PropertyList>
+								<Property Name="ActionType" Type="int16" Value="1"/>
+							</PropertyList>
+							<ReferenceList>
+								<Reference Name="Target">
+									<ObjectRef Name="wind" ID="{0ED28108-C395-42A8-8AD1-251CA5A5B502}" WorkUnitID="{27D32D8D-6C92-4542-9BFC-F0D08111F92F}"/>
+								</Reference>
+							</ReferenceList>
+						</Action>
+					</ChildrenList>
+				</Event>
+				<Event Name="Play_Asobo_A320_NEO_ROLLRATTLE2" ID="{B7755860-FDED-45F5-BCB9-919C0F6BC00E}">
+					<ChildrenList>
+						<Action Name="" ID="{B2384E21-16E6-4C86-B248-33FFCC9A2D26}" ShortID="649501545">
+							<PropertyList>
+								<Property Name="ActionType" Type="int16" Value="1"/>
+							</PropertyList>
+							<ReferenceList>
+								<Reference Name="Target">
+									<ObjectRef Name="rollrattle2" ID="{64CABB9B-95FA-4B44-9A23-064FF8A68953}" WorkUnitID="{27D32D8D-6C92-4542-9BFC-F0D08111F92F}"/>
+								</Reference>
+							</ReferenceList>
+						</Action>
+					</ChildrenList>
+				</Event>
+				<Event Name="Play_Asobo_A320_NEO_Geardownwind" ID="{34FC4B3B-D28B-4BCE-8A74-9C06457D974C}">
+					<ChildrenList>
+						<Action Name="" ID="{15C471CE-614F-4557-990E-9172D19D7A1F}" ShortID="708481270">
+							<PropertyList>
+								<Property Name="ActionType" Type="int16" Value="1"/>
+							</PropertyList>
+							<ReferenceList>
+								<Reference Name="Target">
+									<ObjectRef Name="gearwind" ID="{0E2F5D56-3F38-4969-8297-976DAC447D39}" WorkUnitID="{27D32D8D-6C92-4542-9BFC-F0D08111F92F}"/>
+								</Reference>
+							</ReferenceList>
+						</Action>
+					</ChildrenList>
+				</Event>
+				<Event Name="Play_Asobo_A320_NEO_aural_too_low_flaps" ID="{9ED58D3A-3635-41CE-AD1B-8DE4C60DE0D8}">
+					<ChildrenList>
+						<Action Name="" ID="{CFA10E77-EF69-4435-888A-8E3B0C2D5726}" ShortID="20074345">
+							<PropertyList>
+								<Property Name="ActionType" Type="int16" Value="1"/>
+							</PropertyList>
+							<ReferenceList>
+								<Reference Name="Target">
+									<ObjectRef Name="too-low-flaps" ID="{2FE5B590-353B-47A1-BB87-092E6141FAA9}" WorkUnitID="{27D32D8D-6C92-4542-9BFC-F0D08111F92F}"/>
+								</Reference>
+							</ReferenceList>
+						</Action>
+					</ChildrenList>
+				</Event>
+				<Event Name="Play_Asobo_A320_NEO_aural_too_low_gear" ID="{752CA9A4-224B-409A-A273-F3657103CA4B}">
+					<ChildrenList>
+						<Action Name="" ID="{3508AA0E-F4D1-434D-9934-2BD6E95D3506}" ShortID="913374798">
+							<PropertyList>
+								<Property Name="ActionType" Type="int16" Value="1"/>
+							</PropertyList>
+							<ReferenceList>
+								<Reference Name="Target">
+									<ObjectRef Name="too-low-gear" ID="{011D87A3-5587-4783-9E25-B1B0B86978EF}" WorkUnitID="{27D32D8D-6C92-4542-9BFC-F0D08111F92F}"/>
+								</Reference>
+							</ReferenceList>
+						</Action>
+					</ChildrenList>
+				</Event>
+				<Event Name="Play_Asobo_A320_NEO_aural_too_low_terrain" ID="{15DCEB14-1833-404F-9A3F-D229ED0E9FD9}">
+					<ChildrenList>
+						<Action Name="" ID="{8EEA5F67-8617-409A-854D-E59AF3E533AE}" ShortID="57447507">
+							<PropertyList>
+								<Property Name="ActionType" Type="int16" Value="1"/>
+							</PropertyList>
+							<ReferenceList>
+								<Reference Name="Target">
+									<ObjectRef Name="too-low-terrain" ID="{E117A05A-EC33-469C-B6BE-3917C6BDA7DB}" WorkUnitID="{27D32D8D-6C92-4542-9BFC-F0D08111F92F}"/>
+								</Reference>
+							</ReferenceList>
+						</Action>
+					</ChildrenList>
+				</Event>
+				<Event Name="Play_Asobo_A320_NEO_CIDSchimes" ID="{96A3AC41-9738-479B-B623-5865F22ED5EE}">
+					<ChildrenList>
+						<Action Name="" ID="{F16ED7CA-A396-471A-A4CB-B06C56DE8569}" ShortID="244571525">
+							<PropertyList>
+								<Property Name="ActionType" Type="int16" Value="1"/>
+							</PropertyList>
+							<ReferenceList>
+								<Reference Name="Target">
+									<ObjectRef Name="CIDS Chimes" ID="{2CF58673-88DA-432C-A5DF-B1EC10F82903}" WorkUnitID="{27D32D8D-6C92-4542-9BFC-F0D08111F92F}"/>
+								</Reference>
+							</ReferenceList>
+						</Action>
+					</ChildrenList>
+				</Event>
+				<Event Name="Play_Asobo_A320_NEO_FMGCtest" ID="{4A5C5E88-FB36-48DF-907B-E5A4518B4306}">
+					<ChildrenList>
+						<Action Name="" ID="{3D3AC075-019B-45F1-ABC5-A2F3AF29490B}" ShortID="627960243">
+							<PropertyList>
+								<Property Name="ActionType" Type="int16" Value="1"/>
+							</PropertyList>
+							<ReferenceList>
+								<Reference Name="Target">
+									<ObjectRef Name="FMGCtest" ID="{8502B61E-84C6-4E30-AFDB-61C6B28C5679}" WorkUnitID="{27D32D8D-6C92-4542-9BFC-F0D08111F92F}"/>
+								</Reference>
+							</ReferenceList>
+						</Action>
+					</ChildrenList>
+				</Event>
+				<Event Name="Play_Asobo_A320_NEO_Loudrelay" ID="{2CFF959F-2372-4585-B8EB-299BB4AE0CB3}">
+					<ChildrenList>
+						<Action Name="" ID="{2481862D-156F-46AD-BF81-9DC762618535}" ShortID="569221885">
+							<PropertyList>
+								<Property Name="ActionType" Type="int16" Value="1"/>
+							</PropertyList>
+							<ReferenceList>
+								<Reference Name="Target">
+									<ObjectRef Name="Airbus_Power_Startup" ID="{F117383A-451E-46F1-967C-72C624B1B09C}" WorkUnitID="{27D32D8D-6C92-4542-9BFC-F0D08111F92F}"/>
+								</Reference>
+							</ReferenceList>
+						</Action>
+					</ChildrenList>
+				</Event>
+				<Event Name="Play_Asobo_A320_NEO_startbeep" ID="{B1B6FA5F-5C11-4E83-89CB-38BAE27423C8}">
+					<ChildrenList>
+						<Action Name="" ID="{6830448F-B864-4F70-9A0A-935B596F87CB}" ShortID="136067982">
+							<PropertyList>
+								<Property Name="ActionType" Type="int16" Value="1"/>
+							</PropertyList>
+							<ReferenceList>
+								<Reference Name="Target">
+									<ObjectRef Name="beepstart" ID="{9D5884D8-8943-405F-9176-032D864E1640}" WorkUnitID="{27D32D8D-6C92-4542-9BFC-F0D08111F92F}"/>
+								</Reference>
+							</ReferenceList>
+						</Action>
+					</ChildrenList>
+				</Event>
+				<Event Name="Play_Asobo_A320_NEO_AVvent" ID="{5176C94E-BF8F-4378-8764-6F11C0C195E3}">
+					<ChildrenList>
+						<Action Name="" ID="{F2D4F399-6765-4F1F-A2EB-12F236974A44}" ShortID="239419340">
+							<PropertyList>
+								<Property Name="ActionType" Type="int16" Value="1"/>
+							</PropertyList>
+							<ReferenceList>
+								<Reference Name="Target">
+									<ObjectRef Name="blowerstart" ID="{E05DFCBA-4D0C-4F5F-97BA-5FFFD2D7EE4A}" WorkUnitID="{27D32D8D-6C92-4542-9BFC-F0D08111F92F}"/>
+								</Reference>
+							</ReferenceList>
+						</Action>
+					</ChildrenList>
+				</Event>
+				<Event Name="Play_Asobo_A320_NEO_AVventloop" ID="{DA11F500-E798-41AA-82B5-EA7D231270A3}">
+					<ChildrenList>
+						<Action Name="" ID="{DBF20FBB-F340-46BC-80F2-F32DCBB665ED}" ShortID="434889694">
+							<PropertyList>
+								<Property Name="ActionType" Type="int16" Value="1"/>
+							</PropertyList>
+							<ReferenceList>
+								<Reference Name="Target">
+									<ObjectRef Name="P1010748" ID="{F63E4913-E2CD-4817-85C4-CB62E28BBC89}" WorkUnitID="{27D32D8D-6C92-4542-9BFC-F0D08111F92F}"/>
+								</Reference>
+							</ReferenceList>
+						</Action>
+					</ChildrenList>
+				</Event>
+				<Event Name="Play_Asobo_A320_NEO_batteryrelay" ID="{F7F5867E-03F4-4756-8DF3-A197017B59C4}">
+					<ChildrenList>
+						<Action Name="" ID="{4A2928DD-C86A-43C6-BDEE-7556EAC0414C}" ShortID="62352438">
+							<PropertyList>
+								<Property Name="ActionType" Type="int16" Value="1"/>
+							</PropertyList>
+							<ReferenceList>
+								<Reference Name="Target">
+									<ObjectRef Name="batteryrelay" ID="{68A1C375-F84E-472E-951F-6B6563EC94DC}" WorkUnitID="{27D32D8D-6C92-4542-9BFC-F0D08111F92F}"/>
+								</Reference>
+							</ReferenceList>
+						</Action>
+					</ChildrenList>
+				</Event>
+				<Event Name="Play_Asobo_A320_NEO_cargodoor" ID="{FB53017F-7BBB-4C81-86B8-C43619626D87}">
+					<ChildrenList>
+						<Action Name="" ID="{B4240752-82ED-4976-93DF-F5C566E039EE}" ShortID="937212854">
+							<PropertyList>
+								<Property Name="ActionType" Type="int16" Value="1"/>
+							</PropertyList>
+							<ReferenceList>
+								<Reference Name="Target">
+									<ObjectRef Name="cargodoor" ID="{D253425C-FB95-4452-ACEB-59C1E50E5D4F}" WorkUnitID="{27D32D8D-6C92-4542-9BFC-F0D08111F92F}"/>
+								</Reference>
+							</ReferenceList>
+						</Action>
+					</ChildrenList>
+				</Event>
+				<Event Name="Play_Asobo_A320_NEO_cdoorclose" ID="{9FEB7C43-03F6-4488-8199-4B1CFDE15431}">
+					<ChildrenList>
+						<Action Name="" ID="{61C52488-0283-4325-801F-AEE3B62BB43F}" ShortID="665352232">
+							<PropertyList>
+								<Property Name="ActionType" Type="int16" Value="1"/>
+							</PropertyList>
+							<ReferenceList>
+								<Reference Name="Target">
+									<ObjectRef Name="cargodoorclose" ID="{04FB7342-DD88-4077-9333-82FB278AE464}" WorkUnitID="{27D32D8D-6C92-4542-9BFC-F0D08111F92F}"/>
+								</Reference>
+							</ReferenceList>
+						</Action>
+					</ChildrenList>
+				</Event>
+				<Event Name="Play_Asobo_A320_NEO_emercabincall" ID="{76F2E235-43D7-4D3D-8BBF-EDDD93C932AF}">
+					<ChildrenList>
+						<Action Name="" ID="{2CCEFB2A-9D45-416C-BC21-5DCCAEAD5579}" ShortID="405006369">
+							<PropertyList>
+								<Property Name="ActionType" Type="int16" Value="1"/>
+							</PropertyList>
+							<ReferenceList>
+								<Reference Name="Target">
+									<ObjectRef Name="cabincrewbell3" ID="{95ECBA39-D78D-4703-A5E3-4F84B20E7DF2}" WorkUnitID="{27D32D8D-6C92-4542-9BFC-F0D08111F92F}"/>
+								</Reference>
+							</ReferenceList>
+						</Action>
+					</ChildrenList>
+				</Event>
+				<Event Name="Play_Asobo_A320_NEO_mechhorn" ID="{01486C7B-F5BF-486F-AE55-A5F15C10C1E1}">
+					<ChildrenList>
+						<Action Name="" ID="{BE8723FF-3964-4295-BB5D-D518B67B94B1}" ShortID="130838667">
+							<PropertyList>
+								<Property Name="ActionType" Type="int16" Value="1"/>
+							</PropertyList>
+							<ReferenceList>
+								<Reference Name="Target">
+									<ObjectRef Name="mechhorn" ID="{2CB9EA77-55D4-4482-B145-E9687FB73A89}" WorkUnitID="{27D32D8D-6C92-4542-9BFC-F0D08111F92F}"/>
+								</Reference>
+							</ReferenceList>
+						</Action>
+					</ChildrenList>
+				</Event>
+				<Event Name="Play_Asobo_A320_NEO_evachorncockpit" ID="{9B3CCA66-793F-4DD3-9433-DFAC4C2508D3}">
+					<ChildrenList>
+						<Action Name="" ID="{F218D849-7D26-467C-915E-F13668D49260}" ShortID="993695684">
+							<PropertyList>
+								<Property Name="ActionType" Type="int16" Value="1"/>
+							</PropertyList>
+							<ReferenceList>
+								<Reference Name="Target">
+									<ObjectRef Name="evachorncockpit" ID="{6F0B35B4-34F9-4ED4-B1A1-B99BD7CFA8C8}" WorkUnitID="{27D32D8D-6C92-4542-9BFC-F0D08111F92F}"/>
+								</Reference>
+							</ReferenceList>
+						</Action>
+					</ChildrenList>
+				</Event>
+				<Event Name="Play_Asobo_A320_NEO_evachorncabin" ID="{6B09C00F-40EF-4BFB-BD4B-8D7DD13DCFFF}">
+					<ChildrenList>
+						<Action Name="" ID="{0A564CA7-1B76-44D3-BC4A-B0DE6746367F}" ShortID="464251824">
+							<PropertyList>
+								<Property Name="ActionType" Type="int16" Value="1"/>
+							</PropertyList>
+							<ReferenceList>
+								<Reference Name="Target">
+									<ObjectRef Name="evachorncabin" ID="{3E57FF88-249C-4599-AB1E-466E9D89A651}" WorkUnitID="{27D32D8D-6C92-4542-9BFC-F0D08111F92F}"/>
+								</Reference>
+							</ReferenceList>
+						</Action>
+					</ChildrenList>
+				</Event>
+				<Event Name="Play_Asobo_A320_NEO_gdown" ID="{A1E16BD7-2378-4B42-8854-5839CF53DBF6}">
+					<ChildrenList>
+						<Action Name="" ID="{8AE853AC-5E23-496A-B7D6-EECC6319ADC8}" ShortID="576908997">
+							<PropertyList>
+								<Property Name="ActionType" Type="int16" Value="1"/>
+							</PropertyList>
+							<ReferenceList>
+								<Reference Name="Target">
+									<ObjectRef Name="gdown" ID="{9CA7003F-EEE4-4584-B144-ADD15C48265B}" WorkUnitID="{27D32D8D-6C92-4542-9BFC-F0D08111F92F}"/>
+								</Reference>
+							</ReferenceList>
+						</Action>
+					</ChildrenList>
+				</Event>
+				<Event Name="PlayAsobo_A320_NEO_gearthud" ID="{42673D25-5177-45ED-90F5-83F71728C991}">
+					<ChildrenList>
+						<Action Name="" ID="{F18BA8F3-3A24-4353-AC9A-10FA18B66E08}" ShortID="1033219478">
+							<PropertyList>
+								<Property Name="ActionType" Type="int16" Value="1"/>
+							</PropertyList>
+							<ReferenceList>
+								<Reference Name="Target">
+									<ObjectRef Name="gearthud" ID="{2D92267B-74B4-4A16-9737-5AA5645D6EC6}"/>
+								</Reference>
+							</ReferenceList>
+						</Action>
+					</ChildrenList>
+				</Event>
 			</ChildrenList>
 		</WorkUnit>
 	</Events>
