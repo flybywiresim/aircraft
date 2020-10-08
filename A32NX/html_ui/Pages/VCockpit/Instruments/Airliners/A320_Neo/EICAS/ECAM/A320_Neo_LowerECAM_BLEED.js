@@ -285,7 +285,7 @@ var A320_Neo_LowerECAM_BLEED;
             }
 
             //hide central part during flight
-            if(this.flying){  
+            if(this.flying && !xBleedValveOpen){  
                 this.centerLines[1].setAttribute("visibility", "hidden");
                 this.centerLines[2].setAttribute("visibility", "hidden");
                 this.centerLines[3].setAttribute("visibility", "hidden");        
@@ -299,12 +299,14 @@ var A320_Neo_LowerECAM_BLEED;
             } else {             
                 this.centerLines[1].setAttribute("visibility", "visible");
                 this.centerLines[2].setAttribute("visibility", "visible");
-                this.centerLines[3].setAttribute("visibility", "visible");         
-                this.gndText.setAttribute("visibility", "visible");
-                this.gndTriangle.setAttribute("visibility", "visible");
+                this.centerLines[3].setAttribute("visibility", "visible");      
                 this.apuConnectingLine.setAttribute("visibility", "visible");
                 this.apuText.setAttribute("visibility", "visible");
                 this.apuValve.setAttribute("visibility", "visible");
+                if(!this.flying){      
+                    this.gndText.setAttribute("visibility", "visible");
+                    this.gndTriangle.setAttribute("visibility", "visible");
+                }
             }
 
             //find left pack status
