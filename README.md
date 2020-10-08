@@ -10,7 +10,7 @@ The A32NX Project is a community driven open source project to create a free Air
 
 ### Mod Download & Installer
 
-Download the new mod installer where you can select either the Stable or Developer build, and install download and install the mod directly into your community folder, [download here.](https://github.com/Externoak/A32NX-installer/releases/download/v0.3/A32NX_Downloader.zip)
+Download the new mod installer where you can select either the Stable or Developer build, and install download and install the mod directly into your community folder, [download here.](https://github.com/Externoak/A32NX-installer/releases/latest/download/A32NX_Downloader.zip)
 
 
 ## Traditional Download Method
