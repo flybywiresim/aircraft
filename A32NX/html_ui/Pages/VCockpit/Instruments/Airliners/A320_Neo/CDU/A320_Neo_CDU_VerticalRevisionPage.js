@@ -15,11 +15,11 @@ class CDUVerticalRevisionPage {
             const extra = "---.-";
             const climbSpeedLimit = "250";
             const climbAltLimit = "FL100";
-            let speedConstraint = "*[   ]";
+            let speedConstraint = 0;
             if (waypoint.speedConstraint > 10) {
                 speedConstraint = waypoint.speedConstraint.toFixed(0);
             }
-            let altitudeConstraint = "[   ]*";
+            let altitudeConstraint = 0;
             if (waypoint.legAltitudeDescription !== 0) {
                 if (waypoint.legAltitudeDescription === 1) {
                     altitudeConstraint = waypoint.legAltitude1.toFixed(0);
@@ -33,14 +33,17 @@ class CDUVerticalRevisionPage {
                     altitudeConstraint = ((waypoint.legAltitude1 + waypoint.legAltitude2) * 0.5).toFixed(0);
                 }
             }
+            if (mcdu.transitionAltitude >= 100 && altitudeConstraint > mcdu.transitionAltitude) {
+                altitudeConstraint = "FL" + (altitudeConstraint / 100).toFixed(0);
+            }
             mcdu.setTemplate([
                 ["VERT REV AT " + waypointIdent],
                 [" EFOB=" + efob, "EXTRA=" + extra],
                 [""],
                 [" CLB SPD LIM", ""],
-                [climbSpeedLimit + "/" + climbAltLimit + "[color]blue", "RTA>"],
+                [climbSpeedLimit + "/" + climbAltLimit + "[color]magenta", "RTA>"],
                 [" SPD CSTR", "ALT CSTR "],
-                [speedConstraint + "[color]blue", altitudeConstraint + "[color]blue"],
+                [speedConstraint ? speedConstraint + "[color]magenta" : "*[\xa0\xa0\xa0][color]blue", altitudeConstraint != 0 ? altitudeConstraint + "[color]magenta" : "[\xa0\xa0\xa0\xa0]*[color]blue"],
                 ["", ""],
                 ["", ""],
                 [""],
@@ -64,23 +67,16 @@ class CDUVerticalRevisionPage {
             }; // SPD CSTR
             mcdu.onRightInput[2] = () => {
                 let value = mcdu.inOut;
-                /* API limited at this moment, no way to alter a waypoint except altitude
-                waypoint.legAltitudeDescription = 1;
-                if (value.charAt(0) == '+')
-                {
-                    waypoint.legAltitudeDescription = 2;
-                    value = value.substring(1);
+                if (value === FMCMainDisplay.clrValue) {
+                    mcdu.removeWaypoint(fpIndex, () => {
+                        CDUFlightPlanPage.ShowPage(mcdu, offset);
+                    });
                 }
-                else if (value.charAt(0) == '-')
-                {
-                    waypoint.legAltitudeDescription = 3;
-                    value = value.substring(1);
-                } */
                 value = parseInt(value);
                 if (isFinite(value)) {
                     if (value >= 0) {
                         mcdu.clearUserInput();
-                        mcdu.flightPlanManager.setWaypointAltitude(value / 3.28084, mcdu.flightPlanManager.indexOfWaypoint(waypoint), () => {
+                        mcdu.flightPlanManager.setWaypointAltitude((value < 1000 ? value * 100 : value) / 3.28084, mcdu.flightPlanManager.indexOfWaypoint(waypoint), () => {
                             this.ShowPage(mcdu, waypoint);
                         });
                     }
