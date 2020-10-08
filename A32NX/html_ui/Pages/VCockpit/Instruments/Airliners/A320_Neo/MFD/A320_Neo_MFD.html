@@ -118,12 +118,21 @@
                             <text fill="red" text-anchor="middle" x="50%" y="45%" font-size="30px">MAP NOT AVAIL</text>
                         </g>
                         <g>
-                            <rect x="22%" y="95%" width="56%" height="3%" fill="url(#Backlight)" stroke="white" stroke-width="2"></rect>
+                            <rect id="rect_GPSPrimary" x="22%" y="95%" width="56%" height="3%" fill="url(#Backlight)" stroke="white" stroke-width="2"></rect>
                             <text x="50%" y="97.6%" fill="#db7200" font-size="20px" text-anchor="middle" id="GPSPrimaryLost">GPS PRIMARY LOST</text>
                             <text x="50%" y="97.6%" fill="white" font-size="20px" text-anchor="middle" id="GPSPrimary">GPS PRIMARY</text>
                         </g>
                     </svg>
                 </div>
+            </div>
+
+			<div id="div_Chrono" style="position: absolute; left: 3%; top: 83%; width: 30%; height: 30%; border: none; display: none;">
+				<svg id="svg_Chrono" viewBox="0 0 600 600" style="position:absolute; top:83%; left: 3%; width: 100%; height:100%;">
+					<rect fill="rgba(60,60,70,1)" x="0" y="0" width="12.5%" height="4%"></rect>
+					<text id="text_chrono_prefix" fill="green" text-anchor="left" x="0.5%" y="2.9%" font-size="19px">00'</text>
+					<text id="text_chrono_HRSymbol" fill="green" text-anchor="left" x="4.6%" y="2%" font-size="15px"></text>
+					<text id="text_chrono_suffix" fill="green" text-anchor="left" x="6.4%" y="2.9%" font-size="19px">00"</text>
+                </svg>
             </div>
 
             <div style="position: absolute; left: 0%; top: 0%; width: 100%; height: 100%; border: none; display: none;" id="SelfTestDiv">

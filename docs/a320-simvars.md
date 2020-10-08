@@ -162,6 +162,10 @@
     - Bool
     - True if cabin fans on/auto
 
+- A32NX_PITOT_HEAT_AUTO
+    - Bool
+    - True if pitot heating auto
+
 - A32NX_EMERELECPWR_GEN1_FAULT
     - Bool
     - True if generator 1 line fault
@@ -209,3 +213,7 @@
     - ECAM/ND XFR
     - Position (0-2)
     - 0 is CAPT, 1 is NORM, 2 is F/O
+
+- A32NX_METRIC_ALT_TOGGLE
+    - Bool
+    - True if PFD metric altitude enabled

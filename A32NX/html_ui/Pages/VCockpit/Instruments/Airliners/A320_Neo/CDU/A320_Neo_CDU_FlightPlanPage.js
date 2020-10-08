@@ -192,7 +192,7 @@ class CDUFlightPlanPage {
                             }
                         }
                     }
-                    if (i < rowsCount - 1) {
+                    if (i < rowsCount - 1) { // enough space left before DEST line
                         let airwayName = "";
                         if (prevWaypoint && waypoint) {
                             const airway = IntersectionInfo.GetCommonAirway(prevWaypoint, waypoint);
@@ -200,9 +200,9 @@ class CDUFlightPlanPage {
                                 airwayName = airway.name;
                             }
                         }
+
                         rows[2 * i] = [airwayName, waypoint.cumulativeDistanceInFP.toFixed(0)];
                         let speedConstraint = "---";
-                        console.log(waypoint.speedConstraint);
                         if (waypoint.speedConstraint > 10) {
                             speedConstraint = waypoint.speedConstraint.toFixed(0);
                             if (speedConstraint === lastSpeedConstraint) {
@@ -253,7 +253,7 @@ class CDUFlightPlanPage {
                         } else if (waypoint === mcdu.flightPlanManager.getActiveWaypoint()) {
                             color = "green";
                         }
-                        rows[2 * i + 1] = [waypoint.ident + "[color]" + color, speedConstraint + "/" + altitudeConstraint + "[s-text][color]" + color, timeCell + "[color]" + color];
+
                         if (fpIndex !== -42) {
                             mcdu.onLeftInput[i] = async () => {
                                 const value = mcdu.inOut;
@@ -277,6 +277,34 @@ class CDUFlightPlanPage {
                                     CDUVerticalRevisionPage.ShowPage(mcdu, waypoint);
                                 }
                             };
+                        }
+
+                        if (mcdu.activeHold && mcdu.activeHold.has(waypoint.ident)) {
+                            const holdRows = [
+                                [waypoint.ident + "[color]" + color, speedConstraint + "/" + altitudeConstraint + "[s-text][color]" + color, timeCell + "[color]" + color],
+                                ["" , "IMM[color]blue" , "HOLD"],
+                                ["HOLD " + mcdu.activeHold.get(waypoint.ident).turn + "[color]" + color, "EXIT*[color]blue", "SPD " + mcdu.activeHold.get(waypoint.ident).speed],
+                                ["C" + mcdu.activeHold.get(waypoint.ident).course.toFixed(0) + "°"],
+                                [waypoint.ident + "[color]" + color, speedConstraint + "/" + altitudeConstraint + "[s-text][color]" + color, timeCell + "[color]" + color]
+                            ];
+
+                            // place the button input on the HOLD line to clear the hold
+                            mcdu.onRightInput[i + 1] = async () => {
+                                // TODO remove any active waypoints and route to active waypoint
+                                mcdu.activeHold = null;
+                                CDUFlightPlanPage.ShowPage(mcdu, offset);
+                            };
+
+                            for (let j = 0; i < rowsCount - 1; i++) {
+                                rows[2 * i + 1] = holdRows[j++];
+                                if (i == rowsCount - 2 || j >= holdRows.length) {
+                                    break;
+                                }
+
+                                rows[2 * i + 2] = holdRows[j++];
+                            }
+                        } else {
+                            rows[2 * i + 1] = [waypoint.ident + "[color]" + color, speedConstraint + "/" + altitudeConstraint + "[s-text][color]" + color, timeCell + "[color]" + color];
                         }
                     } else {
                         let destTimeCell = "----";
