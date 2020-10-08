@@ -7,15 +7,19 @@
 					<radialGradient id="SAIBacklight" cx="50%" cy="50%" r="75%" >
 						<stop offset="0%" style="stop-color:rgb(13,20,35);stop-opacity:1" />
 						<stop offset="100%" style="stop-color:rgb(13,20,35);stop-opacity:1" />
-					</radialGradient>					
-				</defs>				
+					</radialGradient>
+				</defs>
 			</svg>
+            <a320-neo-sai-brightness id="Brightness"></a320-neo-sai-brightness>
             <a320-neo-sai-self-test id="SelfTest"></a320-neo-sai-self-test>
             <glasscockpit-highlight id="Highlight" style="position:absolute; width: 100%; height:100%; display:none;"></glasscockpit-highlight>
             <div id="SelfTestHider">
+                <a320-neo-sai-bugs-page id="Bugs"></a320-neo-sai-bugs-page>
                 <a320-neo-sai-altimeter-indicator id="Altimeter"></a320-neo-sai-altimeter-indicator>
                 <a320-neo-sai-airspeed-indicator id="Airspeed"></a320-neo-sai-airspeed-indicator>
                 <a320-neo-sai-attitude-indicator id="Horizon" background="true"></a320-neo-sai-attitude-indicator>
+                <a320-neo-sai-att-reset-indicator id="AttReset"></a320-neo-sai-att-reset-indicator>
+                <a320-neo-sai-landingsys-indicator id="LandingSys"></a320-neo-sai-landingsys-indicator>
             </div>
             <a320-neo-sai-pressure-indicator id="Pressure"></a32nx-sai-pressure-indicator>
         </div>
@@ -25,6 +29,7 @@
 <link rel="stylesheet" href="A320_Neo_SAI.css" />
 
 <script type="text/html" import-script="/JS/SimPlane.js"></script>
+<script type="text/html" import-script="/JS/A32NX_Util.js"></script>
 
 <script type="text/html" import-script="/Pages/VCockpit/Instruments/Shared/Utils/RadioNav.js"></script>
 
