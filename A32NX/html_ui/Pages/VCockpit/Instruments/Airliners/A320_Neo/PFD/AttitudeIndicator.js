@@ -92,7 +92,7 @@ class Jet_PFD_AttitudeIndicator extends HTMLElement {
         this.destroyLayout();
         this.construct_A320_Neo();
     }
-    construct_A320_Neo() {
+    construct_A320_Neo() {        
         const pitchFactor = -7;
         this.pitchAngleFactor = pitchFactor;
         this.horizonAngleFactor = pitchFactor * 1.2;
@@ -445,12 +445,22 @@ class Jet_PFD_AttitudeIndicator extends HTMLElement {
     }
     applyAttributes() {
         if (this.horizon_bottom) {
-            this.horizon_bottom.setAttribute("transform", "rotate(" + this.bankAngle + ", 0, 0) translate(0," + (this.horizonAngle * this.horizonAngleFactor) + ")");
+            if((this.horizonAngle * this.horizonAngleFactor) < (this.horizonHeight / 2)){
+                this.horizon_bottom.setAttribute("transform", "rotate(" + this.bankAngle + ", 0, 0) translate(0," + (this.horizonAngle * this.horizonAngleFactor) + ")");
+            } else {
+                this.horizon_bottom.setAttribute("transform", "rotate(" + this.bankAngle + ", 0, 0) translate(0," + this.horizonHeight / 2 + ")");
+            }
         }
         if (this.attitude_pitch) {
             this.attitude_pitch.setAttribute("transform", "translate(0," + (this.pitchAngle * this.pitchAngleFactor) + ")");
+
+            var hPitchContainer;
+            if(this.radioAltitudeGroup.getAttribute("visibility") === 'visible'){
+                hPitchContainer = (this.attitudeHeight / 2) + (this.pitchAngle * this.pitchAngleFactor) + this.rAltitude;
+            } else {
+                hPitchContainer = this.attitudeHeight;
+            }
             
-            var hPitchContainer = (this.attitudeHeight / 2) + (this.pitchAngle * this.pitchAngleFactor) + this.rAltitude;
             if(hPitchContainer <= this.attitudeHeight){
                 this.setAttitudePitchContainer(hPitchContainer);
             }
@@ -883,6 +893,7 @@ var Jet_PFD_FlightDirector;
             if (fdActive && Simplane.getIsGrounded() && (Simplane.getEngineThrottleMode(0) != ThrottleMode.TOGA || Simplane.getEngineThrottleMode(1) != ThrottleMode.TOGA)) {
                 fdActive = false;
             }
+  
             const trkfpaMode = Simplane.getAutoPilotTRKFPAModeActive();
             this.setModeActive(0, fdActive && !trkfpaMode);
             this.setModeActive(1, trkfpaMode);
