@@ -49,13 +49,18 @@ class CDUAvailableArrivalsPage {
                     const selectedRunway = selectedApproach.runway;
                     for (let i = 0; i < airportInfo.arrivals.length; i++) {
                         const arrival = airportInfo.arrivals[i];
-                        for (let j = 0; j < arrival.runwayTransitions.length; j++) {
-                            const runwayTransition = arrival.runwayTransitions[j];
-                            if (runwayTransition) {
-                                if (runwayTransition.name.indexOf(selectedRunway) != -1) {
-                                    matchingArrivals.push({ arrival: arrival, arrivalIndex: i });
+                        if (arrival.runwayTransitions.length) {
+                            for (let j = 0; j < arrival.runwayTransitions.length; j++) {
+                                const runwayTransition = arrival.runwayTransitions[j];
+                                if (runwayTransition) {
+                                    if (runwayTransition.name.indexOf(selectedRunway) != -1) {
+                                        matchingArrivals.push({ arrival: arrival, arrivalIndex: i });
+                                    }
                                 }
                             }
+                        } else {
+                            //add the arrival even if it isn't runway specific
+                            matchingArrivals.push({ arrival: arrival, arrivalIndex: i });
                         }
                     }
                 } else {

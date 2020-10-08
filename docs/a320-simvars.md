@@ -213,3 +213,7 @@
     - ECAM/ND XFR
     - Position (0-2)
     - 0 is CAPT, 1 is NORM, 2 is F/O
+
+- A32NX_METRIC_ALT_TOGGLE
+    - Bool
+    - True if PFD metric altitude enabled

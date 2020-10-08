@@ -2274,5 +2274,60 @@
             </Test>
          </Sequence>
       </Checkpoint>
+      <!-- EMERGENCY -->
+      <Checkpoint Id="A320_EMERGENCY_PARKING_BRAKE">
+         <CheckpointDesc SubjectTT="TT:AIRCRAFT/PARKING BRK." ExpectationTT="TT:STOP/ON"/>
+         <Instrument Id="LANDING_GEAR_Switch_ParkingBrake"/>
+      </Checkpoint>
+      <Checkpoint Id="A320_EMERGENCY_ATC">
+         <CheckpointDesc SubjectTT="TT:ATC (VHF 1)" ExpectationTT="TT:NOTIFY"/>
+      </Checkpoint>
+      <Checkpoint Id="A320_EMERGENCY_ENGINE_MASTER">
+         <CheckpointDesc SubjectTT="TT:ENG MASTER 1 and 2" ExpectationTT="TT:OFF"/>
+         <Instrument Id="ENGINE_Switch_Master1"/>
+         <Instrument Id="ENGINE_Switch_Master2"/>
+      </Checkpoint>
+      <Checkpoint Id="A320_EMERGENCY_CABINCREW">
+         <CheckpointDesc SubjectTT="TT:CABIN CREW (PA)" ExpectationTT="TT:NOTIFY"/>
+      </Checkpoint>
+      <Checkpoint Id="A320_EMERGENCY_FIRE_ALERT">
+         <CheckpointDesc SubjectTT="TT:FIRE P/Bs (ENG and APU)" ExpectationTT="TT:PUSH"/>
+      </Checkpoint>
+      <Checkpoint Id="A320_EMERGENCY_AGENTS">
+         <CheckpointDesc SubjectTT="TT:AGENTS (ENG and APU)" ExpectationTT="TT:AS REQUIRED"/>
+      </Checkpoint>
+      <Checkpoint Id="A320_EMERGENCY_EVACUATION">
+         <CheckpointDesc SubjectTT="TT:EVACUATION" ExpectationTT="TT:INITIATE"/>
+      </Checkpoint>
+      <Checkpoint Id="A320_EMERGENCY_AUTOBRK">
+         <CheckpointDesc SubjectTT="TT:AUTO BRK" ExpectationTT="TT:DO NOT USE"/>
+      </Checkpoint>
+      <Checkpoint Id="A320_EMERGENCY_LANDING_CONFIG">
+         <CheckpointDesc SubjectTT='TT:FOR LANDING' ExpectationTT="TT:USE NORMAL CONF"/>
+      </Checkpoint>
+      <Checkpoint Id="A320_EMERGENCY_SPEED_TRAJECTORY">
+         <CheckpointDesc SubjectTT="TT:SPEED TRAJECTORY" ExpectationTT="TT:STABILIZE ASAP"/>
+      </Checkpoint>
+      <Checkpoint Id="A320_EMERGENCY_LDG_DIST_PROC">
+         <CheckpointDesc SubjectTT="TT:LDG DIST PROC" ExpectationTT="TT:APPLY"/>
+      </Checkpoint>
+      <Checkpoint Id="A320_EMERGENCY_DIFFERENTIAL_BRAKING">
+         <CheckpointDesc SubjectTT="TT:DIFFERENTIAL BRAKING" ExpectationTT="TT:USE ASAP"/>
+      </Checkpoint>
+      <Checkpoint Id="A320_EMERGENCY_AP">
+         <CheckpointDesc SubjectTT="TT:AP" ExpectationTT="TT:OFF"/>
+         <Instrument Id="PUSH_AUTOPILOT_AP1"/>
+         <Instrument Id="PUSH_AUTOPILOT_AP2"/>
+      </Checkpoint>
+      <Checkpoint Id="A320_EMERGENCY_MAN_PITCH_TRIM">
+         <CheckpointDesc SubjectTT="TT:MAN PITCH TRIM" ExpectationTT="TT:CHECK"/>
+      </Checkpoint>
+      <Checkpoint Id="A320_EMERGENCY_FOR_LDG">
+         <CheckpointDesc SubjectTT="TT:FOR LDG" ExpectationTT="TT:USE FLAP 3"/>
+         <Instrument Id="HANDLING_Lever_Flaps"/>
+      </Checkpoint>
+      <Checkpoint Id="A320_EMERGENCY_GPWS_LDG_FLAP">
+         <CheckpointDesc SubjectTT="TT:GPWS LDG FLAP 3" ExpectationTT="TT:ON"/>
+      </Checkpoint>
    </Checklist.CheckpointLibrary>
 </SimBase.Document>

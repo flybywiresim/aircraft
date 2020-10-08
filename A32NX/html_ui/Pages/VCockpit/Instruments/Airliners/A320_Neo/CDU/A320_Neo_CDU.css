@@ -38,9 +38,9 @@
 
 #Electricity {
   width: 100%;
-  height: 100%; 
+  height: 100%;
   background:radial-gradient(ellipse at center, rgba(13,20,35,1) 0%,rgba(13,20,35,1) 100%);
-  }
+}
 
 #Electricity[state=off] {
   display: none; }
@@ -105,16 +105,16 @@ a320-neo-cdu-main-display::after {
   color: white; }
 
 .blue {
-  color: #99ceff; }
+  color: #00ffff; }
 
 .yellow {
   color: #f9dd02; }
 
 .green {
-  color: #1daa05; }
+  color: #00ff00; }
 
 .red {
-  color: #ff886d; }
+  color: #ff9a00; }
 
 fmc-main-display::before {
   content: " ";
