@@ -40,6 +40,7 @@
 1. [PFD] Added the ability to display metric altitudes - @lousybyte (lousybyte)
 1. [ECAM] Added messages related to anti-skid / N.W. steering being off - @Benjozork (Benjamin Dupont)
 1. [CDU] Updated HOLD Page to honeywell spec, PLAN page updated to show holds - @sepiroth887 (sepiroth887)
+1. [FCU] Fixed incrementing the QNH while in hPa mode - @lousybyte (lousybyte)
 
 ## 2020/09
 1. [General] Add CHANGELOG.md - @nathaninnes (Nathan Innes)
