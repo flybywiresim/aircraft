@@ -47,8 +47,7 @@ class CDUAvailableArrivalsPage {
                 const matchingArrivals = [];
                 if (selectedApproach) {
                     const selectedRunway = selectedApproach.runway;
-                    //for some reason there is a duplicate of every STAR. the /2 will prevent these duplicates from showing.
-                    for (let i = 0; i < airportInfo.arrivals.length / 2; i++) {
+                    for (let i = 0; i < airportInfo.arrivals.length; i++) {
                         const arrival = airportInfo.arrivals[i];
                         for (let j = 0; j < arrival.runwayTransitions.length; j++) {
                             const runwayTransition = arrival.runwayTransitions[j];
