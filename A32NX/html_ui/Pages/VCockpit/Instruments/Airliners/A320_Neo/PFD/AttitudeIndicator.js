@@ -97,7 +97,7 @@ class Jet_PFD_AttitudeIndicator extends HTMLElement {
         this.pitchAngleFactor = pitchFactor;
         this.horizonAngleFactor = pitchFactor * 1.2;
         this.attitudeHeight = 280;
-        this.horizonHeight = 360;
+        this.horizonHeight = 355;
         this.horizonToAttitudeRatio = this.attitudeHeight / this.horizonHeight;
         const seperatorColor = "#e0e0e0";
         {
