@@ -68,6 +68,8 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
             this.compass,
             this.info
         ]);
+        this.chronoAcc = 0;
+        this.chronoStart = 0;
     }
     init() {
         super.init();
@@ -93,9 +95,13 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
         SimVar.SetSimVarValue("L:A320_Neo_MFD_NAV_MODE_2", "number", 3);
         SimVar.SetSimVarValue("L:XMLVAR_A320_WeatherRadar_Sys", "number", 1);
         const url = document.getElementsByTagName("a320-neo-mfd-element")[0].getAttribute("url");
-        this.disp_index = parseInt(url.substring(url.length - 1));
-        this.pot_index = this.disp_index == 1 ? 89 : 91;
-        this.showILS = SimVar.GetSimVarValue(`L:BTN_LS_${this.disp_index}_FILTER_ACTIVE`, "bool");
+        // 1 is captain, 2 is first officer
+        this.screenIndex = parseInt(url.substring(url.length - 1));
+        this.potIndex = this.screenIndex == 1 ? 89 : 91;
+        this.isCaptainsND = this.screenIndex === 1;
+        this.isFirstOfficersND = this.screenIndex === 1;
+        this.side = this.isCaptainsND ? 'L' : 'R';
+        this.showILS = SimVar.GetSimVarValue(`L:BTN_LS_${this.screenIndex}_FILTER_ACTIVE`, "bool");
         this.compass.showILS(this.showILS);
         this.info.showILS(this.showILS);
 
@@ -103,13 +109,44 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
         this.selfTestDiv = document.querySelector("#SelfTestDiv");
         this.selfTestTimerStarted = false;
         this.selfTestTimer = -1;
-        this.selfTestLastKnobValueFO = 1;
-        this.selfTestLastKnobValueCAP = 1;
+
+        //CHRONO
+        SimVar.SetSimVarValue(`L:AUTOPILOT_CHRONO_STATE_${this.side}`, "number", 0);
+        this.chronoDiv = document.querySelector("#div_Chrono");
+        this.text_chrono_prefix = document.querySelector("#text_chrono_prefix");
+        this.text_chrono_HRSymbol = document.querySelector("#text_chrono_HRSymbol");
+        this.text_chrono_suffix = document.querySelector("#text_chrono_suffix");
+        this.IsChronoDisplayed = 0;
 
         this.electricity = this.gps.getChildById("Electricity");
     }
+    displayChronoTime() {
+        const totalSeconds = this.getTotalChronoSeconds();
+        if (this.chronoStart || totalSeconds > 0) {
+            const hours = Math.floor(totalSeconds / 3600).toString().padStart(2, '0');
+            const minutes = Math.floor((totalSeconds % 3600) / 60).toString().padStart(2, '0');
+            if (hours === "00") {
+                const seconds = Math.floor(totalSeconds % 60).toString().padStart(2, '0');
+                this.text_chrono_prefix.innerHTML = minutes + "'";
+                this.text_chrono_HRSymbol.innerHTML = "";
+                this.text_chrono_suffix.innerHTML = seconds + '"';
+            } else {
+                this.text_chrono_prefix.innerHTML = hours;
+                this.text_chrono_HRSymbol.innerHTML = "H";
+                this.text_chrono_suffix.innerHTML = minutes + "'";
+            }
+        }
+        return "";
+    }
+    getTotalChronoSeconds() {
+        let totalSeconds = this.chronoAcc;
+        if (this.chronoStart) {
+            totalSeconds += SimVar.GetGlobalVarValue("ABSOLUTE TIME", "Seconds") - this.chronoStart;
+        }
+        return Math.max(totalSeconds, 0);
+    }
     onUpdate() {
-        const currentKnobValue = SimVar.GetSimVarValue("LIGHT POTENTIOMETER:" + this.pot_index, "number");
+        const currentKnobValue = SimVar.GetSimVarValue("LIGHT POTENTIOMETER:" + this.potIndex, "number");
         if (currentKnobValue <= 0.0) {
             this.selfTestLastKnobValue = currentKnobValue;
             return;
@@ -124,9 +161,34 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
         if (ADIRSState != 2) {
             document.querySelector("#GPSPrimary").setAttribute("visibility", "hidden");
             document.querySelector("#GPSPrimaryLost").setAttribute("visibility", "visible");
+            document.querySelector("#rect_GPSPrimary").setAttribute("visibility", "visible");
+
+            //Simvar to find out if the GPS messages have been already acknowledged in the FCU by clicking the CLR button.
+            var GPSPrimAck = SimVar.GetSimVarValue("L:GPSPrimaryAcknowledged", "bool");
+            //Getting the current GPS value to compare whether if the GPS is lost in the middle (After Aligns)
+            //OR The aircraft is started from the very first time.
+            var GPSPrimaryCurrVal = SimVar.GetSimVarValue("L:GPSPrimary", "bool");
+            if (GPSPrimaryCurrVal && GPSPrimAck) { //Resetting the acknowledged flag, if the GPS flag changed in the middle.
+                SimVar.SetSimVarValue("L:GPSPrimaryAcknowledged", "bool", 0);
+            }
+            SimVar.SetSimVarValue("L:GPSPrimary", "bool", 0);
         } else {
-            document.querySelector("#GPSPrimary").setAttribute("visibility", "visible");
             document.querySelector("#GPSPrimaryLost").setAttribute("visibility", "hidden");
+            var GPSPrimAck = SimVar.GetSimVarValue("L:GPSPrimaryAcknowledged", "bool");
+            var GPSPrimaryCurrVal = SimVar.GetSimVarValue("L:GPSPrimary", "bool");
+            if (!GPSPrimaryCurrVal && GPSPrimAck) { //Resetting the acknowledged flag, if the GPS flag changed in the middle.
+                SimVar.SetSimVarValue("L:GPSPrimaryAcknowledged", "bool", 0);
+            }
+
+            //Clearing the ND message if the message displayed in the FMC is acknowledged by pressing the CLR button.
+            if (!GPSPrimAck) {
+                document.querySelector("#GPSPrimary").setAttribute("visibility", "visible");
+                document.querySelector("#rect_GPSPrimary").setAttribute("visibility", "visible");
+            } else {
+                document.querySelector("#rect_GPSPrimary").setAttribute("visibility", "hidden");
+                document.querySelector("#GPSPrimary").setAttribute("visibility", "hidden");
+            }
+            SimVar.SetSimVarValue("L:GPSPrimary", "bool", 1);
         }
 
         if (ADIRSState != 2 && !this.map.planMode && this.modeChangeTimer == -1) {
@@ -160,6 +222,58 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
             }
         }
 
+        // ND Chrono Logic
+        // Copied the base logic from the Clock functionality.
+        // Chrono button on the FCU panel works a bit different to the Chrono is the clock. For e.g.
+        // 1st Push starts the timer.
+        // 2nd Push Stops the Chrono.
+        // 3rd Push Clears the Chrono.
+        // Chrono State simvar is used to handle thes above states.
+        const AP_ChronoBtnState = SimVar.GetSimVarValue(`L:PUSH_AUTOPILOT_CHRONO_${this.side}`, "bool");
+        const AP_IsChronoState = SimVar.GetSimVarValue(`L:AUTOPILOT_CHRONO_STATE_${this.side}`, "number");
+        // AUTOPILOT_CHRONO_STATE_X States
+        // 0 Off
+        // 1 Running
+        // 2 Stopped
+        if (ACPowerAvailable) {
+            // If Chrono button is pushed on
+            if (AP_ChronoBtnState) {
+                if (AP_IsChronoState === 2) {
+                    // Hide & Clear the chrono if it is already stopped.
+                    this.chronoDiv.setAttribute("style", "display:none");
+                    SimVar.SetSimVarValue(`L:AUTOPILOT_CHRONO_STATE_${this.side}`, "number", 0);
+                    SimVar.SetSimVarValue(`L:PUSH_AUTOPILOT_CHRONO_${this.side}`, "bool", 0);
+                    this.chronoStart = 0;
+                    this.chronoAcc = 0;
+                    this.IsChronoDisplayed = 0;
+                } else {
+                    // Display and start the timer.
+                    this.chronoDiv.setAttribute("style", "display:block");
+                    this.IsChronoDisplayed = 1;
+                    SimVar.SetSimVarValue(`L:AUTOPILOT_CHRONO_STATE_${this.side}`, "number", 1);
+                    if (this.chronoStart === 0) {
+                        this.chronoStart = SimVar.GetGlobalVarValue("ABSOLUTE TIME", "Seconds");
+                    }
+                    this.displayChronoTime();
+                }
+            } else {
+                // Chrono button is pushed OFF
+                if (AP_IsChronoState !== 0 && this.IsChronoDisplayed) {
+                    // Will stop the timer ONLY if it is visible on screen
+                    SimVar.SetSimVarValue(`L:AUTOPILOT_CHRONO_STATE_${this.side}`, "number", 2);
+                }
+            }
+        } else {
+            if (AP_ChronoBtnState !== 0 || AP_IsChronoState !== 0) {
+                SimVar.SetSimVarValue(`L:PUSH_AUTOPILOT_CHRONO_${this.side}`, "bool", 0);
+                SimVar.SetSimVarValue(`L:AUTOPILOT_CHRONO_STATE_${this.side}`, "number", 0);
+                this.chronoDiv.setAttribute("style", "display:none");
+                this.chronoStart = 0;
+                this.chronoAcc = 0;
+                this.IsChronoDisplayed = 0;
+            }
+        }
+
         this.selfTestLastKnobValue = currentKnobValue;
         this.updateScreenState();
     }
@@ -173,11 +287,11 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
     }
 
     _updateNDFiltersStatuses() {
-        SimVar.SetSimVarValue("L:BTN_CSTR_" + this.disp_index + "_FILTER_ACTIVE", "number", this.map.instrument.showConstraints ? 1 : 0);
-        SimVar.SetSimVarValue("L:BTN_VORD_" + this.disp_index + "_FILTER_ACTIVE", "number", this.map.instrument.showVORs ? 1 : 0);
-        SimVar.SetSimVarValue("L:BTN_WPT_" + this.disp_index + "_FILTER_ACTIVE", "number", this.map.instrument.showIntersections ? 1 : 0);
-        SimVar.SetSimVarValue("L:BTN_NDB_" + this.disp_index + "_FILTER_ACTIVE", "number", this.map.instrument.showNDBs ? 1 : 0);
-        SimVar.SetSimVarValue("L:BTN_ARPT_" + this.disp_index + "_FILTER_ACTIVE", "number", this.map.instrument.showAirports ? 1 : 0);
+        SimVar.SetSimVarValue("L:BTN_CSTR_" + this.screenIndex + "_FILTER_ACTIVE", "number", this.map.instrument.showConstraints ? 1 : 0);
+        SimVar.SetSimVarValue("L:BTN_VORD_" + this.screenIndex + "_FILTER_ACTIVE", "number", this.map.instrument.showVORs ? 1 : 0);
+        SimVar.SetSimVarValue("L:BTN_WPT_" + this.screenIndex + "_FILTER_ACTIVE", "number", this.map.instrument.showIntersections ? 1 : 0);
+        SimVar.SetSimVarValue("L:BTN_NDB_" + this.screenIndex + "_FILTER_ACTIVE", "number", this.map.instrument.showNDBs ? 1 : 0);
+        SimVar.SetSimVarValue("L:BTN_ARPT_" + this.screenIndex + "_FILTER_ACTIVE", "number", this.map.instrument.showAirports ? 1 : 0);
     }
     updateMap(_deltaTime) {
         if (this.modeChangeMask && this.modeChangeTimer >= 0) {
@@ -196,9 +310,9 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
         }
         const wxRadarOn = (SimVar.GetSimVarValue("L:XMLVAR_A320_WeatherRadar_Sys", "number") != 1) ? true : false;
         const wxRadarMode = SimVar.GetSimVarValue("L:XMLVAR_A320_WeatherRadar_Mode", "number");
-        const terrainOn = SimVar.GetSimVarValue(`L:BTN_TERRONND_${this.disp_index}_ACTIVE`, "number");
-        const mapMode = SimVar.GetSimVarValue("L:A320_Neo_MFD_NAV_MODE_" + this.disp_index, "number");
-        const mapRange = SimVar.GetSimVarValue("L:A320_Neo_MFD_Range_" + this.disp_index, "number");
+        const terrainOn = SimVar.GetSimVarValue(`L:BTN_TERRONND_${this.screenIndex}_ACTIVE`, "number");
+        const mapMode = SimVar.GetSimVarValue("L:A320_Neo_MFD_NAV_MODE_" + this.screenIndex, "number");
+        const mapRange = SimVar.GetSimVarValue("L:A320_Neo_MFD_Range_" + this.screenIndex, "number");
         const shouldShowWeather = wxRadarOn && wxRadarMode != 3;
         if (this.wxRadarOn != wxRadarOn || this.terrainOn != terrainOn || this.wxRadarMode != wxRadarMode || this.mapMode != mapMode) {
             this.wxRadarOn = wxRadarOn;
@@ -302,7 +416,7 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
     }
     onEvent(_event) {
         switch (_event) {
-            case "BTN_CSTR_" + this.disp_index:
+            case "BTN_CSTR_" + this.screenIndex:
                 this.map.instrument.showConstraints = !this.map.instrument.showConstraints;
                 this.map.instrument.showIntersections = false;
                 this.map.instrument.showNDBs = false;
@@ -310,7 +424,7 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
                 this.map.instrument.showVORs = false;
                 this._updateNDFiltersStatuses();
                 break;
-            case "BTN_VORD_" + this.disp_index:
+            case "BTN_VORD_" + this.screenIndex:
                 this.map.instrument.showConstraints = false;
                 this.map.instrument.showIntersections = false;
                 this.map.instrument.showNDBs = false;
@@ -318,7 +432,7 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
                 this.map.instrument.showVORs = !this.map.instrument.showVORs;
                 this._updateNDFiltersStatuses();
                 break;
-            case "BTN_WPT_" + this.disp_index:
+            case "BTN_WPT_" + this.screenIndex:
                 this.map.instrument.showConstraints = false;
                 this.map.instrument.showVORs = false;
                 this.map.instrument.showNDBs = false;
@@ -326,7 +440,7 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
                 this.map.instrument.showIntersections = !this.map.instrument.showIntersections;
                 this._updateNDFiltersStatuses();
                 break;
-            case "BTN_NDB_" + this.disp_index:
+            case "BTN_NDB_" + this.screenIndex:
                 this.map.instrument.showConstraints = false;
                 this.map.instrument.showVORs = false;
                 this.map.instrument.showIntersections = false;
@@ -334,7 +448,7 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
                 this.map.instrument.showNDBs = !this.map.instrument.showNDBs;
                 this._updateNDFiltersStatuses();
                 break;
-            case "BTN_ARPT_" + this.disp_index:
+            case "BTN_ARPT_" + this.screenIndex:
                 this.map.instrument.showConstraints = false;
                 this.map.instrument.showVORs = false;
                 this.map.instrument.showIntersections = false;
@@ -342,10 +456,10 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
                 this.map.instrument.showAirports = !this.map.instrument.showAirports;
                 this._updateNDFiltersStatuses();
                 break;
-            case "BTN_TERRONND_" + this.disp_index:
-                SimVar.SetSimVarValue(`L:BTN_TERRONND_${this.disp_index}_ACTIVE`, "number", (this.terrainOn) ? 0 : 1);
+            case "BTN_TERRONND_" + this.screenIndex:
+                SimVar.SetSimVarValue(`L:BTN_TERRONND_${this.screenIndex}_ACTIVE`, "number", (this.terrainOn) ? 0 : 1);
                 break;
-            case "BTN_LS_" + this.disp_index:
+            case "BTN_LS_" + this.screenIndex:
                 this.showILS = !this.showILS;
                 this.compass.showILS(this.showILS);
                 this.info.showILS(this.showILS);
@@ -398,13 +512,13 @@ class A320_Neo_MFD_Compass extends NavSystemElement {
         this.svg.aircraft = Aircraft.A320_NEO;
         this.svg.gps = this.gps;
         const url = document.getElementsByTagName("a320-neo-mfd-element")[0].getAttribute("url");
-        this.disp_index = parseInt(url.substring(url.length - 1));
-        this.pot_index = this.disp_index == 1 ? 89 : 91;
+        this.screenIndex = parseInt(url.substring(url.length - 1));
+        this.potIndex = this.screenIndex == 1 ? 89 : 91;
     }
     onEnter() {
     }
     onUpdate(_deltaTime) {
-        const currentKnobValue = SimVar.GetSimVarValue("LIGHT POTENTIOMETER:" + this.pot_index, "number");
+        const currentKnobValue = SimVar.GetSimVarValue("LIGHT POTENTIOMETER:" + this.potIndex, "number");
         if (currentKnobValue <= 0.0) {
             return;
         }
@@ -580,13 +694,13 @@ class A320_Neo_MFD_NDInfo extends NavSystemElement {
         this.allSymbols.push(this.ndInfo.querySelector("#TURB"));
         this.allSymbols.push(this.ndInfo.querySelector("#MAP"));
         const url = document.getElementsByTagName("a320-neo-mfd-element")[0].getAttribute("url");
-        this.disp_index = parseInt(url.substring(url.length - 1));
-        this.pot_index = this.disp_index == 1 ? 89 : 91;
+        this.screenIndex = parseInt(url.substring(url.length - 1));
+        this.potIndex = this.screenIndex == 1 ? 89 : 91;
     }
     onEnter() {
     }
     onUpdate(_deltaTime) {
-        const currentKnobValue = SimVar.GetSimVarValue("LIGHT POTENTIOMETER:" + this.pot_index, "number");
+        const currentKnobValue = SimVar.GetSimVarValue("LIGHT POTENTIOMETER:" + this.potIndex, "number");
         if (currentKnobValue <= 0.0) {
             return;
         }
