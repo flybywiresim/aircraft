@@ -39,6 +39,7 @@
 1. [MISC] Added standby instrument bugs page and corrected standby instrument font and behaviour on power loss - @2hwk (2Cas#1022 on discord)
 1. [PFD] Added the ability to display metric altitudes - @lousybyte (lousybyte)
 1. [ECAM] Added messages related to anti-skid / N.W. steering being off - @Benjozork (Benjamin Dupont)
+1. [CDU] Updated HOLD Page to honeywell spec, PLAN page updated to show holds - @sepiroth887 (sepiroth887)
 
 ## 2020/09
 1. [General] Add CHANGELOG.md - @nathaninnes (Nathan Innes)
