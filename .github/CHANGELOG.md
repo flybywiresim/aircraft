@@ -34,6 +34,7 @@
 1. [CDU] Revised INIT A & B Page - @lucky38i (Lucky38i)
 1. [CDU] Fixed certain STARs not showing on arrivals page - @tyler58546 (tyler58546)
 2. [CHECKLISTS] Added several situations from QRH to checklists - FBI#7771
+1. [ECAM] Fix ECAM wheel page being selected before all gears are downlocked - @lukecologne (luke)
 
 ## 2020/09
 1. [General] Add CHANGELOG.md - @nathaninnes (Nathan Innes)
