@@ -72,17 +72,17 @@ var A320_Neo_LowerECAM_BLEED;
             this.eng2N2BelowIdle = true;
 
             this.thrustTOGAApplied = false;
-            this.flightThrust = false;
             this.bothPacksOn = false;
             this.singlePackOn = false;
             this.flying = false;
+            this.engineIdle = 58.3;
 
             //placeholder logic for packs
             this.engTempMultiplier1 = 0.08;
-            this.engTempMultiplier2 = 0.0000015;
+            this.engTempMultiplier2 = 0.0000009;
             this.engTempMultiplier3 = 0.31;
-            this.engTempOffsetH = -475;
-            this.engTempOffsetV = 160;
+            this.engTempOffsetH = -510;
+            this.engTempOffsetV = 200;
             this.engTempOffsetH2 = -860;
             this.engTempOffsetV2 = 276.4;
 
@@ -200,8 +200,7 @@ var A320_Neo_LowerECAM_BLEED;
             const radioHeight = SimVar.GetSimVarValue("RADIO HEIGHT", "Feet");
             const apuSwitchState = SimVar.GetSimVarValue("L:A32NX_APU_START_ACTIVATED", "bool");
             const fadecStatus = [SimVar.GetSimVarValue("L:A32NX_FADEC_POWERED_ENG1", "bool"), SimVar.GetSimVarValue("L:A32NX_FADEC_POWERED_ENG1", "bool")];
-
-            const GroundSpeed = SimVar.GetSimVarValue("GPS GROUND SPEED", "Meters per second");
+            const groundSpeed = SimVar.GetSimVarValue("GPS GROUND SPEED", "Meters per second");
 
             let currentLeftPackState = SimVar.GetSimVarValue("L:A32NX_AIRCOND_PACK1_TOGGLE", "bool");
             let currentRightPackState = SimVar.GetSimVarValue("L:A32NX_AIRCOND_PACK2_TOGGLE", "bool");
@@ -213,10 +212,6 @@ var A320_Neo_LowerECAM_BLEED;
                 this.thrustTOGAApplied = true;
             } else {
                 this.thrustTOGAApplied = false;
-            }
-
-            if (throttleEng1 > 0.891 && throttleEng2 > 0.891 && radioHeight > 10) {
-                this.flightThrust = true;
             }
 
             if (currentLeftPackState && currentRightPackState) {
@@ -248,22 +243,25 @@ var A320_Neo_LowerECAM_BLEED;
                 }
             }
 
-            if (currentEng1N2 < 58.3) {
+            //checks if engines are below idle
+            if (currentEng1N2 < this.engineIdle) {
                 this.eng1N2BelowIdle = true;
             } else {
                 this.eng1N2BelowIdle = false;
             }
 
-            if (currentEng2N2 < 58.3) {
+            if (currentEng2N2 < this.engineIdle) {
                 this.eng2N2BelowIdle = true;
             } else {
                 this.eng2N2BelowIdle = false;
             }
 
-            if (this.thrustTOGAApplied || (this.flightThrust && radioHeight < 10 && GroundSpeed < 70)) {
+            //closes the ram on takeoff and landing
+            if (this.thrustTOGAApplied || (!this.flying && groundSpeed > 70)) {
                 currentRamState = 0;
             }
 
+            //closes packs when engines are starting
             if (((currentEng2N2 > 1 && currentEng2N2 < 58) || (currentEng1N2 > 1 && currentEng1N2 < 58)) && xBleedValveOpen) {
                 currentLeftPackState = 0;
                 currentRightPackState = 0;
@@ -273,6 +271,7 @@ var A320_Neo_LowerECAM_BLEED;
                 currentLeftPackState = 0;
             }
 
+            //sets the engine bleed local variable to 0 if the engine is not running
             if (!eng1Running) {
                 currentEngineBleedState[0] = 0;
             }
@@ -281,6 +280,7 @@ var A320_Neo_LowerECAM_BLEED;
                 currentEngineBleedState[1] = 0;
             }
 
+            //sets IP valve to open or closed
             if (currentEngineBleedState[0] === 1) {
                 this.leftEngineIp[0].setAttribute("visibility", "visible");
                 this.leftEngineIp[1].setAttribute("visibility", "hidden");
@@ -300,7 +300,8 @@ var A320_Neo_LowerECAM_BLEED;
                 this.htmlUnderRight.setAttribute("visibility", "hidden");
             }
 
-            if (currentEngineBleedState[0] == 1 && eng1Running && currentEng1N2 < 60) {
+            //closes HP valves if engine slightly above idle
+            if (currentEngineBleedState[0] == 1 && eng1Running && currentEng1N2 < 60 && !this.flying) {
                 this.leftEngineHp[0].setAttribute("visibility", "visible");
                 this.leftEngineHp[1].setAttribute("visibility", "hidden");
                 this.htmlEng1Conn4.setAttribute("visibility", "visible");
@@ -310,7 +311,7 @@ var A320_Neo_LowerECAM_BLEED;
                 this.htmlEng1Conn4.setAttribute("visibility", "hidden");
             }
 
-            if (currentEngineBleedState[1] == 1 && eng2Running && currentEng2N2 < 60) {
+            if (currentEngineBleedState[1] == 1 && eng2Running && currentEng2N2 < 60 && !this.flying) {
                 this.rightEngineHp[0].setAttribute("visibility", "visible");
                 this.rightEngineHp[1].setAttribute("visibility", "hidden");
                 this.htmlEng2Conn4.setAttribute("visibility", "visible");
@@ -358,6 +359,7 @@ var A320_Neo_LowerECAM_BLEED;
                 }
             }
 
+            //shows or hides APU in the ecam page based on switch status
             if (apuSwitchState) {
                 this.apuText.setAttribute("visibility", "visible");
                 this.apuValve.setAttribute("visibility", "visible");
@@ -370,8 +372,8 @@ var A320_Neo_LowerECAM_BLEED;
                 this.apuBleedIndication[1].setAttribute("visibility", "hidden");
             }
 
-            //hide GND during flight
-            if (this.flying || GroundSpeed > 1) {
+            //hide GND during flight/when moving/at least one engine is running
+            if (this.flying || eng1Running || eng2Running || groundSpeed > 1) {
                 this.gndText.setAttribute("visibility", "hidden");
                 this.gndTriangle.setAttribute("visibility", "hidden");
             } else {
@@ -423,6 +425,7 @@ var A320_Neo_LowerECAM_BLEED;
                 this.packFlow[2].setAttribute("visibility", "visible");
             }
 
+            //sets the indicator to the correct position
             switch (packRequestedlvl) {
                 case 0:
                     this.setPackIndicators(1, 0, 0, 0, 0, 0, 0);
@@ -447,6 +450,7 @@ var A320_Neo_LowerECAM_BLEED;
                     break;
             }
 
+            //lines set to amber color when not enough pressure and numbers set to amber if fadec powered and engine N2 below idle
             this.setWarningOnLines(eng1Running, this.htmlEng1Conn1);
             this.setWarningOnLines(eng1Running, this.htmlEng1Conn2);
             this.setWarningOnLines(eng1Running, this.htmlEng1Conn3);
@@ -458,6 +462,7 @@ var A320_Neo_LowerECAM_BLEED;
             this.setWarningOnNumbers(this.eng2N2BelowIdle, fadecStatus[1], this.htmlEngNumb2);
 
             //placeholder logic for the bleed page temperatures and pressures, to be replaced/updated/removed when the cond-packs system is implemented
+            //prevents NaN error
             if (!this.packOutMultiplier1) {
                 this.packOutMultiplier1 = 0.055;
             }
@@ -468,28 +473,26 @@ var A320_Neo_LowerECAM_BLEED;
 
             const packRequestedTemp = 18 + (2 * packRequestedlvl);
 
-            const eng1TMP = SimVar.GetSimVarValue("ENG EXHAUST GAS TEMPERATURE:1", "Rankine");
-            const eng1TMPconverted = ((eng1TMP - 491.67) * (5 / 9));
+            const eng1TMP = SimVar.GetSimVarValue("ENG EXHAUST GAS TEMPERATURE:1", "Celsius");
             const eng1PSI = parseInt(SimVar.GetSimVarValue("TURB ENG BLEED AIR:1", "Ratio (0-16384)") / 2.9);
 
             let eng1TMPcomputed;
 
             if (eng1TMP < 860) {
-                eng1TMPcomputed = parseInt(((this.engTempMultiplier1 * (eng1TMPconverted + this.engTempOffsetH)) + (this.engTempMultiplier2 * Math.pow((eng1TMPconverted + this.engTempOffsetH), 3)) + this.engTempOffsetV));
+                eng1TMPcomputed = parseInt(((this.engTempMultiplier1 * (eng1TMP + this.engTempOffsetH)) + (this.engTempMultiplier2 * Math.pow((eng1TMP + this.engTempOffsetH), 3)) + this.engTempOffsetV));
             } else {
-                eng1TMPcomputed = parseInt(this.engTempMultiplier3 * (eng1TMPconverted + this.engTempOffsetH2) + this.engTempOffsetV2);
+                eng1TMPcomputed = parseInt(this.engTempMultiplier3 * (eng1TMP + this.engTempOffsetH2) + this.engTempOffsetV2);
             }
 
-            const eng2TMP = SimVar.GetSimVarValue("ENG EXHAUST GAS TEMPERATURE:2", "Rankine");
-            const eng2TMPConverted = ((eng2TMP - 491.67) * (5 / 9));
+            const eng2TMP = SimVar.GetSimVarValue("ENG EXHAUST GAS TEMPERATURE:2", "Celsius");
             const eng2PSI = parseInt(SimVar.GetSimVarValue("TURB ENG BLEED AIR:2", "Ratio (0-16384)") / 2.9);
 
             let eng2TMPcomputed;
 
             if (eng2TMP < 860) {
-                eng2TMPcomputed = parseInt(((this.engTempMultiplier1 * (eng2TMPConverted + this.engTempOffsetH)) + (this.engTempMultiplier2 * Math.pow((eng2TMPConverted + this.engTempOffsetH), 3)) + this.engTempOffsetV));
+                eng2TMPcomputed = parseInt(((this.engTempMultiplier1 * (eng2TMP+ this.engTempOffsetH)) + (this.engTempMultiplier2 * Math.pow((eng2TMP + this.engTempOffsetH), 3)) + this.engTempOffsetV));
             } else {
-                eng2TMPcomputed = parseInt(this.engTempMultiplier3 * (eng2TMPConverted + this.engTempOffsetH2) + this.engTempOffsetV2);
+                eng2TMPcomputed = parseInt(this.engTempMultiplier3 * (eng2TMP + this.engTempOffsetH2) + this.engTempOffsetV2);
             }
 
             const apuTMPcomputed = parseInt(currentApuN * 2.5);
@@ -499,8 +502,8 @@ var A320_Neo_LowerECAM_BLEED;
                 (parseInt((eng2TMPcomputed * this.packInMultiplier))),
                 (parseInt(apuTMPcomputed * this.packInMultiplierApu))];
 
-            const packTMPComputedOut = [(parseInt(((eng1TMP - 491.67) * (5 / 9)) * this.packOutMultiplier1)),
-                (parseInt(((eng2TMP - 491.67) * (5 / 9)) * this.packOutMultiplier2)),
+            const packTMPComputedOut = [(parseInt(eng1TMPcomputed * this.packOutMultiplier1)),
+                (parseInt(eng2TMPcomputed * this.packOutMultiplier2)),
                 (parseInt(apuTMPcomputed * this.packOutMultiplierApu))];
 
             let packTemperatureVariation1 = 0;
