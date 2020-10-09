@@ -38,7 +38,9 @@ This has the latest features, but is much more unstable, use at your own risk.
 
 ### Please follow ALL steps in this README if you encounter any issues with installation before seeking support.
 
-Installation is really simple. You only have to download the "A32NX" folder.
+Open the zip that you downloaded from one of the links above, and drag the A32NX folder inside the zip into your Community folder.
+
+See below for the location of your Community folder:
 
 For the Microsoft Store edition AND/OR Gamepass edition:
 - Copy the "A32NX" folder into your community package folder. It is located in:
