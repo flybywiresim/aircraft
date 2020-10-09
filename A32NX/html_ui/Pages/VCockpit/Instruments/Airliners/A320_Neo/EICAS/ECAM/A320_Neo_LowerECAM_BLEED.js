@@ -78,10 +78,13 @@ var A320_Neo_LowerECAM_BLEED;
             this.flying = false;
 
             //placeholder logic for packs
-            this.engTempMultiplier1 = 0.06;
-            this.engTempMultiplier2 = 0.0000009;
-            this.engTempOffsetH = -535;
-            this.engTempOffsetV = 200;
+            this.engTempMultiplier1 = 0.08;
+            this.engTempMultiplier2 = 0.0000015;
+            this.engTempMultiplier3 = 0.31;
+            this.engTempOffsetH = -475;
+            this.engTempOffsetV = 160;
+            this.engTempOffsetH2 = -860;
+            this.engTempOffsetV2 = 276.4;
 
             this.packInMultiplier = 0.9;
             this.packOutMultiplier1 = 0.055;
@@ -180,7 +183,6 @@ var A320_Neo_LowerECAM_BLEED;
                 return;
             }
 
-            const currentEngineBleedState = [SimVar.GetSimVarValue("BLEED AIR ENGINE:1", "Bool"), SimVar.GetSimVarValue("BLEED AIR ENGINE:2", "Bool")];
             const currentApuN = SimVar.GetSimVarValue("APU PCT RPM", "percent");
             const currentEng1N2 = SimVar.GetSimVarValue("ENG N2 RPM:1", "Rpm(0 to 16384 = 0 to 100%)");
             const currentEng2N2 = SimVar.GetSimVarValue("ENG N2 RPM:2", "Rpm(0 to 16384 = 0 to 100%)");
@@ -199,9 +201,13 @@ var A320_Neo_LowerECAM_BLEED;
             const apuSwitchState = SimVar.GetSimVarValue("L:A32NX_APU_START_ACTIVATED", "bool");
             const fadecStatus = [SimVar.GetSimVarValue("L:A32NX_FADEC_POWERED_ENG1", "bool"), SimVar.GetSimVarValue("L:A32NX_FADEC_POWERED_ENG1", "bool")];
 
+            const GroundSpeed = SimVar.GetSimVarValue("GPS GROUND SPEED", "Meters per second");
+
             let currentLeftPackState = SimVar.GetSimVarValue("L:A32NX_AIRCOND_PACK1_TOGGLE", "bool");
             let currentRightPackState = SimVar.GetSimVarValue("L:A32NX_AIRCOND_PACK2_TOGGLE", "bool");
             let currentRamState = SimVar.GetSimVarValue("L:A32NX_AIRCOND_RAMAIR_TOGGLE", "bool");
+            let currentEngineBleedState = [0, 0];
+            currentEngineBleedState = [SimVar.GetSimVarValue("BLEED AIR ENGINE:1", "Bool"), SimVar.GetSimVarValue("BLEED AIR ENGINE:2", "Bool")];
 
             if (throttleEng1 > 0.891 && throttleEng2 > 0.891) {
                 this.thrustTOGAApplied = true;
@@ -254,16 +260,28 @@ var A320_Neo_LowerECAM_BLEED;
                 this.eng2N2BelowIdle = false;
             }
 
-            if (this.thrustTOGAApplied || (this.flightThrust && radioHeight < 2000)) {
+            if (this.thrustTOGAApplied || (this.flightThrust && radioHeight < 10 && GroundSpeed < 70)) {
                 currentRamState = 0;
             }
 
-            if ((currentEng2N2 > 1 && currentEng2N2 < 58) || (currentEng1N2 > 1 && currentEng1N2 < 58)) {
+            if (((currentEng2N2 > 1 && currentEng2N2 < 58) || (currentEng1N2 > 1 && currentEng1N2 < 58)) && xBleedValveOpen) {
                 currentLeftPackState = 0;
                 currentRightPackState = 0;
+            } else if ((currentEng2N2 > 1 && currentEng2N2 < 58) && !xBleedValveOpen) {
+                currentRightPackState = 0;
+            } else if ((currentEng1N2 > 1 && currentEng1N2 < 58) && !xBleedValveOpen) {
+                currentLeftPackState = 0;
             }
 
-            if (currentEngineBleedState[0] === 1 && eng1Running) {
+            if (!eng1Running) {
+                currentEngineBleedState[0] = 0;
+            }
+
+            if (!eng2Running) {
+                currentEngineBleedState[1] = 0;
+            }
+
+            if (currentEngineBleedState[0] === 1) {
                 this.leftEngineIp[0].setAttribute("visibility", "visible");
                 this.leftEngineIp[1].setAttribute("visibility", "hidden");
                 this.htmlUnderLeft.setAttribute("visibility", "visible");
@@ -272,7 +290,7 @@ var A320_Neo_LowerECAM_BLEED;
                 this.leftEngineIp[1].setAttribute("visibility", "visible");
                 this.htmlUnderLeft.setAttribute("visibility", "hidden");
             }
-            if (currentEngineBleedState[1] === 1 && eng2Running) {
+            if (currentEngineBleedState[1] === 1) {
                 this.rightEngineIp[0].setAttribute("visibility", "visible");
                 this.rightEngineIp[1].setAttribute("visibility", "hidden");
                 this.htmlUnderRight.setAttribute("visibility", "visible");
@@ -353,7 +371,7 @@ var A320_Neo_LowerECAM_BLEED;
             }
 
             //hide GND during flight
-            if (this.flying) {
+            if (this.flying || GroundSpeed > 1) {
                 this.gndText.setAttribute("visibility", "hidden");
                 this.gndTriangle.setAttribute("visibility", "hidden");
             } else {
@@ -432,12 +450,12 @@ var A320_Neo_LowerECAM_BLEED;
             this.setWarningOnLines(eng1Running, this.htmlEng1Conn1);
             this.setWarningOnLines(eng1Running, this.htmlEng1Conn2);
             this.setWarningOnLines(eng1Running, this.htmlEng1Conn3);
-            this.setWarningOnNumbers(this.eng1N2BelowIdle, !fadecStatus[0], this.htmlEngNumb1);
+            this.setWarningOnNumbers(this.eng1N2BelowIdle, fadecStatus[0], this.htmlEngNumb1);
 
             this.setWarningOnLines(eng2Running, this.htmlEng2Conn1);
             this.setWarningOnLines(eng2Running, this.htmlEng2Conn2);
             this.setWarningOnLines(eng2Running, this.htmlEng2Conn3);
-            this.setWarningOnNumbers(this.eng2N2BelowIdle, !fadecStatus[1], this.htmlEngNumb2);
+            this.setWarningOnNumbers(this.eng2N2BelowIdle, fadecStatus[1], this.htmlEngNumb2);
 
             //placeholder logic for the bleed page temperatures and pressures, to be replaced/updated/removed when the cond-packs system is implemented
             if (!this.packOutMultiplier1) {
@@ -452,13 +470,27 @@ var A320_Neo_LowerECAM_BLEED;
 
             const eng1TMP = SimVar.GetSimVarValue("ENG EXHAUST GAS TEMPERATURE:1", "Rankine");
             const eng1TMPconverted = ((eng1TMP - 491.67) * (5 / 9));
-            const eng1TMPcomputed = parseInt(((this.engTempMultiplier1 * (eng1TMPconverted + this.engTempOffsetH)) + (this.engTempMultiplier2 * Math.pow((eng1TMPconverted + this.engTempOffsetH), 3)) + this.engTempOffsetV));
             const eng1PSI = parseInt(SimVar.GetSimVarValue("TURB ENG BLEED AIR:1", "Ratio (0-16384)") / 2.9);
+
+            let eng1TMPcomputed;
+
+            if (eng1TMP < 860) {
+                eng1TMPcomputed = parseInt(((this.engTempMultiplier1 * (eng1TMPconverted + this.engTempOffsetH)) + (this.engTempMultiplier2 * Math.pow((eng1TMPconverted + this.engTempOffsetH), 3)) + this.engTempOffsetV));
+            } else {
+                eng1TMPcomputed = parseInt(this.engTempMultiplier3 * (eng1TMPconverted + this.engTempOffsetH2) + this.engTempOffsetV2);
+            }
 
             const eng2TMP = SimVar.GetSimVarValue("ENG EXHAUST GAS TEMPERATURE:2", "Rankine");
             const eng2TMPConverted = ((eng2TMP - 491.67) * (5 / 9));
-            const eng2TMPcomputed = parseInt(((this.engTempMultiplier1 * (eng2TMPConverted + this.engTempOffsetH)) + (this.engTempMultiplier2 * Math.pow((eng2TMPConverted + this.engTempOffsetH), 3)) + this.engTempOffsetV));
             const eng2PSI = parseInt(SimVar.GetSimVarValue("TURB ENG BLEED AIR:2", "Ratio (0-16384)") / 2.9);
+
+            let eng2TMPcomputed;
+
+            if (eng2TMP < 860) {
+                eng2TMPcomputed = parseInt(((this.engTempMultiplier1 * (eng2TMPConverted + this.engTempOffsetH)) + (this.engTempMultiplier2 * Math.pow((eng2TMPConverted + this.engTempOffsetH), 3)) + this.engTempOffsetV));
+            } else {
+                eng2TMPcomputed = parseInt(this.engTempMultiplier3 * (eng2TMPConverted + this.engTempOffsetH2) + this.engTempOffsetV2);
+            }
 
             const apuTMPcomputed = parseInt(currentApuN * 2.5);
             const apuPSI = parseInt(currentApuN * 0.35);
@@ -504,10 +536,10 @@ var A320_Neo_LowerECAM_BLEED;
                 this.htmlEng1Tmp.textContent = "XXX";
                 this.htmlEng1Psi.textContent = "xx";
             } else if (currentEngineBleedState[1] && !currentEngineBleedState[0] && currentApuBleedSate && eng2Running && !xBleedValveOpen) {
-                this.htmlEng2Tmp.textContent = eng2TMPcomputed;
-                this.htmlEng2Psi.textContent = eng2PSI;
                 this.htmlEng1Tmp.textContent = apuTMPcomputed;
                 this.htmlEng1Psi.textContent = apuPSI;
+                this.htmlEng2Tmp.textContent = eng2TMPcomputed;
+                this.htmlEng2Psi.textContent = eng2PSI;
             } else if (currentEngineBleedState[1] && !currentEngineBleedState[0] && eng2Running && xBleedValveOpen) {
                 this.htmlEng1Tmp.textContent = eng2TMPcomputed;
                 this.htmlEng1Psi.textContent = eng2PSI;
@@ -533,7 +565,7 @@ var A320_Neo_LowerECAM_BLEED;
                 this.htmlEng1Psi.textContent = eng1PSI;
                 this.htmlEng2Tmp.textContent = eng1TMPcomputed;
                 this.htmlEng2Psi.textContent = eng1PSI;
-            } else if (currentEngineBleedState[0] && currentEngineBleedState[1] && !xBleedValveOpen) {
+            } else if (currentEngineBleedState[0] && currentEngineBleedState[1] && !xBleedValveOpen && eng1Running && eng2Running) {
                 this.htmlEng1Tmp.textContent = eng1TMPcomputed;
                 this.htmlEng1Psi.textContent = eng1PSI;
                 this.htmlEng2Tmp.textContent = eng2TMPcomputed;
@@ -548,13 +580,16 @@ var A320_Neo_LowerECAM_BLEED;
                 this.htmlEng1Psi.textContent = eng1PSI;
                 this.htmlEng2Tmp.textContent = "XXX";
                 this.htmlEng2Psi.textContent = "xx";
+            } else if (currentEngineBleedState[0] && currentEngineBleedState[1] && !eng1Running && !eng2Running && xBleedValveOpen) {
+                this.htmlEng1Tmp.textContent = apuTMPcomputed;
+                this.htmlEng1Psi.textContent = apuPSI;
+                this.htmlEng2Tmp.textContent = apuTMPcomputed;
+                this.htmlEng2Psi.textContent = apuPSI;
             } else {
                 this.htmlEng1Tmp.textContent = "XXX";
                 this.htmlEng1Psi.textContent = "xx";
                 this.htmlEng2Tmp.textContent = "XXX";
                 this.htmlEng2Psi.textContent = "xx";
-                this.htmlEng2Tmp.setAttribute("class", "st7 st2 st6");
-                this.htmlEng2Psi.setAttribute("class", "st7 st2 st6");
             }
 
             SimVar.SetSimVarValue("L:A32NX_AIRCOND_PACK1_FAULT", "bool", 0);
