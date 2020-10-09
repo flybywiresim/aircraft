@@ -1,0 +1,43 @@
+name: release
+# Trigger on release creation
+on:
+  release:
+    types:
+      - created
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      RELEASE_ZIP_NAME: flybywiresim-a32nx.zip
+      MOD_FOLDER_NAME: A32NX
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v2
+      - name: Setup Python 3
+        uses: actions/setup-python@v2
+        with:
+          python-version: "3.x"
+      - name: Set BUILT_DATE_TIME
+        run: echo "BUILT_DATE_TIME=$(date -u -Iseconds)" >> $GITHUB_ENV
+      - name: Generate layout.json
+        run: |
+          cd ./${{ env.MOD_FOLDER_NAME }}
+          python3 ./build.py
+          rm ./build.py
+          echo 'built: ${{ env.BUILT_DATE_TIME }}' >> build_info.txt
+          echo 'ref: ${{ github.ref }}' >> build_info.txt
+          echo 'sha: ${{ github.sha }}' >> build_info.txt
+          echo 'actor: ${{ github.actor }}' >> build_info.txt
+          echo 'event_name: ${{ github.event_name }}' >> build_info.txt
+          cd ..
+          zip -r ./${{ env.RELEASE_ZIP_NAME }} ./${{ env.MOD_FOLDER_NAME }}/
+      - name: Upload release asset
+        uses: actions/upload-release-asset@v1.0.2
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: ./${{ env.RELEASE_ZIP_NAME }}
+          asset_name: ${{ env.RELEASE_ZIP_NAME }}
+          asset_content_type: application/zip
