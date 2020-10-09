@@ -6,12 +6,11 @@
 
 The A32NX Project is a community driven open source project to create a free Airbus A320neo in Microsoft Flight Simulator that is as close to reality as possible. It aims to enhance the default A320neo by improving the systems depth and functionality to bring it up to payware-level, all for free.
 
-## Download
+## Downloads
 
 ### Mod Download & Installer
 
 Download the new mod installer where you can select either the Stable or Developer build, and install download and install the mod directly into your community folder, [download here.](https://github.com/Externoak/A32NX-installer/releases/latest/download/A32NX_Downloader.zip)
-
 
 ## Traditional Download Method
 
@@ -56,6 +55,7 @@ If the above methods do not work:
 See [Contributing.md](.github/Contributing.md)
 
 ## Known Issues (Please note that most issues are being worked on and some of them may even be fixed in the dev branch)
+
 - Captain's PFD may occasionally turn off during flight
 - No Smoking switch doesn't use full range of motion.
 - F/CTL page does not have working speedbrake integration
@@ -67,7 +67,7 @@ See [Contributing.md](.github/Contributing.md)
 
 **Q: Can I download the aircraft in the current state?**
 
-A: Yes, the releases page contains the latest stable release. You can always download the dev version off the master branch, but keep in mind it is a WIP and will be unstable.
+A: Yes, see [Downloads](#Downloads).
 
 **Q: Where is the plane in-sim?**
 
@@ -75,11 +75,11 @@ A: The mod is added on top on the default A320neo from Asobo. If you want to uni
 
 **Q: What are the liveries available?**
 
-A: This project modifies the default A320 Neo from Asobo, therefore all liveries is compatible.
+A: This project modifies the default A320 Neo from Asobo, therefore all liveries should be compatible.
 
 **Q: When will it be released?**
 
-A: The project is an ongoing rolling release. You can download the latest stable version from released or the latest Developer version from the Master branch! (Developer version is classed as unstable and not advised)
+A: The project is an ongoing rolling release. See [Downloads](#Downloads).
 
 **Q: When is the next update?**
 
@@ -95,4 +95,4 @@ A: No, it is a completely free aircraft, open-source.
 
 **Q: How do we report bugs?**
 
-A: Report bugs to us in the Discord server, under the #help channel.
+A: Report bugs to us in the Discord server, under the #help channel, or by creating a GitHub issue. Just make sure to search for existing issues first before creating a new one.
