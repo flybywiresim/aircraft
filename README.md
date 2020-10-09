@@ -32,6 +32,8 @@ This has the latest features, but is much more unstable, use at your own risk.
 
 [Download developer build here.](https://github.com/flybywiresim/a32nx/releases/download/vmaster/A32NX-master.zip)
 
+[View info about the latest build here.](https://github.com/flybywiresim/a32nx/releases/tag/vmaster)
+
 ## Installation
 
 ### Please follow ALL steps in this README if you encounter any issues with installation before seeking support.
