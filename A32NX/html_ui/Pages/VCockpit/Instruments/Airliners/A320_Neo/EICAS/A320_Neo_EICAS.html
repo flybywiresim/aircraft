@@ -1,28 +1,32 @@
-﻿﻿<link rel="stylesheet" href="A320_Neo_EICAS.css" />
+﻿<link rel="stylesheet" href="A320_Neo_EICAS.css"/>
 
 <script type="text/html" id="A320_Neo_EICAS">
     <glasscockpit-highlight id="highlight"></glasscockpit-highlight>
     <div id="Mainframe">
         <div id="Electricity" state="off">
-			<div style="height: 0;">
-				<svg>
-					<defs>
-						<radialGradient id="ECAMBacklight" cx="50%" cy="50%" r="75%" >
-							<stop offset="0%" style="stop-color:rgb(13,20,35);stop-opacity:1" />
-							<stop offset="100%" style="stop-color:rgb(13,20,35);stop-opacity:1" />
-						</radialGradient>
-					</defs>
-				</svg>
-			</div>
+            <div style="height: 0;">
+                <svg>
+                    <defs>
+                        <radialGradient id="ECAMBacklight" cx="50%" cy="50%" r="75%">
+                            <stop offset="0%" style="stop-color:rgb(13,20,35);stop-opacity:1"/>
+                            <stop offset="100%" style="stop-color:rgb(13,20,35);stop-opacity:1"/>
+                        </radialGradient>
+                    </defs>
+                </svg>
+            </div>
             <div id="TopScreen">
                 <a320-neo-upper-ecam id="UpperECAM"></a320-neo-upper-ecam>
-				<div class="SelfTestWrapper" id="TopSelfTest">
-					<svg class="SelfTest" viewBox="0 0 600 600">
-						<rect fill="url(#ECAMBacklight)" x="0" y="0" width="100%" height="100%"></rect>
-						<text class="self_test_text" fill="green" text-anchor="middle" x="50%" y="50%" font-size="30px" style="font-family: 'Roboto' !important">SELF TEST IN PROGRESS</text>
-						<text class="self_test_text2" fill="green" text-anchor="middle" x="50%" y="56%" font-size="30px" style="font-family: 'Roboto' !important">(MAX 40 SECONDS)</text>
-					</svg>
-				</div>
+                <div class="SelfTestWrapper" id="TopSelfTest">
+                    <svg class="SelfTest" viewBox="0 0 600 600">
+                        <rect fill="url(#ECAMBacklight)" x="0" y="0" width="100%" height="100%"></rect>
+                        <text class="self_test_text" fill="green" text-anchor="middle" x="50%" y="50%" font-size="30px"
+                              style="font-family: 'Roboto' !important">SELF TEST IN PROGRESS
+                        </text>
+                        <text class="self_test_text2" fill="green" text-anchor="middle" x="50%" y="56%" font-size="30px"
+                              style="font-family: 'Roboto' !important">(MAX 40 SECONDS)
+                        </text>
+                    </svg>
+                </div>
             </div>
 
             <div id="BottomScreen">
@@ -36,13 +40,20 @@
                 <a320-neo-lower-ecam-status style="display:none"></a320-neo-lower-ecam-status> <!-- MODIFIED -->
                 <a320-neo-lower-ecam-crz style="display:none"></a320-neo-lower-ecam-crz> <!-- MODIFIED -->
                 <eicas-common-display id="CommonDisplay"></eicas-common-display>
-				<div class="SelfTestWrapper" id="BottomSelfTest">
-					<svg class="SelfTest" viewBox="0 0 600 600">
-						<rect fill="url(#ECAMBacklight)" x="0" y="0" width="100%" height="100%"></rect>
-						<text class="self_test_text" fill="green" text-anchor="middle" x="50%" y="50%" font-size="30px" style="font-family: 'Roboto' !important">SELF TEST IN PROGRESS</text>
-						<text class="self_test_text2" fill="green" text-anchor="middle" x="50%" y="56%" font-size="30px" style="font-family: 'Roboto' !important">(MAX 40 SECONDS)</text>
-					</svg>
-				</div>
+
+                <div id="door-video-wrapper"/>
+
+                <div class="SelfTestWrapper" id="BottomSelfTest">
+                    <svg class="SelfTest" viewBox="0 0 600 600">
+                        <rect fill="url(#ECAMBacklight)" x="0" y="0" width="100%" height="100%"></rect>
+                        <text class="self_test_text" fill="green" text-anchor="middle" x="50%" y="50%" font-size="30px"
+                              style="font-family: 'Roboto' !important">SELF TEST IN PROGRESS
+                        </text>
+                        <text class="self_test_text2" fill="green" text-anchor="middle" x="50%" y="56%" font-size="30px"
+                              style="font-family: 'Roboto' !important">(MAX 40 SECONDS)
+                        </text>
+                    </svg>
+                </div>
             </div>
         </div>
     </div>
