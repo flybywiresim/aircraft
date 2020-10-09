@@ -3,6 +3,8 @@
 !/.vscode/**
 !/.github/**
 !/A32NX/**
+/A32NX/layout.json
+/A32NX/manifest.json
 !/docs/**
 !/src/**
 !.gitignore
@@ -13,6 +15,7 @@
 !.eslintrc.json
 !.prettierrc.json
 !.prettierignore
+!manifest-base.json
 .DS_Store
 node_modules
 /src/sound/.cache
