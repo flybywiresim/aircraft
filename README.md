@@ -2,9 +2,9 @@
 
 [![Discord](https://img.shields.io/discord/738864299392630914.svg?label=&logo=discord&logoColor=ffffff&color=7389D8&labelColor=6A7EC2)](https://discord.gg/UjzuHMU)
 
-[![GitHub latest release version](https://img.shields.io/github/v/release/flybywiresim/a32nx.svg?style=flat)]()
-[![Github All Releases download count](https://img.shields.io/github/downloads/flybywiresim/a32nx/total.svg?style=flat)]()
-[![GitHub contributors](https://img.shields.io/github/contributors/flybywiresim/a32nx.svg?style=flat)]()
+[![GitHub latest release version](https://img.shields.io/github/v/release/flybywiresim/a32nx.svg?style=flat)](https://github.com/flybywiresim/a32nx/releases/latest)
+[![Github All Releases download count](https://img.shields.io/github/downloads/flybywiresim/a32nx/total.svg?style=flat)](https://github.com/flybywiresim/a32nx/releases/latest)
+[![GitHub contributors](https://img.shields.io/github/contributors/flybywiresim/a32nx.svg?style=flat)](https://github.com/flybywiresim/a32nx/graphs/contributors)
 
 ## About
 
