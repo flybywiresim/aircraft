@@ -75,7 +75,7 @@ var A320_Neo_LowerECAM_BLEED;
             this.bothPacksOn = false;
             this.singlePackOn = false;
             this.flying = false;
-            this.engineIdle = 58.3;
+            this.engineIdle = 58;
 
             //placeholder logic for packs
             this.engTempMultiplier1 = 0.08;
@@ -490,7 +490,7 @@ var A320_Neo_LowerECAM_BLEED;
             let eng2TMPcomputed;
 
             if (eng2TMP < 860) {
-                eng2TMPcomputed = parseInt(((this.engTempMultiplier1 * (eng2TMP+ this.engTempOffsetH)) + (this.engTempMultiplier2 * Math.pow((eng2TMP + this.engTempOffsetH), 3)) + this.engTempOffsetV));
+                eng2TMPcomputed = parseInt(((this.engTempMultiplier1 * (eng2TMP + this.engTempOffsetH)) + (this.engTempMultiplier2 * Math.pow((eng2TMP + this.engTempOffsetH), 3)) + this.engTempOffsetV));
             } else {
                 eng2TMPcomputed = parseInt(this.engTempMultiplier3 * (eng2TMP + this.engTempOffsetH2) + this.engTempOffsetV2);
             }
