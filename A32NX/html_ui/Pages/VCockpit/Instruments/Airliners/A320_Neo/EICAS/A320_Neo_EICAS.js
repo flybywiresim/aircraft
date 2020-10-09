@@ -1,14 +1,18 @@
 class A320_Neo_EICAS extends Airliners.BaseEICAS {
+
     get templateID() {
         return "A320_Neo_EICAS";
     }
+
     // This js file has 2 intances at runtime, 1 upper screen and 1 lower
     get isTopScreen() {
         return this.urlConfig.index === 1;
     }
+
     get isBottomScreen() {
         return this.urlConfig.index === 2;
     }
+
     changePage(_pageName) {
         let pageName = _pageName.toUpperCase();
         for (let i = 0; i < this.lowerScreenPages.length; i++) {
@@ -25,6 +29,7 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         }
         this.SwitchToPageName(this.LOWER_SCREEN_GROUP_NAME, pageName);
     }
+
     createUpperScreenPage() {
         this.upperTopScreen = new Airliners.EICASScreen("TopScreen", "TopScreen", "a320-neo-upper-ecam");
         this.annunciations = new Cabin_Annunciations();
@@ -35,6 +40,7 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         this.addIndependentElementContainer(this.upperTopScreen);
         this.addIndependentElementContainer(new Airliners.EICASScreen("BottomScreenCommon", "BottomScreen", "eicas-common-display"));
     }
+
     createLowerScreenPages() {
         this.createLowerScreenPage("ENG", "BottomScreen", "a320-neo-lower-ecam-engine");
         this.createLowerScreenPage("BLEED", "BottomScreen", "a320-neo-lower-ecam-bleed"); // MODIFIED
@@ -50,9 +56,11 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         this.createLowerScreenPage("STS", "BottomScreen", "a320-neo-lower-ecam-status"); // MODIFIED
         this.createLowerScreenPage("CRZ", "BottomScreen", "a320-neo-lower-ecam-crz"); // MODIFIED
     }
+
     getLowerScreenChangeEventNamePrefix() {
         return "ECAM_CHANGE_PAGE_";
     }
+
     Init() {
         super.Init();
         this.getDeltaTime = A32NX_Util.createDeltaTimeCalculator(this._lastTime);
@@ -77,10 +85,14 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         this.topSelfTestTimerStarted = false;
         this.topSelfTestLastKnobValue = 1;
 
+        this.doorVideoWrapper = this.querySelector("#door-video-wrapper");
+
         this.bottomSelfTestDiv = this.querySelector("#BottomSelfTest");
         this.bottomSelfTestTimer = -1;
         this.bottomSelfTestTimerStarted = false;
         this.bottomSelfTestLastKnobValue = 1;
+
+        this.doorVideoPressed = false;
 
         // Using ternary in case the LVar is undefined
         this.ACPowerLastState = SimVar.GetSimVarValue("L:A32NX_COLD_AND_DARK_SPAWN", "Bool") ? 0 : 1;
@@ -89,22 +101,26 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         this.changePage("DOOR"); // MODIFIED
         this.changePage("DOOR"); // This should get the ECAM into the "unselected" state
 
-        SimVar.SetSimVarValue("LIGHT POTENTIOMETER:7","FLOAT64",0);
-        SimVar.SetSimVarValue("LIGHT POTENTIOMETER:84","FLOAT64",0);
-        SimVar.SetSimVarValue("LIGHT POTENTIOMETER:85","FLOAT64",0);
-        SimVar.SetSimVarValue("LIGHT POTENTIOMETER:86","FLOAT64",0);
-        SimVar.SetSimVarValue("LIGHT POTENTIOMETER:87","FLOAT64",0.1);
-        SimVar.SetSimVarValue("LIGHT POTENTIOMETER:88","FLOAT64",0.1);
-        SimVar.SetSimVarValue("LIGHT POTENTIOMETER:89","FLOAT64",0.1);
-        SimVar.SetSimVarValue("LIGHT POTENTIOMETER:90","FLOAT64",0.1);
-        SimVar.SetSimVarValue("LIGHT POTENTIOMETER:91","FLOAT64",0.1);
-        SimVar.SetSimVarValue("LIGHT POTENTIOMETER:92","FLOAT64",0.1);
-        SimVar.SetSimVarValue("LIGHT POTENTIOMETER:93","FLOAT64",0.1);
+        SimVar.SetSimVarValue("LIGHT POTENTIOMETER:7", "FLOAT64", 0);
+        SimVar.SetSimVarValue("LIGHT POTENTIOMETER:84", "FLOAT64", 0);
+        SimVar.SetSimVarValue("LIGHT POTENTIOMETER:85", "FLOAT64", 0);
+        SimVar.SetSimVarValue("LIGHT POTENTIOMETER:86", "FLOAT64", 0);
+        SimVar.SetSimVarValue("LIGHT POTENTIOMETER:87", "FLOAT64", 0.1);
+        SimVar.SetSimVarValue("LIGHT POTENTIOMETER:88", "FLOAT64", 0.1);
+        SimVar.SetSimVarValue("LIGHT POTENTIOMETER:89", "FLOAT64", 0.1);
+        SimVar.SetSimVarValue("LIGHT POTENTIOMETER:90", "FLOAT64", 0.1);
+        SimVar.SetSimVarValue("LIGHT POTENTIOMETER:91", "FLOAT64", 0.1);
+        SimVar.SetSimVarValue("LIGHT POTENTIOMETER:92", "FLOAT64", 0.1);
+        SimVar.SetSimVarValue("LIGHT POTENTIOMETER:93", "FLOAT64", 0.1);
     }
+
     onUpdate() {
         const _deltaTime = this.getDeltaTime();
 
         super.onUpdate(_deltaTime);
+
+        this.updateDoorVideoState();
+
         this.updateAnnunciations();
         this.updateScreenState();
 
@@ -116,21 +132,21 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         let DCBus = false;
 
         const ACPowerStateChange = (isACPowerAvailable != this.ACPowerLastState);
-        SimVar.SetSimVarValue("L:ACPowerStateChange","Bool",ACPowerStateChange);
+        SimVar.SetSimVarValue("L:ACPowerStateChange", "Bool", ACPowerStateChange);
 
-        if (SimVar.GetSimVarValue("ELECTRICAL MAIN BUS VOLTAGE","Volts") >= 20) {
+        if (SimVar.GetSimVarValue("ELECTRICAL MAIN BUS VOLTAGE", "Volts") >= 20) {
             DCBus = true;
         }
         const isDCPowerAvailable = isACPowerAvailable || DCBus;
         if (isDCPowerAvailable) {
-            SimVar.SetSimVarValue("L:DCPowerAvailable","bool",1); //True if any AC|DC bus is online
+            SimVar.SetSimVarValue("L:DCPowerAvailable", "bool", 1); //True if any AC|DC bus is online
         } else {
-            SimVar.SetSimVarValue("L:DCPowerAvailable","bool",0);
+            SimVar.SetSimVarValue("L:DCPowerAvailable", "bool", 0);
         }
         if (isACPowerAvailable) {
-            SimVar.SetSimVarValue("L:ACPowerAvailable","bool",1); //True if any AC bus is online
+            SimVar.SetSimVarValue("L:ACPowerAvailable", "bool", 1); //True if any AC bus is online
         } else {
-            SimVar.SetSimVarValue("L:ACPowerAvailable","bool",0);
+            SimVar.SetSimVarValue("L:ACPowerAvailable", "bool", 0);
         }
 
         /**
@@ -284,12 +300,25 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         }
 
         this.PrevFailPage = sFailPage;
+    }
 
-        // modification ends here
+    updateDoorVideoState() {
+        const doorVideoPressedNow = SimVar.GetSimVarValue("L:PUSH_DOORPANEL_VIDEO", "Bool") === 1;
+        const doorVideoEnabledNow = SimVar.GetSimVarValue("L:A32NX_OVHD_COCKPITDOORVIDEO_TOGGLE", "Bool") === 1;
+
+        if (doorVideoEnabledNow && this.doorVideoPressed !== doorVideoPressedNow) {
+            this.doorVideoPressed = doorVideoPressedNow;
+
+            this.setDoorVideo();
+        }
+    }
+
+    setDoorVideo() {
+        this.doorVideoWrapper.style.visibility = this.doorVideoPressed ? "visible" : "hidden";
     }
 
     updateScreenState() {
-        if (SimVar.GetSimVarValue("L:ACPowerAvailable","bool")) {
+        if (SimVar.GetSimVarValue("L:ACPowerAvailable", "bool")) {
             this.electricity.style.display = "block";
         } else {
             this.electricity.style.display = "none";
@@ -367,5 +396,5 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         }
     }
 }
+
 registerInstrument("a320-neo-eicas-element", A320_Neo_EICAS);
-//# sourceMappingURL=A320_Neo_EICAS.js.map
