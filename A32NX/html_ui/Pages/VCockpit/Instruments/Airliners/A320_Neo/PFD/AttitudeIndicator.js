@@ -47,6 +47,35 @@ class Jet_PFD_AttitudeIndicator extends HTMLElement {
     connectedCallback() {
         this.construct();
     }
+    setAttitudePitchContainer(h) {
+        const x = -115;
+        const y = -((this.attitudeHeight / 2) - 10);
+        const w = 230;
+
+        if (!this.attitudePitchContainer) {
+            this.attitudePitchContainer = document.createElementNS(Avionics.SVG.NS, "svg");
+        }
+
+        this.attitudePitchContainer.setAttribute("width", w.toString());
+        this.attitudePitchContainer.setAttribute("height", h.toString());
+        this.attitudePitchContainer.setAttribute("x", x.toString());
+        this.attitudePitchContainer.setAttribute("y", y.toString());
+        this.attitudePitchContainer.setAttribute("viewBox", x + " " + y + " " + w + " " + h);
+        this.attitudePitchContainer.setAttribute("overflow", "hidden");
+
+        if (!this.borders) {
+            this.borders = document.createElementNS(Avionics.SVG.NS, "rect");
+        }
+
+        this.borders.setAttribute("x", "-200");
+        this.borders.setAttribute("y", y.toString());
+        this.borders.setAttribute("width", (w + 200).toString());
+        this.borders.setAttribute("height", h.toString());
+        this.borders.setAttribute("fill", "transparent");
+        this.borders.setAttribute("stroke", "white");
+        this.borders.setAttribute("stroke-width", "3");
+        this.borders.setAttribute("stroke-opacity", "1");
+    }
     showFPV(_active) {
     }
     destroyLayout() {
@@ -67,8 +96,8 @@ class Jet_PFD_AttitudeIndicator extends HTMLElement {
         const pitchFactor = -7;
         this.pitchAngleFactor = pitchFactor;
         this.horizonAngleFactor = pitchFactor * 1.2;
-        this.horizonHeight = 300;
-        this.attitudeHeight = 250;
+        this.attitudeHeight = 280;
+        this.horizonHeight = 355;
         this.horizonToAttitudeRatio = this.attitudeHeight / this.horizonHeight;
         const seperatorColor = "#e0e0e0";
         {
@@ -165,30 +194,14 @@ class Jet_PFD_AttitudeIndicator extends HTMLElement {
             {
                 this.pitch_root = document.createElementNS(Avionics.SVG.NS, "g");
                 pitchSvg.appendChild(this.pitch_root);
-                const borders = document.createElementNS(Avionics.SVG.NS, "rect");
-                borders.setAttribute("x", "-200");
-                borders.setAttribute("y", "-125");
-                borders.setAttribute("width", "400");
-                borders.setAttribute("height", "250");
-                borders.setAttribute("fill", "transparent");
-                borders.setAttribute("stroke", "white");
-                borders.setAttribute("stroke-width", "3");
-                borders.setAttribute("stroke-opacity", "1");
-                this.pitch_root.appendChild(borders);
-                const x = -115;
-                const y = -(this.attitudeHeight / 2);
-                const w = 230;
-                const h = this.attitudeHeight;
-                const attitudePitchContainer = document.createElementNS(Avionics.SVG.NS, "svg");
-                attitudePitchContainer.setAttribute("width", w.toString());
-                attitudePitchContainer.setAttribute("height", h.toString());
-                attitudePitchContainer.setAttribute("x", x.toString());
-                attitudePitchContainer.setAttribute("y", y.toString());
-                attitudePitchContainer.setAttribute("viewBox", x + " " + y + " " + w + " " + h);
-                attitudePitchContainer.setAttribute("overflow", "hidden");
-                this.pitch_root.appendChild(attitudePitchContainer);
+
+                const h = (this.attitudeHeight / 2);
+                this.setAttitudePitchContainer(h);
+                this.pitch_root.appendChild(this.attitudePitchContainer);
+                this.pitch_root.appendChild(this.borders);
+
                 this.attitude_pitch = document.createElementNS(Avionics.SVG.NS, "g");
-                attitudePitchContainer.appendChild(this.attitude_pitch);
+                this.attitudePitchContainer.appendChild(this.attitude_pitch);
                 const maxDash = 80;
                 const fullPrecisionLowerLimit = -20;
                 const fullPrecisionUpperLimit = 20;
@@ -403,9 +416,9 @@ class Jet_PFD_AttitudeIndicator extends HTMLElement {
                 this.radioAltitude = document.createElementNS(Avionics.SVG.NS, "text");
                 this.radioAltitude.textContent = "";
                 this.radioAltitude.setAttribute("x", "0");
-                this.radioAltitude.setAttribute("y", "165");
+                this.radioAltitude.setAttribute("y", "175");
                 this.radioAltitude.setAttribute("text-anchor", "middle");
-                this.radioAltitude.setAttribute("font-size", "30");
+                // this.radioAltitude.setAttribute("font-size", "25");
                 this.radioAltitude.setAttribute("font-family", "Roboto-Bold");
                 this.radioAltitude.setAttribute("fill", "white");
                 this.radioAltitudeGroup.appendChild(this.radioAltitude);
@@ -432,10 +445,20 @@ class Jet_PFD_AttitudeIndicator extends HTMLElement {
     }
     applyAttributes() {
         if (this.horizon_bottom) {
-            this.horizon_bottom.setAttribute("transform", "rotate(" + this.bankAngle + ", 0, 0) translate(0," + (this.horizonAngle * this.horizonAngleFactor) + ")");
+            if ((this.horizonAngle * this.horizonAngleFactor) < (this.horizonHeight / 2)) {
+                this.horizon_bottom.setAttribute("transform", "rotate(" + this.bankAngle + ", 0, 0) translate(0," + (this.horizonAngle * this.horizonAngleFactor) + ")");
+            } else {
+                this.horizon_bottom.setAttribute("transform", "rotate(" + this.bankAngle + ", 0, 0) translate(0," + this.horizonHeight / 2 + ")");
+            }
         }
         if (this.attitude_pitch) {
             this.attitude_pitch.setAttribute("transform", "translate(0," + (this.pitchAngle * this.pitchAngleFactor) + ")");
+
+            const bRaVisible = this.radioAltitudeGroup.getAttribute("visibility") === 'visible';
+            const hPitchContainer = bRaVisible ? (this.attitudeHeight / 2) - 10 + (this.pitchAngle * this.pitchAngleFactor) + this.rAltitude : this.attitudeHeight;
+            if (hPitchContainer <= this.attitudeHeight) {
+                this.setAttitudePitchContainer(hPitchContainer);
+            }
         }
         if (this.pitch_root) {
             this.pitch_root.setAttribute("transform", "rotate(" + this.bankAngle + ", 0, 0)");
@@ -523,9 +546,12 @@ class Jet_PFD_AttitudeIndicator extends HTMLElement {
         }
     }
     updateRadioAltitude(_altitude) {
+
+        this.rAltitude = _altitude;
+
         const xyz = Simplane.getOrientationAxis();
         const val = Math.floor(_altitude);
-        if ((val <= 2500) && (Math.abs(xyz.bank) < Math.PI * 0.35)) {
+        if ((val <= 2500) && (Math.abs(xyz.bank) < Math.PI * 0.25)) {
             let textVal;
             {
                 const absVal = Math.abs(val);
@@ -541,8 +567,10 @@ class Jet_PFD_AttitudeIndicator extends HTMLElement {
             if (this.radioAltitudeColorLimit > 0) {
                 if (val >= this.radioAltitudeColorLimit) {
                     this.radioAltitude.setAttribute("fill", this.radioAltitudeColorOk);
+                    this.radioAltitude.setAttribute("font-size", "25");
                 } else {
                     this.radioAltitude.setAttribute("fill", this.radioAltitudeColorBad);
+                    this.radioAltitude.setAttribute("font-size", "30");
                 }
             }
             this.radioAltitudeGroup.setAttribute("visibility", "visible");
@@ -862,6 +890,7 @@ var Jet_PFD_FlightDirector;
             if (fdActive && Simplane.getIsGrounded() && (Simplane.getEngineThrottleMode(0) != ThrottleMode.TOGA || Simplane.getEngineThrottleMode(1) != ThrottleMode.TOGA)) {
                 fdActive = false;
             }
+
             const trkfpaMode = Simplane.getAutoPilotTRKFPAModeActive();
             this.setModeActive(0, fdActive && !trkfpaMode);
             this.setModeActive(1, trkfpaMode);
