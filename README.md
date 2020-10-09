@@ -8,13 +8,13 @@ The A32NX Project is a community driven open source project to create a free Air
 
 ## Downloads
 
-### Mod Download & Installer
+### A32NX Installer
 
-Download the new mod installer where you can select either the Stable or Developer build, and install download and install the mod directly into your community folder, [download here.](https://github.com/Externoak/A32NX-installer/releases/latest/download/A32NX_Downloader.zip)
+Download the new A32NX installer where you can select either the Stable or Developer build, and download and install the mod directly into your community folder, [download here.](https://github.com/Externoak/A32NX-installer/releases/latest/download/A32NX_Downloader.zip)
 
-## Traditional Download Method
+### Traditional Download Methods
 
-### Latest Stable Release
+#### Latest Stable Release
 
 This is the recommended stable release, as it has been thoroughly tested.
 
@@ -22,7 +22,7 @@ This is the recommended stable release, as it has been thoroughly tested.
 
 You can see the changelog on the releases page: [View Here.](https://github.com/flybywiresim/a32nx/releases)
 
-### Unstable Master Branch Build
+#### Unstable Master Branch Build
 
 This has the latest features, but is much more unstable, use at your own risk.
 
@@ -54,7 +54,7 @@ If the above methods do not work:
 
 See [Contributing.md](.github/Contributing.md)
 
-## Known Issues (Please note that most issues are being worked on and some of them may even be fixed in the dev branch)
+## Known Issues (Please note that most issues are being worked on and some of them may even be fixed in the master branch)
 
 - Captain's PFD may occasionally turn off during flight
 - No Smoking switch doesn't use full range of motion.
