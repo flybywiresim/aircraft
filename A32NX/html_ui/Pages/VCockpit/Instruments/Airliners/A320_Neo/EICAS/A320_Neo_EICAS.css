@@ -314,7 +314,8 @@ a320-neo-eicas-element[index="2"] #Mainframe #BottomScreen {
   width: 100%;
   height: 100%;
   border: none;
-  display: none;
+
+  visibility: hidden;
 }
 
 #BottomScreen #door-video-wrapper {
@@ -331,8 +332,4 @@ a320-neo-eicas-element[index="2"] #Mainframe #BottomScreen {
 
   background-image: url(DoorVideoResources/empty.png);
   background-size: cover;
-}
-
-#BottomScreen .SelfTestWrapper {
-  top: -5%;
 }
