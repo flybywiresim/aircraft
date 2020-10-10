@@ -11,6 +11,7 @@
 		<LOD minSize="10" ModelFile="A320_NEO_INTERIOR_LOD04.gltf"/>
 	</LODS>
 	<Behaviors>
+        <Include ModelBehaviorFile="A32NX\A32NX_Interior.xml"/>
 		<Include ModelBehaviorFile="Asobo\Common.xml"/>
 		<Include ModelBehaviorFile="Asobo\Airliner\AirlinerCommon.xml"/>
 		<Include ModelBehaviorFile="Asobo\Airliner\FMC.xml"/>
