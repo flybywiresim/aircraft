@@ -223,13 +223,14 @@ a320-neo-eicas-element[index="2"] #Mainframe #BottomScreen {
     color: var(--displayCyan);
 }
 .SelfTestWrapper {
-    position: absolute;
-    left: 0%;
-    top: 0%;
-    width: 100%;
-    height: 100%;
-    border: none;
-    display: none;
+  position: absolute;
+  left: 0%;
+  top: 0%;
+  width: 100%;
+  height: 100%;
+  border: none;
+
+  visibility: hidden;
 }
 #BottomScreen #door-video-wrapper {
     position: absolute;
@@ -240,8 +241,4 @@ a320-neo-eicas-element[index="2"] #Mainframe #BottomScreen {
     visibility: hidden;
     background-image: url(DoorVideoResources/empty.png);
     background-size: cover;
-}
-
-#BottomScreen .SelfTestWrapper {
-    top: -5%;
 }
