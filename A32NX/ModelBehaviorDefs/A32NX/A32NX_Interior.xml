@@ -1,0 +1,55 @@
+<ModelBehaviors>
+
+    <!--
+    Template for defining continuous knobs with lower and upper bounds
+
+    Main Parameters:
+            - ANIM_SIMVAR           <no default>        The name of the simvar to use for the knob
+            - ANIM_SIMVAR_UNITS     Default: "percent"  The simvar units
+            - ANIM_SIMVAR_MIN       Default: 0          The lower bound of the position
+            - ANIM_SIMVAR_MAX       Default: 100        The upper bound of the position
+            - INCREMENT             Default: 1          The increment for each click / hold update
+
+    Authors: Benjamin Dupont (@Benjozork) 10/10/20
+    -->
+    <Template Name="FBW_Continuous_Knob_Finite_From_Simvar">
+        <DefaultTemplateParameters>
+            <ANIM_SIMVAR_UNITS>percent</ANIM_SIMVAR_UNITS>
+            <ANIM_SIMVAR_MIN>0</ANIM_SIMVAR_MIN>
+            <ANIM_SIMVAR_MAX>100</ANIM_SIMVAR_MAX>
+            <INCREMENT>1</INCREMENT>
+            <EXTRA_INTERACTION/>
+            <ANIMREF_ID>0</ANIMREF_ID>
+            <ANIMTIP_0_ON_CURSOR>TurnLeft</ANIMTIP_0_ON_CURSOR>
+            <ANIMTIP_1_ON_CURSOR>TurnRight</ANIMTIP_1_ON_CURSOR>
+            <ANIMTIP_0></ANIMTIP_0>
+            <ANIMTIP_1></ANIMTIP_1>
+            <ANIM_LAG>30</ANIM_LAG>
+            <ANIM_WRAP>True</ANIM_WRAP>
+            <!-- Should not be overriden except from generic template -->
+        </DefaultTemplateParameters>
+
+        <UseTemplate Name = "ASOBO_GT_Anim_Code">
+            <ANIM_CODE>
+                (#ANIM_SIMVAR#, #ANIM_SIMVAR_UNITS#) #ANIM_SIMVAR_MIN# - #ANIM_SIMVAR_MAX# #ANIM_SIMVAR_MIN# - / 100 *
+            </ANIM_CODE>
+        </UseTemplate>
+        <!-- <UseTemplate Name = "ASOBO_GT_AnimTriggers_SoundEvents_Same"/> -->
+        <UseTemplate Name = "ASOBO_GT_Interaction_WheelAndContinuousLeft#EXTRA_INTERACTION#">
+            <UPDATE_FREQUENCY>40</UPDATE_FREQUENCY>
+
+            <CLOCKWISE_CODE>
+                (#ANIM_SIMVAR#, #ANIM_SIMVAR_UNITS#) #INCREMENT# + #ANIM_SIMVAR_MAX# min (&gt;#ANIM_SIMVAR#)
+            </CLOCKWISE_CODE>
+            <ANTICLOCKWISE_CODE>
+                (#ANIM_SIMVAR#, #ANIM_SIMVAR_UNITS#) #INCREMENT# - #ANIM_SIMVAR_MIN# max (&gt;#ANIM_SIMVAR#)
+            </ANTICLOCKWISE_CODE>
+        </UseTemplate>
+
+        <Condition Valid="WWISE_EVENT">
+            <UseTemplate Name = "ASOBO_GT_AnimTriggers_SoundEvents_Same">
+            </UseTemplate>
+        </Condition>
+    </Template>
+
+</ModelBehaviors>
