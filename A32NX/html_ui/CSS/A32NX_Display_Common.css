@@ -21,103 +21,103 @@
     --displayYellow: #FFFF00;
 }
 
-:root div {
+div {
     font-family: "ECAMFontRegular" !important;
 }
 
-:root text {
+text {
     font-family: "ECAMFontRegular" !important;
 }
 
-:root .Separator {
+.Separator {
     stroke: var(--displaySeparator);
     stroke-width: 4;
     fill: none;
 }
 
 /* change from PageTitle */
-:root .PageTitle {
+.PageTitle {
     fill: var(--displayWhite);
     font-size: 25px;
     text-decoration: underline;
 }
-:root #PageTitle {
+#PageTitle {
     fill: var(--displayWhite);
     font-size: 25px;
     text-decoration: underline;
 }
-:root .ECAMTitle {
+.ECAMTitle {
     fill: var(--displayWhite);
     font-size: 25px;
     text-decoration: underline;
 }
 
-:root .normalText {
+.normalText {
     fill: var(--displayWhite);
 }
-:root .unitText {
+.unitText {
     fill: var(--displayCyan);
 }
-:root .valueText {
+.valueText {
     fill: var(--displayGreen);
 }
-:root .warningText {
+.warningText {
     fill: var(--displayAmber);
 }
-:root .dangerText {
+.dangerText {
     fill: var(--displayRed);
 }
 
-:root .text-xs {
+.text-xs {
     font-size: 14px;
 }
-:root .text-s {
+.text-s {
     font-size: 16px;
 }
-:root .text-m {
+.text-m {
     font-size: 18px;
 }
-:root .text-l {
+.text-l {
     font-size: 20px;
 }
-:root .text-xl {
+.text-xl {
     font-size: 22px;
 }
-:root .text-xxl {
+.text-xxl {
     font-size: 24px;
 }
 
-:root .greenShapeFill {
+.greenShapeFill {
     stroke: var(--displayGreen);
     fill: var(--displayGreen);
 }
-:root .amberShapeFill {
+.amberShapeFill {
     stroke: var(--displayAmber);
     fill: var(--displayAmber);
 }
-:root .redShapeFill {
+.redShapeFill {
     stroke: var(--displayRed);
     fill: var(--displayRed);
 }
-:root .greyShapeFill {
+.greyShapeFill {
     stroke: var(--displayGrey);
     fill: var(--displayGrey);
 }
-:root .greenShapeOutline {
+.greenShapeOutline {
     stroke: var(--displayGreen);
-    fill: transparent;
+    fill: none;
 }
-:root .amberShapeOutline {
+.amberShapeOutline {
     stroke: var(--displayAmber);
-    fill: transparent;
+    fill: none;
 }
-:root .redShapeOutline {
+.redShapeOutline {
     stroke: var(--displayRed);
-    fill: transparent;
+    fill: none;
 }
-:root .greyShapeOutline {
+.greyShapeOutline {
     stroke: var(--displayGrey);
-    fill: transparent;
+    fill: none;
 }
 
 :root strokeExtraThin {

@@ -2,7 +2,7 @@ class Jet_PFD_VerticalSpeedIndicator extends HTMLElement {
     constructor() {
         super(...arguments);
         this.cursorTextColor = "rgb(26,255,0)";
-        this.fontSize = 25;
+        this.fontSize = 22;
         this.cursorPosX1 = 0;
         this.cursorPosY1 = 0;
         this.cursorPosX2 = 0;
@@ -104,10 +104,10 @@ class Jet_PFD_VerticalSpeedIndicator extends HTMLElement {
                 var text = document.createElementNS(Avionics.SVG.NS, "text");
                 text.textContent = (this.gradSpeeds[i] / 1000).toString();
                 text.setAttribute("x", _left.toString());
-                text.setAttribute("y", y.toString());
+                text.setAttribute("y", (y + 5).toString());
                 text.setAttribute("fill", "white");
                 text.setAttribute("font-size", (this.fontSize * 1.15).toString());
-                text.setAttribute("font-family", "Roboto-Bold");
+                text.setAttribute("font-family", "ECAMFontRegular");
                 text.setAttribute("text-anchor", "start");
                 text.setAttribute("alignment-baseline", "central");
                 this.graduationsGroup.appendChild(text);
@@ -115,7 +115,7 @@ class Jet_PFD_VerticalSpeedIndicator extends HTMLElement {
             y = _graduationStartY + _graduationHeight * 0.5 - this.gradYPos[i];
             var line = document.createElementNS(Avionics.SVG.NS, "rect");
             line.setAttribute("x", (_left + _width * 0.2).toString());
-            line.setAttribute("y", y.toString());
+            line.setAttribute("y", (y - 5).toString());
             line.setAttribute("width", isPrimary ? "9" : "9");
             line.setAttribute("height", isPrimary ? "8" : "2");
             line.setAttribute("fill", "white");
@@ -127,7 +127,7 @@ class Jet_PFD_VerticalSpeedIndicator extends HTMLElement {
                 text.setAttribute("y", y.toString());
                 text.setAttribute("fill", "white");
                 text.setAttribute("font-size", (this.fontSize * 1.15).toString());
-                text.setAttribute("font-family", "Roboto-Bold");
+                text.setAttribute("font-family", "ECAMFontRegular");
                 text.setAttribute("text-anchor", "start");
                 text.setAttribute("alignment-baseline", "central");
                 this.graduationsGroup.appendChild(text);
@@ -175,7 +175,7 @@ class Jet_PFD_VerticalSpeedIndicator extends HTMLElement {
             this.cursorSVGText.setAttribute("y", this.cursorPosY1.toString());
             this.cursorSVGText.setAttribute("fill", this.cursorTextColor);
             this.cursorSVGText.setAttribute("font-size", (this.fontSize * 1.0).toString());
-            this.cursorSVGText.setAttribute("font-family", "Roboto-Bold");
+            this.cursorSVGText.setAttribute("font-family", "ECAMFontRegular");
             this.cursorSVGText.setAttribute("text-anchor", "start");
             this.cursorSVGText.setAttribute("alignment-baseline", "central");
             this.cursorSVGGroup.appendChild(this.cursorSVGText);
