@@ -20,7 +20,7 @@
   <Instrument>
     <Name>A320_Neo_SAI</Name>
     <Electric>
-      <Simvar name="CIRCUIT ON:52" unit="Boolean"/>
+      <Simvar name="CIRCUIT ON:80" unit="Boolean"/>
     </Electric>
   </Instrument>
 
@@ -122,7 +122,7 @@
 	<VoicesAlerts>
 
 		<!-- Added -->
-		
+
 		<Alert>
 			<Type>SoundOnly</Type>
 			<SoundEvent>aural_pull_up</SoundEvent>
