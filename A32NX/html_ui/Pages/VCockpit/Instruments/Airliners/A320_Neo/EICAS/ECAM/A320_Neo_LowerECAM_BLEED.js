@@ -18,6 +18,7 @@ var A320_Neo_LowerECAM_BLEED;
         init() {
 
             this.isInitialised = true;
+            
             //finding all html element for the display, first element of array is always the open on, the second is the closed one
             this.apuBleedIndication = [this.querySelector("#apu-switch-open"), this.querySelector("#apu-switch-closed")];
             this.leftEngineHp = [this.querySelector("#left-engine-hp-open"), this.querySelector("#left-engine-hp-closed")];
@@ -29,18 +30,15 @@ var A320_Neo_LowerECAM_BLEED;
             this.xBleed = [this.querySelector("#xbleed-connection-open"), this.querySelector("#xbleed-connection-closed")];
             this.ramAir = [this.querySelector("#ram-air-on"), this.querySelector("#ram-air-off")];
             this.ramAirConnection = this.querySelector("#ram-air-connection-line");
-            this.packFlow = [this.querySelector("#pack-flow-low"), this.querySelector("#pack-flow-normal"), this.querySelector("#pack-flow-high")];
-            this.packIndicators = [(this.querySelector("#pack-out-temp-indicator-0")), (this.querySelector("#pack-out-temp-indicator-1")),
-                (this.querySelector("#pack-out-temp-indicator-2")), (this.querySelector("#pack-out-temp-indicator-3")),
-                (this.querySelector("#pack-out-temp-indicator-4")), (this.querySelector("#pack-out-temp-indicator-5")),
-                (this.querySelector("#pack-out-temp-indicator-6")),];
-            this.centerLines = [this.querySelector("#center-line-1"), this.querySelector("#center-line-2"), this.querySelector("#center-line-3"),
-                this.querySelector("#center-line-4"), this.querySelector("#center-line-5"), this.querySelector("#center-line-6"),];
+            this.packFlowIndicator = [this.querySelector("#pack-flow-indicator1"), this.querySelector("#pack-flow-indicator2")];
+            this.packIndicator = [this.querySelector("#pack-out-temp-indicator1"), this.querySelector("#pack-out-temp-indicator2")];         
             this.apuConnectingLine = this.querySelector("#apu-connecting-line");
             this.apuText = this.querySelector("#APUtext");
             this.apuValve = this.querySelector("#apu-valve");
             this.gndText = this.querySelector("#GND");
             this.gndTriangle = this.querySelector("#GND-triangle");
+            this.centerLines = [this.querySelector("#center-line-1"), this.querySelector("#center-line-2"), this.querySelector("#center-line-3"),
+                this.querySelector("#center-line-4"), this.querySelector("#center-line-5"), this.querySelector("#center-line-6"),];
 
             this.htmlEngNumb1 = this.querySelector("#eng-numb-1");
             this.htmlEng1Tmp = this.querySelector("#eng1-bleed-tmp");
@@ -94,67 +92,6 @@ var A320_Neo_LowerECAM_BLEED;
             this.temperatureVariationSpeed = 0.01;
         }
 
-        //placeholder logic for packs
-        setPackIndicators(p0, p1, p2, p3, p4, p5, p6) {
-            if (p0) {
-                this.packIndicators[0].setAttribute("visibility", "visible");
-                this.packIndicators[1].setAttribute("visibility", "hidden");
-                this.packIndicators[2].setAttribute("visibility", "hidden");
-                this.packIndicators[3].setAttribute("visibility", "hidden");
-                this.packIndicators[4].setAttribute("visibility", "hidden");
-                this.packIndicators[5].setAttribute("visibility", "hidden");
-                this.packIndicators[6].setAttribute("visibility", "hidden");
-            } else if (p1) {
-                this.packIndicators[0].setAttribute("visibility", "hidden");
-                this.packIndicators[1].setAttribute("visibility", "visible");
-                this.packIndicators[2].setAttribute("visibility", "hidden");
-                this.packIndicators[3].setAttribute("visibility", "hidden");
-                this.packIndicators[4].setAttribute("visibility", "hidden");
-                this.packIndicators[5].setAttribute("visibility", "hidden");
-                this.packIndicators[6].setAttribute("visibility", "hidden");
-            } else if (p2) {
-                this.packIndicators[0].setAttribute("visibility", "hidden");
-                this.packIndicators[1].setAttribute("visibility", "hidden");
-                this.packIndicators[2].setAttribute("visibility", "visible");
-                this.packIndicators[3].setAttribute("visibility", "hidden");
-                this.packIndicators[4].setAttribute("visibility", "hidden");
-                this.packIndicators[5].setAttribute("visibility", "hidden");
-                this.packIndicators[6].setAttribute("visibility", "hidden");
-            } else if (p3) {
-                this.packIndicators[0].setAttribute("visibility", "hidden");
-                this.packIndicators[1].setAttribute("visibility", "hidden");
-                this.packIndicators[2].setAttribute("visibility", "hidden");
-                this.packIndicators[3].setAttribute("visibility", "visible");
-                this.packIndicators[4].setAttribute("visibility", "hidden");
-                this.packIndicators[5].setAttribute("visibility", "hidden");
-                this.packIndicators[6].setAttribute("visibility", "hidden");
-            } else if (p4) {
-                this.packIndicators[0].setAttribute("visibility", "hidden");
-                this.packIndicators[1].setAttribute("visibility", "hidden");
-                this.packIndicators[2].setAttribute("visibility", "hidden");
-                this.packIndicators[3].setAttribute("visibility", "hidden");
-                this.packIndicators[4].setAttribute("visibility", "visible");
-                this.packIndicators[5].setAttribute("visibility", "hidden");
-                this.packIndicators[6].setAttribute("visibility", "hidden");
-            } else if (p5) {
-                this.packIndicators[0].setAttribute("visibility", "hidden");
-                this.packIndicators[1].setAttribute("visibility", "hidden");
-                this.packIndicators[2].setAttribute("visibility", "hidden");
-                this.packIndicators[3].setAttribute("visibility", "hidden");
-                this.packIndicators[4].setAttribute("visibility", "hidden");
-                this.packIndicators[5].setAttribute("visibility", "visible");
-                this.packIndicators[6].setAttribute("visibility", "hidden");
-            } else if (p6) {
-                this.packIndicators[0].setAttribute("visibility", "hidden");
-                this.packIndicators[1].setAttribute("visibility", "hidden");
-                this.packIndicators[2].setAttribute("visibility", "hidden");
-                this.packIndicators[3].setAttribute("visibility", "hidden");
-                this.packIndicators[4].setAttribute("visibility", "hidden");
-                this.packIndicators[5].setAttribute("visibility", "hidden");
-                this.packIndicators[6].setAttribute("visibility", "visible");
-            }
-        }
-
         setWarningColorVal(value, htmlObj, upperLimit, lowerLimit) {
             if (value > upperLimit || value < lowerLimit) {
                 htmlObj.setAttribute("class", "warning st2 st6");
@@ -178,6 +115,7 @@ var A320_Neo_LowerECAM_BLEED;
                 htmlObj.setAttribute("class", "st1 st2 st6");
             }
         }
+
         update(_deltaTime) {
             if (!this.isInitialised) {
                 return;
@@ -192,16 +130,16 @@ var A320_Neo_LowerECAM_BLEED;
             const throttleEng1 = SimVar.GetSimVarValue("GENERAL ENG THROTTLE LEVER POSITION:1", "number");
             const throttleEng2 = SimVar.GetSimVarValue("GENERAL ENG THROTTLE LEVER POSITION:1", "number");
             const currentApuBleedSate = SimVar.GetSimVarValue("BLEED AIR APU", "Bool");
-            const currentXbleedState = SimVar.GetSimVarValue("L:A32NX_KNOB_OVHD_AIRCOND_XBLEED_Position", "Position(0-2)");
-            const currentPackFlow = SimVar.GetSimVarValue("L:A32NX_KNOB_OVHD_AIRCOND_PACKFLOW_Position", "Position(0-2)");
-            const packRequestedlvl = Math.min(...[SimVar.GetSimVarValue("L:A320_Neo_AIRCOND_LVL_1", "Position(0-6)"),
-                SimVar.GetSimVarValue("L:A320_Neo_AIRCOND_LVL_2", "Position(0-6)"),
-                SimVar.GetSimVarValue("L:A320_Neo_AIRCOND_LVL_3", "Position(0-6)")]);
+            const currentXbleedState = SimVar.GetSimVarValue("L:A32NX_KNOB_OVHD_AIRCOND_XBLEED_Position", "Position(0-2)");                
             const radioHeight = SimVar.GetSimVarValue("RADIO HEIGHT", "Feet");
             const apuSwitchState = SimVar.GetSimVarValue("L:A32NX_APU_START_ACTIVATED", "bool");
             const fadecStatus = [SimVar.GetSimVarValue("L:A32NX_FADEC_POWERED_ENG1", "bool"), SimVar.GetSimVarValue("L:A32NX_FADEC_POWERED_ENG1", "bool")];
             const groundSpeed = SimVar.GetSimVarValue("GPS GROUND SPEED", "Meters per second");
+            const packRequestedlvl = Math.min(...[SimVar.GetSimVarValue("L:A320_Neo_AIRCOND_LVL_1", "Position(0-6)"),
+                SimVar.GetSimVarValue("L:A320_Neo_AIRCOND_LVL_2", "Position(0-6)"),
+                SimVar.GetSimVarValue("L:A320_Neo_AIRCOND_LVL_3", "Position(0-6)")]);
 
+            let currentPackFlow = SimVar.GetSimVarValue("L:A32NX_KNOB_OVHD_AIRCOND_PACKFLOW_Position", "Position(0-2)");
             let currentLeftPackState = SimVar.GetSimVarValue("L:A32NX_AIRCOND_PACK1_TOGGLE", "bool");
             let currentRightPackState = SimVar.GetSimVarValue("L:A32NX_AIRCOND_PACK2_TOGGLE", "bool");
             let currentRamState = SimVar.GetSimVarValue("L:A32NX_AIRCOND_RAMAIR_TOGGLE", "bool");
@@ -278,6 +216,11 @@ var A320_Neo_LowerECAM_BLEED;
 
             if (!eng2Running) {
                 currentEngineBleedState[1] = 0;
+            }
+
+            //sets pack flow to high if TOGA applied/ single pack on / bleed provided by apu alone
+            if (this.thrustTOGAApplied || this.singlePackOn || (!currentEngineBleedState[0] && !currentEngineBleedState[1] && this.apuProvidesBleed)) {
+                currentPackFlow = 2;
             }
 
             //sets IP valve to open or closed
@@ -410,58 +353,33 @@ var A320_Neo_LowerECAM_BLEED;
                 this.ramAirConnection.setAttribute("visibility", "hidden");
             }
 
-            //find pack flow state
-            if (currentPackFlow == 0 && !this.thrustTOGAApplied && this.bothPacksOn && (currentEngineBleedState[0] || currentEngineBleedState[1])) {
-                this.packFlow[0].setAttribute("visibility", "visible");
-                this.packFlow[1].setAttribute("visibility", "hidden");
-                this.packFlow[2].setAttribute("visibility", "hidden");
-            } else if (currentPackFlow == 1 && !this.thrustTOGAApplied && this.bothPacksOn && (currentEngineBleedState[0] || currentEngineBleedState[1])) {
-                this.packFlow[0].setAttribute("visibility", "hidden");
-                this.packFlow[1].setAttribute("visibility", "visible");
-                this.packFlow[2].setAttribute("visibility", "hidden");
-            } else {
-                this.packFlow[0].setAttribute("visibility", "hidden");
-                this.packFlow[1].setAttribute("visibility", "hidden");
-                this.packFlow[2].setAttribute("visibility", "visible");
-            }
+            
+            //pack flow indicators, ready for continous knob
+            this.packFlowIndicator[0].setAttribute("style", "transform-origin: 121px 227px; transform: rotate(" + currentPackFlow * 57.5 + "deg); stroke-width: 4.5px; stroke-linecap: round;");
+            this.packFlowIndicator[1].setAttribute("style", "transform-origin: 479px 227px; transform: rotate(" + currentPackFlow * 57.5 + "deg); stroke-width: 4.5px; stroke-linecap: round;");
 
-            //sets the indicator to the correct position
-            switch (packRequestedlvl) {
-                case 0:
-                    this.setPackIndicators(1, 0, 0, 0, 0, 0, 0);
-                    break;
-                case 1:
-                    this.setPackIndicators(0, 1, 0, 0, 0, 0, 0);
-                    break;
-                case 2:
-                    this.setPackIndicators(0, 0, 1, 0, 0, 0, 0);
-                    break;
-                case 3:
-                    this.setPackIndicators(0, 0, 0, 1, 0, 0, 0);
-                    break;
-                case 4:
-                    this.setPackIndicators(0, 0, 0, 0, 1, 0, 0);
-                    break;
-                case 5:
-                    this.setPackIndicators(0, 0, 0, 0, 0, 1, 0);
-                    break;
-                case 6:
-                    this.setPackIndicators(0, 0, 0, 0, 0, 0, 1);
-                    break;
-            }
 
-            //lines set to amber color when not enough pressure and numbers set to amber if fadec powered and engine N2 below idle
-            this.setWarningOnLines(eng1Running, this.htmlEng1Conn1);
-            this.setWarningOnLines(eng1Running, this.htmlEng1Conn2);
-            this.setWarningOnLines(eng1Running, this.htmlEng1Conn3);
-            this.setWarningOnNumbers(this.eng1N2BelowIdle, fadecStatus[0], this.htmlEngNumb1);
-
-            this.setWarningOnLines(eng2Running, this.htmlEng2Conn1);
-            this.setWarningOnLines(eng2Running, this.htmlEng2Conn2);
-            this.setWarningOnLines(eng2Running, this.htmlEng2Conn3);
-            this.setWarningOnNumbers(this.eng2N2BelowIdle, fadecStatus[1], this.htmlEngNumb2);
+            //pack outflow indicators
+            this.packIndicator[0].setAttribute("style", "transform-origin: 479px 152px; transform: rotate(" + packRequestedlvl * 1.23 + "deg); stroke-width: 4.5px; stroke-linecap: round;");
+            this.packIndicator[1].setAttribute("style", "transform-origin: 121px 152px; transform: rotate(" + packRequestedlvl * 1.23 + "deg); stroke-width: 4.5px; stroke-linecap: round;");
 
             //placeholder logic for the bleed page temperatures and pressures, to be replaced/updated/removed when the cond-packs system is implemented
+            const packRequestedTemp = 18 + (0.12 * packRequestedlvl);
+
+            const eng1TMP = SimVar.GetSimVarValue("ENG EXHAUST GAS TEMPERATURE:1", "Celsius");
+            const eng1PSI = parseInt(SimVar.GetSimVarValue("TURB ENG BLEED AIR:1", "Ratio (0-16384)") / 2.9);
+
+            const eng2TMP = SimVar.GetSimVarValue("ENG EXHAUST GAS TEMPERATURE:2", "Celsius");
+            const eng2PSI = parseInt(SimVar.GetSimVarValue("TURB ENG BLEED AIR:2", "Ratio (0-16384)") / 2.9);
+
+            const apuTMPcomputed = parseInt(currentApuN * 2.5);
+            const apuPSI = parseInt(currentApuN * 0.35);
+
+            let eng1TMPcomputed;
+            let eng2TMPcomputed;
+            let packTemperatureVariation1 = 0;
+            let packTemperatureVariation2 = 0;
+
             //prevents NaN error
             if (!this.packOutMultiplier1) {
                 this.packOutMultiplier1 = 0.055;
@@ -471,32 +389,17 @@ var A320_Neo_LowerECAM_BLEED;
                 this.packOutMultiplier2 = 0.055;
             }
 
-            const packRequestedTemp = 18 + (2 * packRequestedlvl);
-
-            const eng1TMP = SimVar.GetSimVarValue("ENG EXHAUST GAS TEMPERATURE:1", "Celsius");
-            const eng1PSI = parseInt(SimVar.GetSimVarValue("TURB ENG BLEED AIR:1", "Ratio (0-16384)") / 2.9);
-
-            let eng1TMPcomputed;
-
             if (eng1TMP < 860) {
                 eng1TMPcomputed = parseInt(((this.engTempMultiplier1 * (eng1TMP + this.engTempOffsetH)) + (this.engTempMultiplier2 * Math.pow((eng1TMP + this.engTempOffsetH), 3)) + this.engTempOffsetV));
             } else {
                 eng1TMPcomputed = parseInt(this.engTempMultiplier3 * (eng1TMP + this.engTempOffsetH2) + this.engTempOffsetV2);
             }
 
-            const eng2TMP = SimVar.GetSimVarValue("ENG EXHAUST GAS TEMPERATURE:2", "Celsius");
-            const eng2PSI = parseInt(SimVar.GetSimVarValue("TURB ENG BLEED AIR:2", "Ratio (0-16384)") / 2.9);
-
-            let eng2TMPcomputed;
-
             if (eng2TMP < 860) {
                 eng2TMPcomputed = parseInt(((this.engTempMultiplier1 * (eng2TMP + this.engTempOffsetH)) + (this.engTempMultiplier2 * Math.pow((eng2TMP + this.engTempOffsetH), 3)) + this.engTempOffsetV));
             } else {
                 eng2TMPcomputed = parseInt(this.engTempMultiplier3 * (eng2TMP + this.engTempOffsetH2) + this.engTempOffsetV2);
             }
-
-            const apuTMPcomputed = parseInt(currentApuN * 2.5);
-            const apuPSI = parseInt(currentApuN * 0.35);
 
             const packTMPComputedIn = [(parseInt((eng1TMPcomputed * this.packInMultiplier))),
                 (parseInt((eng2TMPcomputed * this.packInMultiplier))),
@@ -505,9 +408,6 @@ var A320_Neo_LowerECAM_BLEED;
             const packTMPComputedOut = [(parseInt(eng1TMPcomputed * this.packOutMultiplier1)),
                 (parseInt(eng2TMPcomputed * this.packOutMultiplier2)),
                 (parseInt(apuTMPcomputed * this.packOutMultiplierApu))];
-
-            let packTemperatureVariation1 = 0;
-            let packTemperatureVariation2 = 0;
 
             if (eng1Running && packRequestedTemp && packTMPComputedOut[0] && this.packOutMultiplier1 && this.temperatureVariationSpeed && (currentPackFlow == 0 || currentPackFlow) && this.bothPacksOn && !this.thrustTOGAApplied) {
                 packTemperatureVariation1 = ((((packRequestedTemp / packTMPComputedOut[0]) * this.packOutMultiplier1) - this.packOutMultiplier1));
@@ -643,6 +543,15 @@ var A320_Neo_LowerECAM_BLEED;
             this.setWarningColorVal(this.htmlRightPackOut.textContent, this.htmlRightPackOut, 90, 0);
             this.setWarningColorVal(this.htmlLeftPackOut.textContent, this.htmlLeftPackOut, 90, 0);
 
+            this.setWarningOnLines(eng1Running, this.htmlEng1Conn1);
+            this.setWarningOnLines(eng1Running, this.htmlEng1Conn2);
+            this.setWarningOnLines(eng1Running, this.htmlEng1Conn3);
+            this.setWarningOnNumbers(this.eng1N2BelowIdle, fadecStatus[0], this.htmlEngNumb1);
+
+            this.setWarningOnLines(eng2Running, this.htmlEng2Conn1);
+            this.setWarningOnLines(eng2Running, this.htmlEng2Conn2);
+            this.setWarningOnLines(eng2Running, this.htmlEng2Conn3);
+            this.setWarningOnNumbers(this.eng2N2BelowIdle, fadecStatus[1], this.htmlEngNumb2);
         }
     }
     A320_Neo_LowerECAM_BLEED.Page = Page;
