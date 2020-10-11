@@ -47,6 +47,7 @@
 1. [CDU] Improved the VERT REV page - @lousybyte (lousybyte)
 1. [PFD] Correct PFD attitude indicator onground/inflight - @MMontalto (PiCcy)
 1. [ND] Added WX/TERR on ND brightness knob, fix ND/PFD brightness tooltips - @lukecologne (luke)
+1. [LIGHTS] Fixed DIM/BRT Lights inside the cockpit. Overhead should now be visible.
 
 ## 2020/09
 1. [General] Add CHANGELOG.md - @nathaninnes (Nathan Innes)
