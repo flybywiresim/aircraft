@@ -805,7 +805,7 @@
                 </UseTemplate>
 
                 <!-- DCDU -->
-                <UseTemplate Name="FBW_Aribus_DCDU_2State_Emissive">
+                <UseTemplate Name="FBW_Airbus_DCDU_2State_Emissive">
                     <DCDU_SIDE>L</DCDU_SIDE>
                     <PLANE_NAME>A32NX</PLANE_NAME>
                 </UseTemplate>
@@ -855,7 +855,7 @@
                 </UseTemplate>
 
                 <!-- DCDU -->
-                <UseTemplate Name="FBW_Aribus_DCDU_2State_Emissive">
+                <UseTemplate Name="FBW_Airbus_DCDU_2State_Emissive">
                     <DCDU_SIDE>R</DCDU_SIDE>
                     <PLANE_NAME>A32NX</PLANE_NAME>
                 </UseTemplate>

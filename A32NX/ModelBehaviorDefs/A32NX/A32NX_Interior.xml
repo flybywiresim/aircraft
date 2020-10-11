@@ -129,7 +129,7 @@
 
     Authors: Benjamin Dupont (@Benjozork) 11/10/20
     -->
-    <Template Name="FBW_Aribus_DCDU_2State_Emissive">
+    <Template Name="FBW_Airbus_DCDU_2State_Emissive">
         <UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
             <NODE_ID>SCREEN_COM_#DCDU_SIDE#</NODE_ID>
             <EMISSIVE_CODE>(L:#PLANE_NAME#_PANEL_DCDU_#DCDU_SIDE#_BRIGHTNESS, Bool) if{ 1 } els{ 0.5 }</EMISSIVE_CODE>
