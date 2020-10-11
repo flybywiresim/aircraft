@@ -1149,145 +1149,97 @@
 
                 <!-- Captain side -->
                 <Component ID="Left_DCDU">
+                    <DefaultTemplateParameters>
+                        <PLANE_NAME>A32NX</PLANE_NAME>
+                    </DefaultTemplateParameters>
+
                     <!-- Brightness -->
                     <UseTemplate Name="FBW_Airbus_DCDU_Brightness_Switch">
-                        <PLANE_NAME>A32NX</PLANE_NAME>
                         <DCDU_SIDE>L</DCDU_SIDE>
                     </UseTemplate>
 
-                    <UseTemplate Name="FBW_Airbus_DCDU_Generic_Switch">
+                    <UseTemplate Name="FBW_Airbus_DCDU_Generic_Inop_Switch">
                         <NODE_ID>PUSH_MPL_MS0MINUS</NODE_ID>
-                        <PUSH_CODE>
-                            0
-                        </PUSH_CODE>
                     </UseTemplate>
 
-                    <UseTemplate Name="FBW_Airbus_DCDU_Generic_Switch">
+                    <UseTemplate Name="FBW_Airbus_DCDU_Generic_Inop_Switch">
                         <NODE_ID>PUSH_MPL_MS0PLUS</NODE_ID>
-                        <PUSH_CODE>
-                            0
-                        </PUSH_CODE>
                     </UseTemplate>
 
-                    <UseTemplate Name="FBW_Airbus_DCDU_Generic_Switch">
+                    <UseTemplate Name="FBW_Airbus_DCDU_Generic_Inop_Switch">
                         <NODE_ID>PUSH_MPL_L1</NODE_ID>
-                        <PUSH_CODE>
-                            0
-                        </PUSH_CODE>
                     </UseTemplate>
 
-                    <UseTemplate Name="FBW_Airbus_DCDU_Generic_Switch">
+                    <UseTemplate Name="FBW_Airbus_DCDU_Generic_Inop_Switch">
                         <NODE_ID>PUSH_MPL_L2</NODE_ID>
-                        <PUSH_CODE>
-                            0
-                        </PUSH_CODE>
                     </UseTemplate>
 
-                    <UseTemplate Name="FBW_Airbus_DCDU_Generic_Switch">
+                    <UseTemplate Name="FBW_Airbus_DCDU_Generic_Inop_Switch">
                         <NODE_ID>PUSH_MPL_PRINT</NODE_ID>
-                        <PUSH_CODE>
-                            0
-                        </PUSH_CODE>
                     </UseTemplate>
 
-                    <UseTemplate Name="FBW_Airbus_DCDU_Generic_Switch">
+                    <UseTemplate Name="FBW_Airbus_DCDU_Generic_Inop_Switch">
                         <NODE_ID>PUSH_MPL_POEMINUS</NODE_ID>
-                        <PUSH_CODE>
-                            0
-                        </PUSH_CODE>
                     </UseTemplate>
 
-                    <UseTemplate Name="FBW_Airbus_DCDU_Generic_Switch">
+                    <UseTemplate Name="FBW_Airbus_DCDU_Generic_Inop_Switch">
                         <NODE_ID>PUSH_MPL_POEPLUS</NODE_ID>
-                        <PUSH_CODE>
-                            0
-                        </PUSH_CODE>
                     </UseTemplate>
 
-                    <UseTemplate Name="FBW_Airbus_DCDU_Generic_Switch">
+                    <UseTemplate Name="FBW_Airbus_DCDU_Generic_Inop_Switch">
                         <NODE_ID>PUSH_MPL_R1</NODE_ID>
-                        <PUSH_CODE>
-                            0
-                        </PUSH_CODE>
                     </UseTemplate>
 
-                    <UseTemplate Name="FBW_Airbus_DCDU_Generic_Switch">
+                    <UseTemplate Name="FBW_Airbus_DCDU_Generic_Inop_Switch">
                         <NODE_ID>PUSH_MPL_R2</NODE_ID>
-                        <PUSH_CODE>
-                            0
-                        </PUSH_CODE>
                     </UseTemplate>
                 </Component>
 
                 <!-- F/O side -->
                 <Component ID="Right_DCDU">
+                    <DefaultTemplateParameters>
+                        <PLANE_NAME>A32NX</PLANE_NAME>
+                    </DefaultTemplateParameters>
+
                     <!-- Brightness -->
                     <UseTemplate Name="FBW_Airbus_DCDU_Brightness_Switch">
-                        <PLANE_NAME>A32NX</PLANE_NAME>
                         <DCDU_SIDE>R</DCDU_SIDE>
                     </UseTemplate>
 
-                    <UseTemplate Name="FBW_Airbus_DCDU_Generic_Switch">
+                    <UseTemplate Name="FBW_Airbus_DCDU_Generic_Inop_Switch">
                         <NODE_ID>PUSH_MPR_MS0MINUS</NODE_ID>
-                        <PUSH_CODE>
-                            0
-                        </PUSH_CODE>
                     </UseTemplate>
 
-                    <UseTemplate Name="FBW_Airbus_DCDU_Generic_Switch">
+                    <UseTemplate Name="FBW_Airbus_DCDU_Generic_Inop_Switch">
                         <NODE_ID>PUSH_MPR_MS0PLUS</NODE_ID>
-                        <PUSH_CODE>
-                            0
-                        </PUSH_CODE>
                     </UseTemplate>
 
-                    <UseTemplate Name="FBW_Airbus_DCDU_Generic_Switch">
+                    <UseTemplate Name="FBW_Airbus_DCDU_Generic_Inop_Switch">
                         <NODE_ID>PUSH_MPR_L1</NODE_ID>
-                        <PUSH_CODE>
-                            0
-                        </PUSH_CODE>
                     </UseTemplate>
 
-                    <UseTemplate Name="FBW_Airbus_DCDU_Generic_Switch">
+                    <UseTemplate Name="FBW_Airbus_DCDU_Generic_Inop_Switch">
                         <NODE_ID>PUSH_MPR_L2</NODE_ID>
-                        <PUSH_CODE>
-                            0
-                        </PUSH_CODE>
                     </UseTemplate>
 
-                    <UseTemplate Name="FBW_Airbus_DCDU_Generic_Switch">
+                    <UseTemplate Name="FBW_Airbus_DCDU_Generic_Inop_Switch">
                         <NODE_ID>PUSH_MPR_PRINT</NODE_ID>
-                        <PUSH_CODE>
-                            0
-                        </PUSH_CODE>
                     </UseTemplate>
 
-                    <UseTemplate Name="FBW_Airbus_DCDU_Generic_Switch">
+                    <UseTemplate Name="FBW_Airbus_DCDU_Generic_Inop_Switch">
                         <NODE_ID>PUSH_MPR_POEMINUS</NODE_ID>
-                        <PUSH_CODE>
-                            0
-                        </PUSH_CODE>
                     </UseTemplate>
 
-                    <UseTemplate Name="FBW_Airbus_DCDU_Generic_Switch">
+                    <UseTemplate Name="FBW_Airbus_DCDU_Generic_Inop_Switch">
                         <NODE_ID>PUSH_MPR_POEPLUS</NODE_ID>
-                        <PUSH_CODE>
-                            0
-                        </PUSH_CODE>
                     </UseTemplate>
 
-                    <UseTemplate Name="FBW_Airbus_DCDU_Generic_Switch">
+                    <UseTemplate Name="FBW_Airbus_DCDU_Generic_Inop_Switch">
                         <NODE_ID>PUSH_MPR_R1</NODE_ID>
-                        <PUSH_CODE>
-                            0
-                        </PUSH_CODE>
                     </UseTemplate>
 
-                    <UseTemplate Name="FBW_Airbus_DCDU_Generic_Switch">
+                    <UseTemplate Name="FBW_Airbus_DCDU_Generic_Inop_Switch">
                         <NODE_ID>PUSH_MPR_R2</NODE_ID>
-                        <PUSH_CODE>
-                            0
-                        </PUSH_CODE>
                     </UseTemplate>
                 </Component>
 

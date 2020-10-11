@@ -103,6 +103,24 @@
     </Template>
 
     <!--
+    Template for rigging inop. DCDU generic buttons
+
+    Main Parameters:
+            - NODE_ID           <no default>    Name of the button
+            - PLANE_NAME        <no default>    Plane project name
+            - POTENTIOMETER_ID  85              Potentiometer ID for emissive sequence 1
+
+    Authors: Benjamin Dupont (@Benjozork) 11/10/20
+    -->
+    <Template Name="FBW_Airbus_DCDU_Generic_Inop_Switch">
+        <UseTemplate Name="FBW_Airbus_DCDU_Generic_Switch">
+            <PUSH_CODE>
+                1 (&gt;L:#PLANE_NAME#_PANEL_DCDU_INOP_PUSHED)
+            </PUSH_CODE>
+        </UseTemplate>
+    </Template>
+
+    <!--
     Template for rigging DCDU brightness
 
     Main Parameters:

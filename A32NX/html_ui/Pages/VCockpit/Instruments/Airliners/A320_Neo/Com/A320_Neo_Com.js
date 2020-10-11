@@ -3,6 +3,11 @@
  */
 const SELF_TEST_DURATION = 8000;
 
+/**
+ * Duration of the INOP. text
+ */
+const INOP_SHOW_DURATION = 3000;
+
 class A320_Neo_Com extends BaseAirliners {
 
     constructor() {
@@ -17,12 +22,15 @@ class A320_Neo_Com extends BaseAirliners {
         super.connectedCallback();
 
         this.view = {
-            selfTestWrapper: this.querySelector("#self-test-wrapper")
+            selfTestWrapper: this.querySelector("#self-test-wrapper"),
+            inopWrapper: this.querySelector("#inop-wrapper")
         };
 
         this.lastAcPowerState = SimVar.GetSimVarValue("L:A32NX_COLD_AND_DARK_SPAWN", "Bool") !== 1;
 
         this.selfTestComplete = false;
+
+        this.lastInopPushedState = false;
     }
 
     disconnectedCallback() {
@@ -36,8 +44,10 @@ class A320_Neo_Com extends BaseAirliners {
         super.Update();
 
         this.updatePowerState();
-
         this.setShowSelfTest();
+
+        this.updateInopPushedState();
+        this.setShowInop();
     }
 
     updatePowerState() {
@@ -61,6 +71,26 @@ class A320_Neo_Com extends BaseAirliners {
             this.needsSelfTest = false;
 
             setTimeout(() => this.view.selfTestWrapper.style.visibility = "hidden", SELF_TEST_DURATION);
+        }
+    }
+
+    updateInopPushedState() {
+        const currentInopPushed = SimVar.GetSimVarValue("L:A32NX_PANEL_DCDU_INOP_PUSHED", "Bool") === 1;
+
+        this.inopPushedChange = currentInopPushed !== this.lastInopPushedState && currentInopPushed;
+
+        this.lastInopPushedState = currentInopPushed;
+    }
+
+    setShowInop() {
+        if (this.inopPushedChange) {
+            this.view.inopWrapper.style.visibility = "visible";
+
+            setTimeout(() => {
+                this.view.inopWrapper.style.visibility = "hidden";
+
+                SimVar.SetSimVarValue("L:A32NX_PANEL_DCDU_INOP_PUSHED", "Bool", 0);
+            }, INOP_SHOW_DURATION);
         }
     }
 
