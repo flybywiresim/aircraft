@@ -316,7 +316,7 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
         this.STDpressureSVG.setAttribute("font-family", "Roboto-Light");
         this.STDpressureSVG.setAttribute("text-anchor", "start");
         this.STDpressureSVG.setAttribute("alignment-baseline", "central");
-        this.STDpressureSVG.setAttribute("letter-spacing", "-3px");
+        this.STDpressureSVG.setAttribute("letter-spacing", "-1px");
         this.rootGroup.appendChild(this.STDpressureSVG);
 
         if (!this.STDpressureSVGShape) {
@@ -343,7 +343,7 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
         this.pressureSVGLegend.setAttribute("font-family", "Roboto-Light");
         this.pressureSVGLegend.setAttribute("text-anchor", "start");
         this.pressureSVGLegend.setAttribute("alignment-baseline", "central");
-        this.pressureSVGLegend.setAttribute("letter-spacing", "-3px");
+        this.pressureSVGLegend.setAttribute("letter-spacing", "-1px");
         this.rootGroup.appendChild(this.pressureSVGLegend);
 
         if (!this.pressureSVG) {
@@ -357,7 +357,7 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
         this.pressureSVG.setAttribute("font-family", "Roboto-Light");
         this.pressureSVG.setAttribute("text-anchor", "start");
         this.pressureSVG.setAttribute("alignment-baseline", "central");
-        this.pressureSVG.setAttribute("letter-spacing", "-3px");
+        this.pressureSVG.setAttribute("letter-spacing", "-1px");
         this.rootGroup.appendChild(this.pressureSVG);
         this.rootSVG.appendChild(this.rootGroup);
         this.appendChild(this.rootSVG);
@@ -394,7 +394,7 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
         this.mtrsCursorSVGText.setAttribute("font-family", "Roboto-Light");
         this.mtrsCursorSVGText.setAttribute("text-anchor", "start");
         this.mtrsCursorSVGText.setAttribute("alignment-baseline", "central");
-        this.mtrsCursorSVGText.setAttribute("letter-spacing", "-3px");
+        this.mtrsCursorSVGText.setAttribute("letter-spacing", "-1px");
         this.mtrsCursorSVGText.setAttribute("text-anchor", "end");
         this.mtrsCursorGroup.appendChild(this.mtrsCursorSVGText);
 
@@ -409,7 +409,7 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
         this.mtrsCursorSVGUnit.setAttribute("font-family", "Roboto-Light");
         this.mtrsCursorSVGUnit.setAttribute("text-anchor", "start");
         this.mtrsCursorSVGUnit.setAttribute("alignment-baseline", "central");
-        this.mtrsCursorSVGUnit.setAttribute("letter-spacing", "-3px");
+        this.mtrsCursorSVGUnit.setAttribute("letter-spacing", "-1px");
         this.mtrsCursorGroup.appendChild(this.mtrsCursorSVGUnit);
 
         if (!this.mtrsCursorSVGBorder) {

@@ -39,11 +39,18 @@
   font-weight: normal;
   font-style: normal; }
 
-  @font-face {
-  font-family: "Liberation Mono";
-  src: url("/Fonts/LiberationMono.ttf") format("truetype");
+@font-face {
+font-family: "Liberation Mono";
+src: url("/Fonts/LiberationMono.ttf") format("truetype");
+font-weight: normal;
+font-style: normal; }
+
+@font-face {
+  font-family: "ECAMFontRegular";
+  src: url("/Fonts/ECAMFontRegular.ttf") format("truetype");
   font-weight: normal;
-  font-style: normal; }
+  font-style: normal;
+}
 
 #highlight {
   position: absolute;
@@ -56,14 +63,14 @@
   --refHeight: 1024; }
 
 text {
-  font-family: "Liberation Mono" !important;
+  font-family: "ECAMFontRegular" !important;
 }
 
 a320-neo-pfd-element {
   width: 100%;
   height: 100%;
   background-color: transparent !important;
-  font-family: "Liberation Mono" !important;
+  font-family: "ECAMFontRegular" !important;
   position: relative;
   overflow: hidden;
   z-index: -10; }
@@ -171,7 +178,7 @@ a320-neo-pfd-element {
         left: 0%; }
         a320-neo-pfd-element #Mainframe #InstrumentsContainer #FMA div {
           font-size: 46px;
-          font-family: "Liberation Mono";
+          font-family: "ECAMFontRegular";
           text-align: center;
           line-height: 100%;
           justify-content: space-between;

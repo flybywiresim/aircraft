@@ -268,7 +268,7 @@ class Jet_MFD_NDCompass extends Jet_NDCompass {
                         text.setAttribute("x", "500");
                         text.setAttribute("y", "230");
                         text.setAttribute("fill", "white");
-                        text.setAttribute("font-size", "50");
+                        text.setAttribute("font-size", "45");
                         text.setAttribute("font-family", "Roboto-Light");
                         text.setAttribute("text-anchor", "middle");
                         text.setAttribute("alignment-baseline", "central");
@@ -346,7 +346,7 @@ class Jet_MFD_NDCompass extends Jet_NDCompass {
                     text.setAttribute("x", "500");
                     text.setAttribute("y", "115");
                     text.setAttribute("fill", "white");
-                    text.setAttribute("font-size", "40");
+                    text.setAttribute("font-size", "38");
                     text.setAttribute("font-family", "Roboto-Light");
                     text.setAttribute("text-anchor", "middle");
                     text.setAttribute("alignment-baseline", "central");
