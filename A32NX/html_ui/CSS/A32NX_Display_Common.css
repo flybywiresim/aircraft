@@ -9,16 +9,25 @@
     --displayBackground: rgba(13,20,35,1);
     --displaySeparator: #3C3C3C;
     --displaySeparatorLight: #AAAAAA;
-    --displayWhite: #FFFFFF; /* defaultColour */
+
+    --displayWhite: #FFFFFF;
     --displayGrey: #787878;
-    --displayDarkGrey: #484848; /* HydraulicBgColour */
-    --displayLightGrey: lightgray; /* shapeColour */
-    --displayAmber: #E68000; /* warningColour, old was #db7200, dim is #BE6900 (inactive colour as well)*/
-    --displayCyan: #00BFD9; /* unitsColour, old was #01b8b8, dim is #00FFFF  */
-    --displayGreen: #00E64D; /* valueColour, old was #00b300, dim is #007326 */
+    --displayDarkGrey: #484848;
+    --displayLightGrey: lightgray;
+    --displayAmber: #E68000;
+    --displayCyan: #00BFD9;
+    --displayGreen: #00E64D;
     --displayMagenta: #FF6EFF;
-    --displayRed: #FF0000; /* dangerColour */
+    --displayRed: #FF0000;
     --displayYellow: #FFFF00;
+
+    --mcduWhite: #FFFFFF;
+    --mcduGrey: #787878;
+    --mcduGreen: #00FF00;
+    --mcduAmber: #E68000;
+    --mcduBlue: #00FFFF;
+    --mcduRed: #FF9A00;
+    --mcduMagenta: #F800CC;
 }
 
 div {
