@@ -48,6 +48,8 @@
 1. [PFD] Correct PFD attitude indicator onground/inflight - @MMontalto (PiCcy)
 1. [ND] Added WX/TERR on ND brightness knob, fix ND/PFD brightness tooltips - @lukecologne (luke)
 1. [LIGHTS] Fixed DIM/BRT Lights inside the cockpit. Overhead should now be visible.
+1. [OVHD] Made AIR COND knobs continuous - @Benjozork (Benjamin Dupont)
+
 
 ## 2020/09
 1. [General] Add CHANGELOG.md - @nathaninnes (Nathan Innes)
