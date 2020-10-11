@@ -13,7 +13,7 @@ class CDUPilotsWaypoint {
             [""],
             ["", "NEW"],
             ["", "WAYPOINT>"],
-            ["", "DELETE ALL }[color]blue"]
+            ["", "DELETE ALL}[color]blue"]
         ]);
 
         mcdu.onRightInput[4] = () => {

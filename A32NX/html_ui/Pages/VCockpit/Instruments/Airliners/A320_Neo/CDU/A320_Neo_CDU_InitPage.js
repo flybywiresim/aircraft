@@ -2,12 +2,12 @@ class CDUInitPage {
     static ShowPage1(mcdu) {
         mcdu.clearDisplay();
         // TODO create local simvars for.. everything
-        let fromTo = "____/____[color]red";
+        let fromTo = "____|____[color]red";
         let coRoute = "__________[color]red";
         let flightNo = "________[color]red";
-        let altDest = "----/----------";
+        let altDest = "----|----------";
         let costIndex = "---";
-        let cruiseFlTemp = "----- /---°";
+        let cruiseFlTemp = "-----|---°";
         let alignOption;
 
         if (mcdu.flightPlanManager.getOrigin() && mcdu.flightPlanManager.getOrigin().ident) {
@@ -34,7 +34,7 @@ class CDUInitPage {
                     }
                 };
 
-                cruiseFlTemp = "_____ /___°[color]red";
+                cruiseFlTemp = "_____|___°[color]red";
                 if (mcdu._cruiseEntered) {
                     //This is done so pilot enters a FL first, rather than using the computed one
                     if (mcdu.cruiseFlightLevel) {
@@ -42,7 +42,7 @@ class CDUInitPage {
                         if (isFinite(mcdu.cruiseTemperature)) {
                             temp = mcdu.cruiseTemperature;
                         }
-                        cruiseFlTemp = "FL" + mcdu.cruiseFlightLevel.toFixed(0).padStart(3, "0") + " /" + temp.toFixed(0) + "°[color]blue";
+                        cruiseFlTemp = "FL" + mcdu.cruiseFlightLevel.toFixed(0).padStart(3, "0") + "/" + temp.toFixed(0) + "°[color]blue";
                     }
                 }
                 mcdu.onLeftInput[5] = () => {
@@ -188,7 +188,7 @@ class CDUInitPage {
 
         let zfwColor = "[color]red";
         let zfwCell = "___._";
-        let zfwCgCell = " __._";
+        let zfwCgCell = "__._";
 
         if (mcdu._zeroFuelWeightZFWCGEntered) {
             if (isFinite(mcdu.zeroFuelWeight)) {
@@ -208,7 +208,7 @@ class CDUInitPage {
             if (value === "") {
                 mcdu.inOut =
                     (isFinite(mcdu.zeroFuelWeight) ? mcdu.zeroFuelWeight.toFixed(1) : "") +
-                    "/" +
+                    "|" +
                     (isFinite(mcdu.zeroFuelWeightMassCenter) ? mcdu.zeroFuelWeightMassCenter.toFixed(1) : "");
             } else if (await mcdu.trySetZeroFuelWeightZFWCG(value)) {
                 CDUInitPage.updateTowIfNeeded(mcdu);
@@ -379,7 +379,7 @@ class CDUInitPage {
         mcdu.setTemplate([
             [initBTitle],
             ["TAXI", "ZFW/ZFWCG"], // Reference Honeywell FMS
-            [taxiFuelCell + "[color]blue", zfwCell + "/ " + zfwCgCell + zfwColor],
+            [taxiFuelCell + "[color]blue", zfwCell + "|" + zfwCgCell + zfwColor],
             ["TRIP  /TIME", "BLOCK"],
             [tripWeightCell + "/" + tripTimeCell + tripColor, blockFuel + blockFuelColor],
             ["RTE RSV/%", fuelPlanTopTitle + fuelPlanColor],

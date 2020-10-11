@@ -5,7 +5,7 @@ class CDUIRSInit {
         const checkAligned = SimVar.GetSimVarValue("L:A320_Neo_ADIRS_STATE", "Number");
         if (checkAligned === 0) {
             SimVar.SetSimVarValue("L:A32XN_Neo_ADIRS_ALIGN_TYPE_REF", "Enum", 0);
-            alignMsg = "ALIGN ON REF  }[color]blue";
+            alignMsg = "ALIGN ON REF }[color]blue";
         }
         const emptyIRSGpsString = "--°--.--/---°--.--";
         const arrowupdwn = "↑↓";

@@ -246,7 +246,7 @@ class CDUPerformancePage {
         if (mcdu.currentFlightPhase === FlightPhase.FLIGHT_PHASE_CLIMB) {
             if (confirmAppr) {
                 bottomRowLabels[0] = "CONFIRM[color]red";
-                bottomRowCells[0] = "{ APPR PHASE[color]red";
+                bottomRowCells[0] = "{APPR PHASE[color]red";
                 mcdu.onLeftInput[5] = async () => {
                     if (await mcdu.tryGoInApproachPhase()) {
                         CDUPerformancePage.ShowAPPRPage(mcdu);
@@ -254,7 +254,7 @@ class CDUPerformancePage {
                 };
             } else {
                 bottomRowLabels[0] = "ACTIVATE[color]blue";
-                bottomRowCells[0] = "{ APPR PHASE[color]blue";
+                bottomRowCells[0] = "{APPR PHASE[color]blue";
                 mcdu.onLeftInput[5] = () => {
                     CDUPerformancePage.ShowCLBPage(mcdu, true);
                 };
@@ -337,7 +337,7 @@ class CDUPerformancePage {
         if (mcdu.currentFlightPhase === FlightPhase.FLIGHT_PHASE_CRUISE) {
             if (confirmAppr) {
                 bottomRowLabels[0] = "CONFIRM[color]red";
-                bottomRowCells[0] = "{ APPR PHASE[color]red";
+                bottomRowCells[0] = "{APPR PHASE[color]red";
                 mcdu.onLeftInput[5] = async () => {
                     if (await mcdu.tryGoInApproachPhase()) {
                         CDUPerformancePage.ShowAPPRPage(mcdu);
@@ -345,7 +345,7 @@ class CDUPerformancePage {
                 };
             } else {
                 bottomRowLabels[0] = "ACTIVATE[color]blue";
-                bottomRowCells[0] = "{ APPR PHASE[color]blue";
+                bottomRowCells[0] = "{APPR PHASE[color]blue";
                 mcdu.onLeftInput[5] = () => {
                     CDUPerformancePage.ShowCRZPage(mcdu, true);
                 };
@@ -428,7 +428,7 @@ class CDUPerformancePage {
         if (mcdu.currentFlightPhase === FlightPhase.FLIGHT_PHASE_DESCENT) {
             if (confirmAppr) {
                 bottomRowLabels[0] = "CONFIRM[color]red";
-                bottomRowCells[0] = "{ APPR PHASE[color]red";
+                bottomRowCells[0] = "{APPR PHASE[color]red";
                 mcdu.onLeftInput[5] = async () => {
                     if (await mcdu.tryGoInApproachPhase()) {
                         CDUPerformancePage.ShowAPPRPage(mcdu);
@@ -436,7 +436,7 @@ class CDUPerformancePage {
                 };
             } else {
                 bottomRowLabels[0] = "ACTIVATE[color]blue";
-                bottomRowCells[0] = "{ APPR PHASE[color]blue";
+                bottomRowCells[0] = "{APPR PHASE[color]blue";
                 mcdu.onLeftInput[5] = () => {
                     CDUPerformancePage.ShowDESPage(mcdu, true);
                 };
