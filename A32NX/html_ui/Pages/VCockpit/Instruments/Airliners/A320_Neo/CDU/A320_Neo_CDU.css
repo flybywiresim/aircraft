@@ -1,4 +1,6 @@
-﻿/** This mixin makes a single line element fit exactly on the Roboto font for easier integration. */
+﻿@import url("/CSS/A32NX_Display_Common.css");
+
+/** This mixin makes a single line element fit exactly on the Roboto font for easier integration. */
 :root {
   --bodyHeightScale: 1; }
 
@@ -84,10 +86,11 @@ a320-neo-cdu-main-display {
   position: absolute;
   width: 100%;
   height: 100%;
-  color: white;
-  font-family: "Not Courier Sans", "Consolas";
-  font-size: 6.46vw;
-  color: white; }
+  /* font-family: "Not Courier Sans", "Consolas"; */
+  font-family: "ECAMFontRegular";
+  /* font-size: 6.46vw; */
+  font-size: 5vw;
+  color: var(--displayWhite); }
 
 /*
 a320-neo-cdu-main-display::after {
@@ -102,22 +105,22 @@ a320-neo-cdu-main-display::after {
 }
 */
 .white {
-  color: white; }
+  color: var(--displayWhite); }
 
 .blue {
-  color: #00ffff; }
+  color: var(--displayCyan); }
 
 .yellow {
-  color: #f9dd02; }
+  color: var(--displayYellow); }
 
 .green {
-  color: #00ff00; }
+  color: var(--displayGreen); }
 
 .red {
-  color: #ff9a00; }
+  color: var(--displayRed); }
 
 .magenta {
-  color: #f800cc; }
+  color: var(--displayMagenta); }
 
 fmc-main-display::before {
   content: " ";
@@ -147,8 +150,11 @@ fmc-main-display::before {
   right: 5%; }
 
 .s-text {
-  font-size: 4.8vw;
-  letter-spacing: 0.9vw; }
+  font-size: 5vw;
+  /* font-size: 4.8vw; */
+  /* letter-spacing: 0.9vw;  */
+  /* letter-spacing: 0.5vw; */
+}
 
 .irs-text {
   font-weight: lighter;

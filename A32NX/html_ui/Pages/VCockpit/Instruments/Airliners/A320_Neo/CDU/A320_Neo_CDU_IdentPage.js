@@ -8,7 +8,7 @@ class CDUIdentPage {
             ["", "", "ACTIVE NAV DATA BASE"],
             ["4MAY-4JUL[color]blue", "TC11103001[color]green"],
             ["", "", "SECOND NAV DATA BASE"],
-            ["←4MAY-4JUL[color]blue"],
+            ["{ 4MAY-4JUL[color]blue"],
             [""],
             [""],
             ["CHG CODE"],

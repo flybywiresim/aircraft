@@ -40,7 +40,7 @@ eicas-common-display {
     height: 25%;
 }
 eicas-common-display line {
-    stroke: var(--displayGrey);
+    stroke: var(--displayGrey) !important;
     stroke-width: 6;
 }
 eicas-common-display text {
@@ -48,12 +48,12 @@ eicas-common-display text {
     font-family: "ECAMFontRegular";
 }
 eicas-common-display text.Title {
-    fill: var(--displayWhite);
+    fill: var(--displayWhite) !important;
 }
 eicas-common-display text.Value {
-    fill: var(--displayGreen);
+    fill: var(--displayGreen) !important;
 }
 eicas-common-display text.Unit {
-    fill: var(--displayCyan);
+    fill: var(--displayCyan) !important;
 }
 
