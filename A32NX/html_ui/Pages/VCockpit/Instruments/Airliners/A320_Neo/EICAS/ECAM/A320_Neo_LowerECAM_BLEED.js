@@ -18,7 +18,7 @@ var A320_Neo_LowerECAM_BLEED;
         init() {
 
             this.isInitialised = true;
-            
+
             //finding all html element for the display, first element of array is always the open on, the second is the closed one
             this.apuBleedIndication = [this.querySelector("#apu-switch-open"), this.querySelector("#apu-switch-closed")];
             this.leftEngineHp = [this.querySelector("#left-engine-hp-open"), this.querySelector("#left-engine-hp-closed")];
@@ -31,7 +31,7 @@ var A320_Neo_LowerECAM_BLEED;
             this.ramAir = [this.querySelector("#ram-air-on"), this.querySelector("#ram-air-off")];
             this.ramAirConnection = this.querySelector("#ram-air-connection-line");
             this.packFlowIndicator = [this.querySelector("#pack-flow-indicator1"), this.querySelector("#pack-flow-indicator2")];
-            this.packIndicator = [this.querySelector("#pack-out-temp-indicator1"), this.querySelector("#pack-out-temp-indicator2")];         
+            this.packIndicator = [this.querySelector("#pack-out-temp-indicator1"), this.querySelector("#pack-out-temp-indicator2")];
             this.apuConnectingLine = this.querySelector("#apu-connecting-line");
             this.apuText = this.querySelector("#APUtext");
             this.apuValve = this.querySelector("#apu-valve");
@@ -130,7 +130,7 @@ var A320_Neo_LowerECAM_BLEED;
             const throttleEng1 = SimVar.GetSimVarValue("GENERAL ENG THROTTLE LEVER POSITION:1", "number");
             const throttleEng2 = SimVar.GetSimVarValue("GENERAL ENG THROTTLE LEVER POSITION:1", "number");
             const currentApuBleedSate = SimVar.GetSimVarValue("BLEED AIR APU", "Bool");
-            const currentXbleedState = SimVar.GetSimVarValue("L:A32NX_KNOB_OVHD_AIRCOND_XBLEED_Position", "Position(0-2)");                
+            const currentXbleedState = SimVar.GetSimVarValue("L:A32NX_KNOB_OVHD_AIRCOND_XBLEED_Position", "Position(0-2)");
             const radioHeight = SimVar.GetSimVarValue("RADIO HEIGHT", "Feet");
             const apuSwitchState = SimVar.GetSimVarValue("L:A32NX_APU_START_ACTIVATED", "bool");
             const fadecStatus = [SimVar.GetSimVarValue("L:A32NX_FADEC_POWERED_ENG1", "bool"), SimVar.GetSimVarValue("L:A32NX_FADEC_POWERED_ENG1", "bool")];
@@ -353,11 +353,9 @@ var A320_Neo_LowerECAM_BLEED;
                 this.ramAirConnection.setAttribute("visibility", "hidden");
             }
 
-            
             //pack flow indicators, ready for continous knob
             this.packFlowIndicator[0].setAttribute("style", "transform-origin: 121px 227px; transform: rotate(" + currentPackFlow * 57.5 + "deg); stroke-width: 4.5px; stroke-linecap: round;");
             this.packFlowIndicator[1].setAttribute("style", "transform-origin: 479px 227px; transform: rotate(" + currentPackFlow * 57.5 + "deg); stroke-width: 4.5px; stroke-linecap: round;");
-
 
             //pack outflow indicators
             this.packIndicator[0].setAttribute("style", "transform-origin: 479px 152px; transform: rotate(" + packRequestedlvl * 1.23 + "deg); stroke-width: 4.5px; stroke-linecap: round;");
