@@ -102,4 +102,22 @@
         </UseTemplate>
     </Template>
 
+    <!--
+    Template for rigging DCDU brightness
+
+    Main Parameters:
+            - DCDU_SIDE         <no default>    Either L or R
+            - PLANE_NAME        <no default>    Plane project name
+
+    Authors: Benjamin Dupont (@Benjozork) 11/10/20
+    -->
+    <Template Name="FBW_Aribus_DCDU_2State_Emissive">
+        <UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
+            <NODE_ID>SCREEN_COM_#DCDU_SIDE#</NODE_ID>
+            <EMISSIVE_CODE>(L:#PLANE_NAME#_PANEL_DCDU_#DCDU_SIDE#_BRIGHTNESS, Bool) if{ 1 } els{ 0.5 }</EMISSIVE_CODE>
+            <PART_ID>SCREEN_COM1</PART_ID>
+            <CAMERA_TITLE>ECAM</CAMERA_TITLE>
+        </UseTemplate>
+    </Template>
+
 </ModelBehaviors>
