@@ -4,6 +4,11 @@
 const SELF_TEST_DURATION = 8000;
 
 /**
+ * Duration of the DU waiting for data indication, in milliseconds
+ */
+const WAITING_FOR_DATA_DURATION = 12000;
+
+/**
  * Duration of the INOP. text
  */
 const INOP_SHOW_DURATION = 3000;
@@ -23,6 +28,7 @@ class A320_Neo_Com extends BaseAirliners {
 
         this.view = {
             selfTestWrapper: this.querySelector("#self-test-wrapper"),
+            waitingForDataWrapper: this.querySelector("#waiting-for-data-wrapper"),
             inopWrapper: this.querySelector("#inop-wrapper")
         };
 
@@ -68,9 +74,14 @@ class A320_Neo_Com extends BaseAirliners {
 
         if (this.needsSelfTest) {
             this.view.selfTestWrapper.style.visibility = "visible";
+            this.view.waitingForDataWrapper.style.visibility = "visible";
             this.needsSelfTest = false;
 
-            setTimeout(() => this.view.selfTestWrapper.style.visibility = "hidden", SELF_TEST_DURATION);
+            setTimeout(() => {
+                this.view.selfTestWrapper.style.visibility = "hidden";
+
+                setTimeout(() => this.view.waitingForDataWrapper.style.visibility = "hidden", WAITING_FOR_DATA_DURATION);
+            }, SELF_TEST_DURATION);
         }
     }
 
