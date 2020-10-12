@@ -13,7 +13,7 @@
 1. [ECAM] ELAC/SEC warning color fix, added spoiler functionality to ECAM page - @wpine215 (Iceman)
 1. [OVHD] Implemented missing functionality for multiple overhead buttons and switches - @wpine215 (Iceman)
 1. [ECAM] Improved APU ECAM visuals - @wpine215 (Iceman)
-1. [TEXTURES] changed texture of glareshield and added details
+1. [TEXTURES] Changed texture of glareshield and added details - @Pleasure0102 (Pleasure)
 1. [ECAM] Improved Fuel ECAM visuals and corrected center pump inconsistency - @wpine215 (Iceman)
 1. [MISC] Separated Captian and F/O displays - @tyler58546 (tyler58546)
 1. [ECAM] Added engine FADEC power supply logic - @tyler58546 (tyler58546)
@@ -29,12 +29,12 @@
 1. [TEXTURES] Higher resoloution Mainpanel, fixed glareshield texture error - @Pleasure0102 (Pleasure)
 1. [ECAM] Overhauled WHEEL Page - @Benjozork (Benjamin Dupont)
 1. [CDU] Add approach waypoints to DCT page - @lengyc0208 (lyc)
-1. [Sounds] Added 3D emitters for all sounds
+1. [Sounds] Added 3D emitters for all sounds - @hotshotp (Boris)
 1. [Sounds] Added sounds for Evac horn, emer cabin call, mech horn, gear extend/retract, and cargo door - @hotshotp (Boris)
 1. [CDU] Revised blue, green and amber colors on CDU - @lucky38i (Lucky38i)
 1. [CDU] Revised INIT A & B Page - @lucky38i (Lucky38i)
 1. [CDU] Fixed certain STARs not showing on arrivals page - @tyler58546 (tyler58546)
-1. [CHECKLISTS] Added several situations from QRH to checklists - FBI#7771
+1. [CHECKLISTS] Added several situations from QRH to checklists - @FBI#7771
 1. [ECAM] Fix ECAM wheel page being selected before all gears are downlocked - @lukecologne (luke)
 1. [MISC] Added standby instrument brightness adjustment and attitude reset - @2hwk (2Cas#1022 on discord)
 1. [MISC] Added standby instrument bugs page and corrected standby instrument font and behaviour on power loss - @2hwk (2Cas#1022 on discord)
@@ -51,7 +51,8 @@
 1. [OVHD] Made AIR COND knobs continuous - @Benjozork (Benjamin Dupont)
 1. [TEXTURES] Changed color of FD Panel.
 1. [MISC] New custom display font for PFD/ND/ECAM/MCDU. Overhauled formatting, CSS, and colors of ECAM pages - @wpine215 (Iceman)
-1. [TEXTURES] Fixed Speed Plaque and cleaned up texture on cockpit, some color corrections and more decals
+1. [TEXTURES] Fixed Speed Plaque and cleaned up texture on cockpit, some color corrections and more decals - @Pleasure0102 (Pleasure)
+1. [TEXTURES] Changed Overhead Panel Texture (Decals, color, detail) - @Pleasure0102 (Pleasure)
 
 ## 2020/09
 1. [General] Add CHANGELOG.md - @nathaninnes (Nathan Innes)
