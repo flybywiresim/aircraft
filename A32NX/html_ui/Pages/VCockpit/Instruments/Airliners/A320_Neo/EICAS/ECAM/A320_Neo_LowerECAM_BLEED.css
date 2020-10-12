@@ -71,11 +71,20 @@ a320-neo-lower-ecam-bleed text {
     stroke-width:1px;
 }
 
+.st13{
+    font-size: 18px;
+}
+
 text {
     transform: translateX(-15);
 }
 
 .warning {
     fill: var(--displayAmber);
+    stroke: var(--displayAmber);
+}
+
+.warning_trg {
+    fill: none;
     stroke: var(--displayAmber);
 }

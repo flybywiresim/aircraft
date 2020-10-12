@@ -37,6 +37,8 @@ var A320_Neo_LowerECAM_BLEED;
             this.apuValve = this.querySelector("#apu-valve");
             this.gndText = this.querySelector("#GND");
             this.gndTriangle = this.querySelector("#GND-triangle");
+            this.antiIceText= this.querySelector("#anti-ice-text");
+            this.antiIceTriangles = [this.querySelector("#anti-ice-indicators-1"), this.querySelector("#anti-ice-indicators-2")];
             this.centerLines = [this.querySelector("#center-line-1"), this.querySelector("#center-line-2"), this.querySelector("#center-line-3"),
                 this.querySelector("#center-line-4"), this.querySelector("#center-line-5"), this.querySelector("#center-line-6"),];
 
@@ -74,6 +76,12 @@ var A320_Neo_LowerECAM_BLEED;
             this.singlePackOn = false;
             this.flying = false;
             this.engineIdle = 58;
+
+            this.feetToMeters = 0.3048;
+            this.seaLevelPressurePascal = 101325;
+            this.barometricPressureFactor = -0.00011857591;
+            this.pascalToPSI = 0.000145038;
+            this.inHgToPSI = 0.491154;
 
             //placeholder logic for packs
             this.engTempMultiplier1 = 0.08;
@@ -135,9 +143,17 @@ var A320_Neo_LowerECAM_BLEED;
             const apuSwitchState = SimVar.GetSimVarValue("L:A32NX_APU_START_ACTIVATED", "bool");
             const fadecStatus = [SimVar.GetSimVarValue("L:A32NX_FADEC_POWERED_ENG1", "bool"), SimVar.GetSimVarValue("L:A32NX_FADEC_POWERED_ENG1", "bool")];
             const groundSpeed = SimVar.GetSimVarValue("GPS GROUND SPEED", "Meters per second");
+            const wingAntiInceState = SimVar.GetSimVarValue("STRUCTURAL DEICE SWITCH", "bool");
             const packRequestedlvl = Math.min(...[SimVar.GetSimVarValue("L:A320_Neo_AIRCOND_LVL_1", "Position(0-6)"),
                 SimVar.GetSimVarValue("L:A320_Neo_AIRCOND_LVL_2", "Position(0-6)"),
                 SimVar.GetSimVarValue("L:A320_Neo_AIRCOND_LVL_3", "Position(0-6)")]);
+            const outsidePressureINHG = SimVar.GetSimVarValue("AMBIENT PRESSURE", "inHg");
+            const cabinAltFeet = SimVar.GetSimVarValue("PRESSURIZATION CABIN ALTITUDE", "feet");
+            const cabinAltMeters = cabinAltFeet * this.feetToMeters;
+            const cabinPressurePascal = this.seaLevelPressurePascal * Math.exp(this.barometricPressureFactor * cabinAltMeters); // Barometric formula
+            const cabinPressurePSI = cabinPressurePascal * this.pascalToPSI;
+            const outsidePressurePSI = outsidePressureINHG * this.inHgToPSI;
+            const pressureDiff = cabinPressurePSI - outsidePressurePSI;
 
             let currentPackFlow = SimVar.GetSimVarValue("L:A32NX_KNOB_OVHD_AIRCOND_PACKFLOW_Position", "Position(0-2)");
             let currentLeftPackState = SimVar.GetSimVarValue("L:A32NX_AIRCOND_PACK1_TOGGLE", "bool");
@@ -195,7 +211,7 @@ var A320_Neo_LowerECAM_BLEED;
             }
 
             //closes the ram on takeoff and landing
-            if (this.thrustTOGAApplied || (!this.flying && groundSpeed > 70)) {
+            if (this.thrustTOGAApplied || (!this.flying && groundSpeed > 70) || Math.abs(pressureDiff) > 1) {
                 currentRamState = 0;
             }
 
@@ -353,6 +369,17 @@ var A320_Neo_LowerECAM_BLEED;
                 this.ramAirConnection.setAttribute("visibility", "hidden");
             }
 
+            //find wing anti ice state
+            if (wingAntiInceState) {
+                this.antiIceText.setAttribute("visibility", "visible");
+                this.antiIceTriangles[0].setAttribute("visibility", "visible");
+                this.antiIceTriangles[1].setAttribute("visibility", "visible");
+            } else {
+                this.antiIceText.setAttribute("visibility", "hidden");
+                this.antiIceTriangles[0].setAttribute("visibility", "hidden");
+                this.antiIceTriangles[1].setAttribute("visibility", "hidden");
+            }
+
             //pack flow indicators, ready for continous knob
             this.packFlowIndicator[0].setAttribute("style", "transform-origin: 121px 227px; transform: rotate(" + currentPackFlow * 57.5 + "deg); stroke-width: 4.5px; stroke-linecap: round;");
             this.packFlowIndicator[1].setAttribute("style", "transform-origin: 479px 227px; transform: rotate(" + currentPackFlow * 57.5 + "deg); stroke-width: 4.5px; stroke-linecap: round;");
@@ -494,6 +521,7 @@ var A320_Neo_LowerECAM_BLEED;
             }
 
             SimVar.SetSimVarValue("L:A32NX_AIRCOND_PACK1_FAULT", "bool", 0);
+            this.antiIceTriangles[0].setAttribute("class", "st5");
             if (currentLeftPackState && currentEngineBleedState[0] && eng1Running) {
                 this.htmlLeftPackIn.textContent = packTMPComputedIn[0];
                 this.htmlLeftPackOut.textContent = packTMPComputedOut[0];
@@ -507,11 +535,13 @@ var A320_Neo_LowerECAM_BLEED;
                 if (currentLeftPackState) {
                     SimVar.SetSimVarValue("L:A32NX_AIRCOND_PACK1_FAULT", "bool", 1);
                 }
+                this.antiIceTriangles[0].setAttribute("class", "warning_trg st5");
                 this.htmlLeftPackIn.textContent = "xx";
                 this.htmlLeftPackOut.textContent = "xx";
             }
 
             SimVar.SetSimVarValue("L:A32NX_AIRCOND_PACK2_FAULT", "bool", 0);
+            this.antiIceTriangles[1].setAttribute("class", "st5");
             if (currentRightPackState && currentEngineBleedState[1] && eng2Running) {
                 this.htmlRightPackIn.textContent = packTMPComputedIn[1];
                 this.htmlRightPackOut.textContent = packTMPComputedOut[1];
@@ -525,6 +555,7 @@ var A320_Neo_LowerECAM_BLEED;
                 if (currentRightPackState) {
                     SimVar.SetSimVarValue("L:A32NX_AIRCOND_PACK2_FAULT", "bool", 1);
                 }
+                this.antiIceTriangles[1].setAttribute("class", "warning_trg st5");
                 this.htmlRightPackIn.textContent = "xx";
                 this.htmlRightPackOut.textContent = "xx";
             }

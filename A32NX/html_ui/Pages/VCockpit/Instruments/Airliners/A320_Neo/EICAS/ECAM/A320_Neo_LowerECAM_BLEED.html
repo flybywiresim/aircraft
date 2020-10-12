@@ -42,16 +42,16 @@
 			<!--text-->
 			<text id="APUtext" transform="matrix(1 0 0 1 300 403)" class="st1 st2 st6">APU</text>
 			<text transform="matrix(1 0 0 1 300 146)" class="st1 st2 st6">RAM</text>
-			<text id="left-pack-out" style="font-size: 24px;" transform="matrix(1 0 0 1 120 96)" class="st7 st2 st6">xx</text>
-			<text id="right-pack-out" style="font-size: 24px;" transform="matrix(1 0 0 1 479 100)" class="st7 st2 st6">xx</text>
-			<text id="right-pack-in" style="font-size: 24px;" transform="matrix(1 0 0 1 479 167)" class="st7 st2 st6">xx</text>
-			<text id="left-pack-in"  style="font-size: 24px;"transform="matrix(1 0 0 1 121 167)" class="st7 st2 st6">xx</text>
+			<text id="left-pack-out" style="font-size: 22px;" transform="matrix(1 0 0 1 121 100)" class="st7 st2 st6">xx</text>
+			<text id="right-pack-out" style="font-size: 22px;" transform="matrix(1 0 0 1 479 100)" class="st7 st2 st6">xx</text>
+			<text id="right-pack-in" style="font-size: 22px;" transform="matrix(1 0 0 1 479 170)" class="st7 st2 st6">xx</text>
+			<text id="left-pack-in"  style="font-size: 22px;"transform="matrix(1 0 0 1 121 170)" class="st7 st2 st6">xx</text>
 			<text id="eng1-bleed-psi" transform="matrix(1 0 0 1 121 332)" class="st7 st2 st6">xx</text>
 			<text id="eng1-bleed-tmp" transform="matrix(1 0 0 1 121 355)" class="st7 st2 st6">XXX</text>
 			<text id="eng2-bleed-psi" transform="matrix(1 0 0 1 479 332)" class="st7 st2 st6">xx</text>
 			<text id="eng2-bleed-tmp" transform="matrix(1 0 0 1 479 355)" class="st7 st2 st6">XXX</text>
-			<text transform="matrix(1 0 0 1 431 332)" class="st1 st2 st6">PSI</text>
-			<text transform="matrix(1 0 0 1 169 332)" class="st1 st2 st6">PSI</text>
+			<text transform="matrix(1 0 0 1 431 332)" class="st8 st2 st6">PSI</text>
+			<text transform="matrix(1 0 0 1 169 332)" class="st8 st2 st6">PSI</text>
 			<text transform="matrix(1 0 0 1 121 487)" class="st1 st2 st6">IP</text>
 			<text transform="matrix(1 0 0 1 479 487)" class="st1 st2 st6">IP</text>
 			<text transform="matrix(1 0 0 1 210 487)" class="st1 st2 st6">HP</text>
@@ -92,17 +92,35 @@
 			<text transform="matrix(1 0 0 1 539 128)" class="st1 st2 st6">H</text>
 
 			<!--engine out temps Cs-->
-			<text transform="matrix(1 0 0 1 431 358)" class="st1 st2 st6">°C</text>
-			<text transform="matrix(1 0 0 1 169 358)" class="st1 st2 st6">°C</text>
+			<text transform="matrix(1 0 0 1 431 355)" class="st8 st2 st13">C</text>
+			<text transform="matrix(1 0 0 1 169 355)" class="st8 st2 st13">C</text>
+			<text transform="matrix(1 0 0 1 423 355)" class="st8 st2 st13">°</text>
+			<text transform="matrix(1 0 0 1 161 355)" class="st8 st2 st13">°</text>
 
 			<!--pack temps Cs-->
-			<text transform="matrix(1 0 0 1 150.5466 96)" class="st1 st2 st6">°C</text>
-			<text transform="matrix(1 0 0 1 150.5466 170)" class="st1 st2 st6">°C</text>
-			<text transform="matrix(1 0 0 1 509.0866 100)" class="st1 st2 st6">°C</text>
-			<text transform="matrix(1 0 0 1 509.0866 170)" class="st1 st2 st6">°C</text>
+			<text transform="matrix(1 0 0 1 156 102)" class="st8 st2 st13">C</text>
+			<text transform="matrix(1 0 0 1 156 171)" class="st8 st2 st13">C</text>
+			<text transform="matrix(1 0 0 1 515 102)" class="st8 st2 st13">C</text>
+			<text transform="matrix(1 0 0 1 515 171)" class="st8 st2 st13">C</text>
+			<text transform="matrix(1 0 0 1 148 102)" class="st8 st2 st13">°</text>
+			<text transform="matrix(1 0 0 1 148 171)" class="st8 st2 st13">°</text>
+			<text transform="matrix(1 0 0 1 507 102)" class="st8 st2 st13">°</text>
+			<text transform="matrix(1 0 0 1 507 171)" class="st8 st2 st13">°</text>
 
-			
-			
+			<!--anti ice indication-->
+
+			<g id="anti-ice">
+				<g id="anti-ice-indicators">
+					<polygon id="anti-ice-indicators-1" class="st5" points="116,268 116,284 102,276 116,268" />
+					<polygon id="anti-ice-indicators-2" class="st5" points="484,268 484,284 498,276 484,268" />
+				</g>
+				<g id="anti-ice-text">
+					<text transform="matrix(1.22 0 0 1 65 268)" style="font-size: 18px;" class="st1 st2">ANTI</text>
+					<text transform="matrix(1.22 0 0 1 535 268)" style="font-size: 18px;" class="st1 st2">ANTI</text>
+					<text transform="matrix(1.22 0 0 1 58 285)"  style="font-size: 18px;"class="st1 st2">ICE</text>
+					<text transform="matrix(1.22 0 0 1 540 285)" style="font-size: 18px;" class="st1 st2">ICE</text>
+				</g>
+			</g>
 			<!--temp boxes-->
 			<rect class="st12" x="100" y="317" class="st10" width="42" height="49" />
 			<rect class="st12" x="458" y="318.04" class="st10" width="42" height="49" />
