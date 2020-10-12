@@ -18,7 +18,7 @@ class CDUPosFrozen {
             ["IRS1", "IRS3", "IRS2"],
             ["NAV 0.0[color]green", "NAV 0.0[color]green", "NAV 0.0[color]green"],
             ["", "SEL"],
-            ["←UNFREEZE[color]blue", "NAVAIDS>"]
+            ["{UNFREEZE[color]blue", "NAVAIDS>"]
         ]);
 
         mcdu.onLeftInput[5] = () => {
