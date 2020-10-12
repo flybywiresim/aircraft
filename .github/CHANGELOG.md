@@ -51,6 +51,7 @@
 1. [OVHD] Made AIR COND knobs continuous - @Benjozork (Benjamin Dupont)
 1. [TEXTURES] Changed color of FD Panel.
 1. [MISC] New custom display font for PFD/ND/ECAM/MCDU. Overhauled formatting, CSS, and colors of ECAM pages - @wpine215 (Iceman)
+1. [TEXTURES] Changed Overhead Panel Texture (Decals, color, detail) @Pleasure0102 (Pleasure)
 
 ## 2020/09
 1. [General] Add CHANGELOG.md - @nathaninnes (Nathan Innes)
