@@ -54,6 +54,7 @@
 1. [TEXTURES] Fixed Speed Plaque and cleaned up texture on cockpit, some color corrections and more decals - @Pleasure0102 (Pleasure)
 1. [TEXTURES] Changed Overhead Panel Texture (Decals, color, detail) - @Pleasure0102 (Pleasure)
 1. [LIVERY] Bundle the FlyByWire Livery with the A32NX addon - @devsnek (devsnek)
+1. [ECAM] Added cockpit door video - @Benjozork (Benjamin Dupont)
 
 ## 2020/09
 1. [General] Add CHANGELOG.md - @nathaninnes (Nathan Innes)
