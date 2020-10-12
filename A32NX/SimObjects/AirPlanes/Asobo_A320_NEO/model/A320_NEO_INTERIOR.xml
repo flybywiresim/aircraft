@@ -2512,7 +2512,7 @@
                 <UseTemplate Name="FBW_Lighting_Knob_With_Potentiometer">
                     <NODE_ID>KNOB_OVHD_READINGLTL</NODE_ID>
                     <ANIM_NAME>KNOB_OVHD_READINGLTL</ANIM_NAME>
-                    <POTENTIOMETER>94</POTENTIOMETER>
+                    <POTENTIOMETER>96</POTENTIOMETER>
                     <ANIMTIP_0>Decrease reading light brightness</ANIMTIP_0>
                     <ANIMTIP_1>Increase reading light brightness</ANIMTIP_1>
                 </UseTemplate>
@@ -2521,7 +2521,7 @@
                 <UseTemplate Name="FBW_Lighting_Knob_With_Potentiometer">
                     <NODE_ID>KNOB_OVHD_READINGLTR</NODE_ID>
                     <ANIM_NAME>KNOB_OVHD_READINGLTR</ANIM_NAME>
-                    <POTENTIOMETER>95</POTENTIOMETER>
+                    <POTENTIOMETER>97</POTENTIOMETER>
                     <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.FD_DISPLAY_BRIGHTNESS_DECREASE</ANIMTIP_0>
                     <ANIMTIP_0>Decrease reading light brightness</ANIMTIP_0>
                     <ANIMTIP_1>Increase reading light brightness</ANIMTIP_1>
