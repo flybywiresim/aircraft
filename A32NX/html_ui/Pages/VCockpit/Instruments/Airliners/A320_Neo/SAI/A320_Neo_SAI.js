@@ -46,6 +46,13 @@ const sai_state_machine = {
             }
         }
     },
+    spawn: {
+        transitions: {
+            next: {
+                target: "on"
+            }
+        }
+    }
 };
 
 class A320_Neo_SAI_Airspeed extends NavSystemElement {
@@ -530,8 +537,8 @@ class A320_Neo_SAI_AltimeterIndicator extends HTMLElement {
             }
             this.cursorSVGShape.setAttribute("fill", "url(#SAIBacklight)");
             this.cursorSVGShape.setAttribute("d", "M0 22 L65 22 L65 6 L140 6 L140 72 L65 72 L65 56 L0 56 Z");
-            this.cursorSVGShape.setAttribute("stroke", "yellow");
-            this.cursorSVGShape.setAttribute("stroke-width", "1.5");
+            //this.cursorSVGShape.setAttribute("stroke", "yellow");
+            //this.cursorSVGShape.setAttribute("stroke-width", "3");
             trs.appendChild(this.cursorSVGShape);
             const _cursorWidth = (cursorWidth / _scale);
             const _cursorHeight = (cursorHeight / _scale + 10);
@@ -550,6 +557,13 @@ class A320_Neo_SAI_AltimeterIndicator extends HTMLElement {
                 this.cursorIntegrals[2].construct(integralsGroup, _cursorPosX + 70, _cursorPosY - 2, _width, "Roboto-Bold", this.fontSize * 3, "green");
             }
             this.cursorDecimals.construct(trs, _cursorPosX + 118, _cursorPosY, _width, "Roboto-Bold", this.fontSize * 1.6, "green");
+            this.cursorSVGLine = document.createElementNS(Avionics.SVG.NS, "path");
+            this.cursorSVGLine.setAttribute("fill", "none");
+            this.cursorSVGLine.setAttribute("d", "M0 22 L65 22 L65 6 L140 6 L140 72 L65 72 L65 56 L0 56 Z");
+            this.cursorSVGLine.setAttribute("stroke", "yellow");
+            this.cursorSVGLine.setAttribute("stroke-width", "4");
+            trs.appendChild(this.cursorSVGLine);
+
             this.rootGroup.appendChild(this.cursorSVG);
         }
         const topBg = document.createElementNS(Avionics.SVG.NS, "rect");
@@ -726,8 +740,8 @@ class A320_Neo_SAI_AttitudeIndicator extends HTMLElement {
             this.horizon_root.setAttribute("style", "position:absolute; z-index: -3; width: 100%; height:100%;");
             this.horizon_root.setAttribute("transform", "translate(0, 100)");
             this.appendChild(this.horizon_root);
-            this.horizonTopColor = "#3D9FFF";
-            this.horizonBottomColor = "#905A45";
+            this.horizonTopColor = "#0194FE";
+            this.horizonBottomColor = "#904724";
             this.horizonTop = document.createElementNS(Avionics.SVG.NS, "rect");
             this.horizonTop.setAttribute("fill", (this.backgroundVisible) ? this.horizonTopColor : "transparent");
             this.horizonTop.setAttribute("x", "-1000");
@@ -933,17 +947,17 @@ class A320_Neo_SAI_AttitudeIndicator extends HTMLElement {
                 const cursors = document.createElementNS(Avionics.SVG.NS, "g");
                 this.attitude_root.appendChild(cursors);
                 const leftUpper = document.createElementNS(Avionics.SVG.NS, "path");
-                leftUpper.setAttribute("d", "M-90 0 l0 -6 l55 0 l0 28 l-5 0 l0 -22 l-40 0 Z");
+                leftUpper.setAttribute("d", "M-90 0 v -8 h 65 v 14 h -15 v -6 Z");
                 leftUpper.setAttribute("fill", "url(#SAIBacklight)");
                 leftUpper.setAttribute("stroke", "yellow");
-                leftUpper.setAttribute("stroke-width", "0.7");
+                leftUpper.setAttribute("stroke-width", "3");
                 leftUpper.setAttribute("stroke-opacity", "1.0");
                 cursors.appendChild(leftUpper);
                 const rightUpper = document.createElementNS(Avionics.SVG.NS, "path");
-                rightUpper.setAttribute("d", "M90 0 l0 -6 l-55 0 l0 28 l5 0 l0 -22 l40 0 Z");
+                rightUpper.setAttribute("d", "M90 0 v -8 h -65 v 14 h 15 v -6 Z");
                 rightUpper.setAttribute("fill", "url(#SAIBacklight)");
                 rightUpper.setAttribute("stroke", "yellow");
-                rightUpper.setAttribute("stroke-width", "0.7");
+                rightUpper.setAttribute("stroke-width", "3");
                 rightUpper.setAttribute("stroke-opacity", "1.0");
                 cursors.appendChild(rightUpper);
                 const centerRect = document.createElementNS(Avionics.SVG.NS, "rect");
@@ -1183,13 +1197,16 @@ class A320_Neo_SAI_SelfTest extends NavSystemElement {
 
         if (!cold_dark) {
             this.selfTestElement.finishTest();
-            this.state.setState("on");
+            this.state.setState("spawn");
         } else {
             this.state.setState("off");
+            this.selfTestElement.offDisplay();
         }
+        /*
         if ((!ac_pwr && !dc_pwr)) {
             this.selfTestElement.offDisplay();
         }
+        */
     }
     onEnter() {
     }
@@ -1239,6 +1256,11 @@ class A320_Neo_SAI_SelfTest extends NavSystemElement {
                 break;
             case "on":
                 this.checkShutdown();
+                break;
+            case "spawn":
+                if (ac_pwr || dc_pwr) {
+                    this.state.action("next");
+                }
                 break;
         }
     }
