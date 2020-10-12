@@ -37,7 +37,7 @@ var A320_Neo_LowerECAM_BLEED;
             this.apuValve = this.querySelector("#apu-valve");
             this.gndText = this.querySelector("#GND");
             this.gndTriangle = this.querySelector("#GND-triangle");
-            this.antiIceText= this.querySelector("#anti-ice-text");
+            this.antiIceText = this.querySelector("#anti-ice-text");
             this.antiIceTriangles = [this.querySelector("#anti-ice-indicators-1"), this.querySelector("#anti-ice-indicators-2")];
             this.centerLines = [this.querySelector("#center-line-1"), this.querySelector("#center-line-2"), this.querySelector("#center-line-3"),
                 this.querySelector("#center-line-4"), this.querySelector("#center-line-5"), this.querySelector("#center-line-6"),];
