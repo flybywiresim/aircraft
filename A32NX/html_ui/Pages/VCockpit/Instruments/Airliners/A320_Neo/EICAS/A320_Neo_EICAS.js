@@ -156,7 +156,7 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         const topSelfTestCurrentKnobValue = SimVar.GetSimVarValue("LIGHT POTENTIOMETER:92", "number");
 
         if (((topSelfTestCurrentKnobValue >= 0.1 && this.topSelfTestLastKnobValue < 0.1) || ACPowerStateChange) && isACPowerAvailable && !this.topSelfTestTimerStarted) {
-            this.topSelfTestDiv.style.display = "block";
+            this.topSelfTestDiv.style.visibility = "visible";
             this.topSelfTestTimer = 14.25;
             this.topSelfTestTimerStarted = true;
         }
@@ -164,7 +164,7 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         if (this.topSelfTestTimer >= 0) {
             this.topSelfTestTimer -= _deltaTime / 1000;
             if (this.topSelfTestTimer <= 0) {
-                this.topSelfTestDiv.style.display = "none";
+                this.topSelfTestDiv.style.visibility = "hidden";
                 this.topSelfTestTimerStarted = false;
             }
         }
@@ -178,7 +178,7 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         const bottomSelfTestCurrentKnobValue = SimVar.GetSimVarValue("LIGHT POTENTIOMETER:93", "number");
 
         if (((bottomSelfTestCurrentKnobValue >= 0.1 && this.bottomSelfTestLastKnobValue < 0.1) || ACPowerStateChange) && isACPowerAvailable && !this.bottomSelfTestTimerStarted) {
-            this.bottomSelfTestDiv.style.display = "block";
+            this.bottomSelfTestDiv.style.visibility = "visible";
             this.bottomSelfTestTimer = 14.25;
             this.bottomSelfTestTimerStarted = true;
         }
@@ -186,7 +186,7 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         if (this.bottomSelfTestTimer >= 0) {
             this.bottomSelfTestTimer -= _deltaTime / 1000;
             if (this.bottomSelfTestTimer <= 0) {
-                this.bottomSelfTestDiv.style.display = "none";
+                this.bottomSelfTestDiv.style.visibility = "hidden";
                 this.bottomSelfTestTimerStarted = false;
             }
         }
