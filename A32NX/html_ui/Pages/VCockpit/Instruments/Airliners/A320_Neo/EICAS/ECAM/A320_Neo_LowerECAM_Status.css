@@ -1,98 +1,79 @@
-@font-face {
-  font-family: "B612Mono";
-  src: url("/Fonts/B612Mono-Regular.ttf") format("truetype");
-  font-weight: normal;
-  font-style: normal; }
+@import url("/CSS/A32NX_Display_Common.css");
 
-@font-face {
-  font-family: "Liberation Mono";
-  src: url("/Fonts/LiberationMono.ttf") format("truetype");
-  font-weight: normal;
-  font-style: normal; }
-
-:root {
-  --ecamDefaultColour: white;
-  --ecamShapeColour: lightgray;
-  --ecamUnitsColour: #01b8b8;
-  --ecamValueColour: #00b300;
-  --ecamWarningColour: #db7200;
-  --ecamDangerColour: red;
-  --ecamInactiveColour: #db7200;
-  --ecamSeparatorsColour: white;
-  --ecamHydraulicBgColour: #484848; }
-  :root .Separator {
-    stroke: #3c3c3c;
-    stroke-width: 4;
-    fill: none; }
-  :root div {
-    font-family: "Liberation Mono" !important; }
-  :root text {
-    font-family: "Liberation Mono" !important; }
-  :root .PageTitle {
-    fill: var(--ecamDefaultColour);
-    font-size: 25px;
-    text-decoration: underline; }
-  a320-neo-lower-ecam-status #status-messages {
+a320-neo-lower-ecam-status #status-messages {
     position: absolute;
     left: 3%;
     width: 55%;
     top: 15%;
-    height: 30%; }
-  a320-neo-lower-ecam-status #inop-systems {
+    height: 30%;
+}
+a320-neo-lower-ecam-status #inop-systems {
     position: absolute;
     left: 67.5%;
     width: 50%;
     top: 15%;
     height: 30%;
-  }
-  a320-neo-lower-ecam-status #status-messages div, a320-neo-lower-ecam-status #inop-systems div {
+}
+a320-neo-lower-ecam-status #status-messages div, a320-neo-lower-ecam-status #inop-systems div {
     width: 100%;
     height: 12%;
-    font-size: 45px;
+    font-size: 40px;
     text-align: left;
-  }
-  a320-neo-lower-ecam-status .InfoIndication {
-    color: var(--ecamValueColour); }
-  a320-neo-lower-ecam-status .InfoCaution {
-    color: var(--ecamWarningColour); }
-  a320-neo-lower-ecam-status .InfoWarning {
-    color: var(--ecamDangerColour); }
-  a320-neo-lower-ecam-status .InfoSpecial {
-    color: #d100b2; }
-  a320-neo-lower-ecam-status .Action {
-    color: var(--ecamUnitsColour);
-  }
-  a320-neo-lower-ecam-status .Underline, a320-neo-lower-ecam-status .action-underline {
+}
+
+
+a320-neo-lower-ecam-status .InfoIndication {
+    color: var(--displayGreen);
+}
+a320-neo-lower-ecam-status .InfoCaution {
+    color: var(--displayAmber);
+}
+a320-neo-lower-ecam-status .InfoWarning {
+    color: var(--displayRed);
+}
+a320-neo-lower-ecam-status .InfoSpecial {
+    color: var(--displayMagenta);
+}
+a320-neo-lower-ecam-status .Action {
+    color: var(--displayCyan);
+}
+a320-neo-lower-ecam-status .Underline, a320-neo-lower-ecam-status .action-underline {
     text-decoration: underline;
-  }
-  a320-neo-lower-ecam-status .Completed {
-    display:none;
-  }
-  a320-neo-lower-ecam-status {
-  display: block;
-  position: absolute;
-  top: -5%;
-  bottom: 5%;
-  left: 0%;
-  width: 100%;
-  height: 100%; }
-  a320-neo-lower-ecam-status text {
+}
+a320-neo-lower-ecam-status .Completed {
+    display: none;
+}
+
+
+a320-neo-lower-ecam-status {
+display: block;
+position: absolute;
+top: -5%;
+bottom: 5%;
+left: 0%;
+width: 100%;
+height: 100%;
+}
+a320-neo-lower-ecam-status text {
     text-anchor: middle;
-    alignment-baseline: central; }
-  a320-neo-lower-ecam-status #inop-sys {
+    alignment-baseline: central;
+}
+a320-neo-lower-ecam-status #inop-sys {
     position: absolute;
     left: 67.5%;
     width: 30%;
     top: 68%;
-    height: 30%; }
-  a320-neo-lower-ecam-status #inop-sys div {
+    height: 30%;
+}
+a320-neo-lower-ecam-status #inop-sys div {
     width: 100%;
     height: 12%;
-    font-size: 45px;
-    text-align: left; }
-  a320-neo-lower-ecam-status .action, a320-neo-lower-ecam-status .action-underline, a320-neo-lower-ecam-status .blue {
-    color: var(--ecamUnitsColour);
-  }
-  a320-neo-lower-ecam-status .Underline, a320-neo-lower-ecam-status .action-underline {
+    font-size: 40px;
+    text-align: left;
+}
+a320-neo-lower-ecam-status .action, a320-neo-lower-ecam-status .action-underline, a320-neo-lower-ecam-status .blue {
+    color: var(--displayCyan);
+}
+a320-neo-lower-ecam-status .Underline, a320-neo-lower-ecam-status .action-underline {
     text-decoration: underline;
-  }
+}

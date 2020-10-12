@@ -55,7 +55,7 @@ class CDUHoldAtPage {
             rows.push(["INB CRS", "", ""]);
             rows.push([holdCourse.toFixed(0) + "°[color]blue", "", ""]);
             rows.push(["TURN", computed ? "" : "REVERT TO", ""]);
-            rows.push([holdTurn + "[color]blue", computed ? "" : "COMPUTED→[color]blue", ""]);
+            rows.push([holdTurn + "[color]blue", computed ? "" : "COMPUTED}[color]blue", ""]);
             rows.push(["TIME/DIST"]);
             rows.push([holdTime.toFixed(1) + "/" + holdDistance.toFixed(1) + "[color]blue"]);
             rows.push(["", "", " LAST EXIT"]);
@@ -63,7 +63,7 @@ class CDUHoldAtPage {
             rows.push(["", "", exitTime + " " + resFuel.toFixed(1)]);
             rows.push([""]);
             rows.push([""]);
-            rows.push(["←ERASE[color]red", "INSERT→[color]red", ""]);
+            rows.push(["{ERASE[color]red", "INSERT}[color]red", ""]);
 
             mcdu.setTemplate([
                 ...rows

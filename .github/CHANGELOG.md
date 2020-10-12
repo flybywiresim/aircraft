@@ -49,6 +49,8 @@
 1. [ND] Added WX/TERR on ND brightness knob, fix ND/PFD brightness tooltips - @lukecologne (luke)
 1. [LIGHTS] Fixed DIM/BRT Lights inside the cockpit. Overhead should now be visible. - @Snapmatics (Harry)
 1. [OVHD] Made AIR COND knobs continuous - @Benjozork (Benjamin Dupont)
+1. [TEXTURES] Changed color of FD Panel.
+1. [MISC] New custom display font for PFD/ND/ECAM/MCDU. Overhauled formatting, CSS, and colors of ECAM pages - @wpine215 (Iceman)
 1. [MISC] Standby Instrument cosmetic display fixes, stays ON if emergency power should be available - @2hwk (2Cas#1022 on discord)
 
 ## 2020/09

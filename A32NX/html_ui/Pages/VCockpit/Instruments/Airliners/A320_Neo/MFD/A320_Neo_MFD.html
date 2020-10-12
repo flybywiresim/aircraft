@@ -1,4 +1,5 @@
 <link rel="stylesheet" href="A320_Neo_MFD.css" />
+<link rel="stylesheet" href="/CSS/A32NX_Display_Common.css" />
 
 <script type="text/html" id="A320_Neo_MFD">
     <glasscockpit-highlight id="highlight"></glasscockpit-highlight>
@@ -18,12 +19,12 @@
 
             <div id="ModeChangeMask">
                 <svg width="1280" height="1280">
-                    <text class="Value" x="50%" y="40%" alignment-baseline="baseline" font-size="50px" fill="lime" text-anchor="middle">MODE CHANGE</text>
+                    <text class="Value valueText" x="50%" y="40%" alignment-baseline="baseline" font-size="50px"text-anchor="middle">MODE CHANGE</text>
                 </svg>
             </div>
             <div id="RangeChangeMask">
                 <svg width="1280" height="1280">
-                    <text class="Value" x="50%" y="40%" alignment-baseline="baseline" font-size="50px" fill="lime" text-anchor="middle">RANGE CHANGE</text>
+                    <text class="Value valueText" x="50%" y="40%" alignment-baseline="baseline" font-size="50px" text-anchor="middle">RANGE CHANGE</text>
                 </svg>
             </div>
 
@@ -40,7 +41,7 @@
                             <text id="Wind_Direction" class="Value" x="0%" y="15%" alignment-baseline="baseline">--</text>
                             <text id="Wind_Separator" class="Large" x="16%" y="15%" alignment-baseline="baseline">/</text>
                             <text id="Wind_Strength" class="Value" x="22%" y="15%" alignment-baseline="baseline">--</text>
-                            <g id="Wind_Arrow" transform="translate(45 110) rotate(0)" fill="none" stroke="lime" stroke-width="5" stroke-linejoin="round" stroke-linecap="round" display="none">
+                            <g id="Wind_Arrow" transform="translate(42 110) rotate(0)" class="greenShapeOutline" stroke-width="5" stroke-linejoin="round" stroke-linecap="round" display="none">
                                 <polyline points="0,17 0,-35" />
                                 <polyline points="15,-20, 0,-40 -15,-20" />
                             </g>
@@ -66,9 +67,9 @@
                     <div id="Waypoint">
                         <svg>
                             <g id="Waypoint_Group">
-                                <text id="WP_Name" class="Large" x="73%" y="0%" alignment-baseline="baseline"></text>
+                                <text id="WP_Name" class="Large" x="72%" y="0%" alignment-baseline="baseline"></text>
                                 <text id="WP_Track_Value" class="Value" x="100%" y="0%" alignment-baseline="baseline">---&deg</text>
-                                <text id="WP_Distance_Value" class="Value" x="92%" y="15%" alignment-baseline="baseline">-.-</text>
+                                <text id="WP_Distance_Value" class="Value" x="90%" y="15%" alignment-baseline="baseline">-.-</text>
                                 <text id="WP_Distance_Units" class="Units" x="100%" y="15%" alignment-baseline="baseline">NM</text>
                                 <text id="WP_Time" class="Value" x="100%" y="30%" alignment-baseline="baseline">--:--</text>
                             </g>
@@ -114,13 +115,13 @@
                 <div style="position: absolute; left: 0%; top: 0%; width: 100%; height: 100%; border: none;">
                     <svg viewBox="0 0 600 600" style="position:absolute; top:0%; left: 0%; width: 100%; height:100%;">
                         <g id="MapFail">
-                            <text fill="red" text-anchor="middle" x="50%" y="33%" font-size="30px">HDG</text>
-                            <text fill="red" text-anchor="middle" x="50%" y="45%" font-size="30px">MAP NOT AVAIL</text>
+                            <text class="dangerText" text-anchor="middle" x="50%" y="33%" font-size="30px">HDG</text>
+                            <text class="dangerText" text-anchor="middle" x="50%" y="45%" font-size="30px">MAP NOT AVAIL</text>
                         </g>
                         <g>
                             <rect id="rect_GPSPrimary" x="22%" y="95%" width="56%" height="3%" fill="url(#Backlight)" stroke="white" stroke-width="2"></rect>
-                            <text x="50%" y="97.6%" fill="#db7200" font-size="20px" text-anchor="middle" id="GPSPrimaryLost">GPS PRIMARY LOST</text>
-                            <text x="50%" y="97.6%" fill="white" font-size="20px" text-anchor="middle" id="GPSPrimary">GPS PRIMARY</text>
+                            <text x="50%" y="97.6%" class="warningText" font-size="18px" text-anchor="middle" id="GPSPrimaryLost">GPS PRIMARY LOST</text>
+                            <text x="50%" y="97.6%" class="normalText" font-size="18px" text-anchor="middle" id="GPSPrimary">GPS PRIMARY</text>
                         </g>
                     </svg>
                 </div>
@@ -129,17 +130,17 @@
 			<div id="div_Chrono" style="position: absolute; left: 3%; top: 83%; width: 30%; height: 30%; border: none; display: none;">
 				<svg id="svg_Chrono" viewBox="0 0 600 600" style="position:absolute; top:83%; left: 3%; width: 100%; height:100%;">
 					<rect fill="rgba(60,60,70,1)" x="0" y="0" width="12.5%" height="4%"></rect>
-					<text id="text_chrono_prefix" fill="green" text-anchor="left" x="0.5%" y="2.9%" font-size="19px">00'</text>
-					<text id="text_chrono_HRSymbol" fill="green" text-anchor="left" x="4.6%" y="2%" font-size="15px"></text>
-					<text id="text_chrono_suffix" fill="green" text-anchor="left" x="6.4%" y="2.9%" font-size="19px">00"</text>
+					<text id="text_chrono_prefix" class="valueText" text-anchor="left" x="0.5%" y="3.2%" font-size="19px">00'</text>
+					<text id="text_chrono_HRSymbol" class="valueText" text-anchor="left" x="4.6%" y="2.3%" font-size="15px"></text>
+					<text id="text_chrono_suffix" class="valueText" text-anchor="left" x="6.4%" y="3.2%" font-size="19px">00"</text>
                 </svg>
             </div>
 
             <div style="position: absolute; left: 0%; top: 0%; width: 100%; height: 100%; border: none; display: none;" id="SelfTestDiv">
                 <svg id="SelfTest" viewBox="0 0 600 600" style="position:absolute; top:0%; left: 0%; width: 100%; height:100%;">
                     <rect fill="url(#Backlight)" x="0" y="0" width="100%" height="100%"></rect>
-                    <text id="self_test_text" fill="green" text-anchor="middle" x="50%" y="50%" font-size="30px">SELF TEST IN PROGRESS</text>
-                    <text id="self_test_text2" fill="green" text-anchor="middle" x="50%" y="56%" font-size="30px">(MAX 40 SECONDS)</text>
+                    <text id="self_test_text" class="valueText" text-anchor="middle" x="50%" y="50%" font-size="24px">SELF TEST IN PROGRESS</text>
+                    <text id="self_test_text2" class="valueText" text-anchor="middle" x="50%" y="56%" font-size="24px">(MAX 40 SECONDS)</text>
                 </svg>
             </div>
         </div>

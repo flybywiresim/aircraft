@@ -2,7 +2,7 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
     constructor() {
         super(...arguments);
         this.strokeSize = "3";
-        this.fontSize = 25;
+        this.fontSize = 22;
         this.refHeight = 0;
         this.borderSize = 0;
         this.graduationScrollPosX = 0;
@@ -165,7 +165,7 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
                     line.SVGText1.setAttribute("x", (_left + _width - lineWidth - 3).toString());
                     line.SVGText1.setAttribute("fill", "white");
                     line.SVGText1.setAttribute("font-size", (this.fontSize * 1.4).toString());
-                    line.SVGText1.setAttribute("font-family", "Roboto-Bold");
+                    line.SVGText1.setAttribute("font-family", "ECAMFontRegular");
                     line.SVGText1.setAttribute("text-anchor", "end");
                     line.SVGText1.setAttribute("alignment-baseline", "central");
                 }
@@ -241,7 +241,7 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
                 this.targetAltitudeIndicatorSVGText.setAttribute("y", "49");
                 this.targetAltitudeIndicatorSVGText.setAttribute("fill", "cyan");
                 this.targetAltitudeIndicatorSVGText.setAttribute("font-size", (this.fontSize * 1.15).toString());
-                this.targetAltitudeIndicatorSVGText.setAttribute("font-family", "Roboto-Bold");
+                this.targetAltitudeIndicatorSVGText.setAttribute("font-family", "ECAMFontRegular");
                 this.targetAltitudeIndicatorSVGText.setAttribute("text-anchor", "end");
                 this.targetAltitudeIndicatorSVGText.setAttribute("alignment-baseline", "central");
                 this.targetAltitudeIndicatorSVG.appendChild(this.targetAltitudeIndicatorSVGText);
@@ -282,11 +282,11 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
                 integralsGroup.setAttribute("viewBox", "0 0 " + cursorWidth + " " + cursorHeight);
                 this.cursorSVG.appendChild(integralsGroup);
                 {
-                    this.cursorIntegrals[0].construct(integralsGroup, 1, _cursorPosY + 4, _width, "Roboto-Bold", this.fontSize * 3.5, "rgb(36,255,0)");
-                    this.cursorIntegrals[1].construct(integralsGroup, 52, _cursorPosY + 4, _width, "Roboto-Bold", this.fontSize * 3.5, "rgb(36,255,0)");
-                    this.cursorIntegrals[2].construct(integralsGroup, 103, _cursorPosY + 4, _width, "Roboto-Bold", this.fontSize * 3.5, "rgb(36,255,0)");
+                    this.cursorIntegrals[0].construct(integralsGroup, 1, _cursorPosY + 4, _width, "ECAMFontRegular", this.fontSize * 3.5, "rgb(36,255,0)");
+                    this.cursorIntegrals[1].construct(integralsGroup, 52, _cursorPosY + 4, _width, "ECAMFontRegular", this.fontSize * 3.5, "rgb(36,255,0)");
+                    this.cursorIntegrals[2].construct(integralsGroup, 103, _cursorPosY + 4, _width, "ECAMFontRegular", this.fontSize * 3.5, "rgb(36,255,0)");
                 }
-                this.cursorDecimals.construct(this.cursorSVG, 114, _cursorPosY - 2, _width, "Roboto-Bold", this.fontSize * 1.15, "rgb(36,255,0)");
+                this.cursorDecimals.construct(this.cursorSVG, 114, _cursorPosY - 2, _width, "ECAMFontRegular", this.fontSize * 1.15, "rgb(36,255,0)");
             }
             this.centerSVG.appendChild(this.cursorSVG);
             if (!this.targetAltitudeText) {
@@ -309,14 +309,14 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
             this.STDpressureSVG = document.createElementNS(Avionics.SVG.NS, "text");
         }
         this.STDpressureSVG.textContent = "STD";
-        this.STDpressureSVG.setAttribute("x", "97");
-        this.STDpressureSVG.setAttribute("y", (posY + height + 115 - 36));// - (this.fontSize * 1.3)).toString());
+        this.STDpressureSVG.setAttribute("x", "98");
+        this.STDpressureSVG.setAttribute("y", (posY + height + 115 - 38));// - (this.fontSize * 1.3)).toString());
         this.STDpressureSVG.setAttribute("fill", "cyan");
         this.STDpressureSVG.setAttribute("font-size", (this.fontSize * 1.3).toString());//1.05
-        this.STDpressureSVG.setAttribute("font-family", "Roboto-Light");
+        this.STDpressureSVG.setAttribute("font-family", "ECAMFontRegular");
         this.STDpressureSVG.setAttribute("text-anchor", "start");
         this.STDpressureSVG.setAttribute("alignment-baseline", "central");
-        this.STDpressureSVG.setAttribute("letter-spacing", "-3px");
+        this.STDpressureSVG.setAttribute("letter-spacing", "-1px");
         this.rootGroup.appendChild(this.STDpressureSVG);
 
         if (!this.STDpressureSVGShape) {
@@ -340,10 +340,10 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
         this.pressureSVGLegend.setAttribute("y", (posY + height + 80).toString());//+90
         this.pressureSVGLegend.setAttribute("fill", "white");
         this.pressureSVGLegend.setAttribute("font-size", (this.fontSize * 1.3).toString());//1.05
-        this.pressureSVGLegend.setAttribute("font-family", "Roboto-Light");
+        this.pressureSVGLegend.setAttribute("font-family", "ECAMFontRegular");
         this.pressureSVGLegend.setAttribute("text-anchor", "start");
         this.pressureSVGLegend.setAttribute("alignment-baseline", "central");
-        this.pressureSVGLegend.setAttribute("letter-spacing", "-3px");
+        this.pressureSVGLegend.setAttribute("letter-spacing", "-1px");
         this.rootGroup.appendChild(this.pressureSVGLegend);
 
         if (!this.pressureSVG) {
@@ -354,10 +354,10 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
         this.pressureSVG.setAttribute("y", (posY + height + 80).toString());
         this.pressureSVG.setAttribute("fill", "cyan");
         this.pressureSVG.setAttribute("font-size", (this.fontSize * 1.3).toString());
-        this.pressureSVG.setAttribute("font-family", "Roboto-Light");
+        this.pressureSVG.setAttribute("font-family", "ECAMFontRegular");
         this.pressureSVG.setAttribute("text-anchor", "start");
         this.pressureSVG.setAttribute("alignment-baseline", "central");
-        this.pressureSVG.setAttribute("letter-spacing", "-3px");
+        this.pressureSVG.setAttribute("letter-spacing", "-1px");
         this.rootGroup.appendChild(this.pressureSVG);
         this.rootSVG.appendChild(this.rootGroup);
         this.appendChild(this.rootSVG);
@@ -391,10 +391,10 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
         this.mtrsCursorSVGText.setAttribute("y", (posY + height + 159 - 36));
         this.mtrsCursorSVGText.setAttribute("fill", "lime");
         this.mtrsCursorSVGText.setAttribute("font-size", (this.fontSize * 1.3).toString());
-        this.mtrsCursorSVGText.setAttribute("font-family", "Roboto-Light");
+        this.mtrsCursorSVGText.setAttribute("font-family", "ECAMFontRegular");
         this.mtrsCursorSVGText.setAttribute("text-anchor", "start");
         this.mtrsCursorSVGText.setAttribute("alignment-baseline", "central");
-        this.mtrsCursorSVGText.setAttribute("letter-spacing", "-3px");
+        this.mtrsCursorSVGText.setAttribute("letter-spacing", "-1px");
         this.mtrsCursorSVGText.setAttribute("text-anchor", "end");
         this.mtrsCursorGroup.appendChild(this.mtrsCursorSVGText);
 
@@ -406,10 +406,10 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
         this.mtrsCursorSVGUnit.setAttribute("y", (posY + height + 159 - 36));
         this.mtrsCursorSVGUnit.setAttribute("fill", "cyan");
         this.mtrsCursorSVGUnit.setAttribute("font-size", (this.fontSize * 1.3).toString());
-        this.mtrsCursorSVGUnit.setAttribute("font-family", "Roboto-Light");
+        this.mtrsCursorSVGUnit.setAttribute("font-family", "ECAMFontRegular");
         this.mtrsCursorSVGUnit.setAttribute("text-anchor", "start");
         this.mtrsCursorSVGUnit.setAttribute("alignment-baseline", "central");
-        this.mtrsCursorSVGUnit.setAttribute("letter-spacing", "-3px");
+        this.mtrsCursorSVGUnit.setAttribute("letter-spacing", "-1px");
         this.mtrsCursorGroup.appendChild(this.mtrsCursorSVGUnit);
 
         if (!this.mtrsCursorSVGBorder) {

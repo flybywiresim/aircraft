@@ -1,22 +1,13 @@
-:root {
-    --ecamDefaultColour: white;
-    --ecamUnitsColour: #03a0a0;
-    --ecamValueColour: #00b300;
-    --ecamWarningColour: #db7200;
-    --ecamDangerColour: red;
-    --ecamInactiveColour: #db7200;
-    --ecamSeparatorsColour: white;
-    --ecamHydraulicBgYellow: #f5d108;
-    --ecamHydraulicBgGreen: #00b300;
-    --ecamHydraulicBgColour: #484848;
+@import url("/CSS/A32NX_Display_Common.css");
 
+:root {
     --brake-temp-font-size: 19px;
 }
 
 @keyframes animateLandingGear {
     100%,
     0% {
-        stroke: red;
+        stroke: var(--displayRed);
     }
     60% {
         stroke: none;
@@ -30,109 +21,76 @@
     animation: animateLandingGear .8s infinite;
 }
 
-:root div {
-    font-family: Roboto-Bold;
-}
-
-:root text {
-    font-family: Roboto-Bold;
-}
-
-:root #PageTitle {
-    fill: var(--ecamDefaultColour);
-    font-size: 25px;
-    text-decoration: underline;
-}
-
 /** Common **/
-
 .shape {
     stroke-width: 1.5;
     fill: none;
 }
 
 /* Colors */
-
 .color-white {
-    fill: white;
-    stroke: white;
+    fill: var(--displayWhite);
+    stroke: var(--displayWhite);
 }
-
 .color-gray {
-    fill: hsl(240, 9%, 77%);
-    stroke: hsl(240, 9%, 77%);
+    fill: var(--displayLightGrey);
+    stroke: var(--displayLightGrey);
 }
-
 .shape.color-gray {
     fill: none;
 }
-
 .color-green {
-    fill: var(--ecamValueColour);
-    stroke: var(--ecamValueColour);
+    fill: var(--displayGreen);
+    stroke: var(--displayGreen);
 }
-
 .shape.color-green {
     fill: none;
 }
-
 .color-amber {
-    fill: var(--ecamWarningColour);
-    stroke: var(--ecamWarningColour);
+    fill: var(--displayAmber);
+    stroke: var(--displayAmber);
 }
-
 .shape.color-amber {
     fill: none;
 }
-
 .color-red {
-    fill: var(--ecamDangerColour);
-    stroke: var(--ecamDangerColour);
+    fill: var(--displayRed);
+    stroke: var(--displayRed);
 }
-
 .shape.color-red {
     fill: transparent !important;
 }
 
 /* Big text */
-
 .big-text {
     font-size: 21px;
     text-anchor: middle;
 }
-
 .medium-text {
     font-size: 16px;
 }
-
 .align-left {
     text-anchor: start !important;
 }
 
 /* Gear indicators */
-
 #gear-left {
     transform: translate(-48px, -66px) scale(1.1);
 }
-
 #gear-center {
     transform: translate(-24px, -28px) scale(1.1);
 }
-
 #gear-right {
     transform: translate(-10px, -66px) scale(1.1);
 }
 
 /*  Brake indicators */
-
 #wheel-set-brake-left {
     transform: translate(0, -26px);
 }
-
 #wheel-set-brake-right {
     transform: translate(0, -26px);
 }
-
 .wheel-set-brake-arch {
     transform: scale(0.85, 0.5);
     transform-origin: 40% 63%;
@@ -140,87 +98,75 @@
     stroke: hsl(240, 9%, 77%);
     stroke-width: 4;
 }
-
 .wheel-set-brake-number {
-    fill: var(--ecamDefaultColour);
+    fill: var(--displayWhite);
     font-size: var(--brake-temp-font-size);
     text-anchor: middle !important;
 }
-
 .wheel-set-brake-celsius-marker {
-    fill: var(--ecamUnitsColour);
+    fill: var(--displayCyan);
     font-size: 15px;
     text-anchor: middle !important;
 }
-
 .wheel-set-brake-rel-marker {
-    fill: var(--ecamDefaultColour);
+    fill: var(--displayWhite);
     font-size: var(--brake-temp-font-size);
     text-anchor: middle !important;
 }
-
 .wheel-set-brake-temp {
-    fill: var(--ecamValueColour);
-    stroke: var(--ecamValueColour);
+    fill: var(--displayGreen);
+    stroke: var(--displayGreen);
     font-size: 20px;
     text-anchor: end !important;
 }
-
 .wheel-set-brake-temp-amber {
-    fill: var(--ecamWarningColour);
-    stroke: var(--ecamWarningColour);
+    fill: var(--displayAmber);
+    stroke: var(--displayAmber);
     font-size: 20px;
     text-anchor: end !important;
 }
 
 /* Landing gear indicators */
-
 .gear-door-side-line {
-    fill: var(--ecamDefaultColour);
+    fill: var(--displayWhite);
     stroke-linecap: round;
     stroke-linejoin: round;
     stroke-miterlimit: 10;
     stroke-width: 1.5;
-    stroke: #ffffff
+    stroke: var(--displayWhite);
 }
-
 .gear-door-line {
-    stroke: var(--ecamValueColour);
+    stroke: var(--displayGreen);
     fill: none;
     stroke-linecap: round;
     stroke-linejoin: round;
     stroke-miterlimit: 10;
     stroke-width: 1.5;
 }
-
 .gear-door-in-transit-line {
-    stroke: var(--ecamWarningColour);
+    stroke: var(--displayAmber);
     fill: none;
     stroke-linecap: round;
     stroke-linejoin: round;
     stroke-miterlimit: 10;
     stroke-width: 1.5;
 }
-
 .gear-door-joint {
     fill: none;
     stroke-linecap: round;
     stroke-linejoin: round;
     stroke-miterlimit: 10;
     stroke-width: 1.5;
-    stroke: #ffffff
+    stroke: var(--displayWhite);
 }
-
 .gear-failed-lgciu-xx {
     transform: translateY(-45px) scaleY(1.15);
 }
 
 /* Autobrakes */
-
 #autobrake-element {
     transform: translate(300px, 460px);
 }
-
 .autobrake-mode {
     transform: translateY(24px);
 }
@@ -233,13 +179,11 @@ a320-neo-lower-ecam-wheel {
     width: 100%;
     height: 100%;
 }
-
 a320-neo-lower-ecam-wheel text {
     text-anchor: middle;
     alignment-baseline: central;
 }
-
 .hyd-background {
-    fill: var(--ecamHydraulicBgColour);
+    fill: var(--displayDarkGrey);
     stroke: none;
 }
