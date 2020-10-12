@@ -52,7 +52,7 @@ a320-neo-lower-ecam-bleed text {
 .st9 {
     fill: none;
     stroke: var(--displayWhite);
-    stroke-width: 3;
+    stroke-width: 2;
     stroke-miterlimit: 10;
 }
 .st10 {
