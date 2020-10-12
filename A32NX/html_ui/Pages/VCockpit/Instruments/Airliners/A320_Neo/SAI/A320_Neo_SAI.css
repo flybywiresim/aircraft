@@ -1,3 +1,5 @@
+@import url("/CSS/A32NX_Display_Common.css");
+
 :root {
   --bodyHeightScale: 1; }
 
@@ -20,24 +22,6 @@
   height: 100%; }
   #Electricity[state=off] {
     display: none; }
-
-@font-face {
-  font-family: "Roboto";
-  src: url("/Fonts/RobotoMono-Medium.ttf") format("truetype");
-  font-weight: normal;
-  font-style: normal; }
-
-@font-face {
-  font-family: "Roboto-Light";
-  src: url("/Fonts/RobotoMono-Light.ttf") format("truetype");
-  font-weight: normal;
-  font-style: normal; }
-
-@font-face {
-  font-family: "Roboto-Bold";
-  src: url("/Fonts/RobotoMono-Bold.ttf") format("truetype");
-  font-weight: normal;
-  font-style: normal; }
 
 a320-neo-sai {
   width: 100%;

@@ -1,0 +1,71 @@
+name: master
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  build:
+    # Prevent running this on forks
+    if: github.repository_owner == 'flybywiresim'
+    runs-on: ubuntu-latest
+    env:
+      MASTER_PRE_RELEASE_ID: 32243965
+      MASTER_PRE_RELEASE_TAG: vmaster
+      MASTER_ZIP_NAME: A32NX-master.zip
+      MOD_FOLDER_NAME: A32NX
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v2
+      - name: Setup Python 3
+        uses: actions/setup-python@v2
+        with:
+          python-version: "3.x"
+      - name: Set BUILT_DATE_TIME
+        run: echo "BUILT_DATE_TIME=$(date -u -Iseconds)" >> $GITHUB_ENV
+      - name: Generate layout.json
+        run: |
+          cd ./${{ env.MOD_FOLDER_NAME }}
+          python3 ./build.py
+          rm ./build.py
+          echo 'built: ${{ env.BUILT_DATE_TIME }}' >> build_info.txt
+          echo 'ref: ${{ github.ref }}' >> build_info.txt
+          echo 'sha: ${{ github.sha }}' >> build_info.txt
+          echo 'actor: ${{ github.actor }}' >> build_info.txt
+          echo 'event_name: ${{ github.event_name }}' >> build_info.txt
+          cd ..
+          zip -r ./${{ env.MASTER_ZIP_NAME }} ./${{ env.MOD_FOLDER_NAME }}/
+      - name: Get and delete master pre-release zip asset
+        run: |
+          echo 'checking for first release asset...'
+          assetId=$( \
+            curl --location --request GET \
+              --url https://api.github.com/repos/${{ github.repository }}/releases/${{ env.MASTER_PRE_RELEASE_ID }}/assets \
+            | python3 -c "import sys,json; assets=json.load(sys.stdin); print(assets[0]['id'] if len(assets) > 0 else 'none')" \
+          )
+          if [ $assetId = "none" ]; then
+            echo 'no asset to delete'
+          else
+            echo 'deleting asset '$assetId
+            curl --request DELETE \
+              --url https://api.github.com/repos/${{ github.repository }}/releases/assets/$assetId \
+              --header 'authorization: Bearer ${{ secrets.GITHUB_TOKEN }}'
+          fi
+      - name: Upload release binary
+        uses: actions/upload-release-asset@v1.0.2
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          upload_url: https://uploads.github.com/repos/${{ github.repository }}/releases/${{ env.MASTER_PRE_RELEASE_ID }}/assets{?name,label}
+          asset_path: ./${{ env.MASTER_ZIP_NAME }}
+          asset_name: ${{ env.MASTER_ZIP_NAME }}
+          asset_content_type: application/zip
+      - name: Update master pre-release body
+        run: |
+          curl --request PATCH \
+            --url 'https://api.github.com/repos/${{ github.repository }}/releases/${{ env.MASTER_PRE_RELEASE_ID }}' \
+            --header 'authorization: Bearer ${{ secrets.GITHUB_TOKEN }}' \
+            --header 'Content-Type: application/json' \
+            --data-raw '{
+              "body": "This pre-release has its ${{ env.MASTER_ZIP_NAME }} asset updated on every commit to the master branch\nDo not use the source code assets, they are never updated\nLast updated on ${{ env.BUILT_DATE_TIME }} from commit ${{ github.sha }}\nThis link will always point to the latest master build: https://github.com/${{ github.repository }}/releases/download/${{ env.MASTER_PRE_RELEASE_TAG }}/${{ env.MASTER_ZIP_NAME }}"
+            }'

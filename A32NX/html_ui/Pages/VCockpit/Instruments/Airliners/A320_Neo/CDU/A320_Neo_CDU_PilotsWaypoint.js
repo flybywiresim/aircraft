@@ -13,11 +13,11 @@ class CDUPilotsWaypoint {
             [""],
             ["", "NEW"],
             ["", "WAYPOINT>"],
-            ["", "DELETE ALL→[color]blue"]
-        ])
+            ["", "DELETE ALL}[color]blue"]
+        ]);
 
         mcdu.onRightInput[4] = () => {
-            CDUNewWaypoint.ShowPage(mcdu)
-        }
+            CDUNewWaypoint.ShowPage(mcdu);
+        };
     }
 }

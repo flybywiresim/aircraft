@@ -1,7 +1,7 @@
 <PlaneHTMLConfig>
-  
+
   <SoundSourceNode>AS1000_MFD</SoundSourceNode>
-  
+
   <Instrument>
     <Name>A320_Neo_PFD</Name>
     <SyntheticVision>True</SyntheticVision>
@@ -30,33 +30,35 @@
 		<Simvar name="CIRCUIT ON:53" unit="Boolean"/>
     </Electric>
   </Instrument>
-  
+
   <Instrument>
     <Name>A320_Neo_EICAS_1</Name>
     <Electric>
 		<Simvar name="CIRCUIT ON:54" unit="Boolean"/>
     </Electric>
   </Instrument>
-  
+
   <Instrument>
     <Name>A320_Neo_EICAS_2</Name>
     <Electric>
 		<Simvar name="CIRCUIT ON:55" unit="Boolean"/>
     </Electric>
   </Instrument>
-  
+
   <Instrument>
     <Name>A320_Neo_CDU</Name>
     <Electric>
 		<Simvar name="CIRCUIT ON:56" unit="Boolean"/>
     </Electric>
+		<AlwaysUpdate>True</AlwaysUpdate>
   </Instrument>
-  
+
   <Instrument>
     <Name>A320_Neo_FCU</Name>
     <Electric>
 		<Simvar name="CIRCUIT ON:57" unit="Boolean"/>
     </Electric>
+		<AlwaysUpdate>True</AlwaysUpdate>
   </Instrument>
 
   <Instrument>
@@ -116,8 +118,70 @@
 
   	</Annunciations>
 	<!-- Voices Alerts -->
-  
+
 	<VoicesAlerts>
+
+		<!-- Added -->
+		
+		<Alert>
+			<Type>SoundOnly</Type>
+			<SoundEvent>aural_pull_up</SoundEvent>
+			<Condition>
+				<Simvar name="L:GPWS_PULL_UP" unit="Bool"/>
+			</Condition>
+		</Alert>
+
+		<Alert>
+			<Type>SoundOnly</Type>
+			<SoundEvent>aural_sink_rate</SoundEvent>
+			<Condition>
+				<Simvar name="L:GPWS_SINK_RATE" unit="Bool"/>
+			</Condition>
+		</Alert>
+
+		<Alert>
+			<Type>SoundOnly</Type>
+			<SoundEvent>aural_dont_sink</SoundEvent>
+			<Condition>
+				<Simvar name="L:GPWS_DONT_SINK" unit="Bool"/>
+			</Condition>
+		</Alert>
+
+		<Alert>
+			<Type>SoundOnly</Type>
+			<SoundEvent>aural_too_low_gear</SoundEvent>
+			<Condition>
+				<Equal>
+					<Simvar name="L:GPWS_TOO_LOW" unit="Enum"/>
+					<Constant>2</Constant>
+				</Equal>
+			</Condition>
+		</Alert>
+
+		<Alert>
+			<Type>SoundOnly</Type>
+			<SoundEvent>aural_too_low_flaps</SoundEvent>
+			<Condition>
+				<Equal>
+					<Simvar name="L:GPWS_TOO_LOW" unit="Enum"/>
+					<Constant>3</Constant>
+				</Equal>
+			</Condition>
+		</Alert>
+
+		<Alert>
+			<Type>SoundOnly</Type>
+			<SoundEvent>aural_too_low_terrain</SoundEvent>
+			<Condition>
+				<Equal>
+					<Simvar name="L:GPWS_TOO_LOW" unit="Enum"/>
+					<Constant>1</Constant>
+				</Equal>
+			</Condition>
+		</Alert>
+
+		<!-- Default -->
+
 		<Alert>
 			<Type>SoundOnly</Type>
 			<SoundEvent>aural_5ft</SoundEvent>
@@ -147,7 +211,7 @@
 				</StateMachine>
 			</Condition>
 		</Alert>
-		
+
 		<Alert>
 			<Type>SoundOnly</Type>
 			<SoundEvent>aural_retard</SoundEvent>
@@ -177,7 +241,7 @@
 				</StateMachine>
 			</Condition>
 		</Alert>
-		
+
 		<Alert>
 			<Type>SoundOnly</Type>
 			<SoundEvent>aural_20ft</SoundEvent>
@@ -207,7 +271,7 @@
 				</StateMachine>
 			</Condition>
 		</Alert>
-		
+
 		<Alert>
 			<Type>SoundOnly</Type>
 			<SoundEvent>aural_30ft</SoundEvent>
@@ -237,7 +301,7 @@
 				</StateMachine>
 			</Condition>
 		</Alert>
-		
+
 		<Alert>
 			<Type>SoundOnly</Type>
 			<SoundEvent>aural_40ft</SoundEvent>
@@ -267,7 +331,7 @@
 				</StateMachine>
 			</Condition>
 		</Alert>
-		
+
 		<Alert>
 			<Type>SoundOnly</Type>
 			<SoundEvent>aural_50ft</SoundEvent>
@@ -297,7 +361,7 @@
 				</StateMachine>
 			</Condition>
 		</Alert>
-		
+
 		<Alert>
 			<Type>SoundOnly</Type>
 			<SoundEvent>aural_60ft</SoundEvent>
@@ -327,7 +391,7 @@
 				</StateMachine>
 			</Condition>
 		</Alert>
-		
+
 		<Alert>
 			<Type>SoundOnly</Type>
 			<SoundEvent>aural_70ft</SoundEvent>
@@ -357,7 +421,7 @@
 				</StateMachine>
 			</Condition>
 		</Alert>
-		
+
 		<Alert>
 			<Type>SoundOnly</Type>
 			<SoundEvent>aural_100ft</SoundEvent>
@@ -387,7 +451,7 @@
 				</StateMachine>
 			</Condition>
 		</Alert>
-		
+
 		<Alert>
 			<Type>SoundOnly</Type>
 			<SoundEvent>aural_200ft</SoundEvent>
@@ -417,7 +481,7 @@
 				</StateMachine>
 			</Condition>
 		</Alert>
-		
+
 		<Alert>
 			<Type>SoundOnly</Type>
 			<SoundEvent>aural_300ft</SoundEvent>
@@ -447,7 +511,7 @@
 				</StateMachine>
 			</Condition>
 		</Alert>
-		
+
 		<Alert>
 			<Type>SoundOnly</Type>
 			<SoundEvent>aural_400ft</SoundEvent>
@@ -477,7 +541,7 @@
 				</StateMachine>
 			</Condition>
 		</Alert>
-		
+
 		<Alert>
 			<Type>SoundOnly</Type>
 			<SoundEvent>aural_500ft</SoundEvent>
@@ -507,7 +571,7 @@
 				</StateMachine>
 			</Condition>
 		</Alert>
-		
+
 		<Alert>
 			<Type>SoundOnly</Type>
 			<SoundEvent>aural_1000ft</SoundEvent>
@@ -537,7 +601,7 @@
 				</StateMachine>
 			</Condition>
 		</Alert>
-		
+
 		<Alert>
 			<Type>SoundOnly</Type>
 			<SoundEvent>aural_2500ft</SoundEvent>
@@ -567,7 +631,7 @@
 				</StateMachine>
 			</Condition>
 		</Alert>
-		
+
 		<Alert>
 			<Type>Warning</Type>
 			<SoundEvent>aural_stall</SoundEvent>

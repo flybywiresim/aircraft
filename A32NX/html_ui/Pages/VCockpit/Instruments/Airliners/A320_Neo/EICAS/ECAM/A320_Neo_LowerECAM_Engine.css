@@ -1,23 +1,4 @@
-﻿:root {
-  --ecamDefaultColour: white;
-  --ecamUnitsColour: #009696;
-  --ecamValueColour: green;
-  --ecamWarningColour: #db7200;
-  --ecamDangerColour: red;
-  --ecamInactiveColour: #db7200;
-  --ecamSeparatorsColour: white; }
-  :root .Separator {
-    stroke: #3c3c3c;
-    stroke-width: 4;
-    fill: none; }
-  :root div {
-    font-family: Roboto-Bold; }
-  :root text {
-    font-family: Roboto-Bold; }
-  :root #PageTitle {
-    fill: var(--ecamDefaultColour);
-    font-size: 25px;
-    text-decoration: underline; }
+﻿@import url("/CSS/A32NX_Display_Common.css");
 
 a320-neo-lower-ecam-engine {
     display: block;
@@ -25,25 +6,34 @@ a320-neo-lower-ecam-engine {
     top: -5%;
     left: 0%;
     width: 100%;
-    height: 100%; }
+    height: 100%;
+}
 a320-neo-lower-ecam-engine line.Indicator {
-    stroke: var(--ecamDefaultColour);
-    stroke-width: 1; }
+    stroke: var(--displayWhite);
+    stroke-width: 1;
+}
 a320-neo-lower-ecam-engine text {
     text-anchor: middle;
-    alignment-baseline: central; }
+    alignment-baseline: central;
+}
 a320-neo-lower-ecam-engine text.Title {
     font-size: 18px;
-    fill: var(--ecamDefaultColour); }
+    fill: var(--displayWhite);
+}
 a320-neo-lower-ecam-engine text.Unit {
     font-size: 18px;
-    fill: var(--ecamUnitsColour); }
+    fill: var(--displayCyan);
+}
 a320-neo-lower-ecam-engine text.Value {
     font-size: 22px;
-    fill: var(--ecamValueColour); }
+    fill: var(--displayGreen);
+}
 a320-neo-lower-ecam-engine text.Warning {
     font-size: 22px;
-    fill: var(--ecamWarningColour); }
+    fill: var(--displayAmber);
+}
+
+
 a320-neo-lower-ecam-engine #Gauges {
     position: absolute;
     left: 20%;
@@ -51,20 +41,27 @@ a320-neo-lower-ecam-engine #Gauges {
     top: 20%;
     height: 50%;
     display: flex;
-    justify-content: center; }
+    justify-content: center;
+}
 a320-neo-lower-ecam-engine #LeftGauges {
     position: relative;
-    right:12%; }
-    a320-neo-lower-ecam-engine #RightGauges {
-        position: relative;
-        left:-5%; }
+    right:12%;
+}
+a320-neo-lower-ecam-engine #RightGauges {
+    position: relative;
+    left:-5%;
+}
 a320-neo-lower-ecam-engine #StartValveDiagrams {
-    stroke: var(--ecamValueColour);
-    stroke-width: 2; }
+    stroke: var(--displayGreen);
+    stroke-width: 2;
+}
 a320-neo-lower-ecam-engine #StartValveDiagrams path {
-    fill: none; }
+    fill: none;
+}
 a320-neo-lower-ecam-engine #StartValveDiagrams circle {
-    fill: black; }
+    fill: rgba(13,20,35,1);
+}
 a320-neo-lower-ecam-engine #StartValveDiagrams line {
-    fill: var(--ecamValueColour); }
+    fill: var(--displayGreen);
+}
 

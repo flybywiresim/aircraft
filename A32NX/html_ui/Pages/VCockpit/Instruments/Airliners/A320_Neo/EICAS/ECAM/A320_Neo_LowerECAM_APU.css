@@ -1,93 +1,87 @@
-﻿:root {
-  --ecamDefaultColour: white;
-  --ecamUnitsColour: #009696;
-  --ecamValueColour: green;
-  --ecamWarningColour: #db7200;
-  --ecamDangerColour: red;
-  --ecamInactiveColour: #db7200;
-  --ecamSeparatorsColour: white; }
-  :root .Separator {
-    stroke: #3c3c3c;
-    stroke-width: 4;
-    fill: none; }
-  :root div {
-    font-family: Roboto-Bold; }
-  :root text {
-    font-family: Roboto-Bold; }
-  :root #PageTitle {
-    fill: var(--ecamDefaultColour);
-    font-size: 25px;
-    text-decoration: underline; }
+﻿@import url("/CSS/A32NX_Display_Common.css");
 
 a320-neo-lower-ecam-apu {
-  display: block;
-  position: absolute;
-  top: -5%;
-  left: 0%;
-  width: 100%;
-  height: 100%; }
-  a320-neo-lower-ecam-apu text {
+    display: block;
+    position: absolute;
+    top: -5%;
+    left: 0%;
+    width: 100%;
+    height: 100%;
+}
+a320-neo-lower-ecam-apu text {
     text-anchor: middle;
-    alignment-baseline: central; }
+    alignment-baseline: central;
+}
+a320-neo-lower-ecam-apu text.Title {
+    font-size: 25px;
+    fill: var(--displayWhite);
+}
+
 
 /* Gauges */
 #AGauges {
-  position: absolute;
-  left: 0%;
-  width: 56%;
-  top: 15%;
-  height: 50%;
-  justify-content: center;
+    position: absolute;
+    left: 0%;
+    width: 56%;
+    top: 15%;
+    height: 50%;
+    justify-content: center;
 }
+
 
 /* Custom Styles */
 :root #APUAvail, :root #APUFlapOpen {
-  fill: var(--ecamValueColour);
-  font-size: 25px; 
+    fill: var(--displayGreen);
+    font-size: 25px; 
 }
 :root .WhiteBox {
-  stroke: #ffffff;
-  stroke-width: 2;
+    stroke: var(--displayWhite);
+    stroke-width: 2;
+    fill: rgba(13,20,35,1);
 }
-:root #APUGenParams {
-  fill: var(--ecamDefaultColour);
-  font-size: 15px;
+:root .APUGenTitleInactive {
+    fill: var(--displayWhite);
+    font-size: 18px;
+}
+:root .APUGenTitle {
+    fill: var(--displayGreen);
+    font-size: 18px;
 }
 :root #APUBleed {
-  fill: var(--ecamDefaultColour);
-  font-size: 15px;
+    fill: var(--displayWhite);
+    font-size: 20px;
 }
 :root .APUGenParamValue {
-  fill: var(--ecamValueColour);
-  font-size: 15px;
-  text-anchor: start !important;
+    fill: var(--displayGreen);
+    font-size: 20px;
+    text-anchor: end !important;
 }
 :root .APUGenParamValueWarn {
-  fill: var(--ecamWarningColour);
-  font-size: 15px;
-  text-anchor: start !important;
+    fill: var(--displayAmber);
+    font-size: 20px;
+    text-anchor: end !important;
 }
 :root .APUGenParamUnit {
-  fill: var(--ecamUnitsColour);
-  font-size: 15px;
-  text-anchor: start !important;
+    fill: var(--displayCyan);
+    font-size: 20px;
+    text-anchor: start !important;
 }
 :root .APUGaugeParamUnit {
-  fill: var(--ecamUnitsColour);
-  font-size: 15px;
-  text-anchor: middle !important;
+    fill: var(--displayCyan);
+    font-size: 18px;
+    text-anchor: middle !important;
 }
 :root .APUGaugeParamUnitWhite {
-  fill: var(--ecamDefaultColour);
-  font-size: 15px;
-  text-anchor: middle !important;
+    fill: var(--displayWhite);
+    font-size: 18px;
+    text-anchor: middle !important;
 }
 :root .GreenLine {
-  stroke: var(--ecamValueColour);
-  stroke-width: 2;
-  fill: none;
+    stroke: var(--displayGreen);
+    stroke-width: 3;
+    fill: none;
 }
 :root #APUN {
-  fill: var(--ecamValueColour);
-  font-size: 25px;
+    fill: var(--displayGreen);
+    font-size: 25px;
 }

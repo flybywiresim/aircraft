@@ -1,21 +1,30 @@
 <link rel="stylesheet" href="A320_Neo_MFD.css" />
+<link rel="stylesheet" href="/CSS/A32NX_Display_Common.css" />
 
 <script type="text/html" id="A320_Neo_MFD">
     <glasscockpit-highlight id="highlight"></glasscockpit-highlight>
     <div id="Mainframe">
         <div id="Electricity" state="off">
+			<svg width="100%" height="100%" >
+				<defs>
+					<radialGradient id="Backlight" cx="50%" cy="50%" r="75%" >
+						<stop offset="0%" style="stop-color:rgb(13,20,35);stop-opacity:1" />
+						<stop offset="100%" style="stop-color:rgb(13,20,35);stop-opacity:1" />
+					</radialGradient>					
+				</defs>				
+			</svg>
             <div id="Map">
                 <map-instrument id="MapInstrument" map-mode="plan" bing-id="MFD" show-overlay="false" show-roads="false" config-path="/Pages/VCockpit/Instruments/Airliners/A320_Neo/MFD/"></map-instrument>
             </div>
 
             <div id="ModeChangeMask">
                 <svg width="1280" height="1280">
-                    <text class="Value" x="50%" y="40%" alignment-baseline="baseline" font-size="50px" fill="lime" text-anchor="middle">MODE CHANGE</text>
+                    <text class="Value valueText" x="50%" y="40%" alignment-baseline="baseline" font-size="50px"text-anchor="middle">MODE CHANGE</text>
                 </svg>
             </div>
             <div id="RangeChangeMask">
                 <svg width="1280" height="1280">
-                    <text class="Value" x="50%" y="40%" alignment-baseline="baseline" font-size="50px" fill="lime" text-anchor="middle">RANGE CHANGE</text>
+                    <text class="Value valueText" x="50%" y="40%" alignment-baseline="baseline" font-size="50px" text-anchor="middle">RANGE CHANGE</text>
                 </svg>
             </div>
 
@@ -29,11 +38,11 @@
                             <text id="GS_Value" class="Value" x="10%" y="0%" alignment-baseline="baseline">---</text>
                             <text id="TAS_Text" class="Small" x="26%" y="0%" alignment-baseline="baseline">TAS</text>
                             <text id="TAS_Value" class="Value" x="39%" y="0%" alignment-baseline="baseline">---</text>
-                            <text id="Wind_Direction" class="Value" x="0%" y="25%" alignment-baseline="baseline">--</text>
-                            <text id="Wind_Separator" class="Large" x="14%" y="25%" alignment-baseline="baseline">/</text>
-                            <text id="Wind_Strength" class="Value" x="22%" y="25%" alignment-baseline="baseline">--</text>
-                            <g id="Wind_Arrow" transform="translate(40 100) rotate(0)" fill="none" stroke="lime" stroke-width="5" stroke-linejoin="round" stroke-linecap="round" display="none">
-                                <polyline points="0,16 0,-35" />
+                            <text id="Wind_Direction" class="Value" x="0%" y="15%" alignment-baseline="baseline">--</text>
+                            <text id="Wind_Separator" class="Large" x="16%" y="15%" alignment-baseline="baseline">/</text>
+                            <text id="Wind_Strength" class="Value" x="22%" y="15%" alignment-baseline="baseline">--</text>
+                            <g id="Wind_Arrow" transform="translate(42 110) rotate(0)" class="greenShapeOutline" stroke-width="5" stroke-linejoin="round" stroke-linecap="round" display="none">
+                                <polyline points="0,17 0,-35" />
                                 <polyline points="15,-20, 0,-40 -15,-20" />
                             </g>
                         </svg>
@@ -47,22 +56,22 @@
 
                     <div id="Approach">
                         <svg>
-                            <text id="APP_Type" class="Large" x="68%" y="0%" alignment-baseline="baseline"></text>
+                            <text id="APP_Type" class="Large" x="63%" y="0%" alignment-baseline="baseline"></text>
                             <text id="APP_Freq" class="ValueVor" x="100%" y="0%" alignment-baseline="baseline">---</text>
-                            <text id="APP_Course" class="Large" x="78%" y="25%" alignment-baseline="baseline">CRS</text>
-                            <text id="APP_Course_Value" class="ValueVor" x="101%" y="25%" alignment-baseline="baseline"></text>
-                            <text id="APP_Info" class="ValueVor" x="100%" y="50%" alignment-baseline="baseline">---</text>
+                            <text id="APP_Course" class="Large" x="76%" y="15%" alignment-baseline="baseline">CRS</text>
+                            <text id="APP_Course_Value" class="ValueVor" x="101%" y="15%" alignment-baseline="baseline"></text>
+                            <text id="APP_Info" class="ValueVor" x="100%" y="30%" alignment-baseline="baseline">---</text>
                         </svg>
                     </div>
 
                     <div id="Waypoint">
                         <svg>
                             <g id="Waypoint_Group">
-                                <text id="WP_Name" class="Large" x="75%" y="0%" alignment-baseline="baseline"></text>
+                                <text id="WP_Name" class="Large" x="72%" y="0%" alignment-baseline="baseline"></text>
                                 <text id="WP_Track_Value" class="Value" x="100%" y="0%" alignment-baseline="baseline">---&deg</text>
-                                <text id="WP_Distance_Value" class="Value" x="92%" y="25%" alignment-baseline="baseline">-.-</text>
-                                <text id="WP_Distance_Units" class="Units" x="100%" y="25%" alignment-baseline="baseline">NM</text>
-                                <text id="WP_Time" class="Value" x="100%" y="50%" alignment-baseline="baseline">--:--</text>
+                                <text id="WP_Distance_Value" class="Value" x="90%" y="15%" alignment-baseline="baseline">-.-</text>
+                                <text id="WP_Distance_Units" class="Units" x="100%" y="15%" alignment-baseline="baseline">NM</text>
+                                <text id="WP_Time" class="Value" x="100%" y="30%" alignment-baseline="baseline">--:--</text>
                             </g>
                         </svg>
                     </div>
@@ -71,23 +80,23 @@
                 <div id="VORDMENavaids">
                     <div id="VORDMENavaid_Left" style="display:none">
                         <svg>
-                            <text id="State" x="50%" y="16%" alignment-baseline="middle"></text>
-                            <text id="ID" x="42.5%" y="50%" alignment-baseline="middle"></text>
-                            <text id="Mode" x="67.5%" y="50%" alignment-baseline="middle"></text>
-                            <text id="Distance" x="50%" y="84%" alignment-baseline="middle">--</text>
-                            <text id="Unit" x="75%" y="84%" alignment-baseline="middle">nm</text>
-                            <path id="Arrow" d="M0,25 L0,0 L-15,0 L0,-25 L0,-35 M0,-25 L15,0 L0,0" transform="translate(40 55)" />
+                            <text id="State" x="28%" y="20%" alignment-baseline="middle"></text>
+                            <text id="ID" x="28%" y="50%" alignment-baseline="middle"></text>
+                            <text id="Mode" x="77.5%" y="50%" alignment-baseline="middle"></text>
+                            <text id="Distance" x="28%" y="80%" alignment-baseline="middle">--</text> <!-- MODIFIED -->
+                            <text id="Unit" x="50.5%" y="80%" alignment-baseline="middle">NM</text> <!-- MODIFIED -->
+                            <path id="Arrow-Left" d="M0,25 L0,0 L-15,0 L0,-25 L0,-35 M0,-25 L15,0 L0,0" transform="translate(25 55)" />
                         </svg>
                     </div>
 
                     <div id="VORDMENavaid_Right" style="display:none">
                         <svg>
-                            <text id="State" x="50%" y="16%" alignment-baseline="middle"></text>
-                            <text id="ID" x="42.5%" y="50%" alignment-baseline="middle"></text>
-                            <text id="Mode" x="67.5%" y="50%" alignment-baseline="middle"></text>
-                            <text id="Distance" x="25%" y="84%" alignment-baseline="middle">--</text>
-                            <text id="Unit" x="50%" y="84%" alignment-baseline="middle">nm</text>
-                            <path id="Arrow" d="M-8,25 L-8,0 L-15,0 L0,-25 L0,-35 M0,-25 L15,0 L8,0 L8,25" transform="translate(280 55)" />
+                            <text id="State" x="71%" y="20%" alignment-baseline="middle"></text>
+                            <text id="ID" x="66.5%" y="50%" alignment-baseline="middle"></text>
+                            <text id="Mode" x="22.5%" y="50%" alignment-baseline="middle"></text>
+                            <text id="Distance" x="70%" y="80%" alignment-baseline="middle">--</text> <!-- MODIFIED -->
+                            <text id="Unit" x="91.5%" y="80%" alignment-baseline="middle">NM</text> <!-- MODIFIED -->
+                            <path id="Arrow-Right" d="M-8,25 L-8,0 L-15,0 L0,-25 L0,-35 M0,-25 L15,0 L8,0 L8,25" transform="translate(295 55)" />
                         </svg>
                     </div>
                 </div>
@@ -106,23 +115,32 @@
                 <div style="position: absolute; left: 0%; top: 0%; width: 100%; height: 100%; border: none;">
                     <svg viewBox="0 0 600 600" style="position:absolute; top:0%; left: 0%; width: 100%; height:100%;">
                         <g id="MapFail">
-                            <text fill="red" text-anchor="middle" x="50%" y="33%" font-size="30px">HDG</text>
-                            <text fill="red" text-anchor="middle" x="50%" y="45%" font-size="30px">MAP NOT AVAIL</text>
+                            <text class="dangerText" text-anchor="middle" x="50%" y="33%" font-size="30px">HDG</text>
+                            <text class="dangerText" text-anchor="middle" x="50%" y="45%" font-size="30px">MAP NOT AVAIL</text>
                         </g>
                         <g>
-                            <rect x="22%" y="95%" width="56%" height="3%" fill="black" stroke="white" stroke-width="2"></rect>
-                            <text x="50%" y="97.6%" fill="#db7200" font-size="20px" text-anchor="middle" id="GPSPrimaryLost">GPS PRIMARY LOST</text>
-                            <text x="50%" y="97.6%" fill="white" font-size="20px" text-anchor="middle" id="GPSPrimary">GPS PRIMARY</text>
+                            <rect id="rect_GPSPrimary" x="22%" y="95%" width="56%" height="3%" fill="url(#Backlight)" stroke="white" stroke-width="2"></rect>
+                            <text x="50%" y="97.6%" class="warningText" font-size="18px" text-anchor="middle" id="GPSPrimaryLost">GPS PRIMARY LOST</text>
+                            <text x="50%" y="97.6%" class="normalText" font-size="18px" text-anchor="middle" id="GPSPrimary">GPS PRIMARY</text>
                         </g>
                     </svg>
                 </div>
             </div>
 
+			<div id="div_Chrono" style="position: absolute; left: 3%; top: 83%; width: 30%; height: 30%; border: none; display: none;">
+				<svg id="svg_Chrono" viewBox="0 0 600 600" style="position:absolute; top:83%; left: 3%; width: 100%; height:100%;">
+					<rect fill="rgba(60,60,70,1)" x="0" y="0" width="12.5%" height="4%"></rect>
+					<text id="text_chrono_prefix" class="valueText" text-anchor="left" x="0.5%" y="3.2%" font-size="19px">00'</text>
+					<text id="text_chrono_HRSymbol" class="valueText" text-anchor="left" x="4.6%" y="2.3%" font-size="15px"></text>
+					<text id="text_chrono_suffix" class="valueText" text-anchor="left" x="6.4%" y="3.2%" font-size="19px">00"</text>
+                </svg>
+            </div>
+
             <div style="position: absolute; left: 0%; top: 0%; width: 100%; height: 100%; border: none; display: none;" id="SelfTestDiv">
                 <svg id="SelfTest" viewBox="0 0 600 600" style="position:absolute; top:0%; left: 0%; width: 100%; height:100%;">
-                    <rect fill="black" x="0" y="0" width="100%" height="100%"></rect>
-                    <text id="self_test_text" fill="green" text-anchor="middle" x="50%" y="50%" font-size="30px">SELF TEST IN PROGRESS</text>
-                    <text id="self_test_text2" fill="green" text-anchor="middle" x="50%" y="56%" font-size="30px">(MAX 40 SECONDS)</text>
+                    <rect fill="url(#Backlight)" x="0" y="0" width="100%" height="100%"></rect>
+                    <text id="self_test_text" class="valueText" text-anchor="middle" x="50%" y="50%" font-size="24px">SELF TEST IN PROGRESS</text>
+                    <text id="self_test_text2" class="valueText" text-anchor="middle" x="50%" y="56%" font-size="24px">(MAX 40 SECONDS)</text>
                 </svg>
             </div>
         </div>
@@ -130,39 +148,20 @@
 </script>
 
 <script type="text/html" import-script="/JS/SimPlane.js"></script>
+<script type="text/html" import-script="/JS/A32NX_Util.js"></script>
 
 <script type="text/html" import-script="/Pages/VCockpit/Instruments/Shared/Utils/RadioNav.js"></script>
 
 <script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/Shared/Templates/Highlight/Highlight.js"></script>
-<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/Shared/Templates/WindDataDisplay/WindDataDisplay.js"></script>
 
-<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/Shared/LogicElements/FlightPlan.js"></script>
-<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/Shared/LogicElements/FlightPlanManager.js"></script>
-<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/Shared/LogicElements/GeoCalc.js"></script>
-<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/Shared/LogicElements/SearchField.js"></script>
-<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/Shared/LogicElements/Waypoint.js"></script>
-<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/Shared/LogicElements/Runway.js"></script>
-<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/Shared/LogicElements/Approach.js"></script>
-<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/Shared/LogicElements/NearestWaypoint.js"></script>
 <script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/Shared/LogicElements/SelectableElement.js"></script>
-<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/Shared/LogicElements/ContextualMenu.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/Shared/LogicElements/SearchField.js"></script>
 
-<script type="text/html" import-template="/Pages/VCockpit/Instruments/Shared/Map/MapInstrument.html"></script>
+<script type="text/html" import-template="/Pages/VCockpit/Instruments/A320_Neo/Map/A32NX_MapInstrument.html"></script>
 
-<script type="text/html" import-script="/Pages/VCockpit/Instruments/Shared/Gauges/AbstractGauge.js"></script>
-<script type="text/html" import-script="/Pages/VCockpit/Instruments/Shared/Gauges/CircularGauge.js"></script>
-<script type="text/html" import-script="/Pages/VCockpit/Instruments/Shared/Gauges/HorizontalGauge.js"></script>
-<script type="text/html" import-script="/Pages/VCockpit/Instruments/Shared/Gauges/VerticalGauge.js"></script>
-<script type="text/html" import-script="/Pages/VCockpit/Instruments/Shared/Gauges/FlapsGauge.js"></script>
-<script type="text/html" import-script="/Pages/VCockpit/Instruments/Shared/Gauges/AilTrimGauge.js"></script>
-<script type="text/html" import-script="/Pages/VCockpit/Instruments/Shared/Gauges/ElevTrimGauge.js"></script>
-<script type="text/html" import-script="/Pages/VCockpit/Instruments/Shared/Gauges/RudderTrimGauge.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/A320_Neo/A32NX_NavSystem.js"></script>
 
-<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/Shared/NavSystem.js"></script>
-
-<script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/Shared/LogicElements/GaugeElement.js"></script>
-
-<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/Shared/BaseAirliners.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/A320_Neo/A32NX_BaseAirliners.js"></script>
 <script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/A320_Neo/A32NX_BaseNDCompass.js"></script> <!-- MODIFIED -->
 
 <script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/A320_Neo/MFD/A32NX_NDCompass.js"></script> <!-- MODIFIED -->

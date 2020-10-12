@@ -3,8 +3,12 @@ class A320_Neo_PFD extends BaseAirliners {
         super();
         this.initDuration = 7000;
     }
-    get templateID() { return "A320_Neo_PFD"; }
-    get IsGlassCockpit() { return true; }
+    get templateID() {
+        return "A320_Neo_PFD";
+    }
+    get IsGlassCockpit() {
+        return true;
+    }
     connectedCallback() {
         super.connectedCallback();
         this.pageGroups = [
@@ -57,8 +61,13 @@ class A320_Neo_PFD_MainPage extends NavSystemPage {
     }
     init() {
         super.init();
-        
-        this.showILS = SimVar.GetSimVarValue("L:BTN_LS_FILTER_ACTIVE", "bool");
+
+        const url = document.getElementsByTagName("a320-neo-pfd-element")[0].getAttribute("url");
+        this.disp_index = parseInt(url.substring(url.length - 1));
+        this.pot_index = this.disp_index == 1 ? 88 : 90;
+
+        this.getDeltaTime = A32NX_Util.createDeltaTimeCalculator(this._lastTime);
+        this.showILS = SimVar.GetSimVarValue(`L:BTN_LS_${this.disp_index}_FILTER_ACTIVE`, "bool");
         this.ils.showILS(this.showILS);
         this.compass.showILS(this.showILS);
 
@@ -90,12 +99,20 @@ class A320_Neo_PFD_MainPage extends NavSystemPage {
         this.selfTestLastKnobValueFO = 1;
         this.selfTestLastKnobValueCAP = 1;
 
-        this.electricity = document.querySelector('#Electricity')
+        this.electricity = document.querySelector('#Electricity');
     }
-    onUpdate(_deltaTime) {
-        super.onUpdate();
-        if (!this.hasInitialized) return;
-        this.flashTimer -= _deltaTime/1000;
+    onUpdate() {
+        const _deltaTime = this.getDeltaTime();
+        const currentKnobValue = SimVar.GetSimVarValue("LIGHT POTENTIOMETER:" + this.pot_index, "number");
+        if (currentKnobValue <= 0.0) {
+            this.selfTestLastKnobValue = currentKnobValue;
+            return;
+        }
+        super.onUpdate(_deltaTime);
+        if (!this.hasInitialized) {
+            return;
+        }
+        this.flashTimer -= _deltaTime / 1000;
         if (this.flashTimer <= 0) {
             this.flashTimer = 1;
             this.flashState = !this.flashState;
@@ -115,19 +132,18 @@ class A320_Neo_PFD_MainPage extends NavSystemPage {
         }
 
         const IsOnGround = SimVar.GetSimVarValue("SIM ON GROUND", "Bool");
-        const isAnyEngineSwitchOn = SimVar.GetSimVarValue("GENERAL ENG STARTER:1", "Bool") || SimVar.GetSimVarValue("GENERAL ENG STARTER:2", "Bool");
+        const isAnyEngineSwitchOn = SimVar.GetSimVarValue("FUELSYSTEM VALVE SWITCH:6", "Bool") || SimVar.GetSimVarValue("FUELSYSTEM VALVE SWITCH:7", "Bool");
 
         if (IsOnGround && isAnyEngineSwitchOn) {
             this.groundCursor.style.display = "block";
             this.groundCursorLimits.style.display = "block";
-        }
-        else {
+        } else {
             this.groundCursor.style.display = "none";
             this.groundCursorLimits.style.display = "none";
         }
 
-        const YokeXPosition = 40.9 + (15 * SimVar.GetSimVarValue("YOKE X POSITION", "Position"));
-        const YokeYPosition = 47.7 - (15 * SimVar.GetSimVarValue("YOKE Y POSITION", "Position"));
+        const YokeXPosition = 40.45 + (18.4 * SimVar.GetSimVarValue("YOKE X POSITION", "Position"));
+        const YokeYPosition = 47.95 - (14.45 * SimVar.GetSimVarValue("YOKE Y POSITION", "Position"));
 
         this.groundCursor.style.left = YokeXPosition.toString() + "%";
         this.groundCursor.style.top = YokeYPosition.toString() + "%";
@@ -157,23 +173,14 @@ class A320_Neo_PFD_MainPage extends NavSystemPage {
         const ACPowerStateChange = SimVar.GetSimVarValue("L:ACPowerStateChange","Bool");
         const ACPowerAvailable = SimVar.GetSimVarValue("L:ACPowerAvailable","Bool");
 
-        /**
-         * Self test on PFD screen
-         * TODO: Seperate both PFD screens, currently if the FO changes its screen, it also tests the screen for the captain and vice versa.
-         **/
-        
-        let selfTestCurrentKnobValueFO = SimVar.GetSimVarValue("LIGHT POTENTIOMETER:20", "number");
-        let selfTestCurrentKnobValueCAP = SimVar.GetSimVarValue("LIGHT POTENTIOMETER:18", "number");
-        
-        const FOKnobChanged = (selfTestCurrentKnobValueFO >= 0.1 && this.selfTestLastKnobValueFO < 0.1);
-        const CAPKnobChanged = (selfTestCurrentKnobValueCAP >= 0.1 && this.selfTestLastKnobValueCAP < 0.1);
-        
-        if((FOKnobChanged || CAPKnobChanged || ACPowerStateChange) && ACPowerAvailable && !this.selfTestTimerStarted) {
+        const KnobChanged = (currentKnobValue >= 0.1 && this.selfTestLastKnobValue < 0.1);
+
+        if ((KnobChanged || ACPowerStateChange) && ACPowerAvailable && !this.selfTestTimerStarted) {
             this.selfTestDiv.style.display = "block";
             this.selfTestTimer = 14.25;
             this.selfTestTimerStarted = true;
         }
-        
+
         if (this.selfTestTimer >= 0) {
             this.selfTestTimer -= _deltaTime / 1000;
             if (this.selfTestTimer <= 0) {
@@ -181,17 +188,16 @@ class A320_Neo_PFD_MainPage extends NavSystemPage {
                 this.selfTestTimerStarted = false;
             }
         }
-        
-        this.selfTestLastKnobValueFO = selfTestCurrentKnobValueFO
-        this.selfTestLastKnobValueCAP = selfTestCurrentKnobValueCAP
 
+        this.selfTestLastKnobValue = currentKnobValue;
         this.updateScreenState();
     }
     onEvent(_event) {
         switch (_event) {
-            case "BTN_LS":
+            case `BTN_LS_${this.disp_index}`:
+
                 this.showILS = !this.showILS;
-                SimVar.SetSimVarValue("L:BTN_LS_FILTER_ACTIVE", "number", this.showILS ? 1 : 0);
+                SimVar.SetSimVarValue(`L:BTN_LS_${this.disp_index}_FILTER_ACTIVE`, "number", this.showILS ? 1 : 0);
                 this.ils.showILS(this.showILS);
                 this.compass.showILS(this.showILS);
                 break;
@@ -200,30 +206,38 @@ class A320_Neo_PFD_MainPage extends NavSystemPage {
 
     updateScreenState() {
         if (SimVar.GetSimVarValue("L:ACPowerAvailable","bool")) {
-            this.electricity.style.display = "block"
+            this.electricity.style.display = "block";
         } else {
-            this.electricity.style.display = "none"
+            this.electricity.style.display = "none";
         }
     }
-    
+
 }
 class A320_Neo_PFD_VSpeed extends NavSystemElement {
     init(root) {
         this.vsi = this.gps.getChildById("VSpeed");
         this.vsi.aircraft = Aircraft.A320_NEO;
         this.vsi.gps = this.gps;
+        this.getDeltaTime = A32NX_Util.createDeltaTimeCalculator(this._lastTime);
+        const url = document.getElementsByTagName("a320-neo-pfd-element")[0].getAttribute("url");
+        this.disp_index = parseInt(url.substring(url.length - 1));
+        this.pot_index = this.disp_index == 1 ? 88 : 90;
     }
     onEnter() {
     }
-    onUpdate(_deltaTime) {
-        var vSpeed = Math.round(Simplane.getVerticalSpeed());
+    onUpdate() {
+        const _deltaTime = this.getDeltaTime();
+        const currentKnobValue = SimVar.GetSimVarValue("LIGHT POTENTIOMETER:" + this.pot_index, "number");
+        if (currentKnobValue <= 0.0) {
+            return;
+        }
+        const vSpeed = Math.round(Simplane.getVerticalSpeed());
         this.vsi.setAttribute("vspeed", vSpeed.toString());
         if (Simplane.getAutoPilotVerticalSpeedHoldActive()) {
-            var selVSpeed = Math.round(Simplane.getAutoPilotVerticalSpeedHoldValue());
+            const selVSpeed = Math.round(Simplane.getAutoPilotVerticalSpeedHoldValue());
             this.vsi.setAttribute("selected_vspeed", selVSpeed.toString());
             this.vsi.setAttribute("selected_vspeed_active", "true");
-        }
-        else {
+        } else {
             this.vsi.setAttribute("selected_vspeed_active", "false");
         }
     }
@@ -240,10 +254,19 @@ class A320_Neo_PFD_Airspeed extends NavSystemElement {
         this.airspeed = this.gps.getChildById("Airspeed");
         this.airspeed.aircraft = Aircraft.A320_NEO;
         this.airspeed.gps = this.gps;
+        this.getDeltaTime = A32NX_Util.createDeltaTimeCalculator(this._lastTime);
+        const url = document.getElementsByTagName("a320-neo-pfd-element")[0].getAttribute("url");
+        this.disp_index = parseInt(url.substring(url.length - 1));
+        this.pot_index = this.disp_index == 1 ? 88 : 90;
     }
     onEnter() {
     }
-    onUpdate(_deltaTime) {
+    onUpdate() {
+        const _deltaTime = this.getDeltaTime();
+        const currentKnobValue = SimVar.GetSimVarValue("LIGHT POTENTIOMETER:" + this.pot_index, "number");
+        if (currentKnobValue <= 0.0) {
+            return;
+        }
         this.airspeed.update(_deltaTime);
     }
     onExit() {
@@ -259,10 +282,19 @@ class A320_Neo_PFD_Altimeter extends NavSystemElement {
         this.altimeter = this.gps.getChildById("Altimeter");
         this.altimeter.aircraft = Aircraft.A320_NEO;
         this.altimeter.gps = this.gps;
+        this.getDeltaTime = A32NX_Util.createDeltaTimeCalculator(this._lastTime);
+        const url = document.getElementsByTagName("a320-neo-pfd-element")[0].getAttribute("url");
+        this.disp_index = parseInt(url.substring(url.length - 1));
+        this.pot_index = this.disp_index == 1 ? 88 : 90;
     }
     onEnter() {
     }
-    onUpdate(_deltaTime) {
+    onUpdate() {
+        const _deltaTime = this.getDeltaTime();
+        const currentKnobValue = SimVar.GetSimVarValue("LIGHT POTENTIOMETER:" + this.pot_index, "number");
+        if (currentKnobValue <= 0.0) {
+            return;
+        }
         this.altimeter.update(_deltaTime);
     }
     onExit() {
@@ -287,20 +319,43 @@ class A320_Neo_PFD_Attitude extends NavSystemElement {
         this.hsi = this.gps.getChildById("Horizon");
         this.hsi.aircraft = Aircraft.A320_NEO;
         this.hsi.gps = this.gps;
+        this.getDeltaTime = A32NX_Util.createDeltaTimeCalculator(this._lastTime);
+        const url = document.getElementsByTagName("a320-neo-pfd-element")[0].getAttribute("url");
+        this.disp_index = parseInt(url.substring(url.length - 1));
+        this.pot_index = this.disp_index == 1 ? 88 : 90;
     }
     onEnter() {
     }
-    onUpdate(_deltaTime) {
+    onUpdate() {
+        const _deltaTime = this.getDeltaTime();
+        const currentKnobValue = SimVar.GetSimVarValue("LIGHT POTENTIOMETER:" + this.pot_index, "number");
+        if (currentKnobValue <= 0.0) {
+            return;
+        }
         if (this.hsi) {
             this.hsi.update(_deltaTime);
-            var xyz = Simplane.getOrientationAxis();
+
+            const flightDirectorActive = SimVar.GetSimVarValue(`AUTOPILOT FLIGHT DIRECTOR ACTIVE:1`, "bool");
+            const apHeadingModeSelected = Simplane.getAutoPilotHeadingSelected();
+            const fcuShowHdg = SimVar.GetSimVarValue("L:A320_FCU_SHOW_SELECTED_HEADING", "number");
+            const showSelectedHdg = !flightDirectorActive && (fcuShowHdg || apHeadingModeSelected);
+
+            const selectedHeading = Simplane.getAutoPilotSelectedHeadingLockValue(false);
+            const compass = SimVar.GetSimVarValue("PLANE HEADING DEGREES MAGNETIC", "degree");
+            const xyz = Simplane.getOrientationAxis();
+
             if (xyz) {
+                this.hsi.setAttribute("horizon", (xyz.pitch / Math.PI * 180).toString());
                 this.hsi.setAttribute("pitch", (xyz.pitch / Math.PI * 180).toString());
                 this.hsi.setAttribute("bank", (xyz.bank / Math.PI * 180).toString());
             }
+
             this.hsi.setAttribute("slip_skid", Simplane.getInclinometer().toString());
-            this.hsi.setAttribute("radio_altitude", Simplane.getAltitudeAboveGround().toString());
+            this.hsi.setAttribute("radio_altitude", Simplane.getAltitudeAboveGround(true).toString());
             this.hsi.setAttribute("radio_decision_height", this.gps.radioNav.getRadioDecisionHeight().toString());
+            this.hsi.setAttribute("compass", compass.toString());
+            this.hsi.setAttribute("show_selected_hdg", showSelectedHdg.toString());
+            this.hsi.setAttribute("ap_hdg", selectedHeading.toString());
         }
     }
     onExit() {
@@ -313,10 +368,19 @@ class A320_Neo_PFD_Compass extends NavSystemElement {
         this.hsi = this.gps.getChildById("Compass");
         this.hsi.aircraft = Aircraft.A320_NEO;
         this.hsi.gps = this.gps;
+        this.getDeltaTime = A32NX_Util.createDeltaTimeCalculator(this._lastTime);
+        const url = document.getElementsByTagName("a320-neo-pfd-element")[0].getAttribute("url");
+        this.disp_index = parseInt(url.substring(url.length - 1));
+        this.pot_index = this.disp_index == 1 ? 88 : 90;
     }
     onEnter() {
     }
-    onUpdate(_deltaTime) {
+    onUpdate() {
+        const _deltaTime = this.getDeltaTime();
+        const currentKnobValue = SimVar.GetSimVarValue("LIGHT POTENTIOMETER:" + this.pot_index, "number");
+        if (currentKnobValue <= 0.0) {
+            return;
+        }
         this.hsi.update(_deltaTime);
     }
     onExit() {
@@ -335,10 +399,19 @@ class A320_Neo_PFD_NavStatus extends NavSystemElement {
         this.fma.aircraft = Aircraft.A320_NEO;
         this.fma.gps = this.gps;
         this.isInitialized = true;
+        this.getDeltaTime = A32NX_Util.createDeltaTimeCalculator(this._lastTime);
+        const url = document.getElementsByTagName("a320-neo-pfd-element")[0].getAttribute("url");
+        this.disp_index = parseInt(url.substring(url.length - 1));
+        this.pot_index = this.disp_index == 1 ? 88 : 90;
     }
     onEnter() {
     }
-    onUpdate(_deltaTime) {
+    onUpdate() {
+        const _deltaTime = this.getDeltaTime();
+        const currentKnobValue = SimVar.GetSimVarValue("LIGHT POTENTIOMETER:" + this.pot_index, "number");
+        if (currentKnobValue <= 0.0) {
+            return;
+        }
         if (this.fma != null) {
             this.fma.update(_deltaTime);
         }
@@ -353,10 +426,19 @@ class A320_Neo_PFD_ILS extends NavSystemElement {
         this.ils = this.gps.getChildById("ILS");
         this.ils.aircraft = Aircraft.A320_NEO;
         this.ils.gps = this.gps;
+        this.getDeltaTime = A32NX_Util.createDeltaTimeCalculator(this._lastTime);
+        const url = document.getElementsByTagName("a320-neo-pfd-element")[0].getAttribute("url");
+        this.disp_index = parseInt(url.substring(url.length - 1));
+        this.pot_index = this.disp_index == 1 ? 88 : 90;
     }
     onEnter() {
     }
-    onUpdate(_deltaTime) {
+    onUpdate() {
+        const _deltaTime = this.getDeltaTime();
+        const currentKnobValue = SimVar.GetSimVarValue("LIGHT POTENTIOMETER:" + this.pot_index, "number");
+        if (currentKnobValue <= 0.0) {
+            return;
+        }
         if (this.ils) {
             this.ils.update(_deltaTime);
         }

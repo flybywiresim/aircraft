@@ -1,24 +1,24 @@
 class CDUNewWaypoint {
     static ShowPage(mcdu) {
-        mcdu.clearDisplay()
+        mcdu.clearDisplay();
         mcdu.setTemplate([
             ["NEW WAYPOINT"],
             ["IDENT"],
-            ["□□□□□□□[color]red"],
+            ["_______[color]red"],
             ["LAT/LONG"],
-            ["□□□□.□□/□□□□□.□□[color]red"],
+            ["____.__|_____.__[color]red"],
             ["PLACE/BRG /DIST"],
-            ["□□□□□□□/□□□° /□□□. □[color]red"],
+            ["_______|___° |___. _[color]red"],
             ["PLACE-BRG  /PLACE-BRG"],
-            ["□□□□□-□□□°  /□□□□□-□□□°"],
+            ["_____-___°  |_____-___°"],
             [""],
             ["", "RETURN>"],
             [""],
             [""]
-        ])
+        ]);
 
         mcdu.onRightInput[4] = () => {
-            CDUPilotsWaypoint.ShowPage(mcdu)
-        }
+            CDUPilotsWaypoint.ShowPage(mcdu);
+        };
     }
 }

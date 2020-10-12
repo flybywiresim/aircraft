@@ -1,6 +1,14 @@
-﻿/** This mixin makes a single line element fit exactly on the Roboto font for easier integration. */
+﻿@import url("/CSS/A32NX_Display_Common.css");
+
+/** This mixin makes a single line element fit exactly on the Roboto font for easier integration. */
 :root {
   --bodyHeightScale: 1; }
+
+#highlight {
+  position: absolute;
+  height: 100%;
+  width: 100%;
+  z-index: 10; }
 
 @keyframes TemporaryShow {
   0%, 100% {
@@ -32,43 +40,13 @@
 
 #Electricity {
   width: 100%;
-  height: 100%; }
+  height: 100%;
+  background:radial-gradient(ellipse at center, rgba(13,20,35,1) 0%,rgba(13,20,35,1) 100%);
+}
 
 #Electricity[state=off] {
   display: none; }
 
-@font-face {
-  font-family: "Roboto";
-  src: url("/Fonts/RobotoMono-Medium.ttf") format("truetype");
-  font-weight: normal;
-  font-style: normal; }
-
-@font-face {
-  font-family: "Roboto-Light";
-  src: url("/Fonts/RobotoMono-Light.ttf") format("truetype");
-  font-weight: normal;
-  font-style: normal; }
-
-@font-face {
-  font-family: "Roboto-Bold";
-  src: url("/Fonts/RobotoMono-Bold.ttf") format("truetype");
-  font-weight: normal;
-  font-style: normal; }
-
-@font-face {
-  font-family: "Consolas";
-  src: url("/Fonts/consola.ttf") format("truetype");
-  font-weight: normal;
-  font-style: normal; }
-
-/*
-@font-face {
-    font-family: "Not Courier Sans";
-    src: url("/Fonts/NotCourierSans.otf") format('opentype');
-    font-weight: normal;
-    font-style: normal;
-}
-*/
 span:empty:before {
   content: " "; }
 
@@ -76,11 +54,10 @@ a320-neo-cdu-main-display {
   position: absolute;
   width: 100%;
   height: 100%;
-  background-color: #0e0d08;
-  color: white;
-  font-family: "Not Courier Sans", "Consolas";
-  font-size: 6.46vw;
-  color: white; }
+  font-family: "ECAMFontRegular";
+  /* font-size: 6.46vw; */
+  font-size: 5.8vw;
+  color: var(--displayWhite); }
 
 /*
 a320-neo-cdu-main-display::after {
@@ -95,19 +72,22 @@ a320-neo-cdu-main-display::after {
 }
 */
 .white {
-  color: white; }
+  color: var(--mcduWhite); }
 
 .blue {
-  color: #99ceff; }
+  color: var(--mcduBlue); }
 
 .yellow {
-  color: #f9dd02; }
+  color: var(--mcduYellow); }
 
 .green {
-  color: #1daa05; }
+  color: var(--mcduGreen); }
 
 .red {
-  color: #ff886d; }
+  color: var(--mcduRed); }
+
+.magenta {
+  color: var(--mcduMagenta); }
 
 fmc-main-display::before {
   content: " ";
@@ -137,9 +117,17 @@ fmc-main-display::before {
   right: 5%; }
 
 .s-text {
-  font-size: 4.8vw;
-  width: 100%;
-  letter-spacing: 0.9vw; }
+  font-size: 4.2vw;
+  /* font-size: 4.8vw; */
+  /* letter-spacing: 0.9vw;  */
+  letter-spacing: 0.6vw;
+}
+
+.irs-text {
+  font-weight: lighter;
+  font-size: 6.3vw;
+  letter-spacing: 0.5vw;
+}
 
 .label {
   height: 5%;

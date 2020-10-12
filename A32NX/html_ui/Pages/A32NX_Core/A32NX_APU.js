@@ -8,7 +8,7 @@ class A32NX_APU {
         this.lastAPUBleedState = -1;
     }
     update(_deltaTime) {
-        const currentAPUMasterState = SimVar.GetSimVarValue("FUELSYSTEM VALVE SWITCH:8", "Bool");
+        const currentAPUMasterState = SimVar.GetSimVarValue("A:FUELSYSTEM VALVE SWITCH:8", "Bool");
         const apuFlapOpenPercent = SimVar.GetSimVarValue("L:APU_FLAP_OPEN", "Percent");
         const APUPctRPM = SimVar.GetSimVarValue("APU PCT RPM", "percent");
 
@@ -33,16 +33,16 @@ class A32NX_APU {
         }
 
         //APU start, stop
-        if(APUPctRPM >= 87){
+        if (APUPctRPM >= 87) {
             SimVar.SetSimVarValue("L:APU_GEN_ONLINE","Bool",1);
             SimVar.SetSimVarValue("L:APU_GEN_VOLTAGE","Volts",115);
             SimVar.SetSimVarValue("L:APU_GEN_AMPERAGE","Amperes",782.609); // 1000 * 90 kVA / 115V = 782.609A
-            SimVar.SetSimVarValue("L:APU_GEN_FREQ","Hertz",Math.round((4.46*APUPctRPM)-46.15));
+            SimVar.SetSimVarValue("L:APU_GEN_FREQ","Hertz",Math.round((4.46 * APUPctRPM) - 46.15));
             SimVar.SetSimVarValue("L:APU_BLEED_PRESSURE","PSI",35);
             SimVar.SetSimVarValue(
                 "L:APU_LOAD_PERCENT",
                 "percent",
-                Math.max(SimVar.GetSimVarValue("L:APU_GEN_AMPERAGE","Amperes")/SimVar.GetSimVarValue("ELECTRICAL TOTAL LOAD AMPS","Amperes"), 0)
+                Math.max(SimVar.GetSimVarValue("L:APU_GEN_AMPERAGE","Amperes") / SimVar.GetSimVarValue("ELECTRICAL TOTAL LOAD AMPS","Amperes"), 0)
             );
         } else {
             SimVar.SetSimVarValue("L:APU_GEN_ONLINE","Bool",0);
@@ -56,7 +56,7 @@ class A32NX_APU {
         //Bleed
         const currentAPUBleedState = SimVar.GetSimVarValue("BLEED AIR APU","Bool");
         if (currentAPUBleedState !== this.lastAPUBleedState) {
-            this.lastAPUBleedState = currentAPUBleedState
+            this.lastAPUBleedState = currentAPUBleedState;
             if (currentAPUBleedState === 1) {
                 this.APUBleedTimer = 3;
             } else {
@@ -67,8 +67,8 @@ class A32NX_APU {
         //AVAIL indication & bleed pressure
         if (APUPctRPM > 95) {
             if (this.APUBleedTimer > 0) {
-                this.APUBleedTimer -= _deltaTime/1000;
-                SimVar.SetSimVarValue("L:APU_BLEED_PRESSURE","PSI",Math.round(35-this.APUBleedTimer));
+                this.APUBleedTimer -= _deltaTime / 1000;
+                SimVar.SetSimVarValue("L:APU_BLEED_PRESSURE","PSI",Math.round(35 - this.APUBleedTimer));
             }
         }
     }

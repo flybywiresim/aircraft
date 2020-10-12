@@ -18,8 +18,7 @@ class CDULateralRevisionPage {
             mcdu.onLeftInput[0] = () => {
                 CDUAvailableDeparturesPage.ShowPage(mcdu, waypoint);
             };
-        }
-        else if (waypoint === mcdu.flightPlanManager.getDestination()) {
+        } else if (waypoint === mcdu.flightPlanManager.getDestination()) {
             departureArrival = "<ARRIVAL";
             mcdu.onLeftInput[0] = () => {
                 CDUAvailableArrivalsPage.ShowPage(mcdu, waypoint);
@@ -32,16 +31,16 @@ class CDULateralRevisionPage {
             ["", "LL WING/INCR/NO"],
             ["[][color]blue", "[ ]°/[ ]°/[][color]blue"],
             ["", "NEXT WPT"],
-            ["<HOLD", "[ ][color]blue"],
+            ["<HOLD[color]blue", "[ ][color]blue"],
             ["ENABLE[color]blue", "NEW DEST"],
-            ["←ALTN[color]blue", "[ ][color]blue"],
+            ["{ALTN[color]blue", "[ ][color]blue"],
             [""],
             ["", "AIRWAYS>"],
             [""],
             ["<RETURN"]
         ]);
         mcdu.onRightInput[2] = async () => {
-            let value = mcdu.inOut;
+            const value = mcdu.inOut;
             mcdu.clearUserInput();
             mcdu.insertWaypoint(value, waypointIndexFP + 1, (result) => {
                 if (result) {
@@ -49,8 +48,15 @@ class CDULateralRevisionPage {
                 }
             });
         };
-        mcdu.onRightInput[4] = () => { A320_Neo_CDU_AirwaysFromWaypointPage.ShowPage(mcdu, waypoint); };
-        mcdu.onLeftInput[5] = () => { CDUFlightPlanPage.ShowPage(mcdu); };
+        mcdu.onLeftInput[2] = () => {
+            CDUHoldAtPage.ShowPage(mcdu, waypoint, waypointIndexFP);
+        };
+        mcdu.onRightInput[4] = () => {
+            A320_Neo_CDU_AirwaysFromWaypointPage.ShowPage(mcdu, waypoint);
+        };
+        mcdu.onLeftInput[5] = () => {
+            CDUFlightPlanPage.ShowPage(mcdu);
+        };
     }
 }
 //# sourceMappingURL=A320_Neo_CDU_LateralRevisionPage.js.map

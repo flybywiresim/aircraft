@@ -210,7 +210,7 @@ Effect plug-ins	ID	Name	Type				Notes
 	4280681428	rev_outdoor_aircraft_generic	Wwise Convolution Reverb			
 
 Plug-in Media	ID	Name	Source file	Type	Wwise Object Path	Notes	Data Size
-	74039724	rev_outdoor_aircraft_low_end	C:\Users\olive\Documents\GitHub\msfs-a320neo\src\sound\.cache\Windows\Plugins\Wwise Convolution Reverb\AE_DistantBuilding_MicsFar_28E70600.wem	Wwise Convolution Reverb (Shared)	\Effects\reverb_convolution\rev_outdoor_aircraft_low_end		191040
-	231298282	rev_inside_generic_custom	C:\Users\olive\Documents\GitHub\msfs-a320neo\src\sound\.cache\Windows\Plugins\Wwise Convolution Reverb\IR_ATR42-600_AT4022_BB01EA9C.wem	Wwise Convolution Reverb (Shared)	\Effects\reverb_convolution\rev_inside_generic_custom		352400
-	879285817	rev_outdoor_aircraft_generic	C:\Users\olive\Documents\GitHub\msfs-a320neo\src\sound\.cache\Windows\Plugins\Wwise Convolution Reverb\AE_DistantBuilding_MicsFar_7B6DC981.wem	Wwise Convolution Reverb (Shared)	\Effects\reverb_convolution\rev_outdoor_aircraft_generic		216864
+	74039724	rev_outdoor_aircraft_low_end	C:\Users\olive\Documents\GitHub\a32nx\src\sound\.cache\Windows\Plugins\Wwise Convolution Reverb\AE_DistantBuilding_MicsFar_28E70600.wem	Wwise Convolution Reverb (Shared)	\Effects\reverb_convolution\rev_outdoor_aircraft_low_end		191040
+	231298282	rev_inside_generic_custom	C:\Users\olive\Documents\GitHub\a32nx\src\sound\.cache\Windows\Plugins\Wwise Convolution Reverb\IR_ATR42-600_AT4022_BB01EA9C.wem	Wwise Convolution Reverb (Shared)	\Effects\reverb_convolution\rev_inside_generic_custom		352400
+	879285817	rev_outdoor_aircraft_generic	C:\Users\olive\Documents\GitHub\a32nx\src\sound\.cache\Windows\Plugins\Wwise Convolution Reverb\AE_DistantBuilding_MicsFar_7B6DC981.wem	Wwise Convolution Reverb (Shared)	\Effects\reverb_convolution\rev_outdoor_aircraft_generic		216864
 

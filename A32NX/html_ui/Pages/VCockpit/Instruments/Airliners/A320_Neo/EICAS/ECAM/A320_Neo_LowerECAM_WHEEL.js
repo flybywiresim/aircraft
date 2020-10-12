@@ -1,239 +1,373 @@
+/**
+ * Minimum temperature at which the brake indicator turns amber
+ */
+const BRAKE_AMBER_THRESHOLD = 300;
+
+/**
+ * Minimum temperature at which the brake indicator shows the hottest brake
+ */
+const BRAKE_SHOW_HOTTEST_THRESHOLD = 100;
+
 var A320_Neo_LowerECAM_WHEEL;
 (function (A320_Neo_LowerECAM_WHEEL) {
     class Definitions {
     }
+
     A320_Neo_LowerECAM_WHEEL.Definitions = Definitions;
+
     class Page extends Airliners.EICASTemplateElement {
         constructor() {
             super();
             this.isInitialised = false;
         }
-        get templateID() { return "LowerECAMWHEELTemplate"; }
+        get templateID() {
+            return "LowerECAMWHEELTemplate";
+        }
         connectedCallback() {
             super.connectedCallback();
             TemplateElement.call(this, this.init.bind(this));
         }
+
         init() {
+            this.view = {
+                // Spoiler arrows
+                spoilers: {
+                    left: [
+                        this.querySelector("#arrow5_left"),
+                        this.querySelector("#arrow4_left"),
+                        this.querySelector("#arrow3_left"),
+                        this.querySelector("#arrow2_left"),
+                        this.querySelector("#arrow1_left"),
+                    ],
+                    right: [
+                        this.querySelector("#arrow5_right"),
+                        this.querySelector("#arrow4_right"),
+                        this.querySelector("#arrow3_right"),
+                        this.querySelector("#arrow2_right"),
+                        this.querySelector("#arrow1_right"),
+                    ],
+                    lines: this.querySelectorAll("#speedbrakes path"),
+                    numbers: this.querySelectorAll("#speedbrake_text text"),
+                },
+                // Landing gear indicators
+                gears: {
+                    left: this.querySelector("#gear-left"),
+                    center: this.querySelector("#gear-center"),
+                    right: this.querySelector("#gear-right"),
+                    doors: {
+                        left: this.querySelector("#gear-door-left"),
+                        center: this.querySelector("#gear-door-center"),
+                        right: this.querySelector("#gear-door-right"),
+                        inTransit: {
+                            left: this.querySelector("#gear-door-in-transit-left"),
+                            center: this.querySelector("#gear-door-in-transit-center"),
+                            right: this.querySelector("#gear-door-in-transit-right"),
+                        }
+                    },
+                    lgcius: {
+                        all: [
+                            this.querySelector("#gear-lgciu-1-left"),
+                            this.querySelector("#gear-lgciu-2-left"),
+                            this.querySelector("#gear-lgciu-1-center"),
+                            this.querySelector("#gear-lgciu-2-center"),
+                            this.querySelector("#gear-lgciu-1-right"),
+                            this.querySelector("#gear-lgciu-2-right"),
+                        ],
+                        left: this.querySelector("#gear-lgcius-left"),
+                        center: this.querySelector("#gear-lgcius-center"),
+                        right: this.querySelector("#gear-lgcius-right"),
+                        allOne: {
+                            elements: this.querySelectorAll(".gear-lgciu-1"),
+                            failedElements: this.querySelectorAll(".gear-failed-lgicu-1"),
+                            setSensorFailed(/** boolean */ state) {
+                                if (state) {
+                                    this.elements.forEach(it => it.classList.add("color-red"));
+                                } else {
+                                    this.elements.forEach(it => it.classList.remove("color-red"));
+                                }
+                            },
+                            setFailed(/** boolean */ state) {
+                                if (state) {
+                                    this.elements.forEach(it => it.setAttribute("visibility", "hidden"));
+                                    this.failedElements.forEach(it => it.setAttribute("visibility", "visible"));
+                                } else {
+                                    this.elements.forEach(it => it.setAttribute("visibility", "visible"));
+                                    this.failedElements.forEach(it => it.setAttribute("visibility", "hidden"));
+                                }
+                            }
+                        },
+                        allTwo: {
+                            elements: this.querySelectorAll(".gear-lgciu-2"),
+                            failedElements: this.querySelectorAll(".gear-failed-lgicu-2"),
+                            setSensorFailed(/** boolean */ state) {
+                                if (state) {
+                                    this.elements.forEach(it => it.classList.add("color-red"));
+                                } else {
+                                    this.elements.forEach(it => it.classList.remove("color-red"));
+                                }
+                            },
+                            setFailed(/** boolean */ state) {
+                                if (state) {
+                                    this.elements.forEach(it => it.setAttribute("visibility", "hidden"));
+                                    this.failedElements.forEach(it => it.setAttribute("visibility", "visible"));
+                                } else {
+                                    this.elements.forEach(it => it.setAttribute("visibility", "visible"));
+                                    this.failedElements.forEach(it => it.setAttribute("visibility", "hidden"));
+                                }
+                            }
+                        },
+                    }
+                },
+                // Brake temperature indicators
+                brakes: {
+                    // Arches
+                    indicators: [
+                        this.querySelector("#indicator-arch-1"),
+                        this.querySelector("#indicator-arch-2"),
+                        this.querySelector("#indicator-arch-3"),
+                        this.querySelector("#indicator-arch-4"),
+                    ],
+                    // Temperature
+                    temps: [
+                        this.querySelector("#wheel-brake-temp-1"),
+                        this.querySelector("#wheel-brake-temp-2"),
+                        this.querySelector("#wheel-brake-temp-3"),
+                        this.querySelector("#wheel-brake-temp-4"),
+                    ],
+                    autobrake: {
+                        element: this.querySelector("#autobrake-element"),
+                        title: this.querySelector("#autobrake-title"),
+                        quantity: {
+                            min: this.querySelector("#autobrake-quantity-min"),
+                            med: this.querySelector("#autobrake-quantity-med"),
+                            max: this.querySelector("#autobrake-quantity-max"),
+                        },
+                        setArmed(/** boolean */ state) {
+                            this.element.setAttribute("visibility", state ? "visible" : "hidden");
+                            this.title.setAttribute("visibility", state ? "visible" : "hidden");
+                            this.quantity.min.setAttribute("visibility", state ? "visible" : "hidden");
+                            this.quantity.med.setAttribute("visibility", state ? "visible" : "hidden");
+                            this.quantity.max.setAttribute("visibility", state ? "visible" : "hidden");
+                        },
+                        switch(/** "min" | "med" | "max" */ mode) {
+                            switch (mode) {
+                                case "min":
+                                    this.quantity.min.setAttribute("visibility", "visible");
+                                    this.quantity.med.setAttribute("visibility", "hidden");
+                                    this.quantity.max.setAttribute("visibility", "hidden");
+                                    break;
+                                case "med":
+                                    this.quantity.min.setAttribute("visibility", "hidden");
+                                    this.quantity.med.setAttribute("visibility", "visible");
+                                    this.quantity.max.setAttribute("visibility", "hidden");
+                                    break;
+                                case "max":
+                                    this.quantity.min.setAttribute("visibility", "hidden");
+                                    this.quantity.med.setAttribute("visibility", "hidden");
+                                    this.quantity.max.setAttribute("visibility", "visible");
+                                    break;
+                            }
+                        }
+                    }
+                },
+                center: {
+                    nwSteering: this.querySelector("#center-nw-steering"),
+                    lgCtl: this.querySelector("#center-lg-ctl"),
+                    antiSkid: this.querySelector("#center-anti-skid"),
+                    normBrk: this.querySelector("#center-norm-brk"),
+                    altnBrk: this.querySelector("#center-altn-brk"),
+                    accuOnly: this.querySelector("#center-accu-only"),
+                }
+            };
+
             this.isInitialised = true;
 
-            this.selfTestTimer = 3;
-            this.newTimer = 3;
+            /**
+             * Currently displayed brake temperature. Initialized to SimVar value.
+             */
+            this.currentDisplayedBrakeTemps = [
+                SimVar.GetSimVarValue("L:A32NX_BRAKE_TEMPERATURE_1", "celsius"),
+                SimVar.GetSimVarValue("L:A32NX_BRAKE_TEMPERATURE_2", "celsius"),
+                SimVar.GetSimVarValue("L:A32NX_BRAKE_TEMPERATURE_3", "celsius"),
+                SimVar.GetSimVarValue("L:A32NX_BRAKE_TEMPERATURE_4", "celsius")
+            ];
 
-            this.autoBrakeText = this.querySelector("#autoBrakeText");
+            this.brakeTemperatureDidChange = [true, true, true, true];
 
-            // Hyd Indicator for Steering
-            this.speedbrakeHyd = this.querySelector("#speedbrakeHyd");
-            this.normBrkHyd = this.querySelector("#normBrkHyd");
-            this.atlnBrk = this.querySelector("#atlnBrk");
+            this.hydraulicsAvailable = false;
+            this.setControlsHydraulicsAvailable(this.hydraulicsAvailable);
+        }
 
-            this.steeringNW = this.querySelector("#steering");
-            this.antiSkidd = this.querySelector("#antiskid");
-            this.lastSkiddState = -1;
+        /**
+         * @param element {Element}
+         */
+        show(element) {
+            element.setAttribute("visibility", "visible");
+        }
 
-            // Brake Temp Precentage 
-            this.BrakeTemp1 = this.querySelector("#WheelTemp1");
-            this.BrakeTemp2 = this.querySelector("#WheelTemp2");
-            this.BrakeTemp3 = this.querySelector("#WheelTemp3");
-            this.BrakeTemp4 = this.querySelector("#WheelTemp4");
+        /**
+         * @param element {Element}
+         */
+        hide(element) {
+            element.setAttribute("visibility", "hidden");
+        }
 
-            this.autoBrakeIndicator = this.querySelector("#autobrake");
-            this.autoBrakeIndicator.setAttribute("visibility", "hidden");
-            this.autoBrakeBlinker = this.querySelector("#blinkAutoBrake")
-            this.autoBrakeBlinker.setAttribute("visibility", "hidden");
+        /**
+         * @param element {Element}
+         */
+        makeGreen(element) {
+            element.classList.remove("color-amber");
+            element.classList.remove("color-red");
+            element.classList.add("color-green");
+        }
 
-            // Spoiler
-            this.spoilerRight = this.querySelector("#spoilerRight");
-            this.spoilerRight.setAttribute("visibility", "hidden");
+        /**
+         * @param element {Element}
+         */
+        makeAmber(element) {
+            element.classList.remove("color-green");
+            element.classList.remove("color-red");
+            element.classList.add("color-amber");
+        }
 
-            this.spoilerLeft = this.querySelector("#spoilerLeft");
-            this.spoilerLeft.setAttribute("visibility", "hidden");
-
-            this.tempText = this.querySelector("#temp");
-            this.tempText.setAttribute("visibility", "hidden");
-
-            // TODO Need to finish making failure logic
-            this.failureLGCIUS1 = false;
-            this.failureLGCIUS2 = false;
-
-            this.dummyTempCounter = 1;
-            this.dummyTempCounterCoolDown = 1;
-
-            // The code below can be stream line better for now it works 
-            this.currentBrake1Temp = 45;
-            this.currentBrake2Temp = 50;
-            this.currentBrake3Temp = 45;
-            this.currentBrake4Temp = 50;
-
-            // Set Default State of Brakes Temp
-            this.BrakeTemp1.textContent = 45;
-            this.BrakeTemp2.textContent = 50;
-            this.BrakeTemp3.textContent = 45;
-            this.BrakeTemp4.textContent = 50;
-
-            this.engineOneHydG = "G";
-            this.engineOneHydY = "Y";
-            this.autoBrakeLow = "LOW";
-            this.autoBrakeMed = "MED";
-            this.autoBrakeMax = "MAX";
-
-            // LandingGEAR
-            this.leftLGGroup = this.querySelector("#leftSideLandingGear");
-            this.rightLGGroup = this.querySelector("#RightSideLandingGear");
-            this.centerLGGroup = this.querySelector("#centerLandingGroup");
-
-            this.LGFailureXX = this.querySelector("#LGFailure");
-            this.LGFailureXX.setAttribute("visibility", "hidden");
-
-            this.greenBarLeft = this.querySelector("#leftLGBar");
-            this.greenBarRight = this.querySelector("#rightLGBar");
-            this.greenBarCenter = this.querySelector("#LGFailure");
-
-            this.orangeBars = this.querySelector("#orangeLGDown");
-            this.orangeBars.setAttribute("visibility", "hidden");
-
-            this.greenBarUp = this.querySelector("#greenBarUp");
+        /**
+         * @param element {Element}
+         */
+        makeRed(element) {
+            element.classList.remove("color-green");
+            element.classList.remove("color-amber");
+            element.classList.add("color-red");
         }
 
         update(_deltaTime) {
             if (!this.isInitialised) {
                 return;
             }
+
+            this.updateHydraulicsAvailable(_deltaTime);
+
+            this.updateBrakeTemp(_deltaTime);
             this.updateTempColor(_deltaTime);
-            this.updateHydroSymbols(_deltaTime);
             this.updateAutoBrake(_deltaTime);
-            this.updateSkidToggle(_deltaTime);
+            this.updateNwSteeringAntiSkid(_deltaTime);
+            this.updateLgCtl(_deltaTime);
             this.updateSpoilerSpeedBrake(_deltaTime);
             this.updateLandingGear(_deltaTime);
+        }
 
-            // Brake Temp - this is a based loop checking both speed and current brake pressure
-            const currentBrakeRight = SimVar.GetSimVarValue("BRAKE RIGHT POSITION", "position 32k");
-            const currentBrakeLeft = SimVar.GetSimVarValue("BRAKE LEFT POSITION", "position 32k");
-            const currentParkingBrake = SimVar.GetSimVarValue("BRAKE PARKING INDICATOR", "Bool");
-            const wheelRPM = SimVar.GetSimVarValue("WHEEL RPM", "rpm"); 
+        updateHydraulicsAvailable(_deltaTime) {
+            const hydraulicsShouldBeAvailable = SimVar.GetSimVarValue("ENG COMBUSTION:1", "Bool") === 1 && SimVar.GetSimVarValue("ENG COMBUSTION:2", "Bool") === 1;
 
-            if (wheelRPM > 150 && currentBrakeLeft >= 30000 && currentBrakeRight >= 30000 && !currentParkingBrake) {
-                this.dummyTempCounter += _deltaTime / 1000;
-                // Add temp slowly
-                this.currentBrake1Temp = Math.round(this.currentBrake1Temp) + Math.floor(Math.random() * this.dummyTempCounter) + 1;
-                this.currentBrake2Temp = Math.round(this.currentBrake2Temp) + Math.floor(Math.random() * this.dummyTempCounter) + 1;
-                this.currentBrake3Temp = Math.round(this.currentBrake3Temp) + Math.floor(Math.random() * this.dummyTempCounter) + 1;
-                this.currentBrake4Temp = Math.round(this.currentBrake4Temp) + Math.floor(Math.random() * this.dummyTempCounter) + 1;
+            if (hydraulicsShouldBeAvailable !== this.hydraulicsAvailable) {
+                this.hydraulicsAvailable = hydraulicsShouldBeAvailable;
 
-                this.BrakeTemp1.textContent = this.currentBrake1Temp;
-                this.BrakeTemp2.textContent = this.currentBrake2Temp;
-                this.BrakeTemp3.textContent = this.currentBrake3Temp;
-                this.BrakeTemp4.textContent = this.currentBrake4Temp;
-                this.dummyTempCounter = 0;
+                this.setControlsHydraulicsAvailable(this.hydraulicsAvailable);
+            }
+        }
 
-            } else if (currentBrakeLeft <= 0 && currentBrakeRight <= 0 && !currentParkingBrake) {
+        setControlsHydraulicsAvailable(/** boolean */ state) {
+            if (state) {
+                this.view.spoilers.numbers.forEach(number => this.hide(number));
+                this.view.spoilers.lines.forEach(line => this.makeGreen(line));
 
-                if (this.currentBrake1Temp > 45 || this.currentBrake2Temp > 50 || this.currentBrake3Temp > 45 || this.currentBrake4Temp > 50) {
-                    this.dummyTempCounter += _deltaTime / 1000;
+                this.hide(this.view.center.normBrk);
+                this.hide(this.view.center.altnBrk);
+                this.hide(this.view.center.accuOnly);
 
-                    // Add cool down slowly
-                    this.currentBrake1Temp -= this.dummyTempCounter;
-                    this.currentBrake2Temp -= this.dummyTempCounter;
-                    this.currentBrake3Temp -= this.dummyTempCounter;
-                    this.currentBrake4Temp -= this.dummyTempCounter;
+                this.makeGreen(this.view.brakes.autobrake.title);
+                this.makeGreen(this.view.brakes.autobrake.quantity.min);
+                this.makeGreen(this.view.brakes.autobrake.quantity.med);
+                this.makeGreen(this.view.brakes.autobrake.quantity.max);
+            } else {
+                this.view.spoilers.numbers.forEach(number => this.show(number));
+                this.view.spoilers.lines.forEach(line => this.makeAmber(line));
 
-                    this.BrakeTemp1.textContent = Math.round(this.currentBrake1Temp);
-                    this.BrakeTemp2.textContent = Math.round(this.currentBrake2Temp);
-                    this.BrakeTemp3.textContent = Math.round(this.currentBrake3Temp);
-                    this.BrakeTemp4.textContent = Math.round(this.currentBrake4Temp);
+                this.show(this.view.center.normBrk);
+                this.show(this.view.center.altnBrk);
+                this.show(this.view.center.accuOnly);
 
-                    this.dummyTempCounter = 0;
+                this.makeAmber(this.view.brakes.autobrake.title);
+                this.makeAmber(this.view.brakes.autobrake.quantity.min);
+                this.makeAmber(this.view.brakes.autobrake.quantity.med);
+                this.makeAmber(this.view.brakes.autobrake.quantity.max);
+                this.show(this.view.brakes.autobrake.title);
+            }
+        }
+
+        updateBrakeTemp(_deltaTime) {
+            for (let i = 0; i < this.currentDisplayedBrakeTemps.length; i++) {
+                const newValue = SimVar.GetSimVarValue(`L:A32NX_BRAKE_TEMPERATURE_${i + 1}`, "celsius");
+
+                if (this.currentDisplayedBrakeTemps[i] !== newValue) {
+                    this.currentDisplayedBrakeTemps[i] = newValue;
+                    this.brakeTemperatureDidChange[i] = true;
+
+                    // Round to nearest 5 and clamp above 0
+                    this.view.brakes.temps[i].textContent = Math.max(0, Math.round(this.currentDisplayedBrakeTemps[i] / 5) * 5);
+                } else {
+                    this.brakeTemperatureDidChange[i] = false;
                 }
             }
         }
 
         updateTempColor(_deltaTime) {
-            if (this.currentBrake1Temp <= 100 || this.currentBrake2Temp <= 100 || this.currentBrake3Temp <= 100 || this.currentBrake4Temp <= 100) {
-                this.BrakeTemp1.setAttribute("class", "WHEELTempPrecentage");
-                this.BrakeTemp2.setAttribute("class", "WHEELTempPrecentage");
-                this.BrakeTemp3.setAttribute("class", "WHEELTempPrecentage");
-                this.BrakeTemp4.setAttribute("class", "WHEELTempPrecentage");
-                SimVar.SetSimVarValue("L:A32NX_BRAKES_HOT", "Bool", 0);
-            }
-            if (this.currentBrake1Temp >= 300 || this.currentBrake2Temp >= 300 || this.currentBrake3Temp >= 300 || this.currentBrake4Temp >= 300) {
-                this.BrakeTemp1.setAttribute("class", "WHEELBRAKEWARNING");
-                this.BrakeTemp2.setAttribute("class", "WHEELBRAKEWARNING");
-                this.BrakeTemp3.setAttribute("class", "WHEELBRAKEWARNING");
-                this.BrakeTemp4.setAttribute("class", "WHEELBRAKEWARNING");
-                SimVar.SetSimVarValue("L:A32NX_BRAKES_HOT", "Bool", 1);
-            }
-            if (this.currentBrake1Temp >= 500 || this.currentBrake2Temp >= 500 || this.currentBrake3Temp >= 500 || this.currentBrake4Temp >= 500) {
-                this.BrakeTemp1.setAttribute("class", "WHEELBRAKERED");
-                this.BrakeTemp2.setAttribute("class", "WHEELBRAKERED");
-                this.BrakeTemp3.setAttribute("class", "WHEELBRAKERED");
-                this.BrakeTemp4.setAttribute("class", "WHEELBRAKERED");
-                SimVar.SetSimVarValue("L:A32NX_BRAKES_HOT", "Bool", 1);
-                //SimVar.SetSimVarValue("BRAKE RIGHT POSITION","position 32k", 0);// -- Commit out this , was testing something 
-                //SimVar.SetSimVarValue("BRAKE LEFT POSITION", "position 32k", 0); // --- Uncomment to allow brakes to fail when over 500c
-            }
-        }
+            let max = this.currentDisplayedBrakeTemps[0];
+            let maxIndex = 0;
 
-        // Need to check if Engine 1 or 2 have pushed enough Hydralics Also need to push alerts into ECAM Messages
-        updateHydroSymbols(_deltaTime) {
-            if (!this.isInitialised) {
-                return;
-            }
-            const hydroLeftEnginePrecentage = SimVar.GetSimVarValue("ENG HYDRAULIC PRESSURE:1", "pound-force per square foot");
-            const hydroRightEnginePrecentage = SimVar.GetSimVarValue("ENG HYDRAULIC PRESSURE:2", "pound-force per square foot");
-
-            if (hydroRightEnginePrecentage >= 250000 && hydroRightEnginePrecentage >= 250000) {
-                this.tempText.setAttribute("class", "ALTNBRKIndicator");
-                if (this.selfTestTimer >= 0) {
-                    this.selfTestTimer -= _deltaTime / 1000;
-                    if (this.selfTestTimer <= 0) {
-                        this.tempText.setAttribute("visibility", "hidden");
-                        this.selfTestTimer = 3;
-                        this.textAmber = false;
-                    }
+            for (let i = 1; i < this.currentDisplayedBrakeTemps.length; i++) {
+                if (this.currentDisplayedBrakeTemps[i] > max) {
+                    maxIndex = i;
+                    max = this.currentDisplayedBrakeTemps[i];
                 }
-            } else if (hydroRightEnginePrecentage <= 250000 && hydroRightEnginePrecentage <= 250000) {
-                this.tempText.setAttribute("visibility", "visible");
-                this.tempText.setAttribute("class", "WHEELBRAKEWARNING");
-                this.textAmber = true;
             }
 
-            // Why two ifs, cause part of brakes system works with G and Y hydralics depending on Engine
-            if (hydroLeftEnginePrecentage >= 250000) {
-                this.normBrkHyd.setAttribute("visibility", "hidden");
-            } else {
-                this.normBrkHyd.setAttribute("visibility", "visible");
-            }
+            for (let i = 0; i < this.view.brakes.temps.length; i++) {
+                if (!this.brakeTemperatureDidChange[i]) {
+                    break;
+                }
 
-            if (hydroRightEnginePrecentage >= 250000) {
-                this.speedbrakeHyd.setAttribute("visibility", "hidden");
-                this.atlnBrk.setAttribute("visibility", "hidden");
-            } else {
-                this.speedbrakeHyd.setAttribute("visibility", "visible");
-                this.atlnBrk.setAttribute("visibility", "visible");
+                if (this.currentDisplayedBrakeTemps[i] > BRAKE_AMBER_THRESHOLD) {
+                    this.view.brakes.temps[i].setAttribute("class", "wheel-set-brake-temp-amber");
+                } else {
+                    this.view.brakes.temps[i].setAttribute("class", "wheel-set-brake-temp");
+                }
+
+                if (maxIndex === i) {
+                    if (this.currentDisplayedBrakeTemps[i] > BRAKE_AMBER_THRESHOLD) {
+                        this.view.brakes.indicators[i].classList.add("wheel-set-brake-temp-amber");
+                        this.view.brakes.indicators[i].classList.remove("wheel-set-brake-temp");
+                    } else if (this.currentDisplayedBrakeTemps[i] > BRAKE_SHOW_HOTTEST_THRESHOLD) {
+                        this.view.brakes.indicators[i].classList.add("wheel-set-brake-temp");
+                        this.view.brakes.indicators[i].classList.remove("wheel-set-brake-temp-amber");
+                    }
+                } else {
+                    this.view.brakes.indicators[i].classList.remove("wheel-set-brake-temp", "wheel-set-brake-temp-amber");
+                }
             }
         }
 
         // Need to update the ECAM Messages left side when Skid is turned off casue when off AUTO Brake is off too
-        updateSkidToggle(_deltaTime) {
-            const currentSkiddState = SimVar.GetSimVarValue("ANTISKID BRAKES ACTIVE", "Bool");
+        updateNwSteeringAntiSkid(_deltaTime) {
+            const currentSkidState = SimVar.GetSimVarValue("ANTISKID BRAKES ACTIVE", "Bool");
 
-            if (currentSkiddState === 1 && this.textAmber == false) {
-                this.steeringNW.setAttribute("class", "ALTNBRKIndicator");
-                this.antiSkidd.setAttribute("class", "ALTNBRKIndicator");
-                if (this.newTimer >= 0) {
-                    this.newTimer -= _deltaTime / 1000;
-                    if (this.newTimer <= 0) {
-                        this.steeringNW.setAttribute("visibility", "hidden");
-                        this.antiSkidd.setAttribute("visibility", "hidden");
-                        this.newTimer = 3;
-                    }
-                }
+            if (currentSkidState === 1) {
+                this.hide(this.view.center.nwSteering);
+                this.hide(this.view.center.antiSkid);
+            } else {
+                this.show(this.view.center.nwSteering);
+                this.show(this.view.center.antiSkid);
             }
+        }
 
-            if (currentSkiddState === 0) {
-                this.steeringNW.setAttribute("visibility", "visible");
-                this.antiSkidd.setAttribute("visibility", "visible");
-                this.steeringNW.setAttribute("class", "WHEELBRAKEWARNING");
-                this.antiSkidd.setAttribute("class", "WHEELBRAKEWARNING");
+        updateLgCtl(_deltaTime) {
+            const landingGearLeft = SimVar.GetSimVarValue("GEAR LEFT POSITION", "Percent Over 100");
+            const landingGearCenter = SimVar.GetSimVarValue("GEAR CENTER POSITION", "Percent Over 100");
+            const landingGearRight = SimVar.GetSimVarValue("GEAR RIGHT POSITION", "Percent Over 100");
+
+            if (landingGearLeft > 0 && landingGearLeft < 1 || landingGearCenter > 0 && landingGearCenter < 1 || landingGearRight > 0 && landingGearRight < 1) {
+                this.show(this.view.center.lgCtl);
+            } else {
+                this.hide(this.view.center.lgCtl);
             }
         }
 
@@ -242,42 +376,24 @@ var A320_Neo_LowerECAM_WHEEL;
                 return;
             }
 
-            const autoBrakeSelected = SimVar.GetSimVarValue("L:XMLVAR_Autobrakes_Level", "Number");
-            const autoBrakeActive = SimVar.GetSimVarValue("AUTOBRAKES ACTIVE", "Bool");
+            const autoBrakeMode = SimVar.GetSimVarValue("L:XMLVAR_Autobrakes_Level", "Number");
 
-            if (autoBrakeSelected === 0) {
-                this.autoBrakeText.setAttribute("visibility", "hidden");
-                this.autoBrakeIndicator.setAttribute("visibility", "hidden");
-                return;
-            }
+            if (autoBrakeMode === 0) {
+                this.view.brakes.autobrake.setArmed(false);
+            } else {
+                this.view.brakes.autobrake.setArmed(true);
 
-            // if user selects AUTO BRAKE LOW , MED, MAX show it
-            if (autoBrakeSelected === 1 && !this.isAutoBrakeIndiShown) {
-                this.autoBrakeIndicator.setAttribute("visibility", "visible");
-                this.autoBrakeText.setAttribute("visibility", "visible");
-                this.autoBrakeText.textContent = this.autoBrakeLow;
-
-            } else if (autoBrakeSelected === 2 && !this.isAutoBrakeIndiShown) {
-                this.autoBrakeIndicator.setAttribute("visibility", "visible");
-                this.autoBrakeText.setAttribute("visibility", "visible");
-                this.autoBrakeText.textContent = this.autoBrakeMed;
-
-            } else if (autoBrakeSelected === 3 && !this.isAutoBrakeIndiShown) {
-                this.autoBrakeIndicator.setAttribute("visibility", "visible");
-                this.autoBrakeText.setAttribute("visibility", "visible");
-                this.autoBrakeText.textContent = this.autoBrakeMax;
-            }
-
-            // When landing flash auto brake on wheel page then let it go away
-            if (autoBrakeActive) {
-                this.autoBrakeIndicator.setAttribute("visibility", "hidden");
-                this.autoBrakeBlinker.setAttribute("visibility", "visible");
-                if (this.selfTestTimer >= 0) {
-                    this.selfTestTimer -= _deltaTime / 1000;
-                    if (this.selfTestTimer <= 0) {
-                        this.autoBrakeBlinker.setAttribute("visibility", "hidden");
-                        this.selfTestTimer = 3;
-                    }
+                // Show appropriate autobrake level
+                switch (autoBrakeMode) {
+                    case 1:
+                        this.view.brakes.autobrake.switch("min");
+                        break;
+                    case 2:
+                        this.view.brakes.autobrake.switch("med");
+                        break;
+                    case 3:
+                        this.view.brakes.autobrake.switch("max");
+                        break;
                 }
             }
         }
@@ -290,71 +406,94 @@ var A320_Neo_LowerECAM_WHEEL;
             const spoilerLeftPos = SimVar.GetSimVarValue("SPOILERS LEFT POSITION", "percent");
             const spoilerRightPos = SimVar.GetSimVarValue("SPOILERS RIGHT POSITION", "percent");
 
-            if (spoilerRightPos >= 1) {
-                this.spoilerRight.setAttribute("visibility", "visible");
+            if (this.hydraulicsAvailable && spoilerRightPos >= 1) {
+                this.view.spoilers.right.forEach(arrow => this.show(arrow));
             } else {
-                this.spoilerRight.setAttribute("visibility", "hidden");
+                this.view.spoilers.right.forEach(arrow => this.hide(arrow));
             }
 
-            if (spoilerLeftPos >= 1) {
-                this.spoilerLeft.setAttribute("visibility", "visible");
+            if (this.hydraulicsAvailable && spoilerLeftPos >= 1) {
+                this.view.spoilers.left.forEach(arrow => this.show(arrow));
             } else {
-                this.spoilerLeft.setAttribute("visibility", "hidden");
+                this.view.spoilers.left.forEach(arrow => this.hide(arrow));
             }
         }
 
         updateLandingGear(_deltaTime) {
-            const landingGearRight = SimVar.GetSimVarValue("GEAR RIGHT POSITION", "Percent Over 100");
             const landingGearLeft = SimVar.GetSimVarValue("GEAR LEFT POSITION", "Percent Over 100");
             const landingGearCenter = SimVar.GetSimVarValue("GEAR CENTER POSITION", "Percent Over 100");
+            const landingGearRight = SimVar.GetSimVarValue("GEAR RIGHT POSITION", "Percent Over 100");
 
-            if (landingGearRight >= 0.1 && landingGearRight <= 0.9) {
-                this.rightLGGroup.setAttribute("class", "BlinkLandingGear");
-                this.orangeBars.setAttribute("visibility", "visible");
-                this.greenBarUp.setAttribute("visibility", "hidden");
-            } else {
-                this.rightLGGroup.setAttribute("class", "LANDINGGEARGREEN");
-                this.orangeBars.setAttribute("visibility", "hidden");
-                this.greenBarUp.setAttribute("visibility", "visible");
+            // Make LGCIUs green if gear is down
+
+            if (landingGearLeft === 1) {
+                [this.view.gears.lgcius.all[0], this.view.gears.lgcius.all[1]]
+                    .forEach(lgciu => this.makeGreen(lgciu));
             }
 
+            if (landingGearCenter === 1) {
+                [this.view.gears.lgcius.all[2], this.view.gears.lgcius.all[3]]
+                    .forEach(lgciu => this.makeGreen(lgciu));
+            }
+
+            if (landingGearRight === 1) {
+                [this.view.gears.lgcius.all[4], this.view.gears.lgcius.all[5]]
+                    .forEach(lgciu => this.makeGreen(lgciu));
+            }
+
+            // Make LGCIUs red if gear in transit
+
             if (landingGearLeft >= 0.1 && landingGearLeft <= 0.9) {
-                this.leftLGGroup.setAttribute("class", "BlinkLandingGear");
-                this.orangeBars.setAttribute("visibility", "visible");
-                this.greenBarUp.setAttribute("visibility", "hidden");
+                this.show(this.view.gears.doors.inTransit.left);
+                this.hide(this.view.gears.doors.left);
+
+                [this.view.gears.lgcius.all[0], this.view.gears.lgcius.all[1]]
+                    .forEach(lgciu => this.makeRed(lgciu));
             } else {
-                this.leftLGGroup.setAttribute("class", "LANDINGGEARGREEN");
-                this.orangeBars.setAttribute("visibility", "hidden");
-                this.greenBarUp.setAttribute("visibility", "visible");
+                this.hide(this.view.gears.doors.inTransit.left);
+                this.show(this.view.gears.doors.left);
             }
 
             if (landingGearCenter >= 0.1 && landingGearCenter <= 0.9) {
-                this.centerLGGroup.setAttribute("class", "BlinkLandingGear");
-                this.orangeBars.setAttribute("visibility", "visible");
-                this.greenBarUp.setAttribute("visibility", "hidden");
+                this.show(this.view.gears.doors.inTransit.center);
+                this.hide(this.view.gears.doors.center);
+
+                [this.view.gears.lgcius.all[2], this.view.gears.lgcius.all[3]]
+                    .forEach(lgciu => this.makeRed(lgciu));
             } else {
-                this.centerLGGroup.setAttribute("class", "LANDINGGEARGREEN");
-                this.orangeBars.setAttribute("visibility", "hidden");
-                this.greenBarUp.setAttribute("visibility", "visible");
+                this.hide(this.view.gears.doors.inTransit.center);
+                this.show(this.view.gears.doors.center);
+            }
+
+            if (landingGearRight >= 0.1 && landingGearRight <= 0.9) {
+                this.show(this.view.gears.doors.inTransit.right);
+                this.hide(this.view.gears.doors.right);
+
+                [this.view.gears.lgcius.all[4], this.view.gears.lgcius.all[5]]
+                    .forEach(lgciu => this.makeRed(lgciu));
+            } else {
+                this.hide(this.view.gears.doors.inTransit.right);
+                this.show(this.view.gears.doors.right);
             }
 
             // Now hide them since gear is retracted
-            if (landingGearRight == 0) {
-                this.rightLGGroup.setAttribute("visibility", "hidden");
+
+            if (landingGearLeft === 0) {
+                this.view.gears.lgcius.left.setAttribute("visibility", "hidden");
             } else if (landingGearRight >= 0.1) {
-                this.rightLGGroup.setAttribute("visibility", "visible");
+                this.view.gears.lgcius.left.setAttribute("visibility", "visible");
             }
 
-            if (landingGearLeft == 0) {
-                this.leftLGGroup.setAttribute("visibility", "hidden");
+            if (landingGearCenter === 0) {
+                this.view.gears.lgcius.center.setAttribute("visibility", "hidden");
             } else if (landingGearRight >= 0.1) {
-                this.leftLGGroup.setAttribute("visibility", "visible");
+                this.view.gears.lgcius.center.setAttribute("visibility", "visible");
             }
 
-            if (landingGearCenter == 0) {
-                this.centerLGGroup.setAttribute("visibility", "hidden");
+            if (landingGearRight === 0) {
+                this.view.gears.lgcius.right.setAttribute("visibility", "hidden");
             } else if (landingGearRight >= 0.1) {
-                this.centerLGGroup.setAttribute("visibility", "visible");
+                this.view.gears.lgcius.right.setAttribute("visibility", "visible");
             }
         }
 
@@ -362,7 +501,7 @@ var A320_Neo_LowerECAM_WHEEL;
             // TODO HERE WE NEED TO LOOP THROUGH HYDRALICS
         }
     }
+
     A320_Neo_LowerECAM_WHEEL.Page = Page;
 })(A320_Neo_LowerECAM_WHEEL || (A320_Neo_LowerECAM_WHEEL = {}));
 customElements.define("a320-neo-lower-ecam-wheel", A320_Neo_LowerECAM_WHEEL.Page);
-//# sourceMappingURL=A320_Neo_LowerECAM_WHEEL.js.map

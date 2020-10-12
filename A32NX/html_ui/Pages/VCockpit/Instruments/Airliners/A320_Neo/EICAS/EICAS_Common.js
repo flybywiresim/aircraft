@@ -3,7 +3,9 @@ class EICASCommonDisplay extends Airliners.EICASTemplateElement {
         super();
         this.isInitialised = false;
     }
-    get templateID() { return "EICASCommonDisplayTemplate"; }
+    get templateID() {
+        return "EICASCommonDisplayTemplate";
+    }
     connectedCallback() {
         super.connectedCallback();
         TemplateElement.call(this, this.init.bind(this));
@@ -39,8 +41,7 @@ class EICASCommonDisplay extends Airliners.EICASTemplateElement {
         if (this.tatText != null) {
             if (this.currentTAT > 0) {
                 this.tatText.textContent = "+" + this.currentTAT.toString();
-            }
-            else {
+            } else {
                 this.tatText.textContent = this.currentTAT.toString();
             }
         }
@@ -52,19 +53,18 @@ class EICASCommonDisplay extends Airliners.EICASTemplateElement {
         if (this.satText != null) {
             if (this.currentSAT > 0) {
                 this.satText.textContent = "+" + this.currentSAT.toString();
-            }
-            else {
+            } else {
                 this.satText.textContent = this.currentSAT.toString();
             }
         }
         //}
     }
     refreshClock() {
-        var seconds = Math.floor(SimVar.GetGlobalVarValue("ZULU TIME", "seconds"));
+        const seconds = Math.floor(SimVar.GetGlobalVarValue("ZULU TIME", "seconds"));
         if (seconds != this.currentSeconds) {
             this.currentSeconds = seconds;
-            var hours = Math.floor(seconds / 3600);
-            var minutes = Math.floor((seconds - (hours * 3600)) / 60);
+            const hours = Math.floor(seconds / 3600);
+            const minutes = Math.floor((seconds - (hours * 3600)) / 60);
             if (minutes != this.currentMinutes) {
                 this.currentMinutes = minutes;
                 if (this.hoursText != null) {
@@ -106,12 +106,12 @@ class EICASCommonDisplay extends Airliners.EICASTemplateElement {
         if (this.tatText != null && this.satText != null) {
             if (SimVar.GetSimVarValue("L:A320_Neo_ADIRS_STATE", "Enum") != 2) {
                 this.tatText.textContent = "XX";
-                this.tatText.setAttribute("fill", "#db7200");
+                this.tatText.setAttribute("fill", "#E68000");
                 this.satText.textContent = "XX";
-                this.satText.setAttribute("fill", "#db7200");
+                this.satText.setAttribute("fill", "#E68000");
             } else {
-                this.tatText.setAttribute("fill", "green");
-                this.satText.setAttribute("fill", "green");
+                this.tatText.setAttribute("fill", "#00E64D");
+                this.satText.setAttribute("fill", "#00E64D");
             }
         }
     }

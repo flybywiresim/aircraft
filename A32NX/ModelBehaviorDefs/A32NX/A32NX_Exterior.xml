@@ -1,0 +1,95 @@
+<Include File="Common.xml"/>
+
+
+    <Template Name="A32NX_ENGINE_Turbine_Template">
+        <DefaultTemplateParameters>
+            <ID>1</ID>
+            <MIN_N1_PCT_FOR_SLOW>7</MIN_N1_PCT_FOR_SLOW>
+            <MIN_N1_PCT_FOR_BLUR>15</MIN_N1_PCT_FOR_BLUR>
+            <FROSTED>False</FROSTED>
+        </DefaultTemplateParameters>
+        <UseTemplate Name="A32NX_ENGINE_Turbine_SubTemplate"></UseTemplate>
+    </Template>
+    <Template Name="A32NX_ENGINE_Turbine_SubTemplate">
+        <DefaultTemplateParameters>
+            <ANIM_NODE_ID>ENGINE_Turbine_#ID#</ANIM_NODE_ID>
+            <ANIM_NAME>ENGINE_Turbine_#ID#</ANIM_NAME>
+            <STILL_NODE_ID>ENGINE_Turbine_Still_#ID#</STILL_NODE_ID>
+            <SLOW_NODE_ID>ENGINE_Turbine_Slow_#ID#</SLOW_NODE_ID>
+            <BLURRED_NODE_ID>ENGINE_Turbine_Blurred_#ID#</BLURRED_NODE_ID>
+            <STILL_NODE_ID_COUNT>1</STILL_NODE_ID_COUNT>
+            <SLOW_NODE_ID_COUNT>1</SLOW_NODE_ID_COUNT>
+            <BLURRED_NODE_ID_COUNT>1</BLURRED_NODE_ID_COUNT>
+        </DefaultTemplateParameters>
+        <Component ID="ENGINE_Turbine_#ID#" Node="#ANIM_NODE_ID#">
+            <UseTemplate Name="A32NX_ENGINE_Turbine_Rotation_Template">
+            </UseTemplate>
+        </Component>
+        <Component ID="ENGINE_Turbine_#ID#_Visibility">
+            <DefaultTemplateParameters>
+                <STILL_1_NODE_ID>#STILL_NODE_ID#</STILL_1_NODE_ID>
+                <SLOW_1_NODE_ID>#SLOW_NODE_ID#</SLOW_1_NODE_ID>
+                <BLURRED_1_NODE_ID>#BLURRED_NODE_ID#</BLURRED_1_NODE_ID>
+            </DefaultTemplateParameters>
+            <OverrideTemplateParameters>
+                <PROCESS_PARAM1>True</PROCESS_PARAM1>
+                <PARAM1>NODE_ID</PARAM1>
+                <PARAM1_SUFFIX>_NODE_ID</PARAM1_SUFFIX>
+                <EXIT_TEMPLATE>A32NX_ENGINE_Turbine_Visibility_Base_Template</EXIT_TEMPLATE>
+            </OverrideTemplateParameters>
+            <UseTemplate Name="ASOBO_GT_Helper_Recursive_ID">
+                <MAX_ID>#STILL_NODE_ID_COUNT#</MAX_ID>
+                <STATE>Still</STATE>
+                <PARAM1_PREFIX>STILL_</PARAM1_PREFIX>
+            </UseTemplate>
+            <UseTemplate Name="ASOBO_GT_Helper_Recursive_ID">
+                <MAX_ID>#STILL_NODE_ID_COUNT#</MAX_ID>
+                <STATE>Slow</STATE>
+                <PARAM1_PREFIX>SLOW_</PARAM1_PREFIX>
+            </UseTemplate>
+            <UseTemplate Name="ASOBO_GT_Helper_Recursive_ID">
+                <MAX_ID>#BLURRED_NODE_ID_COUNT#</MAX_ID>
+                <STATE>Blurred</STATE>
+                <PARAM1_PREFIX>BLURRED_</PARAM1_PREFIX>
+            </UseTemplate>
+        </Component>
+    </Template>
+
+    <Template Name="A32NX_ENGINE_Turbine_Rotation_Template">
+        <UseTemplate Name="ASOBO_GT_Anim">
+            <!-- 3894 is the max rated N1 of the LEAP, times 6 is from RPM to deg/s, times 0.01 because percentages -->
+            <ANIM_CODE>0.01 6 3894 (A:TURB ENG N1:#ID#, Percent) (A:ANIMATION DELTA TIME, seconds) * * * *</ANIM_CODE>
+            <ANIM_LENGTH>360</ANIM_LENGTH>
+            <ANIM_WRAP>1</ANIM_WRAP>
+            <ANIM_DELTA>1</ANIM_DELTA>
+        </UseTemplate>
+    </Template>
+    <Template Name="A32NX_ENGINE_Turbine_Still_Visibility_Template">
+        <UseTemplate Name="ASOBO_GT_Visibility">
+            <VISIBILITY_CODE>(A:TURB ENG N1:#ID#, Percent) #MIN_N1_PCT_FOR_SLOW# &lt;</VISIBILITY_CODE>
+        </UseTemplate>
+    </Template>
+    <Template Name="A32NX_ENGINE_Turbine_Slow_Visibility_Template">
+    <UseTemplate Name="ASOBO_GT_Visibility">
+        <VISIBILITY_CODE>
+            (A:TURB ENG N1:#ID#, Percent) #MIN_N1_PCT_FOR_SLOW# &gt;
+            (A:TURB ENG N1:#ID#, Percent) #MIN_N1_PCT_FOR_BLUR# &lt; and
+        </VISIBILITY_CODE>
+    </UseTemplate>
+    </Template>
+    <Template Name="A32NX_ENGINE_Turbine_Blurred_Visibility_Template">
+        <UseTemplate Name="ASOBO_GT_Visibility">
+            <VISIBILITY_CODE>(A:TURB ENG N1:#ID#, Percent) #MIN_N1_PCT_FOR_BLUR# &gt;</VISIBILITY_CODE>
+        </UseTemplate>
+    </Template>
+        <!-- Base visibility template for turbines -->
+    <Template Name="A32NX_ENGINE_Turbine_Visibility_Base_Template">
+        <Condition NotEmpty="NODE_ID">
+            <True>
+                <Component ID="#NODE_ID#" Node="#NODE_ID#">
+                    <UseTemplate Name="A32NX_ENGINE_Turbine_#STATE#_Visibility_Template">
+                    </UseTemplate>
+                </Component>
+            </True>
+        </Condition>
+    </Template>

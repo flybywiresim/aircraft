@@ -1,3 +1,5 @@
+@import url("/CSS/A32NX_Display_Common.css");
+
 :root {
     --bodyHeightScale: 1; }
   
@@ -22,31 +24,13 @@
       display: none; }
   
   @font-face {
-    font-family: "Roboto";
-    src: url("/Fonts/RobotoMono-Medium.ttf") format("truetype");
-    font-weight: normal;
-    font-style: normal; }
-  
-  @font-face {
-    font-family: "Roboto-Light";
-    src: url("/Fonts/RobotoMono-Light.ttf") format("truetype");
-    font-weight: normal;
-    font-style: normal; }
-  
-  @font-face {
-    font-family: "Roboto-Bold";
-    src: url("/Fonts/RobotoMono-Bold.ttf") format("truetype");
-    font-weight: normal;
-    font-style: normal; }
-
-  @font-face {
     font-family: "Liberation Mono";
     src: url("/Fonts/LiberationMono.ttf") format("truetype");
     font-weight: normal;
     font-style: normal; }
 
   text {
-    font-family: "Liberation Mono" !important;
+    font-family: "ECAMFontRegular" !important;
   }
 
   #Mainframe {
@@ -56,12 +40,12 @@
   a320-neo-mfd-element {
     width: 100%;
     height: 100%;
-    background-color: black;
-    font-family: Roboto-Bold;
     overflow: hidden; }
     a320-neo-mfd-element #Electricity {
       width: 100%;
-      height: 100%; }
+      height: 100%; 
+	  background:radial-gradient(ellipse at center, rgba(13,20,35,1) 0%, rgba(13,20,35,1) 100%);
+	  }
       a320-neo-mfd-element #Electricity[state=off] {
         display: none; }
     a320-neo-mfd-element #highlight {
@@ -81,7 +65,7 @@
         position: absolute;
         border: none;
         left: 0%;
-        top: 0%;
+        top: -2%;
         width: 100%;
         height: 100%; }
       a320-neo-mfd-element #Mainframe #Map {
@@ -100,7 +84,7 @@
           width: 10%;
           height: calc( 3 * 1vh * var(--bodyHeightScale));
           background-color: #1a1d21;
-          color: white; }
+          color: var(--displayWhite); }
         a320-neo-mfd-element #Mainframe #Map #WindData {
           position: absolute;
           top: 0%;
@@ -113,7 +97,7 @@
           width: 7%;
           height: calc( 3 * 1vh * var(--bodyHeightScale));
           background-color: #1a1d21;
-          color: #36c8d2; }
+          color: var(--displayCyan); }
         a320-neo-mfd-element #Mainframe #Map #MapSVG, a320-neo-mfd-element #Mainframe #Map #road-network-canvas {
           transform: rotateX(0);
           position: absolute; }
@@ -131,7 +115,8 @@
         height: 100%;
         display: none;
         position: absolute;
-        background-color: black; }
+        background:radial-gradient(ellipse at center, rgba(13,20,35,1) 0%,rgba(13,20,35,1) 100%);
+		}
       a320-neo-mfd-element #Mainframe #RangeChangeMask {
         top: 0%;
         left: 0%;
@@ -139,12 +124,13 @@
         height: 100%;
         display: none;
         position: absolute;
-        background-color: black; }
+        background:radial-gradient(ellipse at center, rgba(13,20,35,1) 0%,rgba(13,20,35,1) 100%);
+		}
       a320-neo-mfd-element #Mainframe #TopBox {
-        top: 2%;
+        top: 3%;
         left: 4%;
         width: 92%;
-        height: 13%;
+        height: 25%;
         position: absolute; }
         a320-neo-mfd-element #Mainframe #TopBox  svg {
           overflow: visible; }
@@ -152,15 +138,15 @@
           top: 0%;
           height: 100%;
           left: -4%;
-          width: 40%;
+          width: 50%;
           position: absolute; }
         a320-neo-mfd-element #Mainframe #TopBox #Speed svg {
           overflow: visible; }
         a320-neo-mfd-element #Mainframe #TopBox #Speed svg #GS_Value {
-          white-space: pre;
+          var(--displayWhite)-space: pre;
         }
         a320-neo-mfd-element #Mainframe #TopBox #Title {
-          top: 15%;
+          top: 11%;
           height: 100%;
           left: 40%;
           width: 20%;
@@ -191,66 +177,70 @@
         a320-neo-mfd-element #Mainframe #TopBox text {
           width: 100%;
           height: 100%;
-          font-family: Roboto-Light; }
+          font-family: ECAMFontRegular; }
         a320-neo-mfd-element #Mainframe #TopBox text.Value {
-          font-size: 38px;
-          fill: lime; }
+          font-size: 44px;
+          fill: var(--displayGreen); }
         a320-neo-mfd-element #Mainframe #TopBox text.ValueVor {
-          font-size: 38px;
-          fill: cyan; }
+          font-size: 44px;
+          fill: var(--displayCyan); }
         a320-neo-mfd-element #Mainframe #TopBox text.ValueIls {
-          font-size: 38px;
-          fill: #ff00ff; }
+          font-size: 44px;
+          fill: var(--displayMagenta); }
         a320-neo-mfd-element #Mainframe #TopBox text.Small {
-          font-size: 30px;
-          fill: white; }
-        a320-neo-mfd-element #Mainframe #TopBox text.Large {
           font-size: 38px;
-          fill: white; }
+          fill: var(--displayWhite); }
+        a320-neo-mfd-element #Mainframe #TopBox text.Large {
+          font-size: 44px;
+          fill: var(--displayWhite); }
         a320-neo-mfd-element #Mainframe #TopBox text.Units {
           font-size: 30px;
-          fill: cyan; }
+          fill: var(--displayCyan); }
         a320-neo-mfd-element #Mainframe #TopBox text.Title {
-          font-size: 45px;
-          fill: lime; }
+          font-size: 44px;
+          fill: var(--displayGreen); }
           a320-neo-mfd-element #Mainframe #TopBox text.Title[state=ils] {
-            fill: #FF0CE2; }
+            fill: var(--displayGreen); }
       a320-neo-mfd-element #Mainframe #VORDMENavaids div {
         top: 87%;
         width: 25%;
         height: 13%;
         position: absolute;
-        background-color: black; }
+		}
       a320-neo-mfd-element #Mainframe #VORDMENavaids svg {
         width: 100%;
         height: 100%; }
       a320-neo-mfd-element #Mainframe #VORDMENavaids #VORDMENavaid_Left {
-        left: 2.5%; }
+        left: 0%; }
       a320-neo-mfd-element #Mainframe #VORDMENavaids #VORDMENavaid_Right {
-        right: 2.5%; }
+        right: 0%; }
       a320-neo-mfd-element #Mainframe #VORDMENavaids text {
-        font-family: Roboto-Light;
+        font-family: ECAMFontRegular;
         text-align: center;
         text-anchor: middle; }
       a320-neo-mfd-element #Mainframe #VORDMENavaids #State {
         font-size: calc( 3 * 1vh * var(--bodyHeightScale));
-        fill: white; }
+        fill: var(--displayWhite); }
       a320-neo-mfd-element #Mainframe #VORDMENavaids #ID {
         font-size: calc( 3 * 1vh * var(--bodyHeightScale));
-        fill: white; }
+        fill: var(--displayWhite); }
       a320-neo-mfd-element #Mainframe #VORDMENavaids #Mode {
         font-size: calc( 3 * 1vh * var(--bodyHeightScale));
-        fill: white;
+        fill: var(--displayWhite);
         text-decoration: underline; }
       a320-neo-mfd-element #Mainframe #VORDMENavaids #Distance {
-        font-size: calc( 2.5 * 1vh * var(--bodyHeightScale));
-        fill: lime; }
+        font-size: calc( 3 * 1vh * var(--bodyHeightScale));
+        fill: var(--displayGreen); }
       a320-neo-mfd-element #Mainframe #VORDMENavaids #Unit {
-        font-size: calc( 2.5 * 1vh * var(--bodyHeightScale));
-        fill: cyan; }
-      a320-neo-mfd-element #Mainframe #VORDMENavaids #Arrow {
+        font-size: calc( 3 * 1vh * var(--bodyHeightScale));
+        fill: var(--displayCyan); }
+      a320-neo-mfd-element #Mainframe #VORDMENavaids #Arrow-Left {
         fill: none;
-        stroke: white;
+        /* stroke: var(--displayWhite); */
+        stroke-width: 6px; }
+      a320-neo-mfd-element #Mainframe #VORDMENavaids #Arrow-Right {
+        fill: none;
+        /* stroke: var(--displayWhite); */
         stroke-width: 6px; }
       a320-neo-mfd-element #Mainframe #Symbols {
         top: 79%;
@@ -264,12 +254,12 @@
         a320-neo-mfd-element #Mainframe #Symbols text {
           width: 100%;
           height: 100%;
-          font-family: Roboto-Bold; }
+          font-family: ECAMFontRegular; }
         a320-neo-mfd-element #Mainframe #Symbols text.Small {
           font-size: 30px;
-          fill: lime; }
+          fill: var(--displayGreen); }
         a320-neo-mfd-element #Mainframe #Symbols text.Large {
           font-size: 38px;
-          fill: lime; }
+          fill: var(--displayGreen); }
   
   

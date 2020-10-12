@@ -1,4 +1,4 @@
-﻿:root {
+:root {
   --bodyHeightScale: 1; }
 
 @keyframes TemporaryShow {
@@ -54,7 +54,9 @@ a320-neo-clock-element {
     top: -4%;
     bottom: 0;
     left: 2%;
-    right: 0; }
+    right: 0; 
+    background-color: rgba(5, 40, 80, 0.623);
+    color: rgba(155, 148, 148, 0.911);}
     a320-neo-clock-element #Mainframe #TopSelector {
       margin-top: 0%;
       width: 100%;
@@ -64,21 +66,37 @@ a320-neo-clock-element {
       justify-content: center; }
       a320-neo-clock-element #Mainframe #TopSelector #TopSelectorValue {
         font-family: Alarm-Clock;
-        font-size: 65px;
+        font-size: 81px;
         text-align: center;
-        color: white; }
+        color: rgba(155, 148, 148, 0.911); }
     a320-neo-clock-element #Mainframe #MiddleSelector {
       margin-top: 0%;
-      width: 100%;
+      margin-left: 0%;
+      width: 80%;
       height: 35%;
-      display: flex;
+      display: flex; 
       align-items: center;
-      justify-content: center; }
+      justify-content: center; 
+      }
       a320-neo-clock-element #Mainframe #MiddleSelector #MiddleSelectorValue {
         font-family: Alarm-Clock;
-        font-size: 65px;
-        text-align: center;
-        color: white; }
+        font-size: 81px;
+        margin-left: 2%;
+        margin-right: 5%;
+        width: 95%;
+        text-align: right;
+        /* font-kerning: none; Note: this one is in stdby for a new font */
+        color: rgba(155, 148, 148, 0.911); }
+      a320-neo-clock-element #Mainframe #MiddleSelector #MiddleSelectorValue2 {
+          font-family: Alarm-Clock;
+          font-size: 65px;
+          margin-left: 0%;
+          margin-right: 0%;
+          width: 5%;
+          text-align: right;
+          vertical-align: middle;
+          color: rgba(155, 148, 148, 0.911); }
+
     a320-neo-clock-element #Mainframe #BottomSelector {
       margin-top: 1%;
       width: 100%;
@@ -88,7 +106,7 @@ a320-neo-clock-element {
       justify-content: center; }
       a320-neo-clock-element #Mainframe #BottomSelector #BottomSelectorValue {
         font-family: Alarm-Clock;
-        font-size: 65px;
+        font-size: 81px;
         text-align: center;
-        color: white; }
+        color: rgba(155, 148, 148, 0.911); }
 

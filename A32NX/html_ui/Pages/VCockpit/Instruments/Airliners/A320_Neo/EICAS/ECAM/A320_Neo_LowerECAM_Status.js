@@ -4,7 +4,7 @@ var A320_Neo_LowerECAM_Status;
     }
     A320_Neo_LowerECAM_Status.Definitions = Definitions;
     function createDiv(_id, _class = "", _text = "") {
-        var div = document.createElement("div");
+        const div = document.createElement("div");
         if (_id.length > 0) {
             div.id = _id;
         }
@@ -20,10 +20,8 @@ var A320_Neo_LowerECAM_Status;
     class Page extends Airliners.EICASTemplateElement {
 
         isInop(_system) {
-            return SimVar.GetSimVarValue("L:A32NX_ECAM_INOP_SYS_"+_system, "Bool");
+            return SimVar.GetSimVarValue("L:A32NX_ECAM_INOP_SYS_" + _system, "Bool");
         }
-
-        
 
         constructor() {
             super();
@@ -83,6 +81,22 @@ var A320_Neo_LowerECAM_Status;
                         name: "",
                         messages: [
                             {
+                                message: "MAX BRK PR......1000PSI",
+                                style: "blue",
+                                isActive: () => this.isInop("ASKID_NWS"),
+                                actions: [
+                                    {
+                                        message: "LDG DIST PROC.....APPLY",
+                                        style: "blue"
+                                    },
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        name: "",
+                        messages: [
+                            {
                                 message: "CAT 3 SINGLE ONLY",
                                 style: "InfoIndication",
                                 isActive: () => {
@@ -96,10 +110,10 @@ var A320_Neo_LowerECAM_Status;
                                 ]
                             }
                         ]
-                    }
+                    },
                 ],
                 normal: []
-            }
+            };
             this.statusMessageArea = new A320_Neo_LowerECAM_Status.StatusMessagePanel(this, "status-messages", 15, this.statusMessages);
             this.inopMessages = {
                 failures: [],
@@ -138,12 +152,6 @@ var A320_Neo_LowerECAM_Status;
                         message: "A/THR",
                         isActive: () => {
                             return this.isInop("ATHR");
-                        }
-                    },
-                    {
-                        message: "N/W. STEER",
-                        isActive: () => {
-                            return this.isInop("NS_STEER");
                         }
                     },
                     {
@@ -189,12 +197,6 @@ var A320_Neo_LowerECAM_Status;
                         }
                     },
                     {
-                        message: "AUTO BRK",
-                        isActive: () => {
-                            return this.isInop("AUTO_BRK");
-                        }
-                    },
-                    {
                         message: "CAP PR 1+2",
                         isActive: () => {
                             return this.isInop("CAB_PR_1") && this.isInop("CAB_PR_2");
@@ -231,17 +233,14 @@ var A320_Neo_LowerECAM_Status;
                         }
                     },
                     {
-                        message: "ANTI SKID",
-                        isActive: () => {
-                            return this.isInop("ANTI_SKID");
-                        }
-                    },
-                    //
-                    {
                         message: "WING A.ICE",
                         isActive: () => {
                             return this.isInop("WING_A_ICE");
                         }
+                    },
+                    {
+                        message: "CAT 3",
+                        isActive: () => this.isInop("CAT_3")
                     },
                     {
                         message: "CAT 3 DUAL",
@@ -314,12 +313,36 @@ var A320_Neo_LowerECAM_Status;
                         isActive: () => {
                             return this.isInop("TCAS");
                         }
-                    }
+                    },
+                    {
+                        message: "ANTI SKID",
+                        isActive: () => this.isInop("ANTI_SKID")
+                    },
+                    {
+                        message: "N/W STRG",
+                        isActive: () => this.isInop("NS_STEER")
+                    },
+                    {
+                        message: "NORM BRK",
+                        isActive: () => this.isInop("NORM_BRK")
+                    },
+                    {
+                        message: "ALTN BRK",
+                        isActive: () => this.isInop("ALTN_BRK")
+                    },
+                    {
+                        message: "AUTO BRK",
+                        isActive: () => {
+                            return this.isInop("AUTO_BRK");
+                        }
+                    },
                 ]
             };
             this.inopSystemsMessageArea = new A320_Neo_LowerECAM_Status.StatusMessagePanel(this, "inop-systems", 15, this.inopMessages);
         }
-        get templateID() { return "LowerECAMStatusTemplate"; }
+        get templateID() {
+            return "LowerECAMStatusTemplate";
+        }
         connectedCallback() {
             super.connectedCallback();
             TemplateElement.call(this, this.init.bind(this));
@@ -372,8 +395,8 @@ A320_Neo_LowerECAM_Status.PanelBase = PanelBase;
  */
 class StatusMessagePanel extends A320_Neo_LowerECAM_Status.PanelBase {
     /**
-     * @param {*} _parent 
-     * @param {string} _id 
+     * @param {*} _parent
+     * @param {string} _id
      * @param {number} _max The maximum number of lines this panel can display
      * @param {*} _messages Object containing all posible messages this panel can display
      */
@@ -390,15 +413,15 @@ class StatusMessagePanel extends A320_Neo_LowerECAM_Status.PanelBase {
     }
     init() {
         super.init();
-        for (var i = 0; i < this.maxLines; i++) {
+        for (let i = 0; i < this.maxLines; i++) {
             this.addDiv();
         }
     }
     update() {
-        
+
         this.activeCategories = [];
         this.currentLine = 0;
-        for (let div of this.allDivs) {
+        for (const div of this.allDivs) {
             div.innerHTML = "";
         }
         const activeFailures = this.getActiveFailures();
@@ -408,7 +431,9 @@ class StatusMessagePanel extends A320_Neo_LowerECAM_Status.PanelBase {
                 this.addLine(failure.style, category.name, failure.message, failure.action, failure.alwaysShowCategory);
                 if (failure.actions != null) {
                     for (const action of failure.actions) {
-                        if (action.isCompleted == null || !action.isCompleted()) this.addLine(action.style, null, action.message, action.action);
+                        if (action.isCompleted == null || !action.isCompleted()) {
+                            this.addLine(action.style, null, action.message, action.action);
+                        }
                     }
                 }
             }
@@ -420,38 +445,40 @@ class StatusMessagePanel extends A320_Neo_LowerECAM_Status.PanelBase {
     }
     addLine(_style, _category, _message, _action, _alwaysShowCategory = false) {
         if (this.currentLine < this.maxLines) {
-            var div = this.allDivs[this.currentLine];
+            const div = this.allDivs[this.currentLine];
             div.innerHTML = "";
             div.className = _style;
             if (div != null) {
 
                 //Category
                 if (_category != null && (!this.activeCategories.includes(_category) || _alwaysShowCategory)) {
-                    var category = document.createElement("span");
+                    const category = document.createElement("span");
                     category.className = "Underline";
                     category.textContent = _category;
                     div.appendChild(category);
                 }
-                
+
                 //Message
-                var message = document.createElement("span");
-                switch(_style) {
+                const message = document.createElement("span");
+                switch (_style) {
                     case "action":
-                        var msgOutput = "-"+_message;
+                        var msgOutput = "-" + _message;
                         for (var i = 0; i < (23 - _message.length - _action.length); i++) {
-                            msgOutput = msgOutput+".";
+                            msgOutput = msgOutput + ".";
                         }
                         msgOutput += _action;
                         break;
                     case "remark":
-                        var msgOutput = "."+(_message+":").substring(0,23);
+                        var msgOutput = "." + (_message + ":").substring(0,23);
                         break;
                     default:
-                        var msgOutput = " "+_message;
-                        if (!_category) break;
+                        var msgOutput = " " + _message;
+                        if (!_category) {
+                            break;
+                        }
                         if (this.activeCategories.includes(_category)) {
                             for (var i = 0; i < _category.length; i++) {
-                                msgOutput = "&nbsp;"+msgOutput;
+                                msgOutput = "&nbsp;" + msgOutput;
                             }
                         }
                         break;
@@ -467,26 +494,31 @@ class StatusMessagePanel extends A320_Neo_LowerECAM_Status.PanelBase {
         this.currentLine++;
     }
 
-    
     getActiveFailures() {
-        let output = {};
+        const output = {};
         this.hasActiveFailures = false;
         this.hasWarnings = false;
         this.hasCautions = false;
-        for (var i = 0; i < this.messages.failures.length; i++) {
+        for (let i = 0; i < this.messages.failures.length; i++) {
             const messages = this.messages.failures[i].messages;
-            for (var n = 0; n < messages.length; n++) {
+            for (let n = 0; n < messages.length; n++) {
                 const message = messages[n];
-                if (message.id == null) message.id = `${i} ${n}`;
+                if (message.id == null) {
+                    message.id = `${i} ${n}`;
+                }
                 if (message.isActive() && !this.clearedMessages.includes(message.id)) {
                     this.hasActiveFailures = true;
-                    if (message.level == 3) this.hasWarnings = true;
-                    if (message.level == 2) this.hasCautions = true;
+                    if (message.level == 3) {
+                        this.hasWarnings = true;
+                    }
+                    if (message.level == 2) {
+                        this.hasCautions = true;
+                    }
                     if (output[i] == null) {
                         output[i] = this.messages.failures[i];
                         output[i].messages = [];
                     }
-                    
+
                     output[i].messages.push(message);
                 }
             }

@@ -4,12 +4,20 @@ class CDUMenuPage {
         const activeSystem = mcdu.activeSystem;
         let textATSU;
         let textFMGC;
+        let textAIDS;
+        let textCFDS;
+        let textMaint;
+        let textReturn;
         let selectedFMGC = false;
         let selectedATSU = false;
 
         const updateView = () => {
             textFMGC = "<FMGC";
             textATSU = "<ATSU";
+            textAIDS = "<AIDS";
+            textCFDS = "<CFDS";
+            textMaint = "MCDU MAINT>";
+            textReturn = "RETURN>";
             if (activeSystem === "FMGC") textFMGC = "<FMGC[color]green";
             if (activeSystem === "ATSU") textATSU = "<ATSU[color]green";
             if (selectedFMGC) textFMGC = "<FMGC (SEL)[color]blue";
@@ -22,12 +30,12 @@ class CDUMenuPage {
                 [""],
                 [textATSU],
                 [""],
+                [textAIDS],
+                [textMaint],
+                [textCFDS],
                 [""],
                 [""],
-                [""],
-                [""],
-                [""],
-                [""],
+                [textReturn],
                 [""]
             ]);
         }
@@ -88,5 +96,21 @@ class CDUMenuPage {
             mcdu.showErrorMessage("");
             CDUFuelPredPage.ShowPage(mcdu);
         };
+        // Previous (original) MCDU menu
+        // mcdu.setTemplate([
+        //     ["A320"],
+        //     ["ENG"],
+        //     ["LEAP A-1"],
+        //     ["ACTIVE DATA BASE"],
+        //     ["4MAY-4JUL[color]blue", "TC11103001"],
+        //     ["SECOND DATA BASE"],
+        //     ["{4MAY-4JUL[color]blue"],
+        //     [""],
+        //     [""],
+        //     [""],
+        //     [""],
+        //     ["", "PERF FACTOR"],
+        //     ["", "0.0"]
+        // ]);
     }
 }
