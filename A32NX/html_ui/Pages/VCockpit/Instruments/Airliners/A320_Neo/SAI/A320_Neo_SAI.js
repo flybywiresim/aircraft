@@ -20,6 +20,34 @@ class A320_Neo_SAI extends BaseAirliners {
     }
 }
 
+const sai_state_machine = {
+    init: "off",
+    off: {
+        transitions: {
+            next: {
+                target: "test"
+            }
+        }
+    },
+    test: {
+        transitions: {
+            next: {
+                target: "on"
+            },
+            reset: {
+                target: "off"
+            }
+        }
+    },
+    on: {
+        transitions: {
+            reset: {
+                target: "off"
+            }
+        }
+    },
+};
+
 class A320_Neo_SAI_Airspeed extends NavSystemElement {
     constructor() {
         super();
@@ -1000,14 +1028,6 @@ customElements.define('a320-neo-sai-attitude-indicator', A320_Neo_SAI_AttitudeIn
 class A320_Neo_SAI_Pressure extends NavSystemElement {
     init(root) {
         this.pressureElement = this.gps.getChildById("Pressure");
-        this.pressureElement.style.display = "none";
-        const interval = 10;
-        this.getFrameCounter = A32NX_Util.createFrameCounter(interval);
-        const cold_dark = SimVar.GetSimVarValue('L:A32NX_COLD_AND_DARK_SPAWN', 'Bool');
-        if (!cold_dark) {
-            this.pressureElement.style.display = "block";
-        }
-        this.just_init = true;
     }
     onEnter() {
     }
@@ -1016,25 +1036,6 @@ class A320_Neo_SAI_Pressure extends NavSystemElement {
     }
     onUpdate(_deltaTime) {
         this.pressureElement.update(_deltaTime);
-        const _updateF = this.getFrameCounter();
-
-        if (_updateF === 0) {
-            const ac_pwr = SimVar.GetSimVarValue("L:ACPowerAvailable", "bool");
-            const dc_pwr = SimVar.GetSimVarValue("L:DCPowerAvailable", "bool");
-            if ((ac_pwr || dc_pwr)) {
-                this.pressureElement.style.display = "block";
-            } else {
-                const airspeed = Simplane.getTrueSpeed();
-                if (airspeed < 50.0) {
-                    // Airspeed > 50 knots, check every 10th frame
-                    if (this.just_init != true) {
-                        this.pressureElement.style.display = "none";
-                    } else {
-                        this.just_init = false;
-                    }
-                }
-            }
-        }
     }
     onExit() {
     }
@@ -1178,45 +1179,67 @@ class A320_Neo_SAI_SelfTest extends NavSystemElement {
         const cold_dark = SimVar.GetSimVarValue('L:A32NX_COLD_AND_DARK_SPAWN', 'Bool');
         const ac_pwr = SimVar.GetSimVarValue("L:ACPowerAvailable", "bool");
         const dc_pwr = SimVar.GetSimVarValue("L:DCPowerAvailable", "bool");
+        this.state = A32NX_Util.createMachine(sai_state_machine);
 
         if (!cold_dark) {
             this.selfTestElement.finishTest();
+            this.state.setState("on");
+        } else {
+            this.state.setState("off");
         }
         if ((!ac_pwr && !dc_pwr)) {
-            this.selfTestElement.style.display = "none";
+            this.selfTestElement.offDisplay();
         }
-        this.just_init = true;
     }
     onEnter() {
     }
     isReady() {
         return true;
     }
+
+    checkShutdown() {
+        const ac_pwr = SimVar.GetSimVarValue("L:ACPowerAvailable", "bool");
+        const dc_pwr = SimVar.GetSimVarValue("L:DCPowerAvailable", "bool");
+
+        if (ac_pwr || dc_pwr) {
+            return;
+        } else {
+            const _updateF = this.getFrameCounter();
+            // Airspeed > 50 knots, check every 10th frame
+            if (_updateF === 0) {
+                const airspeed = Simplane.getTrueSpeed();
+                if (airspeed < 50.0) {
+                    this.selfTestElement.offDisplay();
+                    this.state.action("reset");
+                }
+            }
+        }
+    }
     onUpdate(_deltaTime) {
         const _dTime = this.getDeltaTime();
-        const _updateF = this.getFrameCounter();
 
         const complete = this.selfTestElement.complete;
         const ac_pwr = SimVar.GetSimVarValue("L:ACPowerAvailable", "bool");
         const dc_pwr = SimVar.GetSimVarValue("L:DCPowerAvailable", "bool");
 
-        if ((ac_pwr || dc_pwr)) {
-            this.selfTestElement.style.display = "block";
-            if (!complete) {
-                this.selfTestElement.update(_dTime);
-            }
-        } else {
-            if (_updateF === 0) {
-                const airspeed = Simplane.getTrueSpeed();
-                if (airspeed < 50.0) {
-                    // Airspeed > 50 knots, check every 10th frame
-                    if (this.just_init != true) {
-                        this.selfTestElement.offDisplay();
-                    } else {
-                        this.just_init = false;
-                    }
+        switch (this.state.value) {
+            case "off":
+                if ((ac_pwr || dc_pwr)) {
+                    this.selfTestElement.onDisplay();
+                    this.state.action("next");
                 }
-            }
+                break;
+            case "test":
+                this.checkShutdown();
+                if (!complete) {
+                    this.selfTestElement.update(_dTime);
+                } else if (complete) {
+                    this.state.action("next");
+                }
+                break;
+            case "on":
+                this.checkShutdown();
+                break;
         }
     }
     onEvent(_event) {
@@ -1246,6 +1269,7 @@ class A320_Neo_SAI_SelfTestTimer extends HTMLElement {
 
         this.hide_inst_div = document.querySelector("#SelfTestHider");
         this.hide_inst_div.style.display = "none";
+        this.hide_disp_div = document.querySelector("#PressureHider");
 
         this.selfTestDiv = document.createElement("div");
         this.selfTestDiv.id = "SelfTestDiv";
@@ -1351,13 +1375,9 @@ class A320_Neo_SAI_SelfTestTimer extends HTMLElement {
         if (this.complete) {
             return;
         }
-        if (this.selfTestDiv.style.display === "none") {
-            this.selfTestDiv.style.display = "block";
-        }
         if (this.testTimer >= 0) {
             this.testTimer -= dTime / 1000;
         }
-
         if (this.testTimer > 9) {
             this.st_tmr_txt.textContent = "INIT " + Math.ceil(this.testTimer) + "s";
         } else {
@@ -1367,6 +1387,11 @@ class A320_Neo_SAI_SelfTestTimer extends HTMLElement {
             this.finishTest();
         }
     }
+
+    onDisplay() {
+        this.selfTestDiv.style.display = "block";
+        this.hide_disp_div.style.display = "block";
+    }
     offDisplay() {
         if (this.testTimer > this.start_time) {
             return;
@@ -1374,6 +1399,7 @@ class A320_Neo_SAI_SelfTestTimer extends HTMLElement {
         this.testTimer = this.start_time;
         this.complete = false;
         this.hide_inst_div.style.display = "none";
+        this.hide_disp_div.style.display = "none";
         this.selfTestDiv.style.display = "none";
     }
     finishTest() {
@@ -2089,43 +2115,6 @@ class A320_Neo_SAI_LandingSysIndicator extends HTMLElement {
 
     }
 }
-
-class A320_Neo_StateMachine {
-
-    init() {
-        this.state = state.offline;
-    }
-
-    nextState() {
-        switch (this.state) {
-            case state.offline:
-                this.state = state.test;
-                break;
-            case state.test:
-                this.state = state.online;
-                break;
-            case state.online:
-                this.state = state.offline;
-                break;
-        }
-    }
-
-    setInFlight() {
-        this.state = state;
-    }
-
-    getState() {
-        return this.state;
-    }
-
-}
-
-const state = {
-    "offline":0,
-    "test":1,
-    "online":2
-};
-Object.freeze(state);
 
 customElements.define('a320-neo-sai-landingsys-indicator', A320_Neo_SAI_LandingSysIndicator);
 
