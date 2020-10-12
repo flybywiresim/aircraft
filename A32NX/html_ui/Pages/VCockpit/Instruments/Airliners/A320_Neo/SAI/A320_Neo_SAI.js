@@ -537,8 +537,6 @@ class A320_Neo_SAI_AltimeterIndicator extends HTMLElement {
             }
             this.cursorSVGShape.setAttribute("fill", "url(#SAIBacklight)");
             this.cursorSVGShape.setAttribute("d", "M0 22 L65 22 L65 6 L140 6 L140 72 L65 72 L65 56 L0 56 Z");
-            //this.cursorSVGShape.setAttribute("stroke", "yellow");
-            //this.cursorSVGShape.setAttribute("stroke-width", "3");
             trs.appendChild(this.cursorSVGShape);
             const _cursorWidth = (cursorWidth / _scale);
             const _cursorHeight = (cursorHeight / _scale + 10);
@@ -557,7 +555,7 @@ class A320_Neo_SAI_AltimeterIndicator extends HTMLElement {
                 this.cursorIntegrals[2].construct(integralsGroup, _cursorPosX + 70, _cursorPosY - 2, _width, "ECAMFontRegular", this.fontSize * 3, "#00E64D");
             }
             this.cursorDecimals.construct(trs, _cursorPosX + 118, _cursorPosY, _width, "Roboto-Bold", this.fontSize * 1.6, "green");
-            this.cursorDecimals.construct(trs, _cursorPosX + 118, _cursorPosY, _width, "ECAMFontRegular", this.fontSize * 1.6, "#00E64D"); 
+            this.cursorDecimals.construct(trs, _cursorPosX + 118, _cursorPosY, _width, "ECAMFontRegular", this.fontSize * 1.6, "#00E64D");
             this.cursorSVGLine = document.createElementNS(Avionics.SVG.NS, "path");
             this.cursorSVGLine.setAttribute("fill", "none");
             this.cursorSVGLine.setAttribute("d", "M0 22 L65 22 L65 6 L140 6 L140 72 L65 72 L65 56 L0 56 Z");
