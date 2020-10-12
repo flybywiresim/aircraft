@@ -143,7 +143,7 @@ class Jet_MFD_NDCompass extends Jet_NDCompass {
                             text.setAttribute("x", "50");
                             text.setAttribute("y", (-(circleRadius - 50 + length + 10)).toString());
                             text.setAttribute("fill", "white");
-                            text.setAttribute("font-size", (i % 3 == 0) ? "36" : "20");
+                            text.setAttribute("font-size", (i % 3 == 0) ? "32" : "20");
                             text.setAttribute("font-family", "Roboto-Bold");
                             text.setAttribute("text-anchor", "middle");
                             text.setAttribute("alignment-baseline", "bottom");
@@ -268,8 +268,8 @@ class Jet_MFD_NDCompass extends Jet_NDCompass {
                         text.setAttribute("x", "500");
                         text.setAttribute("y", "230");
                         text.setAttribute("fill", "white");
-                        text.setAttribute("font-size", "50");
-                        text.setAttribute("font-family", "Roboto-Light");
+                        text.setAttribute("font-size", "42");
+                        text.setAttribute("font-family", "ECAMFontRegular");
                         text.setAttribute("text-anchor", "middle");
                         text.setAttribute("alignment-baseline", "central");
                         text.setAttribute("transform", "rotate(" + -fastToFixed(i * 90, 0) + " 500 230)");
@@ -346,8 +346,8 @@ class Jet_MFD_NDCompass extends Jet_NDCompass {
                     text.setAttribute("x", "500");
                     text.setAttribute("y", "115");
                     text.setAttribute("fill", "white");
-                    text.setAttribute("font-size", "40");
-                    text.setAttribute("font-family", "Roboto-Light");
+                    text.setAttribute("font-size", "38");
+                    text.setAttribute("font-family", "ECAMFontRegular");
                     text.setAttribute("text-anchor", "middle");
                     text.setAttribute("alignment-baseline", "central");
                     text.setAttribute("transform", "rotate(" + fastToFixed(i * 10, 0) + " 500 500)");

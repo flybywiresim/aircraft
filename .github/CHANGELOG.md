@@ -48,7 +48,10 @@
 1. [PFD] Correct PFD attitude indicator onground/inflight - @MMontalto (PiCcy)
 1. [ND] Added WX/TERR on ND brightness knob, fix ND/PFD brightness tooltips - @lukecologne (luke)
 1. [ECAM] Improved ECAM bleed page visuals and functionality - @nikotina91
+1. [LIGHTS] Fixed DIM/BRT Lights inside the cockpit. Overhead should now be visible. - @Snapmatics (Harry)
 1. [OVHD] Made AIR COND knobs continuous - @Benjozork (Benjamin Dupont)
+1. [TEXTURES] Changed color of FD Panel.
+1. [MISC] New custom display font for PFD/ND/ECAM/MCDU. Overhauled formatting, CSS, and colors of ECAM pages - @wpine215 (Iceman)
 
 
 ## 2020/09

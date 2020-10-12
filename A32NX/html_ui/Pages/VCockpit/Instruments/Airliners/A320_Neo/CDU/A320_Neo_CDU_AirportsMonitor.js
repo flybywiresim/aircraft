@@ -190,7 +190,7 @@ class CDUAirportsMonitor {
                     [""],
                     this.user_ap_line,
                     ["", "", this.frozen ? "LIST FROZEN" : ""],
-                    [this.frozen ? "←UNFREEZE[color]blue" : "←FREEZE[color]blue", "EFOB/WIND>"]
+                    [this.frozen ? "{UNFREEZE[color]blue" : "{FREEZE[color]blue", "EFOB/WIND>"]
                 ]);
 
                 // force spaces to emulate 4 columns

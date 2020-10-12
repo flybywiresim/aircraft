@@ -13,7 +13,7 @@ class CDUDirectToPage {
         if (directWaypoint) {
             iMax--;
             eraseLabel = "DIR TO[color]red";
-            waypointsCell[4] = "←ERASE[color]red";
+            waypointsCell[4] = "{ERASE[color]red";
             mcdu.onLeftInput[5] = () => {
                 SimVar.SetSimVarValue("L:A320_NEO_PREVIEW_DIRECT_TO", "number", 0);
                 CDUDirectToPage.ShowPage(mcdu);
@@ -39,7 +39,7 @@ class CDUDirectToPage {
         while (i < totalWaypointsCount && i + wptsListIndex < totalWaypointsCount && i < iMax) {
             const waypoint = mcdu.flightPlanManager.getWaypoint(i + wptsListIndex, NaN, true);
             if (waypoint) {
-                waypointsCell[i] = "←" + waypoint.ident + "[color]blue";
+                waypointsCell[i] = "{" + waypoint.ident + "[color]blue";
                 if (waypointsCell[i]) {
                     mcdu.onLeftInput[i + 1] = () => {
                         SimVar.SetSimVarValue("L:A320_NEO_PREVIEW_DIRECT_TO", "number", 1);

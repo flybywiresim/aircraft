@@ -23,12 +23,12 @@ class CDUFuelPredPage {
             rteRsvPercentCell = rteRsvPercent.toFixed(1);
         }
         let zfwColor = "[color]red";
-        let zfwCell = "□□□.□";
+        let zfwCell = "___._";
         if (isFinite(mcdu.zeroFuelWeight)) {
             zfwCell = mcdu.zeroFuelWeight.toFixed(1);
             zfwColor = "[color]blue";
         }
-        let zfwCgCell = "□□.□";
+        let zfwCgCell = "__._";
         if (isFinite(mcdu.zeroFuelWeightMassCenter)) {
             zfwCgCell = mcdu.zeroFuelWeightMassCenter.toFixed(1);
         }

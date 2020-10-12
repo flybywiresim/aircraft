@@ -1,48 +1,4 @@
-@font-face {
-    font-family: "B612Mono";
-    src: url("/Fonts/B612Mono-Regular.ttf") format("truetype");
-    font-weight: normal;
-    font-style: normal;
-}
-
-@font-face {
-    font-family: "Liberation Mono";
-    src: url("/Fonts/LiberationMono.ttf") format("truetype");
-    font-weight: normal;
-    font-style: normal;
-}
-
-:root {
-    --ecamDefaultColour: white;
-    --ecamShapeColour: lightgray;
-    --ecamUnitsColour: #01b8b8;
-    --ecamValueColour: #00b300;
-    --ecamWarningColour: #db7200;
-    --ecamDangerColour: red;
-    --ecamInactiveColour: #db7200;
-    --ecamSeparatorsColour: white;
-    --ecamHydraulicBgColour: #484848;
-}
-
-:root .Separator {
-    stroke: #3c3c3c;
-    stroke-width: 4;
-    fill: none;
-}
-
-:root div {
-    font-family: "Liberation Mono" !important;
-}
-
-:root text {
-    font-family: "Liberation Mono" !important;
-}
-
-:root #PageTitle {
-    fill: var(--ecamDefaultColour);
-    font-size: 25px;
-    text-decoration: underline;
-}
+@import url("/CSS/A32NX_Display_Common.css");
 
 a320-neo-lower-ecam-ftcl {
     display: block;
@@ -53,7 +9,6 @@ a320-neo-lower-ecam-ftcl {
     width: 100%;
     height: 100%;
 }
-
 a320-neo-lower-ecam-ftcl text {
     text-anchor: middle;
     alignment-baseline: central;
@@ -61,91 +16,77 @@ a320-neo-lower-ecam-ftcl text {
 
 a320-neo-lower-ecam-ftcl .MainShape {
     fill: transparent;
-    stroke: var(--ecamShapeColour);
+    stroke: var(--displayLightGrey);
     stroke-width: 2;
 }
-
 a320-neo-lower-ecam-ftcl .MainShapeWarning {
     fill: transparent;
-    stroke: var(--ecamWarningColour);
+    stroke: var(--displayAmber);
     stroke-width: 2;
 }
-
 a320-neo-lower-ecam-ftcl .MainShape4 {
     fill: transparent;
-    stroke: var(--ecamShapeColour);
+    stroke: var(--displayLightGrey);
     stroke-width: 4;
 }
-
 a320-neo-lower-ecam-ftcl .GreenShape {
     fill: transparent;
-    stroke: var(--ecamValueColour);
+    stroke: var(--displayGreen);
     stroke-width: 2;
 }
-
 a320-neo-lower-ecam-ftcl .GreenShapeThick {
     fill: transparent;
-    stroke: var(--ecamValueColour);
+    stroke: var(--displayGreen);
     stroke-width: 3;
 }
-
 a320-neo-lower-ecam-ftcl .WarningShape {
     fill: transparent;
-    stroke: var(--ecamWarningColour);
+    stroke: var(--displayAmber);
     stroke-width: 2
 }
-
 a320-neo-lower-ecam-ftcl .HydBgShape {
-    fill: var(--ecamHydraulicBgColour);
+    fill: var(--displayGrey);
     stroke: none;
 }
 
+
 a320-neo-lower-ecam-ftcl text.Title {
     font-size: 25px;
-    fill: var(--ecamDefaultColour);
+    fill: var(--displayWhite);
 }
-
 a320-neo-lower-ecam-ftcl text.Note {
-    font-size: 12pt;
-    fill: var(--ecamDefaultColour);
+    font-size: 11pt;
+    fill: var(--displayWhite);
 }
-
 a320-neo-lower-ecam-ftcl text.Note15 {
-    font-size: 15pt;
-    fill: var(--ecamDefaultColour);
+    font-size: 13pt;
+    fill: var(--displayWhite);
 }
-
 a320-neo-lower-ecam-ftcl text.Unit {
     font-size: 14pt;
-    fill: var(--ecamUnitsColour);
+    fill: var(--displayCyan);
 }
-
 a320-neo-lower-ecam-ftcl text.Value {
     font-size: 14pt;
-    fill: var(--ecamValueColour);
+    fill: var(--displayGreen);
 }
-
 a320-neo-lower-ecam-ftcl text.Value12 {
     font-size: 12pt;
-    fill: var(--ecamValueColour);
+    fill: var(--displayGreen);
 }
-
 a320-neo-lower-ecam-ftcl text.Value15 {
     font-size: 15pt;
-    fill: var(--ecamValueColour);
+    fill: var(--displayGreen);
 }
-
 a320-neo-lower-ecam-ftcl text.Value15Warning {
     font-size: 15pt;
-    fill: var(--ecamWarningColour);
+    fill: var(--displayAmber);
 }
-
 a320-neo-lower-ecam-ftcl text.ValueWhite {
     font-size: 14pt;
-    fill: var(--ecamDefaultColour);
+    fill: var(--displayWhite);
 }
-
 a320-neo-lower-ecam-ftcl text.Warning {
     font-size: 18px;
-    fill: var(--ecamWarningColour);
+    fill: var(--displayAmber);
 }
