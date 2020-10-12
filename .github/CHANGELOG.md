@@ -51,7 +51,7 @@
 1. [OVHD] Made AIR COND knobs continuous - @Benjozork (Benjamin Dupont)
 1. [TEXTURES] Changed color of FD Panel.
 1. [MISC] New custom display font for PFD/ND/ECAM/MCDU. Overhauled formatting, CSS, and colors of ECAM pages - @wpine215 (Iceman)
-1. [MISC] Standby Instrument cosmetic display fixes, stays ON if emergency power should be available - @2hwk (2Cas#1022 on discord)
+1. [MISC] Standby Instrument stays ON if emergency power should be available, bug fixes - @2hwk (2Cas#1022 on discord)
 
 ## 2020/09
 1. [General] Add CHANGELOG.md - @nathaninnes (Nathan Innes)
