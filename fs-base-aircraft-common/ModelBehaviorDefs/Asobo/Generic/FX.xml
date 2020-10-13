@@ -1,0 +1,52 @@
+
+<!-- ####################################################################### -->
+<!-- ######################### FX Templates ######################## -->
+<!-- ####################################################################### -->
+
+
+<ModelBehaviors>
+	<!--
+		Base FX Template.
+		Must be used in a component that specifies a Node.
+
+		Required parameter:
+			FX_NAME or FX_GUID
+			FX_CODE
+	-->
+	<Template Name = "ASOBO_GT_FX">
+		<DefaultTemplateParameters>
+			<FX_NAME></FX_NAME>
+			<FX_GUID></FX_GUID>
+			<FX_OFFSET_X>0.0</FX_OFFSET_X>
+			<FX_OFFSET_Y>0.0</FX_OFFSET_Y>
+			<FX_OFFSET_Z>0.0</FX_OFFSET_Z>
+		</DefaultTemplateParameters>
+		<EditableTemplateParameters>
+			<FX_NAME></FX_NAME>
+			<FX_GUID></FX_GUID>
+			<FX_CODE></FX_CODE>
+			<FX_OFFSET_X gizmo-node-relpos-x=""></FX_OFFSET_X>
+			<FX_OFFSET_Y gizmo-node-relpos-y=""></FX_OFFSET_Y>
+			<FX_OFFSET_Z gizmo-node-relpos-z=""></FX_OFFSET_Z>
+		</EditableTemplateParameters>
+
+		<Condition>
+			<Test>
+				<Or>
+					<Arg Valid="FX_NAME" />
+					<Arg Valid="FX_GUID" />
+				</Or>
+			</Test>
+			<True>
+				<FX Name="#FX_NAME#" GUID="#FX_GUID#">
+					<Offset>
+						<X>#FX_OFFSET_X#</X>
+						<Y>#FX_OFFSET_Y#</Y>
+						<Z>#FX_OFFSET_Z#</Z>
+					</Offset>
+					<Code>#FX_CODE#</Code>
+				</FX>
+			</True>
+		</Condition>
+	</Template>
+</ModelBehaviors>
