@@ -13,17 +13,17 @@ class VerticalSpeedIndicator extends HTMLElement {
         this.root.setAttribute("height", "100%");
         this.root.setAttribute("viewBox", "0 -25 100 550");
         this.appendChild(this.root);
-        let background = document.createElementNS(Avionics.SVG.NS, "path");
+        const background = document.createElementNS(Avionics.SVG.NS, "path");
         background.setAttribute("d", "M0 0 L0 500 L75 500 L75 300 L10 250 L75 200 L75 0 Z");
         background.setAttribute("fill", "#1a1d21");
         background.setAttribute("fill-opacity", "0.25");
         this.root.appendChild(background);
-        let dashes = [-200, -150, -100, -50, 50, 100, 150, 200];
-        let height = 3;
-        let width = 10;
-        let fontSize = 30;
+        const dashes = [-200, -150, -100, -50, 50, 100, 150, 200];
+        const height = 3;
+        const width = 10;
+        const fontSize = 30;
         for (let i = 0; i < dashes.length; i++) {
-            let rect = document.createElementNS(Avionics.SVG.NS, "rect");
+            const rect = document.createElementNS(Avionics.SVG.NS, "rect");
             rect.setAttribute("x", "0");
             rect.setAttribute("y", (250 - dashes[i] - height / 2).toString());
             rect.setAttribute("height", height.toString());
@@ -31,7 +31,7 @@ class VerticalSpeedIndicator extends HTMLElement {
             rect.setAttribute("fill", "white");
             this.root.appendChild(rect);
             if ((dashes[i] % 100) == 0) {
-                let text = document.createElementNS(Avionics.SVG.NS, "text");
+                const text = document.createElementNS(Avionics.SVG.NS, "text");
                 text.textContent = (dashes[i] / 100).toString();
                 text.setAttribute("y", ((250 - dashes[i] - height / 2) + fontSize / 3).toString());
                 text.setAttribute("x", (3 * width).toString());
@@ -44,7 +44,7 @@ class VerticalSpeedIndicator extends HTMLElement {
         {
             this.indicator = document.createElementNS(Avionics.SVG.NS, "g");
             this.root.appendChild(this.indicator);
-            let indicatorBackground = document.createElementNS(Avionics.SVG.NS, "path");
+            const indicatorBackground = document.createElementNS(Avionics.SVG.NS, "path");
             indicatorBackground.setAttribute("d", "M10 250 L35 275 L130 275 L130 225 L35 225 Z");
             indicatorBackground.setAttribute("fill", "#1a1d21");
             this.indicator.appendChild(indicatorBackground);
@@ -59,11 +59,12 @@ class VerticalSpeedIndicator extends HTMLElement {
         }
     }
     attributeChangedCallback(name, oldValue, newValue) {
-        if (oldValue == newValue)
+        if (oldValue == newValue) {
             return;
+        }
         switch (name) {
             case "vspeed":
-                let vSpeed = parseFloat(newValue);
+                const vSpeed = parseFloat(newValue);
                 this.indicator.setAttribute("transform", "translate(0, " + -Math.max(Math.min(vSpeed, 2500), -2500) / 10 + ")");
                 this.indicatorText.textContent = Math.abs(vSpeed) >= 100 ? fastToFixed(vSpeed, 0) : "";
                 break;
