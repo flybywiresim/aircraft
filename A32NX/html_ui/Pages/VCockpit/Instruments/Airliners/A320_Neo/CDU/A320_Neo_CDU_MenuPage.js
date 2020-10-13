@@ -10,7 +10,9 @@ class CDUMenuPage {
         let textReturn;
         let selectedFMGC = false;
         let selectedATSU = false;
+        let selectedAIDS = false;
         let selectedCFDS = false;
+        let selectedMaint = false;
 
         const updateView = () => {
             textFMGC = "<FMGC";
@@ -21,10 +23,14 @@ class CDUMenuPage {
             textReturn = "RETURN>";
             if (activeSystem === "FMGC") textFMGC = "<FMGC[color]green";
             if (activeSystem === "ATSU") textATSU = "<ATSU[color]green";
+            if (activeSystem === "AIDS") textAIDS = "<AIDS[color]green";
             if (activeSystem === "CFDS") textCFDS = "<CFDS[color]green";
+            if (activeSystem === "MAINT") textMaint = "MCDU MAINT>[color]green";
             if (selectedFMGC) textFMGC = "<FMGC (SEL)[color]blue";
             if (selectedATSU) textATSU = "<ATSU (SEL)[color]blue";
+            if (selectedAIDS) textAIDS = "<AIDS (SEL)[color]blue";
             if (selectedCFDS) textCFDS = "<CFDS (SEL)[color]blue";
+            if (selectedMaint) textMaint = "(SEL) MCDU MAINT>[color]blue";
 
             mcdu.setTemplate([
                 ["MCDU MENU"],
@@ -68,7 +74,13 @@ class CDUMenuPage {
         }
 
         mcdu.onLeftInput[2] = () => {
-            mcdu.showErrorMessage("NOT YET IMPLEMENTED");
+            mcdu.showErrorMessage("WAIT FOR SYSTEM RESPONSE");
+            selectedAIDS = true;
+            updateView();
+            setTimeout(() => {
+                mcdu.showErrorMessage("");
+                CDU_AIDS_MainMenu.ShowPage(mcdu);
+            }, Math.floor(Math.random() * (2000 - 1000)) + 1000); 
         }
 
         mcdu.onLeftInput[3] = () => {
@@ -82,7 +94,13 @@ class CDUMenuPage {
         }
 
         mcdu.onRightInput[3] = () => {
-            mcdu.showErrorMessage("NOT YET IMPLEMENTED");
+            mcdu.showErrorMessage("WAIT FOR SYSTEM RESPONSE");
+            selectedMaint = true;
+            updateView();
+            setTimeout(() => {
+                mcdu.showErrorMessage("");
+                CDU_OPTIONS_MainMenu.ShowPage(mcdu);
+            }, Math.floor(Math.random() * (2000 - 1000)) + 1000); 
         }
 
         mcdu.onDir = () => {
