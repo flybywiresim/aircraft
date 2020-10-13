@@ -1162,8 +1162,8 @@
 												<SegmentShape>Exp1</SegmentShape>
 											</Point>
 											<Point>
-												<XPos>256.20915</XPos>
-												<YPos>-11.01195</YPos>
+												<XPos>254.90025</XPos>
+												<YPos>-5.81572</YPos>
 												<Flags>0</Flags>
 												<SegmentShape>Constant</SegmentShape>
 											</Point>
@@ -2691,13 +2691,13 @@
 								<Value>-7</Value>
 							</ValueList>
 							<RTPCList>
-								<RTPC Name="" ID="{8242BF41-093F-493D-894E-6824DCE8B3A6}" ShortID="5665310">
+								<RTPC Name="" ID="{51CF63F2-C763-4962-8FC6-8CADA0141ED3}" ShortID="1013169811">
 									<ReferenceList>
 										<Reference Name="ControlInput">
 											<ObjectRef Name="SIMVAR_GENERAL_ENG_RPM" ID="{2A2495B6-0158-4F47-8261-D625910D546D}" WorkUnitID="{160297A3-539B-416D-BB27-309DA15AE344}"/>
 										</Reference>
 									</ReferenceList>
-									<Curve Name="" ID="{4E275A51-0D8C-464B-9602-01043FF30C3E}">
+									<Curve Name="" ID="{2EBA3359-529D-4367-9F6F-DCE2478ED3F6}">
 										<PropertyList>
 											<Property Name="Flags" Type="int32" Value="3"/>
 										</PropertyList>
@@ -2718,8 +2718,8 @@
 												<Flags>0</Flags>
 											</Point>
 											<Point>
-												<XPos>24422.51309</XPos>
-												<YPos>0.36908</YPos>
+												<XPos>21861.78011</XPos>
+												<YPos>-0.840460000000007</YPos>
 												<Flags>0</Flags>
 												<SegmentShape>Log3</SegmentShape>
 											</Point>
@@ -2835,8 +2835,8 @@
 												<Flags>0</Flags>
 											</Point>
 											<Point>
-												<XPos>24422.51309</XPos>
-												<YPos>0.369079999999968</YPos>
+												<XPos>21861.78011</XPos>
+												<YPos>-0.84046</YPos>
 												<Flags>0</Flags>
 												<SegmentShape>Log3</SegmentShape>
 											</Point>

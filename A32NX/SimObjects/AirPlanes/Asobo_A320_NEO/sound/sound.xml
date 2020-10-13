@@ -67,10 +67,10 @@
     </MiscellaneousSounds>
 
     <EngineSoundPresets>
-        <Sound WwiseEvent="Combustion" ViewPoint="Outside" ConeHeading="180" WwiseData="true" EngineIndex="1" FadeOutType="3" OutsideConeAngle="180" FadeOutTime="5"/>
-        <Sound WwiseEvent="Combustion" ViewPoint="Outside" ConeHeading="180" WwiseData="true" EngineIndex="2" FadeOutType="3" OutsideConeAngle="180" FadeOutTime="5"/>
-        <Sound WwiseEvent="JetWhine" ViewPoint="Outside" ConeHeading="0" WwiseData="true" EngineIndex="1" RPMMin="1"/>
-        <Sound WwiseEvent="JetWhine" ViewPoint="Outside" ConeHeading="0" WwiseData="true" EngineIndex="2" RPMMin="1"/>
+        <Sound WwiseEvent="Combustion" ConeHeading="180" WwiseData="true" EngineIndex="1" FadeOutType="3" OutsideConeAngle="180" FadeOutTime="5"/>
+        <Sound WwiseEvent="Combustion" ConeHeading="180" WwiseData="true" EngineIndex="2" FadeOutType="3" OutsideConeAngle="180" FadeOutTime="5"/>
+        <Sound WwiseEvent="JetWhine" ConeHeading="0" WwiseData="true" EngineIndex="1" RPMMin="1"/>
+        <Sound WwiseEvent="JetWhine" ConeHeading="0" WwiseData="true" EngineIndex="2" RPMMin="1"/>
     </EngineSoundPresets>
 
     <!-- SimvarSounds ========================================================================================== -->
@@ -103,11 +103,16 @@
         <Sound WwiseEvent="AVvent" WwiseData="true" NodeName="PEDALS_LEFT" Continuous="false" ApplyCockpitReverb="true" SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1">
             <Range LowerBound="28" />
             <WwiseRTPC SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1" RTPCName="SIMVAR_ELECTRICAL_MAIN_BUS_VOLTAGE_A4_R4" />
+            <Requires SimVar="GENERAL ENG RPM" Units="RPM" Index="1">
+                <Range UpperBound="5000" />
+            </Requires>
+
         </Sound>
 
         <Sound WwiseEvent="AVventloop" WwiseData="true" NodeName="PEDALS_LEFT" ApplyCockpitReverb="true" FadeOutType="2" FadeOutTime="4" SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1">
             <Range LowerBound="28" />
             <WwiseRTPC SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1" RTPCName="SIMVAR_ELECTRICAL_MAIN_BUS_VOLTAGE_A4_R4" />
+
         </Sound>
 
         <Sound WwiseData="true" WwiseEvent="apu_bleed_on" FadeOutType="2" FadeOutTime="3" SimVar="BLEED AIR APU" Units="BOOL" Index="0">
@@ -127,11 +132,18 @@
         <Sound WwiseEvent="CIDSchimes" WwiseData="true" NodeName="PUSH_OVHD_ELEC_BAT1" Continuous="false" ApplyCockpitReverb="true" SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1">
             <Range LowerBound="24" />
             <WwiseRTPC SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1" RTPCName="SIMVAR_ELECTRICAL_MAIN_BUS_VOLTAGE_A4_R4" />
+            <Requires SimVar="GENERAL ENG RPM" Units="RPM" Index="1">
+                <Range UpperBound="5000" />
+            </Requires>
+
         </Sound>
 
         <Sound WwiseEvent="FMGCtest" WwiseData="true" NodeName="PUSH_OVHD_ELEC_BAT1" Continuous="false" ApplyCockpitReverb="true" SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1">
             <Range LowerBound="28" />
             <WwiseRTPC SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1" RTPCName="SIMVAR_ELECTRICAL_MAIN_BUS_VOLTAGE_A4_R4" />
+            <Requires SimVar="GENERAL ENG RPM" Units="RPM" Index="1">
+                <Range UpperBound="5000" />
+            </Requires>
         </Sound>
 
         <Sound WwiseEvent="Loudrelay" WwiseData="true" NodeName="PUSH_OVHD_ELEC_BAT1" Continuous="false" ApplyCockpitReverb="true" SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1">
@@ -148,6 +160,9 @@
         <Sound WwiseEvent="startbeep" WwiseData="true" Continuous="false" ApplyCockpitReverb="true" SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1">
             <Range LowerBound="28" />
             <WwiseRTPC SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1" RTPCName="SIMVAR_ELECTRICAL_MAIN_BUS_VOLTAGE_A4_R4" />
+            <Requires SimVar="GENERAL ENG RPM" Units="RPM" Index="1">
+                <Range UpperBound="5000" />
+            </Requires>
 
         </Sound>
 
@@ -238,11 +253,11 @@
             <WwiseRTPC SimVar="GROUND VELOCITY" Units="KNOTS" Index="0" RTPCName="SIMVAR_GROUND_VELOCITY" />
         </Sound>
 
-        <Sound WwiseData="true" WwiseEvent="BuzzL" ViewPoint="Inside" ConeHeading="0" EngineIndex="1" SimVar="GENERAL ENG RPM" Units="RPM" Index="1">
+        <Sound WwiseData="true" WwiseEvent="BuzzL" ViewPoint="Inside" EngineIndex="1" SimVar="GENERAL ENG RPM" Units="RPM" Index="1">
             <Range LowerBound="1" />
             <WwiseRTPC SimVar="GENERAL ENG RPM" Units="RPM" Index="1" RTPCName="SIMVAR_GENERAL_ENG_RPM" />
         </Sound>
-        <Sound WwiseData="true" WwiseEvent="BuzzR" ViewPoint="Inside" ConeHeading="0" EngineIndex="2" SimVar="GENERAL ENG RPM" Units="RPM" Index="2">
+        <Sound WwiseData="true" WwiseEvent="BuzzR" ViewPoint="Inside" EngineIndex="2" SimVar="GENERAL ENG RPM" Units="RPM" Index="2">
             <Range LowerBound="1" />
             <WwiseRTPC SimVar="GENERAL ENG RPM" Units="RPM" Index="2" RTPCName="SIMVAR_GENERAL_ENG_RPM" />
         </Sound>
