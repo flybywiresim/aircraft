@@ -14,10 +14,11 @@ class CDUAocRequestsMessage {
 
         const currentMesssageIndex = mcdu.getMessageIndex(message["id"]);
         const currentMesssageCount = currentMesssageIndex + 1;
+        const msgArrows = mcdu.messages.length > 1 ? " {}" : "";
 
         mcdu.setTemplate([
             ["AOC MSG DISPLAY"],
-            [`${message["opened"]} VIEWED[color]green`, `${currentMesssageCount}/${mcdu.messages.length}`],
+            [`${message["opened"]} VIEWED[color]green`, `${currentMesssageCount}/${mcdu.messages.length}${msgArrows}`],
             [`${lines[offset] ? lines[offset] : ""}`],
             [""],
             [`${lines[offset + 1] ? lines[offset + 1] : ""}`],

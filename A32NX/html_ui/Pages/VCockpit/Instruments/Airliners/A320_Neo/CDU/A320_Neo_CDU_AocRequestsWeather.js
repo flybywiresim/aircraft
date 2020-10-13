@@ -71,41 +71,39 @@ class CDUAocRequestsWeather {
             const getData = async () => {
                 for (const icao of ICAOS) {
                     if (icao !== "") {
-                        await fetch(`https://weather.fs-2020.org/httpparam?dataSource=metars&requestType=retrieve&format=xml&hoursBeforeNow=24&mostRecent=true&stationString=${icao}`)
-                                .then((data) => data.json())      
+                        await fetch(`https://us-central1-flybywire-metar.cloudfunctions.net/metar-py?source=ms&icao=${icao}`)
+                                .then((response) => response.text())
                                 .then((data) => {
-                                    let hasMetar = false;
-                                    if (data["response"]["data"]["METAR"]) {
-                                        const metar = data["response"]["data"]["METAR"]["raw_text"]["_text"];
-                                        if (metar) {
-                                            hasMetar = true;
-                                            let message = metar.match(/(.*?\s){2}/g);
-                                            lines.push(`METAR ${message[0]}`);
-                                            message = message.join('')
+                                    let error = data.slice(0, 9) == "FBW_ERROR";
+                                    
+                                    if (!error) {
+                                        lines.push(`METAR ${icao}`);
 
-                                            function wordWrapToStringList(text, maxLength) {
-                                                let result = [], line = [];
-                                                let length = 0;
-                                                text.split(" ").forEach(function (word) {
-                                                    if ((length + word.length) >= maxLength) {
-                                                        result.push(line.join(" "));
-                                                        line = []; length = 0;
-                                                    }
-                                                    length += word.length + 1;
-                                                    line.push(word);
-                                                });
-                                                if (line.length > 0) {
+                                        function wordWrapToStringList(text, maxLength) {
+                                            let result = [], line = [];
+                                            let length = 0;
+                                            text.split(" ").forEach(function (word) {
+                                                if ((length + word.length) >= maxLength) {
                                                     result.push(line.join(" "));
+                                                    line = []; length = 0;
                                                 }
-                                                return result;
-                                            };
-
-                                            const newLines = wordWrapToStringList(metar, 50);
-                                            newLines.forEach(l => lines.push(l));
-                                            lines.push('--------------------------');
-
-                                        }
-                                        if (!hasMetar) errors += 1;
+                                                length += word.length + 1;
+                                                line.push(word);
+                                            });
+                                            if (line.length > 0) {
+                                                result.push(line.join(" "));
+                                            }
+                                            return result;
+                                        };
+                                        
+                                        const newLines = wordWrapToStringList(data, 25);
+                                        newLines.forEach(l => lines.push(l));
+                                        lines.push('------------------------');
+                                    } else {
+                                        lines.push(`METAR ${icao}`);
+                                        lines.push('ILLEGAL STATION IDENT');
+                                        lines.push('------------------------');
+                                        errors += 1;
                                     }
                                 })
                     }
