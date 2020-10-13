@@ -10,6 +10,7 @@ class CDUMenuPage {
         let textReturn;
         let selectedFMGC = false;
         let selectedATSU = false;
+        let selectedCFDS = false;
 
         const updateView = () => {
             textFMGC = "<FMGC";
@@ -20,8 +21,10 @@ class CDUMenuPage {
             textReturn = "RETURN>";
             if (activeSystem === "FMGC") textFMGC = "<FMGC[color]green";
             if (activeSystem === "ATSU") textATSU = "<ATSU[color]green";
+            if (activeSystem === "CFDS") textCFDS = "<CFDS[color]green";
             if (selectedFMGC) textFMGC = "<FMGC (SEL)[color]blue";
             if (selectedATSU) textATSU = "<ATSU (SEL)[color]blue";
+            if (selectedCFDS) textCFDS = "<CFDS (SEL)[color]blue";
 
             mcdu.setTemplate([
                 ["MCDU MENU"],
@@ -31,12 +34,12 @@ class CDUMenuPage {
                 [textATSU],
                 [""],
                 [textAIDS],
-                [textMaint],
-                [textCFDS],
+                [""],
+                [textCFDS, textMaint],
                 [""],
                 [""],
-                [textReturn],
-                [""]
+                [""],
+                ["", textReturn]
             ]);
         }
 
@@ -62,6 +65,24 @@ class CDUMenuPage {
                 mcdu.showErrorMessage("");
                 CDUAtsuMenu.ShowPage(mcdu);
             }, Math.floor(Math.random() * (2000 - 1000)) + 1000); 
+        }
+
+        mcdu.onLeftInput[2] = () => {
+            mcdu.showErrorMessage("NOT YET IMPLEMENTED");
+        }
+
+        mcdu.onLeftInput[3] = () => {
+            mcdu.showErrorMessage("WAIT FOR SYSTEM RESPONSE");
+            selectedCFDS = true;
+            updateView();
+            setTimeout(() => {
+                mcdu.showErrorMessage("");
+                CDUCfdsMainMenu.ShowPage(mcdu);
+            }, Math.floor(Math.random() * (2000 - 1000)) + 1000); 
+        }
+
+        mcdu.onRightInput[3] = () => {
+            mcdu.showErrorMessage("NOT YET IMPLEMENTED");
         }
 
         mcdu.onDir = () => {
