@@ -494,15 +494,127 @@
 						</Action>
 					</ChildrenList>
 				</Event>
-				<Event Name="PlayAsobo_A320_NEO_gearthud" ID="{42673D25-5177-45ED-90F5-83F71728C991}">
+				<Event Name="Play_Asobo_A320_NEO_RSpool" ID="{4ACCF273-7A8E-4660-BFC9-167A58A871AF}">
 					<ChildrenList>
-						<Action Name="" ID="{F18BA8F3-3A24-4353-AC9A-10FA18B66E08}" ShortID="1033219478">
+						<Action Name="" ID="{E1AA79E9-1FE2-4371-AA50-398C28362CAB}" ShortID="24283889">
 							<PropertyList>
 								<Property Name="ActionType" Type="int16" Value="1"/>
 							</PropertyList>
 							<ReferenceList>
 								<Reference Name="Target">
-									<ObjectRef Name="gearthud" ID="{2D92267B-74B4-4A16-9737-5AA5645D6EC6}"/>
+									<ObjectRef Name="RSpool" ID="{9EBB697B-5AB5-42CB-99E0-54FA98C734A1}" WorkUnitID="{27D32D8D-6C92-4542-9BFC-F0D08111F92F}"/>
+								</Reference>
+							</ReferenceList>
+						</Action>
+					</ChildrenList>
+				</Event>
+				<Event Name="Play_Asobo_A320_NEO_LSpool" ID="{FD807BC8-714F-4064-9484-238F58CE9595}">
+					<ChildrenList>
+						<Action Name="" ID="{D98C927A-C492-4A32-A934-75E7C66E6AA5}" ShortID="731331359">
+							<PropertyList>
+								<Property Name="ActionType" Type="int16" Value="1"/>
+							</PropertyList>
+							<ReferenceList>
+								<Reference Name="Target">
+									<ObjectRef Name="LSpool" ID="{FEC78F90-45D2-4BD1-B00E-0DA8D0EAA8BE}" WorkUnitID="{27D32D8D-6C92-4542-9BFC-F0D08111F92F}"/>
+								</Reference>
+							</ReferenceList>
+						</Action>
+					</ChildrenList>
+				</Event>
+				<Event Name="Play_Asobo_A320_NEO_BuzzL" ID="{90DC8AC7-9EB0-4856-921C-2FB68EE0FB80}">
+					<ChildrenList>
+						<Action Name="" ID="{42C919EC-517C-40E8-ACC2-B2B856584E73}" ShortID="96988879">
+							<PropertyList>
+								<Property Name="ActionType" Type="int16" Value="1"/>
+							</PropertyList>
+							<ReferenceList>
+								<Reference Name="Target">
+									<ObjectRef Name="BuzzL" ID="{F5032246-B49F-433A-9114-7B02E1D57756}" WorkUnitID="{27D32D8D-6C92-4542-9BFC-F0D08111F92F}"/>
+								</Reference>
+							</ReferenceList>
+						</Action>
+					</ChildrenList>
+				</Event>
+				<Event Name="Play_Asobo_A320_NEO_RWhine" ID="{D089E3F6-7370-474D-A556-FA6AC3B2CD17}">
+					<ChildrenList>
+						<Action Name="" ID="{4C716184-5B5D-47D7-A42C-9DBAA5B94147}" ShortID="938288977">
+							<PropertyList>
+								<Property Name="ActionType" Type="int16" Value="1"/>
+							</PropertyList>
+							<ReferenceList>
+								<Reference Name="Target">
+									<ObjectRef Name="RWhine" ID="{3AB2975D-3786-499E-ADAC-0AB6F3C881BC}" WorkUnitID="{27D32D8D-6C92-4542-9BFC-F0D08111F92F}"/>
+								</Reference>
+							</ReferenceList>
+						</Action>
+					</ChildrenList>
+				</Event>
+				<Event Name="Play_Asobo_A320_NEO_Centerthump1" ID="{C6F66D31-925A-425A-94C4-59F67D376756}">
+					<ChildrenList>
+						<Action Name="" ID="{2E07D65F-9920-4E52-8C2C-61BC0EEF9B40}" ShortID="309974248">
+							<PropertyList>
+								<Property Name="ActionType" Type="int16" Value="1"/>
+							</PropertyList>
+							<ReferenceList>
+								<Reference Name="Target">
+									<ObjectRef Name="Centreline_Runway" ID="{24EAAF67-4896-46D2-B1F8-FF62E6136EE6}" WorkUnitID="{27D32D8D-6C92-4542-9BFC-F0D08111F92F}"/>
+								</Reference>
+							</ReferenceList>
+						</Action>
+					</ChildrenList>
+				</Event>
+				<Event Name="Play_Asobo_A320_NEO_Centerthump2" ID="{12B38B1D-89A8-4807-A952-0470A7266DF1}">
+					<ChildrenList>
+						<Action Name="" ID="{39669BF6-7268-4411-80F6-46041D76ADEE}" ShortID="890106486">
+							<PropertyList>
+								<Property Name="ActionType" Type="int16" Value="1"/>
+							</PropertyList>
+							<ReferenceList>
+								<Reference Name="Target">
+									<ObjectRef Name="Centreline_Runway2" ID="{306D2F25-8245-420B-963D-45B8C32EA83B}" WorkUnitID="{27D32D8D-6C92-4542-9BFC-F0D08111F92F}"/>
+								</Reference>
+							</ReferenceList>
+						</Action>
+					</ChildrenList>
+				</Event>
+				<Event Name="Play_Asobo_A320_NEO_bumpslow" ID="{994F91DE-A0AB-4DD6-A981-A2EAFDCB90EA}">
+					<ChildrenList>
+						<Action Name="" ID="{4B0228F3-A45A-4D2C-BBBC-AB6B07B0C837}" ShortID="372752849">
+							<PropertyList>
+								<Property Name="ActionType" Type="int16" Value="1"/>
+							</PropertyList>
+							<ReferenceList>
+								<Reference Name="Target">
+									<ObjectRef Name="bumpslow" ID="{D765D857-B49C-4FAD-B2AF-CB7F1FACC8E7}" WorkUnitID="{27D32D8D-6C92-4542-9BFC-F0D08111F92F}"/>
+								</Reference>
+							</ReferenceList>
+						</Action>
+					</ChildrenList>
+				</Event>
+				<Event Name="Play_Asobo_A320_NEO_BuzzR" ID="{A1EF333D-82AA-4EC9-ACED-3DD652342608}">
+					<ChildrenList>
+						<Action Name="" ID="{9DA8D835-FF34-498C-B52B-4A42A6638BE6}" ShortID="533051879">
+							<PropertyList>
+								<Property Name="ActionType" Type="int16" Value="1"/>
+							</PropertyList>
+							<ReferenceList>
+								<Reference Name="Target">
+									<ObjectRef Name="BuzzR" ID="{498CFB9C-743D-4DC3-9C14-C20317C91246}" WorkUnitID="{27D32D8D-6C92-4542-9BFC-F0D08111F92F}"/>
+								</Reference>
+							</ReferenceList>
+						</Action>
+					</ChildrenList>
+				</Event>
+				<Event Name="Play_Asobo_A320_NEO_LWhine" ID="{1455DC19-C8DD-4B67-9D5A-A394D90F0AAF}">
+					<ChildrenList>
+						<Action Name="" ID="{7AF4D672-7A50-4ADC-8266-0BCECA4294CD}" ShortID="551292619">
+							<PropertyList>
+								<Property Name="ActionType" Type="int16" Value="1"/>
+							</PropertyList>
+							<ReferenceList>
+								<Reference Name="Target">
+									<ObjectRef Name="LWhine" ID="{02E208F7-41B8-4B04-A056-14A2BAEE9EC3}" WorkUnitID="{27D32D8D-6C92-4542-9BFC-F0D08111F92F}"/>
 								</Reference>
 							</ReferenceList>
 						</Action>
