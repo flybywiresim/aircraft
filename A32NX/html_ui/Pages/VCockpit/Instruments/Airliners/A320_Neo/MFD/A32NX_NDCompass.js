@@ -695,7 +695,9 @@ class Jet_MFD_NDCompass extends Jet_NDCompass {
                     break;
                 case NAV_AID_STATE.VOR:
                     this.logic_brg1Source = 1;
-                    this.bearing1.querySelectorAll('path')[0].setAttribute("stroke", "white");
+                    if (this.bearing1) {
+                        this.bearing1.querySelectorAll('path')[0].setAttribute("stroke", "white");
+                    }
                     document.getElementById('Arrow-Left').setAttribute("stroke", "white");
                     this.setAttribute("show_bearing1", "true");
 
@@ -705,7 +707,9 @@ class Jet_MFD_NDCompass extends Jet_NDCompass {
                     break;
                 case NAV_AID_STATE.ADF:
                     this.logic_brg1Source = 4;
-                    this.bearing1.querySelectorAll('path')[0].setAttribute("stroke", "lime");
+                    if (this.bearing1) {
+                        this.bearing1.querySelectorAll('path')[0].setAttribute("stroke", "lime");
+                    }
                     document.getElementById('Arrow-Left').setAttribute("stroke", "lime");
                     this.setAttribute("show_bearing1", "true");
 
@@ -733,7 +737,9 @@ class Jet_MFD_NDCompass extends Jet_NDCompass {
                     break;
                 case NAV_AID_STATE.VOR:
                     this.logic_brg2Source = 2;
-                    this.bearing2.querySelectorAll('path')[0].setAttribute("stroke", "white");
+                    if (this.bearing2) {
+                        this.bearing2.querySelectorAll('path')[0].setAttribute("stroke", "white");
+                    }
                     document.getElementById('Arrow-Right').setAttribute("stroke", "white");
                     this.setAttribute("show_bearing2", "true");
 
@@ -743,7 +749,9 @@ class Jet_MFD_NDCompass extends Jet_NDCompass {
                     break;
                 case NAV_AID_STATE.ADF:
                     this.logic_brg2Source = 4;
-                    this.bearing2.querySelectorAll('path')[0].setAttribute("stroke", "lime");
+                    if (this.bearing2) {
+                        this.bearing2.querySelectorAll('path')[0].setAttribute("stroke", "lime");
+                    }
                     document.getElementById('Arrow-Right').setAttribute("stroke", "lime");
                     this.setAttribute("show_bearing2", "true");
 
