@@ -1138,6 +1138,9 @@
 							</RTPCList>
 						</Property>
 						<Property Name="Volume" Type="Real64">
+							<ValueList>
+								<Value>-3</Value>
+							</ValueList>
 							<RTPCList>
 								<RTPC Name="" ID="{089D521D-D3E0-4B91-AEDB-A535738F6F71}" ShortID="372989760">
 									<ReferenceList>
@@ -2440,6 +2443,11 @@
 				<Sound Name="P1010748" ID="{F63E4913-E2CD-4817-85C4-CB62E28BBC89}" ShortID="953224957">
 					<PropertyList>
 						<Property Name="3DSpatialization" Type="int16" Value="2"/>
+						<Property Name="InitialDelay" Type="Real64">
+							<ValueList>
+								<Value>6</Value>
+							</ValueList>
+						</Property>
 						<Property Name="IsLoopingEnabled" Type="bool" Value="True"/>
 						<Property Name="SpeakerPanning" Type="int16" Value="1"/>
 						<Property Name="SpeakerPanning3DSpatializationMix" Type="int32" Value="74"/>
