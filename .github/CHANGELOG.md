@@ -47,6 +47,7 @@
 1. [CDU] Improved the VERT REV page - @lousybyte (lousybyte)
 1. [PFD] Correct PFD attitude indicator onground/inflight - @MMontalto (PiCcy)
 1. [ND] Added WX/TERR on ND brightness knob, fix ND/PFD brightness tooltips - @lukecologne (luke)
+1. [ECAM] Improved ECAM bleed page visuals and functionality - @nikotina91
 1. [LIGHTS] Fixed DIM/BRT Lights inside the cockpit. Overhead should now be visible. - @Snapmatics (Harry)
 1. [OVHD] Made AIR COND knobs continuous - @Benjozork (Benjamin Dupont)
 1. [TEXTURES] Changed color of FD Panel.
@@ -55,6 +56,7 @@
 1. [TEXTURES] Changed Overhead Panel Texture (Decals, color, detail) - @Pleasure0102 (Pleasure)
 1. [LIVERY] Bundle the FlyByWire Livery with the A32NX addon - @devsnek (devsnek)
 1. [ECAM] Added cockpit door video - @Benjozork (Benjamin Dupont)
+
 
 ## 2020/09
 1. [General] Add CHANGELOG.md - @nathaninnes (Nathan Innes)
