@@ -5,9 +5,9 @@ class ContextualMenu {
     }
     Update(_gps, _maxElems = 6) {
         _gps.contextualMenuTitle.innerHTML = this.title;
-        var elementsHTML = "";
+        let elementsHTML = "";
         _gps.UpdateSlider(_gps.menuSlider, _gps.menuSliderCursor, _gps.contextualMenuDisplayBeginIndex, _gps.currentContextualMenu.elements.length, _maxElems);
-        for (var i = _gps.contextualMenuDisplayBeginIndex; i < Math.min(this.elements.length, _gps.contextualMenuDisplayBeginIndex + _maxElems); i++) {
+        for (let i = _gps.contextualMenuDisplayBeginIndex; i < Math.min(this.elements.length, _gps.contextualMenuDisplayBeginIndex + _maxElems); i++) {
             if (this.elements[i].isInactive()) {
                 elementsHTML += '<div class="ContextualMenuElement" state="Inactive">' + this.elements[i].name + '</div>';
             } else {
@@ -28,7 +28,7 @@ class ContextualMenuConfirmation extends ContextualMenu {
     }
     Update(_gps) {
         _gps.contextualMenuTitle.innerHTML = this.title;
-        var ElementsHTML = "";
+        let ElementsHTML = "";
         _gps.menuSlider.setAttribute("state", "Inactive");
         ElementsHTML += '<div class="ContextualMenuElement" state="Unselected">' + this.message + '</div>';
         ElementsHTML += '<div id="ContextualMenuSeparator"></div>';

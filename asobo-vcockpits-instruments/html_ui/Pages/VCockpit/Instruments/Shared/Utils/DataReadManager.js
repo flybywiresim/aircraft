@@ -3,7 +3,7 @@ class DataReadMetaManager {
         this.managerList = [];
     }
     UpdateAll() {
-        for (var i = 0; i < this.managerList.length; i++) {
+        for (let i = 0; i < this.managerList.length; i++) {
             this.managerList[i].Update();
         }
     }
@@ -53,12 +53,12 @@ class InstrumentDataReadManager {
         if (_instrument == undefined) {
             console.error("Trying to push a Null Instrument to DataReadManager");
         }
-        for (var i = 0; i < this.array.length; i++) {
+        for (let i = 0; i < this.array.length; i++) {
             if (this.array[i].metaManager == _instrument.dataMetaManager) {
                 return this.array[i].AddToQueue(_Getter);
             }
         }
-        var readManager = new DataReadManager(_instrument.dataMetaManager);
+        const readManager = new DataReadManager(_instrument.dataMetaManager);
         this.array.push(readManager);
         return readManager.AddToQueue(_Getter);
     }
