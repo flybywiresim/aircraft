@@ -85,9 +85,7 @@ class A320_Neo_Com extends BaseAirliners {
     }
 
     updateScreenState() {
-        if (this.acPowerStateChange) {
-            this.electricity.style.display = this.lastAcPowerState ? "block" : "none";
-        }
+        this.electricity.style.display = this.lastAcPowerState ? "block" : "none";
     }
 
     setShowSelfTest() {
