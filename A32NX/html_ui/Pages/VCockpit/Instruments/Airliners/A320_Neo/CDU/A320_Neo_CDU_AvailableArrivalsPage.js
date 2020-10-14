@@ -35,7 +35,7 @@ class CDUAvailableArrivalsPage {
                     const index = i + pageCurrent;
                     const approach = approaches[index];
                     if (approach) {
-                        rows[2 * i] = ["{" + Avionics.Utils.formatRunway(approach.name) + "[color]blue"];
+                        rows[2 * i] = ["l" + Avionics.Utils.formatRunway(approach.name) + "[color]blue"];
                         mcdu.onLeftInput[i + 2] = () => {
                             mcdu.setApproachIndex(index, () => {
                                 CDUAvailableArrivalsPage.ShowPage(mcdu, airport, 0, true);
@@ -76,7 +76,7 @@ class CDUAvailableArrivalsPage {
                         if (!selectedArrival) {
                             color = "green";
                         }
-                        rows[2 * i] = ["{NO STAR[color]" + color];
+                        rows[2 * i] = ["lNO STAR[color]" + color];
                         mcdu.onLeftInput[i + 2] = () => {
                             mcdu.setArrivalProcIndex(-1, () => {
                                 CDUAvailableArrivalsPage.ShowPage(mcdu, airport, 0, true);
@@ -91,7 +91,7 @@ class CDUAvailableArrivalsPage {
                             if (selectedStarIndex === starIndex) {
                                 color = "green";
                             }
-                            rows[2 * i] = ["{" + star.name + "[color]" + color];
+                            rows[2 * i] = ["l" + star.name + "[color]" + color];
                             mcdu.onLeftInput[i + 2] = () => {
                                 mcdu.setArrivalProcIndex(starIndex, () => {
                                     if (mcdu.flightPlanManager.getApproachIndex() > -1) {
@@ -158,7 +158,7 @@ class CDUAvailableArrivalsPage {
                 };
             }
             mcdu.setTemplate([
-                ["ARRIVAL TO " + airport.ident + "{ }"],
+                ["ARRIVAL TO " + airport.ident + "lr"],
                 ["APPR", "STAR", "VIA"],
                 [selectedApproachCell + "[color]green", selectedStarCell + "[color]green", selectedViasCell + "[color]green"],
                 [viasPageLabel, "TRANS"],
@@ -230,7 +230,7 @@ class CDUAvailableArrivalsPage {
                         if (index === mcdu.flightPlanManager.getApproachTransitionIndex()) {
                             color = "green";
                         }
-                        rows[2 * i + 1][0] = "{" + name + "[color]" + color;
+                        rows[2 * i + 1][0] = "l" + name + "[color]" + color;
                         mcdu.onLeftInput[i + 2] = () => {
                             mcdu.setApproachTransitionIndex(index, () => {
                                 CDUAvailableArrivalsPage.ShowPage(mcdu, airport, 0, true);
@@ -260,11 +260,11 @@ class CDUAvailableArrivalsPage {
                 };
             }
             mcdu.setTemplate([
-                ["ARRIVAL TO " + airport.ident + "{ }"],
+                ["ARRIVAL TO " + airport.ident + "lr"],
                 ["APPR", "STAR", "VIA"],
                 [selectedApproachCell + "[color]green", selectedStarCell + "[color]green", selectedViasCell + "[color]green"],
                 ["APPR VIAS"],
-                ["{NO VIAS[color]blue"],
+                ["lNO VIAS[color]blue"],
                 rows[0],
                 rows[1],
                 rows[2],

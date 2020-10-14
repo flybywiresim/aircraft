@@ -7,7 +7,7 @@ class CDUIRSInit {
             SimVar.SetSimVarValue("L:A32XN_Neo_ADIRS_ALIGN_TYPE_REF", "Enum", 0);
             alignMsg = "ALIGN ON REF }[color]blue";
         }
-        const emptyIRSGpsString = "--°--.--/---°--.--";
+        const emptyIRSGpsString = "--d--.--/---d--.--";
         const arrowupdwn = "↑↓";
         let larrowupdwn = arrowupdwn;
         let rarrowupdwn = "";
@@ -44,20 +44,20 @@ class CDUIRSInit {
         if (checkAligned !== 2) {
             GPSPosTitle = ["LAT", "LONG", "GPS POSITION"];
             originAirportTitle = ["LAT" + larrowupdwn , rarrowupdwn + "LONG", "REFERENCE"];
-            GPSPosAlign = ["--°--.--", "--°--.--", " "];
-            originAirportString = ['{IrsInitFont}' + originAirportLat['deg'] + '°{IrsInitFontEnd}' + originAirportLat['min'] + '.' + originAirportLat['sec'] + '[s-text]{IrsInitFont}' + originAirportLat['dir'] + "{IrsInitFontEnd} [color]blue", '{IrsInitFont}' + originAirportLon['deg'] + '°{IrsInitFontEnd}' + originAirportLon['min'] + '.' + originAirportLon['sec'] + '[s-text]{IrsInitFont}' + originAirportLon['dir'] + "{IrsInitFontEnd} [color]blue", referenceName];
+            GPSPosAlign = ["--d--.--", "--d--.--", " "];
+            originAirportString = ['{IrsInitFont}' + originAirportLat['deg'] + 'd{IrsInitFontEnd}' + originAirportLat['min'] + '.' + originAirportLat['sec'] + '[s-text]{IrsInitFont}' + originAirportLat['dir'] + "{IrsInitFontEnd} [color]blue", '{IrsInitFont}' + originAirportLon['deg'] + 'd{IrsInitFontEnd}' + originAirportLon['min'] + '.' + originAirportLon['sec'] + '[s-text]{IrsInitFont}' + originAirportLon['dir'] + "{IrsInitFontEnd} [color]blue", referenceName];
             if (SimVar.GetSimVarValue("L:A320_Neo_ADIRS_KNOB_1", "Enum") || SimVar.GetSimVarValue("L:A320_Neo_ADIRS_KNOB_2", "Enum") || SimVar.GetSimVarValue("L:A320_Neo_ADIRS_KNOB_3", "Enum")) {
-                GPSPosAlign = ['{IrsInitFont}' + currentGPSLat['deg'] + '°{IrsInitFontEnd}' + currentGPSLat['min'] + '.' + Math.ceil(Number(currentGPSLat['sec'] / 100)) + '[s-text]{IrsInitFont}' + currentGPSLat['dir'] + "{IrsInitFontEnd} [color]green", '{IrsInitFont}' + currentGPSLon['deg'] + '°{IrsInitFontEnd}' + currentGPSLon['min'] + '.' + Math.ceil(Number(currentGPSLon['sec'] / 100)) + '[s-text]{IrsInitFont}' + currentGPSLon['dir'] + "{IrsInitFontEnd} [color]green", ""];
+                GPSPosAlign = ['{IrsInitFont}' + currentGPSLat['deg'] + 'd{IrsInitFontEnd}' + currentGPSLat['min'] + '.' + Math.ceil(Number(currentGPSLat['sec'] / 100)) + '[s-text]{IrsInitFont}' + currentGPSLat['dir'] + "{IrsInitFontEnd} [color]green", '{IrsInitFont}' + currentGPSLon['deg'] + 'd{IrsInitFontEnd}' + currentGPSLon['min'] + '.' + Math.ceil(Number(currentGPSLon['sec'] / 100)) + '[s-text]{IrsInitFont}' + currentGPSLon['dir'] + "{IrsInitFontEnd} [color]green", ""];
                 alignType = "GPS";
             }
         }
 
-        let IRSAlignOnPos = "{IrsInitFont}" + currentGPSLat['deg'] + '°{IrsInitFontEnd}' + currentGPSLat['min'] + '.' + Math.ceil(Number(currentGPSLat['sec'] / 100)) + '[s-text]{IrsInitFont}' + currentGPSLat['dir'] + '/{IrsInitFontEnd}{IrsInitFont}' + currentGPSLon['deg'] + '°{IrsInitFontEnd}' + currentGPSLon['min'] + '.' + Math.ceil(Number(currentGPSLon['sec'] / 100)) + '{IrsInitFont}' + currentGPSLon['dir'] + '{IrsInitFontEnd}';
+        let IRSAlignOnPos = "{IrsInitFont}" + currentGPSLat['deg'] + 'd{IrsInitFontEnd}' + currentGPSLat['min'] + '.' + Math.ceil(Number(currentGPSLat['sec'] / 100)) + '[s-text]{IrsInitFont}' + currentGPSLat['dir'] + '/{IrsInitFontEnd}{IrsInitFont}' + currentGPSLon['deg'] + 'd{IrsInitFontEnd}' + currentGPSLon['min'] + '.' + Math.ceil(Number(currentGPSLon['sec'] / 100)) + '{IrsInitFont}' + currentGPSLon['dir'] + '{IrsInitFontEnd}';
         if (SimVar.GetSimVarValue("L:A32XN_Neo_ADIRS_ALIGN_TYPE_REF", "Enum") === 1) {
             alignMsg = "";
             alignType = "REF";
             if (checkAligned !== 2) {
-                IRSAlignOnPos = "{IrsInitFont}" + originAirportLat['deg'] + '°{IrsInitFontEnd}' + originAirportLat['min'] + '.' + originAirportLat['sec'] + '[s-text]{IrsInitFont}' + originAirportLat['dir'] + '/{IrsInitFontEnd}{IrsInitFont}' + originAirportLon['deg'] + '°{IrsInitFontEnd}' + originAirportLon['min'] + '.' + originAirportLon['sec'] + '{IrsInitFont}' + originAirportLon['dir'] + '{IrsInitFontEnd}';
+                IRSAlignOnPos = "{IrsInitFont}" + originAirportLat['deg'] + 'd{IrsInitFontEnd}' + originAirportLat['min'] + '.' + originAirportLat['sec'] + '[s-text]{IrsInitFont}' + originAirportLat['dir'] + '/{IrsInitFontEnd}{IrsInitFont}' + originAirportLon['deg'] + 'd{IrsInitFontEnd}' + originAirportLon['min'] + '.' + originAirportLon['sec'] + '{IrsInitFont}' + originAirportLon['dir'] + '{IrsInitFontEnd}';
             }
         }
 

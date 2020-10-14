@@ -8,7 +8,7 @@ class CDUMenuPage {
             ["ACTIVE DATA BASE"],
             ["4MAY-4JUL[color]blue", "TC11103001"],
             ["SECOND DATA BASE"],
-            ["{4MAY-4JUL[color]blue"],
+            ["l4MAY-4JUL[color]blue"],
             [""],
             [""],
             [""],

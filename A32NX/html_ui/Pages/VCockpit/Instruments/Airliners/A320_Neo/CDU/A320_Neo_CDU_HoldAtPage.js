@@ -63,7 +63,7 @@ class CDUHoldAtPage {
             rows.push(["", "", exitTime + " " + resFuel.toFixed(1)]);
             rows.push([""]);
             rows.push([""]);
-            rows.push(["{ERASE[color]red", "INSERT}[color]red", ""]);
+            rows.push(["lERASE[color]red", "INSERT}[color]red", ""]);
 
             mcdu.setTemplate([
                 ...rows

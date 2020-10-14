@@ -36,7 +36,7 @@ class CDUAvailableDeparturesPage {
                     const runway = runways[index];
                     if (runway) {
                         rows[2 * i] = [
-                            "{" + Avionics.Utils.formatRunway(runway.designation) + "[color]blue",
+                            "l" + Avionics.Utils.formatRunway(runway.designation) + "[color]blue",
                             "CRS" + (runway.direction / 10).toFixed(0) + "0[color]blue",
                             runway.length.toFixed(0) + "M[color]blue"
                         ];
@@ -57,7 +57,7 @@ class CDUAvailableDeparturesPage {
                 };
                 let rowIndex = -pageCurrent + 1;
                 let index = 0;
-                rows[0] = ["{NONE[color]blue"];
+                rows[0] = ["lNONE[color]blue"];
                 mcdu.onLeftInput[rowIndex + 1] = () => {
                     mcdu.setDepartureIndex(-1, () => {
                         CDUAvailableDeparturesPage.ShowPage(mcdu, airport);
@@ -83,7 +83,7 @@ class CDUAvailableDeparturesPage {
                         }
                         if (sidMatchesSelectedRunway) {
                             if (rowIndex >= 1) {
-                                rows[2 * rowIndex] = ["{" + sid.name + "[color]blue"];
+                                rows[2 * rowIndex] = ["l" + sid.name + "[color]blue"];
                                 mcdu.onLeftInput[rowIndex + 1] = () => {
                                     mcdu.setRunwayIndex(transitionIndex, (success) => {
                                         mcdu.setDepartureIndex(scopout, () => {
