@@ -1196,8 +1196,8 @@ var A320_Neo_UpperECAM;
 
             //Show landing memo at 2000ft
             //Hides after slowing down to 80kts
-            const inGoAround = (numberPhase == 6 || numberPhase == 7) ? (Simplane.getEngineThrottleMode(0) > Simplane.getEngineThrottleMode(1)) ? Simplane.getEngineThrottleMode(0) : Simplane.getEngineThrottleMode(1) >= ThrottleMode.CLIMB : false;
-            if ((numberPhase == 6 || numberPhase == 7) && !inGoAround && SimVar.GetSimVarValue("RADIO HEIGHT", "Feet") < 2000 && !this.leftEcamMessagePanel.hasActiveFailures) {
+            const inGoAround = (numberPhase == FlightPhase.FLIGHT_PHASE_APPROACH || numberPhase == FlightPhase.FLIGHT_PHASE_GOAROUND) ? (Simplane.getEngineThrottleMode(0) > Simplane.getEngineThrottleMode(1)) ? Simplane.getEngineThrottleMode(0) : Simplane.getEngineThrottleMode(1) >= ThrottleMode.CLIMB : false;
+            if (numberPhase == FlightPhase.FLIGHT_PHASE_APPROACH && !inGoAround && SimVar.GetSimVarValue("RADIO HEIGHT", "Feet") < 2000 && SimVar.GetSimVarValue("AIRSPEED INDICATED", "knots") > 80 && !this.leftEcamMessagePanel.hasActiveFailures) {
                 this.showLandingMemo = true;
             } else {
                 this.showLandingMemo = false;
