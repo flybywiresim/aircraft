@@ -803,6 +803,12 @@
                     <PART_ID>SCREEN_MFD1</PART_ID>
                     <CAMERA_TITLE>MFD</CAMERA_TITLE>
                 </UseTemplate>
+
+                <!-- DCDU -->
+                <UseTemplate Name="FBW_Airbus_DCDU_2State_Emissive">
+                    <DCDU_SIDE>L</DCDU_SIDE>
+                    <PLANE_NAME>A32NX</PLANE_NAME>
+                </UseTemplate>
             </Component>
 
             <Component ID="Screens_Right">
@@ -846,6 +852,12 @@
                     <NODE_ID>SCREEN_MFD_R</NODE_ID>
                     <POTENTIOMETER>91</POTENTIOMETER>
                     <PART_ID>SCREEN_MFD2</PART_ID>
+                </UseTemplate>
+
+                <!-- DCDU -->
+                <UseTemplate Name="FBW_Airbus_DCDU_2State_Emissive">
+                    <DCDU_SIDE>R</DCDU_SIDE>
+                    <PLANE_NAME>A32NX</PLANE_NAME>
                 </UseTemplate>
             </Component>
             <CameraTitle>Pilot</CameraTitle>
@@ -1131,6 +1143,131 @@
                     <CAMERA_TITLE>ECAM</CAMERA_TITLE>
                 </UseTemplate>
             </Component>
+
+                <UseTemplate Name="FBW_Push_Toggle"> 
+                    <TOGGLE_NODE_ID>PUSH_OVHD_CABINPRESS_MODESEL</TOGGLE_NODE_ID>
+                    <TOGGLE_SIMVAR>L:A32NX_OVHD_CABINPRESS_MODESEL</TOGGLE_SIMVAR>       
+                </UseTemplate>
+			    <UseTemplate Name="ASOBO_AIRLINER_ldgelev_Knob_SubTemplate">
+				    <NODE_ID>KNOB_OVHD_CABINPRESS_LDGELEV</NODE_ID>
+				    <ANIM_NAME>KNOB_OVHD_CABINPRESS_LDGELEV</ANIM_NAME>
+					<SIMVAR>A32NX_LDGELEV_KNOB</SIMVAR>
+			    </UseTemplate>
+			    <UseTemplate Name="FBW_Covered_Push_Toggle">
+				    <TOGGLE_NODE_ID>PUSH_OVHD_CABINPRESS_DITCHING</TOGGLE_NODE_ID>
+					<LOCK_NODE_ID>LOCK_OVHD_CABINPRESS_DITCHING</LOCK_NODE_ID>
+				    <TOGGLE_SIMVAR>L:A32NX_OVHD_CABINPRESS_DITCHING</TOGGLE_SIMVAR>
+			    </UseTemplate>
+			    <UseTemplate Name="A32NX_GT_Switch_Dummy">
+					<NODE_ID>SWITCH_OVHD_CABINPRESS_MANVSCTL</NODE_ID>
+					<ANIM_NAME>SWITCH_OVHD_CABINPRESS_MANVSCTL</ANIM_NAME>
+					<NUM_STATES>3</NUM_STATES>
+					<SWITCH_POSITION_TYPE>L</SWITCH_POSITION_TYPE>
+					<SWITCH_POSITION_VAR>A32NX_SWITCH_OVHD_CABINPRESS_MANVSCTL</SWITCH_POSITION_VAR>
+					<INVERT_ANIM>True</INVERT_ANIM>
+			    </UseTemplate>
+			
+			<!-- DCDU / CPDLC screens -->
+            <Component ID="DCDU_Screens">
+
+                <!-- Captain side -->
+                <Component ID="Left_DCDU">
+                    <DefaultTemplateParameters>
+                        <PLANE_NAME>A32NX</PLANE_NAME>
+                    </DefaultTemplateParameters>
+
+                    <!-- Brightness -->
+                    <UseTemplate Name="FBW_Airbus_DCDU_Brightness_Switch">
+                        <DCDU_SIDE>L</DCDU_SIDE>
+                    </UseTemplate>
+
+                    <UseTemplate Name="FBW_Airbus_DCDU_Generic_Inop_Switch">
+                        <NODE_ID>PUSH_MPL_MS0MINUS</NODE_ID>
+                    </UseTemplate>
+
+                    <UseTemplate Name="FBW_Airbus_DCDU_Generic_Inop_Switch">
+                        <NODE_ID>PUSH_MPL_MS0PLUS</NODE_ID>
+                    </UseTemplate>
+
+                    <UseTemplate Name="FBW_Airbus_DCDU_Generic_Inop_Switch">
+                        <NODE_ID>PUSH_MPL_L1</NODE_ID>
+                    </UseTemplate>
+
+                    <UseTemplate Name="FBW_Airbus_DCDU_Generic_Inop_Switch">
+                        <NODE_ID>PUSH_MPL_L2</NODE_ID>
+                    </UseTemplate>
+
+                    <UseTemplate Name="FBW_Airbus_DCDU_Generic_Inop_Switch">
+                        <NODE_ID>PUSH_MPL_PRINT</NODE_ID>
+                    </UseTemplate>
+
+                    <UseTemplate Name="FBW_Airbus_DCDU_Generic_Inop_Switch">
+                        <NODE_ID>PUSH_MPL_POEMINUS</NODE_ID>
+                    </UseTemplate>
+
+                    <UseTemplate Name="FBW_Airbus_DCDU_Generic_Inop_Switch">
+                        <NODE_ID>PUSH_MPL_POEPLUS</NODE_ID>
+                    </UseTemplate>
+
+                    <UseTemplate Name="FBW_Airbus_DCDU_Generic_Inop_Switch">
+                        <NODE_ID>PUSH_MPL_R1</NODE_ID>
+                    </UseTemplate>
+
+                    <UseTemplate Name="FBW_Airbus_DCDU_Generic_Inop_Switch">
+                        <NODE_ID>PUSH_MPL_R2</NODE_ID>
+                    </UseTemplate>
+                </Component>
+
+                <!-- F/O side -->
+                <Component ID="Right_DCDU">
+                    <DefaultTemplateParameters>
+                        <PLANE_NAME>A32NX</PLANE_NAME>
+                    </DefaultTemplateParameters>
+
+                    <!-- Brightness -->
+                    <UseTemplate Name="FBW_Airbus_DCDU_Brightness_Switch">
+                        <DCDU_SIDE>R</DCDU_SIDE>
+                    </UseTemplate>
+
+                    <UseTemplate Name="FBW_Airbus_DCDU_Generic_Inop_Switch">
+                        <NODE_ID>PUSH_MPR_MS0MINUS</NODE_ID>
+                    </UseTemplate>
+
+                    <UseTemplate Name="FBW_Airbus_DCDU_Generic_Inop_Switch">
+                        <NODE_ID>PUSH_MPR_MS0PLUS</NODE_ID>
+                    </UseTemplate>
+
+                    <UseTemplate Name="FBW_Airbus_DCDU_Generic_Inop_Switch">
+                        <NODE_ID>PUSH_MPR_L1</NODE_ID>
+                    </UseTemplate>
+
+                    <UseTemplate Name="FBW_Airbus_DCDU_Generic_Inop_Switch">
+                        <NODE_ID>PUSH_MPR_L2</NODE_ID>
+                    </UseTemplate>
+
+                    <UseTemplate Name="FBW_Airbus_DCDU_Generic_Inop_Switch">
+                        <NODE_ID>PUSH_MPR_PRINT</NODE_ID>
+                    </UseTemplate>
+
+                    <UseTemplate Name="FBW_Airbus_DCDU_Generic_Inop_Switch">
+                        <NODE_ID>PUSH_MPR_POEMINUS</NODE_ID>
+                    </UseTemplate>
+
+                    <UseTemplate Name="FBW_Airbus_DCDU_Generic_Inop_Switch">
+                        <NODE_ID>PUSH_MPR_POEPLUS</NODE_ID>
+                    </UseTemplate>
+
+                    <UseTemplate Name="FBW_Airbus_DCDU_Generic_Inop_Switch">
+                        <NODE_ID>PUSH_MPR_R1</NODE_ID>
+                    </UseTemplate>
+
+                    <UseTemplate Name="FBW_Airbus_DCDU_Generic_Inop_Switch">
+                        <NODE_ID>PUSH_MPR_R2</NODE_ID>
+                    </UseTemplate>
+                </Component>
+
+            </Component>
+
             <CameraTitle>ECAM</CameraTitle>
         </Component>
 
@@ -1948,9 +2085,7 @@
                         <ANIM_NAME>KNOB_OVHD_AIRCOND_AFTCABIN</ANIM_NAME>
                         <NODE_ID>KNOB_OVHD_AIRCOND_AFTCABIN</NODE_ID>
                     </UseTemplate>
-                    <UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
-                        <NODE_ID>PUSH_OVHD_CABINPRESS_MODESEL</NODE_ID>
-                    </UseTemplate>
+                   
                     <UseTemplate Name="ASOBO_GT_Switch_Dummy">
                         <Node_ID>KNOB_OVHD_AUDIOSWITCH</Node_ID>
                         <ANIM_NAME>KNOB_OVHD_AUDIOSWITCH</ANIM_NAME>
@@ -2819,20 +2954,6 @@
         </Component>
 
         <Component ID="Airbus_Pedestal_Radios">
-            <Component ID="Radio_Left">
-
-                <UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
-                    <NODE_ID>SCREEN_COM_L</NODE_ID>
-                    <EMISSIVE_CODE>0.5</EMISSIVE_CODE>                <!-- TODO - Make this editable with a knob -->
-                </UseTemplate>
-            </Component>
-            <Component ID="Radio_Right">
-
-                <UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
-                    <NODE_ID>SCREEN_COM_R</NODE_ID>
-                    <EMISSIVE_CODE>0.5</EMISSIVE_CODE>                <!-- TODO - Make this editable with a knob -->
-                </UseTemplate>
-            </Component>
             <Component ID="Switching_Panel">
                 <UseTemplate Name="A32NX_AIRBUS_DATA_SWITCHING_TEMPLATE">
                     <Node_ID>KNOB_SWITCHING_1</Node_ID>
@@ -3197,66 +3318,6 @@
                 <NODE_ID>KNOB_EFIS_FO_LOUDSPKR</NODE_ID>
             </UseTemplate>
             <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-                <NODE_ID>SWITCH_MPL_DIM</NODE_ID>
-            </UseTemplate>
-            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-                <NODE_ID>PUSH_MPL_MS0MINUS</NODE_ID>
-            </UseTemplate>
-            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-                <NODE_ID>PUSH_MPL_MS0PLUS</NODE_ID>
-            </UseTemplate>
-            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-                <NODE_ID>PUSH_MPL_L1</NODE_ID>
-            </UseTemplate>
-            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-                <NODE_ID>PUSH_MPL_L2</NODE_ID>
-            </UseTemplate>
-            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-                <NODE_ID>PUSH_MPL_PRINT</NODE_ID>
-            </UseTemplate>
-            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-                <NODE_ID>PUSH_MPL_POEMINUS</NODE_ID>
-            </UseTemplate>
-            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-                <NODE_ID>PUSH_MPL_POEPLUS</NODE_ID>
-            </UseTemplate>
-            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-                <NODE_ID>PUSH_MPL_R1</NODE_ID>
-            </UseTemplate>
-            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-                <NODE_ID>PUSH_MPL_R2</NODE_ID>
-            </UseTemplate>
-            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-                <NODE_ID>SWITCH_MPR_DIM</NODE_ID>
-            </UseTemplate>
-            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-                <NODE_ID>PUSH_MPR_MS0MINUS</NODE_ID>
-            </UseTemplate>
-            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-                <NODE_ID>PUSH_MPR_MS0PLUS</NODE_ID>
-            </UseTemplate>
-            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-                <NODE_ID>PUSH_MPR_L1</NODE_ID>
-            </UseTemplate>
-            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-                <NODE_ID>PUSH_MPR_L2</NODE_ID>
-            </UseTemplate>
-            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-                <NODE_ID>PUSH_MPR_PRINT</NODE_ID>
-            </UseTemplate>
-            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-                <NODE_ID>PUSH_MPR_POEMINUS</NODE_ID>
-            </UseTemplate>
-            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-                <NODE_ID>PUSH_MPR_POEPLUS</NODE_ID>
-            </UseTemplate>
-            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-                <NODE_ID>PUSH_MPR_R1</NODE_ID>
-            </UseTemplate>
-            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-                <NODE_ID>PUSH_MPR_R2</NODE_ID>
-            </UseTemplate>
-            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
                 <NODE_ID>LOCK_ECAM_EMERCANC</NODE_ID>
             </UseTemplate>
             <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
@@ -3511,21 +3572,8 @@
             <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
                 <NODE_ID>PUSH_OVHD_FUEL_MODESEL</NODE_ID>
             </UseTemplate>
-            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-                <NODE_ID>SWITCH_OVHD_CABINPRESS_MANVSCTL</NODE_ID>
-            </UseTemplate>
-            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-                <NODE_ID>PUSH_OVHD_CABINPRESS_MODESEL</NODE_ID>
-            </UseTemplate>
-            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-                <NODE_ID>KNOB_OVHD_CABINPRESS_LDGELEV</NODE_ID>
-            </UseTemplate>
-            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-                <NODE_ID>LOCK_OVHD_CABINPRESS_DITCHING</NODE_ID>
-            </UseTemplate>
-            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-                <NODE_ID>PUSH_OVHD_CABINPRESS_DITCHING</NODE_ID>
-            </UseTemplate>
+            
+           
             <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
                 <NODE_ID>PUSH_OVHD_CARGOVENT_AFTISOL</NODE_ID>
             </UseTemplate>
