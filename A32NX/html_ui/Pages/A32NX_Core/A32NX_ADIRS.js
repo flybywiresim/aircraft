@@ -8,6 +8,7 @@ class A32NX_ADIRS {
         const SomeADIRSOn = ((SimVar.GetSimVarValue("L:A320_Neo_ADIRS_KNOB_1", "Enum") >= 1) || (SimVar.GetSimVarValue("L:A320_Neo_ADIRS_KNOB_2", "Enum") >= 1) || (SimVar.GetSimVarValue("L:A320_Neo_ADIRS_KNOB_3", "Enum") >= 1));
         let ADIRSState = SimVar.GetSimVarValue("L:A320_Neo_ADIRS_STATE", "Enum");
         let ADIRSTimer = SimVar.GetSimVarValue("L:A320_Neo_ADIRS_TIME", "Seconds");
+        const storedAlignTime = GetStoredData("A32NX_CONFIG_ALIGN_TIME");
 
         if (!SomeADIRSOn && ADIRSState != 0) {
             //Turn off ADIRS
@@ -25,8 +26,19 @@ class A32NX_ADIRS {
             SimVar.SetSimVarValue("L:A32NX_ADIRS_PFD_ALIGNED_FIRST", "Bool", 0);
             SimVar.SetSimVarValue("L:A32NX_ADIRS_PFD_ALIGNED_ATT", "Bool", 0);
             ADIRSState = 1;
+
             const currentLatitude = SimVar.GetSimVarValue("GPS POSITION LAT", "degree latitude");
-            ADIRSTimer = (Math.pow(currentLatitude, 2) * 0.095) + 310; // ADIRS ALIGN TIME DEPENDING ON LATITUDE.
+            switch(storedAlignTime){
+                case "INSTANT":
+                    ADIRSTimer = 5;
+                    break;
+                case "FAST":
+                    ADIRSTimer = 90;
+                    break;
+                default:
+                    ADIRSTimer = (Math.pow(currentLatitude, 2) * 0.095) + 310;
+            }
+           
             SimVar.SetSimVarValue("L:A320_Neo_ADIRS_TIME", "Seconds", ADIRSTimer);
             SimVar.SetSimVarValue("L:A32NX_Neo_ADIRS_START_TIME", "Seconds", ADIRSTimer);
         }
@@ -34,6 +46,9 @@ class A32NX_ADIRS {
         if (ADIRSState == 1 && SimVar.GetSimVarValue("L:A320_Neo_ADIRS_IN_ALIGN", "Bool") == 1) {
             if (ADIRSTimer > 0) {
                 ADIRSTimer -= deltaTime / 1000;
+                if (storedAlignTime == "INSTANT" && ADIRSTimer > 5) {
+                    ADIRSTimer = 5;
+                }
                 SimVar.SetSimVarValue("L:A320_Neo_ADIRS_TIME", "Seconds", ADIRSTimer);
                 const ADIRSTimerStartTime = SimVar.GetSimVarValue("L:A32NX_Neo_ADIRS_START_TIME", "Seconds");
                 const secondsIntoAlignment = ADIRSTimerStartTime - ADIRSTimer;

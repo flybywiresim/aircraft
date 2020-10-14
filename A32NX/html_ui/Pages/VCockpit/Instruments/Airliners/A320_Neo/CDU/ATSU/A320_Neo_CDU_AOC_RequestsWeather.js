@@ -68,10 +68,19 @@ class CDUAocRequestsWeather {
             mcdu.clearUserInput();
             const lines = []; // Prev Messages
             let errors = 0;
+            const storedMetarSrc = GetStoredData("A32NX_CONFIG_METAR_SRC");
+            let endpoint = "https://us-central1-flybywire-metar.cloudfunctions.net/metar-py";
+            switch(storedMetarSrc) {
+                case "VATSIM":
+                    endpoint += "?source=vatsim&icao=";
+                    break;
+                default:
+                    endpoint += "?source=ms&icao=";
+            }
             const getData = async () => {
                 for (const icao of ICAOS) {
                     if (icao !== "") {
-                        await fetch(`https://us-central1-flybywire-metar.cloudfunctions.net/metar-py?source=ms&icao=${icao}`)
+                        await fetch(`${endpoint}${icao}`)
                                 .then((response) => response.text())
                                 .then((data) => {
                                     let error = data.slice(0, 9) == "FBW_ERROR";
