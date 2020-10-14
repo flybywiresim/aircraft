@@ -103,12 +103,14 @@
         <Sound WwiseEvent="AVvent" WwiseData="true" NodeName="PEDALS_LEFT" Continuous="false" ApplyCockpitReverb="true" SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1">
             <Range LowerBound="28" />
             <WwiseRTPC SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1" RTPCName="SIMVAR_ELECTRICAL_MAIN_BUS_VOLTAGE_A4_R4" />
+            <Requires LocalVar="A32NX_AVIONICS_STARTUP_SOUNDS_INHIBIT" Units="Bool" Index="0">
+                <Range UpperBound="0" />
+            </Requires>
         </Sound>
 
         <Sound WwiseEvent="AVventloop" WwiseData="true" NodeName="PEDALS_LEFT" ApplyCockpitReverb="true" FadeOutType="2" FadeOutTime="4" SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1">
             <Range LowerBound="28" />
             <WwiseRTPC SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1" RTPCName="SIMVAR_ELECTRICAL_MAIN_BUS_VOLTAGE_A4_R4" />
-
         </Sound>
 
         <Sound WwiseData="true" WwiseEvent="apu_bleed_on" FadeOutType="2" FadeOutTime="3" SimVar="BLEED AIR APU" Units="BOOL" Index="0">
@@ -128,11 +130,17 @@
         <Sound WwiseEvent="CIDSchimes" WwiseData="true" NodeName="PUSH_OVHD_ELEC_BAT1" Continuous="false" ApplyCockpitReverb="true" SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1">
             <Range LowerBound="24" />
             <WwiseRTPC SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1" RTPCName="SIMVAR_ELECTRICAL_MAIN_BUS_VOLTAGE_A4_R4" />
+            <Requires LocalVar="A32NX_AVIONICS_STARTUP_SOUNDS_INHIBIT" Units="Bool" Index="0">
+                <Range UpperBound="0" />
+            </Requires>
         </Sound>
 
         <Sound WwiseEvent="FMGCtest" WwiseData="true" NodeName="PUSH_OVHD_ELEC_BAT1" Continuous="false" ApplyCockpitReverb="true" SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1">
             <Range LowerBound="28" />
             <WwiseRTPC SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1" RTPCName="SIMVAR_ELECTRICAL_MAIN_BUS_VOLTAGE_A4_R4" />
+            <Requires LocalVar="A32NX_AVIONICS_STARTUP_SOUNDS_INHIBIT" Units="Bool" Index="0">
+                <Range UpperBound="0" />
+            </Requires>
         </Sound>
 
         <Sound WwiseEvent="Loudrelay" WwiseData="true" NodeName="PUSH_OVHD_ELEC_BAT1" Continuous="false" ApplyCockpitReverb="true" SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1">
