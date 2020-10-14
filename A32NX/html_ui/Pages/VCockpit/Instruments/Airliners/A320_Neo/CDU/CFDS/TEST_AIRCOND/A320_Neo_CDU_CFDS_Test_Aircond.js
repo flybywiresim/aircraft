@@ -1,18 +1,18 @@
-class CDU_CFDS_Test_Inst_CFDIU_Menu {
+class CDUCfdsTestAircond {
     static ShowPage(mcdu) {
         mcdu.clearDisplay();
         mcdu.setTemplate([
-            ["CFDIU"],
+            ["SYSTEM REPORT / TEST"],
+            ["", "", "AIR COND"],
+            ["<CPC 1"],
             [""],
-            ["<LAST LEG REPORT"],
+            ["<CPC 2"],
             [""],
-            ["<LRU IDENTIFICATION"],
+            ["<TEMP CTL"],
             [""],
-            ["<GROUND SCANNING"],
+            ["<AEVC"],
             [""],
-            ["<POWER UP TEST RESULT"],
-            [""],
-            [""],
+            ["<AFT CHC"],
             [""],
             ["<RETURN[color]blue"]
         ]);
@@ -42,11 +42,16 @@ class CDU_CFDS_Test_Inst_CFDIU_Menu {
                 mcdu.showErrorMessage("");
             }, 1000);
         }
+        mcdu.onLeftInput[4] = () => {
+            mcdu.showErrorMessage("NOT YET IMPLEMENTED");
+            setTimeout(() => {
+                mcdu.showErrorMessage("");
+            }, 1000);
+        }
 
         // IMPLEMENTED BUTTONS
         mcdu.onLeftInput[5] = () => {
-            CDUCfdsTestInst.ShowPage(mcdu);
+            CDUCfdsTestMenu.ShowPage(mcdu);
         }
-
     }
 }

@@ -1,20 +1,21 @@
-class CDU_CFDS_Test_Inst_DFDRS_Menu {
-    static ShowPage(mcdu) {
+class CDU_CFDS_Test_Inst_EIS_Menu {
+    static ShowPage(mcdu, eisIndex) {
         mcdu.clearDisplay();
+        const title = "EIS ( DMC " + eisIndex + " )";
         mcdu.setTemplate([
-            ["DFDRS"],
-            ["LAST LEG", "CLASS 3"],
-            ["<REPORT", "FAULTS>"],
-            ["PREVIOUS LEGS"],
-            ["<REPORT", "TEST>"],
+            [title],
             [""],
-            ["<LRU IDENT"],
+            ["<LAST LEG REPORT"],
             [""],
-            ["<GND SCANNING", "EIS 3>"],
-            ["TROUBLE SHOOT", "GROUND"],
-            ["<DATA", "REPORT>"],
-            ["", "SPECIFIC"],
-            ["<RETURN[color]blue", "DATA>"]
+            ["<PREVIOUS LEGS REPORT"],
+            [""],
+            ["<LRU IDENTIFICATION"],
+            [""],
+            ["<ENGINES", "TEST>"],
+            [""],
+            ["<DUMP BITE MEMORY"],
+            [""],
+            ["<RETURN[color]blue"]
         ]);
 
         // INOP BUTTONS
@@ -48,34 +49,13 @@ class CDU_CFDS_Test_Inst_DFDRS_Menu {
                 mcdu.showErrorMessage("");
             }, 1000);
         }
-        mcdu.onRightInput[0] = () => {
-            mcdu.showErrorMessage("NOT YET IMPLEMENTED");
-            setTimeout(() => {
-                mcdu.showErrorMessage("");
-            }, 1000);
-        }
-        mcdu.onRightInput[1] = () => {
-            mcdu.showErrorMessage("NOT YET IMPLEMENTED");
-            setTimeout(() => {
-                mcdu.showErrorMessage("");
-            }, 1000);
-        }
-        mcdu.onRightInput[4] = () => {
-            mcdu.showErrorMessage("NOT YET IMPLEMENTED");
-            setTimeout(() => {
-                mcdu.showErrorMessage("");
-            }, 1000);
-        }
-        mcdu.onRightInput[5] = () => {
-            mcdu.showErrorMessage("NOT YET IMPLEMENTED");
-            setTimeout(() => {
-                mcdu.showErrorMessage("");
-            }, 1000);
-        }
 
         // IMPLEMENTED BUTTONS
         mcdu.onLeftInput[5] = () => {
             CDUCfdsTestInst.ShowPage(mcdu);
+        }
+        mcdu.onRightInput[3] = () => {
+            CDU_CFDS_Test_Inst_EIS_Tests.ShowPage(mcdu, eisIndex);
         }
 
     }

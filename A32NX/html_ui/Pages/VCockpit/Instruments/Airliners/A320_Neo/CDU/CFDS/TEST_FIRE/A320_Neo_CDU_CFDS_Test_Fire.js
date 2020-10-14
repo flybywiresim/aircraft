@@ -1,16 +1,16 @@
-class CDU_CFDS_Test_Inst_CFDIU_Menu {
+class CDUCfdsTestFire {
     static ShowPage(mcdu) {
         mcdu.clearDisplay();
         mcdu.setTemplate([
-            ["CFDIU"],
+            ["SYSTEM REPORT / TEST"],
+            ["", "", "FIRE PROT"],
+            ["<FDU 1"],
             [""],
-            ["<LAST LEG REPORT"],
+            ["<FDU 2"],
             [""],
-            ["<LRU IDENTIFICATION"],
+            ["<FDU APU"],
             [""],
-            ["<GROUND SCANNING"],
-            [""],
-            ["<POWER UP TEST RESULT"],
+            ["<SDCU"],
             [""],
             [""],
             [""],
@@ -42,11 +42,16 @@ class CDU_CFDS_Test_Inst_CFDIU_Menu {
                 mcdu.showErrorMessage("");
             }, 1000);
         }
+        mcdu.onLeftInput[4] = () => {
+            mcdu.showErrorMessage("NOT YET IMPLEMENTED");
+            setTimeout(() => {
+                mcdu.showErrorMessage("");
+            }, 1000);
+        }
 
         // IMPLEMENTED BUTTONS
         mcdu.onLeftInput[5] = () => {
-            CDUCfdsTestInst.ShowPage(mcdu);
+            CDUCfdsTestMenu.ShowPage(mcdu);
         }
-
     }
 }

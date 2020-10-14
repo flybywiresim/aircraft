@@ -1,23 +1,23 @@
-class CDUCfdsMainMenu {
+class CDUCfdsTestCom {
     static ShowPage(mcdu) {
         mcdu.clearDisplay();
-        mcdu.activeSystem = 'CFDS';
         mcdu.setTemplate([
-            ["CFDS", "1", "2"],
+            ["SYSTEM REPORT / TEST   }"],
+            ["", "", "COM"],
+            ["<AMU", "CIDS 2>"],
             [""],
-            ["<LAST LEG REPORT"],
+            ["<RMP 1", "HF 1>"],
             [""],
-            ["<LAST LEG ECAM REPORT"],
+            ["<RMP 2", "HF 2>"],
             [""],
-            ["<PREVIOUS LEGS REPORT"],
+            ["<RMP 3", "VHF 1>"],
             [""],
-            ["<AVIONICS STATUS"],
+            ["<CIDS 1", "VHF 2>"],
             [""],
-            ["<SYSTEM REPORT / TEST"],
-            ["", "", "POST"],
-            ["*SEND[color]blue", "PRINT*[color]blue", "FLT REP"]
+            ["<RETURN[color]blue", "VHF 3>"]
         ]);
 
+        // INOP BUTTONS
         mcdu.onLeftInput[0] = () => {
             mcdu.showErrorMessage("NOT YET IMPLEMENTED");
             setTimeout(() => {
@@ -36,7 +36,43 @@ class CDUCfdsMainMenu {
                 mcdu.showErrorMessage("");
             }, 1000);
         }
-        mcdu.onLeftInput[5] = () => {
+        mcdu.onLeftInput[3] = () => {
+            mcdu.showErrorMessage("NOT YET IMPLEMENTED");
+            setTimeout(() => {
+                mcdu.showErrorMessage("");
+            }, 1000);
+        }
+        mcdu.onLeftInput[4] = () => {
+            mcdu.showErrorMessage("NOT YET IMPLEMENTED");
+            setTimeout(() => {
+                mcdu.showErrorMessage("");
+            }, 1000);
+        }
+        mcdu.onRightInput[0] = () => {
+            mcdu.showErrorMessage("NOT YET IMPLEMENTED");
+            setTimeout(() => {
+                mcdu.showErrorMessage("");
+            }, 1000);
+        }
+        mcdu.onRightInput[1] = () => {
+            mcdu.showErrorMessage("NOT YET IMPLEMENTED");
+            setTimeout(() => {
+                mcdu.showErrorMessage("");
+            }, 1000);
+        }
+        mcdu.onRightInput[2] = () => {
+            mcdu.showErrorMessage("NOT YET IMPLEMENTED");
+            setTimeout(() => {
+                mcdu.showErrorMessage("");
+            }, 1000);
+        }
+        mcdu.onRightInput[3] = () => {
+            mcdu.showErrorMessage("NOT YET IMPLEMENTED");
+            setTimeout(() => {
+                mcdu.showErrorMessage("");
+            }, 1000);
+        }
+        mcdu.onRightInput[4] = () => {
             mcdu.showErrorMessage("NOT YET IMPLEMENTED");
             setTimeout(() => {
                 mcdu.showErrorMessage("");
@@ -50,39 +86,35 @@ class CDUCfdsMainMenu {
         }
 
         // IMPLEMENTED BUTTONS
-        mcdu.onLeftInput[3] = () => {
-            CDUCfdsAvionicsMenu.ShowPage(mcdu);
-        }
-        mcdu.onLeftInput[4] = () => {
+        mcdu.onLeftInput[5] = () => {
             CDUCfdsTestMenu.ShowPage(mcdu);
         }
 
         // PAGE SWITCHING
         mcdu.onPrevPage = () => {
-            CDUCfdsMainMenu.ShowPage2(mcdu);
+            CDUCfdsTestCom.ShowPage2(mcdu);
         };
         mcdu.onNextPage = () => {
-            CDUCfdsMainMenu.ShowPage2(mcdu);
+            CDUCfdsTestCom.ShowPage2(mcdu);
         };
     }
 
     static ShowPage2(mcdu) {
         mcdu.clearDisplay();
-
         mcdu.setTemplate([
-            ["CFDS", "2", "2"],
+            ["SYSTEM REPORT / TEST   }"],
+            ["", "", "COM"],
+            ["<ACARS MU"],
             [""],
-            ["<GMT/DATE INIT"],
+            ["<SDU"],
             [""],
             [""],
             [""],
             [""],
             [""],
-            ["<PFR FILTER PROGRAM"],
             [""],
-            ["<PASSWORD CHANGE"],
             [""],
-            [""]
+            ["<RETURN[color]blue"]
         ]);
 
         // INOP BUTTONS
@@ -92,25 +124,24 @@ class CDUCfdsMainMenu {
                 mcdu.showErrorMessage("");
             }, 1000);
         }
-        mcdu.onLeftInput[3] = () => {
-            mcdu.showErrorMessage("NOT YET IMPLEMENTED");
-            setTimeout(() => {
-                mcdu.showErrorMessage("");
-            }, 1000);
-        }
-        mcdu.onLeftInput[4] = () => {
+        mcdu.onLeftInput[1] = () => {
             mcdu.showErrorMessage("NOT YET IMPLEMENTED");
             setTimeout(() => {
                 mcdu.showErrorMessage("");
             }, 1000);
         }
 
+        // IMPLEMENTED BUTTONS
+        mcdu.onLeftInput[5] = () => {
+            CDUCfdsTestMenu.ShowPage(mcdu);
+        }
+
         // PAGE SWITCHING
         mcdu.onPrevPage = () => {
-            CDUCfdsMainMenu.ShowPage(mcdu);
+            CDUCfdsTestCom.ShowPage(mcdu);
         };
         mcdu.onNextPage = () => {
-            CDUCfdsMainMenu.ShowPage(mcdu);
+            CDUCfdsTestCom.ShowPage(mcdu);
         };
     }
 }

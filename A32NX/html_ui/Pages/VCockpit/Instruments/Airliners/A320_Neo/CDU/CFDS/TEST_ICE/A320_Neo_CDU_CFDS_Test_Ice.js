@@ -1,20 +1,20 @@
-class CDU_CFDS_Test_Inst_DFDRS_Menu {
+class CDUCfdsTestIce {
     static ShowPage(mcdu) {
         mcdu.clearDisplay();
         mcdu.setTemplate([
-            ["DFDRS"],
-            ["LAST LEG", "CLASS 3"],
-            ["<REPORT", "FAULTS>"],
-            ["PREVIOUS LEGS"],
-            ["<REPORT", "TEST>"],
+            ["SYSTEM REPORT / TEST"],
+            ["", "", "ICE + RAIN"],
+            ["<WHC 1"],
             [""],
-            ["<LRU IDENT"],
+            ["<WHC 2"],
             [""],
-            ["<GND SCANNING", "EIS 3>"],
-            ["TROUBLE SHOOT", "GROUND"],
-            ["<DATA", "REPORT>"],
-            ["", "SPECIFIC"],
-            ["<RETURN[color]blue", "DATA>"]
+            ["<PHC 1", "WING ANTI ICE>"],
+            ["", "(THRU ECS)"],
+            ["<PHC 2"],
+            [""],
+            ["<PHC 3"],
+            [""],
+            ["<RETURN[color]blue"]
         ]);
 
         // INOP BUTTONS
@@ -48,25 +48,7 @@ class CDU_CFDS_Test_Inst_DFDRS_Menu {
                 mcdu.showErrorMessage("");
             }, 1000);
         }
-        mcdu.onRightInput[0] = () => {
-            mcdu.showErrorMessage("NOT YET IMPLEMENTED");
-            setTimeout(() => {
-                mcdu.showErrorMessage("");
-            }, 1000);
-        }
-        mcdu.onRightInput[1] = () => {
-            mcdu.showErrorMessage("NOT YET IMPLEMENTED");
-            setTimeout(() => {
-                mcdu.showErrorMessage("");
-            }, 1000);
-        }
-        mcdu.onRightInput[4] = () => {
-            mcdu.showErrorMessage("NOT YET IMPLEMENTED");
-            setTimeout(() => {
-                mcdu.showErrorMessage("");
-            }, 1000);
-        }
-        mcdu.onRightInput[5] = () => {
+        mcdu.onRightInput[2] = () => {
             mcdu.showErrorMessage("NOT YET IMPLEMENTED");
             setTimeout(() => {
                 mcdu.showErrorMessage("");
@@ -74,9 +56,9 @@ class CDU_CFDS_Test_Inst_DFDRS_Menu {
         }
 
         // IMPLEMENTED BUTTONS
-        mcdu.onLeftInput[5] = () => {
-            CDUCfdsTestInst.ShowPage(mcdu);
-        }
 
+        mcdu.onLeftInput[5] = () => {
+            CDUCfdsTestMenu.ShowPage(mcdu);
+        }
     }
 }

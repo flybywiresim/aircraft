@@ -17,35 +17,12 @@ class CDUCfdsTestInst {
             ["<RETURN[color]blue"]
         ]);
 
-        // INOP BUTTONS
-        mcdu.onLeftInput[0] = () => {
-            mcdu.showErrorMessage("NOT YET IMPLEMENTED");
-        }
-        mcdu.onLeftInput[1] = () => {
-            mcdu.showErrorMessage("NOT YET IMPLEMENTED");
-        }
-        mcdu.onLeftInput[2] = () => {
-            mcdu.showErrorMessage("NOT YET IMPLEMENTED");
-        }
-        mcdu.onLeftInput[3] = () => {
-            mcdu.showErrorMessage("NOT YET IMPLEMENTED");
-        }
-        mcdu.onLeftInput[4] = () => {
-            mcdu.showErrorMessage("NOT YET IMPLEMENTED");
-        }
-        mcdu.onRightInput[3] = () => {
-            mcdu.showErrorMessage("NOT YET IMPLEMENTED");
-        }
-        mcdu.onRightInput[4] = () => {
-            mcdu.showErrorMessage("NOT YET IMPLEMENTED");
-        }
-
         // IMPLEMENTED BUTTONS
         mcdu.onLeftInput[0] = () => {
-            CDU_CFDS_Test_Inst_ECAM1_Menu.ShowPage(mcdu);
+            CDU_CFDS_Test_Inst_ECAM_Menu.ShowPage(mcdu, 1);
         }
         mcdu.onLeftInput[1] = () => {
-            CDU_CFDS_Test_Inst_ECAM2_Menu.ShowPage(mcdu);
+            CDU_CFDS_Test_Inst_ECAM_Menu.ShowPage(mcdu, 2);
         }
         mcdu.onLeftInput[2] = () => {
             CDU_CFDS_Test_Inst_DFDRS_Menu.ShowPage(mcdu);
@@ -57,13 +34,13 @@ class CDUCfdsTestInst {
             CDU_CFDS_Test_Inst_CFDIU_Menu.ShowPage(mcdu);
         }
         mcdu.onRightInput[1] = () => {
-            CDU_CFDS_Test_Inst_EIS1_Menu.ShowPage(mcdu);
+            CDU_CFDS_Test_Inst_EIS_Menu.ShowPage(mcdu, 1);
         }
         mcdu.onRightInput[2] = () => {
-            CDU_CFDS_Test_Inst_EIS2_Menu.ShowPage(mcdu);
+            CDU_CFDS_Test_Inst_EIS_Menu.ShowPage(mcdu, 2);
         }
         mcdu.onRightInput[3] = () => {
-            CDU_CFDS_Test_Inst_EIS3_Menu.ShowPage(mcdu);
+            CDU_CFDS_Test_Inst_EIS_Menu.ShowPage(mcdu, 3);
         }
 
     }

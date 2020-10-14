@@ -1,20 +1,20 @@
-class CDU_CFDS_Test_Inst_DFDRS_Menu {
+class CDU_CFDS_Test_Inst_ECAM1_Menu {
     static ShowPage(mcdu) {
         mcdu.clearDisplay();
         mcdu.setTemplate([
-            ["DFDRS"],
-            ["LAST LEG", "CLASS 3"],
-            ["<REPORT", "FAULTS>"],
-            ["PREVIOUS LEGS"],
-            ["<REPORT", "TEST>"],
+            ["ECAM-1"],
+            ["", "", "FWC1/2-SDAC1/2-ECP"],
+            ["<LAST LEG REPORT"],
             [""],
-            ["<LRU IDENT"],
+            ["<PREVIOUS LEGS REPORT"],
             [""],
-            ["<GND SCANNING", "EIS 3>"],
-            ["TROUBLE SHOOT", "GROUND"],
-            ["<DATA", "REPORT>"],
-            ["", "SPECIFIC"],
-            ["<RETURN[color]blue", "DATA>"]
+            ["<LRU IDENTIFICATION"],
+            [""],
+            ["<GROUND SCANNING"],
+            [""],
+            ["<CLASS 3 FAULTS"],
+            [""],
+            ["<RETURN[color]blue"]
         ]);
 
         // INOP BUTTONS
@@ -43,30 +43,6 @@ class CDU_CFDS_Test_Inst_DFDRS_Menu {
             }, 1000);
         }
         mcdu.onLeftInput[4] = () => {
-            mcdu.showErrorMessage("NOT YET IMPLEMENTED");
-            setTimeout(() => {
-                mcdu.showErrorMessage("");
-            }, 1000);
-        }
-        mcdu.onRightInput[0] = () => {
-            mcdu.showErrorMessage("NOT YET IMPLEMENTED");
-            setTimeout(() => {
-                mcdu.showErrorMessage("");
-            }, 1000);
-        }
-        mcdu.onRightInput[1] = () => {
-            mcdu.showErrorMessage("NOT YET IMPLEMENTED");
-            setTimeout(() => {
-                mcdu.showErrorMessage("");
-            }, 1000);
-        }
-        mcdu.onRightInput[4] = () => {
-            mcdu.showErrorMessage("NOT YET IMPLEMENTED");
-            setTimeout(() => {
-                mcdu.showErrorMessage("");
-            }, 1000);
-        }
-        mcdu.onRightInput[5] = () => {
             mcdu.showErrorMessage("NOT YET IMPLEMENTED");
             setTimeout(() => {
                 mcdu.showErrorMessage("");

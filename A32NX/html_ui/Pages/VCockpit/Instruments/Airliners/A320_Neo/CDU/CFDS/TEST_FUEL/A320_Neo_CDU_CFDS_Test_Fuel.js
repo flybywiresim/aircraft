@@ -1,20 +1,20 @@
-class CDU_CFDS_Test_Inst_DFDRS_Menu {
+class CDUCfdsTestFuel {
     static ShowPage(mcdu) {
         mcdu.clearDisplay();
         mcdu.setTemplate([
-            ["DFDRS"],
-            ["LAST LEG", "CLASS 3"],
-            ["<REPORT", "FAULTS>"],
-            ["PREVIOUS LEGS"],
-            ["<REPORT", "TEST>"],
+            ["SYSTEM REPORT / TEST"],
+            ["", "", "FUEL"],
+            ["<ECAM 1", "CFDIU>"],
             [""],
-            ["<LRU IDENT"],
+            ["<ECAM 2", "EIS 1>"],
             [""],
-            ["<GND SCANNING", "EIS 3>"],
-            ["TROUBLE SHOOT", "GROUND"],
-            ["<DATA", "REPORT>"],
-            ["", "SPECIFIC"],
-            ["<RETURN[color]blue", "DATA>"]
+            ["<DFDRS", "EIS 2>"],
+            [""],
+            ["", "EIS 3>"],
+            [""],
+            [""],
+            [""],
+            ["<RETURN[color]blue"]
         ]);
 
         // INOP BUTTONS
@@ -48,13 +48,7 @@ class CDU_CFDS_Test_Inst_DFDRS_Menu {
                 mcdu.showErrorMessage("");
             }, 1000);
         }
-        mcdu.onRightInput[0] = () => {
-            mcdu.showErrorMessage("NOT YET IMPLEMENTED");
-            setTimeout(() => {
-                mcdu.showErrorMessage("");
-            }, 1000);
-        }
-        mcdu.onRightInput[1] = () => {
+        mcdu.onRightInput[3] = () => {
             mcdu.showErrorMessage("NOT YET IMPLEMENTED");
             setTimeout(() => {
                 mcdu.showErrorMessage("");
@@ -66,16 +60,31 @@ class CDU_CFDS_Test_Inst_DFDRS_Menu {
                 mcdu.showErrorMessage("");
             }, 1000);
         }
-        mcdu.onRightInput[5] = () => {
-            mcdu.showErrorMessage("NOT YET IMPLEMENTED");
-            setTimeout(() => {
-                mcdu.showErrorMessage("");
-            }, 1000);
-        }
 
         // IMPLEMENTED BUTTONS
+        mcdu.onLeftInput[0] = () => {
+            CDU_CFDS_Test_Inst_ECAM1_Menu.ShowPage(mcdu);
+        }
+        mcdu.onLeftInput[1] = () => {
+            CDU_CFDS_Test_Inst_ECAM2_Menu.ShowPage(mcdu);
+        }
+        mcdu.onLeftInput[2] = () => {
+            CDU_CFDS_Test_Inst_DFDRS_Menu.ShowPage(mcdu);
+        }
         mcdu.onLeftInput[5] = () => {
-            CDUCfdsTestInst.ShowPage(mcdu);
+            CDUCfdsTestMenu.ShowPage(mcdu);
+        }
+        mcdu.onRightInput[0] = () => {
+            CDU_CFDS_Test_Inst_CFDIU_Menu.ShowPage(mcdu);
+        }
+        mcdu.onRightInput[1] = () => {
+            CDU_CFDS_Test_Inst_EIS1_Menu.ShowPage(mcdu);
+        }
+        mcdu.onRightInput[2] = () => {
+            CDU_CFDS_Test_Inst_EIS2_Menu.ShowPage(mcdu);
+        }
+        mcdu.onRightInput[3] = () => {
+            CDU_CFDS_Test_Inst_EIS3_Menu.ShowPage(mcdu);
         }
 
     }

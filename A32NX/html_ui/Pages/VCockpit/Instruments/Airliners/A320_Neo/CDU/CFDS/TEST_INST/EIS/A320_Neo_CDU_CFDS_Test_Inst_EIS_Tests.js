@@ -1,36 +1,25 @@
-class CDU_CFDS_Test_Inst_CFDIU_Menu {
-    static ShowPage(mcdu) {
+class CDU_CFDS_Test_Inst_EIS_Tests {
+    static ShowPage(mcdu, eisIndex) {
         mcdu.clearDisplay();
+        const title = "EIS ( DMC " + eisIndex + " )";
         mcdu.setTemplate([
-            ["CFDIU"],
-            [""],
-            ["<LAST LEG REPORT"],
-            [""],
-            ["<LRU IDENTIFICATION"],
-            [""],
-            ["<GROUND SCANNING"],
-            [""],
-            ["<POWER UP TEST RESULT"],
+            [title],
+            ["", "", "TEST"],
             [""],
             [""],
+            ["<SYSTEM TEST"],
+            [""],
+            ["<DISPLAY TEST"],
+            [""],
+            ["<I/P TEST"],
+            [""],
+            ["<SYSTEM TEST RESULT"],
             [""],
             ["<RETURN[color]blue"]
         ]);
 
         // INOP BUTTONS
-        mcdu.onLeftInput[0] = () => {
-            mcdu.showErrorMessage("NOT YET IMPLEMENTED");
-            setTimeout(() => {
-                mcdu.showErrorMessage("");
-            }, 1000);
-        }
         mcdu.onLeftInput[1] = () => {
-            mcdu.showErrorMessage("NOT YET IMPLEMENTED");
-            setTimeout(() => {
-                mcdu.showErrorMessage("");
-            }, 1000);
-        }
-        mcdu.onLeftInput[2] = () => {
             mcdu.showErrorMessage("NOT YET IMPLEMENTED");
             setTimeout(() => {
                 mcdu.showErrorMessage("");
@@ -42,11 +31,19 @@ class CDU_CFDS_Test_Inst_CFDIU_Menu {
                 mcdu.showErrorMessage("");
             }, 1000);
         }
-
-        // IMPLEMENTED BUTTONS
-        mcdu.onLeftInput[5] = () => {
-            CDUCfdsTestInst.ShowPage(mcdu);
+        mcdu.onLeftInput[4] = () => {
+            mcdu.showErrorMessage("NOT YET IMPLEMENTED");
+            setTimeout(() => {
+                mcdu.showErrorMessage("");
+            }, 1000);
         }
 
+        // IMPLEMENTED BUTTONS
+        mcdu.onLeftInput[2] = () => {
+            CDU_CFDS_Test_Inst_EIS_Tests_Display.ShowPage(mcdu, eisIndex);
+        }
+        mcdu.onLeftInput[5] = () => {
+            CDU_CFDS_Test_Inst_EIS_Menu.ShowPage(mcdu, eisIndex);
+        }
     }
 }
