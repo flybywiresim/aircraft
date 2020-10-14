@@ -376,7 +376,7 @@
 							</PropertyList>
 							<ReferenceList>
 								<Reference Name="Target">
-									<ObjectRef Name="P1010748" ID="{F63E4913-E2CD-4817-85C4-CB62E28BBC89}" WorkUnitID="{27D32D8D-6C92-4542-9BFC-F0D08111F92F}"/>
+									<ObjectRef Name="P1010748" ID="{26E676B5-7ED0-48B9-9B37-BDBA34D21184}" WorkUnitID="{27D32D8D-6C92-4542-9BFC-F0D08111F92F}"/>
 								</Reference>
 							</ReferenceList>
 						</Action>
