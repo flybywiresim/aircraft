@@ -192,7 +192,8 @@
 					<Component ID="#KNOB_XPNDR_MODE_NODE_ID#" Node="#KNOB_XPNDR_MODE_NODE_ID#">
 						<!-- This is kind of a hack to allow us to initialize this value from the .flt files -->
 						<!-- Feel free to replace if a better solution is found -->
-						<Update Once="True">
+
+                        <Update Once="True">
 						(L:XMLVAR_Auto) (&gt;I:XMLVAR_Auto)
 						#UPDATE_AUTO_TRANSPONDER_STATE#
 						</Update>

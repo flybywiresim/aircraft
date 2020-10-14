@@ -52,4 +52,90 @@
         </Condition>
     </Template>
 
+    <!--
+    Template for rigging DCDU "BRT / DIM" buttons
+
+    Main Parameters:
+            - DCDU_SIDE         <no default>    Either L or R
+            - PLANE_NAME        <no default>    Plane project name
+            - POTENTIOMETER_ID  85              Potentiometer ID for emissive sequence 1
+
+    Authors: Benjamin Dupont (@Benjozork) 10/10/20
+    -->
+    <Template Name="FBW_Airbus_DCDU_Brightness_Switch">
+        <DefaultTemplateParameters>
+            <POTENTIOMETER_ID>85</POTENTIOMETER_ID>
+        </DefaultTemplateParameters>
+
+        <UseTemplate Name="ASOBO_GT_Push_Button_Airliner">
+            <NODE_ID>SWITCH_MP#DCDU_SIDE#_DIM</NODE_ID>
+
+            <SEQ1_EMISSIVE_CODE>(A:LIGHT POTENTIOMETER:#POTENTIOMETER_ID#, percent) 100 /</SEQ1_EMISSIVE_CODE>
+            <SEQ2_EMISSIVE_CODE>1</SEQ2_EMISSIVE_CODE>
+
+            <LEFT_SINGLE_CODE>
+                (L:#PLANE_NAME#_PANEL_DCDU_#DCDU_SIDE#_BRIGHTNESS) ! (&gt;L:#PLANE_NAME#_PANEL_DCDU_#DCDU_SIDE#_BRIGHTNESS)
+            </LEFT_SINGLE_CODE>
+        </UseTemplate>
+    </Template>
+
+    <!--
+    Template for rigging DCDU generic buttons
+
+    Main Parameters:
+            - NODE_ID           <no default>    Name of the button
+            - PUSH_CODE         <no default>    Code to run on push of button
+            - POTENTIOMETER_ID  85              Potentiometer ID for emissive sequence 1
+
+    Authors: Benjamin Dupont (@Benjozork) 10/10/20
+    -->
+    <Template Name="FBW_Airbus_DCDU_Generic_Switch">
+        <DefaultTemplateParameters>
+            <POTENTIOMETER_ID>85</POTENTIOMETER_ID>
+        </DefaultTemplateParameters>
+
+        <UseTemplate Name="ASOBO_GT_Push_Button_Airliner">
+            <SEQ1_EMISSIVE_CODE>(A:LIGHT POTENTIOMETER:#POTENTIOMETER_ID#, percent) 100 /</SEQ1_EMISSIVE_CODE>
+            <SEQ2_EMISSIVE_CODE>1</SEQ2_EMISSIVE_CODE>
+
+            <LEFT_SINGLE_CODE>#PUSH_CODE#</LEFT_SINGLE_CODE>
+        </UseTemplate>
+    </Template>
+
+    <!--
+    Template for rigging inop. DCDU generic buttons
+
+    Main Parameters:
+            - NODE_ID           <no default>    Name of the button
+            - PLANE_NAME        <no default>    Plane project name
+            - POTENTIOMETER_ID  85              Potentiometer ID for emissive sequence 1
+
+    Authors: Benjamin Dupont (@Benjozork) 11/10/20
+    -->
+    <Template Name="FBW_Airbus_DCDU_Generic_Inop_Switch">
+        <UseTemplate Name="FBW_Airbus_DCDU_Generic_Switch">
+            <PUSH_CODE>
+                1 (&gt;L:#PLANE_NAME#_PANEL_DCDU_INOP_PUSHED)
+            </PUSH_CODE>
+        </UseTemplate>
+    </Template>
+
+    <!--
+    Template for rigging DCDU brightness
+
+    Main Parameters:
+            - DCDU_SIDE         <no default>    Either L or R
+            - PLANE_NAME        <no default>    Plane project name
+
+    Authors: Benjamin Dupont (@Benjozork) 11/10/20
+    -->
+    <Template Name="FBW_Airbus_DCDU_2State_Emissive">
+        <UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
+            <NODE_ID>SCREEN_COM_#DCDU_SIDE#</NODE_ID>
+            <EMISSIVE_CODE>(L:#PLANE_NAME#_PANEL_DCDU_#DCDU_SIDE#_BRIGHTNESS, Bool) if{ 1 } els{ 0.5 }</EMISSIVE_CODE>
+            <PART_ID>SCREEN_COM1</PART_ID>
+            <CAMERA_TITLE>ECAM</CAMERA_TITLE>
+        </UseTemplate>
+    </Template>
+
 </ModelBehaviors>
