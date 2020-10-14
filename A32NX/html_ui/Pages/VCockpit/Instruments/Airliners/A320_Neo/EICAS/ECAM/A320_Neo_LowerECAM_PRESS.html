@@ -11,7 +11,7 @@
         <!--FIRST LINE OF TEXT-->
         <text class="st3p st9p" x="280" y="25">LDG ELEV</text>
         <text id="ldg-elev-text" class="st0p st9p" x="380" y="25">AUTO</text>
-        <text id="ldg-elev-value" class="st0p st9p" x="480" y="25">100</text>
+        <text id="ldg-elev-value" class="st0p st9p" x="480" y="25">50</text>
         <text id="ldg-elev-value" class="st3p st7p" x="522" y="26">FT</text>
 
         <!--delta-psi gauge-->
@@ -33,6 +33,7 @@
             <line class="st13p st15p" x1="115" y1="120" x2="118" y2="114" />
             <line id="delta-psi-indicator" class="st0p st12p" style="transform-origin: 100px 152.5px; transform: rotate(0deg); stroke-width: 3px; stroke-linecap: round;" x1="100" y1="152.5" x2="66" y2="182" />
         </g>
+
         <g id="v-s-gauge" transform="translate(160,0) scale(1.2)">
             <g id="v-s-gauge-text">
                 <text class="st3p st8p" x="108" y="68">V/S</text>
@@ -79,8 +80,10 @@
             </g>
 
             <g id="bottom-part-text">
+                <text class="st0p st9p" style="visibility:hidden;" x="225" y="305">SYS  1</text>
                 <text class="st0p st9p" x="390" y="305">SYS  2</text>
-                <text class="st3p st9p" x="535" y="320">SAFETY</text>
+                <text class="st0p st9p" style="visibility:hidden;" x="307.5" y="295">MAN</text>    
+                <text id="safety-text"class="st3p st9p" x="535" y="320">SAFETY</text>
                 <text class="st3p st9p" x="222.5" y="390">VENT</text>
                 <text class="st3p st9p" x="160" y="430">INLET</text>
                 <text class="st3p st9p" x="285" y="430">OUTLET</text>
@@ -90,13 +93,13 @@
 
             <g id="bottom-part-indicators">
                 <path class="st3p st13p" style="fill:none;" d="m 450 380 q -55 6 -67 60"/>
-                <line class="st0p st14p" x1="268" y1="460" x2="305" y2="460" />
+                <line id="valve-outlet" class="st0p st14p" x1="268" y1="460" x2="305" y2="460" />
                 <circle class="st3p st13p" style="fill:none;" cx="265" cy="460" r="3" />
-                <line class="st0p st14p" x1="140" y1="460" x2="177" y2="460" />
+                <line id="valve-inlet" class="st0p st14p" x1="140" y1="460" x2="177" y2="460" />
                 <circle class="st3p st13p" style="fill:none;" cx="180" cy="460" r="3" />
-                <line class="st0p st14p" style="transform-origin: 450px 450px; transform: rotate(10deg);" x1="447" y1="450" x2="380" y2="450" />
+                <line id="valve-indicator" class="st0p st14p" style="transform-origin: 450px 450px; transform: rotate(10deg);" x1="447" y1="450" x2="380" y2="450" />
                 <circle class="st3p st13p" style="fill:none;" cx="450" cy="450" r="3" />
-                <line class="st0p st14p" x1="550" y1="343" x2="550" y2="380" />
+                <line id="valve-safety" class="st0p st14p" x1="550" y1="343" x2="550" y2="380" />
                 <circle class="st3p st13p" style="fill:none;" cx="550" cy="340" r="3" />
                 <line class="st3p st13p" x1="390" y1="420" x2="385" y2="418" />
                 <line class="st3p st13p" x1="405" y1="398" x2="402" y2="394" />
@@ -105,8 +108,8 @@
         </g>
 
         <g id="packs" transform="translate(-10,0)">
-            <polygon class="st0p st13p" style="fill:none;" points="512,470 528,470 520,454 512,470"/>
-            <polygon class="st0p st13p" style="fill:none;" points="86,470 102,470 94,454 86,470"/>
+            <polygon id="pack-indicator-right" class="st0p st13p" style="fill:none;" points="512,470 528,470 520,454 512,470"/>
+            <polygon id="pack-indicator-left" class="st0p st13p" style="fill:none;" points="86,470 102,470 94,454 86,470"/>
         </g>
          
     </svg>
