@@ -9,6 +9,14 @@
 		<UseTemplate Name="ASOBO_DEICE_Switch_Engine_SubTemplate">
 		</UseTemplate>
 	</Template>
+    <Template Name="A32NX_DEICE_Switch_Engine_Template">
+		<DefaultTemplateParameters>
+			<ID>1</ID> 
+			<INTERACTION>Switch</INTERACTION>
+		</DefaultTemplateParameters>
+		<UseTemplate Name="A32NX_DEICE_Switch_Engine_SubTemplate">
+		</UseTemplate>
+	</Template>
 	<Template Name="ASOBO_DEICE_Lever_Engine_Template">
 		<DefaultTemplateParameters>
 			<ANIM_NAME>DEICE_Lever_Engine</ANIM_NAME>
@@ -23,6 +31,13 @@
 			<INTERACTION>Switch</INTERACTION>
 		</DefaultTemplateParameters>
 		<UseTemplate Name="ASOBO_DEICE_Switch_Airframe_SubTemplate"></UseTemplate>
+	</Template>
+    <Template Name="A32NX_DEICE_Switch_Airframe_Template">
+		<DefaultTemplateParameters>
+			<SWITCH_TYPE>ON_OFF</SWITCH_TYPE>
+			<INTERACTION>Switch</INTERACTION>
+		</DefaultTemplateParameters>
+		<UseTemplate Name="A32NX_DEICE_Switch_Airframe_SubTemplate"></UseTemplate>
 	</Template>
 	<Template Name="ASOBO_DEICE_Switch_Propeller_Template">
 		<DefaultTemplateParameters>
