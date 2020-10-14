@@ -83,9 +83,6 @@ var A320_Neo_UpperECAM;
         get templateID() {
             return "UpperECAMTemplate";
         }
-        static refresh() {
-            console.log("REFRESH");
-        }
         connectedCallback() {
             super.connectedCallback();
             TemplateElement.call(this, this.init.bind(this));
