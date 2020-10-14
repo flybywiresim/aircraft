@@ -83,6 +83,9 @@ var A320_Neo_UpperECAM;
         get templateID() {
             return "UpperECAMTemplate";
         }
+        static refresh() {
+            console.log("REFRESH");
+        }
         connectedCallback() {
             super.connectedCallback();
             TemplateElement.call(this, this.init.bind(this));
@@ -1173,6 +1176,8 @@ var A320_Neo_UpperECAM;
             //Show takeoff memo 2 mins after second engine start
             //Hides after takeoff thurst application
             const eng2Running = SimVar.GetSimVarValue("ENG COMBUSTION:2", "bool") && SimVar.GetSimVarValue("ENG N1 RPM:2", "Percent") > 15;
+            const phase = SimVar.GetSimVarValue("L:AIRLINER_FLIGHT_PHASE", "Enum");
+            const numberPhase = SimVar.GetSimVarValue("L:AIRLINER_FLIGHT_PHASE", "number");
             if (!this.showTOMemoDisabled) {
                 if (eng2Running && this.leftEcamMessagePanel.hasActiveFailures == false) {
                     if (this.takeoffMemoTimer == null) {
@@ -1186,7 +1191,7 @@ var A320_Neo_UpperECAM;
                     }
                 }
             } else {
-                if (SimVar.GetSimVarValue("L:AIRLINER_FLIGHT_PHASE", "number") >= 2 && SimVar.GetSimVarValue("L:A32NX_Preflight_Complete", "Bool") != 0 || !eng2Running) {
+                if (numberPhase >= 2 && SimVar.GetSimVarValue("L:A32NX_Preflight_Complete", "Bool") != 0 || !eng2Running) {
                     this.takeoffMemoTimer = null;
                     this.showTakeoffMemo = false;
                 }
@@ -1195,7 +1200,8 @@ var A320_Neo_UpperECAM;
 
             //Show landing memo at 2000ft
             //Hides after slowing down to 80kts
-            if ((SimVar.GetSimVarValue("L:AIRLINER_FLIGHT_PHASE", "number") >= 6 && SimVar.GetSimVarValue("L:AIRLINER_FLIGHT_PHASE", "number") <= 7) && SimVar.GetSimVarValue("RADIO HEIGHT", "Feet") < 2000 && SimVar.GetSimVarValue("AIRSPEED INDICATED", "knots") > 80 && !this.leftEcamMessagePanel.hasActiveFailures) {
+            const inGoAround = (numberPhase == 6 || numberPhase == 7) ? (Simplane.getEngineThrottleMode(0) > Simplane.getEngineThrottleMode(1)) ? Simplane.getEngineThrottleMode(0) : Simplane.getEngineThrottleMode(1) >= ThrottleMode.CLIMB : false;
+            if ((numberPhase >= 6 || numberPhase <= 7) && !inGoAround && SimVar.GetSimVarValue("RADIO HEIGHT", "Feet") < 2000 && !this.leftEcamMessagePanel.hasActiveFailures) {
                 this.showLandingMemo = true;
             } else {
                 this.showLandingMemo = false;
