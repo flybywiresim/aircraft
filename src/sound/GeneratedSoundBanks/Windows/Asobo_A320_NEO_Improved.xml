@@ -47,9 +47,9 @@
 				</Event>
 				<Event Id="2141756415" Name="Play_Asobo_A320_NEO_AVventloop" ObjectPath="\Events\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved\Play_Asobo_A320_NEO_AVventloop" GUID="{DA11F500-E798-41AA-82B5-EA7D231270A3}" MaxAttenuation="1.000000" DurationType="Infinite">
 					<IncludedMemoryFiles>
-						<File Id="524784365" Language="SFX">
+						<File Id="833144844" Language="SFX">
 							<ShortName>P1010748.wav</ShortName>
-							<Path>SFX\P1010748_3B2579BF.wem</Path>
+							<Path>SFX\P1010748_B5BBAF0F.wem</Path>
 						</File>
 					</IncludedMemoryFiles>
 				</Event>
@@ -81,7 +81,7 @@
 					<IncludedMemoryFiles>
 						<File Id="666900117" Language="SFX">
 							<ShortName>BuzzL.wav</ShortName>
-							<Path>SFX\BuzzL_89DC6E16.wem</Path>
+							<Path>SFX\BuzzL_B55D7B15.wem</Path>
 						</File>
 					</IncludedMemoryFiles>
 				</Event>
