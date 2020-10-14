@@ -132,7 +132,7 @@
             <SEQ1_EMISSIVE_CODE>(A:LIGHT POTENTIOMETER:#POTENTIOMETER_ID#, percent) 100 /</SEQ1_EMISSIVE_CODE>
             <SEQ2_EMISSIVE_CODE>1</SEQ2_EMISSIVE_CODE>
 
-            <LEFT_SINGLE_CODE>#PUSH_CODE#</LEFT_SINGLE_CODE>
+            <LEFT_SINGLE_CODE>(&gt;H:#PLANE_NAME#_DCDU_BTN_#HTML_EVENT_ID#)</LEFT_SINGLE_CODE>
         </UseTemplate>
     </Template>
 
@@ -148,9 +148,9 @@
     -->
     <Template Name="FBW_Airbus_DCDU_Generic_Inop_Switch">
         <UseTemplate Name="FBW_Airbus_DCDU_Generic_Switch">
-            <PUSH_CODE>
-                1 (&gt;L:#PLANE_NAME#_PANEL_DCDU_INOP_PUSHED)
-            </PUSH_CODE>
+            <HTML_EVENT_ID>
+                INOP
+            </HTML_EVENT_ID>
         </UseTemplate>
     </Template>
 
