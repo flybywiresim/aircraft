@@ -67,8 +67,8 @@
     </MiscellaneousSounds>
 
     <EngineSoundPresets>
-        <Sound WwiseEvent="Combustion" ConeHeading="180" ViewPoint="Outside" WwiseData="true" EngineIndex="1" FadeOutType="3" OutsideConeAngle="180" FadeOutTime="5"/>
-        <Sound WwiseEvent="Combustion" ConeHeading="180" ViewPoint="Outside" WwiseData="true" EngineIndex="2" FadeOutType="3" OutsideConeAngle="180" FadeOutTime="5"/>
+        <Sound WwiseEvent="Combustion" ConeHeading="180" WwiseData="true" EngineIndex="1" FadeOutType="3" OutsideConeAngle="180" FadeOutTime="5"/>
+        <Sound WwiseEvent="Combustion" ConeHeading="180" WwiseData="true" EngineIndex="2" FadeOutType="3" OutsideConeAngle="180" FadeOutTime="5"/>
         <Sound WwiseEvent="JetWhine" ConeHeading="0" WwiseData="true" EngineIndex="1" RPMMin="1"/>
         <Sound WwiseEvent="JetWhine" ConeHeading="0" WwiseData="true" EngineIndex="2" RPMMin="1"/>
     </EngineSoundPresets>
