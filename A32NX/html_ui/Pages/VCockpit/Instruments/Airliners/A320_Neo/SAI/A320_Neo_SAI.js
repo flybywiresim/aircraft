@@ -20,6 +20,41 @@ class A320_Neo_SAI extends BaseAirliners {
     }
 }
 
+const sai_state_machine = {
+    init: "off",
+    off: {
+        transitions: {
+            next: {
+                target: "test"
+            }
+        }
+    },
+    test: {
+        transitions: {
+            next: {
+                target: "on"
+            },
+            reset: {
+                target: "off"
+            }
+        }
+    },
+    on: {
+        transitions: {
+            reset: {
+                target: "off"
+            }
+        }
+    },
+    spawn: {
+        transitions: {
+            next: {
+                target: "on"
+            }
+        }
+    }
+};
+
 class A320_Neo_SAI_Airspeed extends NavSystemElement {
     constructor() {
         super();
@@ -1144,42 +1179,83 @@ customElements.define('a320-neo-sai-brightness', A320_Neo_SAI_BrightnessBox);
 
 class A320_Neo_SAI_SelfTest extends NavSystemElement {
     init(root) {
-        this.check_count = 0;
         this.selfTestElement = this.gps.getChildById("SelfTest");
         this.getDeltaTime = A32NX_Util.createDeltaTimeCalculator();
-        this.cold_dark = SimVar.GetSimVarValue('L:A32NX_COLD_AND_DARK_SPAWN', 'Bool');
+        const interval = 5;
+        this.getFrameCounter = A32NX_Util.createFrameCounter(interval);
+        const cold_dark = SimVar.GetSimVarValue('L:A32NX_COLD_AND_DARK_SPAWN', 'Bool');
         const ac_pwr = SimVar.GetSimVarValue("L:ACPowerAvailable", "bool");
         const dc_pwr = SimVar.GetSimVarValue("L:DCPowerAvailable", "bool");
+        this.state = A32NX_Util.createMachine(sai_state_machine);
 
-        if (!this.cold_dark && ac_pwr && dc_pwr) {
+        if (!cold_dark) {
             this.selfTestElement.finishTest();
+            this.state.setState("spawn");
+        } else {
+            this.state.setState("off");
+            this.selfTestElement.offDisplay();
         }
-
+        /*
+        if ((!ac_pwr && !dc_pwr)) {
+            this.selfTestElement.offDisplay();
+        }
+        */
     }
     onEnter() {
     }
     isReady() {
         return true;
     }
+
+    checkShutdown() {
+        const ac_pwr = SimVar.GetSimVarValue("L:ACPowerAvailable", "bool");
+        const dc_pwr = SimVar.GetSimVarValue("L:DCPowerAvailable", "bool");
+
+        if (ac_pwr || dc_pwr) {
+            return;
+        } else {
+            const _updateF = this.getFrameCounter();
+            // Airspeed > 50 knots, check every 10th frame
+            if (_updateF === 0) {
+                const airspeed = Simplane.getTrueSpeed();
+                if (airspeed < 50.0) {
+                    this.selfTestElement.offDisplay();
+                    this.state.action("reset");
+                }
+            }
+        }
+    }
     onUpdate(_deltaTime) {
         const _dTime = this.getDeltaTime();
 
+        const complete = this.selfTestElement.complete;
         const ac_pwr = SimVar.GetSimVarValue("L:ACPowerAvailable", "bool");
         const dc_pwr = SimVar.GetSimVarValue("L:DCPowerAvailable", "bool");
-        const complete = this.selfTestElement.complete;
-        const check_interval = 10;
 
-        if ((ac_pwr || dc_pwr) && !complete) {
-            this.selfTestElement.update(_dTime);
+        switch (this.state.value) {
+            case "off":
+                if ((ac_pwr || dc_pwr)) {
+                    this.selfTestElement.onDisplay();
+                    this.state.action("next");
+                }
+                break;
+            case "test":
+                this.checkShutdown();
+                if (!complete) {
+                    this.selfTestElement.update(_dTime);
+                } else if (complete) {
+                    this.state.action("next");
+                }
+                break;
+            case "on":
+                this.checkShutdown();
+                break;
+            case "spawn":
+                if (ac_pwr || dc_pwr) {
+                    this.state.action("next");
+                }
+                break;
         }
-        if (this.check_count % check_interval === 0) {
-            const airspeed = Simplane.getTrueSpeed();
-            if (!ac_pwr && !dc_pwr && airspeed < 50.0) {
-                // Airspeed > 50 knots, check every 10th frame
-                this.selfTestElement.resetTimer();
-            }
-        }
-        this.check_count = (this.check_count + 1) % check_interval;
     }
     onEvent(_event) {
     }
@@ -1208,6 +1284,7 @@ class A320_Neo_SAI_SelfTestTimer extends HTMLElement {
 
         this.hide_inst_div = document.querySelector("#SelfTestHider");
         this.hide_inst_div.style.display = "none";
+        this.hide_disp_div = document.querySelector("#PressureHider");
 
         this.selfTestDiv = document.createElement("div");
         this.selfTestDiv.id = "SelfTestDiv";
@@ -1316,7 +1393,6 @@ class A320_Neo_SAI_SelfTestTimer extends HTMLElement {
         if (this.testTimer >= 0) {
             this.testTimer -= dTime / 1000;
         }
-
         if (this.testTimer > 9) {
             this.st_tmr_txt.textContent = "INIT " + Math.ceil(this.testTimer) + "S";
         } else {
@@ -1326,14 +1402,20 @@ class A320_Neo_SAI_SelfTestTimer extends HTMLElement {
             this.finishTest();
         }
     }
-    resetTimer() {
+
+    onDisplay() {
+        this.selfTestDiv.style.display = "block";
+        this.hide_disp_div.style.display = "block";
+    }
+    offDisplay() {
         if (this.testTimer > this.start_time) {
             return;
         }
-        this.testTimer = Math.floor(Math.random() * 3) + this.start_time;
+        this.testTimer = this.start_time;
         this.complete = false;
         this.hide_inst_div.style.display = "none";
-        this.selfTestDiv.style.display = "block";
+        this.hide_disp_div.style.display = "none";
+        this.selfTestDiv.style.display = "none";
     }
     finishTest() {
         if (this.complete) {
@@ -1477,25 +1559,26 @@ customElements.define('a320-neo-sai-att-reset-indicator', A320_Neo_SAI_AttResetI
 
 class A320_Neo_SAI_Bugs extends NavSystemElement {
     init(root) {
+        const check_interval = 5;
         SimVar.SetSimVarValue("L:A32NX_BARO_BUGS_ACTIVE","Bool", false);
         this.bugsElement = this.gps.getChildById("Bugs");
         this.blink_status = false;
         this.current_bug = 0;
-        this.check_count = 0;
+        this.getFrameCounter = A32NX_Util.createFrameCounter(check_interval);
     }
+
     onEnter() {
     }
     isReady() {
         return true;
     }
     onUpdate(_deltaTime) {
-        const check_interval = 5;
         const blink_interval = 2;
+        const count = this.getFrameCounter();
 
-        if (this.blink_status && this.check_count != 0 && this.check_count % blink_interval) {
+        if (this.blink_status && count != 0 && count % blink_interval) {
             this.bugsElement.toggleBugBox(this.current_bug);
         }
-        this.check_count = (this.check_count + 1) % check_interval;
     }
     onExit() {
     }
