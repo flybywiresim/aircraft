@@ -563,10 +563,13 @@ class Jet_NDCompass extends HTMLElement {
                         this.bearingCircle.setAttribute("visibility", "hidden");
                     }
                 }
-                if (this.isBearing1Displayed) {
-                    this.bearing1.setAttribute("visibility", "visible");
-                } else {
-                    this.bearing1.setAttribute("visibility", "hidden");
+
+                if (this.bearing1) {
+                    if (this.isBearing1Displayed) {
+                        this.bearing1.setAttribute("visibility", "visible");
+                    } else {
+                        this.bearing1.setAttribute("visibility", "hidden");
+                    }
                 }
                 break;
             case "toggle_bearing2":
@@ -578,10 +581,12 @@ class Jet_NDCompass extends HTMLElement {
                         this.bearingCircle.setAttribute("visibility", "hidden");
                     }
                 }
-                if (this.isBearing2Displayed) {
-                    this.bearing2.setAttribute("visibility", "visible");
-                } else {
-                    this.bearing2.setAttribute("visibility", "hidden");
+                if (this.bearing2) {
+                    if (this.isBearing2Displayed) {
+                        this.bearing2.setAttribute("visibility", "visible");
+                    } else {
+                        this.bearing2.setAttribute("visibility", "hidden");
+                    }
                 }
                 break;
         }
@@ -653,10 +658,12 @@ class Jet_NDCompass extends HTMLElement {
                         this.bearingCircle.setAttribute("visibility", "hidden");
                     }
                 }
-                if (this.isBearing1Displayed) {
-                    this.bearing1.setAttribute("visibility", "visible");
-                } else {
-                    this.bearing1.setAttribute("visibility", "hidden");
+                if (this.bearing1) {
+                    if (this.isBearing1Displayed) {
+                        this.bearing1.setAttribute("visibility", "visible");
+                    } else {
+                        this.bearing1.setAttribute("visibility", "hidden");
+                    }
                 }
                 break;
             case "show_bearing2":
@@ -668,10 +675,12 @@ class Jet_NDCompass extends HTMLElement {
                         this.bearingCircle.setAttribute("visibility", "hidden");
                     }
                 }
-                if (this.isBearing2Displayed) {
-                    this.bearing2.setAttribute("visibility", "visible");
-                } else {
-                    this.bearing2.setAttribute("visibility", "hidden");
+                if (this.bearing2) {
+                    if (this.isBearing2Displayed) {
+                        this.bearing2.setAttribute("visibility", "visible");
+                    } else {
+                        this.bearing2.setAttribute("visibility", "hidden");
+                    }
                 }
                 break;
             case "bearing1_bearing":

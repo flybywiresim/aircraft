@@ -76,7 +76,6 @@
 						<Property Name="LfoWaveform" Type="int32" Value="5"/>
 					</PropertyList>
 				</ModulatorLfo>
-				<ModulatorTime Name="New Modulator Time" ID="{0E92929A-F1AC-417C-AA67-B3BC3393424B}" ShortID="176999675"/>
 			</ChildrenList>
 		</WorkUnit>
 	</Modulators>
