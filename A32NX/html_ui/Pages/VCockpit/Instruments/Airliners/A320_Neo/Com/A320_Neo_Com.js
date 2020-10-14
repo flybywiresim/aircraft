@@ -23,6 +23,12 @@ class A320_Neo_Com extends BaseAirliners {
         return "A320_Neo_Com";
     }
 
+    Init() {
+        super.Init();
+
+        this.electricity = this.querySelector("#Electricity");
+    }
+
     connectedCallback() {
         super.connectedCallback();
 
@@ -61,6 +67,7 @@ class A320_Neo_Com extends BaseAirliners {
         super.Update();
 
         this.updatePowerState();
+        this.updateScreenState();
         this.setShowSelfTest();
     }
 
@@ -75,6 +82,12 @@ class A320_Neo_Com extends BaseAirliners {
         this.acPowerStateChange = isAcPowerAvailable !== this.lastAcPowerState;
 
         this.lastAcPowerState = isAcPowerAvailable;
+    }
+
+    updateScreenState() {
+        if (this.acPowerStateChange) {
+            this.electricity.style.display = this.lastAcPowerState ? "block" : "none";
+        }
     }
 
     setShowSelfTest() {
