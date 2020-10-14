@@ -52,7 +52,7 @@ a320-neo-lower-ecam-bleed text {
 .st9 {
     fill: none;
     stroke: var(--displayWhite);
-    stroke-width: 3;
+    stroke-width: 2;
     stroke-miterlimit: 10;
 }
 .st10 {
@@ -65,10 +65,26 @@ a320-neo-lower-ecam-bleed text {
     stroke: #000000;
     stroke-miterlimit: 10;
 }
+.st12{
+    fill: none;
+    stroke: var(--displayWhite);
+    stroke-width:1px;
+}
+
+.st13{
+    font-size: 18px;
+}
 
 text {
     transform: translateX(-15);
 }
+
 .warning {
+    fill: var(--displayAmber);
+    stroke: var(--displayAmber);
+}
+
+.warning_trg {
+    fill: none;
     stroke: var(--displayAmber);
 }

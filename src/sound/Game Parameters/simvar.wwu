@@ -1226,7 +1226,7 @@ Unit : Rpm
 									<PropertyList>
 										<Property Name="FilterTimeDown" Type="Real64" Value="0.1"/>
 										<Property Name="InitialValue" Type="Real64" Value="560"/>
-										<Property Name="Max" Type="Real64" Value="10000"/>
+										<Property Name="Max" Type="Real64" Value="29200"/>
 										<Property Name="SlewRateUp" Type="Real64" Value="0"/>
 									</PropertyList>
 								</GameParameter>
