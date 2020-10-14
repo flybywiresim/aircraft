@@ -108,7 +108,7 @@ class Jet_MFD_NDInfo extends HTMLElement {
         const wpETE = SimVar.GetSimVarValue("GPS WP ETE", "seconds"); // ETE is not available in Simplane 🙄
         const utcTime = SimVar.GetGlobalVarValue("ZULU TIME", "seconds");
         const utcETA = wpETE > 0 ? (utcTime + wpETE) % 86400 : 0;
-        this.setWaypoint(Simplane.getNextWaypointName(), Math.round(Simplane.getNextWaypointTrack()), Simplane.getNextWaypointDistance(), utcETA);
+        this.setWaypoint(Simplane.getNextWaypointName(), Math.round(Simplane.getNextWaypointTrack()), Simplane.getNextWaypointDistance(), utcETA, true);
     }
     setGroundSpeed(_speed, _force = false) {
         if ((_speed != this.currentGroundSpeed) || _force) {
