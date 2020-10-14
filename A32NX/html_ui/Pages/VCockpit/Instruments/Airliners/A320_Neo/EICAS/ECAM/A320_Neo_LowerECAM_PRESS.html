@@ -5,51 +5,88 @@
     <svg viewBox="0 0 600 600" xmlns="http://www.w3.org/2000/svg">
 
         <!--TITLE-->
-        <text class="st1 st3" x="75" y="25" >CAB PRESS</text>
-        <line class="st4" x1="10" y1="37" x2="142" y2="37"/>
+        <text class="st3 st11" x="85" y="25" >CAB PRESS</text>
+        <line class="st4" x1="10" y1="37" x2="160" y2="37"/>
         
         <!--FIRST LINE OF TEXT-->
-        <text class="st1 st6" x="250" y="25">LDG ELEV</text>
-        <text id="ldg-elev-text" class="st6 st7" x="350" y="25">AUTO</text>
-        <text id="ldg-elev-value" class="st6 st7" x="450" y="25">100</text>
-        <text id="ldg-elev-value" class="st1 st14" x="485" y="25">FT</text>
+        <text class="st3 st9" x="280" y="25">LDG ELEV</text>
+        <text id="ldg-elev-text" class="st0 st9" x="380" y="25">AUTO</text>
+        <text id="ldg-elev-value" class="st0 st9" x="480" y="25">100</text>
+        <text id="ldg-elev-value" class="st3 st7" x="522" y="26">FT</text>
 
         <!--delta-psi gauge-->
-        <g id="delta-psi-gauge">
+        <g id="delta-psi-gauge" transform="scale(1.2)">
             <g id="delta-psi-gauge-text">
-                <polygon class="st12" points="90,75 100,75 95,60 90,75" />
-                <text class="st1" style="font-size: 20px;" x="108" y="68">P</text>
-                <text class="st8 st14" x="102" y="87">PSI</text>
+                <polygon class="st13 st15"  points="90,74 100,74 95,62 90,74" />
+                <text class="st3 st8" style="font-size: 20px;" x="108" y="68">P</text>
+                <text class="st1 st7" x="100" y="87">PSI</text>
 
-                <text class="st1 st14" style="font-size: 14px;" x="72" y="168">0</text>
-                <text class="st1 st14" style="font-size: 14px;" x="112" y="130">8</text>
+                <text class="st3 st16" x="72" y="168">0</text>
+                <text class="st3 st16" x="112" y="130">8</text>
 
-                <text class="st3 st7"  x="128" y="170">8.</text>
-                <text class="st7 st14" style="font-size: 14px;" x="146" y="172">0</text>
-
+                <text class="st0 st9"  x="128" y="170">0.</text>
+                <text class="st0 st16" style="font-size: 14px;" x="146" y="172">0</text>
             </g>
-
-            
-            <path class="st9" d="m 75 190 a 1 1 90 0 1 55 -70" fill="none" />
-            
-            
-            <line class="st9" x1="66" y1="182" x2="72" y2="177" />
-            <line class="st9" x1="66" y1="132" x2="72" y2="136" />
-            <line class="st9" x1="115" y1="120" x2="118" y2="114" />
-
-            <line class="warning st9" x1="75" y1="190" x2="68" y2="184" />
-            <line class="warning st9" x1="130" y1="120" x2="122" y2="115" />
-
-
-            <line id="delta-psi-indicator" class="st5" style="transform-origin: 100px 152.5px; transform: rotate(-5deg); stroke-width: 3.5px; stroke-linecap: round;" x1="100" y1="152.5" x2="122" y2="112" />
-
-
-
-        </g>
-
-
            
+            <path class="st13 st15" d="m 75 190 a 1 1 110 0 1 55 -70" fill="none" />
+            <path class="warning_arc st13 st15" d="m 130 120 a 20 20 0 0 0 -5 -3" fill="none" />
+            <path class="warning_arc st13 st15" d="m 75 190 a 20 20 0 0 1 -5 -5" fill="none" />
+            
+            <line class="st13 st15" x1="66" y1="182" x2="72" y2="177" />
+            <line class="st13 st15" x1="66" y1="132" x2="72" y2="136" />
+            <line class="st13 st15" x1="115" y1="120" x2="118" y2="114" />
 
+            <!--<line class="warning st14" style="stroke-linecap: round;" x1="75" y1="190" x2="68" y2="184" />
+            <line class="warning st14" style="stroke-linecap: round;" x1="130" y1="121" x2="122" y2="115" />--> 
+            <line id="delta-psi-indicator" class="st5" style="transform-origin: 100px 152.5px; transform: rotate(50deg); stroke-width: 3px; stroke-linecap: round;" x1="100" y1="152.5" x2="66" y2="182" />
+        </g>
+        <g id="v-s-gauge" transform="translate(170,0) scale(1.2)">
+            <g id="v-s-gauge-text">
+                <text class="st3 st8" style="font-size: 20px;" x="108" y="68">V/S</text>
+                <text class="st1 st7" x="110" y="87">FT/MIN</text>
+
+                <text class="st3 st16" x="100" y="124">2</text>
+                <text class="st3 st16" x="70" y="150">0</text>
+                <text class="st3 st16" x="100" y="178">2</text>
+
+                <text class="st0 st9"  x="128" y="170">0.</text>
+                <text class="st0 st16" style="font-size: 14px;" x="146" y="172">0</text>
+            </g>
+            <path class="st13 st15" d="m 100 190 a 1 1 90 0 1 0 -80" fill="none" />
+            
+            <line class="st13 st15" x1="100" y1="190" x2="100" y2="185" />
+            <line class="st13 st15" x1="100" y1="110" x2="100" y2="115" />
+            <line class="st13 st15" x1="60" y1="150" x2="65" y2="150" />
+            <line class="st13 st15" x1="71" y1="121" x2="75" y2="125" />
+            <line class="st13 st15" x1="71" y1="179" x2="75" y2="175" />
+
+            <line class="st13 st15" x1="99" y1="190" x2="108" y2="190" />
+            <line class="st13 st15" x1="99" y1="110" x2="108" y2="110" />
+            <line id="v-s-indicator" class="st5" style="transform-origin: 100px 150px; transform: rotate(0deg); stroke-width: 3px; stroke-linecap: round;" x1="100" y1="150" x2="56" y2="150" />
+        </g>
+        <g id="cab-alt-gauge" transform="translate(370,0) scale(1.2)">
+            <g id="cab-alt-gauge-text">
+                <text class="st3 st8" style="font-size: 20px;" x="100" y="68">CAB ALT</text>
+                <text class="st1 st7" x="105" y="87">FT</text>
+
+                <text class="st3 st16" x="72" y="168">0</text>
+                <text class="st3 st16" x="112" y="130">10</text>
+
+                <text class="st0 st9"  x="128" y="170">0.</text>
+                <text class="st0 st16" style="font-size: 14px;" x="146" y="172">0</text>
+            </g>
+            <path class="st13 st15" d="m 75 190 a 1 1 90 0 1 55 -70" fill="none" />
+            <path class="red_warning_arc st13 st15" d="m 130 120 a 25 25 0 0 0 -11 -6" fill="none" />
+            
+            <line class="st13 st15" x1="66" y1="182" x2="72" y2="177" />
+            <line class="st13 st15" x1="66" y1="132" x2="72" y2="136" />
+            <line class="red_warning  st13 st15" x1="122" y1="124" x2="126" y2="118" />
+
+            
+            <line id="cab-alt-indicator" class="st5" style="transform-origin: 100px 152.5px; transform: rotate(0deg); stroke-width: 3px; stroke-linecap: round;" x1="100" y1="152.5" x2="66" y2="182" />
+            
+        </g>
+         
     </svg>
 </script>
 
