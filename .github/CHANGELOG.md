@@ -50,6 +50,7 @@
 1. [ECAM] Improved ECAM bleed page visuals and functionality - @nikotina91
 1. [LIGHTS] Fixed DIM/BRT Lights inside the cockpit. Overhead should now be visible. - @Snapmatics (Harry)
 1. [OVHD] Made AIR COND knobs continuous - @Benjozork (Benjamin Dupont)
+1. [DCDU] Add basic functionality and display - @Benjozork (Benjamin Dupont)
 1. [TEXTURES] Changed color of FD Panel.
 1. [MISC] New custom display font for PFD/ND/ECAM/MCDU. Overhauled formatting, CSS, and colors of ECAM pages - @wpine215 (Iceman)
 1. [TEXTURES] Fixed Speed Plaque and cleaned up texture on cockpit, some color corrections and more decals - @Pleasure0102 (Pleasure)
