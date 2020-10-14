@@ -18,38 +18,111 @@
             <ANIM_SIMVAR_MIN>0</ANIM_SIMVAR_MIN>
             <ANIM_SIMVAR_MAX>100</ANIM_SIMVAR_MAX>
             <INCREMENT>1</INCREMENT>
+            <WHEEL_INCREMENT>4</WHEEL_INCREMENT>
             <EXTRA_INTERACTION/>
             <ANIMREF_ID>0</ANIMREF_ID>
             <ANIMTIP_0_ON_CURSOR>TurnLeft</ANIMTIP_0_ON_CURSOR>
             <ANIMTIP_1_ON_CURSOR>TurnRight</ANIMTIP_1_ON_CURSOR>
             <ANIMTIP_0></ANIMTIP_0>
             <ANIMTIP_1></ANIMTIP_1>
-            <ANIM_LAG>30</ANIM_LAG>
+            <ANIM_LAG>60</ANIM_LAG>
             <ANIM_WRAP>True</ANIM_WRAP>
-            <!-- Should not be overriden except from generic template -->
         </DefaultTemplateParameters>
 
-        <UseTemplate Name = "ASOBO_GT_Anim_Code">
+        <UseTemplate Name="ASOBO_GT_Anim_Code">
             <ANIM_CODE>
                 (#ANIM_SIMVAR#, #ANIM_SIMVAR_UNITS#) #ANIM_SIMVAR_MIN# - #ANIM_SIMVAR_MAX# #ANIM_SIMVAR_MIN# - / 100 *
             </ANIM_CODE>
         </UseTemplate>
-        <!-- <UseTemplate Name = "ASOBO_GT_AnimTriggers_SoundEvents_Same"/> -->
-        <UseTemplate Name = "ASOBO_GT_Interaction_WheelAndContinuousLeft#EXTRA_INTERACTION#">
-            <UPDATE_FREQUENCY>40</UPDATE_FREQUENCY>
 
+        <UseTemplate Name="FBW_Continuous_Knob_Finite_From_Simvar_Impl">
             <CLOCKWISE_CODE>
                 (#ANIM_SIMVAR#, #ANIM_SIMVAR_UNITS#) #INCREMENT# + #ANIM_SIMVAR_MAX# min (&gt;#ANIM_SIMVAR#)
             </CLOCKWISE_CODE>
             <ANTICLOCKWISE_CODE>
                 (#ANIM_SIMVAR#, #ANIM_SIMVAR_UNITS#) #INCREMENT# - #ANIM_SIMVAR_MIN# max (&gt;#ANIM_SIMVAR#)
             </ANTICLOCKWISE_CODE>
+
+            <!-- Provide the wheel code if we have WHEEL_INCREMENT -->
+            <Condition Valid="WHEEL_INCREMENT">
+                <True>
+                    <WHEEL_CLOCKWISE_CODE>
+                        (#ANIM_SIMVAR#, #ANIM_SIMVAR_UNITS#) #WHEEL_INCREMENT# + #ANIM_SIMVAR_MAX# min (&gt;#ANIM_SIMVAR#)
+                    </WHEEL_CLOCKWISE_CODE>
+
+                    <WHEEL_ANTICLOCKWISE_CODE>
+                        (#ANIM_SIMVAR#, #ANIM_SIMVAR_UNITS#) #WHEEL_INCREMENT# - #ANIM_SIMVAR_MIN# max (&gt;#ANIM_SIMVAR#)
+                    </WHEEL_ANTICLOCKWISE_CODE>
+                </True>
+            </Condition>
         </UseTemplate>
 
         <Condition Valid="WWISE_EVENT">
-            <UseTemplate Name = "ASOBO_GT_AnimTriggers_SoundEvents_Same">
+            <UseTemplate Name="ASOBO_GT_AnimTriggers_SoundEvents_Same">
             </UseTemplate>
         </Condition>
+    </Template>
+
+    <!-- Not for direct use -->
+    <Template Name="FBW_Continuous_Knob_Finite_From_Simvar_Impl">
+		<DefaultTemplateParameters>
+			<LEFTARROW>TurnLeft</LEFTARROW>
+			<RIGHTARROW>TurnRight</RIGHTARROW>
+            <COOR_DIRECTION>X</COOR_DIRECTION>
+			<UPDATE_FREQUENCY>40</UPDATE_FREQUENCY>
+			<UPDATE_DELAY>0.4</UPDATE_DELAY>
+		</DefaultTemplateParameters>
+
+        <!-- We override the wheel code if we have WHEEL_CLOCKWISE_CODE, WHEEL_ANTICLOCKWISE_CODE -->
+        <OverrideTemplateParameters>
+            <Condition Valid="WHEEL_CLOCKWISE_CODE">
+                <True>
+                    <ACTUAL_WHEEL_CLOCKWISE_CODE>
+                        #WHEEL_CLOCKWISE_CODE#
+                    </ACTUAL_WHEEL_CLOCKWISE_CODE>
+                </True>
+                <False>
+                    <ACTUAL_WHEEL_CLOCKWISE_CODE>
+                        #CLOCKWISE_CODE#
+                    </ACTUAL_WHEEL_CLOCKWISE_CODE>
+                </False>
+            </Condition>
+            <Condition Valid="WHEEL_ANTICLOCKWISE_CODE">
+                <True>
+                    <ACTUAL_WHEEL_ANTICLOCKWISE_CODE>
+                        #WHEEL_ANTICLOCKWISE_CODE#
+                    </ACTUAL_WHEEL_ANTICLOCKWISE_CODE>
+                </True>
+                <False>
+                    <ACTUAL_WHEEL_ANTICLOCKWISE_CODE>
+                        #ANTICLOCKWISE_CODE#
+                    </ACTUAL_WHEEL_ANTICLOCKWISE_CODE>
+                </False>
+            </Condition>
+        </OverrideTemplateParameters>
+
+        <Update Frequency="#UPDATE_FREQUENCY#">
+            (O:XMLVAR_FirstUpdateTime) (E:SIMULATION TIME, seconds) &lt; if{
+            (O:_MouseDownRelativePos#COOR_DIRECTION#) 0 &gt; if{ #CLOCKWISE_CODE# } els{
+            (O:_MouseDownRelativePos#COOR_DIRECTION#) 0 &lt; if{ #ANTICLOCKWISE_CODE# } }
+            }
+        </Update>
+
+        <UseTemplate Name="ASOBO_GT_MouseRect">
+            <MouseFlags>LeftAll+WheelUp+WheelDown</MouseFlags>
+            <CALLBACKCODE>
+                (M:Event) 'WheelUp'    scmi 0 == if{ #ACTUAL_WHEEL_CLOCKWISE_CODE# } els{
+                (M:Event) 'WheelDown'  scmi 0 == if{ #ACTUAL_WHEEL_ANTICLOCKWISE_CODE# } els{
+                (M:Event) 'LeftSingle' scmi 0 == if{
+                (M:Relative#COOR_DIRECTION#) (&gt;O:_MouseDownRelativePos#COOR_DIRECTION#)
+                (E:SIMULATION TIME, seconds) #UPDATE_DELAY# + (&gt;O:XMLVAR_FirstUpdateTime)
+                (O:_MouseDownRelativePos#COOR_DIRECTION#) 0 &gt; if{ #CLOCKWISE_CODE# } els{
+                (O:_MouseDownRelativePos#COOR_DIRECTION#) 0 &lt; if{ #ANTICLOCKWISE_CODE# } }
+                } els{ (M:Event) 'LeftRelease'   scmi 0 == if{
+                0 (&gt;O:_MouseDownRelativePos#COOR_DIRECTION#)
+                } } } }
+            </CALLBACKCODE>
+        </UseTemplate>
     </Template>
 
     <!--
