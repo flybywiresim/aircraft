@@ -192,7 +192,7 @@ class A320_Neo_SAI_AirspeedIndicator extends HTMLElement {
                     arc.setAttribute("height", arcHeight.toString());
                     arc.setAttribute("fill", "white");
                     this.arcs.push(arc);
-                    for (var i = 0; i < this.arcs.length; i++) {
+                    for (let i = 0; i < this.arcs.length; i++) {
                         arcGroup.appendChild(this.arcs[i]);
                     }
                     this.centerSVG.appendChild(arcGroup);
@@ -204,7 +204,7 @@ class A320_Neo_SAI_AirspeedIndicator extends HTMLElement {
                 this.graduationScrollPosX = _left + _width;
                 this.graduationScrollPosY = _top + _height * 0.5;
                 this.graduations = [];
-                for (var i = 0; i < this.totalGraduations; i++) {
+                for (let i = 0; i < this.totalGraduations; i++) {
                     var line = new Avionics.SVGGraduation();
                     const mod = i % (this.nbSecondaryGraduations + 1);
                     line.IsPrimary = (mod == 0) ? true : false;
@@ -227,7 +227,7 @@ class A320_Neo_SAI_AirspeedIndicator extends HTMLElement {
                     }
                     this.graduations.push(line);
                 }
-                for (var i = 0; i < this.totalGraduations; i++) {
+                for (let i = 0; i < this.totalGraduations; i++) {
                     var line = this.graduations[i];
                     graduationGroup.appendChild(line.SVGLine);
                     if (line.SVGText1) {
@@ -473,7 +473,7 @@ class A320_Neo_SAI_AltimeterIndicator extends HTMLElement {
             this.graduationScrollPosX = _left;
             this.graduationScrollPosY = _top + _height * 0.5;
             this.graduations = [];
-            for (var i = 0; i < this.totalGraduations; i++) {
+            for (let i = 0; i < this.totalGraduations; i++) {
                 var line = new Avionics.SVGGraduation();
                 line.IsPrimary = true;
                 if (this.nbSecondaryGraduations > 0 && (i % (this.nbSecondaryGraduations + 1))) {
@@ -498,7 +498,7 @@ class A320_Neo_SAI_AltimeterIndicator extends HTMLElement {
             }
             const graduationGroup = document.createElementNS(Avionics.SVG.NS, "g");
             graduationGroup.setAttribute("id", "graduationGroup");
-            for (var i = 0; i < this.totalGraduations; i++) {
+            for (let i = 0; i < this.totalGraduations; i++) {
                 var line = this.graduations[i];
                 graduationGroup.appendChild(line.SVGLine);
                 if (line.SVGText1) {
@@ -2021,7 +2021,7 @@ class A320_Neo_SAI_BugsPage extends HTMLElement {
 
     getSpdBugs() {
         const bugs = [];
-        for (i = 0; i < 4; i++) {
+        for (let i = 0; i < 4; i++) {
             if (this.bugStatus[i].style.display !== "block") {
                 bugs.push(this.bugTxt[i].textContent);
             }
@@ -2031,7 +2031,7 @@ class A320_Neo_SAI_BugsPage extends HTMLElement {
 
     getAltBugs() {
         const bugs = [];
-        for (i = 4; i < Object.keys(this.bugStatus).length; i++) {
+        for (let i = 4; i < Object.keys(this.bugStatus).length; i++) {
             if (this.bugStatus[i].style.display !== "block") {
                 bugs.push(this.bugTxt[i].textContent);
             }
