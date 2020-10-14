@@ -59,6 +59,7 @@
 1. [ECAM] Added cockpit door video - @Benjozork (Benjamin Dupont)
 1. [MISC] Standby Instrument stays ON if emergency power should be available, bug fixes - @2hwk (2Cas#1022 on discord)
 1. [Sounds] Added Leap 1A engine sounds for idle through TOGA - @hotshotp (Boris)
+1. [MISC] Redesigned Standby instrument, fixed pitch indication - @jakluk (Jakluk)
 
 ## 2020/09
 1. [General] Add CHANGELOG.md - @nathaninnes (Nathan Innes)
