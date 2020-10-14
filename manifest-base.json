@@ -10,24 +10,24 @@
   "title": "A32NX",
   "dependencies": [
     {
-      "package_version": "0.1.51",
+      "package_version": "0.1.58",
       "name": "asobo-aircraft-a320-neo"
     },
     {
-      "package_version": "0.1.38",
+      "package_version": "0.1.52",
       "name": "asobo-vcockpits-instruments-a320-neo"
     },
     {
-      "package_version": "0.1.13",
+      "package_version": "0.1.53",
       "name": "asobo-vcockpits-instruments-airliners"
     },
     {
-      "package_version": "0.1.61",
+      "package_version": "0.1.66",
       "name": "fs-base-aircraft-common"
     }
   ],
   "content_type": "AIRCRAFT",
-  "total_package_size": "00000000000176088117",
-  "minimum_game_version": "1.7.12",
+  "total_package_size": "00000000000221782906",
+  "minimum_game_version": "1.9.5",
   "manufacturer": "Airbus"
 }
