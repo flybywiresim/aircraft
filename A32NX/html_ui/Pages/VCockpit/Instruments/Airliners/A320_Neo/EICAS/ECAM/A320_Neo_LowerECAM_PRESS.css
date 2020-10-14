@@ -13,78 +13,87 @@ a320-neo-lower-ecam-press text {
     alignment-baseline: central;
 }
 
+
 .st0 {
-    fill:var(--displayWhite);
-    stroke:var(--displayWhite);
-    stroke-width:2;
-    stroke-miterlimit:10;
+    fill: var(--displayGreen);
 }
 .st1 {
-    fill: var(--displayWhite);
+    fill: var(--displayCyan);
 }
-.st2 { 
-    font-family: 'ECAMFontRegular';
+.st2 {
+    fill: var(--displayAmber);
 }
 .st3 {
-    font-size:22.4px;
+    fill: var(--displayWhite);
 }
 .st4 {
-    fill: none;
-    stroke: var(--displayWhite);
-    stroke-width: 2;
-    stroke-miterlimit: 10;
+    fill: var(--displayRed);
 }
 .st5 {
     fill: none;
-    stroke: var(--displayGreen);
-    stroke-width: 2;
-    stroke-miterlimit: 10;
 }
+
 .st6 {
-    font-size: 18.29px;
+    font-size: 14px;
 }
 .st7 {
-    fill: var(--displayGreen);
-}
-.st8 {
-    fill: var(--displayCyan);
-}
-.st9 {
-    fill: none;
-    stroke: var(--displayWhite);
-    stroke-width: 2;
-    stroke-miterlimit: 10;
-}
-.st10 {
-    fill: none;
-    stroke: var(--displayWhite);
-    stroke-miterlimit: 10;
-}
-.st11 {
-    fill: var(--displayWhite);
-    stroke: #000000;
-    stroke-miterlimit: 10;
-}
-.st12{
-    fill: none;
-    stroke: var(--displayWhite);
-    stroke-width:1px;
-}
-
-.st13{
-    font-size: 18px;
-}
-.st14{
     font-size: 16px;
 }
-
-text {
-    transform: translateX(-15);
+.st8 {
+    font-size: 18px;
 }
+.st9 {
+    font-size: 20px;
+}
+.st10 {
+    font-size: 22px;
+}
+.st11 {
+    font-size: 26px;
+}
+.st16 {
+    font-size: 12px;
+}
+
+.st12 {
+    stroke-width: 1px;
+}
+
+.st13 {
+    stroke-width: 2px;
+}
+
+.st14 {
+    stroke-width: 3px;
+}
+
+.st15 {
+    stroke: var(--displayWhite);
+    fill: none;
+}
+
+
 
 .warning {
     fill: var(--displayAmber);
     stroke: var(--displayAmber);
 }
+
+.warning_arc {
+    fill: none;
+    stroke: var(--displayAmber);
+}
+
+
+.red_warning {
+    fill: var(--displayRed);
+    stroke: var(--displayRed);
+}
+
+.red_warning_arc {
+    fill: none;
+    stroke: var(--displayRed);
+}
+
 
 
