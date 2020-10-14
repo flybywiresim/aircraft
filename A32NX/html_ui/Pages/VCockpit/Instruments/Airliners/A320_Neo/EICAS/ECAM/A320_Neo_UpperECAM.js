@@ -1176,7 +1176,6 @@ var A320_Neo_UpperECAM;
             //Show takeoff memo 2 mins after second engine start
             //Hides after takeoff thurst application
             const eng2Running = SimVar.GetSimVarValue("ENG COMBUSTION:2", "bool") && SimVar.GetSimVarValue("ENG N1 RPM:2", "Percent") > 15;
-            const phase = SimVar.GetSimVarValue("L:AIRLINER_FLIGHT_PHASE", "Enum");
             const numberPhase = SimVar.GetSimVarValue("L:AIRLINER_FLIGHT_PHASE", "number");
             if (!this.showTOMemoDisabled) {
                 if (eng2Running && this.leftEcamMessagePanel.hasActiveFailures == false) {
