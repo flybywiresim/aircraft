@@ -1172,24 +1172,30 @@ var A320_Neo_UpperECAM;
 
             //Show takeoff memo 2 mins after second engine start
             //Hides after takeoff thurst application
-            if (SimVar.GetSimVarValue("ENG N1 RPM:1", "Percent") > 15 && SimVar.GetSimVarValue("ENG N1 RPM:2", "Percent") > 15 && SimVar.GetSimVarValue("L:AIRLINER_FLIGHT_PHASE", "number") <= 2 && SimVar.GetSimVarValue("L:A32NX_Preflight_Complete", "Bool") == 0 && this.leftEcamMessagePanel.hasActiveFailures == false) {
-                if (this.takeoffMemoTimer == null) {
-                    this.takeoffMemoTimer = 120;
+            const eng2Running = SimVar.GetSimVarValue("ENG COMBUSTION:2", "bool") && SimVar.GetSimVarValue("ENG N1 RPM:2", "Percent") > 15;
+            if (!this.showTOMemoDisabled) {
+                if (eng2Running && this.leftEcamMessagePanel.hasActiveFailures == false) {
+                    if (this.takeoffMemoTimer == null) {
+                        this.takeoffMemoTimer = 120;
+                    }
+                    if (this.takeoffMemoTimer > 0) {
+                        this.takeoffMemoTimer -= _deltaTime / 1000;
+                    } else {
+                        this.showTakeoffMemo = true;
+                        this.showTOMemoDisabled = true;
+                    }
                 }
-                if (this.takeoffMemoTimer > 0) {
-                    this.takeoffMemoTimer -= _deltaTime / 1000;
-                } else {
-                    this.showTakeoffMemo = true;
-                }
-
             } else {
-                this.takeoffMemoTimer = null;
-                this.showTakeoffMemo = false;
+                if (SimVar.GetSimVarValue("L:AIRLINER_FLIGHT_PHASE", "number") >= 2 && SimVar.GetSimVarValue("L:A32NX_Preflight_Complete", "Bool") != 0 || !eng2Running) {
+                    this.takeoffMemoTimer = null;
+                    this.showTakeoffMemo = false;
+                }
+                this.showTOMemoDisabled = eng2Running;
             }
 
             //Show landing memo at 2000ft
             //Hides after slowing down to 80kts
-            if (SimVar.GetSimVarValue("RADIO HEIGHT", "Feet") < 2000 && SimVar.GetSimVarValue("L:AIRLINER_FLIGHT_PHASE", "number") == 6 && SimVar.GetSimVarValue("AIRSPEED INDICATED", "knots") > 80 && !this.leftEcamMessagePanel.hasActiveFailures) {
+            if ((SimVar.GetSimVarValue("L:AIRLINER_FLIGHT_PHASE", "number") >= 6 && SimVar.GetSimVarValue("L:AIRLINER_FLIGHT_PHASE", "number") <= 7) && SimVar.GetSimVarValue("RADIO HEIGHT", "Feet") < 2000 && SimVar.GetSimVarValue("AIRSPEED INDICATED", "knots") > 80 && !this.leftEcamMessagePanel.hasActiveFailures) {
                 this.showLandingMemo = true;
             } else {
                 this.showLandingMemo = false;
