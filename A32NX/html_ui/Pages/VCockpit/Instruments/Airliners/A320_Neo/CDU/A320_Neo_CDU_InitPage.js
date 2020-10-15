@@ -208,7 +208,7 @@ class CDUInitPage {
             if (value === "") {
                 mcdu.inOut =
                     (isFinite(mcdu.zeroFuelWeight) ? mcdu.zeroFuelWeight.toFixed(1) : "") +
-                    "|" +
+                    "/" +
                     (isFinite(mcdu.zeroFuelWeightMassCenter) ? mcdu.zeroFuelWeightMassCenter.toFixed(1) : "");
             } else if (await mcdu.trySetZeroFuelWeightZFWCG(value)) {
                 CDUInitPage.updateTowIfNeeded(mcdu);
