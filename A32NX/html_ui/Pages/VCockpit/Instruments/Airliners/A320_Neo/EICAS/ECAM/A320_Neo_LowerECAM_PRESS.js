@@ -74,7 +74,7 @@ var A320_Neo_LowerECAM_PRESS;
                         for (i = 0; i < htmlObjs.length; i++) {
                             if (htmlObjs[i]) {
                                 htmlObjs[i].setAttribute("visibility", "visible");
-                            }    
+                            }
                         }
                         this.blinkState = 1;
                     } else {
