@@ -214,9 +214,9 @@ var A320_Neo_LowerECAM_PRESS;
             this.setValueWarning(this.htmlCabinAltValue, 9550, 0, 0, "st0p st9p", "red_warningp st9p");
             this.setValueWarning(this.htmlCabinVSValue, 2000, -20000, 0, "st0p st9p", "warningp st9p");
 
-            this.setValueWarningVal(pressureDelta, this.htmlPsiInt, 6.5, -0.4, 0, "st0p st9p", "warningp st9p");
-            this.setValueWarningVal(pressureDelta, this.htmlPsiDecimal, 6.5, -0.4, 0, "st0p st16p", "warningp st16p");
-            this.setValueWarningVal(pressureDelta, this.htmlTextSafety, 6.2, -10, 0, "st3p st9p", "warningp st9p");
+            this.setValueWarningVal(pressureDelta, this.htmlPsiInt, 8.5, -0.4, 0, "st0p st9p", "warningp st9p");
+            this.setValueWarningVal(pressureDelta, this.htmlPsiDecimal, 8.5, -0.4, 0, "st0p st16p", "warningp st16p");
+            this.setValueWarningVal(pressureDelta, this.htmlTextSafety, 8.2, -10, 0, "st3p st9p", "warningp st9p");
         }
     }
     A320_Neo_LowerECAM_PRESS.Page = Page;
