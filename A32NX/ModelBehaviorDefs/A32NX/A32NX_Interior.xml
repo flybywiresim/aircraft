@@ -65,6 +65,7 @@
     <Template Name="FBW_Airbus_DCDU_Brightness_Switch">
         <DefaultTemplateParameters>
             <POTENTIOMETER_ID>85</POTENTIOMETER_ID>
+
         </DefaultTemplateParameters>
 
         <UseTemplate Name="ASOBO_GT_Push_Button_Airliner">
@@ -93,12 +94,12 @@
         <DefaultTemplateParameters>
             <POTENTIOMETER_ID>85</POTENTIOMETER_ID>
         </DefaultTemplateParameters>
-
         <UseTemplate Name="ASOBO_GT_Push_Button_Airliner">
             <SEQ1_EMISSIVE_CODE>(A:LIGHT POTENTIOMETER:#POTENTIOMETER_ID#, percent) 100 /</SEQ1_EMISSIVE_CODE>
             <SEQ2_EMISSIVE_CODE>1</SEQ2_EMISSIVE_CODE>
 
             <LEFT_SINGLE_CODE>#PUSH_CODE#</LEFT_SINGLE_CODE>
+
         </UseTemplate>
     </Template>
 
@@ -114,6 +115,7 @@
     -->
     <Template Name="FBW_Airbus_DCDU_Generic_Inop_Switch">
         <UseTemplate Name="FBW_Airbus_DCDU_Generic_Switch">
+
             <PUSH_CODE>
                 1 (&gt;L:#PLANE_NAME#_PANEL_DCDU_INOP_PUSHED)
             </PUSH_CODE>
@@ -220,6 +222,7 @@
 			</Condition>
 		</UseTemplate>
 	</Template>
+
 
 
 </ModelBehaviors>
