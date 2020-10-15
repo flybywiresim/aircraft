@@ -746,6 +746,10 @@
         -->
 
             <Component ID="Screens_Left">
+                <DefaultTemplateParameters>
+                    <PLANE_NAME>A32NX</PLANE_NAME>
+                </DefaultTemplateParameters>
+            
                 <UseTemplate Name="ASOBO_LIGHTING_Knob_Potentiometer_Template">
                     <POTENTIOMETER>88</POTENTIOMETER>
                     <NODE_ID>KNOB_EFIS_CS_PFD</NODE_ID>
@@ -805,13 +809,19 @@
                 </UseTemplate>
 
                 <!-- DCDU -->
-                <UseTemplate Name="FBW_Airbus_DCDU_2State_Emissive">
-                    <DCDU_SIDE>L</DCDU_SIDE>
-                    <PLANE_NAME>A32NX</PLANE_NAME>
+                <UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
+                    <NODE_ID>SCREEN_COM_L</NODE_ID>
+                    <EMISSIVE_CODE>(L:#PLANE_NAME#_PANEL_DCDU_L_BRIGHTNESS, percent over 100)</EMISSIVE_CODE>
+                    <PART_ID>SCREEN_COM1</PART_ID>
+                    <CAMERA_TITLE>ECAM</CAMERA_TITLE>
                 </UseTemplate>
             </Component>
 
             <Component ID="Screens_Right">
+                <DefaultTemplateParameters>
+                    <PLANE_NAME>A32NX</PLANE_NAME>
+                </DefaultTemplateParameters>
+            
                 <UseTemplate Name="ASOBO_LIGHTING_Knob_Potentiometer_Template">
                     <POTENTIOMETER>90</POTENTIOMETER>
                     <NODE_ID>KNOB_EFIS_FO_PFD</NODE_ID>
@@ -855,9 +865,11 @@
                 </UseTemplate>
 
                 <!-- DCDU -->
-                <UseTemplate Name="FBW_Airbus_DCDU_2State_Emissive">
-                    <DCDU_SIDE>R</DCDU_SIDE>
-                    <PLANE_NAME>A32NX</PLANE_NAME>
+                <UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
+                    <NODE_ID>SCREEN_COM_R</NODE_ID>
+                    <EMISSIVE_CODE>(L:#PLANE_NAME#_PANEL_DCDU_R_BRIGHTNESS, percent over 100)</EMISSIVE_CODE>
+                    <PART_ID>SCREEN_COM2</PART_ID>
+                    <CAMERA_TITLE>ECAM</CAMERA_TITLE>
                 </UseTemplate>
             </Component>
             <CameraTitle>Pilot</CameraTitle>
@@ -1016,101 +1028,6 @@
                     <NODE_ID>PUSH_AUTOPILOT_AUTOLAND_R</NODE_ID>
                     <ONLY_SEQ1/>
                 </UseTemplate>
-
-                <Component ID="MPL">
-                    <DefaultTemplateParameters>
-                        <POTENTIOMETER_SEQ1>85</POTENTIOMETER_SEQ1>
-                        <SEQ1_EMISSIVE_DRIVES_VISIBILITY>False</SEQ1_EMISSIVE_DRIVES_VISIBILITY>
-                    </DefaultTemplateParameters>
-
-                    <UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
-                        <NODE_ID>SWITCH_MPL_DIM</NODE_ID>
-                        <ONLY_SEQ1/>
-                    </UseTemplate>
-                    <UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
-                        <NODE_ID>PUSH_MPL_MS0MINUS</NODE_ID>
-                        <ONLY_SEQ1/>
-                    </UseTemplate>
-                    <UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
-                        <NODE_ID>PUSH_MPL_MS0PLUS</NODE_ID>
-                        <ONLY_SEQ1/>
-                    </UseTemplate>
-                    <UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
-                        <NODE_ID>PUSH_MPL_L1</NODE_ID>
-                        <ONLY_SEQ1/>
-                    </UseTemplate>
-                    <UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
-                        <NODE_ID>PUSH_MPL_L2</NODE_ID>
-                        <ONLY_SEQ1/>
-                    </UseTemplate>
-                    <UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
-                        <NODE_ID>PUSH_MPL_PRINT</NODE_ID>
-                        <ONLY_SEQ1/>
-                    </UseTemplate>
-                    <UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
-                        <NODE_ID>PUSH_MPL_POEMINUS</NODE_ID>
-                        <ONLY_SEQ1/>
-                    </UseTemplate>
-                    <UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
-                        <NODE_ID>PUSH_MPL_POEPLUS</NODE_ID>
-                        <ONLY_SEQ1/>
-                    </UseTemplate>
-                    <UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
-                        <NODE_ID>PUSH_MPL_R1</NODE_ID>
-                        <ONLY_SEQ1/>
-                    </UseTemplate>
-                    <UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
-                        <NODE_ID>PUSH_MPL_R2</NODE_ID>
-                        <ONLY_SEQ1/>
-                    </UseTemplate>
-                </Component>
-
-                <Component ID="MPR">
-                    <DefaultTemplateParameters>
-                        <POTENTIOMETER_SEQ1>85</POTENTIOMETER_SEQ1>
-                        <SEQ1_EMISSIVE_DRIVES_VISIBILITY>False</SEQ1_EMISSIVE_DRIVES_VISIBILITY>
-                    </DefaultTemplateParameters>
-                    <UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
-                        <NODE_ID>SWITCH_MPR_DIM</NODE_ID>
-                        <ONLY_SEQ1/>
-                    </UseTemplate>
-                    <UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
-                        <NODE_ID>PUSH_MPR_MS0MINUS</NODE_ID>
-                        <ONLY_SEQ1/>
-                    </UseTemplate>
-                    <UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
-                        <NODE_ID>PUSH_MPR_MS0PLUS</NODE_ID>
-                        <ONLY_SEQ1/>
-                    </UseTemplate>
-                    <UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
-                        <NODE_ID>PUSH_MPR_L1</NODE_ID>
-                        <ONLY_SEQ1/>
-                    </UseTemplate>
-                    <UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
-                        <NODE_ID>PUSH_MPR_L2</NODE_ID>
-                        <ONLY_SEQ1/>
-                    </UseTemplate>
-                    <UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
-                        <NODE_ID>PUSH_MPR_PRINT</NODE_ID>
-                        <ONLY_SEQ1/>
-                    </UseTemplate>
-                    <UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
-                        <NODE_ID>PUSH_MPR_POEMINUS</NODE_ID>
-                        <ONLY_SEQ1/>
-                    </UseTemplate>
-                    <UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
-                        <NODE_ID>PUSH_MPR_POEPLUS</NODE_ID>
-                        <ONLY_SEQ1/>
-                    </UseTemplate>
-                    <UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
-                        <NODE_ID>PUSH_MPR_R1</NODE_ID>
-                        <ONLY_SEQ1/>
-                    </UseTemplate>
-                    <UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
-                        <NODE_ID>PUSH_MPR_R2</NODE_ID>
-                        <ONLY_SEQ1/>
-                    </UseTemplate>
-                </Component>
             </Component>
 
             <Component ID="EICAS_Screens">
@@ -2302,21 +2219,21 @@
             </Component>
 
             <Component ID="OverHead_AntiIce">
-                <UseTemplate Name="ASOBO_DEICE_Switch_Engine_Template">
+                <UseTemplate Name="A32NX_DEICE_Switch_Engine_Template">
                     <NODE_ID>PUSH_OVHD_ANTIICE_ENG1</NODE_ID>
                     <ANIM_NAME>PUSH_OVHD_ANTIICE_ENG1</ANIM_NAME>
                     <INTERACTION>Push</INTERACTION>
                     <DECALS_TYPE>FaultOn</DECALS_TYPE>
                     <ID>1</ID>
                 </UseTemplate>
-                <UseTemplate Name="ASOBO_DEICE_Switch_Engine_Template">
+                <UseTemplate Name="A32NX_DEICE_Switch_Engine_Template">
                     <NODE_ID>PUSH_OVHD_ANTIICE_ENG2</NODE_ID>
                     <ANIM_NAME>PUSH_OVHD_ANTIICE_ENG2</ANIM_NAME>
                     <INTERACTION>Push</INTERACTION>
                     <DECALS_TYPE>FaultOn</DECALS_TYPE>
                     <ID>2</ID>
                 </UseTemplate>
-                <UseTemplate Name="ASOBO_DEICE_Switch_Airframe_Template">
+                <UseTemplate Name="A32NX_DEICE_Switch_Airframe_Template">
                     <NODE_ID>PUSH_OVHD_ANTIICE_WING</NODE_ID>
                     <ANIM_NAME>PUSH_OVHD_ANTIICE_WING</ANIM_NAME>
                     <INTERACTION>Push</INTERACTION>
