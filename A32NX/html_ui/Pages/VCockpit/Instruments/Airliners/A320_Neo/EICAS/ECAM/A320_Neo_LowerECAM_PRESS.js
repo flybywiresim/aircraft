@@ -72,14 +72,14 @@ var A320_Neo_LowerECAM_PRESS;
                 if (timeCurr - this.mSecondsBlinkLast > blinkInterval) {
                     if (this.blinkState == 0) {
                         for (i = 0; i < htmlObjs.length; i++) {
-                            if(htmlObjs[i]){
+                            if (htmlObjs[i]) {
                                 htmlObjs[i].setAttribute("visibility", "visible");
-                            }      
+                            }    
                         }
                         this.blinkState = 1;
                     } else {
                         for (i = 0; i < htmlObjs.length; i++) {
-                            if(htmlObjs[i]){
+                            if (htmlObjs[i]) {
                                 htmlObjs[i].setAttribute("visibility", "hidden");
                             }
                         }
