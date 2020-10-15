@@ -37,6 +37,20 @@ var A320_Neo_LowerECAM_PRESS;
             this.htmlTextSafety = this.querySelector("#safety-text");
             this.htmlPackIndicatorLeft = this.querySelector("#pack-indicator-left");
             this.htmlPackIndicatorRight = this.querySelector("#pack-indicator-right");
+
+            this.htmlLdgElevText = this.querySelector("#ldg-elev-text");
+            this.htmlLdgElevText2 = this.querySelector("#lower-man-text");
+            this.htmlLdgElevValue = this.querySelector("#ldg-elev-value");
+
+            this.htmlSystems = [this.querySelector("#sys1-text"), this.querySelector("#sys2-text")]
+
+            this.mseconds = 0;
+            this.mseconds_2 = 10;
+            this.justSwitched = false;
+            this.activeSystem = 2;
+
+            this.htmlSystems[1].setAttribute("visibility", "visible");
+            this.htmlSystems[0].setAttribute("visibility", "hidden");
         }
 
         setValueWarning(htmlObj, upperLimit, lowerLimit, tolerance, originalClass, warningClass){
@@ -66,9 +80,13 @@ var A320_Neo_LowerECAM_PRESS;
                 return;
             }
 
+
             let inletValveOpen = false;
             let outletValveOpen = false;
             let safetyValveOpen = false;
+
+            //set active system visibility
+            
 
             //psi delta gauge
             let pressureDelta = SimVar.GetSimVarValue("PRESSURIZATION PRESSURE DIFFERENTIAL", "Pounds per square foot") / 144;
@@ -105,6 +123,43 @@ var A320_Neo_LowerECAM_PRESS;
             this.htmlCabinAltValue.textContent = parseInt(cabinAltitude);
             this.htmlCabinAltIndicator.setAttribute("style", "transform-origin: 100px 152.5px; transform: rotate(" + (cabinAltitude * 0.0164) + "deg); stroke-width: 3px; stroke-linecap: round;");
             
+            //ldg elev
+            const ldgElevMode = SimVar.GetSimVarValue("L:A32NX_OVHD_CABINPRESS_MODESEL", "bool");
+            const ldgElevValue = SimVar.GetSimVarValue("L:A32NX_OVHD_CABINPRESS_LDGELEV", "percent");
+            let time;
+            
+            //pressing switch to MAN, waiting 10 seconds and then switching back to AUTO will change active system
+            if (ldgElevMode) {
+                time = new Date();
+                this.mseconds_2 = time.getTime();
+                if (this.mseconds_2 - this.mseconds > 10000 && !this.justSwitched) {
+                    this.justSwitched = true;
+                }
+                this.htmlLdgElevText.textContent = "MAN";
+                this.htmlLdgElevText2.setAttribute("visibility", "visible");
+                this.htmlLdgElevValue.textContent = parseInt(-2000 + (ldgElevValue * 190.5));     
+            } else {
+                time = new Date();
+                this.mseconds = time.getTime();
+                if (this.justSwitched) {
+                    if (this.activeSystem == 1) {
+                        this.htmlSystems[1].setAttribute("visibility", "visible");
+                        this.htmlSystems[0].setAttribute("visibility", "hidden");
+                        this.activeSystem = 2;
+                    } else {
+                        this.htmlSystems[0].setAttribute("visibility", "visible");
+                        this.htmlSystems[1].setAttribute("visibility", "hidden");
+                        this.activeSystem = 1;
+                    }
+                    this.justSwitched = false;
+                }
+                this.htmlLdgElevText.textContent = "AUTO";
+                this.htmlLdgElevText2.setAttribute("visibility", "hidden");
+                this.htmlLdgElevValue.textContent = "50";
+            }
+
+            
+
             //valve control
             const cabinVSIndicatorRot = 10 + (cabinVSValue * 0.04) 
             if(cabinVSValue > 60){
