@@ -94,12 +94,26 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this.climbTransitionGroundAltitude = null;
     }
 
-    insertSmallFontSpan() {
+    setTemplate(_template) {
+        super.setTemplate(_template);
         this._lineElements.forEach((row) => {
             row.forEach((column) => {
                 if (column != null) {
-                    column.innerHTML = column.innerHTML.replace(/{smallFront}/g, "<span class='s-text'>");
-                    column.innerHTML = column.innerHTML.replace(/{smallEnd}/g, "</span>");
+                    column.innerHTML = column.innerHTML.replace(/{sp}/g, "&nbsp;");
+                    column.innerHTML = column.innerHTML.replace(/{small}/g, "<span class='s-text'>");
+                    column.innerHTML = column.innerHTML.replace(/{red}/g, "<span class='red'>");
+                    column.innerHTML = column.innerHTML.replace(/{green}/g, "<span class='green'>");
+                    column.innerHTML = column.innerHTML.replace(/{blue}/g, "<span class='blue'>");
+                    column.innerHTML = column.innerHTML.replace(/{white}/g, "<span class='white'>");
+                    column.innerHTML = column.innerHTML.replace(/{magenta}/g, "<span class='magenta'>");
+                    column.innerHTML = column.innerHTML.replace(/{end}/g, "</span>");
+                }
+            });
+        });
+        this._labelElements.forEach((row) => {
+            row.forEach((column) => {
+                if (column != null) {
+                    column.innerHTML = column.innerHTML.replace(/{sp}/g, "&nbsp;");
                 }
             });
         });

@@ -101,7 +101,7 @@ class CDUAvailableDeparturesPage {
                         const enRouteTransitionIndex = i + pageCurrent;
                         const enRouteTransition = selectedDeparture.enRouteTransitions[enRouteTransitionIndex];
                         if (enRouteTransition) {
-                            rows[2 * i][1] = enRouteTransition.name + "}[color]blue";
+                            rows[2 * i][1] = enRouteTransition.name + "r[color]blue";
                             mcdu.onRightInput[i + 1] = () => {
                                 mcdu.flightPlanManager.setDepartureEnRouteTransitionIndex(enRouteTransitionIndex, () => {
                                     CDUAvailableDeparturesPage.ShowPage(mcdu, airport, 0, true);
@@ -112,7 +112,7 @@ class CDUAvailableDeparturesPage {
                 }
             }
             mcdu.setTemplate([
-                ["DEPARTURES FROM " + airport.ident + " }"],
+                ["DEPARTURES FROM " + airport.ident + " lr"],
                 ["RWY", "TRANS", "SID"],
                 [selectedRunwayCell, selectedTransCell, selectedSidCell],
                 ["", "", "AVAILABLE " + (sidSelection ? "SIDS" : "RUNWAYS")],
