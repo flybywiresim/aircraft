@@ -72,12 +72,16 @@ var A320_Neo_LowerECAM_PRESS;
                 if (timeCurr - this.mSecondsBlinkLast > blinkInterval) {
                     if (this.blinkState == 0) {
                         for (i = 0; i < htmlObjs.length; i++) {
-                            htmlObjs[i].setAttribute("visibility", "visible");
+                            if(htmlObjs[i]){
+                                htmlObjs[i].setAttribute("visibility", "visible");
+                            }      
                         }
                         this.blinkState = 1;
                     } else {
                         for (i = 0; i < htmlObjs.length; i++) {
-                            htmlObjs[i].setAttribute("visibility", "hidden");
+                            if(htmlObjs[i]){
+                                htmlObjs[i].setAttribute("visibility", "hidden");
+                            }
                         }
                         this.blinkState = 0;
                     }
@@ -198,12 +202,12 @@ var A320_Neo_LowerECAM_PRESS;
             } else if (parseInt(this.htmlCabinVSValue.textContent) <= 1600 && this.blinkingObjs.indexOf(this.htmlCabinVSValue) != -1) {
                 this.removeHtmlObjFromBlinker(this.htmlCabinVSValue);
             }
-            if (flightPhase == 5 && pressureDelta >= 1.5 && this.blinkingObjs.indexOf(this.pressureDeltaDecimal) == -1) {
-                this.addHtmlObjToBlinker(this.pressureDeltaDecimal);
-                this.addHtmlObjToBlinker(this.pressureDeltaInt);
-            } else if (pressureDelta < 1 && this.blinkingObjs.indexOf(this.pressureDeltaDecimal) != -1) {
-                this.removeHtmlObjFromBlinker(this.pressureDeltaDecimal);
-                this.removeHtmlObjFromBlinker(this.pressureDeltaInt);
+            if (flightPhase == 5 && pressureDelta >= 1.5 && this.blinkingObjs.indexOf(this.htmlPsiDecimal) == -1) {
+                this.addHtmlObjToBlinker(this.htmlPsiDecimal);
+                this.addHtmlObjToBlinker(this.htmlPsiInt);
+            } else if (pressureDelta < 1 && this.blinkingObjs.indexOf(this.htmlPsiDecimal) != -1) {
+                this.removeHtmlObjFromBlinker(this.htmlPsiDecimal);
+                this.removeHtmlObjFromBlinker(this.htmlPsiInt);
             }
 
             this.valueBlinker(this.blinkingObjs, 500);
