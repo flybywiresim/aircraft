@@ -71,7 +71,7 @@ var A320_Neo_LowerECAM_PRESS;
                 const timeCurr = time.getTime();
                 if (timeCurr - this.mSecondsBlinkLast > blinkInterval) {
                     if (this.blinkState == 0) {
-                        for (i = 0; i  < htmlObjs.length; i++) {
+                        for (i = 0; i < htmlObjs.length; i++) {
                             htmlObjs[i].setAttribute("visibility", "visible");
                         }
                         this.blinkState = 1;
@@ -86,11 +86,11 @@ var A320_Neo_LowerECAM_PRESS;
             }
         }
 
-        addHtmlObjToBlinker (htmlObj) {
+        addHtmlObjToBlinker(htmlObj) {
             this.blinkingObjs.push(htmlObj);
         }
 
-        removeHtmlObjFromBlinker (htmlObj) {
+        removeHtmlObjFromBlinker(htmlObj) {
             const index = this.blinkingObjs.indexOf(htmlObj);
             this.blinkingObjs.splice(index, 1);
             htmlObj.setAttribute("visibility", "visible");
@@ -190,18 +190,18 @@ var A320_Neo_LowerECAM_PRESS;
 
             if (parseInt(this.htmlCabinAltValue.textContent) >= 8800 && this.blinkingObjs.indexOf(this.htmlCabinAltValue) == -1) {
                 this.addHtmlObjToBlinker(this.htmlCabinAltValue);
-            } else if (parseInt(this.htmlCabinAltValue.textContent) <= 8600  && this.blinkingObjs.indexOf(this.htmlCabinAltValue) != -1) {
+            } else if (parseInt(this.htmlCabinAltValue.textContent) <= 8600 && this.blinkingObjs.indexOf(this.htmlCabinAltValue) != -1) {
                 this.removeHtmlObjFromBlinker(this.htmlCabinAltValue);
             }
-            if(parseInt(this.htmlCabinVSValue.textContent) >= 1800 && this.blinkingObjs.indexOf(this.htmlCabinVSValue) == -1) {
+            if (parseInt(this.htmlCabinVSValue.textContent) >= 1800 && this.blinkingObjs.indexOf(this.htmlCabinVSValue) == -1) {
                 this.addHtmlObjToBlinker(this.htmlCabinVSValue);
-            } else if (parseInt(this.htmlCabinVSValue.textContent) <= 1600  && this.blinkingObjs.indexOf(this.htmlCabinVSValue) != -1){
+            } else if (parseInt(this.htmlCabinVSValue.textContent) <= 1600 && this.blinkingObjs.indexOf(this.htmlCabinVSValue) != -1) {
                 this.removeHtmlObjFromBlinker(this.htmlCabinVSValue);
             }
-            if(flightPhase == 5 && pressureDelta >= 1.5 && this.blinkingObjs.indexOf(this.pressureDeltaDecimal) == -1) {
+            if (flightPhase == 5 && pressureDelta >= 1.5 && this.blinkingObjs.indexOf(this.pressureDeltaDecimal) == -1) {
                 this.addHtmlObjToBlinker(this.pressureDeltaDecimal);
                 this.addHtmlObjToBlinker(this.pressureDeltaInt);
-            } else if (pressureDelta < 1 && this.blinkingObjs.indexOf(this.pressureDeltaDecimal) != -1){
+            } else if (pressureDelta < 1 && this.blinkingObjs.indexOf(this.pressureDeltaDecimal) != -1) {
                 this.removeHtmlObjFromBlinker(this.pressureDeltaDecimal);
                 this.removeHtmlObjFromBlinker(this.pressureDeltaInt);
             }
