@@ -51,6 +51,10 @@ var A320_Neo_LowerECAM_PRESS;
 
             this.htmlSystems[1].setAttribute("visibility", "visible");
             this.htmlSystems[0].setAttribute("visibility", "hidden");
+
+            this.mSecondsBlinkLast = 0;
+            this.blinkState = 0;
+            this.blinkingObjs = [];
         }
 
         setValueWarning(htmlObj, upperLimit, lowerLimit, tolerance, originalClass, warningClass){
@@ -73,6 +77,33 @@ var A320_Neo_LowerECAM_PRESS;
             } else {
                 htmlObj.setAttribute("class", "warning st13p");
             }
+        }
+
+        valueBlinker(htmlObjs, blinkInterval){
+            const time = new Date();
+            let timeCurr = time.getTime();
+            if(timeCurr - this.mSecondsBlinkLast > blinkInterval){
+                if(this.blinkState == 0){
+                    for(i = 0; i  < htmlObjs.length; i++){
+                        htmlObjs[i].setAttribute("visibility", "visible");
+                    }
+                    this.blinkState = 1;
+                } else {
+                    for(i = 0; i  < htmlObjs.length; i++){
+                        htmlObjs[i].setAttribute("visibility", "hidden");
+                    }
+                    this.blinkState = 0;
+                }
+                this.mSecondsBlinkLast = timeCurr;
+            }    
+        }
+
+        addHtmlObjToBlinker(htmlObj){
+            this.blinkingObjs.push(htmlObj);
+        }
+
+        removeHtmlObjToBlinker(htmlObj){
+            this.blinkingObjs = this.blinkingObjs.filter(obj => obj == htmlObj);
         }
 
         update(_deltaTime) {
@@ -156,6 +187,12 @@ var A320_Neo_LowerECAM_PRESS;
                 this.htmlLdgElevValue.textContent = "50";
             }
 
+            if(ldgElevValue > 5000) {
+                this.addHtmlObjToBlinker(this.ldgElevValue);
+            } else {
+                this.removeHtmlObjToBlinker(this.ldgElevValue);
+            }
+
             //valve control
             const cabinVSIndicatorRot = 10 + (cabinVSValue * 0.04) 
             if(cabinVSValue > 60){
@@ -201,6 +238,8 @@ var A320_Neo_LowerECAM_PRESS;
             //set warnings
             const leftPackState = (SimVar.GetSimVarValue("L:A32NX_AIRCOND_PACK1_FAULT", "bool") == 0 && SimVar.GetSimVarValue("L:A32NX_AIRCOND_PACK1_TOGGLE", "bool") == 1)
             const rightPackState = (SimVar.GetSimVarValue("L:A32NX_AIRCOND_PACK2_FAULT", "bool") == 0 && SimVar.GetSimVarValue("L:A32NX_AIRCOND_PACK2_TOGGLE", "bool") == 1) 
+
+            this.valueBlinker(this.blinkingObjs, 500);
 
             this.setPackWarning(leftPackState, this.htmlPackIndicatorLeft);
             this.setPackWarning(rightPackState, this.htmlPackIndicatorRight);
