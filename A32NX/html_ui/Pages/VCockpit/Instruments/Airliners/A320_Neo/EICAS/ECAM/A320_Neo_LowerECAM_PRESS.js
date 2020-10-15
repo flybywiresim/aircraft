@@ -43,52 +43,54 @@ var A320_Neo_LowerECAM_PRESS;
             this.blinkingObjs = [];
         }
 
-        setValueWarning(htmlObj, upperLimit, lowerLimit, tolerance, originalClass, warningClass){
+        setValueWarning(htmlObj, upperLimit, lowerLimit, tolerance, originalClass, warningClass) {
             if (htmlObj.textContent - tolerance > upperLimit || htmlObj.textContent + tolerance < lowerLimit) {
                 htmlObj.setAttribute("class", warningClass);
-            } else {  
+            } else {
                 htmlObj.setAttribute("class", originalClass);
             }
         }
-        setValueWarningVal(value, htmlObj, upperLimit, lowerLimit, tolerance, originalClass, warningClass){
+        setValueWarningVal(value, htmlObj, upperLimit, lowerLimit, tolerance, originalClass, warningClass) {
             if (value - tolerance > upperLimit || value + tolerance < lowerLimit) {
                 htmlObj.setAttribute("class", warningClass);
-            } else {  
+            } else {
                 htmlObj.setAttribute("class", originalClass);
             }
         }
-        setPackWarning(value, htmlObj){
-            if(value){
+        setPackWarning(value, htmlObj) {
+            if (value) {
                 htmlObj.setAttribute("class", "st0p st13p");
             } else {
                 htmlObj.setAttribute("class", "warning st13p");
             }
         }
 
-        valueBlinker(htmlObjs, blinkInterval){
-            const time = new Date();
-            let timeCurr = time.getTime();
-            if(timeCurr - this.mSecondsBlinkLast > blinkInterval){
-                if(this.blinkState == 0){
-                    for(i = 0; i  < htmlObjs.length; i++){
-                        htmlObjs[i].setAttribute("visibility", "visible");
+        valueBlinker(htmlObjs, blinkInterval) {
+            if (htmlObjs.length > 0) {
+                const time = new Date();
+                const timeCurr = time.getTime();
+                if (timeCurr - this.mSecondsBlinkLast > blinkInterval) {
+                    if (this.blinkState == 0) {
+                        for (i = 0; i  < htmlObjs.length; i++) {
+                            htmlObjs[i].setAttribute("visibility", "visible");
+                        }
+                        this.blinkState = 1;
+                    } else {
+                        for (i = 0; i < htmlObjs.length; i++) {
+                            htmlObjs[i].setAttribute("visibility", "hidden");
+                        }
+                        this.blinkState = 0;
                     }
-                    this.blinkState = 1;
-                } else {
-                    for(i = 0; i  < htmlObjs.length; i++){
-                        htmlObjs[i].setAttribute("visibility", "hidden");
-                    }
-                    this.blinkState = 0;
+                    this.mSecondsBlinkLast = timeCurr;
                 }
-                this.mSecondsBlinkLast = timeCurr;
-            }    
+            }
         }
 
-        addHtmlObjToBlinker(htmlObj){
+        addHtmlObjToBlinker (htmlObj) {
             this.blinkingObjs.push(htmlObj);
         }
 
-        removeHtmlObjFromBlinker(htmlObj){
+        removeHtmlObjFromBlinker (htmlObj) {
             const index = this.blinkingObjs.indexOf(htmlObj);
             this.blinkingObjs.splice(index, 1);
             htmlObj.setAttribute("visibility", "visible");
@@ -109,28 +111,28 @@ var A320_Neo_LowerECAM_PRESS;
             let pressureDelta = SimVar.GetSimVarValue("PRESSURIZATION PRESSURE DIFFERENTIAL", "Pounds per square foot") / 144;
             const pressureDeltaInt = parseInt(pressureDelta);
             const pressureDeltaDecimal = parseInt((pressureDelta - pressureDeltaInt) * 10);
-            
-            if(Math.abs(pressureDelta) < 0.05){
-                pressureDelta = 0
+
+            if (Math.abs(pressureDelta) < 0.05) {
+                pressureDelta = 0;
             }
-            
-            if(pressureDelta >= 0) {
+
+            if (pressureDelta >= 0) {
                 this.htmlPsiInt.textContent = pressureDeltaInt + ".";
                 this.htmlPsiDecimal.textContent = pressureDeltaDecimal;
             } else {
                 this.htmlPsiInt.textContent = "-0.";
                 this.htmlPsiDecimal.textContent = Math.abs(pressureDeltaDecimal);
             }
-            
+
             this.htmlPsiIndicator.setAttribute("style", "transform-origin: 100px 152.5px; transform: rotate(" + (pressureDelta * 19.375) + "deg); stroke-width: 3px; stroke-linecap: round;");
 
             //cabin v/s gauge
             let cabinVSValue = SimVar.GetSimVarValue("PRESSURIZATION CABIN ALTITUDE RATE", "feet per second") * 60;
 
-            if(Math.abs(cabinVSValue) < 15){
+            if (Math.abs(cabinVSValue) < 15) {
                 cabinVSValue = 0;
             }
-            
+
             this.htmlCabinVSValue.textContent = parseInt(cabinVSValue);
             this.htmlCabinVSIndicator.setAttribute("style", "transform-origin: 100px 152.5px; transform: rotate(" + (cabinVSValue * 0.045) + "deg); stroke-width: 3px; stroke-linecap: round;");
 
@@ -141,12 +143,12 @@ var A320_Neo_LowerECAM_PRESS;
             this.htmlCabinAltIndicator.setAttribute("style", "transform-origin: 100px 152.5px; transform: rotate(" + (cabinAltitude * 0.0164) + "deg); stroke-width: 3px; stroke-linecap: round;");
 
             //valve control
-            const cabinVSIndicatorRot = 10 + (cabinVSValue * 0.04) 
-            if(cabinVSValue > 60){
+            const cabinVSIndicatorRot = 10 + (cabinVSValue * 0.04);
+            if (cabinVSValue > 60) {
                 this.htmlValveFlow.setAttribute("style", "transform-origin: 450px 450px; transform: rotate(" + cabinVSIndicatorRot + "deg); stroke-width: 3px; stroke-linecap: round;");
                 outletValveOpen = true;
                 inletValveOpen = false;
-            } else if(cabinVSValue < -60) {
+            } else if (cabinVSValue < -60) {
                 this.htmlValveFlow.setAttribute("style", "transform-origin: 450px 450px; transform: rotate(10deg); stroke-width: 3px; stroke-linecap: round;");
                 outletValveOpen = false;
                 inletValveOpen = true;
@@ -156,40 +158,39 @@ var A320_Neo_LowerECAM_PRESS;
                 inletValveOpen = false;
             }
 
-            if(pressureDelta > 8.2){
+            if (pressureDelta > 8.2) {
                 safetyValveOpen = true;
             } else {
                 safetyValveOpen = false;
             }
 
             //control valves
-            if(inletValveOpen){
+            if (inletValveOpen) {
                 this.htmlValveInlet.setAttribute("style", "fill:none; transform-origin: 180px 460px; transform: rotate(-90deg)");
-            }else{
+            } else {
                 this.htmlValveInlet.setAttribute("style", "fill:none; transform-origin: 180px 460px; transform: rotate(0deg)");
             }
 
-            if(outletValveOpen){
+            if (outletValveOpen) {
                 this.htmlValveOutlet.setAttribute("style", "fill:none; transform-origin: 265px 460px; transform: rotate(90deg)");
-            }else{
+            } else {
                 this.htmlValveOutlet.setAttribute("style", "fill:none; transform-origin: 265px 460px; transform: rotate(0deg)");
             }
 
-            if(safetyValveOpen){
+            if (safetyValveOpen) {
                 this.htmlValveSafety.setAttribute("style", "fill:none; transform-origin: 550px 340px; transform: rotate(-90deg)");
-            }else{
+            } else {
                 this.htmlValveSafety.setAttribute("style", "fill:none; transform-origin: 550px 340px; transform: rotate(0deg)");
             }
 
-
             //set warnings
-            const leftPackState = (SimVar.GetSimVarValue("L:A32NX_AIRCOND_PACK1_FAULT", "bool") == 0 && SimVar.GetSimVarValue("L:A32NX_AIRCOND_PACK1_TOGGLE", "bool") == 1)
-            const rightPackState = (SimVar.GetSimVarValue("L:A32NX_AIRCOND_PACK2_FAULT", "bool") == 0 && SimVar.GetSimVarValue("L:A32NX_AIRCOND_PACK2_TOGGLE", "bool") == 1) 
+            const leftPackState = (SimVar.GetSimVarValue("L:A32NX_AIRCOND_PACK1_FAULT", "bool") == 0 && SimVar.GetSimVarValue("L:A32NX_AIRCOND_PACK1_TOGGLE", "bool") == 1);
+            const rightPackState = (SimVar.GetSimVarValue("L:A32NX_AIRCOND_PACK2_FAULT", "bool") == 0 && SimVar.GetSimVarValue("L:A32NX_AIRCOND_PACK2_TOGGLE", "bool") == 1);
             const flightPhase = SimVar.GetSimVarValue("L:AIRLINER_FLIGHT_PHASE", "value");
-           
-            if(parseInt(this.htmlCabinAltValue.textContent) >= 8800 && this.blinkingObjs.indexOf(this.htmlCabinAltValue) == -1) {
+
+            if (parseInt(this.htmlCabinAltValue.textContent) >= 8800 && this.blinkingObjs.indexOf(this.htmlCabinAltValue) == -1) {
                 this.addHtmlObjToBlinker(this.htmlCabinAltValue);
-            } else if (parseInt(this.htmlCabinAltValue.textContent) <= 8600  && this.blinkingObjs.indexOf(this.htmlCabinAltValue) != -1){
+            } else if (parseInt(this.htmlCabinAltValue.textContent) <= 8600  && this.blinkingObjs.indexOf(this.htmlCabinAltValue) != -1) {
                 this.removeHtmlObjFromBlinker(this.htmlCabinAltValue);
             }
             if(parseInt(this.htmlCabinVSValue.textContent) >= 1800 && this.blinkingObjs.indexOf(this.htmlCabinVSValue) == -1) {
@@ -209,7 +210,7 @@ var A320_Neo_LowerECAM_PRESS;
 
             this.setPackWarning(leftPackState, this.htmlPackIndicatorLeft);
             this.setPackWarning(rightPackState, this.htmlPackIndicatorRight);
-            
+
             this.setValueWarning(this.htmlCabinAltValue, 9550, 0, 0, "st0p st9p", "red_warningp st9p");
             this.setValueWarning(this.htmlCabinVSValue, 2000, -20000, 0, "st0p st9p", "warningp st9p");
 
