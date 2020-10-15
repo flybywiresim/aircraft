@@ -217,3 +217,25 @@
 - A32NX_METRIC_ALT_TOGGLE
     - Bool
     - True if PFD metric altitude enabled
+
+- A32NX_OVHD_CABINPRESS_MODESEL
+    - Bool
+    - True if cabin pressure is in manual mode
+
+- A32NX_OVHD_CABINPRESS_LDGELEV
+    - Percent
+    - 0 -> -2000m, 100 -> 17000
+
+- A32NX_OVHD_CABINPRESS_DITCHING_LOCK
+    - Bool
+    - True if the guard is open
+
+- A32NX_OVHD_CABINPRESS_DITCHING
+    - Bool
+    - True if the ditching is on
+
+- A32NX_OVHD_CABINPRESS_MANVSCTL
+    - Position(0,2)
+    - 0 = cabin V/S UP
+    - 1 = cabin V/S neutral
+    - 2 = cabin V/S DOWN
