@@ -135,6 +135,10 @@ var A320_Neo_LowerECAM_PRESS;
 
             if (Math.abs(cabinVSValue) < 15) {
                 cabinVSValue = 0;
+            } else if (cabinVSValue > 2000) {
+                cabinVSValue = 2000;
+            } else if (cabinVSValue < -2000) {
+                cabinVSValue = -2000;
             }
 
             this.htmlCabinVSValue.textContent = parseInt(cabinVSValue);
@@ -147,7 +151,11 @@ var A320_Neo_LowerECAM_PRESS;
             this.htmlCabinAltIndicator.setAttribute("style", "transform-origin: 100px 152.5px; transform: rotate(" + (cabinAltitude * 0.0164) + "deg); stroke-width: 3px; stroke-linecap: round;");
 
             //valve control
+
+            
+
             const cabinVSIndicatorRot = 10 + (cabinVSValue * 0.04);
+
             if (cabinVSValue > 60) {
                 this.htmlValveFlow.setAttribute("style", "transform-origin: 450px 450px; transform: rotate(" + cabinVSIndicatorRot + "deg); stroke-width: 3px; stroke-linecap: round;");
                 outletValveOpen = true;
@@ -215,7 +223,7 @@ var A320_Neo_LowerECAM_PRESS;
             this.setPackWarning(leftPackState, this.htmlPackIndicatorLeft);
             this.setPackWarning(rightPackState, this.htmlPackIndicatorRight);
 
-            this.setValueWarning(this.htmlCabinAltValue, 9550, 0, 0, "st0p st9p", "red_warningp st9p");
+            this.setValueWarning(this.htmlCabinAltValue, 9550, -10000, 0, "st0p st9p", "red_warningp st9p");
             this.setValueWarning(this.htmlCabinVSValue, 2000, -20000, 0, "st0p st9p", "warningp st9p");
 
             this.setValueWarningVal(pressureDelta, this.htmlPsiInt, 8.5, -0.4, 0, "st0p st9p", "warningp st9p");
