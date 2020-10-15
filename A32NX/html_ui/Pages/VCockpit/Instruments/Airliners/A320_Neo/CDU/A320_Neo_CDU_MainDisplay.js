@@ -101,6 +101,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                 if (column != null) {
                     column.innerHTML = column.innerHTML.replace(/{sp}/g, "&nbsp;");
                     column.innerHTML = column.innerHTML.replace(/{small}/g, "<span class='s-text'>");
+                    column.innerHTML = column.innerHTML.replace(/{large}/g, "<span class='l-text'>");
                     column.innerHTML = column.innerHTML.replace(/{red}/g, "<span class='red'>");
                     column.innerHTML = column.innerHTML.replace(/{green}/g, "<span class='green'>");
                     column.innerHTML = column.innerHTML.replace(/{blue}/g, "<span class='blue'>");

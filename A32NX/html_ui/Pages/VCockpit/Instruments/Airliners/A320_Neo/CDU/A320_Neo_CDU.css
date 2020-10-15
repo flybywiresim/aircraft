@@ -141,10 +141,8 @@ fmc-main-display::before {
   font-family: "A32NXMCDUSMALL" !important;
 }
 
-.irs-text {
-  font-weight: lighter;
-  font-size: 6.3vw;
-  letter-spacing: 0.5vw;
+.l-text {
+  font-family: "A32NXMCDU" !important;
 }
 
 .label {
