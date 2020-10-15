@@ -219,7 +219,7 @@
 					(L:XMLVAR_InertSep#ID#_Deployment) #DEPLOYMENT_PER_SECOND# - 0 max (&gt;L:XMLVAR_InertSep#ID#_Deployment)
 				}
 				(L:XMLVAR_InertSep#ID#_Active) if{
-					(L:XMLVAR_InertSep#ID#_Deployment) 16384 * (&gt;K:ANTI_ICE_GRADUAL_SET_ENG#ID#)
+					(L:XMLVAR_InertSep#ID#_Deployment) 14336 * (&gt;K:ANTI_ICE_GRADUAL_SET_ENG#ID#)
 				}
 			</Update>
 			<Update Once="True">
