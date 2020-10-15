@@ -80,13 +80,11 @@ var A320_Neo_LowerECAM_PRESS;
                 return;
             }
 
-
             let inletValveOpen = false;
             let outletValveOpen = false;
             let safetyValveOpen = false;
 
             //set active system visibility
-            
 
             //psi delta gauge
             let pressureDelta = SimVar.GetSimVarValue("PRESSURIZATION PRESSURE DIFFERENTIAL", "Pounds per square foot") / 144;
@@ -157,8 +155,6 @@ var A320_Neo_LowerECAM_PRESS;
                 this.htmlLdgElevText2.setAttribute("visibility", "hidden");
                 this.htmlLdgElevValue.textContent = "50";
             }
-
-            
 
             //valve control
             const cabinVSIndicatorRot = 10 + (cabinVSValue * 0.04) 
