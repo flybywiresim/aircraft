@@ -38,20 +38,6 @@ var A320_Neo_LowerECAM_PRESS;
             this.htmlPackIndicatorLeft = this.querySelector("#pack-indicator-left");
             this.htmlPackIndicatorRight = this.querySelector("#pack-indicator-right");
 
-            this.htmlLdgElevText = this.querySelector("#ldg-elev-text");
-            this.htmlLdgElevText2 = this.querySelector("#lower-man-text");
-            this.htmlLdgElevValue = this.querySelector("#ldg-elev-value");
-
-            this.htmlSystems = [this.querySelector("#sys1-text"), this.querySelector("#sys2-text")]
-
-            this.mseconds = 0;
-            this.mseconds_2 = 10;
-            this.justSwitched = false;
-            this.activeSystem = 2;
-
-            this.htmlSystems[1].setAttribute("visibility", "visible");
-            this.htmlSystems[0].setAttribute("visibility", "hidden");
-
             this.mSecondsBlinkLast = 0;
             this.blinkState = 0;
             this.blinkingObjs = [];
@@ -102,8 +88,10 @@ var A320_Neo_LowerECAM_PRESS;
             this.blinkingObjs.push(htmlObj);
         }
 
-        removeHtmlObjToBlinker(htmlObj){
-            this.blinkingObjs = this.blinkingObjs.filter(obj => obj == htmlObj);
+        removeHtmlObjFromBlinker(htmlObj){
+            const index = this.blinkingObjs.indexOf(htmlObj);
+            this.blinkingObjs.splice(index, 1);
+            htmlObj.setAttribute("visibility", "visible");
         }
 
         update(_deltaTime) {
@@ -151,47 +139,6 @@ var A320_Neo_LowerECAM_PRESS;
 
             this.htmlCabinAltValue.textContent = parseInt(cabinAltitude);
             this.htmlCabinAltIndicator.setAttribute("style", "transform-origin: 100px 152.5px; transform: rotate(" + (cabinAltitude * 0.0164) + "deg); stroke-width: 3px; stroke-linecap: round;");
-            
-            //ldg elev
-            const ldgElevMode = SimVar.GetSimVarValue("L:A32NX_OVHD_CABINPRESS_MODESEL", "bool");
-            const ldgElevValue = SimVar.GetSimVarValue("L:A32NX_OVHD_CABINPRESS_LDGELEV", "percent");
-            let time;
-            
-            //pressing switch to MAN, waiting 10 seconds and then switching back to AUTO will change active system
-            if (ldgElevMode) {
-                time = new Date();
-                this.mseconds_2 = time.getTime();
-                if (this.mseconds_2 - this.mseconds > 10000 && !this.justSwitched) {
-                    this.justSwitched = true;
-                }
-                this.htmlLdgElevText.textContent = "MAN";
-                this.htmlLdgElevText2.setAttribute("visibility", "visible");
-                this.htmlLdgElevValue.textContent = parseInt(-2000 + (ldgElevValue * 190.5));     
-            } else {
-                time = new Date();
-                this.mseconds = time.getTime();
-                if (this.justSwitched) {
-                    if (this.activeSystem == 1) {
-                        this.htmlSystems[1].setAttribute("visibility", "visible");
-                        this.htmlSystems[0].setAttribute("visibility", "hidden");
-                        this.activeSystem = 2;
-                    } else {
-                        this.htmlSystems[0].setAttribute("visibility", "visible");
-                        this.htmlSystems[1].setAttribute("visibility", "hidden");
-                        this.activeSystem = 1;
-                    }
-                    this.justSwitched = false;
-                }
-                this.htmlLdgElevText.textContent = "AUTO";
-                this.htmlLdgElevText2.setAttribute("visibility", "hidden");
-                this.htmlLdgElevValue.textContent = "50";
-            }
-
-            if(ldgElevValue > 5000) {
-                this.addHtmlObjToBlinker(this.ldgElevValue);
-            } else {
-                this.removeHtmlObjToBlinker(this.ldgElevValue);
-            }
 
             //valve control
             const cabinVSIndicatorRot = 10 + (cabinVSValue * 0.04) 
@@ -238,18 +185,37 @@ var A320_Neo_LowerECAM_PRESS;
             //set warnings
             const leftPackState = (SimVar.GetSimVarValue("L:A32NX_AIRCOND_PACK1_FAULT", "bool") == 0 && SimVar.GetSimVarValue("L:A32NX_AIRCOND_PACK1_TOGGLE", "bool") == 1)
             const rightPackState = (SimVar.GetSimVarValue("L:A32NX_AIRCOND_PACK2_FAULT", "bool") == 0 && SimVar.GetSimVarValue("L:A32NX_AIRCOND_PACK2_TOGGLE", "bool") == 1) 
+            const flightPhase = SimVar.GetSimVarValue("L:AIRLINER_FLIGHT_PHASE", "value");
+           
+            if(parseInt(this.htmlCabinAltValue.textContent) >= 8800 && this.blinkingObjs.indexOf(this.htmlCabinAltValue) == -1) {
+                this.addHtmlObjToBlinker(this.htmlCabinAltValue);
+            } else if (parseInt(this.htmlCabinAltValue.textContent) <= 8600  && this.blinkingObjs.indexOf(this.htmlCabinAltValue) != -1){
+                this.removeHtmlObjFromBlinker(this.htmlCabinAltValue);
+            }
+            if(parseInt(this.htmlCabinVSValue.textContent) >= 1800 && this.blinkingObjs.indexOf(this.htmlCabinVSValue) == -1) {
+                this.addHtmlObjToBlinker(this.htmlCabinVSValue);
+            } else if (parseInt(this.htmlCabinVSValue.textContent) <= 1600  && this.blinkingObjs.indexOf(this.htmlCabinVSValue) != -1){
+                this.removeHtmlObjFromBlinker(this.htmlCabinVSValue);
+            }
+            if(flightPhase == 5 && pressureDelta >= 1.5 && this.blinkingObjs.indexOf(this.pressureDeltaDecimal) == -1) {
+                this.addHtmlObjToBlinker(this.pressureDeltaDecimal);
+                this.addHtmlObjToBlinker(this.pressureDeltaInt);
+            } else if (pressureDelta < 1 && this.blinkingObjs.indexOf(this.pressureDeltaDecimal) != -1){
+                this.removeHtmlObjFromBlinker(this.pressureDeltaDecimal);
+                this.removeHtmlObjFromBlinker(this.pressureDeltaInt);
+            }
 
             this.valueBlinker(this.blinkingObjs, 500);
 
             this.setPackWarning(leftPackState, this.htmlPackIndicatorLeft);
             this.setPackWarning(rightPackState, this.htmlPackIndicatorRight);
             
-            this.setValueWarning(this.htmlCabinAltValue, 9550, 0, 0, "st0p st9p", "warning_redp st9p");
-            this.setValueWarning(this.htmlCabinVSValue, 2000, -2000, 0, "st0p st9p", "warningp st9p");
+            this.setValueWarning(this.htmlCabinAltValue, 9550, 0, 0, "st0p st9p", "red_warningp st9p");
+            this.setValueWarning(this.htmlCabinVSValue, 2000, -20000, 0, "st0p st9p", "warningp st9p");
 
-            this.setValueWarningVal(pressureDelta, this.htmlPsiInt, 8.5, -0.4, 0, "st0p st9p", "warningp st9p");
-            this.setValueWarningVal(pressureDelta, this.htmlPsiDecimal, 8.5, -0.4, 0, "st0p st16p", "warningp st16p");
-            this.setValueWarningVal(pressureDelta, this.htmlTextSafety, 8.2, -10, 0, "st3p st9p", "warningp st9p");
+            this.setValueWarningVal(pressureDelta, this.htmlPsiInt, 6.5, -0.4, 0, "st0p st9p", "warningp st9p");
+            this.setValueWarningVal(pressureDelta, this.htmlPsiDecimal, 6.5, -0.4, 0, "st0p st16p", "warningp st16p");
+            this.setValueWarningVal(pressureDelta, this.htmlTextSafety, 6.2, -10, 0, "st3p st9p", "warningp st9p");
         }
     }
     A320_Neo_LowerECAM_PRESS.Page = Page;
