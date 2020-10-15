@@ -2219,21 +2219,21 @@
             </Component>
 
             <Component ID="OverHead_AntiIce">
-                <UseTemplate Name="ASOBO_DEICE_Switch_Engine_Template">
+                <UseTemplate Name="A32NX_DEICE_Switch_Engine_Template">
                     <NODE_ID>PUSH_OVHD_ANTIICE_ENG1</NODE_ID>
                     <ANIM_NAME>PUSH_OVHD_ANTIICE_ENG1</ANIM_NAME>
                     <INTERACTION>Push</INTERACTION>
                     <DECALS_TYPE>FaultOn</DECALS_TYPE>
                     <ID>1</ID>
                 </UseTemplate>
-                <UseTemplate Name="ASOBO_DEICE_Switch_Engine_Template">
+                <UseTemplate Name="A32NX_DEICE_Switch_Engine_Template">
                     <NODE_ID>PUSH_OVHD_ANTIICE_ENG2</NODE_ID>
                     <ANIM_NAME>PUSH_OVHD_ANTIICE_ENG2</ANIM_NAME>
                     <INTERACTION>Push</INTERACTION>
                     <DECALS_TYPE>FaultOn</DECALS_TYPE>
                     <ID>2</ID>
                 </UseTemplate>
-                <UseTemplate Name="ASOBO_DEICE_Switch_Airframe_Template">
+                <UseTemplate Name="A32NX_DEICE_Switch_Airframe_Template">
                     <NODE_ID>PUSH_OVHD_ANTIICE_WING</NODE_ID>
                     <ANIM_NAME>PUSH_OVHD_ANTIICE_WING</ANIM_NAME>
                     <INTERACTION>Push</INTERACTION>
