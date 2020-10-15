@@ -2156,10 +2156,12 @@ class FMCMainDisplay extends BaseAirliners {
                 const val = this.inOut;
                 if (val === "") {
                     this.inOut = "-";
-                } else if (val === "-") {
-                    this.inOut = "+";
-                } else if (val === "+") {
-                    this.inOut = "-";
+                } else if (val.slice(-1) === "-") {
+                    this.inOut = this.inOut.slice(0, -1) + "+";
+                } else if (val.slice(-1) === "+") {
+                    this.inOut = this.inOut.slice(0, -1) + "-";
+                } else {
+                    this.inOut += "-"
                 }
             } else if (input === "Localizer") {
                 this._apLocalizerOn = !this._apLocalizerOn;
