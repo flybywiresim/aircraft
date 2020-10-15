@@ -143,7 +143,7 @@ class Jet_MFD_NDCompass extends Jet_NDCompass {
                             text.setAttribute("x", "50");
                             text.setAttribute("y", (-(circleRadius - 50 + length + 10)).toString());
                             text.setAttribute("fill", "white");
-                            text.setAttribute("font-size", (i % 3 == 0) ? "36" : "20");
+                            text.setAttribute("font-size", (i % 3 == 0) ? "32" : "20");
                             text.setAttribute("font-family", "Roboto-Bold");
                             text.setAttribute("text-anchor", "middle");
                             text.setAttribute("alignment-baseline", "bottom");
@@ -268,8 +268,8 @@ class Jet_MFD_NDCompass extends Jet_NDCompass {
                         text.setAttribute("x", "500");
                         text.setAttribute("y", "230");
                         text.setAttribute("fill", "white");
-                        text.setAttribute("font-size", "50");
-                        text.setAttribute("font-family", "Roboto-Light");
+                        text.setAttribute("font-size", "42");
+                        text.setAttribute("font-family", "ECAMFontRegular");
                         text.setAttribute("text-anchor", "middle");
                         text.setAttribute("alignment-baseline", "central");
                         text.setAttribute("transform", "rotate(" + -fastToFixed(i * 90, 0) + " 500 230)");
@@ -346,8 +346,8 @@ class Jet_MFD_NDCompass extends Jet_NDCompass {
                     text.setAttribute("x", "500");
                     text.setAttribute("y", "115");
                     text.setAttribute("fill", "white");
-                    text.setAttribute("font-size", "40");
-                    text.setAttribute("font-family", "Roboto-Light");
+                    text.setAttribute("font-size", "38");
+                    text.setAttribute("font-family", "ECAMFontRegular");
                     text.setAttribute("text-anchor", "middle");
                     text.setAttribute("alignment-baseline", "central");
                     text.setAttribute("transform", "rotate(" + fastToFixed(i * 10, 0) + " 500 500)");
@@ -695,7 +695,9 @@ class Jet_MFD_NDCompass extends Jet_NDCompass {
                     break;
                 case NAV_AID_STATE.VOR:
                     this.logic_brg1Source = 1;
-                    this.bearing1.querySelectorAll('path')[0].setAttribute("stroke", "white");
+                    if (this.bearing1) {
+                        this.bearing1.querySelectorAll('path')[0].setAttribute("stroke", "white");
+                    }
                     document.getElementById('Arrow-Left').setAttribute("stroke", "white");
                     this.setAttribute("show_bearing1", "true");
 
@@ -705,7 +707,9 @@ class Jet_MFD_NDCompass extends Jet_NDCompass {
                     break;
                 case NAV_AID_STATE.ADF:
                     this.logic_brg1Source = 4;
-                    this.bearing1.querySelectorAll('path')[0].setAttribute("stroke", "lime");
+                    if (this.bearing1) {
+                        this.bearing1.querySelectorAll('path')[0].setAttribute("stroke", "lime");
+                    }
                     document.getElementById('Arrow-Left').setAttribute("stroke", "lime");
                     this.setAttribute("show_bearing1", "true");
 
@@ -733,7 +737,9 @@ class Jet_MFD_NDCompass extends Jet_NDCompass {
                     break;
                 case NAV_AID_STATE.VOR:
                     this.logic_brg2Source = 2;
-                    this.bearing2.querySelectorAll('path')[0].setAttribute("stroke", "white");
+                    if (this.bearing2) {
+                        this.bearing2.querySelectorAll('path')[0].setAttribute("stroke", "white");
+                    }
                     document.getElementById('Arrow-Right').setAttribute("stroke", "white");
                     this.setAttribute("show_bearing2", "true");
 
@@ -743,7 +749,9 @@ class Jet_MFD_NDCompass extends Jet_NDCompass {
                     break;
                 case NAV_AID_STATE.ADF:
                     this.logic_brg2Source = 4;
-                    this.bearing2.querySelectorAll('path')[0].setAttribute("stroke", "lime");
+                    if (this.bearing2) {
+                        this.bearing2.querySelectorAll('path')[0].setAttribute("stroke", "lime");
+                    }
                     document.getElementById('Arrow-Right').setAttribute("stroke", "lime");
                     this.setAttribute("show_bearing2", "true");
 

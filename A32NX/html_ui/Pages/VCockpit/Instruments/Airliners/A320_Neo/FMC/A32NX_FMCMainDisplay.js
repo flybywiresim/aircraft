@@ -1396,7 +1396,7 @@ class FMCMainDisplay extends BaseAirliners {
                 this.showErrorMessage("FORMAT ERROR");
                 return false;
             }
-        } else { // Until the +- button on the MCDU actually shows a plus sign
+        } else if (s.includes("+")) { // Until the +- button on the MCDU actually shows a plus sign
             wind = parseFloat(s);
             this._windDir = "TL";
             if (isFinite(wind)) {
@@ -2153,7 +2153,14 @@ class FMCMainDisplay extends BaseAirliners {
             } else if (input === "DOT") {
                 this.inOut += ".";
             } else if (input === "PLUSMINUS") {
-                this.inOut += "-";
+                const val = this.inOut;
+                if (val === "") {
+                    this.inOut = "-";
+                } else if (val === "-") {
+                    this.inOut = "+";
+                } else if (val === "+") {
+                    this.inOut = "-";
+                }
             } else if (input === "Localizer") {
                 this._apLocalizerOn = !this._apLocalizerOn;
             } else if (input.length === 2 && input[0] === "L") {

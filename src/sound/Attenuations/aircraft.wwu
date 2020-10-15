@@ -5692,7 +5692,7 @@
 												</Point>
 												<Point>
 													<XPos>3</XPos>
-													<YPos>0</YPos>
+													<YPos>-200</YPos>
 													<Flags>37</Flags>
 												</Point>
 											</PointList>
