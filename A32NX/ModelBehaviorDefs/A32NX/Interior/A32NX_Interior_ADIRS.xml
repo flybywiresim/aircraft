@@ -20,7 +20,7 @@
 
             <KNOB_NUM_STATE>3</KNOB_NUM_STATE>
             <KNOB_POSITION_TYPE>L</KNOB_POSITION_TYPE>
-            <KNOB_POSITION_VAR>A320_Neo_ADIRS_KNOB_#ID#</KNOB_POSITION_VAR>
+            <KNOB_POSITION_VAR>A32NX_ADIRS_KNOB_#ID#</KNOB_POSITION_VAR>
             <ANIMCURSOR_MAX>1</ANIMCURSOR_MAX>
         </DefaultTemplateParameters>
 
@@ -47,7 +47,11 @@
 
         <!-- Dummy button, using the FAULT variable -->
         <UseTemplate Name="FBW_Push_Toggle">
-            <TOGGLE_SIMVAR>L:A320_Neo_ADIRS_ALIGN_LIGHT_#ID#</TOGGLE_SIMVAR>
+            <!--
+            This should be a blue "OFF" light but the current texture is
+            an amber "ALIGN" light.
+            <SEQ2_CODE>(L:A32NX_ADIRS_OFF_LIGHT_#ID#, Bool)</SEQ2_CODE>
+            -->
 
             <SEQ1_CODE>(L:A32NX_ADIRS_#ID#_FAULT, Bool)</SEQ1_CODE>
 
