@@ -18,38 +18,111 @@
             <ANIM_SIMVAR_MIN>0</ANIM_SIMVAR_MIN>
             <ANIM_SIMVAR_MAX>100</ANIM_SIMVAR_MAX>
             <INCREMENT>1</INCREMENT>
+            <WHEEL_INCREMENT>4</WHEEL_INCREMENT>
             <EXTRA_INTERACTION/>
             <ANIMREF_ID>0</ANIMREF_ID>
             <ANIMTIP_0_ON_CURSOR>TurnLeft</ANIMTIP_0_ON_CURSOR>
             <ANIMTIP_1_ON_CURSOR>TurnRight</ANIMTIP_1_ON_CURSOR>
             <ANIMTIP_0></ANIMTIP_0>
             <ANIMTIP_1></ANIMTIP_1>
-            <ANIM_LAG>30</ANIM_LAG>
+            <ANIM_LAG>60</ANIM_LAG>
             <ANIM_WRAP>True</ANIM_WRAP>
-            <!-- Should not be overriden except from generic template -->
         </DefaultTemplateParameters>
 
-        <UseTemplate Name = "ASOBO_GT_Anim_Code">
+        <UseTemplate Name="ASOBO_GT_Anim_Code">
             <ANIM_CODE>
                 (#ANIM_SIMVAR#, #ANIM_SIMVAR_UNITS#) #ANIM_SIMVAR_MIN# - #ANIM_SIMVAR_MAX# #ANIM_SIMVAR_MIN# - / 100 *
             </ANIM_CODE>
         </UseTemplate>
-        <!-- <UseTemplate Name = "ASOBO_GT_AnimTriggers_SoundEvents_Same"/> -->
-        <UseTemplate Name = "ASOBO_GT_Interaction_WheelAndContinuousLeft#EXTRA_INTERACTION#">
-            <UPDATE_FREQUENCY>40</UPDATE_FREQUENCY>
 
+        <UseTemplate Name="FBW_Continuous_Knob_Finite_From_Simvar_Impl">
             <CLOCKWISE_CODE>
                 (#ANIM_SIMVAR#, #ANIM_SIMVAR_UNITS#) #INCREMENT# + #ANIM_SIMVAR_MAX# min (&gt;#ANIM_SIMVAR#)
             </CLOCKWISE_CODE>
             <ANTICLOCKWISE_CODE>
                 (#ANIM_SIMVAR#, #ANIM_SIMVAR_UNITS#) #INCREMENT# - #ANIM_SIMVAR_MIN# max (&gt;#ANIM_SIMVAR#)
             </ANTICLOCKWISE_CODE>
+
+            <!-- Provide the wheel code if we have WHEEL_INCREMENT -->
+            <Condition Valid="WHEEL_INCREMENT">
+                <True>
+                    <WHEEL_CLOCKWISE_CODE>
+                        (#ANIM_SIMVAR#, #ANIM_SIMVAR_UNITS#) #WHEEL_INCREMENT# + #ANIM_SIMVAR_MAX# min (&gt;#ANIM_SIMVAR#)
+                    </WHEEL_CLOCKWISE_CODE>
+
+                    <WHEEL_ANTICLOCKWISE_CODE>
+                        (#ANIM_SIMVAR#, #ANIM_SIMVAR_UNITS#) #WHEEL_INCREMENT# - #ANIM_SIMVAR_MIN# max (&gt;#ANIM_SIMVAR#)
+                    </WHEEL_ANTICLOCKWISE_CODE>
+                </True>
+            </Condition>
         </UseTemplate>
 
         <Condition Valid="WWISE_EVENT">
-            <UseTemplate Name = "ASOBO_GT_AnimTriggers_SoundEvents_Same">
+            <UseTemplate Name="ASOBO_GT_AnimTriggers_SoundEvents_Same">
             </UseTemplate>
         </Condition>
+    </Template>
+
+    <!-- Not for direct use -->
+    <Template Name="FBW_Continuous_Knob_Finite_From_Simvar_Impl">
+		<DefaultTemplateParameters>
+			<LEFTARROW>TurnLeft</LEFTARROW>
+			<RIGHTARROW>TurnRight</RIGHTARROW>
+            <COOR_DIRECTION>X</COOR_DIRECTION>
+			<UPDATE_FREQUENCY>40</UPDATE_FREQUENCY>
+			<UPDATE_DELAY>0.4</UPDATE_DELAY>
+		</DefaultTemplateParameters>
+
+        <!-- We override the wheel code if we have WHEEL_CLOCKWISE_CODE, WHEEL_ANTICLOCKWISE_CODE -->
+        <OverrideTemplateParameters>
+            <Condition Valid="WHEEL_CLOCKWISE_CODE">
+                <True>
+                    <ACTUAL_WHEEL_CLOCKWISE_CODE>
+                        #WHEEL_CLOCKWISE_CODE#
+                    </ACTUAL_WHEEL_CLOCKWISE_CODE>
+                </True>
+                <False>
+                    <ACTUAL_WHEEL_CLOCKWISE_CODE>
+                        #CLOCKWISE_CODE#
+                    </ACTUAL_WHEEL_CLOCKWISE_CODE>
+                </False>
+            </Condition>
+            <Condition Valid="WHEEL_ANTICLOCKWISE_CODE">
+                <True>
+                    <ACTUAL_WHEEL_ANTICLOCKWISE_CODE>
+                        #WHEEL_ANTICLOCKWISE_CODE#
+                    </ACTUAL_WHEEL_ANTICLOCKWISE_CODE>
+                </True>
+                <False>
+                    <ACTUAL_WHEEL_ANTICLOCKWISE_CODE>
+                        #ANTICLOCKWISE_CODE#
+                    </ACTUAL_WHEEL_ANTICLOCKWISE_CODE>
+                </False>
+            </Condition>
+        </OverrideTemplateParameters>
+
+        <Update Frequency="#UPDATE_FREQUENCY#">
+            (O:XMLVAR_FirstUpdateTime) (E:SIMULATION TIME, seconds) &lt; if{
+            (O:_MouseDownRelativePos#COOR_DIRECTION#) 0 &gt; if{ #CLOCKWISE_CODE# } els{
+            (O:_MouseDownRelativePos#COOR_DIRECTION#) 0 &lt; if{ #ANTICLOCKWISE_CODE# } }
+            }
+        </Update>
+
+        <UseTemplate Name="ASOBO_GT_MouseRect">
+            <MouseFlags>LeftAll+WheelUp+WheelDown</MouseFlags>
+            <CALLBACKCODE>
+                (M:Event) 'WheelUp'    scmi 0 == if{ #ACTUAL_WHEEL_CLOCKWISE_CODE# } els{
+                (M:Event) 'WheelDown'  scmi 0 == if{ #ACTUAL_WHEEL_ANTICLOCKWISE_CODE# } els{
+                (M:Event) 'LeftSingle' scmi 0 == if{
+                (M:Relative#COOR_DIRECTION#) (&gt;O:_MouseDownRelativePos#COOR_DIRECTION#)
+                (E:SIMULATION TIME, seconds) #UPDATE_DELAY# + (&gt;O:XMLVAR_FirstUpdateTime)
+                (O:_MouseDownRelativePos#COOR_DIRECTION#) 0 &gt; if{ #CLOCKWISE_CODE# } els{
+                (O:_MouseDownRelativePos#COOR_DIRECTION#) 0 &lt; if{ #ANTICLOCKWISE_CODE# } }
+                } els{ (M:Event) 'LeftRelease'   scmi 0 == if{
+                0 (&gt;O:_MouseDownRelativePos#COOR_DIRECTION#)
+                } } } }
+            </CALLBACKCODE>
+        </UseTemplate>
     </Template>
 
     <!--
@@ -65,18 +138,46 @@
     <Template Name="FBW_Airbus_DCDU_Brightness_Switch">
         <DefaultTemplateParameters>
             <POTENTIOMETER_ID>85</POTENTIOMETER_ID>
+            <BRT_DIM_INVERT_ANIM>1</BRT_DIM_INVERT_ANIM>
+            <SEQ1_EMISSIVE_DRIVES_VISIBILITY>False</SEQ1_EMISSIVE_DRIVES_VISIBILITY>
+            <WWISE_EVENT>fmc_push_button_on</WWISE_EVENT>
+            <NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
+            <NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2> 
         </DefaultTemplateParameters>
 
-        <UseTemplate Name="ASOBO_GT_Push_Button_Airliner">
-            <NODE_ID>SWITCH_MP#DCDU_SIDE#_DIM</NODE_ID>
-
-            <SEQ1_EMISSIVE_CODE>(A:LIGHT POTENTIOMETER:#POTENTIOMETER_ID#, percent) 100 /</SEQ1_EMISSIVE_CODE>
-            <SEQ2_EMISSIVE_CODE>1</SEQ2_EMISSIVE_CODE>
-
-            <LEFT_SINGLE_CODE>
-                (L:#PLANE_NAME#_PANEL_DCDU_#DCDU_SIDE#_BRIGHTNESS) ! (&gt;L:#PLANE_NAME#_PANEL_DCDU_#DCDU_SIDE#_BRIGHTNESS)
-            </LEFT_SINGLE_CODE>
-        </UseTemplate>
+        <Component ID="SWITCH_MP#DCDU_SIDE#_DIM" Node="SWITCH_MP#DCDU_SIDE#_DIM">
+            <UseTemplate Name="ASOBO_GT_Switch_3States">
+                <UPARROW/>
+                <DOWNARROW/>
+                <LEFTARROW/>
+                <RIGHTARROW/>
+                <CURSOR>Hand</CURSOR>
+                <ANIM_NAME>SWITCH_MP#DCDU_SIDE#_DIM</ANIM_NAME>
+                <CODE_POS_0>
+                    (L:#PLANE_NAME#_PANEL_DCDU_#DCDU_SIDE#_BRIGHTNESS, percent over 100) 0.05 + 1 min (&gt;L:#PLANE_NAME#_PANEL_DCDU_#DCDU_SIDE#_BRIGHTNESS, percent over 100)
+                </CODE_POS_0>
+                <CODE_POS_2>
+                    (L:#PLANE_NAME#_PANEL_DCDU_#DCDU_SIDE#_BRIGHTNESS, percent over 100) 0.05 - 0.05 max (&gt;L:#PLANE_NAME#_PANEL_DCDU_#DCDU_SIDE#_BRIGHTNESS, percent over 100)
+                </CODE_POS_2>
+                <STATE_MAX_TIMER>0.01</STATE_MAX_TIMER>
+                <STATE0_TIMER>0.01</STATE0_TIMER>
+                <MOMENTARY_REPEAT_FREQUENCY>5</MOMENTARY_REPEAT_FREQUENCY>
+                <MOMENTARY_SWITCH/>
+                
+                <Condition Valid="BRT_DIM_SWITCH_DIRECTION">
+                    <SWITCH_DIRECTION>#BRT_DIM_SWITCH_DIRECTION#</SWITCH_DIRECTION>
+                </Condition>
+                <Condition Valid="BRT_DIM_INVERT_ANIM">
+                    <INVERT_ANIM>#BRT_DIM_INVERT_ANIM#</INVERT_ANIM>
+                </Condition>
+            </UseTemplate>
+        </Component>
+        
+        <Component ID="SWITCH_MP#DCDU_SIDE#_DIM_SEQ1" Node="SWITCH_MP#DCDU_SIDE#_DIM_SEQ1">
+			<UseTemplate Name="ASOBO_GT_Emissive_Gauge">
+				<EMISSIVE_CODE>(A:LIGHT POTENTIOMETER:#POTENTIOMETER_ID#, Percent over 100)</EMISSIVE_CODE>
+			</UseTemplate>
+		</Component>
     </Template>
 
     <!--
@@ -92,13 +193,19 @@
     <Template Name="FBW_Airbus_DCDU_Generic_Switch">
         <DefaultTemplateParameters>
             <POTENTIOMETER_ID>85</POTENTIOMETER_ID>
+            <SEQ1_EMISSIVE_DRIVES_VISIBILITY>False</SEQ1_EMISSIVE_DRIVES_VISIBILITY>
+            <WWISE_EVENT_1>fmc_push_button_on</WWISE_EVENT_1>
+            <WWISE_EVENT_2>fmc_push_button_off</WWISE_EVENT_2>
+            <NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
+            <NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2> 
         </DefaultTemplateParameters>
 
         <UseTemplate Name="ASOBO_GT_Push_Button_Airliner">
+            <ANIM_NAME>#NODE_ID#</ANIM_NAME>
             <SEQ1_EMISSIVE_CODE>(A:LIGHT POTENTIOMETER:#POTENTIOMETER_ID#, percent) 100 /</SEQ1_EMISSIVE_CODE>
             <SEQ2_EMISSIVE_CODE>1</SEQ2_EMISSIVE_CODE>
 
-            <LEFT_SINGLE_CODE>#PUSH_CODE#</LEFT_SINGLE_CODE>
+            <LEFT_SINGLE_CODE>(&gt;H:#PLANE_NAME#_DCDU_BTN_#HTML_EVENT_ID#)</LEFT_SINGLE_CODE>
         </UseTemplate>
     </Template>
 
@@ -114,27 +221,9 @@
     -->
     <Template Name="FBW_Airbus_DCDU_Generic_Inop_Switch">
         <UseTemplate Name="FBW_Airbus_DCDU_Generic_Switch">
-            <PUSH_CODE>
-                1 (&gt;L:#PLANE_NAME#_PANEL_DCDU_INOP_PUSHED)
-            </PUSH_CODE>
-        </UseTemplate>
-    </Template>
-
-    <!--
-    Template for rigging DCDU brightness
-
-    Main Parameters:
-            - DCDU_SIDE         <no default>    Either L or R
-            - PLANE_NAME        <no default>    Plane project name
-
-    Authors: Benjamin Dupont (@Benjozork) 11/10/20
-    -->
-    <Template Name="FBW_Airbus_DCDU_2State_Emissive">
-        <UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
-            <NODE_ID>SCREEN_COM_#DCDU_SIDE#</NODE_ID>
-            <EMISSIVE_CODE>(L:#PLANE_NAME#_PANEL_DCDU_#DCDU_SIDE#_BRIGHTNESS, Bool) if{ 1 } els{ 0.5 }</EMISSIVE_CODE>
-            <PART_ID>SCREEN_COM1</PART_ID>
-            <CAMERA_TITLE>ECAM</CAMERA_TITLE>
+            <HTML_EVENT_ID>
+                INOP
+            </HTML_EVENT_ID>
         </UseTemplate>
     </Template>
 

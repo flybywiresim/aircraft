@@ -23,6 +23,12 @@ class A320_Neo_Com extends BaseAirliners {
         return "A320_Neo_Com";
     }
 
+    Init() {
+        super.Init();
+
+        this.electricity = this.querySelector("#Electricity");
+    }
+
     connectedCallback() {
         super.connectedCallback();
 
@@ -44,16 +50,25 @@ class A320_Neo_Com extends BaseAirliners {
     }
 
     onInteractionEvent(_args) {
+        const eventString = String(_args);
+        const searchString = "DCDU_BTN_";
+        const index = eventString.indexOf(searchString);
+        if (index !== -1) {
+            const event = eventString.substring(index + searchString.length);
+            console.log("DCDU event captured: " + event);
+
+            if (event.includes("INOP")) {
+                this.setShowInop();
+            }
+        }
     }
 
     Update() {
         super.Update();
 
         this.updatePowerState();
+        this.updateScreenState();
         this.setShowSelfTest();
-
-        this.updateInopPushedState();
-        this.setShowInop();
     }
 
     updatePowerState() {
@@ -67,6 +82,10 @@ class A320_Neo_Com extends BaseAirliners {
         this.acPowerStateChange = isAcPowerAvailable !== this.lastAcPowerState;
 
         this.lastAcPowerState = isAcPowerAvailable;
+    }
+
+    updateScreenState() {
+        this.electricity.style.display = this.lastAcPowerState ? "block" : "none";
     }
 
     setShowSelfTest() {
@@ -85,24 +104,11 @@ class A320_Neo_Com extends BaseAirliners {
         }
     }
 
-    updateInopPushedState() {
-        const currentInopPushed = SimVar.GetSimVarValue("L:A32NX_PANEL_DCDU_INOP_PUSHED", "Bool") === 1;
-
-        this.inopPushedChange = currentInopPushed !== this.lastInopPushedState && currentInopPushed;
-
-        this.lastInopPushedState = currentInopPushed;
-    }
-
     setShowInop() {
-        if (this.inopPushedChange) {
-            this.view.inopWrapper.style.visibility = "visible";
-
-            setTimeout(() => {
-                this.view.inopWrapper.style.visibility = "hidden";
-
-                SimVar.SetSimVarValue("L:A32NX_PANEL_DCDU_INOP_PUSHED", "Bool", 0);
-            }, INOP_SHOW_DURATION);
-        }
+        this.view.inopWrapper.style.visibility = "visible";
+        setTimeout(() => {
+            this.view.inopWrapper.style.visibility = "hidden";
+        }, INOP_SHOW_DURATION);
     }
 
 }
