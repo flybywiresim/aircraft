@@ -184,6 +184,24 @@
             <Range LowerBound="1" />
             <WwiseRTPC SimVar="GENERAL ENG RPM" Units="RPM" Index="2" RTPCName="SIMVAR_GENERAL_ENG_RPM" />
         </Sound>
+        <Sound WwiseEvent="ISpoolL" WwiseData="true" NodeName="Engine_PIVOT_LEFT_2" SimVar="GENERAL ENG RPM" Units="RPM" Index="1" ViewPoint="Inside" Continuous="true" >
+            <Range LowerBound="1" />
+            <WwiseRTPC SimVar="GENERAL ENG RPM" Units="RPM" Index="1" RTPCName="SIMVAR_GENERAL_ENG_RPM" />
+        </Sound>
+        <Sound WwiseEvent="ISpoolR" WwiseData="true" NodeName="Engine_PIVOT_RIGHT_2" SimVar="GENERAL ENG RPM" Units="RPM" Index="2" ViewPoint="Inside" Continuous="true" >
+            <Range LowerBound="1" />
+            <WwiseRTPC SimVar="GENERAL ENG RPM" Units="RPM" Index="2" RTPCName="SIMVAR_GENERAL_ENG_RPM" />
+        </Sound>
+        <Sound WwiseEvent="RumbleL" WwiseData="true" NodeName="Engine_PIVOT_LEFT_2" SimVar="GENERAL ENG RPM" Units="RPM" Index="1" ViewPoint="Inside" Continuous="true" >
+            <Range LowerBound="1" />
+            <WwiseRTPC SimVar="GENERAL ENG RPM" Units="RPM" Index="1" RTPCName="SIMVAR_GENERAL_ENG_RPM" />
+        </Sound>
+        <Sound WwiseEvent="RumbleR" WwiseData="true" NodeName="Engine_PIVOT_RIGHT_2" SimVar="GENERAL ENG RPM" Units="RPM" Index="2" ViewPoint="Inside" Continuous="true" >
+            <Range LowerBound="1" />
+            <WwiseRTPC SimVar="GENERAL ENG RPM" Units="RPM" Index="2" RTPCName="SIMVAR_GENERAL_ENG_RPM" />
+        </Sound>
+
+
 
 
         <!-- FUEL PUMP SOUNDS ========================================================================================== -->
