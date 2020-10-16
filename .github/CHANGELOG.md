@@ -58,6 +58,7 @@
 1. [LIVERY] Bundle the FlyByWire Livery with the A32NX addon - @devsnek (devsnek)
 1. [ECAM] Added cockpit door video - @Benjozork (Benjamin Dupont)
 1. [MISC] Standby Instrument stays ON if emergency power should be available, bug fixes - @2hwk (2Cas#1022 on discord)
+1. [ECAM] Engine bleed valve closes at N2 > 50% @RichardPilbery (Richard Pilbery)
 
 ## 2020/09
 1. [General] Add CHANGELOG.md - @nathaninnes (Nathan Innes)

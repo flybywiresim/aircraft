@@ -63,6 +63,10 @@ var A320_Neo_LowerECAM_Engine;
                     ignLeftTargetState = A320_Neo_LowerECAM_Engine.Definitions.IGN_STATE.A;
                 }
             }
+            if(n2Percent > 50) {
+                // Close left valve
+                this.engineLeft.setEngineBleedValveState(false, false);
+            }
             let ignRightTargetState = A320_Neo_LowerECAM_Engine.Definitions.IGN_STATE.NONE;
             engineStarting = (SimVar.GetSimVarValue("GENERAL ENG STARTER:2", "bool") === 1) ? true : false;
             n2Igniting = (SimVar.GetSimVarValue("TURB ENG IS IGNITING:2", "bool") === 1) ? true : false;
@@ -73,6 +77,11 @@ var A320_Neo_LowerECAM_Engine;
                 } else {
                     ignRightTargetState = A320_Neo_LowerECAM_Engine.Definitions.IGN_STATE.A;
                 }
+            }
+            if(n2Percent > 50) {
+                // Close right valve
+                //console.log("Right engine N2 >50%");
+                this.engineRight.setEngineBleedValveState(false, false);
             }
             let ignNeedRefreshTitle = false;
             if (ignLeftTargetState != this.ignLeftCurrentState) {
