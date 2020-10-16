@@ -63,7 +63,7 @@ var A320_Neo_LowerECAM_Engine;
                     ignLeftTargetState = A320_Neo_LowerECAM_Engine.Definitions.IGN_STATE.A;
                 }
             }
-            if(n2Percent > 50) {
+            if (n2Percent > 50) {
                 // Close left valve
                 this.engineLeft.setEngineBleedValveState(false, false);
             }
@@ -78,7 +78,7 @@ var A320_Neo_LowerECAM_Engine;
                     ignRightTargetState = A320_Neo_LowerECAM_Engine.Definitions.IGN_STATE.A;
                 }
             }
-            if(n2Percent > 50) {
+            if (n2Percent > 50) {
                 // Close right valve
                 //console.log("Right engine N2 >50%");
                 this.engineRight.setEngineBleedValveState(false, false);
