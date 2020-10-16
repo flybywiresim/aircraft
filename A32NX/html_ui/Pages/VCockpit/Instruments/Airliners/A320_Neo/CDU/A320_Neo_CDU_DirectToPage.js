@@ -79,9 +79,9 @@ class CDUDirectToPage {
             ["", "WITH"],
             [waypointsCell[1], "ABEAM PTS[color]blue"],
             ["", "RADIAL IN"],
-            [waypointsCell[2], "[ ]°[color]blue"],
+            [waypointsCell[2], "[ ]d[color]blue"],
             ["", "RADIAL OUT"],
-            [waypointsCell[3], "[ ]°[color]blue"],
+            [waypointsCell[3], "[ ]d[color]blue"],
             [eraseLabel, insertLabel],
             [waypointsCell[4], insertLine]
         ]);

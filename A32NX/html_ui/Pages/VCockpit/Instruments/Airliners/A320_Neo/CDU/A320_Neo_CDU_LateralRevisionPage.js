@@ -29,7 +29,7 @@ class CDULateralRevisionPage {
             ["", "", coordinates + "[color]green"],
             [departureArrival, "FIX INFO>"],
             ["", "LL WING/INCR/NO"],
-            ["[][color]blue", "[ ]°/[ ]°/[][color]blue"],
+            ["[][color]blue", "[ ]d/[ ]d/[][color]blue"],
             ["", "NEXT WPT"],
             ["<HOLD[color]blue", "[ ][color]blue"],
             ["ENABLE[color]blue", "NEW DEST"],

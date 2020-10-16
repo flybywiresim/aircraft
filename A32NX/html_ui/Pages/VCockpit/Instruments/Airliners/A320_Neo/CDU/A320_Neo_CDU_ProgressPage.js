@@ -18,7 +18,7 @@ class CDUProgressPage {
             ["UPDATE AT"],
             ["*[][color]blue"],
             ["BRG / DIST"],
-            ["---°.----.-", "[ ][color]blue", "TO"],
+            ["---d.----.-", "[ ][color]blue", "TO"],
             ["PREDICTIVE"],
             ["<GPS", "GPS PRIMARY[color]green"],
             ["REQUIRED", "ESTIMATED", "ACCUR"],

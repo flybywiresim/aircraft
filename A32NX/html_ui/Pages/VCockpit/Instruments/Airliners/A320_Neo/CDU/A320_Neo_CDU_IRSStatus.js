@@ -43,7 +43,7 @@ class CDUIRSStatus {
             [`THDG`, "MHDG"],
             [`${Math.round(THDG)}[color]green`, `${Math.round(MHDG)}[color]green`],
             ["WIND", "GPIRS ACCUR"],
-            [`${Math.round(wind_dir)}°/${Math.round(WIND_VELOCITY)}[color]green`, `200FT[color]green`],
+            [`${Math.round(wind_dir)}d/${Math.round(WIND_VELOCITY)}[color]green`, `200FT[color]green`],
             ["GPIRS POSITION"],
             [`${currPos}[color]green`],
             ["", ""],

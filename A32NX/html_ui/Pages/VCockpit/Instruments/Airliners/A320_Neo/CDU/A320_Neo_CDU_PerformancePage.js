@@ -162,9 +162,9 @@ class CDUPerformancePage {
                 CDUPerformancePage.ShowTAKEOFFPage(mcdu);
             }
         };
-        let flexTakeOffTempCell = "[]°";
+        let flexTakeOffTempCell = "[]d";
         if (isFinite(mcdu.perfTOTemp)) {
-            flexTakeOffTempCell = mcdu.perfTOTemp + "°";
+            flexTakeOffTempCell = mcdu.perfTOTemp + "d";
         }
         mcdu.onRightInput[3] = () => {
             const value = mcdu.inOut;
@@ -593,9 +593,9 @@ class CDUPerformancePage {
             ["QNH", "FINAL", "FLP RETR"],
             [qnhCell + "[color]blue", finalCell + "[color]green", "F=" + flpRetrCell + "[color]green"],
             ["TEMP", "MDA", "SLT RETR"],
-            [tempCell + "°[color]blue", mdaCell + "[color]blue", "S=" + sltRetrCell + "[color]green"],
+            [tempCell + "d[color]blue", mdaCell + "[color]blue", "S=" + sltRetrCell + "[color]green"],
             ["MAG WIND", "DH", "CLEAN"],
-            [magWindHeadingCell + "°/" + magWindSpeedCell + "[color]blue", dhCell + "[color]blue", "0=" + cleanCell + "[color]green"],
+            [magWindHeadingCell + "d/" + magWindSpeedCell + "[color]blue", dhCell + "[color]blue", "0=" + cleanCell + "[color]green"],
             ["TRANS ALT", "LDG CONF"],
             [transAltCell + "[color]blue", "CONF3*[color]green"],
             ["VAPP", "", "VLS"],

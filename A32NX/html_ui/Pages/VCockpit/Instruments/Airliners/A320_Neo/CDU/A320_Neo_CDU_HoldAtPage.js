@@ -53,7 +53,7 @@ class CDUHoldAtPage {
             const rows = [];
             rows.push([(computed ? "COMPUTED HOLD at " : "HOLD at ") + waypoint.ident ]);
             rows.push(["INB CRS", "", ""]);
-            rows.push([holdCourse.toFixed(0) + "°[color]blue", "", ""]);
+            rows.push([holdCourse.toFixed(0) + "d[color]blue", "", ""]);
             rows.push(["TURN", computed ? "" : "REVERT TO", ""]);
             rows.push([holdTurn + "[color]blue", computed ? "" : "COMPUTED}[color]blue", ""]);
             rows.push(["TIME/DIST"]);

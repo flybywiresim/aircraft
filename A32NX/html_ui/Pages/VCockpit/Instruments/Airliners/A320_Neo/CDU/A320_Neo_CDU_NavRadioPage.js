@@ -42,7 +42,7 @@ class CDUNavRadioPage {
             };
             vor1CourseCell = "[]";
             if (mcdu.vor1Course >= 0) {
-                vor1CourseCell = mcdu.vor1Course.toFixed(0) + "°";
+                vor1CourseCell = mcdu.vor1Course.toFixed(0) + "d";
             }
             mcdu.onLeftInput[1] = () => {
                 const value = mcdu.inOut;
@@ -66,7 +66,7 @@ class CDUNavRadioPage {
                 ilsFrequencyCell = Avionics.Utils.formatRunway(approach.name) + "/ ";
                 const runway = mcdu.flightPlanManager.getApproachRunway();
                 if (runway) {
-                    ilsCourseCell = runway.direction.toFixed(0) + "°";
+                    ilsCourseCell = runway.direction.toFixed(0) + "d";
                 }
             }
             if (isFinite(mcdu.ilsFrequency) && mcdu.ilsFrequency > 0) {
@@ -136,7 +136,7 @@ class CDUNavRadioPage {
             };
             vor2CourseCell = "[]";
             if (mcdu.vor2Course >= 0) {
-                vor2CourseCell = mcdu.vor2Course.toFixed(0) + "°";
+                vor2CourseCell = mcdu.vor2Course.toFixed(0) + "d";
             }
             mcdu.onRightInput[1] = () => {
                 const value = mcdu.inOut;

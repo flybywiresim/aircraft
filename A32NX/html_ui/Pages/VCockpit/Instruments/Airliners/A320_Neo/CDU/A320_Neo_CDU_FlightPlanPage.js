@@ -284,7 +284,7 @@ class CDUFlightPlanPage {
                                 [waypoint.ident + "[color]" + color, speedConstraint + "/" + altitudeConstraint + "[s-text][color]" + color, timeCell + "[color]" + color],
                                 ["" , "IMM[color]blue" , "HOLD"],
                                 ["HOLD " + mcdu.activeHold.get(waypoint.ident).turn + "[color]" + color, "EXIT*[color]blue", "SPD " + mcdu.activeHold.get(waypoint.ident).speed],
-                                ["C" + mcdu.activeHold.get(waypoint.ident).course.toFixed(0) + "°"],
+                                ["C" + mcdu.activeHold.get(waypoint.ident).course.toFixed(0) + "d"],
                                 [waypoint.ident + "[color]" + color, speedConstraint + "/" + altitudeConstraint + "[s-text][color]" + color, timeCell + "[color]" + color]
                             ];
 
