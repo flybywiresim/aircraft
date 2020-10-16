@@ -753,7 +753,7 @@
                 <DefaultTemplateParameters>
                     <PLANE_NAME>A32NX</PLANE_NAME>
                 </DefaultTemplateParameters>
-            
+
                 <UseTemplate Name="ASOBO_LIGHTING_Knob_Potentiometer_Template">
                     <POTENTIOMETER>88</POTENTIOMETER>
                     <NODE_ID>KNOB_EFIS_CS_PFD</NODE_ID>
@@ -825,7 +825,7 @@
                 <DefaultTemplateParameters>
                     <PLANE_NAME>A32NX</PLANE_NAME>
                 </DefaultTemplateParameters>
-            
+
                 <UseTemplate Name="ASOBO_LIGHTING_Knob_Potentiometer_Template">
                     <POTENTIOMETER>90</POTENTIOMETER>
                     <NODE_ID>KNOB_EFIS_FO_PFD</NODE_ID>
@@ -1565,10 +1565,10 @@
                 </UseTemplate>
 
                 <UseTemplate Name="ASOBO_LIGHTING_Panel_Emissive_Template">
-                <NODE_ID>LIGHTS_OVHD</NODE_ID>
-                <SIMVAR_INDEX>4</SIMVAR_INDEX>
-                <POTENTIOMETER>86</POTENTIOMETER>
-            </UseTemplate>
+                    <NODE_ID>LIGHTS_OVHD</NODE_ID>
+                    <SIMVAR_INDEX>4</SIMVAR_INDEX>
+                    <POTENTIOMETER>86</POTENTIOMETER>
+                </UseTemplate>
 
                 <UseTemplate Name="ASOBO_LIGHTING_Switch_Light_Cabin_Template">
                     <POTENTIOMETER>7</POTENTIOMETER>
@@ -2513,6 +2513,42 @@
                     <TOGGLE_SIMVAR>L:A32NX_OVHD_APU_AUTOEXITING_TEST</TOGGLE_SIMVAR>
 
                     <SEQ1_CODE>(L:A32NX_OVHD_APU_AUTOEXITING_TEST, Bool) (L:A32NX_OVHD_APU_AUTOEXITING_TEST_STATUS, Bool) and</SEQ1_CODE>
+                </UseTemplate>
+            </Component>
+
+            <Component ID="Overhead_CabinPress">
+                <Component ID="KNOB_OVHD_CABINPRESS_LDGELEV" Node="KNOB_OVHD_CABINPRESS_LDGELEV">
+                    <UseTemplate Name="FBW_Continuous_Knob_Limited_From_Simvar">
+                        <NODE_ID>KNOB_OVHD_CABINPRESS_LDGELEV</NODE_ID>
+                        <ANIM_NAME>KNOB_OVHD_CABINPRESS_LDGELEV</ANIM_NAME>
+                        <LOCAL_SIMVAR>L:A32NX_LANDING_ELEVATION</LOCAL_SIMVAR>
+                        <LOCAL_SIMVAR_UNITS>feet</LOCAL_SIMVAR_UNITS>
+                        <INCREMENT>0.5</INCREMENT>
+                        <MAX_ROT_PERCENT>88</MAX_ROT_PERCENT>
+                        <CONVERSION_FORMULA>193.182 * 2000 -</CONVERSION_FORMULA>
+                    </UseTemplate>
+                </Component>
+
+                <UseTemplate Name="FBW_3State_Springloaded_Switch">
+                    <NODE_ID>SWITCH_OVHD_CABINPRESS_MANVSCTL</NODE_ID>
+                    <ANIM_SIMVAR>L:A32NX_MAN_VS_CONTROL</ANIM_SIMVAR>
+                    <INVERT_ANIM>1</INVERT_ANIM>
+                </UseTemplate>
+
+                <UseTemplate Name="FBW_Push_Toggle">
+                    <TOGGLE_NODE_ID>PUSH_OVHD_CABINPRESS_MODESEL</TOGGLE_NODE_ID>
+                    <TOGGLE_SIMVAR>L:A32NX_CAB_PRESS_MODE_MAN</TOGGLE_SIMVAR>
+                    <SHOULD_ANIM_TOGGLE/>
+                    <SEQ1_CODE>(L:A32NX_CAB_PRESS_SYS_FAULT)</SEQ1_CODE>
+                    <SEQ2_CODE>(L:A32NX_CAB_PRESS_MODE_MAN)</SEQ2_CODE>
+                </UseTemplate>
+
+                <UseTemplate Name="FBW_Covered_Push_Toggle">
+                    <TOGGLE_NODE_ID>PUSH_OVHD_CABINPRESS_DITCHING</TOGGLE_NODE_ID>
+                    <LOCK_NODE_ID>LOCK_OVHD_CABINPRESS_DITCHING</LOCK_NODE_ID>
+                    <TOGGLE_SIMVAR>L:A32NX_DITCHING</TOGGLE_SIMVAR>
+                    <SHOULD_ANIM_TOGGLE/>
+                    <SEQ2_CODE>(L:A32NX_DITCHING)</SEQ2_CODE>
                 </UseTemplate>
             </Component>
 
@@ -3560,21 +3596,6 @@
             </UseTemplate>
             <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
                 <NODE_ID>PUSH_OVHD_FUEL_MODESEL</NODE_ID>
-            </UseTemplate>
-            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-                <NODE_ID>SWITCH_OVHD_CABINPRESS_MANVSCTL</NODE_ID>
-            </UseTemplate>
-            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-                <NODE_ID>PUSH_OVHD_CABINPRESS_MODESEL</NODE_ID>
-            </UseTemplate>
-            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-                <NODE_ID>KNOB_OVHD_CABINPRESS_LDGELEV</NODE_ID>
-            </UseTemplate>
-            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-                <NODE_ID>LOCK_OVHD_CABINPRESS_DITCHING</NODE_ID>
-            </UseTemplate>
-            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-                <NODE_ID>PUSH_OVHD_CABINPRESS_DITCHING</NODE_ID>
             </UseTemplate>
             <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
                 <NODE_ID>PUSH_OVHD_CARGOVENT_AFTISOL</NODE_ID>
