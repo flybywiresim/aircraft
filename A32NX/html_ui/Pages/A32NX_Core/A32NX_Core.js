@@ -1,6 +1,7 @@
 class A32NX_Core {
     constructor() {
         this.modules = [
+            new A32NX_Pressurization(),
             new A32NX_ADIRS(),
             new A32NX_APU(),
             new A32NX_BrakeTemp(),
@@ -8,7 +9,7 @@ class A32NX_Core {
             new A32NX_LocalVarUpdater(),
             new A32NX_FADEC(1),
             new A32NX_FADEC(2),
-            new A32NX_GPWS(),
+            new A32NX_GPWS(),      
         ];
     }
 
