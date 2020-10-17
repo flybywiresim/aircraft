@@ -63,7 +63,7 @@
 
     <MiscellaneousSounds>
         <Sound WwiseEvent="AP_PREFLIGHT_CHECK_OVER" ViewPoint="Inside" WwiseData="true" />
-        <Sound WwiseData="false" WwiseEvent="FLAPS" FileName="FINALFLAPS" FullScaleDistance="3" Continuous="true" FadeOutType="2" FadeOutTime="0.5" />
+        <Sound WwiseData="false" WwiseEvent="FLAPS" FileName="FINALFLAPS" FullScaleDistance="2" Continuous="true" FadeOutType="2" FadeOutTime="0.5" />
     </MiscellaneousSounds>
 
     <!-- SimvarSounds ========================================================================================== -->
