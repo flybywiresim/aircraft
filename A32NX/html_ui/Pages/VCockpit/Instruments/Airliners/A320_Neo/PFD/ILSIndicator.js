@@ -14,23 +14,28 @@ class Jet_PFD_ILSIndicator extends HTMLElement {
         this.infoVisible = false;
         this._aircraft = Aircraft.A320_NEO;
     }
+
     get aircraft() {
         return this._aircraft;
     }
+
     set aircraft(_val) {
-        if (this._aircraft != _val) {
+        if (this._aircraft !== _val) {
             this._aircraft = _val;
             this.construct();
         }
     }
+
     connectedCallback() {
         this.construct();
     }
+
     construct() {
         Utils.RemoveAllChildren(this);
         this.InfoGroup = null;
         this.construct_A320_Neo();
     }
+
     construct_A320_Neo() {
         let posX = 0;
         let posY = 0;
@@ -223,8 +228,9 @@ class Jet_PFD_ILSIndicator extends HTMLElement {
         }
         this.appendChild(this.rootSVG);
     }
+
     update(_deltaTime) {
-        if (!this.gsVisible && SimVar.GetSimVarValue("L:A32NX_ADIRS_PFD_ALIGNED_FIRST", "Bool") == 0) {
+        if (!this.gsVisible && SimVar.GetSimVarValue("L:A32NX_ADIRS_PFD_ALIGNED_FIRST", "Bool") === 0) {
             this.neutralLine.setAttribute("visibility", "hidden");
         } else {
             this.neutralLine.setAttribute("visibility", "visible");
@@ -234,11 +240,11 @@ class Jet_PFD_ILSIndicator extends HTMLElement {
             const isApproachLoaded = Simplane.getAutoPilotApproachLoaded();
             const approachType = Simplane.getAutoPilotApproachType();
             if (this.gs_cursorGroup && this.gsVisible) {
-                if (isApproachLoaded && approachType == 10) {
+                if (isApproachLoaded && approachType === 10) {
                     const gsi = -SimVar.GetSimVarValue("GPS VERTICAL ERROR", "meters");
                     const delta = 0.5 + (gsi / 150.0) / 2;
                     let y = this.gs_cursorMinY + (this.gs_cursorMaxY - this.gs_cursorMinY) * delta;
-                    if (y >= 220 && y <= 230 || SimVar.GetSimVarValue("L:A32NX_OFF_GS", "bool") == 0) {
+                    if (y >= 220 && y <= 230 || SimVar.GetSimVarValue("L:A32NX_OFF_GS", "Bool") === 0) {
                         SimVar.SetSimVarValue("L:A32NX_OFF_GS", "bool", 0);
                     }
                     if (y < 105 || y > 340) {
@@ -262,7 +268,7 @@ class Jet_PFD_ILSIndicator extends HTMLElement {
                     const gsi = -SimVar.GetSimVarValue("NAV GSI:" + localizer.id, "number") / 127.0;
                     const delta = (gsi + 1.0) * 0.5;
                     let y = this.gs_cursorMinY + (this.gs_cursorMaxY - this.gs_cursorMinY) * delta;
-                    if (y >= 220 && y <= 230 || SimVar.GetSimVarValue("L:A32NX_OFF_GS", "bool") == 0) {
+                    if (y >= 220 && y <= 230 || SimVar.GetSimVarValue("L:A32NX_OFF_GS", "bool") === 0) {
                         SimVar.SetSimVarValue("L:A32NX_OFF_GS", "bool", 0);
                     }
                     if (y < 105 || y > 340) {
@@ -290,11 +296,11 @@ class Jet_PFD_ILSIndicator extends HTMLElement {
                 }
             }
             if (this.loc_cursorGroup && this.locVisible) {
-                if ((!isApproachLoaded || approachType != 10) && localizer.id > 0) {
+                if ((!isApproachLoaded || approachType !== 10) && localizer.id > 0) {
                     const cdi = SimVar.GetSimVarValue("NAV CDI:" + localizer.id, "number") / 127.0;
                     const delta = (cdi + 1.0) * 0.5;
                     let x = this.loc_cursorMinX + (this.loc_cursorMaxX - this.loc_cursorMinX) * delta;
-                    if (x >= 245 && x <= 255 || SimVar.GetSimVarValue("L:A32NX_OFF_LOC", "bool") == 0) {
+                    if (x >= 245 && x <= 255 || SimVar.GetSimVarValue("L:A32NX_OFF_LOC", "bool") === 0) {
                         SimVar.SetSimVarValue("L:A32NX_OFF_LOC", "bool", 0);
                     }
                     if (x < 115 || x > 375) {
@@ -335,6 +341,7 @@ class Jet_PFD_ILSIndicator extends HTMLElement {
             }
         }
     }
+
     showLocalizer(_val) {
         this.locVisible = _val;
         if (_val) {
@@ -345,6 +352,7 @@ class Jet_PFD_ILSIndicator extends HTMLElement {
             this.loc_cursorShapeRight.removeAttribute("visibility");
         }
     }
+
     showGlideslope(_val) {
         this.gsVisible = _val;
         if (_val) {
@@ -355,6 +363,7 @@ class Jet_PFD_ILSIndicator extends HTMLElement {
             this.gs_cursorShapeDown.removeAttribute("visibility");
         }
     }
+
     showNavInfo(_val) {
         this.infoVisible = _val;
         if (this.InfoGroup) {
@@ -366,5 +375,6 @@ class Jet_PFD_ILSIndicator extends HTMLElement {
         }
     }
 }
+
 customElements.define("jet-pfd-ils-indicator", Jet_PFD_ILSIndicator);
 //# sourceMappingURL=ILSIndicator.js.map

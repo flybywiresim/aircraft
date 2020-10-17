@@ -4,26 +4,18 @@ class Jet_MFD_NDCompass extends Jet_NDCompass {
         this._lastNavAid1State = NAV_AID_STATE.OFF;
         this._lastNavAid2State = NAV_AID_STATE.OFF;
     }
+
     connectedCallback() {
         super.connectedCallback();
     }
+
     init() {
         super.init();
     }
+
     constructArc() {
         super.constructArc();
-        if (this.aircraft == Aircraft.CJ4) {
-            this.constructArc_CJ4();
-        } else if (this.aircraft == Aircraft.B747_8) {
-            this.constructArc_B747_8();
-        } else if (this.aircraft == Aircraft.AS01B) {
-            this.constructArc_AS01B();
-        } else {
-            this.constructArc_A320_Neo();
-        }
-    }
-    constructArc_CJ4() { }
-    constructArc_A320_Neo() {
+
         this.root = document.createElementNS(Avionics.SVG.NS, "svg");
         this.root.setAttribute("width", "100%");
         this.root.setAttribute("height", "100%");
@@ -125,7 +117,7 @@ class Jet_MFD_NDCompass extends Jet_NDCompass {
                     let radians = 0;
                     for (let i = 0; i < dashSpacing; i++) {
                         const line = document.createElementNS(Avionics.SVG.NS, "line");
-                        const bIsBig = (i % 2 == 0) ? true : false;
+                        const bIsBig = (i % 2 === 0) ? true : false;
                         const length = (bIsBig) ? 17 : 8.5;
                         const lineStart = 50 + circleRadius;
                         const lineEnd = 55 + circleRadius + length;
@@ -143,7 +135,7 @@ class Jet_MFD_NDCompass extends Jet_NDCompass {
                             text.setAttribute("x", "50");
                             text.setAttribute("y", (-(circleRadius - 50 + length + 10)).toString());
                             text.setAttribute("fill", "white");
-                            text.setAttribute("font-size", (i % 3 == 0) ? "32" : "20");
+                            text.setAttribute("font-size", (i % 3 === 0) ? "32" : "20");
                             text.setAttribute("font-family", "Roboto-Bold");
                             text.setAttribute("text-anchor", "middle");
                             text.setAttribute("alignment-baseline", "bottom");
@@ -225,24 +217,10 @@ class Jet_MFD_NDCompass extends Jet_NDCompass {
             }
         }
     }
-    constructArc_B747_8() { }
-    constructArc_AS01B() {
-    }
+
     constructPlan() {
         super.constructPlan();
-        if (this.aircraft == Aircraft.B747_8) {
-            this.constructPlan_B747_8();
-        } else if (this.aircraft == Aircraft.AS01B) {
-            this.constructPlan_AS01B();
-        } else if (this.aircraft == Aircraft.CJ4) {
-            this.constructPlan_CJ4();
-        } else {
-            this.constructPlan_A320_Neo();
-        }
-    }
-    constructPlan_B747_8() { }
-    constructPlan_AS01B() { }
-    constructPlan_A320_Neo() {
+
         this.root = document.createElementNS(Avionics.SVG.NS, "svg");
         this.root.setAttribute("width", "100%");
         this.root.setAttribute("height", "100%");
@@ -301,20 +279,9 @@ class Jet_MFD_NDCompass extends Jet_NDCompass {
             }
         }
     }
-    constructPlan_CJ4() { }
+
     constructRose() {
         super.constructRose();
-        if (this.aircraft == Aircraft.CJ4) {
-            this.constructRose_CJ4();
-        } else if (this.aircraft == Aircraft.B747_8) {
-            this.constructRose_B747_8();
-        } else if (this.aircraft == Aircraft.AS01B) {
-            this.constructRose_AS01B();
-        } else {
-            this.constructRose_A320_Neo();
-        }
-    }
-    constructRose_A320_Neo() {
         this.root = document.createElementNS(Avionics.SVG.NS, "svg");
         this.root.setAttribute("width", "100%");
         this.root.setAttribute("height", "100%");
@@ -331,7 +298,7 @@ class Jet_MFD_NDCompass extends Jet_NDCompass {
             {
                 for (let i = 0; i < 72; i++) {
                     const line = document.createElementNS(Avionics.SVG.NS, "rect");
-                    const length = i % 2 == 0 ? 26 : 13;
+                    const length = i % 2 === 0 ? 26 : 13;
                     line.setAttribute("x", "498");
                     line.setAttribute("y", fastToFixed(833, 0));
                     line.setAttribute("width", "4");
@@ -459,9 +426,9 @@ class Jet_MFD_NDCompass extends Jet_NDCompass {
                 this.courseGroup.appendChild(this.course);
                 {
                     this.courseColor = "";
-                    if (this.navigationMode == Jet_NDCompass_Navigation.ILS) {
+                    if (this.navigationMode === Jet_NDCompass_Navigation.ILS) {
                         this.courseColor = "#ff00ff";
-                    } else if (this.navigationMode == Jet_NDCompass_Navigation.VOR) {
+                    } else if (this.navigationMode === Jet_NDCompass_Navigation.VOR) {
                         this.courseColor = "#00ffff";
                     }
                     this.courseTO = document.createElementNS(Avionics.SVG.NS, "path");
@@ -560,7 +527,7 @@ class Jet_MFD_NDCompass extends Jet_NDCompass {
                 this.selectedHeadingGroup.appendChild(this.selectedHeadingBug);
             }
             this.rotatingCircle.appendChild(this.selectedHeadingGroup);
-            if (this.navigationMode == Jet_NDCompass_Navigation.NAV || this.navigationMode == Jet_NDCompass_Navigation.ILS) {
+            if (this.navigationMode === Jet_NDCompass_Navigation.NAV || this.navigationMode === Jet_NDCompass_Navigation.ILS) {
                 this.ilsGroup = document.createElementNS(Avionics.SVG.NS, "g");
                 this.ilsGroup.setAttribute("id", "ILSGroup");
                 {
@@ -574,7 +541,7 @@ class Jet_MFD_NDCompass extends Jet_NDCompass {
                 }
                 this.rotatingCircle.appendChild(this.ilsGroup);
             }
-            if (this.navigationMode == Jet_NDCompass_Navigation.NAV) {
+            if (this.navigationMode === Jet_NDCompass_Navigation.NAV) {
                 this.selectedTrackGroup = document.createElementNS(Avionics.SVG.NS, "g");
                 this.selectedTrackGroup.setAttribute("id", "selectedTrackGroup");
                 {
@@ -596,7 +563,7 @@ class Jet_MFD_NDCompass extends Jet_NDCompass {
         this.root.appendChild(this.glideSlopeGroup);
         if (this.navigationMode === Jet_NDCompass_Navigation.ILS) {
             for (let i = 0; i < 5; i++) {
-                if (i != 2) {
+                if (i !== 2) {
                     const glideSlopeDot = document.createElementNS(Avionics.SVG.NS, "circle");
                     glideSlopeDot.setAttribute("cx", "950");
                     glideSlopeDot.setAttribute("cy", (250 + i * 125).toFixed(0));
@@ -637,33 +604,33 @@ class Jet_MFD_NDCompass extends Jet_NDCompass {
             this.root.appendChild(neutralLine);
         }
     }
-    constructRose_B747_8() { }
-    constructRose_AS01B() { }
-    constructRose_CJ4() { }
+
     updateFail() {
-        const failed = SimVar.GetSimVarValue("L:A320_Neo_ADIRS_STATE", "Enum") != 2;
+        const adirsNotAligned = SimVar.GetSimVarValue("L:A320_Neo_ADIRS_STATE", "Enum") !== 2;
+
         if (this.arcs) {
             for (const arc of this.arcs) {
-                arc.setAttribute("fill", failed ? "red" : "white");
+                arc.setAttribute("fill", adirsNotAligned ? "red" : "white");
             }
         }
+
         if (this.rotatingCircle) {
-            this.rotatingCircle.setAttribute("visibility", failed ? "hidden" : "visible");
+            this.rotatingCircle.setAttribute("visibility", adirsNotAligned ? "hidden" : "visible");
         }
         if (this.failCircle) {
-            this.failCircle.setAttribute("visibility", failed ? "visible" : "hidden");
+            this.failCircle.setAttribute("visibility", adirsNotAligned ? "visible" : "hidden");
         }
         if (this.failCircle2) {
-            this.failCircle2.setAttribute("visibility", failed ? "visible" : "hidden");
+            this.failCircle2.setAttribute("visibility", adirsNotAligned ? "visible" : "hidden");
         }
         if (this.headingGroup) {
-            this.headingGroup.setAttribute("visibility", failed ? "hidden" : "visible");
+            this.headingGroup.setAttribute("visibility", adirsNotAligned ? "hidden" : "visible");
         }
         if (this.selectedHeadingGroup) {
-            this.selectedHeadingGroup.setAttribute("visibility", failed ? "hidden" : "visible");
+            this.selectedHeadingGroup.setAttribute("visibility", adirsNotAligned ? "hidden" : "visible");
         }
         if (this.neutralLine) {
-            this.neutralLine.setAttribute("visibility", failed ? "hidden" : "visible");
+            this.neutralLine.setAttribute("visibility", adirsNotAligned ? "hidden" : "visible");
         }
     }
 
@@ -672,7 +639,7 @@ class Jet_MFD_NDCompass extends Jet_NDCompass {
      */
     updateNavAid() {
         // Don't show arrows if ADIRS not ready
-        const failed = SimVar.GetSimVarValue("L:A320_Neo_ADIRS_STATE", "Enum") != 2;
+        const failed = SimVar.GetSimVarValue("L:A320_Neo_ADIRS_STATE", "Enum") !== 2;
         if (failed) {
             this.setAttribute("show_bearing1", "false");
             this.setAttribute("show_bearing2", "false");
@@ -683,7 +650,7 @@ class Jet_MFD_NDCompass extends Jet_NDCompass {
 
         // Navigation 1
         const navAid1State = Simplane.getAutoPilotNavAidState(1, 1);
-        if (this._lastNavAid1State != navAid1State) {
+        if (this._lastNavAid1State !== navAid1State) {
             switch (navAid1State) {
                 case NAV_AID_STATE.OFF:
                     this.logic_brg1Source = 0;
@@ -725,7 +692,7 @@ class Jet_MFD_NDCompass extends Jet_NDCompass {
 
         // Navigation 2
         const navAid2State = Simplane.getAutoPilotNavAidState(1, 2);
-        if (this._lastNavAid2State != navAid2State) {
+        if (this._lastNavAid2State !== navAid2State) {
             switch (navAid2State) {
                 case NAV_AID_STATE.OFF:
                     this.logic_brg2Source = 0;
@@ -781,5 +748,6 @@ class Jet_MFD_NDCompass extends Jet_NDCompass {
         this.updateFail();
     }
 }
+
 customElements.define("jet-mfd-nd-compass", Jet_MFD_NDCompass);
 //# sourceMappingURL=NDCompass.js.map

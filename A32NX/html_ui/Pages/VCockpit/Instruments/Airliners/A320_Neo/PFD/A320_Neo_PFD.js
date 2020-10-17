@@ -251,9 +251,9 @@ class A320_Neo_PFD_Airspeed extends NavSystemElement {
         super();
     }
     init(root) {
-        this.airspeed = this.gps.getChildById("Airspeed");
-        this.airspeed.aircraft = Aircraft.A320_NEO;
-        this.airspeed.gps = this.gps;
+        this.airspeedElement = this.gps.getChildById("Airspeed");
+        this.airspeedElement.aircraft = Aircraft.A320_NEO;
+        this.airspeedElement.gps = this.gps;
         this.getDeltaTime = A32NX_Util.createDeltaTimeCalculator(this._lastTime);
         const url = document.getElementsByTagName("a320-neo-pfd-element")[0].getAttribute("url");
         this.disp_index = parseInt(url.substring(url.length - 1));
@@ -267,7 +267,8 @@ class A320_Neo_PFD_Airspeed extends NavSystemElement {
         if (currentKnobValue <= 0.0) {
             return;
         }
-        this.airspeed.update(_deltaTime);
+
+        this.airspeedElement.update(_deltaTime);
     }
     onExit() {
     }

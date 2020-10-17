@@ -2,7 +2,7 @@ declare global {
 
     type NumberSimVarUnit = ("number" | "Number") | "position 32k" | ("SINT32") | ("bool" | "Bool" | "Boolean" | "boolean") | "Enum" | "lbs" | "kg" | ("Degrees" | "degree")
         | "radians" | ("Percent" | "percent") | ("Feet" | "feet" | "feets") | "Volts" | "Amperes" | "Hertz" | "PSI" | "celsius" | "degree latitude"
-        | "degree longitude" | "Meters per second" | "Position" | ("Knots" | "knots") | "Seconds"
+        | "degree longitude" | "Meters per second" | "feet per minute" | "Position" | ("Knots" | "knots") | "Seconds"
 
     type TextSimVarUnit = "Text" | "string"
 
@@ -15,6 +15,8 @@ declare global {
     }
 
     const Simplane: {
+        getIndicatedSpeed(): number
+
         getVerticalSpeed(): number
         getAltitude(): number
         getAltitudeAboveGround(): number
@@ -29,12 +31,17 @@ declare global {
         getPressureSelectedUnits(): string
         getPressureValue(_units?: string): number
 
+        getAutoPilotHeadingSelected(): boolean
+
         getAutoPilotDisplayedAltitudeLockValue(_units?: string): number
         getAutoPilotAirspeedManaged(): boolean
         getAutoPilotHeadingManaged(): boolean
         getAutoPilotAltitudeManaged(): boolean
 
+        getAutoPilotFlightDirectorActive(index: number): boolean
+
         getAutoPilotMachModeActive(): number
+
         getEngineActive(_engineIndex: number): number
         getEngineThrottle(_engineIndex: number): number
         getEngineThrottleMaxThrust(_engineIndex: number): number

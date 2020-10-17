@@ -10,7 +10,7 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
         this.stripHeight = 0;
         this.stripBorderSize = 0;
         this.stripOffsetX = 0;
-        this.speedMarkers = new Array();
+        this.speedMarkers = [];
         this.speedMarkersWidth = 50;
         this.speedMarkersHeight = 50;
         this.graduationScrollPosX = 0;
@@ -34,31 +34,37 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
         this._lastMaxSpeedOverrideTime = 0;
         this._smoothFactor = 0.5;
     }
+
     static get observedAttributes() {
         return ["hud"];
     }
+
     get aircraft() {
         return this._aircraft;
     }
+
     set aircraft(_val) {
-        if (this._aircraft != _val) {
+        if (this._aircraft !== _val) {
             this._aircraft = _val;
             this.construct();
         }
     }
+
     connectedCallback() {
         this.construct();
     }
+
     attributeChangedCallback(name, oldValue, newValue) {
-        if (oldValue == newValue) {
+        if (oldValue === newValue) {
             return;
         }
         switch (name) {
             case "hud":
-                this.isHud = newValue == "true";
+                this.isHud = newValue === "true";
                 break;
         }
     }
+
     construct() {
         Utils.RemoveAllChildren(this);
         this.machPrefixSVG = null;
@@ -97,8 +103,10 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
         this.stripBorderSize = 0;
         this.stripOffsetX = 0;
         this.altOver20k = false;
+
         this.construct_A320_Neo();
     }
+
     construct_A320_Neo() {
         this.rootSVG = document.createElementNS(Avionics.SVG.NS, "svg");
         this.rootSVG.setAttribute("id", "ViewBox");
@@ -526,6 +534,7 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
         this.rootSVG.appendChild(this.rootGroup);
         this.appendChild(this.rootSVG);
     }
+
     createSpeedMarker(_text, _x, _y, _handler, _scale = 1.0, _textScale = 1.4, _color = "#00E64D", _bg = false, _params = []) {
         const svg = document.createElementNS(Avionics.SVG.NS, "svg");
         svg.setAttribute("id", _text + "_Marker");
@@ -572,6 +581,7 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
         speed.setAttribute("text-anchor", "start");
         speed.setAttribute("alignment-baseline", "central");
         svg.appendChild(speed);
+
         const marker = new AirspeedMarker(line, text, speed, _handler.bind(this));
         marker.svg = svg;
         marker.params = _params;
@@ -582,14 +592,14 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
         this.speedMarkerSVG.appendChild(svg);
         return marker;
     }
+
     update(dTime) {
         const indicatedSpeed = Simplane.getIndicatedSpeed();
         if (!this.altOver20k && Simplane.getAltitude() >= 20000) {
             this.altOver20k = true;
         }
         this.updateGraduationScrolling(indicatedSpeed);
-        const iasAcceleration = this.computeIAS(indicatedSpeed);
-        const speedTrend = iasAcceleration;
+        const speedTrend = this.computeIAS(indicatedSpeed);
         const crossSpeed = SimVar.GetGameVarValue("AIRCRAFT CROSSOVER SPEED", "Knots");
         const cruiseMach = SimVar.GetGameVarValue("AIRCRAFT CRUISE MACH", "mach");
         const crossSpeedFactor = Simplane.getCrossoverSpeedFactor(crossSpeed, cruiseMach);
@@ -602,6 +612,7 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
         const stallProtectionMax = Simplane.getStallProtectionMaxSpeed();
         const stallSpeed = Simplane.getStallSpeed();
         const planeOnGround = Simplane.getIsGrounded();
+
         this.smoothSpeeds(indicatedSpeed, dTime, maxSpeed, lowestSelectableSpeed, stallProtectionMin, stallProtectionMax, stallSpeed);
         this.updateSpeedTrendArrow(indicatedSpeed, speedTrend);
         this.updateTargetSpeeds(indicatedSpeed);
@@ -618,6 +629,7 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
         this.updateVSpeeds();
         this.updateFail();
     }
+
     smoothSpeeds(_indicatedSpeed, _dTime, _maxSpeed, _lowestSelectableSpeed, _stallProtectionMin, _stallProtectionMax, _stallSpeed) {
         let refSpeed = _maxSpeed;
         if (this.vLSStripSVG) {
@@ -659,6 +671,7 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
             this._alphaProtectionMax -= delta;
         }
     }
+
     updateSpeedOverride(_dTime) {
         if (Math.abs(this._maxSpeed - this._lastMaxSpeedOverride) >= 5) {
             this._lastMaxSpeedOverrideTime += _dTime / 1000;
@@ -671,6 +684,7 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
             this._lastMaxSpeedOverrideTime = 0;
         }
     }
+
     updateVSpeeds() {
         if (this.vSpeedSVG) {
             if (Simplane.getIndicatedSpeed() < 30) {
@@ -684,6 +698,7 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
             }
         }
     }
+
     computeIAS(_currentSpeed) {
         const newIASTime = {
             ias: _currentSpeed,
@@ -707,12 +722,7 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
         this._lastIASTime = newIASTime;
         return this._computedIASAcceleration * 10;
     }
-    getAutopilotMode() {
-        if (Simplane.getAutoPilotAirspeedHoldActive()) {
-            return AutopilotMode.SELECTED;
-        }
-        return AutopilotMode.MANAGED;
-    }
+
     updateMachSpeed(dTime) {
         if (this.machPrefixSVG && this.machValueSVG) {
             const trueMach = Simplane.getMachSpeed();
@@ -738,10 +748,12 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
             this.machValueSVG.setAttribute("visibility", "hidden");
         }
     }
+
     arcToSVG(_value) {
         const pixels = (_value * this.graduationSpacing * (this.nbSecondaryGraduations + 1)) / 10;
         return pixels;
     }
+
     updateGraduationScrolling(_speed) {
         if (this.graduations) {
             if (_speed < this.graduationMinValue) {
@@ -755,7 +767,7 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
             for (let i = 0; i < this.totalGraduations; i++) {
                 const posX = this.graduationScrollPosX;
                 const posY = currentY;
-                if ((currentVal < this.graduationMinValue) || (currentVal == this.graduationMinValue && !this.graduations[i].SVGText1)) {
+                if ((currentVal < this.graduationMinValue) || (currentVal === this.graduationMinValue && !this.graduations[i].SVGText1)) {
                     this.graduations[i].SVGLine.setAttribute("visibility", "hidden");
                     if (this.graduations[i].SVGText1) {
                         this.graduations[i].SVGText1.setAttribute("visibility", "hidden");
@@ -764,25 +776,12 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
                     this.graduations[i].SVGLine.setAttribute("visibility", "visible");
                     this.graduations[i].SVGLine.setAttribute("transform", "translate(" + posX.toString() + " " + posY.toString() + ")");
                     if (this.graduations[i].SVGText1) {
-                        if (this.aircraft == Aircraft.CJ4) {
-                            if ((currentVal % 4) == 0) {
-                                this.graduations[i].SVGText1.textContent = currentVal.toString();
-                            } else {
-                                this.graduations[i].SVGText1.textContent = "";
-                            }
-                        } else if (this.aircraft == Aircraft.B747_8 || this.aircraft == Aircraft.AS01B) {
-                            if (currentVal < this.graduationMinValue) {
-                                this.graduations[i].SVGText1.textContent = "";
-                            } else {
-                                this.graduations[i].SVGText1.textContent = currentVal.toString();
-                            }
+                        if (currentVal < this.graduationMinValue) {
+                            this.graduations[i].SVGText1.textContent = "";
                         } else {
-                            if (currentVal < this.graduationMinValue) {
-                                this.graduations[i].SVGText1.textContent = "";
-                            } else {
-                                this.graduations[i].SVGText1.textContent = Utils.leadingZeros(currentVal, 3);
-                            }
+                            this.graduations[i].SVGText1.textContent = Utils.leadingZeros(currentVal, 3);
                         }
+
                         this.graduations[i].SVGText1.setAttribute("visibility", "visible");
                         this.graduations[i].SVGText1.setAttribute("transform", "translate(" + posX.toString() + " " + (posY + 3).toString() + ")");
                     }
@@ -800,6 +799,7 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
             }
         }
     }
+
     valueToSvg(current, target) {
         const _top = 0;
         const _height = this.refHeight;
@@ -812,22 +812,22 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
         posY += 2.5;
         return posY;
     }
+
     updateSpeedTrendArrow(currentAirspeed, speedTrend, hide = false) {
         let hideArrow = true;
         if (this.speedTrendArrowSVG && !hide) {
             if (currentAirspeed > 40 && Math.abs(speedTrend) > 1) {
                 const arrowBaseY = this.valueToSvg(currentAirspeed, currentAirspeed);
                 const arrowTopY = this.valueToSvg(currentAirspeed, currentAirspeed + speedTrend);
+
                 let arrowPath = "M 70 " + arrowBaseY + " L 70 " + arrowTopY.toFixed(1) + " ";
-                if (this.aircraft == Aircraft.CJ4) {
-                    arrowPath += "L 50 " + arrowTopY.toFixed(1);
+
+                if (speedTrend > 0) {
+                    arrowPath += "M 62 " + (arrowTopY + 8).toFixed(1) + " L 70 " + arrowTopY.toFixed(1) + " L 78 " + (arrowTopY + 8).toFixed(1);
                 } else {
-                    if (speedTrend > 0) {
-                        arrowPath += "M 62 " + (arrowTopY + 8).toFixed(1) + " L 70 " + arrowTopY.toFixed(1) + " L 78 " + (arrowTopY + 8).toFixed(1);
-                    } else {
-                        arrowPath += "M 62 " + (arrowTopY - 8).toFixed(1) + " L 70 " + arrowTopY.toFixed(1) + " L 78 " + (arrowTopY - 8).toFixed(1);
-                    }
+                    arrowPath += "M 62 " + (arrowTopY - 8).toFixed(1) + " L 70 " + arrowTopY.toFixed(1) + " L 78 " + (arrowTopY - 8).toFixed(1);
                 }
+
                 this.speedTrendArrowSVGShape.setAttribute("d", arrowPath);
                 hideArrow = false;
             }
@@ -838,6 +838,7 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
             this.speedTrendArrowSVG.setAttribute("visibility", "visible");
         }
     }
+
     updateTargetSpeeds(currentAirspeed) {
         let takeOffSpeedNotSet = false;
         let hudSpeed = -1;
@@ -864,7 +865,7 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
                         this.blueSpeedSVG.setAttribute("y", (blueSpeedPosY - blueSpeedHeight * 0.5).toString());
                     }
                     hideBluePointer = false;
-                } else if (SimVar.GetSimVarValue("L:A32NX_ADIRS_PFD_ALIGNED_FIRST", "Bool") == 1) {
+                } else if (SimVar.GetSimVarValue("L:A32NX_ADIRS_PFD_ALIGNED_FIRST", "Bool") === 1) {
                     hideBlueText = false;
                 }
                 hudSpeed = blueAirspeed;
@@ -928,11 +929,12 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
         if (this.speedNotSetSVG) {
             this.speedNotSetSVG.setAttribute("visibility", (takeOffSpeedNotSet) ? "visible" : "hidden");
         }
-        if (this.hudAPSpeed != hudSpeed) {
+        if (this.hudAPSpeed !== hudSpeed) {
             this.hudAPSpeed = Math.round(hudSpeed);
             SimVar.SetSimVarValue("L:HUD_AP_SELECTED_SPEED", "Number", this.hudAPSpeed);
         }
     }
+
     updateNextFlapSpeedIndicator(currentAirspeed, nextFlapSpeed) {
         if (this.nextFlapSVG) {
             let hidePointer = true;
@@ -951,6 +953,7 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
             }
         }
     }
+
     updateGreenDot(currentAirspeed, _greenDot) {
         if (this.greenDotSVG) {
             let hidePointer = true;
@@ -969,10 +972,11 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
             }
         }
     }
+
     updateStrip(_strip, currentAirspeed, maxSpeed, _forceHide, _topToBottom) {
         if (_strip) {
             let hideStrip = true;
-            if (!(SimVar.GetSimVarValue("L:A32NX_ADIRS_PFD_ALIGNED_FIRST", "Bool") == 1)) {
+            if (!(SimVar.GetSimVarValue("L:A32NX_ADIRS_PFD_ALIGNED_FIRST", "Bool") === 1)) {
                 _forceHide = true;
             }
             if (!_forceHide) {
@@ -994,26 +998,28 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
             }
         }
     }
+
     updateSpeedMarkers(currentAirspeed) {
         for (let i = 0; i < this.speedMarkers.length; i++) {
             this.speedMarkers[i].update(currentAirspeed);
-            if (!(SimVar.GetSimVarValue("L:A32NX_ADIRS_PFD_ALIGNED_FIRST", "Bool") == 1)) {
+            if (!(SimVar.GetSimVarValue("L:A32NX_ADIRS_PFD_ALIGNED_FIRST", "Bool") === 1)) {
                 this.speedMarkers[i].svg.setAttribute("style", "display:none");
             } else {
                 this.speedMarkers[i].svg.setAttribute("style", "");
             }
         }
     }
+
     updateMarkerF(_marker, currentAirspeed) {
         let hideMarker = true;
         const phase = Simplane.getCurrentFlightPhase();
         const flapsHandleIndex = Simplane.getFlapsHandleIndex();
-        if (flapsHandleIndex == 2 || flapsHandleIndex == 3) {
+        if (flapsHandleIndex === 2 || flapsHandleIndex === 3) {
             let flapSpeed = 0;
-            if (phase == FlightPhase.FLIGHT_PHASE_TAKEOFF || phase == FlightPhase.FLIGHT_PHASE_CLIMB || phase == FlightPhase.FLIGHT_PHASE_GOAROUND) {
+            if (phase === FlightPhase.FLIGHT_PHASE_TAKEOFF || phase === FlightPhase.FLIGHT_PHASE_CLIMB || phase === FlightPhase.FLIGHT_PHASE_GOAROUND) {
                 flapSpeed = Simplane.getStallSpeedPredicted(flapsHandleIndex - 1) * 1.26;
-            } else if (phase == FlightPhase.FLIGHT_PHASE_DESCENT || phase == FlightPhase.FLIGHT_PHASE_APPROACH) {
-                if (flapsHandleIndex == 2) {
+            } else if (phase === FlightPhase.FLIGHT_PHASE_DESCENT || phase === FlightPhase.FLIGHT_PHASE_APPROACH) {
+                if (flapsHandleIndex === 2) {
                     flapSpeed = Simplane.getStallSpeedPredicted(flapsHandleIndex + 1) * 1.47;
                 } else {
                     flapSpeed = Simplane.getStallSpeedPredicted(flapsHandleIndex + 1) * 1.36;
@@ -1030,15 +1036,16 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
             _marker.svg.setAttribute("visibility", "hidden");
         }
     }
+
     updateMarkerS(_marker, currentAirspeed) {
         let hideMarker = true;
         const phase = Simplane.getCurrentFlightPhase();
         const flapsHandleIndex = Simplane.getFlapsHandleIndex();
-        if (flapsHandleIndex == 1) {
+        if (flapsHandleIndex === 1) {
             let slatSpeed = 0;
-            if (phase == FlightPhase.FLIGHT_PHASE_TAKEOFF || phase == FlightPhase.FLIGHT_PHASE_CLIMB || phase == FlightPhase.FLIGHT_PHASE_GOAROUND) {
+            if (phase === FlightPhase.FLIGHT_PHASE_TAKEOFF || phase === FlightPhase.FLIGHT_PHASE_CLIMB || phase === FlightPhase.FLIGHT_PHASE_GOAROUND) {
                 slatSpeed = Simplane.getStallSpeedPredicted(flapsHandleIndex - 1) * 1.25;
-            } else if (phase == FlightPhase.FLIGHT_PHASE_DESCENT || phase == FlightPhase.FLIGHT_PHASE_APPROACH) {
+            } else if (phase === FlightPhase.FLIGHT_PHASE_DESCENT || phase === FlightPhase.FLIGHT_PHASE_APPROACH) {
                 slatSpeed = Simplane.getStallSpeedPredicted(flapsHandleIndex + 1) * 1.23;
             }
             if (slatSpeed >= 60) {
@@ -1052,6 +1059,7 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
             _marker.svg.setAttribute("visibility", "hidden");
         }
     }
+
     updateMarkerV1(_marker, currentAirspeed) {
         let v1Speed = Simplane.getV1Airspeed();
         if (v1Speed > 0) {
@@ -1060,130 +1068,22 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
             v1Speed = SimVar.GetSimVarValue("L:AIRLINER_V1_SPEED", "Knots");
         }
         if (v1Speed > 0) {
-            let posY = this.valueToSvg(currentAirspeed, v1Speed);
-            if (posY < 25 && (this.aircraft == Aircraft.B747_8 || this.aircraft == Aircraft.AS01B)) {
-                posY = 25;
-                _marker.setOffscreen(true, Math.round(v1Speed));
-            } else {
-                _marker.setOffscreen(false);
-                if (posY >= this.refHeight + 25) {
-                    _marker.passed = true;
-                }
-            }
-            _marker.svg.setAttribute("y", (posY - this.speedMarkersHeight * 0.5).toString());
-            _marker.svg.setAttribute("visibility", "visible");
-        } else {
-            _marker.svg.setAttribute("visibility", "hidden");
-        }
-    }
-    updateMarkerVR(_marker, currentAirspeed) {
-        let vRSpeed = Simplane.getVRAirspeed();
-        if (vRSpeed > 0) {
-            _marker.engaged = true;
-        } else if (_marker.engaged && !_marker.passed) {
-            vRSpeed = SimVar.GetSimVarValue("L:AIRLINER_VR_SPEED", "Knots");
-        }
-        if (vRSpeed > 0) {
-            const posY = this.valueToSvg(currentAirspeed, vRSpeed);
+            const posY = this.valueToSvg(currentAirspeed, v1Speed);
+
+            _marker.setOffscreen(false);
             if (posY >= this.refHeight + 25) {
                 _marker.passed = true;
             }
+
             _marker.svg.setAttribute("y", (posY - this.speedMarkersHeight * 0.5).toString());
             _marker.svg.setAttribute("visibility", "visible");
         } else {
             _marker.svg.setAttribute("visibility", "hidden");
         }
     }
-    updateMarkerV2(_marker, currentAirspeed) {
-        let v2Speed = Simplane.getV2Airspeed();
-        if (v2Speed > 0) {
-            _marker.engaged = true;
-        } else if (_marker.engaged && !_marker.passed) {
-            v2Speed = SimVar.GetSimVarValue("L:AIRLINER_V2_SPEED", "Knots");
-        }
-        if (v2Speed > 0) {
-            const posY = this.valueToSvg(currentAirspeed, v2Speed);
-            if (posY >= this.refHeight + 25) {
-                _marker.passed = true;
-            }
-            _marker.svg.setAttribute("y", (posY - this.speedMarkersHeight * 0.5).toString());
-            _marker.svg.setAttribute("visibility", "visible");
-        } else {
-            _marker.svg.setAttribute("visibility", "hidden");
-        }
-    }
-    updateMarkerVRef(_marker, currentAirspeed) {
-        const vRefSpeed = Simplane.getREFAirspeed();
-        if (vRefSpeed > 0) {
-            let posY = this.valueToSvg(currentAirspeed, vRefSpeed);
-            if (posY > this.refHeight - 25 && (this.aircraft == Aircraft.B747_8 || this.aircraft == Aircraft.AS01B)) {
-                posY = this.refHeight - 25;
-                _marker.setOffscreen(true, Math.round(vRefSpeed));
-            } else {
-                _marker.setOffscreen(false);
-            }
-            _marker.svg.setAttribute("y", (posY - this.speedMarkersHeight * 0.5).toString());
-            _marker.svg.setAttribute("visibility", "visible");
-        } else {
-            _marker.svg.setAttribute("visibility", "hidden");
-        }
-    }
-    updateMarkerVX(_marker, currentAirspeed) {
-        let vxSpeed = Simplane.getVXAirspeed();
-        if (vxSpeed > 0) {
-            _marker.engaged = true;
-        } else if (_marker.engaged && !_marker.passed) {
-            vxSpeed = SimVar.GetSimVarValue("L:AIRLINER_VX_SPEED", "Knots");
-        }
-        if (vxSpeed > 0) {
-            const posY = this.valueToSvg(currentAirspeed, vxSpeed);
-            if (posY >= this.refHeight + 25) {
-                _marker.passed = true;
-            }
-            _marker.svg.setAttribute("y", (posY - this.speedMarkersHeight * 0.5).toString());
-            _marker.svg.setAttribute("visibility", "visible");
-        } else {
-            _marker.svg.setAttribute("visibility", "hidden");
-        }
-    }
-    updateMarkerFlap(_marker, currentAirspeed) {
-        let hideMarker = true;
-        const phase = Simplane.getCurrentFlightPhase();
-        const flapsHandleIndex = Simplane.getFlapsHandleIndex();
-        const markerHandleIndex = _marker.params[0];
-        if (markerHandleIndex == flapsHandleIndex || markerHandleIndex == (flapsHandleIndex - 1)) {
-            if (phase >= FlightPhase.FLIGHT_PHASE_TAKEOFF && ((phase != FlightPhase.FLIGHT_PHASE_CLIMB && phase != FlightPhase.FLIGHT_PHASE_CRUISE) || !this.altOver20k)) {
-                hideMarker = false;
-            }
-        }
-        if (!hideMarker) {
-            let limitSpeed = 0;
-            if (markerHandleIndex == 0) {
-                limitSpeed = Simplane.getFlapsLimitSpeed(this.aircraft, 1) + 20;
-                _marker.setText("UP");
-            } else {
-                limitSpeed = Simplane.getFlapsLimitSpeed(this.aircraft, markerHandleIndex);
-                const degrees = Simplane.getFlapsHandleAngle(markerHandleIndex);
-                _marker.setText(degrees.toFixed(0));
-            }
-            let speedBuffer = 50;
-            {
-                let weightRatio = Simplane.getWeight() / Simplane.getMaxWeight();
-                weightRatio = (weightRatio - 0.65) / (1 - 0.65);
-                weightRatio = 1.0 - Utils.Clamp(weightRatio, 0, 1);
-                let altitudeRatio = Simplane.getAltitude() / 30000;
-                altitudeRatio = 1.0 - Utils.Clamp(altitudeRatio, 0, 1);
-                speedBuffer *= (weightRatio * 0.7 + altitudeRatio * 0.3);
-            }
-            const posY = this.valueToSvg(currentAirspeed, limitSpeed - speedBuffer);
-            _marker.svg.setAttribute("y", (posY - this.speedMarkersHeight * 0.5).toString());
-            _marker.svg.setAttribute("visibility", "visible");
-        } else {
-            _marker.svg.setAttribute("visibility", "hidden");
-        }
-    }
+
     updateFail() {
-        const failed = !(SimVar.GetSimVarValue("L:A32NX_ADIRS_PFD_ALIGNED_FIRST", "Bool") == 1);
+        const failed = !(SimVar.GetSimVarValue("L:A32NX_ADIRS_PFD_ALIGNED_FIRST", "Bool") === 1);
         if (!failed) {
             this.bg.setAttribute("stroke", "transparent");
             this.topLine.setAttribute("stroke", "white");
@@ -1208,7 +1108,9 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
         }
     }
 }
+
 customElements.define("jet-pfd-airspeed-indicator", Jet_PFD_AirspeedIndicator);
+
 class AirspeedMarker {
     constructor(_lineSVG, _textSVG, _offscreenSVG, _handler) {
         this.engaged = false;
@@ -1219,12 +1121,15 @@ class AirspeedMarker {
         this.handler = _handler;
         this.setOffscreen(false);
     }
+
     update(_indicatedSpeed) {
         this.handler(this, _indicatedSpeed);
     }
+
     setText(_text) {
         this.textSVG.textContent = _text;
     }
+
     setOffscreen(_offscreen, _speed = 0) {
         if (_offscreen) {
             this.lineSVG.setAttribute("visibility", "hidden");
@@ -1236,4 +1141,3 @@ class AirspeedMarker {
         }
     }
 }
-//# sourceMappingURL=AirspeedIndicator.js.map

@@ -3,12 +3,15 @@ class A320_Neo_MFD extends BaseAirliners {
         super();
         this.initDuration = 11000;
     }
+
     get templateID() {
         return "A320_Neo_MFD";
     }
+
     get IsGlassCockpit() {
         return true;
     }
+
     connectedCallback() {
         super.connectedCallback();
         this.pageGroups = [
@@ -17,8 +20,10 @@ class A320_Neo_MFD extends BaseAirliners {
             ]),
         ];
     }
+
     disconnectedCallback() {
     }
+
     onEvent(_event) {
         switch (_event) {
             case "CLR_Long":
@@ -31,22 +36,29 @@ class A320_Neo_MFD extends BaseAirliners {
                 break;
         }
     }
+
     Update() {
         super.Update();
     }
 }
+
 class A320_Neo_MFD_MainElement extends NavSystemElement {
     init(root) {
     }
+
     onEnter() {
     }
+
     onUpdate(_deltaTime) {
     }
+
     onExit() {
     }
+
     onEvent(_event) {
     }
 }
+
 class A320_Neo_MFD_MainPage extends NavSystemPage {
     constructor() {
         super("Main", "Mainframe", new A320_Neo_MFD_MainElement());
@@ -71,6 +83,7 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
         this.chronoAcc = 0;
         this.chronoStart = 0;
     }
+
     init() {
         super.init();
         this.getDeltaTime = A32NX_Util.createDeltaTimeCalculator(this._lastTime);
@@ -120,6 +133,7 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
 
         this.electricity = this.gps.getChildById("Electricity");
     }
+
     displayChronoTime() {
         const totalSeconds = this.getTotalChronoSeconds();
         if (this.chronoStart || totalSeconds > 0) {
@@ -138,6 +152,7 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
         }
         return "";
     }
+
     getTotalChronoSeconds() {
         let totalSeconds = this.chronoAcc;
         if (this.chronoStart) {
@@ -145,6 +160,7 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
         }
         return Math.max(totalSeconds, 0);
     }
+
     onUpdate() {
         const currentKnobValue = SimVar.GetSimVarValue("LIGHT POTENTIOMETER:" + this.potIndex, "number");
         if (currentKnobValue <= 0.0) {
@@ -203,8 +219,8 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
             this.map.instrument.airplaneIconElement._image.setAttribute("visibility", ADIRSState != 2 ? "hidden" : "visible");
         }
 
-        const ACPowerStateChange = SimVar.GetSimVarValue("L:ACPowerStateChange","Bool");
-        const ACPowerAvailable = SimVar.GetSimVarValue("L:ACPowerAvailable","Bool");
+        const ACPowerStateChange = SimVar.GetSimVarValue("L:ACPowerStateChange", "Bool");
+        const ACPowerAvailable = SimVar.GetSimVarValue("L:ACPowerAvailable", "Bool");
 
         const KnobChanged = (currentKnobValue >= 0.1 && this.selfTestLastKnobValue < 0.1);
 
@@ -279,7 +295,7 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
     }
 
     updateScreenState() {
-        if (SimVar.GetSimVarValue("L:ACPowerAvailable","bool")) {
+        if (SimVar.GetSimVarValue("L:ACPowerAvailable", "bool")) {
             this.electricity.style.display = "block";
         } else {
             this.electricity.style.display = "none";
@@ -293,6 +309,7 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
         SimVar.SetSimVarValue("L:BTN_NDB_" + this.screenIndex + "_FILTER_ACTIVE", "number", this.map.instrument.showNDBs ? 1 : 0);
         SimVar.SetSimVarValue("L:BTN_ARPT_" + this.screenIndex + "_FILTER_ACTIVE", "number", this.map.instrument.showAirports ? 1 : 0);
     }
+
     updateMap(_deltaTime) {
         if (this.modeChangeMask && this.modeChangeTimer >= 0) {
             this.modeChangeTimer -= _deltaTime / 1000;
@@ -308,7 +325,7 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
                 this.rangeChangeTimer = -1;
             }
         }
-        const wxRadarOn = (SimVar.GetSimVarValue("L:XMLVAR_A320_WeatherRadar_Sys", "number") != 1) ? true : false;
+        const wxRadarOn = (SimVar.GetSimVarValue("L:XMLVAR_A320_WeatherRadar_Sys", "number") !== 1) ? true : false;
         const wxRadarMode = SimVar.GetSimVarValue("L:XMLVAR_A320_WeatherRadar_Mode", "number");
         const terrainOn = SimVar.GetSimVarValue(`L:BTN_TERRONND_${this.screenIndex}_ACTIVE`, "number");
         const mapMode = SimVar.GetSimVarValue("L:A320_Neo_MFD_NAV_MODE_" + this.screenIndex, "number");
@@ -402,6 +419,7 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
         this.map.updateTopOfDescent();
         this.map.updateTopOfClimb();
     }
+
     // The BingMap is used by the A320 to render terrain and weather,
     // but it also renders airports, which the real A320 does not.
     setShowBingMap(showBingMap) {
@@ -414,6 +432,7 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
             this.map.instrument.bingMap.style.visibility = "hidden";
         }
     }
+
     onEvent(_event) {
         switch (_event) {
             case "BTN_CSTR_" + this.screenIndex:
@@ -466,6 +485,7 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
                 break;
         }
     }
+
     setMapMode(_mode) {
         switch (_mode) {
             case 0:
@@ -495,10 +515,12 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
                 break;
         }
     }
+
     showWeather() {
         this.setMapMode(this.mapMode);
         this.map.showWeather();
     }
+
     updateNDInfo(_deltaTime) {
         this.info.showSymbol(A320_Neo_ND_Symbol.WXR, this.wxRadarOn && this.wxRadarMode == 0);
         this.info.showSymbol(A320_Neo_ND_Symbol.WXRTURB, this.wxRadarOn && this.wxRadarMode == 1);
@@ -506,6 +528,7 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
         this.info.showSymbol(A320_Neo_ND_Symbol.MAP, this.wxRadarOn && this.wxRadarMode == 3);
     }
 }
+
 class A320_Neo_MFD_Compass extends NavSystemElement {
     init(root) {
         this.svg = this.gps.getChildById("Compass");
@@ -515,8 +538,10 @@ class A320_Neo_MFD_Compass extends NavSystemElement {
         this.screenIndex = parseInt(url.substring(url.length - 1));
         this.potIndex = this.screenIndex == 1 ? 89 : 91;
     }
+
     onEnter() {
     }
+
     onUpdate(_deltaTime) {
         const currentKnobValue = SimVar.GetSimVarValue("LIGHT POTENTIOMETER:" + this.potIndex, "number");
         if (currentKnobValue <= 0.0) {
@@ -524,21 +549,26 @@ class A320_Neo_MFD_Compass extends NavSystemElement {
         }
         this.svg.update(_deltaTime);
     }
+
     onExit() {
     }
+
     onEvent(_event) {
     }
+
     showILS(_val) {
         if (this.svg) {
             this.svg.showILS(_val);
         }
     }
 }
+
 class A320_Neo_MFD_Map extends MapInstrumentElement {
     constructor() {
         super(...arguments);
         this.zoomRanges = [10, 20, 40, 80, 160, 320];
     }
+
     updateTopOfDescent() {
         const showTopOfDescent = SimVar.GetSimVarValue("L:AIRLINER_FMS_SHOW_TOP_DSCNT", "number") === 1;
         if (showTopOfDescent) {
@@ -559,6 +589,7 @@ class A320_Neo_MFD_Map extends MapInstrumentElement {
             }
         }
     }
+
     updateTopOfClimb() {
         const showTopOfClimb = SimVar.GetSimVarValue("L:AIRLINER_FMS_SHOW_TOP_CLIMB", "number") === 1;
         if (showTopOfClimb) {
@@ -579,11 +610,13 @@ class A320_Neo_MFD_Map extends MapInstrumentElement {
             }
         }
     }
+
     onTemplateLoaded() {
         super.onTemplateLoaded();
         this.compassModeMask = new SvgBottomMaskElement("a320-compass-mask");
         this.planModeMask = new SvgPlanMaskElement("a320-plan-mask");
     }
+
     getAdaptiveRanges(_factor) {
         const ranges = Array.from(this.zoomRanges);
         for (let i = 0; i < ranges.length; i++) {
@@ -591,11 +624,11 @@ class A320_Neo_MFD_Map extends MapInstrumentElement {
         }
         return ranges;
     }
+
     setMode(display) {
         this.hideWeather();
         switch (display) {
-            case Jet_NDCompass_Display.ROSE:
-            {
+            case Jet_NDCompass_Display.ROSE: {
                 this.planMode = false;
                 this.instrument.zoomRanges = this.getAdaptiveRanges(4.5);
                 this.instrument.style.top = "0%";
@@ -604,8 +637,7 @@ class A320_Neo_MFD_Map extends MapInstrumentElement {
                 this.instrument.setPlaneScale(2.0);
                 break;
             }
-            case Jet_NDCompass_Display.ARC:
-            {
+            case Jet_NDCompass_Display.ARC: {
                 this.planMode = false;
                 this.instrument.zoomRanges = this.getAdaptiveRanges(2.3);
                 this.instrument.style.top = "24%";
@@ -614,8 +646,7 @@ class A320_Neo_MFD_Map extends MapInstrumentElement {
                 this.instrument.setPlaneScale(3.5);
                 break;
             }
-            case Jet_NDCompass_Display.PLAN:
-            {
+            case Jet_NDCompass_Display.PLAN: {
                 this.planMode = true;
                 this.instrument.zoomRanges = this.getAdaptiveRanges(4.5);
                 this.instrument.style.top = "0%";
@@ -633,15 +664,18 @@ class A320_Neo_MFD_Map extends MapInstrumentElement {
                 break;
         }
     }
+
     showWeather() {
         this.instrument.showWeatherWithGPS(EWeatherRadar.HORIZONTAL, Math.PI * 2.0);
         this.instrument.setBingMapStyle("5.5%", "5.5%", "89%", "89%");
     }
+
     hideWeather() {
         if (this.instrument.getWeather() != EWeatherRadar.OFF) {
             this.instrument.showWeather(EWeatherRadar.OFF);
         }
     }
+
     showCompassMask() {
         if (this.compassModeMask) {
             if (this.instrument.maskElements.indexOf(this.compassModeMask) === -1) {
@@ -649,6 +683,7 @@ class A320_Neo_MFD_Map extends MapInstrumentElement {
             }
         }
     }
+
     hideCompassMask() {
         if (this.compassModeMask) {
             const maskIndex = this.instrument.maskElements.indexOf(this.compassModeMask);
@@ -657,6 +692,7 @@ class A320_Neo_MFD_Map extends MapInstrumentElement {
             }
         }
     }
+
     showPlanMask() {
         if (this.planModeMask) {
             if (this.instrument.maskElements.indexOf(this.planModeMask) === -1) {
@@ -664,6 +700,7 @@ class A320_Neo_MFD_Map extends MapInstrumentElement {
             }
         }
     }
+
     hidePlanMask() {
         if (this.planModeMask) {
             const maskIndex = this.instrument.maskElements.indexOf(this.planModeMask);
@@ -673,6 +710,7 @@ class A320_Neo_MFD_Map extends MapInstrumentElement {
         }
     }
 }
+
 var A320_Neo_ND_Symbol;
 (function (A320_Neo_ND_Symbol) {
     A320_Neo_ND_Symbol[A320_Neo_ND_Symbol["WXR"] = 0] = "WXR";
@@ -680,11 +718,13 @@ var A320_Neo_ND_Symbol;
     A320_Neo_ND_Symbol[A320_Neo_ND_Symbol["TURB"] = 2] = "TURB";
     A320_Neo_ND_Symbol[A320_Neo_ND_Symbol["MAP"] = 3] = "MAP";
 })(A320_Neo_ND_Symbol || (A320_Neo_ND_Symbol = {}));
+
 class A320_Neo_MFD_NDInfo extends NavSystemElement {
     constructor() {
         super(...arguments);
-        this.allSymbols = new Array();
+        this.allSymbols = [];
     }
+
     init(root) {
         this.ndInfo = this.gps.getChildById("NDInfo");
         this.ndInfo.aircraft = Aircraft.A320_NEO;
@@ -697,8 +737,10 @@ class A320_Neo_MFD_NDInfo extends NavSystemElement {
         this.screenIndex = parseInt(url.substring(url.length - 1));
         this.potIndex = this.screenIndex == 1 ? 89 : 91;
     }
+
     onEnter() {
     }
+
     onUpdate(_deltaTime) {
         const currentKnobValue = SimVar.GetSimVarValue("LIGHT POTENTIOMETER:" + this.potIndex, "number");
         if (currentKnobValue <= 0.0) {
@@ -732,25 +774,30 @@ class A320_Neo_MFD_NDInfo extends NavSystemElement {
         //Hide waypoint when ADIRS not aligned
         wptg.setAttribute("visibility", (ADIRSState != 2) ? "hidden" : "visible");
     }
+
     onExit() {
     }
+
     onEvent(_event) {
     }
+
     setMode(display) {
         if (this.ndInfo) {
             this.ndInfo.setMode(display, 0);
         }
     }
+
     showILS(_val) {
         if (this.ndInfo) {
             this.ndInfo.showILS(_val);
         }
     }
+
     showSymbol(_symbol, _show) {
         if (this.allSymbols[_symbol]) {
             this.allSymbols[_symbol].setAttribute("visibility", (_show) ? "visible" : "hidden");
         }
     }
 }
+
 registerInstrument("a320-neo-mfd-element", A320_Neo_MFD);
-//# sourceMappingURL=A320_Neo_MFD.js.map

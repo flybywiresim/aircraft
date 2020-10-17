@@ -10,14 +10,17 @@ class Jet_MFD_NDInfo extends HTMLElement {
         this._chronoStarted = false;
         this._aircraft = Aircraft.A320_NEO;
     }
+
     get aircraft() {
         return this._aircraft;
     }
+
     set aircraft(_val) {
-        if (this._aircraft != _val) {
+        if (this._aircraft !== _val) {
             this._aircraft = _val;
         }
     }
+
     connectedCallback() {
         this.groundSpeed = this.querySelector("#GS_Value");
         this.trueAirSpeed = this.querySelector("#TAS_Value");
@@ -45,6 +48,7 @@ class Jet_MFD_NDInfo extends HTMLElement {
         this.setWaypoint("", 0, 0, 0, true);
         this.setMode(this._navMode, this._navSource, true);
     }
+
     update(_dTime) {
         this._dTime = _dTime / 1000;
         this.updateTitle();
@@ -54,8 +58,9 @@ class Jet_MFD_NDInfo extends HTMLElement {
         this.updateApproach();
         this.updateElapsedTime();
     }
+
     onEvent(_event) {
-        if (_event == "Push_ET") {
+        if (_event === "Push_ET") {
             if (!this._showET) {
                 this._showET = true;
                 this._chronoValue = 0;
@@ -67,14 +72,16 @@ class Jet_MFD_NDInfo extends HTMLElement {
             }
         }
     }
+
     showILS(_val) {
         this._showILS = _val;
     }
+
     setMode(_navMode, _navSource, _force = false) {
-        if (this._navMode != _navMode || this._navSource != _navSource || _force) {
+        if (this._navMode !== _navMode || this._navSource !== _navSource || _force) {
             this._navMode = _navMode;
             this._navSource = _navSource;
-            if (this._navMode == Jet_NDCompass_Navigation.NAV) {
+            if (this._navMode === Jet_NDCompass_Navigation.NAV) {
                 if (this.waypoint) {
                     this.waypoint.style.display = "block";
                 }
@@ -85,7 +92,7 @@ class Jet_MFD_NDInfo extends HTMLElement {
                     this.approachInfo.textContent = "";
                     this.approach.style.display = "none";
                 }
-            } else if (this._navMode == Jet_NDCompass_Navigation.ILS || this._navMode == Jet_NDCompass_Navigation.VOR) {
+            } else if (this._navMode === Jet_NDCompass_Navigation.ILS || this._navMode === Jet_NDCompass_Navigation.VOR) {
                 if (this.waypoint) {
                     this.waypointName.textContent = "";
                     this.waypointTrack.textContent = "";
@@ -99,37 +106,42 @@ class Jet_MFD_NDInfo extends HTMLElement {
             }
         }
     }
+
     updateSpeeds() {
         this.setGroundSpeed(Math.round(Simplane.getGroundSpeed()));
         this.setTrueAirSpeed(Math.round(Simplane.getTrueSpeed()));
         this.setWind(Math.round(Simplane.getWindDirection()), Math.round(Simplane.getWindStrength()), Simplane.getHeadingMagnetic());
     }
+
     updateWaypoint() {
         const wpETE = SimVar.GetSimVarValue("GPS WP ETE", "seconds"); // ETE is not available in Simplane 🙄
         const utcTime = SimVar.GetGlobalVarValue("ZULU TIME", "seconds");
         const utcETA = wpETE > 0 ? (utcTime + wpETE) % 86400 : 0;
         this.setWaypoint(Simplane.getNextWaypointName(), Math.round(Simplane.getNextWaypointTrack()), Simplane.getNextWaypointDistance(), utcETA, true);
     }
+
     setGroundSpeed(_speed, _force = false) {
-        if ((_speed != this.currentGroundSpeed) || _force) {
+        if ((_speed !== this.currentGroundSpeed) || _force) {
             this.currentGroundSpeed = _speed;
             if (this.groundSpeed != null) {
                 this.groundSpeed.textContent = this.currentGroundSpeed.toString().padStart(3, "0");
             }
         }
     }
+
     setTrueAirSpeed(_speed, _force = false) {
-        if ((_speed != this.currentTrueAirSpeed) || _force) {
+        if ((_speed !== this.currentTrueAirSpeed) || _force) {
             this.currentTrueAirSpeed = _speed;
             if (this.trueAirSpeed != null) {
                 this.trueAirSpeed.textContent = this.currentTrueAirSpeed.toString().padStart(3, "0");
             }
         }
     }
+
     setWind(_windAngle, _windStrength, _planeAngle, _force = false) {
-        const refreshWindAngle = ((_windAngle != this.currentWindAngle) || _force);
-        const refreshWindStrength = ((_windStrength != this.currentWindStrength) || _force);
-        const refreshWindArrow = (refreshWindAngle || refreshWindStrength || (_planeAngle != this.currentPlaneAngle) || _force);
+        const refreshWindAngle = ((_windAngle !== this.currentWindAngle) || _force);
+        const refreshWindStrength = ((_windStrength !== this.currentWindStrength) || _force);
+        const refreshWindArrow = (refreshWindAngle || refreshWindStrength || (_planeAngle !== this.currentPlaneAngle) || _force);
         const windStrongEnough = (this.currentWindStrength >= Jet_MFD_NDInfo.MIN_WIND_STRENGTH_FOR_ARROW_DISPLAY) ? true : false;
         if (refreshWindAngle) {
             let startAngle = this.currentWindAngle;
@@ -172,23 +184,24 @@ class Jet_MFD_NDInfo extends HTMLElement {
             }
         }
     }
+
     setWaypoint(_name, _track, _distance, _eta, _force = false) {
         if (this.waypoint) {
-            if (this._navMode == Jet_NDCompass_Navigation.NAV) {
-                if (_name && _name != "") {
-                    if (_name != this.currentWaypointName || _force) {
+            if (this._navMode === Jet_NDCompass_Navigation.NAV) {
+                if (_name && _name !== "") {
+                    if (_name !== this.currentWaypointName || _force) {
                         this.currentWaypointName = _name;
                         if (this.waypointName != null) {
                             this.waypointName.textContent = _name;
                         }
                     }
-                    if ((_track != this.currentWaypointTrack) || _force) {
+                    if ((_track !== this.currentWaypointTrack) || _force) {
                         this.currentWaypointTrack = _track;
                         if (this.waypointTrack) {
                             this.waypointTrack.textContent = this.currentWaypointTrack.toString().padStart(3, "0") + String.fromCharCode(176);
                         }
                     }
-                    if ((_distance != this.currentWaypointDistance) || _force) {
+                    if ((_distance !== this.currentWaypointDistance) || _force) {
                         this.currentWaypointDistance = _distance;
                         if (this.waypointDistance != null) {
                             if (this.currentWaypointDistance < 10000) {
@@ -198,7 +211,7 @@ class Jet_MFD_NDInfo extends HTMLElement {
                             }
                         }
                     }
-                    if ((_eta != this.currentWaypointTimeETA) || _force) {
+                    if ((_eta !== this.currentWaypointTimeETA) || _force) {
                         this.currentWaypointTimeETA = _eta;
                         if (this.waypointTime != null) {
                             const hours = Math.floor(_eta / 3600);
@@ -223,11 +236,11 @@ class Jet_MFD_NDInfo extends HTMLElement {
             }
         }
     }
+
     updateTitle() {
         if (this.topTitle != null) {
             switch (this._navMode) {
-                case Jet_NDCompass_Navigation.NAV:
-                {
+                case Jet_NDCompass_Navigation.NAV: {
                     let ilsText = null;
                     if (this._showILS) {
                         ilsText = this.getILSIdent();
@@ -241,26 +254,24 @@ class Jet_MFD_NDInfo extends HTMLElement {
                     }
                     break;
                 }
-                case Jet_NDCompass_Navigation.VOR:
-                {
+                case Jet_NDCompass_Navigation.VOR: {
                     this.topTitle.textContent = "VOR";
                     this.topTitle.removeAttribute("state");
                     break;
                 }
-                case Jet_NDCompass_Navigation.ILS:
-                {
+                case Jet_NDCompass_Navigation.ILS: {
                     this.topTitle.textContent = "ILS";
                     this.topTitle.removeAttribute("state");
                     break;
                 }
-                default:
-                {
+                default: {
                     this.topTitle.textContent = "";
                     break;
                 }
             }
         }
     }
+
     updateVOR() {
         if (this.VORLeft != null) {
             this.VORLeft.update(this.gps, this.aircraft);
@@ -269,32 +280,24 @@ class Jet_MFD_NDInfo extends HTMLElement {
             this.VORRight.update(this.gps, this.aircraft);
         }
     }
+
     updateApproach() {
         if (this.approach != null) {
             switch (this._navMode) {
-                case Jet_NDCompass_Navigation.VOR:
-                {
+                case Jet_NDCompass_Navigation.VOR: {
                     let vor;
-                    if (this._navSource == 0) {
+                    if (this._navSource === 0) {
                         vor = this.gps.radioNav.getBestVORBeacon();
                     } else {
                         vor = this.gps.radioNav.getVORBeacon(this._navSource);
                     }
                     let suffix = "";
-                    if (vor.id == 1 || this._navSource == 1) {
-                        if (this.aircraft == Aircraft.A320_NEO || this.aircraft == Aircraft.CJ4) {
-                            suffix = "1";
-                        } else {
-                            suffix = " L";
-                        }
-                    } else if (vor.id == 2 || this._navSource == 2) {
-                        if (this.aircraft == Aircraft.A320_NEO || this.aircraft == Aircraft.CJ4) {
-                            suffix = "2";
-                        } else {
-                            suffix = " R";
-                        }
+                    if (vor.id === 1 || this._navSource === 1) {
+                        suffix = "1";
+                    } else if (vor.id === 2 || this._navSource === 2) {
+                        suffix = "2";
                     }
-                    let type = "VOR";
+                    const type = "VOR";
                     let freq = "--.--";
                     let course = "---°";
                     let ident = "";
@@ -302,46 +305,27 @@ class Jet_MFD_NDInfo extends HTMLElement {
                         freq = vor.freq.toFixed(2);
                         course = Utils.leadingZeros(Math.round(vor.course), 3) + "°";
                         ident = vor.ident;
-                        if (this.aircraft == Aircraft.CJ4) {
-                            const hasLocalizer = SimVar.GetSimVarValue("NAV HAS LOCALIZER:" + vor.id, "Bool");
-                            if (hasLocalizer) {
-                                type = "LOC";
-                            }
-                        }
                     }
                     this.approachType.textContent = type + suffix;
                     this.approachFreq.textContent = freq;
                     this.approachCourse.textContent = course;
                     this.approachInfo.textContent = ident;
-                    if (this.aircraft != Aircraft.CJ4) {
-                        this.approachFreq.setAttribute("class", "ValueVor");
-                        this.approachCourse.setAttribute("class", "ValueVor");
-                        this.approachInfo.setAttribute("class", "ValueVor");
-                    }
                     break;
                 }
-                case Jet_NDCompass_Navigation.ILS:
-                {
+                case Jet_NDCompass_Navigation.ILS: {
                     let ils;
-                    if (this._navSource == 0) {
+                    if (this._navSource === 0) {
                         ils = this.gps.radioNav.getBestILSBeacon();
                     } else {
                         ils = this.gps.radioNav.getILSBeacon(this._navSource);
                     }
                     let suffix = "";
-                    if (ils.id == 1 || ils.id == 3 || this._navSource == 1) {
-                        if (this.aircraft == Aircraft.A320_NEO || this.aircraft == Aircraft.CJ4) {
-                            suffix = "1";
-                        } else {
-                            suffix = " L";
-                        }
-                    } else if (ils.id == 2 || ils.id == 4 || this._navSource == 2) {
-                        if (this.aircraft == Aircraft.A320_NEO || this.aircraft == Aircraft.CJ4) {
-                            suffix = "2";
-                        } else {
-                            suffix = " R";
-                        }
+                    if (ils.id === 1 || ils.id === 3 || this._navSource === 1) {
+                        suffix = "1";
+                    } else if (ils.id === 2 || ils.id === 4 || this._navSource === 2) {
+                        suffix = "2";
                     }
+
                     const type = "ILS";
                     let freq = "--.--";
                     let course = "---°";
@@ -355,16 +339,15 @@ class Jet_MFD_NDInfo extends HTMLElement {
                     this.approachFreq.textContent = freq;
                     this.approachCourse.textContent = course;
                     this.approachInfo.textContent = ident;
-                    if (this.aircraft != Aircraft.CJ4) {
-                        this.approachFreq.setAttribute("class", "ValueIls");
-                        this.approachCourse.setAttribute("class", "ValueIls");
-                        this.approachInfo.setAttribute("class", "ValueIls");
-                    }
+                    this.approachFreq.setAttribute("class", "ValueIls");
+                    this.approachCourse.setAttribute("class", "ValueIls");
+                    this.approachInfo.setAttribute("class", "ValueIls");
                     break;
                 }
             }
         }
     }
+
     updateElapsedTime() {
         if (this.elapsedTime) {
             if (this._showET) {
@@ -403,6 +386,7 @@ class Jet_MFD_NDInfo extends HTMLElement {
             }
         }
     }
+
     getILSIdent() {
         const localizer = this.gps.radioNav.getBestILSBeacon();
         if (localizer.id > 0) {
@@ -411,7 +395,9 @@ class Jet_MFD_NDInfo extends HTMLElement {
         return null;
     }
 }
+
 Jet_MFD_NDInfo.MIN_WIND_STRENGTH_FOR_ARROW_DISPLAY = 2;
+
 class VORDMENavAid {
     constructor(_parent, _index) {
         this.parent = _parent;
@@ -429,22 +415,18 @@ class VORDMENavAid {
         this.setMode(NAV_AID_MODE.NONE, true);
         this.setDistanceValue(0, true);
     }
+
     update(_gps, _aircraft) {
         this.gps = _gps;
         this.aircraft = _aircraft;
         const url = document.getElementsByTagName("a320-neo-mfd-element")[0].getAttribute("url");
         const index = parseInt(url.substring(url.length - 1));
-        let state = Simplane.getAutoPilotNavAidState(index, this.index);
-        if (_aircraft == Aircraft.B747_8) {
-            state--;
-            if (state < 0) {
-                state = 2;
-            }
-        }
+        const state = Simplane.getAutoPilotNavAidState(index, this.index);
+
         this.setState(state);
-        if (this.currentState != NAV_AID_STATE.OFF) {
+        if (this.currentState !== NAV_AID_STATE.OFF) {
             this.setDistanceValue(0);
-            if (this.currentState == NAV_AID_STATE.VOR) {
+            if (this.currentState === NAV_AID_STATE.VOR) {
                 this.setIDValue(this.gps.radioNav.getVORActiveFrequency(this.index), true);
 
                 const hasDme = SimVar.GetSimVarValue(`NAV HAS DME:${this.index}`, "boolean");
@@ -457,35 +439,20 @@ class VORDMENavAid {
             this.setMode(NAV_AID_MODE.MANUAL);
         }
     }
+
     setState(_state, _force = false) {
-        if ((_state != this.currentState) || _force) {
+        if ((_state !== this.currentState) || _force) {
             this.currentState = _state;
             let show = false;
             let type = "";
             switch (this.currentState) {
-                case NAV_AID_STATE.ADF:
-                {
-                    type = "ADF";
-                    if (this.aircraft == Aircraft.A320_NEO || this.aircraft == Aircraft.CJ4) {
-                        type += this.index.toString();
-                    } else if (this.index == 1) {
-                        type += " L";
-                    } else {
-                        type += " R";
-                    }
+                case NAV_AID_STATE.ADF: {
+                    type = "ADF" + this.index.toString();
                     show = true;
                     break;
                 }
-                case NAV_AID_STATE.VOR:
-                {
-                    type = "VOR";
-                    if (this.aircraft == Aircraft.A320_NEO || this.aircraft == Aircraft.CJ4) {
-                        type += this.index.toString();
-                    } else if (this.index == 1) {
-                        type += " L";
-                    } else {
-                        type += " R";
-                    }
+                case NAV_AID_STATE.VOR: {
+                    type = "VOR" + this.index.toString();
                     show = true;
                     break;
                 }
@@ -506,10 +473,10 @@ class VORDMENavAid {
      * @param {boolean} _force force update even when value does not changed
      */
     setIDValue(_value, _force = false) {
-        if ((_value != this.idValue) || _force) {
+        if ((_value !== this.idValue) || _force) {
             this.idValue = _value;
             if (this.idText != null) {
-                if (this.idValue == 0) {
+                if (this.idValue === 0) {
                     this.idText.textContent = "---";
                 } else {
                     switch (this.currentState) {
@@ -536,17 +503,15 @@ class VORDMENavAid {
     }
 
     setMode(_state, _force = false) {
-        if ((_state != this.currentMode) || _force) {
+        if ((_state !== this.currentMode) || _force) {
             this.currentMode = _state;
             let mode = "";
             switch (this.currentMode) {
-                case NAV_AID_MODE.MANUAL:
-                {
+                case NAV_AID_MODE.MANUAL: {
                     mode = "M";
                     break;
                 }
-                case NAV_AID_MODE.REMOTE:
-                {
+                case NAV_AID_MODE.REMOTE: {
                     mode = "R";
                     break;
                 }
@@ -556,8 +521,9 @@ class VORDMENavAid {
             }
         }
     }
+
     setDistanceValue(_value, _force = false) {
-        if ((_value != this.distanceValue) || _force) {
+        if ((_value !== this.distanceValue) || _force) {
             this.distanceValue = _value;
             const showDistance = (this.distanceValue > 0);
             // var displayStr = showDistance ? "block" : "none";
@@ -576,5 +542,6 @@ class VORDMENavAid {
         }
     }
 }
+
 customElements.define("jet-mfd-nd-info", Jet_MFD_NDInfo);
 //# sourceMappingURL=NDInfo.js.map

@@ -16,6 +16,12 @@ class Jet_PFD_HSIndicator extends HTMLElement {
         this.graduationSpacing = 50;
         this._showILS = false;
         this._aircraft = Aircraft.A320_NEO;
+
+        this.previousState = {
+            currentHeading: NaN,
+            selectedHeading: NaN,
+            track: NaN
+        };
     }
     get aircraft() {
         return this._aircraft;
@@ -40,6 +46,7 @@ class Jet_PFD_HSIndicator extends HTMLElement {
 
     construct() {
         Utils.RemoveAllChildren(this);
+
         this.construct_A320_Neo();
     }
 
@@ -249,67 +256,108 @@ class Jet_PFD_HSIndicator extends HTMLElement {
         }
         this.appendChild(this.rootSVG);
     }
-    update(dTime) {
-        this.updateRibbon();
+
+    clampDeltaHeading(/** number */ dh) {
+        let ret;
+
+        if (dh > 180) {
+            ret = dh - 360;
+        } else if (delta < -180) {
+            ret = dh + 360;
+        }
+
+        return ret;
     }
-    updateRibbon() {
-        const compass = SimVar.GetSimVarValue("PLANE HEADING DEGREES MAGNETIC", "degree");
+
+    update(dTime) {
+        let posX;
+
+        const currentHeading = SimVar.GetSimVarValue("PLANE HEADING DEGREES MAGNETIC", "degree");
         const selectedHeading = SimVar.GetSimVarValue("AUTOPILOT HEADING LOCK DIR", "degree");
         const track = SimVar.GetSimVarValue("GPS GROUND MAGNETIC TRACK", "degree");
+
         if (this.graduations) {
-            this.graduationScroller.scroll(compass);
+            this.graduationScroller.scroll(currentHeading);
             let currentVal = this.graduationScroller.firstValue;
             let currentX = this.graduationScrollPosX - this.graduationScroller.offsetY * this.graduationSpacing * (this.nbSecondaryGraduations + 1);
             for (let i = 0; i < this.totalGraduations; i++) {
-                var posX = currentX;
+                const x = currentX;
                 const posY = this.graduationScrollPosY;
-                this.graduations[i].SVGLine.setAttribute("transform", "translate(" + posX.toString() + " " + posY.toString() + ")");
+                this.graduations[i].SVGLine.setAttribute("transform", "translate(" + x.toString() + " " + posY.toString() + ")");
                 if (this.graduations[i].SVGText1) {
                     const roundedVal = Math.floor(currentVal / 10);
                     this.graduations[i].SVGText1.textContent = roundedVal.toString();
-                    this.graduations[i].SVGText1.setAttribute("transform", "translate(" + posX.toString() + " " + posY.toString() + ")");
+                    this.graduations[i].SVGText1.setAttribute("transform", "translate(" + x.toString() + " " + posY.toString() + ")");
                     currentVal = this.graduationScroller.nextValue;
                 }
                 currentX += this.graduationSpacing;
             }
         }
+
         if (this.selectedHeadingGroup) {
             const autoPilotActive = Simplane.getAutoPilotHeadingSelected();
-            if (autoPilotActive) {
-                var delta = selectedHeading - compass;
-                if (delta > 180) {
-                    delta = delta - 360;
-                } else if (delta < -180) {
-                    delta = delta + 360;
+
+            const thisFrameRoundedCurrentHeading = currentHeading.toFixed(1);
+            const lastFrameRoundedCurrentHeading = this.previousState.currentHeading.toFixed(1);
+
+            const thisFrameRoundedSelectedHeading = selectedHeading.toFixed(1);
+            const lastFrameRoundedSelectedHeading = this.previousState.selectedHeading.toFixed(1);
+
+            // Try to not update
+            if (thisFrameRoundedCurrentHeading !== lastFrameRoundedCurrentHeading || thisFrameRoundedSelectedHeading !== lastFrameRoundedSelectedHeading) {
+                if (autoPilotActive) {
+                    let delta = selectedHeading - currentHeading;
+                    if (delta > 180) {
+                        delta -= 360;
+                    } else if (delta < -180) {
+                        delta += 360;
+                    }
+
+                    const posX = delta * this.graduationSpacing * (this.nbSecondaryGraduations + 1) / this.graduationScroller.increment;
+
+                    this.selectedHeadingGroup.setAttribute("transform", "translate(" + posX.toString() + " 0)");
+                    this.selectedHeadingGroup.setAttribute("visibility", "visible");
+                } else {
+                    this.selectedHeadingGroup.setAttribute("visibility", "hidden");
                 }
-                var posX = delta * this.graduationSpacing * (this.nbSecondaryGraduations + 1) / this.graduationScroller.increment;
-                this.selectedHeadingGroup.setAttribute("transform", "translate(" + posX.toString() + " 0)");
-                this.selectedHeadingGroup.setAttribute("visibility", "visible");
-            } else {
-                this.selectedHeadingGroup.setAttribute("visibility", "hidden");
             }
+
+            this.previousState.autoPilotHeadingSelected = autoPilotActive;
         }
+
         if (this.currentTrackGroup) {
-            var delta = track - compass;
-            if (delta > 180) {
-                delta = delta - 360;
-            } else if (delta < -180) {
-                delta = delta + 360;
+            const thisFrameRoundedTrack = track.toFixed(1);
+            const lastFrameRoundedTrack = this.previousState.track.toFixed(1);
+
+            const thisFrameRoundedSelectedHeading = selectedHeading.toFixed(1);
+            const lastFrameRoundedSelectedHeading = this.previousState.selectedHeading.toFixed(1);
+
+            // Try to not update
+            if (thisFrameRoundedTrack !== lastFrameRoundedTrack || thisFrameRoundedSelectedHeading !== lastFrameRoundedSelectedHeading) {
+                let delta = track - currentHeading;
+                if (delta > 180) {
+                    delta -= 360;
+                } else if (delta < -180) {
+                    delta += 360;
+                }
+
+                const x = delta * this.graduationSpacing * (this.nbSecondaryGraduations + 1) / this.graduationScroller.increment;
+
+                this.currentTrackGroup.setAttribute("transform", "translate(" + x.toString() + " 0)");
             }
-            var posX = delta * this.graduationSpacing * (this.nbSecondaryGraduations + 1) / this.graduationScroller.increment;
-            this.currentTrackGroup.setAttribute("transform", "translate(" + posX.toString() + " 0)");
         }
+
         if (this._showILS) {
             if (this.ILSBeaconGroup && this.ILSOffscreenGroup) {
                 const localizer = this.gps.radioNav.getBestILSBeacon();
                 if (localizer.id > 0) {
-                    var delta = localizer.course - compass;
+                    let delta = localizer.course - currentHeading;
                     if (delta > 180) {
                         delta = delta - 360;
                     } else if (delta < -180) {
                         delta = delta + 360;
                     }
-                    var posX = delta * this.graduationSpacing * (this.nbSecondaryGraduations + 1) / this.graduationScroller.increment;
+                    posX = delta * this.graduationSpacing * (this.nbSecondaryGraduations + 1) / this.graduationScroller.increment;
                     if (posX > -(this.refWidth * 0.5) && posX < (this.refWidth * 0.5)) {
                         this.ILSBeaconGroup.setAttribute("visibility", "visible");
                         this.ILSBeaconGroup.setAttribute("transform", "translate(" + posX.toString() + " 0)");
@@ -333,7 +381,11 @@ class Jet_PFD_HSIndicator extends HTMLElement {
                 }
             }
         }
+
+        this.previousState.currentHeading = currentHeading;
+        this.previousState.selectedHeading = selectedHeading;
+        this.previousState.track = track;
     }
 }
+
 customElements.define("jet-pfd-hs-indicator", Jet_PFD_HSIndicator);
-//# sourceMappingURL=HSIndicator.js.map

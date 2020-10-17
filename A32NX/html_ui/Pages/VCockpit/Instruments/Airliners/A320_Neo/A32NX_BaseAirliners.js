@@ -20,14 +20,7 @@ class BaseAirliners extends NavSystem {
         BaseAirliners.isMetric = Simplane.getUnitIsMetric();
     }
     static unitIsMetric(_plane) {
-        switch (_plane) {
-            case Aircraft.A320_NEO:
-                return true;
-            case Aircraft.B747_8:
-            case Aircraft.AS01B:
-                return false;
-        }
-        return BaseAirliners.isMetric;
+        return true;
     }
     updateMachTransition() {
         const crossSpeed = SimVar.GetGameVarValue("AIRCRAFT CROSSOVER SPEED", "knots");
