@@ -60,6 +60,7 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
         this.cursorSVGAltitudeLevelShape = null;
         this.cursorIntegrals = null;
         this.cursorDecimals = null;
+        this._delayedAltitude = 0;
         this.construct_A320_Neo();
     }
     //------------------------------------------------------------- A 320 NEO -------------------------------------------------------------------------------------------------
@@ -426,9 +427,20 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
         this.rootGroup.appendChild(this.mtrsCursorGroup);
     }
     update(_dTime) {
-        const indicatedAltitude = Simplane.getAltitude();
+        let indicatedAltitude = Simplane.getAltitude();
         this.showMTRS(SimVar.GetSimVarValue("L:A32NX_METRIC_ALT_TOGGLE", "bool") && SimVar.GetSimVarValue("L:A32NX_ADIRS_PFD_ALIGNED_FIRST", "Bool"));
 
+        // This stuff makes the altimeter do a smooth rise to the actual altitude after alignment reaches a certain point
+        const desiredDisplayedAltitude = SimVar.GetSimVarValue("L:A32NX_ADIRS_PFD_ALIGNED_FIRST", "Bool") === 0
+            ? 0
+            : indicatedAltitude;
+        const delta = desiredDisplayedAltitude - this._delayedAltitude;
+        if (Math.abs(delta) > 0.01) {
+            this._delayedAltitude += delta * Math.min(1, (4 * (_dTime / 1000)));
+            indicatedAltitude = this._delayedAltitude;
+        }
+
+        const groundReference = indicatedAltitude - Simplane.getAltitudeAboveGround();
         const baroMode = Simplane.getPressureSelectedMode(this.aircraft);
         let selectedAltitude;
         if (this.aircraft === Aircraft.AS01B || this.aircraft === Aircraft.B747_8 || this.aircraft === Aircraft.A320_NEO) {
@@ -438,7 +450,7 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
         }
         this.updateGraduationScrolling(indicatedAltitude);
         this.updateCursorScrolling(indicatedAltitude);
-        this.updateGroundReference(indicatedAltitude, SimVar.GetSimVarValue("L:A32NX_ALTIMETER_GROUND_REFERENCE", "feet"));
+        this.updateGroundReference(indicatedAltitude, groundReference);
         this.updateTargetAltitude(indicatedAltitude, selectedAltitude, baroMode);
         this.updateBaroPressure(baroMode);
         this.updateMtrs(indicatedAltitude, selectedAltitude);
