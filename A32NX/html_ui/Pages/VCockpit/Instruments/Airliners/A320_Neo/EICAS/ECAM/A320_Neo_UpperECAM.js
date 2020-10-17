@@ -1345,7 +1345,7 @@ var A320_Neo_UpperECAM;
                 this.takeoffMemo.divMain.style.display = this.showTakeoffMemo ? "block" : "none";
             }
         }
-        toggleLDGmemo(numberPhase, highestThrottleDetent, _deltaTime) {
+        updateLDGMemo(numberPhase, highestThrottleDetent, _deltaTime) {
             let inApproachPhase = false;
             let inFinalOrTouchDown = false;
             const isLandingPhase = numberPhase == FlightPhase.FLIGHT_PHASE_APPROACH;
