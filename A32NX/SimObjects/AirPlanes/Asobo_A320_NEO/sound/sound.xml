@@ -63,7 +63,7 @@
 
     <MiscellaneousSounds>
         <Sound WwiseEvent="AP_PREFLIGHT_CHECK_OVER" ViewPoint="Inside" WwiseData="true" />
-        <Sound WwiseData="false" WwiseEvent="FLAPS" FileName="FINALFLAPS" FullScaleDistance="4" Continuous="true" FadeOutType="2" FadeOutTime="0.5" />
+        <Sound WwiseData="false" WwiseEvent="FLAPS" FileName="FINALFLAPS" FullScaleDistance="3" Continuous="true" FadeOutType="2" FadeOutTime="0.5" />
     </MiscellaneousSounds>
 
     <!-- SimvarSounds ========================================================================================== -->
@@ -106,6 +106,7 @@
             <WwiseRTPC SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1" RTPCName="SIMVAR_ELECTRICAL_MAIN_BUS_VOLTAGE_A4_R4" />
         </Sound>
 
+        
         <Sound WwiseData="true" WwiseEvent="apu_bleed_on" FadeOutType="2" FadeOutTime="3" SimVar="BLEED AIR APU" Units="BOOL" Index="0">
             <Range LowerBound="1.0" />
             <Requires SimVar="APU PCT RPM" Units="PERCENT" Index="0">
