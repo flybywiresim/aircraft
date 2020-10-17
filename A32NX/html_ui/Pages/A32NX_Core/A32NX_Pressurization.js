@@ -21,7 +21,9 @@ class A32NX_Pressurization {
         this.cabinPressAltitude = 0;
 
         this.lastTimeMeasurement = 0;
-        this.reachedTarget = false;
+        this.lastTimeMeasurementPID = 0;
+        this.I = 0;
+        this.lastP = 0;
 
         this.feetToMeters = 0.3048;
         this.seaLevelPressurePascal = 101325;
@@ -34,71 +36,51 @@ class A32NX_Pressurization {
     setFlightPhase() {
         const groundSpeed = SimVar.GetSimVarValue("GPS GROUND SPEED", "Meters per second");
         const gameFlightPhase = SimVar.GetSimVarValue("L:AIRLINER_FLIGHT_PHASE", "value");
-        const externalPower = SimVar.GetSimVarValue("EXTERNAL POWER ON", "Bool");
+        const externalPower = SimVar.GetSimVarValue("EXTERNAL POWER AVAILABLE", "Bool");
 
-        const time = new Date();
-        const timeS = time.getTime();
-        console.log(" " + this.airborne+ " " +this.flightPhase+ " " +externalPower + "\n");
+        const timeS = (new Date()).getTime();
 
-        if (externalPower && (this.flightPhase == 6 || this.flightPhase == -1 || this.flightPhase == -1)) {
-            console.log("0");
+        if (externalPower && this.flightPhase == -1) {
+            console.log("flight phase 0");
             this.lastTimeMeasurement = timeS;
-            this.reachedTarget = false;
             this.flightPhase = 0;
+            this.I = 0; 
         } else if (!externalPower && !this.airborne && this.flightPhase == 0 && groundSpeed > 0) {
-            console.log("1");
+            console.log("flight phase 1");
             this.lastTimeMeasurement = timeS;
-            this.reachedTarget = false;
             this.flightPhase = 1;
+            this.I = 0; 
         } else if (this.airborne && this.flightPhase == 1) {
-            console.log("2");
+            console.log("flight phase 2");
             this.lastTimeMeasurement = timeS;
-            this.reachedTarget = false;
             this.flightPhase = 2;
+            this.I = 0; 
         } else if (gameFlightPhase == 4 && this.flightPhase == 2) {
-            console.log("3");
+            console.log("flight phase 3");
             this.lastTimeMeasurement = timeS;
-            this.reachedTarget = false;
-            this.flightPhase = 3;
+            this.flightPhase = 3;   
+            this.I = 0; 
         } else if (gameFlightPhase == 5 && this.flightPhase == 3) {
-            console.log("4");
+            console.log("flight phase 4");
             this.lastTimeMeasurement = timeS;
-            this.reachedTarget = false;
             this.flightPhase = 4;
+            this.I = 0; 
         } else if (!this.airborne && this.flightPhase == 4) {
-            console.log("5");
+            console.log("flight phase 5");
             this.lastTimeMeasurement = timeS;
-            this.reachedTarget = false;
+            this.touchdownTime = timeS;
             this.flightPhase = 5;
-        } else if (this.valveFullOpen && this.flightPhase == 5) {
-            console.log("6");
+        } else if (this.flightPhase == 5 && (timeS - this.touchdownTime) > 55000) {
+            console.log("flight phase 6");
             this.lastTimeMeasurement = timeS;
-            this.reachedTarget = false;
             this.flightPhase = 6;
-        } else {
-            console.log("null")
         }
     }
 
-    setTouchdownTime() {
-        const timeVar = new Date();
-        const touchdownTimeTemp = timeVar.getTime();
-        if (this.flightPhase == 4 && !this.airborne) {
-            this.touchdownTime = touchdownTimeTemp;
-        }
-    }
-
-    setValveFullOpenSignal() {
-        const timeVar = new Date();
-        const time = timeVar.getTime();
-        if (this.flightPhase == 5 && time - this.touchdownTime > 10000) {
-            this.valveFullOpen = 1;
-        }
-    }
 
     checkIfAirborne() {
         const radioAlt = SimVar.GetSimVarValue("RADIO HEIGHT", "feet");
-        if (radioAlt > 10) {
+        if (radioAlt > 50) {
             this.airborne = true;
         } else {
             this.airborne = false;
@@ -106,8 +88,7 @@ class A32NX_Pressurization {
     }
 
     simVarUpdater(cabinPress) {
-            const time = new Date();
-            const timeS = time.getTime();
+            const timeS = (new Date()).getTime();
             const timeDelta = timeS - this.lastTimeMeasurement
             this.lastTimeMeasurement = timeS;
 
@@ -116,45 +97,43 @@ class A32NX_Pressurization {
             let currentVS = SimVar.GetSimVarValue("L:A32NX_CABIN_VS_RATE", "ft/min");
             let currentCabinAlt = SimVar.GetSimVarValue("L:A32NX_CABIN_PRESS_ALTITUDE", "ft"); 
             const differenceVS = this.cabinVSRate - currentVS;
-            const differenceCabinAlt = Math.abs(this.cabinPressAltitude - currentCabinAlt);
-        if (!this.reachedTarget) {
+            const differenceCabinAlt = this.cabinPressAltitude - currentCabinAlt;
+        
             if (differenceVS != 0) {
                 currentVS += Math.sign(differenceVS);
             }
 
             if (differenceCabinAlt != 0 && Math.abs(differenceCabinAlt) > 1) {
                 currentCabinAlt += currentVS * (timeDelta / 60000);
-            } else {
-                currentCabinAlt = this.currentCabinAlt;
-                this.reachedTarget = true;
             }
 
             SimVar.SetSimVarValue("L:A32NX_CABIN_VS_RATE", "ft/min", currentVS);
             SimVar.SetSimVarValue("L:A32NX_CABIN_PRESS_ALTITUDE", "ft", currentCabinAlt);
-        } else {
-            SimVar.SetSimVarValue("L:A32NX_CABIN_VS_RATE", "ft/min", 0);
-        }
     }
 
     groundPhase() {
-        this.cabinVSRate = 500;
-        this.simVarUpdater(SimVar.GetSimVarValue("PRESSURE ALTITUDE", "Meters") * 3.28084);
+
+        const currCabinAltitude = SimVar.GetSimVarValue("L:A32NX_CABIN_PRESS_ALTITUDE", "feet");
+        const currOutsideAltitude = SimVar.GetSimVarValue("PRESSURE ALTITUDE", "Meters") / this.feetToMeters;
+        this.cabinVSRate = this.PIDController(currCabinAltitude, currOutsideAltitude, 3, 0.005, 0.002);
+        this.simVarUpdater(currOutsideAltitude);
     }
 
     prePressurizationPhase(cabAltitude) {
         if (this.coldAndDarkStart) {
-            this.cabinVSRate = -400;
+            const currCabinAltitude = SimVar.GetSimVarValue("L:A32NX_CABIN_PRESS_ALTITUDE", "feet");
+            this.cabinVSRate = this.PIDController(currCabinAltitude, cabAltitude, 3, 0.005, 0.002);
             this.simVarUpdater(cabAltitude);
         } else {
             SimVar.SetSimVarValue("L:A32NX_CABIN_VS_RATE", "ft/min", 0);
-            SimVar.SetSimVarValue("L:A32NX_CABIN_PRESS_ALTITUDE", "feet", cabAltitude);
-            SimVar.SetSimVarValue("L:A32NX_CABIN_PSI_DELTA", "Psi", 0.1);
-        } 
+            SimVar.SetSimVarValue("L:A32NX_CABIN_PRESS_ALTITUDE", "ft", cabAltitude);
+            SimVar.SetSimVarValue("L:A32NX_CABIN_PSI_DELTA", "psi", 0.1);
+        }
     }
 
     climbPhase(cabAltitude, vsSpeed) {
-
-        let calculatedVSpeed = vsSpeed * 60 / 3;
+        const currCabinAltitude = SimVar.GetSimVarValue("L:A32NX_CABIN_PRESS_ALTITUDE", "feet");
+        let calculatedVSpeed = (vsSpeed * 60 / 3.5) + this.PIDController(currCabinAltitude, cabAltitude, 3, 0.005, 0.002);
         if (calculatedVSpeed > 2400) {
             calculatedVSpeed = 2400;
         } else if (calculatedVSpeed < -2400) {
@@ -165,51 +144,71 @@ class A32NX_Pressurization {
     }
 
 
-    descentPhase(cabAltitude, vsSpeed) {
-
-        let calculatedVSpeed = vsSpeed * 60 / 3;
-        if (calculatedVSpeed > 2400) {
-            calculatedVSpeed = 2400;
-        } else if (calculatedVSpeed < -750) {
-            calculatedVSpeed = -750;
-        }
-        this.cabinVSRate = calculatedVSpeed;
+    descentPhase(cabAltitude, vSpeed) {
+        const currCabinAltitude = SimVar.GetSimVarValue("L:A32NX_CABIN_PRESS_ALTITUDE", "feet");
+        this.cabinVSRate = (Math.sign(cabAltitude - currCabinAltitude) * Math.abs(vSpeed * 60 / 4)) + this.PIDController(currCabinAltitude, cabAltitude, 3, 0.005, 0.002);
+        console.log(this.cabinVSRate, cabAltitude);
+ 
         this.simVarUpdater(cabAltitude);
     }
 
     cruisePhase(cabAltitude, vsSpeed) {
-        let calculatedVSpeed = vsSpeed * 60 / 3;
+        const currCabinAltitude = SimVar.GetSimVarValue("L:A32NX_CABIN_PRESS_ALTITUDE", "feet");
+        let calculatedVSpeed = (vsSpeed * 60 / 4) + this.PIDController(currCabinAltitude, cabAltitude, 3, 0.005, 0.002);
         if (calculatedVSpeed > 2400) {
             calculatedVSpeed = 2400;
         } else if (calculatedVSpeed < -2400) {
             calculatedVSpeed = -2400;
         }
+        this.cabinVSRate = calculatedVSpeed ;
         this.simVarUpdater(cabAltitude);
     }
+
+    PIDController(value, targetValue, kP, kI, kD) {
+
+        const time = (new Date()).getTime();
+        let deltaTime = 0;
+        if (this.lastTimeMeasurementPID != 0) {
+            deltaTime = time - this.lastTimeMeasurementPID;
+            this.lastTimeMeasurementPID = time;
+        } else {
+            this.lastTimeMeasurementPID = time;
+        }
+        const P = targetValue - value ;
+        
+        this.I += P * deltaTime / 60000;
+        let D = 0;
+        if (this.lastP != 0) {
+            D = (P - this.lastP) / (deltaTime/60000);
+            this.lastP = P;
+        } else {
+            this.lastP = P;
+        }
+        return P * kP + this.I * kI + D * kD;
+    }
+
     update(_deltaTime, _core) {
         const verticalSpeed = SimVar.GetSimVarValue("VERTICAL SPEED", "Feet per second");
 
         const cabinAltMeters = SimVar.GetSimVarValue("L:A32NX_CABIN_PRESS_ALTITUDE", "feet") * this.feetToMeters;
         const outsideAltMeters = SimVar.GetSimVarValue("PRESSURE ALTITUDE", "Meters");
 
-        const cabinPressurePascal = this.seaLevelPressurePascal * Math.exp(this.barometricPressureFactor * cabinAltMeters); // Barometric formula
+        const cabinPressurePascal = this.seaLevelPressurePascal * Math.exp(this.barometricPressureFactor * cabinAltMeters);
         const cabinPressurePSI = cabinPressurePascal * this.pascalToPSI;
 
         const outsidePressurePascal = this.seaLevelPressurePascal * Math.exp(this.barometricPressureFactor * outsideAltMeters);
         const outsidePressurePSI = outsidePressurePascal * this.pascalToPSI;
 
         const pressureDiff = cabinPressurePSI - outsidePressurePSI;
-        const cabinPressurePascalPrePress = (0.1 + outsidePressurePSI) / this.pascalToPSI;
+        const cabinPressurePascalPrePress = (0.11 + outsidePressurePSI) / this.pascalToPSI;
         
-
         const cabinAltPrePress = Math.log(cabinPressurePascalPrePress / this.seaLevelPressurePascal) / this.barometricPressureFactor;
 
         SimVar.SetSimVarValue("L:A32NX_CABIN_PSI_DELTA", "Psi", pressureDiff);
 
-        this.setTouchdownTime();
-        this.setValveFullOpenSignal();
         this.checkIfAirborne();
         this.setFlightPhase();
+      
 
         switch (this.flightPhase) {
             case 0:
@@ -219,13 +218,13 @@ class A32NX_Pressurization {
                 this.prePressurizationPhase(cabinAltPrePress * 3.28084);
                 break;
             case 2:
-                this.climbPhase(8000, verticalSpeed);
+                this.climbPhase((outsideAltMeters * 3.28084) / 4.5, verticalSpeed);
                 break;
             case 3:
-                this.cruisePhase(8000, verticalSpeed);
+                this.cruisePhase((outsideAltMeters * 3.28084) / 4.5, verticalSpeed);
                 break;
             case 4:
-                this.descentPhase(cabinAltPrePress * 3.28084, verticalSpeed);
+                this.descentPhase((outsideAltMeters * 3.28084) / 4.5, verticalSpeed);
                 break;
             case 5:
                 this.prePressurizationPhase(cabinAltPrePress * 3.28084);
@@ -233,6 +232,6 @@ class A32NX_Pressurization {
             case 6:
                 this.groundPhase();
                 break;
-        }      
+        }     
     }
 }

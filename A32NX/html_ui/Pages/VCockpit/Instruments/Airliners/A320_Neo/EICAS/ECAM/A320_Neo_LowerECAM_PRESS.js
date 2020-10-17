@@ -161,7 +161,7 @@ var A320_Neo_LowerECAM_PRESS;
                 this.updateValue(this.htmlPsiInt, pressureDeltaInt + ".");
                 this.updateValue(this.htmlPsiDecimal, pressureDeltaDecimal);
             } else {
-                this.updateValue(this.htmlPsiInt, "-0");
+                this.updateValue(this.htmlPsiInt, "-0.");
                 this.updateValue(this.htmlPsiDecimal, Math.abs(pressureDeltaDecimal));
             }
 
