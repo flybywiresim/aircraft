@@ -1310,7 +1310,7 @@ var A320_Neo_UpperECAM;
                 this.leftEcamMessagePanel.recall("brakes_hot");
             }
         }
-        toggleTOmemo(_deltaTime) {
+        updateTOMemo(_deltaTime) {
             const eng1Started = SimVar.GetSimVarValue("ENG N1 RPM:1", "Percent") > 15;
             const engsStarted = eng1Started && SimVar.GetSimVarValue("ENG N1 RPM:2", "Percent") > 15;
             const toConfig = eng1Started && SimVar.GetSimVarValue("AIRSPEED INDICATED", "knots") < 80 && SimVar.GetSimVarValue("ENG N1 RPM:2", "Percent") <= 15 && SimVar.GetSimVarValue("L:A32NX_TO_CONFIG_NORMAL", "Bool") == 1;
