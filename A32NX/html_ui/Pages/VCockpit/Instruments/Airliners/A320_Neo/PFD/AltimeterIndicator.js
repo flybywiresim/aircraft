@@ -168,19 +168,25 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
 
             this.graduationScrollPosX = 0;
             this.graduationScrollPosY = _top + _height * 0.5;
-            for (var i = 0; i < this.totalGraduations; i++) {
-                var line = new Avionics.SVGGraduation();
+
+            // Create graduations
+
+            for (let i = 0; i < this.totalGraduations; i++) {
+                const line = new Avionics.SVGGraduation();
+
                 line.IsPrimary = true;
                 if (this.nbSecondaryGraduations > 0 && (i % (this.nbSecondaryGraduations + 1))) {
                     line.IsPrimary = false;
                 }
                 const lineWidth = (line.IsPrimary) ? 9 : 9;
                 const lineHeight = (line.IsPrimary) ? 3 : 3;
+
                 line.SVGLine = document.createElementNS(Avionics.SVG.NS, "rect");
                 line.SVGLine.setAttribute("x", (_left + _width - lineWidth).toString());
                 line.SVGLine.setAttribute("width", lineWidth.toString());
                 line.SVGLine.setAttribute("height", lineHeight.toString());
                 line.SVGLine.setAttribute("fill", "white");
+
                 if (line.IsPrimary) {
                     line.SVGText1 = document.createElementNS(Avionics.SVG.NS, "text");
                     line.SVGText1.setAttribute("x", (_left + _width - lineWidth - 3).toString());
@@ -190,46 +196,44 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
                     line.SVGText1.setAttribute("text-anchor", "end");
                     line.SVGText1.setAttribute("alignment-baseline", "central");
                 }
+
                 this.graduations.push(line);
-            }
-            for (var i = 0; i < this.totalGraduations; i++) {
-                var line = this.graduations[i];
+
                 this.centerSVG.appendChild(line.SVGLine);
                 if (line.SVGText1) {
                     this.centerSVG.appendChild(line.SVGText1);
                 }
             }
 
+            // Ground ribbon
+
             const groundRibbonPosX = _left + _width;
             const groundRibbonPosY = 0;
             const groundRibbonWidth = 100;
             const groundRibbonHeight = _height;
-            if (!this.groundRibbonSVG) {
-                this.groundRibbonSVG = document.createElementNS(Avionics.SVG.NS, "svg");
-                this.groundRibbonSVG.setAttribute("id", "GroundRibbonGroup");
-            } else {
-                Utils.RemoveAllChildren(this.groundRibbonSVG);
-            }
+
+            this.groundRibbonSVG = document.createElementNS(Avionics.SVG.NS, "svg");
+            this.groundRibbonSVG.setAttribute("id", "GroundRibbonGroup");
+
             this.groundRibbonSVG.setAttribute("x", groundRibbonPosX.toString());
             this.groundRibbonSVG.setAttribute("y", groundRibbonPosY.toString());
             this.groundRibbonSVG.setAttribute("width", groundRibbonWidth.toString());
             this.groundRibbonSVG.setAttribute("height", groundRibbonHeight.toString());
             this.groundRibbonSVG.setAttribute("viewBox", "0 0 " + groundRibbonWidth + " " + groundRibbonHeight);
-            {
-                if (!this.groundRibbonSVGShape) {
-                    this.groundRibbonSVGShape = document.createElementNS(Avionics.SVG.NS, "rect");
-                }
-                this.groundRibbonSVGShape.setAttribute("fill", "red");
-                this.groundRibbonSVGShape.setAttribute("stroke", "red");
-                this.groundRibbonSVGShape.setAttribute("stroke-width", "2");
-                this.groundRibbonSVGShape.setAttribute("width", "12");
-                this.groundRibbonSVGShape.setAttribute("x", "2");
-                this.groundRibbonSVG.appendChild(this.groundRibbonSVGShape);
-            }
+
+            this.groundRibbonSVGShape = document.createElementNS(Avionics.SVG.NS, "rect");
+            this.groundRibbonSVGShape.setAttribute("fill", "red");
+            this.groundRibbonSVGShape.setAttribute("stroke", "red");
+            this.groundRibbonSVGShape.setAttribute("stroke-width", "2");
+            this.groundRibbonSVGShape.setAttribute("width", "12");
+            this.groundRibbonSVGShape.setAttribute("x", "2");
+            this.groundRibbonSVG.appendChild(this.groundRibbonSVGShape);
             this.centerSVG.appendChild(this.groundRibbonSVG);
+
             const targetAltitudeIndicatorWidth = 100;
             const targetAltitudeIndicatorHeight = 150;
             const targetAltitudeIndicatorPosX = _left - 9;
+
             if (!this.targetAltitudeIndicatorSVG) {
                 this.targetAltitudeIndicatorSVG = document.createElementNS(Avionics.SVG.NS, "svg");
                 this.targetAltitudeIndicatorSVG.setAttribute("id", "TargetAltitudeIndicator");
