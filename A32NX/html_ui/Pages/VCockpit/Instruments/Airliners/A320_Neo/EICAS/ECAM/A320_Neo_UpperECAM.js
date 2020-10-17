@@ -1136,14 +1136,6 @@ var A320_Neo_UpperECAM;
                     function () {
                         return (SimVar.GetSimVarValue("FLAPS HANDLE INDEX", "Enum") == 4);
                     })
-                // new A320_Neo_UpperECAM.MemoItem(
-                //     "ldg-memo-flaps-3",
-                //     "FLAPS",
-                //     "CONF3",
-                //     "CONF3",
-                //     function () {
-                //         return (SimVar.GetSimVarValue("FLAPS HANDLE INDEX", "Enum") == 3);
-                //     })
             ],);
             this.allPanels.push(this.enginePanel);
             this.allPanels.push(this.infoTopPanel);
