@@ -710,7 +710,7 @@ class FMCMainDisplay extends BaseAirliners {
             });
         });
     }
-    insertWaypointsAlongAirway(lastWaypointIdent, index, airwayName, callback = EmptyCallback.Boolean) {
+    async insertWaypointsAlongAirway(lastWaypointIdent, index, airwayName, callback = EmptyCallback.Boolean) {
         const referenceWaypoint = this.flightPlanManager.getWaypoint(index - 1);
         if (referenceWaypoint) {
             const infos = referenceWaypoint.infos;
@@ -730,19 +730,24 @@ class FMCMainDisplay extends BaseAirliners {
                             if (lastIndex < firstIndex) {
                                 inc = -1;
                             }
+                            index -= 1;
                             const count = Math.abs(lastIndex - firstIndex);
-                            const asyncInsertWaypointByIcao = async (icao, index) => {
-                                return new Promise(resolve => {
-                                    this.flightPlanManager.addWaypoint(icao, index, () => {
-                                        resolve();
+                            for (let i = 1; i < count + 1; i++) { // 9 -> 6
+                                const asyncInsertWaypointByIcao = async (icao, idx) => {
+                                    return new Promise(resolve => {
+                                        console.log("add icao:" + icao + " @ " + idx);
+                                        this.flightPlanManager.addWaypoint(icao, idx, () => {
+                                            console.log("icao:" + icao + " added");
+                                            resolve();
+                                        }, false);
                                     });
-                                });
-                            };
-                            const outOfSync = async () => {
-                                await asyncInsertWaypointByIcao(airway.icaos[firstIndex + count * inc], index);
-                                callback(true);
-                            };
-                            outOfSync();
+                                };
+                                const outOfSync = async () => {
+                                    await asyncInsertWaypointByIcao(airway.icaos[firstIndex + i * inc], index + i);
+                                };
+                                await outOfSync();
+                            }
+                            callback(true);
                             return;
                         }
                         this.showErrorMessage("2ND INDEX NOT FOUND");
