@@ -273,4 +273,3 @@ var A320_Neo_LowerECAM_Engine;
     A320_Neo_LowerECAM_Engine.EngineInfo = EngineInfo;
 })(A320_Neo_LowerECAM_Engine || (A320_Neo_LowerECAM_Engine = {}));
 customElements.define("a320-neo-lower-ecam-engine", A320_Neo_LowerECAM_Engine.Page);
-//# sourceMappingURL=A320_Neo_LowerECAM_Engine.js.map
