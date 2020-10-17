@@ -441,7 +441,7 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
         }
 
         const groundReference = indicatedAltitude - Simplane.getAltitudeAboveGround();
-        SimVar.SetSimVarValue("L:Altimeter_GroundReference", "feet", groundReference);
+        SimVar.SetSimVarValue("L:A32NX_ALTIMETER_GROUND_REFERENCE", "feet", groundReference);
 
         const baroMode = Simplane.getPressureSelectedMode(this.aircraft);
         let selectedAltitude;
