@@ -10,7 +10,7 @@ const GRAD_SPEEDS = [500, 1000, 1500, 2000, 4000, 6000];
  */
 const GRAD_Y_POS = [70, 140, 175, 210, 245, 280];
 
-class Jet_PFD_VerticalSpeedIndicator extends HTMLElement {
+class PfdVerticalSpeedIndicator extends HTMLElement {
     constructor() {
         super(...arguments);
         this.cursorTextColor = "rgb(26,255,0)";
@@ -363,4 +363,4 @@ class Jet_PFD_VerticalSpeedIndicator extends HTMLElement {
     }
 }
 
-customElements.define("jet-pfd-vspeed-indicator", Jet_PFD_VerticalSpeedIndicator);
+customElements.define("a32nx-pfd-vspeed-indicator", PfdVerticalSpeedIndicator);
