@@ -1183,7 +1183,7 @@ var A320_Neo_UpperECAM;
 
             //Show landing memo at 2000ft
             //Hides after slowing down to 80kts
-            this.toggleLDGmemo(numberPhase, highestThrottleDetent, _deltaTime);
+            this.updateLDGMemo(numberPhase, highestThrottleDetent, _deltaTime);
 
             //Hide left message panel when memo is diplayed
             if (this.leftEcamMessagePanel != null) {
