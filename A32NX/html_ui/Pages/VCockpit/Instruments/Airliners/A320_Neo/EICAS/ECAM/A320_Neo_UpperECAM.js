@@ -1179,7 +1179,7 @@ var A320_Neo_UpperECAM;
 
             //Show takeoff memo 2 mins after second engine start
             //Hides after takeoff thurst application
-            this.toggleTOmemo(_deltaTime);
+            this.updateTOMemo(_deltaTime);
 
             //Show landing memo at 2000ft
             //Hides after slowing down to 80kts
