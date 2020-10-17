@@ -1155,7 +1155,6 @@ var A320_Neo_UpperECAM;
             this.isInitialised = true;
         }
         update(_deltaTime) {
-
             const leftThrottleDetent = Simplane.getEngineThrottleMode(0);
             const rightThrottleDetent = Simplane.getEngineThrottleMode(1);
             const highestThrottleDetent = (leftThrottleDetent >= rightThrottleDetent) ? leftThrottleDetent : rightThrottleDetent;
@@ -1345,6 +1344,7 @@ var A320_Neo_UpperECAM;
                 this.takeoffMemo.divMain.style.display = this.showTakeoffMemo ? "block" : "none";
             }
         }
+        
         updateLDGMemo(numberPhase, highestThrottleDetent, _deltaTime) {
             let inApproachPhase = false;
             let inFinalOrTouchDown = false;
