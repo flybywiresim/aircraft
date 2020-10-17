@@ -465,10 +465,10 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
         const groundReference = indicatedAltitude - Simplane.getAltitudeAboveGround();
         const baroMode = Simplane.getPressureSelectedMode(this.aircraft);
         const selectedAltitude = Math.max(0, Simplane.getAutoPilotDisplayedAltitudeLockValue());
-        const verticalSpeed = SimVar.GetSimVarValue("VERTICAL SPEED", "feet per minute");
+        const absoluteVerticalSpeed = Math.abs(SimVar.GetSimVarValue("VERTICAL SPEED", "feet per minute"));
 
         // Try to not update the altitude tape
-        if (Math.abs(indicatedAltitude - this.lastIndicatedAltitude) > MIN_ALTITUDE_DELTA_FOR_ALTIMETER_UPDATE || Math.abs(verticalSpeed) > MIN_VSPEED_FOR_ALTIMETER_UPDATE_OVERRIDE) {
+        if (Math.abs(indicatedAltitude - this.lastIndicatedAltitude) > MIN_ALTITUDE_DELTA_FOR_ALTIMETER_UPDATE || absoluteVerticalSpeed > MIN_VSPEED_FOR_ALTIMETER_UPDATE_OVERRIDE) {
             this.updateGraduationScrolling(indicatedAltitude);
             this.updateCursorScrolling(indicatedAltitude);
         }
@@ -479,7 +479,7 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
         }
 
         // Try to not update the target altitude
-        if (this.lastTargetAltitude !== selectedAltitude || verticalSpeed > 1) {
+        if (this.lastTargetAltitude !== selectedAltitude || absoluteVerticalSpeed > 1) {
             this.updateTargetAltitude(indicatedAltitude, selectedAltitude, baroMode);
         }
 
