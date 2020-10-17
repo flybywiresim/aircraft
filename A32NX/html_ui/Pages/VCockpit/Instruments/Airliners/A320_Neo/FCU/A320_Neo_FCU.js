@@ -579,7 +579,6 @@ class A320_Neo_FCU_VerticalSpeed extends A320_Neo_FCU_Component {
     }
     onEvent(_event) {
         console.log("A320_Neo_FCU_VerticalSpeed onEvent " + _event);
-        console.trace();
         if (_event === "VS_INC") {
             this.onRotate();
         } else if (_event === "VS_DEC") {
