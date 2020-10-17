@@ -1232,7 +1232,7 @@ class FMCMainDisplay extends BaseAirliners {
         let zfw = 0;
         let zfwcg = 0;
         if (s) {
-            if (s.includes("")) {
+            if (s.includes("/")) {
                 const sSplit = s.split("/");
                 zfw = parseFloat(sSplit[0]);
                 zfwcg = parseFloat(sSplit[1]);

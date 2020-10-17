@@ -58,6 +58,7 @@
 1. [LIVERY] Bundle the FlyByWire Livery with the A32NX addon - @devsnek (devsnek)
 1. [ECAM] Added cockpit door video - @Benjozork (Benjamin Dupont)
 1. [MISC] Standby Instrument stays ON if emergency power should be available, bug fixes - @2hwk (2Cas#1022 on discord)
+1. [ECAM] Landing Gear ECAM warning when too low - @nathaninnes (Nathan Innes)
 1. [CDU] Added custom MCDU font - @tyler58546 (tyler58546)
 
 ## 2020/09
