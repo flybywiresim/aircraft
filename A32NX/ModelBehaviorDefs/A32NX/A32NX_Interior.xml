@@ -142,7 +142,7 @@
             <SEQ1_EMISSIVE_DRIVES_VISIBILITY>False</SEQ1_EMISSIVE_DRIVES_VISIBILITY>
             <WWISE_EVENT>fmc_push_button_on</WWISE_EVENT>
             <NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
-            <NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2> 
+            <NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
         </DefaultTemplateParameters>
 
         <Component ID="SWITCH_MP#DCDU_SIDE#_DIM" Node="SWITCH_MP#DCDU_SIDE#_DIM">
@@ -163,7 +163,7 @@
                 <STATE0_TIMER>0.01</STATE0_TIMER>
                 <MOMENTARY_REPEAT_FREQUENCY>5</MOMENTARY_REPEAT_FREQUENCY>
                 <MOMENTARY_SWITCH/>
-                
+
                 <Condition Valid="BRT_DIM_SWITCH_DIRECTION">
                     <SWITCH_DIRECTION>#BRT_DIM_SWITCH_DIRECTION#</SWITCH_DIRECTION>
                 </Condition>
@@ -172,7 +172,7 @@
                 </Condition>
             </UseTemplate>
         </Component>
-        
+
         <Component ID="SWITCH_MP#DCDU_SIDE#_DIM_SEQ1" Node="SWITCH_MP#DCDU_SIDE#_DIM_SEQ1">
 			<UseTemplate Name="ASOBO_GT_Emissive_Gauge">
 				<EMISSIVE_CODE>(A:LIGHT POTENTIOMETER:#POTENTIOMETER_ID#, Percent over 100)</EMISSIVE_CODE>
@@ -184,8 +184,9 @@
     Template for rigging DCDU generic buttons
 
     Main Parameters:
-            - NODE_ID           <no default>    Name of the button
-            - PUSH_CODE         <no default>    Code to run on push of button
+            - NODE_ID           <no default>    Node-ID of the button
+            - PLANE_NAME        <no default>    Plane project name
+            - HTML_EVENT_ID     <no default>    HTML-Event that will be fired when the button is pushed
             - POTENTIOMETER_ID  85              Potentiometer ID for emissive sequence 1
 
     Authors: Benjamin Dupont (@Benjozork) 10/10/20
@@ -197,7 +198,7 @@
             <WWISE_EVENT_1>fmc_push_button_on</WWISE_EVENT_1>
             <WWISE_EVENT_2>fmc_push_button_off</WWISE_EVENT_2>
             <NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
-            <NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2> 
+            <NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
         </DefaultTemplateParameters>
 
         <UseTemplate Name="ASOBO_GT_Push_Button_Airliner">
@@ -233,10 +234,12 @@
     Takes into account the value of L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position.
 
     Main Parameters:
-           - TOGGLE_NODE_ID        <no default>    Switch node ID   (anim name will be same)
-           - TOGGLE_SIMVAR         <no default>    SimVar to contain the toggle state
-           - SEQ1_CODE             0               Sequence 1 emissive code
-           - SEQ1_CODE             0               Sequence 2 emissive code
+            - TOGGLE_NODE_ID        <no default>    Switch node ID   (anim name will be same)
+            - TOGGLE_SIMVAR         <no default>    SimVar to contain the toggle state
+            - SHOULD_ANIM_TOGGLE    <no default>    If not present, the switch returns to it's orignial position. (Normal behaviour)
+                                                    If present, the switch will stay pressed.
+            - SEQ1_CODE             0               Sequence 1 emissive code
+            - SEQ1_CODE             0               Sequence 2 emissive code
 
     Authors: Benjamin Dupont (@Benjozork) 12/10/20
     -->
@@ -253,6 +256,10 @@
             <LEFT_SINGLE_CODE>
                 (#TOGGLE_SIMVAR#, Bool) ! (&gt;#TOGGLE_SIMVAR#)
             </LEFT_SINGLE_CODE>
+
+            <Condition Check="SHOULD_ANIM_TOGGLE">
+                <DOWN_STATE_CODE>(#TOGGLE_SIMVAR#)</DOWN_STATE_CODE>
+            </Condition>
 
             <Condition Valid="SEQ1_CODE">
                 <True>
@@ -274,6 +281,7 @@
         </UseTemplate>
     </Template>
 
+
     <!--
     Template for rigging covered push buttons
 
@@ -283,6 +291,8 @@
            - TOGGLE_NODE_ID     <no default>    Switch node ID                              (anim name will be same)
            - LOCK_NODE_ID       <no default>    Lock node ID                                (anim name will be same)
            - TOGGLE_SIMVAR      <no default>    SimVar to contain the toggle state
+           - SHOULD_ANIM_TOGGLE <no default>    If not present, the switch returns to it's orignial position. (Normal behaviour)
+                                                If present, the switch will stay pressed.
            - SEQ1_CODE          0               Sequence 1 emissive code
            - SEQ1_CODE          0               Sequence 2 emissive code
            - INVERTED           False           Whether or not the switch is OFF by default
@@ -311,6 +321,10 @@
                 (#TOGGLE_SIMVAR#, Bool) ! (&gt;#TOGGLE_SIMVAR#)
             </LEFT_SINGLE_CODE>
 
+            <Condition Check="SHOULD_ANIM_TOGGLE">
+                <DOWN_STATE_CODE>(#TOGGLE_SIMVAR#)</DOWN_STATE_CODE>
+            </Condition>
+
             <Condition Check="SEQ1_CODE">
                 <True>
                     <SEQ1_EMISSIVE_CODE>#SEQ1_CODE# (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or</SEQ1_EMISSIVE_CODE>
@@ -338,6 +352,7 @@
         </UseTemplate>
     </Template>
 
+
     <!--
     Template for defining panel lighting knobs tied to potentiometers
 
@@ -360,6 +375,73 @@
         </DefaultTemplateParameters>
 
         <UseTemplate Name="ASOBO_LIGHTING_Knob_SubTemplate">
+        </UseTemplate>
+    </Template>
+
+
+    <!--
+    Template for rigging springloaded 3-State switches. (Springloaded both up and down)
+
+    Main Parameters:
+            - ANIM_SIMVAR       <no default>    The Simvar that is controlled via this switch, Prefix (for example L:) must be included
+            - INVERT_ANIM       <0>             If the associated animation should be reversed
+            - NODE_ID           <no default>    The Node ID associated with this switch
+    -->
+    <Template Name="FBW_3State_Springloaded_Switch">
+        <DefaultTemplateParameters>
+            <WWISE_EVENT>wing_light_switch_on</WWISE_EVENT>
+            <NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
+            <NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
+        </DefaultTemplateParameters>
+
+        <Component ID="#NODE_ID#" Node="#NODE_ID#">
+            <UseTemplate Name="ASOBO_GT_Switch_3States">
+                <UPARROW>UpArrow</UPARROW>
+                <DOWNARROW>DownArrow</DOWNARROW>
+                <LEFTARROW/>
+                <RIGHTARROW/>
+                <CURSOR/>
+                <ANIM_NAME>#NODE_ID#</ANIM_NAME>
+                <CODE_POS_0>0 (&gt;#ANIM_SIMVAR#, number)</CODE_POS_0>
+                <CODE_POS_1>1 (&gt;#ANIM_SIMVAR#, number)</CODE_POS_1>
+                <CODE_POS_2>2 (&gt;#ANIM_SIMVAR#, number)</CODE_POS_2>
+                <STATE_MAX_TIMER>0.01</STATE_MAX_TIMER>
+                <STATE0_TIMER>0.01</STATE0_TIMER>
+                <MOMENTARY_REPEAT_FREQUENCY>5</MOMENTARY_REPEAT_FREQUENCY>
+                <MOMENTARY_SWITCH/>
+            </UseTemplate>
+        </Component>
+    </Template>
+
+
+    <!--
+    Template for rigging a knob where the animation doesn't match up with the maximum knob travel.
+
+    Main Parameters:
+            - NODE_ID               <no default>        The Node ID associated with this knob
+            - LOCAL_SIMVAR          <no default>        The LVar that will be used for this knob
+            - ANIM_VAR_TYPE         <I>                 Type of the variable used for the animation
+            - MAX_ROT_PERCENT       <100>               The maximum percent out of it's animation the knob can rotate
+            - CONVERSION_FORMULA    <optional>          The formula with which the rotation percentage will be transformed into the LOCAL_SIMVAR.
+            - INCREMENT             Default: 1          The increment for each click / hold update
+    -->
+    <Template Name="FBW_Continuous_Knob_Limited_From_Simvar">
+        <DefaultTemplateParameters>
+            <MAX_ROT_PERCENT>100</MAX_ROT_PERCENT>
+            <CONVERSION_FORMULA></CONVERSION_FORMULA>
+            <ANIM_VAR_TYPE>L</ANIM_VAR_TYPE>
+        </DefaultTemplateParameters>
+
+        <Update Frequency="40">
+            (#ANIM_VAR_TYPE#:XMLVAR_#NODE_ID#, percent) #MAX_ROT_PERCENT# min (&gt;#ANIM_VAR_TYPE#:XMLVAR_#NODE_ID#, percent)
+            (#ANIM_VAR_TYPE#:XMLVAR_#NODE_ID#, percent) #CONVERSION_FORMULA# (&gt;#LOCAL_SIMVAR#, #LOCAL_SIMVAR_UNITS#)
+        </Update>
+
+        <UseTemplate Name="FBW_Continuous_Knob_Finite_From_Simvar">
+            <ANIM_SIMVAR_MIN>0</ANIM_SIMVAR_MIN>
+            <ANIM_SIMVAR_MAX>100</ANIM_SIMVAR_MAX>
+            <ANIM_SIMVAR>#ANIM_VAR_TYPE#:XMLVAR_#NODE_ID#</ANIM_SIMVAR>
+            <ANIM_SIMVAR_UNITS>percent</ANIM_SIMVAR_UNITS>
         </UseTemplate>
     </Template>
 
