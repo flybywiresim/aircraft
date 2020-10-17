@@ -67,8 +67,8 @@
     </MiscellaneousSounds>
 
     <EngineSoundPresets>
-        <Sound WwiseEvent="Combustion" ConeHeading="180" ViewPoint="Outside" WwiseData="true" EngineIndex="1" FadeOutType="3" OutsideConeAngle="180" FadeOutTime="5"/>
-        <Sound WwiseEvent="Combustion" ConeHeading="180" ViewPoint="Outside" WwiseData="true" EngineIndex="2" FadeOutType="3" OutsideConeAngle="180" FadeOutTime="5"/>
+        <Sound WwiseEvent="Combustion" ConeHeading="180" WwiseData="true" EngineIndex="1" FadeOutType="3" OutsideConeAngle="180" FadeOutTime="5"/>
+        <Sound WwiseEvent="Combustion" ConeHeading="180" WwiseData="true" EngineIndex="2" FadeOutType="3" OutsideConeAngle="180" FadeOutTime="5"/>
         <Sound WwiseEvent="JetWhine" ConeHeading="0" WwiseData="true" EngineIndex="1" RPMMin="1"/>
         <Sound WwiseEvent="JetWhine" ConeHeading="0" WwiseData="true" EngineIndex="2" RPMMin="1"/>
     </EngineSoundPresets>
@@ -245,33 +245,6 @@
             </Requires>
             <WwiseRTPC SimVar="GROUND VELOCITY" Units="KNOTS" Index="0" RTPCName="SIMVAR_GROUND_VELOCITY" />
         </Sound>
-
-        <Sound WwiseData="true" WwiseEvent="BuzzL" ViewPoint="Inside" EngineIndex="1" SimVar="GENERAL ENG RPM" Units="RPM" Index="1">
-            <Range LowerBound="1" />
-            <WwiseRTPC SimVar="GENERAL ENG RPM" Units="RPM" Index="1" RTPCName="SIMVAR_GENERAL_ENG_RPM" />
-        </Sound>
-        <Sound WwiseData="true" WwiseEvent="BuzzR" ViewPoint="Inside" EngineIndex="2" SimVar="GENERAL ENG RPM" Units="RPM" Index="2">
-            <Range LowerBound="1" />
-            <WwiseRTPC SimVar="GENERAL ENG RPM" Units="RPM" Index="2" RTPCName="SIMVAR_GENERAL_ENG_RPM" />
-        </Sound>
-        <Sound WwiseData="true" WwiseEvent="LSpool" ViewPoint="Inside" EngineIndex="1" SimVar="GENERAL ENG RPM" Units="RPM" Index="1">
-            <Range LowerBound="1" />
-            <WwiseRTPC SimVar="GENERAL ENG RPM" Units="RPM" Index="1" RTPCName="SIMVAR_GENERAL_ENG_RPM" />
-        </Sound>
-        <Sound WwiseData="true" WwiseEvent="RSpool" ViewPoint="Inside" EngineIndex="2" SimVar="GENERAL ENG RPM" Units="RPM" Index="2">
-            <Range LowerBound="1" />
-            <WwiseRTPC SimVar="GENERAL ENG RPM" Units="RPM" Index="2" RTPCName="SIMVAR_GENERAL_ENG_RPM" />
-        </Sound>
-        <Sound WwiseData="true" WwiseEvent="LWhine" ViewPoint="Inside" EngineIndex="1" SimVar="GENERAL ENG RPM" Units="RPM" Index="1">
-            <Range LowerBound="1" />
-            <WwiseRTPC SimVar="GENERAL ENG RPM" Units="RPM" Index="1" RTPCName="SIMVAR_GENERAL_ENG_RPM" />
-        </Sound>
-        <Sound WwiseData="true" WwiseEvent="RWhine" ViewPoint="Inside" EngineIndex="2" SimVar="GENERAL ENG RPM" Units="RPM" Index="2">
-            <Range LowerBound="1" />
-            <WwiseRTPC SimVar="GENERAL ENG RPM" Units="RPM" Index="2" RTPCName="SIMVAR_GENERAL_ENG_RPM" />
-        </Sound>
-
-
 
         <!-- BETTER WIND NOISES ========================================================================================== -->
 

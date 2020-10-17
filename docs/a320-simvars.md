@@ -217,3 +217,31 @@
 - A32NX_METRIC_ALT_TOGGLE
     - Bool
     - True if PFD metric altitude enabled
+
+- A32NX_OVHD_HYD_BLUEPUMP_OVRD
+    - Bool
+    - True if "BLUE PUMP OVRD" switch is off
+
+- A32NX_OVHD_HYD_LEAK_MEASUREMENT_G
+    - Bool
+    - True if "HYD LEAK MEASUREMENT G" switch is on
+
+- A32NX_OVHD_HYD_LEAK_MEASUREMENT_G_LOCK
+    - Bool
+    - True if "HYD LEAK MEASUREMENT G" switch lock is down
+
+- A32NX_OVHD_HYD_LEAK_MEASUREMENT_B
+    - Bool
+    - True if "HYD LEAK MEASUREMENT B" switch is on
+
+- A32NX_OVHD_HYD_LEAK_MEASUREMENT_B_LOCK
+    - Bool
+    - True if "HYD LEAK MEASUREMENT B" switch lock is down
+
+- A32NX_OVHD_HYD_LEAK_MEASUREMENT_Y
+    - Bool
+    - True if "HYD LEAK MEASUREMENT Y" switch is on
+
+- A32NX_OVHD_HYD_LEAK_MEASUREMENT_Y_LOCK
+    - Bool
+    - True if "HYD LEAK MEASUREMENT Y" switch lock is down
