@@ -105,14 +105,6 @@ var A320_Neo_UpperECAM;
                 return -1;
             }
         }
-        gearNotDownLanding() {
-            const rh = this.getCachedSimVar("RADIO HEIGHT", "feet") <= 750;
-            const flapIndex = Simplane.getFlapsHandleIndex();
-            const gearNotDwnLocked = this.getCachedSimVar("GEAR POSITION", "percent") <= 99;
-            const N1Low = this.getCachedSimVar("ENG N1 RPM:1", "percent") <= 75 || this.getCachedSimVar("ENG N1 RPM:2", "percent") <= 75;
-
-            return (rh && gearNotDwnLocked && N1Low) || (rh && gearNotDwnLocked && flapIndex >= 3);
-        }
         engineFailed(_engine) {
             return (this.getCachedSimVar("ENG FAILED:" + _engine, "Bool") == 1) && !this.getCachedSimVar("ENG ON FIRE:" + _engine) && !Simplane.getIsGrounded();
         }
@@ -431,16 +423,6 @@ var A320_Neo_UpperECAM;
                                 message: "",
                                 level: 3,
                                 isActive: () => Simplane.getIndicatedSpeed() > (A32NX_Selectors.VMAX() + 4),
-                            },
-                        ]
-                    },
-                    {
-                        name: "L/G",
-                        messages: [
-                            {
-                                message: "GEAR NOT DOWN",
-                                level: 3,
-                                isActive: this.gearNotDownLanding,
                             },
                         ]
                     },
