@@ -80,7 +80,6 @@ var A320_Neo_LowerECAM_Engine;
             }
             if (n2Percent > 50) {
                 // Close right valve
-                //console.log("Right engine N2 >50%");
                 this.engineRight.setEngineBleedValveState(false, false);
             }
             let ignNeedRefreshTitle = false;
