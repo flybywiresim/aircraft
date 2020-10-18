@@ -67,6 +67,8 @@ class A320_Neo_CDU_AirwaysFromWaypointPage {
                             mcdu.insertWaypointsAlongAirway(value, mcdu.flightPlanManager.getEnRouteWaypointsLastIndex() + 1, pendingAirway.name, (result) => {
                                 if (result) {
                                     A320_Neo_CDU_AirwaysFromWaypointPage.ShowPage(mcdu, waypoint, offset);
+                                } else {
+                                    mcdu.showErrorMessage("NOT ON AIRWAY");
                                 }
                             });
                         }
