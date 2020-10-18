@@ -64,9 +64,8 @@
                     </LEFT_SINGLE_CODE>
                 </UseTemplate>
 
-                <!-- In order to only run the updates once, create them for lowest brake level only -->
-                <Condition Check="AUTOBRAKE_LEVEL" Match="1">
-                    <True>
+                <Condition Check="AUTOBRAKE_LEVEL" Match="0">
+                    <False>
                         <UseTemplate Name="ASOBO_GT_Update">
                             <FREQUENCY>1</FREQUENCY>
                             <UPDATE_CODE>
@@ -86,7 +85,7 @@
                             }
                             </UPDATE_CODE>
                         </UseTemplate>
-                    </True>
+                    </False>
                 </Condition>
             </Component>
             <Component ID="#NODE_ID_DECEL#" Node="#NODE_ID_DECEL#">
