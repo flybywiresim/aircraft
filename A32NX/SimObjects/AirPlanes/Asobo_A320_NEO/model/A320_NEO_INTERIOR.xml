@@ -32,76 +32,6 @@
             </UseTemplate>
         </Template>
 
-        <Template Name="A32NX_HANDLING_Push_Autobrakes_Template">
-            <DefaultTemplateParameters>
-                <AUTOBRAKE_LEVEL>1</AUTOBRAKE_LEVEL>
-                <WWISE_EVENT_1>autobrake_push_button_on</WWISE_EVENT_1>
-                <WWISE_EVENT_2>autobrake_push_button_off</WWISE_EVENT_2>
-                <NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
-                <NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
-                <TOOLTIPID>%((L:XMLVAR_RTO_Level) #AUTOBRAKE_LEVEL# ==)%{if}TT:COCKPIT.TOOLTIPS.AUTO_BRK_TURN_OFF%{else}TT:#OFF_TOOLTIP#%{end}</TOOLTIPID>
-                <ENGINES_COUNT>2</ENGINES_COUNT>
-                <REF_DECEL_FPSS>-7</REF_DECEL_FPSS>
-            </DefaultTemplateParameters>
-            <Component ID="#NODE_ID#" Node="#NODE_ID#">
-                <UseTemplate Name="ASOBO_GT_Push_Button">
-                    <LEFT_SINGLE_CODE>
-                    (A:ANTISKID BRAKES ACTIVE, Bool) ! (L:XMLVAR_Autobrakes_Level) #AUTOBRAKE_LEVEL# == or if{
-                        0 (&gt;L:XMLVAR_Autobrakes_Level)
-                    } els{
-                        #AUTOBRAKE_LEVEL# (&gt;L:XMLVAR_Autobrakes_Level)
-                    }
-
-                    (L:XMLVAR_Autobrakes_Level) 0 == if{
-                        1 (&gt;K:SET_AUTOBRAKE_CONTROL)
-                    } els{
-                        (A:SIM ON GROUND, Bool) if{
-                            0 (&gt;K:SET_AUTOBRAKE_CONTROL)
-                        } els{
-                            (L:XMLVAR_Autobrakes_Level) 1 + (&gt;K:SET_AUTOBRAKE_CONTROL)
-                        }
-                    }
-                    </LEFT_SINGLE_CODE>
-                </UseTemplate>
-
-                <Condition Check="AUTOBRAKE_LEVEL" Match="0">
-                    <False>
-                        <UseTemplate Name="ASOBO_GT_Update">
-                            <FREQUENCY>1</FREQUENCY>
-                            <UPDATE_CODE>
-                            (A:AUTO BRAKE SWITCH CB, Enum) s1 0 == if{
-                                (L:XMLVAR_Autobrakes_Level) 0 == if{
-                                    #AUTOBRAKE_LEVEL# (&gt;L:XMLVAR_Autobrakes_Level)
-                                }
-                            } els{
-                                l1 1 == if{
-                                    0 (&gt;L:XMLVAR_Autobrakes_Level)
-                                } els{
-                                    l1 1 - (&gt;L:XMLVAR_Autobrakes_Level)
-                                    (A:SIM ON GROUND, Bool) (A:GROUND VELOCITY, Knots) 10 &lt; and if{
-                                        0 (&gt;K:SET_AUTOBRAKE_CONTROL)
-                                    }
-                                }
-                            }
-                            </UPDATE_CODE>
-                        </UseTemplate>
-                    </False>
-                </Condition>
-            </Component>
-            <Component ID="#NODE_ID_DECEL#" Node="#NODE_ID_DECEL#">
-                <UseTemplate Name="ASOBO_GT_Emissive_Gauge">
-                    <EMISSIVE_CODE>(A:AUTO BRAKE SWITCH CB, Enum) 1 != (A:ACCELERATION BODY Z, feet per second squared) #REF_DECEL_FPSS# &lt;= and (L:XMLVAR_Autobrakes_Level) #AUTOBRAKE_LEVEL# == and (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or</EMISSIVE_CODE>
-                </UseTemplate>
-            </Component>
-            <Component ID="#NODE_ID_ON#" Node="#NODE_ID_ON#">
-                <UseTemplate Name="ASOBO_GT_Emissive_Gauge">
-                    <EMISSIVE_CODE>
-                    (L:XMLVAR_Autobrakes_Level) #AUTOBRAKE_LEVEL# == (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or
-                    </EMISSIVE_CODE>
-                </UseTemplate>
-            </Component>
-        </Template>
-
         <!-- MCDU -->
 
         <Component ID="MCDU">
@@ -972,7 +902,7 @@
             <UseTemplate Name="ASOBO_LANDING_GEAR_Warning_Template">
                 <ANIM_NAME>DECAL_LANDING_INDICATOR</ANIM_NAME>
             </UseTemplate>
-            <UseTemplate Name="A32NX_HANDLING_Push_Autobrakes_Template">
+            <UseTemplate Name="FBW_Airbus_HANDLING_Push_Autobrakes_Template">
                 <NODE_ID>PUSH_AUTOBKR_LO</NODE_ID>
                 <PART_ID>Autobrake_1</PART_ID>
                 <ANIM_NAME>PUSH_AUTOBKR_LO</ANIM_NAME>
@@ -982,7 +912,7 @@
                 <MIN_DECEL_FPSS>-7</MIN_DECEL_FPSS>
                 <OFF_TOOLTIP>COCKPIT.TOOLTIPS.AUTO_BRK_SET_LO</OFF_TOOLTIP>
             </UseTemplate>
-            <UseTemplate Name="A32NX_HANDLING_Push_Autobrakes_Template">
+            <UseTemplate Name="FBW_Airbus_HANDLING_Push_Autobrakes_Template">
                 <NODE_ID>PUSH_AUTOBKR_MED</NODE_ID>
                 <PART_ID>Autobrake_2</PART_ID>
                 <ANIM_NAME>PUSH_AUTOBKR_MED</ANIM_NAME>
@@ -992,7 +922,7 @@
                 <MIN_DECEL_FPSS>-14</MIN_DECEL_FPSS>
                 <OFF_TOOLTIP>COCKPIT.TOOLTIPS.AUTO_BRK_SET_MED</OFF_TOOLTIP>
             </UseTemplate>
-            <UseTemplate Name="A32NX_HANDLING_Push_Autobrakes_Template">
+            <UseTemplate Name="FBW_Airbus_HANDLING_Push_Autobrakes_Template">
                 <NODE_ID>PUSH_AUTOBKR_MAX</NODE_ID>
                 <PART_ID>Autobrake_3</PART_ID>
                 <ANIM_NAME>PUSH_AUTOBKR_MAX</ANIM_NAME>
