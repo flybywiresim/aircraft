@@ -33,6 +33,7 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
         this._lastMaxSpeedOverride = 600;
         this._lastMaxSpeedOverrideTime = 0;
         this._smoothFactor = 0.5;
+        this._lastFailed = false;
     }
 
     static get observedAttributes() {
@@ -767,7 +768,7 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
             for (let i = 0; i < this.totalGraduations; i++) {
                 const posX = this.graduationScrollPosX;
                 const posY = currentY;
-                if ((currentVal < this.graduationMinValue) || (currentVal === this.graduationMinValue && !this.graduations[i].SVGText1)) {
+                if ((currentVal < this.graduationMinValue) || (currentVal === this.graduationMinValue && !this.graduations[i].SVGText1) || this._lastFailed) {
                     this.graduations[i].SVGLine.setAttribute("visibility", "hidden");
                     if (this.graduations[i].SVGText1) {
                         this.graduations[i].SVGText1.setAttribute("visibility", "hidden");
@@ -832,7 +833,7 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
                 hideArrow = false;
             }
         }
-        if (hideArrow) {
+        if (hideArrow || this._lastFailed) {
             this.speedTrendArrowSVG.setAttribute("visibility", "hidden");
         } else {
             this.speedTrendArrowSVG.setAttribute("visibility", "visible");
@@ -870,7 +871,7 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
                 }
                 hudSpeed = blueAirspeed;
             }
-            if (this.blueSpeedSVG && hideBluePointer) {
+            if (this.blueSpeedSVG && (hideBluePointer || this._lastFailed)) {
                 this.blueSpeedSVG.setAttribute("visibility", "hidden");
             }
             if (this.blueSpeedText) {
@@ -946,7 +947,7 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
                     hidePointer = false;
                 }
             }
-            if (hidePointer) {
+            if (hidePointer || this._lastFailed) {
                 this.nextFlapSVG.setAttribute("visibility", "hidden");
             } else {
                 this.nextFlapSVG.setAttribute("visibility", "visible");
@@ -965,7 +966,7 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
                     hidePointer = false;
                 }
             }
-            if (hidePointer) {
+            if (hidePointer || this._lastFailed) {
                 this.greenDotSVG.setAttribute("visibility", "hidden");
             } else {
                 this.greenDotSVG.setAttribute("visibility", "visible");
