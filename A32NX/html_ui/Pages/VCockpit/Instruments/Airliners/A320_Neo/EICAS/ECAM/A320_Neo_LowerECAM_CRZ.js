@@ -173,7 +173,7 @@ var A320_Neo_LowerECAM_CRZ;
             const landingElev = fastToFixed(SimVar.GetSimVarValue("L:A32NX_LANDING_ELEVATION", "feet"), 0);
 
             if (landingElev == -2000 && this.landingElevationState) {
-                this.landingElevation.textContent = "200";
+                this.landingElevation.textContent = "50";
                 this.LandingElevationMode.textContent = "AUTO";
                 this.landingElevationState = 0;
             } else if (landingElev != -2000 && landingElev != this.landingElevationDisplayed) {

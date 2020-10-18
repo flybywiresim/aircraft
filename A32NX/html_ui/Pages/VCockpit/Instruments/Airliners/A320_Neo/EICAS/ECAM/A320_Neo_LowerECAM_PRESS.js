@@ -220,30 +220,30 @@ var A320_Neo_LowerECAM_PRESS;
             this.htmlPsiIndicator.setAttribute("style", "transform-origin: 100px 152.5px; transform: rotate(" + pressureDelta * 19.375 + "deg); stroke-width: 3px; stroke-linecap: round;");
 
             //cabin v/s gauge
-            if (Math.abs(cabinVSValue) < 50) {
+            if (Math.abs(cabinVSValue) < 10) {
                 cabinVSValue = 0;
             } else if (cabinVSValue > 2400) {
-                cabinVSValue = 2000;
+                cabinVSValue = 2400;
             } else if (cabinVSValue < -2400) {
-                cabinVSValue = -2000;
+                cabinVSValue = -2400;
             }
 
             this.updateIndicator(this.htmlCabinVSIndicator, this.htmlCabinVSValue, parseInt(cabinVSValue), "transform-origin: 100px 152.5px; transform: rotate(" + cabinVSValue * 0.045 + "deg); stroke-width: 3px; stroke-linecap: round;");
-            this.updateValue(this.htmlCabinVSValue, parseInt(cabinVSValue));
+            this.updateValueTol(this.htmlCabinVSValue, parseInt(cabinVSValue), 4);
 
             //cabin alt gauge
             this.updateIndicator(this.htmlCabinAltIndicator, this.htmlCabinAltValue, parseInt(cabinAltitude), "transform-origin: 100px 152.5px; transform: rotate(" + cabinAltitude * 0.0164 + "deg); stroke-width: 3px; stroke-linecap: round;");
             this.updateValueTol(this.htmlCabinAltValue, parseInt(cabinAltitude), 2);
 
             //valve control
-            if (cabinVSValue > 50 && !ditchingOn) {
+            if (cabinVSValue > 10 && !ditchingOn) {
                 this.updateIndicatorOnOldValue(this.htmlValveFlow, this.lastVSIndicatorRotValue, cabinVSIndicatorRot, "transform-origin: 450px 450px; transform: rotate(" + cabinVSIndicatorRot + "deg); stroke-width: 3px; stroke-linecap: round;");
                 outletValveOpen = true;
                 inletValveOpen = false;
                 if (!this.valveFlowStatus) {
                     this.valveFlowStatus = 1;
                 }
-            } else if (cabinVSValue < -50 && !ditchingOn) {
+            } else if (cabinVSValue < -10 && !ditchingOn) {
                 this.htmlValveFlow.setAttribute("style", "transform-origin: 450px 450px; transform: rotate(10deg); stroke-width: 3px; stroke-linecap: round;");
                 outletValveOpen = false;
                 inletValveOpen = true;
