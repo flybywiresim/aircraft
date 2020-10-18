@@ -1084,6 +1084,11 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
 
     updateFail() {
         const failed = !(SimVar.GetSimVarValue("L:A32NX_ADIRS_PFD_ALIGNED_FIRST", "Bool") === 1);
+        if (this._lastFailed === failed) {
+            return;
+        }
+        
+        this._lastFailed = failed;
         if (!failed) {
             this.bg.setAttribute("stroke", "transparent");
             this.topLine.setAttribute("stroke", "white");
