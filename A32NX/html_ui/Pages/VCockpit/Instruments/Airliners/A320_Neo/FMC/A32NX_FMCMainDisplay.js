@@ -733,9 +733,7 @@ class FMCMainDisplay extends BaseAirliners {
                             for (let i = 1; i < count + 1; i++) { // 9 -> 6
                                 const asyncInsertWaypointByIcao = async (icao, idx) => {
                                     return new Promise(resolve => {
-                                        console.log("add icao:" + icao + " @ " + idx);
                                         this.flightPlanManager.addWaypoint(icao, idx, () => {
-                                            console.log("icao:" + icao + " added");
                                             resolve();
                                         }, false);
                                     });
