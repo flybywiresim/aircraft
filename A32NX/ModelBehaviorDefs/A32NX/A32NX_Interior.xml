@@ -525,5 +525,22 @@
         </Component>
     </Template>
 
+    <!--
+    Template for handling landing gear indications
+
+    Authors: Benjamin Dupont (@Benjozork) 10/10/20
+    -->
+    <Template Name="FBW_Airbus_LANDING_GEAR_Light_Template">
+        <DefaultTemplateParameters>
+            <NODE_ID>LANDING_GEAR_Light_#ID#</NODE_ID>
+            <PART_ID>LANDING_GEAR_Light</PART_ID>
+            <SIMVAR>GEAR POSITION:#GEAR_ID#</SIMVAR>
+        </DefaultTemplateParameters>
+        <UseTemplate Name="ASOBO_GT_Push_Button_Airliner">
+            <DUMMY_BUTTON>True</DUMMY_BUTTON>
+            <SEQ1_EMISSIVE_CODE>0.01 99.99 (A:#SIMVAR#, Percent) rng (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or</SEQ1_EMISSIVE_CODE>
+            <SEQ2_EMISSIVE_CODE>90 100 (A:#SIMVAR#, Percent) rng (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or</SEQ2_EMISSIVE_CODE>
+        </UseTemplate>
+    </Template>
 
 </ModelBehaviors>
