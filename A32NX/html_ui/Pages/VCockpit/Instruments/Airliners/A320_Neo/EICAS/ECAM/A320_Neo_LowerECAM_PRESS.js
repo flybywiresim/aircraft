@@ -68,6 +68,7 @@ var A320_Neo_LowerECAM_PRESS;
                 htmlObj.setAttribute("class", originalClass);
             }
         }
+
         setValueWarningVal(value, htmlObj, upperLimit, lowerLimit, tolerance, originalClass, warningClass) {
             if (value - tolerance > upperLimit || value + tolerance < lowerLimit) {
                 htmlObj.setAttribute("class", warningClass);
@@ -75,6 +76,7 @@ var A320_Neo_LowerECAM_PRESS;
                 htmlObj.setAttribute("class", originalClass);
             }
         }
+
         setPackWarning(value, htmlObj) {
             if (value) {
                 htmlObj.setAttribute("class", "st0p st13p");
@@ -118,24 +120,30 @@ var A320_Neo_LowerECAM_PRESS;
             htmlObj.setAttribute("visibility", "visible");
         }
 
-        setValue(htmlObj, newValue){
+        setValue(htmlObj, newValue) {
             htmlObj.textContent = newValue;
         }
 
-        updateValue(htmlObj, value){
-            if(value !== htmlObj.textContent){
+        updateValue(htmlObj, value) {
+            if (value !== htmlObj.textContent) {
                 this.setValue(htmlObj, value);
             }
         }
 
-        updateIndicator(htmlObj, htmlObjVal, value, objStyle){
-            if(value != htmlObjVal.textContent){
+        updateValueTol(htmlObj, value, tolerance) {
+            if (Math.abs(value - htmlObj.textContent) > tolerance) {
+                this.setValue(htmlObj, value);
+            }
+        }
+
+        updateIndicator(htmlObj, htmlObjVal, value, objStyle) {
+            if (value != htmlObjVal.textContent) {
                 htmlObj.setAttribute("style", objStyle);
             }
         }
 
-        updateIndicatorOnOldValue(htmlObj, oldValue, value, objStyle){
-            if(value != oldValue){
+        updateIndicatorOnOldValue(htmlObj, oldValue, value, objStyle) {
+            if (value != oldValue) {
                 htmlObj.setAttribute("style", objStyle);
                 oldValue = value;
             }
@@ -145,12 +153,10 @@ var A320_Neo_LowerECAM_PRESS;
             const pressMode = SimVar.GetSimVarValue("L:A32NX_CAB_PRESS_MODE_MAN", "bool");
 
             if (pressMode && !this.manModeStatus) {
-                console.log("1")
                 this.manModeStatus = 1;
                 this.htmlMANtext.setAttribute("visibility", "visible");
                 this.manModeActiveTime = (new Date()).getTime();
             } else if (!pressMode && this.manModeStatus) {
-                console.log("2")
                 this.manModeStatus = 0;
                 this.htmlMANtext.setAttribute("visibility", "hidden");
                 if ((new Date()).getTime() - this.manModeActiveTime > 10000) {
@@ -158,12 +164,10 @@ var A320_Neo_LowerECAM_PRESS;
                         this.activeSystem = 2;
                         this.htmlSYS2text.setAttribute("visibility", "visible");
                         this.htmlSYS1text.setAttribute("visibility", "hidden");
-                        console.log("3")
                     } else {
                         this.activeSystem = 1;
                         this.htmlSYS2text.setAttribute("visibility", "hidden");
                         this.htmlSYS1text.setAttribute("visibility", "visible");
-                        console.log("4")
                     }
                 }
             }
@@ -180,26 +184,25 @@ var A320_Neo_LowerECAM_PRESS;
             let cabinVSValue = SimVar.GetSimVarValue("L:A32NX_CABIN_VS_RATE", "ft/min");
             let pressureDelta = SimVar.GetSimVarValue("L:A32NX_CABIN_PSI_DELTA", "psi");
 
-            const pressureDeltaInt = parseInt(pressureDelta);
-            const pressureDeltaDecimal = parseInt((pressureDelta - pressureDeltaInt) * 10);
+            const decimalSplit = pressureDelta.toFixed(1).split(".", 2);
             const cabinAltitude = SimVar.GetSimVarValue("L:A32NX_CABIN_PRESS_ALTITUDE", "feet");
             const cabinVSIndicatorRot = 10 + cabinVSValue * 0.04;
             const leftPackState = SimVar.GetSimVarValue("L:A32NX_AIRCOND_PACK1_FAULT", "bool") == 0 && SimVar.GetSimVarValue("L:A32NX_AIRCOND_PACK1_TOGGLE", "bool") == 1;
             const rightPackState = SimVar.GetSimVarValue("L:A32NX_AIRCOND_PACK2_FAULT", "bool") == 0 && SimVar.GetSimVarValue("L:A32NX_AIRCOND_PACK2_TOGGLE", "bool") == 1;
             const flightPhase = SimVar.GetSimVarValue("L:AIRLINER_FLIGHT_PHASE", "value");
             const landingElev = SimVar.GetSimVarValue("L:A32NX_LANDING_ELEVATION", "feet");
+            const ditchingOn = SimVar.GetSimVarValue("L:A32NX_DITCHING", "bool");
 
             //set active system visibility
             this.systemSwitch();
 
             //psi delta gauge
-
             if (landingElev != -2000) {
                 this.updateValue(this.htmlLdgElevText, "MAN");
                 this.updateValue(this.htmlLdgElevValue, parseInt(landingElev));
             } else {
                 this.updateValue(this.htmlLdgElevText, "AUTO");
-                this.updateValue(this.htmlLdgElevValue, "200");
+                this.updateValue(this.htmlLdgElevValue, "50");
             }
 
             if (Math.abs(pressureDelta) < 0.05) {
@@ -207,89 +210,83 @@ var A320_Neo_LowerECAM_PRESS;
             }
 
             if (pressureDelta >= 0) {
-                this.updateValue(this.htmlPsiInt, pressureDeltaInt + ".");
-                this.updateValue(this.htmlPsiDecimal, pressureDeltaDecimal);
+                this.updateValue(this.htmlPsiInt, decimalSplit[0] + ".");
+                this.updateValue(this.htmlPsiDecimal, decimalSplit[1]);
             } else {
-                this.updateValue(this.htmlPsiInt, "-0.");
-                this.updateValue(this.htmlPsiDecimal, Math.abs(pressureDeltaDecimal));
+                this.updateValue(this.htmlPsiInt, "-" + decimalSplit[0] + ".");
+                this.updateValue(this.htmlPsiDecimal, Math.abs(decimalSplit[1]));
             }
-
 
             this.htmlPsiIndicator.setAttribute("style", "transform-origin: 100px 152.5px; transform: rotate(" + pressureDelta * 19.375 + "deg); stroke-width: 3px; stroke-linecap: round;");
 
             //cabin v/s gauge
-            
-            if (Math.abs(cabinVSValue) < 15) {
+            if (Math.abs(cabinVSValue) < 50) {
                 cabinVSValue = 0;
-            } else if (cabinVSValue > 2000) {
+            } else if (cabinVSValue > 2400) {
                 cabinVSValue = 2000;
-            } else if (cabinVSValue < -2000) {
+            } else if (cabinVSValue < -2400) {
                 cabinVSValue = -2000;
             }
 
-            this.updateIndicator(this.htmlCabinVSIndicator, this.htmlCabinVSValue, parseInt(cabinVSValue), "transform-origin: 100px 152.5px; transform: rotate(" + cabinVSValue * 0.045 + "deg); stroke-width: 3px; stroke-linecap: round;"); 
-            this.updateValue(this.htmlCabinVSValue, parseInt(cabinVSValue));    
-            
-            //this.htmlCabinVSIndicator.setAttribute("style", "transform-origin: 100px 152.5px; transform: rotate(" + cabinVSValue * 0.045 + "deg); stroke-width: 3px; stroke-linecap: round;");
+            this.updateIndicator(this.htmlCabinVSIndicator, this.htmlCabinVSValue, parseInt(cabinVSValue), "transform-origin: 100px 152.5px; transform: rotate(" + cabinVSValue * 0.045 + "deg); stroke-width: 3px; stroke-linecap: round;");
+            this.updateValue(this.htmlCabinVSValue, parseInt(cabinVSValue));
 
             //cabin alt gauge
             this.updateIndicator(this.htmlCabinAltIndicator, this.htmlCabinAltValue, parseInt(cabinAltitude), "transform-origin: 100px 152.5px; transform: rotate(" + cabinAltitude * 0.0164 + "deg); stroke-width: 3px; stroke-linecap: round;");
-            this.updateValue(this.htmlCabinAltValue, parseInt(cabinAltitude));
+            this.updateValueTol(this.htmlCabinAltValue, parseInt(cabinAltitude), 2);
 
-            //valve control          
-            if (cabinVSValue > 60) {
+            //valve control
+            if (cabinVSValue > 50 && !ditchingOn) {
                 this.updateIndicatorOnOldValue(this.htmlValveFlow, this.lastVSIndicatorRotValue, cabinVSIndicatorRot, "transform-origin: 450px 450px; transform: rotate(" + cabinVSIndicatorRot + "deg); stroke-width: 3px; stroke-linecap: round;");
                 outletValveOpen = true;
                 inletValveOpen = false;
-                if(!this.valveFlowStatus){
+                if (!this.valveFlowStatus) {
                     this.valveFlowStatus = 1;
                 }
-            } else if (cabinVSValue < -60 && this.valveFlowStatus) {
+            } else if (cabinVSValue < -50 && !ditchingOn) {
                 this.htmlValveFlow.setAttribute("style", "transform-origin: 450px 450px; transform: rotate(10deg); stroke-width: 3px; stroke-linecap: round;");
                 outletValveOpen = false;
                 inletValveOpen = true;
                 this.valveFlowStatus = 0;
-            } else if(this.valveFlowStatus){
+            } else if (this.valveFlowStatus) {
                 this.htmlValveFlow.setAttribute("style", "transform-origin: 450px 450px; transform: rotate(10deg); stroke-width: 3px; stroke-linecap: round;");
                 outletValveOpen = false;
                 inletValveOpen = false;
                 this.valveFlowStatus = 0;
             }
 
-            if (pressureDelta > 8.2) {
+            if (pressureDelta > 8.2 && !ditchingOn) {
                 safetyValveOpen = true;
             } else {
                 safetyValveOpen = false;
             }
 
             //control valves
-            if (inletValveOpen && !this.inletValveStatus) {
+            if (inletValveOpen && !this.inletValveStatus && !ditchingOn) {
                 this.htmlValveInlet.setAttribute("style", "fill:none; transform-origin: 180px 460px; transform: rotate(-90deg)");
                 this.inletValveStatus = 1;
-            } else if (!inletValveOpen && this.inletValveStatus){
+            } else if (!inletValveOpen && this.inletValveStatus) {
                 this.htmlValveInlet.setAttribute("style", "fill:none; transform-origin: 180px 460px; transform: rotate(0deg)");
                 this.inletValveStatus = 0;
             }
 
-            if (outletValveOpen && !this.outletValveStatus) {
+            if (outletValveOpen && !this.outletValveStatus && !ditchingOn) {
                 this.htmlValveOutlet.setAttribute("style", "fill:none; transform-origin: 265px 460px; transform: rotate(90deg)");
                 this.outletValveStatus = 1;
-            } else if (!outletValveOpen && this.outletValveStatus){
+            } else if (!outletValveOpen && this.outletValveStatus) {
                 this.htmlValveOutlet.setAttribute("style", "fill:none; transform-origin: 265px 460px; transform: rotate(0deg)");
                 this.outletValveStatus = 0;
             }
 
-            if (safetyValveOpen && !this.safefyValveStatus) {
+            if (safetyValveOpen && !this.safefyValveStatus && !ditchingOn) {
                 this.htmlValveSafety.setAttribute("style", "fill:none; transform-origin: 550px 340px; transform: rotate(-90deg)");
                 this.safetyValveStatus = 1;
-            } else if (!safetyValveOpen && this.safefyValveStatus){
+            } else if (!safetyValveOpen && this.safefyValveStatus) {
                 this.htmlValveSafety.setAttribute("style", "fill:none; transform-origin: 550px 340px; transform: rotate(0deg)");
                 this.safetyValveStatus = 0;
             }
 
             //set warnings
-            
-
             if (parseInt(this.htmlCabinAltValue.textContent) >= 8800 && this.blinkingObjs.indexOf(this.htmlCabinAltValue) == -1) {
                 this.addHtmlObjToBlinker(this.htmlCabinAltValue);
             } else if (parseInt(this.htmlCabinAltValue.textContent) <= 8600 && this.blinkingObjs.indexOf(this.htmlCabinAltValue) != -1) {
