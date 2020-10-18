@@ -37,6 +37,12 @@ var A320_Neo_LowerECAM_PRESS;
             this.htmlPackIndicatorLeft = this.querySelector("#pack-indicator-left");
             this.htmlPackIndicatorRight = this.querySelector("#pack-indicator-right");
 
+            this.htmlLdgElevText = this.querySelector("#ldg-elev-text");
+            this.htmlLdgElevValue = this.querySelector("#ldg-elev-value");
+            this.htmlMANtext = this.querySelector("#lower-man-text");
+            this.htmlSYS1text = this.querySelector("#sys1-text");
+            this.htmlSYS2text = this.querySelector("#sys2-text");
+
             this.mSecondsBlinkLast = 0;
             this.blinkState = 0;
             this.blinkingObjs = [];
@@ -45,6 +51,12 @@ var A320_Neo_LowerECAM_PRESS;
             this.inletValveStatus = 0;
             this.outletValveStatus = 0;
             this.valveFlowStatus = 0;
+            this.manModeStatus = 0;
+            this.activeSystem = 1;
+
+            this.htmlSYS1text.setAttribute("visibility", "visible");
+            this.htmlSYS2text.setAttribute("visibility", "hidden");
+            this.htmlMANtext.setAttribute("visibility", "hidden");
 
             this.lastVSIndicatorRotValue = 0;
         }
@@ -129,6 +141,34 @@ var A320_Neo_LowerECAM_PRESS;
             }
         }
 
+        systemSwitch() {
+            const pressMode = SimVar.GetSimVarValue("L:A32NX_CAB_PRESS_MODE_MAN", "bool");
+
+            if (pressMode && !this.manModeStatus) {
+                console.log("1")
+                this.manModeStatus = 1;
+                this.htmlMANtext.setAttribute("visibility", "visible");
+                this.manModeActiveTime = (new Date()).getTime();
+            } else if (!pressMode && this.manModeStatus) {
+                console.log("2")
+                this.manModeStatus = 0;
+                this.htmlMANtext.setAttribute("visibility", "hidden");
+                if ((new Date()).getTime() - this.manModeActiveTime > 10000) {
+                    if (this.activeSystem == 1) {
+                        this.activeSystem = 2;
+                        this.htmlSYS2text.setAttribute("visibility", "visible");
+                        this.htmlSYS1text.setAttribute("visibility", "hidden");
+                        console.log("3")
+                    } else {
+                        this.activeSystem = 1;
+                        this.htmlSYS2text.setAttribute("visibility", "hidden");
+                        this.htmlSYS1text.setAttribute("visibility", "visible");
+                        console.log("4")
+                    }
+                }
+            }
+        }
+
         update(_deltaTime) {
             if (!this.isInitialised) {
                 return;
@@ -138,7 +178,7 @@ var A320_Neo_LowerECAM_PRESS;
             let outletValveOpen = false;
             let safetyValveOpen = false;
             let cabinVSValue = SimVar.GetSimVarValue("L:A32NX_CABIN_VS_RATE", "ft/min");
-            let pressureDelta = SimVar.GetSimVarValue("L:A32NX_CABIN_PSI_DELTA", "Psi");
+            let pressureDelta = SimVar.GetSimVarValue("L:A32NX_CABIN_PSI_DELTA", "psi");
 
             const pressureDeltaInt = parseInt(pressureDelta);
             const pressureDeltaDecimal = parseInt((pressureDelta - pressureDeltaInt) * 10);
@@ -147,11 +187,20 @@ var A320_Neo_LowerECAM_PRESS;
             const leftPackState = SimVar.GetSimVarValue("L:A32NX_AIRCOND_PACK1_FAULT", "bool") == 0 && SimVar.GetSimVarValue("L:A32NX_AIRCOND_PACK1_TOGGLE", "bool") == 1;
             const rightPackState = SimVar.GetSimVarValue("L:A32NX_AIRCOND_PACK2_FAULT", "bool") == 0 && SimVar.GetSimVarValue("L:A32NX_AIRCOND_PACK2_TOGGLE", "bool") == 1;
             const flightPhase = SimVar.GetSimVarValue("L:AIRLINER_FLIGHT_PHASE", "value");
+            const landingElev = SimVar.GetSimVarValue("L:A32NX_LANDING_ELEVATION", "feet");
 
             //set active system visibility
+            this.systemSwitch();
 
             //psi delta gauge
-            
+
+            if (landingElev != -2000) {
+                this.updateValue(this.htmlLdgElevText, "MAN");
+                this.updateValue(this.htmlLdgElevValue, parseInt(landingElev));
+            } else {
+                this.updateValue(this.htmlLdgElevText, "AUTO");
+                this.updateValue(this.htmlLdgElevValue, "200");
+            }
 
             if (Math.abs(pressureDelta) < 0.05) {
                 pressureDelta = 0;
