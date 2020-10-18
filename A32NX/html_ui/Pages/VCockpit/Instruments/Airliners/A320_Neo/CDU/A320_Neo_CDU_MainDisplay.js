@@ -225,7 +225,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             this.telexPingActive = true;
             console.error("Telex Ping Loop Activated");
             setInterval(() => {
-                console.error("interval loop");
+                console.log("interval loop");
                 const lat = SimVar.GetSimVarValue("PLANE LATITUDE", "degrees latitude").toString();
                 const long = SimVar.GetSimVarValue("PLANE LONGITUDE", "degrees longitude").toString();
                 const alt = SimVar.GetSimVarValue("PLANE ALTITUDE", "feet").toString();
@@ -250,8 +250,9 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                     for (let msg of data) {
                         console.log("received message!");
                         console.log(msg);
-                        const lines = msg["message"].split(";");
-                        const newMessage = { "id": Date.now(), "type": "FREE TEXT", "time": '00:00', "opened": null, "content": lines, }
+                        let lines = msg["message"].split(";");
+                        lines.unshift("FROM " + msg["m_from"] + "[color]blue");
+                        const newMessage = { "id": Date.now(), "type": "FREE TEXT (" + msg["m_from"] + ")", "time": '00:00', "opened": null, "content": lines, }
                         let timeValue = SimVar.GetGlobalVarValue("ZULU TIME", "seconds");
                         if (timeValue) {
                             const seconds = Number.parseInt(timeValue);
@@ -261,10 +262,12 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                         newMessage["time"] = timeValue.substring(0, 5);
                         this.messages.push(newMessage);
                         toDelete.push(msg["id"]);
+                        console.log("toDelete contents:");
+                        console.log(toDelete);
                     }
                 })
                 .then(() => {
-                    for (let d in toDelete) {
+                    for (let d of toDelete) {
                         console.log("deleting " + d);
                         fetch(`${endpoint_m}/${d}?delete=yes`, {method: "POST"})
                         console.log("deleted message id #" + d);

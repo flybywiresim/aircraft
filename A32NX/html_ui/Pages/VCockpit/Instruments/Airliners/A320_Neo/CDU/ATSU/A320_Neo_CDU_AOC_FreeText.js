@@ -102,10 +102,13 @@ class CDUAocFreeText {
                                         mcdu.showErrorMessage("RECIPIENT NOT FOUND");
                                         break;
                                     case "sender_permissions_error":
-                                        mcdu.showErrorMessage("AUTHENTICATION ERROR");
+                                        mcdu.showErrorMessage("AUTH ERR");
+                                        break;
+                                    case "prohibited_regex_hit":
+                                        mcdu.showErrorMessage("INVALID MSG")
                                         break;
                                     default:
-                                        mcdu.showErrorMessage("UNKNOWN DATALINK ERROR");
+                                        mcdu.showErrorMessage("UNKNOWN DOWNLINK ERR");
                                 }
                             }
                         })
