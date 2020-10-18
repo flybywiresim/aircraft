@@ -69,10 +69,16 @@ class CDUAocRequestsWeather {
             const lines = []; // Prev Messages
             let errors = 0;
             const storedMetarSrc = GetStoredData("A32NX_CONFIG_METAR_SRC");
-            let endpoint = "https://us-central1-flybywire-metar.cloudfunctions.net/metar-py";
+            let endpoint = "https://api.flybywiresim.com/metar";
             switch(storedMetarSrc) {
                 case "VATSIM":
                     endpoint += "?source=vatsim&icao=";
+                    break;
+                case "PILOTEDGE":
+                    endpoint += "?source=pilotedge&icao=";
+                    break;
+                case "IVAO":
+                    endpoint += "?source=ivao&icao=";
                     break;
                 default:
                     endpoint += "?source=ms&icao=";
@@ -110,7 +116,7 @@ class CDUAocRequestsWeather {
                                         lines.push('------------------------');
                                     } else {
                                         lines.push(`METAR ${icao}`);
-                                        lines.push('ILLEGAL STATION IDENT');
+                                        lines.push('STATION NOT AVAILABLE');
                                         lines.push('------------------------');
                                         errors += 1;
                                     }

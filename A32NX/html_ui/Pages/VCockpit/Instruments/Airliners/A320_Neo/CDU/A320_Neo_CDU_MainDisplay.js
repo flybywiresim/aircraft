@@ -16,6 +16,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this._cruiseEntered = false;
         this._blockFuelEntered = false;
         this._gpsprimaryack = 0;
+        this.telexPingActive = false;
     }
     get templateID() {
         return "A320_Neo_CDU";
@@ -35,6 +36,9 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
 
         this.A32NXCore = new A32NX_Core();
         this.A32NXCore.init(this._lastTime);
+
+        SimVar.SetSimVarValue("ATC FLIGHT NUMBER", "string", "", "FMC")
+        SimVar.SetSimVarValue("L:A32NX_Telex_ID", "Number", 0);
 
         this.defaultInputErrorMessage = "NOT ALLOWED";
         this.onDir = () => {
@@ -64,42 +68,9 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this.onMenu = () => {
             CDUMenuPage.ShowPage(this);
         };
-        // Introduced this override in ATSU update - will remove comment when done testing
+
         CDUMenuPage.ShowPage(this);
-        /*
-        const mcduStartPage = SimVar.GetSimVarValue("L:A320_NEO_CDU_START_PAGE", "number");
-        if (mcduStartPage < 1) {
-            if (mcduStartPage < 1) {
-                CDUIdentPage.ShowPage(this);
-            } else if (mcduStartPage === 10) {
-                CDUDirectToPage.ShowPage(this);
-            } else if (mcduStartPage === 20) {
-                CDUProgressPage.ShowPage(this);
-            } else if (mcduStartPage === 30) {
-                CDUPerformancePage.ShowPage(this);
-            } else if (mcduStartPage === 31) {
-                CDUPerformancePage.ShowTAKEOFFPage(this);
-            } else if (mcduStartPage === 32) {
-                CDUPerformancePage.ShowCLBPage(this);
-            } else if (mcduStartPage === 33) {
-                CDUPerformancePage.ShowCRZPage(this);
-            } else if (mcduStartPage === 34) {
-                CDUPerformancePage.ShowDESPage(this);
-            } else if (mcduStartPage === 35) {
-                CDUPerformancePage.ShowAPPRPage(this);
-            } else if (mcduStartPage === 40) {
-                CDUInitPage.ShowPage1(this);
-            } else if (mcduStartPage === 50) {
-                CDUDataIndexPage.ShowPage(this);
-            } else if (mcduStartPage === 60) {
-                CDUFlightPlanPage.ShowPage(this);
-            } else if (mcduStartPage === 70) {
-                CDUNavRadioPage.ShowPage(this);
-            } else if (mcduStartPage === 80) {
-                CDUFuelPredPage.ShowPage(this);
-            }
-        }
-        */
+
         this.electricity = this.querySelector("#Electricity");
         this.climbTransitionGroundAltitude = null;
     }
@@ -245,6 +216,61 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                     SimVar.SetSimVarValue("L:GPSPrimaryMessageDisplayed", "bool", 0);
                 }
             }
+        }
+
+        // AOC Telex Ping
+        const telexID = SimVar.GetSimVarValue("L:A32NX_Telex_ID", "Number");
+        const flightNo = SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string",  "FMC");
+        if (!this.telexPingActive && telexID > 0) {
+            this.telexPingActive = true;
+            console.error("Telex Ping Loop Activated");
+            setInterval(() => {
+                console.error("interval loop");
+                const lat = SimVar.GetSimVarValue("PLANE LATITUDE", "degrees latitude").toString();
+                const long = SimVar.GetSimVarValue("PLANE LONGITUDE", "degrees longitude").toString();
+                const alt = SimVar.GetSimVarValue("PLANE ALTITUDE", "feet").toString();
+                const posData = lat + ";" + long + ";" + alt;
+                const endpoint_c = "https://api.flybywiresim.com/txcxn";
+                const endpoint_m = "https://api.flybywiresim.com/txmsg";
+                let toDelete = [];
+                fetch(`${endpoint_c}/${telexID}?latlong=${posData}&update=yes`, {method: "POST"})
+                .then((response) => response.json())
+                .then((data) => {
+                    if ("error" in data) {
+                        console.log("TELEX PING FAILED");
+                    } else {
+                        console.log("TELEX PING SUCCESSFUL");
+                    }
+                })
+                fetch(`${endpoint_m}/msgto/${flightNo}`, {method: "GET"})
+                .then((response) => response.json())
+                .then((data) => {
+                    console.log("received message data:");
+                    console.log(data);
+                    for (let msg of data) {
+                        console.log("received message!");
+                        console.log(msg);
+                        const lines = msg["message"].split(";");
+                        const newMessage = { "id": Date.now(), "type": "FREE TEXT", "time": '00:00', "opened": null, "content": lines, }
+                        let timeValue = SimVar.GetGlobalVarValue("ZULU TIME", "seconds");
+                        if (timeValue) {
+                            const seconds = Number.parseInt(timeValue);
+                            const displayTime = Utils.SecondsToDisplayTime(seconds, true, true, false);
+                            timeValue = displayTime.toString();
+                        }
+                        newMessage["time"] = timeValue.substring(0, 5);
+                        this.messages.push(newMessage);
+                        toDelete.push(msg["id"]);
+                    }
+                })
+                .then(() => {
+                    for (let d in toDelete) {
+                        console.log("deleting " + d);
+                        fetch(`${endpoint_m}/${d}?delete=yes`, {method: "POST"})
+                        console.log("deleted message id #" + d);
+                    }
+                })
+            }, 30000);
         }
     }
 

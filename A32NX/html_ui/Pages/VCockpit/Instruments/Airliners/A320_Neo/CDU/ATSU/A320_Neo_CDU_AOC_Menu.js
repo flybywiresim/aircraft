@@ -25,12 +25,6 @@ class CDUAocMenu {
                 mcdu.showErrorMessage("");
             }, 1000);
         }
-        mcdu.onLeftInput[2] = () => {
-            mcdu.showErrorMessage("NOT YET IMPLEMENTED");
-            setTimeout(() => {
-                mcdu.showErrorMessage("");
-            }, 1000);
-        }
         mcdu.onLeftInput[3] = () => {
             mcdu.showErrorMessage("NOT YET IMPLEMENTED");
             setTimeout(() => {
@@ -59,6 +53,9 @@ class CDUAocMenu {
         // IMPLEMENTED BUTTONS
         mcdu.onLeftInput[1] = () => {
             CDUAocRequestsWeather.ShowPage(mcdu);
+        }
+        mcdu.onLeftInput[2] = () => {
+            CDUAocFreeText.ShowPage(mcdu);
         }
         mcdu.onLeftInput[5] = () => {
             CDUAtsuMenu.ShowPage(mcdu);

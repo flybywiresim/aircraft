@@ -27,9 +27,9 @@ class CDUAocRequestsMessage {
             [""],
             [`${lines[offset + 3] ? lines[offset + 3] : ""}`],
             [""],
-            ["*PRINT[color]blue"],
+            [`${lines[offset + 4] ? lines[offset + 4] : ""}`],
             [""],
-            ["<RETURN"]
+            ["<RETURN", "PRINT*[color]blue"]
         ]);
 
         if (lines.length > 3) {

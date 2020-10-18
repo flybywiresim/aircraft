@@ -8,7 +8,7 @@ class CDU_OPTIONS_METAR {
             CDU_OPTIONS_METAR.ShowPage(mcdu);
         }
 
-        let msfs = "*MSFS (METEOBLUE)[color]blue";
+        let msfs = "*METEOBLUE (MSFS)[color]blue";
         let avwx = "*AVWX (UNREAL WEATHER)[color]blue";
         let vatsim = "*VATSIM[color]blue";
         let pilotedge = "*PILOTEDGE[color]blue";
@@ -28,7 +28,7 @@ class CDU_OPTIONS_METAR {
                 ivao = "IVAO[color]green";
                 break;
             default:
-                msfs = "MSFS (METEOBLUE)[color]green";
+                msfs = "METEOBLUE (MSFS)[color]green";
         }
 
         mcdu.setTemplate([
@@ -66,16 +66,16 @@ class CDU_OPTIONS_METAR {
             }
         }
         mcdu.onLeftInput[3] = () => {
-            mcdu.showErrorMessage("NOT YET IMPLEMENTED");
-            setTimeout(() => {
-                mcdu.showErrorMessage("");
-            }, 1000);
+            if (storedMetarSrc != "PILOTEDGE") {
+                SetStoredData("A32NX_CONFIG_METAR_SRC", "PILOTEDGE");
+                CDU_OPTIONS_METAR.ShowPage(mcdu);
+            }
         }
         mcdu.onLeftInput[4] = () => {
-            mcdu.showErrorMessage("NOT YET IMPLEMENTED");
-            setTimeout(() => {
-                mcdu.showErrorMessage("");
-            }, 1000);
+            if (storedMetarSrc != "IVAO") {
+                SetStoredData("A32NX_CONFIG_METAR_SRC", "IVAO");
+                CDU_OPTIONS_METAR.ShowPage(mcdu);
+            }
         }
         mcdu.onLeftInput[5] = () => {
             CDU_OPTIONS_MainMenu.ShowPage(mcdu);
