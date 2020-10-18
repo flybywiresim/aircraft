@@ -32,7 +32,7 @@
             </UseTemplate>
         </Template>
 
-        <Template Name="ASOBO_HANDLING_Push_Autobrakes_Template">
+        <Template Name="A32NX_HANDLING_Push_Autobrakes_Template">
             <DefaultTemplateParameters>
                 <AUTOBRAKE_LEVEL>1</AUTOBRAKE_LEVEL>
                 <WWISE_EVENT_1>autobrake_push_button_on</WWISE_EVENT_1>
@@ -972,7 +972,7 @@
             <UseTemplate Name="ASOBO_LANDING_GEAR_Warning_Template">
                 <ANIM_NAME>DECAL_LANDING_INDICATOR</ANIM_NAME>
             </UseTemplate>
-            <UseTemplate Name="ASOBO_HANDLING_Push_Autobrakes_Template">
+            <UseTemplate Name="A32NX_HANDLING_Push_Autobrakes_Template">
                 <NODE_ID>PUSH_AUTOBKR_LO</NODE_ID>
                 <PART_ID>Autobrake_1</PART_ID>
                 <ANIM_NAME>PUSH_AUTOBKR_LO</ANIM_NAME>
@@ -982,7 +982,7 @@
                 <MIN_DECEL_FPSS>-7</MIN_DECEL_FPSS>
                 <OFF_TOOLTIP>COCKPIT.TOOLTIPS.AUTO_BRK_SET_LO</OFF_TOOLTIP>
             </UseTemplate>
-            <UseTemplate Name="ASOBO_HANDLING_Push_Autobrakes_Template">
+            <UseTemplate Name="A32NX_HANDLING_Push_Autobrakes_Template">
                 <NODE_ID>PUSH_AUTOBKR_MED</NODE_ID>
                 <PART_ID>Autobrake_2</PART_ID>
                 <ANIM_NAME>PUSH_AUTOBKR_MED</ANIM_NAME>
@@ -992,7 +992,7 @@
                 <MIN_DECEL_FPSS>-14</MIN_DECEL_FPSS>
                 <OFF_TOOLTIP>COCKPIT.TOOLTIPS.AUTO_BRK_SET_MED</OFF_TOOLTIP>
             </UseTemplate>
-            <UseTemplate Name="ASOBO_HANDLING_Push_Autobrakes_Template">
+            <UseTemplate Name="A32NX_HANDLING_Push_Autobrakes_Template">
                 <NODE_ID>PUSH_AUTOBKR_MAX</NODE_ID>
                 <PART_ID>Autobrake_3</PART_ID>
                 <ANIM_NAME>PUSH_AUTOBKR_MAX</ANIM_NAME>
