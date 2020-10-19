@@ -196,10 +196,8 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
 
     // check GPS Primary state and display message accordingly
     updateGPSMessage() {
-        let gps = SimVar.GetSimVarValue("L:GPSPrimary", "Bool");
-        let ack = SimVar.GetSimVarValue("L:GPSPrimaryAcknowledged", "Bool");
-        if (!ack) {
-            if (!gps) {
+        if (!SimVar.GetSimVarValue("L:GPSPrimaryAcknowledged", "Bool")) {
+            if (!SimVar.GetSimVarValue("L:GPSPrimary", "Bool")) {
                 this.showErrorMessage("GPS PRIMARY LOST", "#ffbf00");
             } else {
                 this.showErrorMessage("GPS PRIMARY");
