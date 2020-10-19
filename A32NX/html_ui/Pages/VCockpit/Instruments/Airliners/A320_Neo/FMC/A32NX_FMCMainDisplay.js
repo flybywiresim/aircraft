@@ -641,12 +641,8 @@ class FMCMainDisplay extends BaseAirliners {
                         this.showErrorMessage("FLT NBR IN USE");
                         inUse = true;
                     } else {
-                        console.log("TELEX INIT SUCCESSFUL");
-                        console.log("TELEX ID IS " + data["id"].toString());
-                        SimVar.SetSimVarValue("L:A32NX_Telex_ID", "Number", data["id"]).then(() => {
-                            console.log("STORED TELEX ID IS " +SimVar.GetSimVarValue("L:A32NX_Telex_ID", "Number").toString());
-                        })
-                        
+                        console.log("INIT SUCCESS. TELEX ID IS " + data["id"].toString());
+                        SimVar.SetSimVarValue("L:A32NX_Telex_ID", "Number", data["id"]);                        
                     }
                 })
             }

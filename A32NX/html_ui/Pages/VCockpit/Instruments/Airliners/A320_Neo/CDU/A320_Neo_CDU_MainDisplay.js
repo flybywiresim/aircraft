@@ -224,7 +224,6 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         if (!this.telexPingActive && telexID > 0) {
             this.telexPingActive = true;
             setInterval(() => {
-                console.log("interval loop");
                 const lat = SimVar.GetSimVarValue("PLANE LATITUDE", "degrees latitude").toString();
                 const long = SimVar.GetSimVarValue("PLANE LONGITUDE", "degrees longitude").toString();
                 const alt = SimVar.GetSimVarValue("PLANE ALTITUDE", "feet").toString();
@@ -237,48 +236,34 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                 .then((data) => {
                     if ("error" in data) {
                         console.log("TELEX PING FAILED");
-                    } else {
-                        console.log("TELEX PING SUCCESSFUL");
                     }
                 })
                 fetch(`${endpoint_m}/msgto/${flightNo}`, {method: "GET"})
                 .then((response) => response.json())
                 .then((data) => {
-                    console.log("received message data:");
                     for (let msg of data) {
-                        console.log("received message!");
                         let lines = [];
                         lines.push("FROM " + msg["m_from"] + "[color]blue");
                         let incLines = msg["message"].split(";");
-                        console.log("here");
                         incLines.forEach(l => lines.push(l.concat("[color]green")));
                         lines.push('---------------------------[color]white');
-                        console.log("here 2");
 
                         let newMessage = { "id": Date.now(), "type": "FREE TEXT (" + msg["m_from"] + ")", "time": '00:00', "opened": null, "content": lines, }
                         let timeValue = SimVar.GetGlobalVarValue("ZULU TIME", "seconds");
-                        console.log("here 3");
                         if (timeValue) {
                             const seconds = Number.parseInt(timeValue);
                             const displayTime = Utils.SecondsToDisplayTime(seconds, true, true, false);
                             timeValue = displayTime.toString();
                         }
-                        console.log("here 4");
                         newMessage["time"] = timeValue.substring(0, 5);
-                        console.log("here 5");
                         this.messages.unshift(newMessage);
-                        console.log("here 6");
                         toDelete.push(msg["id"]);
                     }
                 })
                 .then(() => {
-                    console.log("then 1");
                     const msgCount = SimVar.GetSimVarValue("L:A32NX_COMPANY_MSG_COUNT", "Number");
-                    console.log("then 2");
                     SimVar.SetSimVarValue("L:A32NX_COMPANY_MSG_COUNT", "Number", msgCount + toDelete.length);
-                    console.log("then 3");
                     for (let d of toDelete) {
-                        console.log("deleting " + d);
                         fetch(`${endpoint_m}/${d}?delete=yes`, {method: "POST"})
                     }
                 })
@@ -409,7 +394,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     }
     onEvent(_event) {
         super.onEvent(_event);
-        console.log("A320_Neo_CDU_MainDisplay onEvent " + _event);
+        // console.log("A320_Neo_CDU_MainDisplay onEvent " + _event);
         if (_event === "MODE_SELECTED_SPEED") {
             this._onModeSelectedSpeed();
         }
