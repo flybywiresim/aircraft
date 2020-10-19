@@ -60,6 +60,7 @@
 1. [MISC] Standby Instrument stays ON if emergency power should be available, bug fixes - @2hwk (2Cas#1022 on discord)
 1. [ECAM] Fixed LDG/TO memo showing at incorrect times - @MMontalto (PiCcy)
 1. [MISC] Fixed DECEL always show up on left button only - @jokey2k (JoKeY | Markus#0001 on discord)
+1. [ECAM] Engine bleed valve closes at N2 > 50% @RichardPilbery (Richard Pilbery)
 
 ## 2020/09
 1. [General] Add CHANGELOG.md - @nathaninnes (Nathan Innes)
