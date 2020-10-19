@@ -2,9 +2,11 @@ class CDUAocRequestsWeather {
     static ShowPage(mcdu, store = { "reqType": 0, "depIcao": "", "arrIcao": "", "arpt1": "", "arpt2": "", "arpt3": "", "arpt4": "", "sendStatus": ""}) {
         mcdu.clearDisplay();
 
+        let fplanArptColor = "[color]blue";
         if (mcdu.flightPlanManager.getOrigin() && mcdu.flightPlanManager.getDestination()) {
             store.arpt1 = mcdu.flightPlanManager.getOrigin().ident;
             store.arpt2 = mcdu.flightPlanManager.getDestination().ident;
+            fplanArptColor = "[color]green";
         }
 
         const reqTypes = [
@@ -18,9 +20,9 @@ class CDUAocRequestsWeather {
             mcdu.setTemplate([
                 ["AOC WEATHER REQUEST"],
                 [`WX TYPE`, "AIRPORTS"],
-                [`↓${reqTypes[0]}`, `${store.arpt1 != "" ? store.arpt1 : "[ ]"}[color]blue`],
+                [`↓${reqTypes[0]}`, `${store.arpt1 != "" ? store.arpt1 : "[ ]"}${fplanArptColor}`],
                 [""],
-                ["", `${store["arpt2"] != "" ? store["arpt2"] : "[ ]"}[color]blue`],
+                ["", `${store["arpt2"] != "" ? store["arpt2"] : "[ ]"}${fplanArptColor}`],
                 [""],
                 ["", `${store["arpt3"] != "" ? store["arpt3"] : "[ ]"}[color]blue`],
                 [""],
@@ -36,28 +38,44 @@ class CDUAocRequestsWeather {
         mcdu.onRightInput[0] = () => {
             let value = mcdu.inOut;
             mcdu.clearUserInput();
-            store["arpt1"] = value;
+            if (value === FMCMainDisplay.clrValue) {
+                store["arpt1"] = "";
+            } else {
+                store["arpt1"] = value;
+            }
             CDUAocRequestsWeather.ShowPage(mcdu, store);
         }
 
         mcdu.onRightInput[1] = () => {
             let value = mcdu.inOut;
             mcdu.clearUserInput();
-            store["arpt2"] = value;
+            if (value === FMCMainDisplay.clrValue) {
+                store["arpt2"] = "";
+            } else {
+                store["arpt2"] = value;
+            }
             CDUAocRequestsWeather.ShowPage(mcdu, store);
         }
 
         mcdu.onRightInput[2] = () => {
             let value = mcdu.inOut;
             mcdu.clearUserInput();
-            store["arpt3"] = value;
+            if (value === FMCMainDisplay.clrValue) {
+                store["arpt3"] = "";
+            } else {
+                store["arpt3"] = value;
+            }
             CDUAocRequestsWeather.ShowPage(mcdu, store);
         }
 
         mcdu.onRightInput[3] = () => {
             let value = mcdu.inOut;
             mcdu.clearUserInput();
-            store["arpt4"] = value;
+            if (value === FMCMainDisplay.clrValue) {
+                store["arpt4"] = "";
+            } else {
+                store["arpt4"] = value;
+            }
             CDUAocRequestsWeather.ShowPage(mcdu, store);
         }
 
@@ -92,7 +110,7 @@ class CDUAocRequestsWeather {
                                     let error = data.slice(0, 9) == "FBW_ERROR";
                                     
                                     if (!error) {
-                                        lines.push(`METAR ${icao}`);
+                                        lines.push(`METAR ${icao}[color]blue`);
 
                                         function wordWrapToStringList(text, maxLength) {
                                             let result = [], line = [];
@@ -112,12 +130,12 @@ class CDUAocRequestsWeather {
                                         };
                                         
                                         const newLines = wordWrapToStringList(data, 25);
-                                        newLines.forEach(l => lines.push(l));
-                                        lines.push('------------------------');
+                                        newLines.forEach(l => lines.push(l.concat("[color]green")));
+                                        lines.push('---------------------------[color]white');
                                     } else {
-                                        lines.push(`METAR ${icao}`);
-                                        lines.push('STATION NOT AVAILABLE');
-                                        lines.push('------------------------');
+                                        lines.push(`METAR ${icao}[color]blue`);
+                                        lines.push('STATION NOT AVAILABLE[color]red');
+                                        lines.push('---------------------------[color]white');
                                         errors += 1;
                                     }
                                 })
