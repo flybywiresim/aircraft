@@ -2,19 +2,19 @@ class CDUIdentPage {
     static ShowPage(mcdu) {
         mcdu.clearDisplay();
         mcdu.setTemplate([
-            ["A320"],
-            ["ENG"],
-            ["LEAP A-1[color]green"],
-            ["", "", "ACTIVE NAV DATA BASE"],
-            ["4MAY-4JUL[color]blue", "TC11103001[color]green"],
-            ["", "", "SECOND NAV DATA BASE"],
-            ["{4MAY-4JUL[color]blue"],
+            ["A320-200"],
+            [" ENG"],
+            ["LEAP-1A26[color]green"],
+            ["", "", " ACTIVE NAV DATA BASE"],
+            [" 4MAY-4JUL[color]blue", "TC11103001[color]green"],
+            ["", "", " SECOND NAV DATA BASE"],
+            ["{4MAY-4JUL[s-text][color]blue"],
             [""],
             [""],
             ["CHG CODE"],
-            ["FBW"],
+            ["[  ][color]blue"],
             ["IDLE/PERF", "SOFTWARE"],
-            ["+0.0/+2.4[color]green", "STATUS/XLOAD>"]
+            ["+0.0/+0.0[color]green", "STATUS/XLOAD>"]
         ]);
     }
 }
