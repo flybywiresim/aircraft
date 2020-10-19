@@ -361,6 +361,8 @@ class MapInstrument extends ISvgMapRootElement {
             this.navMap.lineCanvas = this.lineCanvas;
             const mapSVG = this.querySelector("#MapSVG");
             mapSVG.setAttribute("display", "visible");
+
+            this.navMap.svgHtmlElement.setAttribute("viewBox", "0 0 1000 1000");
             this.insertBefore(this.lineCanvas, mapSVG);
             this.wpt = this.querySelector("#WPT");
             this.dtkMap = this.querySelector("#DTKMap");
@@ -677,7 +679,7 @@ class MapInstrument extends ISvgMapRootElement {
                         this.navMap.mapElements.push(...this.npcAirplaneManager.npcAirplanes);
                     }
                 }
-                if (this.bShowAirplane) {
+                if (this.bShowAirplane && this.airplaneIconElement) {
                     this.navMap.mapElements.push(this.airplaneIconElement);
                 }
                 if (this.showObstacles && this.navMap.centerCoordinates) {
@@ -837,7 +839,7 @@ class MapInstrument extends ISvgMapRootElement {
                     this.bingMap.style.transform = transform;
                 }
             } else {
-                if (this.bShowAirplaneOnWeather) {
+                if (this.bShowAirplaneOnWeather && this.airplaneIconElement) {
                     this.navMap.mapElements.push(this.airplaneIconElement);
                 }
                 if (this.bingMap) {
@@ -1163,7 +1165,7 @@ class MapInstrument extends ISvgMapRootElement {
     }
     centerOnPlane() {
         this.setNavMapCenter(this.navMap.planeCoordinates);
-        if (this.eBingMode == EBingMode.PLANE) {
+        if (this.eBingMode == EBingMode.PLANE && this.airplaneIconElement) {
             this.airplaneIconElement.forceCoordinates(this.navMap.centerCoordinates.lat, this.navMap.centerCoordinates.long);
         }
     }

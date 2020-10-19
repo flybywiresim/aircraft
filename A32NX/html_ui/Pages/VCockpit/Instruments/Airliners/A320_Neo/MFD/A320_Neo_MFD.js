@@ -313,14 +313,16 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
         const terrainOn = SimVar.GetSimVarValue(`L:BTN_TERRONND_${this.screenIndex}_ACTIVE`, "number");
         const mapMode = SimVar.GetSimVarValue("L:A320_Neo_MFD_NAV_MODE_" + this.screenIndex, "number");
         const mapRange = SimVar.GetSimVarValue("L:A320_Neo_MFD_Range_" + this.screenIndex, "number");
-        const shouldShowWeather = wxRadarOn && wxRadarMode != 3;
+        const shouldShowWeather = (this.map && !this.map.planMode) && wxRadarOn && wxRadarMode != 3;
         if (this.wxRadarOn != wxRadarOn || this.terrainOn != terrainOn || this.wxRadarMode != wxRadarMode || this.mapMode != mapMode) {
             this.wxRadarOn = wxRadarOn;
             this.wxRadarMode = wxRadarMode;
             this.terrainOn = terrainOn;
             this.mapMode = mapMode;
             this.setMapMode(this.mapMode);
-            if (this.terrainOn) {
+            if (this.map && this.map.planMode) {
+                this.mapConfigId = 0;
+            } else if (this.terrainOn) {
                 this.mapConfigId = 1;
             } else if (shouldShowWeather) {
                 this.showWeather();
