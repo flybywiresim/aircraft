@@ -61,16 +61,16 @@ var A320_Neo_LowerECAM_PRESS;
             this.lastVSIndicatorRotValue = 0;
         }
 
-        setValueWarning(htmlObj, upperLimit, lowerLimit, tolerance, originalClass, warningClass) {
-            if (htmlObj.textContent - tolerance > upperLimit || htmlObj.textContent + tolerance < lowerLimit) {
+        setValueWarning(htmlObj, upperLimit, lowerLimit, originalClass, warningClass) {
+            if (parseInt(htmlObj.textContent) > upperLimit || parseInt(htmlObj.textContent) < lowerLimit) {
                 htmlObj.setAttribute("class", warningClass);
             } else {
                 htmlObj.setAttribute("class", originalClass);
             }
         }
 
-        setValueWarningVal(value, htmlObj, upperLimit, lowerLimit, tolerance, originalClass, warningClass) {
-            if (value - tolerance > upperLimit || value + tolerance < lowerLimit) {
+        setValueWarningVal(value, htmlObj, upperLimit, lowerLimit, originalClass, warningClass) {
+            if (value > upperLimit || value < lowerLimit) {
                 htmlObj.setAttribute("class", warningClass);
             } else {
                 htmlObj.setAttribute("class", originalClass);
@@ -125,19 +125,19 @@ var A320_Neo_LowerECAM_PRESS;
         }
 
         updateValue(htmlObj, value) {
-            if (value !== htmlObj.textContent) {
+            if (value !== parseInt(htmlObj.textContent)) {
                 this.setValue(htmlObj, value);
             }
         }
 
         updateValueTol(htmlObj, value, tolerance) {
-            if (Math.abs(value - htmlObj.textContent) > tolerance) {
+            if (Math.abs(value - parseInt(htmlObj.textContent)) > tolerance) {
                 this.setValue(htmlObj, value);
             }
         }
 
         updateIndicator(htmlObj, htmlObjVal, value, objStyle) {
-            if (value != htmlObjVal.textContent) {
+            if (value != parseInt(htmlObjVal.textContent)) {
                 htmlObj.setAttribute("style", objStyle);
             }
         }
@@ -187,8 +187,8 @@ var A320_Neo_LowerECAM_PRESS;
             const decimalSplit = pressureDelta.toFixed(1).split(".", 2);
             const cabinAltitude = SimVar.GetSimVarValue("L:A32NX_CABIN_PRESS_ALTITUDE", "feet");
             const cabinVSIndicatorRot = 10 + cabinVSValue * 0.04;
-            const leftPackState = SimVar.GetSimVarValue("L:A32NX_AIRCOND_PACK1_FAULT", "bool") == 0 && SimVar.GetSimVarValue("L:A32NX_AIRCOND_PACK1_TOGGLE", "bool") == 1;
-            const rightPackState = SimVar.GetSimVarValue("L:A32NX_AIRCOND_PACK2_FAULT", "bool") == 0 && SimVar.GetSimVarValue("L:A32NX_AIRCOND_PACK2_TOGGLE", "bool") == 1;
+            const leftPackState = (SimVar.GetSimVarValue("L:A32NX_AIRCOND_PACK1_FAULT", "bool") == 1 || SimVar.GetSimVarValue("L:A32NX_AIRCOND_PACK1_TOGGLE", "bool") == 1);
+            const rightPackState = (SimVar.GetSimVarValue("L:A32NX_AIRCOND_PACK2_FAULT", "bool") == 1 || SimVar.GetSimVarValue("L:A32NX_AIRCOND_PACK2_TOGGLE", "bool") == 1);
             const flightPhase = SimVar.GetSimVarValue("L:AIRLINER_FLIGHT_PHASE", "value");
             const landingElev = SimVar.GetSimVarValue("L:A32NX_LANDING_ELEVATION", "feet");
             const ditchingOn = SimVar.GetSimVarValue("L:A32NX_DITCHING", "bool");
@@ -210,17 +210,17 @@ var A320_Neo_LowerECAM_PRESS;
             }
 
             if (pressureDelta >= 0) {
-                this.updateValue(this.htmlPsiInt, decimalSplit[0] + ".");
+                this.updateValue(this.htmlPsiInt, Math.abs(decimalSplit[0]) + ".");
                 this.updateValue(this.htmlPsiDecimal, decimalSplit[1]);
             } else {
-                this.updateValue(this.htmlPsiInt, "-" + decimalSplit[0] + ".");
+                this.updateValue(this.htmlPsiInt, "-" + Math.abs(decimalSplit[0]) + ".");
                 this.updateValue(this.htmlPsiDecimal, Math.abs(decimalSplit[1]));
             }
 
             this.htmlPsiIndicator.setAttribute("style", "transform-origin: 100px 152.5px; transform: rotate(" + pressureDelta * 19.375 + "deg); stroke-width: 3px; stroke-linecap: round;");
 
             //cabin v/s gauge
-            if (Math.abs(cabinVSValue) < 10) {
+            if (Math.abs(cabinVSValue) < 15) {
                 cabinVSValue = 0;
             } else if (cabinVSValue > 2400) {
                 cabinVSValue = 2400;
@@ -236,14 +236,14 @@ var A320_Neo_LowerECAM_PRESS;
             this.updateValueTol(this.htmlCabinAltValue, parseInt(cabinAltitude), 2);
 
             //valve control
-            if (cabinVSValue > 10 && !ditchingOn) {
+            if (cabinVSValue > 15 && !ditchingOn) {
                 this.updateIndicatorOnOldValue(this.htmlValveFlow, this.lastVSIndicatorRotValue, cabinVSIndicatorRot, "transform-origin: 450px 450px; transform: rotate(" + cabinVSIndicatorRot + "deg); stroke-width: 3px; stroke-linecap: round;");
                 outletValveOpen = true;
                 inletValveOpen = false;
                 if (!this.valveFlowStatus) {
                     this.valveFlowStatus = 1;
                 }
-            } else if (cabinVSValue < -10 && !ditchingOn) {
+            } else if (cabinVSValue < -15 && !ditchingOn) {
                 this.htmlValveFlow.setAttribute("style", "transform-origin: 450px 450px; transform: rotate(10deg); stroke-width: 3px; stroke-linecap: round;");
                 outletValveOpen = false;
                 inletValveOpen = true;
@@ -310,12 +310,12 @@ var A320_Neo_LowerECAM_PRESS;
             this.setPackWarning(leftPackState, this.htmlPackIndicatorLeft);
             this.setPackWarning(rightPackState, this.htmlPackIndicatorRight);
 
-            this.setValueWarning(this.htmlCabinAltValue, 9550, -10000, 0, "st0p st9p", "red_warningp st9p");
-            this.setValueWarning(this.htmlCabinVSValue, 2000, -20000, 0, "st0p st9p", "warningp st9p");
+            this.setValueWarning(this.htmlCabinAltValue, 9550, -10000, "st0p st9p", "red_warningp st9p");
+            this.setValueWarning(this.htmlCabinVSValue, 2000, -20000,"st0p st9p", "warningp st9p");
 
-            this.setValueWarningVal(pressureDelta, this.htmlPsiInt, 8.5, -0.4, 0, "st0p st9p", "warningp st9p");
-            this.setValueWarningVal(pressureDelta, this.htmlPsiDecimal, 8.5, -0.4, 0, "st0p st16p", "warningp st16p");
-            this.setValueWarningVal(pressureDelta, this.htmlTextSafety, 8.2, -10, 0, "st3p st9p", "warningp st9p");
+            this.setValueWarningVal(pressureDelta, this.htmlPsiInt, 8.5, -0.4, "st0p st9p", "warningp st9p");
+            this.setValueWarningVal(pressureDelta, this.htmlPsiDecimal, 8.5, -0.4, "st0p st16p", "warningp st16p");
+            this.setValueWarningVal(pressureDelta, this.htmlTextSafety, 8.2, -10, "st3p st9p", "warningp st9p");
         }
     }
     A320_Neo_LowerECAM_PRESS.Page = Page;

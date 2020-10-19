@@ -222,14 +222,17 @@ class A32NX_Pressurization {
             }
         } else {
             const manVSSwitchPos = SimVar.GetSimVarValue("L:A32NX_MAN_VS_CONTROL", "Position(0-2)");
-
-            if (manVSSwitchPos == 0) {
-                this.cabinVSRate += 0.5;
-            } else if (manVSSwitchPos == 2) {
-                this.cabinVSRate += -0.5;
+            if (!ditchingOn) {
+                if (manVSSwitchPos == 0) {
+                    this.cabinVSRate += 0.5;
+                } else if (manVSSwitchPos == 2) {
+                    this.cabinVSRate += -0.5;
+                }
+                this.simVarUpdater(20000);
+            } else {
+                this.cabinVSRate = 0;
+                this.simVarUpdater(20000);
             }
-
-            this.simVarUpdater(20000);
         }
     }
 }
