@@ -5,7 +5,7 @@ class CDUAocMenu {
             ["AOC MENU"],
             ["", "RECEIVED"],
             ["<DELAY", "MESSAGES>"],
-            ["WX", "SENT"],
+            ["WX/ATIS", "SENT"],
             ["<REQUEST", "MESSAGES>"],
             [""],
             ["<FREE TEXT", "DIVERSION>"],
@@ -37,12 +37,6 @@ class CDUAocMenu {
                 mcdu.showErrorMessage("");
             }, 1000);
         }
-        mcdu.onRightInput[1] = () => {
-            mcdu.showErrorMessage("NOT YET IMPLEMENTED");
-            setTimeout(() => {
-                mcdu.showErrorMessage("");
-            }, 1000);
-        }
         mcdu.onRightInput[2] = () => {
             mcdu.showErrorMessage("NOT YET IMPLEMENTED");
             setTimeout(() => {
@@ -62,6 +56,9 @@ class CDUAocMenu {
         }
         mcdu.onRightInput[0] = () => {
             CDUAocMessagesReceived.ShowPage(mcdu);
+        }
+        mcdu.onRightInput[1] = () => {
+            CDUAocMessagesSent.ShowPage(mcdu);
         }
     }
 }

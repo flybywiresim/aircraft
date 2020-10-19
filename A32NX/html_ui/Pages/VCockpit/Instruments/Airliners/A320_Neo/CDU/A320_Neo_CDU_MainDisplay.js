@@ -12,6 +12,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this._apCooldown = 500;
         this._lastRequestedFLCModeWaypointIndex = -1;
         this.messages = [];
+        this.sentMessages = [];
         this.activeSystem = 'FMGC';
         this._cruiseEntered = false;
         this._blockFuelEntered = false;
@@ -1149,6 +1150,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         }
     }
 
+    // INCOMING AOC MESSAGES
     getMessages() {
         return this.messages;
     }
@@ -1182,6 +1184,36 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             SimVar.SetSimVarValue("L:A32NX_COMPANY_MSG_COUNT", "Number", cMsgCnt <= 1 ? 0 : cMsgCnt - 1);
         }
         this.messages.splice(id, 1);
+    }
+
+    // OUTGOING/SENT AOC MESSAGES
+    getSentMessages() {
+        return this.sentMessages;
+    }
+    getSentMessage(id, type) {
+        const messages = this.sentMessages;
+        const currentMessageIndex = messages.findIndex(m => m["id"].toString() === id.toString());
+        if (type === 'previous') {
+            if (messages[currentMessageIndex - 1]) {
+                return messages[currentMessageIndex - 1];
+            }
+            return null;
+        } else if (type === 'next') {
+            if (messages[currentMessageIndex + 1]) {
+                return messages[currentMessageIndex + 1];
+            }
+            return null;
+        }
+        return messages[currentMessageIndex];
+    }
+    getSentMessageIndex(id) {
+        return this.sentMessages.findIndex(m => m["id"].toString() === id.toString());
+    }
+    addSentMessage(message) {
+        this.sentMessages.unshift(message);
+    }
+    deleteSentMessage(id) {
+        this.sentMessages.splice(id, 1);
     }
 }
 A320_Neo_CDU_MainDisplay._v1sConf1 = [

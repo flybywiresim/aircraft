@@ -127,8 +127,24 @@ class CDUAocFreeText {
                 }
                 
 
-                getData().then(() => {
+                getData().then(() => {      
                     setTimeout(() => {
+                        let fMsgLines = msgLines.split(";");
+                        fMsgLines.forEach((line) => {
+                            line += "[color]green";
+                        });
+                        fMsgLines.unshift("TO " + store["msg_to"] + "[color]blue");
+                        fMsgLines.push("---------------------------[color]white");
+                        
+                        const sentMessage = { "id": Date.now(), "type": "FREE TEXT", "time": '00:00', "content": fMsgLines, }
+                        let timeValue = SimVar.GetGlobalVarValue("ZULU TIME", "seconds");
+                        if (timeValue) {
+                            const seconds = Number.parseInt(timeValue);
+                            const displayTime = Utils.SecondsToDisplayTime(seconds, true, true, false);
+                            timeValue = displayTime.toString();
+                        }
+                        sentMessage["time"] = timeValue.substring(0, 5);
+                        mcdu.addSentMessage(sentMessage);
                         store["sendStatus"] = "";
                         updateView();
                     }, 1000);
