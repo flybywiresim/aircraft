@@ -20,7 +20,7 @@ class CDUAocRequestsWeather {
             mcdu.setTemplate([
                 ["AOC WEATHER REQUEST"],
                 [`WX TYPE`, "AIRPORTS"],
-                [`↓${reqTypes[0]}`, `${store.arpt1 != "" ? store.arpt1 : "[ ]"}${fplanArptColor}`],
+                [`↓${reqTypes[0]}[color]blue`, `${store.arpt1 != "" ? store.arpt1 : "[ ]"}${fplanArptColor}`],
                 [""],
                 ["", `${store["arpt2"] != "" ? store["arpt2"] : "[ ]"}${fplanArptColor}`],
                 [""],
