@@ -27,7 +27,6 @@ class A32NX_Pressurization {
 
         this.longitude = 0;
         this.lastLongitude = 0;
-        this.paused = false;
         this.safetyValveOpen = 0;
 
         this.feetToMeters = 0.3048;
@@ -93,9 +92,13 @@ class A32NX_Pressurization {
 
         let currentVS = SimVar.GetSimVarValue("L:A32NX_CABIN_VS_RATE", "ft/min");
         let currentCabinAlt = SimVar.GetSimVarValue("L:A32NX_CABIN_PRESS_ALTITUDE", "ft");
+
+        if (Math.abs(currentCabinAlt) > 50000) {
+            currentCabinAlt = 0;
+        }
+
         const differenceVS = this.cabinVSRate - currentVS;
         const differenceCabinAlt = this.cabinPressAltitude - currentCabinAlt;
-
         if (differenceVS != 0) {
             currentVS += Math.sign(differenceVS) * 2;
         } else {
