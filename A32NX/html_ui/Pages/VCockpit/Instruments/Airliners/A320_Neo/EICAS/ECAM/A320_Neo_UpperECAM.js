@@ -328,6 +328,7 @@ var A320_Neo_UpperECAM;
             this.statusReminder = this.querySelector("#sts-reminder");
             this.activeTakeoffConfigWarnings = [];
             this.clearedSecondaryFailures = [];
+            this.showTOMemoDisabled = true;
             this.ecamMessages = {
                 failures: [
                     {
@@ -1154,6 +1155,11 @@ var A320_Neo_UpperECAM;
             this.isInitialised = true;
         }
         update(_deltaTime) {
+            const leftThrottleDetent = Simplane.getEngineThrottleMode(0);
+            const rightThrottleDetent = Simplane.getEngineThrottleMode(1);
+            const highestThrottleDetent = (leftThrottleDetent >= rightThrottleDetent) ? leftThrottleDetent : rightThrottleDetent;
+            const numberPhase = SimVar.GetSimVarValue("L:AIRLINER_FLIGHT_PHASE", "number");
+
             if (!this.isInitialised) {
                 return;
             }
@@ -1172,35 +1178,12 @@ var A320_Neo_UpperECAM;
 
             //Show takeoff memo 2 mins after second engine start
             //Hides after takeoff thurst application
-            if (SimVar.GetSimVarValue("ENG N1 RPM:1", "Percent") > 15 && SimVar.GetSimVarValue("ENG N1 RPM:2", "Percent") > 15 && SimVar.GetSimVarValue("L:AIRLINER_FLIGHT_PHASE", "number") <= 2 && SimVar.GetSimVarValue("L:A32NX_Preflight_Complete", "Bool") == 0 && this.leftEcamMessagePanel.hasActiveFailures == false) {
-                if (this.takeoffMemoTimer == null) {
-                    this.takeoffMemoTimer = 120;
-                }
-                if (this.takeoffMemoTimer > 0) {
-                    this.takeoffMemoTimer -= _deltaTime / 1000;
-                } else {
-                    this.showTakeoffMemo = true;
-                }
-
-            } else {
-                this.takeoffMemoTimer = null;
-                this.showTakeoffMemo = false;
-            }
+            this.updateTOMemo(_deltaTime);
 
             //Show landing memo at 2000ft
             //Hides after slowing down to 80kts
-            if (SimVar.GetSimVarValue("RADIO HEIGHT", "Feet") < 2000 && SimVar.GetSimVarValue("L:AIRLINER_FLIGHT_PHASE", "number") == 6 && SimVar.GetSimVarValue("AIRSPEED INDICATED", "knots") > 80 && !this.leftEcamMessagePanel.hasActiveFailures) {
-                this.showLandingMemo = true;
-            } else {
-                this.showLandingMemo = false;
-            }
+            this.updateLDGMemo(numberPhase, highestThrottleDetent, _deltaTime);
 
-            if (this.takeoffMemo != null) {
-                this.takeoffMemo.divMain.style.display = this.showTakeoffMemo ? "block" : "none";
-            }
-            if (this.landingMemo != null) {
-                this.landingMemo.divMain.style.display = this.showLandingMemo ? "block" : "none";
-            }
             //Hide left message panel when memo is diplayed
             if (this.leftEcamMessagePanel != null) {
                 this.leftEcamMessagePanel.divMain.style.display = (this.showTakeoffMemo || this.showLandingMemo) ? "none" : "block";
@@ -1259,9 +1242,6 @@ var A320_Neo_UpperECAM;
 
             this.statusReminder.setAttribute("visibility", (this.leftEcamMessagePanel.secondaryFailures.length > 0 && this.leftEcamMessagePanel.secondaryFailures.length == this.clearedSecondaryFailures.length) ? "visible" : "hidden");
 
-            const leftThrottleDetent = Simplane.getEngineThrottleMode(0);
-            const rightThrottleDetent = Simplane.getEngineThrottleMode(1);
-            const highestThrottleDetent = (leftThrottleDetent >= rightThrottleDetent) ? leftThrottleDetent : rightThrottleDetent;
             if (highestThrottleDetent == ThrottleMode.TOGA || highestThrottleDetent == ThrottleMode.FLEX_MCT) {
                 this.updateTakeoffConfigWarnings(false);
             }
@@ -1329,10 +1309,72 @@ var A320_Neo_UpperECAM;
                 this.leftEcamMessagePanel.recall("brakes_hot");
             }
         }
+        updateTOMemo(_deltaTime) {
+            const eng1Started = SimVar.GetSimVarValue("ENG N1 RPM:1", "Percent") > 15;
+            const engsStarted = eng1Started && SimVar.GetSimVarValue("ENG N1 RPM:2", "Percent") > 15;
+            const toConfig = eng1Started && SimVar.GetSimVarValue("AIRSPEED INDICATED", "knots") < 80 && SimVar.GetSimVarValue("ENG N1 RPM:2", "Percent") <= 15 && SimVar.GetSimVarValue("L:A32NX_TO_CONFIG_NORMAL", "Bool") == 1;
+
+            if (!this.showTOMemoDisabled) {
+                if (engsStarted && !this.leftEcamMessagePanel.hasActiveFailures) {
+                    if (this.takeoffMemoTimer == null) {
+                        this.takeoffMemoTimer = 120;
+                    }
+                    if (this.takeoffMemoTimer > 0) {
+                        this.takeoffMemoTimer -= _deltaTime / 1000;
+                    } else {
+                        this.showTakeoffMemo = true;
+                        this.showTOMemoDisabled = true;
+                    }
+                }
+
+                if (toConfig && !this.leftEcamMessagePanel.hasActiveFailures) {
+                    this.showTakeoffMemo = true;
+                    this.showTOMemoDisabled = true;
+                }
+            } else {
+                if (SimVar.GetSimVarValue("L:A32NX_Preflight_Complete", "Bool") == 1 || (!engsStarted && !toConfig)) {
+                    this.takeoffMemoTimer = null;
+                    this.showTakeoffMemo = false;
+                }
+
+                this.showTOMemoDisabled = engsStarted || toConfig;
+            }
+
+            if (this.takeoffMemo != null) {
+                this.takeoffMemo.divMain.style.display = this.showTakeoffMemo ? "block" : "none";
+            }
+        }
+
+        updateLDGMemo(numberPhase, highestThrottleDetent, _deltaTime) {
+            let inApproachPhase = false;
+            let inFinalOrTouchDown = false;
+            const isLandingPhase = numberPhase == FlightPhase.FLIGHT_PHASE_APPROACH;
+            this.inGoAroundCondition = numberPhase == FlightPhase.FLIGHT_PHASE_GOAROUND || highestThrottleDetent > ThrottleMode.CLIMB;
+            this.checkGoAroundTimer = this.inGoAroundCondition || !this.passGroundReferece ? this.checkGoAroundTimer = 30 : this.checkGoAroundTimer;
+
+            if (this.checkGoAroundTimer && this.checkGoAroundTimer > 0) {
+                this.checkGoAroundTimer -= _deltaTime / 1000;
+            }
+
+            if (this.checkGoAroundTimer <= 0) {
+                this.passGroundReferece = true;
+                inApproachPhase = isLandingPhase && !this.inGoAroundCondition && SimVar.GetSimVarValue("RADIO HEIGHT", "Feet") > 800 && SimVar.GetSimVarValue("RADIO HEIGHT", "feets") < 2000;
+                inFinalOrTouchDown = !this.inGoAroundCondition && SimVar.GetSimVarValue("RADIO HEIGHT", "Feet") < 800 && SimVar.GetSimVarValue("AIRSPEED INDICATED", "knots") > 80;
+            } else {
+                this.passGroundReferece = (SimVar.GetSimVarValue("PLANE ALTITUDE", "feets") - SimVar.GetSimVarValue("L:A32NX_ALTIMETER_GROUND_REFERENCE", "feet")) >= 1500;
+                inApproachPhase = false;
+                inFinalOrTouchDown = false;
+            }
+
+            this.showLandingMemo = !this.leftEcamMessagePanel.hasActiveFailures && (inApproachPhase || inFinalOrTouchDown);
+
+            if (this.landingMemo != null) {
+                this.landingMemo.divMain.style.display = this.showLandingMemo ? "block" : "none";
+            }
+        }
         getInfoPanelManager() {
             return this.infoPanelsManager;
-        }
-        ;
+        };
     }
     A320_Neo_UpperECAM.Display = Display;
     class PanelBase {
