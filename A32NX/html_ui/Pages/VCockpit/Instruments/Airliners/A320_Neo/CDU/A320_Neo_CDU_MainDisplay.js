@@ -269,6 +269,8 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                     }
                 })
             }, 30000);
+        } else if (this.telexPingActive && telexID == 0) {
+            this.telexPingActive = false;
         }
     }
 

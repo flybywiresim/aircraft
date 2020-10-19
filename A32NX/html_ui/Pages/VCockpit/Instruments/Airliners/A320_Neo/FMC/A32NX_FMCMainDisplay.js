@@ -626,35 +626,40 @@ class FMCMainDisplay extends BaseAirliners {
             this.showErrorMessage(this.defaultInputErrorMessage);
             return callback(false);
         }
-        SimVar.SetSimVarValue("ATC FLIGHT NUMBER", "string", flightNo, "FMC").then(() => {
-            let inUse = false;
-            const initTelexServer = async () => {
-                const lat = SimVar.GetSimVarValue("PLANE LATITUDE", "degrees latitude").toString();
-                const long = SimVar.GetSimVarValue("PLANE LONGITUDE", "degrees longitude").toString();
-                const alt = SimVar.GetSimVarValue("PLANE ALTITUDE", "feet").toString();
-                const posData = lat + ";" + long + ";" + alt;
-                const endpoint = "https://api.flybywiresim.com/txcxn";
-                await fetch(`${endpoint}?flight=${flightNo}&latlong=${posData}`, {method: "POST"})
-                .then((response) => response.json())
-                .then((data) => {
-                    if ("error" in data) {
-                        this.showErrorMessage("FLT NBR IN USE");
-                        inUse = true;
-                    } else {
-                        console.log("INIT SUCCESS. TELEX ID IS " + data["id"].toString());
-                        SimVar.SetSimVarValue("L:A32NX_Telex_ID", "Number", data["id"]);                        
-                    }
-                })
-            }
 
-            initTelexServer();
-            
-            if(inUse) {
-                return callback(false);
-            }            
-
-            return callback(true);
-        });
+        let storedTelexStatus = GetStoredData("A32NX_CONFIG_TELEX_STATUS");
+        if (storedTelexStatus && storedTelexStatus == "ENABLED") {
+            SimVar.SetSimVarValue("ATC FLIGHT NUMBER", "string", flightNo, "FMC").then(() => {
+                let inUse = false;
+                const initTelexServer = async () => {
+                    const lat = SimVar.GetSimVarValue("PLANE LATITUDE", "degrees latitude").toString();
+                    const long = SimVar.GetSimVarValue("PLANE LONGITUDE", "degrees longitude").toString();
+                    const alt = SimVar.GetSimVarValue("PLANE ALTITUDE", "feet").toString();
+                    const posData = lat + ";" + long + ";" + alt;
+                    const endpoint = "https://api.flybywiresim.com/txcxn";
+                    await fetch(`${endpoint}?flight=${flightNo}&latlong=${posData}`, {method: "POST"})
+                    .then((response) => response.json())
+                    .then((data) => {
+                        if ("error" in data) {
+                            this.showErrorMessage("FLT NBR IN USE");
+                            inUse = true;
+                        } else {
+                            console.log("INIT SUCCESS. TELEX ID IS " + data["id"].toString());
+                            SimVar.SetSimVarValue("L:A32NX_Telex_ID", "Number", data["id"]);                        
+                        }
+                    })
+                }
+    
+                initTelexServer();
+                
+                if(inUse) {
+                    return callback(false);
+                }            
+    
+                return callback(true);
+            });
+        }
+        return callback(true);
     }
     updateCoRoute(coRoute, callback = EmptyCallback.Boolean) {
         if (coRoute.length > 2) {
