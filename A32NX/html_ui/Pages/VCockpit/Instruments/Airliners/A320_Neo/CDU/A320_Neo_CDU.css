@@ -123,6 +123,19 @@ fmc-main-display::before {
   letter-spacing: 0.6vw;
 }
 
+.msg-text {
+  margin-top: 1.5% !important;
+  height: 8.1% !important;
+}
+
+.msg-text.label-left {
+  left: 4% !important;
+}
+
+.msg-text.label-right {
+  right: 6% !important;
+}
+
 .irs-text {
   font-weight: lighter;
   font-size: 6.3vw;
