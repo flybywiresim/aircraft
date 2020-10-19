@@ -1004,6 +1004,12 @@ var A320_Neo_UpperECAM;
                         }
                     },
                     {
+                        message: "COMPANY MSG",
+                        isActive: () => {
+                            return (this.getCachedSimVar("L:A32NX_COMPANY_MSG_COUNT", "Number") > 0) || (SimVar.GetSimVarValue("L:A32NX_COMPANY_MSG_COUNT", "Number") > 0);
+                        }
+                    },
+                    {
                         message: "ENG A.ICE",
                         isActive: () => {
                             return (this.getCachedSimVar("ENG ANTI ICE:1", "Bool") == 1) || (SimVar.GetSimVarValue("ENG ANTI ICE:2", "Bool") == 1);

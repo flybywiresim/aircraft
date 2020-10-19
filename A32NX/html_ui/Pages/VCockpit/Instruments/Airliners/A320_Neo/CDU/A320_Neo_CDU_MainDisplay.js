@@ -223,7 +223,6 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         const flightNo = SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string",  "FMC");
         if (!this.telexPingActive && telexID > 0) {
             this.telexPingActive = true;
-            console.error("Telex Ping Loop Activated");
             setInterval(() => {
                 console.log("interval loop");
                 const lat = SimVar.GetSimVarValue("PLANE LATITUDE", "degrees latitude").toString();
@@ -246,31 +245,41 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                 .then((response) => response.json())
                 .then((data) => {
                     console.log("received message data:");
-                    console.log(data);
                     for (let msg of data) {
                         console.log("received message!");
-                        console.log(msg);
-                        let lines = msg["message"].split(";");
-                        lines.unshift("FROM " + msg["m_from"] + "[color]blue");
-                        const newMessage = { "id": Date.now(), "type": "FREE TEXT (" + msg["m_from"] + ")", "time": '00:00', "opened": null, "content": lines, }
+                        let lines = [];
+                        lines.push("FROM " + msg["m_from"] + "[color]blue");
+                        let incLines = msg["message"].split(";");
+                        console.log("here");
+                        incLines.forEach(l => lines.push(l.concat("[color]green")));
+                        lines.push('---------------------------[color]white');
+                        console.log("here 2");
+
+                        let newMessage = { "id": Date.now(), "type": "FREE TEXT (" + msg["m_from"] + ")", "time": '00:00', "opened": null, "content": lines, }
                         let timeValue = SimVar.GetGlobalVarValue("ZULU TIME", "seconds");
+                        console.log("here 3");
                         if (timeValue) {
                             const seconds = Number.parseInt(timeValue);
                             const displayTime = Utils.SecondsToDisplayTime(seconds, true, true, false);
                             timeValue = displayTime.toString();
                         }
+                        console.log("here 4");
                         newMessage["time"] = timeValue.substring(0, 5);
-                        this.messages.push(newMessage);
+                        console.log("here 5");
+                        this.messages.unshift(newMessage);
+                        console.log("here 6");
                         toDelete.push(msg["id"]);
-                        console.log("toDelete contents:");
-                        console.log(toDelete);
                     }
                 })
                 .then(() => {
+                    console.log("then 1");
+                    const msgCount = SimVar.GetSimVarValue("L:A32NX_COMPANY_MSG_COUNT", "Number");
+                    console.log("then 2");
+                    SimVar.SetSimVarValue("L:A32NX_COMPANY_MSG_COUNT", "Number", msgCount + toDelete.length);
+                    console.log("then 3");
                     for (let d of toDelete) {
                         console.log("deleting " + d);
                         fetch(`${endpoint_m}/${d}?delete=yes`, {method: "POST"})
-                        console.log("deleted message id #" + d);
                     }
                 })
             }, 30000);
@@ -1178,7 +1187,16 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         return this.messages.findIndex(m => m["id"].toString() === id.toString());
     }
     addMessage(message) {
-        this.messages.push(message)
+        this.messages.unshift(message);
+        const cMsgCnt = SimVar.GetSimVarValue("L:A32NX_COMPANY_MSG_COUNT", "Number");
+        SimVar.SetSimVarValue("L:A32NX_COMPANY_MSG_COUNT", "Number", cMsgCnt + 1);
+    }
+    deleteMessage(id) {
+        if (!this.messages[id]["opened"]) {
+            const cMsgCnt = SimVar.GetSimVarValue("L:A32NX_COMPANY_MSG_COUNT", "Number");
+            SimVar.SetSimVarValue("L:A32NX_COMPANY_MSG_COUNT", "Number", cMsgCnt <= 1 ? 0 : cMsgCnt - 1);
+        }
+        this.messages.splice(id, 1);
     }
 }
 A320_Neo_CDU_MainDisplay._v1sConf1 = [
