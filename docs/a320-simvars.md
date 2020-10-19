@@ -245,3 +245,24 @@
 - A32NX_OVHD_HYD_LEAK_MEASUREMENT_Y_LOCK
     - Bool
     - True if "HYD LEAK MEASUREMENT Y" switch lock is down
+    
+- A32NX_LANDING_ELEVATION
+    - Number in feet
+    - Minimum -2000, maximum 15000
+    
+- A32NX_MAN_VS_CONTROL
+    - Number, either 0,1 or 2
+    - 0 if switch is in up position, 1 if switch is neutral, 2 if switch is down.
+    
+- A32NX_CAB_PRESS_MODE_MAN
+    - Bool
+    - True if CABIN PRESS MODE SEL is in manual mode
+    
+- A32NX_CAB_PRESS_SYS_FAULT
+    - Bool
+    - Determines if the FAULT light on the CABIN PRESS MODE SEL pushbutton
+      should be on
+    
+- A32NX_DITCHING
+    - Bool
+    - True if DITCHING mode is enabled
