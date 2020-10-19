@@ -60,7 +60,7 @@ class CDUMenuPage {
             setTimeout(() => {
                 mcdu.showErrorMessage("");
                 CDUIdentPage.ShowPage(mcdu);
-            }, Math.floor(Math.random() * (2000 - 1000)) + 1000); 
+            }, Math.floor(Math.random() * 500) + 200); 
         }
 
         mcdu.onLeftInput[1] = () => {
@@ -70,7 +70,7 @@ class CDUMenuPage {
             setTimeout(() => {
                 mcdu.showErrorMessage("");
                 CDUAtsuMenu.ShowPage(mcdu);
-            }, Math.floor(Math.random() * (2000 - 1000)) + 1000); 
+            }, Math.floor(Math.random() * 500) + 400); 
         }
 
         mcdu.onLeftInput[2] = () => {
@@ -80,7 +80,7 @@ class CDUMenuPage {
             setTimeout(() => {
                 mcdu.showErrorMessage("");
                 CDU_AIDS_MainMenu.ShowPage(mcdu);
-            }, Math.floor(Math.random() * (2000 - 1000)) + 1000); 
+            }, Math.floor(Math.random() * 500) + 800); 
         }
 
         mcdu.onLeftInput[3] = () => {
@@ -90,7 +90,7 @@ class CDUMenuPage {
             setTimeout(() => {
                 mcdu.showErrorMessage("");
                 CDUCfdsMainMenu.ShowPage(mcdu);
-            }, Math.floor(Math.random() * (2000 - 1000)) + 1000); 
+            }, Math.floor(Math.random() * 500) + 800); 
         }
 
         mcdu.onRightInput[3] = () => {
@@ -100,7 +100,7 @@ class CDUMenuPage {
             setTimeout(() => {
                 mcdu.showErrorMessage("");
                 CDU_OPTIONS_MainMenu.ShowPage(mcdu);
-            }, Math.floor(Math.random() * (2000 - 1000)) + 1000); 
+            }, Math.floor(Math.random() * 500) + 400); 
         }
 
         mcdu.onDir = () => {
