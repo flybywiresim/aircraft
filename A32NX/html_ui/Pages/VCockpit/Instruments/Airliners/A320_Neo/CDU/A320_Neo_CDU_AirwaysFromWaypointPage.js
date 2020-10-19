@@ -67,6 +67,8 @@ class A320_Neo_CDU_AirwaysFromWaypointPage {
                             mcdu.insertWaypointsAlongAirway(value, mcdu.flightPlanManager.getEnRouteWaypointsLastIndex() + 1, pendingAirway.name, (result) => {
                                 if (result) {
                                     A320_Neo_CDU_AirwaysFromWaypointPage.ShowPage(mcdu, waypoint, offset);
+                                } else {
+                                    mcdu.showErrorMessage("NOT ON AIRWAY");
                                 }
                             });
                         }
@@ -112,10 +114,12 @@ class A320_Neo_CDU_AirwaysFromWaypointPage {
                 const next = routeWaypoints[i + 1];
                 if (wp) {
                     const prevAirway = IntersectionInfo.GetCommonAirway(prev, wp);
-                    if (!prevAirway) {
+                    if (wp.infos.airwayIn === undefined) {
                         allRows.push(["DIRECT", wp.ident]);
                     } else {
-                        allRows.push([prevAirway.name, wp.ident]);
+                        if(wp.infos.airwayIn !== wp.infos.airwayOut) {
+                            allRows.push([wp.infos.airwayIn, wp.ident]);
+                        }
                     }
                 }
             }
