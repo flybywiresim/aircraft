@@ -24,7 +24,7 @@ class CDUAocFreeText {
         mcdu.onLeftInput[0] = () => {
             let value = mcdu.inOut;
             mcdu.clearUserInput();
-            if (value == "CLR") {
+            if (value === FMCMainDisplay.clrValue) {
                 store["msg_to"] = "";
             } else {
                 store["msg_to"] = value;
@@ -35,7 +35,7 @@ class CDUAocFreeText {
         mcdu.onLeftInput[1] = () => {
             let value = mcdu.inOut;
             mcdu.clearUserInput();
-            if (value == "CLR") {
+            if (value === FMCMainDisplay.clrValue) {
                 store["msg_line1"] = "";
             } else {
                 store["msg_line1"] = value;
@@ -46,7 +46,7 @@ class CDUAocFreeText {
         mcdu.onLeftInput[2] = () => {
             let value = mcdu.inOut;
             mcdu.clearUserInput();
-            if (value == "CLR") {
+            if (value === FMCMainDisplay.clrValue) {
                 store["msg_line2"] = "";
             } else {
                 store["msg_line2"] = value;
@@ -57,7 +57,7 @@ class CDUAocFreeText {
         mcdu.onLeftInput[3] = () => {
             let value = mcdu.inOut;
             mcdu.clearUserInput();
-            if (value == "CLR") {
+            if (value === FMCMainDisplay.clrValue) {
                 store["msg_line3"] = "";
             } else {
                 store["msg_line3"] = value;
@@ -68,7 +68,7 @@ class CDUAocFreeText {
         mcdu.onLeftInput[4] = () => {
             let value = mcdu.inOut;
             mcdu.clearUserInput();
-            if (value == "CLR") {
+            if (value === FMCMainDisplay.clrValue) {
                 store["msg_line4"] = "";
             } else {
                 store["msg_line4"] = value;
@@ -119,6 +119,10 @@ class CDUAocFreeText {
                     } else {
                         store["sendStatus"] = "FAILED";
                     }
+                    store["msg_line1"] = "";
+                    store["msg_line2"] = "";
+                    store["msg_line3"] = "";
+                    store["msg_line4"] = "";
                     updateView();
                 }
                 
