@@ -47,7 +47,7 @@ class CDUIRSStatus {
             ["GPIRS POSITION"],
             [`${currPos}[color]green`],
             ["", ""],
-            ["←FREEZE[color]blue", `${index < 3 ? "NEXT IRS>" : "RETURN>"}`]
+            ["{FREEZE[color]blue", `${index < 3 ? "NEXT IRS>" : "RETURN>"}`]
         ]);
 
         mcdu.onLeftInput[5] = () => {

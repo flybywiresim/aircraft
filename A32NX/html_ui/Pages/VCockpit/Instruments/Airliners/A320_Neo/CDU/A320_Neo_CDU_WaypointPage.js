@@ -10,7 +10,7 @@ class CDUWaypointPage {
         mcdu.setTemplate([
             ["WAYPOINT"],
             ["IDENT"],
-            ["□□□□□□□[color]red"],
+            ["_______[color]red"],
             [""],
             [""],
             [""],

@@ -13,7 +13,7 @@
 1. [ECAM] ELAC/SEC warning color fix, added spoiler functionality to ECAM page - @wpine215 (Iceman)
 1. [OVHD] Implemented missing functionality for multiple overhead buttons and switches - @wpine215 (Iceman)
 1. [ECAM] Improved APU ECAM visuals - @wpine215 (Iceman)
-1. [TEXTURES] changed texture of glareshield and added details
+1. [TEXTURES] Changed texture of glareshield and added details - @Pleasure0102 (Pleasure)
 1. [ECAM] Improved Fuel ECAM visuals and corrected center pump inconsistency - @wpine215 (Iceman)
 1. [MISC] Separated Captian and F/O displays - @tyler58546 (tyler58546)
 1. [ECAM] Added engine FADEC power supply logic - @tyler58546 (tyler58546)
@@ -29,12 +29,12 @@
 1. [TEXTURES] Higher resoloution Mainpanel, fixed glareshield texture error - @Pleasure0102 (Pleasure)
 1. [ECAM] Overhauled WHEEL Page - @Benjozork (Benjamin Dupont)
 1. [CDU] Add approach waypoints to DCT page - @lengyc0208 (lyc)
-1. [Sounds] Added 3D emitters for all sounds
+1. [Sounds] Added 3D emitters for all sounds - @hotshotp (Boris)
 1. [Sounds] Added sounds for Evac horn, emer cabin call, mech horn, gear extend/retract, and cargo door - @hotshotp (Boris)
 1. [CDU] Revised blue, green and amber colors on CDU - @lucky38i (Lucky38i)
 1. [CDU] Revised INIT A & B Page - @lucky38i (Lucky38i)
 1. [CDU] Fixed certain STARs not showing on arrivals page - @tyler58546 (tyler58546)
-1. [CHECKLISTS] Added several situations from QRH to checklists - FBI#7771
+1. [CHECKLISTS] Added several situations from QRH to checklists - @FBI#7771
 1. [ECAM] Fix ECAM wheel page being selected before all gears are downlocked - @lukecologne (luke)
 1. [MISC] Added standby instrument brightness adjustment and attitude reset - @2hwk (2Cas#1022 on discord)
 1. [MISC] Added standby instrument bugs page and corrected standby instrument font and behaviour on power loss - @2hwk (2Cas#1022 on discord)
@@ -47,7 +47,21 @@
 1. [CDU] Improved the VERT REV page - @lousybyte (lousybyte)
 1. [PFD] Correct PFD attitude indicator onground/inflight - @MMontalto (PiCcy)
 1. [ND] Added WX/TERR on ND brightness knob, fix ND/PFD brightness tooltips - @lukecologne (luke)
+1. [ECAM] Improved ECAM bleed page visuals and functionality - @nikotina91
+1. [LIGHTS] Fixed DIM/BRT Lights inside the cockpit. Overhead should now be visible. - @Snapmatics (Harry)
 1. [OVHD] Made AIR COND knobs continuous - @Benjozork (Benjamin Dupont)
+1. [DCDU] Add basic functionality and display - @Benjozork (Benjamin Dupont)
+1. [TEXTURES] Changed color of FD Panel.
+1. [MISC] New custom display font for PFD/ND/ECAM/MCDU. Overhauled formatting, CSS, and colors of ECAM pages - @wpine215 (Iceman)
+1. [TEXTURES] Fixed Speed Plaque and cleaned up texture on cockpit, some color corrections and more decals - @Pleasure0102 (Pleasure)
+1. [TEXTURES] Changed Overhead Panel Texture (Decals, color, detail) - @Pleasure0102 (Pleasure)
+1. [LIVERY] Bundle the FlyByWire Livery with the A32NX addon - @devsnek (devsnek)
+1. [ECAM] Added cockpit door video - @Benjozork (Benjamin Dupont)
+1. [MISC] Standby Instrument stays ON if emergency power should be available, bug fixes - @2hwk (2Cas#1022 on discord)
+1. [MISC] Redesigned Standby instrument, fixed pitch indication - @jakluk (Jakluk)
+1. [ECAM] Fixed LDG/TO memo showing at incorrect times - @MMontalto (PiCcy)
+1. [MISC] Fixed DECEL always show up on left button only - @jokey2k (JoKeY | Markus#0001 on discord)
+1. [ECAM] Engine bleed valve closes at N2 > 50% @RichardPilbery (Richard Pilbery)
 
 ## 2020/09
 1. [General] Add CHANGELOG.md - @nathaninnes (Nathan Innes)
@@ -61,4 +75,3 @@
 1. [ND] Add DME distances, VOR/ADF needles and functioning ADF2 - @blitzcaster (bltzcstr)
 1. [OVHD] Fixed Battery Indicator Colour - @nathaninnes (Nathan Innes)
 1. [MISC] Removed Fuel Patch from MSFS Update 1.8.3 - @nathaninnes (Nathan Innes)
-

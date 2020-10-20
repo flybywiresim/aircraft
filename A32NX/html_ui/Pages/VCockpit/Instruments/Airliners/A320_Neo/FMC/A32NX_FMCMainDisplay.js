@@ -1002,7 +1002,7 @@ class FMCMainDisplay extends BaseAirliners {
         if (flapsHandleIndex != 0) {
             return this.getFlapSpeed();
         }
-        let speed = 285 * (1 - dCI) + 310 * dCI;
+        let speed = 290 * (1 - dCI) + 310 * dCI;
         if (SimVar.GetSimVarValue("PLANE ALTITUDE", "feets") < 10000) {
             speed = Math.min(speed, 250);
         }
@@ -1014,7 +1014,7 @@ class FMCMainDisplay extends BaseAirliners {
         if (flapsHandleIndex != 0) {
             return this.getFlapSpeed();
         }
-        let speed = 240 * (1 - dCI) + 260 * dCI;
+        let speed = 288 * (1 - dCI) + 260 * dCI;
         if (SimVar.GetSimVarValue("PLANE ALTITUDE", "feets") < 10000) {
             speed = Math.min(speed, 250);
         }
@@ -1396,7 +1396,7 @@ class FMCMainDisplay extends BaseAirliners {
                 this.showErrorMessage("FORMAT ERROR");
                 return false;
             }
-        } else { // Until the +- button on the MCDU actually shows a plus sign
+        } else if (s.includes("+")) { // Until the +- button on the MCDU actually shows a plus sign
             wind = parseFloat(s);
             this._windDir = "TL";
             if (isFinite(wind)) {
@@ -2153,7 +2153,14 @@ class FMCMainDisplay extends BaseAirliners {
             } else if (input === "DOT") {
                 this.inOut += ".";
             } else if (input === "PLUSMINUS") {
-                this.inOut += "-";
+                const val = this.inOut;
+                if (val === "") {
+                    this.inOut = "-";
+                } else if (val === "-") {
+                    this.inOut = "+";
+                } else if (val === "+") {
+                    this.inOut = "-";
+                }
             } else if (input === "Localizer") {
                 this._apLocalizerOn = !this._apLocalizerOn;
             } else if (input.length === 2 && input[0] === "L") {

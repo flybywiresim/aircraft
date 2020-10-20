@@ -1,82 +1,64 @@
-﻿:root {
-  --ecamDefaultColour: white;
-  --ecamUnitsColour: #009696;
-  --ecamValueColour: green;
-  --ecamWarningColour: #db7200;
-  --ecamDangerColour: red;
-  --ecamInactiveColour: #db7200;
-  --ecamSeparatorsColour: white; }
-  :root .Separator {
-    stroke: #3c3c3c;
-    stroke-width: 4;
-    fill: none; }
-  :root div {
-    font-family: Roboto-Bold; }
-  :root text {
-    font-family: Roboto-Boldv; }
-  :root .PageTitle {
-    fill: var(--ecamDefaultColour);
-    font-size: 25px;
-    text-decoration: underline; }
-  :root .SubTitle {
-    fill: var(--ecamDefaultColour);
+﻿@import url("/CSS/A32NX_Display_Common.css");
+
+:root .SubTitle {
+    fill: var(--displayWhite);
     font-size: 22px;
-    text-decoration: underline; }
-  :root .WingSym {
-      stroke: var(--ecamDefaultColour);
-      stroke-width: 2;
-      fill: none; }
-  :root .PlaneSym {
-    stroke: var(--ecamDefaultColour);
+    text-decoration: underline;
+}
+:root .WingSym {
+    stroke: var(--displayWhite);
     stroke-width: 2;
-    fill: none; }
+    fill: none;
+}
+:root .PlaneSym {
+    stroke: var(--displayWhite);
+    stroke-width: 2;
+    fill: none;
+}
+
 
 a320-neo-lower-ecam-crz {
-  display: block;
-  position: absolute;
-  top: -5%;
-  left: 0%;
-  width: 100%;
-  height: 100%; }
-  a320-neo-lower-ecam-crz text {
+    display: block;
+    position: absolute;
+    top: -5%;
+    left: 0%;
+    width: 100%;
+    height: 100%;
+}
+a320-neo-lower-ecam-crz text {
     text-anchor: middle;
     alignment-baseline: central;
-    word-spacing: 10; }
+    word-spacing: 10;
+}
+
 
 /* Custom Styles */
 :root .Description {
-  fill: var(--ecamDefaultColour);
-  font-size: 17px;
+    fill: var(--displayWhite);
+    font-size: 17px;
 }
-
 :root .Unit {
-  fill: var(--ecamUnitsColour);
-  font-size: 15px;
+    fill: var(--displayCyan);
+    font-size: 15px;
 }
-
 :root .CRZValue {
-  fill: var(--ecamValueColour);
-  font-size: 20px;
+    fill: var(--displayGreen);
+    font-size: 18px;
 }
-
 :root .CRZValueDecimal {
-  fill: var(--ecamValueColour);
-  font-size: 15px;
-  text-anchor: end !important;
+    fill: var(--displayGreen);
+    font-size: 15px;
+    text-anchor: end !important;
 }
-
 :root .AlignLeft {
-  text-anchor: start !important;
+    text-anchor: start !important;
 }
-
 :root .AlignCenter {
-  text-anchor: middle !important;
+    text-anchor: middle !important;
 }
-
 :root .AlignRight {
-  text-anchor: end !important;
+    text-anchor: end !important;
 }
-
 :root .SmallText {
-  font-size: 15px !important; 
+    font-size: 16px !important; 
 }

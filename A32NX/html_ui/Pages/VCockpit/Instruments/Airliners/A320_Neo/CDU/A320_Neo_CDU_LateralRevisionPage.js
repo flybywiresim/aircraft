@@ -33,7 +33,7 @@ class CDULateralRevisionPage {
             ["", "NEXT WPT"],
             ["<HOLD[color]blue", "[ ][color]blue"],
             ["ENABLE[color]blue", "NEW DEST"],
-            ["←ALTN[color]blue", "[ ][color]blue"],
+            ["{ALTN[color]blue", "[ ][color]blue"],
             [""],
             ["", "AIRWAYS>"],
             [""],
