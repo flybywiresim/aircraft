@@ -371,7 +371,7 @@
             <WwiseRTPC LocalVar="XMLVAR_Throttle2Position" RTPCName="LOCALVAR_GENERAL_ENG_THROTTLE2_LEVER_POSITION" />
         </Sound>
 
-        <Sound WwiseData="true" WwiseEvent="lever_throttle_1_stop" Continuous="false" ViewPoint="Inside" NodeName="LEVER_THROTTLE_1" LocalVar="XMLVAR_Throttle1Position">
+        <Sound WwiseData="false" FileName="detent1, detent2, detent3" WwiseEvent="lever_throttle_1_stop" Continuous="false" ViewPoint="Inside" NodeName="LEVER_THROTTLE_1" LocalVar="XMLVAR_Throttle1Position">
             <Range UpperBound="0" />
             <Range LowerBound="0.9" UpperBound="1.1" />
             <Range LowerBound="1.9" UpperBound="2.1" />
@@ -379,7 +379,7 @@
             <Range LowerBound="3.9" />
         </Sound>
 
-        <Sound WwiseData="true" WwiseEvent="lever_throttle_2_stop" Continuous="false" ViewPoint="Inside" NodeName="LEVER_THROTTLE_2" LocalVar="XMLVAR_Throttle2Position">
+        <Sound WwiseData="false" FileName="detent1, detent2, detent3" WwiseEvent="lever_throttle_2_stop" Continuous="false" ViewPoint="Inside" NodeName="LEVER_THROTTLE_2" LocalVar="XMLVAR_Throttle2Position">
             <Range UpperBound="0" />
             <Range LowerBound="0.9" UpperBound="1.1" />
             <Range LowerBound="1.9" UpperBound="2.1" />
