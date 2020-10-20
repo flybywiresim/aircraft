@@ -711,15 +711,17 @@ class FMCMainDisplay extends BaseAirliners {
         });
     }
     async insertWaypointsAlongAirway(lastWaypointIdent, index, airwayName, callback = EmptyCallback.Boolean) {
-        let referenceWaypoint = this.flightPlanManager.getWaypoint(index - 1);
+        const referenceWaypoint = this.flightPlanManager.getWaypoint(index - 1);
         if (referenceWaypoint) {
-            let infos = referenceWaypoint.infos;
+            const infos = referenceWaypoint.infos;
             if (infos instanceof WayPointInfo) {
-                let airway = infos.airways.find(a => { return a.name === airwayName; });
+                const airway = infos.airways.find(a => {
+                    return a.name === airwayName;
+                });
                 if (airway) {
-                    let firstIndex = airway.icaos.indexOf(referenceWaypoint.icao);
-                    let lastWaypointIcao = airway.icaos.find(icao => icao.substring(7, 12) === lastWaypointIdent.padEnd(5, " "));
-                    let lastIndex = airway.icaos.indexOf(lastWaypointIcao);
+                    const firstIndex = airway.icaos.indexOf(referenceWaypoint.icao);
+                    const lastWaypointIcao = airway.icaos.find(icao => icao.substring(7, 12) === lastWaypointIdent.padEnd(5, " "));
+                    const lastIndex = airway.icaos.indexOf(lastWaypointIcao);
                     if (firstIndex >= 0) {
                         if (lastIndex >= 0) {
                             let inc = 1;
@@ -727,24 +729,24 @@ class FMCMainDisplay extends BaseAirliners {
                                 inc = -1;
                             }
                             index -= 1;
-                            let count = Math.abs(lastIndex - firstIndex);
+                            const count = Math.abs(lastIndex - firstIndex);
                             for (let i = 1; i < count + 1; i++) { // 9 -> 6
-                                let syncInsertWaypointByIcao = async (icao, idx) => {
+                                const syncInsertWaypointByIcao = async (icao, idx) => {
                                     return new Promise(resolve => {
                                         // console.log("add icao:" + icao + " @ " + idx);
-                                        console.time('addWaypoint')
+                                        console.time('addWaypoint');
                                         this.flightPlanManager.addWaypoint(icao, idx, () => {
-                                            console.timeEnd('addWaypoint')
-                                            let waypoint = this.flightPlanManager.getWaypoint(idx);
+                                            console.timeEnd('addWaypoint');
+                                            const waypoint = this.flightPlanManager.getWaypoint(idx);
                                             // console.time('UpdateAirway')
                                             // waypoint.infos.UpdateAirway(airwayName).then(() => {
                                             //     console.timeEnd('UpdateAirway')
-                                                waypoint.infos.airwayIn = airwayName;
-                                                if (i < count) {
-                                                    waypoint.infos.airwayOut = airwayName;
-                                                }
-                                                console.log("icao:" + icao + " added");
-                                                resolve();
+                                            waypoint.infos.airwayIn = airwayName;
+                                            if (i < count) {
+                                                waypoint.infos.airwayOut = airwayName;
+                                            }
+                                            console.log("icao:" + icao + " added");
+                                            resolve();
                                             // });
                                         });
                                     });

@@ -117,7 +117,7 @@ class A320_Neo_CDU_AirwaysFromWaypointPage {
                     if (wp.infos.airwayIn === undefined) {
                         allRows.push(["DIRECT", wp.ident]);
                     } else {
-                        if(wp.infos.airwayIn !== wp.infos.airwayOut) {
+                        if (wp.infos.airwayIn !== wp.infos.airwayOut) {
                             allRows.push([wp.infos.airwayIn, wp.ident]);
                         }
                     }
