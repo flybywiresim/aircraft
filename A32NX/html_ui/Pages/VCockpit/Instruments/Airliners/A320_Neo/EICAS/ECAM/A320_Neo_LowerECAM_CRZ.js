@@ -183,7 +183,7 @@ var A320_Neo_LowerECAM_CRZ;
                 this.landingElevationState = 1;
             }
 
-            const pressureDiff = SimVar.GetSimVarValue("L:A32NX_CABIN_PSI_DELTA", "PSI");
+            let pressureDiff = SimVar.GetSimVarValue("L:A32NX_CABIN_PSI_DELTA", "PSI");
 
             if ((pressureDiff != this.CabinAltitudeDisplayed)) {
                 if ((pressureDiff > -0.05) && (pressureDiff < 0)) {
