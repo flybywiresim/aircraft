@@ -20,13 +20,20 @@ var A320_Neo_LowerECAM_PRESS;
 
             this.htmlPsiInt = this.querySelector("#psi-gauge-int");
             this.htmlPsiDecimal = this.querySelector("#psi-gauge-decimal");
+            this.htmlPsiIntW = this.querySelector("#psi-gauge-int-w");
+            this.htmlPsiDecimalW = this.querySelector("#psi-gauge-decimal-w");
             this.htmlPsiIndicator = this.querySelector("#delta-psi-indicator");
+            this.cabinPsiStatus = 0;
 
             this.htmlCabinVSValue = this.querySelector("#v-s-value");
+            this.htmlCabinVSValueW = this.querySelector("#v-s-value-w");
             this.htmlCabinVSIndicator = this.querySelector("#v-s-indicator");
+            this.cabinVSStatus = 0;
 
             this.htmlCabinAltValue = this.querySelector("#cabin-altitude-value");
+            this.htmlCabinAltValueW = this.querySelector("#cabin-altitude-value-w");
             this.htmlCabinAltIndicator = this.querySelector("#cabin-alt-indicator");
+            this.cabinAltStatus = 0;
 
             this.htmlValveInlet = this.querySelector("#valve-inlet");
             this.htmlValveOutlet = this.querySelector("#valve-outlet");
@@ -34,6 +41,8 @@ var A320_Neo_LowerECAM_PRESS;
             this.htmlValveFlow = this.querySelector("#valve-indicator");
 
             this.htmlTextSafety = this.querySelector("#safety-text");
+            this.htmlTextSafetyW = this.querySelector("#safety-text-w");
+            this.cabinSafetyTextStatus = 0;
             this.htmlPackIndicatorLeft = this.querySelector("#pack-indicator-left");
             this.htmlPackIndicatorRight = this.querySelector("#pack-indicator-right");
 
@@ -51,7 +60,7 @@ var A320_Neo_LowerECAM_PRESS;
             this.blinkState = 0;
             this.blinkingObjs = [];
 
-            this.safefyValveStatus = 0;
+            this.safetyValveStatus = 0;
             this.inletValveStatus = 0;
             this.outletValveStatus = 0;
             this.valveFlowStatus = 0;
@@ -61,16 +70,13 @@ var A320_Neo_LowerECAM_PRESS;
             this.htmlSYS1text.setAttribute("visibility", "visible");
             this.htmlSYS2text.setAttribute("visibility", "hidden");
             this.htmlMANtext.setAttribute("visibility", "hidden");
+            this.htmlTextSafetyW.setAttribute("visibility", "hidden");
+            this.htmlCabinAltValueW.setAttribute("visibility", "hidden");
+            this.htmlCabinVSValueW.setAttribute("visibility", "hidden");
+            this.htmlPsiDecimalW.setAttribute("visibility", "hidden");
+            this.htmlPsiIntW.setAttribute("visibility", "hidden");
 
             this.lastVSIndicatorRotValue = 0;
-        }
-
-        setValueWarningVal(value, htmlObj, upperLimit, lowerLimit, originalClass, warningClass) {
-            if (value > upperLimit || value < lowerLimit) {
-                htmlObj.setAttribute("class", warningClass);
-            } else {
-                htmlObj.setAttribute("class", originalClass);
-            }
         }
 
         setPackWarning(value, htmlObj) {
@@ -240,9 +246,13 @@ var A320_Neo_LowerECAM_PRESS;
             if (pressureDelta >= 0) {
                 this.updateValue(this.htmlPsiInt, Math.abs(decimalSplit[0]) + ".");
                 this.updateValue(this.htmlPsiDecimal, decimalSplit[1]);
+                this.updateValue(this.htmlPsiIntW, Math.abs(decimalSplit[0]) + ".");
+                this.updateValue(this.htmlPsiDecimalW, decimalSplit[1]);
             } else {
                 this.updateValue(this.htmlPsiInt, "-" + Math.abs(decimalSplit[0]) + ".");
                 this.updateValue(this.htmlPsiDecimal, Math.abs(decimalSplit[1]));
+                this.updateValue(this.htmlPsiIntW, "-" + Math.abs(decimalSplit[0]) + ".");
+                this.updateValue(this.htmlPsiDecimalW, Math.abs(decimalSplit[1]));
             }
 
             this.updateIndicatorOnOldValue(this.htmlPsiIndicator, this.htmlCabinPsiValue, parseInt(pressureDelta), "transform-origin: 100px 152.5px; transform: rotate(" + cabinPsiDeltaIndicatorRot + "deg); stroke-width: 3px; stroke-linecap: round;");
@@ -258,10 +268,12 @@ var A320_Neo_LowerECAM_PRESS;
 
             this.updateIndicator(this.htmlCabinVSIndicator, this.htmlCabinVSValue, parseInt(cabinVSValue), "transform-origin: 100px 152.5px; transform: rotate(" + cabinVSIndicatorRot + "deg); stroke-width: 3px; stroke-linecap: round;");
             this.updateValueTol(this.htmlCabinVSValue, parseInt(cabinVSValue), 4);
+            this.updateValueTol(this.htmlCabinVSValueW, parseInt(cabinVSValue), 4);
 
             //cabin alt gauge
             this.updateIndicator(this.htmlCabinAltIndicator, this.htmlCabinAltValue, parseInt(cabinAltitude), "transform-origin: 100px 152.5px; transform: rotate(" + cabinAltitudeIndicatorRot + "deg); stroke-width: 3px; stroke-linecap: round;");
             this.updateValueTol(this.htmlCabinAltValue, parseInt(cabinAltitude), 2);
+            this.updateValueTol(this.htmlCabinAltValueW, parseInt(cabinAltitude), 2);
 
             //valve control
             if (cabinVSValue > 15 && !ditchingOn) {
@@ -283,7 +295,7 @@ var A320_Neo_LowerECAM_PRESS;
                 this.valveFlowStatus = 0;
             }
 
-            if (pressureDelta > 8.2 && !ditchingOn) {
+            if (pressureDelta > 1 && !ditchingOn) {
                 safetyValveOpen = true;
             } else {
                 safetyValveOpen = false;
@@ -306,10 +318,10 @@ var A320_Neo_LowerECAM_PRESS;
                 this.outletValveStatus = 0;
             }
 
-            if (safetyValveOpen && !this.safefyValveStatus && !ditchingOn) {
+            if (safetyValveOpen && !this.safetyValveStatus && !ditchingOn) {
                 this.htmlValveSafety.setAttribute("style", "fill:none; transform-origin: 550px 340px; transform: rotate(-90deg)");
                 this.safetyValveStatus = 1;
-            } else if (!safetyValveOpen && this.safefyValveStatus) {
+            } else if (!safetyValveOpen && this.safetyValveStatus) {
                 this.htmlValveSafety.setAttribute("style", "fill:none; transform-origin: 550px 340px; transform: rotate(0deg)");
                 this.safetyValveStatus = 0;
             }
@@ -338,11 +350,49 @@ var A320_Neo_LowerECAM_PRESS;
             this.setPackWarning(leftPackState, this.htmlPackIndicatorLeft);
             this.setPackWarning(rightPackState, this.htmlPackIndicatorRight);
 
-            this.setValueWarningVal(this.cabinAltitude, this.htmlCabinAltValue, 9550, -10000, "st0p st9p", "red_warningp st9p");
-            this.setValueWarningVal(this.cabinVSRate, this.htmlCabinVSValue, 2000, -2000,"st0p st9p", "warningp st9p");
-            this.setValueWarningVal(pressureDelta, this.htmlPsiInt, 8.5, -0.4, "st0p st9p", "warningp st9p");
-            this.setValueWarningVal(pressureDelta, this.htmlPsiDecimal, 8.5, -0.4, "st0p st16p", "warningp st16p");
-            this.setValueWarningVal(pressureDelta, this.htmlTextSafety, 8.2, -10, "st3p st9p", "warningp st9p");
+            if (this.cabinAltitude >= 9550) {
+                this.htmlCabinAltValue.setAttribute("visibility", "hidden");
+                this.htmlCabinAltValueW.setAttribute("visibility", "visible");
+                this.cabinAltStatus = 1;
+            } else if (this.cabinAltStatus && this.cabinAltitude < 9550) {
+                this.htmlCabinAltValue.setAttribute("visibility", "visible");
+                this.htmlCabinAltValueW.setAttribute("visibility", "hidden");
+                this.cabinAltStatus = 0;
+            }
+
+            if (this.cabinVSRate >= 2000 || this.cabinVSRate <= -2000) {
+                this.htmlCabinVSValueW.setAttribute("visibility", "visible");
+                this.htmlCabinVSValue.setAttribute("visibility", "hidden");
+                this.cabinVSStatus = 1;
+            } else if (this.cabinVSRate < 2000 && this.cabinVSRate > -2000 && this.cabinVSStatus) {
+                this.htmlCabinVSValue.setAttribute("visibility", "visible");
+                this.htmlCabinVSValueW.setAttribute("visibility", "hidden");
+                this.cabinVSStatus = 0;
+            }
+
+            if ((this.psiDelta >= 8.5 || this.psiDelta <= -0.4) && !this.cabinPsiStatus) {
+                this.htmlPsiDecimal.setAttribute("visibility", "hidden");
+                this.htmlPsiDecimalW.setAttribute("visibility", "visible");
+                this.htmlPsiInt.setAttribute("visibility", "hidden");
+                this.htmlPsiIntW.setAttribute("visibility", "visible");
+                this.cabinPsiStatus = 1;
+            } else if (this.psiDelta < 8.5 && this.psiDelta > -0.4 && this.cabinPsiStatus) {
+                this.htmlPsiDecimalW.setAttribute("visibility", "hidden");
+                this.htmlPsiDecimal.setAttribute("visibility", "visible");
+                this.htmlPsiIntW.setAttribute("visibility", "hidden");
+                this.htmlPsiInt.setAttribute("visibility", "visible");
+                this.cabinPsiStatus = 0;
+            }
+
+            if (this.psiDelta >= 8.2 && !this.cabinSafetyTextStatus) {
+                this.htmlTextSafetyW.setAttribute("visibility", "visible");
+                this.htmlTextSafety.setAttribute("visibility", "hidden");
+                this.cabinSafetyTextStatus = 1;
+            } else if (this.psiDelta < 8.2 && this.cabinSafetyTextStatus){
+                this.htmlTextSafety.setAttribute("visibility", "visible");
+                this.htmlTextSafetyW.setAttribute("visibility", "hidden");
+                this.cabinSafetyTextStatus = 0;
+            }
         }
     }
     A320_Neo_LowerECAM_PRESS.Page = Page;
