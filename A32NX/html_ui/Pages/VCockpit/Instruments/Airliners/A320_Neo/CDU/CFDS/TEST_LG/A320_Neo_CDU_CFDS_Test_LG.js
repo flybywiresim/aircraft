@@ -4,52 +4,19 @@ class CDUCfdsTestLG {
         mcdu.setTemplate([
             ["SYSTEM REPORT / TEST"],
             ["", "", "L/G"],
-            ["<LGCIU 1"],
+            ["<LGCIU 1[color]inop"],
             [""],
-            ["<LGCIU 2"],
+            ["<LGCIU 2[color]inop"],
             [""],
-            ["<BSCU 1"],
+            ["<BSCU 1[color]inop"],
             [""],
-            ["<BSCU 2"],
+            ["<BSCU 2[color]inop"],
             [""],
             [""],
             [""],
             ["<RETURN[color]blue"]
         ]);
 
-        // INOP BUTTONS
-        mcdu.onLeftInput[0] = () => {
-            mcdu.showErrorMessage("NOT YET IMPLEMENTED");
-            setTimeout(() => {
-                mcdu.showErrorMessage("");
-            }, 1000);
-        }
-        mcdu.onLeftInput[1] = () => {
-            mcdu.showErrorMessage("NOT YET IMPLEMENTED");
-            setTimeout(() => {
-                mcdu.showErrorMessage("");
-            }, 1000);
-        }
-        mcdu.onLeftInput[2] = () => {
-            mcdu.showErrorMessage("NOT YET IMPLEMENTED");
-            setTimeout(() => {
-                mcdu.showErrorMessage("");
-            }, 1000);
-        }
-        mcdu.onLeftInput[3] = () => {
-            mcdu.showErrorMessage("NOT YET IMPLEMENTED");
-            setTimeout(() => {
-                mcdu.showErrorMessage("");
-            }, 1000);
-        }
-        mcdu.onLeftInput[4] = () => {
-            mcdu.showErrorMessage("NOT YET IMPLEMENTED");
-            setTimeout(() => {
-                mcdu.showErrorMessage("");
-            }, 1000);
-        }
-
-        // IMPLEMENTED BUTTONS
         mcdu.onLeftInput[5] = () => {
             CDUCfdsTestMenu.ShowPage(mcdu);
         }

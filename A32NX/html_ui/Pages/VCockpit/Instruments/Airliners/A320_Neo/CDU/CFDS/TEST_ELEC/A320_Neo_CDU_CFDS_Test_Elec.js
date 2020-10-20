@@ -4,65 +4,19 @@ class CDUCfdsTestElec {
         mcdu.setTemplate([
             ["SYSTEM REPORT / TEST"],
             ["", "", "ELEC"],
-            ["<AC GEN", "TR 1>"],
+            ["<AC GEN[color]inop", "TR 1>[color]inop"],
             [""],
-            ["<GCU EMER", "TR 2>"],
+            ["<GCU EMER[color]inop", "TR 2>[color]inop"],
             [""],
-            ["<BCL 1", "TR 3>"],
+            ["<BCL 1[color]inop", "TR 3>[color]inop"],
             [""],
-            ["<BCL 2"],
+            ["<BCL 2[color]inop"],
             [""],
             [""],
             [""],
             ["<RETURN[color]blue"]
         ]);
 
-        // INOP BUTTONS
-        mcdu.onLeftInput[0] = () => {
-            mcdu.showErrorMessage("NOT YET IMPLEMENTED");
-            setTimeout(() => {
-                mcdu.showErrorMessage("");
-            }, 1000);
-        }
-        mcdu.onLeftInput[1] = () => {
-            mcdu.showErrorMessage("NOT YET IMPLEMENTED");
-            setTimeout(() => {
-                mcdu.showErrorMessage("");
-            }, 1000);
-        }
-        mcdu.onLeftInput[2] = () => {
-            mcdu.showErrorMessage("NOT YET IMPLEMENTED");
-            setTimeout(() => {
-                mcdu.showErrorMessage("");
-            }, 1000);
-        }
-        mcdu.onLeftInput[3] = () => {
-            mcdu.showErrorMessage("NOT YET IMPLEMENTED");
-            setTimeout(() => {
-                mcdu.showErrorMessage("");
-            }, 1000);
-        }
-       
-        mcdu.onRightInput[0] = () => {
-            mcdu.showErrorMessage("NOT YET IMPLEMENTED");
-            setTimeout(() => {
-                mcdu.showErrorMessage("");
-            }, 1000);
-        }
-        mcdu.onRightInput[1] = () => {
-            mcdu.showErrorMessage("NOT YET IMPLEMENTED");
-            setTimeout(() => {
-                mcdu.showErrorMessage("");
-            }, 1000);
-        }
-        mcdu.onRightInput[2] = () => {
-            mcdu.showErrorMessage("NOT YET IMPLEMENTED");
-            setTimeout(() => {
-                mcdu.showErrorMessage("");
-            }, 1000);
-        }
-
-        // IMPLEMENTED BUTTONS
         mcdu.onLeftInput[5] = () => {
             CDUCfdsTestMenu.ShowPage(mcdu);
         }

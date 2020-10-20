@@ -6,7 +6,7 @@ class CDUCfdsTestMenu {
             [""],
             ["<AIRCOND", "F/CTL>"],
             [""],
-            ["<AFS", "FUEL>"],
+            ["<AFS[color]inop", "FUEL>[color]inop"],
             [""],
             ["<COM", "ICE+RAIN>"],
             [""],
@@ -17,21 +17,6 @@ class CDUCfdsTestMenu {
             ["<RETURN[color]blue", "NAV>"]
         ]);
 
-        // INOP BUTTONS
-        mcdu.onLeftInput[1] = () => {
-            mcdu.showErrorMessage("NOT YET IMPLEMENTED");
-            setTimeout(() => {
-                mcdu.showErrorMessage("");
-            }, 1000);
-        }
-        mcdu.onRightInput[1] = () => {
-            mcdu.showErrorMessage("NOT YET IMPLEMENTED");
-            setTimeout(() => {
-                mcdu.showErrorMessage("");
-            }, 1000);
-        }
-
-        // IMPLEMENTED BUTTONS
         mcdu.onLeftInput[0] = () => {
             CDUCfdsTestAircond.ShowPage(mcdu);
         }
@@ -79,7 +64,7 @@ class CDUCfdsTestMenu {
             [""],
             ["<PNEU", "ENG>"],
             [""],
-            ["<APU", "TOILET>"],
+            ["<APU[color]inop", "TOILET>[color]inop"],
             [""],
             [""],
             [""],
@@ -90,27 +75,6 @@ class CDUCfdsTestMenu {
             ["<RETURN[color]blue"]
         ]);
 
-         // INOP BUTTONS
-        mcdu.onLeftInput[1] = () => {
-            mcdu.showErrorMessage("NOT YET IMPLEMENTED");
-            setTimeout(() => {
-                mcdu.showErrorMessage("");
-            }, 1000);
-        }
-        mcdu.onRightInput[0] = () => {
-            mcdu.showErrorMessage("NOT YET IMPLEMENTED");
-            setTimeout(() => {
-                mcdu.showErrorMessage("");
-            }, 1000);
-        }
-        mcdu.onRightInput[1] = () => {
-            mcdu.showErrorMessage("NOT YET IMPLEMENTED");
-            setTimeout(() => {
-                mcdu.showErrorMessage("");
-            }, 1000);
-        }
-
-        // IMPLEMENTED BUTTONS
         mcdu.onLeftInput[0] = () => {
             CDUCfdsTestPneu.ShowPage(mcdu);
         }

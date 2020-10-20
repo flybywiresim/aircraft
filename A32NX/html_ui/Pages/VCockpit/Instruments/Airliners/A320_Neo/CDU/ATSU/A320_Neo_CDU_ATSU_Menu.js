@@ -5,26 +5,22 @@ class CDUAtsuMenu {
         const display = [
             ["ATSU DATALINK"],
             [""],
-            ["<ATC MENU"],
+            ["<ATC MENU[color]inop"],
             [""],
             ["", "AOC MENU>"],
             [""],
             [""],
             [""],
             [""],
-            ["", "DATALINK"],
-            ["", "STATUS>"],
+            ["", "DATALINK[color]inop"],
+            ["", "STATUS>[color]inop"],
             [""],
-            ["", "COMM MENU"]
+            ["", "COMM MENU[color]inop"]
         ];
         mcdu.setTemplate(display);
 
         mcdu.onRightInput[1] = () => {
             CDUAocMenu.ShowPage(mcdu);
-        }
-
-        mcdu.onLeftInput[1] = () => {
-            // Pass
         }
     }
 }

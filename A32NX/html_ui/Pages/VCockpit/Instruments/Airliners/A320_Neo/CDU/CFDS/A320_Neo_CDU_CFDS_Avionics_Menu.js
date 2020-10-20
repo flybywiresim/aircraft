@@ -17,15 +17,6 @@ class CDUCfdsAvionicsMenu {
             ["<RETURN[color]blue", "PRINT*[color]blue"]
         ]);
 
-        // INOP BUTTONS
-        mcdu.onRightInput[5] = () => {
-            mcdu.showErrorMessage("NOT YET IMPLEMENTED");
-            setTimeout(() => {
-                mcdu.showErrorMessage("");
-            }, 1000);
-        }
-
-        // IMPLEMENTED BUTTONS
         mcdu.onLeftInput[5] = () => {
             CDUCfdsMainMenu.ShowPage(mcdu);
         }
@@ -57,15 +48,6 @@ class CDUCfdsAvionicsMenu {
             ["<RETURN[color]blue", "PRINT*[color]blue"]
         ]);
 
-         // INOP BUTTONS
-        mcdu.onRightInput[5] = () => {
-            mcdu.showErrorMessage("NOT YET IMPLEMENTED");
-            setTimeout(() => {
-                mcdu.showErrorMessage("");
-            }, 1000);
-        }
-
-        // IMPLEMENTED BUTTONS
         mcdu.onLeftInput[5] = () => {
             CDUCfdsMainMenu.ShowPage(mcdu);
         }

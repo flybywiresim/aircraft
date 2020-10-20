@@ -42,8 +42,8 @@ class CDU_OPTIONS_TAF {
             }
         }
         mcdu.onLeftInput[1] = () => {
-            if (storedTafSrc != "VATSIM") {
-                SetStoredData("A32NX_CONFIG_TAF_SRC", "VATSIM");
+            if (storedTafSrc != "IVAO") {
+                SetStoredData("A32NX_CONFIG_TAF_SRC", "IVAO");
                 CDU_OPTIONS_TAF.ShowPage(mcdu);
             }
         }

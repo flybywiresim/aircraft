@@ -4,88 +4,19 @@ class CDUCfdsTestNav {
         mcdu.setTemplate([
             ["SYSTEM REPORT / TEST   }"],
             ["", "", "NAV"],
-            ["<ADR 1", "IR 3>"],
+            ["<ADR 1[color]inop", "IR 3>[color]inop"],
             [""],
-            ["<IR 1", "RA 1>"],
+            ["<IR 1[color]inop", "RA 1>[color]inop"],
             [""],
-            ["<ADR 2", "RA 2>"],
+            ["<ADR 2[color]inop", "RA 2>[color]inop"],
             [""],
-            ["<IR 2", "DME 1>"],
+            ["<IR 2[color]inop", "DME 1>[color]inop"],
             [""],
-            ["<ADR 3", "DME 2>"],
+            ["<ADR 3[color]inop", "DME 2>[color]inop"],
             [""],
-            ["<RETURN[color]blue", "MMR 1>"]
+            ["<RETURN[color]blue", "MMR 1>[color]inop"]
         ]);
 
-        // INOP BUTTONS
-        mcdu.onLeftInput[0] = () => {
-            mcdu.showErrorMessage("NOT YET IMPLEMENTED");
-            setTimeout(() => {
-                mcdu.showErrorMessage("");
-            }, 1000);
-        }
-        mcdu.onLeftInput[1] = () => {
-            mcdu.showErrorMessage("NOT YET IMPLEMENTED");
-            setTimeout(() => {
-                mcdu.showErrorMessage("");
-            }, 1000);
-        }
-        mcdu.onLeftInput[2] = () => {
-            mcdu.showErrorMessage("NOT YET IMPLEMENTED");
-            setTimeout(() => {
-                mcdu.showErrorMessage("");
-            }, 1000);
-        }
-        mcdu.onLeftInput[3] = () => {
-            mcdu.showErrorMessage("NOT YET IMPLEMENTED");
-            setTimeout(() => {
-                mcdu.showErrorMessage("");
-            }, 1000);
-        }
-        mcdu.onLeftInput[4] = () => {
-            mcdu.showErrorMessage("NOT YET IMPLEMENTED");
-            setTimeout(() => {
-                mcdu.showErrorMessage("");
-            }, 1000);
-        }
-        mcdu.onRightInput[0] = () => {
-            mcdu.showErrorMessage("NOT YET IMPLEMENTED");
-            setTimeout(() => {
-                mcdu.showErrorMessage("");
-            }, 1000);
-        }
-        mcdu.onRightInput[1] = () => {
-            mcdu.showErrorMessage("NOT YET IMPLEMENTED");
-            setTimeout(() => {
-                mcdu.showErrorMessage("");
-            }, 1000);
-        }
-        mcdu.onRightInput[2] = () => {
-            mcdu.showErrorMessage("NOT YET IMPLEMENTED");
-            setTimeout(() => {
-                mcdu.showErrorMessage("");
-            }, 1000);
-        }
-        mcdu.onRightInput[3] = () => {
-            mcdu.showErrorMessage("NOT YET IMPLEMENTED");
-            setTimeout(() => {
-                mcdu.showErrorMessage("");
-            }, 1000);
-        }
-        mcdu.onRightInput[4] = () => {
-            mcdu.showErrorMessage("NOT YET IMPLEMENTED");
-            setTimeout(() => {
-                mcdu.showErrorMessage("");
-            }, 1000);
-        }
-        mcdu.onRightInput[5] = () => {
-            mcdu.showErrorMessage("NOT YET IMPLEMENTED");
-            setTimeout(() => {
-                mcdu.showErrorMessage("");
-            }, 1000);
-        }
-
-        // IMPLEMENTED BUTTONS
         mcdu.onLeftInput[5] = () => {
             CDUCfdsTestMenu.ShowPage(mcdu);
         }
@@ -104,71 +35,19 @@ class CDUCfdsTestNav {
         mcdu.setTemplate([
             ["SYSTEM REPORT / TEST   }"],
             ["", "", "NAV"],
-            ["<MMR 2", "ADF 1>"],
+            ["<MMR 2[color]inop", "ADF 1>[color]inop"],
             [""],
-            ["<VOR 1", "ADF 2>"],
+            ["<VOR 1[color]inop", "ADF 2>[color]inop"],
             [""],
-            ["<VOR 2", "ATC 1>"],
+            ["<VOR 2[color]inop", "ATC 1>[color]inop"],
             [""],
-            ["<RADAR 1", "ATC 2>"],
+            ["<RADAR 1[color]inop", "ATC 2>[color]inop"],
             [""],
             [""],
             [""],
             ["<RETURN[color]blue"]
         ]);
 
-        // INOP BUTTONS
-        mcdu.onLeftInput[0] = () => {
-            mcdu.showErrorMessage("NOT YET IMPLEMENTED");
-            setTimeout(() => {
-                mcdu.showErrorMessage("");
-            }, 1000);
-        }
-        mcdu.onLeftInput[1] = () => {
-            mcdu.showErrorMessage("NOT YET IMPLEMENTED");
-            setTimeout(() => {
-                mcdu.showErrorMessage("");
-            }, 1000);
-        }
-        mcdu.onLeftInput[2] = () => {
-            mcdu.showErrorMessage("NOT YET IMPLEMENTED");
-            setTimeout(() => {
-                mcdu.showErrorMessage("");
-            }, 1000);
-        }
-        mcdu.onLeftInput[3] = () => {
-            mcdu.showErrorMessage("NOT YET IMPLEMENTED");
-            setTimeout(() => {
-                mcdu.showErrorMessage("");
-            }, 1000);
-        }
-        mcdu.onRightInput[0] = () => {
-            mcdu.showErrorMessage("NOT YET IMPLEMENTED");
-            setTimeout(() => {
-                mcdu.showErrorMessage("");
-            }, 1000);
-        }
-        mcdu.onRightInput[1] = () => {
-            mcdu.showErrorMessage("NOT YET IMPLEMENTED");
-            setTimeout(() => {
-                mcdu.showErrorMessage("");
-            }, 1000);
-        }
-        mcdu.onRightInput[2] = () => {
-            mcdu.showErrorMessage("NOT YET IMPLEMENTED");
-            setTimeout(() => {
-                mcdu.showErrorMessage("");
-            }, 1000);
-        }
-        mcdu.onRightInput[3] = () => {
-            mcdu.showErrorMessage("NOT YET IMPLEMENTED");
-            setTimeout(() => {
-                mcdu.showErrorMessage("");
-            }, 1000);
-        }
- 
-
-        // IMPLEMENTED BUTTONS
         mcdu.onLeftInput[5] = () => {
             CDUCfdsTestMenu.ShowPage(mcdu);
         }
@@ -187,40 +66,19 @@ class CDUCfdsTestNav {
         mcdu.setTemplate([
             ["SYSTEM REPORT / TEST   }"],
             ["", "", "NAV"],
-            ["<HUD"],
+            ["<HUD[color]inop"],
             [""],
-            ["<GPWC"],
-            [""],
-            [""],
+            ["<GPWC[color]inop"],
             [""],
             [""],
             [""],
-            ["<TCAS"],
+            [""],
+            [""],
+            ["<TCAS[color]inop"],
             [""],
             ["<RETURN[color]blue"]
         ]);
 
-        // INOP BUTTONS
-        mcdu.onLeftInput[0] = () => {
-            mcdu.showErrorMessage("NOT YET IMPLEMENTED");
-            setTimeout(() => {
-                mcdu.showErrorMessage("");
-            }, 1000);
-        }
-        mcdu.onLeftInput[1] = () => {
-            mcdu.showErrorMessage("NOT YET IMPLEMENTED");
-            setTimeout(() => {
-                mcdu.showErrorMessage("");
-            }, 1000);
-        }
-        mcdu.onLeftInput[4] = () => {
-            mcdu.showErrorMessage("NOT YET IMPLEMENTED");
-            setTimeout(() => {
-                mcdu.showErrorMessage("");
-            }, 1000);
-        }
-
-        // IMPLEMENTED BUTTONS
         mcdu.onLeftInput[5] = () => {
             CDUCfdsTestMenu.ShowPage(mcdu);
         }

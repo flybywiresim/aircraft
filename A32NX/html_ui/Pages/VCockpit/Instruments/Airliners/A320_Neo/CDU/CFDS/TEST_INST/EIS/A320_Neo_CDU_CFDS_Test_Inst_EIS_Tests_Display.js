@@ -18,7 +18,6 @@ class CDU_CFDS_Test_Inst_EIS_Tests_Display {
             ["<RETURN[color]blue"]
         ]);
 
-        // IMPLEMENTED BUTTONS
         mcdu.onLeftInput[5] = () => {
             CDU_CFDS_Test_Inst_EIS_Tests.ShowPage(mcdu, eisIndex);
         }

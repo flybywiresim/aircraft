@@ -74,6 +74,9 @@ a320-neo-cdu-main-display::after {
 .white {
   color: var(--mcduWhite); }
 
+.inop {
+  color: var(--mcduLightGrey); }
+
 .blue {
   color: var(--mcduBlue); }
 

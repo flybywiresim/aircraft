@@ -17,7 +17,6 @@ class CDUCfdsTestInst {
             ["<RETURN[color]blue"]
         ]);
 
-        // IMPLEMENTED BUTTONS
         mcdu.onLeftInput[0] = () => {
             CDU_CFDS_Test_Inst_ECAM_Menu.ShowPage(mcdu, 1);
         }

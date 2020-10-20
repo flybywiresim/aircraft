@@ -94,7 +94,7 @@ class FMCMainDisplay extends BaseAirliners {
             color = "white";
         }
         this._title = content.split("[color]")[0];
-        this._titleElement.classList.remove("white", "blue", "yellow", "green", "red", "magenta");
+        this._titleElement.classList.remove("white", "blue", "yellow", "green", "red", "magenta", "inop");
         this._titleElement.classList.add(color);
         this._titleElement.textContent = this._title;
     }
@@ -171,7 +171,7 @@ class FMCMainDisplay extends BaseAirliners {
                 color = "white";
             }
             const e = this._labelElements[row][col];
-            e.classList.remove("white", "blue", "yellow", "green", "red", "magenta");
+            e.classList.remove("white", "blue", "yellow", "green", "red", "magenta", "inop");
             e.classList.add(color);
             label = label.split("[color]")[0];
         }
@@ -216,7 +216,7 @@ class FMCMainDisplay extends BaseAirliners {
                 color = "white";
             }
             const e = this._lineElements[row][col];
-            e.classList.remove("white", "blue", "yellow", "green", "red", "magenta");
+            e.classList.remove("white", "blue", "yellow", "green", "red", "magenta", "inop");
             e.classList.add(color);
             content = content.split("[color]")[0];
         }
@@ -628,8 +628,13 @@ class FMCMainDisplay extends BaseAirliners {
         }
 
         let storedTelexStatus = GetStoredData("A32NX_CONFIG_TELEX_STATUS");
-        if (storedTelexStatus && storedTelexStatus == "ENABLED") {
-            SimVar.SetSimVarValue("ATC FLIGHT NUMBER", "string", flightNo, "FMC").then(() => {
+        if (!storedTelexStatus) {
+            storedTelexStatus = "DISABLED";
+        }
+
+        let returnCB = true;
+        SimVar.SetSimVarValue("ATC FLIGHT NUMBER", "string", flightNo, "FMC").then(() => {
+            if (storedTelexStatus == "ENABLED") {
                 let inUse = false;
                 const initTelexServer = async () => {
                     const lat = SimVar.GetSimVarValue("PLANE LATITUDE", "degrees latitude").toString();
@@ -644,7 +649,6 @@ class FMCMainDisplay extends BaseAirliners {
                             this.showErrorMessage("FLT NBR IN USE");
                             inUse = true;
                         } else {
-                            console.log("INIT SUCCESS. TELEX ID IS " + data["id"].toString());
                             SimVar.SetSimVarValue("L:A32NX_Telex_ID", "Number", data["id"]);                        
                         }
                     })
@@ -653,14 +657,13 @@ class FMCMainDisplay extends BaseAirliners {
                 initTelexServer();
                 
                 if(inUse) {
-                    return callback(false);
+                    returnCB = false;
                 }            
-    
-                return callback(true);
-            });
-        }
-        return callback(true);
+            }
+            return callback(returnCB);
+        });
     }
+
     updateCoRoute(coRoute, callback = EmptyCallback.Boolean) {
         if (coRoute.length > 2) {
             if (coRoute.length < 10) {

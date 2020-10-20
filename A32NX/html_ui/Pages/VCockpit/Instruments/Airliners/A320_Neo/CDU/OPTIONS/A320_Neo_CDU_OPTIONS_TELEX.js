@@ -46,18 +46,14 @@ class CDU_OPTIONS_TELEX {
                     break;
                 default:
                     SetStoredData("A32NX_CONFIG_TELEX_STATUS", "ENABLED");
-                    if (SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string", "FMC") != "") {
-                        SimVar.SetSimVarValue("ATC FLIGHT NUMBER", "string", "", "FMC");
-                        mcdu.showErrorMessage("RE-ENTER FLIGHT NUM");
-                        reEnter = true;
-                    } else {
-                        mcdu.showErrorMessage("FREE TEXT ENABLED");
-                    }
+                    SimVar.SetSimVarValue("ATC FLIGHT NUMBER", "string", "", "FMC");
+                    mcdu.showErrorMessage("RE-ENTER FLIGHT NUM");
+                    reEnter = true;
             }
             if (!reEnter) {
                 CDU_OPTIONS_TELEX.ShowPage(mcdu);
             } else {
-                CDUInitPage.ShowPage1(mcdu);
+                CDUInitPage.ShowPage1(mcdu, true);
             }         
         }
     }

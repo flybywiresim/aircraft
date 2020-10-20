@@ -1,6 +1,7 @@
 class CDUAocRequestsWeather {
     static ShowPage(mcdu, store = { "reqType": 0, "depIcao": "", "arrIcao": "", "arpt1": "", "arpt2": "", "arpt3": "", "arpt4": "", "sendStatus": ""}) {
         mcdu.clearDisplay();
+        let labelTimeout;
 
         let fplanArptColor = "[color]blue";
         if (mcdu.flightPlanManager.getOrigin() && mcdu.flightPlanManager.getDestination()) {
@@ -157,13 +158,16 @@ class CDUAocRequestsWeather {
                     }
                     newMessage["time"] = timeValue.substring(0, 5);
                     mcdu.addMessage(newMessage);
+                }, Math.floor(Math.random() * 10000) + 10000);
+                labelTimeout = setTimeout(() => {
                     store["sendStatus"] = "";
                     updateView();
-                }, 1000);
+                }, 3000);
             });
         }
 
         mcdu.onLeftInput[5] = () => {
+            clearTimeout(labelTimeout);
             CDUAocMenu.ShowPage(mcdu);
         }
     }

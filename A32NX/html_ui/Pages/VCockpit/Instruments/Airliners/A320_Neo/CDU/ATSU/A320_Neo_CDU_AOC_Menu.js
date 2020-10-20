@@ -4,47 +4,19 @@ class CDUAocMenu {
         mcdu.setTemplate([
             ["AOC MENU"],
             ["", "RECEIVED"],
-            ["<DELAY", "MESSAGES>"],
+            ["<DELAY[color]inop", "MESSAGES>"],
             ["WX/ATIS", "SENT"],
             ["<REQUEST", "MESSAGES>"],
             [""],
-            ["<FREE TEXT", "DIVERSION>"],
+            ["<FREE TEXT", "DIVERSION>[color]inop"],
             [""],
-            ["<ETA"],
-            ["POSITION"],
-            ["<REPORT", "MISC"],
+            ["<ETA[color]inop"],
+            ["POSITION[color]inop"],
+            ["<REPORT[color]inop", "MISC[color]inop"],
             [""],
             ["<RETURN"]
         ]);
 
-
-        // INOP BUTTONS
-        mcdu.onLeftInput[0] = () => {
-            mcdu.showErrorMessage("NOT YET IMPLEMENTED");
-            setTimeout(() => {
-                mcdu.showErrorMessage("");
-            }, 1000);
-        }
-        mcdu.onLeftInput[3] = () => {
-            mcdu.showErrorMessage("NOT YET IMPLEMENTED");
-            setTimeout(() => {
-                mcdu.showErrorMessage("");
-            }, 1000);
-        }
-        mcdu.onLeftInput[4] = () => {
-            mcdu.showErrorMessage("NOT YET IMPLEMENTED");
-            setTimeout(() => {
-                mcdu.showErrorMessage("");
-            }, 1000);
-        }
-        mcdu.onRightInput[2] = () => {
-            mcdu.showErrorMessage("NOT YET IMPLEMENTED");
-            setTimeout(() => {
-                mcdu.showErrorMessage("");
-            }, 1000);
-        }
-
-        // IMPLEMENTED BUTTONS
         mcdu.onLeftInput[1] = () => {
             CDUAocRequestsWeather.ShowPage(mcdu);
         }

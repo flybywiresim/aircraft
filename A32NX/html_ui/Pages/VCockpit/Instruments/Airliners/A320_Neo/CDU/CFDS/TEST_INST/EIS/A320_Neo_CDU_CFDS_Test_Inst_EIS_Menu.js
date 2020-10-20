@@ -5,52 +5,19 @@ class CDU_CFDS_Test_Inst_EIS_Menu {
         mcdu.setTemplate([
             [title],
             [""],
-            ["<LAST LEG REPORT"],
+            ["<LAST LEG REPORT[color]inop"],
             [""],
-            ["<PREVIOUS LEGS REPORT"],
+            ["<PREVIOUS LEGS REPORT[color]inop"],
             [""],
-            ["<LRU IDENTIFICATION"],
+            ["<LRU IDENTIFICATION[color]inop"],
             [""],
-            ["<ENGINES", "TEST>"],
+            ["<ENGINES[color]inop", "TEST>"],
             [""],
-            ["<DUMP BITE MEMORY"],
+            ["<DUMP BITE MEMORY[color]inop"],
             [""],
             ["<RETURN[color]blue"]
         ]);
 
-        // INOP BUTTONS
-        mcdu.onLeftInput[0] = () => {
-            mcdu.showErrorMessage("NOT YET IMPLEMENTED");
-            setTimeout(() => {
-                mcdu.showErrorMessage("");
-            }, 1000);
-        }
-        mcdu.onLeftInput[1] = () => {
-            mcdu.showErrorMessage("NOT YET IMPLEMENTED");
-            setTimeout(() => {
-                mcdu.showErrorMessage("");
-            }, 1000);
-        }
-        mcdu.onLeftInput[2] = () => {
-            mcdu.showErrorMessage("NOT YET IMPLEMENTED");
-            setTimeout(() => {
-                mcdu.showErrorMessage("");
-            }, 1000);
-        }
-        mcdu.onLeftInput[3] = () => {
-            mcdu.showErrorMessage("NOT YET IMPLEMENTED");
-            setTimeout(() => {
-                mcdu.showErrorMessage("");
-            }, 1000);
-        }
-        mcdu.onLeftInput[4] = () => {
-            mcdu.showErrorMessage("NOT YET IMPLEMENTED");
-            setTimeout(() => {
-                mcdu.showErrorMessage("");
-            }, 1000);
-        }
-
-        // IMPLEMENTED BUTTONS
         mcdu.onLeftInput[5] = () => {
             CDUCfdsTestInst.ShowPage(mcdu);
         }
