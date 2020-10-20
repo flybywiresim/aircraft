@@ -361,8 +361,6 @@ class MapInstrument extends ISvgMapRootElement {
             this.navMap.lineCanvas = this.lineCanvas;
             const mapSVG = this.querySelector("#MapSVG");
             mapSVG.setAttribute("display", "visible");
-
-            this.navMap.svgHtmlElement.setAttribute("viewBox", "0 0 1000 1000");
             this.insertBefore(this.lineCanvas, mapSVG);
             this.wpt = this.querySelector("#WPT");
             this.dtkMap = this.querySelector("#DTKMap");
