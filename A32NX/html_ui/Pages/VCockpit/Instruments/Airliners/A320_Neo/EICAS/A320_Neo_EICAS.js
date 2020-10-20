@@ -271,22 +271,7 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         const sFailPage = SimVar.GetSimVarValue("L:A32NX_ECAM_SFAIL", "Enum");
 
         if (sFailPage != -1) {
-            const ECAMPageIndices = {
-                0: "ENG",
-                1: "BLEED",
-                2: "PRESS",
-                3: "ELEC",
-                4: "HYD",
-                5: "FUEL",
-                6: "APU",
-                7: "COND",
-                8: "DOOR",
-                9: "WHEEL",
-                10: "FTCL",
-                11: "STS"
-            };
-
-            this.pageNameWhenUnselected = ECAMPageIndices[sFailPage];
+            this.pageNameWhenUnselected = this.lowerScreenPages[sFailPage].name;
 
             // Disable user selected page when new failure detected
             if (this.PrevFailPage !== sFailPage) {
@@ -298,32 +283,17 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         // switch page when desired page was changed, or new Failure detected
         if ((this.pageNameWhenUnselected != prevPage && this.currentPage == -1) || (this.PrevFailPage !== sFailPage)) {
             this.SwitchToPageName(this.LOWER_SCREEN_GROUP_NAME, this.pageNameWhenUnselected);
-
         }
 
         // ECAM all button
         this.ecamAllButtonState = SimVar.GetSimVarValue("L:A32NX_ECAM_ALL_Push_IsDown", "Bool");
-        const ECAMPages = [
-            "ENG",
-            "BLEED",
-            "PRESS",
-            "ELEC",
-            "HYD",
-            "FUEL",
-            "APU",
-            "COND",
-            "DOOR",
-            "WHEEL",
-            "FTCL",
-            "STS"
-        ];
-
+        
         if (this.ecamAllButtonState == true && this.ecamAllButtonPrevState == false) { // button press
             this.ecamCycleInterval = setInterval(() => {
-                if (this.currentPage + 1 < ECAMPages.length) {
-                    this.changePage(ECAMPages[this.currentPage + 1]);
+                if (this.currentPage + 1 < this.lowerScreenPages.length) {
+                    this.changePage(this.lowerScreenPages[this.currentPage + 1].name);
                 } else {
-                    this.changePage(ECAMPages[0]);
+                    this.changePage(this.lowerScreenPages[0].name);
                 }
             }, 1000);
             SimVar.SetSimVarValue("L:A32NX_ECAM_CYCLE", "Bool", true);
