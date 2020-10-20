@@ -346,6 +346,10 @@ a320-neo-ecam-gauge #RootSVG #GraduationsGroup .danger {
     stroke-width: 1px !important;
     stroke: var(--displayRed) !important;
 }
+a320-neo-ecam-gauge #RootSVG #GraduationsGroup .warning {
+    stroke-width: 1px !important;
+    stroke: var(--displayAmber) !important;
+}
 
 a320-neo-ecam-gauge #RootSVG #RedArc {
     stroke: var(--displayRed);
