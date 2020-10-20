@@ -293,10 +293,8 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
             this.ecamCycleInterval = setInterval(() => {
                 this.changePage(this.lowerScreenPages[(this.currentPage + 1) % this.lowerScreenPages.length].name);
             }, 1000);
-            SimVar.SetSimVarValue("L:A32NX_ECAM_CYCLE", "Bool", true);
         } else if (!this.ecamAllButtonState && this.ecamAllButtonPrevState) { // button release
             clearInterval(this.ecamCycleInterval);
-            SimVar.SetSimVarValue("L:A32NX_ECAM_CYCLE", "Bool", false);
         }
 
         this.ecamAllButtonPrevState = this.ecamAllButtonState;
