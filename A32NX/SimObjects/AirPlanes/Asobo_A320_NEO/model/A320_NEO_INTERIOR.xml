@@ -2378,35 +2378,47 @@
 
             <Component ID="Overhead_Misc">
                 <Component ID="Left_Column">
-                    <UseTemplate Name="A32NX_AIRLINER_GPWS_ALIGN_Template">
-                        <NODE_ID>PUSH_OVHD_GPWS_TERR</NODE_ID>
+                    <UseTemplate Name="FBW_Push_Toggle">
+                        <TOGGLE_NODE_ID>PUSH_OVHD_GPWS_TERR</TOGGLE_NODE_ID>
+                        <TOGGLE_SIMVAR>L:PUSH_OVHD_GPWS_TERR</TOGGLE_SIMVAR>
+                        <SEQ1_CODE>(L:PUSH_OVHD_GPWS_TERR, Bool) ! (L:PUSH_OVHD_GPWS_TERR_FAULT, Bool)</SEQ1_CODE>
                         <TOOLTIPID>(INOP) TERR</TOOLTIPID>
                     </UseTemplate>
-                    <UseTemplate Name="A32NX_AIRLINER_GPWS_ALIGN_Template">
-                        <NODE_ID>PUSH_OVHD_GPWS_SYS</NODE_ID>
+                    <UseTemplate Name="FBW_Push_Toggle">
+                        <TOGGLE_NODE_ID>PUSH_OVHD_GPWS_SYS</TOGGLE_NODE_ID>
+                        <TOGGLE_SIMVAR>L:PUSH_OVHD_GPWS_SYS</TOGGLE_SIMVAR>
+                        <SEQ1_CODE>(L:PUSH_OVHD_GPWS_SYS, Bool) ! (L:PUSH_OVHD_GPWS_SYS_FAULT, Bool)</SEQ1_CODE>
                         <TOOLTIPID>SYS</TOOLTIPID>
                     </UseTemplate>
-                    <UseTemplate Name="ASOBO_AIRLINER_GPWS_Template">
-                        <NODE_ID>PUSH_OVHD_GPWS_GSMODE</NODE_ID>
+                    <UseTemplate Name="FBW_Push_Toggle">
+                        <TOGGLE_NODE_ID>PUSH_OVHD_GPWS_GSMODE</TOGGLE_NODE_ID>
+                        <TOGGLE_SIMVAR>L:PUSH_OVHD_GPWS_GSMODE</TOGGLE_SIMVAR>
+                        <DISABLE_SEQ1/>
                         <TOOLTIPID>(INOP) G/S Mode</TOOLTIPID>
                     </UseTemplate>
-                    <UseTemplate Name="ASOBO_AIRLINER_GPWS_Template">
-                        <NODE_ID>PUSH_OVHD_GPWS_FLAP</NODE_ID>
+                    <UseTemplate Name="FBW_Push_Toggle">
+                        <TOGGLE_NODE_ID>PUSH_OVHD_GPWS_FLAP</TOGGLE_NODE_ID>
                         <PART_ID>GPWS_Flap</PART_ID>
+                        <TOGGLE_SIMVAR>L:PUSH_OVHD_GPWS_FLAP</TOGGLE_SIMVAR>
+                        <DISABLE_SEQ1/>
                         <TOOLTIPID>Flap Mode</TOOLTIPID>
                     </UseTemplate>
-                    <UseTemplate Name="ASOBO_AIRLINER_GPWS_Template">
-                        <NODE_ID>PUSH_OVHD_GPWS_LDG</NODE_ID>
+                    <UseTemplate Name="FBW_Push_Toggle">
+                        <TOGGLE_NODE_ID>PUSH_OVHD_GPWS_LDG</TOGGLE_NODE_ID>
                         <PART_ID>GPWS_Flap3</PART_ID>
+                        <TOGGLE_SIMVAR>L:PUSH_OVHD_GPWS_LDG</TOGGLE_SIMVAR>
+                        <DISABLE_SEQ1/>
                         <TOOLTIPID>(INOP) LDG Flaps 3</TOOLTIPID>
                     </UseTemplate>
                     <UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
                         <NODE_ID>PUSH_OVHD_OXYGEN_PASSENGER</NODE_ID>
                         <BLOCK_SEQ2>1</BLOCK_SEQ2>
                     </UseTemplate>
-                    <UseTemplate Name="ASOBO_AIRLINER_OXYGEN_Template">
-                        <NODE_ID>PUSH_OVHD_OXYGEN_CREW</NODE_ID>
+                    <UseTemplate Name="FBW_Push_Toggle">
+                        <TOGGLE_NODE_ID>PUSH_OVHD_OXYGEN_CREW</TOGGLE_NODE_ID>
                         <PART_ID>Crew_Supply</PART_ID>
+                        <TOGGLE_SIMVAR>L:PUSH_OVHD_OXYGEN_CREW</TOGGLE_SIMVAR>
+                        <DISABLE_SEQ1/>
                         <TOOLTIPID>Crew oxygen supply</TOOLTIPID>
                     </UseTemplate>
                     <UseTemplate Name="ASOBO_AIRLINER_CALLS_Template">
