@@ -53,7 +53,7 @@ var A320_Neo_ECAM_Common;
             return (this.mainArcRadius * 0.625);
         }
         get redArcInnerRadius() {
-            return (this.mainArcRadius * 0.95);
+            return (this.mainArcRadius * 1);
         }
         get outerIndicatorOffset() {
             return (this.viewBoxSize.x * 0.04);
@@ -243,7 +243,7 @@ var A320_Neo_ECAM_Common;
         }
 
         //accepts two more parameters to set custom ID for dynamic markers
-        addGraduation(_value, _showInnerMarker, _text = "", _showOuterMarker = false, _setid = false, _idName = "") {
+        addGraduation(_value, _showInnerMarker, _text = "", _showOuterMarker = false, _setid = false, _idName = "", _markerColour = "") {
             const dir = this.valueToDir(_value);
             if (_showInnerMarker) {
                 var start = new Vec2(this.center.x + (dir.x * this.mainArcRadius), this.center.y + (dir.y * this.mainArcRadius));
@@ -252,7 +252,11 @@ var A320_Neo_ECAM_Common;
                 if (_setid) {
                     marker.setAttribute("id",_idName);
                 }
-                marker.setAttribute("class", "InnerMarker");
+                if (_markerColour != "") {
+                    marker.setAttribute("class", "InnerMarker" + " " + _markerColour);
+                } else {
+                    marker.setAttribute("class", "InnerMarker");
+                }
                 marker.setAttribute("x1", start.x.toString());
                 marker.setAttribute("y1", start.y.toString());
                 marker.setAttribute("x2", end.x.toString());
