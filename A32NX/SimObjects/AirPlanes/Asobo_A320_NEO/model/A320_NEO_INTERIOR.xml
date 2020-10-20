@@ -1714,8 +1714,9 @@
                         <TOOLTIPID>%((L:A32NX_OVHD_COCKPITDOORVIDEO_TOGGLE, Bool))%{if}Turn OFF door video%{else}Turn ON door video%{end}</TOOLTIPID>
                         <LEFT_SINGLE_CODE>(L:A32NX_OVHD_COCKPITDOORVIDEO_TOGGLE) ! (>L:A32NX_OVHD_COCKPITDOORVIDEO_TOGGLE)</LEFT_SINGLE_CODE>
                     </UseTemplate>
-                    <UseTemplate Name="ASOBO_AIRLINER_CALLS_Template">
+                    <UseTemplate Name="FBW_Push_Held_NoEmissive">
                         <NODE_ID>PUSH_DOORPANEL_VIDEO</NODE_ID>
+                        <HOLD_SIMVAR>L:PUSH_DOORPANEL_VIDEO</HOLD_SIMVAR>
                     </UseTemplate>
                     <UseTemplate Name="ASOBO_AIRLINER_ADIRS_LIGHT_Template">
                         <ID>1</ID>

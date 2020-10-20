@@ -626,12 +626,12 @@
     </Template>
 
     <Template Name="FBW_Airbus_FIRE_AGENT">
-        <UseTemplate Name="ASOBO_GT_Push_Button_Airliner">
-            <SEQ1_EMISSIVE_CODE>(L:FIRE_TEST_#ID#, Bool) (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or (L:FIRE_BUTTON_#ID#, Bool) or</SEQ1_EMISSIVE_CODE>
-            <SEQ2_EMISSIVE_CODE>(L:FIRE_TEST_#ID#, Bool) (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or (L:XMLVAR_#NODE_ID#_Discharge) or</SEQ2_EMISSIVE_CODE>
+        <UseTemplate Name="FBW_Push_Toggle">
+            <SEQ1_CODE>(L:FIRE_TEST_#ID#, Bool) (L:FIRE_BUTTON_#ID#, Bool) or</SEQ1_CODE>
+            <SEQ2_CODE>(L:FIRE_TEST_#ID#, Bool) (L:XMLVAR_#NODE_ID#_Discharge) or</SEQ2_CODE>
             <LEFT_SINGLE_CODE>
                 (L:FIRE_BUTTON_#ID#, Bool) if{
-                1 (>L:XMLVAR_#NODE_ID#_Discharge)
+                    1 (>L:XMLVAR_#NODE_ID#_Discharge)
                 }
             </LEFT_SINGLE_CODE>
         </UseTemplate>
@@ -654,14 +654,15 @@
 
             <Update Frequency = "10">
                 (#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#) 0 &gt; (#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#_IsDown) 0 &gt; or if{
-                (O:AnimGoingForward) if{
-                (#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#) 0.1 #ANIM_DURATION# / + 1 min (&gt;#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#)
-                (#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#) 1 == if{
-                0 (&gt;O:AnimGoingForward)
-                }
-                } els{
-                (#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#) 0.1 #ANIM_DURATION# / - (#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#_IsDown) max (&gt;#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#)
-                }
+                    (O:AnimGoingForward)
+                    if{
+                        (#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#) 0.1 #ANIM_DURATION# / + 1 min (&gt;#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#)
+                        (#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#) 1 == if{
+                            0 (&gt;O:AnimGoingForward)
+                        }
+                    } els{
+                        (#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#) 0.1 #ANIM_DURATION# / - (#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#_IsDown) max (&gt;#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#)
+                    }
                 }
             </Update>
 
@@ -683,7 +684,7 @@
             <UseTemplate Name = "ASOBO_GT_Interaction_LeftSingle_Leave_Code">
                 <LEFT_SINGLE_CODE>
                     (L:FIRE_GUARD_#ID#) 1 == if{
-                    1 (&gt;#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#_IsDown) 1 (&gt;O:AnimGoingForward) #LEFT_SINGLE_CODE#
+                        1 (&gt;#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#_IsDown) 1 (&gt;O:AnimGoingForward) #LEFT_SINGLE_CODE#
                     }
                 </LEFT_SINGLE_CODE>
             </UseTemplate>
@@ -707,14 +708,14 @@
 
             <Update Frequency = "10">
                 (#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#) 0 &gt; (#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#_IsDown) 0 &gt; or if{
-                (O:AnimGoingForward) if{
-                (#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#) 0.1 #ANIM_DURATION# / + 1 min (&gt;#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#)
-                (#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#) 1 == if{
-                0 (&gt;O:AnimGoingForward)
-                }
-                } els{
-                (#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#) 0.1 #ANIM_DURATION# / - (#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#_IsDown) max (&gt;#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#)
-                }
+                    (O:AnimGoingForward) if{
+                        (#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#) 0.1 #ANIM_DURATION# / + 1 min (&gt;#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#)
+                        (#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#) 1 == if{
+                            0 (&gt;O:AnimGoingForward)
+                        }
+                    } els{
+                        (#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#) 0.1 #ANIM_DURATION# / - (#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#_IsDown) max (&gt;#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#)
+                    }
                 }
             </Update>
 
