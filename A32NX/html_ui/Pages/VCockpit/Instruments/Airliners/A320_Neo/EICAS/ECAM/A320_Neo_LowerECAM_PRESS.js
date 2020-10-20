@@ -388,7 +388,7 @@ var A320_Neo_LowerECAM_PRESS;
                 this.htmlTextSafetyW.setAttribute("visibility", "visible");
                 this.htmlTextSafety.setAttribute("visibility", "hidden");
                 this.cabinSafetyTextStatus = 1;
-            } else if (this.psiDelta < 8.2 && this.cabinSafetyTextStatus){
+            } else if (this.psiDelta < 8.2 && this.cabinSafetyTextStatus) {
                 this.htmlTextSafety.setAttribute("visibility", "visible");
                 this.htmlTextSafetyW.setAttribute("visibility", "hidden");
                 this.cabinSafetyTextStatus = 0;
