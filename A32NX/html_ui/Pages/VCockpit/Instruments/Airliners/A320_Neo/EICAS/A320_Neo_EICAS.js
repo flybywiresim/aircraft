@@ -301,8 +301,6 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
 
         }
 
-
-
         // ECAM all button
         this.ecamAllButtonState = SimVar.GetSimVarValue("L:A32NX_ECAM_ALL_Push_IsDown", "Bool");
         const ECAMPages = [
