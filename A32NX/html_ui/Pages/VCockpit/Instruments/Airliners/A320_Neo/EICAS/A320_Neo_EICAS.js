@@ -112,6 +112,8 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         SimVar.SetSimVarValue("LIGHT POTENTIOMETER:91", "FLOAT64", 0.1);
         SimVar.SetSimVarValue("LIGHT POTENTIOMETER:92", "FLOAT64", 0.1);
         SimVar.SetSimVarValue("LIGHT POTENTIOMETER:93", "FLOAT64", 0.1);
+
+        this.ecamAllButtonPrevState = false;
     }
 
     onUpdate() {
@@ -299,6 +301,53 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
 
         }
 
+
+
+        // ECAM all button
+        this.ecamAllButtonState = SimVar.GetSimVarValue("L:A32NX_ECAM_ALL_Push_IsDown", "Bool");
+
+        // const ECAMPages = [
+        //     "ENG",
+        //     "BLEED",
+        //     "FUEL",
+        //     "APU",
+        //     "APU",
+        //     "DOOR",
+        //     "WHEEL",
+        //     "FTCL",
+        //     "STS"
+        // ];
+
+        const ECAMPages = [
+            "ENG",
+            "BLEED",
+            "PRESS",
+            "ELEC",
+            "HYD",
+            "FUEL",
+            "APU",
+            "COND",
+            "DOOR",
+            "WHEEL",
+            "FTCL",
+            "STS"
+        ];
+
+        if (this.ecamAllButtonState == true && this.ecamAllButtonPrevState == false) { // button press
+            this.ecamCycleInterval = setInterval(() => {
+                if (this.currentPage + 1 < ECAMPages.length) {
+                    this.changePage(ECAMPages[this.currentPage + 1]);
+                } else {
+                    this.changePage(ECAMPages[0]);
+                }
+            }, 1000);
+            SimVar.SetSimVarValue("L:A32NX_ECAM_CYCLE", "Bool", true);
+        } else if (this.ecamAllButtonState == false && this.ecamAllButtonPrevState == true) { // button release
+            clearInterval(this.ecamCycleInterval);
+            SimVar.SetSimVarValue("L:A32NX_ECAM_CYCLE", "Bool", false);
+        }
+
+        this.ecamAllButtonPrevState = this.ecamAllButtonState;
         this.PrevFailPage = sFailPage;
     }
 
