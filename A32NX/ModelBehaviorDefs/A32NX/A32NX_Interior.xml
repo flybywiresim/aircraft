@@ -240,8 +240,8 @@
                                                     If present, the switch will stay pressed.
             - SEQ1_CODE             0               Sequence 1 emissive code
             - SEQ1_CODE             0               Sequence 2 emissive code
-            - DISABLE_SEQ1          Not present     If there is a SEQ1 emissive, but it should be deactivated
-            - DISABLE_SEQ2          Not present     If there is a SEQ2 emissive, but it should be deactivated
+            - DISABLE_SEQ1          Not present     If present, the SEQ1 emissive is disabled
+            - DISABLE_SEQ2          Not present     If present, the SEQ2 emissive is disabled
 
     Authors: Benjamin Dupont (@Benjozork) 12/10/20
     -->
