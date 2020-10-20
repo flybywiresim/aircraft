@@ -45,6 +45,8 @@ var A320_Neo_LowerECAM_PRESS;
             this.cabinSafetyTextStatus = 0;
             this.htmlPackIndicatorLeft = this.querySelector("#pack-indicator-left");
             this.htmlPackIndicatorRight = this.querySelector("#pack-indicator-right");
+            this.htmlPackIndicatorLeftText = this.querySelector("#pack-indicator-left-text");
+            this.htmlPackIndicatorRightText = this.querySelector("#pack-indicator-right-text");
 
             this.htmlLdgElevText = this.querySelector("#ldg-elev-text");
             this.htmlLdgElevValue = this.querySelector("#ldg-elev-value");
@@ -79,11 +81,13 @@ var A320_Neo_LowerECAM_PRESS;
             this.lastVSIndicatorRotValue = 0;
         }
 
-        setPackWarning(value, htmlObj) {
+        setPackWarning(value, htmlObj, htmlObjText) {
             if (value) {
                 htmlObj.setAttribute("class", "st0p st13p");
+                htmlObjText.setAttribute("class", "st3p st9p");
             } else {
                 htmlObj.setAttribute("class", "warning st13p");
+                htmlObjText.setAttribute("class", "warning st9p");
             }
         }
 
@@ -347,8 +351,8 @@ var A320_Neo_LowerECAM_PRESS;
 
             this.valueBlinker(this.blinkingObjs, 500);
 
-            this.setPackWarning(leftPackState, this.htmlPackIndicatorLeft);
-            this.setPackWarning(rightPackState, this.htmlPackIndicatorRight);
+            this.setPackWarning(leftPackState, this.htmlPackIndicatorLeft, this.htmlPackIndicatorLeftText);
+            this.setPackWarning(rightPackState, this.htmlPackIndicatorRight, this.htmlPackIndicatorRightText);
 
             if (this.cabinAltitude >= 9550) {
                 this.htmlCabinAltValue.setAttribute("visibility", "hidden");
