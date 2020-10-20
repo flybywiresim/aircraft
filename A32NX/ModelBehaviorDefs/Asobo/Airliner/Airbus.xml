@@ -1240,21 +1240,6 @@
 		</UseTemplate>
 	</Template>
 
-	<Template Name="ASOBO_AIRLINER_CALLS_Template">
-		<DefaultTemplateParameters>
-			<ANIM_NAME>#NODE_ID#</ANIM_NAME>
-			<WWISE_EVENT_1>master_apu_switch_on</WWISE_EVENT_1>
-			<WWISE_EVENT_2>master_apu_switch_off</WWISE_EVENT_2>
-			<CURSOR>Grab</CURSOR>
-		</DefaultTemplateParameters>
-		<Component ID="#NODE_ID#" Node="#NODE_ID#">
-			<UseTemplate Name="ASOBO_GT_Push_Button_Held">
-				<LEFT_SINGLE_CODE>1 (>L:#NODE_ID#)</LEFT_SINGLE_CODE>
-				<LEFT_LEAVE_CODE>0 (>L:#NODE_ID#)</LEFT_LEAVE_CODE>
-			</UseTemplate>
-		</Component>
-	</Template>
-
 	<Template Name="ASOBO_AIRLINER_SIGNS_LIGHT_Template">
 		<UseTemplate Name="ASOBO_GT_Push_Button_Airliner_Dummy">
 			<SEQ1_EMISSIVE_CODE>0</SEQ1_EMISSIVE_CODE>
