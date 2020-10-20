@@ -299,7 +299,7 @@ var A320_Neo_LowerECAM_PRESS;
                 this.valveFlowStatus = 0;
             }
 
-            if (pressureDelta > 1 && !ditchingOn) {
+            if (pressureDelta > 8.2 && !ditchingOn) {
                 safetyValveOpen = true;
             } else {
                 safetyValveOpen = false;
