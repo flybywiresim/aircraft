@@ -2360,32 +2360,32 @@
             <Component ID="Overhead_Misc">
                 <Component ID="Left_Column">
                     <UseTemplate Name="FBW_Push_Toggle">
-                        <TOGGLE_NODE_ID>PUSH_OVHD_GPWS_TERR</TOGGLE_NODE_ID>
+                        <NODE_ID>PUSH_OVHD_GPWS_TERR</NODE_ID>
                         <TOGGLE_SIMVAR>L:PUSH_OVHD_GPWS_TERR</TOGGLE_SIMVAR>
                         <SEQ1_CODE>(L:PUSH_OVHD_GPWS_TERR, Bool) ! (L:PUSH_OVHD_GPWS_TERR_FAULT, Bool)</SEQ1_CODE>
                         <TOOLTIPID>(INOP) TERR</TOOLTIPID>
                     </UseTemplate>
                     <UseTemplate Name="FBW_Push_Toggle">
-                        <TOGGLE_NODE_ID>PUSH_OVHD_GPWS_SYS</TOGGLE_NODE_ID>
+                        <NODE_ID>PUSH_OVHD_GPWS_SYS</NODE_ID>
                         <TOGGLE_SIMVAR>L:PUSH_OVHD_GPWS_SYS</TOGGLE_SIMVAR>
                         <SEQ1_CODE>(L:PUSH_OVHD_GPWS_SYS, Bool) ! (L:PUSH_OVHD_GPWS_SYS_FAULT, Bool)</SEQ1_CODE>
                         <TOOLTIPID>SYS</TOOLTIPID>
                     </UseTemplate>
                     <UseTemplate Name="FBW_Push_Toggle">
-                        <TOGGLE_NODE_ID>PUSH_OVHD_GPWS_GSMODE</TOGGLE_NODE_ID>
+                        <NODE_ID>PUSH_OVHD_GPWS_GSMODE</NODE_ID>
                         <TOGGLE_SIMVAR>L:PUSH_OVHD_GPWS_GSMODE</TOGGLE_SIMVAR>
                         <DISABLE_SEQ1/>
                         <TOOLTIPID>(INOP) G/S Mode</TOOLTIPID>
                     </UseTemplate>
                     <UseTemplate Name="FBW_Push_Toggle">
-                        <TOGGLE_NODE_ID>PUSH_OVHD_GPWS_FLAP</TOGGLE_NODE_ID>
+                        <NODE_ID>PUSH_OVHD_GPWS_FLAP</NODE_ID>
                         <PART_ID>GPWS_Flap</PART_ID>
                         <TOGGLE_SIMVAR>L:PUSH_OVHD_GPWS_FLAP</TOGGLE_SIMVAR>
                         <DISABLE_SEQ1/>
                         <TOOLTIPID>Flap Mode</TOOLTIPID>
                     </UseTemplate>
                     <UseTemplate Name="FBW_Push_Toggle">
-                        <TOGGLE_NODE_ID>PUSH_OVHD_GPWS_LDG</TOGGLE_NODE_ID>
+                        <NODE_ID>PUSH_OVHD_GPWS_LDG</NODE_ID>
                         <PART_ID>GPWS_Flap3</PART_ID>
                         <TOGGLE_SIMVAR>L:PUSH_OVHD_GPWS_LDG</TOGGLE_SIMVAR>
                         <DISABLE_SEQ1/>
@@ -2396,7 +2396,7 @@
                         <BLOCK_SEQ2>1</BLOCK_SEQ2>
                     </UseTemplate>
                     <UseTemplate Name="FBW_Push_Toggle">
-                        <TOGGLE_NODE_ID>PUSH_OVHD_OXYGEN_CREW</TOGGLE_NODE_ID>
+                        <NODE_ID>PUSH_OVHD_OXYGEN_CREW</NODE_ID>
                         <PART_ID>Crew_Supply</PART_ID>
                         <TOGGLE_SIMVAR>L:PUSH_OVHD_OXYGEN_CREW</TOGGLE_SIMVAR>
                         <DISABLE_SEQ1/>
@@ -2419,7 +2419,7 @@
                         <HOLD_SIMVAR>L:PUSH_OVHD_CALLS_AFT</HOLD_SIMVAR>
                     </UseTemplate>
                     <UseTemplate Name="FBW_Covered_Push_Toggle">
-                        <TOGGLE_NODE_ID>PUSH_OVHD_CALLS_EMER</TOGGLE_NODE_ID>
+                        <NODE_ID>PUSH_OVHD_CALLS_EMER</NODE_ID>
                         <LOCK_NODE_ID>LOCK_OVHD_CALLS_EMER</LOCK_NODE_ID>
                         <TOGGLE_SIMVAR>L:A32NX_CALLS_EMER_ON</TOGGLE_SIMVAR>
                         <TOOLTIPID>%((L:A32NX_CALLS_EMER_ON, Bool))%{if}Turn OFF emergency call%{else}Turn ON emergency call%{end}</TOOLTIPID>
@@ -2456,7 +2456,7 @@
 
                 <UseTemplate Name="FBW_Covered_Push_Toggle">
                     <!-- This name is wrong, but it refers to the node we want -->
-                    <TOGGLE_NODE_ID>PUSH_OVHD_HYD_BLUEPUMP</TOGGLE_NODE_ID>
+                    <NODE_ID>PUSH_OVHD_HYD_BLUEPUMP</NODE_ID>
                     <LOCK_NODE_ID>LOCK_OVHD_HYD_BLUEPUMPOVRD</LOCK_NODE_ID>
                     <TOGGLE_SIMVAR>L:A32NX_OVHD_HYD_BLUEPUMP_OVRD</TOGGLE_SIMVAR>
 
@@ -2468,7 +2468,7 @@
                 <!-- G -->
 
                 <UseTemplate Name="FBW_Covered_Push_Toggle">
-                    <TOGGLE_NODE_ID>PUSH_OVHD_HYD_G</TOGGLE_NODE_ID>
+                    <NODE_ID>PUSH_OVHD_HYD_G</NODE_ID>
                     <LOCK_NODE_ID>LOCK_OVHD_HYD_G</LOCK_NODE_ID>
                     <TOGGLE_SIMVAR>L:A32NX_OVHD_HYD_LEAK_MEASUREMENT_G</TOGGLE_SIMVAR>
 
@@ -2478,7 +2478,7 @@
                 <!-- B -->
 
                 <UseTemplate Name="FBW_Covered_Push_Toggle">
-                    <TOGGLE_NODE_ID>PUSH_OVHD_HYD_B</TOGGLE_NODE_ID>
+                    <NODE_ID>PUSH_OVHD_HYD_B</NODE_ID>
                     <LOCK_NODE_ID>LOCK_OVHD_HYD_B</LOCK_NODE_ID>
                     <TOGGLE_SIMVAR>L:A32NX_OVHD_HYD_LEAK_MEASUREMENT_B</TOGGLE_SIMVAR>
 
@@ -2488,7 +2488,7 @@
                 <!-- Y -->
 
                 <UseTemplate Name="FBW_Covered_Push_Toggle">
-                    <TOGGLE_NODE_ID>PUSH_OVHD_HYD_Y</TOGGLE_NODE_ID>
+                    <NODE_ID>PUSH_OVHD_HYD_Y</NODE_ID>
                     <LOCK_NODE_ID>LOCK_OVHD_HYD_Y</LOCK_NODE_ID>
                     <TOGGLE_SIMVAR>L:A32NX_OVHD_HYD_LEAK_MEASUREMENT_Y</TOGGLE_SIMVAR>
 
@@ -2500,7 +2500,7 @@
                 <!-- 1 -->
 
                 <UseTemplate Name="FBW_Covered_Push_Toggle">
-                    <TOGGLE_NODE_ID>PUSH_OVHD_ENG_FADEC2</TOGGLE_NODE_ID>
+                    <NODE_ID>PUSH_OVHD_ENG_FADEC2</NODE_ID>
                     <LOCK_NODE_ID>LOCK_OVHD_ENG_FADEC2</LOCK_NODE_ID>
                     <TOGGLE_SIMVAR>L:A32NX_OVHD_FADEC_1</TOGGLE_SIMVAR>
                 </UseTemplate>
@@ -2508,7 +2508,7 @@
                 <!-- 2 -->
 
                 <UseTemplate Name="FBW_Covered_Push_Toggle">
-                    <TOGGLE_NODE_ID>PUSH_OVHD_ENG_FADEC1</TOGGLE_NODE_ID>
+                    <NODE_ID>PUSH_OVHD_ENG_FADEC1</NODE_ID>
                     <LOCK_NODE_ID>LOCK_OVHD_ENG_FADEC1</LOCK_NODE_ID>
                     <TOGGLE_SIMVAR>L:A32NX_OVHD_FADEC_2</TOGGLE_SIMVAR>
                 </UseTemplate>
@@ -2516,7 +2516,7 @@
                 <!-- APU AUTO EXITING -->
 
                 <UseTemplate Name="FBW_Push_Toggle">
-                    <TOGGLE_NODE_ID>PUSH_OVHD_APU_AUTOEXITING_TEST</TOGGLE_NODE_ID>
+                    <NODE_ID>PUSH_OVHD_APU_AUTOEXITING_TEST</NODE_ID>
                     <TOGGLE_SIMVAR>L:A32NX_OVHD_APU_AUTOEXITING_TEST</TOGGLE_SIMVAR>
 
                     <SEQ1_CODE>(L:A32NX_OVHD_APU_AUTOEXITING_TEST, Bool) (L:A32NX_OVHD_APU_AUTOEXITING_TEST_STATUS, Bool) and</SEQ1_CODE>
@@ -2543,7 +2543,7 @@
                 </UseTemplate>
 
                 <UseTemplate Name="FBW_Push_Toggle">
-                    <TOGGLE_NODE_ID>PUSH_OVHD_CABINPRESS_MODESEL</TOGGLE_NODE_ID>
+                    <NODE_ID>PUSH_OVHD_CABINPRESS_MODESEL</NODE_ID>
                     <TOGGLE_SIMVAR>L:A32NX_CAB_PRESS_MODE_MAN</TOGGLE_SIMVAR>
                     <SHOULD_ANIM_TOGGLE/>
                     <SEQ1_CODE>(L:A32NX_CAB_PRESS_SYS_FAULT)</SEQ1_CODE>
@@ -2551,7 +2551,7 @@
                 </UseTemplate>
 
                 <UseTemplate Name="FBW_Covered_Push_Toggle">
-                    <TOGGLE_NODE_ID>PUSH_OVHD_CABINPRESS_DITCHING</TOGGLE_NODE_ID>
+                    <NODE_ID>PUSH_OVHD_CABINPRESS_DITCHING</NODE_ID>
                     <LOCK_NODE_ID>LOCK_OVHD_CABINPRESS_DITCHING</LOCK_NODE_ID>
                     <TOGGLE_SIMVAR>L:A32NX_DITCHING</TOGGLE_SIMVAR>
                     <SHOULD_ANIM_TOGGLE/>
