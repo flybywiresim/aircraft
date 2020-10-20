@@ -1729,32 +1729,39 @@ var A320_Neo_UpperECAM;
                 fuelOnBoardDiv.appendChild(A320_Neo_UpperECAM.createDiv("Unit", "", "KG"));
                 this.divMain.appendChild(fuelOnBoardDiv);
             }
-            this.setThrottle(false, 0, ThrottleMode.UNKNOWN, true);
+
+            this.setThrottle(false, 0, ThrottleMode.UNKNOWN);
             this.setFlexTemperature(false, 0, true);
             this.setFuelOnBoard(0, true);
         }
+
         update(_deltaTime) {
             super.update(_deltaTime);
+
             if (Simplane.getEngineActive(0) || Simplane.getEngineActive(1)) {
                 const throttleMode = Math.max(Simplane.getEngineThrottleMode(0), Simplane.getEngineThrottleMode(1));
-                const throttleValue = Simplane.getEngineThrottleMaxThrust(1);
+
+                // MaxThrust seems to be bugged, so here we use the throttle position for now
+                const throttlePosition = Math.max(Simplane.getEngineThrottle(1), Simplane.getEngineThrottle(2));
+
                 if (Simplane.getCurrentFlightPhase() < FlightPhase.FLIGHT_PHASE_CLIMB) {
-                    if (throttleMode == ThrottleMode.FLEX_MCT) {
-                        this.setThrottle(true, throttleValue, throttleMode, true);
+                    if (throttleMode === ThrottleMode.FLEX_MCT) {
                         const flexTemp = Simplane.getFlexTemperature();
+
                         this.setFlexTemperature((flexTemp > 0), flexTemp);
                     } else {
-                        this.setThrottle(true, throttleValue, throttleMode);
                         this.setFlexTemperature(false);
                     }
                 } else {
-                    this.setThrottle(true, throttleValue, throttleMode);
                     this.setFlexTemperature(false);
                 }
+
+                this.setThrottle(true, throttlePosition, throttleMode);
             } else {
                 this.setThrottle(false);
                 this.setFlexTemperature(false);
             }
+
             this.setFuelOnBoard(SimVar.GetSimVarValue("FUEL TOTAL QUANTITY WEIGHT", "kg"));
         }
 
@@ -1762,11 +1769,10 @@ var A320_Neo_UpperECAM;
          * @param _active {boolean}
          * @param _value {number}
          * @param _mode {ThrottleMode}
-         * @param _force {boolean}
          */
-        setThrottle(_active, _value = 0, _mode = ThrottleMode.UNKNOWN, _force = false) {
-            if (_active !== this.throttleIsActive || _value !== this.currentThrottleValue || _mode !== this.currentThrottleMode || _force) {
-                this.throttleIsActive = _active;
+        setThrottle(_active, _value = 0, _mode = ThrottleMode.UNKNOWN) {
+            if (_active !== this.currentThrottleIsActive || _value !== this.currentThrottleValue || _mode !== this.currentThrottleMode) {
+                this.currentThrottleIsActive = _active;
                 this.currentThrottleValue = _value;
                 this.currentThrottleMode = _mode;
 
@@ -1776,7 +1782,7 @@ var A320_Neo_UpperECAM;
                         switch (this.currentThrottleMode) {
                             case ThrottleMode.TOGA:
                             {
-                                this.throttleState.textContent = "TO/GA";
+                                this.throttleState.textContent = "TOGA";
                                 break;
                             }
                             case ThrottleMode.FLEX_MCT:
