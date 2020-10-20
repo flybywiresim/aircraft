@@ -19,19 +19,6 @@
         <Include ModelBehaviorFile="Asobo\Airliner\GlassCockpit.xml"/>
         <Include ModelBehaviorFile="Asobo\Airliner\Airbus.xml"/>
 
-        <Template Name="A32NX_LANDING_GEAR_Light_Template">
-            <DefaultTemplateParameters>
-                <NODE_ID>LANDING_GEAR_Light_#ID#</NODE_ID>
-                <PART_ID>LANDING_GEAR_Light</PART_ID>
-                <SIMVAR>GEAR POSITION:#GEAR_ID#</SIMVAR>
-            </DefaultTemplateParameters>
-            <UseTemplate Name="ASOBO_GT_Push_Button_Airliner">
-                <DUMMY_BUTTON>True</DUMMY_BUTTON>
-                <SEQ1_EMISSIVE_CODE>0.01 99.99 (A:#SIMVAR#, Percent) rng (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or</SEQ1_EMISSIVE_CODE>
-                <SEQ2_EMISSIVE_CODE>90 100 (A:#SIMVAR#, Percent) rng (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or</SEQ2_EMISSIVE_CODE>
-            </UseTemplate>
-        </Template>
-
         <!-- MCDU -->
 
         <Component ID="MCDU">
@@ -884,17 +871,17 @@
                 <ANIM_NAME>lever_landing_gear</ANIM_NAME>
                 <NODE_ID>LEVER_LANDINGGEAR</NODE_ID>
             </UseTemplate>
-            <UseTemplate Name="A32NX_LANDING_GEAR_Light_Template">
+            <UseTemplate Name="FBW_Airbus_LANDING_GEAR_Light_Template">
                 <NODE_ID>PUSH_AUTOBKR_LDGGEAR_1</NODE_ID>
                 <ID>1</ID>
                 <GEAR_ID>1</GEAR_ID>
             </UseTemplate>
-            <UseTemplate Name="A32NX_LANDING_GEAR_Light_Template">
+            <UseTemplate Name="FBW_Airbus_LANDING_GEAR_Light_Template">
                 <NODE_ID>PUSH_AUTOBKR_LDGGEAR_2</NODE_ID>
                 <ID>2</ID>
                 <GEAR_ID>0</GEAR_ID>
             </UseTemplate>
-            <UseTemplate Name="A32NX_LANDING_GEAR_Light_Template">
+            <UseTemplate Name="FBW_Airbus_LANDING_GEAR_Light_Template">
                 <NODE_ID>PUSH_AUTOBKR_LDGGEAR_3</NODE_ID>
                 <ID>3</ID>
                 <GEAR_ID>2</GEAR_ID>
@@ -902,7 +889,7 @@
             <UseTemplate Name="ASOBO_LANDING_GEAR_Warning_Template">
                 <ANIM_NAME>DECAL_LANDING_INDICATOR</ANIM_NAME>
             </UseTemplate>
-            <UseTemplate Name="ASOBO_HANDLING_Push_Autobrakes_Template">
+            <UseTemplate Name="FBW_Airbus_HANDLING_Push_Autobrakes_Template">
                 <NODE_ID>PUSH_AUTOBKR_LO</NODE_ID>
                 <PART_ID>Autobrake_1</PART_ID>
                 <ANIM_NAME>PUSH_AUTOBKR_LO</ANIM_NAME>
@@ -912,7 +899,7 @@
                 <MIN_DECEL_FPSS>-7</MIN_DECEL_FPSS>
                 <OFF_TOOLTIP>COCKPIT.TOOLTIPS.AUTO_BRK_SET_LO</OFF_TOOLTIP>
             </UseTemplate>
-            <UseTemplate Name="ASOBO_HANDLING_Push_Autobrakes_Template">
+            <UseTemplate Name="FBW_Airbus_HANDLING_Push_Autobrakes_Template">
                 <NODE_ID>PUSH_AUTOBKR_MED</NODE_ID>
                 <PART_ID>Autobrake_2</PART_ID>
                 <ANIM_NAME>PUSH_AUTOBKR_MED</ANIM_NAME>
@@ -922,7 +909,7 @@
                 <MIN_DECEL_FPSS>-14</MIN_DECEL_FPSS>
                 <OFF_TOOLTIP>COCKPIT.TOOLTIPS.AUTO_BRK_SET_MED</OFF_TOOLTIP>
             </UseTemplate>
-            <UseTemplate Name="ASOBO_HANDLING_Push_Autobrakes_Template">
+            <UseTemplate Name="FBW_Airbus_HANDLING_Push_Autobrakes_Template">
                 <NODE_ID>PUSH_AUTOBKR_MAX</NODE_ID>
                 <PART_ID>Autobrake_3</PART_ID>
                 <ANIM_NAME>PUSH_AUTOBKR_MAX</ANIM_NAME>

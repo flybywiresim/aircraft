@@ -445,4 +445,102 @@
         </UseTemplate>
     </Template>
 
+    <!--
+    Template for handling autobrake push buttons
+
+    Clone of Asobo template to fix broken logic
+
+    Takes into account the value of L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position.
+
+    Authors: Asobo / Markus Ullmann (@jokey2k) 18/10/20
+    -->
+    <Template Name="FBW_Airbus_HANDLING_Push_Autobrakes_Template">
+        <DefaultTemplateParameters>
+            <AUTOBRAKE_LEVEL>1</AUTOBRAKE_LEVEL>
+            <WWISE_EVENT_1>autobrake_push_button_on</WWISE_EVENT_1>
+            <WWISE_EVENT_2>autobrake_push_button_off</WWISE_EVENT_2>
+            <NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
+            <NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
+            <TOOLTIPID>%((L:XMLVAR_RTO_Level) #AUTOBRAKE_LEVEL# ==)%{if}TT:COCKPIT.TOOLTIPS.AUTO_BRK_TURN_OFF%{else}TT:#OFF_TOOLTIP#%{end}</TOOLTIPID>
+            <ENGINES_COUNT>2</ENGINES_COUNT>
+            <REF_DECEL_FPSS>-7</REF_DECEL_FPSS>
+        </DefaultTemplateParameters>
+        <Component ID="#NODE_ID#" Node="#NODE_ID#">
+            <UseTemplate Name="ASOBO_GT_Push_Button">
+                <LEFT_SINGLE_CODE>
+                (A:ANTISKID BRAKES ACTIVE, Bool) ! (L:XMLVAR_Autobrakes_Level) #AUTOBRAKE_LEVEL# == or if{
+                    0 (&gt;L:XMLVAR_Autobrakes_Level)
+                } els{
+                    #AUTOBRAKE_LEVEL# (&gt;L:XMLVAR_Autobrakes_Level)
+                }
+
+                (L:XMLVAR_Autobrakes_Level) 0 == if{
+                    1 (&gt;K:SET_AUTOBRAKE_CONTROL)
+                } els{
+                    (A:SIM ON GROUND, Bool) if{
+                        0 (&gt;K:SET_AUTOBRAKE_CONTROL)
+                    } els{
+                        (L:XMLVAR_Autobrakes_Level) 1 + (&gt;K:SET_AUTOBRAKE_CONTROL)
+                    }
+                }
+                </LEFT_SINGLE_CODE>
+            </UseTemplate>
+
+            <Condition Check="AUTOBRAKE_LEVEL" Match="0">
+                <False>
+                    <UseTemplate Name="ASOBO_GT_Update">
+                        <FREQUENCY>1</FREQUENCY>
+                        <UPDATE_CODE>
+                        (A:AUTO BRAKE SWITCH CB, Enum) s1 0 == if{
+                            (L:XMLVAR_Autobrakes_Level) 0 == if{
+                                #AUTOBRAKE_LEVEL# (&gt;L:XMLVAR_Autobrakes_Level)
+                            }
+                        } els{
+                            l1 1 == if{
+                                0 (&gt;L:XMLVAR_Autobrakes_Level)
+                            } els{
+                                l1 1 - (&gt;L:XMLVAR_Autobrakes_Level)
+                                (A:SIM ON GROUND, Bool) (A:GROUND VELOCITY, Knots) 10 &lt; and if{
+                                    0 (&gt;K:SET_AUTOBRAKE_CONTROL)
+                                }
+                            }
+                        }
+                        </UPDATE_CODE>
+                    </UseTemplate>
+                </False>
+            </Condition>
+        </Component>
+        <Component ID="#NODE_ID_DECEL#" Node="#NODE_ID_DECEL#">
+            <UseTemplate Name="ASOBO_GT_Emissive_Gauge">
+                <EMISSIVE_CODE>(A:AUTO BRAKE SWITCH CB, Enum) 1 != (A:ACCELERATION BODY Z, feet per second squared) #REF_DECEL_FPSS# &lt;= and (L:XMLVAR_Autobrakes_Level) #AUTOBRAKE_LEVEL# == and (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or</EMISSIVE_CODE>
+                <EMISSIVE_DRIVES_VISIBILITY>True</EMISSIVE_DRIVES_VISIBILITY>
+            </UseTemplate>
+        </Component>
+        <Component ID="#NODE_ID_ON#" Node="#NODE_ID_ON#">
+            <UseTemplate Name="ASOBO_GT_Emissive_Gauge">
+                <EMISSIVE_CODE>
+                (L:XMLVAR_Autobrakes_Level) #AUTOBRAKE_LEVEL# == (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or
+                </EMISSIVE_CODE>
+            </UseTemplate>
+        </Component>
+    </Template>
+
+    <!--
+    Template for handling landing gear indications
+
+    Authors: Benjamin Dupont (@Benjozork) 10/10/20
+    -->
+    <Template Name="FBW_Airbus_LANDING_GEAR_Light_Template">
+        <DefaultTemplateParameters>
+            <NODE_ID>LANDING_GEAR_Light_#ID#</NODE_ID>
+            <PART_ID>LANDING_GEAR_Light</PART_ID>
+            <SIMVAR>GEAR POSITION:#GEAR_ID#</SIMVAR>
+        </DefaultTemplateParameters>
+        <UseTemplate Name="ASOBO_GT_Push_Button_Airliner">
+            <DUMMY_BUTTON>True</DUMMY_BUTTON>
+            <SEQ1_EMISSIVE_CODE>0.01 99.99 (A:#SIMVAR#, Percent) rng (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or</SEQ1_EMISSIVE_CODE>
+            <SEQ2_EMISSIVE_CODE>90 100 (A:#SIMVAR#, Percent) rng (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or</SEQ2_EMISSIVE_CODE>
+        </UseTemplate>
+    </Template>
+
 </ModelBehaviors>
