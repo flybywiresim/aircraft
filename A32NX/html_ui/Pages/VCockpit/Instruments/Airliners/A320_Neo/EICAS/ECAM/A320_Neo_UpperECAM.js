@@ -1523,7 +1523,7 @@ var A320_Neo_UpperECAM;
             this.gaugeN1.addGraduation(83, true, "", false, false, "", "warning");
             this.gaugeN1.addGraduation(84, false, "", true);
             this.gaugeN1.addGraduation(90, true);
-            this.gaugeN1.addGraduation(100, true, "10", false, false, "", "danger");
+            this.gaugeN1.addGraduation(100, true, "10");
             this.gaugeN1.addGraduation(gaugeDef.maxRedValue, true, "", false, false, "", "danger");
             this.divMain.appendChild(this.gaugeN1);
             this.allGauges.push(this.gaugeN1);
