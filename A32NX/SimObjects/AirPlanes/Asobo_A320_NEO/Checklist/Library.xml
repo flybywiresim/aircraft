@@ -905,10 +905,7 @@
          <CheckpointDesc SubjectTT="TT:Flight Director" ExpectationTT="TT:ON" />
          <Test>
             <TestValue>
-               <Operator OpType="EQUAL">
-                  <Val SimVarName="AUTOPILOT FLIGHT DIRECTOR ACTIVE" Units="Boolean"/>
-                  <Val Value="0"/>
-               </Operator>
+               <Val SimVarName="AUTOPILOT FLIGHT DIRECTOR ACTIVE:1" Units="Boolean"/>
             </TestValue>
             <Action Copilot="True" Condition="TestValueFalse" Once="true" EventID="TOGGLE_FLIGHT_DIRECTOR"/>
             <Instrument Id="AUTOPILOT_PUSH_FLIGHTDIRECTOR"/>
