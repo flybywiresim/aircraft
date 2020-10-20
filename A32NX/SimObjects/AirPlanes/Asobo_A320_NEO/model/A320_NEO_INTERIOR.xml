@@ -1836,25 +1836,6 @@
                         <NODE_ID>PUSH_OVHD_RCDR_GNDCTL</NODE_ID>
                         <BLOCK_SEQ1>1</BLOCK_SEQ1>
                     </UseTemplate>
-                    <UseTemplate Name="ASOBO_GT_Switch_Dummy">
-                        <NODE_ID>LOCK_OVHD_CALLS_EMER</NODE_ID>
-                        <ANIM_NAME>LOCK_OVHD_CALLS_EMER</ANIM_NAME>
-                        <WWISE_EVENT_1>apu_generator_switch_on</WWISE_EVENT_1>
-                        <WWISE_EVENT_2>apu_generator_switch_off</WWISE_EVENT_2>
-                        <LEFT_SINGLE_CODE>(L:A32NX_CALLS_EMERLOCK_TOGGLE) ! (>L:A32NX_CALLS_EMERLOCK_TOGGLE)</LEFT_SINGLE_CODE>
-                    </UseTemplate>
-                    <UseTemplate Name="ASOBO_GT_Push_Button_Airliner">
-                        <NODE_ID>PUSH_OVHD_CALLS_EMER</NODE_ID>
-                        <ANIM_NAME>PUSH_OVHD_CALLS_EMER</ANIM_NAME>
-                        <SEQ1_EMISSIVE_CODE>(L:A32NX_CALLS_EMER_ON, Bool) (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or</SEQ1_EMISSIVE_CODE>
-                        <SEQ2_EMISSIVE_CODE>1 ! (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or</SEQ2_EMISSIVE_CODE>
-                        <WWISE_EVENT_1>apu_generator_switch_on</WWISE_EVENT_1>
-                        <WWISE_EVENT_2>apu_generator_switch_off</WWISE_EVENT_2>
-                        <NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
-                        <NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
-                        <TOOLTIPID>%((L:A32NX_CALLS_EMER_ON, Bool))%{if}Turn OFF emergency call%{else}Turn ON emergency call%{end}</TOOLTIPID>
-                        <LEFT_SINGLE_CODE>(L:A32NX_CALLS_EMER_ON) ! (>L:A32NX_CALLS_EMER_ON)</LEFT_SINGLE_CODE>
-                    </UseTemplate>
                 </Component>
 
                 <Component ID="Center_Column">
@@ -2428,6 +2409,14 @@
                     </UseTemplate>
                     <UseTemplate Name="ASOBO_AIRLINER_CALLS_Template">
                         <NODE_ID>PUSH_OVHD_CALLS_AFT</NODE_ID>
+                    </UseTemplate>
+                    <UseTemplate Name="FBW_Covered_Push_Toggle">
+                        <TOGGLE_NODE_ID>PUSH_OVHD_CALLS_EMER</TOGGLE_NODE_ID>
+                        <LOCK_NODE_ID>LOCK_OVHD_CALLS_EMER</LOCK_NODE_ID>
+                        <TOGGLE_SIMVAR>L:A32NX_CALLS_EMER_ON</TOGGLE_SIMVAR>
+                        <TOOLTIPID>%((L:A32NX_CALLS_EMER_ON, Bool))%{if}Turn OFF emergency call%{else}Turn ON emergency call%{end}</TOOLTIPID>
+                        <SEQ1_CODE>(L:A32NX_CALLS_EMER_ON, Bool)</SEQ1_CODE>
+                        <SEQ2_CODE>0</SEQ2_CODE>
                     </UseTemplate>
                 </Component>
 
