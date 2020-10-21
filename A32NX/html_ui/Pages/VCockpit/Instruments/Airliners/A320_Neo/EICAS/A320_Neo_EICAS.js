@@ -112,6 +112,8 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         SimVar.SetSimVarValue("LIGHT POTENTIOMETER:91", "FLOAT64", 0.1);
         SimVar.SetSimVarValue("LIGHT POTENTIOMETER:92", "FLOAT64", 0.1);
         SimVar.SetSimVarValue("LIGHT POTENTIOMETER:93", "FLOAT64", 0.1);
+
+        this.ecamAllButtonPrevState = false;
     }
 
     onUpdate() {
@@ -269,22 +271,7 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         const sFailPage = SimVar.GetSimVarValue("L:A32NX_ECAM_SFAIL", "Enum");
 
         if (sFailPage != -1) {
-            const ECAMPageIndices = {
-                0: "ENG",
-                1: "BLEED",
-                2: "PRESS",
-                3: "ELEC",
-                4: "HYD",
-                5: "FUEL",
-                6: "APU",
-                7: "COND",
-                8: "DOOR",
-                9: "WHEEL",
-                10: "FTCL",
-                11: "STS"
-            };
-
-            this.pageNameWhenUnselected = ECAMPageIndices[sFailPage];
+            this.pageNameWhenUnselected = this.lowerScreenPages[sFailPage].name;
 
             // Disable user selected page when new failure detected
             if (this.PrevFailPage !== sFailPage) {
@@ -296,9 +283,21 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         // switch page when desired page was changed, or new Failure detected
         if ((this.pageNameWhenUnselected != prevPage && this.currentPage == -1) || (this.PrevFailPage !== sFailPage)) {
             this.SwitchToPageName(this.LOWER_SCREEN_GROUP_NAME, this.pageNameWhenUnselected);
-
         }
 
+        // ECAM all button
+        this.ecamAllButtonState = SimVar.GetSimVarValue("L:A32NX_ECAM_ALL_Push_IsDown", "Bool");
+
+        if (this.ecamAllButtonState && !this.ecamAllButtonPrevState) { // button press
+            this.changePage(this.lowerScreenPages[(this.currentPage + 1) % this.lowerScreenPages.length].name);
+            this.ecamCycleInterval = setInterval(() => {
+                this.changePage(this.lowerScreenPages[(this.currentPage + 1) % this.lowerScreenPages.length].name);
+            }, 1000);
+        } else if (!this.ecamAllButtonState && this.ecamAllButtonPrevState) { // button release
+            clearInterval(this.ecamCycleInterval);
+        }
+
+        this.ecamAllButtonPrevState = this.ecamAllButtonState;
         this.PrevFailPage = sFailPage;
     }
 
