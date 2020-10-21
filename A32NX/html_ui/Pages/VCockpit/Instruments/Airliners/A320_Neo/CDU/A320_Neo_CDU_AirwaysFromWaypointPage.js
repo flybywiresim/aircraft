@@ -46,7 +46,7 @@ class A320_Neo_CDU_AirwaysFromWaypointPage {
                         if (value.length > 0) {
                             mcdu.clearUserInput();
                             const lastWaypoint = mcdu.flightPlanManager.getWaypoints()[mcdu.flightPlanManager.getEnRouteWaypointsLastIndex()];
-                            if (lastWaypoint.infos instanceof IntersectionInfo || lastWaypoint.infos instanceof VORInfo) {
+                            if (lastWaypoint.infos instanceof IntersectionInfo || lastWaypoint.infos instanceof VORInfo || lastWaypoint.infos instanceof NDBInfo) {
                                 const airway = lastWaypoint.infos.airways.find(a => {
                                     return a.name === value;
                                 });
