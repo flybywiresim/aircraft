@@ -1469,27 +1469,19 @@ var A320_Neo_UpperECAM;
             } else {
                 this.timerTOGA = -1;
             }
-            this.timerAvail = 10;
-            //this.checkIgnitionPhaseForAVAIL(_deltaTime);
+            this.checkIgnitionPhaseForAVAIL(_deltaTime);
         }
         checkIgnitionPhaseForAVAIL(_deltaTime) {
-            console.log("n1 gauge value " + this.getN1GaugeValue());
             if (this.getN1GaugeValue() < 1) {
                 this.timerAvailFlag = 1;
-                console.log("Timerflag: " + this.timerAvailFlag);
             }
             if (this.getEngineStartStatus() && this.getIgnitionStatus()) {
-                console.log("Engine start and igntiion if");
                 if (this.getN1GaugeValue() > 18.3 && this.timerAvailFlag == 1) {
-                    console.log("N1 is above 18.3 and time is available");
                     if (this.timerAvail == -1) {
-                        console.log("Start the clock");
                         this.timerAvail = 10;
                     } else if (this.timerAvail >= 0) {
                         this.timerAvail -= _deltaTime / 1000;
-                        console.log(this.timerAvail);
                     } else {
-                        console.log("Stop the clock");
                         this.timerAvail = -1;
                         this.timerAvailFlag = -1;
                     }
