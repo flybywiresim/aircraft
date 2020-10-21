@@ -20,29 +20,20 @@ var A320_Neo_LowerECAM_PRESS;
 
             this.htmlPsiInt = this.querySelector("#psi-gauge-int");
             this.htmlPsiDecimal = this.querySelector("#psi-gauge-decimal");
-            this.htmlPsiIntW = this.querySelector("#psi-gauge-int-w");
-            this.htmlPsiDecimalW = this.querySelector("#psi-gauge-decimal-w");
             this.htmlPsiIndicator = this.querySelector("#delta-psi-indicator");
-            this.cabinPsiStatus = 0;
 
             this.htmlCabinVSValue = this.querySelector("#v-s-value");
-            this.htmlCabinVSValueW = this.querySelector("#v-s-value-w");
             this.htmlCabinVSIndicator = this.querySelector("#v-s-indicator");
-            this.cabinVSStatus = 0;
 
             this.htmlCabinAltValue = this.querySelector("#cabin-altitude-value");
-            this.htmlCabinAltValueW = this.querySelector("#cabin-altitude-value-w");
             this.htmlCabinAltIndicator = this.querySelector("#cabin-alt-indicator");
-            this.cabinAltStatus = 0;
 
             this.htmlValveInlet = this.querySelector("#valve-inlet");
             this.htmlValveOutlet = this.querySelector("#valve-outlet");
             this.htmlValveSafety = this.querySelector("#valve-safety");
             this.htmlValveFlow = this.querySelector("#valve-indicator");
-
             this.htmlTextSafety = this.querySelector("#safety-text");
-            this.htmlTextSafetyW = this.querySelector("#safety-text-w");
-            this.cabinSafetyTextStatus = 0;
+
             this.htmlPackIndicatorLeft = this.querySelector("#pack-indicator-left");
             this.htmlPackIndicatorRight = this.querySelector("#pack-indicator-right");
             this.htmlPackIndicatorLeftText = this.querySelector("#pack-indicator-left-text");
@@ -54,21 +45,32 @@ var A320_Neo_LowerECAM_PRESS;
             this.htmlSYS1text = this.querySelector("#sys1-text");
             this.htmlSYS2text = this.querySelector("#sys2-text");
 
-            this.psiDelta = SimVar.GetSimVarValue("L:A32NX_CABIN_PSI_DELTA", "psi");
-            this.cabinVSRate = SimVar.GetSimVarValue("L:A32NX_CABIN_VS_RATE", "ft/min");
-            this.cabinAltitude = SimVar.GetSimVarValue("L:A32NX_CABIN_PRESS_ALTITUDE", "feet");
-
+            //blinker values
             this.mSecondsBlinkLast = 0;
             this.blinkState = 0;
             this.blinkingObjs = [];
 
-            this.safetyValveStatus = 0;
-            this.inletValveStatus = 0;
-            this.outletValveStatus = 0;
-            this.valveFlowStatus = 0;
-            this.manModeStatus = 0;
-            this.activeSystem = 1;
+            //old values
+            this.oldCabinVSValue = 0;
+            this.oldCabinAltitudeValue = 0;
+            this.oldCabinPsiDeltaIntValue = 0;
+            this.oldCabinPsiDeltaDecValue = 0;
 
+            this.oldVSIndicatorRot = 0;
+            this.oldCabinAltitudeIndicatorRot = 0;
+            this.oldPsiDeltaIndicatorRot = 0;
+            this.oldOutletIndicatorRot = 0;
+
+            this.oldInletValue = 0;
+            this.oldOutletValue = 0;
+            this.oldSafetyValue = 0;
+
+            this.oldLandingElev = 0;
+            this.oldLandingElevText = "AUTO";
+            this.oldActiveSystemValue = 0;
+            this.oldManModValue = 0;
+
+            //set initial visibility
             this.htmlSYS1text.setAttribute("visibility", "visible");
             this.htmlSYS2text.setAttribute("visibility", "hidden");
             this.htmlMANtext.setAttribute("visibility", "hidden");
@@ -78,9 +80,9 @@ var A320_Neo_LowerECAM_PRESS;
             this.htmlPsiDecimalW.setAttribute("visibility", "hidden");
             this.htmlPsiIntW.setAttribute("visibility", "hidden");
 
-            this.lastVSIndicatorRotValue = 0;
         }
 
+        //sets the packs to warning color
         setPackWarning(value, htmlObj, htmlObjText) {
             if (value) {
                 htmlObj.setAttribute("class", "st0p st13p");
@@ -97,14 +99,14 @@ var A320_Neo_LowerECAM_PRESS;
                 const timeCurr = time.getTime();
                 if (timeCurr - this.mSecondsBlinkLast > blinkInterval) {
                     if (this.blinkState == 0) {
-                        for (i = 0; i < htmlObjs.length; i++) {
+                        for (let i = 0; i < htmlObjs.length; i++) {
                             if (htmlObjs[i]) {
                                 htmlObjs[i].setAttribute("visibility", "visible");
                             }
                         }
                         this.blinkState = 1;
                     } else {
-                        for (i = 0; i < htmlObjs.length; i++) {
+                        for (let i = 0; i < htmlObjs.length; i++) {
                             if (htmlObjs[i]) {
                                 htmlObjs[i].setAttribute("visibility", "hidden");
                             }
@@ -130,207 +132,158 @@ var A320_Neo_LowerECAM_PRESS;
             htmlObj.textContent = newValue;
         }
 
-        updateValue(htmlObj, value) {
-            if (value !== parseInt(htmlObj.textContent)) {
-                this.setValue(htmlObj, value);
+        updateValue(htmlObj, oldValue, newValue) {
+            if (newValue !== oldValue) {
+                this.setValue(htmlObj, newValue);
+                return newValue;
             }
+            return oldValue;
         }
 
-        updateValueTol(htmlObj, value, tolerance) {
-            if (Math.abs(value - parseInt(htmlObj.textContent)) > tolerance) {
-                this.setValue(htmlObj, value);
+        updateIndicator(htmlObj, oldValue, newValue) {
+            if (newValue !== oldValue) {
+                htmlObj.setAttribute("style", "transform-origin: 100px 150px; transform: rotate(" + newValue + "deg); stroke-width: 3px; stroke-linecap: round;");
+                return newValue;
             }
+            return oldValue;
         }
 
-        updateIndicator(htmlObj, htmlObjVal, value, objStyle) {
-            if (value != parseInt(htmlObjVal.textContent)) {
-                htmlObj.setAttribute("style", objStyle);
+        updateFlowIndicator(htmlObj, oldValue, newValue) {
+            if (newValue !== oldValue) {
+                htmlObj.setAttribute("style", "transform-origin:450px 450px; transform: rotate(" + newValue + "deg); stroke-width: 3px; stroke-linecap: round;");
+                return newValue;
             }
+            return oldValue;
         }
 
-        updateIndicatorOnOldValue(htmlObj, oldValue, value, objStyle) {
-            if (value != oldValue) {
-                htmlObj.setAttribute("style", objStyle);
-                oldValue = value;
-            }
-        }
-
-        systemSwitch() {
-            const pressMode = SimVar.GetSimVarValue("L:A32NX_CAB_PRESS_MODE_MAN", "bool");
-
-            if (pressMode && !this.manModeStatus) {
-                this.manModeStatus = 1;
-                this.htmlMANtext.setAttribute("visibility", "visible");
-                this.manModeActiveTime = (new Date()).getTime();
-            } else if (!pressMode && this.manModeStatus) {
-                this.manModeStatus = 0;
-                this.htmlMANtext.setAttribute("visibility", "hidden");
-                if ((new Date()).getTime() - this.manModeActiveTime > 10000) {
-                    if (this.activeSystem == 1) {
-                        this.activeSystem = 2;
-                        this.htmlSYS2text.setAttribute("visibility", "visible");
-                        this.htmlSYS1text.setAttribute("visibility", "hidden");
-                    } else {
-                        this.activeSystem = 1;
-                        this.htmlSYS2text.setAttribute("visibility", "hidden");
-                        this.htmlSYS1text.setAttribute("visibility", "visible");
-                    }
+        updateValve(htmlObj, oldValue, newValue, center, openRot) {
+            if (newValue !== oldValue) {
+                if (newValue == 1) {
+                    htmlObj.setAttribute("style", "transform-origin: " + center + "; transform: rotate(" + openRot + "deg);");
+                } else if (newValue == 0.5) {
+                    htmlObj.setAttribute("style", "transform-origin: " + center + "; transform: rotate(" + fastToFixed(openRot / 2, 0) + "deg);");
+                } else {
+                    htmlObj.setAttribute("style", "transform-origin: " + center + "; transform: rotate(0deg);");
                 }
+                return newValue;
+            }
+            return oldValue;
+        }
+
+        setWarning(condition, htmlObj, warningClass, originalClass) {
+            if (condition) {
+                htmlObj.setAttribute("class", warningClass);
+            } else {
+                htmlObj.setAttribute("class", originalClass);
             }
         }
 
-        update(_deltaTime) {
+        setMaxIndicatorRotation(indicatorValue, constant, offset, maxRot, minRot) {
+            let indicatorRot = offset + indicatorValue * constant;
+            if (indicatorRot > maxRot) {
+                indicatorRot = maxRot;
+            } else if (indicatorRot < minRot) {
+                indicatorRot = minRot;
+            }
+            return indicatorRot;
+        }
+
+        update() {
             if (!this.isInitialised) {
                 return;
             }
 
-            let inletValveOpen = false;
-            let outletValveOpen = false;
-            let safetyValveOpen = false;
-            let cabinVSValue = SimVar.GetSimVarValue("L:A32NX_CABIN_VS_RATE", "ft/min");
-            let pressureDelta = SimVar.GetSimVarValue("L:A32NX_CABIN_PSI_DELTA", "psi");
+            const inletValvePosition = 0; //hook inlet valve real status here
+            const outletValvePosition = 0; //hook outlet valve real status here
+            const safetyValvePosition = 0; //hook safety valve real status here
+            const activeSystem = 2; //hook active system simvar
 
-            const decimalSplit = pressureDelta.toFixed(1).split(".", 2);
-            const cabinAltitude = SimVar.GetSimVarValue("L:A32NX_CABIN_PRESS_ALTITUDE", "feet");
-            const leftPackState = SimVar.GetSimVarValue("L:A32NX_AIRCOND_PACK1_TOGGLE", "bool");
-            const rightPackState = SimVar.GetSimVarValue("L:A32NX_AIRCOND_PACK2_TOGGLE", "bool");
-            const flightPhase = SimVar.GetSimVarValue("L:AIRLINER_FLIGHT_PHASE", "value");
+            const cabinVSValue = fastToFixed(0, 0); //hook cabin VS value here
+            const pressureDelta = (Math.abs(-0.4) > 0.05) ? 8.1 : 0.0; //hook pressure delta value here
+            const cabinAltitude = fastToFixed(0, 0); //hook cabin altitude value here
+            const pressureDeltaDecimalSplit = pressureDelta.toFixed(1).split(".", 2); //decimal split for pressure delta
+
+            const eng1OrEng2Running = (SimVar.GetSimVarValue("ENG COMBUSTION:1", "Bool") || SimVar.GetSimVarValue("ENG COMBUSTION:2", "Bool"));
+            const leftPackState = (SimVar.GetSimVarValue("L:A32NX_AIRCOND_PACK1_TOGGLE", "bool") && eng1OrEng2Running);
+            const rightPackState = (SimVar.GetSimVarValue("L:A32NX_AIRCOND_PACK2_TOGGLE", "bool") && eng1OrEng2Running);
             const landingElev = SimVar.GetSimVarValue("L:A32NX_LANDING_ELEVATION", "feet");
             const ditchingOn = SimVar.GetSimVarValue("L:A32NX_DITCHING", "bool");
+            const flightPhase = SimVar.GetSimVarValue("L:AIRLINER_FLIGHT_PHASE", "int");
+            const manMode = SimVar.GetSimVarValue("L:A32NX_CAB_PRESS_MODE_MAN", "Bool");
 
-            let cabinOutletIndicatorRot = 10 + cabinVSValue * 0.04;
-            let cabinVSIndicatorRot = cabinVSValue * 0.045;
-            let cabinAltitudeIndicatorRot = cabinAltitude * 0.0164;
-            let cabinPsiDeltaIndicatorRot = pressureDelta * 19.375;
+            const cabinOutletIndicatorRot = this.setMaxIndicatorRotation(cabinVSValue, 0.04, 10, 90, 0);
+            const cabinVSIndicatorRot = this.setMaxIndicatorRotation(cabinVSValue, 0.045, 0, 108, -108);
+            const cabinAltitudeIndicatorRot = this.setMaxIndicatorRotation(cabinAltitude, 0.0164, 0, 172, -17);
+            const cabinPsiDeltaIndicatorRot = this.setMaxIndicatorRotation(pressureDelta, 20, 0, 175, -15);
 
-            this.psiDelta = pressureDelta;
-            this.cabinVSRate = cabinVSValue;
-            this.cabinAltitude = cabinAltitude;
+            const inletValveCommandedPosition = (ditchingOn) ? 0 : 0; //hook the commanded position on the second value
+            const outletValveCommandedPosition = (ditchingOn) ? 0 : 0;
+            const safetyValveCommandedPosition = (ditchingOn) ? 0 : 0;
 
-            //set active system visibility
-            this.systemSwitch();
+            //update values
+            this.oldCabinAltitudeValue = this.updateValue(this.htmlCabinAltValue, this.oldCabinAltitudeValue, cabinAltitude);
+            this.oldCabinVSValue = this.updateValue(this.htmlCabinVSValue, this.oldCabinVSValue, cabinVSValue);
 
-            if (cabinPsiDeltaIndicatorRot > 175) {
-                cabinPsiDeltaIndicatorRot = 175;
-            } else if (cabinPsiDeltaIndicatorRot < -15) {
-                cabinPsiDeltaIndicatorRot = -15;
-            }
-
-            if (cabinOutletIndicatorRot > 90) {
-                cabinOutletIndicatorRot = 90;
-            } else if (cabinOutletIndicatorRot < 0) {
-                cabinOutletIndicatorRot = 0;
-            }
-
-            if (cabinVSIndicatorRot > 108) {
-                cabinVSIndicatorRot = 108;
-            } else if (cabinVSIndicatorRot < -108) {
-                cabinVSIndicatorRot = -108;
-            }
-
-            if (cabinAltitudeIndicatorRot > 172) {
-                cabinAltitudeIndicatorRot = 172;
-            } else if (cabinAltitudeIndicatorRot < -17) {
-                cabinAltitudeIndicatorRot = -17;
-            }
-
-            //psi delta gauge
-            if (landingElev != -2000) {
-                this.updateValue(this.htmlLdgElevText, "MAN");
-                this.updateValue(this.htmlLdgElevValue, parseInt(landingElev));
+            if (pressureDelta < 0) {
+                this.oldCabinPsiDeltaIntValue = this.updateValue(this.htmlPsiInt, this.oldCabinPsiDeltaIntValue, "-" + Math.abs(pressureDeltaDecimalSplit[0]) + ".");
             } else {
-                this.updateValue(this.htmlLdgElevText, "AUTO");
-                this.updateValue(this.htmlLdgElevValue, "50");
+                this.oldCabinPsiDeltaIntValue = this.updateValue(this.htmlPsiInt, this.oldCabinPsiDeltaIntValue, Math.abs(pressureDeltaDecimalSplit[0]) + ".");
             }
 
-            if (Math.abs(pressureDelta) < 0.05) {
-                pressureDelta = 0;
-            }
+            this.oldCabinPsiDeltaDecValue = this.updateValue(this.htmlPsiDecimal, this.oldCabinPsiDeltaDecValue, Math.abs(pressureDeltaDecimalSplit[1]));
 
-            if (pressureDelta >= 0) {
-                this.updateValue(this.htmlPsiInt, Math.abs(decimalSplit[0]) + ".");
-                this.updateValue(this.htmlPsiDecimal, decimalSplit[1]);
-                this.updateValue(this.htmlPsiIntW, Math.abs(decimalSplit[0]) + ".");
-                this.updateValue(this.htmlPsiDecimalW, decimalSplit[1]);
-            } else {
-                this.updateValue(this.htmlPsiInt, "-" + Math.abs(decimalSplit[0]) + ".");
-                this.updateValue(this.htmlPsiDecimal, Math.abs(decimalSplit[1]));
-                this.updateValue(this.htmlPsiIntW, "-" + Math.abs(decimalSplit[0]) + ".");
-                this.updateValue(this.htmlPsiDecimalW, Math.abs(decimalSplit[1]));
-            }
-
-            this.updateIndicatorOnOldValue(this.htmlPsiIndicator, this.htmlCabinPsiValue, parseInt(pressureDelta), "transform-origin: 100px 152.5px; transform: rotate(" + cabinPsiDeltaIndicatorRot + "deg); stroke-width: 3px; stroke-linecap: round;");
-
-            //cabin v/s gauge
-            if (Math.abs(cabinVSValue) < 15) {
-                cabinVSValue = 0;
-            } else if (cabinVSValue > 2400) {
-                cabinVSValue = 2400;
-            } else if (cabinVSValue < -2400) {
-                cabinVSValue = -2400;
-            }
-
-            this.updateIndicator(this.htmlCabinVSIndicator, this.htmlCabinVSValue, parseInt(cabinVSValue), "transform-origin: 100px 152.5px; transform: rotate(" + cabinVSIndicatorRot + "deg); stroke-width: 3px; stroke-linecap: round;");
-            this.updateValueTol(this.htmlCabinVSValue, parseInt(cabinVSValue), 4);
-            this.updateValueTol(this.htmlCabinVSValueW, parseInt(cabinVSValue), 4);
-
-            //cabin alt gauge
-            this.updateIndicator(this.htmlCabinAltIndicator, this.htmlCabinAltValue, parseInt(cabinAltitude), "transform-origin: 100px 152.5px; transform: rotate(" + cabinAltitudeIndicatorRot + "deg); stroke-width: 3px; stroke-linecap: round;");
-            this.updateValueTol(this.htmlCabinAltValue, parseInt(cabinAltitude), 2);
-            this.updateValueTol(this.htmlCabinAltValueW, parseInt(cabinAltitude), 2);
-
-            //valve control
-            if (cabinVSValue > 15 && !ditchingOn) {
-                this.updateIndicatorOnOldValue(this.htmlValveFlow, this.lastVSIndicatorRotValue, cabinVSIndicatorRot, "transform-origin: 450px 450px; transform: rotate(" + cabinOutletIndicatorRot + "deg); stroke-width: 3px; stroke-linecap: round;");
-                outletValveOpen = true;
-                inletValveOpen = false;
-                if (!this.valveFlowStatus) {
-                    this.valveFlowStatus = 1;
-                }
-            } else if (cabinVSValue < -15 && !ditchingOn) {
-                this.htmlValveFlow.setAttribute("style", "transform-origin: 450px 450px; transform: rotate(10deg); stroke-width: 3px; stroke-linecap: round;");
-                outletValveOpen = false;
-                inletValveOpen = true;
-                this.valveFlowStatus = 0;
-            } else if (this.valveFlowStatus) {
-                this.htmlValveFlow.setAttribute("style", "transform-origin: 450px 450px; transform: rotate(10deg); stroke-width: 3px; stroke-linecap: round;");
-                outletValveOpen = false;
-                inletValveOpen = false;
-                this.valveFlowStatus = 0;
-            }
-
-            if (pressureDelta > 8.2 && !ditchingOn) {
-                safetyValveOpen = true;
-            } else {
-                safetyValveOpen = false;
-            }
-
-            //control valves
-            if (inletValveOpen && !this.inletValveStatus && !ditchingOn) {
-                this.htmlValveInlet.setAttribute("style", "fill:none; transform-origin: 180px 460px; transform: rotate(-90deg)");
-                this.inletValveStatus = 1;
-            } else if (!inletValveOpen && this.inletValveStatus) {
-                this.htmlValveInlet.setAttribute("style", "fill:none; transform-origin: 180px 460px; transform: rotate(0deg)");
-                this.inletValveStatus = 0;
-            }
-
-            if (outletValveOpen && !this.outletValveStatus && !ditchingOn) {
-                this.htmlValveOutlet.setAttribute("style", "fill:none; transform-origin: 265px 460px; transform: rotate(90deg)");
-                this.outletValveStatus = 1;
-            } else if (!outletValveOpen && this.outletValveStatus) {
-                this.htmlValveOutlet.setAttribute("style", "fill:none; transform-origin: 265px 460px; transform: rotate(0deg)");
-                this.outletValveStatus = 0;
-            }
-
-            if (safetyValveOpen && !this.safetyValveStatus && !ditchingOn) {
-                this.htmlValveSafety.setAttribute("style", "fill:none; transform-origin: 550px 340px; transform: rotate(-90deg)");
-                this.safetyValveStatus = 1;
-            } else if (!safetyValveOpen && this.safetyValveStatus) {
-                this.htmlValveSafety.setAttribute("style", "fill:none; transform-origin: 550px 340px; transform: rotate(0deg)");
-                this.safetyValveStatus = 0;
-            }
+            //update indicators
+            this.oldCabinAltitudeIndicatorRot = this.updateIndicator(this.htmlCabinAltIndicator, this.oldCabinAltitudeIndicatorRot, cabinAltitudeIndicatorRot);
+            this.oldVSIndicatorRot = this.updateIndicator(this.htmlCabinVSIndicator, this.oldVSIndicatorRot, cabinVSIndicatorRot);
+            this.oldOutletIndicatorRot = this.updateFlowIndicator(this.htmlValveFlow, this.oldOutletIndicatorRot, cabinOutletIndicatorRot);
+            this.oldPsiDeltaIndicatorRot = this.updateIndicator(this.htmlPsiIndicator, this.oldPsiDeltaIndicatorRot, cabinPsiDeltaIndicatorRot);
 
             //set warnings
+            this.setWarning((pressureDelta > 8.5 || pressureDelta < -0.4), this.htmlPsiInt, "warningp st9p", "st0p st9p");
+            this.setWarning((pressureDelta > 8.5 || pressureDelta < -0.4), this.htmlPsiDecimal, "warningp st9p", "st0p st9p");
+            this.setWarning((Math.abs(cabinVSValue) > 2000), this.htmlCabinVSValue, "warningp st9p", "st0p st9p");
+            this.setWarning((cabinAltitude > 9550), this.htmlCabinAltValue, "red_warningp st9p", "st0p st9p");
+
+            this.setWarning((inletValvePosition != inletValveCommandedPosition), this.htmlValveInlet, "warning st14p", "st0p st14p");
+            this.setWarning((outletValvePosition != outletValveCommandedPosition), this.htmlValveOutlet, "warning st14p", "st0p st14p");
+            this.setWarning((safetyValvePosition != safetyValveCommandedPosition), this.htmlValveSafety, "warning st14p", "st0p st14p");
+
+            this.setPackWarning(leftPackState, this.htmlPackIndicatorLeft, this.htmlPackIndicatorLeftText);
+            this.setPackWarning(rightPackState, this.htmlPackIndicatorRight, this.htmlPackIndicatorRightText);
+
+            //open or close valves
+            this.oldInletValue = this.updateValve(this.htmlValveInlet, this.oldInletValue, inletValveCommandedPosition, "180px 460px", -90);
+            this.oldOutletValue = this.updateValve(this.htmlValveOutlet, this.oldOutletValue, outletValveCommandedPosition, "265px 460px", 90);
+            this.oldSafetyValue = this.updateValve(this.htmlValveSafety, this.oldSafetyValue, safetyValveCommandedPosition, "550px 340px", -90);
+
+            //landing elev
+            if (landingElev != -2000) {
+                this.oldLandingElev = this.updateValue(this.htmlLdgElevValue, this.oldLandingElev, fastToFixed(landingElev, 0));
+                this.oldLandingElevText = this.updateValue(this.htmlLdgElevText, this.oldLandingElevText, "MAN");
+            } else {
+                this.oldLandingElev = this.updateValue(this.htmlLdgElevValue, this.oldLandingElev, fastToFixed(50, 0)); // hook here auto landing elevation
+                this.oldLandingElevText = this.updateValue(this.htmlLdgElevText, this.oldLandingElevText, "AUTO");
+            }
+
+            if (activeSystem == 1 && this.oldActiveSystemValue != 1) {
+                this.htmlSYS1text.setAttribute("visibility", "visible");
+                this.htmlSYS2text.setAttribute("visibility", "hidden");
+                this.oldActiveSystemValue = 1;
+            } else if (activeSystem == 2 && this.oldActiveSystemValue != 2) {
+                this.htmlSYS2text.setAttribute("visibility", "visible");
+                this.htmlSYS1text.setAttribute("visibility", "hidden");
+                this.oldActiveSystemValue = 2;
+            }
+
+            if (manMode && !this.oldManModValue) {
+                this.htmlMANtext.setAttribute("visibility", "visible");
+                this.oldManModValue = 1;
+            } else if (!manMode && this.oldManModValue) {
+                this.htmlMANtext.setAttribute("visibility", "hidden");
+                this.oldManModValue = 0;
+            }
+
+            //set blink warnings
             if (parseInt(this.htmlCabinAltValue.textContent) >= 8800 && this.blinkingObjs.indexOf(this.htmlCabinAltValue) == -1) {
                 this.addHtmlObjToBlinker(this.htmlCabinAltValue);
             } else if (parseInt(this.htmlCabinAltValue.textContent) <= 8600 && this.blinkingObjs.indexOf(this.htmlCabinAltValue) != -1) {
@@ -351,52 +304,6 @@ var A320_Neo_LowerECAM_PRESS;
 
             this.valueBlinker(this.blinkingObjs, 500);
 
-            this.setPackWarning(leftPackState, this.htmlPackIndicatorLeft, this.htmlPackIndicatorLeftText);
-            this.setPackWarning(rightPackState, this.htmlPackIndicatorRight, this.htmlPackIndicatorRightText);
-
-            if (this.cabinAltitude >= 9550) {
-                this.htmlCabinAltValue.setAttribute("visibility", "hidden");
-                this.htmlCabinAltValueW.setAttribute("visibility", "visible");
-                this.cabinAltStatus = 1;
-            } else if (this.cabinAltStatus && this.cabinAltitude < 9550) {
-                this.htmlCabinAltValue.setAttribute("visibility", "visible");
-                this.htmlCabinAltValueW.setAttribute("visibility", "hidden");
-                this.cabinAltStatus = 0;
-            }
-
-            if (this.cabinVSRate >= 2000 || this.cabinVSRate <= -2000) {
-                this.htmlCabinVSValueW.setAttribute("visibility", "visible");
-                this.htmlCabinVSValue.setAttribute("visibility", "hidden");
-                this.cabinVSStatus = 1;
-            } else if (this.cabinVSRate < 2000 && this.cabinVSRate > -2000 && this.cabinVSStatus) {
-                this.htmlCabinVSValue.setAttribute("visibility", "visible");
-                this.htmlCabinVSValueW.setAttribute("visibility", "hidden");
-                this.cabinVSStatus = 0;
-            }
-
-            if ((this.psiDelta >= 8.5 || this.psiDelta <= -0.4) && !this.cabinPsiStatus) {
-                this.htmlPsiDecimal.setAttribute("visibility", "hidden");
-                this.htmlPsiDecimalW.setAttribute("visibility", "visible");
-                this.htmlPsiInt.setAttribute("visibility", "hidden");
-                this.htmlPsiIntW.setAttribute("visibility", "visible");
-                this.cabinPsiStatus = 1;
-            } else if (this.psiDelta < 8.5 && this.psiDelta > -0.4 && this.cabinPsiStatus) {
-                this.htmlPsiDecimalW.setAttribute("visibility", "hidden");
-                this.htmlPsiDecimal.setAttribute("visibility", "visible");
-                this.htmlPsiIntW.setAttribute("visibility", "hidden");
-                this.htmlPsiInt.setAttribute("visibility", "visible");
-                this.cabinPsiStatus = 0;
-            }
-
-            if (this.psiDelta >= 8.2 && !this.cabinSafetyTextStatus) {
-                this.htmlTextSafetyW.setAttribute("visibility", "visible");
-                this.htmlTextSafety.setAttribute("visibility", "hidden");
-                this.cabinSafetyTextStatus = 1;
-            } else if (this.psiDelta < 8.2 && this.cabinSafetyTextStatus) {
-                this.htmlTextSafety.setAttribute("visibility", "visible");
-                this.htmlTextSafetyW.setAttribute("visibility", "hidden");
-                this.cabinSafetyTextStatus = 0;
-            }
         }
     }
     A320_Neo_LowerECAM_PRESS.Page = Page;

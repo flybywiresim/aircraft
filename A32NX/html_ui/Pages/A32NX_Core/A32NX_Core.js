@@ -1,7 +1,6 @@
 class A32NX_Core {
     constructor() {
         this.modules = [
-            new A32NX_Pressurization(),
             new A32NX_ADIRS(),
             new A32NX_APU(),
             new A32NX_BrakeTemp(),

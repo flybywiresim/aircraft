@@ -53,7 +53,7 @@ var A320_Neo_LowerECAM_CRZ;
             this.VibN2RightDecimal = this.querySelector("#VibN2RightDecimal");
 
             this.LandingElevationMode = this.querySelector("#LandingElevationMode");
-            this.landingElevation = this.querySelector("#LandingElevation");
+            this.LandingElevation = this.querySelector("#LandingElevation");
 
             this.DeltaPressure = this.querySelector("#DeltaPressure");
             this.DeltaPressureDecimal = this.querySelector("#DeltaPressureDecimal");
@@ -79,9 +79,6 @@ var A320_Neo_LowerECAM_CRZ;
             this.CabinVerticalSpeedDisplayed = -1;
             this.CabinAltitudeDisplayed = -1;
             this.OutsidePressureDisplayed = -1;
-
-            this.landingElevationState = 0;
-            this.landingElevationDisplayed = 0;
 
             this.isInitialised = true;
         }
@@ -156,44 +153,40 @@ var A320_Neo_LowerECAM_CRZ;
             }
 
             // Cabin pressure
-            value = SimVar.GetSimVarValue("L:A32NX_CABIN_VS_RATE", "feet per second");
+            value = SimVar.GetSimVarValue("PRESSURIZATION CABIN ALTITUDE RATE", "feet per second");
             valueShown = fastToFixed(value, 0);
             if (valueShown != this.CabinVerticalSpeedDisplayed) {
                 this.CabinVerticalSpeed.textContent = valueShown;
                 this.CabinVerticalSpeedDisplayed = valueShown;
             }
 
-            value = SimVar.GetSimVarValue("L:A32NX_CABIN_PRESS_ALTITUDE", "feet");
+            value = SimVar.GetSimVarValue("PRESSURIZATION CABIN ALTITUDE", "feet");
             valueShown = fastToFixed(value, 0);
             if (valueShown != this.CabinAltitudeDisplayed) {
                 this.CabinAltitude.textContent = valueShown;
                 this.CabinAltitudeDisplayed = valueShown;
             }
 
-            const landingElev = fastToFixed(SimVar.GetSimVarValue("L:A32NX_LANDING_ELEVATION", "feet"), 0);
+            const outsidePressureINHG = SimVar.GetSimVarValue("AMBIENT PRESSURE", "inHg");
 
-            if (landingElev == -2000 && this.landingElevationState) {
-                this.landingElevation.textContent = "50";
-                this.LandingElevationMode.textContent = "AUTO";
-                this.landingElevationState = 0;
-            } else if (landingElev != -2000 && landingElev != this.landingElevationDisplayed) {
-                this.landingElevation.textContent = landingElev;
-                this.landingElevationDisplayed = landingElev;
-                this.LandingElevationMode.textContent = "MAN";
-                this.landingElevationState = 1;
-            }
+            if ((valueShown != this.CabinAltitudeDisplayed) || (outsidePressureINHG != this.OutsidePressureDisplayed)) {
+                const cabinAltMeters = value * Definitions.feetToMeters;
+                const cabinPressurePascal = Definitions.seaLevelPressurePascal * Math.exp(Definitions.barometricPressureFactor * cabinAltMeters); // Barometric formula
+                const cabinPressurePSI = cabinPressurePascal * Definitions.pascalToPSI;
+                const outsidePressurePSI = outsidePressureINHG * Definitions.inHgToPSI;
+                let pressureDiff = cabinPressurePSI - outsidePressurePSI;
 
-            let pressureDiff = SimVar.GetSimVarValue("L:A32NX_CABIN_PSI_DELTA", "PSI");
-
-            if ((pressureDiff != this.CabinAltitudeDisplayed)) {
                 if ((pressureDiff > -0.05) && (pressureDiff < 0)) {
                     pressureDiff = 0; // Prevent it showing -0.0
                 }
 
                 const decimalSplit = pressureDiff.toFixed(1).split(".", 2);
+
                 this.DeltaPressure.textContent = decimalSplit[0] + ".";
                 this.DeltaPressureDecimal.textContent = decimalSplit[1];
-                this.CabinAltitudeDisplayed = pressureDiff;
+
+                this.CabinAltitudeDisplayed = valueShown;
+                this.OutsidePressureDisplayed = outsidePressureINHG;
             }
         }
     }
