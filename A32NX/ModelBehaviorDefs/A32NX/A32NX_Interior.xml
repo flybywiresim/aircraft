@@ -403,14 +403,14 @@
 
 
     <!--
-    Template for a held pushbutton, without an emissive
+    Template for a held pushbutton, currently not possible to use an emissive
 
     Main Parameters:
             - NODE_ID       <no default>    Button node ID (anim name will be the same)
             - HOLD_SIMVAR   <no default>    SimVar to contain the held state
     -->
 
-    <Template Name="FBW_Push_Held_NoEmissive">
+    <Template Name="FBW_Push_Held">
         <DefaultTemplateParameters>
             <NODE_ID>#NODE_ID#</NODE_ID>
             <ANIM_NAME>#NODE_ID#</ANIM_NAME>
@@ -626,7 +626,7 @@
     </Template>
 
     <Template Name="FBW_Airbus_FIRE_TEST_BUTTON">
-        <UseTemplate Name="FBW_Push_Held_NoEmissive">
+        <UseTemplate Name="FBW_Push_Held">
             <HOLD_SIMVAR>L:A32NX_FIRE_TEST_#TYPE##ID#</HOLD_SIMVAR>
         </UseTemplate>
     </Template>

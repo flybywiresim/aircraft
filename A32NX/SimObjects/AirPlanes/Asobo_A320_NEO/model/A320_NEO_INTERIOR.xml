@@ -1714,7 +1714,7 @@
                         <TOOLTIPID>%((L:A32NX_OVHD_COCKPITDOORVIDEO_TOGGLE, Bool))%{if}Turn OFF door video%{else}Turn ON door video%{end}</TOOLTIPID>
                         <LEFT_SINGLE_CODE>(L:A32NX_OVHD_COCKPITDOORVIDEO_TOGGLE) ! (>L:A32NX_OVHD_COCKPITDOORVIDEO_TOGGLE)</LEFT_SINGLE_CODE>
                     </UseTemplate>
-                    <UseTemplate Name="FBW_Push_Held_NoEmissive">
+                    <UseTemplate Name="FBW_Push_Held">
                         <NODE_ID>PUSH_DOORPANEL_VIDEO</NODE_ID>
                         <HOLD_SIMVAR>L:PUSH_DOORPANEL_VIDEO</HOLD_SIMVAR>
                     </UseTemplate>
@@ -1782,7 +1782,7 @@
                         <TOOLTIPID>%((L:A32NX_EVAC_COMMAND_TOGGLE, Bool))%{if}Turn ON evacuation horn%{else}Turn OFF evacuation horn%{end}</TOOLTIPID>
                         <LEFT_SINGLE_CODE>(L:A32NX_EVAC_COMMAND_TOGGLE) ! (>L:A32NX_EVAC_COMMAND_TOGGLE)</LEFT_SINGLE_CODE>
                     </UseTemplate>
-                    <UseTemplate Name="FBW_Push_Held_NoEmissive">
+                    <UseTemplate Name="FBW_Push_Held">
                         <NODE_ID>PUSH_OVHD_EVAC_HORN</NODE_ID>
                         <HOLD_SIMVAR>L:PUSH_OVHD_EVAC_HORN</HOLD_SIMVAR>
                     </UseTemplate>
@@ -2413,19 +2413,19 @@
                         <DISABLE_SEQ1/>
                         <TOOLTIPID>Crew oxygen supply</TOOLTIPID>
                     </UseTemplate>
-                    <UseTemplate Name="FBW_Push_Held_NoEmissive">
+                    <UseTemplate Name="FBW_Push_Held">
                         <NODE_ID>PUSH_OVHD_CALLS_MECH</NODE_ID>
                         <HOLD_SIMVAR>L:PUSH_OVHD_CALLS_MECH</HOLD_SIMVAR>
                     </UseTemplate>
-                    <UseTemplate Name="FBW_Push_Held_NoEmissive">
+                    <UseTemplate Name="FBW_Push_Held">
                         <NODE_ID>PUSH_OVHD_CALLS_ALL</NODE_ID>
                         <HOLD_SIMVAR>L:PUSH_OVHD_CALLS_ALL</HOLD_SIMVAR>
                     </UseTemplate>
-                    <UseTemplate Name="FBW_Push_Held_NoEmissive">
+                    <UseTemplate Name="FBW_Push_Held">
                         <NODE_ID>PUSH_OVHD_CALLS_FWD</NODE_ID>
                         <HOLD_SIMVAR>L:PUSH_OVHD_CALLS_FWD</HOLD_SIMVAR>
                     </UseTemplate>
-                    <UseTemplate Name="FBW_Push_Held_NoEmissive">
+                    <UseTemplate Name="FBW_Push_Held">
                         <NODE_ID>PUSH_OVHD_CALLS_AFT</NODE_ID>
                         <HOLD_SIMVAR>L:PUSH_OVHD_CALLS_AFT</HOLD_SIMVAR>
                     </UseTemplate>
