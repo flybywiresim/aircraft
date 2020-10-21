@@ -620,18 +620,24 @@
 
     <Template Name="FBW_Airbus_FIRE_TEST_LIGHTS">
         <UseTemplate Name="ASOBO_GT_Push_Button_Airliner">
-            <SEQ1_EMISSIVE_CODE>(L:FIRE_TEST_#ID#, Bool) (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or</SEQ1_EMISSIVE_CODE>
-            <SEQ2_EMISSIVE_CODE>(L:FIRE_TEST_#ID#, Bool) (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or</SEQ2_EMISSIVE_CODE>
+            <SEQ1_EMISSIVE_CODE>(L:A32NX_FIRE_TEST_#TYPE##ID#, Bool) (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or</SEQ1_EMISSIVE_CODE>
+            <SEQ2_EMISSIVE_CODE>(L:A32NX_FIRE_TEST_#TYPE##ID#, Bool) (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or</SEQ2_EMISSIVE_CODE>
+        </UseTemplate>
+    </Template>
+
+    <Template Name="FBW_Airbus_FIRE_TEST_BUTTON">
+        <UseTemplate Name="FBW_Push_Held_NoEmissive">
+            <HOLD_SIMVAR>L:A32NX_FIRE_TEST_#TYPE##ID#</HOLD_SIMVAR>
         </UseTemplate>
     </Template>
 
     <Template Name="FBW_Airbus_FIRE_AGENT">
         <UseTemplate Name="FBW_Push_Toggle">
-            <SEQ1_CODE>(L:FIRE_TEST_#ID#, Bool) (L:FIRE_BUTTON_#ID#, Bool) or</SEQ1_CODE>
-            <SEQ2_CODE>(L:FIRE_TEST_#ID#, Bool) (L:XMLVAR_#NODE_ID#_Discharge) or</SEQ2_CODE>
+            <SEQ1_CODE>(L:A32NX_FIRE_TEST_#TYPE##ID#, Bool) (L:A32NX_FIRE_BUTTON_#TYPE##ID#, Bool) or</SEQ1_CODE>
+            <SEQ2_CODE>(L:A32NX_FIRE_TEST_#TYPE##ID#, Bool) (L:A32NX_Fire_#TYPE##ID#_Agent#AGENT_ID#_Discharge) or</SEQ2_CODE>
             <LEFT_SINGLE_CODE>
-                (L:FIRE_BUTTON_#ID#, Bool) if{
-                    1 (>L:XMLVAR_#NODE_ID#_Discharge)
+                (L:A32NX_FIRE_BUTTON_#TYPE##ID#, Bool) if{
+                    1 (>L:A32NX_Fire_#TYPE##ID#_Agent#AGENT_ID#_Discharge)
                 }
             </LEFT_SINGLE_CODE>
         </UseTemplate>
@@ -646,7 +652,7 @@
             <ANIM_LENGTH>100</ANIM_LENGTH>
             <SWITCH_POSITION_TYPE>O</SWITCH_POSITION_TYPE>
             <SWITCH_POSITION_VAR>_ButtonAnimVar</SWITCH_POSITION_VAR>
-            <LEFT_SINGLE_CODE>1 (>L:FIRE_BUTTON_#ID#)</LEFT_SINGLE_CODE>
+            <LEFT_SINGLE_CODE>1 (>L:A32NX_FIRE_BUTTON_#TYPE##ID#)</LEFT_SINGLE_CODE>
             <LEFT_LEAVE_CODE/>
             <ANIM_DURATION>0.3</ANIM_DURATION>
         </DefaultTemplateParameters>
@@ -678,12 +684,12 @@
             </UseTemplate>
 
             <UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
-                <EMISSIVE_CODE>(L:FIRE_TEST_#ID#, Bool) (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or (A:ENG ON FIRE:#ENGINE#, Bool) 1 == or</EMISSIVE_CODE>
+                <EMISSIVE_CODE>(L:A32NX_FIRE_TEST_#TYPE##ID#, Bool) (A:ENG ON FIRE:#ID#, Bool) 1 == or (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or </EMISSIVE_CODE>
             </UseTemplate>
 
             <UseTemplate Name = "ASOBO_GT_Interaction_LeftSingle_Leave_Code">
                 <LEFT_SINGLE_CODE>
-                    (L:FIRE_GUARD_#ID#) 1 == if{
+                    (L:A32NX_FIRE_GUARD_#TYPE##ID#) 1 == if{
                         1 (&gt;#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#_IsDown) 1 (&gt;O:AnimGoingForward) #LEFT_SINGLE_CODE#
                     }
                 </LEFT_SINGLE_CODE>
@@ -732,7 +738,11 @@
 
             <UseTemplate Name = "ASOBO_GT_Interaction_LeftSingle_Leave_Code">
                 <LEFT_SINGLE_CODE>
-                    1 (&gt;#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#_IsDown) 1 (&gt;O:AnimGoingForward) #LEFT_SINGLE_CODE#
+                    (L:A32NX_FIRE_BUTTON_#TYPE##ID#) 0 == if{
+                        (#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#_IsDown) ! (&gt;#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#_IsDown)
+                        (O:AnimGoingForward) ! (&gt;O:AnimGoingForward)
+                        (L:A32NX_FIRE_GUARD_#TYPE##ID#) ! (&gt;L:A32NX_FIRE_GUARD_#TYPE##ID#)
+                    }
                 </LEFT_SINGLE_CODE>
             </UseTemplate>
         </Component>

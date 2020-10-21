@@ -2251,19 +2251,21 @@
             <Component ID="Overhead_Fire">
                 <Component ID="ENG1">
                     <DefaultTemplateParameters>
-                        <ID>ENG1</ID>
+                        <TYPE>ENG</TYPE>
+                        <ID>1</ID>
                     </DefaultTemplateParameters>
 
-                    <UseTemplate Name="FBW_Push_Held_NoEmissive">
+                    <UseTemplate Name="FBW_Airbus_FIRE_TEST_BUTTON">
                         <NODE_ID>PUSH_FIRE_ENG1_TEST</NODE_ID>
                         <PART_ID>Fire_test_eng1</PART_ID>
-                        <HOLD_SIMVAR>L:FIRE_TEST_ENG1</HOLD_SIMVAR>
                     </UseTemplate>
                     <UseTemplate Name="FBW_Airbus_FIRE_AGENT">
                         <NODE_ID>PUSH_OVHD_FIRE_ENG1_AGENT1</NODE_ID>
+                        <AGENT_ID>1</AGENT_ID>
                     </UseTemplate>
                     <UseTemplate Name="FBW_Airbus_FIRE_AGENT">
                         <NODE_ID>PUSH_OVHD_FIRE_ENG1_AGENT2</NODE_ID>
+                        <AGENT_ID>2</AGENT_ID>
                     </UseTemplate>
                     <UseTemplate Name="FBW_Airbus_FIRE_TEST_LIGHTS">
                         <NODE_ID>PUSH_ENGINES_1</NODE_ID>
@@ -2273,25 +2275,27 @@
                     </UseTemplate>
                     <UseTemplate Name="FBW_Airbus_FIRE_BUTTON">
                         <NODE_ID>PUSH_OVHD_FIRE_ENG1</NODE_ID>
-                        <ENGINE>1</ENGINE>
                     </UseTemplate>
                 </Component>
 
                 <Component ID="ENG2">
                     <DefaultTemplateParameters>
-                        <ID>ENG2</ID>
+                        <TYPE>ENG</TYPE>
+                        <ID>2</ID>
                     </DefaultTemplateParameters>
 
-                    <UseTemplate Name="FBW_Push_Held_NoEmissive">
+                    <UseTemplate Name="FBW_Airbus_FIRE_TEST_BUTTON">
                         <NODE_ID>PUSH_FIRE_ENG2_TEST</NODE_ID>
                         <PART_ID>Fire_test_eng2</PART_ID>
-                        <HOLD_SIMVAR>L:FIRE_TEST_ENG2</HOLD_SIMVAR>
+                        <HOLD_SIMVAR>L:A32NX_FIRE_TEST_ENG2</HOLD_SIMVAR>
                     </UseTemplate>
                     <UseTemplate Name="FBW_Airbus_FIRE_AGENT">
                         <NODE_ID>PUSH_OVHD_FIRE_ENG2_AGENT1</NODE_ID>
+                        <AGENT_ID>1</AGENT_ID>
                     </UseTemplate>
                     <UseTemplate Name="FBW_Airbus_FIRE_AGENT">
                         <NODE_ID>PUSH_OVHD_FIRE_ENG2_AGENT2</NODE_ID>
+                        <AGENT_ID>2</AGENT_ID>
                     </UseTemplate>
                     <UseTemplate Name="FBW_Airbus_FIRE_TEST_LIGHTS">
                         <NODE_ID>PUSH_ENGINES_2</NODE_ID>
@@ -2301,32 +2305,38 @@
                     </UseTemplate>
                     <UseTemplate Name="FBW_Airbus_FIRE_BUTTON">
                         <NODE_ID>PUSH_OVHD_FIRE_ENG2</NODE_ID>
-                        <ENGINE>2</ENGINE>
                     </UseTemplate>
                 </Component>
 
                 <Component ID="APU">
-                    <UseTemplate Name="FBW_Push_Held_NoEmissive">
+                    <DefaultTemplateParameters>
+                        <TYPE>APU</TYPE>
+                        <ID></ID>
+                    </DefaultTemplateParameters>
+
+                    <UseTemplate Name="FBW_Airbus_FIRE_TEST_BUTTON">
                         <NODE_ID>PUSH_FIRE_APU_TEST</NODE_ID>
                         <HOLD_SIMVAR>L:FIRE_TEST_APU</HOLD_SIMVAR>
                     </UseTemplate>
-                    <UseTemplate Name="FBW_Airbus_FIRE_TEST_LIGHTS">
+                    <UseTemplate Name="FBW_Airbus_FIRE_AGENT">
                         <NODE_ID>PUSH_OVHD_FIRE_AGENT</NODE_ID>
-                        <ID>APU</ID>
+                        <AGENT_ID>1</AGENT_ID>
                     </UseTemplate>
-                    <UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
+                    <UseTemplate Name="FBW_Airbus_FIRE_BUTTON">
                         <NODE_ID>PUSH_OVHD_FIRE_APU</NODE_ID>
-                        <EMISSIVE_CODE>(L:FIRE_TEST_APU, Bool) (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or</EMISSIVE_CODE>
+                    </UseTemplate>
+                    <UseTemplate Name="FBW_Airbus_FIRE_GUARD">
+                        <NODE_ID>LOCK_OVHD_APU</NODE_ID>
                     </UseTemplate>
                 </Component>
 
                 <Component ID="CARGO_SMOKE">
                     <DefaultTemplateParameters>
-                        <ID>SMOKE</ID>
+                        <TYPE>CARGO</TYPE>
+                        <ID></ID>
                     </DefaultTemplateParameters>
-                    <UseTemplate Name="FBW_Push_Held_NoEmissive">
+                    <UseTemplate Name="FBW_Airbus_FIRE_TEST_BUTTON">
                         <NODE_ID>PUSH_OVHD_CARGOSMOKE_TEST</NODE_ID>
-                        <HOLD_SIMVAR>L:FIRE_TEST_SMOKE</HOLD_SIMVAR>
                     </UseTemplate>
                     <UseTemplate Name="FBW_Airbus_FIRE_TEST_LIGHTS">
                         <NODE_ID>PUSH_OVHD_CARGOSMOKE_FWD2</NODE_ID>
