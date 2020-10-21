@@ -1081,11 +1081,12 @@ class FMCMainDisplay extends BaseAirliners {
     // Overridden by getManagedApproachSpeedMcdu in A320_Neo_CDU_MainDisplay
     // Not sure what to do with this
     getManagedApproachSpeed(flapsHandleIndex = NaN) {
-        if (isNaN(flapsHandleIndex)) flapsHandleIndex = Simplane.getFlapsHandleIndex();
-        if (flapsHandleIndex === 0) return this.getCleanApproachSpeed();
-        if (flapsHandleIndex === 1) return this.getSlatApproachSpeed();
-        if (flapsHandleIndex === 2) return this.getFlapApproachSpeed();
-        return this.getVApp();
+        switch (((isNaN(flapsHandleIndex)) ? Simplane.getFlapsHandleIndex() : flapsHandleIndex)) {
+            case 0: return this.getCleanApproachSpeed();
+            case 1: return this.getSlatApproachSpeed();
+            case 2: return this.getFlapApproachSpeed();
+            default: return this.getVApp();
+        }
     }
     updateCleanApproachSpeed() {
         const apprGreenDotSpeed = this.getCleanApproachSpeed();
@@ -1545,7 +1546,7 @@ class FMCMainDisplay extends BaseAirliners {
             }*/
         }
         const dWeight = SimVar.GetSimVarValue("TOTAL WEIGHT", "kilograms") / 1000;
-        let cg = this.zeroFuelWeightMassCenter;
+        const cg = this.zeroFuelWeightMassCenter;
         if (((isNaN(cg)) ? 24 : cg) < 25) {
             switch (true) {
                 case (dWeight <= 50): return 116;
