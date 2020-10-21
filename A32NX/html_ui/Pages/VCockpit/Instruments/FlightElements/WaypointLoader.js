@@ -933,7 +933,10 @@ class FacilityLoader {
         } else {
             intersectionInfo = intersection;
         }
+        console.log("intersectionInfo")
+        console.log(intersectionInfo)
         if (intersectionInfo instanceof WayPointInfo) {
+            console.log('entro IF')
             const datas = await this.getAllAirwaysData(intersectionInfo, name, maxLength);
             for (let i = 0; i < datas.length; i++) {
                 const airway = new Airway();
@@ -961,6 +964,8 @@ class FacilityLoader {
                 }
             }
         }
+        console.log("airways")
+        console.log(airways)
         return airways;
     }
     async getAirwayData(intersectionInfo, name = "", maxLength = 100) {
