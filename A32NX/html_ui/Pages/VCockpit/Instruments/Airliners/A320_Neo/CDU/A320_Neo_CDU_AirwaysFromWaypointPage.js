@@ -50,12 +50,10 @@ class A320_Neo_CDU_AirwaysFromWaypointPage {
                                 const airway = lastWaypoint.infos.airways.find(a => {
                                     return a.name === value;
                                 });
-                                // console.log('AIRWAY');
-                                // console.log(airway);
                                 if (airway) {
                                     A320_Neo_CDU_AirwaysFromWaypointPage.ShowPage(mcdu, waypoint, offset, airway);
                                 } else {
-                                    mcdu.showErrorMessage("NOT IN DATABASE");
+                                    mcdu.showErrorMessage("AWY/WPT MISMATCH");
                                 }
                             }
                         }
@@ -70,7 +68,7 @@ class A320_Neo_CDU_AirwaysFromWaypointPage {
                                 if (result) {
                                     A320_Neo_CDU_AirwaysFromWaypointPage.ShowPage(mcdu, waypoint, offset);
                                 } else {
-                                    mcdu.showErrorMessage("NOT ON AIRWAY");
+                                    mcdu.showErrorMessage("AWY/WPT MISMATCH");
                                 }
                             });
                         }
