@@ -1006,23 +1006,25 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
     }
     getFlapApproachSpeed() {
         const dWeight = SimVar.GetSimVarValue("TOTAL WEIGHT", "kilograms") / 1000;
-
-        if (dWeight <= 50) return 131;
-        if (dWeight <= 55) return Math.ceil(131 + 1.2 * (dWeight - 50));
-        if (dWeight <= 60) return Math.ceil(137 + 1.4 * (dWeight - 55));
-        if (dWeight <= 65) return Math.ceil(144 + dWeight - 60);
-        if (dWeight <= 70) return Math.ceil(149 + 1.2 * (dWeight - 65));
-        if (dWeight <= 75) return Math.ceil(155 + dWeight - 70);
-        return Math.ceil(160 + 1.20 * (dWeight - 75));
+        switch(true) {
+            case(dWeight <= 50): return 131;
+            case(dWeight <= 55): return Math.ceil(131 + 1.2 * (dWeight - 50));
+            case(dWeight <= 60): return Math.ceil(137 + 1.4 * (dWeight - 55));
+            case(dWeight <= 65): return Math.ceil(144 + dWeight - 60);
+            case(dWeight <= 70): return Math.ceil(149 + 1.2 * (dWeight - 65));
+            case(dWeight <= 75): return Math.ceil(155 + dWeight - 70);
+            default: return Math.ceil(160 + 1.20 * (dWeight - 75));
+        }
     }
     getSlatApproachSpeed() {
         const dWeight = SimVar.GetSimVarValue("TOTAL WEIGHT", "kilograms") / 1000;
-
-        if (dWeight <= 45) return Math.ceil(152 + 1.8 * (dWeight - 40));
-        if (dWeight <= 50) return Math.ceil(161 + 1.6 * (dWeight - 45));
-        if (dWeight <= 55) return Math.ceil(169 + 1.8 * (dWeight - 50));
-        if (dWeight <= 60) return Math.ceil(178 + 1.6 * (dWeight - 55));
-        return Math.ceil(186 + 1.4 * (dWeight - 60));
+        switch(true) {
+            case(dWeight <= 45): return Math.ceil(152 + 1.8 * (dWeight - 40));
+            case(dWeight <= 50): return Math.ceil(161 + 1.6 * (dWeight - 45));
+            case(dWeight <= 55): return Math.ceil(169 + 1.8 * (dWeight - 50));
+            case(dWeight <= 60): return Math.ceil(178 + 1.6 * (dWeight - 55));
+            default: return Math.ceil(186 + 1.4 * (dWeight - 60));
+        }
     }
     updateMarkerF(_marker, currentAirspeed) {
         let hideMarker = true;
