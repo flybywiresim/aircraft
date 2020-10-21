@@ -1017,8 +1017,9 @@ class FMCMainDisplay extends BaseAirliners {
         return speed;
     }
     getFlapApproachSpeed(useCurrentWeight = true) {
-        if (isFinite(this._overridenFlapApproachSpeed)) return this._overridenFlapApproachSpeed;
-        
+        if (isFinite(this._overridenFlapApproachSpeed)) {
+            return this._overridenFlapApproachSpeed;
+        }
         const dWeight = SimVar.GetSimVarValue("TOTAL WEIGHT", "kilograms") / 1000;
         switch (true) {
             case (dWeight <= 50): return 131;
@@ -1046,8 +1047,9 @@ class FMCMainDisplay extends BaseAirliners {
         return false;
     }
     getSlatApproachSpeed(useCurrentWeight = true) {
-        if (isFinite(this._overridenSlatApproachSpeed)) return this._overridenSlatApproachSpeed;
-
+        if (isFinite(this._overridenSlatApproachSpeed)) {
+            return this._overridenSlatApproachSpeed;
+        }
         const dWeight = SimVar.GetSimVarValue("TOTAL WEIGHT", "kilograms") / 1000;
         switch (true) {
             case (dWeight <= 45): return Math.ceil(152 + 1.8 * (dWeight - 40));
