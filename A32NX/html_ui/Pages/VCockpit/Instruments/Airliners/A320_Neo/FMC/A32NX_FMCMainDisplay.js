@@ -1020,13 +1020,13 @@ class FMCMainDisplay extends BaseAirliners {
         if (isFinite(this._overridenFlapApproachSpeed)) return this._overridenFlapApproachSpeed;
         
         const dWeight = SimVar.GetSimVarValue("TOTAL WEIGHT", "kilograms") / 1000;
-        switch(true) {
-            case(dWeight <= 50): return 131;
-            case(dWeight <= 55): return Math.ceil(131 + 1.2 * (dWeight - 50));
-            case(dWeight <= 60): return Math.ceil(137 + 1.4 * (dWeight - 55));
-            case(dWeight <= 65): return Math.ceil(144 + dWeight - 60);
-            case(dWeight <= 70): return Math.ceil(149 + 1.2 * (dWeight - 65));
-            case(dWeight <= 75): return Math.ceil(155 + dWeight - 70);
+        switch (true) {
+            case (dWeight <= 50): return 131;
+            case (dWeight <= 55): return Math.ceil(131 + 1.2 * (dWeight - 50));
+            case (dWeight <= 60): return Math.ceil(137 + 1.4 * (dWeight - 55));
+            case (dWeight <= 65): return Math.ceil(144 + dWeight - 60);
+            case (dWeight <= 70): return Math.ceil(149 + 1.2 * (dWeight - 65));
+            case (dWeight <= 75): return Math.ceil(155 + dWeight - 70);
             default: return Math.ceil(160 + 1.20 * (dWeight - 75));
         }
     }
@@ -1049,11 +1049,11 @@ class FMCMainDisplay extends BaseAirliners {
         if (isFinite(this._overridenSlatApproachSpeed)) return this._overridenSlatApproachSpeed;
 
         const dWeight = SimVar.GetSimVarValue("TOTAL WEIGHT", "kilograms") / 1000;
-        switch(true) {
-            case(dWeight <= 45): return Math.ceil(152 + 1.8 * (dWeight - 40));
-            case(dWeight <= 50): return Math.ceil(161 + 1.6 * (dWeight - 45));
-            case(dWeight <= 55): return Math.ceil(169 + 1.8 * (dWeight - 50));
-            case(dWeight <= 60): return Math.ceil(178 + 1.6 * (dWeight - 55));
+        switch (true) {
+            case (dWeight <= 45): return Math.ceil(152 + 1.8 * (dWeight - 40));
+            case (dWeight <= 50): return Math.ceil(161 + 1.6 * (dWeight - 45));
+            case (dWeight <= 55): return Math.ceil(169 + 1.8 * (dWeight - 50));
+            case (dWeight <= 60): return Math.ceil(178 + 1.6 * (dWeight - 55));
             default: return Math.ceil(186 + 1.4 * (dWeight - 60));
         }
     }
@@ -1527,38 +1527,38 @@ class FMCMainDisplay extends BaseAirliners {
             const dWeight = SimVar.GetSimVarValue("TOTAL WEIGHT", "kilograms") / 1000;
             let cg = this.zeroFuelWeightMassCenter;
             if (((isNaN(cg)) ? 24 : cg)) < 25) {
-                switch(true) {
-                    case(dWeight <= 40): return 116;
-                    case(dWeight <= 45): return Math.ceil(116 + 0.4 * (dWeight - 40));
-                    case(dWeight <= 60): return Math.ceil(118 + 1.2 * (dWeight - 45));
-                    case(dWeight <= 75): return Math.ceil(136 + dWeight - 60);
+                switch (true) {
+                    case (dWeight <= 40): return 116;
+                    case (dWeight <= 45): return Math.ceil(116 + 0.4 * (dWeight - 40));
+                    case (dWeight <= 60): return Math.ceil(118 + 1.2 * (dWeight - 45));
+                    case (dWeight <= 75): return Math.ceil(136 + dWeight - 60);
                     default: return Math.ceil(150 + dWeight - 75);
                 }
             }
-            switch(true) {
-                case(dWeight <= 45): return 116;
-                case(dWeight <= 50): return Math.ceil(116 + 1.4 * (dWeight - 45));
-                case(dWeight <= 55): return Math.ceil(123 + 1.2 * (dWeight - 50));
-                case(dWeight <= 60): return Math.ceil(129 + dWeight - 55);
-                case(dWeight <= 65): return Math.ceil(134 + 1.2 * (dWeight - 60));
+            switch (true) {
+                case (dWeight <= 45): return 116;
+                case (dWeight <= 50): return Math.ceil(116 + 1.4 * (dWeight - 45));
+                case (dWeight <= 55): return Math.ceil(123 + 1.2 * (dWeight - 50));
+                case (dWeight <= 60): return Math.ceil(129 + dWeight - 55);
+                case (dWeight <= 65): return Math.ceil(134 + 1.2 * (dWeight - 60));
                 default: Math.ceil(140 + dWeight - 65);
             }*/
         }
         const dWeight = SimVar.GetSimVarValue("TOTAL WEIGHT", "kilograms") / 1000;
         let cg = this.zeroFuelWeightMassCenter;
         if (((isNaN(cg)) ? 24 : cg) < 25) {
-            switch(true) {
-                case(dWeight <= 50): return 116;
-                case(dWeight >= 75): return Math.ceil(139 + .8 * (dWeight - 75));
-                case(dWeight <= 55): return Math.ceil(116 + .8 * (dWeight - 50));
-                case(dWeight <= 70): return Math.ceil(120 + dWeight - 55);
+            switch (true) {
+                case (dWeight <= 50): return 116;
+                case (dWeight >= 75): return Math.ceil(139 + .8 * (dWeight - 75));
+                case (dWeight <= 55): return Math.ceil(116 + .8 * (dWeight - 50));
+                case (dWeight <= 70): return Math.ceil(120 + dWeight - 55);
                 default: return Math.ceil(135 + .8 * (dWeight - 70));
             }
         }
-        switch(true) {
-            case(dWeight <= 50): return 116;
-            case(dWeight >= 75): return Math.ceil(139 + .8 * (dWeight - 75));
-            case(dWeight <= 55): return Math.ceil(116 + .6 * (dWeight - 50));
+        switch (true) {
+            case (dWeight <= 50): return 116;
+            case (dWeight >= 75): return Math.ceil(139 + .8 * (dWeight - 75));
+            case (dWeight <= 55): return Math.ceil(116 + .6 * (dWeight - 50));
             default: return Math.ceil(119 + dWeight - 55);
         }
     }
