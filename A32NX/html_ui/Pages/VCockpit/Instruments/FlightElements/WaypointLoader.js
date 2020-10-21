@@ -1,8 +1,3 @@
-;
-;
-;
-;
-;
 class NearestAirspacesLoader {
     constructor(_instrument) {
         this.lla = new LatLongAlt;
@@ -933,10 +928,10 @@ class FacilityLoader {
         } else {
             intersectionInfo = intersection;
         }
-        console.log("intersectionInfo")
-        console.log(intersectionInfo)
         if (intersectionInfo instanceof WayPointInfo) {
-            console.log('entro IF')
+            console.log('entro IF');
+            console.log("intersectionInfo");
+            console.log(intersectionInfo);
             const datas = await this.getAllAirwaysData(intersectionInfo, name, maxLength);
             for (let i = 0; i < datas.length; i++) {
                 const airway = new Airway();
@@ -964,8 +959,6 @@ class FacilityLoader {
                 }
             }
         }
-        console.log("airways")
-        console.log(airways)
         return airways;
     }
     async getAirwayData(intersectionInfo, name = "", maxLength = 100) {
@@ -976,18 +969,20 @@ class FacilityLoader {
         if (name === "") {
             name = intersectionInfo.routes[0].name;
         }
+        console.log('intersectionInfo')
+        console.log(intersectionInfo)
         const route = intersectionInfo.routes.find(r => {
             return r.name === name;
         });
         if (route) {
-            const airway = {
+            let airway = {
                 name: route.name,
                 type: route.type,
                 icaos: [intersectionInfo.icao]
             };
             let currentRoute = route;
             let currentWaypointIcao = intersectionInfo.icao;
-            for (let i = 0; i < maxLength * 0.5; i++) {
+            for (let i = 0; i < maxLength * 0.75; i++) {
                 if (currentRoute) {
                     const prevIcao = currentRoute.prevIcao;
                     currentRoute = undefined;
@@ -1007,12 +1002,59 @@ class FacilityLoader {
             }
             currentRoute = route;
             currentWaypointIcao = intersectionInfo.icao;
-            for (let i = 0; i < maxLength * 0.5; i++) {
+            for (let i = 0; i < maxLength * 0.75; i++) {
                 if (currentRoute) {
+                    console.log('currentRoute')
+                    console.log(currentRoute)
                     const nextIcao = currentRoute.nextIcao;
                     currentRoute = undefined;
+                    // if(nextIcao === " " && route.length > 1) {
+                    //     airway = {
+                    //         name: route[1].name,
+                    //         type: route[1].type,
+                    //         icaos: [intersectionInfo.icao]
+                    //     };
+                    //     nextIcao = route[1].nextIcao;
+                    // }
+                    console.log('currentWaypointIcao')
+                    console.log(currentWaypointIcao)
+                    if(nextIcao[0] === " ") {
+                        console.log('ENTRO IF NEXTICAO EMPTY')
+                        const currentWaypoint = await this.getIntersectionData(currentWaypointIcao);
+                        console.log('currentWaypointIF')
+                        console.log(currentWaypoint)
+                        if (currentWaypoint) {
+                            if (currentWaypoint.routes) {
+                                console.log('tiene routes')
+                                console.log(currentWaypoint)
+                                console.log(`name: ${name}`)
+                                const currentRoute = currentWaypoint.routes.filter(r => {
+                                    console.log(r.nextIcao.replace(/\s+/g, '') != "")
+                                    let current = undefined
+                                    if(r.name === name) {
+                                        console.log(r)
+                                        if (r.nextIcao.replace(/\s+/g, '') != "") {
+                                            current = r
+                                            // const spezial = await this.getIntersectionData(current.nextIcao);
+                                            // console.log('spezial')
+                                            // console.log(spezial)
+                                            airway.icaos.push(r.nextIcao);
+                                        }
+                                    }
+                                    console.log('current')
+                                    console.log(current)
+                                    return current;
+                                    // return r.name === name && r.nextIcao.replace(/\s+/g, '') != "" || undefined;
+                                });
+                                console.log('proxima currentRoute')
+                                console.log(currentRoute)
+                            }
+                        }
+                    }
                     if (nextIcao && nextIcao.length > 0 && nextIcao[0] != " ") {
                         const nextWaypoint = await this.getIntersectionData(nextIcao);
+                        console.log('nextWaypoint')
+                        console.log(nextWaypoint)
                         if (nextWaypoint) {
                             airway.icaos.push(nextWaypoint.icao);
                             currentWaypointIcao = nextWaypoint.icao;

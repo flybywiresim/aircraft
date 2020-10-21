@@ -46,12 +46,12 @@ class A320_Neo_CDU_AirwaysFromWaypointPage {
                         if (value.length > 0) {
                             mcdu.clearUserInput();
                             const lastWaypoint = mcdu.flightPlanManager.getWaypoints()[mcdu.flightPlanManager.getEnRouteWaypointsLastIndex()];
-                            console.log('LASTWAYPOINT')
-                            console.log(lastWaypoint)
-                            if (lastWaypoint.infos instanceof IntersectionInfo || lastWaypoint.infos instanceof VORInfo ) {
-                                const airway = lastWaypoint.infos.airways.find(a => { return a.name === value; });
-                                console.log('AIRWAY')
-                                console.log(airway)
+                            if (lastWaypoint.infos instanceof IntersectionInfo || lastWaypoint.infos instanceof VORInfo) {
+                                const airway = lastWaypoint.infos.airways.find(a => {
+                                    return a.name === value;
+                                });
+                                // console.log('AIRWAY');
+                                // console.log(airway);
                                 if (airway) {
                                     A320_Neo_CDU_AirwaysFromWaypointPage.ShowPage(mcdu, waypoint, offset, airway);
                                 } else {
@@ -66,11 +66,6 @@ class A320_Neo_CDU_AirwaysFromWaypointPage {
                         const value = mcdu.inOut;
                         if (value.length > 0) {
                             mcdu.clearUserInput();
-                            console.log('pendingAirway')
-                            console.log(pendingAirway)
-                            const enRouteWP = mcdu.flightPlanManager.getWaypoints()[mcdu.flightPlanManager.getEnRouteWaypointsLastIndex() + 1]
-                            console.log('enRouteWP')
-                            console.log(enRouteWP)
                             mcdu.insertWaypointsAlongAirway(value, mcdu.flightPlanManager.getEnRouteWaypointsLastIndex() + 1, pendingAirway.name, (result) => {
                                 if (result) {
                                     A320_Neo_CDU_AirwaysFromWaypointPage.ShowPage(mcdu, waypoint, offset);
