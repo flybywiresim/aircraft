@@ -4,6 +4,8 @@
 <!-- Use the following format below -->
 <!--  1. [Changed Area] Title of changes - @github username (Name)  -->
 ## 2020/10
+1. [CDU] Added actual VLS and VApp calculation - @MisterChocker (Leon)
+1. [PFD] Added actual F and S speed calculation for approach - @MisterChocker (Leon)
 1. [ENGINE] Improved engine performance - @MisterChocker (Leon)
 1. [AERODYNAMICS] Improved overall flight performance - @MisterChocker (Leon)
 1. [ND] Change ND Sizing - @nathaninnes (Nathan Innes)
