@@ -712,6 +712,8 @@ class FMCMainDisplay extends BaseAirliners {
     }
     async insertWaypointsAlongAirway(lastWaypointIdent, index, airwayName, callback = EmptyCallback.Boolean) {
         const referenceWaypoint = this.flightPlanManager.getWaypoint(index - 1);
+        console.log('referenceWaypoint');
+        console.log(referenceWaypoint);
         if (referenceWaypoint) {
             const infos = referenceWaypoint.infos;
             if (infos instanceof WayPointInfo) {
@@ -733,21 +735,15 @@ class FMCMainDisplay extends BaseAirliners {
                             for (let i = 1; i < count + 1; i++) { // 9 -> 6
                                 const syncInsertWaypointByIcao = async (icao, idx) => {
                                     return new Promise(resolve => {
-                                        // console.log("add icao:" + icao + " @ " + idx);
-                                        console.time('addWaypoint');
+                                        console.log("add icao:" + icao + " @ " + idx);
                                         this.flightPlanManager.addWaypoint(icao, idx, () => {
-                                            console.timeEnd('addWaypoint');
                                             const waypoint = this.flightPlanManager.getWaypoint(idx);
-                                            // console.time('UpdateAirway')
-                                            // waypoint.infos.UpdateAirway(airwayName).then(() => {
-                                            //     console.timeEnd('UpdateAirway')
                                             waypoint.infos.airwayIn = airwayName;
                                             if (i < count) {
                                                 waypoint.infos.airwayOut = airwayName;
                                             }
                                             console.log("icao:" + icao + " added");
                                             resolve();
-                                            // });
                                         });
                                     });
                                 };
