@@ -2589,13 +2589,13 @@
                 <ANIM_NAME>KNOB_AUTOPILOT_SELECTOR_R1</ANIM_NAME>
             </UseTemplate>
 
-            <UseTemplate Name="ASOBO_AUTOPILOT_Knob_Baro_Template">
+            <UseTemplate Name="A32NX_AUTOPILOT_Knob_Baro_Template">
                 <NODE_ID>KNOB_AUTOPILOT_KNOB1_L</NODE_ID>
                 <ANIM_NAME_KNOB>KNOB_AUTOPILOT_KNOB1_L</ANIM_NAME_KNOB>
                 <ANIM_NAME_PUSHPULL>PUSH_AUTOPILOT_KNOB1_L</ANIM_NAME_PUSHPULL>
                 <AIRLINER_TYPE>A320</AIRLINER_TYPE>
             </UseTemplate>
-            <UseTemplate Name="ASOBO_AUTOPILOT_Knob_Baro_Template">
+            <UseTemplate Name="A32NX_AUTOPILOT_Knob_Baro_Template">
                 <NODE_ID>KNOB_AUTOPILOT_KNOB1_R</NODE_ID>
                 <ANIM_NAME_KNOB>KNOB_AUTOPILOT_KNOB1_R</ANIM_NAME_KNOB>
                 <ANIM_NAME_PUSHPULL>PUSH_AUTOPILOT_KNOB1_R</ANIM_NAME_PUSHPULL>
