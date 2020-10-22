@@ -1618,12 +1618,12 @@ var A320_Neo_UpperECAM;
         }
         getEngineStartStatus() {
             const engineId = this.index + 1;
-            const value = (SimVar.GetSimVarValue("GENERAL ENG STARTER:" + engineId, "bool") === 1) ? true : false;
+            const value = (SimVar.GetSimVarValue("GENERAL ENG STARTER:" + engineId, "bool"));
             return value;
         }
         getIgnitionStatus() {
             const engineId = this.index + 1;
-            const value = (SimVar.GetSimVarValue("TURB ENG IS IGNITING:" + engineId, "bool") === 1) ? true : false;
+            const value = (SimVar.GetSimVarValue("TURB ENG IS IGNITING:" + engineId, "bool"));
             return value;
         }
     }
