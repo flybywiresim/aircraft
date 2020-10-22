@@ -955,15 +955,11 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     }
     // Asobo's getManagedApproachSpeed uses incorrect getCleanApproachSpeed for flaps 0
     getManagedApproachSpeedMcdu() {
-        const flapsHandleIndex = Simplane.getFlapsHandleIndex();
-        if (flapsHandleIndex === 0) {
-            return this.getPerfGreenDotSpeed();
-        } else if (flapsHandleIndex === 1) {
-            return this.getSlatApproachSpeed();
-        } else if (flapsHandleIndex === 2) {
-            return this.getFlapApproachSpeed();
-        } else {
-            return this.getVApp();
+        switch (Simplane.getFlapsHandleIndex()) {
+            case 0: return this.getPerfGreenDotSpeed();
+            case 1: return this.getSlatApproachSpeed();
+            case 2: return this.getFlapApproachSpeed();
+            default: return this.getVApp();
         }
     }
     checkUpdateFlightPhase() {
