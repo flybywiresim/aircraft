@@ -63,6 +63,7 @@
 1. [MISC] Fixed DECEL always show up on left button only - @jokey2k (JoKeY | Markus#0001 on discord)
 1. [ECAM] Engine bleed valve closes at N2 > 50% @RichardPilbery (Richard Pilbery)
 1. [ECAM] Added ECAM ALL button functionality @MikeKuijper (Mike Kuijper)
+1. [ECAM] Added AVAIL message on Engine display after engine start @RichardPilbery (Richard Pilbery | tricky_dicky#3571)
 
 ## 2020/09
 1. [General] Add CHANGELOG.md - @nathaninnes (Nathan Innes)
