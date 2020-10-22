@@ -325,7 +325,7 @@ var A320_Neo_ECAM_Common;
                     this.refreshMainValue(this.currentValueFunction());
                 }
                 if (this.outerIndicatorFunction != null) {
-                    this.refreshOuterIndicator(this.outerIndicatorFunction() * 0.01);
+                    this.refreshOuterIndicator(this.outerIndicatorFunction());
                 }
                 if (this.outerDynamicArcFunction != null) {
                     this.outerDynamicArcFunction(this.outerDynamicArcTargetValues);
@@ -396,7 +396,8 @@ var A320_Neo_ECAM_Common;
             if ((_value != this.outerIndicatorValue) || _force) {
                 this.outerIndicatorValue = _value;
                 if (this.outerIndicatorObject != null) {
-                    const angle = (this.startAngle + (this.outerIndicatorValue * this.arcSize));
+                    const clampedValue = Utils.Clamp(_value, this.minValue, this.maxValue);
+                    const angle = this.valueToAngle(clampedValue, false);
                     this.outerIndicatorObject.setAttribute("transform", "rotate(" + angle + ")");
                 }
             }
@@ -426,4 +427,3 @@ var A320_Neo_ECAM_Common;
     A320_Neo_ECAM_Common.Gauge = Gauge;
 })(A320_Neo_ECAM_Common || (A320_Neo_ECAM_Common = {}));
 customElements.define('a320-neo-ecam-gauge', A320_Neo_ECAM_Common.Gauge);
-//# sourceMappingURL=A320_Neo_ECAMGauge.js.map
