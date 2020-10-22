@@ -113,7 +113,6 @@ class A320_Neo_CDU_AirwaysFromWaypointPage {
                 const wp = routeWaypoints[i];
                 const next = routeWaypoints[i + 1];
                 if (wp) {
-                    const prevAirway = IntersectionInfo.GetCommonAirway(prev, wp);
                     if (wp.infos.airwayIn === undefined) {
                         allRows.push(["DIRECT", wp.ident]);
                     } else {
