@@ -66,6 +66,7 @@
 1. [MFD] Weather Radar now sweeps at 180 degrees, Correct masking for flight path/constr/waypoints and display elements, disabled WX/TERR ON MD in PLAN - @2hwk (2Cas#1022)
 1. [ECAM] Added ECAM ALL button functionality @MikeKuijper (Mike Kuijper)
 1. [ECAM] Adjusted Engine gauges so cursor extends beyond radius of gauge @RichardPilbery (Richard Pilbery)
+1. [CAMERA] Modified a couple of the default interior camera angles. @ZigTag (Falcon#5815)
 
 ## 2020/09
 1. [General] Add CHANGELOG.md - @nathaninnes (Nathan Innes)
