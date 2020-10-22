@@ -5,7 +5,7 @@
         <DefaultTemplateParameters>
             <ID>1</ID>
             <MIN_N1_PCT_FOR_SLOW>7</MIN_N1_PCT_FOR_SLOW>
-            <MIN_N1_PCT_FOR_BLUR>15</MIN_N1_PCT_FOR_BLUR>
+            <MIN_N1_PCT_FOR_BLUR>110</MIN_N1_PCT_FOR_BLUR>
             <FROSTED>False</FROSTED>
         </DefaultTemplateParameters>
         <UseTemplate Name="A32NX_ENGINE_Turbine_SubTemplate"></UseTemplate>
@@ -19,7 +19,7 @@
             <BLURRED_NODE_ID>ENGINE_Turbine_Blurred_#ID#</BLURRED_NODE_ID>
             <STILL_NODE_ID_COUNT>1</STILL_NODE_ID_COUNT>
             <SLOW_NODE_ID_COUNT>1</SLOW_NODE_ID_COUNT>
-            <BLURRED_NODE_ID_COUNT>1</BLURRED_NODE_ID_COUNT>
+            <BLURRED_NODE_ID_COUNT>2</BLURRED_NODE_ID_COUNT>
         </DefaultTemplateParameters>
         <Component ID="ENGINE_Turbine_#ID#" Node="#ANIM_NODE_ID#">
             <UseTemplate Name="A32NX_ENGINE_Turbine_Rotation_Template">
@@ -30,6 +30,7 @@
                 <STILL_1_NODE_ID>#STILL_NODE_ID#</STILL_1_NODE_ID>
                 <SLOW_1_NODE_ID>#SLOW_NODE_ID#</SLOW_1_NODE_ID>
                 <BLURRED_1_NODE_ID>#BLURRED_NODE_ID#</BLURRED_1_NODE_ID>
+                <BLURRED_2_NODE_ID>#BLURRED_SPINNER_NODE_ID#</BLURRED_2_NODE_ID>
             </DefaultTemplateParameters>
             <OverrideTemplateParameters>
                 <PROCESS_PARAM1>True</PROCESS_PARAM1>
@@ -43,7 +44,7 @@
                 <PARAM1_PREFIX>STILL_</PARAM1_PREFIX>
             </UseTemplate>
             <UseTemplate Name="ASOBO_GT_Helper_Recursive_ID">
-                <MAX_ID>#STILL_NODE_ID_COUNT#</MAX_ID>
+                <MAX_ID>#SLOW_NODE_ID_COUNT#</MAX_ID>
                 <STATE>Slow</STATE>
                 <PARAM1_PREFIX>SLOW_</PARAM1_PREFIX>
             </UseTemplate>
