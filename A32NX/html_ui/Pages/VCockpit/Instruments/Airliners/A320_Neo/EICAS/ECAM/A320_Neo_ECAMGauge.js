@@ -15,6 +15,7 @@ var A320_Neo_ECAM_Common;
             this.warningRange = [0, 0];
             this.dangerRange = [0, 0];
             this.cursorLength = 1.0;
+            this.cursorMultiplier = 1.1;
             this.currentValuePos = new Vec2(0.65, 0.65);
             this.currentValueFunction = null;
             this.currentValuePrecision = 0;
@@ -39,9 +40,13 @@ var A320_Neo_ECAM_Common;
             this.outerDynamicArcTargetValues = [0, 0];
             this.extraMessageString = "";
             this.isActive = true;
+            this.cursorMultiplier = 1.1;
         }
         get mainArcRadius() {
             return (this.viewBoxSize.x * 0.5 * 0.975);
+        }
+        get cursorArcRadius() {
+            return (this.mainArcRadius * this.cursorMultiplier);
         }
         get graduationInnerLineEndOffset() {
             return (this.mainArcRadius * 0.9);
@@ -121,6 +126,7 @@ var A320_Neo_ECAM_Common;
             this.warningRange[1] = _gaugeDefinition.warningRange[1];
             this.dangerRange[0] = _gaugeDefinition.dangerRange[0];
             this.dangerRange[1] = _gaugeDefinition.dangerRange[1];
+            this.cursorMultiplier = _gaugeDefinition.cursorMultiplier;
             this.currentValueFunction = _gaugeDefinition.currentValueFunction;
             this.currentValuePrecision = _gaugeDefinition.currentValuePrecision;
             this.outerIndicatorFunction = _gaugeDefinition.outerIndicatorFunction;
@@ -170,9 +176,13 @@ var A320_Neo_ECAM_Common;
             const cursorGroup = document.createElementNS(Avionics.SVG.NS, "g");
             cursorGroup.id = "CursorGroup";
             this.cursor = document.createElementNS(Avionics.SVG.NS, "line");
-            this.cursor.setAttribute("x1", (this.mainArcRadius * (1 - _gaugeDefinition.cursorLength)).toString());
+            this.cursorArcRadiusChoice = this.cursorArcRadius;
+            if (this.outerDynamicArcFunction != null) {
+                this.cursorArcRadiusChoice = this.outerDynamicArcRadius;
+            }
+            this.cursor.setAttribute("x1", (this.cursorArcRadiusChoice * (1 - _gaugeDefinition.cursorLength)).toString());
             this.cursor.setAttribute("y1", "0");
-            this.cursor.setAttribute("x2", this.mainArcRadius.toString());
+            this.cursor.setAttribute("x2", this.cursorArcRadiusChoice.toString());
             this.cursor.setAttribute("y2", "0");
             cursorGroup.setAttribute("transform", "translate(" + this.center.x + ", " + this.center.y + ")");
             cursorGroup.appendChild(this.cursor);
