@@ -65,6 +65,7 @@
 1. [MODEL] Spinner spiral now shows at medium blur - @lukecologne (luke)
 1. [MFD] Weather Radar now sweeps at 180 degrees, Correct masking for flight path/constr/waypoints and display elements, disabled WX/TERR ON MD in PLAN - @2hwk (2Cas#1022)
 1. [ECAM] Added ECAM ALL button functionality @MikeKuijper (Mike Kuijper)
+1. [LIGHTS] Added logo lights only turn on while on ground or flaps are extented @linkeleven (linkeleven#2557)
 
 ## 2020/09
 1. [General] Add CHANGELOG.md - @nathaninnes (Nathan Innes)
