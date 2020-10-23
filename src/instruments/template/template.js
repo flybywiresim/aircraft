@@ -19,10 +19,18 @@ class A32NX_INSTRUMENT_NAME_Logic extends BaseInstrument {
     });
 
     // This is big hack, see `template.html`.
-    const code = document.getElementById('A32NX_BUNDLED_LOGIC').innerHTML;
-    const script = document.createElement('script');
-    script.innerHTML = code;
-    document.body.appendChild(script);
+    {
+      const code = document.getElementById('A32NX_BUNDLED_STYLE').innerHTML;
+      const style = document.createElement('style');
+      style.innerHTML = code;
+      document.head.appendChild(style);
+    }
+    {
+      const code = document.getElementById('A32NX_BUNDLED_LOGIC').innerHTML;
+      const script = document.createElement('script');
+      script.innerHTML = code;
+      document.body.appendChild(script);
+    }
   }
 
   Update() {
@@ -31,8 +39,9 @@ class A32NX_INSTRUMENT_NAME_Logic extends BaseInstrument {
   }
 
   onInteractionEvent(event) {
-    this.dispatchEvent(new Event(event));
-    this.dispatchEvent(new CustomEvent('*', { detail: event }));
+    const eventName = String(event);
+    this.dispatchEvent(new CustomEvent(eventName));
+    this.dispatchEvent(new CustomEvent('*', { detail: eventName }));
   }
 }
 

@@ -4,7 +4,7 @@
   "scripts": {
     "lint": "eslint --cache **/*.{js,mjs,jsx}",
     "lint-fix": "npm run lint -- --fix",
-    "prettier": "prettier --write **/*.json **/*.yml",
+    "prettier": "prettier --write **/*.json **/*.yml src/instruments/**/*.css",
     "build:instruments": "rollup -c src/instruments/rollup.config.js",
     "build:msfs": "cd A32NX && python build.py",
     "build": "npm run build:instruments && npm run build:msfs"
@@ -16,7 +16,7 @@
   },
   "lint-staged": {
     "*.{js,mjs,jsx}": "eslint --cache --fix",
-    "*.{json,yml}": "prettier --write"
+    "*.{json,yml,css}": "prettier --write"
   },
   "devDependencies": {
     "@babel/core": "^7.12.3",
@@ -35,7 +35,7 @@
     "lint-staged": "10.4.0",
     "prettier": "2.1.2",
     "rollup": "^2.32.0",
-    "rollup-plugin-bundle-html-thomzz": "^1.0.0"
+    "rollup-plugin-css-only": "^2.1.0"
   },
   "dependencies": {
     "react": "^17.0.0",

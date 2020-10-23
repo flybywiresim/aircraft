@@ -50,6 +50,10 @@ export function useUpdate(handler) {
 const SIMVAR_TYPES = {
   '__proto__': null,
   'GPS POSITION LAT': 'degrees latitude',
+  'L:APU_GEN_ONLINE': 'Bool',
+  'EXTERNAL POWER AVAILABLE:1': 'Bool',
+  'EXTERNAL POWER ON': 'Bool',
+  'L:A32NX_COLD_AND_DARK_SPAWN': 'Bool',
 };
 
 const SIMVAR_CACHE = new Map();
@@ -57,9 +61,9 @@ customElement.addEventListener('update', () => {
   SIMVAR_CACHE.clear();
 });
 
-export function getSimVar(name, type = SIMVAR_TYPES[name]) {
+export function getSimVar(name, type) {
   if (!SIMVAR_CACHE.has(name)) {
-    SIMVAR_CACHE.set(name, SimVar.GetSimVarValue(name, type));
+    SIMVAR_CACHE.set(name, SimVar.GetSimVarValue(name, type || SIMVAR_TYPES[name]));
   }
   return SIMVAR_CACHE.get(name);
 }

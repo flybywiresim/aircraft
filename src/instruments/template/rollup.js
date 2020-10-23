@@ -11,16 +11,18 @@ function replaceButSad(s, search, replace) {
 const TEMPLATE_HTML = fs.readFileSync(`${__dirname}/template.html`, 'utf8');
 const TEMPLATE_JS = fs.readFileSync(`${__dirname}/template.js`, 'utf8');
 
-module.exports = ({ name, outputDir }) => ({
+module.exports = ({ name, outputDir, getCssBundle }) => ({
   name: 'template',
   writeBundle(config, bundle) {
-    const { code } = bundle[`${name}-gen.js`];
+    const { code: jsCode } = bundle[`${name}-gen.js`];
+    const cssCode = getCssBundle();
 
     const process = (s) => {
       let tmp = s;
       tmp = replaceButSad(tmp, 'INSTRUMENT_NAME_LOWER', name.toLowerCase());
       tmp = replaceButSad(tmp, 'INSTRUMENT_NAME', name);
-      tmp = replaceButSad(tmp, 'INSTRUMENT_BUNDLE', code);
+      tmp = replaceButSad(tmp, 'INSTRUMENT_BUNDLE', jsCode);
+      tmp = replaceButSad(tmp, 'INSTRUMENT_STYLE', cssCode);
       return tmp;
     };
 
