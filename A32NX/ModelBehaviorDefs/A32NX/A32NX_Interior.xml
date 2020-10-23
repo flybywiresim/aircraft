@@ -405,4 +405,19 @@
             </UseTemplate>
         </Component>
     </Template>
+
+    <Template Name="FBW_Airbus_Fuel_Pump">
+        <UseTemplate Name="FBW_Push_Toggle">
+            <SEQ2_CODE>(A:FUELSYSTEM PUMP SWITCH:#ID#, Enum) 0 ==</SEQ2_CODE>
+            <LEFT_SINGLE_CODE>#ID# (&gt;K:FUELSYSTEM_PUMP_TOGGLE)</LEFT_SINGLE_CODE>
+            <TOOLTIPID>%((A:FUELSYSTEM PUMP SWITCH:#ID#, Enum) 0 ==)%{if}TT:#OFF_TOOLTIP#%{else}TT:#ON_TOOLTIP#%{end}</TOOLTIPID>
+        </UseTemplate>
+    </Template>
+    <Template Name="FBW_Airbus_Fuel_Crossfeed">
+        <UseTemplate Name="FBW_Push_Toggle">
+            <SEQ2_CODE>(A:FUELSYSTEM VALVE SWITCH:#ID#, Bool)</SEQ2_CODE>
+            <LEFT_SINGLE_CODE>#ID# (&gt;K:FUELSYSTEM_VALVE_TOGGLE)</LEFT_SINGLE_CODE>
+            <TOOLTIPID>%((A:FUELSYSTEM VALVE SWITCH:#ID#, Bool) !)%{if}TT:#OFF_TOOLTIP#%{else}TT:#ON_TOOLTIP#%{end}</TOOLTIPID>
+        </UseTemplate>
+    </Template>
 </ModelBehaviors>
