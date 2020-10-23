@@ -4,6 +4,10 @@
 <!-- Use the following format below -->
 <!--  1. [Changed Area] Title of changes - @github username (Name)  -->
 ## 2020/10
+1. [CDU] Added actual VLS and VApp calculation - @MisterChocker (Leon)
+1. [PFD] Added actual F and S speed calculation for approach - @MisterChocker (Leon)
+1. [ENGINE] Improved engine performance - @MisterChocker (Leon)
+1. [AERODYNAMICS] Improved overall flight performance - @MisterChocker (Leon)
 1. [ND] Change ND Sizing - @nathaninnes (Nathan Innes)
 1. [GPWS] Added Pull Up, Sink Rate, Dont sink GPWS with Default Sounds & Added (Too low) terrain, flaps and gear without Sounds (Future PR by Boris) - @oliverpope03 (Oliver Pope)
 1. [Sounds] Added new sounds for fuel pumps, flaps, ground roll and rattles, touchdowns, and wind - @hotshotp (Boris)
@@ -62,6 +66,11 @@
 1. [ECAM] Fixed LDG/TO memo showing at incorrect times - @MMontalto (PiCcy)
 1. [MISC] Fixed DECEL always show up on left button only - @jokey2k (JoKeY | Markus#0001 on discord)
 1. [ECAM] Engine bleed valve closes at N2 > 50% @RichardPilbery (Richard Pilbery)
+1. [MODEL] Spinner spiral now shows at medium blur - @lukecologne (luke)
+1. [MFD] Weather Radar now sweeps at 180 degrees, Correct masking for flight path/constr/waypoints and display elements, disabled WX/TERR ON MD in PLAN - @2hwk (2Cas#1022)
+1. [ECAM] Added ECAM ALL button functionality @MikeKuijper (Mike Kuijper)
+1. [ECAM] Fix thrust lever position indicator on upper ECAM @RichardPilbery (Richard Pilbery | tricky_dicky3571 on discord)
+1. [ECAM] Adjusted Engine gauges so cursor extends beyond radius of gauge @RichardPilbery (Richard Pilbery)
 
 ## 2020/09
 1. [General] Add CHANGELOG.md - @nathaninnes (Nathan Innes)
