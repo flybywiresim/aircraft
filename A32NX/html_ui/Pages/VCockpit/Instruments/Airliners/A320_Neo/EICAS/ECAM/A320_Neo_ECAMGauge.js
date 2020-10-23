@@ -8,6 +8,7 @@ var A320_Neo_ECAM_Common;
         constructor() {
             this.startAngle = -225;
             this.arcSize = 180;
+            this.cursorOffset = 0;
             this.minValue = 0;
             this.maxValue = 100;
             this.minRedValue = 0;
@@ -34,6 +35,7 @@ var A320_Neo_ECAM_Common;
             super(...arguments);
             this.viewBoxSize = new Vec2(100, 100);
             this.startAngle = -225;
+            this.cursorOffset = 0;
             this.warningRange = [0, 0];
             this.dangerRange = [0, 0];
             this.outerDynamicArcCurrentValues = [0, 0];
@@ -58,7 +60,7 @@ var A320_Neo_ECAM_Common;
             return (this.mainArcRadius * 0.625);
         }
         get redArcInnerRadius() {
-            return (this.mainArcRadius * 0.95);
+            return (this.mainArcRadius * 1);
         }
         get outerIndicatorOffset() {
             return (this.viewBoxSize.x * 0.04);
@@ -116,7 +118,7 @@ var A320_Neo_ECAM_Common;
             return (new Vec2(Math.cos(angle), Math.sin(angle)));
         }
         init(_gaugeDefinition) {
-            this.startAngle = _gaugeDefinition.startAngle;
+            this.cursorOffset = _gaugeDefinition.cursorOffset;
             this.arcSize = _gaugeDefinition.arcSize;
             this.minValue = _gaugeDefinition.minValue;
             this.maxValue = _gaugeDefinition.maxValue;
@@ -151,8 +153,8 @@ var A320_Neo_ECAM_Common;
             }
             this.rootSVG.appendChild(this.mainArc);
             if (this.minRedValue != this.maxRedValue) {
-                const minRedDir = this.valueToDir(this.minRedValue);
-                const maxRedDir = this.valueToDir(this.maxRedValue);
+                const minRedDir = this.valueToDir(this.minRedValue + this.cursorOffset);
+                const maxRedDir = this.valueToDir(this.maxRedValue + this.cursorOffset);
                 const topRight = new Vec2(this.center.x + (maxRedDir.x * this.mainArcRadius), this.center.y + (maxRedDir.y * this.mainArcRadius));
                 const topLeft = new Vec2(this.center.x + (minRedDir.x * this.mainArcRadius), this.center.y + (minRedDir.y * this.mainArcRadius));
                 const bottomRight = new Vec2(this.center.x + (maxRedDir.x * this.redArcInnerRadius), this.center.y + (maxRedDir.y * this.redArcInnerRadius));
@@ -253,8 +255,8 @@ var A320_Neo_ECAM_Common;
         }
 
         //accepts two more parameters to set custom ID for dynamic markers
-        addGraduation(_value, _showInnerMarker, _text = "", _showOuterMarker = false, _setid = false, _idName = "") {
-            const dir = this.valueToDir(_value);
+        addGraduation(_value, _showInnerMarker, _text = "", _showOuterMarker = false, _setid = false, _idName = "", _markerColour = "") {
+            const dir = this.valueToDir(_value + this.cursorOffset);
             if (_showInnerMarker) {
                 var start = new Vec2(this.center.x + (dir.x * this.mainArcRadius), this.center.y + (dir.y * this.mainArcRadius));
                 var end = new Vec2(this.center.x + (dir.x * this.graduationInnerLineEndOffset), this.center.y + (dir.y * this.graduationInnerLineEndOffset));
@@ -262,7 +264,11 @@ var A320_Neo_ECAM_Common;
                 if (_setid) {
                     marker.setAttribute("id",_idName);
                 }
-                marker.setAttribute("class", "InnerMarker");
+                if (_markerColour != "") {
+                    marker.setAttribute("class", "InnerMarker" + " " + _markerColour);
+                } else {
+                    marker.setAttribute("class", "InnerMarker");
+                }
                 marker.setAttribute("x1", start.x.toString());
                 marker.setAttribute("y1", start.y.toString());
                 marker.setAttribute("x2", end.x.toString());
@@ -371,7 +377,9 @@ var A320_Neo_ECAM_Common;
         refreshMainValue(_value, _force = false) {
             if ((_value != this.currentValue) || _force) {
                 this.currentValue = _value;
+                this.currentValueCursor = (_value <= this.minValue) ? this.cursorOffset + this.minValue : _value + this.cursorOffset;
                 const clampedValue = Utils.Clamp(this.currentValue, this.minValue, this.maxValue);
+                const clampedValueCursor = Utils.Clamp(this.currentValueCursor, this.minValue, this.maxValue);
                 let style = "";
                 if ((this.dangerRange[0] != this.dangerRange[1]) && (clampedValue >= this.dangerRange[0]) && (clampedValue <= this.dangerRange[1])) {
                     style = "danger";
@@ -381,7 +389,7 @@ var A320_Neo_ECAM_Common;
                     style = "active";
                 }
                 if (this.cursor != null) {
-                    const angle = this.valueToAngle(clampedValue, false);
+                    const angle = this.valueToAngle(clampedValueCursor, false);
                     this.cursor.setAttribute("transform", "rotate(" + angle + ")");
                     this.cursor.setAttribute("class", style);
                 }
