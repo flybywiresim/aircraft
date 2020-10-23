@@ -42,6 +42,12 @@ var A320_Neo_ECAM_Common;
             this.outerDynamicArcTargetValues = [0, 0];
             this.extraMessageString = "";
             this.isActive = true;
+            this.extraMessagePosXMultiplier = 0;
+            this.extraMessagePosYMultiplier = 0;
+            this.extraMessageBorderPosXMultiplier = 0;
+            this.extraMessageBorderPosYMultiplier = 0;
+            this.extraMessageBorderWidthMultiplier = 0;
+            this.extraMessageBorderHeightMultiplier = 0;
             this.cursorMultiplier = 1.1;
         }
         get mainArcRadius() {
@@ -75,22 +81,22 @@ var A320_Neo_ECAM_Common;
             return (this.viewBoxSize.y * 0.20);
         }
         get extraMessagePosX() {
-            return (this.center.x + (this.viewBoxSize.x * 0.025));
+            return (this.center.x + (this.viewBoxSize.x * this.extraMessagePosXMultiplier));
         }
         get extraMessagePosY() {
-            return (this.center.y - (this.viewBoxSize.y * 0.025));
+            return (this.center.y - (this.viewBoxSize.y * this.extraMessagePosYMultiplier));
         }
         get extraMessageBorderPosX() {
-            return (this.extraMessagePosX - (this.viewBoxSize.x * 0.2));
+            return (this.extraMessagePosX - (this.viewBoxSize.x * this.extraMessageBorderPosXMultiplier));
         }
         get extraMessageBorderPosY() {
-            return (this.extraMessagePosY - (this.viewBoxSize.y * 0.09));
+            return (this.extraMessagePosY - (this.viewBoxSize.y * this.extraMessageBorderPosYMultiplier));
         }
         get extraMessageBorderWidth() {
-            return (this.viewBoxSize.x * 0.4);
+            return (this.viewBoxSize.x * this.extraMessageBorderWidthMultiplier);
         }
         get extraMessageBorderHeight() {
-            return (this.viewBoxSize.y * 0.20);
+            return (this.viewBoxSize.y * this.extraMessageBorderHeightMultiplier);
         }
         set active(_isActive) {
             if (this.isActive != _isActive) {
@@ -134,6 +140,12 @@ var A320_Neo_ECAM_Common;
             this.outerIndicatorFunction = _gaugeDefinition.outerIndicatorFunction;
             this.outerDynamicArcFunction = _gaugeDefinition.outerDynamicArcFunction;
             this.extraMessageFunction = _gaugeDefinition.extraMessageFunction;
+            this.extraMessagePosXMultiplier = 0.025;
+            this.extraMessagePosYMultiplier = 0.025;
+            this.extraMessageBorderPosXMultiplier = 0.2;
+            this.extraMessageBorderPosYMultiplier = 0.09;
+            this.extraMessageBorderWidthMultiplier = 0.4;
+            this.extraMessageBorderHeightMultiplier = 0.2;
             this.outerDynamicMarkerFunction = _gaugeDefinition.outerDynamicMarkerFunction;
             this.dangerMinDynamicFunction = _gaugeDefinition.dangerMinDynamicFunction;
             this.endAngle = this.startAngle + _gaugeDefinition.arcSize;
@@ -346,9 +358,33 @@ var A320_Neo_ECAM_Common;
             }
             if ((this.extraMessageFunction != null) && (this.extraMessageText != null) && (this.extraMessageBorder != null)) {
                 const extraMessage = this.isActive ? this.extraMessageFunction().toString() : "";
+                let style = "";
                 if (extraMessage != this.extraMessageString) {
+                    if (this.extraMessageFunction().toString() == "AVAIL") {
+                        this.extraMessagePosXMultiplier = 0.198;
+                        this.extraMessagePosYMultiplier = 0.025;
+                        this.extraMessageBorderPosXMultiplier = 0.345;
+                        this.extraMessageBorderPosYMultiplier = 0.125;
+                        this.extraMessageBorderWidthMultiplier = 0.68;
+                        this.extraMessageBorderHeightMultiplier = 0.25;
+                        style = "avail ";
+                    } else {
+                        this.extraMessagePosXMultiplier = 0.05;
+                        this.extraMessagePosYMultiplier = 0.025;
+                        this.extraMessageBorderPosXMultiplier = 0.2;
+                        this.extraMessageBorderPosYMultiplier = 0.09;
+                        this.extraMessageBorderWidthMultiplier = 0.4;
+                        this.extraMessageBorderHeightMultiplier = 0.2;
+                    }
+                    this.extraMessageBorder.setAttribute("x", this.extraMessageBorderPosX.toString());
+                    this.extraMessageBorder.setAttribute("y", this.extraMessageBorderPosY.toString());
+                    this.extraMessageBorder.setAttribute("width", this.extraMessageBorderWidth.toString());
+                    this.extraMessageBorder.setAttribute("height", this.extraMessageBorderHeight.toString());
+                    this.extraMessageText.setAttribute("x", this.extraMessagePosX.toString());
+                    this.extraMessageText.setAttribute("y", this.extraMessagePosY.toString());
+                    this.extraMessageText.setAttribute("alignment-baseline", "central");
                     this.extraMessageString = extraMessage;
-                    const style = (this.extraMessageString.length > 0) ? "active" : "inactive";
+                    style += (this.extraMessageString.length > 0) ? "active" : "inactive";
                     this.extraMessageText.textContent = this.extraMessageString;
                     this.extraMessageText.setAttribute("class", style);
                     this.extraMessageBorder.setAttribute("class", style);

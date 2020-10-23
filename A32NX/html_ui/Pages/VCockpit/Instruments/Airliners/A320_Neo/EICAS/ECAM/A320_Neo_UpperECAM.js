@@ -1442,6 +1442,8 @@ var A320_Neo_UpperECAM;
             this.parent.appendChild(this.divMain);
             this.timerTOGA = -1;
             this.throttleMode = Math.max(Simplane.getEngineThrottleMode(0), Simplane.getEngineThrottleMode(1));
+            this.timerAvail = -1;
+            this.timerAvailFlag = -1;
         }
         update(_deltaTime) {
             if (this.allGauges != null) {
@@ -1466,6 +1468,26 @@ var A320_Neo_UpperECAM;
                 }
             } else {
                 this.timerTOGA = -1;
+            }
+            this.checkIgnitionPhaseForAVAIL(_deltaTime);
+        }
+        checkIgnitionPhaseForAVAIL(_deltaTime) {
+            if (this.getN1GaugeValue() < 1) {
+                this.timerAvailFlag = 1;
+            }
+            if (this.getEngineStartStatus() && this.getIgnitionStatus()) {
+                if (this.getN1GaugeValue() > 18.3 && this.timerAvailFlag == 1) {
+                    if (this.timerAvail == -1) {
+                        this.timerAvail = 10;
+                    } else if (this.timerAvail >= 0) {
+                        this.timerAvail -= _deltaTime / 1000;
+                    } else {
+                        this.timerAvail = -1;
+                        this.timerAvailFlag = -1;
+                    }
+                }
+            } else {
+                this.timerAvail = -1;
             }
         }
         createEGTGauge() {
@@ -1595,9 +1617,21 @@ var A320_Neo_UpperECAM;
         getN1GaugeExtraMessage() {
             if (Simplane.getEngineThrottle(this.index) < 0) {
                 return "REV";
+            } else if (this.timerAvail >= 0) {
+                return "AVAIL";
             } else {
                 return "";
             }
+        }
+        getEngineStartStatus() {
+            const engineId = this.index + 1;
+            const value = (SimVar.GetSimVarValue("GENERAL ENG STARTER:" + engineId, "bool"));
+            return value;
+        }
+        getIgnitionStatus() {
+            const engineId = this.index + 1;
+            const value = (SimVar.GetSimVarValue("TURB ENG IS IGNITING:" + engineId, "bool"));
+            return value;
         }
     }
     A320_Neo_UpperECAM.Engine = Engine;

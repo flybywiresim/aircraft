@@ -333,6 +333,7 @@ a320-neo-upper-ecam #Separators {
 
 a320-neo-ecam-gauge #RootSVG #CurrentValue {
     font-size: 20px !important;
+    fill: var(--displayBackground);
 }
 a320-neo-ecam-gauge #RootSVG #CurrentValueBorder {
     fill: none;
@@ -342,6 +343,20 @@ a320-neo-ecam-gauge #RootSVG #CurrentValueBorder {
 a320-neo-ecam-gauge #RootSVG #GraduationsGroup line.InnerMarker {
     stroke-width: 1px !important;
 }
+a320-neo-ecam-gauge #RootSVG #ExtraMessage rect {
+    fill: var(--displayBackground);
+    stroke: lightblue;
+    stroke-width: 1px;
+}
+a320-neo-ecam-gauge #RootSVG #ExtraMessage text {
+    text-align: center;
+    text-anchor: middle;
+    fill: var(--displayGreen);
+    font-size: 15px;
+}
+a320-neo-ecam-gauge #RootSVG #ExtraMessage .avail {
+    font-size: 19.2px;
+}
 a320-neo-ecam-gauge #RootSVG #GraduationsGroup .danger {
     stroke-width: 1px !important;
     stroke: var(--displayRed) !important;
@@ -350,7 +365,6 @@ a320-neo-ecam-gauge #RootSVG #GraduationsGroup .warning {
     stroke-width: 1px !important;
     stroke: var(--displayAmber) !important;
 }
-
 a320-neo-ecam-gauge #RootSVG #RedArc {
     stroke: var(--displayRed);
     stroke-width: 2px;
