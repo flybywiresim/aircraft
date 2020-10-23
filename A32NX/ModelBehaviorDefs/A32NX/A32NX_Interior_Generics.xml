@@ -140,7 +140,7 @@
             - SEQ1_CODE             0               Sequence 2 emissive code
             - DISABLE_SEQ1          Not present     If present, the SEQ1 emissive is disabled
             - DISABLE_SEQ2          Not present     If present, the SEQ2 emissive is disabled
-
+            - DUMMY_BUTTON          Not present     If true, the button will be a dummy button (not pressable, only emissive)
     Authors: Benjamin Dupont (@Benjozork) 12/10/20
     -->
     <Template Name="FBW_Push_Toggle">

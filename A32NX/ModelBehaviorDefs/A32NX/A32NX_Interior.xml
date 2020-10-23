@@ -204,10 +204,10 @@
 
 
     <Template Name="FBW_Airbus_FIRE_TEST_LIGHTS">
-        <UseTemplate Name="ASOBO_GT_Push_Button_Airliner">
+        <UseTemplate Name="FBW_Push_Toggle">
             <DUMMY_BUTTON>True</DUMMY_BUTTON>
-            <SEQ1_EMISSIVE_CODE>(L:A32NX_FIRE_TEST_#TYPE##ID#, Bool) (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or</SEQ1_EMISSIVE_CODE>
-            <SEQ2_EMISSIVE_CODE>(L:A32NX_FIRE_TEST_#TYPE##ID#, Bool) (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or</SEQ2_EMISSIVE_CODE>
+            <SEQ1_CODE>(L:A32NX_FIRE_TEST_#TYPE##ID#, Bool)</SEQ1_CODE>
+            <SEQ2_CODE>(L:A32NX_FIRE_TEST_#TYPE##ID#, Bool)</SEQ2_CODE>
         </UseTemplate>
     </Template>
 
