@@ -321,6 +321,16 @@
             <Range LowerBound="1" />
             <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Index="2" RTPCName="SIMVAR_TURB_ENG_N1" />
         </Sound>
+        
+        <Sound WwiseEvent="ReverseLEXT" NodeName="Engine_PIVOT_LEFT_2" WwiseData="true" SimVar="TURB ENG N1" Units="percent" ViewPoint="outside" Index="1" Continuous="true" >
+            <Range LowerBound="1" />
+            <WwiseRTPC SimVar="TURB ENG REVERSE NOZZLE PERCENT" Units="percent" Index="2" RTPCName="SIMVAR_TURB_ENG_REVERSE_NOZZLE_PERCENT" />
+        </Sound>
+        
+        <Sound WwiseEvent="ReverseREXT" NodeName="Engine_PIVOT_RIGHT_2" WwiseData="true" SimVar="TURB ENG N1" Units="percent" ViewPoint="outside" Index="2" Continuous="true" >
+            <Range LowerBound="1" />
+            <WwiseRTPC SimVar="TURB ENG REVERSE NOZZLE PERCENT" Units="percent" Index="2" RTPCName="SIMVAR_TURB_ENG_REVERSE_NOZZLE_PERCENT" />
+        </Sound>
 
         <!-- FUEL PUMP SOUNDS ========================================================================================== -->
 
