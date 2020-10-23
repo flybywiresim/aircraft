@@ -72,7 +72,6 @@
 1. [ECAM] Adjusted Engine gauges so cursor extends beyond radius of gauge @RichardPilbery (Richard Pilbery | tricky_dicky#3571 on discord)
 1. [ECAM] Added AVAIL message on Engine display after engine start @RichardPilbery (Richard Pilbery | tricky_dicky#3571 on discord)
 1. [ECAM] Fix thrust lever position indicator on upper ECAM @RichardPilbery (Richard Pilbery | tricky_dicky#3571 on discord)
-1. [ECAM] Adjusted Engine gauges so cursor extends beyond radius of gauge (Richard Pilbery | tricky_dicky#3571 on discord)
 
 ## 2020/09
 1. [General] Add CHANGELOG.md - @nathaninnes (Nathan Innes)
