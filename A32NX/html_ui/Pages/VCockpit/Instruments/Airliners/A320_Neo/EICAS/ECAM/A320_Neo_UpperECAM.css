@@ -342,7 +342,6 @@ a320-neo-ecam-gauge #RootSVG #GraduationsGroup line.InnerMarker {
     stroke-width: 1px !important;
 }
 
-
 a320-neo-ecam-gauge #RootSVG #ExtraMessage rect {
     fill: var(--displayBackground);
     stroke: lightblue;
