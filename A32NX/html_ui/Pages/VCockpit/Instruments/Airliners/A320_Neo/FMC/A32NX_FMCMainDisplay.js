@@ -283,10 +283,15 @@ class FMCMainDisplay extends BaseAirliners {
             this.lastUserInput = this.inOut;
         }
         this.inOut = "";
+        this._inOutElement.style.color = "#ffffff";
     }
-    showErrorMessage(message) {
+    showErrorMessage(message, color = "#ffffff") {
+        if (!this.isDisplayingErrorMessage) {
+            this.lastUserInput = this.inOut;
+        }
         this.isDisplayingErrorMessage = true;
         this.inOut = message;
+        this._inOutElement.style.color = color;
     }
     async tryUpdateRefAirport(airportIdent) {
         const airport = await this.dataManager.GetAirportByIdent(airportIdent);
@@ -1948,6 +1953,16 @@ class FMCMainDisplay extends BaseAirliners {
     set atc1Frequency(_frq) {
         this._atc1Frequency = _frq;
     }
+    handlePreviousInputState() {
+        if (this.inOut === FMCMainDisplay.clrValue) {
+            this.inOut = "";
+        }
+        if (this.isDisplayingErrorMessage) {
+            this.inOut = this.lastUserInput;
+            this._inOutElement.style.color = "#ffffff";
+            this.isDisplayingErrorMessage = false;
+        }
+    }
     Init() {
         super.Init();
         this.dataManager = new FMCDataManager(this);
@@ -2001,38 +2016,21 @@ class FMCMainDisplay extends BaseAirliners {
             FMCMainDisplayPages.MenuPage(this);
         };
         this.onLetterInput = (l) => {
-            if (this.inOut === FMCMainDisplay.clrValue) {
-                this.inOut = "";
-            }
-            if (this.isDisplayingErrorMessage) {
-                this.inOut = this.lastUserInput;
-                this.isDisplayingErrorMessage = false;
-            }
+            this.handlePreviousInputState();
             this.inOut += l;
         };
         this.onSp = () => {
-            if (this.inOut === FMCMainDisplay.clrValue) {
-                this.inOut = "";
-            }
-            if (this.isDisplayingErrorMessage) {
-                this.inOut = this.lastUserInput;
-                this.isDisplayingErrorMessage = false;
-            }
+            this.handlePreviousInputState();
             this.inOut += " ";
         };
         this.onDel = () => {
+            this.handlePreviousInputState();
             if (this.inOut.length > 0) {
-                this.inOut = this.inOut.slice(0, this.inOut.length - 1);
+                this.inOut = this.inOut.slice(0, -1);
             }
         };
         this.onDiv = () => {
-            if (this.inOut === FMCMainDisplay.clrValue) {
-                this.inOut = "";
-            }
-            if (this.isDisplayingErrorMessage) {
-                this.inOut = this.lastUserInput;
-                this.isDisplayingErrorMessage = false;
-            }
+            this.handlePreviousInputState();
             this.inOut += "/";
         };
         this.onClr = () => {
@@ -2040,13 +2038,12 @@ class FMCMainDisplay extends BaseAirliners {
                 this.inOut = FMCMainDisplay.clrValue;
             } else if (this.inOut === FMCMainDisplay.clrValue) {
                 this.inOut = "";
+            } else if (this.isDisplayingErrorMessage) {
+                this.inOut = this.lastUserInput;
+                this._inOutElement.style.color = "#ffffff";
+                this.isDisplayingErrorMessage = false;
             } else {
-                if (this.isDisplayingErrorMessage) {
-                    this.inOut = this.lastUserInput;
-                    this.isDisplayingErrorMessage = false;
-                } else if (this.inOut.length > 0) {
-                    this.inOut = this.inOut.substr(0, this.inOut.length - 1);
-                }
+                this.inOut = this.inOut.slice(0, -1);
             }
         };
         this.cruiseFlightLevel = SimVar.GetGameVarValue("AIRCRAFT CRUISE ALTITUDE", "feets");
@@ -2189,10 +2186,14 @@ class FMCMainDisplay extends BaseAirliners {
                 const val = this.inOut;
                 if (val === "") {
                     this.inOut = "-";
-                } else if (val === "-") {
-                    this.inOut = "+";
-                } else if (val === "+") {
-                    this.inOut = "-";
+                } else if (val !== FMCMainDisplay.clrValue && !this.isDisplayingErrorMessage) {
+                    if (val.slice(-1) === "-") {
+                        this.inOut = this.inOut.slice(0, -1) + "+";
+                    } else if (val.slice(-1) === "+") {
+                        this.inOut = this.inOut.slice(0, -1) + "-";
+                    } else {
+                        this.inOut += "-";
+                    }
                 }
             } else if (input === "Localizer") {
                 this._apLocalizerOn = !this._apLocalizerOn;
