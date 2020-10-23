@@ -231,7 +231,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         }
         let dCI = this.costIndex / 999;
         dCI = dCI * dCI;
-        let speed = 320 * (1 - dCI) + 330 * dCI;
+        let speed = 290 * (1 - dCI) + 330 * dCI;
         if (SimVar.GetSimVarValue("PLANE ALTITUDE", "feets") < 10000) {
             speed = Math.min(speed, 250);
         }
@@ -918,15 +918,11 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     }
     // Asobo's getManagedApproachSpeed uses incorrect getCleanApproachSpeed for flaps 0
     getManagedApproachSpeedMcdu() {
-        const flapsHandleIndex = Simplane.getFlapsHandleIndex();
-        if (flapsHandleIndex === 0) {
-            return this.getPerfGreenDotSpeed();
-        } else if (flapsHandleIndex === 1) {
-            return this.getSlatApproachSpeed();
-        } else if (flapsHandleIndex === 2) {
-            return this.getFlapApproachSpeed();
-        } else {
-            return this.getVApp();
+        switch (Simplane.getFlapsHandleIndex()) {
+            case 0: return this.getPerfGreenDotSpeed();
+            case 1: return this.getSlatApproachSpeed();
+            case 2: return this.getFlapApproachSpeed();
+            default: return this.getVApp();
         }
     }
     checkUpdateFlightPhase() {
