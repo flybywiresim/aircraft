@@ -1506,7 +1506,7 @@ var A320_Neo_UpperECAM;
             gaugeDef.currentValuePos.y = 0.75;
             gaugeDef.cursorMultiplier = 1.1;
             gaugeDef.currentValueBorderWidth = 0.68;
-            gaugeDef.outerIndicatorFunction = this.getN1GaugeThrottleValue.bind(this);
+            gaugeDef.outerIndicatorFunction = this.getThrottlePosition.bind(this);
             gaugeDef.outerDynamicArcFunction = this.getN1GaugeAutopilotThrottleValues.bind(this);
             gaugeDef.extraMessageFunction = this.getN1GaugeExtraMessage.bind(this);
             gaugeDef.maxRedValue = A320_Neo_UpperECAM.Definitions.MAX_GAUGE_N1_RED;
@@ -1570,6 +1570,9 @@ var A320_Neo_UpperECAM;
             const throttle = Math.abs(Simplane.getEngineThrottleCommandedN1(this.index));
             const value = throttle * A320_Neo_UpperECAM.Definitions.THROTTLE_TO_N1_GAUGE;
             return value;
+        }
+        getThrottlePosition() {
+            return Simplane.getEngineThrottle(this.index);
         }
         getN1GaugeAutopilotThrottleValues(_values) {
             if ((_values != null) && (_values.length == 2)) {
