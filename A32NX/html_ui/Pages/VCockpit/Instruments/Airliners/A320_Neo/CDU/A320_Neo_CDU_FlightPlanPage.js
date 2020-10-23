@@ -116,15 +116,13 @@ class CDUFlightPlanPage {
             }
             if (prev && curr) {
                 if (i === 1) {
-                    prev.cumulativeDistanceInFP = 0;
-                    prev.cumulativeEstimatedTimeEnRouteFP = 0;
                     const coord = new LatLong(SimVar.GetSimVarValue("PLANE LATITUDE", "degree latitude"), SimVar.GetSimVarValue("PLANE LONGITUDE", "degree longitude"));
                     curr.cumulativeDistanceInFP = Avionics.Utils.computeDistance(coord, curr.infos.coordinates);
                     curr.cumulativeEstimatedTimeEnRouteFP = curr.cumulativeDistanceInFP / groundSpeed * 3600;
                 } else {
                     const dist = Avionics.Utils.computeDistance(prev.infos.coordinates, curr.infos.coordinates);
                     curr.cumulativeDistanceInFP = prev.cumulativeDistanceInFP + dist;
-                    curr.cumulativeEstimatedTimeEnRouteFP = prev.cumulativeEstimatedTimeEnRouteFP + (curr.cumulativeDistanceInFP / groundSpeed * 3600);
+                    curr.cumulativeEstimatedTimeEnRouteFP = prev.cumulativeEstimatedTimeEnRouteFP + (dist / groundSpeed * 3600);
                 }
             }
         }
