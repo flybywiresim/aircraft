@@ -71,6 +71,7 @@
 1. [ECAM] Added ECAM ALL button functionality @MikeKuijper (Mike Kuijper)
 1. [ECAM] Fix thrust lever position indicator on upper ECAM @RichardPilbery (Richard Pilbery | tricky_dicky3571 on discord)
 1. [ECAM] Adjusted Engine gauges so cursor extends beyond radius of gauge @RichardPilbery (Richard Pilbery)
+1. [CDU] Flight plan waypoints distances and times are now properly displayed and updated - @lousybyte (lousybyte)
 
 ## 2020/09
 1. [General] Add CHANGELOG.md - @nathaninnes (Nathan Innes)
