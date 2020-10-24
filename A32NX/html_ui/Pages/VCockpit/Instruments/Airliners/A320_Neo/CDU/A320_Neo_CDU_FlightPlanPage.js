@@ -129,9 +129,7 @@ class CDUFlightPlanPage {
         if (mcdu.flightPlanManager.decelWaypoint) {
             const idx = waypointsWithDiscontinuities.findIndex((e) => e.wp.cumulativeDistanceInFP > mcdu.flightPlanManager.decelWaypoint.cumulativeDistanceInFP);
             if (idx > 0 && idx < waypointsWithDiscontinuities.length) {
-                const prev = waypointsWithDiscontinuities[idx - 1].wp;
-                const dist = Avionics.Utils.computeDistance(prev.infos.coordinates, mcdu.flightPlanManager.decelWaypoint.infos.coordinates);
-                mcdu.flightPlanManager.decelWaypoint.cumulativeEstimatedTimeEnRouteFP = prev.cumulativeEstimatedTimeEnRouteFP + (dist / groundSpeed * 3600);
+                mcdu.flightPlanManager.decelWaypoint.cumulativeEstimatedTimeEnRouteFP = mcdu.flightPlanManager.decelWaypoint.cumulativeDistanceInFP / groundSpeed * 3600;
                 waypointsWithDiscontinuities.splice(idx, 0, {
                     wp: mcdu.flightPlanManager.decelWaypoint,
                     fpIndex: -42
