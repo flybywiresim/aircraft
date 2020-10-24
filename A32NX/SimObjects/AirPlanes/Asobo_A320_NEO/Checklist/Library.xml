@@ -378,7 +378,7 @@
          <CheckpointDesc SubjectTT="TT:GLARESHIELD" ExpectationTT="TT:" />
       </Checkpoint>
       <Checkpoint Id="A320_CPREP1_GLARESHIELD_LIGHTS">
-         <CheckpointDesc SubjectTT="TT:Glareshield Integral Light and Flood Flight" ExpectationTT="TT:SET" />
+         <CheckpointDesc SubjectTT="TT:Glareshield Integral Light and Flood Light" ExpectationTT="TT:SET" />
          <Instrument Id="Lighting_Knob_Glareshield_2"/>
          <Instrument Id="Lighting_Knob_Glareshield_3"/>
       </Checkpoint>
