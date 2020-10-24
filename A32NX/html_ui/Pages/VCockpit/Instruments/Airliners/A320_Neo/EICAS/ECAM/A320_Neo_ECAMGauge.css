@@ -129,9 +129,9 @@ a320-neo-ecam-gauge #RootSVG #ExtraMessage {
     height: 100%;
 }
 a320-neo-ecam-gauge #RootSVG #ExtraMessage rect {
-    fill: black;
+    fill: var(--displayBackground);
     stroke: grey;
-    stroke-width: 3px;
+    stroke-width: 1px;
 }
 a320-neo-ecam-gauge #RootSVG #ExtraMessage text {
     text-align: center;
