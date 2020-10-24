@@ -260,12 +260,12 @@
             <WwiseRTPC SimVar="TURB ENG REVERSE NOZZLE PERCENT" Units="percent" Index="2" RTPCName="SIMVAR_TURB_ENG_REVERSE_NOZZLE_PERCENT" />
         </Sound>
         
-        <Sound WwiseEvent="StartL" NodeName="Engine_PIVOT_LEFT_2" WwiseData="true" SimVar="TURB ENG N2" Units="percent" ViewPoint="Inside" Index="1" Continuous="true" >
+        <Sound WwiseEvent="StartL" NodeName="Engine_PIVOT_LEFT_2" FadeOutType="1" FadeOutTime="1"  WwiseData="true" SimVar="TURB ENG N2" Units="percent" ViewPoint="Inside" Index="1" Continuous="true" >
             <Range LowerBound="1" />
             <WwiseRTPC SimVar="TURB ENG N2" Units="percent" Index="1" RTPCName="SIMVAR_TURB_ENG_N2" />
         </Sound>
         
-        <Sound WwiseEvent="StartR" NodeName="Engine_PIVOT_RIGHT_2" WwiseData="true" SimVar="TURB ENG N2" Units="percent" ViewPoint="Inside" Index="2" Continuous="true" >
+        <Sound WwiseEvent="StartR" NodeName="Engine_PIVOT_RIGHT_2" FadeOutType="1" FadeOutTime="1"  WwiseData="true" SimVar="TURB ENG N2" Units="percent" ViewPoint="Inside" Index="2" Continuous="true" >
             <Range LowerBound="1" />
             <WwiseRTPC SimVar="TURB ENG N2" Units="percent" Index="2" RTPCName="SIMVAR_TURB_ENG_N2" />
         </Sound>
@@ -286,12 +286,12 @@
             </Requires>
         </Sound>
         
-        <Sound WwiseEvent="StartLEXT" NodeName="Engine_PIVOT_LEFT_2" WwiseData="true" SimVar="TURB ENG N2" Units="percent" ViewPoint="Outside" Index="1" Continuous="true" >
+        <Sound WwiseEvent="StartLEXT" NodeName="Engine_PIVOT_LEFT_2" FadeOutType="1" FadeOutTime="1" WwiseData="true" SimVar="TURB ENG N2" Units="percent" ViewPoint="Outside" Index="1" Continuous="true" >
             <Range LowerBound="1" />
             <WwiseRTPC SimVar="TURB ENG N2" Units="percent" Index="1" RTPCName="SIMVAR_TURB_ENG_N2" />
         </Sound>
         
-        <Sound WwiseEvent="StartREXT" NodeName="Engine_PIVOT_RIGHT_2" WwiseData="true" SimVar="TURB ENG N2" Units="percent" ViewPoint="Outside" Index="2" Continuous="true" >
+        <Sound WwiseEvent="StartREXT" NodeName="Engine_PIVOT_RIGHT_2" FadeOutType="1" FadeOutTime="1"  WwiseData="true" SimVar="TURB ENG N2" Units="percent" ViewPoint="Outside" Index="2" Continuous="true" >
             <Range LowerBound="1" />
             <WwiseRTPC SimVar="TURB ENG N2" Units="percent" Index="2" RTPCName="SIMVAR_TURB_ENG_N2" />
         </Sound>
