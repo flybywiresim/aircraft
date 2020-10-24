@@ -20,6 +20,7 @@ var A320_Neo_LowerECAM_APU;
             // Last state tracking inits to -1 since we don't know what the state is.
             // The first update sets it correctly for us.
             this.lastAPUMasterState = -1;
+            this.lastAdirsAligned = -1;
             this.lastAPUBleedState = -1;
 
             //Generator
@@ -43,6 +44,13 @@ var A320_Neo_LowerECAM_APU;
 
             //Gauges
             this.apuInfo = new APUInfo(this.querySelector("#APUGauges"));
+
+            this.previousState = {
+                APUPctRPM: undefined,
+                adirsAligned: undefined,
+                apuGenActive: undefined,
+                externalPowerOn: undefined
+            };
 
             this.APUBleedTimer = 0;
             this.isInitialised = true;
@@ -70,10 +78,12 @@ var A320_Neo_LowerECAM_APU;
 
             const apuFlapOpenPercent = SimVar.GetSimVarValue("L:APU_FLAP_OPEN", "Percent");
 
-            //Bleed
+            // Bleed
             const currentAPUBleedState = SimVar.GetSimVarValue("BLEED AIR APU","Bool");
+
             if (currentAPUBleedState !== this.lastAPUBleedState) {
                 this.lastAPUBleedState = currentAPUBleedState;
+
                 if (currentAPUBleedState === 1) {
                     this.APUBleedOn.setAttribute("visibility", "visible");
                     this.APUBleedOff.setAttribute("visibility", "hidden");
@@ -90,27 +100,46 @@ var A320_Neo_LowerECAM_APU;
             this.APUFrequency.textContent = SimVar.GetSimVarValue("L:APU_GEN_FREQ","Hertz");
             this.APUFrequency.setAttribute("class", "APUGenParamValue");
 
-            //AVAIL indication & bleed pressure
-            if (APUPctRPM > 95) {
-                this.APUAvail.setAttribute("visibility", "visible");
+            const adirsAligned = SimVar.GetSimVarValue("L:A320_Neo_ADIRS_STATE", "Number") === 2;
+            const apuGenActive = SimVar.GetSimVarValue("APU GENERATOR ACTIVE", "Bool") === 1;
+            const externalPowerOn = SimVar.GetSimVarValue("EXTERNAL POWER ON", "Bool") === 0;
 
-                if (SimVar.GetSimVarValue("APU GENERATOR ACTIVE", "Bool") == 1 && SimVar.GetSimVarValue("EXTERNAL POWER ON", "Bool") === 0) {
-                    this.APUGenAvailArrow.setAttribute("visibility", "visible");
-                } else {
-                    this.APUGenAvailArrow.setAttribute("visibility", "hidden");
+            // AVAIL indication & bleed pressure
+            const doUpdateAvailAndBleed =
+                   APUPctRPM !== this.previousState.APUPctRPM
+                || adirsAligned !== this.previousState.adirsAligned
+                || apuGenActive !== this.previousState.apuGenActive
+                || externalPowerOn !== this.previousState.externalPowerOn;
+
+            if (doUpdateAvailAndBleed) {
+                this.previousState.APUPctRPM = APUPctRPM;
+                this.previousState.adirsAligned = adirsAligned;
+                this.previousState.apuGenActive = apuGenActive;
+                this.previousState.externalPowerOn = apuGenActive;
+
+                if (APUPctRPM > 95) {
+                    this.APUAvail.setAttribute("visibility", "visible");
+
+                    if (apuGenActive && externalPowerOn) {
+                        this.APUGenAvailArrow.setAttribute("visibility", "visible");
+                    } else {
+                        this.APUGenAvailArrow.setAttribute("visibility", "hidden");
+                    }
+
+                    this.APUBleedPressure.textContent = SimVar.GetSimVarValue("L:APU_BLEED_PRESSURE","PSI");
+                    this.APUBleedPressure.setAttribute("class", "APUGenParamValue");
                 }
 
-                this.APUBleedPressure.textContent = SimVar.GetSimVarValue("L:APU_BLEED_PRESSURE","PSI");
-                this.APUBleedPressure.setAttribute("class", "APUGenParamValue");
-            } else {
-                this.APUAvail.setAttribute("visibility", "hidden");
-                this.APUGenAvailArrow.setAttribute("visibility", "hidden");
-                this.APUBleedPressure.textContent = "XX";
-                this.APUBleedPressure.setAttribute("class", "APUGenParamValueWarn");
+                if (APUPctRPM < 95 || !adirsAligned) {
+                    this.APUAvail.setAttribute("visibility", "hidden");
+                    this.APUGenAvailArrow.setAttribute("visibility", "hidden");
+                    this.APUBleedPressure.textContent = "XX";
+                    this.APUBleedPressure.setAttribute("class", "APUGenParamValueWarn");
 
-                if (currentAPUMasterState === 0) {
-                    this.APUGenInfo.setAttribute("visibility", "hidden");
-                    this.APUGenTitle.setAttribute("class", "APUGenTitleInactive");
+                    if (currentAPUMasterState === 0) {
+                        this.APUGenInfo.setAttribute("visibility", "hidden");
+                        this.APUGenTitle.setAttribute("class", "APUGenTitleInactive");
+                    }
                 }
             }
 
@@ -298,5 +327,5 @@ var A320_Neo_LowerECAM_APU;
     }
     A320_Neo_LowerECAM_APU.APUInfo = APUInfo;
 })(A320_Neo_LowerECAM_APU || (A320_Neo_LowerECAM_APU = {}));
+
 customElements.define("a320-neo-lower-ecam-apu", A320_Neo_LowerECAM_APU.Page);
-//# sourceMappingURL=A320_Neo_LowerECAM_APU.js.map
