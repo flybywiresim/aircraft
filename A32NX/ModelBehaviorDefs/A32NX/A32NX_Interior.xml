@@ -450,34 +450,20 @@
             <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.PANEL_DEICE_WINDSHIELD_DEICE_ON</ANIMTIP_1>
             <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.PANEL_DEICE_WINDSHIELD_DEICE_OFF</ANIMTIP_0>
 
-            <LEFT_SINGLE_CODE>
-                (A:WINDSHIELD DEICE SWITCH, Enum) 2 == if{
-                    1 (&gt;K:WINDSHIELD_DEICE_SET)
-                } els{
-                    2 (&gt;K:WINDSHIELD_DEICE_SET)
-                }
-                (A:PITOT HEAT SWITCH, Enum) 2 == if{
-                    1 (&gt;K:PITOT_HEAT_SET)
-                    0 (&gt;L:A32NX_PITOT_HEAT_AUTO)
-                } els{
-                    2 (&gt;K:PITOT_HEAT_SET)
-                }
-            </LEFT_SINGLE_CODE>
+            <LEFT_SINGLE_CODE>(L:A32NX_MAN_PITOT_HEAT, Bool) ! (&gt;L:A32NX_MAN_PITOT_HEAT, Bool)</LEFT_SINGLE_CODE>
             <DISABLE_SEQ1/>
-            <SEQ2_EMISSIVE_CODE>(A:PITOT HEAT SWITCH, Enum) 1 == (L:A32NX_PITOT_HEAT_AUTO, Bool) ! and</SEQ2_EMISSIVE_CODE>
-            <SEQ2_CODE_DRIVES_DOWN_STATE>False</SEQ2_CODE_DRIVES_DOWN_STATE>
-            <DOWN_STATE_CODE>(A:PITOT HEAT SWITCH, Enum) 1 == (L:A32NX_PITOT_HEAT_AUTO, Bool) ! and</DOWN_STATE_CODE>
+            <SEQ2_CODE>(L:A32NX_MAN_PITOT_HEAT)</SEQ2_CODE>
         </UseTemplate>
 
         <UseTemplate Name="ASOBO_GT_Update">
             <FREQUENCY>0.33</FREQUENCY>
             <UPDATE_CODE>
-                (A:WINDSHIELD DEICE SWITCH, Enum) 0 == if{ (&gt;K:WINDSHIELD_DEICE_TOGGLE) }
-                (A:PITOT HEAT SWITCH, Enum) 0 == if{ (&gt;K:PITOT_HEAT_TOGGLE) }
-
-                (A:ENG COMBUSTION:1, Bool) (A:ENG COMBUSTION:2, Bool) or (A:PITOT HEAT, Bool) ! and if{
-                #ID# (&gt;K:PITOT_HEAT_ON)
-                    1 (&gt;L:A32NX_PITOT_HEAT_AUTO)
+                (A:ENG COMBUSTION:1, Bool) (A:ENG COMBUSTION:2, Bool) or (L:A32NX_MAN_PITOT_HEAT, Bool) or if{
+                    (A:PITOT HEAT, Bool) ! if{ (&gt;K:PITOT_HEAT_ON) }
+                    (A:WINDSHIELD DEICE SWITCH, Bool) ! if{ (&gt;K:WINDSHIELD_DEICE_ON) }
+                } els{
+                    (A:PITOT HEAT, Bool) if{ (&gt;K:PITOT_HEAT_OFF) }
+                    (A:WINDSHIELD DEICE SWITCH, Bool) if{ (&gt;K:WINDSHIELD_DEICE_OFF) }
                 }
             </UPDATE_CODE>
         </UseTemplate>
