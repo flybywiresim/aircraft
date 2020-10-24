@@ -191,50 +191,21 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
 
         this.updateScreenState();
 
-        //Checking the GPS Primary State and displaying the message accordingly.
-        var GPSPrimary = SimVar.GetSimVarValue("L:GPSPrimary", "bool");
-        var GPSPrimaryAck = SimVar.GetSimVarValue("L:GPSPrimaryAcknowledged", "bool");
-        if (this.inOut.length <= 0) { //First Time When Aircraft Loaded
-            if (GPSPrimary && !GPSPrimaryAck) {
-                this.lastUserInput = "";
+        this.updateGPSMessage();
+    }
+
+    // check GPS Primary state and display message accordingly
+    updateGPSMessage() {
+        if (!SimVar.GetSimVarValue("L:GPSPrimaryAcknowledged", "Bool")) {
+            if (!SimVar.GetSimVarValue("L:GPSPrimary", "Bool")) {
+                this.showErrorMessage("GPS PRIMARY LOST", "#ffff00");
+            } else {
                 this.showErrorMessage("GPS PRIMARY");
-                this._inOutElement.style.color = "#ffffff";
-                SimVar.SetSimVarValue("L:GPSPrimaryMessageDisplayed", "bool", 1);
-            } else if (!GPSPrimaryAck && !GPSPrimary) {
-                this.lastUserInput = "";
-                this.showErrorMessage("GPS PRIMARY LOST");
-                this._inOutElement.style.color = "#FFBF00";
-                SimVar.SetSimVarValue("L:GPSPrimaryMessageDisplayed", "bool", 1);
-            } else {
-                if (this.inOut == "GPS PRIMARY" || this.inOut == "GPS PRIMARY LOST") { //Clear the GPS Messages if not cleared before
-                    this.showErrorMessage("");
-                }
-                this._inOutElement.style.color = "#ffffff";
-                SimVar.SetSimVarValue("L:GPSPrimaryMessageDisplayed", "bool", 0);
             }
-        } else { //Subsequent Times - To handle the IRS Alignment changes in the middle of the session.
-            if (this.inOut != "GPS PRIMARY" && this.inOut != "GPS PRIMARY LOST") {
-                this._inOutElement.style.color = "#ffffff";
-                SimVar.SetSimVarValue("L:GPSPrimaryMessageDisplayed", "bool", 0);
-            } else {
-                if (GPSPrimary && !GPSPrimaryAck) {
-                    this.lastUserInput = "";
-                    this.showErrorMessage("GPS PRIMARY");
-                    this._inOutElement.style.color = "#ffffff";
-                    SimVar.SetSimVarValue("L:GPSPrimaryMessageDisplayed", "bool", 1);
-                } else if (!GPSPrimaryAck && !GPSPrimary) {
-                    this.lastUserInput = "";
-                    this.showErrorMessage("GPS PRIMARY LOST");
-                    this._inOutElement.style.color = "#FFBF00";
-                    SimVar.SetSimVarValue("L:GPSPrimaryMessageDisplayed", "bool", 1);
-                } else {
-                    if (this.inOut == "GPS PRIMARY" || this.inOut == "GPS PRIMARY LOST") { //Clear the GPS Messages if not cleared before
-                        this.showErrorMessage("");
-                    }
-                    this._inOutElement.style.color = "#ffffff";
-                    SimVar.SetSimVarValue("L:GPSPrimaryMessageDisplayed", "bool", 0);
-                }
-            }
+            SimVar.SetSimVarValue("L:GPSPrimaryMessageDisplayed", "Bool", 1);
+        } else if (SimVar.GetSimVarValue("L:GPSPrimaryMessageDisplayed", "Bool")) {
+            this.handlePreviousInputState();
+            SimVar.SetSimVarValue("L:GPSPrimaryMessageDisplayed", "Bool", 0);
         }
     }
 
@@ -410,17 +381,9 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             SimVar.SetSimVarValue("L:A320_FCU_SHOW_SELECTED_HEADING", "number", 1);
         }
 
-        //Clear event to set the acknowledged flag to 1, this in turn hides the GPS Primary Message in the ND.
+        // set acknowledged flag to 1, this in turn hides the GPS Primary Message in the ND.
         if (_event === "1_BTN_CLR") {
-            var ack = SimVar.GetSimVarValue("L:GPSPrimaryAcknowledged", "bool");
-            var isGPSPrimaryMessageDisplayed = SimVar.GetSimVarValue("L:GPSPrimaryMessageDisplayed", "bool");
-            if (!ack && this._inOutElement.textContent == "" && isGPSPrimaryMessageDisplayed) {
-                SimVar.SetSimVarValue("L:GPSPrimaryAcknowledged", "bool", 1);
-                this.isDisplayingErrorMessage = false;
-                this.showErrorMessage("");
-                this._inOutElement.style.color = "#ffffff";
-                SimVar.SetSimVarValue("L:GPSPrimaryMessageDisplayed", "bool", 0);
-            }
+            SimVar.SetSimVarValue("L:GPSPrimaryAcknowledged", "Bool", 1);
         }
     }
     onFlightPhaseChanged() {
