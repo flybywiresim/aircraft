@@ -313,14 +313,16 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
         const terrainOn = SimVar.GetSimVarValue(`L:BTN_TERRONND_${this.screenIndex}_ACTIVE`, "number");
         const mapMode = SimVar.GetSimVarValue("L:A320_Neo_MFD_NAV_MODE_" + this.screenIndex, "number");
         const mapRange = SimVar.GetSimVarValue("L:A320_Neo_MFD_Range_" + this.screenIndex, "number");
-        const shouldShowWeather = wxRadarOn && wxRadarMode != 3;
+        const shouldShowWeather = (this.map && !this.map.planMode) && wxRadarOn && wxRadarMode != 3;
         if (this.wxRadarOn != wxRadarOn || this.terrainOn != terrainOn || this.wxRadarMode != wxRadarMode || this.mapMode != mapMode) {
             this.wxRadarOn = wxRadarOn;
             this.wxRadarMode = wxRadarMode;
             this.terrainOn = terrainOn;
             this.mapMode = mapMode;
             this.setMapMode(this.mapMode);
-            if (this.terrainOn) {
+            if (this.map && this.map.planMode) {
+                this.mapConfigId = 0;
+            } else if (this.terrainOn) {
                 this.mapConfigId = 1;
             } else if (shouldShowWeather) {
                 this.showWeather();
@@ -328,10 +330,17 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
                 this.mapConfigId = 0;
             }
             if (this.compass.svg.displayMode === Jet_NDCompass_Display.ARC) {
-                this.map.showCompassMask();
+                this.map.showWxMask();
+                if (terrainOn) {
+                    // TODO: remove need for compass mask by editing SvgMap.js
+                    this.map.showCompassMask();
+                } else {
+                    this.map.hideCompassMask();
+                }
                 this.map.hidePlanMask();
             } else {
                 this.map.showPlanMask();
+                this.map.hideWxMask();
                 this.map.hideCompassMask();
             }
             if (this.modeChangeMask) {
@@ -581,8 +590,9 @@ class A320_Neo_MFD_Map extends MapInstrumentElement {
     }
     onTemplateLoaded() {
         super.onTemplateLoaded();
-        this.compassModeMask = new SvgBottomMaskElement("a320-compass-mask");
-        this.planModeMask = new SvgPlanMaskElement("a320-plan-mask");
+        this.compassModeMask = new SvgBottomMaskElement("a320-compass-mask", 0, -30);
+        this.wxMask = new SvgPlanMaskElement("a320-wx-mask", 0, 0, "M702 583 835 583 835 457 750 457 702 500z");
+        this.planModeMask = new SvgPlanMaskElement("a320-plan-mask", 0, 0, "M0,0 v1000 h1000 V0 H0 z M813.559,739.539 H186.442 v-471 h627.117 V739.539 z");
     }
     getAdaptiveRanges(_factor) {
         const ranges = Array.from(this.zoomRanges);
@@ -634,7 +644,7 @@ class A320_Neo_MFD_Map extends MapInstrumentElement {
         }
     }
     showWeather() {
-        this.instrument.showWeatherWithGPS(EWeatherRadar.HORIZONTAL, Math.PI * 2.0);
+        this.instrument.showWeatherWithGPS(EWeatherRadar.HORIZONTAL, Math.PI);
         this.instrument.setBingMapStyle("5.5%", "5.5%", "89%", "89%");
     }
     hideWeather() {
@@ -642,6 +652,22 @@ class A320_Neo_MFD_Map extends MapInstrumentElement {
             this.instrument.showWeather(EWeatherRadar.OFF);
         }
     }
+    showWxMask() {
+        if (this.wxMask) {
+            if (this.instrument.maskElements.indexOf(this.wxMask) === -1) {
+                this.instrument.maskElements.push(this.wxMask);
+            }
+        }
+    }
+    hideWxMask() {
+        if (this.wxMask) {
+            const maskIndex = this.instrument.maskElements.indexOf(this.wxMask);
+            if (maskIndex !== -1) {
+                this.instrument.maskElements.splice(maskIndex, 1);
+            }
+        }
+    }
+
     showCompassMask() {
         if (this.compassModeMask) {
             if (this.instrument.maskElements.indexOf(this.compassModeMask) === -1) {
