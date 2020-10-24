@@ -713,13 +713,16 @@
                 <MAX_STEERING_VELOCITY>30</MAX_STEERING_VELOCITY>
             </UseTemplate>
 
+
             <UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
                 <NODE_ID>PUSH_HANDLE_LEFT_YOKE</NODE_ID>
-                <POTENTIOMETER>85</POTENTIOMETER>
+                <!--<POTENTIOMETER>85</POTENTIOMETER>-->
+                <EMISSIVE_CODE>0</EMISSIVE_CODE>
             </UseTemplate>
             <UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
                 <NODE_ID>PUSH_HANDLE_RIGHT_YOKE</NODE_ID>
-                <POTENTIOMETER>85</POTENTIOMETER>
+                <!--<POTENTIOMETER>85</POTENTIOMETER>-->
+                <EMISSIVE_CODE>0</EMISSIVE_CODE>
             </UseTemplate>
 
             <!-- NYI
