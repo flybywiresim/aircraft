@@ -69,9 +69,13 @@
 1. [MODEL] Spinner spiral now shows at medium blur - @lukecologne (luke)
 1. [MFD] Weather Radar now sweeps at 180 degrees, Correct masking for flight path/constr/waypoints and display elements, disabled WX/TERR ON MD in PLAN - @2hwk (2Cas#1022)
 1. [ECAM] Added ECAM ALL button functionality @MikeKuijper (Mike Kuijper)
+1. [ECAM] Fix thrust lever position indicator on upper ECAM @RichardPilbery (Richard Pilbery | tricky_dicky3571 on discord)
+1. [ECAM] Adjusted Engine gauges so cursor extends beyond radius of gauge @RichardPilbery (Richard Pilbery)
 1. [ECAM] Fix thrust lever position indicator on upper ECAM @RichardPilbery (Richard Pilbery | tricky_dicky#3571 on discord)
 1. [ECAM] Adjusted Engine gauges so cursor extends beyond radius of gauge @RichardPilbery (Richard Pilbery | tricky_dicky#3571 on discord)
 1. [ECAM] Fix ECAM N1 engine indicator @RichardPilbery (Richard Pilbery | tricky_dicky#3571 on discord)
+1. [Sound] Added realistic Leap-1A engine sounds including startup, shutdown, idle through TOGA, exterior and interior sounds @hotshotp - (Boris#9134)
+1. [Sound] Enchanced throttle detent sounds @hotshotp - (Boris#9134)
 
 ## 2020/09
 1. [General] Add CHANGELOG.md - @nathaninnes (Nathan Innes)
