@@ -1,7 +1,7 @@
 @import url("/CSS/A32NX_Display_Common.css");
 
 :root {
-    --brake-temp-font-size: 19px;
+    --brake-temp-font-size: 18px;
 }
 
 @keyframes animateLandingGear {
@@ -66,9 +66,11 @@
     font-size: 21px;
     text-anchor: middle;
 }
+
 .medium-text {
-    font-size: 16px;
+    font-size: 17px;
 }
+
 .align-left {
     text-anchor: start !important;
 }
@@ -116,7 +118,7 @@
 .wheel-set-brake-temp {
     fill: var(--displayGreen);
     stroke: var(--displayGreen);
-    font-size: 20px;
+    font-size: var(--brake-temp-font-size);
     text-anchor: end !important;
 }
 .wheel-set-brake-temp-amber {
@@ -183,7 +185,8 @@ a320-neo-lower-ecam-wheel text {
     text-anchor: middle;
     alignment-baseline: central;
 }
+
 .hyd-background {
-    fill: var(--displayDarkGrey);
+    fill: #666666;
     stroke: none;
 }
