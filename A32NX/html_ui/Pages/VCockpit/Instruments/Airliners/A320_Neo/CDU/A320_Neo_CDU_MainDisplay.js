@@ -921,8 +921,8 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         switch (Simplane.getFlapsHandleIndex()) {
             case 0: return this.getPerfGreenDotSpeed();
             case 1: return this.getSlatApproachSpeed();
-            case 2: return this.getFlapApproachSpeed();
-            default: return this.getVApp();
+            case 4: return this.getVApp();
+            default: return this.getFlapApproachSpeed();
         }
     }
     checkUpdateFlightPhase() {
