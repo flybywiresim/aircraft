@@ -1166,63 +1166,53 @@
                     <TYPE>AIRBUS</TYPE>
                 </DefaultTemplateParameters>
 
-                <UseTemplate Name="ASOBO_ELECTRICAL_Switch_Battery_Master_Template">
+                <UseTemplate Name="FBW_Airbus_Batter_Master_Switch">
                     <NODE_ID>PUSH_OVHD_ELEC_BAT1</NODE_ID>
-                    <ANIM_NAME>PUSH_OVHD_ELEC_BAT1</ANIM_NAME>
                     <ID>1</ID>
                     <BATTERY_BUS_ID>10</BATTERY_BUS_ID>
                     <HOT_BATTERY_BUS_ID>6</HOT_BATTERY_BUS_ID>
                 </UseTemplate>
 
-                <UseTemplate Name="ASOBO_ELECTRICAL_Switch_Battery_Master_Template">
+                <UseTemplate Name="FBW_Airbus_Batter_Master_Switch">
                     <NODE_ID>PUSH_OVHD_ELEC_BAT2</NODE_ID>
-                    <ANIM_NAME>PUSH_OVHD_ELEC_BAT2</ANIM_NAME>
                     <ID>2</ID>
                     <BATTERY_BUS_ID>11</BATTERY_BUS_ID>
                     <HOT_BATTERY_BUS_ID>6</HOT_BATTERY_BUS_ID>
                 </UseTemplate>
 
-                <UseTemplate Name="ASOBO_ELECTRICAL_Switch_Alternator_Template">
+                <UseTemplate Name="FBW_Airbus_Engine_Generator_Switch">
                     <NODE_ID>PUSH_OVHD_ELEC_GEN1</NODE_ID>
-                    <ANIM_NAME>PUSH_OVHD_ELEC_GEN1</ANIM_NAME>
                     <ID>1</ID>
                 </UseTemplate>
 
-                <UseTemplate Name="ASOBO_ELECTRICAL_Switch_Alternator_Template">
+                <UseTemplate Name="FBW_Airbus_Engine_Generator_Switch">
                     <NODE_ID>PUSH_OVHD_ELEC_GEN2</NODE_ID>
-                    <ANIM_NAME>PUSH_OVHD_ELEC_GEN2</ANIM_NAME>
                     <ID>2</ID>
                 </UseTemplate>
 
-                <UseTemplate Name="ASOBO_ELECTRICAL_Switch_APU_Generator_Template">
+                <UseTemplate Name="FBW_Airbus_APU_Generator_Switch">
                     <NODE_ID>PUSH_OVHD_ELEC_APUGEN</NODE_ID>
-                    <ANIM_NAME>PUSH_OVHD_ELEC_APUGEN</ANIM_NAME>
                     <ID>1</ID>
                 </UseTemplate>
 
-                <UseTemplate Name="ASOBO_ELECTRICAL_Switch_ExternalPower_Template">
+                <UseTemplate Name="FBW_Airbus_External_Power_Switch">
                     <NODE_ID>PUSH_OVHD_ELEC_EXTPWR</NODE_ID>
-                    <ANIM_NAME>PUSH_OVHD_ELEC_EXTPWR</ANIM_NAME>
                     <ID>1</ID>
                     <FAILURE_CIRCUIT>76</FAILURE_CIRCUIT>
-                    <TOOLTIPID>%((A:EXTERNAL POWER AVAILABLE:1, Bool) 0 == )%{if}TT:COCKPIT.TOOLTIPS.UNAVAILABLE%{end} %((A:EXTERNAL POWER AVAILABLE:1, Bool) (A:EXTERNAL POWER ON:1, Bool) and)%{if}TT:COCKPIT.TOOLTIPS.EXT_PWR_OFF%{else}TT:COCKPIT.TOOLTIPS.EXT_PWR_ON%{end}</TOOLTIPID>
                 </UseTemplate>
 
-                <UseTemplate Name="ASOBO_ELECTRICAL_Switch_Engine_Bleed_Template">
+                <UseTemplate Name="FBW_Airbus_Engine_Bleed_Switch">
                     <NODE_ID>PUSH_OVHD_AIRCOND_ENG1BLEED</NODE_ID>
-                    <ANIM_NAME>PUSH_OVHD_AIRCOND_ENG1BLEED</ANIM_NAME>
                     <ID>1</ID>
                 </UseTemplate>
 
-                <UseTemplate Name="ASOBO_ELECTRICAL_Switch_Engine_Bleed_Template">
+                <UseTemplate Name="FBW_Airbus_Engine_Bleed_Switch">
                     <NODE_ID>PUSH_OVHD_AIRCOND_ENG2BLEED</NODE_ID>
-                    <ANIM_NAME>PUSH_OVHD_AIRCOND_ENG2BLEED</ANIM_NAME>
                     <ID>2</ID>
                 </UseTemplate>
 
-                <UseTemplate Name="ASOBO_ELECTRICAL_Switch_APU_Bleed_Template">
+                <UseTemplate Name="FBW_Airbus_APU_Bleed_Switch">
                     <NODE_ID>PUSH_OVHD_AIRCOND_APUBLEED</NODE_ID>
-                    <ANIM_NAME>PUSH_OVHD_AIRCOND_APUBLEED</ANIM_NAME>
                 </UseTemplate>
 
                 <UseTemplate Name="A32NX_AIRBUS_PACK_SELECTOR_TEMPLATE">
@@ -1354,9 +1344,8 @@
                     <ON_TOOLTIP>COCKPIT.TOOLTIPS.APU_SWITCH_TURN_OFF</ON_TOOLTIP>
                 </UseTemplate>
 
-                <UseTemplate Name="ASOBO_ELECTRICAL_Switch_APU_Starter_Template">
+                <UseTemplate Name="FBW_Airbus_APU_Starter_Switch">
                     <NODE_ID>PUSH_OVHD_APU_START</NODE_ID>
-                    <ANIM_NAME>PUSH_OVHD_APU_START</ANIM_NAME>
                     <EXTRA_CONDITION>(A:ELECTRICAL MAIN BUS VOLTAGE, Volts) 20 &gt; (A:FUELSYSTEM VALVE SWITCH:8, Bool) and</EXTRA_CONDITION>
                 </UseTemplate>
             </Component>
