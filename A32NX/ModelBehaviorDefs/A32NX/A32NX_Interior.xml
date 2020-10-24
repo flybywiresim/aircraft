@@ -420,4 +420,67 @@
             <TOOLTIPID>%((A:FUELSYSTEM VALVE SWITCH:#ID#, Bool) !)%{if}TT:#OFF_TOOLTIP#%{else}TT:#ON_TOOLTIP#%{end}</TOOLTIPID>
         </UseTemplate>
     </Template>
+
+    <Template Name="FBW_Airbus_AntiIce_Engine">
+        <DefaultTemplateParameters>
+            <ID>1</ID>
+            <HELPID>HELPID_CESS_CARB_HEAT</HELPID>
+        </DefaultTemplateParameters>
+
+        <UseTemplate Name="FBW_Push_Toggle">
+            <TOOLTIPID>%((A:ENG ANTI ICE:#ID#, Bool))%{if}TT:COCKPIT.TOOLTIPS.DEICE_PUSH_ENG_ONLY_ON_#ID# %{else}TT:COCKPIT.TOOLTIPS.DEICE_PUSH_ENG_ONLY_OFF_#ID#%{end}</TOOLTIPID>
+            <SEQ2_CODE>(A:ENG ANTI ICE:#ID#, Bool)</SEQ2_CODE>
+            <LEFT_SINGLE_CODE>(&gt;K:ANTI_ICE_TOGGLE_ENG#ID#)</LEFT_SINGLE_CODE>
+        </UseTemplate>
+    </Template>
+    <Template Name="FBW_Airbus_AntiIce_Wing">
+        <UseTemplate Name="FBW_Push_Toggle">
+            <TOOLTIPID>%((A:STRUCTURAL DEICE SWITCH, Bool))%{if}TT:COCKPIT.TOOLTIPS.DEICE_WINGS_ON%{else}TT:COCKPIT.TOOLTIPS.DEICE_WINGS_OFF%{end}</TOOLTIPID>
+            <SEQ2_CODE>(A:STRUCTURAL DEICE SWITCH, Bool)</SEQ2_CODE>
+            <LEFT_SINGLE_CODE>(&gt;K:TOGGLE_STRUCTURAL_DEICE)</LEFT_SINGLE_CODE>
+        </UseTemplate>
+    </Template>
+    <Template Name="FBW_Airbus_Probes_Window_Heat">
+        <DefaultTemplateParameters>
+            <ID>1</ID>
+            <PART_ID>DEICE_Switch_Windshield</PART_ID>
+        </DefaultTemplateParameters>
+
+        <UseTemplate Name="FBW_Push_Toggle">
+            <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.PANEL_DEICE_WINDSHIELD_DEICE_ON</ANIMTIP_1>
+            <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.PANEL_DEICE_WINDSHIELD_DEICE_OFF</ANIMTIP_0>
+
+            <LEFT_SINGLE_CODE>
+                (A:WINDSHIELD DEICE SWITCH, Enum) 2 == if{
+                    1 (&gt;K:WINDSHIELD_DEICE_SET)
+                } els{
+                    2 (&gt;K:WINDSHIELD_DEICE_SET)
+                }
+                (A:PITOT HEAT SWITCH, Enum) 2 == if{
+                    1 (&gt;K:PITOT_HEAT_SET)
+                    0 (&gt;L:A32NX_PITOT_HEAT_AUTO)
+                } els{
+                    2 (&gt;K:PITOT_HEAT_SET)
+                }
+            </LEFT_SINGLE_CODE>
+            <DISABLE_SEQ1/>
+            <SEQ2_EMISSIVE_CODE>(A:PITOT HEAT SWITCH, Enum) 1 == (L:A32NX_PITOT_HEAT_AUTO, Bool) ! and</SEQ2_EMISSIVE_CODE>
+            <SEQ2_CODE_DRIVES_DOWN_STATE>False</SEQ2_CODE_DRIVES_DOWN_STATE>
+            <DOWN_STATE_CODE>(A:PITOT HEAT SWITCH, Enum) 1 == (L:A32NX_PITOT_HEAT_AUTO, Bool) ! and</DOWN_STATE_CODE>
+        </UseTemplate>
+
+        <UseTemplate Name="ASOBO_GT_Update">
+            <FREQUENCY>0.33</FREQUENCY>
+            <UPDATE_CODE>
+                (A:WINDSHIELD DEICE SWITCH, Enum) 0 == if{ (&gt;K:WINDSHIELD_DEICE_TOGGLE) }
+                (A:PITOT HEAT SWITCH, Enum) 0 == if{ (&gt;K:PITOT_HEAT_TOGGLE) }
+
+                (A:ENG COMBUSTION:1, Bool) (A:ENG COMBUSTION:2, Bool) or (A:PITOT HEAT, Bool) ! and if{
+                #ID# (&gt;K:PITOT_HEAT_ON)
+                    1 (&gt;L:A32NX_PITOT_HEAT_AUTO)
+                }
+            </UPDATE_CODE>
+        </UseTemplate>
+    </Template>
+
 </ModelBehaviors>

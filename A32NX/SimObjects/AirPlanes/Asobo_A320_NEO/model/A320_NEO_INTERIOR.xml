@@ -2197,31 +2197,19 @@
             </Component>
 
             <Component ID="OverHead_AntiIce">
-                <UseTemplate Name="A32NX_DEICE_Switch_Engine_Template">
+                <UseTemplate Name="FBW_Airbus_AntiIce_Engine">
                     <NODE_ID>PUSH_OVHD_ANTIICE_ENG1</NODE_ID>
-                    <ANIM_NAME>PUSH_OVHD_ANTIICE_ENG1</ANIM_NAME>
-                    <INTERACTION>Push</INTERACTION>
-                    <DECALS_TYPE>FaultOn</DECALS_TYPE>
                     <ID>1</ID>
                 </UseTemplate>
-                <UseTemplate Name="A32NX_DEICE_Switch_Engine_Template">
+                <UseTemplate Name="FBW_Airbus_AntiIce_Engine">
                     <NODE_ID>PUSH_OVHD_ANTIICE_ENG2</NODE_ID>
-                    <ANIM_NAME>PUSH_OVHD_ANTIICE_ENG2</ANIM_NAME>
-                    <INTERACTION>Push</INTERACTION>
-                    <DECALS_TYPE>FaultOn</DECALS_TYPE>
                     <ID>2</ID>
                 </UseTemplate>
-                <UseTemplate Name="A32NX_DEICE_Switch_Airframe_Template">
+                <UseTemplate Name="FBW_Airbus_AntiIce_Wing">
                     <NODE_ID>PUSH_OVHD_ANTIICE_WING</NODE_ID>
-                    <ANIM_NAME>PUSH_OVHD_ANTIICE_WING</ANIM_NAME>
-                    <INTERACTION>Push</INTERACTION>
-                    <DECALS_TYPE>FaultOn</DECALS_TYPE>
-                    <TOOLTIPID>%((A:STRUCTURAL DEICE SWITCH, Bool))%{if}TT:COCKPIT.TOOLTIPS.DEICE_WINGS_ON%{else}TT:COCKPIT.TOOLTIPS.DEICE_WINGS_OFF%{end}</TOOLTIPID>
                 </UseTemplate>
-                <UseTemplate Name="ASOBO_DEICE_Switch_Windshield_Template">
+                <UseTemplate Name="FBW_Airbus_Probes_Window_Heat">
                     <NODE_ID>PUSH_OVHD_PROBESWINDOW</NODE_ID>
-                    <ANIM_NAME>PUSH_OVHD_PROBESWINDOW</ANIM_NAME>
-                    <SWITCH_TYPE>AIRBUS</SWITCH_TYPE>
                 </UseTemplate>
             </Component>
 
