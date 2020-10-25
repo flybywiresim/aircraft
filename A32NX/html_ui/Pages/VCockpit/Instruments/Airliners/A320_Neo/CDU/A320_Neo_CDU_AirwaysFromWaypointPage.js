@@ -12,7 +12,7 @@ class A320_Neo_CDU_AirwaysFromWaypointPage {
             rowBottomLine = ["*ERASE[color]red", "INSERT*[color]red"];
             mcdu.onRightInput[5] = async () => {
                 mcdu.insertTemporaryFlightPlan(() => {
-                    CDUFlightPlanPage.ShowPage(mcdu, 0);
+                    this.ShowPage(mcdu, 0);
                 });
             };
         }
@@ -45,17 +45,19 @@ class A320_Neo_CDU_AirwaysFromWaypointPage {
                         const value = mcdu.inOut;
                         if (value.length > 0) {
                             mcdu.clearUserInput();
-                            const lastWaypoint = mcdu.flightPlanManager.getWaypoints()[mcdu.flightPlanManager.getEnRouteWaypointsLastIndex()];
-                            if (lastWaypoint.infos instanceof IntersectionInfo || lastWaypoint.infos instanceof VORInfo || lastWaypoint.infos instanceof NDBInfo) {
-                                const airway = lastWaypoint.infos.airways.find(a => {
-                                    return a.name === value;
-                                });
-                                if (airway) {
-                                    A320_Neo_CDU_AirwaysFromWaypointPage.ShowPage(mcdu, waypoint, offset, airway);
-                                } else {
-                                    mcdu.showErrorMessage("AWY/WPT MISMATCH");
+                            mcdu.ensureCurrentFlightPlanIsTemporary(() => {
+                                const lastWaypoint = mcdu.flightPlanManager.getWaypoints()[mcdu.flightPlanManager.getEnRouteWaypointsLastIndex()];
+                                if (lastWaypoint.infos instanceof IntersectionInfo || lastWaypoint.infos instanceof VORInfo || lastWaypoint.infos instanceof NDBInfo) {
+                                    const airway = lastWaypoint.infos.airways.find(a => {
+                                        return a.name === value;
+                                    });
+                                    if (airway) {
+                                        A320_Neo_CDU_AirwaysFromWaypointPage.ShowPage(mcdu, waypoint, offset, airway);
+                                    } else {
+                                        mcdu.showErrorMessage("AWY/WPT MISMATCH");
+                                    }
                                 }
-                            }
+                            });
                         }
                     };
                 } else {
@@ -64,12 +66,14 @@ class A320_Neo_CDU_AirwaysFromWaypointPage {
                         const value = mcdu.inOut;
                         if (value.length > 0) {
                             mcdu.clearUserInput();
-                            mcdu.insertWaypointsAlongAirway(value, mcdu.flightPlanManager.getEnRouteWaypointsLastIndex() + 1, pendingAirway.name, (result) => {
-                                if (result) {
-                                    A320_Neo_CDU_AirwaysFromWaypointPage.ShowPage(mcdu, waypoint, offset);
-                                } else {
-                                    mcdu.showErrorMessage("AWY/WPT MISMATCH");
-                                }
+                            mcdu.ensureCurrentFlightPlanIsTemporary(() => {
+                                mcdu.insertWaypointsAlongAirway(value, mcdu.flightPlanManager.getEnRouteWaypointsLastIndex() + 1, pendingAirway.name, (result) => {
+                                    if (result) {
+                                        A320_Neo_CDU_AirwaysFromWaypointPage.ShowPage(mcdu, waypoint, offset);
+                                    } else {
+                                        mcdu.showErrorMessage("AWY/WPT MISMATCH");
+                                    }
+                                });
                             });
                         }
                     };

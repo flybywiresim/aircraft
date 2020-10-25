@@ -717,8 +717,7 @@ class FMCMainDisplay extends BaseAirliners {
     }
     async insertWaypointsAlongAirway(lastWaypointIdent, index, airwayName, callback = EmptyCallback.Boolean) {
         const referenceWaypoint = this.flightPlanManager.getWaypoint(index - 1);
-        console.log('referenceWaypoint');
-        console.log(referenceWaypoint);
+        const lastWaypointIdentPadEnd = lastWaypointIdent.padEnd(5, " ");
         if (referenceWaypoint) {
             const infos = referenceWaypoint.infos;
             if (infos instanceof WayPointInfo) {
@@ -727,7 +726,7 @@ class FMCMainDisplay extends BaseAirliners {
                 });
                 if (airway) {
                     const firstIndex = airway.icaos.indexOf(referenceWaypoint.icao);
-                    const lastWaypointIcao = airway.icaos.find(icao => icao.substring(7, 12) === lastWaypointIdent.padEnd(5, " "));
+                    const lastWaypointIcao = airway.icaos.find(icao => icao.substring(7, 12) === lastWaypointIdentPadEnd);
                     const lastIndex = airway.icaos.indexOf(lastWaypointIcao);
                     if (firstIndex >= 0) {
                         if (lastIndex >= 0) {
