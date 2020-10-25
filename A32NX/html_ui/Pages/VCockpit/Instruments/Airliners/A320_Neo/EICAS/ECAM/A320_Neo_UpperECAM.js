@@ -27,12 +27,13 @@ var A320_Neo_UpperECAM;
         return div;
     }
     A320_Neo_UpperECAM.createDiv = createDiv;
-    function createSVGText(_text, _class, _x, _y, _alignmentBaseline = "center") {
+    function createSVGText(_text, _class, _x, _y, _alignmentBaseline = "center", _dx = "0%") {
         const textElement = document.createElementNS(Avionics.SVG.NS, "text");
         textElement.textContent = _text;
         textElement.setAttribute("class", _class);
         textElement.setAttribute("x", _x);
         textElement.setAttribute("y", _y);
+        textElement.setAttribute("dx", _dx);
         textElement.setAttribute("alignment-baseline", _alignmentBaseline);
         return textElement;
     }
@@ -1648,7 +1649,9 @@ var A320_Neo_UpperECAM;
                 line.style.strokeWidth = "4";
                 _svgRoot.appendChild(line);
                 this.valueText = A320_Neo_UpperECAM.createSVGText("--.-", "Value", this.getValueTextX(), "88%", "bottom");
+                this.valueText2 = A320_Neo_UpperECAM.createSVGText("", "decimal", this.getValueTextX2(), "88%", "bottom");
                 _svgRoot.appendChild(this.valueText);
+                _svgRoot.appendChild(this.valueText2);
             }
             this.refresh(false, 0, 0, true);
         }
@@ -1658,9 +1661,27 @@ var A320_Neo_UpperECAM;
                 this.currentValue = _value;
                 if (this.valueText != null) {
                     const valueClass = this.isActive ? "Value" : "Inactive";
-                    this.valueText.setAttribute("class", valueClass);
                     if (this.isActive) {
-                        this.valueText.textContent = this.currentValue.toFixed(_valueDisplayPrecision);
+                        if (_valueDisplayPrecision > 0) {
+                            const dx = 0;
+                            if (this.currentValue.toFixed(_valueDisplayPrecision) >= 10) {
+                                this.valueText2.setAttribute("dx", "2%");
+                            } else {
+                                this.valueText2.setAttribute("dx", "0%");
+                            }
+                            const strArray = this.currentValue.toFixed(_valueDisplayPrecision).split(".");
+                            const wholeNumber = strArray[0];
+                            this.valueText.textContent = wholeNumber;
+                            this.valueText.setAttribute("class", valueClass);
+                            const decimal = "." + strArray[1];
+                            this.valueText2.textContent = decimal;
+                            this.valueText2.setAttribute("class", valueClass + " decimal");
+
+                        } else {
+                            this.valueText.setAttribute("class", valueClass);
+                            this.valueText.textContent = this.currentValue.toFixed(_valueDisplayPrecision);
+                        }
+
                     } else {
                         this.valueText.textContent = "XX";
                     }
@@ -1677,7 +1698,10 @@ var A320_Neo_UpperECAM;
             return "42%";
         }
         getValueTextX() {
-            return "18%";
+            return "11%";
+        }
+        getValueTextX2() {
+            return "16%";
         }
     }
     A320_Neo_UpperECAM.LinesStyleComponent_Left = LinesStyleComponent_Left;
@@ -1689,7 +1713,10 @@ var A320_Neo_UpperECAM;
             return "58%";
         }
         getValueTextX() {
-            return "82%";
+            return "78%";
+        }
+        getValueTextX2() {
+            return "83%";
         }
     }
     A320_Neo_UpperECAM.LinesStyleComponent_Right = LinesStyleComponent_Right;
@@ -1727,8 +1754,7 @@ var A320_Neo_UpperECAM;
         }
         getValue(_engine) {
             const name = "ENG N2 RPM:" + _engine;
-            let percent = SimVar.GetSimVarValue(name, "percent");
-            percent = Math.max(0, Math.min(100, percent));
+            const percent = SimVar.GetSimVarValue(name, "percent");
             return percent;
         }
         getValueStringPrecision() {
