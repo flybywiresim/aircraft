@@ -6,20 +6,33 @@
 				<SoundBank Name="Asobo_A320_NEO_Improved" ID="{210EF042-45E5-4AF4-AE40-FE92FA016F27}">
 					<ObjectInclusionList>
 						<ObjectRef Name="Play_Asobo_A320_NEO_aural_too_low_terrain" ID="{15DCEB14-1833-404F-9A3F-D229ED0E9FD9}" WorkUnitID="{662E2C1B-6F57-46BC-90E1-9E4CE64174C6}" Origin="Manual" Filter="7"/>
+						<ObjectRef Name="Play_Asobo_A320_NEO_ISpoolL" ID="{3E690090-4BA5-4056-9400-63DFFB302F5C}" WorkUnitID="{662E2C1B-6F57-46BC-90E1-9E4CE64174C6}" Origin="Manual" Filter="7"/>
 						<ObjectRef Name="Play_Asobo_A320_NEO_LSpool" ID="{FD807BC8-714F-4064-9484-238F58CE9595}" WorkUnitID="{662E2C1B-6F57-46BC-90E1-9E4CE64174C6}" Origin="Manual" Filter="7"/>
 						<ObjectRef Name="Play_Asobo_A320_NEO_aural_too_low_gear" ID="{752CA9A4-224B-409A-A273-F3657103CA4B}" WorkUnitID="{662E2C1B-6F57-46BC-90E1-9E4CE64174C6}" Origin="Manual" Filter="7"/>
+						<ObjectRef Name="Play_Asobo_A320_NEO_IdleWhineL" ID="{F45BE0BA-BB1C-4115-985D-C366F33F8100}" WorkUnitID="{662E2C1B-6F57-46BC-90E1-9E4CE64174C6}" Origin="Manual" Filter="7"/>
+						<ObjectRef Name="Play_Asobo_A320_NEO_StartREXT" ID="{6B4B0718-633A-414C-8BB7-19033007E255}" WorkUnitID="{662E2C1B-6F57-46BC-90E1-9E4CE64174C6}" Origin="Manual" Filter="7"/>
 						<ObjectRef Name="Play_Asobo_A320_NEO_AVventloop" ID="{DA11F500-E798-41AA-82B5-EA7D231270A3}" WorkUnitID="{662E2C1B-6F57-46BC-90E1-9E4CE64174C6}" Origin="Manual" Filter="7"/>
 						<ObjectRef Name="Play_Asobo_A320_NEO_aural_too_low_flaps" ID="{9ED58D3A-3635-41CE-AD1B-8DE4C60DE0D8}" WorkUnitID="{662E2C1B-6F57-46BC-90E1-9E4CE64174C6}" Origin="Manual" Filter="7"/>
+						<ObjectRef Name="Play_Asobo_A320_NEO_safetyvideo" ID="{8A316AEA-A2CC-41DA-BD17-150A08AE386E}" WorkUnitID="{662E2C1B-6F57-46BC-90E1-9E4CE64174C6}" Origin="Manual" Filter="7"/>
+						<ObjectRef Name="Play_Asobo_A320_NEO_StartLEXT" ID="{8F959082-16DC-420F-9258-545596C7DA34}" WorkUnitID="{662E2C1B-6F57-46BC-90E1-9E4CE64174C6}" Origin="Manual" Filter="7"/>
 						<ObjectRef Name="Play_Asobo_A320_NEO_cockpit_cabin_call_aft" ID="{D9D1B1AD-43F3-4218-84B3-70417CCC74F2}" WorkUnitID="{662E2C1B-6F57-46BC-90E1-9E4CE64174C6}" Origin="Manual" Filter="7"/>
 						<ObjectRef Name="Play_Asobo_A320_NEO_Centerthump1" ID="{C6F66D31-925A-425A-94C4-59F67D376756}" WorkUnitID="{662E2C1B-6F57-46BC-90E1-9E4CE64174C6}" Origin="Manual" Filter="7"/>
+						<ObjectRef Name="Play_Asobo_A320_NEO_FFlowLEXT" ID="{57C23534-3531-4263-B58F-DF65BC20459C}" WorkUnitID="{662E2C1B-6F57-46BC-90E1-9E4CE64174C6}" Origin="Manual" Filter="7"/>
 						<ObjectRef Name="Play_Asobo_A320_NEO_AVvent" ID="{5176C94E-BF8F-4378-8764-6F11C0C195E3}" WorkUnitID="{662E2C1B-6F57-46BC-90E1-9E4CE64174C6}" Origin="Manual" Filter="7"/>
 						<ObjectRef Name="Play_Asobo_A320_NEO_Fuelpump" ID="{BF583B36-A7AB-4407-A7CE-C7073BDAF0A2}" WorkUnitID="{662E2C1B-6F57-46BC-90E1-9E4CE64174C6}" Origin="Manual" Filter="7"/>
+						<ObjectRef Name="Play_Asobo_A320_NEO_StartL" ID="{2BF662CF-D39D-443C-AC90-94FB72C7FFED}" WorkUnitID="{662E2C1B-6F57-46BC-90E1-9E4CE64174C6}" Origin="Manual" Filter="7"/>
 						<ObjectRef Name="Play_Asobo_A320_NEO_GROLL" ID="{273CDDDF-ED47-4445-8C89-E01AC8265D34}" WorkUnitID="{662E2C1B-6F57-46BC-90E1-9E4CE64174C6}" Origin="Manual" Filter="7"/>
+						<ObjectRef Name="Play_Asobo_A320_NEO_ReverseREXT" ID="{9CB8DF06-8D35-445E-A5B1-935299294EE8}" WorkUnitID="{662E2C1B-6F57-46BC-90E1-9E4CE64174C6}" Origin="Manual" Filter="7"/>
+						<ObjectRef Name="Play_Asobo_A320_NEO_LspoolEXT" ID="{1F4C0CAC-2030-446A-8379-83AB3F84CCBC}" WorkUnitID="{662E2C1B-6F57-46BC-90E1-9E4CE64174C6}" Origin="Manual" Filter="7"/>
 						<ObjectRef Name="Play_Asobo_A320_NEO_cdoorclose" ID="{9FEB7C43-03F6-4488-8199-4B1CFDE15431}" WorkUnitID="{662E2C1B-6F57-46BC-90E1-9E4CE64174C6}" Origin="Manual" Filter="7"/>
+						<ObjectRef Name="Play_Asobo_A320_NEO_RumbleL" ID="{BCE0D826-AABF-44DC-96DF-83F093F91B9B}" WorkUnitID="{662E2C1B-6F57-46BC-90E1-9E4CE64174C6}" Origin="Manual" Filter="7"/>
 						<ObjectRef Name="Play_Asobo_A320_NEO_improved_tone_caution" ID="{C3F82F3D-BFFD-44F5-AF60-2625B748917D}" WorkUnitID="{662E2C1B-6F57-46BC-90E1-9E4CE64174C6}" Origin="Manual" Filter="7"/>
 						<ObjectRef Name="Play_Asobo_A320_NEO_Loudrelay" ID="{2CFF959F-2372-4585-B8EB-299BB4AE0CB3}" WorkUnitID="{662E2C1B-6F57-46BC-90E1-9E4CE64174C6}" Origin="Manual" Filter="7"/>
+						<ObjectRef Name="Play_Asobo_A320_NEO_IdleWhineR" ID="{7212B79F-830A-4585-88ED-BB6E37755AA0}" WorkUnitID="{662E2C1B-6F57-46BC-90E1-9E4CE64174C6}" Origin="Manual" Filter="7"/>
+						<ObjectRef Name="Play_Asobo_A320_NEO_ReverseR" ID="{4EF56638-2053-45BC-A9EC-DB58764B4D2F}" WorkUnitID="{662E2C1B-6F57-46BC-90E1-9E4CE64174C6}" Origin="Manual" Filter="7"/>
 						<ObjectRef Name="Play_Asobo_A320_NEO_ROLLRATTLE2" ID="{B7755860-FDED-45F5-BCB9-919C0F6BC00E}" WorkUnitID="{662E2C1B-6F57-46BC-90E1-9E4CE64174C6}" Origin="Manual" Filter="7"/>
 						<ObjectRef Name="Play_Asobo_A320_NEO_NWheelSpinAboveGround" ID="{BB75B6F0-D6EB-460D-B9BC-B5E3F3E62D1D}" WorkUnitID="{662E2C1B-6F57-46BC-90E1-9E4CE64174C6}" Origin="Manual" Filter="7"/>
+						<ObjectRef Name="Play_Asobo_A320_NEO_boarding" ID="{2A988EAD-6331-465E-8318-5E16B90D68F6}" WorkUnitID="{662E2C1B-6F57-46BC-90E1-9E4CE64174C6}" Origin="Manual" Filter="7"/>
 						<ObjectRef Name="Play_Asobo_A320_NEO_RSpool" ID="{4ACCF273-7A8E-4660-BFC9-167A58A871AF}" WorkUnitID="{662E2C1B-6F57-46BC-90E1-9E4CE64174C6}" Origin="Manual" Filter="7"/>
 						<ObjectRef Name="Play_Asobo_A320_NEO_cabin_crew_seats_landing" ID="{F7584ADC-7A6D-46D9-8164-981947243F26}" WorkUnitID="{662E2C1B-6F57-46BC-90E1-9E4CE64174C6}" Origin="Manual" Filter="7"/>
 						<ObjectRef Name="Play_Asobo_A320_NEO_RWhine" ID="{D089E3F6-7370-474D-A556-FA6AC3B2CD17}" WorkUnitID="{662E2C1B-6F57-46BC-90E1-9E4CE64174C6}" Origin="Manual" Filter="7"/>
@@ -30,21 +43,39 @@
 						<ObjectRef Name="Play_Asobo_A320_NEO_BuzzL" ID="{90DC8AC7-9EB0-4856-921C-2FB68EE0FB80}" WorkUnitID="{662E2C1B-6F57-46BC-90E1-9E4CE64174C6}" Origin="Manual" Filter="7"/>
 						<ObjectRef Name="Play_Asobo_A320_NEO_mechhorn" ID="{01486C7B-F5BF-486F-AE55-A5F15C10C1E1}" WorkUnitID="{662E2C1B-6F57-46BC-90E1-9E4CE64174C6}" Origin="Manual" Filter="7"/>
 						<ObjectRef Name="Play_Asobo_A320_NEO_FMGCtest" ID="{4A5C5E88-FB36-48DF-907B-E5A4518B4306}" WorkUnitID="{662E2C1B-6F57-46BC-90E1-9E4CE64174C6}" Origin="Manual" Filter="7"/>
+						<ObjectRef Name="Play_Asobo_A320_NEO_detent" ID="{BB4E7A1D-6ED1-48FD-8226-33B1F4F0A1EA}" WorkUnitID="{662E2C1B-6F57-46BC-90E1-9E4CE64174C6}" Origin="Manual" Filter="7"/>
+						<ObjectRef Name="Play_Asobo_A320_NEO_RSpoolEXT" ID="{60BB805E-327B-49F0-AADF-550DF62A4BBC}" WorkUnitID="{662E2C1B-6F57-46BC-90E1-9E4CE64174C6}" Origin="Manual" Filter="7"/>
 						<ObjectRef Name="Play_Asobo_A320_NEO_cockpit_cabin_call_fwd" ID="{9DE4AF9A-E81F-4A93-8C1D-3E93DCBBFEC5}" WorkUnitID="{662E2C1B-6F57-46BC-90E1-9E4CE64174C6}" Origin="Manual" Filter="7"/>
+						<ObjectRef Name="Play_Asobo_A320_NEO_FFlowL" ID="{34AF1497-F46F-4AB7-AA67-BF0EF562EFE5}" WorkUnitID="{662E2C1B-6F57-46BC-90E1-9E4CE64174C6}" Origin="Manual" Filter="7"/>
+						<ObjectRef Name="Play_Asobo_A320_NEO_100" ID="{CB16ECA5-E80D-4B10-9216-405596A9D977}" WorkUnitID="{662E2C1B-6F57-46BC-90E1-9E4CE64174C6}" Origin="Manual" Filter="7"/>
 						<ObjectRef Name="Play_Asobo_A320_NEO_ROLLRATTLE" ID="{4CB230B2-CCA7-4B1F-BFF2-A683A35C19A2}" WorkUnitID="{662E2C1B-6F57-46BC-90E1-9E4CE64174C6}" Origin="Manual" Filter="7"/>
 						<ObjectRef Name="Play_Asobo_A320_NEO_gdown" ID="{A1E16BD7-2378-4B42-8854-5839CF53DBF6}" WorkUnitID="{662E2C1B-6F57-46BC-90E1-9E4CE64174C6}" Origin="Manual" Filter="7"/>
+						<ObjectRef Name="Play_Asobo_A320_NEO_ISpoolR" ID="{CC875524-293F-4B48-939F-5A541CEC8FFD}" WorkUnitID="{662E2C1B-6F57-46BC-90E1-9E4CE64174C6}" Origin="Manual" Filter="7"/>
 						<ObjectRef Name="Play_Asobo_A320_NEO_cabin_crew_seats_takeoff" ID="{0A48C314-7353-4B5A-ABA9-FF01B7DB37D6}" WorkUnitID="{662E2C1B-6F57-46BC-90E1-9E4CE64174C6}" Origin="Manual" Filter="7"/>
 						<ObjectRef Name="Play_Asobo_A320_NEO_LWhine" ID="{1455DC19-C8DD-4B67-9D5A-A394D90F0AAF}" WorkUnitID="{662E2C1B-6F57-46BC-90E1-9E4CE64174C6}" Origin="Manual" Filter="7"/>
 						<ObjectRef Name="Play_Asobo_A320_NEO_Geardownwind" ID="{34FC4B3B-D28B-4BCE-8A74-9C06457D974C}" WorkUnitID="{662E2C1B-6F57-46BC-90E1-9E4CE64174C6}" Origin="Manual" Filter="7"/>
 						<ObjectRef Name="Play_Asobo_A320_NEO_evachorncabin" ID="{6B09C00F-40EF-4BFB-BD4B-8D7DD13DCFFF}" WorkUnitID="{662E2C1B-6F57-46BC-90E1-9E4CE64174C6}" Origin="Manual" Filter="7"/>
+						<ObjectRef Name="Play_Asobo_A320_NEO_LWhineEXT" ID="{5E68D6C6-020C-4C81-AA3E-7FAADC5EEC64}" WorkUnitID="{662E2C1B-6F57-46BC-90E1-9E4CE64174C6}" Origin="Manual" Filter="7"/>
 						<ObjectRef Name="Play_Asobo_A320_NEO_cargodoor" ID="{FB53017F-7BBB-4C81-86B8-C43619626D87}" WorkUnitID="{662E2C1B-6F57-46BC-90E1-9E4CE64174C6}" Origin="Manual" Filter="7"/>
+						<ObjectRef Name="Play_Asobo_A320_NEO_BuzzLEXT" ID="{7499B6F8-2DCD-4CC0-8B72-9987E6CA0229}" WorkUnitID="{662E2C1B-6F57-46BC-90E1-9E4CE64174C6}" Origin="Manual" Filter="7"/>
+						<ObjectRef Name="Play_Asobo_A320_NEO_StartR" ID="{2DD9BDA9-9B5B-4CDC-9535-B9B68ADFDEEF}" WorkUnitID="{662E2C1B-6F57-46BC-90E1-9E4CE64174C6}" Origin="Manual" Filter="7"/>
+						<ObjectRef Name="Play_Asobo_A320_NEO_FFlowR" ID="{90207C9B-BBB8-4CF5-874E-B771E7408E3E}" WorkUnitID="{662E2C1B-6F57-46BC-90E1-9E4CE64174C6}" Origin="Manual" Filter="7"/>
+						<ObjectRef Name="Play_Asobo_A320_NEO_RumbleR" ID="{A7D889A7-DAC6-4CFD-81BA-0A65E775B2F3}" WorkUnitID="{662E2C1B-6F57-46BC-90E1-9E4CE64174C6}" Origin="Manual" Filter="7"/>
 						<ObjectRef Name="Play_Asobo_A320_NEO_Betterwind" ID="{A929CABB-1B68-4D3D-88C5-45E54D3D089C}" WorkUnitID="{662E2C1B-6F57-46BC-90E1-9E4CE64174C6}" Origin="Manual" Filter="7"/>
 						<ObjectRef Name="Play_Asobo_A320_NEO_emercabincall" ID="{76F2E235-43D7-4D3D-8BBF-EDDD93C932AF}" WorkUnitID="{662E2C1B-6F57-46BC-90E1-9E4CE64174C6}" Origin="Manual" Filter="7"/>
+						<ObjectRef Name="Play_Asobo_A320_NEO_ReverseL" ID="{FB61CD6F-3826-4D6D-8691-E62C5CBD9336}" WorkUnitID="{662E2C1B-6F57-46BC-90E1-9E4CE64174C6}" Origin="Manual" Filter="7"/>
+						<ObjectRef Name="Play_Asobo_A320_NEO_RWhineEXT" ID="{3E1B643F-A6A1-4D7D-9FDD-68E3A184DE92}" WorkUnitID="{662E2C1B-6F57-46BC-90E1-9E4CE64174C6}" Origin="Manual" Filter="7"/>
 						<ObjectRef Name="Play_Asobo_A320_NEO_taxirattle" ID="{A315B1BB-3283-4D8D-B20D-24F78AF83B4E}" WorkUnitID="{662E2C1B-6F57-46BC-90E1-9E4CE64174C6}" Origin="Manual" Filter="7"/>
+						<ObjectRef Name="Play_Asobo_A320_NEO_ReverseLEXT" ID="{34D56125-1D8E-4DCF-A1CA-055BD6BEF50C}" WorkUnitID="{662E2C1B-6F57-46BC-90E1-9E4CE64174C6}" Origin="Manual" Filter="7"/>
 						<ObjectRef Name="Play_Asobo_A320_NEO_evachorncockpit" ID="{9B3CCA66-793F-4DD3-9433-DFAC4C2508D3}" WorkUnitID="{662E2C1B-6F57-46BC-90E1-9E4CE64174C6}" Origin="Manual" Filter="7"/>
 						<ObjectRef Name="Play_Asobo_A320_NEO_bumpslow" ID="{994F91DE-A0AB-4DD6-A981-A2EAFDCB90EA}" WorkUnitID="{662E2C1B-6F57-46BC-90E1-9E4CE64174C6}" Origin="Manual" Filter="7"/>
+						<ObjectRef Name="Play_Asobo_A320_NEO_BuzzREXT" ID="{8D3B773D-0A6A-4DE2-B9BB-2573E04AE54A}" WorkUnitID="{662E2C1B-6F57-46BC-90E1-9E4CE64174C6}" Origin="Manual" Filter="7"/>
 						<ObjectRef Name="Play_Asobo_A320_NEO_startbeep" ID="{B1B6FA5F-5C11-4E83-89CB-38BAE27423C8}" WorkUnitID="{662E2C1B-6F57-46BC-90E1-9E4CE64174C6}" Origin="Manual" Filter="7"/>
+						<ObjectRef Name="Play_Asobo_A320_NEO_FFlowREXT" ID="{5B51D6A4-AA4C-4EC4-A42A-63880522832C}" WorkUnitID="{662E2C1B-6F57-46BC-90E1-9E4CE64174C6}" Origin="Manual" Filter="7"/>
 						<ObjectRef Name="Play_Asobo_A320_NEO_BuzzR" ID="{A1EF333D-82AA-4EC9-ACED-3DD652342608}" WorkUnitID="{662E2C1B-6F57-46BC-90E1-9E4CE64174C6}" Origin="Manual" Filter="7"/>
+						<ObjectRef Name="Play_Asobo_A320_NEO_paxtalk" ID="{FF9EEA38-C859-4F5B-ACE8-B54B48530B46}" WorkUnitID="{662E2C1B-6F57-46BC-90E1-9E4CE64174C6}" Origin="Manual" Filter="7"/>
+						<ObjectRef Name="Play_Asobo_A320_NEO_ISPoolREXT" ID="{F840E7F7-E12A-4FB8-BC13-416AEB3A6E30}" WorkUnitID="{662E2C1B-6F57-46BC-90E1-9E4CE64174C6}" Origin="Manual" Filter="7"/>
+						<ObjectRef Name="Play_Asobo_A320_NEO_ISpoolLEXT" ID="{EF01CD0B-2C3F-4FC7-987A-1CB7D7CFD1AD}" WorkUnitID="{662E2C1B-6F57-46BC-90E1-9E4CE64174C6}" Origin="Manual" Filter="7"/>
 						<ObjectRef Name="Play_Asobo_A320_NEO_CRC" ID="{2667E241-B918-4FFE-8429-759F90BA78A1}" WorkUnitID="{662E2C1B-6F57-46BC-90E1-9E4CE64174C6}" Origin="Manual" Filter="7"/>
 					</ObjectInclusionList>
 					<ObjectExclusionList/>

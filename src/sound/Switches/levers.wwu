@@ -63,12 +63,12 @@
 									<Flags>5</Flags>
 								</Point>
 								<Point>
-									<XPos>0.1</XPos>
+									<XPos>10</XPos>
 									<YPos>1</YPos>
 									<Flags>0</Flags>
 								</Point>
 								<Point>
-									<XPos>1</XPos>
+									<XPos>100</XPos>
 									<YPos>1</YPos>
 									<Flags>37</Flags>
 								</Point>
