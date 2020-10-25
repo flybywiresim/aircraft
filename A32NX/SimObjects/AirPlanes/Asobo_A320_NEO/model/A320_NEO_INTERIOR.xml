@@ -713,13 +713,16 @@
                 <MAX_STEERING_VELOCITY>30</MAX_STEERING_VELOCITY>
             </UseTemplate>
 
+
             <UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
                 <NODE_ID>PUSH_HANDLE_LEFT_YOKE</NODE_ID>
-                <POTENTIOMETER>85</POTENTIOMETER>
+                <!--<POTENTIOMETER>85</POTENTIOMETER>-->
+                <EMISSIVE_CODE>0</EMISSIVE_CODE>
             </UseTemplate>
             <UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
                 <NODE_ID>PUSH_HANDLE_RIGHT_YOKE</NODE_ID>
-                <POTENTIOMETER>85</POTENTIOMETER>
+                <!--<POTENTIOMETER>85</POTENTIOMETER>-->
+                <EMISSIVE_CODE>0</EMISSIVE_CODE>
             </UseTemplate>
 
             <!-- NYI
@@ -1508,6 +1511,18 @@
                     <SIMVAR_INDEX>0</SIMVAR_INDEX>
                     <SIMVAR_INDEX_2>0</SIMVAR_INDEX_2>
                     <LIGHT_TYPE2>LOGO</LIGHT_TYPE2>
+                </UseTemplate>
+
+                <!-- turn off the connection to the logo lights when the plane is not on ground and the flaps are retracted -->
+                <UseTemplate Name="ASOBO_GT_Update">
+                    <FREQUENCY>5</FREQUENCY>
+                    <UPDATE_CODE>
+                    (A:SIM ON GROUND, BOOL) 0 != (A:FLAPS HANDLE PERCENT, percent) 0 &gt; or (&gt;O:_ShouldBeConnectedToPowerGrid)
+                    (O:_ShouldBeConnectedToPowerGrid) sp0
+                    2 (&gt;A:BUS LOOKUP INDEX, Number)
+                    (A:CIRCUIT CONNECTION ON:29, Bool) l0 != if{ 29 2 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE) }
+                    (A:CIRCUIT CONNECTION ON:30, Bool) l0 != if{ 30 2 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE) }
+                    </UPDATE_CODE>
                 </UseTemplate>
 
                 <UseTemplate Name="ASOBO_LIGHTING_Switch_Light_Double_Template">
