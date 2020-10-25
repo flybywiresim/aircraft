@@ -1,5 +1,5 @@
 class CDUAocRequestsWeather {
-    static ShowPage(mcdu, store = { "reqType": 0, "depIcao": "", "arrIcao": "", "arpt1": "", "arpt2": "", "arpt3": "", "arpt4": "", "sendStatus": ""}) {
+    static ShowPage(mcdu, store = {"reqID": 0, "depIcao": "", "arrIcao": "", "arpt1": "", "arpt2": "", "arpt3": "", "arpt4": "", "sendStatus": ""}) {
         mcdu.clearDisplay();
         let labelTimeout;
 
@@ -12,18 +12,16 @@ class CDUAocRequestsWeather {
 
         const reqTypes = [
             'METAR',
-            'TAF LONG',
-            'SIGMET',
-            'METAR + TAF'
+            'TAF'
         ];
 
         const updateView = () => {
             mcdu.setTemplate([
                 ["AOC WEATHER REQUEST"],
                 [`WX TYPE`, "AIRPORTS"],
-                [`↓${reqTypes[0]}[color]blue`, `${store.arpt1 != "" ? store.arpt1 : "[ ]"}${fplanArptColor}`],
-                [""],
-                ["", `${store["arpt2"] != "" ? store["arpt2"] : "[ ]"}${fplanArptColor}`],
+                [`↓${reqTypes[store.reqID]}[color]blue`, `${store.arpt1 != "" ? store.arpt1 : "[ ]"}${fplanArptColor}`],
+                ["DIRECT"],
+                ["<ATIS", `${store["arpt2"] != "" ? store["arpt2"] : "[ ]"}${fplanArptColor}`],
                 [""],
                 ["", `${store["arpt3"] != "" ? store["arpt3"] : "[ ]"}[color]blue`],
                 [""],
@@ -81,82 +79,25 @@ class CDUAocRequestsWeather {
         }
 
         mcdu.onRightInput[5] = async () => {
-            store["sendStatus"] = "QUEUED"
+            store["sendStatus"] = "QUEUED";
             updateView();
-            const ICAOS = [store["arpt1"], store["arpt2"], store["arpt3"], store["arpt4"]];
-            mcdu.clearUserInput();
-            const lines = []; // Prev Messages
-            let errors = 0;
-            const storedMetarSrc = GetStoredData("A32NX_CONFIG_METAR_SRC");
-            let endpoint = "https://api.flybywiresim.com/metar";
-            switch(storedMetarSrc) {
-                case "VATSIM":
-                    endpoint += "?source=vatsim&icao=";
-                    break;
-                case "PILOTEDGE":
-                    endpoint += "?source=pilotedge&icao=";
-                    break;
-                case "IVAO":
-                    endpoint += "?source=ivao&icao=";
-                    break;
-                default:
-                    endpoint += "?source=ms&icao=";
-            }
-            const getData = async () => {
-                for (const icao of ICAOS) {
-                    if (icao !== "") {
-                        await fetch(`${endpoint}${icao}`)
-                                .then((response) => response.text())
-                                .then((data) => {
-                                    let error = data.slice(0, 9) == "FBW_ERROR";
-                                    
-                                    if (!error) {
-                                        lines.push(`METAR ${icao}[color]blue`);
+            const icaos = [store["arpt1"], store["arpt2"], store["arpt3"], store["arpt4"]];
+            const lines = [];            
+            const newMessage = { "id": Date.now(), "type": reqTypes[store.reqID], "time": '00:00', "opened": null, "content": lines, }
+            mcdu.clearUserInput();            
 
-                                        function wordWrapToStringList(text, maxLength) {
-                                            let result = [], line = [];
-                                            let length = 0;
-                                            text.split(" ").forEach(function (word) {
-                                                if ((length + word.length) >= maxLength) {
-                                                    result.push(line.join(" "));
-                                                    line = []; length = 0;
-                                                }
-                                                length += word.length + 1;
-                                                line.push(word);
-                                            });
-                                            if (line.length > 0) {
-                                                result.push(line.join(" "));
-                                            }
-                                            return result;
-                                        };
-                                        
-                                        const newLines = wordWrapToStringList(data, 25);
-                                        newLines.forEach(l => lines.push(l.concat("[color]green")));
-                                        lines.push('---------------------------[color]white');
-                                    } else {
-                                        lines.push(`METAR ${icao}[color]blue`);
-                                        lines.push('STATION NOT AVAILABLE[color]red');
-                                        lines.push('---------------------------[color]white');
-                                        errors += 1;
-                                    }
-                                })
-                    }
+            const getInfo = async () => {
+                if (store.reqID == 0) {
+                    getMETAR(icaos, lines, store, updateView);
+                } else {
+                    getTAF(icaos, lines, store, updateView);
                 }
-                store["sendStatus"] = "SENT"
-                updateView();
             }
-            
-            const newMessage = { "id": Date.now(), "type": "METAR", "time": '00:00', "opened": null, "content": errors > 0 ? ["ILLEGAL STATION IDENT"] : lines, }
 
-            getData().then(() => {
+            getInfo().then(() => {
+                store["sendStatus"] = "SENT";
                 setTimeout(() => {
-                    let timeValue = SimVar.GetGlobalVarValue("ZULU TIME", "seconds");
-                    if (timeValue) {
-                        const seconds = Number.parseInt(timeValue);
-                        const displayTime = Utils.SecondsToDisplayTime(seconds, true, true, false);
-                        timeValue = displayTime.toString();
-                    }
-                    newMessage["time"] = timeValue.substring(0, 5);
+                    newMessage["time"] = fetchTimeValue();
                     mcdu.addMessage(newMessage);
                 }, Math.floor(Math.random() * 10000) + 10000);
                 labelTimeout = setTimeout(() => {
@@ -166,6 +107,14 @@ class CDUAocRequestsWeather {
             });
         }
 
+        mcdu.onLeftInput[0] = () => {
+            store["reqID"] = (store.reqID + 1) % 2;
+            CDUAocRequestsWeather.ShowPage(mcdu, store);
+        }
+        mcdu.onLeftInput[1] = () => {
+            clearTimeout(labelTimeout);
+            CDUAocRequestsAtis.ShowPage(mcdu);
+        }
         mcdu.onLeftInput[5] = () => {
             clearTimeout(labelTimeout);
             CDUAocMenu.ShowPage(mcdu);
