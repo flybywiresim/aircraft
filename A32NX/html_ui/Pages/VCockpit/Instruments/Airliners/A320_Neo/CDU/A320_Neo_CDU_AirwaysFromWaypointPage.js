@@ -28,7 +28,7 @@ class A320_Neo_CDU_AirwaysFromWaypointPage {
                 subRows[idx] = ["VIA", "TO"];
             }
         });
-        mcdu._titleElement.innerHTML = `<span><span class='yellow'>AIRWAYS</span> <span class='s-text'>FROM </span><span class='green'>${waypoint.ident}</span></span>`;
+        mcdu._titleElement.innerHTML = `<span><span>AIRWAYS</span> <span class='s-text'>FROM </span><span class='green'>${waypoint.ident}</span></span>`;
         let showInput = false;
         const departureWaypoints = mcdu.flightPlanManager.getDepartureWaypoints();
         const routeWaypoints = mcdu.flightPlanManager.getEnRouteWaypoints();
@@ -71,7 +71,7 @@ class A320_Neo_CDU_AirwaysFromWaypointPage {
                     };
                 } else {
                     subRows[i] = ["VIA", "TO"];
-                    rows[i] = [`${pendingAirway.name}[color]yellow`, "[ ][color]blue"];
+                    rows[i] = [`${pendingAirway.name}[color]blue`, "[ ][color]blue"];
                     mcdu.onRightInput[i] = () => {
                         const value = mcdu.inOut;
                         if (value.length > 0) {
@@ -128,9 +128,9 @@ class A320_Neo_CDU_AirwaysFromWaypointPage {
                 const wp = routeWaypoints[i];
                 const next = routeWaypoints[i + 1];
                 if (wp) {
-                    let color = 'white';
+                    let color = 'green';
                     if (fmc.flightPlanManager.getCurrentFlightPlanIndex() === 1) {
-                        color = 'yellow';
+                        color = 'blue';
                     }
                     if (wp.infos.airwayIn === undefined) {
                         allRows.push(["DIRECT", wp.ident]);
