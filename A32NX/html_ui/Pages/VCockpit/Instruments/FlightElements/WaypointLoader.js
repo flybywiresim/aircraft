@@ -1016,10 +1016,12 @@ class FacilityLoader {
                             }
                         }
                     }
-                    if (nextIcao && nextIcao.length > 0 && nextIcao[0].replace(/\s+/g, '') != "") {
+                    if (nextIcao && nextIcao.length > 0 && nextIcao[0] != " ") {
                         const nextWaypoint = await this.getIntersectionData(nextIcao);
                         if (nextWaypoint) {
-                            airway.icaos.push(nextWaypoint.icao);
+                            if (!airway.icaos.includes(nextWaypoint.icao)) {
+                                airway.icaos.push(nextWaypoint.icao);
+                            }
                             currentWaypointIcao = nextWaypoint.icao;
                             if (nextWaypoint.routes) {
                                 currentRoute = nextWaypoint.routes.find(r => {
