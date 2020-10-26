@@ -1,6 +1,7 @@
 class A32NX_GPWS {
     constructor() {
         console.log('A32NX_GPWS constructed');
+        this.minimumsState = 0;
     }
     init() {
         console.log('A32NX_GPWS init');
@@ -25,9 +26,9 @@ class A32NX_GPWS {
         const altitude = Simplane.getAltitudeAboveGround();
         const vSpeed = Simplane.getVerticalSpeed();
         const Airspeed = SimVar.GetSimVarValue("AIRSPEED INDICATED", "Knots");
-        const decisionHeight = SimVar.GetSimVarValue("L:AIRLINER_DECISION_HEIGHT", "Number");
+        const mda = SimVar.GetSimVarValue("L:AIRLINER_MINIMUM_DESCENT_ALTITUDE", "Number");
+        const dh = SimVar.GetSimVarValue("L:AIRLINER_DECISION_HEIGHT", "Number");
         const phase = SimVar.GetSimVarValue("L:AIRLINER_FLIGHT_PHASE", "Enum");
-        this.gpws_minimums(altitude, decisionHeight, phase);
 
         if (!SYS_PushButton && altitude >= 10 && altitude <= 2450) { //Activate between 10 - 2450 radio alt unless SYS is off
             this.gpws_pull_up(altitude, vSpeed);
@@ -40,33 +41,44 @@ class A32NX_GPWS {
             SimVar.SetSimVarValue("L:GPWS_DONT_SINK", "Bool", 0);
             SimVar.SetSimVarValue("L:GPWS_TOO_LOW", "Enum", 0);
         }
+
+        if((mda != 0 || dh != 0) && phase == FlightPhase.FLIGHT_PHASE_APPROACH) {
+            let minimumsDA; //MDA or DH
+            let minimumsIA; //radio or baro altitude
+            const radioAlt = SimVar.GetSimVarValue("PLANE ALT ABOVE GROUND MINUS CG", "Feet");
+            const baroAlt = SimVar.GetSimVarValue("INDICATED ALTITUDE", "feet");
+            if (mda > 0) {
+                minimumsDA = mda;
+                minimumsIA = baroAlt;
+            } else {
+                minimumsDA = dh;
+                minimumsIA = radioAlt
+            }
+            this.gpws_minimums(minimumsDA, minimumsIA);
+        }
     }
 
-    gpws_minimums(altitude, decisionHeight, phase) {
+    gpws_minimums(minimumsDA, minimumsIA) {
         let over100Above = false;
         let overMinimums = false;
-        let state = 0; //start, over DH, over ADH
 
-        if (decisionHeight != 0 && phase === 6 && decisionHeight <= 90) {
-            overMinimums = altitude >= decisionHeight + 15;
-            over100Above = altitude >= decisionHeight + 115;
-        } else if (decisionHeight != 0 && phase === 6) {
-            overMinimums = altitude >= decisionHeight + 5;
-            over100Above = altitude >= decisionHeight + 105;
+        if (minimumsDA <= 90) {
+            overMinimums = minimumsIA >= minimumsDA + 15;
+            over100Above = minimumsIA >= minimumsDA + 115;
+        } else {
+            overMinimums = minimumsIA >= minimumsDA + 5;
+            over100Above = minimumsIA >= minimumsDA + 105;
         }
-
-        if (state === 0 && over100Above) {
-            state = 2;
-        } else if (state === 0 && overMinimums) {
-            state = 1;
-        }
-
-        if (state === 2 && over100Above === false) {
-            state = 1;
+        if (this.minimumsState === 0 && overMinimums) {
+            this.minimumsState = 1;
+        } else if (this.minimumsState === 1 && over100Above) {
+            this.minimumsState = 2;
+        } else if (this.minimumsState === 2 && !over100Above) {
+            Coherent.call("PLAY_INSTRUMENT_SOUND", "aural_100_above");
+            this.minimumsState = 1;
+        } else if (this.minimumsState === 1 && !overMinimums) {
             Coherent.call("PLAY_INSTRUMENT_SOUND", "aural_minimums");
-        } else if (state === 1 && overMinimums === false) {
-            state = 0;
-            Coherent.call("PLAY_INSTRUMENT_SOUND", "aural_minimums");
+            this.minimumsState = 0;
         }
     }
 
@@ -82,7 +94,7 @@ class A32NX_GPWS {
         SimVar.SetSimVarValue("L:GPWS_PULL_UP", "Bool", pull_up);
     }
 
-    gpws_dont_sink(altitude, vSpeed) {
+    gpws_dont_sink(altitude, vSpeed, phase) {
         let dont_sink = false;
 
         if (phase == FlightPhase.FLIGHT_PHASE_TAKEOFF || phase == FlightPhase.FLIGHT_PHASE_GOAROUND) {
@@ -98,7 +110,7 @@ class A32NX_GPWS {
         SimVar.SetSimVarValue("L:GPWS_DONT_SINK", "Bool", dont_sink);
     }
 
-    gpws_too_low(altitude, Airspeed, FLAP_PushButton) {
+    gpws_too_low(altitude, Airspeed, FLAP_PushButton, phase) {
         const flaps = SimVar.GetSimVarValue("FLAPS HANDLE INDEX", "Number");
         const gear = SimVar.GetSimVarValue("GEAR POSITION:0", "Enum");
 
