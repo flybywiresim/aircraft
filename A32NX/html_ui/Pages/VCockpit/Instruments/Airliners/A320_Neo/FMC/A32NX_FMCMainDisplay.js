@@ -290,7 +290,7 @@ class FMCMainDisplay extends BaseAirliners {
         }
         SimVar.SetSimVarValue("L:AIRLINER_MCDU_CURRENT_FPLN_WAYPOINT", "number", this.currentFlightPlanWaypointIndex);
     }
-    
+
     get cruiseFlightLevel() {
         return this._cruiseFlightLevel;
     }
@@ -648,22 +648,22 @@ class FMCMainDisplay extends BaseAirliners {
                     const posData = lat + ";" + long + ";" + alt;
                     const endpoint = "https://api.flybywiresim.com/txcxn";
                     await fetch(`${endpoint}?flight=${flightNo}&latlong=${posData}`, {method: "POST"})
-                    .then((response) => response.json())
-                    .then((data) => {
-                        if ("error" in data) {
-                            this.showErrorMessage("FLT NBR IN USE");
-                            inUse = true;
-                        } else {
-                            SimVar.SetSimVarValue("L:A32NX_Telex_ID", "Number", data["id"]);                        
-                        }
-                    })
-                }
-    
+                        .then((response) => response.json())
+                        .then((data) => {
+                            if ("error" in data) {
+                                this.showErrorMessage("FLT NBR IN USE");
+                                inUse = true;
+                            } else {
+                                SimVar.SetSimVarValue("L:A32NX_Telex_ID", "Number", data["id"]);
+                            }
+                        });
+                };
+
                 initTelexServer();
-                
-                if(inUse) {
+
+                if (inUse) {
                     returnCB = false;
-                }            
+                }
             }
             return callback(returnCB);
         });

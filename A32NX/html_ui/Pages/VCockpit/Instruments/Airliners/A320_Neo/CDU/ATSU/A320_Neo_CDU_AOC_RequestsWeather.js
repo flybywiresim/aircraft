@@ -31,11 +31,11 @@ class CDUAocRequestsWeather {
                 ["RETURN TO", `${store["sendStatus"]}`],
                 ["<AOC MENU", "SEND*[color]blue"]
             ]);
-        }
+        };
         updateView();
 
         mcdu.onRightInput[0] = () => {
-            let value = mcdu.inOut;
+            const value = mcdu.inOut;
             mcdu.clearUserInput();
             if (value === FMCMainDisplay.clrValue) {
                 store["arpt1"] = "";
@@ -43,10 +43,10 @@ class CDUAocRequestsWeather {
                 store["arpt1"] = value;
             }
             CDUAocRequestsWeather.ShowPage(mcdu, store);
-        }
+        };
 
         mcdu.onRightInput[1] = () => {
-            let value = mcdu.inOut;
+            const value = mcdu.inOut;
             mcdu.clearUserInput();
             if (value === FMCMainDisplay.clrValue) {
                 store["arpt2"] = "";
@@ -54,10 +54,10 @@ class CDUAocRequestsWeather {
                 store["arpt2"] = value;
             }
             CDUAocRequestsWeather.ShowPage(mcdu, store);
-        }
+        };
 
         mcdu.onRightInput[2] = () => {
-            let value = mcdu.inOut;
+            const value = mcdu.inOut;
             mcdu.clearUserInput();
             if (value === FMCMainDisplay.clrValue) {
                 store["arpt3"] = "";
@@ -65,10 +65,10 @@ class CDUAocRequestsWeather {
                 store["arpt3"] = value;
             }
             CDUAocRequestsWeather.ShowPage(mcdu, store);
-        }
+        };
 
         mcdu.onRightInput[3] = () => {
-            let value = mcdu.inOut;
+            const value = mcdu.inOut;
             mcdu.clearUserInput();
             if (value === FMCMainDisplay.clrValue) {
                 store["arpt4"] = "";
@@ -76,15 +76,15 @@ class CDUAocRequestsWeather {
                 store["arpt4"] = value;
             }
             CDUAocRequestsWeather.ShowPage(mcdu, store);
-        }
+        };
 
         mcdu.onRightInput[5] = async () => {
             store["sendStatus"] = "QUEUED";
             updateView();
             const icaos = [store["arpt1"], store["arpt2"], store["arpt3"], store["arpt4"]];
-            const lines = [];            
-            const newMessage = { "id": Date.now(), "type": reqTypes[store.reqID], "time": '00:00', "opened": null, "content": lines, }
-            mcdu.clearUserInput();            
+            const lines = [];
+            const newMessage = { "id": Date.now(), "type": reqTypes[store.reqID], "time": '00:00', "opened": null, "content": lines, };
+            mcdu.clearUserInput();
 
             const getInfo = async () => {
                 if (store.reqID == 0) {
@@ -92,7 +92,7 @@ class CDUAocRequestsWeather {
                 } else {
                     getTAF(icaos, lines, store, updateView);
                 }
-            }
+            };
 
             getInfo().then(() => {
                 store["sendStatus"] = "SENT";
@@ -105,19 +105,19 @@ class CDUAocRequestsWeather {
                     updateView();
                 }, 3000);
             });
-        }
+        };
 
         mcdu.onLeftInput[0] = () => {
             store["reqID"] = (store.reqID + 1) % 2;
             CDUAocRequestsWeather.ShowPage(mcdu, store);
-        }
+        };
         mcdu.onLeftInput[1] = () => {
             clearTimeout(labelTimeout);
             CDUAocRequestsAtis.ShowPage(mcdu);
-        }
+        };
         mcdu.onLeftInput[5] = () => {
             clearTimeout(labelTimeout);
             CDUAocMenu.ShowPage(mcdu);
-        }
+        };
     }
 }

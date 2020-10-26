@@ -19,7 +19,7 @@ class CDUCfdsAvionicsMenu {
 
         mcdu.onLeftInput[5] = () => {
             CDUCfdsMainMenu.ShowPage(mcdu);
-        }
+        };
 
         // PAGE SWITCHING
         mcdu.onPrevPage = () => {
@@ -50,8 +50,8 @@ class CDUCfdsAvionicsMenu {
 
         mcdu.onLeftInput[5] = () => {
             CDUCfdsMainMenu.ShowPage(mcdu);
-        }
-        
+        };
+
         // PAGE SWITCHING
         mcdu.onPrevPage = () => {
             CDUCfdsAvionicsMenu.ShowPage(mcdu);

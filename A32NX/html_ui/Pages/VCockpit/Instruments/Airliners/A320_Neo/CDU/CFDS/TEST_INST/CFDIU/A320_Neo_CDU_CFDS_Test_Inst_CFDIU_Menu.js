@@ -19,7 +19,7 @@ class CDU_CFDS_Test_Inst_CFDIU_Menu {
 
         mcdu.onLeftInput[5] = () => {
             CDUCfdsTestInst.ShowPage(mcdu);
-        }
+        };
 
     }
 }

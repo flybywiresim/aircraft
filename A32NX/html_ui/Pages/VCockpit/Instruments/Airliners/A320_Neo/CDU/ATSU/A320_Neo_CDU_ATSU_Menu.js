@@ -21,6 +21,6 @@ class CDUAtsuMenu {
 
         mcdu.onRightInput[1] = () => {
             CDUAocMenu.ShowPage(mcdu);
-        }
+        };
     }
 }

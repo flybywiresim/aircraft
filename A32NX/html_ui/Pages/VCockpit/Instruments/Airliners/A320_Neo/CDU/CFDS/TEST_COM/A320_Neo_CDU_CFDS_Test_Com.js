@@ -19,7 +19,7 @@ class CDUCfdsTestCom {
 
         mcdu.onLeftInput[5] = () => {
             CDUCfdsTestMenu.ShowPage(mcdu);
-        }
+        };
 
         // PAGE SWITCHING
         mcdu.onPrevPage = () => {
@@ -50,7 +50,7 @@ class CDUCfdsTestCom {
 
         mcdu.onLeftInput[5] = () => {
             CDUCfdsTestMenu.ShowPage(mcdu);
-        }
+        };
 
         // PAGE SWITCHING
         mcdu.onPrevPage = () => {

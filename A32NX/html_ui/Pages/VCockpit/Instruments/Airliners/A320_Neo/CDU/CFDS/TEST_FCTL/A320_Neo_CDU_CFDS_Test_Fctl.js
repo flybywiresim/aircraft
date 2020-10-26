@@ -19,6 +19,6 @@ class CDUCfdsTestFctl {
 
         mcdu.onLeftInput[5] = () => {
             CDUCfdsTestMenu.ShowPage(mcdu);
-        }
+        };
     }
 }

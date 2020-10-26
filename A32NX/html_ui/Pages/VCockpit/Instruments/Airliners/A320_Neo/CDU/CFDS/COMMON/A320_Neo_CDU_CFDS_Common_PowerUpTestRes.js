@@ -20,7 +20,7 @@ class CDU_CFDS_Test_Common_PowerUp {
         // IMPLEMENTED BUTTONS
         mcdu.onLeftInput[5] = () => {
             CDUCfdsTestInst.ShowPage(mcdu);
-        }
+        };
 
     }
 }

@@ -19,34 +19,34 @@ class CDUCfdsTestMenu {
 
         mcdu.onLeftInput[0] = () => {
             CDUCfdsTestAircond.ShowPage(mcdu);
-        }
+        };
         mcdu.onLeftInput[2] = () => {
             CDUCfdsTestCom.ShowPage(mcdu);
-        }
+        };
         mcdu.onLeftInput[3] = () => {
             CDUCfdsTestElec.ShowPage(mcdu);
-        }
+        };
         mcdu.onLeftInput[4] = () => {
             CDUCfdsTestFire.ShowPage(mcdu);
-        }
+        };
         mcdu.onRightInput[0] = () => {
             CDUCfdsTestFctl.ShowPage(mcdu);
-        }
+        };
         mcdu.onRightInput[2] = () => {
             CDUCfdsTestIce.ShowPage(mcdu);
-        }
+        };
         mcdu.onRightInput[3] = () => {
             CDUCfdsTestInst.ShowPage(mcdu);
-        }
+        };
         mcdu.onRightInput[4] = () => {
             CDUCfdsTestLG.ShowPage(mcdu);
-        }
+        };
         mcdu.onRightInput[5] = () => {
             CDUCfdsTestNav.ShowPage(mcdu);
-        }
+        };
         mcdu.onLeftInput[5] = () => {
             CDUCfdsMainMenu.ShowPage(mcdu);
-        }
+        };
 
         // PAGE SWITCHING
         mcdu.onPrevPage = () => {
@@ -77,13 +77,13 @@ class CDUCfdsTestMenu {
 
         mcdu.onLeftInput[0] = () => {
             CDUCfdsTestPneu.ShowPage(mcdu);
-        }
+        };
         mcdu.onLeftInput[5] = () => {
             CDUCfdsMainMenu.ShowPage(mcdu);
-        }
+        };
         mcdu.onRightInput[0] = () => {
             CDUCfdsTestEng.ShowPage(mcdu);
-        }
+        };
 
         // PAGE SWITCHING
         mcdu.onPrevPage = () => {

@@ -38,7 +38,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this.A32NXCore = new A32NX_Core();
         this.A32NXCore.init(this._lastTime);
 
-        SimVar.SetSimVarValue("ATC FLIGHT NUMBER", "string", "", "FMC")
+        SimVar.SetSimVarValue("ATC FLIGHT NUMBER", "string", "", "FMC");
         SimVar.SetSimVarValue("L:A32NX_Telex_ID", "Number", 0);
 
         this.defaultInputErrorMessage = "NOT ALLOWED";
@@ -192,7 +192,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
 
         // AOC Telex Ping
         const telexID = SimVar.GetSimVarValue("L:A32NX_Telex_ID", "Number");
-        const flightNo = SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string",  "FMC");
+        const flightNo = SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string", "FMC");
         if (!this.telexPingActive && telexID > 0) {
             this.telexPingActive = true;
             setInterval(() => {
@@ -202,43 +202,43 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                 const posData = lat + ";" + long + ";" + alt;
                 const endpoint_c = "https://api.flybywiresim.com/txcxn";
                 const endpoint_m = "https://api.flybywiresim.com/txmsg";
-                let toDelete = [];
+                const toDelete = [];
                 fetch(`${endpoint_c}/${telexID}?latlong=${posData}&update=yes`, {method: "POST"})
-                .then((response) => response.json())
-                .then((data) => {
-                    if ("error" in data) {
-                        console.log("TELEX PING FAILED");
-                    }
-                })
-                fetch(`${endpoint_m}/msgto/${flightNo}`, {method: "GET"})
-                .then((response) => response.json())
-                .then((data) => {
-                    for (let msg of data) {
-                        let lines = [];
-                        lines.push("FROM " + msg["m_from"] + "[color]blue");
-                        let incLines = msg["message"].split(";");
-                        incLines.forEach(l => lines.push(l.concat("[color]green")));
-                        lines.push('---------------------------[color]white');
-
-                        let newMessage = { "id": Date.now(), "type": "FREE TEXT (" + msg["m_from"] + ")", "time": '00:00', "opened": null, "content": lines, }
-                        let timeValue = SimVar.GetGlobalVarValue("ZULU TIME", "seconds");
-                        if (timeValue) {
-                            const seconds = Number.parseInt(timeValue);
-                            const displayTime = Utils.SecondsToDisplayTime(seconds, true, true, false);
-                            timeValue = displayTime.toString();
+                    .then((response) => response.json())
+                    .then((data) => {
+                        if ("error" in data) {
+                            console.log("TELEX PING FAILED");
                         }
-                        newMessage["time"] = timeValue.substring(0, 5);
-                        this.messages.unshift(newMessage);
-                        toDelete.push(msg["id"]);
-                    }
-                })
-                .then(() => {
-                    const msgCount = SimVar.GetSimVarValue("L:A32NX_COMPANY_MSG_COUNT", "Number");
-                    SimVar.SetSimVarValue("L:A32NX_COMPANY_MSG_COUNT", "Number", msgCount + toDelete.length);
-                    for (let d of toDelete) {
-                        fetch(`${endpoint_m}/${d}?delete=yes`, {method: "POST"})
-                    }
-                })
+                    });
+                fetch(`${endpoint_m}/msgto/${flightNo}`, {method: "GET"})
+                    .then((response) => response.json())
+                    .then((data) => {
+                        for (const msg of data) {
+                            const lines = [];
+                            lines.push("FROM " + msg["m_from"] + "[color]blue");
+                            const incLines = msg["message"].split(";");
+                            incLines.forEach(l => lines.push(l.concat("[color]green")));
+                            lines.push('---------------------------[color]white');
+
+                            const newMessage = { "id": Date.now(), "type": "FREE TEXT (" + msg["m_from"] + ")", "time": '00:00', "opened": null, "content": lines, };
+                            let timeValue = SimVar.GetGlobalVarValue("ZULU TIME", "seconds");
+                            if (timeValue) {
+                                const seconds = Number.parseInt(timeValue);
+                                const displayTime = Utils.SecondsToDisplayTime(seconds, true, true, false);
+                                timeValue = displayTime.toString();
+                            }
+                            newMessage["time"] = timeValue.substring(0, 5);
+                            this.messages.unshift(newMessage);
+                            toDelete.push(msg["id"]);
+                        }
+                    })
+                    .then(() => {
+                        const msgCount = SimVar.GetSimVarValue("L:A32NX_COMPANY_MSG_COUNT", "Number");
+                        SimVar.SetSimVarValue("L:A32NX_COMPANY_MSG_COUNT", "Number", msgCount + toDelete.length);
+                        for (const d of toDelete) {
+                            fetch(`${endpoint_m}/${d}?delete=yes`, {method: "POST"});
+                        }
+                    });
             }, 30000);
         } else if (this.telexPingActive && telexID == 0) {
             this.telexPingActive = false;
@@ -501,13 +501,12 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                 this.activeSystem = 'FMGC';
             }
             return true;
-        }
-        else if (input === "MENU") {
+        } else if (input === "MENU") {
             if (this.onMenu) {
                 this.onMenu();
-        // } else if (input === "MCDU") {
-        //     if (this.onMcdu) {
-        //         this.onMcdu();
+                // } else if (input === "MCDU") {
+                //     if (this.onMcdu) {
+                //         this.onMcdu();
             }
             return true;
         } else if (input === "AIRPORT") {

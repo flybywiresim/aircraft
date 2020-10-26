@@ -20,10 +20,10 @@ class CDUCfdsMainMenu {
 
         mcdu.onLeftInput[3] = () => {
             CDUCfdsAvionicsMenu.ShowPage(mcdu);
-        }
+        };
         mcdu.onLeftInput[4] = () => {
             CDUCfdsTestMenu.ShowPage(mcdu);
-        }
+        };
 
         // PAGE SWITCHING
         mcdu.onPrevPage = () => {

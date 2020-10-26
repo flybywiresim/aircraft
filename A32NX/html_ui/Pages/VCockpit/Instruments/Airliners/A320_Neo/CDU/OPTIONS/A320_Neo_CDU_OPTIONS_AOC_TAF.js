@@ -11,7 +11,7 @@ class CDU_OPTIONS_TAF {
         let noaa = "*NOAA[color]blue";
         let ivao = "*IVAO[color]blue";
 
-        switch(storedTafSrc) {
+        switch (storedTafSrc) {
             case "IVAO":
                 ivao = "IVAO[color]green";
                 break;
@@ -40,15 +40,15 @@ class CDU_OPTIONS_TAF {
                 SetStoredData("A32NX_CONFIG_TAF_SRC", "NOAA");
                 CDU_OPTIONS_TAF.ShowPage(mcdu);
             }
-        }
+        };
         mcdu.onLeftInput[1] = () => {
             if (storedTafSrc != "IVAO") {
                 SetStoredData("A32NX_CONFIG_TAF_SRC", "IVAO");
                 CDU_OPTIONS_TAF.ShowPage(mcdu);
             }
-        }
+        };
         mcdu.onLeftInput[5] = () => {
             CDU_OPTIONS_MainMenu.ShowPage(mcdu);
-        }
+        };
     }
 }

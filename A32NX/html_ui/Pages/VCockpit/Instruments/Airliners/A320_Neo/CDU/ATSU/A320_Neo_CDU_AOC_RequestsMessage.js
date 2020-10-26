@@ -1,7 +1,7 @@
 class CDUAocRequestsMessage {
     static ShowPage(mcdu, message, offset = 0) {
         mcdu.clearDisplay();
-        let lines = message["content"];
+        const lines = message["content"];
         if (!message["opened"]) {
             let timeValue = SimVar.GetGlobalVarValue("ZULU TIME", "seconds");
             if (timeValue) {
@@ -36,28 +36,36 @@ class CDUAocRequestsMessage {
 
         if (lines.length > 8) {
             mcdu.onUp = () => {
-                if (lines[offset + 1]) offset += 1;
+                if (lines[offset + 1]) {
+                    offset += 1;
+                }
                 CDUAocRequestsMessage.ShowPage(mcdu, message, offset);
-            }
+            };
             mcdu.onDown = () => {
-                if (lines[offset - 1]) offset -= 1;
+                if (lines[offset - 1]) {
+                    offset -= 1;
+                }
                 CDUAocRequestsMessage.ShowPage(mcdu, message, offset);
-            }
+            };
         }
 
         mcdu.onNextPage = () => {
-            const nextMessage = mcdu.getMessage(message["id"], 'next')
-            if (nextMessage) CDUAocRequestsMessage.ShowPage(mcdu, nextMessage);
-        }
+            const nextMessage = mcdu.getMessage(message["id"], 'next');
+            if (nextMessage) {
+                CDUAocRequestsMessage.ShowPage(mcdu, nextMessage);
+            }
+        };
 
         mcdu.onPrevPage = () => {
-            const previousMessage = mcdu.getMessage(message["id"], 'previous')
-            if (previousMessage) CDUAocRequestsMessage.ShowPage(mcdu, previousMessage);
-        }
+            const previousMessage = mcdu.getMessage(message["id"], 'previous');
+            if (previousMessage) {
+                CDUAocRequestsMessage.ShowPage(mcdu, previousMessage);
+            }
+        };
 
         mcdu.onLeftInput[5] = () => {
             CDUAocMessagesReceived.ShowPage(mcdu);
-        }
+        };
 
     }
 }

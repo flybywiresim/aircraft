@@ -1,5 +1,6 @@
 function wordWrapToStringList(text, maxLength) {
-    let result = [], line = [];
+    const result = [];
+    let line = [];
     let length = 0;
     text.split(" ").forEach(function (word) {
         if ((length + word.length) >= maxLength) {
@@ -24,12 +25,12 @@ function fetchTimeValue() {
         return timeValue.substring(0, 5);
     }
     return null;
-}                    
+}
 
 const getMETAR = async (icaos, lines, store, updateView) => {
     const storedMetarSrc = GetStoredData("A32NX_CONFIG_METAR_SRC");
     let endpoint = "https://api.flybywiresim.com/metar";
-    switch(storedMetarSrc) {
+    switch (storedMetarSrc) {
         case "VATSIM":
             endpoint += "?source=vatsim&icao=";
             break;
@@ -45,30 +46,30 @@ const getMETAR = async (icaos, lines, store, updateView) => {
     for (const icao of icaos) {
         if (icao !== "") {
             await fetch(`${endpoint}${icao}`)
-            .then((response) => response.text())
-            .then((data) => {
-                let error = data.slice(0, 9) == "FBW_ERROR";
-                if (!error) {
-                    lines.push(`METAR ${icao}[color]blue`);
-                    const newLines = wordWrapToStringList(data, 25);
-                    newLines.forEach(l => lines.push(l.concat("[color]green")));
-                    lines.push('---------------------------[color]white');
-                } else {
-                    lines.push(`METAR ${icao}[color]blue`);
-                    lines.push('STATION NOT AVAILABLE[color]red');
-                    lines.push('---------------------------[color]white');
-                }
-            })
+                .then((response) => response.text())
+                .then((data) => {
+                    const error = data.slice(0, 9) == "FBW_ERROR";
+                    if (!error) {
+                        lines.push(`METAR ${icao}[color]blue`);
+                        const newLines = wordWrapToStringList(data, 25);
+                        newLines.forEach(l => lines.push(l.concat("[color]green")));
+                        lines.push('---------------------------[color]white');
+                    } else {
+                        lines.push(`METAR ${icao}[color]blue`);
+                        lines.push('STATION NOT AVAILABLE[color]red');
+                        lines.push('---------------------------[color]white');
+                    }
+                });
         }
     }
     store["sendStatus"] = "SENT";
     updateView();
-}
+};
 
 const getTAF = async (icaos, lines, store, updateView) => {
     const storedTafSrc = GetStoredData("A32NX_CONFIG_TAF_SRC");
     let endpoint = "https://api.flybywiresim.com/taf";
-    switch(storedTafSrc) {
+    switch (storedTafSrc) {
         case "IVAO":
             endpoint += "?source=ivao&icao=";
             break;
@@ -78,30 +79,30 @@ const getTAF = async (icaos, lines, store, updateView) => {
     for (const icao of icaos) {
         if (icao !== "") {
             await fetch(`${endpoint}${icao}`)
-            .then((response) => response.text())
-            .then((data) => {
-                let error = data.slice(0, 9) == "FBW_ERROR";
-                if (!error) {
-                    lines.push(`TAF ${icao}[color]blue`);
-                    const newLines = wordWrapToStringList(data, 25);
-                    newLines.forEach(l => lines.push(l.concat("[color]green")));
-                    lines.push('---------------------------[color]white');
-                } else {
-                    lines.push(`TAF ${icao}[color]blue`);
-                    lines.push('STATION NOT AVAILABLE[color]red');
-                    lines.push('---------------------------[color]white');
-                }
-            })
+                .then((response) => response.text())
+                .then((data) => {
+                    const error = data.slice(0, 9) == "FBW_ERROR";
+                    if (!error) {
+                        lines.push(`TAF ${icao}[color]blue`);
+                        const newLines = wordWrapToStringList(data, 25);
+                        newLines.forEach(l => lines.push(l.concat("[color]green")));
+                        lines.push('---------------------------[color]white');
+                    } else {
+                        lines.push(`TAF ${icao}[color]blue`);
+                        lines.push('STATION NOT AVAILABLE[color]red');
+                        lines.push('---------------------------[color]white');
+                    }
+                });
         }
     }
     store["sendStatus"] = "SENT";
     updateView();
-}
+};
 
 const getATIS = async (icao, lines, type, store, updateView) => {
     const storedAtisSrc = GetStoredData("A32NX_CONFIG_ATIS_SRC");
     let endpoint = "https://api.flybywiresim.com/atis";
-    switch(storedAtisSrc) {
+    switch (storedAtisSrc) {
         case "VATSIM":
             endpoint += "?source=vatsim&icao=";
             break;
@@ -116,40 +117,40 @@ const getATIS = async (icao, lines, type, store, updateView) => {
     }
     if (icao !== "") {
         await fetch(`${endpoint}${icao}`)
-        .then((response) => response.json())
-        .then((data) => {
-            let error = "error" in data;
-            if (!error) {
-                let atisData;
-                switch (type) {
-                    case 0:
-                        if ("arr" in data) {
-                            atisData = data.arr;
-                        } else {
+            .then((response) => response.json())
+            .then((data) => {
+                const error = "error" in data;
+                if (!error) {
+                    let atisData;
+                    switch (type) {
+                        case 0:
+                            if ("arr" in data) {
+                                atisData = data.arr;
+                            } else {
+                                atisData = data.combined;
+                            }
+                            break;
+                        case 1:
+                            if ("dep" in data) {
+                                atisData = data.dep;
+                            } else {
+                                atisData = data.combined;
+                            }
+                            break;
+                        default:
                             atisData = data.combined;
-                        }
-                        break;
-                    case 1:
-                        if ("dep" in data) {
-                            atisData = data.dep;
-                        } else {
-                            atisData = data.combined;
-                        }
-                        break;
-                    default:
-                        atisData = data.combined;
+                    }
+                    lines.push(`ATIS ${icao}[color]blue`);
+                    const newLines = wordWrapToStringList(atisData, 25);
+                    newLines.forEach(l => lines.push(l.concat("[color]green")));
+                    lines.push('---------------------------[color]white');
+                } else {
+                    lines.push(`ATIS ${icao}[color]blue`);
+                    lines.push('D-ATIS NOT AVAILABLE[color]red');
+                    lines.push('---------------------------[color]white');
                 }
-                lines.push(`ATIS ${icao}[color]blue`);
-                const newLines = wordWrapToStringList(atisData, 25);
-                newLines.forEach(l => lines.push(l.concat("[color]green")));
-                lines.push('---------------------------[color]white');
-            } else {
-                lines.push(`ATIS ${icao}[color]blue`);
-                lines.push('D-ATIS NOT AVAILABLE[color]red');
-                lines.push('---------------------------[color]white');
-            }
-        })
+            });
     }
     store["sendStatus"] = "SENT";
     updateView();
-}
+};

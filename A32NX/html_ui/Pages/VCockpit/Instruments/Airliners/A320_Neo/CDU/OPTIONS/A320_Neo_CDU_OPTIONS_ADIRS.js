@@ -12,7 +12,7 @@ class CDU_OPTIONS_ADIRS {
         let fast = "*FAST[color]blue";
         let real = "*REAL[color]blue";
 
-        switch(storedAlignTime) {
+        switch (storedAlignTime) {
             case "INSTANT":
                 instant = "INSTANT[color]green";
                 break;
@@ -44,21 +44,21 @@ class CDU_OPTIONS_ADIRS {
                 SetStoredData("A32NX_CONFIG_ALIGN_TIME", "INSTANT");
                 CDU_OPTIONS_ADIRS.ShowPage(mcdu);
             }
-        }
+        };
         mcdu.onLeftInput[1] = () => {
             if (storedAlignTime != "FAST") {
                 SetStoredData("A32NX_CONFIG_ALIGN_TIME", "FAST");
                 CDU_OPTIONS_ADIRS.ShowPage(mcdu);
             }
-        }
+        };
         mcdu.onLeftInput[2] = () => {
             if (storedAlignTime != "REAL") {
                 SetStoredData("A32NX_CONFIG_ALIGN_TIME", "REAL");
                 CDU_OPTIONS_ADIRS.ShowPage(mcdu);
             }
-        }
+        };
         mcdu.onLeftInput[5] = () => {
             CDU_OPTIONS_MainMenu.ShowPage(mcdu);
-        }
+        };
     }
 }

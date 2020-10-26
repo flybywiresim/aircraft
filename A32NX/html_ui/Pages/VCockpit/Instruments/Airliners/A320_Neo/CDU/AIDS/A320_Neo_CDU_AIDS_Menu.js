@@ -23,6 +23,6 @@ class CDU_AIDS_MainMenu {
             setTimeout(() => {
                 mcdu.showErrorMessage("");
             }, 1000);
-        }
+        };
     }
 }

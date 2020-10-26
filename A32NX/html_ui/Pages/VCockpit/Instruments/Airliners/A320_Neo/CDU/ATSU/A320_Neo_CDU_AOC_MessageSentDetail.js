@@ -1,7 +1,7 @@
 class CDUAocMessageSentDetail {
     static ShowPage(mcdu, message, offset = 0) {
         mcdu.clearDisplay();
-        let lines = message["content"];
+        const lines = message["content"];
 
         const currentMesssageIndex = mcdu.getSentMessageIndex(message["id"]);
         const currentMesssageCount = currentMesssageIndex + 1;
@@ -25,28 +25,36 @@ class CDUAocMessageSentDetail {
 
         if (lines.length > 8) {
             mcdu.onUp = () => {
-                if (lines[offset + 1]) offset += 1;
+                if (lines[offset + 1]) {
+                    offset += 1;
+                }
                 CDUAocMessageSentDetail.ShowPage(mcdu, message, offset);
-            }
+            };
             mcdu.onDown = () => {
-                if (lines[offset - 1]) offset -= 1;
+                if (lines[offset - 1]) {
+                    offset -= 1;
+                }
                 CDUAocMessageSentDetail.ShowPage(mcdu, message, offset);
-            }
+            };
         }
 
         mcdu.onNextPage = () => {
-            const nextMessage = mcdu.getSentMessage(message["id"], 'next')
-            if (nextMessage) CDUAocMessageSentDetail.ShowPage(mcdu, nextMessage);
-        }
+            const nextMessage = mcdu.getSentMessage(message["id"], 'next');
+            if (nextMessage) {
+                CDUAocMessageSentDetail.ShowPage(mcdu, nextMessage);
+            }
+        };
 
         mcdu.onPrevPage = () => {
-            const previousMessage = mcdu.getSentMessage(message["id"], 'previous')
-            if (previousMessage) CDUAocMessageSentDetail.ShowPage(mcdu, previousMessage);
-        }
+            const previousMessage = mcdu.getSentMessage(message["id"], 'previous');
+            if (previousMessage) {
+                CDUAocMessageSentDetail.ShowPage(mcdu, previousMessage);
+            }
+        };
 
         mcdu.onLeftInput[5] = () => {
             CDUAocMessagesSent.ShowPage(mcdu);
-        }
+        };
 
     }
 }

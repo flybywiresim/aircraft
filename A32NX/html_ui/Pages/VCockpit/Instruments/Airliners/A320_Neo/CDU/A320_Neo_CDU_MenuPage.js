@@ -21,16 +21,36 @@ class CDUMenuPage {
             textCFDS = "<CFDS";
             textMaint = "MCDU MAINT>";
             textReturn = "RETURN>";
-            if (activeSystem === "FMGC") textFMGC = "<FMGC[color]green";
-            if (activeSystem === "ATSU") textATSU = "<ATSU[color]green";
-            if (activeSystem === "AIDS") textAIDS = "<AIDS[color]green";
-            if (activeSystem === "CFDS") textCFDS = "<CFDS[color]green";
-            if (activeSystem === "MAINT") textMaint = "MCDU MAINT>[color]green";
-            if (selectedFMGC) textFMGC = "<FMGC (SEL)[color]blue";
-            if (selectedATSU) textATSU = "<ATSU (SEL)[color]blue";
-            if (selectedAIDS) textAIDS = "<AIDS (SEL)[color]blue";
-            if (selectedCFDS) textCFDS = "<CFDS (SEL)[color]blue";
-            if (selectedMaint) textMaint = "(SEL) MCDU MAINT>[color]blue";
+            if (activeSystem === "FMGC") {
+                textFMGC = "<FMGC[color]green";
+            }
+            if (activeSystem === "ATSU") {
+                textATSU = "<ATSU[color]green";
+            }
+            if (activeSystem === "AIDS") {
+                textAIDS = "<AIDS[color]green";
+            }
+            if (activeSystem === "CFDS") {
+                textCFDS = "<CFDS[color]green";
+            }
+            if (activeSystem === "MAINT") {
+                textMaint = "MCDU MAINT>[color]green";
+            }
+            if (selectedFMGC) {
+                textFMGC = "<FMGC (SEL)[color]blue";
+            }
+            if (selectedATSU) {
+                textATSU = "<ATSU (SEL)[color]blue";
+            }
+            if (selectedAIDS) {
+                textAIDS = "<AIDS (SEL)[color]blue";
+            }
+            if (selectedCFDS) {
+                textCFDS = "<CFDS (SEL)[color]blue";
+            }
+            if (selectedMaint) {
+                textMaint = "(SEL) MCDU MAINT>[color]blue";
+            }
 
             mcdu.setTemplate([
                 ["MCDU MENU"],
@@ -47,7 +67,7 @@ class CDUMenuPage {
                 [""],
                 ["", textReturn]
             ]);
-        }
+        };
 
         updateView();
 
@@ -60,8 +80,8 @@ class CDUMenuPage {
             setTimeout(() => {
                 mcdu.showErrorMessage("");
                 CDUIdentPage.ShowPage(mcdu);
-            }, Math.floor(Math.random() * 500) + 200); 
-        }
+            }, Math.floor(Math.random() * 500) + 200);
+        };
 
         mcdu.onLeftInput[1] = () => {
             mcdu.showErrorMessage("WAIT FOR SYSTEM RESPONSE");
@@ -70,8 +90,8 @@ class CDUMenuPage {
             setTimeout(() => {
                 mcdu.showErrorMessage("");
                 CDUAtsuMenu.ShowPage(mcdu);
-            }, Math.floor(Math.random() * 500) + 400); 
-        }
+            }, Math.floor(Math.random() * 500) + 400);
+        };
 
         mcdu.onLeftInput[2] = () => {
             mcdu.showErrorMessage("WAIT FOR SYSTEM RESPONSE");
@@ -80,8 +100,8 @@ class CDUMenuPage {
             setTimeout(() => {
                 mcdu.showErrorMessage("");
                 CDU_AIDS_MainMenu.ShowPage(mcdu);
-            }, Math.floor(Math.random() * 500) + 800); 
-        }
+            }, Math.floor(Math.random() * 500) + 800);
+        };
 
         mcdu.onLeftInput[3] = () => {
             mcdu.showErrorMessage("WAIT FOR SYSTEM RESPONSE");
@@ -90,8 +110,8 @@ class CDUMenuPage {
             setTimeout(() => {
                 mcdu.showErrorMessage("");
                 CDUCfdsMainMenu.ShowPage(mcdu);
-            }, Math.floor(Math.random() * 500) + 800); 
-        }
+            }, Math.floor(Math.random() * 500) + 800);
+        };
 
         mcdu.onRightInput[3] = () => {
             mcdu.showErrorMessage("WAIT FOR SYSTEM RESPONSE");
@@ -100,8 +120,8 @@ class CDUMenuPage {
             setTimeout(() => {
                 mcdu.showErrorMessage("");
                 CDU_OPTIONS_MainMenu.ShowPage(mcdu);
-            }, Math.floor(Math.random() * 500) + 400); 
-        }
+            }, Math.floor(Math.random() * 500) + 400);
+        };
 
         mcdu.onDir = () => {
             mcdu.showErrorMessage("");

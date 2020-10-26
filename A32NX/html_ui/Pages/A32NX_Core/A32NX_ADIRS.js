@@ -28,7 +28,7 @@ class A32NX_ADIRS {
             ADIRSState = 1;
 
             const currentLatitude = SimVar.GetSimVarValue("GPS POSITION LAT", "degree latitude");
-            switch(storedAlignTime){
+            switch (storedAlignTime) {
                 case "INSTANT":
                     ADIRSTimer = 5;
                     break;
@@ -38,7 +38,7 @@ class A32NX_ADIRS {
                 default:
                     ADIRSTimer = (Math.pow(currentLatitude, 2) * 0.095) + 310;
             }
-           
+
             SimVar.SetSimVarValue("L:A320_Neo_ADIRS_TIME", "Seconds", ADIRSTimer);
             SimVar.SetSimVarValue("L:A32NX_Neo_ADIRS_START_TIME", "Seconds", ADIRSTimer);
         }

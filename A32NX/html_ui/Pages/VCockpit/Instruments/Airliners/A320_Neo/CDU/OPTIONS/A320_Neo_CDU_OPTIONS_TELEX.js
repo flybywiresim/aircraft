@@ -9,7 +9,7 @@ class CDU_OPTIONS_TELEX {
         }
 
         let telexToggleText;
-        switch(storedTelexStatus) {
+        switch (storedTelexStatus) {
             case "ENABLED":
                 telexToggleText = "DISABLE*[color]blue";
                 break;
@@ -35,10 +35,10 @@ class CDU_OPTIONS_TELEX {
 
         mcdu.onLeftInput[5] = () => {
             CDU_OPTIONS_MainMenu.ShowPage(mcdu);
-        }
+        };
         mcdu.onRightInput[5] = () => {
             let reEnter = false;
-            switch(storedTelexStatus) {
+            switch (storedTelexStatus) {
                 case "ENABLED":
                     SetStoredData("A32NX_CONFIG_TELEX_STATUS", "DISABLED");
                     SimVar.SetSimVarValue("L:A32NX_Telex_ID", "Number", 0);
@@ -54,7 +54,7 @@ class CDU_OPTIONS_TELEX {
                 CDU_OPTIONS_TELEX.ShowPage(mcdu);
             } else {
                 CDUInitPage.ShowPage1(mcdu, true);
-            }         
-        }
+            }
+        };
     }
 }

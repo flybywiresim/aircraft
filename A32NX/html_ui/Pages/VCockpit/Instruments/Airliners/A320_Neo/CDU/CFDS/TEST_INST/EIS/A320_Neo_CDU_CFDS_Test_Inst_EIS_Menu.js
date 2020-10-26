@@ -20,10 +20,10 @@ class CDU_CFDS_Test_Inst_EIS_Menu {
 
         mcdu.onLeftInput[5] = () => {
             CDUCfdsTestInst.ShowPage(mcdu);
-        }
+        };
         mcdu.onRightInput[3] = () => {
             CDU_CFDS_Test_Inst_EIS_Tests.ShowPage(mcdu, eisIndex);
-        }
+        };
 
     }
 }

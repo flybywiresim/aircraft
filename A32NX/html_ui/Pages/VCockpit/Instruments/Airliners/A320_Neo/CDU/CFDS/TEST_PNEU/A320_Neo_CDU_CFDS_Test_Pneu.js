@@ -19,6 +19,6 @@ class CDUCfdsTestPneu {
 
         mcdu.onLeftInput[5] = () => {
             CDUCfdsTestMenu.ShowPage2(mcdu);
-        }
+        };
     }
 }

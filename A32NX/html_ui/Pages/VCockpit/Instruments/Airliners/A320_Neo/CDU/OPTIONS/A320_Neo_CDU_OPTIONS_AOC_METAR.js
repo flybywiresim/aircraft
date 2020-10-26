@@ -14,7 +14,7 @@ class CDU_OPTIONS_METAR {
         let pilotedge = "*PILOTEDGE[color]blue";
         let ivao = "*IVAO[color]blue";
 
-        switch(storedMetarSrc) {
+        switch (storedMetarSrc) {
             case "AVWX":
                 avwx = "AVWX (UNREAL WEATHER)[color]green";
                 break;
@@ -52,33 +52,33 @@ class CDU_OPTIONS_METAR {
                 SetStoredData("A32NX_CONFIG_METAR_SRC", "MSFS");
                 CDU_OPTIONS_METAR.ShowPage(mcdu);
             }
-        }
+        };
         mcdu.onLeftInput[1] = () => {
             mcdu.showErrorMessage("NOT YET IMPLEMENTED");
             setTimeout(() => {
                 mcdu.showErrorMessage("");
             }, 1000);
-        }
+        };
         mcdu.onLeftInput[2] = () => {
             if (storedMetarSrc != "VATSIM") {
                 SetStoredData("A32NX_CONFIG_METAR_SRC", "VATSIM");
                 CDU_OPTIONS_METAR.ShowPage(mcdu);
             }
-        }
+        };
         mcdu.onLeftInput[3] = () => {
             if (storedMetarSrc != "PILOTEDGE") {
                 SetStoredData("A32NX_CONFIG_METAR_SRC", "PILOTEDGE");
                 CDU_OPTIONS_METAR.ShowPage(mcdu);
             }
-        }
+        };
         mcdu.onLeftInput[4] = () => {
             if (storedMetarSrc != "IVAO") {
                 SetStoredData("A32NX_CONFIG_METAR_SRC", "IVAO");
                 CDU_OPTIONS_METAR.ShowPage(mcdu);
             }
-        }
+        };
         mcdu.onLeftInput[5] = () => {
             CDU_OPTIONS_MainMenu.ShowPage(mcdu);
-        }
+        };
     }
 }

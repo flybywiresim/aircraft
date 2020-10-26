@@ -5,7 +5,7 @@ class CDUAocMessagesSent {
         }
         mcdu.clearDisplay();
 
-        let msgTimeHeaders = [];
+        const msgTimeHeaders = [];
         msgTimeHeaders.length = 6;
         for (let i = 5; i > 0; i--) {
             let header = "";
@@ -33,18 +33,22 @@ class CDUAocMessagesSent {
 
         if (messages.length > 4) {
             mcdu.onNextPage = () => {
-                if (messages[offset - 1]) offset *= 2;
+                if (messages[offset - 1]) {
+                    offset *= 2;
+                }
                 CDUAocMessagesSent.ShowPage(mcdu, messages, offset);
-            }
+            };
             mcdu.onPrevPage = () => {
-                if (messages[offset - 1]) offset /= 2;
+                if (messages[offset - 1]) {
+                    offset /= 2;
+                }
                 CDUAocMessagesSent.ShowPage(mcdu, messages, offset);
-            }
+            };
         }
 
         mcdu.onLeftInput[0] = () => {
             if (messages[offset - 5]) {
-                let value = mcdu.inOut;
+                const value = mcdu.inOut;
                 mcdu.clearUserInput();
                 if (value === FMCMainDisplay.clrValue) {
                     mcdu.deleteSentMessage(offset - 5);
@@ -53,11 +57,11 @@ class CDUAocMessagesSent {
                     CDUAocMessageSentDetail.ShowPage(mcdu, messages[offset - 5]);
                 }
             }
-        }
+        };
 
         mcdu.onLeftInput[1] = () => {
             if (messages[offset - 4]) {
-                let value = mcdu.inOut;
+                const value = mcdu.inOut;
                 mcdu.clearUserInput();
                 if (value === FMCMainDisplay.clrValue) {
                     mcdu.deleteSentMessage(offset - 4);
@@ -66,11 +70,11 @@ class CDUAocMessagesSent {
                     CDUAocMessageSentDetail.ShowPage(mcdu, messages[offset - 4]);
                 }
             }
-        }
+        };
 
         mcdu.onLeftInput[2] = () => {
             if (messages[offset - 3]) {
-                let value = mcdu.inOut;
+                const value = mcdu.inOut;
                 mcdu.clearUserInput();
                 if (value === FMCMainDisplay.clrValue) {
                     mcdu.deleteSentMessage(offset - 3);
@@ -79,11 +83,11 @@ class CDUAocMessagesSent {
                     CDUAocMessageSentDetail.ShowPage(mcdu, messages[offset - 3]);
                 }
             }
-        }
+        };
 
         mcdu.onLeftInput[3] = () => {
             if (messages[offset - 2]) {
-                let value = mcdu.inOut;
+                const value = mcdu.inOut;
                 mcdu.clearUserInput();
                 if (value === FMCMainDisplay.clrValue) {
                     mcdu.deleteSentMessage(offset - 2);
@@ -92,11 +96,11 @@ class CDUAocMessagesSent {
                     CDUAocMessageSentDetail.ShowPage(mcdu, messages[offset - 2]);
                 }
             }
-        }
+        };
 
         mcdu.onLeftInput[4] = () => {
             if (messages[offset - 1]) {
-                let value = mcdu.inOut;
+                const value = mcdu.inOut;
                 mcdu.clearUserInput();
                 if (value === FMCMainDisplay.clrValue) {
                     mcdu.deleteSentMessage(offset - 1);
@@ -105,10 +109,10 @@ class CDUAocMessagesSent {
                     CDUAocMessageSentDetail.ShowPage(mcdu, messages[offset - 1]);
                 }
             }
-        }
+        };
 
         mcdu.onLeftInput[5] = () => {
             CDUAocMenu.ShowPage(mcdu);
-        }
+        };
     }
 }

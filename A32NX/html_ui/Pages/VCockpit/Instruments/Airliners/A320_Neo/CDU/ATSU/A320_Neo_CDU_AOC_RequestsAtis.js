@@ -48,11 +48,11 @@ class CDUAocRequestsAtis {
                 ["RETURN TO", `${store["sendStatus"]}`],
                 ["<AOC MENU", "SEND*[color]blue"]
             ]);
-        }
+        };
         updateView();
 
         mcdu.onLeftInput[0] = () => {
-            let value = mcdu.inOut;
+            const value = mcdu.inOut;
             mcdu.clearUserInput();
             if (value === FMCMainDisplay.clrValue) {
                 store["arpt1"] = "";
@@ -60,41 +60,41 @@ class CDUAocRequestsAtis {
                 store["arpt1"] = value;
             }
             CDUAocRequestsAtis.ShowPage(mcdu, store);
-        }
+        };
         mcdu.onLeftInput[1] = () => {
             if (store.reqID != 0) {
                 store["reqID"] = 0;
             }
             CDUAocRequestsAtis.ShowPage(mcdu, store);
-        }
+        };
         mcdu.onLeftInput[2] = () => {
             if (store.reqID != 1) {
                 store["reqID"] = 1;
             }
             CDUAocRequestsAtis.ShowPage(mcdu, store);
-        }
+        };
         mcdu.onLeftInput[5] = () => {
             clearTimeout(labelTimeout);
             CDUAocRequestsWeather.ShowPage(mcdu);
-        }
+        };
 
         mcdu.onRightInput[0] = () => {
             store["formatID"] = (store.formatID + 1) % 2;
             CDUAocRequestsAtis.ShowPage(mcdu, store);
-        }
+        };
         mcdu.onRightInput[1] = () => {
             if (store.reqID != 2) {
                 store["reqID"] = 2;
             }
             CDUAocRequestsAtis.ShowPage(mcdu, store);
-        }
+        };
         mcdu.onRightInput[5] = async () => {
             store["sendStatus"] = "QUEUED";
             updateView();
             const icao = store["arpt1"];
-            const lines = [];            
-            const newMessage = { "id": Date.now(), "type": "ATIS", "time": '00:00', "opened": null, "content": lines, }
-            mcdu.clearUserInput();            
+            const lines = [];
+            const newMessage = { "id": Date.now(), "type": "ATIS", "time": '00:00', "opened": null, "content": lines, };
+            mcdu.clearUserInput();
 
             getATIS(icao, lines, store.reqID, store, updateView).then(() => {
                 store["sendStatus"] = "SENT";
@@ -107,7 +107,7 @@ class CDUAocRequestsAtis {
                     updateView();
                 }, 3000);
             });
-        }
+        };
 
     }
 }

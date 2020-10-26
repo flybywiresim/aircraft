@@ -3,7 +3,6 @@ class CDU_OPTIONS_MainMenu {
         mcdu.clearDisplay();
         mcdu.activeSystem = 'MAINT';
 
- 
         const storedTelexStatus = GetStoredData("A32NX_CONFIG_TELEX_STATUS");
         if (!storedTelexStatus) {
             SetStoredData("A32NX_CONFIG_TELEX_STATUS", "DISABLED");
@@ -32,25 +31,24 @@ class CDU_OPTIONS_MainMenu {
             ["<RETURN[color]blue"]
         ]);
 
-        
         mcdu.onLeftInput[0] = () => {
             CDU_OPTIONS_ATIS.ShowPage(mcdu);
-        }
+        };
         mcdu.onLeftInput[1] = () => {
             CDU_OPTIONS_METAR.ShowPage(mcdu);
-        }
+        };
         mcdu.onLeftInput[3] = () => {
             CDU_OPTIONS_TAF.ShowPage(mcdu);
-        }
+        };
         mcdu.onLeftInput[4] = () => {
             CDU_OPTIONS_TELEX.ShowPage(mcdu);
-        }
+        };
         mcdu.onLeftInput[5] = () => {
             CDUMenuPage.ShowPage(mcdu);
-        }
+        };
 
         mcdu.onRightInput[0] = () => {
             CDU_OPTIONS_ADIRS.ShowPage(mcdu);
-        }       
+        };
     }
 }

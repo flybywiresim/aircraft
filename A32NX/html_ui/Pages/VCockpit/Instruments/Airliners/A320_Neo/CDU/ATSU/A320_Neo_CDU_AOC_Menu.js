@@ -19,18 +19,18 @@ class CDUAocMenu {
 
         mcdu.onLeftInput[1] = () => {
             CDUAocRequestsWeather.ShowPage(mcdu);
-        }
+        };
         mcdu.onLeftInput[2] = () => {
             CDUAocFreeText.ShowPage(mcdu);
-        }
+        };
         mcdu.onLeftInput[5] = () => {
             CDUAtsuMenu.ShowPage(mcdu);
-        }
+        };
         mcdu.onRightInput[0] = () => {
             CDUAocMessagesReceived.ShowPage(mcdu);
-        }
+        };
         mcdu.onRightInput[1] = () => {
             CDUAocMessagesSent.ShowPage(mcdu);
-        }
+        };
     }
 }

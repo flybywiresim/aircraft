@@ -13,7 +13,7 @@ class CDU_OPTIONS_ATIS {
         let pilotedge = "*PILOTEDGE[color]blue";
         let ivao = "*IVAO[color]blue";
 
-        switch(storedAtisSrc) {
+        switch (storedAtisSrc) {
             case "VATSIM":
                 vatsim = "VATSIM[color]green";
                 break;
@@ -48,27 +48,27 @@ class CDU_OPTIONS_ATIS {
                 SetStoredData("A32NX_CONFIG_ATIS_SRC", "FAA");
                 CDU_OPTIONS_ATIS.ShowPage(mcdu);
             }
-        }
+        };
         mcdu.onLeftInput[1] = () => {
             if (storedAtisSrc != "VATSIM") {
                 SetStoredData("A32NX_CONFIG_ATIS_SRC", "VATSIM");
                 CDU_OPTIONS_ATIS.ShowPage(mcdu);
             }
-        }
+        };
         mcdu.onLeftInput[2] = () => {
             if (storedAtisSrc != "PILOTEDGE") {
                 SetStoredData("A32NX_CONFIG_ATIS_SRC", "PILOTEDGE");
                 CDU_OPTIONS_ATIS.ShowPage(mcdu);
             }
-        }
+        };
         mcdu.onLeftInput[3] = () => {
             if (storedAtisSrc != "IVAO") {
                 SetStoredData("A32NX_CONFIG_ATIS_SRC", "IVAO");
                 CDU_OPTIONS_ATIS.ShowPage(mcdu);
             }
-        }
+        };
         mcdu.onLeftInput[5] = () => {
             CDU_OPTIONS_MainMenu.ShowPage(mcdu);
-        }
+        };
     }
 }
