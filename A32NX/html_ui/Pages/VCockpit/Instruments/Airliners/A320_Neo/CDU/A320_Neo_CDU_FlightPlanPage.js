@@ -154,7 +154,7 @@ class CDUFlightPlanPage {
             iWaypoint++;
             if (index === 0 && first === 0) {
                 rows[2 * i] = ["FROM", "SPD/ALT", isFlying ? "UTC" : "TIME"];
-                rows[2 * i + 1] = [originIdentCell, "---/ ---", originTimeCell];
+                rows[2 * i + 1] = [originIdentCell + "[color]green", "---/ ---[color]green", originTimeCell + "[color]green"];
                 mcdu.onLeftInput[i] = async () => {
                     const value = mcdu.inOut;
                     if (value === "") {
@@ -241,7 +241,7 @@ class CDUFlightPlanPage {
                             }
                         }
 
-                        rows[2 * i] = [airwayName, waypoint.cumulativeDistanceInFP.toFixed(0)];
+                        rows[2 * i] = [airwayName, (waypoint.cumulativeDistanceInFP - (prevWaypoint ? prevWaypoint.cumulativeDistanceInFP : 0)).toFixed(0)];
                         let speedConstraint = "---";
                         if (waypoint.speedConstraint > 10) {
                             speedConstraint = waypoint.speedConstraint.toFixed(0);
@@ -287,11 +287,11 @@ class CDUFlightPlanPage {
                         } else {
                             lastAltitudeConstraint = altitudeConstraint;
                         }
-                        let color = "blue";
+                        let color = "green";
                         if (mcdu.flightPlanManager.getCurrentFlightPlanIndex() === 1) {
                             color = "yellow";
                         } else if (waypoint === mcdu.flightPlanManager.getActiveWaypoint()) {
-                            color = "green";
+                            color = "white";
                         }
 
                         if (fpIndex !== -42) {
