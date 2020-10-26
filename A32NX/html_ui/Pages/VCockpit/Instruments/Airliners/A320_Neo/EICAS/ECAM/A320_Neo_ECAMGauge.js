@@ -125,6 +125,7 @@ var A320_Neo_ECAM_Common;
         }
         init(_gaugeDefinition) {
             this.cursorOffset = _gaugeDefinition.cursorOffset;
+            this.startAngle = _gaugeDefinition.startAngle;
             this.arcSize = _gaugeDefinition.arcSize;
             this.minValue = _gaugeDefinition.minValue;
             this.maxValue = _gaugeDefinition.maxValue;
