@@ -1,7 +1,10 @@
 import ReactDOM from 'react-dom';
 import { useState } from 'react';
 import {
-  renderTarget, useInteractionEvent, useUpdate, getSimVar,
+  renderTarget,
+  useInteractionEvent,
+  useUpdate,
+  getSimVar,
 } from '../util.mjs';
 import './style.css';
 

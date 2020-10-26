@@ -11,6 +11,15 @@ class A32NX_INSTRUMENT_NAME_Logic extends BaseInstrument {
     return 'A32NX_INSTRUMENT_NAME_TEMPLATE';
   }
 
+  get isInteractive() {
+    // eslint-disable-next-line
+    return INSTRUMENT_IS_INTERACTIVE;
+  }
+
+  get IsGlassCockpit() {
+    return true;
+  }
+
   connectedCallback() {
     super.connectedCallback();
 
@@ -35,7 +44,9 @@ class A32NX_INSTRUMENT_NAME_Logic extends BaseInstrument {
 
   Update() {
     super.Update();
-    this.dispatchEvent(new CustomEvent('update', { detail: this.deltaTime }));
+    if (this.CanUpdate()) {
+      this.dispatchEvent(new CustomEvent('update', { detail: this.deltaTime }));
+    }
   }
 
   onInteractionEvent(event) {

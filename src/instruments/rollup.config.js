@@ -12,11 +12,12 @@ const template = require('./template/rollup.js');
 const TMPDIR = `${os.tmpdir()}/a32nx-instruments-gen`;
 
 module.exports = fs.readdirSync(`${__dirname}/src`, { withFileTypes: true })
-  .filter((d) => d.isDirectory())
+  .filter((d) => d.isDirectory() && fs.existsSync(`${__dirname}/src/${d.name}/config.json`))
   .map(({ name }) => {
+    const config = JSON.parse(fs.readFileSync(`${__dirname}/src/${name}/config.json`));
     let cssBundle;
     return {
-      input: `${__dirname}/src/${name}/index.jsx`,
+      input: `${__dirname}/src/${name}/${config.index}`,
       output: {
         file: `${TMPDIR}/${name}-gen.js`,
         format: 'iife',
@@ -45,6 +46,7 @@ module.exports = fs.readdirSync(`${__dirname}/src`, { withFileTypes: true })
         }),
         template({
           name,
+          config,
           getCssBundle() {
             return cssBundle;
           },
