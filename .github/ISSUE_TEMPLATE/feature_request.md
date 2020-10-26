@@ -1,7 +1,7 @@
 ---
 name: Feature request
 about: Suggest a new feature for the aircraft
-title: "[REQUEST]"
+title: "[REQUEST] INSERT TITLE HERE"
 labels: Enhancement
 assignees: ''
 
@@ -28,3 +28,5 @@ assignees: ''
 
 <!-- You may optionally provide your discord username, so that we may contact you directly about the issue. -->
 Discord username (if different from GitHub):
+
+**BY REMOVING THIS LINE, I ATTEST THAT I HAVE FOLLOWED THE ISSUE TEMPLATE AND PROVIDED A TITLE, as well as searched for other possible duplicate issues. I acknowledge if this line is not removed and/or the issue template is not respected, my issue will be closed without warning**

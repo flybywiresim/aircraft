@@ -8,6 +8,7 @@ var A320_Neo_ECAM_Common;
         constructor() {
             this.startAngle = -225;
             this.arcSize = 180;
+            this.cursorOffset = 0;
             this.minValue = 0;
             this.maxValue = 100;
             this.minRedValue = 0;
@@ -34,12 +35,19 @@ var A320_Neo_ECAM_Common;
             super(...arguments);
             this.viewBoxSize = new Vec2(100, 100);
             this.startAngle = -225;
+            this.cursorOffset = 0;
             this.warningRange = [0, 0];
             this.dangerRange = [0, 0];
             this.outerDynamicArcCurrentValues = [0, 0];
             this.outerDynamicArcTargetValues = [0, 0];
             this.extraMessageString = "";
             this.isActive = true;
+            this.extraMessagePosXMultiplier = 0;
+            this.extraMessagePosYMultiplier = 0;
+            this.extraMessageBorderPosXMultiplier = 0;
+            this.extraMessageBorderPosYMultiplier = 0;
+            this.extraMessageBorderWidthMultiplier = 0;
+            this.extraMessageBorderHeightMultiplier = 0;
             this.cursorMultiplier = 1.1;
         }
         get mainArcRadius() {
@@ -58,7 +66,7 @@ var A320_Neo_ECAM_Common;
             return (this.mainArcRadius * 0.625);
         }
         get redArcInnerRadius() {
-            return (this.mainArcRadius * 0.95);
+            return (this.mainArcRadius * 1);
         }
         get outerIndicatorOffset() {
             return (this.viewBoxSize.x * 0.04);
@@ -73,22 +81,22 @@ var A320_Neo_ECAM_Common;
             return (this.viewBoxSize.y * 0.20);
         }
         get extraMessagePosX() {
-            return (this.center.x + (this.viewBoxSize.x * 0.025));
+            return (this.center.x + (this.viewBoxSize.x * this.extraMessagePosXMultiplier));
         }
         get extraMessagePosY() {
-            return (this.center.y - (this.viewBoxSize.y * 0.025));
+            return (this.center.y - (this.viewBoxSize.y * this.extraMessagePosYMultiplier));
         }
         get extraMessageBorderPosX() {
-            return (this.extraMessagePosX - (this.viewBoxSize.x * 0.2));
+            return (this.extraMessagePosX - (this.viewBoxSize.x * this.extraMessageBorderPosXMultiplier));
         }
         get extraMessageBorderPosY() {
-            return (this.extraMessagePosY - (this.viewBoxSize.y * 0.09));
+            return (this.extraMessagePosY - (this.viewBoxSize.y * this.extraMessageBorderPosYMultiplier));
         }
         get extraMessageBorderWidth() {
-            return (this.viewBoxSize.x * 0.4);
+            return (this.viewBoxSize.x * this.extraMessageBorderWidthMultiplier);
         }
         get extraMessageBorderHeight() {
-            return (this.viewBoxSize.y * 0.20);
+            return (this.viewBoxSize.y * this.extraMessageBorderHeightMultiplier);
         }
         set active(_isActive) {
             if (this.isActive != _isActive) {
@@ -116,7 +124,7 @@ var A320_Neo_ECAM_Common;
             return (new Vec2(Math.cos(angle), Math.sin(angle)));
         }
         init(_gaugeDefinition) {
-            this.startAngle = _gaugeDefinition.startAngle;
+            this.cursorOffset = _gaugeDefinition.cursorOffset;
             this.arcSize = _gaugeDefinition.arcSize;
             this.minValue = _gaugeDefinition.minValue;
             this.maxValue = _gaugeDefinition.maxValue;
@@ -132,6 +140,12 @@ var A320_Neo_ECAM_Common;
             this.outerIndicatorFunction = _gaugeDefinition.outerIndicatorFunction;
             this.outerDynamicArcFunction = _gaugeDefinition.outerDynamicArcFunction;
             this.extraMessageFunction = _gaugeDefinition.extraMessageFunction;
+            this.extraMessagePosXMultiplier = 0.025;
+            this.extraMessagePosYMultiplier = 0.025;
+            this.extraMessageBorderPosXMultiplier = 0.2;
+            this.extraMessageBorderPosYMultiplier = 0.09;
+            this.extraMessageBorderWidthMultiplier = 0.4;
+            this.extraMessageBorderHeightMultiplier = 0.2;
             this.outerDynamicMarkerFunction = _gaugeDefinition.outerDynamicMarkerFunction;
             this.dangerMinDynamicFunction = _gaugeDefinition.dangerMinDynamicFunction;
             this.endAngle = this.startAngle + _gaugeDefinition.arcSize;
@@ -151,8 +165,8 @@ var A320_Neo_ECAM_Common;
             }
             this.rootSVG.appendChild(this.mainArc);
             if (this.minRedValue != this.maxRedValue) {
-                const minRedDir = this.valueToDir(this.minRedValue);
-                const maxRedDir = this.valueToDir(this.maxRedValue);
+                const minRedDir = this.valueToDir(this.minRedValue + this.cursorOffset);
+                const maxRedDir = this.valueToDir(this.maxRedValue + this.cursorOffset);
                 const topRight = new Vec2(this.center.x + (maxRedDir.x * this.mainArcRadius), this.center.y + (maxRedDir.y * this.mainArcRadius));
                 const topLeft = new Vec2(this.center.x + (minRedDir.x * this.mainArcRadius), this.center.y + (minRedDir.y * this.mainArcRadius));
                 const bottomRight = new Vec2(this.center.x + (maxRedDir.x * this.redArcInnerRadius), this.center.y + (maxRedDir.y * this.redArcInnerRadius));
@@ -253,8 +267,8 @@ var A320_Neo_ECAM_Common;
         }
 
         //accepts two more parameters to set custom ID for dynamic markers
-        addGraduation(_value, _showInnerMarker, _text = "", _showOuterMarker = false, _setid = false, _idName = "") {
-            const dir = this.valueToDir(_value);
+        addGraduation(_value, _showInnerMarker, _text = "", _showOuterMarker = false, _setid = false, _idName = "", _markerColour = "") {
+            const dir = this.valueToDir(_value + this.cursorOffset);
             if (_showInnerMarker) {
                 var start = new Vec2(this.center.x + (dir.x * this.mainArcRadius), this.center.y + (dir.y * this.mainArcRadius));
                 var end = new Vec2(this.center.x + (dir.x * this.graduationInnerLineEndOffset), this.center.y + (dir.y * this.graduationInnerLineEndOffset));
@@ -262,7 +276,11 @@ var A320_Neo_ECAM_Common;
                 if (_setid) {
                     marker.setAttribute("id",_idName);
                 }
-                marker.setAttribute("class", "InnerMarker");
+                if (_markerColour != "") {
+                    marker.setAttribute("class", "InnerMarker" + " " + _markerColour);
+                } else {
+                    marker.setAttribute("class", "InnerMarker");
+                }
                 marker.setAttribute("x1", start.x.toString());
                 marker.setAttribute("y1", start.y.toString());
                 marker.setAttribute("x2", end.x.toString());
@@ -340,9 +358,33 @@ var A320_Neo_ECAM_Common;
             }
             if ((this.extraMessageFunction != null) && (this.extraMessageText != null) && (this.extraMessageBorder != null)) {
                 const extraMessage = this.isActive ? this.extraMessageFunction().toString() : "";
+                let style = "";
                 if (extraMessage != this.extraMessageString) {
+                    if (this.extraMessageFunction().toString() == "AVAIL") {
+                        this.extraMessagePosXMultiplier = 0.198;
+                        this.extraMessagePosYMultiplier = 0.025;
+                        this.extraMessageBorderPosXMultiplier = 0.345;
+                        this.extraMessageBorderPosYMultiplier = 0.125;
+                        this.extraMessageBorderWidthMultiplier = 0.68;
+                        this.extraMessageBorderHeightMultiplier = 0.25;
+                        style = "avail ";
+                    } else {
+                        this.extraMessagePosXMultiplier = 0.05;
+                        this.extraMessagePosYMultiplier = 0.025;
+                        this.extraMessageBorderPosXMultiplier = 0.2;
+                        this.extraMessageBorderPosYMultiplier = 0.09;
+                        this.extraMessageBorderWidthMultiplier = 0.4;
+                        this.extraMessageBorderHeightMultiplier = 0.2;
+                    }
+                    this.extraMessageBorder.setAttribute("x", this.extraMessageBorderPosX.toString());
+                    this.extraMessageBorder.setAttribute("y", this.extraMessageBorderPosY.toString());
+                    this.extraMessageBorder.setAttribute("width", this.extraMessageBorderWidth.toString());
+                    this.extraMessageBorder.setAttribute("height", this.extraMessageBorderHeight.toString());
+                    this.extraMessageText.setAttribute("x", this.extraMessagePosX.toString());
+                    this.extraMessageText.setAttribute("y", this.extraMessagePosY.toString());
+                    this.extraMessageText.setAttribute("alignment-baseline", "central");
                     this.extraMessageString = extraMessage;
-                    const style = (this.extraMessageString.length > 0) ? "active" : "inactive";
+                    style += (this.extraMessageString.length > 0) ? "active" : "inactive";
                     this.extraMessageText.textContent = this.extraMessageString;
                     this.extraMessageText.setAttribute("class", style);
                     this.extraMessageBorder.setAttribute("class", style);
@@ -371,7 +413,9 @@ var A320_Neo_ECAM_Common;
         refreshMainValue(_value, _force = false) {
             if ((_value != this.currentValue) || _force) {
                 this.currentValue = _value;
+                this.currentValueCursor = (_value <= this.minValue) ? this.cursorOffset + this.minValue : _value + this.cursorOffset;
                 const clampedValue = Utils.Clamp(this.currentValue, this.minValue, this.maxValue);
+                const clampedValueCursor = Utils.Clamp(this.currentValueCursor, this.minValue, this.maxValue);
                 let style = "";
                 if ((this.dangerRange[0] != this.dangerRange[1]) && (clampedValue >= this.dangerRange[0]) && (clampedValue <= this.dangerRange[1])) {
                     style = "danger";
@@ -381,7 +425,7 @@ var A320_Neo_ECAM_Common;
                     style = "active";
                 }
                 if (this.cursor != null) {
-                    const angle = this.valueToAngle(clampedValue, false);
+                    const angle = this.valueToAngle(clampedValueCursor, false);
                     this.cursor.setAttribute("transform", "rotate(" + angle + ")");
                     this.cursor.setAttribute("class", style);
                 }
