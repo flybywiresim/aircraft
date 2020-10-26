@@ -75,6 +75,7 @@
 1. [LIGHTS] Added logo lights only turn on while on ground or flaps are extented - @linkeleven (linkeleven#2557)
 1. [CDU] Add basic airways support - @santii90 (Santiago Vazquez), @Lessar277 (Lessar27)
 1. [TEXTURES] Changed cockpit decals resolution from 1k to 2k - @FoxinTale (Aubrey)
+1. [CDU] Add correct UI behavior and colors for airways page - @santii90 (Santiago Vazquez)
 
 ## 2020/09
 1. [General] Add CHANGELOG.md - @nathaninnes (Nathan Innes)
