@@ -73,8 +73,9 @@
 1. [ECAM] Adjusted Engine gauges so cursor extends beyond radius of gauge - @RichardPilbery (Richard Pilbery | tricky_dicky#3571 on discord)
 1. [ECAM] Fix ECAM N1 engine indicator - @RichardPilbery (Richard Pilbery | tricky_dicky#3571 on discord)
 1. [LIGHTS] Added logo lights only turn on while on ground or flaps are extented - @linkeleven (linkeleven#2557)
-1. [CDU] Add basic airways support - @santii90 (Santiago Vazquez), @Lessar277 (Lessar27)
+1. [CDU] Add basic airways support - @santii90 (Santiago Vazquez), @Lessar277 (Lessar27#1112)
 1. [TEXTURES] Changed cockpit decals resolution from 1k to 2k - @FoxinTale (Aubrey)
+1. [ECAM] Fix fuel used values on CRUISE and FUEL pages - @Lessar277 (Lessar27#1112)
 
 ## 2020/09
 1. [General] Add CHANGELOG.md - @nathaninnes (Nathan Innes)
