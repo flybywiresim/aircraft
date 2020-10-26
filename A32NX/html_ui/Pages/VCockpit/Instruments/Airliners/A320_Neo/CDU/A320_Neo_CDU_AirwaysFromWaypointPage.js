@@ -109,23 +109,12 @@ class A320_Neo_CDU_AirwaysFromWaypointPage {
             rowBottomLabel,
             rowBottomLine
         ]);
-        // mcdu.onPrevPage = () => {
-        //     if (offset <= 0) {
-        //         A320_Neo_CDU_AirwaysFromWaypointPage.ShowPage1(mcdu);
-        //     } else {
-        //         A320_Neo_CDU_AirwaysFromWaypointPage.ShowPage2(mcdu, offset - 5);
-        //     }
-        // };
-        // mcdu.onNextPage = () => {
-        //     if (offset + 4 < allRows.rows.length) {
-        //         A320_Neo_CDU_AirwaysFromWaypointPage.ShowPage2(mcdu, offset + 5);
-        //     }
-        // };
     }
     static _GetAllRows(mcdu,currentWP) {
         const allRows = [];
         const flightPlan = mcdu.flightPlanManager;
         if (flightPlan) {
+            // didn't found references to the direct to behavior emulated here.
             // const departure = flightPlan.getDeparture();
             // if (departure) {
             //     const departureWaypoints = flightPlan.getDepartureWaypoints();
@@ -135,8 +124,6 @@ class A320_Neo_CDU_AirwaysFromWaypointPage {
             //     }
             // }
             const routeWaypoints = flightPlan.getEnRouteWaypoints();
-            console.log('currentWP');
-            console.log(currentWP);
             let indexOfWP = 0;
             routeWaypoints.forEach((wyp, idx) => {
                 console.log(`wyp ident ${wyp.ident}`);
@@ -145,7 +132,6 @@ class A320_Neo_CDU_AirwaysFromWaypointPage {
                 }
             });
             const inx = indexOfWP === -1 ? 1 : indexOfWP + 1;
-            console.log(`inx = ${inx} enrouteWpLength: ${routeWaypoints.length}`);
             const lastWaypoint = mcdu.flightPlanManager.getWaypoints()[mcdu.flightPlanManager.getEnRouteWaypointsLastIndex()];
             for (let i = inx; i < routeWaypoints.length; i++) {
                 const wp = routeWaypoints[i];
