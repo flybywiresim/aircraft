@@ -2,7 +2,8 @@ class A320_Neo_CDU_AirwaysFromWaypointPage {
     static ShowPage(mcdu, waypoint, offset = 0, pendingAirway) {
         mcdu.clearDisplay();
         const rows = [["----"], [""], [""], [""], [""]];
-        const allRows = A320_Neo_CDU_AirwaysFromWaypointPage._GetAllRows(mcdu);
+        const subRows = [["VIA", ""], [""], [""], [""], [""]];
+        const allRows = A320_Neo_CDU_AirwaysFromWaypointPage._GetAllRows(mcdu,subRows);
         const page = (2 + (Math.floor(offset / 4)));
         const pageCount = (Math.floor(allRows.length / 4) + 2);
         let rowBottomLabel = [""];
@@ -22,6 +23,12 @@ class A320_Neo_CDU_AirwaysFromWaypointPage {
                 CDUFlightPlanPage.ShowPage(mcdu, 0);
             });
         };
+        allRows.forEach((r, idx) => {
+            if (r[0] != "" && r[1] != "") {
+                subRows[idx] = ["VIA", "TO"];
+            }
+        });
+        mcdu._titleElement.innerHTML = `<span><span class='yellow'>AIRWAYS</span> <span class='s-text'>FROM </span><span class='green'>${waypoint.ident}</span></span>`;
         let showInput = false;
         const departureWaypoints = mcdu.flightPlanManager.getDepartureWaypoints();
         const routeWaypoints = mcdu.flightPlanManager.getEnRouteWaypoints();
@@ -32,7 +39,8 @@ class A320_Neo_CDU_AirwaysFromWaypointPage {
             } else if (!showInput) {
                 showInput = true;
                 if (!pendingAirway) {
-                    rows[i] = ["[ ][color]blue", "[ ][color]blue"];
+                    subRows[i] = ["VIA", ""];
+                    rows[i] = ["[ ][color]blue", ""];
                     mcdu.onRightInput[i] = async () => {
                         const value = mcdu.inOut;
                         if (value.length > 0) {
@@ -62,7 +70,8 @@ class A320_Neo_CDU_AirwaysFromWaypointPage {
                         }
                     };
                 } else {
-                    rows[i] = [pendingAirway.name, "[ ][color]blue"];
+                    subRows[i] = ["VIA", "TO"];
+                    rows[i] = [`${pendingAirway.name}[color]yellow`, "[ ][color]blue"];
                     mcdu.onRightInput[i] = () => {
                         const value = mcdu.inOut;
                         if (value.length > 0) {
@@ -78,29 +87,30 @@ class A320_Neo_CDU_AirwaysFromWaypointPage {
                             });
                         }
                     };
-                    if (rows[i + 1]) {
-                        rows[i + 1] = ["-----"];
-                    }
+                    // May be useful for intersecions.
+                    // if (rows[i + 1]) {
+                    //     rows[i + 1] = ["-----"];
+                    // }
                 }
             }
         }
         mcdu.setTemplate([
-            ["AIRWAYS FROM " + waypoint.ident],
-            ["VIA", "TO"],
+            undefined,
+            subRows[0],
             rows[0],
-            [""],
+            subRows[1],
             rows[1],
-            [""],
+            subRows[2],
             rows[2],
-            [""],
+            subRows[3],
             rows[3],
-            [""],
+            subRows[4],
             rows[4],
             rowBottomLabel,
             rowBottomLine
         ]);
     }
-    static _GetAllRows(fmc) {
+    static _GetAllRows(fmc,subRows) {
         const allRows = [];
         const flightPlan = fmc.flightPlanManager;
         if (flightPlan) {
@@ -118,11 +128,15 @@ class A320_Neo_CDU_AirwaysFromWaypointPage {
                 const wp = routeWaypoints[i];
                 const next = routeWaypoints[i + 1];
                 if (wp) {
+                    let color = 'white';
+                    if (fmc.flightPlanManager.getCurrentFlightPlanIndex() === 1) {
+                        color = 'yellow';
+                    }
                     if (wp.infos.airwayIn === undefined) {
                         allRows.push(["DIRECT", wp.ident]);
                     } else {
                         if (wp.infos.airwayIn !== wp.infos.airwayOut) {
-                            allRows.push([wp.infos.airwayIn, wp.ident]);
+                            allRows.push([`${wp.infos.airwayIn}[color]${color}`, `${wp.ident}[color]${color}`]);
                         }
                     }
                 }
