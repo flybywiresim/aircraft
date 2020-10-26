@@ -154,6 +154,7 @@ var A320_Neo_LowerECAM_Fuel;
                 this.fuelFlowUnit.textContent = "LBS/MIN";
                 this.middleFuelUnit.textContent = "LBS";
             }
+
             this.setAPUState(SimVar.GetSimVarValue("FUELSYSTEM VALVE SWITCH:8", "Bool"), SimVar.GetSimVarValue("FUELSYSTEM VALVE OPEN:8", "Bool"));
         }
         onEvent(_event) {

@@ -195,7 +195,15 @@ class CDUFlightPlanPage {
                     if (i < rowsCount - 1) { // enough space left before DEST line
                         let airwayName = "";
                         if (prevWaypoint && waypoint) {
-                            const airway = IntersectionInfo.GetCommonAirway(prevWaypoint, waypoint);
+                            let airway = undefined;
+                            if (prevWaypoint.infos.airwayOut === waypoint.infos.airwayIn) {
+                                airway = {name: prevWaypoint.infos.airwayOut };
+                            } else if (waypoint.infos.airwayIn && prevWaypoint.infos.airwayOut === undefined) {
+                                airway = {name: waypoint.infos.airwayIn };
+                            } else {
+                                // vanilla Behavior that should not be working this way. (base don pilot feedback)
+                                // airway = IntersectionInfo.GetCommonAirway(prevWaypoint, waypoint);
+                            }
                             if (airway) {
                                 airwayName = airway.name;
                             }
