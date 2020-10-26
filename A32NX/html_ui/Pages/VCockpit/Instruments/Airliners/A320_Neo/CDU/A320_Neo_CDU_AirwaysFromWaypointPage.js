@@ -109,28 +109,49 @@ class A320_Neo_CDU_AirwaysFromWaypointPage {
             rowBottomLabel,
             rowBottomLine
         ]);
+        // mcdu.onPrevPage = () => {
+        //     if (offset <= 0) {
+        //         A320_Neo_CDU_AirwaysFromWaypointPage.ShowPage1(mcdu);
+        //     } else {
+        //         A320_Neo_CDU_AirwaysFromWaypointPage.ShowPage2(mcdu, offset - 5);
+        //     }
+        // };
+        // mcdu.onNextPage = () => {
+        //     if (offset + 4 < allRows.rows.length) {
+        //         A320_Neo_CDU_AirwaysFromWaypointPage.ShowPage2(mcdu, offset + 5);
+        //     }
+        // };
     }
-    static _GetAllRows(fmc,currentWP) {
+    static _GetAllRows(mcdu,currentWP) {
         const allRows = [];
-        const flightPlan = fmc.flightPlanManager;
+        const flightPlan = mcdu.flightPlanManager;
         if (flightPlan) {
-            const departure = flightPlan.getDeparture();
-            if (departure) {
-                const departureWaypoints = flightPlan.getDepartureWaypoints();
-                const lastDepartureWaypoint = departureWaypoints[departureWaypoints.length - 1];
-                if (lastDepartureWaypoint) {
-                    allRows.push([departure.name, lastDepartureWaypoint.ident]);
-                }
-            }
+            // const departure = flightPlan.getDeparture();
+            // if (departure) {
+            //     const departureWaypoints = flightPlan.getDepartureWaypoints();
+            //     const lastDepartureWaypoint = departureWaypoints[departureWaypoints.length - 1];
+            //     if (lastDepartureWaypoint) {
+            //         allRows.push([departure.name, lastDepartureWaypoint.ident]);
+            //     }
+            // }
             const routeWaypoints = flightPlan.getEnRouteWaypoints();
-            const inx = fmc.flightPlanManager.getEnRouteWaypoints().indexOf(currentWP);
+            console.log('currentWP');
+            console.log(currentWP);
+            let indexOfWP = 0;
+            routeWaypoints.forEach((wyp, idx) => {
+                console.log(`wyp ident ${wyp.ident}`);
+                if (wyp.ident === currentWP.ident) {
+                    indexOfWP = idx;
+                }
+            });
+            const inx = indexOfWP === -1 ? 1 : indexOfWP + 1;
+            console.log(`inx = ${inx} enrouteWpLength: ${routeWaypoints.length}`);
+            const lastWaypoint = mcdu.flightPlanManager.getWaypoints()[mcdu.flightPlanManager.getEnRouteWaypointsLastIndex()];
             for (let i = inx; i < routeWaypoints.length; i++) {
-                const prev = routeWaypoints[i - 1];
                 const wp = routeWaypoints[i];
-                const next = routeWaypoints[i + 1];
                 if (wp) {
                     let color = 'green';
-                    if (fmc.flightPlanManager.getCurrentFlightPlanIndex() === 1) {
+                    if (mcdu.flightPlanManager.getCurrentFlightPlanIndex() === 1) {
                         color = 'blue';
                     }
                     if (wp.infos.airwayIn === undefined) {
