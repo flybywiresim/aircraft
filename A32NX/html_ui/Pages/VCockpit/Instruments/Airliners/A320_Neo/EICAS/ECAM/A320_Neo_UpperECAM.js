@@ -148,7 +148,7 @@ var A320_Neo_UpperECAM;
                     style: "remark-indent",
                     message: "IF DAMAGE",
                     isCompleted: () => {
-                        return this.getCachedSimVar("L:FIRE_BUTTON_ENG" + _engine, "Bool") == 1;
+                        return this.getCachedSimVar("L:A32NX_FIRE_BUTTON_ENG" + _engine, "Bool") == 1;
                     }
                 },
                 {
@@ -156,7 +156,7 @@ var A320_Neo_UpperECAM;
                     message: `ENG ${_engine} FIRE P/B`,
                     action: "PUSH",
                     isCompleted: () => {
-                        return this.getCachedSimVar("L:FIRE_BUTTON_ENG" + _engine, "Bool") == 1;
+                        return this.getCachedSimVar("L:A32NX_FIRE_BUTTON_ENG" + _engine, "Bool") == 1;
                     }
                 },
                 {
@@ -221,7 +221,7 @@ var A320_Neo_UpperECAM;
                     message: `ENG ${_engine} FIRE P/B`,
                     action: "PUSH",
                     isCompleted: () => {
-                        return this.getCachedSimVar("L:FIRE_BUTTON_ENG" + _engine, "Bool") == 1;
+                        return this.getCachedSimVar("L:A32NX_FIRE_BUTTON_ENG" + _engine, "Bool") == 1;
                     }
                 },
                 {
@@ -232,7 +232,7 @@ var A320_Neo_UpperECAM;
                     timerMessage: "AGENT1",
                     duration: 10,
                     isCompleted:() => {
-                        return this.getCachedSimVar(`L:XMLVAR_PUSH_OVHD_FIRE_ENG${_engine}_AGENT1_Discharge`, "Bool") == 1;
+                        return this.getCachedSimVar(`L:A32NX_Fire_ENG${_engine}_Agent1_Discharge`, "Bool") == 1;
                     }
                 },
                 {
@@ -243,7 +243,7 @@ var A320_Neo_UpperECAM;
                     timerMessage: "AGENT2",
                     duration: 10,
                     isCompleted:() => {
-                        return this.getCachedSimVar(`L:XMLVAR_PUSH_OVHD_FIRE_ENG${_engine}_AGENT2_Discharge`, "Bool") == 1;
+                        return this.getCachedSimVar(`L:A32NX_Fire_ENG${_engine}_Agent2_Discharge`, "Bool") == 1;
                     }
                 },
                 {
@@ -282,7 +282,7 @@ var A320_Neo_UpperECAM;
                     message: `ENG ${_engine} FIRE P/B`,
                     action: "PUSH",
                     isCompleted: () => {
-                        return this.getCachedSimVar("L:FIRE_BUTTON_ENG" + _engine, "Bool") == 1;
+                        return this.getCachedSimVar("L:A32NX_FIRE_BUTTON_ENG" + _engine, "Bool") == 1;
                     }
                 },
                 {
@@ -290,7 +290,7 @@ var A320_Neo_UpperECAM;
                     message: "AGENT 1",
                     action: "DISCH",
                     isCompleted:() => {
-                        return this.getCachedSimVar(`L:XMLVAR_PUSH_OVHD_FIRE_ENG${_engine}_AGENT1_Discharge`, "Bool") == 1;
+                        return this.getCachedSimVar(`L:A32NX_Fire_ENG${_engine}_Agent1_Discharge`, "Bool") == 1;
                     }
                 },
                 {
@@ -298,7 +298,7 @@ var A320_Neo_UpperECAM;
                     message: "AGENT 2",
                     action: "DISCH",
                     isCompleted:() => {
-                        return this.getCachedSimVar(`L:XMLVAR_PUSH_OVHD_FIRE_ENG${_engine}_AGENT2_Discharge`, "Bool") == 1;
+                        return this.getCachedSimVar(`L:A32NX_Fire_ENG${_engine}_Agent2_Discharge`, "Bool") == 1;
                     }
                 }
             ];
@@ -436,7 +436,7 @@ var A320_Neo_UpperECAM;
                                 landASAP: true,
                                 page: "ENG",
                                 isActive: () => {
-                                    return (this.getCachedSimVar("L:FIRE_TEST_ENG1", "Bool") || this.getCachedSimVar("ENG ON FIRE:1", "Bool")) && !Simplane.getIsGrounded();
+                                    return (this.getCachedSimVar("L:A32NX_FIRE_TEST_ENG1", "Bool") || this.getCachedSimVar("ENG ON FIRE:1", "Bool")) && !Simplane.getIsGrounded();
                                 },
                                 actions: this.getEngineFireActions(1)
                             },
@@ -451,7 +451,7 @@ var A320_Neo_UpperECAM;
                                 landASAP: true,
                                 page: "ENG",
                                 isActive: () => {
-                                    return (this.getCachedSimVar("L:FIRE_TEST_ENG2", "Bool") || this.getCachedSimVar("ENG ON FIRE:2", "Bool")) && !Simplane.getIsGrounded();
+                                    return (this.getCachedSimVar("L:A32NX_FIRE_TEST_ENG2", "Bool") || this.getCachedSimVar("ENG ON FIRE:2", "Bool")) && !Simplane.getIsGrounded();
                                 },
                                 actions: this.getEngineFireActions(2)
                             },
@@ -465,7 +465,7 @@ var A320_Neo_UpperECAM;
                                 message: "",
                                 level: 3,
                                 isActive: () => {
-                                    return (this.getCachedSimVar("L:FIRE_TEST_ENG1", "Bool") || this.getCachedSimVar("ENG ON FIRE:1", "Bool")) && Simplane.getIsGrounded();
+                                    return (this.getCachedSimVar("L:A32NX_FIRE_TEST_ENG1", "Bool") || this.getCachedSimVar("ENG ON FIRE:1", "Bool")) && Simplane.getIsGrounded();
                                 },
                                 actions: this.getEngineFireGroundActions(1)
                             },
@@ -478,7 +478,7 @@ var A320_Neo_UpperECAM;
                                 message: "",
                                 level: 3,
                                 isActive: () => {
-                                    return (this.getCachedSimVar("L:FIRE_TEST_ENG2", "Bool") || this.getCachedSimVar("ENG ON FIRE:2", "Bool")) && Simplane.getIsGrounded();
+                                    return (this.getCachedSimVar("L:A32NX_FIRE_TEST_ENG2", "Bool") || this.getCachedSimVar("ENG ON FIRE:2", "Bool")) && Simplane.getIsGrounded();
                                 },
                                 actions: this.getEngineFireGroundActions(2)
                             },
@@ -491,7 +491,7 @@ var A320_Neo_UpperECAM;
                                 message: "",
                                 level: 3,
                                 isActive: () => {
-                                    return this.getCachedSimVar("L:FIRE_TEST_APU", "Bool");
+                                    return this.getCachedSimVar("L:A32NX_FIRE_TEST_APU", "Bool");
                                 },
                                 actions: [
                                     {
@@ -537,7 +537,7 @@ var A320_Neo_UpperECAM;
                                 message: "",
                                 level: 3,
                                 isActive: () => {
-                                    return this.getCachedSimVar("L:FIRE_TEST_SMOKE", "Bool");
+                                    return this.getCachedSimVar("L:A32NX_FIRE_TEST_CARGO", "Bool");
                                 },
                                 actions: [
                                     {
@@ -1269,10 +1269,10 @@ var A320_Neo_UpperECAM;
                 this.secondaryEcamMessage.normal[13].style = "InfoIndication";
             }
 
-            if (SimVar.GetSimVarValue("L:XMLVAR_PUSH_OVHD_FIRE_ENG1_AGENT1_Discharge", "Bool") == 1) {
+            if (SimVar.GetSimVarValue("L:A32NX_Fire_ENG1_Agent1_Discharge", "Bool") == 1) {
                 SimVar.SetSimVarValue("ENG ON FIRE:1", "Bool", 0);
             }
-            if (SimVar.GetSimVarValue("L:XMLVAR_PUSH_OVHD_FIRE_ENG2_AGENT1_Discharge", "Bool") == 1) {
+            if (SimVar.GetSimVarValue("L:A32NX_Fire_ENG2_Agent1_Discharge", "Bool") == 1) {
                 SimVar.SetSimVarValue("ENG ON FIRE:2", "Bool", 0);
             }
         }
