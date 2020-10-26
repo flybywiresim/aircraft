@@ -977,7 +977,7 @@ class FacilityLoader {
             };
             let currentRoute = route;
             let currentWaypointIcao = intersectionInfo.icao;
-            for (let i = 0; i < maxLength; i++) {
+            for (let i = 0; i < maxLength * 0.75; i++) {
                 if (currentRoute) {
                     const prevIcao = currentRoute.prevIcao;
                     currentRoute = undefined;
@@ -997,7 +997,7 @@ class FacilityLoader {
             }
             currentRoute = route;
             currentWaypointIcao = intersectionInfo.icao;
-            for (let i = 0; i < maxLength; i++) {
+            for (let i = 0; i < maxLength * 0.75; i++) {
                 if (currentRoute) {
                     const nextIcao = currentRoute.nextIcao;
                     currentRoute = undefined;
