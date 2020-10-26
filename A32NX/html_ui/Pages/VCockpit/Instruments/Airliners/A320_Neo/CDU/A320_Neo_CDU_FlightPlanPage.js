@@ -8,7 +8,7 @@ class CDUFlightPlanPage {
                 CDUFlightPlanPage.ShowPage(mcdu, offset);
             }
         };
-        const isFlying = mcdu.currentFlightPhase > FlightPhase.FLIGHT_PHASE_TAKEOFF ||
+        const isFlying = Simplane.getAltitudeAboveGround() > 10 ||
                          Simplane.getEngineThrottleMode(0) >= ThrottleMode.FLEX_MCT && Simplane.getEngineThrottleMode(1) >= ThrottleMode.FLEX_MCT;
         let originIdentCell = "----";
         if (mcdu.flightPlanManager.getOrigin()) {
