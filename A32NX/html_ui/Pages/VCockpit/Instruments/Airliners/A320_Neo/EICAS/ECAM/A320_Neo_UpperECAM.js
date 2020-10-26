@@ -1655,7 +1655,7 @@ var A320_Neo_UpperECAM;
             }
             this.refresh(false, 0, 0, true);
         }
-        refresh(_active, _value, _valueDisplayPrecision, _force = false) {
+        refresh(_active, _value, _valueDisplayPrecision, _force = false, _title = "") {
             if ((this.isActive != _active) || (this.currentValue != _value) || _force) {
                 this.isActive = _active;
                 this.currentValue = _value;
@@ -1678,6 +1678,9 @@ var A320_Neo_UpperECAM;
                             this.valueText2.setAttribute("class", valueClass + " decimal");
 
                         } else {
+                            if (_title == "FF") {
+                                this.valueText.setAttribute("x", this.getValueTextXFF());
+                            }
                             this.valueText.setAttribute("class", valueClass);
                             this.valueText.textContent = this.currentValue.toFixed(_valueDisplayPrecision);
                         }
@@ -1703,6 +1706,9 @@ var A320_Neo_UpperECAM;
         getValueTextX2() {
             return "16%";
         }
+        getValueTextXFF() {
+            return "20%";
+        }
     }
     A320_Neo_UpperECAM.LinesStyleComponent_Left = LinesStyleComponent_Left;
     class LinesStyleComponent_Right extends LinesStyleComponent_Base {
@@ -1717,6 +1723,9 @@ var A320_Neo_UpperECAM;
         }
         getValueTextX2() {
             return "83%";
+        }
+        getValueTextXFF() {
+            return "85%";
         }
     }
     A320_Neo_UpperECAM.LinesStyleComponent_Right = LinesStyleComponent_Right;
@@ -1734,10 +1743,10 @@ var A320_Neo_UpperECAM;
         }
         update(_deltaTime) {
             if (this.leftComponent != null) {
-                this.leftComponent.refresh((SimVar.GetSimVarValue("L:A32NX_FADEC_POWERED_ENG1", "Bool") == 1), this.getValue(1), this.getValueStringPrecision());
+                this.leftComponent.refresh((SimVar.GetSimVarValue("L:A32NX_FADEC_POWERED_ENG1", "Bool") == 1), this.getValue(1), this.getValueStringPrecision(), false, this.getTitle());
             }
             if (this.rightComponent != null) {
-                this.rightComponent.refresh((SimVar.GetSimVarValue("L:A32NX_FADEC_POWERED_ENG2", "Bool") == 1), this.getValue(2), this.getValueStringPrecision());
+                this.rightComponent.refresh((SimVar.GetSimVarValue("L:A32NX_FADEC_POWERED_ENG2", "Bool") == 1), this.getValue(2), this.getValueStringPrecision(), false, this.getTitle());
             }
         }
         getValueStringPrecision() {

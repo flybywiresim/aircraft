@@ -108,6 +108,9 @@ a320-neo-upper-ecam #EnginesPanel #LineStyleInfos .Inactive {
 a320-neo-upper-ecam #EnginesPanel #LineStyleInfos .decimal {
     font-size: 38px !important;
 }
+a320-neo-upper-ecam #EnginesPanel #LineStyleInfos .activeEngine {
+    background-color: rgba(255,255,255,0.5) !important;
+}
 
 
 a320-neo-upper-ecam #InfoTopPanel {
