@@ -1513,6 +1513,18 @@
                     <LIGHT_TYPE2>LOGO</LIGHT_TYPE2>
                 </UseTemplate>
 
+                <!-- turn off the connection to the logo lights when the plane is not on ground and the flaps are retracted -->
+                <UseTemplate Name="ASOBO_GT_Update">
+                    <FREQUENCY>5</FREQUENCY>
+                    <UPDATE_CODE>
+                    (A:SIM ON GROUND, BOOL) 0 != (A:FLAPS HANDLE PERCENT, percent) 0 &gt; or (&gt;O:_ShouldBeConnectedToPowerGrid)
+                    (O:_ShouldBeConnectedToPowerGrid) sp0
+                    2 (&gt;A:BUS LOOKUP INDEX, Number)
+                    (A:CIRCUIT CONNECTION ON:29, Bool) l0 != if{ 29 2 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE) }
+                    (A:CIRCUIT CONNECTION ON:30, Bool) l0 != if{ 30 2 (&gt;K:2:ELECTRICAL_BUS_TO_CIRCUIT_CONNECTION_TOGGLE) }
+                    </UPDATE_CODE>
+                </UseTemplate>
+
                 <UseTemplate Name="ASOBO_LIGHTING_Switch_Light_Double_Template">
                     <NODE_ID>SWITCH_OVHD_EXTLT_NOSE</NODE_ID>
                     <PART_ID>LIGHTING_Switch_Light_Double</PART_ID>
