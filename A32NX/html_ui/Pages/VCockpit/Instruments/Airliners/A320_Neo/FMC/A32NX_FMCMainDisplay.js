@@ -772,6 +772,19 @@ class FMCMainDisplay extends BaseAirliners {
         this.showErrorMessage("NO REF WAYPOINT");
         return callback(false);
     }
+
+    // Copy airway selections from temporary to active flightplan
+    async copyAirwaySelections() {
+        const temporaryFPWaypoints = this.flightPlanManager.getWaypoints(1);
+        const activeFPWaypoints = this.flightPlanManager.getWaypoints(0);
+        for (let i = 0; i < activeFPWaypoints.length; i++) {
+            if (activeFPWaypoints[i].infos && temporaryFPWaypoints[i] && activeFPWaypoints[i].icao === temporaryFPWaypoints[i].icao && temporaryFPWaypoints[i].infos) {
+                activeFPWaypoints[i].infos.airwayIn = temporaryFPWaypoints[i].infos.airwayIn;
+                activeFPWaypoints[i].infos.airwayOut = temporaryFPWaypoints[i].infos.airwayOut;
+            }
+        }
+    }
+
     async tryInsertAirwayByWaypointIdent(newWaypointIdent, from) {
         this.showErrorMessage("NOT IMPLEMENTED");
         return false;

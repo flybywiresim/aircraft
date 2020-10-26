@@ -929,8 +929,6 @@ class FacilityLoader {
             intersectionInfo = intersection;
         }
         if (intersectionInfo instanceof WayPointInfo) {
-            console.log("intersectionInfo");
-            console.log(intersectionInfo);
             const datas = await this.getAllAirwaysData(intersectionInfo, name, maxLength);
             for (let i = 0; i < datas.length; i++) {
                 const airway = new Airway();
@@ -1007,20 +1005,18 @@ class FacilityLoader {
                         const currentWaypoint = await this.getIntersectionData(currentWaypointIcao);
                         if (currentWaypoint) {
                             if (currentWaypoint.routes) {
-                                const currentRoute = currentWaypoint.routes.filter(r => {
-                                    let current = undefined;
+                                currentWaypoint.routes.filter(r => {
                                     if (r.name === name) {
                                         if (r.nextIcao.replace(/\s+/g, '') != "") {
                                             airway.icaos.push(r.nextIcao);
-                                            current = r;
+                                            currentRoute = r;
                                         }
                                     }
-                                    return current;
                                 });
                             }
                         }
                     }
-                    if (nextIcao && nextIcao.length > 0 && nextIcao[0] != " ") {
+                    if (nextIcao && nextIcao.length > 0 && nextIcao[0].replace(/\s+/g, '') != "") {
                         const nextWaypoint = await this.getIntersectionData(nextIcao);
                         if (nextWaypoint) {
                             airway.icaos.push(nextWaypoint.icao);

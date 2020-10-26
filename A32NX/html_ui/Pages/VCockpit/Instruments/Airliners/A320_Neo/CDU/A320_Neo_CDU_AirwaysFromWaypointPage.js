@@ -12,7 +12,8 @@ class A320_Neo_CDU_AirwaysFromWaypointPage {
             rowBottomLine = ["*ERASE[color]red", "INSERT*[color]red"];
             mcdu.onRightInput[5] = async () => {
                 mcdu.insertTemporaryFlightPlan(() => {
-                    this.ShowPage(mcdu, 0);
+                    mcdu.copyAirwaySelections();
+                    CDUFlightPlanPage.ShowPage(mcdu, 0);
                 });
             };
         }
