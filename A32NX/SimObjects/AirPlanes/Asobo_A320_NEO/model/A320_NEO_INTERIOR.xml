@@ -12,7 +12,7 @@
     </LODS>
 
     <Behaviors>
-        <Include ModelBehaviorFile="A32NX\A32NX_Interior.xml"/>
+        <Include ModelBehaviorFile="A32NX\Interior\A32NX_Interior_Includes.xml"/>
         <Include ModelBehaviorFile="A32NX\A32NX_Interior_Generics.xml"/>
         <Include ModelBehaviorFile="Asobo\Common.xml"/>
         <Include ModelBehaviorFile="Asobo\Airliner\AirlinerCommon.xml"/>
@@ -1166,14 +1166,14 @@
                     <TYPE>AIRBUS</TYPE>
                 </DefaultTemplateParameters>
 
-                <UseTemplate Name="FBW_Airbus_Batter_Master_Switch">
+                <UseTemplate Name="FBW_Airbus_Battery_Master_Switch">
                     <NODE_ID>PUSH_OVHD_ELEC_BAT1</NODE_ID>
                     <ID>1</ID>
                     <BATTERY_BUS_ID>10</BATTERY_BUS_ID>
                     <HOT_BATTERY_BUS_ID>6</HOT_BATTERY_BUS_ID>
                 </UseTemplate>
 
-                <UseTemplate Name="FBW_Airbus_Batter_Master_Switch">
+                <UseTemplate Name="FBW_Airbus_Battery_Master_Switch">
                     <NODE_ID>PUSH_OVHD_ELEC_BAT2</NODE_ID>
                     <ID>2</ID>
                     <BATTERY_BUS_ID>11</BATTERY_BUS_ID>
