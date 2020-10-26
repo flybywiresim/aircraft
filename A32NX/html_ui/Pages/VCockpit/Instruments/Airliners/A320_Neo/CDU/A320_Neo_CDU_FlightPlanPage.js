@@ -18,12 +18,14 @@ class CDUFlightPlanPage {
                 originIdentCell += Avionics.Utils.formatRunway(runway.designation);
             }
         }
+        const utcTime = SimVar.GetGlobalVarValue("ZULU TIME", "seconds");
         let originTimeCell = "----";
         if (mcdu.flightPlanManager.getOrigin()) {
             if (isFlying) {
-                originTimeCell = FMCMainDisplay.secondsTohhmm(mcdu.flightPlanManager.getOrigin().estimatedTimeOfArrivalFP);
+                originTimeCell = FMCMainDisplay.secondsTohhmm(this.takeoffUtc);
             } else {
                 originTimeCell = "0000";
+                this.takeoffUtc = utcTime;
             }
         }
         let destCell = "----";
@@ -106,7 +108,6 @@ class CDUFlightPlanPage {
         let iWaypoint = offset;
         let lastAltitudeConstraint = "";
         let lastSpeedConstraint = "";
-        const utcTime = SimVar.GetGlobalVarValue("ZULU TIME", "seconds");
         const groundSpeed = SimVar.GetSimVarValue("GPS GROUND SPEED", "knots") < 100 ? 300 : SimVar.GetSimVarValue("GPS GROUND SPEED", "knots");
         for (let i = 1; i < waypointsWithDiscontinuities.length; i++) {
             let curr, prev;
@@ -122,14 +123,14 @@ class CDUFlightPlanPage {
                     prev.cumulativeEstimatedTimeEnRouteFP = 0;
                     prev.estimatedTimeOfArrivalFP = utcTime;
                     const coord = new LatLong(SimVar.GetSimVarValue("PLANE LATITUDE", "degree latitude"), SimVar.GetSimVarValue("PLANE LONGITUDE", "degree longitude"));
-                    curr.cumulativeDistanceInFP = Avionics.Utils.computeDistance(coord, curr.infos.coordinates);
-                    curr.cumulativeEstimatedTimeEnRouteFP = curr.cumulativeDistanceInFP / groundSpeed * 3600;
+                    curr.cumulativeDistanceInFP = Math.floor(Avionics.Utils.computeDistance(coord, curr.infos.coordinates));
+                    curr.cumulativeEstimatedTimeEnRouteFP = Math.floor(curr.cumulativeDistanceInFP / groundSpeed * 3600);
                     curr.estimatedTimeOfArrivalFP = utcTime + curr.cumulativeEstimatedTimeEnRouteFP;
                 } else {
-                    const dist = Avionics.Utils.computeDistance(prev.infos.coordinates, curr.infos.coordinates);
+                    const dist = Math.floor(Avionics.Utils.computeDistance(prev.infos.coordinates, curr.infos.coordinates));
                     curr.cumulativeDistanceInFP = prev.cumulativeDistanceInFP + dist;
-                    curr.cumulativeEstimatedTimeEnRouteFP = prev.cumulativeEstimatedTimeEnRouteFP + (dist / groundSpeed * 3600);
-                    curr.estimatedTimeOfArrivalFP = prev.estimatedTimeOfArrivalFP + (dist / groundSpeed * 3600);
+                    curr.cumulativeEstimatedTimeEnRouteFP = prev.cumulativeEstimatedTimeEnRouteFP + Math.floor(dist / groundSpeed * 3600);
+                    curr.estimatedTimeOfArrivalFP = prev.estimatedTimeOfArrivalFP + Math.floor(dist / groundSpeed * 3600);
                 }
             }
         }
