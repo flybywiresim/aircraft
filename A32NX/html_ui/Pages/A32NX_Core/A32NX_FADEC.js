@@ -32,7 +32,7 @@ class A32NX_FADEC {
     }
 
     isPowered() {
-        if (SimVar.GetSimVarValue("L:FIRE_BUTTON_ENG" + this.engine, "Bool") == 1) {
+        if (SimVar.GetSimVarValue("L:A32NX_FIRE_BUTTON_ENG" + this.engine, "Bool") == 1) {
             return false;
         }
         if (SimVar.GetSimVarValue("TURB ENG N2:" + this.engine, "Percent") > 15) {
