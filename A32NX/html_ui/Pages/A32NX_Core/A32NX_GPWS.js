@@ -25,17 +25,48 @@ class A32NX_GPWS {
         const altitude = Simplane.getAltitudeAboveGround();
         const vSpeed = Simplane.getVerticalSpeed();
         const Airspeed = SimVar.GetSimVarValue("AIRSPEED INDICATED", "Knots");
+        const decisionHeight = SimVar.GetSimVarValue("L:AIRLINER_DECISION_HEIGHT", "Number");
+        const phase = SimVar.GetSimVarValue("L:AIRLINER_FLIGHT_PHASE", "Enum");
+        this.gpws_minimums(altitude, decisionHeight, phase);
 
         if (!SYS_PushButton && altitude >= 10 && altitude <= 2450) { //Activate between 10 - 2450 radio alt unless SYS is off
             this.gpws_pull_up(altitude, vSpeed);
             this.gpws_sink_rate(altitude, vSpeed);
-            this.gpws_dont_sink(altitude, vSpeed);
-            this.gpws_too_low(altitude, Airspeed, FLAP_PushButton);
+            this.gpws_dont_sink(altitude, vSpeed, phase);
+            this.gpws_too_low(altitude, Airspeed, FLAP_PushButton, phase);
         } else {
             SimVar.SetSimVarValue("L:GPWS_SINK_RATE", "Bool", 0);
             SimVar.SetSimVarValue("L:GPWS_PULL_UP", "Bool", 0);
             SimVar.SetSimVarValue("L:GPWS_DONT_SINK", "Bool", 0);
             SimVar.SetSimVarValue("L:GPWS_TOO_LOW", "Enum", 0);
+        }
+    }
+
+    gpws_minimums(altitude, decisionHeight, phase) {
+        let over100Above = false;
+        let overMinimums = false;
+        let state = 0; //start, over DH, over ADH
+
+        if (decisionHeight != 0 && phase === 6 && decisionHeight <= 90) {
+            overMinimums = altitude >= decisionHeight + 15;
+            over100Above = altitude >= decisionHeight + 115;
+        } else if (decisionHeight != 0 && phase === 6) {
+            overMinimums = altitude >= decisionHeight + 5;
+            over100Above = altitude >= decisionHeight + 105;
+        }
+
+        if (state === 0 && over100Above) {
+            state = 2;
+        } else if (state === 0 && overMinimums) {
+            state = 1;
+        }
+
+        if (state === 2 && over100Above === false) {
+            state = 1;
+            Coherent.call("PLAY_INSTRUMENT_SOUND", "aural_minimums");
+        } else if (state === 1 && overMinimums === false) {
+            state = 0;
+            Coherent.call("PLAY_INSTRUMENT_SOUND", "aural_minimums");
         }
     }
 
@@ -52,7 +83,6 @@ class A32NX_GPWS {
     }
 
     gpws_dont_sink(altitude, vSpeed) {
-        const phase = SimVar.GetSimVarValue("L:AIRLINER_FLIGHT_PHASE", "Enum");
         let dont_sink = false;
 
         if (phase == FlightPhase.FLIGHT_PHASE_TAKEOFF || phase == FlightPhase.FLIGHT_PHASE_GOAROUND) {
@@ -69,7 +99,6 @@ class A32NX_GPWS {
     }
 
     gpws_too_low(altitude, Airspeed, FLAP_PushButton) {
-        const phase = SimVar.GetSimVarValue("L:AIRLINER_FLIGHT_PHASE", "Enum");
         const flaps = SimVar.GetSimVarValue("FLAPS HANDLE INDEX", "Number");
         const gear = SimVar.GetSimVarValue("GEAR POSITION:0", "Enum");
 
