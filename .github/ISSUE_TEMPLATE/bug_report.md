@@ -1,7 +1,7 @@
 ---
 name: Bug report
 about: Create a report to help us improve the mod
-title: "[BUG]"
+title: "[BUG] INSERT TITLE HERE"
 labels: Bug
 assignees: ''
 
@@ -49,3 +49,5 @@ Is this a problem in the vanilla unmodded game?
 
 <!-- You may optionally provide your discord username, so that we may contact you directly about the issue. -->
 Discord username (if different from GitHub):
+
+**BY REMOVING THIS LINE, I ATTEST THAT I HAVE FOLLOWED THE ISSUE TEMPLATE AND PROVIDED A TITLE, as well as searched for other possible duplicate issues. I acknowledge if this line is not removed and/or the issue template is not respected, my issue will be closed without warning**
