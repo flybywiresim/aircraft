@@ -146,6 +146,8 @@ a320-neo-upper-ecam #InfoTopPanel #Status #ThrottleValue {
 a320-neo-upper-ecam #InfoTopPanel #Status #ThrottleValue::after {
     content: "%";
     color: var(--displayCyan);
+    font-size: 38px;
+    padding-left: 4px;
 }
 a320-neo-upper-ecam #InfoTopPanel #Status #ThrottleState.active {
     color: var(--displayCyan);
@@ -160,6 +162,9 @@ a320-neo-upper-ecam #InfoTopPanel #Status #ThrottleValue.active {
 a320-neo-upper-ecam #InfoTopPanel #Status #ThrottleValue.inactive {
     color: var(--displayAmber);
     letter-spacing: 5px;
+}
+a320-neo-upper-ecam #InfoTopPanel #Status #ThrottleValue span {
+    font-size: 38px;
 }
 a320-neo-upper-ecam #InfoTopPanel #Status #FlexTemperature {
     color: var(--displayCyan);
@@ -341,7 +346,7 @@ a320-neo-ecam-gauge #RootSVG #CurrentValue {
     fill: var(--displayBackground);
 }
 a320-neo-ecam-gauge #RootSVG #CurrentValue.decimal {
-    font-size: 16px !important;
+    font-size: 15px !important;
 }
 a320-neo-ecam-gauge #RootSVG #CurrentValueBorder {
     fill: none;

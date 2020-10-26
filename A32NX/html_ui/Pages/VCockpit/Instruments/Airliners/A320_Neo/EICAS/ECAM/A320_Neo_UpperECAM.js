@@ -1670,12 +1670,13 @@ var A320_Neo_UpperECAM;
                                 this.valueText2.setAttribute("dx", "0%");
                             }
                             const strArray = this.currentValue.toFixed(_valueDisplayPrecision).split(".");
-                            const wholeNumber = strArray[0];
+                            const wholeNumber = strArray[0] + ".";
                             this.valueText.textContent = wholeNumber;
                             this.valueText.setAttribute("class", valueClass);
-                            const decimal = "." + strArray[1];
+                            const decimal = strArray[1];
                             this.valueText2.textContent = decimal;
                             this.valueText2.setAttribute("class", valueClass + " decimal");
+                            this.valueText2.setAttribute("y", "89%");
 
                         } else {
                             if (_title == "FF") {
@@ -1899,7 +1900,11 @@ var A320_Neo_UpperECAM;
                         if (_value >= 0) {
                             this.throttleState.style.visibility = "visible";
                             this.throttleValue.style.visibility = "visible";
-                            this.throttleValue.textContent = _value.toFixed(1);
+                            const strArray = _value.toFixed(1).split(".");
+                            const wholeNumber = strArray[0];
+                            const decimal = strArray[1];
+                            const throttleVal = wholeNumber + ".<span>" + decimal + "</span>";
+                            this.throttleValue.innerHTML = throttleVal;
                         } else {
                             this.throttleState.style.visibility = "hidden";
                             this.throttleValue.style.visibility = "hidden";
