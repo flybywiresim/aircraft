@@ -32,7 +32,6 @@ class A320_Neo_CDU_AirwaysFromWaypointPage {
         let showInput = false;
         const departureWaypoints = mcdu.flightPlanManager.getDepartureWaypoints();
         const routeWaypoints = mcdu.flightPlanManager.getEnRouteWaypoints();
-        // offset = routeWaypoints.indexOf(waypoint) >= 0 ? routeWaypoints.indexOf(waypoint) + (departureWaypoints.length ? 1 : 0) + 1 : offset;
         for (let i = 0; i < rows.length; i++) {
             if (allRows[i + offset]) {
                 rows[i] = allRows[i + offset];
@@ -87,10 +86,6 @@ class A320_Neo_CDU_AirwaysFromWaypointPage {
                             });
                         }
                     };
-                    // May be useful for intersecions.
-                    // if (rows[i + 1]) {
-                    //     rows[i + 1] = ["-----"];
-                    // }
                 }
             }
         }
@@ -110,19 +105,10 @@ class A320_Neo_CDU_AirwaysFromWaypointPage {
             rowBottomLine
         ]);
     }
-    static _GetAllRows(mcdu,currentWP) {
+    static _GetAllRows(mcdu, currentWP) {
         const allRows = [];
         const flightPlan = mcdu.flightPlanManager;
         if (flightPlan) {
-            // didn't found references to the direct to behavior emulated here.
-            // const departure = flightPlan.getDeparture();
-            // if (departure) {
-            //     const departureWaypoints = flightPlan.getDepartureWaypoints();
-            //     const lastDepartureWaypoint = departureWaypoints[departureWaypoints.length - 1];
-            //     if (lastDepartureWaypoint) {
-            //         allRows.push([departure.name, lastDepartureWaypoint.ident]);
-            //     }
-            // }
             const routeWaypoints = flightPlan.getEnRouteWaypoints();
             let indexOfWP = 0;
             routeWaypoints.forEach((wyp, idx) => {
