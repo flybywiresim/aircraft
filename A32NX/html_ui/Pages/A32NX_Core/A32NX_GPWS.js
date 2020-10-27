@@ -74,7 +74,7 @@ class A32NX_GPWS {
         } else if (this.minimumsState === 1 && over100Above) {
             this.minimumsState = 2;
         } else if (this.minimumsState === 2 && !over100Above) {
-            Coherent.call("PLAY_INSTRUMENT_SOUND", "aural_100_above");
+            Coherent.call("PLAY_INSTRUMENT_SOUND", "aural_100above");
             this.minimumsState = 1;
         } else if (this.minimumsState === 1 && !overMinimums) {
             Coherent.call("PLAY_INSTRUMENT_SOUND", "aural_minimums");
