@@ -1781,26 +1781,39 @@ var A320_Neo_UpperECAM;
         update(_deltaTime) {
             super.update(_deltaTime);
 
-            if (Simplane.getEngineActive(0) || Simplane.getEngineActive(1)) {
-                const throttleMode = Math.max(Simplane.getEngineThrottleMode(0), Simplane.getEngineThrottleMode(1));
-
+            if ((SimVar.GetSimVarValue("L:A32NX_FADEC_POWERED_ENG1", "Bool") == 1) || (SimVar.GetSimVarValue("L:A32NX_FADEC_POWERED_ENG2", "Bool") == 1)) {
                 // MaxThrust seems to be bugged, so here we use the throttle position for now
                 const throttlePosition = Math.max(Simplane.getEngineThrottle(1), Simplane.getEngineThrottle(2));
+                // Engine Mode START
+                if (!Simplane.getEngineActive(0) || !Simplane.getEngineActive(1)) {
+                    if (!this.currentStart || throttlePosition !== this.currentThrottleValue) {
+                        this.currentStart = true;
+                        this.currentThrottleValue = throttlePosition;
+                        this.setFlexTemperature(false);
+                        this.throttleState.className = "active";
+                        this.throttleValue.className = "active";
+                        this.throttleState.textContent = "CLB";
+                        this.throttleState.style.visibility = "visible";
+                        this.throttleValue.style.visibility = "visible";
+                        this.throttleValue.textContent = throttlePosition.toFixed(1);
+                    }
+                } else {
+                    const throttleMode = Math.max(Simplane.getEngineThrottleMode(0), Simplane.getEngineThrottleMode(1));
 
-                if (Simplane.getCurrentFlightPhase() < FlightPhase.FLIGHT_PHASE_CLIMB) {
-                    if ((throttleMode !== ThrottleMode.TOGA) && (throttleMode !== ThrottleMode.REVERSE)) {
-                        const flexTemp = Simplane.getFlexTemperature();
-
-                        this.setFlexTemperature((flexTemp > 0), flexTemp);
+                    if (Simplane.getCurrentFlightPhase() < FlightPhase.FLIGHT_PHASE_CLIMB) {
+                        if ((throttleMode !== ThrottleMode.TOGA) && (throttleMode !== ThrottleMode.REVERSE)) {
+                            const flexTemp = Simplane.getFlexTemperature();
+                            this.setFlexTemperature((flexTemp > 0), flexTemp);
+                        } else {
+                            this.setFlexTemperature(false);
+                        }
                     } else {
                         this.setFlexTemperature(false);
                     }
-                } else {
-                    this.setFlexTemperature(false);
-                }
 
-                const onGround = Simplane.getIsGrounded();
-                this.setThrottle(true, throttlePosition, throttleMode, onGround);
+                    const onGround = Simplane.getIsGrounded();
+                    this.setThrottle(true, throttlePosition, throttleMode, onGround);
+                }
             } else {
                 this.setThrottle(false);
                 this.setFlexTemperature(false);
@@ -1830,11 +1843,12 @@ var A320_Neo_UpperECAM;
          * @param _grounded {boolean}
          */
         setThrottle(_active, _value = 0, _mode = ThrottleMode.UNKNOWN, _grounded = true) {
-            if (_active !== this.currentThrottleIsActive || _value !== this.currentThrottleValue || _mode !== this.currentThrottleMode || _grounded !== this.currentGrounded) {
+            if (_active !== this.currentThrottleIsActive || _value !== this.currentThrottleValue || _mode !== this.currentThrottleMode || _grounded !== this.currentGrounded || this.currentStart) {
                 this.currentThrottleIsActive = _active;
                 this.currentThrottleValue = _value;
                 this.currentThrottleMode = _mode;
                 this.currentGrounded = _grounded;
+                this.currentStart = false;
 
                 if (this.throttleState != null) {
                     if (_active && (this.currentThrottleMode !== ThrottleMode.UNKNOWN)) {
