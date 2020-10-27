@@ -347,7 +347,6 @@ var A320_Neo_ECAM_Common;
                 if (!this.isActive) {
                     this.currentValueText.textContent = "XX";
                     this.currentValueTextdecimal.textContent = "";
-
                 }
             }
         }
