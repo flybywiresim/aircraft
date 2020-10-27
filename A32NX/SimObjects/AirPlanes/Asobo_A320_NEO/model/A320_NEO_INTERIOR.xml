@@ -1701,32 +1701,32 @@
                         <NODE_ID>PUSH_DOORPANEL_VIDEO</NODE_ID>
                         <HOLD_SIMVAR>L:PUSH_DOORPANEL_VIDEO</HOLD_SIMVAR>
                     </UseTemplate>
-                    <UseTemplate Name="ASOBO_AIRLINER_ADIRS_LIGHT_Template">
+
+                    <!-- ADIRS -->
+
+                    <UseTemplate Name="FBW_Airbus_ADIRS_Light">
                         <ID>1</ID>
-                        <NODE_ID>PUSH_OVHD_ADIRS_IR1</NODE_ID>
                     </UseTemplate>
-                    <UseTemplate Name="ASOBO_AIRLINER_ADIRS_LIGHT_Template">
+                    <UseTemplate Name="FBW_Airbus_ADIRS_Light">
                         <ID>2</ID>
-                        <NODE_ID>PUSH_OVHD_ADIRS_IR2</NODE_ID>
                     </UseTemplate>
-                    <UseTemplate Name="ASOBO_AIRLINER_ADIRS_LIGHT_Template">
+                    <UseTemplate Name="FBW_Airbus_ADIRS_Light">
                         <ID>3</ID>
-                        <NODE_ID>PUSH_OVHD_ADIRS_IR3</NODE_ID>
                     </UseTemplate>
 
-                    <UseTemplate Name="ASOBO_AIRLINER_ADIRS_Knob_Template">
+                    <UseTemplate Name="FBW_Airbus_ADIRS_Knob">
                         <ID>1</ID>
                         <ANIM_CODE>50</ANIM_CODE>
                         <NODE_ID>KNOB_OVHD_ADIRS_1</NODE_ID>
                         <ANIM_NAME>KNOB_OVHD_ADIRS_1</ANIM_NAME>
                     </UseTemplate>
-                    <UseTemplate Name="ASOBO_AIRLINER_ADIRS_Knob_Template">
+                    <UseTemplate Name="FBW_Airbus_ADIRS_Knob">
                         <ID>2</ID>
                         <ANIM_CODE>50</ANIM_CODE>
                         <NODE_ID>KNOB_OVHD_ADIRS_2</NODE_ID>
                         <ANIM_NAME>KNOB_OVHD_ADIRS_2</ANIM_NAME>
                     </UseTemplate>
-                    <UseTemplate Name="ASOBO_AIRLINER_ADIRS_Knob_Template">
+                    <UseTemplate Name="FBW_Airbus_ADIRS_Knob">
                         <ID>3</ID>
                         <ANIM_CODE>50</ANIM_CODE>
                         <NODE_ID>KNOB_OVHD_ADIRS_3</NODE_ID>
