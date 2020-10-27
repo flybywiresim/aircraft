@@ -85,11 +85,11 @@ var A320_Neo_LowerECAM_PRESS;
         //sets the packs to warning color
         setPackWarning(value, htmlObj, htmlObjText) {
             if (value) {
+                htmlObj.setAttribute("class", "warningp st13p");
+                htmlObjText.setAttribute("class", "warningp st9p");
+            } else {
                 htmlObj.setAttribute("class", "st0p st13p");
                 htmlObjText.setAttribute("class", "st3p st9p");
-            } else {
-                htmlObj.setAttribute("class", "warning st13p");
-                htmlObjText.setAttribute("class", "warning st9p");
             }
         }
 
@@ -193,32 +193,31 @@ var A320_Neo_LowerECAM_PRESS;
                 return;
             }
 
-            const inletValvePosition = 0; //hook inlet valve real status here
-            const outletValvePosition = 0; //hook outlet valve real status here
-            const safetyValvePosition = 0; //hook safety valve real status here
-            const activeSystem = 2; //hook active system simvar
+            const inletValveOpenPerc = SimVar.GetSimVarValue("L:VENT_INLET_VALVE", "Percent");
+            const inletValvePosition = (inletValveOpenPerc > 5 && inletValveOpenPerc < 95) ? 0.5 : Math.round(inletValveOpenPerc / 100);
+            const outletValveOpenPerc = SimVar.GetSimVarValue("L:VENT_OUTLET_VALVE", "Percent");
+            const outletValvePosition = (outletValveOpenPerc > 5 && outletValveOpenPerc < 95) ? 0.5 : Math.round(outletValveOpenPerc / 100);
 
-            const cabinVSValue = fastToFixed(0, 0); //hook cabin VS value here
-            const pressureDelta = (Math.abs(-0.4) > 0.05) ? 8.1 : 0.0; //hook pressure delta value here
-            const cabinAltitude = fastToFixed(0, 0); //hook cabin altitude value here
-            const pressureDeltaDecimalSplit = pressureDelta.toFixed(1).split(".", 2); //decimal split for pressure delta
+            const safetyValvePosition = (SimVar.GetSimVarValue("L:SAFETY_VALVE_1", "Bool") || SimVar.GetSimVarValue("L:SAFETY_VALVE_2", "Bool"));
+            const activeSystem = SimVar.GetSimVarValue("L:CPC_SYS1", "Bool") ? 1 : 2;
 
-            const eng1OrEng2Running = (SimVar.GetSimVarValue("ENG COMBUSTION:1", "Bool") || SimVar.GetSimVarValue("ENG COMBUSTION:2", "Bool"));
-            const leftPackState = (SimVar.GetSimVarValue("L:A32NX_AIRCOND_PACK1_TOGGLE", "bool") && eng1OrEng2Running);
-            const rightPackState = (SimVar.GetSimVarValue("L:A32NX_AIRCOND_PACK2_TOGGLE", "bool") && eng1OrEng2Running);
+            const cabinVSValue = fastToFixed(SimVar.GetSimVarValue("L:CABIN_ALTITUDE_RATE", "Feet per second"), 0);
+            const pressureDelta = SimVar.GetSimVarValue("L:DELTA_PRESSURE", "PSI");
+            const cabinAltitude = fastToFixed(SimVar.GetSimVarValue("L:CABIN_ALTITUDE", "Feet"), 0);
+            const pressureDeltaDecimalSplit = pressureDelta.toFixed(1).split(".", 2);
+            const outletValveOpenPercent = SimVar.GetSimVarValue("L:OUTFLOW_VAVLE_PCT", "Percent");//it is defined as "VAVLE" in the wasm, not a typo on my part
+
+            const leftPackState = (!SimVar.GetSimVarValue("L:A32NX_AIRCOND_PACK1_TOGGLE", "bool") && SimVar.GetSimVarValue("ENG COMBUSTION:1", "Bool"));
+            const rightPackState = (!SimVar.GetSimVarValue("L:A32NX_AIRCOND_PACK2_TOGGLE", "bool") && SimVar.GetSimVarValue("ENG COMBUSTION:2", "Bool"));
             const landingElev = SimVar.GetSimVarValue("L:A32NX_LANDING_ELEVATION", "feet");
-            const ditchingOn = SimVar.GetSimVarValue("L:A32NX_DITCHING", "bool");
             const flightPhase = SimVar.GetSimVarValue("L:AIRLINER_FLIGHT_PHASE", "int");
             const manMode = SimVar.GetSimVarValue("L:A32NX_CAB_PRESS_MODE_MAN", "Bool");
+            const landingElevMode = SimVar.GetSimVarValue("L:LANDING_ELEV_MODE", "Bool");
 
-            const cabinOutletIndicatorRot = this.setMaxIndicatorRotation(cabinVSValue, 0.04, 10, 90, 0);
+            const cabinOutletIndicatorRot = this.setMaxIndicatorRotation(outletValveOpenPercent, 0.9, 10, 90, 0);
             const cabinVSIndicatorRot = this.setMaxIndicatorRotation(cabinVSValue, 0.045, 0, 108, -108);
             const cabinAltitudeIndicatorRot = this.setMaxIndicatorRotation(cabinAltitude, 0.0164, 0, 172, -17);
             const cabinPsiDeltaIndicatorRot = this.setMaxIndicatorRotation(pressureDelta, 20, 0, 175, -15);
-
-            const inletValveCommandedPosition = (ditchingOn) ? 0 : 0; //hook the commanded position on the second value
-            const outletValveCommandedPosition = (ditchingOn) ? 0 : 0;
-            const safetyValveCommandedPosition = (ditchingOn) ? 0 : 0;
 
             //update values
             this.oldCabinAltitudeValue = this.updateValue(this.htmlCabinAltValue, this.oldCabinAltitudeValue, cabinAltitude);
@@ -244,24 +243,24 @@ var A320_Neo_LowerECAM_PRESS;
             this.setWarning((Math.abs(cabinVSValue) > 2000), this.htmlCabinVSValue, "warningp st9p", "st0p st9p");
             this.setWarning((cabinAltitude > 9550), this.htmlCabinAltValue, "red_warningp st9p", "st0p st9p");
 
-            this.setWarning((inletValvePosition != inletValveCommandedPosition), this.htmlValveInlet, "warning st14p", "st0p st14p");
-            this.setWarning((outletValvePosition != outletValveCommandedPosition), this.htmlValveOutlet, "warning st14p", "st0p st14p");
-            this.setWarning((safetyValvePosition != safetyValveCommandedPosition), this.htmlValveSafety, "warning st14p", "st0p st14p");
+            this.setWarning(inletValvePosition === 0.5, this.htmlValveInlet, "warning st14p", "st0p st14p");
+            this.setWarning(outletValvePosition === 0.5, this.htmlValveOutlet, "warning st14p", "st0p st14p");
+            this.setWarning(safetyValvePosition === 0.5, this.htmlValveSafety, "warning st14p", "st0p st14p");
 
             this.setPackWarning(leftPackState, this.htmlPackIndicatorLeft, this.htmlPackIndicatorLeftText);
             this.setPackWarning(rightPackState, this.htmlPackIndicatorRight, this.htmlPackIndicatorRightText);
 
             //open or close valves
-            this.oldInletValue = this.updateValve(this.htmlValveInlet, this.oldInletValue, inletValveCommandedPosition, "180px 460px", -90);
-            this.oldOutletValue = this.updateValve(this.htmlValveOutlet, this.oldOutletValue, outletValveCommandedPosition, "265px 460px", 90);
-            this.oldSafetyValue = this.updateValve(this.htmlValveSafety, this.oldSafetyValue, safetyValveCommandedPosition, "550px 340px", -90);
+            this.oldInletValue = this.updateValve(this.htmlValveInlet, this.oldInletValue, inletValvePosition, "180px 460px", -90);
+            this.oldOutletValue = this.updateValve(this.htmlValveOutlet, this.oldOutletValue, outletValvePosition, "265px 460px", 90);
+            this.oldSafetyValue = this.updateValve(this.htmlValveSafety, this.oldSafetyValue, safetyValvePosition, "550px 340px", -90);
 
             //landing elev
-            if (landingElev != -2000) {
+            if (landingElevMode) {
                 this.oldLandingElev = this.updateValue(this.htmlLdgElevValue, this.oldLandingElev, fastToFixed(landingElev, 0));
                 this.oldLandingElevText = this.updateValue(this.htmlLdgElevText, this.oldLandingElevText, "MAN");
             } else {
-                this.oldLandingElev = this.updateValue(this.htmlLdgElevValue, this.oldLandingElev, fastToFixed(50, 0)); // hook here auto landing elevation
+                this.oldLandingElev = this.updateValue(this.htmlLdgElevValue, this.oldLandingElev, fastToFixed(landingElev, 0)); 
                 this.oldLandingElevText = this.updateValue(this.htmlLdgElevText, this.oldLandingElevText, "AUTO");
             }
 
@@ -303,7 +302,6 @@ var A320_Neo_LowerECAM_PRESS;
             }
 
             this.valueBlinker(this.blinkingObjs, 500);
-
         }
     }
     A320_Neo_LowerECAM_PRESS.Page = Page;
