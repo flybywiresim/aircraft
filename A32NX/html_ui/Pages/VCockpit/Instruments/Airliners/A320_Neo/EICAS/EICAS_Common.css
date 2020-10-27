@@ -40,8 +40,8 @@ eicas-common-display {
     height: 25%;
 }
 eicas-common-display line {
-    stroke: var(--displayGrey) !important;
-    stroke-width: 6;
+    stroke: var(--displayWhite) !important;
+    stroke-width: 3;
 }
 eicas-common-display text {
     font-size: 20px;
@@ -55,5 +55,8 @@ eicas-common-display text.Value {
 }
 eicas-common-display text.Unit {
     fill: var(--displayCyan) !important;
+}
+eicas-common-display text.Small {
+  font-size: 18px !important;
 }
 

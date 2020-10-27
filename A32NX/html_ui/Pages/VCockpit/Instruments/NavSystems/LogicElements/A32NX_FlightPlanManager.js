@@ -184,6 +184,12 @@ class FlightPlanManager {
                         if (v) {
                             v.infos.icao = v.icao;
                             v.infos.ident = v.ident;
+                            v.infos.UpdateAirways();
+                            const matchingCurrentWaypoint = currentWaypoints.find(wp => wp.infos.icao === v.infos.icao);
+                            if (matchingCurrentWaypoint) {
+                                v.infos.airwayIn = matchingCurrentWaypoint.infos.airwayIn;
+                                v.infos.airwayOut = matchingCurrentWaypoint.infos.airwayOut;
+                            }
                             v.latitudeFP = waypointData.lla.lat;
                             v.longitudeFP = waypointData.lla.long;
                             v.altitudeinFP = waypointData.lla.alt * 3.2808;
