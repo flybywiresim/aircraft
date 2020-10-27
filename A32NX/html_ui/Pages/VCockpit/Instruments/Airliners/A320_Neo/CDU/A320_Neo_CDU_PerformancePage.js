@@ -566,6 +566,9 @@ class CDUPerformancePage {
         if (isFinite(mcdu.perfApprDH)) {
             if (mcdu.perfApprDH >= 0 && mcdu.perfApprDH <= 700) {
                 dhCell = mcdu.perfApprDH.toFixed(0);
+            } else {
+                mcdu.showErrorMessage("ENTRY OUT OF RANGE");
+                mcdu.setPerfApprDH(FMCMainDisplay.clrValue);
             }
         } else if (mcdu.perfApprDH === "NO DH") {
             dhCell = "NO DH";
