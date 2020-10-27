@@ -22,10 +22,10 @@ class CDUFlightPlanPage {
         let originTimeCell = "----";
         if (mcdu.flightPlanManager.getOrigin()) {
             if (isFlying) {
-                originTimeCell = FMCMainDisplay.secondsTohhmm(this.takeoffUtc);
+                originTimeCell = FMCMainDisplay.secondsTohhmm(mcdu.flightPlanManager._waypointReachedAt);
             } else {
                 originTimeCell = "0000";
-                this.takeoffUtc = utcTime;
+                mcdu.flightPlanManager._waypointReachedAt = utcTime;
             }
         }
         let destCell = "----";
@@ -121,7 +121,7 @@ class CDUFlightPlanPage {
                 if (i === 1) {
                     prev.cumulativeDistanceInFP = 0;
                     prev.cumulativeEstimatedTimeEnRouteFP = 0;
-                    prev.estimatedTimeOfArrivalFP = utcTime;
+                    prev.estimatedTimeOfArrivalFP = mcdu.flightPlanManager._waypointReachedAt;
                     const coord = new LatLong(SimVar.GetSimVarValue("PLANE LATITUDE", "degree latitude"), SimVar.GetSimVarValue("PLANE LONGITUDE", "degree longitude"));
                     curr.cumulativeDistanceInFP = Math.floor(Avionics.Utils.computeDistance(coord, curr.infos.coordinates));
                     curr.cumulativeEstimatedTimeEnRouteFP = Math.floor(curr.cumulativeDistanceInFP / groundSpeed * 3600);
