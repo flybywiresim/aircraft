@@ -129,7 +129,7 @@
     <!--
     Template for rigging uncovered push buttons
 
-    Takes into account the value of L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position.
+    Takes into account the value of L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position, for the annotated light test.
 
     Main Parameters:
             - NODE_ID               <no default>    Switch node ID   (anim name will be same)
@@ -141,7 +141,8 @@
             - DISABLE_SEQ1          Not present     If present, the SEQ1 emissive is disabled
             - DISABLE_SEQ2          Not present     If present, the SEQ2 emissive is disabled
             - DUMMY_BUTTON          Not present     If true, the button will be a dummy button (not pressable, only emissive)
-    Authors: Benjamin Dupont (@Benjozork) 12/10/20
+
+    Authors: Benjamin Dupont (@Benjozork), lukecologne 12/10/20
     -->
     <Template Name="FBW_Push_Toggle">
         <UseTemplate Name="ASOBO_GT_Push_Button_Airliner">
