@@ -1676,7 +1676,7 @@ var A320_Neo_UpperECAM;
                             const decimal = strArray[1];
                             this.valueText2.textContent = decimal;
                             this.valueText2.setAttribute("class", valueClass + " decimal");
-                            this.valueText2.setAttribute("y", "89%");
+                            this.valueText2.setAttribute("y", "88%");
 
                         } else {
                             if (_title == "FF") {

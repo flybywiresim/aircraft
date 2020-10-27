@@ -222,7 +222,7 @@ var A320_Neo_ECAM_Common;
             const textPosX = this.viewBoxSize.x * _gaugeDefinition.currentValuePos.x;
             const textPosY = this.viewBoxSize.x * _gaugeDefinition.currentValuePos.y;
             const textPosXdec = (this.currentValuePrecision == 1) ? textPosX - 9 : textPosX;
-            const textPosYdec = (this.currentValuePrecision == 1) ? textPosY + 2 : textPosY;
+            const textPosYdec = (this.currentValuePrecision == 1) ? textPosY + 7 : textPosY;
             this.currentValueText = document.createElementNS(Avionics.SVG.NS, "text");
             this.currentValueText.id = "CurrentValue";
             this.currentValueText.setAttribute("x", textPosXdec.toString());
@@ -235,7 +235,7 @@ var A320_Neo_ECAM_Common;
             this.currentValueTextdecimal.id = "CurrentValue";
             this.currentValueTextdecimal.setAttribute("x", textPosXdecimal.toString());
             this.currentValueTextdecimal.setAttribute("y", textPosYdecimal.toString());
-            this.currentValueTextdecimal.setAttribute("alignment-baseline", "central");
+            this.currentValueTextdecimal.setAttribute("alignment-baseline", "text-bottom");
             this.rootSVG.appendChild(this.currentValueTextdecimal);
             if (_gaugeDefinition.currentValueBorderWidth > 0) {
                 const borderWidth = this.viewBoxSize.x * _gaugeDefinition.currentValueBorderWidth;
