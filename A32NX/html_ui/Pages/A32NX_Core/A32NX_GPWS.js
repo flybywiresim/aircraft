@@ -42,7 +42,7 @@ class A32NX_GPWS {
             SimVar.SetSimVarValue("L:GPWS_TOO_LOW", "Enum", 0);
         }
 
-        if((mda != 0 || dh != 0) && phase == FlightPhase.FLIGHT_PHASE_APPROACH) {
+        if ((mda != 0 || dh != 0) && phase == FlightPhase.FLIGHT_PHASE_APPROACH) {
             let minimumsDA; //MDA or DH
             let minimumsIA; //radio or baro altitude
             const radioAlt = SimVar.GetSimVarValue("PLANE ALT ABOVE GROUND MINUS CG", "Feet");
@@ -52,7 +52,7 @@ class A32NX_GPWS {
                 minimumsIA = baroAlt;
             } else {
                 minimumsDA = dh;
-                minimumsIA = radioAlt
+                minimumsIA = radioAlt;
             }
             this.gpws_minimums(minimumsDA, minimumsIA);
         }
