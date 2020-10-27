@@ -677,7 +677,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             return false;
         }
     }
-    
+
     getThrustTakeOffLimit() {
         if (this.perfTOTemp <= 10) {
             return 92.8;
