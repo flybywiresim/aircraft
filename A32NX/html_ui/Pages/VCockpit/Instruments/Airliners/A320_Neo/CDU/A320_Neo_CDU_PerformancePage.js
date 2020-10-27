@@ -558,7 +558,7 @@ class CDUPerformancePage {
         mcdu.onRightInput[1] = () => {
             const value = mcdu.inOut;
             mcdu.clearUserInput();
-            if (mcdu.setPerfApprMDA(value)) {
+            if (mcdu.setPerfApprMDA(value) && mcdu.setPerfApprDH(FMCMainDisplay.clrValue)) {
                 CDUPerformancePage.ShowAPPRPage(mcdu);
             }
         };
@@ -569,7 +569,7 @@ class CDUPerformancePage {
         mcdu.onRightInput[2] = () => {
             const value = mcdu.inOut;
             mcdu.clearUserInput();
-            if (mcdu.setPerfApprDH(value)) {
+            if (mcdu.setPerfApprDH(value) && mcdu.setPerfApprMDA(FMCMainDisplay.clrValue)) {
                 CDUPerformancePage.ShowAPPRPage(mcdu);
             }
         };
