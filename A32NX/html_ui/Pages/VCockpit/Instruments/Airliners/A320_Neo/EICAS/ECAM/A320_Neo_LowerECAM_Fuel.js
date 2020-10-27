@@ -81,14 +81,14 @@ var A320_Neo_LowerECAM_Fuel;
             this.middlePump1_Off = this.querySelector("#middlePump1_Off");
             this.middlePump2_Off = this.querySelector("#middlePump2_Off");
             this.isInitialised = true;
+            this.isInMetric = BaseAirliners.unitIsMetric(Aircraft.A320_NEO);
         }
         update(_deltaTime) {
             if (!this.isInitialised) {
                 return;
             }
-            const isInMetric = BaseAirliners.unitIsMetric(Aircraft.A320_NEO);
             let factor = this.gallonToPounds;
-            if (isInMetric) {
+            if (this.isInMetric) {
                 factor = this.gallonToKg;
             }
             this.updateQuantity(this.FOBValue, "FUEL TOTAL QUANTITY", factor);
@@ -145,7 +145,7 @@ var A320_Neo_LowerECAM_Fuel;
                 this.middlePump2_On.setAttribute("visibility", "hidden");
             }
 
-            if (isInMetric) {
+            if (this.isInMetric) {
                 this.FOBUnit.textContent = "KG";
                 this.fuelFlowUnit.textContent = "KG/MIN";
                 this.middleFuelUnit.textContent = "KG";
@@ -167,8 +167,12 @@ var A320_Neo_LowerECAM_Fuel;
         }
         updateFuelConsumption(_unitFactor) {
             if (this.fuelLevels) {
-                const leftConsumption = SimVar.GetSimVarValue("GENERAL ENG FUEL USED SINCE START:" + 1, "gallon") * _unitFactor * 0.001;
-                const rightConsumption = SimVar.GetSimVarValue("GENERAL ENG FUEL USED SINCE START:" + 2, "gallon") * _unitFactor * 0.001;
+                const leftConsumption = this.isInMetric ?
+                    SimVar.GetSimVarValue("GENERAL ENG FUEL USED SINCE START:" + 1, "KG") :
+                    SimVar.GetSimVarValue("GENERAL ENG FUEL USED SINCE START:" + 1, "gallon") * _unitFactor * 0.001;
+                const rightConsumption = this.isInMetric ?
+                    SimVar.GetSimVarValue("GENERAL ENG FUEL USED SINCE START:" + 2, "KG") :
+                    SimVar.GetSimVarValue("GENERAL ENG FUEL USED SINCE START:" + 2, "gallon") * _unitFactor * 0.001;
 
                 const leftConsumptionShown = leftConsumption - (leftConsumption % 10);
                 const rightConsumptionShown = rightConsumption - (rightConsumption % 10);

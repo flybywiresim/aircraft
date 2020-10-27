@@ -14,6 +14,18 @@
     - Holds the start time in seconds that the ADIRS TIMER will count down from
     - Used to have certain things turn on based on a percentage of the total alignment time
     
+- A32NX_ADIRS_1_FAULT
+    - Bool
+    - Whether the "FAULT" indication is shown on the OVHD ADIRS panel for ADIRS 1
+
+- A32NX_ADIRS_2_FAULT
+    - Bool
+    - Whether the "FAULT" indication is shown on the OVHD ADIRS panel for ADIRS 2
+
+- A32NX_ADIRS_3_FAULT
+    - Bool
+    - Whether the "FAULT" indication is shown on the OVHD ADIRS panel for ADIRS 3
+    
 - A32NX_BRAKE_TEMPERATURE_{1,2,3,4}
     - celsius
     - represents the brake temperature of the rear wheels
