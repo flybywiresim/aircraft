@@ -377,6 +377,8 @@ var Airliners;
                         }
                         this.refreshValue();
                     }
+                } else if (buttonSuffix.charAt(0) == 'I') {
+                    return;
                 } else {
                     let slot = -1;
                     {
