@@ -371,6 +371,7 @@ var Airliners;
                             for (var i = 3; i >= 0; i--) {
                                 if (this.currentDigits[i] >= 0) {
                                     this.currentDigits[i] = -1;
+                                    this.bLastInputIsCLR = true;
                                     break;
                                 }
                             }
