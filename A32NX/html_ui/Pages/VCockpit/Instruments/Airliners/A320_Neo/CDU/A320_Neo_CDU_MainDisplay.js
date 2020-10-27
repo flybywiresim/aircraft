@@ -645,7 +645,39 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this.v2Speed = nextV2;
         SimVar.SetSimVarValue("L:AIRLINER_V2_SPEED", "Knots", nextV2);
     }
-
+    setPerfApprMDA(s) {
+        if (s === FMCMainDisplay.clrValue) {
+            this.perfApprMDA = NaN;
+            SimVar.SetSimVarValue("L:AIRLINER_MINIMUM_DESCENT_ALTITUDE", "number", -1);
+            return true;
+        } else {
+            const value = parseFloat(s);
+            if (isFinite(value)) {
+                this.perfApprMDA = value;
+                SimVar.SetSimVarValue("L:AIRLINER_MINIMUM_DESCENT_ALTITUDE", "number", this.perfApprMDA);
+                return true;
+            }
+            this.showErrorMessage(this.defaultInputErrorMessage);
+            return false;
+        }
+    }
+    setPerfApprDH(s) {
+        if (s === FMCMainDisplay.clrValue) {
+            this.perfApprDH = NaN;
+            SimVar.SetSimVarValue("L:AIRLINER_DECISION_HEIGHT", "number", -1);
+            return true;
+        } else {
+            const value = parseFloat(s);
+            if (isFinite(value)) {
+                this.perfApprDH = value;
+                SimVar.SetSimVarValue("L:AIRLINER_DECISION_HEIGHT", "number", this.perfApprDH);
+                return true;
+            }
+            this.showErrorMessage(this.defaultInputErrorMessage);
+            return false;
+        }
+    }
+    
     getThrustTakeOffLimit() {
         if (this.perfTOTemp <= 10) {
             return 92.8;
