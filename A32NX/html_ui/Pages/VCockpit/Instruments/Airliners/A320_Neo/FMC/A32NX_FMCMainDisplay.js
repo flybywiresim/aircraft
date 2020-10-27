@@ -1599,6 +1599,10 @@ class FMCMainDisplay extends BaseAirliners {
             this.perfApprDH = NaN;
             SimVar.SetSimVarValue("L:AIRLINER_DECISION_HEIGHT", "number", 0);
             return true;
+        } else if (s === "NO" || s === "NO DH" || s === "NODH") {
+            this.perfApprDH = "NO DH";
+            SimVar.SetSimVarValue("L:AIRLINER_DECISION_HEIGHT", "number", 0);
+            return true;
         } else {
             const value = parseFloat(s);
             if (isFinite(value)) {

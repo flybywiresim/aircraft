@@ -565,6 +565,8 @@ class CDUPerformancePage {
         let dhCell = "[ ]";
         if (isFinite(mcdu.perfApprDH)) {
             dhCell = mcdu.perfApprDH.toFixed(0);
+        } else if (mcdu.perfApprDH === "NO DH") {
+            dhCell = "NO DH";
         }
         mcdu.onRightInput[2] = () => {
             const value = mcdu.inOut;
