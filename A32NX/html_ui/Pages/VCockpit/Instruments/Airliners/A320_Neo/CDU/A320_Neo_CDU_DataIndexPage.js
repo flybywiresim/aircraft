@@ -11,9 +11,9 @@ class CDUDataIndexPage {
             ["<MONITOR"],
             [""],
             ["<A/C STATUS"],
-            ["CLOSEST", "PRINT"],
-            ["<AIRPORTS", "FUNCTION>"],
-            ["EQUITIME", "AOC"],
+            ["CLOSEST"],
+            ["<AIRPORTS"],
+            ["EQUITIME", "ACARS/PRINT"],
             ["<POINT", "FUNCTION>"]
         ]);
 
@@ -48,13 +48,13 @@ class CDUDataIndexPage {
         mcdu.clearDisplay();
         mcdu.setTemplate([
             ["DATA INDEX", "2", "2"],
-            ["", "PILOTS"],
+            ["", "STORED"],
             ["<WAYPOINTS", "WAYPOINTS>"],
-            ["", "PILOTS"],
+            ["", "STORED"],
             ["<NAVAIDS", "NAVAIDS>"],
-            ["", "PILOTS"],
+            ["", "STORED"],
             ["<RUNWAYS", "RUNWAYS>"],
-            ["", "PILOTS"],
+            ["", "STORED"],
             ["<ROUTES", "ROUTES>"],
             ["ACTIVE F-PLAN", ""],
             ["<WINDS"],

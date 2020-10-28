@@ -20,8 +20,8 @@ class CDUAocRequestsWeather {
                 ["AOC WEATHER REQUEST"],
                 [`WX TYPE`, "AIRPORTS"],
                 [`↓${reqTypes[store.reqID]}[color]blue`, `${store.arpt1 != "" ? store.arpt1 : "[ ]"}${fplanArptColor}`],
-                ["DIRECT"],
-                ["<ATIS", `${store["arpt2"] != "" ? store["arpt2"] : "[ ]"}${fplanArptColor}`],
+                [""],
+                ["", `${store["arpt2"] != "" ? store["arpt2"] : "[ ]"}${fplanArptColor}`],
                 [""],
                 ["", `${store["arpt3"] != "" ? store["arpt3"] : "[ ]"}[color]blue`],
                 [""],
@@ -88,16 +88,16 @@ class CDUAocRequestsWeather {
 
             const getInfo = async () => {
                 if (store.reqID == 0) {
-                    A32NX_ATSU.getMETAR(icaos, lines, store, updateView);
+                    getMETAR(icaos, lines, store, updateView);
                 } else {
-                    A32NX_ATSU.getTAF(icaos, lines, store, updateView);
+                    getTAF(icaos, lines, store, updateView);
                 }
             };
 
             getInfo().then(() => {
                 store["sendStatus"] = "SENT";
                 setTimeout(() => {
-                    newMessage["time"] = A32NX_ATSU.fetchTimeValue();
+                    newMessage["time"] = fetchTimeValue();
                     mcdu.addMessage(newMessage);
                 }, Math.floor(Math.random() * 10000) + 10000);
                 labelTimeout = setTimeout(() => {
@@ -110,10 +110,6 @@ class CDUAocRequestsWeather {
         mcdu.onLeftInput[0] = () => {
             store["reqID"] = (store.reqID + 1) % 2;
             CDUAocRequestsWeather.ShowPage(mcdu, store);
-        };
-        mcdu.onLeftInput[1] = () => {
-            clearTimeout(labelTimeout);
-            CDUAocRequestsAtis.ShowPage(mcdu);
         };
         mcdu.onLeftInput[5] = () => {
             clearTimeout(labelTimeout);

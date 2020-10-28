@@ -148,8 +148,8 @@ class CDUInitPage {
             ["INIT {}"], //Need to find the right unicode for left/right arrow
             ["CO RTE", "FROM/TO"],
             [coRoute, fromTo],
-            ["ALTN/CO RTE"],
-            [altDest],
+            ["ALTN/CO RTE", "INIT[color]inop"],
+            [altDest, "REQUEST*[color]inop"],
             ["FLT NBR"],
             [flightNo + "[color]blue", alignOption],
             [],

@@ -64,11 +64,11 @@ class CDUCfdsTestNav {
     static ShowPage3(mcdu) {
         mcdu.clearDisplay();
         mcdu.setTemplate([
-            ["SYSTEM REPORT / TEST   }"],
+            ["SYSTEM REPORT / TEST  }"],
             ["", "", "NAV"],
-            ["<HUD[color]inop"],
+            ["<HUD[color]inop", "ISIS>[color]inop"],
             [""],
-            ["<GPWC[color]inop"],
+            ["<GPWC[color]inop", "OANS>[color]inop"],
             [""],
             [""],
             [""],

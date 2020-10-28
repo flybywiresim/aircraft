@@ -121,6 +121,7 @@ class CDUAocFreeText {
                     } else {
                         store["sendStatus"] = "FAILED";
                     }
+                    store["msg_to"] = "";
                     store["msg_line1"] = "";
                     store["msg_line2"] = "";
                     store["msg_line3"] = "";
@@ -138,7 +139,7 @@ class CDUAocFreeText {
                         fMsgLines.push("---------------------------[color]white");
 
                         const sentMessage = { "id": Date.now(), "type": "FREE TEXT", "time": '00:00', "content": fMsgLines, };
-                        sentMessage["time"] = A32NX_ATSU.fetchTimeValue();
+                        sentMessage["time"] = fetchTimeValue();
                         mcdu.addSentMessage(sentMessage);
                         store["sendStatus"] = "";
                         updateView();

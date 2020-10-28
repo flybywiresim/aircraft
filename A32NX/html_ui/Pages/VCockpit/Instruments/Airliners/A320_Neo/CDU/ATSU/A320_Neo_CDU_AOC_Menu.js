@@ -3,33 +3,36 @@ class CDUAocMenu {
         mcdu.clearDisplay();
         mcdu.setTemplate([
             ["AOC MENU"],
+            [""],
+            ["<INIT[color]inop", "FREE TEXT>"],
             ["", "RECEIVED"],
-            ["<DELAY[color]inop", "MESSAGES>"],
-            ["WX/ATIS", "SENT"],
-            ["<REQUEST", "MESSAGES>"],
+            ["<WX REQUEST", "MESSAGES>"],
+            ["", "SENT"],
+            ["<ATIS", "MESSAGES>"],
             [""],
-            ["<FREE TEXT", "DIVERSION>[color]inop"],
+            ["<FUEL[color]inop", "BOARDING>[color]inop"],
             [""],
-            ["<ETA[color]inop"],
-            ["POSITION[color]inop"],
-            ["<REPORT[color]inop", "MISC[color]inop"],
-            [""],
-            ["<RETURN"]
+            ["<PERF/W&B[color]inop", "DIVERSION>[color]inop"],
+            ["ATSU DLK"],
+            ["<RETURN", "MISC>[color]inop"]
         ]);
 
         mcdu.onLeftInput[1] = () => {
             CDUAocRequestsWeather.ShowPage(mcdu);
         };
         mcdu.onLeftInput[2] = () => {
-            CDUAocFreeText.ShowPage(mcdu);
+            CDUAocRequestsAtis.ShowPage(mcdu);
         };
         mcdu.onLeftInput[5] = () => {
             CDUAtsuMenu.ShowPage(mcdu);
         };
         mcdu.onRightInput[0] = () => {
-            CDUAocMessagesReceived.ShowPage(mcdu);
+            CDUAocFreeText.ShowPage(mcdu);
         };
         mcdu.onRightInput[1] = () => {
+            CDUAocMessagesReceived.ShowPage(mcdu);
+        };
+        mcdu.onRightInput[2] = () => {
             CDUAocMessagesSent.ShowPage(mcdu);
         };
     }

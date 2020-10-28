@@ -15,14 +15,14 @@ class CDUMenuPage {
         let selectedMaint = false;
 
         const updateView = () => {
-            textFMGC = "<FMGC";
+            textFMGC = "<FMGC (REQ)";
             textATSU = "<ATSU";
             textAIDS = "<AIDS";
             textCFDS = "<CFDS";
             textMaint = "MCDU MAINT>";
             textReturn = "RETURN>";
             if (activeSystem === "FMGC") {
-                textFMGC = "<FMGC[color]green";
+                textFMGC = "<FMGC (REQ)[color]green";
             }
             if (activeSystem === "ATSU") {
                 textATSU = "<ATSU[color]green";
@@ -54,16 +54,16 @@ class CDUMenuPage {
 
             mcdu.setTemplate([
                 ["MCDU MENU"],
-                [""],
-                [textFMGC],
+                ["", "SELECT"],
+                [textFMGC, "NAV B/UP>"],
                 [""],
                 [textATSU],
                 [""],
                 [textAIDS],
                 [""],
-                [textCFDS, textMaint],
+                [textCFDS],
                 [""],
-                [""],
+                ["", "OPTIONS>"],
                 [""],
                 ["", textReturn]
             ]);
@@ -80,7 +80,7 @@ class CDUMenuPage {
             setTimeout(() => {
                 mcdu.showErrorMessage("");
                 CDUIdentPage.ShowPage(mcdu);
-            }, Math.floor(Math.random() * 500) + 200);
+            }, Math.floor(Math.random() * 400) + 100);
         };
 
         mcdu.onLeftInput[1] = () => {
@@ -90,7 +90,7 @@ class CDUMenuPage {
             setTimeout(() => {
                 mcdu.showErrorMessage("");
                 CDUAtsuMenu.ShowPage(mcdu);
-            }, Math.floor(Math.random() * 500) + 400);
+            }, Math.floor(Math.random() * 400) + 200);
         };
 
         mcdu.onLeftInput[2] = () => {
@@ -100,7 +100,7 @@ class CDUMenuPage {
             setTimeout(() => {
                 mcdu.showErrorMessage("");
                 CDU_AIDS_MainMenu.ShowPage(mcdu);
-            }, Math.floor(Math.random() * 500) + 800);
+            }, Math.floor(Math.random() * 400) + 400);
         };
 
         mcdu.onLeftInput[3] = () => {
@@ -110,17 +110,17 @@ class CDUMenuPage {
             setTimeout(() => {
                 mcdu.showErrorMessage("");
                 CDUCfdsMainMenu.ShowPage(mcdu);
-            }, Math.floor(Math.random() * 500) + 800);
+            }, Math.floor(Math.random() * 400) + 400);
         };
 
-        mcdu.onRightInput[3] = () => {
+        mcdu.onRightInput[4] = () => {
             mcdu.showErrorMessage("WAIT FOR SYSTEM RESPONSE");
             selectedMaint = true;
             updateView();
             setTimeout(() => {
                 mcdu.showErrorMessage("");
                 CDU_OPTIONS_MainMenu.ShowPage(mcdu);
-            }, Math.floor(Math.random() * 500) + 400);
+            }, Math.floor(Math.random() * 400) + 200);
         };
 
         mcdu.onDir = () => {
@@ -155,21 +155,5 @@ class CDUMenuPage {
             mcdu.showErrorMessage("");
             CDUFuelPredPage.ShowPage(mcdu);
         };
-        // Previous (original) MCDU menu
-        // mcdu.setTemplate([
-        //     ["A320"],
-        //     ["ENG"],
-        //     ["LEAP A-1"],
-        //     ["ACTIVE DATA BASE"],
-        //     ["4MAY-4JUL[color]blue", "TC11103001"],
-        //     ["SECOND DATA BASE"],
-        //     ["{4MAY-4JUL[color]blue"],
-        //     [""],
-        //     [""],
-        //     [""],
-        //     [""],
-        //     ["", "PERF FACTOR"],
-        //     ["", "0.0"]
-        // ]);
     }
 }
