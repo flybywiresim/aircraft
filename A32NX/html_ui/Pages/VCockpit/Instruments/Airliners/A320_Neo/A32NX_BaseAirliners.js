@@ -371,12 +371,15 @@ var Airliners;
                             for (var i = 3; i >= 0; i--) {
                                 if (this.currentDigits[i] >= 0) {
                                     this.currentDigits[i] = -1;
+                                    this.bLastInputIsCLR = true;
                                     break;
                                 }
                             }
                         }
                         this.refreshValue();
                     }
+                } else if (buttonSuffix.charAt(0) == 'I') {
+                    return;
                 } else {
                     let slot = -1;
                     {
