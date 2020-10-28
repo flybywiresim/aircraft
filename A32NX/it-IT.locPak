@@ -1,0 +1,13 @@
+{
+  "LocalisationPackage": {
+    "Language": "it-IT",
+    "Strings": {
+      "AIRCRAFT.DESCRIPTION": "Airbus lancia il primo A320 nel marzo del 1984. Nel 2010, quasi 26 anni dopo, annuncia l'ingresso dell'A320neo (\"new engine option\", nuova opzione per il motore) nella famiglia, con l'obiettivo di dare nuova vita e sostenere la linea di slanciati aerei di linea a doppia turboventola, in cui Airbus è leader a livello mondiale.<\/br><\/br>In seguito a un lungo processo di sviluppo, l'A320neo entra ufficialmente in servizio all'inizio del 2016 con Lufthansa e diventa rapidamente l'aeromobile commerciale più venduto della storia, con oltre 7000 unità ad oggi ordinate da oltre 115 compagnie aeree.<\/br><\/br>Continuando la tradizione iniziata dall'originale A320, il primo aereo di linea dopo il Concorde a utilizzare i comandi fly-by-wire per nel normale funzionamento, l'A320neo riprende il design della cellula dei modelli precedenti al 95%. Ciò che realmente contraddistingue questa versione è tuttavia l'introduzione di due tipi di motori di nuova generazione, abbinati ai parafanghi proprietari \"Sharklet\" dell'azienda.<\/br><\/br>Risparmio di carburante, ampia portata, carico utile massimo aumentato e distanza di atterraggio ridotta: questi elementi chiave, uniti alla drastica riduzione del rumore e delle emissioni di di anidride carbonica, dimostrano il motivo per cui l'A320neo non è solo un successo commerciale, ma rappresenta anche un significativo progresso nel percorso dell'aviazione verso una maggiore responsabilità ambientale.",
+      "AIRCRAFT.UI_MANUFACTURER": "Airbus",
+      "AIRCRAFT.UI_MODEL": "A320neo",
+      "AIRCRAFT.UI_VARIATION": "Airbus",
+      "COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_HDG_TUNING_LEFT": "Regola a sinistra rotta selezionata (%((A:AUTOPILOT HEADING LOCK DIR:1,degrees))%!d!°)",
+      "COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_HDG_TUNING_RIGHT": "Regola a destra rotta selezionata (%((A:AUTOPILOT HEADING LOCK DIR:1,degrees))%!d!°)"
+    }
+  }
+}
