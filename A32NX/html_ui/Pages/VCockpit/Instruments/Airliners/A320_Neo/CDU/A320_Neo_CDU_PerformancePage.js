@@ -482,8 +482,8 @@ class CDUPerformancePage {
             titleColor = "green";
         }
         let qnhCell = "[ ]";
-        if (isFinite(mcdu.perfApprQNH)) {
-            qnhCell = mcdu.perfApprQNH.toFixed(0);
+        if (isFinite(mcdu.perfApprQNH) | /[0-9]{2}.[0-9]{2}/.test(mcdu.perfApprQNH)) {
+            qnhCell = mcdu.perfApprQNH;
         }
         mcdu.onLeftInput[0] = () => {
             const value = mcdu.inOut;
