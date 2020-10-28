@@ -75,6 +75,8 @@
 1. [LIGHTS] Added logo lights only turn on while on ground or flaps are extented - @linkeleven (linkeleven#2557)
 1. [CDU] Add basic airways support based on code from WorkingTitle team.- @santii90 (Santiago Vazquez), @Lessar277 (Lessar27)
 1. [TEXTURES] Changed cockpit decals resolution from 1k to 2k - @FoxinTale (Aubrey)
+1. [ECAM] Fix fuel used values on CRUISE and FUEL pages - @Lessar277 (Lessar27#1112)
+1. [MISC] Add localisation files for aircraft info when using other languages than english - @pessip (Pessi Päivärinne)
 1. [CDU] Add correct UI behavior and colors for airways page - @santii90 (Santiago Vazquez)
 
 ## 2020/09
