@@ -348,6 +348,9 @@ a320-neo-ecam-gauge #RootSVG #CurrentValue {
 a320-neo-ecam-gauge #RootSVG #CurrentValue.decimal {
     font-size: 15px !important;
 }
+a320-neo-ecam-gauge #RootSVG #CurrentValue.gaugedecimalpoint {
+   fill: var(--displayGreen);
+}
 a320-neo-ecam-gauge #RootSVG #CurrentValueBorder {
     fill: none;
     stroke: lightblue;

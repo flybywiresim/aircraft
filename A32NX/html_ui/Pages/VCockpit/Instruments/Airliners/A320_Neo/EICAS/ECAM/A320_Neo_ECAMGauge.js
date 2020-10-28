@@ -221,7 +221,7 @@ var A320_Neo_ECAM_Common;
             this.rootSVG.appendChild(cursorGroup);
             const textPosX = this.viewBoxSize.x * _gaugeDefinition.currentValuePos.x;
             const textPosY = this.viewBoxSize.x * _gaugeDefinition.currentValuePos.y;
-            const textPosXdec = (this.currentValuePrecision == 1) ? textPosX - 9 : textPosX;
+            const textPosXdec = (this.currentValuePrecision == 1) ? textPosX - 19 : textPosX;
             const textPosYdec = (this.currentValuePrecision == 1) ? textPosY + 7 : textPosY;
             this.currentValueText = document.createElementNS(Avionics.SVG.NS, "text");
             this.currentValueText.id = "CurrentValue";
@@ -237,6 +237,14 @@ var A320_Neo_ECAM_Common;
             this.currentValueTextdecimal.setAttribute("y", textPosYdecimal.toString());
             this.currentValueTextdecimal.setAttribute("alignment-baseline", "text-bottom");
             this.rootSVG.appendChild(this.currentValueTextdecimal);
+            const textPosXdecP = textPosX - 9;
+            this.currentValueTextdecimalP = document.createElementNS(Avionics.SVG.NS, "text");
+            this.currentValueTextdecimalP.id = "CurrentValue";
+            this.currentValueTextdecimalP.setAttribute("x", textPosXdecP.toString());
+            this.currentValueTextdecimalP.setAttribute("y", textPosY.toString());
+            //this.currentValueTextdecimalP.textContent = ".";
+            this.currentValueTextdecimalP.setAttribute("alignment-baseline", "central");
+            this.rootSVG.appendChild(this.currentValueTextdecimalP);
             if (_gaugeDefinition.currentValueBorderWidth > 0) {
                 const borderWidth = this.viewBoxSize.x * _gaugeDefinition.currentValueBorderWidth;
                 const borderHeight = this.currentValueBorderHeight * 1.2;
@@ -347,6 +355,7 @@ var A320_Neo_ECAM_Common;
                 if (!this.isActive) {
                     this.currentValueText.textContent = "XX";
                     this.currentValueTextdecimal.textContent = "";
+                    this.currentValueTextdecimalP.textContent = "";
                 }
             }
         }
@@ -446,9 +455,11 @@ var A320_Neo_ECAM_Common;
                     this.currentValueText.setAttribute("class", style);
                     if (this.currentValuePrecision > 0) {
                         const strValueArray = strValue.split(".");
-                        this.currentValueText.textContent = strValueArray[0] + ".";
+                        this.currentValueText.textContent = strValueArray[0];
                         this.currentValueTextdecimal.textContent = strValueArray[1];
                         this.currentValueTextdecimal.setAttribute("class", style + " decimal");
+                        this.currentValueTextdecimalP.textContent = ".";
+                        this.currentValueTextdecimalP.setAttribute("class", style + " decimalpoint");
                     }
                 }
             }

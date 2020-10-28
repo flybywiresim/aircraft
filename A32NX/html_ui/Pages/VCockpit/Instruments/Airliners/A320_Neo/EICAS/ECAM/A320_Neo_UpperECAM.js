@@ -1650,8 +1650,10 @@ var A320_Neo_UpperECAM;
                 _svgRoot.appendChild(line);
                 this.valueText = A320_Neo_UpperECAM.createSVGText("--.-", "Value", this.getValueTextX(), "88%", "bottom");
                 this.valueText2 = A320_Neo_UpperECAM.createSVGText("", "decimal", this.getValueTextX2(), "88%", "bottom");
+                this.valueTextpoint = A320_Neo_UpperECAM.createSVGText("", "decimalpoint", this.getValueTextXpoint(), "88%", "bottom");
                 _svgRoot.appendChild(this.valueText);
                 _svgRoot.appendChild(this.valueText2);
+                _svgRoot.appendChild(this.valueTextpoint);
             }
             this.refresh(false, 0, 0, true);
         }
@@ -1666,17 +1668,21 @@ var A320_Neo_UpperECAM;
                             const dx = 0;
                             if (this.currentValue.toFixed(_valueDisplayPrecision) >= 10) {
                                 this.valueText2.setAttribute("dx", "2%");
+                                this.valueTextpoint.setAttribute("dx", "2%");
                             } else {
                                 this.valueText2.setAttribute("dx", "0%");
+                                this.valueTextpoint.setAttribute("dx", "0%");
                             }
                             const strArray = this.currentValue.toFixed(_valueDisplayPrecision).split(".");
-                            const wholeNumber = strArray[0] + ".";
+                            const wholeNumber = strArray[0];
                             this.valueText.textContent = wholeNumber;
                             this.valueText.setAttribute("class", valueClass);
                             const decimal = strArray[1];
                             this.valueText2.textContent = decimal;
                             this.valueText2.setAttribute("class", valueClass + " decimal");
                             this.valueText2.setAttribute("y", "88%");
+                            this.valueTextpoint.textContent = ".";
+                            this.valueTextpoint.setAttribute("class", valueClass + " decimalpoint");
 
                         } else {
                             if (_title == "FF") {
@@ -1705,7 +1711,10 @@ var A320_Neo_UpperECAM;
             return "11%";
         }
         getValueTextX2() {
-            return "16%";
+            return "17%";
+        }
+        getValueTextXpoint() {
+            return "14%";
         }
         getValueTextXFF() {
             return "20%";
@@ -1720,10 +1729,13 @@ var A320_Neo_UpperECAM;
             return "58%";
         }
         getValueTextX() {
-            return "78%";
+            return "79%";
         }
         getValueTextX2() {
-            return "83%";
+            return "85%";
+        }
+        getValueTextXpoint() {
+            return "82%";
         }
         getValueTextXFF() {
             return "85%";
