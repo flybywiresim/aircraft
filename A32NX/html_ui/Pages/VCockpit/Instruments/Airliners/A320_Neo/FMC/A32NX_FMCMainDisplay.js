@@ -993,7 +993,7 @@ class FMCMainDisplay extends BaseAirliners {
         return false;
     }
     getClbManagedSpeed() {
-        const dCI = this.costIndex / 999;
+        const dCI = this.costIndex / 99;
         const flapsHandleIndex = Simplane.getFlapsHandleIndex();
         if (flapsHandleIndex != 0) {
             return this.getFlapSpeed();
@@ -1005,7 +1005,7 @@ class FMCMainDisplay extends BaseAirliners {
         return speed;
     }
     getCrzManagedSpeed() {
-        let dCI = this.costIndex / 999;
+        let dCI = this.costIndex / 99;
         dCI = dCI * dCI;
         const flapsHandleIndex = SimVar.GetSimVarValue("FLAPS HANDLE INDEX", "Number");
         if (flapsHandleIndex != 0) {
@@ -1018,7 +1018,7 @@ class FMCMainDisplay extends BaseAirliners {
         return speed;
     }
     getDesManagedSpeed() {
-        const dCI = this.costIndex / 999;
+        const dCI = this.costIndex / 99;
         const flapsHandleIndex = Simplane.getFlapsHandleIndex();
         if (flapsHandleIndex != 0) {
             return this.getFlapSpeed();
