@@ -159,7 +159,7 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
 
         if (((topSelfTestCurrentKnobValue >= 0.1 && this.topSelfTestLastKnobValue < 0.1) || ACPowerStateChange) && isACPowerAvailable && !this.topSelfTestTimerStarted) {
             this.topSelfTestDiv.style.visibility = "visible";
-            this.topSelfTestTimer = 14.25;
+            this.topSelfTestTimer = parseInt(NXDataStore.get("CONFIG_SELF_TEST_TIME", "15"));
             this.topSelfTestTimerStarted = true;
         }
 
@@ -181,7 +181,7 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
 
         if (((bottomSelfTestCurrentKnobValue >= 0.1 && this.bottomSelfTestLastKnobValue < 0.1) || ACPowerStateChange) && isACPowerAvailable && !this.bottomSelfTestTimerStarted) {
             this.bottomSelfTestDiv.style.visibility = "visible";
-            this.bottomSelfTestTimer = 14.25;
+            this.bottomSelfTestTimer = parseInt(NXDataStore.get("CONFIG_SELF_TEST_TIME", "15"));
             this.bottomSelfTestTimerStarted = true;
         }
 

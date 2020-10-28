@@ -24,19 +24,32 @@ class CDUAocRequestsAtis {
         let arrivalText = "{ARRIVAL[color]blue";
         let departureText = "{DEPARTURE[color]blue";
         let enrouteText = "ENROUTE}[color]blue";
-        if (store.reqID == 0) {
-            arrivalText = " ARRIVAL[color]blue";
-        } else if (store.reqID == 1) {
-            departureText = " DEPARTURE[color]blue";
-        } else {
-            enrouteText = "ENROUTE [color]blue";
+
+        if (mcdu.flightPlanManager.getOrigin() && mcdu.flightPlanManager.getDestination()) {
+            store['arrIcao'] = mcdu.flightPlanManager.getDestination().ident;
         }
 
+        if (store.reqID == 0) {
+            arrivalText = "~ARRIVAL[color]blue";
+        } else if (store.reqID == 1) {
+            departureText = "~DEPARTURE[color]blue";
+        } else {
+            enrouteText = "ENROUTE~[color]blue";
+        }
+
+        let arrText;
+        if (store.arpt1 != "") {
+            arrText = store.arpt1;
+        } else if (store.arrIcao != "") {
+            arrText = store.arrIcao + "[s-text]";
+        } else {
+            arrText = "[ ]";
+        }
         const updateView = () => {
             mcdu.setTemplate([
                 ["AOC ATIS REQUEST"],
                 ["AIRPORT", "↓FORMAT FOR"],
-                [`${store["arpt1"] != "" ? store["arpt1"] : "[ ]"}[color]blue`, formatString],
+                [`${arrText}[color]blue`, formatString],
                 ["", "", "-------SELECT ONE-------"],
                 [arrivalText, enrouteText],
                 [""],
@@ -75,7 +88,7 @@ class CDUAocRequestsAtis {
         };
         mcdu.onLeftInput[5] = () => {
             clearTimeout(labelTimeout);
-            CDUAocRequestsWeather.ShowPage(mcdu);
+            CDUAocMenu.ShowPage(mcdu);
         };
 
         mcdu.onRightInput[0] = () => {
@@ -96,15 +109,16 @@ class CDUAocRequestsAtis {
             const newMessage = { "id": Date.now(), "type": "ATIS", "time": '00:00', "opened": null, "content": lines, };
             mcdu.clearUserInput();
 
-            A32NX_ATSU.getATIS(icao, lines, store.reqID, store, updateView).then(() => {
+            getATIS(icao, lines, store.reqID, store, updateView).then(() => {
                 store["sendStatus"] = "SENT";
                 setTimeout(() => {
-                    newMessage["time"] = A32NX_ATSU.fetchTimeValue();
+                    newMessage["time"] = fetchTimeValue();
                     mcdu.addMessage(newMessage);
                 }, Math.floor(Math.random() * 10000) + 10000);
                 labelTimeout = setTimeout(() => {
                     store["sendStatus"] = "";
-                    updateView();
+                    store["arpt1"] = "";
+                    CDUAocRequestsAtis.ShowPage(mcdu, store);
                 }, 3000);
             });
         };

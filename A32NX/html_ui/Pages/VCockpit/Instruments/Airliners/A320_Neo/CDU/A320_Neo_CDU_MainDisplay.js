@@ -1012,7 +1012,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                     }
                 }
 
-                accelerationAltitudeMsl = this.climbTransitionGroundAltitude + 1500;
+                accelerationAltitudeMsl = this.climbTransitionGroundAltitude + parseInt(NXDataStore.get("CONFIG_ACCEL_ALT", "1500"));
             }
 
             if (planeAltitudeMsl > accelerationAltitudeMsl) {

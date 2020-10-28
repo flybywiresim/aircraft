@@ -177,7 +177,7 @@ class A320_Neo_PFD_MainPage extends NavSystemPage {
 
         if ((KnobChanged || ACPowerStateChange) && ACPowerAvailable && !this.selfTestTimerStarted) {
             this.selfTestDiv.style.display = "block";
-            this.selfTestTimer = 14.25;
+            this.selfTestTimer = parseInt(NXDataStore.get("CONFIG_SELF_TEST_TIME", "15"));
             this.selfTestTimerStarted = true;
         }
 
