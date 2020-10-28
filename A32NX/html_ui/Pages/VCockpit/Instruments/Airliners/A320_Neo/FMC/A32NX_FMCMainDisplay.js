@@ -1476,8 +1476,7 @@ class FMCMainDisplay extends BaseAirliners {
             value = Math.round((value * 3386.389) / 100);
             this.perfApprQNH = value;
             return true;
-        }
-        else if (isFinite(value)) {
+        } else if (isFinite(value)) {
             this.perfApprQNH = value;
             return true;
         }
