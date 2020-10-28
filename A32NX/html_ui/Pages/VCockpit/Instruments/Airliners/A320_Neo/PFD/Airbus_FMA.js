@@ -105,6 +105,7 @@ var Airbus_FMA;
             this.autoPilotActive[1] = Simplane.getAutoPilotActive(2);
             this.anyAutoPilotsActive = (this.autoPilotActive[0] || this.autoPilotActive[1]);
             this.bothAutoPilotsActive = (this.autoPilotActive[0] && this.autoPilotActive[1]);
+            this.bothAutoPilotsInactive = (!this.autoPilotActive[0] && !this.autoPilotActive[1]);
             this.autoPilotFlightDirectorActive[0] = Simplane.getAutoPilotFlightDirectorActive(1);
             this.autoPilotFlightDirectorActive[1] = Simplane.getAutoPilotFlightDirectorActive(2);
             const url = document.getElementsByTagName("a320-neo-pfd-element")[0].getAttribute("url");
@@ -1027,7 +1028,8 @@ var Airbus_FMA;
                 } else if ((Airbus_FMA.CurrentPlaneState.highestThrottleDetent == ThrottleMode.FLEX_MCT) && (Airbus_FMA.CurrentPlaneState.flexTemperature > 0)) {
                     SRSEnabled = true;
                 }
-            } else if (Airbus_FMA.CurrentPlaneState.flightPhase == FlightPhase.FLIGHT_PHASE_GOAROUND) {
+            // seems missed approach toga is not yet implemented?
+            } else if (Airbus_FMA.CurrentPlaneState.flightPhase == FlightPhase.FLIGHT_PHASE_GOAROUND || Airbus_FMA.CurrentPlaneState.flightPhase == FlightPhase.FLIGHT_PHASE_APPROACH) {
                 if ((Airbus_FMA.CurrentPlaneState.highestThrottleDetent == ThrottleMode.TOGA) &&
                     (Airbus_FMA.CurrentPlaneState.flapsHandlePercent != 0)) {
                     SRSEnabled = true;
@@ -1085,15 +1087,30 @@ var Airbus_FMA;
             return false;
         }
         static GetModeState_GS() {
-            if (Simplane.getAutoPilotAPPRHold() && Simplane.getAutoPilotGlideslopeHold() && (!Simplane.getAutoPilotApproachLoaded() || Simplane.getAutoPilotApproachType() === 4) && Airbus_FMA.CurrentPlaneState.thisFlightDirectorActive) {
-                if (SimVar.GetSimVarValue("L:A32NX_OFF_GS", "bool") === 1 && Simplane.getAutoPilotAPPRActive()) {
-                    return Airbus_FMA.MODE_STATE.CAPTURED;
+
+            if (CurrentPlaneState.bothAutoPilotsInactive && Simplane.getAutoPilotApproachType() == 4 && Simplane.getAutoPilotAPPRActive() ) {
+                SimVar.SetSimVarValue("AUTOPILOT APPROACH HOLD", "bool", 1); // Not Settable per SDK
+                return Airbus_FMA.MODE_STATE.ENGAGED;
+            }
+
+            if (Simplane.getAutoPilotAPPRHold() && Simplane.getAutoPilotGlideslopeHold() && Airbus_FMA.CurrentPlaneState.thisFlightDirectorActive) {
+    
+                // normally use only for GPS APPROACH APPROACH TYPE = 4 = ILS but the APPROACH TYPE is set too late
+                if (Simplane.getAutoPilotApproachType() == 4 || Simplane.getAutoPilotApproachType() == 0) {
+                    // L:A32NX_OFF_GS is identified too late (see ILSIndicator.js)?
+                    if (Simplane.getAutoPilotAPPRCaptured() && Simplane.getAutoPilotAPPRActive() && !Simplane.getAutoPilotGlideslopeActive() ) {
+                        return Airbus_FMA.MODE_STATE.CAPTURED;
+                    }
+
+                    if (Simplane.getAutoPilotGlideslopeActive() && Simplane.getAutoPilotAPPRActive()) {
+                        return Airbus_FMA.MODE_STATE.ENGAGED;
+                    } 
+
+                    if (SimVar.GetSimVarValue("AUTOPILOT GLIDESLOPE ARM", "bool") === 1) {
+                        return Airbus_FMA.MODE_STATE.ARMED;
+                    }
                 }
-                if (Simplane.getAutoPilotGlideslopeActive() && Simplane.getAutoPilotAPPRActive()) {
-                    return Airbus_FMA.MODE_STATE.ENGAGED;
-                } else {
-                    return Airbus_FMA.MODE_STATE.ARMED;
-                }
+
             }
             return Airbus_FMA.MODE_STATE.NONE;
         }
@@ -1124,7 +1141,7 @@ var Airbus_FMA;
                 }
                 const targetAltitude = Simplane.getAutoPilotAltitudeLockValue("feet");
                 const altitude = Simplane.getAltitude();
-                if (altitude < targetAltitude - 100) {
+                if (altitude < targetAltitude - 100 && !Simplane.getAutoPilotAPPRActive() ) {
                     if (Airbus_FMA.CurrentPlaneState.radioAltitude > 1.5) {
                         return Airbus_FMA.MODE_STATE.ENGAGED;
                     } else {
@@ -1770,7 +1787,7 @@ var Airbus_FMA;
                         this.rolloutDelay = 0;
                         targetState = VerticalAndLateral.STATE.FLARE;
                     } else if (Airbus_FMA.CurrentPlaneState.radioAltitude < 400 ||
-                        (this._previousState === VerticalAndLateral.STATE.LAND && Airbus_FMA.CurrentPlaneState.radioAltitude < 400 * 1.1)) {
+                        (this._previousState === VerticalAndLateral.STATE.LAND && Airbus_FMA.CurrentPlaneState.radioAltitude < 400 * 1.1) && Airbus_FMA.CurrentPlaneState.highestThrottleDetent != ThrottleMode.TOGA) {
                         targetState = VerticalAndLateral.STATE.LAND;
                     }
                 }
