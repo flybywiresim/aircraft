@@ -1606,9 +1606,14 @@ class FMCMainDisplay extends BaseAirliners {
         } else {
             const value = parseFloat(s);
             if (isFinite(value)) {
-                this.perfApprDH = value;
-                SimVar.SetSimVarValue("L:AIRLINER_DECISION_HEIGHT", "number", this.perfApprDH);
-                return true;
+                if (value >= 0 && value <= 700) {
+                    this.perfApprDH = value;
+                    SimVar.SetSimVarValue("L:AIRLINER_DECISION_HEIGHT", "number", this.perfApprDH);
+                    return true;
+                } else {
+                    this.showErrorMessage("ENTRY OUT OF RANGE");
+                    return false;
+                }
             }
             this.showErrorMessage(this.defaultInputErrorMessage);
             return false;
