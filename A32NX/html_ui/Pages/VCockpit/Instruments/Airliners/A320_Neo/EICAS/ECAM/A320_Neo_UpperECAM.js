@@ -1565,17 +1565,17 @@ var A320_Neo_UpperECAM;
             if (this.throttleMode == ThrottleMode.CLIMB) {
                 return 875;
             }
-            if (this.ThrottleMode == ThrottleMode.AUTO) {
+            if (this.throttleMode == ThrottleMode.AUTO) {
                 return 850;
             } else {
                 return 750;
             }
         }
         getModeN1Max() {
-            if (this.throttleMode == ThrottleMode.TOGA && this.timerTOGA > 0) {
-                return 101.5;
-            } else {
-                return 100;
+            switch (this.throttleMode) {
+                case ThrottleMode.TOGA: return ((this.timerTOGA > 0) ? 101.5 : 100);
+                case ThrottleMode.REVERSE: return 66.7;
+                default: return 100;
             }
         }
         getEGTGaugeValue() {
@@ -1773,7 +1773,7 @@ var A320_Neo_UpperECAM;
                 this.divMain.appendChild(fuelOnBoardDiv);
             }
 
-            this.setThrottle(false, 0, ThrottleMode.UNKNOWN);
+            this.setThrottle(false, 0, ThrottleMode.UNKNOWN, true);
             this.setFlexTemperature(false, 0, true);
             this.setFuelOnBoard(0, true);
         }
@@ -1781,25 +1781,39 @@ var A320_Neo_UpperECAM;
         update(_deltaTime) {
             super.update(_deltaTime);
 
-            if (Simplane.getEngineActive(0) || Simplane.getEngineActive(1)) {
-                const throttleMode = Math.max(Simplane.getEngineThrottleMode(0), Simplane.getEngineThrottleMode(1));
-
+            if ((SimVar.GetSimVarValue("L:A32NX_FADEC_POWERED_ENG1", "Bool") == 1) || (SimVar.GetSimVarValue("L:A32NX_FADEC_POWERED_ENG2", "Bool") == 1)) {
                 // MaxThrust seems to be bugged, so here we use the throttle position for now
                 const throttlePosition = Math.max(Simplane.getEngineThrottle(1), Simplane.getEngineThrottle(2));
+                // Engine Mode START
+                if (!Simplane.getEngineActive(0) || !Simplane.getEngineActive(1)) {
+                    if (!this.currentStart || throttlePosition !== this.currentThrottleValue) {
+                        this.currentStart = true;
+                        this.currentThrottleValue = throttlePosition;
+                        this.setFlexTemperature(false);
+                        this.throttleState.className = "active";
+                        this.throttleValue.className = "active";
+                        this.throttleState.textContent = "CLB";
+                        this.throttleState.style.visibility = "visible";
+                        this.throttleValue.style.visibility = "visible";
+                        this.throttleValue.textContent = throttlePosition.toFixed(1);
+                    }
+                } else {
+                    const throttleMode = Math.max(Simplane.getEngineThrottleMode(0), Simplane.getEngineThrottleMode(1));
 
-                if (Simplane.getCurrentFlightPhase() < FlightPhase.FLIGHT_PHASE_CLIMB) {
-                    if (throttleMode === ThrottleMode.FLEX_MCT) {
-                        const flexTemp = Simplane.getFlexTemperature();
-
-                        this.setFlexTemperature((flexTemp > 0), flexTemp);
+                    if (Simplane.getCurrentFlightPhase() < FlightPhase.FLIGHT_PHASE_CLIMB) {
+                        if ((throttleMode !== ThrottleMode.TOGA) && (throttleMode !== ThrottleMode.REVERSE)) {
+                            const flexTemp = Simplane.getFlexTemperature();
+                            this.setFlexTemperature((flexTemp > 0), flexTemp);
+                        } else {
+                            this.setFlexTemperature(false);
+                        }
                     } else {
                         this.setFlexTemperature(false);
                     }
-                } else {
-                    this.setFlexTemperature(false);
-                }
 
-                this.setThrottle(true, throttlePosition, throttleMode);
+                    const onGround = Simplane.getIsGrounded();
+                    this.setThrottle(true, throttlePosition, throttleMode, onGround);
+                }
             } else {
                 this.setThrottle(false);
                 this.setFlexTemperature(false);
@@ -1809,15 +1823,32 @@ var A320_Neo_UpperECAM;
         }
 
         /**
+         * @param _grounded {boolen}
+         * @param _min {string}
+         * @param _med {string}
+         * @param _max {string}
+         * @returns string
+         */
+        getThrustRatingMode(_grounded, _min = "CLB", _med = "FLX", _max = "TOGA") {
+            if (_grounded) {
+                return ((((Simplane.getCurrentFlightPhase() < FlightPhase.FLIGHT_PHASE_CLIMB) && (Simplane.getFlexTemperature() > 0))) ? _med : _max);
+            }
+            return _min;
+        }
+
+        /**
          * @param _active {boolean}
          * @param _value {number}
          * @param _mode {ThrottleMode}
+         * @param _grounded {boolean}
          */
-        setThrottle(_active, _value = 0, _mode = ThrottleMode.UNKNOWN) {
-            if (_active !== this.currentThrottleIsActive || _value !== this.currentThrottleValue || _mode !== this.currentThrottleMode) {
+        setThrottle(_active, _value = 0, _mode = ThrottleMode.UNKNOWN, _grounded = true) {
+            if (_active !== this.currentThrottleIsActive || _value !== this.currentThrottleValue || _mode !== this.currentThrottleMode || _grounded !== this.currentGrounded || this.currentStart) {
                 this.currentThrottleIsActive = _active;
                 this.currentThrottleValue = _value;
                 this.currentThrottleMode = _mode;
+                this.currentGrounded = _grounded;
+                this.currentStart = false;
 
                 if (this.throttleState != null) {
                     if (_active && (this.currentThrottleMode !== ThrottleMode.UNKNOWN)) {
@@ -1830,28 +1861,16 @@ var A320_Neo_UpperECAM;
                             }
                             case ThrottleMode.FLEX_MCT:
                             {
-                                if ((Simplane.getCurrentFlightPhase() < FlightPhase.FLIGHT_PHASE_CLIMB) && (Simplane.getFlexTemperature() > 0)) {
-                                    this.throttleState.textContent = "FLX";
-                                } else {
-                                    this.throttleState.textContent = "MCT";
-                                }
+                                this.throttleState.textContent = this.getThrustRatingMode(this.currentGrounded, "MCT");
                                 break;
                             }
-                            case ThrottleMode.CLIMB:
+                            case ThrottleMode.REVERSE:
                             {
-                                this.throttleState.textContent = "CLB";
+                                this.throttleState.textContent = "MREV";
+                                _value = 66.7;
                                 break;
                             }
-                            case ThrottleMode.AUTO:
-                            {
-                                this.throttleState.textContent = "AUTO";
-                                break;
-                            }
-                            case ThrottleMode.IDLE:
-                            {
-                                this.throttleState.textContent = "IDLE";
-                                break;
-                            }
+                            default: this.throttleState.textContent = this.getThrustRatingMode(this.currentGrounded);
                         }
                     } else {
                         this.throttleState.className = "inactive";
