@@ -229,7 +229,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         if (flapsHandleIndex != 0) {
             return Math.min(maxSpeed, this.getFlapSpeed());
         }
-        let dCI = this.costIndex / 999;
+        let dCI = this.costIndex / 99;
         dCI = dCI * dCI;
         let speed = 290 * (1 - dCI) + 330 * dCI;
         if (SimVar.GetSimVarValue("PLANE ALTITUDE", "feets") < 10000) {
