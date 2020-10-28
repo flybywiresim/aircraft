@@ -6,11 +6,9 @@ class A320_Neo_CDU_AirwaysFromWaypointPage {
         const allRows = A320_Neo_CDU_AirwaysFromWaypointPage._GetAllRows(mcdu,waypoint);
         const page = (2 + (Math.floor(offset / 4)));
         const pageCount = (Math.floor(allRows.length / 4) + 2);
-        let rowBottomLabel = [""];
         let rowBottomLine = ["<RETURN"];
         if (mcdu.flightPlanManager.getCurrentFlightPlanIndex() === 1) {
-            rowBottomLabel = ["TMPY[color]red", "TMPY[color]red"];
-            rowBottomLine = ["*ERASE[color]red", "INSERT*[color]red"];
+            rowBottomLine = ["{ERASE[color]red", "INSERT*[color]red"];
             mcdu.onRightInput[5] = async () => {
                 mcdu.insertTemporaryFlightPlan(() => {
                     mcdu.copyAirwaySelections();
@@ -101,7 +99,7 @@ class A320_Neo_CDU_AirwaysFromWaypointPage {
             rows[3],
             subRows[4],
             rows[4],
-            rowBottomLabel,
+            [""],
             rowBottomLine
         ]);
     }
