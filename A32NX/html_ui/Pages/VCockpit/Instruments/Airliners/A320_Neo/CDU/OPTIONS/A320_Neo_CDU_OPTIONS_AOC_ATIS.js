@@ -2,11 +2,7 @@ class CDU_OPTIONS_ATIS {
     static ShowPage(mcdu) {
         mcdu.clearDisplay();
 
-        const storedAtisSrc = GetStoredData("A32NX_CONFIG_ATIS_SRC");
-        if (!storedAtisSrc) {
-            SetStoredData("A32NX_CONFIG_ATIS_SRC", "FAA");
-            CDU_OPTIONS_ATIS.ShowPage(mcdu);
-        }
+        const storedAtisSrc = NXDataStore.get("CONFIG_ATIS_SRC", "FAA");
 
         let faa = "*FAA (US ONLY)[color]blue";
         let vatsim = "*VATSIM[color]blue";
@@ -45,25 +41,25 @@ class CDU_OPTIONS_ATIS {
 
         mcdu.onLeftInput[0] = () => {
             if (storedAtisSrc != "FAA") {
-                SetStoredData("A32NX_CONFIG_ATIS_SRC", "FAA");
+                NXDataStore.set("CONFIG_ATIS_SRC", "FAA");
                 CDU_OPTIONS_ATIS.ShowPage(mcdu);
             }
         };
         mcdu.onLeftInput[1] = () => {
             if (storedAtisSrc != "VATSIM") {
-                SetStoredData("A32NX_CONFIG_ATIS_SRC", "VATSIM");
+                NXDataStore.set("CONFIG_ATIS_SRC", "VATSIM");
                 CDU_OPTIONS_ATIS.ShowPage(mcdu);
             }
         };
         mcdu.onLeftInput[2] = () => {
             if (storedAtisSrc != "PILOTEDGE") {
-                SetStoredData("A32NX_CONFIG_ATIS_SRC", "PILOTEDGE");
+                NXDataStore.set("CONFIG_ATIS_SRC", "PILOTEDGE");
                 CDU_OPTIONS_ATIS.ShowPage(mcdu);
             }
         };
         mcdu.onLeftInput[3] = () => {
             if (storedAtisSrc != "IVAO") {
-                SetStoredData("A32NX_CONFIG_ATIS_SRC", "IVAO");
+                NXDataStore.set("CONFIG_ATIS_SRC", "IVAO");
                 CDU_OPTIONS_ATIS.ShowPage(mcdu);
             }
         };

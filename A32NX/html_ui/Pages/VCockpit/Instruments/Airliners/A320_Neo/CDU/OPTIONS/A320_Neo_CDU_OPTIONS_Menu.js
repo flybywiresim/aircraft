@@ -3,11 +3,8 @@ class CDU_OPTIONS_MainMenu {
         mcdu.clearDisplay();
         mcdu.activeSystem = 'MAINT';
 
-        const storedTelexStatus = GetStoredData("A32NX_CONFIG_TELEX_STATUS");
-        if (!storedTelexStatus) {
-            SetStoredData("A32NX_CONFIG_TELEX_STATUS", "DISABLED");
-            CDU_OPTIONS_TELEX.ShowPage(mcdu);
-        }
+        const storedTelexStatus = NXDataStore.get("CONFIG_TELEX_STATUS", "DISABLED");
+
         let telexStatus;
         if (storedTelexStatus == "ENABLED") {
             telexStatus = "<DISABLE";

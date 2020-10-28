@@ -632,10 +632,7 @@ class FMCMainDisplay extends BaseAirliners {
             return callback(false);
         }
 
-        let storedTelexStatus = GetStoredData("A32NX_CONFIG_TELEX_STATUS");
-        if (!storedTelexStatus) {
-            storedTelexStatus = "DISABLED";
-        }
+        let storedTelexStatus = NXDataStore.get("CONFIG_TELEX_STATUS", "DISABLED");
 
         let returnCB = true;
         SimVar.SetSimVarValue("ATC FLIGHT NUMBER", "string", flightNo, "FMC").then(() => {

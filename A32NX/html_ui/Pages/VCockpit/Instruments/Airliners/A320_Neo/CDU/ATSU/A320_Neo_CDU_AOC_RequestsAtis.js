@@ -96,10 +96,10 @@ class CDUAocRequestsAtis {
             const newMessage = { "id": Date.now(), "type": "ATIS", "time": '00:00', "opened": null, "content": lines, };
             mcdu.clearUserInput();
 
-            getATIS(icao, lines, store.reqID, store, updateView).then(() => {
+            A32NX_ATSU.getATIS(icao, lines, store.reqID, store, updateView).then(() => {
                 store["sendStatus"] = "SENT";
                 setTimeout(() => {
-                    newMessage["time"] = fetchTimeValue();
+                    newMessage["time"] = A32NX_ATSU.fetchTimeValue();
                     mcdu.addMessage(newMessage);
                 }, Math.floor(Math.random() * 10000) + 10000);
                 labelTimeout = setTimeout(() => {

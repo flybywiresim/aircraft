@@ -81,10 +81,7 @@ class CDUAocFreeText {
             const telexFlight = SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string", "FMC");
 
             console.log(telexFlight);
-            let storedTelexStatus = GetStoredData("A32NX_CONFIG_TELEX_STATUS");
-            if (!storedTelexStatus) {
-                storedTelexStatus = "DISABLED";
-            }
+            let storedTelexStatus = NXDataStore.get("CONFIG_TELEX_STATUS", "DISABLED");
 
             if (telexID > 0 && telexFlight != "" && storedTelexStatus == "ENABLED") {
                 store["sendStatus"] = "QUEUED";
@@ -141,13 +138,7 @@ class CDUAocFreeText {
                         fMsgLines.push("---------------------------[color]white");
 
                         const sentMessage = { "id": Date.now(), "type": "FREE TEXT", "time": '00:00', "content": fMsgLines, };
-                        let timeValue = SimVar.GetGlobalVarValue("ZULU TIME", "seconds");
-                        if (timeValue) {
-                            const seconds = Number.parseInt(timeValue);
-                            const displayTime = Utils.SecondsToDisplayTime(seconds, true, true, false);
-                            timeValue = displayTime.toString();
-                        }
-                        sentMessage["time"] = timeValue.substring(0, 5);
+                        sentMessage["time"] = A32NX_ATSU.fetchTimeValue();
                         mcdu.addSentMessage(sentMessage);
                         store["sendStatus"] = "";
                         updateView();

@@ -2,11 +2,7 @@ class CDU_OPTIONS_TELEX {
     static ShowPage(mcdu) {
         mcdu.clearDisplay();
 
-        const storedTelexStatus = GetStoredData("A32NX_CONFIG_TELEX_STATUS");
-        if (!storedTelexStatus) {
-            SetStoredData("A32NX_CONFIG_TELEX_STATUS", "DISABLED");
-            CDU_OPTIONS_TELEX.ShowPage(mcdu);
-        }
+        const storedTelexStatus = NXDataStore.get("CONFIG_TELEX_STATUS", "DISABLED");
 
         let telexToggleText;
         switch (storedTelexStatus) {
@@ -40,12 +36,12 @@ class CDU_OPTIONS_TELEX {
             let reEnter = false;
             switch (storedTelexStatus) {
                 case "ENABLED":
-                    SetStoredData("A32NX_CONFIG_TELEX_STATUS", "DISABLED");
+                    NXDataStore.set("CONFIG_TELEX_STATUS", "DISABLED");
                     SimVar.SetSimVarValue("L:A32NX_Telex_ID", "Number", 0);
                     mcdu.showErrorMessage("FREE TEXT DISABLED");
                     break;
                 default:
-                    SetStoredData("A32NX_CONFIG_TELEX_STATUS", "ENABLED");
+                    NXDataStore.set("CONFIG_TELEX_STATUS", "ENABLED");
                     SimVar.SetSimVarValue("ATC FLIGHT NUMBER", "string", "", "FMC");
                     mcdu.showErrorMessage("RE-ENTER FLIGHT NUM");
                     reEnter = true;

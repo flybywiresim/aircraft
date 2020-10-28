@@ -2,11 +2,7 @@ class CDU_OPTIONS_TAF {
     static ShowPage(mcdu) {
         mcdu.clearDisplay();
 
-        const storedTafSrc = GetStoredData("A32NX_CONFIG_TAF_SRC");
-        if (!storedTafSrc) {
-            SetStoredData("A32NX_CONFIG_TAF_SRC", "NOAA");
-            CDU_OPTIONS_TAF.ShowPage(mcdu);
-        }
+        const storedTafSrc = NXDataStore.get("CONFIG_TAF_SRC", "NOAA");
 
         let noaa = "*NOAA[color]blue";
         let ivao = "*IVAO[color]blue";
@@ -37,13 +33,13 @@ class CDU_OPTIONS_TAF {
 
         mcdu.onLeftInput[0] = () => {
             if (storedTafSrc != "NOAA") {
-                SetStoredData("A32NX_CONFIG_TAF_SRC", "NOAA");
+                NXDataStore.set("CONFIG_TAF_SRC", "NOAA");
                 CDU_OPTIONS_TAF.ShowPage(mcdu);
             }
         };
         mcdu.onLeftInput[1] = () => {
             if (storedTafSrc != "IVAO") {
-                SetStoredData("A32NX_CONFIG_TAF_SRC", "IVAO");
+                NXDataStore.set("CONFIG_TAF_SRC", "IVAO");
                 CDU_OPTIONS_TAF.ShowPage(mcdu);
             }
         };

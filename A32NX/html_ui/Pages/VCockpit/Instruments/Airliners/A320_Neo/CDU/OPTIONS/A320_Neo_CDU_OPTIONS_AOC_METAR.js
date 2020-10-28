@@ -2,11 +2,7 @@ class CDU_OPTIONS_METAR {
     static ShowPage(mcdu) {
         mcdu.clearDisplay();
 
-        const storedMetarSrc = GetStoredData("A32NX_CONFIG_METAR_SRC");
-        if (!storedMetarSrc) {
-            SetStoredData("A32NX_CONFIG_METAR_SRC", "MSFS");
-            CDU_OPTIONS_METAR.ShowPage(mcdu);
-        }
+        const storedMetarSrc = NXDataStore.get("CONFIG_METAR_SRC", "MSFS");
 
         let msfs = "*METEOBLUE (MSFS)[color]blue";
         let avwx = "*AVWX (UNREAL WEATHER)[color]blue";
@@ -49,7 +45,7 @@ class CDU_OPTIONS_METAR {
 
         mcdu.onLeftInput[0] = () => {
             if (storedMetarSrc != "MSFS") {
-                SetStoredData("A32NX_CONFIG_METAR_SRC", "MSFS");
+                NXDataStore.set("CONFIG_METAR_SRC", "MSFS");
                 CDU_OPTIONS_METAR.ShowPage(mcdu);
             }
         };
@@ -61,19 +57,19 @@ class CDU_OPTIONS_METAR {
         };
         mcdu.onLeftInput[2] = () => {
             if (storedMetarSrc != "VATSIM") {
-                SetStoredData("A32NX_CONFIG_METAR_SRC", "VATSIM");
+                NXDataStore.set("CONFIG_METAR_SRC", "VATSIM");
                 CDU_OPTIONS_METAR.ShowPage(mcdu);
             }
         };
         mcdu.onLeftInput[3] = () => {
             if (storedMetarSrc != "PILOTEDGE") {
-                SetStoredData("A32NX_CONFIG_METAR_SRC", "PILOTEDGE");
+                NXDataStore.set("CONFIG_METAR_SRC", "PILOTEDGE");
                 CDU_OPTIONS_METAR.ShowPage(mcdu);
             }
         };
         mcdu.onLeftInput[4] = () => {
             if (storedMetarSrc != "IVAO") {
-                SetStoredData("A32NX_CONFIG_METAR_SRC", "IVAO");
+                NXDataStore.set("CONFIG_METAR_SRC", "IVAO");
                 CDU_OPTIONS_METAR.ShowPage(mcdu);
             }
         };

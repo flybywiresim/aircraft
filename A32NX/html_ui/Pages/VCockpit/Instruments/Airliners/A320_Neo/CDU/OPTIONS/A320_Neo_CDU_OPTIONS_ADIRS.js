@@ -2,11 +2,7 @@ class CDU_OPTIONS_ADIRS {
     static ShowPage(mcdu) {
         mcdu.clearDisplay();
 
-        const storedAlignTime = GetStoredData("A32NX_CONFIG_ALIGN_TIME");
-        if (!storedAlignTime) {
-            SetStoredData("A32NX_CONFIG_ALIGN_TIME", "REAL");
-            CDU_OPTIONS_ADIRS.ShowPage(mcdu);
-        }
+        const storedAlignTime = NXDataStore.get("CONFIG_ALIGN_TIME", "REAL");
 
         let instant = "*INSTANT[color]blue";
         let fast = "*FAST[color]blue";
@@ -41,19 +37,19 @@ class CDU_OPTIONS_ADIRS {
 
         mcdu.onLeftInput[0] = () => {
             if (storedAlignTime != "INSTANT") {
-                SetStoredData("A32NX_CONFIG_ALIGN_TIME", "INSTANT");
+                NXDataStore.set("CONFIG_ALIGN_TIME", "INSTANT");
                 CDU_OPTIONS_ADIRS.ShowPage(mcdu);
             }
         };
         mcdu.onLeftInput[1] = () => {
             if (storedAlignTime != "FAST") {
-                SetStoredData("A32NX_CONFIG_ALIGN_TIME", "FAST");
+                NXDataStore.set("CONFIG_ALIGN_TIME", "FAST");
                 CDU_OPTIONS_ADIRS.ShowPage(mcdu);
             }
         };
         mcdu.onLeftInput[2] = () => {
             if (storedAlignTime != "REAL") {
-                SetStoredData("A32NX_CONFIG_ALIGN_TIME", "REAL");
+                NXDataStore.set("CONFIG_ALIGN_TIME", "REAL");
                 CDU_OPTIONS_ADIRS.ShowPage(mcdu);
             }
         };

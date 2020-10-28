@@ -88,16 +88,16 @@ class CDUAocRequestsWeather {
 
             const getInfo = async () => {
                 if (store.reqID == 0) {
-                    getMETAR(icaos, lines, store, updateView);
+                    A32NX_ATSU.getMETAR(icaos, lines, store, updateView);
                 } else {
-                    getTAF(icaos, lines, store, updateView);
+                    A32NX_ATSU.getTAF(icaos, lines, store, updateView);
                 }
             };
 
             getInfo().then(() => {
                 store["sendStatus"] = "SENT";
                 setTimeout(() => {
-                    newMessage["time"] = fetchTimeValue();
+                    newMessage["time"] = A32NX_ATSU.fetchTimeValue();
                     mcdu.addMessage(newMessage);
                 }, Math.floor(Math.random() * 10000) + 10000);
                 labelTimeout = setTimeout(() => {
