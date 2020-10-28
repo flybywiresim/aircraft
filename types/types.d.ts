@@ -49,8 +49,8 @@ declare global {
     };
 
     const Utils: {
+        Clamp(value: number, minValue: number, maxValue: number): number;
         RemoveAllChildren(elem): void
-
         leadingZeros(_value, _nbDigits, _pointFixed?: number): string
     }
 
@@ -145,6 +145,7 @@ declare global {
         textContent: string | number;
     }
     class Vec2 {
+        constructor(x: number, y: number);
         x: number;
         y: number;
     }
