@@ -110,12 +110,12 @@ class A320_Neo_CDU_AirwaysFromWaypointPage {
             const routeWaypoints = flightPlan.getEnRouteWaypoints();
             let indexOfWP = 0;
             routeWaypoints.forEach((wyp, idx) => {
-                console.log(`wyp ident ${wyp.ident}`);
                 if (wyp.ident === currentWP.ident) {
                     indexOfWP = idx;
                 }
             });
-            const inx = indexOfWP === -1 ? 1 : indexOfWP + 1;
+            let inx = indexOfWP === -1 ? 1 : indexOfWP + 1;
+            inx = mcdu.flightPlanManager.getDepartureWaypoints().length ? inx - 1 : inx;
             const lastWaypoint = mcdu.flightPlanManager.getWaypoints()[mcdu.flightPlanManager.getEnRouteWaypointsLastIndex()];
             for (let i = inx; i < routeWaypoints.length; i++) {
                 const wp = routeWaypoints[i];
