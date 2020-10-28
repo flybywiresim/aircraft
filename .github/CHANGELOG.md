@@ -4,6 +4,9 @@
 <!-- Use the following format below -->
 <!--  1. [Changed Area] Title of changes - @github username (Name)  -->
 ## 2020/10
+1. [FLIGHTMODEL] Reworked AOA table - @donstim - (donbikes#4084)
+1. [FLIGHTMODEL] Reworked flaps - @donstim - (donbikes#4084)
+1. [FLIGHTMODEL] Reworked drag/thrust ratio - @MisterChocker - (Leon)
 1. [ECAM] Applied FADEC power logic to thrust rating mode and value - @MisterChocker (Leon)
 1. [ECAM] Implemented thrust rating mode indication and logic - @MisterChocker (Leon)
 1. [CDU] Added actual VLS and VApp calculation - @MisterChocker (Leon)
