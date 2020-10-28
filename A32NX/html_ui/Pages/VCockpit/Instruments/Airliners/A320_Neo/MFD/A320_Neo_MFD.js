@@ -109,6 +109,10 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
         this.selfTestDiv = document.querySelector("#SelfTestDiv");
         this.selfTestTimerStarted = false;
         this.selfTestTimer = -1;
+        
+        //ENGINEERING TEST
+        this.engTestDiv = document.querySelector("#MfdEngTest");
+        this.engMaintDiv = document.querySelector("#MfdMaintMode");
 
         //CHRONO
         SimVar.SetSimVarValue(`L:AUTOPILOT_CHRONO_STATE_${this.side}`, "number", 0);
@@ -272,6 +276,12 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
                 this.chronoAcc = 0;
                 this.IsChronoDisplayed = 0;
             }
+        }
+
+        if (this.screenIndex == 1) {
+            updateDisplayDMC("MFD1", this.engTestDiv, this.engMaintDiv);
+        } else {
+            updateDisplayDMC("MFD2", this.engTestDiv, this.engMaintDiv);
         }
 
         this.selfTestLastKnobValue = currentKnobValue;

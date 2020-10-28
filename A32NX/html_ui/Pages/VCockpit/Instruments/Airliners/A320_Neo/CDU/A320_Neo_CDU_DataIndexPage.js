@@ -1,6 +1,7 @@
 class CDUDataIndexPage {
     static ShowPage1(mcdu) {
         mcdu.clearDisplay();
+        mcdu.activeSystem = 'FMGC';
         mcdu.setTemplate([
             ["DATA INDEX", "1", "2"],
             ["POSITION"],

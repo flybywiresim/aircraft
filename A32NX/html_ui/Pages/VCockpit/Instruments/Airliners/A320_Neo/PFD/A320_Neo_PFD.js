@@ -64,7 +64,7 @@ class A320_Neo_PFD_MainPage extends NavSystemPage {
 
         const url = document.getElementsByTagName("a320-neo-pfd-element")[0].getAttribute("url");
         this.disp_index = parseInt(url.substring(url.length - 1));
-        this.pot_index = this.disp_index == 1 ? 88 : 90;
+        this.pot_index = this.disp_index == 1 ? 88 : 90;       
 
         this.getDeltaTime = A32NX_Util.createDeltaTimeCalculator(this._lastTime);
         this.showILS = SimVar.GetSimVarValue(`L:BTN_LS_${this.disp_index}_FILTER_ACTIVE`, "bool");
@@ -98,6 +98,10 @@ class A320_Neo_PFD_MainPage extends NavSystemPage {
         this.selfTestTimer = -1;
         this.selfTestLastKnobValueFO = 1;
         this.selfTestLastKnobValueCAP = 1;
+
+        //ENGINEERING TEST
+        this.engTestDiv = document.querySelector('#PfdEngTest');
+        this.engMaintDiv = document.querySelector('#PfdMaintMode');
 
         this.electricity = document.querySelector('#Electricity');
     }
@@ -187,6 +191,12 @@ class A320_Neo_PFD_MainPage extends NavSystemPage {
                 this.selfTestDiv.style.display = "none";
                 this.selfTestTimerStarted = false;
             }
+        }
+
+        if (this.disp_index == 1) {
+            updateDisplayDMC("PFD1", this.engTestDiv, this.engMaintDiv);
+        } else {
+            updateDisplayDMC("PFD2", this.engTestDiv, this.engMaintDiv);
         }
 
         this.selfTestLastKnobValue = currentKnobValue;

@@ -92,6 +92,11 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         this.bottomSelfTestTimerStarted = false;
         this.bottomSelfTestLastKnobValue = 1;
 
+        this.upperEngTestDiv = this.querySelector("#Eicas1EngTest");
+        this.lowerEngTestDiv = this.querySelector("#Eicas2EngTest");
+        this.upperEngMaintDiv = this.querySelector("#Eicas1MaintMode");
+        this.lowerEngMaintDiv = this.querySelector("#Eicas2MaintMode");
+
         this.doorVideoPressed = false;
 
         // Using ternary in case the LVar is undefined
@@ -150,6 +155,10 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         } else {
             SimVar.SetSimVarValue("L:ACPowerAvailable", "bool", 0);
         }
+
+        // Engineering self-tests
+        updateDisplayDMC("EICAS1", this.upperEngTestDiv, this.upperEngMaintDiv);
+        updateDisplayDMC("EICAS2", this.lowerEngTestDiv, this.lowerEngMaintDiv);
 
         /**
          * Self test on top ECAM screen

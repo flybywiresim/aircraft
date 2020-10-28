@@ -1,6 +1,7 @@
 class CDUInitPage {
     static ShowPage1(mcdu, resetFlightNo = false) {
         mcdu.clearDisplay();
+        mcdu.activeSystem = 'FMGC';
         // TODO create local simvars for.. everything
         let fromTo = "____|____[color]red";
         let coRoute = "__________[color]red";

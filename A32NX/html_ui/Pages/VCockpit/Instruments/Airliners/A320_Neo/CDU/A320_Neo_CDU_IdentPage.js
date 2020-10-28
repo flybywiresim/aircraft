@@ -1,6 +1,7 @@
 class CDUIdentPage {
     static ShowPage(mcdu) {
         mcdu.clearDisplay();
+        mcdu.activeSystem = 'FMGC';
         mcdu.setTemplate([
             ["A320-200"],
             [" ENG"],
@@ -18,4 +19,3 @@ class CDUIdentPage {
         ]);
     }
 }
-//# sourceMappingURL=A320_Neo_CDU_IdentPage.js.map
