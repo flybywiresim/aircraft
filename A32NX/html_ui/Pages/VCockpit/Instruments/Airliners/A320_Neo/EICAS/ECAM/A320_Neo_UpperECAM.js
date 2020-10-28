@@ -1830,8 +1830,8 @@ var A320_Neo_UpperECAM;
          * @returns string
          */
         getThrustRatingMode(_grounded, _min = "CLB", _med = "FLX", _max = "TOGA") {
-            if (_grounded) {
-                return ((((Simplane.getCurrentFlightPhase() < FlightPhase.FLIGHT_PHASE_CLIMB) && (Simplane.getFlexTemperature() > 0))) ? _med : _max);
+            if (_grounded || (Simplane.getCurrentFlightPhase() < FlightPhase.FLIGHT_PHASE_CLIMB)) {
+                return ((Simplane.getFlexTemperature() > 0) ? _med : _max);
             }
             return _min;
         }
