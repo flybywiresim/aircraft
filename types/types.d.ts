@@ -49,7 +49,14 @@ declare global {
     };
 
     const Utils: {
-        Clamp(value: number, minValue: number, maxValue: number): number;
+        /**
+         * Returns a number limited to the given range.
+         * @param value The preferred value.
+         * @param min The lower boundary.
+         * @param max The upper boundary.
+         * @returns min <= returnValue <= max.
+         */
+        Clamp(value: number, min: number, max: number): number;
         RemoveAllChildren(elem): void
         leadingZeros(_value, _nbDigits, _pointFixed?: number): string
     }
