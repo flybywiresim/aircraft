@@ -1,0 +1,13 @@
+{
+  "LocalisationPackage": {
+    "Language": "es-ES",
+    "Strings": {
+      "AIRCRAFT.DESCRIPTION": "Airbus lanzó su primer A320 en marzo de 1984. Casi 26 años después, en 2010, anunciaron el A320neo (New Engine Option) como el miembro de la familia más reciente, para revitalizar y mantener el liderazgo mundial en aviones de pasajeros de turboventilador doble y cuerpo estrecho.<\/br><\/br>Tras un amplio proceso de desarrollo, el A320neo entró oficialmente en servicio a principios de 2016 con Lufthansa y enseguida se convirtió en la aeronave comercial con las ventas más rápidas de la historia: más de 7000 aviones encargados por más de 115 aerolíneas hasta la fecha.<\/br><\/br>Continuando la tradición establecida por el A320 original, que fue el primer avión de pasajeros en utilizar el control de vuelo electrónico para las operaciones normales (exceptuando el Concorde), la célula del A320neo comparte más del 95 por ciento de similitudes con la de los modelos anteriores. Sin embargo, lo que realmente distingue al neo es la incorporación de dos tipos de motores de nueva generación, junto con los dispositivos de punta de ala Sharklet patentados por la compañía.<\/br><\/br>Sus avances clave —como el ahorro de combustible, un mayor alcance, un incremento de la carga útil máxima y una menor distancia de aterrizaje— junto con la drástica reducción del ruido y de las emisiones de dióxido de carbono demuestran por qué el A320neo no solo es un éxito comercial, sino también un importante paso adelante en el camino de la aviación hacia una mayor responsabilidad medioambiental.",
+      "AIRCRAFT.UI_MANUFACTURER": "Airbus",
+      "AIRCRAFT.UI_MODEL": "A320neo",
+      "AIRCRAFT.UI_VARIATION": "Airbus",
+      "COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_HDG_TUNING_LEFT": "Ajustar el rumbo seleccionado a la izquierda (%((A:AUTOPILOT HEADING LOCK DIR:1,degrees))%!d!°)",
+      "COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_HDG_TUNING_RIGHT": "Ajustar el rumbo seleccionado a la derecha (%((A:AUTOPILOT HEADING LOCK DIR:1,degrees))%!d!°)"
+    }
+  }
+}

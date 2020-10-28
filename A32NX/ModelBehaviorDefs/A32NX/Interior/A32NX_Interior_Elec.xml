@@ -1,0 +1,73 @@
+<ModelBehaviors>
+    <Template Name="FBW_Airbus_APU_Generator_Switch">
+        <DefaultTemplateParameters>
+            <ID>1</ID>
+        </DefaultTemplateParameters>
+
+        <UseTemplate Name="FBW_Push_Toggle">
+            <LEFT_SINGLE_CODE>#ID# (&gt;K:APU_GENERATOR_SWITCH_TOGGLE)</LEFT_SINGLE_CODE>
+            <SEQ2_CODE>(A:APU GENERATOR SWITCH:#ID#, Bool) !</SEQ2_CODE>
+            <TOOLTIPID>%((A:APU GENERATOR SWITCH:1, Bool) !)%{if}TT:COCKPIT.TOOLTIPS.APU_GEN_ON%{else}TT:COCKPIT.TOOLTIPS.APU_GEN_OFF%{end}</TOOLTIPID>
+        </UseTemplate>
+    </Template>
+
+    <Template Name="FBW_Airbus_Engine_Generator_Switch">
+        <DefaultTemplateParameters>
+            <ID>1</ID>
+        </DefaultTemplateParameters>
+
+        <UseTemplate Name="FBW_Push_Toggle">
+            <LEFT_SINGLE_CODE>(&gt;K:TOGGLE_ALTERNATOR#ID#)</LEFT_SINGLE_CODE>
+            <SEQ1_CODE>(A:GENERAL ENG MASTER ALTERNATOR:#ID#, bool) (A:GENERAL ENG PCT MAX RPM:#ID#, Percent) 1 &lt; and</SEQ1_CODE>
+            <SEQ2_CODE>(A:GENERAL ENG MASTER ALTERNATOR:#ID#, Bool) !</SEQ2_CODE>
+
+            <TOOLTIPID>%((A:GENERAL ENG MASTER ALTERNATOR:#ID#, Bool))%{if}TT:COCKPIT.TOOLTIPS.GENERATOR_#ID#_TURN_OFF%{else}TT:COCKPIT.TOOLTIPS.GENERATOR_#ID#_TURN_ON%{end}</TOOLTIPID>
+        </UseTemplate>
+    </Template>
+
+    <Template Name="FBW_Airbus_External_Power_Switch">
+        <DefaultTemplateParameters>
+            <ID>1</ID>
+        </DefaultTemplateParameters>
+
+        <UseTemplate Name="FBW_Push_Toggle">
+            <LEFT_SINGLE_CODE>#ID# (&gt;K:TOGGLE_EXTERNAL_POWER)</LEFT_SINGLE_CODE>
+            <SEQ1_CODE>(A:EXTERNAL POWER AVAILABLE:#ID#, Bool) (A:EXTERNAL POWER ON:#ID#, Bool) ! and</SEQ1_CODE>
+            <SEQ2_CODE>(A:EXTERNAL POWER AVAILABLE:#ID#, Bool) (A:EXTERNAL POWER ON:#ID#, Bool) and</SEQ2_CODE>
+
+            <TOOLTIPID>%((A:EXTERNAL POWER AVAILABLE:1, Bool) 0 == )%{if}TT:COCKPIT.TOOLTIPS.UNAVAILABLE%{end} %((A:EXTERNAL POWER AVAILABLE:1, Bool) (A:EXTERNAL POWER ON:1, Bool) and)%{if}TT:COCKPIT.TOOLTIPS.EXT_PWR_OFF%{else}TT:COCKPIT.TOOLTIPS.EXT_PWR_ON%{end}</TOOLTIPID>
+        </UseTemplate>
+    </Template>
+
+    <Template Name="FBW_Airbus_Battery_Master_Switch">
+        <DefaultTemplateParameters>
+            <ID>1</ID>
+        </DefaultTemplateParameters>
+
+        <UseTemplate Name="ASOBO_GT_Helper_Recursive_Param_Builder">
+            <EXIT_TEMPLATE>ASOBO_GT_Update</EXIT_TEMPLATE>
+            <PARAM_NAME>UPDATE_CODE</PARAM_NAME>
+            <PARAM_START>
+                (* Prevent Battery from being shut down, instead disconnect it from bus *)
+            </PARAM_START>
+            <PARAM_REPEATED_START>(A:ELECTRICAL MASTER BATTERY:</PARAM_REPEATED_START>
+            <PARAM_REPEATED_END>, Bool) ! if{ </PARAM_REPEATED_END>
+            <PARAM_REPEATED_2_START>
+                #BATTERY_BUS_ID# (&gt;A:BUS LOOKUP INDEX, Number) (A:BUS CONNECTION ON:#HOT_BATTERY_BUS_ID#, Bool) if{
+                #BATTERY_BUS_ID# #HOT_BATTERY_BUS_ID# (&gt;K:2:ELECTRICAL_BUS_TO_BUS_CONNECTION_TOGGLE)
+                }
+            </PARAM_REPEATED_2_START>
+            <PARAM_REPEATED_2_END> (&gt;K:TOGGLE_MASTER_BATTERY)
+                }
+            </PARAM_REPEATED_2_END>
+            <FREQUENCY>1</FREQUENCY>
+        </UseTemplate>
+
+        <UseTemplate Name="FBW_Push_Toggle">
+            <LEFT_SINGLE_CODE>#BATTERY_BUS_ID# #HOT_BATTERY_BUS_ID# (&gt;K:2:ELECTRICAL_BUS_TO_BUS_CONNECTION_TOGGLE)</LEFT_SINGLE_CODE>
+            <SEQ2_CODE>#BATTERY_BUS_ID# (&gt;A:BUS LOOKUP INDEX, Number) (A:BUS CONNECTION ON:#HOT_BATTERY_BUS_ID#, Bool) !</SEQ2_CODE>
+
+            <TOOLTIPID>%(#BATTERY_BUS_ID# (&gt;A:BUS LOOKUP INDEX, Number) (A:BUS CONNECTION ON:#HOT_BATTERY_BUS_ID#, Bool) !)%{if}TT:COCKPIT.TOOLTIPS.MASTER_SWITCH_BAT_#ID#_OFF%{else}TT:COCKPIT.TOOLTIPS.MASTER_SWITCH_BAT_#ID#_ON%{end}</TOOLTIPID>
+        </UseTemplate>
+    </Template>
+</ModelBehaviors>

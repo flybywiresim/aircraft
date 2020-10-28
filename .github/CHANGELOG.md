@@ -4,6 +4,8 @@
 <!-- Use the following format below -->
 <!--  1. [Changed Area] Title of changes - @github username (Name)  -->
 ## 2020/10
+1. [ECAM] Applied FADEC power logic to thrust rating mode and value - @MisterChocker (Leon)
+1. [ECAM] Implemented thrust rating mode indication and logic - @MisterChocker (Leon)
 1. [CDU] Added actual VLS and VApp calculation - @MisterChocker (Leon)
 1. [PFD] Added actual F and S speed calculation for approach - @MisterChocker (Leon)
 1. [ENGINE] Improved engine performance - @MisterChocker (Leon)
@@ -73,8 +75,13 @@
 1. [ECAM] Adjusted Engine gauges so cursor extends beyond radius of gauge - @RichardPilbery (Richard Pilbery | tricky_dicky#3571 on discord)
 1. [ECAM] Fix ECAM N1 engine indicator - @RichardPilbery (Richard Pilbery | tricky_dicky#3571 on discord)
 1. [LIGHTS] Added logo lights only turn on while on ground or flaps are extented - @linkeleven (linkeleven#2557)
-1. [CDU] Add basicairways support @Lessar277 (Lessar27)
-1. [CDU] Improve airways support. Correct airways page @santii90 (Santiago Vazquez)
+1. [CDU] Add basic airways support - @santii90 (Santiago Vazquez), @Lessar277 (Lessar27#1112)
+1. [TEXTURES] Changed cockpit decals resolution from 1k to 2k - @FoxinTale (Aubrey)
+1. [CDU] Flight plan waypoints distances and times are now properly displayed and updated - @lousybyte (lousybyte)
+1. [ECAM] Fix fuel used values on CRUISE and FUEL pages - @Lessar277 (Lessar27#1112)
+1. [MISC] Add localisation files for aircraft info when using other languages than english - @pessip (Pessi Päivärinne)
+1. [ATC] Fix CLR input for squawk code - @paul92ilm (Lussion)
+1. [TEXTURES] Fixed aft overhead circuit breaker decal from 'LIGHTNING' to 'LIGHTING' (@DarkOfNova#0001)
 
 ## 2020/09
 1. [General] Add CHANGELOG.md - @nathaninnes (Nathan Innes)
