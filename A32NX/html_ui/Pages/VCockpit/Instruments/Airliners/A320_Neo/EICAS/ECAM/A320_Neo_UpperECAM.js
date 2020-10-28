@@ -1784,8 +1784,9 @@ var A320_Neo_UpperECAM;
             if ((SimVar.GetSimVarValue("L:A32NX_FADEC_POWERED_ENG1", "Bool") == 1) || (SimVar.GetSimVarValue("L:A32NX_FADEC_POWERED_ENG2", "Bool") == 1)) {
                 // MaxThrust seems to be bugged, so here we use the throttle position for now
                 const throttlePosition = Math.max(Simplane.getEngineThrottle(1), Simplane.getEngineThrottle(2));
+                const onGround = Simplane.getIsGrounded();
                 // Engine Mode START
-                if (!Simplane.getEngineActive(0) || !Simplane.getEngineActive(1)) {
+                if ((!Simplane.getEngineActive(0) || !Simplane.getEngineActive(1)) && onGround) {
                     if (!this.currentStart || throttlePosition !== this.currentThrottleValue) {
                         this.currentStart = true;
                         this.currentThrottleValue = throttlePosition;
@@ -1811,7 +1812,6 @@ var A320_Neo_UpperECAM;
                         this.setFlexTemperature(false);
                     }
 
-                    const onGround = Simplane.getIsGrounded();
                     this.setThrottle(true, throttlePosition, throttleMode, onGround);
                 }
             } else {
