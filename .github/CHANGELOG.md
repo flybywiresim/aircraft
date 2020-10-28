@@ -81,6 +81,7 @@
 1. [ECAM] Fix fuel used values on CRUISE and FUEL pages - @Lessar277 (Lessar27#1112)
 1. [MISC] Add localisation files for aircraft info when using other languages than english - @pessip (Pessi Päivärinne)
 1. [ATC] Fix CLR input for squawk code - @paul92ilm (Lussion)
+1. [CDU] Allow inserting landing QNH in inHg - @pessip (Pessi Päivärinne)
 
 ## 2020/09
 1. [General] Add CHANGELOG.md - @nathaninnes (Nathan Innes)
