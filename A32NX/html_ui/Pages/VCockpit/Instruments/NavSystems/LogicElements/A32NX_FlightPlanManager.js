@@ -44,6 +44,7 @@ class FlightPlanManager {
         this._isRegistered = false;
         this._currentFlightPlanIndex = 0;
         this._activeWaypointIdentHasChanged = false;
+        this._waypointReachedAt = SimVar.GetGlobalVarValue("ZULU TIME", "seconds");
         this._timeLastSimVarCall = 0;
         this._gpsActiveWaypointIndexHasChanged = false;
         this._timeLastActiveWaypointIndexSimVarCall = 0;
@@ -549,6 +550,7 @@ class FlightPlanManager {
         if (doSimVarCall) {
             const activeWaypointIdent = SimVar.GetSimVarValue("GPS WP NEXT ID", "string");
             if (this._activeWaypointIdent != activeWaypointIdent) {
+                this._waypointReachedAt = SimVar.GetGlobalVarValue("ZULU TIME", "seconds");
                 this._activeWaypointIdentHasChanged = true;
                 this._activeWaypointIdent = activeWaypointIdent;
             }

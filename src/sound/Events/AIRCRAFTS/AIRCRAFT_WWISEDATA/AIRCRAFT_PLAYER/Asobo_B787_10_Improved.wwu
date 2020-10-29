@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<WwiseDocument Type="WorkUnit" ID="{A01E6B49-8BD6-41F9-8999-919BA31C485F}" SchemaVersion="97">
+	<Events>
+		<WorkUnit Name="Asobo_B787_10_Improved" ID="{A01E6B49-8BD6-41F9-8999-919BA31C485F}" PersistMode="Standalone">
+			<ChildrenList>
+				<Event Name="Play_Asobo_B787_10_flapssound" ID="{1DB7CF6B-C7B5-43B7-B13C-7C1E23A56062}">
+					<ChildrenList>
+						<Action Name="" ID="{1F3ECCFB-BC91-4D6C-9D8E-CA7EFC90F103}" ShortID="515765118">
+							<PropertyList>
+								<Property Name="ActionType" Type="int16" Value="1"/>
+							</PropertyList>
+							<ReferenceList>
+								<Reference Name="Target">
+									<ObjectRef Name="78flaps" ID="{F165383D-2EEF-40F7-B2E1-C81028A7CE4B}" WorkUnitID="{B0C3474E-848C-457A-B3F1-28CC8E619509}"/>
+								</Reference>
+							</ReferenceList>
+						</Action>
+					</ChildrenList>
+				</Event>
+			</ChildrenList>
+		</WorkUnit>
+	</Events>
+</WwiseDocument>
