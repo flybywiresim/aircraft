@@ -5430,7 +5430,7 @@
 						</Attenuation>
 						<Attenuation Name="aircraft_player_inside_3m" ID="{538CDAF5-4564-463A-A841-C73D21967E20}" ShortID="563836667">
 							<PropertyList>
-								<Property Name="RadiusMax" Type="Real64" Value="50"/>
+								<Property Name="RadiusMax" Type="Real64" Value="4"/>
 							</PropertyList>
 							<CurveUsageInfoList>
 								<VolumeDryUsage>
@@ -5447,7 +5447,19 @@
 													<SegmentShape>Log1</SegmentShape>
 												</Point>
 												<Point>
-													<XPos>50</XPos>
+													<XPos>2.97806</XPos>
+													<YPos>-0</YPos>
+													<Flags>0</Flags>
+													<SegmentShape>Exp1</SegmentShape>
+												</Point>
+												<Point>
+													<XPos>3.26019</XPos>
+													<YPos>-200</YPos>
+													<Flags>0</Flags>
+													<SegmentShape>Log1</SegmentShape>
+												</Point>
+												<Point>
+													<XPos>4</XPos>
 													<YPos>-200</YPos>
 													<Flags>37</Flags>
 												</Point>
@@ -5472,19 +5484,19 @@
 													<SegmentShape>Exp3</SegmentShape>
 												</Point>
 												<Point>
-													<XPos>2.0635</XPos>
+													<XPos>0.16508</XPos>
 													<YPos>-0.00061</YPos>
 													<Flags>0</Flags>
 													<SegmentShape>Log3</SegmentShape>
 												</Point>
 												<Point>
-													<XPos>22.0455</XPos>
+													<XPos>1.76364</XPos>
 													<YPos>0</YPos>
 													<Flags>0</Flags>
 													<SegmentShape>Exp3</SegmentShape>
 												</Point>
 												<Point>
-													<XPos>50</XPos>
+													<XPos>4</XPos>
 													<YPos>-200</YPos>
 													<Flags>37</Flags>
 												</Point>
@@ -5511,7 +5523,7 @@
 													<Flags>5</Flags>
 												</Point>
 												<Point>
-													<XPos>50</XPos>
+													<XPos>4</XPos>
 													<YPos>0</YPos>
 													<Flags>37</Flags>
 												</Point>
@@ -5532,7 +5544,7 @@
 													<Flags>5</Flags>
 												</Point>
 												<Point>
-													<XPos>50</XPos>
+													<XPos>4</XPos>
 													<YPos>0</YPos>
 													<Flags>37</Flags>
 												</Point>
