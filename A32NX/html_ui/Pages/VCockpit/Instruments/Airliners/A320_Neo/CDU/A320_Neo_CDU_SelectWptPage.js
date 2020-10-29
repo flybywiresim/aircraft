@@ -18,15 +18,27 @@ class A320_Neo_CDU_SelectWptPage {
             const w = waypoints[i + 5 * page];
             if (w) {
                 let t = "";
+                let freq = 0;
                 if (w.icao[0] === "V") {
                     t = " VOR";
+                    freq = fastToFixed(w.infos.frequencyMHz, 3);
                 } else if (w.icao[0] === "N") {
                     t = " NDB";
+                    freq = fastToFixed(w.infos.frequencyMHz, 3);
                 } else if (w.icao[0] === "A") {
                     t = " AIRPORT";
+                    freq = fastToFixed(w.infos.frequencies[0].mhValue, 3);
                 }
-                rows[2 * i] = [w.ident + t];
-                rows[2 * i + 1] = [w.infos.coordinates.toDegreeString()];
+                const lat = SimVar.GetSimVarValue("PLANE LATITUDE", "degree latitude");
+                const long = SimVar.GetSimVarValue("PLANE LONGITUDE", "degree longitude");
+                const planeLla = new LatLongAlt(lat, long);
+                const dist = Avionics.Utils.computeGreatCircleDistance(planeLla, w.infos.coordinates);
+
+                const latString = (w.infos.coordinates.lat.toFixed(0) >= 0) ? `${w.infos.coordinates.lat.toFixed(0).toString().padStart(2, "0")}N` : `${Math.abs(w.infos.coordinates.lat.toFixed(0)).toString().padStart(2, "0")}S`;
+                const longString = (w.infos.coordinates.long.toFixed(0) >= 0) ? `${w.infos.coordinates.long.toFixed(0).toString().padStart(3, "0")}E` : `${Math.abs(w.infos.coordinates.long.toFixed(0)).toString().padStart(3, "0")}W`;
+
+                rows[2 * i] = [`${dist.toFixed(0)}NM`, 'FREQ', 'LAT/LONG'];
+                rows[2 * i + 1] = [w.ident + "[color]blue", freq + "[color]green", `${latString}/${longString}[color]green`];
                 mcdu.onLeftInput[i] = () => {
                     callback(w);
                 };
@@ -36,7 +48,7 @@ class A320_Neo_CDU_SelectWptPage {
             }
         }
         mcdu.setTemplate([
-            ["SELECT DESIRED WPT", (page + 1).toFixed(0), (waypoints.length / 5).toFixed(0)],
+            ["DUPLICATE NAMES", (page + 1).toFixed(0), (waypoints.length / 5).toFixed(0)],
             ...rows,
             [""]
         ]);
