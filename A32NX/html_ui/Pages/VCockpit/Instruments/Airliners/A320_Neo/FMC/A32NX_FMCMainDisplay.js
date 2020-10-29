@@ -2306,6 +2306,12 @@ class FMCMainDisplay extends BaseAirliners {
         footer.appendChild(inout);
         parent.appendChild(footer);
     }
+    static secondsToUTC(seconds) {
+        const h = Math.floor(seconds / 3600);
+        seconds -= h * 3600;
+        const m = Math.floor(seconds / 60);
+        return (h % 24).toFixed(0).padStart(2, "0") + m.toFixed(0).padStart(2, "0");
+    }
     static secondsTohhmm(seconds) {
         const h = Math.floor(seconds / 3600);
         seconds -= h * 3600;
