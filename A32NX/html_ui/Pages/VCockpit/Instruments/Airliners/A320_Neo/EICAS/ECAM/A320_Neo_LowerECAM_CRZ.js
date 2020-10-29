@@ -22,9 +22,10 @@ var A320_Neo_LowerECAM_CRZ;
             TemplateElement.call(this, this.init.bind(this));
         }
         init() {
+            this.isInMetric = BaseAirliners.unitIsMetric(Aircraft.A320_NEO);
 
             // Set units
-            if (BaseAirliners.unitIsMetric(Aircraft.A320_NEO)) {
+            if (this.isInMetric) {
                 this.querySelector("#FuelUsedUnit").textContent = "KG";
                 this.unitFactor = SimVar.GetSimVarValue("FUEL WEIGHT PER GALLON", "kilogram");
             } else {
@@ -88,8 +89,12 @@ var A320_Neo_LowerECAM_CRZ;
             }
 
             // Fuel
-            const leftConsumption = SimVar.GetSimVarValue("GENERAL ENG FUEL USED SINCE START:1", "gallon") * this.unitFactor * 0.001;
-            const rightConsumption = SimVar.GetSimVarValue("GENERAL ENG FUEL USED SINCE START:2", "gallon") * this.unitFactor * 0.001;
+            const leftConsumption = this.isInMetric ?
+                SimVar.GetSimVarValue("GENERAL ENG FUEL USED SINCE START:1", "KG") :
+                SimVar.GetSimVarValue("GENERAL ENG FUEL USED SINCE START:1", "gallon") * this.unitFactor * 0.001;
+            const rightConsumption = this.isInMetric ?
+                SimVar.GetSimVarValue("GENERAL ENG FUEL USED SINCE START:2", "KG") :
+                SimVar.GetSimVarValue("GENERAL ENG FUEL USED SINCE START:2", "gallon") * this.unitFactor * 0.001;
 
             const leftConsumptionShown = fastToFixed(leftConsumption - (leftConsumption % 10), 0);
             const rightConsumptionShown = fastToFixed(rightConsumption - (rightConsumption % 10), 0);
