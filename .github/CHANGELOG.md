@@ -82,6 +82,7 @@
 1. [MISC] Add localisation files for aircraft info when using other languages than english - @pessip (Pessi Päivärinne)
 1. [ATC] Fix CLR input for squawk code - @paul92ilm (Lussion)
 1. [TEXTURES] Fixed aft overhead circuit breaker decal from 'LIGHTNING' to 'LIGHTING' (@DarkOfNova#0001)
+1. [CAMERA] Modified a couple of the default interior camera angles. - @ZigTag (Falcon#5815), @linkeleven (linkeleven#2557)
 
 ## 2020/09
 1. [General] Add CHANGELOG.md - @nathaninnes (Nathan Innes)
