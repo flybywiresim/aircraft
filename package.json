@@ -1,6 +1,6 @@
 {
   "name": "msfs-a320neo-vanilla",
-  "version": "1.9.5",
+  "version": "1.10.7",
   "scripts": {
     "lint": "eslint **/*.js --fix",
     "prettier": "prettier --write **/*.json"
