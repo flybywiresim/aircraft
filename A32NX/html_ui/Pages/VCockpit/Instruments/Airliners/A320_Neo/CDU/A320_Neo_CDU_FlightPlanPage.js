@@ -136,7 +136,7 @@ class CDUFlightPlanPage {
         }
         if (mcdu.flightPlanManager.decelWaypoint) {
             const idx = waypointsWithDiscontinuities.findIndex((e) => e.wp.cumulativeDistanceInFP > mcdu.flightPlanManager.decelWaypoint.cumulativeDistanceInFP);
-            if (idx > 0 && idx < waypointsWithDiscontinuities.length) {
+            if (idx >= 0 && idx < waypointsWithDiscontinuities.length) {
                 mcdu.flightPlanManager.decelWaypoint.cumulativeEstimatedTimeEnRouteFP = mcdu.flightPlanManager.decelWaypoint.cumulativeDistanceInFP / groundSpeed * 3600;
                 mcdu.flightPlanManager.decelWaypoint.estimatedTimeOfArrivalFP = utcTime + mcdu.flightPlanManager.decelWaypoint.cumulativeEstimatedTimeEnRouteFP;
                 waypointsWithDiscontinuities.splice(idx, 0, {
