@@ -40,6 +40,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
 
         SimVar.SetSimVarValue("ATC FLIGHT NUMBER", "string", "", "FMC");
         SimVar.SetSimVarValue("L:A32NX_Telex_ID", "Number", 0);
+        NXDataStore.set("TELEX_KEY", "");
 
         this.defaultInputErrorMessage = "NOT ALLOWED";
         this.onDir = () => {
@@ -174,6 +175,8 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this.updateScreenState();
 
         this.updateGPSMessage();
+
+        this.updateTelex();
     }
 
     // check GPS Primary state and display message accordingly
@@ -189,13 +192,19 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             this.handlePreviousInputState();
             SimVar.SetSimVarValue("L:GPSPrimaryMessageDisplayed", "Bool", 0);
         }
+    }
 
-        // AOC Telex Ping
+    updateTelex() {
         const telexID = SimVar.GetSimVarValue("L:A32NX_Telex_ID", "Number");
-        const flightNo = SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string", "FMC");
-        if (!this.telexPingActive && telexID > 0) {
+        const telexKey = NXDataStore.get("TELEX_KEY", "");
+        if (!this.telexPingActive && telexID > 0 && telexKey != "") {
             this.telexPingActive = true;
             setInterval(() => {
+                // Call the simvars again here, otherwise they won't update if flight number changed
+                let _telexID = SimVar.GetSimVarValue("L:A32NX_Telex_ID", "Number");
+                let _telexKey = NXDataStore.get("TELEX_KEY", "");
+                let _flightNo = SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string", "FMC");
+
                 const lat = SimVar.GetSimVarValue("PLANE LATITUDE", "degrees latitude").toString();
                 const long = SimVar.GetSimVarValue("PLANE LONGITUDE", "degrees longitude").toString();
                 const alt = SimVar.GetSimVarValue("PLANE ALTITUDE", "feet").toString();
@@ -203,14 +212,14 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                 const endpoint_c = "https://api.flybywiresim.com/txcxn";
                 const endpoint_m = "https://api.flybywiresim.com/txmsg";
                 const toDelete = [];
-                fetch(`${endpoint_c}/${telexID}?latlong=${posData}&update=yes`, {method: "POST"})
+                fetch(`${endpoint_c}/${_telexID}?latlong=${posData}&key=${_telexKey}&update=yes`, {method: "POST"})
                     .then((response) => response.json())
                     .then((data) => {
                         if ("error" in data) {
                             console.log("TELEX PING FAILED");
                         }
                     });
-                fetch(`${endpoint_m}/msgto/${flightNo}`, {method: "GET"})
+                fetch(`${endpoint_m}/msgto/${_flightNo}`, {method: "GET"})
                     .then((response) => response.json())
                     .then((data) => {
                         for (const msg of data) {
@@ -236,7 +245,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                         const msgCount = SimVar.GetSimVarValue("L:A32NX_COMPANY_MSG_COUNT", "Number");
                         SimVar.SetSimVarValue("L:A32NX_COMPANY_MSG_COUNT", "Number", msgCount + toDelete.length);
                         for (const d of toDelete) {
-                            fetch(`${endpoint_m}/${d}?delete=yes`, {method: "POST"});
+                            fetch(`${endpoint_m}/${d}?key=${_telexKey}&delete=yes`, {method: "POST"});
                         }
                     });
             }, 30000);

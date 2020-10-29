@@ -652,6 +652,7 @@ class FMCMainDisplay extends BaseAirliners {
                                 inUse = true;
                             } else {
                                 SimVar.SetSimVarValue("L:A32NX_Telex_ID", "Number", data["id"]);
+                                NXDataStore.set("TELEX_KEY", data["private_key"]);
                             }
                         });
                 };

@@ -78,12 +78,13 @@ class CDUAocFreeText {
 
         mcdu.onRightInput[5] = async () => {
             const telexID = SimVar.GetSimVarValue("L:A32NX_Telex_ID", "Number");
+            const telexKey = NXDataStore.get("TELEX_KEY", "");
             const telexFlight = SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string", "FMC");
 
             console.log(telexFlight);
             let storedTelexStatus = NXDataStore.get("CONFIG_TELEX_STATUS", "DISABLED");
 
-            if (telexID > 0 && telexFlight != "" && storedTelexStatus == "ENABLED") {
+            if (telexID > 0 && telexFlight != "" && telexKey != "" && storedTelexStatus == "ENABLED") {
                 store["sendStatus"] = "QUEUED";
                 updateView();
                 const recipient = store["msg_to"];
@@ -94,7 +95,7 @@ class CDUAocFreeText {
 
                 const getData = async () => {
                     if (recipient != "" && msgLines != ";;;") {
-                        await fetch(`${endpoint}?from=${telexFlight}&to=${recipient}&message=${msgLines}`, {method: "POST"})
+                        await fetch(`${endpoint}?from=${telexFlight}&to=${recipient}&key=${telexKey}&message=${msgLines}`, {method: "POST"})
                             .then((response) => response.json())
                             .then((data) => {
                                 if ("error" in data) {
