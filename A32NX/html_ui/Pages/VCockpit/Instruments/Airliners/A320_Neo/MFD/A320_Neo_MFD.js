@@ -31,8 +31,8 @@ class A320_Neo_MFD extends BaseAirliners {
                 break;
         }
     }
-    Update() {
-        super.Update();
+    onUpdate(_deltaTime) {
+        super.onUpdate(_deltaTime);
     }
 }
 class A320_Neo_MFD_MainElement extends NavSystemElement {
