@@ -109,7 +109,7 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
         this.selfTestDiv = document.querySelector("#SelfTestDiv");
         this.selfTestTimerStarted = false;
         this.selfTestTimer = -1;
-        
+
         //ENGINEERING TEST
         this.engTestDiv = document.querySelector("#MfdEngTest");
         this.engMaintDiv = document.querySelector("#MfdMaintMode");

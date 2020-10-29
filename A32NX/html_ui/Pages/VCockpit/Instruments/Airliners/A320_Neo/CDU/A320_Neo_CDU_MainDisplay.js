@@ -201,9 +201,9 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             this.telexPingActive = true;
             setInterval(() => {
                 // Call the simvars again here, otherwise they won't update if flight number changed
-                let _telexID = SimVar.GetSimVarValue("L:A32NX_Telex_ID", "Number");
-                let _telexKey = NXDataStore.get("TELEX_KEY", "");
-                let _flightNo = SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string", "FMC");
+                const _telexID = SimVar.GetSimVarValue("L:A32NX_Telex_ID", "Number");
+                const _telexKey = NXDataStore.get("TELEX_KEY", "");
+                const _flightNo = SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string", "FMC");
 
                 const lat = SimVar.GetSimVarValue("PLANE LATITUDE", "degrees latitude").toString();
                 const long = SimVar.GetSimVarValue("PLANE LONGITUDE", "degrees longitude").toString();

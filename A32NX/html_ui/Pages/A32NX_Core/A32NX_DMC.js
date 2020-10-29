@@ -3,7 +3,7 @@ function updateDisplayDMC(displayName, displayElement, maintElement) {
     const dmc3displayTest = SimVar.GetSimVarValue("L:A32NX_DMC_DISPLAYTEST:3", "Enum");
     let dmc1displayTest = SimVar.GetSimVarValue("L:A32NX_DMC_DISPLAYTEST:1", "Enum");
     let dmc2displayTest = SimVar.GetSimVarValue("L:A32NX_DMC_DISPLAYTEST:2", "Enum");
-    
+
     if (dmcSwitchingKnob == 0) {
         dmc1displayTest = dmc3displayTest;
     } else if (dmcSwitchingKnob == 2) {

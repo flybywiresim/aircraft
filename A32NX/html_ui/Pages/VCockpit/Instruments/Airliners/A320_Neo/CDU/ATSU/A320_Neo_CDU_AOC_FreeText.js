@@ -82,7 +82,7 @@ class CDUAocFreeText {
             const telexFlight = SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string", "FMC");
 
             console.log(telexFlight);
-            let storedTelexStatus = NXDataStore.get("CONFIG_TELEX_STATUS", "DISABLED");
+            const storedTelexStatus = NXDataStore.get("CONFIG_TELEX_STATUS", "DISABLED");
 
             if (telexID > 0 && telexFlight != "" && telexKey != "" && storedTelexStatus == "ENABLED") {
                 store["sendStatus"] = "QUEUED";
