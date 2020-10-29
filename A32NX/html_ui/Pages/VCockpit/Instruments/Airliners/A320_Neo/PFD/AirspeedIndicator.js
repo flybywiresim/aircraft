@@ -891,7 +891,7 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
                     if (Simplane.getAutoPilotMachModeActive()) {
                         redAirspeed = SimVar.GetGameVarValue("FROM MACH TO KIAS", "number", Simplane.getAutoPilotMachHoldValue());
                     } else {
-                        redAirspeed = Simplane.getAutoPilotAirspeedHoldValue();
+                        redAirspeed = (Simplane.getCurrentFlightPhase() === FlightPhase.FLIGHT_PHASE_APPROACH) ? SimVar.GetGameVarValue("AP_MANAGED_SPEED_IN_MACH_OFF", "number", Aircraft.A320_NEO) : Simplane.getAutoPilotAirspeedHoldValue();
                     }
                 }
             }
