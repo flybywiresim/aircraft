@@ -70,14 +70,14 @@ class GaugeElement extends NavSystemElement {
     }
     onUpdate(_deltaTime) {
         if (this.gauge) {
-            var val = this.getCurrentValue();
-            var clampedVal = Math.min(Math.max(val, this.minValue), this.maxValue);
-            var roundedVal = fastToFixed(clampedVal, this.valuePrecision);
+            const val = this.getCurrentValue();
+            const clampedVal = Math.min(Math.max(val, this.minValue), this.maxValue);
+            const roundedVal = fastToFixed(clampedVal, this.valuePrecision);
             this.gauge.setAttribute("value", "" + roundedVal);
             if (this.getCurrentValue2) {
-                var val2 = this.getCurrentValue2();
-                var clampedVal2 = Math.min(Math.max(val2, this.minValue), this.maxValue);
-                var roundedVal2 = fastToFixed(clampedVal2, this.valuePrecision);
+                const val2 = this.getCurrentValue2();
+                const clampedVal2 = Math.min(Math.max(val2, this.minValue), this.maxValue);
+                const roundedVal2 = fastToFixed(clampedVal2, this.valuePrecision);
                 this.gauge.setAttribute("value2", "" + roundedVal2);
             }
         }
@@ -140,7 +140,7 @@ class TextElement extends NavSystemElement {
     onEnter() {
     }
     onUpdate(_deltaTime) {
-        var val = this.getCurrentValue();
+        const val = this.getCurrentValue();
         if (this.elem && this.value != val) {
             this.elem.textContent = val;
             this.value = val;
