@@ -1088,23 +1088,22 @@ var Airbus_FMA;
         }
         static GetModeState_GS() {
 
-            if (CurrentPlaneState.bothAutoPilotsInactive && Simplane.getAutoPilotApproachType() == 4 && Simplane.getAutoPilotAPPRActive() ) {
+            if (CurrentPlaneState.bothAutoPilotsInactive && Simplane.getAutoPilotApproachType() == 4 && Simplane.getAutoPilotAPPRActive()) {
                 SimVar.SetSimVarValue("AUTOPILOT APPROACH HOLD", "bool", 1); // Not Settable per SDK
                 return Airbus_FMA.MODE_STATE.ENGAGED;
             }
 
             if (Simplane.getAutoPilotAPPRHold() && Simplane.getAutoPilotGlideslopeHold() && Airbus_FMA.CurrentPlaneState.thisFlightDirectorActive) {
-    
                 // normally use only for GPS APPROACH APPROACH TYPE = 4 = ILS but the APPROACH TYPE is set too late
                 if (Simplane.getAutoPilotApproachType() == 4 || Simplane.getAutoPilotApproachType() == 0) {
                     // L:A32NX_OFF_GS is identified too late (see ILSIndicator.js)?
-                    if (Simplane.getAutoPilotAPPRCaptured() && Simplane.getAutoPilotAPPRActive() && !Simplane.getAutoPilotGlideslopeActive() ) {
+                    if (Simplane.getAutoPilotAPPRCaptured() && Simplane.getAutoPilotAPPRActive() && !Simplane.getAutoPilotGlideslopeActive()) {
                         return Airbus_FMA.MODE_STATE.CAPTURED;
                     }
 
                     if (Simplane.getAutoPilotGlideslopeActive() && Simplane.getAutoPilotAPPRActive()) {
                         return Airbus_FMA.MODE_STATE.ENGAGED;
-                    } 
+                    }
 
                     if (SimVar.GetSimVarValue("AUTOPILOT GLIDESLOPE ARM", "bool") === 1) {
                         return Airbus_FMA.MODE_STATE.ARMED;
