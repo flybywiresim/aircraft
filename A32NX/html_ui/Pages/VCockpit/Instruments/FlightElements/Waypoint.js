@@ -274,27 +274,27 @@ class AirportInfo extends WayPointInfo {
     GetSymbolFileName() {
         var logo = "";
         if (this.airportClass == 2 || this.airportClass == 3) {
-            logo = "GPS/Airport_Soft.bmp";
+            logo = "GPS/Airport_Soft.png";
         } else if (this.airportClass == 1) {
             switch (Math.round((this.longestRunwayDirection % 180) / 45.0)) {
                 case 0:
                 case 4:
-                    logo = "GPS/Airport_Hard_NS.bmp";
+                    logo = "GPS/Airport_Hard_NS.png";
                     break;
                 case 1:
-                    logo = "GPS/Airport_Hard_NE_SW.bmp";
+                    logo = "GPS/Airport_Hard_NE_SW.png";
                     break;
                 case 2:
-                    logo = "GPS/Airport_Hard_EW.bmp";
+                    logo = "GPS/Airport_Hard_EW.png";
                     break;
                 case 3:
-                    logo = "GPS/Airport_Hard_NW_SE.bmp";
+                    logo = "GPS/Airport_Hard_NW_SE.png";
                     break;
             }
         } else if (this.airportClass == 4) {
-            logo = "GPS/Helipad.bmp";
+            logo = "GPS/Helipad.png";
         } else if (this.airportClass == 5) {
-            logo = "GPS/Private_Airfield.bmp";
+            logo = "GPS/Private_Airfield.png";
         }
         return logo;
     }
@@ -581,22 +581,22 @@ class VORInfo extends WayPointInfo {
         var image = "";
         switch (this.type) {
             case 1:
-                image = "GPS/Vor.bmp";
+                image = "GPS/Vor.png";
                 break;
             case 2:
-                image = "GPS/Vor_DME.bmp";
+                image = "GPS/Vor_DME.png";
                 break;
             case 3:
-                image = "GPS/DME.bmp";
+                image = "GPS/DME.png";
                 break;
             case 4:
-                image = "GPS/Tacan.bmp";
+                image = "GPS/Tacan.png";
                 break;
             case 5:
-                image = "GPS/Vor_Tac.bmp";
+                image = "GPS/Vor_Tac.png";
                 break;
             case 6:
-                image = "GPS/Localizer.bmp";
+                image = "GPS/Localizer.png";
                 break;
         }
         return image;
@@ -689,7 +689,7 @@ class NDBInfo extends WayPointInfo {
         return "N";
     }
     GetSymbol() {
-        return (this.type == 1 ? "GPS/Marker.bmp" : "GPS/Ndb.bmp");
+        return (this.type == 1 ? "GPS/Marker.png" : "GPS/Ndb.png");
     }
     imageFileName() {
         let fName = "";
@@ -764,7 +764,7 @@ class IntersectionInfo extends WayPointInfo {
         return this.loaded;
     }
     GetSymbol() {
-        return "GPS/Intersection.bmp";
+        return "GPS/Intersection.png";
     }
     imageFileName() {
         if (BaseInstrument.useSvgImages) {
