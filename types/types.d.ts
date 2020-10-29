@@ -1,18 +1,37 @@
+type NumberSimVarUnit = ("number" | "Number") | "position 32k" | ("SINT32") | ("bool" | "Bool" | "Boolean" | "boolean") | "Enum" | "lbs" | "kg" | ("Degrees" | "degree")
+    | "radians" | ("Percent" | "percent") | ("Feet" | "feet" | "feets") | "Volts" | "Amperes" | "Hertz" | "PSI" | "celsius" | "degree latitude"
+    | "degree longitude" | "Meters per second" | "Position" | ("Knots" | "knots") | "Seconds" | "kilograms per second" | "nautical miles" | "degrees"
+
+type TextSimVarUnit = "Text" | "string"
+
+type SimVarBatchType = "string" | "number";
+
+interface SimVarStatic {
+    SimVarBatch: SimVarBatchConstructor;
+    GetSimVarArrayValues(batch: SimVarBatch, callback: (results: any[][]) => void, dataSource?: string): void;
+
+    GetSimVarValue(name: string, unit: NumberSimVarUnit, dataSource?: string): number;
+    GetSimVarValue(name: string, unit: TextSimVarUnit, dataSource?: string): string;
+
+    SetSimVarValue(name: string, unit: NumberSimVarUnit, value: number, dataSource?: string): void;
+    SetSimVarValue(name: string, unit: TextSimVarUnit, value: string, dataSource?: string): void;
+}
+
+interface SimVarBatch {
+    add(name: string, unit: NumberSimVarUnit | TextSimVarUnit, type?: SimVarBatchType): void;
+    getCount(): string;
+    getIndex(): string;
+    getNames(): string[];
+    getUnits(): (NumberSimVarUnit | TextSimVarUnit)[];
+    getTypes(): SimVarBatchType[];
+}
+
+interface SimVarBatchConstructor {
+    new(simVarCount: string, simVarIndex: string): SimVarBatch;
+}
+
 declare global {
-
-    type NumberSimVarUnit = ("number" | "Number") | "position 32k" | ("SINT32") | ("bool" | "Bool" | "Boolean" | "boolean") | "Enum" | "lbs" | "kg" | ("Degrees" | "degree")
-        | "radians" | ("Percent" | "percent") | ("Feet" | "feet" | "feets") | "Volts" | "Amperes" | "Hertz" | "PSI" | "celsius" | "degree latitude"
-        | "degree longitude" | "Meters per second" | "Position" | ("Knots" | "knots") | "Seconds"
-
-    type TextSimVarUnit = "Text" | "string"
-
-    const SimVar: {
-        GetSimVarValue(name: string, type: NumberSimVarUnit, dataSource?: string): number
-        GetSimVarValue(name: string, type: TextSimVarUnit, dataSource?: string): string
-
-        SetSimVarValue(name: string, type: NumberSimVarUnit, value: number, dataSource?: string): void
-        SetSimVarValue(name: string, type: TextSimVarUnit, value: string, dataSource?: string): void
-    }
+    const SimVar: SimVarStatic;
 
     const Simplane: {
         getCurrentFlightPhase(): FlightPhase
