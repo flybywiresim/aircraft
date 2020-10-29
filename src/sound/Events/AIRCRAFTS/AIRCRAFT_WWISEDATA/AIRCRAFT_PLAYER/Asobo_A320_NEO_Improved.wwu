@@ -1054,6 +1054,48 @@
 						</Action>
 					</ChildrenList>
 				</Event>
+				<Event Name="Play_Asobo_A320_NEO_APLock" ID="{489B33A5-5CD1-451B-AEF2-8F39D0F438FE}">
+					<ChildrenList>
+						<Action Name="" ID="{E86957CF-1CF0-495C-98FF-429509E237DC}" ShortID="836029660">
+							<PropertyList>
+								<Property Name="ActionType" Type="int16" Value="1"/>
+							</PropertyList>
+							<ReferenceList>
+								<Reference Name="Target">
+									<ObjectRef Name="solenoidlock" ID="{A8CFFDF8-287E-4898-B101-5EEF196E66AA}" WorkUnitID="{27D32D8D-6C92-4542-9BFC-F0D08111F92F}"/>
+								</Reference>
+							</ReferenceList>
+						</Action>
+					</ChildrenList>
+				</Event>
+				<Event Name="Play_Asobo_A320_NEO_APUnlock" ID="{F15CE9AE-F65C-4C46-A870-2C0DDA1D9B88}">
+					<ChildrenList>
+						<Action Name="" ID="{9481155D-73F1-4B66-A5F1-A728EE248A76}" ShortID="845406769">
+							<PropertyList>
+								<Property Name="ActionType" Type="int16" Value="1"/>
+							</PropertyList>
+							<ReferenceList>
+								<Reference Name="Target">
+									<ObjectRef Name="solenoidunlock" ID="{DB288E0F-DE00-4287-9072-513C3C81FFE2}" WorkUnitID="{27D32D8D-6C92-4542-9BFC-F0D08111F92F}"/>
+								</Reference>
+							</ReferenceList>
+						</Action>
+					</ChildrenList>
+				</Event>
+				<Event Name="Play_Asobo_A320_NEO_aural_100above" ID="{F3D18D16-2517-4629-9846-AB2C1267D9E5}">
+					<ChildrenList>
+						<Action Name="" ID="{BED8E523-C25E-4F9D-9FA2-1A527AE98195}" ShortID="1016753974">
+							<PropertyList>
+								<Property Name="ActionType" Type="int16" Value="1"/>
+							</PropertyList>
+							<ReferenceList>
+								<Reference Name="Target">
+									<ObjectRef Name="100-above" ID="{ECB43B82-B568-41AF-97D2-189EE59BA179}" WorkUnitID="{27D32D8D-6C92-4542-9BFC-F0D08111F92F}"/>
+								</Reference>
+							</ReferenceList>
+						</Action>
+					</ChildrenList>
+				</Event>
 			</ChildrenList>
 		</WorkUnit>
 	</Events>
