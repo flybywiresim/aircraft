@@ -1041,6 +1041,12 @@ var A320_Neo_UpperECAM;
                         }
                     },
                     {
+                        message: "SWITCHG PNL",
+                        isActive: () => {
+                            return (SimVar.GetSimVarValue("L:A32NX_KNOB_SWITCHING_3_Position", "Enum") != 1);
+                        }
+                    },
+                    {
                         message: "GPWS FLAP 3",
                         isActive: () => {
                             return (this.getCachedSimVar("L:PUSH_OVHD_GPWS_LDG", "Bool") == 1);
