@@ -312,8 +312,8 @@
     },
     {
       "path": "ModelBehaviorDefs/Asobo/Common/Autopilot.xml",
-      "size": 59346,
-      "date": 132441151040000000
+      "size": 59820,
+      "date": 132475841520000000
     },
     {
       "path": "ModelBehaviorDefs/Asobo/Common/Deice.xml",
@@ -557,8 +557,8 @@
     },
     {
       "path": "ModelBehaviorDefs/Asobo/GlassCockpit/AS3000.xml",
-      "size": 32058,
-      "date": 132441156110000000
+      "size": 32374,
+      "date": 132473188310000000
     },
     {
       "path": "ModelBehaviorDefs/Asobo/GlassCockpit/AS3X.xml",

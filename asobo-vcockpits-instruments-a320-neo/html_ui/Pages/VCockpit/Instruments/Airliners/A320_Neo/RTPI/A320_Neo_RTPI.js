@@ -2,9 +2,7 @@ class A320_Neo_RTPI extends BaseAirliners {
     constructor() {
         super();
     }
-    get templateID() {
-        return "A320_Neo_RTPI";
-    }
+    get templateID() { return "A320_Neo_RTPI"; }
     connectedCallback() {
         super.connectedCallback();
         this.valueText = this.querySelector("#Value");
@@ -14,8 +12,8 @@ class A320_Neo_RTPI extends BaseAirliners {
     disconnectedCallback() {
         super.disconnectedCallback();
     }
-    Update() {
-        super.Update();
+    onUpdate(_deltaTime) {
+        super.onUpdate(_deltaTime);
         this.refreshValue(SimVar.GetSimVarValue("RUDDER TRIM", "degrees"));
     }
     refreshValue(_value, _force = false) {
@@ -27,9 +25,11 @@ class A320_Neo_RTPI extends BaseAirliners {
             if (this.directionText != null) {
                 if (this.currentValue > 0) {
                     this.directionText.textContent = "R";
-                } else if (this.currentValue < 0) {
+                }
+                else if (this.currentValue < 0) {
                     this.directionText.textContent = "L";
-                } else {
+                }
+                else {
                     this.directionText.textContent = "";
                 }
             }

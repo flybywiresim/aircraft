@@ -22,7 +22,7 @@ class CDI extends HTMLElement {
         this.root.setAttribute("height", "100%");
         this.root.setAttribute("viewBox", "0 0 100 15");
         this.appendChild(this.root);
-        const background = document.createElementNS(Avionics.SVG.NS, "rect");
+        let background = document.createElementNS(Avionics.SVG.NS, "rect");
         background.setAttribute("x", "0");
         background.setAttribute("y", "0");
         background.setAttribute("width", "100");
@@ -34,7 +34,7 @@ class CDI extends HTMLElement {
         this.root.appendChild(background);
         for (let i = -4; i <= 4; i++) {
             if (i != 0) {
-                const circle = document.createElementNS(Avionics.SVG.NS, "circle");
+                let circle = document.createElementNS(Avionics.SVG.NS, "circle");
                 circle.setAttribute("cx", (50 + 10 * i).toString());
                 circle.setAttribute("cy", "7.5");
                 circle.setAttribute("r", "2");
@@ -44,14 +44,14 @@ class CDI extends HTMLElement {
                 this.root.appendChild(circle);
             }
         }
-        const centerLine = document.createElementNS(Avionics.SVG.NS, "rect");
+        let centerLine = document.createElementNS(Avionics.SVG.NS, "rect");
         centerLine.setAttribute("x", "49.75");
         centerLine.setAttribute("y", "0");
         centerLine.setAttribute("width", "0.5");
         centerLine.setAttribute("height", "15");
         centerLine.setAttribute("fill", "white");
         this.root.appendChild(centerLine);
-        const autoText = document.createElementNS(Avionics.SVG.NS, "text");
+        let autoText = document.createElementNS(Avionics.SVG.NS, "text");
         autoText.setAttribute("fill", "white");
         autoText.setAttribute("text-anchor", "middle");
         autoText.setAttribute("x", "10");
@@ -94,7 +94,8 @@ class CDI extends HTMLElement {
             case "toFrom":
                 if (newValue == "From") {
                     this.isFrom = true;
-                } else {
+                }
+                else {
                     this.isFrom = false;
                 }
                 this.updateDeviation();
@@ -102,7 +103,8 @@ class CDI extends HTMLElement {
             case "active":
                 if (newValue == "True") {
                     this.deviationIndicator.setAttribute("visibility", "");
-                } else {
+                }
+                else {
                     this.deviationIndicator.setAttribute("visibility", "hidden");
                 }
                 break;

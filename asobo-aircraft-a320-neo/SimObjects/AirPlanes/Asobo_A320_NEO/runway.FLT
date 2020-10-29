@@ -81,13 +81,13 @@ EGT_DegR=1200
 ITT_DegR=1500
 
 [FuelSystem.0]
-Valve.1=False
-Valve.2=False
+Valve.1=True
+Valve.2=True
 Valve.3=False
 Valve.4=False
 Valve.5=False
-Valve.6=True
-Valve.7=True
+Valve.6=False
+Valve.7=False
 Valve.8=False
 Pump.1=True
 Pump.2=True

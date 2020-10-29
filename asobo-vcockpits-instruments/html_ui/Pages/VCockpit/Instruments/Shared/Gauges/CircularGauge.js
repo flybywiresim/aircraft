@@ -51,22 +51,22 @@ class CircularGauge extends AbstractGauge {
         while (this.firstChild) {
             this.removeChild(this.firstChild);
         }
-        const svg = document.createElementNS(Avionics.SVG.NS, "svg");
+        let svg = document.createElementNS(Avionics.SVG.NS, "svg");
         svg.setAttribute("overflow", "visible");
         svg.setAttribute("width", "100%");
         svg.setAttribute("height", "100%");
         svg.setAttribute("viewBox", "0 0 100 100");
         this.appendChild(svg);
-        const circularGauge = document.createElementNS(Avionics.SVG.NS, "path");
-        const d = "M 13 50 L 0 50 A 50 50 0 0 1 100 50 L 87 50";
+        let circularGauge = document.createElementNS(Avionics.SVG.NS, "path");
+        let d = "M 13 50 L 0 50 A 50 50 0 0 1 100 50 L 87 50";
         circularGauge.classList.add("gauge-base");
         circularGauge.classList.add("circular-gauge-base");
         circularGauge.setAttribute("d", d);
         circularGauge.setAttribute("fill", "none");
         circularGauge.setAttribute("stroke", "black");
         svg.appendChild(circularGauge);
-        const circularDashes = document.createElementNS(Avionics.SVG.NS, "path");
-        const circularDashesPath = "M 5 50 A 45 45 0 0 1 95 50";
+        let circularDashes = document.createElementNS(Avionics.SVG.NS, "path");
+        let circularDashesPath = "M 5 50 A 45 45 0 0 1 95 50";
         circularDashes.classList.add("gauge-base");
         circularDashes.classList.add("circular-gauge-base");
         circularDashes.setAttribute("d", circularDashesPath);
@@ -77,12 +77,12 @@ class CircularGauge extends AbstractGauge {
         circularDashes.setAttribute("stroke-dasharray", "1 " + (142 - this._stepsCount) / (this._stepsCount));
         svg.appendChild(circularDashes);
         if (this._redLengthPercent > 0) {
-            const redStartX = -Math.cos(this._redStartAngle) * 50;
-            const redStartY = -Math.sin(this._redStartAngle) * 50;
-            const redEndX = -Math.cos(this._redEndAngle) * 50;
-            const redEndY = -Math.sin(this._redEndAngle) * 50;
-            const redWidthFactor = 0.9;
-            const redArea = document.createElementNS(Avionics.SVG.NS, "path");
+            let redStartX = -Math.cos(this._redStartAngle) * 50;
+            let redStartY = -Math.sin(this._redStartAngle) * 50;
+            let redEndX = -Math.cos(this._redEndAngle) * 50;
+            let redEndY = -Math.sin(this._redEndAngle) * 50;
+            let redWidthFactor = 0.9;
+            let redArea = document.createElementNS(Avionics.SVG.NS, "path");
             let redAreaPath = "M " + (50 + redStartX) + " " + (50 + redStartY);
             redAreaPath += " L " + (50 + redStartX * redWidthFactor) + " " + (50 + redStartY * redWidthFactor);
             redAreaPath += " A " + (50 * redWidthFactor) + " " + (50 * redWidthFactor) + " 0 0 1 " + (50 + redEndX * redWidthFactor) + " " + (50 + redEndY * redWidthFactor);
@@ -93,12 +93,12 @@ class CircularGauge extends AbstractGauge {
             svg.appendChild(redArea);
         }
         if (this._yellowLengthPercent) {
-            const yellowStartX = -Math.cos(this._yellowStartAngle) * 50;
-            const yellowStartY = -Math.sin(this._yellowStartAngle) * 50;
-            const yellowEndX = -Math.cos(this._yellowEndAngle) * 50;
-            const yellowEndY = -Math.sin(this._yellowEndAngle) * 50;
-            const yellowWidthFactor = 0.9;
-            const yellowArea = document.createElementNS(Avionics.SVG.NS, "path");
+            let yellowStartX = -Math.cos(this._yellowStartAngle) * 50;
+            let yellowStartY = -Math.sin(this._yellowStartAngle) * 50;
+            let yellowEndX = -Math.cos(this._yellowEndAngle) * 50;
+            let yellowEndY = -Math.sin(this._yellowEndAngle) * 50;
+            let yellowWidthFactor = 0.9;
+            let yellowArea = document.createElementNS(Avionics.SVG.NS, "path");
             let yellowAreaPath = "M " + (50 + yellowStartX) + " " + (50 + yellowStartY);
             yellowAreaPath += " L " + (50 + yellowStartX * yellowWidthFactor) + " " + (50 + yellowStartY * yellowWidthFactor);
             yellowAreaPath += " A " + (50 * yellowWidthFactor) + " " + (50 * yellowWidthFactor) + " 0 0 1 " + (50 + yellowEndX * yellowWidthFactor) + " " + (50 + yellowEndY * yellowWidthFactor);
@@ -109,12 +109,12 @@ class CircularGauge extends AbstractGauge {
             svg.appendChild(yellowArea);
         }
         if (this._greenLengthPercent > 0) {
-            const greenStartX = -Math.cos(this._greenStartAngle) * 50;
-            const greenStartY = -Math.sin(this._greenStartAngle) * 50;
-            const greenEndX = -Math.cos(this._greenEndAngle) * 50;
-            const greenEndY = -Math.sin(this._greenEndAngle) * 50;
-            const greenWidthFactor = 0.9;
-            const greenArea = document.createElementNS(Avionics.SVG.NS, "path");
+            let greenStartX = -Math.cos(this._greenStartAngle) * 50;
+            let greenStartY = -Math.sin(this._greenStartAngle) * 50;
+            let greenEndX = -Math.cos(this._greenEndAngle) * 50;
+            let greenEndY = -Math.sin(this._greenEndAngle) * 50;
+            let greenWidthFactor = 0.9;
+            let greenArea = document.createElementNS(Avionics.SVG.NS, "path");
             let greenAreaPath = "M " + (50 + greenStartX) + " " + (50 + greenStartY);
             greenAreaPath += " L " + (50 + greenStartX * greenWidthFactor) + " " + (50 + greenStartY * greenWidthFactor);
             greenAreaPath += " A " + (50 * greenWidthFactor) + " " + (50 * greenWidthFactor) + " 0 0 1 " + (50 + greenEndX * greenWidthFactor) + " " + (50 + greenEndY * greenWidthFactor);
@@ -125,12 +125,12 @@ class CircularGauge extends AbstractGauge {
             svg.appendChild(greenArea);
         }
         if (this._lowRedLengthPercent > 0) {
-            const lowRedStartX = -Math.cos(this._lowRedStartAngle) * 50;
-            const lowRedStartY = -Math.sin(this._lowRedStartAngle) * 50;
-            const lowRedEndX = -Math.cos(this._lowRedEndAngle) * 50;
-            const lowRedEndY = -Math.sin(this._lowRedEndAngle) * 50;
-            const lowRedWidthFactor = 0.9;
-            const lowRedArea = document.createElementNS(Avionics.SVG.NS, "path");
+            let lowRedStartX = -Math.cos(this._lowRedStartAngle) * 50;
+            let lowRedStartY = -Math.sin(this._lowRedStartAngle) * 50;
+            let lowRedEndX = -Math.cos(this._lowRedEndAngle) * 50;
+            let lowRedEndY = -Math.sin(this._lowRedEndAngle) * 50;
+            let lowRedWidthFactor = 0.9;
+            let lowRedArea = document.createElementNS(Avionics.SVG.NS, "path");
             let lowRedAreaPath = "M " + (50 + lowRedStartX) + " " + (50 + lowRedStartY);
             lowRedAreaPath += " L " + (50 + lowRedStartX * lowRedWidthFactor) + " " + (50 + lowRedStartY * lowRedWidthFactor);
             lowRedAreaPath += " A " + (50 * lowRedWidthFactor) + " " + (50 * lowRedWidthFactor) + " 0 0 1 " + (50 + lowRedEndX * lowRedWidthFactor) + " " + (50 + lowRedEndY * lowRedWidthFactor);
@@ -141,12 +141,12 @@ class CircularGauge extends AbstractGauge {
             svg.appendChild(lowRedArea);
         }
         if (this._lowYellowLengthPercent > 0) {
-            const lowYellowStartX = -Math.cos(this._lowYellowStartAngle) * 50;
-            const lowYellowStartY = -Math.sin(this._lowYellowStartAngle) * 50;
-            const lowYellowEndX = -Math.cos(this._lowYellowEndAngle) * 50;
-            const lowYellowEndY = -Math.sin(this._lowYellowEndAngle) * 50;
-            const lowYellowWidthFactor = 0.9;
-            const lowYellowArea = document.createElementNS(Avionics.SVG.NS, "path");
+            let lowYellowStartX = -Math.cos(this._lowYellowStartAngle) * 50;
+            let lowYellowStartY = -Math.sin(this._lowYellowStartAngle) * 50;
+            let lowYellowEndX = -Math.cos(this._lowYellowEndAngle) * 50;
+            let lowYellowEndY = -Math.sin(this._lowYellowEndAngle) * 50;
+            let lowYellowWidthFactor = 0.9;
+            let lowYellowArea = document.createElementNS(Avionics.SVG.NS, "path");
             let lowYellowAreaPath = "M " + (50 + lowYellowStartX) + " " + (50 + lowYellowStartY);
             lowYellowAreaPath += " L " + (50 + lowYellowStartX * lowYellowWidthFactor) + " " + (50 + lowYellowStartY * lowYellowWidthFactor);
             lowYellowAreaPath += " A " + (50 * lowYellowWidthFactor) + " " + (50 * lowYellowWidthFactor) + " 0 0 1 " + (50 + lowYellowEndX * lowYellowWidthFactor) + " " + (50 + lowYellowEndY * lowYellowWidthFactor);
@@ -159,7 +159,7 @@ class CircularGauge extends AbstractGauge {
         this._cursor = document.createElementNS(Avionics.SVG.NS, "path");
         this._cursor.classList.add("gauge-cursor");
         this._cursor.classList.add("circular-gauge-cursor");
-        const cursorPath = "M 10 50 L 20 45 L 20 55 Z";
+        let cursorPath = "M 10 50 L 20 45 L 20 55 Z";
         this._cursor.setAttribute("d", cursorPath);
         this._cursor.setAttribute("fill", "white");
         this._cursor.setAttribute("stroke", "black");
@@ -167,11 +167,11 @@ class CircularGauge extends AbstractGauge {
         this._updateValue();
     }
     _updateValueSvg() {
-        const cursorAngle = this._value / this._maxValue * 180;
+        let cursorAngle = this._value / this._maxValue * 180;
         this._cursor.setAttributeNS(Avionics.SVG.NS, "transform", "rotate(" + cursorAngle + " 50 50)");
     }
     _drawBase() {
-        const cx = this._canvasBase.width * 0.5;
+        let cx = this._canvasBase.width * 0.5;
         let cy = this._canvasBase.height * 0.5;
         let r = Math.min(cx, this._canvasBase.height / (1 - Math.sin(this._tilt * Avionics.Utils.DEG2RAD)) + 12);
         cy = Math.max(cy, r);
@@ -179,11 +179,11 @@ class CircularGauge extends AbstractGauge {
         if (r < 1) {
             return;
         }
-        const angularStep = (this._angularSize / this._stepsCount) * Avionics.Utils.DEG2RAD;
+        let angularStep = (this._angularSize / this._stepsCount) * Avionics.Utils.DEG2RAD;
         for (let i = 1; i < this._stepsCount; i++) {
-            const angle = this._startAngle + i * angularStep;
-            const sx = Math.cos(angle);
-            const sy = Math.sin(angle);
+            let angle = this._startAngle + i * angularStep;
+            let sx = Math.cos(angle);
+            let sy = Math.sin(angle);
             CircularGauge.DrawLineFromTo(this._canvasBaseContext, cx + sx * r, cy + sy * r, cx + sx * (r * 0.8), cy + sy * (r * 0.8));
             this._canvasBaseContext.strokeStyle = "white";
             this._canvasBaseContext.stroke();
@@ -214,25 +214,25 @@ class CircularGauge extends AbstractGauge {
             this._canvasBaseContext.fill();
         }
         if (isFinite(this._limitLow)) {
-            const sx = Math.cos(this._limitLowAngle);
-            const sy = Math.sin(this._limitLowAngle);
+            let sx = Math.cos(this._limitLowAngle);
+            let sy = Math.sin(this._limitLowAngle);
             CircularGauge.DrawLineFromTo(this._canvasBaseContext, cx + sx * r, cy + sy * r, cx + sx * (r * 0.75), cy + sy * (r * 0.75));
             this._canvasBaseContext.strokeStyle = "red";
             this._canvasBaseContext.lineWidth = 3;
             this._canvasBaseContext.stroke();
         }
         if (isFinite(this._limitHigh)) {
-            const sx = Math.cos(this._limitHighAngle);
-            const sy = Math.sin(this._limitHighAngle);
+            let sx = Math.cos(this._limitHighAngle);
+            let sy = Math.sin(this._limitHighAngle);
             CircularGauge.DrawLineFromTo(this._canvasBaseContext, cx + sx * r, cy + sy * r, cx + sx * (r * 0.75), cy + sy * (r * 0.75));
             this._canvasBaseContext.strokeStyle = "red";
             this._canvasBaseContext.lineWidth = 3;
             this._canvasBaseContext.stroke();
         }
-        const fsx = Math.cos(this._startAngle);
-        const fsy = Math.sin(this._startAngle);
-        const fex = Math.cos(this._endAngle);
-        const fey = Math.sin(this._endAngle);
+        let fsx = Math.cos(this._startAngle);
+        let fsy = Math.sin(this._startAngle);
+        let fex = Math.cos(this._endAngle);
+        let fey = Math.sin(this._endAngle);
         this._canvasBaseContext.fillStyle = "white";
         this._canvasBaseContext.font = fastToFixed(this.fontSize, 0) + "px Roboto";
         this._canvasBaseContext.textAlign = "center";
@@ -248,17 +248,17 @@ class CircularGauge extends AbstractGauge {
         this._canvasBaseContext.stroke();
     }
     _drawCursor() {
-        const cx = this._canvasCursor.width * 0.5;
+        let cx = this._canvasCursor.width * 0.5;
         let cy = this._canvasCursor.height * 0.5;
-        const r = Math.min(cx, this._canvasCursor.height / (1 - Math.sin(this._tilt * Avionics.Utils.DEG2RAD)) + 12);
+        let r = Math.min(cx, this._canvasCursor.height / (1 - Math.sin(this._tilt * Avionics.Utils.DEG2RAD)) + 12);
         cy = Math.max(cy, r);
         if (r < 1) {
             return;
         }
-        const cursorX = Math.cos(this._cursorAngle);
-        const cursorY = Math.sin(this._cursorAngle);
-        const nX = -cursorY;
-        const nY = cursorX;
+        let cursorX = Math.cos(this._cursorAngle);
+        let cursorY = Math.sin(this._cursorAngle);
+        let nX = -cursorY;
+        let nY = cursorX;
         this._canvasCursorContext.beginPath();
         this._canvasCursorContext.moveTo(cx + (r * 0.8) * cursorX, cy + (r * 0.8) * cursorY);
         this._canvasCursorContext.lineTo(cx + (r * 0.6) * cursorX + nX * r * 0.1, cy + (r * 0.6) * cursorY + nY * r * 0.1);
@@ -271,10 +271,10 @@ class CircularGauge extends AbstractGauge {
         this._canvasCursorContext.fillText(fastToFixed(this._value, this._valuePrecision), 1.9 * cx, cy + this.fontSize * 1.3);
     }
     static DrawThickArc(context, cx, cy, rMin, rMax, angleStart, angleEnd, anticlockWise) {
-        const sx = Math.cos(angleStart);
-        const sy = Math.sin(angleStart);
-        const ex = Math.cos(angleEnd);
-        const ey = Math.sin(angleEnd);
+        let sx = Math.cos(angleStart);
+        let sy = Math.sin(angleStart);
+        let ex = Math.cos(angleEnd);
+        let ey = Math.sin(angleEnd);
         context.beginPath();
         context.moveTo(cx + rMin * sx, cy + rMin * sy);
         context.lineTo(cx + rMax * sx, cy + rMax * sy);

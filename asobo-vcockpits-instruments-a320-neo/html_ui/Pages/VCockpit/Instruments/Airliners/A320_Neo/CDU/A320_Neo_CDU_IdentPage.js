@@ -1,14 +1,15 @@
 class CDUIdentPage {
     static ShowPage(mcdu) {
+        let date = mcdu.getNavDataDateRange();
         mcdu.clearDisplay();
         mcdu.setTemplate([
             ["A320"],
             ["ENG"],
             ["LEAP A-1"],
             ["ACTIVE DATA BASE"],
-            ["4MAY-4JUL[color]blue", "TC11103001"],
+            [date + "[color]blue", "AIRAC"],
             ["SECOND DATA BASE"],
-            ["←4MAY-4JUL[color]blue"],
+            ["←" + date + "[color]blue"],
             [""],
             [""],
             [""],

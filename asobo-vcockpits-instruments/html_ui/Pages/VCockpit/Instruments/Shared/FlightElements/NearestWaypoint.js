@@ -32,36 +32,45 @@ class NearestAirport extends NearestWaypoint {
         return this._svgMapElement;
     }
     imageFileName() {
-        let fName = "ICON_MAP_AIRPORT_UNKNOWN_PINK.svg";
+        var fName = "ICON_MAP_AIRPORT_UNKNOWN_PINK.svg";
         if (this.airportClass === 1) {
             if (this.towered) {
                 if (this.fuel1 !== "" || this.fuel2 !== "") {
                     fName = "ICON_MAP_AIRPORT_TOWERED_SERVICED_BLUE.svg";
-                } else {
+                }
+                else {
                     fName = "ICON_MAP_AIRPORT_TOWERED_NON_SERVICED_BLUE.svg";
                 }
-            } else {
+            }
+            else {
                 if (this.fuel1 !== "" || this.fuel2 !== "") {
                     fName = "ICON_MAP_AIRPORT_NON_TOWERED_SERVICED_PINK.svg";
-                } else {
+                }
+                else {
                     fName = "ICON_MAP_AIRPORT_NON_TOWERED_NON_SERVICED_PINK.svg";
                 }
             }
-        } else if (this.airportClass === 2) {
+        }
+        else if (this.airportClass === 2) {
             if (this.fuel1 !== "" || this.fuel2 !== "") {
                 fName = "ICON_MAP_AIRPORT7.svg";
-            } else {
+            }
+            else {
                 fName = "ICON_MAP_AIRPORT8.svg";
             }
-        } else if (this.airportClass === 3) {
+        }
+        else if (this.airportClass === 3) {
             if (this.towered) {
                 fName = "ICON_MAP_AIRPORT_TOWERED_SEAPLANE_CIV_BLUE.svg";
-            } else {
+            }
+            else {
                 fName = "ICON_MAP_AIRPORT_NON_TOWERED_SEAPLANE_CIV_PINK.svg";
             }
-        } else if (this.airportClass === 4) {
+        }
+        else if (this.airportClass === 4) {
             fName = "ICON_MAP_AIRPORT_HELIPORT_PINK.svg";
-        } else if (this.airportClass === 5) {
+        }
+        else if (this.airportClass === 5) {
             fName = "ICON_MAP_AIRPORT_PRIVATE_PINK.svg";
         }
         if (BaseInstrument.useSvgImages) {
@@ -100,12 +109,13 @@ class FullDataNearestAirportList {
         if (NearestAirportList.readManager.AddToQueue(this.instrument, this)) {
             this.loadState = 0;
             this.needUpdate = false;
-        } else {
+        }
+        else {
             this.needUpdate = true;
         }
     }
     LoadData() {
-        const instrId = this.instrument.instrumentIdentifier;
+        var instrId = this.instrument.instrumentIdentifier;
         switch (this.loadState) {
             case 0:
                 this._referentialLat = SimVar.GetSimVarValue("GPS POSITION LAT", "degree latitude", instrId);
@@ -121,8 +131,8 @@ class FullDataNearestAirportList {
                     for (var j = 0; j < this.airports.length; j++) {
                         this.airports[j].toDelete = true;
                     }
-                    for (let i = 0; i < _Values.length; i++) {
-                        let found = false;
+                    for (var i = 0; i < _Values.length; i++) {
+                        var found = false;
                         for (var j = 0; j < this.airports.length && !found; j++) {
                             if (this.airports[j].GetInfos().icao == _Values[i][2]) {
                                 found = true;
@@ -135,7 +145,7 @@ class FullDataNearestAirportList {
                             }
                         }
                         if (!found) {
-                            const airport = new FullDataAirport(this.instrument);
+                            var airport = new FullDataAirport(this.instrument);
                             airport.toDelete = false;
                             airport.type = 'A';
                             airport.ident = _Values[i][3];
@@ -194,45 +204,23 @@ class NearestAirportList {
         if (NearestAirportList.readManager.AddToQueue(this.instrument, this)) {
             this.loadState = 0;
             this.needUpdate = false;
-        } else {
+        }
+        else {
             this.needUpdate = true;
         }
     }
     GetTable(_startIndex, _prefix) {
-        let html = "";
-        let index;
-        for (let i = 0; i < 3; i++) {
+        var html = "";
+        var index;
+        for (var i = 0; i < 3; i++) {
             index = i + _startIndex;
             html += "<tr>";
             if (index > this.airports.length) {
                 html += "<td></td><td></td><td></td><td></td><td></td>";
-            } else {
-                let logo = "";
-                if (this.airports[index].airportClass == 2 || this.airports[index].airportClass == 3) {
-                    logo = "GPS/Airport_Soft.bmp";
-                } else if (this.airports[index].airportClass == 1) {
-                    switch (Math.round((this.airports[index].longestRunwayDirection % 180) / 45.0)) {
-                        case 0:
-                        case 4:
-                            logo = "GPS/Airport_Hard_NS.bmp";
-                            break;
-                        case 1:
-                            logo = "GPS/Airport_Hard_NE_SW.bmp";
-                            break;
-                        case 2:
-                            logo = "GPS/Airport_Hard_EW.bmp";
-                            break;
-                        case 3:
-                            logo = "GPS/Airport_Hard_NW_SE.bmp";
-                            break;
-                    }
-                } else if (this.airports[index].airportClass == 4) {
-                    logo = "GPS/Helipad.bmp";
-                } else if (this.airports[index].airportClass == 5) {
-                    logo = "GPS/Private_Airfield.bmp";
-                }
+            }
+            else {
                 html += '<td class="SelectableElement" id="' + _prefix + "_" + i + '">' + this.airports[index].ident + '</td>';
-                html += '<td><img src="/Pages/VCockpit/Instruments/NavSystems/Shared/Images/' + logo + '" class="imgSizeS"/> </td>';
+                html += '<td><img src="/Pages/VCockpit/Instruments/Shared/Map/Images/' + this.airports[index].imageFileName() + '" class="imgSizeS"/> </td>';
                 html += '<td>' + fastToFixed(this.airports[index].bearing, 0) + '<div class="Align unit">o<br />M</div></td>';
                 html += '<td>' + fastToFixed(this.airports[index].distance, 1) + '<div class="Align unit">n<br />m</div></td>';
                 html += '<td>' + this.airports[index].bestApproach + '</td>';
@@ -241,7 +229,8 @@ class NearestAirportList {
             html += "<tr>";
             if (index > this.airports.length) {
                 html += "<td></td><td></td><td></td><td></td><td></td>";
-            } else {
+            }
+            else {
                 html += '<td>' + this.airports[index].frequencyName + '</td>';
                 html += '<td colspan="2" class="SelectableElement" id="' + _prefix + "_Freq_" + i + '">' + fastToFixed(this.airports[index].frequencyMHz, 3) + '</td>';
                 html += '<td>rwy</td>';
@@ -252,7 +241,7 @@ class NearestAirportList {
         return html;
     }
     LoadData() {
-        const instrId = this.instrument.instrumentIdentifier;
+        var instrId = this.instrument.instrumentIdentifier;
         switch (this.loadState) {
             case 0:
                 SimVar.SetSimVarValue("C:fs9gps:NearestAirportCurrentLatitude", "degree latitude", SimVar.GetSimVarValue("GPS POSITION LAT", "degree latitude", instrId), instrId);
@@ -260,7 +249,7 @@ class NearestAirportList {
                 SimVar.SetSimVarValue("C:fs9gps:NearestAirportMaximumItems", "number", this.nbMax, instrId);
                 SimVar.SetSimVarValue("C:fs9gps:NearestAirportMaximumDistance", "nautical miles", this.milesDistance, instrId);
                 SimVar.GetSimVarArrayValues(this.airportLineBatch, function (_Values) {
-                    for (let i = 0; i < _Values.length; i++) {
+                    for (var i = 0; i < _Values.length; i++) {
                         if (this.airports.length < i + 1) {
                             this.airports.push(new NearestAirport(this.instrument));
                         }
@@ -282,7 +271,7 @@ class NearestAirportList {
                     }
                 }.bind(this), instrId);
                 SimVar.GetSimVarArrayValues(this.airportSelectedBatch, function (_Values) {
-                    for (let i = 0; i < _Values.length; i++) {
+                    for (var i = 0; i < _Values.length; i++) {
                         if (this.airports.length < i + 1) {
                             this.airports.push(new NearestAirport(this.instrument));
                         }
@@ -347,21 +336,23 @@ class NearestIntersectionList {
         if (NearestIntersectionList.readManager.AddToQueue(this.instrument, this)) {
             this.loadState = 0;
             this.needUpdate = false;
-        } else {
+        }
+        else {
             this.needUpdate = true;
         }
     }
     GetTable(_startIndex, _prefix) {
-        let html = "";
-        let index;
-        for (let i = 0; i < 5; i++) {
+        var html = "";
+        var index;
+        for (var i = 0; i < 5; i++) {
             index = i + _startIndex;
             html += "<tr>";
             if (index > this.intersections.length) {
                 html += "<td></td><td></td><td></td><td></td>";
-            } else {
+            }
+            else {
                 html += '<td class="SelectableElement" id="' + _prefix + "_" + i + '">' + this.intersections[index].ident + '</td>';
-                html += '<td><img src="/Pages/VCockpit/Instruments/NavSystems/Shared/Images/' + this.intersections[index].imageFileName() + '"/></td>';
+                html += '<td><img src="/Pages/VCockpit/Instruments/Shared/Map/Images/' + this.intersections[index].imageFileName() + '"/></td>';
                 html += '<td>' + fastToFixed(this.intersections[index].bearing, 0) + '<div class="Align unit">o<br />M</div></td>';
                 html += '<td>' + fastToFixed(this.intersections[index].distance, 1) + '<div class="Align unit">n<br />m</div></td>';
             }
@@ -370,7 +361,7 @@ class NearestIntersectionList {
         return html;
     }
     LoadData() {
-        const instrId = this.instrument.instrumentIdentifier;
+        var instrId = this.instrument.instrumentIdentifier;
         switch (this.loadState) {
             case 0:
                 SimVar.SetSimVarValue("C:fs9gps:NearestIntersectionCurrentLatitude", "degree latitude", SimVar.GetSimVarValue("GPS POSITION LAT", "degree latitude", instrId), instrId);
@@ -382,8 +373,8 @@ class NearestIntersectionList {
             case 1:
                 SimVar.GetSimVarArrayValues(this.batch, function (_Values) {
                     this.intersections = [];
-                    for (let i = 0; i < _Values.length; i++) {
-                        const intersection = new NearestIntersection(instrId);
+                    for (var i = 0; i < _Values.length; i++) {
+                        var intersection = new NearestIntersection(instrId);
                         intersection.icao = _Values[i][0];
                         intersection.ident = _Values[i][1];
                         intersection.distance = _Values[i][2];
@@ -418,7 +409,8 @@ class NearestNDB extends NearestWaypoint {
         let fName = "";
         if (this.ndbType === 1) {
             fName = "ICON_MAP_NDB_WAYPOINT.svg";
-        } else {
+        }
+        else {
             fName = "ICON_MAP_NDB_WAYPOINT.svg";
         }
         if (BaseInstrument.useSvgImages) {
@@ -447,21 +439,23 @@ class NearestNDBList {
         if (NearestNDBList.readManager.AddToQueue(this.instrument, this)) {
             this.loadState = 0;
             this.needUpdate = false;
-        } else {
+        }
+        else {
             this.needUpdate = true;
         }
     }
     GetTable(_startIndex, _prefix) {
-        let html = "";
-        let index;
-        for (let i = 0; i < 5; i++) {
+        var html = "";
+        var index;
+        for (var i = 0; i < 5; i++) {
             index = i + _startIndex;
             html += "<tr>";
             if (index > this.ndbs.length) {
                 html += "<td></td><td></td><td></td><td></td><td></td>";
-            } else {
+            }
+            else {
                 html += '<td class="SelectableElement" id="' + _prefix + "_" + i + '">' + this.ndbs[index].ident + '</td>';
-                html += '<td><img src="/Pages/VCockpit/Instruments/NavSystems/Shared/Images/' + this.ndbs[index].imageFileName() + '"/></td>';
+                html += '<td><img src="/Pages/VCockpit/Instruments/Shared/Map/Images/' + this.ndbs[index].imageFileName() + '"/></td>';
                 html += '<td>' + fastToFixed(this.ndbs[index].bearing, 0) + '<div class="Align unit">o<br />M</div></td>';
                 html += '<td>' + fastToFixed(this.ndbs[index].distance, 1) + '<div class="Align unit">n<br />m</div></td>';
                 html += '<td>' + fastToFixed(this.ndbs[index].frequencyMHz, 1) + '</td>';
@@ -471,7 +465,7 @@ class NearestNDBList {
         return html;
     }
     LoadData() {
-        const instrId = this.instrument.instrumentIdentifier;
+        var instrId = this.instrument.instrumentIdentifier;
         switch (this.loadState) {
             case 0:
                 SimVar.SetSimVarValue("C:fs9gps:NearestNdbCurrentLatitude", "degree latitude", SimVar.GetSimVarValue("GPS POSITION LAT", "degree latitude", instrId), instrId);
@@ -480,7 +474,7 @@ class NearestNDBList {
                 SimVar.SetSimVarValue("C:fs9gps:NearestNdbMaximumDistance", "nautical miles", this.milesDistance, instrId);
                 SimVar.GetSimVarArrayValues(this.ndbLinesBatch, function (_Values) {
                     this.ndbs = [];
-                    for (let i = 0; i < _Values.length; i++) {
+                    for (var i = 0; i < _Values.length; i++) {
                         if (i > this.ndbs.length - 1) {
                             this.ndbs.push(new NearestNDB(this.instrument));
                         }
@@ -497,7 +491,7 @@ class NearestNDBList {
                     this.loadState++;
                 }.bind(this), instrId);
                 SimVar.GetSimVarArrayValues(this.ndbSelectedBatch, function (_Values) {
-                    for (let i = 0; i < _Values.length; i++) {
+                    for (var i = 0; i < _Values.length; i++) {
                         if (i > this.ndbs.length - 1) {
                             this.ndbs.push(new NearestVOR(this.instrument));
                         }
@@ -569,22 +563,23 @@ class NearestVORList {
         if (NearestVORList.readManager.AddToQueue(this.instrument, this)) {
             this.loadState = 0;
             this.needUpdate = false;
-        } else {
+        }
+        else {
             this.needUpdate = true;
         }
     }
     GetTable(_startIndex, _prefix) {
-        let html = "";
-        let index;
-        for (let i = 0; i < 5; i++) {
+        var html = "";
+        var index;
+        for (var i = 0; i < 5; i++) {
             index = i + _startIndex;
             html += "<tr>";
             if (index > this.vors.length) {
                 html += "<td></td><td></td><td></td><td></td><td></td>";
-            } else {
+            }
+            else {
                 html += '<td class="SelectableElement" id="' + _prefix + "_" + i + '">' + this.vors[index].ident + '</td>';
-                const image = this.vors[index].imageFileName();
-                html += '<td> <img src="/Pages/VCockpit/Instruments/NavSystems/Shared/Images/' + image + '"></td>';
+                html += '<td> <img src="/Pages/VCockpit/Instruments/Shared/Map/Images/' + this.vors[index].imageFileName() + '"></td>';
                 html += '<td>' + fastToFixed(this.vors[index].bearing, 0) + '<div class="Align unit">o<br />M</div></td>';
                 html += '<td>' + fastToFixed(this.vors[index].distance, 1) + '<div class="Align unit">n<br />m</div></td>';
                 html += '<td class="SelectableElement" id="' + _prefix + '_Freq_' + i + '">' + fastToFixed(this.vors[index].frequencyMHz, 2) + '</td>';
@@ -594,7 +589,7 @@ class NearestVORList {
         return html;
     }
     LoadData() {
-        const instrId = this.instrument.instrumentIdentifier;
+        var instrId = this.instrument.instrumentIdentifier;
         switch (this.loadState) {
             case 0:
                 SimVar.SetSimVarValue("C:fs9gps:NearestVorCurrentLatitude", "degree latitude", SimVar.GetSimVarValue("GPS POSITION LAT", "degree latitude", instrId), instrId);
@@ -602,7 +597,7 @@ class NearestVORList {
                 SimVar.SetSimVarValue("C:fs9gps:NearestVorMaximumItems", "number", this.nbMax, instrId);
                 SimVar.SetSimVarValue("C:fs9gps:NearestVorMaximumDistance", "nautical miles", this.milesDistance, instrId);
                 SimVar.GetSimVarArrayValues(this.vorLinesBatch, function (_Values) {
-                    for (let i = 0; i < _Values.length; i++) {
+                    for (var i = 0; i < _Values.length; i++) {
                         if (i > this.vors.length - 1) {
                             this.vors.push(new NearestVOR(this.instrument));
                         }
@@ -620,7 +615,7 @@ class NearestVORList {
                     this.loadState++;
                 }.bind(this), instrId);
                 SimVar.GetSimVarArrayValues(this.vorSelectedBatch, function (_Values) {
-                    for (let i = 0; i < _Values.length; i++) {
+                    for (var i = 0; i < _Values.length; i++) {
                         if (i > this.vors.length - 1) {
                             this.vors.push(new NearestVOR(this.instrument));
                         }
@@ -683,12 +678,13 @@ class NearestAirspaceList {
         if (NearestAirspaceList.readManager.AddToQueue(this.instrument, this)) {
             this.loadState = 0;
             this.needUpdate = false;
-        } else {
+        }
+        else {
             this.needUpdate = true;
         }
     }
     LoadData() {
-        const instrId = this.instrument.instrumentIdentifier;
+        var instrId = this.instrument.instrumentIdentifier;
         switch (this.loadState) {
             case 0:
                 SimVar.SetSimVarValue("C:fs9gps:NearestAirspaceCurrentLatitude", "degree latitude", SimVar.GetSimVarValue("GPS POSITION LAT", "degree latitude", instrId), instrId);
@@ -707,8 +703,8 @@ class NearestAirspaceList {
             case 1:
                 SimVar.GetSimVarArrayValues(this.batch, function (_Values) {
                     this.airspaces = [];
-                    for (let i = 0; i < _Values.length && i < 100; i++) {
-                        const airspace = new NearestAirspace();
+                    for (var i = 0; i < _Values.length && i < 100; i++) {
+                        var airspace = new NearestAirspace();
                         airspace.name = Utils.Translate(_Values[i][0]);
                         airspace.ident = (airspace.name + "_" + i).replace(new RegExp(" ", "g"), "");
                         airspace.ident = airspace.ident.replace(new RegExp("/", "g"), "");

@@ -2,7 +2,7 @@
   "waypointLabelFontSize": "10px",
   "waypointIconSize": 10,
   "airplaneIconSize": 32,
-  "imagesDir": "../../../NavSystems/Shared/Images/",
+  "imagesDir": "../Images/",
   "runwayFillColor": "white",
   "runwayStrokeColor": "red",
   "runwayStrokeWidth": 3,

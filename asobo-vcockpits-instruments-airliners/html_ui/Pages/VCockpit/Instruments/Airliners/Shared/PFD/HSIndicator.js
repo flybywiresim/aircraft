@@ -41,20 +41,21 @@ class Jet_PFD_HSIndicator extends HTMLElement {
         Utils.RemoveAllChildren(this);
         if (this.aircraft == Aircraft.B747_8 || this.aircraft == Aircraft.AS01B) {
             this.construct_B747_8();
-        } else {
+        }
+        else {
             this.construct_A320_Neo();
         }
     }
     construct_B747_8() {
-        const posX = 0;
-        const posY = 0;
-        const width = 400;
-        const height = 400;
+        var posX = 0;
+        var posY = 0;
+        var width = 400;
+        var height = 400;
         this.rootSVG = document.createElementNS(Avionics.SVG.NS, "svg");
         this.rootSVG.setAttribute("id", "ViewBox");
         this.rootSVG.setAttribute("viewBox", "0 0 " + width + " " + height);
         {
-            const circleRadius = 80;
+            let circleRadius = 80;
             this.rotatingCompass = document.createElementNS(Avionics.SVG.NS, "g");
             this.rotatingCompass.setAttribute("id", "Circle");
             this.rootSVG.appendChild(this.rotatingCompass);
@@ -62,22 +63,22 @@ class Jet_PFD_HSIndicator extends HTMLElement {
                 this.rotatingCompassX = posX + width * 0.5;
                 this.rotatingCompassY = posY + height * 0.5;
                 {
-                    const circle = document.createElementNS(Avionics.SVG.NS, "circle");
+                    let circle = document.createElementNS(Avionics.SVG.NS, "circle");
                     circle.setAttribute("cx", this.rotatingCompassX.toString());
                     circle.setAttribute("cy", this.rotatingCompassY.toString());
                     circle.setAttribute("r", circleRadius.toString());
                     circle.setAttribute("fill", "#343B51");
                     this.rotatingCompass.appendChild(circle);
                 }
-                const graduationsGroup = document.createElementNS(Avionics.SVG.NS, "g");
+                let graduationsGroup = document.createElementNS(Avionics.SVG.NS, "g");
                 graduationsGroup.setAttribute("id", "Graduations");
                 this.rotatingCompass.appendChild(graduationsGroup);
                 {
                     let angle = 0;
                     for (let i = 0; i < 72; i++) {
-                        const isPrimary = (i % 2 == 0) ? true : false;
-                        const length = (isPrimary) ? 3 : 2;
-                        const line = document.createElementNS(Avionics.SVG.NS, "line");
+                        let isPrimary = (i % 2 == 0) ? true : false;
+                        let length = (isPrimary) ? 3 : 2;
+                        let line = document.createElementNS(Avionics.SVG.NS, "line");
                         line.setAttribute("x1", this.rotatingCompassX.toString());
                         line.setAttribute("y1", (this.rotatingCompassY - circleRadius).toString());
                         line.setAttribute("x2", this.rotatingCompassX.toString());
@@ -88,10 +89,9 @@ class Jet_PFD_HSIndicator extends HTMLElement {
                         graduationsGroup.appendChild(line);
                         if (isPrimary) {
                             let fontSize = (this.fontSize * 0.20);
-                            if (angle % 90 == 0) {
+                            if (angle % 90 == 0)
                                 fontSize = (this.fontSize * 0.3);
-                            }
-                            const text = document.createElementNS(Avionics.SVG.NS, "text");
+                            let text = document.createElementNS(Avionics.SVG.NS, "text");
                             text.textContent = (angle / 10).toString();
                             text.setAttribute("x", this.rotatingCompassX.toString());
                             text.setAttribute("y", (this.rotatingCompassY - circleRadius + length + 4).toString());
@@ -131,7 +131,7 @@ class Jet_PFD_HSIndicator extends HTMLElement {
             this.currentTrackGroup.setAttribute("stroke", "white");
             this.currentTrackGroup.setAttribute("stroke-width", "0.75");
             this.rootSVG.appendChild(this.currentTrackGroup);
-            const fixedElements = document.createElementNS(Avionics.SVG.NS, "g");
+            let fixedElements = document.createElementNS(Avionics.SVG.NS, "g");
             fixedElements.setAttribute("id", "FixedElements");
             this.rootSVG.appendChild(fixedElements);
             {
@@ -155,7 +155,7 @@ class Jet_PFD_HSIndicator extends HTMLElement {
                 this.selectedHeadingTextRef.setAttribute("text-anchor", "end");
                 this.selectedHeadingTextRef.setAttribute("alignment-baseline", "central");
                 fixedElements.appendChild(this.selectedHeadingTextRef);
-                const topTriangle = document.createElementNS(Avionics.SVG.NS, "path");
+                let topTriangle = document.createElementNS(Avionics.SVG.NS, "path");
                 topTriangle.setAttribute("d", "M " + this.rotatingCompassX + " " + (this.rotatingCompassY - circleRadius) + " l-3.5 -5.5 l7 0 Z");
                 topTriangle.setAttribute("fill", "transparent");
                 topTriangle.setAttribute("stroke", "white");
@@ -171,23 +171,24 @@ class Jet_PFD_HSIndicator extends HTMLElement {
         this.rootSVG.setAttribute("viewBox", "0 0 550 250");
         this.refStartX = 25;
         this.refWidth = 500;
-        const posX = this.refStartX;
-        const posY = 5;
-        const width = this.refWidth;
-        const height = 100;
+        var posX = this.refStartX;
+        var posY = 5;
+        var width = this.refWidth;
+        var height = 100;
         if (!this.rootGroup) {
             this.rootGroup = document.createElementNS(Avionics.SVG.NS, "g");
             this.rootGroup.setAttribute("id", "HS");
-        } else {
+        }
+        else {
             Utils.RemoveAllChildren(this.rootGroup);
         }
         this.rootSVG.appendChild(this.rootGroup);
         if (!this.centerSVG) {
             this.centerSVG = document.createElementNS(Avionics.SVG.NS, "svg");
             this.centerSVG.setAttribute("id", "CenterGroup");
-        } else {
-            Utils.RemoveAllChildren(this.centerSVG);
         }
+        else
+            Utils.RemoveAllChildren(this.centerSVG);
         this.centerSVG.setAttribute("x", posX.toString());
         this.centerSVG.setAttribute("y", posY.toString());
         this.centerSVG.setAttribute("width", width.toString());
@@ -196,11 +197,11 @@ class Jet_PFD_HSIndicator extends HTMLElement {
         this.centerSVG.setAttribute("viewBox", "0 0 " + width + " " + height);
         this.rootGroup.appendChild(this.centerSVG);
         {
-            const _top = 35;
-            const _left = 0;
-            const _width = width;
-            const _height = 80;
-            const bg = document.createElementNS(Avionics.SVG.NS, "rect");
+            var _top = 35;
+            var _left = 0;
+            var _width = width;
+            var _height = 80;
+            var bg = document.createElementNS(Avionics.SVG.NS, "rect");
             bg.setAttribute("x", _left.toString());
             bg.setAttribute("y", _top.toString());
             bg.setAttribute("width", _width.toString());
@@ -210,7 +211,7 @@ class Jet_PFD_HSIndicator extends HTMLElement {
             bg.setAttribute("stroke-width", this.strokeSize.toString());
             bg.setAttribute("stroke-opacity", this.strokeOpacity);
             this.centerSVG.appendChild(bg);
-            const graduationGroup = document.createElementNS(Avionics.SVG.NS, "g");
+            var graduationGroup = document.createElementNS(Avionics.SVG.NS, "g");
             graduationGroup.setAttribute("id", "Graduations");
             {
                 this.graduationScrollPosX = _left + _width * 0.5;
@@ -220,9 +221,9 @@ class Jet_PFD_HSIndicator extends HTMLElement {
                     for (var i = 0; i < this.totalGraduations; i++) {
                         var line = new Avionics.SVGGraduation();
                         line.IsPrimary = (i % (this.nbSecondaryGraduations + 1)) ? false : true;
-                        const lineWidth = line.IsPrimary ? 5 : 5;
-                        const lineHeight = line.IsPrimary ? 25 : 12;
-                        const linePosY = 0;
+                        var lineWidth = line.IsPrimary ? 5 : 5;
+                        var lineHeight = line.IsPrimary ? 25 : 12;
+                        var linePosY = 0;
                         line.SVGLine = document.createElementNS(Avionics.SVG.NS, "rect");
                         line.SVGLine.setAttribute("y", linePosY.toString());
                         line.SVGLine.setAttribute("width", lineWidth.toString());
@@ -252,18 +253,18 @@ class Jet_PFD_HSIndicator extends HTMLElement {
             this.selectedHeadingGroup = document.createElementNS(Avionics.SVG.NS, "g");
             this.selectedHeadingGroup.setAttribute("id", "Heading");
             {
-                const headingPosX = _left + _width * 0.5 - 2;
-                const headingPosY = posY;
-                const headingWidth = 35;
-                const headingHeight = _height;
-                const headingSVG = document.createElementNS(Avionics.SVG.NS, "svg");
+                var headingPosX = _left + _width * 0.5 - 2;
+                var headingPosY = posY;
+                var headingWidth = 35;
+                var headingHeight = _height;
+                let headingSVG = document.createElementNS(Avionics.SVG.NS, "svg");
                 headingSVG.setAttribute("x", (headingPosX - headingWidth * 0.5).toString());
                 headingSVG.setAttribute("y", headingPosY.toString());
                 headingSVG.setAttribute("width", headingWidth.toString());
                 headingSVG.setAttribute("height", headingHeight.toString());
                 headingSVG.setAttribute("viewBox", "0 0 " + headingWidth + " " + headingHeight);
                 {
-                    const headingShape = document.createElementNS(Avionics.SVG.NS, "path");
+                    let headingShape = document.createElementNS(Avionics.SVG.NS, "path");
                     headingShape.setAttribute("fill", "transparent");
                     headingShape.setAttribute("stroke", "#00F2FF");
                     headingShape.setAttribute("stroke-width", "4");
@@ -276,18 +277,18 @@ class Jet_PFD_HSIndicator extends HTMLElement {
             this.currentTrackGroup = document.createElementNS(Avionics.SVG.NS, "g");
             this.currentTrackGroup.setAttribute("id", "CurrentTrack");
             {
-                const trackPosX = _left + _width * 0.5;
-                const trackPosY = posY + 30;
-                const trackWidth = 28;
-                const trackHeight = _height;
-                const trackSVG = document.createElementNS(Avionics.SVG.NS, "svg");
+                var trackPosX = _left + _width * 0.5;
+                var trackPosY = posY + 30;
+                var trackWidth = 28;
+                var trackHeight = _height;
+                let trackSVG = document.createElementNS(Avionics.SVG.NS, "svg");
                 trackSVG.setAttribute("x", (trackPosX - trackWidth * 0.5).toString());
                 trackSVG.setAttribute("y", trackPosY.toString());
                 trackSVG.setAttribute("width", trackWidth.toString());
                 trackSVG.setAttribute("height", trackHeight.toString());
                 trackSVG.setAttribute("viewBox", "0 0 " + trackWidth + " " + trackHeight);
                 {
-                    const trackShape = document.createElementNS(Avionics.SVG.NS, "path");
+                    let trackShape = document.createElementNS(Avionics.SVG.NS, "path");
                     trackShape.setAttribute("fill", "transparent");
                     trackShape.setAttribute("stroke", "#00FF21");
                     trackShape.setAttribute("stroke-width", "4");
@@ -300,18 +301,18 @@ class Jet_PFD_HSIndicator extends HTMLElement {
             this.ILSBeaconGroup = document.createElementNS(Avionics.SVG.NS, "g");
             this.ILSBeaconGroup.setAttribute("id", "ILSBeacon");
             {
-                const ilsPosX = _left + _width * 0.5 + 2.5;
-                const ilsPosY = posY + 45;
-                const ilsWidth = 30;
-                const ilsHeight = _height;
-                const ilsSVG = document.createElementNS(Avionics.SVG.NS, "svg");
+                var ilsPosX = _left + _width * 0.5 + 2.5;
+                var ilsPosY = posY + 45;
+                var ilsWidth = 30;
+                var ilsHeight = _height;
+                let ilsSVG = document.createElementNS(Avionics.SVG.NS, "svg");
                 ilsSVG.setAttribute("x", (ilsPosX - ilsWidth * 0.5).toString());
                 ilsSVG.setAttribute("y", ilsPosY.toString());
                 ilsSVG.setAttribute("width", ilsWidth.toString());
                 ilsSVG.setAttribute("height", ilsHeight.toString());
                 ilsSVG.setAttribute("viewBox", "0 0 " + ilsWidth + " " + ilsHeight);
                 {
-                    const ilsShape = document.createElementNS(Avionics.SVG.NS, "path");
+                    let ilsShape = document.createElementNS(Avionics.SVG.NS, "path");
                     ilsShape.setAttribute("fill", "transparent");
                     ilsShape.setAttribute("stroke", "#FF0CE2");
                     ilsShape.setAttribute("stroke-width", "5");
@@ -321,23 +322,23 @@ class Jet_PFD_HSIndicator extends HTMLElement {
                 this.ILSBeaconGroup.appendChild(ilsSVG);
             }
             this.centerSVG.appendChild(this.ILSBeaconGroup);
-            const cursorPosX = _left + _width * 0.5;
-            const cursorPosY = posY;
-            const cursorWidth = 35;
-            const cursorHeight = _height;
+            var cursorPosX = _left + _width * 0.5;
+            var cursorPosY = posY;
+            var cursorWidth = 35;
+            var cursorHeight = _height;
             if (!this.cursorSVG) {
                 this.cursorSVG = document.createElementNS(Avionics.SVG.NS, "svg");
                 this.cursorSVG.setAttribute("id", "CursorGroup");
-            } else {
-                Utils.RemoveAllChildren(this.cursorSVG);
             }
+            else
+                Utils.RemoveAllChildren(this.cursorSVG);
             this.cursorSVG.setAttribute("x", (cursorPosX - cursorWidth * 0.5).toString());
             this.cursorSVG.setAttribute("y", cursorPosY.toString());
             this.cursorSVG.setAttribute("width", cursorWidth.toString());
             this.cursorSVG.setAttribute("height", cursorHeight.toString());
             this.cursorSVG.setAttribute("viewBox", "0 0 " + cursorWidth + " " + cursorHeight);
             {
-                const cursorShape = document.createElementNS(Avionics.SVG.NS, "path");
+                let cursorShape = document.createElementNS(Avionics.SVG.NS, "path");
                 cursorShape.setAttribute("fill", "yellow");
                 cursorShape.setAttribute("fill-opacity", this.cursorOpacity);
                 cursorShape.setAttribute("d", "M 15 2 L 25 2 L 25 53 L 15 53 L 15 2 Z");
@@ -345,12 +346,12 @@ class Jet_PFD_HSIndicator extends HTMLElement {
             }
             this.centerSVG.appendChild(this.cursorSVG);
         }
-        const rectWidth = 70;
+        let rectWidth = 70;
         this.ILSOffscreenGroup = document.createElementNS(Avionics.SVG.NS, "g");
         this.ILSOffscreenGroup.setAttribute("id", "ILSOffscreen");
         this.rootSVG.appendChild(this.ILSOffscreenGroup);
         {
-            const rect = document.createElementNS(Avionics.SVG.NS, "rect");
+            let rect = document.createElementNS(Avionics.SVG.NS, "rect");
             rect.setAttribute("x", (-rectWidth * 0.5).toString());
             rect.setAttribute("y", "60");
             rect.setAttribute("width", rectWidth.toString());
@@ -372,26 +373,25 @@ class Jet_PFD_HSIndicator extends HTMLElement {
         this.appendChild(this.rootSVG);
     }
     update(dTime) {
-        if (this.rotatingCompass) {
+        if (this.rotatingCompass)
             this.updateCircle();
-        } else {
+        else
             this.updateRibbon();
-        }
     }
     updateRibbon() {
-        const compass = SimVar.GetSimVarValue("PLANE HEADING DEGREES MAGNETIC", "degree");
-        const selectedHeading = SimVar.GetSimVarValue("AUTOPILOT HEADING LOCK DIR", "degree");
-        const track = SimVar.GetSimVarValue("GPS GROUND MAGNETIC TRACK", "degree");
+        var compass = SimVar.GetSimVarValue("PLANE HEADING DEGREES MAGNETIC", "degree");
+        var selectedHeading = SimVar.GetSimVarValue("AUTOPILOT HEADING LOCK DIR", "degree");
+        var track = SimVar.GetSimVarValue("GPS GROUND MAGNETIC TRACK", "degree");
         if (this.graduations) {
             this.graduationScroller.scroll(compass);
-            let currentVal = this.graduationScroller.firstValue;
-            let currentX = this.graduationScrollPosX - this.graduationScroller.offsetY * this.graduationSpacing * (this.nbSecondaryGraduations + 1);
-            for (let i = 0; i < this.totalGraduations; i++) {
+            var currentVal = this.graduationScroller.firstValue;
+            var currentX = this.graduationScrollPosX - this.graduationScroller.offsetY * this.graduationSpacing * (this.nbSecondaryGraduations + 1);
+            for (var i = 0; i < this.totalGraduations; i++) {
                 var posX = currentX;
-                const posY = this.graduationScrollPosY;
+                var posY = this.graduationScrollPosY;
                 this.graduations[i].SVGLine.setAttribute("transform", "translate(" + posX.toString() + " " + posY.toString() + ")");
                 if (this.graduations[i].SVGText1) {
-                    const roundedVal = Math.floor(currentVal / 10);
+                    var roundedVal = Math.floor(currentVal / 10);
                     this.graduations[i].SVGText1.textContent = roundedVal.toString();
                     this.graduations[i].SVGText1.setAttribute("transform", "translate(" + posX.toString() + " " + posY.toString() + ")");
                     currentVal = this.graduationScroller.nextValue;
@@ -400,60 +400,59 @@ class Jet_PFD_HSIndicator extends HTMLElement {
             }
         }
         if (this.selectedHeadingGroup) {
-            const autoPilotActive = Simplane.getAutoPilotHeadingSelected();
+            var autoPilotActive = Simplane.getAutoPilotHeadingSelected();
             if (autoPilotActive) {
                 var delta = selectedHeading - compass;
-                if (delta > 180) {
+                if (delta > 180)
                     delta = delta - 360;
-                } else if (delta < -180) {
+                else if (delta < -180)
                     delta = delta + 360;
-                }
                 var posX = delta * this.graduationSpacing * (this.nbSecondaryGraduations + 1) / this.graduationScroller.increment;
                 this.selectedHeadingGroup.setAttribute("transform", "translate(" + posX.toString() + " 0)");
                 this.selectedHeadingGroup.setAttribute("visibility", "visible");
-            } else {
+            }
+            else {
                 this.selectedHeadingGroup.setAttribute("visibility", "hidden");
             }
         }
         if (this.currentTrackGroup) {
             var delta = track - compass;
-            if (delta > 180) {
+            if (delta > 180)
                 delta = delta - 360;
-            } else if (delta < -180) {
+            else if (delta < -180)
                 delta = delta + 360;
-            }
             var posX = delta * this.graduationSpacing * (this.nbSecondaryGraduations + 1) / this.graduationScroller.increment;
             this.currentTrackGroup.setAttribute("transform", "translate(" + posX.toString() + " 0)");
         }
         if (this._showILS) {
             if (this.ILSBeaconGroup && this.ILSOffscreenGroup) {
-                const localizer = this.gps.radioNav.getBestILSBeacon();
+                let localizer = this.gps.radioNav.getBestILSBeacon();
                 if (localizer.id > 0) {
                     var delta = localizer.course - compass;
-                    if (delta > 180) {
+                    if (delta > 180)
                         delta = delta - 360;
-                    } else if (delta < -180) {
+                    else if (delta < -180)
                         delta = delta + 360;
-                    }
                     var posX = delta * this.graduationSpacing * (this.nbSecondaryGraduations + 1) / this.graduationScroller.increment;
                     if (posX > -(this.refWidth * 0.5) && posX < (this.refWidth * 0.5)) {
                         this.ILSBeaconGroup.setAttribute("visibility", "visible");
                         this.ILSBeaconGroup.setAttribute("transform", "translate(" + posX.toString() + " 0)");
                         this.ILSOffscreenGroup.setAttribute("visibility", "hidden");
-                    } else {
+                    }
+                    else {
                         let pos;
-                        if (posX <= -(this.refWidth * 0.5)) {
+                        if (posX <= -(this.refWidth * 0.5))
                             pos = this.refStartX + 15;
-                        } else {
+                        else
                             pos = this.refStartX + this.refWidth - 15;
-                        }
-                        const rounded = Math.round(localizer.course);
+                        let rounded = Math.round(localizer.course);
                         this.ILSOffscreenText.textContent = Utils.leadingZeros(rounded, 3);
                         this.ILSOffscreenGroup.setAttribute("transform", "translate(" + pos + " 0)");
                         this.ILSOffscreenGroup.setAttribute("visibility", "visible");
                         this.ILSBeaconGroup.setAttribute("visibility", "hidden");
                     }
-                } else {
+                }
+                else {
                     this.ILSOffscreenGroup.setAttribute("visibility", "hidden");
                     this.ILSBeaconGroup.setAttribute("visibility", "hidden");
                 }
@@ -461,33 +460,32 @@ class Jet_PFD_HSIndicator extends HTMLElement {
         }
     }
     updateCircle() {
-        const compass = SimVar.GetSimVarValue("PLANE HEADING DEGREES MAGNETIC", "degree");
+        var compass = SimVar.GetSimVarValue("PLANE HEADING DEGREES MAGNETIC", "degree");
         if (this.rotatingCompass) {
             this.rotatingCompass.setAttribute("transform", "rotate(" + (-compass) + " " + this.rotatingCompassX + " " + this.rotatingCompassY + ")");
         }
         if (this.selectedHeadingGroup) {
-            const autoPilotActive = true;
+            var autoPilotActive = true;
             if (autoPilotActive) {
-                const selectedHeading = SimVar.GetSimVarValue("AUTOPILOT HEADING LOCK DIR", "Degree");
+                var selectedHeading = SimVar.GetSimVarValue("AUTOPILOT HEADING LOCK DIR", "Degree");
                 var delta = compass - selectedHeading;
                 this.selectedHeadingGroup.setAttribute("transform", "rotate(" + (-delta) + " " + this.rotatingCompassX + " " + this.rotatingCompassY + ")");
                 this.selectedHeadingGroup.setAttribute("visibility", "visible");
                 this.selectedHeadingText.textContent = Math.round(selectedHeading) + "H";
-                const headingLocked = Simplane.getAutoPilotHeadingLockActive();
-                if (this.selectedHeadingLine) {
+                let headingLocked = Simplane.getAutoPilotHeadingLockActive();
+                if (this.selectedHeadingLine)
                     this.selectedHeadingLine.classList.toggle('hide', headingLocked);
-                }
-            } else {
+            }
+            else {
                 this.selectedHeadingGroup.setAttribute("visibility", "hidden");
                 this.selectedHeadingText.textContent = "";
             }
         }
         if (this.currentTrackGroup) {
-            let track = SimVar.GetSimVarValue("GPS GROUND MAGNETIC TRACK", "degree");
-            const groundSpeed = SimVar.GetSimVarValue("GPS GROUND SPEED", "knots");
-            if (groundSpeed <= 10) {
+            var track = SimVar.GetSimVarValue("GPS GROUND MAGNETIC TRACK", "degree");
+            var groundSpeed = SimVar.GetSimVarValue("GPS GROUND SPEED", "knots");
+            if (groundSpeed <= 10)
                 track = compass;
-            }
             var delta = compass - track;
             this.currentTrackGroup.setAttribute("transform", "rotate(" + (-delta) + " " + this.rotatingCompassX + " " + this.rotatingCompassY + ")");
         }
