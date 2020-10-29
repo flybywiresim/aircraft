@@ -1470,7 +1470,8 @@ class FMCMainDisplay extends BaseAirliners {
     }
     setPerfApprQNH(s) {
         const value = parseFloat(s);
-        if (/[0-9]{2}.[0-9]{2}/.test(value)) {
+        const regex = /[0-9]{2}.[0-9]{2}/;
+        if (regex.test(value)) {
             this.perfApprQNH = value;
             return true;
         } else if (isFinite(value)) {

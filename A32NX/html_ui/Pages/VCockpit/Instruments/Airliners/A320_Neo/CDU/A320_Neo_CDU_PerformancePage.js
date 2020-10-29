@@ -482,7 +482,8 @@ class CDUPerformancePage {
             titleColor = "green";
         }
         let qnhCell = "[ ]";
-        if (isFinite(mcdu.perfApprQNH) | /[0-9]{2}.[0-9]{2}/.test(mcdu.perfApprQNH)) {
+        const regex = /[0-9]{2}.[0-9]{2}/;
+        if (isFinite(mcdu.perfApprQNH) || regex.test(mcdu.perfApprQNH)) {
             qnhCell = mcdu.perfApprQNH;
         }
         mcdu.onLeftInput[0] = () => {
