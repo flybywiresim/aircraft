@@ -14,6 +14,10 @@ namespace AK
     namespace EVENTS
     {
         static const AkUniqueID PLAY_ASOBO_A320_NEO_100 = 1943534218U;
+        static const AkUniqueID PLAY_ASOBO_A320_NEO_APLOCK = 2605664391U;
+        static const AkUniqueID PLAY_ASOBO_A320_NEO_APUNLOCK = 834519314U;
+        static const AkUniqueID PLAY_ASOBO_A320_NEO_AURAL_100ABOVE = 1287945483U;
+        static const AkUniqueID PLAY_ASOBO_A320_NEO_AURAL_MINIMUMNEW = 1432371593U;
         static const AkUniqueID PLAY_ASOBO_A320_NEO_AURAL_TOO_LOW_FLAPS = 2966091481U;
         static const AkUniqueID PLAY_ASOBO_A320_NEO_AURAL_TOO_LOW_GEAR = 457235918U;
         static const AkUniqueID PLAY_ASOBO_A320_NEO_AURAL_TOO_LOW_TERRAIN = 2302432638U;
