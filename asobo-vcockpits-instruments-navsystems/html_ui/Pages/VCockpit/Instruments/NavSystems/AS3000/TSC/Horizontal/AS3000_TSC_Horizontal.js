@@ -1,5 +1,7 @@
 class AS3000_TSC_Horizontal extends AS3000_TSC {
-    get templateID() { return "AS3000_TSC_Horizontal"; }
+    get templateID() {
+        return "AS3000_TSC_Horizontal";
+    }
     connectedCallback() {
         super.connectedCallback();
         this.topKnobText = this.getChildById("SoftKey_1");

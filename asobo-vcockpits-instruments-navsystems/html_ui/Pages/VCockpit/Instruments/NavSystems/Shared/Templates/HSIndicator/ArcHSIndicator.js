@@ -8,26 +8,26 @@ class ArcHSIIndicator extends HSIndicator {
         this.appendChild(this.root);
         {
             {
-                let arcSize = 55;
-                let arcRadius = 77.5;
-                let arcWidth = 5;
-                let beginPointHalfUnitSize = (arcSize / 2) / arcRadius;
-                let beginPointTopX = 50 - Math.sin(beginPointHalfUnitSize) * (arcRadius + arcWidth / 2);
-                let beginPointBotX = 50 - Math.sin(beginPointHalfUnitSize) * (arcRadius - arcWidth / 2);
-                let endPointTopX = 50 + Math.sin(beginPointHalfUnitSize) * (arcRadius + arcWidth / 2);
-                let endPointBotX = 50 + Math.sin(beginPointHalfUnitSize) * (arcRadius - arcWidth / 2);
-                let pointTopY = 120 - Math.cos(beginPointHalfUnitSize) * (arcRadius + arcWidth / 2);
-                let pointBotY = 120 - Math.cos(beginPointHalfUnitSize) * (arcRadius - arcWidth / 2);
-                let turnRateBackground = document.createElementNS(Avionics.SVG.NS, "path");
+                const arcSize = 55;
+                const arcRadius = 77.5;
+                const arcWidth = 5;
+                const beginPointHalfUnitSize = (arcSize / 2) / arcRadius;
+                const beginPointTopX = 50 - Math.sin(beginPointHalfUnitSize) * (arcRadius + arcWidth / 2);
+                const beginPointBotX = 50 - Math.sin(beginPointHalfUnitSize) * (arcRadius - arcWidth / 2);
+                const endPointTopX = 50 + Math.sin(beginPointHalfUnitSize) * (arcRadius + arcWidth / 2);
+                const endPointBotX = 50 + Math.sin(beginPointHalfUnitSize) * (arcRadius - arcWidth / 2);
+                const pointTopY = 120 - Math.cos(beginPointHalfUnitSize) * (arcRadius + arcWidth / 2);
+                const pointBotY = 120 - Math.cos(beginPointHalfUnitSize) * (arcRadius - arcWidth / 2);
+                const turnRateBackground = document.createElementNS(Avionics.SVG.NS, "path");
                 let path = "M" + beginPointBotX + " " + pointBotY + "A " + (arcRadius - arcWidth / 2) + " " + (arcRadius - arcWidth / 2) + " 0 0 1 " + endPointBotX + " " + pointBotY;
                 path += "L" + endPointTopX + " " + pointTopY + "A " + (arcRadius + arcWidth / 2) + " " + (arcRadius + arcWidth / 2) + " 0 0 0 " + beginPointTopX + " " + pointTopY;
                 turnRateBackground.setAttribute("d", path);
                 turnRateBackground.setAttribute("fill", "#1a1d21");
                 turnRateBackground.setAttribute("fill-opacity", "0.25");
                 this.root.appendChild(turnRateBackground);
-                let lines = [-18, -9, 9, 18];
+                const lines = [-18, -9, 9, 18];
                 for (let i = 0; i < lines.length; i++) {
-                    let line = document.createElementNS(Avionics.SVG.NS, "rect");
+                    const line = document.createElementNS(Avionics.SVG.NS, "rect");
                     line.setAttribute("x", "49.5");
                     line.setAttribute("y", (45 - arcWidth).toString());
                     line.setAttribute("width", "1");
@@ -38,7 +38,7 @@ class ArcHSIIndicator extends HSIndicator {
                 }
             }
             {
-                let turnRateArc = document.createElementNS(Avionics.SVG.NS, "path");
+                const turnRateArc = document.createElementNS(Avionics.SVG.NS, "path");
                 this.turnRateArc = turnRateArc;
                 turnRateArc.setAttribute("fill", "#d12bc7");
                 this.root.appendChild(turnRateArc);
@@ -48,7 +48,7 @@ class ArcHSIIndicator extends HSIndicator {
             this.backgroundCircle = document.createElementNS(Avionics.SVG.NS, "g");
             this.root.appendChild(this.backgroundCircle);
             {
-                let circle = document.createElementNS(Avionics.SVG.NS, "circle");
+                const circle = document.createElementNS(Avionics.SVG.NS, "circle");
                 circle.setAttribute("cx", "50");
                 circle.setAttribute("cy", "120");
                 circle.setAttribute("r", "75");
@@ -59,8 +59,8 @@ class ArcHSIIndicator extends HSIndicator {
             {
                 let angle = 0;
                 for (let i = 0; i < 72; i++) {
-                    let line = document.createElementNS(Avionics.SVG.NS, "rect");
-                    let length = i % 2 == 0 ? 4 : 2;
+                    const line = document.createElementNS(Avionics.SVG.NS, "rect");
+                    const length = i % 2 == 0 ? 4 : 2;
                     line.setAttribute("x", "49.5");
                     line.setAttribute("y", "45");
                     line.setAttribute("width", "1");
@@ -72,10 +72,10 @@ class ArcHSIIndicator extends HSIndicator {
                 }
             }
             {
-                let texts = ["N", "3", "6", "E", "12", "15", "S", "21", "24", "W", "30", "33"];
+                const texts = ["N", "3", "6", "E", "12", "15", "S", "21", "24", "W", "30", "33"];
                 let angle = 0;
                 for (let i = 0; i < texts.length; i++) {
-                    let text = document.createElementNS(Avionics.SVG.NS, "text");
+                    const text = document.createElementNS(Avionics.SVG.NS, "text");
                     text.textContent = texts[i];
                     text.setAttribute("x", "50");
                     text.setAttribute("y", (i % 3) == 0 ? "59" : "56");
@@ -113,21 +113,21 @@ class ArcHSIIndicator extends HSIndicator {
             }
         }
         {
-            let topTriangle = document.createElementNS(Avionics.SVG.NS, "polygon");
+            const topTriangle = document.createElementNS(Avionics.SVG.NS, "polygon");
             topTriangle.setAttribute("points", "46,42 54,42 50,48");
             topTriangle.setAttribute("fill", "white");
             topTriangle.setAttribute("stroke", "black");
             this.root.appendChild(topTriangle);
         }
         {
-            let bearingRectangle = document.createElementNS(Avionics.SVG.NS, "rect");
+            const bearingRectangle = document.createElementNS(Avionics.SVG.NS, "rect");
             bearingRectangle.setAttribute("x", "35");
             bearingRectangle.setAttribute("y", "30");
             bearingRectangle.setAttribute("height", "12");
             bearingRectangle.setAttribute("width", "30");
             bearingRectangle.setAttribute("fill", "#1a1d21");
             this.root.appendChild(bearingRectangle);
-            let bearingText = document.createElementNS(Avionics.SVG.NS, "text");
+            const bearingText = document.createElementNS(Avionics.SVG.NS, "text");
             bearingText.setAttribute("fill", "white");
             bearingText.setAttribute("text-anchor", "middle");
             bearingText.setAttribute("x", "50");
@@ -137,10 +137,11 @@ class ArcHSIIndicator extends HSIndicator {
             this.bearingText = bearingText;
             this.root.appendChild(bearingText);
         }
-        if (this.displayStyle == HSIndicatorDisplayType.HUD_Simplified)
+        if (this.displayStyle == HSIndicatorDisplayType.HUD_Simplified) {
             return;
+        }
         {
-            let headingRectangle = document.createElementNS(Avionics.SVG.NS, "rect");
+            const headingRectangle = document.createElementNS(Avionics.SVG.NS, "rect");
             headingRectangle.setAttribute("x", "-28");
             headingRectangle.setAttribute("y", "48");
             headingRectangle.setAttribute("height", "8");
@@ -148,7 +149,7 @@ class ArcHSIIndicator extends HSIndicator {
             headingRectangle.setAttribute("fill", "#1a1d21");
             headingRectangle.setAttribute("fill-opacity", "1");
             this.root.appendChild(headingRectangle);
-            let headingLeftText = document.createElementNS(Avionics.SVG.NS, "text");
+            const headingLeftText = document.createElementNS(Avionics.SVG.NS, "text");
             headingLeftText.textContent = "HDG";
             headingLeftText.setAttribute("fill", "white");
             headingLeftText.setAttribute("x", "-26");
@@ -156,7 +157,7 @@ class ArcHSIIndicator extends HSIndicator {
             headingLeftText.setAttribute("font-size", "7");
             headingLeftText.setAttribute("font-family", "Roboto");
             this.root.appendChild(headingLeftText);
-            let headingValue = document.createElementNS(Avionics.SVG.NS, "text");
+            const headingValue = document.createElementNS(Avionics.SVG.NS, "text");
             headingValue.setAttribute("fill", "#36c8d2");
             headingValue.setAttribute("x", "-10");
             headingValue.setAttribute("y", "54.4");
@@ -166,14 +167,14 @@ class ArcHSIIndicator extends HSIndicator {
             this.root.appendChild(headingValue);
         }
         {
-            let courseRectangle = document.createElementNS(Avionics.SVG.NS, "rect");
+            const courseRectangle = document.createElementNS(Avionics.SVG.NS, "rect");
             courseRectangle.setAttribute("x", "92");
             courseRectangle.setAttribute("y", "48");
             courseRectangle.setAttribute("height", "8");
             courseRectangle.setAttribute("width", "36");
             courseRectangle.setAttribute("fill", "#1a1d21");
             this.root.appendChild(courseRectangle);
-            let courseLeftText = document.createElementNS(Avionics.SVG.NS, "text");
+            const courseLeftText = document.createElementNS(Avionics.SVG.NS, "text");
             courseLeftText.textContent = "CRS";
             courseLeftText.setAttribute("fill", "white");
             courseLeftText.setAttribute("x", "94");
@@ -181,7 +182,7 @@ class ArcHSIIndicator extends HSIndicator {
             courseLeftText.setAttribute("font-size", "7");
             courseLeftText.setAttribute("font-family", "Roboto");
             this.root.appendChild(courseLeftText);
-            let courseValue = document.createElementNS(Avionics.SVG.NS, "text");
+            const courseValue = document.createElementNS(Avionics.SVG.NS, "text");
             courseValue.setAttribute("fill", "#d12bc7");
             courseValue.setAttribute("x", "110");
             courseValue.setAttribute("y", "54.4");
@@ -216,7 +217,7 @@ class ArcHSIIndicator extends HSIndicator {
             this.flightPhaseBg.setAttribute("height", "7");
             this.flightPhaseBg.setAttribute("width", "16");
             this.root.appendChild(this.flightPhaseBg);
-            let flightPhase = document.createElementNS(Avionics.SVG.NS, "text");
+            const flightPhase = document.createElementNS(Avionics.SVG.NS, "text");
             flightPhase.textContent = "TERM";
             flightPhase.setAttribute("fill", "#d12bc7");
             flightPhase.setAttribute("x", "65");
@@ -228,7 +229,7 @@ class ArcHSIIndicator extends HSIndicator {
             this.root.appendChild(flightPhase);
         }
         {
-            let cdiBackground = document.createElementNS(Avionics.SVG.NS, "rect");
+            const cdiBackground = document.createElementNS(Avionics.SVG.NS, "rect");
             cdiBackground.setAttribute("x", "10");
             cdiBackground.setAttribute("y", "90");
             cdiBackground.setAttribute("width", "80");
@@ -237,9 +238,9 @@ class ArcHSIIndicator extends HSIndicator {
             cdiBackground.setAttribute("stroke", "white");
             cdiBackground.setAttribute("stroke-width", "1");
             this.root.appendChild(cdiBackground);
-            let circlePosition = [-30, -15, 15, 30];
+            const circlePosition = [-30, -15, 15, 30];
             for (let i = 0; i < circlePosition.length; i++) {
-                let CDICircle = document.createElementNS(Avionics.SVG.NS, "circle");
+                const CDICircle = document.createElementNS(Avionics.SVG.NS, "circle");
                 CDICircle.setAttribute("cx", (50 + circlePosition[i]).toString());
                 CDICircle.setAttribute("cy", "96");
                 CDICircle.setAttribute("r", "1.5");
@@ -256,7 +257,7 @@ class ArcHSIIndicator extends HSIndicator {
             this.cdiCentralLine.setAttribute("fill", "white");
             this.root.appendChild(this.cdiCentralLine);
             {
-                let CDISvg = document.createElementNS(Avionics.SVG.NS, "svg");
+                const CDISvg = document.createElementNS(Avionics.SVG.NS, "svg");
                 CDISvg.setAttribute("x", "10");
                 CDISvg.setAttribute("y", "90");
                 CDISvg.setAttribute("width", "80");
@@ -289,7 +290,7 @@ class ArcHSIIndicator extends HSIndicator {
                 this.dme = document.createElementNS(Avionics.SVG.NS, "g");
                 this.dme.setAttribute("display", "none");
                 this.root.appendChild(this.dme);
-                let dmeZone = document.createElementNS(Avionics.SVG.NS, "rect");
+                const dmeZone = document.createElementNS(Avionics.SVG.NS, "rect");
                 dmeZone.setAttribute("x", "-15");
                 dmeZone.setAttribute("y", "20");
                 dmeZone.setAttribute("height", "26");
@@ -297,7 +298,7 @@ class ArcHSIIndicator extends HSIndicator {
                 dmeZone.setAttribute("fill", "#1a1d21");
                 dmeZone.setAttribute("fill-opacity", "1");
                 this.dme.appendChild(dmeZone);
-                let dme1 = document.createElementNS(Avionics.SVG.NS, "text");
+                const dme1 = document.createElementNS(Avionics.SVG.NS, "text");
                 dme1.textContent = "DME";
                 dme1.setAttribute("fill", "white");
                 dme1.setAttribute("x", "-13");
@@ -343,20 +344,20 @@ class ArcHSIIndicator extends HSIndicator {
                 if (this.dme) {
                     if (this.isDmeDisplayed) {
                         this.dme.setAttribute("display", "inherit");
-                    }
-                    else {
+                    } else {
                         this.dme.setAttribute("display", "none");
                     }
                 }
                 break;
         }
-        if (oldValue == newValue)
+        if (oldValue == newValue) {
             return;
+        }
         switch (name) {
             case "rotation":
                 this.backgroundCircle.setAttribute("transform", "rotate(" + (-newValue) + " 50 120)");
                 if (this.bearingText) {
-                    let brg = fastToFixed(parseFloat(newValue), 0);
+                    const brg = fastToFixed(parseFloat(newValue), 0);
                     this.bearingText.textContent = "000".slice(brg.length) + brg + "°";
                 }
                 break;
@@ -367,7 +368,7 @@ class ArcHSIIndicator extends HSIndicator {
                     if (headingValue == 0) {
                         headingValue = 360;
                     }
-                    let hdg = fastToFixed(headingValue, 0);
+                    const hdg = fastToFixed(headingValue, 0);
                     this.headingText.textContent = "000".slice(hdg.length) + hdg + "°";
                 }
                 break;
@@ -375,27 +376,25 @@ class ArcHSIIndicator extends HSIndicator {
                 if (this.course) {
                     this.course.setAttribute("transform", "rotate(" + (newValue) + ", 50, 120)");
                     if (this.courseText) {
-                        let crs = fastToFixed(parseFloat(newValue), 0);
+                        const crs = fastToFixed(parseFloat(newValue), 0);
                         this.courseText.textContent = "000".slice(crs.length) + crs + "°";
                     }
                 }
                 break;
             case "course_deviation":
                 if (this.CDI) {
-                    let deviation = parseFloat(newValue);
+                    const deviation = parseFloat(newValue);
                     if (this.sourceIsGps) {
                         this.crossTrackGoal = (Math.min(Math.max(deviation, -this.crosstrackFullError * 4 / 3), this.crosstrackFullError * 4 / 3) * (30 / this.crosstrackFullError));
                         if (Math.abs(deviation) < this.crosstrackFullError) {
                             Avionics.Utils.diffAndSetAttribute(this.crossTrackError, "visibility", "hidden");
                             Avionics.Utils.diffAndSetAttribute(this.cdiCentralLine, "visibility", "visible");
-                        }
-                        else {
+                        } else {
                             Avionics.Utils.diffAndSetAttribute(this.crossTrackError, "visibility", "visible");
                             Avionics.Utils.diffAndSetAttribute(this.cdiCentralLine, "visibility", "hidden");
                             this.crossTrackError.textContent = fastToFixed(Math.abs(deviation), 1) + "NM";
                         }
-                    }
-                    else {
+                    } else {
                         Avionics.Utils.diffAndSetAttribute(this.crossTrackError, "visibility", "hidden");
                         this.crossTrackGoal = (Math.min(Math.max(deviation, -4 / 3), 4 / 3) * 30);
                     }
@@ -404,32 +403,31 @@ class ArcHSIIndicator extends HSIndicator {
             case "turn_rate":
                 {
                     if (this.turnRateArc) {
-                        let value = Math.max(Math.min(parseFloat(newValue), 4), -4);
-                        let arcAngle = 6 * value * Math.PI / 180;
-                        let arcRadius = 78;
-                        let arcWidth = 2;
-                        let arrowWidth = 6;
-                        let beginPointTopX = 50;
-                        let beginPointBotX = 50;
-                        let beginPointTopY = 120 - arcRadius - (arcWidth / 2);
-                        let beginPointBotY = 120 - arcRadius + (arcWidth / 2);
-                        let endPointTopX = 50 + Math.sin(arcAngle) * (arcRadius + arcWidth / 2);
-                        let endPointBotX = 50 + Math.sin(arcAngle) * (arcRadius - arcWidth / 2);
-                        let endPointTopY = 120 - Math.cos(arcAngle) * (arcRadius + arcWidth / 2);
-                        let endPointBotY = 120 - Math.cos(arcAngle) * (arcRadius - arcWidth / 2);
+                        const value = Math.max(Math.min(parseFloat(newValue), 4), -4);
+                        const arcAngle = 6 * value * Math.PI / 180;
+                        const arcRadius = 78;
+                        const arcWidth = 2;
+                        const arrowWidth = 6;
+                        const beginPointTopX = 50;
+                        const beginPointBotX = 50;
+                        const beginPointTopY = 120 - arcRadius - (arcWidth / 2);
+                        const beginPointBotY = 120 - arcRadius + (arcWidth / 2);
+                        const endPointTopX = 50 + Math.sin(arcAngle) * (arcRadius + arcWidth / 2);
+                        const endPointBotX = 50 + Math.sin(arcAngle) * (arcRadius - arcWidth / 2);
+                        const endPointTopY = 120 - Math.cos(arcAngle) * (arcRadius + arcWidth / 2);
+                        const endPointBotY = 120 - Math.cos(arcAngle) * (arcRadius - arcWidth / 2);
                         let path;
                         if (value == 4 || value == -4) {
-                            let endPointArrowTopX = 50 + Math.sin(arcAngle) * (arcRadius + arrowWidth / 2);
-                            let endPointArrowBotX = 50 + Math.sin(arcAngle) * (arcRadius - arrowWidth / 2);
-                            let endPointArrowTopY = 120 - Math.cos(arcAngle) * (arcRadius + arrowWidth / 2);
-                            let endPointArrowBotY = 120 - Math.cos(arcAngle) * (arcRadius - arrowWidth / 2);
-                            let endPointArrowEndX = 50 + Math.sin(arcAngle + (value > 0 ? 0.1 : -0.1)) * (arcRadius);
-                            let endPointArrowEndY = 120 - Math.cos(arcAngle + (value > 0 ? 0.1 : -0.1)) * (arcRadius);
+                            const endPointArrowTopX = 50 + Math.sin(arcAngle) * (arcRadius + arrowWidth / 2);
+                            const endPointArrowBotX = 50 + Math.sin(arcAngle) * (arcRadius - arrowWidth / 2);
+                            const endPointArrowTopY = 120 - Math.cos(arcAngle) * (arcRadius + arrowWidth / 2);
+                            const endPointArrowBotY = 120 - Math.cos(arcAngle) * (arcRadius - arrowWidth / 2);
+                            const endPointArrowEndX = 50 + Math.sin(arcAngle + (value > 0 ? 0.1 : -0.1)) * (arcRadius);
+                            const endPointArrowEndY = 120 - Math.cos(arcAngle + (value > 0 ? 0.1 : -0.1)) * (arcRadius);
                             path = "M" + beginPointBotX + " " + beginPointBotY + "A " + (arcRadius - arcWidth / 2) + " " + (arcRadius - arcWidth / 2) + " 0 0 " + (arcAngle > 0 ? "1" : "0") + " " + endPointBotX + " " + endPointBotY;
                             path += "L" + endPointArrowBotX + " " + endPointArrowBotY + " L" + endPointArrowEndX + " " + endPointArrowEndY + " L" + endPointArrowTopX + " " + endPointArrowTopY;
                             path += "L" + endPointTopX + " " + endPointTopY + "A " + (arcRadius + arcWidth / 2) + " " + (arcRadius + arcWidth / 2) + " 0 0 " + (arcAngle > 0 ? "0" : "1") + " " + beginPointTopX + " " + beginPointTopY;
-                        }
-                        else {
+                        } else {
                             path = "M" + beginPointBotX + " " + beginPointBotY + "A " + (arcRadius - arcWidth / 2) + " " + (arcRadius - arcWidth / 2) + " 0 0 " + (arcAngle > 0 ? "1" : "0") + " " + endPointBotX + " " + endPointBotY;
                             path += "L" + endPointTopX + " " + endPointTopY + "A " + (arcRadius + arcWidth / 2) + " " + (arcRadius + arcWidth / 2) + " 0 0 " + (arcAngle > 0 ? "0" : "1") + " " + beginPointTopX + " " + beginPointTopY;
                         }
@@ -440,7 +438,7 @@ class ArcHSIIndicator extends HSIndicator {
             case "nav_source":
                 if (this.navSource) {
                     this.navSource.textContent = newValue;
-                    let rect = this.navSource.getBBox();
+                    const rect = this.navSource.getBBox();
                     this.navSourceBg.setAttribute("width", (rect.width + 2).toString());
                     this.navSourceBg.setAttribute("x", (rect.x - 1).toString());
                     switch (newValue) {
@@ -484,7 +482,7 @@ class ArcHSIIndicator extends HSIndicator {
             case "flight_phase":
                 if (this.flightPhase) {
                     this.flightPhase.textContent = newValue;
-                    let flightPhaseRect = this.flightPhase.getBBox();
+                    const flightPhaseRect = this.flightPhase.getBBox();
                     this.flightPhaseBg.setAttribute("width", (flightPhaseRect.width + 2).toString());
                     this.flightPhaseBg.setAttribute("x", (flightPhaseRect.x - 1).toString());
                 }
@@ -497,23 +495,25 @@ class ArcHSIIndicator extends HSIndicator {
                 if (this.dme) {
                     if (this.isDmeDisplayed) {
                         this.dme.setAttribute("display", "inherit");
-                    }
-                    else {
+                    } else {
                         this.dme.setAttribute("display", "none");
                     }
                 }
                 break;
             case "dme_source":
-                if (this.dmeSource)
+                if (this.dmeSource) {
                     this.dmeSource.textContent = newValue;
+                }
                 break;
             case "dme_ident":
-                if (this.dmeIdent)
+                if (this.dmeIdent) {
                     this.dmeIdent.textContent = newValue;
+                }
                 break;
             case "dme_distance":
-                if (this.dmeDistance)
+                if (this.dmeDistance) {
                     this.dmeDistance.textContent = (newValue == "" ? "" : fastToFixed(parseFloat(newValue), 1) + " NM");
+                }
                 break;
             case "to_from":
                 if (this.toIndicator && this.fromIndicator) {
@@ -534,8 +534,9 @@ class ArcHSIIndicator extends HSIndicator {
                 }
                 break;
             case "current_track":
-                if (this.currentTrackIndicator)
+                if (this.currentTrackIndicator) {
                     this.currentTrackIndicator.setAttribute("transform", "rotate(" + (newValue) + ", 50, 120)");
+                }
                 break;
         }
     }
@@ -545,8 +546,7 @@ class ArcHSIIndicator extends HSIndicator {
         super.update(_deltaTime);
         if (SimVar.GetSimVarValue("L:PFD_DME_Displayed", "number") != 0) {
             Avionics.Utils.diffAndSetAttribute(this, "show_dme", "true");
-        }
-        else {
+        } else {
             Avionics.Utils.diffAndSetAttribute(this, "show_dme", "false");
         }
     }
