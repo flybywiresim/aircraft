@@ -1139,7 +1139,7 @@ var Airbus_FMA;
                 }
                 const targetAltitude = Simplane.getAutoPilotAltitudeLockValue("feets");
                 const altitude = Simplane.getAltitude();
-                if (altitude < targetAltitude - 100 && !Simplane.getAutoPilotAPPRActive() ) {
+                if (altitude < targetAltitude - 100 && !Simplane.getAutoPilotAPPRActive()) {
                     if (Airbus_FMA.CurrentPlaneState.radioAltitude > 1.5) {
                         return Airbus_FMA.MODE_STATE.ENGAGED;
                     } else {
