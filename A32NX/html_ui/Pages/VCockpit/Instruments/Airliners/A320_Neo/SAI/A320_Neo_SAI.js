@@ -13,8 +13,8 @@ class A320_Neo_SAI extends BaseAirliners {
         this.addIndependentElementContainer(new NavSystemElementContainer("Bugs", "Bugs", new A320_Neo_SAI_Bugs()));
         this.addIndependentElementContainer(new NavSystemElementContainer("Pressure", "Pressure", new A320_Neo_SAI_Pressure()));
     }
-    Update() {
-        super.Update();
+    onUpdate(_deltaTime) {
+        super.onUpdate(_deltaTime);
     }
     onEvent(_event) {
     }

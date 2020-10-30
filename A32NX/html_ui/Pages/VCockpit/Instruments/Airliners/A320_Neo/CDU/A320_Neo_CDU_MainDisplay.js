@@ -182,8 +182,8 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this.taxiFuelWeight = 0.2;
         CDUInitPage.updateTowIfNeeded(this);
     }
-    Update() {
-        super.Update();
+    onUpdate(_deltaTime) {
+        super.onUpdate(_deltaTime);
 
         this.A32NXCore.update();
 
@@ -585,7 +585,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
 
         let vSpeed = min * (1 - runwayCoef) + max * runwayCoef;
         vSpeed *= dWeightCoef;
-        vSpeed += (flapsHandleIndex - 1) * 6;
+        vSpeed += (3 - flapsHandleIndex) * 6;
         return Math.round(vSpeed);
     }
 
