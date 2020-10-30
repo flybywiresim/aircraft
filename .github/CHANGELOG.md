@@ -4,11 +4,10 @@
 <!-- Use the following format below -->
 <!--  1. [Changed Area] Title of changes - @github username (Name)  -->
 ## 2020/10
-1. [PFD] Improved speed marker position and size - @MisterChocker (Leon)
+1. [PFD] General improvements to the display layout - @MisterChocker (Leon)
+1. [PFD] Added proper selected and managed speed indication - @MisterChocker (Leon)
 1. [PFD] Added V1 indication - @MisterChocker (Leon)
-1. [PFD] Increased font size for managed and selected speed - @MisterChocker (Leon)
-1. [PFD] Aligned speed values on speed band - @MisterChocker (Leon)
-1. [PFD] Added proper speed behaviour when outside range - @MisterChocker (Leon)
+1. [PFD] Added proper speed behaviour when outside range (approach phase) - @MisterChocker (Leon)
 1. [ECAM] Applied FADEC power logic to thrust rating mode and value - @MisterChocker (Leon)
 1. [ECAM] Implemented thrust rating mode indication and logic - @MisterChocker (Leon)
 1. [CDU] Added actual VLS and VApp calculation - @MisterChocker (Leon)
