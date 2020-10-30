@@ -4,6 +4,8 @@
 <!-- Use the following format below -->
 <!--  1. [Changed Area] Title of changes - @github username (Name)  -->
 ## 2020/10
+1. [CDU] Fixed wrong VLS calculation - @MisterChocker (Leon)
+1. [PFD] Fixed wrong managed speed calculation on approach  - @MisterChocker (Leon)
 1. [ECAM] Applied FADEC power logic to thrust rating mode and value - @MisterChocker (Leon)
 1. [ECAM] Implemented thrust rating mode indication and logic - @MisterChocker (Leon)
 1. [CDU] Added actual VLS and VApp calculation - @MisterChocker (Leon)
@@ -75,7 +77,7 @@
 1. [ECAM] Adjusted Engine gauges so cursor extends beyond radius of gauge - @RichardPilbery (Richard Pilbery | tricky_dicky#3571 on discord)
 1. [ECAM] Fix ECAM N1 engine indicator - @RichardPilbery (Richard Pilbery | tricky_dicky#3571 on discord)
 1. [LIGHTS] Added logo lights only turn on while on ground or flaps are extented - @linkeleven (linkeleven#2557)
-1. [CDU] Add basic airways support - @santii90 (Santiago Vazquez), @Lessar277 (Lessar27#1112)
+1. [CDU] Add basic airways support based on code from WorkingTitle team - @santii90 (Santiago Vazquez), @Lessar277 (Lessar27)
 1. [TEXTURES] Changed cockpit decals resolution from 1k to 2k - @FoxinTale (Aubrey)
 1. [CDU] Flight plan waypoints distances and times are now properly displayed and updated - @lousybyte (lousybyte)
 1. [ECAM] Fix fuel used values on CRUISE and FUEL pages - @Lessar277 (Lessar27#1112)
@@ -85,6 +87,7 @@
 1. [CAMERA] Modified a couple of the default interior camera angles. - @ZigTag (Falcon#5815), @linkeleven (linkeleven#2557)
 1. [CDU] Fix takeoff vspeed - @linkeleven (linkeleven#2557)
 1. [ECAM] Decimal font size change - @RichardPilbery (Richard Pilbery)
+1. [CDU] Add correct UI behavior and colors for airways page - @santii90 (Santiago Vazquez)
 
 ## 2020/09
 1. [General] Add CHANGELOG.md - @nathaninnes (Nathan Innes)
