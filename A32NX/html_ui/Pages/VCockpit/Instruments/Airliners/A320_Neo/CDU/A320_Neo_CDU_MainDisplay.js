@@ -1033,10 +1033,8 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         }
         //Logic to switch from APPR to GOAROUND
         if (this.currentFlightPhase == FlightPhase.FLIGHT_PHASE_APPROACH &&
-            highestThrottleDetent == ThrottleMode.TOGA && flapsHandlePercent != 0 && !Simplane.getAutoPilotThrottleActive() &&
-            SimVar.GetSimVarValue("RADIO HEIGHT", "feets") < 2000)
-        {
-            this.currentFlightPhase = FlightPhase.FLIGHT_PHASE_GOAROUND
+            highestThrottleDetent == ThrottleMode.TOGA && flapsHandlePercent != 0 && !Simplane.getAutoPilotThrottleActive() && SimVar.GetSimVarValue("RADIO HEIGHT", "feets") < 2000) {
+            this.currentFlightPhase = FlightPhase.FLIGHT_PHASE_GOAROUND;
             SimVar.SetSimVarValue("L:A32NX_GOAROUND_HDG_MODE", "bool", 0);
             SimVar.SetSimVarValue("L:A32NX_GOAROUND_NAV_MODE", "bool", 0);
 
@@ -1044,10 +1042,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
 
         //Logic to switch back from GOAROUND to APPROACH
         //if ((SimVar.GetSimVarValue("L:A32NX_GOAROUND_HDG_MODE", "bool") === 1 || SimVar.GetSimVarValue("L:A32NX_GOAROUND_NAV_MODE", "bool") === 1)) {
-        if ((SimVar.GetSimVarValue("L:A32NX_GOAROUND_HDG_MODE", "bool") === 1 || SimVar.GetSimVarValue("L:A32NX_GOAROUND_NAV_MODE", "bool") === 1) &&
-            this.currentFlightPhase == FlightPhase.FLIGHT_PHASE_GOAROUND &&
-            SimVar.GetSimVarValue("RADIO HEIGHT", "Feet") > 2000)
-        {
+        if ((SimVar.GetSimVarValue("L:A32NX_GOAROUND_HDG_MODE", "bool") === 1 || SimVar.GetSimVarValue("L:A32NX_GOAROUND_NAV_MODE", "bool") === 1) && this.currentFlightPhase == FlightPhase.FLIGHT_PHASE_GOAROUND && SimVar.GetSimVarValue("RADIO HEIGHT", "Feet") > 2000) {
             if (Simplane.getAutoPilotHeadingManaged() === 1) {
                 SimVar.SetSimVarValue("L:A32NX_GOAROUND_NAV_MODE", "bool", 1);
                 SimVar.SetSimVarValue("L:A32NX_GOAROUND_HDG_MODE", "bool", 0);
@@ -1055,7 +1050,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                 SimVar.SetSimVarValue("L:A32NX_GOAROUND_NAV_MODE", "bool", 0);
                 SimVar.SetSimVarValue("L:A32NX_GOAROUND_HDG_MODE", "bool", 1);
             }
-            this.currentFlightPhase = FlightPhase.FLIGHT_PHASE_APPROACH
+            this.currentFlightPhase = FlightPhase.FLIGHT_PHASE_APPROACH;
         }
 
         //Resets flight phase to preflight 30 seconds after touchdown
