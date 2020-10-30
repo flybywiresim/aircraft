@@ -1,39 +1,250 @@
-type NumberSimVarUnit = ("number" | "Number") | "position 32k" | ("SINT32") | ("bool" | "Bool" | "Boolean" | "boolean") | "Enum" | "lbs" | "kg" | ("Degrees" | "degree")
-    | "radians" | ("Percent" | "percent") | ("Feet" | "feet" | "feets") | "Volts" | "Amperes" | "Hertz" | "PSI" | "celsius" | "degree latitude"
-    | "degree longitude" | "Meters per second" | "Position" | ("Knots" | "knots") | "Seconds" | "kilograms per second" | "nautical miles" | "degrees"
+type NumberVarUnit = ("number" | "Number") | "position 32k" | ("SINT32") | ("bool" | "Bool" | "Boolean" | "boolean") | "Enum" | "lbs" | "kg" | ("Degrees" | "degree")
+    | "radians" | ("Percent" | "percent") | ("Feet" | "feet" | "feets" | "Feets") | "Volts" | "Amperes" | "Hertz" | "PSI" | "celsius" | "degree latitude"
+    | "degree longitude" | "Meters per second" | "Position" | ("Knots" | "knots") | "Seconds" | "seconds" | "kilograms per second" | "nautical miles" | "degrees"
 
-type TextSimVarUnit = "Text" | "string"
+type TextVarUnit = "Text" | "string"
 
-type LatLongAltSimVarUnit = "latlonalt";
-type LatLongAltPBHSimVarUnit = "latlonaltpbh";
-type PitchBankHeadingSimVarUnit = "pbh";
-type PID_STRUCTSimVarUnit = "pid_struct";
-type XYZSimVarUnit = "xyz"
+type LatLongAltVarUnit = "latlonalt";
+type LatLongAltPBHVarUnit = "latlonaltpbh";
+type PitchBankHeadingVarUnit = "pbh";
+type PID_STRUCTVarUnit = "pid_struct";
+type XYZVarUnit = "xyz"
+type POIListVarUnit = "poilist";
+type FuelLevelsVarUnit = "FuelLevels";
+type GlassCockpitSettingsVarUnit = "GlassCockpitSettings";
+
+type VarUnit = NumberVarUnit | TextVarUnit | LatLongAltVarUnit | LatLongAltPBHVarUnit
+    | PitchBankHeadingVarUnit | PID_STRUCTVarUnit | XYZVarUnit;
 
 type SimVarBatchType = "string" | "number";
 
+declare class SimVarValue {
+    constructor(name?: string, unit?: VarUnit, type?: string);
+    name?: string;
+    unit?: string;
+    type?: string;
+}
+
+interface SimVarValueConstructor {
+    new(name?: string, unit?: VarUnit, type?: string): SimVarValue;
+}
+
 interface SimVarStatic {
     SimVarBatch: SimVarBatchConstructor;
+    SimVarValue: SimVarValueConstructor;
+
+    /**
+     * Determines if SimVar is ready.
+     * @returns Something when ready, null when not ready.
+     */
+    IsReady(): any | null;
+
+    /**
+     * When the SimVarValueHistory is stored (disabled by default and currently not exposed),
+     * logs per SimVar (slowest per number of invocations first):
+     * - The amount of invocations.
+     * - The average invocation time in milliseconds.
+     * - The total invocation time in milliseconds.
+     * - The slowest invocation time in milliseconds.
+     * - The average invocation time per frame in milliseconds.
+     * - The average amount of invocations per frame.
+     *
+     *  Also logs the total invokes per frame and total time in milliseconds taken per frame.
+     */
+    LogSimVarValueHistory(): void;
+
+    /**
+     * When the SimVarValueHistory is stored (disabled by default and currently not exposed),
+     * logs per SimVar (slowest per frame first):
+     * - The amount of invocations.
+     * - The average invocation time in milliseconds.
+     * - The total invocation time in milliseconds.
+     * - The slowest invocation time in milliseconds.
+     * - The average invocation time per frame in milliseconds.
+     * - The average amount of invocations per frame.
+     *
+     *  Also logs the total invokes per frame and total time in milliseconds taken per frame.
+     */
+    LogSimVarValueHistoryByTimePerFrame(): void;
+
     GetSimVarArrayValues(batch: SimVarBatch, callback: (results: any[][]) => void, dataSource?: string): void;
 
-    GetSimVarValue(name: string, unit: NumberSimVarUnit, dataSource?: string): number | null;
-    GetSimVarValue(name: string, unit: TextSimVarUnit, dataSource?: string): string | null;
-    GetSimVarValue(name: string, unit: LatLongAltSimVarUnit, dataSource?: string): LatLongAlt | null;
-    GetSimVarValue(name: string, unit: LatLongAltPBHSimVarUnit, dataSource?: string): LatLongAltPBH | null;
-    GetSimVarValue(name: string, unit: PitchBankHeadingSimVarUnit, dataSource?: string): PitchBankHeading | null;
-    GetSimVarValue(name: string, unit: PID_STRUCTSimVarUnit, dataSource?: string): PID_STRUCT | null;
-    GetSimVarValue(name: string, unit: XYZSimVarUnit, dataSource?: string): XYZ | null;
+    GetSimVarValue(name: string, unit: NumberVarUnit, dataSource?: string): number | null;
+    GetSimVarValue(name: string, unit: TextVarUnit, dataSource?: string): string | null;
+    GetSimVarValue(name: string, unit: LatLongAltVarUnit, dataSource?: string): LatLongAlt | null;
+    GetSimVarValue(name: string, unit: LatLongAltPBHVarUnit, dataSource?: string): LatLongAltPBH | null;
+    GetSimVarValue(name: string, unit: PitchBankHeadingVarUnit, dataSource?: string): PitchBankHeading | null;
+    GetSimVarValue(name: string, unit: PID_STRUCTVarUnit, dataSource?: string): PID_STRUCT | null;
+    GetSimVarValue(name: string, unit: XYZVarUnit, dataSource?: string): XYZ | null;
 
-    SetSimVarValue(name: string, unit: NumberSimVarUnit, value: number, dataSource?: string): Promise<void>;
-    SetSimVarValue(name: string, unit: TextSimVarUnit, value: string, dataSource?: string): Promise<void>;
+    SetSimVarValue(name: string, unit: NumberVarUnit, value: number, dataSource?: string): Promise<void>;
+    SetSimVarValue(name: string, unit: TextVarUnit, value: string, dataSource?: string): Promise<void>;
+    SetSimVarValue(name: string, unit: LatLongAltVarUnit, value: LatLongAlt, dataSource?: string): Promise<void>;
+    SetSimVarValue(name: string, unit: LatLongAltPBHVarUnit, value: LatLongAltPBH, dataSource?: string): Promise<void>;
+    SetSimVarValue(name: string, unit: PitchBankHeadingVarUnit, value: PitchBankHeading, dataSource?: string): Promise<void>;
+    SetSimVarValue(name: string, unit: PID_STRUCTVarUnit, value: PID_STRUCT, dataSource?: string): Promise<void>;
+    SetSimVarValue(name: string, unit: XYZVarUnit, value: XYZ, dataSource?: string): Promise<void>;
+
+    GetGlobalVarValue(name: string, unit: any): any | null;
+
+    GetGameVarValue(name: string, unit: NumberVarUnit, param1?: number, param2?: number): number | null;
+    GetGameVarValue(name: string, unit: TextVarUnit): string | null;
+    GetGameVarValue(name: string, unit: XYZVarUnit): XYZ | null;
+    GetGameVarValue(name: string, unit: POIListVarUnit): any | null;
+    GetGameVarValue(name: string, unit: FuelLevelsVarUnit): any | null;
+    GetGameVarValue(name: string, unit: GlassCockpitSettingsVarUnit): GlassCockpitSettings | null;
+    GetGameVarValue(name: string, unit: string): any | null;
+
+    SetGameVarValue(name: string, unit: NumberVarUnit, value: number): Promise<void>;
+    /**
+     * Doesn't do anything.
+     */
+    SetGameVarValue(name: string, unit: "string" | XYZVarUnit | POIListVarUnit | FuelLevelsVarUnit | GlassCockpitSettingsVarUnit, value: any): Promise<void>;
+}
+
+// There's a whole set of classes behind this.
+interface GlassCockpitSettings {
+    FlapsLevels: {
+        initialised: boolean;
+        slatsAngle: number[];
+        flapsAngle: number[]
+    } | null;
+    AirSpeed: {
+        Initialized: boolean;
+        lowLimit: number;
+        greenStart: number;
+        greenEnd: number;
+        whiteStart: number;
+        whiteEnd: number;
+        yellowStart: number;
+        yellowEnd: number;
+        redStart: number;
+        redEnd: number;
+        highLimit: number;
+    };
+    Vacuum: {
+        min: number,
+        greenStart: number,
+        greenEnd: number,
+        max: number
+    };
+    FuelQuantity: {
+        min: number;
+        greenStart: number;
+        greenEnd: number;
+        yellowStart: number;
+        yellowEnd: number;
+        redStart: number;
+        redEnd: number;
+        max: number;
+    };
+    RPM: {
+        min: number;
+        greenStart: number;
+        greenEnd: number;
+        redStart: number;
+        redEnd: number;
+        max: number;
+    };
+    FuelFlow: {
+        min: number;
+        greenStart: number;
+        greenEnd: number;
+        max: number;
+    };
+    OilPressure: {
+        min: number;
+        lowLimit: number;
+        lowRedStart: number;
+        lowRedEnd: number;
+        greenStart: number;
+        greenEnd: number;
+        redStart: number;
+        redEnd: number;
+        highLimit: number;
+        max: number;
+    };
+    OilTemperature: {
+        min: number;
+        lowLimit: number;
+        greenStart: number;
+        greenEnd: number;
+        highLimit: number;
+        max: number;
+    };
+    EGTTemperature: {
+        min: number;
+        max: number;
+    };
+    BatteryBusAmps: {
+        min: number;
+        greenStart: number;
+        greenEnd: number;
+        yellowStart: number;
+        yellowEnd: number;
+        max: number;
+    };
+    GenAltBusAmps: {
+        min: number;
+        greenStart: number;
+        greenEnd: number;
+        max: number;
+    };
+    MainBusVoltage: {
+        min: number;
+        lowLimit: number;
+        lowYellowStart: number;
+        lowYellowEnd: number;
+        greenStart: number;
+        greenEnd: number;
+        highLimit: number;
+        max: number;
+    };
+    HotBatteryBusVoltage: {
+        min: number;
+        lowLimit: number;
+        greenStart: number;
+        greenEnd: number;
+        yellowStart: number;
+        yellowEnd: number;
+        highLimit: number;
+        max: number;
+    };
+    Torque: {
+        min: number;
+        greenStart: number;
+        greenEnd: number;
+        yellowStart: number;
+        yellowEnd: number;
+        redStart: number;
+        redEnd: number;
+        max: number;
+    };
+    TurbineNg: {
+        min: number;
+        greenStart: number;
+        greenEnd: number;
+        redStart: number;
+        redEnd: number;
+        max: number;
+    };
+    ITTEngineOff: {
+        min: number;
+        greenStart: number;
+        greenEnd: number;
+        redStart: number;
+        redEnd: number;
+        max: number;
+    };
+
 }
 
 interface SimVarBatch {
-    add(name: string, unit: NumberSimVarUnit | TextSimVarUnit, type?: SimVarBatchType): void;
+    add(name: string, unit: NumberVarUnit | TextVarUnit, type?: SimVarBatchType): void;
     getCount(): string;
     getIndex(): string;
     getNames(): string[];
-    getUnits(): (NumberSimVarUnit | TextSimVarUnit)[];
+    getUnits(): (NumberVarUnit | TextVarUnit)[];
     getTypes(): SimVarBatchType[];
 }
 
@@ -213,6 +424,8 @@ declare global {
         bReversed: boolean;
         static sKeyDelimiter: string;
     }
+
+
 
     const Simplane: {
         getCurrentFlightPhase(): FlightPhase
