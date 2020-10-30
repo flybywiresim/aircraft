@@ -576,7 +576,7 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
         svg.setAttribute("id", _text + "_Marker");
         svg.setAttribute("x", _x.toString());
         svg.setAttribute("y", _y.toString());
-        svg.setAttribute("width", (this.speedMarkersWidth * _scale * 2).toFixed(0));
+        svg.setAttribute("width", (this.speedMarkersWidth * _scale).toFixed(0));
         svg.setAttribute("height", (this.speedMarkersHeight * _scale * 1.05).toFixed(0));
         svg.setAttribute("viewBox", "0 0 " + this.speedMarkersWidth + " " + (this.speedMarkersHeight * 1.05));
         const offsetY = (this.speedMarkersHeight - this.speedMarkersHeight * _scale) * 0.5;
