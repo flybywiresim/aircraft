@@ -110,7 +110,7 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
         const posY = 60;
         const width = 95;
         const height = 480;
-        const arcWidth = 40;
+        const arcWidth = 50;
         this.refHeight = height;
         this.stripBorderSize = 4;
         this.stripOffsetX = -2;
@@ -130,8 +130,8 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
             } else {
                 Utils.RemoveAllChildren(this.blueSpeedText);
             }
-            this.blueSpeedText.setAttribute("x", (posX + 75).toString());
-            this.blueSpeedText.setAttribute("y", (posY - 15).toString());
+            this.blueSpeedText.setAttribute("x", (posX + 78).toString());
+            this.blueSpeedText.setAttribute("y", (posY - 20).toString());
             this.blueSpeedText.setAttribute("fill", "#00BFD9");
             this.blueSpeedText.setAttribute("font-size", (this.fontSize * 1.4).toString());
             this.blueSpeedText.setAttribute("font-family", "ECAMFontRegular");
@@ -144,9 +144,9 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
                 Utils.RemoveAllChildren(this.v1blueSpeedText);
             }
             this.v1blueSpeedText.setAttribute("x", (posX + 60).toString());
-            this.v1blueSpeedText.setAttribute("y", (posY + 20).toString());
+            this.v1blueSpeedText.setAttribute("y", (posY + 25).toString());
             this.v1blueSpeedText.setAttribute("fill", "#00BFD9");
-            this.v1blueSpeedText.setAttribute("font-size", (this.fontSize * 1.4).toString());
+            this.v1blueSpeedText.setAttribute("font-size", (this.fontSize * 1.3).toString());
             this.v1blueSpeedText.setAttribute("font-family", "ECAMFontRegular");
             this.v1blueSpeedText.setAttribute("text-anchor", "start");
             this.v1blueSpeedText.setAttribute("alignment-baseline", "central");
@@ -156,8 +156,8 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
             } else {
                 Utils.RemoveAllChildren(this.blueSpeedTextLower);
             }
-            this.blueSpeedTextLower.setAttribute("x", (posX + 75).toString());
-            this.blueSpeedTextLower.setAttribute("y", (posY + height + arcWidth - 16).toString());
+            this.blueSpeedTextLower.setAttribute("x", (posX + 78).toString());
+            this.blueSpeedTextLower.setAttribute("y", (posY + height + 17).toString());
             this.blueSpeedTextLower.setAttribute("fill", "#00BFD9");
             this.blueSpeedTextLower.setAttribute("font-size", (this.fontSize * 1.4).toString());
             this.blueSpeedTextLower.setAttribute("font-family", "ECAMFontRegular");
@@ -169,8 +169,8 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
             } else {
                 Utils.RemoveAllChildren(this.redSpeedText);
             }
-            this.redSpeedText.setAttribute("x", (posX + 75).toString());
-            this.redSpeedText.setAttribute("y", (posY - 15).toString());
+            this.redSpeedText.setAttribute("x", (posX + 78).toString());
+            this.redSpeedText.setAttribute("y", (posY - 20).toString());
             this.redSpeedText.setAttribute("fill", "#FF6EFF");
             this.redSpeedText.setAttribute("font-size", (this.fontSize * 1.4).toString());
             this.redSpeedText.setAttribute("font-family", "ECAMFontRegular");
@@ -182,8 +182,8 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
             } else {
                 Utils.RemoveAllChildren(this.redSpeedTextLower);
             }
-            this.redSpeedTextLower.setAttribute("x", (posX + 75).toString());
-            this.redSpeedTextLower.setAttribute("y", (posY + height + arcWidth - 16).toString());
+            this.redSpeedTextLower.setAttribute("x", (posX + 78).toString());
+            this.redSpeedTextLower.setAttribute("y", (posY + height + 17).toString());
             this.redSpeedTextLower.setAttribute("fill", "#FF6EFF");
             this.redSpeedTextLower.setAttribute("font-size", (this.fontSize * 1.4).toString());
             this.redSpeedTextLower.setAttribute("font-family", "ECAMFontRegular");
@@ -240,7 +240,7 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
             this.topLine = topLine;
             topLine.setAttribute("x1", _left.toString());
             topLine.setAttribute("y1", (_top).toString());
-            topLine.setAttribute("x2", (_left + _width + arcWidth).toString());
+            topLine.setAttribute("x2", (_left + _width + 30).toString());
             topLine.setAttribute("y2", (_top).toString());
             topLine.setAttribute("stroke", "white");
             topLine.setAttribute("stroke-width", "3");
@@ -248,9 +248,9 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
             const bottomLine = document.createElementNS(Avionics.SVG.NS, "line");
             this.bottomLine = bottomLine;
             bottomLine.setAttribute("x1", _left.toString());
-            bottomLine.setAttribute("y1", (_top + _height + 20).toString());
-            bottomLine.setAttribute("x2", (_left + _width + arcWidth).toString());
-            bottomLine.setAttribute("y2", (_top + _height + 20).toString());
+            bottomLine.setAttribute("y1", (_top + _height).toString());
+            bottomLine.setAttribute("x2", (_left + _width + 30).toString());
+            bottomLine.setAttribute("y2", (_top + _height).toString());
             bottomLine.setAttribute("stroke", "white");
             bottomLine.setAttribute("stroke-width", "3");
             this.centerSVG.appendChild(bottomLine);
@@ -599,7 +599,7 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
         }
         const text = document.createElementNS(Avionics.SVG.NS, "text");
         text.textContent = _text;
-        text.setAttribute("x", "27");
+        text.setAttribute("x", "30");
         text.setAttribute("y", (offsetY + this.speedMarkersHeight * 0.5).toString());
         text.setAttribute("fill", _color);
         text.setAttribute("font-size", (this.fontSize * _textScale).toString());
@@ -609,7 +609,7 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
         svg.appendChild(text);
         const speed = document.createElementNS(Avionics.SVG.NS, "text");
         speed.textContent = _text;
-        speed.setAttribute("x", "27");
+        speed.setAttribute("x", "30");
         speed.setAttribute("y", (offsetY + this.speedMarkersHeight * 0.8).toString());
         speed.setAttribute("fill", _color);
         speed.setAttribute("font-size", (this.fontSize * _textScale).toString());
@@ -1302,9 +1302,13 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
     updateFail() {
         const failed = !(SimVar.GetSimVarValue("L:A32NX_ADIRS_PFD_ALIGNED_FIRST", "Bool") == 1);
         if (!failed) {
+            if (Simplane.getIndicatedSpeed() < 72) {
+                this.bottomLine.setAttribute("stroke", "transparent");
+            } else {
+                this.bottomLine.setAttribute("stroke", "white");
+            }
             this.bg.setAttribute("stroke", "transparent");
             this.topLine.setAttribute("stroke", "white");
-            this.bottomLine.setAttribute("stroke", "transparent");
             this.graduationVLine.setAttribute("stroke", "white");
             this.cursorSVGShape.setAttribute("visibility", "visible");
         } else {
