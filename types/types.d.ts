@@ -4,17 +4,28 @@ type NumberSimVarUnit = ("number" | "Number") | "position 32k" | ("SINT32") | ("
 
 type TextSimVarUnit = "Text" | "string"
 
+type LatLongAltSimVarUnit = "latlonalt";
+type LatLongAltPBHSimVarUnit = "latlonaltpbh";
+type PitchBankHeadingSimVarUnit = "pbh";
+type PID_STRUCTSimVarUnit = "pid_struct";
+type XYZSimVarUnit = "xyz"
+
 type SimVarBatchType = "string" | "number";
 
 interface SimVarStatic {
     SimVarBatch: SimVarBatchConstructor;
     GetSimVarArrayValues(batch: SimVarBatch, callback: (results: any[][]) => void, dataSource?: string): void;
 
-    GetSimVarValue(name: string, unit: NumberSimVarUnit, dataSource?: string): number;
-    GetSimVarValue(name: string, unit: TextSimVarUnit, dataSource?: string): string;
+    GetSimVarValue(name: string, unit: NumberSimVarUnit, dataSource?: string): number | null;
+    GetSimVarValue(name: string, unit: TextSimVarUnit, dataSource?: string): string | null;
+    GetSimVarValue(name: string, unit: LatLongAltSimVarUnit, dataSource?: string): LatLongAlt | null;
+    GetSimVarValue(name: string, unit: LatLongAltPBHSimVarUnit, dataSource?: string): LatLongAltPBH | null;
+    GetSimVarValue(name: string, unit: PitchBankHeadingSimVarUnit, dataSource?: string): PitchBankHeading | null;
+    GetSimVarValue(name: string, unit: PID_STRUCTSimVarUnit, dataSource?: string): PID_STRUCT | null;
+    GetSimVarValue(name: string, unit: XYZSimVarUnit, dataSource?: string): XYZ | null;
 
-    SetSimVarValue(name: string, unit: NumberSimVarUnit, value: number, dataSource?: string): void;
-    SetSimVarValue(name: string, unit: TextSimVarUnit, value: string, dataSource?: string): void;
+    SetSimVarValue(name: string, unit: NumberSimVarUnit, value: number, dataSource?: string): Promise<void>;
+    SetSimVarValue(name: string, unit: TextSimVarUnit, value: string, dataSource?: string): Promise<void>;
 }
 
 interface SimVarBatch {
@@ -32,6 +43,176 @@ interface SimVarBatchConstructor {
 
 declare global {
     const SimVar: SimVarStatic;
+
+    class LatLongAlt {
+        constructor(latitude: number, longitude: number, alt: number);
+        constructor(data: { lat: number, long: number, alt: number });
+
+        lat: number;
+        long: number;
+        alt: number;
+
+        /**
+         * @returns A LatLong instance containing the latitude and longitude of this instance.
+         */
+        toLatLong(): LatLong;
+
+        /**
+         * @returns A string formatted as "52.370216, 4.895168, 1500.0".
+         */
+        toStringFloat(): string;
+
+        /**
+         * @returns A string formatted as "lat 52.37, long 4.90, alt 1500.00".
+         */
+        toString(): string;
+
+        /**
+         * @returns A string formatted as "5222.2N".
+         */
+        latToDegreeString(): string;
+
+        /**
+         * @returns A string formatted as "00453.7E".
+         */
+        longToDegreeString(): string;
+
+        /**
+         * @returns A string formatted as "N52°22.2 E004°53.7".
+         */
+        toDegreeString(): string;
+    }
+
+    class LatLong {
+        constructor(latitude: number, longitude: number);
+        constructor(data: { lat: number, long: number });
+
+        lat: number;
+        long: number;
+
+        /**
+         * @returns A string formatted as "40.471000, 73.580000".
+         */
+        toStringFloat(): string;
+
+        /**
+         * @returns A string formatted as "lat 40.47, long 73.58".
+         */
+        toString(): string;
+
+        /**
+         * @returns A string formatted as "4047.1N".
+         */
+        latToDegreeString(): string;
+
+        /**
+         * @returns A string formatted as "07358.0W".
+         */
+        longToDegreeString(): string;
+
+        /**
+         * @returns A string formatted as "N40°47.1 W073°58.0".
+         */
+        toDegreeString(): string;
+
+        /**
+         * @returns A string formatted as "4047.1N07358.0W".
+         */
+        toShortDegreeString(): string;
+
+        /**
+         * Parses a string into a LatLong or LatLongAlt
+         * @param str A string formatted as either "0.0,0.0" or "0.0,0.0,0.0".
+         * When the string contains spaces around the numbers, those are ignored.
+         * @returns An instance of LatLong or LatLongAlt, depending on the number of values in the string. Null when
+         * the string doesn't contain a comma.
+         */
+        static fromStringFloat(str: string): LatLong | LatLongAlt | null;
+    }
+
+    class PitchBankHeading {
+        constructor(data: { pitchDegree: number, bankDegree: number, headingDegree: number });
+
+        pitchDegree: number;
+        bankDegree: number;
+        headingDegree: number;
+
+        /**
+         * @returns A string formatted as "p 2.40, b 10.60, h 240.20".
+         */
+        toString(): string;
+    }
+
+    class LatLongAltPBH {
+        constructor(data: { lla: LatLongAlt, pbh: PitchBankHeading });
+
+        lla: LatLongAlt;
+        pbh: PitchBankHeading;
+
+        /**
+         * @returns A string formatted as "lla lat 52.37, long 4.90, alt 1500.00, pbh p 2.40, b 10.60, h 240.20".
+         */
+        toString(): string;
+    }
+
+    class PID_STRUCT {
+        constructor(data: { pid_p: number; pid_i: number; pid_i2: number; pid_d: number;
+            i_boundary: number; i2_boundary: number; d_boundary: number; });
+
+        pid_p: number;
+        pid_i: number;
+        pid_i2: number;
+        pid_d: number;
+        i_boundary: number;
+        i2_boundary: number;
+        d_boundary: number;
+
+        /**
+         * @returns A string formatted as "pid_p 123.46, pid_i 123.46, pid_i2 123.46, pid_d 123.46, i_boundary 123.46, i2_boundary 123.46, d_boundary 123.46".
+         */
+        toString(): string;
+    }
+
+    class XYZ {
+        constructor(data: { x: number; y: number; z: number; });
+
+        x: number;
+        y: number;
+        z: number;
+
+        /**
+         * @returns A string formatted as "x 123.00, y 456.00, z 789.13".
+         */
+        toString(): string;
+    }
+
+    class DataDictionaryEntry {
+        constructor(data: { key: any, data: any });
+
+        /**
+         * @returns A string formatted as "key: " + key + ", data: " + data
+         */
+        toString(): string;
+    }
+
+    class POIInfo {
+        constructor(data: { distance: any, angle: any, isSelected: any });
+
+        /**
+         * @returns A string formatted as "Distance: " + distance + ", angle: " + angle + ", selected: " + isSelected
+         */
+        toString(): string;
+    }
+
+    class KeyActionParams {
+        /**
+         * Parses the JSON string and sets the properties on the newly created instance.
+         */
+        constructor(json: string | null);
+
+        bReversed: boolean;
+        static sKeyDelimiter: string;
+    }
 
     const Simplane: {
         getCurrentFlightPhase(): FlightPhase
