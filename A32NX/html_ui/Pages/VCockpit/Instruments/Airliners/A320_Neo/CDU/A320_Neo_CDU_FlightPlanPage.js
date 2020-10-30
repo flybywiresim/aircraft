@@ -22,7 +22,7 @@ class CDUFlightPlanPage {
         let originTimeCell = "----";
         if (mcdu.flightPlanManager.getOrigin()) {
             if (isFlying) {
-                originTimeCell = FMCMainDisplay.secondsTohhmm(mcdu.flightPlanManager._waypointReachedAt);
+                originTimeCell = FMCMainDisplay.secondsToUTC(mcdu.flightPlanManager._waypointReachedAt);
             } else {
                 originTimeCell = "0000";
                 mcdu.flightPlanManager._waypointReachedAt = utcTime;
@@ -87,6 +87,12 @@ class CDUFlightPlanPage {
         if (destination) {
             waypointsWithDiscontinuities.push(destination);
         }
+        if (mcdu.flightPlanManager.decelWaypoint) {
+            waypointsWithDiscontinuities.splice(mcdu.flightPlanManager.decelPrevIndex + 1, 0, {
+                wp: mcdu.flightPlanManager.decelWaypoint,
+                fpIndex: -42
+            });
+        }
         if (waypointsWithDiscontinuities.length === 0) {
             rowsCount = 0;
             originIdentCell = "";
@@ -108,43 +114,6 @@ class CDUFlightPlanPage {
         let iWaypoint = offset;
         let lastAltitudeConstraint = "";
         let lastSpeedConstraint = "";
-        const groundSpeed = SimVar.GetSimVarValue("GPS GROUND SPEED", "knots") < 100 ? 300 : SimVar.GetSimVarValue("GPS GROUND SPEED", "knots");
-        for (let i = 1; i < waypointsWithDiscontinuities.length; i++) {
-            let curr, prev;
-            if (waypointsWithDiscontinuities[i - 1]) {
-                prev = waypointsWithDiscontinuities[i - 1].wp;
-            }
-            if (waypointsWithDiscontinuities[i]) {
-                curr = waypointsWithDiscontinuities[i].wp;
-            }
-            if (prev && curr) {
-                if (i === 1) {
-                    prev.cumulativeDistanceInFP = 0;
-                    prev.cumulativeEstimatedTimeEnRouteFP = 0;
-                    prev.estimatedTimeOfArrivalFP = mcdu.flightPlanManager._waypointReachedAt;
-                    const coord = new LatLong(SimVar.GetSimVarValue("PLANE LATITUDE", "degree latitude"), SimVar.GetSimVarValue("PLANE LONGITUDE", "degree longitude"));
-                    curr.cumulativeDistanceInFP = Math.floor(Avionics.Utils.computeDistance(coord, curr.infos.coordinates));
-                    curr.cumulativeEstimatedTimeEnRouteFP = Math.floor(curr.cumulativeDistanceInFP / groundSpeed * 3600);
-                    curr.estimatedTimeOfArrivalFP = utcTime + curr.cumulativeEstimatedTimeEnRouteFP;
-                } else {
-                    const dist = Math.floor(Avionics.Utils.computeDistance(prev.infos.coordinates, curr.infos.coordinates));
-                    curr.cumulativeDistanceInFP = prev.cumulativeDistanceInFP + dist;
-                    curr.cumulativeEstimatedTimeEnRouteFP = prev.cumulativeEstimatedTimeEnRouteFP + Math.floor(dist / groundSpeed * 3600);
-                    curr.estimatedTimeOfArrivalFP = prev.estimatedTimeOfArrivalFP + Math.floor(dist / groundSpeed * 3600);
-                }
-            }
-        }
-        if (mcdu.flightPlanManager.decelWaypoint) {
-            const idx = waypointsWithDiscontinuities.findIndex((e) => e.wp.cumulativeDistanceInFP > mcdu.flightPlanManager.decelWaypoint.cumulativeDistanceInFP);
-            if (idx > 0 && idx < waypointsWithDiscontinuities.length) {
-                mcdu.flightPlanManager.decelWaypoint.cumulativeEstimatedTimeEnRouteFP = mcdu.flightPlanManager.decelWaypoint.cumulativeDistanceInFP / groundSpeed * 3600;
-                mcdu.flightPlanManager.decelWaypoint.estimatedTimeOfArrivalFP = utcTime + mcdu.flightPlanManager.decelWaypoint.cumulativeEstimatedTimeEnRouteFP;
-                waypointsWithDiscontinuities.splice(idx, 0, {
-                    wp: mcdu.flightPlanManager.decelWaypoint,
-                    fpIndex: -42
-                });
-            }
-        }
         for (let i = 0; i < rowsCount; i++) {
             if (waypointsWithDiscontinuities.length > 0) {
                 while (iWaypoint >= waypointsWithDiscontinuities.length) {
@@ -168,7 +137,7 @@ class CDUFlightPlanPage {
                 if (mcdu.flightPlanManager.getDestination()) {
                     destDistCell = mcdu.flightPlanManager.getDestination().cumulativeDistanceInFP.toFixed(0);
                     if (isFlying) {
-                        destTimeCell = FMCMainDisplay.secondsTohhmm(mcdu.flightPlanManager.getDestination().estimatedTimeOfArrivalFP);
+                        destTimeCell = FMCMainDisplay.secondsToUTC(mcdu.flightPlanManager.getDestination().estimatedTimeOfArrivalFP);
                     } else {
                         destTimeCell = FMCMainDisplay.secondsTohhmm(mcdu.flightPlanManager.getDestination().cumulativeEstimatedTimeEnRouteFP);
                     }
@@ -208,11 +177,11 @@ class CDUFlightPlanPage {
                     let timeCell = "----";
                     if (isFlying) {
                         if (isFinite(waypoint.estimatedTimeOfArrivalFP)) {
-                            timeCell = FMCMainDisplay.secondsTohhmm(waypoint.estimatedTimeOfArrivalFP);
+                            timeCell = FMCMainDisplay.secondsToUTC(index ? waypoint.estimatedTimeOfArrivalFP : mcdu.flightPlanManager._waypointReachedAt);
                         }
                     } else {
                         if (isFinite(waypoint.cumulativeEstimatedTimeEnRouteFP)) {
-                            timeCell = FMCMainDisplay.secondsTohhmm(waypoint.cumulativeEstimatedTimeEnRouteFP);
+                            timeCell = FMCMainDisplay.secondsTohhmm(index ? waypoint.cumulativeEstimatedTimeEnRouteFP : 0);
                         }
                     }
                     if (fpIndex > mcdu.flightPlanManager.getDepartureWaypointsCount()) {
@@ -241,8 +210,7 @@ class CDUFlightPlanPage {
                                 airwayName = airway.name;
                             }
                         }
-
-                        rows[2 * i] = [airwayName, (waypoint.cumulativeDistanceInFP - (prevWaypoint ? prevWaypoint.cumulativeDistanceInFP : 0)).toFixed(0)];
+                        rows[2 * i] = [airwayName, (index ? waypoint.distanceInFP.toFixed(0) : "")];
                         let speedConstraint = "---";
                         if (waypoint.speedConstraint > 10) {
                             speedConstraint = waypoint.speedConstraint.toFixed(0);
@@ -353,7 +321,7 @@ class CDUFlightPlanPage {
                         if (mcdu.flightPlanManager.getDestination()) {
                             destDistCell = mcdu.flightPlanManager.getDestination().infos.totalDistInFP.toFixed(0);
                             if (isFlying) {
-                                destTimeCell = FMCMainDisplay.secondsTohhmm(mcdu.flightPlanManager.getDestination().estimatedTimeOfArrivalFP);
+                                destTimeCell = FMCMainDisplay.secondsToUTC(mcdu.flightPlanManager.getDestination().estimatedTimeOfArrivalFP);
                             } else {
                                 destTimeCell = FMCMainDisplay.secondsTohhmm(mcdu.flightPlanManager.getDestination().cumulativeEstimatedTimeEnRouteFP);
                             }
