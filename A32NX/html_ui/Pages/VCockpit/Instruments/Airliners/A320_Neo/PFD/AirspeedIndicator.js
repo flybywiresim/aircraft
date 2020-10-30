@@ -143,8 +143,8 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
             } else {
                 Utils.RemoveAllChildren(this.v1blueSpeedText);
             }
-            this.v1blueSpeedText.setAttribute("x", (posX + 72).toString());
-            this.v1blueSpeedText.setAttribute("y", (posY + 20).toString());
+            this.v1blueSpeedText.setAttribute("x", (posX + 60).toString());
+            this.v1blueSpeedText.setAttribute("y", (posY + 22).toString());
             this.v1blueSpeedText.setAttribute("fill", "#00BFD9");
             this.v1blueSpeedText.setAttribute("font-size", (this.fontSize * 1.4).toString());
             this.v1blueSpeedText.setAttribute("font-family", "ECAMFontRegular");
@@ -233,7 +233,7 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
             bg.setAttribute("width", _width.toString());
             bg.setAttribute("height", _height.toString());
             bg.setAttribute("fill", "#343B51");
-            bg.setAttribute("stroke-width", "4");
+            bg.setAttribute("stroke-width", "3");
             bg.setAttribute("stroke", "tranparent");
             this.centerSVG.appendChild(bg);
             const topLine = document.createElementNS(Avionics.SVG.NS, "line");
@@ -243,7 +243,7 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
             topLine.setAttribute("x2", (_left + _width + arcWidth).toString());
             topLine.setAttribute("y2", (_top + 2).toString());
             topLine.setAttribute("stroke", "white");
-            topLine.setAttribute("stroke-width", "4");
+            topLine.setAttribute("stroke-width", "3");
             this.centerSVG.appendChild(topLine);
             const bottomLine = document.createElementNS(Avionics.SVG.NS, "line");
             this.bottomLine = bottomLine;
@@ -252,7 +252,7 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
             bottomLine.setAttribute("x2", (_left + _width + arcWidth).toString());
             bottomLine.setAttribute("y2", (_top + _height + 20).toString());
             bottomLine.setAttribute("stroke", "white");
-            bottomLine.setAttribute("stroke-width", "4");
+            bottomLine.setAttribute("stroke-width", "3");
             this.centerSVG.appendChild(bottomLine);
             const graduationGroup = document.createElementNS(Avionics.SVG.NS, "g");
             graduationGroup.setAttribute("id", "Graduations");
@@ -264,7 +264,7 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
                     var line = new Avionics.SVGGraduation();
                     line.IsPrimary = (i % (this.nbSecondaryGraduations + 1)) ? false : true;
                     const lineWidth = line.IsPrimary ? 16 : 16;
-                    const lineHeight = line.IsPrimary ? 6 : 6;
+                    const lineHeight = line.IsPrimary ? 3 : 3;
                     const linePosX = -lineWidth;
                     line.SVGLine = document.createElementNS(Avionics.SVG.NS, "rect");
                     line.SVGLine.setAttribute("x", linePosX.toString());
@@ -288,7 +288,7 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
                 this.graduationVLine.setAttribute("x2", this.graduationScrollPosX.toString());
                 this.graduationVLine.setAttribute("y2", "0");
                 this.graduationVLine.setAttribute("stroke", "white");
-                this.graduationVLine.setAttribute("stroke-width", "6");
+                this.graduationVLine.setAttribute("stroke-width", "3");
                 for (var i = 0; i < this.totalGraduations; i++) {
                     var line = this.graduations[i];
                     graduationGroup.appendChild(line.SVGLine);
@@ -887,7 +887,7 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
         {
             let hideV1BlueTextLower = true;
             let v1Speed = 0;
-            if ((Simplane.getV1Airspeed() < 0) && (Simplane.getIsGrounded())) {
+            if (Simplane.getIsGrounded()) {
                 v1Speed = SimVar.GetSimVarValue("L:AIRLINER_V1_SPEED", "Knots");
                 if (v1Speed > 0) {
                     if (this.valueToSvg(currentAirspeed, v1Speed) <= 0) {
