@@ -67,7 +67,7 @@
 1. [MISC] Redesigned Standby instrument, fixed pitch indication - @jakluk (Jakluk)
 1. [ECAM] Fixed LDG/TO memo showing at incorrect times - @MMontalto (PiCcy)
 1. [MISC] Fixed DECEL always show up on left button only - @jokey2k (JoKeY | Markus#0001 on discord)
-1. [ECAM] Engine bleed valve closes at N2 > 50% @RichardPilbery (Richard Pilbery)
+1. [ECAM] Engine bleed valve closes at N2 > 50% - @RichardPilbery (Richard Pilbery)
 1. [MODEL] Spinner spiral now shows at medium blur - @lukecologne (luke)
 1. [MFD] Weather Radar now sweeps at 180 degrees, Correct masking for flight path/constr/waypoints and display elements, disabled WX/TERR ON MD in PLAN - @2hwk (2Cas#1022)
 1. [ECAM] Added ECAM ALL button functionality - @MikeKuijper (Mike Kuijper)
@@ -83,6 +83,8 @@
 1. [ATC] Fix CLR input for squawk code - @paul92ilm (Lussion)
 1. [TEXTURES] Fixed aft overhead circuit breaker decal from 'LIGHTNING' to 'LIGHTING' (@DarkOfNova#0001)
 1. [CAMERA] Modified a couple of the default interior camera angles. - @ZigTag (Falcon#5815), @linkeleven (linkeleven#2557)
+1. [CDU] Fix takeoff vspeed - @linkeleven (linkeleven#2557)
+1. [ECAM] Decimal font size change - @RichardPilbery (Richard Pilbery)
 
 ## 2020/09
 1. [General] Add CHANGELOG.md - @nathaninnes (Nathan Innes)
