@@ -1114,7 +1114,7 @@ var Airbus_FMA;
         }
         static IsActive_OPCLB() {
             if ((Simplane.getAutoPilotAltitudeSelected() || Simplane.getAutoPilotAltitudeArmed()) && Airbus_FMA.CurrentPlaneState.thisFlightDirectorActive && Airbus_FMA.CurrentPlaneState.anyAutoPilotsActive) {
-                const targetAltitude = Simplane.getAutoPilotAltitudeLockValue("feets");
+                const targetAltitude = Simplane.getAutoPilotAltitudeLockValue("feet");
                 const altitude = Simplane.getAltitude();
                 if (altitude < targetAltitude - 100) {
                     return true;
@@ -1123,7 +1123,7 @@ var Airbus_FMA;
         }
         static IsActive_OPDES() {
             if ((Simplane.getAutoPilotAltitudeSelected() || Simplane.getAutoPilotAltitudeArmed()) && Airbus_FMA.CurrentPlaneState.thisFlightDirectorActive && Airbus_FMA.CurrentPlaneState.anyAutoPilotsActive) {
-                const targetAltitude = Simplane.getAutoPilotAltitudeLockValue("feets");
+                const targetAltitude = Simplane.getAutoPilotAltitudeLockValue("feet");
                 const altitude = Simplane.getAltitude();
                 if (altitude > targetAltitude + 100) {
                     return true;
@@ -1137,7 +1137,7 @@ var Airbus_FMA;
                 } else if (Airbus_FMA.CurrentPlaneState.radioAltitude <= 1.5) {
                     return Airbus_FMA.MODE_STATE.NONE;
                 }
-                const targetAltitude = Simplane.getAutoPilotAltitudeLockValue("feets");
+                const targetAltitude = Simplane.getAutoPilotAltitudeLockValue("feet");
                 const altitude = Simplane.getAltitude();
                 if (altitude < targetAltitude - 100 && !Simplane.getAutoPilotAPPRActive()) {
                     if (Airbus_FMA.CurrentPlaneState.radioAltitude > 1.5) {
@@ -1148,7 +1148,7 @@ var Airbus_FMA;
                 }
             }
             if (Simplane.getAutoPilotFLCActive() && Airbus_FMA.CurrentPlaneState.thisFlightDirectorActive) {
-                const targetAltitude = Simplane.getAutoPilotAltitudeLockValue("feets");
+                const targetAltitude = Simplane.getAutoPilotAltitudeLockValue("feet");
                 const altitude = Simplane.getAltitude();
                 if (altitude < targetAltitude - 100) {
                     if (Airbus_FMA.CurrentPlaneState.radioAltitude <= 1.5) {
@@ -1167,7 +1167,7 @@ var Airbus_FMA;
                 }
             }
             if (Simplane.getAutoPilotFLCActive() && Airbus_FMA.CurrentPlaneState.thisFlightDirectorActive) {
-                const targetAltitude = Simplane.getAutoPilotAltitudeLockValue("feets");
+                const targetAltitude = Simplane.getAutoPilotAltitudeLockValue("feet");
                 const altitude = Simplane.getAltitude();
                 if (altitude > targetAltitude + 100) {
                     return true;
