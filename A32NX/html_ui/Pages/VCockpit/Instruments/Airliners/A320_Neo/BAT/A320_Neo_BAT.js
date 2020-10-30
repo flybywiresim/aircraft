@@ -14,8 +14,8 @@ var A320_Neo_BAT;
             this.batTexts[0] = this.querySelector("#BAT1");
             this.batTexts[1] = this.querySelector("#BAT2");
         }
-        Update() {
-            super.Update();
+        onUpdate(_deltaTime) {
+            super.onUpdate(_deltaTime);
 
             const lightsTest = SimVar.GetSimVarValue("L:XMLVAR_LTS_Test", "Bool");
             this.lightsTest = lightsTest;

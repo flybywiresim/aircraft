@@ -69,10 +69,10 @@ var A320_Neo_ECAM_Common;
             return (this.mainArcRadius * 1);
         }
         get outerIndicatorOffset() {
-            return (this.viewBoxSize.x * 0.04);
+            return (this.viewBoxSize.x * 0.03);
         }
         get outerIndicatorRadius() {
-            return (this.viewBoxSize.x * 0.035);
+            return (this.viewBoxSize.x * 0.03);
         }
         get outerDynamicArcRadius() {
             return (this.mainArcRadius * 1.15);
@@ -125,6 +125,7 @@ var A320_Neo_ECAM_Common;
         }
         init(_gaugeDefinition) {
             this.cursorOffset = _gaugeDefinition.cursorOffset;
+            this.startAngle = _gaugeDefinition.startAngle;
             this.arcSize = _gaugeDefinition.arcSize;
             this.minValue = _gaugeDefinition.minValue;
             this.maxValue = _gaugeDefinition.maxValue;
@@ -207,6 +208,7 @@ var A320_Neo_ECAM_Common;
             }
             if (this.outerIndicatorFunction != null) {
                 this.outerIndicatorObject = document.createElementNS(Avionics.SVG.NS, "path");
+                this.outerIndicatorObject.id = "OuterIndicatorOffset";
                 const radius = this.outerIndicatorRadius;
                 var d = [
                     "M", (this.mainArcRadius + this.outerIndicatorOffset), "0",
@@ -219,12 +221,30 @@ var A320_Neo_ECAM_Common;
             this.rootSVG.appendChild(cursorGroup);
             const textPosX = this.viewBoxSize.x * _gaugeDefinition.currentValuePos.x;
             const textPosY = this.viewBoxSize.x * _gaugeDefinition.currentValuePos.y;
+            const textPosXdec = (this.currentValuePrecision == 1) ? textPosX - 19 : textPosX;
+            const textPosYdec = (this.currentValuePrecision == 1) ? textPosY + 7 : textPosY;
             this.currentValueText = document.createElementNS(Avionics.SVG.NS, "text");
             this.currentValueText.id = "CurrentValue";
-            this.currentValueText.setAttribute("x", textPosX.toString());
+            this.currentValueText.setAttribute("x", textPosXdec.toString());
             this.currentValueText.setAttribute("y", textPosY.toString());
             this.currentValueText.setAttribute("alignment-baseline", "central");
             this.rootSVG.appendChild(this.currentValueText);
+            const textPosXdecimal = textPosX;
+            const textPosYdecimal = textPosYdec;
+            this.currentValueTextdecimal = document.createElementNS(Avionics.SVG.NS, "text");
+            this.currentValueTextdecimal.id = "CurrentValue";
+            this.currentValueTextdecimal.setAttribute("x", textPosXdecimal.toString());
+            this.currentValueTextdecimal.setAttribute("y", textPosYdecimal.toString());
+            this.currentValueTextdecimal.setAttribute("alignment-baseline", "text-bottom");
+            this.rootSVG.appendChild(this.currentValueTextdecimal);
+            const textPosXdecP = textPosX - 9;
+            this.currentValueTextdecimalP = document.createElementNS(Avionics.SVG.NS, "text");
+            this.currentValueTextdecimalP.id = "CurrentValue";
+            this.currentValueTextdecimalP.setAttribute("x", textPosXdecP.toString());
+            this.currentValueTextdecimalP.setAttribute("y", textPosY.toString());
+            //this.currentValueTextdecimalP.textContent = ".";
+            this.currentValueTextdecimalP.setAttribute("alignment-baseline", "central");
+            this.rootSVG.appendChild(this.currentValueTextdecimalP);
             if (_gaugeDefinition.currentValueBorderWidth > 0) {
                 const borderWidth = this.viewBoxSize.x * _gaugeDefinition.currentValueBorderWidth;
                 const borderHeight = this.currentValueBorderHeight * 1.2;
@@ -334,6 +354,8 @@ var A320_Neo_ECAM_Common;
                 this.currentValueText.setAttribute("class", style);
                 if (!this.isActive) {
                     this.currentValueText.textContent = "XX";
+                    this.currentValueTextdecimal.textContent = "";
+                    this.currentValueTextdecimalP.textContent = "";
                 }
             }
         }
@@ -386,8 +408,6 @@ var A320_Neo_ECAM_Common;
                     this.extraMessageString = extraMessage;
                     style += (this.extraMessageString.length > 0) ? "active" : "inactive";
                     this.extraMessageText.textContent = this.extraMessageString;
-                    this.extraMessageText.setAttribute("class", style);
-                    this.extraMessageBorder.setAttribute("class", style);
                 }
             }
         }
@@ -433,6 +453,14 @@ var A320_Neo_ECAM_Common;
                     const strValue = this.currentValue.toFixed(this.currentValuePrecision);
                     this.currentValueText.textContent = strValue;
                     this.currentValueText.setAttribute("class", style);
+                    if (this.currentValuePrecision > 0) {
+                        const strValueArray = strValue.split(".");
+                        this.currentValueText.textContent = strValueArray[0];
+                        this.currentValueTextdecimal.textContent = strValueArray[1];
+                        this.currentValueTextdecimal.setAttribute("class", style + " decimal");
+                        this.currentValueTextdecimalP.textContent = ".";
+                        this.currentValueTextdecimalP.setAttribute("class", style + " decimalpoint");
+                    }
                 }
             }
         }
@@ -440,8 +468,9 @@ var A320_Neo_ECAM_Common;
             if ((_value != this.outerIndicatorValue) || _force) {
                 this.outerIndicatorValue = _value;
                 if (this.outerIndicatorObject != null) {
-                    const clampedValue = Utils.Clamp(_value, this.minValue, this.maxValue);
-                    const angle = this.valueToAngle(clampedValue, false);
+                    const valueThrottlePosition = (_value <= this.minValue) ? this.cursorOffset + this.minValue : _value + this.cursorOffset;
+                    const clampedValueThrottlePosition = Utils.Clamp(valueThrottlePosition , this.minValue, this.maxValue);
+                    const angle = this.valueToAngle(clampedValueThrottlePosition, false);
                     this.outerIndicatorObject.setAttribute("transform", "rotate(" + angle + ")");
                 }
             }
