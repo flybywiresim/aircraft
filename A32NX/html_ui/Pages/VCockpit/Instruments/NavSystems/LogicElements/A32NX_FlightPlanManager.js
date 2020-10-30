@@ -114,7 +114,44 @@ class FlightPlanManager {
         const waypoints = [];
         const todo = data.length;
         let done = 0;
+        const groundSpeed = SimVar.GetSimVarValue("GPS GROUND SPEED", "knots") < 100 ? 300 : SimVar.GetSimVarValue("GPS GROUND SPEED", "knots");
+        const utcTime = SimVar.GetGlobalVarValue("ZULU TIME", "seconds");
+        const activeIdent = this.getActiveWaypointIdent();
+        const activeIndex = data.findIndex(w => {
+            return w && w.ident === activeIdent;
+        });
+        const count = this.getWaypointsCount();
+        let approach = false;
+        if (count > 1 && data[0].ident != this.getWaypoint(0).ident) {
+            approach = true;
+        }
         for (let i = 0; i < data.length; i++) {
+            const currData = data[i];
+            console.log(currData.ident);
+            if (currData.ident === activeIdent) {
+                const planeCoord = new LatLong(SimVar.GetSimVarValue("PLANE LATITUDE", "degree latitude"), SimVar.GetSimVarValue("PLANE LONGITUDE", "degree longitude"));
+                currData.liveDistanceTo = Math.floor(Avionics.Utils.computeGreatCircleDistance(planeCoord, currData.lla));
+                currData.liveETATo = currData.liveDistanceTo / groundSpeed * 3600;
+                currData.liveUTCTo = utcTime + currData.liveETATo;
+            } else if (i > activeIndex && !approach) {
+                const prevData = data[i - 1];
+                const dist = Avionics.Utils.computeGreatCircleDistance(prevData.lla, currData.lla);
+                currData.distance = dist;
+                currData.liveDistanceTo = prevData.liveDistanceTo + dist;
+                currData.liveETATo = prevData.liveETATo + (dist / groundSpeed * 3600);
+                currData.liveUTCTo = utcTime + currData.liveETATo;
+
+            } else if (approach) {
+                const prevWp = (i ? data[i - 1] : this.getWaypoint(count - 2));
+                const dist = Avionics.Utils.computeGreatCircleDistance((i ? prevWp.lla : prevWp.infos.coordinates), currData.lla);
+                currData.distance = dist;
+                currData.liveDistanceTo = prevWp.liveDistanceTo + dist;
+                currData.liveETATo = prevWp.liveETATo + (dist / groundSpeed * 3600);
+                currData.liveUTCTo = utcTime + currData.liveETATo;
+                currData.distance = dist;
+                currData.cumulativeDistance = (i ? prevWp.cumulativeDistance : prevWp.cumulativeDistanceInFP) + dist;
+                currData.bearing = Avionics.Utils.computeGreatCircleHeading((i ? prevWp.lla : prevWp.infos.coordinates), currData.lla);
+            }
             const waypointData = data[i];
             const ii = i;
             if (waypointData.icao[0] === " " || waypointData.icao[0] == "U" || waypointData.icao[0] == "R" || waypointData.ident === "CUSTD") {
@@ -140,6 +177,9 @@ class FlightPlanManager {
                 wp.infos.airwayIdentInFP = waypointData.airwayIdent;
                 wp.speedConstraint = waypointData.speedConstraint;
                 wp.transitionLLas = waypointData.transitionLLas;
+                wp.liveDistanceTo = waypointData.liveDistanceTo;
+                wp.liveETATo = waypointData.liveETATo;
+                wp.liveUTCTo = waypointData.liveUTCTo;
                 if (wp.speedConstraint > 0) {
                 }
                 if (wp.speedConstraint > 400) {
@@ -178,6 +218,9 @@ class FlightPlanManager {
                     v.infos.airwayIdentInFP = waypointData.airwayIdent;
                     v.speedConstraint = waypointData.speedConstraint;
                     v.transitionLLas = waypointData.transitionLLas;
+                    v.liveDistanceTo = waypointData.liveDistanceTo;
+                    v.liveETATo = waypointData.liveETATo;
+                    v.liveUTCTo = waypointData.liveUTCTo;
                     if (v.speedConstraint > 0) {
                     }
                     if (v.speedConstraint > 400) {
@@ -223,6 +266,9 @@ class FlightPlanManager {
                             v.infos.airwayIdentInFP = waypointData.airwayIdent;
                             v.speedConstraint = waypointData.speedConstraint;
                             v.transitionLLas = waypointData.transitionLLas;
+                            v.liveDistanceTo = waypointData.liveDistanceTo;
+                            v.liveETATo = waypointData.liveETATo;
+                            v.liveUTCTo = waypointData.liveUTCTo;
                             if (v.speedConstraint > 0) {
                             }
                             if (v.speedConstraint > 400) {
@@ -248,10 +294,22 @@ class FlightPlanManager {
         if (destination) {
             const approachWaypoints = this.getApproachWaypoints();
             if (approachWaypoints) {
-                const lastApproachWaypoints = approachWaypoints[approachWaypoints.length - 1];
-                if (lastApproachWaypoints) {
-                    const distance = Avionics.Utils.computeGreatCircleDistance(lastApproachWaypoints.infos.coordinates, destination.infos.coordinates);
-                    destination.cumulativeDistanceInFP = lastApproachWaypoints.cumulativeDistanceInFP + distance;
+                const lastApproachWaypoint = approachWaypoints[approachWaypoints.length - 1];
+                if (lastApproachWaypoint) {
+                    const distance = Avionics.Utils.computeGreatCircleDistance(lastApproachWaypoint.infos.coordinates, destination.infos.coordinates);
+                    destination.cumulativeDistanceInFP = lastApproachWaypoint.cumulativeDistanceInFP + distance;
+                    destination.liveDistanceTo = lastApproachWaypoint.liveDistanceTo + distance;
+                    destination.liveETATo = lastApproachWaypoint.liveETATo + (distance / groundSpeed * 3600);
+                    destination.liveUTCTo = utcTime + destination.liveETATo;
+                }
+            } else {
+                const lastWaypointData = data[data.length - 1];
+                if (lastWaypointData) {
+                    const distance = Math.round(Avionics.Utils.computeGreatCircleDistance(lastWaypointData.lla, destination.infos.coordinates));
+                    destination.cumulativeDistanceInFP = lastWaypointData.cumulativeDistance + distance;
+                    destination.liveDistanceTo = lastWaypointData.liveDistanceTo + distance;
+                    destination.liveETATo = lastWaypointData.liveETATo + (distance / groundSpeed * 3600);
+                    destination.liveUTCTo = utcTime + destination.liveETATo;
                 }
             }
             if (SimVar.GetSimVarValue("L:FLIGHTPLAN_USE_DECEL_WAYPOINT", "number") === 1) {
@@ -361,11 +419,6 @@ class FlightPlanManager {
                 for (let i = 0; i < this._approachWaypoints.length; i++) {
                     const waypoint = this._approachWaypoints[i];
                     if (waypoint) {
-                        if (previousWaypoint && waypoint.infos) {
-                            waypoint.distanceInFP = Avionics.Utils.computeGreatCircleDistance(previousWaypoint.infos.coordinates, waypoint.infos.coordinates);
-                            waypoint.cumulativeDistanceInFP = previousWaypoint.cumulativeDistanceInFP + waypoint.distanceInFP;
-                            waypoint.bearingInFP = Avionics.Utils.computeGreatCircleHeading(previousWaypoint.infos.coordinates, waypoint.infos.coordinates);
-                        }
                         this.addHardCodedConstraints(waypoint);
                         previousWaypoint = waypoint;
                     }
