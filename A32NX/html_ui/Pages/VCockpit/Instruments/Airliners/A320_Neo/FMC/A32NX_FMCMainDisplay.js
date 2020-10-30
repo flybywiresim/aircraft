@@ -1813,6 +1813,10 @@ class FMCMainDisplay extends BaseAirliners {
 
     checkUpdateFlightPhase() {
         const airSpeed = SimVar.GetSimVarValue("AIRSPEED TRUE", "knots");
+        const flapsHandlePercent = Simplane.getFlapsHandlePercent();
+        const leftThrottleDetent = Simplane.getEngineThrottleMode(0);
+        const rightThrottleDetent = Simplane.getEngineThrottleMode(1);
+        const highestThrottleDetent = (leftThrottleDetent >= rightThrottleDetent) ? leftThrottleDetent : rightThrottleDetent;
         if (airSpeed > 10) {
             if (this.currentFlightPhase === 0) {
                 this.currentFlightPhase = FlightPhase.FLIGHT_PHASE_TAKEOFF;
@@ -1855,7 +1859,7 @@ class FMCMainDisplay extends BaseAirliners {
                     const long = SimVar.GetSimVarValue("PLANE LONGITUDE", "degree longitude");
                     const planeLla = new LatLongAlt(lat, long);
                     const dist = Avionics.Utils.computeGreatCircleDistance(planeLla, this.flightPlanManager.getDestination().infos.coordinates);
-                    if (dist < 40) {
+                    if (dist < 40 && this.currentFlightPhase != FlightPhase.FLIGHT_PHASE_GOAROUND) {
                         this.connectIls();
                         this.flightPlanManager.activateApproach();
                         if (this.currentFlightPhase != FlightPhase.FLIGHT_PHASE_APPROACH) {
@@ -1871,12 +1875,43 @@ class FMCMainDisplay extends BaseAirliners {
                         const long = SimVar.GetSimVarValue("PLANE LONGITUDE", "degree longitude");
                         const planeLla = new LatLongAlt(lat, long);
                         const dist = Avionics.Utils.computeGreatCircleDistance(this.flightPlanManager.decelWaypoint.infos.coordinates, planeLla);
-                        if (dist < 3) {
+                        if (dist < 3 && this.currentFlightPhase != FlightPhase.FLIGHT_PHASE_GOAROUND) {
                             console.log("Switching into approach. DECEL lat : " + lat + " long " + long);
                             this.tryGoInApproachPhase();
                         }
                     }
                 }
+            }
+
+            //Logic to switch from APPR to GOAROUND
+            if (this.currentFlightPhase == FlightPhase.FLIGHT_PHASE_APPROACH &&
+                highestThrottleDetent == ThrottleMode.TOGA && flapsHandlePercent != 0 && !Simplane.getAutoPilotThrottleActive() &&
+                SimVar.GetSimVarValue("RADIO HEIGHT", "feets") < 2000)
+            {
+                this.currentFlightPhase = FlightPhase.FLIGHT_PHASE_GOAROUND
+                SimVar.SetSimVarValue("L:A32NX_GOAROUND_HDG_MODE", "bool", 0);
+                SimVar.SetSimVarValue("L:A32NX_GOAROUND_NAV_MODE", "bool", 0);
+
+            }
+
+            //Logic to switch back from GOAROUND to APPROACH
+            //if ((SimVar.GetSimVarValue("L:A32NX_GOAROUND_HDG_MODE", "bool") === 1 || SimVar.GetSimVarValue("L:A32NX_GOAROUND_NAV_MODE", "bool") === 1)) {
+            if ((SimVar.GetSimVarValue("L:A32NX_GOAROUND_HDG_MODE", "bool") === 1 || SimVar.GetSimVarValue("L:A32NX_GOAROUND_NAV_MODE", "bool") === 1) &&
+                this.currentFlightPhase == FlightPhase.FLIGHT_PHASE_GOAROUND &&
+                SimVar.GetSimVarValue("RADIO HEIGHT", "Feet") > 2000)
+            {
+                if (Simplane.getAutoPilotHeadingManaged() === 1) {
+                    console.log("was managed FMC")
+                    console.log(Simplane.getAutoPilotHeadingManaged())
+                    SimVar.SetSimVarValue("L:A32NX_GOAROUND_NAV_MODE", "bool", 1);
+                    SimVar.SetSimVarValue("L:A32NX_GOAROUND_HDG_MODE", "bool", 0);
+                } else if (Simplane.getAutoPilotHeadingSelected() === 1) {
+                    console.log("was selected FMC")
+                    console.log(Simplane.getAutoPilotHeadingManaged())
+                    SimVar.SetSimVarValue("L:A32NX_GOAROUND_NAV_MODE", "bool", 0);
+                    SimVar.SetSimVarValue("L:A32NX_GOAROUND_HDG_MODE", "bool", 1);
+                }
+                this.currentFlightPhase = FlightPhase.FLIGHT_PHASE_APPROACH
             }
         }
         if (SimVar.GetSimVarValue("L:AIRLINER_FLIGHT_PHASE", "number") != this.currentFlightPhase) {
