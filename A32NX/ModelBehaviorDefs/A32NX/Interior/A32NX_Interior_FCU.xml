@@ -1,5 +1,5 @@
 <ModelBehaviors>
-    <Template Name="FBW_Airbus_Baro_Knob">
+    <Template Name="FBW_Airbus_FCU_Baro_Knob">
         <DefaultTemplateParameters>
             <ID>1</ID>
             <ANIMREF_ID>-1</ANIMREF_ID>
@@ -16,11 +16,11 @@
         </DefaultTemplateParameters>
 
         <UseTemplate Name="ASOBO_GT_Helper_Suffix_ID_Appender">
-            <TEMPLATE_TO_CALL>FBW_Airbus_Baro_Knob_SubTemplate</TEMPLATE_TO_CALL>
+            <TEMPLATE_TO_CALL>FBW_Airbus_FCU_Baro_Knob_SubTemplate</TEMPLATE_TO_CALL>
         </UseTemplate>
     </Template>
 
-    <Template Name="FBW_Airbus_Baro_Knob_SubTemplate">
+    <Template Name="FBW_Airbus_FCU_Baro_Knob_SubTemplate">
         <DefaultTemplateParameters>
             <ANIM_NAME>AUTOPILOT_Knob_Baro_#ID##SUFFIX_ID#</ANIM_NAME>
             <ANIM_NAME_KNOB>#ANIM_NAME#</ANIM_NAME_KNOB>
