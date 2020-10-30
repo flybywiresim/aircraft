@@ -272,7 +272,7 @@ var A320_Neo_ECAM_Common;
                 this.extraMessageText.setAttribute("x", this.extraMessagePosX.toString());
                 this.extraMessageText.setAttribute("y", this.extraMessagePosY.toString());
                 this.extraMessageText.setAttribute("alignment-baseline", "central");
-                this.extraMessageText.setAttribute("class", "inactive");
+                this.extraMessageText.setAttribute("class", "active");
                 extraMessageGroup.appendChild(this.extraMessageText);
                 this.rootSVG.appendChild(extraMessageGroup);
             }
@@ -379,10 +379,13 @@ var A320_Neo_ECAM_Common;
                 }
             }
             if ((this.extraMessageFunction != null) && (this.extraMessageText != null) && (this.extraMessageBorder != null)) {
+                //console.log("Gauge: We have a message");
                 const extraMessage = this.isActive ? this.extraMessageFunction().toString() : "";
                 let style = "";
+                //console.log("Extra message is " + extraMessage);
                 if (extraMessage != this.extraMessageString) {
                     if (this.extraMessageFunction().toString() == "AVAIL") {
+                        console.log("AVAIL show");
                         this.extraMessagePosXMultiplier = 0.198;
                         this.extraMessagePosYMultiplier = 0.025;
                         this.extraMessageBorderPosXMultiplier = 0.345;
@@ -407,6 +410,10 @@ var A320_Neo_ECAM_Common;
                     this.extraMessageText.setAttribute("alignment-baseline", "central");
                     this.extraMessageString = extraMessage;
                     style += (this.extraMessageString.length > 0) ? "active" : "inactive";
+                    console.log("Style is " + style);
+                    this.extraMessageBorder.setAttribute("class", style);
+                    this.extraMessageText.setAttribute("class", style);
+                    this.currentValueTextdecimal.setAttribute("class", style + " decimal");
                     this.extraMessageText.textContent = this.extraMessageString;
                 }
             }

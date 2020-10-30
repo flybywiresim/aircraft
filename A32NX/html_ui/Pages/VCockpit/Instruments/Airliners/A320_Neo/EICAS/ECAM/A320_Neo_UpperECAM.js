@@ -1587,7 +1587,16 @@ var A320_Neo_UpperECAM;
         getN1GaugeValue() {
             const engineId = (this.index + 1);
             const value = SimVar.GetSimVarValue("ENG N1 RPM:" + engineId, "percent");
-            return value;
+            //console.log("Engine 1 position is : " + SimVar.GetSimVarValue("ENG N1 RPM:1", "percent"));
+            //console.log("Engine 2 position is : " + SimVar.GetSimVarValue("ENG N1 RPM:2", "percent"));
+            if (value < A320_Neo_UpperECAM.Definitions.MIN_GAUGE_N1) {
+                return value;
+            } else if (this.getThrottlePosition(this.index) > A320_Neo_UpperECAM.Definitions.MIN_GAUGE_N1 && value > this.getThrottlePosition(this.index)) {
+                return this.getThrottlePosition(this.index);
+            } else {
+                return value;
+            }
+
         }
         getN1GaugeThrottleValue() {
             const throttle = Math.abs(Simplane.getEngineThrottleCommandedN1(this.index));
