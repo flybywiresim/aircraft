@@ -1115,8 +1115,8 @@ class FMCMainDisplay extends BaseAirliners {
         switch (((isNaN(flapsHandleIndex)) ? Simplane.getFlapsHandleIndex() : flapsHandleIndex)) {
             case 0: return this.getCleanApproachSpeed();
             case 1: return this.getSlatApproachSpeed();
-            case 2: return this.getFlapApproachSpeed();
-            default: return this.getVApp();
+            case 4: return this.getVApp();
+            default: return this.getFlapApproachSpeed();
         }
     }
     updateCleanApproachSpeed() {
@@ -1552,10 +1552,9 @@ class FMCMainDisplay extends BaseAirliners {
         return false;
     }
     getVLS() {
-        const flapsHandleIndex = Simplane.getFlapsHandleIndex();
+        // for this to be implemented a FLAPS 3 landing logic is needed.
+        /*const flapsHandleIndex = Simplane.getFlapsHandleIndex();
         if (flapsHandleIndex === 3) {
-            return this.getFlapApproachSpeed();
-            /*
             const dWeight = SimVar.GetSimVarValue("TOTAL WEIGHT", "kilograms") / 1000;
             let cg = this.zeroFuelWeightMassCenter;
             if (((isNaN(cg)) ? 24 : cg)) < 25) {
@@ -1574,8 +1573,8 @@ class FMCMainDisplay extends BaseAirliners {
                 case (dWeight <= 60): return Math.ceil(129 + dWeight - 55);
                 case (dWeight <= 65): return Math.ceil(134 + 1.2 * (dWeight - 60));
                 default: Math.ceil(140 + dWeight - 65);
-            }*/
-        }
+            }
+        }*/
         const dWeight = SimVar.GetSimVarValue("TOTAL WEIGHT", "kilograms") / 1000;
         const cg = this.zeroFuelWeightMassCenter;
         if (((isNaN(cg)) ? 24 : cg) < 25) {
