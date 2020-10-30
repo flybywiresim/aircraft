@@ -311,8 +311,8 @@ class A320_Neo_FDW extends BaseAirliners {
     disconnectedCallback() {
         super.disconnectedCallback();
     }
-    Update() {
-        super.Update();
+    onUpdate(_deltaTime) {
+        super.onUpdate(_deltaTime);
         const isOn = SimVar.GetSimVarValue(this.onVarName, "Boolean");
         if (isOn && (this.currentFrequencyType == A320_Neo_RadioManagement.FREQUENCY_TYPE.NONE)) {
             this.switchOn();
