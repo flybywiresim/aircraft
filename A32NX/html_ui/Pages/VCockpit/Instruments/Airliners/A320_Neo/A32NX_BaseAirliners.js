@@ -324,8 +324,8 @@ var Airliners;
             super.Init();
             console.log("ATC Init");
         }
-        Update() {
-            super.Update();
+        onUpdate(_deltaTime) {
+            super.onUpdate(_deltaTime);
 
             const lightsTest = SimVar.GetSimVarValue("L:XMLVAR_LTS_Test", "Bool");
             const lightsTestChanged = lightsTest !== this.lightsTest;
