@@ -76,7 +76,6 @@ a320-neo-upper-ecam #EnginesPanel #GaugeInfo .SLOT2_UNIT {
     color: var(--displayCyan);
 }
 
-
 a320-neo-upper-ecam #EnginesPanel #LineStyleInfos {
     position: absolute;
     left: -2%;
@@ -105,6 +104,12 @@ a320-neo-upper-ecam #EnginesPanel #LineStyleInfos .Value {
 a320-neo-upper-ecam #EnginesPanel #LineStyleInfos .Inactive {
     fill: var(--displayAmber);
     letter-spacing: 5px; 
+}
+a320-neo-upper-ecam #EnginesPanel #LineStyleInfos .decimal {
+    font-size: 38px !important;
+}
+a320-neo-upper-ecam #EnginesPanel #LineStyleInfos .activeEngine {
+    background-color: rgba(255,255,255,0.5) !important;
 }
 
 
@@ -141,6 +146,8 @@ a320-neo-upper-ecam #InfoTopPanel #Status #ThrottleValue {
 a320-neo-upper-ecam #InfoTopPanel #Status #ThrottleValue::after {
     content: "%";
     color: var(--displayCyan);
+    font-size: 38px;
+    padding-left: 4px;
 }
 a320-neo-upper-ecam #InfoTopPanel #Status #ThrottleState.active {
     color: var(--displayCyan);
@@ -155,6 +162,9 @@ a320-neo-upper-ecam #InfoTopPanel #Status #ThrottleValue.active {
 a320-neo-upper-ecam #InfoTopPanel #Status #ThrottleValue.inactive {
     color: var(--displayAmber);
     letter-spacing: 5px;
+}
+a320-neo-upper-ecam #InfoTopPanel #Status #ThrottleValue span {
+    font-size: 38px;
 }
 a320-neo-upper-ecam #InfoTopPanel #Status #FlexTemperature {
     color: var(--displayCyan);
@@ -335,6 +345,12 @@ a320-neo-ecam-gauge #RootSVG #CurrentValue {
     font-size: 20px !important;
     fill: var(--displayBackground);
 }
+a320-neo-ecam-gauge #RootSVG #CurrentValue.decimal {
+    font-size: 15px !important;
+}
+a320-neo-ecam-gauge #RootSVG #CurrentValue.gaugedecimalpoint {
+   fill: var(--displayGreen);
+}
 a320-neo-ecam-gauge #RootSVG #CurrentValueBorder {
     fill: none;
     stroke: lightblue;
@@ -373,4 +389,9 @@ a320-neo-ecam-gauge #RootSVG #RedArc {
 a320-neo-ecam-gauge #RootSVG #GraduationsGroup line.OuterMarker {
     stroke: var(--displayAmber);
     stroke-width: 6px;
+}
+a320-neo-ecam-gauge #RootSVG #OuterIndicatorOffset {
+    stroke: var(--displayCyan) !important;
+    stroke-width: 1.5px !important;
+    fill: none;
 }
