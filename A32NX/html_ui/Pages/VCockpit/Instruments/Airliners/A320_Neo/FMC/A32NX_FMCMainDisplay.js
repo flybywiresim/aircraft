@@ -721,8 +721,7 @@ class FMCMainDisplay extends BaseAirliners {
     }
     async insertWaypointsAlongAirway(lastWaypointIdent, index, airwayName, callback = EmptyCallback.Boolean) {
         const referenceWaypoint = this.flightPlanManager.getWaypoint(index - 1);
-        console.log('referenceWaypoint');
-        console.log(referenceWaypoint);
+        const lastWaypointIdentPadEnd = lastWaypointIdent.padEnd(5, " ");
         if (referenceWaypoint) {
             const infos = referenceWaypoint.infos;
             if (infos instanceof WayPointInfo) {
@@ -731,7 +730,7 @@ class FMCMainDisplay extends BaseAirliners {
                 });
                 if (airway) {
                     const firstIndex = airway.icaos.indexOf(referenceWaypoint.icao);
-                    const lastWaypointIcao = airway.icaos.find(icao => icao.substring(7, 12) === lastWaypointIdent.padEnd(5, " "));
+                    const lastWaypointIcao = airway.icaos.find(icao => icao.substring(7, 12) === lastWaypointIdentPadEnd);
                     const lastIndex = airway.icaos.indexOf(lastWaypointIcao);
                     if (firstIndex >= 0) {
                         if (lastIndex >= 0) {
@@ -777,6 +776,19 @@ class FMCMainDisplay extends BaseAirliners {
         this.showErrorMessage("NO REF WAYPOINT");
         return callback(false);
     }
+
+    // Copy airway selections from temporary to active flightplan
+    async copyAirwaySelections() {
+        const temporaryFPWaypoints = this.flightPlanManager.getWaypoints(1);
+        const activeFPWaypoints = this.flightPlanManager.getWaypoints(0);
+        for (let i = 0; i < activeFPWaypoints.length; i++) {
+            if (activeFPWaypoints[i].infos && temporaryFPWaypoints[i] && activeFPWaypoints[i].icao === temporaryFPWaypoints[i].icao && temporaryFPWaypoints[i].infos) {
+                activeFPWaypoints[i].infos.airwayIn = temporaryFPWaypoints[i].infos.airwayIn;
+                activeFPWaypoints[i].infos.airwayOut = temporaryFPWaypoints[i].infos.airwayOut;
+            }
+        }
+    }
+
     async tryInsertAirwayByWaypointIdent(newWaypointIdent, from) {
         this.showErrorMessage("NOT IMPLEMENTED");
         return false;
@@ -1103,8 +1115,8 @@ class FMCMainDisplay extends BaseAirliners {
         switch (((isNaN(flapsHandleIndex)) ? Simplane.getFlapsHandleIndex() : flapsHandleIndex)) {
             case 0: return this.getCleanApproachSpeed();
             case 1: return this.getSlatApproachSpeed();
-            case 2: return this.getFlapApproachSpeed();
-            default: return this.getVApp();
+            case 4: return this.getVApp();
+            default: return this.getFlapApproachSpeed();
         }
     }
     updateCleanApproachSpeed() {
@@ -1540,10 +1552,9 @@ class FMCMainDisplay extends BaseAirliners {
         return false;
     }
     getVLS() {
-        const flapsHandleIndex = Simplane.getFlapsHandleIndex();
+        // for this to be implemented a FLAPS 3 landing logic is needed.
+        /*const flapsHandleIndex = Simplane.getFlapsHandleIndex();
         if (flapsHandleIndex === 3) {
-            return this.getFlapApproachSpeed();
-            /*
             const dWeight = SimVar.GetSimVarValue("TOTAL WEIGHT", "kilograms") / 1000;
             let cg = this.zeroFuelWeightMassCenter;
             if (((isNaN(cg)) ? 24 : cg)) < 25) {
@@ -1562,8 +1573,8 @@ class FMCMainDisplay extends BaseAirliners {
                 case (dWeight <= 60): return Math.ceil(129 + dWeight - 55);
                 case (dWeight <= 65): return Math.ceil(134 + 1.2 * (dWeight - 60));
                 default: Math.ceil(140 + dWeight - 65);
-            }*/
-        }
+            }
+        }*/
         const dWeight = SimVar.GetSimVarValue("TOTAL WEIGHT", "kilograms") / 1000;
         const cg = this.zeroFuelWeightMassCenter;
         if (((isNaN(cg)) ? 24 : cg) < 25) {
