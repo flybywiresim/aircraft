@@ -1600,9 +1600,14 @@ class FMCMainDisplay extends BaseAirliners {
             SimVar.SetSimVarValue("L:AIRLINER_DECISION_HEIGHT", "number", 0);
             return true;
         } else if (s === "NO" || s === "NO DH" || s === "NODH") {
-            this.perfApprDH = "NO DH";
-            SimVar.SetSimVarValue("L:AIRLINER_DECISION_HEIGHT", "number", 0);
-            return true;
+            if (Simplane.getAutoPilotApproachType() === 4) {
+                this.perfApprDH = "NO DH";
+                SimVar.SetSimVarValue("L:AIRLINER_DECISION_HEIGHT", "number", -1);
+                return true;
+            } else {
+                this.showErrorMessage("NOT ALLOWED");
+                return false;
+            }
         } else {
             const value = parseFloat(s);
             if (isFinite(value)) {
