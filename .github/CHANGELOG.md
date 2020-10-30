@@ -75,7 +75,7 @@
 1. [ECAM] Adjusted Engine gauges so cursor extends beyond radius of gauge - @RichardPilbery (Richard Pilbery | tricky_dicky#3571 on discord)
 1. [ECAM] Fix ECAM N1 engine indicator - @RichardPilbery (Richard Pilbery | tricky_dicky#3571 on discord)
 1. [LIGHTS] Added logo lights only turn on while on ground or flaps are extented - @linkeleven (linkeleven#2557)
-1. [CDU] Add basic airways support - @santii90 (Santiago Vazquez), @Lessar277 (Lessar27#1112)
+1. [CDU] Add basic airways support based on code from WorkingTitle team - @santii90 (Santiago Vazquez), @Lessar277 (Lessar27)
 1. [TEXTURES] Changed cockpit decals resolution from 1k to 2k - @FoxinTale (Aubrey)
 1. [CDU] Flight plan waypoints distances and times are now properly displayed and updated - @lousybyte (lousybyte)
 1. [ECAM] Fix fuel used values on CRUISE and FUEL pages - @Lessar277 (Lessar27#1112)
@@ -83,6 +83,7 @@
 1. [ATC] Fix CLR input for squawk code - @paul92ilm (Lussion)
 1. [TEXTURES] Fixed aft overhead circuit breaker decal from 'LIGHTNING' to 'LIGHTING' (@DarkOfNova#0001)
 1. [CAMERA] Modified a couple of the default interior camera angles. - @ZigTag (Falcon#5815), @linkeleven (linkeleven#2557)
+1. [CDU] Add correct UI behavior and colors for airways page - @santii90 (Santiago Vazquez)
 
 ## 2020/09
 1. [General] Add CHANGELOG.md - @nathaninnes (Nathan Innes)
