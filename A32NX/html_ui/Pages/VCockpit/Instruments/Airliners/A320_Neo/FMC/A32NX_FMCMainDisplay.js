@@ -1892,10 +1892,7 @@ class FMCMainDisplay extends BaseAirliners {
 
             //Logic to switch back from GOAROUND to APPROACH
             //if ((SimVar.GetSimVarValue("L:A32NX_GOAROUND_HDG_MODE", "bool") === 1 || SimVar.GetSimVarValue("L:A32NX_GOAROUND_NAV_MODE", "bool") === 1)) {
-            if ((SimVar.GetSimVarValue("L:A32NX_GOAROUND_HDG_MODE", "bool") === 1 || SimVar.GetSimVarValue("L:A32NX_GOAROUND_NAV_MODE", "bool") === 1) &&
-                this.currentFlightPhase == FlightPhase.FLIGHT_PHASE_GOAROUND &&
-                SimVar.GetSimVarValue("RADIO HEIGHT", "Feet") > 2000)
-            {
+            if ((SimVar.GetSimVarValue("L:A32NX_GOAROUND_HDG_MODE", "bool") === 1 || SimVar.GetSimVarValue("L:A32NX_GOAROUND_NAV_MODE", "bool") === 1) && this.currentFlightPhase == FlightPhase.FLIGHT_PHASE_GOAROUND && SimVar.GetSimVarValue("RADIO HEIGHT", "Feet") > 2000) {
                 if (Simplane.getAutoPilotHeadingManaged() === 1) {
                     SimVar.SetSimVarValue("L:A32NX_GOAROUND_NAV_MODE", "bool", 1);
                     SimVar.SetSimVarValue("L:A32NX_GOAROUND_HDG_MODE", "bool", 0);
