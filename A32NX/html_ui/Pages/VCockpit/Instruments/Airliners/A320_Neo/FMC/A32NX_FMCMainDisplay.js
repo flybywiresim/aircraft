@@ -1597,7 +1597,7 @@ class FMCMainDisplay extends BaseAirliners {
     setPerfApprDH(s) {
         if (s === FMCMainDisplay.clrValue) {
             this.perfApprDH = NaN;
-            SimVar.SetSimVarValue("L:AIRLINER_DECISION_HEIGHT", "number", 0);
+            SimVar.SetSimVarValue("L:AIRLINER_DECISION_HEIGHT", "number", -1);
             return true;
         } else if (s === "NO" || s === "NO DH" || s === "NODH") {
             if (Simplane.getAutoPilotApproachType() === 4) {
