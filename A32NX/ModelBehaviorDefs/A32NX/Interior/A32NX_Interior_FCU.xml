@@ -14,12 +14,14 @@
         <Component ID="#NODE_ID#" Node="#NODE_ID#">
             <UseTemplate Name="ASOBO_GT_Knob_Infinite_PushPull">
                 <ANTICLOCKWISE_CODE>
-                    (A:AUTOPILOT ALTITUDE LOCK VAR, feet) #INCREMENT# - 0 max
-                    (&gt;K:AP_ALT_VAR_SET_ENGLISH) (&gt;H:AP_KNOB_Down) (&gt;H:A320_Neo_CDU_AP_INC_ALT)
+                    (A:AUTOPILOT ALTITUDE LOCK VAR, feet) #INCREMENT# - 0 max (&gt;K:AP_ALT_VAR_SET_ENGLISH)
+                    (&gt;H:AP_KNOB_Down)
+                    (&gt;H:A320_Neo_CDU_AP_DEC_ALT)
                 </ANTICLOCKWISE_CODE>
                 <CLOCKWISE_CODE>
-                    (A:AUTOPILOT ALTITUDE LOCK VAR, feet) #INCREMENT# + 99900 min
-                    (&gt;K:AP_ALT_VAR_SET_ENGLISH) (&gt;H:AP_KNOB_Up) (&gt;H:A320_Neo_CDU_AP_INC_ALT)
+                    (A:AUTOPILOT ALTITUDE LOCK VAR, feet) #INCREMENT# + 99900 min (&gt;K:AP_ALT_VAR_SET_ENGLISH)
+                    (&gt;H:AP_KNOB_Up)
+                    (&gt;H:A320_Neo_CDU_AP_INC_ALT)
                 </CLOCKWISE_CODE>
 
                 <PULL_CODE>
