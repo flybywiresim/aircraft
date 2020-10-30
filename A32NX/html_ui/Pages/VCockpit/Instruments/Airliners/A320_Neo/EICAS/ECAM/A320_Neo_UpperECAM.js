@@ -27,12 +27,13 @@ var A320_Neo_UpperECAM;
         return div;
     }
     A320_Neo_UpperECAM.createDiv = createDiv;
-    function createSVGText(_text, _class, _x, _y, _alignmentBaseline = "center") {
+    function createSVGText(_text, _class, _x, _y, _alignmentBaseline = "center", _dx = "0%") {
         const textElement = document.createElementNS(Avionics.SVG.NS, "text");
         textElement.textContent = _text;
         textElement.setAttribute("class", _class);
         textElement.setAttribute("x", _x);
         textElement.setAttribute("y", _y);
+        textElement.setAttribute("dx", _dx);
         textElement.setAttribute("alignment-baseline", _alignmentBaseline);
         return textElement;
     }
@@ -1648,19 +1649,49 @@ var A320_Neo_UpperECAM;
                 line.style.strokeWidth = "4";
                 _svgRoot.appendChild(line);
                 this.valueText = A320_Neo_UpperECAM.createSVGText("--.-", "Value", this.getValueTextX(), "88%", "bottom");
+                this.valueText2 = A320_Neo_UpperECAM.createSVGText("", "decimal", this.getValueTextX2(), "88%", "bottom");
+                this.valueTextpoint = A320_Neo_UpperECAM.createSVGText("", "decimalpoint", this.getValueTextXpoint(), "88%", "bottom");
                 _svgRoot.appendChild(this.valueText);
+                _svgRoot.appendChild(this.valueText2);
+                _svgRoot.appendChild(this.valueTextpoint);
             }
             this.refresh(false, 0, 0, true);
         }
-        refresh(_active, _value, _valueDisplayPrecision, _force = false) {
+        refresh(_active, _value, _valueDisplayPrecision, _force = false, _title = "") {
             if ((this.isActive != _active) || (this.currentValue != _value) || _force) {
                 this.isActive = _active;
                 this.currentValue = _value;
                 if (this.valueText != null) {
                     const valueClass = this.isActive ? "Value" : "Inactive";
-                    this.valueText.setAttribute("class", valueClass);
                     if (this.isActive) {
-                        this.valueText.textContent = this.currentValue.toFixed(_valueDisplayPrecision);
+                        if (_valueDisplayPrecision > 0) {
+                            const dx = 0;
+                            if (this.currentValue.toFixed(_valueDisplayPrecision) >= 10) {
+                                this.valueText2.setAttribute("dx", "2%");
+                                this.valueTextpoint.setAttribute("dx", "2%");
+                            } else {
+                                this.valueText2.setAttribute("dx", "0%");
+                                this.valueTextpoint.setAttribute("dx", "0%");
+                            }
+                            const strArray = this.currentValue.toFixed(_valueDisplayPrecision).split(".");
+                            const wholeNumber = strArray[0];
+                            this.valueText.textContent = wholeNumber;
+                            this.valueText.setAttribute("class", valueClass);
+                            const decimal = strArray[1];
+                            this.valueText2.textContent = decimal;
+                            this.valueText2.setAttribute("class", valueClass + " decimal");
+                            this.valueText2.setAttribute("y", "88%");
+                            this.valueTextpoint.textContent = ".";
+                            this.valueTextpoint.setAttribute("class", valueClass + " decimalpoint");
+
+                        } else {
+                            if (_title == "FF") {
+                                this.valueText.setAttribute("x", this.getValueTextXFF());
+                            }
+                            this.valueText.setAttribute("class", valueClass);
+                            this.valueText.textContent = this.currentValue.toFixed(_valueDisplayPrecision);
+                        }
+
                     } else {
                         this.valueText.textContent = "XX";
                     }
@@ -1677,7 +1708,16 @@ var A320_Neo_UpperECAM;
             return "42%";
         }
         getValueTextX() {
-            return "18%";
+            return "11%";
+        }
+        getValueTextX2() {
+            return "17%";
+        }
+        getValueTextXpoint() {
+            return "14%";
+        }
+        getValueTextXFF() {
+            return "20%";
         }
     }
     A320_Neo_UpperECAM.LinesStyleComponent_Left = LinesStyleComponent_Left;
@@ -1689,7 +1729,16 @@ var A320_Neo_UpperECAM;
             return "58%";
         }
         getValueTextX() {
+            return "79%";
+        }
+        getValueTextX2() {
+            return "85%";
+        }
+        getValueTextXpoint() {
             return "82%";
+        }
+        getValueTextXFF() {
+            return "85%";
         }
     }
     A320_Neo_UpperECAM.LinesStyleComponent_Right = LinesStyleComponent_Right;
@@ -1707,10 +1756,10 @@ var A320_Neo_UpperECAM;
         }
         update(_deltaTime) {
             if (this.leftComponent != null) {
-                this.leftComponent.refresh((SimVar.GetSimVarValue("L:A32NX_FADEC_POWERED_ENG1", "Bool") == 1), this.getValue(1), this.getValueStringPrecision());
+                this.leftComponent.refresh((SimVar.GetSimVarValue("L:A32NX_FADEC_POWERED_ENG1", "Bool") == 1), this.getValue(1), this.getValueStringPrecision(), false, this.getTitle());
             }
             if (this.rightComponent != null) {
-                this.rightComponent.refresh((SimVar.GetSimVarValue("L:A32NX_FADEC_POWERED_ENG2", "Bool") == 1), this.getValue(2), this.getValueStringPrecision());
+                this.rightComponent.refresh((SimVar.GetSimVarValue("L:A32NX_FADEC_POWERED_ENG2", "Bool") == 1), this.getValue(2), this.getValueStringPrecision(), false, this.getTitle());
             }
         }
         getValueStringPrecision() {
@@ -1727,8 +1776,7 @@ var A320_Neo_UpperECAM;
         }
         getValue(_engine) {
             const name = "ENG N2 RPM:" + _engine;
-            let percent = SimVar.GetSimVarValue(name, "percent");
-            percent = Math.max(0, Math.min(100, percent));
+            const percent = SimVar.GetSimVarValue(name, "percent");
             return percent;
         }
         getValueStringPrecision() {
@@ -1883,7 +1931,11 @@ var A320_Neo_UpperECAM;
                         if (_value >= 0) {
                             this.throttleState.style.visibility = "visible";
                             this.throttleValue.style.visibility = "visible";
-                            this.throttleValue.textContent = _value.toFixed(1);
+                            const strArray = _value.toFixed(1).split(".");
+                            const wholeNumber = strArray[0];
+                            const decimal = strArray[1];
+                            const throttleVal = wholeNumber + ".<span>" + decimal + "</span>";
+                            this.throttleValue.innerHTML = throttleVal;
                         } else {
                             this.throttleState.style.visibility = "hidden";
                             this.throttleValue.style.visibility = "hidden";
