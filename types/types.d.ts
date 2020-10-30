@@ -91,7 +91,7 @@ interface SimVarStatic {
     GetGameVarValue(name: string, unit: TextVarUnit): string | null;
     GetGameVarValue(name: string, unit: XYZVarUnit): XYZ | null;
     GetGameVarValue(name: string, unit: POIListVarUnit): any | null;
-    GetGameVarValue(name: string, unit: FuelLevelsVarUnit): any | null;
+    GetGameVarValue(name: string, unit: FuelLevelsVarUnit): FuelLevels | null;
     GetGameVarValue(name: string, unit: GlassCockpitSettingsVarUnit): GlassCockpitSettings | null;
     GetGameVarValue(name: string, unit: string): any | null;
 
@@ -102,141 +102,100 @@ interface SimVarStatic {
     SetGameVarValue(name: string, unit: "string" | XYZVarUnit | POIListVarUnit | FuelLevelsVarUnit | GlassCockpitSettingsVarUnit, value: any): Promise<void>;
 }
 
-// There's a whole set of classes behind this.
-interface GlassCockpitSettings {
-    FlapsLevels: {
-        initialised: boolean;
-        slatsAngle: number[];
-        flapsAngle: number[]
-    } | null;
-    AirSpeed: {
-        Initialized: boolean;
-        lowLimit: number;
-        greenStart: number;
-        greenEnd: number;
-        whiteStart: number;
-        whiteEnd: number;
-        yellowStart: number;
-        yellowEnd: number;
-        redStart: number;
-        redEnd: number;
-        highLimit: number;
-    };
-    Vacuum: {
-        min: number,
-        greenStart: number,
-        greenEnd: number,
-        max: number
-    };
-    FuelQuantity: {
-        min: number;
-        greenStart: number;
-        greenEnd: number;
-        yellowStart: number;
-        yellowEnd: number;
-        redStart: number;
-        redEnd: number;
-        max: number;
-    };
-    RPM: {
-        min: number;
-        greenStart: number;
-        greenEnd: number;
-        redStart: number;
-        redEnd: number;
-        max: number;
-    };
-    FuelFlow: {
-        min: number;
-        greenStart: number;
-        greenEnd: number;
-        max: number;
-    };
-    OilPressure: {
-        min: number;
-        lowLimit: number;
-        lowRedStart: number;
-        lowRedEnd: number;
-        greenStart: number;
-        greenEnd: number;
-        redStart: number;
-        redEnd: number;
-        highLimit: number;
-        max: number;
-    };
-    OilTemperature: {
-        min: number;
-        lowLimit: number;
-        greenStart: number;
-        greenEnd: number;
-        highLimit: number;
-        max: number;
-    };
-    EGTTemperature: {
-        min: number;
-        max: number;
-    };
-    BatteryBusAmps: {
-        min: number;
-        greenStart: number;
-        greenEnd: number;
-        yellowStart: number;
-        yellowEnd: number;
-        max: number;
-    };
-    GenAltBusAmps: {
-        min: number;
-        greenStart: number;
-        greenEnd: number;
-        max: number;
-    };
-    MainBusVoltage: {
-        min: number;
-        lowLimit: number;
-        lowYellowStart: number;
-        lowYellowEnd: number;
-        greenStart: number;
-        greenEnd: number;
-        highLimit: number;
-        max: number;
-    };
-    HotBatteryBusVoltage: {
-        min: number;
-        lowLimit: number;
-        greenStart: number;
-        greenEnd: number;
-        yellowStart: number;
-        yellowEnd: number;
-        highLimit: number;
-        max: number;
-    };
-    Torque: {
-        min: number;
-        greenStart: number;
-        greenEnd: number;
-        yellowStart: number;
-        yellowEnd: number;
-        redStart: number;
-        redEnd: number;
-        max: number;
-    };
-    TurbineNg: {
-        min: number;
-        greenStart: number;
-        greenEnd: number;
-        redStart: number;
-        redEnd: number;
-        max: number;
-    };
-    ITTEngineOff: {
-        min: number;
-        greenStart: number;
-        greenEnd: number;
-        redStart: number;
-        redEnd: number;
-        max: number;
-    };
+declare class GlassCockpitSettings {
+    FuelFlow:                ColorRangeDisplay;
+    FuelQuantity:            ColorRangeDisplay2;
+    FuelTemperature:         ColorRangeDisplay3;
+    FuelPressure:            ColorRangeDisplay3;
+    OilPressure:             ColorRangeDisplay3;
+    OilTemperature:          ColorRangeDisplay3;
+    EGTTemperature:          RangeDisplay;
+    Vacuum:                  ColorRangeDisplay;
+    ManifoldPressure:        ColorRangeDisplay;
+    AirSpeed:                ColorRangeDisplay4;
+    Torque:                  ColorRangeDisplay2;
+    RPM:                     ColorRangeDisplay2;
+    TurbineNg:               ColorRangeDisplay2;
+    ITTEngineOff:            ColorRangeDisplay3;
+    ITTEngineOn:             ColorRangeDisplay3;
+    MainBusVoltage:          ColorRangeDisplay3;
+    HotBatteryBusVoltage:    ColorRangeDisplay3;
+    BatteryBusAmps:          ColorRangeDisplay2;
+    GenAltBusAmps:           ColorRangeDisplay2;
+    CoolantLevel:            RangeDisplay;
+    CoolantTemperature:      ColorRangeDisplay3;
+    GearOilTemperature:      ColorRangeDisplay2;
+    CabinAltitude:           ColorRangeDisplay;
+    CabinAltitudeChangeRate: RangeDisplay;
+    CabinPressureDiff:       ColorRangeDisplay;
+    ThrottleLevels:          ThrottleLevelsInfo;
+    FlapsLevels:             FlapsLevelsInfo;
+}
 
+declare class RangeDisplay {
+    min:       number;
+    max:       number;
+    lowLimit:  number;
+    highLimit: number;
+    __Type: string;
+}
+
+declare class ColorRangeDisplay extends RangeDisplay {
+    greenStart: number;
+    greenEnd:   number;
+}
+
+declare class ColorRangeDisplay2 extends ColorRangeDisplay {
+    yellowStart: number;
+    yellowEnd:   number;
+    redStart:    number;
+    redEnd:      number;
+}
+
+declare class ColorRangeDisplay3 extends ColorRangeDisplay2 {
+    lowRedStart:    number;
+    lowRedEnd:      number;
+    lowYellowStart: number;
+    lowYellowEnd:   number;
+}
+
+declare class ColorRangeDisplay4 extends ColorRangeDisplay2 {
+    whiteStart: number;
+    whiteEnd:   number;
+}
+
+declare class FlapsLevelsInfo {
+    slatsAngle: number[];
+    flapsAngle: number[];
+}
+
+// noinspection JSUnusedLocalSymbols
+declare class FlapsRangeDisplay extends RangeDisplay {
+    takeOffValue: number;
+}
+
+declare class ThrottleLevelsInfo {
+    minValues: number[];
+    names:     string[];
+}
+
+declare class FuelLevels {
+    fuel_tank_selector: any[];
+}
+
+declare class DesignSpeeds {
+    VS0: number;
+    VS1: number;
+    VFe: number;
+    VNe: number;
+    VNo: number;
+    VMin: number;
+    VMax: number;
+    Vr: number;
+    Vx: number;
+    Vy: number;
+    Vapp: number;
+    BestGlide: number;
 }
 
 interface SimVarBatch {
@@ -425,9 +384,8 @@ declare global {
         static sKeyDelimiter: string;
     }
 
-
-
     const Simplane: {
+        getDesignSpeeds(): DesignSpeeds;
         getCurrentFlightPhase(): FlightPhase
 
         getVerticalSpeed(): number
