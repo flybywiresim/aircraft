@@ -203,7 +203,9 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
             this.speedNotSetSVG.setAttribute("font-family", "ECAMFontRegular");
             this.speedNotSetSVG.setAttribute("text-anchor", "end");
             this.speedNotSetSVG.setAttribute("alignment-baseline", "central");
+            this.rootGroup.appendChild(this.v1blueSpeedText);
             this.rootGroup.appendChild(this.blueSpeedText);
+            this.rootGroup.appendChild(this.blueSpeedTextLower);
             this.rootGroup.appendChild(this.redSpeedText);
             this.rootGroup.appendChild(this.redSpeedTextLower);
             this.rootGroup.appendChild(this.speedNotSetSVG);
@@ -882,7 +884,7 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
         }
     }
     updateTargetSpeeds(currentAirspeed) {
-        /*{
+        {
             let hideV1BlueTextLower = true;
             let v1Speed = 0;
             if ((Simplane.getV1Airspeed() < 0) && (Simplane.getIsGrounded())) {
@@ -901,7 +903,7 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
                     this.v1blueSpeedText.textContent = v1Speed.toFixed(0);
                 }
             }
-        }*/
+        }
         let takeOffSpeedNotSet = false;
         let hudSpeed = -1;
         let hideBluePointer = true;
