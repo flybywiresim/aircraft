@@ -888,10 +888,12 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
             let hideV1BlueTextLower = true;
             let v1Speed = 0;
             if (Simplane.getIsGrounded()) {
-                v1Speed = SimVar.GetSimVarValue("L:AIRLINER_V1_SPEED", "Knots");
-                if (v1Speed > 0) {
-                    if (this.valueToSvg(currentAirspeed, v1Speed) <= 0) {
-                        hideV1BlueTextLower = false;
+                if (Simplane.getCurrentFlightPhase() < FlightPhase.FLIGHT_PHASE_CLIMB) {
+                    v1Speed = SimVar.GetSimVarValue("L:AIRLINER_V1_SPEED", "Knots");
+                    if (v1Speed > 0) {
+                        if (this.valueToSvg(currentAirspeed, v1Speed) <= 0) {
+                            hideV1BlueTextLower = false;
+                        }
                     }
                 }
             }
