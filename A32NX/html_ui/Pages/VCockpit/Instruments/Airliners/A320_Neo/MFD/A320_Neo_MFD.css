@@ -180,7 +180,7 @@
           font-family: ECAMFontRegular; }
         a320-neo-mfd-element #Mainframe #TopBox text.Value {
           font-size: 44px;
-          fill: var(--displayGreen); }
+          fill: var(--mcduGreen); }
         a320-neo-mfd-element #Mainframe #TopBox text.ValueVor {
           font-size: 44px;
           fill: var(--displayCyan); }
@@ -198,9 +198,9 @@
           fill: var(--displayCyan); }
         a320-neo-mfd-element #Mainframe #TopBox text.Title {
           font-size: 44px;
-          fill: var(--displayGreen); }
+          fill: var(--mcduGreen); }
           a320-neo-mfd-element #Mainframe #TopBox text.Title[state=ils] {
-            fill: var(--displayGreen); }
+            fill: var(--mcduGreen); }
       a320-neo-mfd-element #Mainframe #VORDMENavaids div {
         top: 87%;
         width: 25%;
@@ -230,7 +230,7 @@
         text-decoration: underline; }
       a320-neo-mfd-element #Mainframe #VORDMENavaids #Distance {
         font-size: calc( 3 * 1vh * var(--bodyHeightScale));
-        fill: var(--displayGreen); }
+        fill: var(--mcduGreen); }
       a320-neo-mfd-element #Mainframe #VORDMENavaids #Unit {
         font-size: calc( 3 * 1vh * var(--bodyHeightScale));
         fill: var(--displayCyan); }
@@ -257,9 +257,7 @@
           font-family: ECAMFontRegular; }
         a320-neo-mfd-element #Mainframe #Symbols text.Small {
           font-size: 30px;
-          fill: var(--displayGreen); }
+          fill: var(--mcduGreen); }
         a320-neo-mfd-element #Mainframe #Symbols text.Large {
           font-size: 38px;
-          fill: var(--displayGreen); }
-  
-  
+          fill: var(--mcduGreen); }
