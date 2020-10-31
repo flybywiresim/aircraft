@@ -336,7 +336,6 @@ class CDUFlightPlanPage {
                             CDULateralRevisionPage.ShowPage(mcdu, mcdu.flightPlanManager.getDestination(), mcdu.flightPlanManager.getWaypointsCount() - 1);
                         };
                     }
-
                 }
             }
         }

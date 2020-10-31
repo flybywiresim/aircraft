@@ -127,7 +127,7 @@ class FlightPlanManager {
                 currData.liveDistanceTo = Math.floor(Avionics.Utils.computeGreatCircleDistance(planeCoord, currData.lla));
                 currData.liveETATo = currData.liveDistanceTo / groundSpeed * 3600;
                 currData.liveUTCTo = utcTime + currData.liveETATo;
-            } else if (i > activeIndex) {
+            } else if (activeIndex >= 0 && i > activeIndex) {
                 if (!approach) {
                     const prevData = data[i - 1];
                     currData.distance = Avionics.Utils.computeGreatCircleDistance(prevData.lla, currData.lla);
@@ -426,7 +426,7 @@ class FlightPlanManager {
                             waypoint.distanceInFP = Avionics.Utils.computeGreatCircleDistance(previousWaypoint.infos.coordinates, waypoint.infos.coordinates);
                             waypoint.cumulativeDistanceInFP = previousWaypoint.cumulativeDistanceInFP + waypoint.distanceInFP;
                             waypoint.bearingInFP = Avionics.Utils.computeGreatCircleHeading(previousWaypoint.infos.coordinates, waypoint.infos.coordinates);
-                            if (i > activeIndex && waypoint.ident != activeIdent) {
+                            if (activeIndex >= 0 && i > activeIndex && waypoint.ident != activeIdent) {
                                 waypoint.liveDistanceTo = previousWaypoint.liveDistanceTo + waypoint.distanceInFP;
                                 waypoint.liveETATo = waypoint.liveDistanceTo / groundSpeed * 3600;
                                 waypoint.liveUTCTo = utcTime + waypoint.liveETATo;
