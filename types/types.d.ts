@@ -13,6 +13,12 @@ type POIListVarUnit = "poilist";
 type FuelLevelsVarUnit = "FuelLevels";
 type GlassCockpitSettingsVarUnit = "GlassCockpitSettings";
 
+type NauticalMiles = number;
+type Heading = number;
+type Latitude = number;
+type Longitude = number;
+type Altitude = number;
+
 type VarUnit = NumberVarUnit | TextVarUnit | LatLongAltVarUnit | LatLongAltPBHVarUnit
     | PitchBankHeadingVarUnit | PID_STRUCTVarUnit | XYZVarUnit;
 
@@ -95,6 +101,64 @@ declare global {
 // fs-base-ui/html_ui/JS/Avionics.js
 declare global {
     namespace Avionics {
+        class Utils {
+            static make_bcd16(arg: number): number;
+
+            static make_adf_bcd32(arg: number): number;
+
+            static make_xpndr_bcd16(arg: number): number;
+
+            /**
+             * Sets the element's innerHTML to newValue when different.
+             */
+            static diffAndSet(element: InnerHTML, newValue: string): void;
+
+            /**
+             * Sets the element's attribute with the given qualifiedName to newValue when different.
+             */
+            static diffAndSetAttribute(element: Element, qualifiedName: string, newValue: string): void;
+
+            /**
+             * Computes the coordinates at the given distance and bearing away from a latitude and longitude point.
+             */
+            static bearingDistanceToCoordinates(bearing: Heading, distance: NauticalMiles, referentialLat: Latitude,
+                                                referentialLong: Longitude): LatLongAlt;
+
+            /**
+             * Computes the distance in nautical miles between two locations.
+             */
+            static computeDistance(x: LatLong | LatLongAlt, y: LatLong | LatLongAlt): NauticalMiles;
+
+            /**
+             * Computes the great circle heading between two locations.
+             */
+            static computeGreatCircleHeading(from: LatLong | LatLongAlt, to: LatLong | LatLongAlt): Heading;
+
+            /**
+             * Computes the great circle distance in nautical miles between two locations.
+             */
+            static computeGreatCircleDistance(x: LatLong | LatLongAlt, y: LatLong | LatLongAlt): NauticalMiles;
+
+            static lerpAngle(from: number, to: number, d: number): number;
+
+            static meanAngle(a: number, b: number): number;
+
+            static angleDiff(a: number, b: number): number;
+
+            static fmod(a: number, b: number): number;
+
+            /**
+             * Adds a "0" prefix to runway designators which have only one number.
+             */
+            static formatRunway(designation: string): string;
+
+            static DEG2RAD: number;
+
+            static RAD2DEG: number;
+
+            static runwayRegex: RegExp;
+        }
+
         class SVG {
             static NS: string;
         }
@@ -407,12 +471,12 @@ declare global {
 // fs-base-ui/html_ui/JS/Types.js.
 declare global {
     class LatLong {
-        constructor(latitude: number, longitude: number);
-        constructor(data: { lat: number, long: number });
+        constructor(latitude: Latitude, longitude: Longitude);
+        constructor(data: { lat: Latitude, long: Longitude });
 
         __Type: "LatLong";
-        lat: number;
-        long: number;
+        lat: Latitude;
+        long: Longitude;
 
         /**
          * @returns A string formatted as "40.471000, 73.580000".
@@ -455,13 +519,13 @@ declare global {
     }
 
     class LatLongAlt {
-        constructor(latitude: number, longitude: number, alt: number);
-        constructor(data: { lat: number, long: number, alt: number });
+        constructor(latitude: Latitude, longitude: Longitude, alt: Altitude);
+        constructor(data: { lat: Latitude, long: Longitude, alt: Altitude });
 
         __Type: "LatLongAlt";
-        lat: number;
-        long: number;
-        alt: number;
+        lat: Latitude;
+        long: Longitude;
+        alt: Altitude;
 
         /**
          * @returns A LatLong instance containing the latitude and longitude of this instance.
