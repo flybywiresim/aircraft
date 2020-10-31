@@ -85,6 +85,7 @@
 1. [TEXTURES] Fixed aft overhead circuit breaker decal from 'LIGHTNING' to 'LIGHTING' (@DarkOfNova#0001)
 1. [CAMERA] Modified a couple of the default interior camera angles. - @ZigTag (Falcon#5815), @linkeleven (linkeleven#2557)
 1. [CDU] Add correct UI behavior and colors for airways page - @santii90 (Santiago Vazquez)
+1. [CDU] Add ability to clear MDA/DH and add input logic for both MDA/DH - @paul92ilm (Lussion)
 
 ## 2020/09
 1. [General] Add CHANGELOG.md - @nathaninnes (Nathan Innes)
