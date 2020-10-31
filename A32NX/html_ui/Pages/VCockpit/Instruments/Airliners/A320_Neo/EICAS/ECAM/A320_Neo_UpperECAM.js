@@ -920,17 +920,17 @@ var A320_Neo_UpperECAM;
                             return (this.getCachedSimVar("L:AIRLINER_FLIGHT_PHASE", "Enum") == 6) && (this.getCachedSimVar("RADIO HEIGHT", "feet") < 800);
                         }
                     },
-                    {
-                        message: "AP OFF"
-                        style: "fail-3"
+                                        {
+                        message: "AP OFF",
+                        style: "fail-3",
                         important: true,
                         isActive: () => {
                             return (this.getCachedSimVar("AUTOPILOT DISENGAGED", "Bool") == 1);
                         }
                     },
                     {
-                        message: "A/THR"
-                        style: "InfoCaution"
+                        message: "A/THR",
+                        style: "InfoCaution",
                         important: true,
                         isActive: () => {
                             return (this.getCachedSimVar("AUTOTHROTTLE ACTIVE", "Bool") == 0);
