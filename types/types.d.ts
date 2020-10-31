@@ -18,90 +18,6 @@ type VarUnit = NumberVarUnit | TextVarUnit | LatLongAltVarUnit | LatLongAltPBHVa
 
 type SimVarBatchType = "string" | "number";
 
-declare class SimVarValue {
-    constructor(name?: string, unit?: VarUnit, type?: string);
-    name?: string;
-    unit?: string;
-    type?: string;
-}
-
-interface SimVarValueConstructor {
-    new(name?: string, unit?: VarUnit, type?: string): SimVarValue;
-}
-
-interface SimVarStatic {
-    SimVarBatch: SimVarBatchConstructor;
-    SimVarValue: SimVarValueConstructor;
-
-    /**
-     * Determines if SimVar is ready.
-     * @returns Something when ready, null when not ready.
-     */
-    IsReady(): any | null;
-
-    /**
-     * When the SimVarValueHistory is stored (disabled by default and currently not exposed),
-     * logs per SimVar (slowest per number of invocations first):
-     * - The amount of invocations.
-     * - The average invocation time in milliseconds.
-     * - The total invocation time in milliseconds.
-     * - The slowest invocation time in milliseconds.
-     * - The average invocation time per frame in milliseconds.
-     * - The average amount of invocations per frame.
-     *
-     *  Also logs the total invokes per frame and total time in milliseconds taken per frame.
-     */
-    LogSimVarValueHistory(): void;
-
-    /**
-     * When the SimVarValueHistory is stored (disabled by default and currently not exposed),
-     * logs per SimVar (slowest per frame first):
-     * - The amount of invocations.
-     * - The average invocation time in milliseconds.
-     * - The total invocation time in milliseconds.
-     * - The slowest invocation time in milliseconds.
-     * - The average invocation time per frame in milliseconds.
-     * - The average amount of invocations per frame.
-     *
-     *  Also logs the total invokes per frame and total time in milliseconds taken per frame.
-     */
-    LogSimVarValueHistoryByTimePerFrame(): void;
-
-    GetSimVarArrayValues(batch: SimVarBatch, callback: (results: any[][]) => void, dataSource?: string): void;
-
-    GetSimVarValue(name: string, unit: NumberVarUnit, dataSource?: string): number | null;
-    GetSimVarValue(name: string, unit: TextVarUnit, dataSource?: string): string | null;
-    GetSimVarValue(name: string, unit: LatLongAltVarUnit, dataSource?: string): LatLongAlt | null;
-    GetSimVarValue(name: string, unit: LatLongAltPBHVarUnit, dataSource?: string): LatLongAltPBH | null;
-    GetSimVarValue(name: string, unit: PitchBankHeadingVarUnit, dataSource?: string): PitchBankHeading | null;
-    GetSimVarValue(name: string, unit: PID_STRUCTVarUnit, dataSource?: string): PID_STRUCT | null;
-    GetSimVarValue(name: string, unit: XYZVarUnit, dataSource?: string): XYZ | null;
-
-    SetSimVarValue(name: string, unit: NumberVarUnit, value: number, dataSource?: string): Promise<void>;
-    SetSimVarValue(name: string, unit: TextVarUnit, value: string, dataSource?: string): Promise<void>;
-    SetSimVarValue(name: string, unit: LatLongAltVarUnit, value: LatLongAlt, dataSource?: string): Promise<void>;
-    SetSimVarValue(name: string, unit: LatLongAltPBHVarUnit, value: LatLongAltPBH, dataSource?: string): Promise<void>;
-    SetSimVarValue(name: string, unit: PitchBankHeadingVarUnit, value: PitchBankHeading, dataSource?: string): Promise<void>;
-    SetSimVarValue(name: string, unit: PID_STRUCTVarUnit, value: PID_STRUCT, dataSource?: string): Promise<void>;
-    SetSimVarValue(name: string, unit: XYZVarUnit, value: XYZ, dataSource?: string): Promise<void>;
-
-    GetGlobalVarValue(name: string, unit: any): any | null;
-
-    GetGameVarValue(name: string, unit: NumberVarUnit, param1?: number, param2?: number): number | null;
-    GetGameVarValue(name: string, unit: TextVarUnit): string | null;
-    GetGameVarValue(name: string, unit: XYZVarUnit): XYZ | null;
-    GetGameVarValue(name: string, unit: POIListVarUnit): any | null;
-    GetGameVarValue(name: string, unit: FuelLevelsVarUnit): FuelLevels | null;
-    GetGameVarValue(name: string, unit: GlassCockpitSettingsVarUnit): GlassCockpitSettings | null;
-    GetGameVarValue(name: string, unit: string): any | null;
-
-    SetGameVarValue(name: string, unit: NumberVarUnit, value: number): Promise<void>;
-    /**
-     * Doesn't do anything.
-     */
-    SetGameVarValue(name: string, unit: "string" | XYZVarUnit | POIListVarUnit | FuelLevelsVarUnit | GlassCockpitSettingsVarUnit, value: any): Promise<void>;
-}
-
 declare class GlassCockpitSettings {
     FuelFlow:                ColorRangeDisplay;
     FuelQuantity:            ColorRangeDisplay2;
@@ -198,21 +114,93 @@ declare class DesignSpeeds {
     BestGlide: number;
 }
 
-interface SimVarBatch {
-    add(name: string, unit: NumberVarUnit | TextVarUnit, type?: SimVarBatchType): void;
-    getCount(): string;
-    getIndex(): string;
-    getNames(): string[];
-    getUnits(): (NumberVarUnit | TextVarUnit)[];
-    getTypes(): SimVarBatchType[];
-}
-
-interface SimVarBatchConstructor {
-    new(simVarCount: string, simVarIndex: string): SimVarBatch;
-}
-
 declare global {
-    const SimVar: SimVarStatic;
+    namespace SimVar {
+        class SimVarValue {
+            constructor(name?: string, unit?: VarUnit, type?: string);
+            name?: string;
+            unit?: string;
+            type?: string;
+        }
+
+        class SimVarBatch {
+            constructor(simVarCount: string, simVarIndex: string);
+            add(name: string, unit: NumberVarUnit | TextVarUnit, type?: SimVarBatchType): void;
+            getCount(): string;
+            getIndex(): string;
+            getNames(): string[];
+            getUnits(): (NumberVarUnit | TextVarUnit)[];
+            getTypes(): SimVarBatchType[];
+        }
+
+        /**
+         * Determines if SimVar is ready.
+         * @returns Something when ready, null when not ready.
+         */
+        function IsReady(): any | null;
+
+        /**
+         * When the SimVarValueHistory is stored (disabled by default and currently not exposed),
+         * logs per SimVar (slowest per number of invocations first):
+         * - The amount of invocations.
+         * - The average invocation time in milliseconds.
+         * - The total invocation time in milliseconds.
+         * - The slowest invocation time in milliseconds.
+         * - The average invocation time per frame in milliseconds.
+         * - The average amount of invocations per frame.
+         *
+         *  Also logs the total invokes per frame and total time in milliseconds taken per frame.
+         */
+        function LogSimVarValueHistory(): void;
+
+        /**
+         * When the SimVarValueHistory is stored (disabled by default and currently not exposed),
+         * logs per SimVar (slowest per frame first):
+         * - The amount of invocations.
+         * - The average invocation time in milliseconds.
+         * - The total invocation time in milliseconds.
+         * - The slowest invocation time in milliseconds.
+         * - The average invocation time per frame in milliseconds.
+         * - The average amount of invocations per frame.
+         *
+         *  Also logs the total invokes per frame and total time in milliseconds taken per frame.
+         */
+        function LogSimVarValueHistoryByTimePerFrame(): void;
+
+        function GetSimVarArrayValues(batch: SimVarBatch, callback: (results: any[][]) => void, dataSource?: string): void;
+
+        function GetSimVarValue(name: string, unit: NumberVarUnit, dataSource?: string): number | null;
+        function GetSimVarValue(name: string, unit: TextVarUnit, dataSource?: string): string | null;
+        function GetSimVarValue(name: string, unit: LatLongAltVarUnit, dataSource?: string): LatLongAlt | null;
+        function GetSimVarValue(name: string, unit: LatLongAltPBHVarUnit, dataSource?: string): LatLongAltPBH | null;
+        function GetSimVarValue(name: string, unit: PitchBankHeadingVarUnit, dataSource?: string): PitchBankHeading | null;
+        function GetSimVarValue(name: string, unit: PID_STRUCTVarUnit, dataSource?: string): PID_STRUCT | null;
+        function GetSimVarValue(name: string, unit: XYZVarUnit, dataSource?: string): XYZ | null;
+
+        function SetSimVarValue(name: string, unit: NumberVarUnit, value: number, dataSource?: string): Promise<void>;
+        function SetSimVarValue(name: string, unit: TextVarUnit, value: string, dataSource?: string): Promise<void>;
+        function SetSimVarValue(name: string, unit: LatLongAltVarUnit, value: LatLongAlt, dataSource?: string): Promise<void>;
+        function SetSimVarValue(name: string, unit: LatLongAltPBHVarUnit, value: LatLongAltPBH, dataSource?: string): Promise<void>;
+        function SetSimVarValue(name: string, unit: PitchBankHeadingVarUnit, value: PitchBankHeading, dataSource?: string): Promise<void>;
+        function SetSimVarValue(name: string, unit: PID_STRUCTVarUnit, value: PID_STRUCT, dataSource?: string): Promise<void>;
+        function SetSimVarValue(name: string, unit: XYZVarUnit, value: XYZ, dataSource?: string): Promise<void>;
+
+        function GetGlobalVarValue(name: string, unit: any): any | null;
+
+        function GetGameVarValue(name: string, unit: NumberVarUnit, param1?: number, param2?: number): number | null;
+        function GetGameVarValue(name: string, unit: TextVarUnit): string | null;
+        function GetGameVarValue(name: string, unit: XYZVarUnit): XYZ | null;
+        function GetGameVarValue(name: string, unit: POIListVarUnit): any | null;
+        function GetGameVarValue(name: string, unit: FuelLevelsVarUnit): FuelLevels | null;
+        function GetGameVarValue(name: string, unit: GlassCockpitSettingsVarUnit): GlassCockpitSettings | null;
+        function GetGameVarValue(name: string, unit: string): any | null;
+
+        function SetGameVarValue(name: string, unit: NumberVarUnit, value: number): Promise<void>;
+        /**
+         * Doesn't do anything.
+         */
+        function SetGameVarValue(name: string, unit: "string" | XYZVarUnit | POIListVarUnit | FuelLevelsVarUnit | GlassCockpitSettingsVarUnit, value: any): Promise<void>;
+    }
 
     class LatLongAlt {
         constructor(latitude: number, longitude: number, alt: number);
