@@ -47,7 +47,7 @@ class A32NX_GPWS {
             let minimumsIA; //radio or baro altitude
             const radioAlt = SimVar.GetSimVarValue("PLANE ALT ABOVE GROUND MINUS CG", "Feet");
             const baroAlt = SimVar.GetSimVarValue("INDICATED ALTITUDE", "feet");
-            if (dh > -1) {
+            if (dh >= 0) {
                 minimumsDA = dh;
                 minimumsIA = radioAlt;
             } else {
