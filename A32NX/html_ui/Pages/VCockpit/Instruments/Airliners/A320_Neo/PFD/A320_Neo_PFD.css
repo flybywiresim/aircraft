@@ -270,14 +270,14 @@ a320-neo-pfd-element {
             top: 66%;
             font-size: 40px;
             text-align: left;
-            padding-left: 2%;
+            padding-left: 1%;
             padding-top: 7%;}
           a320-neo-pfd-element #Mainframe #InstrumentsContainer #FMA #Column4 #Row3SubRight {
             position: absolute;
             top: 66%;
             font-size: 40px;
             text-align: right;
-            padding-right: 2%;
+            padding-right: 1%;
             padding-top: 7%; }
         a320-neo-pfd-element #Mainframe #InstrumentsContainer #FMA #Column5 {
           width: 20%;
