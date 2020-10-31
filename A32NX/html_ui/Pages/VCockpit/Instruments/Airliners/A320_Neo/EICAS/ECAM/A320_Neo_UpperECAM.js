@@ -925,7 +925,7 @@ var A320_Neo_UpperECAM;
                         style: "fail-3"
                         important: true,
                         isActive: () => {
-                            return ();
+                            return (this.getCachedSimVar("AUTOPILOT DISENGAGED", "Bool") == 1);
                         }
                     },
                     {
@@ -933,7 +933,7 @@ var A320_Neo_UpperECAM;
                         style: "InfoCaution"
                         important: true,
                         isActive: () => {
-                            return();
+                            return (this.getCachedSimVar("AUTOTHROTTLE ACTIVE", "Bool") == 0);
                         }
                     },
 
