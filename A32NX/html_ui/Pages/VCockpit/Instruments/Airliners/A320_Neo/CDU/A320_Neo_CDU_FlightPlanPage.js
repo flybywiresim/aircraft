@@ -88,10 +88,13 @@ class CDUFlightPlanPage {
             waypointsWithDiscontinuities.push(destination);
         }
         if (mcdu.flightPlanManager.decelWaypoint) {
-            waypointsWithDiscontinuities.splice(mcdu.flightPlanManager.decelPrevIndex + 1, 0, {
-                wp: mcdu.flightPlanManager.decelWaypoint,
-                fpIndex: -42
-            });
+            const idx = waypointsWithDiscontinuities.findIndex((e) => e.wp.cumulativeDistanceInFP > mcdu.flightPlanManager.decelWaypoint.cumulativeDistanceInFP);
+            if (idx > 0 && idx < waypointsWithDiscontinuities.length) {
+                waypointsWithDiscontinuities.splice(idx, 0, {
+                    wp: mcdu.flightPlanManager.decelWaypoint,
+                    fpIndex: -42
+                });
+            }
         }
         if (waypointsWithDiscontinuities.length === 0) {
             rowsCount = 0;
@@ -177,11 +180,11 @@ class CDUFlightPlanPage {
                     let timeCell = "----";
                     if (isFlying) {
                         if (isFinite(waypoint.liveUTCTo) || isFinite(mcdu.flightPlanManager._waypointReachedAt)) {
-                            timeCell = FMCMainDisplay.secondsToUTC((index ? waypoint.liveUTCTo : mcdu.flightPlanManager._waypointReachedAt));
+                            timeCell = FMCMainDisplay.secondsToUTC((index ? waypoint.liveUTCTo : mcdu.flightPlanManager._waypointReachedAt)) + "[s-text]";
                         }
                     } else {
                         if (isFinite(waypoint.liveETATo)) {
-                            timeCell = FMCMainDisplay.secondsTohhmm(index ? waypoint.liveETATo : 0);
+                            timeCell = FMCMainDisplay.secondsTohhmm(index ? waypoint.liveETATo : 0) + "[s-text]";
                         }
                     }
                     if (fpIndex > mcdu.flightPlanManager.getDepartureWaypointsCount()) {
@@ -210,7 +213,7 @@ class CDUFlightPlanPage {
                                 airwayName = airway.name;
                             }
                         }
-                        const distance = (index == 1 ? waypoint.liveDistanceTo : waypoint.distanceInFP);
+                        const distance = (waypoint === mcdu.flightPlanManager.getActiveWaypoint() ? waypoint.liveDistanceTo : waypoint.distanceInFP);
                         rows[2 * i] = [airwayName, (index ? distance.toFixed(0) : "")];
                         let speedConstraint = "---";
                         if (waypoint.speedConstraint > 10) {
@@ -333,6 +336,7 @@ class CDUFlightPlanPage {
                             CDULateralRevisionPage.ShowPage(mcdu, mcdu.flightPlanManager.getDestination(), mcdu.flightPlanManager.getWaypointsCount() - 1);
                         };
                     }
+
                 }
             }
         }
