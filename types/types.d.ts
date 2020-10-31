@@ -291,6 +291,80 @@ declare global {
     }
 }
 
+// fs-base-ui/html_ui/JS/buttons.js
+declare global {
+    class ButtonElement extends TemplateElement {
+        onClick: (e: Event) => void;
+        onMouseEnter: () => void;
+        onMouseLeave: () => void;
+        onMouseDown: () => void;
+        onMouseUp: () => void;
+        privateOnKeysMode: () => void;
+        keydownRouter: (e: Event) => void;
+        keyupRouter: (e: Event) => void;
+        OnNavigationModeChanged: () => void;
+        OnLockButtonChanged: () => void;
+
+        get childActiveClass(): string;
+        get canFocusOnMouseOver(): boolean;
+        get interactive(): boolean;
+        get hasMouseOver(): boolean;
+        set hasMouseOver(value: boolean);
+        get defaultClick(): boolean;
+        get defaultSoundType(): string;
+        get soundType(): string;
+        set soundType(type: string);
+        disconnectedCallback(): void;
+        canPlaySound(): boolean;
+        set playSoundOnValidate(value: boolean);
+        canPlaySoundOnValidate(): boolean;
+        onLeave(): void;
+        mouseDown(): void;
+        onKeysMode(): void;
+        mouseUp(): void;
+        hasSound(): boolean;
+        onHover(): void;
+        checkInputbar(): void;
+        getInputBarButtonName(): string;
+        get tooltip(): string | null;
+        get tooltipFollowsMouse(): boolean;
+        get tooltipPosition(): [number, number];
+        get cuttableTextBoxes(): ArrayLike<NodeListOf<any>>;
+        needsTooltip(): boolean;
+        get maxTooltipWidth(): number;
+        updateTooltip(): void;
+        get canBeSelected(): boolean;
+        get validateOnReturn(): boolean;
+        onKeyUp(keycode): boolean;
+        onKeyDown(keycode): boolean;
+        CanRegisterButton(): boolean;
+        IsActive(): boolean;
+        set selected(value: boolean);
+        get selected(): boolean;
+        Validate(): void
+        onValidate(): void;
+        findChildButton(parent: Node): boolean;
+    }
+
+    class UINavigationBlocElement extends ButtonElement {
+        onMouseMode: () => void;
+        onActiveElementChanged: () => void;
+        exitInside: () => void;
+
+        focusByKeys(keycode: number): void;
+        get needInputbar(): boolean;
+        forceInsideMode(): void;
+        setInsideMode(value: boolean): void;
+        getKeyNavigationDirection(): KeyNavigationDirection;
+    }
+
+    class ExternalLink extends ButtonElement {
+    }
+
+    class InternalLink extends ButtonElement {
+    }
+}
+
 // fs-base-ui/html_ui/JS/common.js
 declare global {
     namespace Utils {
@@ -317,6 +391,13 @@ declare global {
         constructor(x: number, y: number);
         x: number;
         y: number;
+    }
+
+    enum KeyNavigationDirection {
+        KeyNavigation_None = 0,
+        KeyNavigation_Horizontal = 1,
+        KeyNavigation_Vertical = 2,
+        KeyNavigation_Grid = 3
     }
 }
 
