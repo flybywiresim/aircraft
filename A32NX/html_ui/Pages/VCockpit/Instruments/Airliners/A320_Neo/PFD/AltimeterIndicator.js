@@ -110,7 +110,7 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
             bg.setAttribute("y", _top.toString());
             bg.setAttribute("width", _width.toString());
             bg.setAttribute("height", _height.toString());
-            bg.setAttribute("fill", "#343B51");
+            bg.setAttribute("fill", "#6B798A");
             bg.setAttribute("stroke-width", "3");
             this.centerSVG.appendChild(bg);
 

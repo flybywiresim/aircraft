@@ -83,7 +83,7 @@ class Jet_PFD_HSIndicator extends HTMLElement {
             bg.setAttribute("y", _top.toString());
             bg.setAttribute("width", _width.toString());
             bg.setAttribute("height", _height.toString());
-            bg.setAttribute("fill", "#343B51");
+            bg.setAttribute("fill", "#6B798A");
             bg.setAttribute("stroke", this.strokeColor);
             bg.setAttribute("stroke-width", this.strokeSize.toString());
             bg.setAttribute("stroke-opacity", this.strokeOpacity);
