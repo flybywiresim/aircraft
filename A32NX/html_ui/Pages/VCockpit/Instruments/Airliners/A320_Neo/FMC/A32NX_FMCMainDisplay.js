@@ -1594,24 +1594,50 @@ class FMCMainDisplay extends BaseAirliners {
         }
     }
     setPerfApprMDA(s) {
-        const value = parseFloat(s);
-        if (isFinite(value)) {
-            this.perfApprMDA = value;
-            SimVar.SetSimVarValue("L:AIRLINER_MINIMUM_DESCENT_ALTITUDE", "number", this.perfApprMDA);
+        if (s === FMCMainDisplay.clrValue) {
+            this.perfApprMDA = NaN;
+            SimVar.SetSimVarValue("L:AIRLINER_MINIMUM_DESCENT_ALTITUDE", "number", 0);
             return true;
+        } else {
+            const value = parseFloat(s);
+            if (isFinite(value)) {
+                this.perfApprMDA = value;
+                SimVar.SetSimVarValue("L:AIRLINER_MINIMUM_DESCENT_ALTITUDE", "number", this.perfApprMDA);
+                return true;
+            }
+            this.showErrorMessage(this.defaultInputErrorMessage);
+            return false;
         }
-        this.showErrorMessage(this.defaultInputErrorMessage);
-        return false;
     }
     setPerfApprDH(s) {
-        const value = parseFloat(s);
-        if (isFinite(value)) {
-            this.perfApprDH = value;
-            SimVar.SetSimVarValue("L:AIRLINER_DECISION_HEIGHT", "number", this.perfApprDH);
+        if (s === FMCMainDisplay.clrValue) {
+            this.perfApprDH = NaN;
+            SimVar.SetSimVarValue("L:AIRLINER_DECISION_HEIGHT", "number", -1);
             return true;
+        } else if (s === "NO" || s === "NO DH" || s === "NODH") {
+            if (Simplane.getAutoPilotApproachType() === 4) {
+                this.perfApprDH = "NO DH";
+                SimVar.SetSimVarValue("L:AIRLINER_DECISION_HEIGHT", "number", -1);
+                return true;
+            } else {
+                this.showErrorMessage("NOT ALLOWED");
+                return false;
+            }
+        } else {
+            const value = parseFloat(s);
+            if (isFinite(value)) {
+                if (value >= 0 && value <= 700) {
+                    this.perfApprDH = value;
+                    SimVar.SetSimVarValue("L:AIRLINER_DECISION_HEIGHT", "number", this.perfApprDH);
+                    return true;
+                } else {
+                    this.showErrorMessage("ENTRY OUT OF RANGE");
+                    return false;
+                }
+            }
+            this.showErrorMessage(this.defaultInputErrorMessage);
+            return false;
         }
-        this.showErrorMessage(this.defaultInputErrorMessage);
-        return false;
     }
     getIsFlying() {
         return this.currentFlightPhase >= FlightPhase.FLIGHT_PHASE_TAKEOFF;
