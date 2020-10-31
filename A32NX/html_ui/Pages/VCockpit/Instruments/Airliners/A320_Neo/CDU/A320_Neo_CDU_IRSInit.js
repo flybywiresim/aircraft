@@ -46,7 +46,7 @@ class CDUIRSInit {
             originAirportTitle = ["LAT" + larrowupdwn , rarrowupdwn + "LONG", "REFERENCE"];
             GPSPosAlign = ["--°--.--", "--°--.--", " "];
             originAirportString = ['{IrsInitFont}' + originAirportLat['deg'] + '°{IrsInitFontEnd}' + originAirportLat['min'] + '.' + originAirportLat['sec'] + '[s-text]{IrsInitFont}' + originAirportLat['dir'] + "{IrsInitFontEnd} [color]blue", '{IrsInitFont}' + originAirportLon['deg'] + '°{IrsInitFontEnd}' + originAirportLon['min'] + '.' + originAirportLon['sec'] + '[s-text]{IrsInitFont}' + originAirportLon['dir'] + "{IrsInitFontEnd} [color]blue", referenceName];
-            if (SimVar.GetSimVarValue("L:A320_Neo_ADIRS_KNOB_1", "Enum") || SimVar.GetSimVarValue("L:A320_Neo_ADIRS_KNOB_2", "Enum") || SimVar.GetSimVarValue("L:A320_Neo_ADIRS_KNOB_3", "Enum")) {
+            if (SimVar.GetSimVarValue("L:A32NX_ADIRS_KNOB_1", "Enum") || SimVar.GetSimVarValue("L:A32NX_ADIRS_KNOB_2", "Enum") || SimVar.GetSimVarValue("L:A32NX_ADIRS_KNOB_3", "Enum")) {
                 GPSPosAlign = ['{IrsInitFont}' + currentGPSLat['deg'] + '°{IrsInitFontEnd}' + currentGPSLat['min'] + '.' + Math.ceil(Number(currentGPSLat['sec'] / 100)) + '[s-text]{IrsInitFont}' + currentGPSLat['dir'] + "{IrsInitFontEnd} [color]green", '{IrsInitFont}' + currentGPSLon['deg'] + '°{IrsInitFontEnd}' + currentGPSLon['min'] + '.' + Math.ceil(Number(currentGPSLon['sec'] / 100)) + '[s-text]{IrsInitFont}' + currentGPSLon['dir'] + "{IrsInitFontEnd} [color]green", ""];
                 alignType = "GPS";
             }
@@ -69,7 +69,7 @@ class CDUIRSInit {
         }
 
         let IRS1GpsString = emptyIRSGpsString;
-        if (SimVar.GetSimVarValue("L:A320_Neo_ADIRS_KNOB_1", "Enum") === 1) {
+        if (SimVar.GetSimVarValue("L:A32NX_ADIRS_KNOB_1", "Enum") === 1) {
             if (checkAligned === 2) {
                 statusIRS1 = "IRS1 ALIGNED ON " + alignType;
             } else {
@@ -80,7 +80,7 @@ class CDUIRSInit {
             statusIRS1 = "IRS1 OFF";
         }
         let IRS2GpsString = emptyIRSGpsString;
-        if (SimVar.GetSimVarValue("L:A320_Neo_ADIRS_KNOB_2", "Enum") === 1) {
+        if (SimVar.GetSimVarValue("L:A32NX_ADIRS_KNOB_2", "Enum") === 1) {
             if (checkAligned === 2) {
                 statusIRS2 = "IRS2 ALIGNED ON " + alignType;
             } else {
@@ -91,7 +91,7 @@ class CDUIRSInit {
             statusIRS2 = "IRS2 OFF";
         }
         let IRS3GpsString = emptyIRSGpsString;
-        if (SimVar.GetSimVarValue("L:A320_Neo_ADIRS_KNOB_3", "Enum") === 1) {
+        if (SimVar.GetSimVarValue("L:A32NX_ADIRS_KNOB_3", "Enum") === 1) {
             if (checkAligned === 2) {
                 statusIRS3 = "IRS3 ALIGNED ON " + alignType;
             } else {
