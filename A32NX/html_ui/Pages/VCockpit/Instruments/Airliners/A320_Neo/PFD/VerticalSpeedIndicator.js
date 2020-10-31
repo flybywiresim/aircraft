@@ -1,7 +1,7 @@
 class Jet_PFD_VerticalSpeedIndicator extends HTMLElement {
     constructor() {
         super(...arguments);
-        this.cursorTextColor = "#00E64D";
+        this.cursorTextColor = "lime";
         this.fontSize = 22;
         this.cursorPosX1 = 0;
         this.cursorPosY1 = 0;
@@ -58,7 +58,7 @@ class Jet_PFD_VerticalSpeedIndicator extends HTMLElement {
         const width = 100;
         const height = 600;
         this.maxSpeed = 10000; // was 6000, raised to keep on displaying the values
-        this.cursorTextColor = "#00E64D";
+        this.cursorTextColor = "lime";
         if (!this.rootGroup) {
             this.rootGroup = document.createElementNS(Avionics.SVG.NS, "g");
             this.rootGroup.setAttribute("id", "VerticalSpeed");
@@ -156,7 +156,7 @@ class Jet_PFD_VerticalSpeedIndicator extends HTMLElement {
             cursorSVGNeutral.setAttribute("y1", this.cursorPosY1.toString());
             cursorSVGNeutral.setAttribute("x2", this.cursorPosX1.toString());
             cursorSVGNeutral.setAttribute("y2", this.cursorPosY1.toString());
-            cursorSVGNeutral.setAttribute("stroke", "#FFFF00");
+            cursorSVGNeutral.setAttribute("stroke", "yellow");
             cursorSVGNeutral.setAttribute("stroke-width", "8");
             this.cursorSVGGroup.appendChild(cursorSVGNeutral);
             const cursorBgWidth = 34;
@@ -246,7 +246,7 @@ class Jet_PFD_VerticalSpeedIndicator extends HTMLElement {
                     this.cursorSVGLine.setAttribute("x2", this.cursorPosX2.toString());
                     this.cursorSVGLine.setAttribute("y2", this.cursorPosY2.toString());
                     if (alert) {
-                        this.cursorSVGLine.setAttribute("stroke", "#E68000");
+                        this.cursorSVGLine.setAttribute("stroke", "orange");
                     } else {
                         this.cursorSVGLine.setAttribute("stroke", this.cursorTextColor);
                     }
@@ -273,7 +273,7 @@ class Jet_PFD_VerticalSpeedIndicator extends HTMLElement {
                         }
                     }
                     if (alert) {
-                        this.cursorSVGText.setAttribute("fill", "#E68000");
+                        this.cursorSVGText.setAttribute("fill", "orange");
                     } else {
                         this.cursorSVGText.setAttribute("fill", this.cursorTextColor);
                     }
