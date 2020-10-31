@@ -172,7 +172,7 @@ class Jet_PFD_AttitudeIndicator extends HTMLElement {
             this.compassSelectedHeading.setAttribute("height", "33");
             this.compassSelectedHeading.setAttribute("y", "-33");
             this.compassSelectedHeading.setAttribute("x", "0");
-            this.compassSelectedHeading.setAttribute("fill", "#00F2FF");
+            this.compassSelectedHeading.setAttribute("fill", "cyan");
             this.horizon_bottom.appendChild(this.compassSelectedHeading);
         }
         {
@@ -409,7 +409,7 @@ class Jet_PFD_AttitudeIndicator extends HTMLElement {
                 this.radioAltitudeGroup = document.createElementNS(Avionics.SVG.NS, "g");
                 this.radioAltitudeGroup.setAttribute("id", "RadioAltitude");
                 this.attitude_root.appendChild(this.radioAltitudeGroup);
-                this.radioAltitudeColorOk = "rgb(36,255,0)";
+                this.radioAltitudeColorOk = "lime";
                 this.radioAltitudeColorBad = "orange";
                 this.radioAltitudeColorLimit = 400;
                 this.radioAltitudeRotate = true;
@@ -725,7 +725,7 @@ var Jet_PFD_FlightDirector;
             return 160;
         }
         getColour() {
-            return "#24FF00";
+            return "lime";
         }
         getFDBankLimit() {
             return 30;
@@ -796,7 +796,7 @@ var Jet_PFD_FlightDirector;
     PathVectorDisplay.MIN_SPEED_TO_DISPLAY = 25;
     class FPV_Airbus extends PathVectorDisplay {
         getColour() {
-            return "#24FF00";
+            return "lime";
         }
         getCircleRadius() {
             return 10;
@@ -838,7 +838,7 @@ var Jet_PFD_FlightDirector;
             }
         }
         getColour() {
-            return "#24FF00";
+            return "lime";
         }
     }
     FPD_Airbus.CIRCLE_RADIUS = 5;

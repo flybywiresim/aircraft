@@ -1,7 +1,7 @@
 class Jet_PFD_VerticalSpeedIndicator extends HTMLElement {
     constructor() {
         super(...arguments);
-        this.cursorTextColor = "rgb(26,255,0)";
+        this.cursorTextColor = "lime";
         this.fontSize = 22;
         this.cursorPosX1 = 0;
         this.cursorPosY1 = 0;
@@ -58,7 +58,7 @@ class Jet_PFD_VerticalSpeedIndicator extends HTMLElement {
         const width = 100;
         const height = 600;
         this.maxSpeed = 10000; // was 6000, raised to keep on displaying the values
-        this.cursorTextColor = "rgb(26,255,0)";
+        this.cursorTextColor = "lime";
         if (!this.rootGroup) {
             this.rootGroup = document.createElementNS(Avionics.SVG.NS, "g");
             this.rootGroup.setAttribute("id", "VerticalSpeed");

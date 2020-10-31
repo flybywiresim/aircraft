@@ -282,11 +282,11 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
                 integralsGroup.setAttribute("viewBox", "0 0 " + cursorWidth + " " + cursorHeight);
                 this.cursorSVG.appendChild(integralsGroup);
                 {
-                    this.cursorIntegrals[0].construct(integralsGroup, 1, _cursorPosY + 4, _width, "ECAMFontRegular", this.fontSize * 3.5, "rgb(36,255,0)");
-                    this.cursorIntegrals[1].construct(integralsGroup, 52, _cursorPosY + 4, _width, "ECAMFontRegular", this.fontSize * 3.5, "rgb(36,255,0)");
-                    this.cursorIntegrals[2].construct(integralsGroup, 103, _cursorPosY + 4, _width, "ECAMFontRegular", this.fontSize * 3.5, "rgb(36,255,0)");
+                    this.cursorIntegrals[0].construct(integralsGroup, 1, _cursorPosY + 4, _width, "ECAMFontRegular", this.fontSize * 3.5, "lime");
+                    this.cursorIntegrals[1].construct(integralsGroup, 52, _cursorPosY + 4, _width, "ECAMFontRegular", this.fontSize * 3.5, "lime");
+                    this.cursorIntegrals[2].construct(integralsGroup, 103, _cursorPosY + 4, _width, "ECAMFontRegular", this.fontSize * 3.5, "lime");
                 }
-                this.cursorDecimals.construct(this.cursorSVG, 114, _cursorPosY - 2, _width, "ECAMFontRegular", this.fontSize * 1.15, "rgb(36,255,0)");
+                this.cursorDecimals.construct(this.cursorSVG, 114, _cursorPosY - 2, _width, "ECAMFontRegular", this.fontSize * 1.15, "lime");
             }
             this.centerSVG.appendChild(this.cursorSVG);
             if (!this.targetAltitudeText) {

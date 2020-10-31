@@ -4,6 +4,8 @@
 <!-- Use the following format below -->
 <!--  1. [Changed Area] Title of changes - @github username (Name)  -->
 ## 2020/10
+1. [PFD] Updated color codes to presed colors - @MisterChocker (Leon)
+1. [PFD] Changed gray background color - @MisterChocker (Leon)
 1. [PFD] General improvements to the display layout - @MisterChocker (Leon)
 1. [PFD] Added proper selected and managed speed indication - @MisterChocker (Leon)
 1. [PFD] Added V1 indication - @MisterChocker (Leon)
