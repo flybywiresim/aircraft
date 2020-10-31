@@ -172,7 +172,7 @@ class Jet_PFD_AttitudeIndicator extends HTMLElement {
             this.compassSelectedHeading.setAttribute("height", "33");
             this.compassSelectedHeading.setAttribute("y", "-33");
             this.compassSelectedHeading.setAttribute("x", "0");
-            this.compassSelectedHeading.setAttribute("fill", "cyan");
+            this.compassSelectedHeading.setAttribute("fill", "#00BFD9");
             this.horizon_bottom.appendChild(this.compassSelectedHeading);
         }
         {
@@ -285,7 +285,7 @@ class Jet_PFD_AttitudeIndicator extends HTMLElement {
                             path += "L0 " + (pitchFactor * nextAngle + 20) + " ";
                             path += "L" + (-bigWidth / 2 + smallWidth) + " " + (pitchFactor * angle - bigHeight / 2) + " l" + -smallWidth + " 0 Z";
                             chevron.setAttribute("d", path);
-                            chevron.setAttribute("fill", "red");
+                            chevron.setAttribute("fill", "#FF0000");
                             this.attitude_pitch.appendChild(chevron);
                         }
                         if (angle >= unusualAttitudeUpperLimit && nextAngle <= maxDash) {
@@ -295,7 +295,7 @@ class Jet_PFD_AttitudeIndicator extends HTMLElement {
                             path += "L0 " + (pitchFactor * angle - 20) + " ";
                             path += "L" + (-bigWidth / 2 + smallWidth) + " " + (pitchFactor * nextAngle + bigHeight / 2) + " l" + -smallWidth + " 0 Z";
                             chevron.setAttribute("d", path);
-                            chevron.setAttribute("fill", "red");
+                            chevron.setAttribute("fill", "#FF0000");
                             this.attitude_pitch.appendChild(chevron);
                         }
                     }
@@ -343,7 +343,7 @@ class Jet_PFD_AttitudeIndicator extends HTMLElement {
                 const topTriangle = document.createElementNS(Avionics.SVG.NS, "path");
                 topTriangle.setAttribute("d", "M0 -180 l-10 -18 l20 0 Z");
                 topTriangle.setAttribute("fill", "transparent");
-                topTriangle.setAttribute("stroke", "yellow");
+                topTriangle.setAttribute("stroke", "#FFFF00");
                 topTriangle.setAttribute("stroke-width", "3");
                 topTriangle.setAttribute("stroke-opacity", "1");
                 this.attitude_bank.appendChild(topTriangle);
@@ -370,14 +370,14 @@ class Jet_PFD_AttitudeIndicator extends HTMLElement {
                     const leftUpper = document.createElementNS(Avionics.SVG.NS, "path");
                     leftUpper.setAttribute("d", "M-145 2 l0 -9 l62 0 l0 28 l-9 0 l0 -19 l-43 0 Z");
                     leftUpper.setAttribute("fill", "url(#Backlight)");
-                    leftUpper.setAttribute("stroke", "yellow");
+                    leftUpper.setAttribute("stroke", "#FFFF00");
                     leftUpper.setAttribute("stroke-width", "3");
                     leftUpper.setAttribute("stroke-opacity", "1.0");
                     cursors.appendChild(leftUpper);
                     const rightUpper = document.createElementNS(Avionics.SVG.NS, "path");
                     rightUpper.setAttribute("d", "M145 2 l0 -9 l-62 0 l0 28 l9 0 l0 -19 l43 0 Z");
                     rightUpper.setAttribute("fill", "url(#Backlight)");
-                    rightUpper.setAttribute("stroke", "yellow");
+                    rightUpper.setAttribute("stroke", "#FFFF00");
                     rightUpper.setAttribute("stroke-width", "3");
                     rightUpper.setAttribute("stroke-opacity", "1.0");
                     cursors.appendChild(rightUpper);
@@ -395,13 +395,13 @@ class Jet_PFD_AttitudeIndicator extends HTMLElement {
                 this.slipSkidTriangle = document.createElementNS(Avionics.SVG.NS, "path");
                 this.slipSkidTriangle.setAttribute("d", "M0 -170 l-13 20 l26 0 Z");
                 this.slipSkidTriangle.setAttribute("fill", "transparent");
-                this.slipSkidTriangle.setAttribute("stroke", "yellow");
+                this.slipSkidTriangle.setAttribute("stroke", "#FFFF00");
                 this.slipSkidTriangle.setAttribute("stroke-width", "3");
                 this.attitude_root.appendChild(this.slipSkidTriangle);
                 this.slipSkid = document.createElementNS(Avionics.SVG.NS, "path");
                 this.slipSkid.setAttribute("d", "M-19 -138 L-15 -144 L17 -144 L21 -138 Z");
                 this.slipSkid.setAttribute("fill", "transparent");
-                this.slipSkid.setAttribute("stroke", "yellow");
+                this.slipSkid.setAttribute("stroke", "#FFFF00");
                 this.slipSkid.setAttribute("stroke-width", "3");
                 this.attitude_root.appendChild(this.slipSkid);
             }
@@ -409,8 +409,8 @@ class Jet_PFD_AttitudeIndicator extends HTMLElement {
                 this.radioAltitudeGroup = document.createElementNS(Avionics.SVG.NS, "g");
                 this.radioAltitudeGroup.setAttribute("id", "RadioAltitude");
                 this.attitude_root.appendChild(this.radioAltitudeGroup);
-                this.radioAltitudeColorOk = "lime";
-                this.radioAltitudeColorBad = "orange";
+                this.radioAltitudeColorOk = "#00E64D";
+                this.radioAltitudeColorBad = "#E68000";
                 this.radioAltitudeColorLimit = 400;
                 this.radioAltitudeRotate = true;
                 this.radioAltitude = document.createElementNS(Avionics.SVG.NS, "text");
@@ -435,7 +435,7 @@ class Jet_PFD_AttitudeIndicator extends HTMLElement {
             centerRectBorder.setAttribute("height", "10");
             centerRectBorder.setAttribute("width", "10");
             centerRectBorder.setAttribute("fill", "none");
-            centerRectBorder.setAttribute("stroke", "yellow");
+            centerRectBorder.setAttribute("stroke", "#FFFF00");
             centerRectBorder.setAttribute("stroke-width", "3");
             cursorsFront.appendChild(centerRectBorder);
         }
@@ -725,7 +725,7 @@ var Jet_PFD_FlightDirector;
             return 160;
         }
         getColour() {
-            return "lime";
+            return "#00E64D";
         }
         getFDBankLimit() {
             return 30;
@@ -796,7 +796,7 @@ var Jet_PFD_FlightDirector;
     PathVectorDisplay.MIN_SPEED_TO_DISPLAY = 25;
     class FPV_Airbus extends PathVectorDisplay {
         getColour() {
-            return "lime";
+            return "#00E64D";
         }
         getCircleRadius() {
             return 10;
@@ -838,7 +838,7 @@ var Jet_PFD_FlightDirector;
             }
         }
         getColour() {
-            return "lime";
+            return "#00E64D";
         }
     }
     FPD_Airbus.CIRCLE_RADIUS = 5;
