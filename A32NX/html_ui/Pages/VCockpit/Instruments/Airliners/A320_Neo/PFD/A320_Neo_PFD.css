@@ -53,7 +53,7 @@ a320-neo-pfd-element {
   z-index: -10; }
   a320-neo-pfd-element #Electricity {
     width: 100%;
-    height: 100%; 
+    height: 100%;
 	background-color:transparent !important;}
     a320-neo-pfd-element #Electricity[state=off] {
       display: none; }
@@ -161,13 +161,13 @@ a320-neo-pfd-element {
           justify-content: space-between;
           white-space: nowrap; }
         a320-neo-pfd-element #Mainframe #InstrumentsContainer #FMA .Engaged {
-          color: var(--displayGreen); }
+          color: var(--mcduGreen); }
         a320-neo-pfd-element #Mainframe #InstrumentsContainer #FMA .Captured {
-          color: var(--displayGreen); }
+          color: var(--mcduGreen); }
         a320-neo-pfd-element #Mainframe #InstrumentsContainer #FMA .Armed {
-          color: var(--displayCyan); }
+          color: var(--mcduBlue); }
         a320-neo-pfd-element #Mainframe #InstrumentsContainer #FMA .Constrained {
-          color: var(--displayMagenta); }
+          color: var(--displayLightMagenta); }
         a320-neo-pfd-element #Mainframe #InstrumentsContainer #FMA .Active {
           color: var(--displayWhite); }
 
