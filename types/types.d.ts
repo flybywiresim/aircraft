@@ -18,102 +18,303 @@ type VarUnit = NumberVarUnit | TextVarUnit | LatLongAltVarUnit | LatLongAltPBHVa
 
 type SimVarBatchType = "string" | "number";
 
-declare class GlassCockpitSettings {
-    FuelFlow:                ColorRangeDisplay;
-    FuelQuantity:            ColorRangeDisplay2;
-    FuelTemperature:         ColorRangeDisplay3;
-    FuelPressure:            ColorRangeDisplay3;
-    OilPressure:             ColorRangeDisplay3;
-    OilTemperature:          ColorRangeDisplay3;
-    EGTTemperature:          RangeDisplay;
-    Vacuum:                  ColorRangeDisplay;
-    ManifoldPressure:        ColorRangeDisplay;
-    AirSpeed:                ColorRangeDisplay4;
-    Torque:                  ColorRangeDisplay2;
-    RPM:                     ColorRangeDisplay2;
-    TurbineNg:               ColorRangeDisplay2;
-    ITTEngineOff:            ColorRangeDisplay3;
-    ITTEngineOn:             ColorRangeDisplay3;
-    MainBusVoltage:          ColorRangeDisplay3;
-    HotBatteryBusVoltage:    ColorRangeDisplay3;
-    BatteryBusAmps:          ColorRangeDisplay2;
-    GenAltBusAmps:           ColorRangeDisplay2;
-    CoolantLevel:            RangeDisplay;
-    CoolantTemperature:      ColorRangeDisplay3;
-    GearOilTemperature:      ColorRangeDisplay2;
-    CabinAltitude:           ColorRangeDisplay;
-    CabinAltitudeChangeRate: RangeDisplay;
-    CabinPressureDiff:       ColorRangeDisplay;
-    ThrottleLevels:          ThrottleLevelsInfo;
-    FlapsLevels:             FlapsLevelsInfo;
+// asobo-vcockpits-instruments-a320-neo/html_ui/Pages/VCockpit/Instruments/Airliners/A320_Neo/EICAS/ECAM/A320_Neo_ECAMGauge.js
+declare global {
+    namespace A320_Neo_ECAM_Common {
+        class GaugeDefinition {
+            startAngle: number;
+            arcSize: number;
+            minValue: number;
+            maxValue: number;
+            minRedValue: number;
+            maxRedValue: number;
+            warningRange: [number, number];
+            dangerRange: [number, number];
+            cursorLength: number;
+            currentValuePos: Vec2;
+            currentValueFunction: (() => void) | null;
+            currentValuePrecision: number;
+            currentValueBorderWidth: number;
+            outerIndicatorFunction: (() => void) | null;
+            outerDynamicArcFunction: (() => void) | null;
+            extraMessageFunction: (() => void) | null;
+        }
+
+        class Gauge extends HTMLElement {
+            viewBoxSize: Vec2;
+            startAngle: number;
+            warningRange: [number, number];
+            dangerRange: [number, number];
+            outerDynamicArcCurrentValues: [number, number];
+            outerDynamicArcTargetValues: [number, number];
+            extraMessageString: string;
+            isActive: boolean;
+            get mainArcRadius(): number;
+            get graduationInnerLineEndOffset(): number;
+            get graduationOuterLineEndOffset(): number;
+            get graduationTextOffset(): number;
+            get redArcInnerRadius(): number;
+            get outerIndicatorOffset(): number;
+            get outerIndicatorRadius(): number;
+            get outerDynamicArcRadius(): number;
+            get currentValueBorderHeight(): number;
+            get extraMessagePosX(): number;
+            get extraMessagePosY(): number;
+            get extraMessageBorderPosX(): number;
+            get extraMessageBorderPosY(): number;
+            get extraMessageBorderWidth(): number;
+            get extraMessageBorderHeight(): number;
+            set active(isActive: boolean);
+            get active(): boolean;
+            polarToCartesian(centerX: number, centerY: number, radius: number, angleInDegrees: number): Vec2;
+            valueToAngle(value: number, radians: number): number;
+            valueToDir(value: number): Vec2;
+            init(gaugeDefinition: GaugeDefinition): void;
+            addGraduation(value: number, showInnerMarker: boolean, text?: string, showOuterMarker?: boolean): void;
+            refreshActiveState(): void;
+            update(deltaTime: number): void;
+            refreshMainValue(value: number, force?: boolean): void
+            refreshOuterIndicator(value: number, force?: boolean): void
+            refreshOuterDynamicArc(start: number, end: number, force?: boolean): void
+        }
+    }
 }
 
-declare class RangeDisplay {
-    min:       number;
-    max:       number;
-    lowLimit:  number;
-    highLimit: number;
-    __Type: string;
+// asobo-vcockpits-instruments-airliners/html_ui/Pages/VCockpit/Instruments/Airliners/Shared/BaseAirliners.js
+declare global {
+    namespace Airliners {
+        class BaseEICAS {
+        }
+
+        class EICASTemplateElement extends TemplateElement {
+            init(): void
+        }
+    }
 }
 
-declare class ColorRangeDisplay extends RangeDisplay {
-    greenStart: number;
-    greenEnd:   number;
+// fs-base-ui/html_ui/JS/Avionics.js
+declare global {
+    namespace Avionics {
+        class SVG {
+            static NS: string;
+        }
+    }
 }
 
-declare class ColorRangeDisplay2 extends ColorRangeDisplay {
-    yellowStart: number;
-    yellowEnd:   number;
-    redStart:    number;
-    redEnd:      number;
+// fs-base-ui/html_ui/JS/common.js
+declare global {
+    namespace Utils {
+        /**
+         * Returns a number limited to the given range.
+         * @param value The preferred value.
+         * @param min The lower boundary.
+         * @param max The upper boundary.
+         * @returns min <= returnValue <= max.
+         */
+        function Clamp(value: number, min: number, max: number): number;
+        function RemoveAllChildren(elem): void
+        function leadingZeros(_value, _nbDigits, _pointFixed?: number): string
+    }
+
+    class UIElement extends HTMLElement {
+        connectedCallback(): void;
+    }
+
+    class TemplateElement extends UIElement {
+    }
+
+    class Vec2 {
+        constructor(x: number, y: number);
+        x: number;
+        y: number;
+    }
 }
 
-declare class ColorRangeDisplay3 extends ColorRangeDisplay2 {
-    lowRedStart:    number;
-    lowRedEnd:      number;
-    lowYellowStart: number;
-    lowYellowEnd:   number;
+// fs-base-ui/html_ui/JS/SimPlane.js
+declare global {
+    namespace Simplane {
+        function getDesignSpeeds(): DesignSpeeds;
+        function getCurrentFlightPhase(): FlightPhase
+
+        function getVerticalSpeed(): number
+        function getAltitude(): number
+        function getAltitudeAboveGround(): number
+        function getHeadingMagnetic(): number
+
+        function getIsGrounded(): boolean
+
+        function getTotalAirTemperature(): number
+        function getAmbientTemperature(): number
+
+        function getPressureSelectedMode(_aircraft: Aircraft): string
+        function getPressureSelectedUnits(): string
+        function getPressureValue(_units?: string): number
+
+        function getAutoPilotDisplayedAltitudeLockValue(_units?: string): number
+        function getAutoPilotAirspeedManaged(): boolean
+        function getAutoPilotHeadingManaged(): boolean
+        function getAutoPilotAltitudeManaged(): boolean
+
+        function getAutoPilotMachModeActive(): number
+        function getEngineActive(_engineIndex: number): number
+        function getEngineThrottle(_engineIndex: number): number
+        function getEngineThrottleMaxThrust(_engineIndex: number): number
+        function getEngineThrottleMode(_engineIndex: number): number
+        function getEngineCommandedN1(_engineIndex: number): number
+        function getFlexTemperature(): number
+
+        //Seems to implement caching behaviour, can be overridden with forceSimVarCall
+        function getFlapsHandleIndex(forceSimVarCall?: boolean): number
+    }
+
+    class GlassCockpitSettings {
+        FuelFlow:                ColorRangeDisplay;
+        FuelQuantity:            ColorRangeDisplay2;
+        FuelTemperature:         ColorRangeDisplay3;
+        FuelPressure:            ColorRangeDisplay3;
+        OilPressure:             ColorRangeDisplay3;
+        OilTemperature:          ColorRangeDisplay3;
+        EGTTemperature:          RangeDisplay;
+        Vacuum:                  ColorRangeDisplay;
+        ManifoldPressure:        ColorRangeDisplay;
+        AirSpeed:                ColorRangeDisplay4;
+        Torque:                  ColorRangeDisplay2;
+        RPM:                     ColorRangeDisplay2;
+        TurbineNg:               ColorRangeDisplay2;
+        ITTEngineOff:            ColorRangeDisplay3;
+        ITTEngineOn:             ColorRangeDisplay3;
+        MainBusVoltage:          ColorRangeDisplay3;
+        HotBatteryBusVoltage:    ColorRangeDisplay3;
+        BatteryBusAmps:          ColorRangeDisplay2;
+        GenAltBusAmps:           ColorRangeDisplay2;
+        CoolantLevel:            RangeDisplay;
+        CoolantTemperature:      ColorRangeDisplay3;
+        GearOilTemperature:      ColorRangeDisplay2;
+        CabinAltitude:           ColorRangeDisplay;
+        CabinAltitudeChangeRate: RangeDisplay;
+        CabinPressureDiff:       ColorRangeDisplay;
+        ThrottleLevels:          ThrottleLevelsInfo;
+        FlapsLevels:             FlapsLevelsInfo;
+    }
+
+    class RangeDisplay {
+        __Type: "RangeDisplay" | "ColorRangeDisplay" | "ColorRangeDisplay2" | "ColorRangeDisplay3"
+            | "ColorRangeDisplay4" | "FlapsRangeDisplay";
+        min:       number;
+        max:       number;
+        lowLimit:  number;
+        highLimit: number;
+    }
+
+    class ColorRangeDisplay extends RangeDisplay {
+        greenStart: number;
+        greenEnd:   number;
+    }
+
+    class ColorRangeDisplay2 extends ColorRangeDisplay {
+        yellowStart: number;
+        yellowEnd:   number;
+        redStart:    number;
+        redEnd:      number;
+    }
+
+    class ColorRangeDisplay3 extends ColorRangeDisplay2 {
+        lowRedStart:    number;
+        lowRedEnd:      number;
+        lowYellowStart: number;
+        lowYellowEnd:   number;
+    }
+
+    class ColorRangeDisplay4 extends ColorRangeDisplay2 {
+        whiteStart: number;
+        whiteEnd:   number;
+    }
+
+    class FlapsLevelsInfo {
+        __Type: "FlapsLevelsInfo";
+        slatsAngle: [number, number, number, number];
+        flapsAngle: [number, number, number, number];
+    }
+
+    class FlapsRangeDisplay extends RangeDisplay {
+        takeOffValue: number;
+    }
+
+    class ThrottleLevelsInfo {
+        __Type: "ThrottleLevelsInfo";
+        minValues: [number, number, number, number, number];
+        names:     [string, string, string, string, string];
+    }
+
+    class FuelLevels {
+        fuel_tank_selector: any[];
+    }
+
+    class DesignSpeeds {
+        VS0: number;
+        VS1: number;
+        VFe: number;
+        VNe: number;
+        VNo: number;
+        VMin: number;
+        VMax: number;
+        Vr: number;
+        Vx: number;
+        Vy: number;
+        Vapp: number;
+        BestGlide: number;
+    }
+
+    enum FlightPhase {
+        FLIGHT_PHASE_PREFLIGHT,
+        FLIGHT_PHASE_TAXI,
+        FLIGHT_PHASE_TAKEOFF,
+        FLIGHT_PHASE_CLIMB,
+        FLIGHT_PHASE_CRUISE,
+        FLIGHT_PHASE_DESCENT,
+        FLIGHT_PHASE_APPROACH,
+        FLIGHT_PHASE_GOAROUND
+    }
+
+    enum AutopilotMode {
+        MANAGED,
+        SELECTED,
+        HOLD
+    }
+
+    enum ThrottleMode {
+        UNKNOWN,
+        REVERSE,
+        IDLE,
+        AUTO,
+        CLIMB,
+        FLEX_MCT,
+        TOGA,
+        HOLD
+    }
+
+    enum Aircraft {
+        CJ4,
+        A320_NEO,
+        B747_8,
+        AS01B,
+        AS02A
+    }
+
+    enum NAV_AID_STATE {
+        OFF,
+        ADF,
+        VOR
+    }
+
+    enum NAV_AID_MODE {
+        NONE,
+        MANUAL,
+        REMOTE
+    }
 }
 
-declare class ColorRangeDisplay4 extends ColorRangeDisplay2 {
-    whiteStart: number;
-    whiteEnd:   number;
-}
-
-declare class FlapsLevelsInfo {
-    slatsAngle: number[];
-    flapsAngle: number[];
-}
-
-// noinspection JSUnusedLocalSymbols
-declare class FlapsRangeDisplay extends RangeDisplay {
-    takeOffValue: number;
-}
-
-declare class ThrottleLevelsInfo {
-    minValues: number[];
-    names:     string[];
-}
-
-declare class FuelLevels {
-    fuel_tank_selector: any[];
-}
-
-declare class DesignSpeeds {
-    VS0: number;
-    VS1: number;
-    VFe: number;
-    VNe: number;
-    VNo: number;
-    VMin: number;
-    VMax: number;
-    Vr: number;
-    Vx: number;
-    Vy: number;
-    Vapp: number;
-    BestGlide: number;
-}
-
+// fs-base-ui/html_ui/JS/simvar.js.
 declare global {
     namespace SimVar {
         class SimVarValue {
@@ -201,50 +402,15 @@ declare global {
          */
         function SetGameVarValue(name: string, unit: "string" | XYZVarUnit | POIListVarUnit | FuelLevelsVarUnit | GlassCockpitSettingsVarUnit, value: any): Promise<void>;
     }
+}
 
-    class LatLongAlt {
-        constructor(latitude: number, longitude: number, alt: number);
-        constructor(data: { lat: number, long: number, alt: number });
-
-        lat: number;
-        long: number;
-        alt: number;
-
-        /**
-         * @returns A LatLong instance containing the latitude and longitude of this instance.
-         */
-        toLatLong(): LatLong;
-
-        /**
-         * @returns A string formatted as "52.370216, 4.895168, 1500.0".
-         */
-        toStringFloat(): string;
-
-        /**
-         * @returns A string formatted as "lat 52.37, long 4.90, alt 1500.00".
-         */
-        toString(): string;
-
-        /**
-         * @returns A string formatted as "5222.2N".
-         */
-        latToDegreeString(): string;
-
-        /**
-         * @returns A string formatted as "00453.7E".
-         */
-        longToDegreeString(): string;
-
-        /**
-         * @returns A string formatted as "N52°22.2 E004°53.7".
-         */
-        toDegreeString(): string;
-    }
-
+// fs-base-ui/html_ui/JS/Types.js.
+declare global {
     class LatLong {
         constructor(latitude: number, longitude: number);
         constructor(data: { lat: number, long: number });
 
+        __Type: "LatLong";
         lat: number;
         long: number;
 
@@ -288,9 +454,50 @@ declare global {
         static fromStringFloat(str: string): LatLong | LatLongAlt | null;
     }
 
+    class LatLongAlt {
+        constructor(latitude: number, longitude: number, alt: number);
+        constructor(data: { lat: number, long: number, alt: number });
+
+        __Type: "LatLongAlt";
+        lat: number;
+        long: number;
+        alt: number;
+
+        /**
+         * @returns A LatLong instance containing the latitude and longitude of this instance.
+         */
+        toLatLong(): LatLong;
+
+        /**
+         * @returns A string formatted as "52.370216, 4.895168, 1500.0".
+         */
+        toStringFloat(): string;
+
+        /**
+         * @returns A string formatted as "lat 52.37, long 4.90, alt 1500.00".
+         */
+        toString(): string;
+
+        /**
+         * @returns A string formatted as "5222.2N".
+         */
+        latToDegreeString(): string;
+
+        /**
+         * @returns A string formatted as "00453.7E".
+         */
+        longToDegreeString(): string;
+
+        /**
+         * @returns A string formatted as "N52°22.2 E004°53.7".
+         */
+        toDegreeString(): string;
+    }
+
     class PitchBankHeading {
         constructor(data: { pitchDegree: number, bankDegree: number, headingDegree: number });
 
+        __Type: "PitchBankHeading";
         pitchDegree: number;
         bankDegree: number;
         headingDegree: number;
@@ -304,6 +511,7 @@ declare global {
     class LatLongAltPBH {
         constructor(data: { lla: LatLongAlt, pbh: PitchBankHeading });
 
+        __Type: "LatLongAltPBH";
         lla: LatLongAlt;
         pbh: PitchBankHeading;
 
@@ -316,6 +524,8 @@ declare global {
     class PID_STRUCT {
         constructor(data: { pid_p: number; pid_i: number; pid_i2: number; pid_d: number;
             i_boundary: number; i2_boundary: number; d_boundary: number; });
+
+        // __Type is missing on this type.
 
         pid_p: number;
         pid_i: number;
@@ -347,6 +557,8 @@ declare global {
     class DataDictionaryEntry {
         constructor(data: { key: any, data: any });
 
+        __Type: "DataDictionaryEntry";
+
         /**
          * @returns A string formatted as "key: " + key + ", data: " + data
          */
@@ -355,6 +567,8 @@ declare global {
 
     class POIInfo {
         constructor(data: { distance: any, angle: any, isSelected: any });
+
+        __Type: "POIInfo";
 
         /**
          * @returns A string formatted as "Distance: " + distance + ", angle: " + angle + ", selected: " + isSelected
@@ -372,214 +586,21 @@ declare global {
         static sKeyDelimiter: string;
     }
 
-    const Simplane: {
-        getDesignSpeeds(): DesignSpeeds;
-        getCurrentFlightPhase(): FlightPhase
-
-        getVerticalSpeed(): number
-        getAltitude(): number
-        getAltitudeAboveGround(): number
-        getHeadingMagnetic(): number
-
-        getIsGrounded(): boolean
-
-        getTotalAirTemperature(): number
-        getAmbientTemperature(): number
-
-        getPressureSelectedMode(_aircraft: Aircraft): string
-        getPressureSelectedUnits(): string
-        getPressureValue(_units?: string): number
-
-        getAutoPilotDisplayedAltitudeLockValue(_units?: string): number
-        getAutoPilotAirspeedManaged(): boolean
-        getAutoPilotHeadingManaged(): boolean
-        getAutoPilotAltitudeManaged(): boolean
-
-        getAutoPilotMachModeActive(): number
-        getEngineActive(_engineIndex: number): number
-        getEngineThrottle(_engineIndex: number): number
-        getEngineThrottleMaxThrust(_engineIndex: number): number
-        getEngineThrottleMode(_engineIndex: number): number
-        getEngineCommandedN1(_engineIndex: number): number
-        getFlexTemperature(): number
-
-        //Seems to implement caching behaviour, can be overridden with forceSimVarCall
-        getFlapsHandleIndex(forceSimVarCall?: boolean): number
-    };
-
-    const Utils: {
-        /**
-         * Returns a number limited to the given range.
-         * @param value The preferred value.
-         * @param min The lower boundary.
-         * @param max The upper boundary.
-         * @returns min <= returnValue <= max.
-         */
-        Clamp(value: number, min: number, max: number): number;
-        RemoveAllChildren(elem): void
-        leadingZeros(_value, _nbDigits, _pointFixed?: number): string
+    /**
+     * The Simvar class is not to be confused with the SimVar namespace.
+     */
+    class Simvar {
+        __Type: "Simvar";
     }
 
-    const Avionics: {
-        SVG: SVG
+    class Attribute {
+        __Type: "Attribute";
     }
+}
 
-    class SVG {
-        NS: string;
-    }
-
-    enum FlightPhase {
-        FLIGHT_PHASE_PREFLIGHT,
-        FLIGHT_PHASE_TAXI,
-        FLIGHT_PHASE_TAKEOFF,
-        FLIGHT_PHASE_CLIMB,
-        FLIGHT_PHASE_CRUISE,
-        FLIGHT_PHASE_DESCENT,
-        FLIGHT_PHASE_APPROACH,
-        FLIGHT_PHASE_GOAROUND
-    }
-
-    enum AutopilotMode {
-        MANAGED,
-        SELECTED,
-        HOLD
-    }
-
-    enum ThrottleMode {
-        UNKNOWN,
-        REVERSE,
-        IDLE,
-        AUTO,
-        CLIMB,
-        FLEX_MCT,
-        TOGA,
-        HOLD
-    }
-
-    enum Aircraft {
-        CJ4,
-        A320_NEO,
-        B747_8,
-        AS01B,
-        AS02A
-    }
-
-    enum NAV_AID_STATE {
-        OFF,
-        ADF,
-        VOR
-    }
-
-    enum NAV_AID_MODE {
-        NONE,
-        MANUAL,
-        REMOTE
-    }
-
-    type A320_Neo_LowerECAM_APU = {
-        Definitions?: any;
-        Page?: any;
-        APUInfo?: APUInfo;
-    };
-
-    class APUInfo {
-
-    }
-
-    class UIElement extends HTMLElement {
-        connectedCallback(): void;
-    }
-
-    class TemplateElement extends UIElement {
-        connectedCallback(): void;
-    }
-
-    class EICASTemplateElement extends TemplateElement {
-        init(): void
-    }
-
-    class BaseEICAS {
-
-    }
-
-    const Airliners: {
-        BaseEICAS: new () => BaseEICAS,
-        EICASTemplateElement: new () => EICASTemplateElement,
-    };
-
-    interface Element {
-        textContent: string | number;
-    }
-    class Vec2 {
-        constructor(x: number, y: number);
-        x: number;
-        y: number;
-    }
-
-    class GaugeDefinition {
-        startAngle: number;
-        arcSize: number;
-        minValue: number;
-        maxValue: number;
-        minRedValue: number;
-        maxRedValue: number;
-        warningRange: [number, number];
-        dangerRange: [number, number];
-        cursorLength: number;
-        currentValuePos: Vec2;
-        currentValueFunction: () => void;
-        currentValuePrecision: number;
-        currentValueBorderWidth: number;
-        outerIndicatorFunction: () => void;
-        outerDynamicArcFunction: () => void;
-        extraMessageFunction: () => void;
-    }
-
-    class Gauge extends HTMLElement {
-        viewBoxSize: Vec2;
-        startAngle: number;
-        warningRange: [number, number];
-        dangerRange: [number, number];
-        outerDynamicArcCurrentValues: [number, number];
-        outerDynamicArcTargetValues: [number, number];
-        extraMessageString: string;
-        isActive: boolean;
-        get mainArcRadius(): number;
-        get graduationInnerLineEndOffset(): number;
-        get graduationOuterLineEndOffset(): number;
-        get graduationTextOffset(): number;
-        get redArcInnerRadius(): number;
-        get outerIndicatorOffset(): number;
-        get outerIndicatorRadius(): number;
-        get outerDynamicArcRadius(): number;
-        get currentValueBorderHeight(): number;
-        get extraMessagePosX(): number;
-        get extraMessagePosY(): number;
-        get extraMessageBorderPosX(): number;
-        get extraMessageBorderPosY(): number;
-        get extraMessageBorderWidth(): number;
-        get extraMessageBorderHeight(): number;
-        set active(_isActive: boolean);
-        get active(): boolean;
-        polarToCartesian(_centerX: number, _centerY: number, _radius: number, _angleInDegrees: number): Vec2;
-        valueToAngle(_value: number, _radians: number): number;
-        valueToDir(_value: number): Vec2;
-        init(_gaugeDefinition: GaugeDefinition): void;
-        addGraduation(_value: number, _showInnerMarker: boolean, _text?: string, _showOuterMarker?: boolean): void;
-        refreshActiveState(): void;
-        update(_deltaTime: number): void;
-        refreshMainValue(_value: number, _force?: boolean): void
-        refreshOuterIndicator(_value: number, _force?: boolean): void
-        refreshOuterDynamicArc(_start: number, _end: number, _force?: boolean): void
-    }
-
-    const A320_Neo_ECAM_Common: {
-        GaugeDefinition: new () => GaugeDefinition;
-        Gauge: new () => Gauge;
-    }
-
+declare global {
     interface Document {
-        createElement(tagName: "a320-neo-ecam-gauge"): Gauge;
+        createElement(tagName: "a320-neo-ecam-gauge"): A320_Neo_ECAM_Common.Gauge;
     }
 }
 
