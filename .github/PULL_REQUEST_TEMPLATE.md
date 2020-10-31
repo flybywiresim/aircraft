@@ -31,4 +31,4 @@ The build.py will have already been run with the latest changes, so no need to r
 
 1. Make sure you are signed in to GitHub
 1. Click on the **Checks** tab on the PR
-1. On the right side, slick on the **Artifacts** drop down and click the **A32NX** link
+1. On the right side, click on the **Artifacts** drop down and click the **A32NX** link
