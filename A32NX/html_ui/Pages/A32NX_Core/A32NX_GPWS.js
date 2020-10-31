@@ -42,17 +42,17 @@ class A32NX_GPWS {
             SimVar.SetSimVarValue("L:GPWS_TOO_LOW", "Enum", 0);
         }
 
-        if ((mda !== 0 || dh !== 0) && phase === FlightPhase.FLIGHT_PHASE_APPROACH) {
+        if ((mda !== 0 || dh !== -1) && phase === FlightPhase.FLIGHT_PHASE_APPROACH) {
             let minimumsDA; //MDA or DH
             let minimumsIA; //radio or baro altitude
             const radioAlt = SimVar.GetSimVarValue("PLANE ALT ABOVE GROUND MINUS CG", "Feet");
             const baroAlt = SimVar.GetSimVarValue("INDICATED ALTITUDE", "feet");
-            if (mda > 0) {
-                minimumsDA = mda;
-                minimumsIA = baroAlt;
-            } else {
+            if (dh > -1) {
                 minimumsDA = dh;
                 minimumsIA = radioAlt;
+            } else {
+                minimumsDA = mda;
+                minimumsIA = baroAlt;
             }
             this.gpws_minimums(minimumsDA, minimumsIA);
         }
@@ -77,7 +77,7 @@ class A32NX_GPWS {
             Coherent.call("PLAY_INSTRUMENT_SOUND", "aural_100above");
             this.minimumsState = 1;
         } else if (this.minimumsState === 1 && !overMinimums) {
-            Coherent.call("PLAY_INSTRUMENT_SOUND", "aural_minimums");
+            Coherent.call("PLAY_INSTRUMENT_SOUND", "aural_minimumnew");
             this.minimumsState = 0;
         }
     }
