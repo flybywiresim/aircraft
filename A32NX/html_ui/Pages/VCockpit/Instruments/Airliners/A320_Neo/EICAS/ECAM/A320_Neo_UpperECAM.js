@@ -920,20 +920,46 @@ var A320_Neo_UpperECAM;
                             return (this.getCachedSimVar("L:AIRLINER_FLIGHT_PHASE", "Enum") == 6) && (this.getCachedSimVar("RADIO HEIGHT", "feet") < 800);
                         }
                     },
-                                        {
+                    {
                         message: "AP OFF",
                         style: "fail-3",
                         important: true,
                         isActive: () => {
-                            return (this.getCachedSimVar("AUTOPILOT DISENGAGED", "Bool") == 1);
+                            if (this.getCachedSimVar("AUTOPILOT MASTER", "Bool") == 0) {
+                                SimVar.SetSimVarValue("L:AP_DiscWarn", "Bool", 1);
+                                let timer = setTimeout(function() {SimVar.SetSimVarValue("L:AP_WarnStop", "Bool", 1);}, 3000);
+                                if ((this.getCachedSimVar("L:AP_DiscWarn", "Bool") == 1) && (this.getCachedSimVar("L:AP_WarnStop", "Bool") != 1)) {
+                                    return true;
+                                }
+                                else {
+                                    clearTimeout(timer);
+                                    return 0;
+                                }
+                            } else {
+                                SimVar.SetSimVarValue("L:AP_WarnStop", "Bool", 0);
+                                SimVar.SetSimVarValue("L:AP_DiscWarn", "Bool", 0);
+                            }
                         }
                     },
                     {
-                        message: "A/THR",
+                        message: "A/THR OFF",
                         style: "InfoCaution",
                         important: true,
                         isActive: () => {
-                            return (this.getCachedSimVar("AUTOTHROTTLE ACTIVE", "Bool") == 0);
+                            if (this.getCachedSimVar("AUTOTHROTTLE ACTIVE", "Bool") == 0) {
+                                SimVar.SetSimVarValue("L:ATHR_DiscWarn", "Bool", 1);
+                                let timer = setTimeout(function() {SimVar.SetSimVarValue("L:ATHR_WarnStop", "Bool", 1);}, 3000);
+                                if ((this.getCachedSimVar("L:ATHR_DiscWarn", "Bool") == 1) && (this.getCachedSimVar("L:ATHR_WarnStop", "Bool") != 1)) {
+                                    return true;
+                                }
+                                else {
+                                    clearTimeout(timer);
+                                    return 0;
+                                }
+                            } else {
+                                SimVar.SetSimVarValue("L:ATHR_WarnStop", "Bool", 0);
+                                SimVar.SetSimVarValue("L:ATHR_DiscWarn", "Bool", 0);
+                            }
                         }
                     },
 
