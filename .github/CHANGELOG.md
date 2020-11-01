@@ -6,6 +6,7 @@
 
 ## 0.5.0
 1. [ND] Updated colors (cyan, green, magenta) - @MisterChocker (Leon)
+1. [ECAM] Fixed thrust rating mode START in flight misbehavior - @MisterChocker (Leon)
 1. [CDU] Fixed wrong VLS calculation - @MisterChocker (Leon)
 1. [PFD] Fixed wrong managed speed calculation on approach  - @MisterChocker (Leon)
 1. [ECAM] Applied FADEC power logic to thrust rating mode and value - @MisterChocker (Leon)
