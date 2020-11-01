@@ -3,12 +3,12 @@ class CDUAvailableArrivalsPage {
         const airportInfo = airport.infos;
         if (airportInfo instanceof AirportInfo) {
             mcdu.clearDisplay();
-            console.log(airport);
+            // console.log(airport);
             let selectedApproachCell = "---";
             let selectedViasCell = "NONE";
             let selectedTransitionCell = "NONE";
             const selectedApproach = mcdu.flightPlanManager.getApproach();
-            console.log(selectedApproach);
+            // console.log(selectedApproach);
             if (selectedApproach) {
                 selectedApproachCell = Avionics.Utils.formatRunway(selectedApproach.name);
                 const selectedApproachTransition = selectedApproach.transitions[mcdu.flightPlanManager.getApproachTransitionIndex()];
