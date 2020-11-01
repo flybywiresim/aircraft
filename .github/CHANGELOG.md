@@ -3,6 +3,7 @@
 <!-- Always use "1." at the start instead of "2. " or "X. " as GitHub will auto renumber everything. -->
 <!-- Use the following format below -->
 <!--  1. [Changed Area] Title of changes - @github username (Name)  -->
+
 ## 0.5.0
 1. [PFD] Updated color codes to preset colors - @MisterChocker (Leon)
 1. [PFD] Changed gray background color - @MisterChocker (Leon)
@@ -10,6 +11,7 @@
 1. [PFD] Added proper selected and managed speed indication - @MisterChocker (Leon)
 1. [PFD] Added V1 indication - @MisterChocker (Leon)
 1. [PFD] Added proper speed bug behaviour when outside range (approach phase) - @MisterChocker (Leon)
+1. [ECAM] Fixed thrust rating mode START in flight misbehavior - @MisterChocker (Leon)
 1. [CDU] Fixed wrong VLS calculation - @MisterChocker (Leon)
 1. [PFD] Fixed wrong managed speed calculation on approach  - @MisterChocker (Leon)
 1. [ECAM] Applied FADEC power logic to thrust rating mode and value - @MisterChocker (Leon)
