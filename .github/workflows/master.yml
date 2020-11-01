@@ -25,15 +25,15 @@ jobs:
         run: echo "BUILT_DATE_TIME=$(date -u -Iseconds)" >> $GITHUB_ENV
       - name: Generate layout.json
         run: |
-          cd ./${{ env.MOD_FOLDER_NAME }}
-          python3 ./build.py
-          rm ./build.py
-          echo 'built: ${{ env.BUILT_DATE_TIME }}' >> build_info.txt
-          echo 'ref: ${{ github.ref }}' >> build_info.txt
-          echo 'sha: ${{ github.sha }}' >> build_info.txt
-          echo 'actor: ${{ github.actor }}' >> build_info.txt
-          echo 'event_name: ${{ github.event_name }}' >> build_info.txt
-          cd ..
+          npm install
+          npm run build
+
+          echo 'built: ${{ env.BUILT_DATE_TIME }}' >> ./${{ env.MOD_FOLDER_NAME }}/build_info.txt
+          echo 'ref: ${{ github.ref }}' >> ./${{ env.MOD_FOLDER_NAME }}/build_info.txt
+          echo 'sha: ${{ github.sha }}' >> ./${{ env.MOD_FOLDER_NAME }}/build_info.txt
+          echo 'actor: ${{ github.actor }}' >> ./${{ env.MOD_FOLDER_NAME }}/build_info.txt
+          echo 'event_name: ${{ github.event_name }}' >> ./${{ env.MOD_FOLDER_NAME }}/build_info.txt
+
           zip -r ./${{ env.MASTER_ZIP_NAME }} ./${{ env.MOD_FOLDER_NAME }}/
       - name: Get and delete master pre-release zip asset
         run: |
