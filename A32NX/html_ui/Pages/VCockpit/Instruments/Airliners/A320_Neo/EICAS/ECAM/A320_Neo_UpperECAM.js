@@ -321,6 +321,44 @@ var A320_Neo_UpperECAM;
                 }
             }
         }
+        getAPWarning(_type, _time) {
+            const count = _time * 1000;
+            if(_type == "AP"){
+                if (this.getCachedSimVar("AUTOPILOT MASTER", "Bool") == false) {
+                    SimVar.SetSimVarValue("L:AP_DiscWarn", "Bool", true);
+                    const timer = setTimeout(function () {
+                        SimVar.SetSimVarValue("L:AP_WarnStop", "Bool", true);
+                    }, count);
+                    if ((this.getCachedSimVar("L:AP_DiscWarn", "Bool") == true) && (this.getCachedSimVar("L:AP_WarnStop", "Bool") != true)) {
+                        return true;
+                    } else {
+                        clearTimeout(timer);
+                        return false;
+                    }
+                } else {
+                    SimVar.SetSimVarValue("L:AP_WarnStop", "Bool", 0);
+                    SimVar.SetSimVarValue("L:AP_DiscWarn", "Bool", 0);
+                }
+            }
+            if(_type == "ATHR"){
+                if (this.getCachedSimVar("AUTOTHROTTLE ACTIVE", "Bool") == false) {
+                    SimVar.SetSimVarValue("L:ATHR_DiscWarn", "Bool", true);
+                    const timer2 = setTimeout(function () {
+                        SimVar.SetSimVarValue("L:ATHR_WarnStop", "Bool", true);
+                    }, count);
+                    if ((this.getCachedSimVar("L:ATHR_DiscWarn", "Bool") == true) && (this.getCachedSimVar("L:ATHR_WarnStop", "Bool") != true)) {
+                        return true;
+                    } else {
+                        clearTimeout(timer2);
+                        return false;
+                    }
+                } else {
+                    SimVar.SetSimVarValue("L:ATHR_WarnStop", "Bool", false);
+                    SimVar.SetSimVarValue("L:ATHR_DiscWarn", "Bool", false);
+                }
+            }
+        }
+
         init() {
             this.enginePanel = new A320_Neo_UpperECAM.EnginePanel(this, "EnginesPanel");
             this.infoTopPanel = new A320_Neo_UpperECAM.InfoTopPanel(this, "InfoTopPanel");
@@ -925,21 +963,7 @@ var A320_Neo_UpperECAM;
                         style: "fail-3",
                         important: true,
                         isActive: () => {
-                            if (this.getCachedSimVar("AUTOPILOT MASTER", "Bool") == 0) {
-                                SimVar.SetSimVarValue("L:AP_DiscWarn", "Bool", 1);
-                                const timer = setTimeout(function () {
-                                    SimVar.SetSimVarValue("L:AP_WarnStop", "Bool", 1);
-                                }, 3000);
-                                if ((this.getCachedSimVar("L:AP_DiscWarn", "Bool") == 1) && (this.getCachedSimVar("L:AP_WarnStop", "Bool") != 1)) {
-                                    return true;
-                                } else {
-                                    clearTimeout(timer);
-                                    return 0;
-                                }
-                            } else {
-                                SimVar.SetSimVarValue("L:AP_WarnStop", "Bool", 0);
-                                SimVar.SetSimVarValue("L:AP_DiscWarn", "Bool", 0);
-                            }
+                            return (this.getAPWarning("AP", 4) == true);
                         }
                     },
                     {
@@ -947,21 +971,7 @@ var A320_Neo_UpperECAM;
                         style: "InfoCaution",
                         important: true,
                         isActive: () => {
-                            if (this.getCachedSimVar("AUTOTHROTTLE ACTIVE", "Bool") == 0) {
-                                SimVar.SetSimVarValue("L:ATHR_DiscWarn", "Bool", 1);
-                                const timer = setTimeout(function () {
-                                    SimVar.SetSimVarValue("L:ATHR_WarnStop", "Bool", 1);
-                                }, 3000);
-                                if ((this.getCachedSimVar("L:ATHR_DiscWarn", "Bool") == 1) && (this.getCachedSimVar("L:ATHR_WarnStop", "Bool") != 1)) {
-                                    return true;
-                                } else {
-                                    clearTimeout(timer);
-                                    return 0;
-                                }
-                            } else {
-                                SimVar.SetSimVarValue("L:ATHR_WarnStop", "Bool", 0);
-                                SimVar.SetSimVarValue("L:ATHR_DiscWarn", "Bool", 0);
-                            }
+                            return (this.getAPWarning("ATHR", 4) == true);
                         }
                     },
 
