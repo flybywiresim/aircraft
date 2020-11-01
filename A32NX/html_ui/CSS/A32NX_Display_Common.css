@@ -12,7 +12,7 @@
 
     --displayWhite: #FFFFFF;
     --displayGrey: #787878;
-    --displayDarkGrey: #484848;
+    --displayDarkGrey: #b3b3b3;
     --displayLightGrey: lightgray;
     --displayAmber: #E68000;
     --displayCyan: #00BFD9;
@@ -26,6 +26,7 @@
     --mcduGreen: #00FF00;
     --mcduAmber: #E68000;
     --mcduBlue: #00FFFF;
+    --mcduYellow: #FFFF00;
     --mcduRed: #FF9A00;
     --mcduMagenta: #F800CC;
 }

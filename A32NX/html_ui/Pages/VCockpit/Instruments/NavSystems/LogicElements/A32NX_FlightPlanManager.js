@@ -10,40 +10,13 @@ class FlightPlanManager {
         this.decelPrevIndex = -1;
         this._lastDistanceToPreviousActiveWaypoint = 0;
         this._isGoingTowardPreviousActiveWaypoint = false;
-        this._update = () => {
-            const prevWaypoint = this.getPreviousActiveWaypoint();
-            if (prevWaypoint) {
-                const planeCoordinates = new LatLong(SimVar.GetSimVarValue("PLANE LATITUDE", "degree latitude"), SimVar.GetSimVarValue("PLANE LONGITUDE", "degree longitude"));
-                if (isFinite(planeCoordinates.lat) && isFinite(planeCoordinates.long)) {
-                    const dist = Avionics.Utils.computeGreatCircleDistance(planeCoordinates, prevWaypoint.infos.coordinates);
-                    if (isFinite(dist)) {
-                        if (dist < this._lastDistanceToPreviousActiveWaypoint) {
-                            this._isGoingTowardPreviousActiveWaypoint = true;
-                        } else {
-                            this._isGoingTowardPreviousActiveWaypoint = false;
-                        }
-                        this._lastDistanceToPreviousActiveWaypoint = dist;
-                        if (this._activeWaypointIdentHasChanged || this._gpsActiveWaypointIndexHasChanged) {
-                            setTimeout(() => {
-                                this._activeWaypointIdentHasChanged = false;
-                                this._gpsActiveWaypointIndexHasChanged = false;
-                            }, 3000);
-                        }
-                        return;
-                    }
-                }
-            }
-            if (this._activeWaypointIdentHasChanged || this._gpsActiveWaypointIndexHasChanged) {
-                setTimeout(() => {
-                    this._activeWaypointIdentHasChanged = false;
-                    this._gpsActiveWaypointIndexHasChanged = false;
-                }, 3000);
-            }
-            this._isGoingTowardPreviousActiveWaypoint = false;
-        };
+        this._resetTimer = 0;
+        this._updateTimer = 0;
         this._isRegistered = false;
+        this._isRegisteredAndLoaded = false;
         this._currentFlightPlanIndex = 0;
         this._activeWaypointIdentHasChanged = false;
+        this._waypointReachedAt = SimVar.GetGlobalVarValue("ZULU TIME", "seconds");
         this._timeLastSimVarCall = 0;
         this._gpsActiveWaypointIndexHasChanged = false;
         this._timeLastActiveWaypointIndexSimVarCall = 0;
@@ -52,7 +25,7 @@ class FlightPlanManager {
         this._approachActivated = false;
         FlightPlanManager.DEBUG_INSTANCE = this;
         this.instrument = _instrument;
-        setInterval(this._update, 1000);
+        this.registerListener();
     }
     addHardCodedConstraints(wp) {
         return;
@@ -76,6 +49,50 @@ class FlightPlanManager {
             wp.legAltitude1 = 1900;
         }
     }
+    update(_deltaTime) {
+        if (this._resetTimer > 0) {
+            this._resetTimer -= _deltaTime;
+            if (this._resetTimer <= 0) {
+                this._resetTimer = 0;
+                this._activeWaypointIdentHasChanged = false;
+                this._gpsActiveWaypointIndexHasChanged = false;
+            }
+        }
+        this._updateTimer += _deltaTime;
+        if (this._updateTimer >= 1000) {
+            this._updateTimer = 0;
+            const prevWaypoint = this.getPreviousActiveWaypoint();
+            if (prevWaypoint) {
+                const planeCoordinates = new LatLong(SimVar.GetSimVarValue("PLANE LATITUDE", "degree latitude"), SimVar.GetSimVarValue("PLANE LONGITUDE", "degree longitude"));
+                if (isFinite(planeCoordinates.lat) && isFinite(planeCoordinates.long)) {
+                    const dist = Avionics.Utils.computeGreatCircleDistance(planeCoordinates, prevWaypoint.infos.coordinates);
+                    if (isFinite(dist)) {
+                        if (dist < this._lastDistanceToPreviousActiveWaypoint) {
+                            this._isGoingTowardPreviousActiveWaypoint = true;
+                        } else {
+                            this._isGoingTowardPreviousActiveWaypoint = false;
+                        }
+                        this._lastDistanceToPreviousActiveWaypoint = dist;
+                        if ((this._activeWaypointIdentHasChanged || this._gpsActiveWaypointIndexHasChanged) && this._resetTimer <= 0) {
+                            this._resetTimer = 3000;
+                        }
+                        return;
+                    }
+                }
+            }
+            if ((this._activeWaypointIdentHasChanged || this._gpsActiveWaypointIndexHasChanged) && this._resetTimer <= 0) {
+                this._resetTimer = 3000;
+            }
+            this._isGoingTowardPreviousActiveWaypoint = false;
+        }
+    }
+    onCurrentGameFlightLoaded(_callback) {
+        if (this._isRegisteredAndLoaded) {
+            _callback();
+            return;
+        }
+        this._onCurrentGameFlightLoaded = _callback;
+    }
     registerListener() {
         if (this._isRegistered) {
             return;
@@ -85,11 +102,12 @@ class FlightPlanManager {
         setTimeout(() => {
             Coherent.call("LOAD_CURRENT_GAME_FLIGHT");
             Coherent.call("LOAD_CURRENT_ATC_FLIGHTPLAN");
-            if (this.onCurrentGameFlightLoaded) {
-                setTimeout(() => {
-                    this.onCurrentGameFlightLoaded();
-                }, 200);
-            }
+            setTimeout(() => {
+                this._isRegisteredAndLoaded = true;
+                if (this._onCurrentGameFlightLoaded) {
+                    this._onCurrentGameFlightLoaded();
+                }
+            }, 200);
         }, 200);
     }
     _loadWaypoints(data, currentWaypoints, callback) {
@@ -184,6 +202,12 @@ class FlightPlanManager {
                         if (v) {
                             v.infos.icao = v.icao;
                             v.infos.ident = v.ident;
+                            v.infos.UpdateAirways();
+                            const matchingCurrentWaypoint = currentWaypoints.find(wp => wp.infos.icao === v.infos.icao);
+                            if (matchingCurrentWaypoint) {
+                                v.infos.airwayIn = matchingCurrentWaypoint.infos.airwayIn;
+                                v.infos.airwayOut = matchingCurrentWaypoint.infos.airwayOut;
+                            }
                             v.latitudeFP = waypointData.lla.lat;
                             v.longitudeFP = waypointData.lla.long;
                             v.altitudeinFP = waypointData.lla.alt * 3.2808;
@@ -543,6 +567,7 @@ class FlightPlanManager {
         if (doSimVarCall) {
             const activeWaypointIdent = SimVar.GetSimVarValue("GPS WP NEXT ID", "string");
             if (this._activeWaypointIdent != activeWaypointIdent) {
+                this._waypointReachedAt = SimVar.GetGlobalVarValue("ZULU TIME", "seconds");
                 this._activeWaypointIdentHasChanged = true;
                 this._activeWaypointIdent = activeWaypointIdent;
             }
