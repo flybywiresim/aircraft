@@ -11,6 +11,7 @@
 1. [FLIGHTMODEL] Reduced rudder effectiveness - @MisterChocker - (Leon)
 1. [ENGINE] Adjusted N1% thrust table - @MisterChocker - (Leon)
 1. [PFD] Improved VLS, Vaprot and Vamax - @donstim - (donbikes#4084)
+1. [ECAM] Fixed thrust rating mode START in flight misbehavior - @MisterChocker (Leon)
 1. [CDU] Fixed wrong VLS calculation - @MisterChocker (Leon)
 1. [PFD] Fixed wrong managed speed calculation on approach  - @MisterChocker (Leon)
 1. [ECAM] Applied FADEC power logic to thrust rating mode and value - @MisterChocker (Leon)
