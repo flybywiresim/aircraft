@@ -323,7 +323,7 @@ var A320_Neo_UpperECAM;
         }
         getAPWarning(_type, _time) {
             const count = _time * 1000;
-            if(_type == "AP"){
+            if (_type == "AP") {
                 if (this.getCachedSimVar("AUTOPILOT MASTER", "Bool") == false) {
                     SimVar.SetSimVarValue("L:AP_DiscWarn", "Bool", true);
                     const timer = setTimeout(function () {
@@ -340,7 +340,7 @@ var A320_Neo_UpperECAM;
                     SimVar.SetSimVarValue("L:AP_DiscWarn", "Bool", 0);
                 }
             }
-            if(_type == "ATHR"){
+            if (_type == "ATHR") {
                 if (this.getCachedSimVar("AUTOTHROTTLE ACTIVE", "Bool") == false) {
                     SimVar.SetSimVarValue("L:ATHR_DiscWarn", "Bool", true);
                     const timer2 = setTimeout(function () {
