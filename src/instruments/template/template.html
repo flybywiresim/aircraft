@@ -1,0 +1,21 @@
+<script type="text/html" id="A32NX_INSTRUMENT_NAME_TEMPLATE">
+    <div id="A32NX_REACT_MOUNT">
+        <h1>If you're seeing this, React didn't load.</h1>
+    </div>
+
+    <script id="A32NX_BUNDLED_LOGIC">
+        // Although this is a script tag, because it is a child of a custom element,
+        // it will not execute. Inside `template.js`, we read the contents of this script
+        // element, then create a new script element and append it to the document body.
+        // We embed it into this file, even though it is useless, because this file can
+        // be hot-reloaded, but `template.js` cannot.
+        /* eslint-disable */
+        INSTRUMENT_BUNDLE
+    </script>
+    <style id="A32NX_BUNDLED_STYLE">
+        /* same deal as above */
+        INSTRUMENT_STYLE
+    </style>
+</script>
+
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/generated/INSTRUMENT_NAME/template.js"></script>

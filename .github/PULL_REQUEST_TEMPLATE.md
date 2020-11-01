@@ -27,7 +27,7 @@ Discord username (if different from GitHub):
 ## How to download the PR for QA
 
 Every new commit to this PR will cause a new A32NX artifact to be created and uploaded.
-The build.py will have already been run with the latest changes, so no need to rerun it once you download the zip.
+The build script will have already been run with the latest changes, so no need to rerun it once you download the zip.
 
 1. Make sure you are signed in to GitHub
 1. Click on the **Checks** tab on the PR
