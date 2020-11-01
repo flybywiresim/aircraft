@@ -326,7 +326,7 @@ var A320_Neo_UpperECAM;
             let apwarning;
             if (this.getCachedSimVar("AUTOPILOT MASTER", "Bool") == false) {
                 const timer = setTimeout(function () {
-                    SimVar.SetSimVarValue("L:AP_DiscWarn", "Bool", true); 
+                    SimVar.SetSimVarValue("L:AP_DiscWarn", "Bool", true);
                 }, count);
                 if (this.getCachedSimVar("L:AP_DiscWarn", "Bool") != true) {
                     return true;
