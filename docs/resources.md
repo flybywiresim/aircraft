@@ -27,4 +27,4 @@ Then in `cmd`, run the command below. Be sure to replace each path with the prop
 mklink /J "C:\users\<user>\AppData\Microsoft Flight Simulator\Packages\Community\A32NX" "C:\path\to\cloned\repo\A32NX"
 ```
 
-And you're done! Be sure to run `build.py` (or the build task in VSCode) when ever new files are added, **but don't commit the result!**
+And you're done! Be sure to run `npm run build` (or the build task in VSCode) when ever new files are added, **but don't commit the result!**

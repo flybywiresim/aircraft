@@ -97,9 +97,7 @@
     -->
     <Template Name="FBW_Airbus_DCDU_Generic_Inop_Switch">
         <UseTemplate Name="FBW_Airbus_DCDU_Generic_Switch">
-            <HTML_EVENT_ID>
-                INOP
-            </HTML_EVENT_ID>
+            <HTML_EVENT_ID>INOP</HTML_EVENT_ID>
         </UseTemplate>
     </Template>
 
