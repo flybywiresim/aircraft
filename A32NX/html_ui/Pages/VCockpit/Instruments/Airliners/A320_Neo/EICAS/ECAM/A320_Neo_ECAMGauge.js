@@ -413,7 +413,6 @@ var A320_Neo_ECAM_Common;
                     console.log("Style is " + style);
                     this.extraMessageBorder.setAttribute("class", style);
                     this.extraMessageText.setAttribute("class", style);
-                    this.currentValueTextdecimal.setAttribute("class", style + " decimal");
                     this.extraMessageText.textContent = this.extraMessageString;
                 }
             }
@@ -474,6 +473,7 @@ var A320_Neo_ECAM_Common;
         refreshOuterIndicator(_value, _force = false) {
             if ((_value != this.outerIndicatorValue) || _force) {
                 this.outerIndicatorValue = _value;
+                console.log("Outer indicator is " + _value);
                 if (this.outerIndicatorObject != null) {
                     const valueThrottlePosition = (_value <= this.minValue) ? this.cursorOffset + this.minValue : _value + this.cursorOffset;
                     const clampedValueThrottlePosition = Utils.Clamp(valueThrottlePosition , this.minValue, this.maxValue);
