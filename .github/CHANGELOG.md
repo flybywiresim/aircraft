@@ -38,6 +38,7 @@
 1. [CDU] Add ability to clear MDA/DH and add input logic for both MDA/DH - @paul92ilm (Lussion)
 1. [CHECKLISTS] Fix FD check in Taxi checklist - @Acrobot (Andrzej Pomirski)
 1. [ADIRS] Fix ADIRS lights and split into three separate units - @devsnek (devsnek#0001)
+1. [ECAM] Add Autopilot & A/THR Disconnected Warning - @Kimbyeoungjang (김병장#7165)
 
 ## 0.4.0
 1. [General] Add CHANGELOG.md - @nathaninnes (Nathan Innes)
