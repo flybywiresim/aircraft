@@ -98,6 +98,7 @@ var Airbus_FMA;
     Airbus_FMA.TEXT_STYLE_CLASS = TEXT_STYLE_CLASS;
     class CurrentPlaneState {
         static init() {
+            SimVar.SetSimVarValue("L:AIRLINER_DECISION_HEIGHT", "number", -1);
         }
         static refresh() {
             this.autoPilotActive[0] = Simplane.getAutoPilotActive(1);
@@ -1540,7 +1541,7 @@ var Airbus_FMA;
             if ((Airbus_FMA.CurrentPlaneState.flightPhase == FlightPhase.FLIGHT_PHASE_DESCENT) || (Airbus_FMA.CurrentPlaneState.flightPhase == FlightPhase.FLIGHT_PHASE_APPROACH)) {
                 if (Airbus_FMA.CurrentPlaneState.minimumDescentAltitude > 0) {
                     targetState = Column4.ROW_3_STATE.MDA;
-                } else if (Airbus_FMA.CurrentPlaneState.decisionHeight > 0) {
+                } else if (Airbus_FMA.CurrentPlaneState.decisionHeight >= 0) {
                     targetState = Column4.ROW_3_STATE.DH;
                 } else {
                     targetState = Column4.ROW_3_STATE.NO_DH;
