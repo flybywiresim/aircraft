@@ -192,15 +192,15 @@
             <TestValue>
                <Operator OpType="AND">
                   <Operator OpType="EQUAL">
-                     <Val Code="(L:A320_Neo_ADIRS_KNOB_1)" Units="Enum"/>
+                     <Val Code="(L:A32NX_ADIRS_KNOB_1)" Units="Enum"/>
                      <Val Value="1"/>
                   </Operator>
                   <Operator OpType="EQUAL">
-                     <Val Code="(L:A320_Neo_ADIRS_KNOB_2)" Units="Enum"/>
+                     <Val Code="(L:A32NX_ADIRS_KNOB_2)" Units="Enum"/>
                      <Val Value="1"/>
                   </Operator>
                   <Operator OpType="EQUAL">
-                     <Val Code="(L:A320_Neo_ADIRS_KNOB_3)" Units="Enum"/>
+                     <Val Code="(L:A32NX_ADIRS_KNOB_3)" Units="Enum"/>
                      <Val Value="1"/>
                   </Operator>
                </Operator>
@@ -905,10 +905,7 @@
          <CheckpointDesc SubjectTT="TT:Flight Director" ExpectationTT="TT:ON" />
          <Test>
             <TestValue>
-               <Operator OpType="EQUAL">
-                  <Val SimVarName="AUTOPILOT FLIGHT DIRECTOR ACTIVE" Units="Boolean"/>
-                  <Val Value="0"/>
-               </Operator>
+               <Val SimVarName="AUTOPILOT FLIGHT DIRECTOR ACTIVE:1" Units="Boolean"/>
             </TestValue>
             <Action Copilot="True" Condition="TestValueFalse" Once="true" EventID="TOGGLE_FLIGHT_DIRECTOR"/>
             <Instrument Id="AUTOPILOT_PUSH_FLIGHTDIRECTOR"/>
@@ -2021,15 +2018,15 @@
             <TestValue>
                <Operator OpType="AND">
                   <Operator OpType="EQUAL">
-                     <Val Code="(L:A320_Neo_ADIRS_KNOB_1)" Units="Enum"/>
+                     <Val Code="(L:A32NX_ADIRS_KNOB_1)" Units="Enum"/>
                      <Val Value="0"/>
                   </Operator>
                   <Operator OpType="EQUAL">
-                     <Val Code="(L:A320_Neo_ADIRS_KNOB_2)" Units="Enum"/>
+                     <Val Code="(L:A32NX_ADIRS_KNOB_2)" Units="Enum"/>
                      <Val Value="0"/>
                   </Operator>
                   <Operator OpType="EQUAL">
-                     <Val Code="(L:A320_Neo_ADIRS_KNOB_3)" Units="Enum"/>
+                     <Val Code="(L:A32NX_ADIRS_KNOB_3)" Units="Enum"/>
                      <Val Value="0"/>
                   </Operator>
                </Operator>

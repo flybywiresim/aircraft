@@ -63,8 +63,8 @@ class A320_Neo_Com extends BaseAirliners {
         }
     }
 
-    Update() {
-        super.Update();
+    onUpdate(_deltaTime) {
+        super.onUpdate(_deltaTime);
 
         this.updatePowerState();
         this.updateScreenState();
