@@ -1,3 +1,4 @@
+const QNH_REGEX = /[0-9]{2}.[0-9]{2}/;
 class CDUPerformancePage {
     static ShowPage(mcdu) {
         if (mcdu.currentFlightPhase <= FlightPhase.FLIGHT_PHASE_TAKEOFF) {
@@ -482,8 +483,7 @@ class CDUPerformancePage {
             titleColor = "green";
         }
         let qnhCell = "[ ]";
-        const regex = /[0-9]{2}.[0-9]{2}/;
-        if (isFinite(mcdu.perfApprQNH) || regex.test(mcdu.perfApprQNH)) {
+        if (isFinite(mcdu.perfApprQNH) || QNH_REGEX.test(mcdu.perfApprQNH)) {
             qnhCell = mcdu.perfApprQNH;
         }
         mcdu.onLeftInput[0] = () => {
