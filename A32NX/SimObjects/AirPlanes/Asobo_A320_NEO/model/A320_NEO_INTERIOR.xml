@@ -557,7 +557,7 @@
                     <ANIM_NAME>SWITCH_ENGINES_ENG1</ANIM_NAME>
                     <NODE_ID>SWITCH_ENGINES_ENG1</NODE_ID>
                     <ID>1</ID>
-                    <VALVE_ID>6</VALVE_ID>
+                    <VALVE_ID>1</VALVE_ID>
                     <!-- This makes it not light up -->
                     <POTENTIOMETER>9999</POTENTIOMETER>
                 </UseTemplate>
@@ -567,7 +567,7 @@
                     <ANIM_NAME>SWITCH_ENGINES_ENG2</ANIM_NAME>
                     <NODE_ID>SWITCH_ENGINES_ENG2</NODE_ID>
                     <ID>2</ID>
-                    <VALVE_ID>7</VALVE_ID>
+                    <VALVE_ID>2</VALVE_ID>
                     <!-- This makes it not light up -->
                     <POTENTIOMETER>9999</POTENTIOMETER>
                 </UseTemplate>
