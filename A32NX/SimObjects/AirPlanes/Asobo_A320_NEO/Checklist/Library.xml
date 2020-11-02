@@ -11,7 +11,7 @@
             <Test>
                <TestValue>
                   <Operator OpType="NOT">
-                     <Val SimVarName="FUELSYSTEM VALVE SWITCH:6" Units="boolean" />
+                     <Val SimVarName="FUELSYSTEM VALVE SWITCH:1" Units="boolean" />
                   </Operator>
                </TestValue>
                <Action Copilot="True" Condition="TestValueFalse" Once="true" EventID="FUELSYSTEM_VALVE_CLOSE" EventParam="6" />
@@ -29,7 +29,7 @@
             <Test>
                <TestValue>
                   <Operator OpType="NOT">
-                     <Val SimVarName="FUELSYSTEM VALVE SWITCH:7" Units="boolean" />
+                     <Val SimVarName="FUELSYSTEM VALVE SWITCH:2" Units="boolean" />
                   </Operator>
                </TestValue>
                <Action Copilot="True" Condition="TestValueFalse" Once="true" EventID="FUELSYSTEM_VALVE_OPEN" EventParam="7" />
@@ -545,7 +545,7 @@
             <Test>
                <TestValue>
                   <Operator OpType="NOT">
-                     <Val SimVarName="FUELSYSTEM VALVE SWITCH:6" Units="boolean" />
+                     <Val SimVarName="FUELSYSTEM VALVE SWITCH:1" Units="boolean" />
                   </Operator>
                </TestValue>
                <Action Copilot="True" Condition="TestValueFalse" Once="true" EventID="FUELSYSTEM_VALVE_CLOSE" EventParam="6" />
@@ -563,7 +563,7 @@
             <Test>
                <TestValue>
                   <Operator OpType="NOT">
-                     <Val SimVarName="FUELSYSTEM VALVE SWITCH:7" Units="boolean" />
+                     <Val SimVarName="FUELSYSTEM VALVE SWITCH:2" Units="boolean" />
                   </Operator>
                </TestValue>
                <Action Copilot="True" Condition="TestValueFalse" Once="true" EventID="FUELSYSTEM_VALVE_OPEN" EventParam="7" />
@@ -1929,7 +1929,7 @@
             <Test>
                <TestValue>
                   <Operator OpType="NOT">
-                     <Val SimVarName="FUELSYSTEM VALVE SWITCH:6" Units="boolean" />
+                     <Val SimVarName="FUELSYSTEM VALVE SWITCH:1" Units="boolean" />
                   </Operator>
                </TestValue>
                <Action Copilot="True" Condition="TestValueFalse" Once="true" EventID="FUELSYSTEM_VALVE_CLOSE" EventParam="6" />
@@ -1947,7 +1947,7 @@
             <Test>
                <TestValue>
                   <Operator OpType="NOT">
-                     <Val SimVarName="FUELSYSTEM VALVE SWITCH:7" Units="boolean" />
+                     <Val SimVarName="FUELSYSTEM VALVE SWITCH:2" Units="boolean" />
                   </Operator>
                </TestValue>
                <Action Copilot="True" Condition="TestValueFalse" Once="true" EventID="FUELSYSTEM_VALVE_OPEN" EventParam="7" />
@@ -2215,7 +2215,7 @@
          <Sequence SeqType="Unordered">
             <Test>
                <TestValue>
-                  <Val SimVarName="FUELSYSTEM VALVE SWITCH:6" Units="boolean" />
+                  <Val SimVarName="FUELSYSTEM VALVE SWITCH:1" Units="boolean" />
                </TestValue>
                <Action Copilot="True" Condition="TestValueFalse" Once="true" EventID="FUELSYSTEM_VALVE_OPEN" EventParam="6" />
                <Instrument Id="ENGINE_Switch_Master1" />
@@ -2235,7 +2235,7 @@
          <Sequence SeqType="Unordered">
             <Test>
                <TestValue>
-                  <Val SimVarName="FUELSYSTEM VALVE SWITCH:7" Units="boolean" />
+                  <Val SimVarName="FUELSYSTEM VALVE SWITCH:2" Units="boolean" />
                </TestValue>
                <Action Copilot="True" Condition="TestValueFalse" Once="true" EventID="FUELSYSTEM_VALVE_OPEN" EventParam="7" />
                <Instrument Id="ENGINE_Switch_Master2" />
