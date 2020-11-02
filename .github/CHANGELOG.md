@@ -40,6 +40,7 @@
 1. [ADIRS] Fix ADIRS lights and split into three separate units - @devsnek (devsnek#0001)
 1. [CDU] Fix MCDU not loading when starting midair - @ThatRedMelon (Daniel Brown)
 1. [FCU] Clamp the selected altitude between 100 and 49000 - @lars-reimann (Lars Reimann)
+1. [TEXTURES] added Registry plaque and improved Textures - @Pleasure0102 (Pleasure)
 
 ## 0.4.0
 1. [General] Add CHANGELOG.md - @nathaninnes (Nathan Innes)
@@ -107,4 +108,3 @@
 1. [LIVERY] Bundle the FlyByWire Livery with the A32NX addon - @devsnek (devsnek)
 1. [ECAM] Added cockpit door video - @Benjozork (Benjamin Dupont)
 1. [MISC] Standby Instrument stays ON if emergency power should be available, bug fixes - @2hwk (2Cas#1022 on discord)
-1. [TEXTURES] added Registry plaque and improved Textures - @Pleasure0102 (Pleasure)
