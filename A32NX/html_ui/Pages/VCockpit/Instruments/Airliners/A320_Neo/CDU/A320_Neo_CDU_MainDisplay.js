@@ -343,9 +343,12 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             this._onModeManagedSpeed();
         }
         if (_event === "MODE_SELECTED_HEADING") {
-            if (this.flightPlanManager.getWaypointsCount() === 0) {
-                return;
-            }
+            SimVar.SetSimVarValue("L:A32NX_GOAROUND_HDG_MODE", "bool", 1);
+            SimVar.SetSimVarValue("L:A32NX_GOAROUND_NAV_MODE", "bool", 0);
+            //why is below code checking for waypointcounts when we are in selected mode?
+            //if (this.flightPlanManager.getWaypointsCount() === 0) {
+            //    return;
+            //}
             if (Simplane.getAutoPilotHeadingManaged()) {
                 if (SimVar.GetSimVarValue("L:A320_FCU_SHOW_SELECTED_HEADING", "number") === 0) {
                     const currentHeading = Simplane.getHeadingMagnetic();
@@ -355,6 +358,8 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             this._onModeSelectedHeading();
         }
         if (_event === "MODE_MANAGED_HEADING") {
+            SimVar.SetSimVarValue("L:A32NX_GOAROUND_HDG_MODE", "bool", 0);
+            SimVar.SetSimVarValue("L:A32NX_GOAROUND_NAV_MODE", "bool", 1);
             if (this.flightPlanManager.getWaypointsCount() === 0) {
                 return;
             }
@@ -1037,19 +1042,14 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             this.currentFlightPhase = FlightPhase.FLIGHT_PHASE_GOAROUND;
             SimVar.SetSimVarValue("L:A32NX_GOAROUND_HDG_MODE", "bool", 0);
             SimVar.SetSimVarValue("L:A32NX_GOAROUND_NAV_MODE", "bool", 0);
-
+            //SimVar.SetSimVarValue("K:KEY_AP_APR_HOLD", "bool", 0);
         }
 
-        //Logic to switch back from GOAROUND to APPROACH
-        //if ((SimVar.GetSimVarValue("L:A32NX_GOAROUND_HDG_MODE", "bool") === 1 || SimVar.GetSimVarValue("L:A32NX_GOAROUND_NAV_MODE", "bool") === 1)) {
+        //Logic to switch back from GOAROUND to APPROACH (Missed Approach Path still need to be implemented)
+        //Exit Scenario for successful GOAROUND
         if ((SimVar.GetSimVarValue("L:A32NX_GOAROUND_HDG_MODE", "bool") === 1 || SimVar.GetSimVarValue("L:A32NX_GOAROUND_NAV_MODE", "bool") === 1) && this.currentFlightPhase == FlightPhase.FLIGHT_PHASE_GOAROUND && SimVar.GetSimVarValue("RADIO HEIGHT", "Feet") > 2000) {
-            if (Simplane.getAutoPilotHeadingManaged() === 1) {
-                SimVar.SetSimVarValue("L:A32NX_GOAROUND_NAV_MODE", "bool", 1);
-                SimVar.SetSimVarValue("L:A32NX_GOAROUND_HDG_MODE", "bool", 0);
-            } else if (Simplane.getAutoPilotHeadingSelected() === 1) {
-                SimVar.SetSimVarValue("L:A32NX_GOAROUND_NAV_MODE", "bool", 0);
-                SimVar.SetSimVarValue("L:A32NX_GOAROUND_HDG_MODE", "bool", 1);
-            }
+            this.currentFlightPhase = FlightPhase.FLIGHT_PHASE_APPROACH;
+        } else if (this.currentFlightPhase == FlightPhase.FLIGHT_PHASE_GOAROUND && !Simplane.getAutoPilotFlightDirectorActive(1)) {
             this.currentFlightPhase = FlightPhase.FLIGHT_PHASE_APPROACH;
         }
 
