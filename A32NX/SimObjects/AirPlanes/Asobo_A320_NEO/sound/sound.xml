@@ -62,7 +62,9 @@
 
     <MiscellaneousSounds>
         <Sound WwiseEvent="AP_PREFLIGHT_CHECK_OVER" ViewPoint="Inside" WwiseData="true" />
-        <Sound WwiseData="false" WwiseEvent="FLAPS" FileName="FINALFLAPS" NodeName="HublotIn002" FullScaleDistance="2" Continuous="true" FadeOutType="2" FadeOutTime="0.5" />
+        <Sound WwiseData="false" WwiseEvent="FLAPS" FileName="FINALFLAPS" NodeName="WING_AILERON_1_LEFT" FullScaleDistance="4" Continuous="true" FadeOutType="2" FadeOutTime="0.5" />
+        <Sound WwiseData="false" WwiseEvent="FLAPS" FileName="FINALFLAPS" NodeName="WING_AILERON_1_RIGHT" FullScaleDistance="4" Continuous="true" FadeOutType="2" FadeOutTime="0.5" />
+
     </MiscellaneousSounds>
 
     <!-- SimvarSounds ========================================================================================== -->
@@ -104,7 +106,7 @@
             <Range LowerBound="28" />
             <WwiseRTPC SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1" RTPCName="SIMVAR_ELECTRICAL_MAIN_BUS_VOLTAGE_A4_R4" />
         </Sound>
-        
+
         <Sound WwiseData="true" WwiseEvent="apu_bleed_on" FadeOutType="2" FadeOutTime="3" SimVar="BLEED AIR APU" Units="BOOL" Index="0">
             <Range LowerBound="1.0" />
             <Requires SimVar="APU PCT RPM" Units="PERCENT" Index="0">
@@ -118,25 +120,25 @@
                 <Range LowerBound="1" />
             </Requires>
         </Sound>
-        
+
         <Sound WwiseData="true" WwiseEvent="APUnlock" NodeName="SCREEN_PFD_L" ViewPoint="Inside" Continuous="false" SimVar="AUTOPILOT MASTER" Units="BOOL" Index="0">
             <Range UpperBound="0" />
             <Requires SimVar="AUTOPILOT AVAILABLE" Index="0" Units="BOOL">
                 <Range LowerBound="1" />
             </Requires>
         </Sound>
-        
+
         <Sound WwiseData="true" WwiseEvent="APUnlock" NodeName="SCREEN_PFD_R" ViewPoint="Inside" Continuous="false" SimVar="AUTOPILOT MASTER" Units="BOOL" Index="0">
             <Range UpperBound="0" />
             <Requires SimVar="AUTOPILOT AVAILABLE" Index="0" Units="BOOL">
                 <Range LowerBound="1" />
             </Requires>
         </Sound>
-        
+
         <Sound WwiseData="true" WwiseEvent="APLock" NodeName="SCREEN_PFD_L" ViewPoint="Inside" Continuous="false" SimVar="AUTOPILOT MASTER" Units="BOOL" Index="0">
             <Range LowerBound="1" />
         </Sound>
-        
+
         <Sound WwiseData="true" WwiseEvent="APLock" NodeName="SCREEN_PFD_R" ViewPoint="Inside" Continuous="false" SimVar="AUTOPILOT MASTER" Units="BOOL" Index="0">
             <Range LowerBound="1" />
         </Sound>
@@ -172,184 +174,184 @@
             <WwiseRTPC SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1" RTPCName="SIMVAR_ELECTRICAL_MAIN_BUS_VOLTAGE_A4_R4" />
         </Sound>
 
-        <Sound WwiseEvent="cargodoor" WwiseData="true" Continuous="true" SimVar="INTERACTIVE POINT OPEN" Units="PERCENT" Index="5" >
+        <Sound WwiseEvent="cargodoor" WwiseData="true" Continuous="true" SimVar="INTERACTIVE POINT OPEN" Units="PERCENT" Index="5">
             <Range LowerBound="0.01" />
         </Sound>
 
         <Sound WwiseEvent="cdoorclose" WwiseData="true" Continuous="false" SimVar="INTERACTIVE POINT OPEN" Units="PERCENT" Index="5">
             <Range UpperBound="1" />
         </Sound>
-        
+
         <!-- ENGINE SOUNDS ======================================================================================== -->
-        
-        <Sound WwiseEvent="LSpool" WwiseData="true" NodeName="Engine_PIVOT_LEFT_2" SimVar="TURB ENG N1" Units="percent" Index="1" ViewPoint="Inside" Continuous="true" >
+
+        <Sound WwiseEvent="LSpool" WwiseData="true" NodeName="Engine_PIVOT_LEFT_2" SimVar="TURB ENG N1" Units="percent" Index="1" ViewPoint="Inside" Continuous="true">
             <Range LowerBound="1" />
             <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Index="1" RTPCName="SIMVAR_TURB_ENG_N1" />
         </Sound>
-        
-        <Sound WwiseEvent="RSpool" WwiseData="true" NodeName="Engine_PIVOT_RIGHT_2" SimVar="TURB ENG N1" Units="percent" Index="2" ViewPoint="Inside" Continuous="true" >
+
+        <Sound WwiseEvent="RSpool" WwiseData="true" NodeName="Engine_PIVOT_RIGHT_2" SimVar="TURB ENG N1" Units="percent" Index="2" ViewPoint="Inside" Continuous="true">
             <Range LowerBound="1" />
             <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Index="2" RTPCName="SIMVAR_TURB_ENG_N1" />
         </Sound>
-        
-        <Sound WwiseEvent="ISpoolL" WwiseData="true" NodeName="Engine_PIVOT_LEFT_2" SimVar="TURB ENG N1" Units="percent" Index="1" ViewPoint="Inside" Continuous="true" >
+
+        <Sound WwiseEvent="ISpoolL" WwiseData="true" NodeName="Engine_PIVOT_LEFT_2" SimVar="TURB ENG N1" Units="percent" Index="1" ViewPoint="Inside" Continuous="true">
             <Range LowerBound="1" />
             <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Index="1" RTPCName="SIMVAR_TURB_ENG_N1" />
         </Sound>
-        
-        <Sound WwiseEvent="ISpoolR" WwiseData="true" NodeName="Engine_PIVOT_RIGHT_2" SimVar="TURB ENG N1" Units="percent" Index="2" ViewPoint="Inside" Continuous="true" >
+
+        <Sound WwiseEvent="ISpoolR" WwiseData="true" NodeName="Engine_PIVOT_RIGHT_2" SimVar="TURB ENG N1" Units="percent" Index="2" ViewPoint="Inside" Continuous="true">
             <Range LowerBound="1" />
             <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Index="2" RTPCName="SIMVAR_TURB_ENG_N1" />
         </Sound>
-        
-        <Sound WwiseEvent="LWhine" WwiseData="true" NodeName="Engine_PIVOT_LEFT_2" SimVar="TURB ENG N1" Units="percent" Index="1" ViewPoint="Inside" Continuous="true" >
+
+        <Sound WwiseEvent="LWhine" WwiseData="true" NodeName="Engine_PIVOT_LEFT_2" SimVar="TURB ENG N1" Units="percent" Index="1" ViewPoint="Inside" Continuous="true">
             <Range LowerBound="1" />
             <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Index="1" RTPCName="SIMVAR_TURB_ENG_N1" />
         </Sound>
-        
-        <Sound WwiseEvent="RWhine" WwiseData="true" NodeName="Engine_PIVOT_RIGHT_2" SimVar="TURB ENG N1" Units="percent" Index="2" ViewPoint="Inside" Continuous="true" >
+
+        <Sound WwiseEvent="RWhine" WwiseData="true" NodeName="Engine_PIVOT_RIGHT_2" SimVar="TURB ENG N1" Units="percent" Index="2" ViewPoint="Inside" Continuous="true">
             <Range LowerBound="1" />
             <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Index="2" RTPCName="SIMVAR_TURB_ENG_N1" />
         </Sound>
-        
-        <Sound WwiseEvent="BuzzL" WwiseData="true" NodeName="Engine_PIVOT_LEFT_2" SimVar="TURB ENG N1" Units="percent" Index="1" ViewPoint="Inside" Continuous="true" >
+
+        <Sound WwiseEvent="BuzzL" WwiseData="true" NodeName="Engine_PIVOT_LEFT_2" SimVar="TURB ENG N1" Units="percent" Index="1" ViewPoint="Inside" Continuous="true">
             <Range LowerBound="1" />
             <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Index="1" RTPCName="SIMVAR_TURB_ENG_N1" />
         </Sound>
-        
-        <Sound WwiseEvent="BuzzR" WwiseData="true" NodeName="Engine_PIVOT_RIGHT_2" SimVar="TURB ENG N1" Units="percent" Index="2" ViewPoint="Inside" Continuous="true" >
+
+        <Sound WwiseEvent="BuzzR" WwiseData="true" NodeName="Engine_PIVOT_RIGHT_2" SimVar="TURB ENG N1" Units="percent" Index="2" ViewPoint="Inside" Continuous="true">
             <Range LowerBound="1" />
             <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Index="2" RTPCName="SIMVAR_TURB_ENG_N1" />
         </Sound>
-        
-        <Sound WwiseEvent="BuzzLEXT" WwiseData="true" NodeName="Engine_PIVOT_LEFT_2" SimVar="TURB ENG N1" Units="percent" Index="1" ViewPoint="Outside" Continuous="true" >
+
+        <Sound WwiseEvent="BuzzLEXT" WwiseData="true" NodeName="Engine_PIVOT_LEFT_2" SimVar="TURB ENG N1" Units="percent" Index="1" ViewPoint="Outside" Continuous="true">
             <Range LowerBound="1" />
             <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Index="1" RTPCName="SIMVAR_TURB_ENG_N1" />
         </Sound>
-        
-        <Sound WwiseEvent="BuzzREXT" WwiseData="true" NodeName="Engine_PIVOT_RIGHT_2" SimVar="TURB ENG N1" Units="percent" Index="2" ViewPoint="Outside" Continuous="true" >
+
+        <Sound WwiseEvent="BuzzREXT" WwiseData="true" NodeName="Engine_PIVOT_RIGHT_2" SimVar="TURB ENG N1" Units="percent" Index="2" ViewPoint="Outside" Continuous="true">
             <Range LowerBound="1" />
             <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Index="2" RTPCName="SIMVAR_TURB_ENG_N1" />
         </Sound>
-        
-        <Sound WwiseEvent="LWhineEXT" WwiseData="true" NodeName="Engine_PIVOT_LEFT_2" SimVar="TURB ENG N1" Units="percent" Index="1" ViewPoint="Outside" Continuous="true" >
+
+        <Sound WwiseEvent="LWhineEXT" WwiseData="true" NodeName="Engine_PIVOT_LEFT_2" SimVar="TURB ENG N1" Units="percent" Index="1" ViewPoint="Outside" Continuous="true">
             <Range LowerBound="1" />
             <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Index="1" RTPCName="SIMVAR_TURB_ENG_N1" />
         </Sound>
-        
-        <Sound WwiseEvent="RwhineEXT" WwiseData="true" NodeName="Engine_PIVOT_RIGHT_2" SimVar="TURB ENG N1" Units="percent" Index="2" ViewPoint="Outside" Continuous="true" >
+
+        <Sound WwiseEvent="RwhineEXT" WwiseData="true" NodeName="Engine_PIVOT_RIGHT_2" SimVar="TURB ENG N1" Units="percent" Index="2" ViewPoint="Outside" Continuous="true">
             <Range LowerBound="1" />
             <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Index="2" RTPCName="SIMVAR_TURB_ENG_N1" />
         </Sound>
-        
-        <Sound WwiseEvent="LSpoolEXT" WwiseData="true" NodeName="Engine_PIVOT_LEFT_2" SimVar="TURB ENG N1" Units="percent" Index="1" ViewPoint="Outside" Continuous="true" >
+
+        <Sound WwiseEvent="LSpoolEXT" WwiseData="true" NodeName="Engine_PIVOT_LEFT_2" SimVar="TURB ENG N1" Units="percent" Index="1" ViewPoint="Outside" Continuous="true">
             <Range LowerBound="1" />
             <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Index="1" RTPCName="SIMVAR_TURB_ENG_N1" />
         </Sound>
-        
-        <Sound WwiseEvent="RSpoolEXT" WwiseData="true" NodeName="Engine_PIVOT_RIGHT_2" SimVar="TURB ENG N1" Units="percent" Index="2" ViewPoint="Outside" Continuous="true" >
+
+        <Sound WwiseEvent="RSpoolEXT" WwiseData="true" NodeName="Engine_PIVOT_RIGHT_2" SimVar="TURB ENG N1" Units="percent" Index="2" ViewPoint="Outside" Continuous="true">
             <Range LowerBound="1" />
             <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Index="2" RTPCName="SIMVAR_TURB_ENG_N1" />
         </Sound>
-        
-        <Sound WwiseEvent="ISpoolLEXT" WwiseData="true" NodeName="Engine_PIVOT_LEFT_2" SimVar="TURB ENG N1" Units="percent" Index="1" ViewPoint="Outside" Continuous="true" >
+
+        <Sound WwiseEvent="ISpoolLEXT" WwiseData="true" NodeName="Engine_PIVOT_LEFT_2" SimVar="TURB ENG N1" Units="percent" Index="1" ViewPoint="Outside" Continuous="true">
             <Range LowerBound="1" />
             <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Index="1" RTPCName="SIMVAR_TURB_ENG_N1" />
         </Sound>
-        
-        <Sound WwiseEvent="ISpoolREXT" WwiseData="true" NodeName="Engine_PIVOT_RIGHT_2" SimVar="TURB ENG N1" Units="percent" Index="2" ViewPoint="Outside" Continuous="true" >
+
+        <Sound WwiseEvent="ISpoolREXT" WwiseData="true" NodeName="Engine_PIVOT_RIGHT_2" SimVar="TURB ENG N1" Units="percent" Index="2" ViewPoint="Outside" Continuous="true">
             <Range LowerBound="1" />
             <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Index="2" RTPCName="SIMVAR_TURB_ENG_N1" />
         </Sound>
-        
-        <Sound WwiseEvent="RumbleL" NodeName="Engine_PIVOT_LEFT_2" WwiseData="true" SimVar="TURB ENG N1" Units="percent" Index="1" Continuous="true" >
+
+        <Sound WwiseEvent="RumbleL" NodeName="Engine_PIVOT_LEFT_2" WwiseData="true" SimVar="TURB ENG N1" Units="percent" Index="1" Continuous="true">
             <Range LowerBound="1" />
             <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Index="1" RTPCName="SIMVAR_TURB_ENG_N1" />
         </Sound>
-        
-        <Sound WwiseEvent="RumbleR" NodeName="Engine_PIVOT_RIGHT_2" WwiseData="true" SimVar="TURB ENG N1" Units="percent" Index="2" Continuous="true" >
+
+        <Sound WwiseEvent="RumbleR" NodeName="Engine_PIVOT_RIGHT_2" WwiseData="true" SimVar="TURB ENG N1" Units="percent" Index="2" Continuous="true">
             <Range LowerBound="1" />
             <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Index="2" RTPCName="SIMVAR_TURB_ENG_N1" />
         </Sound>
-        
-        <Sound WwiseEvent="ReverseL" NodeName="Engine_PIVOT_LEFT_2" WwiseData="true" SimVar="TURB ENG N1" Units="percent" Index="1" Continuous="true" >
+
+        <Sound WwiseEvent="ReverseL" NodeName="Engine_PIVOT_LEFT_2" WwiseData="true" SimVar="TURB ENG N1" Units="percent" Index="1" Continuous="true">
             <Range LowerBound="1" />
             <WwiseRTPC SimVar="TURB ENG REVERSE NOZZLE PERCENT" Units="percent" Index="2" RTPCName="SIMVAR_TURB_ENG_REVERSE_NOZZLE_PERCENT" />
         </Sound>
-        
-        <Sound WwiseEvent="ReverseR" NodeName="Engine_PIVOT_RIGHT_2" WwiseData="true" SimVar="TURB ENG N1" Units="percent" Index="2" Continuous="true" >
+
+        <Sound WwiseEvent="ReverseR" NodeName="Engine_PIVOT_RIGHT_2" WwiseData="true" SimVar="TURB ENG N1" Units="percent" Index="2" Continuous="true">
             <Range LowerBound="1" />
             <WwiseRTPC SimVar="TURB ENG REVERSE NOZZLE PERCENT" Units="percent" Index="2" RTPCName="SIMVAR_TURB_ENG_REVERSE_NOZZLE_PERCENT" />
         </Sound>
-        
-        <Sound WwiseEvent="StartL" NodeName="Engine_PIVOT_LEFT_2" FadeOutType="1" FadeOutTime="1"  WwiseData="true" SimVar="TURB ENG N2" Units="percent" ViewPoint="Inside" Index="1" Continuous="true" >
+
+        <Sound WwiseEvent="StartL" NodeName="Engine_PIVOT_LEFT_2" FadeOutType="1" FadeOutTime="1" WwiseData="true" SimVar="TURB ENG N2" Units="percent" ViewPoint="Inside" Index="1" Continuous="true">
             <Range LowerBound="1" />
             <WwiseRTPC SimVar="TURB ENG N2" Units="percent" Index="1" RTPCName="SIMVAR_TURB_ENG_N2" />
         </Sound>
-        
-        <Sound WwiseEvent="StartR" NodeName="Engine_PIVOT_RIGHT_2" FadeOutType="1" FadeOutTime="1"  WwiseData="true" SimVar="TURB ENG N2" Units="percent" ViewPoint="Inside" Index="2" Continuous="true" >
+
+        <Sound WwiseEvent="StartR" NodeName="Engine_PIVOT_RIGHT_2" FadeOutType="1" FadeOutTime="1" WwiseData="true" SimVar="TURB ENG N2" Units="percent" ViewPoint="Inside" Index="2" Continuous="true">
             <Range LowerBound="1" />
             <WwiseRTPC SimVar="TURB ENG N2" Units="percent" Index="2" RTPCName="SIMVAR_TURB_ENG_N2" />
         </Sound>
-        
-        <Sound WwiseEvent="FFlowL" WwiseData="true" NodeName="Engine_PIVOT_LEFT_2" SimVar="TURB ENG N2" Units="percent" ViewPoint="Inside" Index="1" ViewPoint="Inside" Continuous="true" >
+
+        <Sound WwiseEvent="FFlowL" WwiseData="true" NodeName="Engine_PIVOT_LEFT_2" SimVar="TURB ENG N2" Units="percent" ViewPoint="Inside" Index="1" ViewPoint="Inside" Continuous="true">
             <Range LowerBound="1" />
             <WwiseRTPC SimVar="TURB ENG N2" Units="percent" Index="1" RTPCName="SIMVAR_TURB_ENG_N2" />
             <Requires SimVar="TURB ENG FUEL FLOW PPH" Units="PPH" Index="1">
-            <Range LowerBound="40" />
+                <Range LowerBound="40" />
             </Requires>
         </Sound>
-        
-        <Sound WwiseEvent="FFlowR" WwiseData="true" NodeName="Engine_PIVOT_RIGHT_2" SimVar="TURB ENG N2" Units="percent" ViewPoint="Inside" Index="2" ViewPoint="Inside" Continuous="true" >
+
+        <Sound WwiseEvent="FFlowR" WwiseData="true" NodeName="Engine_PIVOT_RIGHT_2" SimVar="TURB ENG N2" Units="percent" ViewPoint="Inside" Index="2" ViewPoint="Inside" Continuous="true">
             <Range LowerBound="1" />
             <WwiseRTPC SimVar="TURB ENG N2" Units="percent" Index="2" RTPCName="SIMVAR_TURB_ENG_N2" />
             <Requires SimVar="TURB ENG FUEL FLOW PPH" Units="PPH" Index="2">
-            <Range LowerBound="40" />
+                <Range LowerBound="40" />
             </Requires>
         </Sound>
-        
-        <Sound WwiseEvent="StartLEXT" NodeName="Engine_PIVOT_LEFT_2" FadeOutType="1" FadeOutTime="1" WwiseData="true" SimVar="TURB ENG N2" Units="percent" ViewPoint="Outside" Index="1" Continuous="true" >
+
+        <Sound WwiseEvent="StartLEXT" NodeName="Engine_PIVOT_LEFT_2" FadeOutType="1" FadeOutTime="1" WwiseData="true" SimVar="TURB ENG N2" Units="percent" ViewPoint="Outside" Index="1" Continuous="true">
             <Range LowerBound="1" />
             <WwiseRTPC SimVar="TURB ENG N2" Units="percent" Index="1" RTPCName="SIMVAR_TURB_ENG_N2" />
         </Sound>
-        
-        <Sound WwiseEvent="StartREXT" NodeName="Engine_PIVOT_RIGHT_2" FadeOutType="1" FadeOutTime="1"  WwiseData="true" SimVar="TURB ENG N2" Units="percent" ViewPoint="Outside" Index="2" Continuous="true" >
+
+        <Sound WwiseEvent="StartREXT" NodeName="Engine_PIVOT_RIGHT_2" FadeOutType="1" FadeOutTime="1" WwiseData="true" SimVar="TURB ENG N2" Units="percent" ViewPoint="Outside" Index="2" Continuous="true">
             <Range LowerBound="1" />
             <WwiseRTPC SimVar="TURB ENG N2" Units="percent" Index="2" RTPCName="SIMVAR_TURB_ENG_N2" />
         </Sound>
-        
-        <Sound WwiseEvent="FFlowLEXT" WwiseData="true" NodeName="Engine_PIVOT_LEFT_2" SimVar="TURB ENG N2" Units="percent" ViewPoint="Outside" Index="1" ViewPoint="Inside" Continuous="true" >
+
+        <Sound WwiseEvent="FFlowLEXT" WwiseData="true" NodeName="Engine_PIVOT_LEFT_2" SimVar="TURB ENG N2" Units="percent" ViewPoint="Outside" Index="1" ViewPoint="Inside" Continuous="true">
             <Range LowerBound="1" />
             <WwiseRTPC SimVar="TURB ENG N2" Units="percent" Index="1" RTPCName="SIMVAR_TURB_ENG_N2" />
             <Requires SimVar="TURB ENG FUEL FLOW PPH" Units="PPH" Index="1">
-            <Range LowerBound="40" />
+                <Range LowerBound="40" />
             </Requires>
         </Sound>
-        
-        <Sound WwiseEvent="FFlowREXT" WwiseData="true" NodeName="Engine_PIVOT_RIGHT_2" SimVar="TURB ENG N2" Units="percent" ViewPoint="Outside" Index="2" ViewPoint="Inside" Continuous="true" >
+
+        <Sound WwiseEvent="FFlowREXT" WwiseData="true" NodeName="Engine_PIVOT_RIGHT_2" SimVar="TURB ENG N2" Units="percent" ViewPoint="Outside" Index="2" ViewPoint="Inside" Continuous="true">
             <Range LowerBound="1" />
             <WwiseRTPC SimVar="TURB ENG N2" Units="percent" Index="2" RTPCName="SIMVAR_TURB_ENG_N2" />
             <Requires SimVar="TURB ENG FUEL FLOW PPH" Units="PPH" Index="2">
-            <Range LowerBound="40" />
+                <Range LowerBound="40" />
             </Requires>
         </Sound>
-        
-        <Sound WwiseEvent="IdleWhineL" WwiseData="true" NodeName="Engine_PIVOT_LEFT_2" SimVar="TURB ENG N1" Units="percent" Index="1" ViewPoint="Outside" Continuous="true" >
+
+        <Sound WwiseEvent="IdleWhineL" WwiseData="true" NodeName="Engine_PIVOT_LEFT_2" SimVar="TURB ENG N1" Units="percent" Index="1" ViewPoint="Outside" Continuous="true">
             <Range LowerBound="1" />
             <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Index="1" RTPCName="SIMVAR_TURB_ENG_N1" />
         </Sound>
-        
-        <Sound WwiseEvent="IdleWhineR" WwiseData="true" NodeName="Engine_PIVOT_RIGHT_2" SimVar="TURB ENG N1" Units="percent" Index="2" ViewPoint="Outside" Continuous="true" >
+
+        <Sound WwiseEvent="IdleWhineR" WwiseData="true" NodeName="Engine_PIVOT_RIGHT_2" SimVar="TURB ENG N1" Units="percent" Index="2" ViewPoint="Outside" Continuous="true">
             <Range LowerBound="1" />
             <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Index="2" RTPCName="SIMVAR_TURB_ENG_N1" />
         </Sound>
-        
-        <Sound WwiseEvent="ReverseLEXT" NodeName="Engine_PIVOT_LEFT_2" WwiseData="true" SimVar="TURB ENG N1" Units="percent" ViewPoint="outside" Index="1" Continuous="true" >
+
+        <Sound WwiseEvent="ReverseLEXT" NodeName="Engine_PIVOT_LEFT_2" WwiseData="true" SimVar="TURB ENG N1" Units="percent" ViewPoint="outside" Index="1" Continuous="true">
             <Range LowerBound="1" />
             <WwiseRTPC SimVar="TURB ENG REVERSE NOZZLE PERCENT" Units="percent" Index="2" RTPCName="SIMVAR_TURB_ENG_REVERSE_NOZZLE_PERCENT" />
         </Sound>
-        
-        <Sound WwiseEvent="ReverseREXT" NodeName="Engine_PIVOT_RIGHT_2" WwiseData="true" SimVar="TURB ENG N1" Units="percent" ViewPoint="outside" Index="2" Continuous="true" >
+
+        <Sound WwiseEvent="ReverseREXT" NodeName="Engine_PIVOT_RIGHT_2" WwiseData="true" SimVar="TURB ENG N1" Units="percent" ViewPoint="outside" Index="2" Continuous="true">
             <Range LowerBound="1" />
             <WwiseRTPC SimVar="TURB ENG REVERSE NOZZLE PERCENT" Units="percent" Index="2" RTPCName="SIMVAR_TURB_ENG_REVERSE_NOZZLE_PERCENT" />
         </Sound>
@@ -394,8 +396,11 @@
             <WwiseRTPC SimVar="GROUND VELOCITY" Units="KNOTS" Index="0" RTPCName="SIMVAR_GROUND_VELOCITY" />
         </Sound>
 
-        <Sound WwiseData="true" WwiseEvent="NWheelSpinAboveGround" ViewPoint="Inside" Continuous="false" SimVar="SIM ON GROUND" Units="BOOLEAN" Index="0">
-            <Range UpperBound="0" />
+        <Sound WwiseData="true" WwiseEvent="NWheelSpinAboveGround" ViewPoint="Inside" Continuous="false" SimVar="GEAR ANIMATION POSITION" Units="PERCENT" Index="0">
+            <Range UpperBound="50" />
+            <Requires SimVar="WHEEL RPM" Units="RPM" Index="0">
+                <Range LowerBound="1100" />
+            </Requires>
         </Sound>
 
         <Sound WwiseData="true" WwiseEvent="taxirattle" ViewPoint="Inside" SimVar="SIM ON GROUND" Units="BOOLEAN" Index="0">
@@ -413,7 +418,7 @@
             </Requires>
             <WwiseRTPC SimVar="GROUND VELOCITY" Units="KNOTS" Index="0" RTPCName="SIMVAR_GROUND_VELOCITY" />
         </Sound>
-        
+
         <Sound WwiseData="true" WwiseEvent="Centerthump1" ViewPoint="Inside" SimVar="SIM ON GROUND" Units="BOOLEAN" Index="0">
             <Range LowerBound="1.0" />
             <Requires SimVar="GEAR TOTAL PCT EXTENDED" Units="PERCENT" Index="0">
@@ -421,7 +426,7 @@
             </Requires>
             <WwiseRTPC SimVar="GROUND VELOCITY" Units="KNOTS" Index="0" RTPCName="SIMVAR_GROUND_VELOCITY" />
         </Sound>
-        
+
         <Sound WwiseData="true" WwiseEvent="Centerthump2" ViewPoint="Inside" FadeOutType="2" FadeOutTime="1" SimVar="SIM ON GROUND" Units="BOOLEAN" Index="0">
             <Range LowerBound="1.0" />
             <Requires SimVar="GEAR TOTAL PCT EXTENDED" Units="PERCENT" Index="0">
@@ -429,7 +434,7 @@
             </Requires>
             <WwiseRTPC SimVar="GROUND VELOCITY" Units="KNOTS" Index="0" RTPCName="SIMVAR_GROUND_VELOCITY" />
         </Sound>
-        
+
         <Sound WwiseData="true" WwiseEvent="bumpslow" ViewPoint="Inside" FadeOutType="2" FadeOutTime="1" SimVar="SIM ON GROUND" Units="BOOLEAN" Index="0">
             <Range LowerBound="1.0" />
             <Requires SimVar="GEAR TOTAL PCT EXTENDED" Units="PERCENT" Index="0">
@@ -500,18 +505,36 @@
 
         <Sound WwiseData="true" WwiseEvent="detent" Continuous="false" ViewPoint="Inside" NodeName="LEVER_THROTTLE_1" LocalVar="XMLVAR_Throttle1Position">
             <Range UpperBound="0" />
-            <Range LowerBound="0.9" UpperBound="1.1" />
-            <Range LowerBound="1.9" UpperBound="2.1" />
             <Range LowerBound="2.9" UpperBound="3.1" />
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="detent" Continuous="false" ViewPoint="Inside" NodeName="LEVER_THROTTLE_2" LocalVar="XMLVAR_Throttle2Position">
+            <Range UpperBound="0" />
+            <Range LowerBound="2.9" UpperBound="3.1" />
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="detent" Continuous="false" ViewPoint="Inside" NodeName="LEVER_THROTTLE_1" LocalVar="XMLVAR_Throttle1Position">
+            <Range LowerBound="1.9" UpperBound="2.1" />
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="detent" Continuous="false" ViewPoint="Inside" NodeName="LEVER_THROTTLE_2" LocalVar="XMLVAR_Throttle2Position">
+            <Range LowerBound="1.9" UpperBound="2.1" />
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="TOGAdetent" Continuous="false" ViewPoint="Inside" NodeName="LEVER_THROTTLE_1" LocalVar="XMLVAR_Throttle1Position">
             <Range LowerBound="3.9" />
         </Sound>
 
-        <Sound WwiseData="true" WwiseEvent="detent" BreakOnStop="false" Continuous="false" ViewPoint="Inside" NodeName="LEVER_THROTTLE_2" LocalVar="XMLVAR_Throttle2Position">
-            <Range UpperBound="0" />
-            <Range LowerBound="0.9" UpperBound="1.1" />
-            <Range LowerBound="1.9" UpperBound="2.1" />
-            <Range LowerBound="2.9" UpperBound="3.1" />
+        <Sound WwiseData="true" WwiseEvent="TOGAdetent" Continuous="false" ViewPoint="Inside" NodeName="LEVER_THROTTLE_2" LocalVar="XMLVAR_Throttle2Position">
             <Range LowerBound="3.9" />
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="IdleDetent" Continuous="false" ViewPoint="Inside" NodeName="LEVER_THROTTLE_1" LocalVar="XMLVAR_Throttle1Position">
+            <Range LowerBound="0.9" UpperBound="1.1" />
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="IdleDetent" Continuous="false" ViewPoint="Inside" NodeName="LEVER_THROTTLE_2" LocalVar="XMLVAR_Throttle2Position">
+            <Range LowerBound="0.9" UpperBound="1.1" />
         </Sound>
 
         <Sound WwiseData="true" WwiseEvent="lever_trim_elevator" ViewPoint="Inside" NodeName="LEVER_ELEVATORTRIM_1" ContinuousStopDelay="1.0" SimVar="ELEVATOR TRIM POSITION" Units="PERCENT" Index="0">
@@ -768,6 +791,14 @@
         <Sound WwiseData="true" WwiseEvent="double_light_switch" ViewPoint="Inside"/>
         <Sound WwiseData="true" WwiseEvent="cabin_light_switch" ViewPoint="Inside"/>
         <Sound WwiseData="true" WwiseEvent="lighting_knob_generic" ViewPoint="Inside"/>
+
+        <!-- pb1on and pb1off are push buttons that stay in, mpb1on and mpb1off are momentary push button, lswitch is the light switch -->
+
+        <Sound WwiseData="true" WwiseEvent="pb1on" Continuous="false" ViewPoint="Inside"/>
+        <Sound WwiseData="true" WwiseEvent="pb1off" Continuous="false" ViewPoint="Inside"/>
+        <Sound WwiseData="true" WwiseEvent="mpb1on" Continuous="false" ViewPoint="Inside"/>
+        <Sound WwiseData="true" WwiseEvent="mpb1off" Continuous="false" ViewPoint="Inside"/>
+        <Sound WwiseData="true" WwiseEvent="lswitch" Continuous="false" ViewPoint="Inside"/>
 
         <!-- AUTOPILOT =======================================================================================  -->
         <Sound WwiseData="true" WwiseEvent="autopilot_knob_push_button_on" ViewPoint="Inside"/>
