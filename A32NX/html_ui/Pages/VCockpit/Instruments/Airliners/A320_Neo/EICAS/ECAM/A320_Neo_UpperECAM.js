@@ -321,42 +321,6 @@ var A320_Neo_UpperECAM;
                 }
             }
         }
-        getAPWarning(_time) {
-            const count = _time * 1000;
-            let apwarning;
-            if (this.getCachedSimVar("AUTOPILOT MASTER", "Bool") == false) {
-                const timer = setTimeout(function () {
-                    SimVar.SetSimVarValue("L:AP_DiscWarn", "Bool", true);
-                }, count);
-                if (this.getCachedSimVar("L:AP_DiscWarn", "Bool") != true) {
-                    return true;
-                } else {
-                    clearTimeout(timer);
-                    return false;
-                }
-            } else {
-                apwarning = 0;
-                SimVar.SetSimVarValue("L:AP_DiscWarn", "Bool", false);
-            }
-        }
-        getATHRWarning(_time) {
-            const count = _time * 1000;
-            if (this.getCachedSimVar("AUTOTHROTTLE ACTIVE", "Bool") == false) {
-                SimVar.SetSimVarValue("L:ATHR_Disconnected", "Bool", true);
-                const timer = setTimeout(function () {
-                    SimVar.SetSimVarValue("L:ATHR_DiscWarn", "Bool", true);
-                }, count);
-                if (this.getCachedSimVar("L:ATHR_DiscWarn", "Bool") != true) {
-                    return true;
-                } else {
-                    clearTimeout(timer);
-                    return false;
-                }
-            } else {
-                SimVar.SetSimVarValue("L:ATHR_DiscWarn", "Bool", false);
-                SimVar.SetSimVarValue("L:ATHR_Disconnected", "Bool", false);
-            }
-        }
         init() {
             this.enginePanel = new A320_Neo_UpperECAM.EnginePanel(this, "EnginesPanel");
             this.infoTopPanel = new A320_Neo_UpperECAM.InfoTopPanel(this, "InfoTopPanel");
@@ -954,22 +918,6 @@ var A320_Neo_UpperECAM;
                         important: true,
                         isActive: () => {
                             return (this.getCachedSimVar("L:AIRLINER_FLIGHT_PHASE", "Enum") == 6) && (this.getCachedSimVar("RADIO HEIGHT", "feet") < 800);
-                        }
-                    },
-                    {
-                        message: "AP OFF",
-                        style: "fail-3",
-                        important: true,
-                        isActive: () => {
-                            return (this.getAPWarning(3) == true);
-                        }
-                    },
-                    {
-                        message: "A/THR OFF",
-                        style: "fail-2",
-                        important: true,
-                        isActive: () => {
-                            return (this.getATHRWarning(3) == true);
                         }
                     },
 
