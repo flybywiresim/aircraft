@@ -14,7 +14,7 @@
                      <Val SimVarName="FUELSYSTEM VALVE SWITCH:1" Units="boolean" />
                   </Operator>
                </TestValue>
-               <Action Copilot="True" Condition="TestValueFalse" Once="true" EventID="FUELSYSTEM_VALVE_CLOSE" EventParam="6" />
+               <Action Copilot="True" Condition="TestValueFalse" Once="true" EventID="FUELSYSTEM_VALVE_CLOSE" EventParam="1" />
                <Instrument Id="ENGINE_Switch_Master1" />
             </Test>
             <Test>
@@ -32,7 +32,7 @@
                      <Val SimVarName="FUELSYSTEM VALVE SWITCH:2" Units="boolean" />
                   </Operator>
                </TestValue>
-               <Action Copilot="True" Condition="TestValueFalse" Once="true" EventID="FUELSYSTEM_VALVE_OPEN" EventParam="7" />
+               <Action Copilot="True" Condition="TestValueFalse" Once="true" EventID="FUELSYSTEM_VALVE_OPEN" EventParam="2" />
                <Instrument Id="ENGINE_Switch_Master2" />
             </Test>
             <Test>
@@ -548,7 +548,7 @@
                      <Val SimVarName="FUELSYSTEM VALVE SWITCH:1" Units="boolean" />
                   </Operator>
                </TestValue>
-               <Action Copilot="True" Condition="TestValueFalse" Once="true" EventID="FUELSYSTEM_VALVE_CLOSE" EventParam="6" />
+               <Action Copilot="True" Condition="TestValueFalse" Once="true" EventID="FUELSYSTEM_VALVE_CLOSE" EventParam="1" />
                <Instrument Id="ENGINE_Switch_Master1" />
             </Test>
             <Test>
@@ -566,7 +566,7 @@
                      <Val SimVarName="FUELSYSTEM VALVE SWITCH:2" Units="boolean" />
                   </Operator>
                </TestValue>
-               <Action Copilot="True" Condition="TestValueFalse" Once="true" EventID="FUELSYSTEM_VALVE_OPEN" EventParam="7" />
+               <Action Copilot="True" Condition="TestValueFalse" Once="true" EventID="FUELSYSTEM_VALVE_OPEN" EventParam="2" />
                <Instrument Id="ENGINE_Switch_Master2" />
             </Test>
             <Test>
@@ -1932,7 +1932,7 @@
                      <Val SimVarName="FUELSYSTEM VALVE SWITCH:1" Units="boolean" />
                   </Operator>
                </TestValue>
-               <Action Copilot="True" Condition="TestValueFalse" Once="true" EventID="FUELSYSTEM_VALVE_CLOSE" EventParam="6" />
+               <Action Copilot="True" Condition="TestValueFalse" Once="true" EventID="FUELSYSTEM_VALVE_CLOSE" EventParam="1" />
                <Instrument Id="ENGINE_Switch_Master1" />
             </Test>
             <Test>
@@ -1950,7 +1950,7 @@
                      <Val SimVarName="FUELSYSTEM VALVE SWITCH:2" Units="boolean" />
                   </Operator>
                </TestValue>
-               <Action Copilot="True" Condition="TestValueFalse" Once="true" EventID="FUELSYSTEM_VALVE_OPEN" EventParam="7" />
+               <Action Copilot="True" Condition="TestValueFalse" Once="true" EventID="FUELSYSTEM_VALVE_OPEN" EventParam="2" />
                <Instrument Id="ENGINE_Switch_Master2" />
             </Test>
             <Test>
@@ -2217,7 +2217,7 @@
                <TestValue>
                   <Val SimVarName="FUELSYSTEM VALVE SWITCH:1" Units="boolean" />
                </TestValue>
-               <Action Copilot="True" Condition="TestValueFalse" Once="true" EventID="FUELSYSTEM_VALVE_OPEN" EventParam="6" />
+               <Action Copilot="True" Condition="TestValueFalse" Once="true" EventID="FUELSYSTEM_VALVE_OPEN" EventParam="1" />
                <Instrument Id="ENGINE_Switch_Master1" />
             </Test>
             <Test>
@@ -2237,7 +2237,7 @@
                <TestValue>
                   <Val SimVarName="FUELSYSTEM VALVE SWITCH:2" Units="boolean" />
                </TestValue>
-               <Action Copilot="True" Condition="TestValueFalse" Once="true" EventID="FUELSYSTEM_VALVE_OPEN" EventParam="7" />
+               <Action Copilot="True" Condition="TestValueFalse" Once="true" EventID="FUELSYSTEM_VALVE_OPEN" EventParam="2" />
                <Instrument Id="ENGINE_Switch_Master2" />
             </Test>
             <Test>
