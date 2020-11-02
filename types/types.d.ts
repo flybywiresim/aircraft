@@ -1810,6 +1810,24 @@ declare global {
     function RegisterFlightPlanListener(callback?: () => void): FlightPlanListener;
 }
 
+// fs-base-ui/html_ui/JS/Inputs.js
+declare global {
+    interface Inputs {
+        getInputStatus(context: any, action: any): any;
+    }
+
+    function GetInputs(): Inputs;
+
+    enum EInputStatus {
+        idle,
+        pressed,
+        down,
+        released
+    }
+
+    function GetInputStatus(context: any, action: any): any;
+}
+
 // fs-base-ui/html_ui/JS/SimPlane.js
 declare global {
     namespace Simplane {
