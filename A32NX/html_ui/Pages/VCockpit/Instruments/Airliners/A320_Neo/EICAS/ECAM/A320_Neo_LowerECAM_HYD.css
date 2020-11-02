@@ -1,0 +1,73 @@
+@import url("/CSS/A32NX_Display_Common.css");
+
+a320-neo-lower-ecam-hyd {
+    display: block;
+    position: absolute;
+    top: -3%;
+    bottom: 5%;
+    left: 0%;
+    width: 100%;
+    height: 100%;
+}
+
+
+a320-neo-lower-ecam-hyd .MainShape {
+    fill: transparent;
+    stroke: var(--displayLightGrey);
+    stroke-width: 3;
+  }
+  
+a320-neo-lower-ecam-hyd .FlowShape {
+    fill: rgba(13, 20, 35, 1);
+    stroke: var(--displayGreen);
+    stroke-width: 2;
+  }
+a320-neo-lower-ecam-hyd .Triangle {
+    fill: none;
+    stroke: var(--displayGreen);
+    stroke-width: 2;
+    stroke-miterlimit: 10;
+}
+a320-neo-lower-ecam-hyd .round {
+    fill: none;
+    stroke: var(--displayGreen);
+    stroke-width: 2;
+    stroke-miterlimit: 10;
+}
+
+a320-neo-lower-ecam-door text {
+    text-anchor: middle;
+    alignment-baseline: central;
+}
+a320-neo-lower-ecam-hyd text.Title {
+    font-size: 25px;
+    fill: var(--displayWhite);
+}
+a320-neo-lower-ecam-hyd text.Hyd {
+    font-size: 17pt;
+    fill: var(--displayWhite);
+}
+a320-neo-lower-ecam-hyd text.Psi {
+    font-size: 15pt;
+    fill: var(--displayCyan);
+}
+a320-neo-lower-ecam-hyd text.PsiValue {
+    font-size: 25px;
+    fill: var(--displayGreen);
+}
+a320-neo-lower-ecam-hyd text.Lo {
+    font-size: 21px;
+    fill: var(--displayAmber);
+}
+a320-neo-lower-ecam-hyd text.Elec {
+    font-size: 18px;
+    fill: var(--displayAmber);
+}
+a320-neo-lower-ecam-hyd text.Ovht {
+    font-size: 27px;
+    fill: var(--displayAmber);
+}
+a320-neo-lower-ecam-hyd text.Other {
+    font-size: 20px;
+    fill: var(--displayWhite);
+}

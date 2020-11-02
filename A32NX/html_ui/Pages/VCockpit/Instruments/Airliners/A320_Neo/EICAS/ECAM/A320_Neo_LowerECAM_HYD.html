@@ -1,0 +1,92 @@
+<link rel="stylesheet" href="./A320_neo_LowerECAM_HYD.css" />
+
+<script type="text/html" id="LowerECAMHYDTemplate">
+    <svg viewBox="0 0 600 600" xmlns="http://www.w3.org/2000/svg">
+        <!--add something-->
+        
+
+        <!--Left-->
+        <g id="leftHyd">
+            <polygon class="Triangle" points="90,67 109,67 100,50 90,67"/>
+            <line class="FlowShape" x1="100" y1="110" x2="100" y2="67" />
+            <line class="FlowShape" x1="100" y1="480" x2="100" y2="160" />
+        </g>
+
+        <!--Middle-->
+        <g id="MiddleHyd">
+            <polygon class="Triangle" points="290,67 309,67 300,50 290,67"/>
+            <line class="FlowShape" x1="300" y1="110" x2="300" y2="67" />
+            <line class="FlowShape" x1="300" y1="480" x2="300" y2="160" />
+        </g>
+
+        <!--Right-->
+        <g id="RightHyd">
+            <polygon class="Triangle" points="490,67 509,67 500,50 490,67"/>
+            <line class="FlowShape" x1="500" y1="110" x2="500" y2="67" />
+            <line class="FlowShape" x1="500" y1="480" x2="500" y2="160" />
+        </g>
+
+        <!--RAT-->
+        <g id="RAT">
+            <polygon class="Triangle" points="90,67 109,67 100,50 90,67"/>
+            <text id="RAT" class="Other" x="220" y="250" text-anchor="middle" alignment-baseline="central">RAT</text>
+            <path id="rightTriangle" class="Triangle" d="M265,250 l-18,-10 l0,20Z"></path>
+            <line class="FlowShape" x1="266" y1="250" x2="300" y2="250" />
+        </g>
+
+        <!--PTU-->
+        <g id="PTU">
+            <line class="FlowShape" x1="500" y1="185" x2="447" y2="185" />
+            <path id="leftTriangle1" class="Triangle" d="M430,185 l18,-10 l0,20Z"></path>
+            <line class="FlowShape" x1="350" y1="185" x2="325" y2="185" />
+            <path id="leftTriangle2" class="Triangle" d="M350,185 l18,-10 l0,20Z"></path>
+            <path class="round" d="M 275 184 c 10 30 41 30 51 0"/>
+            <line class="FlowShape" x1="275" y1="185" x2="210" y2="185" />
+            <path id="leftTriangle3" class="Triangle" d="M193,185 l18,-10 l0,20Z"></path>
+            <line class="FlowShape" x1="193" y1="185" x2="100" y2="185" />
+            <text id="RAT" class="Other" x="400" y="185" text-anchor="middle" alignment-baseline="central">PTU</text>
+        </g>
+
+        <!--ELEC OVHT-->
+        <line class="FlowShape" x1="520" y1="233" x2="500" y2="233" />
+        <path id="leftTriangleElec" class="Triangle" d="M520,233 l18,-10 l0,20Z"></path>
+        <text id="ELEC1" class="Elec" x="567" y="220" text-anchor="middle" alignment-baseline="central">ELEC</text>
+        <text id="OVHT1" class="Elec" x="567" y="245" text-anchor="middle" alignment-baseline="central">OVHT</text>
+
+        <text id="ELEC2" class="Elec" x="350" y="280" text-anchor="middle" alignment-baseline="central">ELEC</text>
+        <text id="OVHT2" class="Elec" x="350" y="305" text-anchor="middle" alignment-baseline="central">OVHT</text>
+
+
+        <!-- Texts -->
+        <g id="texts">
+            <text id="PageTitle" class="Title Large" x="200" y="10" text-anchor="middle" alignment-baseline="central" text-decoration="underline">HYD</text>
+
+            <text id="HydGreen" class="Hyd" x="100" y="30" text-anchor="middle" alignment-baseline="central">GREEN</text>
+            <text id="HydBlue" class="Hyd" x="300" y="30" text-anchor="middle" alignment-baseline="central">BLUE</text>
+            <text id="HydYellow" class="Hyd" x="500" y="30" text-anchor="middle" alignment-baseline="central">YELLOW</text>
+
+            <text id="GreenPsi" class="PsiValue" x="100" y="130" text-anchor="middle" alignment-baseline="central">3000</text>
+            <text id="BluePsi" class="PsiValue" x="300" y="130" text-anchor="middle" alignment-baseline="central">3000</text>
+            <text id="YellowPsi" class="PsiValue" x="500" y="130" text-anchor="middle" alignment-baseline="central">3000</text>
+
+            <text id="Psi1" class="Psi" x="200" y="130" text-anchor="middle" alignment-baseline="central">PSI</text>
+            <text id="Psi2" class="Psi" x="400" y="130" text-anchor="middle" alignment-baseline="central">PSI</text>
+
+            <text id="LOAIR1" class="Lo" x="150" y="405" text-anchor="middle" alignment-baseline="central">LO AIR</text>
+            <text id="PRESS1" class="Lo" x="150" y="435" text-anchor="middle" alignment-baseline="central">PRESS</text>
+
+            <text id="LOAIR2" class="Lo" x="350" y="405" text-anchor="middle" alignment-baseline="central">LO AIR</text>
+            <text id="PRESS2" class="Lo" x="350" y="435" text-anchor="middle" alignment-baseline="central">PRESS</text>
+
+            <text id="LOAIR3" class="Lo" x="550" y="405" text-anchor="middle" alignment-baseline="central">LO AIR</text>
+            <text id="PRESS3" class="Lo" x="550" y="435" text-anchor="middle" alignment-baseline="central">PRESS</text>
+
+            <text id="OVHT1" class="Ovht" x="150" y="480" text-anchor="middle" alignment-baseline="central">OVHT</text>
+            <text id="OVHT2" class="Ovht" x="350" y="480" text-anchor="middle" alignment-baseline="central">OVHT</text>
+            <text id="OVHT3" class="Ovht" x="550" y="480" text-anchor="middle" alignment-baseline="central">OVHT</text>
+            
+        </g>
+    </svg>
+</script>
+
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/A320_Neo/EICAS/ECAM/A320_Neo_LowerECAM_HYD.js"></script>
