@@ -110,7 +110,7 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
             bg.setAttribute("y", _top.toString());
             bg.setAttribute("width", _width.toString());
             bg.setAttribute("height", _height.toString());
-            bg.setAttribute("fill", "#6B798A");
+            bg.setAttribute("fill", "#343B51");
             bg.setAttribute("stroke-width", "3");
             this.centerSVG.appendChild(bg);
 
@@ -282,11 +282,11 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
                 integralsGroup.setAttribute("viewBox", "0 0 " + cursorWidth + " " + cursorHeight);
                 this.cursorSVG.appendChild(integralsGroup);
                 {
-                    this.cursorIntegrals[0].construct(integralsGroup, 1, _cursorPosY + 4, _width, "ECAMFontRegular", this.fontSize * 3.5, "lime");
-                    this.cursorIntegrals[1].construct(integralsGroup, 52, _cursorPosY + 4, _width, "ECAMFontRegular", this.fontSize * 3.5, "lime");
-                    this.cursorIntegrals[2].construct(integralsGroup, 103, _cursorPosY + 4, _width, "ECAMFontRegular", this.fontSize * 3.5, "lime");
+                    this.cursorIntegrals[0].construct(integralsGroup, 1, _cursorPosY + 4, _width, "ECAMFontRegular", this.fontSize * 3.5, "rgb(36,255,0)");
+                    this.cursorIntegrals[1].construct(integralsGroup, 52, _cursorPosY + 4, _width, "ECAMFontRegular", this.fontSize * 3.5, "rgb(36,255,0)");
+                    this.cursorIntegrals[2].construct(integralsGroup, 103, _cursorPosY + 4, _width, "ECAMFontRegular", this.fontSize * 3.5, "rgb(36,255,0)");
                 }
-                this.cursorDecimals.construct(this.cursorSVG, 114, _cursorPosY - 2, _width, "ECAMFontRegular", this.fontSize * 1.15, "lime");
+                this.cursorDecimals.construct(this.cursorSVG, 114, _cursorPosY - 2, _width, "ECAMFontRegular", this.fontSize * 1.15, "rgb(36,255,0)");
             }
             this.centerSVG.appendChild(this.cursorSVG);
             if (!this.targetAltitudeText) {
@@ -461,7 +461,7 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
             if (this.mtrsSelectedGroup) {
                 const APMode = this.getAutopilotMode();
                 const meters = Math.round(_selected * 0.3048);
-                this.mtrsSelectedGroup.style.color = (APMode == AutopilotMode.SELECTED) ? "cyan" : "#FF94FF";
+                this.mtrsSelectedGroup.style.color = (APMode == AutopilotMode.SELECTED) ? "cyan" : "magenta";
                 this.mtrsSelectedGroup.textContent = meters.toString() + "M";
             }
             if (this.mtrsCursorGroup) {
@@ -703,14 +703,14 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
                     this.targetAltitudeText.style.top = "718px";
                     this.targetAltitudeText.style.left = "85px";
                     this.targetAltitudeText.style.display = "block";
-                    this.targetAltitudeText.style.color = (APMode == AutopilotMode.SELECTED) ? "cyan" : "#FF94FF";
+                    this.targetAltitudeText.style.color = (APMode == AutopilotMode.SELECTED) ? "cyan" : "magenta";
                     this.targetAltitudeIndicatorSVG.setAttribute("visibility", "hidden");
                 } else if (deltaAltitude > 650) {
                     this.targetAltitudeText.textContent = textContent;
                     this.targetAltitudeText.style.top = "-16px";
                     this.targetAltitudeText.style.left = "85px";
                     this.targetAltitudeText.style.display = "block";
-                    this.targetAltitudeText.style.color = (APMode == AutopilotMode.SELECTED) ? "cyan" : "#FF94FF";
+                    this.targetAltitudeText.style.color = (APMode == AutopilotMode.SELECTED) ? "cyan" : "magenta";
                     this.targetAltitudeIndicatorSVG.setAttribute("visibility", "hidden");
                 } else {
                     this.targetAltitudeText.style.display = "none";
@@ -718,14 +718,14 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
                     offsetY -= 51;
                     this.targetAltitudeIndicatorSVG.setAttribute("y", offsetY.toString());
                     this.targetAltitudeIndicatorSVG.setAttribute("visibility", "visible");
-                    this.targetAltitudeIndicatorSVGShape.setAttribute("stroke", (APMode == AutopilotMode.SELECTED) ? "cyan" : "#FF94FF");
+                    this.targetAltitudeIndicatorSVGShape.setAttribute("stroke", (APMode == AutopilotMode.SELECTED) ? "cyan" : "magenta");
                     if (this.targetAltitudeIndicatorSVGText) {
                         if (targetAltitude >= 10) {
                             this.targetAltitudeIndicatorSVGText.textContent = targetAltitude.toFixed(0);
                         } else {
                             this.targetAltitudeIndicatorSVGText.textContent = "100";
                         }
-                        this.targetAltitudeIndicatorSVGText.setAttribute("fill", (APMode == AutopilotMode.SELECTED) ? "cyan" : "#FF94FF");
+                        this.targetAltitudeIndicatorSVGText.setAttribute("fill", (APMode == AutopilotMode.SELECTED) ? "cyan" : "magenta");
                     }
                 }
                 hudAltitude = targetAltitude;

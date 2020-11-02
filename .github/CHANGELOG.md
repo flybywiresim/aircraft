@@ -5,8 +5,6 @@
 <!--  1. [Changed Area] Title of changes - @github username (Name)  -->
 
 ## 0.5.0
-1. [PFD] Updated color codes to preset colors - @MisterChocker (Leon)
-1. [PFD] Changed gray background color - @MisterChocker (Leon)
 1. [PFD] General improvements to the display layout - @MisterChocker (Leon)
 1. [PFD] Added proper selected and managed speed indication - @MisterChocker (Leon)
 1. [PFD] Added V1 indication - @MisterChocker (Leon)
