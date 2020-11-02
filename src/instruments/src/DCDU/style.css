@@ -12,21 +12,25 @@
   font-style: normal;
 }
 
-#dcdu {
+.dcdu-lines {
   position: absolute;
   left: 10px !important;
   top: 10px !important;
   width: 492px;
   height: 364px;
 
-  background: radial-gradient(ellipse at center, rgba(13, 20, 35, 1) 0%, rgb(13, 20, 35) 100%);
+  background: radial-gradient(
+    ellipse at center,
+    rgba(13, 20, 35, 1) 0%,
+    rgb(13, 20, 35) 100%
+  );
 
   visibility: visible !important;
 
   font-family: Roboto;
 }
 
-#dcdu path {
+.dcdu-lines path {
   stroke: white;
   stroke-width: 3;
 }
@@ -38,9 +42,11 @@
   width: 492px;
   height: 364px;
 
-  background: radial-gradient(ellipse at center, rgba(13, 20, 35, 1) 0%, rgb(13, 20, 35) 100%);
-
-  visibility: hidden;
+  background: radial-gradient(
+    ellipse at center,
+    rgba(13, 20, 35, 1) 0%,
+    rgb(13, 20, 35) 100%
+  );
 }
 
 .text-wrapper text {
@@ -50,7 +56,7 @@
   font-family: Roboto-Light;
 }
 
-#inop-wrapper {
+.inop-wrapper {
   position: absolute;
   left: 10px !important;
   top: 10px !important;
@@ -60,15 +66,7 @@
   visibility: hidden;
 }
 
-#waiting-for-data-wrapper {
-  z-index: 90;
-}
-
-#self-test-wrapper {
-  z-index: 100;
-}
-
-#inop-wrapper text {
+.inop-wrapper text {
   fill: white;
   font-size: 36px;
   text-anchor: middle;

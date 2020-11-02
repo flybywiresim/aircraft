@@ -34,7 +34,7 @@ The master branch only contains files which have been modified from the original
 
 ## Committing changes
 
-After making any changes to files inside the `A32NX` directory, ensure you run the `build.py` script to regenerate the `layout.json` as necessary. There's also a CI check to ensure this has been done.
+After making any changes to files inside the `A32NX` or `src` directories, ensure you run the `npm run build` to regenerate the `layout.json` as necessary. There's also a CI check to ensure this has been done.
 
 ## Helping others
 
