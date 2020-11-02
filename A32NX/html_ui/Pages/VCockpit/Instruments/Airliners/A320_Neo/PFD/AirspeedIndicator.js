@@ -1004,6 +1004,28 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
             }
         }
     }
+    getFlapApproachSpeed() {
+        const dWeight = SimVar.GetSimVarValue("TOTAL WEIGHT", "kilograms") / 1000;
+        switch (true) {
+            case (dWeight <= 50): return 131;
+            case (dWeight <= 55): return Math.ceil(131 + 1.2 * (dWeight - 50));
+            case (dWeight <= 60): return Math.ceil(137 + 1.4 * (dWeight - 55));
+            case (dWeight <= 65): return Math.ceil(144 + dWeight - 60);
+            case (dWeight <= 70): return Math.ceil(149 + 1.2 * (dWeight - 65));
+            case (dWeight <= 75): return Math.ceil(155 + dWeight - 70);
+            default: return Math.ceil(160 + 1.20 * (dWeight - 75));
+        }
+    }
+    getSlatApproachSpeed() {
+        const dWeight = SimVar.GetSimVarValue("TOTAL WEIGHT", "kilograms") / 1000;
+        switch (true) {
+            case (dWeight <= 45): return Math.ceil(152 + 1.8 * (dWeight - 40));
+            case (dWeight <= 50): return Math.ceil(161 + 1.6 * (dWeight - 45));
+            case (dWeight <= 55): return Math.ceil(169 + 1.8 * (dWeight - 50));
+            case (dWeight <= 60): return Math.ceil(178 + 1.6 * (dWeight - 55));
+            default: return Math.ceil(186 + 1.4 * (dWeight - 60));
+        }
+    }
     updateMarkerF(_marker, currentAirspeed) {
         let hideMarker = true;
         const phase = Simplane.getCurrentFlightPhase();
@@ -1013,11 +1035,7 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
             if (phase == FlightPhase.FLIGHT_PHASE_TAKEOFF || phase == FlightPhase.FLIGHT_PHASE_CLIMB || phase == FlightPhase.FLIGHT_PHASE_GOAROUND) {
                 flapSpeed = Simplane.getStallSpeedPredicted(flapsHandleIndex - 1) * 1.26;
             } else if (phase == FlightPhase.FLIGHT_PHASE_DESCENT || phase == FlightPhase.FLIGHT_PHASE_APPROACH) {
-                if (flapsHandleIndex == 2) {
-                    flapSpeed = Simplane.getStallSpeedPredicted(flapsHandleIndex + 1) * 1.47;
-                } else {
-                    flapSpeed = Simplane.getStallSpeedPredicted(flapsHandleIndex + 1) * 1.36;
-                }
+                flapSpeed = this.getFlapApproachSpeed();
             }
             if (flapSpeed >= 60) {
                 const posY = this.valueToSvg(currentAirspeed, flapSpeed);
@@ -1039,7 +1057,7 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
             if (phase == FlightPhase.FLIGHT_PHASE_TAKEOFF || phase == FlightPhase.FLIGHT_PHASE_CLIMB || phase == FlightPhase.FLIGHT_PHASE_GOAROUND) {
                 slatSpeed = Simplane.getStallSpeedPredicted(flapsHandleIndex - 1) * 1.25;
             } else if (phase == FlightPhase.FLIGHT_PHASE_DESCENT || phase == FlightPhase.FLIGHT_PHASE_APPROACH) {
-                slatSpeed = Simplane.getStallSpeedPredicted(flapsHandleIndex + 1) * 1.23;
+                slatSpeed = this.getSlatApproachSpeed();
             }
             if (slatSpeed >= 60) {
                 const posY = this.valueToSvg(currentAirspeed, slatSpeed);
