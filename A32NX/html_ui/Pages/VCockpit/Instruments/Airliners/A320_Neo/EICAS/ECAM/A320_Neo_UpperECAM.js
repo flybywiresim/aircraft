@@ -1597,16 +1597,12 @@ var A320_Neo_UpperECAM;
         getN1GaugeValue() {
             const engineId = (this.index + 1);
             const value = SimVar.GetSimVarValue("ENG N1 RPM:" + engineId, "percent");
-            //console.log("N1 rpm is " + value);
             const throttle = this.deltaThrottlePosition;
             const currentThrottlePosition = this.getThrottlePosition(this.index);
             this.deltaThrottlePosition = currentThrottlePosition;
-            //console.log("Throttle is " + this.deltaThrottlePosition);
             if (value < A320_Neo_UpperECAM.Definitions.MIN_GAUGE_N1 || currentThrottlePosition > value) {
-                //console.log("Value less than min for engine or throttle is higher " + engineId);
                 return value;
             } else if (value > this.getThrottlePosition(this.index)) {
-                //console.log("Value > throttle for engine " + engineId);
                 return (currentThrottlePosition > A320_Neo_UpperECAM.Definitions.MIN_GAUGE_N1) ? currentThrottlePosition : A320_Neo_UpperECAM.Definitions.MIN_GAUGE_N1;
             } else if (currentThrottlePosition > throttle && value < currentThrottlePosition) {
                 return value;
