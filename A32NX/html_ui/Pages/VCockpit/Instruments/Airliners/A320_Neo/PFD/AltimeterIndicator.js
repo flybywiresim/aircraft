@@ -459,9 +459,8 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
     updateMtrs(_altitude, _selected) {
         if (this.mtrsVisible) {
             if (this.mtrsSelectedGroup) {
-                const APMode = this.getAutopilotMode();
                 const meters = Math.round(_selected * 0.3048);
-                this.mtrsSelectedGroup.style.color = (APMode == AutopilotMode.SELECTED) ? "cyan" : "magenta";
+                this.mtrsSelectedGroup.style.color = this.getAutopilotMode() ? "cyan" : "magenta";
                 this.mtrsSelectedGroup.textContent = meters.toString() + "M";
             }
             if (this.mtrsCursorGroup) {
@@ -626,23 +625,24 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
             }
         }
     }
+    /**
+     * @returns {boolean} True: Selected Mode, False: Managed Mode
+     */
     getAutopilotMode() {
         if (this.aircraft == Aircraft.A320_NEO) {
             if (Simplane.getAutoPilotAltitudeManaged() && SimVar.GetSimVarValue("L:AP_CURRENT_TARGET_ALTITUDE_IS_CONSTRAINT", "number") != 0) {
-                return AutopilotMode.MANAGED;
+                return false;
             }
-            return AutopilotMode.SELECTED;
-        } else {
-            return AutopilotMode.SELECTED;
         }
+        return true;
     }
     updateTargetAltitude(currentAltitude, targetAltitude, baroMode) {
         let hudAltitude = 0;
         if (this.targetAltitudeIndicatorSVG) {
-            const APMode = this.getAutopilotMode();
+            const APModeSelected = this.getAutopilotMode();
             const stdMode = (baroMode == "STD") ? true : false;
             if (this.aircraft == Aircraft.CJ4 || this.aircraft == Aircraft.B747_8 || this.aircraft == Aircraft.AS01B) {
-                if (APMode != AutopilotMode.MANAGED) {
+                if (APModeSelected) {
                     let divider = 100;
                     let refDelta = 275;
                     let textAlwaysVisible = false;
@@ -692,7 +692,7 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
                 }
             } else if (this.aircraft == Aircraft.A320_NEO) {
                 let textContent;
-                if (APMode !== AutopilotMode.SELECTED) {
+                if (!APModeSelected) {
                     const cstnAlt = SimVar.GetSimVarValue("L:A32NX_AP_CSTN_ALT", "feet");
                     if (isFinite(cstnAlt)) {
                         targetAltitude = cstnAlt;
@@ -709,14 +709,14 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
                     this.targetAltitudeText.style.top = "718px";
                     this.targetAltitudeText.style.left = "85px";
                     this.targetAltitudeText.style.display = "block";
-                    this.targetAltitudeText.style.color = (APMode == AutopilotMode.SELECTED) ? "cyan" : "magenta";
+                    this.targetAltitudeText.style.color = APModeSelected ? "cyan" : "magenta";
                     this.targetAltitudeIndicatorSVG.setAttribute("visibility", "hidden");
                 } else if (deltaAltitude > 650) {
                     this.targetAltitudeText.textContent = textContent;
                     this.targetAltitudeText.style.top = "-16px";
                     this.targetAltitudeText.style.left = "85px";
                     this.targetAltitudeText.style.display = "block";
-                    this.targetAltitudeText.style.color = (APMode == AutopilotMode.SELECTED) ? "cyan" : "magenta";
+                    this.targetAltitudeText.style.color = APModeSelected ? "cyan" : "magenta";
                     this.targetAltitudeIndicatorSVG.setAttribute("visibility", "hidden");
                 } else {
                     this.targetAltitudeText.style.display = "none";
@@ -724,14 +724,14 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
                     offsetY -= 51;
                     this.targetAltitudeIndicatorSVG.setAttribute("y", offsetY.toString());
                     this.targetAltitudeIndicatorSVG.setAttribute("visibility", "visible");
-                    this.targetAltitudeIndicatorSVGShape.setAttribute("stroke", (APMode == AutopilotMode.SELECTED) ? "cyan" : "magenta");
+                    this.targetAltitudeIndicatorSVGShape.setAttribute("stroke", APModeSelected ? "cyan" : "magenta");
                     if (this.targetAltitudeIndicatorSVGText) {
                         if (targetAltitude >= 10) {
                             this.targetAltitudeIndicatorSVGText.textContent = targetAltitude.toFixed(0);
                         } else {
                             this.targetAltitudeIndicatorSVGText.textContent = "100";
                         }
-                        this.targetAltitudeIndicatorSVGText.setAttribute("fill", (APMode == AutopilotMode.SELECTED) ? "cyan" : "magenta");
+                        this.targetAltitudeIndicatorSVGText.setAttribute("fill", APModeSelected ? "cyan" : "magenta");
                     }
                 }
                 hudAltitude = targetAltitude;
