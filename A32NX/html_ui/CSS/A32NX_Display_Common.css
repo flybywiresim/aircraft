@@ -1,150 +1,150 @@
 @font-face {
-    font-family: "ECAMFontRegular";
-    src: url("/Fonts/ECAMFontRegular.ttf") format("truetype");
-    font-weight: normal;
-    font-style: normal;
+  font-family: "ECAMFontRegular";
+  src: url("/Fonts/ECAMFontRegular.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
 }
 
 :root {
-    --displayBackground: rgba(13,20,35,1);
-    --displaySeparator: #3C3C3C;
-    --displaySeparatorLight: #AAAAAA;
+  --displayBackground: rgba(13, 20, 35, 1);
+  --displaySeparator: #3c3c3c;
+  --displaySeparatorLight: #aaaaaa;
 
-    --displayWhite: #FFFFFF;
-    --displayGrey: #787878;
-    --displayDarkGrey: #b3b3b3;
-    --displayLightGrey: lightgray;
-    --displayAmber: #E68000;
-    --displayCyan: #00BFD9;
-    --displayGreen: #00E64D;
-    --displayMagenta: #FF6EFF;
-    --displayRed: #FF0000;
-    --displayYellow: #FFFF00;
+  --displayWhite: #ffffff;
+  --displayGrey: #787878;
+  --displayDarkGrey: #b3b3b3;
+  --displayLightGrey: lightgray;
+  --displayAmber: #e68000;
+  --displayCyan: #00bfd9;
+  --displayGreen: #00e64d;
+  --displayMagenta: #ff6eff;
+  --displayRed: #ff0000;
+  --displayYellow: #ffff00;
 
-    --mcduWhite: #FFFFFF;
-    --mcduGrey: #787878;
-    --mcduGreen: #00FF00;
-    --mcduAmber: #E68000;
-    --mcduBlue: #00FFFF;
-    --mcduYellow: #FFFF00;
-    --mcduRed: #FF9A00;
-    --mcduMagenta: #F800CC;
+  --mcduWhite: #ffffff;
+  --mcduGrey: #787878;
+  --mcduGreen: #00ff00;
+  --mcduAmber: #e68000;
+  --mcduBlue: #00ffff;
+  --mcduYellow: #ffff00;
+  --mcduRed: #ff9a00;
+  --mcduMagenta: #f800cc;
 }
 
 div {
-    font-family: "ECAMFontRegular" !important;
+  font-family: "ECAMFontRegular" !important;
 }
 
 text {
-    font-family: "ECAMFontRegular" !important;
+  font-family: "ECAMFontRegular" !important;
 }
 
 .Separator {
-    stroke: var(--displaySeparator);
-    stroke-width: 4;
-    fill: none;
+  stroke: var(--displaySeparator);
+  stroke-width: 4;
+  fill: none;
 }
 
 /* change from PageTitle */
 .PageTitle {
-    fill: var(--displayWhite);
-    font-size: 25px;
-    text-decoration: underline;
+  fill: var(--displayWhite);
+  font-size: 25px;
+  text-decoration: underline;
 }
 #PageTitle {
-    fill: var(--displayWhite);
-    font-size: 25px;
-    text-decoration: underline;
+  fill: var(--displayWhite);
+  font-size: 25px;
+  text-decoration: underline;
 }
 .ECAMTitle {
-    fill: var(--displayWhite);
-    font-size: 25px;
-    text-decoration: underline;
+  fill: var(--displayWhite);
+  font-size: 25px;
+  text-decoration: underline;
 }
 
 .normalText {
-    fill: var(--displayWhite);
+  fill: var(--displayWhite);
 }
 .unitText {
-    fill: var(--displayCyan);
+  fill: var(--displayCyan);
 }
 .valueText {
-    fill: var(--displayGreen);
+  fill: var(--displayGreen);
 }
 .warningText {
-    fill: var(--displayAmber);
+  fill: var(--displayAmber);
 }
 .dangerText {
-    fill: var(--displayRed);
+  fill: var(--displayRed);
 }
 
 .text-xs {
-    font-size: 14px;
+  font-size: 14px;
 }
 .text-s {
-    font-size: 16px;
+  font-size: 16px;
 }
 .text-m {
-    font-size: 18px;
+  font-size: 18px;
 }
 .text-l {
-    font-size: 20px;
+  font-size: 20px;
 }
 .text-xl {
-    font-size: 22px;
+  font-size: 22px;
 }
 .text-xxl {
-    font-size: 24px;
+  font-size: 24px;
 }
 
 .greenShapeFill {
-    stroke: var(--displayGreen);
-    fill: var(--displayGreen);
+  stroke: var(--displayGreen);
+  fill: var(--displayGreen);
 }
 .amberShapeFill {
-    stroke: var(--displayAmber);
-    fill: var(--displayAmber);
+  stroke: var(--displayAmber);
+  fill: var(--displayAmber);
 }
 .redShapeFill {
-    stroke: var(--displayRed);
-    fill: var(--displayRed);
+  stroke: var(--displayRed);
+  fill: var(--displayRed);
 }
 .greyShapeFill {
-    stroke: var(--displayGrey);
-    fill: var(--displayGrey);
+  stroke: var(--displayGrey);
+  fill: var(--displayGrey);
 }
 .greenShapeOutline {
-    stroke: var(--displayGreen);
-    fill: none;
+  stroke: var(--displayGreen);
+  fill: none;
 }
 .amberShapeOutline {
-    stroke: var(--displayAmber);
-    fill: none;
+  stroke: var(--displayAmber);
+  fill: none;
 }
 .redShapeOutline {
-    stroke: var(--displayRed);
-    fill: none;
+  stroke: var(--displayRed);
+  fill: none;
 }
 .greyShapeOutline {
-    stroke: var(--displayGrey);
-    fill: none;
+  stroke: var(--displayGrey);
+  fill: none;
 }
 
 :root strokeExtraThin {
-    stroke-width: 1px;
+  stroke-width: 1px;
 }
 :root strokeThin {
-    stroke-width: 2px;
+  stroke-width: 2px;
 }
 :root strokeRegular {
-    stroke-width: 3px;
+  stroke-width: 3px;
 }
 :root strokeThick {
-    stroke-width: 4px;
+  stroke-width: 4px;
 }
 :root strokeExtraThick {
-    stroke-width: 5px;
+  stroke-width: 5px;
 }
 :root strokeSuperThick {
-    stroke-width: 6px;
+  stroke-width: 6px;
 }
