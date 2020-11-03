@@ -7,6 +7,7 @@
 /A32NX/manifest.json
 !/docs/**
 !/src/**
+!/types/**
 !.gitignore
 !CODEOWNERS
 !package.json
