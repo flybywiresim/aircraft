@@ -692,6 +692,12 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
                 }
             } else if (this.aircraft == Aircraft.A320_NEO) {
                 let textContent;
+                if (APMode !== AutopilotMode.SELECTED) {
+                    const cstnAlt = SimVar.GetSimVarValue("L:A32NX_AP_CSTN_ALT", "feet");
+                    if (isFinite(cstnAlt)) {
+                        targetAltitude = cstnAlt;
+                    }
+                }
                 if (stdMode && targetAltitude >= 1000) {
                     textContent = "FL" + Math.abs(targetAltitude / 100).toString();
                 } else {
