@@ -4,9 +4,9 @@
     {
       "label": "Build",
       "type": "shell",
-      "command": "python build.py",
+      "command": "npm run build",
       "options": {
-        "cwd": "${workspaceFolder}/A32NX"
+        "cwd": "${workspaceFolder}"
       },
       "problemMatcher": [],
       "group": {

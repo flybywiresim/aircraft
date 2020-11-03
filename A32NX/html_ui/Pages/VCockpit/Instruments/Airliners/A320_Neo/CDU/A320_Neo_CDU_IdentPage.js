@@ -1,15 +1,16 @@
 class CDUIdentPage {
     static ShowPage(mcdu) {
+        const date = mcdu.getNavDataDateRange();
         mcdu.clearDisplay();
         mcdu.activeSystem = 'FMGC';
         mcdu.setTemplate([
-            ["A320-200"],
-            [" ENG"],
-            ["LEAP-1A26[color]green"],
-            ["", "", " ACTIVE NAV DATA BASE"],
-            [" 8OCT-5NOV[color]blue", "TC11103001[color]green"],
-            ["", "", " SECOND NAV DATA BASE"],
-            ["{8OCT-5NOV[s-text][color]blue"],
+            ["A320"],
+            ["ENG"],
+            ["LEAP A-1[color]green"],
+            ["", "", "ACTIVE NAV DATA BASE"],
+            [date + "[color]blue", "AIRAC"],
+            ["", "", "SECOND NAV DATA BASE"],
+            ["{" + date + "4MAY-4JUL[color]blue"],
             [""],
             [""],
             ["CHG CODE"],
@@ -19,3 +20,4 @@ class CDUIdentPage {
         ]);
     }
 }
+//# sourceMappingURL=A320_Neo_CDU_IdentPage.js.map
