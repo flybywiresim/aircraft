@@ -5,6 +5,10 @@
 <!--  1. [Changed Area] Title of changes - @github username (Name)  -->
 
 ## 0.5.0
+1. [PFD] General improvements to the display layout - @MisterChocker (Leon)
+1. [PFD] Added proper selected and managed speed indication - @MisterChocker (Leon)
+1. [PFD] Added V1 indication - @MisterChocker (Leon)
+1. [PFD] Added proper speed bug behaviour when outside range (approach phase) - @MisterChocker (Leon)
 1. [ECAM] Fixed thrust rating mode START in flight misbehavior - @MisterChocker (Leon)
 1. [CDU] Fixed wrong VLS calculation - @MisterChocker (Leon)
 1. [PFD] Fixed wrong managed speed calculation on approach  - @MisterChocker (Leon)
@@ -38,6 +42,10 @@
 1. [CDU] Add ability to clear MDA/DH and add input logic for both MDA/DH - @paul92ilm (Lussion)
 1. [CHECKLISTS] Fix FD check in Taxi checklist - @Acrobot (Andrzej Pomirski)
 1. [ADIRS] Fix ADIRS lights and split into three separate units - @devsnek (devsnek#0001)
+1. [CDU] Fix MCDU not loading when starting midair - @ThatRedMelon (Daniel Brown)
+1. [FCU] Clamp the selected altitude between 100 and 49000 - @lars-reimann (Lars Reimann)
+1. [TEXTURES] added Registry plaque and improved Textures - @Pleasure0102 (Pleasure)
+1. [GPWS] Add minimums and 100above logic - @linkeleven (linkeleven#2557)
 
 ## 0.4.0
 1. [General] Add CHANGELOG.md - @nathaninnes (Nathan Innes)
