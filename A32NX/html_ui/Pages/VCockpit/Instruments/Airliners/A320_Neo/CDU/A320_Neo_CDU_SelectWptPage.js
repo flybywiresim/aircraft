@@ -12,7 +12,9 @@ class A320_Neo_CDU_SelectWptPage {
             [""],
             [""],
             [""],
-            [""]
+            [""],
+            [""],
+            ["<RETURN"]
         ];
         for (let i = 0; i < 5; i++) {
             const w = waypoints[i + 5 * page];
@@ -44,6 +46,9 @@ class A320_Neo_CDU_SelectWptPage {
                 };
                 mcdu.onRightInput[i] = () => {
                     callback(w);
+                };
+                mcdu.onLeftInput[5] = () => {
+                    CDUFlightPlanPage.ShowPage(mcdu, 0);
                 };
             }
         }
