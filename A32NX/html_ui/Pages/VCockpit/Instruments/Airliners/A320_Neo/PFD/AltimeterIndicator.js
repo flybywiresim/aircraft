@@ -117,9 +117,9 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
             const topLine = document.createElementNS(Avionics.SVG.NS, "line");
             this.topLine = topLine;
             topLine.setAttribute("x1", _left.toString());
-            topLine.setAttribute("y1", (_top + 2).toString());
+            topLine.setAttribute("y1", (_top).toString());
             topLine.setAttribute("x2", (_left + _width + arcWidth).toString());
-            topLine.setAttribute("y2", (_top + 2).toString());
+            topLine.setAttribute("y2", (_top).toString());
             topLine.setAttribute("stroke", "white");
             topLine.setAttribute("stroke-width", "3");
             this.centerSVG.appendChild(topLine);
