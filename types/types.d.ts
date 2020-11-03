@@ -17,7 +17,24 @@ type NauticalMiles = number;
 type Heading = number;
 type Latitude = number;
 type Longitude = number;
-type Altitude = number;
+type Feet = number;
+type Knots = number;
+type FeetPerMinute = number;
+type Mach = number;
+type Degrees = number;
+type Seconds = number;
+type Percent = number;
+type Radians = number;
+type RotationsPerMinute = number;
+type Angl16 = number;
+type RadiansPerSecond = number;
+type PercentOver100 = number;
+type Gallons = number;
+type Kilograms = number;
+type Celcius = number;
+type InchesOfMercury = number;
+type Millibar = number;
+type PressurePerSquareInch = number;
 
 type VarUnit = NumberVarUnit | TextVarUnit | LatLongAltVarUnit | LatLongAltPBHVarUnit
     | PitchBankHeadingVarUnit | PID_STRUCTVarUnit | XYZVarUnit;
@@ -1903,41 +1920,6 @@ declare global {
 
 // fs-base-ui/html_ui/JS/SimPlane.js
 declare global {
-    namespace Simplane {
-        function getDesignSpeeds(): DesignSpeeds;
-        function getCurrentFlightPhase(): FlightPhase
-
-        function getVerticalSpeed(): number
-        function getAltitude(): number
-        function getAltitudeAboveGround(): number
-        function getHeadingMagnetic(): number
-
-        function getIsGrounded(): boolean
-
-        function getTotalAirTemperature(): number
-        function getAmbientTemperature(): number
-
-        function getPressureSelectedMode(_aircraft: Aircraft): string
-        function getPressureSelectedUnits(): string
-        function getPressureValue(_units?: string): number
-
-        function getAutoPilotDisplayedAltitudeLockValue(_units?: string): number
-        function getAutoPilotAirspeedManaged(): boolean
-        function getAutoPilotHeadingManaged(): boolean
-        function getAutoPilotAltitudeManaged(): boolean
-
-        function getAutoPilotMachModeActive(): number
-        function getEngineActive(_engineIndex: number): number
-        function getEngineThrottle(_engineIndex: number): number
-        function getEngineThrottleMaxThrust(_engineIndex: number): number
-        function getEngineThrottleMode(_engineIndex: number): number
-        function getEngineCommandedN1(_engineIndex: number): number
-        function getFlexTemperature(): number
-
-        //Seems to implement caching behaviour, can be overridden with forceSimVarCall
-        function getFlapsHandleIndex(forceSimVarCall?: boolean): number
-    }
-
     class GlassCockpitSettings {
         FuelFlow:                ColorRangeDisplay;
         FuelQuantity:            ColorRangeDisplay2;
@@ -2022,35 +2004,40 @@ declare global {
     }
 
     class DesignSpeeds {
-        VS0: number;
-        VS1: number;
-        VFe: number;
-        VNe: number;
-        VNo: number;
-        VMin: number;
-        VMax: number;
-        Vr: number;
-        Vx: number;
-        Vy: number;
-        Vapp: number;
-        BestGlide: number;
+        VS0: Knots | null;
+        VS1: Knots | null;
+        VFe: Knots | null;
+        VNe: Knots | null;
+        VNo: Knots | null;
+        VMin: Knots | null;
+        VMax: Knots | null;
+        Vr: Knots | null;
+        Vx: Knots | null;
+        Vy: Knots | null;
+        Vapp: Knots | null;
+        BestGlide: Knots | null;
     }
 
-    enum FlightPhase {
-        FLIGHT_PHASE_PREFLIGHT,
-        FLIGHT_PHASE_TAXI,
-        FLIGHT_PHASE_TAKEOFF,
-        FLIGHT_PHASE_CLIMB,
-        FLIGHT_PHASE_CRUISE,
-        FLIGHT_PHASE_DESCENT,
-        FLIGHT_PHASE_APPROACH,
-        FLIGHT_PHASE_GOAROUND
+    enum EngineType {
+        ENGINE_TYPE_PISTON,
+        ENGINE_TYPE_JET,
+        ENGINE_TYPE_NONE,
+        ENGINE_TYPE_HELO_TURBINE,
+        ENGINE_TYPE_ROCKET,
+        ENGINE_TYPE_TURBOPROP
     }
 
-    enum AutopilotMode {
-        MANAGED,
-        SELECTED,
-        HOLD
+    enum PropellerType {
+        PROPELLER_TYPE_CONSTANT_SPEED,
+        PROPELLER_TYPE_FIXED_PITCH
+    }
+
+    enum Aircraft {
+        CJ4,
+        A320_NEO,
+        B747_8,
+        AS01B,
+        AS02A
     }
 
     enum ThrottleMode {
@@ -2064,12 +2051,73 @@ declare global {
         HOLD
     }
 
-    enum Aircraft {
-        CJ4,
-        A320_NEO,
-        B747_8,
-        AS01B,
-        AS02A
+    enum AutopilotMode {
+        MANAGED,
+        SELECTED,
+        HOLD
+    }
+
+    enum FlightState {
+        FLIGHT_STATE_BRIEFING,
+        FLIGHT_STATE_INTRO_PLANE,
+        FLIGHT_STATE_INTRO,
+        FLIGHT_STATE_PREFLIGHT_GATE,
+        FLIGHT_STATE_PREFLIGHT_PUSHBACK,
+        FLIGHT_STATE_PREFLIGHT_TAXI,
+        FLIGHT_STATE_PREFLIGHT_HOLDSHORT,
+        FLIGHT_STATE_FLIGHT_RUNWAY,
+        FLIGHT_STATE_FLIGHT_INITIAL_CLIMB,
+        FLIGHT_STATE_FLIGHT_CLIMB,
+        FLIGHT_STATE_FLIGHT_CRUISE,
+        FLIGHT_STATE_FLIGHT_DESCENT,
+        FLIGHT_STATE_JOINPLANE,
+        FLIGHT_STATE_LANDING_APPROACH,
+        FLIGHT_STATE_LANDING_FINAL,
+        FLIGHT_STATE_LANDING_TOUCHDOWN,
+        FLIGHT_STATE_LANDING_GROUNDROLL,
+        FLIGHT_STATE_LANDING_TAXI,
+        FLIGHT_STATE_LANDING_GATE,
+        FLIGHT_STATE_LANDING_REST,
+        FLIGHT_STATE_OUTRO,
+        FLIGHT_STATE_WAITING,
+        FLIGHT_STATE_TELEPORTTOSTATE,
+        FLIGHT_STATE_FREEFLIGHT,
+        FLIGHT_STATE_LANDINGCHALLENGE,
+        FLIGHT_STATE_BUSHTRIP,
+    }
+
+    enum FlightPhase {
+        FLIGHT_PHASE_PREFLIGHT,
+        FLIGHT_PHASE_TAXI,
+        FLIGHT_PHASE_TAKEOFF,
+        FLIGHT_PHASE_CLIMB,
+        FLIGHT_PHASE_CRUISE,
+        FLIGHT_PHASE_DESCENT,
+        FLIGHT_PHASE_APPROACH,
+        FLIGHT_PHASE_GOAROUND
+    }
+
+    enum ApproachType {
+        APPROACH_TYPE_UNKNOWN,
+        APPROACH_TYPE_VFR,
+        APPROACH_TYPE_HEL,
+        APPROACH_TYPE_TACAN,
+        APPROACH_TYPE_NDB,
+        APPROACH_TYPE_LORAN,
+        APPROACH_TYPE_RNAV,
+        APPROACH_TYPE_VOR,
+        APPROACH_TYPE_GPS,
+        APPROACH_TYPE_SDF,
+        APPROACH_TYPE_LDA,
+        APPROACH_TYPE_LOC,
+        APPROACH_TYPE_MLS,
+        APPROACH_TYPE_ILS
+    }
+
+    enum WorldRegion {
+        NORTH_AMERICA,
+        AUSTRALIA,
+        OTHER
     }
 
     enum NAV_AID_STATE {
@@ -2082,6 +2130,204 @@ declare global {
         NONE,
         MANUAL,
         REMOTE
+    }
+
+    namespace Simplane {
+        function getDesignSpeeds(): DesignSpeeds;
+        function getTrueSpeed(): Knots;
+        function getIndicatedSpeed(): Knots;
+        function getVerticalSpeed(): FeetPerMinute | null;
+        function getGroundSpeed(): Knots | null;
+        function getMachSpeed(): Mach | null;
+
+        /**
+         * Gets the V1 speed up during and before takeoff, -1 after.
+         */
+        function getV1Airspeed(): Knots | -1  | null;
+
+        /**
+         * Gets the VR speed up during and before takeoff, -1 after.
+         */
+        function getVRAirspeed(): Knots | -1  | null;
+
+        /**
+         * Gets the VR speed up during and before takeoff, -1 after.
+         */
+        function getV2Airspeed(): Knots | -1 | null;
+        function getREFAirspeed(): Knots | null;
+        function getVXAirspeed(): Knots | null;
+        function getFMCGreenDotSpeed(): number | null;
+        function getFMCApprGreenDotSpeed(): number | null;
+        function getGreenDotSpeed(): Knots | null;
+        function getCrossoverSpeedFactor(cas, mach: Mach): number | null;
+        function getFlapsLimitSpeed(aicraft: any, flapIndex: number): Knots | null;
+        /**
+         * @summary
+         * Seems to implement caching behaviour, can be overridden with forceSimVarCall.
+         */
+        function getFlapsHandleIndex(forceSimVarCall?: boolean): number | null;
+        /**
+         * @summary
+         * Seems to implement caching behaviour, can be overridden with forceSimVarCall.
+         */
+        function getFlapsExtendSpeed(aircraft: any, forceSimVarCall?: boolean): Knots | null;
+        /**
+         * @summary
+         * Seems to implement caching behaviour, can be overridden with forceSimVarCall.
+         */
+        function getNextFlapsExtendSpeed(aircraft: any, forceSimVarCall?: boolean): Knots | null;
+        function getMaxSpeed(aircraft: any): Knots;
+        function getLowestSelectableSpeed(): Knots | null;
+        function getStallProtectionMinSpeed(): Knots | null;
+        function getStallProtectionMaxSpeed(): Knots | null;
+        function getStallSpeed(): Knots | null;
+        function getStallSpeedPredicted(flapIndex: number): Knots | null;
+        function getWindDirection(): Degrees | null;
+        function getWindStrength(): Knots | null;
+        function getAutoPilotActive(apIndex: number): boolean | null;
+        function getAutoPilotAirspeedManaged(): boolean;
+        function getAutoPilotAirspeedSelected(): boolean;
+        function getAutoPilotAirspeedHoldActive(isManaged?: boolean): boolean | null;
+        function getAutoPilotAirspeedHoldValue(): Knots | null;
+        function getAutoPilotSelectedAirspeedHoldValue(): Knots | null;
+        function getAutoPilotManagedAirspeedHoldValue(): Knots | null;
+        function getAutoPilotMachModeActive(): boolean | null;
+        function getAutoPilotMachHoldValue(): number | null;
+        function getAutoPilotSelectedMachHoldValue(): number | null;
+        function getAutoPilotManagedMachHoldValue(): number | null;
+        function getAutoPilotHeadingManaged(): boolean;
+        function getAutoPilotHeadingSelected(): boolean;
+        function getAutoPilotHeadingLockActive(): boolean | null;
+        function getAutoPilotHeadingLockValue(radians?: boolean): Radians | Degrees | null;
+        function getAutoPilotSelectedHeadingLockValue(radians?: boolean): Radians | Degrees | null;
+        function getAutoPilotAltitudeManaged(): boolean;
+        function getAutoPilotAltitudeSelected(): boolean;
+        function getAutoPilotAltitudeArmed(): boolean | null;
+        function getAutoPilotAltitudeLockActive(): boolean | null;
+        function getAutoPilotFLCActive(): boolean;
+        /**
+         * @param units Default = feet.
+         */
+        function getAutoPilotAltitudeLockValue(units?: string): Feet | null;
+        /**
+         * @param units Default = feet.
+         */
+        function getAutoPilotSelectedAltitudeLockValue(units? : string): Feet | null;
+        /**
+         * @param units Default = feet.
+         */
+        function getAutoPilotDisplayedAltitudeLockValue(units?: string): Feet | null;
+        function getAutoPilotAltitudeLockUnits(): "feet";
+        function getAutoPilotVerticalSpeedHoldActive(): boolean | null;
+        function getAutoPilotVerticalSpeedHoldValue(): FeetPerMinute | null;
+        function getAutoPilotSelectedVerticalSpeedHoldValue(): FeetPerMinute | null;
+        function getAutoPilotDisplayedVerticalSpeedHoldValue(): FeetPerMinute | null;
+        function getAutoPilotLateralModeActive(): boolean | null;
+        function getAutoPilotFlightDirectorActive(fdIndex: number): boolean | null;
+        function getAutoPilotFlightDirectorBankValue(): Degrees | null;
+        function getAutoPilotFlightDirectorPitchValue(): Degrees | null;
+        function getAutopilotGPSDriven(): boolean | null;
+        function getAutopilotGPSActive(): boolean | null;
+        function getAutoPilotTrackAngle(): Degrees | null;
+        function getAutoPilotFlightPathAngle(): Degrees | null;
+        function getAutoPilotThrottleArmed(index?: number): boolean | null;
+        function getAutoPilotThrottleLocked(): boolean | null;
+        function getAutoPilotThrottleActive(index?: number): boolean | null;
+        function getAutoPilotTOGAActive(): boolean | null;
+        function getAutoPilotAPPRCaptured(): boolean | null;
+        function getAutoPilotAPPRActive(): boolean;
+        function getAutoPilotAPPRArm(): boolean;
+        function getAutoPilotAPPRHold(): boolean | null;
+        function getAutoPilotTRKFPAModeActive(): boolean | null;
+        function getAutoPilotTRKModeActive(): boolean | null;
+        function getAutoPilotFPAModeActive(): boolean | null;
+        function getAutoPilotGlideslopeActive(): boolean | null;
+        function getAutoPilotGlideslopeArm(): boolean | null;
+        function getAutoPilotGlideslopeHold(): boolean | null;
+        function getAutoPilotApproachType(): ApproachType | null;
+        function getAutoPilotApproachLoaded(): boolean | null;
+        function getAutoPilotNavAidState(user: number, _switch: any): number | null;
+        function getAutoPilotIsHeadingAligned(): boolean | null;
+        function getNextWaypointName(): string | null;
+        function getNextWaypointTrack(): Degrees | null;
+        function getNextWaypointDistance(): NauticalMiles | null;
+        function getNextWaypointETA(): Seconds | null;
+        function getFlightTime(): Seconds | null;
+        function getCurrentUTC(): Seconds | null;
+        function getEngineCount(): number | null;
+        function getEngineActive(engineIndex: number): boolean | null;
+        function getEngineThrottle(engineIndex: number): Percent | null;
+        function getEngineThrottleMode(engineIndex: number): ThrottleMode | null;
+        function getEngineCommandedN1(engineIndex: number): Percent | null;
+        function getEngineThrottleCommandedN1(engineIndex: number): Percent | null;
+        function getEngineThrottleMaxThrust(engineIndex: number): number;
+        function getEngineThrustTakeOffMode(engineIndex: number): number | null;
+        function getEngineThrustClimbMode(engineIndex: number): number | null;
+        /**
+         * Equal to getEngineThrottle
+         */
+        function getAutopilotThrottle(engineIndex: number): Percent | null;
+        /**
+         * Equal to getEngineCommandedN1
+         */
+        function getAutopilotCommandedN1(engineIndex: number): Percent | null;
+        function getEngineType(): EngineType | null;
+        function getEngineRPM(engineIndex: number): RotationsPerMinute | null;
+        function getEnginePower(engineIndex: number): Percent | null;
+        function getMinCruiseRPM(): RotationsPerMinute | null;
+        function getMaxCruiseRPM(): RotationsPerMinute | null;
+        function getMaxIndicatedRPM(): RotationsPerMinute | null;
+        function getMaxRatedRPM(): RotationsPerMinute | null;
+        function getPropellerType(): PropellerType | null;
+        function getNbPropellers(): number | null;
+        function getInclinometer(): Position | null;
+        function getAngleOfAttack(): Angl16 | null;
+        function getOrientationAxis(): XYZ | null;
+        function getAltitude(): Feet | null;
+        function getGroundReference(): Feet | null;
+        function getTurnRate(): RadiansPerSecond | null;
+        function getHeadingMagnetic(): Heading | null;
+        function getPitch(): Degrees | null;
+        function getBank(): Degrees | null;
+        function getFlightDirectorPitch(): Degrees | null;
+        function getFlightDirectorBank(): Degrees | null;
+        function getIsGrounded(): boolean;
+        function getAltitudeAboveGround(forceSimVarCall?: boolean): Feet;
+        function getCrossoverAltitude(cas, mach: Mach): Feet | null;
+        function getThrustReductionAltitude(): Feet | null;
+        function getFlapsNbHandles(): number | null;
+        function getFlapsHandlePercent(): PercentOver100 | null;
+        function getFlapsHandleAngle(flapIndex: number): Degrees | null;
+        function getFlapsAngle(): Radians | null;
+        function getTrim(): PercentOver100 | null;
+        function getTrimIndicator(): number | null;
+        function getTrimNeutral(): PercentOver100 | null;
+        function setTransponderToRegion(): void;
+        function setTransponderToZero(): void;
+        function getTotalAirTemperature(): Celcius | null;
+        function getAmbientTemperature(): Celcius | null;
+        function getFlexTemperature(): number | null;
+        function getFuelPercent(): Percent;
+        function getFuelQuantity(): Gallons;
+        function getTotalFuel(): Kilograms | null;
+        function getFuelUsed(engineIndex: number): Kilograms | null;
+        function getCompassAngle(): Radians | null;
+        function getPressureValue(): InchesOfMercury | null;
+        function getPressureValue(units?: "inches of mercury"): InchesOfMercury | null;
+        function getPressureValue(units?: "millibar"): Millibar | null;
+        function getPressureSelectedUnits(): "inches of mercury" | "millibar";
+        function getPressureSelectedMode(aircraft: Aircraft): "QFE" | "QNH" | "STD" | "";
+        function getHasGlassCockpit(): boolean | null;
+        function getPressurisationCabinAltitude(): Feet | null;
+        function getPressurisationCabinAltitudeGoal(): Feet | null;
+        function getPressurisationCabinAltitudeRate(): Feet | null;
+        function getPressurisationDifferential(): PressurePerSquareInch | null;
+        function getWeight(): Kilograms | null;
+        function getMaxWeight(): Kilograms | null;
+        function getGearPosition(): Percent | null;
+        function getUnitIsMetric(): boolean | null;
+        function getCurrentFlightPhase(forceSimVarCall?: boolean): FlightPhase | null;
+        function getWorldRegion(): WorldRegion;
     }
 }
 
@@ -2226,13 +2472,13 @@ declare global {
     }
 
     class LatLongAlt {
-        constructor(latitude: Latitude, longitude: Longitude, alt: Altitude);
-        constructor(data: { lat: Latitude, long: Longitude, alt: Altitude });
+        constructor(latitude: Latitude, longitude: Longitude, alt: Feet);
+        constructor(data: { lat: Latitude, long: Longitude, alt: Feet });
 
         __Type: "LatLongAlt";
         lat: Latitude;
         long: Longitude;
-        alt: Altitude;
+        alt: Feet;
 
         /**
          * @returns A LatLong instance containing the latitude and longitude of this instance.
