@@ -2,50 +2,84 @@ class A32NX_GPWS {
     constructor() {
         console.log('A32NX_GPWS constructed');
         this.minimumsState = 0;
+
+        this.radnav = new RadioNav();
+
+        this.Mode3MaxAlt = NaN;
+
+        this.Mode2BoundaryLeaveAlt = NaN;
+
+        this.RadioAltRate = NaN;
+        this.prevRadioAlt = NaN;
+
+        this.Mode1Code = 0; //0: no mode 1 warning, 1: mode 1 "sink rate", 2: mode 1 "pull up"
+        this.Mode2Code = 0; //0: no mode 2 warning, 1: mode 2 "Terrain", 2: mode 2 "pull up"
+        this.Mode3Code = 0; //0: no mode 3 warning, 1: mode 3 "don't sink"
+        this.Mode4Code = 0; //0: no mode 4 warning, 1: mode 4 "too low gear", 2: mode 4 "too low flaps", 3: mode 4 "too low terrain"
+        this.Mode5Code = 0; //0: no mode 5 warning, 1: mode 5 "glideslope", 2: mode 5 "hard glideslope"(louder)
     }
     init() {
         console.log('A32NX_GPWS init');
 
-        SimVar.SetSimVarValue("L:GPWS_SINK_RATE", "Bool", 0);
-        SimVar.SetSimVarValue("L:GPWS_PULL_UP", "Bool", 0);
-        SimVar.SetSimVarValue("L:GPWS_DONT_SINK", "Bool", 0);
-        SimVar.SetSimVarValue("L:GPWS_TOO_LOW", "Enum", 0); // 0 (Off) 1 (Too Low Terrain) 2 (Too Low Gear) 3 (Too Low Flaps)
+        this.radnav.init(NavMode.FOUR_SLOTS);
 
-        //SimVar.SetSimVarValue("L:GPWS_MODE_2", "Enum", 0); // GPWS Mode 2 = 0 (Off) 1 (Terrain Terrain Pull Up) 2 (Terrain)
-        //SimVar.SetSimVarValue("L:GPWS_MODE_5", "Enum", 0); // GPWS Mode 5 = 0 (Off)
+        SimVar.SetSimVarValue("L:A32NX_GPWS_GS_Warning_Active", "Bool", 0);
+        SimVar.SetSimVarValue("L:A32NX_GPWS_Warning_Active", "Bool", 0);
     }
 
     update(deltaTime, _core) {
         this.faults();
-        this.gpws();
+        this.gpws(deltaTime);
     }
+    gpws(deltaTime) {
+        const radioAlt = SimVar.GetSimVarValue("PLANE ALT ABOVE GROUND MINUS CG", "Feet");
 
-    gpws() {
-        const SYS_PushButton = SimVar.GetSimVarValue("L:PUSH_OVHD_GPWS_SYS", "Bool");
-        const FLAP_PushButton = SimVar.GetSimVarValue("L:PUSH_OVHD_GPWS_FLAP", "Bool");
-        const altitude = Simplane.getAltitudeAboveGround();
-        const vSpeed = Simplane.getVerticalSpeed();
-        const Airspeed = SimVar.GetSimVarValue("AIRSPEED INDICATED", "Knots");
         const mda = SimVar.GetSimVarValue("L:AIRLINER_MINIMUM_DESCENT_ALTITUDE", "Number");
         const dh = SimVar.GetSimVarValue("L:AIRLINER_DECISION_HEIGHT", "Number");
         const phase = SimVar.GetSimVarValue("L:AIRLINER_FLIGHT_PHASE", "Enum");
 
-        if (!SYS_PushButton && altitude >= 10 && altitude <= 2450) { //Activate between 10 - 2450 radio alt unless SYS is off
-            this.gpws_pull_up(altitude, vSpeed);
-            this.gpws_sink_rate(altitude, vSpeed);
-            this.gpws_dont_sink(altitude, vSpeed, phase);
-            this.gpws_too_low(altitude, Airspeed, FLAP_PushButton, phase);
+        if (radioAlt >= 10 && radioAlt <= 2450 && !SimVar.GetSimVarValue("L:A32NX_GPWS_SYS_OFF", "Bool")) { //Activate between 10 - 2450 radio alt unless SYS is off
+            const FlapPushButton = SimVar.GetSimVarValue("L:A32NX_GPWS_FLAPS3", "Bool");
+            const FlapPosition = SimVar.GetSimVarValue("FLAPS HANDLE INDEX", "Number");
+            const FlapsInLandingConfig = FlapPushButton ? (FlapPosition === 3) : (FlapPosition === 4);
+            const vSpeed = Simplane.getVerticalSpeed();
+            const Airspeed = SimVar.GetSimVarValue("AIRSPEED INDICATED", "Knots");
+            const gearExtended = SimVar.GetSimVarValue("GEAR TOTAL PCT EXTENDED", "Percent") > 90;
+
+            if (!isNaN(this.prevRadioAlt)) {
+                this.RadioAltRate = (radioAlt - this.prevRadioAlt) * deltaTime / 60 * 1000;
+                this.prevRadioAlt = radioAlt;
+            } else {
+                this.prevRadioAlt = radioAlt;
+            }
+
+            this.GPWSMode1(radioAlt, vSpeed);
+            this.GPWSMode2(radioAlt, Airspeed, FlapsInLandingConfig, gearExtended);
+            this.GPWSMode3(radioAlt, phase, FlapsInLandingConfig, gearExtended);
+            this.GPWSMode4(radioAlt, FlapsInLandingConfig, gearExtended, phase);
+            this.GPWSMode5(radioAlt);
+
+            if (this.Mode1Code !== 0 || this.Mode2Code !== 0 || this.Mode3Code !== 0 || this.Mode4Code !== 0) {
+                SimVar.SetSimVarValue("L:A32NX_GPWS_Warning_Active", "Bool", 1);
+            } else {
+                SimVar.SetSimVarValue("L:A32NX_GPWS_Warning_Active", "Bool", 0);
+            }
+            if (this.Mode5Code !== 0) {
+                SimVar.SetSimVarValue("L:A32NX_GPWS_GS_Warning_Active", "Bool", 1);
+            } else {
+                SimVar.SetSimVarValue("L:A32NX_GPWS_GS_Warning_Active", "Bool", 0);
+            }
         } else {
-            SimVar.SetSimVarValue("L:GPWS_SINK_RATE", "Bool", 0);
-            SimVar.SetSimVarValue("L:GPWS_PULL_UP", "Bool", 0);
-            SimVar.SetSimVarValue("L:GPWS_DONT_SINK", "Bool", 0);
-            SimVar.SetSimVarValue("L:GPWS_TOO_LOW", "Enum", 0);
+            this.prevRadioAlt = NaN;
+            this.RadioAltRate = NaN;
+
+            SimVar.SetSimVarValue("L:A32NX_GPWS_GS_Warning_Active", "Bool", 0);
+            SimVar.SetSimVarValue("L:A32NX_GPWS_Warning_Active", "Bool", 0);
         }
 
         if ((mda !== 0 || dh !== -1) && phase === FlightPhase.FLIGHT_PHASE_APPROACH) {
             let minimumsDA; //MDA or DH
             let minimumsIA; //radio or baro altitude
-            const radioAlt = SimVar.GetSimVarValue("PLANE ALT ABOVE GROUND MINUS CG", "Feet");
             const baroAlt = SimVar.GetSimVarValue("INDICATED ALTITUDE", "feet");
             if (dh >= 0) {
                 minimumsDA = dh;
@@ -82,60 +116,151 @@ class A32NX_GPWS {
         }
     }
 
-    gpws_sink_rate(altitude, vSpeed) {
-        const sink_rate = (altitude < 2500 && altitude > 1000 && vSpeed <= -2000) || (altitude < 1000 && vSpeed <= -1200);
+    /**
+     * Compute the GPWS Mode 1 state.
+     * @param radioAlt - Radio altitude in feet
+     * @param vSpeed - Vertical speed, in feet/min, should be inertial vertical speed, not sure if simconnect provides that
+     */
+    GPWSMode1(radioAlt, vSpeed) {
+        const sinkrate = -vSpeed;
 
-        SimVar.SetSimVarValue("L:GPWS_SINK_RATE", "Bool", sink_rate);
-    }
-
-    gpws_pull_up(altitude, vSpeed) {
-        const pull_up = (altitude < 2500 && altitude > 1000 && vSpeed <= -4000) || (altitude < 1000 && vSpeed <= -2400);
-
-        SimVar.SetSimVarValue("L:GPWS_PULL_UP", "Bool", pull_up);
-    }
-
-    gpws_dont_sink(altitude, vSpeed, phase) {
-        let dont_sink = false;
-
-        if (phase == FlightPhase.FLIGHT_PHASE_TAKEOFF || phase == FlightPhase.FLIGHT_PHASE_GOAROUND) {
-            if (altitude > 50 && altitude <= 100 && vSpeed <= -200) {
-                dont_sink = true;
-            } else if (altitude > 100 && altitude <= 600 && vSpeed <= -300) {
-                dont_sink = true;
-            } else if (altitude > 600 && altitude <= 750 && vSpeed <= -1000) {
-                dont_sink = true;
-            }
+        if (sinkrate <= 1000) {
+            this.Mode1Code = 0;
+            return;
         }
 
-        SimVar.SetSimVarValue("L:GPWS_DONT_SINK", "Bool", dont_sink);
-    }
+        const maxSinkrateAlt = 0.61 * sinkrate - 600;
+        const maxPullUpAlt = sinkrate > 1700 ? 1.3 * sinkrate - 1940 : 0.4 * sinkrate - 410;
 
-    gpws_too_low(altitude, Airspeed, FLAP_PushButton, phase) {
-        const flaps = SimVar.GetSimVarValue("FLAPS HANDLE INDEX", "Number");
-        const gear = SimVar.GetSimVarValue("GEAR POSITION:0", "Enum");
-
-        let too_low_gear = false;
-        let too_low_flaps = false;
-        let too_low_terrain = false;
-
-        if (phase != FlightPhase.FLIGHT_PHASE_TAKEOFF && FLAP_PushButton != 1) {
-            too_low_gear = altitude < 500 && Airspeed < 195 && gear != 1;
-            too_low_flaps = altitude < 250 && Airspeed < 160 && flaps != 4;
-            if (Airspeed >= 240) {
-                too_low_terrain = altitude < 1000 && (gear != 1 || flaps != 4);
-            } else {
-                too_low_terrain = altitude < (Airspeed - 140) * 10 && (gear != 1 || flaps != 4);
-            }
-        }
-
-        if (too_low_gear) {
-            SimVar.SetSimVarValue("L:GPWS_TOO_LOW", "Enum", 2);
-        } else if (too_low_flaps) {
-            SimVar.SetSimVarValue("L:GPWS_TOO_LOW", "Enum", 3);
-        } else if (too_low_terrain) {
-            SimVar.SetSimVarValue("L:GPWS_TOO_LOW", "Enum", 1);
+        if (radioAlt <= maxPullUpAlt) {
+            this.Mode1Code = 2;
+        } else if (radioAlt <= maxSinkrateAlt) {
+            this.Mode1Code = 1;
         } else {
-            SimVar.SetSimVarValue("L:GPWS_TOO_LOW", "Enum", 0);
+            this.Mode1Code = 0;
+        }
+    }
+
+    /**
+     * Compute the GPWS Mode 2 state.
+     * @param radioAlt - Radio altitude in feet
+     * @param speed - Airspeed in knots.
+     * @param FlapsInLandingConfig - If flaps is in landing config
+     * @param gearExtended - If the gear is deployed
+     */
+    GPWSMode2(radioAlt, speed, FlapsInLandingConfig, gearExtended) {
+        let IsInBoundary = false;
+        const UpperBoundaryRate = -this.RadioAltRate < 3500 ? 0.4 * this.RadioAltRate - 50 : 0.18 * this.RadioAltRate + 720;
+        const UpperBoundarySpeed = Math.max(1650, Math.min(2450, 8.8888 * speed - 305.555));
+
+        if (!FlapsInLandingConfig) {
+            if (radioAlt < UpperBoundarySpeed && radioAlt < UpperBoundaryRate) {
+                IsInBoundary = true;
+            }
+        } else {
+            if (radioAlt < 775 && radioAlt < UpperBoundaryRate && -this.RadioAltRate < 10000) {
+                IsInBoundary = true;
+            }
+        }
+
+        if (IsInBoundary) {
+            this.Mode2BoundaryLeaveAlt = -1;
+        } else if (this.Mode2BoundaryLeaveAlt === -1) {
+            this.Mode2BoundaryLeaveAlt = radioAlt;
+        }
+    }
+
+    /**
+     * Compute the GPWS Mode 3 state.
+     * @param radioAlt - Radio altitude in feet
+     * @param phase - Flight phase index
+     * @param FlapsInLandingConfig - If flaps is in landing config
+     * @constructor
+     */
+    GPWSMode3(radioAlt, phase, FlapsInLandingConfig, gearExtended) {
+        if (!(phase === FlightPhase.FLIGHT_PHASE_TAKEOFF || (phase === FlightPhase.FLIGHT_PHASE_GOAROUND && !(gearExtended && FlapsInLandingConfig))) || radioAlt > 1500 || radioAlt < 10) {
+            this.Mode3MaxAlt = NaN;
+            this.Mode3Code = 0;
+            return;
+        }
+
+        const baroAlt = SimVar.GetSimVarValue("PLANE ALTITUDE", "feet");
+
+        const maxAltLoss = 0.09 * radioAlt + 7.1;
+
+        if (baroAlt > this.Mode3MaxAlt || isNaN(this.Mode3MaxAlt)) {
+            this.Mode3MaxAlt = baroAlt;
+            this.Mode3Code = 0;
+        } else if ((this.Mode3MaxAlt - baroAlt) > maxAltLoss) {
+            this.Mode3Code = 1;
+        } else {
+            this.Mode3Code = 0;
+        }
+    }
+
+    /**
+     * Compute the GPWS Mode 4 state.
+     * @param radioAlt - Radio altitude in feet
+     * @param speed - Airspeed in knots.
+     * @param FlapsInLandingConfig - If flaps is in landing config
+     * @param gearExtended - If the gear is extended
+     * @param phase - Flight phase index
+     * @constructor
+     */
+    GPWSMode4(radioAlt, speed, FlapsInLandingConfig, gearExtended, phase) {
+        if (radioAlt < 30 || radioAlt > 1000) {
+            this.Mode4Code = 0;
+            return;
+        }
+
+        // Mode 4 A and B logic
+        if (!gearExtended && phase === FlightPhase.FLIGHT_PHASE_APPROACH) {
+            if (speed < 190 && radioAlt < 500) {
+                this.Mode4Code = 1;
+            } else if (speed >= 190) {
+                const maxWarnAlt = 8.333 * speed - 1083.333;
+                this.Mode4Code = radioAlt < maxWarnAlt ? 3 : 0;
+            }
+        } else if (FlapsInLandingConfig && phase === FlightPhase.FLIGHT_PHASE_APPROACH) {
+            if (speed < 159 && radioAlt < 245) {
+                this.Mode4Code = 2;
+            } else if (speed >= 159) {
+                const maxWarnAlt = 8.2967 * speed - 1074.18;
+                this.Mode4Code = radioAlt < maxWarnAlt ? 3 : 0;
+            }
+        }
+
+        // Mode 4C logic
+
+    }
+
+    /**
+     * Compute the GPWS Mode 5 state.
+     * @param - radioAlt Radio altitude in feet
+     * @constructor
+     */
+    GPWSMode5(radioAlt) {
+        if (radioAlt > 1000 || radioAlt < 30 || SimVar.GetSimVarValue("L:A32NX_GPWS_GS_OFF", "Bool")) {
+            this.Mode5Code = 0;
+            return;
+        }
+        const localizer = this.radnav.getBestILSBeacon();
+        if (localizer.id <= 0 || !SimVar.GetSimVarValue("NAV HAS GLIDE SLOPE:" + localizer.id, "Bool")) {
+            this.Mode5Code = 0;
+            return;
+        }
+        const error = SimVar.GetSimVarValue("NAV GLIDE SLOPE ERROR:" + localizer.id, "Degrees");
+        const dots = -error * 2.5; //According to the FCOM, one dot is approx. 0.4 degrees. 1/0.4 = 2.5
+
+        const minAltForWarning = dots < 2.9 ? -75 * dots + 247.5 : 30;
+        const minAltForHardWarning = dots < 3.8 ? -66.66 * dots + 283.33 : 30;
+
+        if (dots > 1.3 && radioAlt > minAltForWarning) {
+            this.Mode5Code = 1;
+        } else if (dots > 2 && radioAlt > minAltForHardWarning && radioAlt < 350) {
+            this.Mode5Code = 2;
+        } else {
+            this.Mode5Code = 0;
         }
     }
 
@@ -150,12 +275,12 @@ class A32NX_GPWS {
         const ADIRS_TIME = SimVar.GetSimVarValue("L:A320_Neo_ADIRS_TIME", "seconds");
 
         if (ADIRS == 0) {
-            SimVar.SetSimVarValue("L:PUSH_OVHD_GPWS_TERR_FAULT", "Bool", 1);
+            SimVar.SetSimVarValue("L:A32NX_GPWS_TERR_FAULT", "Bool", 1);
         } else if (ADIRS == 1) { //Maths will only be calculated if ADIRS in state 1 to save update time
             if (ADIRS_TIME > 120 + (0.055 * Math.pow(posLAT, 2))) { //120 0.055 (A:GPS POSITION LAT, degree latitude) 2 pow * +
-                SimVar.SetSimVarValue("L:PUSH_OVHD_GPWS_TERR_FAULT", "Bool", 1);
+                SimVar.SetSimVarValue("L:A32NX_GPWS_TERR_FAULT", "Bool", 1);
             } else {
-                SimVar.SetSimVarValue("L:PUSH_OVHD_GPWS_TERR_FAULT", "Bool", 0);
+                SimVar.SetSimVarValue("L:A32NX_GPWS_TERR_FAULT", "Bool", 0);
             }
         }
     }
@@ -166,12 +291,12 @@ class A32NX_GPWS {
         const ADIRS_TIME = SimVar.GetSimVarValue("L:A320_Neo_ADIRS_TIME", "seconds");
 
         if (ADIRS == 0) {
-            SimVar.SetSimVarValue("L:PUSH_OVHD_GPWS_SYS_FAULT", "Bool", 1);
+            SimVar.SetSimVarValue("L:A32NX_GPWS_SYS_FAULT", "Bool", 1);
         } else if (ADIRS == 1) { //Maths will only be calculated if ADIRS in state 1 to save update time
             if (ADIRS_TIME > 305 + (0.095 * Math.pow(posLAT, 2)) - posLAT / 2) { //305 0.095 (A:GPS POSITION LAT, degree latitude) 2 pow * + (A:GPS POSITION LAT, degree latitude) 2 / -
-                SimVar.SetSimVarValue("L:PUSH_OVHD_GPWS_SYS_FAULT", "Bool", 1);
+                SimVar.SetSimVarValue("L:A32NX_GPWS_SYS_FAULT", "Bool", 1);
             } else {
-                SimVar.SetSimVarValue("L:PUSH_OVHD_GPWS_SYS_FAULT", "Bool", 0);
+                SimVar.SetSimVarValue("L:A32NX_GPWS_SYS_FAULT", "Bool", 0);
             }
         }
     }
