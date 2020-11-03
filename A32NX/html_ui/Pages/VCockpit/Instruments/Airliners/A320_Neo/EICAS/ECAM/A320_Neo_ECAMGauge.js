@@ -436,6 +436,7 @@ var A320_Neo_ECAM_Common;
             if ((_value != this.currentValue) || _force) {
                 this.currentValue = _value;
                 this.currentValueCursor = (_value <= this.minValue) ? this.cursorOffset + this.minValue : _value + this.cursorOffset;
+                //this.currentValueCursor = _value + this.cursorOffset;
                 const clampedValue = Utils.Clamp(this.currentValue, this.minValue, this.maxValue);
                 const clampedValueCursor = Utils.Clamp(this.currentValueCursor, this.minValue, this.maxValue);
                 let style = "";
@@ -469,9 +470,9 @@ var A320_Neo_ECAM_Common;
         refreshOuterIndicator(_value, _force = false) {
             if ((_value != this.outerIndicatorValue) || _force) {
                 this.outerIndicatorValue = _value;
-                console.log("Outer indicator is " + _value);
                 if (this.outerIndicatorObject != null) {
                     const valueThrottlePosition = (_value <= this.minValue) ? this.cursorOffset + this.minValue : _value + this.cursorOffset;
+                    //const valueThrottlePosition = _value + this.cursorOffset;
                     const clampedValueThrottlePosition = Utils.Clamp(valueThrottlePosition , this.minValue, this.maxValue);
                     const angle = this.valueToAngle(clampedValueThrottlePosition, false);
                     this.outerIndicatorObject.setAttribute("transform", "rotate(" + angle + ")");

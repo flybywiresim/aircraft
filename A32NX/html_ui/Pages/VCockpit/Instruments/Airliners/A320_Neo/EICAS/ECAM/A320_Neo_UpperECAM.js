@@ -1597,21 +1597,7 @@ var A320_Neo_UpperECAM;
         getN1GaugeValue() {
             const engineId = (this.index + 1);
             const value = SimVar.GetSimVarValue("ENG N1 RPM:" + engineId, "percent");
-            const throttle = this.deltaThrottlePosition;
-            const currentThrottlePosition = this.getThrottlePosition(this.index);
-            this.deltaThrottlePosition = currentThrottlePosition;
-            if (value < A320_Neo_UpperECAM.Definitions.MIN_GAUGE_N1 || currentThrottlePosition > value) {
-                return value;
-            } else if (value > this.getThrottlePosition(this.index)) {
-                return (currentThrottlePosition > A320_Neo_UpperECAM.Definitions.MIN_GAUGE_N1) ? currentThrottlePosition : A320_Neo_UpperECAM.Definitions.MIN_GAUGE_N1;
-            } else if (currentThrottlePosition > throttle && value < currentThrottlePosition) {
-                return value;
-            } else if (currentThrottlePosition > A320_Neo_UpperECAM.Definitions.MIN_GAUGE_N1) {
-                return currentThrottlePosition;
-            } else {
-                return value;
-            }
-
+            return value;
         }
         getN1GaugeThrottleValue() {
             const throttle = Math.abs(Simplane.getEngineThrottleCommandedN1(this.index));
@@ -1619,7 +1605,7 @@ var A320_Neo_UpperECAM;
             return value;
         }
         getThrottlePosition() {
-            return Simplane.getEngineThrottle(this.index);
+            return Math.abs(Simplane.getEngineThrottleCommandedN1(this.index));
         }
         getN1GaugeAutopilotThrottleValues(_values) {
             // This seems broken
@@ -1707,6 +1693,7 @@ var A320_Neo_UpperECAM;
                             const strArray = this.currentValue.toFixed(_valueDisplayPrecision).split(".");
                             const wholeNumber = strArray[0];
                             this.valueText.textContent = wholeNumber;
+                            this.valueText.setAttribute("x", this.getValueTextX());
                             this.valueText.setAttribute("class", valueClass);
                             const decimal = strArray[1];
                             this.valueText2.textContent = decimal;
@@ -1728,6 +1715,8 @@ var A320_Neo_UpperECAM;
                         this.valueTextpoint.textContent = "";
                         this.valueText2.textContent = "";
                         this.valueText.setAttribute("class", valueClass);
+                        this.valueText2.setAttribute("class", valueClass);
+                        this.valueText.setAttribute("x", this.getValueTextX2());
                     }
                 }
             }
