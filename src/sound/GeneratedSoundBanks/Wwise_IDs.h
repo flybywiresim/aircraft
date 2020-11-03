@@ -14,6 +14,10 @@ namespace AK
     namespace EVENTS
     {
         static const AkUniqueID PLAY_ASOBO_A320_NEO_100 = 1943534218U;
+        static const AkUniqueID PLAY_ASOBO_A320_NEO_APLOCK = 2605664391U;
+        static const AkUniqueID PLAY_ASOBO_A320_NEO_APUNLOCK = 834519314U;
+        static const AkUniqueID PLAY_ASOBO_A320_NEO_AURAL_100ABOVE = 1287945483U;
+        static const AkUniqueID PLAY_ASOBO_A320_NEO_AURAL_MINIMUMNEW = 1432371593U;
         static const AkUniqueID PLAY_ASOBO_A320_NEO_AURAL_TOO_LOW_FLAPS = 2966091481U;
         static const AkUniqueID PLAY_ASOBO_A320_NEO_AURAL_TOO_LOW_GEAR = 457235918U;
         static const AkUniqueID PLAY_ASOBO_A320_NEO_AURAL_TOO_LOW_TERRAIN = 2302432638U;
@@ -50,6 +54,9 @@ namespace AK
         static const AkUniqueID PLAY_ASOBO_A320_NEO_GDOWN = 2037093904U;
         static const AkUniqueID PLAY_ASOBO_A320_NEO_GEARDOWNWIND = 1163974770U;
         static const AkUniqueID PLAY_ASOBO_A320_NEO_GROLL = 3751190317U;
+        static const AkUniqueID PLAY_ASOBO_A320_NEO_IDLEDETENT = 3820456089U;
+        static const AkUniqueID PLAY_ASOBO_A320_NEO_IDLEL = 3071528237U;
+        static const AkUniqueID PLAY_ASOBO_A320_NEO_IDLER = 3071528243U;
         static const AkUniqueID PLAY_ASOBO_A320_NEO_IDLEWHINEL = 3641349600U;
         static const AkUniqueID PLAY_ASOBO_A320_NEO_IDLEWHINER = 3641349630U;
         static const AkUniqueID PLAY_ASOBO_A320_NEO_IMPROVED_TONE_CAUTION = 39660050U;
@@ -61,11 +68,16 @@ namespace AK
         static const AkUniqueID PLAY_ASOBO_A320_NEO_LOUDRELAY = 2822123028U;
         static const AkUniqueID PLAY_ASOBO_A320_NEO_LSPOOL = 1588468208U;
         static const AkUniqueID PLAY_ASOBO_A320_NEO_LSPOOLEXT = 2357261761U;
+        static const AkUniqueID PLAY_ASOBO_A320_NEO_LSWITCH = 2441360683U;
         static const AkUniqueID PLAY_ASOBO_A320_NEO_LWHINE = 3053554464U;
         static const AkUniqueID PLAY_ASOBO_A320_NEO_LWHINEEXT = 1788429969U;
         static const AkUniqueID PLAY_ASOBO_A320_NEO_MECHHORN = 3612963377U;
+        static const AkUniqueID PLAY_ASOBO_A320_NEO_MPB1OFF = 3243997212U;
+        static const AkUniqueID PLAY_ASOBO_A320_NEO_MPB1ON = 179984854U;
         static const AkUniqueID PLAY_ASOBO_A320_NEO_NWHEELSPINABOVEGROUND = 886207320U;
         static const AkUniqueID PLAY_ASOBO_A320_NEO_PAXTALK = 1575751666U;
+        static const AkUniqueID PLAY_ASOBO_A320_NEO_PB1OFF = 2081204367U;
+        static const AkUniqueID PLAY_ASOBO_A320_NEO_PB1ON = 2743347483U;
         static const AkUniqueID PLAY_ASOBO_A320_NEO_REVERSEL = 3122667443U;
         static const AkUniqueID PLAY_ASOBO_A320_NEO_REVERSELEXT = 2082310016U;
         static const AkUniqueID PLAY_ASOBO_A320_NEO_REVERSER = 3122667437U;
@@ -85,6 +97,7 @@ namespace AK
         static const AkUniqueID PLAY_ASOBO_A320_NEO_STARTR = 917958459U;
         static const AkUniqueID PLAY_ASOBO_A320_NEO_STARTREXT = 1123662120U;
         static const AkUniqueID PLAY_ASOBO_A320_NEO_TAXIRATTLE = 2073073335U;
+        static const AkUniqueID PLAY_ASOBO_A320_NEO_TOGADETENT = 958251500U;
     } // namespace EVENTS
 
     namespace STATES
