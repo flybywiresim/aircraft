@@ -41,6 +41,7 @@
 1. [CDU] Fix MCDU not loading when starting midair - @ThatRedMelon (Daniel Brown)
 1. [FCU] Clamp the selected altitude between 100 and 49000 - @lars-reimann (Lars Reimann)
 1. [TEXTURES] added Registry plaque and improved Textures - @Pleasure0102 (Pleasure)
+1. [CDU] Allow inserting landing QNH in inHg - @pessip (Pessi Päivärinne)
 
 ## 0.4.0
 1. [General] Add CHANGELOG.md - @nathaninnes (Nathan Innes)
