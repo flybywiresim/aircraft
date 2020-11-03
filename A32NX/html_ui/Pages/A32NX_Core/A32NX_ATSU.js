@@ -42,7 +42,7 @@ const getMETAR = async (icaos, lines, store, updateView) => {
     const storedMetarSrc = NXDataStore.get("CONFIG_METAR_SRC", "MSFS");
     for (const icao of icaos) {
         if (icao !== "") {
-            await fetch(`${endpoint}metar/{icao}?source=${srcMap[storedMetarSrc]}`)
+            await fetch(`${endpoint}metar/${icao}?source=${srcMap[storedMetarSrc]}`)
                 .then((response) => response.json())
                 .then((data) => {
                     lines.push(`METAR ${icao}[color]blue`);
