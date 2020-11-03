@@ -321,7 +321,7 @@ var A320_Neo_UpperECAM;
                 }
             }
         }
-        getAPWarning(time) {
+		getAPWarning(time) {
             const count = time * 1000;
             if (this.getCachedSimVar("AUTOPILOT MASTER", "Bool") == false) {
                 const timer = setTimeout(() => {
@@ -954,7 +954,7 @@ var A320_Neo_UpperECAM;
                             return (this.getCachedSimVar("L:AIRLINER_FLIGHT_PHASE", "Enum") == 6) && (this.getCachedSimVar("RADIO HEIGHT", "feet") < 800);
                         }
                     },
-                    {
+					{
                         message: "AP OFF",
                         style: "fail-3",
                         important: true,
@@ -1882,8 +1882,9 @@ var A320_Neo_UpperECAM;
             if ((SimVar.GetSimVarValue("L:A32NX_FADEC_POWERED_ENG1", "Bool") == 1) || (SimVar.GetSimVarValue("L:A32NX_FADEC_POWERED_ENG2", "Bool") == 1)) {
                 // MaxThrust seems to be bugged, so here we use the throttle position for now
                 const throttlePosition = Math.max(Simplane.getEngineThrottle(1), Simplane.getEngineThrottle(2));
+                const onGround = Simplane.getIsGrounded();
                 // Engine Mode START
-                if (!Simplane.getEngineActive(0) || !Simplane.getEngineActive(1)) {
+                if ((!Simplane.getEngineActive(0) || !Simplane.getEngineActive(1)) && onGround) {
                     if (!this.currentStart || throttlePosition !== this.currentThrottleValue) {
                         this.currentStart = true;
                         this.currentThrottleValue = throttlePosition;
@@ -1909,7 +1910,6 @@ var A320_Neo_UpperECAM;
                         this.setFlexTemperature(false);
                     }
 
-                    const onGround = Simplane.getIsGrounded();
                     this.setThrottle(true, throttlePosition, throttleMode, onGround);
                 }
             } else {
@@ -1928,8 +1928,8 @@ var A320_Neo_UpperECAM;
          * @returns string
          */
         getThrustRatingMode(_grounded, _min = "CLB", _med = "FLX", _max = "TOGA") {
-            if (_grounded) {
-                return ((((Simplane.getCurrentFlightPhase() < FlightPhase.FLIGHT_PHASE_CLIMB) && (Simplane.getFlexTemperature() > 0))) ? _med : _max);
+            if (_grounded || (Simplane.getCurrentFlightPhase() < FlightPhase.FLIGHT_PHASE_CLIMB)) {
+                return Simplane.getFlexTemperature() > 0 ? _med : _max;
             }
             return _min;
         }
