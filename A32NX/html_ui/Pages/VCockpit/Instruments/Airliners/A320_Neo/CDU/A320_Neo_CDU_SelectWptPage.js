@@ -3,7 +3,7 @@ class A320_Neo_CDU_SelectWptPage {
         mcdu.clearDisplay();
         mcdu.page.Current = mcdu.page.SelectWptPage;
         const rows = [
-            [""],
+            ["", 'FREQ', 'LAT/LONG'],
             [""],
             [""],
             [""],
@@ -37,7 +37,7 @@ class A320_Neo_CDU_SelectWptPage {
                 const latString = (w.infos.coordinates.lat.toFixed(0) >= 0) ? `${w.infos.coordinates.lat.toFixed(0).toString().padStart(2, "0")}N` : `${Math.abs(w.infos.coordinates.lat.toFixed(0)).toString().padStart(2, "0")}S`;
                 const longString = (w.infos.coordinates.long.toFixed(0) >= 0) ? `${w.infos.coordinates.long.toFixed(0).toString().padStart(3, "0")}E` : `${Math.abs(w.infos.coordinates.long.toFixed(0)).toString().padStart(3, "0")}W`;
 
-                rows[2 * i] = [`${dist.toFixed(0)}NM`, 'FREQ', 'LAT/LONG'];
+                rows[2 * i].splice(0, 1, dist.toFixed(0) + "NM");
                 rows[2 * i + 1] = [w.ident + "[color]blue", freq + "[color]green", `${latString}/${longString}[color]green`];
                 mcdu.onLeftInput[i] = () => {
                     callback(w);
