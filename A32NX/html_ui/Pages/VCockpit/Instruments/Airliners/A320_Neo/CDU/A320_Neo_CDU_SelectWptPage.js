@@ -40,7 +40,7 @@ class A320_Neo_CDU_SelectWptPage {
                 const longString = (w.infos.coordinates.long.toFixed(0) >= 0) ? `${w.infos.coordinates.long.toFixed(0).toString().padStart(3, "0")}E` : `${Math.abs(w.infos.coordinates.long.toFixed(0)).toString().padStart(3, "0")}W`;
 
                 rows[2 * i].splice(0, 1, dist.toFixed(0) + "NM");
-                rows[2 * i + 1] = [w.ident + "[color]blue", freq + "[color]green", `${latString}/${longString}[color]green`];
+                rows[2 * i + 1] = ["*" + w.ident + "[color]blue", freq + "[color]green", `${latString}/${longString}[color]green`];
                 mcdu.onLeftInput[i] = () => {
                     callback(w);
                 };
