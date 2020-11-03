@@ -116,7 +116,7 @@ class FlightPlanManager {
         const waypoints = [];
         const todo = data.length;
         let done = 0;
-        const groundSpeed = SimVar.GetSimVarValue("GPS GROUND SPEED", "knots") < 100 ? 300 : SimVar.GetSimVarValue("GPS GROUND SPEED", "knots");
+        const groundSpeed = SimVar.GetSimVarValue("GPS GROUND SPEED", "knots") < 100 ? 400 : SimVar.GetSimVarValue("GPS GROUND SPEED", "knots");
         const utcTime = SimVar.GetGlobalVarValue("ZULU TIME", "seconds");
         const activeIdent = this.getActiveWaypointIdent();
         const activeIndex = data.findIndex(wp => {
@@ -339,9 +339,9 @@ class FlightPlanManager {
                                 const planeCoord = new LatLong(SimVar.GetSimVarValue("PLANE LATITUDE", "degree latitude"), SimVar.GetSimVarValue("PLANE LONGITUDE", "degree longitude"));
                                 this.decelWaypoint.legAltitude1 = decelPosition.alt;
                                 this.decelWaypoint.legAltitudeDescription = 1;
-                                this.decelWaypoint.distanceInFP = decelPosition.distance;
                                 const dist = Avionics.Utils.computeGreatCircleDistance(planeCoord, this.decelWaypoint.infos.coordinates);
                                 this.decelWaypoint.liveDistanceTo = dist;
+                                this.decelWaypoint.distanceInFP = (prevWaypoint.ident === this.getOrigin().ident ? dist : decelPosition.distance);
                                 this.decelWaypoint.liveETATo = (this._decelReached ? this._waypointReachedAt : dist / groundSpeed * 3600);
                                 this.decelWaypoint.liveUTCTo = utcTime + this.decelWaypoint.liveETATo;
                             }
@@ -1356,7 +1356,7 @@ class FlightPlanManager {
             const waypoint = allWaypoints[i];
             waypoint.alt = waypoint.legAltitude1;
             waypoint.real = true;
-            if (waypoint.transitionLLas) {
+            if (waypoints.length > 1 && waypoint.transitionLLas) {
                 let fromWaypoint = waypoints[waypoints.length - 2];
                 for (let j = 0; j < waypoint.transitionLLas.length; j++) {
                     const coord = new LatLong(waypoint.transitionLLas[j].lat, waypoint.transitionLLas[j].long);
@@ -1381,7 +1381,7 @@ class FlightPlanManager {
         const destination = this.getDestination();
         if (destination) {
             const fromStartDistance = destination.cumulativeDistanceInFP - distance;
-            let prevIndex;
+            let prevIndex = 0;
             let prevReal;
             let prev;
             let next;
@@ -1398,12 +1398,21 @@ class FlightPlanManager {
                 }
                 prevIndex = i;
             }
+            if (!prev) {
+                prev = this.getOrigin();
+                prevReal = this.getOrigin();
+            }
+            if (!next) {
+                next = destination;
+            }
+            const output = new LatLong();
             const prevCD = prev.cumulativeDistanceInFP;
             const nextCD = next.cumulativeDistanceInFP;
             const d = (fromStartDistance - prevCD) / (nextCD - prevCD);
-            const output = new LatLong();
-            output.lat = Avionics.Utils.lerpAngle(prev.infos.coordinates.lat, next.infos.coordinates.lat, d);
-            output.long = Avionics.Utils.lerpAngle(prev.infos.coordinates.long, next.infos.coordinates.long, d);
+            const lat = (prev.ident === this.getOrigin().ident ? SimVar.GetSimVarValue("PLANE LATITUDE", "degree latitude") : prev.infos.coordinates.lat);
+            const long = (prev.ident === this.getOrigin().ident ? SimVar.GetSimVarValue("PLANE LONGITUDE", "degree longitude") : prev.infos.coordinates.long);
+            output.lat = Avionics.Utils.lerpAngle(lat, next.infos.coordinates.lat, Math.abs(d));
+            output.long = Avionics.Utils.lerpAngle(long, next.infos.coordinates.long, Math.abs(d));
             return {
                 lla: output,
                 prevIndex: prevIndex,
