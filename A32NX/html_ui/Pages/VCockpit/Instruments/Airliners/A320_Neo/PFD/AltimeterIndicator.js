@@ -636,6 +636,22 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
         }
         return true;
     }
+    /**
+     * @param alt {float}
+     * @param isStd {boolean}
+     * @param noFL {boolean}
+     * @returns alt or fl {string} if noFL 'FL' won't be added in front
+     */
+    getAltFL(alt, isStd, noFL = false) {
+        if (isStd && alt >= 1000) {
+            const convAlt = (alt / 100).toFixed(0).toString();
+            if (alt < 10000) {
+                return noFL ? "0" + convAlt : "FL0" + convAlt;
+            }
+            return noFL ? convAlt : "FL" + convAlt;
+        }
+        return alt.toFixed(0).toString();
+    }
     updateTargetAltitude(currentAltitude, targetAltitude, baroMode) {
         let hudAltitude = 0;
         if (this.targetAltitudeIndicatorSVG) {
@@ -691,28 +707,22 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
                     this.targetAltitudeIndicatorSVG.setAttribute("visibility", "hidden");
                 }
             } else if (this.aircraft == Aircraft.A320_NEO) {
-                let textContent;
                 if (!APModeSelected) {
                     const cstnAlt = SimVar.GetSimVarValue("L:A32NX_AP_CSTN_ALT", "feet");
                     if (isFinite(cstnAlt)) {
                         targetAltitude = cstnAlt;
                     }
                 }
-                if (stdMode && targetAltitude >= 1000) {
-                    textContent = "FL" + Math.abs(targetAltitude / 100).toFixed(0).toString();
-                } else {
-                    textContent = targetAltitude.toFixed(0);
-                }
                 const deltaAltitude = targetAltitude - currentAltitude;
                 if (deltaAltitude < -650) {
-                    this.targetAltitudeText.textContent = textContent;
+                    this.targetAltitudeText.textContent = this.getAltFL(targetAltitude, stdMode);
                     this.targetAltitudeText.style.top = "718px";
                     this.targetAltitudeText.style.left = "85px";
                     this.targetAltitudeText.style.display = "block";
                     this.targetAltitudeText.style.color = APModeSelected ? "cyan" : "magenta";
                     this.targetAltitudeIndicatorSVG.setAttribute("visibility", "hidden");
                 } else if (deltaAltitude > 650) {
-                    this.targetAltitudeText.textContent = textContent;
+                    this.targetAltitudeText.textContent = this.getAltFL(targetAltitude, stdMode);
                     this.targetAltitudeText.style.top = "-16px";
                     this.targetAltitudeText.style.left = "85px";
                     this.targetAltitudeText.style.display = "block";
@@ -727,7 +737,7 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
                     this.targetAltitudeIndicatorSVGShape.setAttribute("stroke", APModeSelected ? "cyan" : "magenta");
                     if (this.targetAltitudeIndicatorSVGText) {
                         if (targetAltitude >= 10) {
-                            this.targetAltitudeIndicatorSVGText.textContent = targetAltitude.toFixed(0);
+                            this.targetAltitudeIndicatorSVGText.textContent = this.getAltFL(targetAltitude, stdMode, true);
                         } else {
                             this.targetAltitudeIndicatorSVGText.textContent = "100";
                         }
