@@ -699,7 +699,7 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
                     }
                 }
                 if (stdMode && targetAltitude >= 1000) {
-                    textContent = "FL" + Math.abs(targetAltitude / 100).toString();
+                    textContent = "FL" + Math.abs(targetAltitude / 100).toFixed(0).toString();
                 } else {
                     textContent = targetAltitude.toFixed(0);
                 }
