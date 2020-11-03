@@ -60,35 +60,33 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         };
         const mcduStartPage = SimVar.GetSimVarValue("L:A320_NEO_CDU_START_PAGE", "number");
         if (mcduStartPage < 1) {
-            if (mcduStartPage < 1) {
-                CDUIdentPage.ShowPage(this);
-            } else if (mcduStartPage === 10) {
-                CDUDirectToPage.ShowPage(this);
-            } else if (mcduStartPage === 20) {
-                CDUProgressPage.ShowPage(this);
-            } else if (mcduStartPage === 30) {
-                CDUPerformancePage.ShowPage(this);
-            } else if (mcduStartPage === 31) {
-                CDUPerformancePage.ShowTAKEOFFPage(this);
-            } else if (mcduStartPage === 32) {
-                CDUPerformancePage.ShowCLBPage(this);
-            } else if (mcduStartPage === 33) {
-                CDUPerformancePage.ShowCRZPage(this);
-            } else if (mcduStartPage === 34) {
-                CDUPerformancePage.ShowDESPage(this);
-            } else if (mcduStartPage === 35) {
-                CDUPerformancePage.ShowAPPRPage(this);
-            } else if (mcduStartPage === 40) {
-                CDUInitPage.ShowPage1(this);
-            } else if (mcduStartPage === 50) {
-                CDUDataIndexPage.ShowPage(this);
-            } else if (mcduStartPage === 60) {
-                CDUFlightPlanPage.ShowPage(this);
-            } else if (mcduStartPage === 70) {
-                CDUNavRadioPage.ShowPage(this);
-            } else if (mcduStartPage === 80) {
-                CDUFuelPredPage.ShowPage(this);
-            }
+            CDUIdentPage.ShowPage(this);
+        } else if (mcduStartPage === 10) {
+            CDUDirectToPage.ShowPage(this);
+        } else if (mcduStartPage === 20) {
+            CDUProgressPage.ShowPage(this);
+        } else if (mcduStartPage === 30) {
+            CDUPerformancePage.ShowPage(this);
+        } else if (mcduStartPage === 31) {
+            CDUPerformancePage.ShowTAKEOFFPage(this);
+        } else if (mcduStartPage === 32) {
+            CDUPerformancePage.ShowCLBPage(this);
+        } else if (mcduStartPage === 33) {
+            CDUPerformancePage.ShowCRZPage(this);
+        } else if (mcduStartPage === 34) {
+            CDUPerformancePage.ShowDESPage(this);
+        } else if (mcduStartPage === 35) {
+            CDUPerformancePage.ShowAPPRPage(this);
+        } else if (mcduStartPage === 40) {
+            CDUInitPage.ShowPage1(this);
+        } else if (mcduStartPage === 50) {
+            CDUDataIndexPage.ShowPage(this);
+        } else if (mcduStartPage === 60) {
+            CDUFlightPlanPage.ShowPage(this);
+        } else if (mcduStartPage === 70) {
+            CDUNavRadioPage.ShowPage(this);
+        } else if (mcduStartPage === 80) {
+            CDUFuelPredPage.ShowPage(this);
         }
         this.electricity = this.querySelector("#Electricity");
         this.climbTransitionGroundAltitude = null;
@@ -910,6 +908,8 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             } else if (this.currentFlightPhase === FlightPhase.FLIGHT_PHASE_APPROACH) {
                 if (this.isAirspeedManaged()) {
                     const speed = this.getManagedApproachSpeedMcdu();
+                    const vls = this.getVApp();
+                    SimVar.SetSimVarValue("L:A32NX_AP_APPVLS", "knots", vls);
                     this.setAPManagedSpeed(speed, Aircraft.A320_NEO);
                 }
             }
