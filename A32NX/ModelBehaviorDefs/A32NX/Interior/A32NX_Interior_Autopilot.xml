@@ -34,7 +34,7 @@
                     0 (&gt;L:#PLANE_NAME#_AUTOPILOT_LAST_APPR_MODE)
                 }
             </LEFT_SINGLE_CODE>
-            <EMISSIVE_CODE_ACTIVE>(L:#PLANE_NAME#_AUTOPILOT_LAST_APPR_MODE, Number) 0 ==</EMISSIVE_CODE_ACTIVE>
+            <EMISSIVE_CODE_ACTIVE>(L:#PLANE_NAME#_AUTOPILOT_LAST_APPR_MODE, Number) 1 ==</EMISSIVE_CODE_ACTIVE>
         </UseTemplate>
     </Template>
 
@@ -62,7 +62,7 @@
 
                 (&gt;K:AP_APR_HOLD)
 
-                (L:#PLANE_NAME#_AUTOPILOT_LAST_APPR_MODE, Bool) 2 &lt;= if{
+                (L:#PLANE_NAME#_AUTOPILOT_LAST_APPR_MODE, Bool) 2 &lt; if{
                     (* Mode was undefined or loc, we set to appr *)
 
                     2 (&gt;L:#PLANE_NAME#_AUTOPILOT_LAST_APPR_MODE)
@@ -72,7 +72,7 @@
                     0 (&gt;L:#PLANE_NAME#_AUTOPILOT_LAST_APPR_MODE)
                 }
             </LEFT_SINGLE_CODE>
-            <EMISSIVE_CODE_ACTIVE>(L:#PLANE_NAME#_AUTOPILOT_LAST_APPR_MODE, Number) 1 ==</EMISSIVE_CODE_ACTIVE>
+            <EMISSIVE_CODE_ACTIVE>(L:#PLANE_NAME#_AUTOPILOT_LAST_APPR_MODE, Number) 2 ==</EMISSIVE_CODE_ACTIVE>
         </UseTemplate>
     </Template>
 

@@ -699,6 +699,7 @@
         <Sound WwiseData="true" WwiseEvent="aural_500ft" />
         <Sound WwiseData="true" WwiseEvent="aural_1000ft" />
         <Sound WwiseData="true" WwiseEvent="aural_2500ft" />
+        <Sound WwiseData="true" WwiseEvent="aural_100above" />
         <Sound WwiseData="true" WwiseEvent="aural_minimums" />
         <Sound WwiseData="true" WwiseEvent="aural_minimumnew" NodeName="WIPER_BASE_L" />
         <Sound WwiseData="true" WwiseEvent="aural_100above" NodeName="WIPER_BASE_L" />
