@@ -224,7 +224,7 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
                     this.targetAltitudeIndicatorSVGShape = document.createElementNS(Avionics.SVG.NS, "path");
                 }
                 this.targetAltitudeIndicatorSVGShape.setAttribute("fill", "none");
-                this.targetAltitudeIndicatorSVGShape.setAttribute("stroke", "cyan");// TBM later (should turn amber for Selected mode)
+                this.targetAltitudeIndicatorSVGShape.setAttribute("stroke", "#00FFFF");// TBM later (should turn amber for Selected mode)
                 this.targetAltitudeIndicatorSVGShape.setAttribute("stroke-width", "3");
                 this.targetAltitudeIndicatorSVGShape.setAttribute("d", "M 0 0 L 38 0 L 38 100 L 0 100 L 0 55 L 6 50 L 0 45 Z");
                 this.targetAltitudeIndicatorSVG.appendChild(this.targetAltitudeIndicatorSVGShape);
@@ -239,7 +239,7 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
                 this.targetAltitudeIndicatorSVGText.textContent = "35000";
                 this.targetAltitudeIndicatorSVGText.setAttribute("x", (8 + _width + 18).toString());
                 this.targetAltitudeIndicatorSVGText.setAttribute("y", "49");
-                this.targetAltitudeIndicatorSVGText.setAttribute("fill", "cyan");
+                this.targetAltitudeIndicatorSVGText.setAttribute("fill", "#00FFFF");
                 this.targetAltitudeIndicatorSVGText.setAttribute("font-size", (this.fontSize * 1.15).toString());
                 this.targetAltitudeIndicatorSVGText.setAttribute("font-family", "ECAMFontRegular");
                 this.targetAltitudeIndicatorSVGText.setAttribute("text-anchor", "end");
@@ -296,7 +296,7 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
                 Utils.RemoveAllChildren(this.targetAltitudeText);
             }
             this.targetAltitudeText.style.fontSize = "45px";
-            this.targetAltitudeText.style.color = "cyan";
+            this.targetAltitudeText.style.color = "#00FFFF";
             this.targetAltitudeText.style.position = "absolute";
             this.targetAltitudeText.style.top = "-5px";
             this.targetAltitudeText.style.left = "25px";
@@ -311,7 +311,7 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
         this.STDpressureSVG.textContent = "STD";
         this.STDpressureSVG.setAttribute("x", "98");
         this.STDpressureSVG.setAttribute("y", (posY + height + 115 - 38));// - (this.fontSize * 1.3)).toString());
-        this.STDpressureSVG.setAttribute("fill", "cyan");
+        this.STDpressureSVG.setAttribute("fill", "#00FFFF");
         this.STDpressureSVG.setAttribute("font-size", (this.fontSize * 1.3).toString());//1.05
         this.STDpressureSVG.setAttribute("font-family", "ECAMFontRegular");
         this.STDpressureSVG.setAttribute("text-anchor", "start");
@@ -352,7 +352,7 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
         this.pressureSVG.textContent = "---";
         this.pressureSVG.setAttribute("x", "130");
         this.pressureSVG.setAttribute("y", (posY + height + 80).toString());
-        this.pressureSVG.setAttribute("fill", "cyan");
+        this.pressureSVG.setAttribute("fill", "#00FFFF");
         this.pressureSVG.setAttribute("font-size", (this.fontSize * 1.3).toString());
         this.pressureSVG.setAttribute("font-family", "ECAMFontRegular");
         this.pressureSVG.setAttribute("text-anchor", "start");
@@ -389,7 +389,7 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
         this.mtrsCursorSVGText.textContent = "-----";
         this.mtrsCursorSVGText.setAttribute("x", "153");
         this.mtrsCursorSVGText.setAttribute("y", (posY + height + 159 - 36));
-        this.mtrsCursorSVGText.setAttribute("fill", "lime");
+        this.mtrsCursorSVGText.setAttribute("fill", "rgb(0,255,0)");
         this.mtrsCursorSVGText.setAttribute("font-size", (this.fontSize * 1.3).toString());
         this.mtrsCursorSVGText.setAttribute("font-family", "ECAMFontRegular");
         this.mtrsCursorSVGText.setAttribute("text-anchor", "start");
@@ -404,7 +404,7 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
         this.mtrsCursorSVGUnit.textContent = " M";
         this.mtrsCursorSVGUnit.setAttribute("x", "162");
         this.mtrsCursorSVGUnit.setAttribute("y", (posY + height + 159 - 36));
-        this.mtrsCursorSVGUnit.setAttribute("fill", "cyan");
+        this.mtrsCursorSVGUnit.setAttribute("fill", "#00FFFF");
         this.mtrsCursorSVGUnit.setAttribute("font-size", (this.fontSize * 1.3).toString());
         this.mtrsCursorSVGUnit.setAttribute("font-family", "ECAMFontRegular");
         this.mtrsCursorSVGUnit.setAttribute("text-anchor", "start");

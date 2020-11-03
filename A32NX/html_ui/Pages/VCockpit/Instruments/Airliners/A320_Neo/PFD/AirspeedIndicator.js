@@ -145,7 +145,7 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
             }
             this.v1blueSpeedText.setAttribute("x", (posX + 60).toString());
             this.v1blueSpeedText.setAttribute("y", (posY + 25).toString());
-            this.v1blueSpeedText.setAttribute("fill", "cyan");
+            this.v1blueSpeedText.setAttribute("fill", "#00FFFF");
             this.v1blueSpeedText.setAttribute("font-size", (this.fontSize * 1.3).toString());
             this.v1blueSpeedText.setAttribute("font-family", "ECAMFontRegular");
             this.v1blueSpeedText.setAttribute("text-anchor", "start");
@@ -158,7 +158,7 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
             }
             this.blueSpeedTextLower.setAttribute("x", (posX + 78).toString());
             this.blueSpeedTextLower.setAttribute("y", (posY + height + 17).toString());
-            this.blueSpeedTextLower.setAttribute("fill", "cyan");
+            this.blueSpeedTextLower.setAttribute("fill", "#00FFFF");
             this.blueSpeedTextLower.setAttribute("font-size", (this.fontSize * 1.4).toString());
             this.blueSpeedTextLower.setAttribute("font-family", "ECAMFontRegular");
             this.blueSpeedTextLower.setAttribute("text-anchor", "end");
@@ -184,7 +184,7 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
             }
             this.redSpeedTextLower.setAttribute("x", (posX + 78).toString());
             this.redSpeedTextLower.setAttribute("y", (posY + height + 17).toString());
-            this.redSpeedTextLower.setAttribute("fill", "#FF6EFF");
+            this.redSpeedTextLower.setAttribute("fill", "#FF94FF");
             this.redSpeedTextLower.setAttribute("font-size", (this.fontSize * 1.4).toString());
             this.redSpeedTextLower.setAttribute("font-family", "ECAMFontRegular");
             this.redSpeedTextLower.setAttribute("text-anchor", "end");
