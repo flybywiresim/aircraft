@@ -321,40 +321,38 @@ var A320_Neo_UpperECAM;
                 }
             }
         }
-        getAPWarning(_time) {
-            const count = _time * 1000;
-            let apwarning;
+        getAPWarning(time) {
+            const count = time * 1000;
             if (this.getCachedSimVar("AUTOPILOT MASTER", "Bool") == false) {
-                const timer = setTimeout(function () {
-                    SimVar.SetSimVarValue("L:AP_DiscWarn", "Bool", true);
+                const timer = setTimeout(() => {
+                    SimVar.SetSimVarValue("L:A32NX_AP_DISCWARN", "Bool", true); 
                 }, count);
-                if (this.getCachedSimVar("L:AP_DiscWarn", "Bool") != true) {
+                if (this.getCachedSimVar("L:A32NX_AP_DISCWARN", "Bool") != true) {
                     return true;
                 } else {
                     clearTimeout(timer);
                     return false;
                 }
             } else {
-                apwarning = 0;
-                SimVar.SetSimVarValue("L:AP_DiscWarn", "Bool", false);
+                SimVar.SetSimVarValue("L:A32NX_AP_DISCWARN", "Bool", false);
             }
         }
-        getATHRWarning(_time) {
-            const count = _time * 1000;
+        getATHRWarning(time) {
+            const count = time * 1000;
             if (this.getCachedSimVar("AUTOTHROTTLE ACTIVE", "Bool") == false) {
-                SimVar.SetSimVarValue("L:ATHR_Disconnected", "Bool", true);
-                const timer = setTimeout(function () {
-                    SimVar.SetSimVarValue("L:ATHR_DiscWarn", "Bool", true);
+                SimVar.SetSimVarValue("L:A32NX_ATHR_DISC", "Bool", true);
+                const timer = setTimeout(() => {
+                    SimVar.SetSimVarValue("L:A32NX_ATHR_DISCWARN", "Bool", true);
                 }, count);
-                if (this.getCachedSimVar("L:ATHR_DiscWarn", "Bool") != true) {
+                if (this.getCachedSimVar("L:A32NX_ATHR_DISCWARN", "Bool") != true) {
                     return true;
                 } else {
                     clearTimeout(timer);
                     return false;
                 }
             } else {
-                SimVar.SetSimVarValue("L:ATHR_DiscWarn", "Bool", false);
-                SimVar.SetSimVarValue("L:ATHR_Disconnected", "Bool", false);
+                SimVar.SetSimVarValue("L:A32NX_ATHR_DISC", "Bool", false);
+                SimVar.SetSimVarValue("L:A32NX_ATHR_DISCWARN", "Bool", false);
             }
         }
         init() {
@@ -1884,9 +1882,8 @@ var A320_Neo_UpperECAM;
             if ((SimVar.GetSimVarValue("L:A32NX_FADEC_POWERED_ENG1", "Bool") == 1) || (SimVar.GetSimVarValue("L:A32NX_FADEC_POWERED_ENG2", "Bool") == 1)) {
                 // MaxThrust seems to be bugged, so here we use the throttle position for now
                 const throttlePosition = Math.max(Simplane.getEngineThrottle(1), Simplane.getEngineThrottle(2));
-                const onGround = Simplane.getIsGrounded();
                 // Engine Mode START
-                if ((!Simplane.getEngineActive(0) || !Simplane.getEngineActive(1)) && onGround) {
+                if (!Simplane.getEngineActive(0) || !Simplane.getEngineActive(1)) {
                     if (!this.currentStart || throttlePosition !== this.currentThrottleValue) {
                         this.currentStart = true;
                         this.currentThrottleValue = throttlePosition;
@@ -1912,6 +1909,7 @@ var A320_Neo_UpperECAM;
                         this.setFlexTemperature(false);
                     }
 
+                    const onGround = Simplane.getIsGrounded();
                     this.setThrottle(true, throttlePosition, throttleMode, onGround);
                 }
             } else {
@@ -1930,8 +1928,8 @@ var A320_Neo_UpperECAM;
          * @returns string
          */
         getThrustRatingMode(_grounded, _min = "CLB", _med = "FLX", _max = "TOGA") {
-            if (_grounded || (Simplane.getCurrentFlightPhase() < FlightPhase.FLIGHT_PHASE_CLIMB)) {
-                return Simplane.getFlexTemperature() > 0 ? _med : _max;
+            if (_grounded) {
+                return ((((Simplane.getCurrentFlightPhase() < FlightPhase.FLIGHT_PHASE_CLIMB) && (Simplane.getFlexTemperature() > 0))) ? _med : _max);
             }
             return _min;
         }
