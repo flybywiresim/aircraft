@@ -90,6 +90,8 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         }
         this.electricity = this.querySelector("#Electricity");
         this.climbTransitionGroundAltitude = null;
+        this.initB = false;
+        this.initBTimer = 0;
     }
 
     insertSmallFontSpan() {
@@ -196,21 +198,21 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
 
     // check if init2 page is active
     updateMCDU() {
-        if (!this.initB) {
-            if (this.isLockedInit()) {
-                if (!this.initBTimer) {
-                    this.initBTimer = 0;
+        if (this.isAnEngineOn()) {
+            if (!this.initB) {
+                if (this.initBTimer === 0) {
+                    this.initBTimer = SimVar.GetGlobalVarValue("ABSOLUTE TIME", "Seconds");
                 }
-                if (this.initBTimer > 15) {
+                if ((this.initBTimer + 15) < SimVar.GetGlobalVarValue("ABSOLUTE TIME", "Seconds")) {
                     if (this.getTitle() === "INIT FUEL PREDICTION {}") {
                         CDUFuelPredPage.ShowPage(this);
                     }
                     this.initB = true;
-                    this.initBTimer = false;
-                } else {
-                    this.initBTimer++;
+                    this.initBTimer = 0;
                 }
             }
+        } else {
+            this.initB = false;
         }
     }
 

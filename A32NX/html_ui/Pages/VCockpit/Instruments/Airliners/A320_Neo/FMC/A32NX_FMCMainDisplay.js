@@ -316,7 +316,11 @@ class FMCMainDisplay extends BaseAirliners {
         this._inOutElement.style.color = color;
     }
 
-    isLockedInit() {
+    /**
+     * Returns true if an engine is running (FF > 0)
+     * @returns {number}
+     */
+    isAnEngineOn() {
         return Simplane.getEngineActive(0) || Simplane.getEngineActive(1);
     }
 

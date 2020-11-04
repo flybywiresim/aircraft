@@ -9,7 +9,7 @@ class CDUProgressPage {
             const value = mcdu.inOut;
             mcdu.clearUserInput();
             if (mcdu.setCruiseFlightLevelAndTemperature(value)) {
-                CDUProgressPage.ShowReportPage(mcdu);
+                CDUProgressPage.ShowPage(mcdu);
             }
         };
         mcdu.onLeftInput[1] = () => {

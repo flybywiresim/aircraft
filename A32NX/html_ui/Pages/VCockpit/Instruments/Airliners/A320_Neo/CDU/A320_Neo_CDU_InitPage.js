@@ -165,12 +165,12 @@ class CDUInitPage {
         mcdu.insertSmallFontSpan();
 
         mcdu.onPrevPage = () => {
-            if (!mcdu.isLockedInit()) {
+            if (!mcdu.isAnEngineOn()) {
                 CDUInitPage.ShowPage2(mcdu);
             }
         };
         mcdu.onNextPage = () => {
-            if (!mcdu.isLockedInit()) {
+            if (!mcdu.isAnEngineOn()) {
                 CDUInitPage.ShowPage2(mcdu);
             }
         };
