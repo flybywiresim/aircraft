@@ -1099,7 +1099,6 @@ var Airbus_FMA;
 
             if (Airbus_FMA.CurrentPlaneState.flightPhase != FlightPhase.FLIGHT_PHASE_GOAROUND) {
                 if (CurrentPlaneState.bothAutoPilotsInactive && Simplane.getAutoPilotApproachType() == 4 && Simplane.getAutoPilotAPPRActive()) {
-                    SimVar.SetSimVarValue("AUTOPILOT APPROACH HOLD", "bool", 1); // Not Settable per SDK
                     return Airbus_FMA.MODE_STATE.ENGAGED;
                 }
 
