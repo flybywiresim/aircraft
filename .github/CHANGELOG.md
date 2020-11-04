@@ -5,6 +5,8 @@
 <!--  1. [Changed Area] Title of changes - @github username (Name)  -->
 
 ## 0.5.0
+1. [MCDU] Added Perf Page CI functionality - @MisterChocker (Leon)
+1. [MCDU] Added PROG Page CRZ FL functionality - @MisterChocker (Leon)
 1. [MCDU] Added Init B page only available until engine start - @MisterChocker (Leon)
 1. [PFD] General improvements to the display layout - @MisterChocker (Leon)
 1. [PFD] Added proper selected and managed speed indication - @MisterChocker (Leon)
