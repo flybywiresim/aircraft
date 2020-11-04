@@ -6,6 +6,7 @@
 
 ## 0.5.0
 1. [PFD] Added proper altitude constrain visuals - @MisterChocker (Leon)
+1. [COLORS] Improved MCDU/PFD/ND/ECAM colors - @MisterChocker (Leon)
 1. [PFD] General improvements to the display layout - @MisterChocker (Leon)
 1. [PFD] Added proper selected and managed speed indication - @MisterChocker (Leon)
 1. [PFD] Added V1 indication - @MisterChocker (Leon)

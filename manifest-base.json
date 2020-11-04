@@ -6,7 +6,6 @@
       "OlderHistory": ""
     }
   },
-  "package_version": "0.4.1",
   "title": "A32NX",
   "dependencies": [
     {
@@ -27,7 +26,6 @@
     }
   ],
   "content_type": "AIRCRAFT",
-  "total_package_size": "00000000000221782906",
   "minimum_game_version": "1.9.5",
   "manufacturer": "Airbus"
 }
