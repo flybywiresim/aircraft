@@ -197,19 +197,20 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this.updateGPSMessage();
     }
 
-    // check if init2 page is active
+    /**
+     * Checks whether INIT page B is open and an engine is being started, if so:
+     * The INIT page B reverts to the FUEL PRED page 15 seconds after the first engine start and cannot be accessed after engine start.
+     */
     updateMCDU() {
         if (this.isAnEngineOn()) {
             if (!this.initB) {
-                if (this.initBTimer === 0) {
-                    this.initBTimer = SimVar.GetGlobalVarValue("ABSOLUTE TIME", "Seconds");
-                }
-                if ((this.initBTimer + 15) < SimVar.GetGlobalVarValue("ABSOLUTE TIME", "Seconds")) {
-                    if (this.getTitle() === this.initBTitle) {
-                        CDUFuelPredPage.ShowPage(this);
-                    }
-                    this.initB = true;
-                    this.initBTimer = 0;
+                this.initB = true;
+                if (this.getTitle() === this.initBTitle) {
+                    setTimeout(() => {
+                        if (this.getTitle() === this.initBTitle) {
+                            CDUFuelPredPage.ShowPage(this);
+                        }
+                    }, 15000);
                 }
             }
         } else {
