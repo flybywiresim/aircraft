@@ -3,7 +3,7 @@ class CDUProgressPage {
         mcdu.clearDisplay();
         const flightPhase = "CRZ";
         const flightNo = SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string");
-        const cruiseFl = mcdu._cruiseEntered ? "FL" + mcdu.cruiseFlightLevel.toFixed(0).padStart(3, "0") + "[color]blue" : "-----";
+        const flCrz = mcdu._cruiseEntered ? "FL" + mcdu.cruiseFlightLevel.toFixed(0).padStart(3, "0") + "[color]blue" : "-----";
         mcdu.onLeftInput[0] = () => {
             mcdu._cruiseEntered = true;
             const value = mcdu.inOut;
@@ -13,7 +13,7 @@ class CDUProgressPage {
             }
         };
         mcdu.onLeftInput[1] = () => {
-            CDUProgressPage.ShowPage(mcdu);
+            CDUProgressPage.ShowReportPage(mcdu);
         };
         mcdu.onLeftInput[4] = () => {
             CDUProgressPage.ShowPredictiveGPSPage(mcdu);
@@ -21,7 +21,7 @@ class CDUProgressPage {
         mcdu.setTemplate([
             ["ECON " + flightPhase + " " + flightNo],
             [flightPhase, "REC MAX", "OPT"],
-            [cruiseFl, "-----" ,"-----"],
+            [flCrz, "-----" ,"-----"],
             [""],
             ["<REPORT", ""],
             ["UPDATE AT"],
