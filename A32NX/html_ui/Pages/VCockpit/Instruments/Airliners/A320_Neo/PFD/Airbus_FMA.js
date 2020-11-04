@@ -907,7 +907,7 @@ var Airbus_FMA;
                     }
                 }
             }
-            if (this.currentRow1State == Column2.ROW_1_STATE.OP_CLB || this.currentRow1State == Column2.ROW_1_STATE.OP_DES || this.currentRow1State == Column2.ROW_1_STATE.CLB_ENGAGED || this.currentRow1State == Column2.ROW_1_STATE.DES) {
+            if (this.currentRow1State == Column2.ROW_1_STATE.OP_CLB || this.currentRow1State == Column2.ROW_1_STATE.OP_DES || this.currentRow1State == Column2.ROW_1_STATE.CLB_ENGAGED || this.currentRow1State == Column2.ROW_1_STATE.DES || this.currentRow1State == Column2.ROW_1_STATE.VS) {
                 if (Column2.GetModeState_GS() == MODE_STATE.ARMED) {
                     targetRow2State = Column2.ROW_2_STATE.ALT_GS_ARMED;
                 } else if (Column2.GetModeState_GS() != MODE_STATE.CAPTURED) {
