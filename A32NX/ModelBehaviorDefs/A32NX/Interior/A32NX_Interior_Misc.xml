@@ -109,7 +109,7 @@
 
     Takes into account the value of L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position.
 
-    Authors: Asobo / Markus Ullmann (@jokey2k) 18/10/20 Geoff Darst(geoffda) 2/11/20   
+    Authors: Asobo / Markus Ullmann (@jokey2k) 18/10/20   
     -->
     <Template Name="FBW_Airbus_HANDLING_Push_Autobrakes_Template">
         <DefaultTemplateParameters>
