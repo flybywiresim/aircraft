@@ -354,7 +354,7 @@ var A320_Neo_ECAM_Common;
             }
             if (this.currentValueText != null) {
                 this.currentValueText.setAttribute("class", style);
-                if (this.uppercam == true) {
+                if (this.uppercam) {
                     this.currentValueBorder.setAttribute('class', style);
                 }
                 if (!this.isActive) {
