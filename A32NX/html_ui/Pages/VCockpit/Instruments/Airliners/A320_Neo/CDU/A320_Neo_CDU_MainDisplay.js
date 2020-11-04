@@ -174,6 +174,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this._onModeManagedAltitude();
 
         CDUPerformancePage.UpdateThrRedAccFromOrigin(this);
+        CDUPerformancePage.UpdateThrRedAccFromDestination(this);
 
         SimVar.SetSimVarValue("K:VS_SLOT_INDEX_SET", "number", 1);
 
@@ -406,6 +407,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                 SimVar.SetSimVarValue("K:SPEED_SLOT_INDEX_SET", "number", 1);
             }
         }
+        //TODO something for Goaround? Like Green Dot Speed SRS etc ...
     }
     onInputAircraftSpecific(input) {
         if (input === "DIR") {
@@ -1042,15 +1044,22 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             this.currentFlightPhase = FlightPhase.FLIGHT_PHASE_GOAROUND;
             SimVar.SetSimVarValue("L:A32NX_GOAROUND_HDG_MODE", "bool", 0);
             SimVar.SetSimVarValue("L:A32NX_GOAROUND_NAV_MODE", "bool", 0);
-            //SimVar.SetSimVarValue("K:KEY_AP_APR_HOLD", "bool", 0);
+            CDUPerformancePage.ShowGOAROUNDPage(this);
         }
 
-        //Logic to switch back from GOAROUND to APPROACH (Missed Approach Path still need to be implemented)
-        //Exit Scenario for successful GOAROUND
+        //Logic to switch back from GOAROUND to APPROACH
+        //When missed approach or sec fpl are implemented this needs rework
+        //Exit Scenario after successful GOAROUND
         if ((SimVar.GetSimVarValue("L:A32NX_GOAROUND_HDG_MODE", "bool") === 1 || SimVar.GetSimVarValue("L:A32NX_GOAROUND_NAV_MODE", "bool") === 1) && this.currentFlightPhase == FlightPhase.FLIGHT_PHASE_GOAROUND && SimVar.GetSimVarValue("RADIO HEIGHT", "Feet") > 2000) {
-            this.currentFlightPhase = FlightPhase.FLIGHT_PHASE_APPROACH;
+            //this.currentFlightPhase = FlightPhase.FLIGHT_PHASE_APPROACH;
+            if (this.tryGoInApproachPhase()) {
+                CDUPerformancePage.ShowAPPRPage(this);
+            }
         } else if (this.currentFlightPhase == FlightPhase.FLIGHT_PHASE_GOAROUND && !Simplane.getAutoPilotFlightDirectorActive(1)) {
-            this.currentFlightPhase = FlightPhase.FLIGHT_PHASE_APPROACH;
+            //this.currentFlightPhase = FlightPhase.FLIGHT_PHASE_APPROACH;
+            if (this.tryGoInApproachPhase()) {
+                CDUPerformancePage.ShowAPPRPage(this);
+            }
         }
 
         //Resets flight phase to preflight 30 seconds after touchdown

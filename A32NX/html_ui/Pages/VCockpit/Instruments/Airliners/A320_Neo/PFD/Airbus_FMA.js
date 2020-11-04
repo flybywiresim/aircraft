@@ -710,6 +710,7 @@ var Airbus_FMA;
         }
         IsActive_LVRCLB() {
             const thrustReductionAltitude = Simplane.getThrustReductionAltitude();
+            const thrustReductionAltitudeGoaround = SimVar.GetSimVarValue("L:AIRLINER_THR_RED_ALT_GOAROUND", "number");
             const inTakeoff = (Airbus_FMA.CurrentPlaneState.flightPhase == FlightPhase.FLIGHT_PHASE_TAKEOFF);
             const inClimb = (Airbus_FMA.CurrentPlaneState.flightPhase == FlightPhase.FLIGHT_PHASE_CLIMB);
             const inGoAround = (Airbus_FMA.CurrentPlaneState.flightPhase == FlightPhase.FLIGHT_PHASE_GOAROUND);
@@ -724,6 +725,9 @@ var Airbus_FMA;
                 if ((inTakeoff || inClimb) && !inGoAround) {
                     return Airbus_FMA.CurrentPlaneState.highestThrottleDetent > ThrottleMode.CLIMB;
                 }
+
+            }
+            if (Simplane.getAltitude() > thrustReductionAltitudeGoaround) {
 
                 if (inGoAround && Airbus_FMA.CurrentPlaneState.highestThrottleDetent == ThrottleMode.TOGA) {
                     return true;
@@ -1029,7 +1033,7 @@ var Airbus_FMA;
             }
         }
         static GetModeState_SRS() {
-            const thrustReductionAltitude = Simplane.getThrustReductionAltitude();
+            const thrustReductionAltitudeGoaround = SimVar.GetSimVarValue("L:AIRLINER_THR_RED_ALT_GOAROUND", "number");
 
             if (Airbus_FMA.CurrentPlaneState.flightPhase == FlightPhase.FLIGHT_PHASE_TAKEOFF && Airbus_FMA.CurrentPlaneState.thisFlightDirectorActive) {
                 if (Airbus_FMA.CurrentPlaneState.highestThrottleDetent == ThrottleMode.TOGA) {
@@ -1040,7 +1044,7 @@ var Airbus_FMA;
 
             } else if (Airbus_FMA.CurrentPlaneState.flightPhase == FlightPhase.FLIGHT_PHASE_GOAROUND) {
                 //Check if SRS needs to be shown when above thrustReductionAlt
-                if (Simplane.getAltitude() < thrustReductionAltitude) {
+                if (Simplane.getAltitude() < thrustReductionAltitudeGoaround) {
                     SRSEnabled = true;
                     return Airbus_FMA.MODE_STATE.ENGAGED;
                 }
@@ -1126,9 +1130,8 @@ var Airbus_FMA;
         static IsArmed_OPCLB_MA() {
 
             if (Airbus_FMA.CurrentPlaneState.flightPhase == FlightPhase.FLIGHT_PHASE_GOAROUND) {
-                //Check if SRS needs to be shown when above thrustReductionAlt
-                const thrustReductionAltitude = Simplane.getThrustReductionAltitude();
-                if (Simplane.getAltitude() < thrustReductionAltitude) {
+                const thrustReductionAltitudeGoaround = SimVar.GetSimVarValue("L:AIRLINER_THR_RED_ALT_GOAROUND", "number");
+                if (Simplane.getAltitude() < thrustReductionAltitudeGoaround) {
                     return true;
                 }
             }

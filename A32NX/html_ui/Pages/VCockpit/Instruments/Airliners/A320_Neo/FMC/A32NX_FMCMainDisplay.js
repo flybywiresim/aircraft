@@ -999,6 +999,33 @@ class FMCMainDisplay extends BaseAirliners {
         return false;
     }
 
+    trySetThrustReductionAccelerationAltitudeGoaround(s) {
+        let thrRed = NaN;
+        let accAlt = NaN;
+        if (s) {
+            const sSplit = s.split("/");
+            thrRed = parseInt(sSplit[0]);
+            accAlt = parseInt(sSplit[1]);
+        }
+        console.log("s ",s);
+        console.log("thrRed ",thrRed);
+        console.log("accAlt ",accAlt);
+        if ((isFinite(thrRed) || isFinite(accAlt)) && thrRed <= accAlt) {
+            if (isFinite(thrRed)) {
+                this.thrustReductionAltitudeGoaround = thrRed;
+                SimVar.SetSimVarValue("L:AIRLINER_THR_RED_ALT_GOAROUND", "Number", this.thrustReductionAltitudeGoaround);
+            }
+            if (isFinite(accAlt)) {
+                this.accelerationAltitudeGoaround = accAlt;
+                SimVar.SetSimVarValue("L:AIRLINER_ACC_ALT_GOAROUND", "Number", this.accelerationAltitudeGoaround);
+            }
+            console.log("WILL RETURN TRUE!");
+            return true;
+        }
+        this.showErrorMessage(this.defaultInputErrorMessage);
+        return false;
+    }
+
     trySetFlapsTHS(s) {
         if (s) {
             const flaps = s.split("/")[0];
@@ -1805,6 +1832,11 @@ class FMCMainDisplay extends BaseAirliners {
             Coherent.call("GENERAL_ENG_THROTTLE_MANAGED_MODE_SET", ThrottleMode.AUTO);
             return true;
         }
+        if (this.currentFlightPhase === FlightPhase.FLIGHT_PHASE_GOAROUND) {
+            this.currentFlightPhase = FlightPhase.FLIGHT_PHASE_APPROACH;
+            Coherent.call("GENERAL_ENG_THROTTLE_MANAGED_MODE_SET", ThrottleMode.AUTO);
+            return true;
+        }
         if (this.currentFlightPhase === FlightPhase.FLIGHT_PHASE_APPROACH) {
             return true;
         }
@@ -1891,12 +1923,19 @@ class FMCMainDisplay extends BaseAirliners {
                 //SimVar.SetSimVarValue("K:KEY_AP_APR_HOLD", "bool", 0);
             }
 
-            //Logic to switch back from GOAROUND to APPROACH (Missed Approach Path still need to be implemented)
-            //Exit Scenario for successful GOAROUND
+            //Logic to switch back from GOAROUND to APPROACH
+            //When missed approach or sec fpl are implemented this needs rework
+            //Exit Scenario after successful GOAROUND
             if ((SimVar.GetSimVarValue("L:A32NX_GOAROUND_HDG_MODE", "bool") === 1 || SimVar.GetSimVarValue("L:A32NX_GOAROUND_NAV_MODE", "bool") === 1) && this.currentFlightPhase == FlightPhase.FLIGHT_PHASE_GOAROUND && SimVar.GetSimVarValue("RADIO HEIGHT", "Feet") > 2000) {
-                this.currentFlightPhase = FlightPhase.FLIGHT_PHASE_APPROACH;
+                //this.currentFlightPhase = FlightPhase.FLIGHT_PHASE_APPROACH;
+                if (this.tryGoInApproachPhase()) {
+                    CDUPerformancePage.ShowAPPRPage(this);
+                }
             } else if (this.currentFlightPhase == FlightPhase.FLIGHT_PHASE_GOAROUND && !Simplane.getAutoPilotFlightDirectorActive(1)) {
-                this.currentFlightPhase = FlightPhase.FLIGHT_PHASE_APPROACH;
+                //this.currentFlightPhase = FlightPhase.FLIGHT_PHASE_APPROACH;
+                if (this.tryGoInApproachPhase()) {
+                    CDUPerformancePage.ShowAPPRPage(this);
+                }
             }
         }
         if (SimVar.GetSimVarValue("L:AIRLINER_FLIGHT_PHASE", "number") != this.currentFlightPhase) {
