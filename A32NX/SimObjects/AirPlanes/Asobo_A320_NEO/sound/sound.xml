@@ -37,8 +37,6 @@
 
     <GroundSounds>
 
-
-
         <Sound WwiseEvent="CENTER_TOUCHDOWN" FadeOutType="2" FadeOutTime="0.5" WwiseData="true">
             <WwiseRTPC SimVar="WHEEL RPM" Units="RPM" Index="0" Derived="true" RTPCName="SIMVAR_WHEEL_RPM_DERIVED"/>
             <WwiseRTPC SimVar="VERTICAL SPEED" Units="FEET PER MINUTE" Derived="true" Index="0" RTPCName="SIMVAR_VERTICAL_SPEED_DERIVED" />
@@ -58,7 +56,9 @@
     </GroundSounds>
 
     <MiscellaneousSounds>
+
         <Sound WwiseEvent="AP_PREFLIGHT_CHECK_OVER" ViewPoint="Inside" WwiseData="true" />
+        
     </MiscellaneousSounds>
 
     <!-- SimvarSounds ========================================================================================== -->
