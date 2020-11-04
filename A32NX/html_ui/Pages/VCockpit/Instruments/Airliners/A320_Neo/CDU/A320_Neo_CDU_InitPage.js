@@ -386,6 +386,8 @@ class CDUInitPage {
             extraTimeCell = "0000{smallEnd}";
         }
 
+        mcdu.initBTitle = initBTitle;
+
         mcdu.setTemplate([
             [initBTitle],
             ["TAXI", "ZFW/ZFWCG"], // Reference Honeywell FMS

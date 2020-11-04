@@ -92,6 +92,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this.climbTransitionGroundAltitude = null;
         this.initB = false;
         this.initBTimer = 0;
+        this.initBTitle = "";
     }
 
     insertSmallFontSpan() {
@@ -204,7 +205,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                     this.initBTimer = SimVar.GetGlobalVarValue("ABSOLUTE TIME", "Seconds");
                 }
                 if ((this.initBTimer + 15) < SimVar.GetGlobalVarValue("ABSOLUTE TIME", "Seconds")) {
-                    if (this.getTitle() === "INIT FUEL PREDICTION {}") {
+                    if (this.getTitle() === this.initBTitle) {
                         CDUFuelPredPage.ShowPage(this);
                     }
                     this.initB = true;
