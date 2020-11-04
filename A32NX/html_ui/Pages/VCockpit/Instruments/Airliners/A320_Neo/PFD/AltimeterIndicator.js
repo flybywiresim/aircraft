@@ -460,7 +460,7 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
         if (this.mtrsVisible) {
             if (this.mtrsSelectedGroup) {
                 const meters = Math.round(_selected * 0.3048);
-                this.mtrsSelectedGroup.style.color = this.getAutopilotMode() ? "#00FFFF" : "FF94FF";
+                this.mtrsSelectedGroup.style.color = this.getAutopilotMode() ? "#00FFFF" : "#FF94FF";
                 this.mtrsSelectedGroup.textContent = meters.toString() + "M";
             }
             if (this.mtrsCursorGroup) {
