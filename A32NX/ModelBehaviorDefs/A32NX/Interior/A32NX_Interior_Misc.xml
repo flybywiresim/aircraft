@@ -199,7 +199,6 @@
                                     (L:A32NX_AUTOBRAKES_ACTIVATED) (A:AUTOBRAKES ACTIVE, Bool) ! and if{
                                         0 (&gt;L:XMLVAR_Autobrakes_Level)
                                         0 (&gt;L:A32NX_AUTOBRAKES_ACTIVATED)
-                                        1 (&gt;L:A32NX_DISARM_AUTOBRAKES_ON_LG_RETRACT)
                                         0 (&gt;A32NX_ON_GROUND_WAIT_COUNTER)
                                     }
                                 } els{
