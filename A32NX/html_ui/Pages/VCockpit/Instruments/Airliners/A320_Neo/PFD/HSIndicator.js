@@ -83,7 +83,7 @@ class Jet_PFD_HSIndicator extends HTMLElement {
             bg.setAttribute("y", _top.toString());
             bg.setAttribute("width", _width.toString());
             bg.setAttribute("height", _height.toString());
-            bg.setAttribute("fill", "#343B51");
+            bg.setAttribute("fill", "#6B798A");
             bg.setAttribute("stroke", this.strokeColor);
             bg.setAttribute("stroke-width", this.strokeSize.toString());
             bg.setAttribute("stroke-opacity", this.strokeOpacity);
@@ -143,7 +143,7 @@ class Jet_PFD_HSIndicator extends HTMLElement {
                 {
                     const headingShape = document.createElementNS(Avionics.SVG.NS, "path");
                     headingShape.setAttribute("fill", "transparent");
-                    headingShape.setAttribute("stroke", "#00F2FF");
+                    headingShape.setAttribute("stroke", "#00FFFF");
                     headingShape.setAttribute("stroke-width", "4");
                     headingShape.setAttribute("d", "M20 24 l -12 -20 l 24 0 z");
                     headingSVG.appendChild(headingShape);
@@ -167,7 +167,7 @@ class Jet_PFD_HSIndicator extends HTMLElement {
                 {
                     const trackShape = document.createElementNS(Avionics.SVG.NS, "path");
                     trackShape.setAttribute("fill", "transparent");
-                    trackShape.setAttribute("stroke", "#00FF21");
+                    trackShape.setAttribute("stroke", "#00FF00");
                     trackShape.setAttribute("stroke-width", "4");
                     trackShape.setAttribute("d", "M13 0 l-13 17 l13 17 l13 -17 Z");
                     trackSVG.appendChild(trackShape);
@@ -191,7 +191,7 @@ class Jet_PFD_HSIndicator extends HTMLElement {
                 {
                     const ilsShape = document.createElementNS(Avionics.SVG.NS, "path");
                     ilsShape.setAttribute("fill", "transparent");
-                    ilsShape.setAttribute("stroke", "#FF0CE2");
+                    ilsShape.setAttribute("stroke", "#FF94FF");
                     ilsShape.setAttribute("stroke-width", "5");
                     ilsShape.setAttribute("d", "M15 0 l0 50 M0 40 l30 0");
                     ilsSVG.appendChild(ilsShape);
@@ -240,7 +240,7 @@ class Jet_PFD_HSIndicator extends HTMLElement {
             this.ILSOffscreenText = document.createElementNS(Avionics.SVG.NS, "text");
             this.ILSOffscreenText.setAttribute("x", "0");
             this.ILSOffscreenText.setAttribute("y", (60 + 20).toString());
-            this.ILSOffscreenText.setAttribute("fill", "#FF0CE2");
+            this.ILSOffscreenText.setAttribute("fill", "#FF94FF");
             this.ILSOffscreenText.setAttribute("font-size", (this.fontSize * 1.35).toString());
             this.ILSOffscreenText.setAttribute("font-family", "Roboto-Light");
             this.ILSOffscreenText.setAttribute("text-anchor", "middle");
