@@ -165,12 +165,12 @@ class CDUInitPage {
         mcdu.insertSmallFontSpan();
 
         mcdu.onPrevPage = () => {
-            if (!Simplane.getEngineActive(0) && !Simplane.getEngineActive(1)) {
+            if (!mcdu.isLockedInit()) {
                 CDUInitPage.ShowPage2(mcdu);
             }
         };
         mcdu.onNextPage = () => {
-            if (!Simplane.getEngineActive(0) && !Simplane.getEngineActive(1)) {
+            if (!mcdu.isLockedInit()) {
                 CDUInitPage.ShowPage2(mcdu);
             }
         };

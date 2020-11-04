@@ -316,6 +316,10 @@ class FMCMainDisplay extends BaseAirliners {
         this._inOutElement.style.color = color;
     }
 
+    isLockedInit() {
+        return Simplane.getEngineActive(0) || Simplane.getEngineActive(1);
+    }
+
     async tryUpdateRefAirport(airportIdent) {
         const airport = await this.dataManager.GetAirportByIdent(airportIdent);
         if (!airport) {

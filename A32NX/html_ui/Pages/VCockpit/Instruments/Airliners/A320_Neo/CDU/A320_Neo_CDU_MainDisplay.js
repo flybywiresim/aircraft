@@ -185,11 +185,33 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
 
         this.A32NXCore.update();
 
+        this.updateMCDU();
+
         this.updateAutopilot();
 
         this.updateScreenState();
 
         this.updateGPSMessage();
+    }
+
+    // check if init2 page is active
+    updateMCDU() {
+        if (!this.initB) {
+            if (this.isLockedInit()) {
+                if (!this.initBTimer) {
+                    this.initBTimer = 0;
+                }
+                if (this.initBTimer > 15) {
+                    if (this.getTitle() === "INIT FUEL PREDICTION {}") {
+                        CDUFuelPredPage.ShowPage(this);
+                    }
+                    this.initB = true;
+                    this.initBTimer = false;
+                } else {
+                    this.initBTimer++;
+                }
+            }
+        }
     }
 
     // check GPS Primary state and display message accordingly
