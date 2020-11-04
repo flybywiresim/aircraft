@@ -128,10 +128,12 @@
                 be set if the aircraft is on the ground.-->
             <UseTemplate Name="ASOBO_GT_Push_Button">
                 <LEFT_SINGLE_CODE>
-                (A:ANTISKID BRAKES ACTIVE, Bool) ! (L:XMLVAR_Autobrakes_Level) #AUTOBRAKE_LEVEL# == or (A:SIM ON GROUND, Bool) ! #AUTOBRAKE_LEVEL# 3 == and or if{
+                (A:ANTISKID BRAKES ACTIVE, Bool) ! (L:XMLVAR_Autobrakes_Level) #AUTOBRAKE_LEVEL# == or if{
                     0 (&gt;L:XMLVAR_Autobrakes_Level)
                 } els{
-                    #AUTOBRAKE_LEVEL# (&gt;L:XMLVAR_Autobrakes_Level)
+                    (A:SIM ON GROUND, Bool) #AUTOBRAKE_LEVEL# 3 != or if{
+                        #AUTOBRAKE_LEVEL# (&gt;L:XMLVAR_Autobrakes_Level)
+                    }
                 }
 
                 (L:XMLVAR_Autobrakes_Level) 0 == if{
