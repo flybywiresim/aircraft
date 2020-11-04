@@ -250,13 +250,13 @@ var A320_Neo_ECAM_Common;
                 const borderHeight = this.currentValueBorderHeight * 1.2;
                 const borderPosX = textPosX - (borderWidth * 0.95);
                 const borderPosY = textPosY - (borderHeight * 0.55);
-                const currentValueBorder = document.createElementNS(Avionics.SVG.NS, "rect");
-                currentValueBorder.id = "CurrentValueBorder";
-                currentValueBorder.setAttribute("x", borderPosX.toString());
-                currentValueBorder.setAttribute("y", borderPosY.toString());
-                currentValueBorder.setAttribute("width", borderWidth.toString());
-                currentValueBorder.setAttribute("height", borderHeight.toString());
-                this.rootSVG.appendChild(currentValueBorder);
+                this.currentValueBorder = document.createElementNS(Avionics.SVG.NS, "rect");
+                this.currentValueBorder.id = "CurrentValueBorder";
+                this.currentValueBorder.setAttribute("x", borderPosX.toString());
+                this.currentValueBorder.setAttribute("y", borderPosY.toString());
+                this.currentValueBorder.setAttribute("width", borderWidth.toString());
+                this.currentValueBorder.setAttribute("height", borderHeight.toString());
+                this.rootSVG.appendChild(this.currentValueBorder);
             }
             if (this.extraMessageFunction != null) {
                 const extraMessageGroup = document.createElementNS(Avionics.SVG.NS, "g");
@@ -352,6 +352,9 @@ var A320_Neo_ECAM_Common;
             }
             if (this.currentValueText != null) {
                 this.currentValueText.setAttribute("class", style);
+                if (this.currentValuePrecision == 0) {
+                    this.currentValueBorder.setAttribute('class', style);
+                }
                 if (!this.isActive) {
                     this.currentValueText.textContent = "XX";
                     this.currentValueTextdecimal.textContent = "";
@@ -433,37 +436,35 @@ var A320_Neo_ECAM_Common;
             }
         }
         refreshMainValue(_value, _force = false) {
-            if ((_value != this.currentValue) || _force) {
-                this.currentValue = _value;
-                this.currentValueCursor = (_value <= this.minValue) ? this.cursorOffset + this.minValue : _value + this.cursorOffset;
-                //this.currentValueCursor = _value + this.cursorOffset;
-                const clampedValue = Utils.Clamp(this.currentValue, this.minValue, this.maxValue);
-                const clampedValueCursor = Utils.Clamp(this.currentValueCursor, this.minValue, this.maxValue);
-                let style = "";
-                if ((this.dangerRange[0] != this.dangerRange[1]) && (clampedValue >= this.dangerRange[0]) && (clampedValue <= this.dangerRange[1])) {
-                    style = "danger";
-                } else if ((this.warningRange[0] != this.warningRange[1]) && (clampedValue >= this.warningRange[0]) && (clampedValue <= this.warningRange[1])) {
-                    style = "warning";
-                } else {
-                    style = "active";
-                }
-                if (this.cursor != null) {
-                    const angle = this.valueToAngle(clampedValueCursor, false);
-                    this.cursor.setAttribute("transform", "rotate(" + angle + ")");
-                    this.cursor.setAttribute("class", style);
-                }
-                if (this.currentValueText != null) {
-                    const strValue = this.currentValue.toFixed(this.currentValuePrecision);
-                    this.currentValueText.textContent = strValue;
-                    this.currentValueText.setAttribute("class", style);
-                    if (this.currentValuePrecision > 0) {
-                        const strValueArray = strValue.split(".");
-                        this.currentValueText.textContent = strValueArray[0];
-                        this.currentValueTextdecimal.textContent = strValueArray[1];
-                        this.currentValueTextdecimal.setAttribute("class", style + " decimal");
-                        this.currentValueTextdecimalP.textContent = ".";
-                        this.currentValueTextdecimalP.setAttribute("class", style + " decimalpoint");
-                    }
+            console.log("value is " + _value + " and currentValue is " + this.currentValue);
+            this.currentValue = _value;
+            this.currentValueCursor = (_value <= this.minValue) ? this.cursorOffset + this.minValue : _value + this.cursorOffset;
+            const clampedValue = Utils.Clamp(this.currentValue, this.minValue, this.maxValue);
+            const clampedValueCursor = Utils.Clamp(this.currentValueCursor, this.minValue, this.maxValue);
+            let style = "";
+            if ((this.dangerRange[0] != this.dangerRange[1]) && (clampedValue >= this.dangerRange[0]) && (clampedValue <= this.dangerRange[1])) {
+                style = "danger";
+            } else if ((this.warningRange[0] != this.warningRange[1]) && (clampedValue >= this.warningRange[0]) && (clampedValue <= this.warningRange[1])) {
+                style = "warning";
+            } else {
+                style = "active";
+            }
+            if (this.cursor != null) {
+                const angle = this.valueToAngle(clampedValueCursor, false);
+                this.cursor.setAttribute("transform", "rotate(" + angle + ")");
+                this.cursor.setAttribute("class", style);
+            }
+            if (this.currentValueText != null) {
+                const strValue = this.currentValue.toFixed(this.currentValuePrecision);
+                this.currentValueText.textContent = strValue;
+                this.currentValueText.setAttribute("class", style);
+                if (this.currentValuePrecision > 0) {
+                    const strValueArray = strValue.split(".");
+                    this.currentValueText.textContent = strValueArray[0];
+                    this.currentValueTextdecimal.textContent = strValueArray[1];
+                    this.currentValueTextdecimal.setAttribute("class", style + " decimal");
+                    this.currentValueTextdecimalP.textContent = ".";
+                    this.currentValueTextdecimalP.setAttribute("class", style + " decimalpoint");
                 }
             }
         }
