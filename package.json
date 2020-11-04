@@ -6,7 +6,7 @@
     "lint-fix": "npm run lint -- --fix",
     "prettier": "prettier --write **/*.json **/*.yml src/instruments/**/*.css",
     "build:instruments": "rollup -c src/instruments/rollup.config.js",
-    "build:msfs": "cd A32NX && python build.py",
+    "build:msfs": "node scripts/build.js",
     "build": "npm run build:instruments && npm run build:msfs"
   },
   "husky": {
