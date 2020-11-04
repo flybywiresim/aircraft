@@ -17,7 +17,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this._cruiseEntered = false;
         this._blockFuelEntered = false;
         this._gpsprimaryack = 0;
-        this.telexPingActive = false;
+        this.telexPingId = 0;
     }
     get templateID() {
         return "A320_Neo_CDU";
@@ -39,7 +39,6 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this.A32NXCore.init(this._lastTime);
 
         SimVar.SetSimVarValue("ATC FLIGHT NUMBER", "string", "", "FMC");
-        SimVar.SetSimVarValue("L:A32NX_Telex_ID", "Number", 0);
         NXDataStore.set("TELEX_KEY", "");
 
         this.defaultInputErrorMessage = "NOT ALLOWED";
@@ -195,41 +194,70 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     }
 
     updateTelex() {
-        const telexID = SimVar.GetSimVarValue("L:A32NX_Telex_ID", "Number");
         const telexKey = NXDataStore.get("TELEX_KEY", "");
-        if (!this.telexPingActive && telexID > 0 && telexKey != "") {
-            this.telexPingActive = true;
-            setInterval(() => {
-                // Call the simvars again here, otherwise they won't update if flight number changed
-                const _telexID = SimVar.GetSimVarValue("L:A32NX_Telex_ID", "Number");
+        if (this.telexPingId === 0 && telexKey === "") {
+            this.telexPingId = setInterval(() => {
+                // Call the key again, otherwise it won't be updated
                 const _telexKey = NXDataStore.get("TELEX_KEY", "");
-                const _flightNo = SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string", "FMC");
 
-                const lat = SimVar.GetSimVarValue("PLANE LATITUDE", "degrees latitude").toString();
-                const long = SimVar.GetSimVarValue("PLANE LONGITUDE", "degrees longitude").toString();
-                const alt = SimVar.GetSimVarValue("PLANE ALTITUDE", "feet").toString();
-                const posData = lat + ";" + long + ";" + alt;
+                const lat = SimVar.GetSimVarValue("PLANE LATITUDE", "degree latitude");
+                const long = SimVar.GetSimVarValue("PLANE LONGITUDE", "degree longitude");
+                const alt = SimVar.GetSimVarValue("PLANE ALTITUDE", "feet");
+                const heading = SimVar.GetSimVarValue("PLANE HEADING DEGREES MAGNETIC", "degree");
+
                 const endpoint_c = "https://api.flybywiresim.com/txcxn";
                 const endpoint_m = "https://api.flybywiresim.com/txmsg";
+
+                const updateBody = {
+                    location: {
+                        x: long,
+                        y: lat,
+                    },
+                    trueAltitude: alt,
+                    heading: heading,
+                    destination: ""
+                };
+
+                const headers = {
+                    Authorization: `Bearer ${_telexKey}`,
+                    "Content-Type": "application/json"
+                };
+
                 const toDelete = [];
-                fetch(`${endpoint_c}/${_telexID}?latlong=${posData}&key=${_telexKey}&update=yes`, {method: "POST"})
-                    .then((response) => response.json())
-                    .then((data) => {
-                        if ("error" in data) {
-                            console.log("TELEX PING FAILED");
+
+                // Update connection
+                fetch(`${endpoint_c}`, { method: "PUT", body: JSON.stringify(updateBody), headers })
+                    .then((response) => {
+                        if (!response.ok) {
+                            throw (response);
                         }
+
+                        return response.json();
+                    })
+                    .catch(() => {
+                        console.log("TELEX PING FAILED");
                     });
-                fetch(`${endpoint_m}/msgto/${_flightNo}`, {method: "GET"})
-                    .then((response) => response.json())
+
+                // Fetch new messages
+                fetch(`${endpoint_m}`, { method: "GET", headers })
+                    .then((response) => {
+                        if (!response.ok) {
+                            throw (response);
+                        }
+
+                        return response.json();
+                    })
                     .then((data) => {
                         for (const msg of data) {
+                            const sender = msg["from"]["flight"];
+
                             const lines = [];
-                            lines.push("FROM " + msg["m_from"] + "[color]blue");
+                            lines.push("FROM " + sender + "[color]blue");
                             const incLines = msg["message"].split(";");
                             incLines.forEach(l => lines.push(l.concat("[color]green")));
                             lines.push('---------------------------[color]white');
 
-                            const newMessage = { "id": Date.now(), "type": "FREE TEXT (" + msg["m_from"] + ")", "time": '00:00', "opened": null, "content": lines, };
+                            const newMessage = { "id": Date.now(), "type": "FREE TEXT (" + sender + ")", "time": '00:00', "opened": null, "content": lines, };
                             let timeValue = SimVar.GetGlobalVarValue("ZULU TIME", "seconds");
                             if (timeValue) {
                                 const seconds = Number.parseInt(timeValue);
@@ -240,17 +268,20 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                             this.messages.unshift(newMessage);
                             toDelete.push(msg["id"]);
                         }
-                    })
-                    .then(() => {
+
                         const msgCount = SimVar.GetSimVarValue("L:A32NX_COMPANY_MSG_COUNT", "Number");
                         SimVar.SetSimVarValue("L:A32NX_COMPANY_MSG_COUNT", "Number", msgCount + toDelete.length);
-                        for (const d of toDelete) {
-                            fetch(`${endpoint_m}/${d}?key=${_telexKey}&delete=yes`, {method: "POST"});
+                    })
+                    .catch(err => {
+                        if (err.status === 404) {
+                            return;
                         }
+                        console.log("TELEX MSG FETCH FAILED");
                     });
             }, 30000);
-        } else if (this.telexPingActive && telexID == 0) {
-            this.telexPingActive = false;
+        } else if (this.telexPingId !== 0 && telexKey === "") {
+            clearInterval(this.telexPingId);
+            this.telexPingId = 0;
         }
     }
 

@@ -37,7 +37,6 @@ class CDU_OPTIONS_TELEX {
             switch (storedTelexStatus) {
                 case "ENABLED":
                     NXDataStore.set("CONFIG_TELEX_STATUS", "DISABLED");
-                    SimVar.SetSimVarValue("L:A32NX_Telex_ID", "Number", 0);
                     mcdu.showErrorMessage("FREE TEXT DISABLED");
                     break;
                 default:

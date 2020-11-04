@@ -683,24 +683,44 @@ class FMCMainDisplay extends BaseAirliners {
 
         let returnCB = true;
         SimVar.SetSimVarValue("ATC FLIGHT NUMBER", "string", flightNo, "FMC").then(() => {
-            if (storedTelexStatus == "ENABLED") {
+            if (storedTelexStatus === "ENABLED") {
                 let inUse = false;
                 const initTelexServer = async () => {
-                    const lat = SimVar.GetSimVarValue("PLANE LATITUDE", "degrees latitude").toString();
-                    const long = SimVar.GetSimVarValue("PLANE LONGITUDE", "degrees longitude").toString();
-                    const alt = SimVar.GetSimVarValue("PLANE ALTITUDE", "feet").toString();
-                    const posData = lat + ";" + long + ";" + alt;
+                    const lat = SimVar.GetSimVarValue("PLANE LATITUDE", "degree latitude");
+                    const long = SimVar.GetSimVarValue("PLANE LONGITUDE", "degree longitude");
+                    const alt = SimVar.GetSimVarValue("PLANE ALTITUDE", "feet");
+                    const heading = SimVar.GetSimVarValue("PLANE HEADING DEGREES MAGNETIC", "degree");
+
                     const endpoint = "https://api.flybywiresim.com/txcxn";
-                    await fetch(`${endpoint}?flight=${flightNo}&latlong=${posData}`, {method: "POST"})
-                        .then((response) => response.json())
-                        .then((data) => {
-                            if ("error" in data) {
-                                this.showErrorMessage("FLT NBR IN USE");
-                                inUse = true;
-                            } else {
-                                SimVar.SetSimVarValue("L:A32NX_Telex_ID", "Number", data["id"]);
-                                NXDataStore.set("TELEX_KEY", data["private_key"]);
+
+                    const connectBody = {
+                        location: {
+                            x: long,
+                            y: lat,
+                        },
+                        trueAltitude: alt,
+                        heading: heading,
+                        origin: "",
+                        destination: "",
+                        flight: flightNo
+                    };
+
+                    const headers = { "Content-Type": "application/json" };
+
+                    await fetch(`${endpoint}`, { method: "POST", body: JSON.stringify(connectBody), headers })
+                        .then((response) => {
+                            if (!response.ok) {
+                                throw (response);
                             }
+
+                            return response.json();
+                        })
+                        .then((data) => {
+                            NXDataStore.set("TELEX_KEY", data["accessToken"]);
+                        })
+                        .catch(() => {
+                            this.showErrorMessage("FLT NBR IN USE");
+                            inUse = true;
                         });
                 };
 
