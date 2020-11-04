@@ -390,12 +390,12 @@
             <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Index="1" RTPCName="SIMVAR_TURB_ENG_N1" />
         </Sound>
         
-        <Sound WwiseEvent="Fuelpumpext" WwiseData="true" Continuous="true" NodeName="WING_BONE_LEFT_01" SimVar="FUELSYSTEM PUMP ACTIVE" Units="BOOL" Index="5">
+        <Sound WwiseEvent="Fuelpumpext" WwiseData="true" Continuous="true" NodeName="WING_BONE_RIGHT_01" SimVar="FUELSYSTEM PUMP ACTIVE" Units="BOOL" Index="5">
             <Range LowerBound="1" />
             <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Index="1" RTPCName="SIMVAR_TURB_ENG_N1" />
         </Sound>
         
-        <Sound WwiseEvent="Fuelpumpext" WwiseData="true" Continuous="true" NodeName="WING_BONE_LEFT_01" SimVar="FUELSYSTEM PUMP ACTIVE" Units="BOOL" Index="6">
+        <Sound WwiseEvent="Fuelpumpext" WwiseData="true" Continuous="true" NodeName="WING_BONE_RIGHT_01" SimVar="FUELSYSTEM PUMP ACTIVE" Units="BOOL" Index="6">
             <Range LowerBound="1" />
             <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Index="1" RTPCName="SIMVAR_TURB_ENG_N1" />
         </Sound>
@@ -764,7 +764,6 @@
         <Sound WwiseData="true" WwiseEvent="aural_500ft" />
         <Sound WwiseData="true" WwiseEvent="aural_1000ft" />
         <Sound WwiseData="true" WwiseEvent="aural_2500ft" />
-        <Sound WwiseData="true" WwiseEvent="aural_100above" />
         <Sound WwiseData="true" WwiseEvent="aural_minimums" />
         <Sound WwiseData="true" WwiseEvent="aural_minimumnew" NodeName="WIPER_BASE_L" />
         <Sound WwiseData="true" WwiseEvent="aural_100above" NodeName="WIPER_BASE_L" />
