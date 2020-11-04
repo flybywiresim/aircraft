@@ -140,28 +140,35 @@
                         (L:XMLVAR_Autobrakes_Level) 1 + (&gt;K:SET_AUTOBRAKE_CONTROL)
                     }
                 }
+                
+                (A:SIM ON GROUND, Bool) if{
+                    1 (&gt;L:A32NX_DISARM_AUTOBRAKES_ON_LG_RETRACT)
+                } els{
+                    0 (&gt;L:A32NX_DISARM_AUTOBRAKES_ON_LG_RETRACT)
+                }
                 </LEFT_SINGLE_CODE>
             </UseTemplate>
-
             <Condition Check="AUTOBRAKE_LEVEL" Match="0">
                 <False>
                     <UseTemplate Name="ASOBO_GT_Update">
                         <FREQUENCY>1</FREQUENCY>
                         <UPDATE_CODE>
-                        (A:AUTO BRAKE SWITCH CB, Enum) s1 0 == if{
-                            (L:XMLVAR_Autobrakes_Level) 0 == if{
-                                #AUTOBRAKE_LEVEL# (&gt;L:XMLVAR_Autobrakes_Level)
-                            }
-                        } els{
-                            l1 1 == if{
+                        (L:XMLVAR_Autobrakes_Level) 0 != if{
+                            (L:A32NX_DISARM_AUTOBRAKES_ON_LG_RETRACT) (A:GEAR HANDLE POSITION, Bool) ! and if{
+                                 0 (&gt;L:XMLVAR_Autobrakes_Level)
+                                 0 (&gt;L:A32NX_DISARM_AUTOBRAKES_ON_LG_RETRACT)
+                            }  
+                            
+                            (A:AUTOBRAKES ACTIVE, Bool) if{
+                                1 (&gt;L:A32NX_AUTOBRAKES_ACTIVATED)
+                            }   
+                            
+                            (L:A32NX_AUTOBRAKES_ACTIVATED) (A:AUTOBRAKES ACTIVE, Bool) ! and if{
                                 0 (&gt;L:XMLVAR_Autobrakes_Level)
-                            } els{
-                                l1 1 - (&gt;L:XMLVAR_Autobrakes_Level)
-                                (A:SIM ON GROUND, Bool) (A:GROUND VELOCITY, Knots) 10 &lt; and if{
-                                    0 (&gt;K:SET_AUTOBRAKE_CONTROL)
-                                }
+                                0 (&gt;L:A32NX_AUTOBRAKES_ACTIVATED)
+                                1 (&gt;L:A32NX_DISARM_AUTOBRAKES_ON_LG_RETRACT)
                             }
-                        }
+                        }  
                         </UPDATE_CODE>
                     </UseTemplate>
                 </False>
