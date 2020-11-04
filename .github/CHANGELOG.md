@@ -3,7 +3,21 @@
 <!-- Always use "1." at the start instead of "2. " or "X. " as GitHub will auto renumber everything. -->
 <!-- Use the following format below -->
 <!--  1. [Changed Area] Title of changes - @github username (Name)  -->
+
 ## 0.5.0
+1. [PFD] General improvements to the display layout - @MisterChocker (Leon)
+1. [PFD] Added proper selected and managed speed indication - @MisterChocker (Leon)
+1. [PFD] Added V1 indication - @MisterChocker (Leon)
+1. [PFD] Added proper speed bug behaviour when outside range (approach phase) - @MisterChocker (Leon)
+1. [ECAM] Fixed thrust rating mode START in flight misbehavior - @MisterChocker (Leon)
+1. [CDU] Fixed wrong VLS calculation - @MisterChocker (Leon)
+1. [PFD] Fixed wrong managed speed calculation on approach  - @MisterChocker (Leon)
+1. [ECAM] Applied FADEC power logic to thrust rating mode and value - @MisterChocker (Leon)
+1. [ECAM] Implemented thrust rating mode indication and logic - @MisterChocker (Leon)
+1. [CDU] Added actual VLS and VApp calculation - @MisterChocker (Leon)
+1. [PFD] Added actual F and S speed calculation for approach - @MisterChocker (Leon)
+1. [ENGINE] Improved engine performance - @MisterChocker (Leon)
+1. [AERODYNAMICS] Improved overall flight performance - @MisterChocker (Leon)
 1. [MISC] Redesigned Standby instrument, fixed pitch indication - @jakluk (Jakluk)
 1. [ECAM] Fixed LDG/TO memo showing at incorrect times - @MMontalto (PiCcy)
 1. [MISC] Fixed DECEL always show up on left button only - @jokey2k (JoKeY | Markus#0001 on discord)
@@ -28,6 +42,11 @@
 1. [CDU] Add ability to clear MDA/DH and add input logic for both MDA/DH - @paul92ilm (Lussion)
 1. [CHECKLISTS] Fix FD check in Taxi checklist - @Acrobot (Andrzej Pomirski)
 1. [ADIRS] Fix ADIRS lights and split into three separate units - @devsnek (devsnek#0001)
+1. [CDU] Fix MCDU not loading when starting midair - @ThatRedMelon (Daniel Brown)
+1. [FCU] Clamp the selected altitude between 100 and 49000 - @lars-reimann (Lars Reimann)
+1. [TEXTURES] added Registry plaque and improved Textures - @Pleasure0102 (Pleasure)
+1. [GPWS] Add minimums and 100above logic - @linkeleven (linkeleven#2557)
+1. [TEXTURES] Changed cockpit font and fixed spelling errors - @FoxinTale (Aubrey)
 
 ## 0.4.0
 1. [General] Add CHANGELOG.md - @nathaninnes (Nathan Innes)
@@ -41,14 +60,6 @@
 1. [ND] Add DME distances, VOR/ADF needles and functioning ADF2 - @blitzcaster (bltzcstr)
 1. [OVHD] Fixed Battery Indicator Colour - @nathaninnes (Nathan Innes)
 1. [MISC] Removed Fuel Patch from MSFS Update 1.8.3 - @nathaninnes (Nathan Innes)
-1. [CDU] Fixed wrong VLS calculation - @MisterChocker (Leon)
-1. [PFD] Fixed wrong managed speed calculation on approach  - @MisterChocker (Leon)
-1. [ECAM] Applied FADEC power logic to thrust rating mode and value - @MisterChocker (Leon)
-1. [ECAM] Implemented thrust rating mode indication and logic - @MisterChocker (Leon)
-1. [CDU] Added actual VLS and VApp calculation - @MisterChocker (Leon)
-1. [PFD] Added actual F and S speed calculation for approach - @MisterChocker (Leon)
-1. [ENGINE] Improved engine performance - @MisterChocker (Leon)
-1. [AERODYNAMICS] Improved overall flight performance - @MisterChocker (Leon)
 1. [ND] Change ND Sizing - @nathaninnes (Nathan Innes)
 1. [GPWS] Added Pull Up, Sink Rate, Dont sink GPWS with Default Sounds & Added (Too low) terrain, flaps and gear without Sounds (Future PR by Boris) - @oliverpope03 (Oliver Pope)
 1. [Sounds] Added new sounds for fuel pumps, flaps, ground roll and rattles, touchdowns, and wind - @hotshotp (Boris)
