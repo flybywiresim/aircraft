@@ -125,7 +125,7 @@
         <Component ID="#NODE_ID#" Node="#NODE_ID#">
             <UseTemplate Name="ASOBO_GT_Push_Button">
                 <LEFT_SINGLE_CODE>
-                (A:ANTISKID BRAKES ACTIVE, Bool) ! (L:XMLVAR_Autobrakes_Level) #AUTOBRAKE_LEVEL# == or if{
+                (A:ANTISKID BRAKES ACTIVE, Bool) ! (L:XMLVAR_Autobrakes_Level) #AUTOBRAKE_LEVEL# == or (A:SIM ON GROUND, Bool) ! #AUTOBRAKE_LEVEL# 3 == and or if{
                     0 (&gt;L:XMLVAR_Autobrakes_Level)
                 } els{
                     #AUTOBRAKE_LEVEL# (&gt;L:XMLVAR_Autobrakes_Level)
@@ -153,15 +153,28 @@
                     <UseTemplate Name="ASOBO_GT_Update">
                         <FREQUENCY>1</FREQUENCY>
                         <UPDATE_CODE>
+                        (A:AUTO BRAKE SWITCH CB, Number) 4 == if{
+                            3 (&gt;L:XMLVAR_Autobrakes_Level)
+                        }
+                                
                         (L:XMLVAR_Autobrakes_Level) 0 != if{
                             (L:A32NX_DISARM_AUTOBRAKES_ON_LG_RETRACT) (A:GEAR HANDLE POSITION, Bool) ! and if{
-                                 0 (&gt;L:XMLVAR_Autobrakes_Level)
-                                 0 (&gt;L:A32NX_DISARM_AUTOBRAKES_ON_LG_RETRACT)
-                            }  
+                                 30 (L:A32NX_10_SEC_COUNTER) == if{                                                                 
+                                     0 (&gt;L:XMLVAR_Autobrakes_Level)
+                                     0 (&gt;L:A32NX_DISARM_AUTOBRAKES_ON_LG_RETRACT)
+                                     0 == (L:A32NX_10_SEC_COUNTER)
+                                 } els{
+                                    (L:A32NX_10_SEC_COUNTER) 1 + (&gt;L:A32NX_10_SEC_COUNTER)
+                                }
+                            } 
+                            
+                            (A:SIM ON GROUND, Bool) if{
+                                1 (&gt;L:A32NX_DISARM_AUTOBRAKES_ON_LG_RETRACT)
+                            }
                             
                             (A:AUTOBRAKES ACTIVE, Bool) if{
                                 1 (&gt;L:A32NX_AUTOBRAKES_ACTIVATED)
-                            }   
+                            }                              
                             
                             (L:A32NX_AUTOBRAKES_ACTIVATED) (A:AUTOBRAKES ACTIVE, Bool) ! and if{
                                 0 (&gt;L:XMLVAR_Autobrakes_Level)
