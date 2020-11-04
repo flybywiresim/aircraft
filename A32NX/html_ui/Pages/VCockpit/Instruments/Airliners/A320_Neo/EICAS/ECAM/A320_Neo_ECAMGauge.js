@@ -49,6 +49,7 @@ var A320_Neo_ECAM_Common;
             this.extraMessageBorderWidthMultiplier = 0;
             this.extraMessageBorderHeightMultiplier = 0;
             this.cursorMultiplier = 1.1;
+            this.uppercam = false;
         }
         get mainArcRadius() {
             return (this.viewBoxSize.x * 0.5 * 0.975);
@@ -149,6 +150,7 @@ var A320_Neo_ECAM_Common;
             this.extraMessageBorderHeightMultiplier = 0.2;
             this.outerDynamicMarkerFunction = _gaugeDefinition.outerDynamicMarkerFunction;
             this.dangerMinDynamicFunction = _gaugeDefinition.dangerMinDynamicFunction;
+            this.uppercam = _gaugeDefinition.uppercam;
             this.endAngle = this.startAngle + _gaugeDefinition.arcSize;
             this.center = new Vec2(this.viewBoxSize.x * 0.5, this.viewBoxSize.y * 0.5);
             this.rootSVG = document.createElementNS(Avionics.SVG.NS, "svg");
@@ -352,7 +354,7 @@ var A320_Neo_ECAM_Common;
             }
             if (this.currentValueText != null) {
                 this.currentValueText.setAttribute("class", style);
-                if (this.currentValuePrecision == 0) {
+                if (this.uppercam == true) {
                     this.currentValueBorder.setAttribute('class', style);
                 }
                 if (!this.isActive) {
@@ -436,7 +438,6 @@ var A320_Neo_ECAM_Common;
             }
         }
         refreshMainValue(_value, _force = false) {
-            console.log("value is " + _value + " and currentValue is " + this.currentValue);
             this.currentValue = _value;
             this.currentValueCursor = (_value <= this.minValue) ? this.cursorOffset + this.minValue : _value + this.cursorOffset;
             const clampedValue = Utils.Clamp(this.currentValue, this.minValue, this.maxValue);

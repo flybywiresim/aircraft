@@ -1519,6 +1519,7 @@ var A320_Neo_UpperECAM;
             gaugeDef.dangerMinDynamicFunction = this.getModeEGTMax.bind(this);
             gaugeDef.currentValueFunction = this.getEGTGaugeValue.bind(this);
             gaugeDef.currentValuePrecision = 0;
+            gaugeDef.upperecam = true;
             this.gaugeEGT = window.document.createElement("a320-neo-ecam-gauge");
             this.gaugeEGT.id = "EGT_Gauge";
             this.gaugeEGT.init(gaugeDef);
