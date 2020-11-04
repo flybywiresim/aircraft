@@ -48,6 +48,7 @@
 1. [TEXTURES] added Registry plaque and improved Textures - @Pleasure0102 (Pleasure)
 1. [GPWS] Add minimums and 100above logic - @linkeleven (linkeleven#2557)
 1. [TEXTURES] Changed cockpit font and fixed spelling errors - @FoxinTale (Aubrey)
+1. [AUTO BRK] Fixed autobrake disarm behavior to match real life. MAX can no longer be selected when the aircraft is in the air. @geoffda (Geoff Darst)
 
 ## 0.4.0
 1. [General] Add CHANGELOG.md - @nathaninnes (Nathan Innes)
