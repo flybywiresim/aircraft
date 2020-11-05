@@ -1,6 +1,8 @@
 class A32NX_GPWS {
-    constructor() {
+    constructor(_core) {
         console.log('A32NX_GPWS constructed');
+        this.core = _core;
+
         this.minimumsState = 0;
 
         this.radnav = new RadioNav();
@@ -17,7 +19,11 @@ class A32NX_GPWS {
         this.Mode3Code = 0; //0: no mode 3 warning, 1: mode 3 "don't sink"
         this.Mode4Code = 0; //0: no mode 4 warning, 1: mode 4 "too low gear", 2: mode 4 "too low flaps", 3: mode 4 "too low terrain"
         this.Mode5Code = 0; //0: no mode 5 warning, 1: mode 5 "glideslope", 2: mode 5 "hard glideslope"(louder)
+
+        this.AltCallState = A32NX_Util.createMachine(AltCallStateMachine);
+        this.AltCallState.setState("ground");
     }
+
     init() {
         console.log('A32NX_GPWS init');
 
@@ -33,6 +39,8 @@ class A32NX_GPWS {
     }
     gpws(deltaTime) {
         const radioAlt = SimVar.GetSimVarValue("PLANE ALT ABOVE GROUND MINUS CG", "Feet");
+
+        this.UpdateAltState(radioAlt);
 
         const mda = SimVar.GetSimVarValue("L:AIRLINER_MINIMUM_DESCENT_ALTITUDE", "Number");
         const dh = SimVar.GetSimVarValue("L:AIRLINER_DECISION_HEIGHT", "Number");
@@ -108,10 +116,10 @@ class A32NX_GPWS {
         } else if (this.minimumsState === 1 && over100Above) {
             this.minimumsState = 2;
         } else if (this.minimumsState === 2 && !over100Above) {
-            Coherent.call("PLAY_INSTRUMENT_SOUND", "aural_100above");
+            this.core.soundManager.tryPlaySound(soundList.hundred_above);
             this.minimumsState = 1;
         } else if (this.minimumsState === 1 && !overMinimums) {
-            Coherent.call("PLAY_INSTRUMENT_SOUND", "aural_minimumnew");
+            this.core.soundManager.tryPlaySound(soundList.minimums);
             this.minimumsState = 0;
         }
     }
@@ -274,9 +282,9 @@ class A32NX_GPWS {
         const ADIRS = SimVar.GetSimVarValue("L:A320_Neo_ADIRS_STATE", "Enum");
         const ADIRS_TIME = SimVar.GetSimVarValue("L:A320_Neo_ADIRS_TIME", "seconds");
 
-        if (ADIRS == 0) {
+        if (ADIRS === 0) {
             SimVar.SetSimVarValue("L:A32NX_GPWS_TERR_FAULT", "Bool", 1);
-        } else if (ADIRS == 1) { //Maths will only be calculated if ADIRS in state 1 to save update time
+        } else if (ADIRS === 1) { //Maths will only be calculated if ADIRS in state 1 to save update time
             if (ADIRS_TIME > 120 + (0.055 * Math.pow(posLAT, 2))) { //120 0.055 (A:GPS POSITION LAT, degree latitude) 2 pow * +
                 SimVar.SetSimVarValue("L:A32NX_GPWS_TERR_FAULT", "Bool", 1);
             } else {
@@ -290,9 +298,9 @@ class A32NX_GPWS {
         const ADIRS = SimVar.GetSimVarValue("L:A320_Neo_ADIRS_STATE", "Enum");
         const ADIRS_TIME = SimVar.GetSimVarValue("L:A320_Neo_ADIRS_TIME", "seconds");
 
-        if (ADIRS == 0) {
+        if (ADIRS === 0) {
             SimVar.SetSimVarValue("L:A32NX_GPWS_SYS_FAULT", "Bool", 1);
-        } else if (ADIRS == 1) { //Maths will only be calculated if ADIRS in state 1 to save update time
+        } else if (ADIRS === 1) { //Maths will only be calculated if ADIRS in state 1 to save update time
             if (ADIRS_TIME > 305 + (0.095 * Math.pow(posLAT, 2)) - posLAT / 2) { //305 0.095 (A:GPS POSITION LAT, degree latitude) 2 pow * + (A:GPS POSITION LAT, degree latitude) 2 / -
                 SimVar.SetSimVarValue("L:A32NX_GPWS_SYS_FAULT", "Bool", 1);
             } else {
@@ -300,4 +308,273 @@ class A32NX_GPWS {
             }
         }
     }
+
+    UpdateAltState(radioAlt) {
+        switch (this.AltCallState.value) {
+            case "ground":
+                if (radioAlt > 5) {
+                    this.AltCallState.action("up");
+                }
+                break;
+            case "over5":
+                if (radioAlt > 6.5) {
+                    this.AltCallState.action("up");
+                } else if (radioAlt <= 5) {
+                    this.core.soundManager.tryPlaySound(soundList.alt_5);
+                    this.AltCallState.action("down");
+                }
+                break;
+            case "retard":
+                if (radioAlt > 10) {
+                    this.AltCallState.action("up");
+                } else if (radioAlt <= 7.5) {
+                    this.core.soundManager.removePeriodicSound(soundList.retard);
+                    this.AltCallState.action("down");
+                }
+                break;
+            case "over10":
+                if (radioAlt > 20) {
+                    this.AltCallState.action("up");
+                } else if (radioAlt <= 10) {
+                    this.core.soundManager.tryPlaySound(soundList.alt_10);
+                    this.core.soundManager.addPeriodicSound(soundList.retard, 1.1);
+                    this.AltCallState.action("down");
+                }
+                break;
+            case "over20":
+                if (radioAlt > 30) {
+                    this.AltCallState.action("up");
+                } else if (radioAlt <= 20) {
+                    this.core.soundManager.tryPlaySound(soundList.alt_20);
+                    this.AltCallState.action("down");
+                }
+                break;
+            case "over30":
+                if (radioAlt > 40) {
+                    this.AltCallState.action("up");
+                } else if (radioAlt <= 30) {
+                    this.core.soundManager.tryPlaySound(soundList.alt_30);
+                    this.AltCallState.action("down");
+                }
+                break;
+            case "over40":
+                if (radioAlt > 50) {
+                    this.AltCallState.action("up");
+                } else if (radioAlt <= 40) {
+                    this.core.soundManager.tryPlaySound(soundList.alt_40);
+                    this.AltCallState.action("down");
+                }
+                break;
+            case "over50":
+                if (radioAlt > 100) {
+                    this.AltCallState.action("up");
+                } else if (radioAlt <= 50) {
+                    this.core.soundManager.tryPlaySound(soundList.alt_50);
+                    this.AltCallState.action("down");
+                }
+                break;
+            case "over100":
+                if (radioAlt > 200) {
+                    this.AltCallState.action("up");
+                } else if (radioAlt <= 100) {
+                    this.core.soundManager.tryPlaySound(soundList.alt_100);
+                    this.AltCallState.action("down");
+                }
+                break;
+            case "over200":
+                if (radioAlt > 300) {
+                    this.AltCallState.action("up");
+                } else if (radioAlt <= 200) {
+                    this.core.soundManager.tryPlaySound(soundList.alt_200);
+                    this.AltCallState.action("down");
+                }
+                break;
+            case "over300":
+                if (radioAlt > 400) {
+                    this.AltCallState.action("up");
+                } else if (radioAlt <= 300) {
+                    this.core.soundManager.tryPlaySound(soundList.alt_300);
+                    this.AltCallState.action("down");
+                }
+                break;
+            case "over400":
+                if (radioAlt > 500) {
+                    this.AltCallState.action("up");
+                } else if (radioAlt <= 400) {
+                    this.core.soundManager.tryPlaySound(soundList.alt_400);
+                    this.AltCallState.action("down");
+                }
+                break;
+            case "over500":
+                if (radioAlt > 1000) {
+                    this.AltCallState.action("up");
+                } else if (radioAlt <= 500) {
+                    this.core.soundManager.tryPlaySound(soundList.alt_500);
+                    this.AltCallState.action("down");
+                }
+                break;
+            case "over1000":
+                if (radioAlt > 2500) {
+                    this.AltCallState.action("up");
+                } else if (radioAlt <= 1000) {
+                    this.core.soundManager.tryPlaySound(soundList.alt_1000);
+                    this.AltCallState.action("down");
+                }
+                break;
+            case "over2500":
+                if (radioAlt <= 2500) {
+                    this.core.soundManager.tryPlaySound(soundList.alt_2500);
+                    this.AltCallState.action("down");
+                }
+                break;
+        }
+    }
 }
+
+const AltCallStateMachine = {
+    init: "ground",
+    over2500: {
+        transitions: {
+            down: {
+                target: "over1000"
+            }
+        }
+    },
+    over1000: {
+        transitions: {
+            down: {
+                target: "over500"
+            },
+            up: {
+                target: "over2500"
+            }
+        }
+    },
+    over500: {
+        transitions: {
+            down: {
+                target: "over400"
+            },
+            up: {
+                target: "over1000"
+            }
+        }
+    },
+    over400: {
+        transitions: {
+            down: {
+                target: "over300"
+            },
+            up: {
+                target: "over500"
+            }
+        }
+    },
+    over300: {
+        transitions: {
+            down: {
+                target: "over200"
+            },
+            up: {
+                target: "over400"
+            }
+        }
+    },
+    over200: {
+        transitions: {
+            down: {
+                target: "over100"
+            },
+            up: {
+                target: "over300"
+            }
+        }
+    },
+    over100: {
+        transitions: {
+            down: {
+                target: "over50"
+            },
+            up: {
+                target: "over200"
+            }
+        }
+    },
+    over50: {
+        transitions: {
+            down: {
+                target: "over40"
+            },
+            up: {
+                target: "over100"
+            }
+        }
+    },
+    over40: {
+        transitions: {
+            down: {
+                target: "over30"
+            },
+            up: {
+                target: "over50"
+            }
+        }
+    },
+    over30: {
+        transitions: {
+            down: {
+                target: "over20"
+            },
+            up: {
+                target: "over40"
+            }
+        }
+    },
+    over20: {
+        transitions: {
+            down: {
+                target: "over10"
+            },
+            up: {
+                target: "over30"
+            }
+        }
+    },
+    over10: {
+        transitions: {
+            down: {
+                target: "retard"
+            },
+            up: {
+                target: "over20"
+            }
+        }
+    },
+    retard: {
+        transitions: {
+            down: {
+                target: "over5"
+            },
+            up: {
+                target: "over10"
+            }
+        }
+    },
+    over5: {
+        transitions: {
+            down: {
+                target: "ground"
+            },
+            up: {
+                target: "retard"
+            }
+        }
+    },
+    ground: {
+        transitions: {
+            up: {
+                target: "over5"
+            }
+        }
+    }
+};
