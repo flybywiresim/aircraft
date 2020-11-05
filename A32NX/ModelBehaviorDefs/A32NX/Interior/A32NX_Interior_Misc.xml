@@ -294,7 +294,7 @@
             <TOOLTIPID>%((A:APU PCT RPM, Percent) 0 &gt; (A:APU PCT RPM, Percent) #AVAIL_PERCENTAGE# &lt; and)%{if}TT:COCKPIT.TOOLTIPS.UNAVAILABLE%{end} %((A:APU PCT RPM, Percent) #AVAIL_PERCENTAGE# &gt;= (A:APU SWITCH, Bool) and)%{if}TT:COCKPIT.TOOLTIPS.APU_STARTER_TURN_OFF%{else}TT:COCKPIT.TOOLTIPS.APU_STARTER_TURN_ON%{end}</TOOLTIPID>
         </UseTemplate>
     </Template>
-    <Template Name="FBW_ENGINE_Switch_Master_SubTemplate">
+    <Template Name="FBW_ENGINE_Switch_Master_Template">
         <DefaultTemplateParameters>
             <NODE_ID>ENGINE_Switch_Master_#ID#</NODE_ID>
             <ANIM_NAME>ENGINE_Switch_Master_#ID#</ANIM_NAME>
