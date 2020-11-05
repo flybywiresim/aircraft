@@ -19,14 +19,10 @@ jobs:
     steps:
       - name: Checkout source
         uses: actions/checkout@v2
-      - name: Setup Python 3
-        uses: actions/setup-python@v2
-        with:
-          python-version: "3.x"
       - name: Generate layout.json and update manifest.json
         run: |
-          cd ./A32NX
-          python3 build.py
+          npm install
+          npm run build
       - uses: actions/upload-artifact@v2
         with:
           name: A32NX

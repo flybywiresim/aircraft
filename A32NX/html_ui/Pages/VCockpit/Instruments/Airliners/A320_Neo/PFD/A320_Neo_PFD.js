@@ -22,8 +22,8 @@ class A320_Neo_PFD extends BaseAirliners {
         window.console.log("A320 Neo PFD - destroyed");
         super.disconnectedCallback();
     }
-    Update() {
-        super.Update();
+    onUpdate(_deltaTime) {
+        super.onUpdate(_deltaTime);
     }
 }
 class A320_Neo_PFD_MainElement extends NavSystemElement {

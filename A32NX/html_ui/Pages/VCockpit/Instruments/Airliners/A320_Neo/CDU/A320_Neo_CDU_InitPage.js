@@ -2,6 +2,7 @@ class CDUInitPage {
     static ShowPage1(mcdu, resetFlightNo = false) {
         mcdu.clearDisplay();
         mcdu.activeSystem = 'FMGC';
+
         // TODO create local simvars for.. everything
         let fromTo = "____|____[color]red";
         let coRoute = "__________[color]red";
@@ -31,6 +32,8 @@ class CDUInitPage {
                 if (mcdu.costIndex) {
                     costIndex = mcdu.costIndex + "[color]blue";
                 }
+
+                // Cost index
                 mcdu.onLeftInput[4] = () => {
                     const value = mcdu.inOut;
                     mcdu.clearUserInput();
@@ -40,6 +43,7 @@ class CDUInitPage {
                 };
 
                 cruiseFlTemp = "_____|___°[color]red";
+
                 if (mcdu._cruiseEntered) {
                     //This is done so pilot enters a FL first, rather than using the computed one
                     if (mcdu.cruiseFlightLevel) {
@@ -50,6 +54,8 @@ class CDUInitPage {
                         cruiseFlTemp = "FL" + mcdu.cruiseFlightLevel.toFixed(0).padStart(3, "0") + "/" + temp.toFixed(0) + "°[color]blue";
                     }
                 }
+
+                // CRZ FL / FLX TEMP
                 mcdu.onLeftInput[5] = () => {
                     mcdu._cruiseEntered = true;
                     const value = mcdu.inOut;

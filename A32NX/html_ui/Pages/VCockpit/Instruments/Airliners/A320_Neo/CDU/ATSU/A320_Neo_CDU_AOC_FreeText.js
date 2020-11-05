@@ -77,14 +77,13 @@ class CDUAocFreeText {
         };
 
         mcdu.onRightInput[5] = async () => {
-            const telexID = SimVar.GetSimVarValue("L:A32NX_Telex_ID", "Number");
             const telexKey = NXDataStore.get("TELEX_KEY", "");
             const telexFlight = SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string", "FMC");
 
             console.log(telexFlight);
             const storedTelexStatus = NXDataStore.get("CONFIG_TELEX_STATUS", "DISABLED");
 
-            if (telexID > 0 && telexFlight != "" && telexKey != "" && storedTelexStatus == "ENABLED") {
+            if (telexFlight !== "" && telexKey !== "" && storedTelexStatus === "ENABLED") {
                 store["sendStatus"] = "QUEUED";
                 updateView();
                 const recipient = store["msg_to"];
@@ -94,30 +93,43 @@ class CDUAocFreeText {
                 const endpoint = "https://api.flybywiresim.com/txmsg";
 
                 const getData = async () => {
-                    if (recipient != "" && msgLines != ";;;") {
-                        await fetch(`${endpoint}?from=${telexFlight}&to=${recipient}&key=${telexKey}&message=${msgLines}`, {method: "POST"})
-                            .then((response) => response.json())
-                            .then((data) => {
-                                if ("error" in data) {
-                                    errors += 1;
-                                    switch (data["error"]) {
-                                        case "recipient_not_found":
-                                            mcdu.showErrorMessage("RECIPIENT NOT FOUND");
-                                            break;
-                                        case "sender_permissions_error":
-                                            mcdu.showErrorMessage("AUTH ERR");
-                                            break;
-                                        case "prohibited_regex_hit":
-                                            mcdu.showErrorMessage("INVALID MSG");
-                                            break;
-                                        default:
-                                            mcdu.showErrorMessage("UNKNOWN DOWNLINK ERR");
-                                    }
+                    const body = {
+                        to: recipient,
+                        message: msgLines
+                    };
+
+                    const headers = {
+                        Authorization: `Bearer ${telexKey}`,
+                        "Content-Type": "application/json"
+                    };
+
+                    if (recipient !== "" && msgLines !== ";;;") {
+                        await fetch(`${endpoint}`, {method: "POST", body: JSON.stringify(body), headers})
+                            .then((response) => {
+                                if (!response.ok) {
+                                    throw (response);
+                                }
+                            })
+                            .catch(err => {
+                                errors += 1;
+                                switch (err.status) {
+                                    case 404:
+                                        mcdu.showErrorMessage("RECIPIENT NOT FOUND");
+                                        break;
+                                    case 401:
+                                    case 403:
+                                        mcdu.showErrorMessage("AUTH ERR");
+                                        break;
+                                    case 400:
+                                        mcdu.showErrorMessage("INVALID MSG");
+                                        break;
+                                    default:
+                                        mcdu.showErrorMessage("UNKNOWN DOWNLINK ERR");
                                 }
                             });
                     }
 
-                    if (errors == 0) {
+                    if (errors === 0) {
                         store["sendStatus"] = "SENT";
                     } else {
                         store["sendStatus"] = "FAILED";

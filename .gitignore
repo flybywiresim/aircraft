@@ -5,8 +5,10 @@
 !/A32NX/**
 /A32NX/layout.json
 /A32NX/manifest.json
+/A32NX/html_ui/Pages/VCockpit/Instruments/generated
 !/docs/**
 !/src/**
+!/scripts/**
 !.gitignore
 !CODEOWNERS
 !package.json
