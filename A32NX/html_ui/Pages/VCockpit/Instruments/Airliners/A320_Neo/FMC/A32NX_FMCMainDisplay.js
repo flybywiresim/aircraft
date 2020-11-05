@@ -1330,7 +1330,7 @@ class FMCMainDisplay extends BaseAirliners {
             return false;
         }
         const phase = Simplane.getCurrentFlightPhase();
-        if (this._cruiseEntered && fl < this.cruiseFlightLevel && phase === FlightPhase.FLIGHT_PHASE_CRUISE) {
+        if (this._cruiseEntered && fl < Math.max(0, Simplane.getAutoPilotDisplayedAltitudeLockValue()) && phase === FlightPhase.FLIGHT_PHASE_CRUISE) {
             this.showErrorMessage(this.defaultInputErrorMessage);
             return false;
         }
