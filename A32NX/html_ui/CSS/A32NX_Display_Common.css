@@ -15,9 +15,9 @@
   --displayDarkGrey: #b3b3b3;
   --displayLightGrey: lightgray;
   --displayAmber: #e68000;
-  --displayCyan: #00bfd9;
-  --displayGreen: #00e64d;
-  --displayMagenta: #ff6eff;
+  --displayCyan: #00ffff;
+  --displayGreen: #00ff00;
+  --displayMagenta: #ff94ff;
   --displayRed: #ff0000;
   --displayYellow: #ffff00;
 
@@ -28,7 +28,7 @@
   --mcduBlue: #00ffff;
   --mcduYellow: #ffff00;
   --mcduRed: #ff9a00;
-  --mcduMagenta: #f800cc;
+  --mcduMagenta: #ff94ff;
 }
 
 div {
