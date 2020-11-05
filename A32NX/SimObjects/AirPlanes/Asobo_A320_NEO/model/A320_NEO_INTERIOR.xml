@@ -552,7 +552,7 @@
 
         <Component ID="Pedestal_Aft">
             <Component ID="Engines">
-                <UseTemplate Name="FBW_ENGINE_Switch_Master_SubTemplate">
+                <UseTemplate Name="FBW_ENGINE_Switch_Master_Template">
                     <AIRBUS_TYPE/>
                     <ANIM_NAME>SWITCH_ENGINES_ENG1</ANIM_NAME>
                     <NODE_ID>SWITCH_ENGINES_ENG1</NODE_ID>
@@ -562,7 +562,7 @@
                     <POTENTIOMETER>9999</POTENTIOMETER>
                 </UseTemplate>
 
-                <UseTemplate Name="FBW_ENGINE_Switch_Master_SubTemplate">
+                <UseTemplate Name="FBW_ENGINE_Switch_Master_Template">
                     <AIRBUS_TYPE/>
                     <ANIM_NAME>SWITCH_ENGINES_ENG2</ANIM_NAME>
                     <NODE_ID>SWITCH_ENGINES_ENG2</NODE_ID>
