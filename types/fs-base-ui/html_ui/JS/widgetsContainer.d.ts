@@ -1,6 +1,10 @@
 /// <reference path="./common.d.ts" />
 
 declare global {
+    interface Document {
+        createElement(tagName: "widget-container"): WidgetsContainer;
+    }
+
     class WidgetsContainer {
         gridWidth: number;
         CleanWidgets: () => void;

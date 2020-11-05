@@ -1,6 +1,19 @@
 /// <reference path="./animation/animation.d.ts" />
 
 declare global {
+    interface Document {
+        createElement(tagName: "import-template"): ImportTemplateElement;
+        createElement(tagName: "import-script"): ImportScriptElement;
+        createElement(tagName: "ui-element"): UIElement;
+        createElement(tagName: "template-element"): TemplateElement;
+        createElement(tagName: "ui-marquee"): UIMarquee;
+        createElement(tagName: "l10n-label"): LabelizeElement;
+        createElement(tagName: "ui-image"): UIImageElement;
+        createElement(tagName: "icon-text"): IconTextElement;
+        createElement(tagName: "device-button"): DeviceButtonElement;
+        createElement(tagName: "icon-element"): IconElement;
+    }
+
     let bDebugKeyNavigation: boolean;
     let bLiveReload: boolean;
     let bAutoReloadCSS: boolean;

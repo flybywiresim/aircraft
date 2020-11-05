@@ -1,5 +1,3 @@
-/// <reference path="./asobo-vcockpits-instruments-a320-neo/html_ui/Pages/VCockpit/Instruments/Airliners/A320_Neo/EICAS/ECAM/A320_Neo_ECAMGauge.d.ts" />
-
 export type NauticalMiles = number;
 export type Heading = number;
 export type Latitude = number;
@@ -22,12 +20,5 @@ export type Celcius = number;
 export type InchesOfMercury = number;
 export type Millibar = number;
 export type PressurePerSquareInch = number;
-
-declare global {
-    interface Document {
-        // TODO: Scour files for customElements.define to set all these types.
-        createElement(tagName: "a320-neo-ecam-gauge"): A320_Neo_ECAM_Common.Gauge;
-    }
-}
 
 export {};

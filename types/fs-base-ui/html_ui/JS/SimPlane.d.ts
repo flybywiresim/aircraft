@@ -1,3 +1,5 @@
+/// <reference path="./Types.d.ts" />
+
 import {
     Angl16, Celcius, Degrees, Feet, FeetPerMinute, Gallons, Heading, InchesOfMercury, Kilograms, Knots,
     Mach, Millibar, NauticalMiles, Percent, PercentOver100, PressurePerSquareInch, Radians, RadiansPerSecond,

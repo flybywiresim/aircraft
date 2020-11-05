@@ -1,6 +1,10 @@
 /// <reference path="../../../../../../../../../fs-base-ui/html_ui/JS/common.d.ts" />
 
 declare global {
+    interface Document {
+        createElement(tagName: "a320-neo-ecam-gauge"): A320_Neo_ECAM_Common.Gauge;
+    }
+
     namespace A320_Neo_ECAM_Common {
         class GaugeDefinition {
             startAngle: number;

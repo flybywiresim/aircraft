@@ -1,4 +1,8 @@
 declare global {
+    interface Document {
+        createElement(tagName: "bing-map"): BingMapElement;
+    }
+
     class BingMapsConfig {
         load(source: {
             netBingHeightColor1?: any;

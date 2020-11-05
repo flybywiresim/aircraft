@@ -1,6 +1,13 @@
 /// <reference path="./common.d.ts" />
 
 declare global {
+    interface Document {
+        createElement(tagName: "ui-button"): ButtonElement;
+        createElement(tagName: "ui-navigation-bloc"): UINavigationBlocElement;
+        createElement(tagName: "external-link"): ExternalLink;
+        createElement(tagName: "internal-link"): InternalLink;
+    }
+
     class ButtonElement extends TemplateElement {
         onClick: (e: Event) => void;
         onMouseEnter: () => void;
