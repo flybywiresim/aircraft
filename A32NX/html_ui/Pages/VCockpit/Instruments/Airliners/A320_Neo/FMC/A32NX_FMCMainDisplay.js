@@ -2369,6 +2369,7 @@ class FMCMainDisplay extends BaseAirliners {
         this.thrustReductionAltitude = 1500;
         SimVar.SetSimVarValue("L:AIRLINER_THR_RED_ALT", "Number", this.thrustReductionAltitude);
         this.page = {
+            SelfPtr: false,
             Current: 0,
             Clear: 0,
             AirportsMonitor: 1,
@@ -2563,6 +2564,10 @@ class FMCMainDisplay extends BaseAirliners {
         this.pageUpdate = undefined;
         this.refreshPageCallback = undefined;
         this.page.Current = this.page.Clear;
+        if (this.page.SelfPtr) {
+            clearTimeout(this.page.SelfPtr);
+            this.page.SelfPtr = false;
+        }
     }
 
     generateHTMLLayout(parent) {

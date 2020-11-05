@@ -27,7 +27,7 @@ class CDUProgressPage {
             ["REQUIRED", "ESTIMATED", "ACCUR"],
             ["3.4NM[color]blue", "0.07NM[color]green", "HIGH[color]green"]
         ]);
-        setTimeout(() => {
+        mcdu.page.SelfPtr = setTimeout(() => {
             if (mcdu.page.Current === mcdu.page.ProgressPage) {
                 CDUProgressPage.ShowPage(mcdu);
             }
