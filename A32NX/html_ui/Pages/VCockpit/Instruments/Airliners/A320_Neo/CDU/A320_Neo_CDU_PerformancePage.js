@@ -633,7 +633,7 @@ class CDUPerformancePage {
         if (mcdu.currentFlightPhase === FlightPhase.FLIGHT_PHASE_GOAROUND) {
             titleColor = "green";
         }
-        let thrRedAcc = "---"
+        let thrRedAcc = "---";
         if (isFinite(mcdu.thrustReductionAltitudeGoaround) && mcdu.thrustReductionAltitudeGoaround != 0) {
             thrRedAcc = mcdu.thrustReductionAltitudeGoaround.toFixed(0);
         }
