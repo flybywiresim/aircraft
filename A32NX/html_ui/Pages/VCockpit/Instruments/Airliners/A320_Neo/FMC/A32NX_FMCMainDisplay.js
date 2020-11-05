@@ -73,7 +73,6 @@ class FMCMainDisplay extends BaseAirliners {
         this._zeroFuelWeightZFWCGEntered = false;
         this._taxiEntered = false;
         this._windDir = "HD";
-        this.pageUpdated = false;
     }
 
     static approachTypeStringToIndex(approachType) {
