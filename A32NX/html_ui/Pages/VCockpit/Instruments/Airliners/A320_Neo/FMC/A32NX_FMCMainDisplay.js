@@ -1007,9 +1007,6 @@ class FMCMainDisplay extends BaseAirliners {
             thrRed = parseInt(sSplit[0]);
             accAlt = parseInt(sSplit[1]);
         }
-        console.log("s ",s);
-        console.log("thrRed ",thrRed);
-        console.log("accAlt ",accAlt);
         if ((isFinite(thrRed) || isFinite(accAlt)) && thrRed <= accAlt) {
             if (isFinite(thrRed)) {
                 this.thrustReductionAltitudeGoaround = thrRed;
@@ -1019,7 +1016,17 @@ class FMCMainDisplay extends BaseAirliners {
                 this.accelerationAltitudeGoaround = accAlt;
                 SimVar.SetSimVarValue("L:AIRLINER_ACC_ALT_GOAROUND", "Number", this.accelerationAltitudeGoaround);
             }
-            console.log("WILL RETURN TRUE!");
+            return true;
+        }
+        this.showErrorMessage(this.defaultInputErrorMessage);
+        return false;
+    }
+
+    trySetEngineOutAcceleration(s) {
+        const engOutAcc = parseInt(s);
+        if (isFinite(engOutAcc)) {
+            this.engineOutAccelerationGoaround = engOutAcc;
+            SimVar.SetSimVarValue("L:AIRLINER_ENG_OUT_ACC_ALT_GOAROUND", "Number", this.engineOutAccelerationGoaround);
             return true;
         }
         this.showErrorMessage(this.defaultInputErrorMessage);

@@ -633,15 +633,14 @@ class CDUPerformancePage {
         if (mcdu.currentFlightPhase === FlightPhase.FLIGHT_PHASE_GOAROUND) {
             titleColor = "green";
         }
-        let thrRedAcc = mcdu.thrustReductionAltitudeGoaround.toFixed(0);
-        const engOut = thrRedAcc;
-        if (isFinite(mcdu.thrustReductionAltitudeGoaround)) {
+        let thrRedAcc = "---"
+        if (isFinite(mcdu.thrustReductionAltitudeGoaround) && mcdu.thrustReductionAltitudeGoaround != 0) {
             thrRedAcc = mcdu.thrustReductionAltitudeGoaround.toFixed(0);
-        } else {
-            thrRedAcc = "---";
         }
+
         thrRedAcc += "/";
-        if (isFinite(mcdu.accelerationAltitudeGoaround.toFixed(0))) {
+
+        if (isFinite(mcdu.accelerationAltitudeGoaround && mcdu.accelerationAltitudeGoaround != 0)) {
             thrRedAcc += mcdu.accelerationAltitudeGoaround.toFixed(0);
         } else {
             thrRedAcc += "---";
@@ -652,6 +651,22 @@ class CDUPerformancePage {
             const value = mcdu.inOut;
             mcdu.clearUserInput();
             if (mcdu.trySetThrustReductionAccelerationAltitudeGoaround(value)) {
+                CDUPerformancePage.ShowGOAROUNDPage(mcdu);
+            }
+        };
+
+        let engOut = "---";
+        if (isFinite(mcdu.engineOutAccelerationGoaround) && mcdu.engineOutAccelerationGoaround != 0) {
+            engOut = mcdu.engineOutAccelerationGoaround.toFixed(0);
+        } else if (isFinite(mcdu.thrustReductionAltitudeGoaround) && mcdu.thrustReductionAltitudeGoaround != 0) {
+            engOut = mcdu.thrustReductionAltitudeGoaround.toFixed(0);
+        }
+        engOut += "[color]blue";
+
+        mcdu.onRightInput[4] = () => {
+            const value = mcdu.inOut;
+            mcdu.clearUserInput();
+            if (mcdu.trySetEngineOutAcceleration(value)) {
                 CDUPerformancePage.ShowGOAROUNDPage(mcdu);
             }
         };
@@ -710,9 +725,11 @@ class CDUPerformancePage {
 
         mcdu.thrustReductionAltitudeGoaround = thrRedAccAltitude;
         mcdu.accelerationAltitudeGoaround = thrRedAccAltitude;
+        mcdu.engineOutAccelerationGoaround = thrRedAccAltitude;
 
         SimVar.SetSimVarValue("L:AIRLINER_THR_RED_ALT_GOAROUND", "Number", thrRedAccAltitude || 0);
         SimVar.SetSimVarValue("L:AIRLINER_ACC_ALT_GOAROUND", "Number", thrRedAccAltitude || 0);
+        SimVar.SetSimVarValue("L:AIRLINER_ENG_OUT_ACC_ALT_GOAROUND", "Number", thrRedAccAltitude || 0);
     }
 }
 CDUPerformancePage._timer = 0;
