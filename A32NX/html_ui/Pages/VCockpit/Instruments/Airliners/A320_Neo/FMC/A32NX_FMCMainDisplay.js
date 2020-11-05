@@ -73,6 +73,7 @@ class FMCMainDisplay extends BaseAirliners {
         this._zeroFuelWeightZFWCGEntered = false;
         this._taxiEntered = false;
         this._windDir = "HD";
+        this.pageUpdated = false;
     }
 
     static approachTypeStringToIndex(approachType) {
@@ -314,6 +315,51 @@ class FMCMainDisplay extends BaseAirliners {
         this.isDisplayingErrorMessage = true;
         this.inOut = message;
         this._inOutElement.style.color = color;
+    }
+
+    /**
+     * Returns true if an engine is not running (FF === 0)
+     * @returns {number}
+     */
+    isAnEngineOff() {
+        return Simplane.getEngineActive(0) && Simplane.getEngineActive(1);
+    }
+
+    /**
+     * Returns the ISA temperature for a given altitude
+     * @param alt {number} altitude in ft
+     * @returns {number} ISA temp in C°
+     */
+    getIsaTemp(alt = Simplane.getAltitude()) {
+        return alt / 1000 * (-1.98) + 15;
+    }
+
+    /**
+     * Returns the deviation from ISA temperature and OAT at given altitude
+     * @param alt {number} altitude in ft
+     * @returns {number} ISA temp deviation from OAT in C°
+     */
+    getIsaTempDeviation(alt = Simplane.getAltitude()) {
+        return SimVar.GetSimVarValue("AMBIENT TEMPERATURE", "celsius") - this.getIsaTemp(alt);
+    }
+
+    /**
+     * Returns the maximum cruise FL for ISA temp and GW
+     * @param temp {number} ISA in C°
+     * @param gw {number} GW in t
+     * @returns {number} MAX FL
+     */
+    getMaxFL(temp = this.getIsaTempDeviation(), gw = SimVar.GetSimVarValue("TOTAL WEIGHT", "kg") / 1000) {
+        return Math.round(temp <= 10 ? -2.778 * gw + 578.667 : (temp * (-0.039) - 2.389) * gw + temp * (-0.667) + 585.334);
+    }
+
+    /**
+     * Returns the maximum allowed cruise FL considering max service FL
+     * @param fl {number} FL to check
+     * @returns {number} maximum allowed cruise FL
+     */
+    getMaxFlCorrected(fl = this.getMaxFL()) {
+        return fl >= this.maxCruiseFL ? this.maxCruiseFL : fl;
     }
 
     async tryUpdateRefAirport(airportIdent) {
@@ -2323,6 +2369,56 @@ class FMCMainDisplay extends BaseAirliners {
         this.updateFuelVars();
         this.thrustReductionAltitude = 1500;
         SimVar.SetSimVarValue("L:AIRLINER_THR_RED_ALT", "Number", this.thrustReductionAltitude);
+        this.page = {
+            Current: 0,
+            Clear: 0,
+            AirportsMonitor: 1,
+            AirwaysFromWaypointPage: 2,
+            AirwaysFromWaypointPageGetAllRows: 3,
+            AvailableArrivalsPage: 4,
+            AvailableArrivalsPageVias: 5,
+            AvailableDeparturesPage: 6,
+            AvailableFlightPlanPage: 7,
+            DataIndexPage1: 8,
+            DataIndexPage2: 9,
+            DirectToPage: 10,
+            FlightPlanPage: 11,
+            FuelPredPage: 12,
+            GPSMonitor: 13,
+            HoldAtPage: 14,
+            IdentPage: 15,
+            InitPageA: 16,
+            InitPageB: 17,
+            IRSInit: 18,
+            IRSMonitor: 19,
+            IRSStatus: 20,
+            IRSStatusFrozen: 21,
+            LateralRevisionPage: 22,
+            MenuPage: 23,
+            NavaidPage: 24,
+            NavRadioPage: 25,
+            NewWaypoint: 26,
+            PerformancePageTakeoff: 27,
+            PerformancePageClb: 28,
+            PerformancePageCrz: 29,
+            PerformancePageDes: 30,
+            PerformancePageAppr: 31,
+            PerformancePageGoAround: 32,
+            PilotsWaypoint: 33,
+            PosFrozen: 34,
+            PositionMonitorPage: 35,
+            ProgressPage: 36,
+            ProgressPageReport: 37,
+            ProgressPagePredictiveGPS: 38,
+            SelectedNavaids: 39,
+            SelectWptPage: 40,
+            VerticalRevisionPage: 41,
+            WaypointPage: 42
+        };
+    }
+
+    page() {
+
     }
 
     onPowerOn() {
@@ -2467,6 +2563,7 @@ class FMCMainDisplay extends BaseAirliners {
         this.onNextPage = undefined;
         this.pageUpdate = undefined;
         this.refreshPageCallback = undefined;
+        this.page.Current = this.page.Clear;
     }
 
     generateHTMLLayout(parent) {
