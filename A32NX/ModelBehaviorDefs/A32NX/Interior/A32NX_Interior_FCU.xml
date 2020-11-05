@@ -34,41 +34,64 @@
             <BARO_ID>#ID#</BARO_ID>
             <MODE_BARO>0</MODE_BARO>
             <MODE_QNH>1</MODE_QNH>
-            <MODE_STD>2</MODE_STD>
+            <MODE_STD_BARO>2</MODE_STD_BARO>
+            <MODE_STD_QNH>3</MODE_STD_QNH>      
             <NODE_ID>AUTOPILOT_Knob_Baro_#ID##SUFFIX_ID#</NODE_ID>
             <PART_ID>AUTOPILOT_Knob_Baro</PART_ID>
         </DefaultTemplateParameters>
 
         <Component ID="#NODE_ID#" Node="#NODE_ID#">
             <UseTemplate Name="ASOBO_GT_Knob_Infinite_PushPull">
-                <ANTICLOCKWISE_CONDITION>(L:XMLVAR_Baro#BARO_ID#_Mode) #MODE_STD# !=</ANTICLOCKWISE_CONDITION>
                 <ANTICLOCKWISE_CODE>
-                    (L:XMLVAR_Baro_Selector_HPA_#BARO_ID#) if{
-                    #BARO_ID# (A:KOHLSMAN SETTING MB:1, mbars) -- 16 * (&gt;K:2:KOHLSMAN_SET)
-                    } els{
-                    #BARO_ID# (&gt;K:KOHLSMAN_DEC)
+                    (L:XMLVAR_Baro#BARO_ID#_Mode) #MODE_STD_BARO# != (L:XMLVAR_Baro#BARO_ID#_Mode) #MODE_STD_QNH# != and if{
+                        (L:XMLVAR_Baro_Selector_HPA_#BARO_ID#) if{
+                            #BARO_ID# (A:KOHLSMAN SETTING MB:1, mbars) -- 16 * (&gt;K:2:KOHLSMAN_SET)
+                        } els{
+                            #BARO_ID# (&gt;K:KOHLSMAN_DEC)
+                        }
                     }
                 </ANTICLOCKWISE_CODE>
 
-                <CLOCKWISE_CONDITION>(L:XMLVAR_Baro#BARO_ID#_Mode) #MODE_STD# !=</CLOCKWISE_CONDITION>
                 <CLOCKWISE_CODE>
-                    (L:XMLVAR_Baro_Selector_HPA_#BARO_ID#) if{
-                    #BARO_ID# (A:KOHLSMAN SETTING MB:1, mbars) ++ 16 * (&gt;K:2:KOHLSMAN_SET)
-                    } els{
-                    #BARO_ID# (&gt;K:KOHLSMAN_INC)
+                    (L:XMLVAR_Baro#BARO_ID#_Mode) #MODE_STD_BARO# != (L:XMLVAR_Baro#BARO_ID#_Mode) #MODE_STD_QNH# != and if{
+                        (L:XMLVAR_Baro_Selector_HPA_#BARO_ID#) if{
+                            #BARO_ID# (A:KOHLSMAN SETTING MB:1, mbars) ++ 16 * (&gt;K:2:KOHLSMAN_SET)
+                        } els{
+                            #BARO_ID# (&gt;K:KOHLSMAN_INC)
+                        }
                     }
                 </CLOCKWISE_CODE>
                 
                 <PULL_CODE>
-                    #MODE_STD# (&gt;L:XMLVAR_Baro#BARO_ID#_Mode)
+                    (L:XMLVAR_Baro#BARO_ID#_Mode) #MODE_BARO# == if{ 
+                        #MODE_STD_BARO# (&gt;L:XMLVAR_Baro#BARO_ID#_Mode) 
+                    } els{ 
+                        (L:XMLVAR_Baro#BARO_ID#_Mode) #MODE_QNH# == if{ 
+                            #MODE_STD_QNH# (&gt;L:XMLVAR_Baro#BARO_ID#_Mode) 
+                        } 
+                    }
                 </PULL_CODE>
                 <PUSH_CODE>
-                    (L:XMLVAR_Baro#BARO_ID#_Mode) #MODE_STD# == if{ #MODE_BARO# (&gt;L:XMLVAR_Baro#BARO_ID#_Mode) } els{ (L:XMLVAR_Baro#BARO_ID#_Mode) ! (&gt;L:XMLVAR_Baro#BARO_ID#_Mode) }
+                    (L:XMLVAR_Baro#BARO_ID#_Mode) #MODE_STD_BARO# == if{
+                        #MODE_BARO# (&gt;L:XMLVAR_Baro#BARO_ID#_Mode)
+                    } els{
+                        (L:XMLVAR_Baro#BARO_ID#_Mode) #MODE_STD_QNH# == if{
+                            #MODE_QNH# (&gt;L:XMLVAR_Baro#BARO_ID#_Mode)
+                        } els{
+                            (L:XMLVAR_Baro#BARO_ID#_Mode) ! (&gt;L:XMLVAR_Baro#BARO_ID#_Mode)
+                        }
+                    }
                 </PUSH_CODE>
 
                 <CENTER_RADIUS>0</CENTER_RADIUS>
                 <COUNT>36</COUNT>
-                <OVERRIDE_PUSH_ANIM_CODE>0 100 (L:XMLVAR_Baro#BARO_ID#_Mode) #MODE_STD# == ? 50 (O:_PushAnimVar) ?</OVERRIDE_PUSH_ANIM_CODE>
+                <OVERRIDE_PUSH_ANIM_CODE>
+                    0 100 
+                        (L:XMLVAR_Baro#BARO_ID#_Mode) #MODE_STD_BARO# == 
+                        (L:XMLVAR_Baro#BARO_ID#_Mode) #MODE_STD_QNH# == or ?
+                    50 
+                        (O:_PushAnimVar) ?
+                </OVERRIDE_PUSH_ANIM_CODE>
                 <WWISE_EVENT>autopilot_selector_knob</WWISE_EVENT>
                 <WWISE_EVENT_1>autopilot_knob_push_button_on</WWISE_EVENT_1>
                 <WWISE_EVENT_2>autopilot_knob_push_button_off</WWISE_EVENT_2>
