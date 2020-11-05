@@ -1,7 +1,7 @@
 class Jet_PFD_VerticalSpeedIndicator extends HTMLElement {
     constructor() {
         super(...arguments);
-        this.cursorTextColor = "rgb(26,255,0)";
+        this.cursorTextColor = "rgb(0,255,0)";
         this.fontSize = 22;
         this.cursorPosX1 = 0;
         this.cursorPosY1 = 0;
@@ -58,7 +58,7 @@ class Jet_PFD_VerticalSpeedIndicator extends HTMLElement {
         const width = 100;
         const height = 600;
         this.maxSpeed = 10000; // was 6000, raised to keep on displaying the values
-        this.cursorTextColor = "rgb(26,255,0)";
+        this.cursorTextColor = "rgb(0,255,0)";
         if (!this.rootGroup) {
             this.rootGroup = document.createElementNS(Avionics.SVG.NS, "g");
             this.rootGroup.setAttribute("id", "VerticalSpeed");
@@ -72,7 +72,7 @@ class Jet_PFD_VerticalSpeedIndicator extends HTMLElement {
             Utils.RemoveAllChildren(this.centerGroup);
         }
         const smallBg = document.createElementNS(Avionics.SVG.NS, "path");
-        smallBg.setAttribute("fill", "#343B51");
+        smallBg.setAttribute("fill", "#6B798A");
         smallBg.setAttribute("d", "M 0 0 L 0 " + height + " L 30 " + height + " L 50 " + (height - 100) + " L 50 100 L 30 0 Z");
         smallBg.setAttribute("transform", "translate(" + posX + " " + posY + ")");
         this.centerGroup.appendChild(smallBg);
@@ -183,7 +183,7 @@ class Jet_PFD_VerticalSpeedIndicator extends HTMLElement {
         }
         {
             this.failMask = document.createElementNS(Avionics.SVG.NS, "path");
-            this.failMask.setAttribute("fill", "#343B51");
+            this.failMask.setAttribute("fill", "#6B798A");
             this.failMask.setAttribute("d", "M 0 0 L 0 " + height + " L 30 " + height + " L 50 " + (height - 100) + " L 50 100 L 30 0 Z");
             this.failMask.setAttribute("transform", "translate(" + posX + " " + posY + ")");
             this.centerGroup.appendChild(this.failMask);
