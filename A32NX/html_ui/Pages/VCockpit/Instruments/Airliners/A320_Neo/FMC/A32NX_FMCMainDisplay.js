@@ -2417,8 +2417,14 @@ class FMCMainDisplay extends BaseAirliners {
         };
     }
 
-    page() {
-
+    /**
+     * Tries to delete a pages timeout
+     */
+    tryDeleteTimeout() {
+        if (this.page.SelfPtr) {
+            clearTimeout(this.page.SelfPtr);
+            this.page.SelfPtr = false;
+        }
     }
 
     onPowerOn() {
@@ -2564,10 +2570,7 @@ class FMCMainDisplay extends BaseAirliners {
         this.pageUpdate = undefined;
         this.refreshPageCallback = undefined;
         this.page.Current = this.page.Clear;
-        if (this.page.SelfPtr) {
-            clearTimeout(this.page.SelfPtr);
-            this.page.SelfPtr = false;
-        }
+        this.tryDeleteTimeout();
     }
 
     generateHTMLLayout(parent) {
