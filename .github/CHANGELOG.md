@@ -49,6 +49,7 @@
 1. [GPWS] Add minimums and 100above logic - @linkeleven (linkeleven#2557)
 1. [TEXTURES] Changed cockpit font and fixed spelling errors - @FoxinTale (Aubrey)
 1. [AUTO BRK] Fixed autobrake disarm behavior to match real life. MAX can no longer be selected when the aircraft is in the air. @geoffda (Geoff Darst)
+1. [FCU] Remember selected pressure mode when returning from Std mode - @lhoenig (Lukas Hoenig)
 
 ## 0.4.0
 1. [General] Add CHANGELOG.md - @nathaninnes (Nathan Innes)
@@ -116,3 +117,4 @@
 1. [LIVERY] Bundle the FlyByWire Livery with the A32NX addon - @devsnek (devsnek)
 1. [ECAM] Added cockpit door video - @Benjozork (Benjamin Dupont)
 1. [MISC] Standby Instrument stays ON if emergency power should be available, bug fixes - @2hwk (2Cas#1022 on discord)
+1. [CDU] Full +/- button functionality - @lhoenig (Lukas Hoenig)
