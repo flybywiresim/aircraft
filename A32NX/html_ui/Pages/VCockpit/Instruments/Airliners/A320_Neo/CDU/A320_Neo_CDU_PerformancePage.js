@@ -634,7 +634,7 @@ class CDUPerformancePage {
             titleColor = "green";
         }
         let thrRedAcc = mcdu.thrustReductionAltitudeGoaround.toFixed(0);
-        let engOut = thrRedAcc;
+        const engOut = thrRedAcc;
         if (isFinite(mcdu.thrustReductionAltitudeGoaround)) {
             thrRedAcc = mcdu.thrustReductionAltitudeGoaround.toFixed(0);
         } else {
@@ -682,7 +682,7 @@ class CDUPerformancePage {
             [""],
             [""],
             ["THR RED/ACC", "OUT ACC", "ENG"],
-            [thrRedAcc+"[color]blue", engOut +"[color]blue]"],
+            [thrRedAcc + "[color]blue", engOut + "[color]blue]"],
             ["PREV"],
             ["<PHASE"]
         ]);
