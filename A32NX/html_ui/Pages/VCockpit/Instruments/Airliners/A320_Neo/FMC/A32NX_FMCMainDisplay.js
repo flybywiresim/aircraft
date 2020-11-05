@@ -1796,7 +1796,7 @@ class FMCMainDisplay extends BaseAirliners {
         } else if (s === "NO" || s === "NO DH" || s === "NODH") {
             if (Simplane.getAutoPilotApproachType() === 4) {
                 this.perfApprDH = "NO DH";
-                SimVar.SetSimVarValue("L:AIRLINER_DECISION_HEIGHT", "number", -1);
+                SimVar.SetSimVarValue("L:AIRLINER_DECISION_HEIGHT", "number", -2);
                 return true;
             } else {
                 this.showErrorMessage("NOT ALLOWED");

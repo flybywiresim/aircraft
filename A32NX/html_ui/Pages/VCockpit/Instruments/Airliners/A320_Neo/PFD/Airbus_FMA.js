@@ -1623,8 +1623,10 @@ var Airbus_FMA;
                     targetState = Column4.ROW_3_STATE.MDA;
                 } else if (Airbus_FMA.CurrentPlaneState.decisionHeight >= 0) {
                     targetState = Column4.ROW_3_STATE.DH;
-                } else {
+                } else if (Airbus_FMA.CurrentPlaneState.decisionHeight == -2) {
                     targetState = Column4.ROW_3_STATE.NO_DH;
+                } else {
+                    targetState = Column4.ROW_3_STATE.NONE;
                 }
             }
             if ((targetState != this.currentRow3State) || (targetState == Column4.ROW_3_STATE.DH) || (targetState == Column4.ROW_3_STATE.MDA)) {
