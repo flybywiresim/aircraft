@@ -1302,6 +1302,51 @@ class FMCMainDisplay extends BaseAirliners {
         return this._routeReservedPercent;
     }
 
+    /**
+     * Sets new Cruise FL if all conditions good
+     * @param input {float} Altitude or FL
+     * @returns {boolean} input passed checks
+     */
+    trySetCruiseFl(input) {
+        if (input === FMCMainDisplay.clrValue) {
+            this.showErrorMessage(this.defaultInputErrorMessage);
+            return false;
+        }
+        const flString = input.replace("FL", "");
+        if (!flString) {
+            this.showErrorMessage(this.defaultInputErrorMessage);
+            return false;
+        }
+        let fl = parseFloat(flString);
+        if (!isFinite(fl)) {
+            this.showErrorMessage(this.defaultInputErrorMessage);
+            return false;
+        }
+        if (fl >= 1000) {
+            fl = Math.floor(fl / 100);
+        }
+        if (fl > this.maxCruiseFL) {
+            this.showErrorMessage(this.defaultInputErrorMessage);
+            return false;
+        }
+        const phase = Simplane.getCurrentFlightPhase();
+        if (this._cruiseEntered && fl < this.cruiseFlightLevel && phase === FlightPhase.FLIGHT_PHASE_CRUISE) {
+            this.showErrorMessage(this.defaultInputErrorMessage);
+            return false;
+        }
+        if (fl > Math.floor(Simplane.getAltitude() / 100) && phase > FlightPhase.FLIGHT_PHASE_CRUISE) {
+            this.showErrorMessage("ENTRY OUT OF RANGE");
+            return false;
+        }
+        if (fl > 0 && fl <= this.maxCruiseFL) {
+            this.cruiseFlightLevel = fl;
+            this._cruiseEntered = true;
+            return true;
+        }
+        this.showErrorMessage("ENTRY OUT OF RANGE");
+        return false;
+    }
+
     trySetRouteReservedFuel(s) {
         if (s) {
             const rteRsvWeight = parseFloat(s.split("/")[0]);

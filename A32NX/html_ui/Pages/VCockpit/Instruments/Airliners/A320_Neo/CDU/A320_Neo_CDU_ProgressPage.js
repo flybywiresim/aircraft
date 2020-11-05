@@ -5,10 +5,9 @@ class CDUProgressPage {
         const flightNo = SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string");
         const flCrz = mcdu._cruiseEntered ? "FL" + mcdu.cruiseFlightLevel.toFixed(0).padStart(3, "0") + "[color]blue" : "-----";
         mcdu.onLeftInput[0] = () => {
-            mcdu._cruiseEntered = true;
             const value = mcdu.inOut;
-            mcdu.clearUserInput();
-            if (mcdu.setCruiseFlightLevelAndTemperature(value)) {
+            if (mcdu.trySetCruiseFl(value)) {
+                mcdu.clearUserInput();
                 CDUProgressPage.ShowPage(mcdu);
             }
         };
