@@ -26,4 +26,4 @@ jobs:
       - uses: actions/upload-artifact@v2
         with:
           name: A32NX
-          path: ./A32NX/
+          path: ./A32NX
