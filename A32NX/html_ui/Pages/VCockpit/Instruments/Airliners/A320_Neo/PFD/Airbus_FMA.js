@@ -797,6 +797,7 @@ var Airbus_FMA;
             this.currentRow1State = Column2.ROW_1_STATE.NONE;
             this.currentRow2State = Column2.ROW_2_STATE.NONE;
             this.currentConstrained = SimVar.GetSimVarValue("L:AP_CURRENT_TARGET_ALTITUDE_IS_CONSTRAINT", "number") === 1;
+            this.skipRow2 = false;
         }
         updateChild(_deltaTime) {
             let targetRow1State = Column2.ROW_1_STATE.NONE;
@@ -809,7 +810,11 @@ var Airbus_FMA;
             }
             if ((targetRow1State != this.currentRow1State) || (targetRow1State == Column2.ROW_1_STATE.VS) || (targetRow1State == Column2.ROW_1_STATE.FPA) || (currentConstrained !== this.currentConstrained)) {
                 this.currentRow1State = targetRow1State;
+                if (this.skipRow2) {
+                    this.currentRow2State = targetRow2State;
+                }
                 setTimeout(() => {
+                    this.skipRow2 = false;
                     switch (this.currentRow1State) {
                         case Column2.ROW_1_STATE.SRS_ARMED: {
                             this.setRowText(0, "SRS", Airbus_FMA.MODE_STATE.ARMED);
@@ -827,12 +832,32 @@ var Airbus_FMA;
                             this.setRowText(0, "ALT*", Airbus_FMA.MODE_STATE.CAPTURED);
                             break;
                         }
+                        case Column2.ROW_1_STATE.GS_ENGAGED: {
+                            this.setRowText(0, "G/S", Airbus_FMA.MODE_STATE.ENGAGED);
+                            break;
+                        }
+                        case Column2.ROW_1_STATE.GS_CAPTURED: {
+                            this.setRowText(0, "G/S*", Airbus_FMA.MODE_STATE.CAPTURED);
+                            break;
+                        }
                         case Column2.ROW_1_STATE.ALT_CST_ENGAGED: {
+                            this.skipRow2 = true;
                             this.setRowText(0, "ALT CST", Airbus_FMA.MODE_STATE.ENGAGED);
+                            if (this.currentRow2State === Column2.ROW_2_STATE.GS_ARMED) {
+                                this.setRowMultiText(1, Simplane.getAltitude() < Math.max(0, Simplane.getAutoPilotDisplayedAltitudeLockValue()) ? "CLB" : "DES", Airbus_FMA.MODE_STATE.ARMED, "G/S", Airbus_FMA.MODE_STATE.ARMED);
+                            } else {
+                                this.setRowMultiText(1, Simplane.getAltitude() < Math.max(0, Simplane.getAutoPilotDisplayedAltitudeLockValue()) ? "CLB" : "DES", Airbus_FMA.MODE_STATE.ARMED, "", Airbus_FMA.MODE_STATE.ACTIVE);
+                            }
                             break;
                         }
                         case Column2.ROW_1_STATE.ALT_CST_CAPTURED: {
+                            this.skipRow2 = true;
                             this.setRowText(0, "ALT CST*", Airbus_FMA.MODE_STATE.CAPTURED);
+                            if (targetRow2State === Column2.ROW_2_STATE.GS_ARMED) {
+                                this.setRowMultiText(1, Simplane.getAltitude() < Math.max(0, Simplane.getAutoPilotDisplayedAltitudeLockValue()) ? "CLB" : "DES", Airbus_FMA.MODE_STATE.ARMED, "G/S", Airbus_FMA.MODE_STATE.ARMED);
+                            } else {
+                                this.setRowMultiText(1, Simplane.getAltitude() < Math.max(0, Simplane.getAutoPilotDisplayedAltitudeLockValue()) ? "CLB" : "DES", Airbus_FMA.MODE_STATE.ARMED, "", Airbus_FMA.MODE_STATE.ACTIVE);
+                            }
                             break;
                         }
                         case Column2.ROW_1_STATE.VS: {
@@ -860,14 +885,6 @@ var Airbus_FMA;
                         }
                         case Column2.ROW_1_STATE.EXP_DES: {
                             this.setRowText(0, "EXP DES", Airbus_FMA.MODE_STATE.ENGAGED);
-                            break;
-                        }
-                        case Column2.ROW_1_STATE.GS_ENGAGED: {
-                            this.setRowText(0, "G/S", Airbus_FMA.MODE_STATE.ENGAGED);
-                            break;
-                        }
-                        case Column2.ROW_1_STATE.GS_CAPTURED: {
-                            this.setRowText(0, "G/S*", Airbus_FMA.MODE_STATE.CAPTURED);
                             break;
                         }
                         case Column2.ROW_1_STATE.OP_CLB: {
@@ -898,51 +915,59 @@ var Airbus_FMA;
                 }, 400 + Math.random() * 100);
             }
 
-            if (this.currentRow1State == Column2.ROW_1_STATE.OP_CLB || this.currentRow1State == Column2.ROW_1_STATE.OP_DES || this.currentRow1State == Column2.ROW_1_STATE.CLB_ENGAGED || this.currentRow1State == Column2.ROW_1_STATE.DES || currentConstrained !== this.currentConstrained) {
-                if (Column2.GetModeState_GS() == MODE_STATE.ARMED) {
-                    targetRow2State = Column2.ROW_2_STATE.ALT_GS_ARMED;
-                } else if (Column2.GetModeState_GS() != MODE_STATE.CAPTURED) {
-                    targetRow2State = Column2.ROW_2_STATE.ALT_ARMED;
-                }
-            }
-            if (targetRow2State != this.currentRow2State || currentConstrained !== this.currentConstrained) {
-                this.currentRow2State = targetRow2State;
-                setTimeout(() => {
-                    switch (this.currentRow2State) {
-                        case Column2.ROW_2_STATE.ALT_ARMED: {
-                            if (SimVar.GetSimVarValue("L:AP_CURRENT_TARGET_ALTITUDE_IS_CONSTRAINT", "number") === 1) {
-                                this.setRowMultiText(1, "ALT", Airbus_FMA.MODE_STATE.CONSTRAINED, "", Airbus_FMA.MODE_STATE.ACTIVE);
-                            } else {
-                                this.setRowMultiText(1, "ALT", Airbus_FMA.MODE_STATE.ARMED, "", Airbus_FMA.MODE_STATE.ACTIVE);
-                            }
-                            break;
-                        }
-                        case Column2.ROW_2_STATE.ALT_CST_CONSTRAINED: {
-                            this.setRowText(1, "ALT CST", Airbus_FMA.MODE_STATE.CONSTRAINED);
-                            break;
-                        }
-                        case Column2.ROW_2_STATE.GS_ARMED: {
-                            this.setRowText(1, "G/S", Airbus_FMA.MODE_STATE.ARMED);
-                            break;
-                        }
-                        case Column2.ROW_2_STATE.GS_FINAL_ARMED: {
-                            this.setRowText(1, "FINAL", Airbus_FMA.MODE_STATE.ARMED);
-                            break;
-                        }
-                        case Column2.ROW_2_STATE.CLB_ARMED: {
-                            this.setRowMultiText(1, "CLB", Airbus_FMA.MODE_STATE.ARMED, "", Airbus_FMA.MODE_STATE.ACTIVE);
-                            break;
-                        }
-                        case Column2.ROW_2_STATE.ALT_GS_ARMED: {
-                            this.setRowMultiText(1, "ALT", Airbus_FMA.MODE_STATE.ARMED, "G/S", Airbus_FMA.MODE_STATE.ARMED);
-                            break;
-                        }
-                        default: {
-                            this.setRowText(1, "", Airbus_FMA.MODE_STATE.NONE);
-                            break;
-                        }
+            if (!this.skipRow2) {
+                if (this.currentRow1State == Column2.ROW_1_STATE.OP_CLB || this.currentRow1State == Column2.ROW_1_STATE.OP_DES || this.currentRow1State == Column2.ROW_1_STATE.CLB_ENGAGED || this.currentRow1State == Column2.ROW_1_STATE.DES || currentConstrained !== this.currentConstrained) {
+                    if (Column2.GetModeState_GS() == MODE_STATE.ARMED) {
+                        targetRow2State = Column2.ROW_2_STATE.ALT_GS_ARMED;
+                    } else if (Column2.GetModeState_GS() != MODE_STATE.CAPTURED) {
+                        targetRow2State = Column2.ROW_2_STATE.ALT_ARMED;
                     }
-                }, 400 + Math.random() * 100);
+                }
+                if (targetRow2State != this.currentRow2State || currentConstrained !== this.currentConstrained) {
+                    this.currentRow2State = targetRow2State;
+                    setTimeout(() => {
+                        if (currentConstrained) {
+
+                        } else {
+                            switch (this.currentRow2State) {
+                                case Column2.ROW_2_STATE.ALT_ARMED: {
+                                    if (Column2.ROW_1_STATE.ALT_CST_ENGAGED !== targetRow1State || Column2.ROW_1_STATE.ALT_CST_CAPTURED !== targetRow1State) {
+                                        if (SimVar.GetSimVarValue("L:AP_CURRENT_TARGET_ALTITUDE_IS_CONSTRAINT", "number") === 1) {
+                                            this.setRowMultiText(1, "ALT", Airbus_FMA.MODE_STATE.CONSTRAINED, "", Airbus_FMA.MODE_STATE.ACTIVE);
+                                        } else {
+                                            this.setRowMultiText(1, "ALT", Airbus_FMA.MODE_STATE.ARMED, "", Airbus_FMA.MODE_STATE.ACTIVE);
+                                        }
+                                    }
+                                    break;
+                                }
+                                case Column2.ROW_2_STATE.ALT_CST_CONSTRAINED: {
+                                    this.setRowText(1, "ALT CST", Airbus_FMA.MODE_STATE.CONSTRAINED);
+                                    break;
+                                }
+                                case Column2.ROW_2_STATE.GS_ARMED: {
+                                    this.setRowText(1, "G/S", Airbus_FMA.MODE_STATE.ARMED);
+                                    break;
+                                }
+                                case Column2.ROW_2_STATE.GS_FINAL_ARMED: {
+                                    this.setRowText(1, "FINAL", Airbus_FMA.MODE_STATE.ARMED);
+                                    break;
+                                }
+                                case Column2.ROW_2_STATE.CLB_ARMED: {
+                                    this.setRowMultiText(1, "CLB", Airbus_FMA.MODE_STATE.ARMED, "", Airbus_FMA.MODE_STATE.ACTIVE);
+                                    break;
+                                }
+                                case Column2.ROW_2_STATE.ALT_GS_ARMED: {
+                                    this.setRowMultiText(1, "ALT", Airbus_FMA.MODE_STATE.ARMED, "G/S", Airbus_FMA.MODE_STATE.ARMED);
+                                    break;
+                                }
+                                default: {
+                                    this.setRowText(1, "", Airbus_FMA.MODE_STATE.NONE);
+                                    break;
+                                }
+                            }
+                        }
+                    }, 400 + Math.random() * 100);
+                }
             }
         }
         getTargetRow1State() {
