@@ -31,7 +31,7 @@ class CDUProgressPage {
             if (mcdu.page.Current === mcdu.page.ProgressPage) {
                 CDUProgressPage.ShowPage(mcdu);
             }
-        }, 5000);
+        }, mcdu.PageTimeout.Prog);
     }
     static ShowReportPage(mcdu) {
         mcdu.clearDisplay();

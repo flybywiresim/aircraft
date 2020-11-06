@@ -2368,6 +2368,9 @@ class FMCMainDisplay extends BaseAirliners {
         this.updateFuelVars();
         this.thrustReductionAltitude = 1500;
         SimVar.SetSimVarValue("L:AIRLINER_THR_RED_ALT", "Number", this.thrustReductionAltitude);
+        this.PageTimeout = {
+            Prog: 5000
+        };
         this.page = {
             SelfPtr: false,
             Current: 0,
@@ -2415,6 +2418,58 @@ class FMCMainDisplay extends BaseAirliners {
             VerticalRevisionPage: 41,
             WaypointPage: 42
         };
+    }
+
+    /**
+     * Used for basic inputs e.g. alternate airport, ci, fl, temp, constraints, ...
+     * @returns {number} delay in ms between 300 and 400
+     */
+    getDelayBasic() {
+        return 300 + 100 * Math.random();
+    }
+
+    /**
+     * Used for e.g. loading time fore pages
+     * @returns {number} delay in ms between 600 and 800
+     */
+    getDelayMedium() {
+        return 600 + 200 * Math.random();
+    }
+
+    /**
+     * Used for intense calculation
+     * @returns {number} delay in ms between 900 and 12000
+     */
+    getDelayHigh() {
+        return 900 + 300 * Math.random();
+    }
+
+    /**
+     * Used for changes to the flight plan
+     * @returns {number} dynamic delay in ms between ~300 and up to +2000 (depending on additional conditions)
+     */
+    getDelayRouteChange() {
+        if (this._zeroFuelWeightZFWCGEntered && this._blockFuelEntered) {
+            return this.flightPlanManager.getWaypointsCount() * 20 + (this.flightPlanManager.getDestination().cumulativeDistanceInFP) / 10 + Math.random() * 300;
+        } else {
+            return 300 + this.flightPlanManager.getWaypointsCount() * Math.random() + this.flightPlanManager.getDestination().cumulativeDistanceInFP * Math.random();
+        }
+    }
+
+    /**
+     * Used for calculation time for fuel pred page
+     * @returns {number} dynamic delay in ms between 2000ms and 400ms
+     */
+    getDelayFuelPred() {
+        return this.flightPlanManager.getWaypointsCount() * 20 + (this.flightPlanManager.getDestination().cumulativeDistanceInFP) / 10 + Math.random() * 300;
+    }
+
+    /**
+     * Used to load wind data into fms
+     * @returns {number} dynamic delay in ms dependent on amount of waypoints
+     */
+    getDelayWindLoad() {
+        return this.flightPlanManager.getWaypointsCount() * 20;
     }
 
     /**
