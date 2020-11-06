@@ -935,8 +935,8 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
 
                 let maxSpeed;
                 let speed;
-                let gaInitSpeed = SimVar.GetSimVarValue("L:A32NX_GOAROUND_INIT_SPEED", "number");
-                let gaAppSpeed  = SimVar.GetSimVarValue("L:A32NX_GOAROUND_INIT_APP_SPEED", "number");
+                const gaInitSpeed = SimVar.GetSimVarValue("L:A32NX_GOAROUND_INIT_SPEED", "number");
+                const gaAppSpeed = SimVar.GetSimVarValue("L:A32NX_GOAROUND_INIT_APP_SPEED", "number");
 
                 if (eng1Running && eng2Running) {
                     maxSpeed = this.getVLS() + 25;
@@ -951,7 +951,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                     this.setAPManagedSpeed(speed, Aircraft.A320_NEO);
                 }
 
-                let selectedAltFCU = SimVar.GetSimVarValue("L:HUD_AP_SELECTED_ALTITUDE", "Number");
+                const selectedAltFCU = SimVar.GetSimVarValue("L:HUD_AP_SELECTED_ALTITUDE", "Number");
 
                 if (apLogicOn) {
                     this._forceNextAltitudeUpdate = true;
@@ -1115,7 +1115,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         if (this.currentFlightPhase == FlightPhase.FLIGHT_PHASE_GOAROUND) {
 
             const planeAltitudeMsl = Simplane.getAltitude();
-            let accelerationAltitudeMsl = this.accelerationAltitudeGoaround;
+            const accelerationAltitudeMsl = this.accelerationAltitudeGoaround;
 
             if (planeAltitudeMsl > accelerationAltitudeMsl) {
                 console.log('switching to FLIGHT_PHASE_CLIMB from GA: ' + JSON.stringify({planeAltitudeMsl, accelerationAltitudeMsl, prevPhase: this.currentFlightPhase}, null, 2));

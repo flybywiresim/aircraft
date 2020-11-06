@@ -147,7 +147,7 @@ var Airbus_FMA;
     CurrentPlaneState.autoPilotActive = [false, false];
     CurrentPlaneState.autoPilotFlightDirectorActive = [false, false];
     Airbus_FMA.CurrentPlaneState = CurrentPlaneState;
-    let SRSEnabled = false;
+
     class Cell {
         constructor(_parent, _className) {
             this.parent = _parent;
