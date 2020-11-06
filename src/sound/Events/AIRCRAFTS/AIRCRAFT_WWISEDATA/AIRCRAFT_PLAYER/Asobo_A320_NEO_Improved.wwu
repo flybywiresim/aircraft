@@ -1244,6 +1244,118 @@
 						</Action>
 					</ChildrenList>
 				</Event>
+				<Event Name="Play_Asobo_A320_NEO_smoothtouch" ID="{6CBDB91B-5E29-4DBB-AA42-F4ACBB74D3EA}">
+					<ChildrenList>
+						<Action Name="" ID="{4C6CD080-21CE-4CAB-B69A-5969318BB757}" ShortID="652370528">
+							<PropertyList>
+								<Property Name="ActionType" Type="int16" Value="1"/>
+							</PropertyList>
+							<ReferenceList>
+								<Reference Name="Target">
+									<ObjectRef Name="smoothtouch" ID="{DC099CDF-B7C4-4F18-8C64-6CFC80E5680C}" WorkUnitID="{27D32D8D-6C92-4542-9BFC-F0D08111F92F}"/>
+								</Reference>
+							</ReferenceList>
+						</Action>
+					</ChildrenList>
+				</Event>
+				<Event Name="Play_Asobo_A320_NEO_medtouch" ID="{E129FE7D-9221-47B6-8C58-2A614E22E4E2}">
+					<ChildrenList>
+						<Action Name="" ID="{F55AE5D8-008E-4094-8469-5E594151B68F}" ShortID="295399926">
+							<PropertyList>
+								<Property Name="ActionType" Type="int16" Value="1"/>
+							</PropertyList>
+							<ReferenceList>
+								<Reference Name="Target">
+									<ObjectRef Name="medtouch" ID="{B69BB6C9-4FB6-4B39-A185-FB10F3AA6741}" WorkUnitID="{27D32D8D-6C92-4542-9BFC-F0D08111F92F}"/>
+								</Reference>
+							</ReferenceList>
+						</Action>
+					</ChildrenList>
+				</Event>
+				<Event Name="Play_Asobo_A320_NEO_firmtouch" ID="{A8C192A2-B35B-4E43-818E-C763B78E0095}">
+					<ChildrenList>
+						<Action Name="" ID="{4844AB94-F230-479F-8922-10262A625692}" ShortID="899792418">
+							<PropertyList>
+								<Property Name="ActionType" Type="int16" Value="1"/>
+							</PropertyList>
+							<ReferenceList>
+								<Reference Name="Target">
+									<ObjectRef Name="CENTER_TOUCHDOWN" ID="{BA767610-0976-4FAF-9CFA-34FEBF33F830}" WorkUnitID="{27D32D8D-6C92-4542-9BFC-F0D08111F92F}"/>
+								</Reference>
+							</ReferenceList>
+						</Action>
+					</ChildrenList>
+				</Event>
+				<Event Name="Play_Asobo_A320_NEO_Fuelpumpext" ID="{C31D6B38-EBF6-4DA1-BA04-1B1FF9B40C6D}">
+					<ChildrenList>
+						<Action Name="" ID="{DFAFB3F7-5BD0-4278-9E89-B3A22FF7D86E}" ShortID="166015310">
+							<PropertyList>
+								<Property Name="ActionType" Type="int16" Value="1"/>
+							</PropertyList>
+							<ReferenceList>
+								<Reference Name="Target">
+									<ObjectRef Name="fuelpumpsext" ID="{DFAAB296-41A4-4231-A090-A04D1F0F36D2}" WorkUnitID="{27D32D8D-6C92-4542-9BFC-F0D08111F92F}"/>
+								</Reference>
+							</ReferenceList>
+						</Action>
+					</ChildrenList>
+				</Event>
+				<Event Name="Play_Asobo_A320_NEO_splrleftwind" ID="{E485C2A1-698E-422A-B75D-C7F686E67D7F}">
+					<ChildrenList>
+						<Action Name="" ID="{D4BCE669-442A-451A-B218-9438589450D8}" ShortID="870747150">
+							<PropertyList>
+								<Property Name="ActionType" Type="int16" Value="1"/>
+							</PropertyList>
+							<ReferenceList>
+								<Reference Name="Target">
+									<ObjectRef Name="spoilerleft" ID="{4CC937D6-57F7-44DE-BBD1-C83F34EA88BF}" WorkUnitID="{27D32D8D-6C92-4542-9BFC-F0D08111F92F}"/>
+								</Reference>
+							</ReferenceList>
+						</Action>
+					</ChildrenList>
+				</Event>
+				<Event Name="Play_Asobo_A320_NEO_splrrightwind" ID="{349C9A95-AF05-4179-A98D-24F4A6F0A13B}">
+					<ChildrenList>
+						<Action Name="" ID="{466B360A-2E7F-4A56-AC7F-3E8AB8C26D3D}" ShortID="170964644">
+							<PropertyList>
+								<Property Name="ActionType" Type="int16" Value="1"/>
+							</PropertyList>
+							<ReferenceList>
+								<Reference Name="Target">
+									<ObjectRef Name="spoilerright" ID="{5F854ECE-A370-4F73-A753-6D3836314835}" WorkUnitID="{27D32D8D-6C92-4542-9BFC-F0D08111F92F}"/>
+								</Reference>
+							</ReferenceList>
+						</Action>
+					</ChildrenList>
+				</Event>
+				<Event Name="Play_Asobo_A320_NEO_taxirumble" ID="{CD01237B-2B82-4657-9283-25C115D647BC}">
+					<ChildrenList>
+						<Action Name="" ID="{2201C72D-3FD0-4DFA-A737-206F690F3037}" ShortID="106152748">
+							<PropertyList>
+								<Property Name="ActionType" Type="int16" Value="1"/>
+							</PropertyList>
+							<ReferenceList>
+								<Reference Name="Target">
+									<ObjectRef Name="taxi" ID="{E500CEF5-B895-463C-9877-287A2D880922}" WorkUnitID="{27D32D8D-6C92-4542-9BFC-F0D08111F92F}"/>
+								</Reference>
+							</ReferenceList>
+						</Action>
+					</ChildrenList>
+				</Event>
+				<Event Name="Play_Asobo_A320_NEO_nosetouch" ID="{9C4172A6-2B83-46F3-BDC4-D85DA92267D9}">
+					<ChildrenList>
+						<Action Name="" ID="{81C71FF5-4B60-4D84-A857-27AA77A22706}" ShortID="5361421">
+							<PropertyList>
+								<Property Name="ActionType" Type="int16" Value="1"/>
+							</PropertyList>
+							<ReferenceList>
+								<Reference Name="Target">
+									<ObjectRef Name="nosetouch" ID="{1175F9C3-EB12-4A1C-B369-03AB7C895D7D}" WorkUnitID="{27D32D8D-6C92-4542-9BFC-F0D08111F92F}"/>
+								</Reference>
+							</ReferenceList>
+						</Action>
+					</ChildrenList>
+				</Event>
 			</ChildrenList>
 		</WorkUnit>
 	</Events>
