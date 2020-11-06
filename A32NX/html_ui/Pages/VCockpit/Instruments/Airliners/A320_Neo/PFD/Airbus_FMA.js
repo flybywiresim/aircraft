@@ -1446,7 +1446,7 @@ var Airbus_FMA;
 
             // Future: NAV should not arm/engage during GA when there is no missed approach / secondary fp to follow
             // NAV will engage automatically when there is a missed approach flightplan to follow, or waypoint or whatever
-            if (Airbus_FMA.CurrentPlaneState.flightPhase == FlightPhase.FLIGHT_PHASE_GOAROUND && SimVar.GetSimVarValue("L:A32NX_GOAROUND_NAV_MODE", "bool") === 1 && SimVar.GetSimVarValue("L:A320_FCU_SHOW_SELECTED_HEADING", "number") === 0 ) {
+            if (Airbus_FMA.CurrentPlaneState.flightPhase == FlightPhase.FLIGHT_PHASE_GOAROUND && SimVar.GetSimVarValue("L:A32NX_GOAROUND_NAV_MODE", "bool") === 1 && SimVar.GetSimVarValue("L:A320_FCU_SHOW_SELECTED_HEADING", "number") === 0) {
                 if (Airbus_FMA.CurrentPlaneState.radioAltitude >= 30) {
                     return Airbus_FMA.MODE_STATE.ENGAGED;
                 } else {

@@ -1887,7 +1887,7 @@ class FMCMainDisplay extends BaseAirliners {
                 if (SimVar.GetSimVarValue("L:A32NX_GOAROUND_PASSED", "bool") === 1) {
                     const selectedAltFCU = SimVar.GetSimVarValue("L:HUD_AP_SELECTED_ALTITUDE", "Number");
                     if (SimVar.GetSimVarValue("L:A32NX_CRZ_ALT_SET_INITIAL", "bool") == 1) {
-                        cruiseFlightLevel = SimVar.GetSimVarValue("L:A32NX_NEW_CRZ_ALT", "number")
+                        cruiseFlightLevel = SimVar.GetSimVarValue("L:A32NX_NEW_CRZ_ALT", "number");
                     } else {
                         cruiseFlightLevel = selectedAltFCU / 100;
                         remainInClimb = true;
@@ -1967,7 +1967,7 @@ class FMCMainDisplay extends BaseAirliners {
             if (this.currentFlightPhase == FlightPhase.FLIGHT_PHASE_GOAROUND) {
 
                 const planeAltitudeMsl = Simplane.getAltitude();
-                let accelerationAltitudeMsl = this.accelerationAltitudeGoaround;
+                const accelerationAltitudeMsl = this.accelerationAltitudeGoaround;
 
                 if (planeAltitudeMsl > accelerationAltitudeMsl) {
                     console.log('switching to FLIGHT_PHASE_CLIMB from GA: ' + JSON.stringify({planeAltitudeMsl, accelerationAltitudeMsl, prevPhase: this.currentFlightPhase}, null, 2));
