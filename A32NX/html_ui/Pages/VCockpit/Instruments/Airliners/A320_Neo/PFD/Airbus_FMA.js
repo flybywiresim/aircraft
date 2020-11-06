@@ -413,130 +413,134 @@ var Airbus_FMA;
             const targetRow1And2State = this.getTargetRow1And2State();
             if ((targetRow1And2State != this.currentRow1And2State) || (this.currentRow1And2State == Column1.ROW_1_2_STATE.MANFLX)) {
                 this.currentRow1And2State = targetRow1And2State;
-                this.setRowText(0, "", Airbus_FMA.MODE_STATE.NONE);
-                this.setRowText(1, "", Airbus_FMA.MODE_STATE.NONE);
-                switch (this.currentRow1And2State) {
-                    case Column1.ROW_1_2_STATE.MANTOGA:
-                    {
-                        this.setRowHighlightStyle(0, Airbus_FMA.HIGHLIGHT_STYLE.OPEN_BOTTOM, true);
-                        this.setRowHighlightStyle(1, Airbus_FMA.HIGHLIGHT_STYLE.OPEN_TOP, true);
-                        this.setRowText(0, "MAN", Airbus_FMA.MODE_STATE.STATUS);
-                        this.setRowText(1, "TOGA", Airbus_FMA.MODE_STATE.STATUS);
-                        break;
+                setTimeout(() => {
+                    this.setRowText(0, "", Airbus_FMA.MODE_STATE.NONE);
+                    this.setRowText(1, "", Airbus_FMA.MODE_STATE.NONE);
+                    switch (this.currentRow1And2State) {
+                        case Column1.ROW_1_2_STATE.MANTOGA:
+                        {
+                            this.setRowHighlightStyle(0, Airbus_FMA.HIGHLIGHT_STYLE.OPEN_BOTTOM, true);
+                            this.setRowHighlightStyle(1, Airbus_FMA.HIGHLIGHT_STYLE.OPEN_TOP, true);
+                            this.setRowText(0, "MAN", Airbus_FMA.MODE_STATE.STATUS);
+                            this.setRowText(1, "TOGA", Airbus_FMA.MODE_STATE.STATUS);
+                            break;
+                        }
+                        case Column1.ROW_1_2_STATE.TOGA:
+                        {
+                            this.setRowHighlightStyle(0, Airbus_FMA.HIGHLIGHT_STYLE.FULL, true);
+                            this.setRowText(0, "TOGA", Airbus_FMA.MODE_STATE.STATUS);
+                            break;
+                        }
+                        case Column1.ROW_1_2_STATE.MANFLX:
+                        {
+                            this.setRowHighlightStyle(0, Airbus_FMA.HIGHLIGHT_STYLE.OPEN_BOTTOM, true);
+                            this.setRowHighlightStyle(1, Airbus_FMA.HIGHLIGHT_STYLE.OPEN_TOP, true);
+                            this.setRowText(0, "MAN", Airbus_FMA.MODE_STATE.STATUS);
+                            let temperatureText = Airbus_FMA.CurrentPlaneState.flexTemperature >= 0 ? "+" : "-";
+                            temperatureText += Airbus_FMA.CurrentPlaneState.flexTemperature.toFixed(0);
+                            this.setRowMultiText(1, "FLX", Airbus_FMA.MODE_STATE.STATUS, temperatureText, Airbus_FMA.MODE_STATE.ARMED);
+                            break;
+                        }
+                        case Column1.ROW_1_2_STATE.MANMCT:
+                        {
+                            this.setRowHighlightStyle(0, Airbus_FMA.HIGHLIGHT_STYLE.OPEN_BOTTOM, true);
+                            this.setRowHighlightStyle(1, Airbus_FMA.HIGHLIGHT_STYLE.OPEN_TOP, true);
+                            this.setRowText(0, "MAN", Airbus_FMA.MODE_STATE.STATUS);
+                            this.setRowText(1, "MCT", Airbus_FMA.MODE_STATE.STATUS);
+                            break;
+                        }
+                        case Column1.ROW_1_2_STATE.MANTHR:
+                        {
+                            this.setRowHighlightStyle(0, Airbus_FMA.HIGHLIGHT_STYLE.OPEN_BOTTOM_WARNING, true);
+                            this.setRowHighlightStyle(1, Airbus_FMA.HIGHLIGHT_STYLE.OPEN_TOP_WARNING, true);
+                            this.setRowText(0, "MAN", Airbus_FMA.MODE_STATE.STATUS);
+                            this.setRowText(1, "THR", Airbus_FMA.MODE_STATE.STATUS);
+                            break;
+                        }
+                        case Column1.ROW_1_2_STATE.THRMCT:
+                        {
+                            this.setRowHighlightStyle(0, Airbus_FMA.HIGHLIGHT_STYLE.FULL);
+                            this.setRowText(0, "THR MCT", Airbus_FMA.MODE_STATE.ENGAGED);
+                            break;
+                        }
+                        case Column1.ROW_1_2_STATE.THRCLB:
+                        {
+                            this.setRowHighlightStyle(0, Airbus_FMA.HIGHLIGHT_STYLE.FULL);
+                            this.setRowText(0, "THR CLB", Airbus_FMA.MODE_STATE.ENGAGED);
+                            break;
+                        }
+                        case Column1.ROW_1_2_STATE.THRLVR:
+                        {
+                            this.setRowHighlightStyle(0, Airbus_FMA.HIGHLIGHT_STYLE.FULL);
+                            this.setRowText(0, "THR LVR", Airbus_FMA.MODE_STATE.ENGAGED);
+                            break;
+                        }
+                        case Column1.ROW_1_2_STATE.THRIDLE:
+                        {
+                            this.setRowHighlightStyle(0, Airbus_FMA.HIGHLIGHT_STYLE.FULL);
+                            this.setRowText(0, "THR IDLE", Airbus_FMA.MODE_STATE.ENGAGED);
+                            break;
+                        }
+                        case Column1.ROW_1_2_STATE.AFLOOR:
+                        {
+                            this.setRowHighlightStyle(0, Airbus_FMA.HIGHLIGHT_STYLE.FULL_WARNING, true);
+                            this.setRowText(0, "A.FLOOR", Airbus_FMA.MODE_STATE.ENGAGED);
+                            break;
+                        }
+                        case Column1.ROW_1_2_STATE.TOGALK:
+                        {
+                            this.setRowHighlightStyle(0, Airbus_FMA.HIGHLIGHT_STYLE.FULL_WARNING, true);
+                            this.setRowText(0, "TOGA LK", Airbus_FMA.MODE_STATE.ENGAGED);
+                            break;
+                        }
+                        case Column1.ROW_1_2_STATE.SPEED:
+                        {
+                            this.setRowHighlightStyle(0, Airbus_FMA.HIGHLIGHT_STYLE.FULL);
+                            this.setRowText(0, "SPEED", Airbus_FMA.MODE_STATE.ENGAGED);
+                            break;
+                        }
+                        case Column1.ROW_1_2_STATE.MACH:
+                        {
+                            this.setRowHighlightStyle(0, Airbus_FMA.HIGHLIGHT_STYLE.FULL);
+                            this.setRowText(0, "MACH", Airbus_FMA.MODE_STATE.ENGAGED);
+                            break;
+                        }
+                        case Column1.ROW_1_2_STATE.THRLK:
+                        {
+                            this.setRowHighlightStyle(0, Airbus_FMA.HIGHLIGHT_STYLE.FULL);
+                            this.setRowText(0, "THR LK", Airbus_FMA.MODE_STATE.WARNING);
+                            break;
+                        }
                     }
-                    case Column1.ROW_1_2_STATE.TOGA:
-                    {
-                        this.setRowHighlightStyle(0, Airbus_FMA.HIGHLIGHT_STYLE.FULL, true);
-                        this.setRowText(0, "TOGA", Airbus_FMA.MODE_STATE.STATUS);
-                        break;
-                    }
-                    case Column1.ROW_1_2_STATE.MANFLX:
-                    {
-                        this.setRowHighlightStyle(0, Airbus_FMA.HIGHLIGHT_STYLE.OPEN_BOTTOM, true);
-                        this.setRowHighlightStyle(1, Airbus_FMA.HIGHLIGHT_STYLE.OPEN_TOP, true);
-                        this.setRowText(0, "MAN", Airbus_FMA.MODE_STATE.STATUS);
-                        let temperatureText = Airbus_FMA.CurrentPlaneState.flexTemperature >= 0 ? "+" : "-";
-                        temperatureText += Airbus_FMA.CurrentPlaneState.flexTemperature.toFixed(0);
-                        this.setRowMultiText(1, "FLX", Airbus_FMA.MODE_STATE.STATUS, temperatureText, Airbus_FMA.MODE_STATE.ARMED);
-                        break;
-                    }
-                    case Column1.ROW_1_2_STATE.MANMCT:
-                    {
-                        this.setRowHighlightStyle(0, Airbus_FMA.HIGHLIGHT_STYLE.OPEN_BOTTOM, true);
-                        this.setRowHighlightStyle(1, Airbus_FMA.HIGHLIGHT_STYLE.OPEN_TOP, true);
-                        this.setRowText(0, "MAN", Airbus_FMA.MODE_STATE.STATUS);
-                        this.setRowText(1, "MCT", Airbus_FMA.MODE_STATE.STATUS);
-                        break;
-                    }
-                    case Column1.ROW_1_2_STATE.MANTHR:
-                    {
-                        this.setRowHighlightStyle(0, Airbus_FMA.HIGHLIGHT_STYLE.OPEN_BOTTOM_WARNING, true);
-                        this.setRowHighlightStyle(1, Airbus_FMA.HIGHLIGHT_STYLE.OPEN_TOP_WARNING, true);
-                        this.setRowText(0, "MAN", Airbus_FMA.MODE_STATE.STATUS);
-                        this.setRowText(1, "THR", Airbus_FMA.MODE_STATE.STATUS);
-                        break;
-                    }
-                    case Column1.ROW_1_2_STATE.THRMCT:
-                    {
-                        this.setRowHighlightStyle(0, Airbus_FMA.HIGHLIGHT_STYLE.FULL);
-                        this.setRowText(0, "THR MCT", Airbus_FMA.MODE_STATE.ENGAGED);
-                        break;
-                    }
-                    case Column1.ROW_1_2_STATE.THRCLB:
-                    {
-                        this.setRowHighlightStyle(0, Airbus_FMA.HIGHLIGHT_STYLE.FULL);
-                        this.setRowText(0, "THR CLB", Airbus_FMA.MODE_STATE.ENGAGED);
-                        break;
-                    }
-                    case Column1.ROW_1_2_STATE.THRLVR:
-                    {
-                        this.setRowHighlightStyle(0, Airbus_FMA.HIGHLIGHT_STYLE.FULL);
-                        this.setRowText(0, "THR LVR", Airbus_FMA.MODE_STATE.ENGAGED);
-                        break;
-                    }
-                    case Column1.ROW_1_2_STATE.THRIDLE:
-                    {
-                        this.setRowHighlightStyle(0, Airbus_FMA.HIGHLIGHT_STYLE.FULL);
-                        this.setRowText(0, "THR IDLE", Airbus_FMA.MODE_STATE.ENGAGED);
-                        break;
-                    }
-                    case Column1.ROW_1_2_STATE.AFLOOR:
-                    {
-                        this.setRowHighlightStyle(0, Airbus_FMA.HIGHLIGHT_STYLE.FULL_WARNING, true);
-                        this.setRowText(0, "A.FLOOR", Airbus_FMA.MODE_STATE.ENGAGED);
-                        break;
-                    }
-                    case Column1.ROW_1_2_STATE.TOGALK:
-                    {
-                        this.setRowHighlightStyle(0, Airbus_FMA.HIGHLIGHT_STYLE.FULL_WARNING, true);
-                        this.setRowText(0, "TOGA LK", Airbus_FMA.MODE_STATE.ENGAGED);
-                        break;
-                    }
-                    case Column1.ROW_1_2_STATE.SPEED:
-                    {
-                        this.setRowHighlightStyle(0, Airbus_FMA.HIGHLIGHT_STYLE.FULL);
-                        this.setRowText(0, "SPEED", Airbus_FMA.MODE_STATE.ENGAGED);
-                        break;
-                    }
-                    case Column1.ROW_1_2_STATE.MACH:
-                    {
-                        this.setRowHighlightStyle(0, Airbus_FMA.HIGHLIGHT_STYLE.FULL);
-                        this.setRowText(0, "MACH", Airbus_FMA.MODE_STATE.ENGAGED);
-                        break;
-                    }
-                    case Column1.ROW_1_2_STATE.THRLK:
-                    {
-                        this.setRowHighlightStyle(0, Airbus_FMA.HIGHLIGHT_STYLE.FULL);
-                        this.setRowText(0, "THR LK", Airbus_FMA.MODE_STATE.WARNING);
-                        break;
-                    }
-                }
+                }, 500 + Math.random() * 100);
             }
             const targetRow3State = this.getTargetRow3State();
             if (targetRow3State != this.currentRow3State) {
                 this.currentRow3State = targetRow3State;
-                switch (this.currentRow3State) {
-                    case Column1.ROW_3_STATE.LVRCLB:
-                    {
-                        this.setRowText(2, "LVR CLB", Airbus_FMA.MODE_STATE.ACTIVE_BLINK);
-                        break;
+                setTimeout(() => {
+                    switch (this.currentRow3State) {
+                        case Column1.ROW_3_STATE.LVRCLB:
+                        {
+                            this.setRowText(2, "LVR CLB", Airbus_FMA.MODE_STATE.ACTIVE_BLINK);
+                            break;
+                        }
+                        case Column1.ROW_3_STATE.LVRMCT:
+                        {
+                            this.setRowText(2, "LVR MCT", Airbus_FMA.MODE_STATE.STATUS);
+                            break;
+                        }
+                        case Column1.ROW_3_STATE.LVRASYM:
+                        {
+                            this.setRowText(2, "LVR ASYM", Airbus_FMA.MODE_STATE.WARNING);
+                            break;
+                        }
+                        default:
+                        {
+                            this.setRowText(2, "", Airbus_FMA.MODE_STATE.NONE);
+                            break;
+                        }
                     }
-                    case Column1.ROW_3_STATE.LVRMCT:
-                    {
-                        this.setRowText(2, "LVR MCT", Airbus_FMA.MODE_STATE.STATUS);
-                        break;
-                    }
-                    case Column1.ROW_3_STATE.LVRASYM:
-                    {
-                        this.setRowText(2, "LVR ASYM", Airbus_FMA.MODE_STATE.WARNING);
-                        break;
-                    }
-                    default:
-                    {
-                        this.setRowText(2, "", Airbus_FMA.MODE_STATE.NONE);
-                        break;
-                    }
-                }
+                }, 500 + Math.random() * 100);
             }
         }
         getTargetRow1And2State() {
@@ -792,166 +796,153 @@ var Airbus_FMA;
             this.setRowHighlightStyle(0, Airbus_FMA.HIGHLIGHT_STYLE.FULL);
             this.currentRow1State = Column2.ROW_1_STATE.NONE;
             this.currentRow2State = Column2.ROW_2_STATE.NONE;
+            this.currentConstrained = SimVar.GetSimVarValue("L:AP_CURRENT_TARGET_ALTITUDE_IS_CONSTRAINT", "number") === 1;
         }
         updateChild(_deltaTime) {
             let targetRow1State = Column2.ROW_1_STATE.NONE;
             let targetRow2State = Column2.ROW_2_STATE.NONE;
+            let currentConstrained = this.currentConstrained;
             if (!Airbus_FMA.VerticalAndLateral.IsActive_Any()) {
                 targetRow1State = this.getTargetRow1State();
                 targetRow2State = this.getTargetRow2State();
+                currentConstrained = SimVar.GetSimVarValue("L:AP_CURRENT_TARGET_ALTITUDE_IS_CONSTRAINT", "number") === 1;
             }
-            if ((targetRow1State != this.currentRow1State) || (targetRow1State == Column2.ROW_1_STATE.VS) || (targetRow1State == Column2.ROW_1_STATE.FPA)) {
+            if ((targetRow1State != this.currentRow1State) || (targetRow1State == Column2.ROW_1_STATE.VS) || (targetRow1State == Column2.ROW_1_STATE.FPA) || (currentConstrained !== this.currentConstrained)) {
                 this.currentRow1State = targetRow1State;
-                switch (this.currentRow1State) {
-                    case Column2.ROW_1_STATE.SRS_ARMED:
-                    {
-                        this.setRowText(0, "SRS", Airbus_FMA.MODE_STATE.ARMED);
-                        break;
-                    }
-                    case Column2.ROW_1_STATE.SRS_ENGAGED:
-                    {
-                        this.setRowText(0, "SRS", Airbus_FMA.MODE_STATE.ENGAGED);
-                        break;
-                    }
-                    case Column2.ROW_1_STATE.ALT_ENGAGED:
-                    {
-                        this.setRowText(0, "ALT", Airbus_FMA.MODE_STATE.ENGAGED);
-                        break;
-                    }
-                    case Column2.ROW_1_STATE.ALT_CAPTURED:
-                    {
-                        this.setRowText(0, "ALT*", Airbus_FMA.MODE_STATE.CAPTURED);
-                        break;
-                    }
-                    case Column2.ROW_1_STATE.ALT_CST_ENGAGED:
-                    {
-                        this.setRowText(0, "ALT CST", Airbus_FMA.MODE_STATE.ENGAGED);
-                        break;
-                    }
-                    case Column2.ROW_1_STATE.ALT_CST_CAPTURED:
-                    {
-                        this.setRowText(0, "ALT CST*", Airbus_FMA.MODE_STATE.CAPTURED);
-                        break;
-                    }
-                    case Column2.ROW_1_STATE.VS:
-                    {
-                        const speed = Airbus_FMA.CurrentPlaneState.autoPilotVerticalSpeedHoldValue;
-                        var str;
-                        if (speed >= 0) {
-                            str = "+" + speed.toFixed(0);
-                        } else {
-                            str = speed.toFixed(0);
+                setTimeout(() => {
+                    switch (this.currentRow1State) {
+                        case Column2.ROW_1_STATE.SRS_ARMED: {
+                            this.setRowText(0, "SRS", Airbus_FMA.MODE_STATE.ARMED);
+                            break;
                         }
-                        this.setRowMultiText(0, "V/S", Airbus_FMA.MODE_STATE.ENGAGED, str, Airbus_FMA.MODE_STATE.ARMED);
-                        break;
+                        case Column2.ROW_1_STATE.SRS_ENGAGED: {
+                            this.setRowText(0, "SRS", Airbus_FMA.MODE_STATE.ENGAGED);
+                            break;
+                        }
+                        case Column2.ROW_1_STATE.ALT_ENGAGED: {
+                            this.setRowText(0, "ALT", Airbus_FMA.MODE_STATE.ENGAGED);
+                            break;
+                        }
+                        case Column2.ROW_1_STATE.ALT_CAPTURED: {
+                            this.setRowText(0, "ALT*", Airbus_FMA.MODE_STATE.CAPTURED);
+                            break;
+                        }
+                        case Column2.ROW_1_STATE.ALT_CST_ENGAGED: {
+                            this.setRowText(0, "ALT CST", Airbus_FMA.MODE_STATE.ENGAGED);
+                            break;
+                        }
+                        case Column2.ROW_1_STATE.ALT_CST_CAPTURED: {
+                            this.setRowText(0, "ALT CST*", Airbus_FMA.MODE_STATE.CAPTURED);
+                            break;
+                        }
+                        case Column2.ROW_1_STATE.VS: {
+                            const speed = Airbus_FMA.CurrentPlaneState.autoPilotVerticalSpeedHoldValue;
+                            var str;
+                            if (speed >= 0) {
+                                str = "+" + speed.toFixed(0);
+                            } else {
+                                str = speed.toFixed(0);
+                            }
+                            this.setRowMultiText(0, "V/S", Airbus_FMA.MODE_STATE.ENGAGED, str, Airbus_FMA.MODE_STATE.ARMED);
+                            break;
+                        }
+                        case Column2.ROW_1_STATE.FPA: {
+                            let value = -Airbus_FMA.CurrentPlaneState.autoPilotFlightPathAngle;
+                            const sign = (value < 0) ? "-" : "+";
+                            value = Math.min(Math.abs(value), 9.9);
+                            var str = sign + value.toFixed(2) + String.fromCharCode(176);
+                            this.setRowMultiText(0, "FPA", Airbus_FMA.MODE_STATE.ENGAGED, str, Airbus_FMA.MODE_STATE.ARMED);
+                            break;
+                        }
+                        case Column2.ROW_1_STATE.EXP_CLB: {
+                            this.setRowText(0, "EXP CLB", Airbus_FMA.MODE_STATE.ENGAGED);
+                            break;
+                        }
+                        case Column2.ROW_1_STATE.EXP_DES: {
+                            this.setRowText(0, "EXP DES", Airbus_FMA.MODE_STATE.ENGAGED);
+                            break;
+                        }
+                        case Column2.ROW_1_STATE.GS_ENGAGED: {
+                            this.setRowText(0, "G/S", Airbus_FMA.MODE_STATE.ENGAGED);
+                            break;
+                        }
+                        case Column2.ROW_1_STATE.GS_CAPTURED: {
+                            this.setRowText(0, "G/S*", Airbus_FMA.MODE_STATE.CAPTURED);
+                            break;
+                        }
+                        case Column2.ROW_1_STATE.OP_CLB: {
+                            this.setRowText(0, "OP CLB", Airbus_FMA.MODE_STATE.ENGAGED);
+                            break;
+                        }
+                        case Column2.ROW_1_STATE.OP_DES: {
+                            this.setRowText(0, "OP DES", Airbus_FMA.MODE_STATE.ENGAGED);
+                            break;
+                        }
+                        case Column2.ROW_1_STATE.CLB_ENGAGED: {
+                            this.setRowText(0, "CLB", Airbus_FMA.MODE_STATE.ENGAGED);
+                            break;
+                        }
+                        case Column2.ROW_1_STATE.DES: {
+                            this.setRowText(0, "DES", Airbus_FMA.MODE_STATE.ENGAGED);
+                            break;
+                        }
+                        case Column2.ROW_1_STATE.ALT_CRZ: {
+                            this.setRowText(0, "ALT CRZ", Airbus_FMA.MODE_STATE.ENGAGED);
+                            break;
+                        }
+                        default: {
+                            this.setRowText(0, "", Airbus_FMA.MODE_STATE.NONE);
+                            break;
+                        }
                     }
-                    case Column2.ROW_1_STATE.FPA:
-                    {
-                        let value = -Airbus_FMA.CurrentPlaneState.autoPilotFlightPathAngle;
-                        const sign = (value < 0) ? "-" : "+";
-                        value = Math.min(Math.abs(value), 9.9);
-                        var str = sign + value.toFixed(2) + String.fromCharCode(176);
-                        this.setRowMultiText(0, "FPA", Airbus_FMA.MODE_STATE.ENGAGED, str, Airbus_FMA.MODE_STATE.ARMED);
-                        break;
-                    }
-                    case Column2.ROW_1_STATE.EXP_CLB:
-                    {
-                        this.setRowText(0, "EXP CLB", Airbus_FMA.MODE_STATE.ENGAGED);
-                        break;
-                    }
-                    case Column2.ROW_1_STATE.EXP_DES:
-                    {
-                        this.setRowText(0, "EXP DES", Airbus_FMA.MODE_STATE.ENGAGED);
-                        break;
-                    }
-                    case Column2.ROW_1_STATE.GS_ENGAGED:
-                    {
-                        this.setRowText(0, "G/S", Airbus_FMA.MODE_STATE.ENGAGED);
-                        break;
-                    }
-                    case Column2.ROW_1_STATE.GS_CAPTURED:
-                    {
-                        this.setRowText(0, "G/S*", Airbus_FMA.MODE_STATE.CAPTURED);
-                        break;
-                    }
-                    case Column2.ROW_1_STATE.OP_CLB:
-                    {
-                        this.setRowText(0, "OP CLB", Airbus_FMA.MODE_STATE.ENGAGED);
-                        break;
-                    }
-                    case Column2.ROW_1_STATE.OP_DES:
-                    {
-                        this.setRowText(0, "OP DES", Airbus_FMA.MODE_STATE.ENGAGED);
-                        break;
-                    }
-                    case Column2.ROW_1_STATE.CLB_ENGAGED:
-                    {
-                        this.setRowText(0, "CLB", Airbus_FMA.MODE_STATE.ENGAGED);
-                        break;
-                    }
-                    case Column2.ROW_1_STATE.DES:
-                    {
-                        this.setRowText(0, "DES", Airbus_FMA.MODE_STATE.ENGAGED);
-                        break;
-                    }
-                    case Column2.ROW_1_STATE.ALT_CRZ:
-                    {
-                        this.setRowText(0, "ALT CRZ", Airbus_FMA.MODE_STATE.ENGAGED);
-                        break;
-                    }
-                    default:
-                    {
-                        this.setRowText(0, "", Airbus_FMA.MODE_STATE.NONE);
-                        break;
-                    }
-                }
+                }, 400 + Math.random() * 100);
             }
-            if (this.currentRow1State == Column2.ROW_1_STATE.OP_CLB || this.currentRow1State == Column2.ROW_1_STATE.OP_DES || this.currentRow1State == Column2.ROW_1_STATE.CLB_ENGAGED || this.currentRow1State == Column2.ROW_1_STATE.DES) {
+
+            if (this.currentRow1State == Column2.ROW_1_STATE.OP_CLB || this.currentRow1State == Column2.ROW_1_STATE.OP_DES || this.currentRow1State == Column2.ROW_1_STATE.CLB_ENGAGED || this.currentRow1State == Column2.ROW_1_STATE.DES || currentConstrained !== this.currentConstrained) {
                 if (Column2.GetModeState_GS() == MODE_STATE.ARMED) {
                     targetRow2State = Column2.ROW_2_STATE.ALT_GS_ARMED;
                 } else if (Column2.GetModeState_GS() != MODE_STATE.CAPTURED) {
                     targetRow2State = Column2.ROW_2_STATE.ALT_ARMED;
                 }
             }
-            if (targetRow2State != this.currentRow2State) {
+            if (targetRow2State != this.currentRow2State || currentConstrained !== this.currentConstrained) {
                 this.currentRow2State = targetRow2State;
-                switch (this.currentRow2State) {
-                    case Column2.ROW_2_STATE.ALT_ARMED:
-                    {
-                        this.setRowMultiText(1, "ALT", Airbus_FMA.MODE_STATE.ARMED, "", Airbus_FMA.MODE_STATE.ACTIVE);
-                        break;
+                setTimeout(() => {
+                    switch (this.currentRow2State) {
+                        case Column2.ROW_2_STATE.ALT_ARMED: {
+                            if (SimVar.GetSimVarValue("L:AP_CURRENT_TARGET_ALTITUDE_IS_CONSTRAINT", "number") === 1) {
+                                this.setRowMultiText(1, "ALT", Airbus_FMA.MODE_STATE.CONSTRAINED, "", Airbus_FMA.MODE_STATE.ACTIVE);
+                            } else {
+                                this.setRowMultiText(1, "ALT", Airbus_FMA.MODE_STATE.ARMED, "", Airbus_FMA.MODE_STATE.ACTIVE);
+                            }
+                            break;
+                        }
+                        case Column2.ROW_2_STATE.ALT_CST_CONSTRAINED: {
+                            this.setRowText(1, "ALT CST", Airbus_FMA.MODE_STATE.CONSTRAINED);
+                            break;
+                        }
+                        case Column2.ROW_2_STATE.GS_ARMED: {
+                            this.setRowText(1, "G/S", Airbus_FMA.MODE_STATE.ARMED);
+                            break;
+                        }
+                        case Column2.ROW_2_STATE.GS_FINAL_ARMED: {
+                            this.setRowText(1, "FINAL", Airbus_FMA.MODE_STATE.ARMED);
+                            break;
+                        }
+                        case Column2.ROW_2_STATE.CLB_ARMED: {
+                            this.setRowMultiText(1, "CLB", Airbus_FMA.MODE_STATE.ARMED, "", Airbus_FMA.MODE_STATE.ACTIVE);
+                            break;
+                        }
+                        case Column2.ROW_2_STATE.ALT_GS_ARMED: {
+                            this.setRowMultiText(1, "ALT", Airbus_FMA.MODE_STATE.ARMED, "G/S", Airbus_FMA.MODE_STATE.ARMED);
+                            break;
+                        }
+                        default: {
+                            this.setRowText(1, "", Airbus_FMA.MODE_STATE.NONE);
+                            break;
+                        }
                     }
-                    case Column2.ROW_2_STATE.ALT_CST_CONSTRAINED:
-                    {
-                        this.setRowText(1, "ALT CST", Airbus_FMA.MODE_STATE.CONSTRAINED);
-                        break;
-                    }
-                    case Column2.ROW_2_STATE.GS_ARMED:
-                    {
-                        this.setRowText(1, "G/S", Airbus_FMA.MODE_STATE.ARMED);
-                        break;
-                    }
-                    case Column2.ROW_2_STATE.GS_FINAL_ARMED:
-                    {
-                        this.setRowText(1, "FINAL", Airbus_FMA.MODE_STATE.ARMED);
-                        break;
-                    }
-                    case Column2.ROW_2_STATE.CLB_ARMED:
-                    {
-                        this.setRowMultiText(1, "CLB", Airbus_FMA.MODE_STATE.ARMED, "", Airbus_FMA.MODE_STATE.ACTIVE);
-                        break;
-                    }
-                    case Column2.ROW_2_STATE.ALT_GS_ARMED:
-                    {
-                        this.setRowMultiText(1, "ALT", Airbus_FMA.MODE_STATE.ARMED, "G/S", Airbus_FMA.MODE_STATE.ARMED);
-                        break;
-                    }
-                    default:
-                    {
-                        this.setRowText(1, "", Airbus_FMA.MODE_STATE.NONE);
-                        break;
-                    }
-                }
+                }, 400 + Math.random() * 100);
             }
         }
         getTargetRow1State() {
@@ -967,6 +958,12 @@ var Airbus_FMA;
             } else if (gsModeState == Airbus_FMA.MODE_STATE.CAPTURED) {
                 return Column2.ROW_1_STATE.GS_CAPTURED;
             }
+            const altCSTModeState = this.GetModeState_ALTCST();
+            if (altCSTModeState == Airbus_FMA.MODE_STATE.ENGAGED) {
+                return Column2.ROW_1_STATE.ALT_CST_ENGAGED;
+            } else if (altCSTModeState == Airbus_FMA.MODE_STATE.CAPTURED) {
+                return Column2.ROW_1_STATE.ALT_CST_CAPTURED;
+            }
             const altModeState = Column2.GetModeState_ALT();
             if (altModeState == Airbus_FMA.MODE_STATE.ENGAGED) {
                 if (Airbus_FMA.CurrentPlaneState.flightPhase == FlightPhase.FLIGHT_PHASE_CRUISE) {
@@ -976,13 +973,6 @@ var Airbus_FMA;
                 }
             } else if (altModeState == Airbus_FMA.MODE_STATE.CAPTURED) {
                 return Column2.ROW_1_STATE.ALT_CAPTURED;
-            }
-            const altCSTModeState = this.GetModeState_ALTCST();
-            if (altCSTModeState == Airbus_FMA.MODE_STATE.ENGAGED) {
-                return Column2.ROW_1_STATE.ALT_CST_ENGAGED;
-            } else if (altCSTModeState == Airbus_FMA.MODE_STATE.CAPTURED) {
-                return Column2.ROW_1_STATE.ALT_CST_CAPTURED;
-                return Column2.ROW_1_STATE.ALT_CST_CAPTURED;
             }
             if (Column2.IsActive_VS()) {
                 return Column2.ROW_1_STATE.VS;
@@ -1006,10 +996,10 @@ var Airbus_FMA;
             }
         }
         getTargetRow2State() {
-            if (Column2.GetModeState_ALT() == Airbus_FMA.MODE_STATE.ARMED) {
-                return Column2.ROW_2_STATE.ALT_ARMED;
-            } else if (this.GetModeState_ALTCST() == Airbus_FMA.MODE_STATE.CONSTRAINED) {
+            if (this.GetModeState_ALTCST() == Airbus_FMA.MODE_STATE.CONSTRAINED) {
                 return Column2.ROW_2_STATE.ALT_CST_CONSTRAINED;
+            } else if (Column2.GetModeState_ALT() == Airbus_FMA.MODE_STATE.ARMED) {
+                return SimVar.GetSimVarValue("L:AP_CURRENT_TARGET_ALTITUDE_IS_CONSTRAINT", "number") === 1 ? Column2.ROW_2_STATE.ALT_CST_CONSTRAINED : Column2.ROW_2_STATE.ALT_ARMED;
             } else if (Column2.GetModeState_GS() == Airbus_FMA.MODE_STATE.ARMED) {
                 return Column2.ROW_2_STATE.GS_ARMED;
             } else if (this.IsActive_FinalArmed()) {
@@ -1043,6 +1033,7 @@ var Airbus_FMA;
             return Airbus_FMA.MODE_STATE.NONE;
         }
         static GetModeState_ALT() {
+            // if (Airbus_FMA.CurrentPlaneState.anyAutoPilotsActive && Airbus_FMA.CurrentPlaneState.autoPilotAltitudeLockActive && Airbus_FMA.CurrentPlaneState.thisFlightDirectorActive && SimVar.GetSimVarValue("L:AP_CURRENT_TARGET_ALTITUDE_IS_CONSTRAINT", "number") === 0) {
             if (Airbus_FMA.CurrentPlaneState.anyAutoPilotsActive && Airbus_FMA.CurrentPlaneState.autoPilotAltitudeLockActive && Airbus_FMA.CurrentPlaneState.thisFlightDirectorActive) {
                 const diffAlt = Math.abs(Airbus_FMA.CurrentPlaneState.autoPilotAltitudeLockValue - Airbus_FMA.CurrentPlaneState.altitude);
 
@@ -1062,6 +1053,22 @@ var Airbus_FMA;
             return Airbus_FMA.MODE_STATE.NONE;
         }
         GetModeState_ALTCST() {
+            if (Airbus_FMA.CurrentPlaneState.anyAutoPilotsActive && Airbus_FMA.CurrentPlaneState.autoPilotAltitudeLockActive && Airbus_FMA.CurrentPlaneState.thisFlightDirectorActive && SimVar.GetSimVarValue("L:AP_CURRENT_TARGET_ALTITUDE_IS_CONSTRAINT", "number") === 1) {
+                const diffAlt = Math.abs(Airbus_FMA.CurrentPlaneState.autoPilotAltitudeLockValue - Airbus_FMA.CurrentPlaneState.altitude);
+
+                if (diffAlt <= Airbus_FMA.Definitions.ALT_ENGAGED_RANGE) {
+                    this._lastALTMode = Airbus_FMA.MODE_STATE.ENGAGED;
+                } else {
+                    if (this._lastALTMode === Airbus_FMA.MODE_STATE.ENGAGED) {
+                        if ((diffAlt - Airbus_FMA.Definitions.ALT_ENGAGED_RANGE) > 50) {
+                            this._lastALTMode = Airbus_FMA.MODE_STATE.CAPTURED;
+                        }
+                    } else {
+                        this._lastALTMode = Airbus_FMA.MODE_STATE.CAPTURED;
+                    }
+                }
+                return this._lastALTMode;
+            }
             return Airbus_FMA.MODE_STATE.NONE;
         }
         static IsActive_VS() {
@@ -1225,88 +1232,92 @@ var Airbus_FMA;
                     this.rwytrkDisabled = true;
                 }
                 this.currentRow1State = targetRow1State;
-                switch (this.currentRow1State) {
-                    case Column3.ROW_1_STATE.RWY:
-                    {
-                        this.setRowText(0, "RWY", Airbus_FMA.MODE_STATE.ENGAGED);
-                        break;
+                setTimeout(() => {
+                    switch (this.currentRow1State) {
+                        case Column3.ROW_1_STATE.RWY:
+                        {
+                            this.setRowText(0, "RWY", Airbus_FMA.MODE_STATE.ENGAGED);
+                            break;
+                        }
+                        case Column3.ROW_1_STATE.HDG:
+                        {
+                            this.setRowText(0, "HDG", Airbus_FMA.MODE_STATE.ENGAGED);
+                            break;
+                        }
+                        case Column3.ROW_1_STATE.TRACK:
+                        {
+                            this.setRowText(0, "TRACK", Airbus_FMA.MODE_STATE.ENGAGED);
+                            break;
+                        }
+                        case Column3.ROW_1_STATE.LOC_ENGAGED:
+                        {
+                            this.setRowText(0, "LOC", Airbus_FMA.MODE_STATE.ENGAGED);
+                            break;
+                        }
+                        case Column3.ROW_1_STATE.LOC_CAPTURED:
+                        {
+                            this.setRowText(0, "LOC *", Airbus_FMA.MODE_STATE.CAPTURED);
+                            break;
+                        }
+                        case Column3.ROW_1_STATE.NAV_ENGAGED:
+                        {
+                            this.setRowText(0, "NAV", Airbus_FMA.MODE_STATE.ENGAGED);
+                            break;
+                        }
+                        case Column3.ROW_1_STATE.NAV_CAPTURED:
+                        {
+                            this.setRowText(0, "NAV", Airbus_FMA.MODE_STATE.ENGAGED);
+                            break;
+                        }
+                        case Column3.ROW_1_STATE.RWY_TRK:
+                        {
+                            this.setRowText(0, "RWY TRK", Airbus_FMA.MODE_STATE.ENGAGED);
+                            break;
+                        }
+                        case Column3.ROW_1_STATE.GA_TRK:
+                        {
+                            this.setRowText(0, "GA TRK", Airbus_FMA.MODE_STATE.ENGAGED);
+                            break;
+                        }
+                        case Column3.ROW_1_STATE.APPNAV_ENGAGED:
+                        {
+                            this.setRowText(0, "APP NAV", Airbus_FMA.MODE_STATE.ENGAGED);
+                            break;
+                        }
+                        default:
+                        {
+                            this.setRowText(0, "", Airbus_FMA.MODE_STATE.NONE);
+                            break;
+                        }
                     }
-                    case Column3.ROW_1_STATE.HDG:
-                    {
-                        this.setRowText(0, "HDG", Airbus_FMA.MODE_STATE.ENGAGED);
-                        break;
-                    }
-                    case Column3.ROW_1_STATE.TRACK:
-                    {
-                        this.setRowText(0, "TRACK", Airbus_FMA.MODE_STATE.ENGAGED);
-                        break;
-                    }
-                    case Column3.ROW_1_STATE.LOC_ENGAGED:
-                    {
-                        this.setRowText(0, "LOC", Airbus_FMA.MODE_STATE.ENGAGED);
-                        break;
-                    }
-                    case Column3.ROW_1_STATE.LOC_CAPTURED:
-                    {
-                        this.setRowText(0, "LOC *", Airbus_FMA.MODE_STATE.CAPTURED);
-                        break;
-                    }
-                    case Column3.ROW_1_STATE.NAV_ENGAGED:
-                    {
-                        this.setRowText(0, "NAV", Airbus_FMA.MODE_STATE.ENGAGED);
-                        break;
-                    }
-                    case Column3.ROW_1_STATE.NAV_CAPTURED:
-                    {
-                        this.setRowText(0, "NAV", Airbus_FMA.MODE_STATE.ENGAGED);
-                        break;
-                    }
-                    case Column3.ROW_1_STATE.RWY_TRK:
-                    {
-                        this.setRowText(0, "RWY TRK", Airbus_FMA.MODE_STATE.ENGAGED);
-                        break;
-                    }
-                    case Column3.ROW_1_STATE.GA_TRK:
-                    {
-                        this.setRowText(0, "GA TRK", Airbus_FMA.MODE_STATE.ENGAGED);
-                        break;
-                    }
-                    case Column3.ROW_1_STATE.APPNAV_ENGAGED:
-                    {
-                        this.setRowText(0, "APP NAV", Airbus_FMA.MODE_STATE.ENGAGED);
-                        break;
-                    }
-                    default:
-                    {
-                        this.setRowText(0, "", Airbus_FMA.MODE_STATE.NONE);
-                        break;
-                    }
-                }
+                }, 400 + Math.random() * 100);
             }
             if (targetRow2State != this.currentRow2State) {
                 this.currentRow2State = targetRow2State;
-                switch (this.currentRow2State) {
-                    case Column3.ROW_2_STATE.LOC_ARMED:
-                    {
-                        this.setRowText(1, "LOC", Airbus_FMA.MODE_STATE.ARMED);
-                        break;
+                setTimeout(() => {
+                    switch (this.currentRow2State) {
+                        case Column3.ROW_2_STATE.LOC_ARMED:
+                        {
+                            this.setRowText(1, "LOC", Airbus_FMA.MODE_STATE.ARMED);
+                            break;
+                        }
+                        case Column3.ROW_2_STATE.NAV_ARMED:
+                        {
+                            this.setRowText(1, "NAV", Airbus_FMA.MODE_STATE.ARMED);
+                            break;
+                        }
+                        case Column3.ROW_2_STATE.APPNAV_ARMED:
+                        {
+                            this.setRowText(1, "APP NAV", Airbus_FMA.MODE_STATE.ARMED);
+                            break;
+                        }
+                        default:
+                        {
+                            this.setRowText(1, "", Airbus_FMA.MODE_STATE.NONE);
+                            break;
+                        }
                     }
-                    case Column3.ROW_2_STATE.NAV_ARMED:
-                    {
-                        this.setRowText(1, "NAV", Airbus_FMA.MODE_STATE.ARMED);
-                        break;
-                    }
-                    case Column3.ROW_2_STATE.APPNAV_ARMED:
-                    {
-                        this.setRowText(1, "APP NAV", Airbus_FMA.MODE_STATE.ARMED);
-                        break;
-                    }
-                    default:
-                    {
-                        this.setRowText(1, "", Airbus_FMA.MODE_STATE.NONE);
-                        break;
-                    }
-                }
+                }, 400 + Math.random() * 100);
             }
         }
         getTargetRow1State() {
@@ -1482,28 +1493,30 @@ var Airbus_FMA;
             }
             if (targetState != this.currentRow1State) {
                 this.currentRow1State = targetState;
-                switch (targetState) {
-                    case Column4.ROW_1_STATE.CAT_1:
-                    {
-                        this.setRowText(0, "CAT 1", Airbus_FMA.MODE_STATE.STATUS);
-                        break;
+                setTimeout(() => {
+                    switch (targetState) {
+                        case Column4.ROW_1_STATE.CAT_1:
+                        {
+                            this.setRowText(0, "CAT 1", Airbus_FMA.MODE_STATE.STATUS);
+                            break;
+                        }
+                        case Column4.ROW_1_STATE.CAT_2:
+                        {
+                            this.setRowText(0, "CAT 2", Airbus_FMA.MODE_STATE.STATUS);
+                            break;
+                        }
+                        case Column4.ROW_1_STATE.CAT_3:
+                        {
+                            this.setRowText(0, "CAT 3", Airbus_FMA.MODE_STATE.STATUS);
+                            break;
+                        }
+                        default:
+                        {
+                            this.setRowText(0, "", Airbus_FMA.MODE_STATE.NONE);
+                            break;
+                        }
                     }
-                    case Column4.ROW_1_STATE.CAT_2:
-                    {
-                        this.setRowText(0, "CAT 2", Airbus_FMA.MODE_STATE.STATUS);
-                        break;
-                    }
-                    case Column4.ROW_1_STATE.CAT_3:
-                    {
-                        this.setRowText(0, "CAT 3", Airbus_FMA.MODE_STATE.STATUS);
-                        break;
-                    }
-                    default:
-                    {
-                        this.setRowText(0, "", Airbus_FMA.MODE_STATE.NONE);
-                        break;
-                    }
-                }
+                }, 500 + Math.random() * 100);
             }
         }
         updateRow2(_deltaTime) {
@@ -1517,23 +1530,25 @@ var Airbus_FMA;
             }
             if (targetState != this.currentRow2State) {
                 this.currentRow2State = targetState;
-                switch (targetState) {
-                    case Column4.ROW_2_STATE.SINGLE:
-                    {
-                        this.setRowText(1, "SINGLE", Airbus_FMA.MODE_STATE.STATUS);
-                        break;
+                setTimeout(() => {
+                    switch (targetState) {
+                        case Column4.ROW_2_STATE.SINGLE:
+                        {
+                            this.setRowText(1, "SINGLE", Airbus_FMA.MODE_STATE.STATUS);
+                            break;
+                        }
+                        case Column4.ROW_2_STATE.DUAL:
+                        {
+                            this.setRowText(1, "DUAL", Airbus_FMA.MODE_STATE.STATUS);
+                            break;
+                        }
+                        default:
+                        {
+                            this.setRowText(1, "", Airbus_FMA.MODE_STATE.NONE);
+                            break;
+                        }
                     }
-                    case Column4.ROW_2_STATE.DUAL:
-                    {
-                        this.setRowText(1, "DUAL", Airbus_FMA.MODE_STATE.STATUS);
-                        break;
-                    }
-                    default:
-                    {
-                        this.setRowText(1, "", Airbus_FMA.MODE_STATE.NONE);
-                        break;
-                    }
-                }
+                }, 500 + Math.random() * 100);
             }
         }
         updateRow3(_deltaTime) {
@@ -1549,30 +1564,32 @@ var Airbus_FMA;
             }
             if ((targetState != this.currentRow3State) || (targetState == Column4.ROW_3_STATE.DH) || (targetState == Column4.ROW_3_STATE.MDA)) {
                 this.currentRow3State = targetState;
-                switch (targetState) {
-                    case Column4.ROW_3_STATE.DH:
-                    {
-                        var value = Airbus_FMA.CurrentPlaneState.decisionHeight;
-                        this.setRowMultiText(2, "DH", Airbus_FMA.MODE_STATE.STATUS, value.toFixed(0), Airbus_FMA.MODE_STATE.ARMED);
-                        break;
+                setTimeout(() => {
+                    switch (targetState) {
+                        case Column4.ROW_3_STATE.DH:
+                        {
+                            var value = Airbus_FMA.CurrentPlaneState.decisionHeight;
+                            this.setRowMultiText(2, "DH", Airbus_FMA.MODE_STATE.STATUS, value.toFixed(0), Airbus_FMA.MODE_STATE.ARMED);
+                            break;
+                        }
+                        case Column4.ROW_3_STATE.NO_DH:
+                        {
+                            this.setRowText(2, "NO DH", Airbus_FMA.MODE_STATE.STATUS);
+                            break;
+                        }
+                        case Column4.ROW_3_STATE.MDA:
+                        {
+                            var value = Airbus_FMA.CurrentPlaneState.minimumDescentAltitude;
+                            this.setRowMultiText(2, "MDA", Airbus_FMA.MODE_STATE.STATUS, value.toFixed(0), Airbus_FMA.MODE_STATE.ARMED);
+                            break;
+                        }
+                        default:
+                        {
+                            this.setRowText(2, "", Airbus_FMA.MODE_STATE.NONE);
+                            break;
+                        }
                     }
-                    case Column4.ROW_3_STATE.NO_DH:
-                    {
-                        this.setRowText(2, "NO DH", Airbus_FMA.MODE_STATE.STATUS);
-                        break;
-                    }
-                    case Column4.ROW_3_STATE.MDA:
-                    {
-                        var value = Airbus_FMA.CurrentPlaneState.minimumDescentAltitude;
-                        this.setRowMultiText(2, "MDA", Airbus_FMA.MODE_STATE.STATUS, value.toFixed(0), Airbus_FMA.MODE_STATE.ARMED);
-                        break;
-                    }
-                    default:
-                    {
-                        this.setRowText(2, "", Airbus_FMA.MODE_STATE.NONE);
-                        break;
-                    }
-                }
+                }, 500 + Math.random() * 100);
             }
         }
     }
@@ -1621,28 +1638,30 @@ var Airbus_FMA;
             }
             if (targetState != this.currentRow1State) {
                 this.currentRow1State = targetState;
-                switch (targetState) {
-                    case Column5.ROW_1_STATE.AP_1:
-                    {
-                        this.setRowText(0, "AP1", Airbus_FMA.MODE_STATE.ACTIVE);
-                        break;
+                setTimeout(() => {
+                    switch (targetState) {
+                        case Column5.ROW_1_STATE.AP_1:
+                        {
+                            this.setRowText(0, "AP1", Airbus_FMA.MODE_STATE.ACTIVE);
+                            break;
+                        }
+                        case Column5.ROW_1_STATE.AP_2:
+                        {
+                            this.setRowText(0, "AP2", Airbus_FMA.MODE_STATE.ACTIVE);
+                            break;
+                        }
+                        case Column5.ROW_1_STATE.AP_BOTH:
+                        {
+                            this.setRowText(0, "AP1+2", Airbus_FMA.MODE_STATE.ACTIVE);
+                            break;
+                        }
+                        default:
+                        {
+                            this.setRowText(0, "", Airbus_FMA.MODE_STATE.NONE);
+                            break;
+                        }
                     }
-                    case Column5.ROW_1_STATE.AP_2:
-                    {
-                        this.setRowText(0, "AP2", Airbus_FMA.MODE_STATE.ACTIVE);
-                        break;
-                    }
-                    case Column5.ROW_1_STATE.AP_BOTH:
-                    {
-                        this.setRowText(0, "AP1+2", Airbus_FMA.MODE_STATE.ACTIVE);
-                        break;
-                    }
-                    default:
-                    {
-                        this.setRowText(0, "", Airbus_FMA.MODE_STATE.NONE);
-                        break;
-                    }
-                }
+                }, 600 + Math.random() * 100);
             }
         }
         refreshFlightDirectorDisplay() {
@@ -1658,28 +1677,30 @@ var Airbus_FMA;
             }
             if (targetState != this.currentRow2State) {
                 this.currentRow2State = targetState;
-                switch (targetState) {
-                    case Column5.ROW_2_STATE.FD_1:
-                    {
-                        this.setRowText(1, "1 FD -", Airbus_FMA.MODE_STATE.ACTIVE);
-                        break;
+                setTimeout(() => {
+                    switch (targetState) {
+                        case Column5.ROW_2_STATE.FD_1:
+                        {
+                            this.setRowText(1, "1 FD -", Airbus_FMA.MODE_STATE.ACTIVE);
+                            break;
+                        }
+                        case Column5.ROW_2_STATE.FD_2:
+                        {
+                            this.setRowText(1, "- FD 2", Airbus_FMA.MODE_STATE.ACTIVE);
+                            break;
+                        }
+                        case Column5.ROW_2_STATE.FD_BOTH:
+                        {
+                            this.setRowText(1, "1 FD 2", Airbus_FMA.MODE_STATE.ACTIVE);
+                            break;
+                        }
+                        default:
+                        {
+                            this.setRowText(1, "", Airbus_FMA.MODE_STATE.NONE);
+                            break;
+                        }
                     }
-                    case Column5.ROW_2_STATE.FD_2:
-                    {
-                        this.setRowText(1, "- FD 2", Airbus_FMA.MODE_STATE.ACTIVE);
-                        break;
-                    }
-                    case Column5.ROW_2_STATE.FD_BOTH:
-                    {
-                        this.setRowText(1, "1 FD 2", Airbus_FMA.MODE_STATE.ACTIVE);
-                        break;
-                    }
-                    default:
-                    {
-                        this.setRowText(1, "", Airbus_FMA.MODE_STATE.NONE);
-                        break;
-                    }
-                }
+                }, 600 + Math.random() * 100);
             }
         }
         refreshAutoThrottleDisplay() {
@@ -1691,23 +1712,25 @@ var Airbus_FMA;
             }
             if (targetState != this.currentRow3State) {
                 this.currentRow3State = targetState;
-                switch (targetState) {
-                    case Column5.ROW_3_STATE.ATHR_ARMED:
-                    {
-                        this.setRowText(2, "A/THR", Airbus_FMA.MODE_STATE.ARMED);
-                        break;
+                setTimeout(() => {
+                    switch (targetState) {
+                        case Column5.ROW_3_STATE.ATHR_ARMED:
+                        {
+                            this.setRowText(2, "A/THR", Airbus_FMA.MODE_STATE.ARMED);
+                            break;
+                        }
+                        case Column5.ROW_3_STATE.ATHR_ACTIVE:
+                        {
+                            this.setRowText(2, "A/THR", Airbus_FMA.MODE_STATE.ACTIVE);
+                            break;
+                        }
+                        default:
+                        {
+                            this.setRowText(2, "", Airbus_FMA.MODE_STATE.NONE);
+                            break;
+                        }
                     }
-                    case Column5.ROW_3_STATE.ATHR_ACTIVE:
-                    {
-                        this.setRowText(2, "A/THR", Airbus_FMA.MODE_STATE.ACTIVE);
-                        break;
-                    }
-                    default:
-                    {
-                        this.setRowText(2, "", Airbus_FMA.MODE_STATE.NONE);
-                        break;
-                    }
-                }
+                }, 600 + Math.random() * 100);
             }
         }
     }
