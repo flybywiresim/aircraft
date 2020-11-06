@@ -654,6 +654,7 @@ class A320_Neo_FCU_Pressure extends A320_Neo_FCU_Component {
     }
     refresh(_mode, _isHGUnit, _value, _lightsTest, _force = false) {
         if ((_mode != this.currentMode) || (_isHGUnit != this.isHGUnit) || (_value != this.currentValue) || (_lightsTest !== this.lightsTest) || _force) {
+            var wasStd = this.currentMode == "STD" && _mode != "STD";
             this.currentMode = _mode;
             this.isHGUnit = _isHGUnit;
             this.currentValue = _value;
@@ -680,7 +681,9 @@ class A320_Neo_FCU_Pressure extends A320_Neo_FCU_Component {
                 this.setTextElementActive(this.textQNH, !isQFE);
                 this.setElementVisibility(this.decimalPoint, this.isHGUnit);
                 const value = Math.round(Math.max(this.isHGUnit ? (this.currentValue * 100) : this.currentValue, 0));
-                this.textValueContent = value.toString().padStart(4, "0");
+                if (!wasStd) {
+                    this.textValueContent = value.toString().padStart(4, "0");
+                }
             }
         }
     }
