@@ -4,9 +4,9 @@ class CDUIdentPage {
         mcdu.clearDisplay();
         mcdu.activeSystem = 'FMGC';
         mcdu.setTemplate([
-            ["A320"],
+            ["A320-200"],
             ["ENG"],
-            ["LEAP A-1[color]green"],
+            ["LEAP 1A-26[color]green"],
             ["", "", "ACTIVE NAV DATA BASE"],
             [date + "[color]blue", "AIRAC"],
             ["", "", "SECOND NAV DATA BASE"],

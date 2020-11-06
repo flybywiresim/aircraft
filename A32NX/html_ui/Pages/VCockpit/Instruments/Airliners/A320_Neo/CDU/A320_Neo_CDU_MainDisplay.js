@@ -195,8 +195,10 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
 
     updateTelex() {
         const telexKey = NXDataStore.get("TELEX_KEY", "");
-        if (this.telexPingId === 0 && telexKey === "") {
+        if (this.telexPingId === 0 && telexKey !== "") {
+            console.error("TELEX PING ENABLED");
             this.telexPingId = setInterval(() => {
+                console.log("TELEX PING SENT");
                 // Call the key again, otherwise it won't be updated
                 const _telexKey = NXDataStore.get("TELEX_KEY", "");
 
@@ -280,6 +282,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                     });
             }, 30000);
         } else if (this.telexPingId !== 0 && telexKey === "") {
+            console.error("TELEX PING DISABLED");
             clearInterval(this.telexPingId);
             this.telexPingId = 0;
         }
