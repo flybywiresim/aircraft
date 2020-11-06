@@ -12,4 +12,8 @@ class NXDataStore {
     static set(key, val) {
         SetStoredData(`A32NX_${key}`, val);
     }
+
+    static delete(key) {
+        DeleteStoredData(`A32NX_${key}`);
+    }
 }

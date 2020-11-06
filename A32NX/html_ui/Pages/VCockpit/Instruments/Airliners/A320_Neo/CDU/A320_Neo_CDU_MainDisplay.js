@@ -194,61 +194,19 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     }
 
     updateTelex() {
-        const telexKey = NXDataStore.get("TELEX_KEY", "");
-        if (this.telexPingId === 0 && telexKey !== "") {
-            console.error("TELEX PING ENABLED");
+        if (this.telexPingId === 0 && !NXApi.hasTelexConnection()) {
+            console.log("STARTING TELEX PING");
             this.telexPingId = setInterval(() => {
-                console.log("TELEX PING SENT");
-                // Call the key again, otherwise it won't be updated
-                const _telexKey = NXDataStore.get("TELEX_KEY", "");
-
-                const lat = SimVar.GetSimVarValue("PLANE LATITUDE", "degree latitude");
-                const long = SimVar.GetSimVarValue("PLANE LONGITUDE", "degree longitude");
-                const alt = SimVar.GetSimVarValue("PLANE ALTITUDE", "feet");
-                const heading = SimVar.GetSimVarValue("PLANE HEADING DEGREES MAGNETIC", "degree");
-
-                const endpoint_c = "https://api.flybywiresim.com/txcxn";
-                const endpoint_m = "https://api.flybywiresim.com/txmsg";
-
-                const updateBody = {
-                    location: {
-                        x: long,
-                        y: lat,
-                    },
-                    trueAltitude: alt,
-                    heading: heading,
-                    destination: ""
-                };
-
-                const headers = {
-                    Authorization: `Bearer ${_telexKey}`,
-                    "Content-Type": "application/json"
-                };
-
                 const toDelete = [];
 
                 // Update connection
-                fetch(`${endpoint_c}`, { method: "PUT", body: JSON.stringify(updateBody), headers })
-                    .then((response) => {
-                        if (!response.ok) {
-                            throw (response);
-                        }
-
-                        return response.json();
-                    })
+                NXApi.updateTelex()
                     .catch(() => {
                         console.log("TELEX PING FAILED");
                     });
 
                 // Fetch new messages
-                fetch(`${endpoint_m}`, { method: "GET", headers })
-                    .then((response) => {
-                        if (!response.ok) {
-                            throw (response);
-                        }
-
-                        return response.json();
-                    })
+                NXApi.getTelexMessages()
                     .then((data) => {
                         for (const msg of data) {
                             const sender = msg["from"]["flight"];
@@ -281,8 +239,8 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                         console.log("TELEX MSG FETCH FAILED");
                     });
             }, 30000);
-        } else if (this.telexPingId !== 0 && telexKey === "") {
-            console.error("TELEX PING DISABLED");
+        } else if (this.telexPingId !== 0 && NXApi.hasTelexConnection()) {
+            console.log("TELEX PING STOPPED");
             clearInterval(this.telexPingId);
             this.telexPingId = 0;
         }
