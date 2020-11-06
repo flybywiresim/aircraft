@@ -25,6 +25,7 @@ declare global {
         get interactive(): boolean;
         get hasMouseOver(): boolean;
         set hasMouseOver(value: boolean);
+        get focusedClassName(): string;
         get defaultClick(): boolean;
         get defaultSoundType(): string;
         get soundType(): string;

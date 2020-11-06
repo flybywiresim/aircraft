@@ -4,22 +4,6 @@ declare global {
     }
 
     class BingMapsConfig {
-        load(source: {
-            netBingHeightColor1?: any;
-            netBingAltitudeColors1?: any;
-            netBingTextureResolution?: any;
-            netBingSkyColor1?: any;
-            netBingHeightColor2?: any;
-            netBingAltitudeColors2?: any;
-            netBingSkyColor2?: any;
-            netBingHeightColor3?: any;
-            netBingAltitudeColors3?: any;
-            netBingSkyColor3?: any;
-        }, id: number): boolean;
-        heightColors: number[];
-        aspectRatio: number;
-        resolution: number;
-        clearColor: number;
     }
 
     enum EBingMode {

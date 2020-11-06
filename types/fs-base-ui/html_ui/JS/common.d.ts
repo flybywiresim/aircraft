@@ -225,7 +225,7 @@ declare global {
         /**
          * Formats the given number to a localized string.
          */
-        function formatNumber(value: number): string;
+        function formatNumber(value: number, integer?: boolean): string;
 
         /**
          * Formats the given number as an (localized???) integer.
@@ -504,6 +504,7 @@ declare global {
         get disabled(): boolean;
         isOneParentHidden(): boolean;
         canBeSelectedDisabled(): boolean;
+        canBeSelectedLocked(): boolean;
         canBeSelectedWithKeys(): boolean;
         get forceNoKeyNavigation(): boolean;
         get canBeSelected(): boolean;
@@ -561,6 +562,7 @@ declare global {
         stopScrollAnimation: () => void;
         needsTooltip(): boolean;
         needsEllipsis(): boolean;
+        noSizeCheck(): boolean;
         set manual(value: boolean);
         get manual(): boolean;
         scrollAnimation(): UITimeline;
