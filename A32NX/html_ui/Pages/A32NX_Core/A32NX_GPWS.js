@@ -22,6 +22,8 @@ class A32NX_GPWS {
 
         this.AltCallState = A32NX_Util.createMachine(AltCallStateMachine);
         this.AltCallState.setState("ground");
+        this.RetardState = A32NX_Util.createMachine(RetardStateMachine);
+        this.RetardState.setState("retardStopped");
     }
 
     init() {
@@ -317,18 +319,12 @@ class A32NX_GPWS {
                 }
                 break;
             case "over5":
-                if (radioAlt > 6.5) {
-                    this.AltCallState.action("up");
-                } else if (radioAlt <= 5) {
-                    this.core.soundManager.tryPlaySound(soundList.alt_5);
-                    this.AltCallState.action("down");
-                }
-                break;
-            case "retard":
                 if (radioAlt > 10) {
                     this.AltCallState.action("up");
-                } else if (radioAlt <= 7.5) {
-                    this.core.soundManager.removePeriodicSound(soundList.retard);
+                } else if (radioAlt <= 5) {
+                    if (this.RetardState.value !== "retardPlaying") {
+                        this.core.soundManager.tryPlaySound(soundList.alt_5);
+                    }
                     this.AltCallState.action("down");
                 }
                 break;
@@ -336,8 +332,9 @@ class A32NX_GPWS {
                 if (radioAlt > 20) {
                     this.AltCallState.action("up");
                 } else if (radioAlt <= 10) {
-                    this.core.soundManager.tryPlaySound(soundList.alt_10);
-                    this.core.soundManager.addPeriodicSound(soundList.retard, 1.1);
+                    if (this.RetardState.value !== "retardPlaying") {
+                        this.core.soundManager.tryPlaySound(soundList.alt_10);
+                    }
                     this.AltCallState.action("down");
                 }
                 break;
@@ -428,8 +425,57 @@ class A32NX_GPWS {
                 }
                 break;
         }
+
+        switch (this.RetardState.value) {
+            case "overRetard":
+                if (radioAlt < 20) {
+                    if (!SimVar.GetSimVarValue("AUTOPILOT MASTER", "Bool")) {
+                        this.RetardState.action("play");
+                        this.core.soundManager.addPeriodicSound(soundList.retard, 1.1);
+                    } else if (radioAlt < 10) {
+                        this.RetardState.action("play");
+                        this.core.soundManager.addPeriodicSound(soundList.retard, 1.1);
+                    }
+                }
+                break;
+            case "retardPlaying":
+                if (SimVar.GetSimVarValue("GENERAL ENG THROTTLE LEVER POSITION:1", "Percent over 100") === 0 || SimVar.GetSimVarValue("GENERAL ENG THROTTLE LEVER POSITION:2", "Percent over 100") === 0) {
+                    this.RetardState.action("stop");
+                    this.core.soundManager.removePeriodicSound(soundList.retard);
+                }
+                break;
+            case "retardStopped":
+                if (radioAlt > 20) {
+                    this.RetardState.action("up");
+                }
+                break;
+        }
     }
 }
+
+const RetardStateMachine = {
+    overRetard: {
+        transitions: {
+            play: {
+                target: "retardPlaying"
+            }
+        }
+    },
+    retardPlaying: {
+        transitions: {
+            stop: {
+                target: "retardStopped"
+            }
+        }
+    },
+    retardStopped: {
+        transitions: {
+            up: {
+                target: "overRetard"
+            }
+        }
+    }
+};
 
 const AltCallStateMachine = {
     init: "ground",
@@ -543,20 +589,10 @@ const AltCallStateMachine = {
     over10: {
         transitions: {
             down: {
-                target: "retard"
-            },
-            up: {
-                target: "over20"
-            }
-        }
-    },
-    retard: {
-        transitions: {
-            down: {
                 target: "over5"
             },
             up: {
-                target: "over10"
+                target: "over20"
             }
         }
     },
@@ -566,7 +602,7 @@ const AltCallStateMachine = {
                 target: "ground"
             },
             up: {
-                target: "retard"
+                target: "over10"
             }
         }
     },
