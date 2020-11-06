@@ -5,7 +5,7 @@ class CDUProgressPage {
         const flightPhase = "CRZ";
         const flightNo = SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string");
         const flMax = "FL" + mcdu.getMaxFlCorrected().toString();
-        const flOpt = (mcdu._cruiseEntered && mcdu._blockFuelEntered && (!mcdu.isAnEngineOff())) ? flMax + "[color]green" : "-----";
+        const flOpt = (mcdu._cruiseEntered && mcdu._blockFuelEntered && (!mcdu.isAllEngineOn())) ? flMax + "[color]green" : "-----";
         mcdu.onLeftInput[1] = () => {
             CDUProgressPage.ShowReportPage(mcdu);
         };
