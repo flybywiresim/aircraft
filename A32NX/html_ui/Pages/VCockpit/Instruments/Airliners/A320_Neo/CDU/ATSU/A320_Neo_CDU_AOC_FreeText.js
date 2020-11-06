@@ -77,13 +77,9 @@ class CDUAocFreeText {
         };
 
         mcdu.onRightInput[5] = async () => {
-            const telexKey = NXDataStore.get("TELEX_KEY", "");
-            const telexFlight = SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string", "FMC");
-
-            console.log(telexFlight);
             const storedTelexStatus = NXDataStore.get("CONFIG_TELEX_STATUS", "DISABLED");
 
-            if (telexFlight !== "" && telexKey !== "" && storedTelexStatus === "ENABLED") {
+            if (NXApi.hasTelexConnection() && storedTelexStatus === "ENABLED") {
                 store["sendStatus"] = "QUEUED";
                 updateView();
                 const recipient = store["msg_to"];

@@ -114,7 +114,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                     SimVar.SetSimVarValue("L:A32NX_COMPANY_MSG_COUNT", "Number", msgCount + toDelete.length);
                 })
                 .catch(err => {
-                    if (err.status === 404) {
+                    if (err.status === 404 || err === NXApi.disabledError || err === NXApi.disconnectedError) {
                         return;
                     }
                     console.log("TELEX MSG FETCH FAILED");

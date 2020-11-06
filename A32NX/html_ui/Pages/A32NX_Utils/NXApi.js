@@ -30,7 +30,7 @@ class NXApi {
                     throw (response);
                 }
 
-                console.error('TAF RESPONSE OK');
+                console.log('TAF RESPONSE OK');
                 return response.json();
             });
     }
@@ -60,10 +60,11 @@ class NXApi {
         }
 
         const connectBody = NXApi.buildTelexBody(flightNo);
-        const headers = { "Content-Type": "application/json" };
+        const headers = {"Content-Type": "application/json"};
 
         console.log("CONNECTING TO TELEX");
-        return fetch(`${NXApi.url}/txcxn`, { method: "POST", body: JSON.stringify(connectBody), headers })
+
+        return fetch(`${NXApi.url}/txcxn`, {method: "POST", body: JSON.stringify(connectBody), headers})
             .then((response) => {
                 if (!response.ok) {
                     console.error("TELEX CONNECTION ERROR");
@@ -71,12 +72,12 @@ class NXApi {
                 }
 
                 console.log("TELEX CONNECTION OK");
-                const data = response.json();
-
-                NXDataStore.set("TELEX_KEY", data.accessToken);
-                NXDataStore.set("TELEX_FLIGHT_NUMBER", data.flight);
-
-                return data;
+                return response.json()
+                    .then((data) => {
+                        NXDataStore.set("TELEX_KEY", data.accessToken);
+                        NXDataStore.set("TELEX_FLIGHT_NUMBER", data.flight);
+                        return data;
+                    });
             });
     }
 
@@ -98,7 +99,7 @@ class NXApi {
         };
 
         console.log('UPDATING TELEX');
-        return fetch(`${NXApi.url}/txcxn`, { method: "PUT", body: JSON.stringify(updateBody), headers })
+        return fetch(`${NXApi.url}/txcxn`, {method: "PUT", body: JSON.stringify(updateBody), headers})
             .then((response) => {
                 if (!response.ok) {
                     console.error("TELEX UPDATE ERROR");
@@ -120,7 +121,7 @@ class NXApi {
             Authorization: NXApi.buildToken()
         };
 
-        return fetch(`${NXApi.url}/txcxn`, { method: "DELETE", headers })
+        return fetch(`${NXApi.url}/txcxn`, {method: "DELETE", headers})
             .then((response) => {
                 if (!response.ok) {
                     throw (response);
@@ -148,7 +149,7 @@ class NXApi {
             Authorization: NXApi.buildToken()
         };
 
-        return fetch(`${NXApi.url}/txmsg`, { method: "GET", headers })
+        return fetch(`${NXApi.url}/txmsg`, {method: "GET", headers})
             .then((response) => {
                 if (!response.ok) {
                     throw (response);
@@ -193,10 +194,7 @@ class NXApi {
 
     static hasTelexConnection() {
         const txKey = NXDataStore.get("TELEX_KEY", "");
-        console.log("KEY." + txKey);
-
         const txFlight = NXDataStore.get("TELEX_FLIGHT_NUMBER", "");
-        console.log("FLT." + txFlight);
 
         return txKey && txFlight;
     }
