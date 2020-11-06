@@ -109,8 +109,14 @@ a320-neo-upper-ecam #EnginesPanel #LineStyleInfos .decimal {
     font-size: 38px !important;
 }
 a320-neo-upper-ecam #EnginesPanel #LineStyleInfos .activeEngine {
-    background-color: rgba(255,255,255,0.5) !important;
+    display: block;
+    fill: rgba(255, 255, 255, 0.1);
+    stroke: none;
 }
+a320-neo-upper-ecam #EnginesPanel #LineStyleInfos .inactiveEngine {
+    display: none;
+}
+
 
 
 a320-neo-upper-ecam #InfoTopPanel {
@@ -338,60 +344,4 @@ a320-neo-upper-ecam #Separators {
     width: 100%;
     top: 0%;
     height: 100%; 
-}
-
-
-a320-neo-ecam-gauge #RootSVG #CurrentValue {
-    font-size: 20px !important;
-    fill: var(--displayBackground);
-}
-a320-neo-ecam-gauge #RootSVG #CurrentValue.decimal {
-    font-size: 15px !important;
-}
-a320-neo-ecam-gauge #RootSVG #CurrentValue.gaugedecimalpoint {
-   fill: var(--displayGreen);
-}
-a320-neo-ecam-gauge #RootSVG #CurrentValueBorder {
-    fill: none;
-    stroke: lightblue;
-    stroke-width: 1px;
-}
-a320-neo-ecam-gauge #RootSVG #GraduationsGroup line.InnerMarker {
-    stroke-width: 1px !important;
-}
-a320-neo-ecam-gauge #RootSVG #ExtraMessage rect {
-    fill: var(--displayBackground);
-    stroke: lightblue;
-    stroke-width: 1px;
-}
-a320-neo-ecam-gauge #RootSVG #ExtraMessage text {
-    text-align: center;
-    text-anchor: middle;
-    fill: var(--displayGreen);
-    font-size: 15px;
-}
-a320-neo-ecam-gauge #RootSVG #ExtraMessage .avail {
-    font-size: 19.2px;
-}
-a320-neo-ecam-gauge #RootSVG #GraduationsGroup .danger {
-    stroke-width: 1px !important;
-    stroke: var(--displayRed) !important;
-}
-a320-neo-ecam-gauge #RootSVG #GraduationsGroup .warning {
-    stroke-width: 1px !important;
-    stroke: var(--displayAmber) !important;
-}
-a320-neo-ecam-gauge #RootSVG #RedArc {
-    stroke: var(--displayRed);
-    stroke-width: 2px;
-    fill: none;
-}
-a320-neo-ecam-gauge #RootSVG #GraduationsGroup line.OuterMarker {
-    stroke: var(--displayAmber);
-    stroke-width: 6px;
-}
-a320-neo-ecam-gauge #RootSVG #OuterIndicatorOffset {
-    stroke: var(--displayCyan) !important;
-    stroke-width: 1.5px !important;
-    fill: none;
 }

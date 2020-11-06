@@ -47,6 +47,16 @@ var A320_Neo_UpperECAM;
         return circleElement;
     }
     A320_Neo_UpperECAM.createSVGCircle = createSVGCircle;
+    function createRectangle(_class, _x, _y, _width, _height) {
+        const rectElement = document.createElementNS(Avionics.SVG.NS, "rect");
+        rectElement.setAttribute("x", _x);
+        rectElement.setAttribute("y", _y);
+        rectElement.setAttribute("width", _width);
+        rectElement.setAttribute("height", _height);
+        rectElement.setAttribute("class", _class);
+        return rectElement;
+    }
+    A320_Neo_UpperECAM.createRectangle = createRectangle;
     function createSlatParallelogram(_class, _cx, _cy) {
         const parElement = document.createElementNS(Avionics.SVG.NS, "polygon");
         const _w = 5;
@@ -71,7 +81,6 @@ var A320_Neo_UpperECAM;
         return parElement;
     }
     A320_Neo_UpperECAM.createFlapParallelogram = createFlapParallelogram;
-
     class Display extends Airliners.EICASTemplateElement {
         constructor() {
             super();
@@ -1445,6 +1454,7 @@ var A320_Neo_UpperECAM;
             this.throttleMode = Math.max(Simplane.getEngineThrottleMode(0), Simplane.getEngineThrottleMode(1));
             this.timerAvail = -1;
             this.timerAvailFlag = -1;
+            this.deltaThrottlePosition = this.getThrottlePosition(this.index);
         }
         update(_deltaTime) {
             if (this.allGauges != null) {
@@ -1509,6 +1519,7 @@ var A320_Neo_UpperECAM;
             gaugeDef.dangerMinDynamicFunction = this.getModeEGTMax.bind(this);
             gaugeDef.currentValueFunction = this.getEGTGaugeValue.bind(this);
             gaugeDef.currentValuePrecision = 0;
+            gaugeDef.upperecam = true;
             this.gaugeEGT = window.document.createElement("a320-neo-ecam-gauge");
             this.gaugeEGT.id = "EGT_Gauge";
             this.gaugeEGT.init(gaugeDef);
@@ -1595,25 +1606,28 @@ var A320_Neo_UpperECAM;
             return value;
         }
         getThrottlePosition() {
-            return Simplane.getEngineThrottle(this.index);
+            return Math.abs(Simplane.getEngineThrottleCommandedN1(this.index));
         }
         getN1GaugeAutopilotThrottleValues(_values) {
-            if ((_values != null) && (_values.length == 2)) {
-                if (Simplane.getAutoPilotThrottleActive()) {
-                    const engineThrottle = this.getN1GaugeValue();
-                    const autopilotThrottle = Simplane.getAutopilotCommandedN1(this.index);
-                    if (engineThrottle < autopilotThrottle) {
-                        _values[0] = engineThrottle;
-                        _values[1] = autopilotThrottle;
-                    } else {
-                        _values[0] = autopilotThrottle;
-                        _values[1] = engineThrottle;
-                    }
-                } else {
-                    _values[0] = 0;
-                    _values[1] = 0;
-                }
-            }
+            // This seems broken
+            _values[0] = 0;
+            _values[1] = 0;
+            // if ((_values != null) && (_values.length == 2)) {
+            //     if (Simplane.getAutoPilotThrottleActive()) {
+            //         const engineThrottle = this.getN1GaugeValue();
+            //         const autopilotThrottle = Simplane.getAutopilotCommandedN1(this.index);
+            //         if (engineThrottle < autopilotThrottle) {
+            //             _values[0] = engineThrottle;
+            //             _values[1] = autopilotThrottle;
+            //         } else {
+            //             _values[0] = autopilotThrottle;
+            //             _values[1] = engineThrottle;
+            //         }
+            //     } else {
+            //         _values[0] = 0;
+            //         _values[1] = 0;
+            //     }
+            // }
         }
         getN1GaugeExtraMessage() {
             if (Simplane.getEngineThrottle(this.index) < 0) {
@@ -1651,14 +1665,18 @@ var A320_Neo_UpperECAM;
                 this.valueText = A320_Neo_UpperECAM.createSVGText("--.-", "Value", this.getValueTextX(), "88%", "bottom");
                 this.valueText2 = A320_Neo_UpperECAM.createSVGText("", "decimal", this.getValueTextX2(), "88%", "bottom");
                 this.valueTextpoint = A320_Neo_UpperECAM.createSVGText("", "decimalpoint", this.getValueTextXpoint(), "88%", "bottom");
+                //createRectangle(_class, _x, _y, _width, _height) {
+                this.N2Box = A320_Neo_UpperECAM.createRectangle("activeEngine", this.getBoxX(), "70", "150", "40");
+                _svgRoot.appendChild(this.N2Box);
                 _svgRoot.appendChild(this.valueText);
                 _svgRoot.appendChild(this.valueText2);
                 _svgRoot.appendChild(this.valueTextpoint);
             }
             this.refresh(false, 0, 0, true);
         }
-        refresh(_active, _value, _valueDisplayPrecision, _force = false, _title = "") {
+        refresh(_active, _value, _valueDisplayPrecision, _force = false, _title = "", _displayEngine = "inactiveEngine") {
             if ((this.isActive != _active) || (this.currentValue != _value) || _force) {
+                this.N2Box.setAttribute("class", _displayEngine);
                 this.isActive = _active;
                 this.currentValue = _value;
                 if (this.valueText != null) {
@@ -1676,6 +1694,7 @@ var A320_Neo_UpperECAM;
                             const strArray = this.currentValue.toFixed(_valueDisplayPrecision).split(".");
                             const wholeNumber = strArray[0];
                             this.valueText.textContent = wholeNumber;
+                            this.valueText.setAttribute("x", this.getValueTextX());
                             this.valueText.setAttribute("class", valueClass);
                             const decimal = strArray[1];
                             this.valueText2.textContent = decimal;
@@ -1694,6 +1713,11 @@ var A320_Neo_UpperECAM;
 
                     } else {
                         this.valueText.textContent = "XX";
+                        this.valueTextpoint.textContent = "";
+                        this.valueText2.textContent = "";
+                        this.valueText.setAttribute("class", valueClass);
+                        this.valueText2.setAttribute("class", valueClass);
+                        this.valueText.setAttribute("x", this.getValueTextX2());
                     }
                 }
             }
@@ -1709,6 +1733,9 @@ var A320_Neo_UpperECAM;
         }
         getValueTextX() {
             return "11%";
+        }
+        getBoxX() {
+            return "15";
         }
         getValueTextX2() {
             return "17%";
@@ -1730,6 +1757,9 @@ var A320_Neo_UpperECAM;
         }
         getValueTextX() {
             return "79%";
+        }
+        getBoxX() {
+            return "538";
         }
         getValueTextX2() {
             return "85%";
@@ -1756,14 +1786,22 @@ var A320_Neo_UpperECAM;
         }
         update(_deltaTime) {
             if (this.leftComponent != null) {
-                this.leftComponent.refresh((SimVar.GetSimVarValue("L:A32NX_FADEC_POWERED_ENG1", "Bool") == 1), this.getValue(1), this.getValueStringPrecision(), false, this.getTitle());
+                this.leftComponent.refresh((SimVar.GetSimVarValue("L:A32NX_FADEC_POWERED_ENG1", "Bool") == 1), this.getValue(1), this.getValueStringPrecision(), false, this.getTitle(), this.getDisplayActiveEngine(1));
             }
             if (this.rightComponent != null) {
-                this.rightComponent.refresh((SimVar.GetSimVarValue("L:A32NX_FADEC_POWERED_ENG2", "Bool") == 1), this.getValue(2), this.getValueStringPrecision(), false, this.getTitle());
+                this.rightComponent.refresh((SimVar.GetSimVarValue("L:A32NX_FADEC_POWERED_ENG2", "Bool") == 1), this.getValue(2), this.getValueStringPrecision(), false, this.getTitle(), this.getDisplayActiveEngine(2));
             }
         }
         getValueStringPrecision() {
             return 0;
+        }
+        getEngineStartStatus(_engine) {
+            const value = (SimVar.GetSimVarValue("GENERAL ENG STARTER:" + _engine, "bool"));
+            return value;
+        }
+        getIgnitionStatus(_engine) {
+            const value = (SimVar.GetSimVarValue("TURB ENG IS IGNITING:" + _engine, "bool"));
+            return value;
         }
     }
     A320_Neo_UpperECAM.LinesStyleInfo = LinesStyleInfo;
@@ -1778,6 +1816,13 @@ var A320_Neo_UpperECAM;
             const name = "ENG N2 RPM:" + _engine;
             const percent = SimVar.GetSimVarValue(name, "percent");
             return percent;
+        }
+        getDisplayActiveEngine(_engine) {
+            if (this.getValue(_engine) < 57.8 && this.getEngineStartStatus(_engine) && this.getIgnitionStatus(_engine)) {
+                return "activeEngine";
+            } else {
+                return "inactiveEngine";
+            }
         }
         getValueStringPrecision() {
             return 1;
@@ -1798,6 +1843,9 @@ var A320_Neo_UpperECAM;
         getValue(_engine) {
             const value = SimVar.GetSimVarValue("ENG FUEL FLOW GPH:" + _engine, "gallons per hour") * this.gallonToKG;
             return value;
+        }
+        getDisplayActiveEngine(_engine) {
+            return "inactiveEngine";
         }
     }
     A320_Neo_UpperECAM.LinesStyleInfo_FF = LinesStyleInfo_FF;

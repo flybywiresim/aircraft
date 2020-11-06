@@ -43,6 +43,7 @@
 1. [CDU] Add ability to clear MDA/DH and add input logic for both MDA/DH - @paul92ilm (Lussion)
 1. [CHECKLISTS] Fix FD check in Taxi checklist - @Acrobot (Andrzej Pomirski)
 1. [ADIRS] Fix ADIRS lights and split into three separate units - @devsnek (devsnek#0001)
+1. [ECAM] Fixed donut and AVAIL message on N1 display. Add highlight on N2 during engine start - @RichardPilbery (Richard Pilbery)
 1. [CDU] Fix MCDU not loading when starting midair - @ThatRedMelon (Daniel Brown)
 1. [FCU] Clamp the selected altitude between 100 and 49000 - @lars-reimann (Lars Reimann)
 1. [TEXTURES] added Registry plaque and improved Textures - @Pleasure0102 (Pleasure)
