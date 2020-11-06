@@ -1463,7 +1463,7 @@
          </Test>
       </Checkpoint>
       <Checkpoint Id="A320_ILSAPPR_LANDING_GEAR">
-         <CheckpointDesc SubjectTT="TT:Leading Gear" ExpectationTT="TT:DOWN" />
+         <CheckpointDesc SubjectTT="TT:Landing Gear" ExpectationTT="TT:DOWN" />
          <Instrument Id="LANDING_GEAR_Lever_Gear" />
          <Test>
             <TestValue>
