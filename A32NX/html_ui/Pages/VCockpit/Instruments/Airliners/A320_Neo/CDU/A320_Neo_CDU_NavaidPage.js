@@ -6,6 +6,7 @@
 class CDUNavaidPage {
     static ShowPage(mcdu) {
         mcdu.clearDisplay();
+        mcdu.page.Current = mcdu.page.NavaidPage;
 
         mcdu.setTemplate([
             ["NAVAID"],

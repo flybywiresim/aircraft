@@ -2374,7 +2374,7 @@ class FMCMainDisplay extends BaseAirliners {
             Clear: 0,
             AirportsMonitor: 1,
             AirwaysFromWaypointPage: 2,
-            AirwaysFromWaypointPageGetAllRows: 3,
+            // AirwaysFromWaypointPageGetAllRows: 3,
             AvailableArrivalsPage: 4,
             AvailableArrivalsPageVias: 5,
             AvailableDeparturesPage: 6,

@@ -1,6 +1,7 @@
 class CDUDirectToPage {
     static ShowPage(mcdu, directWaypoint, wptsListIndex = 0) {
         mcdu.clearDisplay();
+        mcdu.page.Current = mcdu.page.DirectToPage;
         let directWaypointCell = " ";
         if (directWaypoint) {
             directWaypointCell = directWaypoint.ident;

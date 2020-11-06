@@ -1,6 +1,7 @@
 class CDUInitPage {
     static ShowPage1(mcdu) {
         mcdu.clearDisplay();
+        mcdu.page.Current = mcdu.page.InitPageA;
 
         // TODO create local simvars for.. everything
         let fromTo = "____|____[color]red";
@@ -185,6 +186,7 @@ class CDUInitPage {
     }
     static ShowPage2(mcdu) {
         mcdu.clearDisplay();
+        mcdu.page.Current = mcdu.page.InitPageB;
 
         let initBTitle = "INIT {}";
 

@@ -35,6 +35,7 @@ class CDUProgressPage {
     }
     static ShowReportPage(mcdu) {
         mcdu.clearDisplay();
+        mcdu.page.Current = mcdu.page.ProgressPageReport;
         let altCell = "---";
         if (isFinite(mcdu.cruiseFlightLevel)) {
             altCell = mcdu.cruiseFlightLevel.toFixed(0);
@@ -106,6 +107,7 @@ class CDUProgressPage {
     }
     static ShowPredictiveGPSPage(mcdu, overrideDestETA = "") {
         mcdu.clearDisplay();
+        mcdu.page.Current = mcdu.page.ProgressPagePredictiveGPS;
         let destIdentCell = "";
         let destETACell = "";
         if (mcdu.flightPlanManager.getDestination()) {

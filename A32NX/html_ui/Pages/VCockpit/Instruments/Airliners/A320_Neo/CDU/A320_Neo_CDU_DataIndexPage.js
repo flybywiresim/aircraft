@@ -1,6 +1,7 @@
 class CDUDataIndexPage {
     static ShowPage1(mcdu) {
         mcdu.clearDisplay();
+        mcdu.page.Current = mcdu.page.DataIndexPage1;
         mcdu.setTemplate([
             ["DATA INDEX", "1", "2"],
             ["POSITION"],
@@ -46,6 +47,7 @@ class CDUDataIndexPage {
     }
     static ShowPage2(mcdu) {
         mcdu.clearDisplay();
+        mcdu.page.Current = mcdu.page.DataIndexPage2;
         mcdu.setTemplate([
             ["DATA INDEX", "2", "2"],
             ["", "PILOTS"],
