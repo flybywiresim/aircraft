@@ -50,6 +50,7 @@
 1. [GPWS] Add minimums and 100above logic - @linkeleven (linkeleven#2557)
 1. [TEXTURES] Changed cockpit font and fixed spelling errors - @FoxinTale (Aubrey)
 1. [FCU] Remember selected pressure mode when returning from Std mode - @lhoenig (Lukas Hoenig)
+1. [TEXTURES] upgraded to 4k Textures (pedestal,throttle unit) fixed decal texture - @Pleasure0102 (Pleasure)
 
 ## 0.4.0
 1. [General] Add CHANGELOG.md - @nathaninnes (Nathan Innes)
