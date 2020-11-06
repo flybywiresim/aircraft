@@ -23,7 +23,10 @@ jobs:
         run: |
           npm install
           npm run build
+          mkdir tmp_A32NX
+          mv A32NX tmp_A32NX/
+          mv tmp_A32NX A32NX
       - uses: actions/upload-artifact@v2
         with:
           name: A32NX
-          path: ./A32NX/
+          path: A32NX
