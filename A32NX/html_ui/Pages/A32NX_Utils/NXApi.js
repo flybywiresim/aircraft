@@ -127,8 +127,8 @@ class NXApi {
                     throw (response);
                 }
 
-                NXDataStore.delete("TELEX_KEY");
-                NXDataStore.delete("TELEX_FLIGHT_NUMBER");
+                NXDataStore.set("TELEX_KEY", "");
+                NXDataStore.set("TELEX_FLIGHT_NUMBER", "");
 
                 return response.json();
             });
@@ -224,7 +224,7 @@ class NXApi {
     }
 }
 
-NXApi.url = "https://fbw.stonelabs.io";
+NXApi.url = "https://api.flybywiresim.com";
 NXApi.disabledError = "TELEX DISABLED";
 NXApi.disconnectedError = "TELEX DISCONNECTED";
 NXApi.noRecipientError = "NO RECIPIENT";

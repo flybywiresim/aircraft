@@ -40,7 +40,7 @@ class CDU_OPTIONS_TELEX {
                     mcdu.showErrorMessage("FREE TEXT DISABLED");
                     NXApi.disconnectTelex()
                         .catch(() => {
-                            mcdu.showErrorMessage("TELEX DISABLE ERROR");
+                            console.log('TELEX DISCONNECT ISSUE');
                         });
                     break;
                 default:
