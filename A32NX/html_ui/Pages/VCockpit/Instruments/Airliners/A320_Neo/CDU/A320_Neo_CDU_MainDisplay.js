@@ -955,7 +955,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
 
                 if (apLogicOn) {
                     this._forceNextAltitudeUpdate = true;
-                    SimVar.SetSimVarValue("K:ALTITUDE_SLOT_INDEX_SET", "number", 2);
+                    //SimVar.SetSimVarValue("K:ALTITUDE_SLOT_INDEX_SET", "number", 2);
                     Coherent.call("AP_ALT_VAR_SET_ENGLISH", 1, selectedAltFCU, this._forceNextAltitudeUpdate);
                     Coherent.call("AP_ALT_VAR_SET_ENGLISH", 2, selectedAltFCU, this._forceNextAltitudeUpdate);
                     this._forceNextAltitudeUpdate = false;

@@ -1150,7 +1150,6 @@ var Airbus_FMA;
             }
         }
         static GetModeState_CLB() {
-            //GEGA
             if ((Airbus_FMA.CurrentPlaneState.autoPilotAltitudeLockActive && Airbus_FMA.CurrentPlaneState.thisFlightDirectorActive || Simplane.getAutoPilotFLCActive() && Airbus_FMA.CurrentPlaneState.thisFlightDirectorActive) && (Airbus_FMA.CurrentPlaneState.altitude < Airbus_FMA.CurrentPlaneState.autoPilotAltitudeLockValue) && Airbus_FMA.CurrentPlaneState.thisFlightDirectorActive) {
                 if (Airbus_FMA.CurrentPlaneState.flightPhase < FlightPhase.FLIGHT_PHASE_CLIMB) {
                     return Airbus_FMA.MODE_STATE.ARMED;
