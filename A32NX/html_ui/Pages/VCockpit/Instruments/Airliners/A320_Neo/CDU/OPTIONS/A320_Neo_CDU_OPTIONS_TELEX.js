@@ -38,6 +38,10 @@ class CDU_OPTIONS_TELEX {
                 case "ENABLED":
                     NXDataStore.set("CONFIG_TELEX_STATUS", "DISABLED");
                     mcdu.showErrorMessage("FREE TEXT DISABLED");
+                    NXApi.disconnectTelex()
+                        .catch(() => {
+                            mcdu.showErrorMessage("TELEX DISABLE ERROR");
+                        });
                     break;
                 default:
                     NXDataStore.set("CONFIG_TELEX_STATUS", "ENABLED");

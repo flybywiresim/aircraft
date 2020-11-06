@@ -687,9 +687,7 @@ class FMCMainDisplay extends BaseAirliners {
                 const initTelexServer = async () => {
                     NXApi.connectTelex(flightNo)
                         .catch((err) => {
-                            if (err === NXApi.telexNotEnabledError) {
-                                this.showErrorMessage(err);
-                            } else {
+                            if (err !== NXApi.disconnectedError) {
                                 this.showErrorMessage("FLT NBR IN USE");
                             }
 
