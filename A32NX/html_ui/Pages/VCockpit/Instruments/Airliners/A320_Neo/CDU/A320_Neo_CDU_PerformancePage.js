@@ -222,7 +222,12 @@ class CDUPerformancePage {
             costIndexCell = mcdu.costIndex.toFixed(0) + "[color]blue";
         }
         let managedSpeedCell = "";
-        const managedSpeed = mcdu.getClbManagedSpeed();
+        let managedSpeed;
+        if (SimVar.GetSimVarValue("L:A32NX_GOAROUND_PASSED", "bool") === 1) {
+            managedSpeed = mcdu.getPerfGreenDotSpeed();
+        } else {
+            managedSpeed = mcdu.getClbManagedSpeed();
+        }
         if (isFinite(managedSpeed)) {
             managedSpeedCell = managedSpeed.toFixed(0);
         }
