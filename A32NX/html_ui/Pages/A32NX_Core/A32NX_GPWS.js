@@ -209,7 +209,7 @@ class A32NX_GPWS {
         SimVar.SetSimVarValue("L:A32NX_GPWS_Warning_Active", "Bool", shouldGPWSLightActive);
 
         if (this.Mode5Code !== this.PrevMode5Code) {
-            SimVar.SetSimVarValue("L:A32NX_GPWS_GS_Warning_Active", "Bool", Math.max(this.Mode5Code, 1));
+            SimVar.SetSimVarValue("L:A32NX_GPWS_GS_Warning_Active", "Bool", Math.min(this.Mode5Code, 1));
             if (this.Mode5Code === 1) {
                 // no callout for that (yet)
             }
@@ -382,10 +382,10 @@ class A32NX_GPWS {
         const minAltForWarning = dots < 2.9 ? -75 * dots + 247.5 : 30;
         const minAltForHardWarning = dots < 3.8 ? -66.66 * dots + 283.33 : 30;
 
-        if (dots > 1.3 && radioAlt > minAltForWarning) {
-            this.Mode5Code = 1;
-        } else if (dots > 2 && radioAlt > minAltForHardWarning && radioAlt < 350) {
+        if (dots > 2 && radioAlt > minAltForHardWarning && radioAlt < 350) {
             this.Mode5Code = 2;
+        } else if (dots > 1.3 && radioAlt > minAltForWarning) {
+            this.Mode5Code = 1;
         } else {
             this.Mode5Code = 0;
         }
