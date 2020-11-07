@@ -22,6 +22,7 @@
   --displayYellow: #ffff00;
 
   --mcduWhite: #ffffff;
+  --mcduLightGrey: #666666;
   --mcduGrey: #787878;
   --mcduGreen: #00ff00;
   --mcduAmber: #e68000;
@@ -147,4 +148,38 @@ text {
 }
 :root strokeSuperThick {
   stroke-width: 6px;
+}
+
+.engineering-mode-overlay {
+  position: absolute;
+  left: 0%;
+  top: 0%;
+  width: 100%;
+  height: 100%;
+  border: none;
+  z-index: 999;
+  background-image: url(/css/thalesTest.svg);
+  background-size: cover;
+}
+
+.engineering-mode-overlay text {
+  font-size: 21px;
+  text-anchor: middle;
+  color: black;
+}
+
+.engineering-mode-overlay text.start {
+  font-size: 21px;
+  text-anchor: start;
+  color: black;
+}
+
+.maintenance-mode-overlay {
+  position: absolute;
+  left: 0%;
+  top: 0%;
+  width: 100%;
+  height: 100%;
+  border: none;
+  z-index: 990;
 }
