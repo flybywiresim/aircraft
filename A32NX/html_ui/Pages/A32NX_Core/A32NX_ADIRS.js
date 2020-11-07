@@ -27,7 +27,17 @@ class ADIRS {
             if (this.timer === -1) {
                 // Align time changes depending on latitude.
                 const currentLatitude = SimVar.GetSimVarValue("GPS POSITION LAT", "degree latitude");
-                this.timer = ((currentLatitude ** 2) * 0.095) + 310;
+                const storedAlignMode = NXDataStore.get("CONFIG_ALIGN_TIME", "REAL");
+                switch (storedAlignMode) {
+                    case "INSTANT":
+                        this.timer = 1;
+                        break;
+                    case "FAST":
+                        this.timer = 90;
+                        break;
+                    default:
+                        this.timer = ((currentLatitude ** 2) * 0.095) + 310;
+                }
 
                 // Flash FAULT light
                 SimVar.SetSimVarValue(`L:A32NX_ADIRS_${this.num}_FAULT`, 'Bool', 1);
