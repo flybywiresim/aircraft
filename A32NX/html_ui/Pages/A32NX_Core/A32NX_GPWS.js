@@ -140,7 +140,7 @@ class A32NX_GPWS {
         }
 
         const maxSinkrateAlt = 0.61 * sinkrate - 600;
-        const maxPullUpAlt = sinkrate > 1700 ? 1.3 * sinkrate - 1940 : 0.4 * sinkrate - 410;
+        const maxPullUpAlt = sinkrate < 1700 ? 1.3 * sinkrate - 1940 : 0.4 * sinkrate - 410;
 
         if (radioAlt <= maxPullUpAlt) {
             this.Mode1Code = 2;
@@ -222,6 +222,7 @@ class A32NX_GPWS {
             this.Mode4Code = 0;
             return;
         }
+        const FlapModeOff = SimVar.GetSimVarValue("L:A32NX_GPWS_FLAP_OFF", "Bool");
 
         // Mode 4 A and B logic
         if (!gearExtended && phase === FlightPhase.FLIGHT_PHASE_APPROACH) {
@@ -231,16 +232,18 @@ class A32NX_GPWS {
                 const maxWarnAlt = 8.333 * speed - 1083.333;
                 this.Mode4Code = radioAlt < maxWarnAlt ? 3 : 0;
             }
-        } else if (FlapsInLandingConfig && phase === FlightPhase.FLIGHT_PHASE_APPROACH) {
+        } else if (!FlapsInLandingConfig && !FlapModeOff && phase === FlightPhase.FLIGHT_PHASE_APPROACH) {
             if (speed < 159 && radioAlt < 245) {
                 this.Mode4Code = 2;
             } else if (speed >= 159) {
                 const maxWarnAlt = 8.2967 * speed - 1074.18;
                 this.Mode4Code = radioAlt < maxWarnAlt ? 3 : 0;
             }
+        } else {
+            this.Mode4Code = 0;
         }
 
-        // Mode 4C logic
+        // Mode 4C logic to be implemented
 
     }
 
