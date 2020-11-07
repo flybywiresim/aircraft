@@ -17,10 +17,6 @@ jobs:
     steps:
       - name: Checkout source
         uses: actions/checkout@v2
-      - name: Setup Python 3
-        uses: actions/setup-python@v2
-        with:
-          python-version: "3.x"
       - name: Set BUILT_DATE_TIME
         run: echo "BUILT_DATE_TIME=$(date -u -Iseconds)" >> $GITHUB_ENV
       - name: Generate layout.json
@@ -38,14 +34,15 @@ jobs:
       - name: Get and delete master pre-release zip asset
         run: |
           echo 'checking for first release asset...'
-          assetId=$( \
+          assets=$( \
             curl --location --request GET \
-              --url https://api.github.com/repos/${{ github.repository }}/releases/${{ env.MASTER_PRE_RELEASE_ID }}/assets \
-            | python3 -c "import sys,json; assets=json.load(sys.stdin); print(assets[0]['id'] if len(assets) > 0 else 'none')" \
+              --url https://api.github.com/repos/${{ github.repository }}/releases/${{ env.MASTER_PRE_RELEASE_ID }}/assets
           )
-          if [ $assetId = "none" ]; then
+    
+          if [ $(echo $assets | jq '.[0].size') -eq '0' ]; then
             echo 'no asset to delete'
           else
+            assetId=$(echo $assets | jq '.[0].id')
             echo 'deleting asset '$assetId
             curl --request DELETE \
               --url https://api.github.com/repos/${{ github.repository }}/releases/assets/$assetId \
