@@ -15,9 +15,10 @@ class A32NX_SoundManager {
     }
 
     addPeriodicSound(sound, period = NaN) {
+        let useLengthForPeriod = false;
         if (period < sound.length) {
-            console.log("A32NXSoundManager ERROR: Sound period can't be smaller than sound length.");
-            return;
+            console.error("A32NXSoundManager ERROR: Sound period can't be smaller than sound length. Using sound length instead.");
+            useLengthForPeriod = true;
         }
 
         let found = false;
@@ -28,7 +29,7 @@ class A32NX_SoundManager {
         });
 
         if (!found) {
-            this.periodicList.push(new PeriodicSound(sound, period));
+            this.periodicList.push(new PeriodicSound(sound, useLengthForPeriod ? sound.length : period));
         }
     }
 
@@ -75,27 +76,27 @@ class A32NX_SoundManager {
 const soundList = {
     pull_up: {
         name: "aural_pull_up",
-        length: 1
+        length: 0.9
     },
     sink_rate: {
         name: "aural_sink_rate",
-        length: 1
+        length: 0.9
     },
     dont_sink:{
         name: "aural_dont_sink",
-        length: 1
+        length: 0.9
     },
     too_low_gear:{
         name: "aural_too_low_gear",
-        length: 1.3
+        length: 0.8
     },
     too_low_flaps:{
         name: "aural_too_low_flaps",
-        length: 1.3
+        length: 0.8
     },
     too_low_terrain: {
         name: "aural_too_low_terrain",
-        length: 1.3
+        length: 0.9
     },
     minimums: {
         name: "aural_minimumnew",
