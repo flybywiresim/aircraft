@@ -4,10 +4,27 @@ class CDUProgressPage {
         mcdu.activeSystem = 'FMGC';
         const flightPhase = "CRZ";
         const flightNo = SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string");
-        const flCrz = mcdu._cruiseEntered ? "FL" + mcdu.cruiseFlightLevel.toFixed(0).padStart(3, "0") + "[color]blue" : "-----";
+        let flCrz = "-----";
+        switch (Simplane.getCurrentFlightPhase()) {
+            case FlightPhase.FLIGHT_PHASE_TAKEOFF: {
+                if (mcdu._cruiseEntered) {
+                    flCrz = "FL" + mcdu.cruiseFlightLevel.toFixed(0).padStart(3, "0") + "[color]blue";
+                }
+                break;
+            }
+            case FlightPhase.FLIGHT_PHASE_CLIMB: {
+                mcdu.cruiseFlightLevel = Math.floor(Math.max(0, Simplane.getAutoPilotDisplayedAltitudeLockValue()) / 100);
+                flCrz = "FL" + mcdu.cruiseFlightLevel.toFixed(0).padStart(3, "0") + "[color]blue";
+                break;
+            }
+            case FlightPhase.FLIGHT_PHASE_CRUISE: {
+                flCrz = "FL" + mcdu.cruiseFlightLevel.toFixed(0).padStart(3, "0") + "[color]blue";
+                break;
+            }
+        }
         mcdu.onLeftInput[0] = () => {
             const value = mcdu.inOut;
-            if (mcdu.trySetCruiseFl(value)) {
+            if (mcdu.trySetCruiseFlCheckInput(value)) {
                 mcdu.clearUserInput();
                 CDUProgressPage.ShowPage(mcdu);
             }

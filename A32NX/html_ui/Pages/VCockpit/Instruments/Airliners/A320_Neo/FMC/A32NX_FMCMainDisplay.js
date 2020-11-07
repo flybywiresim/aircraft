@@ -413,18 +413,7 @@ class FMCMainDisplay extends BaseAirliners {
             }
         }
         if (flString) {
-            const fl = parseFloat(flString);
-            if (isFinite(fl)) {
-                if (fl > 0 && fl <= this.maxCruiseFL) {
-                    this.cruiseFlightLevel = fl;
-                    return true;
-                } else if (fl >= 1000 && fl <= this.maxCruiseFL * 100) {
-                    this.cruiseFlightLevel = Math.floor(fl / 100);
-                    return true;
-                }
-                this.showErrorMessage("ENTRY OUT OF RANGE");
-                return false;
-            }
+            return this.trySetCruiseFl(parseFloat(flString));
         }
         this.showErrorMessage(this.defaultInputErrorMessage);
         return false;
@@ -1341,11 +1330,11 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     /**
-     * Sets new Cruise FL if all conditions good
-     * @param input {float} Altitude or FL
+     * Checks input and passes to trySetCruiseFl()
+     * @param input
      * @returns {boolean} input passed checks
      */
-    trySetCruiseFl(input) {
+    trySetCruiseFlCheckInput(input) {
         if (input === FMCMainDisplay.clrValue) {
             this.showErrorMessage(this.defaultInputErrorMessage);
             return false;
@@ -1355,7 +1344,15 @@ class FMCMainDisplay extends BaseAirliners {
             this.showErrorMessage(this.defaultInputErrorMessage);
             return false;
         }
-        let fl = parseFloat(flString);
+        return this.trySetCruiseFl(parseFloat(flString));
+    }
+
+    /**
+     * Sets new Cruise FL if all conditions good
+     * @param fl {number} Altitude or FL
+     * @returns {boolean} input passed checks
+     */
+    trySetCruiseFl(fl) {
         if (!isFinite(fl)) {
             this.showErrorMessage(this.defaultInputErrorMessage);
             return false;
@@ -1368,7 +1365,7 @@ class FMCMainDisplay extends BaseAirliners {
             return false;
         }
         const phase = Simplane.getCurrentFlightPhase();
-        if (this._cruiseEntered && fl < Math.max(0, Simplane.getAutoPilotDisplayedAltitudeLockValue()) && phase === FlightPhase.FLIGHT_PHASE_CRUISE) {
+        if (fl < Math.max(0, Simplane.getAutoPilotDisplayedAltitudeLockValue()) && phase === FlightPhase.FLIGHT_PHASE_CRUISE) {
             this.showErrorMessage(this.defaultInputErrorMessage);
             return false;
         }
