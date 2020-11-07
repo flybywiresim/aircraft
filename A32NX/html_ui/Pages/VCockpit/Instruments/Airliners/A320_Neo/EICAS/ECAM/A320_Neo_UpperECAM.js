@@ -1015,6 +1015,12 @@ var A320_Neo_UpperECAM;
                         }
                     },
                     {
+                        message: "COMPANY MSG",
+                        isActive: () => {
+                            return (this.getCachedSimVar("L:A32NX_COMPANY_MSG_COUNT", "Number") > 0) || (SimVar.GetSimVarValue("L:A32NX_COMPANY_MSG_COUNT", "Number") > 0);
+                        }
+                    },
+                    {
                         message: "ENG A.ICE",
                         isActive: () => {
                             return (this.getCachedSimVar("ENG ANTI ICE:1", "Bool") == 1) || (SimVar.GetSimVarValue("ENG ANTI ICE:2", "Bool") == 1);
@@ -1042,6 +1048,12 @@ var A320_Neo_UpperECAM;
                         message: "LDG LT",
                         isActive: () => {
                             return (SimVar.GetSimVarValue("L:LANDING_1_Retracted", "Bool") == 0 || SimVar.GetSimVarValue("L:LANDING_2_Retracted", "Bool") == 0);
+                        }
+                    },
+                    {
+                        message: "SWITCHG PNL",
+                        isActive: () => {
+                            return (SimVar.GetSimVarValue("L:A32NX_KNOB_SWITCHING_3_Position", "Enum") != 1);
                         }
                     },
                     {
@@ -2343,7 +2355,7 @@ var A320_Neo_UpperECAM;
             }
 
             if (warningsCount[3] > this.lastWarningsCount[3]) {
-                console.warn(warningsCount[3]);
+                // console.warn(warningsCount[3]);
                 SimVar.SetSimVarValue("L:A32NX_MASTER_WARNING", "Bool", 1);
             }
             if (warningsCount[2] > this.lastWarningsCount[2]) {
