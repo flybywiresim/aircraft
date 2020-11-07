@@ -97,7 +97,7 @@ class FMCMainDisplay extends BaseAirliners {
             color = "white";
         }
         this._title = content.split("[color]")[0];
-        this._titleElement.classList.remove("white", "blue", "yellow", "green", "red", "magenta");
+        this._titleElement.classList.remove("white", "blue", "yellow", "green", "red", "magenta", "inop");
         this._titleElement.classList.add(color);
         this._titleElement.textContent = this._title;
     }
@@ -167,12 +167,20 @@ class FMCMainDisplay extends BaseAirliners {
             label = "------------------------";
         }
         if (label !== "") {
+            if (label.indexOf("[b-text]") !== -1) {
+                label = label.replace("[b-text]", "");
+                this._lineElements[row][col].classList.remove("s-text");
+                this._lineElements[row][col].classList.add("msg-text");
+            } else {
+                this._lineElements[row][col].classList.remove("msg-text");
+            }
+
             let color = label.split("[color]")[1];
             if (!color) {
                 color = "white";
             }
             const e = this._labelElements[row][col];
-            e.classList.remove("white", "blue", "yellow", "green", "red", "magenta");
+            e.classList.remove("white", "blue", "yellow", "green", "red", "magenta", "inop");
             e.classList.add(color);
             label = label.split("[color]")[0];
         }
@@ -219,7 +227,7 @@ class FMCMainDisplay extends BaseAirliners {
                 color = "white";
             }
             const e = this._lineElements[row][col];
-            e.classList.remove("white", "blue", "yellow", "green", "red", "magenta");
+            e.classList.remove("white", "blue", "yellow", "green", "red", "magenta", "inop");
             e.classList.add(color);
             content = content.split("[color]")[0];
         }
@@ -252,7 +260,7 @@ class FMCMainDisplay extends BaseAirliners {
         }
     }
 
-    setTemplate(template) {
+    setTemplate(template, large = false) {
         if (template[0]) {
             this.setTitle(template[0][0]);
             this.setPageCurrent(template[0][1]);
@@ -261,13 +269,24 @@ class FMCMainDisplay extends BaseAirliners {
         for (let i = 0; i < 6; i++) {
             let tIndex = 2 * i + 1;
             if (template[tIndex]) {
-                if (template[tIndex][1] !== undefined) {
-                    this.setLabel(template[tIndex][0], i, 0);
-                    this.setLabel(template[tIndex][1], i, 1);
-                    this.setLabel(template[tIndex][2], i, 2);
-                    this.setLabel(template[tIndex][3], i, 3);
+                if (large) {
+                    if (template[tIndex][1] !== undefined) {
+                        this.setLine(template[tIndex][0], i, 0);
+                        this.setLine(template[tIndex][1], i, 1);
+                        this.setLine(template[tIndex][2], i, 2);
+                        this.setLine(template[tIndex][3], i, 3);
+                    } else {
+                        this.setLine(template[tIndex][0], i, -1);
+                    }
                 } else {
-                    this.setLabel(template[tIndex][0], i, -1);
+                    if (template[tIndex][1] !== undefined) {
+                        this.setLabel(template[tIndex][0], i, 0);
+                        this.setLabel(template[tIndex][1], i, 1);
+                        this.setLabel(template[tIndex][2], i, 2);
+                        this.setLabel(template[tIndex][3], i, 3);
+                    } else {
+                        this.setLabel(template[tIndex][0], i, -1);
+                    }
                 }
             }
             tIndex = 2 * i + 2;
@@ -290,6 +309,7 @@ class FMCMainDisplay extends BaseAirliners {
     getNavDataDateRange() {
         return SimVar.GetGameVarValue("FLIGHT NAVDATA DATE RANGE", "string");
     }
+
     get cruiseFlightLevel() {
         return this._cruiseFlightLevel;
     }
@@ -658,8 +678,26 @@ class FMCMainDisplay extends BaseAirliners {
             this.showErrorMessage(this.defaultInputErrorMessage);
             return callback(false);
         }
+
+        const storedTelexStatus = NXDataStore.get("CONFIG_TELEX_STATUS", "DISABLED");
+
+        let connectSuccess = true;
         SimVar.SetSimVarValue("ATC FLIGHT NUMBER", "string", flightNo, "FMC").then(() => {
-            return callback(true);
+            if (storedTelexStatus === "ENABLED") {
+                const initTelexServer = async () => {
+                    NXApi.connectTelex(flightNo)
+                        .catch((err) => {
+                            if (err !== NXApi.disconnectedError) {
+                                this.showErrorMessage("FLT NBR IN USE");
+                            }
+
+                            connectSuccess = false;
+                        });
+                };
+
+                initTelexServer();
+            }
+            return callback(connectSuccess);
         });
     }
 
