@@ -835,48 +835,37 @@ var A320_Neo_UpperECAM;
                         messages: [
                             {
                                 id: "to_speeds_disagree",
-                                message: "",
+                                message: "V1/VR/V2 DISAGREE",
                                 level: 2,
+                                alwaysShowCategory: true,
                                 isActive: () => {
                                     return this.activeTakeoffConfigWarnings.includes("to_speeds_disagree") && Simplane.getIsGrounded();
                                 },
-                                alwaysShowCategory: true,
-                                actions: [
-                                    {
-                                        style: "fail-2",
-                                        message: "V1/VR/V2 DISAGREE"
-                                    }
-                                ]
                             },
                             {
                                 id: "to_speeds_too_low",
-                                message: "",
+                                message: "SPEEDS TOO LOW",
                                 level: 2,
+                                alwaysShowCategory: true,
                                 isActive: () => {
                                     return this.activeTakeoffConfigWarnings.includes("to_speeds_too_low") && Simplane.getIsGrounded();
                                 },
                                 alwaysShowCategory: true,
                                 actions: [
                                     {
-                                        style: "fail-2",
-                                        message: "SPEEDS TOO LOW"
+                                        style: "blue",
+                                        message: "&nbsp;-TOW AND T.O DATA.CHECK"
                                     }
                                 ]
                             },
                             {
                                 id: "to_no_speeds",
-                                message: "",
+                                message: "SPEEDS NOT INSERTED",
                                 level: 2,
+                                alwaysShowCategory: true,
                                 isActive: () => {
                                     return this.activeTakeoffConfigWarnings.includes("to_no_speeds") && Simplane.getIsGrounded();
                                 },
-                                alwaysShowCategory: true,
-                                actions: [
-                                    {
-                                        style: "fail-2",
-                                        message: "SPEEDS NOT INSERTED"
-                                    }
-                                ]
                             },
                         ]
                     },
