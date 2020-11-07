@@ -24,6 +24,19 @@
                         <text class="self_test_text2 valueText" text-anchor="middle" x="50%" y="56%" font-size="24px">(MAX 40 SECONDS)</text>
                     </svg>
                 </div>
+
+                <svg id="Eicas1EngTest" class="engineering-mode-overlay" viewBox="0 0 600 600">
+                    <text class="start" x="9" y="250">P/N : C19755BA01</text>
+                    <text class="start" x="10" y="270">S/N : C1975517332</text>
+                    <text class="start" x="10" y="344">EIS SW</text>
+                    <text class="start" x="10" y="366">P/N : C1975517332</text>
+                    <text x="445" y="250">THALES AVIONICS</text>
+                    <text x="538" y="366">LCDU 725</text>
+                </svg>
+                <svg id="Eicas1MaintMode" class="maintenance-mode-overlay" viewBox="0 0 600 600">
+                    <rect fill="url(#ECAMBacklight)" x="0" y="0" width="100%" height="100%"></rect>
+                    <text class="valueText" text-anchor="middle" x="50%" y="35%" font-size="24px">MAINTENANCE MODE</text>
+                </svg>
             </div>
 
             <div id="BottomScreen">
@@ -37,6 +50,19 @@
                 <a320-neo-lower-ecam-status style="display:none"></a320-neo-lower-ecam-status> <!-- MODIFIED -->
                 <a320-neo-lower-ecam-crz style="display:none"></a320-neo-lower-ecam-crz> <!-- MODIFIED -->
                 <eicas-common-display id="CommonDisplay"></eicas-common-display>
+
+                <svg id="Eicas2EngTest" class="engineering-mode-overlay" viewBox="0 0 600 600" style="top: -5% !important;">
+                    <text class="start" x="9" y="250">P/N : C19755BA01</text>
+                    <text class="start" x="10" y="270">S/N : C1975517332</text>
+                    <text class="start" x="10" y="344">EIS SW</text>
+                    <text class="start" x="10" y="366">P/N : C1975517332</text>
+                    <text x="445" y="250">THALES AVIONICS</text>
+                    <text x="538" y="366">LCDU 725</text>
+                </svg>
+                <svg id="Eicas2MaintMode" class="maintenance-mode-overlay" viewBox="0 0 600 600" style="top: -5% !important;">
+                    <rect fill="url(#ECAMBacklight)" x="0" y="0" width="100%" height="100%"></rect>
+                    <text class="valueText" text-anchor="middle" x="50%" y="35%" font-size="24px">MAINTENANCE MODE</text>
+                </svg>
 
                 <div id="door-video-wrapper"/>
 
@@ -55,6 +81,9 @@
 <script type="text/html" import-script="/JS/SimPlane.js"></script>
 <script type="text/html" import-script="/JS/A32NX_Util.js"></script>
 <script type="text/html" import-script="/JS/A32NX_Selectors.js"></script>
+<script type="text/html" import-script="/JS/dataStorage.js"></script>
+<script type="text/html" import-script="/Pages/A32NX_Utils/NXDataStore.js"></script>
+<script type="text/html" import-script="/Pages/A32NX_Core/A32NX_DMC.js"></script>
 
 <script type="text/html" import-script="/Pages/VCockpit/Instruments/Shared/Utils/RadioNav.js"></script>
 

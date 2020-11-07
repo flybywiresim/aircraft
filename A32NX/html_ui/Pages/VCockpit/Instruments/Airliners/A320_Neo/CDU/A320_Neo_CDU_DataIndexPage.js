@@ -2,6 +2,7 @@ class CDUDataIndexPage {
     static ShowPage1(mcdu) {
         mcdu.clearDisplay();
         mcdu.page.Current = mcdu.page.DataIndexPage1;
+        mcdu.activeSystem = 'FMGC';
         mcdu.setTemplate([
             ["DATA INDEX", "1", "2"],
             ["POSITION"],
@@ -12,9 +13,9 @@ class CDUDataIndexPage {
             ["<MONITOR"],
             [""],
             ["<A/C STATUS"],
-            ["CLOSEST", "PRINT"],
-            ["<AIRPORTS", "FUNCTION>"],
-            ["EQUITIME", "AOC"],
+            ["CLOSEST"],
+            ["<AIRPORTS"],
+            ["EQUITIME", "ACARS/PRINT"],
             ["<POINT", "FUNCTION>"]
         ]);
 
@@ -50,13 +51,13 @@ class CDUDataIndexPage {
         mcdu.page.Current = mcdu.page.DataIndexPage2;
         mcdu.setTemplate([
             ["DATA INDEX", "2", "2"],
-            ["", "PILOTS"],
+            ["", "STORED"],
             ["<WAYPOINTS", "WAYPOINTS>"],
-            ["", "PILOTS"],
+            ["", "STORED"],
             ["<NAVAIDS", "NAVAIDS>"],
-            ["", "PILOTS"],
+            ["", "STORED"],
             ["<RUNWAYS", "RUNWAYS>"],
-            ["", "PILOTS"],
+            ["", "STORED"],
             ["<ROUTES", "ROUTES>"],
             ["ACTIVE F-PLAN", ""],
             ["<WINDS"],
