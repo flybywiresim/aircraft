@@ -82,7 +82,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             NXApi.updateTelex()
                 .catch((err) => {
                     if (err !== NXApi.disabledError) {
-                        console.error("TELEX PING FAILED");
+                        console.log("TELEX PING FAILED");
                     }
                 });
 

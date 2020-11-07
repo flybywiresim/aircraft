@@ -2355,7 +2355,7 @@ var A320_Neo_UpperECAM;
             }
 
             if (warningsCount[3] > this.lastWarningsCount[3]) {
-                console.warn(warningsCount[3]);
+                // console.warn(warningsCount[3]);
                 SimVar.SetSimVarValue("L:A32NX_MASTER_WARNING", "Bool", 1);
             }
             if (warningsCount[2] > this.lastWarningsCount[2]) {

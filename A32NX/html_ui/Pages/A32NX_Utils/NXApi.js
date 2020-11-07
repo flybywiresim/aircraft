@@ -4,15 +4,12 @@ class NXApi {
             throw ("No ICAO provided");
         }
 
-        console.log('GET METAR');
         return fetch(`${NXApi.url}/metar/${icao}?source=${source}`)
             .then((response) => {
                 if (!response.ok) {
-                    console.error('METAR RESPONSE ERROR');
                     throw (response);
                 }
 
-                console.log('METAR RESPONSE OK');
                 return response.json();
             });
     }
@@ -22,15 +19,12 @@ class NXApi {
             throw ("No ICAO provided");
         }
 
-        console.log('GET TAF');
         return fetch(`${NXApi.url}/taf/${icao}?source=${source}`)
             .then((response) => {
                 if (!response.ok) {
-                    console.error('TAF RESPONSE ERROR');
                     throw (response);
                 }
 
-                console.log('TAF RESPONSE OK');
                 return response.json();
             });
     }
@@ -40,15 +34,12 @@ class NXApi {
             throw ("No ICAO provided");
         }
 
-        console.log('GET ATIS');
         return fetch(`${NXApi.url}/atis/${icao}?source=${source}`)
             .then((response) => {
                 if (!response.ok) {
-                    console.error('ATIS RESPONSE ERROR');
                     throw (response);
                 }
 
-                console.log('ATIS RESPONSE OK');
                 return response.json();
             });
     }
@@ -62,16 +53,12 @@ class NXApi {
         const connectBody = NXApi.buildTelexBody(flightNo);
         const headers = {"Content-Type": "application/json"};
 
-        console.log("CONNECTING TO TELEX");
-
         return fetch(`${NXApi.url}/txcxn`, {method: "POST", body: JSON.stringify(connectBody), headers})
             .then((response) => {
                 if (!response.ok) {
-                    console.error("TELEX CONNECTION ERROR");
                     throw (response);
                 }
 
-                console.log("TELEX CONNECTION OK");
                 return response.json()
                     .then((data) => {
                         NXDataStore.set("TELEX_KEY", data.accessToken);
@@ -98,15 +85,12 @@ class NXApi {
             Authorization: NXApi.buildToken()
         };
 
-        console.log('UPDATING TELEX');
         return fetch(`${NXApi.url}/txcxn`, {method: "PUT", body: JSON.stringify(updateBody), headers})
             .then((response) => {
                 if (!response.ok) {
-                    console.error("TELEX UPDATE ERROR");
                     throw (response);
                 }
 
-                console.log("TELEX UPDATE OK");
                 return response.json();
             });
     }
