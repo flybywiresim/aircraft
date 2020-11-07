@@ -25,15 +25,19 @@ jobs:
           npm install
           npm run build
 
-          echo 'built: ${{ env.BUILT_DATE_TIME }}' >> ./${{ env.MOD_FOLDER_NAME }}/build_info.txt
-          echo 'ref: ${{ github.ref }}' >> ./${{ env.MOD_FOLDER_NAME }}/build_info.txt
-          echo 'sha: ${{ github.sha }}' >> ./${{ env.MOD_FOLDER_NAME }}/build_info.txt
-          echo 'actor: ${{ github.actor }}' >> ./${{ env.MOD_FOLDER_NAME }}/build_info.txt
-          echo 'event_name: ${{ github.event_name }}' >> ./${{ env.MOD_FOLDER_NAME }}/build_info.txt
+          echo $( \
+            jq -n \
+              --arg built '${{ env.BUILT_DATE_TIME }}' \
+              --arg ref '${{ github.ref }}' \
+              --arg sha '${{ github.sha }}' \
+              --arg actor '${{ github.actor }}' \
+              --arg event_name '${{ github.event_name }}' \
+              '{built: $built, ref: $ref, sha: $sha, actor: $actor, event_name: $event_name}' \
+          ) > ./${{ env.MOD_FOLDER_NAME }}/build_info.json
       - name: Build ZIP file
         run: |
           mkdir ./${{ env.BUILD_DIR_NAME }}
-          cp ./${{ env.MOD_FOLDER_NAME }}/build_info.txt ./${{ env.BUILD_DIR_NAME }}/build_info.txt
+          cp ./${{ env.MOD_FOLDER_NAME }}/build_info.json ./${{ env.BUILD_DIR_NAME }}/build_info.json
           zip -r ./${{ env.BUILD_DIR_NAME }}/${{ env.MASTER_ZIP_NAME }} ./${{ env.MOD_FOLDER_NAME }}/
       - name: Get and delete master pre-release zip asset
         run: |
