@@ -634,21 +634,6 @@ var A320_Neo_UpperECAM;
                                     }
                                 ]
                             },
-                            {
-                                id: "config_to_speeds",
-                                message: "",
-                                level: 2,
-                                isActive: () => {
-                                    return this.activeTakeoffConfigWarnings.includes("to_speeds_disagree") && Simplane.getIsGrounded();
-                                },
-                                alwaysShowCategory: true,
-                                actions: [
-                                    {
-                                        style: "fail-2",
-                                        message: "T.O V1/VR/V2 DISAGREE"
-                                    }
-                                ]
-                            }
                         ]
                     },
                     {
@@ -843,6 +828,56 @@ var A320_Neo_UpperECAM;
                                     return this.getCachedSimVar("L:A320_Neo_ADIRS_STATE", "Enum") == 0;
                                 },
                             }
+                        ]
+                    },
+                    {
+                        name: "T.O",
+                        messages: [
+                            {
+                                id: "to_speeds_disagree",
+                                message: "",
+                                level: 2,
+                                isActive: () => {
+                                    return this.activeTakeoffConfigWarnings.includes("to_speeds_disagree") && Simplane.getIsGrounded();
+                                },
+                                alwaysShowCategory: true,
+                                actions: [
+                                    {
+                                        style: "fail-2",
+                                        message: "V1/VR/V2 DISAGREE"
+                                    }
+                                ]
+                            },
+                            {
+                                id: "to_speeds_too_low",
+                                message: "",
+                                level: 2,
+                                isActive: () => {
+                                    return this.activeTakeoffConfigWarnings.includes("to_speeds_too_low") && Simplane.getIsGrounded();
+                                },
+                                alwaysShowCategory: true,
+                                actions: [
+                                    {
+                                        style: "fail-2",
+                                        message: "SPEEDS TOO LOW"
+                                    }
+                                ]
+                            },
+                            {
+                                id: "to_no_speeds",
+                                message: "",
+                                level: 2,
+                                isActive: () => {
+                                    return this.activeTakeoffConfigWarnings.includes("to_no_speeds") && Simplane.getIsGrounded();
+                                },
+                                alwaysShowCategory: true,
+                                actions: [
+                                    {
+                                        style: "fail-2",
+                                        message: "SPEEDS NOT INSERTED"
+                                    }
+                                ]
+                            },
                         ]
                     },
                 ],
@@ -1350,7 +1385,7 @@ var A320_Neo_UpperECAM;
                 this.leftEcamMessagePanel.recall("config_spd_brk");
                 this.leftEcamMessagePanel.recall("config_park_brake");
                 this.leftEcamMessagePanel.recall("brakes_hot");
-                this.leftEcamMessagePanel.recall("config_to_speeds");
+                this.leftEcamMessagePanel.recall("to_speeds_disagree");
             }
         }
         updateTOMemo(_deltaTime) {
