@@ -955,7 +955,7 @@ class FMCMainDisplay extends BaseAirliners {
                     SimVar.SetSimVarValue("L:AIRLINER_V1_SPEED", "Knots", this.v1Speed);
                     return true;
                 }
-                this.showErrorMessage("V1/VR/V2 DISAGREE");
+                this.showErrorMessage("V1/VR/V2 DISAGREE", "#ff9a00");
                 return false;
             }
             this.showErrorMessage("ENTRY OUT OF RANGE");
@@ -978,7 +978,7 @@ class FMCMainDisplay extends BaseAirliners {
                     SimVar.SetSimVarValue("L:AIRLINER_VR_SPEED", "Knots", this.vRSpeed);
                     return true;
                 }
-                this.showErrorMessage("V1/VR/V2 DISAGREE");
+                this.showErrorMessage("V1/VR/V2 DISAGREE", "#ff9a00");
                 return false;
             }
             this.showErrorMessage("ENTRY OUT OF RANGE");
@@ -1001,7 +1001,7 @@ class FMCMainDisplay extends BaseAirliners {
                     SimVar.SetSimVarValue("L:AIRLINER_V2_SPEED", "Knots", this.v2Speed);
                     return true;
                 }
-                this.showErrorMessage("V1/VR/V2 DISAGREE");
+                this.showErrorMessage("V1/VR/V2 DISAGREE", "#ff9a00");
                 return false;
             }
             this.showErrorMessage("ENTRY OUT OF RANGE");
