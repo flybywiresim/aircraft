@@ -1,6 +1,7 @@
 class CDUInitPage {
-    static ShowPage1(mcdu) {
+    static ShowPage1(mcdu, resetFlightNo = false) {
         mcdu.clearDisplay();
+        mcdu.activeSystem = 'FMGC';
 
         // TODO create local simvars for.. everything
         let fromTo = "____|____[color]red";
@@ -21,6 +22,10 @@ class CDUInitPage {
                 //Need code to set the SimVarValue if user inputs FlNo
                 if (SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string", "FMC")) {
                     flightNo = SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string", "FMC") + "[color]blue";
+                }
+
+                if (resetFlightNo) {
+                    flightNo = "________[color]red";
                 }
 
                 costIndex = "___[color]red";
@@ -150,8 +155,8 @@ class CDUInitPage {
             ["INIT {}"], //Need to find the right unicode for left/right arrow
             ["CO RTE", "FROM/TO"],
             [coRoute, fromTo],
-            ["ALTN/CO RTE"],
-            [altDest],
+            ["ALTN/CO RTE", "INIT[color]inop"],
+            [altDest, "REQUEST*[color]inop"],
             ["FLT NBR"],
             [flightNo + "[color]blue", alignOption],
             [],

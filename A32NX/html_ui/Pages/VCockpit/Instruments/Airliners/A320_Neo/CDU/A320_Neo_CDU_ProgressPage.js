@@ -1,6 +1,7 @@
 class CDUProgressPage {
     static ShowPage(mcdu) {
         mcdu.clearDisplay();
+        mcdu.activeSystem = 'FMGC';
         const flightPhase = "CRZ";
         const flightNo = SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string");
         const flCrz = mcdu._cruiseEntered ? "FL" + mcdu.cruiseFlightLevel.toFixed(0).padStart(3, "0") + "[color]blue" : "-----";

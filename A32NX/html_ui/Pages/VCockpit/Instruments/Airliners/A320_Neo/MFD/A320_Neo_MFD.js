@@ -110,6 +110,10 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
         this.selfTestTimerStarted = false;
         this.selfTestTimer = -1;
 
+        //ENGINEERING TEST
+        this.engTestDiv = document.querySelector("#MfdEngTest");
+        this.engMaintDiv = document.querySelector("#MfdMaintMode");
+
         //CHRONO
         SimVar.SetSimVarValue(`L:AUTOPILOT_CHRONO_STATE_${this.side}`, "number", 0);
         this.chronoDiv = document.querySelector("#div_Chrono");
@@ -210,7 +214,7 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
 
         if ((KnobChanged || ACPowerStateChange) && ACPowerAvailable && !this.selfTestTimerStarted) {
             this.selfTestDiv.style.display = "block";
-            this.selfTestTimer = 14.25;
+            this.selfTestTimer = parseInt(NXDataStore.get("CONFIG_SELF_TEST_TIME", "15"));
             this.selfTestTimerStarted = true;
         }
 
@@ -272,6 +276,12 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
                 this.chronoAcc = 0;
                 this.IsChronoDisplayed = 0;
             }
+        }
+
+        if (this.screenIndex == 1) {
+            updateDisplayDMC("MFD1", this.engTestDiv, this.engMaintDiv);
+        } else {
+            updateDisplayDMC("MFD2", this.engTestDiv, this.engMaintDiv);
         }
 
         this.selfTestLastKnobValue = currentKnobValue;
