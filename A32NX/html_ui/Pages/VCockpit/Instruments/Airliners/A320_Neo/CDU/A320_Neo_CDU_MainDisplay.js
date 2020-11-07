@@ -804,6 +804,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                         isFinite(nextWaypoint.legAltitude1) &&
                         nextWaypoint.legAltitude1 < 20000 &&
                         nextWaypoint.legAltitude1 > selectedAltitude) {
+                        SimVar.SetSimVarValue("L:A32NX_AP_CSTN_ALT", "feet", nextWaypoint.legAltitude1);
                         Coherent.call("AP_ALT_VAR_SET_ENGLISH", 2, nextWaypoint.legAltitude1, this._forceNextAltitudeUpdate);
                         this._forceNextAltitudeUpdate = false;
                         SimVar.SetSimVarValue("L:AP_CURRENT_TARGET_ALTITUDE_IS_CONSTRAINT", "number", 1);
