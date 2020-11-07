@@ -48,9 +48,9 @@ var A320_Neo_LowerECAM_Fuel;
             TemplateElement.call(this, this.init.bind(this));
         }
         init() {
-            this.allToggleElements.push(new JetFuelToggleElement(this, "#leftValve", "FUELSYSTEM VALVE SWITCH:6", "FUELSYSTEM VALVE OPEN:6"));
-            this.allToggleElements.push(new JetFuelToggleElement(this, "#middleValve", "FUELSYSTEM VALVE SWITCH:1", "FUELSYSTEM VALVE OPEN:1"));
-            this.allToggleElements.push(new JetFuelToggleElement(this, "#rightValve", "FUELSYSTEM VALVE SWITCH:7", "FUELSYSTEM VALVE OPEN:7"));
+            this.allToggleElements.push(new JetFuelToggleElement(this, "#leftValve", "FUELSYSTEM VALVE SWITCH:1", "FUELSYSTEM VALVE OPEN:1"));
+            this.allToggleElements.push(new JetFuelToggleElement(this, "#middleValve", "FUELSYSTEM VALVE SWITCH:3", "FUELSYSTEM VALVE OPEN:3"));
+            this.allToggleElements.push(new JetFuelToggleElement(this, "#rightValve", "FUELSYSTEM VALVE SWITCH:2", "FUELSYSTEM VALVE OPEN:2"));
             this.allToggleElements.push(new JetFuelToggleElement(this, "#leftPump1", "FUELSYSTEM PUMP SWITCH:2", "FUELSYSTEM PUMP ACTIVE:2"));
             this.allToggleElements.push(new JetFuelToggleElement(this, "#leftPump2", "FUELSYSTEM PUMP SWITCH:5", "FUELSYSTEM PUMP ACTIVE:5"));
             this.allToggleElements.push(new JetFuelToggleElement(this, "#rightPump1", "FUELSYSTEM PUMP SWITCH:3", "FUELSYSTEM PUMP ACTIVE:3"));
