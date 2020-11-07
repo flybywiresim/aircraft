@@ -949,7 +949,7 @@ class FMCMainDisplay extends BaseAirliners {
         }
         const v = parseInt(s);
         if (isFinite(v)) {
-            if (v > 0 && v < 1000) {
+            if (v >= 90 && v < 1000) {
                 if (v <= SimVar.GetSimVarValue("L:AIRLINER_VR_SPEED", "Knots") && v <= SimVar.GetSimVarValue("L:AIRLINER_V2_SPEED", "Knots")) {
                     this.v1Speed = v;
                     SimVar.SetSimVarValue("L:AIRLINER_V1_SPEED", "Knots", this.v1Speed);
@@ -972,7 +972,7 @@ class FMCMainDisplay extends BaseAirliners {
         }
         const v = parseInt(s);
         if (isFinite(v)) {
-            if (v > 0 && v < 1000) {
+            if (v >= 90 && v < 1000) {
                 if (v >= SimVar.GetSimVarValue("L:AIRLINER_V1_SPEED", "Knots") && v <= SimVar.GetSimVarValue("L:AIRLINER_V2_SPEED", "Knots")) {
                     this.vRSpeed = v;
                     SimVar.SetSimVarValue("L:AIRLINER_VR_SPEED", "Knots", this.vRSpeed);
@@ -995,7 +995,7 @@ class FMCMainDisplay extends BaseAirliners {
         }
         const v = parseInt(s);
         if (isFinite(v)) {
-            if (v > 0 && v < 1000) {
+            if (v >= 90 && v < 1000) {
                 if (v >= SimVar.GetSimVarValue("L:AIRLINER_V1_SPEED", "Knots") && v >= SimVar.GetSimVarValue("L:AIRLINER_VR_SPEED", "Knots")) {
                     this.v2Speed = v;
                     SimVar.SetSimVarValue("L:AIRLINER_V2_SPEED", "Knots", this.v2Speed);
