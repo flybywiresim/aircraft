@@ -11,9 +11,13 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this._hasReachedTopOfDescent = false;
         this._apCooldown = 500;
         this._lastRequestedFLCModeWaypointIndex = -1;
+        this.messages = [];
+        this.sentMessages = [];
+        this.activeSystem = 'FMGC';
         this._cruiseEntered = false;
         this._blockFuelEntered = false;
         this._gpsprimaryack = 0;
+        this.telexPingId = 0;
     }
     get templateID() {
         return "A320_Neo_CDU";
@@ -30,8 +34,11 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     }
     Init() {
         super.Init();
+
         this.A32NXCore = new A32NX_Core();
         this.A32NXCore.init(this._lastTime);
+
+        SimVar.SetSimVarValue("ATC FLIGHT NUMBER", "string", "", "FMC");
 
         this.defaultInputErrorMessage = "NOT ALLOWED";
         this.onDir = () => {
@@ -58,38 +65,61 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this.onFuel = () => {
             CDUFuelPredPage.ShowPage(this);
         };
-        const mcduStartPage = SimVar.GetSimVarValue("L:A320_NEO_CDU_START_PAGE", "number");
-        if (mcduStartPage < 1) {
-            CDUIdentPage.ShowPage(this);
-        } else if (mcduStartPage === 10) {
-            CDUDirectToPage.ShowPage(this);
-        } else if (mcduStartPage === 20) {
-            CDUProgressPage.ShowPage(this);
-        } else if (mcduStartPage === 30) {
-            CDUPerformancePage.ShowPage(this);
-        } else if (mcduStartPage === 31) {
-            CDUPerformancePage.ShowTAKEOFFPage(this);
-        } else if (mcduStartPage === 32) {
-            CDUPerformancePage.ShowCLBPage(this);
-        } else if (mcduStartPage === 33) {
-            CDUPerformancePage.ShowCRZPage(this);
-        } else if (mcduStartPage === 34) {
-            CDUPerformancePage.ShowDESPage(this);
-        } else if (mcduStartPage === 35) {
-            CDUPerformancePage.ShowAPPRPage(this);
-        } else if (mcduStartPage === 40) {
-            CDUInitPage.ShowPage1(this);
-        } else if (mcduStartPage === 50) {
-            CDUDataIndexPage.ShowPage(this);
-        } else if (mcduStartPage === 60) {
-            CDUFlightPlanPage.ShowPage(this);
-        } else if (mcduStartPage === 70) {
-            CDUNavRadioPage.ShowPage(this);
-        } else if (mcduStartPage === 80) {
-            CDUFuelPredPage.ShowPage(this);
-        }
+        this.onMenu = () => {
+            CDUMenuPage.ShowPage(this);
+        };
+
+        CDUMenuPage.ShowPage(this);
+
         this.electricity = this.querySelector("#Electricity");
         this.climbTransitionGroundAltitude = null;
+
+        // Start the TELEX Ping. API functions check the connection status themself
+        setInterval(() => {
+            const toDelete = [];
+
+            // Update connection
+            NXApi.updateTelex()
+                .catch((err) => {
+                    if (err !== NXApi.disabledError) {
+                        console.log("TELEX PING FAILED");
+                    }
+                });
+
+            // Fetch new messages
+            NXApi.getTelexMessages()
+                .then((data) => {
+                    for (const msg of data) {
+                        const sender = msg["from"]["flight"];
+
+                        const lines = [];
+                        lines.push("FROM " + sender + "[color]blue");
+                        const incLines = msg["message"].split(";");
+                        incLines.forEach(l => lines.push(l.concat("[color]green")));
+                        lines.push('---------------------------[color]white');
+
+                        const newMessage = { "id": Date.now(), "type": "FREE TEXT (" + sender + ")", "time": '00:00', "opened": null, "content": lines, };
+                        let timeValue = SimVar.GetGlobalVarValue("ZULU TIME", "seconds");
+                        if (timeValue) {
+                            const seconds = Number.parseInt(timeValue);
+                            const displayTime = Utils.SecondsToDisplayTime(seconds, true, true, false);
+                            timeValue = displayTime.toString();
+                        }
+                        newMessage["time"] = timeValue.substring(0, 5);
+                        this.messages.unshift(newMessage);
+                        toDelete.push(msg["id"]);
+                    }
+
+                    const msgCount = SimVar.GetSimVarValue("L:A32NX_COMPANY_MSG_COUNT", "Number");
+                    SimVar.SetSimVarValue("L:A32NX_COMPANY_MSG_COUNT", "Number", msgCount + toDelete.length);
+                })
+                .catch(err => {
+                    if (err.status === 404 || err === NXApi.disabledError || err === NXApi.disconnectedError) {
+                        return;
+                    }
+                    console.log("TELEX MSG FETCH FAILED");
+                });
+        }, 30000);
     }
 
     insertSmallFontSpan() {
@@ -330,7 +360,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     }
     onEvent(_event) {
         super.onEvent(_event);
-        console.log("A320_Neo_CDU_MainDisplay onEvent " + _event);
+        // console.log("A320_Neo_CDU_MainDisplay onEvent " + _event);
         if (_event === "MODE_SELECTED_SPEED") {
             this._onModeSelectedSpeed();
         }
@@ -406,61 +436,75 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         if (input === "DIR") {
             if (this.onDir) {
                 this.onDir();
+                this.activeSystem = 'FMGC';
             }
             return true;
         } else if (input === "PROG") {
             if (this.onProg) {
                 this.onProg();
+                this.activeSystem = 'FMGC';
             }
             return true;
         } else if (input === "PERF") {
             if (this.onPerf) {
                 this.onPerf();
+                this.activeSystem = 'FMGC';
             }
             return true;
         } else if (input === "INIT") {
             if (this.onInit) {
                 this.onInit();
+                this.activeSystem = 'FMGC';
             }
             return true;
         } else if (input === "DATA") {
             if (this.onData) {
                 this.onData();
+                this.activeSystem = 'FMGC';
             }
             return true;
         } else if (input === "FPLN") {
             if (this.onFpln) {
                 this.onFpln();
+                this.activeSystem = 'FMGC';
             }
             return true;
         } else if (input === "RAD") {
             if (this.onRad) {
                 this.onRad();
+                this.activeSystem = 'FMGC';
             }
             return true;
         } else if (input === "FUEL") {
             if (this.onFuel) {
                 this.onFuel();
+                this.activeSystem = 'FMGC';
             }
             return true;
         } else if (input === "SEC") {
             if (this.onSec) {
                 this.onSec();
+                this.activeSystem = 'FMGC';
             }
             return true;
         } else if (input === "ATC") {
             if (this.onAtc) {
                 this.onAtc();
+                this.activeSystem = 'FMGC';
             }
             return true;
-        } else if (input === "MCDU") {
-            if (this.onMcdu) {
-                this.onMcdu();
+        } else if (input === "MENU") {
+            if (this.onMenu) {
+                this.onMenu();
+                // } else if (input === "MCDU") {
+                //     if (this.onMcdu) {
+                //         this.onMcdu();
             }
             return true;
         } else if (input === "AIRPORT") {
             if (this.onAirport) {
                 this.onAirport();
+                this.activeSystem = 'FMGC';
             }
             return true;
         } else if (input === "UP") {
@@ -804,6 +848,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                         isFinite(nextWaypoint.legAltitude1) &&
                         nextWaypoint.legAltitude1 < 20000 &&
                         nextWaypoint.legAltitude1 > selectedAltitude) {
+                        SimVar.SetSimVarValue("L:A32NX_AP_CSTN_ALT", "feet", nextWaypoint.legAltitude1);
                         Coherent.call("AP_ALT_VAR_SET_ENGLISH", 2, nextWaypoint.legAltitude1, this._forceNextAltitudeUpdate);
                         this._forceNextAltitudeUpdate = false;
                         SimVar.SetSimVarValue("L:AP_CURRENT_TARGET_ALTITUDE_IS_CONSTRAINT", "number", 1);
@@ -962,7 +1007,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                     }
                 }
 
-                accelerationAltitudeMsl = this.climbTransitionGroundAltitude + 1500;
+                accelerationAltitudeMsl = this.climbTransitionGroundAltitude + parseInt(NXDataStore.get("CONFIG_ACCEL_ALT", "1500"));
             }
 
             if (planeAltitudeMsl > accelerationAltitudeMsl) {
@@ -1058,6 +1103,72 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             this.onFlightPhaseChanged();
             SimVar.SetSimVarValue("L:A32NX_CABIN_READY", "Bool", 0);
         }
+    }
+
+    // INCOMING AOC MESSAGES
+    getMessages() {
+        return this.messages;
+    }
+    getMessage(id, type) {
+        const messages = this.messages;
+        const currentMessageIndex = messages.findIndex(m => m["id"].toString() === id.toString());
+        if (type === 'previous') {
+            if (messages[currentMessageIndex - 1]) {
+                return messages[currentMessageIndex - 1];
+            }
+            return null;
+        } else if (type === 'next') {
+            if (messages[currentMessageIndex + 1]) {
+                return messages[currentMessageIndex + 1];
+            }
+            return null;
+        }
+        return messages[currentMessageIndex];
+    }
+    getMessageIndex(id) {
+        return this.messages.findIndex(m => m["id"].toString() === id.toString());
+    }
+    addMessage(message) {
+        this.messages.unshift(message);
+        const cMsgCnt = SimVar.GetSimVarValue("L:A32NX_COMPANY_MSG_COUNT", "Number");
+        SimVar.SetSimVarValue("L:A32NX_COMPANY_MSG_COUNT", "Number", cMsgCnt + 1);
+    }
+    deleteMessage(id) {
+        if (!this.messages[id]["opened"]) {
+            const cMsgCnt = SimVar.GetSimVarValue("L:A32NX_COMPANY_MSG_COUNT", "Number");
+            SimVar.SetSimVarValue("L:A32NX_COMPANY_MSG_COUNT", "Number", cMsgCnt <= 1 ? 0 : cMsgCnt - 1);
+        }
+        this.messages.splice(id, 1);
+    }
+
+    // OUTGOING/SENT AOC MESSAGES
+    getSentMessages() {
+        return this.sentMessages;
+    }
+    getSentMessage(id, type) {
+        const messages = this.sentMessages;
+        const currentMessageIndex = messages.findIndex(m => m["id"].toString() === id.toString());
+        if (type === 'previous') {
+            if (messages[currentMessageIndex - 1]) {
+                return messages[currentMessageIndex - 1];
+            }
+            return null;
+        } else if (type === 'next') {
+            if (messages[currentMessageIndex + 1]) {
+                return messages[currentMessageIndex + 1];
+            }
+            return null;
+        }
+        return messages[currentMessageIndex];
+    }
+    getSentMessageIndex(id) {
+        return this.sentMessages.findIndex(m => m["id"].toString() === id.toString());
+    }
+    addSentMessage(message) {
+        this.sentMessages.unshift(message);
+    }
+    deleteSentMessage(id) {
+        this.sentMessages.splice(id, 1);
     }
 }
 A320_Neo_CDU_MainDisplay._v1sConf1 = [

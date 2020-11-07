@@ -11,6 +11,7 @@
 1. [FLIGHTMODEL] Reduced rudder effectiveness - @MisterChocker - (Leon)
 1. [ENGINE] Adjusted N1% thrust table - @MisterChocker - (Leon)
 1. [PFD] Improved VLS, Vaprot and Vamax - @donstim - (donbikes#4084)
+1. [PFD] Added proper altitude constrain visuals - @MisterChocker (Leon)
 1. [COLORS] Improved MCDU/PFD/ND/ECAM colors - @MisterChocker (Leon)
 1. [PFD] General improvements to the display layout - @MisterChocker (Leon)
 1. [PFD] Added proper selected and managed speed indication - @MisterChocker (Leon)
@@ -57,6 +58,9 @@
 1. [TEXTURES] Changed cockpit font and fixed spelling errors - @FoxinTale (Aubrey)
 1. [FCU] Remember selected pressure mode when returning from Std mode - @lhoenig (Lukas Hoenig)
 1. [TEXTURES] upgraded to 4k Textures (pedestal,throttle unit) fixed decal texture - @Pleasure0102 (Pleasure)
+1. [PFD] Added FMAs ALT CST and ALT CST* as well as CLB magenta and DES or CLB blue - @MisterChocker (Leon)
+1. [CDU] Added CFDS display test, ATSU METAR/TAF/ATIS requests, and ATSU free text - @wpine215 (Iceman), @nistei (Nistei), @Edwin B
+
 
 ## 0.4.0
 1. [General] Add CHANGELOG.md - @nathaninnes (Nathan Innes)
@@ -124,4 +128,3 @@
 1. [LIVERY] Bundle the FlyByWire Livery with the A32NX addon - @devsnek (devsnek)
 1. [ECAM] Added cockpit door video - @Benjozork (Benjamin Dupont)
 1. [MISC] Standby Instrument stays ON if emergency power should be available, bug fixes - @2hwk (2Cas#1022 on discord)
-1. [CDU] Full +/- button functionality - @lhoenig (Lukas Hoenig)
