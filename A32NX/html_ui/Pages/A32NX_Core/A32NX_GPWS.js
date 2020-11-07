@@ -7,7 +7,9 @@ class A32NX_GPWS {
 
         this.radnav = new RadioNav();
 
-        this.Mode3MaxAlt = NaN;
+        this.Mode3MaxBaroAlt = NaN;
+
+        this.Mode4MaxRAAlt = NaN;
 
         this.Mode2BoundaryLeaveAlt = NaN;
         this.Mode2NumTerrain = 0;
@@ -68,6 +70,8 @@ class A32NX_GPWS {
             const Airspeed = SimVar.GetSimVarValue("AIRSPEED INDICATED", "Knots");
             const gearExtended = SimVar.GetSimVarValue("GEAR TOTAL PCT EXTENDED", "Percent") > 0.9;
 
+            this.update_maxRA(radioAlt);
+
             this.GPWSMode1(radioAlt, vSpeed);
             this.GPWSMode2(radioAlt, Airspeed, FlapsInLandingConfig, gearExtended);
             this.GPWSMode3(radioAlt, phase, FlapsInLandingConfig, gearExtended);
@@ -117,6 +121,12 @@ class A32NX_GPWS {
             this.prevRadioAlt = radioAlt;
         } else {
             this.prevRadioAlt2 = radioAlt;
+        }
+    }
+
+    update_maxRA(radioAlt) {
+        if (this.Mode4MaxRAAlt < radioAlt || isNaN(this.Mode4MaxRAAlt)) {
+            this.Mode4MaxRAAlt = radioAlt;
         }
     }
 
@@ -303,7 +313,7 @@ class A32NX_GPWS {
      */
     GPWSMode3(radioAlt, phase, FlapsInLandingConfig, gearExtended) {
         if (!(phase === FlightPhase.FLIGHT_PHASE_TAKEOFF || (phase === FlightPhase.FLIGHT_PHASE_GOAROUND && !(gearExtended && FlapsInLandingConfig))) || radioAlt > 1500 || radioAlt < 10) {
-            this.Mode3MaxAlt = NaN;
+            this.Mode3MaxBaroAlt = NaN;
             this.Mode3Code = 0;
             return;
         }
@@ -312,10 +322,10 @@ class A32NX_GPWS {
 
         const maxAltLoss = 0.09 * radioAlt + 7.1;
 
-        if (baroAlt > this.Mode3MaxAlt || isNaN(this.Mode3MaxAlt)) {
-            this.Mode3MaxAlt = baroAlt;
+        if (baroAlt > this.Mode3MaxBaroAlt || isNaN(this.Mode3MaxBaroAlt)) {
+            this.Mode3MaxBaroAlt = baroAlt;
             this.Mode3Code = 0;
-        } else if ((this.Mode3MaxAlt - baroAlt) > maxAltLoss) {
+        } else if ((this.Mode3MaxBaroAlt - baroAlt) > maxAltLoss) {
             this.Mode3Code = 1;
         } else {
             this.Mode3Code = 0;
@@ -356,9 +366,14 @@ class A32NX_GPWS {
         } else {
             this.Mode4Code = 0;
         }
+        if (!FlapsInLandingConfig || !gearExtended) {
+            const maxWarnAltSpeed = Math.max(Math.min(8.3333 * speed - 1083.33, 1000), 500);
+            const maxWarnAlt = 0.750751 * this.Mode4MaxRAAlt - 0.750751;
 
-        // Mode 4C logic to be implemented
-
+            if (this.Mode4MaxRAAlt > 100 && radioAlt < maxWarnAltSpeed && radioAlt < maxWarnAlt) {
+                this.Mode4Code = 3;
+            }
+        }
     }
 
     /**
