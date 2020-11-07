@@ -5,8 +5,8 @@ class CDUProgressPage {
         mcdu.activeSystem = 'FMGC';
         const flightPhase = "CRZ";
         const flightNo = SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string");
-        const flMax = "FL" + mcdu.getMaxFlCorrected().toString();
-        const flOpt = (mcdu._cruiseEntered && mcdu._blockFuelEntered && mcdu.isAllEngineOn()) ? flMax + "[color]green" : "-----";
+        const flMax = mcdu.getMaxFlCorrected();
+        const flOpt = (mcdu._cruiseEntered && mcdu._blockFuelEntered && mcdu.isAllEngineOn()) ? "FL" + (Math.floor(flMax / 5) * 5).toString() + "[color]green" : "-----";
         mcdu.onLeftInput[1] = () => {
             CDUProgressPage.ShowReportPage(mcdu);
         };
@@ -16,7 +16,7 @@ class CDUProgressPage {
         mcdu.setTemplate([
             ["ECON " + flightPhase + " " + flightNo],
             [flightPhase, "REC MAX", "OPT"],
-            ["", flMax + "[color]magenta", flOpt],
+            ["", "FL" + flMax.toString() + "[color]magenta", flOpt],
             [""],
             ["<REPORT", ""],
             ["UPDATE AT"],
