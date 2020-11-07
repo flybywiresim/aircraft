@@ -681,56 +681,23 @@ class FMCMainDisplay extends BaseAirliners {
 
         const storedTelexStatus = NXDataStore.get("CONFIG_TELEX_STATUS", "DISABLED");
 
-        let returnCB = true;
+        let connectSuccess = true;
         SimVar.SetSimVarValue("ATC FLIGHT NUMBER", "string", flightNo, "FMC").then(() => {
             if (storedTelexStatus === "ENABLED") {
-                let inUse = false;
                 const initTelexServer = async () => {
-                    const lat = SimVar.GetSimVarValue("PLANE LATITUDE", "degree latitude");
-                    const long = SimVar.GetSimVarValue("PLANE LONGITUDE", "degree longitude");
-                    const alt = SimVar.GetSimVarValue("PLANE ALTITUDE", "feet");
-                    const heading = SimVar.GetSimVarValue("PLANE HEADING DEGREES MAGNETIC", "degree");
-
-                    const endpoint = "https://api.flybywiresim.com/txcxn";
-
-                    const connectBody = {
-                        location: {
-                            x: long,
-                            y: lat,
-                        },
-                        trueAltitude: alt,
-                        heading: heading,
-                        origin: "",
-                        destination: "",
-                        flight: flightNo
-                    };
-
-                    const headers = { "Content-Type": "application/json" };
-
-                    await fetch(`${endpoint}`, { method: "POST", body: JSON.stringify(connectBody), headers })
-                        .then((response) => {
-                            if (!response.ok) {
-                                throw (response);
+                    NXApi.connectTelex(flightNo)
+                        .catch((err) => {
+                            if (err !== NXApi.disconnectedError) {
+                                this.showErrorMessage("FLT NBR IN USE");
                             }
 
-                            return response.json();
-                        })
-                        .then((data) => {
-                            NXDataStore.set("TELEX_KEY", data["accessToken"]);
-                        })
-                        .catch(() => {
-                            this.showErrorMessage("FLT NBR IN USE");
-                            inUse = true;
+                            connectSuccess = false;
                         });
                 };
 
                 initTelexServer();
-
-                if (inUse) {
-                    returnCB = false;
-                }
             }
-            return callback(returnCB);
+            return callback(connectSuccess);
         });
     }
 

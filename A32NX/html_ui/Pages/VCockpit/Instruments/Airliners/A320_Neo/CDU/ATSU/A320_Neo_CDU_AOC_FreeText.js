@@ -77,39 +77,19 @@ class CDUAocFreeText {
         };
 
         mcdu.onRightInput[5] = async () => {
-            const telexKey = NXDataStore.get("TELEX_KEY", "");
-            const telexFlight = SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string", "FMC");
-
-            console.log(telexFlight);
             const storedTelexStatus = NXDataStore.get("CONFIG_TELEX_STATUS", "DISABLED");
 
-            if (telexFlight !== "" && telexKey !== "" && storedTelexStatus === "ENABLED") {
+            if (NXApi.hasTelexConnection() && storedTelexStatus === "ENABLED") {
                 store["sendStatus"] = "QUEUED";
                 updateView();
                 const recipient = store["msg_to"];
                 const msgLines = [store["msg_line1"], store["msg_line2"], store["msg_line3"], store["msg_line4"]].join(";");
                 mcdu.clearUserInput();
                 let errors = 0;
-                const endpoint = "https://api.flybywiresim.com/txmsg";
 
                 const getData = async () => {
-                    const body = {
-                        to: recipient,
-                        message: msgLines
-                    };
-
-                    const headers = {
-                        Authorization: `Bearer ${telexKey}`,
-                        "Content-Type": "application/json"
-                    };
-
                     if (recipient !== "" && msgLines !== ";;;") {
-                        await fetch(`${endpoint}`, {method: "POST", body: JSON.stringify(body), headers})
-                            .then((response) => {
-                                if (!response.ok) {
-                                    throw (response);
-                                }
-                            })
+                        await NXApi.sendTelexMessage(recipient, msgLines)
                             .catch(err => {
                                 errors += 1;
                                 switch (err.status) {

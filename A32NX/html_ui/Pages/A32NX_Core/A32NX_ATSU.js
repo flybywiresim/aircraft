@@ -1,4 +1,3 @@
-const endpoint = "https://api.flybywiresim.com/";
 const msgSep = "---------------------------[color]white";
 const srcMap = {
     "FAA": "faa",
@@ -42,14 +41,7 @@ const getMETAR = async (icaos, lines, store, updateView) => {
     const storedMetarSrc = NXDataStore.get("CONFIG_METAR_SRC", "MSFS");
     for (const icao of icaos) {
         if (icao !== "") {
-            await fetch(`${endpoint}metar/${icao}?source=${srcMap[storedMetarSrc]}`)
-                .then((response) => {
-                    if (!response.ok) {
-                        throw (response);
-                    }
-
-                    return response.json();
-                })
+            await NXApi.getMetar(icao, srcMap[storedMetarSrc])
                 .then((data) => {
                     lines.push(`METAR ${icao}[color]blue`);
                     const newLines = wordWrapToStringList(data.metar, 25);
@@ -71,14 +63,7 @@ const getTAF = async (icaos, lines, store, updateView) => {
     const storedTafSrc = NXDataStore.get("CONFIG_TAF_SRC", "NOAA");
     for (const icao of icaos) {
         if (icao !== "") {
-            await fetch(`${endpoint}taf/${icao}?source=${srcMap[storedTafSrc]}`)
-                .then((response) => {
-                    if (!response.ok) {
-                        throw (response);
-                    }
-
-                    return response.json();
-                })
+            await NXApi.getTaf(icao, srcMap[storedTafSrc])
                 .then((data) => {
                     lines.push(`TAF ${icao}[color]blue`);
                     const newLines = wordWrapToStringList(data.taf, 25);
@@ -99,14 +84,7 @@ const getTAF = async (icaos, lines, store, updateView) => {
 const getATIS = async (icao, lines, type, store, updateView) => {
     const storedAtisSrc = NXDataStore.get("CONFIG_ATIS_SRC", "FAA");
     if (icao !== "") {
-        await fetch(`${endpoint}atis/${icao}?source=${srcMap[storedAtisSrc]}`)
-            .then((response) => {
-                if (!response.ok) {
-                    throw (response);
-                }
-
-                return response.json();
-            })
+        await NXApi.getAtis(icao, srcMap[storedAtisSrc])
             .then((data) => {
                 let atisData;
                 switch (type) {
