@@ -88,7 +88,7 @@ class CDUFlightPlanPage {
         if (destination) {
             waypointsWithDiscontinuities.push(destination);
         }
-        if (mcdu.flightPlanManager.decelWaypoint) {
+        if (mcdu.flightPlanManager.decelWaypoint && !mcdu.flightPlanManager._decelReached) {
             const idx = waypointsWithDiscontinuities.findIndex((e) => e.wp.cumulativeDistanceInFP > mcdu.flightPlanManager.decelWaypoint.cumulativeDistanceInFP);
             if (idx >= 0 && idx < waypointsWithDiscontinuities.length) {
                 waypointsWithDiscontinuities.splice(idx, 0, {
