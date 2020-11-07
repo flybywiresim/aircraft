@@ -633,6 +633,21 @@ var A320_Neo_UpperECAM;
                                         message: "PARK BRAKE ON"
                                     }
                                 ]
+                            },
+                            {
+                                id: "config_to_speeds",
+                                message: "",
+                                level: 2,
+                                isActive: () => {
+                                    return this.activeTakeoffConfigWarnings.includes("to_speeds_disagree") && Simplane.getIsGrounded();
+                                },
+                                alwaysShowCategory: true,
+                                actions: [
+                                    {
+                                        style: "fail-2",
+                                        message: "T.O V1/VR/V2 DISAGREE"
+                                    }
+                                ]
                             }
                         ]
                     },
@@ -1303,6 +1318,9 @@ var A320_Neo_UpperECAM;
             const speedBrake = SimVar.GetSimVarValue("SPOILERS HANDLE POSITION", "Position");
             const parkBrake = SimVar.GetSimVarValue("BRAKE PARKING INDICATOR", "Bool");
             const brakesHot = SimVar.GetSimVarValue("L:A32NX_BRAKES_HOT", "Bool");
+            const v1Speed = SimVar.GetSimVarValue("L:AIRLINER_V1_SPEED", "Knots");
+            const vrSpeed = SimVar.GetSimVarValue("L:AIRLINER_VR_SPEED", "Knots");
+            const v2Speed = SimVar.GetSimVarValue("L:AIRLINER_V2_SPEED", "Knots");
             this.activeTakeoffConfigWarnings = [];
             if (SimVar.GetSimVarValue("L:AIRLINER_FLIGHT_PHASE", "Enum") > 2) {
                 return;
@@ -1319,6 +1337,9 @@ var A320_Neo_UpperECAM;
             if (brakesHot == 1) {
                 this.activeTakeoffConfigWarnings.push("brakes_hot");
             }
+            if (!(v1Speed <= vrSpeed && vrSpeed <= v2Speed)) {
+                this.activeTakeoffConfigWarnings.push("to_speeds_disagree");
+            }
 
             if (_test && this.activeTakeoffConfigWarnings.length == 0) {
                 SimVar.SetSimVarValue("L:A32NX_TO_CONFIG_NORMAL", "Bool", 1);
@@ -1329,6 +1350,7 @@ var A320_Neo_UpperECAM;
                 this.leftEcamMessagePanel.recall("config_spd_brk");
                 this.leftEcamMessagePanel.recall("config_park_brake");
                 this.leftEcamMessagePanel.recall("brakes_hot");
+                this.leftEcamMessagePanel.recall("config_to_speeds");
             }
         }
         updateTOMemo(_deltaTime) {
