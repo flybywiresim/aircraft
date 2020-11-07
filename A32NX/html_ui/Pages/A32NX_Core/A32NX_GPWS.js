@@ -10,15 +10,26 @@ class A32NX_GPWS {
         this.Mode3MaxAlt = NaN;
 
         this.Mode2BoundaryLeaveAlt = NaN;
+        this.Mode2NumTerrain = 0;
+        this.Mode2NumFramesInBoundary = 0;
 
         this.RadioAltRate = NaN;
         this.prevRadioAlt = NaN;
+        this.prevRadioAlt2 = NaN;
 
         this.Mode1Code = 0; //0: no mode 1 warning, 1: mode 1 "sink rate", 2: mode 1 "pull up"
         this.Mode2Code = 0; //0: no mode 2 warning, 1: mode 2 "Terrain", 2: mode 2 "pull up"
         this.Mode3Code = 0; //0: no mode 3 warning, 1: mode 3 "don't sink"
         this.Mode4Code = 0; //0: no mode 4 warning, 1: mode 4 "too low gear", 2: mode 4 "too low flaps", 3: mode 4 "too low terrain"
         this.Mode5Code = 0; //0: no mode 5 warning, 1: mode 5 "glideslope", 2: mode 5 "hard glideslope"(louder)
+
+        this.PrevMode1Code = 0;
+        this.PrevMode2Code = 0;
+        this.PrevMode3Code = 0;
+        this.PrevMode4Code = 0;
+        this.PrevMode5Code = 0;
+
+        this.PrevShouldPullUpPlay = 0;
 
         this.AltCallState = A32NX_Util.createMachine(AltCallStateMachine);
         this.AltCallState.setState("ground");
@@ -43,6 +54,7 @@ class A32NX_GPWS {
         const radioAlt = SimVar.GetSimVarValue("PLANE ALT ABOVE GROUND MINUS CG", "Feet");
 
         this.UpdateAltState(radioAlt);
+        this.differentiate_radioalt(radioAlt, deltaTime);
 
         const mda = SimVar.GetSimVarValue("L:AIRLINER_MINIMUM_DESCENT_ALTITUDE", "Number");
         const dh = SimVar.GetSimVarValue("L:AIRLINER_DECISION_HEIGHT", "Number");
@@ -54,38 +66,26 @@ class A32NX_GPWS {
             const FlapsInLandingConfig = FlapPushButton ? (FlapPosition === 3) : (FlapPosition === 4);
             const vSpeed = Simplane.getVerticalSpeed();
             const Airspeed = SimVar.GetSimVarValue("AIRSPEED INDICATED", "Knots");
-            const gearExtended = SimVar.GetSimVarValue("GEAR TOTAL PCT EXTENDED", "Percent") > 90;
-
-            if (!isNaN(this.prevRadioAlt)) {
-                this.RadioAltRate = (radioAlt - this.prevRadioAlt) * deltaTime / 60 * 1000;
-                this.prevRadioAlt = radioAlt;
-            } else {
-                this.prevRadioAlt = radioAlt;
-            }
+            const gearExtended = SimVar.GetSimVarValue("GEAR TOTAL PCT EXTENDED", "Percent") > 0.9;
 
             this.GPWSMode1(radioAlt, vSpeed);
             this.GPWSMode2(radioAlt, Airspeed, FlapsInLandingConfig, gearExtended);
             this.GPWSMode3(radioAlt, phase, FlapsInLandingConfig, gearExtended);
-            this.GPWSMode4(radioAlt, FlapsInLandingConfig, gearExtended, phase);
+            this.GPWSMode4(radioAlt, Airspeed, FlapsInLandingConfig, gearExtended, phase);
             this.GPWSMode5(radioAlt);
 
-            if (this.Mode1Code !== 0 || this.Mode2Code !== 0 || this.Mode3Code !== 0 || this.Mode4Code !== 0) {
-                SimVar.SetSimVarValue("L:A32NX_GPWS_Warning_Active", "Bool", 1);
-            } else {
-                SimVar.SetSimVarValue("L:A32NX_GPWS_Warning_Active", "Bool", 0);
-            }
-            if (this.Mode5Code !== 0) {
-                SimVar.SetSimVarValue("L:A32NX_GPWS_GS_Warning_Active", "Bool", 1);
-            } else {
-                SimVar.SetSimVarValue("L:A32NX_GPWS_GS_Warning_Active", "Bool", 0);
-            }
         } else {
-            this.prevRadioAlt = NaN;
-            this.RadioAltRate = NaN;
+            this.Mode1Code = 0;
+            this.Mode2Code = 0;
+            this.Mode3Code = 0;
+            this.Mode4Code = 0;
+            this.Mode5Code = 0;
 
             SimVar.SetSimVarValue("L:A32NX_GPWS_GS_Warning_Active", "Bool", 0);
             SimVar.SetSimVarValue("L:A32NX_GPWS_Warning_Active", "Bool", 0);
         }
+
+        this.GPWSComputeLightsAndCallouts();
 
         if ((mda !== 0 || dh !== -1) && phase === FlightPhase.FLIGHT_PHASE_APPROACH) {
             let minimumsDA; //MDA or DH
@@ -99,6 +99,24 @@ class A32NX_GPWS {
                 minimumsIA = baroAlt;
             }
             this.gpws_minimums(minimumsDA, minimumsIA);
+        }
+    }
+
+    /**
+     * Takes the derivative of the radio altimeter. Using central difference, to prevent high frequency noise
+     * @param radioAlt - in feet
+     * @param deltaTime - in milliseconds
+     */
+    differentiate_radioalt(radioAlt, deltaTime) {
+        if (!isNaN(this.prevRadioAlt2)) {
+            this.RadioAltRate = (radioAlt - this.prevRadioAlt2) / (deltaTime / 1000 / 60) / 2;
+            this.prevRadioAlt2 = this.prevRadioAlt;
+            this.prevRadioAlt = radioAlt;
+        } else if (!isNaN(this.prevRadioAlt)) {
+            this.prevRadioAlt2 = this.prevRadioAlt;
+            this.prevRadioAlt = radioAlt;
+        } else {
+            this.prevRadioAlt2 = radioAlt;
         }
     }
 
@@ -123,6 +141,79 @@ class A32NX_GPWS {
         } else if (this.minimumsState === 1 && !overMinimums) {
             this.core.soundManager.tryPlaySound(soundList.minimums);
             this.minimumsState = 0;
+        }
+    }
+
+    GPWSComputeLightsAndCallouts() {
+        let shouldGPWSLightActive = 0;
+
+        if (this.Mode1Code !== this.PrevMode1Code) {
+            if (this.PrevMode1Code === 1) {
+                this.core.soundManager.removePeriodicSound(soundList.sink_rate);
+            }
+            if (this.Mode1Code === 1) {
+                shouldGPWSLightActive |= true;
+                this.core.soundManager.addPeriodicSound(soundList.sink_rate, 1.1);
+            } else if (this.Mode1Code === 2) {
+                shouldGPWSLightActive |= true;
+            }
+            this.PrevMode1Code = this.Mode1Code;
+        }
+
+        if (this.Mode2Code !== 0) {
+            shouldGPWSLightActive |= true;
+        }
+
+        if (this.Mode3Code !== this.PrevMode3Code) {
+            if (this.Mode3Code === 1) {
+                this.core.soundManager.addPeriodicSound(soundList.dont_sink, 1.1);
+                shouldGPWSLightActive |= true;
+            } else {
+                this.core.soundManager.removePeriodicSound(soundList.dont_sink);
+            }
+            this.PrevMode3Code = this.Mode3Code;
+        }
+
+        if (this.Mode4Code !== this.PrevMode4Code) {
+            if (this.PrevMode4Code === 1) {
+                this.core.soundManager.removePeriodicSound(soundList.too_low_gear);
+            } else if (this.PrevMode4Code === 2) {
+                this.core.soundManager.removePeriodicSound(soundList.too_low_flaps);
+            } else if (this.PrevMode4Code === 3) {
+                this.core.soundManager.removePeriodicSound(soundList.too_low_terrain);
+            }
+
+            if (this.Mode4Code === 1) {
+                this.core.soundManager.addPeriodicSound(soundList.too_low_gear, 1.1);
+                shouldGPWSLightActive |= true;
+            } else if (this.Mode4Code === 2) {
+                this.core.soundManager.addPeriodicSound(soundList.too_low_flaps, 1.1);
+                shouldGPWSLightActive |= true;
+            } else if (this.Mode4Code === 3) {
+                this.core.soundManager.addPeriodicSound(soundList.too_low_terrain, 1.1);
+                shouldGPWSLightActive |= true;
+            }
+            this.PrevMode4Code = this.Mode4Code;
+        }
+
+        const shouldPullUpPlay = this.Mode1Code === 2 || this.Mode2Code === 2;
+        if (shouldPullUpPlay !== this.PrevShouldPullUpPlay) {
+            if (shouldPullUpPlay) {
+                this.core.soundManager.addPeriodicSound(soundList.pull_up, 1.1);
+            } else {
+                this.core.soundManager.removePeriodicSound(soundList.pull_up);
+            }
+            this.PrevShouldPullUpPlay = shouldPullUpPlay;
+        }
+
+        SimVar.SetSimVarValue("L:A32NX_GPWS_Warning_Active", "Bool", shouldGPWSLightActive);
+
+        if (this.Mode5Code !== this.PrevMode5Code) {
+            SimVar.SetSimVarValue("L:A32NX_GPWS_GS_Warning_Active", "Bool", Math.max(this.Mode5Code, 1));
+            if (this.Mode5Code === 1) {
+                // no callout for that (yet)
+            }
+            this.PrevMode5Code = this.Mode5Code;
         }
     }
 
@@ -160,23 +251,46 @@ class A32NX_GPWS {
      */
     GPWSMode2(radioAlt, speed, FlapsInLandingConfig, gearExtended) {
         let IsInBoundary = false;
-        const UpperBoundaryRate = -this.RadioAltRate < 3500 ? 0.4 * this.RadioAltRate - 50 : 0.18 * this.RadioAltRate + 720;
+        const UpperBoundaryRate = -this.RadioAltRate < 3500 ? 0.7937 * -this.RadioAltRate - 1557.5 : 0.19166 * -this.RadioAltRate + 610;
         const UpperBoundarySpeed = Math.max(1650, Math.min(2450, 8.8888 * speed - 305.555));
 
-        if (!FlapsInLandingConfig) {
+        if (!FlapsInLandingConfig && -this.RadioAltRate > 2000) {
             if (radioAlt < UpperBoundarySpeed && radioAlt < UpperBoundaryRate) {
-                IsInBoundary = true;
+                this.Mode2NumFramesInBoundary += 1;
+            } else {
+                this.Mode2NumFramesInBoundary = 0;
             }
-        } else {
+        } else if (FlapsInLandingConfig && -this.RadioAltRate > 2000) {
             if (radioAlt < 775 && radioAlt < UpperBoundaryRate && -this.RadioAltRate < 10000) {
-                IsInBoundary = true;
+                this.Mode2NumFramesInBoundary += 1;
+            } else {
+                this.Mode2NumFramesInBoundary = 0;
             }
+        }
+        // This is to prevent very quick changes in radio alt rate triggering the alarm. The derivative is sadly pretty jittery.
+        if (this.Mode2NumFramesInBoundary > 5) {
+            IsInBoundary = true;
         }
 
         if (IsInBoundary) {
             this.Mode2BoundaryLeaveAlt = -1;
+            if (this.Mode2NumTerrain < 2 || gearExtended) {
+                if (this.core.soundManager.tryPlaySound(soundList.too_low_terrain)) { // too low terrain is not correct, but no "terrain" call yet
+                    this.Mode2NumTerrain += 1;
+                }
+                this.Mode2Code = 1;
+            } else if (!gearExtended) {
+                this.Mode2Code = 2;
+            }
         } else if (this.Mode2BoundaryLeaveAlt === -1) {
             this.Mode2BoundaryLeaveAlt = radioAlt;
+        } else if (this.Mode2BoundaryLeaveAlt + 300 > radioAlt) {
+            this.Mode2Code = 1;
+            this.core.soundManager.tryPlaySound(soundList.too_low_terrain);
+        } else if (this.Mode2BoundaryLeaveAlt + 300 <= radioAlt) {
+            this.Mode2Code = 0;
+            this.Mode2NumTerrain = 0;
+            this.Mode2BoundaryLeaveAlt = NaN;
         }
     }
 
