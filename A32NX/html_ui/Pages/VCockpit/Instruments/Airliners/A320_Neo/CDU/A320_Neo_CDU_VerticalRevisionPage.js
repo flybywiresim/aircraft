@@ -64,6 +64,9 @@ class CDUVerticalRevisionPage {
                 }
                 mcdu.clearUserInput();
                 mcdu.showErrorMessage("NOT YET IMPLEMENTED");
+                setTimeout(() => {
+                    mcdu.showErrorMessage("");
+                }, 1000);
             }; // SPD CSTR
             mcdu.onRightInput[2] = () => {
                 let value = mcdu.inOut;

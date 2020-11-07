@@ -1,6 +1,7 @@
 class CDUProgressPage {
     static ShowPage(mcdu) {
         mcdu.clearDisplay();
+        mcdu.activeSystem = 'FMGC';
         const flightPhase = "CRZ";
         const flightNo = SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string");
         mcdu.onLeftInput[1] = () => {
