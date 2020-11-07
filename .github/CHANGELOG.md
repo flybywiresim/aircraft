@@ -35,13 +35,13 @@
 1. [TEXTURES] Changed cockpit decals resolution from 1k to 2k - @FoxinTale (Aubrey)
 1. [ECAM] Fix fuel used values on CRUISE and FUEL pages - @Lessar277 (Lessar27#1112)
 1. [MISC] Add localisation files for aircraft info when using other languages than english - @pessip (Pessi Päivärinne)
-1. [ATC] Fix CLR input for squawk code - @paul92ilm (Lussion)
+1. [ATC] Fixed CLR input for squawk code - @paul92ilm (Lussion)
 1. [TEXTURES] Fixed aft overhead circuit breaker decal from 'LIGHTNING' to 'LIGHTING' (@DarkOfNova#0001)
 1. [CAMERA] Modified a couple of the default interior camera angles. - @ZigTag (Falcon#5815), @linkeleven (linkeleven#2557)
 1. [CDU] Fix takeoff vspeed - @linkeleven (linkeleven#2557)
 1. [ECAM] Decimal font size change - @RichardPilbery (Richard Pilbery)
 1. [CDU] Add correct UI behavior and colors for airways page - @santii90 (Santiago Vazquez)
-1. [CDU] Add ability to clear MDA/DH and add input logic for both MDA/DH - @paul92ilm (Lussion)
+1. [CDU] Added ability to clear MDA/DH, added input logic for both MDA/DH - @paul92ilm (Lussion)
 1. [CHECKLISTS] Fix FD check in Taxi checklist - @Acrobot (Andrzej Pomirski)
 1. [ADIRS] Fix ADIRS lights and split into three separate units - @devsnek (devsnek#0001)
 1. [ECAM] Fixed donut and AVAIL message on N1 display. Add highlight on N2 during engine start - @RichardPilbery (Richard Pilbery)
@@ -54,6 +54,8 @@
 1. [TEXTURES] upgraded to 4k Textures (pedestal,throttle unit) fixed decal texture - @Pleasure0102 (Pleasure)
 1. [PFD] Added FMAs ALT CST and ALT CST* as well as CLB magenta and DES or CLB blue - @MisterChocker (Leon)
 1. [CDU] Added CFDS display test, ATSU METAR/TAF/ATIS requests, and ATSU free text - @wpine215 (Iceman), @nistei (Nistei), @Edwin B
+1. [CDU] Added V1/VR/V2 logic and disagree message, fixed V1/VR/V2 minimum range - @paul92ilm (Lussion)
+1. [ECAM] Added T.O message category to upper ECAM - @paul92ilm (Lussion)
 
 
 ## 0.4.0
