@@ -2033,14 +2033,14 @@ var A320_Neo_UpperECAM;
             super(...arguments);
             this.viewBoxSize = new Vec2(500, 125);
             this.dotSize = 5;
-            this.slatArrowPathD = "m20,-12 l-31,6 l0,17, l23,-5 l10,-20";
+            this.slatArrowPathD = "m20,-12 l-27,8 l-6,18 l27,-8 l6,-18";
             this.slatDotPositions = [
                 new Vec2(160, 37),
                 new Vec2(110, 52),
                 new Vec2(68, 68),
                 new Vec2(25, 81)
             ];
-            this.flapArrowPathD = "m-20,-12 l31,6 l0,17, l-23,-5 l-10,-20";
+            this.flapArrowPathD = "m-20,-12 l31,6 l0,19, l-21,-5 l-10,-20";
             this.flapDotPositions = [
                 new Vec2(220, 37),
                 new Vec2(280, 50),
@@ -2055,7 +2055,7 @@ var A320_Neo_UpperECAM;
                 new Vec2(180, 25),
                 new Vec2(200, 25),
                 new Vec2(210, 45),
-                new Vec2(170, 45)
+                new Vec2(174, 43)
             ];
         }
         create() {
