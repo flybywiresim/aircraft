@@ -1000,7 +1000,7 @@ var Airbus_FMA;
         }
 
         getTargetRow1State() {
-            const srsModeState = Column2.GetModeState_SRS();
+            const srsModeState = this.GetModeState_SRS();
             if (srsModeState == Airbus_FMA.MODE_STATE.ARMED) {
                 return Column2.ROW_1_STATE.SRS_ARMED;
             } else if (srsModeState == Airbus_FMA.MODE_STATE.ENGAGED) {
