@@ -119,7 +119,7 @@ var A320_Neo_UpperECAM;
             return (this.getCachedSimVar("ENG FAILED:" + _engine, "Bool") == 1) && !this.getCachedSimVar("ENG ON FIRE:" + _engine) && !Simplane.getIsGrounded();
         }
         engineShutdown(_engine) {
-            return (this.getCachedSimVar("TURB ENG N1:" + _engine, "Percent") < 15 || this.getCachedSimVar("FUELSYSTEM VALVE SWITCH:" + (_engine + 5), "Bool") == 0) && !Simplane.getIsGrounded();
+            return (this.getCachedSimVar("TURB ENG N1:" + _engine, "Percent") < 15 || this.getCachedSimVar("FUELSYSTEM VALVE SWITCH:" + (_engine), "Bool") == 0) && !Simplane.getIsGrounded();
         }
         getEngineFailActions(_engine) {
             return [
@@ -143,7 +143,7 @@ var A320_Neo_UpperECAM;
                     style: "remark",
                     message: "IF NO RELIGHT AFTER 30S",
                     isCompleted: () => {
-                        return this.getCachedSimVar("FUELSYSTEM VALVE SWITCH:" + (_engine + 5), "Bool") == 0;
+                        return this.getCachedSimVar("FUELSYSTEM VALVE SWITCH:" + (_engine), "Bool") == 0;
                     }
                 },
                 {
@@ -151,7 +151,7 @@ var A320_Neo_UpperECAM;
                     message: "ENG MASTER " + _engine,
                     action: "OFF",
                     isCompleted: () => {
-                        return this.getCachedSimVar("FUELSYSTEM VALVE SWITCH:" + (_engine + 5), "Bool") == 0;
+                        return this.getCachedSimVar("FUELSYSTEM VALVE SWITCH:" + (_engine), "Bool") == 0;
                     }
                 },
                 {
@@ -223,7 +223,7 @@ var A320_Neo_UpperECAM;
                     message: "ENG MASTER " + _engine,
                     action: "OFF",
                     isCompleted: () => {
-                        return this.getCachedSimVar("FUELSYSTEM VALVE SWITCH:" + (_engine + 5), "Bool") == 0;
+                        return this.getCachedSimVar("FUELSYSTEM VALVE SWITCH:" + (_engine), "Bool") == 0;
                     }
                 },
                 {
@@ -1015,6 +1015,12 @@ var A320_Neo_UpperECAM;
                         }
                     },
                     {
+                        message: "COMPANY MSG",
+                        isActive: () => {
+                            return (this.getCachedSimVar("L:A32NX_COMPANY_MSG_COUNT", "Number") > 0) || (SimVar.GetSimVarValue("L:A32NX_COMPANY_MSG_COUNT", "Number") > 0);
+                        }
+                    },
+                    {
                         message: "ENG A.ICE",
                         isActive: () => {
                             return (this.getCachedSimVar("ENG ANTI ICE:1", "Bool") == 1) || (SimVar.GetSimVarValue("ENG ANTI ICE:2", "Bool") == 1);
@@ -1042,6 +1048,12 @@ var A320_Neo_UpperECAM;
                         message: "LDG LT",
                         isActive: () => {
                             return (SimVar.GetSimVarValue("L:LANDING_1_Retracted", "Bool") == 0 || SimVar.GetSimVarValue("L:LANDING_2_Retracted", "Bool") == 0);
+                        }
+                    },
+                    {
+                        message: "SWITCHG PNL",
+                        isActive: () => {
+                            return (SimVar.GetSimVarValue("L:A32NX_KNOB_SWITCHING_3_Position", "Enum") != 1);
                         }
                     },
                     {
@@ -2343,7 +2355,7 @@ var A320_Neo_UpperECAM;
             }
 
             if (warningsCount[3] > this.lastWarningsCount[3]) {
-                console.warn(warningsCount[3]);
+                // console.warn(warningsCount[3]);
                 SimVar.SetSimVarValue("L:A32NX_MASTER_WARNING", "Bool", 1);
             }
             if (warningsCount[2] > this.lastWarningsCount[2]) {
