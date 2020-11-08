@@ -2459,6 +2459,14 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     /**
+     * Used for switching pages
+     * @returns {number} delay in ms between 150 and 200
+     */
+    getDelaySwitchPage() {
+        return 150 + 50 * Math.random();
+    }
+
+    /**
      * Used for basic inputs e.g. alternate airport, ci, fl, temp, constraints, ...
      * @returns {number} delay in ms between 300 and 400
      */
