@@ -6,7 +6,7 @@ class CDUProgressPage {
         const flightPhase = "CRZ";
         const flightNo = SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string");
         const flMax = mcdu.getMaxFlCorrected();
-        const flOpt = (mcdu._cruiseEntered && mcdu._blockFuelEntered && mcdu.isAllEngineOn()) ? "FL" + (Math.floor(flMax / 5) * 5).toString() + "[color]green" : "-----";
+        const flOpt = (mcdu._zeroFuelWeightZFWCGEntered && mcdu._blockFuelEntered && (mcdu.isAllEngineOn() || Simplane.getIsGrounded())) ? "FL" + (Math.floor(flMax / 5) * 5).toString() + "[color]green" : "-----";
         mcdu.onLeftInput[1] = () => {
             CDUProgressPage.ShowReportPage(mcdu);
         };
