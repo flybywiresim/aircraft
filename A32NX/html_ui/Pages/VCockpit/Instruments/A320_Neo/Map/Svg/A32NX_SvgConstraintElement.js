@@ -41,7 +41,7 @@ class A32NXSvgConstraintElement extends SvgConstraintElement {
                 context.fillStyle = "black";
                 context.fillRect(0, 0, this._textWidth + map.config.waypointLabelBackgroundPaddingLeft + map.config.waypointLabelBackgroundPaddingRight, this._textHeight + map.config.waypointLabelBackgroundPaddingTop + map.config.waypointLabelBackgroundPaddingBottom);
             }
-            context.fillStyle = "magenta";
+            context.fillStyle = "#ff94ff";
             context.font = fontSize + "px " + map.config.waypointLabelFontFamily;
             context.fillText(text, map.config.waypointLabelBackgroundPaddingLeft, this._textHeight + map.config.waypointLabelBackgroundPaddingTop);
             if (this.source.speedConstraint > 0) {
