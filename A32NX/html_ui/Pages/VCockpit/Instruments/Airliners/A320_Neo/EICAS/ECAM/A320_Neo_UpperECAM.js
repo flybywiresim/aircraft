@@ -127,7 +127,7 @@ var A320_Neo_UpperECAM;
             return (this.getCachedSimVar("ENG FAILED:" + _engine, "Bool") == 1) && !this.getCachedSimVar("ENG ON FIRE:" + _engine) && !Simplane.getIsGrounded();
         }
         engineShutdown(_engine) {
-            return (this.getCachedSimVar("TURB ENG N1:" + _engine, "Percent") < 15 || this.getCachedSimVar("FUELSYSTEM VALVE SWITCH:" + (_engine + 5), "Bool") == 0) && !Simplane.getIsGrounded();
+            return (this.getCachedSimVar("TURB ENG N1:" + _engine, "Percent") < 15 || this.getCachedSimVar("FUELSYSTEM VALVE SWITCH:" + (_engine), "Bool") == 0) && !Simplane.getIsGrounded();
         }
         getEngineFailActions(_engine) {
             return [
@@ -151,7 +151,7 @@ var A320_Neo_UpperECAM;
                     style: "remark",
                     message: "IF NO RELIGHT AFTER 30S",
                     isCompleted: () => {
-                        return this.getCachedSimVar("FUELSYSTEM VALVE SWITCH:" + (_engine + 5), "Bool") == 0;
+                        return this.getCachedSimVar("FUELSYSTEM VALVE SWITCH:" + (_engine), "Bool") == 0;
                     }
                 },
                 {
@@ -159,7 +159,7 @@ var A320_Neo_UpperECAM;
                     message: "ENG MASTER " + _engine,
                     action: "OFF",
                     isCompleted: () => {
-                        return this.getCachedSimVar("FUELSYSTEM VALVE SWITCH:" + (_engine + 5), "Bool") == 0;
+                        return this.getCachedSimVar("FUELSYSTEM VALVE SWITCH:" + (_engine), "Bool") == 0;
                     }
                 },
                 {
@@ -231,7 +231,7 @@ var A320_Neo_UpperECAM;
                     message: "ENG MASTER " + _engine,
                     action: "OFF",
                     isCompleted: () => {
-                        return this.getCachedSimVar("FUELSYSTEM VALVE SWITCH:" + (_engine + 5), "Bool") == 0;
+                        return this.getCachedSimVar("FUELSYSTEM VALVE SWITCH:" + (_engine), "Bool") == 0;
                     }
                 },
                 {
