@@ -518,7 +518,7 @@ class MapInstrument extends ISvgMapRootElement {
                     const wpWithConstraints = this.flightPlanManager.getWaypointsWithAltitudeConstraints();
                     this.constraints = [];
                     for (let i = 0; i < wpWithConstraints.length; i++) {
-                        const svgConstraint = new SvgConstraintElement(wpWithConstraints[i]);
+                        const svgConstraint = new A32NXSvgConstraintElement(wpWithConstraints[i]);
                         this.constraints.push(svgConstraint);
                     }
                 }
