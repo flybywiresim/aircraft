@@ -1154,7 +1154,7 @@ var Airbus_FMA;
             }
             return Airbus_FMA.MODE_STATE.NONE;
         }
-        
+
         static IsArmed_OPCLB_MA() {
             if (Airbus_FMA.CurrentPlaneState.flightPhase == FlightPhase.FLIGHT_PHASE_GOAROUND) {
                 const thrustReductionAltitudeGoaround = SimVar.GetSimVarValue("L:AIRLINER_THR_RED_ALT_GOAROUND", "number");
