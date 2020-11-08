@@ -15,6 +15,7 @@ class CDUPerformancePage {
     }
     static ShowTAKEOFFPage(mcdu) {
         mcdu.clearDisplay();
+        mcdu.page.Current = mcdu.page.PerformancePageTakeoff;
         CDUPerformancePage._timer = 0;
         CDUPerformancePage._lastPhase = mcdu.currentFlightPhase;
         mcdu.pageUpdate = () => {
@@ -195,6 +196,7 @@ class CDUPerformancePage {
     }
     static ShowCLBPage(mcdu, confirmAppr = false) {
         mcdu.clearDisplay();
+        mcdu.page.Current = mcdu.page.PerformancePageClb;
         CDUPerformancePage._timer = 0;
         CDUPerformancePage._lastPhase = mcdu.currentFlightPhase;
         mcdu.pageUpdate = () => {
@@ -293,6 +295,7 @@ class CDUPerformancePage {
     }
     static ShowCRZPage(mcdu, confirmAppr = false) {
         mcdu.clearDisplay();
+        mcdu.page.Current = mcdu.page.PerformancePageCrz;
         CDUPerformancePage._timer = 0;
         CDUPerformancePage._lastPhase = mcdu.currentFlightPhase;
         mcdu.pageUpdate = () => {
@@ -391,6 +394,7 @@ class CDUPerformancePage {
     }
     static ShowDESPage(mcdu, confirmAppr = false) {
         mcdu.clearDisplay();
+        mcdu.page.Current = mcdu.page.PerformancePageDes;
         CDUPerformancePage._timer = 0;
         CDUPerformancePage._lastPhase = mcdu.currentFlightPhase;
         mcdu.pageUpdate = () => {
@@ -489,6 +493,7 @@ class CDUPerformancePage {
     }
     static ShowAPPRPage(mcdu) {
         mcdu.clearDisplay();
+        mcdu.page.Current = mcdu.page.PerformancePageAppr;
         CDUPerformancePage._timer = 0;
         CDUPerformancePage._lastPhase = mcdu.currentFlightPhase;
         mcdu.pageUpdate = () => {
@@ -636,6 +641,7 @@ class CDUPerformancePage {
     }
     static ShowGOAROUNDPage(mcdu) {
         mcdu.clearDisplay();
+        mcdu.page.Current = mcdu.page.PerformancePageGoAround;
         CDUPerformancePage._timer = 0;
         CDUPerformancePage._lastPhase = mcdu.currentFlightPhase;
         mcdu.pageUpdate = () => {

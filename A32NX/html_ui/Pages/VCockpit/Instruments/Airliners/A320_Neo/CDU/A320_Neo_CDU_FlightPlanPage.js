@@ -1,6 +1,7 @@
 class CDUFlightPlanPage {
     static ShowPage(mcdu, offset = 0) {
         mcdu.clearDisplay();
+        mcdu.page.Current = mcdu.page.FlightPlanPage;
         mcdu.activeSystem = 'FMGC';
         CDUFlightPlanPage._timer = 0;
         mcdu.pageUpdate = () => {

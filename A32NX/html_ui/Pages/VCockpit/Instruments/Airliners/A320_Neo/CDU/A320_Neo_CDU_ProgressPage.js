@@ -1,9 +1,12 @@
 class CDUProgressPage {
     static ShowPage(mcdu) {
         mcdu.clearDisplay();
+        mcdu.page.Current = mcdu.page.ProgressPage;
         mcdu.activeSystem = 'FMGC';
         const flightPhase = "CRZ";
         const flightNo = SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string");
+        const flMax = mcdu.getMaxFlCorrected();
+        const flOpt = (mcdu._zeroFuelWeightZFWCGEntered && mcdu._blockFuelEntered && (mcdu.isAllEngineOn() || Simplane.getIsGrounded())) ? "FL" + (Math.floor(flMax / 5) * 5).toString() + "[color]green" : "-----";
         let flCrz = "-----";
         switch (Simplane.getCurrentFlightPhase()) {
             case FlightPhase.FLIGHT_PHASE_TAKEOFF: {
@@ -43,7 +46,7 @@ class CDUProgressPage {
         mcdu.setTemplate([
             ["ECON " + flightPhase + " " + flightNo],
             [flightPhase, "REC MAX", "OPT"],
-            [flCrz, "-----" ,"-----"],
+            [flCrz, "FL" + flMax.toString() + "[color]magenta", flOpt],
             [""],
             ["<REPORT", ""],
             ["UPDATE AT"],
@@ -55,9 +58,15 @@ class CDUProgressPage {
             ["REQUIRED", "ESTIMATED", "ACCUR"],
             ["3.4NM[color]blue", "0.07NM[color]green", "HIGH[color]green"]
         ]);
+        mcdu.page.SelfPtr = setTimeout(() => {
+            if (mcdu.page.Current === mcdu.page.ProgressPage) {
+                CDUProgressPage.ShowPage(mcdu);
+            }
+        }, mcdu.PageTimeout.Prog);
     }
     static ShowReportPage(mcdu) {
         mcdu.clearDisplay();
+        mcdu.page.Current = mcdu.page.ProgressPageReport;
         let altCell = "---";
         if (isFinite(mcdu.cruiseFlightLevel)) {
             altCell = mcdu.cruiseFlightLevel.toFixed(0);
@@ -129,6 +138,7 @@ class CDUProgressPage {
     }
     static ShowPredictiveGPSPage(mcdu, overrideDestETA = "") {
         mcdu.clearDisplay();
+        mcdu.page.Current = mcdu.page.ProgressPagePredictiveGPS;
         let destIdentCell = "";
         let destETACell = "";
         if (mcdu.flightPlanManager.getDestination()) {

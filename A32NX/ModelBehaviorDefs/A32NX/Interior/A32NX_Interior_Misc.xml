@@ -294,4 +294,49 @@
             <TOOLTIPID>%((A:APU PCT RPM, Percent) 0 &gt; (A:APU PCT RPM, Percent) #AVAIL_PERCENTAGE# &lt; and)%{if}TT:COCKPIT.TOOLTIPS.UNAVAILABLE%{end} %((A:APU PCT RPM, Percent) #AVAIL_PERCENTAGE# &gt;= (A:APU SWITCH, Bool) and)%{if}TT:COCKPIT.TOOLTIPS.APU_STARTER_TURN_OFF%{else}TT:COCKPIT.TOOLTIPS.APU_STARTER_TURN_ON%{end}</TOOLTIPID>
         </UseTemplate>
     </Template>
+    <Template Name="FBW_ENGINE_Switch_Master_Template">
+        <DefaultTemplateParameters>
+            <NODE_ID>ENGINE_Switch_Master_#ID#</NODE_ID>
+            <ANIM_NAME>ENGINE_Switch_Master_#ID#</ANIM_NAME>
+            <WWISE_EVENT_1>engine_master_switch_on</WWISE_EVENT_1>
+            <WWISE_EVENT_2>engine_master_switch_off</WWISE_EVENT_2>
+            <PART_ID>ENGINE_Switch_Master</PART_ID>
+            <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.ENGINE#ID#_MASTER_TURN_ON</ANIMTIP_0>
+            <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.ENGINE#ID#_MASTER_TURN_OFF</ANIMTIP_1>
+        </DefaultTemplateParameters>
+        <Component ID="#NODE_ID#" Node="#NODE_ID#">
+            <Update Frequency="5">
+						(* This Update Ensures that the state of some simvars that are linked to the same button is consistent. *)
+						(A:FUELSYSTEM VALVE SWITCH:#VALVE_ID#, Bool) sp1
+						(A:GENERAL ENG STARTER:#ID#, Bool) l1 != if{ 
+							(&gt;K:TOGGLE_STARTER#ID#)
+						}
+            </Update>
+            <UseTemplate Name="ASOBO_GT_Switch_Code">
+                <ANIM_CODE>
+							(A:FUELSYSTEM VALVE SWITCH:#VALVE_ID#, Bool) 100 *
+                </ANIM_CODE>
+                <LEFT_SINGLE_CODE>
+						(A:FUELSYSTEM VALVE SWITCH:#VALVE_ID#, Bool) if{
+								#VALVE_ID# (&gt;K:FUELSYSTEM_VALVE_CLOSE)
+								(A:GENERAL ENG STARTER:#ID#, Bool) if{
+									(&gt;K:TOGGLE_STARTER#ID#)
+								}
+							} els{
+								#VALVE_ID# (&gt;K:FUELSYSTEM_VALVE_OPEN)
+								(A:GENERAL ENG STARTER:#ID#, Bool) ! if{
+									(&gt;K:TOGGLE_STARTER#ID#)
+								}
+							}
+                </LEFT_SINGLE_CODE>
+            </UseTemplate>
+        </Component>
+        <Condition Check="POTENTIOMETER">
+            <Component ID="#NODE_ID#_SEQ1" Node="#NODE_ID#_SEQ1">
+                <UseTemplate Name="ASOBO_GT_Emissive_Gauge">
+                    <EMISSIVE_CODE>(A:LIGHT POTENTIOMETER:#POTENTIOMETER#, Percent over 100)</EMISSIVE_CODE>
+                </UseTemplate>
+            </Component>
+        </Condition>
+    </Template>
 </ModelBehaviors>

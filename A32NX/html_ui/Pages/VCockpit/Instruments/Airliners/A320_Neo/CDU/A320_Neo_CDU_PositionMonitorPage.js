@@ -1,6 +1,7 @@
 class CDUPositionMonitorPage {
     static ShowPage(mcdu) {
         mcdu.clearDisplay();
+        mcdu.page.Current = mcdu.page.PositionMonitorPage;
         mcdu.refreshPageCallback = () => {
             CDUPositionMonitorPage.ShowPage(mcdu);
         };
