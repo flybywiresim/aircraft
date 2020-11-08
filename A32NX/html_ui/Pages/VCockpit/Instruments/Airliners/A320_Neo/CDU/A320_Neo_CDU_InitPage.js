@@ -170,12 +170,16 @@ class CDUInitPage {
         mcdu.insertSmallFontSpan();
 
         mcdu.onPrevPage = () => {
-            if (!mcdu.isAnEngineOn()) {
+            if (mcdu.isAnEngineOn()) {
+                mcdu.showErrorMessage("NOT AVAILABLE");
+            } else {
                 CDUInitPage.ShowPage2(mcdu);
             }
         };
         mcdu.onNextPage = () => {
-            if (!mcdu.isAnEngineOn()) {
+            if (mcdu.isAnEngineOn()) {
+                mcdu.showErrorMessage("NOT AVAILABLE");
+            } else {
                 CDUInitPage.ShowPage2(mcdu);
             }
         };
