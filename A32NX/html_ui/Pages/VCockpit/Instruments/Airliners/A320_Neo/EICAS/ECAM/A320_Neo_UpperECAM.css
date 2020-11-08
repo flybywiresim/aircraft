@@ -228,7 +228,9 @@ a320-neo-upper-ecam #FlapsPanel #DiagramSVG .state {
   fill: var(--displayGreen);
 }
 a320-neo-upper-ecam #FlapsPanel #DiagramSVG .dot {
-  fill: var(--displayWhite);
+  stroke: var(--displayWhite);
+  stroke-width: 2.5;
+  fill: transparent;
 }
 a320-neo-upper-ecam #FlapsPanel #DiagramSVG .shape {
   fill: none;
@@ -339,10 +341,10 @@ a320-neo-upper-ecam .fail-3 .boxed {
 }
 
 a320-neo-upper-ecam #Separators {
-    position: absolute;
-    display: block;
-    left: 0%;
-    width: 100%;
-    top: 0%;
-    height: 100%; 
+  position: absolute;
+  display: block;
+  left: 0%;
+  width: 100%;
+  top: 0%;
+  height: 100%;
 }

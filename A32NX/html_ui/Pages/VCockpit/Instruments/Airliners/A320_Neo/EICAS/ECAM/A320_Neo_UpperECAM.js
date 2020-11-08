@@ -59,10 +59,14 @@ var A320_Neo_UpperECAM;
     A320_Neo_UpperECAM.createRectangle = createRectangle;
     function createSlatParallelogram(_class, _cx, _cy) {
         const parElement = document.createElementNS(Avionics.SVG.NS, "polygon");
-        const _w = 5;
-        const _h = 6;
-        const _ox = 2;
-        const _oy = 1;
+        const _xOffset = 3.2;
+        const _yOffset = 1;
+        const _w = 3;
+        const _h = 4;
+        const _ox = 1.5;
+        const _oy = 1.5;
+        _cx = _cx + _xOffset;
+        _cy = _cy + _yOffset;
         const _ppoints = String(_cx - _w) + "," + String(_cy - _oy) + " " + String(_cx - _w - _ox) + "," + String(_cy + _h) + " " + String(_cx + _w) + "," + String(_cy + _oy) + " " + String(_cx + _w + _ox) + "," + String(_cy - _h);
         parElement.setAttribute("class", _class);
         parElement.setAttribute("points", _ppoints);
@@ -71,11 +75,15 @@ var A320_Neo_UpperECAM;
     A320_Neo_UpperECAM.createSlatParallelogram = createSlatParallelogram;
     function createFlapParallelogram(_class, _cx, _cy) {
         const parElement = document.createElementNS(Avionics.SVG.NS, "polygon");
-        const _w = 4;
-        const _h = 5;
+        const _xOffset = -1;
+        const _yOffset = -0.5;
+        const _w = 3.5;
+        const _h = 3.5;
         const _ox = 2;
-        const _oy = -3;
-        const _ppoints = String(_cx - _w) + "," + String(_cy - _oy) + " " + String(_cx - _w - _ox) + "," + String(_cy - _h) + " " + String(_cx + _w) + "," + String(_cy + _oy) + " " + String(_cx + _w + _ox) + "," + String(_cy + _h);
+        const _oy = -2;
+        _cx = _cx + _xOffset;
+        _cy = _cy + _yOffset;
+        const _ppoints = String(_cx - _w) + "," + String(_cy - _oy) + " " + String(_cx - _w - _ox) + "," + String(_cy - _h) + " " + String(_cx + _w) + "," + String(_cy + _oy) + " " + String(_cx + _w) + "," + String(_cy + _h);
         parElement.setAttribute("class", _class);
         parElement.setAttribute("points", _ppoints);
         return parElement;
@@ -2037,8 +2045,8 @@ var A320_Neo_UpperECAM;
             this.slatDotPositions = [
                 new Vec2(160, 37),
                 new Vec2(110, 52),
-                new Vec2(68, 68),
-                new Vec2(25, 81)
+                new Vec2(68, 65),
+                new Vec2(26, 78)
             ];
             this.flapArrowPathD = "m-20,-12 l31,6 l0,19, l-21,-5 l-10,-20";
             this.flapDotPositions = [
