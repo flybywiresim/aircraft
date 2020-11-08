@@ -17,6 +17,7 @@ class FlightPlanManager {
         this._currentFlightPlanIndex = 0;
         this._activeWaypointIdentHasChanged = false;
         this._waypointReachedAt = SimVar.GetGlobalVarValue("ZULU TIME", "seconds");
+        this._decelDistance = 32; // TODO: properly calculate this value
         this._decelReached = false;
         this._lastWaypointData = 0;
         this._timeLastSimVarCall = 0;
@@ -144,7 +145,7 @@ class FlightPlanManager {
                 currData.liveETATo = currData.liveDistanceTo / groundSpeed * 3600;
                 currData.liveUTCTo = utcTime + currData.liveETATo;
             } else if (approach) {
-                const prevData = (i ? data[i - 1] : this._lastWaypointData);
+                const prevData = (i > 1 ? data[i - 1] : this._lastWaypointData);
                 currData.distance = Avionics.Utils.computeGreatCircleDistance(prevData.lla, currData.lla);
                 if (currData.ident != "USER") {
                     currData.cumulativeDistance = prevData.cumulativeDistance + currData.distance;
@@ -325,7 +326,7 @@ class FlightPlanManager {
                         this.decelWaypoint.infos.icao = this.decelWaypoint.icao;
                         this.decelWaypoint.ident = "(DECEL)";
                         this.decelWaypoint.infos.ident = this.decelWaypoint.ident;
-                        const decelPosition = this.getCoordinatesAtNMFromDestinationAlongFlightPlan(32);
+                        const decelPosition = this.getCoordinatesAtNMFromDestinationAlongFlightPlan(this._decelDistance);
                         if (decelPosition) {
                             const decelCoordinates = decelPosition.lla;
                             this.decelWaypoint.infos.coordinates = new LatLongAlt(decelCoordinates.lat, decelCoordinates.long);
@@ -334,13 +335,14 @@ class FlightPlanManager {
                             this.decelWaypoint.altitudeinFP = decelPosition.alt;
                             this.decelWaypoint.cumulativeDistanceInFP = decelPosition.cumulativeDistance;
                             this.decelPrevIndex = decelPosition.prevIndex;
-                            const prevWaypoint = this.getWaypoint(this.decelPrevIndex, undefined, true);
+                            const prevWaypoint = decelPosition.prevWp;
                             if (prevWaypoint) {
-                                const planeCoord = new LatLong(SimVar.GetSimVarValue("PLANE LATITUDE", "degree latitude"), SimVar.GetSimVarValue("PLANE LONGITUDE", "degree longitude"));
                                 this.decelWaypoint.legAltitude1 = decelPosition.alt;
                                 this.decelWaypoint.legAltitudeDescription = 1;
                                 this.decelWaypoint.distanceInFP = decelPosition.distance;
-                                this.decelWaypoint.liveDistanceTo = prevWaypoint.liveDistanceTo + this.decelWaypoint.distanceInFP;
+                                const planeCoord = new LatLong(SimVar.GetSimVarValue("PLANE LATITUDE", "degree latitude"), SimVar.GetSimVarValue("PLANE LONGITUDE", "degree longitude"));
+                                const dist = Avionics.Utils.computeGreatCircleDistance(planeCoord, this.decelWaypoint.infos.coordinates);
+                                this.decelWaypoint.liveDistanceTo = prevWaypoint.liveDistanceTo ? prevWaypoint.liveDistanceTo + this.decelWaypoint.distanceInFP : dist;
                                 this.decelWaypoint.liveETATo = (this._decelReached ? this._waypointReachedAt : this.decelWaypoint.liveDistanceTo / groundSpeed * 3600);
                                 this.decelWaypoint.liveUTCTo = utcTime + this.decelWaypoint.liveETATo;
                             }
@@ -1389,13 +1391,13 @@ class FlightPlanManager {
                 prev = allWaypoints[i];
                 if (prev.real) {
                     prevReal = prev;
+                    prevIndex++;
                 }
+                alt = prev.altitudeinFP ? prev.altitudeinFP : (prev.legAltitude1 ? prev.legAltitude1 : 0);
                 next = allWaypoints[i + 1];
-                alt = prev.legAltitude1;
                 if (prev.cumulativeDistanceInFP < fromStartDistance && next.cumulativeDistanceInFP > fromStartDistance) {
                     break;
                 }
-                prevIndex = i;
             }
             if (!next) {
                 next = destination;
@@ -1411,7 +1413,8 @@ class FlightPlanManager {
             const dist = prev ? Avionics.Utils.computeGreatCircleDistance(prev.infos.coordinates, output) : 0;
             return {
                 lla: output,
-                prevIndex: prevIndex,
+                prevIndex: Math.max(0, prevIndex - 1),
+                prevWp: prevReal,
                 alt: 100 * Math.floor((alt + 50) / 100),
                 cumulativeDistance: prev ? prev.cumulativeDistanceInFP : 0 + dist,
                 distance: prevReal ? Avionics.Utils.computeGreatCircleDistance(prevReal.infos.coordinates, output) : 0
