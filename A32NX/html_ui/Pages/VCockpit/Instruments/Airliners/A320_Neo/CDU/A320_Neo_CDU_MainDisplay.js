@@ -74,7 +74,6 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this.electricity = this.querySelector("#Electricity");
         this.climbTransitionGroundAltitude = null;
         this.initB = false;
-        this.initBTimer = 0;
         this.initBTitle = "";
 
         // Start the TELEX Ping. API functions check the connection status themself
