@@ -5,6 +5,19 @@
     <glasscockpit-highlight id="highlight"></glasscockpit-highlight>
     <div id="Mainframe">
         <div id="Electricity" state="off">
+            <svg id="MfdEngTest" class="engineering-mode-overlay" viewBox="0 0 600 600">
+                <text class="start" x="9" y="250">P/N : C19755BA01</text>
+                <text class="start" x="10" y="270">S/N : C1975517332</text>
+                <text class="start" x="10" y="344">EIS SW</text>
+                <text class="start" x="10" y="366">P/N : C1975517332</text>
+                <text x="445" y="250">THALES AVIONICS</text>
+                <text x="538" y="366">LCDU 725</text>
+            </svg>
+            <svg id="MfdMaintMode" class="maintenance-mode-overlay" viewBox="0 0 600 600">
+                <rect fill="url(#ECAMBacklight)" x="0" y="0" width="100%" height="100%"></rect>
+                <text class="valueText" text-anchor="middle" x="50%" y="35%" font-size="24px">MAINTENANCE MODE</text>
+            </svg>
+
 			<svg width="100%" height="100%" >
 				<defs>
 					<radialGradient id="Backlight" cx="50%" cy="50%" r="75%" >
@@ -149,6 +162,9 @@
 
 <script type="text/html" import-script="/JS/SimPlane.js"></script>
 <script type="text/html" import-script="/JS/A32NX_Util.js"></script>
+<script type="text/html" import-script="/JS/dataStorage.js"></script>
+<script type="text/html" import-script="/Pages/A32NX_Utils/NXDataStore.js"></script>
+<script type="text/html" import-script="/Pages/A32NX_Core/A32NX_DMC.js"></script>
 
 <script type="text/html" import-script="/Pages/VCockpit/Instruments/Shared/Utils/RadioNav.js"></script>
 

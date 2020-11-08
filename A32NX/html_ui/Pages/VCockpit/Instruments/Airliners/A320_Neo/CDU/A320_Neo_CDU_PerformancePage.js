@@ -1,6 +1,7 @@
 const QNH_REGEX = /[0-9]{2}.[0-9]{2}/;
 class CDUPerformancePage {
     static ShowPage(mcdu) {
+        mcdu.activeSystem = 'FMGC';
         if (mcdu.currentFlightPhase <= FlightPhase.FLIGHT_PHASE_TAKEOFF) {
             CDUPerformancePage.ShowTAKEOFFPage(mcdu);
         } else if (mcdu.currentFlightPhase === FlightPhase.FLIGHT_PHASE_CLIMB) {
