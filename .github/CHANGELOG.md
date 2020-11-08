@@ -57,6 +57,7 @@
 1. [TEXTURES] upgraded to 4k Textures (pedestal,throttle unit) fixed decal texture - @Pleasure0102 (Pleasure)
 1. [PFD] Added FMAs ALT CST and ALT CST* as well as CLB magenta and DES or CLB blue - @MisterChocker (Leon)
 1. [CDU] Added CFDS display test, ATSU METAR/TAF/ATIS requests, and ATSU free text - @wpine215 (Iceman), @nistei (Nistei), @Edwin B
+1. [GPWS] Completely redone GPWS logic, and improve Retard call logic, prevent multiple calls playing at once - lukecologne (luke)
 
 
 ## 0.4.0
