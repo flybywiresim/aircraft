@@ -2496,7 +2496,7 @@ class FMCMainDisplay extends BaseAirliners {
      */
     getDelayRouteChange() {
         if (this._zeroFuelWeightZFWCGEntered && this._blockFuelEntered) {
-            return this.flightPlanManager.getWaypointsCount() * 20 + (this.flightPlanManager.getDestination().cumulativeDistanceInFP) / 10 + Math.random() * 300;
+            return Math.pow(this.flightPlanManager.getWaypointsCount(), 2) + (this.flightPlanManager.getDestination().cumulativeDistanceInFP) / 10 + Math.random() * 300;
         } else {
             return 300 + this.flightPlanManager.getWaypointsCount() * Math.random() + this.flightPlanManager.getDestination().cumulativeDistanceInFP * Math.random();
         }
@@ -2507,7 +2507,7 @@ class FMCMainDisplay extends BaseAirliners {
      * @returns {number} dynamic delay in ms between 2000ms and 400ms
      */
     getDelayFuelPred() {
-        return this.flightPlanManager.getWaypointsCount() * 20 + (this.flightPlanManager.getDestination().cumulativeDistanceInFP) / 10 + Math.random() * 300;
+        return Math.pow(this.flightPlanManager.getWaypointsCount(), 2) + (this.flightPlanManager.getDestination().cumulativeDistanceInFP) / 10 + Math.random() * 300;
     }
 
     /**
@@ -2515,7 +2515,7 @@ class FMCMainDisplay extends BaseAirliners {
      * @returns {number} dynamic delay in ms dependent on amount of waypoints
      */
     getDelayWindLoad() {
-        return this.flightPlanManager.getWaypointsCount() * 20;
+        return Math.pow(this.flightPlanManager.getWaypointsCount(), 2);
     }
 
     /**
