@@ -74,7 +74,6 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this.electricity = this.querySelector("#Electricity");
         this.climbTransitionGroundAltitude = null;
         this.initB = false;
-        this.initBTitle = "";
 
         // Start the TELEX Ping. API functions check the connection status themself
         setInterval(() => {
@@ -234,9 +233,9 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         if (this.isAnEngineOn()) {
             if (!this.initB) {
                 this.initB = true;
-                if (this.getTitle() === this.initBTitle) {
+                if (this.page.Current === this.page.InitPageB) {
                     setTimeout(() => {
-                        if (this.getTitle() === this.initBTitle) {
+                        if (this.page.Current === this.page.InitPageB) {
                             CDUFuelPredPage.ShowPage(this);
                         }
                     }, 15000);
