@@ -46,19 +46,19 @@ class CDUIRSInit {
             GPSPosTitle = ["LAT", "LONG", "GPS POSITION"];
             originAirportTitle = ["LAT" + larrowupdwn , rarrowupdwn + "LONG", "REFERENCE"];
             GPSPosAlign = ["--°--.--", "--°--.--", " "];
-            originAirportString = ['{IrsInitFont}' + originAirportLat['deg'] + '°{IrsInitFontEnd}' + originAirportLat['min'] + '.' + originAirportLat['sec'] + '[s-text]{IrsInitFont}' + originAirportLat['dir'] + "{IrsInitFontEnd} [color]blue", '{IrsInitFont}' + originAirportLon['deg'] + '°{IrsInitFontEnd}' + originAirportLon['min'] + '.' + originAirportLon['sec'] + '[s-text]{IrsInitFont}' + originAirportLon['dir'] + "{IrsInitFontEnd} [color]blue", referenceName];
+            originAirportString = [originAirportLat['deg'] + "°{small}" + originAirportLat['min'] + "." + originAirportLat['sec'] + "{end}" + originAirportLat['dir'] + "[color]blue", originAirportLon['deg'] + "°{small}" + originAirportLon['min'] + "." + originAirportLon['sec'] + "{end}" + originAirportLon['dir'] + "[color]blue", referenceName];
             if (SimVar.GetSimVarValue("L:A32NX_ADIRS_KNOB_1", "Enum") || SimVar.GetSimVarValue("L:A32NX_ADIRS_KNOB_2", "Enum") || SimVar.GetSimVarValue("L:A32NX_ADIRS_KNOB_3", "Enum")) {
-                GPSPosAlign = ['{IrsInitFont}' + currentGPSLat['deg'] + '°{IrsInitFontEnd}' + currentGPSLat['min'] + '.' + Math.ceil(Number(currentGPSLat['sec'] / 100)) + '[s-text]{IrsInitFont}' + currentGPSLat['dir'] + "{IrsInitFontEnd} [color]green", '{IrsInitFont}' + currentGPSLon['deg'] + '°{IrsInitFontEnd}' + currentGPSLon['min'] + '.' + Math.ceil(Number(currentGPSLon['sec'] / 100)) + '[s-text]{IrsInitFont}' + currentGPSLon['dir'] + "{IrsInitFontEnd} [color]green", ""];
+                GPSPosAlign = [currentGPSLat['deg'] + "°{small}" + currentGPSLat['min'] + "." + Math.ceil(Number(currentGPSLat['sec'] / 100)) + "{end}" + currentGPSLat['dir'] + '[color]green', currentGPSLon['deg'] + "°{small}" + currentGPSLon['min'] + "." + Math.ceil(Number(currentGPSLon['sec'] / 100)) + "{end}" + currentGPSLon['dir'] + "[color]green", ""];
                 alignType = "GPS";
             }
         }
 
-        let IRSAlignOnPos = "{IrsInitFont}" + currentGPSLat['deg'] + '°{IrsInitFontEnd}' + currentGPSLat['min'] + '.' + Math.ceil(Number(currentGPSLat['sec'] / 100)) + '[s-text]{IrsInitFont}' + currentGPSLat['dir'] + '/{IrsInitFontEnd}{IrsInitFont}' + currentGPSLon['deg'] + '°{IrsInitFontEnd}' + currentGPSLon['min'] + '.' + Math.ceil(Number(currentGPSLon['sec'] / 100)) + '{IrsInitFont}' + currentGPSLon['dir'] + '{IrsInitFontEnd}';
+        let IRSAlignOnPos = currentGPSLat['deg'] + "°{small}" + currentGPSLat['min'] + "." + Math.ceil(Number(currentGPSLat['sec'] / 100)) + "{end}" + currentGPSLat['dir'] + "/" + currentGPSLon['deg'] + "°{small}" + currentGPSLon['min'] + "." + Math.ceil(Number(currentGPSLon['sec'] / 100)) + "{end}" + currentGPSLon['dir'];
         if (SimVar.GetSimVarValue("L:A32XN_Neo_ADIRS_ALIGN_TYPE_REF", "Enum") === 1) {
             alignMsg = "";
             alignType = "REF";
             if (checkAligned !== 2) {
-                IRSAlignOnPos = "{IrsInitFont}" + originAirportLat['deg'] + '°{IrsInitFontEnd}' + originAirportLat['min'] + '.' + originAirportLat['sec'] + '[s-text]{IrsInitFont}' + originAirportLat['dir'] + '/{IrsInitFontEnd}{IrsInitFont}' + originAirportLon['deg'] + '°{IrsInitFontEnd}' + originAirportLon['min'] + '.' + originAirportLon['sec'] + '{IrsInitFont}' + originAirportLon['dir'] + '{IrsInitFontEnd}';
+                IRSAlignOnPos = originAirportLat['deg'] + "°{small}" + originAirportLat['min'] + "." + originAirportLat['sec'] + "{end}" + originAirportLat['dir'] + "/" + originAirportLon['deg'] + "°{small}" + originAirportLon['min'] + "." + originAirportLon['sec'] + "{end}" + originAirportLon['dir'];
             }
         }
 
@@ -118,20 +118,6 @@ class CDUIRSInit {
             [],
             ["<RETURN", alignMsg]
         ]);
-
-        // IRS Font is different we loop over keywords to set correct font since at the moment we cannot adapt FMCMainDisplay.js to allow for extra keywords
-        mcdu._lineElements.forEach(function (ele) {
-            ele.forEach(function (el) {
-                if (el != null) {
-                    let newHtml = el;
-                    if (newHtml != null) {
-                        newHtml = newHtml.innerHTML.replace(/{IrsInitFont}/g, '<span class=\'irs-text\'>');
-                        newHtml = newHtml.replace(/{IrsInitFontEnd}/g, '</span>');
-                        el.innerHTML = newHtml;
-                    }
-                }
-            });
-        });
 
         mcdu.onLeftInput[0] = () => {
             lon = false;

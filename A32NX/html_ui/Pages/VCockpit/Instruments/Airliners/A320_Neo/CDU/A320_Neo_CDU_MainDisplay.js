@@ -123,12 +123,36 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         }, 30000);
     }
 
-    insertSmallFontSpan() {
+    _formatCell(str) {
+        return str
+            .replace(/{small}/g, "<span class='s-text'>")
+            .replace(/{red}/g, "<span class='red'>")
+            .replace(/{green}/g, "<span class='green'>")
+            .replace(/{blue}/g, "<span class='blue'>")
+            .replace(/{white}/g, "<span class='white'>")
+            .replace(/{magenta}/g, "<span class='magenta'>")
+            .replace(/{inop}/g, "<span class='inop'>")
+            .replace(/{sp}/g, "&nbsp;")
+            .replace(/{end}/g, "</span>");
+    }
+
+    setTemplate(_template) {
+        super.setTemplate(_template);
+        // Apply formatting helper to title page, lines and labels
+        if (this._titleElement !== null) {
+            this._titleElement.innerHTML = this._formatCell(this._titleElement.innerHTML);
+        }
         this._lineElements.forEach((row) => {
             row.forEach((column) => {
-                if (column != null) {
-                    column.innerHTML = column.innerHTML.replace(/{smallFront}/g, "<span class='s-text'>");
-                    column.innerHTML = column.innerHTML.replace(/{smallEnd}/g, "</span>");
+                if (column !== null) {
+                    column.innerHTML = this._formatCell(column.innerHTML);
+                }
+            });
+        });
+        this._labelElements.forEach((row) => {
+            row.forEach((column) => {
+                if (column !== null) {
+                    column.innerHTML = this._formatCell(column.innerHTML);
                 }
             });
         });
