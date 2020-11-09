@@ -58,7 +58,7 @@
 1. [PFD] Added FMAs ALT CST and ALT CST* as well as CLB magenta and DES or CLB blue - @MisterChocker (Leon)
 1. [CDU] Added CFDS display test, ATSU METAR/TAF/ATIS requests, and ATSU free text - @wpine215 (Iceman), @nistei (Nistei), @Edwin B
 1. [CDU] Fixed error messages delete input - @MisterChocker (Leon)
-1. [CDU] Added input delay paging left/right and input L/R - @MisterChocker (Leon)
+1. [CDU] Added input delay paging left/right and input 1-6L/1-6R - @MisterChocker (Leon)
 
 
 ## 0.4.0
