@@ -71,6 +71,14 @@ See [Contributing.md](.github/Contributing.md)
 - Automatic ECAM page switching has minor bugs
 - APU/Engine fire covers cannot be retracted once opened
 
+## License
+
+The contents of this repository are DUAL LICENSED.
+
+Textual-form source code in this repository are licensed under the GNU General Public License version 3. Artistic assets (including but not limited to images, sound banks, 3D models and textures) are licensed under [Creative Commons CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/).
+
+Any other works found to be not explicitely covered by the above definitions are all rights reserved in order to avoid ambiguities at the moment, but we are very permissive about their use if you contact us.
+
 ## FAQ
 
 **Q: Can I download the aircraft in the current state?**

@@ -1,6 +1,7 @@
 class CDUInitPage {
     static ShowPage1(mcdu, resetFlightNo = false) {
         mcdu.clearDisplay();
+        mcdu.page.Current = mcdu.page.InitPageA;
         mcdu.activeSystem = 'FMGC';
 
         // TODO create local simvars for.. everything
@@ -190,6 +191,7 @@ class CDUInitPage {
     }
     static ShowPage2(mcdu) {
         mcdu.clearDisplay();
+        mcdu.page.Current = mcdu.page.InitPageB;
 
         let initBTitle = "INIT {}";
 
