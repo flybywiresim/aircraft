@@ -1,4 +1,5 @@
 declare global {
+    // Lorem Ipsum
 
     type NumberSimVarUnit = ("number" | "Number") | "position 32k" | ("SINT32") | ("bool" | "Bool" | "Boolean" | "boolean") | "Enum" | "lbs" | "kg" | ("Degrees" | "degree")
         | "radians" | ("Percent" | "percent") | ("Feet" | "feet" | "feets") | "Volts" | "Amperes" | "Hertz" | "PSI" | "celsius" | "degree latitude"
