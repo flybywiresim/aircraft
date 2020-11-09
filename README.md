@@ -75,7 +75,7 @@ See [Contributing.md](.github/Contributing.md)
 
 The contents of this repository are DUAL LICENSED.
 
-Textual-form source code in this repository are licensed under the GNU General Public License version 3. Artistic assets (including but not limited to images, sound banks, 3D models and textures) are licensed under [Creative Commons CC-BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/).
+Textual-form source code in this repository are licensed under the GNU General Public License version 3. Artistic assets (including but not limited to images, sound banks, 3D models and textures) are licensed under [Creative Commons CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/).
 
 Any other works found to be not explicitely covered by the above definitions are all rights reserved in order to avoid ambiguities at the moment, but we are very permissive about their use if you contact us.
 
