@@ -1,6 +1,7 @@
 class CDUIRSInit {
     static ShowPage(mcdu, lon, originAirportLat, originAirportLon, referenceName, originAirportCoordinates, alignMsg = "ALIGN ON REF  }[color]blue") {
         mcdu.clearDisplay();
+        mcdu.page.Current = mcdu.page.IRSInit;
         mcdu.setTitle('IRS INIT');
         const checkAligned = SimVar.GetSimVarValue("L:A320_Neo_ADIRS_STATE", "Number");
         if (checkAligned === 0) {
