@@ -70,13 +70,11 @@ class CDUHoldAtPage {
                 ...rows
             ]);
 
-            mcdu.onLeftInput[0] = () => {
-                const value = mcdu.inOut;
+            mcdu.onLeftInput[0] = (value) => {
                 if (isNaN(value) || 0 < value > 360) {
                     mcdu.inOut = "NaN";
                     return;
                 }
-                mcdu.clearUserInput();
                 mcdu.manualHoldData = {
                     time: holdTime,
                     course: parseFloat(value),
@@ -86,13 +84,11 @@ class CDUHoldAtPage {
                 CDUHoldAtPage.ShowPage(mcdu, waypoint, waypointIndexFP);
             };
 
-            mcdu.onLeftInput[1] = () => {
-                const value = mcdu.inOut;
+            mcdu.onLeftInput[1] = (value) => {
                 if (value != "L" && value != "R") {
                     mcdu.inOut = "ERR FMT";
                     return;
                 }
-                mcdu.clearUserInput();
                 mcdu.manualHoldData = {
                     time: holdTime,
                     course: holdCourse,
@@ -102,16 +98,13 @@ class CDUHoldAtPage {
                 CDUHoldAtPage.ShowPage(mcdu, waypoint, waypointIndexFP);
             };
 
-            mcdu.onLeftInput[2] = () => {
-                const value = mcdu.inOut;
-
+            mcdu.onLeftInput[2] = (value) => {
                 if (value.startsWith("/")) {
                     const distComp = value.replace("/", "");
                     if (isNaN(distComp)) {
                         mcdu.inOut = "ERR FMT";
                         return;
                     }
-                    mcdu.clearUserInput();
                     mcdu.manualHoldData = {
                         time: parseFloat(distComp) / estimatedTAS,
                         course: holdCourse,
@@ -130,7 +123,6 @@ class CDUHoldAtPage {
 
                 holdDistance = estimatedTAS * parseFloat(value);
 
-                mcdu.clearUserInput();
                 mcdu.manualHoldData = {
                     time: value,
                     course: holdCourse,

@@ -56,21 +56,18 @@ class CDUVerticalRevisionPage {
             mcdu.onRightInput[0] = () => {}; // EXTRA
             mcdu.onLeftInput[1] = () => {}; // CLB SPD LIM
             mcdu.onRightInput[1] = () => {}; // RTA
-            mcdu.onLeftInput[2] = async () => {
-                const value = parseInt(mcdu.inOut);
+            mcdu.onLeftInput[2] = async (value) => {
                 if (isFinite(value)) {
                     if (value >= 0) {
                         // NYI
                     }
                 }
-                mcdu.clearUserInput();
                 mcdu.showErrorMessage("NOT YET IMPLEMENTED");
                 setTimeout(() => {
                     mcdu.showErrorMessage("");
                 }, 1000);
             }; // SPD CSTR
-            mcdu.onRightInput[2] = () => {
-                let value = mcdu.inOut;
+            mcdu.onRightInput[2] = (value) => {
                 if (value === FMCMainDisplay.clrValue) {
                     mcdu.removeWaypoint(fpIndex, () => {
                         CDUFlightPlanPage.ShowPage(mcdu, offset);
@@ -79,7 +76,6 @@ class CDUVerticalRevisionPage {
                 value = parseInt(value);
                 if (isFinite(value)) {
                     if (value >= 0) {
-                        mcdu.clearUserInput();
                         mcdu.flightPlanManager.setWaypointAltitude((value < 1000 ? value * 100 : value) / 3.28084, mcdu.flightPlanManager.indexOfWaypoint(waypoint), () => {
                             this.ShowPage(mcdu, waypoint);
                         });

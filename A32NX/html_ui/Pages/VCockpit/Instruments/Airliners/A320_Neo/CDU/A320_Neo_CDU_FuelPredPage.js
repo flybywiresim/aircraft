@@ -34,9 +34,7 @@ class CDUFuelPredPage {
         if (isFinite(mcdu.zeroFuelWeightMassCenter)) {
             zfwCgCell = mcdu.zeroFuelWeightMassCenter.toFixed(1);
         }
-        mcdu.onRightInput[2] = async () => {
-            const value = mcdu.inOut;
-            mcdu.clearUserInput();
+        mcdu.onRightInput[2] = async (value) => {
             if (await mcdu.trySetZeroFuelWeightZFWCG(value)) {
                 CDUInitPage.ShowPage2(mcdu);
             }

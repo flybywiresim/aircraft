@@ -40,9 +40,7 @@ class CDULateralRevisionPage {
             [""],
             ["<RETURN"]
         ]);
-        mcdu.onRightInput[2] = async () => {
-            const value = mcdu.inOut;
-            mcdu.clearUserInput();
+        mcdu.onRightInput[2] = async (value) => {
             mcdu.insertWaypoint(value, waypointIndexFP + 1, (result) => {
                 if (result) {
                     CDUFlightPlanPage.ShowPage(mcdu);

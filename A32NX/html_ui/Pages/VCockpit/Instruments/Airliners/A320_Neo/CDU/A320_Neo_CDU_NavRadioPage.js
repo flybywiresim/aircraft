@@ -17,10 +17,8 @@ class CDUNavRadioPage {
             if (mcdu.vor1Frequency > 0) {
                 vor1FrequencyCell = "[]/" + mcdu.vor1Frequency.toFixed(2);
             }
-            mcdu.onLeftInput[0] = () => {
-                const value = mcdu.inOut;
+            mcdu.onLeftInput[0] = (value) => {
                 const numValue = parseFloat(value);
-                mcdu.clearUserInput();
                 if (isFinite(numValue) && numValue >= 108 && numValue <= 117.95 && RadioNav.isHz50Compliant(numValue)) {
                     mcdu.vor1Frequency = numValue;
                     if (mcdu.isRadioNavActive()) {
@@ -46,10 +44,8 @@ class CDUNavRadioPage {
             if (mcdu.vor1Course >= 0) {
                 vor1CourseCell = mcdu.vor1Course.toFixed(0) + "°";
             }
-            mcdu.onLeftInput[1] = () => {
-                const value = mcdu.inOut;
+            mcdu.onLeftInput[1] = (value) => {
                 const numValue = parseFloat(value);
-                mcdu.clearUserInput();
                 if (isFinite(numValue) && numValue >= 0 && numValue < 360) {
                     SimVar.SetSimVarValue("K:VOR1_SET", "number", numValue).then(() => {
                         mcdu.vor1Course = numValue;
@@ -76,9 +72,7 @@ class CDUNavRadioPage {
             } else {
                 ilsFrequencyCell += "[ ]";
             }
-            mcdu.onLeftInput[2] = () => {
-                const value = mcdu.inOut;
-                mcdu.clearUserInput();
+            mcdu.onLeftInput[2] = (value) => {
                 if (mcdu.setIlsFrequency(value)) {
                     CDUNavRadioPage.ShowPage(mcdu);
                 }
@@ -87,10 +81,8 @@ class CDUNavRadioPage {
             if (mcdu.adf1Frequency > 0) {
                 adf1FrequencyCell = "[]/" + mcdu.adf1Frequency.toFixed(2);
             }
-            mcdu.onLeftInput[4] = () => {
-                const value = mcdu.inOut;
+            mcdu.onLeftInput[4] = (value) => {
                 const numValue = parseFloat(value);
-                mcdu.clearUserInput();
                 if (isFinite(numValue) && numValue >= 100 && numValue <= 1699.9) {
                     SimVar.SetSimVarValue("K:ADF_COMPLETE_SET", "Frequency ADF BCD32", Avionics.Utils.make_adf_bcd32(numValue * 1000)).then(() => {
                         mcdu.adf1Frequency = numValue;
@@ -111,10 +103,8 @@ class CDUNavRadioPage {
             if (mcdu.vor2Frequency > 0) {
                 vor2FrequencyCell = "[]/" + mcdu.vor2Frequency.toFixed(2);
             }
-            mcdu.onRightInput[0] = () => {
-                const value = mcdu.inOut;
+            mcdu.onRightInput[0] = (value) => {
                 const numValue = parseFloat(value);
-                mcdu.clearUserInput();
                 if (isFinite(numValue) && numValue >= 108 && numValue <= 117.95 && RadioNav.isHz50Compliant(numValue)) {
                     mcdu.vor2Frequency = numValue;
                     if (mcdu.isRadioNavActive()) {
@@ -140,10 +130,8 @@ class CDUNavRadioPage {
             if (mcdu.vor2Course >= 0) {
                 vor2CourseCell = mcdu.vor2Course.toFixed(0) + "°";
             }
-            mcdu.onRightInput[1] = () => {
-                const value = mcdu.inOut;
+            mcdu.onRightInput[1] = (value) => {
                 const numValue = parseFloat(value);
-                mcdu.clearUserInput();
                 if (isFinite(numValue) && numValue >= 0 && numValue < 360) {
                     SimVar.SetSimVarValue("K:VOR2_SET", "number", numValue).then(() => {
                         mcdu.vor2Course = numValue;
@@ -159,10 +147,8 @@ class CDUNavRadioPage {
             if (mcdu.adf2Frequency > 0) {
                 adf2FrequencyCell = mcdu.adf2Frequency.toFixed(2) + "/[]";
             }
-            mcdu.onRightInput[4] = () => {
-                const value = mcdu.inOut;
+            mcdu.onRightInput[4] = (value) => {
                 const numValue = parseFloat(value);
-                mcdu.clearUserInput();
                 if (isFinite(numValue) && numValue >= 100 && numValue <= 1699.9) {
                     SimVar.SetSimVarValue("K:ADF2_COMPLETE_SET", "Frequency ADF BCD32", Avionics.Utils.make_adf_bcd32(numValue * 1000)).then(() => {
                         mcdu.adf2Frequency = numValue;
