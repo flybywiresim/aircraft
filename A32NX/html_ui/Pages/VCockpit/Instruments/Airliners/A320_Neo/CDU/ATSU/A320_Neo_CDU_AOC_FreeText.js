@@ -66,6 +66,9 @@ class CDUAocFreeText {
             CDUAocFreeText.ShowPage(mcdu, store);
         };
 
+        mcdu.rightInputDelay[5] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
         mcdu.onRightInput[5] = async () => {
             const storedTelexStatus = NXDataStore.get("CONFIG_TELEX_STATUS", "DISABLED");
 
@@ -131,6 +134,10 @@ class CDUAocFreeText {
             } else {
                 mcdu.showErrorMessage("TELEX NOT ENABLED");
             }
+        };
+
+        mcdu.leftInputDelay[5] = () => {
+            return mcdu.getDelaySwitchPage();
         };
 
         mcdu.onLeftInput[5] = () => {

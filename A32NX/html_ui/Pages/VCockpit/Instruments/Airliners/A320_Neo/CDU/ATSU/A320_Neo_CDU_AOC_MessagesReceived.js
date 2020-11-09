@@ -51,6 +51,10 @@ class CDUAocMessagesReceived {
             };
         }
 
+        mcdu.leftInputDelay[0] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
+
         mcdu.onLeftInput[0] = (value) => {
             if (messages[offset - 5]) {
                 if (value === FMCMainDisplay.clrValue) {
@@ -60,6 +64,10 @@ class CDUAocMessagesReceived {
                     CDUAocRequestsMessage.ShowPage(mcdu, messages[offset - 5]);
                 }
             }
+        };
+
+        mcdu.leftInputDelay[1] = () => {
+            return mcdu.getDelaySwitchPage();
         };
 
         mcdu.onLeftInput[1] = (value) => {
@@ -73,6 +81,10 @@ class CDUAocMessagesReceived {
             }
         };
 
+        mcdu.leftInputDelay[2] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
+
         mcdu.onLeftInput[2] = (value) => {
             if (messages[offset - 3]) {
                 if (value === FMCMainDisplay.clrValue) {
@@ -82,6 +94,10 @@ class CDUAocMessagesReceived {
                     CDUAocRequestsMessage.ShowPage(mcdu, messages[offset - 3]);
                 }
             }
+        };
+
+        mcdu.leftInputDelay[3] = () => {
+            return mcdu.getDelaySwitchPage();
         };
 
         mcdu.onLeftInput[3] = (value) => {
@@ -95,6 +111,10 @@ class CDUAocMessagesReceived {
             }
         };
 
+        mcdu.leftInputDelay[4] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
+
         mcdu.onLeftInput[4] = (value) => {
             if (messages[offset - 1]) {
                 if (value === FMCMainDisplay.clrValue) {
@@ -104,6 +124,10 @@ class CDUAocMessagesReceived {
                     CDUAocRequestsMessage.ShowPage(mcdu, messages[offset - 1]);
                 }
             }
+        };
+
+        mcdu.leftInputDelay[5] = () => {
+            return mcdu.getDelaySwitchPage();
         };
 
         mcdu.onLeftInput[5] = () => {

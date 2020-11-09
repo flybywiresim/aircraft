@@ -18,8 +18,15 @@ class CDUCfdsMainMenu {
             ["*SEND[color]blue", "PRINT*[color]blue", "FLT REP"]
         ]);
 
+        mcdu.leftInputDelay[3] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
         mcdu.onLeftInput[3] = () => {
             CDUCfdsAvionicsMenu.ShowPage(mcdu);
+        };
+
+        mcdu.leftInputDelay[4] = () => {
+            return mcdu.getDelaySwitchPage();
         };
         mcdu.onLeftInput[4] = () => {
             CDUCfdsTestMenu.ShowPage(mcdu);

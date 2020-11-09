@@ -19,9 +19,15 @@ class CDU_CFDS_Test_Inst_EIS_Menu {
             ["<RETURN[color]blue"]
         ]);
 
+        mcdu.leftInputDelay[5] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
         mcdu.onLeftInput[5] = () => {
             SimVar.SetSimVarValue(`L:A32NX_DMC_DISPLAYTEST:${eisIndex}`, "Enum", 0);
             CDUCfdsTestInst.ShowPage(mcdu);
+        };
+        mcdu.rightInputDelay[3] = () => {
+            return mcdu.getDelaySwitchPage();
         };
         mcdu.onRightInput[3] = () => {
             CDU_CFDS_Test_Inst_EIS_Tests.ShowPage(mcdu, eisIndex);

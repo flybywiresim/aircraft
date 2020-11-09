@@ -17,6 +17,9 @@ class CDUCfdsTestCom {
             ["<RETURN[color]blue", "VHF 3>[color]inop"]
         ]);
 
+        mcdu.leftInputDelay[5] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
         mcdu.onLeftInput[5] = () => {
             CDUCfdsTestMenu.ShowPage(mcdu);
         };
@@ -48,6 +51,9 @@ class CDUCfdsTestCom {
             ["<RETURN[color]blue"]
         ]);
 
+        mcdu.leftInputDelay[5] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
         mcdu.onLeftInput[5] = () => {
             CDUCfdsTestMenu.ShowPage(mcdu);
         };

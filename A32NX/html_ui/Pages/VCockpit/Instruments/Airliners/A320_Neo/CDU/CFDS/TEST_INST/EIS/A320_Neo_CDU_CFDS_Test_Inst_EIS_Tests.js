@@ -19,8 +19,14 @@ class CDU_CFDS_Test_Inst_EIS_Tests {
             ["<RETURN[color]blue"]
         ]);
 
+        mcdu.leftInputDelay[2] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
         mcdu.onLeftInput[2] = () => {
             CDU_CFDS_Test_Inst_EIS_Tests_Display.ShowPage(mcdu, eisIndex);
+        };
+        mcdu.leftInputDelay[5] = () => {
+            return mcdu.getDelaySwitchPage();
         };
         mcdu.onLeftInput[5] = () => {
             CDU_CFDS_Test_Inst_EIS_Menu.ShowPage(mcdu, eisIndex);

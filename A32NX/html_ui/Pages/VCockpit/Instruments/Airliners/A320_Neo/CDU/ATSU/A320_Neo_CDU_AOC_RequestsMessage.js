@@ -63,6 +63,9 @@ class CDUAocRequestsMessage {
             }
         };
 
+        mcdu.leftInputDelay[5] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
         mcdu.onLeftInput[5] = () => {
             CDUAocMessagesReceived.ShowPage(mcdu);
         };
