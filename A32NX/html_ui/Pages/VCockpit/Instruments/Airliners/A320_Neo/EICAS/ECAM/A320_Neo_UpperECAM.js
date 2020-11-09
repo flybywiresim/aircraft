@@ -2094,11 +2094,11 @@ var A320_Neo_UpperECAM;
             this.currentFlapsArrow = document.createElementNS(Avionics.SVG.NS, "path");
             this.currentFlapsArrow.setAttribute("class", "currentArrow");
             rootSVG.appendChild(this.currentFlapsArrow);
-            this.targetSlatsArrow = document.createElementNS(Avionics.SVG.NS, "path");
-            this.targetSlatsArrow.setAttribute("class", "targetArrow");
+            this.targetSlatsArrow = document.createElementNS(Avionics.SVG.NS, "polygon");
+            this.targetSlatsArrow.setAttribute("class", "targetDot");
             rootSVG.appendChild(this.targetSlatsArrow);
-            this.targetFlapsArrow = document.createElementNS(Avionics.SVG.NS, "path");
-            this.targetFlapsArrow.setAttribute("class", "targetArrow");
+            this.targetFlapsArrow = document.createElementNS(Avionics.SVG.NS, "polygon");
+            this.targetFlapsArrow.setAttribute("class", "targetDot");
             rootSVG.appendChild(this.targetFlapsArrow);
             this.targetSlatsArrowsStrings = new Array();
             this.targetSlatsArrowsStrings.push(this.generateArrowPathD(this.slatArrowPathD, null, this.slatDotPositions[0], this.slatDotPositions[1], 0));
@@ -2112,11 +2112,20 @@ var A320_Neo_UpperECAM;
             this.targetFlapsArrowsStrings.push(this.generateArrowPathD(this.flapArrowPathD, null, this.flapDotPositions[1], this.flapDotPositions[2], 1));
             this.targetFlapsArrowsStrings.push(this.generateArrowPathD(this.flapArrowPathD, null, this.flapDotPositions[2], this.flapDotPositions[3], 1));
             this.targetFlapsArrowsStrings.push(this.generateArrowPathD(this.flapArrowPathD, null, this.flapDotPositions[3], this.flapDotPositions[4], 1));
+            this.targetSlatsDots = new Array();
+            this.targetSlatsDots.push(A320_Neo_UpperECAM.createSlatParallelogram("targetDot", this.slatDotPositions[1].x, this.slatDotPositions[1].y + 20).getAttribute("points"));
+            this.targetSlatsDots.push(A320_Neo_UpperECAM.createSlatParallelogram("targetDot", this.slatDotPositions[2].x, this.slatDotPositions[2].y + 20).getAttribute("points"));
+            this.targetSlatsDots.push(A320_Neo_UpperECAM.createSlatParallelogram("targetDot", this.slatDotPositions[2].x, this.slatDotPositions[2].y + 20).getAttribute("points"));
+            this.targetSlatsDots.push(A320_Neo_UpperECAM.createSlatParallelogram("targetDot", this.slatDotPositions[3].x, this.slatDotPositions[3].y + 20).getAttribute("points"));
+            this.targetFlapsDots = new Array();
+            this.targetFlapsDots.push(A320_Neo_UpperECAM.createFlapParallelogram("targetDot", this.flapDotPositions[1].x, this.flapDotPositions[1].y + 20).getAttribute("points"));
+            this.targetFlapsDots.push(A320_Neo_UpperECAM.createFlapParallelogram("targetDot", this.flapDotPositions[2].x, this.flapDotPositions[2].y + 20).getAttribute("points"));
+            this.targetFlapsDots.push(A320_Neo_UpperECAM.createFlapParallelogram("targetDot", this.flapDotPositions[3].x, this.flapDotPositions[3].y + 20).getAttribute("points"));
+            this.targetFlapsDots.push(A320_Neo_UpperECAM.createFlapParallelogram("targetDot", this.flapDotPositions[4].x, this.flapDotPositions[4].y + 20).getAttribute("points"));
             this.hideOnInactiveGroup.appendChild(A320_Neo_UpperECAM.createSVGText("S", "sfText", this.sTextPos.x.toString(), this.sTextPos.y.toString()));
             this.hideOnInactiveGroup.appendChild(A320_Neo_UpperECAM.createSVGText("F", "sfText", this.fTextPos.x.toString(), this.fTextPos.y.toString()));
             this.currentStateText = A320_Neo_UpperECAM.createSVGText("", "state", this.currentStateTextPos.x.toString(), this.currentStateTextPos.y.toString());
             this.hideOnInactiveGroup.appendChild(this.currentStateText);
-            const dotSizeStr = this.dotSize.toString();
             for (var i = 1; i < this.slatDotPositions.length; ++i) {
                 this.hideOnInactiveGroup.appendChild(A320_Neo_UpperECAM.createSlatParallelogram("dot", this.slatDotPositions[i].x, this.slatDotPositions[i].y));
             }
@@ -2249,7 +2258,7 @@ var A320_Neo_UpperECAM;
             }
             if (this.targetSlatsArrow != null) {
                 if (slatsAngleChanged && (this.targetSlatsArrowsStrings != null) && (slatsTargetIndex >= 0) && (slatsTargetIndex < this.targetSlatsArrowsStrings.length)) {
-                    this.targetSlatsArrow.setAttribute("d", this.targetSlatsArrowsStrings[slatsTargetIndex]);
+                    this.targetSlatsArrow.setAttribute("points", this.targetSlatsDots[slatsTargetIndex - 1]);
                     this.targetSlatsArrow.style.display = "block";
                 } else {
                     this.targetSlatsArrow.style.display = "none";
@@ -2257,7 +2266,7 @@ var A320_Neo_UpperECAM;
             }
             if (this.targetFlapsArrow != null) {
                 if (flapsAngleChanged && (this.targetFlapsArrowsStrings != null) && (flapsTargetIndex >= 0) && (flapsTargetIndex < this.targetFlapsArrowsStrings.length)) {
-                    this.targetFlapsArrow.setAttribute("d", this.targetFlapsArrowsStrings[flapsTargetIndex]);
+                    this.targetFlapsArrow.setAttribute("points", this.targetFlapsDots[flapsTargetIndex - 1]);
                     this.targetFlapsArrow.style.display = "block";
                 } else {
                     this.targetFlapsArrow.style.display = "none";

@@ -229,8 +229,13 @@ a320-neo-upper-ecam #FlapsPanel #DiagramSVG .state {
 }
 a320-neo-upper-ecam #FlapsPanel #DiagramSVG .dot {
   stroke: var(--displayWhite);
-  stroke-width: 2.5;
-  fill: transparent;
+  stroke-width: 3px;
+  fill: none;
+}
+a320-neo-upper-ecam #FlapsPanel #DiagramSVG .targetDot {
+  stroke: var(--displayCyan);
+  stroke-width: 3px;
+  fill: none;
 }
 a320-neo-upper-ecam #FlapsPanel #DiagramSVG .shape {
   fill: none;
@@ -241,11 +246,6 @@ a320-neo-upper-ecam #FlapsPanel #DiagramSVG .currentArrow {
   fill: none;
   stroke-width: 3px;
   stroke: var(--displayGreen);
-}
-a320-neo-upper-ecam #FlapsPanel #DiagramSVG .targetArrow {
-  fill: none;
-  stroke-width: 3px;
-  stroke: var(--displayCyan);
 }
 
 a320-neo-upper-ecam #InfoBottomLeftPanel,
