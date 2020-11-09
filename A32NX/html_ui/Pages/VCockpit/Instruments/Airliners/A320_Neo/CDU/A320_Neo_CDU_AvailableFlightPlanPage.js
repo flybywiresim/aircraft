@@ -1,6 +1,7 @@
 class CDUAvailableFlightPlanPage {
     static ShowPage(mcdu) {
         mcdu.clearDisplay();
+        mcdu.page.Current = mcdu.page.AvailableFlightPlanPage;
         let fromTo = "NO ORIGIN/DEST";
         if (mcdu.flightPlanManager.getOrigin()) {
             if (mcdu.flightPlanManager.getDestination()) {

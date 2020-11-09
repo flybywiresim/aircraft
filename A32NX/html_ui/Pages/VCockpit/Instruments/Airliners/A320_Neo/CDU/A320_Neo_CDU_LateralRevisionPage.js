@@ -3,6 +3,7 @@ class CDULateralRevisionPage {
         console.log("CDULateralRevisionPage.ShowPage");
         console.log(waypoint);
         mcdu.clearDisplay();
+        mcdu.page.Current = mcdu.page.LateralRevisionPage;
         let waypointIdent = "---";
         if (waypoint) {
             waypointIdent = waypoint.ident;
