@@ -1,6 +1,8 @@
 class CDUFuelPredPage {
     static ShowPage(mcdu) {
         mcdu.clearDisplay();
+        mcdu.page.Current = mcdu.page.FuelPredPage;
+        mcdu.activeSystem = 'FMGC';
         const isFlying = parseInt(SimVar.GetSimVarValue("GROUND VELOCITY", "knots")) > 30;
         let destIdentCell = "---";
         let destTimeCell = "";

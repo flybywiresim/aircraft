@@ -1,0 +1,149 @@
+<ModelBehaviors>
+    <Template Name="FBW_Airbus_FCU_Baro_Knob">
+        <DefaultTemplateParameters>
+            <ID>1</ID>
+            <ANIMREF_ID>-1</ANIMREF_ID>
+            <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_BARO_KNOB_INCREASE</ANIMTIP_0>
+            <ANIMTIP_0_ON_CURSOR>TurnRight</ANIMTIP_0_ON_CURSOR>
+            <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_BARO_KNOB_DECREASE</ANIMTIP_1>
+            <ANIMTIP_1_ON_CURSOR>TurnLeft</ANIMTIP_1_ON_CURSOR>
+            <ANIMTIP_2>TT:COCKPIT.TOOLTIPS.BARO_REF_SET_STD</ANIMTIP_2>
+            <ANIMTIP_2_ON_CURSOR>DownArrow</ANIMTIP_2_ON_CURSOR>
+            <ANIMTIP_3>TT:COCKPIT.TOOLTIPS.BARO_ENABLE_SELECTION</ANIMTIP_3>
+            <ANIMTIP_3_ON_CURSOR>UpArrow</ANIMTIP_3_ON_CURSOR>
+            <ANIMTIP_4>TT:COCKPIT.TOOLTIPS.BARO_REF_SET_STD</ANIMTIP_4>
+            <ANIMTIP_4_ON_CURSOR>Hand</ANIMTIP_4_ON_CURSOR>
+        </DefaultTemplateParameters>
+
+        <UseTemplate Name="ASOBO_GT_Helper_Suffix_ID_Appender">
+            <TEMPLATE_TO_CALL>FBW_Airbus_FCU_Baro_Knob_SubTemplate</TEMPLATE_TO_CALL>
+        </UseTemplate>
+    </Template>
+
+    <Template Name="FBW_Airbus_FCU_Baro_Knob_SubTemplate">
+        <DefaultTemplateParameters>
+            <ANIM_NAME>AUTOPILOT_Knob_Baro_#ID##SUFFIX_ID#</ANIM_NAME>
+            <ANIM_NAME_KNOB>#ANIM_NAME#</ANIM_NAME_KNOB>
+            <ANIM_NAME_PUSH>AUTOPILOT_Knob_Baro_#ID#_push#SUFFIX_ID#</ANIM_NAME_PUSH>
+            <ANIM_NAME_PUSHPULL>AUTOPILOT_Knob_Baro_#ID#_pushpull#SUFFIX_ID#</ANIM_NAME_PUSHPULL>
+            <ANIMREF_ID>-1</ANIMREF_ID>
+            <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_BARO_KNOB_INCREASE</ANIMTIP_0>
+            <ANIMTIP_0_ON_CURSOR>TurnRight</ANIMTIP_0_ON_CURSOR>
+            <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_BARO_KNOB_DECREASE</ANIMTIP_1>
+            <ANIMTIP_1_ON_CURSOR>TurnLeft</ANIMTIP_1_ON_CURSOR>
+            <BARO_ID>#ID#</BARO_ID>
+            <MODE_BARO>0</MODE_BARO>
+            <MODE_QNH>1</MODE_QNH>
+            <MODE_STD_BARO>2</MODE_STD_BARO>
+            <MODE_STD_QNH>3</MODE_STD_QNH>      
+            <NODE_ID>AUTOPILOT_Knob_Baro_#ID##SUFFIX_ID#</NODE_ID>
+            <PART_ID>AUTOPILOT_Knob_Baro</PART_ID>
+        </DefaultTemplateParameters>
+
+        <Component ID="#NODE_ID#" Node="#NODE_ID#">
+            <UseTemplate Name="ASOBO_GT_Knob_Infinite_PushPull">
+                <ANTICLOCKWISE_CODE>
+                    (L:XMLVAR_Baro#BARO_ID#_Mode) #MODE_STD_BARO# != (L:XMLVAR_Baro#BARO_ID#_Mode) #MODE_STD_QNH# != and if{
+                        (L:XMLVAR_Baro_Selector_HPA_#BARO_ID#) if{
+                            #BARO_ID# (A:KOHLSMAN SETTING MB:1, mbars) -- 16 * (&gt;K:2:KOHLSMAN_SET)
+                        } els{
+                            #BARO_ID# (&gt;K:KOHLSMAN_DEC)
+                        }
+                    }
+                </ANTICLOCKWISE_CODE>
+
+                <CLOCKWISE_CODE>
+                    (L:XMLVAR_Baro#BARO_ID#_Mode) #MODE_STD_BARO# != (L:XMLVAR_Baro#BARO_ID#_Mode) #MODE_STD_QNH# != and if{
+                        (L:XMLVAR_Baro_Selector_HPA_#BARO_ID#) if{
+                            #BARO_ID# (A:KOHLSMAN SETTING MB:1, mbars) ++ 16 * (&gt;K:2:KOHLSMAN_SET)
+                        } els{
+                            #BARO_ID# (&gt;K:KOHLSMAN_INC)
+                        }
+                    }
+                </CLOCKWISE_CODE>
+                
+                <PULL_CODE>
+                    (L:XMLVAR_Baro#BARO_ID#_Mode) #MODE_BARO# == if{ 
+                        #MODE_STD_BARO# (&gt;L:XMLVAR_Baro#BARO_ID#_Mode) 
+                    } els{ 
+                        (L:XMLVAR_Baro#BARO_ID#_Mode) #MODE_QNH# == if{ 
+                            #MODE_STD_QNH# (&gt;L:XMLVAR_Baro#BARO_ID#_Mode) 
+                        } 
+                    }
+                </PULL_CODE>
+                <PUSH_CODE>
+                    (L:XMLVAR_Baro#BARO_ID#_Mode) #MODE_STD_BARO# == if{
+                        #MODE_BARO# (&gt;L:XMLVAR_Baro#BARO_ID#_Mode)
+                    } els{
+                        (L:XMLVAR_Baro#BARO_ID#_Mode) #MODE_STD_QNH# == if{
+                            #MODE_QNH# (&gt;L:XMLVAR_Baro#BARO_ID#_Mode)
+                        } els{
+                            (L:XMLVAR_Baro#BARO_ID#_Mode) ! (&gt;L:XMLVAR_Baro#BARO_ID#_Mode)
+                        }
+                    }
+                </PUSH_CODE>
+
+                <CENTER_RADIUS>0</CENTER_RADIUS>
+                <COUNT>36</COUNT>
+                <OVERRIDE_PUSH_ANIM_CODE>
+                    0 100 
+                        (L:XMLVAR_Baro#BARO_ID#_Mode) #MODE_STD_BARO# == 
+                        (L:XMLVAR_Baro#BARO_ID#_Mode) #MODE_STD_QNH# == or ?
+                    50 
+                        (O:_PushAnimVar) ?
+                </OVERRIDE_PUSH_ANIM_CODE>
+                <WWISE_EVENT>autopilot_selector_knob</WWISE_EVENT>
+                <WWISE_EVENT_1>autopilot_knob_push_button_on</WWISE_EVENT_1>
+                <WWISE_EVENT_2>autopilot_knob_push_button_off</WWISE_EVENT_2>
+            </UseTemplate>
+        </Component>
+    </Template>
+
+    <Template Name="FBW_Airbus_FCU_Altitude_Knob">
+        <DefaultTemplateParameters>
+            <ID>1</ID>
+        </DefaultTemplateParameters>
+
+        <UseTemplate Name="ASOBO_GT_Helper_Suffix_ID_Appender">
+            <TEMPLATE_TO_CALL>FBW_Airbus_FCU_Altitude_Knob_SubTemplate</TEMPLATE_TO_CALL>
+        </UseTemplate>
+    </Template>
+
+    <Template Name="FBW_Airbus_FCU_Altitude_Knob_SubTemplate">
+        <DefaultTemplateParameters>
+            <ANIM_NAME>AUTOPILOT_Knob_Altitude#SUFFIX_ID#</ANIM_NAME>
+            <ANIM_NAME_PUSHPULL>AUTOPILOT_Knob_Altitude_PushPull#SUFFIX_ID#</ANIM_NAME_PUSHPULL>
+            <HELPID>HELPID_AUTOPILOT_ALTITUDE_INDICATOR</HELPID>
+            <ID>1</ID>
+            <INCREMENT>(L:XMLVAR_Autopilot_Altitude_Increment)</INCREMENT>
+            <NODE_ID>AUTOPILOT_Knob_Altitude#SUFFIX_ID#</NODE_ID>
+            <PART_ID>AUTOPILOT_Knob_Altitude</PART_ID>
+        </DefaultTemplateParameters>
+
+        <Component ID="#NODE_ID#" Node="#NODE_ID#">
+            <UseTemplate Name="ASOBO_GT_Knob_Infinite_PushPull">
+                <ANTICLOCKWISE_CODE>
+                    3 (A:AUTOPILOT ALTITUDE LOCK VAR:3, feet) #INCREMENT# - 100 max (&gt;K:2:AP_ALT_VAR_SET_ENGLISH) (&gt;H:AP_KNOB_Down)
+                    (&gt;H:A320_Neo_CDU_AP_DEC_ALT)
+                </ANTICLOCKWISE_CODE>
+                <CLOCKWISE_CODE>
+                    3 (A:AUTOPILOT ALTITUDE LOCK VAR:3, feet) #INCREMENT# + 49000 min (&gt;K:2:AP_ALT_VAR_SET_ENGLISH) (&gt;H:AP_KNOB_Up)
+                    (&gt;H:A320_Neo_CDU_AP_INC_ALT)
+                </CLOCKWISE_CODE>
+
+                <PULL_CODE>
+                    (&gt;H:A320_Neo_CDU_MODE_SELECTED_ALTITUDE)
+                </PULL_CODE>
+                <PUSH_CODE>
+                    (&gt;H:A320_Neo_CDU_MODE_MANAGED_ALTITUDE)
+                </PUSH_CODE> <!-- TODO - Change - Should be managed climb/descent (comment from Asobo) -->
+
+                <CENTER_RADIUS>0</CENTER_RADIUS>
+                <COUNT>36</COUNT>
+                <WWISE_EVENT>autopilot_altitude_knob</WWISE_EVENT>
+                <WWISE_EVENT_1>autopilot_knob_push_button_on</WWISE_EVENT_1>
+                <WWISE_EVENT_2>autopilot_knob_push_button_off</WWISE_EVENT_2>
+            </UseTemplate>
+        </Component>
+    </Template>
+</ModelBehaviors>

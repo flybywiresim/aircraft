@@ -552,22 +552,22 @@
 
         <Component ID="Pedestal_Aft">
             <Component ID="Engines">
-                <UseTemplate Name="ASOBO_ENGINE_Switch_Master_Template">
+                <UseTemplate Name="FBW_ENGINE_Switch_Master_Template">
                     <AIRBUS_TYPE/>
                     <ANIM_NAME>SWITCH_ENGINES_ENG1</ANIM_NAME>
                     <NODE_ID>SWITCH_ENGINES_ENG1</NODE_ID>
                     <ID>1</ID>
-                    <VALVE_ID>6</VALVE_ID>
+                    <VALVE_ID>1</VALVE_ID>
                     <!-- This makes it not light up -->
                     <POTENTIOMETER>9999</POTENTIOMETER>
                 </UseTemplate>
 
-                <UseTemplate Name="ASOBO_ENGINE_Switch_Master_Template">
+                <UseTemplate Name="FBW_ENGINE_Switch_Master_Template">
                     <AIRBUS_TYPE/>
                     <ANIM_NAME>SWITCH_ENGINES_ENG2</ANIM_NAME>
                     <NODE_ID>SWITCH_ENGINES_ENG2</NODE_ID>
                     <ID>2</ID>
-                    <VALVE_ID>7</VALVE_ID>
+                    <VALVE_ID>2</VALVE_ID>
                     <!-- This makes it not light up -->
                     <POTENTIOMETER>9999</POTENTIOMETER>
                 </UseTemplate>
@@ -1589,7 +1589,7 @@
                 </DefaultTemplateParameters>
                 <UseTemplate Name="FBW_Airbus_Fuel_Crossfeed">
                     <NODE_ID>PUSH_OVHD_FUEL_XFEED</NODE_ID>
-                    <ID>1</ID>
+                    <ID>3</ID>
                     <OFF_TOOLTIP>COCKPIT.TOOLTIPS.FUEL_XFEED_TURN_ON</OFF_TOOLTIP>
                     <ON_TOOLTIP>COCKPIT.TOOLTIPS.FUEL_XFEED_TURN_OFF</ON_TOOLTIP>
                 </UseTemplate>
@@ -2560,13 +2560,13 @@
                 <ANIM_NAME>KNOB_AUTOPILOT_SELECTOR_R1</ANIM_NAME>
             </UseTemplate>
 
-            <UseTemplate Name="A32NX_AUTOPILOT_Knob_Baro_Template">
+            <UseTemplate Name="FBW_Airbus_FCU_Baro_Knob">
                 <NODE_ID>KNOB_AUTOPILOT_KNOB1_L</NODE_ID>
                 <ANIM_NAME_KNOB>KNOB_AUTOPILOT_KNOB1_L</ANIM_NAME_KNOB>
                 <ANIM_NAME_PUSHPULL>PUSH_AUTOPILOT_KNOB1_L</ANIM_NAME_PUSHPULL>
                 <AIRLINER_TYPE>A320</AIRLINER_TYPE>
             </UseTemplate>
-            <UseTemplate Name="A32NX_AUTOPILOT_Knob_Baro_Template">
+            <UseTemplate Name="FBW_Airbus_FCU_Baro_Knob">
                 <NODE_ID>KNOB_AUTOPILOT_KNOB1_R</NODE_ID>
                 <ANIM_NAME_KNOB>KNOB_AUTOPILOT_KNOB1_R</ANIM_NAME_KNOB>
                 <ANIM_NAME_PUSHPULL>PUSH_AUTOPILOT_KNOB1_R</ANIM_NAME_PUSHPULL>
@@ -2807,7 +2807,7 @@
 
             </UseTemplate>
 
-            <UseTemplate Name="ASOBO_AUTOPILOT_Knob_Altitude_Template">
+            <UseTemplate Name="FBW_Airbus_FCU_Altitude_Knob">
                 <NODE_ID>KNOB_AUTOPILOT_KNOB_ALT</NODE_ID>
                 <ANIM_NAME_KNOB>KNOB_AUTOPILOT_ALT</ANIM_NAME_KNOB>
                 <ANIM_NAME_PUSHPULL>PUSH_AUTOPILOT_ALT</ANIM_NAME_PUSHPULL>
@@ -2820,7 +2820,6 @@
                 <ANIMTIP_2_ON_CURSOR>UpArrow</ANIMTIP_2_ON_CURSOR>
                 <ANIMTIP_3>TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_ENGAGE_SELECTED_ALTITUDE_MODE</ANIMTIP_3>
                 <ANIMTIP_3_ON_CURSOR>DownArrow</ANIMTIP_3_ON_CURSOR>
-                <TYPE>AIRBUS</TYPE>
             </UseTemplate>
 
             <UseTemplate Name="ASOBO_AUTOPILOT_Knob_VerticalSpeed_Template">
@@ -3776,6 +3775,5 @@
                 <NODE_ID>PUSH_OVHD_ELT_ON</NODE_ID>
             </UseTemplate>
         </Component>
-
     </Behaviors>
 </ModelInfo>

@@ -1,6 +1,8 @@
 class CDUNavRadioPage {
     static ShowPage(mcdu) {
         mcdu.clearDisplay();
+        mcdu.page.Current = mcdu.page.NavRadioPage;
+        mcdu.activeSystem = 'FMGC';
         mcdu.refreshPageCallback = () => {
             CDUNavRadioPage.ShowPage(mcdu);
         };
