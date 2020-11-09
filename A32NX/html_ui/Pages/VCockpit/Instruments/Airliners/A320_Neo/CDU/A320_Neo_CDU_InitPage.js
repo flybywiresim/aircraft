@@ -35,9 +35,7 @@ class CDUInitPage {
                 }
 
                 // Cost index
-                mcdu.onLeftInput[4] = () => {
-                    const value = mcdu.inOut;
-                    mcdu.clearUserInput();
+                mcdu.onLeftInput[4] = (value) => {
                     if (mcdu.tryUpdateCostIndex(value)) {
                         CDUInitPage.ShowPage1(mcdu);
                     }
@@ -57,10 +55,8 @@ class CDUInitPage {
                 }
 
                 // CRZ FL / FLX TEMP
-                mcdu.onLeftInput[5] = () => {
+                mcdu.onLeftInput[5] = (value) => {
                     mcdu._cruiseEntered = true;
-                    const value = mcdu.inOut;
-                    mcdu.clearUserInput();
                     if (mcdu.setCruiseFlightLevelAndTemperature(value)) {
                         CDUInitPage.ShowPage1(mcdu);
                     }
@@ -75,14 +71,12 @@ class CDUInitPage {
                 if (mcdu.altDestination) {
                     altDest = mcdu.altDestination.ident + "[color]blue";
                 }
-                mcdu.onLeftInput[1] = async () => {
-                    const value = mcdu.inOut;
+                mcdu.onLeftInput[1] = async (value) => {
                     switch (altDest) {
                         case "NONE":
                             if (value === "") {
                                 CDUAvailableFlightPlanPage.ShowPage(mcdu);
                             } else {
-                                mcdu.clearUserInput();
                                 if (await mcdu.tryUpdateAltDestination(value)) {
                                     CDUInitPage.ShowPage1(mcdu);
                                 }
@@ -92,7 +86,6 @@ class CDUInitPage {
                             if (value === "") {
                                 CDUAvailableFlightPlanPage.ShowPage(mcdu);
                             } else {
-                                mcdu.clearUserInput();
                                 if (await mcdu.tryUpdateAltDestination(value)) {
                                     CDUInitPage.ShowPage1(mcdu);
                                 }
@@ -106,9 +99,7 @@ class CDUInitPage {
         if (mcdu.coRoute) {
             coRoute = mcdu.coRoute + "[color]blue";
         }
-        mcdu.onLeftInput[0] = () => {
-            const value = mcdu.inOut;
-            mcdu.clearUserInput();
+        mcdu.onLeftInput[0] = (value) => {
             mcdu.updateCoRoute(value, (result) => {
                 if (result) {
                     CDUInitPage.ShowPage1(mcdu);
@@ -121,10 +112,8 @@ class CDUInitPage {
          * else show route selection pair if city pair is displayed
          * Ref: FCOM 4.03.20 P6
          */
-        mcdu.onRightInput[0] = () => {
-            const value = mcdu.inOut;
+        mcdu.onRightInput[0] = (value) => {
             if (value !== "") {
-                mcdu.clearUserInput();
                 mcdu.tryUpdateFromTo(value, (result) => {
                     if (result) {
                         CDUPerformancePage.UpdateThrRedAccFromOrigin(mcdu);
@@ -137,14 +126,15 @@ class CDUInitPage {
                 }
             }
         };
+        mcdu.rightInputDelay[2] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
         mcdu.onRightInput[2] = () => {
             if (alignOption) {
                 CDUIRSInit.ShowPage(mcdu);
             }
         };
-        mcdu.onLeftInput[2] = () => {
-            const value = mcdu.inOut;
-            mcdu.clearUserInput();
+        mcdu.onLeftInput[2] = (value) => {
             mcdu.updateFlightNo(value, (result) => {
                 if (result) {
                     CDUInitPage.ShowPage1(mcdu);
@@ -215,9 +205,7 @@ class CDUInitPage {
                 zfwColor = "[color]blue";
             }
         }
-        mcdu.onRightInput[0] = async () => {
-            const value = mcdu.inOut;
-            mcdu.clearUserInput();
+        mcdu.onRightInput[0] = async (value) => {
             if (value === "") {
                 mcdu.inOut =
                     (isFinite(mcdu.zeroFuelWeight) ? mcdu.zeroFuelWeight.toFixed(1) : "") +
@@ -237,9 +225,7 @@ class CDUInitPage {
                 blockFuelColor = "[color]blue";
             }
         }
-        mcdu.onRightInput[1] = async () => {
-            const value = mcdu.inOut;
-            mcdu.clearUserInput();
+        mcdu.onRightInput[1] = async (value) => {
             if (await mcdu.trySetBlockFuel(value)) {
                 mcdu._blockFuelEntered = true;
                 CDUInitPage.updateTowIfNeeded(mcdu);
@@ -259,9 +245,7 @@ class CDUInitPage {
                 taxiFuelCell = "{smallFront}" + mcdu.taxiFuelWeight.toFixed(1) + "{smallEnd}";
             }
         }
-        mcdu.onLeftInput[0] = async () => {
-            const value = mcdu.inOut;
-            mcdu.clearUserInput();
+        mcdu.onLeftInput[0] = async (value) => {
             if (await mcdu.trySetTaxiFuelWeight(value)) {
                 CDUInitPage.updateTowIfNeeded(mcdu);
                 CDUInitPage.ShowPage2(mcdu);
@@ -284,9 +268,7 @@ class CDUInitPage {
         let finalTimeCell = "{blueFront}0045{blueEnd}";
         let finalColor = "[color]white";
 
-        mcdu.onLeftInput[4] = async () => {
-            const value = mcdu.inOut;
-            mcdu.clearUserInput();
+        mcdu.onLeftInput[4] = async (value) => {
             if (await mcdu.trySetRouteFinalFuel(value)) {
                 CDUInitPage.ShowPage2(mcdu);
             }
@@ -334,9 +316,7 @@ class CDUInitPage {
                 rteRsvPercentCell = mcdu.getRouteReservedPercent().toFixed(1);
                 rteRsvColor = "[color]blue";
             }
-            mcdu.onLeftInput[2] = async () => {
-                const value = mcdu.inOut;
-                mcdu.clearUserInput();
+            mcdu.onLeftInput[2] = async (value) => {
                 if (await mcdu.trySetRouteReservedFuel(value)) {
                     CDUInitPage.ShowPage2(mcdu);
                 }
@@ -370,9 +350,7 @@ class CDUInitPage {
                 tripWindCell = "{smallFront}" + mcdu._windDir + mcdu.averageWind.toFixed(0).padStart(3, "0") + "{smallEnd}";
 
             }
-            mcdu.onRightInput[4] = async () => {
-                const value = mcdu.inOut;
-                mcdu.clearUserInput();
+            mcdu.onRightInput[4] = async (value) => {
                 if (await mcdu.trySetAverageWind(value)) {
                     CDUInitPage.ShowPage2(mcdu);
                 }
