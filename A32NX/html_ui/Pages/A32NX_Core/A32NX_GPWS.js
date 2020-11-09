@@ -73,7 +73,8 @@ class A32NX_GPWS {
             this.update_maxRA(radioAlt);
 
             this.GPWSMode1(radioAlt, vSpeed);
-            this.GPWSMode2(radioAlt, Airspeed, FlapsInLandingConfig, gearExtended);
+            //Mode 2 is disabled because of an issue with the terrain height simvar which causes false warnings very frequently. See PR#1742 for more info
+            //this.GPWSMode2(radioAlt, Airspeed, FlapsInLandingConfig, gearExtended);
             this.GPWSMode3(radioAlt, phase, FlapsInLandingConfig, gearExtended);
             this.GPWSMode4(radioAlt, Airspeed, FlapsInLandingConfig, gearExtended, phase);
             this.GPWSMode5(radioAlt);
