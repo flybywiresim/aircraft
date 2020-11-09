@@ -49,9 +49,7 @@ class CDU_OPTIONS_MainMenu {
         mcdu.onRightInput[0] = () => {
             CDU_OPTIONS_ADIRS.ShowPage(mcdu);
         };
-        mcdu.onRightInput[1] = () => {
-            const value = mcdu.inOut;
-            mcdu.clearUserInput();
+        mcdu.onRightInput[1] = (value) => {
             if (value === FMCMainDisplay.clrValue) {
                 NXDataStore.set("CONFIG_ACCEL_ALT", "1500");
             } else if (isNaN(value) || parseInt(value) < 1000 || parseInt(value) > 5000) {
@@ -61,9 +59,7 @@ class CDU_OPTIONS_MainMenu {
             }
             CDU_OPTIONS_MainMenu.ShowPage(mcdu);
         };
-        mcdu.onRightInput[2] = () => {
-            const value = mcdu.inOut;
-            mcdu.clearUserInput();
+        mcdu.onRightInput[2] = (value) => {
             if (value === FMCMainDisplay.clrValue) {
                 NXDataStore.set("CONFIG_SELF_TEST_TIME", "15");
             } else if (isNaN(value) || parseInt(value) < 5 || parseInt(value) > 40) {
