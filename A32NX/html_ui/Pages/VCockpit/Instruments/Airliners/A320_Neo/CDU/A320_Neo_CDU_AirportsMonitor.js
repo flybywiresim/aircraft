@@ -250,6 +250,10 @@ class CDUAirportsMonitor {
             this.ShowPage(mcdu);
         };
 
+        mcdu.rightInputDelay[5] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
+
         // EFOB/WIND
         if (!this.page2) {
             mcdu.onRightInput[5] = () => {

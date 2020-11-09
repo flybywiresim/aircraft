@@ -126,35 +126,75 @@ class CDUMenuPage {
 
         mcdu.onDir = () => {
             mcdu.showErrorMessage("");
-            CDUDirectToPage.ShowPage(mcdu);
+            const cur = mcdu.page.Current;
+            setTimeout(() => {
+                if (mcdu.page.Current === cur) {
+                    CDUDirectToPage.ShowPage(mcdu);
+                }
+            }, mcdu.getDelaySwitchPage());
         };
         mcdu.onProg = () => {
             mcdu.showErrorMessage("");
-            CDUProgressPage.ShowPage(mcdu);
+            const cur = mcdu.page.Current;
+            setTimeout(() => {
+                if (mcdu.page.Current === cur) {
+                    CDUProgressPage.ShowPage(mcdu);
+                }
+            }, mcdu.getDelaySwitchPage());
         };
         mcdu.onPerf = () => {
             mcdu.showErrorMessage("");
-            CDUPerformancePage.ShowPage(mcdu);
+            const cur = mcdu.page.Current;
+            setTimeout(() => {
+                if (mcdu.page.Current === cur) {
+                    CDUPerformancePage.ShowPage(mcdu);
+                }
+            }, mcdu.getDelaySwitchPage());
         };
         mcdu.onInit = () => {
             mcdu.showErrorMessage("");
-            CDUInitPage.ShowPage1(mcdu);
+            const cur = mcdu.page.Current;
+            setTimeout(() => {
+                if (mcdu.page.Current === cur) {
+                    CDUInitPage.ShowPage1(mcdu);
+                }
+            }, mcdu.getDelaySwitchPage());
         };
         mcdu.onData = () => {
             mcdu.showErrorMessage("");
-            CDUDataIndexPage.ShowPage1(mcdu);
+            const cur = mcdu.page.Current;
+            setTimeout(() => {
+                if (mcdu.page.Current === cur) {
+                    CDUDataIndexPage.ShowPage1(mcdu);
+                }
+            }, mcdu.getDelaySwitchPage());
         };
         mcdu.onFpln = () => {
             mcdu.showErrorMessage("");
-            CDUFlightPlanPage.ShowPage(mcdu);
+            const cur = mcdu.page.Current;
+            setTimeout(() => {
+                if (mcdu.page.Current === cur) {
+                    CDUFlightPlanPage.ShowPage(mcdu);
+                }
+            }, mcdu.getDelaySwitchPage());
         };
         mcdu.onRad = () => {
             mcdu.showErrorMessage("");
-            CDUNavRadioPage.ShowPage(mcdu);
+            const cur = mcdu.page.Current;
+            setTimeout(() => {
+                if (mcdu.page.Current === cur) {
+                    CDUNavRadioPage.ShowPage(mcdu);
+                }
+            }, mcdu.getDelaySwitchPage());
         };
         mcdu.onFuel = () => {
             mcdu.showErrorMessage("");
-            CDUFuelPredPage.ShowPage(mcdu);
+            const cur = mcdu.page.Current;
+            setTimeout(() => {
+                if (mcdu.page.Current === cur) {
+                    CDUFuelPredPage.ShowPage(mcdu);
+                }
+            }, mcdu.getDelaySwitchPage());
         };
     }
 }

@@ -176,6 +176,9 @@ class CDUPerformancePage {
             ["", "NEXT"],
             ["", "PHASE>"]
         ]);
+        mcdu.rightInputDelay[5] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
         mcdu.onRightInput[5] = () => {
             CDUPerformancePage.ShowCLBPage(mcdu);
         };
@@ -230,6 +233,9 @@ class CDUPerformancePage {
         }
         const bottomRowLabels = ["PREV", "NEXT"];
         const bottomRowCells = ["<PHASE", "PHASE>"];
+        mcdu.leftInputDelay[5] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
         if (mcdu.currentFlightPhase === FlightPhase.FLIGHT_PHASE_CLIMB) {
             if (confirmAppr) {
                 bottomRowLabels[0] = "CONFIRM[color]red";
@@ -251,6 +257,9 @@ class CDUPerformancePage {
                 CDUPerformancePage.ShowTAKEOFFPage(mcdu);
             };
         }
+        mcdu.rightInputDelay[5] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
         mcdu.onRightInput[5] = () => {
             CDUPerformancePage.ShowCRZPage(mcdu);
         };
@@ -320,6 +329,9 @@ class CDUPerformancePage {
         }
         const bottomRowLabels = ["PREV", "NEXT"];
         const bottomRowCells = ["<PHASE", "PHASE>"];
+        mcdu.leftInputDelay[5] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
         if (mcdu.currentFlightPhase === FlightPhase.FLIGHT_PHASE_CRUISE) {
             if (confirmAppr) {
                 bottomRowLabels[0] = "CONFIRM[color]red";
@@ -341,6 +353,9 @@ class CDUPerformancePage {
                 CDUPerformancePage.ShowCLBPage(mcdu);
             };
         }
+        mcdu.rightInputDelay[5] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
         mcdu.onRightInput[5] = () => {
             CDUPerformancePage.ShowDESPage(mcdu);
         };
@@ -410,6 +425,9 @@ class CDUPerformancePage {
         }
         const bottomRowLabels = ["PREV", "NEXT"];
         const bottomRowCells = ["<PHASE", "PHASE>"];
+        mcdu.leftInputDelay[5] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
         if (mcdu.currentFlightPhase === FlightPhase.FLIGHT_PHASE_DESCENT) {
             if (confirmAppr) {
                 bottomRowLabels[0] = "CONFIRM[color]red";
@@ -431,6 +449,9 @@ class CDUPerformancePage {
                 CDUPerformancePage.ShowCRZPage(mcdu);
             };
         }
+        mcdu.rightInputDelay[5] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
         mcdu.onRightInput[5] = () => {
             CDUPerformancePage.ShowAPPRPage(mcdu);
         };
@@ -577,8 +598,14 @@ class CDUPerformancePage {
             ["PREV", "NEXT"],
             ["<PHASE", "PHASE>"]
         ]);
+        mcdu.leftInputDelay[5] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
         mcdu.onLeftInput[5] = () => {
             CDUPerformancePage.ShowDESPage(mcdu);
+        };
+        mcdu.rightInputDelay[5] = () => {
+            return mcdu.getDelaySwitchPage();
         };
         mcdu.onRightInput[5] = () => {
             CDUPerformancePage.ShowGOAROUNDPage(mcdu);
@@ -614,6 +641,9 @@ class CDUPerformancePage {
             ["PREV"],
             ["<PHASE"]
         ]);
+        mcdu.leftInputDelay[5] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
         mcdu.onLeftInput[5] = () => {
             CDUPerformancePage.ShowAPPRPage(mcdu);
         };

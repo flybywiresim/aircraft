@@ -35,6 +35,10 @@ class CDUPositionMonitorPage {
             ["{FREEZE[color]blue", "NAVAIDS>"]
         ]);
 
+        mcdu.rightInputDelay[5] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
+
         mcdu.onRightInput[5] = () => {
             CDUSelectedNavaids.ShowPage(mcdu);
         };

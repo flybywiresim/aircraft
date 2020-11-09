@@ -17,6 +17,10 @@ class CDUPilotsWaypoint {
             ["", "DELETE ALL}[color]blue"]
         ]);
 
+        mcdu.rightInputDelay[4] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
+
         mcdu.onRightInput[4] = () => {
             CDUNewWaypoint.ShowPage(mcdu);
         };

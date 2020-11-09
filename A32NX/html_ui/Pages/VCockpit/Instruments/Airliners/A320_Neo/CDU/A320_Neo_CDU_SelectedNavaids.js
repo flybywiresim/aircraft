@@ -19,6 +19,10 @@ class CDUSelectedNavaids {
             ["DESELECT", "RETURN>"]
         ]);
 
+        mcdu.rightInputDelay[5] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
+
         mcdu.onRightInput[5] = () => {
             CDUDataIndexPage.ShowPage1(mcdu);
         };

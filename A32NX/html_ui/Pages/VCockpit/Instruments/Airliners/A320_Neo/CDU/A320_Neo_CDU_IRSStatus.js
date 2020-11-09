@@ -55,6 +55,10 @@ class CDUIRSStatus {
             CDUIRSStatusFrozen.ShowPage(mcdu, index, wind_dir);
         };
 
+        mcdu.rightInputDelay[5] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
+
         mcdu.onRightInput[5] = () => {
             if (index > 2) {
                 CDUIRSMonitor.ShowPage(mcdu);
