@@ -2657,7 +2657,7 @@ class FMCMainDisplay extends BaseAirliners {
                             if (this.page.Current === cur) {
                                 this.onLeftInput[v - 1](value);
                             }
-                        }, this.leftInputDelay[v - 1] ? this.leftInputDelay[v - 1]() : this.getDelayBasic());
+                        }, this.leftInputDelay[v - 1] ? this.leftInputDelay[v - 1](value) : this.getDelayBasic());
                     }
                 }
             } else if (input.length === 2 && input[0] === "R") {
