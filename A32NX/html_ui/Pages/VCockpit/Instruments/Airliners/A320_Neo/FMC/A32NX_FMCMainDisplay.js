@@ -1991,10 +1991,21 @@ class FMCMainDisplay extends BaseAirliners {
             if (this.currentFlightPhase == FlightPhase.FLIGHT_PHASE_APPROACH && highestThrottleDetent == ThrottleMode.TOGA && flapsHandlePercent != 0 && !Simplane.getAutoPilotThrottleActive() && SimVar.GetSimVarValue("RADIO HEIGHT", "feets") < 2000) {
 
                 this.currentFlightPhase = FlightPhase.FLIGHT_PHASE_GOAROUND;
+                SimVar.SetSimVarValue("L:A32NX_GOAROUND_GATRK_MODE", "bool", 0);
                 SimVar.SetSimVarValue("L:A32NX_GOAROUND_HDG_MODE", "bool", 0);
                 SimVar.SetSimVarValue("L:A32NX_GOAROUND_NAV_MODE", "bool", 0);
                 SimVar.SetSimVarValue("L:A32NX_GOAROUND_INIT_SPEED", "number", Simplane.getIndicatedSpeed());
                 SimVar.SetSimVarValue("L:A32NX_GOAROUND_INIT_APP_SPEED", "number", this.getVApp());
+
+                if (SimVar.GetSimVarValue("AUTOPILOT MASTER", "Bool") === 1) {
+                    console.log("CDU AP is ON, toggle it off and disable APPR ");
+                    SimVar.SetSimVarValue("K:AP_LOC_HOLD_ON", "number", 1); // Turns AP localizer hold !!ON/ARMED!! and glide-slope hold mode !!OFF!!
+                    SimVar.SetSimVarValue("K:AP_LOC_HOLD_OFF", "number", 1); // Turns !!OFF!! localizer hold mode
+                    SimVar.SetSimVarValue("K:AUTOPILOT_OFF", "number", 1);
+                    SimVar.SetSimVarValue("K:AUTOPILOT_ON", "number", 1);
+                } else if (SimVar.GetSimVarValue("AUTOPILOT MASTER", "Bool") === 0 && SimVar.GetSimVarValue("AUTOPILOT APPROACH HOLD", "boolean") === 1) {
+                    SimVar.SetSimVarValue("AP_APR_HOLD_OFF", "number", 1);
+                }
 
                 CDUPerformancePage.ShowGOAROUNDPage(this);
             }

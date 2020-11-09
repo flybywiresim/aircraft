@@ -999,11 +999,9 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                 const selectedAltFCU = SimVar.GetSimVarValue("L:HUD_AP_SELECTED_ALTITUDE", "Number");
 
                 if (apLogicOn) {
-                    this._forceNextAltitudeUpdate = true;
-                    //SimVar.SetSimVarValue("K:ALTITUDE_SLOT_INDEX_SET", "number", 2);
-                    Coherent.call("AP_ALT_VAR_SET_ENGLISH", 1, selectedAltFCU, this._forceNextAltitudeUpdate);
-                    Coherent.call("AP_ALT_VAR_SET_ENGLISH", 2, selectedAltFCU, this._forceNextAltitudeUpdate);
-                    this._forceNextAltitudeUpdate = false;
+                    //depending if on HDR/TRK or NAV mode, select approriate Alt Mode (WIP)
+                    //this._onModeManagedAltitude();
+                    this._onModeSelectedAltitude();
                 }
             }
             this.updateAutopilotCooldown = this._apCooldown;
@@ -1146,10 +1144,21 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         if (this.currentFlightPhase == FlightPhase.FLIGHT_PHASE_APPROACH && highestThrottleDetent == ThrottleMode.TOGA && flapsHandlePercent != 0 && !Simplane.getAutoPilotThrottleActive() && SimVar.GetSimVarValue("RADIO HEIGHT", "feets") < 2000) {
 
             this.currentFlightPhase = FlightPhase.FLIGHT_PHASE_GOAROUND;
+            SimVar.SetSimVarValue("L:A32NX_GOAROUND_GATRK_MODE", "bool", 0);
             SimVar.SetSimVarValue("L:A32NX_GOAROUND_HDG_MODE", "bool", 0);
             SimVar.SetSimVarValue("L:A32NX_GOAROUND_NAV_MODE", "bool", 0);
             SimVar.SetSimVarValue("L:A32NX_GOAROUND_INIT_SPEED", "number", Simplane.getIndicatedSpeed());
             SimVar.SetSimVarValue("L:A32NX_GOAROUND_INIT_APP_SPEED", "number", this.getVApp());
+
+            if (SimVar.GetSimVarValue("AUTOPILOT MASTER", "Bool") === 1) {
+                console.log("CDU AP is ON, toggle it off and disable APPR ");
+                SimVar.SetSimVarValue("K:AP_LOC_HOLD_ON", "number", 1); // Turns AP localizer hold !!ON/ARMED!! and glide-slope hold mode !!OFF!!
+                SimVar.SetSimVarValue("K:AP_LOC_HOLD_OFF", "number", 1); // Turns !!OFF!! localizer hold mode
+                SimVar.SetSimVarValue("K:AUTOPILOT_OFF", "number", 1);
+                SimVar.SetSimVarValue("K:AUTOPILOT_ON", "number", 1);
+            } else if (SimVar.GetSimVarValue("AUTOPILOT MASTER", "Bool") === 0 && SimVar.GetSimVarValue("AUTOPILOT APPROACH HOLD", "boolean") === 1) {
+                SimVar.SetSimVarValue("AP_APR_HOLD_OFF", "number", 1);
+            }
 
             CDUPerformancePage.ShowGOAROUNDPage(this);
         }
