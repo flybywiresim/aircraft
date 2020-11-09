@@ -3,6 +3,7 @@ class CDUVerticalRevisionPage {
         const waypointInfo = waypoint.infos;
         if (waypointInfo instanceof WayPointInfo) {
             mcdu.clearDisplay();
+            mcdu.page.Current = mcdu.page.VerticalRevisionPage;
             let waypointIdent = "---";
             if (waypoint) {
                 waypointIdent = waypoint.ident;

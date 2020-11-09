@@ -4,6 +4,7 @@ class CDUAvailableDeparturesPage {
         console.log(airportInfo);
         if (airportInfo instanceof AirportInfo) {
             mcdu.clearDisplay();
+            mcdu.page.Current = mcdu.page.AvailableDeparturesPage;
             let selectedRunwayCell = "---";
             const selectedRunway = mcdu.flightPlanManager.getDepartureRunway();
             if (selectedRunway) {

@@ -3,6 +3,7 @@ class CDUAvailableArrivalsPage {
         const airportInfo = airport.infos;
         if (airportInfo instanceof AirportInfo) {
             mcdu.clearDisplay();
+            mcdu.page.Current = mcdu.page.AvailableArrivalsPage;
             console.log(airport);
             let selectedApproachCell = "---";
             let selectedViasCell = "NONE";
@@ -201,6 +202,7 @@ class CDUAvailableArrivalsPage {
         const airportInfo = airport.infos;
         if (airportInfo instanceof AirportInfo) {
             mcdu.clearDisplay();
+            mcdu.page.Current = mcdu.page.AvailableArrivalsPageVias;
             let selectedApproachCell = "---";
             let selectedViasCell = "NONE";
             const selectedApproach = mcdu.flightPlanManager.getApproach();
