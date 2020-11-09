@@ -45,7 +45,7 @@ class CDUNavaidPage {
                     ]);
                     mcdu.inOut = Object.keys(res);
                 } else {
-                    mcdu.inOut = "INVALID ENTRY";
+                    mcdu.showErrorMessage(mcdu.defaultInputErrorMessage);
                 }
             });
         };
