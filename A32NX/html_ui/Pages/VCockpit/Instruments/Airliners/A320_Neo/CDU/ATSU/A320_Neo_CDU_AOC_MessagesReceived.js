@@ -51,10 +51,8 @@ class CDUAocMessagesReceived {
             };
         }
 
-        mcdu.onLeftInput[0] = () => {
+        mcdu.onLeftInput[0] = (value) => {
             if (messages[offset - 5]) {
-                const value = mcdu.inOut;
-                mcdu.clearUserInput();
                 if (value === FMCMainDisplay.clrValue) {
                     mcdu.deleteMessage(offset - 5);
                     CDUAocMessagesReceived.ShowPage(mcdu, messages, offset);
@@ -64,10 +62,8 @@ class CDUAocMessagesReceived {
             }
         };
 
-        mcdu.onLeftInput[1] = () => {
+        mcdu.onLeftInput[1] = (value) => {
             if (messages[offset - 4]) {
-                const value = mcdu.inOut;
-                mcdu.clearUserInput();
                 if (value === FMCMainDisplay.clrValue) {
                     mcdu.deleteMessage(offset - 4);
                     CDUAocMessagesReceived.ShowPage(mcdu, messages, offset);
@@ -77,10 +73,8 @@ class CDUAocMessagesReceived {
             }
         };
 
-        mcdu.onLeftInput[2] = () => {
+        mcdu.onLeftInput[2] = (value) => {
             if (messages[offset - 3]) {
-                const value = mcdu.inOut;
-                mcdu.clearUserInput();
                 if (value === FMCMainDisplay.clrValue) {
                     mcdu.deleteMessage(offset - 3);
                     CDUAocMessagesReceived.ShowPage(mcdu, messages, offset);
@@ -90,10 +84,8 @@ class CDUAocMessagesReceived {
             }
         };
 
-        mcdu.onLeftInput[3] = () => {
+        mcdu.onLeftInput[3] = (value) => {
             if (messages[offset - 2]) {
-                const value = mcdu.inOut;
-                mcdu.clearUserInput();
                 if (value === FMCMainDisplay.clrValue) {
                     mcdu.deleteMessage(offset - 2);
                     CDUAocMessagesReceived.ShowPage(mcdu, messages, offset);
@@ -103,10 +95,8 @@ class CDUAocMessagesReceived {
             }
         };
 
-        mcdu.onLeftInput[4] = () => {
+        mcdu.onLeftInput[4] = (value) => {
             if (messages[offset - 1]) {
-                const value = mcdu.inOut;
-                mcdu.clearUserInput();
                 if (value === FMCMainDisplay.clrValue) {
                     mcdu.deleteMessage(offset - 1);
                     CDUAocMessagesReceived.ShowPage(mcdu, messages, offset);

@@ -34,9 +34,7 @@ class CDUAocRequestsWeather {
         };
         updateView();
 
-        mcdu.onRightInput[0] = () => {
-            const value = mcdu.inOut;
-            mcdu.clearUserInput();
+        mcdu.onRightInput[0] = (value) => {
             if (value === FMCMainDisplay.clrValue) {
                 store["arpt1"] = "";
             } else {
@@ -45,9 +43,7 @@ class CDUAocRequestsWeather {
             CDUAocRequestsWeather.ShowPage(mcdu, store);
         };
 
-        mcdu.onRightInput[1] = () => {
-            const value = mcdu.inOut;
-            mcdu.clearUserInput();
+        mcdu.onRightInput[1] = (value) => {
             if (value === FMCMainDisplay.clrValue) {
                 store["arpt2"] = "";
             } else {
@@ -56,9 +52,7 @@ class CDUAocRequestsWeather {
             CDUAocRequestsWeather.ShowPage(mcdu, store);
         };
 
-        mcdu.onRightInput[2] = () => {
-            const value = mcdu.inOut;
-            mcdu.clearUserInput();
+        mcdu.onRightInput[2] = (value) => {
             if (value === FMCMainDisplay.clrValue) {
                 store["arpt3"] = "";
             } else {
@@ -67,9 +61,7 @@ class CDUAocRequestsWeather {
             CDUAocRequestsWeather.ShowPage(mcdu, store);
         };
 
-        mcdu.onRightInput[3] = () => {
-            const value = mcdu.inOut;
-            mcdu.clearUserInput();
+        mcdu.onRightInput[3] = (value) => {
             if (value === FMCMainDisplay.clrValue) {
                 store["arpt4"] = "";
             } else {

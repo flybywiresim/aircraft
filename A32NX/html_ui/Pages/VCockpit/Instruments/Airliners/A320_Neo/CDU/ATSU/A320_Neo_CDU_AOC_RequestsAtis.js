@@ -64,9 +64,7 @@ class CDUAocRequestsAtis {
         };
         updateView();
 
-        mcdu.onLeftInput[0] = () => {
-            const value = mcdu.inOut;
-            mcdu.clearUserInput();
+        mcdu.onLeftInput[0] = (value) => {
             if (value === FMCMainDisplay.clrValue) {
                 store["arpt1"] = "";
             } else {
