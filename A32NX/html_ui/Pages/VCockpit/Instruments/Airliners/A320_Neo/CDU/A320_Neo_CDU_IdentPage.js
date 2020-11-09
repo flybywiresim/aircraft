@@ -2,6 +2,7 @@ class CDUIdentPage {
     static ShowPage(mcdu) {
         const date = mcdu.getNavDataDateRange();
         mcdu.clearDisplay();
+        mcdu.page.Current = mcdu.page.IdentPage;
         mcdu.activeSystem = 'FMGC';
         mcdu.setTemplate([
             ["A320-200"],
