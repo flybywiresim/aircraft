@@ -465,7 +465,6 @@ class MapInstrument extends ISvgMapRootElement {
         }
     }
     onBeforeMapRedraw() {
-        const transitionAltitude = SimVar.GetSimVarValue("L:AIRLINER_TRANS_ALT", "Number");
         if (this.eBingMode !== EBingMode.HORIZON) {
             this.drawCounter++;
             this.drawCounter %= 100;
@@ -516,6 +515,7 @@ class MapInstrument extends ISvgMapRootElement {
             }
             if (this.drawCounter === 45 || (this.showConstraints && (!this.constraints || this.constraints.length === 0))) {
                 if (this.showConstraints) {
+                    const transitionAltitude = SimVar.GetSimVarValue("L:AIRLINER_TRANS_ALT", "Number");
                     const wpWithConstraints = this.flightPlanManager.getWaypointsWithAltitudeConstraints();
                     this.constraints = [];
                     for (let i = 0; i < wpWithConstraints.length; i++) {
