@@ -6,7 +6,8 @@ const { babel } = require('@rollup/plugin-babel');
 const { nodeResolve } = require('@rollup/plugin-node-resolve');
 const commonjs = require('@rollup/plugin-commonjs');
 const replace = require('@rollup/plugin-replace');
-const css = require('rollup-plugin-css-only');
+const scss = require('rollup-plugin-scss');
+const scssCompiler = require('node-sass');
 const template = require('./template/rollup.js');
 
 const TMPDIR = `${os.tmpdir()}/a32nx-instruments-gen`;
@@ -39,7 +40,8 @@ module.exports = fs.readdirSync(`${__dirname}/src`, { withFileTypes: true })
                 commonjs({
                     include: /node_modules/,
                 }),
-                css({
+                scss({
+                    compiler: scssCompiler,
                     output: (generatedBundle) => {
                         cssBundle = generatedBundle;
                     },
