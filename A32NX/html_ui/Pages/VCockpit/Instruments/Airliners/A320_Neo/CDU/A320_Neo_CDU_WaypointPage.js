@@ -44,7 +44,7 @@ class CDUWaypointPage {
                         [""]
                     ]);
                 } else {
-                    mcdu.inOut = "INVALID ENTRY";
+                    mcdu.showErrorMessage(mcdu.defaultInputErrorMessage);
                 }
             });
         };
