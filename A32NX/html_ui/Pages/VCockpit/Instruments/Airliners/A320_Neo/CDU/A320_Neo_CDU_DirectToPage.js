@@ -1,6 +1,8 @@
 class CDUDirectToPage {
     static ShowPage(mcdu, directWaypoint, wptsListIndex = 0) {
         mcdu.clearDisplay();
+        mcdu.page.Current = mcdu.page.DirectToPage;
+        mcdu.activeSystem = 'FMGC';
         let directWaypointCell = " ";
         if (directWaypoint) {
             directWaypointCell = directWaypoint.ident;

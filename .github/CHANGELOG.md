@@ -5,6 +5,9 @@
 <!--  1. [Changed Area] Title of changes - @github username (Name)  -->
 
 ## 0.5.0
+1. [MCDU] Added mcdu page id system - @MisterChocker (Leon)
+1. [MCDU] Added Progress Page REC MAX FL functionality and dummy OPT - @MisterChocker (Leon)
+1. [PFD] Added proper altitude constrain visuals - @MisterChocker (Leon)
 1. [COLORS] Improved MCDU/PFD/ND/ECAM colors - @MisterChocker (Leon)
 1. [PFD] General improvements to the display layout - @MisterChocker (Leon)
 1. [PFD] Added proper selected and managed speed indication - @MisterChocker (Leon)
@@ -43,6 +46,7 @@
 1. [CDU] Add ability to clear MDA/DH and add input logic for both MDA/DH - @paul92ilm (Lussion)
 1. [CHECKLISTS] Fix FD check in Taxi checklist - @Acrobot (Andrzej Pomirski)
 1. [ADIRS] Fix ADIRS lights and split into three separate units - @devsnek (devsnek#0001)
+1. [ECAM] Fixed donut and AVAIL message on N1 display. Add highlight on N2 during engine start - @RichardPilbery (Richard Pilbery)
 1. [CDU] Fix MCDU not loading when starting midair - @ThatRedMelon (Daniel Brown)
 1. [FCU] Clamp the selected altitude between 100 and 49000 - @lars-reimann (Lars Reimann)
 1. [TEXTURES] added Registry plaque and improved Textures - @Pleasure0102 (Pleasure)
@@ -50,6 +54,10 @@
 1. [TEXTURES] Changed cockpit font and fixed spelling errors - @FoxinTale (Aubrey)
 1. [AUTO BRK] Fixed autobrake disarm behavior to match real life. MAX can no longer be selected when the aircraft is in the air. @geoffda (Geoff Darst)
 1. [FCU] Remember selected pressure mode when returning from Std mode - @lhoenig (Lukas Hoenig)
+1. [TEXTURES] upgraded to 4k Textures (pedestal,throttle unit) fixed decal texture - @Pleasure0102 (Pleasure)
+1. [PFD] Added FMAs ALT CST and ALT CST* as well as CLB magenta and DES or CLB blue - @MisterChocker (Leon)
+1. [CDU] Added CFDS display test, ATSU METAR/TAF/ATIS requests, and ATSU free text - @wpine215 (Iceman), @nistei (Nistei), @Edwin B
+
 
 ## 0.4.0
 1. [General] Add CHANGELOG.md - @nathaninnes (Nathan Innes)
@@ -117,4 +125,3 @@
 1. [LIVERY] Bundle the FlyByWire Livery with the A32NX addon - @devsnek (devsnek)
 1. [ECAM] Added cockpit door video - @Benjozork (Benjamin Dupont)
 1. [MISC] Standby Instrument stays ON if emergency power should be available, bug fixes - @2hwk (2Cas#1022 on discord)
-1. [CDU] Full +/- button functionality - @lhoenig (Lukas Hoenig)

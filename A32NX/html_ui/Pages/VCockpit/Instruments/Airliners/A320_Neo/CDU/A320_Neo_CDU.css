@@ -74,6 +74,9 @@ a320-neo-cdu-main-display::after {
 .white {
   color: var(--mcduWhite); }
 
+.inop {
+  color: var(--mcduLightGrey); }
+
 .blue {
   color: var(--mcduBlue); }
 
@@ -121,6 +124,19 @@ fmc-main-display::before {
   /* font-size: 4.8vw; */
   /* letter-spacing: 0.9vw;  */
   letter-spacing: 0.6vw;
+}
+
+.msg-text {
+  margin-top: 1.5% !important;
+  height: 8.1% !important;
+}
+
+.msg-text.label-left {
+  left: 4% !important;
+}
+
+.msg-text.label-right {
+  right: 6% !important;
 }
 
 .irs-text {

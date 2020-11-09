@@ -97,7 +97,7 @@ class FMCMainDisplay extends BaseAirliners {
             color = "white";
         }
         this._title = content.split("[color]")[0];
-        this._titleElement.classList.remove("white", "blue", "yellow", "green", "red", "magenta");
+        this._titleElement.classList.remove("white", "blue", "yellow", "green", "red", "magenta", "inop");
         this._titleElement.classList.add(color);
         this._titleElement.textContent = this._title;
     }
@@ -167,12 +167,20 @@ class FMCMainDisplay extends BaseAirliners {
             label = "------------------------";
         }
         if (label !== "") {
+            if (label.indexOf("[b-text]") !== -1) {
+                label = label.replace("[b-text]", "");
+                this._lineElements[row][col].classList.remove("s-text");
+                this._lineElements[row][col].classList.add("msg-text");
+            } else {
+                this._lineElements[row][col].classList.remove("msg-text");
+            }
+
             let color = label.split("[color]")[1];
             if (!color) {
                 color = "white";
             }
             const e = this._labelElements[row][col];
-            e.classList.remove("white", "blue", "yellow", "green", "red", "magenta");
+            e.classList.remove("white", "blue", "yellow", "green", "red", "magenta", "inop");
             e.classList.add(color);
             label = label.split("[color]")[0];
         }
@@ -219,7 +227,7 @@ class FMCMainDisplay extends BaseAirliners {
                 color = "white";
             }
             const e = this._lineElements[row][col];
-            e.classList.remove("white", "blue", "yellow", "green", "red", "magenta");
+            e.classList.remove("white", "blue", "yellow", "green", "red", "magenta", "inop");
             e.classList.add(color);
             content = content.split("[color]")[0];
         }
@@ -252,7 +260,7 @@ class FMCMainDisplay extends BaseAirliners {
         }
     }
 
-    setTemplate(template) {
+    setTemplate(template, large = false) {
         if (template[0]) {
             this.setTitle(template[0][0]);
             this.setPageCurrent(template[0][1]);
@@ -261,13 +269,24 @@ class FMCMainDisplay extends BaseAirliners {
         for (let i = 0; i < 6; i++) {
             let tIndex = 2 * i + 1;
             if (template[tIndex]) {
-                if (template[tIndex][1] !== undefined) {
-                    this.setLabel(template[tIndex][0], i, 0);
-                    this.setLabel(template[tIndex][1], i, 1);
-                    this.setLabel(template[tIndex][2], i, 2);
-                    this.setLabel(template[tIndex][3], i, 3);
+                if (large) {
+                    if (template[tIndex][1] !== undefined) {
+                        this.setLine(template[tIndex][0], i, 0);
+                        this.setLine(template[tIndex][1], i, 1);
+                        this.setLine(template[tIndex][2], i, 2);
+                        this.setLine(template[tIndex][3], i, 3);
+                    } else {
+                        this.setLine(template[tIndex][0], i, -1);
+                    }
                 } else {
-                    this.setLabel(template[tIndex][0], i, -1);
+                    if (template[tIndex][1] !== undefined) {
+                        this.setLabel(template[tIndex][0], i, 0);
+                        this.setLabel(template[tIndex][1], i, 1);
+                        this.setLabel(template[tIndex][2], i, 2);
+                        this.setLabel(template[tIndex][3], i, 3);
+                    } else {
+                        this.setLabel(template[tIndex][0], i, -1);
+                    }
                 }
             }
             tIndex = 2 * i + 2;
@@ -290,6 +309,7 @@ class FMCMainDisplay extends BaseAirliners {
     getNavDataDateRange() {
         return SimVar.GetGameVarValue("FLIGHT NAVDATA DATE RANGE", "string");
     }
+
     get cruiseFlightLevel() {
         return this._cruiseFlightLevel;
     }
@@ -314,6 +334,51 @@ class FMCMainDisplay extends BaseAirliners {
         this.isDisplayingErrorMessage = true;
         this.inOut = message;
         this._inOutElement.style.color = color;
+    }
+
+    /**
+     * Returns true if all engine is are running (FF > 0)
+     * @returns {number}
+     */
+    isAllEngineOn() {
+        return Simplane.getEngineActive(0) && Simplane.getEngineActive(1);
+    }
+
+    /**
+     * Returns the ISA temperature for a given altitude
+     * @param alt {number} altitude in ft
+     * @returns {number} ISA temp in C°
+     */
+    getIsaTemp(alt = Simplane.getAltitude()) {
+        return alt / 1000 * (-1.98) + 15;
+    }
+
+    /**
+     * Returns the deviation from ISA temperature and OAT at given altitude
+     * @param alt {number} altitude in ft
+     * @returns {number} ISA temp deviation from OAT in C°
+     */
+    getIsaTempDeviation(alt = Simplane.getAltitude()) {
+        return SimVar.GetSimVarValue("AMBIENT TEMPERATURE", "celsius") - this.getIsaTemp(alt);
+    }
+
+    /**
+     * Returns the maximum cruise FL for ISA temp and GW
+     * @param temp {number} ISA in C°
+     * @param gw {number} GW in t
+     * @returns {number} MAX FL
+     */
+    getMaxFL(temp = this.getIsaTempDeviation(), gw = SimVar.GetSimVarValue("TOTAL WEIGHT", "kg") / 1000) {
+        return Math.round(temp <= 10 ? -2.778 * gw + 578.667 : (temp * (-0.039) - 2.389) * gw + temp * (-0.667) + 585.334);
+    }
+
+    /**
+     * Returns the maximum allowed cruise FL considering max service FL
+     * @param fl {number} FL to check
+     * @returns {number} maximum allowed cruise FL
+     */
+    getMaxFlCorrected(fl = this.getMaxFL()) {
+        return fl >= this.maxCruiseFL ? this.maxCruiseFL : fl;
     }
 
     async tryUpdateRefAirport(airportIdent) {
@@ -658,8 +723,26 @@ class FMCMainDisplay extends BaseAirliners {
             this.showErrorMessage(this.defaultInputErrorMessage);
             return callback(false);
         }
+
+        const storedTelexStatus = NXDataStore.get("CONFIG_TELEX_STATUS", "DISABLED");
+
+        let connectSuccess = true;
         SimVar.SetSimVarValue("ATC FLIGHT NUMBER", "string", flightNo, "FMC").then(() => {
-            return callback(true);
+            if (storedTelexStatus === "ENABLED") {
+                const initTelexServer = async () => {
+                    NXApi.connectTelex(flightNo)
+                        .catch((err) => {
+                            if (err !== NXApi.disconnectedError) {
+                                this.showErrorMessage("FLT NBR IN USE");
+                            }
+
+                            connectSuccess = false;
+                        });
+                };
+
+                initTelexServer();
+            }
+            return callback(connectSuccess);
         });
     }
 
@@ -2323,6 +2406,126 @@ class FMCMainDisplay extends BaseAirliners {
         this.updateFuelVars();
         this.thrustReductionAltitude = 1500;
         SimVar.SetSimVarValue("L:AIRLINER_THR_RED_ALT", "Number", this.thrustReductionAltitude);
+        this.PageTimeout = {
+            Prog: 5000
+        };
+        this.page = {
+            SelfPtr: false,
+            Current: 0,
+            Clear: 0,
+            AirportsMonitor: 1,
+            AirwaysFromWaypointPage: 2,
+            // AirwaysFromWaypointPageGetAllRows: 3,
+            AvailableArrivalsPage: 4,
+            AvailableArrivalsPageVias: 5,
+            AvailableDeparturesPage: 6,
+            AvailableFlightPlanPage: 7,
+            DataIndexPage1: 8,
+            DataIndexPage2: 9,
+            DirectToPage: 10,
+            FlightPlanPage: 11,
+            FuelPredPage: 12,
+            GPSMonitor: 13,
+            HoldAtPage: 14,
+            IdentPage: 15,
+            InitPageA: 16,
+            InitPageB: 17,
+            IRSInit: 18,
+            IRSMonitor: 19,
+            IRSStatus: 20,
+            IRSStatusFrozen: 21,
+            LateralRevisionPage: 22,
+            MenuPage: 23,
+            NavaidPage: 24,
+            NavRadioPage: 25,
+            NewWaypoint: 26,
+            PerformancePageTakeoff: 27,
+            PerformancePageClb: 28,
+            PerformancePageCrz: 29,
+            PerformancePageDes: 30,
+            PerformancePageAppr: 31,
+            PerformancePageGoAround: 32,
+            PilotsWaypoint: 33,
+            PosFrozen: 34,
+            PositionMonitorPage: 35,
+            ProgressPage: 36,
+            ProgressPageReport: 37,
+            ProgressPagePredictiveGPS: 38,
+            SelectedNavaids: 39,
+            SelectWptPage: 40,
+            VerticalRevisionPage: 41,
+            WaypointPage: 42
+        };
+    }
+
+    /**
+     * Used for switching pages
+     * @returns {number} delay in ms between 150 and 200
+     */
+    getDelaySwitchPage() {
+        return 150 + 50 * Math.random();
+    }
+
+    /**
+     * Used for basic inputs e.g. alternate airport, ci, fl, temp, constraints, ...
+     * @returns {number} delay in ms between 300 and 400
+     */
+    getDelayBasic() {
+        return 300 + 100 * Math.random();
+    }
+
+    /**
+     * Used for e.g. loading time fore pages
+     * @returns {number} delay in ms between 600 and 800
+     */
+    getDelayMedium() {
+        return 600 + 200 * Math.random();
+    }
+
+    /**
+     * Used for intense calculation
+     * @returns {number} delay in ms between 900 and 12000
+     */
+    getDelayHigh() {
+        return 900 + 300 * Math.random();
+    }
+
+    /**
+     * Used for changes to the flight plan
+     * @returns {number} dynamic delay in ms between ~300 and up to +2000 (depending on additional conditions)
+     */
+    getDelayRouteChange() {
+        if (this._zeroFuelWeightZFWCGEntered && this._blockFuelEntered) {
+            return Math.pow(this.flightPlanManager.getWaypointsCount(), 2) + (this.flightPlanManager.getDestination().cumulativeDistanceInFP) / 10 + Math.random() * 300;
+        } else {
+            return 300 + this.flightPlanManager.getWaypointsCount() * Math.random() + this.flightPlanManager.getDestination().cumulativeDistanceInFP * Math.random();
+        }
+    }
+
+    /**
+     * Used for calculation time for fuel pred page
+     * @returns {number} dynamic delay in ms between 2000ms and 400ms
+     */
+    getDelayFuelPred() {
+        return Math.pow(this.flightPlanManager.getWaypointsCount(), 2) + (this.flightPlanManager.getDestination().cumulativeDistanceInFP) / 10 + Math.random() * 300;
+    }
+
+    /**
+     * Used to load wind data into fms
+     * @returns {number} dynamic delay in ms dependent on amount of waypoints
+     */
+    getDelayWindLoad() {
+        return Math.pow(this.flightPlanManager.getWaypointsCount(), 2);
+    }
+
+    /**
+     * Tries to delete a pages timeout
+     */
+    tryDeleteTimeout() {
+        if (this.page.SelfPtr) {
+            clearTimeout(this.page.SelfPtr);
+            this.page.SelfPtr = false;
+        }
     }
 
     onPowerOn() {
@@ -2467,6 +2670,8 @@ class FMCMainDisplay extends BaseAirliners {
         this.onNextPage = undefined;
         this.pageUpdate = undefined;
         this.refreshPageCallback = undefined;
+        this.page.Current = this.page.Clear;
+        this.tryDeleteTimeout();
     }
 
     generateHTMLLayout(parent) {
