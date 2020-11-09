@@ -1,12 +1,18 @@
 name: PR
 on:
   pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - ready_for_review
     branches:
       - master
 
 jobs:
   lint:
     runs-on: ubuntu-latest
+    if: github.event.pull_request.draft == false
     steps:
       - name: Checkout source
         uses: actions/checkout@v2
@@ -16,6 +22,7 @@ jobs:
         run: npm run lint
   build:
     runs-on: ubuntu-latest
+    if: github.event.pull_request.draft == false
     steps:
       - name: Checkout source
         uses: actions/checkout@v2
