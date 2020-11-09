@@ -2260,16 +2260,24 @@ var A320_Neo_UpperECAM;
                 if (slatsAngleChanged && (this.targetSlatsArrowsStrings != null) && (slatsTargetIndex >= 0) && (slatsTargetIndex < this.targetSlatsArrowsStrings.length)) {
                     this.targetSlatsArrow.setAttribute("points", this.targetSlatsDots[slatsTargetIndex - 1]);
                     this.targetSlatsArrow.style.display = "block";
+                    this.currentStateText.setAttribute("class", "stateInTransit");
                 } else {
                     this.targetSlatsArrow.style.display = "none";
+                    if (flapsAngleChanged && (this.targetFlapsArrowsStrings != null) && (flapsTargetIndex >= 0) && (flapsTargetIndex < this.targetFlapsArrowsStrings.length)) {
+                        this.currentStateText.setAttribute("class", "state");
+                    }
                 }
             }
             if (this.targetFlapsArrow != null) {
                 if (flapsAngleChanged && (this.targetFlapsArrowsStrings != null) && (flapsTargetIndex >= 0) && (flapsTargetIndex < this.targetFlapsArrowsStrings.length)) {
                     this.targetFlapsArrow.setAttribute("points", this.targetFlapsDots[flapsTargetIndex - 1]);
                     this.targetFlapsArrow.style.display = "block";
+                    this.currentStateText.setAttribute("class", "stateInTransit");
                 } else {
                     this.targetFlapsArrow.style.display = "none";
+                    if (!(slatsAngleChanged && (this.targetSlatsArrowsStrings != null) && (slatsTargetIndex >= 0) && (slatsTargetIndex < this.targetSlatsArrowsStrings.length))) {
+                        this.currentStateText.setAttribute("class", "state");
+                    }
                 }
             }
         }

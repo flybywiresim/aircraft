@@ -227,6 +227,9 @@ a320-neo-upper-ecam #FlapsPanel #DiagramSVG .sfText {
 a320-neo-upper-ecam #FlapsPanel #DiagramSVG .state {
   fill: var(--displayGreen);
 }
+a320-neo-upper-ecam #FlapsPanel #DiagramSVG .stateInTransit {
+  fill: var(--displayCyan);
+}
 a320-neo-upper-ecam #FlapsPanel #DiagramSVG .dot {
   stroke: var(--displayWhite);
   stroke-width: 3px;
