@@ -1589,7 +1589,7 @@
                 </DefaultTemplateParameters>
                 <UseTemplate Name="FBW_Airbus_Fuel_Crossfeed">
                     <NODE_ID>PUSH_OVHD_FUEL_XFEED</NODE_ID>
-                    <ID>1</ID>
+                    <ID>3</ID>
                     <OFF_TOOLTIP>COCKPIT.TOOLTIPS.FUEL_XFEED_TURN_ON</OFF_TOOLTIP>
                     <ON_TOOLTIP>COCKPIT.TOOLTIPS.FUEL_XFEED_TURN_OFF</ON_TOOLTIP>
                 </UseTemplate>
