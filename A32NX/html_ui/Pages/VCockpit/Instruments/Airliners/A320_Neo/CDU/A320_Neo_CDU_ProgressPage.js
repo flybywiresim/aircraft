@@ -7,6 +7,36 @@ class CDUProgressPage {
         const flightNo = SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string");
         const flMax = mcdu.getMaxFlCorrected();
         const flOpt = (mcdu._zeroFuelWeightZFWCGEntered && mcdu._blockFuelEntered && (mcdu.isAllEngineOn() || Simplane.getIsGrounded())) ? "FL" + (Math.floor(flMax / 5) * 5).toString() + "[color]green" : "-----";
+        let flCrz = "-----";
+        switch (Simplane.getCurrentFlightPhase()) {
+            case FlightPhase.FLIGHT_PHASE_TAKEOFF: {
+                if (!mcdu._cruiseEntered) {
+                    mcdu.cruiseFlightLevel = Math.floor(Math.max(0, Simplane.getAutoPilotDisplayedAltitudeLockValue()) / 100);
+                }
+                flCrz = "FL" + mcdu.cruiseFlightLevel.toFixed(0).padStart(3, "0") + "[color]blue";
+                break;
+            }
+            case FlightPhase.FLIGHT_PHASE_CLIMB: {
+                mcdu.cruiseFlightLevel = Math.floor(Math.max(0, Simplane.getAutoPilotDisplayedAltitudeLockValue()) / 100);
+                flCrz = "FL" + mcdu.cruiseFlightLevel.toFixed(0).padStart(3, "0") + "[color]blue";
+                break;
+            }
+            case FlightPhase.FLIGHT_PHASE_CRUISE: {
+                const fl = Math.floor(Math.max(0, Simplane.getAutoPilotDisplayedAltitudeLockValue()) / 100);
+                if (fl > mcdu.cruiseFlightLevel) {
+                    mcdu.cruiseFlightLevel = fl;
+                }
+                flCrz = "FL" + mcdu.cruiseFlightLevel.toFixed(0).padStart(3, "0") + "[color]blue";
+                break;
+            }
+        }
+        mcdu.onLeftInput[0] = () => {
+            const value = mcdu.inOut;
+            if (mcdu.trySetCruiseFlCheckInput(value)) {
+                mcdu.clearUserInput();
+                CDUProgressPage.ShowPage(mcdu);
+            }
+        };
         mcdu.onLeftInput[1] = () => {
             CDUProgressPage.ShowReportPage(mcdu);
         };
@@ -16,7 +46,7 @@ class CDUProgressPage {
         mcdu.setTemplate([
             ["ECON " + flightPhase + " " + flightNo],
             [flightPhase, "REC MAX", "OPT"],
-            ["", "FL" + flMax.toString() + "[color]magenta", flOpt],
+            [flCrz, "FL" + flMax.toString() + "[color]magenta", flOpt],
             [""],
             ["<REPORT", ""],
             ["UPDATE AT"],

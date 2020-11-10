@@ -73,6 +73,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
 
         this.electricity = this.querySelector("#Electricity");
         this.climbTransitionGroundAltitude = null;
+        this.initB = false;
 
         // Start the TELEX Ping. API functions check the connection status themself
         setInterval(() => {
@@ -215,11 +216,32 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
 
         this.A32NXCore.update();
 
+        this.updateMCDU();
+
         this.updateAutopilot();
 
         this.updateScreenState();
 
         this.updateGPSMessage();
+    }
+
+    /**
+     * Checks whether INIT page B is open and an engine is being started, if so:
+     * The INIT page B reverts to the FUEL PRED page 15 seconds after the first engine start and cannot be accessed after engine start.
+     */
+    updateMCDU() {
+        if (this.isAnEngineOn()) {
+            if (!this.initB) {
+                this.initB = true;
+                setTimeout(() => {
+                    if (this.page.Current === this.page.InitPageB && this.isAnEngineOn()) {
+                        CDUFuelPredPage.ShowPage(this);
+                    }
+                }, 15000);
+            }
+        } else {
+            this.initB = false;
+        }
     }
 
     // check GPS Primary state and display message accordingly
