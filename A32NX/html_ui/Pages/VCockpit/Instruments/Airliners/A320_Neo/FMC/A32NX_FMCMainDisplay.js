@@ -1,3 +1,4 @@
+const QNH_REGEX = /[0-9]{2}.[0-9]{2}/;
 class FMCMainDisplay extends BaseAirliners {
     constructor() {
         super(...arguments);
@@ -336,6 +337,59 @@ class FMCMainDisplay extends BaseAirliners {
         this._inOutElement.style.color = color;
     }
 
+    /**
+     * Returns true if an engine is running (FF > 0)
+     * @returns {number}
+     */
+    isAnEngineOn() {
+        return Simplane.getEngineActive(0) || Simplane.getEngineActive(1);
+    }
+
+    /**
+     * Returns true if all engines are running (FF > 0)
+     * @returns {number}
+     */
+    isAllEngineOn() {
+        return Simplane.getEngineActive(0) && Simplane.getEngineActive(1);
+    }
+
+    /**
+     * Returns the ISA temperature for a given altitude
+     * @param alt {number} altitude in ft
+     * @returns {number} ISA temp in C°
+     */
+    getIsaTemp(alt = Simplane.getAltitude()) {
+        return alt / 1000 * (-1.98) + 15;
+    }
+
+    /**
+     * Returns the deviation from ISA temperature and OAT at given altitude
+     * @param alt {number} altitude in ft
+     * @returns {number} ISA temp deviation from OAT in C°
+     */
+    getIsaTempDeviation(alt = Simplane.getAltitude()) {
+        return SimVar.GetSimVarValue("AMBIENT TEMPERATURE", "celsius") - this.getIsaTemp(alt);
+    }
+
+    /**
+     * Returns the maximum cruise FL for ISA temp and GW
+     * @param temp {number} ISA in C°
+     * @param gw {number} GW in t
+     * @returns {number} MAX FL
+     */
+    getMaxFL(temp = this.getIsaTempDeviation(), gw = SimVar.GetSimVarValue("TOTAL WEIGHT", "kg") / 1000) {
+        return Math.round(temp <= 10 ? -2.778 * gw + 578.667 : (temp * (-0.039) - 2.389) * gw + temp * (-0.667) + 585.334);
+    }
+
+    /**
+     * Returns the maximum allowed cruise FL considering max service FL
+     * @param fl {number} FL to check
+     * @returns {number} maximum allowed cruise FL
+     */
+    getMaxFlCorrected(fl = this.getMaxFL()) {
+        return fl >= this.maxCruiseFL ? this.maxCruiseFL : fl;
+    }
+
     async tryUpdateRefAirport(airportIdent) {
         const airport = await this.dataManager.GetAirportByIdent(airportIdent);
         if (!airport) {
@@ -405,18 +459,7 @@ class FMCMainDisplay extends BaseAirliners {
             }
         }
         if (flString) {
-            const fl = parseFloat(flString);
-            if (isFinite(fl)) {
-                if (fl > 0 && fl <= this.maxCruiseFL) {
-                    this.cruiseFlightLevel = fl;
-                    return true;
-                } else if (fl >= 1000 && fl <= this.maxCruiseFL * 100) {
-                    this.cruiseFlightLevel = Math.floor(fl / 100);
-                    return true;
-                }
-                this.showErrorMessage("ENTRY OUT OF RANGE");
-                return false;
-            }
+            return this.trySetCruiseFl(parseFloat(flString));
         }
         this.showErrorMessage(this.defaultInputErrorMessage);
         return false;
@@ -1332,6 +1375,59 @@ class FMCMainDisplay extends BaseAirliners {
         return this._routeReservedPercent;
     }
 
+    /**
+     * Checks input and passes to trySetCruiseFl()
+     * @param input
+     * @returns {boolean} input passed checks
+     */
+    trySetCruiseFlCheckInput(input) {
+        if (input === FMCMainDisplay.clrValue) {
+            this.showErrorMessage(this.defaultInputErrorMessage);
+            return false;
+        }
+        const flString = input.replace("FL", "");
+        if (!flString) {
+            this.showErrorMessage(this.defaultInputErrorMessage);
+            return false;
+        }
+        return this.trySetCruiseFl(parseFloat(flString));
+    }
+
+    /**
+     * Sets new Cruise FL if all conditions good
+     * @param fl {number} Altitude or FL
+     * @returns {boolean} input passed checks
+     */
+    trySetCruiseFl(fl) {
+        if (!isFinite(fl)) {
+            this.showErrorMessage(this.defaultInputErrorMessage);
+            return false;
+        }
+        if (fl >= 1000) {
+            fl = Math.floor(fl / 100);
+        }
+        if (fl > this.maxCruiseFL) {
+            this.showErrorMessage(this.defaultInputErrorMessage);
+            return false;
+        }
+        const phase = Simplane.getCurrentFlightPhase();
+        if (fl < Math.floor(Math.max(0, Simplane.getAutoPilotDisplayedAltitudeLockValue()) / 100) && phase === FlightPhase.FLIGHT_PHASE_CRUISE) {
+            this.showErrorMessage(this.defaultInputErrorMessage);
+            return false;
+        }
+        if (fl > Math.floor(Simplane.getAltitude() / 100) && phase > FlightPhase.FLIGHT_PHASE_CRUISE) {
+            this.showErrorMessage("ENTRY OUT OF RANGE");
+            return false;
+        }
+        if (fl > 0 && fl <= this.maxCruiseFL) {
+            this.cruiseFlightLevel = fl;
+            this._cruiseEntered = true;
+            return true;
+        }
+        this.showErrorMessage("ENTRY OUT OF RANGE");
+        return false;
+    }
+
     trySetRouteReservedFuel(s) {
         if (s) {
             const rteRsvWeight = parseFloat(s.split("/")[0]);
@@ -1652,7 +1748,11 @@ class FMCMainDisplay extends BaseAirliners {
 
     setPerfApprQNH(s) {
         const value = parseFloat(s);
-        if (isFinite(value)) {
+
+        if (QNH_REGEX.test(value)) {
+            this.perfApprQNH = value;
+            return true;
+        } else if (isFinite(value)) {
             this.perfApprQNH = value;
             return true;
         }
@@ -2361,6 +2461,126 @@ class FMCMainDisplay extends BaseAirliners {
         this.updateFuelVars();
         this.thrustReductionAltitude = 1500;
         SimVar.SetSimVarValue("L:AIRLINER_THR_RED_ALT", "Number", this.thrustReductionAltitude);
+        this.PageTimeout = {
+            Prog: 5000
+        };
+        this.page = {
+            SelfPtr: false,
+            Current: 0,
+            Clear: 0,
+            AirportsMonitor: 1,
+            AirwaysFromWaypointPage: 2,
+            // AirwaysFromWaypointPageGetAllRows: 3,
+            AvailableArrivalsPage: 4,
+            AvailableArrivalsPageVias: 5,
+            AvailableDeparturesPage: 6,
+            AvailableFlightPlanPage: 7,
+            DataIndexPage1: 8,
+            DataIndexPage2: 9,
+            DirectToPage: 10,
+            FlightPlanPage: 11,
+            FuelPredPage: 12,
+            GPSMonitor: 13,
+            HoldAtPage: 14,
+            IdentPage: 15,
+            InitPageA: 16,
+            InitPageB: 17,
+            IRSInit: 18,
+            IRSMonitor: 19,
+            IRSStatus: 20,
+            IRSStatusFrozen: 21,
+            LateralRevisionPage: 22,
+            MenuPage: 23,
+            NavaidPage: 24,
+            NavRadioPage: 25,
+            NewWaypoint: 26,
+            PerformancePageTakeoff: 27,
+            PerformancePageClb: 28,
+            PerformancePageCrz: 29,
+            PerformancePageDes: 30,
+            PerformancePageAppr: 31,
+            PerformancePageGoAround: 32,
+            PilotsWaypoint: 33,
+            PosFrozen: 34,
+            PositionMonitorPage: 35,
+            ProgressPage: 36,
+            ProgressPageReport: 37,
+            ProgressPagePredictiveGPS: 38,
+            SelectedNavaids: 39,
+            SelectWptPage: 40,
+            VerticalRevisionPage: 41,
+            WaypointPage: 42
+        };
+    }
+
+    /**
+     * Used for switching pages
+     * @returns {number} delay in ms between 150 and 200
+     */
+    getDelaySwitchPage() {
+        return 150 + 50 * Math.random();
+    }
+
+    /**
+     * Used for basic inputs e.g. alternate airport, ci, fl, temp, constraints, ...
+     * @returns {number} delay in ms between 300 and 400
+     */
+    getDelayBasic() {
+        return 300 + 100 * Math.random();
+    }
+
+    /**
+     * Used for e.g. loading time fore pages
+     * @returns {number} delay in ms between 600 and 800
+     */
+    getDelayMedium() {
+        return 600 + 200 * Math.random();
+    }
+
+    /**
+     * Used for intense calculation
+     * @returns {number} delay in ms between 900 and 12000
+     */
+    getDelayHigh() {
+        return 900 + 300 * Math.random();
+    }
+
+    /**
+     * Used for changes to the flight plan
+     * @returns {number} dynamic delay in ms between ~300 and up to +2000 (depending on additional conditions)
+     */
+    getDelayRouteChange() {
+        if (this._zeroFuelWeightZFWCGEntered && this._blockFuelEntered) {
+            return Math.pow(this.flightPlanManager.getWaypointsCount(), 2) + (this.flightPlanManager.getDestination().cumulativeDistanceInFP) / 10 + Math.random() * 300;
+        } else {
+            return 300 + this.flightPlanManager.getWaypointsCount() * Math.random() + this.flightPlanManager.getDestination().cumulativeDistanceInFP * Math.random();
+        }
+    }
+
+    /**
+     * Used for calculation time for fuel pred page
+     * @returns {number} dynamic delay in ms between 2000ms and 400ms
+     */
+    getDelayFuelPred() {
+        return Math.pow(this.flightPlanManager.getWaypointsCount(), 2) + (this.flightPlanManager.getDestination().cumulativeDistanceInFP) / 10 + Math.random() * 300;
+    }
+
+    /**
+     * Used to load wind data into fms
+     * @returns {number} dynamic delay in ms dependent on amount of waypoints
+     */
+    getDelayWindLoad() {
+        return Math.pow(this.flightPlanManager.getWaypointsCount(), 2);
+    }
+
+    /**
+     * Tries to delete a pages timeout
+     */
+    tryDeleteTimeout() {
+        if (this.page.SelfPtr) {
+            clearTimeout(this.page.SelfPtr);
+            this.page.SelfPtr = false;
+        }
     }
 
     onPowerOn() {
@@ -2505,6 +2725,8 @@ class FMCMainDisplay extends BaseAirliners {
         this.onNextPage = undefined;
         this.pageUpdate = undefined;
         this.refreshPageCallback = undefined;
+        this.page.Current = this.page.Clear;
+        this.tryDeleteTimeout();
     }
 
     generateHTMLLayout(parent) {

@@ -34,6 +34,7 @@ class CDUIRSStatus {
         wind_dir = smoothedAngle % 360;
 
         mcdu.clearDisplay();
+        mcdu.page.Current = mcdu.page.IRSStatus;
         mcdu.setTemplate([
             [`IRS${index}`],
             ["POSITION"],

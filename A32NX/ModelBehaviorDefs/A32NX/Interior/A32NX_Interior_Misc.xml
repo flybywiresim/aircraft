@@ -109,7 +109,7 @@
 
     Takes into account the value of L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position.
 
-    Authors: Asobo / Markus Ullmann (@jokey2k) 18/10/20
+    Authors: Asobo / Markus Ullmann (@jokey2k) 18/10/20   
     -->
     <Template Name="FBW_Airbus_HANDLING_Push_Autobrakes_Template">
         <DefaultTemplateParameters>
@@ -123,12 +123,18 @@
             <REF_DECEL_FPSS>-7</REF_DECEL_FPSS>
         </DefaultTemplateParameters>
         <Component ID="#NODE_ID#" Node="#NODE_ID#">
+            <!--XMLVAR_Autobrakes_Level it the SIMVAR that tracks the position of the autobrake pushbutton switches in A32NX.
+                In order for autobrakes to be set, anti-skid must be enabled. In addition, autobrakes MAX can only
+                be set if the aircraft is on the ground.-->
             <UseTemplate Name="ASOBO_GT_Push_Button">
                 <LEFT_SINGLE_CODE>
                 (A:ANTISKID BRAKES ACTIVE, Bool) ! (L:XMLVAR_Autobrakes_Level) #AUTOBRAKE_LEVEL# == or if{
                     0 (&gt;L:XMLVAR_Autobrakes_Level)
-                } els{
-                    #AUTOBRAKE_LEVEL# (&gt;L:XMLVAR_Autobrakes_Level)
+                    } els{
+                        (A:SIM ON GROUND, Bool) #AUTOBRAKE_LEVEL# 3 != or if{ 
+                            #AUTOBRAKE_LEVEL# (&gt;L:XMLVAR_Autobrakes_Level)
+                        }
+                    }
                 }
 
                 (L:XMLVAR_Autobrakes_Level) 0 == if{
@@ -140,28 +146,71 @@
                         (L:XMLVAR_Autobrakes_Level) 1 + (&gt;K:SET_AUTOBRAKE_CONTROL)
                     }
                 }
+                
+                (A:SIM ON GROUND, Bool) if{
+                    1 (&gt;L:A32NX_DISARM_AUTOBRAKES_ON_LG_RETRACT)
+                } els{
+                    0 (&gt;L:A32NX_DISARM_AUTOBRAKES_ON_LG_RETRACT)
+                }
                 </LEFT_SINGLE_CODE>
             </UseTemplate>
-
+            <!--This is the update code that adjusts the autobrake push button settings in response to SIMVAR changes.
+                1) A:AUTO BRAKE SWITCH CB is not how we keep track of autobrake settings since it reflects the positioning of the rotary
+                   BOEING switch. However, it is currently what is getting set by autobrakes settings in the .flt files. Taxi.flt and Runway.flt
+                   both set autobrakes to 4, so we look for that value and set autbrakes to max if we find it. Technically, this is a bit
+                   abusive since RTO is 0, while 4 is the maximum setting for normal braking but doing it this way enables us to have 
+                   the check work only once.
+                   
+                2) Autobrakes should automatically disarm 10 seconds after the landing gear is retracted. To simulate this, we use a counter
+                   to create a delay after we notice that the landing gear lever has been retracted. Obviously, this won't be exactly accurate,
+                   but it is much closer to reality. Once the autobrakes have been automatically disarmed they are allowed to be rearmed. 
+                   Additionally, if the aircraft touches down and the autobrakes are not engaged; i.e. in the balked landing scenario where
+                   the ground spoilers do not deploy, then the autobrakes will be disarmed normally by landing gear retraction.
+                   
+                3) Upon landing, the autobrake buttons will be disarmed once autobraking deactivates. To ensure that we are actually down,
+                   we will also wait approximately 10 seconds before beginning to test for autobrake deactivation. This is necessary since
+                   at least currently, the autobrake system is activating and deactivating during bounced landings.
+                   CONSIDER: If the autobrake system is rewritten to accurately simulate the real-life system, can we remove the delay?
+                   -->
             <Condition Check="AUTOBRAKE_LEVEL" Match="0">
                 <False>
                     <UseTemplate Name="ASOBO_GT_Update">
                         <FREQUENCY>1</FREQUENCY>
                         <UPDATE_CODE>
-                        (A:AUTO BRAKE SWITCH CB, Enum) s1 0 == if{
-                            (L:XMLVAR_Autobrakes_Level) 0 == if{
-                                #AUTOBRAKE_LEVEL# (&gt;L:XMLVAR_Autobrakes_Level)
-                            }
-                        } els{
-                            l1 1 == if{
-                                0 (&gt;L:XMLVAR_Autobrakes_Level)
-                            } els{
-                                l1 1 - (&gt;L:XMLVAR_Autobrakes_Level)
-                                (A:SIM ON GROUND, Bool) (A:GROUND VELOCITY, Knots) 10 &lt; and if{
-                                    0 (&gt;K:SET_AUTOBRAKE_CONTROL)
-                                }
-                            }
+                        (A:AUTO BRAKE SWITCH CB, Number) 4 == (A:SIM ON GROUND, Bool) and if{
+                            3 (&gt;L:XMLVAR_Autobrakes_Level)
                         }
+                                
+                        (L:XMLVAR_Autobrakes_Level) 0 != if{
+                            (L:A32NX_DISARM_AUTOBRAKES_ON_LG_RETRACT) (A:GEAR HANDLE POSITION, Bool) ! and if{
+                                 30 (L:A32NX_LG_UP_WAIT_COUNTER) == if{                                                                 
+                                     0 (&gt;L:XMLVAR_Autobrakes_Level)
+                                     0 (&gt;L:A32NX_DISARM_AUTOBRAKES_ON_LG_RETRACT)
+                                     0 == (L:A32NX_LG_UP_WAIT_COUNTER)
+                                 } els{
+                                    (L:A32NX_LG_UP_WAIT_COUNTER) 1 + (&gt;L:A32NX_LG_UP_WAIT_COUNTER)
+                                }
+                            } 
+                            
+                            (A:SIM ON GROUND, Bool) if{
+                                1 (&gt;L:A32NX_DISARM_AUTOBRAKES_ON_LG_RETRACT)
+                                30 (L:A32NX_ON_GROUND_WAIT_COUNTER) == if{ 
+                                    (A:AUTOBRAKES ACTIVE, Bool) if{
+                                        1 (&gt;L:A32NX_AUTOBRAKES_ACTIVATED)
+                                    }                              
+                            
+                                    (L:A32NX_AUTOBRAKES_ACTIVATED) (A:AUTOBRAKES ACTIVE, Bool) ! and if{
+                                        0 (&gt;L:XMLVAR_Autobrakes_Level)
+                                        0 (&gt;L:A32NX_AUTOBRAKES_ACTIVATED)
+                                        0 (&gt;A32NX_ON_GROUND_WAIT_COUNTER)
+                                    }
+                                } els{
+                                    (L:A32NX_ON_GROUND_WAIT_COUNTER) 1 + (&gt;L:A32NX_ON_GROUND_WAIT_COUNTER)
+                                }
+                            } els{
+                                0 (&gt;A32NX_ON_GROUND_WAIT_COUNTER)
+                            }
+                        }  
                         </UPDATE_CODE>
                     </UseTemplate>
                 </False>
