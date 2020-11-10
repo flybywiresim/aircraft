@@ -1130,7 +1130,7 @@ var Airbus_FMA;
         static GetModeState_GS() {
 
             if (Airbus_FMA.CurrentPlaneState.flightPhase != FlightPhase.FLIGHT_PHASE_GOAROUND) {
-                if (CurrentPlaneState.bothAutoPilotsInactive && Simplane.getAutoPilotApproachType() == 4 && Simplane.getAutoPilotAPPRActive() && !SimVar.GetSimVarValue("L:A32NX_AUTOPILOT_LOC_MODE, bool") === 1) {
+                if (CurrentPlaneState.bothAutoPilotsInactive && Simplane.getAutoPilotApproachType() == 4 && Simplane.getAutoPilotAPPRActive() && SimVar.GetSimVarValue("L:A32NX_AUTOPILOT_LOC_MODE", "bool") != 1) {
                     return Airbus_FMA.MODE_STATE.ENGAGED;
                 }
 
