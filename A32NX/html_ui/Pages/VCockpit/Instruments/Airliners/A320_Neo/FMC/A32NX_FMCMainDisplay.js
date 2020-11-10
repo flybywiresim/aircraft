@@ -338,7 +338,15 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     /**
-     * Returns true if all engine is are running (FF > 0)
+     * Returns true if an engine is running (FF > 0)
+     * @returns {number}
+     */
+    isAnEngineOn() {
+        return Simplane.getEngineActive(0) || Simplane.getEngineActive(1);
+    }
+
+    /**
+     * Returns true if all engines are running (FF > 0)
      * @returns {number}
      */
     isAllEngineOn() {
@@ -451,18 +459,7 @@ class FMCMainDisplay extends BaseAirliners {
             }
         }
         if (flString) {
-            const fl = parseFloat(flString);
-            if (isFinite(fl)) {
-                if (fl > 0 && fl <= this.maxCruiseFL) {
-                    this.cruiseFlightLevel = fl;
-                    return true;
-                } else if (fl >= 1000 && fl <= this.maxCruiseFL * 100) {
-                    this.cruiseFlightLevel = Math.floor(fl / 100);
-                    return true;
-                }
-                this.showErrorMessage("ENTRY OUT OF RANGE");
-                return false;
-            }
+            return this.trySetCruiseFl(parseFloat(flString));
         }
         this.showErrorMessage(this.defaultInputErrorMessage);
         return false;
@@ -1376,6 +1373,59 @@ class FMCMainDisplay extends BaseAirliners {
             return this._routeReservedWeight / this.blockFuel * 100;
         }
         return this._routeReservedPercent;
+    }
+
+    /**
+     * Checks input and passes to trySetCruiseFl()
+     * @param input
+     * @returns {boolean} input passed checks
+     */
+    trySetCruiseFlCheckInput(input) {
+        if (input === FMCMainDisplay.clrValue) {
+            this.showErrorMessage(this.defaultInputErrorMessage);
+            return false;
+        }
+        const flString = input.replace("FL", "");
+        if (!flString) {
+            this.showErrorMessage(this.defaultInputErrorMessage);
+            return false;
+        }
+        return this.trySetCruiseFl(parseFloat(flString));
+    }
+
+    /**
+     * Sets new Cruise FL if all conditions good
+     * @param fl {number} Altitude or FL
+     * @returns {boolean} input passed checks
+     */
+    trySetCruiseFl(fl) {
+        if (!isFinite(fl)) {
+            this.showErrorMessage(this.defaultInputErrorMessage);
+            return false;
+        }
+        if (fl >= 1000) {
+            fl = Math.floor(fl / 100);
+        }
+        if (fl > this.maxCruiseFL) {
+            this.showErrorMessage(this.defaultInputErrorMessage);
+            return false;
+        }
+        const phase = Simplane.getCurrentFlightPhase();
+        if (fl < Math.floor(Math.max(0, Simplane.getAutoPilotDisplayedAltitudeLockValue()) / 100) && phase === FlightPhase.FLIGHT_PHASE_CRUISE) {
+            this.showErrorMessage(this.defaultInputErrorMessage);
+            return false;
+        }
+        if (fl > Math.floor(Simplane.getAltitude() / 100) && phase > FlightPhase.FLIGHT_PHASE_CRUISE) {
+            this.showErrorMessage("ENTRY OUT OF RANGE");
+            return false;
+        }
+        if (fl > 0 && fl <= this.maxCruiseFL) {
+            this.cruiseFlightLevel = fl;
+            this._cruiseEntered = true;
+            return true;
+        }
+        this.showErrorMessage("ENTRY OUT OF RANGE");
+        return false;
     }
 
     trySetRouteReservedFuel(s) {

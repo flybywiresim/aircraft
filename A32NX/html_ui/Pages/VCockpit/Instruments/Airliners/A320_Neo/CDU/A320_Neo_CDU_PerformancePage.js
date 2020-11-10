@@ -234,6 +234,13 @@ class CDUPerformancePage {
         } else {
             selectedSpeedCell = "[]";
         }
+        mcdu.onLeftInput[1] = () => {
+            const value = mcdu.inOut;
+            mcdu.clearUserInput();
+            if (mcdu.tryUpdateCostIndex(value)) {
+                CDUPerformancePage.ShowCLBPage(mcdu);
+            }
+        };
         mcdu.onLeftInput[3] = () => {
             const value = mcdu.inOut;
             mcdu.clearUserInput();
@@ -326,6 +333,13 @@ class CDUPerformancePage {
         } else {
             selectedSpeedCell = "[]";
         }
+        mcdu.onLeftInput[1] = () => {
+            const value = mcdu.inOut;
+            mcdu.clearUserInput();
+            if (mcdu.tryUpdateCostIndex(value)) {
+                CDUPerformancePage.ShowCLBPage(mcdu);
+            }
+        };
         mcdu.onLeftInput[3] = () => {
             const value = mcdu.inOut;
             mcdu.clearUserInput();
@@ -452,6 +466,13 @@ class CDUPerformancePage {
                 CDUPerformancePage.ShowCRZPage(mcdu);
             };
         }
+        mcdu.onLeftInput[1] = () => {
+            const value = mcdu.inOut;
+            mcdu.clearUserInput();
+            if (mcdu.tryUpdateCostIndex(value)) {
+                CDUPerformancePage.ShowCLBPage(mcdu);
+            }
+        };
         mcdu.onRightInput[5] = () => {
             CDUPerformancePage.ShowAPPRPage(mcdu);
         };
