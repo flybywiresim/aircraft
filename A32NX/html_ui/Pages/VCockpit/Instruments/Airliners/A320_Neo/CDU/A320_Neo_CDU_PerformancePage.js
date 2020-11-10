@@ -15,6 +15,7 @@ class CDUPerformancePage {
     }
     static ShowTAKEOFFPage(mcdu) {
         mcdu.clearDisplay();
+        mcdu.page.Current = mcdu.page.PerformancePageTakeoff;
         CDUPerformancePage._timer = 0;
         CDUPerformancePage._lastPhase = mcdu.currentFlightPhase;
         mcdu.pageUpdate = () => {
@@ -195,6 +196,7 @@ class CDUPerformancePage {
     }
     static ShowCLBPage(mcdu, confirmAppr = false) {
         mcdu.clearDisplay();
+        mcdu.page.Current = mcdu.page.PerformancePageClb;
         CDUPerformancePage._timer = 0;
         CDUPerformancePage._lastPhase = mcdu.currentFlightPhase;
         mcdu.pageUpdate = () => {
@@ -231,6 +233,13 @@ class CDUPerformancePage {
         } else {
             selectedSpeedCell = "[]";
         }
+        mcdu.onLeftInput[1] = () => {
+            const value = mcdu.inOut;
+            mcdu.clearUserInput();
+            if (mcdu.tryUpdateCostIndex(value)) {
+                CDUPerformancePage.ShowCLBPage(mcdu);
+            }
+        };
         mcdu.onLeftInput[3] = () => {
             const value = mcdu.inOut;
             mcdu.clearUserInput();
@@ -286,6 +295,7 @@ class CDUPerformancePage {
     }
     static ShowCRZPage(mcdu, confirmAppr = false) {
         mcdu.clearDisplay();
+        mcdu.page.Current = mcdu.page.PerformancePageCrz;
         CDUPerformancePage._timer = 0;
         CDUPerformancePage._lastPhase = mcdu.currentFlightPhase;
         mcdu.pageUpdate = () => {
@@ -322,6 +332,13 @@ class CDUPerformancePage {
         } else {
             selectedSpeedCell = "[]";
         }
+        mcdu.onLeftInput[1] = () => {
+            const value = mcdu.inOut;
+            mcdu.clearUserInput();
+            if (mcdu.tryUpdateCostIndex(value)) {
+                CDUPerformancePage.ShowCLBPage(mcdu);
+            }
+        };
         mcdu.onLeftInput[3] = () => {
             const value = mcdu.inOut;
             mcdu.clearUserInput();
@@ -377,6 +394,7 @@ class CDUPerformancePage {
     }
     static ShowDESPage(mcdu, confirmAppr = false) {
         mcdu.clearDisplay();
+        mcdu.page.Current = mcdu.page.PerformancePageDes;
         CDUPerformancePage._timer = 0;
         CDUPerformancePage._lastPhase = mcdu.currentFlightPhase;
         mcdu.pageUpdate = () => {
@@ -447,6 +465,13 @@ class CDUPerformancePage {
                 CDUPerformancePage.ShowCRZPage(mcdu);
             };
         }
+        mcdu.onLeftInput[1] = () => {
+            const value = mcdu.inOut;
+            mcdu.clearUserInput();
+            if (mcdu.tryUpdateCostIndex(value)) {
+                CDUPerformancePage.ShowCLBPage(mcdu);
+            }
+        };
         mcdu.onRightInput[5] = () => {
             CDUPerformancePage.ShowAPPRPage(mcdu);
         };
@@ -468,6 +493,7 @@ class CDUPerformancePage {
     }
     static ShowAPPRPage(mcdu) {
         mcdu.clearDisplay();
+        mcdu.page.Current = mcdu.page.PerformancePageAppr;
         CDUPerformancePage._timer = 0;
         CDUPerformancePage._lastPhase = mcdu.currentFlightPhase;
         mcdu.pageUpdate = () => {
@@ -483,8 +509,9 @@ class CDUPerformancePage {
             titleColor = "green";
         }
         let qnhCell = "[ ]";
-        if (isFinite(mcdu.perfApprQNH)) {
-            qnhCell = mcdu.perfApprQNH.toFixed(0);
+        const QNH_REGEX = /[0-9]{2}.[0-9]{2}/;
+        if (isFinite(mcdu.perfApprQNH) || QNH_REGEX.test(mcdu.perfApprQNH)) {
+            qnhCell = mcdu.perfApprQNH;
         }
         mcdu.onLeftInput[0] = () => {
             const value = mcdu.inOut;
@@ -615,6 +642,7 @@ class CDUPerformancePage {
     }
     static ShowGOAROUNDPage(mcdu) {
         mcdu.clearDisplay();
+        mcdu.page.Current = mcdu.page.PerformancePageGoAround;
         CDUPerformancePage._timer = 0;
         CDUPerformancePage._lastPhase = mcdu.currentFlightPhase;
         mcdu.pageUpdate = () => {

@@ -9,6 +9,7 @@ class CDUHoldAtPage {
             };
 
             mcdu.clearDisplay();
+            mcdu.page.Current = mcdu.page.HoldAtPage;
 
             let speedConstraint = waypoint.speedConstraint;
             let holdTime = 1.5;

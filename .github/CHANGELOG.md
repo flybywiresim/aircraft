@@ -11,6 +11,11 @@
 1. [FLIGHTMODEL] Reduced rudder effectiveness - @MisterChocker - (Leon)
 1. [ENGINE] Adjusted N1% thrust table - @MisterChocker - (Leon)
 1. [PFD] Improved VLS, Vaprot and Vamax - @donstim - (donbikes#4084)
+1. [MCDU] Added Perf Page CI functionality - @MisterChocker (Leon)
+1. [MCDU] Added PROG Page CRZ FL functionality and logic - @MisterChocker (Leon)
+1. [MCDU] Added Init B page only available until engine start - @MisterChocker (Leon)
+1. [MCDU] Added mcdu page id system - @MisterChocker (Leon)
+1. [MCDU] Added Progress Page REC MAX FL functionality and dummy OPT - @MisterChocker (Leon)
 1. [PFD] Added proper altitude constrain visuals - @MisterChocker (Leon)
 1. [COLORS] Improved MCDU/PFD/ND/ECAM colors - @MisterChocker (Leon)
 1. [PFD] General improvements to the display layout - @MisterChocker (Leon)
@@ -56,11 +61,13 @@
 1. [TEXTURES] added Registry plaque and improved Textures - @Pleasure0102 (Pleasure)
 1. [GPWS] Add minimums and 100above logic - @linkeleven (linkeleven#2557)
 1. [TEXTURES] Changed cockpit font and fixed spelling errors - @FoxinTale (Aubrey)
+1. [AUTO BRK] Fixed autobrake disarm behavior to match real life. MAX can no longer be selected when the aircraft is in the air. @geoffda (Geoff Darst)
 1. [FCU] Remember selected pressure mode when returning from Std mode - @lhoenig (Lukas Hoenig)
 1. [TEXTURES] upgraded to 4k Textures (pedestal,throttle unit) fixed decal texture - @Pleasure0102 (Pleasure)
 1. [PFD] Added FMAs ALT CST and ALT CST* as well as CLB magenta and DES or CLB blue - @MisterChocker (Leon)
 1. [CDU] Added CFDS display test, ATSU METAR/TAF/ATIS requests, and ATSU free text - @wpine215 (Iceman), @nistei (Nistei), @Edwin B
-
+1. [ECAM] Improve flaps/slats panel design on upper ECAM, improve flaps/slats transition logic - @paul92ilm (Lussion)
+1. [CDU] Allow inserting landing QNH in inHg - @pessip (Pessi Päivärinne)
 
 ## 0.4.0
 1. [General] Add CHANGELOG.md - @nathaninnes (Nathan Innes)
