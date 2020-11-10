@@ -219,9 +219,6 @@ class CDUAirportsMonitor {
                         // trigger data update next frame
                         this.total_delta_t = update_ival_ms;
                         this.ShowPage(mcdu);
-                    } else {
-                        console.log(`"${value}"`);
-                        console.log(`"${FMCMainDisplay.clrValue}"`);
                     }
                 } else if (value !== '' && value !== FMCMainDisplay.clrValue) {
                     // GetAirportByIdent returns a Waypoint in the callback,
