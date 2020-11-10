@@ -1,4 +1,3 @@
-const QNH_REGEX = /[0-9]{2}.[0-9]{2}/;
 class CDUPerformancePage {
     static ShowPage(mcdu) {
         mcdu.activeSystem = 'FMGC';
@@ -510,6 +509,7 @@ class CDUPerformancePage {
             titleColor = "green";
         }
         let qnhCell = "[ ]";
+        const QNH_REGEX = /[0-9]{2}.[0-9]{2}/;
         if (isFinite(mcdu.perfApprQNH) || QNH_REGEX.test(mcdu.perfApprQNH)) {
             qnhCell = mcdu.perfApprQNH;
         }
