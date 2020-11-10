@@ -5,9 +5,9 @@
 <!--  1. [Changed Area] Title of changes - @github username (Name)  -->
 
 ## 0.5.0
-1. [MCDU] Added Perf Page CI functionality - @MisterChocker (Leon)
-1. [MCDU] Added PROG Page CRZ FL functionality and logic - @MisterChocker (Leon)
-1. [MCDU] Added Init B page only available until engine start - @MisterChocker (Leon)
+1. [CDU] Added Performance Page CI functionality - @MisterChocker (Leon)
+1. [CDU] Added Progress Page CRZ FL functionality and logic - @MisterChocker (Leon)
+1. [CDU] Added Init B page only available until engine start - @MisterChocker (Leon)
 1. [CDU] Added mcdu page id system - @MisterChocker (Leon)
 1. [CDU] Added Progress Page REC MAX FL functionality and dummy OPT - @MisterChocker (Leon)
 1. [PFD] Added proper altitude constrain visuals - @MisterChocker (Leon)
