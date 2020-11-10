@@ -1,3 +1,4 @@
+const QNH_REGEX = /[0-9]{2}.[0-9]{2}/;
 class FMCMainDisplay extends BaseAirliners {
     constructor() {
         super(...arguments);
@@ -1747,7 +1748,11 @@ class FMCMainDisplay extends BaseAirliners {
 
     setPerfApprQNH(s) {
         const value = parseFloat(s);
-        if (isFinite(value)) {
+
+        if (QNH_REGEX.test(value)) {
+            this.perfApprQNH = value;
+            return true;
+        } else if (isFinite(value)) {
             this.perfApprQNH = value;
             return true;
         }
