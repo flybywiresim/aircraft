@@ -59,11 +59,15 @@ var A320_Neo_UpperECAM;
     A320_Neo_UpperECAM.createRectangle = createRectangle;
     function createSlatParallelogram(_class, _cx, _cy) {
         const parElement = document.createElementNS(Avionics.SVG.NS, "polygon");
-        const _w = 5;
-        const _h = 6;
-        const _ox = 2;
-        const _oy = 1;
-        const _ppoints = String(_cx - _w) + "," + String(_cy - _oy) + " " + String(_cx - _w - _ox) + "," + String(_cy + _h) + " " + String(_cx + _w) + "," + String(_cy + _oy) + " " + String(_cx + _w + _ox) + "," + String(_cy - _h);
+        const _xOffset = 3.2;
+        const _yOffset = 1;
+        const _w = 3;
+        const _h = 4;
+        const _ox = 1.5;
+        const _oy = 1.5;
+        const _x = _cx + _xOffset;
+        const _y = _cy + _yOffset;
+        const _ppoints = String(_x - _w) + "," + String(_y - _oy) + " " + String(_x - _w - _ox) + "," + String(_y + _h) + " " + String(_x + _w) + "," + String(_y + _oy) + " " + String(_x + _w + _ox) + "," + String(_y - _h);
         parElement.setAttribute("class", _class);
         parElement.setAttribute("points", _ppoints);
         return parElement;
@@ -71,11 +75,15 @@ var A320_Neo_UpperECAM;
     A320_Neo_UpperECAM.createSlatParallelogram = createSlatParallelogram;
     function createFlapParallelogram(_class, _cx, _cy) {
         const parElement = document.createElementNS(Avionics.SVG.NS, "polygon");
-        const _w = 4;
-        const _h = 5;
+        const _xOffset = -1;
+        const _yOffset = -0.5;
+        const _w = 3.5;
+        const _h = 3.5;
         const _ox = 2;
-        const _oy = -3;
-        const _ppoints = String(_cx - _w) + "," + String(_cy - _oy) + " " + String(_cx - _w - _ox) + "," + String(_cy - _h) + " " + String(_cx + _w) + "," + String(_cy + _oy) + " " + String(_cx + _w + _ox) + "," + String(_cy + _h);
+        const _oy = -2;
+        const _x = _cx + _xOffset;
+        const _y = _cy + _yOffset;
+        const _ppoints = String(_x - _w) + "," + String(_y - _oy) + " " + String(_x - _w - _ox) + "," + String(_y - _h) + " " + String(_x + _w) + "," + String(_y + _oy) + " " + String(_x + _w) + "," + String(_y + _h);
         parElement.setAttribute("class", _class);
         parElement.setAttribute("points", _ppoints);
         return parElement;
@@ -2033,14 +2041,14 @@ var A320_Neo_UpperECAM;
             super(...arguments);
             this.viewBoxSize = new Vec2(500, 125);
             this.dotSize = 5;
-            this.slatArrowPathD = "m20,-12 l-31,6 l0,17, l23,-5 l10,-20";
+            this.slatArrowPathD = "m20,-12 l-27,8 l-6,18 l27,-8 l6,-18";
             this.slatDotPositions = [
                 new Vec2(160, 37),
                 new Vec2(110, 52),
-                new Vec2(68, 68),
-                new Vec2(25, 81)
+                new Vec2(68, 65),
+                new Vec2(26, 78)
             ];
-            this.flapArrowPathD = "m-20,-12 l31,6 l0,17, l-23,-5 l-10,-20";
+            this.flapArrowPathD = "m-20,-12 l31,6 l0,19, l-21,-5 l-10,-20";
             this.flapDotPositions = [
                 new Vec2(220, 37),
                 new Vec2(280, 50),
@@ -2055,7 +2063,7 @@ var A320_Neo_UpperECAM;
                 new Vec2(180, 25),
                 new Vec2(200, 25),
                 new Vec2(210, 45),
-                new Vec2(170, 45)
+                new Vec2(174, 43)
             ];
         }
         create() {
@@ -2086,11 +2094,11 @@ var A320_Neo_UpperECAM;
             this.currentFlapsArrow = document.createElementNS(Avionics.SVG.NS, "path");
             this.currentFlapsArrow.setAttribute("class", "currentArrow");
             rootSVG.appendChild(this.currentFlapsArrow);
-            this.targetSlatsArrow = document.createElementNS(Avionics.SVG.NS, "path");
-            this.targetSlatsArrow.setAttribute("class", "targetArrow");
+            this.targetSlatsArrow = document.createElementNS(Avionics.SVG.NS, "polygon");
+            this.targetSlatsArrow.setAttribute("class", "targetDot");
             rootSVG.appendChild(this.targetSlatsArrow);
-            this.targetFlapsArrow = document.createElementNS(Avionics.SVG.NS, "path");
-            this.targetFlapsArrow.setAttribute("class", "targetArrow");
+            this.targetFlapsArrow = document.createElementNS(Avionics.SVG.NS, "polygon");
+            this.targetFlapsArrow.setAttribute("class", "targetDot");
             rootSVG.appendChild(this.targetFlapsArrow);
             this.targetSlatsArrowsStrings = new Array();
             this.targetSlatsArrowsStrings.push(this.generateArrowPathD(this.slatArrowPathD, null, this.slatDotPositions[0], this.slatDotPositions[1], 0));
@@ -2104,11 +2112,20 @@ var A320_Neo_UpperECAM;
             this.targetFlapsArrowsStrings.push(this.generateArrowPathD(this.flapArrowPathD, null, this.flapDotPositions[1], this.flapDotPositions[2], 1));
             this.targetFlapsArrowsStrings.push(this.generateArrowPathD(this.flapArrowPathD, null, this.flapDotPositions[2], this.flapDotPositions[3], 1));
             this.targetFlapsArrowsStrings.push(this.generateArrowPathD(this.flapArrowPathD, null, this.flapDotPositions[3], this.flapDotPositions[4], 1));
+            this.targetSlatsDots = new Array();
+            this.targetSlatsDots.push(A320_Neo_UpperECAM.createSlatParallelogram("targetDot", this.slatDotPositions[1].x, this.slatDotPositions[1].y + 20).getAttribute("points"));
+            this.targetSlatsDots.push(A320_Neo_UpperECAM.createSlatParallelogram("targetDot", this.slatDotPositions[2].x, this.slatDotPositions[2].y + 20).getAttribute("points"));
+            this.targetSlatsDots.push(A320_Neo_UpperECAM.createSlatParallelogram("targetDot", this.slatDotPositions[2].x, this.slatDotPositions[2].y + 20).getAttribute("points"));
+            this.targetSlatsDots.push(A320_Neo_UpperECAM.createSlatParallelogram("targetDot", this.slatDotPositions[3].x, this.slatDotPositions[3].y + 20).getAttribute("points"));
+            this.targetFlapsDots = new Array();
+            this.targetFlapsDots.push(A320_Neo_UpperECAM.createFlapParallelogram("targetDot", this.flapDotPositions[1].x, this.flapDotPositions[1].y + 20).getAttribute("points"));
+            this.targetFlapsDots.push(A320_Neo_UpperECAM.createFlapParallelogram("targetDot", this.flapDotPositions[2].x, this.flapDotPositions[2].y + 20).getAttribute("points"));
+            this.targetFlapsDots.push(A320_Neo_UpperECAM.createFlapParallelogram("targetDot", this.flapDotPositions[3].x, this.flapDotPositions[3].y + 20).getAttribute("points"));
+            this.targetFlapsDots.push(A320_Neo_UpperECAM.createFlapParallelogram("targetDot", this.flapDotPositions[4].x, this.flapDotPositions[4].y + 20).getAttribute("points"));
             this.hideOnInactiveGroup.appendChild(A320_Neo_UpperECAM.createSVGText("S", "sfText", this.sTextPos.x.toString(), this.sTextPos.y.toString()));
             this.hideOnInactiveGroup.appendChild(A320_Neo_UpperECAM.createSVGText("F", "sfText", this.fTextPos.x.toString(), this.fTextPos.y.toString()));
             this.currentStateText = A320_Neo_UpperECAM.createSVGText("", "state", this.currentStateTextPos.x.toString(), this.currentStateTextPos.y.toString());
             this.hideOnInactiveGroup.appendChild(this.currentStateText);
-            const dotSizeStr = this.dotSize.toString();
             for (var i = 1; i < this.slatDotPositions.length; ++i) {
                 this.hideOnInactiveGroup.appendChild(A320_Neo_UpperECAM.createSlatParallelogram("dot", this.slatDotPositions[i].x, this.slatDotPositions[i].y));
             }
@@ -2241,18 +2258,26 @@ var A320_Neo_UpperECAM;
             }
             if (this.targetSlatsArrow != null) {
                 if (slatsAngleChanged && (this.targetSlatsArrowsStrings != null) && (slatsTargetIndex >= 0) && (slatsTargetIndex < this.targetSlatsArrowsStrings.length)) {
-                    this.targetSlatsArrow.setAttribute("d", this.targetSlatsArrowsStrings[slatsTargetIndex]);
+                    this.targetSlatsArrow.setAttribute("points", this.targetSlatsDots[slatsTargetIndex - 1]);
                     this.targetSlatsArrow.style.display = "block";
+                    this.currentStateText.setAttribute("class", "stateInTransit");
                 } else {
                     this.targetSlatsArrow.style.display = "none";
+                    if (flapsAngleChanged && (this.targetFlapsArrowsStrings != null) && (flapsTargetIndex >= 0) && (flapsTargetIndex < this.targetFlapsArrowsStrings.length)) {
+                        this.currentStateText.setAttribute("class", "state");
+                    }
                 }
             }
             if (this.targetFlapsArrow != null) {
                 if (flapsAngleChanged && (this.targetFlapsArrowsStrings != null) && (flapsTargetIndex >= 0) && (flapsTargetIndex < this.targetFlapsArrowsStrings.length)) {
-                    this.targetFlapsArrow.setAttribute("d", this.targetFlapsArrowsStrings[flapsTargetIndex]);
+                    this.targetFlapsArrow.setAttribute("points", this.targetFlapsDots[flapsTargetIndex - 1]);
                     this.targetFlapsArrow.style.display = "block";
+                    this.currentStateText.setAttribute("class", "stateInTransit");
                 } else {
                     this.targetFlapsArrow.style.display = "none";
+                    if (!(slatsAngleChanged && (this.targetSlatsArrowsStrings != null) && (slatsTargetIndex >= 0) && (slatsTargetIndex < this.targetSlatsArrowsStrings.length))) {
+                        this.currentStateText.setAttribute("class", "state");
+                    }
                 }
             }
         }

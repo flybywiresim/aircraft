@@ -73,6 +73,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
 
         this.electricity = this.querySelector("#Electricity");
         this.climbTransitionGroundAltitude = null;
+        this.initB = false;
 
         // Start the TELEX Ping. API functions check the connection status themself
         setInterval(() => {
@@ -216,11 +217,32 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
 
         this.A32NXCore.update();
 
+        this.updateMCDU();
+
         this.updateAutopilot();
 
         this.updateScreenState();
 
         this.updateGPSMessage();
+    }
+
+    /**
+     * Checks whether INIT page B is open and an engine is being started, if so:
+     * The INIT page B reverts to the FUEL PRED page 15 seconds after the first engine start and cannot be accessed after engine start.
+     */
+    updateMCDU() {
+        if (this.isAnEngineOn()) {
+            if (!this.initB) {
+                this.initB = true;
+                setTimeout(() => {
+                    if (this.page.Current === this.page.InitPageB && this.isAnEngineOn()) {
+                        CDUFuelPredPage.ShowPage(this);
+                    }
+                }, 15000);
+            }
+        } else {
+            this.initB = false;
+        }
     }
 
     // check GPS Primary state and display message accordingly
@@ -1132,9 +1154,11 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                     const planeLla = new LatLongAlt(lat, long);
                     const dist = Avionics.Utils.computeGreatCircleDistance(this.flightPlanManager.decelWaypoint.infos.coordinates, planeLla);
                     if (dist < 3 && this.currentFlightPhase != FlightPhase.FLIGHT_PHASE_GOAROUND) {
-                        console.log('switching to tryGoInApproachPhase (AT DECEL): ' + JSON.stringify({lat, long, dist, prevPhase: this.currentFlightPhase}, null, 2));
-                        console.log("Switching into approach. DECEL lat : " + lat + " long " + long);
-                        this.tryGoInApproachPhase();
+                        this.flightPlanManager._decelReached = true;
+                        this._waypointReachedAt = SimVar.GetGlobalVarValue("ZULU TIME", "seconds");
+                        if (Simplane.getAltitudeAboveGround() < 9500) {
+                            this.tryGoInApproachPhase();
+                        }
                     }
                 }
             }

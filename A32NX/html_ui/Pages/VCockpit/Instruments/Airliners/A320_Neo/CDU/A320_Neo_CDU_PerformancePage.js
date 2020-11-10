@@ -240,6 +240,13 @@ class CDUPerformancePage {
         } else {
             selectedSpeedCell = "[]";
         }
+        mcdu.onLeftInput[1] = () => {
+            const value = mcdu.inOut;
+            mcdu.clearUserInput();
+            if (mcdu.tryUpdateCostIndex(value)) {
+                CDUPerformancePage.ShowCLBPage(mcdu);
+            }
+        };
         mcdu.onLeftInput[3] = () => {
             const value = mcdu.inOut;
             mcdu.clearUserInput();
@@ -332,6 +339,13 @@ class CDUPerformancePage {
         } else {
             selectedSpeedCell = "[]";
         }
+        mcdu.onLeftInput[1] = () => {
+            const value = mcdu.inOut;
+            mcdu.clearUserInput();
+            if (mcdu.tryUpdateCostIndex(value)) {
+                CDUPerformancePage.ShowCLBPage(mcdu);
+            }
+        };
         mcdu.onLeftInput[3] = () => {
             const value = mcdu.inOut;
             mcdu.clearUserInput();
@@ -458,6 +472,13 @@ class CDUPerformancePage {
                 CDUPerformancePage.ShowCRZPage(mcdu);
             };
         }
+        mcdu.onLeftInput[1] = () => {
+            const value = mcdu.inOut;
+            mcdu.clearUserInput();
+            if (mcdu.tryUpdateCostIndex(value)) {
+                CDUPerformancePage.ShowCLBPage(mcdu);
+            }
+        };
         mcdu.onRightInput[5] = () => {
             CDUPerformancePage.ShowAPPRPage(mcdu);
         };
@@ -495,8 +516,9 @@ class CDUPerformancePage {
             titleColor = "green";
         }
         let qnhCell = "[ ]";
-        if (isFinite(mcdu.perfApprQNH)) {
-            qnhCell = mcdu.perfApprQNH.toFixed(0);
+        const QNH_REGEX = /[0-9]{2}.[0-9]{2}/;
+        if (isFinite(mcdu.perfApprQNH) || QNH_REGEX.test(mcdu.perfApprQNH)) {
+            qnhCell = mcdu.perfApprQNH;
         }
         mcdu.onLeftInput[0] = () => {
             const value = mcdu.inOut;
