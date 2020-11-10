@@ -35,11 +35,17 @@ class CDU_OPTIONS_ADIRS {
             ["<RETURN[color]blue"]
         ]);
 
+        mcdu.leftInputDelay[0] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
         mcdu.onLeftInput[0] = () => {
             if (storedAlignTime != "INSTANT") {
                 NXDataStore.set("CONFIG_ALIGN_TIME", "INSTANT");
                 CDU_OPTIONS_ADIRS.ShowPage(mcdu);
             }
+        };
+        mcdu.leftInputDelay[1] = () => {
+            return mcdu.getDelaySwitchPage();
         };
         mcdu.onLeftInput[1] = () => {
             if (storedAlignTime != "FAST") {
@@ -47,11 +53,17 @@ class CDU_OPTIONS_ADIRS {
                 CDU_OPTIONS_ADIRS.ShowPage(mcdu);
             }
         };
+        mcdu.leftInputDelay[2] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
         mcdu.onLeftInput[2] = () => {
             if (storedAlignTime != "REAL") {
                 NXDataStore.set("CONFIG_ALIGN_TIME", "REAL");
                 CDU_OPTIONS_ADIRS.ShowPage(mcdu);
             }
+        };
+        mcdu.leftInputDelay[5] = () => {
+            return mcdu.getDelaySwitchPage();
         };
         mcdu.onLeftInput[5] = () => {
             CDU_OPTIONS_MainMenu.ShowPage(mcdu);

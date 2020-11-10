@@ -43,11 +43,17 @@ class CDU_OPTIONS_METAR {
             ["<RETURN[color]blue"]
         ]);
 
+        mcdu.leftInputDelay[0] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
         mcdu.onLeftInput[0] = () => {
             if (storedMetarSrc != "MSFS") {
                 NXDataStore.set("CONFIG_METAR_SRC", "MSFS");
                 CDU_OPTIONS_METAR.ShowPage(mcdu);
             }
+        };
+        mcdu.leftInputDelay[1] = () => {
+            return mcdu.getDelaySwitchPage();
         };
         mcdu.onLeftInput[1] = () => {
             mcdu.showErrorMessage("NOT YET IMPLEMENTED");
@@ -55,11 +61,17 @@ class CDU_OPTIONS_METAR {
                 mcdu.showErrorMessage("");
             }, 1000);
         };
+        mcdu.leftInputDelay[2] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
         mcdu.onLeftInput[2] = () => {
             if (storedMetarSrc != "VATSIM") {
                 NXDataStore.set("CONFIG_METAR_SRC", "VATSIM");
                 CDU_OPTIONS_METAR.ShowPage(mcdu);
             }
+        };
+        mcdu.leftInputDelay[3] = () => {
+            return mcdu.getDelaySwitchPage();
         };
         mcdu.onLeftInput[3] = () => {
             if (storedMetarSrc != "PILOTEDGE") {
@@ -67,11 +79,17 @@ class CDU_OPTIONS_METAR {
                 CDU_OPTIONS_METAR.ShowPage(mcdu);
             }
         };
+        mcdu.leftInputDelay[4] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
         mcdu.onLeftInput[4] = () => {
             if (storedMetarSrc != "IVAO") {
                 NXDataStore.set("CONFIG_METAR_SRC", "IVAO");
                 CDU_OPTIONS_METAR.ShowPage(mcdu);
             }
+        };
+        mcdu.leftInputDelay[5] = () => {
+            return mcdu.getDelaySwitchPage();
         };
         mcdu.onLeftInput[5] = () => {
             CDU_OPTIONS_MainMenu.ShowPage(mcdu);
