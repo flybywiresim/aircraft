@@ -2738,7 +2738,7 @@
                 <ANIM_NAME>PUSH_AUTOPILOT_HDGTRK</ANIM_NAME>
             </UseTemplate>
 
-            <UseTemplate Name="ASOBO_AUTOPILOT_Push_Autopilot_Template">
+            <UseTemplate Name="FBW_Airbus_Autopilot_Template">
                 <NODE_ID>PUSH_AUTOPILOT_AP1</NODE_ID>
                 <PART_ID>PUSH_AUTOPILOT_AP1</PART_ID>
                 <ANIM_NAME>PUSH_AUTOPILOT_AP1</ANIM_NAME>
@@ -2751,7 +2751,7 @@
                 <TOOLTIPID>%((L:XMLVAR_Autopilot_1_Status, bool))%{if}TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_AP_ON%{else}TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_AP_OFF%{end}</TOOLTIPID>
             </UseTemplate>
 
-            <UseTemplate Name="ASOBO_AUTOPILOT_Push_Autopilot_Template">
+            <UseTemplate Name="FBW_Airbus_Autopilot_Template">
                 <NODE_ID>PUSH_AUTOPILOT_AP2</NODE_ID>
                 <PART_ID>PUSH_AUTOPILOT_AP2</PART_ID>
                 <ANIM_NAME>PUSH_AUTOPILOT_AP2</ANIM_NAME>
@@ -2787,33 +2787,6 @@
                 <POTENTIOMETER>84</POTENTIOMETER>
                 <ACTIVE_NODE_ID>PUSH_AUTOPILOT_APPR_SEQ1</ACTIVE_NODE_ID>
                 <EMISSIVE_NODE_ID>PUSH_AUTOPILOT_APPR_SEQ2</EMISSIVE_NODE_ID>
-            </UseTemplate>
-
-            <!-- Workaround for re-enabling the last mode whenever AP is turned on -->
-            <UseTemplate Name="FBW_Simvar_Change_Listener">
-                <LISTENER_NAME>APPR_MODE_REENABLE</LISTENER_NAME>
-
-                <SIMVAR_NAME>A:AUTOPILOT MASTER</SIMVAR_NAME>
-                <SIMVAR_UNIT>Bool</SIMVAR_UNIT>
-                <TARGET_VALUE>1</TARGET_VALUE>
-
-                <CODE>
-                    (* Store what the last mode was *)
-
-                    (L:#PLANE_NAME#_AUTOPILOT_LAST_APPR_MODE, Bool) s1
-
-                    l1 1 == if{
-                        (* Was LOC *)
-                        1 (&gt;K:AP_LOC_HOLD)
-                    } els{
-                        l1 2 == if{
-                            (* Was APPR *)
-                            1 (&gt;K:AP_APR_HOLD)
-                        }
-                    }
-                </CODE>
-
-                <UPDATE_FREQUENCY>5</UPDATE_FREQUENCY>
             </UseTemplate>
 
             <UseTemplate Name="ASOBO_AIRBUS_Push_Expedite_Template">

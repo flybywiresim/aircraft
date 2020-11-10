@@ -1152,6 +1152,8 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
 
             if (SimVar.GetSimVarValue("AUTOPILOT MASTER", "Bool") === 1) {
                 console.log("CDU AP is ON, toggle it off and disable APPR ");
+                SimVar.SetSimVarValue("L:A32NX_AUTOPILOT_APPR_MODE, bool", 0);
+                SimVar.SetSimVarValue("L:A32NX_AUTOPILOT_LOC_MODE, bool", 0);
                 SimVar.SetSimVarValue("K:AP_LOC_HOLD_ON", "number", 1); // Turns AP localizer hold !!ON/ARMED!! and glide-slope hold mode !!OFF!!
                 SimVar.SetSimVarValue("K:AP_LOC_HOLD_OFF", "number", 1); // Turns !!OFF!! localizer hold mode
                 SimVar.SetSimVarValue("K:AUTOPILOT_OFF", "number", 1);
