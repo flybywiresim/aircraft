@@ -5,6 +5,9 @@
 <!--  1. [Changed Area] Title of changes - @github username (Name)  -->
 
 ## 0.5.0
+1. [MCDU] Added Perf Page CI functionality - @MisterChocker (Leon)
+1. [MCDU] Added PROG Page CRZ FL functionality and logic - @MisterChocker (Leon)
+1. [MCDU] Added Init B page only available until engine start - @MisterChocker (Leon)
 1. [MCDU] Added mcdu page id system - @MisterChocker (Leon)
 1. [MCDU] Added Progress Page REC MAX FL functionality and dummy OPT - @MisterChocker (Leon)
 1. [PFD] Added proper altitude constrain visuals - @MisterChocker (Leon)
@@ -58,7 +61,8 @@
 1. [PFD] Added FMAs ALT CST and ALT CST* as well as CLB magenta and DES or CLB blue - @MisterChocker (Leon)
 1. [CDU] Added CFDS display test, ATSU METAR/TAF/ATIS requests, and ATSU free text - @wpine215 (Iceman), @nistei (Nistei), @Edwin B
 1. [GPWS] Completely redone GPWS logic, and improve Retard call logic, prevent multiple calls playing at once - lukecologne (luke)
-
+1. [ECAM] Improve flaps/slats panel design on upper ECAM, improve flaps/slats transition logic - @paul92ilm (Lussion)
+1. [CDU] Allow inserting landing QNH in inHg - @pessip (Pessi Päivärinne)
 
 ## 0.4.0
 1. [General] Add CHANGELOG.md - @nathaninnes (Nathan Innes)
