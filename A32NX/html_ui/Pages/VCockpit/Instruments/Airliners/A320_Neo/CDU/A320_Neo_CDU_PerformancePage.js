@@ -222,6 +222,11 @@ class CDUPerformancePage {
         } else {
             selectedSpeedCell = "[]";
         }
+        mcdu.onLeftInput[1] = (value) => {
+            if (mcdu.tryUpdateCostIndex(value)) {
+                CDUPerformancePage.ShowCLBPage(mcdu);
+            }
+        };
         mcdu.onLeftInput[3] = (value) => {
             if (mcdu.trySetPreSelectedClimbSpeed(value)) {
                 CDUPerformancePage.ShowCLBPage(mcdu);
@@ -318,6 +323,11 @@ class CDUPerformancePage {
         } else {
             selectedSpeedCell = "[]";
         }
+        mcdu.onLeftInput[1] = (value) => {
+            if (mcdu.tryUpdateCostIndex(value)) {
+                CDUPerformancePage.ShowCLBPage(mcdu);
+            }
+        };
         mcdu.onLeftInput[3] = (value) => {
             if (mcdu.trySetPreSelectedCruiseSpeed(value)) {
                 CDUPerformancePage.ShowCRZPage(mcdu);
@@ -449,6 +459,11 @@ class CDUPerformancePage {
                 CDUPerformancePage.ShowCRZPage(mcdu);
             };
         }
+        mcdu.onLeftInput[1] = (value) => {
+            if (mcdu.tryUpdateCostIndex(value)) {
+                CDUPerformancePage.ShowCLBPage(mcdu);
+            }
+        };
         mcdu.rightInputDelay[5] = () => {
             return mcdu.getDelaySwitchPage();
         };
@@ -489,8 +504,9 @@ class CDUPerformancePage {
             titleColor = "green";
         }
         let qnhCell = "[ ]";
-        if (isFinite(mcdu.perfApprQNH)) {
-            qnhCell = mcdu.perfApprQNH.toFixed(0);
+        const QNH_REGEX = /[0-9]{2}.[0-9]{2}/;
+        if (isFinite(mcdu.perfApprQNH) || QNH_REGEX.test(mcdu.perfApprQNH)) {
+            qnhCell = mcdu.perfApprQNH;
         }
         mcdu.onLeftInput[0] = (value) => {
             if (mcdu.setPerfApprQNH(value)) {
