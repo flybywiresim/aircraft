@@ -1157,21 +1157,25 @@ var Airbus_FMA;
 
         static IsArmed_OPCLB_MA() {
             if (Airbus_FMA.CurrentPlaneState.flightPhase == FlightPhase.FLIGHT_PHASE_GOAROUND) {
-                const thrustReductionAltitudeGoaround = SimVar.GetSimVarValue("L:AIRLINER_THR_RED_ALT_GOAROUND", "number");
-                if (Simplane.getAltitude() < thrustReductionAltitudeGoaround) {
-                    return true;
-                }
+                return true
             }
         }
 
         static IsActive_OPCLB() {
+            const accelAlt = SimVar.GetSimVarValue("L:AIRLINER_ACC_ALT_GOAROUND", "number");
+            const targetAltitude = Simplane.getAutoPilotAltitudeLockValue("feet");
+            const altitude = Simplane.getAltitude();
+
+            if (altitude < accelAlt && Airbus_FMA.CurrentPlaneState.highestThrottleDetent == ThrottleMode.TOGA) {
+                return false;
+            }
+
             if ((Simplane.getAutoPilotAltitudeSelected() || Simplane.getAutoPilotAltitudeArmed()) && Airbus_FMA.CurrentPlaneState.thisFlightDirectorActive && Airbus_FMA.CurrentPlaneState.anyAutoPilotsActive) {
-                const targetAltitude = Simplane.getAutoPilotAltitudeLockValue("feet");
-                const altitude = Simplane.getAltitude();
                 if (altitude < targetAltitude - 100) {
                     return true;
                 }
             }
+
         }
 
         static IsActive_OPDES() {
@@ -1185,14 +1189,22 @@ var Airbus_FMA;
         }
 
         static GetModeState_CLB() {
+            const accelAlt = SimVar.GetSimVarValue("L:AIRLINER_ACC_ALT_GOAROUND", "number");
+            const targetAltitude = Simplane.getAutoPilotAltitudeLockValue("feet");
+            const altitude = Simplane.getAltitude();
+
             if ((Airbus_FMA.CurrentPlaneState.autoPilotAltitudeLockActive && Airbus_FMA.CurrentPlaneState.thisFlightDirectorActive || Simplane.getAutoPilotFLCActive() && Airbus_FMA.CurrentPlaneState.thisFlightDirectorActive) && (Airbus_FMA.CurrentPlaneState.altitude < Airbus_FMA.CurrentPlaneState.autoPilotAltitudeLockValue) && Airbus_FMA.CurrentPlaneState.thisFlightDirectorActive) {
+
+                if (altitude < accelAlt && Airbus_FMA.CurrentPlaneState.highestThrottleDetent == ThrottleMode.TOGA) {
+                    return Airbus_FMA.MODE_STATE.NONE;
+                }
+
                 if (Airbus_FMA.CurrentPlaneState.flightPhase < FlightPhase.FLIGHT_PHASE_CLIMB) {
                     return Airbus_FMA.MODE_STATE.ARMED;
                 } else if (Airbus_FMA.CurrentPlaneState.radioAltitude <= 1.5) {
                     return Airbus_FMA.MODE_STATE.NONE;
                 }
-                const targetAltitude = Simplane.getAutoPilotAltitudeLockValue("feet");
-                const altitude = Simplane.getAltitude();
+
                 if (altitude < targetAltitude - 100 && !Simplane.getAutoPilotAPPRActive()) {
                     if (Airbus_FMA.CurrentPlaneState.radioAltitude > 1.5 && Simplane.getAutoPilotHeadingManaged()) {
                         return Airbus_FMA.MODE_STATE.ENGAGED;
@@ -1202,8 +1214,11 @@ var Airbus_FMA;
                 }
             }
             if (Simplane.getAutoPilotFLCActive() && Airbus_FMA.CurrentPlaneState.thisFlightDirectorActive) {
-                const targetAltitude = Simplane.getAutoPilotAltitudeLockValue("feet");
-                const altitude = Simplane.getAltitude();
+
+                if (altitude < accelAlt && Airbus_FMA.CurrentPlaneState.highestThrottleDetent == ThrottleMode.TOGA) {
+                    return Airbus_FMA.MODE_STATE.NONE;
+                }
+
                 if (altitude < targetAltitude - 100) {
                     if (Airbus_FMA.CurrentPlaneState.radioAltitude <= 1.5) {
                         return Airbus_FMA.MODE_STATE.ENGAGED;
@@ -1363,6 +1378,10 @@ var Airbus_FMA;
                             this.setRowText(1, "APP NAV", Airbus_FMA.MODE_STATE.ARMED);
                             break;
                         }
+                        case Column3.ROW_2_STATE.HDG_ARMED: {
+                            this.setRowText(1, "HDG", Airbus_FMA.MODE_STATE.ARMED);
+                            break;
+                        }
                         default: {
                             this.setRowText(1, "", Airbus_FMA.MODE_STATE.NONE);
                             break;
@@ -1410,6 +1429,8 @@ var Airbus_FMA;
                 return Column3.ROW_2_STATE.APPNAV_ARMED;
             } else if (this.GetModeState_NAV() == Airbus_FMA.MODE_STATE.ARMED) {
                 return Column3.ROW_2_STATE.NAV_ARMED;
+            } else if (this.IsArmed_HDG()) {
+                return Column3.ROW_1_STATE.HDG_ARMED;
             } else {
                 return Column3.ROW_2_STATE.NONE;
             }
@@ -1424,6 +1445,23 @@ var Airbus_FMA;
                 }
             }
             return false;
+        }
+
+        IsArmed_HDG() {
+            //until we have a valid missed approach path to follow, during goaround HDG will be the armed and later activated mode
+            if (Airbus_FMA.CurrentPlaneState.flightPhase == FlightPhase.FLIGHT_PHASE_GOAROUND && Airbus_FMA.CurrentPlaneState.flapsHandlePercent != 0) {
+
+                if (SimVar.GetSimVarValue("L:A32NX_GOAROUND_NAV_MODE", "bool") === 1) {
+                    return false;
+                }
+
+                if (SimVar.GetSimVarValue("L:A32NX_GOAROUND_HDG_MODE", "bool") === 1) {
+                    return false;
+                }
+                return true;
+            } else {
+                return false;
+            }
         }
 
         IsActive_HDG() {
@@ -1521,7 +1559,7 @@ var Airbus_FMA;
                     //SimVar.SetSimVarValue("K:AP_WING_LEVELER_OFF", "number", 1);
                     return false;
                 }
-                //SimVar.SetSimVarValue("K:AP_WING_LEVELER_ON", "number", 1);
+                SimVar.SetSimVarValue("K:AP_WING_LEVELER_ON", "number", 1);
                 return true;
             } else {
                 return false;

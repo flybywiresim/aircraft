@@ -353,6 +353,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             SimVar.SetSimVarValue("K:AP_PANEL_HEADING_HOLD", "Number", 1);
         }
         SimVar.SetSimVarValue("K:HEADING_SLOT_INDEX_SET", "number", 1);
+        SimVar.SetSimVarValue("L:A32NX_GOAROUND_HDG_MODE", "bool", 1);
     }
     _onModeManagedHeading() {
         if (SimVar.GetSimVarValue("AUTOPILOT APPROACH HOLD", "boolean")) {
@@ -447,6 +448,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             let preSelectedClbSpeed = this.preSelectedClbSpeed;
             if (SimVar.GetSimVarValue("L:A32NX_GOAROUND_PASSED", "bool") === 1) {
                 preSelectedClbSpeed = this.getPerfGreenDotSpeed();
+                this._onModeSelectedHeading();
             }
             if (isFinite(preSelectedClbSpeed)) {
                 this.setAPSelectedSpeed(preSelectedClbSpeed, Aircraft.A320_NEO);
@@ -1013,6 +1015,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
 
                 speed = Math.max(gaInitSpeed, gaAppSpeed);
                 speed = Math.min(speed, maxSpeed);
+                SimVar.SetSimVarValue("L:A32NX_TOGA_SPEED", "number", speed);
 
                 if (this.isAirspeedManaged()) {
                     this.setAPManagedSpeed(speed, Aircraft.A320_NEO);
@@ -1187,6 +1190,9 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                 SimVar.SetSimVarValue("L:A32NX_AUTOPILOT_APPR_MODE", "bool", 0);
                 SimVar.SetSimVarValue("L:A32NX_AUTOPILOT_LOC_MODE", "bool", 0);
             }
+
+            const currentHeading = Simplane.getHeadingMagnetic();
+            Coherent.call("HEADING_BUG_SET", 1, currentHeading);
 
             CDUPerformancePage.ShowGOAROUNDPage(this);
         }
