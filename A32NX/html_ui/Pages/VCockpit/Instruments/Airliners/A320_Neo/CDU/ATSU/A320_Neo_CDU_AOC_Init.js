@@ -100,7 +100,7 @@ class CDUAocMisc {
                         CDUAocMisc.ShowPage(mcdu);
                     }, 3000);
                 })
-                .catch(err => {
+                .catch(_err => {
                     showError("ERROR");
                 });
         }
