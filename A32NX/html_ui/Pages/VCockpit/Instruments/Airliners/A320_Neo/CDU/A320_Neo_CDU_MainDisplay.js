@@ -1328,4 +1328,3 @@ A320_Neo_CDU_MainDisplay._v2sConf2 = [
     [121, 144],
 ];
 registerInstrument("a320-neo-cdu-main-display", A320_Neo_CDU_MainDisplay);
-//# sourceMappingURL=A320_Neo_CDU_MainDisplay.js.map

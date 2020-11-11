@@ -370,4 +370,3 @@ class CDUFlightPlanPage {
     }
 }
 CDUFlightPlanPage._timer = 0;
-//# sourceMappingURL=A320_Neo_CDU_FlightPlanPage.js.map
