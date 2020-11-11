@@ -2125,9 +2125,6 @@ class FMCMainDisplay extends BaseAirliners {
                     this.currentFlightPhase = FlightPhase.FLIGHT_PHASE_CLIMB;
                     SimVar.SetSimVarValue("L:A32NX_GOAROUND_PASSED", "bool", 1);
                 }
-
-            } else if (this.currentFlightPhase == FlightPhase.FLIGHT_PHASE_GOAROUND && !Simplane.getAutoPilotFlightDirectorActive(1)) {
-                //ToBeDefined
             }
         }
         if (SimVar.GetSimVarValue("L:AIRLINER_FLIGHT_PHASE", "number") != this.currentFlightPhase) {
