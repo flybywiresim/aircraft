@@ -52,7 +52,7 @@ class CDUAocMisc {
             } else {
                 store["username"] = value;
             }
-            CDUAocMisc.ShowPage(mcdu, store);
+            CDUAocMisc.ShowPage(mcdu);
         };
 
         mcdu.onLeftInput[5] = () => {
@@ -62,10 +62,10 @@ class CDUAocMisc {
         function showError(error) {
             store["sendStatus"] = error;
 
-            CDUAocMisc.ShowPage(mcdu, store);
+            CDUAocMisc.ShowPage(mcdu);
             setTimeout(() => {
                 store["sendStatus"] = "";
-                CDUAocMisc.ShowPage(mcdu, store);
+                CDUAocMisc.ShowPage(mcdu);
             }, 3000);
         }
 
@@ -76,7 +76,7 @@ class CDUAocMisc {
             }
 
             store["sendStatus"] = "REQUESTING";
-            CDUAocMisc.ShowPage(mcdu, store);
+            CDUAocMisc.ShowPage(mcdu);
 
             return fetch(`http://www.simbrief.com/api/xml.fetcher.php?username=${store["username"]}`)
                 .then(response => response.text())
@@ -94,10 +94,10 @@ class CDUAocMisc {
                     store["costIndex"] = data.getElementsByTagName("costindex")[0].childNodes[0].nodeValue;
                     store["sendStatus"] = "DONE";
 
-                    CDUAocMisc.ShowPage(mcdu, store);
+                    CDUAocMisc.ShowPage(mcdu);
                     setTimeout(() => {
                         store["sendStatus"] = "";
-                        CDUAocMisc.ShowPage(mcdu, store);
+                        CDUAocMisc.ShowPage(mcdu);
                     }, 3000);
                 })
                 .catch(err => {
