@@ -8,10 +8,10 @@ class CDU_OPTIONS_SIMBRIEF {
 
         mcdu.setTemplate([
             ["A32NX OPTIONS"],
-            ["USERNAME", "", "SIMBRIEF PROFILE"],
+            ["", "", "SIMBRIEF PROFILE"],
+            [""],
+            ["USERNAME"],
             [`${simbriefUsernameString}[color]blue`],
-            [""],
-            [""],
             [""],
             [""],
             [""],
@@ -22,7 +22,7 @@ class CDU_OPTIONS_SIMBRIEF {
             ["<RETURN[color]blue"]
         ]);
 
-        mcdu.onLeftInput[0] = () => {
+        mcdu.onLeftInput[1] = () => {
             const value = mcdu.inOut;
             mcdu.clearUserInput();
             if (value === FMCMainDisplay.clrValue) {
