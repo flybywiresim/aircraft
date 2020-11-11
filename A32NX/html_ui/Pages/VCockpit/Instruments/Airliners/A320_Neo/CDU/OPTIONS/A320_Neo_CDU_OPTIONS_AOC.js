@@ -15,7 +15,7 @@ class CDU_OPTIONS_AOC {
             ["\xa0SOURCE"],
             ["<TAF"],
             [""],
-            [""],
+            ["<SIMBRIEF"],
             [""],
             ["<RETURN"]
         ]);
@@ -29,6 +29,9 @@ class CDU_OPTIONS_AOC {
         mcdu.onLeftInput[3] = () => {
             CDU_OPTIONS_TAF.ShowPage(mcdu);
         };
+        mcdu.onLeftInput[4] = () => {
+            CDU_OPTIONS_SIMBRIEF.ShowPage(mcdu);
+        };
         mcdu.onRightInput[0] = () => {
             CDU_OPTIONS_TELEX.ShowPage(mcdu);
         };
@@ -40,6 +43,9 @@ class CDU_OPTIONS_AOC {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.leftInputDelay[3] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
+        mcdu.leftInputDelay[4] = () => {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.rightInputDelay[0] = () => {
