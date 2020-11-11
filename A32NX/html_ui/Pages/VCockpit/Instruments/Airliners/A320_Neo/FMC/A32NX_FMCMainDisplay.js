@@ -2097,7 +2097,6 @@ class FMCMainDisplay extends BaseAirliners {
                 SimVar.SetSimVarValue("L:A32NX_GOAROUND_INIT_APP_SPEED", "number", this.getVApp());
 
                 if (SimVar.GetSimVarValue("AUTOPILOT MASTER", "Bool") === 1) {
-                    console.log("CDU AP is ON, toggle it off and disable APPR ");
                     SimVar.SetSimVarValue("K:AP_LOC_HOLD_ON", "number", 1); // Turns AP localizer hold !!ON/ARMED!! and glide-slope hold mode !!OFF!!
                     SimVar.SetSimVarValue("K:AP_LOC_HOLD_OFF", "number", 1); // Turns !!OFF!! localizer hold mode
                     SimVar.SetSimVarValue("K:AUTOPILOT_OFF", "number", 1);

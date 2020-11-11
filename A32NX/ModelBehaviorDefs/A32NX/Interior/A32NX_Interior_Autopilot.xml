@@ -5,7 +5,7 @@
 
     Should probably be replaced by a generic template at some point.
     -->
-    <Template Name="FBW_Airbus_Autopilot_Template">
+    <Template Name="FBW_Airbus_Autopilot_Master">
         <DefaultTemplateParameters>
             <DEFAULT_NAME>Autopilot</DEFAULT_NAME>
             <HELPID>HELPID_AUTOPILOT_MASTER</HELPID>

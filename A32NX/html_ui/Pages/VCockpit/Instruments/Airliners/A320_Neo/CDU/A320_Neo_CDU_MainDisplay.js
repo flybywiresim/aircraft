@@ -1178,7 +1178,6 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             SimVar.SetSimVarValue("L:A32NX_GOAROUND_INIT_APP_SPEED", "number", this.getVApp());
 
             if (SimVar.GetSimVarValue("AUTOPILOT MASTER", "Bool") === 1) {
-                console.log("CDU AP is ON, toggle it off and disable APPR ");
                 SimVar.SetSimVarValue("K:AP_LOC_HOLD_ON", "number", 1); // Turns AP localizer hold !!ON/ARMED!! and glide-slope hold mode !!OFF!!
                 SimVar.SetSimVarValue("K:AP_LOC_HOLD_OFF", "number", 1); // Turns !!OFF!! localizer hold mode
                 SimVar.SetSimVarValue("K:AUTOPILOT_OFF", "number", 1);
@@ -1210,9 +1209,6 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                 this.currentFlightPhase = FlightPhase.FLIGHT_PHASE_CLIMB;
                 SimVar.SetSimVarValue("L:A32NX_GOAROUND_PASSED", "bool", 1);
             }
-
-        } else if (this.currentFlightPhase == FlightPhase.FLIGHT_PHASE_GOAROUND && !Simplane.getAutoPilotFlightDirectorActive(1)) {
-            //ToBeDefined
         }
 
         //Resets flight phase to preflight 30 seconds after touchdown

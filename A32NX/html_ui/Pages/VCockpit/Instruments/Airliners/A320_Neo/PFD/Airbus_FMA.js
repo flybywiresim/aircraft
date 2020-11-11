@@ -1551,12 +1551,10 @@ var Airbus_FMA;
             if (Airbus_FMA.CurrentPlaneState.flightPhase == FlightPhase.FLIGHT_PHASE_GOAROUND && Airbus_FMA.CurrentPlaneState.flapsHandlePercent != 0) {
 
                 if (SimVar.GetSimVarValue("L:A32NX_GOAROUND_NAV_MODE", "bool") === 1) {
-                    //SimVar.SetSimVarValue("K:AP_WING_LEVELER_OFF", "number", 1);
                     return false;
                 }
 
                 if (SimVar.GetSimVarValue("L:A32NX_GOAROUND_HDG_MODE", "bool") === 1) {
-                    //SimVar.SetSimVarValue("K:AP_WING_LEVELER_OFF", "number", 1);
                     return false;
                 }
                 SimVar.SetSimVarValue("K:AP_WING_LEVELER_ON", "number", 1);

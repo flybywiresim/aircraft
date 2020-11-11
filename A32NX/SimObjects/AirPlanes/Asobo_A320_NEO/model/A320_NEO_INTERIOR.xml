@@ -2738,7 +2738,7 @@
                 <ANIM_NAME>PUSH_AUTOPILOT_HDGTRK</ANIM_NAME>
             </UseTemplate>
 
-            <UseTemplate Name="FBW_Airbus_Autopilot_Template">
+            <UseTemplate Name="FBW_Airbus_Autopilot_Master">
                 <NODE_ID>PUSH_AUTOPILOT_AP1</NODE_ID>
                 <PART_ID>PUSH_AUTOPILOT_AP1</PART_ID>
                 <ANIM_NAME>PUSH_AUTOPILOT_AP1</ANIM_NAME>
@@ -2751,7 +2751,7 @@
                 <TOOLTIPID>%((L:XMLVAR_Autopilot_1_Status, bool))%{if}TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_AP_ON%{else}TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_AP_OFF%{end}</TOOLTIPID>
             </UseTemplate>
 
-            <UseTemplate Name="FBW_Airbus_Autopilot_Template">
+            <UseTemplate Name="FBW_Airbus_Autopilot_Master">
                 <NODE_ID>PUSH_AUTOPILOT_AP2</NODE_ID>
                 <PART_ID>PUSH_AUTOPILOT_AP2</PART_ID>
                 <ANIM_NAME>PUSH_AUTOPILOT_AP2</ANIM_NAME>
