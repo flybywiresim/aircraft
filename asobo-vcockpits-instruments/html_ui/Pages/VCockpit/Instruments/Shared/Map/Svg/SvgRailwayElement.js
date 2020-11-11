@@ -8,16 +8,16 @@ class SvgRailwayElement extends SvgMapElement {
         ;
     }
     createDraw(map) {
-        let container = document.createElementNS(Avionics.SVG.NS, "svg");
+        const container = document.createElementNS(Avionics.SVG.NS, "svg");
         container.id = this.id(map);
         container.setAttribute("overflow", "visible");
-        let shape = document.createElementNS(Avionics.SVG.NS, "polyline");
+        const shape = document.createElementNS(Avionics.SVG.NS, "polyline");
         shape.classList.add("map-railway");
         shape.setAttribute("stroke", map.config.railwayStrokeColor);
         shape.setAttribute("stroke-width", fastToFixed(map.config.railwayWidth, 0));
         shape.setAttribute("fill", "none");
         container.appendChild(shape);
-        let shapeRail = document.createElementNS(Avionics.SVG.NS, "polyline");
+        const shapeRail = document.createElementNS(Avionics.SVG.NS, "polyline");
         shapeRail.classList.add("map-railway");
         shapeRail.setAttribute("stroke", map.config.railwayStrokeColor);
         shapeRail.setAttribute("stroke-width", fastToFixed((map.config.railwayWidth * 3), 0));
@@ -28,7 +28,7 @@ class SvgRailwayElement extends SvgMapElement {
     }
     updateDraw(map) {
         let points = "";
-        let pos = new Vec2();
+        const pos = new Vec2();
         this.path.forEach((p) => {
             map.coordinatesToXYToRef(p, pos);
             points += fastToFixed(pos.x, 0) + "," + fastToFixed(pos.y, 0) + " ";
