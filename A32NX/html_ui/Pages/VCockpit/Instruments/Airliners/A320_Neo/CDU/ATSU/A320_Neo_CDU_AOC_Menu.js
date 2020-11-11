@@ -14,7 +14,7 @@ class CDUAocMenu {
             [""],
             ["<PERF/W&B[color]inop", "DIVERSION>[color]inop"],
             ["ATSU DLK"],
-            ["<RETURN", "MISC>[color]inop"]
+            ["<RETURN", "MISC SIMBRIEF>"]
         ]);
 
         mcdu.leftInputDelay[1] = () => {
@@ -52,6 +52,9 @@ class CDUAocMenu {
         };
         mcdu.onRightInput[2] = () => {
             CDUAocMessagesSent.ShowPage(mcdu);
+        };
+        mcdu.onRightInput[5] = () => {
+            CDUAocMisc.ShowPage(mcdu);
         };
     }
 }
