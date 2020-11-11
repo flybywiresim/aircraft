@@ -1090,9 +1090,11 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                     const planeLla = new LatLongAlt(lat, long);
                     const dist = Avionics.Utils.computeGreatCircleDistance(this.flightPlanManager.decelWaypoint.infos.coordinates, planeLla);
                     if (dist < 3) {
-                        console.log('switching to tryGoInApproachPhase (AT DECEL): ' + JSON.stringify({lat, long, dist, prevPhase: this.currentFlightPhase}, null, 2));
-                        console.log("Switching into approach. DECEL lat : " + lat + " long " + long);
-                        this.tryGoInApproachPhase();
+                        this.flightPlanManager._decelReached = true;
+                        this._waypointReachedAt = SimVar.GetGlobalVarValue("ZULU TIME", "seconds");
+                        if (Simplane.getAltitudeAboveGround() < 9500) {
+                            this.tryGoInApproachPhase();
+                        }
                     }
                 }
             }

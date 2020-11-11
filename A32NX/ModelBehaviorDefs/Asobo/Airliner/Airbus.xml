@@ -1471,17 +1471,6 @@
 		</UseTemplate>
 	</Template>
 
-	<Template Name="A32NX_AIRBUS_Push_EFISGPWS_Template">
-		<UseTemplate Name="ASOBO_GT_Push_Button_Airliner_Dummy">
-			<ANIM_NAME>#NODE_ID#</ANIM_NAME>
-			<WWISE_EVENT_1>master_apu_switch_on</WWISE_EVENT_1>
-			<WWISE_EVENT_2>master_apu_switch_off</WWISE_EVENT_2>
-			<SEQ1_EMISSIVE_CODE>(L:GPWS_PULL_UP, Bool) (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or</SEQ1_EMISSIVE_CODE>
-			<SEQ2_EMISSIVE_CODE>(L:GPWS_SINK_RATE, Bool) (L:GPWS_DONT_SINK, Bool) (L:GPWS_TOO_LOW, Enum) ! 0 == or or (L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position) 0 == or</SEQ2_EMISSIVE_CODE>
-			<LEFT_SINGLE_CODE>1 (>L:GPWS_TEST)</LEFT_SINGLE_CODE>
-		</UseTemplate>
-	</Template>
-
 	<Template Name="A32NX_AIRBUS_PACK_SELECTOR_TEMPLATE">
 		<Component ID="#NODE_ID#" Node="#NODE_ID#">
 			<UseTemplate Name="ASOBO_GT_Switch_3States">
