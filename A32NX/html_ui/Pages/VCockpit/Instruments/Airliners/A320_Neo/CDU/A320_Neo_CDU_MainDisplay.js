@@ -26,6 +26,18 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this.altLock = 0;
         this.messageQueue = [];
         this._destDataChecked = false;
+        this.simbrief = {
+            username: "",
+            route: "",
+            cruiseAltitude: "",
+            originIcao: "",
+            destinationIcao: "",
+            block: "",
+            payload: "",
+            estZfw: "",
+            sendStatus: "",
+            costIndex: ""
+        };
     }
     get templateID() {
         return "A320_Neo_CDU";
