@@ -18,8 +18,18 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this._blockFuelEntered = false;
         this._gpsprimaryack = 0;
         this.currentFlightPhase = FlightPhase.FLIGHT_PHASE_PREFLIGHT;
-        this.updateTypeIIMessage = false;
-        this.messageQueue = [];
+        this.simbrief = {
+            username: "",
+            route: "",
+            cruiseAltitude: "",
+            originIcao: "",
+            destinationIcao: "",
+            block: "",
+            payload: "",
+            estZfw: "",
+            sendStatus: "",
+            costIndex: ""
+        };
     }
     get templateID() {
         return "A320_Neo_CDU";
@@ -102,6 +112,9 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             CDU_OPTIONS_TELEX.ShowPage(this);
         }
 
+        // Set up the AC type for the API
+        NXDataStore.set("AC_TYPE", "A32NX");
+
         // Start the TELEX Ping. API functions check the connection status themself
         setInterval(() => {
             const toDelete = [];
@@ -148,8 +161,6 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                     console.log("TELEX MSG FETCH FAILED");
                 });
         }, NXApi.updateRate);
-
-        SimVar.SetSimVarValue("L:A32NX_GPS_PRIMARY_LOST_MSG", "Bool", 0);
     }
 
     _formatCell(str) {
@@ -277,8 +288,6 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this.updateScreenState();
 
         this.updateGPSMessage();
-
-        this.tryShowMessage();
     }
 
     /**
@@ -303,25 +312,15 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     // check GPS Primary state and display message accordingly
     updateGPSMessage() {
         if (!SimVar.GetSimVarValue("L:GPSPrimaryAcknowledged", "Bool")) {
-            if (SimVar.GetSimVarValue("L:GPSPrimary", "Bool")) {
-                if (!SimVar.GetSimVarValue("L:GPSPrimaryMessageDisplayed", "Bool")) {
-                    SimVar.SetSimVarValue("L:GPSPrimaryMessageDisplayed", "Bool", 1);
-                    SimVar.SetSimVarValue("L:A32NX_GPS_PRIMARY_LOST_MSG", "Bool", 0);
-                    this.tryRemoveMessage("GPS PRIMARY LOST");
-                    this.addTypeTwoMessage("GPS PRIMARY", "#ffffff", () => {
-                        SimVar.SetSimVarValue("L:GPSPrimaryAcknowledged", "Bool", 1);
-                    });
-                }
+            if (!SimVar.GetSimVarValue("L:GPSPrimary", "Bool")) {
+                this.showErrorMessage("GPS PRIMARY LOST", "#ffff00");
             } else {
-                if (!SimVar.GetSimVarValue("L:A32NX_GPS_PRIMARY_LOST_MSG", "Bool")) {
-                    SimVar.SetSimVarValue("L:A32NX_GPS_PRIMARY_LOST_MSG", "Bool", 1);
-                    SimVar.SetSimVarValue("L:GPSPrimaryMessageDisplayed", "Bool", 0);
-                    this.tryRemoveMessage("GPS PRIMARY");
-                    this.addTypeTwoMessage("GPS PRIMARY LOST", "#ffff00", () => {
-                        SimVar.SetSimVarValue("L:A32NX_GPS_PRIMARY_LOST_MSG", "Bool", 1);
-                    });
-                }
+                this.showErrorMessage("GPS PRIMARY");
             }
+            SimVar.SetSimVarValue("L:GPSPrimaryMessageDisplayed", "Bool", 1);
+        } else if (SimVar.GetSimVarValue("L:GPSPrimaryMessageDisplayed", "Bool")) {
+            this.handlePreviousInputState();
+            SimVar.SetSimVarValue("L:GPSPrimaryMessageDisplayed", "Bool", 0);
         }
     }
 
@@ -331,64 +330,6 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         } else {
             this.electricity.style.display = "none";
         }
-    }
-
-    forceClearScratchpad() {
-        this.inOut = "";
-        this.lastUserInput = "";
-        this.isDisplayingErrorMessage = false;
-    }
-
-    /**
-     * Add Type II Message
-     * @param message {string} Message to be displayed
-     * @param color {string} Color of Message
-     * @param f {function} Function gets executed when error message has been cleared
-     */
-    addTypeTwoMessage(message, color = "#ffffff", f = () => {}) {
-        if (this.checkForMessage(message, color)) {
-            this.messageQueue.unshift([message, color, f]);
-            if (this.messageQueue.length > 5) {
-                this.messageQueue.splice(5, 1);
-            }
-            this.updateTypeIIMessage = true;
-            this.tryShowMessage();
-        }
-    }
-
-    tryShowMessage() {
-        if (this.updateTypeIIMessage || !this.isDisplayingErrorMessage && !this.inOut && this.messageQueue.length > 0) {
-            this.updateTypeIIMessage = false;
-            this.isDisplayingErrorMessage = true;
-            this.inOut = this.messageQueue[0][0];
-            this._inOutElement.style.color = this.messageQueue[0][1];
-        }
-    }
-
-    /**
-     * Removes Type II Message
-     * @param message {string} Message to be removed
-     */
-    tryRemoveMessage(message = this.inOut) {
-        for (let i = 0; i < this.messageQueue.length; i++) {
-            if (this.messageQueue[i][0] === message) {
-                this.messageQueue[i][2]();
-                this.messageQueue.splice(i, 1);
-                break;
-            }
-        }
-    }
-
-    checkForMessage(message, color) {
-        if (message === "" || color === "") {
-            return false;
-        }
-        for (let i = 0; i < this.messageQueue.length; i++) {
-            if (this.messageQueue[i][0] === message) {
-                return false;
-            }
-        }
-        return true;
     }
 
     getClbManagedSpeed() {
@@ -555,6 +496,11 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                 Coherent.call("HEADING_BUG_SET", 1, currentHeading);
             }
             SimVar.SetSimVarValue("L:A320_FCU_SHOW_SELECTED_HEADING", "number", 1);
+        }
+
+        // set acknowledged flag to 1, this in turn hides the GPS Primary Message in the ND.
+        if (_event === "1_BTN_CLR") {
+            SimVar.SetSimVarValue("L:GPSPrimaryAcknowledged", "Bool", 1);
         }
     }
     onFlightPhaseChanged() {
@@ -1186,11 +1132,13 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
 
             //End preflight when takeoff power is applied and engines are running
             if (this.currentFlightPhase < FlightPhase.FLIGHT_PHASE_TAKEOFF && isTakeOffValid) {
+                SimVar.SetSimVarValue("L:A32NX_Preflight_Complete", "Bool", 1);
                 this.currentFlightPhase = FlightPhase.FLIGHT_PHASE_TAKEOFF;
             }
 
             //Reset to preflight in case of RTO
             if (this.currentFlightPhase === FlightPhase.FLIGHT_PHASE_TAKEOFF && !isTakeOffValid) {
+                SimVar.SetSimVarValue("L:A32NX_Preflight_Complete", "Bool", 0);
                 this.currentFlightPhase = FlightPhase.FLIGHT_PHASE_PREFLIGHT;
                 this.climbTransitionGroundAltitude = null;
             }
@@ -1361,6 +1309,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             if (this.landingResetTimer <= 0) {
                 this.landingResetTimer = null;
                 this.currentFlightPhase = FlightPhase.FLIGHT_PHASE_PREFLIGHT;
+                SimVar.SetSimVarValue("L:A32NX_Preflight_Complete", "Bool", 0);
                 SimVar.SetSimVarValue("L:A32NX_TO_CONFIG_NORMAL", "Bool", 0);
                 CDUIdentPage.ShowPage(this);
             }
