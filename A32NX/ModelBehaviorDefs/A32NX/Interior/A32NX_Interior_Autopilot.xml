@@ -15,90 +15,61 @@
             <ON_AP_MASTER_SWITCH></ON_AP_MASTER_SWITCH>
         </DefaultTemplateParameters>
         <OverrideTemplateParameters>
-            <Switch Param="TYPE">
-                <Case Value="EXCLUSIVE_AP">
-                    <Switch Param="AP_COUNT">
-                        <Case Value="2">
-                            <RESET_CODE>
-                                1 #ID# != if{ 0 (&gt;L:XMLVAR_Autopilot_1_Status) }
-                                2 #ID# != if{ 0 (&gt;L:XMLVAR_Autopilot_2_Status) }
-                            </RESET_CODE>
-                        </Case>
-                    </Switch>
-                    <TEST_CODE>1</TEST_CODE>
-                    <Condition Check="ID" Match="1">
-                        <True>
-                            <INIT>(A:AUTOPILOT MASTER, Bool) (&gt;L:XMLVAR_Autopilot_#ID#_Status)</INIT>
-                        </True>
-                    </Condition>
-                </Case>
-                <Default>
-                    <RESET_CODE></RESET_CODE>
-                    <TEST_CODE>1</TEST_CODE>
+            <RESET_CODE>
+                1 #ID# != if{ 0 (&gt;L:XMLVAR_Autopilot_1_Status) }
+                2 #ID# != if{ 0 (&gt;L:XMLVAR_Autopilot_2_Status) }
+            </RESET_CODE>
+            <TEST_CODE>1</TEST_CODE>
+            <Condition Check="ID" Match="1">
+                <True>
                     <INIT>(A:AUTOPILOT MASTER, Bool) (&gt;L:XMLVAR_Autopilot_#ID#_Status)</INIT>
-                </Default>
-            </Switch>
+                </True>
+            </Condition>
         </OverrideTemplateParameters>
         <Condition Check="ID" Match="1">
             <True>
                 <UseTemplate Name="ASOBO_GT_Update">
                     <FREQUENCY>3</FREQUENCY>
-                    <Switch Param="AP_COUNT">
-                        <Case Value="2">
-                            <UPDATE_CODE>
-                                (A:AUTOPILOT MASTER, Bool) (L:XMLVAR_Autopilot_1_Status) (L:XMLVAR_Autopilot_2_Status) or != if{
-                                    #RESET_CODE#
-                                    (A:AUTOPILOT MASTER, Bool) (&gt;L:XMLVAR_Autopilot_#ID#_Status)
-                                }
-                            </UPDATE_CODE>
-                        </Case>
-                    </Switch>
+                    <UPDATE_CODE>
+                        (A:AUTOPILOT MASTER, Bool) (L:XMLVAR_Autopilot_1_Status) (L:XMLVAR_Autopilot_2_Status) or != if{
+                            #RESET_CODE#
+                            (A:AUTOPILOT MASTER, Bool) (&gt;L:XMLVAR_Autopilot_#ID#_Status)
+                        }
+                    </UPDATE_CODE>
                 </UseTemplate>
             </True>
         </Condition>
         <UseTemplate Name="ASOBO_AUTOPILOT_Push_Template">
-            <Switch Param="AP_COUNT">
-                <Case Value="2">
-                    <LEFT_SINGLE_CODE>
+            <LEFT_SINGLE_CODE>
 
-                        (L:#PLANE_NAME#_AUTOPILOT_APPR_MODE, bool) if{
-                            (&gt;K:AP_LOC_HOLD_ON)
-                            (&gt;K:AP_LOC_HOLD_OFF)
-                        }
-                        (L:#PLANE_NAME#_AUTOPILOT_LOC_MODE, bool) if{
-                            (&gt;K:AP_LOC_HOLD)
-                        }
-                        (A:AUTOPILOT DISENGAGED, Bool) ! #TEST_CODE# and  if{
-                            #RESET_CODE#
-                            (L:XMLVAR_Autopilot_#ID#_Status) ! (&gt;L:XMLVAR_Autopilot_#ID#_Status)
-                            (L:XMLVAR_Autopilot_1_Status) (L:XMLVAR_Autopilot_2_Status) or
-                            (A:AUTOPILOT MASTER, Bool) != if{
+                (L:#PLANE_NAME#_AUTOPILOT_APPR_MODE, bool) if{
+                    (&gt;K:AP_LOC_HOLD_ON)
+                    (&gt;K:AP_LOC_HOLD_OFF)
+                }
+                (L:#PLANE_NAME#_AUTOPILOT_LOC_MODE, bool) if{
+                    (&gt;K:AP_LOC_HOLD)
+                }
+                (A:AUTOPILOT DISENGAGED, Bool) ! #TEST_CODE# and  if{
+                    #RESET_CODE#
+                    (L:XMLVAR_Autopilot_#ID#_Status) ! (&gt;L:XMLVAR_Autopilot_#ID#_Status)
+                    (L:XMLVAR_Autopilot_1_Status) (L:XMLVAR_Autopilot_2_Status) or
+                    (A:AUTOPILOT MASTER, Bool) != if{
 
-                                (&gt;K:AP_MASTER)
-                                (A:AUTOPILOT MASTER, Bool) ! if{
-                                    0 (&gt;L:XMLVAR_Autopilot_#ID#_Status)
-                                }
-                            }
+                        (&gt;K:AP_MASTER)
+                        (A:AUTOPILOT MASTER, Bool) ! if{
+                            0 (&gt;L:XMLVAR_Autopilot_#ID#_Status)
                         }
-                        (L:#PLANE_NAME#_AUTOPILOT_APPR_MODE, bool) if{
-                            (&gt;K:AP_APR_HOLD)
-                        }
-                        (L:#PLANE_NAME#_AUTOPILOT_LOC_MODE, bool) if{
-                            (&gt;K:AP_LOC_HOLD)
-                        }
+                    }
+                }
+                (L:#PLANE_NAME#_AUTOPILOT_APPR_MODE, bool) if{
+                    (&gt;K:AP_APR_HOLD)
+                }
+                (L:#PLANE_NAME#_AUTOPILOT_LOC_MODE, bool) if{
+                    (&gt;K:AP_LOC_HOLD)
+                }
 
-                    </LEFT_SINGLE_CODE>
-                    <EMISSIVE_CODE_ACTIVE>#APPR_CONDITION# (A:AUTOPILOT MASTER, Bool) (L:XMLVAR_Autopilot_#ID#_Status) and or</EMISSIVE_CODE_ACTIVE>
-                </Case>
-                <Default>
-                    <LEFT_SINGLE_CODE>
-                        (A:AUTOPILOT DISENGAGED, Bool) ! if{
-                            (&gt;K:AP_MASTER) #ON_AP_MASTER_SWITCH#
-                        }
-                    </LEFT_SINGLE_CODE>
-                    <EMISSIVE_SIMVAR_ACTIVE>AUTOPILOT MASTER</EMISSIVE_SIMVAR_ACTIVE>
-                </Case>
-            </Switch>
+            </LEFT_SINGLE_CODE>
+            <EMISSIVE_CODE_ACTIVE>#APPR_CONDITION# (A:AUTOPILOT MASTER, Bool) (L:XMLVAR_Autopilot_#ID#_Status) and or</EMISSIVE_CODE_ACTIVE>
         </UseTemplate>
     </Template>
 
