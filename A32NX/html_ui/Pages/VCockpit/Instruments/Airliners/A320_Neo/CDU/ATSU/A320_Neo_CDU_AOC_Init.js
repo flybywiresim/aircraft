@@ -5,6 +5,8 @@ class CDUAocMisc {
 
         const store = mcdu.simbrief;
 
+        const simbriefUsername = NXDataStore.get("CONFIG_SIMBRIEF_USERNAME", "");
+
         let fromTo = "____|____[color]red";
         let block = "___._[color]red";
         let payload = "___._[color]red";
@@ -26,7 +28,7 @@ class CDUAocMisc {
         const display = [
             ["AOC INIT DATA REQUEST"],
             ["", "SIMBRIEF USERNAME"],
-            ["", `${store["username"] != "" ? store["username"] : "[ ]"}[color]blue`],
+            ["", `${simbriefUsername != "" ? simbriefUsername : "[ ]"}[color]blue`],
             ["FROM/TO", "PAYLOAD"],
             [fromTo, payload],
             ["ROUTE"],
@@ -44,17 +46,6 @@ class CDUAocMisc {
             getSimbrief();
         };
 
-        mcdu.onRightInput[0] = () => {
-            const value = mcdu.inOut;
-            mcdu.clearUserInput();
-            if (value === FMCMainDisplay.clrValue) {
-                store["username"] = "";
-            } else {
-                store["username"] = value;
-            }
-            CDUAocMisc.ShowPage(mcdu);
-        };
-
         mcdu.onLeftInput[5] = () => {
             CDUAocMenu.ShowPage(mcdu);
         };
@@ -70,7 +61,7 @@ class CDUAocMisc {
         }
 
         function getSimbrief() {
-            if (!store["username"]) {
+            if (!simbriefUsername) {
                 showError("NO USERNAME");
                 throw ("No simbrief username provided");
             }
@@ -78,7 +69,7 @@ class CDUAocMisc {
             store["sendStatus"] = "REQUESTING";
             CDUAocMisc.ShowPage(mcdu);
 
-            return fetch(`http://www.simbrief.com/api/xml.fetcher.php?username=${store["username"]}`)
+            return fetch(`http://www.simbrief.com/api/xml.fetcher.php?username=${simbriefUsername}`)
                 .then(response => response.text())
                 .then(str => (new window.DOMParser()).parseFromString(str, "text/xml"))
                 .then(data => {

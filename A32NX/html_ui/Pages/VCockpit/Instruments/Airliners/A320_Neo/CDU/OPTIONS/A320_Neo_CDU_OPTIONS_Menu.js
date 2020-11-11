@@ -22,8 +22,8 @@ class CDU_OPTIONS_MainMenu {
             ["<METAR SRC", `${storedAccelAlt} FT.>[color]blue`],
             ["AOC[color]green", "DMC SELF-TEST[color]green"],
             ["<SIGMET SRC[color]inop", `${storedDMCTestTime} SEC.>[color]blue`],
-            ["AOC[color]green"],
-            ["<TAF SRC"],
+            ["AOC[color]green", "AOC[color]green"],
+            ["<TAF SRC", "SIMBRIEF>"],
             ["FREE TEXT[color]green"],
             [telexStatus],
             [""],
@@ -92,6 +92,10 @@ class CDU_OPTIONS_MainMenu {
                 NXDataStore.set("CONFIG_SELF_TEST_TIME", value);
             }
             CDU_OPTIONS_MainMenu.ShowPage(mcdu);
+        };
+
+        mcdu.onRightInput[3] = () => {
+            CDU_OPTIONS_SIMBRIEF.ShowPage(mcdu);
         };
     }
 }
