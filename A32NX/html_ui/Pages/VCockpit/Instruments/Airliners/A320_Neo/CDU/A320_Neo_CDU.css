@@ -173,12 +173,6 @@ fmc-main-display::before {
   right: 6% !important;
 }
 
-.irs-text {
-  font-weight: lighter;
-  font-size: 6.3vw;
-  letter-spacing: 0.5vw;
-}
-
 .label {
   height: 5%;
   margin: 0;
