@@ -24,8 +24,8 @@ class CDUAocMisc {
         }
 
         const display = [
-            ["ATSU MISC SIMBRIEF"],
-            ["", "USERNAME"],
+            ["AOC INIT DATA REQUEST"],
+            ["", "SIMBRIEF USERNAME"],
             ["", `${store["username"] != "" ? store["username"] : "[ ]"}[color]blue`],
             ["FROM/TO", "PAYLOAD"],
             [fromTo, payload],
