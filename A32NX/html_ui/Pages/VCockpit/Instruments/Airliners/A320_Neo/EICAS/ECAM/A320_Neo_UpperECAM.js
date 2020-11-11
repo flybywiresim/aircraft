@@ -2703,4 +2703,3 @@ var A320_Neo_UpperECAM;
 
 })(A320_Neo_UpperECAM || (A320_Neo_UpperECAM = {}));
 customElements.define("a320-neo-upper-ecam", A320_Neo_UpperECAM.Display);
-//# sourceMappingURL=A320_Neo_UpperECAM.js.map
