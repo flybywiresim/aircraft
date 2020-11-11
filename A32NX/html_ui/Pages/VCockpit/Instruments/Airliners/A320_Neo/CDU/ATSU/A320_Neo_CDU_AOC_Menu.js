@@ -4,7 +4,7 @@ class CDUAocMenu {
         mcdu.setTemplate([
             ["AOC MENU"],
             [""],
-            ["<INIT[color]inop", "FREE TEXT>"],
+            ["<INIT", "FREE TEXT>"],
             ["", "RECEIVED"],
             ["<WX REQUEST", "MESSAGES>"],
             ["", "SENT"],
@@ -14,7 +14,7 @@ class CDUAocMenu {
             [""],
             ["<PERF/W&B[color]inop", "DIVERSION>[color]inop"],
             ["ATSU DLK"],
-            ["<RETURN", "MISC SIMBRIEF>"]
+            ["<RETURN", "MISC>[color]inop"]
         ]);
 
         mcdu.leftInputDelay[1] = () => {
@@ -53,7 +53,7 @@ class CDUAocMenu {
         mcdu.onRightInput[2] = () => {
             CDUAocMessagesSent.ShowPage(mcdu);
         };
-        mcdu.onRightInput[5] = () => {
+        mcdu.onLeftInput[0] = () => {
             CDUAocMisc.ShowPage(mcdu);
         };
     }
