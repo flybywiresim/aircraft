@@ -64,6 +64,7 @@
 1. [CDU] Added CFDS display test, ATSU METAR/TAF/ATIS requests, and ATSU free text - @wpine215 (Iceman), @nistei (Nistei), @Edwin B
 1. [CDU] Fixed error messages delete input - @MisterChocker (Leon)
 1. [CDU] Added input delay paging left/right and input 1-6L/1-6R - @MisterChocker (Leon)
+1. [GPWS] Completely redone GPWS logic, and improve Retard call logic, prevent multiple calls playing at once - lukecologne (luke)
 1. [ECAM] Improve flaps/slats panel design on upper ECAM, improve flaps/slats transition logic - @paul92ilm (Lussion)
 1. [CDU] Allow inserting landing QNH in inHg - @pessip (Pessi Päivärinne)
 
