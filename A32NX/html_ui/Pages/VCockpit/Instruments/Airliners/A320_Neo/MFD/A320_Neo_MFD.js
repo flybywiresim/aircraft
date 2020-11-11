@@ -789,4 +789,3 @@ class A320_Neo_MFD_NDInfo extends NavSystemElement {
     }
 }
 registerInstrument("a320-neo-mfd-element", A320_Neo_MFD);
-//# sourceMappingURL=A320_Neo_MFD.js.map
