@@ -49,7 +49,7 @@ var Boeing_FCU;
         onUpdate(_deltaTime) {
             super.onUpdate(_deltaTime);
             const machChanged = this.updateMachTransition();
-            var visible = this.shouldBeVisible();
+            const visible = this.shouldBeVisible();
             if ((visible != this.m_isVisible) || machChanged) {
                 this.m_isVisible = visible;
                 if (this.modeElement != null) {
@@ -73,7 +73,7 @@ var Boeing_FCU;
             if (Simplane.getAutoPilotMachModeActive()) {
                 if (_value < 1.0) {
                     const fixedMach = _value.toFixed(3);
-                    var radixPos = fixedMach.indexOf('.');
+                    const radixPos = fixedMach.indexOf('.');
                     return fixedMach.slice(radixPos);
                 }
                 return _value.toFixed(1);
@@ -109,13 +109,13 @@ var Boeing_FCU;
         }
         onFlightStart() {
             super.onFlightStart();
-            var simHeading = SimVar.GetSimVarValue("PLANE HEADING DEGREES MAGNETIC", "degree");
+            const simHeading = SimVar.GetSimVarValue("PLANE HEADING DEGREES MAGNETIC", "degree");
             Coherent.call("HEADING_BUG_SET", 1, Math.round(simHeading));
         }
         onUpdate(_deltaTime) {
             super.onUpdate(_deltaTime);
-            var visible = this.shouldBeVisible();
-            var trkMode = Simplane.getAutoPilotTRKModeActive();
+            const visible = this.shouldBeVisible();
+            const trkMode = Simplane.getAutoPilotTRKModeActive();
             if ((visible != this.m_isVisible) || (trkMode != this.isTRKMode)) {
                 this.m_isVisible = visible;
                 this.isTRKMode = trkMode;
@@ -164,8 +164,8 @@ var Boeing_FCU;
         }
         onUpdate(_deltaTime) {
             super.onUpdate(_deltaTime);
-            var visible = this.shouldBeVisible();
-            var fpaMode = Simplane.getAutoPilotFPAModeActive();
+            const visible = this.shouldBeVisible();
+            const fpaMode = Simplane.getAutoPilotFPAModeActive();
             if ((visible != this.m_isVisible) || (fpaMode != this.isFPAMode)) {
                 this.m_isVisible = visible;
                 this.isFPAMode = fpaMode;
@@ -209,7 +209,7 @@ var Boeing_FCU;
         }
         onUpdate(_deltaTime) {
             super.onUpdate(_deltaTime);
-            var visible = this.shouldBeVisible();
+            const visible = this.shouldBeVisible();
             if (visible != this.m_isVisible) {
                 this.m_isVisible = visible;
                 if (this.valueElement != null) {

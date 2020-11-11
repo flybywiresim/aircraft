@@ -5,7 +5,7 @@ class AS530 extends BaseGPS {
     connectedCallback() {
         super.connectedCallback();
         this.menuMaxElems = 11;
-        var defaultNav = new GPS_DefaultNavPage(5, [3, 4, 9, 7, 10]);
+        const defaultNav = new GPS_DefaultNavPage(5, [3, 4, 9, 7, 10]);
         defaultNav.element.addElement(new MapInstrumentElement());
         this.pageGroups = [
             new NavSystemPageGroup("NAV", this, [

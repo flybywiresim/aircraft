@@ -112,11 +112,11 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
                 this.modeChangeTimer = -1;
             }
         }
-        var wxRadarOn = (SimVar.GetSimVarValue("L:XMLVAR_A320_WeatherRadar_Sys", "number") != 1) ? true : false;
-        var wxRadarMode = SimVar.GetSimVarValue("L:XMLVAR_A320_WeatherRadar_Mode", "number");
-        var terrainOn = SimVar.GetSimVarValue("L:BTN_TERRONND_ACTIVE", "number");
-        var mapMode = SimVar.GetSimVarValue("L:A320_Neo_MFD_NAV_MODE", "number");
-        var mapRange = SimVar.GetSimVarValue("L:A320_Neo_MFD_Range", "number");
+        const wxRadarOn = (SimVar.GetSimVarValue("L:XMLVAR_A320_WeatherRadar_Sys", "number") != 1) ? true : false;
+        const wxRadarMode = SimVar.GetSimVarValue("L:XMLVAR_A320_WeatherRadar_Mode", "number");
+        const terrainOn = SimVar.GetSimVarValue("L:BTN_TERRONND_ACTIVE", "number");
+        const mapMode = SimVar.GetSimVarValue("L:A320_Neo_MFD_NAV_MODE", "number");
+        const mapRange = SimVar.GetSimVarValue("L:A320_Neo_MFD_Range", "number");
         if (this.wxRadarOn != wxRadarOn || this.terrainOn != terrainOn || this.wxRadarMode != wxRadarMode || this.mapMode != mapMode) {
             this.wxRadarOn = wxRadarOn;
             this.wxRadarMode = wxRadarMode;

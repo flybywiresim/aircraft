@@ -127,7 +127,7 @@ class BaseGPS extends NavSystem {
             this.comStandby.setAttribute("state", "Unselected");
         }
         if (SimVar.GetSimVarValue("C:fs9gps:FlightPlanIsActiveFlightPlan", "Boolean")) {
-            var distance = SimVar.GetSimVarValue("GPS WP DISTANCE", "nautical mile");
+            const distance = SimVar.GetSimVarValue("GPS WP DISTANCE", "nautical mile");
             if (SimVar.GetSimVarValue("C:fs9gps:FlightPlanIsActiveApproach", "Boolean")) {
                 this.currentMode = 3;
                 this.botRadioPartMid.textContent = "APPR";
@@ -147,8 +147,8 @@ class BaseGPS extends NavSystem {
             this.botRadioPartMid.textContent = "ENR";
             this.currentMode = 0;
         }
-        var pagesMenu = "";
-        for (var i = 0; i < this.getCurrentPageGroup().pages.length; i++) {
+        let pagesMenu = "";
+        for (let i = 0; i < this.getCurrentPageGroup().pages.length; i++) {
             if (i == this.getCurrentPageGroup().pageIndex) {
                 pagesMenu += '<div class="PageSelect" state="Active"></div>';
             } else {
@@ -161,8 +161,8 @@ class BaseGPS extends NavSystem {
 }
 class GPS_DefaultNavPage extends NavSystemPage {
     constructor(_customValuesNumber = 6, _customValuesDefaults = [4, 3, 0, 9, 10, 7]) {
-        var cdiElem = new CDIElement();
-        var baseElem = new GPS_DefaultNav(_customValuesNumber, _customValuesDefaults);
+        const cdiElem = new CDIElement();
+        const baseElem = new GPS_DefaultNav(_customValuesNumber, _customValuesDefaults);
         super("DefaultNav", "DefaultNav", new NavSystemElementGroup([baseElem, cdiElem]));
         this.cdiElement = cdiElem;
         this.baseElem = baseElem;
@@ -287,7 +287,7 @@ class GPS_DefaultNav extends NavSystemElement {
             }
         }
         this.currBranchTo.textContent = SimVar.GetSimVarValue("GPS WP NEXT ID", "string");
-        for (var i = 0; i < this.dnCustoms.length; i++) {
+        for (let i = 0; i < this.dnCustoms.length; i++) {
             this.dnCustoms[i].Update();
         }
     }
@@ -365,7 +365,7 @@ class GPS_ComNav extends NavSystemElement {
         this.gps.currFlightPlan.FillWithCurrentFP(function () {
             this.airportListOnPlan = this.gps.currFlightPlan.GetAirportList();
             this.airportSelectionMenu.elements = [];
-            for (var i = 0; i < this.airportListOnPlan.length; i++) {
+            for (let i = 0; i < this.airportListOnPlan.length; i++) {
                 this.airportSelectionMenu.elements.push(new ContextualMenuElement(this.airportListOnPlan[i].GetInfos().ident, this.setComAirtportListIndex_CB.bind(this, i)));
             }
             this.UpdateComDisplay();
@@ -389,7 +389,7 @@ class GPS_ComNav extends NavSystemElement {
             }
             this.terrainCode.textContent = this.airportListOnPlan[this.airportListIndex].GetInfos().ident;
             this.terrainType.textContent = this.gps.airportPrivateTypeStrFromEnum(this.airportListOnPlan[this.airportListIndex].GetInfos().privateType);
-            var logo = this.airportListOnPlan[this.airportListIndex].GetInfos().GetSymbol();
+            const logo = this.airportListOnPlan[this.airportListIndex].GetInfos().GetSymbol();
             if (logo != "") {
                 this.terrainTypeLogo.innerHTML = '<img src="/Pages/VCockpit/Instruments/NavSystems/Shared/Images/' + logo + '"/>';
             } else {
@@ -414,8 +414,8 @@ class GPS_ComNav extends NavSystemElement {
     }
     UpdateComDisplay() {
         this.airportListOnPlan[this.airportListIndex].UpdateInfos();
-        var infos = this.airportListOnPlan[this.airportListIndex].GetInfos();
-        var elements = [];
+        const infos = this.airportListOnPlan[this.airportListIndex].GetInfos();
+        const elements = [];
         if (infos && infos.frequencies) {
             for (let i = 0; i < infos.frequencies.length; i++) {
                 elements.push('<div><div class="Align LeftDisplay">' + infos.frequencies[i].name.replace(" ", "&nbsp;").slice(0, 15) + '</div> <div class="Align RightValue SelectableElement">' + this.gps.frequencyFormat(infos.frequencies[i].mhValue, 3) + '</div></div>');
@@ -486,17 +486,17 @@ class GPS_Position extends NavSystemElement {
     }
     onUpdate(_deltaTime) {
         this.compassBackground.setAttribute("style", "Left:" + fastToFixed(((SimVar.GetSimVarValue("GPS GROUND MAGNETIC TRACK", "degree") * -125 / 90) - 40), 0) + "px");
-        for (var i = 0; i < this.customValues.length; i++) {
+        for (let i = 0; i < this.customValues.length; i++) {
             this.customValues[i].Update();
         }
         this.positionValueNS.textContent = this.gps.latitudeFormat(SimVar.GetSimVarValue("GPS POSITION LAT", "degree latitude"));
         this.positionValueEW.textContent = this.gps.longitudeFormat(SimVar.GetSimVarValue("GPS POSITION LON", "degree longitude"));
-        var time = SimVar.GetGlobalVarValue("LOCAL TIME", "seconds");
-        var hours = Math.floor(time / 3600);
-        var minutes = Math.floor((time % 3600) / 60);
-        var seconds = Math.floor(time % 60);
+        const time = SimVar.GetGlobalVarValue("LOCAL TIME", "seconds");
+        const hours = Math.floor(time / 3600);
+        const minutes = Math.floor((time % 3600) / 60);
+        const seconds = Math.floor(time % 60);
         this.timeValue.textContent = (hours < 10 ? "0" + fastToFixed(hours, 0) : fastToFixed(hours, 0)) + ":" + (minutes < 10 ? "0" + fastToFixed(minutes, 0) : fastToFixed(minutes, 0)) + ":" + (seconds < 10 ? "0" + fastToFixed(seconds, 0) : fastToFixed(seconds, 0));
-        var reference = this.posRefSearchField.getUpdatedInfos();
+        const reference = this.posRefSearchField.getUpdatedInfos();
         if (this.referenceMode == 0) {
             this.positionRefMode.textContent = "TO";
         } else {
@@ -641,9 +641,9 @@ class GPS_AirportWaypointLocation extends NavSystemElement {
     }
     onUpdate(_deltaTime) {
         this.icaoSearchField.Update();
-        var infos = this.icaoSearchField.getUpdatedInfos();
+        const infos = this.icaoSearchField.getUpdatedInfos();
         if (infos && infos.icao) {
-            var logo = infos.GetSymbol();
+            const logo = infos.GetSymbol();
             if (logo != "") {
                 this.privateLogo.innerHTML = '<img src="/Pages/VCockpit/Instruments/NavSystems/Shared/Images/' + logo + '"/>';
             }
@@ -748,13 +748,13 @@ class GPS_AirportWaypointRunways extends NavSystemElement {
     }
     onUpdate(_deltaTime) {
         this.icaoSearchField.Update();
-        var infos = this.icaoSearchField.getUpdatedInfos();
+        const infos = this.icaoSearchField.getUpdatedInfos();
         if (infos && infos.icao) {
-            var size = infos.GetSize();
-            var nmPixelSize = Math.min(130 / size.x, 110 / size.y);
-            var context = this.mapElement.getContext("2d");
+            const size = infos.GetSize();
+            const nmPixelSize = Math.min(130 / size.x, 110 / size.y);
+            const context = this.mapElement.getContext("2d");
             context.clearRect(0, 0, 200, 200);
-            var logo = infos.GetSymbol();
+            const logo = infos.GetSymbol();
             if (logo != "") {
                 this.privateLogoElement.innerHTML = '<img src="/Pages/VCockpit/Instruments/NavSystems/Shared/Images/' + logo + '"/>';
             }
@@ -891,14 +891,14 @@ class GPS_AirportWaypointRunways extends NavSystemElement {
     }
     runway_SelectionCallback(_event) {
         if (_event == "ENT_Push" || _event == "RightSmallKnob_Right" || _event == "RightSmallKnob_Left") {
-            var infos = this.icaoSearchField.getUpdatedInfos();
+            const infos = this.icaoSearchField.getUpdatedInfos();
             if (infos && infos.icao) {
-                var menu = new ContextualMenu("RUNWAY", []);
-                var callback = function (_index) {
+                const menu = new ContextualMenu("RUNWAY", []);
+                const callback = function (_index) {
                     this.selectedRunway = _index;
                     this.gps.SwitchToInteractionState(0);
                 };
-                for (var i = 0; i < infos.runways.length; i++) {
+                for (let i = 0; i < infos.runways.length; i++) {
                     menu.elements.push(new ContextualMenuElement(infos.runways[i].designation, callback.bind(this, i)));
                 }
                 this.gps.ShowContextualMenu(menu);
@@ -937,9 +937,9 @@ class GPS_AirportWaypointFrequencies extends NavSystemElement {
     }
     onUpdate(_deltaTime) {
         this.icaoSearchField.Update();
-        var infos = this.icaoSearchField.getUpdatedInfos();
+        const infos = this.icaoSearchField.getUpdatedInfos();
         if (infos && infos.icao) {
-            var logo = infos.GetSymbol();
+            const logo = infos.GetSymbol();
             if (logo != "") {
                 this.logoElement.innerHTML = '<img src="/Pages/VCockpit/Instruments/NavSystems/Shared/Images/' + logo + '"/>';
             }
@@ -957,7 +957,7 @@ class GPS_AirportWaypointFrequencies extends NavSystemElement {
                     this.privateElement.textContent = "Private";
                     break;
             }
-            var elements = [];
+            const elements = [];
             if (infos && infos.frequencies) {
                 for (let i = 0; i < infos.frequencies.length; i++) {
                     elements.push('<div><div class="Align LeftDisplay">' + infos.frequencies[i].name.replace(" ", "&nbsp;").slice(0, 15) + '</div> <div class="Align RightValue SelectableElement">' + this.gps.frequencyFormat(infos.frequencies[i].mhValue, 3) + '</div></div>');
@@ -978,7 +978,7 @@ class GPS_AirportWaypointFrequencies extends NavSystemElement {
     }
     activeFrequency_SelectionCallback(_event, _index) {
         if (_event == "ENT_Push") {
-            var infos = this.icaoSearchField.getUpdatedInfos();
+            const infos = this.icaoSearchField.getUpdatedInfos();
             if (infos.frequencies[_index].mhValue >= 118) {
                 SimVar.SetSimVarValue("K:COM" + (this.gps.comIndex == 1 ? "" : this.gps.comIndex) + "_STBY_RADIO_SET", "Frequency BCD16", infos.frequencies[_index].bcd16Value);
             } else {
@@ -1037,9 +1037,9 @@ class GPS_AirportWaypointApproaches extends NavSystemElement {
     }
     onUpdate(_deltaTime) {
         this.icaoSearchField.Update();
-        var infos = this.icaoSearchField.getUpdatedInfos();
+        const infos = this.icaoSearchField.getUpdatedInfos();
         if (infos && infos.icao) {
-            var logo = infos.GetSymbol();
+            const logo = infos.GetSymbol();
             if (logo != "") {
                 this.privateLogoElement.innerHTML = '<img src="/Pages/VCockpit/Instruments/NavSystems/Shared/Images/' + logo + '"/>';
             }
@@ -1114,15 +1114,15 @@ class GPS_AirportWaypointApproaches extends NavSystemElement {
     }
     approach_SelectionCallback(_event) {
         if (_event == "ENT_Push" || _event == "RightSmallKnob_Right" || _event == "RightSmallKnob_Left") {
-            var infos = this.icaoSearchField.getUpdatedInfos();
+            const infos = this.icaoSearchField.getUpdatedInfos();
             if (infos && infos.icao) {
-                var menu = new ContextualMenu("APR", []);
-                var callback = function (_index) {
+                const menu = new ContextualMenu("APR", []);
+                const callback = function (_index) {
                     this.selectedApproach = _index;
                     this.selectedTransition = 0;
                     this.gps.SwitchToInteractionState(0);
                 };
-                for (var i = 0; i < infos.approaches.length; i++) {
+                for (let i = 0; i < infos.approaches.length; i++) {
                     menu.elements.push(new ContextualMenuElement(infos.approaches[i].name, callback.bind(this, i)));
                 }
                 this.gps.ShowContextualMenu(menu);
@@ -1131,16 +1131,16 @@ class GPS_AirportWaypointApproaches extends NavSystemElement {
     }
     transtion_SelectionCallback(_event) {
         if (_event == "ENT_Push" || _event == "RightSmallKnob_Right" || _event == "RightSmallKnob_Left") {
-            var infos = this.icaoSearchField.getUpdatedInfos();
+            const infos = this.icaoSearchField.getUpdatedInfos();
             if (infos && infos.icao) {
-                var menu = new ContextualMenu("TRANS", []);
-                var callback = function (_index) {
+                const menu = new ContextualMenu("TRANS", []);
+                const callback = function (_index) {
                     this.selectedTransition = _index;
                     this.gps.SwitchToInteractionState(0);
                 };
                 const approach = this.getSelectedApproach(infos);
                 if (approach) {
-                    for (var i = 0; i < approach.transitions.length; i++) {
+                    for (let i = 0; i < approach.transitions.length; i++) {
                         menu.elements.push(new ContextualMenuElement(approach.transitions[i].name, callback.bind(this, i)));
                     }
                 }
@@ -1176,9 +1176,9 @@ class GPS_IntersectionWaypoint extends NavSystemElement {
     }
     onUpdate(_deltaTime) {
         this.icaoSearchField.Update();
-        var infos = this.icaoSearchField.getUpdatedInfos();
+        const infos = this.icaoSearchField.getUpdatedInfos();
         if (infos && infos.icao) {
-            var logo = infos.GetSymbol();
+            const logo = infos.GetSymbol();
             if (logo != "") {
                 this.symbolElement.innerHTML = '<img src="/Pages/VCockpit/Instruments/NavSystems/Shared/Images/' + logo + '"/>';
             }
@@ -1237,9 +1237,9 @@ class GPS_NDBWaypoint extends NavSystemElement {
     }
     onUpdate(_deltaTime) {
         this.icaoSearchField.Update();
-        var infos = this.icaoSearchField.getUpdatedInfos();
+        const infos = this.icaoSearchField.getUpdatedInfos();
         if (infos && infos.icao) {
-            var logo = infos.GetSymbol();
+            const logo = infos.GetSymbol();
             if (logo != "") {
                 this.symbolElement.innerHTML = '<img src="/Pages/VCockpit/Instruments/NavSystems/Shared/Images/' + logo + '"/>';
             }
@@ -1308,9 +1308,9 @@ class GPS_VORWaypoint extends NavSystemElement {
     }
     onUpdate(_deltaTime) {
         this.icaoSearchField.Update();
-        var infos = this.icaoSearchField.getUpdatedInfos();
+        const infos = this.icaoSearchField.getUpdatedInfos();
         if (infos && infos.icao) {
-            var logo = infos.GetSymbol();
+            const logo = infos.GetSymbol();
             if (logo != "") {
                 this.symbolElement.innerHTML = '<img src="/Pages/VCockpit/Instruments/NavSystems/Shared/Images/' + logo + '"/>';
             }
@@ -1325,7 +1325,7 @@ class GPS_VORWaypoint extends NavSystemElement {
             } else {
                 this.weatherBroadcastElement.textContent = "";
             }
-            var magVar = infos.magneticVariation;
+            const magVar = infos.magneticVariation;
             if (infos.magneticVariation > 0) {
                 this.magneticDeviationElement.textContent = 'W' + fastToFixed(magVar, 0) + "°";
             } else {
@@ -1379,11 +1379,11 @@ class GPS_NearestAirports extends NavSystemElement {
     }
     onUpdate(_deltaTime) {
         this.nearestAirportList.Update();
-        var airportListStrings = [];
-        for (var i = 0; i < this.nearestAirportList.airports.length; i++) {
-            var firstLine = "";
-            var secondLine = "";
-            var logo = "";
+        const airportListStrings = [];
+        for (let i = 0; i < this.nearestAirportList.airports.length; i++) {
+            let firstLine = "";
+            let secondLine = "";
+            let logo = "";
             if (this.nearestAirportList.airports[i].airportClass == 2 || this.nearestAirportList.airports[i].airportClass == 3) {
                 logo = "Airport_Soft.png";
             } else if (this.nearestAirportList.airports[i].airportClass == 1) {
@@ -1470,9 +1470,9 @@ class GPS_NearestIntersection extends NavSystemElement {
     }
     onUpdate(_deltaTime) {
         this.nearestIntersectionList.Update();
-        var lines = [];
-        for (var i = 0; i < this.nearestIntersectionList.intersections.length; i++) {
-            var line = "";
+        const lines = [];
+        for (let i = 0; i < this.nearestIntersectionList.intersections.length; i++) {
+            let line = "";
             line += '<td class="SelectableElement">' + this.nearestIntersectionList.intersections[i].ident + '</td>';
             line += '<td><img src="/Pages/VCockpit/Instruments/Shared/Map/Images/' + this.nearestIntersectionList.intersections[i].imageFileName() + '"/></td>';
             line += '<td>' + fastToFixed(this.nearestIntersectionList.intersections[i].bearing, 0) + '<div class="Align unit">o<br />M</div></td>';
@@ -1518,9 +1518,9 @@ class GPS_NearestNDB extends NavSystemElement {
     }
     onUpdate(_deltaTime) {
         this.nearestNDBList.Update();
-        var lines = [];
-        for (var i = 0; i < this.nearestNDBList.ndbs.length; i++) {
-            var line = "";
+        const lines = [];
+        for (let i = 0; i < this.nearestNDBList.ndbs.length; i++) {
+            let line = "";
             line += '<td class="SelectableElement">' + this.nearestNDBList.ndbs[i].ident + '</td>';
             line += '<td><img src="/Pages/VCockpit/Instruments/Shared/Map/Images/' + this.nearestNDBList.ndbs[i].imageFileName() + '"/></td>';
             line += '<td>' + fastToFixed(this.nearestNDBList.ndbs[i].bearing, 0) + '<div class="Align unit">o<br />M</div></td>';
@@ -1570,11 +1570,11 @@ class GPS_NearestVOR extends NavSystemElement {
     }
     onUpdate(_deltaTime) {
         this.nearestVORList.Update();
-        var lines = [];
-        for (var i = 0; i < this.nearestVORList.vors.length; i++) {
-            var line = "";
+        const lines = [];
+        for (let i = 0; i < this.nearestVORList.vors.length; i++) {
+            let line = "";
             line += '<td class="SelectableElement Select0">' + this.nearestVORList.vors[i].ident + '</td>';
-            var image = this.nearestVORList.vors[i].imageFileName();
+            const image = this.nearestVORList.vors[i].imageFileName();
             line += '<td> <img src="/Pages/VCockpit/Instruments/Shared/Map/Images/' + image + '"></td>';
             line += '<td>' + fastToFixed(this.nearestVORList.vors[i].bearing, 0) + '<div class="Align unit">o<br />M</div></td>';
             line += '<td>' + fastToFixed(this.nearestVORList.vors[i].distance, 1) + '<div class="Align unit">n<br />m</div></td>';
@@ -1625,7 +1625,7 @@ class GPS_NearestAirpaces extends NavSystemElement {
     }
     onUpdate(_deltaTime) {
         this.nearestAirspacesList.Update();
-        var nbAirspaces = this.nearestAirspacesList.airspaces.length;
+        const nbAirspaces = this.nearestAirspacesList.airspaces.length;
         if (nbAirspaces > 0) {
             const airspace = this.nearestAirspacesList.airspaces[0];
             this.nrstAirspaceName1.textContent = airspace.name;
@@ -1694,10 +1694,10 @@ class GPS_DirectTo extends NavSystemElement {
         }
     }
     onUpdate(_deltaTime) {
-        var infos = this.icaoSearchField.getWaypoint() ? this.icaoSearchField.getWaypoint().infos : new WayPointInfo(this.gps);
+        const infos = this.icaoSearchField.getWaypoint() ? this.icaoSearchField.getWaypoint().infos : new WayPointInfo(this.gps);
         if (infos && infos.icao != '') {
             this.icao.textContent = infos.icao;
-            var logo = infos.GetSymbol();
+            const logo = infos.GetSymbol();
             if (logo != "") {
                 this.airportPrivateLogo.innerHTML = '<img src="/Pages/VCockpit/Instruments/NavSystems/Shared/Images/' + logo + '"/>';
             }
@@ -1748,8 +1748,8 @@ class GPS_DirectTo extends NavSystemElement {
     }
     flightPlan_SelectionCallback(_event) {
         if (_event == "ENT_Push" || _event == "RightSmallKnob_Right" || _event == "RightSmallKnob_Left") {
-            var elements = [];
-            for (var i = 0; i < this.gps.currFlightPlan.wayPoints.length; i++) {
+            const elements = [];
+            for (let i = 0; i < this.gps.currFlightPlan.wayPoints.length; i++) {
                 elements.push(new ContextualMenuElement(this.gps.currFlightPlan.wayPoints[i].GetInfos().ident, function (_index) {
                     this.currentFPLWpSelected = _index;
                     this.icaoSearchField.SetWaypoint(this.gps.currFlightPlan.wayPoints[_index].type, this.gps.currFlightPlan.wayPoints[_index].GetInfos().icao);
@@ -1932,7 +1932,7 @@ class GPS_Messages extends NavSystemElement {
     onEnter() {
     }
     onUpdate(_deltaTime) {
-        var html = "";
+        const html = "";
         this.messages.innerHTML = html;
     }
     onExit() {
@@ -1965,7 +1965,7 @@ class GPS_FPLWaypointSelection extends NavSystemElement {
         this.waypointSelectionSearchField.StartSearch(this.onSearchFieldValidation.bind(this));
     }
     onUpdate(_deltaTime) {
-        var infos = this.waypointSelectionSearchField.getUpdatedInfos();
+        const infos = this.waypointSelectionSearchField.getUpdatedInfos();
         this.wpSRegion.textContent = infos.region ? infos.region : '';
         this.wpSFacility1.textContent = infos.name ? infos.name : '';
         this.wpSFacility2.textContent = infos.city ? infos.city : '';
@@ -1987,7 +1987,7 @@ class GPS_FPLWaypointSelection extends NavSystemElement {
             this.gps.lastRelevantICAOType = null;
             this.gps.switchToPopUpPage(this.duplicateWaypoints, this.gps.popUpCloseCallback);
         } else {
-            var infos = this.waypointSelectionSearchField.getUpdatedInfos();
+            const infos = this.waypointSelectionSearchField.getUpdatedInfos();
             this.gps.lastRelevantICAO = infos.icao;
             this.gps.lastRelevantICAOType = infos.getWaypointType();
             this.gps.closePopUpElement();

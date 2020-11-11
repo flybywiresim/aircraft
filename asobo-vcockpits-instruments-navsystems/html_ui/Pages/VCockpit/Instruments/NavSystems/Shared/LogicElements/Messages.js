@@ -41,8 +41,8 @@ class MessageList {
         switch (this.loadState) {
             case 0:
                 SimVar.GetSimVarArrayValues(this.batch, function (_values) {
-                    for (var i = 0; i < _values.length; i++) {
-                        var message = new Message();
+                    for (let i = 0; i < _values.length; i++) {
+                        const message = new Message();
                         message.SetAirspaceMessageType(_values[i][0]);
                         this.loadState++;
                     }
