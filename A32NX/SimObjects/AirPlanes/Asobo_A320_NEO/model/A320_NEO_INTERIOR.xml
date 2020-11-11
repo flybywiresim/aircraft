@@ -755,6 +755,11 @@
                     <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.LIGHTING_KNOB_L_PFD_INCREASE</ANIMTIP_1>
                 </UseTemplate>
 
+                <UseTemplate Name="FBW_Airbus_Push_EFIS_GPWS">
+                    <NODE_ID>PUSH_EFIS_CS_GPWS</NODE_ID>
+                    <ANIM_NAME>PUSH_EFIS_CS_GPWS</ANIM_NAME>
+                </UseTemplate>
+
                 <UseTemplate Name="ASOBO_AIRBUS_Push_TERRONND_Template">
                     <NODE_ID>PUSH_TERRONND</NODE_ID>
                     <ANIM_NAME>PUSH_TERRONND</ANIM_NAME>
@@ -825,6 +830,11 @@
                     <MIN_VALUE>0</MIN_VALUE>
                     <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.LIGHTING_KNOB_R_PFD_DECREASE</ANIMTIP_0>
                     <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.LIGHTING_KNOB_R_PFD_INCREASE</ANIMTIP_1>
+                </UseTemplate>
+
+                <UseTemplate Name="FBW_Airbus_Push_EFIS_GPWS">
+                    <NODE_ID>PUSH_EFIS_FO_GPWS</NODE_ID>
+                    <ANIM_NAME>PUSH_EFIS_FO_GPWS</ANIM_NAME>
                 </UseTemplate>
 
                 <UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
@@ -930,16 +940,6 @@
                 <ANIM_NAME>SWITCH_AUTOBKR_ASKID</ANIM_NAME>
                 <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.ANTISKID_TURN_ON</ANIMTIP_0>
                 <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.ANTISKID_TURN_OFF</ANIMTIP_1>
-            </UseTemplate>
-
-            <UseTemplate Name="A32NX_AIRBUS_Push_EFISGPWS_Template">
-                <NODE_ID>PUSH_EFIS_CS_GPWS</NODE_ID>
-                <ANIM_NAME>PUSH_EFIS_CS_GPWS</ANIM_NAME>
-            </UseTemplate>
-
-            <UseTemplate Name="A32NX_AIRBUS_Push_EFISGPWS_Template">
-                <NODE_ID>PUSH_EFIS_FO_GPWS</NODE_ID>
-                <ANIM_NAME>PUSH_EFIS_FO_GPWS</ANIM_NAME>
             </UseTemplate>
 
             <Component ID="Standby_Indicator">
@@ -2343,35 +2343,35 @@
                 <Component ID="Left_Column">
                     <UseTemplate Name="FBW_Push_Toggle">
                         <NODE_ID>PUSH_OVHD_GPWS_TERR</NODE_ID>
-                        <TOGGLE_SIMVAR>L:PUSH_OVHD_GPWS_TERR</TOGGLE_SIMVAR>
-                        <SEQ1_CODE>(L:PUSH_OVHD_GPWS_TERR, Bool) ! (L:PUSH_OVHD_GPWS_TERR_FAULT, Bool)</SEQ1_CODE>
-                        <TOOLTIPID>(INOP) TERR</TOOLTIPID>
+                        <TOGGLE_SIMVAR>L:A32NX_GPWS_TERR_OFF</TOGGLE_SIMVAR>
+                        <SEQ1_CODE>(L:A32NX_GPWS_TERR_OFF, Bool) ! (L:A32NX_GPWS_TERR_FAULT, Bool)</SEQ1_CODE>
+                        <TOOLTIPID>%((L:A32NX_GPWS_TERR_OFF, Bool))%{if}(Inop.) Turn ON GPWS TERR%{else}(Inop.) Turn OFF GPWS TERR%{end}</TOOLTIPID>
                     </UseTemplate>
                     <UseTemplate Name="FBW_Push_Toggle">
                         <NODE_ID>PUSH_OVHD_GPWS_SYS</NODE_ID>
-                        <TOGGLE_SIMVAR>L:PUSH_OVHD_GPWS_SYS</TOGGLE_SIMVAR>
-                        <SEQ1_CODE>(L:PUSH_OVHD_GPWS_SYS, Bool) ! (L:PUSH_OVHD_GPWS_SYS_FAULT, Bool)</SEQ1_CODE>
-                        <TOOLTIPID>SYS</TOOLTIPID>
+                        <TOGGLE_SIMVAR>L:A32NX_GPWS_SYS_OFF</TOGGLE_SIMVAR>
+                        <SEQ1_CODE>(L:A32NX_GPWS_SYS_OFF, Bool) ! (L:A32NX_GPWS_SYS_FAULT, Bool)</SEQ1_CODE>
+                        <TOOLTIPID>%((L:A32NX_GPWS_SYS_OFF, Bool))%{if}Turn ON GPWS SYS%{else}Turn OFF GPWS SYS%{end}</TOOLTIPID>
                     </UseTemplate>
                     <UseTemplate Name="FBW_Push_Toggle">
                         <NODE_ID>PUSH_OVHD_GPWS_GSMODE</NODE_ID>
-                        <TOGGLE_SIMVAR>L:PUSH_OVHD_GPWS_GSMODE</TOGGLE_SIMVAR>
+                        <TOGGLE_SIMVAR>L:A32NX_GPWS_GS_OFF</TOGGLE_SIMVAR>
                         <DISABLE_SEQ1/>
-                        <TOOLTIPID>(INOP) G/S Mode</TOOLTIPID>
+                        <TOOLTIPID>%((L:A32NX_GPWS_GS_OFF, Bool))%{if}Turn ON GPWS G/S mode%{else}Turn OFF GPWS G/S mode%{end}</TOOLTIPID>
                     </UseTemplate>
                     <UseTemplate Name="FBW_Push_Toggle">
                         <NODE_ID>PUSH_OVHD_GPWS_FLAP</NODE_ID>
                         <PART_ID>GPWS_Flap</PART_ID>
-                        <TOGGLE_SIMVAR>L:PUSH_OVHD_GPWS_FLAP</TOGGLE_SIMVAR>
+                        <TOGGLE_SIMVAR>L:A32NX_GPWS_FLAP_OFF</TOGGLE_SIMVAR>
                         <DISABLE_SEQ1/>
-                        <TOOLTIPID>Flap Mode</TOOLTIPID>
+                        <TOOLTIPID>%((L:A32NX_GPWS_FLAP_OFF, Bool))%{if}Turn ON GPWS flap mode%{else}Turn OFF GPWS flap mode%{end}</TOOLTIPID>
                     </UseTemplate>
                     <UseTemplate Name="FBW_Push_Toggle">
                         <NODE_ID>PUSH_OVHD_GPWS_LDG</NODE_ID>
                         <PART_ID>GPWS_Flap3</PART_ID>
-                        <TOGGLE_SIMVAR>L:PUSH_OVHD_GPWS_LDG</TOGGLE_SIMVAR>
+                        <TOGGLE_SIMVAR>L:A32NX_GPWS_FLAPS3</TOGGLE_SIMVAR>
                         <DISABLE_SEQ1/>
-                        <TOOLTIPID>(INOP) LDG Flaps 3</TOOLTIPID>
+                        <TOOLTIPID>%((L:A32NX_GPWS_FLAPS3, Bool))%{if}Switch landing flaps to FULL%{else}Switch landing flaps to 3%{end}</TOOLTIPID>
                     </UseTemplate>
                     <UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
                         <NODE_ID>PUSH_OVHD_OXYGEN_PASSENGER</NODE_ID>
