@@ -429,9 +429,9 @@ class CDUInitPage {
         const M = 0 | (deg % 1) * 60e7;
         let degree;
         if (lng) {
-            degree = (0 | (deg < 0 ? deg = -deg : deg)).toString().padStart(3, "0");
+            degree = (0 | (deg < 0 ? -deg : deg)).toString().padStart(3, "0");
         } else {
-            degree = 0 | (deg < 0 ? deg = -deg : deg);
+            degree = 0 | (deg < 0 ? -deg : deg);
         }
         return {
             dir : deg < 0 ? lng ? 'W' : 'S' : lng ? 'E' : 'N',
