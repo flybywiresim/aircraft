@@ -387,8 +387,8 @@
     },
     {
       "path": "ModelBehaviorDefs/Asobo/Common/Subtemplates/Autopilot_Subtemplates.xml",
-      "size": 32079,
-      "date": 132441109810000000
+      "size": 32191,
+      "date": 132481914710000000
     },
     {
       "path": "ModelBehaviorDefs/Asobo/Common/Subtemplates/Deice_Subtemplates.xml",
@@ -637,8 +637,8 @@
     },
     {
       "path": "ModelBehaviorDefs/Asobo/NAVCOM/NavComSystem.xml",
-      "size": 91053,
-      "date": 132441156120000000
+      "size": 91264,
+      "date": 132481956260000000
     },
     {
       "path": "ModelBehaviorDefs/Asobo/Transponder/AS21.xml",

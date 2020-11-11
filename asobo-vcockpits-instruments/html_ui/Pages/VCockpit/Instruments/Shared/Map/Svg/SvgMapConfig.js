@@ -124,13 +124,13 @@ class SvgMapConfig {
         this.netBingSkyColor3 = "#000000";
     }
     load(path, callback) {
-        const request = new XMLHttpRequest();
+        let request = new XMLHttpRequest();
         request.overrideMimeType("application/json");
         request.onreadystatechange = () => {
             if (request.readyState === 4) {
                 if (request.status === 200) {
-                    const config = JSON.parse(request.responseText);
-                    for (const property in config) {
+                    let config = JSON.parse(request.responseText);
+                    for (let property in config) {
                         this[property] = config[property];
                     }
                     this.waypointLabelBackgroundPaddingTop = parseFloat(this.waypointLabelBackgroundPadding.split(" ")[0]);
@@ -143,7 +143,7 @@ class SvgMapConfig {
                     this.cityLabelBackgroundPaddingLeft = parseFloat(this.cityLabelBackgroundPadding.split(" ")[3]);
                     if (this.netBingHeightColor1 && this.netBingHeightColor1.length > 0) {
                         this.netBingAltitudeColors1[0] = this.netBingWaterColor1;
-                        const curve = new Avionics.Curve();
+                        let curve = new Avionics.Curve();
                         curve.interpolationFunction = Avionics.CurveTool.StringColorRGBInterpolation;
                         for (let i = 0; i < this.netBingHeightColor1.length; i++) {
                             let color = this.netBingHeightColor1[i].color;
@@ -151,13 +151,13 @@ class SvgMapConfig {
                             curve.add(this.netBingHeightColor1[i].alt, color);
                         }
                         for (let i = 0; i < 60; i++) {
-                            const color = curve.evaluate(i * 30000 / 60);
+                            let color = curve.evaluate(i * 30000 / 60);
                             this.netBingAltitudeColors1[i + 1] = color;
                         }
                     }
                     if (this.netBingHeightColor2 && this.netBingHeightColor2.length > 0) {
                         this.netBingAltitudeColors2[0] = this.netBingWaterColor2;
-                        const curve = new Avionics.Curve();
+                        let curve = new Avionics.Curve();
                         curve.interpolationFunction = Avionics.CurveTool.StringColorRGBInterpolation;
                         for (let i = 0; i < this.netBingHeightColor2.length; i++) {
                             let color = this.netBingHeightColor2[i].color;
@@ -165,13 +165,13 @@ class SvgMapConfig {
                             curve.add(this.netBingHeightColor2[i].alt, color);
                         }
                         for (let i = 0; i < 60; i++) {
-                            const color = curve.evaluate(i * 30000 / 60);
+                            let color = curve.evaluate(i * 30000 / 60);
                             this.netBingAltitudeColors2[i + 1] = color;
                         }
                     }
                     if (this.netBingHeightColor3 && this.netBingHeightColor3.length > 0) {
                         this.netBingAltitudeColors3[0] = this.netBingWaterColor3;
-                        const curve = new Avionics.Curve();
+                        let curve = new Avionics.Curve();
                         curve.interpolationFunction = Avionics.CurveTool.StringColorRGBInterpolation;
                         for (let i = 0; i < this.netBingHeightColor3.length; i++) {
                             let color = this.netBingHeightColor3[i].color;
@@ -179,7 +179,7 @@ class SvgMapConfig {
                             curve.add(this.netBingHeightColor3[i].alt, color);
                         }
                         for (let i = 0; i < 60; i++) {
-                            const color = curve.evaluate(i * 30000 / 60);
+                            let color = curve.evaluate(i * 30000 / 60);
                             this.netBingAltitudeColors3[i + 1] = color;
                         }
                     }
@@ -196,7 +196,7 @@ class SvgMapConfig {
         switch (_id) {
             case 0:
                 if (this.netBingHeightColor1) {
-                    const config = new BingMapsConfig();
+                    let config = new BingMapsConfig();
                     if (this.netBingAltitudeColors1) {
                         config.heightColors = [];
                         for (let i = 0; i < this.netBingAltitudeColors1.length; i++) {
@@ -211,7 +211,7 @@ class SvgMapConfig {
                 break;
             case 1:
                 if (this.netBingHeightColor2) {
-                    const config = new BingMapsConfig();
+                    let config = new BingMapsConfig();
                     if (this.netBingAltitudeColors2) {
                         config.heightColors = [];
                         for (let i = 0; i < this.netBingAltitudeColors2.length; i++) {
@@ -226,7 +226,7 @@ class SvgMapConfig {
                 break;
             case 2:
                 if (this.netBingHeightColor3) {
-                    const config = new BingMapsConfig();
+                    let config = new BingMapsConfig();
                     if (this.netBingAltitudeColors3) {
                         config.heightColors = [];
                         for (let i = 0; i < this.netBingAltitudeColors3.length; i++) {
@@ -243,18 +243,20 @@ class SvgMapConfig {
         return null;
     }
     convertColor(_color) {
-        const r = parseInt(_color.substr(1, 2), 16) / 255;
-        const g = parseInt(_color.substr(3, 2), 16) / 255;
-        const b = parseInt(_color.substr(5, 2), 16) / 255;
-        const max = Math.max(r, g, b);
-        const min = Math.min(r, g, b);
+        let r = parseInt(_color.substr(1, 2), 16) / 255;
+        let g = parseInt(_color.substr(3, 2), 16) / 255;
+        let b = parseInt(_color.substr(5, 2), 16) / 255;
+        let max = Math.max(r, g, b);
+        let min = Math.min(r, g, b);
         let t = 0;
         if (max !== min) {
             if (max === r) {
                 t = 60 * (g - b) / (max - min) + 360;
-            } else if (max === g) {
+            }
+            else if (max === g) {
                 t = 60 * (b - r) / (max - min) + 120;
-            } else if (max === b) {
+            }
+            else if (max === b) {
                 t = 60 * (r - g) / (max - min) + 240;
             }
             while (t < 0) {
@@ -271,11 +273,11 @@ class SvgMapConfig {
         let v = max;
         s = Math.min(1, s * 1.2);
         v = Math.min(1, v * 1.2);
-        const ti = Math.floor(t / 60);
-        const f = t / 60 - ti;
-        const l = v * (1 - s);
-        const m = v * (1 - f * s);
-        const n = v * (1 - (1 - f) * s);
+        let ti = Math.floor(t / 60);
+        let f = t / 60 - ti;
+        let l = v * (1 - s);
+        let m = v * (1 - f * s);
+        let n = v * (1 - (1 - f) * s);
         let newR = 0;
         let newG = 0;
         let newB = 0;
@@ -283,23 +285,28 @@ class SvgMapConfig {
             newR = v;
             newG = n;
             newB = l;
-        } else if (ti === 1) {
+        }
+        else if (ti === 1) {
             newR = m;
             newG = v;
             newB = l;
-        } else if (ti === 2) {
+        }
+        else if (ti === 2) {
             newR = l;
             newG = v;
             newB = n;
-        } else if (ti === 3) {
+        }
+        else if (ti === 3) {
             newR = l;
             newG = m;
             newB = v;
-        } else if (ti === 4) {
+        }
+        else if (ti === 4) {
             newR = n;
             newG = l;
             newB = v;
-        } else if (ti === 5) {
+        }
+        else if (ti === 5) {
             newR = v;
             newG = l;
             newB = m;
@@ -314,15 +321,15 @@ class SvgMapConfig {
         return color;
     }
     hexaToRGB(_hexa) {
-        const hexStringColor = _hexa;
+        let hexStringColor = _hexa;
         let offset = 0;
         if (hexStringColor[0] === "#") {
             offset = 1;
         }
-        const r = parseInt(hexStringColor.substr(0 + offset, 2), 16);
-        const g = parseInt(hexStringColor.substr(2 + offset, 2), 16);
-        const b = parseInt(hexStringColor.substr(4 + offset, 2), 16);
-        const rgb = 256 * 256 * b + 256 * g + r;
+        let r = parseInt(hexStringColor.substr(0 + offset, 2), 16);
+        let g = parseInt(hexStringColor.substr(2 + offset, 2), 16);
+        let b = parseInt(hexStringColor.substr(4 + offset, 2), 16);
+        var rgb = 256 * 256 * b + 256 * g + r;
         return rgb;
     }
 }

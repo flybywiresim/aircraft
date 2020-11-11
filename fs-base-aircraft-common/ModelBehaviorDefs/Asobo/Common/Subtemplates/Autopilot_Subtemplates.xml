@@ -206,6 +206,13 @@
 					<ANTICLOCKWISE_DIR>INC</ANTICLOCKWISE_DIR>
 				</True>
 			</Condition>
+			<Switch>
+				<Case Valid="SEPARATED_INTERACTION">
+				</Case>
+				<Default>
+					<SWITCH_DIRECTION>Vertical</SWITCH_DIRECTION>
+				</Default>
+			</Switch>
 		</DefaultTemplateParameters>
 		<OverrideTemplateParameters>
 			<Condition Valid="SET_AIRSPEED_ON_FLC">
@@ -291,7 +298,6 @@
 			<Default>
 				<Component ID="#NODE_ID#" Node="#NODE_ID#">
 					<UseTemplate Name="ASOBO_GT_Knob_Infinite">
-						<SWITCH_DIRECTION>Vertical</SWITCH_DIRECTION>
 					</UseTemplate>
 				</Component>
 			</Default>

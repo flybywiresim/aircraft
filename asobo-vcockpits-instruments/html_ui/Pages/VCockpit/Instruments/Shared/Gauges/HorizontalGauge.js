@@ -6,13 +6,13 @@ class HorizontalGauge extends AbstractGauge {
         while (this.firstChild) {
             this.removeChild(this.firstChild);
         }
-        const svg = document.createElementNS(Avionics.SVG.NS, "svg");
+        let svg = document.createElementNS(Avionics.SVG.NS, "svg");
         svg.setAttribute("overflow", "visible");
         svg.setAttribute("width", "100%");
         svg.setAttribute("height", "100%");
         svg.setAttribute("viewBox", "0 0 100 100");
         this.appendChild(svg);
-        const dashes = document.createElementNS(Avionics.SVG.NS, "line");
+        let dashes = document.createElementNS(Avionics.SVG.NS, "line");
         dashes.classList.add("gauge-base");
         dashes.classList.add("vertical-gauge-base");
         dashes.setAttribute("x1", "0");
@@ -26,7 +26,7 @@ class HorizontalGauge extends AbstractGauge {
         dashes.setAttribute("stroke-dasharray", "1 " + (101 - this._stepsCount) / (this._stepsCount));
         svg.appendChild(dashes);
         if (this._lowRedLengthPercent > 0) {
-            const lowRedRect = document.createElementNS(Avionics.SVG.NS, "rect");
+            let lowRedRect = document.createElementNS(Avionics.SVG.NS, "rect");
             lowRedRect.setAttribute("x", fastToFixed((this._lowRedStartPercent * 100), 2));
             lowRedRect.setAttribute("y", "14");
             lowRedRect.setAttribute("width", fastToFixed(Math.max(this._lowRedLengthPercent * 100, 0), 2));
@@ -35,7 +35,7 @@ class HorizontalGauge extends AbstractGauge {
             svg.appendChild(lowRedRect);
         }
         if (this._lowYellowLengthPercent > 0) {
-            const lowYellowRect = document.createElementNS(Avionics.SVG.NS, "rect");
+            let lowYellowRect = document.createElementNS(Avionics.SVG.NS, "rect");
             lowYellowRect.setAttribute("x", fastToFixed((this._lowYellowStartPercent * 100), 2));
             lowYellowRect.setAttribute("y", "14");
             lowYellowRect.setAttribute("width", fastToFixed(Math.max(this._lowYellowLengthPercent * 100, 0), 2));
@@ -44,7 +44,7 @@ class HorizontalGauge extends AbstractGauge {
             svg.appendChild(lowYellowRect);
         }
         if (this._greenLengthPercent > 0) {
-            const greenRect = document.createElementNS(Avionics.SVG.NS, "rect");
+            let greenRect = document.createElementNS(Avionics.SVG.NS, "rect");
             greenRect.setAttribute("x", fastToFixed((this._greenStartPercent * 100), 2));
             greenRect.setAttribute("y", "14");
             greenRect.setAttribute("width", fastToFixed(Math.max(this._greenLengthPercent * 100, 0), 2));
@@ -53,7 +53,7 @@ class HorizontalGauge extends AbstractGauge {
             svg.appendChild(greenRect);
         }
         if (this._yellowLengthPercent > 0) {
-            const yellowRect = document.createElementNS(Avionics.SVG.NS, "rect");
+            let yellowRect = document.createElementNS(Avionics.SVG.NS, "rect");
             yellowRect.setAttribute("x", fastToFixed((this._yellowStartPercent * 100), 2));
             yellowRect.setAttribute("y", "14");
             yellowRect.setAttribute("width", fastToFixed(Math.max(this._yellowLengthPercent * 100, 0), 2));
@@ -62,7 +62,7 @@ class HorizontalGauge extends AbstractGauge {
             svg.appendChild(yellowRect);
         }
         if (this._redLengthPercent > 0) {
-            const redRect = document.createElementNS(Avionics.SVG.NS, "rect");
+            let redRect = document.createElementNS(Avionics.SVG.NS, "rect");
             redRect.setAttribute("x", fastToFixed((this._redStartPercent * 100), 2));
             redRect.setAttribute("y", "14");
             redRect.setAttribute("width", fastToFixed(Math.max(this._redLengthPercent * 100, 0), 2));
@@ -71,7 +71,7 @@ class HorizontalGauge extends AbstractGauge {
             svg.appendChild(redRect);
         }
         if (isFinite(this._limitLowPercent)) {
-            const limitLowRect = document.createElementNS(Avionics.SVG.NS, "path");
+            let limitLowRect = document.createElementNS(Avionics.SVG.NS, "path");
             let d = "M " + fastToFixed((this._limitLowPercent * 100), 2) + " 10";
             d += " L " + fastToFixed((this._limitLowPercent * 100), 2) + " 20";
             limitLowRect.setAttribute("d", d);
@@ -81,7 +81,7 @@ class HorizontalGauge extends AbstractGauge {
             svg.appendChild(limitLowRect);
         }
         if (isFinite(this._limitHighPercent)) {
-            const limitHighRect = document.createElementNS(Avionics.SVG.NS, "path");
+            let limitHighRect = document.createElementNS(Avionics.SVG.NS, "path");
             let d = "M " + fastToFixed((this._limitHighPercent * 100), 2) + " 10";
             d += " L " + fastToFixed((this._limitHighPercent * 100), 2) + " 20";
             limitHighRect.setAttribute("d", d);
@@ -95,11 +95,11 @@ class HorizontalGauge extends AbstractGauge {
         this._cursor.classList.add("horizontal-gauge-cursor");
         this._cursor.setAttribute("fill", "white");
         this._cursor.setAttribute("stroke", "black");
-        const cursorPath = "M -4 0 L 4 0 L 4 8 L 0 12 L -4 8 Z";
+        let cursorPath = "M -4 0 L 4 0 L 4 8 L 0 12 L -4 8 Z";
         this._cursor.setAttribute("d", cursorPath);
         svg.appendChild(this._cursor);
-        const horizontalGauge = document.createElementNS(Avionics.SVG.NS, "path");
-        const d = "M 0 7 L 0 20 L 100 20 L 100 7";
+        let horizontalGauge = document.createElementNS(Avionics.SVG.NS, "path");
+        let d = "M 0 7 L 0 20 L 100 20 L 100 7";
         horizontalGauge.classList.add("gauge-base");
         horizontalGauge.classList.add("horizontal-gauge-base");
         horizontalGauge.setAttribute("d", d);
@@ -109,16 +109,16 @@ class HorizontalGauge extends AbstractGauge {
         this._updateValue();
     }
     _updateValueSvg() {
-        const cursorPercent = this._cursorPercent * 100;
+        let cursorPercent = this._cursorPercent * 100;
         this._cursor.setAttribute("transform", "translate(" + cursorPercent + " 0)");
     }
     _drawBase() {
-        const w = this._canvasBase.width - 2;
-        const h = this._canvasBase.height - 2;
+        let w = this._canvasBase.width - 2;
+        let h = this._canvasBase.height - 2;
         if (w < 1 || h < 1) {
             return;
         }
-        const step = w / this._stepsCount;
+        let step = w / this._stepsCount;
         for (let i = 1; i < this._stepsCount; i++) {
             CircularGauge.DrawLineFromTo(this._canvasBaseContext, i * step, h - w * 0.07, i * step, h);
             this._canvasBaseContext.strokeStyle = "white";
@@ -170,13 +170,13 @@ class HorizontalGauge extends AbstractGauge {
         this._canvasBaseContext.stroke();
     }
     _drawCursor() {
-        const w = this._canvasCursor.width - 2;
-        const h = this._canvasCursor.height - 2;
+        let w = this._canvasCursor.width - 2;
+        let h = this._canvasCursor.height - 2;
         if (w < 1 || h < 1) {
             return;
         }
-        const s = w / 30;
-        const cursorY = h - w / 10 - 2 * s;
+        let s = w / 30;
+        let cursorY = h - w / 10 - 2 * s;
         this._canvasCursorContext.beginPath();
         this._canvasCursorContext.moveTo(-s + this._cursorPercent * w, 0 + cursorY);
         this._canvasCursorContext.lineTo(s + this._cursorPercent * w, 0 + cursorY);
