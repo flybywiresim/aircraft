@@ -1157,7 +1157,7 @@ var Airbus_FMA;
 
         static IsArmed_OPCLB_MA() {
             if (Airbus_FMA.CurrentPlaneState.flightPhase == FlightPhase.FLIGHT_PHASE_GOAROUND) {
-                return true
+                return true;
             }
         }
 
