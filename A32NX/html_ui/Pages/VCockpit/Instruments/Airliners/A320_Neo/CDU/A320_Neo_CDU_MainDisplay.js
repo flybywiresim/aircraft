@@ -28,6 +28,18 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this._destDataChecked = false;
         this._towerHeadwind = 0;
         this._conversionWeight = parseFloat(NXDataStore.get("CONFIG_USING_METRIC_UNIT", "1"));
+        this.simbrief = {
+            username: "",
+            route: "",
+            cruiseAltitude: "",
+            originIcao: "",
+            destinationIcao: "",
+            block: "",
+            payload: "",
+            estZfw: "",
+            sendStatus: "",
+            costIndex: ""
+        };
     }
     get templateID() {
         return "A320_Neo_CDU";
