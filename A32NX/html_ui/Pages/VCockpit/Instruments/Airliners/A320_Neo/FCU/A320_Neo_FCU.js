@@ -714,4 +714,3 @@ class A320_Neo_FCU_SmallScreen extends NavSystemElement {
     }
 }
 registerInstrument("a320-neo-fcu-element", A320_Neo_FCU);
-//# sourceMappingURL=A320_Neo_FCU.js.map

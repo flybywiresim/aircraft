@@ -27,7 +27,6 @@ class A320_Neo_CDU_AirwaysFromWaypointPage {
                 subRows[idx] = ["VIA", "TO"];
             }
         });
-        mcdu._titleElement.innerHTML = `<span><span>AIRWAYS</span> <span class='s-text'>FROM </span><span class='green'>${waypoint.ident}</span></span>`;
         let showInput = false;
         const departureWaypoints = mcdu.flightPlanManager.getDepartureWaypoints();
         const routeWaypoints = mcdu.flightPlanManager.getEnRouteWaypoints();
@@ -89,7 +88,7 @@ class A320_Neo_CDU_AirwaysFromWaypointPage {
             }
         }
         mcdu.setTemplate([
-            undefined,
+            ["AIRWAYS {small}FROM {end}{green}" + waypoint.ident + "{end}"],
             subRows[0],
             rows[0],
             subRows[1],
@@ -138,4 +137,3 @@ class A320_Neo_CDU_AirwaysFromWaypointPage {
         return allRows;
     }
 }
-//# sourceMappingURL=A320_Neo_CDU_AirwaysFromWaypointPage.js.map

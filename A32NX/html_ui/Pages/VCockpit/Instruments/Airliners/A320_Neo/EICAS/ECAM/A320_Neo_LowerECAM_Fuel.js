@@ -205,4 +205,3 @@ var A320_Neo_LowerECAM_Fuel;
     A320_Neo_LowerECAM_Fuel.Page = Page;
 })(A320_Neo_LowerECAM_Fuel || (A320_Neo_LowerECAM_Fuel = {}));
 customElements.define("a320-neo-lower-ecam-fuel", A320_Neo_LowerECAM_Fuel.Page);
-//# sourceMappingURL=A320_Neo_LowerECAM_Fuel.js.map
