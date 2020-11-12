@@ -1865,10 +1865,14 @@
                         <TOOLTIPID>%((L:A32NX_EVAC_COMMAND_TOGGLE, Bool))%{if}Turn ON evacuation horn%{else}Turn OFF evacuation horn%{end}</TOOLTIPID>
                         <LEFT_SINGLE_CODE>(L:A32NX_EVAC_COMMAND_TOGGLE) ! (>L:A32NX_EVAC_COMMAND_TOGGLE)</LEFT_SINGLE_CODE>
                     </UseTemplate>
-                    <UseTemplate Name="FBW_Push_Held">
+
+                    <UseTemplate Name="FBW_Push_Toggle">
                         <NODE_ID>PUSH_OVHD_EVAC_HORN</NODE_ID>
-                        <HOLD_SIMVAR>L:PUSH_OVHD_EVAC_HORN</HOLD_SIMVAR>
+                        <TOGGLE_SIMVAR>L:PUSH_OVHD_EVAC_HORN</TOGGLE_SIMVAR>
+
+                        <MOMENTARY/>
                     </UseTemplate>
+
                     <UseTemplate Name="ASOBO_GT_Switch_Dummy">
                         <NODE_ID>SWITCH_OVHD_EVAC_CAPT</NODE_ID>
                         <ANIM_NAME>SWITCH_OVHD_EVAC_CAPT</ANIM_NAME>

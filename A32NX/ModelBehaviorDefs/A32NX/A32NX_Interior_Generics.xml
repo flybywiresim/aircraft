@@ -168,7 +168,7 @@
                 <!-- No custom code - assume usage of TOGGLE_SIMVAR -->
                 <False>
                     <LEFT_SINGLE_CODE>(#TOGGLE_SIMVAR#, Bool) ! (&gt;#TOGGLE_SIMVAR#)</LEFT_SINGLE_CODE>
-                    <Condition Valid="MOMENTARY">
+                    <Condition Check="MOMENTARY">
                         <False>
                             <DOWN_STATE_CODE>(#TOGGLE_SIMVAR#)</DOWN_STATE_CODE>
                         </False>
@@ -177,7 +177,7 @@
 
                 <!-- Custom code - no usage of TOGGLE_SIMVAR, and if not momentary: track switch state ourselves -->
                 <True>
-                    <Condition Valid="MOMENTARY">
+                    <Condition Check="MOMENTARY">
                         <False>
                             <LEFT_SINGLE_CODE>
                                 #LEFT_SINGLE_CODE#
