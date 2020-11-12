@@ -182,7 +182,18 @@ class A32NX_Vspeeds {
 
     updateVspeeds(gw) {
         const cgw = Math.ceil(((gw > 80 ? 80 : gw) - 40) / 5);
-        SimVar.SetSimVarValue("L:A32NX_VS", "number", vs[this.curFhi][cgw](gw));
-        SimVar.SetSimVarValue("L:A32NX_VLS", "number", vls[this.curFhi][cgw](gw));
+        const alt = Simplane.getAltitude() - 20000;
+        SimVar.SetSimVarValue("L:A32NX_VS", "number", this.compensateForMachEffect(vs[this.curFhi][cgw](gw), alt));
+        SimVar.SetSimVarValue("L:A32NX_VLS", "number", this.compensateForMachEffect(vls[this.curFhi][cgw](gw), alt));
+    }
+
+    /**
+     * Corrects velocity for mach effect by adding 1kt for every 1000ft above FL200
+     * @param v {number} velocity in kt (CAS)
+     * @param a {number} altitude in ft
+     * @returns {number} Mach corrected velocity in kt (CAS)
+     */
+    compensateForMachEffect(v, a) {
+        return a > 20000 ? v + (a - 20000) / 1000 : v;
     }
 }
