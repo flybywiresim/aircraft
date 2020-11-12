@@ -69,20 +69,17 @@ class CDUAocMisc {
             store["sendStatus"] = "REQUESTING";
             CDUAocMisc.ShowPage(mcdu);
 
-            return fetch(`http://www.simbrief.com/api/xml.fetcher.php?username=${simbriefUsername}`)
-                .then(response => response.text())
-                .then(str => (new window.DOMParser()).parseFromString(str, "text/xml"))
+            return fetch(`http://www.simbrief.com/api/xml.fetcher.php?username=${simbriefUsername}&json=1`)
+                .then(response => response.json())
                 .then(data => {
-                    console.log('Got data from SimBrief');
-
-                    store["route"] = data.getElementsByTagName("route")[0].childNodes[0].nodeValue;
-                    store["cruiseAltitude"] = data.getElementsByTagName("initial_altitude")[0].childNodes[0].nodeValue;
-                    store["originIcao"] = data.getElementsByTagName("icao_code")[0].childNodes[0].nodeValue;
-                    store["destinationIcao"] = data.getElementsByTagName("icao_code")[1].childNodes[0].nodeValue;
-                    store["block"] = data.getElementsByTagName("plan_ramp")[0].childNodes[0].nodeValue;
-                    store["payload"] = data.getElementsByTagName("payload")[0].childNodes[0].nodeValue;
-                    store["estZfw"] = data.getElementsByTagName("est_zfw")[0].childNodes[0].nodeValue;
-                    store["costIndex"] = data.getElementsByTagName("costindex")[0].childNodes[0].nodeValue;
+                    store["route"] = data.general.route;
+                    store["cruiseAltitude"] = data.general.initial_altitude;
+                    store["originIcao"] = data.origin.icao_code;
+                    store["destinationIcao"] = data.destination.icao_code;
+                    store["block"] = data.fuel.plan_ramp;
+                    store["payload"] = data.weights.payload;
+                    store["estZfw"] = data.weights.est_zfw;
+                    store["costIndex"] = data.general.costindex;
                     store["sendStatus"] = "DONE";
 
                     CDUAocMisc.ShowPage(mcdu);
