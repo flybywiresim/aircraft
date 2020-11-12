@@ -36,7 +36,7 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
         this._lastVs = 0;
         this._lastVls = 0;
         this._lastGw = 0;
-        this._lastFhi = 0;
+        this._lastFhi = -1;
     }
     static get observedAttributes() {
         return ["hud"];
@@ -489,10 +489,11 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
                 this.vlsStripSVG = document.createElementNS(Avionics.SVG.NS, "g");
                 this.vlsStripSVG.setAttribute("id", "VLS");
                 {
-                    const stripWidth = 9;
+                    const stripWidth = 10;
                     const shape = document.createElementNS(Avionics.SVG.NS, "path");
                     shape.setAttribute("fill", "url(#Backlight)");
                     shape.setAttribute("stroke", "orange");
+                    shape.setAttribute("stroke-width", "3");
                     shape.setAttribute("d", "M 0 0 l " + stripWidth + " 0 l 0 " + (this.stripHeight) + " l " + (-stripWidth) + " 0 Z");
                     this.vlsStripSVG.appendChild(shape);
                 }
