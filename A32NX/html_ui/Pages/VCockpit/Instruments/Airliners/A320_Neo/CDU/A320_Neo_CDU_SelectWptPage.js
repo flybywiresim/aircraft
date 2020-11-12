@@ -21,7 +21,7 @@ class A320_Neo_CDU_SelectWptPage {
             return Avionics.Utils.computeGreatCircleDistance(planeLla, w.infos.coordinates);
         }
 
-        const orderedWaypoints = [...waypoints].filter(Boolean).sort((a, b) => {
+        const orderedWaypoints = [...waypoints].filter((v, i, a) => a.map((e) => e.infos.coordinates.toDegreeString()).indexOf(v.infos.coordinates.toDegreeString()) === i).sort((a, b) => {
             return calculateDistance(a) - calculateDistance(b);
         });
 
@@ -38,7 +38,7 @@ class A320_Neo_CDU_SelectWptPage {
                     freq = (w.infos.frequencyMHz) ? fastToFixed(w.infos.frequencyMHz, 3).toString() : " ";
                 } else if (w.icao[0] === "A") {
                     t = " AIRPORT";
-                    freq = (w.infos.frequencies[0]) ? fastToFixed(w.infos.frequencies[0].mhValue, 3).toString() : " ";
+                    freq = " ";
                 }
 
                 const latString = (w.infos.coordinates.lat.toFixed(0) >= 0) ? `${w.infos.coordinates.lat.toFixed(0).toString().padStart(2, "0")}N` : `${Math.abs(w.infos.coordinates.lat.toFixed(0)).toString().padStart(2, "0")}S`;
