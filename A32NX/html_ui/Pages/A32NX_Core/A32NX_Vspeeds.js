@@ -159,16 +159,25 @@ class A32NX_Vspeeds {
         SimVar.SetSimVarValue("L:A32NX_VLS", "number", 0);
         this.lastGw = -1;
         this.lastFhi = -1;
+        this.curFhi = -1;
     }
 
     update(_deltaTime) {
         const gw = SimVar.GetSimVarValue("TOTAL WEIGHT", "kg") / 1000;
         const fhi = Simplane.getFlapsHandleIndex();
-        if ((Math.round(gw * 10) / 10) !== this.lastGw || fhi !== this.lastFhi) {
-            SimVar.SetSimVarValue("L:A32NX_VS", "number", vs[this.lastFhi === 0 ? 5 : fhi][Math.ceil(((gw > 80 ? 80 : gw) - 40) / 5)](gw));
-            SimVar.SetSimVarValue("L:A32NX_VLS", "number", vls[this.lastFhi === 0 ? 5 : fhi][Math.ceil(((gw > 80 ? 80 : gw) - 40) / 5)](gw));
-            this.lastGw = Math.round(gw * 10) / 10;
+        if (fhi !== this.lastFhi) {
+            this.curFhi = this.lastFhi === 0 ? 5 : fhi;
             this.lastFhi = fhi;
+            this.updateVspeeds(gw);
+        } else if ((Math.round(gw * 10) / 10) !== this.lastGw) {
+            this.lastGw = Math.round(gw * 10) / 10;
+            this.updateVspeeds(gw);
         }
+    }
+
+    updateVspeeds(gw) {
+        const cgw = Math.ceil(((gw > 80 ? 80 : gw) - 40) / 5);
+        SimVar.SetSimVarValue("L:A32NX_VS", "number", vs[this.curFhi][cgw](gw));
+        SimVar.SetSimVarValue("L:A32NX_VLS", "number", vls[this.curFhi][cgw](gw));
     }
 }
