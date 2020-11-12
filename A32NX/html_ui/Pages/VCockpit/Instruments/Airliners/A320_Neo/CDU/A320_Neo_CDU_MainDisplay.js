@@ -19,7 +19,6 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this._gpsprimaryack = 0;
         this.currentFlightPhase = FlightPhase.FLIGHT_PHASE_PREFLIGHT;
         this.simbrief = {
-            username: "",
             route: "",
             cruiseAltitude: "",
             originIcao: "",
