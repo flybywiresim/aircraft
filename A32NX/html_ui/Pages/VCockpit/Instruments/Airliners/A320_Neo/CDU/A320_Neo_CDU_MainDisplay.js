@@ -472,7 +472,6 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             let preSelectedClbSpeed = this.preSelectedClbSpeed;
             if (SimVar.GetSimVarValue("L:A32NX_GOAROUND_PASSED", "bool") === 1) {
                 preSelectedClbSpeed = this.getPerfGreenDotSpeed();
-                this._onModeSelectedHeading();
             }
             if (isFinite(preSelectedClbSpeed)) {
                 this.setAPSelectedSpeed(preSelectedClbSpeed, Aircraft.A320_NEO);
@@ -987,6 +986,12 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                 let speed;
                 if (SimVar.GetSimVarValue("L:A32NX_GOAROUND_PASSED", "bool") === 1) {
                     speed = this.getPerfGreenDotSpeed();
+                    //delete override logic when we have valid nav data -aka goaround path- after goaround!
+                    if (SimVar.GetSimVarValue("L:A32NX_GOAROUND_NAV_OVERRIDE", "bool") === 0) {
+                        console.log("only once per goaround override to HDG selected");
+                        SimVar.SetSimVarValue("L:A32NX_GOAROUND_NAV_OVERRIDE", "bool", 1);
+                        this._onModeSelectedHeading();
+                    }
                 } else {
                     speed = this.getClbManagedSpeed();
                 }
@@ -1200,6 +1205,8 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             SimVar.SetSimVarValue("L:A32NX_GOAROUND_NAV_MODE", "bool", 0);
             SimVar.SetSimVarValue("L:A32NX_GOAROUND_INIT_SPEED", "number", Simplane.getIndicatedSpeed());
             SimVar.SetSimVarValue("L:A32NX_GOAROUND_INIT_APP_SPEED", "number", this.getVApp());
+            //delete override logic when we have valid nav data -aka goaround path- after goaround!
+            SimVar.SetSimVarValue("L:A32NX_GOAROUND_NAV_OVERRIDE", "bool", 0);
 
             if (SimVar.GetSimVarValue("AUTOPILOT MASTER", "Bool") === 1) {
                 SimVar.SetSimVarValue("K:AP_LOC_HOLD_ON", "number", 1); // Turns AP localizer hold !!ON/ARMED!! and glide-slope hold mode !!OFF!!
