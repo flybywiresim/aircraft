@@ -33,7 +33,7 @@ class CDUAocInit {
         if (store["costIndex"]) {
             costIndex = `${store["costIndex"]}[color]green`;
         }
-        if (store["icao_airline"] && store["flight_number"]) {
+        if (store["icao_airline"] || store["flight_number"]) {
             fltNbr = `${store.icao_airline}${store.flight_number}[color]green`;
         }
 
@@ -55,7 +55,9 @@ class CDUAocInit {
         mcdu.setTemplate(display);
 
         mcdu.onRightInput[0] = () => {
-            CDUAocInitRoute.ShowPage(mcdu);
+            if (store.navlog.length) {
+                CDUAocInitRoute.ShowPage(mcdu);
+            }
         };
 
         mcdu.onRightInput[5] = () => {
@@ -97,7 +99,7 @@ class CDUAocInit {
                     store["estZfw"] = data.weights.est_zfw;
                     store["costIndex"] = data.general.costindex;
                     store["navlog"] = data.navlog.fix;
-                    store["icao_airline"] = data.general.icao_airline;
+                    store["icao_airline"] = typeof data.general.icao_airline == 'string' ? data.general.icao_airline : "";
                     store["flight_number"] = data.general.flight_number;
                     store["sendStatus"] = "DONE";
 
