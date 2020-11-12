@@ -33,6 +33,10 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
         this._lastMaxSpeedOverride = 600;
         this._lastMaxSpeedOverrideTime = 0;
         this._smoothFactor = 0.5;
+        this._lastVs = 0;
+        this._lastVls = 0;
+        this._lastGw = 0;
+        this._lastFhi = 0;
     }
     static get observedAttributes() {
         return ["hud"];
@@ -642,14 +646,22 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
         // Value used to draw the red VMAX barber pole
         const maxSpeed = A32NX_Selectors.VMAX();
         const greenDot = Simplane.getGreenDotSpeed() * crossSpeedFactor;
+        const planeOnGround = Simplane.getIsGrounded();
         const gw = SimVar.GetSimVarValue("TOTAL WEIGHT", "kg") / 1000;
         const fhi = Simplane.getFlapsHandleIndex();
-        const vs = this.getVs(gw, fhi);
-        const vamax = vs * 1.03;
-        const vaprot = vs * 1.1;
-        const vls = this.getVls(gw, fhi);
-        const planeOnGround = Simplane.getIsGrounded();
-        this.smoothSpeeds(indicatedSpeed, dTime, maxSpeed, vls, vaprot, vamax, vs);
+        if ((Math.round(gw * 10) / 10) !== this._lastGw || fhi !== this._lastFhi) {
+            console.log("fhi: " + fhi);
+            this._lastGw = Math.round(gw * 10) / 10;
+            if (this._lastFhi === 0) {
+                this._lastVs = this.getVs(gw, 5);
+                this._lastVls = this.getVls(gw, 5);
+            } else {
+                this._lastVs = this.getVs(gw, fhi);
+                this._lastVls = this.getVls(gw, fhi);
+            }
+            this._lastFhi = fhi;
+        }
+        this.smoothSpeeds(indicatedSpeed, dTime, maxSpeed, this._lastVls, this._lastVs * 1.1, this._lastVs * 1.03, this._lastVs);
         this.updateSpeedTrendArrow(indicatedSpeed, speedTrend);
         this.updateTargetSpeeds(indicatedSpeed);
         this.updateNextFlapSpeedIndicator(indicatedSpeed, nextFlapSpeed);
