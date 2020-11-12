@@ -134,7 +134,7 @@
     Main Parameters:
             - NODE_ID               <no default>    Switch node ID   (anim name will be same)
             - TOGGLE_SIMVAR         <no default>    SimVar to contain the toggle state
-            - SHOULD_ANIM_TOGGLE    <no default>    If not present, the switch returns to it's orignial position. (Normal behaviour)
+            - MOMENTARY             <no default>    If present, the switch returns to it's original position
                                                     If present, the switch will stay pressed.
             - SEQ1_CODE             0               Sequence 1 emissive code
             - SEQ1_CODE             0               Sequence 2 emissive code
@@ -149,25 +149,44 @@
             <NODE_ID>#NODE_ID#</NODE_ID>
             <ANIM_NAME>#NODE_ID#</ANIM_NAME>
 
-            <WWISE_EVENT_1>apu_generator_switch_on</WWISE_EVENT_1>
-            <WWISE_EVENT_2>apu_generator_switch_off</WWISE_EVENT_2>
+            <Condition Valid="MOMENTARY">
+                <True>
+                    <WWISE_EVENT_1>mpb1on</WWISE_EVENT_1>
+                    <WWISE_EVENT_2>mpb1off</WWISE_EVENT_2>
+                </True>
+                <False>
+                    <WWISE_EVENT_1>pb1on</WWISE_EVENT_1>
+                    <WWISE_EVENT_2>pb1off</WWISE_EVENT_2>
+                </False>
+            </Condition>
+
             <NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
             <NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
 
-            <Condition Valid="LEFT_SINGLE_CODE">
+            <Condition Check="LEFT_SINGLE_CODE">
                 <False>
-                    <LEFT_SINGLE_CODE>
-                        (#TOGGLE_SIMVAR#, Bool) ! (&gt;#TOGGLE_SIMVAR#)
-                    </LEFT_SINGLE_CODE>
+                    <LEFT_SINGLE_CODE>(#TOGGLE_SIMVAR#, Bool) ! (&gt;#TOGGLE_SIMVAR#)</LEFT_SINGLE_CODE>
                 </False>
                 <True>
-                    <LEFT_SINGLE_CODE>#LEFT_SINGLE_CODE#</LEFT_SINGLE_CODE>
+                    <Condition Valid="MOMENTARY">
+                        <False>
+                            <LEFT_SINGLE_CODE>
+                                #LEFT_SINGLE_CODE#
+
+                                (L:XMLVAR_Momentary_#NODE_ID#_Pressed) ! (&gt;L:XMLVAR_Momentary_#NODE_ID#_Pressed)
+                            </LEFT_SINGLE_CODE>
+                        </False>
+                        <True>
+                            <LEFT_SINGLE_CODE>#LEFT_SINGLE_CODE#</LEFT_SINGLE_CODE>
+                        </True>
+                    </Condition>
                 </True>
             </Condition>
 
-
-            <Condition Check="SHOULD_ANIM_TOGGLE">
-                <DOWN_STATE_CODE>(#TOGGLE_SIMVAR#)</DOWN_STATE_CODE>
+            <Condition Valid="MOMENTARY">
+                <False>
+                    <DOWN_STATE_CODE>(L:XMLVAR_Momentary_#NODE_ID#_Pressed)</DOWN_STATE_CODE>
+                </False>
             </Condition>
 
             <Condition Check="DISABLE_SEQ1">
@@ -214,7 +233,7 @@
            - NODE_ID            <no default>    Switch node ID                              (anim name will be same)
            - LOCK_NODE_ID       <no default>    Lock node ID                                (anim name will be same)
            - TOGGLE_SIMVAR      <no default>    SimVar to contain the toggle state
-           - SHOULD_ANIM_TOGGLE <no default>    If not present, the switch returns to it's orignial position. (Normal behaviour)
+           - MOMENTARY <no default>    If not present, the switch returns to it's orignial position. (Normal behaviour)
                                                 If present, the switch will stay pressed.
            - SEQ1_CODE          0               Sequence 1 emissive code
            - SEQ1_CODE          0               Sequence 2 emissive code
@@ -254,7 +273,7 @@
             </Condition>
 
 
-            <Condition Check="SHOULD_ANIM_TOGGLE">
+            <Condition Check="MOMENTARY">
                 <DOWN_STATE_CODE>(#TOGGLE_SIMVAR#)</DOWN_STATE_CODE>
             </Condition>
 

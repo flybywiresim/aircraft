@@ -2651,7 +2651,7 @@
                 <UseTemplate Name="FBW_Push_Toggle">
                     <NODE_ID>PUSH_OVHD_CABINPRESS_MODESEL</NODE_ID>
                     <TOGGLE_SIMVAR>L:A32NX_CAB_PRESS_MODE_MAN</TOGGLE_SIMVAR>
-                    <SHOULD_ANIM_TOGGLE/>
+                    <MOMENTARY/>
                     <SEQ1_CODE>(L:A32NX_CAB_PRESS_SYS_FAULT)</SEQ1_CODE>
                     <SEQ2_CODE>(L:A32NX_CAB_PRESS_MODE_MAN)</SEQ2_CODE>
                 </UseTemplate>
@@ -2660,7 +2660,7 @@
                     <NODE_ID>PUSH_OVHD_CABINPRESS_DITCHING</NODE_ID>
                     <LOCK_NODE_ID>LOCK_OVHD_CABINPRESS_DITCHING</LOCK_NODE_ID>
                     <TOGGLE_SIMVAR>L:A32NX_DITCHING</TOGGLE_SIMVAR>
-                    <SHOULD_ANIM_TOGGLE/>
+                    <MOMENTARY/>
                     <SEQ2_CODE>(L:A32NX_DITCHING)</SEQ2_CODE>
                 </UseTemplate>
             </Component>
