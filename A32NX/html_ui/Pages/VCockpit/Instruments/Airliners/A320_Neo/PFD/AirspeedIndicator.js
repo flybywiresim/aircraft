@@ -750,7 +750,7 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
             // Conf Full
             case 4: {
                 switch (true) {
-                    case (gw <= 84):
+                    case (gw <= 40):
                         return 100;
                     case (gw <= 45):
                         return 84 + .8 * (gw - 40);
