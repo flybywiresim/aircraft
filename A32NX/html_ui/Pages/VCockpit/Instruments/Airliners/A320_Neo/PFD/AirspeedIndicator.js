@@ -1000,45 +1000,12 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
         }
     }
     smoothSpeeds(_indicatedSpeed, _dTime, _maxSpeed, _vls, _vaprot, _vamax, _vs) {
-        /*let refSpeed = _maxSpeed;
-        if (this.vlsStripSVG) {
-            const delta = _vls - refSpeed;
-            if (delta >= 0) {
-                _vls -= delta + 5;
-            }
-            refSpeed = _vls;
-        }
-        if (this.vaprotStripSVG) {
-            const delta = _vaprot - refSpeed;
-            if (delta >= 0) {
-                _vaprot -= delta + 5;
-            }
-            refSpeed = _vaprot;
-        }
-        if (this.vamaxStripSVG) {
-            const delta = _vamax - refSpeed;
-            if (delta >= 0) {
-                _vamax -= delta + 5;
-            }
-            refSpeed = _vamax;
-        }
-        if (this.vsStripSVG) {
-            const delta = _vs - refSpeed;
-            if (delta >= 0) {
-                _vamax -= delta + 5;
-            }
-            refSpeed = _vs;
-        }*/
         const seconds = _dTime / 1000;
         this._maxSpeed = Utils.SmoothSin(this._maxSpeed, _maxSpeed, this._smoothFactor, seconds);
         this._vls = Utils.SmoothSin(this._vls, _vls, this._smoothFactor, seconds);
         this._vaprot = Utils.SmoothSin(this._vaprot, _vaprot, this._smoothFactor, seconds);
         this._vamax = Utils.SmoothSin(this._vamax, _vamax, this._smoothFactor, seconds);
         this._vs = Utils.SmoothSin(this._vs, _vs, this._smoothFactor, seconds);
-        // const delta = this._vamax - _indicatedSpeed;
-        // if (delta >= 0) {
-        //     this._vamax -= delta;
-        // }
     }
     updateSpeedOverride(_dTime) {
         if (Math.abs(this._maxSpeed - this._lastMaxSpeedOverride) >= 5) {
