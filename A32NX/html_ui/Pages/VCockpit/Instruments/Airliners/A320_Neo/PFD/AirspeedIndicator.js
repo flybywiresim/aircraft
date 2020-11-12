@@ -25,10 +25,10 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
         this.altOver20k = false;
         this._aircraft = Aircraft.A320_NEO;
         this._computedIASAcceleration = 0;
-        this._lowestSelectableSpeed = 0;
-        this._alphaProtectionMin = 0;
-        this._alphaProtectionMax = 0;
-        this._stallSpeed = 0;
+        this._vls = 0;
+        this._vaprot = 0;
+        this._vamax = 0;
+        this._vs = 0;
         this._maxSpeed = 600;
         this._lastMaxSpeedOverride = 600;
         this._lastMaxSpeedOverrideTime = 0;
@@ -83,10 +83,10 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
         this.greenDotSVGShape = null;
         this.stripsSVG = null;
         this.vMaxStripSVG = null;
-        this.vLSStripSVG = null;
-        this.stallProtMinStripSVG = null;
-        this.stallProtMaxStripSVG = null;
-        this.stallStripSVG = null;
+        this.vlsStripSVG = null;
+        this.vaprotStripSVG = null;
+        this.vamaxStripSVG = null;
+        this.vsStripSVG = null;
         this.speedMarkerSVG = null;
         this.speedMarkersWidth = null;
         this.speedMarkersHeight = null;
@@ -482,26 +482,26 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
                     }
                 }
                 this.stripsSVG.appendChild(this.vMaxStripSVG);
-                this.vLSStripSVG = document.createElementNS(Avionics.SVG.NS, "g");
-                this.vLSStripSVG.setAttribute("id", "VLS");
+                this.vlsStripSVG = document.createElementNS(Avionics.SVG.NS, "g");
+                this.vlsStripSVG.setAttribute("id", "VLS");
                 {
                     const stripWidth = 9;
                     const shape = document.createElementNS(Avionics.SVG.NS, "path");
                     shape.setAttribute("fill", "url(#Backlight)");
                     shape.setAttribute("stroke", "orange");
                     shape.setAttribute("d", "M 0 0 l " + stripWidth + " 0 l 0 " + (this.stripHeight) + " l " + (-stripWidth) + " 0 Z");
-                    this.vLSStripSVG.appendChild(shape);
+                    this.vlsStripSVG.appendChild(shape);
                 }
-                this.stripsSVG.appendChild(this.vLSStripSVG);
-                this.stallProtMinStripSVG = document.createElementNS(Avionics.SVG.NS, "g");
-                this.stallProtMinStripSVG.setAttribute("id", "StallProtMin");
+                this.stripsSVG.appendChild(this.vlsStripSVG);
+                this.vaprotStripSVG = document.createElementNS(Avionics.SVG.NS, "g");
+                this.vaprotStripSVG.setAttribute("id", "StallProtMin");
                 {
                     const stripWidth = 14;
                     const shape = document.createElementNS(Avionics.SVG.NS, "path");
                     shape.setAttribute("fill", "url(#Backlight)");
                     shape.setAttribute("stroke", "orange");
                     shape.setAttribute("d", "M 0 0 l " + stripWidth + " 0 l 0 " + (this.stripHeight) + " l " + (-stripWidth) + " 0 Z");
-                    this.stallProtMinStripSVG.appendChild(shape);
+                    this.vaprotStripSVG.appendChild(shape);
                     const dashHeight = stripWidth * 1.0;
                     const dashSpacing = dashHeight * 0.75;
                     let y = 0;
@@ -512,22 +512,22 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
                         rect.setAttribute("y", y.toString());
                         rect.setAttribute("width", stripWidth.toString());
                         rect.setAttribute("height", dashHeight.toString());
-                        this.stallProtMinStripSVG.appendChild(rect);
+                        this.vaprotStripSVG.appendChild(rect);
                         y += dashHeight + dashSpacing;
                     }
                 }
-                this.stripsSVG.appendChild(this.stallProtMinStripSVG);
-                this.stallProtMaxStripSVG = document.createElementNS(Avionics.SVG.NS, "g");
-                this.stallProtMaxStripSVG.setAttribute("id", "StallProtMax");
+                this.stripsSVG.appendChild(this.vaprotStripSVG);
+                this.vamaxStripSVG = document.createElementNS(Avionics.SVG.NS, "g");
+                this.vamaxStripSVG.setAttribute("id", "StallProtMax");
                 {
                     const stripWidth = 19;
                     const shape = document.createElementNS(Avionics.SVG.NS, "path");
                     shape.setAttribute("fill", "red");
                     shape.setAttribute("stroke", "red");
                     shape.setAttribute("d", "M 0 0 l " + stripWidth + " 0 l 0 " + (this.stripHeight) + " l " + (-stripWidth) + " 0 Z");
-                    this.stallProtMaxStripSVG.appendChild(shape);
+                    this.vamaxStripSVG.appendChild(shape);
                 }
-                this.stripsSVG.appendChild(this.stallProtMaxStripSVG);
+                this.stripsSVG.appendChild(this.vamaxStripSVG);
             }
             const speedMarkersPosX = _left + _width;
             const speedMarkersPosY = 0;
@@ -642,20 +642,22 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
         // Value used to draw the red VMAX barber pole
         const maxSpeed = A32NX_Selectors.VMAX();
         const greenDot = Simplane.getGreenDotSpeed() * crossSpeedFactor;
-        const lowestSelectableSpeed = Simplane.getLowestSelectableSpeed();
-        const stallProtectionMin = Simplane.getStallProtectionMinSpeed();
-        const stallProtectionMax = Simplane.getStallProtectionMaxSpeed();
-        const stallSpeed = Simplane.getStallSpeed();
+        const gw = SimVar.GetSimVarValue("TOTAL WEIGHT", "kg") / 1000;
+        const vs = Simplane.getStallSpeed() * 1.03;
+        // const vs = this.getVs(gw);
+        const vamax = vs * 1.03;
+        const vaprot = vs * 1.1;
+        const vls = this.getVls(gw);
         const planeOnGround = Simplane.getIsGrounded();
-        this.smoothSpeeds(indicatedSpeed, dTime, maxSpeed, lowestSelectableSpeed, stallProtectionMin, stallProtectionMax, stallSpeed);
+        this.smoothSpeeds(indicatedSpeed, dTime, maxSpeed, vls, vaprot, vamax, vs);
         this.updateSpeedTrendArrow(indicatedSpeed, speedTrend);
         this.updateTargetSpeeds(indicatedSpeed);
         this.updateNextFlapSpeedIndicator(indicatedSpeed, nextFlapSpeed);
         this.updateStrip(this.vMaxStripSVG, indicatedSpeed, this._maxSpeed, false, true);
-        this.updateStrip(this.vLSStripSVG, indicatedSpeed, this._lowestSelectableSpeed, planeOnGround, false);
-        this.updateStrip(this.stallProtMinStripSVG, indicatedSpeed, this._alphaProtectionMin, planeOnGround, false);
-        this.updateStrip(this.stallProtMaxStripSVG, indicatedSpeed, this._alphaProtectionMax, planeOnGround, false);
-        this.updateStrip(this.stallStripSVG, indicatedSpeed, this._stallSpeed, planeOnGround, false);
+        this.updateStrip(this.vlsStripSVG, indicatedSpeed, this._vls, planeOnGround, false);
+        this.updateStrip(this.vaprotStripSVG, indicatedSpeed, this._vaprot, planeOnGround, false);
+        this.updateStrip(this.vamaxStripSVG, indicatedSpeed, this._vamax, planeOnGround, false);
+        this.updateStrip(this.vsStripSVG, indicatedSpeed, this._vs, planeOnGround, false);
         this.updateGreenDot(indicatedSpeed, greenDot);
         this.updateSpeedMarkers(indicatedSpeed);
         this.updateMachSpeed(dTime);
@@ -663,46 +665,227 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
         this.updateVSpeeds();
         this.updateFail();
     }
-    smoothSpeeds(_indicatedSpeed, _dTime, _maxSpeed, _lowestSelectableSpeed, _stallProtectionMin, _stallProtectionMax, _stallSpeed) {
-        let refSpeed = _maxSpeed;
-        if (this.vLSStripSVG) {
-            const delta = _lowestSelectableSpeed - refSpeed;
-            if (delta >= 0) {
-                _lowestSelectableSpeed -= delta + 5;
+    getVs(gw) {
+        // TODO: implement vs from table
+    }
+    getVls(gw) {
+        const cfp = Simplane.getCurrentFlightPhase();
+        switch (Simplane.getFlapsHandleIndex()) {
+            case 0: {
+                switch (true) {
+                    case (gw <= 40):
+                        return 159;
+                    case (gw <= 55):
+                        return 159 + 1.8 * (gw - 40);
+                    case (gw <= 65):
+                        return 186 + 1.2 * (gw - 55);
+                    case (gw <= 70):
+                        return 198 + 1.6 * (gw - 65);
+                    case (gw <= 75):
+                        return 206 + 1.2 * (gw - 70);
+                    default:
+                        return 212 + 1.6 * (gw - 75);
+                }
             }
-            refSpeed = _lowestSelectableSpeed;
-        }
-        if (this.stallProtMinStripSVG) {
-            const delta = _stallProtectionMin - refSpeed;
-            if (delta >= 0) {
-                _stallProtectionMin -= delta + 5;
+            case 1: {
+                if (cfp < FlightPhase.FLIGHT_PHASE_CLIMB) {
+                    switch (true) {
+                        case (gw <= 40):
+                            return 105;
+                        case (gw <= 45):
+                            return 105 + 1.2 * (gw - 40);
+                        case (gw <= 50):
+                            return 111 + gw - 45;
+                        case (gw <= 55):
+                            return 116 + 1.2 * (gw - 50);
+                        case (gw <= 70):
+                            return 122 + gw - 55;
+                        case (gw <= 75):
+                            return 137 + .8 * (gw - 70);
+                        default:
+                            return 141 + 1.2 * (gw - 75);
+                    }
+                } else {
+                    switch (true) {
+                        case (gw <= 40):
+                            return 114;
+                        case (gw <= 45):
+                            return 114 + 1.4 * (gw - 40);
+                        case (gw <= 55):
+                            return 121 + 1.2 * (gw - 45);
+                        case (gw <= 60):
+                            return 133 + gw - 55;
+                        case (gw <= 65):
+                            return 138 + 1.2 * (gw - 60);
+                        case (gw <= 70):
+                            return 144 + gw - 65;
+                        default:
+                            return 154 + 1.2 * (gw - 75);
+                    }
+                }
             }
-            refSpeed = _stallProtectionMin;
-        }
-        if (this.stallProtMaxStripSVG) {
-            const delta = _stallProtectionMax - refSpeed;
-            if (delta >= 0) {
-                _stallProtectionMax -= delta + 5;
+            case 2: {
+                if (cfp < FlightPhase.FLIGHT_PHASE_CLIMB) {
+                    switch (true) {
+                        case (gw <= 40):
+                            return 101;
+                        case (gw <= 45):
+                            return 101 + 1.4 * (gw - 40);
+                        case (gw <= 50):
+                            return 108 + 1.2 * (gw - 45);
+                        case (gw <= 55):
+                            return 114 + gw - 50;
+                        case (gw <= 60):
+                            return 119 + 1.2 * (gw - 55);
+                        case (gw <= 65):
+                            return 125 + gw - 60;
+                        case (gw <= 70):
+                            return 130 + .4 * (gw - 65);
+                        default:
+                            return 132 + .8 * (gw - 70);
+                    }
+                } else {
+                    switch (true) {
+                        case (gw <= 40):
+                            return 109;
+                        case (gw <= 45):
+                            return 109 + 1.8 * (gw - 40);
+                        case (gw <= 60):
+                            return 118 + 1.2 * (gw - 45);
+                        case (gw <= 65):
+                            return 136 + gw - 60;
+                        case (gw <= 70):
+                            return 141 + .43 * (gw - 65);
+                        case (gw <= 75):
+                            return 144 + .8 * (gw - 70);
+                        default:
+                            return 148 + gw - 75;
+                    }
+                }
             }
-            refSpeed = _stallProtectionMax;
-        }
-        if (this.stallStripSVG) {
-            const delta = _stallSpeed - refSpeed;
-            if (delta >= 0) {
-                _stallProtectionMax -= delta + 5;
+            case 3: {
+                if (cfp < FlightPhase.FLIGHT_PHASE_CLIMB) {
+                    switch (true) {
+                        case (gw <= 40):
+                            return 101;
+                        case (gw <= 45):
+                            return 101 + 1.4 * (gw - 40);
+                        case (gw <= 50):
+                            return 108 + 1.2 * (gw - 45);
+                        case (gw <= 55):
+                            return 114 + gw - 50;
+                        case (gw <= 60):
+                            return 119 + 1.2 * (gw - 55);
+                        case (gw <= 65):
+                            return 125 + gw - 60;
+                        case (gw <= 70):
+                            return 130 + .8 * (gw - 65);
+                        case (gw <= 75):
+                            return 134 + gw - 70;
+                        default:
+                            return 139 + .6 * (gw - 75);
+                    }
+                } else {
+                    const cg = SimVar.GetSimVarValue("CG PERCENT", "percent");
+                    if (((isNaN(cg)) ? 24 : cg) < 25) {
+                        switch (true) {
+                            case (gw <= 40):
+                                return 116;
+                            case (gw <= 45):
+                                return 116 + .4 * (gw - 40);
+                            case (gw <= 60):
+                                return 118 + 1.2 * (gw - 45);
+                            case (gw <= 75):
+                                return 136 + gw - 60;
+                            default:
+                                return 150 + gw - 75;
+                        }
+                    }
+                    switch (true) {
+                        case (gw <= 45):
+                            return 116;
+                        case (gw <= 50):
+                            return 116 + 1.4 * (gw - 45);
+                        case (gw <= 55):
+                            return 123 + 1.2 * (gw - 50);
+                        case (gw <= 60):
+                            return 129 + gw - 55;
+                        case (gw <= 65):
+                            return 134 + 1.2 * (gw - 60);
+                        default:
+                            return 140 + gw - 65;
+                    }
+                }
             }
-            refSpeed = _stallSpeed;
+            case 4: {
+                const cg = SimVar.GetSimVarValue("CG PERCENT", "percent");
+                if (((isNaN(cg)) ? 24 : cg) < 25) {
+                    switch (true) {
+                        case (gw <= 50):
+                            return 116;
+                        case (gw >= 75):
+                            return 139 + .8 * (gw - 75);
+                        case (gw <= 55):
+                            return 116 + .8 * (gw - 50);
+                        case (gw <= 70):
+                            return 120 + gw - 55;
+                        default:
+                            return 135 + .8 * (gw - 70);
+                    }
+                }
+                switch (true) {
+                    case (gw <= 50):
+                        return 116;
+                    case (gw >= 75):
+                        return 139 + .8 * (gw - 75);
+                    case (gw <= 55):
+                        return 116 + .6 * (gw - 50);
+                    default:
+                        return 119 + gw - 55;
+                }
+            }
         }
+    }
+    smoothSpeeds(_indicatedSpeed, _dTime, _maxSpeed, _vls, _vaprot, _vamax, _vs) {
+        /*let refSpeed = _maxSpeed;
+        if (this.vlsStripSVG) {
+            const delta = _vls - refSpeed;
+            if (delta >= 0) {
+                _vls -= delta + 5;
+            }
+            refSpeed = _vls;
+        }
+        if (this.vaprotStripSVG) {
+            const delta = _vaprot - refSpeed;
+            if (delta >= 0) {
+                _vaprot -= delta + 5;
+            }
+            refSpeed = _vaprot;
+        }
+        if (this.vamaxStripSVG) {
+            const delta = _vamax - refSpeed;
+            if (delta >= 0) {
+                _vamax -= delta + 5;
+            }
+            refSpeed = _vamax;
+        }
+        if (this.vsStripSVG) {
+            const delta = _vs - refSpeed;
+            if (delta >= 0) {
+                _vamax -= delta + 5;
+            }
+            refSpeed = _vs;
+        }*/
         const seconds = _dTime / 1000;
         this._maxSpeed = Utils.SmoothSin(this._maxSpeed, _maxSpeed, this._smoothFactor, seconds);
-        this._lowestSelectableSpeed = Utils.SmoothSin(this._lowestSelectableSpeed, _lowestSelectableSpeed, this._smoothFactor, seconds);
-        this._alphaProtectionMin = Utils.SmoothSin(this._alphaProtectionMin, _stallProtectionMin, this._smoothFactor, seconds);
-        this._alphaProtectionMax = Utils.SmoothSin(this._alphaProtectionMax, _stallProtectionMax, this._smoothFactor, seconds);
-        this._stallSpeed = Utils.SmoothSin(this._stallSpeed, _stallSpeed, this._smoothFactor, seconds);
-        const delta = this._alphaProtectionMax - _indicatedSpeed;
-        if (delta >= 0) {
-            this._alphaProtectionMax -= delta;
-        }
+        this._vls = Utils.SmoothSin(this._vls, _vls, this._smoothFactor, seconds);
+        this._vaprot = Utils.SmoothSin(this._vaprot, _vaprot, this._smoothFactor, seconds);
+        this._vamax = Utils.SmoothSin(this._vamax, _vamax, this._smoothFactor, seconds);
+        this._vs = Utils.SmoothSin(this._vs, _vs, this._smoothFactor, seconds);
+        // const delta = this._vamax - _indicatedSpeed;
+        // if (delta >= 0) {
+        //     this._vamax -= delta;
+        // }
     }
     updateSpeedOverride(_dTime) {
         if (Math.abs(this._maxSpeed - this._lastMaxSpeedOverride) >= 5) {
