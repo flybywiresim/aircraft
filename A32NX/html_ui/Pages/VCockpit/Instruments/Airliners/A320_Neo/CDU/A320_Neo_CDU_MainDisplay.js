@@ -1083,7 +1083,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             }
 
             if (planeAltitudeMsl > accelerationAltitudeMsl) {
-                console.log('switching to FLIGHT_PHASE_CLIMB: ' + JSON.stringify({planeAltitudeMsl, accelerationAltitudeMsl, prevPhase: this.currentFlightPhase}, null, 2));
+                //console.log('switching to FLIGHT_PHASE_CLIMB: ' + JSON.stringify({planeAltitudeMsl, accelerationAltitudeMsl, prevPhase: this.currentFlightPhase}, null, 2));
                 this.currentFlightPhase = FlightPhase.FLIGHT_PHASE_CLIMB;
                 this.climbTransitionGroundAltitude = null;
             }
@@ -1107,9 +1107,9 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             if (isFinite(cruiseFlightLevel)) {
                 if (altitude >= 0.96 * cruiseFlightLevel) {
                     if (remainInClimb) {
-                        console.log('remaining in FLIGHT_PHASE_CLIMB (no new DEST/CRZ ALT) : ' + JSON.stringify({altitude, cruiseFlightLevel, prevPhase: this.currentFlightPhase}, null, 2));
+                        //console.log('remaining in FLIGHT_PHASE_CLIMB (no new DEST/CRZ ALT) : ' + JSON.stringify({altitude, cruiseFlightLevel, prevPhase: this.currentFlightPhase}, null, 2));
                     } else {
-                        console.log('switching to FLIGHT_PHASE_CRUISE: ' + JSON.stringify({altitude, cruiseFlightLevel, prevPhase: this.currentFlightPhase}, null, 2));
+                        //console.log('switching to FLIGHT_PHASE_CRUISE: ' + JSON.stringify({altitude, cruiseFlightLevel, prevPhase: this.currentFlightPhase}, null, 2));
                         this.currentFlightPhase = FlightPhase.FLIGHT_PHASE_CRUISE;
                         SimVar.SetSimVarValue("L:A32NX_GOAROUND_PASSED", "bool", 0);
                         Coherent.call("GENERAL_ENG_THROTTLE_MANAGED_MODE_SET", ThrottleMode.AUTO);
@@ -1123,7 +1123,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             const cruiseFlightLevel = this.cruiseFlightLevel * 100;
             if (isFinite(cruiseFlightLevel)) {
                 if (altitude < 0.94 * cruiseFlightLevel) {
-                    console.log('switching to FLIGHT_PHASE_DESCENT: ' + JSON.stringify({altitude, cruiseFlightLevel, prevPhase: this.currentFlightPhase}, null, 2));
+                    //console.log('switching to FLIGHT_PHASE_DESCENT: ' + JSON.stringify({altitude, cruiseFlightLevel, prevPhase: this.currentFlightPhase}, null, 2));
                     this.currentFlightPhase = FlightPhase.FLIGHT_PHASE_DESCENT;
                     Coherent.call("GENERAL_ENG_THROTTLE_MANAGED_MODE_SET", ThrottleMode.AUTO);
                 }
@@ -1205,7 +1205,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             const accelerationAltitudeMsl = this.accelerationAltitudeGoaround;
 
             if (planeAltitudeMsl > accelerationAltitudeMsl) {
-                console.log('switching to FLIGHT_PHASE_CLIMB from GA: ' + JSON.stringify({planeAltitudeMsl, accelerationAltitudeMsl, prevPhase: this.currentFlightPhase}, null, 2));
+                //console.log('switching to FLIGHT_PHASE_CLIMB from GA: ' + JSON.stringify({planeAltitudeMsl, accelerationAltitudeMsl, prevPhase: this.currentFlightPhase}, null, 2));
                 this.currentFlightPhase = FlightPhase.FLIGHT_PHASE_CLIMB;
                 SimVar.SetSimVarValue("L:A32NX_GOAROUND_PASSED", "bool", 1);
             }

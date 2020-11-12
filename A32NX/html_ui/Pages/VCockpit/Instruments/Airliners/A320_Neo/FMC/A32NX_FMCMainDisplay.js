@@ -2035,9 +2035,9 @@ class FMCMainDisplay extends BaseAirliners {
                 if (isFinite(cruiseFlightLevel)) {
                     if (altitude >= 0.96 * cruiseFlightLevel) {
                         if (remainInClimb) {
-                            console.log('remaining in FLIGHT_PHASE_CLIMB (no new DEST/CRZ ALT) : ' + JSON.stringify({altitude, cruiseFlightLevel, prevPhase: this.currentFlightPhase}, null, 2));
+                            //console.log('remaining in FLIGHT_PHASE_CLIMB (no new DEST/CRZ ALT) : ' + JSON.stringify({altitude, cruiseFlightLevel, prevPhase: this.currentFlightPhase}, null, 2));
                         } else {
-                            console.log('switching to FLIGHT_PHASE_CRUISE: ' + JSON.stringify({altitude, cruiseFlightLevel, prevPhase: this.currentFlightPhase}, null, 2));
+                            //console.log('switching to FLIGHT_PHASE_CRUISE: ' + JSON.stringify({altitude, cruiseFlightLevel, prevPhase: this.currentFlightPhase}, null, 2));
                             this.currentFlightPhase = FlightPhase.FLIGHT_PHASE_CRUISE;
                             SimVar.SetSimVarValue("L:A32NX_GOAROUND_PASSED", "bool", 0);
                             Coherent.call("GENERAL_ENG_THROTTLE_MANAGED_MODE_SET", ThrottleMode.AUTO);
@@ -2121,7 +2121,7 @@ class FMCMainDisplay extends BaseAirliners {
                 const accelerationAltitudeMsl = this.accelerationAltitudeGoaround;
 
                 if (planeAltitudeMsl > accelerationAltitudeMsl) {
-                    console.log('switching to FLIGHT_PHASE_CLIMB from GA: ' + JSON.stringify({planeAltitudeMsl, accelerationAltitudeMsl, prevPhase: this.currentFlightPhase}, null, 2));
+                    //console.log('switching to FLIGHT_PHASE_CLIMB from GA: ' + JSON.stringify({planeAltitudeMsl, accelerationAltitudeMsl, prevPhase: this.currentFlightPhase}, null, 2));
                     this.currentFlightPhase = FlightPhase.FLIGHT_PHASE_CLIMB;
                     SimVar.SetSimVarValue("L:A32NX_GOAROUND_PASSED", "bool", 1);
                 }

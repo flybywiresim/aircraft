@@ -1494,7 +1494,6 @@ var Airbus_FMA;
         }
 
         GetModeState_LOC() {
-            // when GOAROUND flightphase is available in future, replace logic instead of checking SRS State
             if (Airbus_FMA.CurrentPlaneState.thisFlightDirectorActive) {
                 if (Simplane.getAutoPilotAPPRActive() && SimVar.GetSimVarValue("L:A32NX_OFF_LOC", "bool") == 1 && Airbus_FMA.CurrentPlaneState.flightPhase != FlightPhase.FLIGHT_PHASE_GOAROUND) {
                     return Airbus_FMA.MODE_STATE.CAPTURED;
