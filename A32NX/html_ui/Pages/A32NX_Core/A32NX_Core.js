@@ -9,7 +9,8 @@ class A32NX_Core {
             new A32NX_FADEC(1),
             new A32NX_FADEC(2),
             new A32NX_GPWS(),
-            new A32NX_GroundReference()
+            new A32NX_GroundReference(),
+            new A32NX_Vspeeds()
         ];
     }
 
