@@ -87,16 +87,16 @@ const vls = [
         () => 220
     ], // Clean Config
     [
-        (_, p) => p ? 105 : 114,
-        (gw, p) => p ? 105 + 1.2 * (gw - 40) : 114 + 1.4 * (gw - 40),
-        (gw, p) => p ? 111 + gw - 45 : 121 + 1.2 * (gw - 45),
-        (gw, p) => p ? 116 + 1.2 * (gw - 50) : 127 + 1.2 * (gw - 50),
-        (gw, p) => (p ? 122 : 133) + gw - 55,
-        (gw, p) => p ? 127 + gw - 60 : 138 + 1.2 * (gw - 60),
-        (gw, p) => (p ? 132 : 144) + gw - 65,
-        (gw, p) => p ? 137 + .8 * (gw - 70) : 149 + gw - 70,
-        (gw, p) => p ? 141 + 1.2 * (gw - 75) : 154 + 1.2 * (gw - 75),
-        (_, p) => p ? 147 : 160
+        (_, p = Simplane.getCurrentFlightPhase() < FlightPhase.FLIGHT_PHASE_CLIMB) => p ? 105 : 114,
+        (gw, p = Simplane.getCurrentFlightPhase() < FlightPhase.FLIGHT_PHASE_CLIMB) => p ? 105 + 1.2 * (gw - 40) : 114 + 1.4 * (gw - 40),
+        (gw, p = Simplane.getCurrentFlightPhase() < FlightPhase.FLIGHT_PHASE_CLIMB) => p ? 111 + gw - 45 : 121 + 1.2 * (gw - 45),
+        (gw, p = Simplane.getCurrentFlightPhase() < FlightPhase.FLIGHT_PHASE_CLIMB) => p ? 116 + 1.2 * (gw - 50) : 127 + 1.2 * (gw - 50),
+        (gw, p = Simplane.getCurrentFlightPhase() < FlightPhase.FLIGHT_PHASE_CLIMB) => (p ? 122 : 133) + gw - 55,
+        (gw, p = Simplane.getCurrentFlightPhase() < FlightPhase.FLIGHT_PHASE_CLIMB) => p ? 127 + gw - 60 : 138 + 1.2 * (gw - 60),
+        (gw, p = Simplane.getCurrentFlightPhase() < FlightPhase.FLIGHT_PHASE_CLIMB) => (p ? 132 : 144) + gw - 65,
+        (gw, p = Simplane.getCurrentFlightPhase() < FlightPhase.FLIGHT_PHASE_CLIMB) => p ? 137 + .8 * (gw - 70) : 149 + gw - 70,
+        (gw, p = Simplane.getCurrentFlightPhase() < FlightPhase.FLIGHT_PHASE_CLIMB) => p ? 141 + 1.2 * (gw - 75) : 154 + 1.2 * (gw - 75),
+        (_, p = Simplane.getCurrentFlightPhase() < FlightPhase.FLIGHT_PHASE_CLIMB) => p ? 147 : 160
     ], // Config 1 + F
     [
         (_, p = Simplane.getCurrentFlightPhase() < FlightPhase.FLIGHT_PHASE_CLIMB) => p ? 101 : 109,
