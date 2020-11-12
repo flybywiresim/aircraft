@@ -67,6 +67,7 @@
 1. [CDU] Allow inserting landing QNH in inHg - @pessip (Pessi Päivärinne)
 1. [CDU] Fix IRS coordinates always showing N/E - @beheh (Benedict Etzel)
 1. [General] Added location reporting for the live map - @nistei (Nistei)
+1. [ECAM] Fix cabin vertical speed display to show feet/min - @MattPaxtonBel, @RichardPilbery
 1. [FCU] Fix altitude change when the increment is 1000 - @lars-reimann (Lars Reimann)
 
 ## 0.4.0
