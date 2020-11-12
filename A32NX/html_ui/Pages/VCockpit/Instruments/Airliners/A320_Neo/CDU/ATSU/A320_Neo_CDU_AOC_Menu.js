@@ -54,7 +54,7 @@ class CDUAocMenu {
             CDUAocMessagesSent.ShowPage(mcdu);
         };
         mcdu.onLeftInput[0] = () => {
-            CDUAocMisc.ShowPage(mcdu);
+            CDUAocInit.ShowPage(mcdu);
         };
     }
 }
