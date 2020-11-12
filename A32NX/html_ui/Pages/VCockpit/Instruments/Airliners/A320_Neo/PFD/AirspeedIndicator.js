@@ -643,11 +643,11 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
         const maxSpeed = A32NX_Selectors.VMAX();
         const greenDot = Simplane.getGreenDotSpeed() * crossSpeedFactor;
         const gw = SimVar.GetSimVarValue("TOTAL WEIGHT", "kg") / 1000;
-        const vs = Simplane.getStallSpeed() * 1.03;
-        // const vs = this.getVs(gw);
+        const fhi = Simplane.getFlapsHandleIndex();
+        const vs = this.getVs(gw, fhi);
         const vamax = vs * 1.03;
         const vaprot = vs * 1.1;
-        const vls = this.getVls(gw);
+        const vls = this.getVls(gw, fhi);
         const planeOnGround = Simplane.getIsGrounded();
         this.smoothSpeeds(indicatedSpeed, dTime, maxSpeed, vls, vaprot, vamax, vs);
         this.updateSpeedTrendArrow(indicatedSpeed, speedTrend);
@@ -665,12 +665,126 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
         this.updateVSpeeds();
         this.updateFail();
     }
-    getVs(gw) {
-        // TODO: implement vs from table
+    getVs(gw, fhi) {
+        switch (fhi) {
+            // Clean Conf
+            case 0: {
+                switch (true) {
+                    case (gw <= 40):
+                        return 124;
+                    case (gw <= 55):
+                        return 124 + 1.4 * (gw - 40);
+                    case (gw <= 65):
+                        return 145 + gw - 55;
+                    case (gw <= 70):
+                        return 155 + 1.2 * (gw - 65);
+                    case (gw <= 75):
+                        return 161 + gw - 70;
+                    default:
+                        return 166 + 1.2 * (gw - 75);
+                }
+            }
+            // Conf 1 + F
+            case 1: {
+                switch (true) {
+                    case (gw <= 40):
+                        return 93;
+                    case (gw <= 55):
+                        return 93 + gw - 40;
+                    case (gw <= 60):
+                        return 108 + .8 * (gw - 55);
+                    case (gw <= 65):
+                        return 112 + gw - 60;
+                    case (gw <= 75):
+                        return 117 + .8 + (gw - 65);
+                    default:
+                        return 125 + gw - 75;
+                }
+            }
+            // Conf 2
+            case 2: {
+                switch (true) {
+                    case (gw <= 40):
+                        return 89;
+                    case (gw <= 45):
+                        return 89 + gw - 40;
+                    case (gw <= 50):
+                        return 94 + gw - 45;
+                    case (gw <= 55):
+                        return 99 + .8 * (gw - 50);
+                    case (gw <= 60):
+                        return 103 + gw - 55;
+                    case (gw <= 65):
+                        return 108 + .8 * (gw - 60);
+                    case (gw <= 70):
+                        return 112 + gw - 65;
+                    case (gw <= 75):
+                        return 117 + .6 * (gw - 70);
+                    default:
+                        return 120 + .8 * (gw - 75);
+                }
+            }
+            // Conf 3
+            case 3: {
+                switch (true) {
+                    case (gw <= 40):
+                        return 89;
+                    case (gw <= 45):
+                        return 89 + gw - 40;
+                    case (gw <= 50):
+                        return 94 + gw - 45;
+                    case (gw <= 55):
+                        return 99 + .8 * (gw - 50);
+                    case (gw <= 60):
+                        return 103 + gw - 55;
+                    case (gw <= 65):
+                        return 108 + .8 * (gw - 60);
+                    case (gw <= 70):
+                        return 112 + gw - 65;
+                    case (gw <= 75):
+                        return 117 + .6 * (gw - 70);
+                    default:
+                        return 120 + .8 * (gw - 75);
+                }
+            }
+            // Conf Full
+            case 4: {
+                switch (true) {
+                    case (gw <= 84):
+                        return 100;
+                    case (gw <= 45):
+                        return 84 + .8 * (gw - 40);
+                    case (gw <= 50):
+                        return 88 + gw - 45;
+                    case (gw <= 75):
+                        return 93 + .8 * (gw - 50);
+                    default:
+                        return 113 + .6 * (gw - 75);
+                }
+            }
+            // Conf 1
+            default: {
+                switch (true) {
+                    case (gw <= 40):
+                        return 102;
+                    case (gw <= 55):
+                        return 102 + gw - 40;
+                    case (gw <= 60):
+                        return 117 + 1.2 * (gw - 55);
+                    case (gw <= 65):
+                        return 123 + .8 * (gw - 60);
+                    case (gw <= 75):
+                        return 132 + gw - 65;
+                    default:
+                        return 137 + .8 * (gw - 75);
+                }
+            }
+        }
     }
-    getVls(gw) {
+    getVls(gw, fhi) {
         const cfp = Simplane.getCurrentFlightPhase();
-        switch (Simplane.getFlapsHandleIndex()) {
+        switch (fhi) {
+            // Clean Conf
             case 0: {
                 switch (true) {
                     case (gw <= 40):
@@ -687,6 +801,7 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
                         return 212 + 1.6 * (gw - 75);
                 }
             }
+            // Conf 1 + F
             case 1: {
                 if (cfp < FlightPhase.FLIGHT_PHASE_CLIMB) {
                     switch (true) {
@@ -724,6 +839,7 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
                     }
                 }
             }
+            // Conf 2
             case 2: {
                 if (cfp < FlightPhase.FLIGHT_PHASE_CLIMB) {
                     switch (true) {
@@ -763,6 +879,7 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
                     }
                 }
             }
+            // Conf 3
             case 3: {
                 if (cfp < FlightPhase.FLIGHT_PHASE_CLIMB) {
                     switch (true) {
@@ -817,6 +934,7 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
                     }
                 }
             }
+            // Conf Full
             case 4: {
                 const cg = SimVar.GetSimVarValue("CG PERCENT", "percent");
                 if (((isNaN(cg)) ? 24 : cg) < 25) {
@@ -842,6 +960,27 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
                         return 116 + .6 * (gw - 50);
                     default:
                         return 119 + gw - 55;
+                }
+            }
+            // Conf 1
+            default: {
+                switch (true) {
+                    case (gw <= 40):
+                        return 125;
+                    case (gw <= 45):
+                        return 125 + 1.4 * (gw - 40);
+                    case (gw <= 55):
+                        return 132 + 1.2 * (gw - 45);
+                    case (gw <= 60):
+                        return 144 + 1.4 * (gw - 55);
+                    case (gw <= 65):
+                        return 151 + gw - 60;
+                    case (gw <= 70):
+                        return 156 + 1.2 * (gw - 65);
+                    case (gw <= 75):
+                        return 162 + 1.4 * (gw - 70);
+                    default:
+                        return 169 + .8 * (gw - 75);
                 }
             }
         }
