@@ -27,7 +27,6 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this.messageQueue = [];
         this._destDataChecked = false;
         this.simbrief = {
-            username: "",
             route: "",
             cruiseAltitude: "",
             originIcao: "",
