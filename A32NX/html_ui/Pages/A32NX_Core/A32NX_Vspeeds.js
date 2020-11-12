@@ -36,16 +36,16 @@ const vs = [
         () => 124
     ], // Conf 2
     [
-        () => 89,
-        (gw) => 89 + gw - 40,
-        (gw) => 94 + gw - 45,
-        (gw) => 99 + .8 * (gw - 50),
-        (gw) => 103 + gw - 55,
-        (gw) => 108 + .8 * (gw - 60),
-        (gw) => 112 + gw - 65,
-        (gw) => 117 + .6 * (gw - 70),
-        (gw) => 120 + .8 * (gw - 75),
-        () => 124
+        () => 89 - Math.round(SimVar.GetSimVarValue("GEAR POSITION:0", "Enum")) * 2,
+        (gw, ldg) => 89 + gw - 40 - Math.round(SimVar.GetSimVarValue("GEAR POSITION:0", "Enum")) * 2,
+        (gw) => 94 + gw - 45 - Math.round(SimVar.GetSimVarValue("GEAR POSITION:0", "Enum")) * 2,
+        (gw) => 99 + .8 * (gw - 50) - Math.round(SimVar.GetSimVarValue("GEAR POSITION:0", "Enum")) * 2,
+        (gw) => 103 + gw - 55 - Math.round(SimVar.GetSimVarValue("GEAR POSITION:0", "Enum")) * 2,
+        (gw) => 108 + .8 * (gw - 60) - Math.round(SimVar.GetSimVarValue("GEAR POSITION:0", "Enum")) * 2,
+        (gw) => 112 + gw - 65 - Math.round(SimVar.GetSimVarValue("GEAR POSITION:0", "Enum")) * 2,
+        (gw) => 117 + .6 * (gw - 70) - Math.round(SimVar.GetSimVarValue("GEAR POSITION:0", "Enum")) * 2,
+        (gw) => 120 + .8 * (gw - 75) - Math.round(SimVar.GetSimVarValue("GEAR POSITION:0", "Enum")) * 2,
+        () => 124 - Math.round(SimVar.GetSimVarValue("GEAR POSITION:0", "Enum")) * 2
     ], // Conf 3
     [
         () => 84,
@@ -111,16 +111,16 @@ const vls = [
         (_, p = Simplane.getCurrentFlightPhase() < FlightPhase.FLIGHT_PHASE_CLIMB) => p ? 140 : 153
     ], // Config 2
     [
-        (_, p = Simplane.getCurrentFlightPhase() < FlightPhase.FLIGHT_PHASE_CLIMB) => p ? 101 : 116,
-        (gw, p = Simplane.getCurrentFlightPhase() < FlightPhase.FLIGHT_PHASE_CLIMB, cg = SimVar.GetSimVarValue("CG PERCENT", "percent")) => p ? 101 + 1.4 * (gw - 40) : ((isNaN(cg)) ? 24 : cg) < 25 ? 116 + .4 * (gw - 40) : 116,
-        (gw, p = Simplane.getCurrentFlightPhase() < FlightPhase.FLIGHT_PHASE_CLIMB, cg = SimVar.GetSimVarValue("CG PERCENT", "percent")) => p ? 108 + 1.2 * (gw - 45) : ((isNaN(cg)) ? 24 : cg) < 25 ? 118 + 1.2 * (gw - 45) : 116 + 1.4 * (gw - 45),
-        (gw, p = Simplane.getCurrentFlightPhase() < FlightPhase.FLIGHT_PHASE_CLIMB, cg = SimVar.GetSimVarValue("CG PERCENT", "percent")) => p ? 114 + gw - 50 : ((isNaN(cg)) ? 24 : cg) < 25 ? 124 + 1.2 * (gw - 50) : 123 + 1.2 * (gw - 50),
-        (gw, p = Simplane.getCurrentFlightPhase() < FlightPhase.FLIGHT_PHASE_CLIMB, cg = SimVar.GetSimVarValue("CG PERCENT", "percent")) => p ? 119 + 1.2 * (gw - 55) : ((isNaN(cg)) ? 24 : cg) < 25 ? 130 + 1.2 * (gw - 55) : 129 + gw - 55,
-        (gw, p = Simplane.getCurrentFlightPhase() < FlightPhase.FLIGHT_PHASE_CLIMB, cg = SimVar.GetSimVarValue("CG PERCENT", "percent")) => p ? 125 + gw - 60 : ((isNaN(cg)) ? 24 : cg) < 25 ? 136 + gw - 60 : 134 + 1.2 * (gw - 60),
-        (gw, p = Simplane.getCurrentFlightPhase() < FlightPhase.FLIGHT_PHASE_CLIMB, cg = SimVar.GetSimVarValue("CG PERCENT", "percent")) => p ? 130 + .8 * (gw - 65) : (((isNaN(cg)) ? 24 : cg) < 25 ? 141 : 140) + gw - 65,
-        (gw, p = Simplane.getCurrentFlightPhase() < FlightPhase.FLIGHT_PHASE_CLIMB, cg = SimVar.GetSimVarValue("CG PERCENT", "percent")) => p ? 134 + gw - 70 : (((isNaN(cg)) ? 24 : cg) < 25 ? 146 : 145) + gw - 70,
-        (gw, p = Simplane.getCurrentFlightPhase() < FlightPhase.FLIGHT_PHASE_CLIMB, cg = SimVar.GetSimVarValue("CG PERCENT", "percent")) => p ? 139 + .6 * (gw - 75) : ((isNaN(cg)) ? 24 : cg) < 25 ? 151 + .8 * (gw - 75) : 150 + gw - 65,
-        (_, p = Simplane.getCurrentFlightPhase() < FlightPhase.FLIGHT_PHASE_CLIMB) => p ? 142 : 155
+        (_, p = Simplane.getCurrentFlightPhase() < FlightPhase.FLIGHT_PHASE_CLIMB) => p ? 101 : 116 - Math.round(SimVar.GetSimVarValue("GEAR POSITION:0", "Enum")),
+        (gw, p = Simplane.getCurrentFlightPhase() < FlightPhase.FLIGHT_PHASE_CLIMB, cg = SimVar.GetSimVarValue("CG PERCENT", "percent")) => p ? 101 + 1.4 * (gw - 40) : (((isNaN(cg)) ? 24 : cg) < 25 ? 116 + .4 * (gw - 40) : 116) - Math.round(SimVar.GetSimVarValue("GEAR POSITION:0", "Enum")),
+        (gw, p = Simplane.getCurrentFlightPhase() < FlightPhase.FLIGHT_PHASE_CLIMB, cg = SimVar.GetSimVarValue("CG PERCENT", "percent")) => p ? 108 + 1.2 * (gw - 45) : (((isNaN(cg)) ? 24 : cg) < 25 ? 118 + 1.2 * (gw - 45) : 116 + 1.4 * (gw - 45)) - Math.round(SimVar.GetSimVarValue("GEAR POSITION:0", "Enum")),
+        (gw, p = Simplane.getCurrentFlightPhase() < FlightPhase.FLIGHT_PHASE_CLIMB, cg = SimVar.GetSimVarValue("CG PERCENT", "percent")) => p ? 114 + gw - 50 : (((isNaN(cg)) ? 24 : cg) < 25 ? 124 + 1.2 * (gw - 50) : 123 + 1.2 * (gw - 50)) - Math.round(SimVar.GetSimVarValue("GEAR POSITION:0", "Enum")),
+        (gw, p = Simplane.getCurrentFlightPhase() < FlightPhase.FLIGHT_PHASE_CLIMB, cg = SimVar.GetSimVarValue("CG PERCENT", "percent")) => p ? 119 + 1.2 * (gw - 55) : (((isNaN(cg)) ? 24 : cg) < 25 ? 130 + 1.2 * (gw - 55) : 129 + gw - 55) - Math.round(SimVar.GetSimVarValue("GEAR POSITION:0", "Enum")),
+        (gw, p = Simplane.getCurrentFlightPhase() < FlightPhase.FLIGHT_PHASE_CLIMB, cg = SimVar.GetSimVarValue("CG PERCENT", "percent")) => p ? 125 + gw - 60 : (((isNaN(cg)) ? 24 : cg) < 25 ? 136 + gw - 60 : 134 + 1.2 * (gw - 60)) - Math.round(SimVar.GetSimVarValue("GEAR POSITION:0", "Enum")),
+        (gw, p = Simplane.getCurrentFlightPhase() < FlightPhase.FLIGHT_PHASE_CLIMB, cg = SimVar.GetSimVarValue("CG PERCENT", "percent")) => p ? 130 + .8 * (gw - 65) : ((((isNaN(cg)) ? 24 : cg) < 25 ? 141 : 140) + gw - 65) - Math.round(SimVar.GetSimVarValue("GEAR POSITION:0", "Enum")),
+        (gw, p = Simplane.getCurrentFlightPhase() < FlightPhase.FLIGHT_PHASE_CLIMB, cg = SimVar.GetSimVarValue("CG PERCENT", "percent")) => p ? 134 + gw - 70 : ((((isNaN(cg)) ? 24 : cg) < 25 ? 146 : 145) + gw - 70) - Math.round(SimVar.GetSimVarValue("GEAR POSITION:0", "Enum")),
+        (gw, p = Simplane.getCurrentFlightPhase() < FlightPhase.FLIGHT_PHASE_CLIMB, cg = SimVar.GetSimVarValue("CG PERCENT", "percent")) => p ? 139 + .6 * (gw - 75) : (((isNaN(cg)) ? 24 : cg) < 25 ? 151 + .8 * (gw - 75) : 150 + gw - 65) - Math.round(SimVar.GetSimVarValue("GEAR POSITION:0", "Enum")),
+        (_, p = Simplane.getCurrentFlightPhase() < FlightPhase.FLIGHT_PHASE_CLIMB) => p ? 142 : 155 - Math.round(SimVar.GetSimVarValue("GEAR POSITION:0", "Enum"))
     ], // Config 3
     [
         () => 116,
@@ -160,17 +160,22 @@ class A32NX_Vspeeds {
         this.lastGw = -1;
         this.lastFhi = -1;
         this.curFhi = -1;
+        this.ldgPos = -1;
     }
 
     update(_deltaTime) {
         const gw = SimVar.GetSimVarValue("TOTAL WEIGHT", "kg") / 1000;
         const fhi = Simplane.getFlapsHandleIndex();
+        const ldg = Math.round(SimVar.GetSimVarValue("GEAR POSITION:0", "Enum"));
         if (fhi !== this.lastFhi) {
             this.curFhi = this.lastFhi === 0 ? 5 : fhi;
             this.lastFhi = fhi;
             this.updateVspeeds(gw);
         } else if ((Math.round(gw * 10) / 10) !== this.lastGw) {
             this.lastGw = Math.round(gw * 10) / 10;
+            this.updateVspeeds(gw);
+        } else if (ldg !== this.ldgPos) {
+            this.ldgPos = ldg;
             this.updateVspeeds(gw);
         }
     }
