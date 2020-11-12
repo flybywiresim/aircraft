@@ -652,7 +652,6 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
         const gw = SimVar.GetSimVarValue("TOTAL WEIGHT", "kg") / 1000;
         const fhi = Simplane.getFlapsHandleIndex();
         if ((Math.round(gw * 10) / 10) !== this._lastGw || fhi !== this._lastFhi) {
-            console.log("fhi: " + fhi);
             this._lastGw = Math.round(gw * 10) / 10;
             if (this._lastFhi === 0) {
                 this._lastVs = this.getVs(gw, 5);
