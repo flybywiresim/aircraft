@@ -471,8 +471,8 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
                     shape.setAttribute("stroke", "red");
                     shape.setAttribute("d", "M 0 0 l " + stripWidth + " 0 l 0 " + (this.stripHeight) + " l " + (-stripWidth) + " 0 Z");
                     this.vMaxStripSVG.appendChild(shape);
-                    const dashHeight = stripWidth * 1.0;
-                    const dashSpacing = dashHeight * 0.75;
+                    const dashHeight = stripWidth * 1.2;
+                    const dashSpacing = dashHeight;
                     let y = this.stripHeight - dashHeight;
                     while (y > 0) {
                         const rect = document.createElementNS(Avionics.SVG.NS, "rect");
