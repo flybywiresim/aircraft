@@ -37,7 +37,7 @@ const vs = [
     ], // Conf 2
     [
         () => 91 - Math.round(SimVar.GetSimVarValue("GEAR POSITION:0", "Enum")) * 2,
-        (gw, ldg) => 91 + gw - 40 - Math.round(SimVar.GetSimVarValue("GEAR POSITION:0", "Enum")) * 2,
+        (gw) => 91 + gw - 40 - Math.round(SimVar.GetSimVarValue("GEAR POSITION:0", "Enum")) * 2,
         (gw) => 96 + gw - 45 - Math.round(SimVar.GetSimVarValue("GEAR POSITION:0", "Enum")) * 2,
         (gw) => 101 + .8 * (gw - 50) - Math.round(SimVar.GetSimVarValue("GEAR POSITION:0", "Enum")) * 2,
         (gw) => 105 + gw - 55 - Math.round(SimVar.GetSimVarValue("GEAR POSITION:0", "Enum")) * 2,
