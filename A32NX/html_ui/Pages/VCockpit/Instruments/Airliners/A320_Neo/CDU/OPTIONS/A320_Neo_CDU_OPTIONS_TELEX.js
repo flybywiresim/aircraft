@@ -33,27 +33,28 @@ class CDU_OPTIONS_TELEX {
             CDU_OPTIONS_MainMenu.ShowPage(mcdu);
         };
         mcdu.onRightInput[5] = () => {
-            let reEnter = false;
             switch (storedTelexStatus) {
                 case "ENABLED":
                     NXDataStore.set("CONFIG_TELEX_STATUS", "DISABLED");
                     mcdu.showErrorMessage("FREE TEXT DISABLED");
-                    NXApi.disconnectTelex()
-                        .catch(() => {
-                            console.log('TELEX DISCONNECT ISSUE');
+                    NXApi.updateTelex()
+                        .catch((err) => {
+                            if (err !== NXApi.disconnectedError) {
+                                console.log("TELEX PING FAILED");
+                            }
                         });
                     break;
                 default:
                     NXDataStore.set("CONFIG_TELEX_STATUS", "ENABLED");
-                    SimVar.SetSimVarValue("ATC FLIGHT NUMBER", "string", "", "FMC");
-                    mcdu.showErrorMessage("RE-ENTER FLIGHT NUM");
-                    reEnter = true;
+                    mcdu.showErrorMessage("FREE TEXT ENABLED");
+
+                    const flightNo = SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string");
+                    NXApi.connectTelex(flightNo)
+                        .catch(() => {
+                            // ignored: Flight number in use would mean that we already set one
+                        });
             }
-            if (!reEnter) {
-                CDU_OPTIONS_TELEX.ShowPage(mcdu);
-            } else {
-                CDUInitPage.ShowPage1(mcdu, true);
-            }
+            CDU_OPTIONS_TELEX.ShowPage(mcdu);
         };
     }
 }

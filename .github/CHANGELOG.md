@@ -66,6 +66,7 @@
 1. [ECAM] Improve flaps/slats panel design on upper ECAM, improve flaps/slats transition logic - @paul92ilm (Lussion)
 1. [CDU] Allow inserting landing QNH in inHg - @pessip (Pessi Päivärinne)
 1. [CDU] Fix IRS coordinates always showing N/E - @beheh (Benedict Etzel)
+1. [General] Added location reporting for the live map - @nistei (Nistei)
 
 ## 0.4.0
 1. [General] Add CHANGELOG.md - @nathaninnes (Nathan Innes)

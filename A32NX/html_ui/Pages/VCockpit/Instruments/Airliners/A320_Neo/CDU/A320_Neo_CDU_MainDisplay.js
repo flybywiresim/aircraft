@@ -17,7 +17,6 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this._cruiseEntered = false;
         this._blockFuelEntered = false;
         this._gpsprimaryack = 0;
-        this.telexPingId = 0;
     }
     get templateID() {
         return "A320_Neo_CDU";
@@ -38,7 +37,13 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this.A32NXCore = new A32NX_Core();
         this.A32NXCore.init(this._lastTime);
 
-        SimVar.SetSimVarValue("ATC FLIGHT NUMBER", "string", "", "FMC");
+        const flightNo = SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string");
+        NXApi.connectTelex(flightNo)
+            .catch((err) => {
+                if (err !== NXApi.disconnectedError) {
+                    this.showErrorMessage("FLT NBR IN USE");
+                }
+            });
 
         this.defaultInputErrorMessage = "NOT ALLOWED";
         this.onDir = () => {
@@ -82,7 +87,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             // Update connection
             NXApi.updateTelex()
                 .catch((err) => {
-                    if (err !== NXApi.disabledError) {
+                    if (err !== NXApi.disconnectedError) {
                         console.log("TELEX PING FAILED");
                     }
                 });
