@@ -1494,7 +1494,7 @@ var Airbus_FMA;
         }
 
         GetModeState_LOC() {
-            if (Airbus_FMA.CurrentPlaneState.thisFlightDirectorActive) {
+            if (Airbus_FMA.CurrentPlaneState.thisFlightDirectorActive && Simplane.getAutoPilotApproachType() != 10) {
                 if (Simplane.getAutoPilotAPPRActive() && SimVar.GetSimVarValue("L:A32NX_OFF_LOC", "bool") == 1 && Airbus_FMA.CurrentPlaneState.flightPhase != FlightPhase.FLIGHT_PHASE_GOAROUND) {
                     return Airbus_FMA.MODE_STATE.CAPTURED;
                 }
