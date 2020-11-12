@@ -1973,24 +1973,29 @@ class FMCMainDisplay extends BaseAirliners {
         if (this.currentFlightPhase === FlightPhase.FLIGHT_PHASE_CLIMB) {
             this.currentFlightPhase = FlightPhase.FLIGHT_PHASE_APPROACH;
             Coherent.call("GENERAL_ENG_THROTTLE_MANAGED_MODE_SET", ThrottleMode.AUTO);
+            SimVar.SetSimVarValue("L:A32NX_GOAROUND_PASSED", "bool", 0);
             return true;
         }
         if (this.currentFlightPhase === FlightPhase.FLIGHT_PHASE_CRUISE) {
             this.currentFlightPhase = FlightPhase.FLIGHT_PHASE_APPROACH;
             Coherent.call("GENERAL_ENG_THROTTLE_MANAGED_MODE_SET", ThrottleMode.AUTO);
+            SimVar.SetSimVarValue("L:A32NX_GOAROUND_PASSED", "bool", 0);
             return true;
         }
         if (this.currentFlightPhase === FlightPhase.FLIGHT_PHASE_DESCENT) {
             this.currentFlightPhase = FlightPhase.FLIGHT_PHASE_APPROACH;
             Coherent.call("GENERAL_ENG_THROTTLE_MANAGED_MODE_SET", ThrottleMode.AUTO);
+            SimVar.SetSimVarValue("L:A32NX_GOAROUND_PASSED", "bool", 0);
             return true;
         }
         if (this.currentFlightPhase === FlightPhase.FLIGHT_PHASE_GOAROUND) {
             this.currentFlightPhase = FlightPhase.FLIGHT_PHASE_APPROACH;
             Coherent.call("GENERAL_ENG_THROTTLE_MANAGED_MODE_SET", ThrottleMode.AUTO);
+            SimVar.SetSimVarValue("L:A32NX_GOAROUND_PASSED", "bool", 0);
             return true;
         }
         if (this.currentFlightPhase === FlightPhase.FLIGHT_PHASE_APPROACH) {
+            SimVar.SetSimVarValue("L:A32NX_GOAROUND_PASSED", "bool", 0);
             return true;
         }
         return false;
