@@ -721,25 +721,16 @@ class FMCMainDisplay extends BaseAirliners {
             return callback(false);
         }
 
-        const storedTelexStatus = NXDataStore.get("CONFIG_TELEX_STATUS", "DISABLED");
-
-        let connectSuccess = true;
         SimVar.SetSimVarValue("ATC FLIGHT NUMBER", "string", flightNo, "FMC").then(() => {
-            if (storedTelexStatus === "ENABLED") {
-                const initTelexServer = async () => {
-                    NXApi.connectTelex(flightNo)
-                        .catch((err) => {
-                            if (err !== NXApi.disconnectedError) {
-                                this.showErrorMessage("FLT NBR IN USE");
-                            }
+            NXApi.connectTelex(flightNo)
+                .then(() => {
+                    callback(true);
+                })
+                .catch(() => {
+                    this.showErrorMessage("FLT NBR IN USE");
 
-                            connectSuccess = false;
-                        });
-                };
-
-                initTelexServer();
-            }
-            return callback(connectSuccess);
+                    callback(false);
+                });
         });
     }
 
@@ -2861,4 +2852,3 @@ FMCMainDisplay.approachTypes = [
 ];
 FMCMainDisplay.clrValue = " CLR ";
 FMCMainDisplay._AvailableKeys = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-//# sourceMappingURL=FMCMainDisplay.js.map

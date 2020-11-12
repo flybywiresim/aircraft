@@ -62,8 +62,11 @@
 1. [TEXTURES] upgraded to 4k Textures (pedestal,throttle unit) fixed decal texture - @Pleasure0102 (Pleasure)
 1. [PFD] Added FMAs ALT CST and ALT CST* as well as CLB magenta and DES or CLB blue - @MisterChocker (Leon)
 1. [CDU] Added CFDS display test, ATSU METAR/TAF/ATIS requests, and ATSU free text - @wpine215 (Iceman), @nistei (Nistei), @Edwin B
+1. [GPWS] Completely redone GPWS logic, and improve Retard call logic, prevent multiple calls playing at once - lukecologne (luke)
 1. [ECAM] Improve flaps/slats panel design on upper ECAM, improve flaps/slats transition logic - @paul92ilm (Lussion)
 1. [CDU] Allow inserting landing QNH in inHg - @pessip (Pessi Päivärinne)
+1. [CDU] Fix IRS coordinates always showing N/E - @beheh (Benedict Etzel)
+1. [General] Added location reporting for the live map - @nistei (Nistei)
 
 ## 0.4.0
 1. [General] Add CHANGELOG.md - @nathaninnes (Nathan Innes)

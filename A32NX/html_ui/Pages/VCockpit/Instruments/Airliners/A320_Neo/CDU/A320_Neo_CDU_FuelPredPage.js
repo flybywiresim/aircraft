@@ -58,4 +58,3 @@ class CDUFuelPredPage {
         ]);
     }
 }
-//# sourceMappingURL=A320_Neo_CDU_FuelPredPage.js.map
