@@ -70,6 +70,7 @@
 1. [FCU] Correct behaviour of APPR and LOC buttons when connecting/disconnecting AP - @antikythera288 (mrmercury#8898 on discord)
 1. [AUTOPILOT] fully managed GO-AROUND implemented aswell as correct FD's for hand-flying the GO-AROUND (until missed approach paths are implemented, only via preselected HDG) - @antikythera288 (mrmercury#8898 on discord)
 1. [MCDU] added fully working GO-AROUND Page - @antikythera288 (mrmercury#8898 on discord)
+1. [CDU] Fix IRS coordinates always showing N/E - @beheh (Benedict Etzel)
 
 ## 0.4.0
 1. [General] Add CHANGELOG.md - @nathaninnes (Nathan Innes)
