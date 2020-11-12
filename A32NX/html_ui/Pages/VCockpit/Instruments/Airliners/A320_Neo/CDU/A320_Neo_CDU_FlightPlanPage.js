@@ -90,7 +90,7 @@ class CDUFlightPlanPage {
             waypointsWithDiscontinuities.push(destination);
         }
         if (mcdu.flightPlanManager.decelWaypoint) {
-            const idx = waypointsWithDiscontinuities.findIndex((e) => e.wp.cumulativeDistanceInFP > mcdu.flightPlanManager.decelWaypoint.cumulativeDistanceInFP);
+            const idx = waypointsWithDiscontinuities.findIndex((e) => e.wp.cumulativeDistanceInFP >= mcdu.flightPlanManager.decelWaypoint.cumulativeDistanceInFP);
             if (idx >= 0 && idx < waypointsWithDiscontinuities.length) {
                 waypointsWithDiscontinuities.splice(idx, 0, {
                     wp: mcdu.flightPlanManager.decelWaypoint,
@@ -370,4 +370,3 @@ class CDUFlightPlanPage {
     }
 }
 CDUFlightPlanPage._timer = 0;
-//# sourceMappingURL=A320_Neo_CDU_FlightPlanPage.js.map

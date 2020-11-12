@@ -117,4 +117,3 @@ class EICASCommonDisplay extends Airliners.EICASTemplateElement {
     }
 }
 customElements.define("eicas-common-display", EICASCommonDisplay);
-//# sourceMappingURL=EICAS_Common.js.map

@@ -165,10 +165,8 @@ class CDUInitPage {
             ["COST INDEX"],
             [costIndex, "WIND>"],
             ["CRZ FL/TEMP", "TROPO"],
-            [cruiseFlTemp, "{smallFront}36090{smallEnd}[color]blue"],
+            [cruiseFlTemp, "{small}36090{end}[color]blue"],
         ]);
-
-        mcdu.insertSmallFontSpan();
 
         mcdu.onPrevPage = () => {
             if (mcdu.isAnEngineOn()) {
@@ -259,12 +257,12 @@ class CDUInitPage {
         let lwCell = "---.-";
         let towLwColor = "[color]white";
 
-        let taxiFuelCell = "{smallFront}0.4{smallEnd}";
+        let taxiFuelCell = "{small}0.4{end}";
         if (isFinite(mcdu.taxiFuelWeight)) {
             if (mcdu._taxiEntered) {
                 taxiFuelCell = mcdu.taxiFuelWeight.toFixed(1);
             } else {
-                taxiFuelCell = "{smallFront}" + mcdu.taxiFuelWeight.toFixed(1) + "{smallEnd}";
+                taxiFuelCell = "{small}" + mcdu.taxiFuelWeight.toFixed(1) + "{end}";
             }
         }
         mcdu.onLeftInput[0] = async () => {
@@ -281,7 +279,7 @@ class CDUInitPage {
         let tripColor = "[color]white";
 
         let rteRsvWeightCell = "---.-";
-        let rteRsvPercentCell = "{blueFront}5.0{blueEnd}";
+        let rteRsvPercentCell = "{blue}5.0{end}";
         let rteRsvColor = "[color]white";
 
         let altnWeightCell = "---.-";
@@ -289,7 +287,7 @@ class CDUInitPage {
         const altnColor = "[color]white";
 
         let finalWeightCell = "---.-";
-        let finalTimeCell = "{blueFront}0045{blueEnd}";
+        let finalTimeCell = "{blue}0045{end}";
         let finalColor = "[color]white";
 
         mcdu.onLeftInput[4] = async () => {
@@ -332,13 +330,13 @@ class CDUInitPage {
             }
 
             if (isFinite(mcdu.getTotalTripFuelCons()) && isFinite(mcdu.getTotalTripTime())) {
-                tripWeightCell = "__{smallFront}" + mcdu.getTotalTripFuelCons().toFixed(1);
-                tripTimeCell = FMCMainDisplay.secondsTohhmm(mcdu.getTotalTripTime()) + "{smallEnd}";
+                tripWeightCell = "{sp}{sp}{small}" + mcdu.getTotalTripFuelCons().toFixed(1);
+                tripTimeCell = FMCMainDisplay.secondsTohhmm(mcdu.getTotalTripTime()) + "{end}";
                 tripColor = "[color]green";
             }
 
             if (isFinite(mcdu.getRouteReservedWeight()) && isFinite(mcdu.getRouteReservedPercent())) {
-                rteRsvWeightCell = "__{smallFront}" + mcdu.getRouteReservedWeight().toFixed(1) + "{smallEnd}";
+                rteRsvWeightCell = "{sp}{sp}{small}" + mcdu.getRouteReservedWeight().toFixed(1) + "{end}";
                 rteRsvPercentCell = mcdu.getRouteReservedPercent().toFixed(1);
                 rteRsvColor = "[color]blue";
             }
@@ -351,16 +349,16 @@ class CDUInitPage {
             };
 
             //TODO Compute  ALTN WEIGHT & TIME, this is a placeholder value
-            altnWeightCell = "__{smallFront}{greenFront}0.0{greenEnd}{smallEnd}";
+            altnWeightCell = "{sp}{sp}{small}{green}0.0{end}{end}";
 
             if (isFinite(mcdu.getRouteFinalFuelWeight()) && isFinite(mcdu.getRouteFinalFuelTime())) {
-                finalWeightCell = "{smallFront}" + mcdu.getRouteFinalFuelWeight().toFixed(1) + "{smallEnd}";
+                finalWeightCell = "{small}" + mcdu.getRouteFinalFuelWeight().toFixed(1) + "{end}";
                 finalTimeCell = FMCMainDisplay.secondsTohhmm(mcdu.getRouteFinalFuelTime());
                 finalColor = "[color]blue";
             }
 
             // TODO compute final weight and time, this is a place holder value
-            finalWeightCell = "__{smallFront}" + "0.0" + "{smallEnd}";
+            finalWeightCell = "{sp}{sp}{small}" + "0.0" + "{end}";
             finalColor = "[color]blue";
 
             mcdu.takeOffWeight = mcdu.zeroFuelWeight + mcdu.blockFuel - mcdu.taxiFuelWeight;
@@ -369,13 +367,13 @@ class CDUInitPage {
                 towLwColor = "[color]green";
             }
 
-            towCell = "{smallFront}" + towCell;
-            lwCell = "000.0" + "{smallEnd}"; //TODO compute landing weight, this is a place holder value
+            towCell = "{small}" + towCell;
+            lwCell = "000.0" + "{end}"; //TODO compute landing weight, this is a place holder value
 
-            tripWindCell = "{smallFront}" + mcdu._windDir + "000" + "{smallEnd}";
+            tripWindCell = "{small}" + mcdu._windDir + "000" + "{end}";
             tripWindColor = "[color]blue";
             if (isFinite(mcdu.averageWind)) {
-                tripWindCell = "{smallFront}" + mcdu._windDir + mcdu.averageWind.toFixed(0).padStart(3, "0") + "{smallEnd}";
+                tripWindCell = "{small}" + mcdu._windDir + mcdu.averageWind.toFixed(0).padStart(3, "0") + "{end}";
 
             }
             mcdu.onRightInput[4] = async () => {
@@ -387,14 +385,14 @@ class CDUInitPage {
             };
 
             // TODO calculate minDestFob, this is a placeholder value
-            minDestFob = "__{smallFront}0.0{smallEnd}";
+            minDestFob = "{sp}{sp}{small}0.0{end}";
             minDestFobColor = "[color]blue";
 
             // TODO calculate extra weight and time, this is a plceholder value
             // extraWeightCell = parseFloat(blockFuel) - (parseFloat(taxiFuelCell) + parseFloat(taxiFuelCell) + parseFloat(rteRsvWeightCell) + parseFloat(minDestFob));
             extraColor = "[color]green";
-            extraWeightCell = "{smallFront}0.0";
-            extraTimeCell = "0000{smallEnd}";
+            extraWeightCell = "{small}0.0";
+            extraTimeCell = "0000{end}";
         }
 
         mcdu.setTemplate([
@@ -405,35 +403,13 @@ class CDUInitPage {
             [tripWeightCell + "/" + tripTimeCell + tripColor, blockFuel + blockFuelColor],
             ["RTE RSV/%", fuelPlanTopTitle + fuelPlanColor],
             [rteRsvWeightCell + "/" + rteRsvPercentCell + rteRsvColor, fuelPlanBottomTitle + fuelPlanColor],
-            ["ALTN  /TIME", "TOW/___LW"],
+            ["ALTN  /TIME", "TOW/{sp}{sp}{sp}LW"],
             [altnWeightCell + "/" + altnTimeCell + altnColor, towCell + "/" + lwCell + towLwColor],
             ["FINAL/TIME", "TRIP WIND"],
-            [finalWeightCell + "/" + finalTimeCell + finalColor, "{smallFront}" + tripWindCell + "{smallEnd}" + tripWindColor],
+            [finalWeightCell + "/" + finalTimeCell + finalColor, "{small}" + tripWindCell + "{end}" + tripWindColor],
             ["MIN DEST FOB", "EXTRA/TIME"],
             [minDestFob + minDestFobColor, extraWeightCell + "/" + extraTimeCell + extraColor],
         ]);
-
-        mcdu.insertSmallFontSpan();
-
-        // Set initial RTE RSV % to blue
-        mcdu._lineElements[2][0].innerHTML = mcdu._lineElements[2][0].innerHTML.replace(/{blueFront}/g, "<span class='blue'>");
-        mcdu._lineElements[2][0].innerHTML = mcdu._lineElements[2][0].innerHTML.replace(/{blueEnd}/g, "</span>");
-
-        //Set ALTN time to green
-        mcdu._lineElements[3][0].innerHTML = mcdu._lineElements[3][0].innerHTML.replace(/{greenFront}/g, "<span class='green'>");
-        mcdu._lineElements[3][0].innerHTML = mcdu._lineElements[3][0].innerHTML.replace(/{greenEnd}/g, "</span>");
-
-        // Set initial final time to blue
-        mcdu._lineElements[4][0].innerHTML = mcdu._lineElements[4][0].innerHTML.replace(/{blueFront}/g, "<span class='blue'>");
-        mcdu._lineElements[4][0].innerHTML = mcdu._lineElements[4][0].innerHTML.replace(/{blueEnd}/g, "</span>");
-
-        // Add required spacing to line elements
-        for (let i = 1; i <= 5; i++) {
-            mcdu._lineElements[i][0].innerHTML = mcdu._lineElements[i][0].innerHTML.replace(/_/g, "&nbsp;");
-        }
-
-        // Add required spacing to TOW/LW title element
-        mcdu._labelElements[3][1].innerHTML = mcdu._labelElements[3][1].innerHTML.replace(/_/g, "&nbsp;");
 
         // It infact does not work
         mcdu.onPlusMinus = () => {
@@ -453,9 +429,9 @@ class CDUInitPage {
         const M = 0 | (deg % 1) * 60e7;
         let degree;
         if (lng) {
-            degree = (0 | (deg < 0 ? deg = -deg : deg)).toString().padStart(3, "0");
+            degree = (0 | (deg < 0 ? -deg : deg)).toString().padStart(3, "0");
         } else {
-            degree = 0 | (deg < 0 ? deg = -deg : deg);
+            degree = 0 | (deg < 0 ? -deg : deg);
         }
         return {
             dir : deg < 0 ? lng ? 'W' : 'S' : lng ? 'E' : 'N',
@@ -465,4 +441,3 @@ class CDUInitPage {
         };
     }
 }
-//# sourceMappingURL=A320_Neo_CDU_InitPage.js.map

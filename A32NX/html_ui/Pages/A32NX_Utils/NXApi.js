@@ -45,11 +45,6 @@ class NXApi {
     }
 
     static connectTelex(flightNo) {
-        // TELEX disabled
-        if (NXDataStore.get("CONFIG_TELEX_STATUS", "DISABLED") !== "ENABLED") {
-            return Promise.reject(NXApi.disabledError);
-        }
-
         const connectBody = NXApi.buildTelexBody(flightNo);
         const headers = {"Content-Type": "application/json"};
 
@@ -61,19 +56,13 @@ class NXApi {
 
                 return response.json()
                     .then((data) => {
-                        NXDataStore.set("TELEX_KEY", data.accessToken);
-                        NXDataStore.set("TELEX_FLIGHT_NUMBER", data.flight);
+                        NXApi.accessToken = data.accessToken;
                         return data;
                     });
             });
     }
 
     static updateTelex() {
-        // TELEX disabled
-        if (NXDataStore.get("CONFIG_TELEX_STATUS", "DISABLED") !== "ENABLED") {
-            return Promise.reject(NXApi.disabledError);
-        }
-
         // No connection
         if (!NXApi.hasTelexConnection()) {
             return Promise.reject(NXApi.disconnectedError);
@@ -98,7 +87,7 @@ class NXApi {
     static disconnectTelex() {
         // No connection
         if (!NXApi.hasTelexConnection()) {
-            return Promise.reject(NXApi.disabledError);
+            return Promise.reject(NXApi.disconnectedError);
         }
 
         const headers = {
@@ -111,10 +100,7 @@ class NXApi {
                     throw (response);
                 }
 
-                NXDataStore.set("TELEX_KEY", "");
-                NXDataStore.set("TELEX_FLIGHT_NUMBER", "");
-
-                return response.json();
+                NXApi.accessToken = "";
             });
     }
 
@@ -177,15 +163,11 @@ class NXApi {
     }
 
     static hasTelexConnection() {
-        const txKey = NXDataStore.get("TELEX_KEY", "");
-        const txFlight = NXDataStore.get("TELEX_FLIGHT_NUMBER", "");
-
-        return txKey && txFlight;
+        return !!NXApi.accessToken;
     }
 
     static buildToken() {
-        const txKey = NXDataStore.get("TELEX_KEY", "");
-        return `Bearer ${txKey}`;
+        return `Bearer ${NXApi.accessToken}`;
     }
 
     static buildTelexBody(flightNo) {
@@ -193,6 +175,7 @@ class NXApi {
         const long = SimVar.GetSimVarValue("PLANE LONGITUDE", "degree longitude");
         const alt = SimVar.GetSimVarValue("PLANE ALTITUDE", "feet");
         const heading = SimVar.GetSimVarValue("PLANE HEADING DEGREES MAGNETIC", "degree");
+        const freetext = NXDataStore.get("CONFIG_TELEX_STATUS", "DISABLED") === "ENABLED";
 
         return {
             location: {
@@ -203,7 +186,8 @@ class NXApi {
             heading: heading,
             origin: "",
             destination: "",
-            flight: flightNo
+            freetextEnabled: freetext,
+            flight: flightNo,
         };
     }
 }
@@ -212,3 +196,4 @@ NXApi.url = "https://api.flybywiresim.com";
 NXApi.disabledError = "TELEX DISABLED";
 NXApi.disconnectedError = "TELEX DISCONNECTED";
 NXApi.noRecipientError = "NO RECIPIENT";
+NXApi.accessToken = "";
