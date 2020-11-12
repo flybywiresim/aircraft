@@ -124,29 +124,13 @@
             <UseTemplate Name="ASOBO_GT_Knob_Infinite_PushPull">
                 <!-- Calculates max(ALTITUDE_LOCK - INCREMENT + (INCREMENT - ALTITUDE_LOCK % INCREMENT) % INCREMENT, 100) -->
                 <ANTICLOCKWISE_CODE>
-                    3
-
-                                (A:AUTOPILOT ALTITUDE LOCK VAR:3, feet) #INCREMENT# -
-                                #INCREMENT# (A:AUTOPILOT ALTITUDE LOCK VAR:3, feet) #INCREMENT# % - #INCREMENT# %
-                            +
-                            100
-                        max
-                    (&gt;K:2:AP_ALT_VAR_SET_ENGLISH)
-
+                    3 (A:AUTOPILOT ALTITUDE LOCK VAR:3, feet) #INCREMENT# - #INCREMENT# (A:AUTOPILOT ALTITUDE LOCK VAR:3, feet) #INCREMENT# % - #INCREMENT# % + 100 max (&gt;K:2:AP_ALT_VAR_SET_ENGLISH)
                     (&gt;H:AP_KNOB_Down)
                     (&gt;H:A320_Neo_CDU_AP_DEC_ALT)
                 </ANTICLOCKWISE_CODE>
                 <!-- Calculates min(ALTITUDE_LOCK + INCREMENT - ALTITUDE_LOCK % INCREMENT, 49000) -->
                 <CLOCKWISE_CODE>
-                    3
-
-                                (A:AUTOPILOT ALTITUDE LOCK VAR:3, feet) #INCREMENT# +
-                                (A:AUTOPILOT ALTITUDE LOCK VAR:3, feet) #INCREMENT# %
-                            -
-                            49000
-                        min
-                    (&gt;K:2:AP_ALT_VAR_SET_ENGLISH)
-
+                    3 (A:AUTOPILOT ALTITUDE LOCK VAR:3, feet) #INCREMENT# + (A:AUTOPILOT ALTITUDE LOCK VAR:3, feet) #INCREMENT# % - 49000 min (&gt;K:2:AP_ALT_VAR_SET_ENGLISH)
                     (&gt;H:AP_KNOB_Up)
                     (&gt;H:A320_Neo_CDU_AP_INC_ALT)
                 </CLOCKWISE_CODE>
