@@ -1429,4 +1429,3 @@ class MapInstrument extends ISvgMapRootElement {
 }
 customElements.define("map-instrument", MapInstrument);
 checkAutoload();
-//# sourceMappingURL=MapInstrument.js.map

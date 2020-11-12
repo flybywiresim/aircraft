@@ -161,7 +161,8 @@ var A320_Neo_LowerECAM_CRZ;
             value = SimVar.GetSimVarValue("PRESSURIZATION CABIN ALTITUDE RATE", "feet per second");
             valueShown = fastToFixed(value, 0);
             if (valueShown != this.CabinVerticalSpeedDisplayed) {
-                this.CabinVerticalSpeed.textContent = valueShown;
+                const feet_per_minute = valueShown * 60;
+                this.CabinVerticalSpeed.textContent = feet_per_minute;
                 this.CabinVerticalSpeedDisplayed = valueShown;
             }
 
@@ -199,4 +200,3 @@ var A320_Neo_LowerECAM_CRZ;
 
 })(A320_Neo_LowerECAM_CRZ || (A320_Neo_LowerECAM_CRZ = {}));
 customElements.define("a320-neo-lower-ecam-crz", A320_Neo_LowerECAM_CRZ.Page);
-//# sourceMappingURL=A320_Neo_LowerECAM_CRZ.js.map
