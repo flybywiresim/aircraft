@@ -60,14 +60,21 @@
 1. [FCU] Clamp the selected altitude between 100 and 49000 - @lars-reimann (Lars Reimann)
 1. [TEXTURES] added Registry plaque and improved Textures - @Pleasure0102 (Pleasure)
 1. [GPWS] Add minimums and 100above logic - @linkeleven (linkeleven#2557)
+1. [CDU] Flight plan waypoints distances and times are now properly displayed and updated - @lousybyte (lousybyte)
+1. [CDU] Improved DECEL waypoint data and position - @lousybyte (lousybyte)
 1. [TEXTURES] Changed cockpit font and fixed spelling errors - @FoxinTale (Aubrey)
 1. [AUTO BRK] Fixed autobrake disarm behavior to match real life. MAX can no longer be selected when the aircraft is in the air. @geoffda (Geoff Darst)
 1. [FCU] Remember selected pressure mode when returning from Std mode - @lhoenig (Lukas Hoenig)
 1. [TEXTURES] upgraded to 4k Textures (pedestal,throttle unit) fixed decal texture - @Pleasure0102 (Pleasure)
 1. [PFD] Added FMAs ALT CST and ALT CST* as well as CLB magenta and DES or CLB blue - @MisterChocker (Leon)
 1. [CDU] Added CFDS display test, ATSU METAR/TAF/ATIS requests, and ATSU free text - @wpine215 (Iceman), @nistei (Nistei), @Edwin B
+1. [GPWS] Completely redone GPWS logic, and improve Retard call logic, prevent multiple calls playing at once - lukecologne (luke)
 1. [ECAM] Improve flaps/slats panel design on upper ECAM, improve flaps/slats transition logic - @paul92ilm (Lussion)
 1. [CDU] Allow inserting landing QNH in inHg - @pessip (Pessi Päivärinne)
+1. [CDU] Fix IRS coordinates always showing N/E - @beheh (Benedict Etzel)
+1. [General] Added location reporting for the live map - @nistei (Nistei)
+1. [ECAM] Fix cabin vertical speed display to show feet/min - @MattPaxtonBel, @RichardPilbery
+1. [FCU] Fix altitude change when the increment is 1000 - @lars-reimann (Lars Reimann)
 
 ## 0.4.0
 1. [General] Add CHANGELOG.md - @nathaninnes (Nathan Innes)

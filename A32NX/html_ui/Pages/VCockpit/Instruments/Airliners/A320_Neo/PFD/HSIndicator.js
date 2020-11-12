@@ -336,4 +336,3 @@ class Jet_PFD_HSIndicator extends HTMLElement {
     }
 }
 customElements.define("jet-pfd-hs-indicator", Jet_PFD_HSIndicator);
-//# sourceMappingURL=HSIndicator.js.map
