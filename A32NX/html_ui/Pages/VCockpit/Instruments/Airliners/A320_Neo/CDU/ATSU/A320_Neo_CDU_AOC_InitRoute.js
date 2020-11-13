@@ -1,6 +1,7 @@
 class CDUAocInitRoute {
     static ShowPage(mcdu, store = {offset: 0}) {
         mcdu.clearDisplay();
+        mcdu.page.Current = "";
         mcdu.activeSystem = 'ATSU';
 
         const rows = [["----"]];
@@ -29,16 +30,12 @@ class CDUAocInitRoute {
         ];
         mcdu.setTemplate(display);
 
-        mcdu.onRightInput[5] = () => {
-            getSimbrief();
-        };
-
-        mcdu.onLeftInput[5] = () => {
-            CDUAocMenu.ShowPage(mcdu);
-        };
-
         mcdu.onLeftInput[5] = () => {
             CDUAocInit.ShowPage(mcdu);
+        };
+
+        mcdu.onRightInput[5] = () => {
+            CDUAocInit.insertUplink(mcdu);
         };
 
         mcdu.onUp = () => {
