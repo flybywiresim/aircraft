@@ -485,7 +485,15 @@ class FMCMainDisplay extends BaseAirliners {
             }
         }
         if (flString) {
-            return this.trySetCruiseFl(parseFloat(flString));
+            if (this.trySetCruiseFl(parseFloat(flString))) {
+                if (SimVar.GetSimVarValue("L:A32NX_CRZ_ALT_SET_INITIAL", "bool") === 1 && SimVar.GetSimVarValue("L:A32NX_GOAROUND_PASSED", "bool") === 1) {
+                    SimVar.SetSimVarValue("L:A32NX_NEW_CRZ_ALT", "number", this.cruiseFlightLevel);
+                } else {
+                    SimVar.SetSimVarValue("L:A32NX_CRZ_ALT_SET_INITIAL", "bool", 1);
+                }
+                return true;
+            }
+            return false;
         }
         this.showErrorMessage(this.defaultInputErrorMessage);
         return false;
@@ -1261,6 +1269,40 @@ class FMCMainDisplay extends BaseAirliners {
                 this.accelerationAltitude = accAlt;
                 SimVar.SetSimVarValue("L:AIRLINER_ACC_ALT", "Number", this.accelerationAltitude);
             }
+            return true;
+        }
+        this.showErrorMessage(this.defaultInputErrorMessage);
+        return false;
+    }
+
+    trySetThrustReductionAccelerationAltitudeGoaround(s) {
+        let thrRed = NaN;
+        let accAlt = NaN;
+        if (s) {
+            const sSplit = s.split("/");
+            thrRed = parseInt(sSplit[0]);
+            accAlt = parseInt(sSplit[1]);
+        }
+        if ((isFinite(thrRed) || isFinite(accAlt)) && thrRed <= accAlt) {
+            if (isFinite(thrRed)) {
+                this.thrustReductionAltitudeGoaround = thrRed;
+                SimVar.SetSimVarValue("L:AIRLINER_THR_RED_ALT_GOAROUND", "Number", this.thrustReductionAltitudeGoaround);
+            }
+            if (isFinite(accAlt)) {
+                this.accelerationAltitudeGoaround = accAlt;
+                SimVar.SetSimVarValue("L:AIRLINER_ACC_ALT_GOAROUND", "Number", this.accelerationAltitudeGoaround);
+            }
+            return true;
+        }
+        this.showErrorMessage(this.defaultInputErrorMessage);
+        return false;
+    }
+
+    trySetEngineOutAcceleration(s) {
+        const engOutAcc = parseInt(s);
+        if (isFinite(engOutAcc)) {
+            this.engineOutAccelerationGoaround = engOutAcc;
+            SimVar.SetSimVarValue("L:AIRLINER_ENG_OUT_ACC_ALT_GOAROUND", "Number", this.engineOutAccelerationGoaround);
             return true;
         }
         this.showErrorMessage(this.defaultInputErrorMessage);
@@ -2269,7 +2311,7 @@ class FMCMainDisplay extends BaseAirliners {
         } else if (s === "NO" || s === "NO DH" || s === "NODH") {
             if (Simplane.getAutoPilotApproachType() === 4) {
                 this.perfApprDH = "NO DH";
-                SimVar.SetSimVarValue("L:AIRLINER_DECISION_HEIGHT", "number", -1);
+                SimVar.SetSimVarValue("L:AIRLINER_DECISION_HEIGHT", "number", -2);
                 return true;
             } else {
                 this.showErrorMessage("NOT ALLOWED");
@@ -2300,19 +2342,29 @@ class FMCMainDisplay extends BaseAirliners {
         if (this.currentFlightPhase === FlightPhase.FLIGHT_PHASE_CLIMB) {
             this.currentFlightPhase = FlightPhase.FLIGHT_PHASE_APPROACH;
             Coherent.call("GENERAL_ENG_THROTTLE_MANAGED_MODE_SET", ThrottleMode.AUTO);
+            SimVar.SetSimVarValue("L:A32NX_GOAROUND_PASSED", "bool", 0);
             return true;
         }
         if (this.currentFlightPhase === FlightPhase.FLIGHT_PHASE_CRUISE) {
             this.currentFlightPhase = FlightPhase.FLIGHT_PHASE_APPROACH;
             Coherent.call("GENERAL_ENG_THROTTLE_MANAGED_MODE_SET", ThrottleMode.AUTO);
+            SimVar.SetSimVarValue("L:A32NX_GOAROUND_PASSED", "bool", 0);
             return true;
         }
         if (this.currentFlightPhase === FlightPhase.FLIGHT_PHASE_DESCENT) {
             this.currentFlightPhase = FlightPhase.FLIGHT_PHASE_APPROACH;
             Coherent.call("GENERAL_ENG_THROTTLE_MANAGED_MODE_SET", ThrottleMode.AUTO);
+            SimVar.SetSimVarValue("L:A32NX_GOAROUND_PASSED", "bool", 0);
+            return true;
+        }
+        if (this.currentFlightPhase === FlightPhase.FLIGHT_PHASE_GOAROUND) {
+            this.currentFlightPhase = FlightPhase.FLIGHT_PHASE_APPROACH;
+            Coherent.call("GENERAL_ENG_THROTTLE_MANAGED_MODE_SET", ThrottleMode.AUTO);
+            SimVar.SetSimVarValue("L:A32NX_GOAROUND_PASSED", "bool", 0);
             return true;
         }
         if (this.currentFlightPhase === FlightPhase.FLIGHT_PHASE_APPROACH) {
+            SimVar.SetSimVarValue("L:A32NX_GOAROUND_PASSED", "bool", 0);
             return true;
         }
         return false;
@@ -2320,6 +2372,10 @@ class FMCMainDisplay extends BaseAirliners {
 
     checkUpdateFlightPhase() {
         const airSpeed = SimVar.GetSimVarValue("AIRSPEED TRUE", "knots");
+        const flapsHandlePercent = Simplane.getFlapsHandlePercent();
+        const leftThrottleDetent = Simplane.getEngineThrottleMode(0);
+        const rightThrottleDetent = Simplane.getEngineThrottleMode(1);
+        const highestThrottleDetent = (leftThrottleDetent >= rightThrottleDetent) ? leftThrottleDetent : rightThrottleDetent;
         if (airSpeed > 10) {
             if (this.currentFlightPhase === 0) {
                 this.currentFlightPhase = FlightPhase.FLIGHT_PHASE_TAKEOFF;
@@ -2337,12 +2393,29 @@ class FMCMainDisplay extends BaseAirliners {
                 }
             }
             if (this.currentFlightPhase === FlightPhase.FLIGHT_PHASE_CLIMB) {
+                let cruiseFlightLevel;
+                let remainInClimb = false;
+                if (SimVar.GetSimVarValue("L:A32NX_GOAROUND_PASSED", "bool") === 1) {
+                    const selectedAltFCU = SimVar.GetSimVarValue("L:HUD_AP_SELECTED_ALTITUDE", "Number");
+                    if (SimVar.GetSimVarValue("L:A32NX_CRZ_ALT_SET_INITIAL", "bool") == 1) {
+                        cruiseFlightLevel = SimVar.GetSimVarValue("L:A32NX_NEW_CRZ_ALT", "number");
+                    } else {
+                        cruiseFlightLevel = selectedAltFCU / 100;
+                        remainInClimb = true;
+                    }
+                }
                 const altitude = SimVar.GetSimVarValue("PLANE ALTITUDE", "feet");
-                const cruiseFlightLevel = this.cruiseFlightLevel * 100;
+                cruiseFlightLevel = this.cruiseFlightLevel * 100;
                 if (isFinite(cruiseFlightLevel)) {
                     if (altitude >= 0.96 * cruiseFlightLevel) {
-                        this.currentFlightPhase = FlightPhase.FLIGHT_PHASE_CRUISE;
-                        Coherent.call("GENERAL_ENG_THROTTLE_MANAGED_MODE_SET", ThrottleMode.AUTO);
+                        if (remainInClimb) {
+                            //console.log('remaining in FLIGHT_PHASE_CLIMB (no new DEST/CRZ ALT) : ' + JSON.stringify({altitude, cruiseFlightLevel, prevPhase: this.currentFlightPhase}, null, 2));
+                        } else {
+                            //console.log('switching to FLIGHT_PHASE_CRUISE: ' + JSON.stringify({altitude, cruiseFlightLevel, prevPhase: this.currentFlightPhase}, null, 2));
+                            this.currentFlightPhase = FlightPhase.FLIGHT_PHASE_CRUISE;
+                            SimVar.SetSimVarValue("L:A32NX_GOAROUND_PASSED", "bool", 0);
+                            Coherent.call("GENERAL_ENG_THROTTLE_MANAGED_MODE_SET", ThrottleMode.AUTO);
+                        }
                     }
                 }
             }
@@ -2362,7 +2435,7 @@ class FMCMainDisplay extends BaseAirliners {
                     const long = SimVar.GetSimVarValue("PLANE LONGITUDE", "degree longitude");
                     const planeLla = new LatLongAlt(lat, long);
                     const dist = Avionics.Utils.computeGreatCircleDistance(planeLla, this.flightPlanManager.getDestination().infos.coordinates);
-                    if (dist < 40) {
+                    if (dist < 40 && this.currentFlightPhase != FlightPhase.FLIGHT_PHASE_GOAROUND) {
                         this.connectIls();
                         this.flightPlanManager.activateApproach();
                         if (this.currentFlightPhase != FlightPhase.FLIGHT_PHASE_APPROACH) {
@@ -2378,11 +2451,55 @@ class FMCMainDisplay extends BaseAirliners {
                         const long = SimVar.GetSimVarValue("PLANE LONGITUDE", "degree longitude");
                         const planeLla = new LatLongAlt(lat, long);
                         const dist = Avionics.Utils.computeGreatCircleDistance(this.flightPlanManager.decelWaypoint.infos.coordinates, planeLla);
-                        if (dist < 3) {
+                        if (dist < 3 && this.currentFlightPhase != FlightPhase.FLIGHT_PHASE_GOAROUND) {
                             console.log("Switching into approach. DECEL lat : " + lat + " long " + long);
                             this.tryGoInApproachPhase();
                         }
                     }
+                }
+            }
+
+            //Logic to switch from APPR to GOAROUND
+            //another condition getIsGrounded < 30sec
+            if (this.currentFlightPhase == FlightPhase.FLIGHT_PHASE_APPROACH && highestThrottleDetent == ThrottleMode.TOGA && flapsHandlePercent != 0 && !Simplane.getAutoPilotThrottleActive() && SimVar.GetSimVarValue("RADIO HEIGHT", "feets") < 2000) {
+
+                this.currentFlightPhase = FlightPhase.FLIGHT_PHASE_GOAROUND;
+                SimVar.SetSimVarValue("L:A32NX_GOAROUND_GATRK_MODE", "bool", 0);
+                SimVar.SetSimVarValue("L:A32NX_GOAROUND_HDG_MODE", "bool", 0);
+                SimVar.SetSimVarValue("L:A32NX_GOAROUND_NAV_MODE", "bool", 0);
+                SimVar.SetSimVarValue("L:A32NX_GOAROUND_INIT_SPEED", "number", Simplane.getIndicatedSpeed());
+                SimVar.SetSimVarValue("L:A32NX_GOAROUND_INIT_APP_SPEED", "number", this.getVApp());
+                //delete override logic when we have valid nav data -aka goaround path- after goaround!
+                SimVar.SetSimVarValue("L:A32NX_GOAROUND_NAV_OVERRIDE", "bool", 0);
+
+                if (SimVar.GetSimVarValue("AUTOPILOT MASTER", "Bool") === 1) {
+                    SimVar.SetSimVarValue("K:AP_LOC_HOLD_ON", "number", 1); // Turns AP localizer hold !!ON/ARMED!! and glide-slope hold mode !!OFF!!
+                    SimVar.SetSimVarValue("K:AP_LOC_HOLD_OFF", "number", 1); // Turns !!OFF!! localizer hold mode
+                    SimVar.SetSimVarValue("K:AUTOPILOT_OFF", "number", 1);
+                    SimVar.SetSimVarValue("K:AUTOPILOT_ON", "number", 1);
+                    SimVar.SetSimVarValue("L:A32NX_AUTOPILOT_APPR_MODE", "bool", 0);
+                    SimVar.SetSimVarValue("L:A32NX_AUTOPILOT_LOC_MODE", "bool", 0);
+                } else if (SimVar.GetSimVarValue("AUTOPILOT MASTER", "Bool") === 0 && SimVar.GetSimVarValue("AUTOPILOT APPROACH HOLD", "boolean") === 1) {
+                    SimVar.SetSimVarValue("AP_APR_HOLD_OFF", "number", 1);
+                    SimVar.SetSimVarValue("L:A32NX_AUTOPILOT_APPR_MODE", "bool", 0);
+                    SimVar.SetSimVarValue("L:A32NX_AUTOPILOT_LOC_MODE", "bool", 0);
+                }
+
+                CDUPerformancePage.ShowGOAROUNDPage(this);
+            }
+
+            //Logic to switch back from GOAROUND to CLB/CRZ
+            //When missed approach or sec fpl are implemented this needs rework
+            //Exit Scenario after successful GOAROUND
+            if (this.currentFlightPhase == FlightPhase.FLIGHT_PHASE_GOAROUND) {
+
+                const planeAltitudeMsl = Simplane.getAltitude();
+                const accelerationAltitudeMsl = this.accelerationAltitudeGoaround;
+
+                if (planeAltitudeMsl > accelerationAltitudeMsl) {
+                    //console.log('switching to FLIGHT_PHASE_CLIMB from GA: ' + JSON.stringify({planeAltitudeMsl, accelerationAltitudeMsl, prevPhase: this.currentFlightPhase}, null, 2));
+                    this.currentFlightPhase = FlightPhase.FLIGHT_PHASE_CLIMB;
+                    SimVar.SetSimVarValue("L:A32NX_GOAROUND_PASSED", "bool", 1);
                 }
             }
         }
