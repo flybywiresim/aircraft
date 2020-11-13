@@ -114,8 +114,8 @@ class CDUAocInit {
 
                 if (mcdu.page.Current == mcdu.page.AOCInit) {
                     CDUAocInit.ShowPage(mcdu);
-                    CDUAocInit.showStatus(mcdu, "DONE");
                 }
+                CDUAocInit.showStatus(mcdu, "DONE");
             })
             .catch(_err => {
                 console.log(_err.message);
