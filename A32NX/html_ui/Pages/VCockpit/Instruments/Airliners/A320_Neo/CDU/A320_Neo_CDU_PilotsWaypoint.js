@@ -1,6 +1,7 @@
 class CDUPilotsWaypoint {
     static ShowPage(mcdu) {
         mcdu.clearDisplay();
+        mcdu.page.Current = mcdu.page.PilotsWaypoint;
         mcdu.setTemplate([
             ["PILOTS WAYPOINT", "1", "1"],
             ["IDENT"],

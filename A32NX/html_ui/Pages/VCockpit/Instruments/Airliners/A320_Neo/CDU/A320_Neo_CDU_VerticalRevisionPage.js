@@ -3,6 +3,7 @@ class CDUVerticalRevisionPage {
         const waypointInfo = waypoint.infos;
         if (waypointInfo instanceof WayPointInfo) {
             mcdu.clearDisplay();
+            mcdu.page.Current = mcdu.page.VerticalRevisionPage;
             let waypointIdent = "---";
             if (waypoint) {
                 waypointIdent = waypoint.ident;
@@ -95,4 +96,3 @@ class CDUVerticalRevisionPage {
         }
     }
 }
-//# sourceMappingURL=A320_Neo_CDU_VerticalRevisionPage.js.map

@@ -782,4 +782,3 @@ class Jet_MFD_NDCompass extends Jet_NDCompass {
     }
 }
 customElements.define("jet-mfd-nd-compass", Jet_MFD_NDCompass);
-//# sourceMappingURL=NDCompass.js.map

@@ -577,4 +577,3 @@ class VORDMENavAid {
     }
 }
 customElements.define("jet-mfd-nd-info", Jet_MFD_NDInfo);
-//# sourceMappingURL=NDInfo.js.map
