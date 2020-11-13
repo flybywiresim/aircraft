@@ -360,9 +360,9 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     showErrorMessage(message, color = "#ffffff") {
-        // if (!this.isDisplayingErrorMessage) {
-        //     this.lastUserInput = this.inOut;
-        // }
+        if (!this.isDisplayingErrorMessage && this.inOut) {
+            this.lastUserInput = this.inOut;
+        }
         this.isDisplayingErrorMessage = true;
         this.inOut = message;
         this._inOutElement.style.color = color;
