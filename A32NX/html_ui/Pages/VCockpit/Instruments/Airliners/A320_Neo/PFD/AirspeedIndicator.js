@@ -232,7 +232,7 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
             bg.setAttribute("y", _top.toString());
             bg.setAttribute("width", _width.toString());
             bg.setAttribute("height", _height.toString());
-            bg.setAttribute("fill", "#6B798A");
+            bg.setAttribute("fill", "#5A6573");
             bg.setAttribute("stroke-width", "3");
             bg.setAttribute("stroke", "tranparent");
             this.centerSVG.appendChild(bg);
