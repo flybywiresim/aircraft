@@ -549,4 +549,3 @@ class StatusMessagePanel extends A320_Neo_LowerECAM_Status.PanelBase {
     }
 }
 A320_Neo_LowerECAM_Status.StatusMessagePanel = StatusMessagePanel;
-//# sourceMappingURL=A320_Neo_LowerECAM_Status.js.map

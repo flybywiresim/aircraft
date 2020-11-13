@@ -54,6 +54,7 @@ class A32NX_GPWS {
     }
     gpws(deltaTime) {
         const radioAlt = SimVar.GetSimVarValue("PLANE ALT ABOVE GROUND MINUS CG", "Feet");
+        const onGround = SimVar.GetSimVarValue("SIM ON GROUND", "Bool");
 
         this.UpdateAltState(radioAlt);
         this.differentiate_radioalt(radioAlt, deltaTime);
@@ -70,7 +71,7 @@ class A32NX_GPWS {
             const Airspeed = SimVar.GetSimVarValue("AIRSPEED INDICATED", "Knots");
             const gearExtended = SimVar.GetSimVarValue("GEAR TOTAL PCT EXTENDED", "Percent") > 0.9;
 
-            this.update_maxRA(radioAlt);
+            this.update_maxRA(radioAlt, onGround);
 
             this.GPWSMode1(radioAlt, vSpeed);
             //Mode 2 is disabled because of an issue with the terrain height simvar which causes false warnings very frequently. See PR#1742 for more info
@@ -125,8 +126,11 @@ class A32NX_GPWS {
         }
     }
 
-    update_maxRA(radioAlt) {
-        if (this.Mode4MaxRAAlt < radioAlt || isNaN(this.Mode4MaxRAAlt)) {
+    update_maxRA(radioAlt, onGround) {
+        // on ground check is to get around the fact that radio alt is set to around 300 while loading
+        if (onGround) {
+            this.Mode4MaxRAAlt = NaN;
+        } else if (this.Mode4MaxRAAlt < radioAlt || isNaN(this.Mode4MaxRAAlt)) {
             this.Mode4MaxRAAlt = radioAlt;
         }
     }

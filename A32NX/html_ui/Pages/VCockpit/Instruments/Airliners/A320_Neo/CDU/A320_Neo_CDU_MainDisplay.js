@@ -17,7 +17,6 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this._cruiseEntered = false;
         this._blockFuelEntered = false;
         this._gpsprimaryack = 0;
-        this.telexPingId = 0;
     }
     get templateID() {
         return "A320_Neo_CDU";
@@ -38,7 +37,13 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this.A32NXCore = new A32NX_Core();
         this.A32NXCore.init(this._lastTime);
 
-        SimVar.SetSimVarValue("ATC FLIGHT NUMBER", "string", "", "FMC");
+        const flightNo = SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string");
+        NXApi.connectTelex(flightNo)
+            .catch((err) => {
+                if (err !== NXApi.disconnectedError) {
+                    this.showErrorMessage("FLT NBR IN USE");
+                }
+            });
 
         this.defaultInputErrorMessage = "NOT ALLOWED";
         this.onDir = () => {
@@ -82,7 +87,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             // Update connection
             NXApi.updateTelex()
                 .catch((err) => {
-                    if (err !== NXApi.disabledError) {
+                    if (err !== NXApi.disconnectedError) {
                         console.log("TELEX PING FAILED");
                     }
                 });
@@ -123,12 +128,36 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         }, 30000);
     }
 
-    insertSmallFontSpan() {
+    _formatCell(str) {
+        return str
+            .replace(/{small}/g, "<span class='s-text'>")
+            .replace(/{red}/g, "<span class='red'>")
+            .replace(/{green}/g, "<span class='green'>")
+            .replace(/{blue}/g, "<span class='blue'>")
+            .replace(/{white}/g, "<span class='white'>")
+            .replace(/{magenta}/g, "<span class='magenta'>")
+            .replace(/{inop}/g, "<span class='inop'>")
+            .replace(/{sp}/g, "&nbsp;")
+            .replace(/{end}/g, "</span>");
+    }
+
+    setTemplate(_template) {
+        super.setTemplate(_template);
+        // Apply formatting helper to title page, lines and labels
+        if (this._titleElement !== null) {
+            this._titleElement.innerHTML = this._formatCell(this._titleElement.innerHTML);
+        }
         this._lineElements.forEach((row) => {
             row.forEach((column) => {
-                if (column != null) {
-                    column.innerHTML = column.innerHTML.replace(/{smallFront}/g, "<span class='s-text'>");
-                    column.innerHTML = column.innerHTML.replace(/{smallEnd}/g, "</span>");
+                if (column !== null) {
+                    column.innerHTML = this._formatCell(column.innerHTML);
+                }
+            });
+        });
+        this._labelElements.forEach((row) => {
+            row.forEach((column) => {
+                if (column !== null) {
+                    column.innerHTML = this._formatCell(column.innerHTML);
                 }
             });
         });
@@ -1328,4 +1357,3 @@ A320_Neo_CDU_MainDisplay._v2sConf2 = [
     [121, 144],
 ];
 registerInstrument("a320-neo-cdu-main-display", A320_Neo_CDU_MainDisplay);
-//# sourceMappingURL=A320_Neo_CDU_MainDisplay.js.map

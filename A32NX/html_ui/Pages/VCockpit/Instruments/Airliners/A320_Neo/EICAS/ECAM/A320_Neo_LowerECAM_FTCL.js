@@ -327,4 +327,3 @@ let A320_Neo_LowerECAM_FTCL;
     A320_Neo_LowerECAM_FTCL.Page = Page;
 })(A320_Neo_LowerECAM_FTCL || (A320_Neo_LowerECAM_FTCL = {}));
 customElements.define("a320-neo-lower-ecam-ftcl", A320_Neo_LowerECAM_FTCL.Page);
-//# sourceMappingURL=A320_Neo_LowerECAM_FTCL.js.map

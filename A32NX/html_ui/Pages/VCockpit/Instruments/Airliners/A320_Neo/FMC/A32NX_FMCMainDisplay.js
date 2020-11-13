@@ -721,25 +721,16 @@ class FMCMainDisplay extends BaseAirliners {
             return callback(false);
         }
 
-        const storedTelexStatus = NXDataStore.get("CONFIG_TELEX_STATUS", "DISABLED");
-
-        let connectSuccess = true;
         SimVar.SetSimVarValue("ATC FLIGHT NUMBER", "string", flightNo, "FMC").then(() => {
-            if (storedTelexStatus === "ENABLED") {
-                const initTelexServer = async () => {
-                    NXApi.connectTelex(flightNo)
-                        .catch((err) => {
-                            if (err !== NXApi.disconnectedError) {
-                                this.showErrorMessage("FLT NBR IN USE");
-                            }
+            NXApi.connectTelex(flightNo)
+                .then(() => {
+                    callback(true);
+                })
+                .catch(() => {
+                    this.showErrorMessage("FLT NBR IN USE");
 
-                            connectSuccess = false;
-                        });
-                };
-
-                initTelexServer();
-            }
-            return callback(connectSuccess);
+                    callback(false);
+                });
         });
     }
 
@@ -991,9 +982,12 @@ class FMCMainDisplay extends BaseAirliners {
         }
         const v = parseInt(s);
         if (isFinite(v)) {
-            if (v > 0 && v < 1000) {
+            if (v >= 90 && v < 1000) {
                 this.v1Speed = v;
                 SimVar.SetSimVarValue("L:AIRLINER_V1_SPEED", "Knots", this.v1Speed);
+                if ((v > SimVar.GetSimVarValue("L:AIRLINER_VR_SPEED", "Knots") || v > SimVar.GetSimVarValue("L:AIRLINER_V2_SPEED", "Knots")) && SimVar.GetSimVarValue("L:AIRLINER_VR_SPEED", "Knots") !== -1 && SimVar.GetSimVarValue("L:AIRLINER_V2_SPEED", "Knots") !== -1) {
+                    this.showErrorMessage("V1/VR/V2 DISAGREE", "#ff9a00");
+                }
                 return true;
             }
             this.showErrorMessage("ENTRY OUT OF RANGE");
@@ -1010,9 +1004,12 @@ class FMCMainDisplay extends BaseAirliners {
         }
         const v = parseInt(s);
         if (isFinite(v)) {
-            if (v > 0 && v < 1000) {
+            if (v >= 90 && v < 1000) {
                 this.vRSpeed = v;
                 SimVar.SetSimVarValue("L:AIRLINER_VR_SPEED", "Knots", this.vRSpeed);
+                if ((v < SimVar.GetSimVarValue("L:AIRLINER_V1_SPEED", "Knots") || v > SimVar.GetSimVarValue("L:AIRLINER_V2_SPEED", "Knots")) && SimVar.GetSimVarValue("L:AIRLINER_V1_SPEED", "Knots") !== -1 && SimVar.GetSimVarValue("L:AIRLINER_V2_SPEED", "Knots") !== -1) {
+                    this.showErrorMessage("V1/VR/V2 DISAGREE", "#ff9a00");
+                }
                 return true;
             }
             this.showErrorMessage("ENTRY OUT OF RANGE");
@@ -1029,9 +1026,12 @@ class FMCMainDisplay extends BaseAirliners {
         }
         const v = parseInt(s);
         if (isFinite(v)) {
-            if (v > 0 && v < 1000) {
+            if (v >= 90 && v < 1000) {
                 this.v2Speed = v;
                 SimVar.SetSimVarValue("L:AIRLINER_V2_SPEED", "Knots", this.v2Speed);
+                if ((v < SimVar.GetSimVarValue("L:AIRLINER_V1_SPEED", "Knots") || v < SimVar.GetSimVarValue("L:AIRLINER_VR_SPEED", "Knots")) && SimVar.GetSimVarValue("L:AIRLINER_V1_SPEED", "Knots") !== -1 && SimVar.GetSimVarValue("L:AIRLINER_VR_SPEED", "Knots") !== -1) {
+                    this.showErrorMessage("V1/VR/V2 DISAGREE", "#ff9a00");
+                }
                 return true;
             }
             this.showErrorMessage("ENTRY OUT OF RANGE");
@@ -2861,4 +2861,3 @@ FMCMainDisplay.approachTypes = [
 ];
 FMCMainDisplay.clrValue = " CLR ";
 FMCMainDisplay._AvailableKeys = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-//# sourceMappingURL=FMCMainDisplay.js.map

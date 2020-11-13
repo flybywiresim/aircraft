@@ -1359,4 +1359,3 @@ class AirspeedMarker {
         }
     }
 }
-//# sourceMappingURL=AirspeedIndicator.js.map
