@@ -1161,6 +1161,9 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
         } else {
             _marker.svg.setAttribute("visibility", "hidden");
         }
+        if (!Simplane.getIsGrounded()) {
+            _marker.svg.setAttribute("visibility", "hidden");
+        }
     }
     updateMarkerVR(_marker, currentAirspeed) {
         let vRSpeed = Simplane.getVRAirspeed();
