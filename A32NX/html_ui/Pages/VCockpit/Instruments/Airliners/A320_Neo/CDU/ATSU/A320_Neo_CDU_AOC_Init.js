@@ -1,11 +1,8 @@
 class CDUAocInit {
     static ShowPage(mcdu) {
         mcdu.clearDisplay();
+        mcdu.page.Current = mcdu.page.AOCInit;
         mcdu.activeSystem = 'ATSU';
-
-        const store = mcdu.simbrief;
-
-        const simbriefUsername = NXDataStore.get("CONFIG_SIMBRIEF_USERNAME", "");
 
         let fromTo = "----|----[color]white";
         let block = "---.-[color]white";
@@ -15,32 +12,32 @@ class CDUAocInit {
         let costIndex = "--[color]white";
         let fltNbr = '-----';
 
-        if (store["originIcao"] && store["destinationIcao"]) {
-            fromTo = `${store["originIcao"]}/${store["destinationIcao"]}[color]green`;
+        if (mcdu.simbrief["originIcao"] && mcdu.simbrief["destinationIcao"]) {
+            fromTo = `${mcdu.simbrief["originIcao"]}/${mcdu.simbrief["destinationIcao"]}[color]green`;
         }
-        if (store["block"]) {
-            block = `${(+store["block"] / 1000).toFixed(1)}[color]green`;
+        if (mcdu.simbrief["block"]) {
+            block = `${(+mcdu.simbrief["block"] / 1000).toFixed(1)}[color]green`;
         }
-        if (store["payload"]) {
-            payload = `${(+store["payload"] / 1000).toFixed(1)}[color]green`;
+        if (mcdu.simbrief["payload"]) {
+            payload = `${(+mcdu.simbrief["payload"] / 1000).toFixed(1)}[color]green`;
         }
-        if (store["estZfw"]) {
-            estZfw = `${(+store["estZfw"] / 1000).toFixed(1)}[color]green`;
+        if (mcdu.simbrief["estZfw"]) {
+            estZfw = `${(+mcdu.simbrief["estZfw"] / 1000).toFixed(1)}[color]green`;
         }
-        if (store["cruiseAltitude"]) {
-            cruiseAltitude = `${store["cruiseAltitude"]}[color]green`;
+        if (mcdu.simbrief["cruiseAltitude"]) {
+            cruiseAltitude = `${mcdu.simbrief["cruiseAltitude"]}[color]green`;
         }
-        if (store["costIndex"]) {
-            costIndex = `${store["costIndex"]}[color]green`;
+        if (mcdu.simbrief["costIndex"]) {
+            costIndex = `${mcdu.simbrief["costIndex"]}[color]green`;
         }
-        if (store["icao_airline"] || store["flight_number"]) {
-            fltNbr = `${store.icao_airline}${store.flight_number}[color]green`;
+        if (mcdu.simbrief["icao_airline"] || mcdu.simbrief["flight_number"]) {
+            fltNbr = `${mcdu.simbrief.icao_airline}${mcdu.simbrief.flight_number}[color]green`;
         }
 
         const display = [
             ["AOC INIT DATA REQUEST"],
-            ["SIMBRIEF USERNAME", ""],
-            [ `${simbriefUsername != "" ? simbriefUsername : "-----"}[color]white`, store.navlog.length ? "ROUTE>" : "ROUTE>[color]inop"],
+            ["", ""],
+            ["", mcdu.simbrief.navlog.length ? "ROUTE>" : "ROUTE>[color]inop"],
             ["FLT NBR", "FROM/TO"],
             [fltNbr, fromTo],
             ["BLOCK", "CRZ FL"],
@@ -49,70 +46,141 @@ class CDUAocInit {
             [payload, costIndex],
             ["ZFW", ""],
             [estZfw, ""],
-            ["RETURN TO", store["sendStatus"]],
+            ["RETURN TO", mcdu.simbrief["sendStatus"]],
             ["<AOC MENU", "REQUEST*[color]blue"]
         ];
         mcdu.setTemplate(display);
 
+        mcdu.onLeftInput[0] = () => {
+            CDU_OPTIONS_SIMBRIEF.ShowPage(mcdu);
+        };
+
         mcdu.onRightInput[0] = () => {
-            if (store.navlog.length) {
+            if (mcdu.simbrief.navlog.length) {
                 CDUAocInitRoute.ShowPage(mcdu);
             }
         };
 
         mcdu.onRightInput[5] = () => {
-            getSimbrief();
+            CDUAocInit.getSimbrief(mcdu);
         };
 
         mcdu.onLeftInput[5] = () => {
             CDUAocMenu.ShowPage(mcdu);
         };
+    }
 
-        function showError(error) {
-            store["sendStatus"] = error;
+    static showStatus(mcdu, status) {
+        mcdu.simbrief["sendStatus"] = status;
 
+        if (mcdu.page.Current == mcdu.page.AOCInit) {
             CDUAocInit.ShowPage(mcdu);
-            setTimeout(() => {
-                store["sendStatus"] = "";
+        }
+        setTimeout(() => {
+            mcdu.simbrief["sendStatus"] = "";
+            if (mcdu.page.Current == mcdu.page.AOCInit) {
                 CDUAocInit.ShowPage(mcdu);
-            }, 3000);
-        }
-
-        function getSimbrief() {
-            if (!simbriefUsername) {
-                showError("NO USERNAME");
-                throw ("No simbrief username provided");
             }
+        }, 3000);
+    }
 
-            store["sendStatus"] = "REQUESTING";
-            CDUAocInit.ShowPage(mcdu);
+    static getSimbrief(mcdu) {
+        const simbriefUsername = NXDataStore.get("CONFIG_SIMBRIEF_USERNAME", "");
 
-            return fetch(`http://www.simbrief.com/api/xml.fetcher.php?username=${simbriefUsername}&json=1`)
-                .then(response => response.json())
-                .then(data => {
-                    store["route"] = data.general.route;
-                    store["cruiseAltitude"] = data.general.initial_altitude;
-                    store["originIcao"] = data.origin.icao_code;
-                    store["destinationIcao"] = data.destination.icao_code;
-                    store["block"] = data.fuel.plan_ramp;
-                    store["payload"] = data.weights.payload;
-                    store["estZfw"] = data.weights.est_zfw;
-                    store["costIndex"] = data.general.costindex;
-                    store["navlog"] = data.navlog.fix;
-                    store["icao_airline"] = typeof data.general.icao_airline == 'string' ? data.general.icao_airline : "";
-                    store["flight_number"] = data.general.flight_number;
-                    store["sendStatus"] = "DONE";
-
-                    CDUAocInit.ShowPage(mcdu);
-                    setTimeout(() => {
-                        store["sendStatus"] = "";
-                        CDUAocInit.ShowPage(mcdu);
-                    }, 3000);
-                })
-                .catch(_err => {
-                    console.log(_err.message);
-                    showError("ERROR");
-                });
+        if (!simbriefUsername) {
+            mcdu.showErrorMessage("NO SIMBRIEF USER");
+            throw ("No simbrief username provided");
         }
+
+        mcdu.simbrief["sendStatus"] = "REQUESTING";
+        if (mcdu.page.Current == mcdu.page.AOCInit) {
+            CDUAocInit.ShowPage(mcdu);
+        }
+
+        return fetch(`http://www.simbrief.com/api/xml.fetcher.php?username=${simbriefUsername}&json=1`)
+            .then(response => response.json())
+            .then(data => {
+                mcdu.simbrief["route"] = data.general.route;
+                mcdu.simbrief["cruiseAltitude"] = data.general.initial_altitude;
+                mcdu.simbrief["originIcao"] = data.origin.icao_code;
+                mcdu.simbrief["destinationIcao"] = data.destination.icao_code;
+                mcdu.simbrief["block"] = data.fuel.plan_ramp;
+                mcdu.simbrief["payload"] = data.weights.payload;
+                mcdu.simbrief["estZfw"] = data.weights.est_zfw;
+                mcdu.simbrief["costIndex"] = data.general.costindex;
+                mcdu.simbrief["navlog"] = data.navlog.fix;
+                mcdu.simbrief["icao_airline"] = typeof data.general.icao_airline == 'string' ? data.general.icao_airline : "";
+                mcdu.simbrief["flight_number"] = data.general.flight_number;
+
+                if (mcdu.page.Current == mcdu.page.AOCInit) {
+                    CDUAocInit.ShowPage(mcdu);
+                    CDUAocInit.showStatus(mcdu, "DONE");
+                }
+            })
+            .catch(_err => {
+                console.log(_err.message);
+                if (mcdu.page.Current == mcdu.page.AOCInit) {
+                    CDUAocInit.showStatus(mcdu, "ERROR");
+                }
+            });
+    }
+
+    /**
+     * There are two uplink requests that are made at the same time:
+     * - AOC ACT F-PLN
+     * - PERF DATA
+     */
+    static insertUplink(mcdu) {
+        const fromTo = `${mcdu.simbrief["originIcao"]}/${mcdu.simbrief["destinationIcao"]}`;
+        const cruiseAltitude = mcdu.simbrief["cruiseAltitude"];
+        const costIndex = mcdu.simbrief["costIndex"];
+        const fltNbr = `${mcdu.simbrief.icao_airline}${mcdu.simbrief.flight_number}`;
+
+        const uplinkInProg = "UPLINK INSERT IN PROG";
+        const aocActFplnUplink = "AOC ACT F-PLN UPLINK";
+        const perfDataUplink = "PERF DATA UPLINK";
+
+        mcdu.showErrorMessage(uplinkInProg);
+
+        /**
+         * AOC ACT F-PLN UPLINK
+         * TODO:
+         * - ROUTE
+         * - ALTN
+         */
+        mcdu.tryUpdateFromTo(fromTo, (result) => {
+            if (result) {
+                CDUPerformancePage.UpdateThrRedAccFromOrigin(mcdu);
+                mcdu.showErrorMessage(aocActFplnUplink);
+                if (mcdu.page.Current == mcdu.page.InitPageA) {
+                    CDUInitPage.ShowPage1(mcdu);
+                }
+            }
+        });
+        mcdu.updateFlightNo(fltNbr, (result) => {
+            if (result) {
+                if (mcdu.page.Current == mcdu.page.InitPageA) {
+                    CDUInitPage.ShowPage1(mcdu);
+                }
+            }
+        });
+
+        /**
+         * PERF DATA UPLINK
+         * TODO:
+         * - CRZ TEMP
+         * - BLOCK
+         * - ?
+         */
+        setTimeout(() => {
+            if (mcdu.setCruiseFlightLevelAndTemperature(cruiseAltitude)) {
+                mcdu.showErrorMessage(perfDataUplink);
+            }
+            if (mcdu.tryUpdateCostIndex(costIndex)) {
+            }
+            if (mcdu.page.Current == mcdu.page.InitPageA) {
+                CDUInitPage.ShowPage1(mcdu);
+            }
+        }, 3000); // Fake delay for perf "calculations"
     }
 }

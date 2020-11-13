@@ -128,6 +128,12 @@ class CDUInitPage {
                 }
             }
         };
+        mcdu.onRightInput[1] = () => {
+            CDUAocInit.getSimbrief(mcdu)
+                .then(() => {
+                    CDUAocInit.insertUplink(mcdu);
+                });
+        };
         mcdu.rightInputDelay[2] = () => {
             return mcdu.getDelaySwitchPage();
         };
@@ -148,8 +154,8 @@ class CDUInitPage {
             ["INIT {}"], //Need to find the right unicode for left/right arrow
             ["CO RTE", "FROM/TO"],
             [coRoute, fromTo],
-            ["ALTN/CO RTE", "INIT[color]inop"],
-            [altDest, "REQUEST*[color]inop"],
+            ["ALTN/CO RTE", "INIT"],
+            [altDest, "REQUEST*[color]red"],
             ["FLT NBR"],
             [flightNo + "[color]cyan", alignOption],
             [],
