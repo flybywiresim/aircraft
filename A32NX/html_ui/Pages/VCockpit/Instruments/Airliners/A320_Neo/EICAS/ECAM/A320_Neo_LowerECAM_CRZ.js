@@ -161,7 +161,8 @@ var A320_Neo_LowerECAM_CRZ;
             value = SimVar.GetSimVarValue("PRESSURIZATION CABIN ALTITUDE RATE", "feet per second");
             valueShown = fastToFixed(value, 0);
             if (valueShown != this.CabinVerticalSpeedDisplayed) {
-                this.CabinVerticalSpeed.textContent = valueShown;
+                const feet_per_minute = valueShown * 60;
+                this.CabinVerticalSpeed.textContent = feet_per_minute;
                 this.CabinVerticalSpeedDisplayed = valueShown;
             }
 
