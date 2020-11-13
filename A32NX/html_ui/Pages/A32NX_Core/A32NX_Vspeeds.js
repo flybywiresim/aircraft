@@ -157,43 +157,68 @@ class A32NX_Vspeeds {
         console.log('A32NX_VSPEEDS init');
         SimVar.SetSimVarValue("L:A32NX_VS", "number", 0);
         SimVar.SetSimVarValue("L:A32NX_VLS", "number", 0);
+        SimVar.SetSimVarValue("L:A32NX_GD", "number", 0);
         this.lastGw = -1;
         this.lastFhi = -1;
         this.curFhi = -1;
         this.ldgPos = -1;
+        this.alt = -1;
     }
 
     update(_deltaTime) {
-        const gw = SimVar.GetSimVarValue("TOTAL WEIGHT", "kg") / 1000;
+        const gw = this.round(SimVar.GetSimVarValue("TOTAL WEIGHT", "kg")) / 1000;
         const fhi = Simplane.getFlapsHandleIndex();
         const ldg = Math.round(SimVar.GetSimVarValue("GEAR POSITION:0", "Enum"));
+        const alt = this.round(Simplane.getAltitude());
         if (fhi !== this.lastFhi) {
             this.curFhi = this.lastFhi === 0 ? 5 : fhi;
             this.lastFhi = fhi;
             this.updateVspeeds(gw);
-        } else if ((Math.round(gw * 10) / 10) !== this.lastGw) {
-            this.lastGw = Math.round(gw * 10) / 10;
+        } else if (gw !== this.lastGw) {
+            this.lastGw = gw;
             this.updateVspeeds(gw);
         } else if (ldg !== this.ldgPos) {
             this.ldgPos = ldg;
             this.updateVspeeds(gw);
+        } else if (alt !== this.alt) {
+            this.updateVspeeds(gw);
+            this.alt = alt;
         }
     }
 
     updateVspeeds(gw) {
         const cgw = Math.ceil(((gw > 80 ? 80 : gw) - 40) / 5);
-        const alt = Simplane.getAltitude() - 20000;
-        SimVar.SetSimVarValue("L:A32NX_VS", "number", this.compensateForMachEffect(vs[this.curFhi][cgw](gw), alt));
-        SimVar.SetSimVarValue("L:A32NX_VLS", "number", this.compensateForMachEffect(vls[this.curFhi][cgw](gw), alt));
+        SimVar.SetSimVarValue("L:A32NX_VS", "number", this.compensateForMachEffect(vs[this.curFhi][cgw](gw)));
+        SimVar.SetSimVarValue("L:A32NX_VLS", "number", this.compensateForMachEffect(vls[this.curFhi][cgw](gw)));
+        SimVar.SetSimVarValue("L:A32NX_GD", "number", this.compensateForMachEffect(this.calculateGreenDotSpeed(gw)));
+    }
+
+    /**
+     * Get aircraft takeoff and approach green dot speed
+     * Calculation:
+     * Gross weight (t) * 2 + 85 when below FL200
+     * @returns {number}
+     */
+    calculateGreenDotSpeed(gw) {
+        return gw * 2 + 85;
     }
 
     /**
      * Corrects velocity for mach effect by adding 1kt for every 1000ft above FL200
      * @param v {number} velocity in kt (CAS)
-     * @param a {number} altitude in ft
      * @returns {number} Mach corrected velocity in kt (CAS)
      */
-    compensateForMachEffect(v, a) {
-        return a > 20000 ? v + (a - 20000) / 1000 : v;
+    compensateForMachEffect(v) {
+        return this.alt > 20000 ? v + (this.alt - 20000) / 1000 : v;
+    }
+
+    /**
+     * Math.round(x / r) * r
+     * @param x {number} number to be rounded
+     * @param r {number} precision
+     * @returns {number} rounded number
+     */
+    round(x, r = 100) {
+        return Math.round(x / r) * r;
     }
 }

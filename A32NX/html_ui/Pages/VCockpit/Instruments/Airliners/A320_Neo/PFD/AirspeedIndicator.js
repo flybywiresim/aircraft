@@ -643,7 +643,7 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
         const nextFlapSpeed = Simplane.getNextFlapsExtendSpeed(this.aircraft) * crossSpeedFactor;
         // Value used to draw the red VMAX barber pole
         const maxSpeed = A32NX_Selectors.VMAX();
-        const greenDot = Simplane.getGreenDotSpeed() * crossSpeedFactor;
+        const greenDot = SimVar.GetSimVarValue("L:A32NX_GD", "number");
         const planeOnGround = Simplane.getIsGrounded();
         const vs = SimVar.GetSimVarValue("L:A32NX_VS", "number");
         const vls = SimVar.GetSimVarValue("L:A32NX_VLS", "number");
