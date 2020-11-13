@@ -191,22 +191,14 @@ const vlsTo = [
 ];
 
 /**
- * Checks if cg is defined
- * @param cg {number} center of gravity
- * @returns {number} validated center of gravity
- */
-function getSafeCg(cg = SimVar.GetSimVarValue("CG PERCENT", "percent")) {
-    return isNaN(cg) ? 24 : cg;
-}
-
-/**
  * Correct input function for cg
  * @param gw {number} gross weight (t)
  * @param f {function} function to be called with cg variable
+ * @param cg {number} center of gravity
  * @returns {number} cg corrected velocity (CAS)
  */
-function correctCg(gw, f) {
-    return f(gw, getSafeCg());
+function correctCg(gw, f, cg = SimVar.GetSimVarValue("CG PERCENT", "percent")) {
+    return f(gw, isNaN(cg) ? 24 : cg);
 }
 
 class A32NX_Vspeeds {
