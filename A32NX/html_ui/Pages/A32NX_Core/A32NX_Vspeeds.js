@@ -171,7 +171,7 @@ class A32NX_Vspeeds {
         const ldg = Math.round(SimVar.GetSimVarValue("GEAR POSITION:0", "Enum"));
         const alt = this.round(Simplane.getAltitude());
         if (fhi !== this.lastFhi) {
-            this.curFhi = this.lastFhi === 0 ? 5 : fhi;
+            this.curFhi = this.lastFhi === 0 && Simplane.getCurrentFlightPhase() > FlightPhase.FLIGHT_PHASE_TAKEOFF ? 5 : fhi;
             this.lastFhi = fhi;
             this.updateVspeeds(gw);
         } else if (gw !== this.lastGw) {
