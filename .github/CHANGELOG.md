@@ -69,6 +69,9 @@
 1. [General] Added location reporting for the live map - @nistei (Nistei)
 1. [CDU] Add V1/VR/V2 logic and disagree message, fixed V1/VR/V2 minimum range - @paul92ilm (Lussion)
 1. [ECAM] Add T.O message category to upper ECAM - @paul92ilm (Lussion)
+1. [ECAM] Fix cabin vertical speed display to show feet/min - @MattPaxtonBel, @RichardPilbery
+1. [FCU] Fix altitude change when the increment is 1000 - @lars-reimann (Lars Reimann)
+1. [CDU] Improve LAT REV page layout - @beheh (Benedict Etzel)
 
 ## 0.4.0
 1. [General] Add CHANGELOG.md - @nathaninnes (Nathan Innes)
