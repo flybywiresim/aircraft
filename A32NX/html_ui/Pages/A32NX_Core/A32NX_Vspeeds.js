@@ -36,16 +36,16 @@ const vs = [
         () => 126
     ], // Conf 2
     [
-        () => 91 - Math.round(SimVar.GetSimVarValue("GEAR POSITION:0", "Enum")) * 2,
-        (gw) => 91 + gw - 40 - Math.round(SimVar.GetSimVarValue("GEAR POSITION:0", "Enum")) * 2,
-        (gw) => 96 + gw - 45 - Math.round(SimVar.GetSimVarValue("GEAR POSITION:0", "Enum")) * 2,
-        (gw) => 101 + .8 * (gw - 50) - Math.round(SimVar.GetSimVarValue("GEAR POSITION:0", "Enum")) * 2,
-        (gw) => 105 + gw - 55 - Math.round(SimVar.GetSimVarValue("GEAR POSITION:0", "Enum")) * 2,
-        (gw) => 110 + .8 * (gw - 60) - Math.round(SimVar.GetSimVarValue("GEAR POSITION:0", "Enum")) * 2,
-        (gw) => 114 + gw - 65 - Math.round(SimVar.GetSimVarValue("GEAR POSITION:0", "Enum")) * 2,
-        (gw) => 119 + .6 * (gw - 70) - Math.round(SimVar.GetSimVarValue("GEAR POSITION:0", "Enum")) * 2,
-        (gw) => 122 + .8 * (gw - 75) - Math.round(SimVar.GetSimVarValue("GEAR POSITION:0", "Enum")) * 2,
-        () => 126 - Math.round(SimVar.GetSimVarValue("GEAR POSITION:0", "Enum")) * 2
+        (_, ldg) => 91 - ldg * 2,
+        (gw, ldg) => 91 + gw - 40 - ldg * 2,
+        (gw, ldg) => 96 + gw - 45 - ldg * 2,
+        (gw, ldg) => 101 + .8 * (gw - 50) - ldg * 2,
+        (gw, ldg) => 105 + gw - 55 - ldg * 2,
+        (gw, ldg) => 110 + .8 * (gw - 60) - ldg * 2,
+        (gw, ldg) => 114 + gw - 65 - ldg * 2,
+        (gw, ldg) => 119 + .6 * (gw - 70) - ldg * 2,
+        (gw, ldg) => 122 + .8 * (gw - 75) - ldg * 2,
+        (_, ldg) => 126 - ldg * 2
     ], // Conf 3
     [
         () => 84,
@@ -111,26 +111,26 @@ const vls = [
         () => 154
     ], // Config 2
     [
-        () => 117 - Math.round(SimVar.GetSimVarValue("GEAR POSITION:0", "Enum")),
-        (gw, cg = SimVar.GetSimVarValue("CG PERCENT", "percent")) => (((isNaN(cg)) ? 24 : cg) < 25 ? 117 + .4 * (gw - 40) : 117) - Math.round(SimVar.GetSimVarValue("GEAR POSITION:0", "Enum")),
-        (gw, cg = SimVar.GetSimVarValue("CG PERCENT", "percent")) => (((isNaN(cg)) ? 24 : cg) < 25 ? 119 + 1.2 * (gw - 45) : 117 + 1.4 * (gw - 45)) - Math.round(SimVar.GetSimVarValue("GEAR POSITION:0", "Enum")),
-        (gw, cg = SimVar.GetSimVarValue("CG PERCENT", "percent")) => (((isNaN(cg)) ? 24 : cg) < 25 ? 125 + 1.2 * (gw - 50) : 124 + 1.2 * (gw - 50)) - Math.round(SimVar.GetSimVarValue("GEAR POSITION:0", "Enum")),
-        (gw, cg = SimVar.GetSimVarValue("CG PERCENT", "percent")) => (((isNaN(cg)) ? 24 : cg) < 25 ? 131 + 1.2 * (gw - 55) : 130 + gw - 55) - Math.round(SimVar.GetSimVarValue("GEAR POSITION:0", "Enum")),
-        (gw, cg = SimVar.GetSimVarValue("CG PERCENT", "percent")) => (((isNaN(cg)) ? 24 : cg) < 25 ? 137 + gw - 60 : 135 + 1.2 * (gw - 60)) - Math.round(SimVar.GetSimVarValue("GEAR POSITION:0", "Enum")),
-        (gw, cg = SimVar.GetSimVarValue("CG PERCENT", "percent")) => ((((isNaN(cg)) ? 24 : cg) < 25 ? 142 : 141) + gw - 65) - Math.round(SimVar.GetSimVarValue("GEAR POSITION:0", "Enum")),
-        (gw, cg = SimVar.GetSimVarValue("CG PERCENT", "percent")) => ((((isNaN(cg)) ? 24 : cg) < 25 ? 147 : 146) + gw - 70) - Math.round(SimVar.GetSimVarValue("GEAR POSITION:0", "Enum")),
-        (gw, cg = SimVar.GetSimVarValue("CG PERCENT", "percent")) => (((isNaN(cg)) ? 24 : cg) < 25 ? 152 + .8 * (gw - 75) : 151 + gw - 65) - Math.round(SimVar.GetSimVarValue("GEAR POSITION:0", "Enum")),
-        () => 156 - Math.round(SimVar.GetSimVarValue("GEAR POSITION:0", "Enum"))
+        (_, ldg) => 117 - ldg,
+        (gw, ldg) => correctCg(gw, (gw, cg) => (isNaN(cg) ? 24 : cg) < 25 ? 117 + .4 * (gw - 40) : 117) - ldg,
+        (gw, ldg) => correctCg(gw, (gw, cg) => (isNaN(cg) ? 24 : cg) < 25 ? 119 + 1.2 * (gw - 45) : 117 + 1.4 * (gw - 45)) - ldg,
+        (gw, ldg) => correctCg(gw, (gw, cg) => (isNaN(cg) ? 24 : cg) < 25 ? 125 + 1.2 * (gw - 50) : 124 + 1.2 * (gw - 50)) - ldg,
+        (gw, ldg) => correctCg(gw, (gw, cg) => (isNaN(cg) ? 24 : cg) < 25 ? 131 + 1.2 * (gw - 55) : 130 + gw - 55) - ldg,
+        (gw, ldg) => correctCg(gw, (gw, cg) => (isNaN(cg) ? 24 : cg) < 25 ? 137 + gw - 60 : 135 + 1.2 * (gw - 60)) - ldg,
+        (gw, ldg) => correctCg(gw, (gw, cg) => ((isNaN(cg) ? 24 : cg) < 25 ? 142 : 141) + gw - 65) - ldg,
+        (gw, ldg) => correctCg(gw, (gw, cg) => ((isNaN(cg) ? 24 : cg) < 25 ? 147 : 146) + gw - 70) - ldg,
+        (gw, ldg) => correctCg(gw, (gw, cg) => (isNaN(cg) ? 24 : cg) < 25 ? 152 + .8 * (gw - 75) : 151 + gw - 65) - ldg,
+        (_, ldg) => 156 - ldg
     ], // Config 3
     [
         () => 116,
         () => 116,
         () => 116,
-        (gw, cg = SimVar.GetSimVarValue("CG PERCENT", "percent")) => 116 + (((isNaN(cg)) ? 24 : cg) < 25 ? .8 : .6) * (gw - 50),
-        (gw, cg = SimVar.GetSimVarValue("CG PERCENT", "percent")) => (((isNaN(cg)) ? 24 : cg) < 25 ? 120 : 119) + gw - 55,
-        (gw, cg = SimVar.GetSimVarValue("CG PERCENT", "percent")) => (((isNaN(cg)) ? 24 : cg) < 25 ? 125 : 124) + gw - 60,
-        (gw, cg = SimVar.GetSimVarValue("CG PERCENT", "percent")) => (((isNaN(cg)) ? 24 : cg) < 25 ? 130 : 129) + gw - 65,
-        (gw, cg = SimVar.GetSimVarValue("CG PERCENT", "percent")) => ((isNaN(cg)) ? 24 : cg) < 25 ? 135 + .8 * (gw - 70) : 134 + gw - 70,
+        (gw) => 116 + correctCg(gw, (gw, cg) => ((isNaN(cg) ? 24 : cg) < 25 ? .8 : .6) * (gw - 50)),
+        (gw) => correctCg(gw, (gw, cg) => ((isNaN(cg) ? 24 : cg) < 25 ? 120 : 119) + gw - 55),
+        (gw) => correctCg(gw, (gw, cg) => ((isNaN(cg) ? 24 : cg) < 25 ? 125 : 124) + gw - 60),
+        (gw) => correctCg(gw, (gw, cg) => ((isNaN(cg) ? 24 : cg) < 25 ? 130 : 129) + gw - 65),
+        (gw) => correctCg(gw, (gw, cg) => (isNaN(cg) ? 24 : cg) < 25 ? 135 + .8 * (gw - 70) : 134 + gw - 70),
         (gw) => 139 + .8 * (gw - 75),
         () => 143
     ], // Config Full
@@ -190,6 +190,16 @@ const vlsTo = [
     vls[5] // Config 1
 ];
 
+/**
+ * Correct input function for cg
+ * @param gw {number} gross weight (t)
+ * @param f {function} function to be called with cg variable
+ * @returns {number} cg corrected velocity (CAS)
+ */
+function correctCg(gw, f) {
+    return f(gw, SimVar.GetSimVarValue("CG PERCENT", "percent"));
+}
+
 class A32NX_Vspeeds {
     constructor() {
         console.log('A32NX_VSPEEDS constructed');
@@ -236,9 +246,9 @@ class A32NX_Vspeeds {
      */
     updateVspeeds(gw, fp) {
         const cgw = Math.ceil(((gw > 80 ? 80 : gw) - 40) / 5);
-        SimVar.SetSimVarValue("L:A32NX_VS", "number", this.compensateForMachEffect(vs[this.curFhi][cgw](gw)));
+        SimVar.SetSimVarValue("L:A32NX_VS", "number", this.compensateForMachEffect(vs[this.curFhi][cgw](gw, this.ldgPos)));
         SimVar.SetSimVarValue("L:A32NX_VLS", "number", this.compensateForMachEffect(
-            (fp < FlightPhase.FLIGHT_PHASE_CLIMB ? vlsTo : vls)[this.curFhi][cgw](gw))
+            (fp < FlightPhase.FLIGHT_PHASE_CLIMB ? vlsTo : vls)[this.curFhi][cgw](gw, this.ldgPos))
         );
         SimVar.SetSimVarValue("L:A32NX_GD", "number", this.compensateForMachEffect(this.calculateGreenDotSpeed(gw)));
     }
