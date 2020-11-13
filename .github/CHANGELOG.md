@@ -81,6 +81,7 @@
 1. [CDU] Improve LAT REV page layout - @beheh (Benedict Etzel)
 1. [PFD] Improved PFD text readability - @MisterChocker (Leon)
 1. [ECAM] Added CABIN PRESS page - @nikotina91
+1. [ECAM] Add ELEC page - @ramon54321
 
 ## 0.4.0
 1. [General] Add CHANGELOG.md - @nathaninnes (Nathan Innes)
