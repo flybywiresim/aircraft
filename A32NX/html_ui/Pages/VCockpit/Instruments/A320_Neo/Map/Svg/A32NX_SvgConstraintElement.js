@@ -31,8 +31,7 @@ class SvgConstraintElement extends SvgMapElement {
         if (this.source.ident.indexOf(" ") != -1) {
             return "constraint-" + this._id + "-map-" + map.index;
             ;
-        }
-        else {
+        } else {
             return "constraint-" + this.source.ident + "-map-" + map.index;
             ;
         }
@@ -109,8 +108,7 @@ class SvgConstraintElement extends SvgMapElement {
                 if (this.minimize) {
                     this.svgElement.setAttribute("width", fastToFixed(map.config.waypointIconSize * 1.3 * 0.5, 0));
                     this.svgElement.setAttribute("height", fastToFixed(map.config.waypointIconSize * 1.3 * 0.5, 0));
-                }
-                else {
+                } else {
                     this.svgElement.setAttribute("width", fastToFixed(map.config.waypointIconSize * 1.3, 0));
                     this.svgElement.setAttribute("height", fastToFixed(map.config.waypointIconSize * 1.3, 0));
                 }
@@ -120,18 +118,18 @@ class SvgConstraintElement extends SvgMapElement {
             if (this.needRepaint || Math.abs(this._lastX - this.x) > 0.1 || Math.abs(this._lastY - this.y) > 0.1) {
                 this._lastX = this.x;
                 this._lastY = this.y;
-                let x = (this.x - map.config.waypointIconSize * 1.3 * 0.5 * (this.minimize ? 0.5 : 1));
-                let y = (this.y - map.config.waypointIconSize * 1.3 * 0.5 * (this.minimize ? 0.5 : 1));
+                const x = (this.x - map.config.waypointIconSize * 1.3 * 0.5 * (this.minimize ? 0.5 : 1));
+                const y = (this.y - map.config.waypointIconSize * 1.3 * 0.5 * (this.minimize ? 0.5 : 1));
                 this.svgElement.setAttribute("x", x + "");
                 this.svgElement.setAttribute("y", y + "");
                 if (!this._label) {
-                    let labelId = this.id(map) + "-text-" + map.index;
-                    let label = document.getElementById(labelId);
+                    const labelId = this.id(map) + "-text-" + map.index;
+                    const label = document.getElementById(labelId);
                     if (label instanceof SVGForeignObjectElement) {
-                        let c = document.createElement("canvas");
-                        let ctx = c.getContext("2d");
-                        let fontSize = map.config.waypointLabelFontSize;
-                        let text = "CSTR";
+                        const c = document.createElement("canvas");
+                        const ctx = c.getContext("2d");
+                        const fontSize = map.config.waypointLabelFontSize;
+                        const text = "CSTR";
                         ctx.font = fontSize + "px " + map.config.waypointLabelFontFamily;
                         this._textWidth = ctx.measureText(text).width;
                         this._textHeight = fontSize * 0.675;
@@ -140,13 +138,12 @@ class SvgConstraintElement extends SvgMapElement {
                     }
                 }
                 if (this._label) {
-                    let textX = (x + map.config.waypointIconSize * 0.5 - this._textWidth * 0.5 + map.config.waypointLabelDistanceX);
-                    let textY = y + map.config.waypointLabelDistance + map.config.waypointLabelFontSize + 4;
+                    const textX = (x + map.config.waypointIconSize * 0.5 - this._textWidth * 0.5 + map.config.waypointLabelDistanceX);
+                    const textY = y + map.config.waypointLabelDistance + map.config.waypointLabelFontSize + 4;
                     this._label.setAttribute("x", textX + "");
                     this._label.setAttribute("y", textY + "");
                     this.needRepaint = false;
-                }
-                else {
+                } else {
                     this.needRepaint = true;
                 }
             }
@@ -175,7 +172,7 @@ class SvgTopOfXElement extends SvgMapElement {
         return this.imageName + ".svg";
     }
     createDraw(map) {
-        let container = document.createElementNS(Avionics.SVG.NS, "image");
+        const container = document.createElementNS(Avionics.SVG.NS, "image");
         container.id = this.id(map);
         container.classList.add("map-city-icon");
         container.setAttribute("width", fastToFixed(map.config.waypointIconSize * 2, 0));
@@ -186,7 +183,7 @@ class SvgTopOfXElement extends SvgMapElement {
     updateDraw(map) {
         map.latLongToXYToRef(this.lat, this.long, this);
         if (isFinite(this.x) && isFinite(this.y)) {
-            let fileName = this.imageFileName();
+            const fileName = this.imageFileName();
             if (fileName !== this._lastFileName) {
                 this.svgElement.setAttributeNS("http://www.w3.org/1999/xlink", "href", map.config.imagesDir + fileName);
                 this._lastFileName = fileName;
