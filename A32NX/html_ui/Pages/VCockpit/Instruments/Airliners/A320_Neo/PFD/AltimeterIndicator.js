@@ -1,7 +1,7 @@
 class Jet_PFD_AltimeterIndicator extends HTMLElement {
     constructor() {
         super(...arguments);
-        this.strokeSize = "3";
+        this.strokeSize = "4";
         this.fontSize = 22;
         this.refHeight = 0;
         this.borderSize = 0;
@@ -761,6 +761,26 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
             this.cursorSVGShape.setAttribute("stroke", "yellow");
             this.cursorIntegralsGroup.setAttribute("visibility", "visible");
             this.cursorDecimals.setAttribute("visibility", "visible");
+            
+            
+            // Altitude almost reached blink animation
+            const cursorSVGAltitudeAnimation = document.createElementNS(Avionics.SVG.NS, "animate");
+            cursorSVGAltitudeAnimation.setAttribute("attributeType", "XML");
+            cursorSVGAltitudeAnimation.setAttribute("attributeName", "stroke");
+            cursorSVGAltitudeAnimation.setAttribute("values", "yellow;#42420c");
+            cursorSVGAltitudeAnimation.setAttribute("dur", "0.0s");
+            cursorSVGAltitudeAnimation.setAttribute("repeatCount", "indefinite");
+            this.cursorSVGShape.appendChild(cursorSVGAltitudeAnimation);
+    
+
+            // Blink when 750 feet from target altitude and stop when bellow 250 
+            const delta = Math.abs(this._delayedAltitude - this.hudAPAltitude);
+            if (250 <= delta && delta <= 750) {
+                cursorSVGAltitudeAnimation.setAttribute("dur", "1s");
+            } else {
+                cursorSVGAltitudeAnimation.setAttribute("dur", "0.0s");
+            }
+
             this.verticalLine.setAttribute("stroke", "white");
             // Code to add if visibilty issues with this part
 
