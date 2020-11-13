@@ -80,6 +80,7 @@
 1. [FCU] Fix altitude change when the increment is 1000 - @lars-reimann (Lars Reimann)
 1. [CDU] Improve LAT REV page layout - @beheh (Benedict Etzel)
 1. [PFD] Improved PFD text readability - @MisterChocker (Leon)
+1. [ECAM] Added CABIN PRESS page - @nikotina91
 
 ## 0.4.0
 1. [General] Add CHANGELOG.md - @nathaninnes (Nathan Innes)
