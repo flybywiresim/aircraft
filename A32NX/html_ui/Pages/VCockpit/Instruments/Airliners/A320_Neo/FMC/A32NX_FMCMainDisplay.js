@@ -27,14 +27,15 @@ class FMCMainDisplay extends BaseAirliners {
         this.perfTOTemp = 20;
         this._overridenFlapApproachSpeed = NaN;
         this._overridenSlatApproachSpeed = NaN;
-        this._routeFinalFuelWeight = NaN;
-        this._routeFinalFuelTime = NaN;
-        this._routeReservedWeight = NaN;
-        this._routeReservedPercent = 0;
+        this._routeFinalFuelWeight = 0;
+        this._routeFinalFuelTime = 30;
+        this._routeFinalFuelTimeDefault = 30;
+        this._routeReservedWeight = 0;
+        this._routeReservedPercent = 5;
         this._takeOffFlap = -1;
         this.takeOffWeight = NaN;
         this.landingWeight = NaN;
-        this.averageWind = NaN;
+        this.averageWind = 0;
         this.perfCrzWindHeading = NaN;
         this.perfCrzWindSpeed = NaN;
         this.perfApprQNH = NaN;
@@ -70,9 +71,35 @@ class FMCMainDisplay extends BaseAirliners {
         this._smoothedTargetHeading = NaN;
         this._smootherTargetPitch = NaN;
 
+        this._windDirections = {
+            TAILWIND : "TL",
+            HEADWIND : "HD"
+        };
+        this._fuelPlanningPhases = {
+            PLANNING : 1,
+            IN_PROGRESS : 2,
+            COMPLETED : 3
+        };
         this._zeroFuelWeightZFWCGEntered = false;
         this._taxiEntered = false;
-        this._windDir = "HD";
+        this._windDir = this._windDirections.HEADWIND;
+        this._DistanceToAlt = 0;
+        this._routeAltFuelWeight = 0;
+        this._routeAltFuelTime = 0;
+        this._routeTripFuelWeight = 0;
+        this._routeTripTime = 0;
+        this._defaultTaxiFuelWeight = 0.2;
+        this._rteRsvPercentOOR = false;
+        this._rteReservedEntered = false;
+        this._rteFinalCoeffecient = 0;
+        this._rteFinalEntered = false;
+        this._routeAltFuelEntered = false;
+        this._minDestFob = 0;
+        this._minDestFobEntered = false;
+        this._defaultRouteFinalTime = 45;
+        this._fuelPredDone = false;
+        this._fuelPlanningPhase = this._fuelPlanningPhases.PLANNING;
+        this._blockFuelEntered = false;
     }
 
     static approachTypeStringToIndex(approachType) {
@@ -537,14 +564,67 @@ class FMCMainDisplay extends BaseAirliners {
         });
     }
 
+    /**
+     * Computes distance between destination and alternate destination
+     */
+    tryUpdateDistanceToAlt() {
+        this._DistanceToAlt = Avionics.Utils.computeGreatCircleDistance(
+            this.flightPlanManager.getDestination().infos.coordinates,
+            this.altDestination.infos.coordinates);
+    }
+
+    isAltFuelInRange(fuel) {
+        return 0 < fuel && fuel < (this.blockFuel - this._routeTripFuelWeight);
+    }
+
+    async trySetRouteAlternateFuel(altFuel) {
+        if (altFuel === FMCMainDisplay.clrValue) {
+            this._routeAltFuelEntered = false;
+            return true;
+        }
+        const value = parseFloat(altFuel);
+        if (isFinite(value) && this.isAltFuelInRange(value)) {
+            this._routeAltFuelEntered = true;
+            this._routeAltFuelWeight = value;
+            this._routeAltFuelTime = FMCMainDisplay.minutesTohhmm(A32NX_FuelPred.computeUserAltTime(this._routeAltFuelWeight * 1000, 290));
+            return true;
+        }
+        this.showErrorMessage("FORMAT ERROR");
+        return false;
+    }
+
+    isMinDestFobInRange(fuel) {
+        return 0 <= fuel && fuel <= 80.0;
+    }
+
+    async trySetMinDestFob(fuel) {
+        if (fuel === FMCMainDisplay.clrValue) {
+            this._minDestFobEntered = false;
+            return true;
+        }
+        const value = parseFloat(fuel);
+        if (isFinite(value) && this.isMinDestFobInRange(value)) {
+            this._minDestFobEntered = true;
+            if (value < this._minDestFob) {
+                this.showErrorMessage("CHECK MIN DEST FOB");
+            }
+            this._minDestFob = value;
+            return true;
+        }
+        this.showErrorMessage("FORMAT ERROR");
+        return false;
+    }
+
     async tryUpdateAltDestination(altDestIdent) {
-        if (altDestIdent === "NONE") {
+        if (altDestIdent === "NONE" || altDestIdent === FMCMainDisplay.clrValue) {
             this.altDestination = undefined;
+            this._DistanceToAlt = 0;
             return true;
         }
         const airportAltDest = await this.dataManager.GetAirportByIdent(altDestIdent);
         if (airportAltDest) {
             this.altDestination = airportAltDest;
+            this.tryUpdateDistanceToAlt();
             return true;
         }
         this.showErrorMessage("NOT IN DATABASE");
@@ -575,6 +655,120 @@ class FMCMainDisplay extends BaseAirliners {
                 callback(true);
             });
         });
+    }
+
+    /**
+     * Updates the Fuel weight cell to tons. Uses a place holder FL120 for 30 min
+     */
+    tryUpdateRouteFinalFuel() {
+        if (this._routeFinalFuelTime <= 0) {
+            this._routeFinalFuelTime = this._defaultRouteFinalTime;
+        }
+        this._routeFinalFuelWeight = A32NX_FuelPred.computeHoldingTrackFF(this.zeroFuelWeight, 120) / 1000;
+        this._rteFinalCoeffecient = A32NX_FuelPred.computeHoldingTrackFF(this.zeroFuelWeight, 120) / 30;
+    }
+
+    /**
+     * Updates the alternate fuel and time values using a place holder FL of 330 until that can be set
+     */
+    tryUpdateRouteAlternate() {
+        if (this._DistanceToAlt < 20) {
+            this._routeAltFuelWeight = 0;
+            this._routeAltFuelTime = 0;
+        } else {
+            const placeholderFl = 120;
+            let airDistance = 0;
+            if (this._windDir === this._windDirections.TAILWIND) {
+                airDistance = A32NX_FuelPred.computeAirDistance(Math.round(this._DistanceToAlt), this.averageWind);
+            } else if (this._windDir === this._windDirections.HEADWIND) {
+                airDistance = A32NX_FuelPred.computeAirDistance(Math.round(this._DistanceToAlt), -this.averageWind);
+            }
+
+            const deviation = (this.zeroFuelWeight + this._routeFinalFuelWeight - A32NX_FuelPred.refWeight) * A32NX_FuelPred.computeNumbers(airDistance, placeholderFl, A32NX_FuelPred.computations.CORRECTIONS, true);
+
+            this._routeAltFuelWeight = (A32NX_FuelPred.computeNumbers(airDistance, placeholderFl, A32NX_FuelPred.computations.FUEL, true) + deviation) / 1000;
+            this._routeAltFuelTime = A32NX_FuelPred.computeNumbers(airDistance, placeholderFl, A32NX_FuelPred.computations.TIME, true);
+        }
+    }
+
+    /**
+     * Attempts to calculate trip information. Is dynamic in that it will use liveDistanceTo the destination rather than a
+     * static distance. Works down to 20NM airDistance and FL100 Up to 3100NM airDistance and FL390, anything out of those ranges and values
+     * won't be updated.
+     */
+    tryUpdateRouteTrip(dynamic = false) {
+        let airDistance = 0;
+        const groundDistance = dynamic ? this.flightPlanManager.getDestination().liveDistanceTo : this.flightPlanManager.getDestination().cumulativeDistanceInFP;
+        if (this._windDir === this._windDirections.TAILWIND) {
+            airDistance = A32NX_FuelPred.computeAirDistance(groundDistance, this.averageWind);
+        } else if (this._windDir === this._windDirections.HEADWIND) {
+            airDistance = A32NX_FuelPred.computeAirDistance(groundDistance, -this.averageWind);
+        }
+
+        let altToUse = this.cruiseFlightLevel;
+        // Use the cruise level for calculations otherwise after cruise use descent altitude down to 10,000 feet.
+        if (this.currentFlightPhase >= FlightPhase.FLIGHT_PHASE_DESCENT) {
+            altToUse = SimVar.GetSimVarValue("PLANE ALTITUDE", 'Feet') / 100;
+        }
+
+        // Use alternate coefficients - EXPERIMENTAL
+        if ((20 < airDistance && airDistance < 200) || (100 < altToUse && altToUse < 290)) {
+            const deviation = (this.zeroFuelWeight + this._routeFinalFuelWeight + this._routeAltFuelWeight - A32NX_FuelPred.refWeight) * A32NX_FuelPred.computeNumbers(airDistance, altToUse, A32NX_FuelPred.computations.CORRECTIONS, true);
+
+            this._routeTripFuelWeight = (A32NX_FuelPred.computeNumbers(airDistance, altToUse, A32NX_FuelPred.computations.FUEL, true) + deviation - 60) / 1000; // Deducted 60KG fuel as Alternate predictions include go-around
+            this._routeTripTime = A32NX_FuelPred.computeNumbers(airDistance, altToUse, A32NX_FuelPred.computations.TIME, true);
+        } else if ((200 <= airDistance && airDistance <= 3100) || (290 <= altToUse && altToUse <= 390)) {
+            const deviation = (this.zeroFuelWeight + this._routeFinalFuelWeight + this._routeAltFuelWeight - A32NX_FuelPred.refWeight) * A32NX_FuelPred.computeNumbers(airDistance, altToUse, A32NX_FuelPred.computations.CORRECTIONS, false);
+
+            this._routeTripFuelWeight = (A32NX_FuelPred.computeNumbers(airDistance, altToUse, A32NX_FuelPred.computations.FUEL, false) + deviation) / 1000;
+            this._routeTripTime = A32NX_FuelPred.computeNumbers(airDistance, altToUse, A32NX_FuelPred.computations.TIME, false);
+        }
+    }
+
+    tryUpdateMinDestFob() {
+        this._minDestFob = this._routeAltFuelWeight + this.getRouteFinalFuelWeight();
+    }
+
+    tryUpdateTOW() {
+        this.takeOffWeight = this.getGW() - this.taxiFuelWeight;
+    }
+
+    tryUpdateLW() {
+        this.landingWeight = this.takeOffWeight - this._routeTripFuelWeight;
+    }
+
+    /**
+     * Computes extra fuel
+     * @param {boolean}useFOB - States whether to use the FOB rather than block fuel when computing extra fuel
+     * @returns {number}
+     */
+    tryGetExtraFuel(useFOB = false) {
+        if (useFOB) {
+            return this.getFOB() - this.getTotalTripFuelCons() - this._minDestFob - this.taxiFuelWeight;
+        } else {
+            return this.blockFuel - this.getTotalTripFuelCons() - this._minDestFob - this.taxiFuelWeight;
+        }
+    }
+
+    /**
+     * EXPERIMENTAL
+     * Attempts to calculate the extra time
+     */
+    tryGetExtraTime(useFOB = false) {
+        if (this.tryGetExtraFuel(useFOB) <= 0) {
+            return 0;
+        }
+        const tempWeight = this.getGW() - this._minDestFob;
+        const tempFFCoefficient = A32NX_FuelPred.computeHoldingTrackFF(tempWeight, 180) / 30;
+        return (this.tryGetExtraFuel(useFOB) * 1000) / tempFFCoefficient;
+    }
+
+    getRouteAltFuelWeight() {
+        return this._routeAltFuelWeight;
+    }
+
+    getRouteAltFuelTime() {
+        return this._routeAltFuelTime;
     }
 
     setOriginRunway(runwayName, callback = EmptyCallback.Boolean) {
@@ -750,17 +944,11 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     getTotalTripTime() {
-        if (this.flightPlanManager.getOrigin()) {
-            return this.flightPlanManager.getOrigin().infos.totalTimeInFP;
-        }
-        return NaN;
+        return this._routeTripTime;
     }
 
     getTotalTripFuelCons() {
-        if (this.flightPlanManager.getOrigin()) {
-            return this.flightPlanManager.getOrigin().infos.totalFuelConsInFP;
-        }
-        return NaN;
+        return this._routeTripFuelWeight;
     }
 
     getOrSelectWaypointByIdent(ident, callback) {
@@ -1307,15 +1495,47 @@ class FMCMainDisplay extends BaseAirliners {
             SimVar.SetSimVarValue("L:AIRLINER_APPR_GREEN_DOT_SPD", "Number", apprGreenDotSpeed);
         }
     }
+    isTaxiFuelInRange(taxi) {
+        return 0 <= taxi && taxi <= 9.9;
+    }
 
+    /**
+     * Attempts to predict required block fuel for trip
+     * @returns {boolean}
+     */
+    tryFuelPlanning() {
+        if (this._fuelPlanningPhase === this._fuelPlanningPhases.IN_PROGRESS) {
+            this._blockFuelEntered = true;
+            this._fuelPlanningPhase = this._fuelPlanningPhases.COMPLETED;
+            return true;
+        }
+        const tempRouteFinalFuelTime = this._routeFinalFuelTime;
+        this.tryUpdateRouteFinalFuel();
+        this.tryUpdateRouteAlternate();
+        this.tryUpdateRouteTrip();
+        this.tryUpdateMinDestFob();
+
+        this._routeFinalFuelTime = tempRouteFinalFuelTime;
+        this._routeFinalFuelWeight = (this._routeFinalFuelTime * this._rteFinalCoeffecient) / 1000;
+
+        this.blockFuel = this.getTotalTripFuelCons() + this._minDestFob + this.taxiFuelWeight;
+        this._fuelPlanningPhase = this._fuelPlanningPhases.IN_PROGRESS;
+        return true;
+    }
     async trySetTaxiFuelWeight(s) {
+        if (s === FMCMainDisplay.clrValue) {
+            this.taxiFuelWeight = this._defaultTaxiFuelWeight;
+            this._taxiEntered = false;
+            return true;
+        }
         if (!/[0-9]+(\.[0-9][0-9]?)?/.test(s)) {
             this.showErrorMessage("FORMAT ERROR");
             return false;
         }
         this._taxiEntered = true;
+
         const value = parseFloat(s);
-        if (isFinite(value) && value >= 0) {
+        if (isFinite(value) && value >= 0 && this.isTaxiFuelInRange(value)) {
             this.taxiFuelWeight = value;
             return true;
         }
@@ -1325,33 +1545,69 @@ class FMCMainDisplay extends BaseAirliners {
 
     getRouteFinalFuelWeight() {
         if (isFinite(this._routeFinalFuelWeight)) {
+            this._routeFinalFuelWeight = (this._routeFinalFuelTime * this._rteFinalCoeffecient) / 1000;
             return this._routeFinalFuelWeight;
-        } else if (isFinite(this._routeFinalFuelTime)) {
-            return this.getTotalTripFuelCons() / this.getTotalTripTime() * this._routeFinalFuelTime;
         }
-        return NaN;
     }
 
     getRouteFinalFuelTime() {
-        if (isFinite(this._routeFinalFuelTime)) {
-            return this._routeFinalFuelTime;
-        } else if (isFinite(this._routeFinalFuelWeight)) {
-            return this.getTotalTripTime() / this.getTotalTripFuelCons() * this._routeFinalFuelWeight;
-        }
-        return NaN;
+        return this._routeFinalFuelTime;
     }
 
-    async trySetRouteFinalFuel(s) {
+    isFinalFuelInRange(fuel) {
+        return 0 <= fuel && fuel <= 100;
+    }
+
+    isFinalTimeInRange(time) {
+        const convertedTime = FMCMainDisplay.hhmmToMinutes(time.padStart(4,"0"));
+        return 0 <= convertedTime && convertedTime <= 90;
+    }
+
+    /**
+     * This method is used to set initial Final Time for when INIT B is making predictions
+     * @param {String} s - containing time value
+     * @returns {boolean}
+     */
+    async trySetRouteFinalTime(s) {
         if (s) {
-            const rteFinalWeight = parseFloat(s.split("/")[0]);
-            const rteFinalTime = FMCMainDisplay.hhmmToSeconds(s.split("/")[1]);
-            if (isFinite(rteFinalWeight)) {
-                this._routeFinalFuelWeight = rteFinalWeight;
-                this._routeFinalFuelTime = NaN;
+            if (s === FMCMainDisplay.clrValue) {
+                this._routeFinalFuelTime = this._routeFinalFuelTimeDefault;
                 return true;
-            } else if (isFinite(rteFinalTime)) {
-                this._routeFinalFuelWeight = NaN;
-                this._routeFinalFuelTime = rteFinalTime;
+            }
+            const rteFinalTime = s.split("/")[1];
+            if (rteFinalTime !== undefined && this.isFinalTimeInRange(rteFinalTime)) {
+                this._routeFinalFuelTime = FMCMainDisplay.hhmmToMinutes(rteFinalTime.padStart(4,"0"));
+                return true;
+            }
+            this.showErrorMessage(this.defaultInputErrorMessage);
+            return false;
+        }
+        this.showErrorMessage(this.defaultInputErrorMessage);
+        return false;
+    }
+
+    /**
+     *
+     * @param {string} s
+     * @returns {Promise<boolean>}
+     */
+    async trySetRouteFinalFuel(s) {
+        if (s === FMCMainDisplay.clrValue) {
+            this._routeFinalFuelTime = this._routeFinalFuelTimeDefault;
+            this._rteFinalEntered = false;
+            return true;
+        }
+        if (s) {
+            this._rteFinalEntered = true;
+            const rteFinalWeight = parseFloat(s.split("/")[0]);
+            const rteFinalTime = s.split("/")[1];
+            if (rteFinalTime === undefined && this.isFinalFuelInRange(rteFinalWeight)) {
+                this._routeFinalFuelWeight = rteFinalWeight;
+                this._routeFinalFuelTime = (rteFinalWeight * 1000) / this._rteFinalCoeffecient;
+                return true;
+            } else if (rteFinalTime !== undefined && this.isFinalTimeInRange(rteFinalTime)) {
+                this._routeFinalFuelTime = FMCMainDisplay.hhmmToMinutes(rteFinalTime.padStart(4,"0"));
+                this._routeFinalFuelWeight = (this._routeFinalFuelTime * this._rteFinalCoeffecient) / 1000;
                 return true;
             }
         }
@@ -1360,7 +1616,7 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     getRouteReservedWeight() {
-        if (isFinite(this._routeReservedWeight)) {
+        if (isFinite(this._routeReservedWeight) && this._routeReservedWeight !== 0) {
             return this._routeReservedWeight;
         } else {
             return this._routeReservedPercent * this.blockFuel / 100;
@@ -1368,10 +1624,36 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     getRouteReservedPercent() {
-        if (isFinite(this._routeReservedWeight) && isFinite(this.blockFuel)) {
+        if (isFinite(this._routeReservedWeight) && isFinite(this.blockFuel) && this._routeReservedWeight !== 0) {
             return this._routeReservedWeight / this.blockFuel * 100;
         }
         return this._routeReservedPercent;
+    }
+    trySetRouteReservedPercent(s) {
+        if (s) {
+            if (s === FMCMainDisplay.clrValue) {
+                this._rteReservedEntered = false;
+                this._routeReservedWeight = 0;
+                this._routeReservedPercent = 5;
+                return true;
+            }
+            const rteRsvPercent = parseFloat(s.split("/")[1]);
+            if ((0 > rteRsvPercent > 15)) {
+                this._rteRsvPercentOOR = true;
+                this.showErrorMessage(this.defaultInputErrorMessage);
+                return false;
+            }
+            this._rteRsvPercentOOR = false;
+            if (isFinite(rteRsvPercent)) {
+                this._routeReservedWeight = NaN;
+                this._routeReservedPercent = rteRsvPercent;
+                return true;
+            }
+            this.showErrorMessage(this.defaultInputErrorMessage);
+            return false;
+        }
+        this.showErrorMessage(this.defaultInputErrorMessage);
+        return false;
     }
 
     /**
@@ -1429,8 +1711,20 @@ class FMCMainDisplay extends BaseAirliners {
 
     trySetRouteReservedFuel(s) {
         if (s) {
+            if (s === FMCMainDisplay.clrValue) {
+                this._rteReservedEntered = false;
+                this._routeReservedWeight = 0;
+                this._routeReservedPercent = 5;
+                return true;
+            }
             const rteRsvWeight = parseFloat(s.split("/")[0]);
             const rteRsvPercent = parseFloat(s.split("/")[1]);
+            if ((0 > rteRsvPercent && rteRsvPercent > 15)) {
+                this._rteRsvPercentOOR = true;
+                return true;
+            }
+            this._rteRsvPercentOOR = false;
+            this._rteReservedEntered = true;
             if (isFinite(rteRsvWeight)) {
                 this._routeReservedWeight = rteRsvWeight;
                 this._routeReservedPercent = 0;
@@ -1507,6 +1801,14 @@ class FMCMainDisplay extends BaseAirliners {
         callback(false);
     }
 
+    isZFWInRange(zfw) {
+        return 35.0 <= zfw && zfw <= 80.0; //TODO figure out how to handle LBs and KG input
+    }
+
+    isZFWCGInRange(zfwcg) {
+        return (8.0 <= zfwcg && zfwcg <= 50.0);
+    }
+
     async trySetZeroFuelWeightZFWCG(s, useLbs = false) {
         let zfw = 0;
         let zfwcg = 0;
@@ -1519,7 +1821,7 @@ class FMCMainDisplay extends BaseAirliners {
                 zfw = parseFloat(s);
             }
         }
-        if (zfw > 0 && zfwcg > 0) {
+        if (zfw > 0 && zfwcg > 0 && this.isZFWInRange(zfw) && this.isZFWCGInRange(zfwcg)) {
             this._zeroFuelWeightZFWCGEntered = true;
             if (useLbs) {
                 zfw = zfw / 2.204623;
@@ -1534,23 +1836,29 @@ class FMCMainDisplay extends BaseAirliners {
             return true;
         }
         if (this._zeroFuelWeightZFWCGEntered) {
-            if (zfw > 0) {
+            if (zfw > 0 && this.isZFWInRange(zfw)) {
                 if (useLbs) {
                     zfw = zfw / 2.204623;
                 }
                 this.setZeroFuelWeight(zfw.toString());
-            } else if (zfwcg > 0) {
+            } else {
+                this.showErrorMessage("FORMAT ERROR");
+                return false;
+            }
+            if (zfwcg > 0 && this.isZFWCGInRange(zfwcg)) {
                 this.setZeroFuelCG(zfwcg.toString());
+            } else {
+                this.showErrorMessage("FORMAT ERROR");
+                return false;
             }
 
             this.updateTakeOffTrim();
             this.updateCleanTakeOffSpeed();
             this.updateCleanApproachSpeed();
             return true;
-        } else {
-            this.showErrorMessage("FORMAT ERROR");
-            return false;
         }
+        this.showErrorMessage("FORMAT ERROR");
+        return false;
     }
 
     getBlockFuel(useLbs = false) {
@@ -1560,14 +1868,71 @@ class FMCMainDisplay extends BaseAirliners {
         return this.blockFuel;
     }
 
+    /**
+     *
+     * @param useLbs states whether to return the weight back in tons or pounds
+     * @returns {*}
+     */
+    getFOB(useLbs = false) {
+        if (useLbs) {
+            return SimVar.GetSimVarValue("FUEL TOTAL QUANTITY WEIGHT", "pound");
+        } else {
+            return (SimVar.GetSimVarValue("FUEL TOTAL QUANTITY WEIGHT", "pound") * 0.453592) / 1000;
+        }
+    }
+
+    /**
+     * retrieves GW in Tons
+     * @returns {number}
+     */
+    getGW() {
+        return (SimVar.GetSimVarValue("TOTAL WEIGHT", "Pounds") * 0.45359237) / 1000;
+    }
+
+    getCG() {
+        return SimVar.GetSimVarValue("CG PERCENT", "Percent over 100") * 100;
+    }
+
+    /**
+     *
+     * @returns {number} Returns estimated fuel on board when arriving at the destination
+     */
+    getDestEFOB(useFOB = false) {
+        if (useFOB) {
+            return this.getFOB() - this._routeTripFuelWeight - this.taxiFuelWeight;
+        } else {
+            return this.blockFuel - this._routeTripFuelWeight - this.taxiFuelWeight;
+
+        }
+    }
+
+    /**
+     * @returns {number} Returns EFOB when arriving at the alternate dest
+     */
+    getAltEFOB(useFOB = false) {
+        return this.getDestEFOB(useFOB) - this._routeAltFuelWeight;
+    }
+
+    isBlockFuelInRange(fuel) {
+        return 0 <= fuel && fuel <= 80;
+    }
+
     trySetBlockFuel(s, useLbs = false) {
+        if (s === FMCMainDisplay.clrValue) {
+            this.blockFuel = 0.0;
+            this._blockFuelEntered = false;
+            this._fuelPredDone = false;
+            this._fuelPlanningPhase = this._fuelPlanningPhases.PLANNING;
+            return true;
+        }
         let value = parseFloat(s);
-        if (isFinite(value)) {
+        if (isFinite(value) && this.isBlockFuelInRange(value)) {
             if (useLbs) {
                 value = value / 2.204623;
             }
             this.blockFuel = value;
             this.updateTakeOffTrim();
+            this._blockFuelEntered = true;
             return true;
         }
         this.showErrorMessage(this.defaultInputErrorMessage);
@@ -1628,13 +1993,17 @@ class FMCMainDisplay extends BaseAirliners {
         return false;
     }
 
+    isAvgWindInRange(wind) {
+        return 0 <= wind && wind <= 250;
+    }
+
     // If anyone wants to refactor this please do
     async trySetAverageWind(s) {
         let wind;
         if (s.includes("HD")) {
             wind = parseFloat(s.split("HD")[1]);
-            this._windDir = "HD";
-            if (isFinite(wind)) {
+            this._windDir = this._windDirections.HEADWIND;
+            if (isFinite(wind) && this.isAvgWindInRange(wind)) {
                 this.averageWind = wind;
                 return true;
             } else {
@@ -1643,8 +2012,8 @@ class FMCMainDisplay extends BaseAirliners {
             }
         } else if (s.includes("H")) {
             wind = parseFloat(s.split("H")[1]);
-            this._windDir = "HD";
-            if (isFinite(wind)) {
+            this._windDir = this._windDirections.HEADWIND;
+            if (isFinite(wind) && this.isAvgWindInRange(wind)) {
                 this.averageWind = wind;
                 return true;
             } else {
@@ -1653,8 +2022,8 @@ class FMCMainDisplay extends BaseAirliners {
             }
         } else if (s.includes("-")) {
             wind = parseFloat(s.split("-")[1]);
-            this._windDir = "HD";
-            if (isFinite(wind)) {
+            this._windDir = this._windDirections.HEADWIND;
+            if (isFinite(wind) && this.isAvgWindInRange(wind)) {
                 this.averageWind = wind;
                 return true;
             } else {
@@ -1663,8 +2032,8 @@ class FMCMainDisplay extends BaseAirliners {
             }
         } else if (s.includes("TL")) {
             wind = parseFloat(s.split("TL")[1]);
-            this._windDir = "TL";
-            if (isFinite(wind)) {
+            this._windDir = this._windDirections.TAILWIND;
+            if (isFinite(wind) && this.isAvgWindInRange(wind)) {
                 this.averageWind = wind;
                 return true;
             } else {
@@ -1673,18 +2042,18 @@ class FMCMainDisplay extends BaseAirliners {
             }
         } else if (s.includes("T")) {
             wind = parseFloat(s.split("T")[1]);
-            this._windDir = "TL";
-            if (isFinite(wind)) {
+            this._windDir = this._windDirections.TAILWIND;
+            if (isFinite(wind) && this.isAvgWindInRange(wind)) {
                 this.averageWind = wind;
                 return true;
             } else {
                 this.showErrorMessage("FORMAT ERROR");
                 return false;
             }
-        } else if (s.includes("+")) { // Until the +- button on the MCDU actually shows a plus sign
+        } else if (s.includes("+") || s) { // Will this work..?
             wind = parseFloat(s);
-            this._windDir = "TL";
-            if (isFinite(wind)) {
+            this._windDir = this._windDirections.TAILWIND;
+            if (isFinite(wind) && this.isAvgWindInRange(wind)) {
                 this.averageWind = wind;
                 return true;
             } else {
@@ -2462,7 +2831,8 @@ class FMCMainDisplay extends BaseAirliners {
         this.thrustReductionAltitude = 1500;
         SimVar.SetSimVarValue("L:AIRLINER_THR_RED_ALT", "Number", this.thrustReductionAltitude);
         this.PageTimeout = {
-            Prog: 5000
+            Prog: 5000,
+            Dyn: 1500
         };
         this.page = {
             SelfPtr: false,
@@ -2559,10 +2929,10 @@ class FMCMainDisplay extends BaseAirliners {
 
     /**
      * Used for calculation time for fuel pred page
-     * @returns {number} dynamic delay in ms between 2000ms and 400ms
+     * @returns {number} dynamic delay in ms between 2000ms and 4000ms
      */
     getDelayFuelPred() {
-        return Math.pow(this.flightPlanManager.getWaypointsCount(), 2) + (this.flightPlanManager.getDestination().cumulativeDistanceInFP) / 10 + Math.random() * 300;
+        return 1714 * this.flightPlanManager.getWaypointsCount() + this.flightPlanManager.getDestination().cumulativeDistanceInFP;
     }
 
     /**
@@ -2805,6 +3175,10 @@ class FMCMainDisplay extends BaseAirliners {
         return h.toFixed(0).padStart(2, "0") + m.toFixed(0).padStart(2, "0");
     }
 
+    static minuteToSeconds(minutes) {
+        return minutes * 60;
+    }
+
     static hhmmToSeconds(hhmm) {
         if (!hhmm) {
             return NaN;
@@ -2812,6 +3186,32 @@ class FMCMainDisplay extends BaseAirliners {
         const h = parseInt(hhmm.substring(0, 2));
         const m = parseInt(hhmm.substring(2, 4));
         return h * 3600 + m * 60;
+    }
+
+    /**
+     * Computes hour and minutes when given minutes
+     * @param {number} minutes - minutes used to make the conversion
+     * @returns {string} A string in the format "HHMM" e.g "0235"
+     */
+    static minutesTohhmm(minutes) {
+        const h = Math.floor(minutes / 60);
+        minutes -= h * 60;
+        const m = minutes;
+        return h.toFixed(0).padStart(2,"0") + m.toFixed(0).padStart(2, "0");
+    }
+
+    /**
+     * computes minutes when given hour and minutes
+     * @param {string} hhmm - string used ot make the conversion
+     * @returns {number} numbers in minutes form
+     */
+    static hhmmToMinutes(hhmm) {
+        if (!hhmm) {
+            return NaN;
+        }
+        const h = parseInt(hhmm.substring(0, 2));
+        const m = parseInt(hhmm.substring(2, 4));
+        return h * 60 + m;
     }
 
     setAPSelectedSpeed(_speed, _aircraft) {

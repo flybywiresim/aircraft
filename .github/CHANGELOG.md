@@ -67,6 +67,8 @@
 1. [CDU] Allow inserting landing QNH in inHg - @pessip (Pessi Päivärinne)
 1. [CDU] Fix IRS coordinates always showing N/E - @beheh (Benedict Etzel)
 1. [General] Added location reporting for the live map - @nistei (Nistei)
+1. [CDU] Init A now showing computed values and simulated computational delays - @lucky38i (Lucky38i)
+1. [CDU] Fuel Pred now showing computed values and refreshes when page is updating - @lucky38i (Lucky38i)
 1. [CDU] Add V1/VR/V2 logic and disagree message, fixed V1/VR/V2 minimum range - @paul92ilm (Lussion)
 1. [ECAM] Add T.O message category to upper ECAM - @paul92ilm (Lussion)
 1. [ECAM] Fix cabin vertical speed display to show feet/min - @MattPaxtonBel, @RichardPilbery
