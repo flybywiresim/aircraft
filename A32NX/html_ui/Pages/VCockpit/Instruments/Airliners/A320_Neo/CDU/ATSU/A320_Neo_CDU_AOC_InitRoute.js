@@ -35,7 +35,7 @@ class CDUAocInitRoute {
         };
 
         mcdu.onRightInput[5] = () => {
-            CDUAocInit.insertUplink(mcdu);
+            // I dont know if we want this button here
         };
 
         mcdu.onUp = () => {

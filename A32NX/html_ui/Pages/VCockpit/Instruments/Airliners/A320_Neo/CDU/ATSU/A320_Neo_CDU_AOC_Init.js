@@ -165,6 +165,10 @@ class CDUAocInit {
             }
         });
 
+        setTimeout(() => {
+            CDUAocInit.buildRouteFromNavlog(mcdu);
+        }, 10000); // Fake 10s delay for perf "calculations"
+
         /**
          * PERF DATA UPLINK
          * TODO:
@@ -181,6 +185,76 @@ class CDUAocInit {
             if (mcdu.page.Current == mcdu.page.InitPageA) {
                 CDUInitPage.ShowPage1(mcdu);
             }
-        }, 3000); // Fake delay for perf "calculations"
+        }, 3000); // Fake 3s delay for perf "calculations"
+    }
+
+    static addWaypointAsync(mcdu, routeIdent, wpIndex, via) {
+        if (via) {
+            return new Promise((res, rej) => {
+                mcdu.insertWaypointsAlongAirway(routeIdent, wpIndex, via, (result) => {
+                    console.log('result');
+                    console.log(result);
+                    if (result) {
+                        console.log("Inserted waypoint : " + routeIdent + " via " + via);
+                        res(true);
+                    } else {
+                        mcdu.showErrorMessage("AWY/WPT MISMATCH");
+                        res(false);
+                    }
+                });
+            });
+        } else {
+            return new Promise((res, rej) => {
+                mcdu.getOrSelectWaypointByIdent(routeIdent, (waypoint) => {
+                    if (!waypoint) {
+                        mcdu.showErrorMessage("NOT IN DATABASE");
+                        console.log('NOT IN DATABASE' + routeIdent);
+                        res(false);
+                    } else {
+                        console.log('ICAO ICAO ICAO ' + waypoint.icao);
+                        mcdu.flightPlanManager.addWaypoint(waypoint.icao, wpIndex, () => {
+                            console.log('WORKED' + routeIdent);
+                            res(true);
+                        });
+                    }
+                });
+            });
+        }
+    }
+
+    static async buildRouteFromNavlog(mcdu) {
+        const {navlog, route} = mcdu.simbrief;
+
+        const routeSplit = route.split(' ');
+        const procedures = new Set(navlog.filter(fix => fix.is_sid_star === "1").map(fix => fix.via_airway));
+
+        for (const [i, routeIdent] of routeSplit.entries()) {
+            console.log('----');
+            console.log(routeIdent);
+            for (const fix of navlog) {
+                if (fix.is_sid_star === "0") {
+                    if (!procedures.has(routeIdent)) {
+                        if (routeIdent.match(/((^[0-9]+[a-z]+)|(^[a-z]+[0-9]+))+[0-9a-z]+$/i) || routeIdent === "DCT") {
+                            if (routeIdent === "DCT") {
+                                console.log("Direct to waypoint found, skipping");
+                                break;
+                            } else {
+                                const wpIndex = mcdu.flightPlanManager.getEnRouteWaypointsLastIndex() + 1;
+                                console.log("Inserting waypoint : " + routeSplit[i + 1] + " via " + routeIdent + " | " + wpIndex);
+                                await CDUAocInit.addWaypointAsync(mcdu, routeSplit[i + 1], wpIndex, routeIdent);
+
+                                break;
+                            }
+                        } else {
+                            const wpIndex = mcdu.flightPlanManager.getWaypointsCount() - 1;
+                            console.log("Inserting waypoint : " + routeIdent + " | " + wpIndex);
+                            await CDUAocInit.addWaypointAsync(mcdu, routeIdent, wpIndex);
+
+                            break;
+                        }
+                    }
+                }
+            }
+        }
     }
 }
