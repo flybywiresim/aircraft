@@ -34,6 +34,9 @@ class CDULateralRevisionPage {
         let departureCell = "";
         if (isDeparture) {
             departureCell = "<DEPARTURE";
+            mcdu.leftInputDelay[0] = () => {
+                return mcdu.getDelaySwitchPage();
+            };
             mcdu.onLeftInput[0] = () => {
                 CDUAvailableDeparturesPage.ShowPage(mcdu, waypoint);
             };
@@ -42,6 +45,9 @@ class CDULateralRevisionPage {
         let arrivalFixInfoCell = "";
         if (isDestination) {
             arrivalFixInfoCell = "ARRIVAL>";
+            mcdu.rightInputDelay[0] = () => {
+                return mcdu.getDelaySwitchPage();
+            };
             mcdu.onRightInput[0] = () => {
                 CDUAvailableArrivalsPage.ShowPage(mcdu, waypoint);
             };
@@ -85,6 +91,9 @@ class CDULateralRevisionPage {
         let holdCell = "";
         if (isWaypoint) {
             holdCell = "<HOLD";
+            mcdu.leftInputDelay[2] = () => {
+                return mcdu.getDelaySwitchPage();
+            };
             mcdu.onLeftInput[2] = () => {
                 CDUHoldAtPage.ShowPage(mcdu, waypoint, waypointIndexFP);
             };
@@ -108,6 +117,9 @@ class CDULateralRevisionPage {
         let airwaysCell = "";
         if (isWaypoint) {
             airwaysCell = "AIRWAYS>";
+            mcdu.rightInputDelay[4] = () => {
+                return mcdu.getDelaySwitchPage();
+            };
             mcdu.onRightInput[4] = () => {
                 A320_Neo_CDU_AirwaysFromWaypointPage.ShowPage(mcdu, waypoint);
             };
@@ -133,6 +145,9 @@ class CDULateralRevisionPage {
             [""],
             ["<RETURN"]
         ]);
+        mcdu.leftInputDelay[5] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
         mcdu.onLeftInput[5] = () => {
             CDUFlightPlanPage.ShowPage(mcdu);
         };
