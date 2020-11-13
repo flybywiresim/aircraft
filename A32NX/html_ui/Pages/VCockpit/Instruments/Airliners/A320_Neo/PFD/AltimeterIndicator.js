@@ -761,8 +761,7 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
             this.cursorSVGShape.setAttribute("stroke", "yellow");
             this.cursorIntegralsGroup.setAttribute("visibility", "visible");
             this.cursorDecimals.setAttribute("visibility", "visible");
-            
-            
+
             // Altitude almost reached blink animation
             const cursorSVGAltitudeAnimation = document.createElementNS(Avionics.SVG.NS, "animate");
             cursorSVGAltitudeAnimation.setAttribute("attributeType", "XML");
@@ -771,9 +770,8 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
             cursorSVGAltitudeAnimation.setAttribute("dur", "0.0s");
             cursorSVGAltitudeAnimation.setAttribute("repeatCount", "indefinite");
             this.cursorSVGShape.appendChild(cursorSVGAltitudeAnimation);
-    
 
-            // Blink when 750 feet from target altitude and stop when bellow 250 
+            // Blink when 750 feet from target altitude and stop when bellow 250
             const delta = Math.abs(this._delayedAltitude - this.hudAPAltitude);
             if (250 <= delta && delta <= 750) {
                 cursorSVGAltitudeAnimation.setAttribute("dur", "1s");
