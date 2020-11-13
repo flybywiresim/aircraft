@@ -70,9 +70,7 @@ class CDUFuelPredPage {
                         finalColor = "[color]blue";
                     }
                 }
-                mcdu.onLeftInput[4] = async () => {
-                    const value = mcdu.inOut;
-                    mcdu.clearUserInput();
+                mcdu.onLeftInput[4] = async (value) => {
                     if (await mcdu.trySetRouteFinalFuel(value)) {
                         CDUFuelPredPage.ShowPage(mcdu);
                     }
@@ -92,9 +90,7 @@ class CDUFuelPredPage {
                         altFuelColor = "[color]blue";
                     }
                 }
-                mcdu.onLeftInput[3] = async () => {
-                    const value = mcdu.inOut;
-                    mcdu.clearUserInput();
+                mcdu.onLeftInput[3] = async (value) => {
                     console.log("Entered Val : " + value);
                     if (await mcdu.trySetRouteAlternateFuel(value)) {
                         CDUFuelPredPage.ShowPage(mcdu);
@@ -142,9 +138,7 @@ class CDUFuelPredPage {
                         rteRsvPercentCell = mcdu.getRouteReservedPercent().toFixed(1);
                         rteRsvPercentCell = rteRsvPercentCell.length <= 3 ? "{sp}" + rteRsvPercentCell : rteRsvPercentCell;
                         rteRSvCellColor = "[color]blue";
-                        mcdu.onLeftInput[2] = async () => {
-                            const value = mcdu.inOut;
-                            mcdu.clearUserInput();
+                        mcdu.onLeftInput[2] = async (value) => {
                             if (await mcdu.trySetRouteReservedFuel(value)) {
                                 CDUInitPage.ShowPage2(mcdu);
                             }
@@ -160,9 +154,7 @@ class CDUFuelPredPage {
                     minDestFobCell = "{sp}{sp}{small}" + mcdu._minDestFob.toFixed(1) + "{end}";
                     minDestFobCellColor = "[color]blue";
                 }
-                mcdu.onLeftInput[5] = async () => {
-                    const value = mcdu.inOut;
-                    mcdu.clearUserInput();
+                mcdu.onLeftInput[5] = async (value) => {
                     if (await mcdu.trySetMinDestFob(value)) {
                         CDUFuelPredPage.ShowPage(mcdu);
                     }
