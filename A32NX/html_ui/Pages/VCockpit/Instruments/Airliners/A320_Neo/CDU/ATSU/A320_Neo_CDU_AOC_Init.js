@@ -151,7 +151,6 @@ class CDUAocInit {
         mcdu.tryUpdateFromTo(fromTo, (result) => {
             if (result) {
                 CDUPerformancePage.UpdateThrRedAccFromOrigin(mcdu);
-                mcdu.showErrorMessage(aocActFplnUplink);
                 if (mcdu.page.Current == mcdu.page.InitPageA) {
                     CDUInitPage.ShowPage1(mcdu);
                 }
@@ -165,8 +164,9 @@ class CDUAocInit {
             }
         });
 
-        setTimeout(() => {
-            CDUAocInit.buildRouteFromNavlog(mcdu);
+        setTimeout(async () => {
+            await CDUAocInit.buildRouteFromNavlog(mcdu);
+            mcdu.showErrorMessage(aocActFplnUplink);
         }, 10000); // Fake 10s delay for perf "calculations"
 
         /**
@@ -211,9 +211,8 @@ class CDUAocInit {
                         console.log('NOT IN DATABASE' + routeIdent);
                         res(false);
                     } else {
-                        console.log('ICAO ICAO ICAO ' + waypoint.icao);
                         mcdu.flightPlanManager.addWaypoint(waypoint.icao, wpIndex, () => {
-                            console.log('WORKED' + routeIdent);
+                            console.log("Inserted waypoint : " + routeIdent);
                             res(true);
                         });
                     }
