@@ -1098,12 +1098,12 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
         let hideMarker = true;
         const phase = Simplane.getCurrentFlightPhase();
         const flapsHandleIndex = Simplane.getFlapsHandleIndex();
-        if (flapsHandleIndex == 2 || flapsHandleIndex == 3) {
+        if (flapsHandleIndex == 2 || (flapsHandleIndex == 3 && !SimVar.GetSimVarValue("L:A32NX_LANDING_CONF3", "boolean"))) {
             let flapSpeed = 0;
             if (phase == FlightPhase.FLIGHT_PHASE_TAKEOFF || phase == FlightPhase.FLIGHT_PHASE_CLIMB || phase == FlightPhase.FLIGHT_PHASE_GOAROUND) {
                 flapSpeed = Simplane.getStallSpeedPredicted(flapsHandleIndex - 1) * 1.26;
             } else if (phase == FlightPhase.FLIGHT_PHASE_DESCENT || phase == FlightPhase.FLIGHT_PHASE_APPROACH) {
-                flapSpeed = this.getFlapApproachSpeed();
+                flapSpeed = SimVar.GetSimVarValue("L:A32NX_FS", "number");
             }
             if (flapSpeed >= 60) {
                 const posY = this.valueToSvg(currentAirspeed, flapSpeed);
@@ -1125,7 +1125,7 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
             if (phase == FlightPhase.FLIGHT_PHASE_TAKEOFF || phase == FlightPhase.FLIGHT_PHASE_CLIMB || phase == FlightPhase.FLIGHT_PHASE_GOAROUND) {
                 slatSpeed = Simplane.getStallSpeedPredicted(flapsHandleIndex - 1) * 1.25;
             } else if (phase == FlightPhase.FLIGHT_PHASE_DESCENT || phase == FlightPhase.FLIGHT_PHASE_APPROACH) {
-                slatSpeed = this.getSlatApproachSpeed();
+                slatSpeed = SimVar.GetSimVarValue("L:A32NX_SS", "number");
             }
             if (slatSpeed >= 60) {
                 const posY = this.valueToSvg(currentAirspeed, slatSpeed);
