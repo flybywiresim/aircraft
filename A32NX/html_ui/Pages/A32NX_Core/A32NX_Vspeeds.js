@@ -1,6 +1,8 @@
 /**
  * Stall speed table
- * calls function(gross weight (t), landing gear) which returns CAS
+ * calls function(gross weight (t), landing gear) which returns CAS.
+ * Indexes: 0 - Clean config, 1 - Config 1 + F, 2 - Config 2, 3 - Config 3, 4 - Config Full, 5 - Config 1.
+ * Sub-Indexes: 0 to 9 represent gross weight (t) in 5t steps from 40 to 80.
  */
 const vs = [
     [
@@ -79,7 +81,9 @@ const vs = [
 
 /**
  * Lowest selectable Speed Table
- * calls function(gross weigh (t), landing gear) which returns CAS, automatically compensates for cg
+ * calls function(gross weigh (t), landing gear) which returns CAS, automatically compensates for cg.
+ * Indexes: 0 - Clean config, 1 - Config 1 + F, 2 - Config 2, 3 - Config 3, 4 - Config Full, 5 - Config 1.
+ * Sub-Indexes: 0 to 9 represent gross weight (t) in 5t steps from 40 to 80.
  */
 const vls = [
     [
@@ -158,7 +162,9 @@ const vls = [
 
 /**
  * Lowest selectable Speed Table for TakeOff ONLY
- * calls function(gross weight (t)) which returns CAS
+ * calls function(gross weight (t)) which returns CAS.
+ * Indexes: 0 - Clean config, 1 - Config 1 + F, 2 - Config 2, 3 - Config 3, 4 - Config Full, 5 - Config 1.
+ * Sub-Indexes: 0 to 9 represent gross weight (t) in 5t steps from 40 to 80.
  */
 const vlsTo = [
     vls[0], // Clean Config
@@ -204,7 +210,8 @@ const vlsTo = [
 
 /**
  * F-Speed Table
- * calls function(gross weight (t)) which returns CAS
+ * calls function(gross weight (t)) which returns CAS.
+ * Indexes: 0 to 9 represent gross weight (t) in 5t steps from 40 to 80.
  */
 const fs = [
     () => 131,
@@ -221,7 +228,8 @@ const fs = [
 
 /**
  * S-Speed Table
- * calls function(gross weight (t)) which returns CAS
+ * calls function(gross weight (t)) which returns CAS.
+ * Indexes: 0 to 9 represent gross weight (t) in 5t steps from 40 to 80.
  */
 const ss = [
     () => 152,
