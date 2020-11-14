@@ -18,6 +18,9 @@ class CDU_CFDS_Test_Common_PowerUp {
         ]);
 
         // IMPLEMENTED BUTTONS
+        mcdu.leftInputDelay[5] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
         mcdu.onLeftInput[5] = () => {
             CDUCfdsTestInst.ShowPage(mcdu);
         };
