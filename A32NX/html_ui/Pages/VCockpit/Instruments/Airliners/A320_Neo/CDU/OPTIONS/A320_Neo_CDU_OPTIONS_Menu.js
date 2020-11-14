@@ -3,7 +3,7 @@ class CDU_OPTIONS_MainMenu {
         mcdu.clearDisplay();
         mcdu.activeSystem = 'MAINT';
 
-        const storedTelexStatus = NXDataStore.get("CONFIG_TELEX_STATUS", "DISABLED");
+        const storedTelexStatus = NXDataStore.get("CONFIG_ONLINE_FEATURES_STATUS", "DISABLED");
         const storedAccelAlt = parseInt(NXDataStore.get("CONFIG_ACCEL_ALT", "1500"));
         const storedDMCTestTime = parseInt(NXDataStore.get("CONFIG_SELF_TEST_TIME", "15"));
 

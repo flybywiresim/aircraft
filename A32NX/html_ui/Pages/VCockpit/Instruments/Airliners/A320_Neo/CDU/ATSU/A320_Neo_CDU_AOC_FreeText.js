@@ -70,7 +70,7 @@ class CDUAocFreeText {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onRightInput[5] = async () => {
-            const storedTelexStatus = NXDataStore.get("CONFIG_TELEX_STATUS", "DISABLED");
+            const storedTelexStatus = NXDataStore.get("CONFIG_ONLINE_FEATURES_STATUS", "DISABLED");
 
             if (NXApi.hasTelexConnection() && storedTelexStatus === "ENABLED") {
                 store["sendStatus"] = "QUEUED";
