@@ -466,4 +466,3 @@ class A320_Neo_PFD_ILS extends NavSystemElement {
     }
 }
 registerInstrument("a320-neo-pfd-element", A320_Neo_PFD);
-//# sourceMappingURL=A320_Neo_PFD.js.map

@@ -5,6 +5,9 @@
 <!--  1. [Changed Area] Title of changes - @github username (Name)  -->
 
 ## 0.5.0
+1. [MCDU] Added Perf Page CI functionality - @MisterChocker (Leon)
+1. [MCDU] Added PROG Page CRZ FL functionality and logic - @MisterChocker (Leon)
+1. [MCDU] Added Init B page only available until engine start - @MisterChocker (Leon)
 1. [MCDU] Added mcdu page id system - @MisterChocker (Leon)
 1. [MCDU] Added Progress Page REC MAX FL functionality and dummy OPT - @MisterChocker (Leon)
 1. [PFD] Added proper altitude constrain visuals - @MisterChocker (Leon)
@@ -43,7 +46,7 @@
 1. [CDU] Fix takeoff vspeed - @linkeleven (linkeleven#2557)
 1. [ECAM] Decimal font size change - @RichardPilbery (Richard Pilbery)
 1. [CDU] Add correct UI behavior and colors for airways page - @santii90 (Santiago Vazquez)
-1. [CDU] Add ability to clear MDA/DH and add input logic for both MDA/DH - @paul92ilm (Lussion)
+1. [CDU] Add ability to clear MDA/DH, add input logic for both MDA/DH - @paul92ilm (Lussion)
 1. [CHECKLISTS] Fix FD check in Taxi checklist - @Acrobot (Andrzej Pomirski)
 1. [ADIRS] Fix ADIRS lights and split into three separate units - @devsnek (devsnek#0001)
 1. [ECAM] Fixed donut and AVAIL message on N1 display. Add highlight on N2 during engine start - @RichardPilbery (Richard Pilbery)
@@ -51,12 +54,34 @@
 1. [FCU] Clamp the selected altitude between 100 and 49000 - @lars-reimann (Lars Reimann)
 1. [TEXTURES] added Registry plaque and improved Textures - @Pleasure0102 (Pleasure)
 1. [GPWS] Add minimums and 100above logic - @linkeleven (linkeleven#2557)
+1. [CDU] Flight plan waypoints distances and times are now properly displayed and updated - @lousybyte (lousybyte)
+1. [CDU] Improved DECEL waypoint data and position - @lousybyte (lousybyte)
 1. [TEXTURES] Changed cockpit font and fixed spelling errors - @FoxinTale (Aubrey)
+1. [AUTO BRK] Fixed autobrake disarm behavior to match real life. MAX can no longer be selected when the aircraft is in the air. @geoffda (Geoff Darst)
 1. [FCU] Remember selected pressure mode when returning from Std mode - @lhoenig (Lukas Hoenig)
 1. [TEXTURES] upgraded to 4k Textures (pedestal,throttle unit) fixed decal texture - @Pleasure0102 (Pleasure)
 1. [PFD] Added FMAs ALT CST and ALT CST* as well as CLB magenta and DES or CLB blue - @MisterChocker (Leon)
 1. [CDU] Added CFDS display test, ATSU METAR/TAF/ATIS requests, and ATSU free text - @wpine215 (Iceman), @nistei (Nistei), @Edwin B
-
+1. [GPWS] Completely redone GPWS logic, and improve Retard call logic, prevent multiple calls playing at once - lukecologne (luke)
+1. [ECAM] Improve flaps/slats panel design on upper ECAM, improve flaps/slats transition logic - @paul92ilm (Lussion)
+1. [CDU] Allow inserting landing QNH in inHg - @pessip (Pessi Päivärinne)
+1. [Systems] GO-AROUND flight phase introduced
+1. [FMA] Improved and corrected FMA logic for autopilot connect/disconnect toggle during APPR mode, GO-AROUNDs, DH/MDA and other small tweaks - @antikythera288 (mrmercury#8898 on discord)
+1. [FCU] Correct behaviour of APPR and LOC buttons when connecting/disconnecting AP - @antikythera288 (mrmercury#8898 on discord)
+1. [AUTOPILOT] fully managed GO-AROUND implemented aswell as correct FD's for hand-flying the GO-AROUND (until missed approach paths are implemented, only via preselected HDG) - @antikythera288 (mrmercury#8898 on discord)
+1. [MCDU] added fully working GO-AROUND Page - @antikythera288 (mrmercury#8898 on discord)
+1. [CDU] Fix IRS coordinates always showing N/E - @beheh (Benedict Etzel)
+1. [General] Added location reporting for the live map - @nistei (Nistei)
+1. [CDU] Init A now showing computed values and simulated computational delays - @lucky38i (Lucky38i)
+1. [CDU] Fuel Pred now showing computed values and refreshes when page is updating - @lucky38i (Lucky38i)
+1. [CDU] Add V1/VR/V2 logic and disagree message, fixed V1/VR/V2 minimum range - @paul92ilm (Lussion)
+1. [ECAM] Add T.O message category to upper ECAM - @paul92ilm (Lussion)
+1. [ECAM] Fix cabin vertical speed display to show feet/min - @MattPaxtonBel, @RichardPilbery
+1. [FCU] Fix altitude change when the increment is 1000 - @lars-reimann (Lars Reimann)
+1. [CDU] Improve LAT REV page layout - @beheh (Benedict Etzel)
+1. [PFD] Improved PFD text readability - @MisterChocker (Leon)
+1. [ECAM] Added CABIN PRESS page - @nikotina91
+1. [ECAM] Add ELEC page - @ramon54321
 
 ## 0.4.0
 1. [General] Add CHANGELOG.md - @nathaninnes (Nathan Innes)
@@ -124,3 +149,4 @@
 1. [LIVERY] Bundle the FlyByWire Livery with the A32NX addon - @devsnek (devsnek)
 1. [ECAM] Added cockpit door video - @Benjozork (Benjamin Dupont)
 1. [MISC] Standby Instrument stays ON if emergency power should be available, bug fixes - @2hwk (2Cas#1022 on discord)
+1. [CDU] Full +/- button functionality - @lhoenig (Lukas Hoenig)

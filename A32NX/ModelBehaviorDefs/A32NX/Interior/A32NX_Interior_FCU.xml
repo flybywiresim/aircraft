@@ -35,7 +35,7 @@
             <MODE_BARO>0</MODE_BARO>
             <MODE_QNH>1</MODE_QNH>
             <MODE_STD_BARO>2</MODE_STD_BARO>
-            <MODE_STD_QNH>3</MODE_STD_QNH>      
+            <MODE_STD_QNH>3</MODE_STD_QNH>
             <NODE_ID>AUTOPILOT_Knob_Baro_#ID##SUFFIX_ID#</NODE_ID>
             <PART_ID>AUTOPILOT_Knob_Baro</PART_ID>
         </DefaultTemplateParameters>
@@ -61,14 +61,14 @@
                         }
                     }
                 </CLOCKWISE_CODE>
-                
+
                 <PULL_CODE>
-                    (L:XMLVAR_Baro#BARO_ID#_Mode) #MODE_BARO# == if{ 
-                        #MODE_STD_BARO# (&gt;L:XMLVAR_Baro#BARO_ID#_Mode) 
-                    } els{ 
-                        (L:XMLVAR_Baro#BARO_ID#_Mode) #MODE_QNH# == if{ 
-                            #MODE_STD_QNH# (&gt;L:XMLVAR_Baro#BARO_ID#_Mode) 
-                        } 
+                    (L:XMLVAR_Baro#BARO_ID#_Mode) #MODE_BARO# == if{
+                        #MODE_STD_BARO# (&gt;L:XMLVAR_Baro#BARO_ID#_Mode)
+                    } els{
+                        (L:XMLVAR_Baro#BARO_ID#_Mode) #MODE_QNH# == if{
+                            #MODE_STD_QNH# (&gt;L:XMLVAR_Baro#BARO_ID#_Mode)
+                        }
                     }
                 </PULL_CODE>
                 <PUSH_CODE>
@@ -86,10 +86,10 @@
                 <CENTER_RADIUS>0</CENTER_RADIUS>
                 <COUNT>36</COUNT>
                 <OVERRIDE_PUSH_ANIM_CODE>
-                    0 100 
-                        (L:XMLVAR_Baro#BARO_ID#_Mode) #MODE_STD_BARO# == 
+                    0 100
+                        (L:XMLVAR_Baro#BARO_ID#_Mode) #MODE_STD_BARO# ==
                         (L:XMLVAR_Baro#BARO_ID#_Mode) #MODE_STD_QNH# == or ?
-                    50 
+                    50
                         (O:_PushAnimVar) ?
                 </OVERRIDE_PUSH_ANIM_CODE>
                 <WWISE_EVENT>autopilot_selector_knob</WWISE_EVENT>
@@ -122,12 +122,16 @@
 
         <Component ID="#NODE_ID#" Node="#NODE_ID#">
             <UseTemplate Name="ASOBO_GT_Knob_Infinite_PushPull">
+                <!-- Calculates max(ALTITUDE_LOCK - INCREMENT + (INCREMENT - ALTITUDE_LOCK % INCREMENT) % INCREMENT, 100) -->
                 <ANTICLOCKWISE_CODE>
-                    3 (A:AUTOPILOT ALTITUDE LOCK VAR:3, feet) #INCREMENT# - 100 max (&gt;K:2:AP_ALT_VAR_SET_ENGLISH) (&gt;H:AP_KNOB_Down)
+                    3 (A:AUTOPILOT ALTITUDE LOCK VAR:3, feet) #INCREMENT# - #INCREMENT# (A:AUTOPILOT ALTITUDE LOCK VAR:3, feet) #INCREMENT# % - #INCREMENT# % + 100 max (&gt;K:2:AP_ALT_VAR_SET_ENGLISH)
+                    (&gt;H:AP_KNOB_Down)
                     (&gt;H:A320_Neo_CDU_AP_DEC_ALT)
                 </ANTICLOCKWISE_CODE>
+                <!-- Calculates min(ALTITUDE_LOCK + INCREMENT - ALTITUDE_LOCK % INCREMENT, 49000) -->
                 <CLOCKWISE_CODE>
-                    3 (A:AUTOPILOT ALTITUDE LOCK VAR:3, feet) #INCREMENT# + 49000 min (&gt;K:2:AP_ALT_VAR_SET_ENGLISH) (&gt;H:AP_KNOB_Up)
+                    3 (A:AUTOPILOT ALTITUDE LOCK VAR:3, feet) #INCREMENT# + (A:AUTOPILOT ALTITUDE LOCK VAR:3, feet) #INCREMENT# % - 49000 min (&gt;K:2:AP_ALT_VAR_SET_ENGLISH)
+                    (&gt;H:AP_KNOB_Up)
                     (&gt;H:A320_Neo_CDU_AP_INC_ALT)
                 </CLOCKWISE_CODE>
 

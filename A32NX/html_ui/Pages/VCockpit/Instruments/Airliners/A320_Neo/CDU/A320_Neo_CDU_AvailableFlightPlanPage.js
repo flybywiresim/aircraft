@@ -28,4 +28,3 @@ class CDUAvailableFlightPlanPage {
         };
     }
 }
-//# sourceMappingURL=A320_Neo_CDU_AvailableFlightPlanPage.js.map
