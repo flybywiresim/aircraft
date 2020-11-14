@@ -40,7 +40,9 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             costIndex: "",
             navlog: [],
             icao_airline: "",
-            flight_number: ""
+            flight_number: "",
+            alternateIcao: "",
+            avgTropopause: "",
         };
     }
     get templateID() {

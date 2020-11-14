@@ -11,6 +11,7 @@ class CDUInitPage {
         let costIndex = "---";
         let cruiseFlTemp = "-----|---°";
         let alignOption;
+        let tropo = "{small}36090{end}[color]cyan";
 
         if (mcdu.flightPlanManager.getOrigin() && mcdu.flightPlanManager.getOrigin().ident) {
             if (mcdu.flightPlanManager.getDestination() && mcdu.flightPlanManager.getDestination().ident) {
@@ -108,6 +109,15 @@ class CDUInitPage {
             });
         };
 
+        if (mcdu.tropo) {
+            tropo = mcdu.tropo + "[color]blue";
+        }
+        mcdu.onRightInput[4] = (value) => {
+            if (mcdu.tryUpdateTropo(value)) {
+                CDUInitPage.ShowPage1(mcdu);
+            }
+        };
+
         /**
          * If scratchpad is filled, attempt to update city pair
          * else show route selection pair if city pair is displayed
@@ -161,7 +171,7 @@ class CDUInitPage {
             [],
             ["", "WIND/TEMP>[color]inop"],
             ["COST INDEX", "TROPO"],
-            [costIndex, "{small}36090{end}[color]cyan"],
+            [costIndex, tropo],
             ["CRZ FL/TEMP", "GND TEMP"],
             [cruiseFlTemp, "---°[color]inop"],
         ]);
