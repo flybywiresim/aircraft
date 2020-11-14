@@ -17,6 +17,7 @@
 !.editorconfig
 !.eslintrc.json
 !jsconfig.json
+!.gitattributes
 !.prettierrc.json
 !.prettierignore
 !manifest-base.json
