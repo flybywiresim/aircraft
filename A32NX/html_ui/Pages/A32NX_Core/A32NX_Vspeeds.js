@@ -286,6 +286,10 @@ class A32NX_Vspeeds {
         this.cgw = 0;
     }
 
+    /**
+     * Fetches aircraft parameter and checks against cached values.
+     * On disagree cache gets updated and Vspeeds recalculated, then shared.
+     */
     update(_deltaTime) {
         const gw = this.round(SimVar.GetSimVarValue("TOTAL WEIGHT", "kg")) / 1000;
         const fhi = Simplane.getFlapsHandleIndex();
