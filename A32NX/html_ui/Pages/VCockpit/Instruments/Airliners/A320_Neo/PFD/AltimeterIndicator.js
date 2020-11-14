@@ -1,7 +1,7 @@
 class Jet_PFD_AltimeterIndicator extends HTMLElement {
     constructor() {
         super(...arguments);
-        this.strokeSize = "4";
+        this.strokeSize = "3";
         this.fontSize = 22;
         this.refHeight = 0;
         this.borderSize = 0;
@@ -454,8 +454,71 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
         this.updateTargetAltitude(indicatedAltitude, selectedAltitude, baroMode);
         this.updateBaroPressure(baroMode);
         this.updateMtrs(indicatedAltitude, selectedAltitude);
+        this._updateAltitudeAlert(indicatedAltitude, selectedAltitude);
         this.updateFail();
     }
+
+    
+    _pulseYellow() {
+        console.log('Pulse Yellow');
+    }
+    _flashMagenta() {
+        console.log('Flash Magenta');
+    }
+
+    _updateAltitudeAlert(indicatedAltitude, selectedAltitude) {
+
+        // TODO: Exit when:
+        // - Selected altitude is being changed
+        // - Landing gear down
+        // - Glide slope captured
+
+        const gear = !SimVar.GetSimVarValue("IS GEAR RETRACTABLE", "Boolean") || SimVar.GetSimVarValue("GEAR HANDLE POSITION", "Boolean");
+
+        if (gear) {
+            return;
+        }
+
+        const delta = Math.abs(indicatedAltitude - selectedAltitude);
+        let isInYellow = false;
+        let isInMagenta = false;
+
+        if (250 <= delta && delta <= 750) {
+            isInYellow = true;
+        }
+
+        // Are we deviating from selected altitude
+        if (this._previousIndicatedAltitude) {
+            const deviationCoefficient = indicatedAltitude - this._previousIndicatedAltitude;
+            // console.log(deviationCoefficient);
+            
+            if (Math.abs(deviationCoefficient) > 2) {
+                const deviationCoefficientSign = Math.sign(deviationCoefficient)
+                const pullingUp = [0, 1].includes(deviationCoefficientSign);
+                const pullingDown = [-0, -1].includes(deviationCoefficientSign);
+                
+                if ( delta > 750 && delta <= 850) {
+                    if (pullingUp && indicatedAltitude > selectedAltitude) {
+                        isInMagenta = true;
+                    } else if (pullingDown && indicatedAltitude < selectedAltitude) {
+                        isInMagenta = true;
+                    }
+                }
+            }     
+        }
+
+        if (isInMagenta) {
+            this._flashMagenta()
+        } else if (isInYellow) {
+            this._pulseYellow()
+        }
+        
+        this._previousIndicatedAltitude = indicatedAltitude;
+        
+        
+    }
+
+
     updateMtrs(_altitude, _selected) {
         if (this.mtrsVisible) {
             if (this.mtrsSelectedGroup) {
@@ -761,23 +824,6 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
             this.cursorSVGShape.setAttribute("stroke", "yellow");
             this.cursorIntegralsGroup.setAttribute("visibility", "visible");
             this.cursorDecimals.setAttribute("visibility", "visible");
-
-            // Altitude almost reached blink animation
-            const cursorSVGAltitudeAnimation = document.createElementNS(Avionics.SVG.NS, "animate");
-            cursorSVGAltitudeAnimation.setAttribute("attributeType", "XML");
-            cursorSVGAltitudeAnimation.setAttribute("attributeName", "stroke");
-            cursorSVGAltitudeAnimation.setAttribute("values", "yellow;#42420c");
-            cursorSVGAltitudeAnimation.setAttribute("dur", "0.0s");
-            cursorSVGAltitudeAnimation.setAttribute("repeatCount", "indefinite");
-            this.cursorSVGShape.appendChild(cursorSVGAltitudeAnimation);
-
-            // Blink when 750 feet from target altitude and stop when bellow 250
-            const delta = Math.abs(this._delayedAltitude - this.hudAPAltitude);
-            if (250 <= delta && delta <= 750) {
-                cursorSVGAltitudeAnimation.setAttribute("dur", "1s");
-            } else {
-                cursorSVGAltitudeAnimation.setAttribute("dur", "0.0s");
-            }
 
             this.verticalLine.setAttribute("stroke", "white");
             // Code to add if visibilty issues with this part
