@@ -16,6 +16,7 @@
 !package-lock.json
 !.editorconfig
 !.eslintrc.json
+!.gitattributes
 !.prettierrc.json
 !.prettierignore
 !manifest-base.json
