@@ -37,7 +37,7 @@ class CDUAocInit {
         const display = [
             ["AOC INIT DATA REQUEST"],
             ["", ""],
-            ["", mcdu.simbrief.navlog.length ? "ROUTE>" : "ROUTE>[color]inop"],
+            ["", mcdu.simbrief.navlog.length ? "NAVLOG>" : "NAVLOG>[color]inop"],
             ["FLT NBR", "FROM/TO"],
             [fltNbr, fromTo],
             ["BLOCK", "CRZ FL"],

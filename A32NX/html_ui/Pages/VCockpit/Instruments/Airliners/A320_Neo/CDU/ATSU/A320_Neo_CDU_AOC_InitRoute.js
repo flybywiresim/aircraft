@@ -14,7 +14,7 @@ class CDUAocInitRoute {
         getAllRows();
 
         const display = [
-            ["ROUTE {small}FOR {end}{green}" + fltNbr + "{end}"],
+            ["NAVLOG {small}FOR {end}{green}" + fltNbr + "{end}"],
             subRows[0 + offset],
             rows[0 + offset],
             subRows[1 + offset],
@@ -26,7 +26,7 @@ class CDUAocInitRoute {
             subRows[4 + offset],
             rows[4 + offset],
             [""],
-            ["<RETURN", "INSERT*[color]red"]
+            ["<RETURN", "INSERT*[color]inop"]
         ];
         mcdu.setTemplate(display);
 
@@ -39,18 +39,23 @@ class CDUAocInitRoute {
         };
 
         mcdu.onUp = () => {
-            store["offset"]++;
+            const numRows = mcdu.simbrief.navlog.length;
+            const rowMinusFive = numRows - 5;
+            if (store["offset"] < rowMinusFive) {
+                store["offset"]++;
+            }
             CDUAocInitRoute.ShowPage(mcdu, store);
         };
 
         mcdu.onDown = () => {
-            store["offset"]--;
+            if (store["offset"] > 0) {
+                store["offset"]--;
+            }
             CDUAocInitRoute.ShowPage(mcdu, store);
         };
 
         function getAllRows() {
             mcdu.simbrief.navlog.forEach((fix, i) => {
-                console.log('fix');
                 const subRow = [`${fix.distance}nm`, `${fix.altitude_feet}[color]green`];
                 const row = [fix.via_airway, fix.ident];
                 subRows[i] = subRow;
