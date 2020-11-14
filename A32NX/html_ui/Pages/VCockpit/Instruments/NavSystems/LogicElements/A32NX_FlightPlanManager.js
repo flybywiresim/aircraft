@@ -551,7 +551,7 @@ class FlightPlanManager {
                     this.instrument.requestCall(callback);
                 });
             });
-            this.instrument.requestCall(callback);
+            // this.instrument.requestCall(callback);
         });
     }
     getOrigin() {
