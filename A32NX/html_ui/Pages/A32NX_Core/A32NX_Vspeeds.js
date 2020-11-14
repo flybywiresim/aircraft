@@ -1,3 +1,7 @@
+/**
+ * Stall speed table
+ * calls function(gross weight (t), landing gear) which returns CAS
+ */
 const vs = [
     [
         () => 124,
@@ -73,6 +77,10 @@ const vs = [
     ] // Conf 1
 ];
 
+/**
+ * Lowest selectable Speed Table
+ * calls function(gross weigh (t), landing gear) which returns CAS, automatically compensates for cg
+ */
 const vls = [
     [
         () => 159,
@@ -148,6 +156,10 @@ const vls = [
     ] // Config 1
 ];
 
+/**
+ * Lowest selectable Speed Table for TakeOff ONLY
+ * calls function(gross weight (t)) which returns CAS
+ */
 const vlsTo = [
     vls[0], // Clean Config
     [
@@ -190,6 +202,10 @@ const vlsTo = [
     vls[5] // Config 1
 ];
 
+/**
+ * F-Speed Table
+ * calls function(gross weight (t)) which returns CAS
+ */
 const fs = [
     () => 131,
     () => 131,
@@ -203,6 +219,10 @@ const fs = [
     () => 166
 ];
 
+/**
+ * S-Speed Table
+ * calls function(gross weight (t)) which returns CAS
+ */
 const ss = [
     () => 152,
     (m) => 152 + 1.8 * (m - 40),
