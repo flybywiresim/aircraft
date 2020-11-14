@@ -11,6 +11,8 @@ class FMCMainDisplay extends BaseAirliners {
         this._inOut = undefined;
         this.onLeftInput = [];
         this.onRightInput = [];
+        this.leftInputDelay = [];
+        this.rightInputDelay = [];
         this.lastPos = "";
         this.costIndex = 0;
         this.lastUserInput = "";
@@ -349,13 +351,16 @@ class FMCMainDisplay extends BaseAirliners {
     clearUserInput() {
         if (!this.isDisplayingErrorMessage) {
             this.lastUserInput = this.inOut;
+            this.inOut = "";
+            this._inOutElement.style.color = "#ffffff";
+            return this.lastUserInput;
+        } else {
+            return this.inOut;
         }
-        this.inOut = "";
-        this._inOutElement.style.color = "#ffffff";
     }
 
     showErrorMessage(message, color = "#ffffff") {
-        if (!this.isDisplayingErrorMessage) {
+        if (!this.isDisplayingErrorMessage && this.inOut) {
             this.lastUserInput = this.inOut;
         }
         this.isDisplayingErrorMessage = true;
@@ -3123,9 +3128,19 @@ class FMCMainDisplay extends BaseAirliners {
             } else if (input === "NAVRAD") {
                 this.onRad();
             } else if (input === "PREVPAGE") {
-                this.onPrevPage();
+                const cur = this.page.Current;
+                setTimeout(() => {
+                    if (this.page.Current === cur) {
+                        this.onPrevPage();
+                    }
+                }, this.getDelaySwitchPage());
             } else if (input === "NEXTPAGE") {
-                this.onNextPage();
+                const cur = this.page.Current;
+                setTimeout(() => {
+                    if (this.page.Current === cur) {
+                        this.onNextPage();
+                    }
+                }, this.getDelaySwitchPage());
             } else if (input === "SP") {
                 this.onSp();
             } else if (input === "DEL") {
@@ -3155,14 +3170,26 @@ class FMCMainDisplay extends BaseAirliners {
                 const v = parseInt(input[1]);
                 if (isFinite(v)) {
                     if (this.onLeftInput[v - 1]) {
-                        this.onLeftInput[v - 1]();
+                        const value = this.clearUserInput();
+                        const cur = this.page.Current;
+                        setTimeout(() => {
+                            if (this.page.Current === cur) {
+                                this.onLeftInput[v - 1](value);
+                            }
+                        }, this.leftInputDelay[v - 1] ? this.leftInputDelay[v - 1](value) : this.getDelayBasic());
                     }
                 }
             } else if (input.length === 2 && input[0] === "R") {
                 const v = parseInt(input[1]);
                 if (isFinite(v)) {
                     if (this.onRightInput[v - 1]) {
-                        this.onRightInput[v - 1]();
+                        const value = this.clearUserInput();
+                        const cur = this.page.Current;
+                        setTimeout(() => {
+                            if (this.page.Current === cur) {
+                                this.onRightInput[v - 1](value);
+                            }
+                        }, this.rightInputDelay[v - 1] ? this.rightInputDelay[v - 1]() : this.getDelayBasic());
                     }
                 }
             } else if (input.length === 1 && FMCMainDisplay._AvailableKeys.indexOf(input) !== -1) {
@@ -3185,6 +3212,8 @@ class FMCMainDisplay extends BaseAirliners {
         }
         this.onLeftInput = [];
         this.onRightInput = [];
+        this.leftInputDelay = [];
+        this.rightInputDelay = [];
         this.onPrevPage = undefined;
         this.onNextPage = undefined;
         this.pageUpdate = undefined;

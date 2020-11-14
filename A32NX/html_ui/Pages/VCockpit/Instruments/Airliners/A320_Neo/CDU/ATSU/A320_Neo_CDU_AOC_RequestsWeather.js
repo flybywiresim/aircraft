@@ -34,9 +34,11 @@ class CDUAocRequestsWeather {
         };
         updateView();
 
-        mcdu.onRightInput[0] = () => {
-            const value = mcdu.inOut;
-            mcdu.clearUserInput();
+        mcdu.rightInputDelay[0] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
+
+        mcdu.onRightInput[0] = (value) => {
             if (value === FMCMainDisplay.clrValue) {
                 store["arpt1"] = "";
             } else {
@@ -45,9 +47,11 @@ class CDUAocRequestsWeather {
             CDUAocRequestsWeather.ShowPage(mcdu, store);
         };
 
-        mcdu.onRightInput[1] = () => {
-            const value = mcdu.inOut;
-            mcdu.clearUserInput();
+        mcdu.rightInputDelay[1] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
+
+        mcdu.onRightInput[1] = (value) => {
             if (value === FMCMainDisplay.clrValue) {
                 store["arpt2"] = "";
             } else {
@@ -56,9 +60,11 @@ class CDUAocRequestsWeather {
             CDUAocRequestsWeather.ShowPage(mcdu, store);
         };
 
-        mcdu.onRightInput[2] = () => {
-            const value = mcdu.inOut;
-            mcdu.clearUserInput();
+        mcdu.rightInputDelay[2] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
+
+        mcdu.onRightInput[2] = (value) => {
             if (value === FMCMainDisplay.clrValue) {
                 store["arpt3"] = "";
             } else {
@@ -67,15 +73,21 @@ class CDUAocRequestsWeather {
             CDUAocRequestsWeather.ShowPage(mcdu, store);
         };
 
-        mcdu.onRightInput[3] = () => {
-            const value = mcdu.inOut;
-            mcdu.clearUserInput();
+        mcdu.rightInputDelay[3] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
+
+        mcdu.onRightInput[3] = (value) => {
             if (value === FMCMainDisplay.clrValue) {
                 store["arpt4"] = "";
             } else {
                 store["arpt4"] = value;
             }
             CDUAocRequestsWeather.ShowPage(mcdu, store);
+        };
+
+        mcdu.rightInputDelay[5] = () => {
+            return mcdu.getDelaySwitchPage();
         };
 
         mcdu.onRightInput[5] = async () => {
@@ -107,9 +119,15 @@ class CDUAocRequestsWeather {
             });
         };
 
+        mcdu.leftInputDelay[0] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
         mcdu.onLeftInput[0] = () => {
             store["reqID"] = (store.reqID + 1) % 2;
             CDUAocRequestsWeather.ShowPage(mcdu, store);
+        };
+        mcdu.leftInputDelay[5] = () => {
+            return mcdu.getDelaySwitchPage();
         };
         mcdu.onLeftInput[5] = () => {
             clearTimeout(labelTimeout);
