@@ -227,6 +227,16 @@ function correctCg(m, f, cg = SimVar.GetSimVarValue("CG PERCENT", "percent")) {
     return f(m, isNaN(cg) ? 24 : cg);
 }
 
+/**
+ * Calculates and shares Vs, Vls, F, S and GD.
+ * L SimVars:
+ * A32NX_VS,
+ * A32NX_VLS,
+ * A32NX_FS,
+ * A32NX_SS,
+ * A32NX_GD,
+ * A32NX_LANDING_CONF3
+ */
 class A32NX_Vspeeds {
     constructor() {
         console.log('A32NX_VSPEEDS constructed');
@@ -236,10 +246,10 @@ class A32NX_Vspeeds {
         console.log('A32NX_VSPEEDS init');
         SimVar.SetSimVarValue("L:A32NX_VS", "number", 0);
         SimVar.SetSimVarValue("L:A32NX_VLS", "number", 0);
-        SimVar.SetSimVarValue("L:A32NX_GD", "number", 0);
-        SimVar.SetSimVarValue("L:A32NX_LANDING_CONF3", "boolean", 0);
         SimVar.SetSimVarValue("L:A32NX_FS", "number", 0);
         SimVar.SetSimVarValue("L:A32NX_SS", "number", 0);
+        SimVar.SetSimVarValue("L:A32NX_GD", "number", 0);
+        SimVar.SetSimVarValue("L:A32NX_LANDING_CONF3", "boolean", 0);
         this.lastGw = 50;
         this.lastFhi = -1;
         this.curFhi = -1;
