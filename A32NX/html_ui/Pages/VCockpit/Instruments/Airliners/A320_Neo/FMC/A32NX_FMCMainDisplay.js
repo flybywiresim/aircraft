@@ -106,6 +106,7 @@ class FMCMainDisplay extends BaseAirliners {
         this._blockFuelEntered = false;
         /* CPDLC Fields */
         this._cpdlcAtcCenter = "";
+        this.tropo = "";
     }
 
     static approachTypeStringToIndex(approachType) {
@@ -527,6 +528,20 @@ class FMCMainDisplay extends BaseAirliners {
                     return true;
                 }
             }
+        }
+        this.showErrorMessage(this.defaultInputErrorMessage);
+        return false;
+    }
+
+    /**
+     * TODO:
+     * Add check for valid tropo value
+     */
+    tryUpdateTropo(tropo) {
+        const value = parseInt(tropo);
+        if (isFinite(value)) {
+            this.tropo = value;
+            return true;
         }
         this.showErrorMessage(this.defaultInputErrorMessage);
         return false;
