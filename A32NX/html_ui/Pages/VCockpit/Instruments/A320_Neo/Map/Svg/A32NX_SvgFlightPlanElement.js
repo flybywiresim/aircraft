@@ -224,8 +224,8 @@ class SvgFlightPlanElement extends SvgMapElement {
             });
             console.log(indexes);
         }
-        for (let bevels = 0; bevels < 2; bevels++) {
-            const bevelAmount = map.NMToPixels(3) / (bevels + 1);
+        for (let bevels = 0; bevels < 4; bevels++) {
+            const bevelAmount = map.NMToPixels(0.5) / (bevels + 1);
             if (this.points.length > 2) {
                 const beveledPoints = [this.points[0]];
                 for (let i = 1; i < this.points.length - 1; i++) {
