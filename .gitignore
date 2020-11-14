@@ -9,6 +9,7 @@
 !/docs/**
 !/src/**
 !/scripts/**
+!/types/**
 !.gitignore
 !CODEOWNERS
 !package.json

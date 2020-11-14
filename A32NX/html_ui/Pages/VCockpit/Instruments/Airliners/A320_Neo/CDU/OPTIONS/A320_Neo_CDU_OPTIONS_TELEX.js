@@ -37,10 +37,10 @@ class CDU_OPTIONS_TELEX {
                 case "ENABLED":
                     NXDataStore.set("CONFIG_TELEX_STATUS", "DISABLED");
                     mcdu.showErrorMessage("FREE TEXT DISABLED");
-                    NXApi.updateTelex()
+                    NXApi.disconnectTelex()
                         .catch((err) => {
                             if (err !== NXApi.disconnectedError) {
-                                console.log("TELEX PING FAILED");
+                                console.log("TELEX DISCONNECT FAILED");
                             }
                         });
                     break;
@@ -50,8 +50,10 @@ class CDU_OPTIONS_TELEX {
 
                     const flightNo = SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string");
                     NXApi.connectTelex(flightNo)
-                        .catch(() => {
-                            // ignored: Flight number in use would mean that we already set one
+                        .catch((err) => {
+                            if (err.status === 409) {
+                                mcdu.showErrorMessage("ENABLED. FLT NBR IN USE");
+                            }
                         });
             }
             CDU_OPTIONS_TELEX.ShowPage(mcdu);

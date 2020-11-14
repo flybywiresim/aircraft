@@ -72,7 +72,7 @@ class Jet_PFD_VerticalSpeedIndicator extends HTMLElement {
             Utils.RemoveAllChildren(this.centerGroup);
         }
         const smallBg = document.createElementNS(Avionics.SVG.NS, "path");
-        smallBg.setAttribute("fill", "#6B798A");
+        smallBg.setAttribute("fill", "#5A6573");
         smallBg.setAttribute("d", "M 0 0 L 0 " + height + " L 30 " + height + " L 50 " + (height - 100) + " L 50 100 L 30 0 Z");
         smallBg.setAttribute("transform", "translate(" + posX + " " + posY + ")");
         this.centerGroup.appendChild(smallBg);
@@ -183,7 +183,7 @@ class Jet_PFD_VerticalSpeedIndicator extends HTMLElement {
         }
         {
             this.failMask = document.createElementNS(Avionics.SVG.NS, "path");
-            this.failMask.setAttribute("fill", "#6B798A");
+            this.failMask.setAttribute("fill", "#5A6573");
             this.failMask.setAttribute("d", "M 0 0 L 0 " + height + " L 30 " + height + " L 50 " + (height - 100) + " L 50 100 L 30 0 Z");
             this.failMask.setAttribute("transform", "translate(" + posX + " " + posY + ")");
             this.centerGroup.appendChild(this.failMask);
