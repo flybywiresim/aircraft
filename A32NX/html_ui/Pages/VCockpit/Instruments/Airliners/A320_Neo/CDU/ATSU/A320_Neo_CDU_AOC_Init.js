@@ -73,12 +73,12 @@ class CDUAocInit {
     static showStatus(mcdu, status) {
         mcdu.simbrief["sendStatus"] = status;
 
-        if (mcdu.page.Current == mcdu.page.AOCInit) {
+        if (mcdu.page.Current === mcdu.page.AOCInit) {
             CDUAocInit.ShowPage(mcdu);
         }
         setTimeout(() => {
             mcdu.simbrief["sendStatus"] = "";
-            if (mcdu.page.Current == mcdu.page.AOCInit) {
+            if (mcdu.page.Current === mcdu.page.AOCInit) {
                 CDUAocInit.ShowPage(mcdu);
             }
         }, 3000);
@@ -93,7 +93,7 @@ class CDUAocInit {
         }
 
         mcdu.simbrief["sendStatus"] = "REQUESTING";
-        if (mcdu.page.Current == mcdu.page.AOCInit) {
+        if (mcdu.page.Current === mcdu.page.AOCInit) {
             CDUAocInit.ShowPage(mcdu);
         }
 
@@ -109,17 +109,17 @@ class CDUAocInit {
                 mcdu.simbrief["estZfw"] = data.weights.est_zfw;
                 mcdu.simbrief["costIndex"] = data.general.costindex;
                 mcdu.simbrief["navlog"] = data.navlog.fix;
-                mcdu.simbrief["icao_airline"] = typeof data.general.icao_airline == 'string' ? data.general.icao_airline : "";
+                mcdu.simbrief["icao_airline"] = typeof data.general.icao_airline === 'string' ? data.general.icao_airline : "";
                 mcdu.simbrief["flight_number"] = data.general.flight_number;
 
-                if (mcdu.page.Current == mcdu.page.AOCInit) {
+                if (mcdu.page.Current === mcdu.page.AOCInit) {
                     CDUAocInit.ShowPage(mcdu);
                 }
                 CDUAocInit.showStatus(mcdu, "DONE");
             })
             .catch(_err => {
                 console.log(_err.message);
-                if (mcdu.page.Current == mcdu.page.AOCInit) {
+                if (mcdu.page.Current === mcdu.page.AOCInit) {
                     CDUAocInit.showStatus(mcdu, "ERROR");
                 }
             });
@@ -151,14 +151,14 @@ class CDUAocInit {
         mcdu.tryUpdateFromTo(fromTo, (result) => {
             if (result) {
                 CDUPerformancePage.UpdateThrRedAccFromOrigin(mcdu);
-                if (mcdu.page.Current == mcdu.page.InitPageA) {
+                if (mcdu.page.Current === mcdu.page.InitPageA) {
                     CDUInitPage.ShowPage1(mcdu);
                 }
             }
         });
         mcdu.updateFlightNo(fltNbr, (result) => {
             if (result) {
-                if (mcdu.page.Current == mcdu.page.InitPageA) {
+                if (mcdu.page.Current === mcdu.page.InitPageA) {
                     CDUInitPage.ShowPage1(mcdu);
                 }
             }
@@ -182,7 +182,7 @@ class CDUAocInit {
             }
             if (mcdu.tryUpdateCostIndex(costIndex)) {
             }
-            if (mcdu.page.Current == mcdu.page.InitPageA) {
+            if (mcdu.page.Current === mcdu.page.InitPageA) {
                 CDUInitPage.ShowPage1(mcdu);
             }
         }, 3000); // Fake 3s delay for perf "calculations"
