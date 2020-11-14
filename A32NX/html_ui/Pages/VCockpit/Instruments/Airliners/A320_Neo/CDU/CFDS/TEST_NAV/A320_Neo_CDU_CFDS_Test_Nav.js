@@ -17,6 +17,9 @@ class CDUCfdsTestNav {
             ["<RETURN[color]blue", "MMR 1>[color]inop"]
         ]);
 
+        mcdu.leftInputDelay[5] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
         mcdu.onLeftInput[5] = () => {
             CDUCfdsTestMenu.ShowPage(mcdu);
         };
@@ -48,6 +51,9 @@ class CDUCfdsTestNav {
             ["<RETURN[color]blue"]
         ]);
 
+        mcdu.leftInputDelay[5] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
         mcdu.onLeftInput[5] = () => {
             CDUCfdsTestMenu.ShowPage(mcdu);
         };
@@ -79,6 +85,9 @@ class CDUCfdsTestNav {
             ["<RETURN[color]blue"]
         ]);
 
+        mcdu.leftInputDelay[5] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
         mcdu.onLeftInput[5] = () => {
             CDUCfdsTestMenu.ShowPage(mcdu);
         };

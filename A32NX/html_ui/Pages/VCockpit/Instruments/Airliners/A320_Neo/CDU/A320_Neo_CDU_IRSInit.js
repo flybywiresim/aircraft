@@ -127,6 +127,10 @@ class CDUIRSInit {
             lon = true;
         };
 
+        mcdu.leftInputDelay[5] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
+
         mcdu.onLeftInput[5] = () => {
             CDUInitPage.ShowPage1(mcdu);
         };
