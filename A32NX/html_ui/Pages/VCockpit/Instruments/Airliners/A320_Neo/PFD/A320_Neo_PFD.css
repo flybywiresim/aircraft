@@ -465,17 +465,18 @@ a320-neo-pfd-element #Mainframe #InstrumentsContainer #ILS {
 }
 
 
-.flash-magenta {
-  animation:flash-magenta 0.3s steps(2, start) infinite;
+.flash-amber {
+  animation: flash-amber 1s steps(2, start) infinite;
 }
 
-@keyframes flash-magenta {
+@keyframes flash-amber {
   from {
-    stroke-width: 3;
-    stroke: rgb(75, 44, 75);
+    stroke:  #000000;
+    stroke-width: 3px;
   }
   to {
-    stroke: #FF94FF;
-    stroke-width: 5;
+    stroke: #fea400;
+    stroke-width: 5px;
+    
   }
 }

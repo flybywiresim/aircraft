@@ -462,17 +462,16 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
     _pulseYellow() {
         this.cursorSVGShape.classList.add("pulse-yellow");
     }
-    _flashMagenta() {
-        this.cursorSVGShape.classList.add("flash-magenta");
+    _flashAmber() {
+        this.cursorSVGShape.classList.add("flash-amber");
     }
     
     _removeAltitudeWarnings() {
         this.cursorSVGShape.classList.remove("pulse-yellow");
-        this.cursorSVGShape.classList.remove("flash-magenta");
+        this.cursorSVGShape.classList.remove("flash-amber");
     }
 
     _updateAltitudeAlert(indicatedAltitude, selectedAltitude) {
-
         // TODO: Exit when:
         // - Selected altitude is being changed
         // - Landing gear down
@@ -513,7 +512,7 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
         }
 
         if (isInMagenta) {
-            this._flashMagenta()
+            this._flashAmber()
         } else if (isInYellow) {
             this._pulseYellow()
         } else {
