@@ -103,6 +103,7 @@ class FMCMainDisplay extends BaseAirliners {
         this._fuelPredDone = false;
         this._fuelPlanningPhase = this._fuelPlanningPhases.PLANNING;
         this._blockFuelEntered = false;
+        this.tropo = "";
     }
 
     static approachTypeStringToIndex(approachType) {
@@ -530,6 +531,20 @@ class FMCMainDisplay extends BaseAirliners {
                     return true;
                 }
             }
+        }
+        this.showErrorMessage(this.defaultInputErrorMessage);
+        return false;
+    }
+
+    /**
+     * TODO:
+     * Add check for valid tropo value
+     */
+    tryUpdateTropo(tropo) {
+        const value = parseInt(tropo);
+        if (isFinite(value)) {
+            this.tropo = value;
+            return true;
         }
         this.showErrorMessage(this.defaultInputErrorMessage);
         return false;
