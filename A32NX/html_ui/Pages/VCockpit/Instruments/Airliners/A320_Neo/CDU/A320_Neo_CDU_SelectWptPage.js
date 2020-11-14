@@ -1,6 +1,7 @@
 class A320_Neo_CDU_SelectWptPage {
     static ShowPage(mcdu, waypoints, callback, page = 0) {
         mcdu.clearDisplay();
+        mcdu.page.Current = mcdu.page.SelectWptPage;
         const rows = [
             [""],
             [""],
@@ -51,4 +52,3 @@ class A320_Neo_CDU_SelectWptPage {
         };
     }
 }
-//# sourceMappingURL=A320_Neo_CDU_SelectWptPage.js.map

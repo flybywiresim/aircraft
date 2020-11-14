@@ -1547,4 +1547,3 @@ class AirportLoader extends WaypointLoader {
         };
     }
 }
-//# sourceMappingURL=WaypointLoader.js.map

@@ -1,6 +1,7 @@
 class CDUIRSStatusFrozen {
     static ShowPage(mcdu, index, wind_dir) {
         mcdu.clearDisplay();
+        mcdu.page.Current = mcdu.page.IRSStatusFrozen;
         let currPos = new LatLong(SimVar.GetSimVarValue("GPS POSITION LAT", "degree latitude"),
             SimVar.GetSimVarValue("GPS POSITION LON", "degree longitude")).toShortDegreeString();
         if (currPos.includes("N")) {

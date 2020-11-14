@@ -38,7 +38,7 @@ jobs:
             curl --location --request GET \
               --url https://api.github.com/repos/${{ github.repository }}/releases/${{ env.MASTER_PRE_RELEASE_ID }}/assets
           )
-    
+
           if [ $(echo $assets | jq '.[0].size') -eq '0' ]; then
             echo 'no asset to delete'
           else
