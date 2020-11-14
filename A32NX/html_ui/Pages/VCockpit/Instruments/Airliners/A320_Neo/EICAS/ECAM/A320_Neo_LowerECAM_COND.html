@@ -1,0 +1,78 @@
+﻿
+<link rel="stylesheet" href="./A320_Neo_LowerECAM_COND.css" />
+
+<script type="text/html" id="LowerECAMCONDTemplate">
+    <svg viewBox="0 0 600 600" xmlns="http://www.w3.org/2000/svg">
+      <!-- Title and unit -->
+      <text class="CondTitle" x="40" y="20">COND</text>
+      <text class="CondTitleUnit" x="525" y="20">TEMP:</text>
+      <text id="CondTempUnit" class="CondUnit" x="580" y="20">°C</text>
+      
+      <text id="LeftFanWarning" class="FanWarning AlignCenter" x="156" y="80">FAN</text>
+      <text id="RightFanWarning" class="FanWarning AlignCenter" x="438" y="80">FAN</text>
+      <text id="AltnMode" class="AltnMode AlignCenter" x="300" y="45">ALTN MODE</text>
+      
+      <!-- Plane shape -->
+      <path class="CondPlane" d="m 210.6428,103.56133 v 83.97584 h 55.55171 m 31.00094,0 h 51.73732 v -50.70766 m 0,50.70766 h 55.55173 m 34.81534,0 22.46143,0.14881 14.27533,-10.61944 m -265.3938,10.47063 -43.25439,0.17314 m -31.10621,0.0111 C 87.85126,187.93937 90.279951,179.93878 69.125975,171.79352 M 476.81403,113.1494 461.34196,103.20862 c -116.67487,0.0387 -207.24004,-0.30086 -323.91504,-0.12489 -25.973,0.63434 -39.266055,24.80255 -39.266055,24.80255 0,0 -8.962748,-1.18602 -29.113246,18.38276" id="PlaneSymbol"/>
+      
+      <!-- Cockpit -->
+      <text class="CondZone AlignCenter" x="153" y="120">CKPT</text>
+      <text id="CkptTemp" class="CondValue AlignCenter" x="153" y="152">21</text>
+      <text id="CkptTrimTemp" class="CondValue Smaller AlignCenter" x="153" y="198">21</text>
+      <text class="DuctStatus" x="119" y="235">C</text>
+      <text class="DuctStatus" x="187" y="235">H</text>
+      <g id="CkptGauge" transform="rotate(-45,155,250)">
+         <polygon class="st5" points="155,225  159,232 151,232" />
+         <line class="st5" x1="155" y1="232" x2="155" y2="250" />  
+      </g>
+      <line class="st5" x1="155" y1="250" x2="155" y2="300"/>
+      <g class="Gauge">
+        <path d="m 134.23177,232.59812 c 15.08157,-14.32036 29.6171,-11.25051 41.3664,0"/>
+        <line x1="155" y1="215" x2="155" y2="223" />
+      </g>
+      
+      <!-- Fwd -->
+      <text class="CondZone AlignCenter" x="280" y="120">FWD</text>
+      <text id="FwdTemp" class="CondValue AlignCenter" x="280" y="152">21</text>
+      <text id="FwdTrimTemp" class="CondValue Smaller AlignCenter" x="280" y="198">23</text>
+      <text class="DuctStatus" x="245" y="235">C</text>
+      <text class="DuctStatus" x="315" y="235">H</text>
+      <g id="FwdGauge" transform="rotate(35,280,250)">
+         <polygon class="st5" points="276,232 280,225 284,232 " />
+         <line class="st5" x1="280" y1="232" x2="280" y2="250" />
+      </g>
+      <line class="st5" x1="280" y1="250" x2="280" y2="300"/>
+      <g class="Gauge">
+        <path d="m 259.419,232.62894 c 15.08157,-14.32036 29.6171,-11.25051 41.3664,0"/>
+        <line x1="280" y1="215" x2="280" y2="223" />
+      </g>
+      
+      <!-- Aft -->
+      <text class="CondZone AlignCenter" x="420" y="120">AFT</text>
+      <text id="AftTemp" class="CondValue AlignCenter" x="420" y="152">22</text>
+      <text id="AftTrimTemp" class="CondValue Smaller AlignCenter" x="420" y="198">23</text>
+      <text class="DuctStatus" x="385" y="235">C</text>
+      <text class="DuctStatus" x="455" y="235">H</text>
+      <g id="AftGauge" transform="rotate(-15,420,250)">
+         <polygon class="st5" points="416,232 420,225 424,232"/>
+         <line class="st5" x1="420" y1="232" x2="420" y2="250"/>
+      </g>  
+      <line class="st5" x1="420" y1="250" x2="420" y2="300"/>
+      <g class="Gauge">
+         <path d="m 399.3168,232.64473 c 15.08157,-14.32036 29.6171,-11.25051 41.3664,0"/>
+         <line x1="420" y1="215" x2="420" y2="223" />
+      </g>
+      
+      <!-- Valve and tubes -->
+      <text class="DuctStatus" x="565" y="296"><tspan x="565" y="295">HOT</tspan><tspan x="565" y="320">AIR</tspan></text>
+      <g id="HotAirValve" class="valve-moving">
+         <circle class="st5" cx="506" cy="300" r="16"/>
+         <line class="st5" x1="490" y1="300" x2="522" y2="300" id="HotAirValveOpen" />
+         <line class="st5" x1="506" y1="284" x2="506" y2="316" id="HotAirValveClosed" />
+      </g>
+      <line class="st5" x1="155" y1="300" x2="490" y2="300"/>
+      <line class="st5" x1="522" y1="300" x2="540" y2="300"/>
+    </svg>
+</script>
+
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/A320_Neo/EICAS/ECAM/A320_Neo_LowerECAM_COND.js"></script>
