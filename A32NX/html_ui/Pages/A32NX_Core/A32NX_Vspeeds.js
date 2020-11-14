@@ -253,7 +253,6 @@ class A32NX_Vspeeds {
         const ldg = Math.round(SimVar.GetSimVarValue("GEAR POSITION:0", "Enum"));
         const alt = this.round(Simplane.getAltitude());
         const fp = Simplane.getCurrentFlightPhase();
-        const ldgConf3 = SimVar.GetSimVarValue("L:A32NX_LANDING_CONF3", "boolean");
         switch (true) {
             case (fhi !== this.lastFhi): {
                 this.curFhi = this.lastFhi === 0 && fp > FlightPhase.FLIGHT_PHASE_TAKEOFF ? 5 : fhi;
