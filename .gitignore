@@ -9,13 +9,15 @@
 !/docs/**
 !/src/**
 !/scripts/**
-!/types/**
+!/typings/**
 !.gitignore
 !CODEOWNERS
 !package.json
 !package-lock.json
 !.editorconfig
 !.eslintrc.json
+!jsconfig.json
+!.gitattributes
 !.prettierrc.json
 !.prettierignore
 !manifest-base.json
