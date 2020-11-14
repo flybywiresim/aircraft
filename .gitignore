@@ -8,6 +8,8 @@
 /A32NX/html_ui/Pages/VCockpit/Instruments/generated
 !/docs/**
 !/src/**
+!/scripts/**
+!/types/**
 !.gitignore
 !CODEOWNERS
 !package.json

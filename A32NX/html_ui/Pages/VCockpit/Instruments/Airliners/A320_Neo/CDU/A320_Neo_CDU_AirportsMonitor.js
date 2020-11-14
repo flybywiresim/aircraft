@@ -144,6 +144,7 @@ class CDUAirportsMonitor {
         // display data on MCDU
         if (this.icao1) {
             mcdu.clearDisplay();
+            mcdu.page.Current = mcdu.page.AirportsMonitor;
             if (this.page2) {
                 mcdu.setTemplate([
                     ["CLOSEST AIRPORTS"],

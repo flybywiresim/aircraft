@@ -1,6 +1,8 @@
 class CDUNavRadioPage {
     static ShowPage(mcdu) {
         mcdu.clearDisplay();
+        mcdu.page.Current = mcdu.page.NavRadioPage;
+        mcdu.activeSystem = 'FMGC';
         mcdu.refreshPageCallback = () => {
             CDUNavRadioPage.ShowPage(mcdu);
         };
@@ -190,4 +192,3 @@ class CDUNavRadioPage {
         ]);
     }
 }
-//# sourceMappingURL=A320_Neo_CDU_NavRadioPage.js.map
