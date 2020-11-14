@@ -186,15 +186,7 @@ var A320_Neo_LowerECAM_BLEED;
             }
 
             if (!this.apuProvidesBleed && (currentApuN > 0.94)) {
-                this.apuBleedStartTimer = 2;
-            }
-
-            if (this.apuBleedStartTimer >= 0) {
-                this.apuBleedStartTimer -= _deltaTime / 1000;
-                if (this.apuBleedStartTimer < 0) {
-                    this.apuProvidesBleed = true;
-                    this.querySelector("#apu-connecting-line").setAttribute("style", "stroke:008000");
-                }
+                this.apuProvidesBleed = true;
             }
 
             //checks if engines are below idle
