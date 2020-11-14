@@ -13,10 +13,6 @@
         "SwitchCase": 1
       }
     ],
-    // "linebreak-style": [
-    //     "error",
-    //     "unix"
-    // ],
     "linebreak-style": "off",
     // No quotes option is really fully consistent, so probably best to jsut not enforce either type
     "quotes": "off",
@@ -53,7 +49,6 @@
     "no-console": "off",
     "no-debugger": "error",
     "eol-last": ["error", "always"],
-    "linebreak-style": ["error", "unix"],
     "no-multiple-empty-lines": [
       "error",
       {
