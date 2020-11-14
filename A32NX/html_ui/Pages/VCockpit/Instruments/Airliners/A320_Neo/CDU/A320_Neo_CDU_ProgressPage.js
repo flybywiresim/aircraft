@@ -30,15 +30,19 @@ class CDUProgressPage {
                 break;
             }
         }
-        mcdu.onLeftInput[0] = () => {
-            const value = mcdu.inOut;
+        mcdu.onLeftInput[0] = (value) => {
             if (mcdu.trySetCruiseFlCheckInput(value)) {
-                mcdu.clearUserInput();
                 CDUProgressPage.ShowPage(mcdu);
             }
         };
+        mcdu.leftInputDelay[1] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
         mcdu.onLeftInput[1] = () => {
             CDUProgressPage.ShowReportPage(mcdu);
+        };
+        mcdu.leftInputDelay[4] = () => {
+            return mcdu.getDelaySwitchPage();
         };
         mcdu.onLeftInput[4] = () => {
             CDUProgressPage.ShowPredictiveGPSPage(mcdu);
@@ -71,9 +75,7 @@ class CDUProgressPage {
         if (isFinite(mcdu.cruiseFlightLevel)) {
             altCell = mcdu.cruiseFlightLevel.toFixed(0);
         }
-        mcdu.onRightInput[0] = () => {
-            const value = mcdu.inOut;
-            mcdu.clearUserInput();
+        mcdu.onRightInput[0] = (value) => {
             if (mcdu.setCruiseFlightLevelAndTemperature(value)) {
                 CDUProgressPage.ShowReportPage(mcdu);
             }
@@ -148,9 +150,7 @@ class CDUProgressPage {
             } else {
                 destETACell = FMCMainDisplay.secondsTohhmm(mcdu.flightPlanManager.getDestination().infos.etaInFP);
             }
-            mcdu.onRightInput[0] = () => {
-                const value = mcdu.inOut;
-                mcdu.clearUserInput();
+            mcdu.onRightInput[0] = (value) => {
                 CDUProgressPage.ShowPredictiveGPSPage(mcdu, value);
             };
         }

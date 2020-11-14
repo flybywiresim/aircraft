@@ -562,6 +562,9 @@ class FlightPlanManager {
         }
     }
     setOrigin(icao, callback = () => { }) {
+        // NXDataStore instead of Simvar, because local string SimVars are not possible.
+        NXDataStore.set("PLAN_ORIGIN", icao.replace("A      ", "").trim());
+
         Coherent.call("SET_ORIGIN", icao).then(() => {
             this.updateFlightPlan(callback);
         });
@@ -917,6 +920,9 @@ class FlightPlanManager {
         return waypointsWithAltitudeConstraints;
     }
     setDestination(icao, callback = () => { }) {
+        // NXDataStore instead of Simvar, because local string SimVars are not possible.
+        NXDataStore.set("PLAN_DESTINATION", icao.replace("A      ", "").trim());
+
         Coherent.call("SET_DESTINATION", icao).then(() => {
             this.updateFlightPlan(callback);
         });

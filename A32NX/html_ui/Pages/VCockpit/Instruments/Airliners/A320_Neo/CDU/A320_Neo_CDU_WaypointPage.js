@@ -24,17 +24,14 @@ class CDUWaypointPage {
             [""]
         ]);
 
-        mcdu.onLeftInput[0] = () => {
-            const INPUT = mcdu.inOut;
-            mcdu.clearUserInput();
-
-            const selectedWaypoint = mcdu.getOrSelectWaypointByIdent(INPUT, res => {
+        mcdu.onLeftInput[0] = (value) => {
+            const selectedWaypoint = mcdu.getOrSelectWaypointByIdent(value, res => {
                 if (res) {
                     mcdu.clearDisplay();
                     mcdu.setTemplate([
                         ["WAYPOINT"],
                         ["IDENT"],
-                        [`${INPUT}`],
+                        [`${value}`],
                         ["LAT/LONG"],
                         [`${new LatLong(res.infos.coordinates.lat, res.infos.coordinates.long).toShortDegreeString()}[color]green`],
                         [""],
@@ -47,7 +44,7 @@ class CDUWaypointPage {
                         [""]
                     ]);
                 } else {
-                    mcdu.inOut = "INVALID ENTRY";
+                    mcdu.showErrorMessage(mcdu.defaultInputErrorMessage);
                 }
             });
         };
