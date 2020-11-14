@@ -294,7 +294,13 @@ class A32NX_Vspeeds {
         const fp = Simplane.getCurrentFlightPhase();
 
         if (this.tryUpdateFhi(fp) || this.tryUpdateGw() || this.tryUpdateLdg() || this.tryUpdateAlt()) {
-            this.updateVspeeds(fp);
+            SimVar.SetSimVarValue("L:A32NX_VS", "number", this.compensateForMachEffect(vs[this.curFhi][this.cgw](this.lastGw, this.ldgPos)));
+            SimVar.SetSimVarValue("L:A32NX_VLS", "number", this.compensateForMachEffect(
+                (fp < FlightPhase.FLIGHT_PHASE_CLIMB ? vlsTo : vls)[this.curFhi][this.cgw](this.lastGw, this.ldgPos)
+            ));
+            SimVar.SetSimVarValue("L:A32NX_FS", "number", fs[this.cgw](this.lastGw));
+            SimVar.SetSimVarValue("L:A32NX_SS", "number", ss[this.cgw](this.lastGw));
+            SimVar.SetSimVarValue("L:A32NX_GD", "number", this.compensateForMachEffect(this.calculateGreenDotSpeed()));
         }
     }
 
@@ -351,20 +357,6 @@ class A32NX_Vspeeds {
         }
         this.alt = alt;
         return true;
-    }
-
-    /**
-     * This method updates all SimVars with current Vspeeds
-     * @param fp {number} current flight phase
-     */
-    updateVspeeds(fp) {
-        SimVar.SetSimVarValue("L:A32NX_VS", "number", this.compensateForMachEffect(vs[this.curFhi][this.cgw](this.lastGw, this.ldgPos)));
-        SimVar.SetSimVarValue("L:A32NX_VLS", "number", this.compensateForMachEffect(
-            (fp < FlightPhase.FLIGHT_PHASE_CLIMB ? vlsTo : vls)[this.curFhi][this.cgw](this.lastGw, this.ldgPos)
-        ));
-        SimVar.SetSimVarValue("L:A32NX_FS", "number", fs[this.cgw](this.lastGw));
-        SimVar.SetSimVarValue("L:A32NX_SS", "number", ss[this.cgw](this.lastGw));
-        SimVar.SetSimVarValue("L:A32NX_GD", "number", this.compensateForMachEffect(this.calculateGreenDotSpeed()));
     }
 
     /**
