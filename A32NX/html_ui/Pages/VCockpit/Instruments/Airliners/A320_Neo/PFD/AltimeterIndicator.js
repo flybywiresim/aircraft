@@ -110,7 +110,7 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
             bg.setAttribute("y", _top.toString());
             bg.setAttribute("width", _width.toString());
             bg.setAttribute("height", _height.toString());
-            bg.setAttribute("fill", "#6B798A");
+            bg.setAttribute("fill", "#5A6573");
             bg.setAttribute("stroke-width", "3");
             this.centerSVG.appendChild(bg);
 
@@ -828,4 +828,3 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
     }
 }
 customElements.define("jet-pfd-altimeter-indicator", Jet_PFD_AltimeterIndicator);
-//# sourceMappingURL=AltimeterIndicator.js.map

@@ -2,6 +2,7 @@ class CDUIdentPage {
     static ShowPage(mcdu) {
         const date = mcdu.getNavDataDateRange();
         mcdu.clearDisplay();
+        mcdu.page.Current = mcdu.page.IdentPage;
         mcdu.activeSystem = 'FMGC';
         mcdu.setTemplate([
             ["A320-200"],
@@ -20,4 +21,3 @@ class CDUIdentPage {
         ]);
     }
 }
-//# sourceMappingURL=A320_Neo_CDU_IdentPage.js.map

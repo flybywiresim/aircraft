@@ -2936,4 +2936,3 @@ class GlassCockpit_XMLEngine extends NavSystemElement {
         this.xmlEngineDisplay.onSoundEnd(_eventId);
     }
 }
-//# sourceMappingURL=NavSystem.js.map

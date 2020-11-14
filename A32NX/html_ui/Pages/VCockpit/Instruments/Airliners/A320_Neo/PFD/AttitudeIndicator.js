@@ -903,4 +903,3 @@ var Jet_PFD_FlightDirector;
     Jet_PFD_FlightDirector.A320_Neo_Handler = A320_Neo_Handler;
 })(Jet_PFD_FlightDirector || (Jet_PFD_FlightDirector = {}));
 customElements.define("jet-pfd-attitude-indicator", Jet_PFD_AttitudeIndicator);
-//# sourceMappingURL=AttitudeIndicator.js.map

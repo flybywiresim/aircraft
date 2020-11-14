@@ -1,6 +1,7 @@
 class CDUMenuPage {
     static ShowPage(mcdu) {
         mcdu.clearDisplay();
+        mcdu.page.Current = mcdu.page.MenuPage;
         const activeSystem = mcdu.activeSystem;
         let textATSU;
         let textFMGC;

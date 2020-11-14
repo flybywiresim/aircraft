@@ -6,7 +6,7 @@ import {
     useUpdate,
     getSimVar,
 } from '../util.mjs';
-import './style.css';
+import './style.scss';
 
 // TODO: Move anything dependent on ac power change to A32NX_Core
 function powerAvailable() {
