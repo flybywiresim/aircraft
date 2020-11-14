@@ -26,7 +26,6 @@ class CDU_OPTIONS_SIMBRIEF {
             return mcdu.getDelayBasic();
         };
         mcdu.onLeftInput[1] = (value) => {
-            mcdu.clearUserInput();
             if (value === FMCMainDisplay.clrValue) {
                 NXDataStore.set("CONFIG_SIMBRIEF_USERNAME", "");
             } else {
