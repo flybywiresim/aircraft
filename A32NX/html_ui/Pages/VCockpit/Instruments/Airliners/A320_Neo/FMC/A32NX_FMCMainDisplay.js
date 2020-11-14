@@ -902,10 +902,13 @@ class FMCMainDisplay extends BaseAirliners {
                 .then(() => {
                     callback(true);
                 })
-                .catch(() => {
-                    this.showErrorMessage("FLT NBR IN USE");
+                .catch((err) => {
+                    if (err !== NXApi.disabledError) {
+                        this.showErrorMessage("FLT NBR IN USE");
+                        return callback(false);
+                    }
 
-                    callback(false);
+                    return callback(true);
                 });
         });
     }

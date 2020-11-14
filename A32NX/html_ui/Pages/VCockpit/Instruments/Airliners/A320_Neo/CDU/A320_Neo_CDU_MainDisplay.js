@@ -40,7 +40,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         const flightNo = SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string");
         NXApi.connectTelex(flightNo)
             .catch((err) => {
-                if (err !== NXApi.disconnectedError) {
+                if (err !== NXApi.disabledError) {
                     this.showErrorMessage("FLT NBR IN USE");
                 }
             });
@@ -90,7 +90,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             // Update connection
             NXApi.updateTelex()
                 .catch((err) => {
-                    if (err !== NXApi.disconnectedError) {
+                    if (err !== NXApi.disconnectedError && err !== NXApi.disabledError) {
                         console.log("TELEX PING FAILED");
                     }
                 });

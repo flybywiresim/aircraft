@@ -45,6 +45,11 @@ class NXApi {
     }
 
     static connectTelex(flightNo) {
+        // TELEX disabled
+        if (NXDataStore.get("CONFIG_TELEX_STATUS", "DISABLED") !== "ENABLED") {
+            return Promise.reject(NXApi.disabledError);
+        }
+
         const connectBody = NXApi.buildTelexBody(flightNo);
         const headers = {"Content-Type": "application/json"};
 
@@ -63,6 +68,11 @@ class NXApi {
     }
 
     static updateTelex() {
+        // TELEX disabled
+        if (NXDataStore.get("CONFIG_TELEX_STATUS", "DISABLED") !== "ENABLED") {
+            return Promise.reject(NXApi.disabledError);
+        }
+
         // No connection
         if (!NXApi.hasTelexConnection()) {
             return Promise.reject(NXApi.disconnectedError);
