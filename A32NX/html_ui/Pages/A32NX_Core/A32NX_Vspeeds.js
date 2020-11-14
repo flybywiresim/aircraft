@@ -277,7 +277,7 @@ class A32NX_Vspeeds {
         SimVar.SetSimVarValue("L:A32NX_FS", "number", 0);
         SimVar.SetSimVarValue("L:A32NX_SS", "number", 0);
         SimVar.SetSimVarValue("L:A32NX_GD", "number", 0);
-        // SimVar.SetSimVarValue("L:A32NX_LANDING_CONF3", "boolean", 0);
+        SimVar.SetSimVarValue("L:A32NX_LANDING_CONF3", "boolean", 0);
         // SimVar.SetSimVarValue("L:A32NX_VLS_APP", "number", 0);
         // SimVar.SetSimVarValue("L:A32NX_VAPP", "number", 0);
         this.lastGw = 50;
