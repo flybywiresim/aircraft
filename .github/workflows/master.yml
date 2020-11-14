@@ -14,6 +14,7 @@ jobs:
       MASTER_PRE_RELEASE_TAG: vmaster
       MASTER_ZIP_NAME: A32NX-master.zip
       MOD_FOLDER_NAME: A32NX
+      BUILD_DIR_NAME: vmaster
     steps:
       - name: Checkout source
         uses: actions/checkout@v2
@@ -24,13 +25,20 @@ jobs:
           npm install
           npm run build
 
-          echo 'built: ${{ env.BUILT_DATE_TIME }}' >> ./${{ env.MOD_FOLDER_NAME }}/build_info.txt
-          echo 'ref: ${{ github.ref }}' >> ./${{ env.MOD_FOLDER_NAME }}/build_info.txt
-          echo 'sha: ${{ github.sha }}' >> ./${{ env.MOD_FOLDER_NAME }}/build_info.txt
-          echo 'actor: ${{ github.actor }}' >> ./${{ env.MOD_FOLDER_NAME }}/build_info.txt
-          echo 'event_name: ${{ github.event_name }}' >> ./${{ env.MOD_FOLDER_NAME }}/build_info.txt
-
-          zip -r ./${{ env.MASTER_ZIP_NAME }} ./${{ env.MOD_FOLDER_NAME }}/
+          echo $( \
+            jq -n \
+              --arg built '${{ env.BUILT_DATE_TIME }}' \
+              --arg ref '${{ github.ref }}' \
+              --arg sha '${{ github.sha }}' \
+              --arg actor '${{ github.actor }}' \
+              --arg event_name '${{ github.event_name }}' \
+              '{built: $built, ref: $ref, sha: $sha, actor: $actor, event_name: $event_name}' \
+          ) > ./${{ env.MOD_FOLDER_NAME }}/build_info.json
+      - name: Build ZIP file
+        run: |
+          mkdir ./${{ env.BUILD_DIR_NAME }}
+          cp ./${{ env.MOD_FOLDER_NAME }}/build_info.json ./${{ env.BUILD_DIR_NAME }}/build_info.json
+          zip -r ./${{ env.BUILD_DIR_NAME }}/${{ env.MASTER_ZIP_NAME }} ./${{ env.MOD_FOLDER_NAME }}/
       - name: Get and delete master pre-release zip asset
         run: |
           echo 'checking for first release asset...'
@@ -54,7 +62,7 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
         with:
           upload_url: https://uploads.github.com/repos/${{ github.repository }}/releases/${{ env.MASTER_PRE_RELEASE_ID }}/assets{?name,label}
-          asset_path: ./${{ env.MASTER_ZIP_NAME }}
+          asset_path: ./${{ env.BUILD_DIR_NAME }}/${{ env.MASTER_ZIP_NAME }}
           asset_name: ${{ env.MASTER_ZIP_NAME }}
           asset_content_type: application/zip
       - name: Update master pre-release body
@@ -66,3 +74,14 @@ jobs:
             --data-raw '{
               "body": "This pre-release has its ${{ env.MASTER_ZIP_NAME }} asset updated on every commit to the master branch\nDo not use the source code assets, they are never updated\nLast updated on ${{ env.BUILT_DATE_TIME }} from commit ${{ github.sha }}\nThis link will always point to the latest master build: https://github.com/${{ github.repository }}/releases/download/${{ env.MASTER_PRE_RELEASE_TAG }}/${{ env.MASTER_ZIP_NAME }}"
             }'
+      - name: Upload to CDN
+        uses: LibreTexts/do-space-sync-action@master
+        with:
+          args: --acl public-read
+        env:
+          SOURCE_DIR: ./${{ env.BUILD_DIR_NAME }}
+          DEST_DIR: ${{ env.BUILD_DIR_NAME }}
+          SPACE_NAME: ${{ secrets.CDN_SPACE_NAME }}
+          SPACE_REGION: ${{ secrets.CDN_SPACE_REGION }}
+          SPACE_ACCESS_KEY_ID: ${{ secrets.CDN_SPACE_ACCESS_KEY_ID }}
+          SPACE_SECRET_ACCESS_KEY: ${{ secrets.CDN_SPACE_SECRET_ACCESS_KEY }}
