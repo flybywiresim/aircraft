@@ -245,6 +245,7 @@ class A32NX_Vspeeds {
         this.curFhi = -1;
         this.ldgPos = -1;
         this.alt = -1;
+        this.cgw = 0;
     }
 
     update(_deltaTime) {
@@ -261,8 +262,8 @@ class A32NX_Vspeeds {
                 break;
             }
             case (gw !== this.lastGw): {
-                // TODO: make updateVspeeds() use this.gw and remove param
                 this.lastGw = gw;
+                this.cgw = Math.ceil(((gw > 80 ? 80 : gw) - 40) / 5);
                 this.updateVspeeds(fp);
                 break;
             }
@@ -284,13 +285,12 @@ class A32NX_Vspeeds {
      * @param fp {number} current flight phase
      */
     updateVspeeds(fp) {
-        const cgw = Math.ceil(((this.lastGw > 80 ? 80 : this.lastGw) - 40) / 5);
-        SimVar.SetSimVarValue("L:A32NX_VS", "number", this.compensateForMachEffect(vs[this.curFhi][cgw](this.lastGw, this.ldgPos)));
+        SimVar.SetSimVarValue("L:A32NX_VS", "number", this.compensateForMachEffect(vs[this.curFhi][this.cgw](this.lastGw, this.ldgPos)));
         SimVar.SetSimVarValue("L:A32NX_VLS", "number", this.compensateForMachEffect(
-            (fp < FlightPhase.FLIGHT_PHASE_CLIMB ? vlsTo : vls)[this.curFhi][cgw](this.lastGw, this.ldgPos)
+            (fp < FlightPhase.FLIGHT_PHASE_CLIMB ? vlsTo : vls)[this.curFhi][this.cgw](this.lastGw, this.ldgPos)
         ));
-        SimVar.SetSimVarValue("L:A32NX_FS", "number", fs[cgw](this.lastGw));
-        SimVar.SetSimVarValue("L:A32NX_SS", "number", ss[cgw](this.lastGw));
+        SimVar.SetSimVarValue("L:A32NX_FS", "number", fs[this.cgw](this.lastGw));
+        SimVar.SetSimVarValue("L:A32NX_SS", "number", ss[this.cgw](this.lastGw));
         SimVar.SetSimVarValue("L:A32NX_GD", "number", this.compensateForMachEffect(this.calculateGreenDotSpeed()));
     }
 
