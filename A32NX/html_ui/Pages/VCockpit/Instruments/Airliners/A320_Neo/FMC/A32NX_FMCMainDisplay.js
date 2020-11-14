@@ -538,14 +538,20 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     /**
-     * Any tropopause altitude up to 60,000 ft is able to be entered.
+     * Any tropopause altitude up to 60,000 ft is able to be entered
+     * Format: NNNN or NNNNN Leading 0’s must be included
+     * Entry is rounded to the nearest 10 ft
      */
     tryUpdateTropo(tropo) {
-        const value = parseInt(tropo);
-        if (isFinite(value)) {
-            if (value >= 0 && value <= 60000) {
-                this.tropo = value;
-                return true;
+        const _tropo = typeof tropo === 'number' ? tropo.toString() : tropo;
+        if (_tropo.match(/^(?=(\D*\d){4,5}\D*$)/g)) {
+            const value = parseInt(_tropo.padEnd(5, '0'));
+            if (isFinite(value)) {
+                if (value >= 0 && value <= 60000) {
+                    const valueRounded = Math.round(value / 10) * 10;
+                    this.tropo = valueRounded.toString();
+                    return true;
+                }
             }
         }
         this.showErrorMessage(this.defaultInputErrorMessage);
