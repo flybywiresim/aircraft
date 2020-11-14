@@ -240,7 +240,7 @@ class A32NX_Vspeeds {
         SimVar.SetSimVarValue("L:A32NX_LANDING_CONF3", "boolean", 0);
         SimVar.SetSimVarValue("L:A32NX_FS", "number", 0);
         SimVar.SetSimVarValue("L:A32NX_SS", "number", 0);
-        this.lastGw = -1;
+        this.lastGw = 50;
         this.lastFhi = -1;
         this.curFhi = -1;
         this.ldgPos = -1;
@@ -287,8 +287,8 @@ class A32NX_Vspeeds {
         const cgw = Math.ceil(((this.lastGw > 80 ? 80 : this.lastGw) - 40) / 5);
         SimVar.SetSimVarValue("L:A32NX_VS", "number", this.compensateForMachEffect(vs[this.curFhi][cgw](this.lastGw, this.ldgPos)));
         SimVar.SetSimVarValue("L:A32NX_VLS", "number", this.compensateForMachEffect(
-            (fp < FlightPhase.FLIGHT_PHASE_CLIMB ? vlsTo : vls)[this.curFhi][cgw](this.lastGw, this.ldgPos))
-        );
+            (fp < FlightPhase.FLIGHT_PHASE_CLIMB ? vlsTo : vls)[this.curFhi][cgw](this.lastGw, this.ldgPos)
+        ));
         SimVar.SetSimVarValue("L:A32NX_FS", "number", fs[cgw](this.lastGw));
         SimVar.SetSimVarValue("L:A32NX_SS", "number", ss[cgw](this.lastGw));
         SimVar.SetSimVarValue("L:A32NX_GD", "number", this.compensateForMachEffect(this.calculateGreenDotSpeed()));
