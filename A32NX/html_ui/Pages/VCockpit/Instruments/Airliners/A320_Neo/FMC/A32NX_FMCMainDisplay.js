@@ -639,32 +639,6 @@ class FMCMainDisplay extends BaseAirliners {
         return false;
     }
 
-    updateRouteOrigin(newRouteOrigin, callback = EmptyCallback.Boolean) {
-        this.dataManager.GetAirportByIdent(newRouteOrigin).then(airport => {
-            if (!airport) {
-                this.showErrorMessage("NOT IN DATABASE");
-                return callback(false);
-            }
-            this.flightPlanManager.setOrigin(airport.icao, () => {
-                this.tmpOrigin = airport.ident;
-                callback(true);
-            });
-        });
-    }
-
-    updateRouteDestination(routeDestination, callback = EmptyCallback.Boolean) {
-        this.dataManager.GetAirportByIdent(routeDestination).then(airport => {
-            if (!airport) {
-                this.showErrorMessage("NOT IN DATABASE");
-                return callback(false);
-            }
-            this.flightPlanManager.setDestination(airport.icao, () => {
-                this.tmpDestination = airport.ident;
-                callback(true);
-            });
-        });
-    }
-
     /**
      * Updates the Fuel weight cell to tons. Uses a place holder FL120 for 30 min
      */
