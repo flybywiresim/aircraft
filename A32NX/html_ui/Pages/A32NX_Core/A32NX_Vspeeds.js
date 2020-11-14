@@ -296,29 +296,28 @@ class A32NX_Vspeeds {
         const ldg = Math.round(SimVar.GetSimVarValue("GEAR POSITION:0", "Enum"));
         const alt = this.round(Simplane.getAltitude());
         const fp = Simplane.getCurrentFlightPhase();
-        switch (true) {
-            case (fhi !== this.lastFhi): {
-                this.curFhi = this.lastFhi === 0 && fp > FlightPhase.FLIGHT_PHASE_TAKEOFF ? 5 : fhi;
-                this.lastFhi = fhi;
-                this.updateVspeeds(fp);
-                break;
-            }
-            case (gw !== this.lastGw): {
-                this.lastGw = gw;
-                this.cgw = Math.ceil(((gw > 80 ? 80 : gw) - 40) / 5);
-                this.updateVspeeds(fp);
-                break;
-            }
-            case (ldg !== this.ldgPos): {
-                this.ldgPos = ldg;
-                this.updateVspeeds(fp);
-                break;
-            }
-            case (alt !== this.alt): {
-                this.alt = alt;
-                this.updateVspeeds(fp);
-                break;
-            }
+        let update = false;
+
+        if (fhi !== this.lastFhi) {
+            this.curFhi = this.lastFhi === 0 && fp > FlightPhase.FLIGHT_PHASE_TAKEOFF ? 5 : fhi;
+            this.lastFhi = fhi;
+            update = true;
+        }
+        if (gw !== this.lastGw) {
+            this.lastGw = gw;
+            this.cgw = Math.ceil(((gw > 80 ? 80 : gw) - 40) / 5);
+            update = true;
+        }
+        if (ldg !== this.ldgPos) {
+            this.ldgPos = ldg;
+            update = true;
+        }
+        if (alt !== this.alt) {
+            this.alt = alt;
+            update = true;
+        }
+        if (update) {
+            this.updateVspeeds(fp);
         }
     }
 
