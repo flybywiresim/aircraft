@@ -175,6 +175,9 @@ class NXApi {
         const long = SimVar.GetSimVarValue("PLANE LONGITUDE", "degree longitude");
         const alt = SimVar.GetSimVarValue("PLANE ALTITUDE", "feet");
         const heading = SimVar.GetSimVarValue("PLANE HEADING DEGREES MAGNETIC", "degree");
+        const origin = NXDataStore.get("PLAN_ORIGIN", "");
+        const destination = NXDataStore.get("PLAN_DESTINATION", "");
+        const acType = NXDataStore.get("AC_TYPE", "unknown");
         const freetext = NXDataStore.get("CONFIG_TELEX_STATUS", "DISABLED") === "ENABLED";
 
         return {
@@ -184,10 +187,11 @@ class NXApi {
             },
             trueAltitude: alt,
             heading: heading,
-            origin: "",
-            destination: "",
+            origin: origin,
+            destination: destination,
             freetextEnabled: freetext,
             flight: flightNo,
+            aircraftType: acType,
         };
     }
 }
@@ -197,3 +201,4 @@ NXApi.disabledError = "TELEX DISABLED";
 NXApi.disconnectedError = "TELEX DISCONNECTED";
 NXApi.noRecipientError = "NO RECIPIENT";
 NXApi.accessToken = "";
+NXApi.updateRate = 15000;

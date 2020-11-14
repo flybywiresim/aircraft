@@ -2549,6 +2549,8 @@
                 <SEQ1_EMISSIVE_DRIVES_VISIBILITY>False</SEQ1_EMISSIVE_DRIVES_VISIBILITY>
                 <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
                 <DEFAULT_TEMPLATE_EMISSIVE>ASOBO_LIGHTING_Potentiometer_Emissive_Template</DEFAULT_TEMPLATE_EMISSIVE>
+
+                <PLANE_NAME>A32NX</PLANE_NAME>
             </DefaultTemplateParameters>
 
             <UseTemplate Name="ASOBO_AIRLINER_Switch_Baro_Selector_Template">
@@ -2731,20 +2733,12 @@
 
             </UseTemplate>
 
-            <UseTemplate Name="ASOBO_AUTOPILOT_Push_Localizer_Template">
-                <NODE_ID>PUSH_AUTOPILOT_LOC</NODE_ID>
-                <ANIM_NAME>PUSH_AUTOPILOT_LOC</ANIM_NAME>
-                <POTENTIOMETER>84</POTENTIOMETER>
-                <ACTIVE_NODE_ID>PUSH_AUTOPILOT_LOC_SEQ1</ACTIVE_NODE_ID>
-                <EMISSIVE_NODE_ID>PUSH_AUTOPILOT_LOC_SEQ2</EMISSIVE_NODE_ID>
-            </UseTemplate>
-
             <UseTemplate Name="ASOBO_AIRBUS_Push_Heading_Track_Template">
                 <NODE_ID>PUSH_AUTOPILOT_HDGTRK</NODE_ID>
                 <ANIM_NAME>PUSH_AUTOPILOT_HDGTRK</ANIM_NAME>
             </UseTemplate>
 
-            <UseTemplate Name="ASOBO_AUTOPILOT_Push_Autopilot_Template">
+            <UseTemplate Name="FBW_Airbus_Autopilot_Master">
                 <NODE_ID>PUSH_AUTOPILOT_AP1</NODE_ID>
                 <PART_ID>PUSH_AUTOPILOT_AP1</PART_ID>
                 <ANIM_NAME>PUSH_AUTOPILOT_AP1</ANIM_NAME>
@@ -2757,7 +2751,7 @@
                 <TOOLTIPID>%((L:XMLVAR_Autopilot_1_Status, bool))%{if}TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_AP_ON%{else}TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_AP_OFF%{end}</TOOLTIPID>
             </UseTemplate>
 
-            <UseTemplate Name="ASOBO_AUTOPILOT_Push_Autopilot_Template">
+            <UseTemplate Name="FBW_Airbus_Autopilot_Master">
                 <NODE_ID>PUSH_AUTOPILOT_AP2</NODE_ID>
                 <PART_ID>PUSH_AUTOPILOT_AP2</PART_ID>
                 <ANIM_NAME>PUSH_AUTOPILOT_AP2</ANIM_NAME>
@@ -2779,13 +2773,20 @@
                 <TOOLTIPID>%((A:AUTOPILOT THROTTLE ARM,Bool))%{if}TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_AUTOTHROTTLE_ARMED%{else}TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_AUTOTHROTTLE_OFF%{end}</TOOLTIPID>
             </UseTemplate>
 
-            <UseTemplate Name="ASOBO_AUTOPILOT_Push_Approach_Template">
+            <UseTemplate Name="FBW_Airbus_Autopilot_Push_Localiser">
+                <NODE_ID>PUSH_AUTOPILOT_LOC</NODE_ID>
+                <ANIM_NAME>PUSH_AUTOPILOT_LOC</ANIM_NAME>
+                <POTENTIOMETER>84</POTENTIOMETER>
+                <ACTIVE_NODE_ID>PUSH_AUTOPILOT_LOC_SEQ1</ACTIVE_NODE_ID>
+                <EMISSIVE_NODE_ID>PUSH_AUTOPILOT_LOC_SEQ2</EMISSIVE_NODE_ID>
+            </UseTemplate>
+
+            <UseTemplate Name="FBW_Airbus_Autopilot_Push_Approach">
                 <NODE_ID>PUSH_AUTOPILOT_APPR</NODE_ID>
                 <ANIM_NAME>PUSH_AUTOPILOT_APPR</ANIM_NAME>
                 <POTENTIOMETER>84</POTENTIOMETER>
                 <ACTIVE_NODE_ID>PUSH_AUTOPILOT_APPR_SEQ1</ACTIVE_NODE_ID>
                 <EMISSIVE_NODE_ID>PUSH_AUTOPILOT_APPR_SEQ2</EMISSIVE_NODE_ID>
-                <DISABLE_GPS_MODE>False</DISABLE_GPS_MODE>
             </UseTemplate>
 
             <UseTemplate Name="ASOBO_AIRBUS_Push_Expedite_Template">

@@ -858,7 +858,6 @@ var A320_Neo_UpperECAM;
                                 isActive: () => {
                                     return this.activeTakeoffConfigWarnings.includes("to_speeds_too_low") && Simplane.getIsGrounded();
                                 },
-                                alwaysShowCategory: true,
                                 actions: [
                                     {
                                         style: "blue",
