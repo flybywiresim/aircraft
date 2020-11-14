@@ -40,7 +40,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         const flightNo = SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string");
         NXApi.connectTelex(flightNo)
             .catch((err) => {
-                if (err !== NXApi.disconnectedError) {
+                if (err !== NXApi.disabledError) {
                     this.showErrorMessage("FLT NBR IN USE");
                 }
             });
@@ -85,6 +85,9 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this.climbTransitionGroundAltitude = null;
         this.initB = false;
 
+        // Set up the AC type for the API
+        NXDataStore.set("AC_TYPE", "A32NX");
+
         // Start the TELEX Ping. API functions check the connection status themself
         setInterval(() => {
             const toDelete = [];
@@ -92,7 +95,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             // Update connection
             NXApi.updateTelex()
                 .catch((err) => {
-                    if (err !== NXApi.disconnectedError) {
+                    if (err !== NXApi.disconnectedError && err !== NXApi.disabledError) {
                         console.log("TELEX PING FAILED");
                     }
                 });
@@ -130,7 +133,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                     }
                     console.log("TELEX MSG FETCH FAILED");
                 });
-        }, 30000);
+        }, NXApi.updateRate);
     }
 
     _formatCell(str) {
