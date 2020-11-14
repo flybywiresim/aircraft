@@ -82,6 +82,8 @@
 1. [FCU] Fix altitude change when the increment is 1000 - @lars-reimann (Lars Reimann)
 1. [CDU] Improve LAT REV page layout - @beheh (Benedict Etzel)
 1. [PFD] Improved PFD text readability - @MisterChocker (Leon)
+1. [ECAM] Added CABIN PRESS page - @nikotina91
+1. [ECAM] Add ELEC page - @ramon54321
 
 ## 0.4.0
 1. [General] Add CHANGELOG.md - @nathaninnes (Nathan Innes)
@@ -149,3 +151,4 @@
 1. [LIVERY] Bundle the FlyByWire Livery with the A32NX addon - @devsnek (devsnek)
 1. [ECAM] Added cockpit door video - @Benjozork (Benjamin Dupont)
 1. [MISC] Standby Instrument stays ON if emergency power should be available, bug fixes - @2hwk (2Cas#1022 on discord)
+1. [CDU] Full +/- button functionality - @lhoenig (Lukas Hoenig)
