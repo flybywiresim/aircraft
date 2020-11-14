@@ -22,8 +22,10 @@ class CDU_OPTIONS_SIMBRIEF {
             ["<RETURN[color]blue"]
         ]);
 
-        mcdu.onLeftInput[1] = () => {
-            const value = mcdu.inOut;
+        mcdu.leftInputDelay[1] = () => {
+            return mcdu.getDelayBasic();
+        };
+        mcdu.onLeftInput[1] = (value) => {
             mcdu.clearUserInput();
             if (value === FMCMainDisplay.clrValue) {
                 NXDataStore.set("CONFIG_SIMBRIEF_USERNAME", "");
@@ -33,6 +35,9 @@ class CDU_OPTIONS_SIMBRIEF {
             CDU_OPTIONS_SIMBRIEF.ShowPage(mcdu);
         };
 
+        mcdu.leftInputDelay[5] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
         mcdu.onLeftInput[5] = () => {
             CDU_OPTIONS_MainMenu.ShowPage(mcdu);
         };
