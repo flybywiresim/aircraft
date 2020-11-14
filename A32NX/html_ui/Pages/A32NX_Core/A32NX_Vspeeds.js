@@ -295,7 +295,7 @@ class A32NX_Vspeeds {
     }
 
     /**
-     * Get aircraft takeoff and approach green dot speed
+     * Calculate green dot speed
      * Calculation:
      * Gross weight (t) * 2 + 85 when below FL200
      * @returns {number}
