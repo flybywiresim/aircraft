@@ -51,20 +51,32 @@ class CDUAocInit {
         ];
         mcdu.setTemplate(display);
 
+        mcdu.leftInputDelay[0] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
         mcdu.onLeftInput[0] = () => {
             CDU_OPTIONS_SIMBRIEF.ShowPage(mcdu);
         };
 
+        mcdu.rightInputDelay[0] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
         mcdu.onRightInput[0] = () => {
             if (mcdu.simbrief.navlog.length) {
                 CDUAocInitRoute.ShowPage(mcdu);
             }
         };
 
+        mcdu.rightInputDelay[5] = () => {
+            return mcdu.getDelayBasic();
+        };
         mcdu.onRightInput[5] = () => {
             CDUAocInit.getSimbrief(mcdu);
         };
 
+        mcdu.leftInputDelay[5] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
         mcdu.onLeftInput[5] = () => {
             CDUAocMenu.ShowPage(mcdu);
         };
@@ -167,7 +179,7 @@ class CDUAocInit {
         setTimeout(async () => {
             await CDUAocInit.buildRouteFromNavlog(mcdu);
             mcdu.showErrorMessage(aocActFplnUplink);
-        }, 10000); // Fake 10s delay for perf "calculations"
+        }, mcdu.getDelayRouteChange()); // Fake 10s delay for perf "calculations"
 
         /**
          * PERF DATA UPLINK
@@ -185,7 +197,7 @@ class CDUAocInit {
             if (mcdu.page.Current === mcdu.page.InitPageA) {
                 CDUInitPage.ShowPage1(mcdu);
             }
-        }, 3000); // Fake 3s delay for perf "calculations"
+        }, mcdu.getDelayHigh()); // Fake 3s delay for perf "calculations"
     }
 
     static addWaypointAsync(mcdu, routeIdent, wpIndex, via) {
