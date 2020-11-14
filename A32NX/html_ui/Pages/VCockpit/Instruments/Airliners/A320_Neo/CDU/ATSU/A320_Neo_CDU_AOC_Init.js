@@ -128,6 +128,8 @@ class CDUAocInit {
                     CDUAocInit.ShowPage(mcdu);
                 }
                 CDUAocInit.showStatus(mcdu, "DONE");
+
+                return mcdu.simbrief;
             })
             .catch(_err => {
                 console.log(_err.message);
@@ -157,12 +159,18 @@ class CDUAocInit {
         /**
          * AOC ACT F-PLN UPLINK
          * TODO:
-         * - ROUTE
+         * - ROUTE (half done)
          * - ALTN
          */
         mcdu.tryUpdateFromTo(fromTo, (result) => {
             if (result) {
                 CDUPerformancePage.UpdateThrRedAccFromOrigin(mcdu);
+
+                setTimeout(async () => {
+                    await CDUAocInit.buildRouteFromNavlog(mcdu);
+                    mcdu.showErrorMessage(aocActFplnUplink);
+                }, mcdu.getDelayRouteChange());
+
                 if (mcdu.page.Current === mcdu.page.InitPageA) {
                     CDUInitPage.ShowPage1(mcdu);
                 }
@@ -175,11 +183,6 @@ class CDUAocInit {
                 }
             }
         });
-
-        setTimeout(async () => {
-            await CDUAocInit.buildRouteFromNavlog(mcdu);
-            mcdu.showErrorMessage(aocActFplnUplink);
-        }, mcdu.getDelayRouteChange()); // Fake 10s delay for perf "calculations"
 
         /**
          * PERF DATA UPLINK
@@ -197,20 +200,19 @@ class CDUAocInit {
             if (mcdu.page.Current === mcdu.page.InitPageA) {
                 CDUInitPage.ShowPage1(mcdu);
             }
-        }, mcdu.getDelayHigh()); // Fake 3s delay for perf "calculations"
+        }, mcdu.getDelayHigh());
     }
 
     static addWaypointAsync(mcdu, routeIdent, wpIndex, via) {
         if (via) {
             return new Promise((res, rej) => {
                 mcdu.insertWaypointsAlongAirway(routeIdent, wpIndex, via, (result) => {
-                    console.log('result');
-                    console.log(result);
                     if (result) {
-                        console.log("Inserted waypoint : " + routeIdent + " via " + via);
+                        console.log("Inserted waypoint: " + routeIdent + " via " + via);
                         res(true);
                     } else {
                         mcdu.showErrorMessage("AWY/WPT MISMATCH");
+                        console.log('AWY/WPT MISMATCH' + routeIdent + " via " + via);
                         res(false);
                     }
                 });
@@ -224,7 +226,7 @@ class CDUAocInit {
                         res(false);
                     } else {
                         mcdu.flightPlanManager.addWaypoint(waypoint.icao, wpIndex, () => {
-                            console.log("Inserted waypoint : " + routeIdent);
+                            console.log("Inserted waypoint: " + routeIdent);
                             res(true);
                         });
                     }
@@ -233,13 +235,19 @@ class CDUAocInit {
         }
     }
 
-    static async buildRouteFromNavlog(mcdu) {
+    static buildRouteFromNavlog(mcdu) {
         const {navlog, route} = mcdu.simbrief;
 
         const routeSplit = route.split(' ');
         const procedures = new Set(navlog.filter(fix => fix.is_sid_star === "1").map(fix => fix.via_airway));
 
-        for (const [i, routeIdent] of routeSplit.entries()) {
+        async function asyncForEach(array, callback) {
+            for (let index = 0; index < array.length; index++) {
+                await callback(array[index], index, array);
+            }
+        }
+
+        asyncForEach(routeSplit, async (routeIdent, i) => {
             console.log('----');
             console.log(routeIdent);
             for (const fix of navlog) {
@@ -251,14 +259,14 @@ class CDUAocInit {
                                 break;
                             } else {
                                 const wpIndex = mcdu.flightPlanManager.getEnRouteWaypointsLastIndex() + 1;
-                                console.log("Inserting waypoint : " + routeSplit[i + 1] + " via " + routeIdent + " | " + wpIndex);
+                                console.log("Inserting waypoint: " + routeSplit[i + 1] + " via " + routeIdent + " | " + wpIndex);
                                 await CDUAocInit.addWaypointAsync(mcdu, routeSplit[i + 1], wpIndex, routeIdent);
 
                                 break;
                             }
                         } else {
                             const wpIndex = mcdu.flightPlanManager.getWaypointsCount() - 1;
-                            console.log("Inserting waypoint : " + routeIdent + " | " + wpIndex);
+                            console.log("Inserting waypoint: " + routeIdent + " | " + wpIndex);
                             await CDUAocInit.addWaypointAsync(mcdu, routeIdent, wpIndex);
 
                             break;
@@ -266,6 +274,6 @@ class CDUAocInit {
                     }
                 }
             }
-        }
+        });
     }
 }
