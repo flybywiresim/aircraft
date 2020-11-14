@@ -212,26 +212,20 @@ class CDUAirportsMonitor {
 
         // user-selected 5th airport (only possible to set on page 1)
         if (!this.page2) {
-            mcdu.onLeftInput[4] = () => {
+            mcdu.onLeftInput[4] = (value) => {
                 if (this.user_ap) {
-                    if (mcdu.inOut === FMCMainDisplay.clrValue) {
+                    if (value === FMCMainDisplay.clrValue) {
                         this.user_ap = undefined;
-                        mcdu.clearUserInput();
                         // trigger data update next frame
                         this.total_delta_t = update_ival_ms;
                         this.ShowPage(mcdu);
-                    } else {
-                        console.log(`"${mcdu.inOut}"`);
-                        console.log(`"${FMCMainDisplay.clrValue}"`);
                     }
-                } else if (mcdu.inOut !== '' && mcdu.inOut !== FMCMainDisplay.clrValue) {
-                    const ap = mcdu.inOut;
+                } else if (value !== '' && value !== FMCMainDisplay.clrValue) {
                     // GetAirportByIdent returns a Waypoint in the callback,
                     // which interally uses FacilityLoader (and further down calls Coherence)
-                    mcdu.dataManager.GetAirportByIdent(ap).then((ap_data) => {
+                    mcdu.dataManager.GetAirportByIdent(value).then((ap_data) => {
                         if (ap_data) {
                             this.user_ap = ap_data;
-                            mcdu.clearUserInput();
                             // trigger data update next frame
                             this.total_delta_t = update_ival_ms;
                             this.frozen = false;
@@ -251,6 +245,10 @@ class CDUAirportsMonitor {
             // trigger data update next frame
             this.total_delta_t = update_ival_ms;
             this.ShowPage(mcdu);
+        };
+
+        mcdu.rightInputDelay[5] = () => {
+            return mcdu.getDelaySwitchPage();
         };
 
         // EFOB/WIND

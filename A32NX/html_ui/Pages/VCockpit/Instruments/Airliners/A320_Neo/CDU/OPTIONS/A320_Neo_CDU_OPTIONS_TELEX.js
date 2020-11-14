@@ -29,8 +29,14 @@ class CDU_OPTIONS_TELEX {
             ["<RETURN[color]blue", telexToggleText]
         ]);
 
+        mcdu.leftInputDelay[5] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
         mcdu.onLeftInput[5] = () => {
             CDU_OPTIONS_MainMenu.ShowPage(mcdu);
+        };
+        mcdu.rightInputDelay[5] = () => {
+            return mcdu.getDelaySwitchPage();
         };
         mcdu.onRightInput[5] = () => {
             switch (storedTelexStatus) {
