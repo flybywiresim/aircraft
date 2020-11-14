@@ -291,34 +291,66 @@ class A32NX_Vspeeds {
      * On disagree cache gets updated and Vspeeds recalculated, then shared.
      */
     update(_deltaTime) {
-        const gw = this.round(SimVar.GetSimVarValue("TOTAL WEIGHT", "kg")) / 1000;
-        const fhi = Simplane.getFlapsHandleIndex();
-        const ldg = Math.round(SimVar.GetSimVarValue("GEAR POSITION:0", "Enum"));
-        const alt = this.round(Simplane.getAltitude());
         const fp = Simplane.getCurrentFlightPhase();
-        let update = false;
 
-        if (fhi !== this.lastFhi) {
-            this.curFhi = this.lastFhi === 0 && fp > FlightPhase.FLIGHT_PHASE_TAKEOFF ? 5 : fhi;
-            this.lastFhi = fhi;
-            update = true;
-        }
-        if (gw !== this.lastGw) {
-            this.lastGw = gw;
-            this.cgw = Math.ceil(((gw > 80 ? 80 : gw) - 40) / 5);
-            update = true;
-        }
-        if (ldg !== this.ldgPos) {
-            this.ldgPos = ldg;
-            update = true;
-        }
-        if (alt !== this.alt) {
-            this.alt = alt;
-            update = true;
-        }
-        if (update) {
+        if (this.tryUpdateFhi(fp) || this.tryUpdateGw() || this.tryUpdateLdg() || this.tryUpdateAlt()) {
             this.updateVspeeds(fp);
         }
+    }
+
+    /**
+     * Checks if flaps position has changed and updates if true
+     * @param fp {number} Flight Phase
+     * @param fhi {number} Flaps Handle Index
+     * @returns {boolean} has changed?
+     */
+    tryUpdateFhi(fp, fhi = Simplane.getFlapsHandleIndex()) {
+        if (fhi === this.lastFhi) {
+            return false;
+        }
+        this.curFhi = this.lastFhi === 0 && fp > FlightPhase.FLIGHT_PHASE_TAKEOFF ? 5 : fhi;
+        this.lastFhi = fhi;
+        return true;
+    }
+
+    /**
+     * Checks if gross weight has changed and updates if true
+     * @param gw {number} gross weight (rounded to 100 kg)
+     * @returns {boolean} has changed?
+     */
+    tryUpdateGw(gw = this.round(SimVar.GetSimVarValue("TOTAL WEIGHT", "kg")) / 1000) {
+        if (gw === this.lastGw) {
+            return false;
+        }
+        this.lastGw = gw;
+        this.cgw = Math.ceil(((gw > 80 ? 80 : gw) - 40) / 5);
+        return true;
+    }
+
+    /**
+     * Checks if landing gear position has changed and updates if true
+     * @param ldg {number} landing gear position
+     * @returns {boolean} has changed?
+     */
+    tryUpdateLdg(ldg = Math.round(SimVar.GetSimVarValue("GEAR POSITION:0", "Enum"))) {
+        if (ldg === this.ldgPos) {
+            return false;
+        }
+        this.ldgPos = ldg;
+        return true;
+    }
+
+    /**
+     * Checks if altitude has changed and updates if true
+     * @param alt {number} altitude in ft (rounded to 100 ft)
+     * @returns {boolean} has changed?
+     */
+    tryUpdateAlt(alt = this.round(Simplane.getAltitude())) {
+        if (alt === this.alt) {
+            return false;
+        }
+        this.alt = alt;
+        return true;
     }
 
     /**
