@@ -534,14 +534,15 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     /**
-     * TODO:
-     * Add check for valid tropo value
+     * Any tropopause altitude up to 60,000 ft is able to be entered.
      */
     tryUpdateTropo(tropo) {
         const value = parseInt(tropo);
         if (isFinite(value)) {
-            this.tropo = value;
-            return true;
+            if (value >= 0 && value <= 60000) {
+                this.tropo = value;
+                return true;
+            }
         }
         this.showErrorMessage(this.defaultInputErrorMessage);
         return false;
