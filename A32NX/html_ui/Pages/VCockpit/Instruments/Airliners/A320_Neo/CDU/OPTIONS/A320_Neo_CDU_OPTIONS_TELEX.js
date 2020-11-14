@@ -2,38 +2,50 @@ class CDU_OPTIONS_TELEX {
     static ShowPage(mcdu) {
         mcdu.clearDisplay();
 
-        const storedTelexStatus = NXDataStore.get("CONFIG_TELEX_STATUS", "DISABLED");
+        const storedTelexStatus = NXDataStore.get("CONFIG_TELEX_STATUS", "UNKNOWN");
+        let firstTime = false;
 
         let telexToggleText;
+
         switch (storedTelexStatus) {
             case "ENABLED":
                 telexToggleText = "DISABLE*[color]blue";
                 break;
-            default:
+            case "UNKNOWN":
+                telexToggleText = "ENABLE*[color]blue";
+                firstTime = true;
+                break;
+            case "DISABLED":
                 telexToggleText = "ENABLE*[color]blue";
         }
 
         mcdu.setTemplate([
             ["A32NX OPTIONS"],
-            ["", "", "AOC FREE TEXT"],
+            ["", "", "ONLINE FEATURES"],
             ["WARNING:[color]red"],
-            ["[b-text]ALL MSGS ARE PUBLICLY"],
-            ["[s-text]READABLE. IF ENABLED,"],
+            ["[b-text]ENABLES FREE TEXT AND LIVE"],
+            ["[s-text]MAP. IF ENABLED,"],
             ["[b-text]AIRCRAFT POSITION DATA WILL"],
-            ["[s-text]ALSO BE PUBLISHED FOR THE"],
-            ["[b-text]DURATION OF THE FLIGHT,"],
-            ["[s-text]WHILE CONNECTED."],
-            ["[b-text]MSGS ARE NOT MODERATED."],
+            ["[s-text]BE PUBLISHED FOR THE"],
+            ["[b-text]DURATION OF THE FLIGHT."],
+            ["[s-text]MSGS ARE PUBLIC, NOT MODERATED."],
+            [""],
             ["[s-text]USE AT YOUR OWN RISK.[color]red"],
             ["", "CONFIRM[color]blue"],
-            ["<RETURN[color]blue", telexToggleText]
+            firstTime ? ["<LATER[color]blue", telexToggleText] : ["<RETURN[color]blue", telexToggleText]
         ]);
 
         mcdu.leftInputDelay[5] = () => {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onLeftInput[5] = () => {
-            CDU_OPTIONS_MainMenu.ShowPage(mcdu);
+            if (firstTime) {
+                CDUMenuPage.ShowPage(mcdu);
+                // Take "LATER" as disabling it
+                NXDataStore.set("CONFIG_TELEX_STATUS", "DISABLED");
+            } else {
+                CDU_OPTIONS_MainMenu.ShowPage(mcdu);
+            }
         };
         mcdu.rightInputDelay[5] = () => {
             return mcdu.getDelaySwitchPage();
@@ -62,7 +74,11 @@ class CDU_OPTIONS_TELEX {
                             }
                         });
             }
-            CDU_OPTIONS_TELEX.ShowPage(mcdu);
+            if (firstTime) {
+                CDUMenuPage.ShowPage(mcdu);
+            } else {
+                CDU_OPTIONS_TELEX.ShowPage(mcdu);
+            }
         };
     }
 }
