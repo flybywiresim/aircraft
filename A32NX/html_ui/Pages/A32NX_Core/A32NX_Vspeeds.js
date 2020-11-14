@@ -290,8 +290,8 @@ class A32NX_Vspeeds {
         SimVar.SetSimVarValue("L:A32NX_VLS", "number", this.compensateForMachEffect(
             (fp < FlightPhase.FLIGHT_PHASE_CLIMB ? vlsTo : vls)[this.curFhi][cgw](this.lastGw, this.ldgPos))
         );
-        SimVar.SetSimVarValue("L:A32NX_FS", "number", this.compensateForMachEffect(fs[cgw](this.lastGw)));
-        SimVar.SetSimVarValue("L:A32NX_SS", "number", this.compensateForMachEffect(ss[cgw](this.lastGw)));
+        SimVar.SetSimVarValue("L:A32NX_FS", "number", fs[cgw](this.lastGw));
+        SimVar.SetSimVarValue("L:A32NX_SS", "number", ss[cgw](this.lastGw));
         SimVar.SetSimVarValue("L:A32NX_GD", "number", this.compensateForMachEffect(this.calculateGreenDotSpeed()));
     }
 
