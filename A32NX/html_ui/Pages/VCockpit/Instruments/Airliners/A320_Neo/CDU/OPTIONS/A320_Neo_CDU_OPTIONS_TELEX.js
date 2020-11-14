@@ -2,7 +2,7 @@ class CDU_OPTIONS_TELEX {
     static ShowPage(mcdu) {
         mcdu.clearDisplay();
 
-        const storedTelexStatus = NXDataStore.get("CONFIG_TELEX_STATUS", "UNKNOWN");
+        const storedTelexStatus = NXDataStore.get("CONFIG_ONLINE_FEATURES_STATUS", "UNKNOWN");
         let firstTime = false;
 
         let telexToggleText;
@@ -42,7 +42,7 @@ class CDU_OPTIONS_TELEX {
             if (firstTime) {
                 CDUMenuPage.ShowPage(mcdu);
                 // Take "LATER" as disabling it
-                NXDataStore.set("CONFIG_TELEX_STATUS", "DISABLED");
+                NXDataStore.set("CONFIG_ONLINE_FEATURES_STATUS", "DISABLED");
             } else {
                 CDU_OPTIONS_MainMenu.ShowPage(mcdu);
             }
@@ -53,7 +53,7 @@ class CDU_OPTIONS_TELEX {
         mcdu.onRightInput[5] = () => {
             switch (storedTelexStatus) {
                 case "ENABLED":
-                    NXDataStore.set("CONFIG_TELEX_STATUS", "DISABLED");
+                    NXDataStore.set("CONFIG_ONLINE_FEATURES_STATUS", "DISABLED");
                     mcdu.showErrorMessage("FREE TEXT DISABLED");
                     NXApi.disconnectTelex()
                         .catch((err) => {
@@ -63,7 +63,7 @@ class CDU_OPTIONS_TELEX {
                         });
                     break;
                 default:
-                    NXDataStore.set("CONFIG_TELEX_STATUS", "ENABLED");
+                    NXDataStore.set("CONFIG_ONLINE_FEATURES_STATUS", "ENABLED");
                     mcdu.showErrorMessage("FREE TEXT ENABLED");
 
                     const flightNo = SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string");

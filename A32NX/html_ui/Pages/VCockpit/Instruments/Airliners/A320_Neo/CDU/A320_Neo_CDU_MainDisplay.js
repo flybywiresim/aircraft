@@ -86,7 +86,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this.initB = false;
 
         // If the consent is not set, show telex page
-        const onlineFeaturesStatus = NXDataStore.get("CONFIG_TELEX_STATUS", "UNKNOWN");
+        const onlineFeaturesStatus = NXDataStore.get("CONFIG_ONLINE_FEATURES_STATUS", "UNKNOWN");
 
         if (onlineFeaturesStatus === "UNKNOWN") {
             CDU_OPTIONS_TELEX.ShowPage(this);
