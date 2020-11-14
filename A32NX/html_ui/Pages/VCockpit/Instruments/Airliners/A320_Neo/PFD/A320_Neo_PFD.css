@@ -446,3 +446,36 @@ a320-neo-pfd-element #Mainframe #InstrumentsContainer #ILS {
   height: 100%;
   z-index: 1;
 }
+
+
+
+.pulse-yellow {
+  animation: pulse-yellow 1s steps(2, start) infinite;
+}
+
+@keyframes pulse-yellow {
+  from {
+    stroke: rgb(61, 61, 29);
+    stroke-width: 3;
+  }
+  to {
+    stroke: rgb(245, 245, 0);
+    stroke-width: 5;
+  }
+}
+
+
+.flash-magenta {
+  animation:flash-magenta 0.3s steps(2, start) infinite;
+}
+
+@keyframes flash-magenta {
+  from {
+    stroke-width: 3;
+    stroke: rgb(75, 44, 75);
+  }
+  to {
+    stroke: #FF94FF;
+    stroke-width: 5;
+  }
+}

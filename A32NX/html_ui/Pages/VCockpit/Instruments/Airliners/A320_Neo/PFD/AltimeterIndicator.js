@@ -460,10 +460,15 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
 
     
     _pulseYellow() {
-        console.log('Pulse Yellow');
+        this.cursorSVGShape.classList.add("pulse-yellow");
     }
     _flashMagenta() {
-        console.log('Flash Magenta');
+        this.cursorSVGShape.classList.add("flash-magenta");
+    }
+    
+    _removeAltitudeWarnings() {
+        this.cursorSVGShape.classList.remove("pulse-yellow");
+        this.cursorSVGShape.classList.remove("flash-magenta");
     }
 
     _updateAltitudeAlert(indicatedAltitude, selectedAltitude) {
@@ -472,10 +477,10 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
         // - Selected altitude is being changed
         // - Landing gear down
         // - Glide slope captured
-
         const gear = !SimVar.GetSimVarValue("IS GEAR RETRACTABLE", "Boolean") || SimVar.GetSimVarValue("GEAR HANDLE POSITION", "Boolean");
 
         if (gear) {
+            this._removeAltitudeWarnings()
             return;
         }
 
@@ -497,7 +502,7 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
                 const pullingUp = [0, 1].includes(deviationCoefficientSign);
                 const pullingDown = [-0, -1].includes(deviationCoefficientSign);
                 
-                if ( delta > 750 && delta <= 850) {
+                if ( delta > 750 && delta <= 1000) {
                     if (pullingUp && indicatedAltitude > selectedAltitude) {
                         isInMagenta = true;
                     } else if (pullingDown && indicatedAltitude < selectedAltitude) {
@@ -511,11 +516,11 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
             this._flashMagenta()
         } else if (isInYellow) {
             this._pulseYellow()
+        } else {
+            this._removeAltitudeWarnings()
         }
         
         this._previousIndicatedAltitude = indicatedAltitude;
-        
-        
     }
 
 
