@@ -359,6 +359,12 @@ class FMCMainDisplay extends BaseAirliners {
         }
     }
 
+    tryClearOldUserInput() {
+        if (!this.isDisplayingErrorMessage) {
+            this.lastUserInput = "";
+        }
+    }
+
     showErrorMessage(message, color = "#ffffff") {
         if (!this.isDisplayingErrorMessage && this.inOut) {
             this.lastUserInput = this.inOut;
@@ -1392,10 +1398,6 @@ class FMCMainDisplay extends BaseAirliners {
     getCrzManagedSpeed() {
         let dCI = this.costIndex / 999;
         dCI = dCI * dCI;
-        const flapsHandleIndex = SimVar.GetSimVarValue("FLAPS HANDLE INDEX", "Number");
-        if (flapsHandleIndex != 0) {
-            return this.getFlapSpeed();
-        }
         let speed = 290 * (1 - dCI) + 310 * dCI;
         if (SimVar.GetSimVarValue("PLANE ALTITUDE", "feet") < 10000) {
             speed = Math.min(speed, 250);
@@ -3176,6 +3178,7 @@ class FMCMainDisplay extends BaseAirliners {
                         setTimeout(() => {
                             if (this.page.Current === cur) {
                                 this.onLeftInput[v - 1](value);
+                                this.tryClearOldUserInput();
                             }
                         }, this.leftInputDelay[v - 1] ? this.leftInputDelay[v - 1](value) : this.getDelayBasic());
                     }
@@ -3189,6 +3192,7 @@ class FMCMainDisplay extends BaseAirliners {
                         setTimeout(() => {
                             if (this.page.Current === cur) {
                                 this.onRightInput[v - 1](value);
+                                this.tryClearOldUserInput();
                             }
                         }, this.rightInputDelay[v - 1] ? this.rightInputDelay[v - 1]() : this.getDelayBasic());
                     }
