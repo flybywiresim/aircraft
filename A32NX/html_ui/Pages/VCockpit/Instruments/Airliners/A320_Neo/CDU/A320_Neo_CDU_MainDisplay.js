@@ -19,7 +19,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this._gpsprimaryack = 0;
         this.currentFlightPhase = FlightPhase.FLIGHT_PHASE_PREFLIGHT;
         this.updateTypeIIMessage = false;
-        this.messageQueue = [["test213", "rgb(241,0,0)", () => {}, () => {}]];
+        this.messageQueue = [];
     }
     get templateID() {
         return "A320_Neo_CDU";
