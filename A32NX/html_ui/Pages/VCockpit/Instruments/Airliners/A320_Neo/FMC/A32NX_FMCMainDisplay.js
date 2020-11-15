@@ -1226,7 +1226,7 @@ class FMCMainDisplay extends BaseAirliners {
         const v = parseInt(s);
         if (isFinite(v) && v > 0) {
             this.transitionAltitude = v;
-            SimVar.SetSimVarValue("L:AIRLINER_TRANS_ALT", "Number", this.v2Speed);
+            SimVar.SetSimVarValue("L:AIRLINER_TRANS_ALT", "Number", v);
             return true;
         }
         this.showErrorMessage(this.defaultInputErrorMessage);
