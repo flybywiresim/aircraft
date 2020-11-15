@@ -4,12 +4,12 @@
 // The updater compares the new value from the selector with the current value from the local simvar,
 // and then updates the local simvar if it changed.
 const FLAPS_IN_MOTION_MIN_DELTA = 0.1;
- 
+
 class A32NX_LocalVarUpdater {
     constructor() {
         // Initial data for deltas
         this.lastFlapsPosition = SimVar.GetSimVarValue("TRAILING EDGE FLAPS LEFT PERCENT", "percent");
- 
+
         this.updaters = [
             {
                 varName: "L:A32NX_NO_SMOKING_MEMO",
@@ -24,44 +24,44 @@ class A32NX_LocalVarUpdater {
             // New updaters go here...
         ];
     }
- 
+
     update() {
         this.updaters.forEach(this._runUpdater);
     }
- 
-    _runUpdater({varName, type, selector}) {
+
+    _runUpdater({ varName, type, selector }) {
         const newValue = selector();
         const currentValue = SimVar.GetSimVarValue(varName, type);
         if (newValue !== currentValue) {
             SimVar.SetSimVarValue(varName, type, newValue);
         }
     }
- 
+
     _noSmokingMemoSelector() {
         const gearPercent = SimVar.GetSimVarValue("GEAR CENTER POSITION", "Percent");
         const noSmokingSwitch = SimVar.GetSimVarValue("L:XMLVAR_SWITCH_OVHD_INTLT_NOSMOKING_Position", "Position");
- 
+
         // Switch is ON
         if (noSmokingSwitch === 0) {
             return true;
         }
- 
+
         // Switch is AUTO and gear more than 50% down
         if (noSmokingSwitch === 1 && gearPercent > 50) {
             return true;
         }
- 
+
         return false;
     }
- 
+
     _flapsInMotionSelector() {
         const currentFlapsPosition = SimVar.GetSimVarValue("TRAILING EDGE FLAPS LEFT PERCENT", "percent");
         const lastFlapsPosition = this.lastFlapsPosition;
- 
+
         this.lastFlapsPosition = SimVar.GetSimVarValue("TRAILING EDGE FLAPS LEFT PERCENT", "percent");
- 
+
         return Math.abs(lastFlapsPosition - currentFlapsPosition) > FLAPS_IN_MOTION_MIN_DELTA;
     }
- 
+
     // New selectors go here...
 }
