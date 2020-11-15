@@ -4,59 +4,50 @@ class CDUAocInit {
         mcdu.page.Current = mcdu.page.AOCInit;
         mcdu.activeSystem = 'ATSU';
 
-        let fromTo = "----|----[color]white";
-        let block = "---.-[color]white";
-        let payload = "---.-[color]white";
-        let estZfw = "---.-[color]white";
-        let cruiseAltitude = "-----[color]white";
-        let costIndex = "--[color]white";
-        let fltNbr = '-----';
+        let fltNbr = '_______[color]red';
+        let originIcao = '____[color]red';
+        let destinationIcao = '____[color]red';
+        let ete = "____[color]red";
+        let fob = `{small}---.-{end}[color]white`;
 
-        if (mcdu.simbrief["originIcao"] && mcdu.simbrief["destinationIcao"]) {
-            fromTo = `${mcdu.simbrief["originIcao"]}/${mcdu.simbrief["destinationIcao"]}[color]green`;
+        const currentFob = formatWeight(SimVar.GetSimVarValue("FUEL TOTAL QUANTITY WEIGHT", "kg"));
+
+        function formatWeight(value) {
+            return (value / 1000).toFixed(1);
         }
-        if (mcdu.simbrief["block"]) {
-            block = `${(+mcdu.simbrief["block"] / 1000).toFixed(1)}[color]green`;
+
+        if (mcdu.simbrief["originIcao"]) {
+            originIcao = `${mcdu.simbrief["originIcao"]}[color]blue`;
         }
-        if (mcdu.simbrief["payload"]) {
-            payload = `${(+mcdu.simbrief["payload"] / 1000).toFixed(1)}[color]green`;
-        }
-        if (mcdu.simbrief["estZfw"]) {
-            estZfw = `${(+mcdu.simbrief["estZfw"] / 1000).toFixed(1)}[color]green`;
-        }
-        if (mcdu.simbrief["cruiseAltitude"]) {
-            cruiseAltitude = `${mcdu.simbrief["cruiseAltitude"]}[color]green`;
-        }
-        if (mcdu.simbrief["costIndex"]) {
-            costIndex = `${mcdu.simbrief["costIndex"]}[color]green`;
+        if (mcdu.simbrief["destinationIcao"]) {
+            destinationIcao = `${mcdu.simbrief["destinationIcao"]}[color]blue`;
         }
         if (mcdu.simbrief["icao_airline"] || mcdu.simbrief["flight_number"]) {
             fltNbr = `${mcdu.simbrief.icao_airline}${mcdu.simbrief.flight_number}[color]green`;
         }
+        if (mcdu.simbrief["ete"]) {
+            ete = `${mcdu.simbrief.ete}[color]blue`;
+        }
+        if (currentFob) {
+            fob = `{small}${currentFob}{end}[color]green`;
+        }
 
         const display = [
-            ["AOC INIT DATA REQUEST"],
-            ["", ""],
-            ["", mcdu.simbrief.navlog.length ? "NAVLOG>" : "NAVLOG>[color]inop"],
-            ["FLT NBR", "FROM/TO"],
-            [fltNbr, fromTo],
-            ["BLOCK", "CRZ FL"],
-            [block, cruiseAltitude],
-            ["PAYLOAD", "CI"],
-            [payload, costIndex],
-            ["ZFW", ""],
-            [estZfw, ""],
-            ["RETURN TO", mcdu.simbrief["sendStatus"]],
-            ["<AOC MENU", "REQUEST*[color]blue"]
+            ["INIT/REVIEW", "1", "2", "AOC"],
+            ["FMC FLT NO", "GMT"],
+            [fltNbr, "2337[color]green"],
+            ["DEP"],
+            [originIcao],
+            ["DEST"],
+            [destinationIcao, "CREW DETAILS>"],
+            ["FOB"],
+            ["   " + fob],
+            ["ETE"],
+            [ete, "INIT DATA REQ*[color]blue"],
+            ["", "ADVISORY"],
+            ["<AOC MENU"]
         ];
         mcdu.setTemplate(display);
-
-        mcdu.leftInputDelay[0] = () => {
-            return mcdu.getDelaySwitchPage();
-        };
-        mcdu.onLeftInput[0] = () => {
-            CDU_OPTIONS_SIMBRIEF.ShowPage(mcdu);
-        };
 
         mcdu.rightInputDelay[0] = () => {
             return mcdu.getDelaySwitchPage();
@@ -67,10 +58,10 @@ class CDUAocInit {
             }
         };
 
-        mcdu.rightInputDelay[5] = () => {
+        mcdu.rightInputDelay[4] = () => {
             return mcdu.getDelayBasic();
         };
-        mcdu.onRightInput[5] = () => {
+        mcdu.onRightInput[4] = () => {
             CDUAocInit.getSimbrief(mcdu);
         };
 
@@ -79,6 +70,93 @@ class CDUAocInit {
         };
         mcdu.onLeftInput[5] = () => {
             CDUAocMenu.ShowPage(mcdu);
+        };
+
+        mcdu.onNextPage = () => {
+            CDUAocInit.ShowPage2(mcdu);
+        };
+    }
+
+    static ShowPage2(mcdu) {
+        mcdu.clearDisplay();
+        mcdu.page.Current = mcdu.page.AOCInit2;
+        mcdu.activeSystem = 'ATSU';
+
+        const currentFob = formatWeight(SimVar.GetSimVarValue("FUEL TOTAL QUANTITY WEIGHT", "kg"));
+
+        function formatWeight(value) {
+            return (value / 1000).toFixed(1);
+        }
+
+        function formatTime(timestamp) {
+            var date = new Date(+timestamp * 1000);
+            return `${date.getUTCHours().toString().padStart(2, "0")}${date.getUTCMinutes().toString().padEnd(2, "0")}`;
+        }
+
+        /**
+            Out: is when you set the brakes to off...
+            Doors: When the last door closes
+            Off: Take off time
+            On: Landing time
+            In: remains blank until brakes set to park AND the first door opens
+         */
+
+        let fob = `{small}---.-{end}[color]white`;
+        let outTime = `----[color]white`;
+        let blockTime = `----[color]white`;
+        let offTime = `----[color]white`;
+        const inTime = `----[color]white`;
+        let onTime = `----[color]white`;
+        const fltTime = `----[color]white`;
+        const gmtTime = `----[color]white`;
+        const doorsTime = `----[color]white`;
+
+        if (currentFob) {
+            fob = `{small}${currentFob}{end}[color]green`;
+        }
+        if (mcdu.simbrief["outTime"]) {
+            outTime = `${formatTime(mcdu.simbrief.outTime)}[color]green`;
+        }
+        if (mcdu.simbrief["blockTime"]) {
+            blockTime = `${formatTime(mcdu.simbrief.blockTime)}[color]green`;
+        }
+        if (mcdu.simbrief["offTime"]) {
+            offTime = `${formatTime(mcdu.simbrief.offTime)}[color]green`;
+        }
+        if (mcdu.simbrief["inTime"]) {
+            // In: remains blank until brakes set to park AND the first door opens
+            // inTime = `${formatTime(mcdu.simbrief.inTime)}[color]green`;
+        }
+        if (mcdu.simbrief["onTime"]) {
+            onTime = `${formatTime(mcdu.simbrief.onTime)}[color]green`;
+        }
+
+        const display = [
+            ["INIT/REVIEW", "2", "2", "AOC"],
+            [" OUT", "OFF ", "DOORS"],
+            [outTime, offTime, doorsTime],
+            [" ON", "IN ", "GMT"],
+            [onTime, inTime, gmtTime],
+            [" BLK TIME", "FLT TIME "],
+            [blockTime, fltTime],
+            [" FUEL REM", "LDG PILOT "],
+            ["   " + fob, "-------"],
+            ["", ""],
+            ["*AUTOLAND <{small}n{end}>[color]blue"],
+            ["", "ADVISORY "],
+            ["<AOC MENU"]
+        ];
+        mcdu.setTemplate(display);
+
+        mcdu.leftInputDelay[5] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
+        mcdu.onLeftInput[5] = () => {
+            CDUAocInit.ShowPage(mcdu);
+        };
+
+        mcdu.onPrevPage = () => {
+            CDUAocInit.ShowPage(mcdu);
         };
     }
 
@@ -125,6 +203,12 @@ class CDUAocInit {
                 mcdu.simbrief["flight_number"] = data.general.flight_number;
                 mcdu.simbrief["alternateIcao"] = data.alternate.icao_code;
                 mcdu.simbrief["avgTropopause"] = data.general.avg_tropopause;
+                mcdu.simbrief["ete"] = data.times.est_time_enroute;
+                mcdu.simbrief["blockTime"] = data.times.est_block;
+                mcdu.simbrief["outTime"] = data.times.est_out;
+                mcdu.simbrief["onTime"] = data.times.est_on;
+                mcdu.simbrief["inTime"] = data.times.est_in;
+                mcdu.simbrief["offTime"] = data.times.est_off;
 
                 if (mcdu.page.Current === mcdu.page.AOCInit) {
                     CDUAocInit.ShowPage(mcdu);
