@@ -86,6 +86,9 @@
 1. [ECAM] Add ELEC page - @ramon54321
 1. [ND] Improved flight path shape display - @lousybyte (lousybyte)
 1. [CDU] Rework duplicate waypoint names page - @pessip (Pessi Päivärinne)
+1. [ECAM] Fixed ELEV limits display on the F/CTL page - @lousybyte (lousybyte)
+1. [CDU] Fix missing preflight flight phase - @beheh (Benedict Etzel)
+1. [CDU] Fix flight phase when spawning mid-air - @beheh (Benedict Etzel)
 
 ## 0.4.0
 1. [General] Add CHANGELOG.md - @nathaninnes (Nathan Innes)

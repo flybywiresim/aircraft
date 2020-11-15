@@ -17,6 +17,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this._cruiseEntered = false;
         this._blockFuelEntered = false;
         this._gpsprimaryack = 0;
+        this.currentFlightPhase = FlightPhase.FLIGHT_PHASE_PREFLIGHT;
     }
     get templateID() {
         return "A320_Neo_CDU";
@@ -80,6 +81,13 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         };
 
         CDUMenuPage.ShowPage(this);
+
+        // support spawning in with a custom flight phases from the .flt files
+        const initialFlightPhase = SimVar.GetSimVarValue("L:A32NX_INITIAL_FLIGHT_PHASE", "number");
+        if (initialFlightPhase) {
+            this.currentFlightPhase = initialFlightPhase;
+            this.onFlightPhaseChanged();
+        }
 
         this.electricity = this.querySelector("#Electricity");
         this.climbTransitionGroundAltitude = null;
@@ -1097,20 +1105,37 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         const rightThrottleDetent = Simplane.getEngineThrottleMode(1);
         const highestThrottleDetent = (leftThrottleDetent >= rightThrottleDetent) ? leftThrottleDetent : rightThrottleDetent;
 
-        //End preflight when takeoff power is applied and engines are running
-        if (this.currentFlightPhase <= 2) {
-            if ((highestThrottleDetent == ThrottleMode.TOGA || highestThrottleDetent == ThrottleMode.FLEX_MCT) && SimVar.GetSimVarValue("ENG N1 RPM:1", "Percent") > 15 && SimVar.GetSimVarValue("ENG N1 RPM:2", "Percent") > 15) {
-                SimVar.SetSimVarValue("L:A32NX_Preflight_Complete", "Bool", 1);
-            }
-        }
+        if (this.currentFlightPhase <= FlightPhase.FLIGHT_PHASE_TAKEOFF) {
+            const isAirborne = !Simplane.getIsGrounded(); // TODO replace with proper flight mode in future
+            const isTogaFlex = highestThrottleDetent === ThrottleMode.TOGA || highestThrottleDetent === ThrottleMode.FLEX_MCT;
+            const flapsSlatsRetracted = (
+                SimVar.GetSimVarValue("TRAILING EDGE FLAPS LEFT ANGLE", "degrees") === 0 &&
+                SimVar.GetSimVarValue("TRAILING EDGE FLAPS RIGHT ANGLE", "degrees") === 0 &&
+                SimVar.GetSimVarValue("LEADING EDGE FLAPS LEFT ANGLE", "degrees") === 0 &&
+                SimVar.GetSimVarValue("LEADING EDGE FLAPS RIGHT ANGLE", "degrees") === 0
+            );
+            const pitchTakeoffEngaged = !isAirborne && isFinite(this.v2Speed) && isTogaFlex && !flapsSlatsRetracted;
+            const isTakeOffValid = pitchTakeoffEngaged ||
+                SimVar.GetSimVarValue("GPS GROUND SPEED", "knots") > 90 ||
+                (
+                    SimVar.GetSimVarValue("ENG N1 RPM:1", "Percent") >= 85 &&
+                    SimVar.GetSimVarValue("ENG N1 RPM:2", "Percent") >= 85
+                );
 
-        //Reset to preflight in case of RTO
-        if (this.currentFlightPhase <= 2 && SimVar.GetSimVarValue("L:A32NX_Preflight_Complete", "Bool") == 1) {
-            if (!(highestThrottleDetent == ThrottleMode.TOGA || highestThrottleDetent == ThrottleMode.FLEX_MCT) && SimVar.GetSimVarValue("RADIO HEIGHT", "Feet") < 100) {
+            //End preflight when takeoff power is applied and engines are running
+            if (this.currentFlightPhase < FlightPhase.FLIGHT_PHASE_TAKEOFF && isTakeOffValid) {
+                SimVar.SetSimVarValue("L:A32NX_Preflight_Complete", "Bool", 1);
+                this.currentFlightPhase = FlightPhase.FLIGHT_PHASE_TAKEOFF;
+            }
+
+            //Reset to preflight in case of RTO
+            if (this.currentFlightPhase === FlightPhase.FLIGHT_PHASE_TAKEOFF && !isTakeOffValid) {
                 SimVar.SetSimVarValue("L:A32NX_Preflight_Complete", "Bool", 0);
+                this.currentFlightPhase = FlightPhase.FLIGHT_PHASE_PREFLIGHT;
                 this.climbTransitionGroundAltitude = null;
             }
         }
+
         //Changes to climb phase when acceleration altitude is reached
         if (this.currentFlightPhase === FlightPhase.FLIGHT_PHASE_TAKEOFF && airSpeed > 80) {
             const planeAltitudeMsl = Simplane.getAltitude();
@@ -1275,7 +1300,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             this.landingResetTimer -= deltaTime / 1000;
             if (this.landingResetTimer <= 0) {
                 this.landingResetTimer = null;
-                this.currentFlightPhase = 2;
+                this.currentFlightPhase = FlightPhase.FLIGHT_PHASE_PREFLIGHT;
                 SimVar.SetSimVarValue("L:A32NX_Preflight_Complete", "Bool", 0);
                 SimVar.SetSimVarValue("L:A32NX_TO_CONFIG_NORMAL", "Bool", 0);
                 CDUIdentPage.ShowPage(this);
