@@ -89,6 +89,7 @@
 1. [ECAM] Fixed ELEV limits display on the F/CTL page - @lousybyte (lousybyte)
 1. [CDU] Fix missing preflight flight phase - @beheh (Benedict Etzel)
 1. [CDU] Fix flight phase when spawning mid-air - @beheh (Benedict Etzel)
+1. [CDU] Fixed autothrust targeting F or S speed on climb - @MisterChocker (Leon)
 
 ## 0.4.0
 1. [General] Add CHANGELOG.md - @nathaninnes (Nathan Innes)
