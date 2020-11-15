@@ -341,12 +341,12 @@ var A320_Neo_UpperECAM;
         getAPWarning(time) {
             const count = time * 1000;
             if (this.getCachedSimVar("AUTOPILOT MASTER", "Bool") == false) {
-                SimVar.SetSimVarValue("L:Generic_Master_Warning_Active", "Bool", true);
                 const timer = setTimeout(() => {
                     SimVar.SetSimVarValue("L:A32NX_AP_DISCWARN", "Bool", true);
                     SimVar.SetSimVarValue("L:Generic_Master_Warning_Active", "Bool", false);
                 }, count);
                 if (this.getCachedSimVar("L:A32NX_AP_DISCWARN", "Bool") != true) {
+                    SimVar.SetSimVarValue("L:Generic_Master_Warning_Active", "Bool", true);
                     return true;
                 } else {
                     clearTimeout(timer);
@@ -360,12 +360,12 @@ var A320_Neo_UpperECAM;
             const count = time * 1000;
             if (this.getCachedSimVar("AUTOTHROTTLE ACTIVE", "Bool") == false) {
                 SimVar.SetSimVarValue("L:A32NX_ATHR_DISC", "Bool", true);
-                SimVar.SetSimVarValue("L:Generic_Master_Caution_Active", "Bool", true);
                 const timer = setTimeout(() => {
                     SimVar.SetSimVarValue("L:A32NX_ATHR_DISCWARN", "Bool", true);
                     SimVar.SetSimVarValue("L:Generic_Master_Caution_Active", "Bool", false);
                 }, count);
                 if (this.getCachedSimVar("L:A32NX_ATHR_DISCWARN", "Bool") != true) {
+                    SimVar.SetSimVarValue("L:Generic_Master_Caution_Active", "Bool", true);
                     return true;
                 } else {
                     clearTimeout(timer);
@@ -896,6 +896,7 @@ var A320_Neo_UpperECAM;
                                 isActive: () => {
                                     return this.activeTakeoffConfigWarnings.includes("to_speeds_too_low") && Simplane.getIsGrounded();
                                 },
+                                alwaysShowCategory: true,
                                 actions: [
                                     {
                                         style: "blue",
