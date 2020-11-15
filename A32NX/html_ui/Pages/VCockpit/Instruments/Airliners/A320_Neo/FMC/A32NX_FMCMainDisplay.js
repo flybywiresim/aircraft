@@ -137,6 +137,21 @@ class FMCMainDisplay extends BaseAirliners {
         this._titleElement.textContent = this._title;
     }
 
+    setTitleLeft(content) {
+        if (!content) {
+            this._titleLeftElement.textContent = "";
+            return;
+        }
+        let color = content.split("[color]")[1];
+        if (!color) {
+            color = "white";
+        }
+        this._titleLeft = content.split("[color]")[0];
+        this._titleLeftElement.classList.remove("white", "blue", "yellow", "green", "red", "magenta", "inop");
+        this._titleLeftElement.classList.add(color);
+        this._titleLeftElement.textContent = this._titleLeft;
+    }
+
     getPageCurrent() {
         if (this._pageCurrent === undefined) {
             this._pageCurrent = parseInt(this._pageCurrentElement.textContent);
@@ -291,10 +306,12 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     setTemplate(template, large = false) {
+        console.log('setTemplate 2', large);
         if (template[0]) {
             this.setTitle(template[0][0]);
             this.setPageCurrent(template[0][1]);
             this.setPageCount(template[0][2]);
+            this.setTitleLeft(template[0][3]);
         }
         for (let i = 0; i < 6; i++) {
             let tIndex = 2 * i + 1;
@@ -2909,6 +2926,7 @@ class FMCMainDisplay extends BaseAirliners {
             mainFrame = this;
         }
         this.generateHTMLLayout(mainFrame);
+        this._titleLeftElement = this.getChildById("title-left");
         this._titleElement = this.getChildById("title");
         this._pageCurrentElement = this.getChildById("page-current");
         this._pageCountElement = this.getChildById("page-count");
@@ -3061,6 +3079,7 @@ class FMCMainDisplay extends BaseAirliners {
             VerticalRevisionPage: 41,
             WaypointPage: 42,
             AOCInit: 43,
+            AOCInit2: 44,
         };
     }
 
@@ -3336,24 +3355,37 @@ class FMCMainDisplay extends BaseAirliners {
         }
         const header = document.createElement("div");
         header.id = "header";
+
+        const titleLeft = document.createElement("div");
+        titleLeft.classList.add("s-text");
+        titleLeft.id = "title-left";
+        parent.appendChild(titleLeft);
+
         const title = document.createElement("span");
         title.id = "title";
         header.appendChild(title);
+
         parent.appendChild(header);
+
         const page = document.createElement("div");
         page.id = "page-info";
         page.classList.add("s-text");
+
         const pageCurrent = document.createElement("span");
         pageCurrent.id = "page-current";
+
         const pageSlash = document.createElement("span");
         pageSlash.id = "page-slash";
         pageSlash.textContent = "/";
+
         const pageCount = document.createElement("span");
         pageCount.id = "page-count";
+
         page.appendChild(pageCurrent);
         page.appendChild(pageSlash);
         page.appendChild(pageCount);
         parent.appendChild(page);
+
         for (let i = 0; i < 6; i++) {
             const label = document.createElement("div");
             label.classList.add("label", "s-text");

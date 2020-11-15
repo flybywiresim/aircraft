@@ -43,6 +43,12 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             flight_number: "",
             alternateIcao: "",
             avgTropopause: "",
+            ete: "",
+            blockTime: "",
+            outTime: "",
+            onTime: "",
+            inTime: "",
+            offTime: "",
         };
     }
     get templateID() {
