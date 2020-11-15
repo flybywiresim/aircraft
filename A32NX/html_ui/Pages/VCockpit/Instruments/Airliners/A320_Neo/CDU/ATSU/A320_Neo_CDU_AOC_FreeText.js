@@ -21,9 +21,7 @@ class CDUAocFreeText {
         };
         updateView();
 
-        mcdu.onLeftInput[0] = () => {
-            const value = mcdu.inOut;
-            mcdu.clearUserInput();
+        mcdu.onLeftInput[0] = (value) => {
             if (value === FMCMainDisplay.clrValue) {
                 store["msg_to"] = "";
             } else {
@@ -32,9 +30,7 @@ class CDUAocFreeText {
             CDUAocFreeText.ShowPage(mcdu, store);
         };
 
-        mcdu.onLeftInput[1] = () => {
-            const value = mcdu.inOut;
-            mcdu.clearUserInput();
+        mcdu.onLeftInput[1] = (value) => {
             if (value === FMCMainDisplay.clrValue) {
                 store["msg_line1"] = "";
             } else {
@@ -43,9 +39,7 @@ class CDUAocFreeText {
             CDUAocFreeText.ShowPage(mcdu, store);
         };
 
-        mcdu.onLeftInput[2] = () => {
-            const value = mcdu.inOut;
-            mcdu.clearUserInput();
+        mcdu.onLeftInput[2] = (value) => {
             if (value === FMCMainDisplay.clrValue) {
                 store["msg_line2"] = "";
             } else {
@@ -54,9 +48,7 @@ class CDUAocFreeText {
             CDUAocFreeText.ShowPage(mcdu, store);
         };
 
-        mcdu.onLeftInput[3] = () => {
-            const value = mcdu.inOut;
-            mcdu.clearUserInput();
+        mcdu.onLeftInput[3] = (value) => {
             if (value === FMCMainDisplay.clrValue) {
                 store["msg_line3"] = "";
             } else {
@@ -65,9 +57,7 @@ class CDUAocFreeText {
             CDUAocFreeText.ShowPage(mcdu, store);
         };
 
-        mcdu.onLeftInput[4] = () => {
-            const value = mcdu.inOut;
-            mcdu.clearUserInput();
+        mcdu.onLeftInput[4] = (value) => {
             if (value === FMCMainDisplay.clrValue) {
                 store["msg_line4"] = "";
             } else {
@@ -76,8 +66,11 @@ class CDUAocFreeText {
             CDUAocFreeText.ShowPage(mcdu, store);
         };
 
+        mcdu.rightInputDelay[5] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
         mcdu.onRightInput[5] = async () => {
-            const storedTelexStatus = NXDataStore.get("CONFIG_TELEX_STATUS", "DISABLED");
+            const storedTelexStatus = NXDataStore.get("CONFIG_ONLINE_FEATURES_STATUS", "DISABLED");
 
             if (NXApi.hasTelexConnection() && storedTelexStatus === "ENABLED") {
                 store["sendStatus"] = "QUEUED";
@@ -141,6 +134,10 @@ class CDUAocFreeText {
             } else {
                 mcdu.showErrorMessage("TELEX NOT ENABLED");
             }
+        };
+
+        mcdu.leftInputDelay[5] = () => {
+            return mcdu.getDelaySwitchPage();
         };
 
         mcdu.onLeftInput[5] = () => {

@@ -45,6 +45,11 @@ class NXApi {
     }
 
     static connectTelex(flightNo) {
+        // TELEX disabled
+        if (NXDataStore.get("CONFIG_ONLINE_FEATURES_STATUS", "DISABLED") !== "ENABLED") {
+            return Promise.reject(NXApi.disabledError);
+        }
+
         const connectBody = NXApi.buildTelexBody(flightNo);
         const headers = {"Content-Type": "application/json"};
 
@@ -63,6 +68,11 @@ class NXApi {
     }
 
     static updateTelex() {
+        // TELEX disabled
+        if (NXDataStore.get("CONFIG_ONLINE_FEATURES_STATUS", "DISABLED") !== "ENABLED") {
+            return Promise.reject(NXApi.disabledError);
+        }
+
         // No connection
         if (!NXApi.hasTelexConnection()) {
             return Promise.reject(NXApi.disconnectedError);
@@ -106,7 +116,7 @@ class NXApi {
 
     static getTelexMessages() {
         // TELEX disabled
-        if (NXDataStore.get("CONFIG_TELEX_STATUS", "DISABLED") !== "ENABLED") {
+        if (NXDataStore.get("CONFIG_ONLINE_FEATURES_STATUS", "DISABLED") !== "ENABLED") {
             return Promise.reject(NXApi.disabledError);
         }
 
@@ -131,7 +141,7 @@ class NXApi {
 
     static sendTelexMessage(recipient, message) {
         // TELEX disabled
-        if (NXDataStore.get("CONFIG_TELEX_STATUS", "DISABLED") !== "ENABLED") {
+        if (NXDataStore.get("CONFIG_ONLINE_FEATURES_STATUS", "DISABLED") !== "ENABLED") {
             return Promise.reject(NXApi.disabledError);
         }
 
@@ -175,7 +185,10 @@ class NXApi {
         const long = SimVar.GetSimVarValue("PLANE LONGITUDE", "degree longitude");
         const alt = SimVar.GetSimVarValue("PLANE ALTITUDE", "feet");
         const heading = SimVar.GetSimVarValue("PLANE HEADING DEGREES MAGNETIC", "degree");
-        const freetext = NXDataStore.get("CONFIG_TELEX_STATUS", "DISABLED") === "ENABLED";
+        const origin = NXDataStore.get("PLAN_ORIGIN", "");
+        const destination = NXDataStore.get("PLAN_DESTINATION", "");
+        const acType = NXDataStore.get("AC_TYPE", "unknown");
+        const freetext = NXDataStore.get("CONFIG_ONLINE_FEATURES_STATUS", "DISABLED") === "ENABLED";
 
         return {
             location: {
@@ -184,10 +197,11 @@ class NXApi {
             },
             trueAltitude: alt,
             heading: heading,
-            origin: "",
-            destination: "",
+            origin: origin,
+            destination: destination,
             freetextEnabled: freetext,
             flight: flightNo,
+            aircraftType: acType,
         };
     }
 }
@@ -197,3 +211,4 @@ NXApi.disabledError = "TELEX DISABLED";
 NXApi.disconnectedError = "TELEX DISCONNECTED";
 NXApi.noRecipientError = "NO RECIPIENT";
 NXApi.accessToken = "";
+NXApi.updateRate = 15000;

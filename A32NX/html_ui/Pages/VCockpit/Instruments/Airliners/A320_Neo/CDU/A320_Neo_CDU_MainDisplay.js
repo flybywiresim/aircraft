@@ -17,6 +17,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this._cruiseEntered = false;
         this._blockFuelEntered = false;
         this._gpsprimaryack = 0;
+        this.currentFlightPhase = FlightPhase.FLIGHT_PHASE_PREFLIGHT;
     }
     get templateID() {
         return "A320_Neo_CDU";
@@ -40,7 +41,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         const flightNo = SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string");
         NXApi.connectTelex(flightNo)
             .catch((err) => {
-                if (err !== NXApi.disconnectedError) {
+                if (err !== NXApi.disabledError) {
                     this.showErrorMessage("FLT NBR IN USE");
                 }
             });
@@ -71,14 +72,36 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             CDUFuelPredPage.ShowPage(this);
         };
         this.onMenu = () => {
-            CDUMenuPage.ShowPage(this);
+            const cur = this.page.Current;
+            setTimeout(() => {
+                if (this.page.Current === cur) {
+                    CDUMenuPage.ShowPage(this);
+                }
+            }, this.getDelaySwitchPage());
         };
 
         CDUMenuPage.ShowPage(this);
 
+        // support spawning in with a custom flight phases from the .flt files
+        const initialFlightPhase = SimVar.GetSimVarValue("L:A32NX_INITIAL_FLIGHT_PHASE", "number");
+        if (initialFlightPhase) {
+            this.currentFlightPhase = initialFlightPhase;
+            this.onFlightPhaseChanged();
+        }
+
         this.electricity = this.querySelector("#Electricity");
         this.climbTransitionGroundAltitude = null;
         this.initB = false;
+
+        // If the consent is not set, show telex page
+        const onlineFeaturesStatus = NXDataStore.get("CONFIG_ONLINE_FEATURES_STATUS", "UNKNOWN");
+
+        if (onlineFeaturesStatus === "UNKNOWN") {
+            CDU_OPTIONS_TELEX.ShowPage(this);
+        }
+
+        // Set up the AC type for the API
+        NXDataStore.set("AC_TYPE", "A32NX");
 
         // Start the TELEX Ping. API functions check the connection status themself
         setInterval(() => {
@@ -87,7 +110,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             // Update connection
             NXApi.updateTelex()
                 .catch((err) => {
-                    if (err !== NXApi.disconnectedError) {
+                    if (err !== NXApi.disconnectedError && err !== NXApi.disabledError) {
                         console.log("TELEX PING FAILED");
                     }
                 });
@@ -125,7 +148,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                     }
                     console.log("TELEX MSG FETCH FAILED");
                 });
-        }, 30000);
+        }, NXApi.updateRate);
     }
 
     _formatCell(str) {
@@ -234,6 +257,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this._onModeManagedAltitude();
 
         CDUPerformancePage.UpdateThrRedAccFromOrigin(this);
+        CDUPerformancePage.UpdateThrRedAccFromDestination(this);
 
         SimVar.SetSimVarValue("K:VS_SLOT_INDEX_SET", "number", 1);
 
@@ -381,6 +405,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             SimVar.SetSimVarValue("K:AP_PANEL_HEADING_HOLD", "Number", 1);
         }
         SimVar.SetSimVarValue("K:HEADING_SLOT_INDEX_SET", "number", 1);
+        SimVar.SetSimVarValue("L:A32NX_GOAROUND_HDG_MODE", "bool", 1);
     }
     _onModeManagedHeading() {
         if (SimVar.GetSimVarValue("AUTOPILOT APPROACH HOLD", "boolean")) {
@@ -422,9 +447,12 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             this._onModeManagedSpeed();
         }
         if (_event === "MODE_SELECTED_HEADING") {
-            if (this.flightPlanManager.getWaypointsCount() === 0) {
-                return;
-            }
+            SimVar.SetSimVarValue("L:A32NX_GOAROUND_HDG_MODE", "bool", 1);
+            SimVar.SetSimVarValue("L:A32NX_GOAROUND_NAV_MODE", "bool", 0);
+            //why is below code checking for waypointcounts when we are in selected mode?
+            //if (this.flightPlanManager.getWaypointsCount() === 0) {
+            //    return;
+            //}
             if (Simplane.getAutoPilotHeadingManaged()) {
                 if (SimVar.GetSimVarValue("L:A320_FCU_SHOW_SELECTED_HEADING", "number") === 0) {
                     const currentHeading = Simplane.getHeadingMagnetic();
@@ -434,6 +462,8 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             this._onModeSelectedHeading();
         }
         if (_event === "MODE_MANAGED_HEADING") {
+            SimVar.SetSimVarValue("L:A32NX_GOAROUND_HDG_MODE", "bool", 0);
+            SimVar.SetSimVarValue("L:A32NX_GOAROUND_NAV_MODE", "bool", 1);
             if (this.flightPlanManager.getWaypointsCount() === 0) {
                 return;
             }
@@ -467,8 +497,12 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     }
     onFlightPhaseChanged() {
         if (this.currentFlightPhase === FlightPhase.FLIGHT_PHASE_CLIMB) {
-            if (isFinite(this.preSelectedClbSpeed)) {
-                this.setAPSelectedSpeed(this.preSelectedClbSpeed, Aircraft.A320_NEO);
+            let preSelectedClbSpeed = this.preSelectedClbSpeed;
+            if (SimVar.GetSimVarValue("L:A32NX_GOAROUND_PASSED", "bool") === 1) {
+                preSelectedClbSpeed = this.getPerfGreenDotSpeed();
+            }
+            if (isFinite(preSelectedClbSpeed)) {
+                this.setAPSelectedSpeed(preSelectedClbSpeed, Aircraft.A320_NEO);
                 SimVar.SetSimVarValue("K:SPEED_SLOT_INDEX_SET", "number", 1);
             }
         } else if (this.currentFlightPhase === FlightPhase.FLIGHT_PHASE_CRUISE) {
@@ -482,6 +516,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                 SimVar.SetSimVarValue("K:SPEED_SLOT_INDEX_SET", "number", 1);
             }
         }
+        //TODO something for Goaround? Like Green Dot Speed SRS etc ...
     }
     onInputAircraftSpecific(input) {
         if (input === "DIR") {
@@ -976,8 +1011,19 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                 SimVar.SetSimVarValue("AUTOPILOT THROTTLE MAX THRUST", "number", n1); */
 
             } else if (this.currentFlightPhase === FlightPhase.FLIGHT_PHASE_CLIMB) {
+                let speed;
+                if (SimVar.GetSimVarValue("L:A32NX_GOAROUND_PASSED", "bool") === 1) {
+                    speed = this.getPerfGreenDotSpeed();
+                    //delete override logic when we have valid nav data -aka goaround path- after goaround!
+                    if (SimVar.GetSimVarValue("L:A32NX_GOAROUND_NAV_OVERRIDE", "bool") === 0) {
+                        console.log("only once per goaround override to HDG selected");
+                        SimVar.SetSimVarValue("L:A32NX_GOAROUND_NAV_OVERRIDE", "bool", 1);
+                        this._onModeSelectedHeading();
+                    }
+                } else {
+                    speed = this.getClbManagedSpeed();
+                }
                 if (this.isAirspeedManaged()) {
-                    const speed = this.getClbManagedSpeed();
                     this.setAPManagedSpeed(speed, Aircraft.A320_NEO);
                 }
             } else if (this.currentFlightPhase === FlightPhase.FLIGHT_PHASE_CRUISE) {
@@ -1009,6 +1055,37 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                     this.setAPManagedSpeed(speed, Aircraft.A320_NEO);
                 }
             }
+            if (this.currentFlightPhase == FlightPhase.FLIGHT_PHASE_GOAROUND) {
+                const eng1Running = SimVar.GetSimVarValue("ENG COMBUSTION:1", "bool");
+                const eng2Running = SimVar.GetSimVarValue("ENG COMBUSTION:2", "bool");
+
+                let maxSpeed;
+                let speed;
+                const gaInitSpeed = SimVar.GetSimVarValue("L:A32NX_GOAROUND_INIT_SPEED", "number");
+                const gaAppSpeed = SimVar.GetSimVarValue("L:A32NX_GOAROUND_INIT_APP_SPEED", "number");
+
+                if (eng1Running && eng2Running) {
+                    maxSpeed = this.getVLS() + 25;
+                } else {
+                    maxSpeed = this.getVLS() + 15;
+                }
+
+                speed = Math.max(gaInitSpeed, gaAppSpeed);
+                speed = Math.min(speed, maxSpeed);
+                SimVar.SetSimVarValue("L:A32NX_TOGA_SPEED", "number", speed);
+
+                if (this.isAirspeedManaged()) {
+                    this.setAPManagedSpeed(speed, Aircraft.A320_NEO);
+                }
+
+                const selectedAltFCU = SimVar.GetSimVarValue("L:HUD_AP_SELECTED_ALTITUDE", "Number");
+
+                if (apLogicOn) {
+                    //depending if on HDR/TRK or NAV mode, select approriate Alt Mode (WIP)
+                    //this._onModeManagedAltitude();
+                    this._onModeSelectedAltitude();
+                }
+            }
             this.updateAutopilotCooldown = this._apCooldown;
         }
     }
@@ -1023,24 +1100,42 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     }
     checkUpdateFlightPhase() {
         const airSpeed = SimVar.GetSimVarValue("AIRSPEED TRUE", "knots");
+        const flapsHandlePercent = Simplane.getFlapsHandlePercent();
         const leftThrottleDetent = Simplane.getEngineThrottleMode(0);
         const rightThrottleDetent = Simplane.getEngineThrottleMode(1);
         const highestThrottleDetent = (leftThrottleDetent >= rightThrottleDetent) ? leftThrottleDetent : rightThrottleDetent;
 
-        //End preflight when takeoff power is applied and engines are running
-        if (this.currentFlightPhase <= 2) {
-            if ((highestThrottleDetent == ThrottleMode.TOGA || highestThrottleDetent == ThrottleMode.FLEX_MCT) && SimVar.GetSimVarValue("ENG N1 RPM:1", "Percent") > 15 && SimVar.GetSimVarValue("ENG N1 RPM:2", "Percent") > 15) {
-                SimVar.SetSimVarValue("L:A32NX_Preflight_Complete", "Bool", 1);
-            }
-        }
+        if (this.currentFlightPhase <= FlightPhase.FLIGHT_PHASE_TAKEOFF) {
+            const isAirborne = !Simplane.getIsGrounded(); // TODO replace with proper flight mode in future
+            const isTogaFlex = highestThrottleDetent === ThrottleMode.TOGA || highestThrottleDetent === ThrottleMode.FLEX_MCT;
+            const flapsSlatsRetracted = (
+                SimVar.GetSimVarValue("TRAILING EDGE FLAPS LEFT ANGLE", "degrees") === 0 &&
+                SimVar.GetSimVarValue("TRAILING EDGE FLAPS RIGHT ANGLE", "degrees") === 0 &&
+                SimVar.GetSimVarValue("LEADING EDGE FLAPS LEFT ANGLE", "degrees") === 0 &&
+                SimVar.GetSimVarValue("LEADING EDGE FLAPS RIGHT ANGLE", "degrees") === 0
+            );
+            const pitchTakeoffEngaged = !isAirborne && isFinite(this.v2Speed) && isTogaFlex && !flapsSlatsRetracted;
+            const isTakeOffValid = pitchTakeoffEngaged ||
+                SimVar.GetSimVarValue("GPS GROUND SPEED", "knots") > 90 ||
+                (
+                    SimVar.GetSimVarValue("ENG N1 RPM:1", "Percent") >= 85 &&
+                    SimVar.GetSimVarValue("ENG N1 RPM:2", "Percent") >= 85
+                );
 
-        //Reset to preflight in case of RTO
-        if (this.currentFlightPhase <= 2 && SimVar.GetSimVarValue("L:A32NX_Preflight_Complete", "Bool") == 1) {
-            if (!(highestThrottleDetent == ThrottleMode.TOGA || highestThrottleDetent == ThrottleMode.FLEX_MCT) && SimVar.GetSimVarValue("RADIO HEIGHT", "Feet") < 100) {
+            //End preflight when takeoff power is applied and engines are running
+            if (this.currentFlightPhase < FlightPhase.FLIGHT_PHASE_TAKEOFF && isTakeOffValid) {
+                SimVar.SetSimVarValue("L:A32NX_Preflight_Complete", "Bool", 1);
+                this.currentFlightPhase = FlightPhase.FLIGHT_PHASE_TAKEOFF;
+            }
+
+            //Reset to preflight in case of RTO
+            if (this.currentFlightPhase === FlightPhase.FLIGHT_PHASE_TAKEOFF && !isTakeOffValid) {
                 SimVar.SetSimVarValue("L:A32NX_Preflight_Complete", "Bool", 0);
+                this.currentFlightPhase = FlightPhase.FLIGHT_PHASE_PREFLIGHT;
                 this.climbTransitionGroundAltitude = null;
             }
         }
+
         //Changes to climb phase when acceleration altitude is reached
         if (this.currentFlightPhase === FlightPhase.FLIGHT_PHASE_TAKEOFF && airSpeed > 80) {
             const planeAltitudeMsl = Simplane.getAltitude();
@@ -1062,20 +1157,37 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             }
 
             if (planeAltitudeMsl > accelerationAltitudeMsl) {
-                console.log('switching to FLIGHT_PHASE_CLIMB: ' + JSON.stringify({planeAltitudeMsl, accelerationAltitudeMsl, prevPhase: this.currentFlightPhase}, null, 2));
+                //console.log('switching to FLIGHT_PHASE_CLIMB: ' + JSON.stringify({planeAltitudeMsl, accelerationAltitudeMsl, prevPhase: this.currentFlightPhase}, null, 2));
                 this.currentFlightPhase = FlightPhase.FLIGHT_PHASE_CLIMB;
                 this.climbTransitionGroundAltitude = null;
             }
         }
-        //Default Asobo logic
+
+        //(Mostly) Default Asobo logic
         if (this.currentFlightPhase === FlightPhase.FLIGHT_PHASE_CLIMB) {
-            const altitude = SimVar.GetSimVarValue("PLANE ALTITUDE", "feets");
-            const cruiseFlightLevel = this.cruiseFlightLevel * 100;
+            let cruiseFlightLevel;
+            let remainInClimb = false;
+            if (SimVar.GetSimVarValue("L:A32NX_GOAROUND_PASSED", "bool") === 1) {
+                const selectedAltFCU = SimVar.GetSimVarValue("L:HUD_AP_SELECTED_ALTITUDE", "Number");
+                if (SimVar.GetSimVarValue("L:A32NX_CRZ_ALT_SET_INITIAL", "bool") == 1) {
+                    cruiseFlightLevel = SimVar.GetSimVarValue("L:A32NX_NEW_CRZ_ALT", "number");
+                } else {
+                    cruiseFlightLevel = selectedAltFCU / 100;
+                    remainInClimb = true;
+                }
+            }
+            const altitude = SimVar.GetSimVarValue("PLANE ALTITUDE", "feet");
+            cruiseFlightLevel = this.cruiseFlightLevel * 100;
             if (isFinite(cruiseFlightLevel)) {
                 if (altitude >= 0.96 * cruiseFlightLevel) {
-                    console.log('switching to FLIGHT_PHASE_CRUISE: ' + JSON.stringify({altitude, cruiseFlightLevel, prevPhase: this.currentFlightPhase}, null, 2));
-                    this.currentFlightPhase = FlightPhase.FLIGHT_PHASE_CRUISE;
-                    Coherent.call("GENERAL_ENG_THROTTLE_MANAGED_MODE_SET", ThrottleMode.AUTO);
+                    if (remainInClimb) {
+                        //console.log('remaining in FLIGHT_PHASE_CLIMB (no new DEST/CRZ ALT) : ' + JSON.stringify({altitude, cruiseFlightLevel, prevPhase: this.currentFlightPhase}, null, 2));
+                    } else {
+                        //console.log('switching to FLIGHT_PHASE_CRUISE: ' + JSON.stringify({altitude, cruiseFlightLevel, prevPhase: this.currentFlightPhase}, null, 2));
+                        this.currentFlightPhase = FlightPhase.FLIGHT_PHASE_CRUISE;
+                        SimVar.SetSimVarValue("L:A32NX_GOAROUND_PASSED", "bool", 0);
+                        Coherent.call("GENERAL_ENG_THROTTLE_MANAGED_MODE_SET", ThrottleMode.AUTO);
+                    }
                 }
             }
         }
@@ -1085,7 +1197,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             const cruiseFlightLevel = this.cruiseFlightLevel * 100;
             if (isFinite(cruiseFlightLevel)) {
                 if (altitude < 0.94 * cruiseFlightLevel) {
-                    console.log('switching to FLIGHT_PHASE_DESCENT: ' + JSON.stringify({altitude, cruiseFlightLevel, prevPhase: this.currentFlightPhase}, null, 2));
+                    //console.log('switching to FLIGHT_PHASE_DESCENT: ' + JSON.stringify({altitude, cruiseFlightLevel, prevPhase: this.currentFlightPhase}, null, 2));
                     this.currentFlightPhase = FlightPhase.FLIGHT_PHASE_DESCENT;
                     Coherent.call("GENERAL_ENG_THROTTLE_MANAGED_MODE_SET", ThrottleMode.AUTO);
                 }
@@ -1099,7 +1211,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                 const long = SimVar.GetSimVarValue("PLANE LONGITUDE", "degree longitude");
                 const planeLla = new LatLongAlt(lat, long);
                 const dist = Avionics.Utils.computeGreatCircleDistance(planeLla, this.flightPlanManager.getDestination().infos.coordinates);
-                if (dist < 40) {
+                if (dist < 40 && this.currentFlightPhase != FlightPhase.FLIGHT_PHASE_GOAROUND) {
                     this.connectIls();
                     this.flightPlanManager.activateApproach();
                     if (this.currentFlightPhase != FlightPhase.FLIGHT_PHASE_APPROACH) {
@@ -1118,7 +1230,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                     const long = SimVar.GetSimVarValue("PLANE LONGITUDE", "degree longitude");
                     const planeLla = new LatLongAlt(lat, long);
                     const dist = Avionics.Utils.computeGreatCircleDistance(this.flightPlanManager.decelWaypoint.infos.coordinates, planeLla);
-                    if (dist < 3) {
+                    if (dist < 3 && this.currentFlightPhase != FlightPhase.FLIGHT_PHASE_GOAROUND) {
                         this.flightPlanManager._decelReached = true;
                         this._waypointReachedAt = SimVar.GetGlobalVarValue("ZULU TIME", "seconds");
                         if (Simplane.getAltitudeAboveGround() < 9500) {
@@ -1128,6 +1240,53 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                 }
             }
         }
+        //Logic to switch from APPR to GOAROUND
+        //another condition getIsGrounded < 30sec
+        if (this.currentFlightPhase == FlightPhase.FLIGHT_PHASE_APPROACH && highestThrottleDetent == ThrottleMode.TOGA && flapsHandlePercent != 0 && !Simplane.getAutoPilotThrottleActive() && SimVar.GetSimVarValue("RADIO HEIGHT", "feets") < 2000) {
+
+            this.currentFlightPhase = FlightPhase.FLIGHT_PHASE_GOAROUND;
+            SimVar.SetSimVarValue("L:A32NX_GOAROUND_GATRK_MODE", "bool", 0);
+            SimVar.SetSimVarValue("L:A32NX_GOAROUND_HDG_MODE", "bool", 0);
+            SimVar.SetSimVarValue("L:A32NX_GOAROUND_NAV_MODE", "bool", 0);
+            SimVar.SetSimVarValue("L:A32NX_GOAROUND_INIT_SPEED", "number", Simplane.getIndicatedSpeed());
+            SimVar.SetSimVarValue("L:A32NX_GOAROUND_INIT_APP_SPEED", "number", this.getVApp());
+            //delete override logic when we have valid nav data -aka goaround path- after goaround!
+            SimVar.SetSimVarValue("L:A32NX_GOAROUND_NAV_OVERRIDE", "bool", 0);
+
+            if (SimVar.GetSimVarValue("AUTOPILOT MASTER", "Bool") === 1) {
+                SimVar.SetSimVarValue("K:AP_LOC_HOLD_ON", "number", 1); // Turns AP localizer hold !!ON/ARMED!! and glide-slope hold mode !!OFF!!
+                SimVar.SetSimVarValue("K:AP_LOC_HOLD_OFF", "number", 1); // Turns !!OFF!! localizer hold mode
+                SimVar.SetSimVarValue("K:AUTOPILOT_OFF", "number", 1);
+                SimVar.SetSimVarValue("K:AUTOPILOT_ON", "number", 1);
+                SimVar.SetSimVarValue("L:A32NX_AUTOPILOT_APPR_MODE", "bool", 0);
+                SimVar.SetSimVarValue("L:A32NX_AUTOPILOT_LOC_MODE", "bool", 0);
+            } else if (SimVar.GetSimVarValue("AUTOPILOT MASTER", "Bool") === 0 && SimVar.GetSimVarValue("AUTOPILOT APPROACH HOLD", "boolean") === 1) {
+                SimVar.SetSimVarValue("AP_APR_HOLD_OFF", "number", 1);
+                SimVar.SetSimVarValue("L:A32NX_AUTOPILOT_APPR_MODE", "bool", 0);
+                SimVar.SetSimVarValue("L:A32NX_AUTOPILOT_LOC_MODE", "bool", 0);
+            }
+
+            const currentHeading = Simplane.getHeadingMagnetic();
+            Coherent.call("HEADING_BUG_SET", 1, currentHeading);
+
+            CDUPerformancePage.ShowGOAROUNDPage(this);
+        }
+
+        //Logic to switch back from GOAROUND to CLB/CRZ
+        //When missed approach or sec fpl are implemented this needs rework
+        //Exit Scenario after successful GOAROUND
+        if (this.currentFlightPhase == FlightPhase.FLIGHT_PHASE_GOAROUND) {
+
+            const planeAltitudeMsl = Simplane.getAltitude();
+            const accelerationAltitudeMsl = this.accelerationAltitudeGoaround;
+
+            if (planeAltitudeMsl > accelerationAltitudeMsl) {
+                //console.log('switching to FLIGHT_PHASE_CLIMB from GA: ' + JSON.stringify({planeAltitudeMsl, accelerationAltitudeMsl, prevPhase: this.currentFlightPhase}, null, 2));
+                this.currentFlightPhase = FlightPhase.FLIGHT_PHASE_CLIMB;
+                SimVar.SetSimVarValue("L:A32NX_GOAROUND_PASSED", "bool", 1);
+            }
+        }
+
         //Resets flight phase to preflight 30 seconds after touchdown
         if (this.currentFlightPhase === FlightPhase.FLIGHT_PHASE_APPROACH && Simplane.getAltitudeAboveGround() < 1.5) {
             if (this.landingResetTimer == null) {
@@ -1141,7 +1300,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             this.landingResetTimer -= deltaTime / 1000;
             if (this.landingResetTimer <= 0) {
                 this.landingResetTimer = null;
-                this.currentFlightPhase = 2;
+                this.currentFlightPhase = FlightPhase.FLIGHT_PHASE_PREFLIGHT;
                 SimVar.SetSimVarValue("L:A32NX_Preflight_Complete", "Bool", 0);
                 SimVar.SetSimVarValue("L:A32NX_TO_CONFIG_NORMAL", "Bool", 0);
                 CDUIdentPage.ShowPage(this);

@@ -64,9 +64,10 @@ class CDUAocRequestsAtis {
         };
         updateView();
 
-        mcdu.onLeftInput[0] = () => {
-            const value = mcdu.inOut;
-            mcdu.clearUserInput();
+        mcdu.leftInputDelay[0] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
+        mcdu.onLeftInput[0] = (value) => {
             if (value === FMCMainDisplay.clrValue) {
                 store["arpt1"] = "";
             } else {
@@ -74,11 +75,17 @@ class CDUAocRequestsAtis {
             }
             CDUAocRequestsAtis.ShowPage(mcdu, store);
         };
+        mcdu.leftInputDelay[1] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
         mcdu.onLeftInput[1] = () => {
             if (store.reqID != 0) {
                 store["reqID"] = 0;
             }
             CDUAocRequestsAtis.ShowPage(mcdu, store);
+        };
+        mcdu.leftInputDelay[2] = () => {
+            return mcdu.getDelaySwitchPage();
         };
         mcdu.onLeftInput[2] = () => {
             if (store.reqID != 1) {
@@ -86,20 +93,32 @@ class CDUAocRequestsAtis {
             }
             CDUAocRequestsAtis.ShowPage(mcdu, store);
         };
+        mcdu.leftInputDelay[5] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
         mcdu.onLeftInput[5] = () => {
             clearTimeout(labelTimeout);
             CDUAocMenu.ShowPage(mcdu);
         };
 
+        mcdu.rightInputDelay[0] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
         mcdu.onRightInput[0] = () => {
             store["formatID"] = (store.formatID + 1) % 2;
             CDUAocRequestsAtis.ShowPage(mcdu, store);
+        };
+        mcdu.rightInputDelay[1] = () => {
+            return mcdu.getDelaySwitchPage();
         };
         mcdu.onRightInput[1] = () => {
             if (store.reqID != 2) {
                 store["reqID"] = 2;
             }
             CDUAocRequestsAtis.ShowPage(mcdu, store);
+        };
+        mcdu.rightInputDelay[5] = () => {
+            return mcdu.getDelaySwitchPage();
         };
         mcdu.onRightInput[5] = async () => {
             store["sendStatus"] = "QUEUED";

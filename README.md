@@ -8,7 +8,7 @@
 
 ## About
 
-The A32NX Project is a community driven open source project to create a free Airbus A320neo in Microsoft Flight Simulator that is as close to reality as possible. It aims to enhance the default A320neo by improving the systems depth and functionality to bring it up to payware-level, all for free.
+The A32NX Project is a community-driven open source project to create a free Airbus A320neo in Microsoft Flight Simulator that is as close to reality as possible. It aims to enhance the default A320neo by improving the systems depth and functionality to bring it up to payware-level, all for free.
 
 ## Downloads
 
@@ -22,7 +22,7 @@ Download the new A32NX installer where you can select either the Stable or Devel
 
 This is the recommended stable release, as it has been thoroughly tested.
 
-[Download stable release here.](https://github.com/flybywiresim/a32nx/releases/latest/download/flybywiresim-a32nx.zip)
+[Download the stable release here.](https://github.com/flybywiresim/a32nx/releases/latest/download/flybywiresim-a32nx.zip)
 
 You can see the changelog on the releases page: [View Here.](https://github.com/flybywiresim/a32nx/releases)
 
@@ -65,7 +65,7 @@ See [Contributing.md](.github/Contributing.md)
 ## Known Issues (Please note that most issues are being worked on and some of them may even be fixed in the master branch)
 
 - Captain's PFD may occasionally turn off during flight
-- No Smoking switch doesn't use full range of motion.
+- No Smoking switch doesn't use a full range of motion.
 - F/CTL page does not have working speedbrake integration
 - BLEED page is not fully functional
 - Automatic ECAM page switching has minor bugs
@@ -75,9 +75,9 @@ See [Contributing.md](.github/Contributing.md)
 
 The contents of this repository are DUAL LICENSED.
 
-Textual-form source code in this repository are licensed under the GNU General Public License version 3. Artistic assets (including but not limited to images, sound banks, 3D models and textures) are licensed under [Creative Commons CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/).
+Textual-form source code in this repository is licensed under the GNU General Public License version 3. Artistic assets (including but not limited to images, sound banks, 3D models, and textures) are licensed under [Creative Commons CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/).
 
-Any other works found to be not explicitely covered by the above definitions are all rights reserved in order to avoid ambiguities at the moment, but we are very permissive about their use if you contact us.
+Any other works found to be not explicitly covered by the above definitions are all rights reserved to avoid ambiguities at the moment, but we are very permissive about their use if you contact us.
 
 ## FAQ
 
@@ -87,11 +87,10 @@ A: Yes, see [Downloads](#Downloads).
 
 **Q: Where is the plane in-sim?**
 
-A: The mod is added on top on the default A320neo from Asobo. If you want to uninstall it and revert to the original aircraft, just delete the A32NX folder in your community folder.
-
+A: The mod is added on top of the default A320neo from Asobo. If you want to uninstall it and revert to the original aircraft, just delete the A32NX folder in your community folder.
 **Q: What are the liveries available?**
 
-A: This project modifies the default A320 Neo from Asobo, therefore all liveries should be compatible.
+A: This project modifies the default A320neo from Asobo, therefore all liveries should be compatible.
 
 **Q: When will it be released?**
 

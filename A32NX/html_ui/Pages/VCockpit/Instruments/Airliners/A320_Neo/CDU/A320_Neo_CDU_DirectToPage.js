@@ -21,9 +21,7 @@ class CDUDirectToPage {
                 CDUDirectToPage.ShowPage(mcdu);
             };
         }
-        mcdu.onLeftInput[0] = () => {
-            const value = mcdu.inOut;
-            mcdu.clearUserInput();
+        mcdu.onLeftInput[0] = (value) => {
             mcdu.getOrSelectWaypointByIdent(value, (w) => {
                 if (w) {
                     SimVar.SetSimVarValue("L:A320_NEO_PREVIEW_DIRECT_TO", "number", 1);
