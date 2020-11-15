@@ -3218,6 +3218,10 @@ class FMCMainDisplay extends BaseAirliners {
         this.onNextPage = undefined;
         this.pageUpdate = undefined;
         this.refreshPageCallback = undefined;
+        if (this.page.Current === this.page.MenuPage) {
+            this.showErrorMessage("");
+            this.isDisplayingErrorMessage = false;
+        }
         this.page.Current = this.page.Clear;
         this.tryDeleteTimeout();
     }
