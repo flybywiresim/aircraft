@@ -12,19 +12,19 @@ class A32NX_LocalVarUpdater {
                 selector: this._noSmokingMemoSelector,
             },
             {
-                varName: "L:CKPT_TEMP",
+                varName: "L:A32NX_CKPT_TEMP",
                 type: "celsius",
                 selector: this._condTempSelector,
                 index: 1
             },
             {
-                varName: "L:FWD_TEMP",
+                varName: "L:A32NX_FWD_TEMP",
                 type: "celsius",
                 selector: this._condTempSelector,
                 index : 2
             },
             {
-                varName: "L:AFT_TEMP",
+                varName: "L:A32NX_AFT_TEMP",
                 type: "celsius",
                 selector: this._condTempSelector,
                 index: 3

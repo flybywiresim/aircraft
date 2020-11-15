@@ -72,21 +72,21 @@ var A320_Neo_LowerECAM_CRZ;
 
             this.condTemp = [
                 {
-                    varName: "L:CKPT_TEMP",
+                    varName: "L:A32NX_CKPT_TEMP",
                     type: "celsius",
                     selector: this.CockpitTemp,
                     value: this.CockpitTempValue,
                     index: 1
                 },
                 {
-                    varName: "L:FWD_TEMP",
+                    varName: "L:A32NX_FWD_TEMP",
                     type: "celsius",
                     selector: this.ForwardTemp,
                     value: this.ForwardTempValue,
                     index : 2
                 },
                 {
-                    varName: "L:AFT_TEMP",
+                    varName: "L:A32NX_AFT_TEMP",
                     type: "celsius",
                     selector: this.AftTemp,
                     value: this.AftTempValue,
