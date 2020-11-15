@@ -359,6 +359,12 @@ class FMCMainDisplay extends BaseAirliners {
         }
     }
 
+    tryClearOldUserInput() {
+        if (!this.isDisplayingErrorMessage) {
+            this.lastUserInput = "";
+        }
+    }
+
     showErrorMessage(message, color = "#ffffff") {
         if (!this.isDisplayingErrorMessage && this.inOut) {
             this.lastUserInput = this.inOut;
@@ -3174,6 +3180,7 @@ class FMCMainDisplay extends BaseAirliners {
                         setTimeout(() => {
                             if (this.page.Current === cur) {
                                 this.onLeftInput[v - 1](value);
+                                this.tryClearOldUserInput();
                             }
                         }, this.leftInputDelay[v - 1] ? this.leftInputDelay[v - 1](value) : this.getDelayBasic());
                     }
@@ -3187,6 +3194,7 @@ class FMCMainDisplay extends BaseAirliners {
                         setTimeout(() => {
                             if (this.page.Current === cur) {
                                 this.onRightInput[v - 1](value);
+                                this.tryClearOldUserInput();
                             }
                         }, this.rightInputDelay[v - 1] ? this.rightInputDelay[v - 1]() : this.getDelayBasic());
                     }
