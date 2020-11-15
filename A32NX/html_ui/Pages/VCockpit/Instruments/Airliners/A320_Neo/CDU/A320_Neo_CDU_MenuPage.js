@@ -125,7 +125,6 @@ class CDUMenuPage {
         };
 
         mcdu.onDir = () => {
-            mcdu.showErrorMessage("");
             const cur = mcdu.page.Current;
             setTimeout(() => {
                 if (mcdu.page.Current === cur) {
@@ -134,7 +133,6 @@ class CDUMenuPage {
             }, mcdu.getDelaySwitchPage());
         };
         mcdu.onProg = () => {
-            mcdu.showErrorMessage("");
             const cur = mcdu.page.Current;
             setTimeout(() => {
                 if (mcdu.page.Current === cur) {
@@ -143,7 +141,6 @@ class CDUMenuPage {
             }, mcdu.getDelaySwitchPage());
         };
         mcdu.onPerf = () => {
-            mcdu.showErrorMessage("");
             const cur = mcdu.page.Current;
             setTimeout(() => {
                 if (mcdu.page.Current === cur) {
@@ -152,7 +149,6 @@ class CDUMenuPage {
             }, mcdu.getDelaySwitchPage());
         };
         mcdu.onInit = () => {
-            mcdu.showErrorMessage("");
             const cur = mcdu.page.Current;
             setTimeout(() => {
                 if (mcdu.page.Current === cur) {
@@ -161,7 +157,6 @@ class CDUMenuPage {
             }, mcdu.getDelaySwitchPage());
         };
         mcdu.onData = () => {
-            mcdu.showErrorMessage("");
             const cur = mcdu.page.Current;
             setTimeout(() => {
                 if (mcdu.page.Current === cur) {
@@ -170,7 +165,6 @@ class CDUMenuPage {
             }, mcdu.getDelaySwitchPage());
         };
         mcdu.onFpln = () => {
-            mcdu.showErrorMessage("");
             const cur = mcdu.page.Current;
             setTimeout(() => {
                 if (mcdu.page.Current === cur) {
@@ -179,7 +173,6 @@ class CDUMenuPage {
             }, mcdu.getDelaySwitchPage());
         };
         mcdu.onRad = () => {
-            mcdu.showErrorMessage("");
             const cur = mcdu.page.Current;
             setTimeout(() => {
                 if (mcdu.page.Current === cur) {
@@ -188,7 +181,6 @@ class CDUMenuPage {
             }, mcdu.getDelaySwitchPage());
         };
         mcdu.onFuel = () => {
-            mcdu.showErrorMessage("");
             const cur = mcdu.page.Current;
             setTimeout(() => {
                 if (mcdu.page.Current === cur) {
