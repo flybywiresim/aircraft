@@ -9,31 +9,50 @@ jobs:
   build:
     runs-on: ubuntu-latest
     env:
-      RELEASE_ZIP_NAME: flybywiresim-a32nx.zip
+      RELEASE_ZIP_NAME: A32NX-stable.zip
       MOD_FOLDER_NAME: A32NX
+      BUILD_DIR_NAME: stable
     steps:
       - name: Checkout source
         uses: actions/checkout@v2
       - name: Set BUILT_DATE_TIME
         run: echo "BUILT_DATE_TIME=$(date -u -Iseconds)" >> $GITHUB_ENV
-      - name: Generate layout.json
+      - name: Build A32NX
         run: |
           npm install
           npm run build
 
-          echo 'built: ${{ env.BUILT_DATE_TIME }}' >> ./${{ env.MOD_FOLDER_NAME }}/build_info.txt
-          echo 'ref: ${{ github.ref }}' >> ./${{ env.MOD_FOLDER_NAME }}/build_info.txt
-          echo 'sha: ${{ github.sha }}' >> ./${{ env.MOD_FOLDER_NAME }}/build_info.txt
-          echo 'actor: ${{ github.actor }}' >> ./${{ env.MOD_FOLDER_NAME }}/build_info.txt
-          echo 'event_name: ${{ github.event_name }}' >> ./${{ env.MOD_FOLDER_NAME }}/build_info.txt
-
-          zip -r ./${{ env.RELEASE_ZIP_NAME }} ./${{ env.MOD_FOLDER_NAME }}/
+          echo $( \
+            jq -n \
+              --arg built '${{ env.BUILT_DATE_TIME }}' \
+              --arg ref '${{ github.ref }}' \
+              --arg sha '${{ github.sha }}' \
+              --arg actor '${{ github.actor }}' \
+              --arg event_name '${{ github.event_name }}' \
+              '{built: $built, ref: $ref, sha: $sha, actor: $actor, event_name: $event_name}' \
+          ) > ./${{ env.MOD_FOLDER_NAME }}/build_info.json
+      - name: Build ZIP file
+        run: |
+          mkdir ./${{ env.BUILD_DIR_NAME }}
+          cp ./${{ env.MOD_FOLDER_NAME }}/build_info.json ./${{ env.BUILD_DIR_NAME }}/build_info.json
+          zip -r ./${{ env.BUILD_DIR_NAME }}/${{ env.RELEASE_ZIP_NAME }} ./${{ env.MOD_FOLDER_NAME }}/
       - name: Upload release asset
         uses: actions/upload-release-asset@v1.0.2
         env:
           GITHUB_TOKEN: ${{ github.token }}
         with:
           upload_url: ${{ github.event.release.upload_url }}
-          asset_path: ./${{ env.RELEASE_ZIP_NAME }}
+          asset_path: ./${{ env.BUILD_DIR_NAME }}/${{ env.RELEASE_ZIP_NAME }}
           asset_name: ${{ env.RELEASE_ZIP_NAME }}
           asset_content_type: application/zip
+      - name: Upload to CDN
+        uses: LibreTexts/do-space-sync-action@master
+        with:
+          args: --acl public-read
+        env:
+          SOURCE_DIR: ./${{ env.BUILD_DIR_NAME }}
+          DEST_DIR: ${{ env.BUILD_DIR_NAME }}
+          SPACE_NAME: ${{ secrets.CDN_SPACE_NAME }}
+          SPACE_REGION: ${{ secrets.CDN_SPACE_REGION }}
+          SPACE_ACCESS_KEY_ID: ${{ secrets.CDN_SPACE_ACCESS_KEY_ID }}
+          SPACE_SECRET_ACCESS_KEY: ${{ secrets.CDN_SPACE_SECRET_ACCESS_KEY }}

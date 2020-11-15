@@ -18,6 +18,9 @@ class CDU_AIDS_MainMenu {
             ["DAR = RUNNING[color]green", "STOP*[color]blue"]
         ]);
 
+        mcdu.rightInputDelay[5] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
         mcdu.onRightInput[5] = () => {
             mcdu.showErrorMessage("NOT YET IMPLEMENTED");
             setTimeout(() => {

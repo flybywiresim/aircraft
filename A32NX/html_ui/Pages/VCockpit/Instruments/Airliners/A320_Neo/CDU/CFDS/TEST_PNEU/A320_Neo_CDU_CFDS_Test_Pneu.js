@@ -17,6 +17,9 @@ class CDUCfdsTestPneu {
             ["<RETURN[color]blue"]
         ]);
 
+        mcdu.leftInputDelay[5] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
         mcdu.onLeftInput[5] = () => {
             CDUCfdsTestMenu.ShowPage2(mcdu);
         };

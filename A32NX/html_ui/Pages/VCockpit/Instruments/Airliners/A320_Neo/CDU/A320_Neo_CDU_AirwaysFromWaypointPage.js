@@ -38,19 +38,15 @@ class A320_Neo_CDU_AirwaysFromWaypointPage {
                 if (!pendingAirway) {
                     subRows[i] = ["VIA", ""];
                     rows[i] = ["[ ][color]blue", ""];
-                    mcdu.onRightInput[i] = async () => {
-                        const value = mcdu.inOut;
+                    mcdu.onRightInput[i] = async (value) => {
                         if (value.length > 0) {
-                            mcdu.clearUserInput();
                             mcdu.insertWaypoint(value, mcdu.flightPlanManager.getEnRouteWaypointsLastIndex() + 1, () => {
                                 A320_Neo_CDU_AirwaysFromWaypointPage.ShowPage(mcdu, waypoint, offset);
                             });
                         }
                     };
-                    mcdu.onLeftInput[i] = async () => {
-                        const value = mcdu.inOut;
+                    mcdu.onLeftInput[i] = async (value) => {
                         if (value.length > 0) {
-                            mcdu.clearUserInput();
                             mcdu.ensureCurrentFlightPlanIsTemporary(() => {
                                 const lastWaypoint = mcdu.flightPlanManager.getWaypoints()[mcdu.flightPlanManager.getEnRouteWaypointsLastIndex()];
                                 if (lastWaypoint.infos instanceof IntersectionInfo || lastWaypoint.infos instanceof VORInfo || lastWaypoint.infos instanceof NDBInfo) {
@@ -69,10 +65,8 @@ class A320_Neo_CDU_AirwaysFromWaypointPage {
                 } else if (pendingAirway) {
                     subRows[i] = ["VIA", "TO"];
                     rows[i] = [`${pendingAirway.name}[color]blue`, "[ ][color]blue"];
-                    mcdu.onRightInput[i] = () => {
-                        const value = mcdu.inOut;
+                    mcdu.onRightInput[i] = (value) => {
                         if (value.length > 0) {
-                            mcdu.clearUserInput();
                             mcdu.ensureCurrentFlightPlanIsTemporary(() => {
                                 mcdu.insertWaypointsAlongAirway(value, mcdu.flightPlanManager.getEnRouteWaypointsLastIndex() + 1, pendingAirway.name, (result) => {
                                     if (result) {

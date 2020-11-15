@@ -2,59 +2,83 @@ class CDU_OPTIONS_TELEX {
     static ShowPage(mcdu) {
         mcdu.clearDisplay();
 
-        const storedTelexStatus = NXDataStore.get("CONFIG_TELEX_STATUS", "DISABLED");
+        const storedTelexStatus = NXDataStore.get("CONFIG_ONLINE_FEATURES_STATUS", "UNKNOWN");
+        let firstTime = false;
 
         let telexToggleText;
+
         switch (storedTelexStatus) {
             case "ENABLED":
                 telexToggleText = "DISABLE*[color]blue";
                 break;
-            default:
+            case "UNKNOWN":
+                telexToggleText = "ENABLE*[color]blue";
+                firstTime = true;
+                break;
+            case "DISABLED":
                 telexToggleText = "ENABLE*[color]blue";
         }
 
         mcdu.setTemplate([
             ["A32NX OPTIONS"],
-            ["", "", "AOC FREE TEXT"],
+            ["", "", "ONLINE FEATURES"],
             ["WARNING:[color]red"],
-            ["[b-text]ALL MSGS ARE PUBLICLY"],
-            ["[s-text]READABLE. IF ENABLED,"],
+            ["[b-text]ENABLES FREE TEXT AND LIVE"],
+            ["[s-text]MAP. IF ENABLED,"],
             ["[b-text]AIRCRAFT POSITION DATA WILL"],
-            ["[s-text]ALSO BE PUBLISHED FOR THE"],
-            ["[b-text]DURATION OF THE FLIGHT,"],
-            ["[s-text]WHILE CONNECTED."],
-            ["[b-text]MSGS ARE NOT MODERATED."],
+            ["[s-text]BE PUBLISHED FOR THE"],
+            ["[b-text]DURATION OF THE FLIGHT."],
+            ["[s-text]MSGS ARE PUBLIC, NOT MODERATED."],
+            [""],
             ["[s-text]USE AT YOUR OWN RISK.[color]red"],
             ["", "CONFIRM[color]blue"],
-            ["<RETURN[color]blue", telexToggleText]
+            firstTime ? ["<LATER[color]blue", telexToggleText] : ["<RETURN[color]blue", telexToggleText]
         ]);
 
+        mcdu.leftInputDelay[5] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
         mcdu.onLeftInput[5] = () => {
-            CDU_OPTIONS_MainMenu.ShowPage(mcdu);
+            if (firstTime) {
+                CDUMenuPage.ShowPage(mcdu);
+                // Take "LATER" as disabling it
+                NXDataStore.set("CONFIG_ONLINE_FEATURES_STATUS", "DISABLED");
+            } else {
+                CDU_OPTIONS_MainMenu.ShowPage(mcdu);
+            }
+        };
+        mcdu.rightInputDelay[5] = () => {
+            return mcdu.getDelaySwitchPage();
         };
         mcdu.onRightInput[5] = () => {
             switch (storedTelexStatus) {
                 case "ENABLED":
-                    NXDataStore.set("CONFIG_TELEX_STATUS", "DISABLED");
+                    NXDataStore.set("CONFIG_ONLINE_FEATURES_STATUS", "DISABLED");
                     mcdu.showErrorMessage("FREE TEXT DISABLED");
-                    NXApi.updateTelex()
+                    NXApi.disconnectTelex()
                         .catch((err) => {
                             if (err !== NXApi.disconnectedError) {
-                                console.log("TELEX PING FAILED");
+                                console.log("TELEX DISCONNECT FAILED");
                             }
                         });
                     break;
                 default:
-                    NXDataStore.set("CONFIG_TELEX_STATUS", "ENABLED");
+                    NXDataStore.set("CONFIG_ONLINE_FEATURES_STATUS", "ENABLED");
                     mcdu.showErrorMessage("FREE TEXT ENABLED");
 
                     const flightNo = SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string");
                     NXApi.connectTelex(flightNo)
-                        .catch(() => {
-                            // ignored: Flight number in use would mean that we already set one
+                        .catch((err) => {
+                            if (err.status === 409) {
+                                mcdu.showErrorMessage("ENABLED. FLT NBR IN USE");
+                            }
                         });
             }
-            CDU_OPTIONS_TELEX.ShowPage(mcdu);
+            if (firstTime) {
+                CDUMenuPage.ShowPage(mcdu);
+            } else {
+                CDU_OPTIONS_TELEX.ShowPage(mcdu);
+            }
         };
     }
 }

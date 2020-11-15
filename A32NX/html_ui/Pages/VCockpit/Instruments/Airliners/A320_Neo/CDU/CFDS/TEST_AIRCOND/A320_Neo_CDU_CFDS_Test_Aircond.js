@@ -17,6 +17,9 @@ class CDUCfdsTestAircond {
             ["<RETURN[color]blue"]
         ]);
 
+        mcdu.leftInputDelay[5] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
         mcdu.onLeftInput[5] = () => {
             CDUCfdsTestMenu.ShowPage(mcdu);
         };
