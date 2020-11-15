@@ -343,7 +343,7 @@ var A320_Neo_UpperECAM;
             if (this.getCachedSimVar("AUTOPILOT MASTER", "Bool") == false) {
                 SimVar.SetSimVarValue("L:Generic_Master_Warning_Active", "Bool", true);
                 const timer = setTimeout(() => {
-                    SimVar.SetSimVarValue("L:A32NX_AP_DISCWARN", "Bool", true); 
+                    SimVar.SetSimVarValue("L:A32NX_AP_DISCWARN", "Bool", true);
                     SimVar.SetSimVarValue("L:Generic_Master_Warning_Active", "Bool", false);
                 }, count);
                 if (this.getCachedSimVar("L:A32NX_AP_DISCWARN", "Bool") != true) {
