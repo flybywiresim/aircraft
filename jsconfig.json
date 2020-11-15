@@ -1,0 +1,7 @@
+// jsconfig.json ensures vscode runs in Explicit Project mode (https://code.visualstudio.com/docs/languages/jsconfig).
+// Without it, vscode runs in File Scope mode where the lack of explicit references between files makes vscode unable to find
+// references or go to definitions.
+
+{
+  "exclude": ["node_modules"]
+}
