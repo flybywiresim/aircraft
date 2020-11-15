@@ -559,7 +559,6 @@ class FMCMainDisplay extends BaseAirliners {
                                     this.tmpOrigin = airportFrom.ident;
                                     this.flightPlanManager.setDestination(airportTo.icao, () => {
                                         this.tmpOrigin = airportTo.ident;
-                                        this.currentFlightPhase = FlightPhase.FLIGHT_PHASE_TAKEOFF;
                                         callback(true);
                                     });
                                 });
@@ -3214,9 +3213,9 @@ class FMCMainDisplay extends BaseAirliners {
         this.onRightInput = [];
         this.leftInputDelay = [];
         this.rightInputDelay = [];
-        this.onPrevPage = undefined;
-        this.onNextPage = undefined;
-        this.pageUpdate = undefined;
+        this.onPrevPage = () => {};
+        this.onNextPage = () => {};
+        this.pageUpdate = () => {};
         this.refreshPageCallback = undefined;
         if (this.page.Current === this.page.MenuPage) {
             this.showErrorMessage("");
