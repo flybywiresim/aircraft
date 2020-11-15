@@ -328,10 +328,6 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                 maxSpeed = this.v2Speed + 50;
             }
         }
-        const flapsHandleIndex = Simplane.getFlapsHandleIndex();
-        if (flapsHandleIndex != 0) {
-            return Math.min(maxSpeed, this.getFlapSpeed());
-        }
         let dCI = this.costIndex / 999;
         dCI = dCI * dCI;
         let speed = 290 * (1 - dCI) + 330 * dCI;
