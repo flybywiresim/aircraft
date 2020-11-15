@@ -90,6 +90,7 @@
 1. [CDU] Fix missing preflight flight phase - @beheh (Benedict Etzel)
 1. [CDU] Fix flight phase when spawning mid-air - @beheh (Benedict Etzel)
 1. [ND] Added altitude constraints in flight level based on the transition altitude provided in MCDU Take Off Performace @ilyeshammadi (Ilyes Hammadi)
+1. [CDU] Added TYPE I and TYPE II message types and handling - @MisterChocker (Leon) 
 
 ## 0.4.0
 1. [General] Add CHANGELOG.md - @nathaninnes (Nathan Innes)
