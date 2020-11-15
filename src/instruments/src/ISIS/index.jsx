@@ -1,6 +1,8 @@
+/* eslint-disable max-classes-per-file */
+/* eslint-disable react/prop-types */
 /* eslint-disable indent */
 import ReactDOM from 'react-dom';
-import { useState } from 'react';
+import React, { useState } from 'react';
 import {
     renderTarget,
     useInteractionEvent,
@@ -21,26 +23,80 @@ function powerAvailable() {
     );
 }
 
-function SelfTest() {
-    const seconds = 90;
+function SelfTestOriginal({ time }) {
     return (
         <svg id="SelfTestSVG" viewBox="0 0 600 600">
             <rect id="SpeedTest" className="box" x="8%" y="46.5%" />
             <text id="SpeedTestTxt" className="boxText" x="8.75%" y="52.5%">SPD</text>
+            <rect id="AttTest" className="box" x="36%" y="32.5%" />
+            <text id="AltTestTxt" className="boxText" x="38%" y="38.5%">ATT</text>
             <rect id="AltTest" className="box" x="70%" y="46.5%" />
             <text id="AltTestTxt" className="boxText" x="72.5%" y="52.5%">ALT</text>
-            <rect id="TmrTest" className="box" x="30%" y="64%" />
-            <text id="TmrTestTxt" className="boxText" x="31%" y="70%">
+            <rect id="TmrTest" className="box" x="29%" y="64%" />
+            <text id="TmrTestTxt" className="boxText" x="30%" y="70%">
                 INIT
-                {` ${seconds}`}
+                {` ${time}`}
                 s
             </text>
         </svg>
     );
 }
+class SelfTest extends React.Component {
+    constructor(props) {
+        const s = props.seconds;
+        super();
+        this.state = {
+            seconds: s,
+        };
+    }
+
+    componentDidMount() {
+        this.testTimer = setInterval(() => {
+            const { seconds } = this.state;
+
+            if (seconds > 0) {
+                this.setState(() => ({
+                    seconds: seconds - 1,
+                }));
+            }
+            if (seconds === 0) {
+                clearInterval(this.testTimer);
+            }
+        }, 990);
+    }
+
+    componentWillUnmount() {
+        clearInterval(this.testTimer);
+    }
+
+    render() {
+        let { seconds } = this.state;
+        if (seconds < 10) {
+            seconds = `0${seconds}`;
+        }
+        return (
+            <svg id="SelfTestSVG" viewBox="0 0 600 600">
+                <rect id="SpeedTest" className="box" x="8%" y="46.5%" />
+                <text id="SpeedTestTxt" className="boxText" x="8.75%" y="52.5%">SPD</text>
+                <rect id="AttTest" className="box" x="36%" y="32.5%" />
+                <text id="AltTestTxt" className="boxText" x="38%" y="38.5%">ATT</text>
+                <rect id="AltTest" className="box" x="70%" y="46.5%" />
+                <text id="AltTestTxt" className="boxText" x="72.5%" y="52.5%">ALT</text>
+                <rect id="TmrTest" className="box" x="29%" y="64%" />
+                <text id="TmrTestTxt" className="boxText" x="30%" y="70%">
+                    INIT
+                    {` ${seconds}`}
+                    s
+                </text>
+            </svg>
+        );
+    }
+}
 
 function WaitingForData() {
-
+    return (
+        <svg />
+    );
 }
 
 function Idle() {
@@ -54,11 +110,15 @@ function Idle() {
             }, 3000);
         }
     });
+    return (
+        <svg />
+    );
 }
 
-function DCDU() {
+function ISIS() {
+    const selfTest = 90;
     const [state, setState] = useState('DEFAULT');
-
+    let timer = null;
     useUpdate((_deltaTime) => {
         if (state === 'OFF') {
             if (powerAvailable()) {
@@ -80,19 +140,12 @@ function DCDU() {
     case 'OFF':
         return <></>;
     case 'ON':
-        setTimeout(() => {
-            if (powerAvailable()) {
-                setState('WAITING');
-            }
-        }, 8000);
-        return <SelfTest />;
-    case 'WAITING':
-        setTimeout(() => {
+        timer = setTimeout(() => {
             if (powerAvailable()) {
                 setState('IDLE');
             }
-        }, 12000);
-        return <WaitingForData />;
+        }, 90000);
+        return <SelfTest seconds={selfTest} />;
     case 'IDLE':
         return <Idle />;
     default:
@@ -100,4 +153,4 @@ function DCDU() {
     }
 }
 
-ReactDOM.render(<DCDU />, renderTarget);
+ReactDOM.render(<ISIS />, renderTarget);
