@@ -329,7 +329,7 @@ a320-neo-upper-ecam .fail-2 {
 }
 a320-neo-upper-ecam .action,
 a320-neo-upper-ecam .action-underline,
-a320-neo-upper-ecam .blue {
+a320-neo-upper-ecam .cyan {
   color: var(--displayCyan);
 }
 a320-neo-upper-ecam .fail-2 .boxed {

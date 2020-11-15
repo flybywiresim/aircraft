@@ -87,6 +87,10 @@
 1. [ND] Improved flight path shape display - @lousybyte (lousybyte)
 1. [CDU] Rework duplicate waypoint names page - @pessip (Pessi Päivärinne)
 1. [ECAM] Fixed ELEV limits display on the F/CTL page - @lousybyte (lousybyte)
+1. [CDU] Fix missing preflight flight phase - @beheh (Benedict Etzel)
+1. [CDU] Fix flight phase when spawning mid-air - @beheh (Benedict Etzel)
+1. [CDU] Fixed autothrust targeting F or S speed on climb - @MisterChocker (Leon)
+1. [ND] Added altitude constraints in flight level based on the transition altitude provided in MCDU Take Off Performace @ilyeshammadi (Ilyes Hammadi)
 
 ## 0.4.0
 1. [General] Add CHANGELOG.md - @nathaninnes (Nathan Innes)

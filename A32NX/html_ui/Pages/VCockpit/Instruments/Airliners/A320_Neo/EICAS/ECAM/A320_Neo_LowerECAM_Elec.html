@@ -1,9 +1,17 @@
 ﻿<!-- <link rel="stylesheet" href="./A320_Neo_LowerECAM_Fuel.css" /> -->
 
 <style>
-    html {
-        background-color: #111111;
+    @import url("/CSS/A32NX_Display_Common.css");
+
+
+    #main-elec {
+        position: absolute;
+        top: -30px;
+        left: -20px;
+        transform-origin: top left;
+        transform: scale(1.045);
     }
+
     path {
         stroke-width: 1px;
         stroke-linecap: square;
@@ -21,15 +29,11 @@
         font-size: 5.6px;
         font-weight: 400;
     }
-    .hidden {
-        display: none;
-    }
     path {
         stroke: #EEEEEE;
-
     }
     path.green {
-        stroke: green;
+        stroke: var(--displayGreen);
     }
     rect.bus {
         fill: #999999;
@@ -39,6 +43,7 @@
     }
     .box {
         stroke: #EEEEEE;
+        fill: none;
         stroke-width: 1px;
     }
     text.left {
@@ -54,13 +59,13 @@
         text-align: middle;
     }
     text.green {
-        fill: green;
+        fill: var(--displayGreen);
     }
     text.amber {
-        fill: #db7200;
+        fill: var(--displayAmber);
     }
-    text.blue {
-        fill: #009696;
+    text.cyan {
+        fill: var(--displayCyan);
     }
     text.small {
         font-size: 4px;
@@ -82,144 +87,144 @@
 </style>
 
 <script type="text/html" id="LowerECAMElecTemplate">
-    <svg style="background-color: #000000;" version="1.1" viewBox="0 0 160 160" xmlns="http://www.w3.org/2000/svg">
+    <svg id="main-elec" version="1.1" viewBox="0 0 160 160" xmlns="http://www.w3.org/2000/svg">
         <rect id="BAT2_BOX" class="box" x="108" y="4" width="23" height="19" />
         <text id="BAT2_OFF" class="middle" dominant-baseline="middle" x="119.5" y="15">OFF</text>
         <text id="BAT2_TITLE" class="right" x="121" y="9.5">BAT</text>
         <text id="BAT2_TITLE_NUMBER" class="left large" x="122" y="9.5">2</text>
         <text id="BAT2_VOLTS_VALUE" class="green right" x="121" y="15.5">31</text>
-        <text id="BAT2_VOLTS_UNIT" class="blue left" x="122" y="15.5">V</text>
+        <text id="BAT2_VOLTS_UNIT" class="cyan left" x="122" y="15.5">V</text>
         <text id="BAT2_AMPS_VALUE" class="green right" x="121" y="21.5">2</text>
-        <text id="BAT2_AMPS_UNIT" class="blue left" x="122" y="21.5">A</text>
-    
+        <text id="BAT2_AMPS_UNIT" class="cyan left" x="122" y="21.5">A</text>
+
         <rect id="DCBATBUS_BOX" class="bus" x="62" y="10" width="36" height="7" />
         <text id="DCBATBUS_TITLE" class="bus green middle" dominant-baseline="middle" x="80" y="14">DC BAT</text>
-    
+
         <rect id="BAT1_BOX" class="box" x="29" y="4" width="23" height="19" />
         <text id="BAT1_OFF" class="middle" dominant-baseline="middle" x="40.5" y="15">OFF</text>
         <text id="BAT1_TITLE" class="right" x="43" y="9.5">BAT</text>
         <text id="BAT1_TITLE_NUMBER" class="left large" x="44" y="9.5">1</text>
         <text id="BAT1_VOLTS_VALUE" class="green right" x="43" y="15.5">25.5</text>
-        <text id="BAT1_VOLTS_UNIT" class="blue left" x="44" y="15.5">V</text>
+        <text id="BAT1_VOLTS_UNIT" class="cyan left" x="44" y="15.5">V</text>
         <text id="BAT1_AMPS_VALUE" class="green right" x="43" y="21.5">5.2</text>
-        <text id="BAT1_AMPS_UNIT" class="blue left" x="44" y="21.5">A</text>
-    
+        <text id="BAT1_AMPS_UNIT" class="cyan left" x="44" y="21.5">A</text>
+
         <rect id="DCBUS2_BOX" class="bus" x="134" y="24" width="23" height="7" />
         <text id="DCBUS2_TITLE" class="bus green right" x="146.5" y="29.25">DC</text>
         <text id="DCBUS2_TITLE_NUMBER" class="bus large green left" x="147.5" y="29.25">2</text>
-    
+
         <rect id="DCESSBUS_BOX" class="bus" x="62" y="31" width="36" height="7" />
         <text id="DCESSBUS_TITLE" class="bus green middle" dominant-baseline="middle" x="80" y="35">DC ESS</text>
         <text id="DCESSBUS_SHED" class="middle small" dominant-baseline="middle" x="80" y="40.5">SHED</text>
-    
+
         <rect id="DCBUS1_BOX" class="bus" x="1" y="24" width="23" height="7" />
         <text id="DCBUS1_TITLE" class="bus green right" x="13.5" y="29.25">DC</text>
         <text id="DCBUS1_TITLE_NUMBER" class="bus large green left" x="14.5" y="29.25">1</text>
-    
+
         <rect id="TR2_BOX" class="box" x="131.5" y="43" width="23" height="20" />
         <text id="TR2_TITLE"class="right" x="146" y="49.5">TR</text>
         <text id="TR2_TITLE_NUMBER" class="left large" x="147" y="49.5">2</text>
         <text id="TR2_VOLTS_VALUE" class="green right" x="146" y="55.5">98</text>
-        <text id="TR2_VOLTS_UNIT" class="blue left" x="147" y="55.5">V</text>
+        <text id="TR2_VOLTS_UNIT" class="cyan left" x="147" y="55.5">V</text>
         <text id="TR2_AMPS_VALUE" class="green right" x="146" y="61.5">7</text>
-        <text id="TR2_AMPS_UNIT" class="blue left" x="147" y="61.5">A</text>
-    
+        <text id="TR2_AMPS_UNIT" class="cyan left" x="147" y="61.5">A</text>
+
         <rect id="EMERGEN_BOX" class="box" x="88" y="43" width="27.5" height="20" />
         <text id="EMERGEN_TITLE" class="middle" x="101.75" y="49.5">EMER GEN</text>
         <text id="EMERGEN_OFFLINE" class="left medium" dominant-baseline="middle" x="88.25" y="56">EMER GEN</text>
         <text id="EMERGEN_VOLTS_VALUE" class="green right" x="105" y="55.5">8</text>
-        <text id="EMERGEN_VOLTS_UNIT" class="blue left" x="106" y="55.5">V</text>
+        <text id="EMERGEN_VOLTS_UNIT" class="cyan left" x="106" y="55.5">V</text>
         <text id="EMERGEN_FREQ_VALUE" class="green right" x="105" y="61.5">77</text>
-        <text id="EMERGEN_FREQ_UNIT" class="blue left" x="106" y="61.5">HZ</text>
-    
+        <text id="EMERGEN_FREQ_UNIT" class="cyan left" x="106" y="61.5">HZ</text>
+
         <rect id="ESSTR_BOX" class="box" x="57" y="43" width="22.5" height="20" />
         <text id="ESSTR_TITLE" class="middle" x="68.25" y="49.5">ESS TR</text>
         <text id="ESSTR_VOLTS_VALUE" class="green right" x="71" y="55.5">13</text>
-        <text id="ESSTR_VOLTS_UNIT" class="blue left" x="72" y="55.5">V</text>
+        <text id="ESSTR_VOLTS_UNIT" class="cyan left" x="72" y="55.5">V</text>
         <text id="ESSTR_AMPS_VALUE" class="green right" x="71" y="61.5">2</text>
-        <text id="ESSTR_AMPS_UNIT" class="blue left" x="72" y="61.5">A</text>
-    
+        <text id="ESSTR_AMPS_UNIT" class="cyan left" x="72" y="61.5">A</text>
+
         <rect id="TR1_BOX" class="box" x="3.5" y="43" width="23" height="20" />
         <text id="TR1_TITLE" class="right" x="18" y="49.5">TR</text>
         <text id="TR1_TITLE_NUMBER" class="left large" x="19" y="49.5">1</text>
         <text id="TR1_VOLTS_VALUE" class="green right"  x="18" y="55.5">57</text>
-        <text id="TR1_VOLTS_UNIT" class="blue left" x="19" y="55.5">V</text>
+        <text id="TR1_VOLTS_UNIT" class="cyan left" x="19" y="55.5">V</text>
         <text id="TR1_AMPS_VALUE" class="green right" x="18" y="61.5">4</text>
-        <text id="TR1_AMPS_UNIT" class="blue left" x="19" y="61.5">A</text>
-    
+        <text id="TR1_AMPS_UNIT" class="cyan left" x="19" y="61.5">A</text>
+
         <rect id="ACBUS2_BOX" class="bus" x="121" y="71" width="36" height="7" />
         <text id="ACBUS2_TITLE" class="bus green right" x="141.5" y="76.5">AC</text>
         <text id="ACBUS2_TITLE_NUMBER" class="bus large green left" x="142.5" y="76.5">2</text>
-    
+
         <rect id="ACESSBUS_BOX" class="bus" x="62" y="71" width="36" height="7" />
         <text id="ACESSBUS_TITLE" class="bus green middle" dominant-baseline="middle" x="80" y="75">AC ESS</text>
         <text id="ACESSBUS_SHED" class="middle small" dominant-baseline="middle" x="80" y="80.5">SHED</text>
-    
+
         <rect id="ACBUS1_BOX" class="bus" x="1" y="71" width="36" height="7" />
         <text id="ACBUS1_TITLE" class="bus green right" x="18.5" y="76.5">AC</text>
         <text id="ACBUS1_TITLE_NUMBER" class="bus large green left" x="19.5" y="76.5">1</text>
-    
+
         <rect id="GEN2_BOX" class="box" x="131.5" y="92" width="23" height="25" />
         <text id="GEN2_TITLE" class="right" x="146" y="98">GEN</text>
         <text id="GEN2_TITLE_NUMBER" class="left large" x="147" y="98">2</text>
         <text id="GEN2_OFF" class="middle" dominant-baseline="middle" x="143" y="106.5">OFF</text>
         <text id="GEN2_LOAD_VALUE" class="green right" x="146" y="104">48</text>
-        <text id="GEN2_LOAD_UNIT" class="blue left" x="147" y="104">%</text>
+        <text id="GEN2_LOAD_UNIT" class="cyan left" x="147" y="104">%</text>
         <text id="GEN2_VOLTS_VALUE" class="green right" x="146" y="110">201</text>
-        <text id="GEN2_VOLTS_UNIT" class="blue left" x="147" y="110">V</text>
+        <text id="GEN2_VOLTS_UNIT" class="cyan left" x="147" y="110">V</text>
         <text id="GEN2_FREQ_VALUE" class="green right" x="146" y="116">49</text>
-        <text id="GEN2_FREQ_UNIT" class="blue left" x="147" y="116">HZ</text>
-    
+        <text id="GEN2_FREQ_UNIT" class="cyan left" x="147" y="116">HZ</text>
+
         <rect id="EXTPWR_BOX" class="box" x="84" y="104" width="25" height="18" />
         <text id="EXTPWR_TITLE" class="middle" x="96.5" y="109">EXT PWR</text>
         <text id="EXTPWR_VOLTS_VALUE" class="green right" x="98" y="115">128</text>
-        <text id="EXTPWR_VOLTS_UNIT" class="blue left" x="99" y="115">V</text>
+        <text id="EXTPWR_VOLTS_UNIT" class="cyan left" x="99" y="115">V</text>
         <text id="EXTPWR_FREQ_VALUE" class="green right" x="98" y="121">50</text>
-        <text id="EXTPWR_FREQ_UNIT" class="blue left" x="99" y="121">HZ</text>
-    
+        <text id="EXTPWR_FREQ_UNIT" class="cyan left" x="99" y="121">HZ</text>
+
         <rect id="APUGEN_BOX" class="box" x="45" y="98" width="25" height="24" />
         <text id="APUGEN_TITLE" class="middle" x="57.5" y="103">APU GEN</text>
         <text id="APUGEN_OFF" class="middle" dominant-baseline="middle" x="57.5" y="111">OFF</text>
         <text id="APUGEN_LOAD_VALUE" class="green right" x="60.5" y="109">81</text>
-        <text id="APUGEN_LOAD_UNIT" class="blue left" x="61.5" y="109">%</text>
+        <text id="APUGEN_LOAD_UNIT" class="cyan left" x="61.5" y="109">%</text>
         <text id="APUGEN_VOLTS_VALUE" class="green right" x="60.5" y="115">210</text>
-        <text id="APUGEN_VOLTS_UNIT" class="blue left" x="61.5" y="115">V</text>
+        <text id="APUGEN_VOLTS_UNIT" class="cyan left" x="61.5" y="115">V</text>
         <text id="APUGEN_FREQ_VALUE" class="green right" x="60.5" y="121">32</text>
-        <text id="APUGEN_FREQ_UNIT" class="blue left" x="61.5" y="121">HZ</text>
-    
+        <text id="APUGEN_FREQ_UNIT" class="cyan left" x="61.5" y="121">HZ</text>
+
         <rect id="GEN1_BOX" class="box" x="3.5" y="92" width="23" height="25" />
         <text id="GEN1_TITLE" class="right" x="18" y="98">GEN</text>
         <text id="GEN1_TITLE_NUMBER" class="left large" x="19" y="98">1</text>
         <text id="GEN1_OFF" class="middle" dominant-baseline="middle" x="15" y="106.5">OFF</text>
         <text id="GEN1_LOAD_VALUE" class="green right" x="18" y="104">43</text>
-        <text id="GEN1_LOAD_UNIT" class="blue left" x="19" y="104">%</text>
+        <text id="GEN1_LOAD_UNIT" class="cyan left" x="19" y="104">%</text>
         <text id="GEN1_VOLTS_VALUE" class="green right" x="18" y="110">207</text>
-        <text id="GEN1_VOLTS_UNIT" class="blue left" x="19" y="110">V</text>
+        <text id="GEN1_VOLTS_UNIT" class="cyan left" x="19" y="110">V</text>
         <text id="GEN1_FREQ_VALUE" class="green right" x="18" y="116">8</text>
-        <text id="GEN1_FREQ_UNIT" class="blue left" x="19" y="116">HZ</text>
-    
+        <text id="GEN1_FREQ_UNIT" class="cyan left" x="19" y="116">HZ</text>
+
         <text id="IDG2_TITLE" class="left" x="137" y="127">IDG</text>
         <text id="IDG2_TITLE_NUMBER" class="left large" x="147.5" y="127">2</text>
         <text id="IDG2_TEMP_VALUE" class="green right" x="128" y="127">142</text>
-        <text id="IDG2_TEMP_UNIT" class="blue left" x="129" y="127">°C</text>
+        <text id="IDG2_TEMP_UNIT" class="cyan left" x="129" y="127">°C</text>
         <text id="IDG2_DISC" class="right" x="151" y="132">DISC</text>
         <text id="IDG2_LOPR" class="right" x="151" y="132">LO PR</text>
-    
+
         <text id="IDG1_TITLE" class="left" x="7.5" y="127">IDG</text>
         <text id="IDG1_TITLE_NUMBER" class="left large" x="18" y="127">1</text>
         <text id="IDG1_TEMP_VALUE" class="green right" x="36" y="127">142</text>
-        <text id="IDG1_TEMP_UNIT" class="blue left" x="37" y="127">°C</text>
+        <text id="IDG1_TEMP_UNIT" class="cyan left" x="37" y="127">°C</text>
         <text id="IDG1_DISC" class="left" x="7.5" y="132">DISC</text>
         <text id="IDG1_LOPR" class="left" x="7.5" y="132">LO PR</text>
-    
+
         <text id="GALLEY_SHED_TOP" class="middle" x="80" y="129">GALLEY</text>
         <text id="GALLEY_SHED_BOTTOM" class="middle" x="80" y="134">SHED</text>
-    
+
         <text id="TITLE_HEADING" class="left" x="1.3" y="7.4">ELEC</text>
         <path id="TITLE_UNDERLINE" d="m1.5 8.6282h13.2" />
-    
+
         <text id="STATINV_TITLE" class="left medium" x="58" y="8">STAT INV</text>
-    
+
         <path id="WIRE_XFEED-C" class="green" d="m96.187 85.834h47.9" />
         <path id="WIRE_XFEED-B" class="green" d="m57.323 85.834h39.381" />
         <path id="WIRE_XFEED-A" class="green" d="m14.78 85.834h43" />
@@ -248,7 +253,7 @@
         <path id="WIRE_EMERGEN_ESSTR" class="green" d="m85.072 55.441h-5.4449" />
         <path id="WIRE_EMERGEN_ACESS" class="green" d="m91.612 62.866v4.3012" />
         <path id="WIRE_ESSTR_DCESS" class="green" d="m68.921 38v1.8951" />
-    
+
         <path id="ARROW_ESSTR_DCESS" class="arrow" d="m67.1 42.02h3.6633l-1.8316-2.3982z" />
         <path id="ARROW_XFEED_AC1" class="arrow green" d="m13.191 81.005h3.6633l-1.8316-2.3982z" />
         <path id="ARROW_XFEED_AC2" class="arrow green" d="m142.1 81.005h3.6633l-1.8316-2.3982z" />
