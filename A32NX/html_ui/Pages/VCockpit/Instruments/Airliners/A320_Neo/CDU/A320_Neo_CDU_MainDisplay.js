@@ -75,7 +75,6 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         };
         this.onMenu = () => {
             const cur = this.page.Current;
-            this.setVarOnResponse();
             setTimeout(() => {
                 if (this.page.Current === cur) {
                     CDUMenuPage.ShowPage(this);
@@ -312,12 +311,15 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                     SimVar.SetSimVarValue("L:GPSPrimaryMessageDisplayed", "Bool", 1);
                     SimVar.SetSimVarValue("L:A32NX_GPS_PRIMARY_LOST_MSG", "Bool", 0);
                     this.tryRemoveMessage("GPS PRIMARY LOST");
-                    this.showErrorMessage("GPS PRIMARY");
+                    this.addTypeTwoMessage("GPS PRIMARY", "#ffffff", () => {
+                        SimVar.SetSimVarValue("L:GPSPrimaryAcknowledged", "Bool", 1);
+                    });
                 }
             } else {
                 if (!SimVar.GetSimVarValue("L:A32NX_GPS_PRIMARY_LOST_MSG", "Bool")) {
                     SimVar.SetSimVarValue("L:A32NX_GPS_PRIMARY_LOST_MSG", "Bool", 1);
                     SimVar.SetSimVarValue("L:GPSPrimaryMessageDisplayed", "Bool", 0);
+                    this.tryRemoveMessage("GPS PRIMARY");
                     this.addTypeTwoMessage("GPS PRIMARY LOST", "#ffff00", () => {
                         SimVar.SetSimVarValue("L:A32NX_GPS_PRIMARY_LOST_MSG", "Bool", 0);
                     });
@@ -335,7 +337,6 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     }
 
     forceClearScratchpad() {
-        this.setVarOnResponse();
         this.inOut = "";
         this.lastUserInput = "";
         this.isDisplayingErrorMessage = false;
@@ -391,10 +392,6 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             }
         }
         return true;
-    }
-
-    setVarOnResponse() {
-        SimVar.SetSimVarValue("L:GPSPrimaryAcknowledged", "Bool", 1);
     }
 
     getClbManagedSpeed() {
