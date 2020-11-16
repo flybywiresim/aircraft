@@ -177,7 +177,7 @@ class CDUNavRadioPage {
             [vor1FrequencyCell + "[color]blue", vor2FrequencyCell + "[color]blue"],
             ["CRS", "CRS"],
             [vor1CourseCell + "[color]blue", vor2CourseCell + "[color]blue"],
-            ["ILS\xa0/FREQ"],
+            ["\xa0LS\xa0/FREQ"],
             [ilsFrequencyCell + "[color]blue"],
             ["CRS"],
             [ilsCourseCell],
