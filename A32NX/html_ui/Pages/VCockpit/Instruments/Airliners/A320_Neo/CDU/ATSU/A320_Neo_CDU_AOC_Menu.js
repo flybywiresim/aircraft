@@ -10,7 +10,7 @@ class CDUAocMenu {
             ["", "SENT"],
             ["<ATIS", "MESSAGES>"],
             [""],
-            ["<FUEL[color]inop", "BOARDING>[color]inop"],
+            ["<OFP DATA[color]white", "BOARDING>[color]inop"],
             [""],
             ["<PERF/W&B[color]inop", "DIVERSION>[color]inop"],
             ["ATSU DLK"],
@@ -28,6 +28,12 @@ class CDUAocMenu {
         };
         mcdu.onLeftInput[2] = () => {
             CDUAocRequestsAtis.ShowPage(mcdu);
+        };
+        mcdu.leftInputDelay[3] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
+        mcdu.onLeftInput[3] = () => {
+            CDUAocOfpData.ShowPage(mcdu);
         };
         mcdu.leftInputDelay[5] = () => {
             return mcdu.getDelaySwitchPage();

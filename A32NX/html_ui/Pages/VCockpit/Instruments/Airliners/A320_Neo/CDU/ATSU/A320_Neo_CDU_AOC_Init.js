@@ -49,15 +49,6 @@ class CDUAocInit {
         ];
         mcdu.setTemplate(display);
 
-        mcdu.rightInputDelay[0] = () => {
-            return mcdu.getDelaySwitchPage();
-        };
-        mcdu.onRightInput[0] = () => {
-            if (mcdu.simbrief.navlog.length) {
-                CDUAocInitRoute.ShowPage(mcdu);
-            }
-        };
-
         mcdu.rightInputDelay[4] = () => {
             return mcdu.getDelayBasic();
         };
@@ -152,7 +143,7 @@ class CDUAocInit {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onLeftInput[5] = () => {
-            CDUAocInit.ShowPage(mcdu);
+            CDUAocMenu.ShowPage(mcdu);
         };
 
         mcdu.onPrevPage = () => {
@@ -194,7 +185,7 @@ class CDUAocInit {
                 mcdu.simbrief["cruiseAltitude"] = data.general.initial_altitude;
                 mcdu.simbrief["originIcao"] = data.origin.icao_code;
                 mcdu.simbrief["destinationIcao"] = data.destination.icao_code;
-                mcdu.simbrief["block"] = data.fuel.plan_ramp;
+                mcdu.simbrief["blockFuel"] = data.fuel.plan_ramp;
                 mcdu.simbrief["payload"] = data.weights.payload;
                 mcdu.simbrief["estZfw"] = data.weights.est_zfw;
                 mcdu.simbrief["costIndex"] = data.general.costindex;
@@ -209,6 +200,8 @@ class CDUAocInit {
                 mcdu.simbrief["onTime"] = data.times.est_on;
                 mcdu.simbrief["inTime"] = data.times.est_in;
                 mcdu.simbrief["offTime"] = data.times.est_off;
+                mcdu.simbrief["taxiFuel"] = data.fuel.taxi;
+                mcdu.simbrief["tripFuel"] = data.fuel.enroute_burn;
 
                 if (mcdu.page.Current === mcdu.page.AOCInit) {
                     CDUAocInit.ShowPage(mcdu);
