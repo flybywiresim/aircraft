@@ -485,7 +485,7 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
 
         if (landingGearIsDown || glideSlopeCaptured) { return; }
 
-        const delta = Math.abs(indicatedAltitude - this._savedSelectedAltitude);
+        const delta = Math.abs(indicatedAltitude - selectedAltitude);
 
         if (delta < 250) {
             this._wasBellowThreshold = true;
