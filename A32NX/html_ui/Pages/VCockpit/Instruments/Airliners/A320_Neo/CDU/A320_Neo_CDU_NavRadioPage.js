@@ -99,9 +99,9 @@ class CDUNavRadioPage {
         let vor2CourseCell = "";
         let adf2FrequencyCell = "";
         if (!radioOn) {
-            vor2FrequencyCell = "[]/[.]";
+            vor2FrequencyCell = "[.]/[]";
             if (mcdu.vor2Frequency > 0) {
-                vor2FrequencyCell = "[]/" + mcdu.vor2Frequency.toFixed(2);
+                vor2FrequencyCell = mcdu.vor2Frequency.toFixed(2) + "/[]";
             }
             mcdu.onRightInput[0] = (value) => {
                 const numValue = parseFloat(value);
