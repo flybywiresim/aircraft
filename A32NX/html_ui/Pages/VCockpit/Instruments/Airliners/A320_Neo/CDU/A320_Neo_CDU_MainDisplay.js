@@ -31,7 +31,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             cruiseAltitude: "",
             originIcao: "",
             destinationIcao: "",
-            block: "",
+            blockFuel: "",
             payload: "",
             estZfw: "",
             sendStatus: "",
@@ -47,6 +47,8 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             onTime: "",
             inTime: "",
             offTime: "",
+            taxiFuel: "",
+            tripFuel: "",
         };
     }
     get templateID() {
