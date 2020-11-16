@@ -475,16 +475,17 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
     _updateAltitudeAlert(indicatedAltitude, selectedAltitude) {
         // Clean any previous animation
         this._removeAltitudeWarnings();
-
-        // TODO: Exit when:
+        
+        // Exit when:
         // - Selected altitude is being changed
         // - Landing gear down
         // - Glide slope captured
-        const gear = !SimVar.GetSimVarValue("IS GEAR RETRACTABLE", "Boolean") || SimVar.GetSimVarValue("GEAR HANDLE POSITION", "Boolean");
+        const landingGearIsDown = !SimVar.GetSimVarValue("IS GEAR RETRACTABLE", "Boolean") || SimVar.GetSimVarValue("GEAR HANDLE POSITION", "Boolean");
+        const glideSlopeCaptured =  SimVar.GetSimVarValue("AUTOPILOT GLIDESLOPE ARM", "bool") === 1;
 
-        if (gear) { return; }
+        if (landingGearIsDown || glideSlopeCaptured) { return; }
 
-        const delta = Math.abs(indicatedAltitude - selectedAltitude);
+        const delta = Math.abs(indicatedAltitude - this._savedSelectedAltitude);
 
         if (delta < 250) {
             this._wasBellowThreshold = true;
