@@ -1,4 +1,49 @@
 /**
+ * TO V2 speed table
+ * calls function(gross weight (t)) which returns CAS.
+ * Indexes: 0 - Config 1 + F, 1 - Config 2, 2 - Config 3.
+ * Sub-Indexes: 0 to 9 represent gross weight (t) in 5t steps from 40 to 80.
+ */
+const to = [
+    [
+        () => 126,
+        () => 126,
+        () => 126,
+        (m) => 126 + 0.2 * (m - 50),
+        (m) => 127 + m - 55,
+        (m) => 132 + m - 60,
+        (m) => 137 + m - 65,
+        (m) => 142 + m - 70,
+        (m) => 147 + m - 75,
+        () => 151
+    ], // Conf 1 + F
+    [
+        () => 126,
+        () => 126,
+        () => 126,
+        () => 126,
+        (m) => 126 + 0.2 * (m - 55),
+        (m) => 127 + m - 60,
+        (m) => 132 + m - 65,
+        (m) => 137 + 0.8 * (m - 70),
+        (m) => 141 + m - 75,
+        () => 146
+    ], // Conf 2
+    [
+        () => 125,
+        () => 125,
+        () => 125,
+        () => 125,
+        () => 125,
+        (m) => 125 + 0.6 * (m - 60),
+        (m) => 128 + 0.8 * (m - 65),
+        (m) => 128 + m - 70,
+        (m) => 128 + 0.8 * (m - 75),
+        () => 141
+    ] // Conf 3
+];
+
+/**
  * Stall speed table
  * calls function(gross weight (t), landing gear) which returns CAS.
  * Indexes: 0 - Clean config, 1 - Config 1 + F, 2 - Config 2, 3 - Config 3, 4 - Config Full, 5 - Config 1.
@@ -278,6 +323,8 @@ class A32NX_Vspeeds {
         SimVar.SetSimVarValue("L:A32NX_SS", "number", 0);
         SimVar.SetSimVarValue("L:A32NX_GD", "number", 0);
         SimVar.SetSimVarValue("L:A32NX_LANDING_CONF3", "boolean", 0);
+        SimVar.SetSimVarValue("L:A32NX_TO_CONF", "number", 1);
+        SimVar.SetSimVarValue("L:A32NX_V2", "number", 0);
         // SimVar.SetSimVarValue("L:A32NX_VLS_APP", "number", 0);
         // SimVar.SetSimVarValue("L:A32NX_VAPP", "number", 0);
         this.lastGw = 50;
@@ -286,6 +333,7 @@ class A32NX_Vspeeds {
         this.ldgPos = -1;
         this.alt = -1;
         this.cgw = 0;
+        this.toConf = 0;
     }
 
     /**
@@ -295,11 +343,12 @@ class A32NX_Vspeeds {
     update(_deltaTime) {
         const fp = Simplane.getCurrentFlightPhase();
 
-        if (this.tryUpdateFhi(fp) || this.tryUpdateGw() || this.tryUpdateLdg() || this.tryUpdateAlt()) {
+        if (this.tryUpdateFhi(fp) || this.tryUpdateGw() || this.tryUpdateLdg() || this.tryUpdateAlt() || this.tryUpdateToConfig()) {
             SimVar.SetSimVarValue("L:A32NX_VS", "number", this.compensateForMachEffect(vs[this.curFhi][this.cgw](this.lastGw, this.ldgPos)));
             SimVar.SetSimVarValue("L:A32NX_VLS", "number", this.compensateForMachEffect(
                 (fp < FlightPhase.FLIGHT_PHASE_CLIMB ? vlsTo : vls)[this.curFhi][this.cgw](this.lastGw, this.ldgPos)
             ));
+            SimVar.SetSimVarValue("L:A32NX_V2", "number", to[this.toConf - 1][this.cgw](this.lastGw) + this.toConf === 2 ? Math.abs(this.alt * 0.0002) : 0);
             SimVar.SetSimVarValue("L:A32NX_FS", "number", fs[this.cgw](this.lastGw));
             SimVar.SetSimVarValue("L:A32NX_SS", "number", ss[this.cgw](this.lastGw));
             SimVar.SetSimVarValue("L:A32NX_GD", "number", this.compensateForMachEffect(this.calculateGreenDotSpeed()));
@@ -362,6 +411,19 @@ class A32NX_Vspeeds {
             return false;
         }
         this.alt = alt;
+        return true;
+    }
+
+    /**
+     * Checks if TO Config has changed and updates if true
+     * @param conf {number} flaps to config
+     * @returns {boolean} has changed?
+     */
+    tryUpdateToConfig(conf = SimVar.GetSimVarValue("L:A32NX_TO_CONF", "number")) {
+        if (conf === this.toConf) {
+            return false;
+        }
+        this.toConf = conf;
         return true;
     }
 
