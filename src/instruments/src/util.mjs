@@ -54,6 +54,7 @@ const SIMVAR_TYPES = {
     'EXTERNAL POWER AVAILABLE:1': 'Bool',
     'EXTERNAL POWER ON': 'Bool',
     'L:A32NX_COLD_AND_DARK_SPAWN': 'Bool',
+    'L:A32NX_BARO_BRIGHTNESS': 'number',
 };
 
 const SIMVAR_CACHE = new Map();

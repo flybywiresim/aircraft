@@ -8,6 +8,7 @@ import {
     useInteractionEvent,
     useUpdate,
     getSimVar,
+    setSimVar,
 } from '../util.mjs';
 import './style.scss';
 
@@ -22,31 +23,12 @@ function powerAvailable() {
         getSimVar('EXTERNAL POWER AVAILABLE:1') && getSimVar('EXTERNAL POWER ON')
     );
 }
-
-function SelfTestOriginal({ time }) {
-    return (
-        <svg id="SelfTestSVG" viewBox="0 0 600 600">
-            <rect id="SpeedTest" className="box" x="8%" y="46.5%" />
-            <text id="SpeedTestTxt" className="boxText" x="8.75%" y="52.5%">SPD</text>
-            <rect id="AttTest" className="box" x="36%" y="32.5%" />
-            <text id="AltTestTxt" className="boxText" x="38%" y="38.5%">ATT</text>
-            <rect id="AltTest" className="box" x="70%" y="46.5%" />
-            <text id="AltTestTxt" className="boxText" x="72.5%" y="52.5%">ALT</text>
-            <rect id="TmrTest" className="box" x="29%" y="64%" />
-            <text id="TmrTestTxt" className="boxText" x="30%" y="70%">
-                INIT
-                {` ${time}`}
-                s
-            </text>
-        </svg>
-    );
-}
 class SelfTest extends React.Component {
-    constructor(props) {
-        const s = props.seconds;
+    constructor() {
+        const selfTestLen = 90;
         super();
         this.state = {
-            seconds: s,
+            seconds: selfTestLen,
         };
     }
 
@@ -93,9 +75,30 @@ class SelfTest extends React.Component {
     }
 }
 
-function WaitingForData() {
+// TODO: Remove workaround component when plane model can be changed
+function Brightness(props) {
+    const { status } = props;
+    const [brightness, setBrightness] = useState(getSimVar('L:A32NX_BARO_BRIGHTNESS', 'number'));
+    const max = 1;
+    const min = 0.15;
+
+    if (status !== 'BUGS') {
+        useInteractionEvent('A320_Neo_SAI_BTN_BARO_PLUS', () => {
+            if (brightness <= max - 0.05) {
+                setBrightness(brightness + 0.05);
+                setSimVar('L:A32NX_BARO_BRIGHTNESS', brightness);
+            }
+        });
+
+        useInteractionEvent('A320_Neo_SAI_BTN_BARO_MINUS', () => {
+            if (brightness - 0.05 >= min) {
+                setBrightness(brightness - 0.05);
+                setSimVar('L:A32NX_BARO_BRIGHTNESS', brightness);
+            }
+        });
+    }
     return (
-        <svg />
+        <svg id="BrightnessSVG" viewBox="0 0 600 600" opacity={1 - brightness} />
     );
 }
 
@@ -110,22 +113,25 @@ function Idle() {
             }, 3000);
         }
     });
+
     return (
         <svg />
     );
 }
 
 function ISIS() {
-    const selfTest = 90;
     const [state, setState] = useState('DEFAULT');
-    let timer = null;
+
     useUpdate((_deltaTime) => {
         if (state === 'OFF') {
             if (powerAvailable()) {
-                setState('ON');
+                setState('SELFTEST');
             }
         } else if (!powerAvailable()) {
-            setState('OFF');
+            const airspeed = Simplane.getTrueSpeed();
+            if (airspeed < 50.0) {
+                setState('OFF');
+            }
         }
     });
 
@@ -139,15 +145,26 @@ function ISIS() {
         return <></>;
     case 'OFF':
         return <></>;
-    case 'ON':
-        timer = setTimeout(() => {
+    case 'SELFTEST':
+        setTimeout(() => {
             if (powerAvailable()) {
                 setState('IDLE');
             }
         }, 90000);
-        return <SelfTest seconds={selfTest} />;
+        // TODO: Remove <Brightness> component once plane model can be modified
+        return (
+            <div>
+                <Brightness status={state} />
+                <SelfTest status={state} />
+            </div>
+        );
     case 'IDLE':
-        return <Idle />;
+        return (
+            <div>
+                <Brightness status={state} />
+                <Idle />
+            </div>
+        );
     default:
         throw new RangeError();
     }

@@ -42,6 +42,7 @@ function Idle() {
     const [inop, setInop] = useState(false);
 
     useInteractionEvent('A32NX_DCDU_BTN_INOP', () => {
+        console.log('Hello');
         if (!inop) {
             setInop(true);
             setTimeout(() => {
