@@ -36,7 +36,7 @@ class A32NX_GPWS {
         this.AltCallState = A32NX_Util.createMachine(AltCallStateMachine);
         this.AltCallState.setState("ground");
         this.RetardState = A32NX_Util.createMachine(RetardStateMachine);
-        this.RetardState.setState("retardStopped");
+        this.RetardState.setState("landed");
     }
 
     init() {
@@ -579,11 +579,14 @@ class A32NX_GPWS {
                 break;
             case "retardPlaying":
                 if (SimVar.GetSimVarValue("GENERAL ENG THROTTLE LEVER POSITION:1", "Percent over 100") === 0 || SimVar.GetSimVarValue("GENERAL ENG THROTTLE LEVER POSITION:2", "Percent over 100") === 0) {
-                    this.RetardState.action("stop");
+                    this.RetardState.action("land");
+                    this.core.soundManager.removePeriodicSound(soundList.retard);
+                } else if (SimVar.GetSimVarValue("L:AIRLINER_FLIGHT_PHASE", "Enum") === FlightPhase.FLIGHT_PHASE_GOAROUND || radioAlt > 20) {
+                    this.RetardState.action("go_around");
                     this.core.soundManager.removePeriodicSound(soundList.retard);
                 }
                 break;
-            case "retardStopped":
+            case "landed":
                 if (radioAlt > 20) {
                     this.RetardState.action("up");
                 }
@@ -602,12 +605,15 @@ const RetardStateMachine = {
     },
     retardPlaying: {
         transitions: {
-            stop: {
+            land: {
                 target: "retardStopped"
+            },
+            go_around: {
+                target: "overRetard"
             }
         }
     },
-    retardStopped: {
+    landed: {
         transitions: {
             up: {
                 target: "overRetard"
