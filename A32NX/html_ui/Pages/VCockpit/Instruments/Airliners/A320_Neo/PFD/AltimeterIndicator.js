@@ -462,6 +462,7 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
     _pulseYellow() {
         this.cursorSVGShape.classList.add("pulse-yellow");
     }
+
     _flashAmber() {
         this.cursorSVGShape.classList.add("flash-amber");
     }
@@ -472,54 +473,47 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
     }
 
     _updateAltitudeAlert(indicatedAltitude, selectedAltitude) {
+        // Clean any previous animation
+        this._removeAltitudeWarnings();
+
         // TODO: Exit when:
         // - Selected altitude is being changed
         // - Landing gear down
         // - Glide slope captured
         const gear = !SimVar.GetSimVarValue("IS GEAR RETRACTABLE", "Boolean") || SimVar.GetSimVarValue("GEAR HANDLE POSITION", "Boolean");
 
-        if (gear) {
-            this._removeAltitudeWarnings()
-            return;
-        }
+        if (gear) { return; }
 
         const delta = Math.abs(indicatedAltitude - selectedAltitude);
-        let isInYellow = false;
-        let isInMagenta = false;
+
+        if (delta < 250) {
+            this._wasBellowThreshold = true;
+            this._wasAboveThreshold = false;
+        }
+
+        if (750 < delta) {
+            this._wasAboveThreshold = true;
+            this._wasBellowThreshold = false;
+        }
 
         if (250 <= delta && delta <= 750) {
-            isInYellow = true;
+            this._wasInRange = true;
         }
 
-        // Are we deviating from selected altitude
-        if (this._previousIndicatedAltitude) {
-            const deviationCoefficient = indicatedAltitude - this._previousIndicatedAltitude;
-            // console.log(deviationCoefficient);
-            
-            if (Math.abs(deviationCoefficient) > 2) {
-                const deviationCoefficientSign = Math.sign(deviationCoefficient)
-                const pullingUp = [0, 1].includes(deviationCoefficientSign);
-                const pullingDown = [-0, -1].includes(deviationCoefficientSign);
-                
-                if ( delta > 750 && delta <= 1000) {
-                    if (pullingUp && indicatedAltitude > selectedAltitude) {
-                        isInMagenta = true;
-                    } else if (pullingDown && indicatedAltitude < selectedAltitude) {
-                        isInMagenta = true;
-                    }
-                }
-            }     
+        if (1000 < delta) {
+            this._wasInRange = false;
         }
 
-        if (isInMagenta) {
-            this._flashAmber()
-        } else if (isInYellow) {
-            this._pulseYellow()
-        } else {
-            this._removeAltitudeWarnings()
+        if (250 <= delta && delta <= 1000) {
+            if (this._wasBellowThreshold) {
+                this._flashAmber();
+            } else if (this._wasAboveThreshold && delta <= 750) {
+                this._pulseYellow();
+            } 
+            else if (750 < delta && this._wasInRange) {
+                this._flashAmber();
+            }
         }
-        
-        this._previousIndicatedAltitude = indicatedAltitude;
     }
 
 
