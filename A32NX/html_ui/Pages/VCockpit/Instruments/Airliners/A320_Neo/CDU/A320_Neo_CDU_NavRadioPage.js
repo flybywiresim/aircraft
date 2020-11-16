@@ -13,9 +13,9 @@ class CDUNavRadioPage {
         let ilsCourseCell = "";
         let adf1FrequencyCell = "";
         if (!radioOn) {
-            vor1FrequencyCell = "[]/[.]";
+            vor1FrequencyCell = "[\xa0]/[\xa0\xa0.\xa0]";
             if (mcdu.vor1Frequency > 0) {
-                vor1FrequencyCell = "[]/" + mcdu.vor1Frequency.toFixed(2);
+                vor1FrequencyCell = "[\xa0]/" + mcdu.vor1Frequency.toFixed(2);
             }
             mcdu.onLeftInput[0] = (value) => {
                 const numValue = parseFloat(value);
@@ -35,12 +35,14 @@ class CDUNavRadioPage {
                     }
                 } else if (value === FMCMainDisplay.clrValue) {
                     mcdu.vor1Frequency = 0;
+                    mcdu.radioNav.setVORActiveFrequency(1, 0);
+                    vor1FrequencyCell = "[\xa0]/[\xa0\xa0.\xa0]";
                     CDUNavRadioPage.ShowPage(mcdu);
                 } else {
                     mcdu.showErrorMessage(mcdu.defaultInputErrorMessage);
                 }
             };
-            vor1CourseCell = "[]";
+            vor1CourseCell = "[\xa0]";
             if (mcdu.vor1Course >= 0) {
                 vor1CourseCell = mcdu.vor1Course.toFixed(0) + "°";
             }
@@ -57,24 +59,26 @@ class CDUNavRadioPage {
                     mcdu.showErrorMessage(mcdu.defaultInputErrorMessage);
                 }
             };
-            ilsFrequencyCell = "[]/[.]";
-            ilsCourseCell = "[]";
+            ilsFrequencyCell = "[\xa0\xa0]/[\xa0\xa0.\xa0]";
+            ilsCourseCell = "[\xa0]";
             const approach = mcdu.flightPlanManager.getApproach();
-            if (approach && approach.name && approach.name.indexOf("ILS") !== -1) {
-                ilsFrequencyCell = "[]/" + mcdu.ilsFrequency.toFixed(2);
+            const ilsIdent = mcdu.radioNav.getBestILSBeacon();                 
+            if (mcdu.ilsFrequency > 0){
+                ilsFrequencyCell = ilsIdent.ident + "/" + mcdu.ilsFrequency.toFixed(2);
+                }
+                console.log('--KK: ' + ilsIdent.ident);
                 const runway = mcdu.flightPlanManager.getApproachRunway();
                 if (runway) {
-                    ilsCourseCell = runway.direction.toFixed(0) + "°";
+                    ilsCourseCell = runway.direction.toFixed(0) + "°";                   
                 }
-            }
-            mcdu.onLeftInput[2] = (value) => {
+                        mcdu.onLeftInput[2] = (value) => {
                 if (mcdu.setIlsFrequency(value)) {
                     CDUNavRadioPage.ShowPage(mcdu);
                 }
             };
-            adf1FrequencyCell = "[]/[.]";
+            adf1FrequencyCell = "[\xa0]/[\xa0\xa0.]";
             if (mcdu.adf1Frequency > 0) {
-                adf1FrequencyCell = "[]/" + mcdu.adf1Frequency.toFixed(2);
+                adf1FrequencyCell = "[\xa0]/" + mcdu.adf1Frequency.toFixed(1);
             }
             mcdu.onLeftInput[4] = (value) => {
                 const numValue = parseFloat(value);
@@ -85,6 +89,11 @@ class CDUNavRadioPage {
                             CDUNavRadioPage.ShowPage(mcdu);
                         });
                     });
+                } else if (value === FMCMainDisplay.clrValue) {
+                    mcdu.adf1Frequency = 0;
+                    mcdu.radioNav.setADFActiveFrequency(1, 0);
+                    adf1FrequencyCell = "[\xa0]/[\xa0\xa0.]";
+                    CDUNavRadioPage.ShowPage(mcdu);
                 } else {
                     mcdu.showErrorMessage(mcdu.defaultInputErrorMessage);
                 }
@@ -94,9 +103,9 @@ class CDUNavRadioPage {
         let vor2CourseCell = "";
         let adf2FrequencyCell = "";
         if (!radioOn) {
-            vor2FrequencyCell = "[.]/[]";
+            vor2FrequencyCell = "[\xa0\xa0.\xa0]/[\xa0]";
             if (mcdu.vor2Frequency > 0) {
-                vor2FrequencyCell = mcdu.vor2Frequency.toFixed(2) + "/[]";
+                vor2FrequencyCell = mcdu.vor2Frequency.toFixed(2) + "/[\xa0]";
             }
             mcdu.onRightInput[0] = (value) => {
                 const numValue = parseFloat(value);
@@ -116,12 +125,14 @@ class CDUNavRadioPage {
                     }
                 } else if (value === FMCMainDisplay.clrValue) {
                     mcdu.vor2Frequency = 0;
+                    mcdu.radioNav.setVORActiveFrequency(2, 0);
+                    vor2FrequencyCell = "[\xa0\xa0.\xa0]/[\xa0]";
                     CDUNavRadioPage.ShowPage(mcdu);
                 } else {
                     mcdu.showErrorMessage(mcdu.defaultInputErrorMessage);
                 }
             };
-            vor2CourseCell = "[]";
+            vor2CourseCell = "[\xa0]";
             if (mcdu.vor2Course >= 0) {
                 vor2CourseCell = mcdu.vor2Course.toFixed(0) + "°";
             }
@@ -138,9 +149,9 @@ class CDUNavRadioPage {
                     mcdu.showErrorMessage(mcdu.defaultInputErrorMessage);
                 }
             };
-            adf2FrequencyCell = "[.]/[]";
+            adf2FrequencyCell = "[\xa0\xa0.]/[\xa0]";
             if (mcdu.adf2Frequency > 0) {
-                adf2FrequencyCell = mcdu.adf2Frequency.toFixed(2) + "/[]";
+                adf2FrequencyCell = mcdu.adf2Frequency.toFixed(1) + "/[\xa0]";
             }
             mcdu.onRightInput[4] = (value) => {
                 const numValue = parseFloat(value);
@@ -151,6 +162,11 @@ class CDUNavRadioPage {
                             CDUNavRadioPage.ShowPage(mcdu);
                         });
                     });
+                } else if (value === FMCMainDisplay.clrValue) {
+                    mcdu.adf2Frequency = 0;
+                    mcdu.radioNav.setADFActiveFrequency(2, 0);
+                    adf2FrequencyCell = "[\xa0\xa0.]/[\xa0]";
+                    CDUNavRadioPage.ShowPage(mcdu);
                 } else {
                     mcdu.showErrorMessage(mcdu.defaultInputErrorMessage);
                 }
@@ -162,7 +178,7 @@ class CDUNavRadioPage {
             [vor1FrequencyCell + "[color]blue", vor2FrequencyCell + "[color]blue"],
             ["CRS", "CRS"],
             [vor1CourseCell + "[color]blue", vor2CourseCell + "[color]blue"],
-            ["ILS/FREQ"],
+            ["\xa0LS\xa0/FREQ"],
             [ilsFrequencyCell + "[color]blue"],
             ["CRS"],
             [ilsCourseCell],
