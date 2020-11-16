@@ -39,17 +39,17 @@ var A320_Neo_LowerECAM_COND;
             }
 
             // display zone and trim temperature for each zone
-            var zoneTemp = SimVar.GetSimVarValue("L:CKPT_TEMP", "celsius");
+            var zoneTemp = SimVar.GetSimVarValue("L:A32NX_CKPT_TEMP", "celsius");
             this.querySelector("#CkptTemp").textContent = parseInt(zoneTemp);
             var trimTemp = SimVar.GetSimVarValue("L:CKPT_DUCT_TEMP", "celsius");
             this.querySelector("#CkptTrimTemp").textContent = parseInt(trimTemp);
 
-            zoneTemp = SimVar.GetSimVarValue("L:FWD_TEMP", "celsius");
+            zoneTemp = SimVar.GetSimVarValue("L:A32NX_FWD_TEMP", "celsius");
             this.querySelector("#FwdTemp").textContent = parseInt(zoneTemp);
             trimTemp = SimVar.GetSimVarValue("L:FWD_DUCT_TEMP", "celsius");
             this.querySelector("#FwdTrimTemp").textContent = parseInt(trimTemp);
 
-            zoneTemp = SimVar.GetSimVarValue("L:AFT_TEMP", "celsius");
+            zoneTemp = SimVar.GetSimVarValue("L:A32NX_AFT_TEMP", "celsius");
             this.querySelector("#AftTemp").textContent = parseInt(zoneTemp);
             trimTemp = SimVar.GetSimVarValue("L:AFT_DUCT_TEMP", "celsius");
             this.querySelector("#AftTrimTemp").textContent = parseInt(trimTemp);
