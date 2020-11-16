@@ -311,7 +311,6 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                 if (!SimVar.GetSimVarValue("L:GPSPrimaryMessageDisplayed", "Bool")) {
                     SimVar.SetSimVarValue("L:GPSPrimaryMessageDisplayed", "Bool", 1);
                     SimVar.SetSimVarValue("L:A32NX_GPS_PRIMARY_LOST_MSG", "Bool", 0);
-                    console.log("primary");
                     this.tryRemoveMessage("GPS PRIMARY LOST");
                     this.showErrorMessage("GPS PRIMARY");
                 }
@@ -319,8 +318,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                 if (!SimVar.GetSimVarValue("L:A32NX_GPS_PRIMARY_LOST_MSG", "Bool")) {
                     SimVar.SetSimVarValue("L:A32NX_GPS_PRIMARY_LOST_MSG", "Bool", 1);
                     SimVar.SetSimVarValue("L:GPSPrimaryMessageDisplayed", "Bool", 0);
-                    console.log("primary lost");
-                    this.addTypeIIMessage("GPS PRIMARY LOST", "#ffff00", () => {
+                    this.addTypeTwoMessage("GPS PRIMARY LOST", "#ffff00", () => {
                         SimVar.SetSimVarValue("L:A32NX_GPS_PRIMARY_LOST_MSG", "Bool", 0);
                     });
                 }
@@ -349,7 +347,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
      * @param color {string} Color of Message
      * @param f {function} Function gets executed when error message has been cleared
      */
-    addTypeIIMessage(message, color = "#ffffff", f = () => {}) {
+    addTypeTwoMessage(message, color = "#ffffff", f = () => {}) {
         if (this.checkForMessage(message, color)) {
             this.messageQueue.unshift([message, color, f]);
             if (this.messageQueue.length > 5) {
