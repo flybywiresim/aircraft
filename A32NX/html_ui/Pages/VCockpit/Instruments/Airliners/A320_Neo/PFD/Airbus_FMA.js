@@ -1141,7 +1141,7 @@ var Airbus_FMA;
                             return Airbus_FMA.MODE_STATE.ARMED;
                         }
                         // L:A32NX_OFF_GS is identified too late (see ILSIndicator.js)?
-                        if (Simplane.getAutoPilotAPPRCaptured() && Simplane.getAutoPilotAPPRActive() && !Simplane.getAutoPilotGlideslopeActive()) {   
+                        if (Simplane.getAutoPilotAPPRCaptured() && Simplane.getAutoPilotAPPRActive() && !Simplane.getAutoPilotGlideslopeActive()) {
                             return Airbus_FMA.MODE_STATE.CAPTURED;
                         }
                         if (Simplane.getAutoPilotGlideslopeActive() && Simplane.getAutoPilotAPPRActive()) {

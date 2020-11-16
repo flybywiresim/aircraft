@@ -458,7 +458,6 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
         this.updateFail();
     }
 
-    
     _pulseYellow() {
         this.cursorSVGShape.classList.add("pulse-yellow");
     }
@@ -466,7 +465,7 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
     _flashAmber() {
         this.cursorSVGShape.classList.add("flash-amber");
     }
-    
+
     _removeAltitudeWarnings() {
         this.cursorSVGShape.classList.remove("pulse-yellow");
         this.cursorSVGShape.classList.remove("flash-amber");
@@ -475,21 +474,23 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
     _updateAltitudeAlert(indicatedAltitude) {
         // Clean any previous animation
         this._removeAltitudeWarnings();
-        
+
         // Exit when:
         // - Landing gear down
         // - Glide slope captured
         const landingGearIsDown = !SimVar.GetSimVarValue("IS GEAR RETRACTABLE", "Boolean") || SimVar.GetSimVarValue("GEAR HANDLE POSITION", "Boolean");
-        const glideSlopeCaptured =  SimVar.GetSimVarValue("L:GLIDE_SLOPE_CAPTURED", "bool") === 1;
-        if (landingGearIsDown || glideSlopeCaptured) { return; }
+        const glideSlopeCaptured = SimVar.GetSimVarValue("L:GLIDE_SLOPE_CAPTURED", "bool") === 1;
+        if (landingGearIsDown || glideSlopeCaptured) {
+            return;
+        }
 
         const currentAltitudeConstraint = SimVar.GetSimVarValue("L:A32NX_AP_CSTN_ALT", "feet");
         // Use the constraint altitude if provided otherwise use selected altitude lock value
         const targetAltitude = currentAltitudeConstraint && !this.getAutopilotMode() ? currentAltitudeConstraint : Simplane.getAutoPilotSelectedAltitudeLockValue();
 
-        // Exit when selected altitude is being changed 
+        // Exit when selected altitude is being changed
         if (this.previousTargetAltitude !== targetAltitude) {
-            this.previousTargetAltitude = targetAltitude
+            this.previousTargetAltitude = targetAltitude;
             this._wasBellowThreshold = false;
             this._wasAboveThreshold = false;
             this._wasInRange = false;
@@ -517,15 +518,13 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
                 this._flashAmber();
             } else if (this._wasAboveThreshold && delta <= 750) {
                 this._pulseYellow();
-            } 
-            else if (750 < delta && this._wasInRange) {
+            } else if (750 < delta && this._wasInRange) {
                 this._flashAmber();
             } else if (this._wasInRange) {
                 this._pulseYellow();
             }
         }
     }
-
 
     updateMtrs(_altitude, _selected) {
         if (this.mtrsVisible) {
