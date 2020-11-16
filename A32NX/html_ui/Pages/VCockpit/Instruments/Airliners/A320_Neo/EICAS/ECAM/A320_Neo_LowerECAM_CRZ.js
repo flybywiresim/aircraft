@@ -66,6 +66,36 @@ var A320_Neo_LowerECAM_CRZ;
             this.ForwardTemp = this.querySelector("#ForwardTemp");
             this.AftTemp = this.querySelector("#AftTemp");
 
+            this.CockpitTempValue = 0.0;
+            this.ForwardTempValue = 0.0;
+            this.AftTempValue = 0.0;
+
+            this.condTemp = [
+                {
+                    varName: "L:A32NX_CKPT_TEMP",
+                    type: "celsius",
+                    selector: this.CockpitTemp,
+                    value: this.CockpitTempValue,
+                    index: 1
+                },
+                {
+                    varName: "L:A32NX_FWD_TEMP",
+                    type: "celsius",
+                    selector: this.ForwardTemp,
+                    value: this.ForwardTempValue,
+                    index : 2
+                },
+                {
+                    varName: "L:A32NX_AFT_TEMP",
+                    type: "celsius",
+                    selector: this.AftTemp,
+                    value: this.AftTempValue,
+                    index: 3
+                },
+            ];
+
+            this.condTemp.forEach(this._condTempSelector);
+
             // Initialize displayed values
             this.LeftConsumptionDisplayed = -1;
             this.RightConsumptionDisplayed = -1;
@@ -193,6 +223,15 @@ var A320_Neo_LowerECAM_CRZ;
 
                 this.CabinAltitudeDisplayed = valueShown;
                 this.OutsidePressureDisplayed = outsidePressureINHG;
+            }
+
+            this.condTemp.forEach(this._condTempSelector);
+
+        }
+        _condTempSelector({varName, type, selector, value, index}) {
+            const currentValue = SimVar.GetSimVarValue(varName, type);
+            if (currentValue != value) {
+                selector.textContent = parseInt(currentValue);
             }
         }
     }
