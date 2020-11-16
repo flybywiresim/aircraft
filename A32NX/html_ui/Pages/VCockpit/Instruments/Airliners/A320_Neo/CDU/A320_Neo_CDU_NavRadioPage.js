@@ -66,7 +66,6 @@ class CDUNavRadioPage {
             if (mcdu.ilsFrequency > 0){
                 ilsFrequencyCell = ilsIdent.ident + "/" + mcdu.ilsFrequency.toFixed(2);
                 }
-                console.log('--KK: ' + ilsIdent.ident);
                 const runway = mcdu.flightPlanManager.getApproachRunway();
                 if (runway) {
                     ilsCourseCell = runway.direction.toFixed(0) + "°";                   
@@ -178,7 +177,7 @@ class CDUNavRadioPage {
             [vor1FrequencyCell + "[color]blue", vor2FrequencyCell + "[color]blue"],
             ["CRS", "CRS"],
             [vor1CourseCell + "[color]blue", vor2CourseCell + "[color]blue"],
-            ["\xa0LS\xa0/FREQ"],
+            ["ILS\xa0/FREQ"],
             [ilsFrequencyCell + "[color]blue"],
             ["CRS"],
             [ilsCourseCell],
