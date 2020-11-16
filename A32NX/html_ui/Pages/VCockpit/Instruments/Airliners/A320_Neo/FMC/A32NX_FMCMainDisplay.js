@@ -3113,7 +3113,6 @@ class FMCMainDisplay extends BaseAirliners {
             if (this.onInputAircraftSpecific(input)) {
                 return;
             }
-            console.log("input: " + input);
             if (input === "INIT") {
                 this.onInit();
             } else if (input === "DEPARR") {
