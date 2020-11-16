@@ -2795,6 +2795,7 @@ class FMCMainDisplay extends BaseAirliners {
             this.inOut = "";
         }
         if (this.isDisplayingErrorMessage) {
+            this.setVarOnResponse();
             this.inOut = this.lastUserInput;
             this._inOutElement.style.color = "#ffffff";
             this.isDisplayingErrorMessage = false;
@@ -2877,6 +2878,7 @@ class FMCMainDisplay extends BaseAirliners {
             } else if (this.inOut === FMCMainDisplay.clrValue) {
                 this.inOut = "";
             } else if (this.isDisplayingErrorMessage) {
+                this.setVarOnResponse();
                 this.tryRemoveMessage();
                 this.inOut = this.lastUserInput;
                 this._inOutElement.style.color = "#ffffff";
@@ -3111,6 +3113,7 @@ class FMCMainDisplay extends BaseAirliners {
             if (this.onInputAircraftSpecific(input)) {
                 return;
             }
+            console.log("input: " + input);
             if (input === "INIT") {
                 this.onInit();
             } else if (input === "DEPARR") {
@@ -3152,8 +3155,12 @@ class FMCMainDisplay extends BaseAirliners {
             } else if (input === "DIV") {
                 this.onDiv();
             } else if (input === "DOT") {
+                this.handlePreviousInputState();
+                this.setVarOnResponse();
                 this.inOut += ".";
             } else if (input === "PLUSMINUS") {
+                this.handlePreviousInputState();
+                this.setVarOnResponse();
                 const val = this.inOut;
                 if (val === "") {
                     this.inOut = "-";

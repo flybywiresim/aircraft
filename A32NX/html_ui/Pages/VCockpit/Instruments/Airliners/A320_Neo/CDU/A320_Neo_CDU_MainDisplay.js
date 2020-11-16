@@ -75,6 +75,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         };
         this.onMenu = () => {
             const cur = this.page.Current;
+            this.setVarOnResponse();
             setTimeout(() => {
                 if (this.page.Current === cur) {
                     CDUMenuPage.ShowPage(this);
@@ -336,6 +337,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     }
 
     forceClearScratchpad() {
+        this.setVarOnResponse();
         this.inOut = "";
         this.lastUserInput = "";
         this.isDisplayingErrorMessage = false;
@@ -393,7 +395,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         return true;
     }
 
-    onUserResponse() {
+    setVarOnResponse() {
         SimVar.SetSimVarValue("L:GPSPrimaryAcknowledged", "Bool", 1);
     }
 
@@ -587,7 +589,6 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         //TODO something for Goaround? Like Green Dot Speed SRS etc ...
     }
     onInputAircraftSpecific(input) {
-        this.onUserResponse();
         if (input === "DIR") {
             if (this.onDir) {
                 this.onDir();
