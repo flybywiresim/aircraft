@@ -3,8 +3,13 @@
 // The selector calculates the new value based on other simvars and some logic.
 // The updater compares the new value from the selector with the current value from the local simvar,
 // and then updates the local simvar if it changed.
+const FLAPS_IN_MOTION_MIN_DELTA = 0.1;
+
 class A32NX_LocalVarUpdater {
     constructor() {
+        // Initial data for deltas
+        this.lastFlapsPosition = SimVar.GetSimVarValue("TRAILING EDGE FLAPS LEFT PERCENT", "percent");
+
         this.updaters = [
             {
                 varName: "L:A32NX_NO_SMOKING_MEMO",
@@ -29,6 +34,11 @@ class A32NX_LocalVarUpdater {
                 selector: this._condTempSelector,
                 index: 3
             },
+            {
+                varName: "L:A32NX_FLAPS_IN_MOTION",
+                type: "Bool",
+                selector: this._flapsInMotionSelector.bind(this)
+            }
             // New updaters go here...
         ];
     }
@@ -68,6 +78,15 @@ class A32NX_LocalVarUpdater {
         const cabinKnobValue = SimVar.GetSimVarValue("L:A320_Neo_AIRCOND_LVL_" + _index, "Position(0-6)");
         const cabinTemp = (18 + (0.12 * cabinKnobValue));
         return cabinTemp;
+    }
+
+    _flapsInMotionSelector() {
+        const currentFlapsPosition = SimVar.GetSimVarValue("TRAILING EDGE FLAPS LEFT PERCENT", "percent");
+        const lastFlapsPosition = this.lastFlapsPosition;
+
+        this.lastFlapsPosition = SimVar.GetSimVarValue("TRAILING EDGE FLAPS LEFT PERCENT", "percent");
+
+        return Math.abs(lastFlapsPosition - currentFlapsPosition) > FLAPS_IN_MOTION_MIN_DELTA;
     }
 
     // New selectors go here...
