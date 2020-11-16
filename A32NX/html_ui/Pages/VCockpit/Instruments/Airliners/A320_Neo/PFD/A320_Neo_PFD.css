@@ -447,8 +447,6 @@ a320-neo-pfd-element #Mainframe #InstrumentsContainer #ILS {
   z-index: 1;
 }
 
-
-
 .pulse-yellow {
   animation: pulse-yellow 1s steps(2, start) infinite;
 }
