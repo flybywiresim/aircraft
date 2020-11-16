@@ -481,7 +481,9 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
         // - Landing gear down
         // - Glide slope captured
         const landingGearIsDown = !SimVar.GetSimVarValue("IS GEAR RETRACTABLE", "Boolean") || SimVar.GetSimVarValue("GEAR HANDLE POSITION", "Boolean");
-        const glideSlopeCaptured =  SimVar.GetSimVarValue("AUTOPILOT GLIDESLOPE ARM", "bool") === 1;
+        const glideSlopeCaptured =  SimVar.GetSimVarValue("L:GLIDE_SLOPE_CAPTURED", "bool") === 1;
+
+        // TODO: Cancel when selected altitude is changed
 
         if (landingGearIsDown || glideSlopeCaptured) { return; }
 
