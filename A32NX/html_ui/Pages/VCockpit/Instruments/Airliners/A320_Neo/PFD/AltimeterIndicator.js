@@ -477,17 +477,18 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
         this._removeAltitudeWarnings();
         
         // Exit when:
-        // - Selected altitude is being changed
+        // - TODO: Selected altitude is being changed
         // - Landing gear down
         // - Glide slope captured
         const landingGearIsDown = !SimVar.GetSimVarValue("IS GEAR RETRACTABLE", "Boolean") || SimVar.GetSimVarValue("GEAR HANDLE POSITION", "Boolean");
         const glideSlopeCaptured =  SimVar.GetSimVarValue("L:GLIDE_SLOPE_CAPTURED", "bool") === 1;
-
-        // TODO: Cancel when selected altitude is changed
-
         if (landingGearIsDown || glideSlopeCaptured) { return; }
 
-        const delta = Math.abs(indicatedAltitude - selectedAltitude);
+        const currentAltitudeConstraint = SimVar.GetSimVarValue("L:A32NX_AP_CSTN_ALT", "feet");
+        // Use the constraint altitude if provided otherwise use selected altitude when AP is engaged
+        const targetAltitude = currentAltitudeConstraint && !this.getAutopilotMode() ? currentAltitudeConstraint : selectedAltitude;
+
+        const delta = Math.abs(indicatedAltitude - targetAltitude);
 
         if (delta < 250) {
             this._wasBellowThreshold = true;
