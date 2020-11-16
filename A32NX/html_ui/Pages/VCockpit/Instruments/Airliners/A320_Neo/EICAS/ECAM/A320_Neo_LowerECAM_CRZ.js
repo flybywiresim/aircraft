@@ -114,7 +114,7 @@ var A320_Neo_LowerECAM_CRZ;
             this.isInitialised = true;
         }
         update(_deltaTime) {
-            if (!this.isInitialised) {
+            if (!this.isInitialised || !A320_Neo_EICAS.isOnBottomScreen()) {
                 return;
             }
 
