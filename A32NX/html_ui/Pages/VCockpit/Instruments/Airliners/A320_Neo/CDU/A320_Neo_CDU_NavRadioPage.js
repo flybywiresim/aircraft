@@ -57,20 +57,15 @@ class CDUNavRadioPage {
                     mcdu.showErrorMessage(mcdu.defaultInputErrorMessage);
                 }
             };
-            ilsFrequencyCell = "[]/ ";
+            ilsFrequencyCell = "[]/[.]";
             ilsCourseCell = "[]";
             const approach = mcdu.flightPlanManager.getApproach();
             if (approach && approach.name && approach.name.indexOf("ILS") !== -1) {
-                ilsFrequencyCell = Avionics.Utils.formatRunway(approach.name) + "/ ";
+                ilsFrequencyCell = "[]/" + mcdu.ilsFrequency.toFixed(2);
                 const runway = mcdu.flightPlanManager.getApproachRunway();
                 if (runway) {
                     ilsCourseCell = runway.direction.toFixed(0) + "°";
                 }
-            }
-            if (isFinite(mcdu.ilsFrequency) && mcdu.ilsFrequency > 0) {
-                ilsFrequencyCell += mcdu.ilsFrequency.toFixed(2);
-            } else {
-                ilsFrequencyCell += "[ ]";
             }
             mcdu.onLeftInput[2] = (value) => {
                 if (mcdu.setIlsFrequency(value)) {
