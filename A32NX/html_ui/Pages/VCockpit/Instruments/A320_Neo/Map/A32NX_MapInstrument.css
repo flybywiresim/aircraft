@@ -73,3 +73,7 @@ map-instrument {
     width: 100%;
     height: 100%; }
 
+/* Set the CSTR circle stroke color */
+#path819 {
+  stroke: #ff94ff !important;
+}
