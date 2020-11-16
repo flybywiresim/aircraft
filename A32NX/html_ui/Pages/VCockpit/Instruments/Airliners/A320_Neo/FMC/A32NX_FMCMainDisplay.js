@@ -3080,6 +3080,7 @@ class FMCMainDisplay extends BaseAirliners {
             WaypointPage: 42,
             AOCInit: 43,
             AOCInit2: 44,
+            AOCOfpData: 45,
         };
     }
 
