@@ -13,6 +13,23 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         return this.urlConfig.index === 2;
     }
 
+    // The following two functions can be called from anywhere on the EICAS
+    static isOnTopScreen() {
+        const eicas = document.getElementsByTagName("a320-neo-eicas-element");
+        if (!eicas.length) {
+            return false;
+        }
+        return eicas[0].isTopScreen;
+    }
+
+    static isOnBottomScreen() {
+        const eicas = document.getElementsByTagName("a320-neo-eicas-element");
+        if (!eicas.length) {
+            return false;
+        }
+        return eicas[0].isBottomScreen;
+    }
+
     changePage(_pageName) {
         let pageName = _pageName.toUpperCase();
         for (let i = 0; i < this.lowerScreenPages.length; i++) {
