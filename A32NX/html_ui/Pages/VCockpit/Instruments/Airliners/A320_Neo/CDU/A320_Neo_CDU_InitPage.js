@@ -231,7 +231,7 @@ class CDUInitPage {
         }
         mcdu.onRightInput[0] = async (value) => {
             if (value === "") {
-                mcdu.updateFuelVars();
+                mcdu.updateZfwVars();
                 mcdu.inOut =
                     (isFinite(mcdu.zeroFuelWeight) ? mcdu.zeroFuelWeight.toFixed(1) : "") +
                     "/" +
