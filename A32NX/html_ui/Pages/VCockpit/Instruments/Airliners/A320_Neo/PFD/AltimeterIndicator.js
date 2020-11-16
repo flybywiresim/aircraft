@@ -487,11 +487,9 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
         // Use the constraint altitude if provided otherwise use selected altitude lock value
         const targetAltitude = currentAltitudeConstraint && !this.getAutopilotMode() ? currentAltitudeConstraint : Simplane.getAutoPilotSelectedAltitudeLockValue();
 
-        setTimeout(tgtAltitude => {
-            this.previousTargetAltitude = tgtAltitude;
-        }, 1000, targetAltitude)
         // Exit when selected altitude is being changed 
         if (this.previousTargetAltitude !== targetAltitude) {
+            this.previousTargetAltitude = targetAltitude
             this._wasBellowThreshold = false;
             this._wasAboveThreshold = false;
             this._wasInRange = false;
