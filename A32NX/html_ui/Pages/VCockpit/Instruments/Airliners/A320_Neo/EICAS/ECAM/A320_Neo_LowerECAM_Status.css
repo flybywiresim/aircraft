@@ -73,7 +73,7 @@ a320-neo-lower-ecam-status #inop-sys div {
 }
 a320-neo-lower-ecam-status .action,
 a320-neo-lower-ecam-status .action-underline,
-a320-neo-lower-ecam-status .blue {
+a320-neo-lower-ecam-status .cyan {
   color: var(--displayCyan);
 }
 a320-neo-lower-ecam-status .Underline,
