@@ -471,6 +471,7 @@ a320-neo-pfd-element #Mainframe #InstrumentsContainer #ILS {
 
 @keyframes flash-amber {
   from {
+    /* TODO: Fix missing transparent animation */
     stroke:  #000000;
     stroke-width: 3px;
   }

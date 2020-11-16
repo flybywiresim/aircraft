@@ -514,11 +514,7 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
             this._wasInRange = true;
         }
 
-        if (1000 < delta) {
-            this._wasInRange = false;
-        }
-
-        if (250 <= delta && delta <= 1000) {
+        if (250 <= delta) {
             if (this._wasBellowThreshold) {
                 this._flashAmber();
             } else if (this._wasAboveThreshold && delta <= 750) {
