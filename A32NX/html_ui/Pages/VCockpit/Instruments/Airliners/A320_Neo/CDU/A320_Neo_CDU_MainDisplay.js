@@ -351,7 +351,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         if (this.checkForMessage(message, color)) {
             this.messageQueue.unshift([message, color, f]);
             if (this.messageQueue.length > 5) {
-                this.messageQueue.splice(4, 1);
+                this.messageQueue.splice(5, 1);
             }
             this.updateTypeIIMessage = true;
             this.tryShowMessage();
