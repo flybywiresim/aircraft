@@ -356,10 +356,12 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                         if (selAlt < wpt.legAltitude2) {
                             return wpt.legAltitude2;
                         }
+                        return 0;
                     } else {
                         if (selAlt > wpt.legAltitude1) {
                             return wpt.legAltitude1;
                         }
+                        return 0;
                     }
                 } else {
                     if (wpt.legAltitudeDescription === 1 || wpt.legAltitudeDescription === type) {
@@ -367,10 +369,12 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                             if (selAlt > wpt.legAltitude1) {
                                 return wpt.legAltitude1;
                             }
+                            return 0;
                         } else { // constraint above
                             if (selAlt < wpt.legAltitude1) {
                                 return wpt.legAltitude1;
                             }
+                            return 0;
                         }
                     }
                 }
