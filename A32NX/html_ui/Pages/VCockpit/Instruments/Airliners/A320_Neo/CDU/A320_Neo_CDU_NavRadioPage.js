@@ -12,6 +12,7 @@ class CDUNavRadioPage {
         let ilsFrequencyCell = "";
         let ilsCourseCell = "";
         let adf1FrequencyCell = "";
+        let adf1BfoOption = "";
         if (!radioOn) {
             vor1FrequencyCell = "[\xa0]/[\xa0\xa0.\xa0]";
             if (mcdu.vor1Frequency > 0) {
@@ -44,7 +45,7 @@ class CDUNavRadioPage {
             };
             vor1CourseCell = "[\xa0]";
             if (mcdu.vor1Course >= 0) {
-                vor1CourseCell = mcdu.vor1Course.toFixed(0) + "°";
+                vor1CourseCell = mcdu.vor1Course.toFixed(0);
             }
             mcdu.onLeftInput[1] = (value) => {
                 const numValue = parseFloat(value);
@@ -68,7 +69,7 @@ class CDUNavRadioPage {
                 }
                 const runway = mcdu.flightPlanManager.getApproachRunway();
                 if (runway) {
-                    ilsCourseCell = runway.direction.toFixed(0) + "°";                   
+                    ilsCourseCell = runway.direction.toFixed(0);                   
                 }
                         mcdu.onLeftInput[2] = (value) => {
                 if (mcdu.setIlsFrequency(value)) {
@@ -78,6 +79,7 @@ class CDUNavRadioPage {
             adf1FrequencyCell = "[\xa0]/[\xa0\xa0.]";
             if (mcdu.adf1Frequency > 0) {
                 adf1FrequencyCell = "[\xa0]/" + mcdu.adf1Frequency.toFixed(1);
+                adf1BfoOption = "<ADF1 BFO";
             }
             mcdu.onLeftInput[4] = (value) => {
                 const numValue = parseFloat(value);
@@ -101,6 +103,7 @@ class CDUNavRadioPage {
         let vor2FrequencyCell = "";
         let vor2CourseCell = "";
         let adf2FrequencyCell = "";
+        let adf2BfoOption = "";
         if (!radioOn) {
             vor2FrequencyCell = "[\xa0\xa0.\xa0]/[\xa0]";
             if (mcdu.vor2Frequency > 0) {
@@ -133,7 +136,7 @@ class CDUNavRadioPage {
             };
             vor2CourseCell = "[\xa0]";
             if (mcdu.vor2Course >= 0) {
-                vor2CourseCell = mcdu.vor2Course.toFixed(0) + "°";
+                vor2CourseCell = mcdu.vor2Course.toFixed(0);
             }
             mcdu.onRightInput[1] = (value) => {
                 const numValue = parseFloat(value);
@@ -151,6 +154,7 @@ class CDUNavRadioPage {
             adf2FrequencyCell = "[\xa0\xa0.]/[\xa0]";
             if (mcdu.adf2Frequency > 0) {
                 adf2FrequencyCell = mcdu.adf2Frequency.toFixed(1) + "/[\xa0]";
+                adf2BfoOption = "ADF2 BFO>";
             }
             mcdu.onRightInput[4] = (value) => {
                 const numValue = parseFloat(value);
@@ -184,7 +188,7 @@ class CDUNavRadioPage {
             ["ADF1/FREQ", "FREQ/ADF2"],
             [adf1FrequencyCell + "[color]blue", adf2FrequencyCell + "[color]blue"],
             [""],
-            [""]
+            [adf1BfoOption + "[color]inop", adf2BfoOption + "[color]inop"]
         ]);
     }
 }
