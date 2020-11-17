@@ -139,7 +139,11 @@ class CDUInitPage {
             }
         };
         mcdu.onRightInput[1] = () => {
-            CDUAocInit.getSimbrief(mcdu)
+            getSimBriefOfp(mcdu, () => {
+                if (mcdu.page.Current === mcdu.page.InitPageA) {
+                    CDUInitPage.ShowPage1(mcdu);
+                }
+            })
                 .then(() => {
                     CDUAocInit.insertUplink(mcdu);
                 });
