@@ -92,6 +92,7 @@
 1. [CDU] Fixed autothrust targeting F or S speed on climb - @MisterChocker (Leon)
 1. [ND] Added altitude constraints in flight level based on the transition altitude provided in MCDU Take Off Performace @ilyeshammadi (Ilyes Hammadi)
 1. [ECAM] Fix cabin vertical speed unit - @MrMinimal (Tom Langwaldt)
+1. [PFD] Add altitude indicator alerts @ilyeshammadi (Ilyes Hammadi)
 
 ## 0.4.0
 1. [General] Add CHANGELOG.md - @nathaninnes (Nathan Innes)
