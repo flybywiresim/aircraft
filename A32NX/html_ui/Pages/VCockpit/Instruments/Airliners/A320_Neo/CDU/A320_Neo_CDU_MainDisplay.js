@@ -342,7 +342,6 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     getAltitudeConstraint() {
         const fph = Simplane.getCurrentFlightPhase();
         const type = fph < FlightPhase.FLIGHT_PHASE_CRUISE || fph === FlightPhase.FLIGHT_PHASE_GOAROUND ? 3 : 2;
-        const selAlt = this.altLock;
         const rte = this.flightPlanManager.getWaypoints(0);
         let tmp = 0;
 
@@ -354,16 +353,12 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             // Ensure constraint waypoint after TOD is not a constraint for climb phase
             if (tmp) {
                 if (isFinite(wpt.legAltitude2)) {
-                    if (type === 3) {
-                        if (wpt.legAltitude1 > wpt.legAltitude2 || wpt.legAltitude1 > tmp) {
-                            return 0;
-                        }
+                    if (type === 3 && (wpt.legAltitude1 > wpt.legAltitude2 || wpt.legAltitude1 > tmp)) {
+                        return 0;
                     }
                 } else {
-                    if (type === 3) {
-                        if (wpt.legAltitude1 > tmp) {
-                            return 0;
-                        }
+                    if (type === 3 && wpt.legAltitude1 > tmp) {
+                        return 0;
                     }
                 }
             } else {
@@ -372,12 +367,12 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             if (wpt.legAltitudeDescription !== 0) {
                 if (wpt.legAltitudeDescription === 4) {
                     if (type === 3) {
-                        if (selAlt < wpt.legAltitude2) {
+                        if (this.altLock < wpt.legAltitude2) {
                             return wpt.legAltitude2;
                         }
                         return 0;
                     } else {
-                        if (selAlt > wpt.legAltitude1) {
+                        if (this.altLock > wpt.legAltitude1) {
                             return wpt.legAltitude1;
                         }
                         return 0;
@@ -385,12 +380,12 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                 } else {
                     if (wpt.legAltitudeDescription === 1 || wpt.legAltitudeDescription === type) {
                         if (type === 3) { // constraint below
-                            if (selAlt > wpt.legAltitude1) {
+                            if (this.altLock > wpt.legAltitude1) {
                                 return wpt.legAltitude1;
                             }
                             return 0;
                         } else { // constraint above
-                            if (selAlt < wpt.legAltitude1) {
+                            if (this.altLock < wpt.legAltitude1) {
                                 return wpt.legAltitude1;
                             }
                             return 0;
