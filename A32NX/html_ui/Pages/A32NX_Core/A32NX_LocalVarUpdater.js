@@ -120,8 +120,6 @@ class A32NX_LocalVarUpdater {
         return cabinTemp;
     }
 
-    // P: let currentPackFlow = ;
-
     _flapsInMotionSelector() {
         const currentFlapsPosition = SimVar.GetSimVarValue("TRAILING EDGE FLAPS LEFT PERCENT", "percent");
         const lastFlapsPosition = this.lastFlapsPosition;
