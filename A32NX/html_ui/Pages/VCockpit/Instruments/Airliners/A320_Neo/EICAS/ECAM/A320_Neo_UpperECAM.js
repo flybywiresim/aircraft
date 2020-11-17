@@ -1223,14 +1223,15 @@ var A320_Neo_UpperECAM;
             this.isInitialised = true;
         }
         update(_deltaTime) {
+            if (!this.isInitialised || !A320_Neo_EICAS.isOnTopScreen()) {
+                return;
+            }
+
             const leftThrottleDetent = Simplane.getEngineThrottleMode(0);
             const rightThrottleDetent = Simplane.getEngineThrottleMode(1);
             const highestThrottleDetent = (leftThrottleDetent >= rightThrottleDetent) ? leftThrottleDetent : rightThrottleDetent;
             const numberPhase = SimVar.GetSimVarValue("L:AIRLINER_FLIGHT_PHASE", "number");
 
-            if (!this.isInitialised) {
-                return;
-            }
             for (let i = 0; i < this.allPanels.length; ++i) {
                 if (this.allPanels[i] != null) {
                     this.allPanels[i].update(_deltaTime);
