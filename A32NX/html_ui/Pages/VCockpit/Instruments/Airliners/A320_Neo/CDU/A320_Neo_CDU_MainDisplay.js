@@ -21,6 +21,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this.updateCst = false;
         this.activeWaypointIdx = -1;
         this.constraintAlt = 0;
+        this.altLock = 0;
     }
     get templateID() {
         return "A320_Neo_CDU";
@@ -328,9 +329,11 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             return this.constraintAlt = 0;
         }
         const activeWptIdx = this.flightPlanManager.getActiveWaypointIndex();
-        if (this.updateCst || activeWptIdx !== this.activeWptIdx) {
+        const altLock = Simplane.getAutoPilotSelectedAltitudeLockValue("feet");
+        if (this.updateCst || activeWptIdx !== this.activeWptIdx || altLock !== this.altLock) {
             this.updateCst = false;
             this.activeWptIdx = activeWptIdx;
+            this.altLock = altLock;
             return this.constraintAlt = this.getAltitudeConstraint();
         }
         return this.constraintAlt;
@@ -339,11 +342,11 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     getAltitudeConstraint() {
         const fph = Simplane.getCurrentFlightPhase();
         const type = fph < FlightPhase.FLIGHT_PHASE_CRUISE || fph === FlightPhase.FLIGHT_PHASE_GOAROUND ? 3 : 2;
-        const selAlt = Simplane.getAutoPilotSelectedAltitudeLockValue("feet");
+        const selAlt = this.altLock;
         const rte = this.flightPlanManager.getWaypoints(0);
         let tmp = 0;
 
-        for (let i = this.activeWptIdx + 1; i < rte.length; i++) {
+        for (let i = this.activeWptIdx; i < rte.length; i++) {
             const wpt = rte[i];
             if (!isFinite(wpt.legAltitude1)) {
                 continue;
