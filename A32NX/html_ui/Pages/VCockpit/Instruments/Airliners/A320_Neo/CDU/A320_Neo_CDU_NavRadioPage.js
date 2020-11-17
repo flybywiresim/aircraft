@@ -21,6 +21,9 @@ class CDUNavRadioPage {
             mcdu.onLeftInput[0] = (value) => {
                 const numValue = parseFloat(value);
                 if (isFinite(numValue) && numValue >= 108 && numValue <= 117.95 && RadioNav.isHz50Compliant(numValue)) {
+                    if (numValue != mcdu.vor1Frequency) {
+                        mcdu.vor1Course = 0;
+                    }
                     mcdu.vor1Frequency = numValue;
                     if (mcdu.isRadioNavActive()) {
                         mcdu.requestCall(() => {
@@ -36,6 +39,7 @@ class CDUNavRadioPage {
                     }
                 } else if (value === FMCMainDisplay.clrValue) {
                     mcdu.vor1Frequency = 0;
+                    mcdu.vor1Course = 0;
                     mcdu.radioNav.setVORActiveFrequency(1, 0);
                     vor1FrequencyCell = "[\xa0]/[\xa0\xa0.\xa0]";
                     CDUNavRadioPage.ShowPage(mcdu);
@@ -44,12 +48,12 @@ class CDUNavRadioPage {
                 }
             };
             vor1CourseCell = "[\xa0]";
-            if (mcdu.vor1Course >= 0) {
-                vor1CourseCell = mcdu.vor1Course.toFixed(0);
+            if (mcdu.vor1Course > 0) {
+                vor1CourseCell = mcdu.vor1Course.toFixed(0).padStart(3, "0");
             }
             mcdu.onLeftInput[1] = (value) => {
                 const numValue = parseFloat(value);
-                if (isFinite(numValue) && numValue >= 0 && numValue < 360) {
+                if (isFinite(numValue) && numValue > 0 && numValue <= 360) {
                     SimVar.SetSimVarValue("K:VOR1_SET", "number", numValue).then(() => {
                         mcdu.vor1Course = numValue;
                         mcdu.requestCall(() => {
@@ -69,7 +73,7 @@ class CDUNavRadioPage {
                 }
                 const runway = mcdu.flightPlanManager.getApproachRunway();
                 if (runway) {
-                    ilsCourseCell = runway.direction.toFixed(0);                   
+                    ilsCourseCell = runway.direction.toFixed(0).padStart(3, "0");                   
                 }
                         mcdu.onLeftInput[2] = (value) => {
                 if (mcdu.setIlsFrequency(value)) {
@@ -112,6 +116,9 @@ class CDUNavRadioPage {
             mcdu.onRightInput[0] = (value) => {
                 const numValue = parseFloat(value);
                 if (isFinite(numValue) && numValue >= 108 && numValue <= 117.95 && RadioNav.isHz50Compliant(numValue)) {
+                    if (numValue != mcdu.vor2Frequency) {
+                        mcdu.vor2Course = 0;
+                    }
                     mcdu.vor2Frequency = numValue;
                     if (mcdu.isRadioNavActive()) {
                         mcdu.requestCall(() => {
@@ -127,6 +134,7 @@ class CDUNavRadioPage {
                     }
                 } else if (value === FMCMainDisplay.clrValue) {
                     mcdu.vor2Frequency = 0;
+                    mcdu.vor2Course = 0;
                     mcdu.radioNav.setVORActiveFrequency(2, 0);
                     vor2FrequencyCell = "[\xa0\xa0.\xa0]/[\xa0]";
                     CDUNavRadioPage.ShowPage(mcdu);
@@ -135,12 +143,12 @@ class CDUNavRadioPage {
                 }
             };
             vor2CourseCell = "[\xa0]";
-            if (mcdu.vor2Course >= 0) {
-                vor2CourseCell = mcdu.vor2Course.toFixed(0);
+            if (mcdu.vor2Course > 0) {
+                vor2CourseCell = mcdu.vor2Course.toFixed(0).padStart(3, "0");
             }
             mcdu.onRightInput[1] = (value) => {
                 const numValue = parseFloat(value);
-                if (isFinite(numValue) && numValue >= 0 && numValue < 360) {
+                if (isFinite(numValue) && numValue > 0 && numValue <= 360) {
                     SimVar.SetSimVarValue("K:VOR2_SET", "number", numValue).then(() => {
                         mcdu.vor2Course = numValue;
                         mcdu.requestCall(() => {
@@ -150,7 +158,7 @@ class CDUNavRadioPage {
                 } else {
                     mcdu.showErrorMessage(mcdu.defaultInputErrorMessage);
                 }
-            };
+            }; 
             adf2FrequencyCell = "[\xa0\xa0.]/[\xa0]";
             if (mcdu.adf2Frequency > 0) {
                 adf2FrequencyCell = mcdu.adf2Frequency.toFixed(1) + "/[\xa0]";
