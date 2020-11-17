@@ -13,6 +13,15 @@ class CDUNavRadioPage {
         let ilsCourseCell = "";
         let adf1FrequencyCell = "";
         let adf1BfoOption = "";
+        const ilsIdent = mcdu.radioNav.getBestILSBeacon();
+        console.log("--K0:" + ilsIdent.ident)
+        CDUNavRadioPage._timer = 0;
+        mcdu.pageUpdate = () => {
+            CDUNavRadioPage._timer++;
+            if (CDUNavRadioPage._timer >= 15) {
+                CDUNavRadioPage.ShowPage(mcdu);
+            }
+        };
         if (!radioOn) {
             vor1FrequencyCell = "[\xa0]/[\xa0\xa0.\xa0]";
             if (mcdu.vor1Frequency > 0) {
@@ -66,12 +75,14 @@ class CDUNavRadioPage {
             };
             ilsFrequencyCell = "[\xa0\xa0]/[\xa0\xa0.\xa0]";
             ilsCourseCell = "[\xa0]";
-            const approach = mcdu.flightPlanManager.getApproach();
-            const ilsIdent = mcdu.radioNav.getBestILSBeacon();                 
+            const approach = mcdu.flightPlanManager.getApproach();       
             if (mcdu.ilsFrequency > 0){
-                ilsFrequencyCell = ilsIdent.ident + "/" + mcdu.ilsFrequency.toFixed(2);
+                ilsFrequencyCell = "{small}" + ilsIdent.ident + "{end}" + "/" + mcdu.ilsFrequency.toFixed(2);
                 }
                 const runway = mcdu.flightPlanManager.getApproachRunway();
+                if (ilsIdent.ident == "" && mcdu.ilsFrequency > 0) {
+                    ilsFrequencyCell = "[\xa0\xa0]/" + mcdu.ilsFrequency.toFixed(2);
+                }
                 if (runway) {
                     ilsCourseCell = runway.direction.toFixed(0).padStart(3, "0");                   
                 }
@@ -200,3 +211,4 @@ class CDUNavRadioPage {
         ]);
     }
 }
+CDUNavRadioPage._timer = 0;
