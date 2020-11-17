@@ -34,7 +34,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             blockFuel: "",
             payload: "",
             estZfw: "",
-            sendStatus: "",
+            sendStatus: "READY",
             costIndex: "",
             navlog: [],
             icao_airline: "",
