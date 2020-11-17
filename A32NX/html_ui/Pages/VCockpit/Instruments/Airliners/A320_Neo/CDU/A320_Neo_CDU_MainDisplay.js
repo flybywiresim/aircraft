@@ -337,13 +337,13 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                 if (isFinite(wpt.legAltitude2)) {
                     if (type === 3) {
                         if (wpt.legAltitude1 > wpt.legAltitude2 || wpt.legAltitude1 > tmp) {
-                            break;
+                            return 0;
                         }
                     }
                 } else {
                     if (type === 3) {
                         if (wpt.legAltitude1 > tmp) {
-                            break;
+                            return 0;
                         }
                     }
                 }
@@ -354,22 +354,22 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                 if (wpt.legAltitudeDescription === 4) {
                     if (type === 3) {
                         if (selAlt < wpt.legAltitude2) {
-                            return wpt.legAltitude2.toFixed(0);
+                            return wpt.legAltitude2;
                         }
                     } else {
                         if (selAlt > wpt.legAltitude1) {
-                            return wpt.legAltitude1.toFixed(0);
+                            return wpt.legAltitude1;
                         }
                     }
                 } else {
                     if (wpt.legAltitudeDescription === 1 || wpt.legAltitudeDescription === type) {
                         if (type === 3) { // constraint below
                             if (selAlt > wpt.legAltitude1) {
-                                return wpt.legAltitude1.toFixed(0);
+                                return wpt.legAltitude1;
                             }
                         } else { // constraint above
                             if (selAlt < wpt.legAltitude1) {
-                                return wpt.legAltitude1.toFixed(0);
+                                return wpt.legAltitude1;
                             }
                         }
                     }
@@ -984,7 +984,6 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                     } else {
                         SimVar.SetSimVarValue("L:AIRLINER_FMS_SHOW_TOP_DSCNT", "number", 0);
                     }
-                    const selectedAltitude = Simplane.getAutoPilotSelectedAltitudeLockValue("feet");
                     const constrainedAltitude = this.getAltitudeConstraint();
                     if (!this.flightPlanManager.getIsDirectTo() && constrainedAltitude) {
                         SimVar.SetSimVarValue("L:A32NX_AP_CSTN_ALT", "feet", constrainedAltitude);
