@@ -17,22 +17,40 @@ class A32NX_LocalVarUpdater {
                 selector: this._noSmokingMemoSelector,
             },
             {
-                varName: "L:A32NX_CKPT_TEMP",
+                varName: "L:A32NX_CKPT_TRIM_TEMP",
                 type: "celsius",
                 selector: this._condTempSelector,
-                index: 1
+                identifier: 1
+            },
+            {
+                varName: "L:A32NX_FWD_TRIM_TEMP",
+                type: "celsius",
+                selector: this._condTempSelector,
+                identifier : 2
+            },
+            {
+                varName: "L:A32NX_AFT_TRIM_TEMP",
+                type: "celsius",
+                selector: this._condTempSelector,
+                identifier: 3
+            },
+            {
+                varName: "L:A32NX_CKPT_TEMP",
+                type: "celsius",
+                selector: this._condTrimOutletSelector,
+                identifier: "CKPT"
             },
             {
                 varName: "L:A32NX_FWD_TEMP",
                 type: "celsius",
-                selector: this._condTempSelector,
-                index : 2
+                selector: this._condTrimOutletSelector,
+                identifier: "FWD"
             },
             {
                 varName: "L:A32NX_AFT_TEMP",
                 type: "celsius",
-                selector: this._condTempSelector,
-                index: 3
+                selector: this._condTrimOutletSelector,
+                identifier: "AFT"
             },
             {
                 varName: "L:A32NX_FLAPS_IN_MOTION",
@@ -47,8 +65,8 @@ class A32NX_LocalVarUpdater {
         this.updaters.forEach(this._runUpdater);
     }
 
-    _runUpdater({varName, type, selector, index = null}) {
-        const newValue = selector(index);
+    _runUpdater({varName, type, selector, identifier = null}) {
+        const newValue = selector(identifier);
         const currentValue = SimVar.GetSimVarValue(varName, type);
         if (newValue !== currentValue) {
             SimVar.SetSimVarValue(varName, type, newValue);
@@ -72,11 +90,18 @@ class A32NX_LocalVarUpdater {
         return false;
     }
 
-    _condTempSelector(_index) {
+    _condTempSelector(_identifier) {
         // Temporary code until packs code is written and implemented
-        // Uses position of AIR COND knobs as a surrogate
-        const cabinKnobValue = SimVar.GetSimVarValue("L:A320_Neo_AIRCOND_LVL_" + _index, "Position(0-6)");
-        const cabinTemp = (18 + (0.12 * cabinKnobValue));
+        // Uses position of AIR COND knobs to generate the trim air temperature
+        const airconKnobValue = SimVar.GetSimVarValue("L:A320_Neo_AIRCOND_LVL_" + _identifier, "Position(0-100)");
+        const trimTemp = (0.12 * airconKnobValue) + 18; // Map from knob range 0-100 to 18-30 degrees C
+        return trimTemp;
+    }
+
+    _condTrimOutletSelector(_compartment) {
+        // Uses outlet temperature of trim air valves to generate the cabin temperature
+        const cabinTemp = SimVar.GetSimVarValue("L:A32NX_" + _compartment + "_TRIM_TEMP", "celsius");
+        // Dämpfung
         return cabinTemp;
     }
 
