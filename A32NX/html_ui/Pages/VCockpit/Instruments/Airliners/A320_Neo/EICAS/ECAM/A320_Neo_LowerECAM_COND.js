@@ -23,6 +23,7 @@ var A320_Neo_LowerECAM_COND;
             }
 
             this.isInitialised = true;
+
             // finding all html element for the display, first element of array is always the open on, the second is the closed one
             this.hotAirValveIndication = [this.querySelector("#HotAirValveOpen"), this.querySelector("#HotAirValveClosed")];
             this.trimAirValveIndicator = [this.querySelector("#CkptGauge"), this.querySelector("#FwdGauge"), this.querySelector("#AftGauge")];
@@ -41,6 +42,20 @@ var A320_Neo_LowerECAM_COND;
             this.fanWarningIndication[1].setAttribute("visibility", "hidden");
 
             this.querySelector("#AltnMode").setAttribute("visibility", "hidden");
+
+            // Init Cabin Temp
+            if (Simplane.getIsGrounded()) {
+                SimVar.SetSimVarValue("L:A32NX_CKPT_TEMP", "celsius", Simplane.getAmbientTemperature());
+                SimVar.SetSimVarValue("L:A32NX_FWD_TEMP", "celsius", Simplane.getAmbientTemperature());
+                SimVar.SetSimVarValue("L:A32NX_AFT_TEMP", "celsius", Simplane.getAmbientTemperature());
+            } else {
+                // TODO FIX - not a function error
+                const defaultCabinTemp = 18; // Initial airborne cabin temperature
+                //Simvar.SetSimVarValue("L:A32NX_CKPT_TEMP", "celsius", defaultCabinTemp);
+                //Simvar.SetSimVarValue("L:A32NX_FWD_TEMP", "celsius", defaultCabinTemp);
+                //Simvar.SetSimVarValue("L:A32NX_AFT_TEMP", "celsius", defaultCabinTemp);
+            }
+
         }
         update(_deltaTime) {
             if (!this.isInitialised) {
@@ -48,7 +63,7 @@ var A320_Neo_LowerECAM_COND;
             }
 
             // Disaply trim valve position for each zone
-            const gaugeOffset = -50; //Gauges range is from -50 degree to +50 degree, AC-selectort value is 0-100 - added an offset for this
+            const gaugeOffset = -50; //Gauges range is from -50 degree to +50 degree, AC-selector value is 0-100 - added an offset for this
 
             var airconSelectedTempCockpit = SimVar.GetSimVarValue("L:A320_Neo_AIRCOND_LVL_1", "Position(0-100)");
             var airconSelectedTempFWD = SimVar.GetSimVarValue("L:A320_Neo_AIRCOND_LVL_2", "Position(0-100)");

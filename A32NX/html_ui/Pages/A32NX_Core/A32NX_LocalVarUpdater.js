@@ -113,7 +113,7 @@ class A32NX_LocalVarUpdater {
         const deltaTemp = trimTemp - currentCabinTemp;
 
         // variation depends on packflow
-        const cabinTempVariationSpeed = 0.0001 * (SimVar.GetSimVarValue("L:A32NX_KNOB_OVHD_AIRCOND_PACKFLOW_Position", "Position(0-2)") + 1);
+        const cabinTempVariationSpeed = 0.0005 * (SimVar.GetSimVarValue("L:A32NX_KNOB_OVHD_AIRCOND_PACKFLOW_Position", "Position(0-2)") + 1);
 
         const cabinTemp = currentCabinTemp + deltaTemp * cabinTempVariationSpeed;
 
