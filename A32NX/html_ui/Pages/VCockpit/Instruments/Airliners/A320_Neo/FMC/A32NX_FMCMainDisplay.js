@@ -359,6 +359,12 @@ class FMCMainDisplay extends BaseAirliners {
         }
     }
 
+    tryClearOldUserInput() {
+        if (!this.isDisplayingErrorMessage) {
+            this.lastUserInput = "";
+        }
+    }
+
     showErrorMessage(message, color = "#ffffff") {
         if (!this.isDisplayingErrorMessage && this.inOut) {
             this.lastUserInput = this.inOut;
@@ -1226,7 +1232,7 @@ class FMCMainDisplay extends BaseAirliners {
         const v = parseInt(s);
         if (isFinite(v) && v > 0) {
             this.transitionAltitude = v;
-            SimVar.SetSimVarValue("L:AIRLINER_TRANS_ALT", "Number", this.v2Speed);
+            SimVar.SetSimVarValue("L:AIRLINER_TRANS_ALT", "Number", v);
             return true;
         }
         this.showErrorMessage(this.defaultInputErrorMessage);
@@ -1378,10 +1384,6 @@ class FMCMainDisplay extends BaseAirliners {
 
     getClbManagedSpeed() {
         const dCI = this.costIndex / 999;
-        const flapsHandleIndex = Simplane.getFlapsHandleIndex();
-        if (flapsHandleIndex != 0) {
-            return this.getFlapSpeed();
-        }
         let speed = 220 * (1 - dCI) + 280 * dCI;
         if (SimVar.GetSimVarValue("PLANE ALTITUDE", "feet") < 10000) {
             speed = Math.min(speed, 250);
@@ -1392,10 +1394,6 @@ class FMCMainDisplay extends BaseAirliners {
     getCrzManagedSpeed() {
         let dCI = this.costIndex / 999;
         dCI = dCI * dCI;
-        const flapsHandleIndex = SimVar.GetSimVarValue("FLAPS HANDLE INDEX", "Number");
-        if (flapsHandleIndex != 0) {
-            return this.getFlapSpeed();
-        }
         let speed = 290 * (1 - dCI) + 310 * dCI;
         if (SimVar.GetSimVarValue("PLANE ALTITUDE", "feet") < 10000) {
             speed = Math.min(speed, 250);
@@ -3060,11 +3058,16 @@ class FMCMainDisplay extends BaseAirliners {
         this.initRadioNav(true);
     }
 
-    updateFuelVars() {
+    updateZfwVars() {
         const totalWeight = SimVar.GetSimVarValue("TOTAL WEIGHT", "kilograms") / 1000;
-        this.blockFuel = SimVar.GetSimVarValue("FUEL TOTAL QUANTITY", "gallons") * SimVar.GetSimVarValue("FUEL WEIGHT PER GALLON", "kilograms") / 1000;
-        this.zeroFuelWeight = totalWeight - this.blockFuel;
+        const blockFuel = SimVar.GetSimVarValue("FUEL TOTAL QUANTITY", "gallons") * SimVar.GetSimVarValue("FUEL WEIGHT PER GALLON", "kilograms") / 1000;
+        this.zeroFuelWeight = totalWeight - blockFuel;
         this.zeroFuelWeightMassCenter = SimVar.GetSimVarValue("CG PERCENT", "percent");
+    }
+
+    updateFuelVars() {
+        this.blockFuel = SimVar.GetSimVarValue("FUEL TOTAL QUANTITY", "gallons") * SimVar.GetSimVarValue("FUEL WEIGHT PER GALLON", "kilograms") / 1000;
+        this.updateZfwVars();
     }
 
     updateVSpeeds() {
@@ -3174,6 +3177,7 @@ class FMCMainDisplay extends BaseAirliners {
                         setTimeout(() => {
                             if (this.page.Current === cur) {
                                 this.onLeftInput[v - 1](value);
+                                this.tryClearOldUserInput();
                             }
                         }, this.leftInputDelay[v - 1] ? this.leftInputDelay[v - 1](value) : this.getDelayBasic());
                     }
@@ -3187,6 +3191,7 @@ class FMCMainDisplay extends BaseAirliners {
                         setTimeout(() => {
                             if (this.page.Current === cur) {
                                 this.onRightInput[v - 1](value);
+                                this.tryClearOldUserInput();
                             }
                         }, this.rightInputDelay[v - 1] ? this.rightInputDelay[v - 1]() : this.getDelayBasic());
                     }

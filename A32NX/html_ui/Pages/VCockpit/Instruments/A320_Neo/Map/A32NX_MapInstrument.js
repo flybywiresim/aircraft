@@ -515,10 +515,11 @@ class MapInstrument extends ISvgMapRootElement {
             }
             if (this.drawCounter === 45 || (this.showConstraints && (!this.constraints || this.constraints.length === 0))) {
                 if (this.showConstraints) {
+                    const transitionAltitude = SimVar.GetSimVarValue("L:AIRLINER_TRANS_ALT", "Number");
                     const wpWithConstraints = this.flightPlanManager.getWaypointsWithAltitudeConstraints();
                     this.constraints = [];
                     for (let i = 0; i < wpWithConstraints.length; i++) {
-                        const svgConstraint = new SvgConstraintElement(wpWithConstraints[i]);
+                        const svgConstraint = new SvgConstraintElement(wpWithConstraints[i], transitionAltitude);
                         this.constraints.push(svgConstraint);
                     }
                 }
