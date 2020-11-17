@@ -18,6 +18,9 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this._blockFuelEntered = false;
         this._gpsprimaryack = 0;
         this.currentFlightPhase = FlightPhase.FLIGHT_PHASE_PREFLIGHT;
+        this.updateCst = false;
+        this.activeWaypointIdx = -1;
+        this.constraintAlt = 0;
     }
     get templateID() {
         return "A320_Neo_CDU";
@@ -320,6 +323,19 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         }
     }
 
+    tryUpdateAltitudeConstraint() {
+        if (this.flightPlanManager.getIsDirectTo()) {
+            return this.constraintAlt = 0;
+        }
+        const activeWptIdx = this.flightPlanManager.getActiveWaypointIndex();
+        if (this.updateCst || activeWptIdx !== this.activeWptIdx) {
+            this.updateCst = false;
+            this.activeWptIdx = activeWptIdx;
+            return this.constraintAlt = this.getAltitudeConstraint();
+        }
+        return this.constraintAlt;
+    }
+
     getAltitudeConstraint() {
         const fph = Simplane.getCurrentFlightPhase();
         const type = fph < FlightPhase.FLIGHT_PHASE_CRUISE || fph === FlightPhase.FLIGHT_PHASE_GOAROUND ? 3 : 2;
@@ -327,7 +343,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         const rte = this.flightPlanManager.getWaypoints(0);
         let tmp = 0;
 
-        for (let i = this.flightPlanManager.getActiveWaypointIndex() + 1; i < rte.length; i++) {
+        for (let i = this.activeWptIdx + 1; i < rte.length; i++) {
             const wpt = rte[i];
             if (!isFinite(wpt.legAltitude1)) {
                 continue;
@@ -988,10 +1004,9 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                     } else {
                         SimVar.SetSimVarValue("L:AIRLINER_FMS_SHOW_TOP_DSCNT", "number", 0);
                     }
-                    const constrainedAltitude = this.getAltitudeConstraint();
-                    if (!this.flightPlanManager.getIsDirectTo() && constrainedAltitude) {
-                        SimVar.SetSimVarValue("L:A32NX_AP_CSTN_ALT", "feet", constrainedAltitude);
-                        Coherent.call("AP_ALT_VAR_SET_ENGLISH", 2, constrainedAltitude, this._forceNextAltitudeUpdate);
+                    if (this.tryUpdateAltitudeConstraint()) {
+                        SimVar.SetSimVarValue("L:A32NX_AP_CSTN_ALT", "feet", this.constraintAlt);
+                        Coherent.call("AP_ALT_VAR_SET_ENGLISH", 2, this.constraintAlt, this._forceNextAltitudeUpdate);
                         this._forceNextAltitudeUpdate = false;
                         SimVar.SetSimVarValue("L:AP_CURRENT_TARGET_ALTITUDE_IS_CONSTRAINT", "number", 1);
                     } else {

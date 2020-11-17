@@ -68,6 +68,7 @@ class CDUVerticalRevisionPage {
                 }, 1000);
             }; // SPD CSTR
             mcdu.onRightInput[2] = (value) => {
+                mcdu.updateCst = true;
                 if (value === FMCMainDisplay.clrValue) {
                     mcdu.removeWaypoint(fpIndex, () => {
                         CDUFlightPlanPage.ShowPage(mcdu, offset);
