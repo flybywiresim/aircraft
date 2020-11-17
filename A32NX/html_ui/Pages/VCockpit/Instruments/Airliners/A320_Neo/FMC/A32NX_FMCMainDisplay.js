@@ -1384,10 +1384,6 @@ class FMCMainDisplay extends BaseAirliners {
 
     getClbManagedSpeed() {
         const dCI = this.costIndex / 999;
-        const flapsHandleIndex = Simplane.getFlapsHandleIndex();
-        if (flapsHandleIndex != 0) {
-            return this.getFlapSpeed();
-        }
         let speed = 220 * (1 - dCI) + 280 * dCI;
         if (SimVar.GetSimVarValue("PLANE ALTITUDE", "feet") < 10000) {
             speed = Math.min(speed, 250);
