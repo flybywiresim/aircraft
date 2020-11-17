@@ -125,7 +125,7 @@ var A320_Neo_LowerECAM_BLEED;
         }
 
         update(_deltaTime) {
-            if (!this.isInitialised) {
+            if (!this.isInitialised || !A320_Neo_EICAS.isOnBottomScreen()) {
                 return;
             }
 
