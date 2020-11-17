@@ -240,7 +240,7 @@ var A320_Neo_LowerECAM_WHEEL;
         }
 
         update(_deltaTime) {
-            if (!this.isInitialised) {
+            if (!this.isInitialised || !A320_Neo_EICAS.isOnBottomScreen()) {
                 return;
             }
 
@@ -372,10 +372,6 @@ var A320_Neo_LowerECAM_WHEEL;
         }
 
         updateAutoBrake(_deltaTime) {
-            if (!this.isInitialised) {
-                return;
-            }
-
             const autoBrakeMode = SimVar.GetSimVarValue("L:XMLVAR_Autobrakes_Level", "Number");
 
             if (autoBrakeMode === 0) {
