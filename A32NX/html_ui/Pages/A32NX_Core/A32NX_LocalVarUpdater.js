@@ -107,10 +107,20 @@ class A32NX_LocalVarUpdater {
 
     _condTrimOutletSelector(_compartment) {
         // Uses outlet temperature of trim air valves to generate the cabin temperature
-        const cabinTemp = SimVar.GetSimVarValue("L:A32NX_" + _compartment + "_TRIM_TEMP", "celsius");
-        // Dämpfung
+        const currentCabinTemp = SimVar.GetSimVarValue("L:A32NX_" + _compartment + "_TEMP", "celsius");
+        const trimTemp = SimVar.GetSimVarValue("L:A32NX_" + _compartment + "_TRIM_TEMP", "celsius");
+
+        const deltaTemp = trimTemp - currentCabinTemp;
+
+        // variation depends on packflow
+        const cabinTempVariationSpeed = 0.0001 * (SimVar.GetSimVarValue("L:A32NX_KNOB_OVHD_AIRCOND_PACKFLOW_Position", "Position(0-2)") + 1);
+
+        const cabinTemp = currentCabinTemp + deltaTemp * cabinTempVariationSpeed;
+
         return cabinTemp;
     }
+
+    // P: let currentPackFlow = ;
 
     _flapsInMotionSelector() {
         const currentFlapsPosition = SimVar.GetSimVarValue("TRAILING EDGE FLAPS LEFT PERCENT", "percent");
