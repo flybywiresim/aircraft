@@ -364,32 +364,33 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             } else {
                 tmp = wpt.legAltitude1;
             }
-            if (wpt.legAltitudeDescription !== 0) {
-                if (wpt.legAltitudeDescription === 4) {
-                    if (type === 3) {
-                        if (this.altLock < wpt.legAltitude2) {
-                            return wpt.legAltitude2;
-                        }
-                        return 0;
-                    } else {
+            if (wpt.legAltitudeDescription === 0) {
+                continue;
+            }
+            if (wpt.legAltitudeDescription === 4) {
+                if (type === 3) {
+                    if (this.altLock < wpt.legAltitude2) {
+                        return wpt.legAltitude2;
+                    }
+                    return 0;
+                } else {
+                    if (this.altLock > wpt.legAltitude1) {
+                        return wpt.legAltitude1;
+                    }
+                    return 0;
+                }
+            } else {
+                if (wpt.legAltitudeDescription === 1 || wpt.legAltitudeDescription === type) {
+                    if (type === 3) { // constraint below
                         if (this.altLock > wpt.legAltitude1) {
                             return wpt.legAltitude1;
                         }
                         return 0;
-                    }
-                } else {
-                    if (wpt.legAltitudeDescription === 1 || wpt.legAltitudeDescription === type) {
-                        if (type === 3) { // constraint below
-                            if (this.altLock > wpt.legAltitude1) {
-                                return wpt.legAltitude1;
-                            }
-                            return 0;
-                        } else { // constraint above
-                            if (this.altLock < wpt.legAltitude1) {
-                                return wpt.legAltitude1;
-                            }
-                            return 0;
+                    } else { // constraint above
+                        if (this.altLock < wpt.legAltitude1) {
+                            return wpt.legAltitude1;
                         }
+                        return 0;
                     }
                 }
             }
