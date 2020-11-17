@@ -84,7 +84,7 @@ var A320_Neo_LowerECAM_Fuel;
             this.isInMetric = BaseAirliners.unitIsMetric(Aircraft.A320_NEO);
         }
         update(_deltaTime) {
-            if (!this.isInitialised) {
+            if (!this.isInitialised || !A320_Neo_EICAS.isOnBottomScreen()) {
                 return;
             }
             let factor = this.gallonToPounds;
