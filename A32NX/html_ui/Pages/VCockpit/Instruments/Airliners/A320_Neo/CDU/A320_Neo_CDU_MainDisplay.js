@@ -325,16 +325,15 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
 
     tryUpdateAltitudeConstraint(force = false) {
         if (this.flightPlanManager.getIsDirectTo()) {
-            return this.constraintAlt = 0;
+            this.constraintAlt = 0;
         }
         const activeWptIdx = this.flightPlanManager.getActiveWaypointIndex();
         const altLock = Simplane.getAutoPilotSelectedAltitudeLockValue("feet");
         if (force || activeWptIdx !== this.activeWptIdx || altLock !== this.altLock) {
             this.activeWptIdx = activeWptIdx;
             this.altLock = altLock;
-            return this.constraintAlt = this.getAltitudeConstraint();
+            this.constraintAlt = this.getAltitudeConstraint();
         }
-        return this.constraintAlt;
     }
 
     getAltitudeConstraint() {
@@ -372,12 +371,29 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         return 0;
     }
 
+    getSpeedConstraint(raw = true) {
+        const wpt = this.flightPlanManager.getActiveWaypoint();
+        if (!wpt.speedConstraint) {
+            return Infinity;
+        }
+        if (raw) {
+            return wpt.speedConstraint;
+        }
+        const diff = Simplane.getIndicatedSpeed() - wpt.speedConstraint + 5;
+        if (diff < wpt.distanceInFP) {
+            return Infinity;
+        }
+        return wpt.speedConstraint;
+    }
+
     getClbManagedSpeed() {
         let maxSpeed = Infinity;
         if (isFinite(this.v2Speed)) {
             const altitude = Simplane.getAltitude();
             if (altitude < this.thrustReductionAltitude) {
                 maxSpeed = this.v2Speed + 50;
+            } else {
+                maxSpeed = this.getSpeedConstraint();
             }
         }
         let dCI = this.costIndex / 999;
@@ -939,6 +955,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             }
             SimVar.SetSimVarValue("SIMVAR_AUTOPILOT_AIRSPEED_MIN_CALCULATED", "knots", Simplane.getStallProtectionMinSpeed());
             SimVar.SetSimVarValue("SIMVAR_AUTOPILOT_AIRSPEED_MAX_CALCULATED", "knots", Simplane.getMaxSpeed(Aircraft.A320_NEO));
+            this.tryUpdateAltitudeConstraint();
             if (this.isAltitudeManaged()) {
                 const prevWaypoint = this.flightPlanManager.getPreviousActiveWaypoint();
                 const nextWaypoint = this.flightPlanManager.getActiveWaypoint();
@@ -977,7 +994,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                     } else {
                         SimVar.SetSimVarValue("L:AIRLINER_FMS_SHOW_TOP_DSCNT", "number", 0);
                     }
-                    if (this.tryUpdateAltitudeConstraint()) {
+                    if (this.constraintAlt) {
                         SimVar.SetSimVarValue("L:A32NX_AP_CSTN_ALT", "feet", this.constraintAlt);
                         Coherent.call("AP_ALT_VAR_SET_ENGLISH", 2, this.constraintAlt, this._forceNextAltitudeUpdate);
                         this._forceNextAltitudeUpdate = false;

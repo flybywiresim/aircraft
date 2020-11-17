@@ -1388,7 +1388,7 @@ class FMCMainDisplay extends BaseAirliners {
         if (SimVar.GetSimVarValue("PLANE ALTITUDE", "feet") < 10000) {
             speed = Math.min(speed, 250);
         }
-        return speed;
+        return Math.min(speed, this.getSpeedConstraint());
     }
 
     getCrzManagedSpeed() {
@@ -1398,7 +1398,7 @@ class FMCMainDisplay extends BaseAirliners {
         if (SimVar.GetSimVarValue("PLANE ALTITUDE", "feet") < 10000) {
             speed = Math.min(speed, 250);
         }
-        return speed;
+        return Math.min(speed, this.getSpeedConstraint(false));
     }
 
     getDesManagedSpeed() {
@@ -1411,7 +1411,7 @@ class FMCMainDisplay extends BaseAirliners {
         if (SimVar.GetSimVarValue("PLANE ALTITUDE", "feet") < 10000) {
             speed = Math.min(speed, 250);
         }
-        return speed;
+        return Math.min(speed, this.getSpeedConstraint(false));
     }
 
     getFlapApproachSpeed(useCurrentWeight = true) {
