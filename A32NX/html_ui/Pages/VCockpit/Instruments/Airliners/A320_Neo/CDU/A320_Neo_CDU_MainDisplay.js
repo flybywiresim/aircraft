@@ -350,11 +350,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             }
             // Ensure constraint waypoint after TOD is not a constraint for climb phase
             if (tmp) {
-                if (isFinite(wpt.legAltitude2)) {
-                    if (type === 3 && (wpt.legAltitude1 > wpt.legAltitude2 || wpt.legAltitude1 > tmp)) {
-                        return 0;
-                    }
-                } else if (type === 3 && wpt.legAltitude1 > tmp) {
+                if (type === 3 && (wpt.legAltitude1 < tmp || (isFinite(wpt.legAltitude2) && wpt.legAltitude2 < tmp))) {
                     return 0;
                 }
             } else {
