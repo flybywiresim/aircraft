@@ -93,8 +93,15 @@ class A32NX_LocalVarUpdater {
     _condTempSelector(_identifier) {
         // Temporary code until packs code is written and implemented
         // Uses position of AIR COND knobs to generate the trim air temperature
-        const airconKnobValue = SimVar.GetSimVarValue("L:A320_Neo_AIRCOND_LVL_" + _identifier, "Position(0-100)");
-        const trimTemp = (0.12 * airconKnobValue) + 18; // Map from knob range 0-100 to 18-30 degrees C
+        let trimTemp = null;
+
+        if (SimVar.GetSimVarValue("L:A32NX_AIRCOND_HOTAIR_TOGGLE", "Bool")) {
+            const airconKnobValue = SimVar.GetSimVarValue("L:A320_Neo_AIRCOND_LVL_" + _identifier, "Position(0-100)");
+            trimTemp = (0.12 * airconKnobValue) + 18; // Map from knob range 0-100 to 18-30 degrees C
+        } else {
+            trimTemp = 18; // TODO replace placeholder with pack out temperature
+        }
+
         return trimTemp;
     }
 
