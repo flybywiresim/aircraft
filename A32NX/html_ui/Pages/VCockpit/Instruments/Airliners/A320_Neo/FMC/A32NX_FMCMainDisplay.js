@@ -556,8 +556,8 @@ class FMCMainDisplay extends BaseAirliners {
 
     /**
      * Any tropopause altitude up to 60,000 ft is able to be entered
-     * Format: NNNN or NNNNN Leading 0’s must be included
-     * Entry is rounded to the nearest 10 ft
+     * @param {string | number} tropo Format: NNNN or NNNNN Leading 0’s must be included. Entry is rounded to the nearest 10 ft
+     * @return {boolean} Whether tropopause could be set or not
      */
     tryUpdateTropo(tropo) {
         const _tropo = typeof tropo === 'number' ? tropo.toString() : tropo;

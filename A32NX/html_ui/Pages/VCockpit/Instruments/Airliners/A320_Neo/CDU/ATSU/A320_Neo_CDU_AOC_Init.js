@@ -1,3 +1,11 @@
+/**
+ * Value is rounded to 1000 and fixed to 1 decimal
+ * @param {number | string} value
+ */
+function formatWeight(value) {
+    return (+value / 1000).toFixed(1);
+}
+
 class CDUAocInit {
     static ShowPage(mcdu) {
         mcdu.clearDisplay();
@@ -9,23 +17,30 @@ class CDUAocInit {
         let destinationIcao = '____[color]red';
         let ete = "____[color]red";
         let fob = `{small}---.-{end}[color]white`;
+        let requestButton = "INIT DATA REQ*[color]blue";
 
-        const currentFob = formatWeight(SimVar.GetSimVarValue("FUEL TOTAL QUANTITY WEIGHT", "kg"));
+        const currentFob = formatWeight(mcdu.getFOB());
 
-        function formatWeight(value) {
-            return (value / 1000).toFixed(1);
+        function updateView() {
+            if (mcdu.page.Current !== mcdu.page.AOCInit) {
+                return;
+            }
+            CDUAocInit.ShowPage(mcdu);
         }
 
-        if (mcdu.simbrief["originIcao"]) {
-            originIcao = `${mcdu.simbrief["originIcao"]}[color]blue`;
+        if (mcdu.simbrief.sendStatus !== "READY") {
+            requestButton = "INIT DATA REQ[color]blue";
         }
-        if (mcdu.simbrief["destinationIcao"]) {
-            destinationIcao = `${mcdu.simbrief["destinationIcao"]}[color]blue`;
+        if (mcdu.simbrief.originIcao) {
+            originIcao = `${mcdu.simbrief.originIcao}[color]blue`;
         }
-        if (mcdu.simbrief["icao_airline"] || mcdu.simbrief["flight_number"]) {
+        if (mcdu.simbrief.destinationIcao) {
+            destinationIcao = `${mcdu.simbrief.destinationIcao}[color]blue`;
+        }
+        if (mcdu.simbrief.icao_airline || mcdu.simbrief.flight_number) {
             fltNbr = `${mcdu.simbrief.icao_airline}${mcdu.simbrief.flight_number}[color]green`;
         }
-        if (mcdu.simbrief["ete"]) {
+        if (mcdu.simbrief.ete) {
             ete = `${mcdu.simbrief.ete}[color]blue`;
         }
         if (currentFob) {
@@ -43,7 +58,7 @@ class CDUAocInit {
             ["FOB"],
             ["   " + fob],
             ["ETE"],
-            [ete, "INIT DATA REQ*[color]blue"],
+            [ete, requestButton],
             ["", "ADVISORY"],
             ["<AOC MENU"]
         ];
@@ -53,7 +68,7 @@ class CDUAocInit {
             return mcdu.getDelayBasic();
         };
         mcdu.onRightInput[4] = () => {
-            CDUAocInit.getSimbrief(mcdu);
+            getSimBriefOfp(mcdu, updateView);
         };
 
         mcdu.leftInputDelay[5] = () => {
@@ -73,11 +88,7 @@ class CDUAocInit {
         mcdu.page.Current = mcdu.page.AOCInit2;
         mcdu.activeSystem = 'ATSU';
 
-        const currentFob = formatWeight(SimVar.GetSimVarValue("FUEL TOTAL QUANTITY WEIGHT", "kg"));
-
-        function formatWeight(value) {
-            return (value / 1000).toFixed(1);
-        }
+        const currentFob = formatWeight(mcdu.getFOB());
 
         function formatTime(timestamp) {
             var date = new Date(+timestamp * 1000);
@@ -85,22 +96,23 @@ class CDUAocInit {
         }
 
         /**
+            GMT: is the current zulu time
+            FLT time: is wheels up to wheels down... so basically shows 0000 as soon as you are wheels up, counts up and then stops timing once you are weight on wheels again
             Out: is when you set the brakes to off...
             Doors: When the last door closes
-            Off: Take off time
-            On: Landing time
+            Off: remains blank until Take off time
+            On: remains blank until Landing time
             In: remains blank until brakes set to park AND the first door opens
          */
-
         let fob = `{small}---.-{end}[color]white`;
-        let outTime = `----[color]white`;
-        let blockTime = `----[color]white`;
-        let offTime = `----[color]white`;
-        const inTime = `----[color]white`;
-        let onTime = `----[color]white`;
-        const fltTime = `----[color]white`;
         const gmtTime = `----[color]white`;
+        const fltTime = `----[color]white`;
+        let outTime = `----[color]white`;
         const doorsTime = `----[color]white`;
+        let offTime = `----[color]white`;
+        let onTime = `----[color]white`;
+        const inTime = `----[color]white`;
+        let blockTime = `----[color]white`;
 
         if (currentFob) {
             fob = `{small}${currentFob}{end}[color]green`;
@@ -108,36 +120,41 @@ class CDUAocInit {
         if (mcdu.simbrief["outTime"]) {
             outTime = `${formatTime(mcdu.simbrief.outTime)}[color]green`;
         }
-        if (mcdu.simbrief["blockTime"]) {
-            blockTime = `${formatTime(mcdu.simbrief.blockTime)}[color]green`;
-        }
         if (mcdu.simbrief["offTime"]) {
             offTime = `${formatTime(mcdu.simbrief.offTime)}[color]green`;
+        }
+        if (mcdu.simbrief["onTime"]) {
+            onTime = `${formatTime(mcdu.simbrief.onTime)}[color]green`;
         }
         if (mcdu.simbrief["inTime"]) {
             // In: remains blank until brakes set to park AND the first door opens
             // inTime = `${formatTime(mcdu.simbrief.inTime)}[color]green`;
         }
-        if (mcdu.simbrief["onTime"]) {
-            onTime = `${formatTime(mcdu.simbrief.onTime)}[color]green`;
+        if (mcdu.simbrief["blockTime"]) {
+            blockTime = `${formatTime(mcdu.simbrief.blockTime)}[color]green`;
         }
 
-        const display = [
-            ["INIT/REVIEW", "2", "2", "AOC"],
-            [" OUT", "OFF ", "DOORS"],
-            [outTime, offTime, doorsTime],
-            [" ON", "IN ", "GMT"],
-            [onTime, inTime, gmtTime],
-            [" BLK TIME", "FLT TIME "],
-            [blockTime, fltTime],
-            [" FUEL REM", "LDG PILOT "],
-            ["   " + fob, "-------"],
-            ["", ""],
-            ["*AUTOLAND <{small}n{end}>[color]blue"],
-            ["", "ADVISORY "],
-            ["<AOC MENU"]
-        ];
-        mcdu.setTemplate(display);
+        function updateView() {
+            if (mcdu.page.Current !== mcdu.page.AOCInit2) {
+                return;
+            }
+            const display = [
+                ["INIT/REVIEW", "2", "2", "AOC"],
+                [" OUT", "OFF ", "DOORS"],
+                [outTime, offTime, doorsTime],
+                [" ON", "IN ", "GMT"],
+                [onTime, inTime, gmtTime],
+                [" BLK TIME", "FLT TIME "],
+                [blockTime, fltTime],
+                [" FUEL REM", "LDG PILOT "],
+                ["   " + fob, "-------"],
+                ["", ""],
+                ["*AUTOLAND <{small}n{end}>[color]blue"],
+                ["", "ADVISORY "],
+                ["<AOC MENU"]
+            ];
+            mcdu.setTemplate(display);
+        }
 
         mcdu.leftInputDelay[5] = () => {
             return mcdu.getDelaySwitchPage();
@@ -149,73 +166,8 @@ class CDUAocInit {
         mcdu.onPrevPage = () => {
             CDUAocInit.ShowPage(mcdu);
         };
-    }
 
-    static showStatus(mcdu, status) {
-        mcdu.simbrief["sendStatus"] = status;
-
-        if (mcdu.page.Current === mcdu.page.AOCInit) {
-            CDUAocInit.ShowPage(mcdu);
-        }
-        setTimeout(() => {
-            mcdu.simbrief["sendStatus"] = "";
-            if (mcdu.page.Current === mcdu.page.AOCInit) {
-                CDUAocInit.ShowPage(mcdu);
-            }
-        }, 3000);
-    }
-
-    static getSimbrief(mcdu) {
-        const simbriefUsername = NXDataStore.get("CONFIG_SIMBRIEF_USERNAME", "");
-
-        if (!simbriefUsername) {
-            mcdu.showErrorMessage("NO SIMBRIEF USER");
-            throw ("No simbrief username provided");
-        }
-
-        mcdu.simbrief["sendStatus"] = "REQUESTING";
-        if (mcdu.page.Current === mcdu.page.AOCInit) {
-            CDUAocInit.ShowPage(mcdu);
-        }
-
-        return fetch(`http://www.simbrief.com/api/xml.fetcher.php?username=${simbriefUsername}&json=1`)
-            .then(response => response.json())
-            .then(data => {
-                mcdu.simbrief["route"] = data.general.route;
-                mcdu.simbrief["cruiseAltitude"] = data.general.initial_altitude;
-                mcdu.simbrief["originIcao"] = data.origin.icao_code;
-                mcdu.simbrief["destinationIcao"] = data.destination.icao_code;
-                mcdu.simbrief["blockFuel"] = data.fuel.plan_ramp;
-                mcdu.simbrief["payload"] = data.weights.payload;
-                mcdu.simbrief["estZfw"] = data.weights.est_zfw;
-                mcdu.simbrief["costIndex"] = data.general.costindex;
-                mcdu.simbrief["navlog"] = data.navlog.fix;
-                mcdu.simbrief["icao_airline"] = typeof data.general.icao_airline === 'string' ? data.general.icao_airline : "";
-                mcdu.simbrief["flight_number"] = data.general.flight_number;
-                mcdu.simbrief["alternateIcao"] = data.alternate.icao_code;
-                mcdu.simbrief["avgTropopause"] = data.general.avg_tropopause;
-                mcdu.simbrief["ete"] = data.times.est_time_enroute;
-                mcdu.simbrief["blockTime"] = data.times.est_block;
-                mcdu.simbrief["outTime"] = data.times.est_out;
-                mcdu.simbrief["onTime"] = data.times.est_on;
-                mcdu.simbrief["inTime"] = data.times.est_in;
-                mcdu.simbrief["offTime"] = data.times.est_off;
-                mcdu.simbrief["taxiFuel"] = data.fuel.taxi;
-                mcdu.simbrief["tripFuel"] = data.fuel.enroute_burn;
-
-                if (mcdu.page.Current === mcdu.page.AOCInit) {
-                    CDUAocInit.ShowPage(mcdu);
-                }
-                CDUAocInit.showStatus(mcdu, "DONE");
-
-                return mcdu.simbrief;
-            })
-            .catch(_err => {
-                console.log(_err.message);
-                if (mcdu.page.Current === mcdu.page.AOCInit) {
-                    CDUAocInit.showStatus(mcdu, "ERROR");
-                }
-            });
+        updateView();
     }
 
     /**
@@ -254,7 +206,7 @@ class CDUAocInit {
                 await mcdu.tryUpdateAltDestination(alternateIcao);
 
                 setTimeout(async () => {
-                    await CDUAocInit.buildRouteFromNavlog(mcdu);
+                    await CDUAocInit.uplinkRoute(mcdu);
                     mcdu.showErrorMessage(aocActFplnUplink);
                 }, mcdu.getDelayRouteChange());
 
@@ -300,6 +252,7 @@ class CDUAocInit {
     /**
      * TODO:
      * Sometimes the insertWaypointsAlongAirway fails with no aparent reason
+     * It seems that it fails only on the first time you try
      */
     static addWaypointAsync(mcdu, routeIdent, wpIndex, via) {
         if (via) {
@@ -333,7 +286,7 @@ class CDUAocInit {
         }
     }
 
-    static buildRouteFromNavlog(mcdu) {
+    static uplinkRoute(mcdu) {
         const {navlog, route} = mcdu.simbrief;
 
         const routeSplit = route.split(' ');
