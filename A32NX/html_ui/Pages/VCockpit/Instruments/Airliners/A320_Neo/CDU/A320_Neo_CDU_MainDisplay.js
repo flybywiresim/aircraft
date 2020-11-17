@@ -18,7 +18,6 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this._blockFuelEntered = false;
         this._gpsprimaryack = 0;
         this.currentFlightPhase = FlightPhase.FLIGHT_PHASE_PREFLIGHT;
-        this.updateCst = false;
         this.activeWaypointIdx = -1;
         this.constraintAlt = 0;
         this.altLock = 0;
@@ -324,14 +323,13 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         }
     }
 
-    tryUpdateAltitudeConstraint() {
+    tryUpdateAltitudeConstraint(force = false) {
         if (this.flightPlanManager.getIsDirectTo()) {
             return this.constraintAlt = 0;
         }
         const activeWptIdx = this.flightPlanManager.getActiveWaypointIndex();
         const altLock = Simplane.getAutoPilotSelectedAltitudeLockValue("feet");
-        if (this.updateCst || activeWptIdx !== this.activeWptIdx || altLock !== this.altLock) {
-            this.updateCst = false;
+        if (force || activeWptIdx !== this.activeWptIdx || altLock !== this.altLock) {
             this.activeWptIdx = activeWptIdx;
             this.altLock = altLock;
             return this.constraintAlt = this.getAltitudeConstraint();

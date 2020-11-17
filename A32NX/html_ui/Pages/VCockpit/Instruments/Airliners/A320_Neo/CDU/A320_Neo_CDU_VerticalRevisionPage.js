@@ -68,9 +68,9 @@ class CDUVerticalRevisionPage {
                 }, 1000);
             }; // SPD CSTR
             mcdu.onRightInput[2] = (value) => {
-                mcdu.updateCst = true;
                 if (value === FMCMainDisplay.clrValue) {
                     mcdu.removeWaypoint(fpIndex, () => {
+                        mcdu.tryUpdateAltitudeConstraint(true);
                         CDUFlightPlanPage.ShowPage(mcdu, offset);
                     });
                 }
@@ -78,6 +78,7 @@ class CDUVerticalRevisionPage {
                 if (isFinite(value)) {
                     if (value >= 0) {
                         mcdu.flightPlanManager.setWaypointAltitude((value < 1000 ? value * 100 : value) / 3.28084, mcdu.flightPlanManager.indexOfWaypoint(waypoint), () => {
+                            mcdu.tryUpdateAltitudeConstraint(true);
                             this.ShowPage(mcdu, waypoint);
                         });
                     }
