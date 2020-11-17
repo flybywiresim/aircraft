@@ -68,8 +68,6 @@ var A320_Neo_LowerECAM_COND;
             this.fwdCabinTemp.textContent = parseInt(SimVar.GetSimVarValue("L:A32NX_FWD_TEMP", "celsius"));
             this.aftCabinTemp.textContent = parseInt(SimVar.GetSimVarValue("L:A32NX_AFT_TEMP", "celsius"));
 
-            console.log(SimVar.GetSimVarValue("L:A32NX_AFT_TEMP", "celsius"));
-
             // find if the hot air valve is open or not
             var currentHotAirSate = SimVar.GetSimVarValue("L:A32NX_AIRCOND_HOTAIR_TOGGLE", "Bool");
             this.hotAirValveIndication[0].setAttribute("visibility", currentHotAirSate ? 'visible' : 'hidden');
