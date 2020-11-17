@@ -320,6 +320,65 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         }
     }
 
+    getAltitudeConstraint() {
+        const fph = Simplane.getCurrentFlightPhase();
+        const type = fph < FlightPhase.FLIGHT_PHASE_CRUISE || fph === FlightPhase.FLIGHT_PHASE_GOAROUND ? 3 : 2;
+        const selAlt = Simplane.getAutoPilotSelectedAltitudeLockValue("feet");
+        const rte = this.flightPlanManager.getWaypoints(0);
+        let tmp = 0;
+
+        for (let i = this.flightPlanManager.getActiveWaypointIndex() + 1; i < rte.length; i++) {
+            const wpt = rte[i];
+            if (!isFinite(wpt.legAltitude1)) {
+                continue;
+            }
+            // Ensure constraint waypoint after TOD is not a constraint for climb phase
+            if (tmp) {
+                if (isFinite(wpt.legAltitude2)) {
+                    if (type === 3) {
+                        if (wpt.legAltitude1 > wpt.legAltitude2 || wpt.legAltitude1 > tmp) {
+                            break;
+                        }
+                    }
+                } else {
+                    if (type === 3) {
+                        if (wpt.legAltitude1 > tmp) {
+                            break;
+                        }
+                    }
+                }
+            } else {
+                tmp = wpt.legAltitude1;
+            }
+            if (wpt.legAltitudeDescription !== 0) {
+                if (wpt.legAltitudeDescription === 4) {
+                    if (type === 3) {
+                        if (selAlt < wpt.legAltitude2) {
+                            return wpt.legAltitude2.toFixed(0);
+                        }
+                    } else {
+                        if (selAlt > wpt.legAltitude1) {
+                            return wpt.legAltitude1.toFixed(0);
+                        }
+                    }
+                } else {
+                    if (wpt.legAltitudeDescription === 1 || wpt.legAltitudeDescription === type) {
+                        if (type === 3) { // constraint below
+                            if (selAlt > wpt.legAltitude1) {
+                                return wpt.legAltitude1.toFixed(0);
+                            }
+                        } else { // constraint above
+                            if (selAlt < wpt.legAltitude1) {
+                                return wpt.legAltitude1.toFixed(0);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return 0;
+    }
+
     getClbManagedSpeed() {
         let maxSpeed = Infinity;
         if (isFinite(this.v2Speed)) {
@@ -926,12 +985,10 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                         SimVar.SetSimVarValue("L:AIRLINER_FMS_SHOW_TOP_DSCNT", "number", 0);
                     }
                     const selectedAltitude = Simplane.getAutoPilotSelectedAltitudeLockValue("feet");
-                    if (!this.flightPlanManager.getIsDirectTo() &&
-                        isFinite(nextWaypoint.legAltitude1) &&
-                        nextWaypoint.legAltitude1 < 20000 &&
-                        nextWaypoint.legAltitude1 > selectedAltitude) {
-                        SimVar.SetSimVarValue("L:A32NX_AP_CSTN_ALT", "feet", nextWaypoint.legAltitude1);
-                        Coherent.call("AP_ALT_VAR_SET_ENGLISH", 2, nextWaypoint.legAltitude1, this._forceNextAltitudeUpdate);
+                    const constrainedAltitude = this.getAltitudeConstraint();
+                    if (!this.flightPlanManager.getIsDirectTo() && constrainedAltitude) {
+                        SimVar.SetSimVarValue("L:A32NX_AP_CSTN_ALT", "feet", constrainedAltitude);
+                        Coherent.call("AP_ALT_VAR_SET_ENGLISH", 2, constrainedAltitude, this._forceNextAltitudeUpdate);
                         this._forceNextAltitudeUpdate = false;
                         SimVar.SetSimVarValue("L:AP_CURRENT_TARGET_ALTITUDE_IS_CONSTRAINT", "number", 1);
                     } else {
