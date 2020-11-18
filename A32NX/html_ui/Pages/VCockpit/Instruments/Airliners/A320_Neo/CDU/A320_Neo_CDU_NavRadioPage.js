@@ -83,21 +83,31 @@ class CDUNavRadioPage {
             //console.log("--ILS:" + ilsIdent.id + ilsIdent.ident);
             if (mcdu.ilsFrequency > 0){
                 ilsFrequencyCell = "{small}" + ilsIdent.ident + "{end}" + "/" + mcdu.ilsFrequency.toFixed(2);
-                }
-                const runway = mcdu.flightPlanManager.getApproachRunway();
-                if (ilsIdent.ident == "" && mcdu.ilsFrequency > 0) {
-                    ilsFrequencyCell = "[\xa0\xa0]/" + mcdu.ilsFrequency.toFixed(2);
-                }
-                if (runway) {
-                    ilsCourseCell = "{small}" + runway.direction.toFixed(0).padStart(3, "0") + "{end}";
-                    ilsFrequencyCell = "{small}" + ilsIdent.ident + "/" + mcdu.ilsFrequency.toFixed(2) + "{end}";               
-                }
-                if (runway && ilsIdent.ident == "") {
-                    ilsFrequencyCell = "{small}" + "[\xa0\xa0]/" + mcdu.ilsFrequency.toFixed(2) + "{end}";
-                }
-                mcdu.onLeftInput[2] = (value) => {
-                    ilsCourseCell = "{small}" + "TEST" + "{end}";
+            }
+            const runway = mcdu.flightPlanManager.getApproachRunway();
+            if (ilsIdent.ident == "" && mcdu.ilsFrequency > 0) {
+                ilsFrequencyCell = "[\xa0\xa0]/" + mcdu.ilsFrequency.toFixed(2);
+            }
+            if (runway) {
+                ilsCourseCell = "{small}" + runway.direction.toFixed(0).padStart(3, "0") + "{end}";
+                ilsFrequencyCell = "{small}" + ilsIdent.ident + "/" + mcdu.ilsFrequency.toFixed(2) + "{end}";               
+            }
+            if (runway && ilsIdent.ident == "") {
+                ilsFrequencyCell = "{small}" + "[\xa0\xa0]/" + mcdu.ilsFrequency.toFixed(2) + "{end}";
+            }
+            if (runway && mcdu.ilsFrequency == "") {
+                ilsFrequencyCell = "[\xa0\xa0]/[\xa0\xa0.\xa0]";
+                ilsCourseCell = "";
+            }
+            mcdu.onLeftInput[2] = (value) => {
                 if (mcdu.setIlsFrequency(value)) {
+                    CDUNavRadioPage.ShowPage(mcdu);
+                }
+                else if (value === FMCMainDisplay.clrValue) {
+                    mcdu.ilsFrequency = 0;
+                    mcdu.ilsCourse = 0;
+                    ilsFrequencyCell = "[\xa0\xa0]/[\xa0\xa0.\xa0]";
+                    ilsCourseCell = "";
                     CDUNavRadioPage.ShowPage(mcdu);
                 }
             };
