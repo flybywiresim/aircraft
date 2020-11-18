@@ -363,12 +363,12 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     }
 
     tryShowMessage() {
-      if (this.updateTypeIIMessage || !this.isDisplayingErrorMessage && !this.inOut && this.messageQueue.length > 0) {
-          this.updateTypeIIMessage = false;
-          this.isDisplayingErrorMessage = true;
-          this.inOut = this.messageQueue[0][0];
-          this._inOutElement.style.color = this.messageQueue[0][1];
-      }
+        if (this.updateTypeIIMessage || !this.isDisplayingErrorMessage && !this.inOut && this.messageQueue.length > 0) {
+            this.updateTypeIIMessage = false;
+            this.isDisplayingErrorMessage = true;
+            this.inOut = this.messageQueue[0][0];
+            this._inOutElement.style.color = this.messageQueue[0][1];
+        }
     }
 
     /**
@@ -396,7 +396,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         }
         return true;
     }
-      
+
     tryUpdateAltitudeConstraint(force = false) {
         if (this.flightPlanManager.getIsDirectTo()) {
             this.constraintAlt = 0;
