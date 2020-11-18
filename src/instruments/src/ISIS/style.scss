@@ -40,31 +40,81 @@
   width: 100%;
   height: 100%;
   background-color: rgba(13,20,35,1);
-
-  #AltTest {
-    width: 18%;
-  }
-
-  #AttTest {
-    width: 18%;
-  }
-
-  #TmrTest {
-    width: 36%;
-  }
-
   .box {
     fill: #afbb3a;
-    width: 15%;
     height: 7%;
   }
-
   .boxText {
     font-weight: 1800;
     font-size: 38px;
     fill:#1f242d;
   }
+}
 
+#Airspeed {
+  position: absolute;
+  left: 0%;
+  top: 0%;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+}
+
+#AttitudeComponent {
+  position: absolute;
+  height: 80%;
+  bottom: 16%;
+  left: 22%;
+  right: 28%;
+  width: auto;
+  z-index: -1;
+  #HorizonRoot {
+    position: absolute;
+    z-index: -3;
+    width: 100%;
+    height: 100%;
+  }
+  #Pitch {
+    top: -12.9%;
+    left: -7%;
+    width: 120%;
+    height: 120%;
+    position: absolute;
+    transform: scale(1.35);
+    #PitchRoot {
+      position:absolute;
+      z-index: -2;
+    }
+  }
+  #Attitude {
+    top: -8.5%;
+    left: -7%;
+    width: 120%;
+    height: 120%;
+    position: absolute;
+    transform: scale(1.35);
+    #AttitudeRoot {
+      position: absolute;
+      z-index: 0;
+      #AttitudeBank {
+        #TopTriangle {
+          fill: yellow;
+          stroke: yellow;
+          stroke-opacity: 1;
+        }
+        .dashLine {
+          fill: none;
+          stroke: white;
+          stroke-width: 2.5;
+        }
+        #Arc {
+          fill: transparent;
+          stroke: white;
+          stroke-width: 2.5;
+        }
+      }
+    }
+  }
 }
 
 a320-neo-sai {
