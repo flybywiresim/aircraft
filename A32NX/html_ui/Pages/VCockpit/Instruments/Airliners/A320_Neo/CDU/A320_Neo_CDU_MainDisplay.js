@@ -376,11 +376,11 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     }
 
     getSpeedConstraint(raw = true) {
-        const wpt = this.flightPlanManager.getActiveWaypoint();
-        if (!isFinite(wpt.speedConstraint)) {
+        if (this.flightPlanManager.getIsDirectTo()) {
             return Infinity;
         }
-        if (wpt.speedConstraint < 100) {
+        const wpt = this.flightPlanManager.getActiveWaypoint();
+        if (typeof wpt === 'undefined' || !isFinite(wpt.speedConstraint) || wpt.speedConstraint < 100) {
             return Infinity;
         }
         if (raw) {
