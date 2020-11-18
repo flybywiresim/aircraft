@@ -361,10 +361,12 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             if (wpt.legAltitudeDescription === 4) {
                 if (type === 3 && this.altLock > wpt.legAltitude2) {
                     return wpt.legAltitude2;
-                } else if (type < 3 && this.altLock < wpt.legAltitude1) {
+                } else if (type === 2 && this.altLock < wpt.legAltitude1) {
                     return wpt.legAltitude1;
                 }
-            } else if ((wpt.legAltitudeDescription === 1 || wpt.legAltitudeDescription === type) && (type === 3 && this.altLock > wpt.legAltitude1) || (type < 3 && this.altLock < wpt.legAltitude1)) {
+            } else if ((wpt.legAltitudeDescription === 1 || wpt.legAltitudeDescription === type) && (
+                (type === 3 && this.altLock > wpt.legAltitude1) || (type === 2 && this.altLock < wpt.legAltitude1)
+            )) {
                 return wpt.legAltitude1;
             }
         }
