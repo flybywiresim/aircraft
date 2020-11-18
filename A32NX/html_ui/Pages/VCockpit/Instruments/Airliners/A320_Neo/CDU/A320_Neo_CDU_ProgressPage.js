@@ -23,7 +23,7 @@ class CDUProgressPage {
                 } else if (mcdu.cruiseFlightLevel < alt) {
                     mcdu.cruiseFlightLevel = alt.toFixed(0).padStart(3, "0") + "[color]blue";
                     flCrz = "FL" + mcdu.cruiseFlightLevel.toFixed(0).padStart(3, "0") + "[color]blue";
-                    mcdu.showErrorMessage("NEW CRZ ALT-" + mcdu.cruiseFlightLevel * 100);
+                    mcdu.addTypeTwoMessage("NEW CRZ ALT-" + mcdu.cruiseFlightLevel * 100);
                 } else {
                     flCrz = "FL" + mcdu.cruiseFlightLevel.toFixed(0).padStart(3, "0") + "[color]blue";
                 }
@@ -33,7 +33,7 @@ class CDUProgressPage {
                 const fl = Math.floor(Math.max(0, Simplane.getAutoPilotSelectedAltitudeLockValue("feet")) / 100);
                 if (fl > mcdu.cruiseFlightLevel) {
                     mcdu.cruiseFlightLevel = fl;
-                    mcdu.showErrorMessage("NEW CRZ ALT-" + mcdu.cruiseFlightLevel * 100);
+                    mcdu.addTypeTwoMessage("NEW CRZ ALT-" + mcdu.cruiseFlightLevel * 100);
                 }
                 flCrz = "FL" + mcdu.cruiseFlightLevel.toFixed(0).padStart(3, "0") + "[color]blue";
                 break;
