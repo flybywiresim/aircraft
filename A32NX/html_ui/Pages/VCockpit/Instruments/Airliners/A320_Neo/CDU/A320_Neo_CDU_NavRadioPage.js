@@ -32,6 +32,15 @@ class CDUNavRadioPage {
             }
             mcdu.onLeftInput[0] = (value) => {
                 const numValue = parseFloat(value);
+                if (!isFinite(numValue)){
+                    mcdu.getOrSelectWaypointByIdent(value, (waypoint) => {
+                        mcdu.vor1Frequency = waypoint.infos.frequencyMHz;
+                        mcdu.radioNav.setVORActiveFrequency(1, mcdu.vor1Frequency);
+                        mcdu.requestCall(() => {
+                            CDUNavRadioPage.ShowPage(mcdu);
+                        });
+                    })
+                }
                 if (isFinite(numValue) && numValue >= 108 && numValue <= 117.95 && RadioNav.isHz50Compliant(numValue)) {
                     if (numValue != mcdu.vor1Frequency) {
                         mcdu.vor1Course = 0;
@@ -48,7 +57,7 @@ class CDUNavRadioPage {
                                 CDUNavRadioPage.ShowPage(mcdu);
                             });
                         });
-                    }
+                    }               
                 } else if (value === FMCMainDisplay.clrValue) {
                     mcdu.vor1Frequency = 0;
                     mcdu.vor1Course = 0;
@@ -117,6 +126,15 @@ class CDUNavRadioPage {
             }
             mcdu.onLeftInput[4] = (value) => {
                 const numValue = parseFloat(value);
+                if (!isFinite(numValue)){
+                    mcdu.getOrSelectWaypointByIdent(value, (waypoint) => {
+                        mcdu.adf1Frequency = waypoint.infos.frequencyMHz;
+                        mcdu.radioNav.setADFActiveFrequency(1, mcdu.adf1Frequency);
+                        mcdu.requestCall(() => {
+                            CDUNavRadioPage.ShowPage(mcdu);
+                        });
+                    })
+                }                
                 if (isFinite(numValue) && numValue >= 100 && numValue <= 1699.9) {
                     SimVar.SetSimVarValue("K:ADF_COMPLETE_SET", "Frequency ADF BCD32", Avionics.Utils.make_adf_bcd32(numValue * 1000)).then(() => {
                         mcdu.adf1Frequency = numValue;
@@ -149,6 +167,15 @@ class CDUNavRadioPage {
             }
             mcdu.onRightInput[0] = (value) => {
                 const numValue = parseFloat(value);
+                if (!isFinite(numValue)){
+                    mcdu.getOrSelectWaypointByIdent(value, (waypoint) => {
+                        mcdu.vor2Frequency = waypoint.infos.frequencyMHz;
+                        mcdu.radioNav.setVORActiveFrequency(2, mcdu.vor2Frequency);
+                        mcdu.requestCall(() => {
+                            CDUNavRadioPage.ShowPage(mcdu);
+                        });
+                    })
+                }
                 if (isFinite(numValue) && numValue >= 108 && numValue <= 117.95 && RadioNav.isHz50Compliant(numValue)) {
                     if (numValue != mcdu.vor2Frequency) {
                         mcdu.vor2Course = 0;
@@ -205,6 +232,15 @@ class CDUNavRadioPage {
             }
             mcdu.onRightInput[4] = (value) => {
                 const numValue = parseFloat(value);
+                if (!isFinite(numValue)){
+                    mcdu.getOrSelectWaypointByIdent(value, (waypoint) => {
+                        mcdu.adf2Frequency = waypoint.infos.frequencyMHz;
+                        mcdu.radioNav.setADFActiveFrequency(2, mcdu.adf2Frequency);
+                        mcdu.requestCall(() => {
+                            CDUNavRadioPage.ShowPage(mcdu);
+                        });
+                    })
+                } 
                 if (isFinite(numValue) && numValue >= 100 && numValue <= 1699.9) {
                     SimVar.SetSimVarValue("K:ADF2_COMPLETE_SET", "Frequency ADF BCD32", Avionics.Utils.make_adf_bcd32(numValue * 1000)).then(() => {
                         mcdu.adf2Frequency = numValue;
