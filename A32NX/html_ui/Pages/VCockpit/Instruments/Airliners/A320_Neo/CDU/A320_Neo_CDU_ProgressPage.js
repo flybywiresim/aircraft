@@ -10,19 +10,16 @@ class CDUProgressPage {
         let flCrz = "-----";
         switch (Simplane.getCurrentFlightPhase()) {
             case FlightPhase.FLIGHT_PHASE_TAKEOFF: {
-                if (!mcdu._cruiseEntered) {
-                    mcdu.cruiseFlightLevel = Math.floor(Math.max(0, Simplane.getAutoPilotSelectedAltitudeLockValue("feet")) / 100);
+                if (mcdu._cruiseEntered) {
+                    flCrz = "FL" + mcdu.cruiseFlightLevel.toFixed(0).padStart(3, "0") + "[color]blue";
                 }
-                flCrz = "FL" + mcdu.cruiseFlightLevel.toFixed(0).padStart(3, "0") + "[color]blue";
                 break;
             }
             case FlightPhase.FLIGHT_PHASE_CLIMB: {
                 const alt = Simplane.getAutoPilotSelectedAltitudeLockValue("feet") / 100;
                 const altCtn = SimVar.GetSimVarValue("L:A32NX_AP_CSTN_ALT", "feet") / 100;
-                if (SimVar.GetSimVarValue("L:AP_CURRENT_TARGET_ALTITUDE_IS_CONSTRAINT", "number") && alt > altCtn) {
-                    flCrz = "FL" + altCtn.toFixed(0).padStart(3, "0") + "[color]blue";
-                } else if (mcdu.cruiseFlightLevel > alt) {
-                    flCrz = "FL" + alt.toFixed(0).padStart(3, "0") + "[color]blue";
+                if (!mcdu._cruiseEntered) {
+                    flCrz = "FL" + (SimVar.GetSimVarValue("L:AP_CURRENT_TARGET_ALTITUDE_IS_CONSTRAINT", "number") && alt > altCtn ? altCtn.toFixed(0).padStart(3, "0") : alt.toFixed(0).padStart(3, "0")) + "[color]blue";
                 } else if (mcdu.cruiseFlightLevel < alt) {
                     mcdu.cruiseFlightLevel = alt.toFixed(0).padStart(3, "0") + "[color]blue";
                     flCrz = "FL" + mcdu.cruiseFlightLevel.toFixed(0).padStart(3, "0") + "[color]blue";
@@ -41,6 +38,7 @@ class CDUProgressPage {
                 flCrz = "FL" + mcdu.cruiseFlightLevel.toFixed(0).padStart(3, "0") + "[color]blue";
                 break;
             }
+            default: mcdu._cruiseEntered = false;
         }
         mcdu.onLeftInput[0] = (value) => {
             if (mcdu.trySetCruiseFlCheckInput(value)) {
