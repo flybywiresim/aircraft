@@ -337,11 +337,13 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     }
 
     getAltitudeConstraint() {
+        const rte = this.flightPlanManager.getWaypoints(0);
+        if (rte.length === 0) {
+            return 0;
+        }
         const fph = Simplane.getCurrentFlightPhase();
         const type = fph < FlightPhase.FLIGHT_PHASE_CRUISE || fph === FlightPhase.FLIGHT_PHASE_GOAROUND ? 3 : 2;
-        const rte = this.flightPlanManager.getWaypoints(0);
         let tmp = 0;
-
         for (let i = this.activeWptIdx; i < rte.length; i++) {
             const wpt = rte[i];
             if (!isFinite(wpt.legAltitude1)) {
