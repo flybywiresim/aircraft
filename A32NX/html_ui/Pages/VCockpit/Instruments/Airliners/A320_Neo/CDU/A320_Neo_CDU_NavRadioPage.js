@@ -13,8 +13,6 @@ class CDUNavRadioPage {
         let ilsCourseCell = "";
         let adf1FrequencyCell = "";
         let adf1BfoOption = "";
-        const ilsIdent = mcdu.radioNav.getBestILSBeacon();
-        console.log("--K0:" + ilsIdent.ident)
         CDUNavRadioPage._timer = 0;
         mcdu.pageUpdate = () => {
             CDUNavRadioPage._timer++;
@@ -23,9 +21,14 @@ class CDUNavRadioPage {
             }
         };
         if (!radioOn) {
-            vor1FrequencyCell = "[\xa0]/[\xa0\xa0.\xa0]";
+            vor1FrequencyCell = "[\xa0\xa0]/[\xa0\xa0.\xa0]";
+            const vor1Ident = mcdu.radioNav.getVORBeacon(1);
+            //console.log("--VOR1:" + vor1Ident.id + vor1Ident.ident);
             if (mcdu.vor1Frequency > 0) {
-                vor1FrequencyCell = "[\xa0]/" + mcdu.vor1Frequency.toFixed(2);
+                vor1FrequencyCell = "{small}" + "\xa0" + vor1Ident.ident + "{end}" + "/" + mcdu.vor1Frequency.toFixed(2);
+            }
+            if (vor1Ident.ident == "" && mcdu.vor1Frequency > 0) {
+                vor1FrequencyCell = "[\xa0\xa0]/" + mcdu.vor1Frequency.toFixed(2);
             }
             mcdu.onLeftInput[0] = (value) => {
                 const numValue = parseFloat(value);
@@ -74,8 +77,10 @@ class CDUNavRadioPage {
                 }
             };
             ilsFrequencyCell = "[\xa0\xa0]/[\xa0\xa0.\xa0]";
-            ilsCourseCell = "[\xa0]";
-            const approach = mcdu.flightPlanManager.getApproach();       
+            ilsCourseCell = "";
+            const approach = mcdu.flightPlanManager.getApproach();
+            const ilsIdent = mcdu.radioNav.getILSBeacon(1);
+            //console.log("--ILS:" + ilsIdent.id + ilsIdent.ident);
             if (mcdu.ilsFrequency > 0){
                 ilsFrequencyCell = "{small}" + ilsIdent.ident + "{end}" + "/" + mcdu.ilsFrequency.toFixed(2);
                 }
@@ -84,17 +89,27 @@ class CDUNavRadioPage {
                     ilsFrequencyCell = "[\xa0\xa0]/" + mcdu.ilsFrequency.toFixed(2);
                 }
                 if (runway) {
-                    ilsCourseCell = runway.direction.toFixed(0).padStart(3, "0");                   
+                    ilsCourseCell = "{small}" + runway.direction.toFixed(0).padStart(3, "0") + "{end}";
+                    ilsFrequencyCell = "{small}" + ilsIdent.ident + "/" + mcdu.ilsFrequency.toFixed(2) + "{end}";               
                 }
-                        mcdu.onLeftInput[2] = (value) => {
+                if (runway && ilsIdent.ident == "") {
+                    ilsFrequencyCell = "{small}" + "[\xa0\xa0]/" + mcdu.ilsFrequency.toFixed(2) + "{end}";
+                }
+                mcdu.onLeftInput[2] = (value) => {
+                    ilsCourseCell = "{small}" + "TEST" + "{end}";
                 if (mcdu.setIlsFrequency(value)) {
                     CDUNavRadioPage.ShowPage(mcdu);
                 }
             };
-            adf1FrequencyCell = "[\xa0]/[\xa0\xa0.]";
+            adf1FrequencyCell = "[\xa0\xa0]/[\xa0\xa0\xa0.]";
+            const adf1Ident = SimVar.GetSimVarValue(`ADF IDENT:1`, "string");
+            //console.log("--ADF1:" + adf1Ident + adf1Ident.ident);
             if (mcdu.adf1Frequency > 0) {
-                adf1FrequencyCell = "[\xa0]/" + mcdu.adf1Frequency.toFixed(1);
+                adf1FrequencyCell = "{small}" + "\xa0" + adf1Ident + "{end}" + "/" + mcdu.adf1Frequency.toFixed(1);
                 adf1BfoOption = "<ADF1 BFO";
+            }
+            if (adf1Ident == "" && mcdu.adf1Frequency > 0) {
+                adf1FrequencyCell = "[\xa0\xa0]/" + mcdu.adf1Frequency.toFixed(1);
             }
             mcdu.onLeftInput[4] = (value) => {
                 const numValue = parseFloat(value);
@@ -120,9 +135,14 @@ class CDUNavRadioPage {
         let adf2FrequencyCell = "";
         let adf2BfoOption = "";
         if (!radioOn) {
-            vor2FrequencyCell = "[\xa0\xa0.\xa0]/[\xa0]";
+            vor2FrequencyCell = "[\xa0\xa0.\xa0]/[\xa0\xa0]";
+            const vor2Ident = mcdu.radioNav.getVORBeacon(2);
+            //console.log("--VOR2:" + vor2Ident.id);
             if (mcdu.vor2Frequency > 0) {
-                vor2FrequencyCell = mcdu.vor2Frequency.toFixed(2) + "/[\xa0]";
+                vor2FrequencyCell = mcdu.vor2Frequency.toFixed(2) + "/" + "{small}" + vor2Ident.ident + "\xa0" + "{end}";
+            }
+            if (vor2Ident.ident == "" && mcdu.vor2Frequency > 0) {
+                vor2FrequencyCell = mcdu.vor2Frequency.toFixed(2) + "/[\xa0\xa0]";
             }
             mcdu.onRightInput[0] = (value) => {
                 const numValue = parseFloat(value);
@@ -170,10 +190,15 @@ class CDUNavRadioPage {
                     mcdu.showErrorMessage(mcdu.defaultInputErrorMessage);
                 }
             }; 
-            adf2FrequencyCell = "[\xa0\xa0.]/[\xa0]";
+            adf2FrequencyCell = "[\xa0\xa0\xa0.]/[\xa0\xa0]";
+            const adf2Ident = SimVar.GetSimVarValue(`ADF IDENT:2`, "string");
+            //console.log("--ADF2:" + adf2Ident);
             if (mcdu.adf2Frequency > 0) {
-                adf2FrequencyCell = mcdu.adf2Frequency.toFixed(1) + "/[\xa0]";
+                adf2FrequencyCell = mcdu.adf2Frequency.toFixed(1) + "/" + "{small}" + adf2Ident + "\xa0" + "{end}";
                 adf2BfoOption = "ADF2 BFO>";
+            }
+            if (adf2Ident == "" && mcdu.adf2Frequency > 0) {
+                adf2FrequencyCell = mcdu.adf2Frequency.toFixed(1) + "/[\xa0\xa0]";
             }
             mcdu.onRightInput[4] = (value) => {
                 const numValue = parseFloat(value);
@@ -203,7 +228,7 @@ class CDUNavRadioPage {
             ["\xa0LS\xa0/FREQ"],
             [ilsFrequencyCell + "[color]blue"],
             ["CRS"],
-            [ilsCourseCell],
+            [ilsCourseCell + "[color]blue"],
             ["ADF1/FREQ", "FREQ/ADF2"],
             [adf1FrequencyCell + "[color]blue", adf2FrequencyCell + "[color]blue"],
             [""],
