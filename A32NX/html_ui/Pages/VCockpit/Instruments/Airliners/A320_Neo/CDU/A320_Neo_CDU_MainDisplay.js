@@ -1117,8 +1117,13 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                 }
             } else if (this.currentFlightPhase === FlightPhase.FLIGHT_PHASE_APPROACH) {
                 if (this.isAirspeedManaged()) {
-                    const speed = this.getManagedApproachSpeedMcdu();
-                    const vls = this.getVApp();
+                    const ctn = this.getSpeedConstraint(false);
+                    let speed = this.getManagedApproachSpeedMcdu();
+                    let vls = this.getVApp();
+                    if (ctn !== Infinity) {
+                        vls = Math.max(vls, ctn);
+                        speed = Math.max(speed, ctn);
+                    }
                     SimVar.SetSimVarValue("L:A32NX_AP_APPVLS", "knots", vls);
                     this.setAPManagedSpeed(speed, Aircraft.A320_NEO);
                 }
