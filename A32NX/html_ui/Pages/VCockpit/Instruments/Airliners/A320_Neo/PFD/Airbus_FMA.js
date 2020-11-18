@@ -1128,7 +1128,7 @@ var Airbus_FMA;
         }
 
         static GetModeState_GS() {
-
+            SimVar.SetSimVarValue("L:GLIDE_SLOPE_CAPTURED", "bool", 0);
             if (Airbus_FMA.CurrentPlaneState.flightPhase != FlightPhase.FLIGHT_PHASE_GOAROUND) {
                 if (CurrentPlaneState.bothAutoPilotsInactive && Simplane.getAutoPilotApproachType() == 4 && Simplane.getAutoPilotAPPRActive() && SimVar.GetSimVarValue("L:A32NX_AUTOPILOT_LOC_MODE", "bool") != 1) {
                     return Airbus_FMA.MODE_STATE.ENGAGED;
@@ -1145,6 +1145,7 @@ var Airbus_FMA;
                             return Airbus_FMA.MODE_STATE.CAPTURED;
                         }
                         if (Simplane.getAutoPilotGlideslopeActive() && Simplane.getAutoPilotAPPRActive()) {
+                            SimVar.SetSimVarValue("L:GLIDE_SLOPE_CAPTURED", "bool", 1);
                             return Airbus_FMA.MODE_STATE.ENGAGED;
                         }
 

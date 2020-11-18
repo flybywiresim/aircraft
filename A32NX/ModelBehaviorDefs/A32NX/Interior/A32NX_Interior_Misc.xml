@@ -357,7 +357,7 @@
             <Update Frequency="5">
 						(* This Update Ensures that the state of some simvars that are linked to the same button is consistent. *)
 						(A:FUELSYSTEM VALVE SWITCH:#VALVE_ID#, Bool) sp1
-						(A:GENERAL ENG STARTER:#ID#, Bool) l1 != if{ 
+						(A:GENERAL ENG STARTER:#ID#, Bool) l1 != if{
 							(&gt;K:TOGGLE_STARTER#ID#)
 						}
             </Update>
@@ -402,5 +402,30 @@
 
             <TOOLTIPID>Test GPWS / Stop G/S alert</TOOLTIPID>
         </UseTemplate>
+    </Template>
+
+    <Template Name="FBW_Airbus_Sidestick_Priority">
+        <DefaultTemplateParameters>
+            <WWISE_EVENT_1>yoke_push_button_on</WWISE_EVENT_1>
+            <WWISE_EVENT_2>yoke_push_button_off</WWISE_EVENT_2>
+            <ANIM_NAME>#NODE_ID#</ANIM_NAME>
+            <ID>1</ID>
+            <TOOLTIPID>%((A:AUTOPILOT MASTER, Bool))%{if}Disc. Autopilot%{else}Take priority%{end}</TOOLTIPID>
+        </DefaultTemplateParameters>
+
+        <Component ID="#NODE_ID#" Node="#NODE_ID#">
+            <UseTemplate Name="ASOBO_GT_Push_Button_Held">
+                <LEFT_SINGLE_CODE>
+                    (A:AUTOPILOT MASTER, Bool) if{
+                        (&gt;K:AP_MASTER)
+                    } els{
+                        1 (&gt;L:A32NX_PRIORITY_TAKEOVER:#ID#)
+                    }
+                </LEFT_SINGLE_CODE>
+                <LEFT_LEAVE_CODE>
+                    0 (&gt;L:A32NX_PRIORITY_TAKEOVER:#ID#)
+                </LEFT_LEAVE_CODE>
+            </UseTemplate>
+        </Component>
     </Template>
 </ModelBehaviors>
