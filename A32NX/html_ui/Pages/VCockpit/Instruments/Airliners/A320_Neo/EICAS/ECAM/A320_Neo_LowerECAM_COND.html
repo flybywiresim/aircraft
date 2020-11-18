@@ -17,11 +17,11 @@
       
       <!-- Cockpit -->
       <text class="CondZone AlignCenter" x="153" y="120">CKPT</text>
-      <text id="CkptTemp" class="CondValue AlignCenter" x="153" y="152">21</text>
-      <text id="CkptTrimTemp" class="CondValue Smaller AlignCenter" x="153" y="198">21</text>
+      <text id="CkptCabinTemp" class="CondValue AlignCenter" x="153" y="152">-99</text>
+      <text id="CkptTrimTemp" class="CondValue Smaller AlignCenter" x="153" y="198">-99</text>
       <text class="DuctStatus" x="119" y="235">C</text>
       <text class="DuctStatus" x="187" y="235">H</text>
-      <g id="CkptGauge" transform="rotate(-45,155,250)">
+      <g id="CkptGauge" transform="rotate(-50,155,250)">
          <polygon class="st5" points="155,225  159,232 151,232" />
          <line class="st5" x1="155" y1="232" x2="155" y2="250" />  
       </g>
@@ -33,11 +33,11 @@
       
       <!-- Fwd -->
       <text class="CondZone AlignCenter" x="280" y="120">FWD</text>
-      <text id="FwdTemp" class="CondValue AlignCenter" x="280" y="152">21</text>
-      <text id="FwdTrimTemp" class="CondValue Smaller AlignCenter" x="280" y="198">23</text>
+      <text id="FwdCabinTemp" class="CondValue AlignCenter" x="280" y="152">-99</text>
+      <text id="FwdTrimTemp" class="CondValue Smaller AlignCenter" x="280" y="198">-99</text>
       <text class="DuctStatus" x="245" y="235">C</text>
       <text class="DuctStatus" x="315" y="235">H</text>
-      <g id="FwdGauge" transform="rotate(35,280,250)">
+      <g id="FwdGauge" transform="rotate(-50,280,250)">
          <polygon class="st5" points="276,232 280,225 284,232 " />
          <line class="st5" x1="280" y1="232" x2="280" y2="250" />
       </g>
@@ -49,11 +49,11 @@
       
       <!-- Aft -->
       <text class="CondZone AlignCenter" x="420" y="120">AFT</text>
-      <text id="AftTemp" class="CondValue AlignCenter" x="420" y="152">22</text>
-      <text id="AftTrimTemp" class="CondValue Smaller AlignCenter" x="420" y="198">23</text>
+      <text id="AftCabinTemp" class="CondValue AlignCenter" x="420" y="152">-99</text>
+      <text id="AftTrimTemp" class="CondValue Smaller AlignCenter" x="420" y="198">-99</text>
       <text class="DuctStatus" x="385" y="235">C</text>
       <text class="DuctStatus" x="455" y="235">H</text>
-      <g id="AftGauge" transform="rotate(-15,420,250)">
+      <g id="AftGauge" transform="rotate(-50,420,250)">
          <polygon class="st5" points="416,232 420,225 424,232"/>
          <line class="st5" x1="420" y1="232" x2="420" y2="250"/>
       </g>  
@@ -65,7 +65,7 @@
       
       <!-- Valve and tubes -->
       <text class="DuctStatus" x="565" y="296"><tspan x="565" y="295">HOT</tspan><tspan x="565" y="320">AIR</tspan></text>
-      <g id="HotAirValve" class="valve-moving">
+      <g id="HotAirValve">
          <circle class="st5" cx="506" cy="300" r="16"/>
          <line class="st5" x1="490" y1="300" x2="522" y2="300" id="HotAirValveOpen" />
          <line class="st5" x1="506" y1="284" x2="506" y2="316" id="HotAirValveClosed" />

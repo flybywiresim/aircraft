@@ -95,6 +95,7 @@
 1. [PFD] Add altitude indicator alerts @ilyeshammadi (Ilyes Hammadi)
 1. [CDU] The precomputed values for ZFW/ZFWCG are now properly updated when the weight load parameters are changed - @lousybyte (lousybyte)
 1. [ND] Add altitue constraint symbol and fix constraint circle color @ilyeshammadi (Ilyes Hammadi)
+1. [ECAM] Add COND page - @lcalaresu (Luc Calaresu), @highperformancedevelopments
 
 ## 0.4.0
 1. [General] Add CHANGELOG.md - @nathaninnes (Nathan Innes)
