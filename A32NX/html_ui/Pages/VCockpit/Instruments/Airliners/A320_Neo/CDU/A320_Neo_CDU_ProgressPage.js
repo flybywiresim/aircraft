@@ -11,18 +11,18 @@ class CDUProgressPage {
         switch (Simplane.getCurrentFlightPhase()) {
             case FlightPhase.FLIGHT_PHASE_TAKEOFF: {
                 if (!mcdu._cruiseEntered) {
-                    mcdu.cruiseFlightLevel = Math.floor(Math.max(0, Simplane.getAutoPilotDisplayedAltitudeLockValue()) / 100);
+                    mcdu.cruiseFlightLevel = Math.floor(Math.max(0, Simplane.getAutoPilotSelectedAltitudeLockValue("feet")) / 100);
                 }
                 flCrz = "FL" + mcdu.cruiseFlightLevel.toFixed(0).padStart(3, "0") + "[color]blue";
                 break;
             }
             case FlightPhase.FLIGHT_PHASE_CLIMB: {
-                mcdu.cruiseFlightLevel = Math.floor(Math.max(0, Simplane.getAutoPilotDisplayedAltitudeLockValue()) / 100);
+                mcdu.cruiseFlightLevel = Math.floor(Math.max(0, Simplane.getAutoPilotSelectedAltitudeLockValue("feet")) / 100);
                 flCrz = "FL" + mcdu.cruiseFlightLevel.toFixed(0).padStart(3, "0") + "[color]blue";
                 break;
             }
             case FlightPhase.FLIGHT_PHASE_CRUISE: {
-                const fl = Math.floor(Math.max(0, Simplane.getAutoPilotDisplayedAltitudeLockValue()) / 100);
+                const fl = Math.floor(Math.max(0, Simplane.getAutoPilotSelectedAltitudeLockValue("feet")) / 100);
                 if (fl > mcdu.cruiseFlightLevel) {
                     mcdu.cruiseFlightLevel = fl;
                 }
