@@ -454,8 +454,78 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
         this.updateTargetAltitude(indicatedAltitude, selectedAltitude, baroMode);
         this.updateBaroPressure(baroMode);
         this.updateMtrs(indicatedAltitude, selectedAltitude);
+        this._updateAltitudeAlert(indicatedAltitude);
         this.updateFail();
     }
+
+    _pulseYellow() {
+        this.cursorSVGShape.classList.add("pulse-yellow");
+    }
+
+    _flashAmber() {
+        this.cursorSVGShape.classList.add("flash-amber");
+    }
+
+    _removeAltitudeWarnings() {
+        this.cursorSVGShape.classList.remove("pulse-yellow");
+        this.cursorSVGShape.classList.remove("flash-amber");
+    }
+
+    _updateAltitudeAlert(indicatedAltitude) {
+        // Clean any previous animation
+        this._removeAltitudeWarnings();
+
+        // Exit when:
+        // - Landing gear down
+        // - Glide slope captured
+        const landingGearIsDown = !SimVar.GetSimVarValue("IS GEAR RETRACTABLE", "Boolean") || SimVar.GetSimVarValue("GEAR HANDLE POSITION", "Boolean");
+        const glideSlopeCaptured = SimVar.GetSimVarValue("L:GLIDE_SLOPE_CAPTURED", "bool") === 1;
+        if (landingGearIsDown || glideSlopeCaptured) {
+            return;
+        }
+
+        const currentAltitudeConstraint = SimVar.GetSimVarValue("L:A32NX_AP_CSTN_ALT", "feet");
+        // Use the constraint altitude if provided otherwise use selected altitude lock value
+        const targetAltitude = currentAltitudeConstraint && !this.getAutopilotMode() ? currentAltitudeConstraint : Simplane.getAutoPilotSelectedAltitudeLockValue();
+
+        // Exit when selected altitude is being changed
+        if (this.previousTargetAltitude !== targetAltitude) {
+            this.previousTargetAltitude = targetAltitude;
+            this._wasBellowThreshold = false;
+            this._wasAboveThreshold = false;
+            this._wasInRange = false;
+            return;
+        }
+
+        const delta = Math.abs(indicatedAltitude - targetAltitude);
+
+        if (delta < 250) {
+            this._wasBellowThreshold = true;
+            this._wasAboveThreshold = false;
+        }
+
+        if (750 < delta) {
+            this._wasAboveThreshold = true;
+            this._wasBellowThreshold = false;
+        }
+
+        if (250 <= delta && delta <= 750) {
+            this._wasInRange = true;
+        }
+
+        if (250 <= delta) {
+            if (this._wasBellowThreshold) {
+                this._flashAmber();
+            } else if (this._wasAboveThreshold && delta <= 750) {
+                this._pulseYellow();
+            } else if (750 < delta && this._wasInRange) {
+                this._flashAmber();
+            } else if (this._wasInRange) {
+                this._pulseYellow();
+            }
+        }
+    }
+
     updateMtrs(_altitude, _selected) {
         if (this.mtrsVisible) {
             if (this.mtrsSelectedGroup) {
@@ -761,6 +831,7 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
             this.cursorSVGShape.setAttribute("stroke", "yellow");
             this.cursorIntegralsGroup.setAttribute("visibility", "visible");
             this.cursorDecimals.setAttribute("visibility", "visible");
+
             this.verticalLine.setAttribute("stroke", "white");
             // Code to add if visibilty issues with this part
 

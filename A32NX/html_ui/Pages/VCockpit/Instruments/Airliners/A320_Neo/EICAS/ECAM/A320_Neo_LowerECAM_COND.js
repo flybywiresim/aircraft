@@ -58,7 +58,7 @@ var A320_Neo_LowerECAM_COND;
 
         }
         update(_deltaTime) {
-            if (!this.isInitialised) {
+            if (!this.isInitialised || !A320_Neo_EICAS.isOnBottomScreen()) {
                 return;
             }
 
@@ -92,4 +92,3 @@ var A320_Neo_LowerECAM_COND;
     A320_Neo_LowerECAM_COND.Page = Page;
 })(A320_Neo_LowerECAM_COND || (A320_Neo_LowerECAM_COND = {}));
 customElements.define("a320-neo-lower-ecam-cond", A320_Neo_LowerECAM_COND.Page);
-//# sourceMappingURL=A320_Neo_LowerECAM_COND.js.map
