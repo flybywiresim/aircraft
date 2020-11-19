@@ -1,4 +1,4 @@
-class CDUAtcMenu {
+class CDUAtcConnection {
     static ShowPage1(mcdu) {
         mcdu.clearDisplay();
         mcdu.setTemplate([
