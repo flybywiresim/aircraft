@@ -1161,6 +1161,13 @@ Unit : Percent</Comment>
 									<Comment>Engine vibration value	
 Unit : Number</Comment>
 								</GameParameter>
+								<GameParameter Name="SIMVAR_TURB_ENG_N1_DERIVED" ID="{79A066BA-57E2-4045-8509-C0AC2DFF5235}">
+									<PropertyList>
+										<Property Name="InitialValue" Type="Real64" Value="1"/>
+										<Property Name="Max" Type="Real64" Value="1"/>
+										<Property Name="Min" Type="Real64" Value="-1"/>
+									</PropertyList>
+								</GameParameter>
 							</ChildrenList>
 						</Folder>
 						<Folder Name="shared" ID="{85C08B9D-1664-4174-884A-4021BE8B40ED}" ShortID="13425331">
