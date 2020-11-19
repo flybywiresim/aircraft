@@ -28,9 +28,10 @@ class CDUAocOfpData {
         let taxiFuel = "____[color]red";
         let tripFuel = "_____[color]red";
         let estZfw = "__._[color]red";
+        let payload = "_____[color]red";
         let requestButton = "SEND*[color]blue";
 
-        if (mcdu.simbrief.sendStatus !== "READY") {
+        if (mcdu.simbrief.sendStatus !== "READY" && mcdu.simbrief.sendStatus !== "DONE") {
             requestButton = "SEND[color]blue";
         }
 
@@ -58,6 +59,12 @@ class CDUAocOfpData {
             tripFuel = `{${size}}${currentTripFuel}{end}[color]blue`;
         }
 
+        const currentPayload = mcdu.aocWeight.payload || mcdu.simbrief.payload;
+        if (currentPayload) {
+            const size = mcdu.aocWeight.payload ? 'big' : 'small';
+            payload = `{${size}}${currentPayload}{end}[color]blue`;
+        }
+
         const display = [
             ["OFP WEIGHT", undefined, undefined, "AOC"],
             ["BLOCK FUEL", "ZFW"],
@@ -65,10 +72,10 @@ class CDUAocOfpData {
             ["TAXI FUEL", "TRIP FUEL"],
             [taxiFuel, tripFuel],
             ["", "PAYLOAD"],
-            [""],
+            ["", payload],
             ["PAYLOAD"],
-            ["*LOAD[color]blue", "PRINT*[color]blue"],
-            ["REFUEL", "OFP WEIGHT REQUEST[color]blue"],
+            ["*LOAD[color]blue", "PRINT*[color]inop"],
+            ["REFUEL", "OFP REQUEST[color]blue"],
             ["*LOAD[color]blue", requestButton],
             [""],
             ["<AOC MENU"]
@@ -108,6 +115,26 @@ class CDUAocOfpData {
             const enteredFuel = Math.round(+value);
             if (enteredFuel > 0 && enteredFuel <= maxAllowableFuel) {
                 mcdu.aocWeight.taxiFuel = enteredFuel.toString();
+                updateView();
+                return true;
+            }
+            mcdu.showErrorMessage(mcdu.defaultInputErrorMessage);
+            return false;
+        };
+
+        mcdu.rightInputDelay[1] = () => {
+            return mcdu.getDelayBasic();
+        };
+        mcdu.onRightInput[1] = (value) => {
+            if (value === FMCMainDisplay.clrValue) {
+                mcdu.aocWeight.tripFuel = "";
+                updateView();
+                return true;
+            }
+            const maxAllowableFuel = 21273;
+            const enteredFuel = Math.round(+value);
+            if (enteredFuel > 0 && enteredFuel <= maxAllowableFuel) {
+                mcdu.aocWeight.tripFuel = enteredFuel.toString();
                 updateView();
                 return true;
             }
