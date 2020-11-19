@@ -62,10 +62,14 @@ class FMCDataManager {
         waypoints.push(...airports);
         return waypoints;
     }
-    async GetNavaidsByIdent(ident) {
+    async GetVORsByIdent(ident) {
         let navaids = [];
         let vors = await this.GetWaypointsByIdentAndType(ident, "V");
         navaids.push(...vors);
+        return navaids;
+    }
+    async GetNDBsByIdent(ident) {
+        let navaids = [];
         let ndbs = await this.GetWaypointsByIdentAndType(ident, "N");
         navaids.push(...ndbs);
         return navaids;

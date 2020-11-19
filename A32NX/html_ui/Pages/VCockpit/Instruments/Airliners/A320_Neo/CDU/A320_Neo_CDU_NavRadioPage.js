@@ -33,7 +33,7 @@ class CDUNavRadioPage {
             mcdu.onLeftInput[0] = (value) => {
                 const numValue = parseFloat(value);
                 if (!isFinite(numValue)){
-                    mcdu.getOrSelectNavaidsByIdent(value, (navaids) => {
+                    mcdu.getOrSelectVORsByIdent(value, (navaids) => {
                         mcdu.vor1Frequency = navaids.infos.frequencyMHz;
                         mcdu.radioNav.setVORActiveFrequency(1, mcdu.vor1Frequency);
                         mcdu.requestCall(() => {
@@ -118,7 +118,7 @@ class CDUNavRadioPage {
             const adf1Ident = SimVar.GetSimVarValue(`ADF IDENT:1`, "string");
             //console.log("--ADF1:" + adf1Ident + adf1Ident.ident);
             if (mcdu.adf1Frequency > 0) {
-                adf1FrequencyCell = "{small}" + "\xa0" + adf1Ident + "{end}" + "/" + mcdu.adf1Frequency.toFixed(1);
+                adf1FrequencyCell = "{small}" + "\xa0" + adf1Ident.padStart(3, "\xa0") + "{end}" + "/" + mcdu.adf1Frequency.toFixed(1);
                 adf1BfoOption = "<ADF1 BFO";
             }
             if (adf1Ident == "" && mcdu.adf1Frequency > 0) {
@@ -127,7 +127,7 @@ class CDUNavRadioPage {
             mcdu.onLeftInput[4] = (value) => {
                 const numValue = parseFloat(value);
                 if (!isFinite(numValue)){
-                    mcdu.getOrSelectNavaidsByIdent(value, (navaids) => {
+                    mcdu.getOrSelectNDBsByIdent(value, (navaids) => {
                         mcdu.adf1Frequency = navaids.infos.frequencyMHz;
                         mcdu.radioNav.setADFActiveFrequency(1, mcdu.adf1Frequency);
                         mcdu.requestCall(() => {
@@ -168,7 +168,7 @@ class CDUNavRadioPage {
             mcdu.onRightInput[0] = (value) => {
                 const numValue = parseFloat(value);
                 if (!isFinite(numValue)){
-                    mcdu.getOrSelectNavaidsByIdent(value, (navaids) => {
+                    mcdu.getOrSelectVORsByIdent(value, (navaids) => {
                         mcdu.vor2Frequency = navaids.infos.frequencyMHz;
                         mcdu.radioNav.setVORActiveFrequency(2, mcdu.vor2Frequency);
                         mcdu.requestCall(() => {
@@ -224,7 +224,7 @@ class CDUNavRadioPage {
             const adf2Ident = SimVar.GetSimVarValue(`ADF IDENT:2`, "string");
             //console.log("--ADF2:" + adf2Ident);
             if (mcdu.adf2Frequency > 0) {
-                adf2FrequencyCell = mcdu.adf2Frequency.toFixed(1) + "/" + "{small}" + adf2Ident + "\xa0" + "{end}";
+                adf2FrequencyCell = mcdu.adf2Frequency.toFixed(1) + "/" + "{small}" + adf2Ident.padEnd(3, "\xa0") + "\xa0" + "{end}";
                 adf2BfoOption = "ADF2 BFO>";
             }
             if (adf2Ident == "" && mcdu.adf2Frequency > 0) {
@@ -233,7 +233,7 @@ class CDUNavRadioPage {
             mcdu.onRightInput[4] = (value) => {
                 const numValue = parseFloat(value);
                 if (!isFinite(numValue)){
-                    mcdu.getOrSelectNavaidsByIdent(value, (navaids) => {
+                    mcdu.getOrSelectNDBsByIdent(value, (navaids) => {
                         mcdu.adf2Frequency = navaids.infos.frequencyMHz;
                         mcdu.radioNav.setADFActiveFrequency(2, mcdu.adf2Frequency);
                         mcdu.requestCall(() => {
