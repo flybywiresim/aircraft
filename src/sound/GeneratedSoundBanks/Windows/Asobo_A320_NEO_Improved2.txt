@@ -1,0 +1,13 @@
+Event	ID	Name			Wwise Object Path	Notes
+	176856600	Play_Asobo_A320_NEO_cchordloop			\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved\Play_Asobo_A320_NEO_cchordloop	
+	395471396	Play_Asobo_A320_NEO_cchordshort			\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved\Play_Asobo_A320_NEO_cchordshort	
+	3760147643	Play_Asobo_A320_NEO_panelrattle			\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved\Play_Asobo_A320_NEO_panelrattle	
+
+Game Parameter	ID	Name			Wwise Object Path	Notes
+	1649214721	SIMVAR_GROUND_VELOCITY			\simvar\physic\SIMVAR_GROUND_VELOCITY	Speed relative to the earths surface  Unit : Knots
+
+In Memory Audio	ID	Name	Audio source file		Wwise Object Path	Notes	Data Size
+	323412330	Alt_01	H:\sound\.cache\Windows\SFX\Alt_BFD87124.wem		\Actor-Mixer Hierarchy\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved\Alt_01		24689
+	474126494	panelrattle	H:\sound\.cache\Windows\SFX\panelrattle_1D8DE606.wem		\Actor-Mixer Hierarchy\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved\panelrattle		307365
+	550405798	Alt	H:\sound\.cache\Windows\SFX\Alt_1E8ECBBC.wem		\Actor-Mixer Hierarchy\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved\Alt		24621
+
