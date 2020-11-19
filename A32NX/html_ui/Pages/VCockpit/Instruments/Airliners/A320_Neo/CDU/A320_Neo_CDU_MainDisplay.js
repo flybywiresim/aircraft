@@ -375,7 +375,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         if (this.checkForMessage(message)) {
             // Before adding message to queue, check other messages in queue for validity
             for (let i = 0; i < this.messageQueue.length; i++) {
-                if (this.messageQueue[i][3]) {
+                if (this.messageQueue[i][3]()) {
                     this.messageQueue.splice(i, 1);
                 }
             }
