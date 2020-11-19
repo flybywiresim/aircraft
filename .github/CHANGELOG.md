@@ -53,7 +53,6 @@
 1. [CDU] Fix MCDU not loading when starting midair - @ThatRedMelon (Daniel Brown)
 1. [FCU] Clamp the selected altitude between 100 and 49000 - @lars-reimann (Lars Reimann)
 1. [TEXTURES] added Registry plaque and improved Textures - @Pleasure0102 (Pleasure)
-1. [ECAM] Add Autopilot & A/THR Disconnected Warning - @Kimbyeoungjang (김병장#7165)
 1. [GPWS] Add minimums and 100above logic - @linkeleven (linkeleven#2557)
 1. [CDU] Flight plan waypoints distances and times are now properly displayed and updated - @lousybyte (lousybyte)
 1. [CDU] Improved DECEL waypoint data and position - @lousybyte (lousybyte)
@@ -95,6 +94,7 @@
 1. [ECAM] Fix cabin vertical speed unit - @MrMinimal (Tom Langwaldt)
 1. [PFD] Add altitude indicator alerts @ilyeshammadi (Ilyes Hammadi)
 1. [CDU] The precomputed values for ZFW/ZFWCG are now properly updated when the weight load parameters are changed - @lousybyte (lousybyte)
+1. [PFD] Add QNH flashing when reach transition altitude - @Kimbyeoungjang (김병장#7165)
 
 ## 0.4.0
 1. [General] Add CHANGELOG.md - @nathaninnes (Nathan Innes)
