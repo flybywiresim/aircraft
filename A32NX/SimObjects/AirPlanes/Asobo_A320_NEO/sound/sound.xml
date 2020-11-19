@@ -6,6 +6,7 @@
     <WwisePackages>
         <MainPackage Name="Asobo_A320_NEO"/>
         <AdditionalPackage Name="Asobo_A320_NEO_Improved"/>
+        <AdditionalPackage Name="Asobo_A320_NEO_Improved2"/>
     </WwisePackages>
 
     <AcousticParameters>
@@ -81,30 +82,30 @@
                 <Range UpperBound="0" />
             </Requires>
         </Sound>
-        
+
         <Sound WwiseEvent="ventstop" WwiseData="true" SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1">
-        <Range UpperBound="27" />
+            <Range UpperBound="27" />
         </Sound>
 
         <Sound WwiseEvent="AVventloop" WwiseData="true" NodeName="PEDALS_LEFT" FadeOutType="2" FadeOutTime="4" SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1">
             <Range LowerBound="28" />
             <WwiseRTPC SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1" RTPCName="SIMVAR_ELECTRICAL_MAIN_BUS_VOLTAGE_A4_R4" />
         </Sound>
-        
+
         <Sound WwiseData="true" WwiseEvent="apu_bleed_on" FadeOutType="2" FadeOutTime="3" SimVar="BLEED AIR APU" Units="BOOL" Index="0">
-      <Range LowerBound="1.0" />
-	  <Requires SimVar="APU PCT RPM" Units="PERCENT" Index="0">
-        <Range LowerBound="95" />
-	  </Requires>
-    </Sound> 
-	
-	<Sound WwiseData="true" WwiseEvent="ap_disengage_sound" Continuous="false" SimVar="AUTOPILOT MASTER" Units="BOOL" Index="0">
-	  <Range UpperBound="0" />
-	  <Requires SimVar="AUTOPILOT AVAILABLE" Index="0" Units="BOOL">
-        <Range LowerBound="1" />
-      </Requires>
-    </Sound>
-    
+            <Range LowerBound="1.0" />
+            <Requires SimVar="APU PCT RPM" Units="PERCENT" Index="0">
+                <Range LowerBound="95" />
+            </Requires>
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="ap_disengage_sound" Continuous="false" SimVar="AUTOPILOT MASTER" Units="BOOL" Index="0">
+            <Range UpperBound="0" />
+            <Requires SimVar="AUTOPILOT AVAILABLE" Index="0" Units="BOOL">
+                <Range LowerBound="1" />
+            </Requires>
+        </Sound>
+
         <Sound WwiseData="true" WwiseEvent="ap_disengage_sound" Continuous="false" SimVar="AUTOPILOT MASTER" Units="BOOL" Index="0">
             <Range UpperBound="0" />
             <Requires SimVar="AUTOPILOT AVAILABLE" Index="0" Units="BOOL">
@@ -164,10 +165,10 @@
             <Range LowerBound="28" />
             <WwiseRTPC SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1" RTPCName="SIMVAR_ELECTRICAL_MAIN_BUS_VOLTAGE_A4_R4" />
         </Sound>
-        
-        <Sound WwiseEvent="bluesystem" WwiseData="true" NodeName="Engine_PIVOT_RIGHT_2" Continuous="false" SimVar="TURB ENG N2" Units="percent" Index="2" >
-        	<Range LowerBound="47" />
-        	</Sound>
+
+        <Sound WwiseEvent="bluesystem" WwiseData="true" NodeName="Engine_PIVOT_RIGHT_2" Continuous="false" SimVar="TURB ENG N2" Units="percent" Index="2">
+            <Range LowerBound="47" />
+        </Sound>
 
         <!-- ENGINE SOUNDS ======================================================================================== -->
 
@@ -180,7 +181,7 @@
             <Range LowerBound="0" />
             <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Index="2" RTPCName="SIMVAR_TURB_ENG_N1" />
         </Sound>
-        
+
         <Sound WwiseEvent="BuzzL" NodeName="Engine_PIVOT_LEFT_2" WwiseData="true" SimVar="TURB ENG N1" Units="percent" Index="1" Continuous="true">
             <Range LowerBound="1" />
             <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Index="1" RTPCName="SIMVAR_TURB_ENG_N1" />
@@ -190,7 +191,7 @@
             <Range LowerBound="1" />
             <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Index="2" RTPCName="SIMVAR_TURB_ENG_N1" />
         </Sound>
-         
+
         <Sound WwiseEvent="RumbleL" NodeName="Engine_PIVOT_LEFT_2" WwiseData="true" SimVar="TURB ENG N1" Units="percent" Index="1" Continuous="true">
             <Range LowerBound="1" />
             <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Index="1" RTPCName="SIMVAR_TURB_ENG_N1" />
@@ -200,7 +201,7 @@
             <Range LowerBound="1" />
             <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Index="2" RTPCName="SIMVAR_TURB_ENG_N1" />
         </Sound>
-        
+
         <Sound WwiseEvent="RumbleLowL" NodeName="Engine_PIVOT_LEFT_2" WwiseData="true" SimVar="TURB ENG N1" Units="percent" Index="1" Continuous="true">
             <Range LowerBound="1" />
             <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Index="1" RTPCName="SIMVAR_TURB_ENG_N1" />
@@ -210,7 +211,7 @@
             <Range LowerBound="1" />
             <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Index="2" RTPCName="SIMVAR_TURB_ENG_N1" />
         </Sound>
-        
+
         <Sound WwiseEvent="ISpoolL" WwiseData="true" NodeName="Engine_PIVOT_LEFT_2" SimVar="TURB ENG N1" Units="percent" Index="1" ViewPoint="Inside" Continuous="true">
             <Range LowerBound="1" />
             <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Index="1" RTPCName="SIMVAR_TURB_ENG_N1" />
@@ -290,7 +291,7 @@
             <Range LowerBound="1" />
             <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Index="2" RTPCName="SIMVAR_TURB_ENG_N1" />
         </Sound>
- 
+
         <Sound WwiseEvent="RumbleLowL" NodeName="Engine_PIVOT_LEFT_2" WwiseData="true" SimVar="TURB ENG N1" Units="percent" Index="1" Continuous="true">
             <Range LowerBound="1" />
             <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Index="1" RTPCName="SIMVAR_TURB_ENG_N1" />
@@ -324,7 +325,7 @@
             <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Index="2" RTPCName="SIMVAR_TURB_ENG_N1" />
             <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Derived="true" Index="2" RTPCName="SIMVAR_TURB_ENG_N1_DERIVED" />
         </Sound>
-        
+
         <Sound WwiseEvent="ShutL" NodeName="Engine_PIVOT_LEFT_2" FadeOutType="1" FadeOutTime="1" WwiseData="true" SimVar="TURB ENG N2" Units="percent" ViewPoint="Inside" Index="1" Continuous="true">
             <Range LowerBound="1" />
             <WwiseRTPC SimVar="TURB ENG N2" Units="percent" Index="1" RTPCName="SIMVAR_TURB_ENG_N2" />
@@ -414,12 +415,12 @@
             <Range LowerBound="1" />
             <WwiseRTPC SimVar="TURB ENG REVERSE NOZZLE PERCENT" Units="percent" Index="2" RTPCName="SIMVAR_TURB_ENG_REVERSE_NOZZLE_PERCENT" />
         </Sound>
-        
-        <Sound WwiseData="true" WwiseEvent="gearleverclick" Continuous="false" NodeName="PEDALS_LEFT" ViewPoint="Inside" SimVar="GEAR HANDLE POSITION" Units="BOOLEAN" Index="0" >
+
+        <Sound WwiseData="true" WwiseEvent="gearleverclick" Continuous="false" NodeName="PEDALS_LEFT" ViewPoint="Inside" SimVar="GEAR HANDLE POSITION" Units="BOOLEAN" Index="0">
             <Range LowerBound="1" />
         </Sound>
-        
-        <Sound WwiseData="true" WwiseEvent="gearleverclick" Continuous="false" NodeName="PEDALS_LEFT" ViewPoint="Inside" SimVar="GEAR HANDLE POSITION" Units="BOOLEAN" Index="0" >
+
+        <Sound WwiseData="true" WwiseEvent="gearleverclick" Continuous="false" NodeName="PEDALS_LEFT" ViewPoint="Inside" SimVar="GEAR HANDLE POSITION" Units="BOOLEAN" Index="0">
             <Range UpperBound="0" />
         </Sound>
 
@@ -502,7 +503,7 @@
             </Requires>
             <WwiseRTPC SimVar="GROUND VELOCITY" Units="KNOTS" Index="0" RTPCName="SIMVAR_GROUND_VELOCITY" />
         </Sound>
-        
+
         <Sound WwiseData="true" WwiseEvent="panelrattle" ViewPoint="Inside" FadeOutType="2" FadeOutTime="1" SimVar="SIM ON GROUND" Units="BOOLEAN" Index="0">
             <Range LowerBound="1.0" />
             <Requires SimVar="GEAR TOTAL PCT EXTENDED" Units="PERCENT" Index="0">
@@ -836,7 +837,8 @@
 
     <AvionicSounds>
         <Sound WwiseData="true" WwiseEvent="improved_tone_caution" NodeName="PEDALS_LEFT" ViewPoint="Inside"/>
-        <Sound WwiseData="true" WwiseEvent="tone_altitude_alert_default" ViewPoint="Inside"/>
+        <Sound WwiseData="true" WwiseEvent="cchordshort" Continuous="false" NodeName="PEDALS_LEFT" ViewPoint="Inside"/>
+        <Sound WwiseData="true" WwiseEvent="cchordloop" Continuous="true" NodeName="PEDALS_LEFT" ViewPoint="Inside"/>
         <Sound WwiseData="true" WwiseEvent="aural_stall" />
         <Sound WwiseData="true" WwiseEvent="aural_pull_up" />
         <Sound WwiseData="true" WwiseEvent="aural_overspeed" />
