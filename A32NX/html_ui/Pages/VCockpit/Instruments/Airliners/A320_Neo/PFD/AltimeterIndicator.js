@@ -525,7 +525,7 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
             }
         }
     }
-    
+
     _blinkQNH() {
         this.pressureSVGLegend.classList.add("blink");
         this.pressureSVG.classList.add("blink");
