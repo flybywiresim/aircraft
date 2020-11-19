@@ -24,7 +24,7 @@ class CDUAtsuMenu {
         };
 
         mcdu.onLeftInput[0] = () => {
-            CDUAtcMenu.ShowPage(mcdu);
+            CDUAtcMenu.ShowPage1(mcdu);
         };
 
         mcdu.rightInputDelay[1] = () => {
