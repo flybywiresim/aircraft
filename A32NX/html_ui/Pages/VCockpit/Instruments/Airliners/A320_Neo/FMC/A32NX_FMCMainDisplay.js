@@ -959,6 +959,7 @@ class FMCMainDisplay extends BaseAirliners {
     getOrSelectVORsByIdent(ident, callback) {
         this.dataManager.GetVORsByIdent(ident).then((navaids) => {
             if (!navaids || navaids.length === 0) {
+                this.showErrorMessage("NOT IN DATABASE");
                 return callback(undefined);
             }
             if (navaids.length === 1) {
@@ -970,6 +971,7 @@ class FMCMainDisplay extends BaseAirliners {
     getOrSelectNDBsByIdent(ident, callback) {
         this.dataManager.GetNDBsByIdent(ident).then((navaids) => {
             if (!navaids || navaids.length === 0) {
+                this.showErrorMessage("NOT IN DATABASE");
                 return callback(undefined);
             }
             if (navaids.length === 1) {
