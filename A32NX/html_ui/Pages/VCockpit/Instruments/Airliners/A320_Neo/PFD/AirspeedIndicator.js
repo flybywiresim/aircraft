@@ -839,7 +839,7 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
             }
             if (this.graduationVLine) {
                 const factor = 10 / this.graduationScroller.increment;
-                const offsetY = (Math.min((startVal - this.graduationMinValue), 0) / 10) * this.graduationSpacing * (this.nbSecondaryGraduations) * factor;
+                const offsetY = (Math.min((startVal - this.graduationMinValue * 2 + 1), 0) / 10) * this.graduationSpacing * (this.nbSecondaryGraduations) * factor;
                 this.graduationVLine.setAttribute("y1", Math.ceil(startY + offsetY).toString());
                 this.graduationVLine.setAttribute("y2", Math.floor(currentY + offsetY).toString());
             }
