@@ -40,16 +40,32 @@ class SvgConstraintElement extends SvgMapElement {
         return "ICON_CSTR_MAGENTA.svg";
     }
 
+    _getAltitudeDescriptionSymbol() {
+        if (this.source.legAltitudeDescription == 2) {
+            return '+';
+        } else if (this.source.legAltitudeDescription == 3) {
+            return '-';
+        } else {
+            return '';
+        }
+    }
+
     createDraw(map) {
         const fontSize = map.config.waypointLabelFontSize;
         let text = "CSTR";
         let speedText = "";
+        const altitudeDescriptionSymbol = this._getAltitudeDescriptionSymbol();
+
         if (this.source) {
             if (this.source.legAltitude1 > this.transitionAltitude) {
                 text = "FL" + (this.source.legAltitude1 / 100).toFixed(0);
             } else {
                 text = (this.source.legAltitude1 / 10).toFixed(0) + "0";
             }
+        }
+
+        if (altitudeDescriptionSymbol) {
+            text = altitudeDescriptionSymbol + text;
         }
 
         if (this.source.speedConstraint > 10) {

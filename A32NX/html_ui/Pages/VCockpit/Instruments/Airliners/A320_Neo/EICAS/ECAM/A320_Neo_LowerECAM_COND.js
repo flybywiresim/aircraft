@@ -23,8 +23,18 @@ var A320_Neo_LowerECAM_COND;
             }
 
             this.isInitialised = true;
+
             // finding all html element for the display, first element of array is always the open on, the second is the closed one
             this.hotAirValveIndication = [this.querySelector("#HotAirValveOpen"), this.querySelector("#HotAirValveClosed")];
+            this.trimAirValveIndicator = [this.querySelector("#CkptGauge"), this.querySelector("#FwdGauge"), this.querySelector("#AftGauge")];
+
+            this.cockpitTrimTemp = this.querySelector("#CkptTrimTemp");
+            this.fwdTrimTemp = this.querySelector("#FwdTrimTemp");
+            this.aftTrimTemp = this.querySelector("#AftTrimTemp");
+
+            this.cockpitCabinTemp = this.querySelector("#CkptCabinTemp");
+            this.fwdCabinTemp = this.querySelector("#FwdCabinTemp");
+            this.aftCabinTemp = this.querySelector("#AftCabinTemp");
 
             // fan warnings, hidden on initialisation
             this.fanWarningIndication = [this.querySelector("#LeftFanWarning"), this.querySelector("#RightFanWarning")];
@@ -32,29 +42,46 @@ var A320_Neo_LowerECAM_COND;
             this.fanWarningIndication[1].setAttribute("visibility", "hidden");
 
             this.querySelector("#AltnMode").setAttribute("visibility", "hidden");
+
+            // Init Cabin Temp
+            if (Simplane.getIsGrounded()) {
+                SimVar.SetSimVarValue("L:A32NX_CKPT_TEMP", "celsius", Simplane.getAmbientTemperature());
+                SimVar.SetSimVarValue("L:A32NX_FWD_TEMP", "celsius", Simplane.getAmbientTemperature());
+                SimVar.SetSimVarValue("L:A32NX_AFT_TEMP", "celsius", Simplane.getAmbientTemperature());
+            } else {
+                // TODO FIX - not a function error
+                const defaultCabinTemp = 18; // Initial airborne cabin temperature
+                //Simvar.SetSimVarValue("L:A32NX_CKPT_TEMP", "celsius", defaultCabinTemp);
+                //Simvar.SetSimVarValue("L:A32NX_FWD_TEMP", "celsius", defaultCabinTemp);
+                //Simvar.SetSimVarValue("L:A32NX_AFT_TEMP", "celsius", defaultCabinTemp);
+            }
+
         }
         update(_deltaTime) {
-            if (!this.isInitialised) {
+            if (!this.isInitialised || !A320_Neo_EICAS.isOnBottomScreen()) {
                 return;
             }
 
-            // display zone and trim temperature for each zone
-            var zoneTemp = SimVar.GetSimVarValue("L:CKPT_TEMP", "celsius");
-            this.querySelector("#CkptTemp").textContent = parseInt(zoneTemp);
-            var trimTemp = SimVar.GetSimVarValue("L:CKPT_DUCT_TEMP", "celsius");
-            this.querySelector("#CkptTrimTemp").textContent = parseInt(trimTemp);
+            // Disaply trim valve position for each zone
+            const gaugeOffset = -50; //Gauges range is from -50 degree to +50 degree, AC-selector value is 0-100 - added an offset for this
 
-            zoneTemp = SimVar.GetSimVarValue("L:FWD_TEMP", "celsius");
-            this.querySelector("#FwdTemp").textContent = parseInt(zoneTemp);
-            trimTemp = SimVar.GetSimVarValue("L:FWD_DUCT_TEMP", "celsius");
-            this.querySelector("#FwdTrimTemp").textContent = parseInt(trimTemp);
+            var airconSelectedTempCockpit = SimVar.GetSimVarValue("L:A320_Neo_AIRCOND_LVL_1", "Position(0-100)");
+            var airconSelectedTempFWD = SimVar.GetSimVarValue("L:A320_Neo_AIRCOND_LVL_2", "Position(0-100)");
+            var airconSelectedTempAFT = SimVar.GetSimVarValue("L:A320_Neo_AIRCOND_LVL_3", "Position(0-100)");
 
-            zoneTemp = SimVar.GetSimVarValue("L:AFT_TEMP", "celsius");
-            this.querySelector("#AftTemp").textContent = parseInt(zoneTemp);
-            trimTemp = SimVar.GetSimVarValue("L:AFT_DUCT_TEMP", "celsius");
-            this.querySelector("#AftTrimTemp").textContent = parseInt(trimTemp);
+            this.trimAirValveIndicator[0].setAttribute("style", "transform-origin: 155px 250px; transform: rotate(" + (gaugeOffset + airconSelectedTempCockpit) + "deg); stroke-width: 4.5px; stroke-linecap: round;");
+            this.trimAirValveIndicator[1].setAttribute("style", "transform-origin: 280px 250px; transform: rotate(" + (gaugeOffset + airconSelectedTempFWD) + "deg); stroke-width: 4.5px; stroke-linecap: round;");
+            this.trimAirValveIndicator[2].setAttribute("style", "transform-origin: 420px 250px; transform: rotate(" + (gaugeOffset + airconSelectedTempAFT) + "deg); stroke-width: 4.5px; stroke-linecap: round;");
 
-            // TODO: disaply trim valve position for each zone
+            // Generate trim outlet values
+            this.cockpitTrimTemp.textContent = parseInt(SimVar.GetSimVarValue("L:A32NX_CKPT_TRIM_TEMP", "celsius"));
+            this.fwdTrimTemp.textContent = parseInt(SimVar.GetSimVarValue("L:A32NX_FWD_TRIM_TEMP", "celsius"));
+            this.aftTrimTemp.textContent = parseInt(SimVar.GetSimVarValue("L:A32NX_AFT_TRIM_TEMP", "celsius"));
+
+            // Display cabin temp
+            this.cockpitCabinTemp.textContent = parseInt(SimVar.GetSimVarValue("L:A32NX_CKPT_TEMP", "celsius"));
+            this.fwdCabinTemp.textContent = parseInt(SimVar.GetSimVarValue("L:A32NX_FWD_TEMP", "celsius"));
+            this.aftCabinTemp.textContent = parseInt(SimVar.GetSimVarValue("L:A32NX_AFT_TEMP", "celsius"));
 
             // find if the hot air valve is open or not
             var currentHotAirSate = SimVar.GetSimVarValue("L:A32NX_AIRCOND_HOTAIR_TOGGLE", "Bool");
@@ -65,4 +92,3 @@ var A320_Neo_LowerECAM_COND;
     A320_Neo_LowerECAM_COND.Page = Page;
 })(A320_Neo_LowerECAM_COND || (A320_Neo_LowerECAM_COND = {}));
 customElements.define("a320-neo-lower-ecam-cond", A320_Neo_LowerECAM_COND.Page);
-//# sourceMappingURL=A320_Neo_LowerECAM_COND.js.map

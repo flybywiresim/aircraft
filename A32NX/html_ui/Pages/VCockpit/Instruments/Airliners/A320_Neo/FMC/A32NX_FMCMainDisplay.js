@@ -624,7 +624,7 @@ class FMCMainDisplay extends BaseAirliners {
         if (isFinite(value) && this.isMinDestFobInRange(value)) {
             this._minDestFobEntered = true;
             if (value < this._minDestFob) {
-                this.showErrorMessage("CHECK MIN DEST FOB");
+                this.addTypeTwoMessage("CHECK MIN DEST FOB");
             }
             this._minDestFob = value;
             return true;
@@ -1169,7 +1169,7 @@ class FMCMainDisplay extends BaseAirliners {
                 this.v1Speed = v;
                 SimVar.SetSimVarValue("L:AIRLINER_V1_SPEED", "Knots", this.v1Speed);
                 if ((v > SimVar.GetSimVarValue("L:AIRLINER_VR_SPEED", "Knots") || v > SimVar.GetSimVarValue("L:AIRLINER_V2_SPEED", "Knots")) && SimVar.GetSimVarValue("L:AIRLINER_VR_SPEED", "Knots") !== -1 && SimVar.GetSimVarValue("L:AIRLINER_V2_SPEED", "Knots") !== -1) {
-                    this.showErrorMessage("V1/VR/V2 DISAGREE", "#ff9a00");
+                    this.addTypeTwoMessage("V1/VR/V2 DISAGREE", "#ff9a00");
                 }
                 return true;
             }
@@ -1191,7 +1191,7 @@ class FMCMainDisplay extends BaseAirliners {
                 this.vRSpeed = v;
                 SimVar.SetSimVarValue("L:AIRLINER_VR_SPEED", "Knots", this.vRSpeed);
                 if ((v < SimVar.GetSimVarValue("L:AIRLINER_V1_SPEED", "Knots") || v > SimVar.GetSimVarValue("L:AIRLINER_V2_SPEED", "Knots")) && SimVar.GetSimVarValue("L:AIRLINER_V1_SPEED", "Knots") !== -1 && SimVar.GetSimVarValue("L:AIRLINER_V2_SPEED", "Knots") !== -1) {
-                    this.showErrorMessage("V1/VR/V2 DISAGREE", "#ff9a00");
+                    this.addTypeTwoMessage("V1/VR/V2 DISAGREE", "#ff9a00");
                 }
                 return true;
             }
@@ -1213,7 +1213,7 @@ class FMCMainDisplay extends BaseAirliners {
                 this.v2Speed = v;
                 SimVar.SetSimVarValue("L:AIRLINER_V2_SPEED", "Knots", this.v2Speed);
                 if ((v < SimVar.GetSimVarValue("L:AIRLINER_V1_SPEED", "Knots") || v < SimVar.GetSimVarValue("L:AIRLINER_VR_SPEED", "Knots")) && SimVar.GetSimVarValue("L:AIRLINER_V1_SPEED", "Knots") !== -1 && SimVar.GetSimVarValue("L:AIRLINER_VR_SPEED", "Knots") !== -1) {
-                    this.showErrorMessage("V1/VR/V2 DISAGREE", "#ff9a00");
+                    this.addTypeTwoMessage("V1/VR/V2 DISAGREE", "#ff9a00");
                 }
                 return true;
             }
@@ -1384,10 +1384,6 @@ class FMCMainDisplay extends BaseAirliners {
 
     getClbManagedSpeed() {
         const dCI = this.costIndex / 999;
-        const flapsHandleIndex = Simplane.getFlapsHandleIndex();
-        if (flapsHandleIndex != 0) {
-            return this.getFlapSpeed();
-        }
         let speed = 220 * (1 - dCI) + 280 * dCI;
         if (SimVar.GetSimVarValue("PLANE ALTITUDE", "feet") < 10000) {
             speed = Math.min(speed, 250);
@@ -2877,6 +2873,7 @@ class FMCMainDisplay extends BaseAirliners {
             } else if (this.inOut === FMCMainDisplay.clrValue) {
                 this.inOut = "";
             } else if (this.isDisplayingErrorMessage) {
+                this.tryRemoveMessage();
                 this.inOut = this.lastUserInput;
                 this._inOutElement.style.color = "#ffffff";
                 this.isDisplayingErrorMessage = false;
@@ -3062,11 +3059,16 @@ class FMCMainDisplay extends BaseAirliners {
         this.initRadioNav(true);
     }
 
-    updateFuelVars() {
+    updateZfwVars() {
         const totalWeight = SimVar.GetSimVarValue("TOTAL WEIGHT", "kilograms") / 1000;
-        this.blockFuel = SimVar.GetSimVarValue("FUEL TOTAL QUANTITY", "gallons") * SimVar.GetSimVarValue("FUEL WEIGHT PER GALLON", "kilograms") / 1000;
-        this.zeroFuelWeight = totalWeight - this.blockFuel;
+        const blockFuel = SimVar.GetSimVarValue("FUEL TOTAL QUANTITY", "gallons") * SimVar.GetSimVarValue("FUEL WEIGHT PER GALLON", "kilograms") / 1000;
+        this.zeroFuelWeight = totalWeight - blockFuel;
         this.zeroFuelWeightMassCenter = SimVar.GetSimVarValue("CG PERCENT", "percent");
+    }
+
+    updateFuelVars() {
+        this.blockFuel = SimVar.GetSimVarValue("FUEL TOTAL QUANTITY", "gallons") * SimVar.GetSimVarValue("FUEL WEIGHT PER GALLON", "kilograms") / 1000;
+        this.updateZfwVars();
     }
 
     updateVSpeeds() {
@@ -3151,8 +3153,10 @@ class FMCMainDisplay extends BaseAirliners {
             } else if (input === "DIV") {
                 this.onDiv();
             } else if (input === "DOT") {
+                this.handlePreviousInputState();
                 this.inOut += ".";
             } else if (input === "PLUSMINUS") {
+                this.handlePreviousInputState();
                 const val = this.inOut;
                 if (val === "") {
                     this.inOut = "-";
@@ -3222,8 +3226,7 @@ class FMCMainDisplay extends BaseAirliners {
         this.pageUpdate = () => {};
         this.refreshPageCallback = undefined;
         if (this.page.Current === this.page.MenuPage) {
-            this.showErrorMessage("");
-            this.isDisplayingErrorMessage = false;
+            this.forceClearScratchpad();
         }
         this.page.Current = this.page.Clear;
         this.tryDeleteTimeout();
