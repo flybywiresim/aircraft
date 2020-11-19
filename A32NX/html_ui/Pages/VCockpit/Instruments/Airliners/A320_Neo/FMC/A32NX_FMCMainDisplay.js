@@ -956,9 +956,19 @@ class FMCMainDisplay extends BaseAirliners {
             return callback(waypoints[0]);           
         });
     }
-
-    getOrSelectNavaidsByIdent(ident, callback) {
-        this.dataManager.GetNavaidsByIdent(ident).then((navaids) => {
+    getOrSelectVORsByIdent(ident, callback) {
+        this.dataManager.GetVORsByIdent(ident).then((navaids) => {
+            if (!navaids || navaids.length === 0) {
+                return callback(undefined);
+            }
+            if (navaids.length === 1) {
+                return callback(navaids[0]);
+            }
+            A320_Neo_CDU_SelectWptPage.ShowPage(this, navaids, callback);
+        });
+    }
+    getOrSelectNDBsByIdent(ident, callback) {
+        this.dataManager.GetNDBsByIdent(ident).then((navaids) => {
             if (!navaids || navaids.length === 0) {
                 return callback(undefined);
             }
