@@ -952,8 +952,8 @@ class FMCMainDisplay extends BaseAirliners {
         this.dataManager.GetWaypointsByIdent(ident).then((waypoints) => {
             if (!waypoints || waypoints.length === 0) {
                 return callback(undefined);
-            } 
-            return callback(waypoints[0]);           
+            }
+            return callback(waypoints[0]);
         });
     }
     getOrSelectVORsByIdent(ident, callback) {
