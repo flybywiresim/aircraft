@@ -203,7 +203,9 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
 
     checkDestData() {
         if (!isFinite(this.perfApprQNH) || !isFinite(this.perfApprTemp) || !isFinite(this.perfApprWindHeading) || !isFinite(this.perfApprWindSpeed)) {
-            this.addTypeTwoMessage("ENTER DEST DATA", "#ffff00");
+            this.addTypeTwoMessage("ENTER DEST DATA", "#ffff00", () => {}, () => {
+                return isFinite(this.perfApprQNH) && isFinite(this.perfApprTemp) && isFinite(this.perfApprWindHeading) && isFinite(this.perfApprWindSpeed);
+            });
         }
     }
 
@@ -364,10 +366,13 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
      * @param message {string} Message to be displayed
      * @param color {string} Color of Message
      * @param f {function} Function gets executed when error message has been cleared
+     * @param c {function} Function that checks for validity of error message
      */
-    addTypeTwoMessage(message, color = "#ffffff", f = () => {}) {
+    addTypeTwoMessage(message, color = "#ffffff", f = () => {}, c = () => {
+        return false;
+    }) {
         if (this.checkForMessage(message, color)) {
-            this.messageQueue.unshift([message, color, f]);
+            this.messageQueue.unshift([message, color, f, c]);
             if (this.messageQueue.length > 5) {
                 this.messageQueue.splice(5, 1);
             }
@@ -377,6 +382,10 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
 
     tryShowMessage(force = false) {
         if (force || !this.isDisplayingErrorMessage && !this.inOut && this.messageQueue.length > 0) {
+            if (this.messageQueue[0][3]()) {
+                this.tryRemoveMessage(this.messageQueue[0][0]);
+                return;
+            }
             if (!this.isDisplayingErrorMessage) {
                 this.lastUserInput = this.inOut;
             }
