@@ -364,6 +364,7 @@ class FMCMainDisplay extends BaseAirliners {
         if (!this.isDisplayingErrorMessage && !this.isDisplayingTypeTwoMessage) {
             this.lastUserInput = "";
         }
+        this.tryShowMessage();
     }
 
     showErrorMessage(message, color = "#ffffff") {
@@ -2883,6 +2884,7 @@ class FMCMainDisplay extends BaseAirliners {
             } else {
                 this.inOut = this.inOut.slice(0, -1);
             }
+            this.tryShowMessage();
         };
         this.cruiseFlightLevel = SimVar.GetGameVarValue("AIRCRAFT CRUISE ALTITUDE", "feet");
         this.cruiseFlightLevel /= 100;

@@ -299,8 +299,6 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this.updateScreenState();
 
         this.updateGPSMessage();
-
-        this.tryShowMessage();
     }
 
     /**
@@ -360,6 +358,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this.lastUserInput = "";
         this.isDisplayingErrorMessage = false;
         this.isDisplayingTypeTwoMessage = false;
+        this.tryShowMessage();
     }
 
     /**
@@ -391,7 +390,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         if (force || !this.isDisplayingErrorMessage && !this.inOut && this.messageQueue.length > 0) {
             if (this.messageQueue[0][3]()) {
                 this.tryRemoveMessage(this.messageQueue[0][0]);
-                return;
+                return this.tryShowMessage();
             }
             if (!this.isDisplayingErrorMessage) {
                 this.isDisplayingTypeTwoMessage = true;
@@ -414,6 +413,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                 break;
             }
         }
+        this.tryShowMessage();
     }
 
     checkForMessage(message) {
