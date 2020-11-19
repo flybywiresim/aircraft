@@ -40,8 +40,7 @@ class CDUNavRadioPage {
                             CDUNavRadioPage.ShowPage(mcdu);
                         });
                     })
-                }
-                if (isFinite(numValue) && numValue >= 108 && numValue <= 117.95 && RadioNav.isHz50Compliant(numValue)) {
+                } else if (isFinite(numValue) && numValue >= 108 && numValue <= 117.95 && RadioNav.isHz50Compliant(numValue)) {
                     if (numValue != mcdu.vor1Frequency) {
                         mcdu.vor1Course = 0;
                     }
@@ -64,7 +63,7 @@ class CDUNavRadioPage {
                     mcdu.radioNav.setVORActiveFrequency(1, 0);
                     CDUNavRadioPage.ShowPage(mcdu);
                 } else {
-                    mcdu.showErrorMessage(mcdu.defaultInputErrorMessage);
+                    mcdu.showErrorMessage("ENTRY OUT OF RANGE");
                 }
             };
             vor1CourseCell = "[\xa0]";
@@ -81,7 +80,7 @@ class CDUNavRadioPage {
                         });
                     });
                 } else {
-                    mcdu.showErrorMessage(mcdu.defaultInputErrorMessage);
+                    mcdu.showErrorMessage("ENTRY OUT OF RANGE");
                 }
             };
 
@@ -147,7 +146,7 @@ class CDUNavRadioPage {
                     mcdu.radioNav.setADFActiveFrequency(1, 0);
                     CDUNavRadioPage.ShowPage(mcdu);
                 } else {
-                    mcdu.showErrorMessage(mcdu.defaultInputErrorMessage);
+                    mcdu.showErrorMessage("ENTRY OUT OF RANGE");
                 }
             };
         }
@@ -200,7 +199,7 @@ class CDUNavRadioPage {
                     vor2FrequencyCell = "[\xa0\xa0.\xa0]/[\xa0]";
                     CDUNavRadioPage.ShowPage(mcdu);
                 } else {
-                    mcdu.showErrorMessage(mcdu.defaultInputErrorMessage);
+                    mcdu.showErrorMessage("ENTRY OUT OF RANGE");
                 }
             };
             vor2CourseCell = "[\xa0]";
@@ -217,7 +216,7 @@ class CDUNavRadioPage {
                         });
                     });
                 } else {
-                    mcdu.showErrorMessage(mcdu.defaultInputErrorMessage);
+                    mcdu.showErrorMessage("ENTRY OUT OF RANGE");
                 }
             }; 
             adf2FrequencyCell = "[\xa0\xa0\xa0.]/[\xa0\xa0]";
@@ -254,7 +253,7 @@ class CDUNavRadioPage {
                     adf2FrequencyCell = "[\xa0\xa0.]/[\xa0]";
                     CDUNavRadioPage.ShowPage(mcdu);
                 } else {
-                    mcdu.showErrorMessage(mcdu.defaultInputErrorMessage);
+                    mcdu.showErrorMessage("ENTRY OUT OF RANGE");
                 }
             };
         }
