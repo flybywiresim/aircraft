@@ -4,23 +4,23 @@ class CDUAtcMenu {
         mcdu.setTemplate([
             ["ATC MENU", "1", "2"],
             [""],
-            ["<LAT REQ", "VERT REQ>"],
+            ["<LAT REQ[color]inop", "VERT REQ>[color]inop"],
             ["", ""],
-            ["<WHEN CAN WE", "OTHER REQ>"],
+            ["<WHEN CAN WE[color]inop", "OTHER REQ>[color]inop"],
             [""],
-            ["", "TEXT>"],
+            ["", "TEXT>[color]inop"],
             [""],
-            ["<MSG RECORD", "REPORTS>"],
+            ["<MSG RECORD[color]inop", "REPORTS>[color]inop"],
             [""],
             ["<CONNECTION", ""],
             ["ATSU DLK"],
-            ["<RETURN", "EMERGENCY>[color]red"]
+            ["<RETURN", "EMERGENCY>[color]inop"]
         ]);
 
-        mcdu.leftInputDelay[5] = () => {
+        mcdu.leftInputDelay[4] = () => {
             return mcdu.getDelaySwitchPage();
         };
-        mcdu.onLeftInput[5] = () => {
+        mcdu.onLeftInput[4] = () => {
             CDUAtcConnection.ShowPage(mcdu);
         };
 
@@ -43,10 +43,10 @@ class CDUAtcMenu {
         mcdu.clearDisplay();
         mcdu.setTemplate([
             ["ATC MENU", "2", "2"],
-            [""],
-            ["<DEPART REQ", "ATIS>"],
+            ["-------ATS", "623------"],
+            ["<DEPART REQ[color]inop", "ATIS>"],
             ["", ""],
-            ["<OCEANIC REQ", ""],
+            ["<OCEANIC REQ[color]inop", ""],
             [""],
             [""],
             [""],
