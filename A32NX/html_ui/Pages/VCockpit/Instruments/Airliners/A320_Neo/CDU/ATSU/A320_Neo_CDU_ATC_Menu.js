@@ -4,17 +4,17 @@ class CDUAtcMenu {
         mcdu.setTemplate([
             ["ATC MENU"],
             [""],
-            ["<LAT REQ", "VET REQ>"],
-            ["", "RECEIVED"],
-            ["<WX REQUEST", "MESSAGES>"],
-            ["", "SENT"],
-            ["<ATIS", "MESSAGES>"],
+            ["<LAT REQ", "VERT REQ>"],
+            ["", ""],
+            ["<WHEN CAN WE", "OTHER REQ>"],
             [""],
-            ["<FUEL[color]inop", "BOARDING>[color]inop"],
+            ["", "TEXT>"],
             [""],
-            ["<PERF/W&B[color]inop", "DIVERSION>[color]inop"],
+            ["<MSG RECORD", "REPORTS"],
+            [""],
+            ["<CONNECTION", ""],
             ["ATSU DLK"],
-            ["<RETURN", "MISC>[color]inop"]
+            ["<RETURN", "EMERGENCY>[color]red"]
         ]);
     }
 }
