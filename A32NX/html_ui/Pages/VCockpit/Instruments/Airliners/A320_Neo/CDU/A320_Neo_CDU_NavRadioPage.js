@@ -23,7 +23,6 @@ class CDUNavRadioPage {
         if (!radioOn) {
             vor1FrequencyCell = "[\xa0\xa0]/[\xa0\xa0.\xa0]";
             const vor1Ident = mcdu.radioNav.getVORBeacon(1);
-            //console.log("--VOR1:" + vor1Ident.id + vor1Ident.ident);
             if (mcdu.vor1Frequency > 0) {
                 vor1FrequencyCell = "{small}" + "\xa0" + vor1Ident.ident + "{end}" + "/" + mcdu.vor1Frequency.toFixed(2);
             }
@@ -88,7 +87,6 @@ class CDUNavRadioPage {
             const approach = mcdu.flightPlanManager.getApproach();
             const ilsIdent = mcdu.radioNav.getILSBeacon(1);
             const runway = mcdu.flightPlanManager.getApproachRunway();
-            //console.log("--ILS:" + ilsIdent.id + ilsIdent.ident + approach.name + mcdu.radioNav.getILSActiveFrequency(1));
             if (mcdu.ilsFrequency != 0) {
                 let ilsIdentStr = "[\xa0\xa0]";
                 if (ilsIdent.ident != "") {
@@ -107,12 +105,8 @@ class CDUNavRadioPage {
                     CDUNavRadioPage.ShowPage(mcdu);
                 }
             };
-
-            // if (runway && approach.name.indexOf("ILS") >= 0 && mcdu.ilsFrequency != 0) {
-
             adf1FrequencyCell = "[\xa0\xa0]/[\xa0\xa0\xa0.]";
             const adf1Ident = SimVar.GetSimVarValue(`ADF IDENT:1`, "string");
-            //console.log("--ADF1:" + adf1Ident + adf1Ident.ident);
             if (mcdu.adf1Frequency > 0) {
                 adf1FrequencyCell = "{small}" + "\xa0" + adf1Ident.padStart(3, "\xa0") + "{end}" + "/" + mcdu.adf1Frequency.toFixed(1);
                 adf1BfoOption = "<ADF1 BFO";
@@ -153,7 +147,6 @@ class CDUNavRadioPage {
         if (!radioOn) {
             vor2FrequencyCell = "[\xa0\xa0.\xa0]/[\xa0\xa0]";
             const vor2Ident = mcdu.radioNav.getVORBeacon(2);
-            //console.log("--VOR2:" + vor2Ident.id);
             if (mcdu.vor2Frequency > 0) {
                 vor2FrequencyCell = mcdu.vor2Frequency.toFixed(2) + "/" + "{small}" + vor2Ident.ident + "\xa0" + "{end}";
             }
@@ -216,7 +209,6 @@ class CDUNavRadioPage {
             };
             adf2FrequencyCell = "[\xa0\xa0\xa0.]/[\xa0\xa0]";
             const adf2Ident = SimVar.GetSimVarValue(`ADF IDENT:2`, "string");
-            //console.log("--ADF2:" + adf2Ident);
             if (mcdu.adf2Frequency > 0) {
                 adf2FrequencyCell = mcdu.adf2Frequency.toFixed(1) + "/" + "{small}" + adf2Ident.padEnd(3, "\xa0") + "\xa0" + "{end}";
                 adf2BfoOption = "ADF2 BFO>";
