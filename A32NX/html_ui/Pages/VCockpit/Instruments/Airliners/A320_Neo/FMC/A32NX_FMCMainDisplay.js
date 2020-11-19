@@ -17,6 +17,7 @@ class FMCMainDisplay extends BaseAirliners {
         this.costIndex = 0;
         this.lastUserInput = "";
         this.isDisplayingErrorMessage = false;
+        this.isDisplayingTypeTwoMessage = false;
         this.maxCruiseFL = 390;
         this.routeIndex = 0;
         this.coRoute = "";
@@ -349,7 +350,7 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     clearUserInput() {
-        if (!this.isDisplayingErrorMessage) {
+        if (!this.isDisplayingErrorMessage && !this.isDisplayingTypeTwoMessage) {
             this.lastUserInput = this.inOut;
             this.inOut = "";
             this._inOutElement.style.color = "#ffffff";
@@ -360,13 +361,13 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     tryClearOldUserInput() {
-        if (!this.isDisplayingErrorMessage) {
+        if (!this.isDisplayingErrorMessage && !this.isDisplayingTypeTwoMessage) {
             this.lastUserInput = "";
         }
     }
 
     showErrorMessage(message, color = "#ffffff") {
-        if (!this.isDisplayingErrorMessage && this.inOut) {
+        if (!this.isDisplayingErrorMessage && !this.isDisplayingTypeTwoMessage && this.inOut) {
             this.lastUserInput = this.inOut;
         }
         this.isDisplayingErrorMessage = true;
@@ -2790,10 +2791,11 @@ class FMCMainDisplay extends BaseAirliners {
         if (this.inOut === FMCMainDisplay.clrValue) {
             this.inOut = "";
         }
-        if (this.isDisplayingErrorMessage) {
+        if (this.isDisplayingErrorMessage || this.isDisplayingTypeTwoMessage) {
             this.inOut = this.lastUserInput;
             this._inOutElement.style.color = "#ffffff";
             this.isDisplayingErrorMessage = false;
+            this.isDisplayingTypeTwoMessage = false;
         }
     }
 
@@ -2872,11 +2874,12 @@ class FMCMainDisplay extends BaseAirliners {
                 this.inOut = FMCMainDisplay.clrValue;
             } else if (this.inOut === FMCMainDisplay.clrValue) {
                 this.inOut = "";
-            } else if (this.isDisplayingErrorMessage) {
+            } else if (this.isDisplayingErrorMessage || this.isDisplayingTypeTwoMessage) {
                 this.tryRemoveMessage();
                 this.inOut = this.lastUserInput;
                 this._inOutElement.style.color = "#ffffff";
                 this.isDisplayingErrorMessage = false;
+                this.isDisplayingTypeTwoMessage = false;
             } else {
                 this.inOut = this.inOut.slice(0, -1);
             }
@@ -3160,7 +3163,7 @@ class FMCMainDisplay extends BaseAirliners {
                 const val = this.inOut;
                 if (val === "") {
                     this.inOut = "-";
-                } else if (val !== FMCMainDisplay.clrValue && !this.isDisplayingErrorMessage) {
+                } else if (val !== FMCMainDisplay.clrValue && (!this.isDisplayingErrorMessage || !this.isDisplayingTypeTwoMessage)) {
                     if (val.slice(-1) === "-") {
                         this.inOut = this.inOut.slice(0, -1) + "+";
                     } else if (val.slice(-1) === "+") {

@@ -359,6 +359,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this.inOut = "";
         this.lastUserInput = "";
         this.isDisplayingErrorMessage = false;
+        this.isDisplayingTypeTwoMessage = false;
     }
 
     /**
@@ -393,11 +394,11 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                 return;
             }
             if (!this.isDisplayingErrorMessage) {
+                this.isDisplayingTypeTwoMessage = true;
                 this.lastUserInput = this.inOut;
+                this.inOut = this.messageQueue[0][0];
+                this._inOutElement.style.color = this.messageQueue[0][1];
             }
-            this.isDisplayingErrorMessage = true;
-            this.inOut = this.messageQueue[0][0];
-            this._inOutElement.style.color = this.messageQueue[0][1];
         }
     }
 
