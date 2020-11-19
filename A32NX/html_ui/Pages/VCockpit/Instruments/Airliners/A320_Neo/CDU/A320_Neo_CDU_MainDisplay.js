@@ -371,7 +371,13 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     addTypeTwoMessage(message, color = "#ffffff", f = () => {}, c = () => {
         return false;
     }) {
-        if (this.checkForMessage(message, color)) {
+        if (this.checkForMessage(message)) {
+            // Before adding message to queue, check other messages in queue for validity
+            for (let i = 0; i < this.messageQueue.length; i++) {
+                if (this.messageQueue[i][3]) {
+                    this.messageQueue.splice(i, 1);
+                }
+            }
             this.messageQueue.unshift([message, color, f, c]);
             if (this.messageQueue.length > 5) {
                 this.messageQueue.splice(5, 1);
@@ -409,8 +415,8 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         }
     }
 
-    checkForMessage(message, color) {
-        if (message === "" || color === "") {
+    checkForMessage(message) {
+        if (!message) {
             return false;
         }
         for (let i = 0; i < this.messageQueue.length; i++) {
