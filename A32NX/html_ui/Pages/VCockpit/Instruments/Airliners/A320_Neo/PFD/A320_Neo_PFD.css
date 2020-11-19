@@ -1,4 +1,4 @@
-﻿@import url("/CSS/A32NX_Display_Common.css");
+@import url("/CSS/A32NX_Display_Common.css");
 
 :root {
   --bodyHeightScale: 1;
@@ -473,4 +473,8 @@ a320-neo-pfd-element #Mainframe #InstrumentsContainer #ILS {
   50%, 100% {
     stroke: #ff9a00;
   }
+}
+
+.blink {
+  animation : blinking 1.3s infinite;
 }
