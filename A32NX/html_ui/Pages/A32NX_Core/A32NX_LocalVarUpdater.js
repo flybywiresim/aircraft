@@ -3,14 +3,60 @@
 // The selector calculates the new value based on other simvars and some logic.
 // The updater compares the new value from the selector with the current value from the local simvar,
 // and then updates the local simvar if it changed.
+const FLAPS_IN_MOTION_MIN_DELTA = 0.1;
+
 class A32NX_LocalVarUpdater {
     constructor() {
+        // Initial data for deltas
+        this.lastFlapsPosition = SimVar.GetSimVarValue("TRAILING EDGE FLAPS LEFT PERCENT", "percent");
+
         this.updaters = [
             {
                 varName: "L:A32NX_NO_SMOKING_MEMO",
                 type: "Bool",
                 selector: this._noSmokingMemoSelector,
             },
+            {
+                varName: "L:A32NX_CKPT_TRIM_TEMP",
+                type: "celsius",
+                selector: this._condTempSelector,
+                identifier: 1
+            },
+            {
+                varName: "L:A32NX_FWD_TRIM_TEMP",
+                type: "celsius",
+                selector: this._condTempSelector,
+                identifier : 2
+            },
+            {
+                varName: "L:A32NX_AFT_TRIM_TEMP",
+                type: "celsius",
+                selector: this._condTempSelector,
+                identifier: 3
+            },
+            {
+                varName: "L:A32NX_CKPT_TEMP",
+                type: "celsius",
+                selector: this._condTrimOutletSelector,
+                identifier: "CKPT"
+            },
+            {
+                varName: "L:A32NX_FWD_TEMP",
+                type: "celsius",
+                selector: this._condTrimOutletSelector,
+                identifier: "FWD"
+            },
+            {
+                varName: "L:A32NX_AFT_TEMP",
+                type: "celsius",
+                selector: this._condTrimOutletSelector,
+                identifier: "AFT"
+            },
+            {
+                varName: "L:A32NX_FLAPS_IN_MOTION",
+                type: "Bool",
+                selector: this._flapsInMotionSelector.bind(this)
+            }
             // New updaters go here...
         ];
     }
@@ -19,8 +65,8 @@ class A32NX_LocalVarUpdater {
         this.updaters.forEach(this._runUpdater);
     }
 
-    _runUpdater({varName, type, selector}) {
-        const newValue = selector();
+    _runUpdater({varName, type, selector, identifier = null}) {
+        const newValue = selector(identifier);
         const currentValue = SimVar.GetSimVarValue(varName, type);
         if (newValue !== currentValue) {
             SimVar.SetSimVarValue(varName, type, newValue);
@@ -42,6 +88,45 @@ class A32NX_LocalVarUpdater {
         }
 
         return false;
+    }
+
+    _condTempSelector(_identifier) {
+        // Temporary code until packs code is written and implemented
+        // Uses position of AIR COND knobs to generate the trim air temperature
+        let trimTemp = null;
+
+        if (SimVar.GetSimVarValue("L:A32NX_AIRCOND_HOTAIR_TOGGLE", "Bool")) {
+            const airconKnobValue = SimVar.GetSimVarValue("L:A320_Neo_AIRCOND_LVL_" + _identifier, "Position(0-100)");
+            trimTemp = (0.12 * airconKnobValue) + 18; // Map from knob range 0-100 to 18-30 degrees C
+        } else {
+            trimTemp = 18; // TODO replace placeholder with pack out temperature
+        }
+
+        return trimTemp;
+    }
+
+    _condTrimOutletSelector(_compartment) {
+        // Uses outlet temperature of trim air valves to generate the cabin temperature
+        const currentCabinTemp = SimVar.GetSimVarValue("L:A32NX_" + _compartment + "_TEMP", "celsius");
+        const trimTemp = SimVar.GetSimVarValue("L:A32NX_" + _compartment + "_TRIM_TEMP", "celsius");
+
+        const deltaTemp = trimTemp - currentCabinTemp;
+
+        // variation depends on packflow
+        const cabinTempVariationSpeed = 0.0005 * (SimVar.GetSimVarValue("L:A32NX_KNOB_OVHD_AIRCOND_PACKFLOW_Position", "Position(0-2)") + 1);
+
+        const cabinTemp = currentCabinTemp + deltaTemp * cabinTempVariationSpeed;
+
+        return cabinTemp;
+    }
+
+    _flapsInMotionSelector() {
+        const currentFlapsPosition = SimVar.GetSimVarValue("TRAILING EDGE FLAPS LEFT PERCENT", "percent");
+        const lastFlapsPosition = this.lastFlapsPosition;
+
+        this.lastFlapsPosition = SimVar.GetSimVarValue("TRAILING EDGE FLAPS LEFT PERCENT", "percent");
+
+        return Math.abs(lastFlapsPosition - currentFlapsPosition) > FLAPS_IN_MOTION_MIN_DELTA;
     }
 
     // New selectors go here...

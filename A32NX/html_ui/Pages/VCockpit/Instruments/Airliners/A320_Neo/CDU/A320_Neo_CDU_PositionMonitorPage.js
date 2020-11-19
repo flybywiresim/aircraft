@@ -1,6 +1,7 @@
 class CDUPositionMonitorPage {
     static ShowPage(mcdu) {
         mcdu.clearDisplay();
+        mcdu.page.Current = mcdu.page.PositionMonitorPage;
         mcdu.refreshPageCallback = () => {
             CDUPositionMonitorPage.ShowPage(mcdu);
         };
@@ -34,6 +35,10 @@ class CDUPositionMonitorPage {
             ["{FREEZE[color]blue", "NAVAIDS>"]
         ]);
 
+        mcdu.rightInputDelay[5] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
+
         mcdu.onRightInput[5] = () => {
             CDUSelectedNavaids.ShowPage(mcdu);
         };
@@ -43,4 +48,3 @@ class CDUPositionMonitorPage {
         };
     }
 }
-//# sourceMappingURL=A320_Neo_CDU_PositionMonitorPage.js.map

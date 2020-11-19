@@ -110,11 +110,10 @@ class EICASCommonDisplay extends Airliners.EICASTemplateElement {
                 this.satText.textContent = "XX";
                 this.satText.setAttribute("fill", "#E68000");
             } else {
-                this.tatText.setAttribute("fill", "#00E64D");
-                this.satText.setAttribute("fill", "#00E64D");
+                this.tatText.setAttribute("fill", "#00ff00");
+                this.satText.setAttribute("fill", "#00ff00");
             }
         }
     }
 }
 customElements.define("eicas-common-display", EICASCommonDisplay);
-//# sourceMappingURL=EICAS_Common.js.map

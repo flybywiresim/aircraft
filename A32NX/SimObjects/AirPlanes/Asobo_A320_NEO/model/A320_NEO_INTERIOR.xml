@@ -552,22 +552,22 @@
 
         <Component ID="Pedestal_Aft">
             <Component ID="Engines">
-                <UseTemplate Name="ASOBO_ENGINE_Switch_Master_Template">
+                <UseTemplate Name="FBW_ENGINE_Switch_Master_Template">
                     <AIRBUS_TYPE/>
                     <ANIM_NAME>SWITCH_ENGINES_ENG1</ANIM_NAME>
                     <NODE_ID>SWITCH_ENGINES_ENG1</NODE_ID>
                     <ID>1</ID>
-                    <VALVE_ID>6</VALVE_ID>
+                    <VALVE_ID>1</VALVE_ID>
                     <!-- This makes it not light up -->
                     <POTENTIOMETER>9999</POTENTIOMETER>
                 </UseTemplate>
 
-                <UseTemplate Name="ASOBO_ENGINE_Switch_Master_Template">
+                <UseTemplate Name="FBW_ENGINE_Switch_Master_Template">
                     <AIRBUS_TYPE/>
                     <ANIM_NAME>SWITCH_ENGINES_ENG2</ANIM_NAME>
                     <NODE_ID>SWITCH_ENGINES_ENG2</NODE_ID>
                     <ID>2</ID>
-                    <VALVE_ID>7</VALVE_ID>
+                    <VALVE_ID>2</VALVE_ID>
                     <!-- This makes it not light up -->
                     <POTENTIOMETER>9999</POTENTIOMETER>
                 </UseTemplate>
@@ -694,13 +694,15 @@
                 <ANIM_NAME_YOKE_Y>yoke_lever_stick_fore2_aft</ANIM_NAME_YOKE_Y>
             </UseTemplate>
 
-            <UseTemplate Name="ASOBO_HANDLING_Push_AP_Trim_Disc_Template">
+            <UseTemplate Name="FBW_Airbus_Sidestick_Priority">
                 <NODE_ID>PUSH_YOKE_LEFT</NODE_ID>
                 <ANIM_NAME>PUSH_YOKE_LEFT</ANIM_NAME>
+                <ID>1</ID>
             </UseTemplate>
-            <UseTemplate Name="ASOBO_HANDLING_Push_AP_Trim_Disc_Template">
+            <UseTemplate Name="FBW_Airbus_Sidestick_Priority">
                 <NODE_ID>PUSH_YOKE_RIGHT</NODE_ID>
                 <ANIM_NAME>PUSH_YOKE_RIGHT</ANIM_NAME>
+                <ID>2</ID>
             </UseTemplate>
 
             <UseTemplate Name="ASOBO_HANDLING_Steering_Tiller_Template">
@@ -753,6 +755,11 @@
                     <MIN_VALUE>0</MIN_VALUE>
                     <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.LIGHTING_KNOB_L_PFD_DECREASE</ANIMTIP_0>
                     <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.LIGHTING_KNOB_L_PFD_INCREASE</ANIMTIP_1>
+                </UseTemplate>
+
+                <UseTemplate Name="FBW_Airbus_Push_EFIS_GPWS">
+                    <NODE_ID>PUSH_EFIS_CS_GPWS</NODE_ID>
+                    <ANIM_NAME>PUSH_EFIS_CS_GPWS</ANIM_NAME>
                 </UseTemplate>
 
                 <UseTemplate Name="ASOBO_AIRBUS_Push_TERRONND_Template">
@@ -825,6 +832,11 @@
                     <MIN_VALUE>0</MIN_VALUE>
                     <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.LIGHTING_KNOB_R_PFD_DECREASE</ANIMTIP_0>
                     <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.LIGHTING_KNOB_R_PFD_INCREASE</ANIMTIP_1>
+                </UseTemplate>
+
+                <UseTemplate Name="FBW_Airbus_Push_EFIS_GPWS">
+                    <NODE_ID>PUSH_EFIS_FO_GPWS</NODE_ID>
+                    <ANIM_NAME>PUSH_EFIS_FO_GPWS</ANIM_NAME>
                 </UseTemplate>
 
                 <UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
@@ -930,16 +942,6 @@
                 <ANIM_NAME>SWITCH_AUTOBKR_ASKID</ANIM_NAME>
                 <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.ANTISKID_TURN_ON</ANIMTIP_0>
                 <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.ANTISKID_TURN_OFF</ANIMTIP_1>
-            </UseTemplate>
-
-            <UseTemplate Name="A32NX_AIRBUS_Push_EFISGPWS_Template">
-                <NODE_ID>PUSH_EFIS_CS_GPWS</NODE_ID>
-                <ANIM_NAME>PUSH_EFIS_CS_GPWS</ANIM_NAME>
-            </UseTemplate>
-
-            <UseTemplate Name="A32NX_AIRBUS_Push_EFISGPWS_Template">
-                <NODE_ID>PUSH_EFIS_FO_GPWS</NODE_ID>
-                <ANIM_NAME>PUSH_EFIS_FO_GPWS</ANIM_NAME>
             </UseTemplate>
 
             <Component ID="Standby_Indicator">
@@ -1589,7 +1591,7 @@
                 </DefaultTemplateParameters>
                 <UseTemplate Name="FBW_Airbus_Fuel_Crossfeed">
                     <NODE_ID>PUSH_OVHD_FUEL_XFEED</NODE_ID>
-                    <ID>1</ID>
+                    <ID>3</ID>
                     <OFF_TOOLTIP>COCKPIT.TOOLTIPS.FUEL_XFEED_TURN_ON</OFF_TOOLTIP>
                     <ON_TOOLTIP>COCKPIT.TOOLTIPS.FUEL_XFEED_TURN_OFF</ON_TOOLTIP>
                 </UseTemplate>
@@ -2343,35 +2345,35 @@
                 <Component ID="Left_Column">
                     <UseTemplate Name="FBW_Push_Toggle">
                         <NODE_ID>PUSH_OVHD_GPWS_TERR</NODE_ID>
-                        <TOGGLE_SIMVAR>L:PUSH_OVHD_GPWS_TERR</TOGGLE_SIMVAR>
-                        <SEQ1_CODE>(L:PUSH_OVHD_GPWS_TERR, Bool) ! (L:PUSH_OVHD_GPWS_TERR_FAULT, Bool)</SEQ1_CODE>
-                        <TOOLTIPID>(INOP) TERR</TOOLTIPID>
+                        <TOGGLE_SIMVAR>L:A32NX_GPWS_TERR_OFF</TOGGLE_SIMVAR>
+                        <SEQ1_CODE>(L:A32NX_GPWS_TERR_OFF, Bool) ! (L:A32NX_GPWS_TERR_FAULT, Bool)</SEQ1_CODE>
+                        <TOOLTIPID>%((L:A32NX_GPWS_TERR_OFF, Bool))%{if}(Inop.) Turn ON GPWS TERR%{else}(Inop.) Turn OFF GPWS TERR%{end}</TOOLTIPID>
                     </UseTemplate>
                     <UseTemplate Name="FBW_Push_Toggle">
                         <NODE_ID>PUSH_OVHD_GPWS_SYS</NODE_ID>
-                        <TOGGLE_SIMVAR>L:PUSH_OVHD_GPWS_SYS</TOGGLE_SIMVAR>
-                        <SEQ1_CODE>(L:PUSH_OVHD_GPWS_SYS, Bool) ! (L:PUSH_OVHD_GPWS_SYS_FAULT, Bool)</SEQ1_CODE>
-                        <TOOLTIPID>SYS</TOOLTIPID>
+                        <TOGGLE_SIMVAR>L:A32NX_GPWS_SYS_OFF</TOGGLE_SIMVAR>
+                        <SEQ1_CODE>(L:A32NX_GPWS_SYS_OFF, Bool) ! (L:A32NX_GPWS_SYS_FAULT, Bool)</SEQ1_CODE>
+                        <TOOLTIPID>%((L:A32NX_GPWS_SYS_OFF, Bool))%{if}Turn ON GPWS SYS%{else}Turn OFF GPWS SYS%{end}</TOOLTIPID>
                     </UseTemplate>
                     <UseTemplate Name="FBW_Push_Toggle">
                         <NODE_ID>PUSH_OVHD_GPWS_GSMODE</NODE_ID>
-                        <TOGGLE_SIMVAR>L:PUSH_OVHD_GPWS_GSMODE</TOGGLE_SIMVAR>
+                        <TOGGLE_SIMVAR>L:A32NX_GPWS_GS_OFF</TOGGLE_SIMVAR>
                         <DISABLE_SEQ1/>
-                        <TOOLTIPID>(INOP) G/S Mode</TOOLTIPID>
+                        <TOOLTIPID>%((L:A32NX_GPWS_GS_OFF, Bool))%{if}Turn ON GPWS G/S mode%{else}Turn OFF GPWS G/S mode%{end}</TOOLTIPID>
                     </UseTemplate>
                     <UseTemplate Name="FBW_Push_Toggle">
                         <NODE_ID>PUSH_OVHD_GPWS_FLAP</NODE_ID>
                         <PART_ID>GPWS_Flap</PART_ID>
-                        <TOGGLE_SIMVAR>L:PUSH_OVHD_GPWS_FLAP</TOGGLE_SIMVAR>
+                        <TOGGLE_SIMVAR>L:A32NX_GPWS_FLAP_OFF</TOGGLE_SIMVAR>
                         <DISABLE_SEQ1/>
-                        <TOOLTIPID>Flap Mode</TOOLTIPID>
+                        <TOOLTIPID>%((L:A32NX_GPWS_FLAP_OFF, Bool))%{if}Turn ON GPWS flap mode%{else}Turn OFF GPWS flap mode%{end}</TOOLTIPID>
                     </UseTemplate>
                     <UseTemplate Name="FBW_Push_Toggle">
                         <NODE_ID>PUSH_OVHD_GPWS_LDG</NODE_ID>
                         <PART_ID>GPWS_Flap3</PART_ID>
-                        <TOGGLE_SIMVAR>L:PUSH_OVHD_GPWS_LDG</TOGGLE_SIMVAR>
+                        <TOGGLE_SIMVAR>L:A32NX_GPWS_FLAPS3</TOGGLE_SIMVAR>
                         <DISABLE_SEQ1/>
-                        <TOOLTIPID>(INOP) LDG Flaps 3</TOOLTIPID>
+                        <TOOLTIPID>%((L:A32NX_GPWS_FLAPS3, Bool))%{if}Switch landing flaps to FULL%{else}Switch landing flaps to 3%{end}</TOOLTIPID>
                     </UseTemplate>
                     <UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
                         <NODE_ID>PUSH_OVHD_OXYGEN_PASSENGER</NODE_ID>
@@ -2549,6 +2551,8 @@
                 <SEQ1_EMISSIVE_DRIVES_VISIBILITY>False</SEQ1_EMISSIVE_DRIVES_VISIBILITY>
                 <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
                 <DEFAULT_TEMPLATE_EMISSIVE>ASOBO_LIGHTING_Potentiometer_Emissive_Template</DEFAULT_TEMPLATE_EMISSIVE>
+
+                <PLANE_NAME>A32NX</PLANE_NAME>
             </DefaultTemplateParameters>
 
             <UseTemplate Name="ASOBO_AIRLINER_Switch_Baro_Selector_Template">
@@ -2731,20 +2735,12 @@
 
             </UseTemplate>
 
-            <UseTemplate Name="ASOBO_AUTOPILOT_Push_Localizer_Template">
-                <NODE_ID>PUSH_AUTOPILOT_LOC</NODE_ID>
-                <ANIM_NAME>PUSH_AUTOPILOT_LOC</ANIM_NAME>
-                <POTENTIOMETER>84</POTENTIOMETER>
-                <ACTIVE_NODE_ID>PUSH_AUTOPILOT_LOC_SEQ1</ACTIVE_NODE_ID>
-                <EMISSIVE_NODE_ID>PUSH_AUTOPILOT_LOC_SEQ2</EMISSIVE_NODE_ID>
-            </UseTemplate>
-
             <UseTemplate Name="ASOBO_AIRBUS_Push_Heading_Track_Template">
                 <NODE_ID>PUSH_AUTOPILOT_HDGTRK</NODE_ID>
                 <ANIM_NAME>PUSH_AUTOPILOT_HDGTRK</ANIM_NAME>
             </UseTemplate>
 
-            <UseTemplate Name="ASOBO_AUTOPILOT_Push_Autopilot_Template">
+            <UseTemplate Name="FBW_Airbus_Autopilot_Master">
                 <NODE_ID>PUSH_AUTOPILOT_AP1</NODE_ID>
                 <PART_ID>PUSH_AUTOPILOT_AP1</PART_ID>
                 <ANIM_NAME>PUSH_AUTOPILOT_AP1</ANIM_NAME>
@@ -2757,7 +2753,7 @@
                 <TOOLTIPID>%((L:XMLVAR_Autopilot_1_Status, bool))%{if}TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_AP_ON%{else}TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_AP_OFF%{end}</TOOLTIPID>
             </UseTemplate>
 
-            <UseTemplate Name="ASOBO_AUTOPILOT_Push_Autopilot_Template">
+            <UseTemplate Name="FBW_Airbus_Autopilot_Master">
                 <NODE_ID>PUSH_AUTOPILOT_AP2</NODE_ID>
                 <PART_ID>PUSH_AUTOPILOT_AP2</PART_ID>
                 <ANIM_NAME>PUSH_AUTOPILOT_AP2</ANIM_NAME>
@@ -2779,13 +2775,20 @@
                 <TOOLTIPID>%((A:AUTOPILOT THROTTLE ARM,Bool))%{if}TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_AUTOTHROTTLE_ARMED%{else}TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_AUTOTHROTTLE_OFF%{end}</TOOLTIPID>
             </UseTemplate>
 
-            <UseTemplate Name="ASOBO_AUTOPILOT_Push_Approach_Template">
+            <UseTemplate Name="FBW_Airbus_Autopilot_Push_Localiser">
+                <NODE_ID>PUSH_AUTOPILOT_LOC</NODE_ID>
+                <ANIM_NAME>PUSH_AUTOPILOT_LOC</ANIM_NAME>
+                <POTENTIOMETER>84</POTENTIOMETER>
+                <ACTIVE_NODE_ID>PUSH_AUTOPILOT_LOC_SEQ1</ACTIVE_NODE_ID>
+                <EMISSIVE_NODE_ID>PUSH_AUTOPILOT_LOC_SEQ2</EMISSIVE_NODE_ID>
+            </UseTemplate>
+
+            <UseTemplate Name="FBW_Airbus_Autopilot_Push_Approach">
                 <NODE_ID>PUSH_AUTOPILOT_APPR</NODE_ID>
                 <ANIM_NAME>PUSH_AUTOPILOT_APPR</ANIM_NAME>
                 <POTENTIOMETER>84</POTENTIOMETER>
                 <ACTIVE_NODE_ID>PUSH_AUTOPILOT_APPR_SEQ1</ACTIVE_NODE_ID>
                 <EMISSIVE_NODE_ID>PUSH_AUTOPILOT_APPR_SEQ2</EMISSIVE_NODE_ID>
-                <DISABLE_GPS_MODE>False</DISABLE_GPS_MODE>
             </UseTemplate>
 
             <UseTemplate Name="ASOBO_AIRBUS_Push_Expedite_Template">
@@ -3775,6 +3778,5 @@
                 <NODE_ID>PUSH_OVHD_ELT_ON</NODE_ID>
             </UseTemplate>
         </Component>
-
     </Behaviors>
 </ModelInfo>

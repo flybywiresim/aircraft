@@ -34,6 +34,7 @@ class CDUIRSStatus {
         wind_dir = smoothedAngle % 360;
 
         mcdu.clearDisplay();
+        mcdu.page.Current = mcdu.page.IRSStatus;
         mcdu.setTemplate([
             [`IRS${index}`],
             ["POSITION"],
@@ -52,6 +53,10 @@ class CDUIRSStatus {
 
         mcdu.onLeftInput[5] = () => {
             CDUIRSStatusFrozen.ShowPage(mcdu, index, wind_dir);
+        };
+
+        mcdu.rightInputDelay[5] = () => {
+            return mcdu.getDelaySwitchPage();
         };
 
         mcdu.onRightInput[5] = () => {

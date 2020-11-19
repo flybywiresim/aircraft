@@ -125,7 +125,7 @@ var A320_Neo_LowerECAM_BLEED;
         }
 
         update(_deltaTime) {
-            if (!this.isInitialised) {
+            if (!this.isInitialised || !A320_Neo_EICAS.isOnBottomScreen()) {
                 return;
             }
 
@@ -186,15 +186,7 @@ var A320_Neo_LowerECAM_BLEED;
             }
 
             if (!this.apuProvidesBleed && (currentApuN > 0.94)) {
-                this.apuBleedStartTimer = 2;
-            }
-
-            if (this.apuBleedStartTimer >= 0) {
-                this.apuBleedStartTimer -= _deltaTime / 1000;
-                if (this.apuBleedStartTimer < 0) {
-                    this.apuProvidesBleed = true;
-                    this.querySelector("#apu-connecting-line").setAttribute("style", "stroke:008000");
-                }
+                this.apuProvidesBleed = true;
             }
 
             //checks if engines are below idle
@@ -586,4 +578,3 @@ var A320_Neo_LowerECAM_BLEED;
     A320_Neo_LowerECAM_BLEED.Page = Page;
 })(A320_Neo_LowerECAM_BLEED || (A320_Neo_LowerECAM_BLEED = {}));
 customElements.define("a320-neo-lower-ecam-bleed", A320_Neo_LowerECAM_BLEED.Page);
-//# sourceMappingURL=A320_Neo_LowerECAM_BLEED.js.map

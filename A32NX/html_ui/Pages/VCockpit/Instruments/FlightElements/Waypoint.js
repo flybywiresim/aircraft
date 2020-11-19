@@ -28,6 +28,9 @@ class WayPoint {
         this.instrument = _instrument;
         this.infos = new WayPointInfo(_instrument);
         this.transitionLLas = [];
+        this.liveDistanceTo = 0;
+        this.liveETATo = 0;
+        this.liveUTCTo = 0;
     }
     getSvgElement(index) {
         if (this.infos) {
@@ -910,4 +913,3 @@ class Frequency {
         this.bcd16Value = _bcd16Value;
     }
 }
-//# sourceMappingURL=Waypoint.js.map
