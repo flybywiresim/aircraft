@@ -146,7 +146,20 @@ class CDUAocOfpData {
             return mcdu.getDelayBasic();
         };
         mcdu.onLeftInput[3] = () => {
-            // TODO Set SimVar payload
+            if (currentPayload) {
+                const pilotWeightInPounds = 200; // One pilot
+                const currentPayloadInPounds = (+currentPayload * 2.20462) - (pilotWeightInPounds * 2); // kg to pounds minus two pilots
+
+                const payloadCount = SimVar.GetSimVarValue("PAYLOAD STATION COUNT", "number");
+                for (let i = 1; i <= payloadCount; i++) {
+                    if (i === 1 || i === 2) {
+                        // Pilots
+                        SimVar.SetSimVarValue(`PAYLOAD STATION WEIGHT:${i}`, "Pounds", pilotWeightInPounds);
+                    } else {
+                        SimVar.SetSimVarValue(`PAYLOAD STATION WEIGHT:${i}`, "Pounds", currentPayloadInPounds / 4);
+                    }
+                }
+            }
         };
 
         mcdu.leftInputDelay[4] = () => {
