@@ -18,7 +18,6 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this._blockFuelEntered = false;
         this._gpsprimaryack = 0;
         this.currentFlightPhase = FlightPhase.FLIGHT_PHASE_PREFLIGHT;
-        this.updateTypeIIMessage = false;
         this.messageQueue = [];
     }
     get templateID() {
@@ -156,13 +155,13 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         setInterval(() => {
             if (this.currentFlightPhase === FlightPhase.FLIGHT_PHASE_CRUISE) {
                 const dest = this.flightPlanManager.getDestination();
-                if (dest && dest.infos.totalDistInFP < 180) {
+                if (dest && dest.liveDistanceTo < 180) {
                     this.checkDestData();
                 }
             } else if (this.currentFlightPhase === FlightPhase.FLIGHT_PHASE_DESCENT || this.currentFlightPhase === FlightPhase.FLIGHT_PHASE_APPROACH) {
                 this.checkDestData();
             }
-        }, 10000);
+        }, 15000);
 
         SimVar.SetSimVarValue("L:A32NX_GPS_PRIMARY_LOST_MSG", "Bool", 0);
     }
@@ -372,14 +371,15 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             if (this.messageQueue.length > 5) {
                 this.messageQueue.splice(5, 1);
             }
-            this.updateTypeIIMessage = true;
-            this.tryShowMessage();
+            this.tryShowMessage(true);
         }
     }
 
-    tryShowMessage() {
-        if (this.updateTypeIIMessage || !this.isDisplayingErrorMessage && !this.inOut && this.messageQueue.length > 0) {
-            this.updateTypeIIMessage = false;
+    tryShowMessage(force = false) {
+        if (force || !this.isDisplayingErrorMessage && !this.inOut && this.messageQueue.length > 0) {
+            if (!this.isDisplayingErrorMessage) {
+                this.lastUserInput = this.inOut;
+            }
             this.isDisplayingErrorMessage = true;
             this.inOut = this.messageQueue[0][0];
             this._inOutElement.style.color = this.messageQueue[0][1];
