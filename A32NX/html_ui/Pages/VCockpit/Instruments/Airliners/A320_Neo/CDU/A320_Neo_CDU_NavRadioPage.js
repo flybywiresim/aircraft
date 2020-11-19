@@ -13,10 +13,14 @@ class CDUNavRadioPage {
         let ilsCourseCell = "";
         let adf1FrequencyCell = "";
         let adf1BfoOption = "";
+        let vor2FrequencyCell = "";
+        let vor2CourseCell = "";
+        let adf2FrequencyCell = "";
+        let adf2BfoOption = "";
         CDUNavRadioPage._timer = 0;
         mcdu.pageUpdate = () => {
             CDUNavRadioPage._timer++;
-            if (CDUNavRadioPage._timer >= 10) {
+            if (CDUNavRadioPage._timer >= 5) {
                 CDUNavRadioPage.ShowPage(mcdu);
             }
         };
@@ -31,10 +35,16 @@ class CDUNavRadioPage {
             }
             mcdu.onLeftInput[0] = (value) => {
                 const numValue = parseFloat(value);
-                if (!isFinite(numValue) && value.length == 3) {
+                if (value === FMCMainDisplay.clrValue) {
+                    mcdu.vor1Frequency = 0;
+                    mcdu.vor1Course = 0;
+                    mcdu.radioNav.setVORActiveFrequency(1, 0);
+                    CDUNavRadioPage.ShowPage(mcdu);
+                } else if (!isFinite(numValue) && value.length == 3) {
                     mcdu.getOrSelectVORsByIdent(value, (navaids) => {
                         mcdu.vor1Frequency = navaids.infos.frequencyMHz;
                         mcdu.radioNav.setVORActiveFrequency(1, mcdu.vor1Frequency);
+                        mcdu.vor1Course = 0;
                         mcdu.requestCall(() => {
                             CDUNavRadioPage.ShowPage(mcdu);
                         });
@@ -56,11 +66,6 @@ class CDUNavRadioPage {
                             });
                         });
                     }
-                } else if (value === FMCMainDisplay.clrValue) {
-                    mcdu.vor1Frequency = 0;
-                    mcdu.vor1Course = 0;
-                    mcdu.radioNav.setVORActiveFrequency(1, 0);
-                    CDUNavRadioPage.ShowPage(mcdu);
                 } else {
                     mcdu.showErrorMessage("ENTRY OUT OF RANGE");
                 }
@@ -78,6 +83,9 @@ class CDUNavRadioPage {
                             CDUNavRadioPage.ShowPage(mcdu);
                         });
                     });
+                } else if (value === FMCMainDisplay.clrValue) {
+                    mcdu.vor1Course = 0;
+                    CDUNavRadioPage.ShowPage(mcdu);
                 } else {
                     mcdu.showErrorMessage("ENTRY OUT OF RANGE");
                 }
@@ -140,10 +148,7 @@ class CDUNavRadioPage {
                 }
             };
         }
-        let vor2FrequencyCell = "";
-        let vor2CourseCell = "";
-        let adf2FrequencyCell = "";
-        let adf2BfoOption = "";
+
         if (!radioOn) {
             vor2FrequencyCell = "[\xa0\xa0.\xa0]/[\xa0\xa0]";
             const vor2Ident = mcdu.radioNav.getVORBeacon(2);
@@ -155,10 +160,16 @@ class CDUNavRadioPage {
             }
             mcdu.onRightInput[0] = (value) => {
                 const numValue = parseFloat(value);
-                if (!isFinite(numValue && value.length == 3)) {
+                if (value === FMCMainDisplay.clrValue) {
+                    mcdu.vor2Frequency = 0;
+                    mcdu.vor2Course = 0;
+                    mcdu.radioNav.setVORActiveFrequency(2, 0);
+                    CDUNavRadioPage.ShowPage(mcdu);
+                } else if (!isFinite(numValue) && value.length == 3) {
                     mcdu.getOrSelectVORsByIdent(value, (navaids) => {
                         mcdu.vor2Frequency = navaids.infos.frequencyMHz;
                         mcdu.radioNav.setVORActiveFrequency(2, mcdu.vor2Frequency);
+                        mcdu.vor2Course = 0;
                         mcdu.requestCall(() => {
                             CDUNavRadioPage.ShowPage(mcdu);
                         });
@@ -180,12 +191,6 @@ class CDUNavRadioPage {
                             });
                         });
                     }
-                } else if (value === FMCMainDisplay.clrValue) {
-                    mcdu.vor2Frequency = 0;
-                    mcdu.vor2Course = 0;
-                    mcdu.radioNav.setVORActiveFrequency(2, 0);
-                    vor2FrequencyCell = "[\xa0\xa0.\xa0]/[\xa0]";
-                    CDUNavRadioPage.ShowPage(mcdu);
                 } else {
                     mcdu.showErrorMessage("ENTRY OUT OF RANGE");
                 }
@@ -203,6 +208,9 @@ class CDUNavRadioPage {
                             CDUNavRadioPage.ShowPage(mcdu);
                         });
                     });
+                } else if (value === FMCMainDisplay.clrValue) {
+                    mcdu.vor2Course = 0;
+                    CDUNavRadioPage.ShowPage(mcdu);
                 } else {
                     mcdu.showErrorMessage("ENTRY OUT OF RANGE");
                 }
