@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<SoundBanksInfo Platform="Windows" BasePlatform="Windows" SchemaVersion="12" SoundbankVersion="135">
+	<RootPaths>
+		<ProjectRoot>H:\sound\</ProjectRoot>
+		<SourceFilesRoot>H:\sound\.cache\Windows\</SourceFilesRoot>
+		<SoundBanksRoot>H:\sound\GeneratedSoundBanks\Windows\</SoundBanksRoot>
+		<ExternalSourcesInputFile></ExternalSourcesInputFile>
+		<ExternalSourcesOutputRoot>H:\sound\GeneratedSoundBanks\Windows</ExternalSourcesOutputRoot>
+	</RootPaths>
+	<SoundBanks>
+		<SoundBank Id="3930137174" GUID="{88821FE4-17EB-43EC-89B4-70A3BBE35D4B}" Language="SFX">
+			<ObjectPath>\SoundBanks\Asobo_A320_NEO_Improved\Asobo_A320_NEO_Improved2</ObjectPath>
+			<ShortName>Asobo_A320_NEO_Improved2</ShortName>
+			<Path>Asobo_A320_NEO_Improved2.bnk</Path>
+			<IncludedEvents>
+				<Event Id="176856600" Name="Play_Asobo_A320_NEO_cchordloop" ObjectPath="\Events\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved\Play_Asobo_A320_NEO_cchordloop" GUID="{B442EAE0-4D8F-4E16-B971-9F3B9EC39510}" MaxAttenuation="4.000000" DurationType="Infinite">
+					<IncludedMemoryFiles>
+						<File Id="323412330" Language="SFX">
+							<ShortName>Alt.wav</ShortName>
+							<Path>SFX\Alt_BFD87124.wem</Path>
+						</File>
+					</IncludedMemoryFiles>
+				</Event>
+				<Event Id="395471396" Name="Play_Asobo_A320_NEO_cchordshort" ObjectPath="\Events\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved\Play_Asobo_A320_NEO_cchordshort" GUID="{793845A2-1F1C-47B6-AECB-B4825C5E6B9C}" MaxAttenuation="4.000000" DurationType="OneShot" DurationMin="1.499456" DurationMax="1.499456">
+					<IncludedMemoryFiles>
+						<File Id="550405798" Language="SFX">
+							<ShortName>Alt.wav</ShortName>
+							<Path>SFX\Alt_1E8ECBBC.wem</Path>
+						</File>
+					</IncludedMemoryFiles>
+				</Event>
+				<Event Id="3760147643" Name="Play_Asobo_A320_NEO_panelrattle" ObjectPath="\Events\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved\Play_Asobo_A320_NEO_panelrattle" GUID="{3FD710E1-84C5-4AFB-9150-00D8C64B7369}" DurationType="Infinite">
+					<IncludedMemoryFiles>
+						<File Id="474126494" Language="SFX">
+							<ShortName>panelrattle.wav</ShortName>
+							<Path>SFX\panelrattle_1D8DE606.wem</Path>
+						</File>
+					</IncludedMemoryFiles>
+				</Event>
+			</IncludedEvents>
+			<GameParameters>
+				<GameParameter Id="1649214721" Name="SIMVAR_GROUND_VELOCITY" ObjectPath="\Game Parameters\simvar\physic\SIMVAR_GROUND_VELOCITY" GUID="{8E7BB6E5-0182-456B-BE83-12F6B4244555}"/>
+			</GameParameters>
+		</SoundBank>
+	</SoundBanks>
+</SoundBanksInfo>
