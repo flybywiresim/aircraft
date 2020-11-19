@@ -36,26 +36,26 @@ class CDUAocOfpData {
 
         const currentBlockFuel = mcdu.aocWeight.blockFuel || mcdu.simbrief.blockFuel;
         if (currentBlockFuel) {
-            const color = mcdu.aocWeight.blockFuel ? 'blue' : 'green';
-            blockFuel = `${currentBlockFuel}[color]${color}`;
+            const size = mcdu.aocWeight.blockFuel ? 'big' : 'small';
+            blockFuel = `{${size}}${currentBlockFuel}{end}{end}[color]blue`;
         }
 
         const currentEstZfw = mcdu.aocWeight.estZfw || mcdu.simbrief.estZfw;
         if (currentEstZfw) {
-            const color = mcdu.aocWeight.estZfw ? 'blue' : 'green';
-            estZfw = `${formatWeight(currentEstZfw)}[color]${color}`;
+            const size = mcdu.aocWeight.estZfw ? 'big' : 'small';
+            estZfw = `{${size}}${formatWeight(currentEstZfw)}{end}[color]blue`;
         }
 
         const currentTaxiFuel = mcdu.aocWeight.taxiFuel || mcdu.simbrief.taxiFuel;
         if (currentTaxiFuel) {
-            const color = mcdu.aocWeight.taxiFuel ? 'blue' : 'green';
-            taxiFuel = `${currentTaxiFuel}[color]${color}`;
+            const size = mcdu.aocWeight.taxiFuel ? 'big' : 'small';
+            taxiFuel = `{${size}}${currentTaxiFuel}{end}[color]blue`;
         }
 
         const currentTripFuel = mcdu.aocWeight.tripFuel || mcdu.simbrief.tripFuel;
         if (currentTripFuel) {
-            const color = mcdu.aocWeight.tripFuel ? 'blue' : 'green';
-            tripFuel = `${currentTripFuel}[color]${color}`;
+            const size = mcdu.aocWeight.tripFuel ? 'big' : 'small';
+            tripFuel = `{${size}}${currentTripFuel}{end}[color]blue`;
         }
 
         const display = [
@@ -64,7 +64,7 @@ class CDUAocOfpData {
             [blockFuel, estZfw],
             ["TAXI FUEL", "TRIP FUEL"],
             [taxiFuel, tripFuel],
-            [""],
+            ["", "PAYLOAD"],
             [""],
             ["PAYLOAD"],
             ["*LOAD[color]blue", "PRINT*[color]blue"],

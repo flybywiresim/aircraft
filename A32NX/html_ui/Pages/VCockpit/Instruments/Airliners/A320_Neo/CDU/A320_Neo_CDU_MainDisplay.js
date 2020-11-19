@@ -183,6 +183,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
 
     _formatCell(str) {
         return str
+            .replace(/{big}/g, "<span class='b-text'>")
             .replace(/{small}/g, "<span class='s-text'>")
             .replace(/{red}/g, "<span class='red'>")
             .replace(/{green}/g, "<span class='green'>")

@@ -160,6 +160,11 @@ fmc-main-display::before {
   left: 5%;
 }
 
+.b-text {
+  font-size: 5.8vw;
+  letter-spacing: normal;
+}
+
 .s-text {
   font-size: 4.2vw;
   /* font-size: 4.8vw; */
