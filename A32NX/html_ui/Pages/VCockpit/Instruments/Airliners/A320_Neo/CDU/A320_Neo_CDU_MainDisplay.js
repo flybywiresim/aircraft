@@ -152,6 +152,18 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                 });
         }, NXApi.updateRate);
 
+        // Start the check routine for system health and status
+        setInterval(() => {
+            if (this.currentFlightPhase === FlightPhase.FLIGHT_PHASE_CRUISE) {
+                const dest = this.flightPlanManager.getDestination();
+                if (dest && dest.infos.totalDistInFP < 180) {
+                    this.checkDestData();
+                }
+            } else if (this.currentFlightPhase === FlightPhase.FLIGHT_PHASE_DESCENT || this.currentFlightPhase === FlightPhase.FLIGHT_PHASE_APPROACH) {
+                this.checkDestData();
+            }
+        }, 10000);
+
         SimVar.SetSimVarValue("L:A32NX_GPS_PRIMARY_LOST_MSG", "Bool", 0);
     }
 
@@ -188,6 +200,12 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                 }
             });
         });
+    }
+
+    checkDestData() {
+        if (!isFinite(this.perfApprQNH) || !isFinite(this.perfApprTemp) || !isFinite(this.perfApprWindHeading) || !isFinite(this.perfApprWindSpeed)) {
+            this.addTypeTwoMessage("ENTER DEST DATA", "#ffff00");
+        }
     }
 
     trySetFlapsTHS(s) {
@@ -457,12 +475,6 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         return payloadWeight;
     }
 
-    checkDestData() {
-        if (!isFinite(this.perfApprQNH) || !isFinite(this.perfApprTemp) || !isFinite(this.perfApprWindHeading) || !isFinite(this.perfApprWindSpeed)) {
-            this.addTypeTwoMessage("ENTER DEST DATA", "#ffff00");
-        }
-    }
-
     _onModeSelectedSpeed() {
         if (SimVar.GetSimVarValue("L:A320_FCU_SHOW_SELECTED_SPEED", "number") === 0) {
             const currentSpeed = Simplane.getIndicatedSpeed();
@@ -587,9 +599,6 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                 this.setAPSelectedSpeed(this.preSelectedDesSpeed, Aircraft.A320_NEO);
                 SimVar.SetSimVarValue("K:SPEED_SLOT_INDEX_SET", "number", 1);
             }
-            this.checkDestData();
-        } else if (this.currentFlightPhase === FlightPhase.FLIGHT_PHASE_APPROACH) {
-            this.checkDestData();
         }
         //TODO something for Goaround? Like Green Dot Speed SRS etc ...
     }
@@ -1107,10 +1116,6 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                     this.setAPManagedSpeed(speed, Aircraft.A320_NEO);
                 }
                 if (this.isAltitudeManaged()) {
-                }
-                const dest = this.flightPlanManager.getDestination();
-                if (dest && dest.infos.totalDistInFP < 180) {
-                    this.checkDestData();
                 }
                 /* let altitude = Simplane.getAltitudeAboveGround();
                 let n1 = 100;
