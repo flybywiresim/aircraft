@@ -16,7 +16,7 @@ class CDUNavRadioPage {
         CDUNavRadioPage._timer = 0;
         mcdu.pageUpdate = () => {
             CDUNavRadioPage._timer++;
-            if (CDUNavRadioPage._timer >= 15) {
+            if (CDUNavRadioPage._timer >= 10) {
                 CDUNavRadioPage.ShowPage(mcdu);
             }
         };
@@ -33,8 +33,8 @@ class CDUNavRadioPage {
             mcdu.onLeftInput[0] = (value) => {
                 const numValue = parseFloat(value);
                 if (!isFinite(numValue)){
-                    mcdu.getOrSelectWaypointByIdent(value, (waypoint) => {
-                        mcdu.vor1Frequency = waypoint.infos.frequencyMHz;
+                    mcdu.getOrSelectNavaidsByIdent(value, (navaids) => {
+                        mcdu.vor1Frequency = navaids.infos.frequencyMHz;
                         mcdu.radioNav.setVORActiveFrequency(1, mcdu.vor1Frequency);
                         mcdu.requestCall(() => {
                             CDUNavRadioPage.ShowPage(mcdu);
@@ -127,8 +127,8 @@ class CDUNavRadioPage {
             mcdu.onLeftInput[4] = (value) => {
                 const numValue = parseFloat(value);
                 if (!isFinite(numValue)){
-                    mcdu.getOrSelectWaypointByIdent(value, (waypoint) => {
-                        mcdu.adf1Frequency = waypoint.infos.frequencyMHz;
+                    mcdu.getOrSelectNavaidsByIdent(value, (navaids) => {
+                        mcdu.adf1Frequency = navaids.infos.frequencyMHz;
                         mcdu.radioNav.setADFActiveFrequency(1, mcdu.adf1Frequency);
                         mcdu.requestCall(() => {
                             CDUNavRadioPage.ShowPage(mcdu);
@@ -168,8 +168,8 @@ class CDUNavRadioPage {
             mcdu.onRightInput[0] = (value) => {
                 const numValue = parseFloat(value);
                 if (!isFinite(numValue)){
-                    mcdu.getOrSelectWaypointByIdent(value, (waypoint) => {
-                        mcdu.vor2Frequency = waypoint.infos.frequencyMHz;
+                    mcdu.getOrSelectNavaidsByIdent(value, (navaids) => {
+                        mcdu.vor2Frequency = navaids.infos.frequencyMHz;
                         mcdu.radioNav.setVORActiveFrequency(2, mcdu.vor2Frequency);
                         mcdu.requestCall(() => {
                             CDUNavRadioPage.ShowPage(mcdu);
@@ -233,8 +233,8 @@ class CDUNavRadioPage {
             mcdu.onRightInput[4] = (value) => {
                 const numValue = parseFloat(value);
                 if (!isFinite(numValue)){
-                    mcdu.getOrSelectWaypointByIdent(value, (waypoint) => {
-                        mcdu.adf2Frequency = waypoint.infos.frequencyMHz;
+                    mcdu.getOrSelectNavaidsByIdent(value, (navaids) => {
+                        mcdu.adf2Frequency = navaids.infos.frequencyMHz;
                         mcdu.radioNav.setADFActiveFrequency(2, mcdu.adf2Frequency);
                         mcdu.requestCall(() => {
                             CDUNavRadioPage.ShowPage(mcdu);
