@@ -455,6 +455,7 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
         this.updateBaroPressure(baroMode);
         this.updateMtrs(indicatedAltitude, selectedAltitude);
         this._updateAltitudeAlert(indicatedAltitude);
+        this._updateQNHAlert(indicatedAltitude, baroMode);
         this.updateFail();
     }
 
@@ -523,6 +524,37 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
             } else if (this._wasInRange) {
                 this._pulseYellow();
             }
+        }
+    }
+
+    _blinkQNH() {
+        this.pressureSVGLegend.classList.add("blink");
+        this.pressureSVG.classList.add("blink");
+    }
+
+    _blinkSTD() {
+        this.STDpressureSVG.classList.add("blink");
+        this.STDpressureSVGShape.classList.add("blink");
+    }
+
+    _removeBlink() {
+        this.pressureSVGLegend.classList.remove("blink");
+        this.pressureSVG.classList.remove("blink");
+        this.STDpressureSVG.classList.remove("blink");
+        this.STDpressureSVGShape.classList.remove("blink");
+    }
+
+    _updateQNHAlert(indicatedAltitude, baroMode) {
+        this._removeBlink();
+
+        const transitionAltitude = SimVar.GetSimVarValue("L:AIRLINER_TRANS_ALT", "Number");
+
+        if (transitionAltitude <= indicatedAltitude && baroMode != "STD" && SimVar.GetSimVarValue("L:AIRLINER_FLIGHT_PHASE", "number") > 2) {
+            this._blinkQNH();
+        }
+
+        if (transitionAltitude > indicatedAltitude && baroMode == "STD" && SimVar.GetSimVarValue("L:AIRLINER_FLIGHT_PHASE", "number") > 2) {
+            this._blinkSTD();
         }
     }
 
