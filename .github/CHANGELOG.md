@@ -99,6 +99,7 @@
 1. [ND] Add altitue constraint symbol and fix constraint circle color @ilyeshammadi (Ilyes Hammadi)
 1. [ECAM] Add COND page - @lcalaresu (Luc Calaresu), @highperformancedevelopments
 1. [CDU] Ported system messages type II to actual type II - @MisterChocker (Leon)
+1. [PFD] Add QNH flashing when reach transition altitude - @Kimbyeoungjang (김병장#7165)
 
 ## 0.4.0
 1. [General] Add CHANGELOG.md - @nathaninnes (Nathan Innes)
