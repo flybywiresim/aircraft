@@ -22,10 +22,9 @@ class CDUAocInit {
         const currentFob = formatWeight(mcdu.getFOB());
 
         function updateView() {
-            if (mcdu.page.Current !== mcdu.page.AOCInit) {
-                return;
+            if (mcdu.page.Current === mcdu.page.AOCInit) {
+                CDUAocInit.ShowPage(mcdu);
             }
-            CDUAocInit.ShowPage(mcdu);
         }
 
         if (mcdu.simbrief.sendStatus !== "READY") {

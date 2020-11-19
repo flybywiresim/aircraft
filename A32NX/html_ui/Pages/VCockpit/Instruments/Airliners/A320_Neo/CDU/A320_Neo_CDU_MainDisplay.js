@@ -50,6 +50,12 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             taxiFuel: "",
             tripFuel: "",
         };
+        this.aocWeight = {
+            blockFuel: "",
+            estZfw: "",
+            taxiFuel: "",
+            tripFuel: "",
+        };
     }
     get templateID() {
         return "A320_Neo_CDU";
