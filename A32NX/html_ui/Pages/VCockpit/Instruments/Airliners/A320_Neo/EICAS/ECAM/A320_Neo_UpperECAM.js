@@ -1018,7 +1018,7 @@ var A320_Neo_UpperECAM;
                         style: "fail-3",
                         important: true,
                         isActive: () => {
-                            return (this.getAPWarning(3) == true);
+                            return (this.getAPWarning(3));
                         }
                     },
                     {
@@ -1026,7 +1026,7 @@ var A320_Neo_UpperECAM;
                         style: "fail-2",
                         important: true,
                         isActive: () => {
-                            return (this.getATHRWarning(3) == true);
+                            return (this.getATHRWarning(3));
                         }
                     },
 
