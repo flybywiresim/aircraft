@@ -57,6 +57,9 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             tripFuel: "",
             payload: ""
         };
+        this.aocTimes = {
+            doors: ""
+        };
     }
     get templateID() {
         return "A320_Neo_CDU";
@@ -1587,6 +1590,19 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         } else {
             //Reset timer to 30 when airborne in case of go around
             this.landingResetTimer = 30;
+        }
+
+        if (this.currentFlightPhase == FlightPhase.FLIGHT_PHASE_PREFLIGHT) {
+            const cabinDoorPctOpen = SimVar.GetSimVarValue("INTERACTIVE POINT OPEN:0", "percent");
+            console.log('cabinDoorPctOpen', cabinDoorPctOpen);
+            if (!this.aocTimes.doors && cabinDoorPctOpen < 20) {
+                const seconds = Math.floor(SimVar.GetGlobalVarValue("ZULU TIME", "seconds"));
+                this.aocTimes.doors = seconds;
+            } else {
+                if (cabinDoorPctOpen > 20) {
+                    this.aocTimes.doors = "";
+                }
+            }
         }
 
         if (SimVar.GetSimVarValue("L:AIRLINER_FLIGHT_PHASE", "number") != this.currentFlightPhase) {
