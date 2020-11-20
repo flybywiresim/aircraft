@@ -28,7 +28,7 @@ class CDUAocInit {
         }
 
         if (mcdu.simbrief.sendStatus !== "READY") {
-            requestButton = "INIT DATA REQ[color]blue";
+            requestButton = "INIT DATA REQ [color]blue";
         }
         if (mcdu.simbrief.originIcao) {
             originIcao = `${mcdu.simbrief.originIcao}[color]blue`;
