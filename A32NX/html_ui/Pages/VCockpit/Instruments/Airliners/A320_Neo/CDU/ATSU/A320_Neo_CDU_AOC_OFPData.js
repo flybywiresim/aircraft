@@ -32,7 +32,7 @@ class CDUAocOfpData {
         let requestButton = "SEND*[color]blue";
 
         if (mcdu.simbrief.sendStatus !== "READY" && mcdu.simbrief.sendStatus !== "DONE") {
-            requestButton = "SEND[color]blue";
+            requestButton = "SEND [color]blue";
         }
 
         const currentBlockFuel = mcdu.aocWeight.blockFuel || mcdu.simbrief.blockFuel;

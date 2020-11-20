@@ -3,7 +3,7 @@
  * @param {number | string} value
  */
 function formatWeight(value) {
-    return (+value / 1000).toFixed(1);
+    return (+value).toFixed(1);
 }
 
 class CDUAocInit {
@@ -27,7 +27,7 @@ class CDUAocInit {
             }
         }
 
-        if (mcdu.simbrief.sendStatus !== "READY") {
+        if (mcdu.simbrief.sendStatus !== "READY" && mcdu.simbrief.sendStatus !== "DONE") {
             requestButton = "INIT DATA REQ [color]blue";
         }
         if (mcdu.simbrief.originIcao) {
