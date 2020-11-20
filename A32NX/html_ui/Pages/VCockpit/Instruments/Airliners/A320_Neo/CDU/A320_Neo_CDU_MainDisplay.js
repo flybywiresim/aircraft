@@ -1189,13 +1189,11 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
 
             //End preflight when takeoff power is applied and engines are running
             if (this.currentFlightPhase < FlightPhase.FLIGHT_PHASE_TAKEOFF && isTakeOffValid) {
-                SimVar.SetSimVarValue("L:A32NX_Preflight_Complete", "Bool", 1);
                 this.currentFlightPhase = FlightPhase.FLIGHT_PHASE_TAKEOFF;
             }
 
             //Reset to preflight in case of RTO
             if (this.currentFlightPhase === FlightPhase.FLIGHT_PHASE_TAKEOFF && !isTakeOffValid) {
-                SimVar.SetSimVarValue("L:A32NX_Preflight_Complete", "Bool", 0);
                 this.currentFlightPhase = FlightPhase.FLIGHT_PHASE_PREFLIGHT;
                 this.climbTransitionGroundAltitude = null;
             }
@@ -1366,7 +1364,6 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             if (this.landingResetTimer <= 0) {
                 this.landingResetTimer = null;
                 this.currentFlightPhase = FlightPhase.FLIGHT_PHASE_PREFLIGHT;
-                SimVar.SetSimVarValue("L:A32NX_Preflight_Complete", "Bool", 0);
                 SimVar.SetSimVarValue("L:A32NX_TO_CONFIG_NORMAL", "Bool", 0);
                 CDUIdentPage.ShowPage(this);
             }
