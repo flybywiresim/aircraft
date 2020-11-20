@@ -70,7 +70,7 @@ var A320_Neo_LowerECAM_COND;
             var airconSelectedTempAFT = SimVar.GetSimVarValue("L:A320_Neo_AIRCOND_LVL_3", "Position(0-100)");
 
             this.trimAirValveIndicator[0].setAttribute("style", "transform-origin: 155px 250px; transform: rotate(" + (gaugeOffset + airconSelectedTempCockpit) + "deg); stroke-width: 4.5px; stroke-linecap: round;");
-            this.trimAirValveIndicator[1].setAttribute("style", "transform-origin: 280px 250px; transform: rotate(" + (gaugeOffset + airconSelectedTempFWD) + "deg); stroke-width: 4.5px; stroke-linecap: round;");
+            this.trimAirValveIndicator[1].setAttribute("style", "transform-origin: 285px 205px; transform: rotate(" + (gaugeOffset + airconSelectedTempFWD) + "deg); stroke-width: 4.5px; stroke-linecap: round;");
             this.trimAirValveIndicator[2].setAttribute("style", "transform-origin: 420px 250px; transform: rotate(" + (gaugeOffset + airconSelectedTempAFT) + "deg); stroke-width: 4.5px; stroke-linecap: round;");
 
             // Generate trim outlet values
