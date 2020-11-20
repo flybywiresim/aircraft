@@ -382,12 +382,12 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             if (this.messageQueue.length > 5) {
                 this.messageQueue.splice(5, 1);
             }
-            this.tryShowMessage(true);
+            this.tryShowMessage();
         }
     }
 
-    tryShowMessage(force = false) {
-        if (force || !this.isDisplayingErrorMessage && !this.inOut && this.messageQueue.length > 0) {
+    tryShowMessage() {
+        if (!this.isDisplayingErrorMessage && !this.inOut && this.messageQueue.length > 0) {
             if (this.messageQueue[0][3]()) {
                 this.tryRemoveMessage(this.messageQueue[0][0]);
                 return this.tryShowMessage();
