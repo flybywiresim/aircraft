@@ -14,15 +14,11 @@ class CDUInitPage {
         let tropo = "{small}36090{end}[color]cyan";
         let requestButton = "REQUEST*[color]red";
         let requestButtonLabel = "INIT [color]red";
+        let requestEnable = true;
 
-        switch (mcdu.simbrief.sendStatus) {
-            case "REQUESTING":
-                requestButton = "REQUEST [color]red";
-                break;
-            case "DONE":
-                requestButtonLabel = "";
-                requestButton = "";
-                break;
+        if (mcdu.simbrief.sendStatus === "REQUESTING") {
+            requestEnable = false;
+            requestButton = "REQUEST [color]red";
         }
 
         if (mcdu.flightPlanManager.getOrigin() && mcdu.flightPlanManager.getOrigin().ident) {
@@ -36,6 +32,10 @@ class CDUInitPage {
                 if (SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string", "FMC")) {
                     flightNo = SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string", "FMC") + "[color]cyan";
                 }
+
+                requestEnable = false;
+                requestButtonLabel = "";
+                requestButton = "";
 
                 if (resetFlightNo) {
                     flightNo = "________[color]amber";
@@ -151,7 +151,7 @@ class CDUInitPage {
             }
         };
         mcdu.onRightInput[1] = () => {
-            if (mcdu.simbrief.sendStatus === "READY") {
+            if (requestEnable) {
                 getSimBriefOfp(mcdu, () => {
                     if (mcdu.page.Current === mcdu.page.InitPageA) {
                         CDUInitPage.ShowPage1(mcdu);
