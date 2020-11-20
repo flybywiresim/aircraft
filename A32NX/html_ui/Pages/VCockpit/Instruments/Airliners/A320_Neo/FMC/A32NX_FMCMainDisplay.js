@@ -3059,7 +3059,8 @@ class FMCMainDisplay extends BaseAirliners {
      * @returns {number} dynamic delay in ms between 2000ms and 4000ms
      */
     getDelayFuelPred() {
-        return 225 * this.flightPlanManager.getWaypointsCount() + this.flightPlanManager.getDestination().cumulativeDistanceInFP;
+        const tripDist = this.flightPlanManager.getDestination().cumulativeDistanceInFP;
+        return 225 * this.flightPlanManager.getWaypointsCount() + (tripDist > 0 ? tripDist / 2 : 0);
     }
 
     /**
