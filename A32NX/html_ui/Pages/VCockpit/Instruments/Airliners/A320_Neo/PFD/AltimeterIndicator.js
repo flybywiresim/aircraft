@@ -455,6 +455,7 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
         this.updateBaroPressure(baroMode);
         this.updateMtrs(indicatedAltitude, selectedAltitude);
         this._updateAltitudeAlert(indicatedAltitude);
+        this._updateQNHAlert(indicatedAltitude, baroMode);
         this.updateFail();
     }
 
