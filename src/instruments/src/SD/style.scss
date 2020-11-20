@@ -1,0 +1,34 @@
+@font-face {
+  font-family: "Roboto";
+  src: url("/Fonts/RobotoMono-Medium.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Roboto-Light";
+  src: url("/Fonts/RobotoMono-Light.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
+
+.sd-svg {
+  position: absolute;
+  width: 1280px;
+  height: 1280px;
+
+  background: radial-gradient(
+      ellipse at center,
+      rgba(13, 20, 35, 1) 0%,
+      rgb(13, 20, 35) 100%
+  );
+
+  visibility: visible !important;
+
+  font-family: Roboto;
+
+  path {
+    stroke: white;
+    stroke-width: 3;
+  }
+}
