@@ -306,7 +306,6 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     setTemplate(template, large = false) {
-        console.log('setTemplate 2', large);
         if (template[0]) {
             this.setTitle(template[0][0]);
             this.setPageCurrent(template[0][1]);
@@ -1119,6 +1118,7 @@ class FMCMainDisplay extends BaseAirliners {
         if (referenceWaypoint) {
             const infos = referenceWaypoint.infos;
             if (infos instanceof WayPointInfo) {
+                await referenceWaypoint.infos.UpdateAirways(); // Sometimes the waypoint is initialized without waiting to the airways array to be filled
                 const airway = infos.airways.find(a => {
                     return a.name === airwayName;
                 });
@@ -1155,18 +1155,24 @@ class FMCMainDisplay extends BaseAirliners {
                             callback(true);
                             return;
                         }
+                        console.log('2ND INDEX NOT FOUND');
                         this.showErrorMessage("2ND INDEX NOT FOUND");
                         return callback(false);
                     }
+                    console.log('1ST INDEX NOT FOUND');
                     this.showErrorMessage("1ST INDEX NOT FOUND");
                     return callback(false);
                 }
+                console.log("NO REF WAYPOINT 1");
                 this.showErrorMessage("NO REF WAYPOINT");
                 return callback(false);
             }
+            console.log("NO WAYPOINT INFOS");
             this.showErrorMessage("NO WAYPOINT INFOS");
             return callback(false);
         }
+
+        console.log("NO REF WAYPOINT 2");
         this.showErrorMessage("NO REF WAYPOINT");
         return callback(false);
     }
