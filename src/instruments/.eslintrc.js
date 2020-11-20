@@ -49,6 +49,8 @@ module.exports = {
         'quote-props': ['error', 'consistent-as-needed'],
         'strict': ['error', 'global'],
 
+        'import/extensions': 'off',
+
         // Not needed with react 17+
         'react/jsx-uses-react': 'off',
         'react/react-in-jsx-scope': 'off',
