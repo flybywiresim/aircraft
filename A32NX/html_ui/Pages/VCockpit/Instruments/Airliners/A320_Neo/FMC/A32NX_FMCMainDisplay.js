@@ -2182,9 +2182,14 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     setPerfApprTransAlt(s) {
-        const value = parseFloat(s);
-        if (isFinite(value) && value > 0 && value < 60000) {
-            this.perfApprTransAlt = value;
+        if (!/^\d+$/.test(s)) {
+            this.showErrorMessage("FORMAT ERROR");
+            return false;
+        }
+        const v = parseInt(s);
+        if (isFinite(v) && v > 0) {
+            this.transitionAltitude = v;
+            SimVar.SetSimVarValue("L:AIRLINER_APPR_TRANS_ALT", "Number", v);
             return true;
         }
         this.showErrorMessage(this.defaultInputErrorMessage);
