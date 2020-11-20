@@ -12,6 +12,18 @@ class CDUInitPage {
         let cruiseFlTemp = "-----|---°";
         let alignOption;
         let tropo = "{small}36090{end}[color]cyan";
+        let requestButton = "REQUEST*[color]red";
+        let requestButtonLabel = "INIT [color]red";
+
+        switch (mcdu.simbrief.sendStatus) {
+            case "REQUESTING":
+                requestButton = "REQUEST [color]red";
+                break;
+            case "DONE":
+                requestButtonLabel = "";
+                requestButton = "";
+                break;
+        }
 
         if (mcdu.flightPlanManager.getOrigin() && mcdu.flightPlanManager.getOrigin().ident) {
             if (mcdu.flightPlanManager.getDestination() && mcdu.flightPlanManager.getDestination().ident) {
@@ -139,14 +151,16 @@ class CDUInitPage {
             }
         };
         mcdu.onRightInput[1] = () => {
-            getSimBriefOfp(mcdu, () => {
-                if (mcdu.page.Current === mcdu.page.InitPageA) {
-                    CDUInitPage.ShowPage1(mcdu);
-                }
-            })
-                .then(() => {
-                    insertUplink(mcdu);
-                });
+            if (mcdu.simbrief.sendStatus === "READY") {
+                getSimBriefOfp(mcdu, () => {
+                    if (mcdu.page.Current === mcdu.page.InitPageA) {
+                        CDUInitPage.ShowPage1(mcdu);
+                    }
+                })
+                    .then(() => {
+                        insertUplink(mcdu);
+                    });
+            }
         };
         mcdu.rightInputDelay[2] = () => {
             return mcdu.getDelaySwitchPage();
@@ -168,8 +182,8 @@ class CDUInitPage {
             ["INIT {}"], //Need to find the right unicode for left/right arrow
             ["CO RTE", "FROM/TO"],
             [coRoute, fromTo],
-            ["ALTN/CO RTE", "INIT[color]red"],
-            [altDest, "REQUEST*[color]red"],
+            ["ALTN/CO RTE", requestButtonLabel],
+            [altDest, requestButton],
             ["FLT NBR"],
             [flightNo + "[color]cyan", alignOption],
             [],
