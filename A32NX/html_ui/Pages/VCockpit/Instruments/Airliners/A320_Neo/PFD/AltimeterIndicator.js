@@ -553,11 +553,11 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
 
         const transitionAltitude = SimVar.GetSimVarValue("L:AIRLINER_TRANS_ALT", "Number");
 
-        if (transitionAltitude <= indicatedAltitude && baroMode != "STD" && SimVar.GetSimVarValue("L:A32NX_FWC_FLIGHT_PHASE", "number") > 2) {
+        if ((transitionAltitude <= indicatedAltitude) && (baroMode != "STD") && (SimVar.GetSimVarValue("L:A32NX_FWC_FLIGHT_PHASE", "number") > 3) && (SimVar.GetSimVarValue("L:A32NX_FWC_FLIGHT_PHASE", "number") < 9)) {
             this._blinkQNH();
         }
 
-        if (transitionAltitude > indicatedAltitude && baroMode == "STD" && SimVar.GetSimVarValue("L:A32NX_FWC_FLIGHT_PHASE", "number") > 2) {
+        if ((transitionAltitude > indicatedAltitude) && (baroMode == "STD") && (SimVar.GetSimVarValue("L:A32NX_FWC_FLIGHT_PHASE", "number") > 3) && (SimVar.GetSimVarValue("L:A32NX_FWC_FLIGHT_PHASE", "number") < 9)) {
             this._blinkSTD();
         }
     }
