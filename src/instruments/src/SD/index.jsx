@@ -7,6 +7,7 @@ import {
     getSimVar,
 } from '../util.mjs';
 import './style.scss';
+import { StatusArea } from './StatusArea/StatusArea.jsx';
 
 // TODO: Move anything dependent on ac power change to A32NX_Core
 function powerAvailable() {
@@ -45,6 +46,8 @@ function Idle() {
         <>
             <svg className="sd-svg" viewBox="0 0 600 600">
                 <text x={300} y={300} stroke="white" fill="white" fontSize={24} textAnchor="middle">Nothing here right now</text>
+
+                <StatusArea />
             </svg>
         </>
     );
