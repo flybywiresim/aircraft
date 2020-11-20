@@ -18,14 +18,21 @@ class CDUAocInit {
         let ete = "____[color]red";
         let fob = `{small}---.-{end}[color]white`;
         let requestButton = "INIT DATA REQ*[color]blue";
+        let gmt = "0000[color]green";
 
-        const currentFob = formatWeight(mcdu.getFOB());
+        const seconds = Math.floor(SimVar.GetGlobalVarValue("ZULU TIME", "seconds"));
+        gmt = `{small}${FMCMainDisplay.secondsTohhmm(seconds)}{end}[color]green`;
 
         function updateView() {
             if (mcdu.page.Current === mcdu.page.AOCInit) {
                 CDUAocInit.ShowPage(mcdu);
             }
         }
+
+        mcdu.refreshPageCallback = () => {
+            CDUAocInit.ShowPage(mcdu);
+        };
+        SimVar.SetSimVarValue("L:FMC_UPDATE_CURRENT_PAGE", "number", 1);
 
         if (mcdu.simbrief.sendStatus !== "READY" && mcdu.simbrief.sendStatus !== "DONE") {
             requestButton = "INIT DATA REQ [color]blue";
@@ -37,11 +44,13 @@ class CDUAocInit {
             destinationIcao = `${mcdu.simbrief.destinationIcao}[color]blue`;
         }
         if (mcdu.simbrief.icao_airline || mcdu.simbrief.flight_number) {
-            fltNbr = `${mcdu.simbrief.icao_airline}${mcdu.simbrief.flight_number}[color]green`;
+            fltNbr = `{small}${mcdu.simbrief.icao_airline}${mcdu.simbrief.flight_number}{end}[color]green`;
         }
         if (mcdu.simbrief.ete) {
             ete = `${mcdu.simbrief.ete}[color]blue`;
         }
+
+        const currentFob = formatWeight(mcdu.getFOB());
         if (currentFob) {
             fob = `{small}${currentFob}{end}[color]green`;
         }
@@ -49,11 +58,11 @@ class CDUAocInit {
         const display = [
             ["INIT/REVIEW", "1", "2", "AOC"],
             ["{big}FMC FLT NO{end}", "{big}GMT{end}"],
-            [fltNbr, "2337[color]green"],
+            [fltNbr, gmt],
             ["{big}DEP{end}"],
             [originIcao],
             ["{big}DEST{end}"],
-            [destinationIcao, "CREW DETAILS>"],
+            [destinationIcao, "CREW DETAILS>[color]inop"],
             ["{big}FOB{end}"],
             ["   " + fob],
             ["{big}ETE{end}"],
@@ -62,6 +71,13 @@ class CDUAocInit {
             ["<AOC MENU"]
         ];
         mcdu.setTemplate(display);
+
+        mcdu.rightInputDelay[2] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
+        mcdu.onRightInput[2] = () => {
+            // Crew Details
+        };
 
         mcdu.rightInputDelay[4] = () => {
             return mcdu.getDelayBasic();
@@ -94,6 +110,11 @@ class CDUAocInit {
             return `${date.getUTCHours().toString().padStart(2, "0")}${date.getUTCMinutes().toString().padEnd(2, "0")}`;
         }
 
+        mcdu.refreshPageCallback = () => {
+            CDUAocInit.ShowPage2(mcdu);
+        };
+        SimVar.SetSimVarValue("L:FMC_UPDATE_CURRENT_PAGE", "number", 1);
+
         /**
             GMT: is the current zulu time
             FLT time: is wheels up to wheels down... so basically shows 0000 as soon as you are wheels up, counts up and then stops timing once you are weight on wheels again
@@ -104,20 +125,26 @@ class CDUAocInit {
             In: remains blank until brakes set to park AND the first door opens
          */
         let fob = `{small}---.-{end}[color]white`;
-        const gmtTime = `----[color]white`;
         const fltTime = `----[color]white`;
         let outTime = `----[color]white`;
-        const doorsTime = `----[color]white`;
+        let doorsTime = `----[color]white`;
         let offTime = `----[color]white`;
         let onTime = `----[color]white`;
         const inTime = `----[color]white`;
         let blockTime = `----[color]white`;
+        let gmt = "0000[color]green";
+
+        const seconds = Math.floor(SimVar.GetGlobalVarValue("ZULU TIME", "seconds"));
+        gmt = `{small}${FMCMainDisplay.secondsTohhmm(seconds)}{end}[color]green`;
 
         if (currentFob) {
             fob = `{small}${currentFob}{end}[color]green`;
         }
         if (mcdu.simbrief["outTime"]) {
             outTime = `${formatTime(mcdu.simbrief.outTime)}[color]green`;
+        }
+        if (mcdu.aocTimes.doors) {
+            doorsTime = `${FMCMainDisplay.secondsTohhmm(mcdu.aocTimes.doors)}[color]green`;
         }
         if (mcdu.simbrief["offTime"]) {
             offTime = `${formatTime(mcdu.simbrief.offTime)}[color]green`;
@@ -142,7 +169,7 @@ class CDUAocInit {
                 [" {big}OUT{end}", "{big}OFF{end} ", "{big}DOORS{end}"],
                 [outTime, offTime, doorsTime],
                 [" {big}ON{end}", "{big}IN{end} ", "{big}GMT{end}"],
-                [onTime, inTime, gmtTime],
+                [onTime, inTime, gmt],
                 [" {big}BLK TIME{end}", "{big}FLT TIME{end} "],
                 [blockTime, fltTime],
                 [" {big}FUEL REM{end}", "{big}LDG PILOT{end} "],

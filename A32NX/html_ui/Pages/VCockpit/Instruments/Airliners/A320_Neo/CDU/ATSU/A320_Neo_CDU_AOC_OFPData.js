@@ -2,7 +2,7 @@
  * Value is rounded to 1000 and fixed to 1 decimal
  * @param {number | string} value
  */
-function formatWeight(value) {
+function formatWeightInTons(value) {
     return (+value / 1000).toFixed(1);
 }
 
@@ -44,7 +44,7 @@ class CDUAocOfpData {
         const currentEstZfw = mcdu.aocWeight.estZfw || mcdu.simbrief.estZfw;
         if (currentEstZfw) {
             const size = mcdu.aocWeight.estZfw ? 'big' : 'small';
-            estZfw = `{${size}}${formatWeight(currentEstZfw)}{end}[color]blue`;
+            estZfw = `{${size}}${formatWeightInTons(currentEstZfw)}{end}[color]blue`;
         }
 
         const currentTaxiFuel = mcdu.aocWeight.taxiFuel || mcdu.simbrief.taxiFuel;
