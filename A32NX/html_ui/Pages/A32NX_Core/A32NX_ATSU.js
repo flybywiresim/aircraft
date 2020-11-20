@@ -181,7 +181,7 @@ const getSimBriefOfp = (mcdu, updateView) => {
 const insertUplink = (mcdu) => {
     const {
         originIcao,
-        destinationIca,
+        destinationIcao,
         cruiseAltitude,
         costIndex,
         alternateIcao,
@@ -190,8 +190,8 @@ const insertUplink = (mcdu) => {
         flight_number
     } = mcdu.simbrief;
 
-    const fromTo = `${mcdu.simbrief.originIcao}/${mcdu.simbrief.destinationIcao}`;
-    const fltNbr = `${mcdu.simbrief.icao_airline}${mcdu.simbrief.flight_number}`;
+    const fromTo = `${originIcao}/${destinationIcao}`;
+    const fltNbr = `${icao_airline}${flight_number}`;
 
     const uplinkInProg = "UPLINK INSERT IN PROG";
     const aocActFplnUplink = "AOC ACT F-PLN UPLINK";
