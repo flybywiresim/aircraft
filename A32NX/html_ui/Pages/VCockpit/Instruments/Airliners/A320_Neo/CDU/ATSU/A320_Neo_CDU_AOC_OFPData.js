@@ -187,6 +187,8 @@ class CDUAocOfpData {
                 const centerTankFill = Math.min(centerTankCapacity, currentBlockFuelInGallons);
                 SimVar.SetSimVarValue(`FUEL TANK CENTER QUANTITY`, "Gallons", centerTankFill);
                 currentBlockFuelInGallons -= centerTankFill;
+
+                mcdu.updateFuelVars();
             }
         };
 
