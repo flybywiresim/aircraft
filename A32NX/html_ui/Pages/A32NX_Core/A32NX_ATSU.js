@@ -168,7 +168,7 @@ const getSimBriefOfp = (mcdu, updateView) => {
         .catch(_err => {
             console.log(_err.message);
 
-            mcdu.simbrief["sendStatus"] = "ERROR";
+            mcdu.simbrief["sendStatus"] = "READY";
             updateView();
         });
 };
