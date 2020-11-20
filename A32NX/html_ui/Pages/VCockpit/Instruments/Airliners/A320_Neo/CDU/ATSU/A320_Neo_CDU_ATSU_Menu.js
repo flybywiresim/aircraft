@@ -15,14 +15,13 @@ class CDUAtsuMenu {
             ["", "DATALINK[color]inop"],
             ["", "STATUS>[color]inop"],
             [""],
-            ["", "COMM MENU[color]inop"]
+            ["", "COMM MENU>"]
         ];
         mcdu.setTemplate(display);
 
         mcdu.leftInputDelay[0] = () => {
             return mcdu.getDelaySwitchPage();
         };
-
         mcdu.onLeftInput[0] = () => {
             CDUAtcMenu.ShowPage1(mcdu);
         };
@@ -30,9 +29,15 @@ class CDUAtsuMenu {
         mcdu.rightInputDelay[1] = () => {
             return mcdu.getDelaySwitchPage();
         };
-
         mcdu.onRightInput[1] = () => {
             CDUAocMenu.ShowPage(mcdu);
+        };
+
+        mcdu.rightInputDelay[5] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
+        mcdu.onRightInput[5] = () => {
+            CDUCommMenu.ShowPage(mcdu);
         };
     }
 }
