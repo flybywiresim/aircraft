@@ -145,7 +145,7 @@ class CDUInitPage {
                 }
             })
                 .then(() => {
-                    CDUAocInit.insertUplink(mcdu);
+                    insertUplink(mcdu);
                 });
         };
         mcdu.rightInputDelay[2] = () => {

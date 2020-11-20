@@ -172,3 +172,162 @@ const getSimBriefOfp = (mcdu, updateView) => {
             updateView();
         });
 };
+
+/**
+ * There are two uplink requests that are made at the same time:
+ * - AOC ACT F-PLN
+ * - PERF DATA
+ */
+const insertUplink = (mcdu) => {
+    const {
+        originIcao,
+        destinationIca,
+        cruiseAltitude,
+        costIndex,
+        alternateIcao,
+        avgTropopause,
+        icao_airline,
+        flight_number
+    } = mcdu.simbrief;
+
+    const fromTo = `${mcdu.simbrief.originIcao}/${mcdu.simbrief.destinationIcao}`;
+    const fltNbr = `${mcdu.simbrief.icao_airline}${mcdu.simbrief.flight_number}`;
+
+    const uplinkInProg = "UPLINK INSERT IN PROG";
+    const aocActFplnUplink = "AOC ACT F-PLN UPLINK";
+    const perfDataUplink = "PERF DATA UPLINK";
+
+    mcdu.showErrorMessage(uplinkInProg);
+
+    /**
+         * AOC ACT F-PLN UPLINK
+         * Updates:
+         * - From/To
+         * - Altn
+         * - F-pln
+         *
+         * TODO:
+         * - F-pln (almost done, needs some better error handling)
+         */
+    mcdu.tryUpdateFromTo(fromTo, async (result) => {
+        if (result) {
+            CDUPerformancePage.UpdateThrRedAccFromOrigin(mcdu);
+
+            await mcdu.tryUpdateAltDestination(alternateIcao);
+
+            setTimeout(async () => {
+                await uplinkRoute(mcdu);
+                mcdu.showErrorMessage(aocActFplnUplink);
+            }, mcdu.getDelayRouteChange());
+
+            if (mcdu.page.Current === mcdu.page.InitPageA) {
+                CDUInitPage.ShowPage1(mcdu);
+            }
+        }
+    });
+    mcdu.updateFlightNo(fltNbr, (result) => {
+        if (result) {
+            if (mcdu.page.Current === mcdu.page.InitPageA) {
+                CDUInitPage.ShowPage1(mcdu);
+            }
+        }
+    });
+
+    /**
+         * PERF DATA UPLINK
+         * Updates:
+         * - CRZ FL
+         * - CI
+         * - TROPO
+         *
+         * TODO:
+         * - CRZ TEMP
+         * - BLOCK
+         * - ?
+         */
+    setTimeout(() => {
+        if (mcdu.setCruiseFlightLevelAndTemperature(cruiseAltitude)) {
+        }
+        if (mcdu.tryUpdateCostIndex(costIndex)) {
+        }
+        if (mcdu.tryUpdateTropo(avgTropopause)) {
+        }
+        if (mcdu.page.Current === mcdu.page.InitPageA) {
+            CDUInitPage.ShowPage1(mcdu);
+        }
+    }, mcdu.getDelayHigh());
+};
+
+const addWaypointAsync = (mcdu, routeIdent, wpIndex, via) => {
+    if (via) {
+        return new Promise((res, rej) => {
+            mcdu.insertWaypointsAlongAirway(routeIdent, wpIndex, via, (result) => {
+                if (result) {
+                    console.log("Inserted waypoint: " + routeIdent + " via " + via);
+                    res(true);
+                } else {
+                    console.log('AWY/WPT MISMATCH ' + routeIdent + " via " + via);
+                    mcdu.showErrorMessage("AWY/WPT MISMATCH");
+                    res(false);
+                }
+            });
+        });
+    } else {
+        return new Promise((res, rej) => {
+            mcdu.getOrSelectWaypointByIdent(routeIdent, (waypoint) => {
+                if (waypoint) {
+                    mcdu.flightPlanManager.addWaypoint(waypoint.icao, wpIndex, () => {
+                        console.log("Inserted waypoint: " + routeIdent);
+                        res(true);
+                    });
+                } else {
+                    console.log('NOT IN DATABASE ' + routeIdent);
+                    mcdu.showErrorMessage("NOT IN DATABASE");
+                    res(false);
+                }
+            });
+        });
+    }
+};
+
+const uplinkRoute = async (mcdu) => {
+    const {navlog, route} = mcdu.simbrief;
+
+    const routeSplit = route.split(' ');
+    const procedures = new Set(navlog.filter(fix => fix.is_sid_star === "1").map(fix => fix.via_airway));
+
+    async function asyncForEach(array, callback) {
+        for (let index = 0; index < array.length; index++) {
+            await callback(array[index], index, array);
+        }
+    }
+
+    await asyncForEach(routeSplit, async (routeIdent, i) => {
+        console.log('----');
+        console.log(routeIdent);
+        for (const fix of navlog) {
+            if (fix.is_sid_star === "0") {
+                if (!procedures.has(routeIdent)) {
+                    if (routeIdent.match(/((^[0-9]+[a-z]+)|(^[a-z]+[0-9]+))+[0-9a-z]+$/i) || routeIdent === "DCT") {
+                        if (routeIdent === "DCT") {
+                            console.log("Direct to waypoint found, skipping");
+                            break;
+                        } else {
+                            const wpIndex = mcdu.flightPlanManager.getWaypointsCount() - 1;
+                            console.log("Inserting waypoint: " + routeSplit[i + 1] + " via " + routeIdent + " | " + wpIndex);
+                            await addWaypointAsync(mcdu, routeSplit[i + 1], wpIndex, routeIdent);
+
+                            break;
+                        }
+                    } else {
+                        const wpIndex = mcdu.flightPlanManager.getWaypointsCount() - 1;
+                        console.log("Inserting waypoint: " + routeIdent + " | " + wpIndex);
+                        await addWaypointAsync(mcdu, routeIdent, wpIndex);
+
+                        break;
+                    }
+                }
+            }
+        }
+    });
+};
