@@ -58,7 +58,11 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             payload: ""
         };
         this.aocTimes = {
-            doors: ""
+            doors: 0,
+            off: 0,
+            out: 0,
+            on: 0,
+            in: 0,
         };
     }
     get templateID() {
@@ -332,6 +336,8 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     }
     onUpdate(_deltaTime) {
         super.onUpdate(_deltaTime);
+
+        this.checkAocTimes();
 
         this.A32NXCore.update();
 
@@ -1592,9 +1598,53 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             this.landingResetTimer = 30;
         }
 
+        if (SimVar.GetSimVarValue("L:AIRLINER_FLIGHT_PHASE", "number") != this.currentFlightPhase) {
+            SimVar.SetSimVarValue("L:AIRLINER_FLIGHT_PHASE", "number", this.currentFlightPhase);
+            this.onFlightPhaseChanged();
+            SimVar.SetSimVarValue("L:A32NX_CABIN_READY", "Bool", 0);
+        }
+    }
+    checkAocTimes() {
+        if (!this.aocTimes.off) {
+            const isAirborne = !Simplane.getIsGrounded(); // TODO replace with proper flight mode in future
+            if (this.currentFlightPhase === FlightPhase.FLIGHT_PHASE_TAKEOFF && isAirborne) {
+                // Wheels off
+                // Off: remains blank until Take off time
+                const seconds = Math.floor(SimVar.GetGlobalVarValue("ZULU TIME", "seconds"));
+                this.aocTimes.off = seconds;
+            }
+        }
+
+        if (!this.aocTimes.out) {
+            const currentPKGBrakeState = SimVar.GetSimVarValue("BRAKE PARKING POSITION", "Bool");
+            if (this.currentFlightPhase === FlightPhase.FLIGHT_PHASE_PREFLIGHT && !currentPKGBrakeState) {
+                // Out: is when you set the brakes to off
+                const seconds = Math.floor(SimVar.GetGlobalVarValue("ZULU TIME", "seconds"));
+                this.aocTimes.out = seconds;
+            }
+        }
+
+        if (!this.aocTimes.on) {
+            const isAirborne = !Simplane.getIsGrounded(); // TODO replace with proper flight mode in future
+            if (this.aocTimes.off && !isAirborne) {
+                // On: remains blank until Landing time
+                const seconds = Math.floor(SimVar.GetGlobalVarValue("ZULU TIME", "seconds"));
+                this.aocTimes.on = seconds;
+            }
+        }
+
+        if (!this.aocTimes.in) {
+            const currentPKGBrakeState = SimVar.GetSimVarValue("BRAKE PARKING POSITION", "Bool");
+            const cabinDoorPctOpen = SimVar.GetSimVarValue("INTERACTIVE POINT OPEN:0", "percent");
+            if (this.aocTimes.on && currentPKGBrakeState && cabinDoorPctOpen > 20) {
+                // In: remains blank until brakes set to park AND the first door opens
+                const seconds = Math.floor(SimVar.GetGlobalVarValue("ZULU TIME", "seconds"));
+                this.aocTimes.in = seconds;
+            }
+        }
+
         if (this.currentFlightPhase == FlightPhase.FLIGHT_PHASE_PREFLIGHT) {
             const cabinDoorPctOpen = SimVar.GetSimVarValue("INTERACTIVE POINT OPEN:0", "percent");
-            console.log('cabinDoorPctOpen', cabinDoorPctOpen);
             if (!this.aocTimes.doors && cabinDoorPctOpen < 20) {
                 const seconds = Math.floor(SimVar.GetGlobalVarValue("ZULU TIME", "seconds"));
                 this.aocTimes.doors = seconds;
@@ -1603,12 +1653,6 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                     this.aocTimes.doors = "";
                 }
             }
-        }
-
-        if (SimVar.GetSimVarValue("L:AIRLINER_FLIGHT_PHASE", "number") != this.currentFlightPhase) {
-            SimVar.SetSimVarValue("L:AIRLINER_FLIGHT_PHASE", "number", this.currentFlightPhase);
-            this.onFlightPhaseChanged();
-            SimVar.SetSimVarValue("L:A32NX_CABIN_READY", "Bool", 0);
         }
     }
 
