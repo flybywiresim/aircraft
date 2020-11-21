@@ -3,6 +3,11 @@
 text.text-unit {
   fill: $display-cyan;
   font-size: $font-size-large;
+@import "../Common/definitions";
+
+text.text-unit {
+  fill: $display-cyan;
+  font-size: $font-size-xlarge;
 }
 
 text.text-value {
