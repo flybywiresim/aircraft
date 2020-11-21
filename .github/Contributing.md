@@ -6,9 +6,7 @@ Welcome to the A32NX project repository. Thank you for your interest in contribu
 
 [git](https://git-scm.com/downloads)
 
-[nodejs v12+](https://nodejs.org/en/download/)
-
-[python 3.9+](https://www.python.org/downloads/)
+[nodejs v14+](https://nodejs.org/en/download/)
 
 ## Optional
 
