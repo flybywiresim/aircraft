@@ -189,9 +189,9 @@ class NXApi {
         const long = SimVar.GetSimVarValue("PLANE LONGITUDE", "degree longitude");
         const alt = SimVar.GetSimVarValue("PLANE ALTITUDE", "feet");
         const heading = SimVar.GetSimVarValue("PLANE HEADING DEGREES MAGNETIC", "degree");
+        const acType = SimVar.GetSimVarValue("TITLE", "string");
         const origin = NXDataStore.get("PLAN_ORIGIN", "");
         const destination = NXDataStore.get("PLAN_DESTINATION", "");
-        const acType = NXDataStore.get("AC_TYPE", "unknown");
         const freetext = NXDataStore.get("CONFIG_ONLINE_FEATURES_STATUS", "DISABLED") === "ENABLED";
 
         return {
