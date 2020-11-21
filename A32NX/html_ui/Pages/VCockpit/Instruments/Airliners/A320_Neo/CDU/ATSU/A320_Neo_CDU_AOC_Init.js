@@ -6,6 +6,11 @@ function formatWeight(value) {
     return (+value).toFixed(1);
 }
 
+function formatTime(timestamp) {
+    var date = new Date(+timestamp * 1000);
+    return `${date.getUTCHours().toString().padStart(2, "0")}${date.getUTCMinutes().toString().padEnd(2, "0")}`;
+}
+
 class CDUAocInit {
     static ShowPage(mcdu) {
         mcdu.clearDisplay();
@@ -47,7 +52,7 @@ class CDUAocInit {
             fltNbr = `{small}${mcdu.simbrief.icao_airline}${mcdu.simbrief.flight_number}{end}[color]green`;
         }
         if (mcdu.simbrief.ete) {
-            ete = `${mcdu.simbrief.ete}[color]blue`;
+            ete = `${formatTime(mcdu.simbrief.ete)}[color]blue`;
         }
 
         const currentFob = formatWeight(mcdu.getFOB());
@@ -105,11 +110,6 @@ class CDUAocInit {
 
         const currentFob = formatWeight(mcdu.getFOB());
 
-        function formatTime(timestamp) {
-            var date = new Date(+timestamp * 1000);
-            return `${date.getUTCHours().toString().padStart(2, "0")}${date.getUTCMinutes().toString().padEnd(2, "0")}`;
-        }
-
         mcdu.refreshPageCallback = () => {
             CDUAocInit.ShowPage2(mcdu);
         };
@@ -125,12 +125,12 @@ class CDUAocInit {
             In: remains blank until brakes set to park AND the first door opens
          */
         let fob = `{small}---.-{end}[color]white`;
-        const fltTime = `----[color]white`;
+        let fltTime = `----[color]white`;
         let outTime = `----[color]white`;
         let doorsTime = `----[color]white`;
         let offTime = `----[color]white`;
         let onTime = `----[color]white`;
-        const inTime = `----[color]white`;
+        let inTime = `----[color]white`;
         let blockTime = `----[color]white`;
         let gmt = "0000[color]green";
 
@@ -140,21 +140,27 @@ class CDUAocInit {
         if (currentFob) {
             fob = `{small}${currentFob}{end}[color]green`;
         }
-        if (mcdu.simbrief["outTime"]) {
-            outTime = `${formatTime(mcdu.simbrief.outTime)}[color]green`;
+        if (mcdu.aocTimes.out) {
+            outTime = `${FMCMainDisplay.secondsTohhmm(mcdu.aocTimes.out)}[color]green`;
         }
         if (mcdu.aocTimes.doors) {
             doorsTime = `${FMCMainDisplay.secondsTohhmm(mcdu.aocTimes.doors)}[color]green`;
         }
-        if (mcdu.simbrief["offTime"]) {
-            offTime = `${formatTime(mcdu.simbrief.offTime)}[color]green`;
+        if (mcdu.aocTimes.off) {
+            offTime = `${FMCMainDisplay.secondsTohhmm(mcdu.aocTimes.off)}[color]green`;
+            let currentfltTime = 0;
+            if (mcdu.aocTimes.on) {
+                currentfltTime = mcdu.aocTimes.on - mcdu.aocTimes.off;
+            } else {
+                currentfltTime = seconds - mcdu.aocTimes.off;
+            }
+            fltTime = `${FMCMainDisplay.secondsTohhmm(currentfltTime)}[color]green`;
         }
-        if (mcdu.simbrief["onTime"]) {
-            onTime = `${formatTime(mcdu.simbrief.onTime)}[color]green`;
+        if (mcdu.aocTimes.on) {
+            onTime = `${FMCMainDisplay.secondsTohhmm(mcdu.aocTimes.on)}[color]green`;
         }
-        if (mcdu.simbrief["inTime"]) {
-            // In: remains blank until brakes set to park AND the first door opens
-            // inTime = `${formatTime(mcdu.simbrief.inTime)}[color]green`;
+        if (mcdu.aocTimes.in) {
+            inTime = `${FMCMainDisplay.secondsTohhmm(mcdu.aocTimes.in)}[color]green`;
         }
         if (mcdu.simbrief["blockTime"]) {
             blockTime = `${formatTime(mcdu.simbrief.blockTime)}[color]green`;
