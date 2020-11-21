@@ -101,6 +101,7 @@
 1. [CDU] Ported system messages type II to actual type II - @MisterChocker (Leon)
 1. [ECAM] Implemented proper FWC flight phases - @beheh (Benedict Etzel)
 1. [ECAM] Updated ECAM messages - @beheh (Benedict Etzel)
+1. [CDU] New improved RADNAV page | Ability to tune navaids with identifier - @St54Kevin (Kevin Karas)
 1. [PFD] Add QNH flashing when reach transition altitude - @Kimbyeoungjang (김병장#7165)
 
 ## 0.4.0
