@@ -1,0 +1,16 @@
+@import "../Common/definitions";
+
+text.text-unit {
+  fill: $display-cyan;
+  font-size: $font-size-xlarge;
+}
+
+text.text-value {
+  fill: $display-green;
+  font-size: $font-size-xlarge;
+}
+
+text.text-title {
+  fill: $display-white;
+  font-size: $font-size-xlarge;
+}
