@@ -50,6 +50,10 @@ class NXApi {
             return Promise.reject(NXApi.disabledError);
         }
 
+        if (!flightNo) {
+            return Promise.reject(NXApi.disabledError);
+        }
+
         const connectBody = NXApi.buildTelexBody(flightNo);
         const headers = {"Content-Type": "application/json"};
 
@@ -212,3 +216,6 @@ NXApi.disconnectedError = "TELEX DISCONNECTED";
 NXApi.noRecipientError = "NO RECIPIENT";
 NXApi.accessToken = "";
 NXApi.updateRate = 15000;
+
+NXDataStore.set("PLAN_ORIGIN", "");
+NXDataStore.set("PLAN_DESTINATION", "");
