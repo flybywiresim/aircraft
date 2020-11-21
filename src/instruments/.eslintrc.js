@@ -50,6 +50,7 @@ module.exports = {
         'strict': ['error', 'global'],
 
         'import/extensions': 'off',
+        'react/prop-types': 'off',
 
         // Not needed with react 17+
         'react/jsx-uses-react': 'off',
