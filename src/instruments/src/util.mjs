@@ -1,4 +1,6 @@
-import { useEffect, useRef } from 'react';
+/* global SimVar */
+
+import { useEffect, useState, useRef } from 'react';
 
 export const renderTarget = document.getElementById('A32NX_REACT_MOUNT');
 export const customElement = renderTarget.parentElement;
@@ -67,7 +69,30 @@ export function getSimVar(name, type) {
     return SIMVAR_CACHE.get(name);
 }
 
+export function getGlobalVar(name, type) {
+    if (!SIMVAR_CACHE.has(name)) {
+        SIMVAR_CACHE.set(name, SimVar.GetGlobalVarValue(name, type || SIMVAR_TYPES[name]));
+    }
+    return SIMVAR_CACHE.get(name);
+}
+
 export function setSimVar(name, value, type = SIMVAR_TYPES[name]) {
     SIMVAR_CACHE.delete(name);
     return SimVar.SetSimVarValue(name, type, value);
+}
+
+export function useSimVar(name, type) {
+    const [value, updater] = useState(0);
+
+    useUpdate(() => updater(getSimVar(name, type)));
+
+    return value;
+}
+
+export function useGlobalVar(name, type) {
+    const [value, updater] = useState(0);
+
+    useUpdate(() => updater(getGlobalVar(name, type)));
+
+    return value;
 }
