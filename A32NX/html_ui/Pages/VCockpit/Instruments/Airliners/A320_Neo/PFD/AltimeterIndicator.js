@@ -563,7 +563,7 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
                 this._blinkSTD(); //after crz phase, if under trans lvl, STD will blink
             }
         }
-        if (SimVar.GetSimVarValue("L:AIRLINER_FLIGHT_PHASE", "Number") = 7) {
+        if (SimVar.GetSimVarValue("L:AIRLINER_FLIGHT_PHASE", "Number") == 7) {
             if ((transitionAltitude <= indicatedAltitude) && (baroMode != "STD") && (SimVar.GetSimVarValue("L:A32NX_FWC_FLIGHT_PHASE", "number") > 3) && (SimVar.GetSimVarValue("L:A32NX_FWC_FLIGHT_PHASE", "number") < 9)) {
                 this._blinkQNH(); //GoAround, use CLIMB logic
             }
