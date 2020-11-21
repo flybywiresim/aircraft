@@ -1,13 +1,7 @@
 @font-face {
-  font-family: "Roboto";
-  src: url("/Fonts/RobotoMono-Medium.ttf") format("truetype");
-  font-weight: normal;
-  font-style: normal;
-}
-
-@font-face {
-  font-family: "Roboto-Light";
-  src: url("/Fonts/RobotoMono-Light.ttf") format("truetype");
+  font-family: "Ecam";
+  //noinspection CssUnknownTarget
+  src: url("/Fonts/ECAMFontRegular.ttf") format("truetype");
   font-weight: normal;
   font-style: normal;
 }
@@ -25,5 +19,5 @@
 
   visibility: visible !important;
 
-  font-family: Roboto;
+  font-family: "Ecam", monospace !important;
 }
