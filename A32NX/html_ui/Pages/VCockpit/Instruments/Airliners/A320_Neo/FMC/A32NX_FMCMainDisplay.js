@@ -2219,7 +2219,7 @@ class FMCMainDisplay extends BaseAirliners {
             return false;
         }
         if (isFinite(v) && v > 0) {
-            this.transitionAltitude = v;
+            this.perfApprTransAlt = v;
             SimVar.SetSimVarValue("L:AIRLINER_APPR_TRANS_ALT", "Number", v);
             return true;
         }
