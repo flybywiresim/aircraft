@@ -8,47 +8,15 @@ a320-neo-lower-ecam-cond {
   width: 100%;
   height: 100%;
 }
+
 a320-neo-lower-ecam-cond text {
   text-anchor: middle;
   alignment-baseline: central;
   word-spacing: 10;
 }
 
-/* Custom Styles */
-:root .CondZone {
-  fill: var(--displayWhite);
-  font-size: 24px;
-}
-
-:root .CondValue {
-  fill: var(--displayGreen);
-  font-size: 24px;
-  font-weight: bold;
-}
-:root .Smaller {
-  font-size: 22px;
-}
-
-:root .FanWarning {
-  fill: var(--displayAmber);
-  font-size: 22px;
-}
-
-:root .AltnMode {
-  fill: var(--displayGreen);
-  font-size: 22px;
-}
-
-:root .AlignLeft {
-  text-anchor: start !important;
-}
-
 :root .AlignCenter {
   text-anchor: middle !important;
-}
-
-:root .AlignRight {
-  text-anchor: end !important;
 }
 
 :root .Gauge {
@@ -57,16 +25,18 @@ a320-neo-lower-ecam-cond text {
   stroke-width: 2;
   stroke-miterlimit: 10;
 }
+
 :root .CondPlane {
   stroke: var(--displayLightGrey);
-  stroke-width: 3;
+  stroke-width: 1;
   fill: none;
 }
+
 .DuctStatus {
   fill: var(--displayWhite);
-  font-size: 22px;
   font-weight: bold;
 }
+
 .valve-moving > .st5 {
   stroke: var(--displayAmber);
 }
