@@ -1,4 +1,4 @@
-﻿@import url("/CSS/A32NX_Display_Common.css");
+@import url("/CSS/A32NX_Display_Common.css");
 
 :root {
   --bodyHeightScale: 1;
@@ -56,6 +56,117 @@ text {
   font-family: "ECAMFontRegular" !important;
 }
 
+.Magenta {
+  stroke: var(--displayMagenta);
+  fill: none;
+}
+.Magenta text {
+  fill: var(--displayMagenta);
+  stroke: none;
+}
+
+.Cyan {
+  stroke: var(--displayCyan);
+  fill: none;
+}
+.Cyan text {
+  fill: var(--displayCyan);
+  stroke: none;
+}
+
+.White {
+  stroke: var(--displayWhite);
+  fill: none;
+}
+.White text {
+  fill: var(--displayWhite);
+  stroke: none;
+}
+
+.Green {
+  stroke: var(--displayGreen);
+  fill: none;
+}
+.Green text {
+  stroke: var(--displayGreen);
+  stroke: none;
+}
+
+.Amber {
+  stroke: var(--displayAmber);
+  fill: none;
+}
+.Amber text {
+  fill: var(--displayAmber);
+  stroke: none;
+}
+
+.Yellow {
+  stroke: var(--displayYellow);
+  fill: none;
+}
+.Yellow.Fill {
+  fill: var(--displayYellow);
+  stroke: none;
+}
+.Yellow text {
+  fill: var(--displayYellow);
+  stroke: none;
+}
+
+.Red {
+  stroke: var(--displayRed);
+  fill: none;
+}
+.Red text {
+  fill: var(--displayRed);
+  stroke: none;
+}
+
+.EarthFill {
+  fill: #9c480c;
+  stroke: none;
+}
+.SkyFill {
+  fill: #0698ff;
+  stroke: none;
+}
+
+.TapeBackground {
+  fill: var(--displayGrey);
+  stroke: none;
+}
+
+.BackgroundFill {
+  fill: var(--displayBackground);
+  stroke: none;
+  fill-rule: evenodd;
+}
+
+.NormalStroke {
+  stroke-width: 0.185mm;
+}
+
+.FontLargest {
+  font-size: 7px;
+}
+
+.FontLarge {
+  font-size: 6.5px;
+}
+
+.FontMedium {
+  font-size: 5.5px;
+}
+
+.FontSmall {
+  font-size: 5px;
+}
+
+.FontSmallest {
+  font-size: 4.5px;
+}
+
 a320-neo-pfd-element {
   width: 100%;
   height: 100%;
@@ -86,92 +197,10 @@ a320-neo-pfd-element #Mainframe {
   background-color: transparent !important;
   position: relative;
 }
-a320-neo-pfd-element #Mainframe #HorizonContainer {
-  transform: rotateX(0);
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  z-index: -6;
-  border: none;
-  background-color: transparent !important;
-  overflow: hidden;
-}
-a320-neo-pfd-element #Mainframe #HorizonContainer #Horizon {
-  position: absolute;
-  left: 15%;
-  top: 20.5%;
-  width: 58%;
-  height: 48%;
-  border: none;
-  background-color: transparent !important;
-  transform: scale(0.9);
-}
-a320-neo-pfd-element #Mainframe #HorizonContainer #GroundCursor {
-  position: absolute;
-  left: 40.9%;
-  top: 47.7%;
-  width: 7%;
-  height: 7%;
-  border: none;
-  display: block;
-}
-a320-neo-pfd-element #Mainframe #HorizonContainer #GroundCursor svg line {
-  stroke-width: 2.6;
-  stroke: var(--displayWhite);
-}
-a320-neo-pfd-element #Mainframe #HorizonContainer #GroundCursorLimits {
-  position: absolute;
-  left: 25.1%;
-  top: 36.7%;
-  width: 37.5%;
-  height: 10%;
-  border: none;
-  display: block;
-}
-a320-neo-pfd-element #Mainframe #HorizonContainer #GroundCursorLimits svg line {
-  stroke-width: 14;
-  stroke: var(--displayWhite);
-}
 a320-neo-pfd-element #Mainframe #InstrumentsContainer {
   transform: rotateX(0);
   width: 100%;
   height: 100%;
-  z-index: 0;
-}
-a320-neo-pfd-element #Mainframe #InstrumentsContainer #Altimeter {
-  transform: rotateX(0);
-  position: absolute;
-  top: 21.5%;
-  left: 68%;
-  width: 28%;
-  height: 100%;
-}
-a320-neo-pfd-element #Mainframe #InstrumentsContainer #Airspeed {
-  transform: rotateX(0);
-  position: absolute;
-  top: 17.5%;
-  left: -4%;
-  width: 24%;
-  height: 67.5%;
-}
-a320-neo-pfd-element #Mainframe #InstrumentsContainer #VSpeed {
-  transform: rotateX(0);
-  position: absolute;
-  border: none;
-  top: 17.5%;
-  left: 92%;
-  width: 28%;
-  height: 100%;
-  z-index: 0;
-}
-a320-neo-pfd-element #Mainframe #InstrumentsContainer #Compass {
-  transform: rotateX(0);
-  position: absolute;
-  border: none;
-  top: 88%;
-  left: 19%;
-  width: 50%;
-  height: 45%;
   z-index: 0;
 }
 a320-neo-pfd-element #Mainframe #InstrumentsContainer #FMA {
