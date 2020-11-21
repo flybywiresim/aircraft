@@ -537,18 +537,6 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
         this.STDpressureSVGShape.classList.add("blink");
     }
 
-    _removeBlink() {
-        this.pressureSVGLegend.classList.remove("blink");
-        this.pressureSVG.classList.remove("blink");
-        this.STDpressureSVG.classList.remove("blink");
-        this.STDpressureSVGShape.classList.remove("blink");
-    }
-
-    _removeQNHBlink() {
-        this.pressureSVGLegend.classList.remove("blink");
-        this.pressureSVG.classList.remove("blink");
-    }
-
     _updateQNHAlert(indicatedAltitude, baroMode) {
         this._removeBlink(); //Reset Blink
 
@@ -570,19 +558,19 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
             if ((transitionAltitude > indicatedAltitude) && (baroMode == "STD") && (SimVar.GetSimVarValue("L:A32NX_FWC_FLIGHT_PHASE", "number") > 3) && (SimVar.GetSimVarValue("L:A32NX_FWC_FLIGHT_PHASE", "number") < 9)) {
                 this._blinkSTD(); //when climb phase, do not use STD.
             }
-        } else if (flightPhase = 7) {
+        }      
+        if ((flightPhase > 4) && (flightPhase < 7)) {
+            if ((transitionLevel >= indicatedAltitude) && (baroMode == "STD") && (SimVar.GetSimVarValue("L:A32NX_FWC_FLIGHT_PHASE", "number") > 3) && (SimVar.GetSimVarValue("L:A32NX_FWC_FLIGHT_PHASE", "number") < 9)) {
+                this._blinkSTD(); //after crz phase, if under trans lvl, STD will blink
+            }
+        }
+        if (flightPhase = 7) {
             if ((transitionAltitude <= indicatedAltitude) && (baroMode != "STD") && (SimVar.GetSimVarValue("L:A32NX_FWC_FLIGHT_PHASE", "number") > 3) && (SimVar.GetSimVarValue("L:A32NX_FWC_FLIGHT_PHASE", "number") < 9)) {
                 this._blinkQNH(); //GoAround, use CLIMB logic
             }
             if ((transitionAltitude > indicatedAltitude) && (baroMode == "STD") && (SimVar.GetSimVarValue("L:A32NX_FWC_FLIGHT_PHASE", "number") > 3) && (SimVar.GetSimVarValue("L:A32NX_FWC_FLIGHT_PHASE", "number") < 9)) {
-                this._blinkSTD(); //GoAround, use CLIMB logic
+                this._blinkSTD();
             }
-        } else {
-            if ((transitionLevel >= indicatedAltitude) && (baroMode == "STD") && (SimVar.GetSimVarValue("L:A32NX_FWC_FLIGHT_PHASE", "number") > 3) && (SimVar.GetSimVarValue("L:A32NX_FWC_FLIGHT_PHASE", "number") < 9)) {
-                this._blinkSTD(); //after climb phase, if under trans lvl, STD will blink
-            }
-            //also, there is no QNH flashing logic after climb because i can't do that.
-            //only flashing GoAround Phase, after crz phase, there is no reason to change STD.
         }
     }
 
