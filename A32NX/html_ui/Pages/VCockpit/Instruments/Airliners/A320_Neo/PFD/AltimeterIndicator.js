@@ -544,21 +544,32 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
         this.STDpressureSVGShape.classList.remove("blink");
     }
 
+    _removeQNHBlink() {
+        this.pressureSVGLegend.classList.remove("blink");
+        this.pressureSVG.classList.remove("blink");
+    }
+
     _updateQNHAlert(indicatedAltitude, baroMode) {
-        this._removeBlink();
+        this._removeBlink(); //Reset Blink
 
         if (SimVar.GetSimVarValue("L:AIRLINER_TRANS_ALT", "Number") == 0) {
-            SimVar.SetSimVarValue("L:AIRLINER_TRANS_ALT", "Number", 10000);
+            SimVar.SetSimVarValue("L:AIRLINER_TRANS_ALT", "Number", 10000); //Default TRANS ALT to 10,000ft
         }
-        const transitionAltitude = SimVar.GetSimVarValue("L:AIRLINER_TRANS_ALT", "Number");
-        const transitionAPPRAltitude = SimVar.GetSimVarValue("L:AIRLINER_APPR_TRANS_ALT", "Number");
+        if (SimVar.GetSimVarValue("L:AIRLINER_APPR_TRANS_ALT", "Number") == 0) {
+            SimVar.SetSimVarValue("L:AIRLINER_APPR_TRANS_ALT", "Number", 10000); //Default TRANS LVL to 10,000ft
+        }
 
-        if ((transitionAltitude <= indicatedAltitude) && (baroMode != "STD") && (SimVar.GetSimVarValue("L:A32NX_FWC_FLIGHT_PHASE", "number") > 3) && (SimVar.GetSimVarValue("L:A32NX_FWC_FLIGHT_PHASE", "number") < 9)) {
+        const transitionAltitude = SimVar.GetSimVarValue("L:AIRLINER_TRANS_ALT", "Number");
+        const transitionLevel = SimVar.GetSimVarValue("L:AIRLINER_APPR_TRANS_ALT", "Number");
+
+        if ((transitionAltitude < indicatedAltitude) && (baroMode != "STD") && (SimVar.GetSimVarValue("L:A32NX_FWC_FLIGHT_PHASE", "number") > 3) && (SimVar.GetSimVarValue("L:A32NX_FWC_FLIGHT_PHASE", "number") < 9)) {
             this._blinkQNH();
         }
-
-        if ((transitionAPPRAltitude > indicatedAltitude) && (baroMode == "STD") && (SimVar.GetSimVarValue("L:A32NX_FWC_FLIGHT_PHASE", "number") > 3) && (SimVar.GetSimVarValue("L:A32NX_FWC_FLIGHT_PHASE", "number") < 9)) {
+        if ((transitionLevel > indicatedAltitude) && (baroMode == "STD") && (SimVar.GetSimVarValue("L:A32NX_FWC_FLIGHT_PHASE", "number") > 3) && (SimVar.GetSimVarValue("L:A32NX_FWC_FLIGHT_PHASE", "number") < 9)) {
             this._blinkSTD();
+        }
+        if (indicatedAltitude > transitionAltitude && indicatedAltitude < transitionLevel && SimVar.GetSimVarValue("L:AIRLINER_FLIGHT_PHASE", "number") > 3 && SimVar.GetSimVarValue("L:AIRLINER_FLIGHT_PHASE", "number") != 7) {
+            this._removeQNHBlink();
         }
     }
 
