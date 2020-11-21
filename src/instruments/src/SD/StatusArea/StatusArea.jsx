@@ -14,13 +14,13 @@ export const StatusArea = () => {
             <path className="sd-status-line" d="M 200 510 v 100" />
             <path className="sd-status-line" d="M 400 510 v 100" />
 
-            <Text title x={410} y={532} alignStart>
+            <Text title x={415} y={534} alignStart>
                 GW
             </Text>
-            <Text value x={520} y={532} alignEnd>
+            <Text value x={535} y={534} alignEnd>
                 {Math.round(gw)}
             </Text>
-            <Text unit x={556} y={532}>
+            <Text unit x={570} y={534} alignEnd>
                 KG
             </Text>
         </>
