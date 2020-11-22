@@ -536,6 +536,14 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
         this.STDpressureSVG.classList.add("blink");
         this.STDpressureSVGShape.classList.add("blink");
     }
+
+    _removeBlink() {
+        this.pressureSVGLegend.classList.remove("blink");
+        this.pressureSVG.classList.remove("blink");
+        this.STDpressureSVG.classList.remove("blink");
+        this.STDpressureSVGShape.classList.remove("blink");
+    }
+
     _updateQNHAlert(indicatedAltitude, baroMode) {
         this._removeBlink(); //Reset Blink
 
