@@ -8,13 +8,16 @@ var A320_Neo_LowerECAM_COND;
             super();
             this.isInitialised = false;
         }
+
         get templateID() {
             return "LowerECAMCONDTemplate";
         }
+
         connectedCallback() {
             super.connectedCallback();
             TemplateElement.call(this, this.init.bind(this));
         }
+
         init() {
             if (BaseAirliners.unitIsMetric(Aircraft.A320_NEO)) {
                 this.querySelector("#CondTempUnit").textContent = "°C";
@@ -42,21 +45,8 @@ var A320_Neo_LowerECAM_COND;
             this.fanWarningIndication[1].setAttribute("visibility", "hidden");
 
             this.querySelector("#AltnMode").setAttribute("visibility", "hidden");
-
-            // Init Cabin Temp
-            if (Simplane.getIsGrounded()) {
-                SimVar.SetSimVarValue("L:A32NX_CKPT_TEMP", "celsius", Simplane.getAmbientTemperature());
-                SimVar.SetSimVarValue("L:A32NX_FWD_TEMP", "celsius", Simplane.getAmbientTemperature());
-                SimVar.SetSimVarValue("L:A32NX_AFT_TEMP", "celsius", Simplane.getAmbientTemperature());
-            } else {
-                // TODO FIX - not a function error
-                const defaultCabinTemp = 18; // Initial airborne cabin temperature
-                //Simvar.SetSimVarValue("L:A32NX_CKPT_TEMP", "celsius", defaultCabinTemp);
-                //Simvar.SetSimVarValue("L:A32NX_FWD_TEMP", "celsius", defaultCabinTemp);
-                //Simvar.SetSimVarValue("L:A32NX_AFT_TEMP", "celsius", defaultCabinTemp);
-            }
-
         }
+
         update(_deltaTime) {
             if (!this.isInitialised || !A320_Neo_EICAS.isOnBottomScreen()) {
                 return;

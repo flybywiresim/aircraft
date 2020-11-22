@@ -9,6 +9,12 @@ class A32NX_LocalVarUpdater {
     constructor() {
         // Initial data for deltas
         this.lastFlapsPosition = SimVar.GetSimVarValue("TRAILING EDGE FLAPS LEFT PERCENT", "percent");
+        // track which compartment has gotten temperature initialization
+        this.initializedCabinTemp = {
+            "CKPT":false,
+            "FWD":false,
+            "AFT":false
+        };
 
         this.updaters = [
             {
@@ -37,19 +43,19 @@ class A32NX_LocalVarUpdater {
             {
                 varName: "L:A32NX_CKPT_TEMP",
                 type: "celsius",
-                selector: this._condTrimOutletSelector,
+                selector: this._condTrimOutletSelector.bind(this),
                 identifier: "CKPT"
             },
             {
                 varName: "L:A32NX_FWD_TEMP",
                 type: "celsius",
-                selector: this._condTrimOutletSelector,
+                selector: this._condTrimOutletSelector.bind(this),
                 identifier: "FWD"
             },
             {
                 varName: "L:A32NX_AFT_TEMP",
                 type: "celsius",
-                selector: this._condTrimOutletSelector,
+                selector: this._condTrimOutletSelector.bind(this),
                 identifier: "AFT"
             },
             {
@@ -106,7 +112,14 @@ class A32NX_LocalVarUpdater {
     }
 
     _condTrimOutletSelector(_compartment) {
-        // Uses outlet temperature of trim air valves to generate the cabin temperature
+        // Cabin initially has outside temperature
+        if (!this.initializedCabinTemp[_compartment]) {
+            this.initializedCabinTemp[_compartment] = true;
+
+            return Simplane.getAmbientTemperature();
+        }
+
+        // Use outlet temperature of trim air valves to generate the cabin temperature
         const currentCabinTemp = SimVar.GetSimVarValue("L:A32NX_" + _compartment + "_TEMP", "celsius");
         const trimTemp = SimVar.GetSimVarValue("L:A32NX_" + _compartment + "_TRIM_TEMP", "celsius");
 
