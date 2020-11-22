@@ -103,6 +103,7 @@
 1. [ECAM] Implemented proper FWC flight phases - @beheh (Benedict Etzel)
 1. [ECAM] Updated ECAM messages - @beheh (Benedict Etzel)
 1. [CDU] New improved RADNAV page | Ability to tune navaids with identifier - @St54Kevin (Kevin Karas)
+1. [ECAM] Added flight phase inhibit override to recall button - @beheh (Benedict Etzel)
 
 ## 0.4.0
 1. [General] Add CHANGELOG.md - @nathaninnes (Nathan Innes)

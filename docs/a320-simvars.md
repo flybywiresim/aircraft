@@ -286,3 +286,15 @@
 - A32NX_FWC_SKIP_STARTUP
     - Bool
     - Set to true in a non-cold and dark flight phase to skip the initial memorization step
+
+- A32NX_FWC_TOMEMO
+    - Bool
+    - True when the FWC decides that the takeoff memo should be shown
+
+- A32NX_FWC_LDGMEMO
+    - Bool
+    - True when the FWC decides that the landing memo should be shown
+
+- A32NX_FWC_INHIBOVRD
+    - Bool
+    - True when the FWC decides that flight phase inhibits should be overridden (and ignored)
