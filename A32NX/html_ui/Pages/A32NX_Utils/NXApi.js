@@ -188,7 +188,7 @@ class NXApi {
         const lat = SimVar.GetSimVarValue("PLANE LATITUDE", "degree latitude");
         const long = SimVar.GetSimVarValue("PLANE LONGITUDE", "degree longitude");
         const alt = SimVar.GetSimVarValue("PLANE ALTITUDE", "feet");
-        const heading = SimVar.GetSimVarValue("PLANE HEADING DEGREES MAGNETIC", "degree");
+        const heading = SimVar.GetSimVarValue("PLANE HEADING DEGREES TRUE", "degree");
         const acType = SimVar.GetSimVarValue("TITLE", "string");
         const origin = NXDataStore.get("PLAN_ORIGIN", "");
         const destination = NXDataStore.get("PLAN_DESTINATION", "");
