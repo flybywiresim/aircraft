@@ -7,8 +7,7 @@
 ## 0.5.0
 1. [FLIGHTMODEL] Reworked AOA table - @donstim - (donbikes#4084)
 1. [FLIGHTMODEL] Reworked flaps - @donstim - (donbikes#4084)
-1. [FLIGHTMODEL] Reworked drag/thrust ratio - @MisterChocker - (Leon)
-1. [FLIGHTMODEL] Reduced rudder effectiveness - @MisterChocker - (Leon)
+1. [FLIGHTMODEL] Reworked drag/thrust ratio - @donstim - (donbikes#4084)
 1. [ENGINE] Adjusted N1% thrust table - @MisterChocker - (Leon)
 1. [PFD] Added independent calculations for GD, Vls, Vaprot, Vamax, Vs - @MisterChocker - (Leon)
 1. [PFD] Fixed V1 not disappear after liftoff - @MisterChocker - (Leon)
