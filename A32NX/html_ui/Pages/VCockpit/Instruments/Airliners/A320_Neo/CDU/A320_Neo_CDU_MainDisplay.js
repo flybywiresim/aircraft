@@ -102,9 +102,6 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             CDU_OPTIONS_TELEX.ShowPage(this);
         }
 
-        // Set up the AC type for the API
-        NXDataStore.set("AC_TYPE", "A32NX");
-
         // Start the TELEX Ping. API functions check the connection status themself
         setInterval(() => {
             const toDelete = [];
