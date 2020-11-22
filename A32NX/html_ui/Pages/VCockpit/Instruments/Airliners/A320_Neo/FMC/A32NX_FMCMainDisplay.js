@@ -61,6 +61,7 @@ class FMCMainDisplay extends BaseAirliners {
         this._vor2Frequency = 0;
         this._vor2Course = 0;
         this._ilsFrequency = 0;
+        this._ilsFrequencyPilotEntered = false;
         this._ilsCourse = 0;
         this._adf1Frequency = 0;
         this._adf2Frequency = 0;
@@ -886,6 +887,7 @@ class FMCMainDisplay extends BaseAirliners {
                 if (isFinite(frequency)) {
                     const freq = Math.round(frequency * 100) / 100;
                     if (this.connectIlsFrequency(freq)) {
+                        this._ilsFrequencyPilotEntered = false;
                         SimVar.SetSimVarValue("L:FLIGHTPLAN_APPROACH_ILS", "number", freq);
                         const approach = this.flightPlanManager.getApproach();
                         if (approach && approach.name && approach.name.indexOf("ILS") !== -1) {
@@ -952,6 +954,30 @@ class FMCMainDisplay extends BaseAirliners {
                 return callback(undefined);
             }
             return callback(waypoints[0]);
+        });
+    }
+    getOrSelectVORsByIdent(ident, callback) {
+        this.dataManager.GetVORsByIdent(ident).then((navaids) => {
+            if (!navaids || navaids.length === 0) {
+                this.showErrorMessage("NOT IN DATABASE");
+                return callback(undefined);
+            }
+            if (navaids.length === 1) {
+                return callback(navaids[0]);
+            }
+            A320_Neo_CDU_SelectWptPage.ShowPage(this, navaids, callback);
+        });
+    }
+    getOrSelectNDBsByIdent(ident, callback) {
+        this.dataManager.GetNDBsByIdent(ident).then((navaids) => {
+            if (!navaids || navaids.length === 0) {
+                this.showErrorMessage("NOT IN DATABASE");
+                return callback(undefined);
+            }
+            if (navaids.length === 1) {
+                return callback(navaids[0]);
+            }
+            A320_Neo_CDU_SelectWptPage.ShowPage(this, navaids, callback);
         });
     }
 
@@ -2542,12 +2568,15 @@ class FMCMainDisplay extends BaseAirliners {
     setIlsFrequency(s) {
         if (s === FMCMainDisplay.clrValue) {
             this.ilsFrequency = 0;
+            this.radioNav.setILSActiveFrequency(1, 0);
+            this._ilsFrequencyPilotEntered = false;
             return true;
         }
         const v = parseFloat(s);
         if (isFinite(v)) {
             const freq = Math.round(v * 100) / 100;
             if (this.connectIlsFrequency(freq)) {
+                this._ilsFrequencyPilotEntered = true;
                 return true;
             }
             this.showErrorMessage("OUT OF RANGE");
@@ -2891,6 +2920,7 @@ class FMCMainDisplay extends BaseAirliners {
                     if (isFinite(frequency)) {
                         const freq = Math.round(frequency * 100) / 100;
                         if (this.connectIlsFrequency(freq)) {
+                            this._ilsFrequencyPilotEntered = false;
                             SimVar.SetSimVarValue("L:FLIGHTPLAN_APPROACH_ILS", "number", freq);
                             const approach = this.flightPlanManager.getApproach();
                             if (approach && approach.name && approach.name.indexOf("ILS") !== -1) {
