@@ -563,8 +563,8 @@ class Jet_MFD_NDCompass extends Jet_NDCompass {
 
                     this.trackingGroup.appendChild(this.trackingLine);
                 }
-                
-                this.trackingGroup.appendChild(this.trackingBug);                
+
+                this.trackingGroup.appendChild(this.trackingBug);
             }
             this.rotatingCircle.appendChild(this.trackingGroup);
             this.headingGroup = document.createElementNS(Avionics.SVG.NS, "g");
