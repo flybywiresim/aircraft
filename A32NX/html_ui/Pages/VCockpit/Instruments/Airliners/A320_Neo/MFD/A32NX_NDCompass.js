@@ -171,6 +171,16 @@ class Jet_MFD_NDCompass extends Jet_NDCompass {
                     this.trackingBug.setAttribute("stroke-width", "2");
                     this.trackingBug.setAttribute("fill", "transparent");
                     this.trackingGroup.appendChild(this.trackingBug);
+
+                    this.trackingLine = document.createElementNS(Avionics.SVG.NS, "line");
+                    this.trackingLine.setAttribute("id", "trackingLine");
+                    this.trackingLine.setAttribute("stroke", "#00FF00");
+                    this.trackingLine.setAttribute("x1", "50");
+                    this.trackingLine.setAttribute("y1", (30 + circleRadius).toString());
+                    this.trackingLine.setAttribute("x2", "50");
+                    this.trackingLine.setAttribute("y2", (-348 + circleRadius - halfh * 2).toString());
+                    this.trackingLine.setAttribute("stroke-width", "2");
+                    this.trackingGroup.appendChild(this.trackingLine);
                 }
                 this.rotatingCircle.appendChild(this.trackingGroup);
                 this.headingGroup = document.createElementNS(Avionics.SVG.NS, "g");
@@ -528,8 +538,8 @@ class Jet_MFD_NDCompass extends Jet_NDCompass {
             this.trackingGroup = document.createElementNS(Avionics.SVG.NS, "g");
             this.trackingGroup.setAttribute("id", "trackingGroup");
             {
-                const halfw = 13;
-                const halfh = 20;
+                const halfw = 7;
+                const halfh = 10;
                 const p1 = (500) + ", " + (500 - circleRadius);
                 const p2 = (500 + halfw) + ", " + (500 - circleRadius + halfh);
                 const p3 = (500) + ", " + (500 - circleRadius + halfh * 2);
@@ -540,7 +550,21 @@ class Jet_MFD_NDCompass extends Jet_NDCompass {
                 this.trackingBug.setAttribute("stroke", "#00FF00");
                 this.trackingBug.setAttribute("stroke-width", "2");
                 this.trackingBug.setAttribute("fill", "transparent");
-                this.trackingGroup.appendChild(this.trackingBug);
+
+                if (this.navigationMode === Jet_NDCompass_Navigation.NAV) {
+                    this.trackingLine = document.createElementNS(Avionics.SVG.NS, "line");
+                    this.trackingLine.setAttribute("id", "trackingLine");
+                    this.trackingLine.setAttribute("stroke", "#00FF00");
+                    this.trackingLine.setAttribute("x1", "500");
+                    this.trackingLine.setAttribute("y1", (170 + circleRadius).toString());
+                    this.trackingLine.setAttribute("x2", "500");
+                    this.trackingLine.setAttribute("y2", (-125 + circleRadius - halfh * 2).toString());
+                    this.trackingLine.setAttribute("stroke-width", "3");
+
+                    this.trackingGroup.appendChild(this.trackingLine);
+                }
+                
+                this.trackingGroup.appendChild(this.trackingBug);                
             }
             this.rotatingCircle.appendChild(this.trackingGroup);
             this.headingGroup = document.createElementNS(Avionics.SVG.NS, "g");
