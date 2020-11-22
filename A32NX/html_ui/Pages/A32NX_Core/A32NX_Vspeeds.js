@@ -353,7 +353,7 @@ class A32NX_Vspeeds {
             );
             SimVar.SetSimVarValue("L:A32NX_FS", "number", fs[this.cgw](this.lastGw));
             SimVar.SetSimVarValue("L:A32NX_SS", "number", ss[this.cgw](this.lastGw));
-            SimVar.SetSimVarValue("L:A32NX_GD", "number", this.compensateForMachEffect(this.calculateGreenDotSpeed()));
+            SimVar.SetSimVarValue("L:A32NX_GD", "number", this.curFhi === 0 ? this.compensateForMachEffect(this.calculateGreenDotSpeed()) : 0);
             // TODO: Integrate new SimVar
             // const vref = Math.ceil(vls[SimVar.GetSimVarValue("L:A32NX_LANDING_CONF3", "boolean") ? 3 : 4][this.cgw](this.lastGw, 1));
             // SimVar.SetSimVarValue("L:A32NX_VLS_APP", "number", vref);
