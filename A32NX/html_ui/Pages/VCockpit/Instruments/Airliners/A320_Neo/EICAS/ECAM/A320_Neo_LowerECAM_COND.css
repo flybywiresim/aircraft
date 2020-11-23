@@ -1,42 +1,4 @@
-﻿:root {
-  --ecamDefaultColour: white;
-  --ecamUnitsColour: #009696;
-  --ecamValueColour: green;
-  --ecamWarningColour: #db7200;
-  --ecamDangerColour: red;
-  --ecamInactiveColour: #db7200;
-  --ecamSeparatorsColour: white; 
-  --ecamCondPlaneColour: #a1c9c9;
-}
-:root .Separator {
-  stroke: #3c3c3c;
-  stroke-width: 4;
-  fill: none; 
-}
-:root div {
-  font-family: Roboto-Bold; 
-}
-:root text {
-  font-family: Roboto-Bold; 
-}
-:root .CondTitle {
-  fill: var(--ecamDefaultColour);
-  font-size: 32px;
-  text-decoration: underline; 
-}
-:root .CondTitleUnit {
-  fill: var(--ecamDefaultColour);
-  font-size: 28px; 
-}
-:root .CondUnit {
-  fill: var(--ecamUnitsColour);
-  font-size: 24px;
-}
-:root .PlaneSym {
-  stroke: var(--ecamDefaultColour);
-  stroke-width: 2;
-  fill: none; 
-}
+﻿@import url("/CSS/A32NX_Display_Common.css");
 
 a320-neo-lower-ecam-cond {
   display: block;
@@ -44,66 +6,37 @@ a320-neo-lower-ecam-cond {
   top: -5%;
   left: 0%;
   width: 100%;
-  height: 100%; 
+  height: 100%;
 }
+
 a320-neo-lower-ecam-cond text {
   text-anchor: middle;
   alignment-baseline: central;
-  word-spacing: 10; 
-}
-
-/* Custom Styles */
-:root .CondZone {
-  fill: var(--ecamDefaultColour);
-  font-size: 24px;
-}
-
-:root .CondValue {
-  fill: var(--ecamValueColour);
-  font-size: 24px;
-  font-weight: bold;
-}
-:root .Smaller {
-  font-size: 22px;
-}
-
-:root .FanWarning {
-  fill: var(--ecamWarningColour);
-  font-size: 22px;
-}
-
-:root .AltnMode {
-  fill: var(--ecamValueColour);
-  font-size: 22px;
-}
-
-:root .AlignLeft {
-  text-anchor: start !important;
+  word-spacing: 10;
 }
 
 :root .AlignCenter {
   text-anchor: middle !important;
 }
 
-:root .AlignRight {
-  text-anchor: end !important;
+:root .Gauge {
+  fill: none;
+  stroke: var(--displayWhite);
+  stroke-width: 2;
+  stroke-miterlimit: 10;
 }
 
-:root .Gauge {
-  fill:none;stroke:#FFFFFF;
-  stroke-width:2;
-  stroke-miterlimit:10;
-}
 :root .CondPlane {
-  stroke:var(--ecamCondPlaneColour);
-  stroke-width: 3;
-  fill: none; 
+  stroke: var(--displayLightGrey);
+  stroke-width: 1;
+  fill: none;
 }
-.DuctStatus{
-  fill: var(--ecamDefaultColour);
-  font-size: 22px;
+
+.DuctStatus {
+  fill: var(--displayWhite);
   font-weight: bold;
 }
+
 .valve-moving > .st5 {
   stroke: var(--displayAmber);
 }

@@ -1416,7 +1416,7 @@ class FMCMainDisplay extends BaseAirliners {
         if (SimVar.GetSimVarValue("PLANE ALTITUDE", "feet") < 10000) {
             speed = Math.min(speed, 250);
         }
-        return speed;
+        return Math.min(speed, this.getSpeedConstraint());
     }
 
     getCrzManagedSpeed() {
@@ -1426,7 +1426,7 @@ class FMCMainDisplay extends BaseAirliners {
         if (SimVar.GetSimVarValue("PLANE ALTITUDE", "feet") < 10000) {
             speed = Math.min(speed, 250);
         }
-        return speed;
+        return Math.min(speed, this.getSpeedConstraint(false));
     }
 
     getDesManagedSpeed() {
@@ -1439,7 +1439,7 @@ class FMCMainDisplay extends BaseAirliners {
         if (SimVar.GetSimVarValue("PLANE ALTITUDE", "feet") < 10000) {
             speed = Math.min(speed, 250);
         }
-        return speed;
+        return Math.min(speed, this.getSpeedConstraint(false));
     }
 
     getFlapApproachSpeed(useCurrentWeight = true) {
@@ -2210,9 +2210,19 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     setPerfApprTransAlt(s) {
-        const value = parseFloat(s);
-        if (isFinite(value) && value > 0 && value < 60000) {
-            this.perfApprTransAlt = value;
+        if (!/^\d+$/.test(s)) {
+            this.showErrorMessage("FORMAT ERROR");
+            return false;
+        }
+        const v = parseInt(s);
+        const transALT = SimVar.GetSimVarValue("L:AIRLINER_TRANS_ALT", "Number");
+        if (s < transALT) {
+            this.showErrorMessage("NOT ALLOWED");
+            return false;
+        }
+        if (isFinite(v) && v > 0) {
+            this.perfApprTransAlt = v;
+            SimVar.SetSimVarValue("L:AIRLINER_APPR_TRANS_ALT", "Number", v);
             return true;
         }
         this.showErrorMessage(this.defaultInputErrorMessage);
