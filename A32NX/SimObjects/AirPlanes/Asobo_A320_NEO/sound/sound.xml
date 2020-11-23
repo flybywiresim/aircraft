@@ -830,6 +830,14 @@
                 <Range LowerBound="28" />
             </Requires>
         </Sound>
+        
+        <!-- Alert when reach selected altitude -->
+        <Sound WwiseData="true" WwiseEvent="NEED TO INSERT SOUND" LocalVar="A32NX_ReachAltitude" Continuous="false">
+            <Range LowerBound="1" />
+            <Requires SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1">
+                <Range LowerBound="28" />
+            </Requires>
+        </Sound>
 
     </SimVarSounds>
 
