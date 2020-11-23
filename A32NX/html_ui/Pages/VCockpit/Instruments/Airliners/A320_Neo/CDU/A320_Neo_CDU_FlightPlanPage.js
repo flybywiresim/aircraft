@@ -382,15 +382,13 @@ class CDUFlightPlanPage {
             if (offset > 0) {
                 offset--;//the screen should go down until hit the end of the list then go back to top instead of scrolling cont
             } else {
-                offset = mcdu.flightPlanManager.getWaypointsCount() - 1;
+                offset = waypointsWithDiscontinuities.length - 1;
             }
-            //offset = Math.max(offset - 1, 0); EDITED
+            //offset = Math.max(offset - 1, 0);//EDITED
             CDUFlightPlanPage.ShowPage(mcdu, offset);
         };
         mcdu.onUp = () => {
-            //offset++;//set limiter
-
-            if (offset < mcdu.flightPlanManager.getWaypointsCount() - 1) {
+            if (offset < waypointsWithDiscontinuities.length - 1) {
                 offset++;
             } else {
                 offset = 0;
