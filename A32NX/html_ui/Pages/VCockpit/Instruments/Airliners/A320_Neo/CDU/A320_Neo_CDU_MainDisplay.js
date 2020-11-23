@@ -18,7 +18,6 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this._blockFuelEntered = false;
         this._gpsprimaryack = 0;
         this.currentFlightPhase = FlightPhase.FLIGHT_PHASE_PREFLIGHT;
-        this.updateTypeIIMessage = false;
         this.messageQueue = [];
     }
     get templateID() {
@@ -149,6 +148,18 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                 });
         }, NXApi.updateRate);
 
+        // Start the check routine for system health and status
+        setInterval(() => {
+            if (this.currentFlightPhase === FlightPhase.FLIGHT_PHASE_CRUISE) {
+                const dest = this.flightPlanManager.getDestination();
+                if (dest && dest.liveDistanceTo < 180) {
+                    this.checkDestData();
+                }
+            } else if (this.currentFlightPhase === FlightPhase.FLIGHT_PHASE_DESCENT || this.currentFlightPhase === FlightPhase.FLIGHT_PHASE_APPROACH) {
+                this.checkDestData();
+            }
+        }, 15000);
+
         SimVar.SetSimVarValue("L:A32NX_GPS_PRIMARY_LOST_MSG", "Bool", 0);
     }
 
@@ -185,6 +196,14 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                 }
             });
         });
+    }
+
+    checkDestData() {
+        if (!isFinite(this.perfApprQNH) || !isFinite(this.perfApprTemp) || !isFinite(this.perfApprWindHeading) || !isFinite(this.perfApprWindSpeed)) {
+            this.addTypeTwoMessage("ENTER DEST DATA", "#ffff00", () => {}, () => {
+                return isFinite(this.perfApprQNH) && isFinite(this.perfApprTemp) && isFinite(this.perfApprWindHeading) && isFinite(this.perfApprWindSpeed);
+            });
+        }
     }
 
     trySetFlapsTHS(s) {
@@ -277,8 +296,6 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this.updateScreenState();
 
         this.updateGPSMessage();
-
-        this.tryShowMessage();
     }
 
     /**
@@ -337,6 +354,8 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this.inOut = "";
         this.lastUserInput = "";
         this.isDisplayingErrorMessage = false;
+        this.isDisplayingTypeTwoMessage = false;
+        this.tryShowMessage();
     }
 
     /**
@@ -344,24 +363,38 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
      * @param message {string} Message to be displayed
      * @param color {string} Color of Message
      * @param f {function} Function gets executed when error message has been cleared
+     * @param c {function} Function that checks for validity of error message
      */
-    addTypeTwoMessage(message, color = "#ffffff", f = () => {}) {
-        if (this.checkForMessage(message, color)) {
-            this.messageQueue.unshift([message, color, f]);
+    addTypeTwoMessage(message, color = "#ffffff", f = () => {}, c = () => {
+        return false;
+    }) {
+        if (this.checkForMessage(message)) {
+            // Before adding message to queue, check other messages in queue for validity
+            for (let i = 0; i < this.messageQueue.length; i++) {
+                if (this.messageQueue[i][3]()) {
+                    this.messageQueue.splice(i, 1);
+                }
+            }
+            this.messageQueue.unshift([message, color, f, c]);
             if (this.messageQueue.length > 5) {
                 this.messageQueue.splice(5, 1);
             }
-            this.updateTypeIIMessage = true;
             this.tryShowMessage();
         }
     }
 
     tryShowMessage() {
-        if (this.updateTypeIIMessage || !this.isDisplayingErrorMessage && !this.inOut && this.messageQueue.length > 0) {
-            this.updateTypeIIMessage = false;
-            this.isDisplayingErrorMessage = true;
-            this.inOut = this.messageQueue[0][0];
-            this._inOutElement.style.color = this.messageQueue[0][1];
+        if (!this.isDisplayingErrorMessage && !this.inOut && this.messageQueue.length > 0) {
+            if (this.messageQueue[0][3]()) {
+                this.tryRemoveMessage(this.messageQueue[0][0]);
+                return this.tryShowMessage();
+            }
+            if (!this.isDisplayingErrorMessage) {
+                this.isDisplayingTypeTwoMessage = true;
+                this.lastUserInput = this.inOut;
+                this.inOut = this.messageQueue[0][0];
+                this._inOutElement.style.color = this.messageQueue[0][1];
+            }
         }
     }
 
@@ -377,10 +410,11 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                 break;
             }
         }
+        this.tryShowMessage();
     }
 
-    checkForMessage(message, color) {
-        if (message === "" || color === "") {
+    checkForMessage(message) {
+        if (!message) {
             return false;
         }
         for (let i = 0; i < this.messageQueue.length; i++) {
@@ -453,6 +487,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         }
         return payloadWeight;
     }
+
     _onModeSelectedSpeed() {
         if (SimVar.GetSimVarValue("L:A320_FCU_SHOW_SELECTED_SPEED", "number") === 0) {
             const currentSpeed = Simplane.getIndicatedSpeed();
