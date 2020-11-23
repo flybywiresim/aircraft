@@ -132,9 +132,9 @@ class FlightPlanManager {
 
     setOrGetLegAltitudeDescription(waypoint, newValue){
         // Create a unique key for the current waypoint
-        const key = _getWaypointLocalStorageKey(waypoint);
+        const key = this._getWaypointLocalStorageKey(waypoint);
         // Save if not saved otherwise use the saved one
-        if (!localStorage.getItem('waypoints')[key]) {
+        if (!localStorage.getItem(key)) {
             localStorage.setItem(key, newValue);
             waypoint.legAltitudeDescription = newValue;
         }
