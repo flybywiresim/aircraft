@@ -834,7 +834,7 @@
             </Requires>
         </Sound>
 
-        <Sound WwiseData="true" WwiseEvent="cchordloop" LocalVar="A32NX_ReachAltitudeLoop" Continuous="false">
+        <Sound WwiseData="true" WwiseEvent="cchordloop" LocalVar="A32NX_ReachAltitudeLoop">
             <Range LowerBound="1" />
             <Requires SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1">
                 <Range LowerBound="28" />
