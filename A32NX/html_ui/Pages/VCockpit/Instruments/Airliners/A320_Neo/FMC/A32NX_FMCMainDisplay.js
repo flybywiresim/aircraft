@@ -17,6 +17,7 @@ class FMCMainDisplay extends BaseAirliners {
         this.costIndex = 0;
         this.lastUserInput = "";
         this.isDisplayingErrorMessage = false;
+        this.isDisplayingTypeTwoMessage = false;
         this.maxCruiseFL = 390;
         this.routeIndex = 0;
         this.coRoute = "";
@@ -61,6 +62,7 @@ class FMCMainDisplay extends BaseAirliners {
         this._vor2Frequency = 0;
         this._vor2Course = 0;
         this._ilsFrequency = 0;
+        this._ilsFrequencyPilotEntered = false;
         this._ilsCourse = 0;
         this._adf1Frequency = 0;
         this._adf2Frequency = 0;
@@ -349,7 +351,7 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     clearUserInput() {
-        if (!this.isDisplayingErrorMessage) {
+        if (!this.isDisplayingErrorMessage && !this.isDisplayingTypeTwoMessage) {
             this.lastUserInput = this.inOut;
             this.inOut = "";
             this._inOutElement.style.color = "#ffffff";
@@ -360,13 +362,14 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     tryClearOldUserInput() {
-        if (!this.isDisplayingErrorMessage) {
+        if (!this.isDisplayingErrorMessage && !this.isDisplayingTypeTwoMessage) {
             this.lastUserInput = "";
         }
+        this.tryShowMessage();
     }
 
     showErrorMessage(message, color = "#ffffff") {
-        if (!this.isDisplayingErrorMessage && this.inOut) {
+        if (!this.isDisplayingErrorMessage && !this.isDisplayingTypeTwoMessage && this.inOut) {
             this.lastUserInput = this.inOut;
         }
         this.isDisplayingErrorMessage = true;
@@ -624,7 +627,7 @@ class FMCMainDisplay extends BaseAirliners {
         if (isFinite(value) && this.isMinDestFobInRange(value)) {
             this._minDestFobEntered = true;
             if (value < this._minDestFob) {
-                this.showErrorMessage("CHECK MIN DEST FOB");
+                this.addTypeTwoMessage("CHECK MIN DEST FOB");
             }
             this._minDestFob = value;
             return true;
@@ -886,6 +889,7 @@ class FMCMainDisplay extends BaseAirliners {
                 if (isFinite(frequency)) {
                     const freq = Math.round(frequency * 100) / 100;
                     if (this.connectIlsFrequency(freq)) {
+                        this._ilsFrequencyPilotEntered = false;
                         SimVar.SetSimVarValue("L:FLIGHTPLAN_APPROACH_ILS", "number", freq);
                         const approach = this.flightPlanManager.getApproach();
                         if (approach && approach.name && approach.name.indexOf("ILS") !== -1) {
@@ -952,6 +956,30 @@ class FMCMainDisplay extends BaseAirliners {
                 return callback(undefined);
             }
             return callback(waypoints[0]);
+        });
+    }
+    getOrSelectVORsByIdent(ident, callback) {
+        this.dataManager.GetVORsByIdent(ident).then((navaids) => {
+            if (!navaids || navaids.length === 0) {
+                this.showErrorMessage("NOT IN DATABASE");
+                return callback(undefined);
+            }
+            if (navaids.length === 1) {
+                return callback(navaids[0]);
+            }
+            A320_Neo_CDU_SelectWptPage.ShowPage(this, navaids, callback);
+        });
+    }
+    getOrSelectNDBsByIdent(ident, callback) {
+        this.dataManager.GetNDBsByIdent(ident).then((navaids) => {
+            if (!navaids || navaids.length === 0) {
+                this.showErrorMessage("NOT IN DATABASE");
+                return callback(undefined);
+            }
+            if (navaids.length === 1) {
+                return callback(navaids[0]);
+            }
+            A320_Neo_CDU_SelectWptPage.ShowPage(this, navaids, callback);
         });
     }
 
@@ -1169,7 +1197,7 @@ class FMCMainDisplay extends BaseAirliners {
                 this.v1Speed = v;
                 SimVar.SetSimVarValue("L:AIRLINER_V1_SPEED", "Knots", this.v1Speed);
                 if ((v > SimVar.GetSimVarValue("L:AIRLINER_VR_SPEED", "Knots") || v > SimVar.GetSimVarValue("L:AIRLINER_V2_SPEED", "Knots")) && SimVar.GetSimVarValue("L:AIRLINER_VR_SPEED", "Knots") !== -1 && SimVar.GetSimVarValue("L:AIRLINER_V2_SPEED", "Knots") !== -1) {
-                    this.showErrorMessage("V1/VR/V2 DISAGREE", "#ff9a00");
+                    this.addTypeTwoMessage("V1/VR/V2 DISAGREE", "#ff9a00");
                 }
                 return true;
             }
@@ -1191,7 +1219,7 @@ class FMCMainDisplay extends BaseAirliners {
                 this.vRSpeed = v;
                 SimVar.SetSimVarValue("L:AIRLINER_VR_SPEED", "Knots", this.vRSpeed);
                 if ((v < SimVar.GetSimVarValue("L:AIRLINER_V1_SPEED", "Knots") || v > SimVar.GetSimVarValue("L:AIRLINER_V2_SPEED", "Knots")) && SimVar.GetSimVarValue("L:AIRLINER_V1_SPEED", "Knots") !== -1 && SimVar.GetSimVarValue("L:AIRLINER_V2_SPEED", "Knots") !== -1) {
-                    this.showErrorMessage("V1/VR/V2 DISAGREE", "#ff9a00");
+                    this.addTypeTwoMessage("V1/VR/V2 DISAGREE", "#ff9a00");
                 }
                 return true;
             }
@@ -1213,7 +1241,7 @@ class FMCMainDisplay extends BaseAirliners {
                 this.v2Speed = v;
                 SimVar.SetSimVarValue("L:AIRLINER_V2_SPEED", "Knots", this.v2Speed);
                 if ((v < SimVar.GetSimVarValue("L:AIRLINER_V1_SPEED", "Knots") || v < SimVar.GetSimVarValue("L:AIRLINER_VR_SPEED", "Knots")) && SimVar.GetSimVarValue("L:AIRLINER_V1_SPEED", "Knots") !== -1 && SimVar.GetSimVarValue("L:AIRLINER_VR_SPEED", "Knots") !== -1) {
-                    this.showErrorMessage("V1/VR/V2 DISAGREE", "#ff9a00");
+                    this.addTypeTwoMessage("V1/VR/V2 DISAGREE", "#ff9a00");
                 }
                 return true;
             }
@@ -2548,12 +2576,15 @@ class FMCMainDisplay extends BaseAirliners {
     setIlsFrequency(s) {
         if (s === FMCMainDisplay.clrValue) {
             this.ilsFrequency = 0;
+            this.radioNav.setILSActiveFrequency(1, 0);
+            this._ilsFrequencyPilotEntered = false;
             return true;
         }
         const v = parseFloat(s);
         if (isFinite(v)) {
             const freq = Math.round(v * 100) / 100;
             if (this.connectIlsFrequency(freq)) {
+                this._ilsFrequencyPilotEntered = true;
                 return true;
             }
             this.showErrorMessage("OUT OF RANGE");
@@ -2796,10 +2827,11 @@ class FMCMainDisplay extends BaseAirliners {
         if (this.inOut === FMCMainDisplay.clrValue) {
             this.inOut = "";
         }
-        if (this.isDisplayingErrorMessage) {
+        if (this.isDisplayingErrorMessage || this.isDisplayingTypeTwoMessage) {
             this.inOut = this.lastUserInput;
             this._inOutElement.style.color = "#ffffff";
             this.isDisplayingErrorMessage = false;
+            this.isDisplayingTypeTwoMessage = false;
         }
     }
 
@@ -2878,14 +2910,16 @@ class FMCMainDisplay extends BaseAirliners {
                 this.inOut = FMCMainDisplay.clrValue;
             } else if (this.inOut === FMCMainDisplay.clrValue) {
                 this.inOut = "";
-            } else if (this.isDisplayingErrorMessage) {
+            } else if (this.isDisplayingErrorMessage || this.isDisplayingTypeTwoMessage) {
                 this.tryRemoveMessage();
                 this.inOut = this.lastUserInput;
                 this._inOutElement.style.color = "#ffffff";
                 this.isDisplayingErrorMessage = false;
+                this.isDisplayingTypeTwoMessage = false;
             } else {
                 this.inOut = this.inOut.slice(0, -1);
             }
+            this.tryShowMessage();
         };
         this.cruiseFlightLevel = SimVar.GetGameVarValue("AIRCRAFT CRUISE ALTITUDE", "feet");
         this.cruiseFlightLevel /= 100;
@@ -2897,6 +2931,7 @@ class FMCMainDisplay extends BaseAirliners {
                     if (isFinite(frequency)) {
                         const freq = Math.round(frequency * 100) / 100;
                         if (this.connectIlsFrequency(freq)) {
+                            this._ilsFrequencyPilotEntered = false;
                             SimVar.SetSimVarValue("L:FLIGHTPLAN_APPROACH_ILS", "number", freq);
                             const approach = this.flightPlanManager.getApproach();
                             if (approach && approach.name && approach.name.indexOf("ILS") !== -1) {
@@ -3166,7 +3201,7 @@ class FMCMainDisplay extends BaseAirliners {
                 const val = this.inOut;
                 if (val === "") {
                     this.inOut = "-";
-                } else if (val !== FMCMainDisplay.clrValue && !this.isDisplayingErrorMessage) {
+                } else if (val !== FMCMainDisplay.clrValue && (!this.isDisplayingErrorMessage || !this.isDisplayingTypeTwoMessage)) {
                     if (val.slice(-1) === "-") {
                         this.inOut = this.inOut.slice(0, -1) + "+";
                     } else if (val.slice(-1) === "+") {
