@@ -79,17 +79,14 @@ class CDUVerticalRevisionPage {
                 const MINUS_REGEX = /\-\d+/g
 
                 let altitude;
-                let symbol;
                 let code;
 
                 if ( value.match(MINUS_REGEX)) {
-                    symbol = '-';
                     code = 3;
-                    altitude = value.split(symbol)[1];
+                    altitude = value.split('-')[1];
                 } else if ((value.match(PLUS_REGEX))) {
-                    symbol = '+';
                     code = 2;
-                    altitude = value.split(symbol)[1];
+                    altitude = value.split('+')[1];
                 } else {
                     code = 1;
                     altitude = value;
