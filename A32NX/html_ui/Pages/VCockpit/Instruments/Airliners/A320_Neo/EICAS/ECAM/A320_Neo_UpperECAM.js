@@ -99,6 +99,7 @@ var A320_Neo_UpperECAM;
             this._aircraft = Aircraft.A320_NEO;
             this.toInhibitTimer = new NXLogic_ConfirmNode(3);
             this.ldgInhibitTimer = new NXLogic_ConfirmNode(3);
+            this.predWsMemo = new NXLogic_MemoryNode(true);
         }
         get templateID() {
             return "UpperECAMTemplate";
@@ -1095,7 +1096,9 @@ var A320_Neo_UpperECAM;
                     },
                     {
                         message: "PRED W/S OFF",
-                        style: () => this.isInFlightPhase(3, 4, 5, 7, 8, 9) ? "InfoCaution" : "InfoIndication", // todo also when pressing to config
+                        style: () => (
+                            this.isInFlightPhase(3, 4, 5, 7, 8, 9) || this.predWsMemo.read()
+                        ) ? "InfoCaution" : "InfoIndication",
                         isActive: () => {
                             return (
                                 !this.isInFlightPhase(1, 10) &&
@@ -1306,13 +1309,18 @@ var A320_Neo_UpperECAM;
                 this.leftEcamMessagePanel.divMain.style.display = (showTOMemo || showLdgMemo) ? "none" : "block";
             }
 
+            let toConfigMomentary = false;
             if (SimVar.GetSimVarValue("L:A32NX_FWC_TOCONFIG", "Bool")) {
                 SimVar.SetSimVarValue("L:A32NX_FWC_TOCONFIG", "Bool", 0);
-                /// FWC ESLD 1.0.180
+                // FWC ESLD 1.0.180
                 if (this.isInFlightPhase(2, 9)) {
                     this.updateTakeoffConfigWarnings(true);
                 }
+                toConfigMomentary = true;
             }
+
+            // FWC ESLD 2.0.540
+            this.predWsMemo.write(this.fwcFlightPhase === 2 && toConfigMomentary, this.fwcFlightPhase !== 2);
 
             if (SimVar.GetSimVarValue("L:A32NX_BTN_CLR", "Bool") == 1 || SimVar.GetSimVarValue("L:A32NX_BTN_CLR2", "Bool") == 1) {
                 SimVar.SetSimVarValue("L:A32NX_BTN_CLR", "Bool", 0);
