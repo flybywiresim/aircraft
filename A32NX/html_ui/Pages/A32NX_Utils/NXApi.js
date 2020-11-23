@@ -50,6 +50,10 @@ class NXApi {
             return Promise.reject(NXApi.disabledError);
         }
 
+        if (!flightNo) {
+            return Promise.reject(NXApi.disabledError);
+        }
+
         const connectBody = NXApi.buildTelexBody(flightNo);
         const headers = {"Content-Type": "application/json"};
 
@@ -184,10 +188,10 @@ class NXApi {
         const lat = SimVar.GetSimVarValue("PLANE LATITUDE", "degree latitude");
         const long = SimVar.GetSimVarValue("PLANE LONGITUDE", "degree longitude");
         const alt = SimVar.GetSimVarValue("PLANE ALTITUDE", "feet");
-        const heading = SimVar.GetSimVarValue("PLANE HEADING DEGREES MAGNETIC", "degree");
+        const heading = SimVar.GetSimVarValue("PLANE HEADING DEGREES TRUE", "degree");
+        const acType = SimVar.GetSimVarValue("TITLE", "string");
         const origin = NXDataStore.get("PLAN_ORIGIN", "");
         const destination = NXDataStore.get("PLAN_DESTINATION", "");
-        const acType = NXDataStore.get("AC_TYPE", "unknown");
         const freetext = NXDataStore.get("CONFIG_ONLINE_FEATURES_STATUS", "DISABLED") === "ENABLED";
 
         return {
@@ -212,3 +216,6 @@ NXApi.disconnectedError = "TELEX DISCONNECTED";
 NXApi.noRecipientError = "NO RECIPIENT";
 NXApi.accessToken = "";
 NXApi.updateRate = 15000;
+
+NXDataStore.set("PLAN_ORIGIN", "");
+NXDataStore.set("PLAN_DESTINATION", "");
