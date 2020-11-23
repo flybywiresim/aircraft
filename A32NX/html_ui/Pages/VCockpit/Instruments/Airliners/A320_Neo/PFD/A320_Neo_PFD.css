@@ -476,5 +476,5 @@ a320-neo-pfd-element #Mainframe #InstrumentsContainer #ILS {
 }
 
 .blink {
-  animation : blinking 1.3s infinite;
+  animation : blinking 1s infinite;
 }
