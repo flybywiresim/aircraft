@@ -378,19 +378,18 @@ class CDUFlightPlanPage {
             ["FROM " + originIdentCell],
             ...rows
         ]);
-        mcdu.onDown = () => {
-            if (offset > 0) {
-                offset--;//the screen should go down until hit the end of the list then go back to top instead of scrolling cont
-            } else {
+        mcdu.onDown = () => {//on page down decrement the page offset.
+            if (offset > 0) {//if page not on top
+                offset--;
+            } else {//else go to the bottom
                 offset = waypointsWithDiscontinuities.length - 1;
             }
-            //offset = Math.max(offset - 1, 0);//EDITED
             CDUFlightPlanPage.ShowPage(mcdu, offset);
         };
         mcdu.onUp = () => {
-            if (offset < waypointsWithDiscontinuities.length - 1) {
+            if (offset < waypointsWithDiscontinuities.length - 1) {//if page not on bottom
                 offset++;
-            } else {
+            } else {//else go on top
                 offset = 0;
             }
             CDUFlightPlanPage.ShowPage(mcdu, offset);
