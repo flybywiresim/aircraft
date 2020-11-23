@@ -98,7 +98,11 @@
 1. [PFD] Improved speedband visuals - @MisterChocker (Leon)
 1. [ND] Add altitue constraint symbol and fix constraint circle color @ilyeshammadi (Ilyes Hammadi)
 1. [ECAM] Add COND page - @lcalaresu (Luc Calaresu), @highperformancedevelopments
+1. [CDU] Added check for dest data is set - @MisterChocker (Leon)
 1. [CDU] Ported system messages type II to actual type II - @MisterChocker (Leon)
+1. [ECAM] Implemented proper FWC flight phases - @beheh (Benedict Etzel)
+1. [ECAM] Updated ECAM messages - @beheh (Benedict Etzel)
+1. [CDU] New improved RADNAV page | Ability to tune navaids with identifier - @St54Kevin (Kevin Karas)
 1. [MISC] Add altitude alert when reach selected altitude - @Kimbyeoungjang (김병장#7165)
 
 ## 0.4.0
