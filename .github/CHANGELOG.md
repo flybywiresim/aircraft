@@ -93,6 +93,7 @@
 1. [ND] Added altitude constraints in flight level based on the transition altitude provided in MCDU Take Off Performace @ilyeshammadi (Ilyes Hammadi)
 1. [CDU] Added TYPE I and TYPE II message types and handling - @MisterChocker (Leon) 
 1. [ECAM] Fix cabin vertical speed unit - @MrMinimal (Tom Langwaldt)
+1. [CDU] Improved constraints recognition - @MisterChocker (Leon)
 1. [PFD] Add altitude indicator alerts @ilyeshammadi (Ilyes Hammadi)
 1. [CDU] The precomputed values for ZFW/ZFWCG are now properly updated when the weight load parameters are changed - @lousybyte (lousybyte)
 1. [PFD] Improved speedband visuals - @MisterChocker (Leon)
