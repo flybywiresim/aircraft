@@ -143,7 +143,7 @@ class FlightPlanManager {
     }
 
     setLegAltitudeDescription(waypoint, newValue){
-        const key = _getWaypointLocalStorageKey(waypoint);
+        const key = this._getWaypointLocalStorageKey(waypoint);
         localStorage.setItem(key, newValue);
         waypoint.legAltitudeDescription = newValue;
     }
