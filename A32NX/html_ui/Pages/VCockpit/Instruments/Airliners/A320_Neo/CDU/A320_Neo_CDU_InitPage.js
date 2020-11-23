@@ -480,7 +480,7 @@ class CDUInitPage {
                                 CDUInitPage.ShowPage2(mcdu);
                             }
                         }
-                    }, mcdu.getDelayFuelPred());
+                    }, mcdu.getDelayWindLoad());
                 };
 
                 if (mcdu._minDestFobEntered) {
