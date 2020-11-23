@@ -524,6 +524,10 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
                 this._pulseYellow();
             }
         }
+        
+        if (delta == 750) {
+            SimVar.SetSimVarValue("L:A32NX_ReachAltitude", "Bool", true);
+        }
     }
 
     updateMtrs(_altitude, _selected) {
