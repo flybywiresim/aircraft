@@ -20,7 +20,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this.currentFlightPhase = FlightPhase.FLIGHT_PHASE_PREFLIGHT;
         this.activeWaypointIdx = -1;
         this.constraintAlt = 0;
-        this.altLock = 0;
+        this.fcuSelAlt = 0;
         this.updateTypeIIMessage = false;
         this.messageQueue = [];
     }
@@ -434,49 +434,49 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             this.constraintAlt = 0;
         }
         const activeWptIdx = this.flightPlanManager.getActiveWaypointIndex();
-        const altLock = Simplane.getAutoPilotSelectedAltitudeLockValue("feet");
-        if (force || activeWptIdx !== this.activeWptIdx || altLock !== this.altLock) {
+        const fcuSelAlt = Simplane.getAutoPilotDisplayedAltitudeLockValue("feet");
+        if (force || activeWptIdx !== this.activeWptIdx || fcuSelAlt !== this.fcuSelAlt) {
             this.activeWptIdx = activeWptIdx;
-            this.altLock = altLock;
-            this.constraintAlt = this.getAltitudeConstraint();
+            this.fcuSelAlt = fcuSelAlt;
+            const curFlightPhase = Simplane.getCurrentFlightPhase();
+            if (curFlightPhase === FlightPhase.FLIGHT_PHASE_CRUISE) {
+                this.constraintAlt = 0;
+                return;
+            }
+            const rte = this.flightPlanManager.getWaypoints(0);
+            if (rte.length === 0) {
+                this.constraintAlt = 0;
+                return;
+            }
+            if (curFlightPhase === FlightPhase.FLIGHT_PHASE_DESCENT || curFlightPhase === FlightPhase.FLIGHT_PHASE_APPROACH) {
+                this.constraintAlt = this.getAltitudeConstraintDescent(rte);
+            }
+            this.constraintAlt = this.getAltitudeConstraintClimb(rte);
         }
     }
 
-    getAltitudeConstraint() {
-        const rte = this.flightPlanManager.getWaypoints(0);
-        if (rte.length === 0) {
-            return 0;
-        }
-        const fph = Simplane.getCurrentFlightPhase();
-        const type = fph < FlightPhase.FLIGHT_PHASE_CRUISE || fph === FlightPhase.FLIGHT_PHASE_GOAROUND ? 3 : 2;
-        let tmp = 0;
-        for (let i = this.activeWptIdx; i < rte.length; i++) {
+    getAltitudeConstraintDescent() {
+        return 0;
+    }
+
+    getAltitudeConstraintClimb(rte, min = Simplane.getAltitude(), max = this.cruiseFlightLevel * 100) {
+        for (let i = this.activeWaypointIdx; i < rte.length; i++) {
             const wpt = rte[i];
-            if (!isFinite(wpt.legAltitude1)) {
+            if (typeof wpt === "undefined" || !isFinite(wpt.legAltitude1) || wpt.legAltitudeDescription === 0 || wpt.legAltitudeDescription === 2) {
                 continue;
             }
-            // Ensure constraint waypoint after TOD is not a constraint for climb phase
-            if (tmp) {
-                if (type === 3 && (wpt.legAltitude1 < tmp || (isFinite(wpt.legAltitude2) && wpt.legAltitude2 < tmp))) {
-                    return 0;
-                }
-            } else {
-                tmp = wpt.legAltitude1;
-            }
-            if (wpt.legAltitudeDescription === 0) {
+            // Get current waypoints altitude constraint, if type 4, get correct (highest) altitude
+            const cur = wpt.legAltitudeDescription === 4 ? (wpt.legAltitude1 < wpt.legAltitude2 ? wpt.legAltitude2 : wpt.legAltitude1) : wpt.legAltitude1;
+            // Continue search if constraint alt is invalid (too low)
+            if (cur < min) {
                 continue;
             }
-            if (wpt.legAltitudeDescription === 4) {
-                if (type === 3 && this.altLock > wpt.legAltitude2) {
-                    return wpt.legAltitude2;
-                } else if (type === 2 && this.altLock < wpt.legAltitude1) {
-                    return wpt.legAltitude1;
-                }
-            } else if ((wpt.legAltitudeDescription === 1 || wpt.legAltitudeDescription === type) && (
-                (type === 3 && this.altLock > wpt.legAltitude1) || (type === 2 && this.altLock < wpt.legAltitude1)
-            )) {
-                return wpt.legAltitude1;
+            // Abort search if constraint alt is invalid (too high) and return 0 (no constraint)
+            if (cur >= max || cur >= this.fcuSelAlt) {
+                return 0;
             }
+            // Abort search and return valid constraint
+            return cur;
         }
         return 0;
     }
