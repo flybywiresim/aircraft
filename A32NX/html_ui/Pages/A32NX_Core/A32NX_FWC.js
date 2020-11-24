@@ -1,9 +1,16 @@
 class A32NX_FWC {
     constructor() {
+        // momentary
+        this.toConfigTest = null; // WTOCT
+        this.flightPhaseEndedPulse = false; // ESLD 1.0.155
+
+        // persistent
         this.flightPhase = null;
+        this.ldgMemo = null;
+        this.toMemo = null;
 
         // ESDL 1. 0. 60
-        this.gndMemo = new NXLogic_ConfirmNode(1);
+        this.gndMemo = new NXLogic_ConfirmNode(1); // outptuts ZGND
 
         // ESDL 1. 0. 60
         this.eng1OrTwoRunningConf = new NXLogic_ConfirmNode(30);
@@ -30,13 +37,61 @@ class A32NX_FWC {
         this.groundImmediateMemo = new NXLogic_TriggeredMonostableNode(2); // MTRIG 03
         this.phase5Memo = new NXLogic_TriggeredMonostableNode(120); // MTRIG 01
         this.phase67Memo = new NXLogic_TriggeredMonostableNode(180); // MTRIG 02
+
+        // ESDL 1. 0.115
+        this.memoFlightPhaseInhibOvrd_memo = new NXLogic_MemoryNode(false);
+
+        // ESDL 1. 0.180
+        this.memoTo_conf01 = new NXLogic_ConfirmNode(120, true); // CONF 01
+        this.memoTo_memo = new NXLogic_MemoryNode(false);
+
+        // ESDL 1. 0.190
+        this.memoLdgMemo_conf01 = new NXLogic_ConfirmNode(1, true); // CONF 01
+        this.memoLdgMemo_memory1 = new NXLogic_MemoryNode(false);
+        this.memoLdgMemo_conf02 = new NXLogic_ConfirmNode(10, true); // CONF 01
+        this.memoLdgMemo_below2000ft = new NXLogic_MemoryNode(true);
+
+        // ESDL 1. 0.310
+        this.memoToInhibit_conf01 = new NXLogic_ConfirmNode(3, true); // CONF 01
+
+        // ESDL 1. 0.320
+        this.memoLdgInhibit_conf01 = new NXLogic_ConfirmNode(3, true); // CONF 01
     }
 
-    update(_deltaTime) {
-        this.updateFlightPhase(_deltaTime);
+    update(_deltaTime, _core) {
+        this._resetPulses();
+
+        this._updateFlightPhase(_deltaTime);
+        this._updateButtons(_deltaTime);
+        this._updateTakeoffMemo(_deltaTime);
+        this._updateLandingMemo(_deltaTime);
     }
 
-    updateFlightPhase(_deltaTime) {
+    _resetPulses() {
+        this.flightPhaseEndedPulse = false;
+    }
+
+    _updateButtons(_deltaTime) {
+        if (SimVar.GetSimVarValue("L:A32NX_BTN_TOCONFIG", "Bool")) {
+            SimVar.SetSimVarValue("L:A32NX_BTN_TOCONFIG", "Bool", 0);
+            this.toConfigTest = true;
+            SimVar.SetSimVarValue("L:A32NX_FWC_TOCONFIG", "Bool", 1);
+        } else if (this.toConfigTest) {
+            this.toConfigTest = false;
+        }
+
+        let recall = false;
+        if (SimVar.GetSimVarValue("L:A32NX_BTN_RCL", "Bool")) {
+            SimVar.SetSimVarValue("L:A32NX_BTN_RCL", "Bool", 0);
+            SimVar.SetSimVarValue("L:A32NX_FWC_RECALL", "Bool", 1);
+            recall = true;
+        }
+
+        const inhibOverride = this.memoFlightPhaseInhibOvrd_memo.write(recall, this.flightPhaseEndedPulse);
+        SimVar.SetSimVarValue("L:A32NX_FWC_INHIBOVRD", "Bool", inhibOverride);
+    }
+
+    _updateFlightPhase(_deltaTime) {
         const radioHeight = SimVar.GetSimVarValue("RADIO HEIGHT", "Feet");
         const eng1N1 = SimVar.GetSimVarValue("ENG N1 RPM:1", "Percent");
         const eng2N1 = SimVar.GetSimVarValue("ENG N1 RPM:2", "Percent");
@@ -139,8 +194,7 @@ class A32NX_FWC {
 
         if (this.flightPhase === null && phases.indexOf(true) !== -1) {
             // if we aren't initialized, just grab the first one that is valid
-            this.flightPhase = phases.indexOf(true) + 1;
-            SimVar.SetSimVarValue("L:A32NX_FWC_FLIGHT_PHASE", "Enum", this.flightPhase);
+            this._setFlightPhase(phases.indexOf(true) + 1);
             console.log(`FWC flight phase: ${this.flightPhase}`);
             return;
         }
@@ -151,8 +205,7 @@ class A32NX_FWC {
         if (activePhases.length === 1) {
             if (activePhases[0] !== this.flightPhase) {
                 console.log(`FWC flight phase: ${this.flightPhase} => ${activePhases[0]}`);
-                this.flightPhase = activePhases[0];
-                SimVar.SetSimVarValue("L:A32NX_FWC_FLIGHT_PHASE", "Enum", this.flightPhase);
+                this._setFlightPhase(activePhases[0]);
             }
             return;
         }
@@ -166,8 +219,7 @@ class A32NX_FWC {
                 return;
             }
             // pick the earliest one
-            this.flightPhase = activePhases[0];
-            SimVar.SetSimVarValue(`L:A32NX_FWC_FLIGHT_PHASE`, "Enum", this.flightPhase);
+            this._setFlightPhase(activePhases[0]);
             console.log(`Resolving by switching FWC flight phase: ${this.flightPhase} => ${activePhases[0]}`);
             return;
         }
@@ -175,8 +227,63 @@ class A32NX_FWC {
         // otherwise, no flight phase is valid => warn
         console.warn("No valid FWC flight phase");
         if (this.flightPhase === null) {
-            this.flightPhase = 6;
-            SimVar.SetSimVarValue("L:A32NX_FWC_FLIGHT_PHASE", "Enum", this.flightPhase);
+            this._setFlightPhase(null);
         }
+    }
+
+    _setFlightPhase(flightPhase) {
+        if (flightPhase === this.flightPhase) {
+            return;
+        }
+
+        // ESDL 1.0.115
+        if (this.flightPhase !== null) {
+            this.flightPhaseEndedPulse = true;
+        }
+
+        // update flight phase
+        this.flightPhase = flightPhase;
+        SimVar.SetSimVarValue("L:A32NX_FWC_FLIGHT_PHASE", "Enum", this.flightPhase || 0);
+    }
+
+    _updateTakeoffMemo(_deltaTime) {
+        /// FWC ESLD 1.0.180
+        const setFlightPhaseMemo = this.flightPhase === 2 && this.toConfigTest;
+        const resetFlightPhaseMemo = (
+            this.flightPhase === 10 ||
+            this.flightPhase === 3 ||
+            this.flightPhase === 1 ||
+            this.flightPhase === 6
+        );
+        const flightPhaseMemo = this.memoTo_memo.write(setFlightPhaseMemo, resetFlightPhaseMemo);
+
+        const eng1NotRunning = SimVar.GetSimVarValue("ENG N1 RPM:1", "Percent") < 15;
+        const eng2NotRunning = SimVar.GetSimVarValue("ENG N1 RPM:2", "Percent") < 15;
+        const toTimerElapsed = this.memoTo_conf01.write(!eng1NotRunning && !eng2NotRunning, _deltaTime);
+
+        this.toMemo = flightPhaseMemo || (this.flightPhase === 2 && toTimerElapsed);
+        SimVar.SetSimVarValue("L:A32NX_FWC_TOMEMO", "Bool", this.toMemo);
+    }
+
+    _updateLandingMemo(_deltaTime) {
+        const radioHeight = SimVar.GetSimVarValue("RADIO HEIGHT", "Feet");
+        const radioHeightInvalid = false;
+        const gearDownlocked = SimVar.GetSimVarValue("GEAR TOTAL PCT EXTENDED", "percent") > 0.95;
+
+        // FWC ESLD 1.0.190
+        const setBelow2000ft = radioHeight < 2000;
+        const resetBelow2000ft = radioHeight > 2200;
+        const memo2 = this.memoLdgMemo_below2000ft.write(setBelow2000ft, resetBelow2000ft);
+
+        const setLandingMemo = this.memoLdgMemo_conf01.write(!radioHeightInvalid && resetBelow2000ft, _deltaTime);
+        const resetLandingMemo = !(this.flightPhase === 7 || this.flightPhase === 8 || this.flightPhase === 6);
+        const memo1 = this.memoLdgMemo_memory1.write(setLandingMemo, resetLandingMemo);
+
+        const showInApproach = memo1 && memo2 && this.flightPhase === 6;
+
+        const invalidRadioMemo = this.memoLdgMemo_conf02.write(radioHeightInvalid && gearDownlocked);
+
+        this.ldgMemo = showInApproach || invalidRadioMemo || this.flightPhase === 8 || this.flightPhase === 7;
+        SimVar.SetSimVarValue("L:A32NX_FWC_LDGMEMO", "Bool", this.ldgMemo);
     }
 }
