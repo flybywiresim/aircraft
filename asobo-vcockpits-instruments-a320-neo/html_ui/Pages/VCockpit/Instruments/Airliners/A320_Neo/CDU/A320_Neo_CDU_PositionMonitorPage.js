@@ -1,7 +1,7 @@
 class CDUPositionMonitorPage {
     static ShowPage(mcdu) {
         mcdu.clearDisplay();
-        const currPos = new LatLong(SimVar.GetSimVarValue("GPS POSITION LAT", "degree latitude"), SimVar.GetSimVarValue("GPS POSITION LON", "degree longitude")).toShortDegreeString();
+        let currPos = new LatLong(SimVar.GetSimVarValue("GPS POSITION LAT", "degree latitude"), SimVar.GetSimVarValue("GPS POSITION LON", "degree longitude")).toShortDegreeString();
         mcdu.setTemplate([
             ["POSITION MONITOR"],
             [""],

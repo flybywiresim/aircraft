@@ -34,29 +34,31 @@ class Jet_PFD_AOAIndicator extends HTMLElement {
         this.rootSVG = document.createElementNS(Avionics.SVG.NS, "svg");
         this.rootSVG.setAttribute("id", "ViewBox");
         this.rootSVG.setAttribute("viewBox", "0 0 250 500");
-        const width = 70.5;
-        const centerHeight = 380;
-        const posX = width * 0.5;
-        let posY = 435;
+        var width = 70.5;
+        var centerHeight = 380;
+        var posX = width * 0.5;
+        var posY = 435;
         if (!this.rootGroup) {
             this.rootGroup = document.createElementNS(Avionics.SVG.NS, "g");
             this.rootGroup.setAttribute("id", "AoA");
-        } else {
+        }
+        else {
             Utils.RemoveAllChildren(this.rootGroup);
         }
         if (!this.centerGroup) {
             this.centerGroup = document.createElementNS(Avionics.SVG.NS, "g");
             this.centerGroup.setAttribute("id", "CenterGroup");
-        } else {
+        }
+        else {
             Utils.RemoveAllChildren(this.centerGroup);
         }
         posY -= centerHeight;
         {
-            const _top = posY;
-            const _left = posX - width * 0.5;
-            const _width = width;
-            const _height = centerHeight;
-            const bg = document.createElementNS(Avionics.SVG.NS, "rect");
+            var _top = posY;
+            var _left = posX - width * 0.5;
+            var _width = width;
+            var _height = centerHeight;
+            var bg = document.createElementNS(Avionics.SVG.NS, "rect");
             bg.setAttribute("x", _left.toString());
             bg.setAttribute("y", _top.toString());
             bg.setAttribute("width", _width.toString());
@@ -74,24 +76,25 @@ class Jet_PFD_AOAIndicator extends HTMLElement {
             text.setAttribute("text-anchor", "end");
             text.setAttribute("alignment-baseline", "central");
             this.centerGroup.appendChild(text);
-            const _graduationStartY = _top + 60;
-            const _graduationHeight = (_top + 325) - _graduationStartY;
+            var _graduationStartY = _top + 60;
+            var _graduationHeight = (_top + 325) - _graduationStartY;
             if (!this.graduationsGroup) {
                 this.graduationsGroup = document.createElementNS(Avionics.SVG.NS, "g");
                 this.graduationsGroup.setAttribute("id", "GraduationsGroup");
-            } else {
+            }
+            else {
                 Utils.RemoveAllChildren(this.graduationsGroup);
             }
-            const _nbGrads = 9;
-            const _gradSpacing = _graduationHeight / (_nbGrads - 1);
-            const _gradTexts = ["1.0", ".8", ".6", ".4", ".2"];
-            let _textId = 0;
-            const _gradX = (_left + _width * 0.75);
-            for (let i = 0; i < _nbGrads; i++) {
-                const isPrimary = (i % 2) ? false : true;
-                const y = _graduationStartY + (_gradSpacing * i);
-                const len = isPrimary ? 12 : 6;
-                const line = document.createElementNS(Avionics.SVG.NS, "rect");
+            var _nbGrads = 9;
+            var _gradSpacing = _graduationHeight / (_nbGrads - 1);
+            var _gradTexts = ["1.0", ".8", ".6", ".4", ".2"];
+            var _textId = 0;
+            var _gradX = (_left + _width * 0.75);
+            for (var i = 0; i < _nbGrads; i++) {
+                var isPrimary = (i % 2) ? false : true;
+                var y = _graduationStartY + (_gradSpacing * i);
+                var len = isPrimary ? 12 : 6;
+                var line = document.createElementNS(Avionics.SVG.NS, "rect");
                 line.setAttribute("x", (_gradX - len).toString());
                 line.setAttribute("y", y.toString());
                 line.setAttribute("width", len.toString());
@@ -112,7 +115,7 @@ class Jet_PFD_AOAIndicator extends HTMLElement {
                     _textId++;
                 }
             }
-            const graduationVLine = document.createElementNS(Avionics.SVG.NS, "line");
+            var graduationVLine = document.createElementNS(Avionics.SVG.NS, "line");
             graduationVLine.setAttribute("x1", _gradX.toString());
             graduationVLine.setAttribute("y1", _graduationStartY.toString());
             graduationVLine.setAttribute("x2", _gradX.toString());
@@ -136,23 +139,22 @@ class Jet_PFD_AOAIndicator extends HTMLElement {
             this.cursorMaxY = _graduationStartY;
             this.cursorWidth = 40;
             this.cursorHeight = 16;
-            const cursorPosX = _gradX - this.cursorWidth * 0.5;
-            const cursorPosY = this.cursorMinY;
+            var cursorPosX = _gradX - this.cursorWidth * 0.5;
+            var cursorPosY = this.cursorMinY;
             if (!this.cursorSVG) {
                 this.cursorSVG = document.createElementNS(Avionics.SVG.NS, "svg");
                 this.cursorSVG.setAttribute("id", "CursorGroup");
-            } else {
-                Utils.RemoveAllChildren(this.cursorSVG);
             }
+            else
+                Utils.RemoveAllChildren(this.cursorSVG);
             this.cursorSVG.setAttribute("x", cursorPosX.toString());
             this.cursorSVG.setAttribute("y", (cursorPosY - this.cursorHeight * 0.5).toString());
             this.cursorSVG.setAttribute("width", this.cursorWidth.toString());
             this.cursorSVG.setAttribute("height", this.cursorHeight.toString());
             this.cursorSVG.setAttribute("viewBox", "0 0 " + this.cursorWidth + " " + this.cursorHeight);
             {
-                if (!this.cursorSVGShape) {
+                if (!this.cursorSVGShape)
                     this.cursorSVGShape = document.createElementNS(Avionics.SVG.NS, "path");
-                }
                 this.cursorSVGShape.setAttribute("fill", "white");
                 this.cursorSVGShape.setAttribute("d", "M10 0 l25 0 l-4 8 l5 8 l-25 0 l-5 -8 l5 -8 Z");
                 this.cursorSVGShape.setAttribute("fill", "none");
@@ -167,22 +169,22 @@ class Jet_PFD_AOAIndicator extends HTMLElement {
         this.appendChild(this.rootSVG);
     }
     attributeChangedCallback(name, oldValue, newValue) {
-        if (oldValue == newValue) {
+        if (oldValue == newValue)
             return;
-        }
         switch (name) {
             case "angle":
                 let angle = parseFloat(newValue);
                 angle = Math.min(Math.max(angle, 0), 16) / 16;
                 if (this.cursorSVG) {
-                    const posY = this.cursorMinY + (this.cursorMaxY - this.cursorMinY) * angle;
+                    var posY = this.cursorMinY + (this.cursorMaxY - this.cursorMinY) * angle;
                     this.cursorSVG.setAttribute("y", (posY - this.cursorHeight * 0.5).toString());
                 }
                 var fixedAngle = angle.toFixed(2);
                 if (angle < 1.0) {
-                    const radixPos = fixedAngle.indexOf('.');
+                    var radixPos = fixedAngle.indexOf('.');
                     this.bottomText.textContent = fixedAngle.slice(radixPos);
-                } else {
+                }
+                else {
                     this.bottomText.textContent = fixedAngle;
                 }
                 break;

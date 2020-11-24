@@ -10,39 +10,43 @@
 		Must be used in a component that specifies a Node.
 
 		Required parameter:
-			FX_NAME or FX_GUID
+			FX_GUID
 			FX_CODE
 	-->
 	<Template Name = "ASOBO_GT_FX">
 		<DefaultTemplateParameters>
-			<FX_NAME></FX_NAME>
 			<FX_GUID></FX_GUID>
 			<FX_OFFSET_X>0.0</FX_OFFSET_X>
 			<FX_OFFSET_Y>0.0</FX_OFFSET_Y>
 			<FX_OFFSET_Z>0.0</FX_OFFSET_Z>
+			<FX_ROTATION_OFFSET_P>0.0</FX_ROTATION_OFFSET_P>
+			<FX_ROTATION_OFFSET_B>0.0</FX_ROTATION_OFFSET_B>
+			<FX_ROTATION_OFFSET_H>0.0</FX_ROTATION_OFFSET_H>
 		</DefaultTemplateParameters>
 		<EditableTemplateParameters>
-			<FX_NAME></FX_NAME>
 			<FX_GUID></FX_GUID>
 			<FX_CODE></FX_CODE>
 			<FX_OFFSET_X gizmo-node-relpos-x=""></FX_OFFSET_X>
 			<FX_OFFSET_Y gizmo-node-relpos-y=""></FX_OFFSET_Y>
 			<FX_OFFSET_Z gizmo-node-relpos-z=""></FX_OFFSET_Z>
+			<FX_ROTATION_OFFSET_P gizmo-node-relrot-p=""></FX_ROTATION_OFFSET_P>
+			<FX_ROTATION_OFFSET_B gizmo-node-relrot-b=""></FX_ROTATION_OFFSET_B>
+			<FX_ROTATION_OFFSET_H gizmo-node-relrot-h=""></FX_ROTATION_OFFSET_H>
 		</EditableTemplateParameters>
 
 		<Condition>
 			<Test>
-				<Or>
-					<Arg Valid="FX_NAME" />
-					<Arg Valid="FX_GUID" />
-				</Or>
+				<Arg Valid="FX_GUID" />
 			</Test>
 			<True>
-				<FX Name="#FX_NAME#" GUID="#FX_GUID#">
+				<FX GUID="#FX_GUID#">
 					<Offset>
 						<X>#FX_OFFSET_X#</X>
 						<Y>#FX_OFFSET_Y#</Y>
 						<Z>#FX_OFFSET_Z#</Z>
+						<P>#FX_ROTATION_OFFSET_P#</P>
+						<B>#FX_ROTATION_OFFSET_B#</B>
+						<H>#FX_ROTATION_OFFSET_H#</H>
 					</Offset>
 					<Code>#FX_CODE#</Code>
 				</FX>

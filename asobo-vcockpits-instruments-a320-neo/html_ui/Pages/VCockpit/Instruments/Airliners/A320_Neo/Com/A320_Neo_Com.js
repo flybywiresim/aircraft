@@ -3,9 +3,7 @@ class A320_Neo_Com extends BaseAirliners {
         super();
         this.initDuration = 11000;
     }
-    get templateID() {
-        return "A320_Neo_Com";
-    }
+    get templateID() { return "A320_Neo_Com"; }
     connectedCallback() {
         super.connectedCallback();
         this.pageGroups = [

@@ -1008,6 +1008,13 @@
 							<NODE_ID>Autopilot_Push_Autopilot#AUTOPILOT_SUFFIX_ID#</NODE_ID>
 							<EMISSIVE_NODE_ID>Autopilot_Push_Autopilot#AUTOPILOT_SUFFIX_ID#</EMISSIVE_NODE_ID>
 							<ANIM_NAME>Autopilot_Push_Autopilot#AUTOPILOT_SUFFIX_ID#</ANIM_NAME>
+							<ON_AP_MASTER_SWITCH>
+								(A:AUTOPILOT MASTER, Bool) if{
+									(A:AUTOPILOT FLIGHT DIRECTOR ACTIVE, Bool) ! if{ 
+										1 (&gt;K:TOGGLE_FLIGHT_DIRECTOR)
+									}
+								}
+							</ON_AP_MASTER_SWITCH>
 						</UseTemplate>
 						<UseTemplate Name="ASOBO_AUTOPILOT_Push_BackCourse_Template">
 							<NODE_ID>Autopilot_Push_Backcourse#AUTOPILOT_SUFFIX_ID#</NODE_ID>
@@ -1019,6 +1026,7 @@
 							<EMISSIVE_NODE_ID>Autopilot_Push_FlightDirector#AUTOPILOT_SUFFIX_ID#</EMISSIVE_NODE_ID>
 							<ANIM_NAME>Autopilot_Push_FlightDirector#AUTOPILOT_SUFFIX_ID#</ANIM_NAME>
 							<ID>0</ID>
+							<FD_TOGGLE_CONDITION>(A:AUTOPILOT MASTER, Bool) !</FD_TOGGLE_CONDITION>
 							<NO_SIMVAR_LIGHT/>
 						</UseTemplate>
 						<UseTemplate Name="ASOBO_AUTOPILOT_Push_Heading_Template">

@@ -489,6 +489,7 @@
 								(&gt;K:AP_MASTER)
 								(A:AUTOPILOT MASTER, Bool) ! if{
 									0 (&gt;L:XMLVAR_Autopilot_#ID#_Status) 
+									(&gt;H:Generic_Autopilot_#ID#_Manual_Off)
 								}
 							}
 						}
@@ -505,6 +506,7 @@
 								(&gt;K:AP_MASTER)
 								(A:AUTOPILOT MASTER, Bool) ! if{
 									0 (&gt;L:XMLVAR_Autopilot_#ID#_Status) 
+									(&gt;H:Generic_Autopilot_#ID#_Manual_Off)
 								}
 							}
 						}
@@ -515,6 +517,9 @@
 					<LEFT_SINGLE_CODE>
 						(A:AUTOPILOT DISENGAGED, Bool) ! if{
 							(&gt;K:AP_MASTER) #ON_AP_MASTER_SWITCH#
+							(A:AUTOPILOT MASTER, Bool) ! if{
+								(&gt;H:Generic_Autopilot_Manual_Off)
+							}
 						}
 					</LEFT_SINGLE_CODE>
 					<EMISSIVE_SIMVAR_ACTIVE>AUTOPILOT MASTER</EMISSIVE_SIMVAR_ACTIVE>  
@@ -689,7 +694,8 @@
 	</Template>
 	<Template Name="ASOBO_AUTOPILOT_Push_FlightDirector_Template">
 		<DefaultTemplateParameters>
-			<ID>1</ID>
+			<ID>1</ID>			
+			<FD_TOGGLE_CONDITION>1</FD_TOGGLE_CONDITION>
 		</DefaultTemplateParameters>
 		
 		<UseTemplate Name="ASOBO_AUTOPILOT_Push_FlightDirector_SubTemplate">

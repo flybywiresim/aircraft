@@ -173,7 +173,6 @@
 	</Component>
 	<!-- <Component ID="FX_CONTRAIL_LEFT" Node="Engine_PIVOT_left">
 		<UseTemplate Name="ASOBO_GT_FX">
-			<FX_NAME>CONTRAIL_LEFT</FX_NAME>
 			<FX_GUID>{904EC2CE-F8DD-4480-99E7-B33F7CF6E114}</FX_GUID>
 			<FX_CODE>(A:GEAR ANIMATION POSITION, Keyframe) 100 &gt; s0 (O:LastGearOnGround) ! and (A:GROUND VELOCITY, Knots) 10 &gt; and l0 (&gt;O:LastGearOnGround)</FX_CODE>
 			<FX_CODE>(A:GEAR ANIMATION POSITION:0, keyframe) 100 &gt;</FX_CODE>
@@ -185,7 +184,6 @@
 	</Component> -->
 	<!-- <Component ID="TEST_FX2" Node="Engine_PIVOT_right">
 		<UseTemplate Name="ASOBO_GT_FX">
-			<FX_NAME>MY_FX_NAME</FX_NAME>
 			<FX_GUID>{904EC2CE-F8DD-4480-99E7-B33F7CF6E114}</FX_GUID>
 			<FX_CODE>(A:GEAR ANIMATION POSITION, Keyframe) 100 &gt; s0 (O:LastGearOnGround) ! and (A:GROUND VELOCITY, Knots) 10 &gt; and l0 (&gt;O:LastGearOnGround)</FX_CODE>
 			<FX_CODE>(A:GEAR ANIMATION POSITION:0, keyframe) 100 &gt;</FX_CODE> 
@@ -197,7 +195,6 @@
 	</Component> -->
 	<Component ID="FX_TIRE_CONTACT_1" Node="fx_tire_contactPoint_left_in">
 		<UseTemplate Name="ASOBO_GT_FX">
-			<FX_NAME>SMOKE_ON_TIRE_CONTACT</FX_NAME>
 			<FX_GUID>{7E68323C-E75D-4F5B-988E-65DD4956F6BA}</FX_GUID>
 			<FX_CODE>101 100 &gt;</FX_CODE>
 			<FX_OFFSET_X>0</FX_OFFSET_X>
@@ -207,7 +204,6 @@
 	</Component>
 	<Component ID="FX_TIRE_CONTACT_2" Node="fx_tire_contactPoint_left_out">
 		<UseTemplate Name="ASOBO_GT_FX">
-			<FX_NAME>SMOKE_ON_TIRE_CONTACT</FX_NAME>
 			<FX_GUID>{7E68323C-E75D-4F5B-988E-65DD4956F6BA}</FX_GUID>
 			<FX_CODE>101 100 &gt;</FX_CODE>
 			<FX_OFFSET_X>0</FX_OFFSET_X>
@@ -217,7 +213,6 @@
 	</Component>
 	<Component ID="FX_TIRE_CONTACT_3" Node="fx_tire_contactPoint_right_in">
 		<UseTemplate Name="ASOBO_GT_FX">
-			<FX_NAME>SMOKE_ON_TIRE_CONTACT</FX_NAME>
 			<FX_GUID>{7E68323C-E75D-4F5B-988E-65DD4956F6BA}</FX_GUID>
 			<FX_CODE>101 100 &gt;</FX_CODE>
 			<FX_OFFSET_X>0</FX_OFFSET_X>
@@ -227,7 +222,6 @@
 	</Component>
 	<Component ID="FX_TIRE_CONTACT_4" Node="fx_tire_contactPoint_right_out">
 		<UseTemplate Name="ASOBO_GT_FX">
-			<FX_NAME>SMOKE_ON_TIRE_CONTACT</FX_NAME>
 			<FX_GUID>{7E68323C-E75D-4F5B-988E-65DD4956F6BA}</FX_GUID>
 			<!-- <FX_CODE>(A:GEAR ANIMATION POSITION, Keyframe) 100 &gt; s0 (O:LastGearOnGround) ! and (A:GROUND VELOCITY, Knots) 10 &gt; and l0 (&gt;O:LastGearOnGround)</FX_CODE> -->
 			<!-- <FX_CODE>(A:GEAR ANIMATION POSITION:0, keyframe) 100 &gt;</FX_CODE>  -->

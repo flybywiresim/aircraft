@@ -429,6 +429,7 @@
 		<EditableTemplateParameters>
 			<AddParams>
 				<ID></ID>
+				<FD_TOGGLE_CONDITION></FD_TOGGLE_CONDITION>
 			</AddParams>
 			<AddOptions>
 				<TOGGLEABLE/>
@@ -436,7 +437,7 @@
 		</EditableTemplateParameters>
 		
 		<UseTemplate Name="ASOBO_AUTOPILOT_Push_Template">
-			<LEFT_SINGLE_CODE>#ID# (&gt;K:TOGGLE_FLIGHT_DIRECTOR)</LEFT_SINGLE_CODE>
+			<LEFT_SINGLE_CODE>#FD_TOGGLE_CONDITION# if{ #ID# (&gt;K:TOGGLE_FLIGHT_DIRECTOR) }</LEFT_SINGLE_CODE>
 			<EMISSIVE_SIMVAR_ACTIVE>AUTOPILOT FLIGHT DIRECTOR ACTIVE:#ID#</EMISSIVE_SIMVAR_ACTIVE>
 		</UseTemplate>
 	</Template>

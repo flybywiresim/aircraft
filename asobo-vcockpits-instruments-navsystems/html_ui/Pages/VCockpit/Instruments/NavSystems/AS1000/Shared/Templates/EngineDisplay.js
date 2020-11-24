@@ -2,9 +2,7 @@ class PistonEngine extends TemplateElement {
     constructor() {
         super();
     }
-    get templateID() {
-        return "PistonEngineTemplate";
-    }
+    get templateID() { return "PistonEngineTemplate"; }
     connectedCallback() {
         super.connectedCallback();
     }
@@ -14,9 +12,7 @@ class TurboEngine extends TemplateElement {
     constructor() {
         super();
     }
-    get templateID() {
-        return "TurboEngineTemplate";
-    }
+    get templateID() { return "TurboEngineTemplate"; }
     connectedCallback() {
         super.connectedCallback();
     }
@@ -26,9 +22,7 @@ class EngineDisplay extends TemplateElement {
     constructor() {
         super();
     }
-    get templateID() {
-        return "EngineDisplayTemplate";
-    }
+    get templateID() { return "EngineDisplayTemplate"; }
     connectedCallback() {
         super.connectedCallback();
     }

@@ -1,7 +1,5 @@
 class AS430 extends BaseGPS {
-    get templateID() {
-        return "AS430";
-    }
+    get templateID() { return "AS430"; }
     connectedCallback() {
         super.connectedCallback();
         this.pageGroups = [

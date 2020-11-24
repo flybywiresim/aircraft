@@ -4,7 +4,7 @@ class GeoCalcInfo {
         this.instrument = _instrument;
     }
     LoadData() {
-        const instrId = this.instrument.instrumentIdentifier;
+        var instrId = this.instrument.instrumentIdentifier;
         switch (this.loadState) {
             case 0:
                 SimVar.SetSimVarValue("C:fs9gps:GeoCalcLatitude1", "degree", this.lat1, instrId);
