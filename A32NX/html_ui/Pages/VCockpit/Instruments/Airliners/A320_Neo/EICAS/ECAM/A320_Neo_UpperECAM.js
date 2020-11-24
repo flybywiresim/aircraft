@@ -97,9 +97,9 @@ var A320_Neo_UpperECAM;
             this.simVarCache = {};
             this.frameCount = 0;
             this._aircraft = Aircraft.A320_NEO;
+            this.takeoffMemoTimer = new NXLogic_ConfirmNode(120);
             this.toInhibitTimer = new NXLogic_ConfirmNode(3);
             this.ldgInhibitTimer = new NXLogic_ConfirmNode(3);
-            this.predWsMemo = new NXLogic_MemoryNode(true);
         }
         get templateID() {
             return "UpperECAMTemplate";
@@ -118,9 +118,9 @@ var A320_Neo_UpperECAM;
             return value;
         }
         getADIRSMins() {
-            const secs = this.getCachedSimVar("L:A320_Neo_ADIRS_TIME", "seconds");
+            const secs = SimVar.GetSimVarValue("L:A320_Neo_ADIRS_TIME", "seconds");
             const mins = Math.ceil(secs / 60);
-            if (secs > 0 && this.getCachedSimVar("L:A320_Neo_ADIRS_IN_ALIGN", "Bool")) {
+            if (secs > 0 && SimVar.GetSimVarValue("L:A320_Neo_ADIRS_IN_ALIGN", "Bool")) {
                 return mins;
             } else {
                 return -1;
@@ -134,9 +134,6 @@ var A320_Neo_UpperECAM;
         }
         engineShutdown(_engine) {
             return (this.getCachedSimVar("TURB ENG N1:" + _engine, "Percent") < 15 || this.getCachedSimVar("FUELSYSTEM VALVE SWITCH:" + (_engine), "Bool") == 0) && !Simplane.getIsGrounded();
-        }
-        isEngineRunning(_engine) {
-            return this.getCachedSimVar(`ENG N1 RPM:${_engine}`, "Percent") >= 15;
         }
         getEngineFailActions(_engine) {
             return [
@@ -217,7 +214,7 @@ var A320_Neo_UpperECAM;
                     action: "TA"
                 },
                 {
-                    style: "cyan",
+                    style: "blue",
                     message: "AVOID ICING CONDITIONS"
                 }
             ];
@@ -468,7 +465,7 @@ var A320_Neo_UpperECAM;
                                         }
                                     },
                                     {
-                                        style: "cyan",
+                                        style: "blue",
                                         message: "GLDG DIST: 2NM/1000FT"
                                     },
                                     {
@@ -487,8 +484,7 @@ var A320_Neo_UpperECAM;
                             {
                                 message: "",
                                 level: 3,
-                                flightPhasesInhib: [2, 3, 4, 8, 9, 10],
-                                isActive: () => Simplane.getIndicatedSpeed() > (A32NX_Selectors.VMAX() + 4),
+                                isActive: () => this.isInFlightPhase(5, 6, 7) && Simplane.getIndicatedSpeed() > (A32NX_Selectors.VMAX() + 4),
                             },
                         ]
                     },
@@ -605,7 +601,6 @@ var A320_Neo_UpperECAM;
                             {
                                 message: "",
                                 level: 3,
-                                flightPhasesInhib: [4, 5, 7, 8],
                                 isActive: () => {
                                     return this.getCachedSimVar("L:A32NX_FIRE_TEST_CARGO", "Bool");
                                 },
@@ -653,8 +648,9 @@ var A320_Neo_UpperECAM;
                                 id: "config_flaps",
                                 message: "",
                                 level: 3,
-                                flightPhasesInhib: [5, 6, 7, 8, 10], // TODO
-                                isActive: () => this.activeTakeoffConfigWarnings.includes("flaps"),
+                                isActive: () => {
+                                    return this.activeTakeoffConfigWarnings.includes("flaps") && Simplane.getIsGrounded();
+                                },
                                 alwaysShowCategory: true,
                                 actions: [
                                     {
@@ -667,8 +663,9 @@ var A320_Neo_UpperECAM;
                                 id: "config_spd_brk",
                                 message: "",
                                 level: 3,
-                                flightPhasesInhib: [5, 6, 7, 8], // TODO
-                                isActive: () => this.activeTakeoffConfigWarnings.includes("spd_brk"),
+                                isActive: () => {
+                                    return this.activeTakeoffConfigWarnings.includes("spd_brk") && Simplane.getIsGrounded();
+                                },
                                 alwaysShowCategory: true,
                                 actions: [
                                     {
@@ -681,7 +678,6 @@ var A320_Neo_UpperECAM;
                                 id: "config_park_brake",
                                 message: "",
                                 level: 3,
-                                flightPhasesInhib: [1, 4, 5, 6, 7, 8, 9, 10], // TODO
                                 isActive: () => {
                                     return this.activeTakeoffConfigWarnings.includes("park_brake") && Simplane.getIsGrounded();
                                 },
@@ -701,9 +697,8 @@ var A320_Neo_UpperECAM;
                             {
                                 message: "EXCESS CAB ALT",
                                 level: 3,
-                                flightPhasesInhib: [1, 2, 3, 4, 5, 7, 8, 9, 10],
                                 isActive: () => (
-                                    !Simplane.getIsGrounded() &&
+                                    this.fwcFlightPhase === 6 &&
                                     this.getCachedSimVar("PRESSURIZATION CABIN ALTITUDE", "feet") > 10000
                                 ),
                                 actions: [
@@ -845,9 +840,10 @@ var A320_Neo_UpperECAM;
                                 message: "HOT",
                                 id: "brakes_hot",
                                 level: 2,
-                                flightPhasesInhib: [4, 8, 9, 10],
-                                page: "WHEEL",
-                                isActive: () => SimVar.GetSimVarValue("L:A32NX_BRAKES_HOT", "Bool"),
+                                isActive: () => (
+                                    !this.isInFlightPhase(4, 8, 9, 10) &&
+                                    SimVar.GetSimVarValue("L:A32NX_BRAKES_HOT", "Bool")
+                                ),
                                 actions: [
                                     {
                                         style: "action",
@@ -855,18 +851,17 @@ var A320_Neo_UpperECAM;
                                         action: "PREFER CHOCKS"
                                     },
                                     {
-                                        style: "cyan",
+                                        style: "blue",
                                         message: "&nbsp;-DELAY T.O FOR COOL"
                                     }
                                 ]
                             },
                             {
                                 message: "PARK BRK ON",
-                                id: "brakes_park_brk_on",
+                                id: "brakes_hot",
                                 level: 2,
-                                flightPhasesInhib: [1, 2, 3, 4, 5, 8, 9, 10],
                                 isActive: () => (
-                                    this.isInFlightPhase(8, 6, 7) && SimVar.GetSimVarValue("BRAKE PARKING INDICATOR", "Bool")
+                                    this.isInFlightPhase(6, 7) && SimVar.GetSimVarValue("BRAKE PARKING INDICATOR", "Bool")
                                 ),
                                 actions: [
                                     {
@@ -879,9 +874,7 @@ var A320_Neo_UpperECAM;
                             },
                             {
                                 message: "A/SKID N/WS OFF",
-                                id: "brakes_askid_nws_off",
                                 level: 2,
-                                flightPhasesInhib: [4, 5],
                                 page: "WHEEL",
                                 inopSystems: [
                                     "CAT_3_DUAL",
@@ -892,11 +885,13 @@ var A320_Neo_UpperECAM;
                                     "ASKID_NWS" // only as trigger for STS messages
                                 ],
                                 isActive: () => (
-                                    !SimVar.GetSimVarValue("ANTISKID BRAKES ACTIVE", "Bool")
+                                    this.fwcFlightPhase !== 4 &&
+                                    this.fwcFlightPhase !== 5 &&
+                                    SimVar.GetSimVarValue("ANTISKID BRAKES ACTIVE", "Bool") === 0
                                 ),
                                 actions: [
                                     {
-                                        style: "cyan",
+                                        style: "blue",
                                         message: "&nbsp;MAX BRK PR......1000PSI"
                                     }
                                 ],
@@ -912,8 +907,12 @@ var A320_Neo_UpperECAM;
                                 inopSystems: [
                                     "TCAS"
                                 ],
-                                flightPhasesInhib: [3, 4, 5, 7, 8],
-                                isActive: () => !this.isInFlightPhase(1, 10) && this.getCachedSimVar("L:A320_Neo_ADIRS_STATE", "Enum") !== 2,
+                                isActive: () => {
+                                    return (
+                                        !this.isInFlightPhase(3, 4, 5, 7, 8) &&
+                                        this.getCachedSimVar("L:A320_Neo_ADIRS_STATE", "Enum") == 0
+                                    );
+                                },
                             }
                         ]
                     },
@@ -931,7 +930,7 @@ var A320_Neo_UpperECAM;
                                 ),
                                 actions: [
                                     {
-                                        style: "cyan",
+                                        style: "blue",
                                         message: "&nbsp;-TOW AND T.O DATA.CHECK"
                                     }
                                 ]
@@ -962,38 +961,35 @@ var A320_Neo_UpperECAM;
                 normal: [
                     {
                         message: "IR IN ALIGN > 7 MN",
-                        style: () => this.isEngineRunning(1) || this.isEngineRunning(2) ? "InfoCaution" : "InfoIndication",
                         isActive: () => this.isInFlightPhase(1, 2) && this.getADIRSMins() >= 7
                     },
                     {
                         message: "IR IN ALIGN 6 MN",
-                        style: () => this.isEngineRunning(1) || this.isEngineRunning(2) ? "InfoCaution" : "InfoIndication",
                         isActive: () => this.isInFlightPhase(1, 2) && this.getADIRSMins() === 6
                     },
                     {
                         message: "IR IN ALIGN 5 MN",
-                        style: () => this.isEngineRunning(1) || this.isEngineRunning(2) ? "InfoCaution" : "InfoIndication",
                         isActive: () => this.isInFlightPhase(1, 2) && this.getADIRSMins() === 5
                     },
                     {
                         message: "IR IN ALIGN 4 MN",
-                        style: () => this.isEngineRunning(1) || this.isEngineRunning(2) ? "InfoCaution" : "InfoIndication",
                         isActive: () => this.isInFlightPhase(1, 2) && this.getADIRSMins() === 4
                     },
                     {
                         message: "IR IN ALIGN 3 MN",
-                        style: () => this.isEngineRunning(1) || this.isEngineRunning(2) ? "InfoCaution" : "InfoIndication",
                         isActive: () => this.isInFlightPhase(1, 2) && this.getADIRSMins() === 3
                     },
                     {
                         message: "IR IN ALIGN 2 MN",
-                        style: () => this.isEngineRunning(1) || this.isEngineRunning(2) ? "InfoCaution" : "InfoIndication",
                         isActive: () => this.isInFlightPhase(1, 2) && this.getADIRSMins() === 2
                     },
                     {
                         message: "IR IN ALIGN 1 MN",
-                        style: () => this.isEngineRunning(1) || this.isEngineRunning(2) ? "InfoCaution" : "InfoIndication",
                         isActive: () => this.isInFlightPhase(1, 2) && (this.getADIRSMins() === 0 || this.getADIRSMins() === 1)
+                    },
+                    {
+                        message: "IRS ALIGNED",
+                        isActive: () => this.isInFlightPhase(1, 2) && this.getADIRSMins() === -1
                     },
                     {
                         message: "GND SPLRS ARMED",
@@ -1007,12 +1003,6 @@ var A320_Neo_UpperECAM;
                         message: "NO SMOKING",
                         isActive: () => this.getCachedSimVar("L:A32NX_NO_SMOKING_MEMO", "Bool")
                     },
-                    {
-                        message: "STROBE LT OFF",
-                        isActive: () => (
-                            this.isInFlightPhase(6, 7, 8) && !this.getCachedSimVar("LIGHT STROBE ON", "Bool")
-                        ),
-                    },
                 ]
             };
             this.secondaryEcamMessage = {
@@ -1022,13 +1012,13 @@ var A320_Neo_UpperECAM;
                         message: "LAND ASAP",
                         style: "fail-3",
                         important: true,
-                        isActive: () => this.leftEcamMessagePanel.landASAP === 3 && !Simplane.getIsGrounded()
+                        isActive: () => this.leftEcamMessagePanel.landASAP === 3 && this.fwcFlightPhase !== 4 && this.fwcFlightPhase !== 8,
                     },
                     {
                         message: "LAND ASAP",
                         style: "fail-2",
                         important: true,
-                        isActive: () => this.leftEcamMessagePanel.landASAP === 2 && !Simplane.getIsGrounded()
+                        isActive: () => this.leftEcamMessagePanel.landASAP === 2 && this.fwcFlightPhase !== 4 && this.fwcFlightPhase !== 8,
                     },
                     {
                         message: "T.O. INHIBIT",
@@ -1086,28 +1076,21 @@ var A320_Neo_UpperECAM;
                     },
                     {
                         message: "SPEED BRK",
-                        style: () => {
-                            if (this.isInFlightPhase(2, 3, 4, 5)) {
-                                return "InfoCaution";
-                            }
-                            // todo
-                            return "InfoIndication";
-                        },
-                        isActive: () => (
-                            !(
-                                this.fwcFlightPhase === 1 ||
-                                this.fwcFlightPhase === 8 ||
-                                this.fwcFlightPhase === 9 ||
-                                this.fwcFlightPhase === 10
-                            ) && SimVar.GetSimVarValue("SPOILERS HANDLE POSITION", "position") > 0
-                        ),
+                        isActive: () => {
+                            return (
+                                !this.isInFlightPhase(1, 8, 9, 10) &&
+                                SimVar.GetSimVarValue("SPOILERS HANDLE POSITION", "position") > 0
+                            );
+                        }
                     },
                     {
                         message: "AUTO BRK LO",
-                        isActive: () => (
-                            (this.fwcFlightPhase === 7 || this.fwcFlightPhase === 8) &&
-                            SimVar.GetSimVarValue("L:XMLVAR_Autobrakes_Level", "Enum") === 1
-                        )
+                        isActive: () => {
+                            return (
+                                (this.fwcFlightPhase === 7 || this.fwcFlightPhase === 8) &&
+                                SimVar.GetSimVarValue("L:XMLVAR_Autobrakes_Level", "Enum") === 1
+                            );
+                        }
                     },
                     {
                         message: "AUTO BRK MED",
@@ -1130,8 +1113,9 @@ var A320_Neo_UpperECAM;
                     {
                         message: "PARK BRK",
                         isActive: () => (
-                            this.isInFlightPhase(1, 2, 9, 10) && this.getCachedSimVar("BRAKE PARKING INDICATOR", "Bool")
-                        ),
+                            this.isInFlightPhase(1, 2, 9, 10) &&
+                            this.getCachedSimVar("BRAKE PARKING INDICATOR", "Bool")
+                        )
                     },
                     {
                         message: "HYD PTU",
@@ -1143,19 +1127,40 @@ var A320_Neo_UpperECAM;
                     },
                     {
                         message: "NW STRG DISC",
-                        style: () => this.isEngineRunning(1) || this.isEngineRunning(2) ? "InfoCaution" : "InfoIndication",
+                        style: "InfoIndication",
                         isActive: () => (
-                            this.getCachedSimVar("PUSHBACK STATE", "Enum") !== 3
+                            this.getCachedSimVar("PUSHBACK STATE", "Enum") !== 3 &&
+                            this.getCachedSimVar("ENG N1 RPM:1", "Percent") < 15 &&
+                            this.getCachedSimVar("ENG N1 RPM:1", "Percent") < 15
+                        )
+                    },
+                    {
+                        message: "NW STRG DISC",
+                        style: "InfoCaution",
+                        isActive: () => (
+                            this.getCachedSimVar("PUSHBACK STATE", "Enum") !== 3 && (
+                                this.getCachedSimVar("ENG N1 RPM:1", "Percent") >= 15 ||
+                                this.getCachedSimVar("ENG N1 RPM:1", "Percent") >= 15
+                            )
                         )
                     },
                     {
                         message: "PRED W/S OFF",
-                        style: () => (
-                            this.isInFlightPhase(3, 4, 5, 7, 8, 9) || this.predWsMemo.read()
-                        ) ? "InfoCaution" : "InfoIndication",
+                        style: "InfoIndication",
                         isActive: () => {
                             return (
-                                !this.isInFlightPhase(1, 10) &&
+                                !this.isInFlightPhase(3, 4, 5, 7, 8, 9) &&
+                                !this.getCachedSimVar("L:A32NX_SWITCH_RADAR_PWS_Position", "Bool")
+                            );
+                        }
+                    },
+                    {
+                        message: "PRED W/S OFF",
+                        style: "InfoCaution",
+                        isActive: () => {
+                            return (
+                                // TODO should turn amber in phase 2 once T.O. Config is pressed at least once
+                                this.isInFlightPhase(3, 4, 5, 7, 8, 9) &&
                                 !this.getCachedSimVar("L:A32NX_SWITCH_RADAR_PWS_Position", "Bool")
                             );
                         }
@@ -1171,7 +1176,8 @@ var A320_Neo_UpperECAM;
                         message: "COMPANY MSG",
                         isActive: () => {
                             return this.isInFlightPhase(1, 2, 6, 9, 10) && (
-                                this.getCachedSimVar("L:A32NX_COMPANY_MSG_COUNT", "Number") > 0
+                                this.getCachedSimVar("L:A32NX_COMPANY_MSG_COUNT", "Number") > 0 ||
+                                SimVar.GetSimVarValue("L:A32NX_COMPANY_MSG_COUNT", "Number") > 0
                             );
                         }
                     },
@@ -1191,15 +1197,19 @@ var A320_Neo_UpperECAM;
                         message: "APU AVAIL",
                         isActive: () => (
                             !this.getCachedSimVar("BLEED AIR APU", "Bool") &&
-                            this.getCachedSimVar("APU PCT RPM", "Percent") >= 95
+                            SimVar.GetSimVarValue("APU PCT RPM", "Percent") >= 95
                         )
                     },
                     {
                         message: "APU BLEED",
                         isActive: () => (
                             this.getCachedSimVar("BLEED AIR APU", "Bool") &&
-                            this.getCachedSimVar("APU PCT RPM", "Percent") >= 95
+                            SimVar.GetSimVarValue("APU PCT RPM", "Percent") >= 95
                         )
+                    },
+                    {
+                        message: "IGNITION",
+                        isActive: () => this.getCachedSimVar("L:XMLVAR_ENG_MODE_SEL", "Enum") === 2
                     },
                     {
                         message: "LDG LT",
@@ -1330,6 +1340,10 @@ var A320_Neo_UpperECAM;
                 return;
             }
 
+            const leftThrottleDetent = Simplane.getEngineThrottleMode(0);
+            const rightThrottleDetent = Simplane.getEngineThrottleMode(1);
+            const highestThrottleDetent = (leftThrottleDetent >= rightThrottleDetent) ? leftThrottleDetent : rightThrottleDetent;
+
             for (let i = 0; i < this.allPanels.length; ++i) {
                 if (this.allPanels[i] != null) {
                     this.allPanels[i].update(_deltaTime);
@@ -1345,36 +1359,31 @@ var A320_Neo_UpperECAM;
 
             this.overflowArrow.setAttribute("opacity", (this.leftEcamMessagePanel.overflow || this.rightEcamMessagePanel.overflow) ? "1" : "0");
 
-            this.updateInhibitMessages(_deltaTime);
+            //Show takeoff memo 2 mins after second engine start
+            //Hides after takeoff thurst application
+            this.updateTOMemo(_deltaTime);
+            this.updateTOInhibit(_deltaTime);
 
-            const memosInhibited = this.leftEcamMessagePanel.hasWarnings || this.leftEcamMessagePanel.hasCautions;
-            const showTOMemo = SimVar.GetSimVarValue("L:A32NX_FWC_TOMEMO", "Bool") && !memosInhibited;
-            if (this.takeoffMemo != null) {
-                this.takeoffMemo.divMain.style.display = showTOMemo ? "block" : "none";
-            }
-
-            const showLdgMemo = SimVar.GetSimVarValue("L:A32NX_FWC_LDGMEMO", "Bool") && !memosInhibited;
-            if (this.landingMemo != null) {
-                this.landingMemo.divMain.style.display = showLdgMemo ? "block" : "none";
-            }
+            //Show landing memo at 2000ft
+            //Hides after slowing down to 80kts
+            this.updateLDGMemo(_deltaTime);
+            this.updateLDGInhibit(_deltaTime);
 
             //Hide left message panel when memo is diplayed
             if (this.leftEcamMessagePanel != null) {
-                this.leftEcamMessagePanel.divMain.style.display = (showTOMemo || showLdgMemo) ? "none" : "block";
+                this.leftEcamMessagePanel.divMain.style.display = (this.showTakeoffMemo || this.showLandingMemo) ? "none" : "block";
             }
 
-            let toConfigMomentary = false;
-            if (SimVar.GetSimVarValue("L:A32NX_FWC_TOCONFIG", "Bool")) {
-                SimVar.SetSimVarValue("L:A32NX_FWC_TOCONFIG", "Bool", 0);
-                // FWC ESLD 1.0.180
+            if (SimVar.GetSimVarValue("L:A32NX_BTN_TOCONFIG", "Bool") == 1) {
+                SimVar.SetSimVarValue("L:A32NX_BTN_TOCONFIG", "Bool", 0);
+                /// FWC ESLD 1.0.180
                 if (this.isInFlightPhase(2, 9)) {
+                    this._fwcMemoTOConfig = true;
+                }
+                if (this._fwcMemoTOConfig) {
                     this.updateTakeoffConfigWarnings(true);
                 }
-                toConfigMomentary = true;
             }
-
-            // FWC ESLD 2.0.540
-            this.predWsMemo.write(this.fwcFlightPhase === 2 && toConfigMomentary, this.fwcFlightPhase !== 2);
 
             if (SimVar.GetSimVarValue("L:A32NX_BTN_CLR", "Bool") == 1 || SimVar.GetSimVarValue("L:A32NX_BTN_CLR2", "Bool") == 1) {
                 SimVar.SetSimVarValue("L:A32NX_BTN_CLR", "Bool", 0);
@@ -1390,8 +1399,8 @@ var A320_Neo_UpperECAM;
 
             }
 
-            if (SimVar.GetSimVarValue("L:A32NX_FWC_RECALL", "Bool")) {
-                SimVar.SetSimVarValue("L:A32NX_FWC_RECALL", "Bool", 0);
+            if (SimVar.GetSimVarValue("L:A32NX_BTN_RCL", "Bool") == 1) {
+                SimVar.SetSimVarValue("L:A32NX_BTN_RCL", "Bool", 0);
                 this.leftEcamMessagePanel.recall();
                 this.clearedSecondaryFailures = [];
             }
@@ -1424,11 +1433,11 @@ var A320_Neo_UpperECAM;
 
             this.statusReminder.setAttribute("visibility", (this.leftEcamMessagePanel.secondaryFailures.length > 0 && this.leftEcamMessagePanel.secondaryFailures.length == this.clearedSecondaryFailures.length) ? "visible" : "hidden");
 
-            if (this.fwcFlightPhase === 3) {
+            if (highestThrottleDetent == ThrottleMode.TOGA || highestThrottleDetent == ThrottleMode.FLEX_MCT) {
                 this.updateTakeoffConfigWarnings(false);
             }
 
-            if (this.fwcFlightPhase === 5) {
+            if (Simplane.getCurrentFlightPhase() > 2) {
                 this.activeTakeoffConfigWarnings = [];
             }
 
@@ -1466,17 +1475,17 @@ var A320_Neo_UpperECAM;
             if (speedBrake > 0) {
                 this.activeTakeoffConfigWarnings.push("spd_brk");
             }
-            if (parkBrake && !_test) {
+            if (parkBrake == 1 && !_test) {
                 this.activeTakeoffConfigWarnings.push("park_brake");
             }
-            if (brakesHot) {
+            if (brakesHot == 1) {
                 this.activeTakeoffConfigWarnings.push("brakes_hot");
             }
             if (!(v1Speed <= vrSpeed && vrSpeed <= v2Speed)) {
                 this.activeTakeoffConfigWarnings.push("to_speeds_disagree");
             }
 
-            if (_test && this.activeTakeoffConfigWarnings.length === 0) {
+            if (_test && this.activeTakeoffConfigWarnings.length == 0) {
                 SimVar.SetSimVarValue("L:A32NX_TO_CONFIG_NORMAL", "Bool", 1);
             } else {
                 SimVar.SetSimVarValue("L:A32NX_TO_CONFIG_NORMAL", "Bool", 0);
@@ -1488,10 +1497,60 @@ var A320_Neo_UpperECAM;
             }
         }
 
-        updateInhibitMessages(_deltaTime) {
-            this.inhibitOverride = this.getCachedSimVar("L:A32NX_FWC_INHIBOVRD", "Bool");
-            this.showTakeoffInhibit = this.toInhibitTimer.write(this.isInFlightPhase(3, 4, 5) && !this.inhibOverride, _deltaTime);
-            this.showLandingInhibit = this.ldgInhibitTimer.write(this.isInFlightPhase(7, 8) && !this.inhibOverride, _deltaTime);
+        updateTOMemo(_deltaTime) {
+            /// FWC ESLD 1.0.180
+            const resetTakeoffMemo = this.isInFlightPhase(10, 3, 1, 6);
+            if (this._fwcMemoTOConfig && resetTakeoffMemo) {
+                this._fwcMemoTOConfig = false;
+            }
+
+            const eng1NotRunning = this.getCachedSimVar("ENG N1 RPM:1", "Percent") < 15;
+            const eng2NotRunning = this.getCachedSimVar("ENG N1 RPM:2", "Percent") < 15;
+            const toTimerElapsed = this.takeoffMemoTimer.write(!eng1NotRunning && !eng2NotRunning, _deltaTime);
+            this.showTakeoffMemo = this._fwcMemoTOConfig || (this.fwcFlightPhase === 2 && toTimerElapsed);
+
+            if (this.takeoffMemo != null) {
+                this.takeoffMemo.divMain.style.display = this.showTakeoffMemo ? "block" : "none";
+            }
+        }
+
+        updateTOInhibit(_deltaTime) {
+            this.showTakeoffInhibit = this.toInhibitTimer.write(this.isInFlightPhase(3, 4, 5), _deltaTime);
+        }
+
+        updateLDGMemo(_deltaTime) {
+            const radioHeight = this.getCachedSimVar("RADIO HEIGHT", "Feet");
+
+            // FWC ESLD 1.0.190
+            const setAbove2200ft = radioHeight > 2200;
+            const clearAbove2200ft = !this.isInFlightPhase(7, 8, 6);
+            if (!this._fwcMemoAbove2200Ft && setAbove2200ft && !clearAbove2200ft) {
+                this._fwcMemoAbove2200Ft = true;
+            } else if (this._fwcMemoAbove2200Ft && clearAbove2200ft) {
+                this._fwcMemoAbove2200Ft = false;
+            }
+
+            const setBelow2000ft = radioHeight < 2000;
+            const clearBelow2000ft = radioHeight > 2200;
+            if (!this._fwcMemoBelow2000Ft && setBelow2000ft) {
+                this._fwcMemoBelow2000Ft = true;
+            } else if (this._fwcMemoBelow2000Ft && clearBelow2000ft) {
+                this._fwcMemoBelow2000Ft = false;
+            }
+
+            this.showLandingMemo = (
+                (this._fwcMemoAbove2200Ft && this._fwcMemoBelow2000Ft && this.fwcFlightPhase === 6) ||
+                this.fwcFlightPhase === 7 ||
+                this.fwcFlightPhase === 8
+            );
+
+            if (this.landingMemo != null) {
+                this.landingMemo.divMain.style.display = this.showLandingMemo ? "block" : "none";
+            }
+        }
+
+        updateLDGInhibit(_deltaTime) {
+            this.showLandingInhibit = this.ldgInhibitTimer.write(this.isInFlightPhase(7, 8), _deltaTime);
         }
 
         getInfoPanelManager() {
@@ -2418,7 +2477,6 @@ var A320_Neo_UpperECAM;
                 2: 0,
                 3: 0
             };
-            this.knownFailures = [];
             this.clearedMessages = [];
             this.inopSystems = {};
             this.landASAP = 0;
@@ -2451,13 +2509,13 @@ var A320_Neo_UpperECAM;
                     this.addLine("fail-" + failure.level, category.name, failure.message, failure.action, failure.alwaysShowCategory);
                     warningsCount[failure.level] = warningsCount[failure.level] + 1;
                     if (failure.actions != null) {
-                        let firstAction = true;
+                        let fisrtAction = true;
                         for (const action of failure.actions) {
                             if (action.isCompleted == null || !action.isCompleted()) {
-                                if ((action.style != "action-timer" || firstAction)) {
+                                if ((action.style != "action-timer" || fisrtAction)) {
                                     this.addLine(action.style, null, action.message, action.action, false, action.id, action.duration, action.timerMessage);
                                 }
-                                firstAction = false;
+                                fisrtAction = false;
                             }
                         }
                     }
@@ -2467,11 +2525,7 @@ var A320_Neo_UpperECAM;
                 const activeMessages = this.getActiveMessages();
                 for (const message of activeMessages) {
                     if (!this.failMode || message.important) {
-                        let style = message.style;
-                        if (typeof style === "function") {
-                            style = style();
-                        }
-                        this.addLine(style || "InfoIndication", null, message.message, null);
+                        this.addLine(message.style || "InfoIndication", null, message.message, null);
                     }
                 }
             }
@@ -2583,31 +2637,9 @@ var A320_Neo_UpperECAM;
                     if (message.id == null) {
                         message.id = `${i} ${n}`;
                     }
-
-                    if (!this.knownFailures.includes(message.id)) {
-                        // only check for inhibition if the failure has not occured yet
-
-                        if (!this.parent.fwcFlightPhase) {
-                            // inhibition requires a valid flight phase
-                            continue;
-                        }
-
-                        const inhibitedPhases = Array.isArray(message.flightPhasesInhib) ? message.flightPhasesInhib : [];
-                        if (
-                            !this.parent.inhibitOverride &&
-                            inhibitedPhases.length &&
-                            this.parent.isInFlightPhase(...inhibitedPhases) &&
-                            !this.knownFailures.includes(message.id)
-                        ) {
-                            continue;
-                        }
-                    }
-
                     const isActive = message.isActive();
+
                     if (isActive) {
-                        if (!this.knownFailures.includes(message.id) && this.parent.fwcFlightPhase) {
-                            this.knownFailures.push(message.id);
-                        }
                         if (!this.clearedMessages.includes(message.id)) {
                             this.hasActiveFailures = true;
                             if (message.level == 3) {
@@ -2616,10 +2648,9 @@ var A320_Neo_UpperECAM;
                             if (message.level == 2) {
                                 this.hasCautions = true;
                             }
-                            if (!output[i]) {
-                                // Load the failure into output if it was not seen before, but take special care not to
-                                // just copy the original messages.failures object, as you will mutate it.
-                                output[i] = Object.assign({}, this.messages.failures[i], {messages: []});
+                            if (output[i] == null) {
+                                output[i] = this.messages.failures[i];
+                                output[i].messages = [];
                             }
                             output[i].messages.push(message);
                             if (this.activePage == null && message.page != null) {
@@ -2643,14 +2674,9 @@ var A320_Neo_UpperECAM;
                                 }
                             }
                         }
-                    } else {
-                        if (this.knownFailures.includes(message.id)) {
-                            this.knownFailures = this.knownFailures.filter(id => id !== message.id);
-                        }
                     }
                 }
             }
-
             return output;
         }
 
@@ -2669,11 +2695,6 @@ var A320_Neo_UpperECAM;
                 const index = this.clearedMessages.indexOf(_failure);
                 if (index > -1) {
                     this.clearedMessages.splice(index, 1);
-                }
-                // By adding the message to the list of known failures it will bypass any flight phase inhibition.
-                // If it is not active it will be removed again from the list immediately by getActiveFailures().
-                if (!this.knownFailures.includes(_failure)) {
-                    this.knownFailures.push(_failure);
                 }
             } else {
                 this.clearedMessages = [];

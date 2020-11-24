@@ -17,7 +17,6 @@ class FMCMainDisplay extends BaseAirliners {
         this.costIndex = 0;
         this.lastUserInput = "";
         this.isDisplayingErrorMessage = false;
-        this.isDisplayingTypeTwoMessage = false;
         this.maxCruiseFL = 390;
         this.routeIndex = 0;
         this.coRoute = "";
@@ -351,7 +350,7 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     clearUserInput() {
-        if (!this.isDisplayingErrorMessage && !this.isDisplayingTypeTwoMessage) {
+        if (!this.isDisplayingErrorMessage) {
             this.lastUserInput = this.inOut;
             this.inOut = "";
             this._inOutElement.style.color = "#ffffff";
@@ -362,14 +361,13 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     tryClearOldUserInput() {
-        if (!this.isDisplayingErrorMessage && !this.isDisplayingTypeTwoMessage) {
+        if (!this.isDisplayingErrorMessage) {
             this.lastUserInput = "";
         }
-        this.tryShowMessage();
     }
 
     showErrorMessage(message, color = "#ffffff") {
-        if (!this.isDisplayingErrorMessage && !this.isDisplayingTypeTwoMessage && this.inOut) {
+        if (!this.isDisplayingErrorMessage && this.inOut) {
             this.lastUserInput = this.inOut;
         }
         this.isDisplayingErrorMessage = true;
@@ -1416,7 +1414,7 @@ class FMCMainDisplay extends BaseAirliners {
         if (SimVar.GetSimVarValue("PLANE ALTITUDE", "feet") < 10000) {
             speed = Math.min(speed, 250);
         }
-        return Math.min(speed, this.getSpeedConstraint());
+        return speed;
     }
 
     getCrzManagedSpeed() {
@@ -1426,7 +1424,7 @@ class FMCMainDisplay extends BaseAirliners {
         if (SimVar.GetSimVarValue("PLANE ALTITUDE", "feet") < 10000) {
             speed = Math.min(speed, 250);
         }
-        return Math.min(speed, this.getSpeedConstraint(false));
+        return speed;
     }
 
     getDesManagedSpeed() {
@@ -1439,7 +1437,7 @@ class FMCMainDisplay extends BaseAirliners {
         if (SimVar.GetSimVarValue("PLANE ALTITUDE", "feet") < 10000) {
             speed = Math.min(speed, 250);
         }
-        return Math.min(speed, this.getSpeedConstraint(false));
+        return speed;
     }
 
     getFlapApproachSpeed(useCurrentWeight = true) {
@@ -2210,19 +2208,9 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     setPerfApprTransAlt(s) {
-        if (!/^\d+$/.test(s)) {
-            this.showErrorMessage("FORMAT ERROR");
-            return false;
-        }
-        const v = parseInt(s);
-        const transALT = SimVar.GetSimVarValue("L:AIRLINER_TRANS_ALT", "Number");
-        if (s < transALT) {
-            this.showErrorMessage("NOT ALLOWED");
-            return false;
-        }
-        if (isFinite(v) && v > 0) {
-            this.perfApprTransAlt = v;
-            SimVar.SetSimVarValue("L:AIRLINER_APPR_TRANS_ALT", "Number", v);
+        const value = parseFloat(s);
+        if (isFinite(value) && value > 0 && value < 60000) {
+            this.perfApprTransAlt = value;
             return true;
         }
         this.showErrorMessage(this.defaultInputErrorMessage);
@@ -2831,11 +2819,10 @@ class FMCMainDisplay extends BaseAirliners {
         if (this.inOut === FMCMainDisplay.clrValue) {
             this.inOut = "";
         }
-        if (this.isDisplayingErrorMessage || this.isDisplayingTypeTwoMessage) {
+        if (this.isDisplayingErrorMessage) {
             this.inOut = this.lastUserInput;
             this._inOutElement.style.color = "#ffffff";
             this.isDisplayingErrorMessage = false;
-            this.isDisplayingTypeTwoMessage = false;
         }
     }
 
@@ -2914,16 +2901,14 @@ class FMCMainDisplay extends BaseAirliners {
                 this.inOut = FMCMainDisplay.clrValue;
             } else if (this.inOut === FMCMainDisplay.clrValue) {
                 this.inOut = "";
-            } else if (this.isDisplayingErrorMessage || this.isDisplayingTypeTwoMessage) {
+            } else if (this.isDisplayingErrorMessage) {
                 this.tryRemoveMessage();
                 this.inOut = this.lastUserInput;
                 this._inOutElement.style.color = "#ffffff";
                 this.isDisplayingErrorMessage = false;
-                this.isDisplayingTypeTwoMessage = false;
             } else {
                 this.inOut = this.inOut.slice(0, -1);
             }
-            this.tryShowMessage();
         };
         this.cruiseFlightLevel = SimVar.GetGameVarValue("AIRCRAFT CRUISE ALTITUDE", "feet");
         this.cruiseFlightLevel /= 100;
@@ -3074,7 +3059,7 @@ class FMCMainDisplay extends BaseAirliners {
      * @returns {number} dynamic delay in ms between 2000ms and 4000ms
      */
     getDelayFuelPred() {
-        return 225 * this.flightPlanManager.getWaypointsCount() + (this.flightPlanManager.getDestination().cumulativeDistanceInFP / 2);
+        return 1714 * this.flightPlanManager.getWaypointsCount() + this.flightPlanManager.getDestination().cumulativeDistanceInFP;
     }
 
     /**
@@ -3205,7 +3190,7 @@ class FMCMainDisplay extends BaseAirliners {
                 const val = this.inOut;
                 if (val === "") {
                     this.inOut = "-";
-                } else if (val !== FMCMainDisplay.clrValue && (!this.isDisplayingErrorMessage || !this.isDisplayingTypeTwoMessage)) {
+                } else if (val !== FMCMainDisplay.clrValue && !this.isDisplayingErrorMessage) {
                     if (val.slice(-1) === "-") {
                         this.inOut = this.inOut.slice(0, -1) + "+";
                     } else if (val.slice(-1) === "+") {
