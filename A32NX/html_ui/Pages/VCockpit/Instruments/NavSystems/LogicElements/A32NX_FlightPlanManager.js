@@ -491,7 +491,6 @@ class FlightPlanManager {
                     waypoint.transitionLLas = waypointData.transitionLLas;
                     const altitudeConstraintInFeet = waypoint.altitudeinFP;
                     if (altitudeConstraintInFeet >= 500) {
-                        // waypoint.legAltitudeDescription = 1;
                         this.setOrGetLegAltitudeDescription(waypoint, 1);
                         waypoint.legAltitude1 = altitudeConstraintInFeet;
                     }
