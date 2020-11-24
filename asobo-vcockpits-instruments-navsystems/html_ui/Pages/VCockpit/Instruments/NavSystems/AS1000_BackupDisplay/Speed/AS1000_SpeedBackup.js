@@ -1,5 +1,7 @@
 class AS1000_SpeedBackup extends NavSystem {
-    get templateID() { return "AS1000_SpeedBackup"; }
+    get templateID() {
+        return "AS1000_SpeedBackup";
+    }
     connectedCallback() {
         super.connectedCallback();
         this.addIndependentElementContainer(new NavSystemElementContainer("Altimeter", "SvgMain", new Backup_Altimeter()));
@@ -26,8 +28,7 @@ class Backup_Airspeed extends NavSystemElement {
             this.airspeedElement.setAttribute("red-begin", cockpitSettings.AirSpeed.redStart.toString());
             this.airspeedElement.setAttribute("red-end", cockpitSettings.AirSpeed.redEnd.toString());
             this.airspeedElement.setAttribute("max-speed", cockpitSettings.AirSpeed.highLimit.toString());
-        }
-        else {
+        } else {
             var designSpeeds = Simplane.getDesignSpeeds();
             this.airspeedElement.setAttribute("green-begin", designSpeeds.VS1.toString());
             this.airspeedElement.setAttribute("green-end", designSpeeds.VNo.toString());

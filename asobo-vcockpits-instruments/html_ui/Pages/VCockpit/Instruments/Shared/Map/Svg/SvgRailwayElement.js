@@ -8,16 +8,16 @@ class SvgRailwayElement extends SvgMapElement {
         ;
     }
     createDraw(map) {
-        let container = document.createElementNS(Avionics.SVG.NS, "svg");
+        const container = document.createElementNS(Avionics.SVG.NS, "svg");
         container.id = this.id(map);
         container.setAttribute("overflow", "visible");
-        let shape = document.createElementNS(Avionics.SVG.NS, "path");
+        const shape = document.createElementNS(Avionics.SVG.NS, "path");
         shape.classList.add("map-railway");
         shape.setAttribute("stroke", map.config.railwayStrokeColor);
         shape.setAttribute("stroke-width", fastToFixed(map.config.railwayWidth, 0));
         shape.setAttribute("fill", "none");
         container.appendChild(shape);
-        let shapeRail = document.createElementNS(Avionics.SVG.NS, "path");
+        const shapeRail = document.createElementNS(Avionics.SVG.NS, "path");
         shapeRail.classList.add("map-railway");
         shapeRail.setAttribute("stroke", map.config.railwayStrokeColor);
         shapeRail.setAttribute("stroke-width", fastToFixed((map.config.railwayWidth * 3), 0));
@@ -28,9 +28,9 @@ class SvgRailwayElement extends SvgMapElement {
     }
     updateDraw(map) {
         let points = "";
-        let pos = new Vec2();
-        let s1 = new Vec2();
-        let s2 = new Vec2();
+        const pos = new Vec2();
+        const s1 = new Vec2();
+        const s2 = new Vec2();
         let p1 = null;
         let p2 = null;
         let first = true;
@@ -47,20 +47,18 @@ class SvgRailwayElement extends SvgMapElement {
             p2 = pos;
             if (p1.x != p2.x || p1.y != p2.y) {
                 if (map.segmentVsFrame(p1, p2, s1, s2)) {
-                    let x1 = fastToFixed(s1.x, 0);
-                    let y1 = fastToFixed(s1.y, 0);
-                    let x2 = fastToFixed(s2.x, 0);
-                    let y2 = fastToFixed(s2.y, 0);
+                    const x1 = fastToFixed(s1.x, 0);
+                    const y1 = fastToFixed(s1.y, 0);
+                    const x2 = fastToFixed(s2.x, 0);
+                    const y2 = fastToFixed(s2.y, 0);
                     if (first || prevWasClipped) {
                         points += "M" + x1 + " " + y1 + " L" + x2 + " " + y2 + " ";
-                    }
-                    else {
+                    } else {
                         points += "L" + x2 + " " + y2 + " ";
                     }
                     first = false;
                     prevWasClipped = (s2.Equals(p2)) ? false : true;
-                }
-                else {
+                } else {
                     prevWasClipped = true;
                 }
             }

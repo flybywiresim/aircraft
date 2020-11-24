@@ -6,12 +6,12 @@ class Runway {
         this.sinDirection = 0;
     }
     splitIfTwoWays() {
-        let splitRunways = [];
-        let designations = this.designation.split("-");
+        const splitRunways = [];
+        const designations = this.designation.split("-");
         for (let i = 0; i < designations.length; i++) {
-            let newRunway = new Runway();
+            const newRunway = new Runway();
             newRunway.designation = designations[i];
-            let runwayNumber = parseInt(newRunway.designation);
+            const runwayNumber = parseInt(newRunway.designation);
             if (i === 0) {
                 if (this.designatorCharPrimary === 1) {
                     newRunway.designation += "L";

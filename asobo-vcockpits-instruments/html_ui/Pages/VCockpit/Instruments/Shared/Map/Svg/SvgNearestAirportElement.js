@@ -27,17 +27,13 @@ class SvgNearestAirportElement extends SvgWaypointElement {
         let fName = "";
         if (this.airportClass == 2 || this.airportClass == 3) {
             fName = "ICON_MAP_AIRPORT8.svg";
-        }
-        else if (this.airportClass == 1) {
+        } else if (this.airportClass == 1) {
             fName = "ICON_MAP_AIRPORT_NON_TOWERED_NON_SERVICED_PINK.svg";
-        }
-        else if (this.airportClass == 4) {
+        } else if (this.airportClass == 4) {
             fName = "ICON_MAP_AIRPORT_HELIPORT_PINK.svg";
-        }
-        else if (this.airportClass == 5) {
+        } else if (this.airportClass == 5) {
             fName = "ICON_MAP_AIRPORT_PRIVATE_PINK.svg";
-        }
-        else {
+        } else {
             fName = "ICON_MAP_AIRPORT8.svg";
         }
         if (BaseInstrument.useSvgImages) {

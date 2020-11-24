@@ -32,12 +32,10 @@ class SvgMap {
         let elementId = "MapSVG";
         if (typeof (arg) === "string") {
             configPath = arg;
-        }
-        else if (arg) {
+        } else if (arg) {
             if (arg.svgElement instanceof Element) {
                 this._svgHtmlElement = arg.svgElement;
-            }
-            else if (typeof (arg.svgElementId) === "string") {
+            } else if (typeof (arg.svgElementId) === "string") {
                 elementId = arg.svgElementId;
             }
             if (typeof (arg.configPath) === "string") {
@@ -49,14 +47,13 @@ class SvgMap {
         }
         this.svgHtmlElement.setAttribute("viewBox", "0 0 1000 1000");
         this._frameClipping.initRect(1000, 1000);
-        let loadConfig = () => {
+        const loadConfig = () => {
             if (typeof (SvgMapConfig) !== "undefined") {
                 this.config = new SvgMapConfig();
                 this.config.load(configPath, () => {
                     this.configLoaded = true;
                 });
-            }
-            else {
+            } else {
                 setTimeout(loadConfig, 200);
             }
         };
@@ -75,13 +72,15 @@ class SvgMap {
         }
     }
     get lastCenterCoordinates() {
-        if (this._previousCenterCoordinates.length <= 0)
+        if (this._previousCenterCoordinates.length <= 0) {
             return null;
+        }
         return this._previousCenterCoordinates[this._previousCenterCoordinates.length - 1];
     }
     get centerCoordinates() {
-        if (this._previousCenterCoordinates.length <= 0)
+        if (this._previousCenterCoordinates.length <= 0) {
             return null;
+        }
         return this._previousCenterCoordinates[0];
     }
     setCenterCoordinates(a, b, c) {
@@ -93,8 +92,7 @@ class SvgMap {
         if ((a instanceof LatLong) || (a instanceof LatLongAlt) || (typeof (a.lat) === "number" && typeof (a.long) === "number")) {
             lat = a.lat;
             long = a.long;
-        }
-        else if (typeof (a) === "number" && typeof (b) === "number") {
+        } else if (typeof (a) === "number" && typeof (b) === "number") {
             if (isFinite(a)) {
                 lat = a;
             }
@@ -103,8 +101,9 @@ class SvgMap {
             }
         }
         if (isFinite(lat) && isFinite(long)) {
-            if (!isFinite(c))
+            if (!isFinite(c)) {
                 c = 5;
+            }
             this._previousCenterCoordinates.push(new LatLong(lat, long));
             while (this._previousCenterCoordinates.length > c) {
                 this._previousCenterCoordinates.splice(0, 1);
@@ -128,8 +127,7 @@ class SvgMap {
             if (isFinite(b)) {
                 smoothness = Math.min(1, Math.max(b, 0));
             }
-        }
-        else if (typeof (a) === "number" && typeof (b) === "number") {
+        } else if (typeof (a) === "number" && typeof (b) === "number") {
             if (isFinite(a)) {
                 lat = a;
             }
@@ -143,16 +141,14 @@ class SvgMap {
         if (isFinite(lat) && isFinite(long)) {
             if (!this._planeCoordinates) {
                 this._planeCoordinates = new LatLong(lat, long);
-            }
-            else {
+            } else {
                 if (Math.abs(this._planeCoordinates.lat - lat) > 0.01 || Math.abs(this._planeCoordinates.long - long) > 0.01) {
                     this._planeCoordinates.lat = lat;
                     this._planeCoordinates.long = long;
                     if (Math.abs(this._planeCoordinates.lat - lat) > 0.5 || Math.abs(this._planeCoordinates.long - long) > 0.5) {
                         unsmoothedMove = true;
                     }
-                }
-                else {
+                } else {
                     this._planeCoordinates.lat *= smoothness;
                     this._planeCoordinates.lat += lat * (1 - smoothness);
                     this._planeCoordinates.long *= smoothness;
@@ -174,15 +170,14 @@ class SvgMap {
     setRange(r) {
         if (this._ratio < 1) {
             this.NMWidth = r / this._ratio;
-        }
-        else {
+        } else {
             this.NMWidth = r * this._ratio;
         }
     }
     computeCoordinates() {
         this._ftWidth = 6076.11 * this._NMWidth;
         if (this.centerCoordinates) {
-            let centerCoordinates = this.centerCoordinates;
+            const centerCoordinates = this.centerCoordinates;
             this._angularWidth = this._NMWidth / 60 / Math.cos(centerCoordinates.lat * Avionics.Utils.DEG2RAD);
             this._angularHeight = this._NMWidth / 60;
             this._bottomLeftCoordinates.lat = centerCoordinates.lat - this._angularHeight * 0.5;
@@ -249,9 +244,9 @@ class SvgMap {
         this.cosPlaneDirection = Math.cos(this.planeDirectionRadian);
         this.sinPlaneDirection = Math.sin(this.planeDirectionRadian);
         this.planeAltitude = SimVar.GetSimVarValue("PLANE ALT ABOVE GROUND", "feet");
-        let w = this.htmlRoot.getWidth();
-        let h = this.htmlRoot.getHeight();
-        let r = w / h;
+        const w = this.htmlRoot.getWidth();
+        const h = this.htmlRoot.getHeight();
+        const r = w / h;
         if (isFinite(r) && r > 0) {
             this._ratio = r;
         }
@@ -282,70 +277,64 @@ class SvgMap {
             this.lineCanvas.getContext("2d").clearRect(0, 0, this.lineCanvas.width, this.lineCanvas.height);
         }
         for (let i = 0; i < this.mapElements.length; i++) {
-            let svgElement = this.mapElements[i].draw(this);
+            const svgElement = this.mapElements[i].draw(this);
             svgElement.setAttribute("needDeletion", "false");
         }
         let i = 0;
         while (i < this.planeLayer.children.length) {
-            let e = this.planeLayer.children[i];
+            const e = this.planeLayer.children[i];
             if (e.getAttribute("needDeletion") === "true") {
                 this.planeLayer.removeChild(e);
-            }
-            else {
+            } else {
                 i++;
             }
         }
         i = 0;
         while (i < this.defaultLayer.children.length) {
-            let e = this.defaultLayer.children[i];
+            const e = this.defaultLayer.children[i];
             if (e.getAttribute("needDeletion") === "true") {
                 this.defaultLayer.removeChild(e);
                 if (e.getAttribute("hasTextBox") === "true") {
-                    let textElement = this.htmlRoot.querySelector("#" + e.id + "-text-" + this.index);
+                    const textElement = this.htmlRoot.querySelector("#" + e.id + "-text-" + this.index);
                     if (textElement) {
                         this.textLayer.removeChild(textElement);
                     }
-                    let rectElement = this.htmlRoot.querySelector("#" + e.id + "-rect-" + this.index);
+                    const rectElement = this.htmlRoot.querySelector("#" + e.id + "-rect-" + this.index);
                     if (rectElement) {
                         this.textLayer.removeChild(rectElement);
                     }
                 }
-            }
-            else {
+            } else {
                 i++;
             }
         }
         i = 0;
         while (i < this.flightPlanLayer.children.length) {
-            let e = this.flightPlanLayer.children[i];
+            const e = this.flightPlanLayer.children[i];
             if (e.getAttribute("needDeletion") === "true") {
                 this.flightPlanLayer.removeChild(e);
-            }
-            else {
+            } else {
                 i++;
             }
         }
         i = 0;
         while (i < this.maskLayer.children.length) {
-            let e = this.maskLayer.children[i];
+            const e = this.maskLayer.children[i];
             if (e.getAttribute("needDeletion") === "true") {
                 this.maskLayer.removeChild(e);
-            }
-            else {
+            } else {
                 i++;
             }
         }
         if (this.config.preventLabelOverlap) {
             this._elementsWithTextBox = [];
             for (let i = 0; i < this.mapElements.length; i++) {
-                let e = this.mapElements[i];
+                const e = this.mapElements[i];
                 if (e instanceof SvgNearestAirportElement) {
                     this._elementsWithTextBox.push(e);
-                }
-                else if (e instanceof SvgWaypointElement) {
+                } else if (e instanceof SvgWaypointElement) {
                     this._elementsWithTextBox.push(e);
-                }
-                else if (e instanceof SvgConstraintElement) {
+                } else if (e instanceof SvgConstraintElement) {
                     this._elementsWithTextBox.push(e);
                 }
             }
@@ -355,7 +344,7 @@ class SvgMap {
             this.textManager.update(this, this._elementsWithTextBox);
         }
         if (SvgMap.LOG_PERFS) {
-            let dt = performance.now() - t0;
+            const dt = performance.now() - t0;
             this._iterations += 1;
             this._mediumUpdateTime *= 99 / 100;
             this._mediumUpdateTime += dt / 100;
@@ -376,30 +365,25 @@ class SvgMap {
     appendChild(mapElement, svgElement) {
         if (mapElement instanceof SvgAirplaneElement) {
             this.planeLayer.appendChild(svgElement);
-        }
-        else if (mapElement instanceof SvgMaskElement) {
+        } else if (mapElement instanceof SvgMaskElement) {
             this.maskLayer.appendChild(svgElement);
-        }
-        else if (mapElement instanceof SvgFlightPlanElement) {
+        } else if (mapElement instanceof SvgFlightPlanElement) {
             this.flightPlanLayer.appendChild(svgElement);
-        }
-        else if (mapElement instanceof SvgBackOnTrackElement) {
+        } else if (mapElement instanceof SvgBackOnTrackElement) {
             this.flightPlanLayer.appendChild(svgElement);
-        }
-        else if (mapElement instanceof SvgWaypointElement) {
+        } else if (mapElement instanceof SvgWaypointElement) {
             this.defaultLayer.appendChild(svgElement);
             if (mapElement._label) {
                 this.textLayer.appendChild(mapElement._label);
             }
             mapElement.needRepaint = true;
-        }
-        else {
+        } else {
             this.defaultLayer.appendChild(svgElement);
         }
     }
     resize(w, h) {
         console.log("SvgMap Resize : " + w + " " + h);
-        let max = Math.max(w, h);
+        const max = Math.max(w, h);
         this.svgHtmlElement.setAttribute("width", fastToFixed(max, 0) + "px");
         this.svgHtmlElement.setAttribute("height", fastToFixed(max, 0) + "px");
         let top = "0px";
@@ -448,8 +432,8 @@ class SvgMap {
         return p.x >= (0 - 1000 * safetyMarginFactor) && p.y >= (0 - 1000 * safetyMarginFactor) && p.x < (1000 + 1000 * safetyMarginFactor) && p.y < (1000 + 1000 * safetyMarginFactor);
     }
     isLatLongInFrame(ll, safetyMarginFactor = 0) {
-        let dLat = this._angularHeight * safetyMarginFactor;
-        let dLong = this._angularWidth * safetyMarginFactor;
+        const dLat = this._angularHeight * safetyMarginFactor;
+        const dLong = this._angularWidth * safetyMarginFactor;
         return (ll.lat >= this._bottomLeftCoordinates.lat - dLat &&
             ll.long >= this._bottomLeftCoordinates.long - dLong &&
             ll.lat <= this._topRightCoordinates.lat + dLat &&
@@ -459,82 +443,78 @@ class SvgMap {
         return this._frameClipping.segmentVsRect(s1, s2, out1, out2);
     }
     coordinatesToXY(coordinates) {
-        let xy = new Vec2();
+        const xy = new Vec2();
         this.coordinatesToXYToRef(coordinates, xy);
         return xy;
     }
     latLongToXYToRef(lat, long, ref) {
-        let xNorth = (long - this.centerCoordinates.long) / this._angularWidthNorth * 1000;
-        let xSouth = (long - this.centerCoordinates.long) / this._angularWidthSouth * 1000;
+        const xNorth = (long - this.centerCoordinates.long) / this._angularWidthNorth * 1000;
+        const xSouth = (long - this.centerCoordinates.long) / this._angularWidthSouth * 1000;
         let deltaLat = (lat - this.centerCoordinates.lat) / this._angularHeight;
-        let y = -deltaLat * 1000;
+        const y = -deltaLat * 1000;
         deltaLat += 0.5;
-        let x = xNorth * deltaLat + xSouth * (1 - deltaLat);
+        const x = xNorth * deltaLat + xSouth * (1 - deltaLat);
         if (this.rotateWithPlane) {
             ref.x = x * this.cosPlaneDirection - y * this.sinPlaneDirection + 500;
             ref.y = x * this.sinPlaneDirection + y * this.cosPlaneDirection + 500;
-        }
-        else {
+        } else {
             ref.x = x + 500;
             ref.y = y + 500;
         }
     }
     coordinatesToXYToRef(coordinates, ref) {
-        let xNorth = (coordinates.long - this.centerCoordinates.long) / this._angularWidthNorth * 1000;
-        let xSouth = (coordinates.long - this.centerCoordinates.long) / this._angularWidthSouth * 1000;
+        const xNorth = (coordinates.long - this.centerCoordinates.long) / this._angularWidthNorth * 1000;
+        const xSouth = (coordinates.long - this.centerCoordinates.long) / this._angularWidthSouth * 1000;
         let deltaLat = (coordinates.lat - this.centerCoordinates.lat) / this._angularHeight;
-        let y = -deltaLat * 1000;
+        const y = -deltaLat * 1000;
         deltaLat += 0.5;
-        let x = xNorth * deltaLat + xSouth * (1 - deltaLat);
+        const x = xNorth * deltaLat + xSouth * (1 - deltaLat);
         if (this.rotateWithPlane) {
             ref.x = x * this.cosPlaneDirection - y * this.sinPlaneDirection + 500;
             ref.y = x * this.sinPlaneDirection + y * this.cosPlaneDirection + 500;
-        }
-        else {
+        } else {
             ref.x = x + 500;
             ref.y = y + 500;
         }
     }
     latLongToXYToRefForceCenter(lat, long, ref, forcedCenterCoordinates) {
-        let xNorth = (long - forcedCenterCoordinates.long) / this._angularWidthNorth * 1000;
-        let xSouth = (long - forcedCenterCoordinates.long) / this._angularWidthSouth * 1000;
+        const xNorth = (long - forcedCenterCoordinates.long) / this._angularWidthNorth * 1000;
+        const xSouth = (long - forcedCenterCoordinates.long) / this._angularWidthSouth * 1000;
         let deltaLat = (lat - forcedCenterCoordinates.lat) / this._angularHeight;
-        let y = -deltaLat * 1000;
+        const y = -deltaLat * 1000;
         deltaLat += 0.5;
-        let x = xNorth * deltaLat + xSouth * (1 - deltaLat);
+        const x = xNorth * deltaLat + xSouth * (1 - deltaLat);
         if (this.rotateWithPlane) {
             ref.x = x * this.cosPlaneDirection - y * this.sinPlaneDirection + 500;
             ref.y = x * this.sinPlaneDirection + y * this.cosPlaneDirection + 500;
-        }
-        else {
+        } else {
             ref.x = x + 500;
             ref.y = y + 500;
         }
     }
     coordinatesToXYToRefForceCenter(coordinates, ref, forcedCenterCoordinates) {
-        let xNorth = (coordinates.long - forcedCenterCoordinates.long) / this._angularWidthNorth * 1000;
-        let xSouth = (coordinates.long - forcedCenterCoordinates.long) / this._angularWidthSouth * 1000;
+        const xNorth = (coordinates.long - forcedCenterCoordinates.long) / this._angularWidthNorth * 1000;
+        const xSouth = (coordinates.long - forcedCenterCoordinates.long) / this._angularWidthSouth * 1000;
         let deltaLat = (coordinates.lat - forcedCenterCoordinates.lat) / this._angularHeight;
-        let y = -deltaLat * 1000;
+        const y = -deltaLat * 1000;
         deltaLat += 0.5;
-        let x = xNorth * deltaLat + xSouth * (1 - deltaLat);
+        const x = xNorth * deltaLat + xSouth * (1 - deltaLat);
         if (this.rotateWithPlane) {
             ref.x = x * this.cosPlaneDirection - y * this.sinPlaneDirection + 500;
             ref.y = x * this.sinPlaneDirection + y * this.cosPlaneDirection + 500;
-        }
-        else {
+        } else {
             ref.x = x + 500;
             ref.y = y + 500;
         }
     }
     XYToCoordinates(xy) {
-        let lat = this.centerCoordinates.lat - ((xy.y - 500) / 1000) * this._angularHeight;
-        let long = this.centerCoordinates.long + ((xy.x - 500) / 1000) * this._angularWidth;
+        const lat = this.centerCoordinates.lat - ((xy.y - 500) / 1000) * this._angularHeight;
+        const long = this.centerCoordinates.long + ((xy.x - 500) / 1000) * this._angularWidth;
         return new LatLongAlt(lat, long);
     }
     bearingDistanceToXY(bearing, distance) {
-        let x = 1000 * (this._planeXY.x + Math.sin(bearing * Avionics.Utils.DEG2RAD) * distance / this.NMWidth);
-        let y = 1000 * (this._planeXY.y - Math.cos(bearing * Avionics.Utils.DEG2RAD) * distance / this.NMWidth);
+        const x = 1000 * (this._planeXY.x + Math.sin(bearing * Avionics.Utils.DEG2RAD) * distance / this.NMWidth);
+        const y = 1000 * (this._planeXY.y - Math.cos(bearing * Avionics.Utils.DEG2RAD) * distance / this.NMWidth);
         return { x: x, y: y };
     }
 }

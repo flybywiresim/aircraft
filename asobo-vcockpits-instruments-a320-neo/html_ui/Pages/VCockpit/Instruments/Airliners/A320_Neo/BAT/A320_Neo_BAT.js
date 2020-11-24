@@ -6,7 +6,9 @@ var A320_Neo_BAT;
             this.batTexts = new Array(null, null);
             this.batValues = new Array(0, 0);
         }
-        get templateID() { return "A320_Neo_BAT"; }
+        get templateID() {
+            return "A320_Neo_BAT";
+        }
         connectedCallback() {
             super.connectedCallback();
             this.batTexts[0] = this.querySelector("#BAT1");

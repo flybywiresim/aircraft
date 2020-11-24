@@ -29,7 +29,7 @@ class SvgObstacleElement extends SvgMapElement {
         return "ICON_MAP_OBSTACLE_" + litUnlit + "_" + moreLess + "_1000_AGL_" + color + ".svg";
     }
     createDraw(map) {
-        let container = document.createElementNS(Avionics.SVG.NS, "svg");
+        const container = document.createElementNS(Avionics.SVG.NS, "svg");
         container.id = this.id(map);
         container.setAttribute("overflow", "visible");
         this._image = document.createElementNS(Avionics.SVG.NS, "image");
@@ -51,14 +51,12 @@ class SvgObstacleElement extends SvgMapElement {
                 let color;
                 if (map.planeAltitude - this.alt < 100) {
                     color = "RED";
-                }
-                else if (map.planeAltitude - this.alt < 1000) {
+                } else if (map.planeAltitude - this.alt < 1000) {
                     color = "YELLOW";
-                }
-                else {
+                } else {
                     color = "GREY";
                 }
-                let fileName = this.imageFileName(color);
+                const fileName = this.imageFileName(color);
                 if (fileName !== this._lastFileName) {
                     this._image.setAttributeNS("http://www.w3.org/1999/xlink", "href", map.config.imagesDir + fileName);
                     this._lastFileName = fileName;

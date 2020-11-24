@@ -3,7 +3,9 @@ class AS1000_AttitudeSpeedBackup extends NavSystem {
         super(...arguments);
         this.altimeterIndex = 2;
     }
-    get templateID() { return "AS1000_AttitudeSpeedBackup"; }
+    get templateID() {
+        return "AS1000_AttitudeSpeedBackup";
+    }
     connectedCallback() {
         super.connectedCallback();
         this.addIndependentElementContainer(new NavSystemElementContainer("Altimeter", "SvgMain", new ASBackup_Altimeter()));
@@ -13,7 +15,7 @@ class AS1000_AttitudeSpeedBackup extends NavSystem {
     parseXMLConfig() {
         super.parseXMLConfig();
         if (this.instrumentXmlConfig) {
-            let altimeterIndexElems = this.instrumentXmlConfig.getElementsByTagName("AltimeterIndex");
+            const altimeterIndexElems = this.instrumentXmlConfig.getElementsByTagName("AltimeterIndex");
             if (altimeterIndexElems.length > 0) {
                 this.altimeterIndex = parseInt(altimeterIndexElems[0].textContent) + 1;
             }
@@ -40,8 +42,7 @@ class ASBackup_Airspeed extends NavSystemElement {
             this.airspeedElement.setAttribute("red-begin", cockpitSettings.AirSpeed.redStart.toString());
             this.airspeedElement.setAttribute("red-end", cockpitSettings.AirSpeed.redEnd.toString());
             this.airspeedElement.setAttribute("max-speed", cockpitSettings.AirSpeed.highLimit.toString());
-        }
-        else {
+        } else {
             var designSpeeds = Simplane.getDesignSpeeds();
             this.airspeedElement.setAttribute("green-begin", designSpeeds.VS1.toString());
             this.airspeedElement.setAttribute("green-end", designSpeeds.VNo.toString());

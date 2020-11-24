@@ -328,11 +328,9 @@ var A320_Neo_ECAM_Common;
                 var style = "";
                 if ((this.dangerRange[0] != this.dangerRange[1]) && (clampedValue >= this.dangerRange[0]) && (clampedValue <= this.dangerRange[1])) {
                     style = "danger";
-                }
-                else if ((this.warningRange[0] != this.warningRange[1]) && (clampedValue >= this.warningRange[0]) && (clampedValue <= this.warningRange[1])) {
+                } else if ((this.warningRange[0] != this.warningRange[1]) && (clampedValue >= this.warningRange[0]) && (clampedValue <= this.warningRange[1])) {
                     style = "warning";
-                }
-                else {
+                } else {
                     style = "active";
                 }
                 if (this.cursor != null) {

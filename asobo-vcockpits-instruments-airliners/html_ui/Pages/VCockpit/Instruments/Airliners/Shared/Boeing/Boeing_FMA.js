@@ -7,7 +7,9 @@ var Boeing;
             this.allAnnunciations = new Array();
             this._aircraft = Aircraft.B747_8;
         }
-        get templateID() { return "BoeingFMATemplate"; }
+        get templateID() {
+            return "BoeingFMATemplate";
+        }
         get aircraft() {
             return this._aircraft;
         }
@@ -71,8 +73,7 @@ var Boeing_FMA;
                     if (alt < 1.5) {
                         this.rolloutDelay += _deltaTime;
                         this.rolloutState = (this.rolloutDelay >= 1000) ? 2 : 1;
-                    }
-                    else {
+                    } else {
                         this.rolloutDelay = 0;
                         this.rolloutState = 1;
                     }
@@ -114,8 +115,9 @@ var Boeing_FMA;
         }
         changeMode(_mode) {
             this.currentMode = _mode;
-            if (this.divElement != null)
+            if (this.divElement != null) {
                 this.divElement.innerHTML = "<span>" + this.getCurrentModeText() + "</span>";
+            }
             this.setHighlightVisibility(this.currentMode >= 0);
         }
         setHighlightVisibility(_show) {
@@ -193,8 +195,7 @@ var Boeing_FMA;
         getCurrentModeText() {
             var modeText = "";
             if (this.leftThrottleArmed && !this.rightThrottleArmed) {
-            }
-            else if (!this.leftThrottleArmed && this.rightThrottleArmed) {
+            } else if (!this.leftThrottleArmed && this.rightThrottleArmed) {
             }
             switch (this.currentMode) {
                 case 0:
@@ -223,8 +224,7 @@ var Boeing_FMA;
             if (Simplane.getAutoPilotAPPRHold() && Simplane.getAutoPilotAPPRActive()) {
                 if (Simplane.getAutoPilotApproachType() == 10) {
                     return 1;
-                }
-                else {
+                } else {
                     return 6;
                 }
             }
@@ -246,8 +246,7 @@ var Boeing_FMA;
             if (Simplane.getAutoPilotHeadingLockActive()) {
                 if (SimVar.GetSimVarValue("L:AP_HEADING_HOLD_ACTIVE", "number") === 1) {
                     return 2;
-                }
-                else {
+                } else {
                     return 3;
                 }
             }
@@ -255,16 +254,13 @@ var Boeing_FMA;
                 if (Simplane.getAutoPilotHeadingLockActive()) {
                     if (this.fma.aircraft == Aircraft.B747_8) {
                         return 3;
-                    }
-                    else {
+                    } else {
                         return (Simplane.getAutoPilotTRKModeActive() ? 10 : 3);
                     }
-                }
-                else {
+                } else {
                     if (this.fma.aircraft == Aircraft.B747_8) {
                         return 2;
-                    }
-                    else {
+                    } else {
                         return (Simplane.getAutoPilotTRKModeActive() ? 9 : 2);
                     }
                 }
@@ -299,8 +295,7 @@ var Boeing_FMA;
             if (Simplane.getAutoPilotAPPRHold() && Simplane.getAutoPilotAPPRArm()) {
                 if (Simplane.getAutoPilotApproachType() == 10) {
                     return 1;
-                }
-                else {
+                } else {
                     return 3;
                 }
             }
@@ -346,8 +341,7 @@ var Boeing_FMA;
         getActiveMode() {
             if (Simplane.getAutoPilotActive()) {
                 return 0;
-            }
-            else if (Simplane.getAutoPilotFlightDirectorActive(1)) {
+            } else if (Simplane.getAutoPilotFlightDirectorActive(1)) {
                 return 1;
             }
             return -1;
@@ -369,8 +363,7 @@ var Boeing_FMA;
             if (Simplane.getAutoPilotAPPRHold() && Simplane.getAutoPilotGlideslopeHold() && Simplane.getAutoPilotGlideslopeActive() && Simplane.getAutoPilotAPPRActive()) {
                 if (Simplane.getAutoPilotApproachType() == 10) {
                     return 5;
-                }
-                else {
+                } else {
                     return 4;
                 }
             }
@@ -379,7 +372,7 @@ var Boeing_FMA;
             }
             if (SimVar.GetSimVarValue("L:AP_VNAV_ACTIVE", "number") === 1) {
                 if (Simplane.getAutoPilotAltitudeLockActive()) {
-                    let altitude = Simplane.getAltitude();
+                    const altitude = Simplane.getAltitude();
                     if (altitude > SimVar.GetSimVarValue("L:AIRLINER_CRUISE_ALTITUDE", "number") + 100) {
                         return 9;
                     }
@@ -405,12 +398,10 @@ var Boeing_FMA;
             if (Simplane.getAutoPilotActive()) {
                 if (Simplane.getAutoPilotAltitudeLockActive()) {
                     return 0;
-                }
-                else if (Simplane.getAutoPilotVerticalSpeedHoldActive()) {
+                } else if (Simplane.getAutoPilotVerticalSpeedHoldActive()) {
                     if (this.fma.aircraft == Aircraft.B747_8) {
                         return 10;
-                    }
-                    else {
+                    } else {
                         return (Simplane.getAutoPilotFPAModeActive() ? 3 : 10);
                     }
                 }
@@ -440,8 +431,7 @@ var Boeing_FMA;
             if (Simplane.getAutoPilotAPPRHold() && Simplane.getAutoPilotGlideslopeHold() && !(Simplane.getAutoPilotGlideslopeActive() && Simplane.getAutoPilotAPPRActive())) {
                 if (Simplane.getAutoPilotApproachType() == 10) {
                     return 1;
-                }
-                else {
+                } else {
                     return 2;
                 }
             }

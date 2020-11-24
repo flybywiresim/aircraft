@@ -1,7 +1,7 @@
 class A320_Neo_CDU_SelectWptPage {
     static ShowPage(mcdu, waypoints, callback, page = 0) {
         mcdu.clearDisplay();
-        let rows = [
+        const rows = [
             [""],
             [""],
             [""],
@@ -14,16 +14,14 @@ class A320_Neo_CDU_SelectWptPage {
             [""]
         ];
         for (let i = 0; i < 5; i++) {
-            let w = waypoints[i + 5 * page];
+            const w = waypoints[i + 5 * page];
             if (w) {
                 let t = "";
                 if (w.icao[0] === "V") {
                     t = " VOR";
-                }
-                else if (w.icao[0] === "N") {
+                } else if (w.icao[0] === "N") {
                     t = " NDB";
-                }
-                else if (w.icao[0] === "A") {
+                } else if (w.icao[0] === "A") {
                     t = " AIRPORT";
                 }
                 rows[2 * i] = [w.ident + t];
