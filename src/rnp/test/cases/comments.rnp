@@ -1,0 +1,19 @@
+(/ a line comment 1;
+2;
+(* a
+block
+comment 3; *)
+4;
+(*
+nested
+(*
+block
+*)
+5;
+comment
+*)
+6;
+---
+2 p
+4 p
+6 p

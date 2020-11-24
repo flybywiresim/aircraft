@@ -81,33 +81,33 @@ function DCDU() {
     });
 
     switch (state) {
-    case 'DEFAULT':
-        if (getSimVar('L:A32NX_COLD_AND_DARK_SPAWN')) {
-            setState('OFF');
-        } else {
-            setState('IDLE');
-        }
-        return <></>;
-    case 'OFF':
-        return <></>;
-    case 'ON':
-        setTimeout(() => {
-            if (powerAvailable()) {
-                setState('WAITING');
-            }
-        }, 8000);
-        return <SelfTest />;
-    case 'WAITING':
-        setTimeout(() => {
-            if (powerAvailable()) {
+        case 'DEFAULT':
+            if (getSimVar('L:A32NX_COLD_AND_DARK_SPAWN')) {
+                setState('OFF');
+            } else {
                 setState('IDLE');
             }
-        }, 12000);
-        return <WaitingForData />;
-    case 'IDLE':
-        return <Idle />;
-    default:
-        throw new RangeError();
+            return <></>;
+        case 'OFF':
+            return <></>;
+        case 'ON':
+            setTimeout(() => {
+                if (powerAvailable()) {
+                    setState('WAITING');
+                }
+            }, 8000);
+            return <SelfTest />;
+        case 'WAITING':
+            setTimeout(() => {
+                if (powerAvailable()) {
+                    setState('IDLE');
+                }
+            }, 12000);
+            return <WaitingForData />;
+        case 'IDLE':
+            return <Idle />;
+        default:
+            throw new RangeError();
     }
 }
 

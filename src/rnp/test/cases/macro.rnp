@@ -1,0 +1,9 @@
+macro x($a, $b) {
+    let a = $a;
+    let b = $b;
+    a * a + b * b;
+}
+
+x(2, 3)
+---
+2 sp0 3 sp1 l0 l0 * l1 l1 * + p

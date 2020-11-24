@@ -37,8 +37,20 @@ module.exports = {
         'class-methods-use-this': 'off',
         'curly': ['error', 'all'],
         'import/prefer-default-export': 'off',
-        'indent': ['error', 4],
+        'indent': ['error', 4, {
+            SwitchCase: 1,
+            FunctionDeclaration: {
+                parameters: 'first',
+            },
+            FunctionExpression: {
+                parameters: 'first',
+            },
+            CallExpression: {
+                arguments: 'first',
+            },
+        }],
         'react/jsx-indent': ['error', 4],
+        'max-classes-per-file': 'off',
         'no-restricted-syntax': 'off',
         'no-unused-vars': ['error', {
             vars: 'all',

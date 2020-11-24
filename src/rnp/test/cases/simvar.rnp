@@ -1,0 +1,4 @@
+(L:ABC);
+(L:ABC, boolean);
+---
+(L:ABC) p (L:ABC,boolean) p

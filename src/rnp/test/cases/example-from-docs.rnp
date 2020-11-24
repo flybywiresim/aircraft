@@ -1,0 +1,35 @@
+if (M:Event, string) == 'LeftSingle' {
+  (L:LastPos) = (M:X);
+}
+if (M:Event, string) == 'WheelUp' {
+  (K:RUDDER_TRIM_RIGHT) = 0;
+}
+if (M:Event, string) == 'WheelDown' {
+  (K:RUDDER_TRIM_LEFT) = 0;
+}
+if (M:Event, string) == 'LeftDrag' {
+  if ((M:X, number) - (L:LastPos, number)) > 5 {
+    (L:RudderTrimtabPos) = (L:RudderTrimtabPos, number) + 2;
+    (M:X) = (L:LastPos);
+  }
+  if ((M:X, number) - (L:LastPos, number)) < -5 {
+    (L:RudderTrimtabPos) = (L:RudderTrimtabPos, number) - 2;
+    (M:X) = (L:LastPos);
+  }
+}
+if (M:Event, string) == 'LeftRelease' {
+  (L:RudderTrimtabPos) = 50;
+}
+if (M:Event, string) == 'Leave' {
+  (L:RudderTrimtabPos) = 50;
+}
+---
+(M:Event,string) 'LeftSingle' scmp 0 == if{ (M:X) (>L:LastPos) }
+(M:Event,string) 'WheelUp' scmp 0 == if{ 0 (>K:RUDDER_TRIM_RIGHT) }
+(M:Event,string) 'WheelDown' scmp 0 == if{ 0 (>K:RUDDER_TRIM_LEFT) }
+(M:Event,string) 'LeftDrag' scmp 0 == if{
+    (M:X,number) (L:LastPos,number) - 5 > if{ (L:RudderTrimtabPos,number) 2 + (>L:RudderTrimtabPos) (L:LastPos) (>M:X) }
+    (M:X,number) (L:LastPos,number) - 5 - < if{ (L:RudderTrimtabPos,number) 2 - (>L:RudderTrimtabPos) (L:LastPos) (>M:X) }
+}
+(M:Event,string) 'LeftRelease' scmp 0 == if{ 50 (>L:RudderTrimtabPos) }
+(M:Event,string) 'Leave' scmp 0 == if{ 50 (>L:RudderTrimtabPos) }
