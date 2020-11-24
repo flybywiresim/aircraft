@@ -113,12 +113,12 @@ class FlightPlanManager {
             }, 200);
         }, 200);
     }
-    
+
     _getWaypointLocalStorageKey(waypoint) {
         return `${waypoint.ident}_${this.indexOfWaypoint(waypoint)}`;
     }
-    
-    setOrGetLegAltitudeDescription(waypoint, newValue){
+
+    setOrGetLegAltitudeDescription(waypoint, newValue) {
         // Create a unique key for the current waypoint
         const key = this._getWaypointLocalStorageKey(waypoint);
         // Save if not saved otherwise use the saved one
@@ -126,11 +126,11 @@ class FlightPlanManager {
             localStorage.setItem(key, newValue);
             waypoint.legAltitudeDescription = newValue;
         }
-        const val = localStorage.getItem(key)
+        const val = localStorage.getItem(key);
         waypoint.legAltitudeDescription = parseInt(val);
     }
 
-    setLegAltitudeDescription(waypoint, newValue){
+    setLegAltitudeDescription(waypoint, newValue) {
         const key = this._getWaypointLocalStorageKey(waypoint);
         localStorage.setItem(key, newValue);
         waypoint.legAltitudeDescription = newValue;

@@ -75,13 +75,13 @@ class CDUVerticalRevisionPage {
                     });
                 }
 
-                const PLUS_REGEX = /\+\d+/g
-                const MINUS_REGEX = /\-\d+/g
+                const PLUS_REGEX = /\+\d+/g;
+                const MINUS_REGEX = /\-\d+/g;
 
                 let altitude;
                 let code;
 
-                if ( value.match(MINUS_REGEX)) {
+                if (value.match(MINUS_REGEX)) {
                     code = 3;
                     altitude = value.split('-')[1];
                 } else if ((value.match(PLUS_REGEX))) {
