@@ -17,9 +17,9 @@ class CDUProgressPage {
             }
             case FlightPhase.FLIGHT_PHASE_CLIMB: {
                 const alt = Simplane.getAutoPilotSelectedAltitudeLockValue("feet") / 100;
-                const altCtn = SimVar.GetSimVarValue("L:A32NX_AP_CSTN_ALT", "feet") / 100;
+                const altCtn = mcdu.constraintAlt / 100;
                 if (!mcdu._cruiseEntered) {
-                    flCrz = "FL" + (SimVar.GetSimVarValue("L:AP_CURRENT_TARGET_ALTITUDE_IS_CONSTRAINT", "number") && alt > altCtn ? altCtn.toFixed(0).padStart(3, "0") : alt.toFixed(0).padStart(3, "0")) + "[color]blue";
+                    flCrz = "FL" + (altCtn && alt > altCtn ? altCtn.toFixed(0).padStart(3, "0") : alt.toFixed(0).padStart(3, "0")) + "[color]blue";
                 } else if (mcdu.cruiseFlightLevel < alt) {
                     mcdu.cruiseFlightLevel = alt.toFixed(0).padStart(3, "0") + "[color]blue";
                     flCrz = "FL" + mcdu.cruiseFlightLevel.toFixed(0).padStart(3, "0") + "[color]blue";
