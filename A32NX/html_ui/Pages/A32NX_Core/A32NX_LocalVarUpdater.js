@@ -9,12 +9,6 @@ class A32NX_LocalVarUpdater {
     constructor() {
         // Initial data for deltas
         this.lastFlapsPosition = SimVar.GetSimVarValue("TRAILING EDGE FLAPS LEFT PERCENT", "percent");
-        // track which compartment has gotten temperature initialization
-        this.initializedCabinTemp = {
-            "CKPT":false,
-            "FWD":false,
-            "AFT":false
-        };
 
         this.updaters = [
             {
@@ -43,19 +37,19 @@ class A32NX_LocalVarUpdater {
             {
                 varName: "L:A32NX_CKPT_TEMP",
                 type: "celsius",
-                selector: this._condTrimOutletSelector.bind(this),
+                selector: this._condTrimOutletSelector,
                 identifier: "CKPT"
             },
             {
                 varName: "L:A32NX_FWD_TEMP",
                 type: "celsius",
-                selector: this._condTrimOutletSelector.bind(this),
+                selector: this._condTrimOutletSelector,
                 identifier: "FWD"
             },
             {
                 varName: "L:A32NX_AFT_TEMP",
                 type: "celsius",
-                selector: this._condTrimOutletSelector.bind(this),
+                selector: this._condTrimOutletSelector,
                 identifier: "AFT"
             },
             {
@@ -112,27 +106,15 @@ class A32NX_LocalVarUpdater {
     }
 
     _condTrimOutletSelector(_compartment) {
-        // Cabin initially has outside temperature
-        if (!this.initializedCabinTemp[_compartment]) {
-            this.initializedCabinTemp[_compartment] = true;
-
-            return Simplane.getAmbientTemperature();
-        }
-
-        // Use outlet temperature of trim air valves to generate the cabin temperature
+        // Uses outlet temperature of trim air valves to generate the cabin temperature
         const currentCabinTemp = SimVar.GetSimVarValue("L:A32NX_" + _compartment + "_TEMP", "celsius");
         const trimTemp = SimVar.GetSimVarValue("L:A32NX_" + _compartment + "_TRIM_TEMP", "celsius");
 
         const deltaTemp = trimTemp - currentCabinTemp;
 
-        // temperature variation depends on packflow and compartment size
-        let compartmentSizeModifier = 0.0001;
+        // variation depends on packflow
+        const cabinTempVariationSpeed = 0.0005 * (SimVar.GetSimVarValue("L:A32NX_KNOB_OVHD_AIRCOND_PACKFLOW_Position", "Position(0-2)") + 1);
 
-        if (_compartment == "CKPT") {
-            compartmentSizeModifier = 0.0002;
-        }
-
-        const cabinTempVariationSpeed = compartmentSizeModifier * (SimVar.GetSimVarValue("L:A32NX_KNOB_OVHD_AIRCOND_PACKFLOW_Position", "Position(0-2)") + 1);
         const cabinTemp = currentCabinTemp + deltaTemp * cabinTempVariationSpeed;
 
         return cabinTemp;
