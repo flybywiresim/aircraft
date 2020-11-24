@@ -325,8 +325,6 @@ class A32NX_Vspeeds {
         SimVar.SetSimVarValue("L:A32NX_LANDING_CONF3", "boolean", 0);
         SimVar.SetSimVarValue("L:A32NX_TO_CONF", "number", 1);
         SimVar.SetSimVarValue("L:A32NX_V2", "number", 0);
-        // SimVar.SetSimVarValue("L:A32NX_VLS_APP", "number", 0);
-        // SimVar.SetSimVarValue("L:A32NX_VAPP", "number", 0);
         this.lastGw = 50;
         this.lastFhi = -1;
         this.curFhi = -1;
@@ -334,16 +332,31 @@ class A32NX_Vspeeds {
         this.alt = -1;
         this.cgw = 0;
         this.toConf = 1;
-    }
 
-    /**
-     * Fetches aircraft parameter and checks against cached values.
-     * On disagree cache gets updated and Vspeeds recalculated, then shared.
-     */
-    update(_deltaTime) {
-        const fp = Simplane.getCurrentFlightPhase();
+        /**
+         * Fetches aircraft parameter and checks against cached values.
+         * On disagree cache gets updated and Vspeeds recalculated, then shared.
+         */
+        setInterval(() => {
+            const fp = Simplane.getCurrentFlightPhase();
+            const fhi = Simplane.getFlapsHandleIndex();
+            const gw = this.round(SimVar.GetSimVarValue("TOTAL WEIGHT", "kg")) / 1000;
+            const ldg = Math.round(SimVar.GetSimVarValue("GEAR POSITION:0", "Enum"));
+            const alt = this.round(Simplane.getAltitude());
+            const conf = SimVar.GetSimVarValue("L:A32NX_TO_CONF", "number");
 
-        if (this.tryUpdateFhi(fp) || this.tryUpdateGw() || this.tryUpdateLdg() || this.tryUpdateAlt() || this.tryUpdateToConfig()) {
+            if (fhi === this.lastFhi && gw === this.lastGw && ldg === this.ldgPos && alt === this.alt && conf === this.toConf) {
+                return;
+            }
+
+            this.curFhi = this.lastFhi === 0 && fp > FlightPhase.FLIGHT_PHASE_TAKEOFF ? 5 : fhi;
+            this.lastFhi = fhi;
+            this.lastGw = gw;
+            this.cgw = Math.ceil(((gw > 80 ? 80 : gw) - 40) / 5);
+            this.ldgPos = ldg;
+            this.alt = alt;
+            this.toConf = conf;
+
             SimVar.SetSimVarValue("L:A32NX_VS", "number", this.compensateForMachEffect(vs[this.curFhi][this.cgw](this.lastGw, this.ldgPos)));
             SimVar.SetSimVarValue("L:A32NX_VLS", "number", this.compensateForMachEffect(
                 (fp < FlightPhase.FLIGHT_PHASE_CLIMB ? vlsTo : vls)[this.curFhi][this.cgw](this.lastGw, this.ldgPos)
@@ -354,75 +367,10 @@ class A32NX_Vspeeds {
             SimVar.SetSimVarValue("L:A32NX_FS", "number", fs[this.cgw](this.lastGw));
             SimVar.SetSimVarValue("L:A32NX_SS", "number", ss[this.cgw](this.lastGw));
             SimVar.SetSimVarValue("L:A32NX_GD", "number", this.curFhi === 0 ? this.compensateForMachEffect(this.calculateGreenDotSpeed()) : 0);
-        }
+        }, 500);
     }
 
-    /**
-     * Checks if flaps position has changed and updates if true
-     * @param fp {number} Flight Phase
-     * @param fhi {number} Flaps Handle Index
-     * @returns {boolean} has changed?
-     */
-    tryUpdateFhi(fp, fhi = Simplane.getFlapsHandleIndex()) {
-        if (fhi === this.lastFhi) {
-            return false;
-        }
-        this.curFhi = this.lastFhi === 0 && fp > FlightPhase.FLIGHT_PHASE_TAKEOFF ? 5 : fhi;
-        this.lastFhi = fhi;
-        return true;
-    }
-
-    /**
-     * Checks if gross weight has changed and updates if true
-     * @param gw {number} gross weight (rounded to 100 kg)
-     * @returns {boolean} has changed?
-     */
-    tryUpdateGw(gw = this.round(SimVar.GetSimVarValue("TOTAL WEIGHT", "kg")) / 1000) {
-        if (gw === this.lastGw) {
-            return false;
-        }
-        this.lastGw = gw;
-        this.cgw = Math.ceil(((gw > 80 ? 80 : gw) - 40) / 5);
-        return true;
-    }
-
-    /**
-     * Checks if landing gear position has changed and updates if true
-     * @param ldg {number} landing gear position
-     * @returns {boolean} has changed?
-     */
-    tryUpdateLdg(ldg = Math.round(SimVar.GetSimVarValue("GEAR POSITION:0", "Enum"))) {
-        if (ldg === this.ldgPos) {
-            return false;
-        }
-        this.ldgPos = ldg;
-        return true;
-    }
-
-    /**
-     * Checks if altitude has changed and updates if true
-     * @param alt {number} altitude in ft (rounded to 100 ft)
-     * @returns {boolean} has changed?
-     */
-    tryUpdateAlt(alt = this.round(Simplane.getAltitude())) {
-        if (alt === this.alt) {
-            return false;
-        }
-        this.alt = alt;
-        return true;
-    }
-
-    /**
-     * Checks if TO Config has changed and updates if true
-     * @param conf {number} flaps to config
-     * @returns {boolean} has changed?
-     */
-    tryUpdateToConfig(conf = SimVar.GetSimVarValue("L:A32NX_TO_CONF", "number")) {
-        if (conf === this.toConf) {
-            return false;
-        }
-        this.toConf = conf;
-        return true;
+    update() {
     }
 
     /**
