@@ -118,18 +118,6 @@ class FlightPlanManager {
         return `${waypoint.ident}_${this.indexOfWaypoint(waypoint)}`;
     }
     
-    _getWaypointAdditionalDataFromLocalStorage(waypoint) {
-        return localStorage.getItem('waypoints')[this._getWaypointLocalStorageKey(waypoint)]
-    }
-
-    _setWaypointAdditionalDataFromLocalStorage(waypoint, key, value) {
-        // Initialize with an empty object if not existing
-        if (!this._getWaypointAdditionalDataFromLocalStorage(waypoint)) {
-            localStorage.setItem('waypoints')[this._getWaypointLocalStorageKey(waypoint)] = {}
-        }
-        localStorage.setItem('waypoints')[this._getWaypointLocalStorageKey(waypoint)][key] = value;
-    }
-
     setOrGetLegAltitudeDescription(waypoint, newValue){
         // Create a unique key for the current waypoint
         const key = this._getWaypointLocalStorageKey(waypoint);
