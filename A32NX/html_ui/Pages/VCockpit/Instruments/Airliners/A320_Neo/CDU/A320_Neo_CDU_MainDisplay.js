@@ -450,7 +450,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         const fph = Simplane.getCurrentFlightPhase();
         const type = fph < FlightPhase.FLIGHT_PHASE_CRUISE || fph === FlightPhase.FLIGHT_PHASE_GOAROUND ? 3 : 2;
         let tmp = 0;
-        for (let i = this.activeWptIdx; i < rte.length; i++) {
+        for (let i = this.activeWptIdx; (i < rte.length && i < this.activeWptIdx + 15); i++) {
             const wpt = rte[i];
             if (!isFinite(wpt.legAltitude1)) {
                 continue;
