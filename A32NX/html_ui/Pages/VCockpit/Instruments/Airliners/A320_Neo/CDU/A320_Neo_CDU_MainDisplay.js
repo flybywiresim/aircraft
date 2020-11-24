@@ -18,9 +18,6 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this._blockFuelEntered = false;
         this._gpsprimaryack = 0;
         this.currentFlightPhase = FlightPhase.FLIGHT_PHASE_PREFLIGHT;
-        this.activeWaypointIdx = -1;
-        this.constraintAlt = 0;
-        this.altLock = 0;
         this.updateTypeIIMessage = false;
         this.messageQueue = [];
     }
@@ -105,6 +102,9 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             CDU_OPTIONS_TELEX.ShowPage(this);
         }
 
+        // Set up the AC type for the API
+        NXDataStore.set("AC_TYPE", "A32NX");
+
         // Start the TELEX Ping. API functions check the connection status themself
         setInterval(() => {
             const toDelete = [];
@@ -152,18 +152,6 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                 });
         }, NXApi.updateRate);
 
-        // Start the check routine for system health and status
-        setInterval(() => {
-            if (this.currentFlightPhase === FlightPhase.FLIGHT_PHASE_CRUISE) {
-                const dest = this.flightPlanManager.getDestination();
-                if (dest && dest.liveDistanceTo < 180) {
-                    this.checkDestData();
-                }
-            } else if (this.currentFlightPhase === FlightPhase.FLIGHT_PHASE_DESCENT || this.currentFlightPhase === FlightPhase.FLIGHT_PHASE_APPROACH) {
-                this.checkDestData();
-            }
-        }, 15000);
-
         SimVar.SetSimVarValue("L:A32NX_GPS_PRIMARY_LOST_MSG", "Bool", 0);
     }
 
@@ -200,14 +188,6 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                 }
             });
         });
-    }
-
-    checkDestData() {
-        if (!isFinite(this.perfApprQNH) || !isFinite(this.perfApprTemp) || !isFinite(this.perfApprWindHeading) || !isFinite(this.perfApprWindSpeed)) {
-            this.addTypeTwoMessage("ENTER DEST DATA", "#ffff00", () => {}, () => {
-                return isFinite(this.perfApprQNH) && isFinite(this.perfApprTemp) && isFinite(this.perfApprWindHeading) && isFinite(this.perfApprWindSpeed);
-            });
-        }
     }
 
     trySetFlapsTHS(s) {
@@ -300,6 +280,8 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this.updateScreenState();
 
         this.updateGPSMessage();
+
+        this.tryShowMessage();
     }
 
     /**
@@ -358,8 +340,6 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this.inOut = "";
         this.lastUserInput = "";
         this.isDisplayingErrorMessage = false;
-        this.isDisplayingTypeTwoMessage = false;
-        this.tryShowMessage();
     }
 
     /**
@@ -367,38 +347,24 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
      * @param message {string} Message to be displayed
      * @param color {string} Color of Message
      * @param f {function} Function gets executed when error message has been cleared
-     * @param c {function} Function that checks for validity of error message
      */
-    addTypeTwoMessage(message, color = "#ffffff", f = () => {}, c = () => {
-        return false;
-    }) {
-        if (this.checkForMessage(message)) {
-            // Before adding message to queue, check other messages in queue for validity
-            for (let i = 0; i < this.messageQueue.length; i++) {
-                if (this.messageQueue[i][3]()) {
-                    this.messageQueue.splice(i, 1);
-                }
-            }
-            this.messageQueue.unshift([message, color, f, c]);
+    addTypeTwoMessage(message, color = "#ffffff", f = () => {}) {
+        if (this.checkForMessage(message, color)) {
+            this.messageQueue.unshift([message, color, f]);
             if (this.messageQueue.length > 5) {
                 this.messageQueue.splice(5, 1);
             }
+            this.updateTypeIIMessage = true;
             this.tryShowMessage();
         }
     }
 
     tryShowMessage() {
-        if (!this.isDisplayingErrorMessage && !this.inOut && this.messageQueue.length > 0) {
-            if (this.messageQueue[0][3]()) {
-                this.tryRemoveMessage(this.messageQueue[0][0]);
-                return this.tryShowMessage();
-            }
-            if (!this.isDisplayingErrorMessage) {
-                this.isDisplayingTypeTwoMessage = true;
-                this.lastUserInput = this.inOut;
-                this.inOut = this.messageQueue[0][0];
-                this._inOutElement.style.color = this.messageQueue[0][1];
-            }
+        if (this.updateTypeIIMessage || !this.isDisplayingErrorMessage && !this.inOut && this.messageQueue.length > 0) {
+            this.updateTypeIIMessage = false;
+            this.isDisplayingErrorMessage = true;
+            this.inOut = this.messageQueue[0][0];
+            this._inOutElement.style.color = this.messageQueue[0][1];
         }
     }
 
@@ -414,11 +380,10 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                 break;
             }
         }
-        this.tryShowMessage();
     }
 
-    checkForMessage(message) {
-        if (!message) {
+    checkForMessage(message, color) {
+        if (message === "" || color === "") {
             return false;
         }
         for (let i = 0; i < this.messageQueue.length; i++) {
@@ -429,84 +394,12 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         return true;
     }
 
-    tryUpdateAltitudeConstraint(force = false) {
-        if (this.flightPlanManager.getIsDirectTo()) {
-            this.constraintAlt = 0;
-        }
-        const activeWptIdx = this.flightPlanManager.getActiveWaypointIndex();
-        const altLock = Simplane.getAutoPilotSelectedAltitudeLockValue("feet");
-        if (force || activeWptIdx !== this.activeWptIdx || altLock !== this.altLock) {
-            this.activeWptIdx = activeWptIdx;
-            this.altLock = altLock;
-            this.constraintAlt = this.getAltitudeConstraint();
-        }
-    }
-
-    getAltitudeConstraint() {
-        const rte = this.flightPlanManager.getWaypoints(0);
-        if (rte.length === 0) {
-            return 0;
-        }
-        const fph = Simplane.getCurrentFlightPhase();
-        const type = fph < FlightPhase.FLIGHT_PHASE_CRUISE || fph === FlightPhase.FLIGHT_PHASE_GOAROUND ? 3 : 2;
-        let tmp = 0;
-        for (let i = this.activeWptIdx; i < rte.length; i++) {
-            const wpt = rte[i];
-            if (!isFinite(wpt.legAltitude1)) {
-                continue;
-            }
-            // Ensure constraint waypoint after TOD is not a constraint for climb phase
-            if (tmp) {
-                if (type === 3 && (wpt.legAltitude1 < tmp || (isFinite(wpt.legAltitude2) && wpt.legAltitude2 < tmp))) {
-                    return 0;
-                }
-            } else {
-                tmp = wpt.legAltitude1;
-            }
-            if (wpt.legAltitudeDescription === 0) {
-                continue;
-            }
-            if (wpt.legAltitudeDescription === 4) {
-                if (type === 3 && this.altLock > wpt.legAltitude2) {
-                    return wpt.legAltitude2;
-                } else if (type === 2 && this.altLock < wpt.legAltitude1) {
-                    return wpt.legAltitude1;
-                }
-            } else if ((wpt.legAltitudeDescription === 1 || wpt.legAltitudeDescription === type) && (
-                (type === 3 && this.altLock > wpt.legAltitude1) || (type === 2 && this.altLock < wpt.legAltitude1)
-            )) {
-                return wpt.legAltitude1;
-            }
-        }
-        return 0;
-    }
-
-    getSpeedConstraint(raw = true) {
-        if (this.flightPlanManager.getIsDirectTo()) {
-            return Infinity;
-        }
-        const wpt = this.flightPlanManager.getActiveWaypoint();
-        if (typeof wpt === 'undefined' || !isFinite(wpt.speedConstraint) || wpt.speedConstraint < 100) {
-            return Infinity;
-        }
-        if (raw) {
-            return wpt.speedConstraint;
-        }
-        const diff = Simplane.getIndicatedSpeed() - wpt.speedConstraint + 5;
-        if (diff < wpt.distanceInFP) {
-            return Infinity;
-        }
-        return wpt.speedConstraint;
-    }
-
     getClbManagedSpeed() {
         let maxSpeed = Infinity;
         if (isFinite(this.v2Speed)) {
             const altitude = Simplane.getAltitude();
             if (altitude < this.thrustReductionAltitude) {
                 maxSpeed = this.v2Speed + 50;
-            } else {
-                maxSpeed = this.getSpeedConstraint();
             }
         }
         let dCI = this.costIndex / 999;
@@ -563,7 +456,6 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         }
         return payloadWeight;
     }
-
     _onModeSelectedSpeed() {
         if (SimVar.GetSimVarValue("L:A320_FCU_SHOW_SELECTED_SPEED", "number") === 0) {
             const currentSpeed = Simplane.getIndicatedSpeed();
@@ -1064,7 +956,6 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             }
             SimVar.SetSimVarValue("SIMVAR_AUTOPILOT_AIRSPEED_MIN_CALCULATED", "knots", Simplane.getStallProtectionMinSpeed());
             SimVar.SetSimVarValue("SIMVAR_AUTOPILOT_AIRSPEED_MAX_CALCULATED", "knots", Simplane.getMaxSpeed(Aircraft.A320_NEO));
-            this.tryUpdateAltitudeConstraint();
             if (this.isAltitudeManaged()) {
                 const prevWaypoint = this.flightPlanManager.getPreviousActiveWaypoint();
                 const nextWaypoint = this.flightPlanManager.getActiveWaypoint();
@@ -1103,9 +994,13 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                     } else {
                         SimVar.SetSimVarValue("L:AIRLINER_FMS_SHOW_TOP_DSCNT", "number", 0);
                     }
-                    if (this.constraintAlt) {
-                        SimVar.SetSimVarValue("L:A32NX_AP_CSTN_ALT", "feet", this.constraintAlt);
-                        Coherent.call("AP_ALT_VAR_SET_ENGLISH", 2, this.constraintAlt, this._forceNextAltitudeUpdate);
+                    const selectedAltitude = Simplane.getAutoPilotSelectedAltitudeLockValue("feet");
+                    if (!this.flightPlanManager.getIsDirectTo() &&
+                        isFinite(nextWaypoint.legAltitude1) &&
+                        nextWaypoint.legAltitude1 < 20000 &&
+                        nextWaypoint.legAltitude1 > selectedAltitude) {
+                        SimVar.SetSimVarValue("L:A32NX_AP_CSTN_ALT", "feet", nextWaypoint.legAltitude1);
+                        Coherent.call("AP_ALT_VAR_SET_ENGLISH", 2, nextWaypoint.legAltitude1, this._forceNextAltitudeUpdate);
                         this._forceNextAltitudeUpdate = false;
                         SimVar.SetSimVarValue("L:AP_CURRENT_TARGET_ALTITUDE_IS_CONSTRAINT", "number", 1);
                     } else {
@@ -1219,13 +1114,8 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                 }
             } else if (this.currentFlightPhase === FlightPhase.FLIGHT_PHASE_APPROACH) {
                 if (this.isAirspeedManaged()) {
-                    const ctn = this.getSpeedConstraint(false);
-                    let speed = this.getManagedApproachSpeedMcdu();
-                    let vls = this.getVApp();
-                    if (ctn !== Infinity) {
-                        vls = Math.max(vls, ctn);
-                        speed = Math.max(speed, ctn);
-                    }
+                    const speed = this.getManagedApproachSpeedMcdu();
+                    const vls = this.getVApp();
                     SimVar.SetSimVarValue("L:A32NX_AP_APPVLS", "knots", vls);
                     this.setAPManagedSpeed(speed, Aircraft.A320_NEO);
                 }
