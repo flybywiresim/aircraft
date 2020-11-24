@@ -70,13 +70,33 @@ class CDUVerticalRevisionPage {
             mcdu.onRightInput[2] = (value) => {
                 if (value === FMCMainDisplay.clrValue) {
                     mcdu.removeWaypoint(fpIndex, () => {
+                        mcdu.tryUpdateAltitudeConstraint(true);
                         CDUFlightPlanPage.ShowPage(mcdu, offset);
                     });
                 }
-                value = parseInt(value);
-                if (isFinite(value)) {
-                    if (value >= 0) {
-                        mcdu.flightPlanManager.setWaypointAltitude((value < 1000 ? value * 100 : value) / 3.28084, mcdu.flightPlanManager.indexOfWaypoint(waypoint), () => {
+
+                const PLUS_REGEX = /\+\d+/g;
+                const MINUS_REGEX = /\-\d+/g;
+
+                let altitude;
+                let code;
+
+                if (value.match(MINUS_REGEX)) {
+                    code = 3;
+                    altitude = value.split('-')[1];
+                } else if ((value.match(PLUS_REGEX))) {
+                    code = 2;
+                    altitude = value.split('+')[1];
+                } else {
+                    code = 1;
+                    altitude = value;
+                }
+                altitude = parseInt(altitude);
+                if (isFinite(altitude)) {
+                    if (altitude >= 0) {
+                        mcdu.flightPlanManager.setLegAltitudeDescription(waypoint, code);
+                        mcdu.flightPlanManager.setWaypointAltitude((altitude < 1000 ? altitude * 100 : altitude) / 3.28084, mcdu.flightPlanManager.indexOfWaypoint(waypoint), () => {
+                            mcdu.tryUpdateAltitudeConstraint(true);
                             this.ShowPage(mcdu, waypoint);
                         });
                     }
