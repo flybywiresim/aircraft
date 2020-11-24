@@ -974,9 +974,9 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
                 const isManaged = Simplane.getAutoPilotAirspeedManaged();
                 if (isManaged) {
                     if (Simplane.getAutoPilotMachModeActive()) {
-                        redAirspeed = SimVar.GetGameVarValue("FROM MACH TO KIAS", "number", Simplane.getAutoPilotMachHoldValue());
+                        redAirspeed = Simplane.getCurrentFlightPhase() === FlightPhase.FLIGHT_PHASE_APPROACH ? SimVar.GetSimVarValue("L:A32NX_AP_APPVLS", "knots") : SimVar.GetGameVarValue("FROM MACH TO KIAS", "number", Simplane.getAutoPilotMachHoldValue());
                     } else {
-                        redAirspeed = (Simplane.getCurrentFlightPhase() === FlightPhase.FLIGHT_PHASE_APPROACH) ? SimVar.GetSimVarValue("L:A32NX_AP_APPVLS", "knots") : Simplane.getAutoPilotAirspeedHoldValue();
+                        redAirspeed = Simplane.getCurrentFlightPhase() === FlightPhase.FLIGHT_PHASE_APPROACH ? SimVar.GetSimVarValue("L:A32NX_AP_APPVLS", "knots") : Simplane.getAutoPilotAirspeedHoldValue();
                     }
                 }
             }

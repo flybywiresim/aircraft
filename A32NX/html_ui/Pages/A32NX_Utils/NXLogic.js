@@ -92,6 +92,9 @@ class NXLogic_ConfirmNode {
         this._previousValue = value;
         return value;
     }
+    read() {
+        return this._previousValue;
+    }
 }
 
 /**
