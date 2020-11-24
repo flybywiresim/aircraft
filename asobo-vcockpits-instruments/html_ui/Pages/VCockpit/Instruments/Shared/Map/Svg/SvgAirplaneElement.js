@@ -24,7 +24,7 @@ class SvgAirplaneElement extends SvgMapElement {
         container.setAttribute("overflow", "visible");
         this._image = document.createElementNS(Avionics.SVG.NS, "image");
         this._image.setAttributeNS("http://www.w3.org/1999/xlink", "href", this.getIconPath(map));
-        var newScale = 100 * this._scale;
+        const newScale = 100 * this._scale;
         this._image.setAttribute("x", ((100 - newScale) * 0.5) + "%");
         this._image.setAttribute("y", ((100 - newScale) * 0.5) + "%");
         this._image.setAttribute("width", newScale + "%");
@@ -77,7 +77,7 @@ class SvgAirplaneElement extends SvgMapElement {
         if (Math.abs(this._scale - _scale) > Number.EPSILON) {
             this._scale = _scale;
             if (this._image) {
-                var newScale = 100 * _scale;
+                const newScale = 100 * _scale;
                 this._image.setAttribute("x", ((100 - newScale) * 0.5) + "%");
                 this._image.setAttribute("y", ((100 - newScale) * 0.5) + "%");
                 this._image.setAttribute("width", newScale + "%");

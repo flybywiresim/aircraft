@@ -90,8 +90,8 @@ class NavSystemTouch_Transponder extends NavSystemElement {
             }
             this.inputChanged = true;
         } else if (this.inputChanged) {
-            var regex = new RegExp('^(.{' + this.inputIndex + '})(.)(.*)');
-            var replace = '<span class="Writed">$1</span><span class="Writing">$2</span><span class = "ToWrite">$3</span>';
+            const regex = new RegExp('^(.{' + this.inputIndex + '})(.)(.*)');
+            const replace = '<span class="Writed">$1</span><span class="Writing">$2</span><span class = "ToWrite">$3</span>';
             transponderCode = "";
             for (let i = 0; i < this.currentInput.length; i++) {
                 transponderCode += (this.currentInput[i] == -1 ? "_" : this.currentInput[i]);
@@ -140,7 +140,7 @@ class NavSystemTouch_Transponder extends NavSystemElement {
                     return;
                 }
             }
-            var code = this.currentInput[0] * 4096 + this.currentInput[1] * 256 + this.currentInput[2] * 16 + this.currentInput[3];
+            const code = this.currentInput[0] * 4096 + this.currentInput[1] * 256 + this.currentInput[2] * 16 + this.currentInput[3];
             SimVar.SetSimVarValue("K:XPNDR_SET", "Frequency BCD16", code);
         }
         this.cancelCode();
@@ -545,8 +545,8 @@ class NavSystemTouch_FullKeyboard extends NavSystemElement {
             if (this.currentIndex == -1) {
                 this.EditText.innerHTML = '<span class="NoEdit">' + this.displayedValue + '</span>';
             } else {
-                var regex = new RegExp('^(.{' + this.currentIndex + '})(.)(.*)');
-                var replace = '<span class="Writed">$1</span><span class="Writing">$2</span><span class = "ToWrite">$3</span>';
+                const regex = new RegExp('^(.{' + this.currentIndex + '})(.)(.*)');
+                const replace = '<span class="Writed">$1</span><span class="Writing">$2</span><span class = "ToWrite">$3</span>';
                 this.EditText.innerHTML = this.displayedValue.replace(regex, replace);
             }
         }
@@ -670,8 +670,8 @@ class NavSystemTouch_FrequencyKeyboard extends NavSystemElement {
                 this.frequencyDisplay.innerHTML = freqStby;
             }
         } else if (this.inputChanged) {
-            var regex = new RegExp('^(.{' + (this.inputIndex > (5 - this.nbDigits - 1) ? this.inputIndex + 1 : this.inputIndex) + '})(.)(.*)');
-            var replace = '<span class="Writed">$1</span><span class="Writing">$2</span><span class = "ToWrite">$3</span>';
+            const regex = new RegExp('^(.{' + (this.inputIndex > (5 - this.nbDigits - 1) ? this.inputIndex + 1 : this.inputIndex) + '})(.)(.*)');
+            const replace = '<span class="Writed">$1</span><span class="Writing">$2</span><span class = "ToWrite">$3</span>';
             let value = ((this.currentInput / (this.unit == "KHz" ? 1 : 1000000)).toFixed(nbDigits) + " ");
             for (let i = 0; i < Math.floor(Math.log10(this.maxFreq * (this.unit == "KHz" ? 1 : 1000000))) - Math.floor(Math.log10(this.currentInput)); i++) {
                 value = "0" + value;
@@ -976,7 +976,7 @@ class NavSystemTouch_DuplicateWaypointSelection extends NavSystemElement {
         this.searchTitle.textContent = 'Search Results for "' + SimVar.GetSimVarValue("C:fs9gps:IcaoSearchCurrentIdent", "string", this.gps.instrumentIdentifier) + '"';
         SimVar.GetSimVarArrayValues(this.batch, function (_Values) {
             this.wayPoints = [];
-            for (var i = 0; i < _Values.length; i++) {
+            for (let i = 0; i < _Values.length; i++) {
                 const waypoint = new WayPoint(this.gps);
                 waypoint.type = _Values[i][0];
                 waypoint.SetIdent(_Values[i][2]);

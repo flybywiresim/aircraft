@@ -16,7 +16,7 @@ class Backup_Airspeed extends NavSystemElement {
     init(root) {
         this.airspeedElement = this.gps.getChildById("SvgMain");
         this.airspeedElement.setAttribute("is-backup", "true");
-        var cockpitSettings = SimVar.GetGameVarValue("", "GlassCockpitSettings");
+        const cockpitSettings = SimVar.GetGameVarValue("", "GlassCockpitSettings");
         if (cockpitSettings && cockpitSettings.AirSpeed.Initialized) {
             this.airspeedElement.setAttribute("min-speed", cockpitSettings.AirSpeed.lowLimit.toString());
             this.airspeedElement.setAttribute("green-begin", cockpitSettings.AirSpeed.greenStart.toString());
@@ -29,7 +29,7 @@ class Backup_Airspeed extends NavSystemElement {
             this.airspeedElement.setAttribute("red-end", cockpitSettings.AirSpeed.redEnd.toString());
             this.airspeedElement.setAttribute("max-speed", cockpitSettings.AirSpeed.highLimit.toString());
         } else {
-            var designSpeeds = Simplane.getDesignSpeeds();
+            const designSpeeds = Simplane.getDesignSpeeds();
             this.airspeedElement.setAttribute("green-begin", designSpeeds.VS1.toString());
             this.airspeedElement.setAttribute("green-end", designSpeeds.VNo.toString());
             this.airspeedElement.setAttribute("flaps-begin", designSpeeds.VS0.toString());
@@ -41,7 +41,7 @@ class Backup_Airspeed extends NavSystemElement {
             this.airspeedElement.setAttribute("max-speed", designSpeeds.VNe.toString());
         }
         if (this.gps) {
-            var aspectRatio = this.gps.getAspectRatio();
+            const aspectRatio = this.gps.getAspectRatio();
             this.airspeedElement.setAttribute("aspect-ratio", aspectRatio.toString());
         }
     }
@@ -51,7 +51,7 @@ class Backup_Airspeed extends NavSystemElement {
         return true;
     }
     onUpdate(_deltaTime) {
-        var indicatedSpeed = Simplane.getIndicatedSpeed();
+        const indicatedSpeed = Simplane.getIndicatedSpeed();
         if (indicatedSpeed != this.lastIndicatedSpeed) {
             this.airspeedElement.setAttribute("airspeed", indicatedSpeed.toFixed(1));
             this.lastIndicatedSpeed = indicatedSpeed;
@@ -72,7 +72,7 @@ class Backup_Altimeter extends NavSystemElement {
         this.altimeterElement = this.gps.getChildById("SvgMain");
         this.altimeterElement.setAttribute("is-backup", "true");
         if (this.gps) {
-            var aspectRatio = this.gps.getAspectRatio();
+            const aspectRatio = this.gps.getAspectRatio();
             this.altimeterElement.setAttribute("aspect-ratio", aspectRatio.toString());
         }
     }
@@ -82,12 +82,12 @@ class Backup_Altimeter extends NavSystemElement {
         return true;
     }
     onUpdate(_deltaTime) {
-        var altitude = SimVar.GetSimVarValue("INDICATED ALTITUDE:2", "feet");
+        const altitude = SimVar.GetSimVarValue("INDICATED ALTITUDE:2", "feet");
         if (altitude != this.lastAltitude) {
             this.lastAltitude = altitude;
             this.altimeterElement.setAttribute("altitude", altitude);
         }
-        var pressure = SimVar.GetSimVarValue("KOHLSMAN SETTING HG:2", "inches of mercury");
+        let pressure = SimVar.GetSimVarValue("KOHLSMAN SETTING HG:2", "inches of mercury");
         pressure = fastToFixed(pressure, 2);
         if (pressure != this.lastPressure) {
             this.lastPressure = pressure;

@@ -5,7 +5,7 @@ class PFD_VSpeed extends NavSystemElement {
     onEnter() {
     }
     onUpdate(_deltaTime) {
-        var vSpeed = fastToFixed(Simplane.getVerticalSpeed(), 1);
+        const vSpeed = fastToFixed(Simplane.getVerticalSpeed(), 1);
         this.vsi.setAttribute("vspeed", vSpeed);
     }
     onExit() {
@@ -24,7 +24,7 @@ class PFD_Airspeed extends NavSystemElement {
     }
     init(root) {
         this.airspeedElement = this.gps.getChildById("Airspeed");
-        var cockpitSettings = SimVar.GetGameVarValue("", "GlassCockpitSettings");
+        const cockpitSettings = SimVar.GetGameVarValue("", "GlassCockpitSettings");
         if (cockpitSettings && cockpitSettings.AirSpeed.Initialized) {
             this.airspeedElement.setAttribute("min-speed", cockpitSettings.AirSpeed.lowLimit.toString());
             this.airspeedElement.setAttribute("green-begin", cockpitSettings.AirSpeed.greenStart.toString());
@@ -38,7 +38,7 @@ class PFD_Airspeed extends NavSystemElement {
             this.airspeedElement.setAttribute("max-speed", cockpitSettings.AirSpeed.highLimit.toString());
             this.maxSpeed = cockpitSettings.AirSpeed.highLimit;
         } else {
-            var designSpeeds = Simplane.getDesignSpeeds();
+            const designSpeeds = Simplane.getDesignSpeeds();
             this.airspeedElement.setAttribute("green-begin", designSpeeds.VS1.toString());
             this.airspeedElement.setAttribute("green-end", designSpeeds.VNo.toString());
             this.airspeedElement.setAttribute("flaps-begin", designSpeeds.VS0.toString());
@@ -60,12 +60,12 @@ class PFD_Airspeed extends NavSystemElement {
     onEnter() {
     }
     onUpdate(_deltaTime) {
-        var indicatedSpeed = Simplane.getIndicatedSpeed();
+        const indicatedSpeed = Simplane.getIndicatedSpeed();
         if (indicatedSpeed != this.lastIndicatedSpeed) {
             this.airspeedElement.setAttribute("airspeed", indicatedSpeed.toFixed(1));
             this.lastIndicatedSpeed = indicatedSpeed;
         }
-        var trueSpeed = Simplane.getTrueSpeed();
+        const trueSpeed = Simplane.getTrueSpeed();
         if (trueSpeed != this.lastTrueSpeed) {
             this.airspeedElement.setAttribute("true-airspeed", trueSpeed.toString());
             this.lastTrueSpeed = trueSpeed;
@@ -129,8 +129,8 @@ class PFD_Altimeter extends NavSystemElement {
     onEnter() {
     }
     onUpdate(_deltaTime) {
-        var altitude = SimVar.GetSimVarValue("INDICATED ALTITUDE:" + this.altimeterIndex, "feet");
-        var selectedAltitude = SimVar.GetSimVarValue("AUTOPILOT ALTITUDE LOCK VAR", "feet");
+        const altitude = SimVar.GetSimVarValue("INDICATED ALTITUDE:" + this.altimeterIndex, "feet");
+        const selectedAltitude = SimVar.GetSimVarValue("AUTOPILOT ALTITUDE LOCK VAR", "feet");
         if (altitude != this.lastAltitude) {
             this.altimeterElement.setAttribute("Altitude", altitude.toFixed(1));
             this.lastAltitude = altitude;
@@ -239,7 +239,7 @@ class PFD_Altimeter extends NavSystemElement {
                 }
                 break;
         }
-        var pressure = SimVar.GetSimVarValue("KOHLSMAN SETTING HG:" + this.altimeterIndex, "inches of mercury");
+        let pressure = SimVar.GetSimVarValue("KOHLSMAN SETTING HG:" + this.altimeterIndex, "inches of mercury");
         pressure = pressure.toFixed(2);
         if (pressure != this.lastPressure) {
             this.altimeterElement.setAttribute("pressure", pressure);
@@ -270,7 +270,7 @@ class PFD_Attitude extends NavSystemElement {
     onEnter() {
     }
     onUpdate(_deltaTime) {
-        var xyz = Simplane.getOrientationAxis();
+        const xyz = Simplane.getOrientationAxis();
         if (xyz) {
             this.svg.setAttribute("pitch", (xyz.pitch / Math.PI * 180).toString());
             this.svg.setAttribute("bank", (xyz.bank / Math.PI * 180).toString());
@@ -309,7 +309,7 @@ class PFD_SimpleCompass extends NavSystemElement {
     }
     onUpdate(_deltaTime) {
         const bearing = SimVar.GetSimVarValue("PLANE HEADING DEGREES MAGNETIC", "degree");
-        var roundedbearing = fastToFixed(bearing, 3);
+        const roundedbearing = fastToFixed(bearing, 3);
         this.compass.setAttribute("bearing", roundedbearing);
         this.compass.setAttribute("course", SimVar.GetSimVarValue("GPS WP DESIRED TRACK", "degree"));
         this.compass.setAttribute("course-active", SimVar.GetSimVarValue("GPS IS ACTIVE FLIGHT PLAN", "Bool") ? "True" : "False");
@@ -437,13 +437,13 @@ class PFD_Attitude_old extends NavSystemIFrameElement {
     onEnter() {
     }
     onUpdate(_deltaTime) {
-        var xyz = Simplane.getOrientationAxis();
-        var roll = SimVar.GetSimVarValue("ATTITUDE INDICATOR BANK DEGREES", "degree") / 360;
+        const xyz = Simplane.getOrientationAxis();
+        const roll = SimVar.GetSimVarValue("ATTITUDE INDICATOR BANK DEGREES", "degree") / 360;
         this.canvas["setRollScale"](roll);
         this.canvas["setPitchScaleRotation"](roll);
-        var pitch = -SimVar.GetSimVarValue("ATTITUDE INDICATOR PITCH DEGREES", "degree") / 88.88;
+        const pitch = -SimVar.GetSimVarValue("ATTITUDE INDICATOR PITCH DEGREES", "degree") / 88.88;
         this.canvas["setPitchScaleValue"](pitch);
-        var slipSkid = Simplane.getInclinometer();
+        const slipSkid = Simplane.getInclinometer();
         this.canvas["setSlipSkid"](slipSkid);
     }
     onExit() {
@@ -473,7 +473,7 @@ class PFD_NavStatus extends NavSystemElement {
     onUpdate(_deltaTime) {
         const flightPlanActive = SimVar.GetSimVarValue("GPS IS ACTIVE FLIGHT PLAN", "boolean");
         if (flightPlanActive) {
-            var legToName = SimVar.GetSimVarValue("GPS WP NEXT ID", "string");
+            let legToName = SimVar.GetSimVarValue("GPS WP NEXT ID", "string");
             if (!legToName) {
                 legToName = "---";
             }
@@ -494,7 +494,7 @@ class PFD_NavStatus extends NavSystemElement {
                     this.legSymbol = 1;
                 }
             } else {
-                var legFromName = SimVar.GetSimVarValue("GPS WP PREV ID", "string");
+                let legFromName = SimVar.GetSimVarValue("GPS WP PREV ID", "string");
                 if (!legFromName) {
                     legFromName = "---";
                 }
@@ -511,14 +511,14 @@ class PFD_NavStatus extends NavSystemElement {
                     this.legSymbol = 2;
                 }
             }
-            var currentLegDistance = fastToFixed(SimVar.GetSimVarValue("GPS WP DISTANCE", "nautical miles"), 1) + "NM";
+            const currentLegDistance = fastToFixed(SimVar.GetSimVarValue("GPS WP DISTANCE", "nautical miles"), 1) + "NM";
             if (this.currentLegDistanceValue != currentLegDistance) {
                 if (this.currentLegDistance) {
                     this.currentLegDistance.textContent = currentLegDistance;
                 }
                 this.currentLegDistanceValue = currentLegDistance;
             }
-            var currentLegBearing = Math.round(SimVar.GetSimVarValue("GPS WP BEARING", "degree")) + "°";
+            const currentLegBearing = Math.round(SimVar.GetSimVarValue("GPS WP BEARING", "degree")) + "°";
             if (this.currentLegBearingValue != currentLegBearing) {
                 if (this.currentLegBearing) {
                     this.currentLegBearing.textContent = currentLegBearing;
@@ -561,12 +561,12 @@ class PFD_XPDR extends NavSystemElement {
     }
     onUpdate(_deltaTime) {
         if (this.XPDRValueElement) {
-            var code = this.getCode();
+            const code = this.getCode();
             if (this.codeValue != code) {
                 this.XPDRValueElement.textContent = this.getCode();
                 this.codeValue = code;
             }
-            var mode = "";
+            let mode = "";
             const currMode = SimVar.GetSimVarValue("TRANSPONDER STATE:1", "number");
             if (this.identTime <= 0) {
                 switch (currMode) {
@@ -599,7 +599,7 @@ class PFD_XPDR extends NavSystemElement {
                     this.editTime = 0;
                 }
             }
-            var time = this.getLocalTime();
+            const time = this.getLocalTime();
             if (this.timeValue != time) {
                 this.LCLValueElement.textContent = time;
                 this.timeValue = time;
@@ -622,7 +622,7 @@ class PFD_XPDR extends NavSystemElement {
                         this.currEdit--;
                     }
                 } else {
-                    var currCode = SimVar.GetSimVarValue("TRANSPONDER CODE:1", "number");
+                    const currCode = SimVar.GetSimVarValue("TRANSPONDER CODE:1", "number");
                     this.newCode[0] = Math.floor(currCode / 1000);
                     this.newCode[1] = Math.floor(currCode / 100) % 10;
                     this.newCode[2] = Math.floor(currCode / 10) % 10;
@@ -673,8 +673,8 @@ class PFD_XPDR extends NavSystemElement {
     }
     getCode() {
         if (this.editTime > 0) {
-            var displayCode = "";
-            for (var i = 0; i < 4; i++) {
+            let displayCode = "";
+            for (let i = 0; i < 4; i++) {
                 if (this.newCode[i] == -1) {
                     displayCode += "_";
                 } else {
@@ -700,14 +700,14 @@ class PFD_XPDR extends NavSystemElement {
         }
     }
     sendNewCode() {
-        var code = this.newCode[0] * 4096 + this.newCode[1] * 256 + this.newCode[2] * 16 + this.newCode[3];
+        const code = this.newCode[0] * 4096 + this.newCode[1] * 256 + this.newCode[2] * 16 + this.newCode[3];
         SimVar.SetSimVarValue("K:XPNDR_SET", "Frequency BCD16", code);
     }
     getLocalTime() {
-        var value = SimVar.GetGlobalVarValue("LOCAL TIME", "seconds");
+        const value = SimVar.GetGlobalVarValue("LOCAL TIME", "seconds");
         if (value) {
-            var seconds = Number.parseInt(value);
-            var time = Utils.SecondsToDisplayTime(seconds, true, true, false);
+            const seconds = Number.parseInt(value);
+            const time = Utils.SecondsToDisplayTime(seconds, true, true, false);
             return time.toString();
         }
         return "";
@@ -737,7 +737,7 @@ class PFD_OAT extends NavSystemElement {
     onEnter() {
     }
     onUpdate(_deltaTime) {
-        var celsius = this.getATMTemperatureC();
+        const celsius = this.getATMTemperatureC();
         if (this.celsiusValue != celsius) {
             this.valueElement.textContent = celsius;
             this.celsiusValue = celsius;
@@ -748,10 +748,10 @@ class PFD_OAT extends NavSystemElement {
     onEvent(_event) {
     }
     getATMTemperatureC() {
-        var value = SimVar.GetSimVarValue("AMBIENT TEMPERATURE", "celsius");
+        const value = SimVar.GetSimVarValue("AMBIENT TEMPERATURE", "celsius");
         if (value) {
-            var degrees = Number.parseInt(value);
-            var temperature = degrees.toString() + "° C";
+            const degrees = Number.parseInt(value);
+            const temperature = degrees.toString() + "° C";
             return temperature.toString();
         }
         return "";
@@ -775,7 +775,7 @@ class PFD_Annunciations extends Annunciations {
         if (this.engineType == EngineType.ENGINE_TYPE_PISTON) {
             for (var i = 0; i < this.allMessages.length; i++) {
                 var message = this.allMessages[i];
-                var value = false;
+                let value = false;
                 if (message.Handler) {
                     value = message.Handler();
                 }
@@ -1113,12 +1113,12 @@ class MFD_WindData extends NavSystemElement {
     onEnter() {
     }
     onUpdate(_deltaTime) {
-        var wind = fastToFixed(SimVar.GetSimVarValue("AMBIENT WIND DIRECTION", "degree"), 0);
+        const wind = fastToFixed(SimVar.GetSimVarValue("AMBIENT WIND DIRECTION", "degree"), 0);
         if (wind != this.windValue) {
             this.svg.setAttribute("wind-direction", wind);
             this.windValue = wind;
         }
-        var strength = fastToFixed(SimVar.GetSimVarValue("AMBIENT WIND VELOCITY", "knots"), 0);
+        const strength = fastToFixed(SimVar.GetSimVarValue("AMBIENT WIND VELOCITY", "knots"), 0);
         if (strength != this.strengthValue) {
             this.svg.setAttribute("wind-strength", strength);
             this.strengthValue = strength;
@@ -1250,7 +1250,7 @@ class PFD_RadarAltitude extends NavSystemElement {
         if (!this.isActive) {
             return;
         }
-        var xyz = Simplane.getOrientationAxis();
+        const xyz = Simplane.getOrientationAxis();
         const radarAltitude = SimVar.GetSimVarValue("RADIO HEIGHT", "feet");
         if (radarAltitude > 0 && radarAltitude < 2500 && (Math.abs(xyz.bank) < Math.PI * 0.35)) {
             Avionics.Utils.diffAndSetAttribute(this.altimeter, "radar-altitude", radarAltitude);
@@ -2060,12 +2060,12 @@ class MFD_Waypoints extends NavSystemElement {
             }
         }
         this.icaoSearchField.Update();
-        var infos = this.icaoSearchField.getUpdatedInfos();
+        const infos = this.icaoSearchField.getUpdatedInfos();
         if (infos && (infos.icao != "" || infos.ident != "")) {
             this.facilityElement.textContent = infos.name;
             this.cityElement.textContent = infos.city;
             this.regionElement.textContent = infos.region;
-            var logo = infos.imageFileName();
+            const logo = infos.imageFileName();
             if (logo != "") {
                 Avionics.Utils.diffAndSetAttribute(this.symbolElement, "src", "/Pages/VCockpit/Instruments/Shared/Map/Images/" + logo);
             } else {
@@ -2233,7 +2233,7 @@ class DRCT_SelectionWindow extends NavSystemElement {
     onUpdate(_deltaTime) {
         if (this.isVisible) {
             this.window.setAttribute("state", "Active");
-            var elements = [];
+            const elements = [];
             switch (this.menuIndex) {
                 case 0:
                     this.title.textContent = "FPL";
@@ -2357,7 +2357,7 @@ class GlassCockpit_DirectTo extends NavSystemElement {
             this.directToWindow.setAttribute("state", "Active");
             this.nameSearchField.Update();
             this.icaoSearchField.Update();
-            var infos = this.icaoSearchField.getUpdatedInfos();
+            const infos = this.icaoSearchField.getUpdatedInfos();
             if (infos && infos.icao != "") {
                 if (this.cityElement) {
                     this.cityElement.textContent = infos.city;
@@ -2365,7 +2365,7 @@ class GlassCockpit_DirectTo extends NavSystemElement {
                 if (this.regionElement) {
                     this.regionElement.textContent = infos.region;
                 }
-                var logo = infos.GetSymbol();
+                const logo = infos.GetSymbol();
                 if (logo != "") {
                     if (this.symbolElement) {
                         this.symbolElement.innerHTML = '<img src="/Pages/VCockpit/Instruments/NavSystems/Shared/Images/' + logo + '"/>';
@@ -3160,7 +3160,7 @@ class MFD_ApproachSelection extends NavSystemElement {
                     Avionics.Utils.diffAndSet(this.elem_airportType, "Private");
                     break;
             }
-            var logo = infos.imageFileName();
+            const logo = infos.imageFileName();
             if (logo != "") {
                 Avionics.Utils.diffAndSetAttribute(this.elem_airportLogo, "src", "/Pages/VCockpit/Instruments/Shared/Map/Images/" + logo);
             } else {
@@ -3460,7 +3460,7 @@ class MFD_ArrivalSelection extends NavSystemElement {
                     Avionics.Utils.diffAndSet(this.elem_airportType, "Private");
                     break;
             }
-            var logo = infos.imageFileName();
+            const logo = infos.imageFileName();
             if (logo != "") {
                 Avionics.Utils.diffAndSetAttribute(this.elem_airportLogo, "src", "/Pages/VCockpit/Instruments/Shared/Map/Images/" + logo);
             } else {
@@ -3770,7 +3770,7 @@ class MFD_DepartureSelection extends NavSystemElement {
                     Avionics.Utils.diffAndSet(this.elem_airportType, "Private");
                     break;
             }
-            var logo = infos.imageFileName();
+            const logo = infos.imageFileName();
             if (logo != "") {
                 Avionics.Utils.diffAndSetAttribute(this.elem_airportLogo, "src", "/Pages/VCockpit/Instruments/Shared/Map/Images/" + logo);
             } else {

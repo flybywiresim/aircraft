@@ -227,7 +227,7 @@ class AbstractGauge extends HTMLElement {
             this._value = parseFloat(newValue);
             this._updateValue();
         } else {
-            var needUpdate = true;
+            let needUpdate = true;
             if (name === "tilt") {
                 this._tilt = parseFloat(newValue);
             } else if (name === "angular-size") {
