@@ -2,6 +2,7 @@
 !*/
 !/.vscode/**
 !/.github/**
+!/.husky/**
 !/A32NX/**
 /A32NX/layout.json
 /A32NX/manifest.json
@@ -13,7 +14,6 @@
 !.gitignore
 !CODEOWNERS
 !package.json
-!package-lock.json
 !.editorconfig
 !.eslintrc.json
 !jsconfig.json

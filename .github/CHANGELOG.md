@@ -93,15 +93,23 @@
 1. [ND] Added altitude constraints in flight level based on the transition altitude provided in MCDU Take Off Performace @ilyeshammadi (Ilyes Hammadi)
 1. [CDU] Added TYPE I and TYPE II message types and handling - @MisterChocker (Leon) 
 1. [ECAM] Fix cabin vertical speed unit - @MrMinimal (Tom Langwaldt)
+1. [CDU] Improved constraints recognition - @MisterChocker (Leon)
 1. [PFD] Add altitude indicator alerts @ilyeshammadi (Ilyes Hammadi)
 1. [CDU] The precomputed values for ZFW/ZFWCG are now properly updated when the weight load parameters are changed - @lousybyte (lousybyte)
 1. [PFD] Improved speedband visuals - @MisterChocker (Leon)
 1. [ND] Add altitue constraint symbol and fix constraint circle color @ilyeshammadi (Ilyes Hammadi)
 1. [ECAM] Add COND page - @lcalaresu (Luc Calaresu), @highperformancedevelopments
+1. [CDU] Added check for dest data is set - @MisterChocker (Leon)
 1. [CDU] Ported system messages type II to actual type II - @MisterChocker (Leon)
 1. [ECAM] Implemented proper FWC flight phases - @beheh (Benedict Etzel)
 1. [ECAM] Updated ECAM messages - @beheh (Benedict Etzel)
 1. [CDU] New improved RADNAV page | Ability to tune navaids with identifier - @St54Kevin (Kevin Karas)
+1. [ND] Add heading line to ARC and NAV map mode @ilyeshammadi (Ilyes Hammadi)
+1. [PFD] Add QNH flashing when reach transition altitude - @Kimbyeoungjang (김병장#7165)
+1. [ECAM] Added flight phase inhibit override to recall button - @beheh (Benedict Etzel)
+1. [CDU] Added constraints symbols logic to flight plan - @ilyeshammadi (Ilyes Hammadi)
+1. [ECAM] Changed SAT and TAT values to green colour - @RichardPilbery (Richard Pilbery)
+1. [General] Improve ground handling, steering, and suspension - @wpine215 (Iceman)
 
 ## 0.4.0
 1. [General] Add CHANGELOG.md - @nathaninnes (Nathan Innes)
