@@ -450,16 +450,38 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             }
             if (curFlightPhase === FlightPhase.FLIGHT_PHASE_DESCENT || curFlightPhase === FlightPhase.FLIGHT_PHASE_APPROACH) {
                 this.constraintAlt = this.getAltitudeConstraintDescent(rte);
+                return;
             }
-            this.constraintAlt = this.getAltitudeConstraintClimb(rte);
+            this.constraintAlt = this.getAltitudeConstraintAscent(rte);
         }
     }
 
-    getAltitudeConstraintDescent() {
-        return 0;
+    getAltitudeConstraintDescent(rte, last = 0, max = Simplane.getAltitude()) {
+        if (rte.length === 0) {
+            return 0;
+        }
+        for (let i = this.flightPlanManager.indexOfWaypoint(this.flightPlanManager.getDestination()); i >= this.activeWaypointIdx; i--) {
+            const wpt = rte[i];
+            if (typeof wpt === "undefined" || !isFinite(wpt.legAltitude1) || wpt.legAltitudeDescription === 0 || wpt.legAltitudeDescription === 3) {
+                continue;
+            }
+            // Get current waypoints altitude constraint, if type 4, get correct (highest) altitude
+            const cur = wpt.legAltitudeDescription === 4 ? (wpt.legAltitude1 < wpt.legAltitude2 ? wpt.legAltitude1 : wpt.legAltitude2) : wpt.legAltitude1;
+            // Continue search if constraint alt is invalid (too low)
+            if (cur <= this.fcuSelAlt || cur <= last) {
+                continue;
+            }
+            // Abort search and return last valid constraint
+            if (cur >= max) {
+                return last;
+            }
+            // Continue search and update last valid constraint
+            last = cur;
+        }
+        return last;
     }
 
-    getAltitudeConstraintClimb(rte, min = Simplane.getAltitude()) {
+    getAltitudeConstraintAscent(rte, min = Simplane.getAltitude()) {
         for (let i = this.activeWaypointIdx; i < rte.length; i++) {
             const wpt = rte[i];
             if (typeof wpt === "undefined" || !isFinite(wpt.legAltitude1) || wpt.legAltitudeDescription === 0 || wpt.legAltitudeDescription === 2) {
