@@ -524,7 +524,10 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                 continue;
             }
             // Get current waypoints altitude constraint, if type 4, get correct (highest) altitude
-            const cur = wpt.legAltitudeDescription === 4 ? (wpt.legAltitude1 < wpt.legAltitude2 ? wpt.legAltitude2 : wpt.legAltitude1) : wpt.legAltitude1;
+            let cur = wpt.legAltitude1;
+            if (wpt.legAltitudeDescription === 4 && wpt.legAltitude1 < wpt.legAltitude2) {
+                cur = wpt.legAltitude2;
+            }
             // Continue search if constraint alt is invalid (too low)
             if (cur < min) {
                 continue;
