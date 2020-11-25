@@ -443,36 +443,66 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                 this.constraintAlt = 0;
                 return;
             }
-            const rte = this.flightPlanManager.getWaypoints(0);
-            if (rte.length === 0) {
-                this.constraintAlt = 0;
-                return;
-            }
             if (curFlightPhase === FlightPhase.FLIGHT_PHASE_DESCENT || curFlightPhase === FlightPhase.FLIGHT_PHASE_APPROACH) {
-                this.constraintAlt = this.getAltitudeConstraintDescent(rte);
+                this.constraintAlt = this.getAltitudeConstraintDescent();
                 return;
             }
-            this.constraintAlt = this.getAltitudeConstraintAscent(rte);
+            this.constraintAlt = this.getAltitudeConstraintAscent();
         }
     }
 
-    getAltitudeConstraintDescent(rte, last = 0, max = Simplane.getAltitude()) {
-        if (rte.length === 0) {
+    getAltitudeConstraintDescent() {
+        const waypointsWithDiscontinuities = [];
+        let first = 0;
+        if (this.flightPlanManager.isActiveApproach()) {
+            first = this.flightPlanManager.getWaypointsCount() - 1;
+        } else {
+            first = Math.max(0, this.flightPlanManager.getActiveWaypointIndex() - 1);
+        }
+        for (let i = first; i < this.flightPlanManager.getWaypointsCount(); i++) {
+            const prev = waypointsWithDiscontinuities[waypointsWithDiscontinuities.length - 1];
+            const wp = this.flightPlanManager.getWaypoint(i);
+            if (!prev || (prev.wp && prev.wp.ident !== wp.ident)) {
+                waypointsWithDiscontinuities.push({ wp: this.flightPlanManager.getWaypoint(i), fpIndex: i });
+            }
+        }
+        const approachWaypoints = this.flightPlanManager.getApproachWaypoints();
+        waypointsWithDiscontinuities.pop();
+        for (let i = 0; i < approachWaypoints.length; i++) {
+            const prev = waypointsWithDiscontinuities[waypointsWithDiscontinuities.length - 1];
+            const wp = approachWaypoints[i];
+            if (!prev || (prev.wp && prev.wp.ident !== wp.ident)) {
+                waypointsWithDiscontinuities.push({
+                    wp: wp,
+                    fpIndex: -42
+                });
+            }
+        }
+        const activeIdent = this.flightPlanManager.getActiveWaypointIdent();
+        const activeIndex = waypointsWithDiscontinuities.findIndex(w => {
+            return w.wp && w.wp.ident === activeIdent;
+        });
+        if (waypointsWithDiscontinuities.length === 0) {
             return 0;
         }
-        for (let i = this.flightPlanManager.indexOfWaypoint(this.flightPlanManager.getDestination()); i >= this.activeWaypointIdx; i--) {
-            const wpt = rte[i];
+        const max = Simplane.getAltitude() + 50;
+        let last = 0;
+        for (let i = waypointsWithDiscontinuities.length - 1; i >= activeIndex; i--) {
+            const wpt = waypointsWithDiscontinuities[i].wp;
             if (typeof wpt === "undefined" || !isFinite(wpt.legAltitude1) || wpt.legAltitudeDescription === 0 || wpt.legAltitudeDescription === 3) {
                 continue;
             }
-            // Get current waypoints altitude constraint, if type 4, get correct (highest) altitude
-            const cur = wpt.legAltitudeDescription === 4 ? (wpt.legAltitude1 < wpt.legAltitude2 ? wpt.legAltitude1 : wpt.legAltitude2) : wpt.legAltitude1;
+            // Get current waypoints altitude constraint, if type 4, get correct (lowest) altitude
+            let cur = wpt.legAltitude1;
+            if (wpt.legAltitudeDescription === 4 && wpt.legAltitude1 > wpt.legAltitude2) {
+                cur = wpt.legAltitude2;
+            }
             // Continue search if constraint alt is invalid (too low)
             if (cur <= this.fcuSelAlt || cur <= last) {
                 continue;
             }
             // Abort search and return last valid constraint
-            if (cur >= max) {
+            if (cur > max) {
                 return last;
             }
             // Continue search and update last valid constraint
@@ -481,7 +511,13 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         return last;
     }
 
-    getAltitudeConstraintAscent(rte, min = Simplane.getAltitude()) {
+    getAltitudeConstraintAscent() {
+        const rte = this.flightPlanManager.getWaypoints(0);
+        const min = Simplane.getAltitude();
+        if (rte.length === 0) {
+            this.constraintAlt = 0;
+            return;
+        }
         for (let i = this.activeWaypointIdx; i < rte.length; i++) {
             const wpt = rte[i];
             if (typeof wpt === "undefined" || !isFinite(wpt.legAltitude1) || wpt.legAltitudeDescription === 0 || wpt.legAltitudeDescription === 2) {
