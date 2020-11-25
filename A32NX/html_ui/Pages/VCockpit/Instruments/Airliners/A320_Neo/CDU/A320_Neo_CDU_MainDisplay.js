@@ -459,7 +459,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         return 0;
     }
 
-    getAltitudeConstraintClimb(rte, min = Simplane.getAltitude(), max = this.cruiseFlightLevel * 100) {
+    getAltitudeConstraintClimb(rte, min = Simplane.getAltitude()) {
         for (let i = this.activeWaypointIdx; i < rte.length; i++) {
             const wpt = rte[i];
             if (typeof wpt === "undefined" || !isFinite(wpt.legAltitude1) || wpt.legAltitudeDescription === 0 || wpt.legAltitudeDescription === 2) {
@@ -472,7 +472,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                 continue;
             }
             // Abort search if constraint alt is invalid (too high) and return 0 (no constraint)
-            if (cur >= max || cur >= this.fcuSelAlt) {
+            if (cur >= this.fcuSelAlt) {
                 return 0;
             }
             // Abort search and return valid constraint
