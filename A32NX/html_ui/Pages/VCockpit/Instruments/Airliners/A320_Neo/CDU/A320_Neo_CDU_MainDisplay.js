@@ -485,7 +485,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         if (waypointsWithDiscontinuities.length === 0) {
             return 0;
         }
-        const max = Simplane.getAltitude() + 50;
+        const max = this.constraintAlt ? this.constraintAlt : Simplane.getAltitude() + 50;
         let last = 0;
         for (let i = waypointsWithDiscontinuities.length - 1; i >= activeIndex; i--) {
             const wpt = waypointsWithDiscontinuities[i].wp;
