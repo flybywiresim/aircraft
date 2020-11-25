@@ -29,9 +29,9 @@ class A32NX_ConstraintManager {
             return 0;
         }
         if (flightPhase === FlightPhase.FLIGHT_PHASE_DESCENT || flightPhase === FlightPhase.FLIGHT_PHASE_APPROACH) {
-            return this._getAltitudeConstraintDescent(fpm, curConstraintAlt);
+            return Math.round(this._getAltitudeConstraintDescent(fpm, curConstraintAlt));
         }
-        return this._getAltitudeConstraintAscent(fpm, activeWpIdx);
+        return Math.round(this._getAltitudeConstraintAscent(fpm, activeWpIdx));
     }
 
     static _getAltitudeConstraintAscent(fpm, activeWpIdx) {
