@@ -432,6 +432,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     tryUpdateAltitudeConstraint(force = false) {
         if (this.flightPlanManager.getIsDirectTo()) {
             this.constraintAlt = 0;
+            return;
         }
         const activeWptIdx = this.flightPlanManager.getActiveWaypointIndex();
         const fcuSelAlt = Simplane.getAutoPilotDisplayedAltitudeLockValue("feet");
@@ -515,8 +516,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         const rte = this.flightPlanManager.getWaypoints(0);
         const min = Simplane.getAltitude();
         if (rte.length === 0) {
-            this.constraintAlt = 0;
-            return;
+            return 0;
         }
         for (let i = this.activeWaypointIdx; i < rte.length; i++) {
             const wpt = rte[i];
