@@ -13,6 +13,7 @@
 <script type="text/html" import-script="/JS/dataStorage.js"></script>
 <script type="text/html" import-script="/Pages/A32NX_Utils/NXDataStore.js"></script>
 <script type="text/html" import-script="/Pages/A32NX_Utils/NXApi.js"></script>
+<script type="text/html" import-script="/Pages/A32NX_Utils/NXLogic.js"></script>
 
 <script type="text/html" import-script="/Pages/VCockpit/Instruments/Shared/Utils/RadioNav.js"></script>
 
@@ -29,7 +30,7 @@
 <script type="text/html" import-script="/Pages/VCockpit/Instruments/NavSystems/A320_Neo/A32NX_NavSystem.js"></script>
 <script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/A320_Neo/A32NX_BaseAirliners.js"></script>
 <script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/A320_Neo/FMC/A32NX_FMCMainDisplay.js"></script>
-<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/Shared/FMC/FMCDataManager.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/A320_Neo/FMC/A32NX_FMCDataManager.js"></script>
 <script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/A320_Neo/CDU/A320_Neo_CDU_DataIndexPage.js"></script>
 <script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/A320_Neo/CDU/A320_Neo_CDU_PositionMonitorPage.js"></script>
 <script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/A320_Neo/CDU/A320_Neo_CDU_ProgressPage.js"></script>
@@ -65,15 +66,11 @@
 <script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/A320_Neo/CDU/ATSU/A320_Neo_CDU_ATC_ConnectionStatus.js"></script>
 <script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/A320_Neo/CDU/ATSU/A320_Neo_CDU_ATC_DepartReq.js"></script>
 <script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/A320_Neo/CDU/ATSU/A320_Neo_CDU_ATC_Emergency.js"></script>
-<!--<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/A320_Neo/CDU/ATSU/A320_Neo_CDU_ATC_LatReq.js"></script>
-<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/A320_Neo/CDU/ATSU/A320_Neo_CDU_ATC_MsgRecord.js"></script>
-<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/A320_Neo/CDU/ATSU/A320_Neo_CDU_ATC_OceanicReq.js"></script>-->
 <script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/A320_Neo/CDU/ATSU/A320_Neo_CDU_ATC_PositionReport.js"></script>
 <script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/A320_Neo/CDU/ATSU/A320_Neo_CDU_ATC_Reports.js"></script>
-<!--<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/A320_Neo/CDU/ATSU/A320_Neo_CDU_ATC_Text.js"></script>
-<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/A320_Neo/CDU/ATSU/A320_Neo_CDU_ATC_VertReq.js"></script>
-<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/A320_Neo/CDU/ATSU/A320_Neo_CDU_ATC_WhenCanWe.js"></script-->
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/A320_Neo/CDU/ATSU/A320_Neo_CDU_ATC_Request.js"></script>
 <script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/A320_Neo/CDU/ATSU/A320_Neo_CDU_Comm_Menu.js"></script>
+<script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/A320_Neo/CDU/ATSU/A320_Neo_CDU_DatalinkStatus.js"></script>
 
 <!-- CFDS Pages -->
 <script type="text/html" import-script="/Pages/VCockpit/Instruments/Airliners/A320_Neo/CDU/CFDS/A320_Neo_CDU_CFDS_Menu.js"></script>
@@ -142,6 +139,7 @@
 <script type="text/html" import-script="/Pages/A32NX_Core/A32NX_LocalVarUpdater.js"></script>
 <script type="text/html" import-script="/Pages/A32NX_Core/A32NX_FADEC.js"></script>
 <script type="text/html" import-script="/Pages/A32NX_Core/A32NX_GPWS.js"></script>
+<script type="text/html" import-script="/Pages/A32NX_Core/A32NX_FWC.js"></script>
 <script type="text/html" import-script="/Pages/A32NX_Core/A32NX_Core.js"></script>
 <script type="text/html" import-script="/Pages/A32NX_Core/A32NX_ATSU.js"></script>
 <script type="text/html" import-script="/Pages/A32NX_Core/A32NX_FuelPred.js"></script>

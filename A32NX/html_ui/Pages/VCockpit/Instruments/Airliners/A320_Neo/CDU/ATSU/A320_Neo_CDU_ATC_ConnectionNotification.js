@@ -1,9 +1,17 @@
 class CDUAtcConnectionNotification {
-    static ShowPage(mcdu, store = {"atcCenter": "", "nextAtc": ""}) {
+    static ShowPage(mcdu, store = {"returnMsg": ""}) {
         mcdu.clearDisplay();
-
+        let canNotify = "";
         let flightNo = "______[color]green";
+        let connectCtrField = mcdu._cpdlcAtcCenter;
 
+        if (mcdu._cpdlcAtcCenter != "") {
+            connectCtrField = mcdu._cpdlcAtcCenter + "[color]green";
+            canNotify = "*";
+        } else {
+            connectCtrField = "____[color]red";
+            canNotify = "\xa0";
+        }
         if (SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string", "FMC")) {
             flightNo = SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string", "FMC") + "[color]green";
         }
@@ -13,11 +21,11 @@ class CDUAtcConnectionNotification {
             ["ATC FLT NBR"],
             [flightNo],
             ["ATC CENTER"],
-            [`${store["atcCenter"] != "" ? store["atcCenter"] + "[color]green" : "____[color]red"}`, "NOTIFY*[color]blue"],
+            [connectCtrField, "NOTIFY" + canNotify + "[color]blue"],
             [""],
             [""],
             [""],
-            [""],
+            ["\xa0\xa0" + store["returnMsg"]],
             [""],
             [""],
             ["ATC MENU", "CONNECTION"],
@@ -28,12 +36,10 @@ class CDUAtcConnectionNotification {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onLeftInput[1] = (value) => {
-            if (value === FMCMainDisplay.clrValue) {
-                store["atcCenter"] = "";
-            } else {
-                store["atcCenter"] = value;
+            if (value != "") {
+                mcdu._cpdlcAtcCenter = value;
             }
-            CDUAtcConnectionNotification.ShowPage(mcdu, store);
+            CDUAtcConnectionNotification.ShowPage(mcdu);
         };
 
         mcdu.leftInputDelay[5] = () => {
@@ -41,6 +47,18 @@ class CDUAtcConnectionNotification {
         };
         mcdu.onLeftInput[5] = () => {
             CDUAtcConnection.ShowPage(mcdu);
+        };
+
+        mcdu.rightInputDelay[1] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
+        mcdu.onRightInput[1] = () => {
+            if (mcdu._cpdlcAtcCenter != "") {
+                store["returnMsg"] = mcdu._cpdlcAtcCenter + " NOTIFIED[color]green";
+            } else {
+                store["returnMsg"] = "INVALID ENTRY";
+            }
+            CDUAtcConnectionNotification.ShowPage(mcdu, store);
         };
 
         mcdu.rightInputDelay[5] = () => {

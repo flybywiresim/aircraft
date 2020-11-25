@@ -1,9 +1,8 @@
 class CDUAtcConnectionStatus {
     static ShowPage(mcdu) {
         mcdu.clearDisplay();
-
+        const activeAtc = mcdu._cpdlcAtcCenter + "[color]green";
         let flightNo = "______[color]green";
-        let atcCenter = "____[color]red";
 
         if (SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string", "FMC")) {
             flightNo = SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string", "FMC") + "[color]green";
@@ -12,7 +11,7 @@ class CDUAtcConnectionStatus {
         mcdu.setTemplate([
             ["CONNECTION STATUS"],
             ["ACTIVE ATC"],
-            [atcCenter],
+            [activeAtc],
             ["NEXT ATC"],
             ["----"],
             ["", "MAX UPLINK DELAY"],
@@ -34,6 +33,13 @@ class CDUAtcConnectionStatus {
         };
         mcdu.onLeftInput[5] = () => {
             CDUAtcMenu.ShowPage1(mcdu);
+        };
+
+        mcdu.rightInputDelay[5] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
+        mcdu.onRightInput[5] = () => {
+            CDUAtcConnectionNotification.ShowPage(mcdu);
         };
     }
 }

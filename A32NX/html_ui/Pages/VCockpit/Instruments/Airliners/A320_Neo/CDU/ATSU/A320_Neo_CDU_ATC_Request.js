@@ -1,4 +1,4 @@
-class CDUAtcDepartReq {
+class CDUAtcRequest {
     static ShowPage(mcdu) {
         mcdu.clearDisplay();
 
@@ -14,15 +14,15 @@ class CDUAtcDepartReq {
         }
 
         mcdu.setTemplate([
-            ["DATALINK STATUS"],
-            ["ATC FLT NBR", "A/C TYPE"],
-            [flightNo, "A20N[color]blue"],
-            ["FROM/TO"],
-            [fromTo],
-            ["GATE", "ATIS"],
-            ["___[color]red", "_[color]red"],
-            ["---------FREE TEXT---------"],
-            ["[][color]blue"],
+            ["REQUEST"],
+            ["DIR TO", "FL/ALT"],
+            ["[{\xa0\xa0\xa0}]", "[{\xa0\xa0\xa0}]"],
+            ["", "SPD/MACH"],
+            ["", "[{\xa0\xa0\xa0}]"],
+            [""],
+            [""],
+            ["DUE TO", "DUE TO"],
+            ["{WEATHER", "A/C PERF}"],
             [""],
             [""],
             ["ATC MENU", "ATC DEPART[color]blue"],
@@ -37,7 +37,7 @@ class CDUAtcDepartReq {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onLeftInput[5] = () => {
-            CDUAtsuMenu.ShowPage(mcdu);
+            CDUAtcMenu.ShowPage2(mcdu);
         };
     }
 }

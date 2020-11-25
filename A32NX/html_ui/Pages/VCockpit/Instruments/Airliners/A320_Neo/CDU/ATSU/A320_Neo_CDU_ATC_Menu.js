@@ -4,11 +4,11 @@ class CDUAtcMenu {
         mcdu.setTemplate([
             ["ATC MENU", "1", "2"],
             [""],
-            ["<LAT REQ[color]inop", "VERT REQ>[color]inop"],
+            ["<REQUEST"],
             ["", ""],
-            ["<WHEN CAN WE[color]inop", "OTHER REQ>[color]inop"],
             [""],
-            ["", "TEXT>[color]inop"],
+            [""],
+            [""],
             [""],
             ["<MSG RECORD[color]inop", "REPORTS>"],
             [""],
@@ -17,26 +17,12 @@ class CDUAtcMenu {
             ["<RETURN", "EMERGENCY>[color]red"]
         ]);
 
-        /*mcdu.leftInputDelay[0] = () => {
+        mcdu.leftInputDelay[0] = () => {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onLeftInput[0] = () => {
-            CDUAtcLatReq.ShowPage(mcdu);
+            CDUAtcRequest.ShowPage(mcdu);
         };
-
-        mcdu.leftInputDelay[1] = () => {
-            return mcdu.getDelaySwitchPage();
-        };
-        mcdu.onLeftInput[1] = () => {
-            CDUAtcWhenCanWe.ShowPage(mcdu);
-        };
-
-        mcdu.leftInputDelay[3] = () => {
-            return mcdu.getDelaySwitchPage();
-        };
-        mcdu.onLeftInput[3] = () => {
-            CDUAtcMsgRecord.ShowPage(mcdu);
-        };*/
 
         mcdu.leftInputDelay[4] = () => {
             return mcdu.getDelaySwitchPage();
