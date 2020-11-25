@@ -7,12 +7,8 @@
     "prettier": "prettier --write **/*.json **/*.yml src/instruments/**/*.css",
     "build:instruments": "rollup -c src/instruments/rollup.config.js",
     "build:msfs": "node scripts/build.js",
-    "build": "npm run build:instruments && npm run build:msfs"
-  },
-  "husky": {
-    "hooks": {
-      "pre-commit": "lint-staged"
-    }
+    "build": "npm run build:instruments && npm run build:msfs",
+    "postinstall": "husky install"
   },
   "lint-staged": {
     "*.{js,mjs,jsx}": "eslint --cache --fix",
@@ -31,7 +27,7 @@
     "eslint-plugin-import": "^2.22.1",
     "eslint-plugin-jsx-a11y": "^6.3.1",
     "eslint-plugin-react": "^7.21.5",
-    "husky": "4.3.0",
+    "husky": "^5.0.4",
     "lint-staged": "10.4.0",
     "prettier": "2.1.2",
     "rollup": "^2.32.0",
