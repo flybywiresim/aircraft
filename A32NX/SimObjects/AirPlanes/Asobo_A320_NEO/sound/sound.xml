@@ -376,7 +376,7 @@
             <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Derived="true" Index="2" RTPCName="SIMVAR_TURB_ENG_N1_DERIVED" />
         </Sound>
 
-        <Sound WwiseEvent="FFlowL" WwiseData="true" NodeName="Engine_PIVOT_LEFT_2" SimVar="TURB ENG N2" Units="percent" ViewPoint="Inside" Index="1" ViewPoint="Inside" Continuous="true">
+        <Sound WwiseEvent="FFlowL" WwiseData="true" NodeName="Engine_PIVOT_LEFT_2" SimVar="TURB ENG N2" Units="percent" ViewPoint="Inside" Index="1" Continuous="true">
             <Range LowerBound="1" />
             <WwiseRTPC SimVar="TURB ENG N2" Units="percent" Index="1" RTPCName="SIMVAR_TURB_ENG_N2" />
             <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Index="1" RTPCName="SIMVAR_TURB_ENG_N1" />
@@ -386,7 +386,7 @@
             </Requires>
         </Sound>
 
-        <Sound WwiseEvent="FFlowR" WwiseData="true" NodeName="Engine_PIVOT_RIGHT_2" SimVar="TURB ENG N2" Units="percent" ViewPoint="Inside" Index="2" ViewPoint="Inside" Continuous="true">
+        <Sound WwiseEvent="FFlowR" WwiseData="true" NodeName="Engine_PIVOT_RIGHT_2" SimVar="TURB ENG N2" Units="percent" ViewPoint="Inside" Index="2"  Continuous="true">
             <Range LowerBound="1" />
             <WwiseRTPC SimVar="TURB ENG N2" Units="percent" Index="2" RTPCName="SIMVAR_TURB_ENG_N2" />
             <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Index="2" RTPCName="SIMVAR_TURB_ENG_N1" />
@@ -406,7 +406,7 @@
             <WwiseRTPC SimVar="TURB ENG N2" Units="percent" Index="2" RTPCName="SIMVAR_TURB_ENG_N2" />
         </Sound>
 
-        <Sound WwiseEvent="FFlowLEXT" WwiseData="true" NodeName="Engine_PIVOT_LEFT_2" SimVar="TURB ENG N2" Units="percent" ViewPoint="Outside" Index="1" ViewPoint="Inside" Continuous="true">
+        <Sound WwiseEvent="FFlowLEXT" WwiseData="true" NodeName="Engine_PIVOT_LEFT_2" SimVar="TURB ENG N2" Units="percent" ViewPoint="Outside" Index="1" Continuous="true">
             <Range LowerBound="1" />
             <WwiseRTPC SimVar="TURB ENG N2" Units="percent" Index="1" RTPCName="SIMVAR_TURB_ENG_N2" />
             <Requires SimVar="TURB ENG FUEL FLOW PPH" Units="PPH" Index="1">
@@ -414,7 +414,7 @@
             </Requires>
         </Sound>
 
-        <Sound WwiseEvent="FFlowREXT" WwiseData="true" NodeName="Engine_PIVOT_RIGHT_2" SimVar="TURB ENG N2" Units="percent" ViewPoint="Outside" Index="2" ViewPoint="Inside" Continuous="true">
+        <Sound WwiseEvent="FFlowREXT" WwiseData="true" NodeName="Engine_PIVOT_RIGHT_2" SimVar="TURB ENG N2" Units="percent" ViewPoint="Outside" Index="2" Continuous="true">
             <Range LowerBound="1" />
             <WwiseRTPC SimVar="TURB ENG N2" Units="percent" Index="2" RTPCName="SIMVAR_TURB_ENG_N2" />
             <Requires SimVar="TURB ENG FUEL FLOW PPH" Units="PPH" Index="2">
