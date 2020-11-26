@@ -10,32 +10,18 @@ jobs:
     runs-on: ubuntu-latest
     env:
       RELEASE_ZIP_NAME: A32NX-stable.zip
-      MOD_FOLDER_NAME: A32NX
       BUILD_DIR_NAME: stable
     steps:
       - name: Checkout source
         uses: actions/checkout@v2
-      - name: Set BUILT_DATE_TIME
-        run: echo "BUILT_DATE_TIME=$(date -u -Iseconds)" >> $GITHUB_ENV
       - name: Build A32NX
         run: |
-          npm install
-          npm run build
-
-          echo $( \
-            jq -n \
-              --arg built '${{ env.BUILT_DATE_TIME }}' \
-              --arg ref '${{ github.ref }}' \
-              --arg sha '${{ github.sha }}' \
-              --arg actor '${{ github.actor }}' \
-              --arg event_name '${{ github.event_name }}' \
-              '{built: $built, ref: $ref, sha: $sha, actor: $actor, event_name: $event_name}' \
-          ) > ./${{ env.MOD_FOLDER_NAME }}/build_info.json
+          ./scripts/dev-env/run.sh ./scripts/setup.sh
+          ./scripts/dev-env/run.sh ./scripts/build.sh
       - name: Build ZIP file
         run: |
           mkdir ./${{ env.BUILD_DIR_NAME }}
-          cp ./${{ env.MOD_FOLDER_NAME }}/build_info.json ./${{ env.BUILD_DIR_NAME }}/build_info.json
-          zip -r ./${{ env.BUILD_DIR_NAME }}/${{ env.RELEASE_ZIP_NAME }} ./${{ env.MOD_FOLDER_NAME }}/
+          zip -r ./${{ env.BUILD_DIR_NAME }}/${{ env.RELEASE_ZIP_NAME }} ./A32NX/
       - name: Upload release asset
         uses: actions/upload-release-asset@v1.0.2
         env:
