@@ -531,6 +531,9 @@
         <Sound WwiseData="true" WwiseEvent="NWheelSpinAboveGround" NodeName="PEDALS_LEFT" ViewPoint="Inside" Continuous="false" SimVar="GEAR ANIMATION POSITION" Units="PERCENT" Index="0">
             <Range UpperBound="50" />
             <WwiseRTPC SimVar="GEAR ANIMATION POSITION" Units="PERCENT" Index="0" RTPCName="SIMVAR_GEAR_ANIMATION_POSITION" />
+            <Requires SimVar="WHEEL RPM" Units="RPM" Index="1">
+            <Range LowerBound="900" />
+            <Requires />
         </Sound>
 
         <Sound WwiseData="true" WwiseEvent="taxirattle" ViewPoint="Inside" SimVar="SIM ON GROUND" Units="BOOLEAN" Index="0">
