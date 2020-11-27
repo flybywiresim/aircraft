@@ -697,11 +697,10 @@
             <WwiseRTPC SimVar="GEAR TOTAL PCT EXTENDED" Units="PERCENT" Derived="true" Index="0" RTPCName="SIMVAR_GEAR_TOTAL_PCT_EXTENDED_DERIVED" />
         </Sound>
 
-        <Sound WwiseEvent="gdown" WwiseData="true" Continuous="false" NodeName="WHEELS_C" FadeOutType="2" FadeOutTime="1" SimVar="GEAR TOTAL PCT EXTENDED" Units="PERCENT">
+        <Sound WwiseEvent="gdown" Continuous="false" WwiseData="true" FadeOutType="2" FadeOutTime="1" SimVar="GEAR TOTAL PCT EXTENDED" Units="PERCENT">
             <Range LowerBound="0.1" UpperBound="0.9" />
-            <WwiseRTPC SimVar="GEAR TOTAL PCT EXTENDED" Units="PERCENT" Index="0" RTPCName="SIMVAR_GEAR_TOTAL_PCT_EXTENDED" />
         </Sound>
-
+        
         <!-- INSTRUMENTS FOLEYS  =========================================================================  -->
 
         <Sound WwiseData="true" WwiseEvent="FLAPS_LEVER" ViewPoint="Inside" NodeName="LEVER_FLAPS" SimVar="FLAPS HANDLE PERCENT" Units="PERCENT" Index="0">
