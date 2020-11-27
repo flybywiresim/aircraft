@@ -90,18 +90,18 @@ class A320_Neo_CDU_AirwaysFromWaypointPage {
                                                     if (airway) {
                                                         A320_Neo_CDU_AirwaysFromWaypointPage.ShowPage(mcdu, waypoint, offset, airway);
                                                     } else {
-                                                        mcdu.showErrorMessage("AWY/WPT MISMATCH");
+                                                        mcdu.showErrorMessage("NO INTERSECTION FOUND");
                                                     }
                                                 } else {
-                                                    mcdu.showErrorMessage("AWY/WPT MISMATCH");
+                                                    mcdu.showErrorMessage("NO INTERSECTION FOUND");
                                                 }
                                             });
                                         });
                                     }
                                 }
-                                mcdu.showErrorMessage("AWY/WPT MISMATCH");
+                                mcdu.showErrorMessage("NO INTERSECTION FOUND");
                             } else {
-                                mcdu.showErrorMessage("AWY/WPT MISMATCH");
+                                mcdu.showErrorMessage("NO INTERSECTION FOUND");
                             }
                         };
                     }
