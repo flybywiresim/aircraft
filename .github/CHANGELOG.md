@@ -107,6 +107,7 @@
 1. [ND] Add heading line to ARC and NAV map mode @ilyeshammadi (Ilyes Hammadi)
 1. [PFD] Add QNH flashing when reach transition altitude - @Kimbyeoungjang (김병장#7165)
 1. [ECAM] Added flight phase inhibit override to recall button - @beheh (Benedict Etzel)
+1. [CDU] Changed FMGC constraint classification - @MisterChocker (Leon)
 1. [CDU] Added constraints symbols logic to flight plan - @ilyeshammadi (Ilyes Hammadi)
 1. [ECAM] Changed SAT and TAT values to green colour - @RichardPilbery (Richard Pilbery)
 1. [General] Improve ground handling, steering, and suspension - @wpine215 (Iceman)

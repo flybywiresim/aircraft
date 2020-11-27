@@ -273,7 +273,7 @@ ForceDisplayUI=False
 AltitudeSlotIndex=2
 SpeedSlotIndex=2
 VSSlotIndex=2
-
+MaxBankIndex=0
 [Controls.0]
 SpoilersHandle=000.00
 SpoilersArmed=False
