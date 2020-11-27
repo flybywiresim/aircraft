@@ -77,29 +77,25 @@ class A320_Neo_CDU_AirwaysFromWaypointPage {
                         rows[i + 1] = ["[ ][color]blue", ""];
                         mcdu.onLeftInput[i + 1] = async (value) => {
                             if (value.length > 0) {
-                                for (let i = 0; i < pendingAirway.icaos.length; i++) {
-                                    const currentWaypointA = await mcdu.flightPlanManager.instrument.facilityLoader.getIntersectionData(pendingAirway.icaos[i]);
-                                    const route = currentWaypointA.routes.find(a => {
-                                        return a.name === value;
-                                    });
-                                    if (route) {
-                                        return mcdu.ensureCurrentFlightPlanIsTemporary(() => {
-                                            mcdu.insertWaypointsAlongAirway(currentWaypointA.icao.substring(4).trim(), mcdu.flightPlanManager.getEnRouteWaypointsLastIndex() + 1, pendingAirway.name, async (result) => {
-                                                if (result) {
-                                                    const airway = await this._getAirway(mcdu, value);
-                                                    if (airway) {
-                                                        A320_Neo_CDU_AirwaysFromWaypointPage.ShowPage(mcdu, waypoint, offset, airway);
-                                                    } else {
-                                                        mcdu.showErrorMessage("NO INTERSECTION FOUND");
-                                                    }
+                                const toWp = await this._getFirstIntersection(mcdu.flightPlanManager, value, pendingAirway.icaos);
+                                if (toWp) {
+                                    mcdu.ensureCurrentFlightPlanIsTemporary(() => {
+                                        mcdu.insertWaypointsAlongAirway(toWp, mcdu.flightPlanManager.getEnRouteWaypointsLastIndex() + 1, pendingAirway.name, async (result) => {
+                                            if (result) {
+                                                const airway = await this._getAirway(mcdu, value);
+                                                if (airway) {
+                                                    A320_Neo_CDU_AirwaysFromWaypointPage.ShowPage(mcdu, waypoint, offset, airway);
                                                 } else {
                                                     mcdu.showErrorMessage("NO INTERSECTION FOUND");
                                                 }
-                                            });
+                                            } else {
+                                                mcdu.showErrorMessage("NO INTERSECTION FOUND");
+                                            }
                                         });
-                                    }
+                                    });
+                                } else {
+                                    mcdu.showErrorMessage("NO INTERSECTION FOUND");
                                 }
-                                mcdu.showErrorMessage("NO INTERSECTION FOUND");
                             } else {
                                 mcdu.showErrorMessage("NO INTERSECTION FOUND");
                             }
@@ -166,5 +162,33 @@ class A320_Neo_CDU_AirwaysFromWaypointPage {
                 return a.name === value;
             });
         }
+    }
+
+    /**
+     * Distance is measured in number of fixes, not a real distance unit.
+     * Searching around current fixes index.
+     */
+    static async _getFirstIntersection(fpm, value, icaos) {
+        const ident = fpm.getWaypoints()[fpm.getEnRouteWaypointsLastIndex()].ident;
+        const identIdx = icaos.findIndex(x => x.substring(4).trim() === ident);
+        for (let i = 0; i < icaos.length - identIdx; i++) {
+            let res = await this._getRoute(fpm, value, icaos[identIdx + i]);
+            if (res) {
+                return icaos[identIdx + i].substring(4).trim();
+            }
+            if (identIdx - i < 0 || i === 0) {
+                continue;
+            }
+            res = await this._getRoute(fpm, value, icaos[identIdx - i]);
+            if (res) {
+                return icaos[identIdx - i].substring(4).trim();
+            }
+        }
+    }
+
+    static async _getRoute(fpm, value, ident) {
+        return (await fpm.instrument.facilityLoader.getIntersectionData(ident)).routes.find(a => {
+            return a.name === value;
+        });
     }
 }
