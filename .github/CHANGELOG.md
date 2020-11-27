@@ -110,6 +110,7 @@
 1. [CDU] Added constraints symbols logic to flight plan - @ilyeshammadi (Ilyes Hammadi)
 1. [ECAM] Changed SAT and TAT values to green colour - @RichardPilbery (Richard Pilbery)
 1. [General] Improve ground handling, steering, and suspension - @wpine215 (Iceman)
+1. [CDU] Added Airway Page airway to airway insert option - @MisterChocker (Leon)
 
 ## 0.4.0
 1. [General] Add CHANGELOG.md - @nathaninnes (Nathan Innes)
