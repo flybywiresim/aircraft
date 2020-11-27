@@ -48,7 +48,7 @@ class A320_Neo_CDU_AirwaysFromWaypointPage {
                     mcdu.onLeftInput[i] = async (value) => {
                         if (value.length > 0) {
                             mcdu.ensureCurrentFlightPlanIsTemporary(async () => {
-                                const airway = await this._getAirway(mcdu, value, 4);
+                                const airway = await this._getAirway(mcdu, value);
                                 if (airway) {
                                     A320_Neo_CDU_AirwaysFromWaypointPage.ShowPage(mcdu, waypoint, offset, airway);
                                 } else {
@@ -158,23 +158,13 @@ class A320_Neo_CDU_AirwaysFromWaypointPage {
         return allRows;
     }
 
-    static async _getAirway(mcdu, value, tries = 200) {
-        for (let n = 0; n < tries; n++) {
-            const airway = await new Promise(res => {
-                setTimeout(() => {
-                    const lastWaypoint = mcdu.flightPlanManager.getWaypoints()[mcdu.flightPlanManager.getEnRouteWaypointsLastIndex()];
-                    if (lastWaypoint.infos instanceof IntersectionInfo || lastWaypoint.infos instanceof VORInfo || lastWaypoint.infos instanceof NDBInfo) {
-                        const airway = lastWaypoint.infos.airways.find(a => {
-                            return a.name === value;
-                        });
-                        res(airway);
-                    }
-                    res();
-                }, 50);
+    static async _getAirway(mcdu, value) {
+        const lastWaypoint = mcdu.flightPlanManager.getWaypoints()[mcdu.flightPlanManager.getEnRouteWaypointsLastIndex()];
+        await lastWaypoint.infos.UpdateAirway(value);
+        if (lastWaypoint.infos instanceof IntersectionInfo || lastWaypoint.infos instanceof VORInfo || lastWaypoint.infos instanceof NDBInfo) {
+            return lastWaypoint.infos.airways.find(a => {
+                return a.name === value;
             });
-            if (airway) {
-                return airway;
-            }
         }
     }
 }
