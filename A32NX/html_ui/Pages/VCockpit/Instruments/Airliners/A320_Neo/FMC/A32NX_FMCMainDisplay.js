@@ -355,10 +355,8 @@ class FMCMainDisplay extends BaseAirliners {
             this.lastUserInput = this.inOut;
             this.inOut = "";
             this._inOutElement.style.color = "#ffffff";
-            return this.lastUserInput;
-        } else {
-            return this.inOut;
         }
+        return this.lastUserInput;
     }
 
     tryClearOldUserInput() {

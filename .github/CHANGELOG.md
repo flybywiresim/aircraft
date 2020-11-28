@@ -118,6 +118,7 @@
 1. [Sound] Improved nose wheel liftoff sound - @hotshotp (Boris)
 1. [Sound] Added new APU start contactor sounds - @hotshotp (Boris)
 1. [Sound] Added new realistic LEAP-1A engine sounds - @hotshotp (Boris)
+1. [CDU] Improved input handling while a message is visible - @MisterChocker (Leon)
 
 ## 0.4.0
 1. [General] Add CHANGELOG.md - @nathaninnes (Nathan Innes)
