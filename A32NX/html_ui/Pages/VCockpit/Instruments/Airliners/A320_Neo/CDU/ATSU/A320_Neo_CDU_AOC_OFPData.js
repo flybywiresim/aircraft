@@ -35,10 +35,15 @@ class CDUAocOfpData {
             requestButton = "SEND [color]blue";
         }
 
+        const cgPercent = SimVar.GetSimVarValue("CG PERCENT", "percent");
+
+        const cgColor = cgPercent >= 16 && cgPercent <= 40 ? 'green' : 'red';
+        const cg = `{small}${cgPercent.toFixed(1)}{end}[color]${cgColor}`;
+
         const currentBlockFuel = mcdu.aocWeight.blockFuel || mcdu.simbrief.blockFuel;
         if (currentBlockFuel) {
             const size = mcdu.aocWeight.blockFuel ? 'big' : 'small';
-            blockFuel = `{${size}}${currentBlockFuel}{end}{end}[color]blue`;
+            blockFuel = `{${size}}${currentBlockFuel}{end}[color]blue`;
         }
 
         const currentEstZfw = mcdu.aocWeight.estZfw || mcdu.simbrief.estZfw;
@@ -66,13 +71,13 @@ class CDUAocOfpData {
         }
 
         const display = [
-            ["OFP WEIGHT", undefined, undefined, "AOC"],
+            ["OFP WT/BAL", undefined, undefined, "AOC"],
             ["BLOCK FUEL", "ZFW"],
             [blockFuel, estZfw],
-            ["TAXI FUEL", "TRIP FUEL"],
-            [taxiFuel, tripFuel],
-            ["", "PAYLOAD"],
-            ["", payload],
+            ["TAXI FUEL", "CG"],
+            [taxiFuel, cg],
+            ["TRIP FUEL", "PAYLOAD"],
+            [tripFuel, payload],
             ["PAYLOAD"],
             ["*LOAD[color]blue", "PRINT*[color]inop"],
             ["REFUEL", "OFP REQUEST[color]blue"],
@@ -145,7 +150,7 @@ class CDUAocOfpData {
         mcdu.leftInputDelay[3] = () => {
             return mcdu.getDelayBasic();
         };
-        mcdu.onLeftInput[3] = () => {
+        mcdu.onLeftInput[3] = async () => {
             if (currentPayload) {
                 const pilotWeightInPounds = 200; // One pilot
                 const currentPayloadInPounds = (+currentPayload * 2.20462) - (pilotWeightInPounds * 2); // kg to pounds minus two pilots
@@ -154,18 +159,42 @@ class CDUAocOfpData {
                 for (let i = 1; i <= payloadCount; i++) {
                     if (i === 1 || i === 2) {
                         // Pilots
-                        SimVar.SetSimVarValue(`PAYLOAD STATION WEIGHT:${i}`, "Pounds", pilotWeightInPounds);
+                        await SimVar.SetSimVarValue(`PAYLOAD STATION WEIGHT:${i}`, "Pounds", pilotWeightInPounds);
                     } else {
-                        SimVar.SetSimVarValue(`PAYLOAD STATION WEIGHT:${i}`, "Pounds", currentPayloadInPounds / 4);
+                        await SimVar.SetSimVarValue(`PAYLOAD STATION WEIGHT:${i}`, "Pounds", currentPayloadInPounds / 4);
                     }
                 }
+
+                updateView();
+            }
+        };
+
+        mcdu.leftInputDelay[1] = () => {
+            return mcdu.getDelayBasic();
+        };
+        mcdu.onLeftInput[1] = async () => {
+            if (currentPayload) {
+                const pilotWeightInPounds = 200; // One pilot
+                const currentPayloadInPounds = (+currentPayload * 2.20462) - (pilotWeightInPounds * 2); // kg to pounds minus two pilots
+
+                const payloadCount = SimVar.GetSimVarValue("PAYLOAD STATION COUNT", "number");
+                for (let i = 1; i <= payloadCount; i++) {
+                    if (i === 1 || i === 2) {
+                        // Pilots
+                        await SimVar.SetSimVarValue(`PAYLOAD STATION WEIGHT:${i}`, "Pounds", pilotWeightInPounds);
+                    } else {
+                        await SimVar.SetSimVarValue(`PAYLOAD STATION WEIGHT:${i}`, "Pounds", currentPayloadInPounds / 4);
+                    }
+                }
+
+                updateView();
             }
         };
 
         mcdu.leftInputDelay[4] = () => {
             return mcdu.getDelayBasic();
         };
-        mcdu.onLeftInput[4] = () => {
+        mcdu.onLeftInput[4] = async () => {
             if (currentBlockFuel) {
                 const outerTankCapacity = 200; // Left and Right
                 const innerTankCapacity = 1800; // Left and Right
@@ -175,20 +204,22 @@ class CDUAocOfpData {
                 let currentBlockFuelInGallons = +currentBlockFuel / +fuelWeightPerGallon;
 
                 const outerTankFill = Math.min(outerTankCapacity, currentBlockFuelInGallons / 2);
-                SimVar.SetSimVarValue(`FUEL TANK LEFT AUX QUANTITY`, "Gallons", outerTankFill);
-                SimVar.SetSimVarValue(`FUEL TANK RIGHT AUX QUANTITY`, "Gallons", outerTankFill);
+                await SimVar.SetSimVarValue(`FUEL TANK LEFT AUX QUANTITY`, "Gallons", outerTankFill);
+                await SimVar.SetSimVarValue(`FUEL TANK RIGHT AUX QUANTITY`, "Gallons", outerTankFill);
                 currentBlockFuelInGallons -= outerTankFill * 2;
 
                 const innerTankFill = Math.min(innerTankCapacity, currentBlockFuelInGallons / 2);
-                SimVar.SetSimVarValue(`FUEL TANK LEFT MAIN QUANTITY`, "Gallons", innerTankFill);
-                SimVar.SetSimVarValue(`FUEL TANK RIGHT MAIN QUANTITY`, "Gallons", innerTankFill);
+                await SimVar.SetSimVarValue(`FUEL TANK LEFT MAIN QUANTITY`, "Gallons", innerTankFill);
+                await SimVar.SetSimVarValue(`FUEL TANK RIGHT MAIN QUANTITY`, "Gallons", innerTankFill);
                 currentBlockFuelInGallons -= innerTankFill * 2;
 
                 const centerTankFill = Math.min(centerTankCapacity, currentBlockFuelInGallons);
-                SimVar.SetSimVarValue(`FUEL TANK CENTER QUANTITY`, "Gallons", centerTankFill);
+                await SimVar.SetSimVarValue(`FUEL TANK CENTER QUANTITY`, "Gallons", centerTankFill);
                 currentBlockFuelInGallons -= centerTankFill;
 
                 mcdu.updateFuelVars();
+
+                updateView();
             }
         };
 
