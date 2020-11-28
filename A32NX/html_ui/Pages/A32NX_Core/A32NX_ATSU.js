@@ -295,6 +295,7 @@ const uplinkRoute = async (mcdu) => {
 
     const routeSplit = route.split(' ');
     const procedures = new Set(navlog.filter(fix => fix.is_sid_star === "1").map(fix => fix.via_airway));
+    const waypoints = new Set(navlog.filter(fix => fix.type === "wpt").map(fix => fix.ident));
 
     async function asyncForEach(array, callback) {
         for (let index = 0; index < array.length; index++) {
@@ -320,11 +321,13 @@ const uplinkRoute = async (mcdu) => {
                             break;
                         }
                     } else {
-                        const wpIndex = mcdu.flightPlanManager.getWaypointsCount() - 1;
-                        console.log("Inserting waypoint: " + routeIdent + " | " + wpIndex);
-                        await addWaypointAsync(mcdu, routeIdent, wpIndex);
+                        if (waypoints.has(routeIdent)) {
+                            const wpIndex = mcdu.flightPlanManager.getWaypointsCount() - 1;
+                            console.log("Inserting waypoint: " + routeIdent + " | " + wpIndex);
+                            await addWaypointAsync(mcdu, routeIdent, wpIndex);
 
-                        break;
+                            break;
+                        }
                     }
                 }
             }
