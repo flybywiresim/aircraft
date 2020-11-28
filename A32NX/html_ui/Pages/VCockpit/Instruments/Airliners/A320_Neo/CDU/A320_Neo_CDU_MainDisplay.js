@@ -325,18 +325,18 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     updateGPSMessage() {
         if (!SimVar.GetSimVarValue("L:GPSPrimaryAcknowledged", "Bool")) {
             if (SimVar.GetSimVarValue("L:GPSPrimary", "Bool")) {
+                SimVar.SetSimVarValue("L:A32NX_GPS_PRIMARY_LOST_MSG", "Bool", 0);
                 if (!SimVar.GetSimVarValue("L:GPSPrimaryMessageDisplayed", "Bool")) {
                     SimVar.SetSimVarValue("L:GPSPrimaryMessageDisplayed", "Bool", 1);
-                    SimVar.SetSimVarValue("L:A32NX_GPS_PRIMARY_LOST_MSG", "Bool", 0);
                     this.tryRemoveMessage("GPS PRIMARY LOST");
                     this.addTypeTwoMessage("GPS PRIMARY", "#ffffff", () => {
                         SimVar.SetSimVarValue("L:GPSPrimaryAcknowledged", "Bool", 1);
                     });
                 }
             } else {
+                SimVar.SetSimVarValue("L:GPSPrimaryMessageDisplayed", "Bool", 0);
                 if (!SimVar.GetSimVarValue("L:A32NX_GPS_PRIMARY_LOST_MSG", "Bool")) {
                     SimVar.SetSimVarValue("L:A32NX_GPS_PRIMARY_LOST_MSG", "Bool", 1);
-                    SimVar.SetSimVarValue("L:GPSPrimaryMessageDisplayed", "Bool", 0);
                     this.tryRemoveMessage("GPS PRIMARY");
                     this.addTypeTwoMessage("GPS PRIMARY LOST", "#ffff00", () => {
                         SimVar.SetSimVarValue("L:A32NX_GPS_PRIMARY_LOST_MSG", "Bool", 1);
@@ -388,14 +388,15 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     }
 
     tryShowMessage() {
-        if (!this.isDisplayingErrorMessage && !this.inOut && this.messageQueue.length > 0) {
+        if (!this.isDisplayingErrorMessage && (!this.inOut || this.isDisplayingTypeTwoMessage) && this.messageQueue.length > 0) {
             if (this.messageQueue[0][3]()) {
-                this.tryRemoveMessage(this.messageQueue[0][0]);
-                return this.tryShowMessage();
+                return this.tryRemoveMessage(this.messageQueue[0][0]);
             }
             if (!this.isDisplayingErrorMessage) {
-                this.isDisplayingTypeTwoMessage = true;
-                this.lastUserInput = this.inOut;
+                if (!this.isDisplayingTypeTwoMessage) {
+                    this.isDisplayingTypeTwoMessage = true;
+                    this.lastUserInput = this.inOut;
+                }
                 this.inOut = this.messageQueue[0][0];
                 this._inOutElement.style.color = this.messageQueue[0][1];
             }
@@ -423,6 +424,11 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         }
         for (let i = 0; i < this.messageQueue.length; i++) {
             if (this.messageQueue[i][0] === message) {
+                if (i !== 0) {
+                    this.messageQueue.unshift(this.messageQueue[i]);
+                    this.messageQueue.splice(i + 1, 1);
+                    this.tryShowMessage();
+                }
                 return false;
             }
         }
