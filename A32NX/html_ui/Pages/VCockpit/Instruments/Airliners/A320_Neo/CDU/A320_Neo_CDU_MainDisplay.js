@@ -435,6 +435,17 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         return true;
     }
 
+    /**
+     * This handler will write data to the scratchpad
+     * @param data {string}
+     */
+    sendDataToScratchpad(data) {
+        this.isDisplayingErrorMessage = false;
+        this.isDisplayingTypeTwoMessage = false;
+        this._inOutElement.style.color = "#ffffff";
+        this.inOut = data;
+    }
+
     tryUpdateAltitudeConstraint(force = false) {
         if (this.flightPlanManager.getIsDirectTo()) {
             this.constraintAlt = 0;
