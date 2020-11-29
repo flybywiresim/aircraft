@@ -112,6 +112,10 @@ a320-neo-cdu-main-display::after {
   color: var(--mcduAmber);
 }
 
+.red {
+  color: var(--mcduRed);
+}
+
 .magenta {
   color: var(--mcduMagenta);
 }
