@@ -34,7 +34,7 @@ var A320_Neo_LowerECAM_Status;
                         messages: [
                             {
                                 message: "AVOID ICING CONDITIONS",
-                                style: "blue",
+                                style: "cyan",
                                 isActive: () => {
                                     return this.isInop("WING_A_ICE");
                                 },

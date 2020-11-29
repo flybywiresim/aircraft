@@ -124,7 +124,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                         const sender = msg["from"]["flight"];
 
                         const lines = [];
-                        lines.push("FROM " + sender + "[color]blue");
+                        lines.push("FROM " + sender + "[color]cyan");
                         const incLines = msg["message"].split(";");
                         incLines.forEach(l => lines.push(l.concat("[color]green")));
                         lines.push('---------------------------[color]white');
@@ -170,9 +170,10 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     _formatCell(str) {
         return str
             .replace(/{small}/g, "<span class='s-text'>")
+            .replace(/{amber}/g, "<span class='amber'>")
             .replace(/{red}/g, "<span class='red'>")
             .replace(/{green}/g, "<span class='green'>")
-            .replace(/{blue}/g, "<span class='blue'>")
+            .replace(/{cyan}/g, "<span class='cyan'>")
             .replace(/{white}/g, "<span class='white'>")
             .replace(/{magenta}/g, "<span class='magenta'>")
             .replace(/{inop}/g, "<span class='inop'>")

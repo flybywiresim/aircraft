@@ -14,7 +14,7 @@ class CDUCfdsTestNav {
             [""],
             ["<ADR 3[color]inop", "DME 2>[color]inop"],
             [""],
-            ["<RETURN[color]blue", "MMR 1>[color]inop"]
+            ["<RETURN[color]cyan", "MMR 1>[color]inop"]
         ]);
 
         mcdu.leftInputDelay[5] = () => {
@@ -48,7 +48,7 @@ class CDUCfdsTestNav {
             [""],
             [""],
             [""],
-            ["<RETURN[color]blue"]
+            ["<RETURN[color]cyan"]
         ]);
 
         mcdu.leftInputDelay[5] = () => {
@@ -82,7 +82,7 @@ class CDUCfdsTestNav {
             [""],
             ["<TCAS[color]inop"],
             [""],
-            ["<RETURN[color]blue"]
+            ["<RETURN[color]cyan"]
         ]);
 
         mcdu.leftInputDelay[5] = () => {

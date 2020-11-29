@@ -9,13 +9,13 @@ class CDUIdentPage {
             ["ENG"],
             ["LEAP 1A-26[color]green"],
             ["", "", "ACTIVE NAV DATA BASE"],
-            [date + "[color]blue", "AIRAC"],
+            [date + "[color]cyan", "AIRAC"],
             ["", "", "SECOND NAV DATA BASE"],
-            ["{" + date + "4MAY-4JUL[color]blue"],
+            ["{" + date + "4MAY-4JUL[color]cyan"],
             [""],
             [""],
             ["CHG CODE"],
-            ["[  ][color]blue"],
+            ["[  ][color]cyan"],
             ["IDLE/PERF", "SOFTWARE"],
             ["+0.0/+0.0[color]green", "STATUS/XLOAD>"]
         ]);

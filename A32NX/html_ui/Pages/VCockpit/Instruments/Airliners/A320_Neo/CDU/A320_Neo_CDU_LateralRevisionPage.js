@@ -77,7 +77,7 @@ class CDULateralRevisionPage {
                 nextWpt = "[{sp}{sp}{sp}{sp}][color]inop";
             } else {
                 nextWptLabel = "NEXT WPT";
-                nextWpt = "[{sp}{sp}{sp}{sp}][color]blue";
+                nextWpt = "[{sp}{sp}{sp}{sp}][color]cyan";
                 mcdu.onRightInput[2] = async (value) => {
                     mcdu.insertWaypoint(value, waypointIndexFP + 1, (result) => {
                         if (result) {
