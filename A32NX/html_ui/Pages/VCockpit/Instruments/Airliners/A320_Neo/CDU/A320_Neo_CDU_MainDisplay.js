@@ -204,7 +204,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
 
     checkDestData() {
         if (!isFinite(this.perfApprQNH) || !isFinite(this.perfApprTemp) || !isFinite(this.perfApprWindHeading) || !isFinite(this.perfApprWindSpeed)) {
-            this.addTypeTwoMessage("ENTER DEST DATA", "#ffff00", () => {}, () => {
+            this.addTypeTwoMessage("ENTER DEST DATA", "yellow", () => {}, () => {
                 return isFinite(this.perfApprQNH) && isFinite(this.perfApprTemp) && isFinite(this.perfApprWindHeading) && isFinite(this.perfApprWindSpeed);
             });
         }
@@ -329,7 +329,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                     SimVar.SetSimVarValue("L:GPSPrimaryMessageDisplayed", "Bool", 1);
                     SimVar.SetSimVarValue("L:A32NX_GPS_PRIMARY_LOST_MSG", "Bool", 0);
                     this.tryRemoveMessage("GPS PRIMARY LOST");
-                    this.addTypeTwoMessage("GPS PRIMARY", "#ffffff", () => {
+                    this.addTypeTwoMessage("GPS PRIMARY", "white", () => {
                         SimVar.SetSimVarValue("L:GPSPrimaryAcknowledged", "Bool", 1);
                     });
                 }
@@ -338,7 +338,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                     SimVar.SetSimVarValue("L:A32NX_GPS_PRIMARY_LOST_MSG", "Bool", 1);
                     SimVar.SetSimVarValue("L:GPSPrimaryMessageDisplayed", "Bool", 0);
                     this.tryRemoveMessage("GPS PRIMARY");
-                    this.addTypeTwoMessage("GPS PRIMARY LOST", "#ffff00", () => {
+                    this.addTypeTwoMessage("GPS PRIMARY LOST", "yellow", () => {
                         SimVar.SetSimVarValue("L:A32NX_GPS_PRIMARY_LOST_MSG", "Bool", 1);
                     });
                 }
@@ -369,7 +369,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
      * @param f {function} Function gets executed when error message has been cleared
      * @param c {function} Function that checks for validity of error message
      */
-    addTypeTwoMessage(message, color = "#ffffff", f = () => {}, c = () => {
+    addTypeTwoMessage(message, color = "white", f = () => {}, c = () => {
         return false;
     }) {
         if (this.checkForMessage(message)) {
