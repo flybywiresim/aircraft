@@ -399,7 +399,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                 this.lastUserInput = this.inOut;
                 this.inOut = this.messageQueue[0][0];
                 const color = this.messageQueue[0][1];
-                if (["white", "cyan", "amber"].indexOf(color) !== -1) {
+                if (["white", "amber"].indexOf(color) !== -1) {
                     this._inOutElement.className = color;
                     this._inOutElement.style.removeProperty("color");
                 } else {
