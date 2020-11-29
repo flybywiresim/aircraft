@@ -338,7 +338,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                     SimVar.SetSimVarValue("L:A32NX_GPS_PRIMARY_LOST_MSG", "Bool", 1);
                     SimVar.SetSimVarValue("L:GPSPrimaryMessageDisplayed", "Bool", 0);
                     this.tryRemoveMessage("GPS PRIMARY");
-                    this.addTypeTwoMessage("GPS PRIMARY LOST", "yellow", () => {
+                    this.addTypeTwoMessage("GPS PRIMARY LOST", "red", () => {
                         SimVar.SetSimVarValue("L:A32NX_GPS_PRIMARY_LOST_MSG", "Bool", 1);
                     });
                 }
