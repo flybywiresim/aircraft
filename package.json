@@ -6,8 +6,9 @@
     "lint-fix": "npm run lint -- --fix",
     "prettier": "prettier --write **/*.json **/*.yml src/instruments/**/*.css",
     "build:instruments": "rollup -c src/instruments/rollup.config.js",
+    "build:fbw": "cd src/fbw && ./build.sh",
     "build:msfs": "node scripts/build.js",
-    "build": "npm run build:instruments && npm run build:msfs",
+    "build": "npm run build:instruments && npm run build:fbw && npm run build:msfs",
     "postinstall": "husky install"
   },
   "lint-staged": {
