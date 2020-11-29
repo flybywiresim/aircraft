@@ -354,7 +354,7 @@ class FMCMainDisplay extends BaseAirliners {
         if (!this.isDisplayingErrorMessage && !this.isDisplayingTypeTwoMessage) {
             this.lastUserInput = this.inOut;
             this.inOut = "";
-            this._inOutElement.style.color = "white";
+            this._inOutElement.className = "white";
             return this.lastUserInput;
         } else {
             return this.inOut;
@@ -368,13 +368,13 @@ class FMCMainDisplay extends BaseAirliners {
         this.tryShowMessage();
     }
 
-    showErrorMessage(message, color = "white") {
+    showErrorMessage(message, color = false) {
         if (!this.isDisplayingErrorMessage && !this.isDisplayingTypeTwoMessage && this.inOut) {
             this.lastUserInput = this.inOut;
         }
         this.isDisplayingErrorMessage = true;
         this.inOut = message;
-        this._inOutElement.style.color = color;
+        this._inOutElement.className = color ? "amber" : "white";
     }
 
     /**
@@ -1197,7 +1197,7 @@ class FMCMainDisplay extends BaseAirliners {
                 this.v1Speed = v;
                 SimVar.SetSimVarValue("L:AIRLINER_V1_SPEED", "Knots", this.v1Speed);
                 if ((v > SimVar.GetSimVarValue("L:AIRLINER_VR_SPEED", "Knots") || v > SimVar.GetSimVarValue("L:AIRLINER_V2_SPEED", "Knots")) && SimVar.GetSimVarValue("L:AIRLINER_VR_SPEED", "Knots") !== -1 && SimVar.GetSimVarValue("L:AIRLINER_V2_SPEED", "Knots") !== -1) {
-                    this.addTypeTwoMessage("V1/VR/V2 DISAGREE", "amber");
+                    this.addTypeTwoMessage("V1/VR/V2 DISAGREE", true);
                 }
                 return true;
             }
@@ -1219,7 +1219,7 @@ class FMCMainDisplay extends BaseAirliners {
                 this.vRSpeed = v;
                 SimVar.SetSimVarValue("L:AIRLINER_VR_SPEED", "Knots", this.vRSpeed);
                 if ((v < SimVar.GetSimVarValue("L:AIRLINER_V1_SPEED", "Knots") || v > SimVar.GetSimVarValue("L:AIRLINER_V2_SPEED", "Knots")) && SimVar.GetSimVarValue("L:AIRLINER_V1_SPEED", "Knots") !== -1 && SimVar.GetSimVarValue("L:AIRLINER_V2_SPEED", "Knots") !== -1) {
-                    this.addTypeTwoMessage("V1/VR/V2 DISAGREE", "amber");
+                    this.addTypeTwoMessage("V1/VR/V2 DISAGREE", true);
                 }
                 return true;
             }
@@ -1241,7 +1241,7 @@ class FMCMainDisplay extends BaseAirliners {
                 this.v2Speed = v;
                 SimVar.SetSimVarValue("L:AIRLINER_V2_SPEED", "Knots", this.v2Speed);
                 if ((v < SimVar.GetSimVarValue("L:AIRLINER_V1_SPEED", "Knots") || v < SimVar.GetSimVarValue("L:AIRLINER_VR_SPEED", "Knots")) && SimVar.GetSimVarValue("L:AIRLINER_V1_SPEED", "Knots") !== -1 && SimVar.GetSimVarValue("L:AIRLINER_VR_SPEED", "Knots") !== -1) {
-                    this.addTypeTwoMessage("V1/VR/V2 DISAGREE", "amber");
+                    this.addTypeTwoMessage("V1/VR/V2 DISAGREE", true);
                 }
                 return true;
             }
@@ -2833,7 +2833,7 @@ class FMCMainDisplay extends BaseAirliners {
         }
         if (this.isDisplayingErrorMessage || this.isDisplayingTypeTwoMessage) {
             this.inOut = this.lastUserInput;
-            this._inOutElement.style.color = "white";
+            this._inOutElement.className = "white";
             this.isDisplayingErrorMessage = false;
             this.isDisplayingTypeTwoMessage = false;
         }
@@ -2888,6 +2888,7 @@ class FMCMainDisplay extends BaseAirliners {
             ];
         }
         this._inOutElement = this.getChildById("in-out");
+        this._inOutElement.style.removeProperty("color");
         this.onMenu = () => {
             FMCMainDisplayPages.MenuPage(this);
         };
@@ -2917,7 +2918,7 @@ class FMCMainDisplay extends BaseAirliners {
             } else if (this.isDisplayingErrorMessage || this.isDisplayingTypeTwoMessage) {
                 this.tryRemoveMessage();
                 this.inOut = this.lastUserInput;
-                this._inOutElement.style.color = "white";
+                this._inOutElement.className = "white";
                 this.isDisplayingErrorMessage = false;
                 this.isDisplayingTypeTwoMessage = false;
             } else {

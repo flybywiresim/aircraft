@@ -205,7 +205,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
 
     checkDestData() {
         if (!isFinite(this.perfApprQNH) || !isFinite(this.perfApprTemp) || !isFinite(this.perfApprWindHeading) || !isFinite(this.perfApprWindSpeed)) {
-            this.addTypeTwoMessage("ENTER DEST DATA", "amber", () => {}, () => {
+            this.addTypeTwoMessage("ENTER DEST DATA", true, () => {}, () => {
                 return isFinite(this.perfApprQNH) && isFinite(this.perfApprTemp) && isFinite(this.perfApprWindHeading) && isFinite(this.perfApprWindSpeed);
             });
         }
@@ -330,7 +330,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                     SimVar.SetSimVarValue("L:GPSPrimaryMessageDisplayed", "Bool", 1);
                     SimVar.SetSimVarValue("L:A32NX_GPS_PRIMARY_LOST_MSG", "Bool", 0);
                     this.tryRemoveMessage("GPS PRIMARY LOST");
-                    this.addTypeTwoMessage("GPS PRIMARY", "white", () => {
+                    this.addTypeTwoMessage("GPS PRIMARY", false, () => {
                         SimVar.SetSimVarValue("L:GPSPrimaryAcknowledged", "Bool", 1);
                     });
                 }
@@ -339,7 +339,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                     SimVar.SetSimVarValue("L:A32NX_GPS_PRIMARY_LOST_MSG", "Bool", 1);
                     SimVar.SetSimVarValue("L:GPSPrimaryMessageDisplayed", "Bool", 0);
                     this.tryRemoveMessage("GPS PRIMARY");
-                    this.addTypeTwoMessage("GPS PRIMARY LOST", "amber", () => {
+                    this.addTypeTwoMessage("GPS PRIMARY LOST", true, () => {
                         SimVar.SetSimVarValue("L:A32NX_GPS_PRIMARY_LOST_MSG", "Bool", 1);
                     });
                 }
@@ -366,11 +366,11 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     /**
      * Add Type II Message
      * @param message {string} Message to be displayed
-     * @param color {string} Color of Message
+     * @param isAmber {boolean} Is color amber
      * @param f {function} Function gets executed when error message has been cleared
      * @param c {function} Function that checks for validity of error message
      */
-    addTypeTwoMessage(message, color = "white", f = () => {}, c = () => {
+    addTypeTwoMessage(message, isAmber = false, f = () => {}, c = () => {
         return false;
     }) {
         if (this.checkForMessage(message)) {
@@ -380,7 +380,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                     this.messageQueue.splice(i, 1);
                 }
             }
-            this.messageQueue.unshift([message, color, f, c]);
+            this.messageQueue.unshift([message, isAmber, f, c]);
             if (this.messageQueue.length > 5) {
                 this.messageQueue.splice(5, 1);
             }
@@ -398,14 +398,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                 this.isDisplayingTypeTwoMessage = true;
                 this.lastUserInput = this.inOut;
                 this.inOut = this.messageQueue[0][0];
-                const color = this.messageQueue[0][1];
-                if (["white", "amber"].indexOf(color) !== -1) {
-                    this._inOutElement.className = color;
-                    this._inOutElement.style.removeProperty("color");
-                } else {
-                    this._inOutElement.className = "";
-                    this._inOutElement.style.color = color;
-                }
+                this._inOutElement.className = this.messageQueue[0][1] ? "amber" : "white";
             }
         }
     }
