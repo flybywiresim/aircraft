@@ -2889,6 +2889,7 @@ class FMCMainDisplay extends BaseAirliners {
         }
         this._inOutElement = this.getChildById("in-out");
         this._inOutElement.style.removeProperty("color");
+        this._inOutElement.className = "white";
         this.onMenu = () => {
             FMCMainDisplayPages.MenuPage(this);
         };
