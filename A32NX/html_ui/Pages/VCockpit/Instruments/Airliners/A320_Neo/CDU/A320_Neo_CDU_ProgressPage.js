@@ -16,12 +16,12 @@ class CDUProgressPage {
                 break;
             }
             case FlightPhase.FLIGHT_PHASE_CLIMB: {
-                const alt = Simplane.getAutoPilotSelectedAltitudeLockValue("feet") / 100;
-                const altCtn = mcdu.constraintAlt / 100;
+                const alt = Math.round(Simplane.getAutoPilotSelectedAltitudeLockValue("feet") / 100);
+                const altCtn = Math.round(mcdu.constraintAlt / 100);
                 if (!mcdu._cruiseEntered) {
                     flCrz = "FL" + (altCtn && alt > altCtn ? altCtn.toFixed(0).padStart(3, "0") : alt.toFixed(0).padStart(3, "0")) + "[color]blue";
                 } else if (mcdu.cruiseFlightLevel < alt) {
-                    mcdu.cruiseFlightLevel = alt.toFixed(0).padStart(3, "0") + "[color]blue";
+                    mcdu.cruiseFlightLevel = alt;
                     flCrz = "FL" + mcdu.cruiseFlightLevel.toFixed(0).padStart(3, "0") + "[color]blue";
                     mcdu.addTypeTwoMessage("NEW CRZ ALT-" + mcdu.cruiseFlightLevel * 100);
                 } else {
@@ -30,7 +30,7 @@ class CDUProgressPage {
                 break;
             }
             case FlightPhase.FLIGHT_PHASE_CRUISE: {
-                const fl = Math.floor(Math.max(0, Simplane.getAutoPilotSelectedAltitudeLockValue("feet")) / 100);
+                const fl = Math.round(Simplane.getAutoPilotSelectedAltitudeLockValue("feet") / 100);
                 if (fl > mcdu.cruiseFlightLevel) {
                     mcdu.cruiseFlightLevel = fl;
                     mcdu.addTypeTwoMessage("NEW CRZ ALT-" + mcdu.cruiseFlightLevel * 100);
@@ -38,7 +38,6 @@ class CDUProgressPage {
                 flCrz = "FL" + mcdu.cruiseFlightLevel.toFixed(0).padStart(3, "0") + "[color]blue";
                 break;
             }
-            default: mcdu._cruiseEntered = false;
         }
         mcdu.onLeftInput[0] = (value) => {
             if (mcdu.trySetCruiseFlCheckInput(value)) {
