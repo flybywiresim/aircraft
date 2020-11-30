@@ -376,7 +376,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         if (this.checkForMessage(message)) {
             // Before adding message to queue, check other messages in queue for validity
             for (let i = 0; i < this.messageQueue.length; i++) {
-                if (this.messageQueue[i][2]()) {
+                if (this.messageQueue[i][2](this)) {
                     this.messageQueue.splice(i, 1);
                 }
             }
@@ -390,7 +390,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
 
     tryShowMessage() {
         if (!this.isDisplayingErrorMessage && (!this.inOut || this.isDisplayingTypeTwoMessage) && this.messageQueue.length > 0) {
-            if (this.messageQueue[0][2]()) {
+            if (this.messageQueue[0][2](this)) {
                 return this.tryRemoveMessage(this.messageQueue[0][0]);
             }
             if (!this.isDisplayingErrorMessage) {
@@ -411,7 +411,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     tryRemoveMessage(message = this.inOut) {
         for (let i = 0; i < this.messageQueue.length; i++) {
             if (this.messageQueue[i][0] === message) {
-                this.messageQueue[i][3]();
+                this.messageQueue[i][3](this);
                 this.messageQueue.splice(i, 1);
                 break;
             }

@@ -1184,8 +1184,8 @@ class FMCMainDisplay extends BaseAirliners {
         this.v2Speed = 140;
     }
 
-    checkVSpeedDisagree() {
-        return this.v1Speed && this.vRSpeed && this.v2Speed && this.v1Speed <= this.vRSpeed && this.vRSpeed <= this.v2Speed;
+    checkVSpeedDisagree(mcdu) {
+        return mcdu.v1Speed && mcdu.vRSpeed && mcdu.v2Speed && mcdu.v1Speed <= mcdu.vRSpeed && mcdu.vRSpeed <= mcdu.v2Speed;
     }
 
     trySetV1Speed(s) {
