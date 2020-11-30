@@ -241,11 +241,7 @@ class CDUFlightPlanPage {
                         } else {
                             altitudeConstraint = waypoint.legAltitude1.toFixed(0);
                         }
-                        if (waypoint.legAltitudeDescription !== 0 && waypoint.ident !== "(DECEL)" && (
-                            waypoint.legAltitudeDescription === 1
-                            || waypoint.legAltitudeDescription === 4
-                            || waypoint.legAltitudeDescription === (Simplane.getCurrentFlightPhase() === FlightPhase.FLIGHT_PHASE_CLIMB ? 3 : 2)
-                        )) {
+                        if (waypoint.legAltitudeDescription !== 0 && waypoint.ident !== "(DECEL)") {
                             altPrefix = "{magenta}*{end}";
                             if (waypoint.legAltitudeDescription === 4) {
                                 altitudeConstraint = ((waypoint.legAltitude1 + waypoint.legAltitude2) * 0.5).toFixed(0);
