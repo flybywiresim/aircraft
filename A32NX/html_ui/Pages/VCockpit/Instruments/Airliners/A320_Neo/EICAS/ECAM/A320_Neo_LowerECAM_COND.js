@@ -55,9 +55,9 @@ var A320_Neo_LowerECAM_COND;
             // Disaply trim valve position for each zone
             const gaugeOffset = -50; //Gauges range is from -50 degree to +50 degree, AC-selector value is 0-100 - added an offset for this
 
-            var airconSelectedTempCockpit = SimVar.GetSimVarValue("L:A320_Neo_AIRCOND_LVL_1", "Position(0-100)");
-            var airconSelectedTempFWD = SimVar.GetSimVarValue("L:A320_Neo_AIRCOND_LVL_2", "Position(0-100)");
-            var airconSelectedTempAFT = SimVar.GetSimVarValue("L:A320_Neo_AIRCOND_LVL_3", "Position(0-100)");
+            var airconSelectedTempCockpit = SimVar.GetSimVarValue("L:A320_Neo_AIRCOND_LVL_1", "number");
+            var airconSelectedTempFWD = SimVar.GetSimVarValue("L:A320_Neo_AIRCOND_LVL_2", "number");
+            var airconSelectedTempAFT = SimVar.GetSimVarValue("L:A320_Neo_AIRCOND_LVL_3", "number");
 
             this.trimAirValveIndicator[0].setAttribute("style", "transform-origin: 155px 230px; transform: rotate(" + (gaugeOffset + airconSelectedTempCockpit) + "deg); stroke-width: 4.5px; stroke-linecap: round;");
             this.trimAirValveIndicator[1].setAttribute("style", "transform-origin: 285px 230px; transform: rotate(" + (gaugeOffset + airconSelectedTempFWD) + "deg); stroke-width: 4.5px; stroke-linecap: round;");
