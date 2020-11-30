@@ -2949,12 +2949,9 @@ class FMCMainDisplay extends BaseAirliners {
                 });
                 const callback = () => {
                     this.flightPlanManager.createNewFlightPlan();
-                    this._computeV1Speed();
-                    this._computeVRSpeed();
-                    this._computeV2Speed();
-                    SimVar.SetSimVarValue("L:AIRLINER_V1_SPEED", "Knots", this.v1Speed);
-                    SimVar.SetSimVarValue("L:AIRLINER_V2_SPEED", "Knots", this.v2Speed);
-                    SimVar.SetSimVarValue("L:AIRLINER_VR_SPEED", "Knots", this.vRSpeed);
+                    SimVar.SetSimVarValue("L:AIRLINER_V1_SPEED", "Knots", NaN);
+                    SimVar.SetSimVarValue("L:AIRLINER_V2_SPEED", "Knots", NaN);
+                    SimVar.SetSimVarValue("L:AIRLINER_VR_SPEED", "Knots", NaN);
                     const cruiseAlt = Math.floor(this.flightPlanManager.cruisingAltitude / 100);
                     console.log("FlightPlan Cruise Override. Cruising at FL" + cruiseAlt + " instead of default FL" + this.cruiseFlightLevel);
                     if (cruiseAlt > 0) {
