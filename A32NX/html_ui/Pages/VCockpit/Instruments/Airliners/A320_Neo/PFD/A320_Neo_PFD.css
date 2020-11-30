@@ -143,7 +143,7 @@ text {
   fill-rule: evenodd;
 }
 
-.NormalStroke {
+.NormalStroke:not(text) {
   stroke-width: 0.185mm;
 }
 
