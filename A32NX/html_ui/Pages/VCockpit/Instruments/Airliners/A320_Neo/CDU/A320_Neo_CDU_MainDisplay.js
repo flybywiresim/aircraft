@@ -261,6 +261,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
 
             // Commit changes.
             if (validEntry) {
+                SimVar.SetSimVarValue("L:A32NX_TO_CONF", "number", nextFlaps);
                 this.flaps = nextFlaps;
                 this.ths = nextThs;
                 return true;
@@ -891,7 +892,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     }
 
     _getV1Speed() {
-        let dWeightCoef = (this.getWeight(true) - 100) / (175 - 100);
+        /*let dWeightCoef = (this.getWeight(true) - 100) / (175 - 100);
         dWeightCoef = Utils.Clamp(dWeightCoef, 0, 1);
         dWeightCoef = 0.7 + (1.0 - 0.7) * dWeightCoef;
 
@@ -899,7 +900,8 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         const min = A320_Neo_CDU_MainDisplay._v1sConf1[tempIndex][0];
         const max = A320_Neo_CDU_MainDisplay._v1sConf1[tempIndex][1];
 
-        return this._getVSpeed(dWeightCoef, min, max);
+        return this._getVSpeed(dWeightCoef, min, max);*/
+        return SimVar.GetSimVarValue("L:A32NX_V2", "number") - 5;
     }
     _computeV1Speed() {
         // computeV1Speed is called by inherited class so it must remain,
@@ -910,7 +912,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     }
 
     _getVRSpeed() {
-        let dWeightCoef = (this.getWeight(true) - 100) / (175 - 100);
+        /*let dWeightCoef = (this.getWeight(true) - 100) / (175 - 100);
         dWeightCoef = Utils.Clamp(dWeightCoef, 0, 1);
         dWeightCoef = 0.695 + (0.985 - 0.695) * dWeightCoef;
 
@@ -918,7 +920,8 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         const min = A320_Neo_CDU_MainDisplay._vRsConf1[tempIndex][0];
         const max = A320_Neo_CDU_MainDisplay._vRsConf1[tempIndex][1];
 
-        return this._getVSpeed(dWeightCoef, min, max);
+        return this._getVSpeed(dWeightCoef, min, max);*/
+        return SimVar.GetSimVarValue("L:A32NX_V2", "number") - 4;
     }
     _computeVRSpeed() {
         // computeVRSpeed is called by inherited class so it must remain,
@@ -929,7 +932,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     }
 
     _getV2Speed() {
-        let dWeightCoef = (this.getWeight(true) - 100) / (175 - 100);
+        /*let dWeightCoef = (this.getWeight(true) - 100) / (175 - 100);
         dWeightCoef = Utils.Clamp(dWeightCoef, 0, 1);
         dWeightCoef = 0.71 + (0.96 - 0.71) * dWeightCoef;
 
@@ -937,7 +940,8 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         const min = A320_Neo_CDU_MainDisplay._v2sConf1[tempIndex][0];
         const max = A320_Neo_CDU_MainDisplay._v2sConf1[tempIndex][1];
 
-        return this._getVSpeed(dWeightCoef, min, max);
+        return this._getVSpeed(dWeightCoef, min, max);*/
+        return SimVar.GetSimVarValue("L:A32NX_V2", "number");
     }
     _computeV2Speed() {
         // computeV2Speed is called by inherited class so it must remain,
