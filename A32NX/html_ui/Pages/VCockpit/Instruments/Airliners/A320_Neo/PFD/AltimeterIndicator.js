@@ -464,7 +464,7 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
         // Trigger the warning sound only if both auto pilots are disabled
         if (Simplane.getAutoPilotActive(1) == 0 && Simplane.getAutoPilotActive(2) == 0) {
             SimVar.SetSimVarValue("L:A32NX_ALT_DEVIATION_SHORT", "Bool", 1);
-        }   
+        }
     }
 
     _flashAmber() {
