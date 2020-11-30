@@ -17,6 +17,9 @@
  */
 
 #include <iostream>
+#include <filesystem>
+#include <fstream>
+#include <INIReader.h>
 
 #include "SimConnectData.h"
 #include "FlyByWireInterface.h"
@@ -25,11 +28,21 @@ using namespace std;
 
 bool FlyByWireInterface::connect()
 {
+  // register L variables for the sidestick
+  sideStickPositionX = register_named_variable("A32NX_SIDESTICK_POSITION_X");
+  sideStickPositionY = register_named_variable("A32NX_SIDESTICK_POSITION_Y");
+
+  // initialize throttle system
+  initializeThrottles();
+
   // initialize model
   model.initialize();
 
   // connect to sim connect
-  return simConnectInterface.connect();
+  return simConnectInterface.connect(
+    isThrottleHandlingEnabled,
+    idleThrottleInput
+  );
 }
 
 void FlyByWireInterface::disconnect()
@@ -54,6 +67,12 @@ bool FlyByWireInterface::update(
 
   // write output
   result &= writeModelOuputDataToSim();
+
+  // get throttle data and process it
+  if (isThrottleHandlingEnabled)
+  {
+    result &= processThrottles();
+  }
 
   // return result
   return result;
@@ -128,6 +147,16 @@ bool FlyByWireInterface::getModelInputDataFromSim(
 
 bool FlyByWireInterface::writeModelOuputDataToSim()
 {
+  // write side stick positions
+  set_named_variable_value(
+    sideStickPositionX,
+    static_cast<FLOAT64>(model.FlyByWire_Y.out.sim.input.delta_xi_pos)
+  );
+  set_named_variable_value(
+    sideStickPositionY,
+    static_cast<FLOAT64>(model.FlyByWire_Y.out.sim.input.delta_eta_pos)
+  );
+
   // when tracking mode is on do not write anything
   if (model.FlyByWire_Y.out.sim.data_computed.tracking_mode_on)
   {
@@ -163,5 +192,106 @@ bool FlyByWireInterface::writeModelOuputDataToSim()
     }
   }
 
+  return true;
+}
+
+void FlyByWireInterface::initializeThrottles()
+{
+  // read configuration
+  INIReader configuration(THROTTLE_CONFIGURATION_FILEPATH);
+  if (configuration.ParseError() < 0)
+  {
+    // file does not exist yet -> store the default configuration in a file
+    ofstream configFile;
+    configFile.open(THROTTLE_CONFIGURATION_FILEPATH);
+    configFile << "[Throttle]" << endl;
+    configFile << "Enabled = true" << endl;
+    configFile << "ReverseOnAxis = false" << endl;
+    configFile << "DetentReverseFull = -1.00" << endl;
+    configFile << "DetentIdle = -1.00" << endl;
+    configFile << "DetentClimb = 0.66" << endl;
+    configFile << "DetentFlexMct = 0.88" << endl;
+    configFile << "DetentTakeOffGoAround = 1.00" << endl;
+    configFile.close();
+  }
+
+  // read basic configuration
+  isThrottleHandlingEnabled = configuration.GetBoolean("Throttle", "Enabled", false);
+  useReverseOnAxis = configuration.GetBoolean("Throttle", "ReverseOnAxis", true);
+  // read mapping configuration
+  vector<pair<double, double>> mappingTable;
+  if (useReverseOnAxis)
+  {
+    mappingTable.emplace_back(configuration.GetReal("Throttle", "DetendReverseFull", -1.00), -20.00);
+  }
+  mappingTable.emplace_back(configuration.GetReal("Throttle", "DetentIdle", useReverseOnAxis ? 0.00 : -1.00), 0.00);
+  mappingTable.emplace_back(configuration.GetReal("Throttle", "DetentClimb", 0.67), 89.00);
+  mappingTable.emplace_back(configuration.GetReal("Throttle", "DetentFlexMct", 0.89), 95.00);
+  mappingTable.emplace_back(configuration.GetReal("Throttle", "DetentTakeOffGoAround", 1.00), 100.00);
+
+  // remember idle throttle setting
+  if (useReverseOnAxis)
+  {
+    idleThrottleInput = mappingTable[1].first;
+  }
+  else
+  {
+    idleThrottleInput = mappingTable[0].first;
+  }
+
+  // print config
+  cout << "WASM: Throttle Configuration : Enabled               = " << isThrottleHandlingEnabled << endl;
+  cout << "WASM: Throttle Configuration : ReverseOnAxis         = " << useReverseOnAxis << endl;
+  int index = 0;
+  if (useReverseOnAxis)
+  {
+    cout << "WASM: Throttle Configuration : DetentReverseFull     = " << mappingTable[index++].first << endl;
+  }
+  cout << "WASM: Throttle Configuration : DetentIdle            = " << mappingTable[index++].first << endl;
+  cout << "WASM: Throttle Configuration : DetentClimb           = " << mappingTable[index++].first << endl;
+  cout << "WASM: Throttle Configuration : DetentFlexMct         = " << mappingTable[index++].first << endl;
+  cout << "WASM: Throttle Configuration : DetentTakeOffGoAround = " << mappingTable[index++].first << endl;
+
+  // initialize lookup table
+  throttleLookupTable.initialize(mappingTable, -20, 100);
+}
+
+bool FlyByWireInterface::processThrottles() {
+  // get data from simconnect
+  auto simInputThrottles = simConnectInterface.getSimInputThrottles();
+
+  // process the data (lut)
+  SimOutputThrottles simOutputThrottles = {
+      throttleLookupTable.get(simInputThrottles.throttles[0]),
+      throttleLookupTable.get(simInputThrottles.throttles[1])
+  };
+
+  // detect reverse situation
+  if (!useReverseOnAxis && simConnectInterface.getIsReverseToggleActive())
+  {
+    simOutputThrottles.throttleLeverPosition_1 = -10.0 * (simInputThrottles.throttles[0] + 1);
+    simOutputThrottles.throttleLeverPosition_2 = -10.0 * (simInputThrottles.throttles[1] + 1);
+  }
+
+  // write output to sim
+  if (!simConnectInterface.sendData(simOutputThrottles))
+  {
+    cout << "WASM: Write data failed!" << endl;
+    return false;
+  }
+
+  // determine if autothrust armed event needs to be triggered
+  if (simConnectInterface.getIsAutothrottlesArmed()
+    && simOutputThrottles.throttleLeverPosition_1 < 1
+    && simOutputThrottles.throttleLeverPosition_2 < 1)
+  {
+    if (!simConnectInterface.sendAutoThrustArmEvent())
+    {
+      cout << "WASM: Write data failed!" << endl;
+      return false;
+    }
+  }
+
+  // success
   return true;
 }

@@ -21,11 +21,13 @@ clang++ \
   -I "${MSFS_SDK}/WASM/include" \
   -I "${MSFS_SDK}/SimConnect SDK/include" \
   -I ./src/model \
+  -I ./src/inih \
   ./src/model/FlyByWire.cpp \
   ./src/model/FlyByWire_data.cpp \
   -I ./src/interface \
   ./src/interface/SimConnectInterface.cpp \
   ./src/FlyByWireInterface.cpp \
+  ./src/InterpolatingLookupTable.cpp \
   ./src/main.cpp \
   -o $OUTPUT
 

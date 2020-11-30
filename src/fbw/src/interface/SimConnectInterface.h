@@ -25,13 +25,16 @@
 
 #include "SimConnectData.h"
 
-class SimConnectInterface {
+    class SimConnectInterface {
 public:
   SimConnectInterface() = default;
 
   ~SimConnectInterface() = default;
 
-  bool connect();
+  bool connect(
+    bool isThrottleHandlingEnabled,
+    double idleThrottleInput
+  );
 
   void disconnect();
 
@@ -49,9 +52,20 @@ public:
     SimOutputEtaTrim output
   );
 
+  bool sendData(
+    SimOutputThrottles output
+  );
+
+  bool sendAutoThrustArmEvent();
+
   SimData getSimData();
 
   SimInput getSimInput();
+
+  SimInputThrottles getSimInputThrottles();
+
+  bool getIsReverseToggleActive();
+  bool getIsAutothrottlesArmed();
 
 private:
   bool isConnected = false;
@@ -60,9 +74,16 @@ private:
   SimData simData = {};
   SimInput simInput = {};
 
+  SimInputThrottles simInputThrottles = {};
+  bool isReverseToggleActive = false;
+  bool isAutothrustArmed = false;
+  double idleThrottleInput = -1.0;
+
   bool prepareSimDataSimConnectDataDefinitions();
 
-  bool prepareSimInputSimConnectDataDefinitions();
+  bool prepareSimInputSimConnectDataDefinitions(
+    bool isThrottleHandlingEnabled
+  );
 
   bool prepareSimOutputSimConnectDataDefinitions();
 
@@ -77,6 +98,12 @@ private:
 
   void simConnectProcessSimObjectDataByType(
     const SIMCONNECT_RECV* pData
+  );
+
+  bool sendData(
+    SIMCONNECT_DATA_DEFINITION_ID id,
+    DWORD size,
+    void* data
   );
 
   static bool addDataDefinition(
