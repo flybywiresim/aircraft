@@ -10,7 +10,8 @@ class A32NX_Core {
             new A32NX_FADEC(2),
             new A32NX_FWC(),
             new A32NX_GPWS(this),
-            new A32NX_GroundReference()
+            new A32NX_GroundReference(),
+            new A32NX_Vspeeds()
         ];
 
         this.soundManager = new A32NX_SoundManager();
