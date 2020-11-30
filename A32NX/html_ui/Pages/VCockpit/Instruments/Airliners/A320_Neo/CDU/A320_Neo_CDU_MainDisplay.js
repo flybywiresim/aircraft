@@ -670,7 +670,10 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         }
     }
     onFlightPhaseChanged() {
-        if (this.currentFlightPhase === FlightPhase.FLIGHT_PHASE_CLIMB) {
+        if (this.currentFlightPhase === FlightPhase.FLIGHT_PHASE_TAKEOFF) {
+            this._destDataChecked = false;
+        } else if (this.currentFlightPhase === FlightPhase.FLIGHT_PHASE_CLIMB) {
+            this._destDataChecked = false;
             let preSelectedClbSpeed = this.preSelectedClbSpeed;
             if (SimVar.GetSimVarValue("L:A32NX_GOAROUND_PASSED", "bool") === 1) {
                 preSelectedClbSpeed = this.getPerfGreenDotSpeed();
