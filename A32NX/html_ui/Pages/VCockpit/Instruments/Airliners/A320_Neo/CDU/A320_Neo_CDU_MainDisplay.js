@@ -23,6 +23,9 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this.altLock = 0;
         this.updateTypeIIMessage = false;
         this.messageQueue = [];
+        this.speedLimit = 250;
+        this.speedLimitAltitude = 10000;
+        this.transitionAltitude = 18000;
     }
     get templateID() {
         return "A320_Neo_CDU";
@@ -301,6 +304,8 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this.updateScreenState();
 
         this.updateGPSMessage();
+
+        this.updatePredictions();
     }
 
     /**
@@ -345,6 +350,10 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                 }
             }
         }
+    }
+
+    getIsFlying() {
+        return this.currentFlightPhase > FlightPhase.FLIGHT_PHASE_TAKEOFF;
     }
 
     updateScreenState() {
@@ -500,11 +509,10 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         return wpt.speedConstraint;
     }
 
-    getClbManagedSpeed() {
+    getClbManagedSpeed(_altitude = Simplane.getAltitude()) {
         let maxSpeed = Infinity;
         if (isFinite(this.v2Speed)) {
-            const altitude = Simplane.getAltitude();
-            if (altitude < this.thrustReductionAltitude) {
+            if (_altitude < this.thrustReductionAltitude) {
                 maxSpeed = this.v2Speed + 50;
             } else {
                 maxSpeed = this.getSpeedConstraint();
@@ -513,8 +521,8 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         let dCI = this.costIndex / 999;
         dCI = dCI * dCI;
         let speed = 290 * (1 - dCI) + 330 * dCI;
-        if (SimVar.GetSimVarValue("PLANE ALTITUDE", "feets") < 10000) {
-            speed = Math.min(speed, 250);
+        if (_altitude < this.speedLimitAltitude) {
+            speed = Math.min(speed, this.speedLimit);
         }
         return Math.min(maxSpeed, speed);
     }
@@ -525,6 +533,479 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     getSlatTakeOffSpeed() {
         const dWeight = (this.getWeight() - 47) / (78 - 47);
         return 154 + 44 * dWeight;
+    }
+
+    getCrzManagedSpeed(_altitude = Simplane.getAltitude(), _flaps = Simplane.getFlapsHandleIndex()) {
+        let dCI = this.costIndex / 999;
+        dCI = dCI * dCI;
+        if (_flaps != 0) {
+
+            return this.getFlapSpeed();
+        }
+        let speed = 285 * (1 - dCI) + 310 * dCI;
+        if (_altitude < this.speedLimitAltitude) {
+            speed = Math.min(speed, this.speedLimit);
+        }
+        return speed;
+    }
+
+    getDesManagedSpeed(_altitude = Simplane.getAltitude(), _flaps = Simplane.getFlapsHandleIndex()) {
+        const dCI = this.costIndex / 999;
+        if (_flaps != 0) {
+
+            return this.getFlapSpeed();
+        }
+        let speed = 240 * (1 - dCI) + 260 * dCI;
+        if (_altitude < this.speedLimitAltitude) {
+            speed = Math.min(speed, this.speedLimit);
+        }
+        return speed;
+    }
+
+    getMarkerPosition(_distance, _waypoints) {
+
+        if (_waypoints.length < 2) {
+            return {
+                latitude: NaN,
+                longitude: NaN,
+                heading: NaN,
+                index: NaN
+            };
+        }
+
+        let prevWaypoint = _waypoints[0].wp;
+        let nextWaypoint = _waypoints[1].wp;
+        for (var i = 0; _waypoints[i].wp.cumulativeDistanceInFP < _distance && i < _waypoints.length - 1; i++) {
+            prevWaypoint = _waypoints[i].wp;
+            nextWaypoint = _waypoints[i + 1].wp;
+        }
+        const f = ((_distance - prevWaypoint.cumulativeDistanceInFP) / (nextWaypoint.cumulativeDistanceInFP - prevWaypoint.cumulativeDistanceInFP));
+        return {
+            latitude: Avionics.Utils.lerpAngle(prevWaypoint.infos.lat, nextWaypoint.infos.lat, f),
+            longitude: Avionics.Utils.lerpAngle(prevWaypoint.infos.long, nextWaypoint.infos.long, f),
+            heading: nextWaypoint.bearingInFP,
+            index: i
+        };
+    }
+
+    getActiveAltitudeConstraint(_waypoints, _index) {
+        let output = {
+            altitude: null,
+            distance: null,
+        };
+        for (let i = 0; i <= _index; i++) {
+            const waypoint = _waypoints[i].wp;
+            if (waypoint.legAltitudeDescription !== 0) {
+                let alt = waypoint.legAltitude1;
+                if (waypoint.legAltitudeDescription === 4) {
+                    alt = (waypoint.legAltitude1 + waypoint.legAltitude2) * 0.5;
+                }
+                if (alt < (this.cruiseFlightLevel * 100) - 5) {
+                    output = {
+                        altitude: alt,
+                        distance: waypoint.cumulativeDistanceInFP
+                    };
+                }
+            }
+        }
+        return output;
+    }
+
+    getNextAltitudeConstraint(_waypoints, _index, _types = [1,2,3,4]) {
+        for (let i = _index; i < _waypoints.length; i++) {
+            const waypoint = _waypoints[i].wp;
+            if (_types.includes(waypoint.legAltitudeDescription)) {
+                let alt = waypoint.legAltitude1;
+                if (waypoint.legAltitudeDescription === 4) {
+                    alt = (waypoint.legAltitude1 + waypoint.legAltitude2) * 0.5;
+                }
+                if (alt < (this.cruiseFlightLevel * 100) - 5) {
+                    return {
+                        altitude: alt,
+                        distance: waypoint.cumulativeDistanceInFP
+                    };
+                }
+            }
+        }
+        return {
+            altitude: null,
+            distance: null,
+        };
+    }
+
+    getTakeoffAltitude() {
+        const origin = this.flightPlanManager.getOrigin();
+        if (origin) {
+            return origin.altitudeinFP;
+        }
+        return 0;
+    }
+
+    getLandingAltitude() {
+        const dest = this.flightPlanManager.getDestination();
+        if (dest) {
+            return dest.altitudeinFP;
+        }
+        return 0;
+    }
+
+    predictClimbDistance(_waypoints, _startAltitude, _endAltitude, _indicatedAirspeed = 250) {
+        for (let i = 0; i < _waypoints.length - 1; i++) {
+            const waypoint = _waypoints[i].wp;
+
+            if (waypoint.legAltitudeDescription != 0 || i == 0) {
+
+                const waypointDistance = waypoint.cumulativeDistanceInFP;
+                let waypointAltitude = waypoint.legAltitude1 || this.getTakeoffAltitude();
+
+                if (waypoint.legAltitudeDescription === 4) {
+                    waypointAltitude = (waypoint.legAltitude1 + waypoint.legAltitude2) * 0.5;
+                }
+
+                const nextConstraint = this.getNextAltitudeConstraint(_waypoints, i, [1,3,4]);
+
+                const nextConstraintAltitude = nextConstraint.altitude || this.getLandingAltitude();
+                const nextConstraintDistance = nextConstraint.distance || this.flightPlanManager.getDestination().cumulativeDistanceInFP;
+
+                if (nextConstraintAltitude >= _endAltitude) {
+                    return this.predictTopOfClimb(_waypoints, waypointAltitude, waypointDistance, _endAltitude, _indicatedAirspeed);
+                }
+
+                const totalDistance = nextConstraintDistance - waypointDistance;
+
+                const climbDistance = -1 * this.predictTopOfClimb(_waypoints, waypointAltitude, 0, this.cruiseFlightLevel * 100, _indicatedAirspeed);
+                const descentDistance = this.predictTopOfDescent(nextConstraintAltitude, totalDistance, this.predictGroundSpeed(this.getDesManagedSpeed(), this.calculateAverageAltitude(this.cruiseFlightLevel * 100, nextConstraintAltitude)), this.cruiseFlightLevel * 100);
+
+                if (climbDistance + descentDistance < totalDistance) {
+                    return this.predictTopOfClimb(_waypoints, waypointAltitude, waypointDistance, _endAltitude, _indicatedAirspeed);
+                }
+            }
+
+        }
+    }
+
+    predictClimbAltitude(_waypoints, _distance, _indicatedAirspeed = 250) {
+        let output = NaN;
+        for (let i = 0; _waypoints[i].wp.cumulativeDistanceInFP < _distance; i++) {
+            const waypoint = _waypoints[i].wp;
+
+            if (waypoint.legAltitudeDescription != 0 || i == 0) {
+
+                const waypointDistance = waypoint.cumulativeDistanceInFP;
+                let waypointAltitude = waypoint.legAltitude1 || this.getTakeoffAltitude();
+
+                if (waypoint.legAltitudeDescription === 4) {
+                    waypointAltitude = (waypoint.legAltitude1 + waypoint.legAltitude2) * 0.5;
+                }
+
+                const nextConstraint = this.getNextAltitudeConstraint(_waypoints, i, [1,3,4]);
+
+                const nextConstraintAltitude = nextConstraint.altitude || this.getLandingAltitude();
+                const nextConstraintDistance = nextConstraint.distance || this.flightPlanManager.getDestination().cumulativeDistanceInFP;
+
+                const totalDistance = nextConstraintDistance - waypointDistance;
+
+                const climbDistance = -1 * this.predictTopOfClimb(_waypoints, waypointAltitude, 0, this.cruiseFlightLevel * 100, _indicatedAirspeed);
+                const descentDistance = this.predictTopOfDescent(nextConstraintAltitude, totalDistance, this.predictGroundSpeed(this.getDesManagedSpeed(), this.calculateAverageAltitude(this.cruiseFlightLevel * 100, nextConstraintAltitude)), this.cruiseFlightLevel * 100);
+
+                if (climbDistance + descentDistance < totalDistance) {
+                    const speed = this.predictSpeedAtDistance(waypoint.cumulativeDistanceInFP);
+                    const distance = _distance - waypoint.cumulativeDistanceInFP;
+                    const duration1 = 108.27 + ((-4.36e-3) * waypointAltitude) + (7.33e-7 * Math.pow(waypointAltitude, 2));
+                    const duration2 = (distance / speed) * 60 * 60;
+                    const x = duration2 - duration1;
+                    if (x > 115) {
+                        return 5.19533e-6 * Math.sqrt((50544015e9 * x) - 514469876205e7) + 2974.08;
+                    } else {
+                        return 35 * x;
+                    }
+                } else {
+                    const a = waypointAltitude;
+                    const b = nextConstraintAltitude;
+                    const x = (waypointDistance - this.getCurrentDistanceInFP()) / totalDistance;
+                    output = a + (b - a) * x;
+                }
+            }
+
+        }
+        return output;
+    }
+
+    calculateAverageAltitude(a, b) {
+        return (a + b) / 2;
+    }
+
+    calculatePressureAtAltitude(_altitude) {
+        const m = -0.000643908531686;
+        const b = 29.92126;
+        return (m * _altitude) + b;
+    }
+
+    predictGroundSpeed(_indicatedAirspeed, _altitude) {
+        const pressure = this.calculatePressureAtAltitude(_altitude);
+        //TODO: use better equation with mach and temp for TAS
+        const trueAirspeed = _indicatedAirspeed * Math.sqrt(29.92126 / pressure);
+        //TODO: account for wind
+        return trueAirspeed;
+    }
+
+    predictTopOfClimb(_waypoints, _constraintAltitude, _constraintDistance, _targetAltitude, _indicatedAirspeed = 250) {
+        let previousClimbDuration = Math.max(0, 108.27 + ((-4.36e-3) * _constraintAltitude) + (7.33e-7 * Math.pow(_constraintAltitude, 2)));
+        if (_constraintAltitude < 7500) {
+            previousClimbDuration = _constraintAltitude / (4000 / 60);
+        }
+        let climbDuration = 108.27 + ((-4.36e-3) * _targetAltitude) + (7.33e-7 * Math.pow(_targetAltitude, 2));
+        const averageAltitude = this.calculateAverageAltitude(_constraintAltitude, _targetAltitude);
+        const groundSpeed = this.predictGroundSpeed(_indicatedAirspeed, averageAltitude);
+
+        if (_targetAltitude < 7500) {
+            climbDuration = _targetAltitude / (4000 / 60);
+        }
+        climbDuration -= previousClimbDuration;
+        const climbDistance = (climbDuration / 60 / 60) * groundSpeed;
+        return _constraintDistance + climbDistance;
+    }
+
+    predictTopOfDescent(_constraintAltitude, _constraintDistance, _groundSpeed, _startAltitude) {
+        const vSpeed = 2700;
+        const descentDuration = Math.abs(_constraintAltitude - _startAltitude) / vSpeed / 60;
+        const descentDistance = descentDuration * _groundSpeed;
+        return _constraintDistance - descentDistance;
+    }
+
+    getCurrentDistanceInFP() {
+        const activeWaypoint = this.flightPlanManager.getActiveWaypoint();
+        if (activeWaypoint && activeWaypoint.cumulativeDistanceInFP) {
+            return Math.max(0, this.flightPlanManager.getActiveWaypoint().cumulativeDistanceInFP - SimVar.GetSimVarValue("GPS WP DISTANCE", "Nautical miles"));
+        }
+        return NaN;
+    }
+
+    predictSpeedAtDistance(_distance, _waypoints = this.getWaypoints()) {
+
+        //TODO: use predicted altitude
+
+        if (!this.topOfClimb || !this.topOfDescent) {
+            return NaN;
+        }
+        if (_distance <= this.topOfClimb) {
+            return this.getClbManagedSpeed(_distance > this.limDist ? this.cruiseFlightLevel * 100 : this.speedLimitAltitude - 10, 0);
+        } else if (_distance > this.topOfDescent) {
+            return this.getDesManagedSpeed(this.cruiseFlightLevel * 100, 0);
+        } else {
+            return this.getCrzManagedSpeed(this.cruiseFlightLevel * 100, 0);
+        }
+    }
+
+    predictAltitudeAtDistance(_waypoints, _distance) {
+        if (!this.topOfClimb || !this.topOfDescent) {
+            return NaN;
+        }
+        if (_distance < this.topOfClimb) {
+            //TODO: account for speed changes
+            return this.predictClimbAltitude(_waypoints, _distance, this.getClbManagedSpeed(this.cruiseFlightLevel * 100, 0));
+        } else if (_distance > this.topOfDescent) {
+            //TODO: predict altitude during descent
+            return 0;
+        } else {
+            return this.cruiseFlightLevel * 100;
+        }
+    }
+
+    predictFlightTimeAtWaypoint(_waypoints, _index) {
+        if (!this.topOfClimb || !this.topOfDescent) {
+            return NaN;
+        }
+        let predictedSpeed = this.getClbManagedSpeed(this.cruiseFlightLevel * 100, 0) || 250;
+        let totalTime = 0;
+        for (let i = 0; i <= _index; i++) {
+            const waypoint = _waypoints[i].wp;
+            const distance = waypoint.distanceInFP;
+            //TODO: use actual predicted altitude
+            const altitude = this.cruiseFlightLevel * 100;
+            predictedSpeed = this.predictGroundSpeed(this.predictSpeedAtDistance(waypoint.cumulativeDistanceInFP), altitude);
+            totalTime += (distance / predictedSpeed) * 60 * 60;
+        }
+        return totalTime;
+    }
+
+    predictFlightTimeAtDistance(_waypoints, _distance) {
+        if (!this.topOfClimb || !this.topOfDescent) {
+            return NaN;
+        }
+
+        let lastIndex = NaN;
+        for (let i = 0; i < _waypoints.length; i++) {
+            if (_waypoints[i].wp.cumulativeDistanceInFP < _distance) {
+                lastIndex = i;
+            }
+        }
+
+        let predictedSpeed = this.getClbManagedSpeed(0, 0) || 250;
+        let totalTime = 0;
+        let wpDistance = 0;
+        for (let i = 0; i <= lastIndex; i++) {
+            const waypoint = _waypoints[i].wp;
+            wpDistance = waypoint.distanceInFP;
+            //TODO: use actual predicted altitude
+            const altitude = this.cruiseFlightLevel * 100;
+            predictedSpeed = this.predictGroundSpeed(this.predictSpeedAtDistance(waypoint.cumulativeDistanceInFP), altitude);
+            totalTime += (wpDistance / predictedSpeed) * 60 * 60;
+        }
+        totalTime += ((_distance - wpDistance) / predictedSpeed) * 60 * 60;
+        return totalTime;
+    }
+
+    predictETEToWaypoint(_waypoints, _index) {
+        return this.predictFlightTimeAtWaypoint(_waypoints, _index) - this.predictFlightTimeAtDistance(_waypoints, this.getCurrentDistanceInFP());
+    }
+
+    predictETEToDistance(_waypoints, _distance) {
+        return this.predictFlightTimeAtDistance(_waypoints, _distance) - this.predictFlightTimeAtDistance(_waypoints, this.getCurrentDistanceInFP());
+    }
+
+    predictUTCAtWaypoint(_waypoints, _index) {
+        const utc = SimVar.GetGlobalVarValue("ZULU TIME", "seconds");
+        const ete = this.predictETEToWaypoint(_waypoints, _index);
+        let prediction = utc + ete;
+        while (prediction > 60 * 60 * 24) {
+            prediction -= 60 * 60 * 24;
+        }
+        return prediction;
+    }
+
+    predictUTCAtDistance(_waypoints, _distance) {
+        const utc = SimVar.GetGlobalVarValue("ZULU TIME", "seconds");
+        const ete = this.predictETEToDistance(_waypoints, _distance);
+        let prediction = utc + ete;
+        while (prediction > 60 * 60 * 24) {
+            prediction -= 60 * 60 * 24;
+        }
+        return prediction;
+    }
+
+    updatePredictions() {
+
+        const waypoints = this.getWaypoints();
+
+        if (!this.flightPlanManager.getDestination() || !this.flightPlanManager.getOrigin() || waypoints.length < 2 || !isFinite(this.costIndex) || !this._cruiseEntered || !this._zeroFuelWeightZFWCGEntered || !this._blockFuelEntered) {
+            SimVar.SetSimVarValue("L:AIRLINER_FMS_SHOW_TOP_CLIMB", "number", 0);
+            SimVar.SetSimVarValue("L:AIRLINER_FMS_SHOW_TOP_DSCNT", "number", 0);
+            this.topOfClimb = null;
+            this.topOfDescent = null;
+            this.limDist = NaN;
+            this.predictionsAvailable = false;
+            return;
+        }
+
+        this.predictionsAvailable = true;
+
+        this.limDist = this.predictClimbDistance(waypoints, 0, this.speedLimitAltitude, Math.max(this.getClbManagedSpeed(), this.speedLimit));
+
+        //Top of Climb
+        const topOfClimb = this.predictClimbDistance(waypoints, this.getTakeoffAltitude(), this.cruiseFlightLevel * 100);
+        SimVar.SetSimVarValue("L:A32NX_TOC", "number", topOfClimb);
+        this.topOfClimb = topOfClimb;
+        const tocPosition = this.getMarkerPosition(topOfClimb, waypoints);
+        SimVar.SetSimVarValue("L:AIRLINER_FMS_SHOW_TOP_CLIMB", "number", 1);
+        SimVar.SetSimVarValue("L:AIRLINER_FMS_LAT_TOP_CLIMB", "number", tocPosition.latitude);
+        SimVar.SetSimVarValue("L:AIRLINER_FMS_LONG_TOP_CLIMB", "number", tocPosition.longitude);
+        SimVar.SetSimVarValue("L:AIRLINER_FMS_HEADING_TOP_CLIMB", "number", tocPosition.heading);
+
+        //Top of Descent
+
+        let firstDescentContraintAltitude = this.getLandingAltitude();
+        let firstDescentContraintDistance = this.flightPlanManager.getDestination().cumulativeDistanceInFP;
+        let topOfDescent = this.predictTopOfDescent(this.getLandingAltitude(), this.flightPlanManager.getDestination().cumulativeDistanceInFP, this.predictGroundSpeed(this.getDesManagedSpeed(this.cruiseFlightLevel * 100, 0), this.calculateAverageAltitude(this.cruiseFlightLevel * 100, firstDescentContraintAltitude)), this.cruiseFlightLevel * 100);
+        for (let i = 0; i < waypoints.length; i++) {
+            const waypoint = waypoints[i].wp;
+            if (waypoint.cumulativeDistanceInFP > topOfClimb && ((this.isArrivalWaypoint(waypoint) && (waypoint.legAltitude1 > 500 || waypoint.legAltitudeDescription != 1)) || this.isApproachWaypoint(waypoint))) {
+                if (waypoint.legAltitudeDescription == 1 || waypoint.legAltitudeDescription == 3) {
+                    const alt = waypoint.legAltitude1;
+                    if (alt < (this.cruiseFlightLevel * 100) - 5) {
+                        firstDescentContraintAltitude = alt;
+                        firstDescentContraintDistance = waypoint.cumulativeDistanceInFP;
+                        topOfDescent = this.predictTopOfDescent(firstDescentContraintAltitude, firstDescentContraintDistance, this.predictGroundSpeed(this.getDesManagedSpeed(this.cruiseFlightLevel * 100, 0), this.calculateAverageAltitude(this.cruiseFlightLevel * 100, firstDescentContraintAltitude)), this.cruiseFlightLevel * 100);
+                        if (topOfDescent > topOfClimb) {
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        SimVar.SetSimVarValue("L:A32NX_TOD", "number", topOfDescent);
+        this.topOfDescent = topOfDescent;
+        SimVar.SetSimVarValue("L:A32NX_TOD_DISTANCE", "number", topOfDescent - this.getCurrentDistanceInFP());
+
+        const todPosition = this.getMarkerPosition(topOfDescent, waypoints);
+        SimVar.SetSimVarValue("L:AIRLINER_FMS_SHOW_TOP_DSCNT", "number", 1);
+        SimVar.SetSimVarValue("L:AIRLINER_FMS_LAT_TOP_DSCNT", "number", todPosition.latitude);
+        SimVar.SetSimVarValue("L:AIRLINER_FMS_LONG_TOP_DSCNT", "number", todPosition.longitude);
+        SimVar.SetSimVarValue("L:AIRLINER_FMS_HEADING_TOP_DSCNT", "number", todPosition.heading);
+        this.todIndex = todPosition.index;
+    }
+
+    getWaypoints() {
+        const waypointsWithDiscontinuities = [];
+        for (let i = 0; i < this.flightPlanManager.getWaypointsCount(); i++) {
+            const prev = waypointsWithDiscontinuities[waypointsWithDiscontinuities.length - 1];
+            const wp = this.flightPlanManager.getWaypoint(i);
+            if (!prev || (prev.wp && prev.wp.ident != wp.ident)) {
+                waypointsWithDiscontinuities.push({ wp: this.flightPlanManager.getWaypoint(i), fpIndex: i });
+            }
+        }
+        const approachWaypoints = this.flightPlanManager.getApproachWaypoints();
+        const destination = waypointsWithDiscontinuities.pop();
+        for (let i = 0; i < approachWaypoints.length; i++) {
+            const prev = waypointsWithDiscontinuities[waypointsWithDiscontinuities.length - 1];
+            const wp = approachWaypoints[i];
+            if (!prev || (prev.wp && prev.wp.ident != wp.ident)) {
+                waypointsWithDiscontinuities.push({
+                    wp: wp,
+                    fpIndex: -42
+                });
+            }
+        }
+        if (destination) {
+            waypointsWithDiscontinuities.push(destination);
+        }
+        return waypointsWithDiscontinuities;
+    }
+
+    isDepartureWaypoint(_waypoint, _departureWaypoints = this.flightPlanManager.getDepartureWaypoints()) {
+        for (const waypoint of _departureWaypoints) {
+            if (waypoint.icao == _waypoint.icao) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    isArrivalWaypoint(_waypoint, _arrivalWaypoints = this.flightPlanManager.getArrivalWaypoints()) {
+        for (const waypoint of _arrivalWaypoints) {
+            if (waypoint.icao == _waypoint.icao) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    isApproachWaypoint(_waypoint, _approachWaypoints = this.flightPlanManager.getApproachWaypoints()) {
+        for (const waypoint of _approachWaypoints) {
+            if (waypoint.icao == _waypoint.icao) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    getLastDepartureWaypoint(_departureWaypoints = this.flightPlanManager.getDepartureWaypoints()) {
+        let lastWaypoint = null;
+        for (const waypoint of _departureWaypoints) {
+            lastWaypoint = waypoint;
+        }
+        return lastWaypoint;
     }
 
     /**
@@ -1042,71 +1523,16 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             }
             const currentAltitude = Simplane.getAltitude();
             const groundSpeed = Simplane.getGroundSpeed();
-            const apTargetAltitude = Simplane.getAutoPilotAltitudeLockValue("feet");
-            let showTopOfClimb = false;
-            let topOfClimbLlaHeading;
-            const planeHeading = Simplane.getHeadingMagnetic();
             const planeCoordinates = new LatLong(SimVar.GetSimVarValue("PLANE LATITUDE", "degree latitude"), SimVar.GetSimVarValue("PLANE LONGITUDE", "degree longitude"));
-            if (apTargetAltitude > currentAltitude + 40) {
-                const vSpeed = Simplane.getVerticalSpeed();
-                const climbDuration = (apTargetAltitude - currentAltitude) / vSpeed / 60;
-                const climbDistance = climbDuration * groundSpeed;
-                if (climbDistance > 1) {
-                    topOfClimbLlaHeading = this.flightPlanManager.getCoordinatesHeadingAtDistanceAlongFlightPlan(climbDistance);
-                    if (topOfClimbLlaHeading) {
-                        showTopOfClimb = true;
-                    }
-                }
-            }
-            if (showTopOfClimb) {
-                SimVar.SetSimVarValue("L:AIRLINER_FMS_SHOW_TOP_CLIMB", "number", 1);
-                SimVar.SetSimVarValue("L:AIRLINER_FMS_LAT_TOP_CLIMB", "number", topOfClimbLlaHeading.lla.lat);
-                SimVar.SetSimVarValue("L:AIRLINER_FMS_LONG_TOP_CLIMB", "number", topOfClimbLlaHeading.lla.long);
-                SimVar.SetSimVarValue("L:AIRLINER_FMS_HEADING_TOP_CLIMB", "number", topOfClimbLlaHeading.heading);
-            } else {
-                SimVar.SetSimVarValue("L:AIRLINER_FMS_SHOW_TOP_CLIMB", "number", 0);
-            }
+
             SimVar.SetSimVarValue("SIMVAR_AUTOPILOT_AIRSPEED_MIN_CALCULATED", "knots", Simplane.getStallProtectionMinSpeed());
             SimVar.SetSimVarValue("SIMVAR_AUTOPILOT_AIRSPEED_MAX_CALCULATED", "knots", Simplane.getMaxSpeed(Aircraft.A320_NEO));
-            this.tryUpdateAltitudeConstraint();
+            /*this.tryUpdateAltitudeConstraint();
             if (this.isAltitudeManaged()) {
                 const prevWaypoint = this.flightPlanManager.getPreviousActiveWaypoint();
                 const nextWaypoint = this.flightPlanManager.getActiveWaypoint();
                 if (prevWaypoint && nextWaypoint) {
-                    let targetAltitude = nextWaypoint.legAltitude1;
-                    if (nextWaypoint.legAltitudeDescription === 4) {
-                        targetAltitude = Math.max(nextWaypoint.legAltitude1, nextWaypoint.legAltitude2);
-                    }
-                    let showTopOfDescent = false;
-                    let topOfDescentLat;
-                    let topOfDescentLong;
-                    let topOfDescentHeading;
-                    this._hasReachedTopOfDescent = true;
-                    if (currentAltitude > targetAltitude + 40) {
-                        let vSpeed = Math.abs(Math.min(0, Simplane.getVerticalSpeed()));
-                        if (vSpeed < 200) {
-                            vSpeed = 2000;
-                        }
-                        const descentDuration = Math.abs(targetAltitude - currentAltitude) / vSpeed / 60;
-                        const descentDistance = descentDuration * groundSpeed;
-                        const distanceToTarget = Avionics.Utils.computeGreatCircleDistance(prevWaypoint.infos.coordinates, nextWaypoint.infos.coordinates);
-                        showTopOfDescent = true;
-                        const f = 1 - descentDistance / distanceToTarget;
-                        topOfDescentLat = Avionics.Utils.lerpAngle(prevWaypoint.infos.lat, nextWaypoint.infos.lat, f);
-                        topOfDescentLong = Avionics.Utils.lerpAngle(prevWaypoint.infos.long, nextWaypoint.infos.long, f);
-                        topOfDescentHeading = nextWaypoint.bearingInFP;
-                        if (distanceToTarget + 1 > descentDistance) {
-                            this._hasReachedTopOfDescent = false;
-                        }
-                    }
-                    if (showTopOfDescent) {
-                        SimVar.SetSimVarValue("L:AIRLINER_FMS_SHOW_TOP_DSCNT", "number", 1);
-                        SimVar.SetSimVarValue("L:AIRLINER_FMS_LAT_TOP_DSCNT", "number", topOfDescentLat);
-                        SimVar.SetSimVarValue("L:AIRLINER_FMS_LONG_TOP_DSCNT", "number", topOfDescentLong);
-                        SimVar.SetSimVarValue("L:AIRLINER_FMS_HEADING_TOP_DSCNT", "number", topOfDescentHeading);
-                    } else {
-                        SimVar.SetSimVarValue("L:AIRLINER_FMS_SHOW_TOP_DSCNT", "number", 0);
-                    }
+
                     if (this.constraintAlt) {
                         SimVar.SetSimVarValue("L:A32NX_AP_CSTN_ALT", "feet", this.constraintAlt);
                         Coherent.call("AP_ALT_VAR_SET_ENGLISH", 2, this.constraintAlt, this._forceNextAltitudeUpdate);
@@ -1128,7 +1554,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                         SimVar.SetSimVarValue("L:AP_CURRENT_TARGET_ALTITUDE_IS_CONSTRAINT", "number", 0);
                     }
                 }
-            }
+            }*/
             if (!this.flightPlanManager.isActiveApproach()) {
                 const activeWaypoint = this.flightPlanManager.getActiveWaypoint();
                 const nextActiveWaypoint = this.flightPlanManager.getNextActiveWaypoint();
