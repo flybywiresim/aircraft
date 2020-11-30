@@ -18,12 +18,22 @@
 
 #pragma once
 
-#ifndef __INTELLISENSE__
-#	define MODULE_EXPORT __attribute__( ( visibility( "default" ) ) )
-#	define MODULE_WASM_MODNAME(mod) __attribute__((import_module(mod)))
-#else
-#	define MODULE_EXPORT
-#	define MODULE_WASM_MODNAME(mod)
-#	define __attribute__(x)
-#	define __restrict__
-#endif
+#include <utility>
+#include <vector>
+
+    class InterpolatingLookupTable
+{
+public:
+  void initialize(
+      std::vector<std::pair<double, double>> mapping,
+      double minimum,
+      double maximum);
+
+  double get(
+      double value);
+
+private:
+  std::vector<std::pair<double, double>> mappingTable;
+  double mappingMinimum;
+  double mappingMaximum;
+};
