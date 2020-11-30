@@ -21,9 +21,12 @@
 #include <vector>
 #include "SimConnectInterface.h"
 
-using namespace std;
+    using namespace std;
 
-bool SimConnectInterface::connect() {
+bool SimConnectInterface::connect(
+  bool isThrottleHandlingEnabled,
+  double idleThrottleInput
+) {
   // info message
   cout << "WASM: Connecting..." << endl;
 
@@ -41,9 +44,11 @@ bool SimConnectInterface::connect() {
     // we are now connected
     isConnected = true;
     cout << "WASM: Connected" << endl;
+    // store idle level
+    this->idleThrottleInput = idleThrottleInput;
     // add data to definition
     bool prepareResult = prepareSimDataSimConnectDataDefinitions();
-    prepareResult &= prepareSimInputSimConnectDataDefinitions();
+    prepareResult &= prepareSimInputSimConnectDataDefinitions(isThrottleHandlingEnabled);
     prepareResult &= prepareSimOutputSimConnectDataDefinitions();
     // check result
     if (!prepareResult) {
@@ -108,12 +113,50 @@ bool SimConnectInterface::prepareSimDataSimConnectDataDefinitions() {
   return result;
 }
 
-bool SimConnectInterface::prepareSimInputSimConnectDataDefinitions() {
+bool SimConnectInterface::prepareSimInputSimConnectDataDefinitions(
+  bool isThrottleHandlingEnabled
+) {
   bool result = true;
 
   result &= addInputDataDefinition(hSimConnect, 0, 0, "AXIS_ELEVATOR_SET", true);
   result &= addInputDataDefinition(hSimConnect, 0, 1, "AXIS_AILERONS_SET", true);
   result &= addInputDataDefinition(hSimConnect, 0, 2, "AXIS_RUDDER_SET", true);
+
+  if (isThrottleHandlingEnabled) {
+    result &= addInputDataDefinition(hSimConnect, 0, 3, "AUTO_THROTTLE_ARM", false);
+
+    result &= addInputDataDefinition(hSimConnect, 0, 4, "THROTTLE_SET", true);
+    result &= addInputDataDefinition(hSimConnect, 0, 5, "THROTTLE1_SET", true);
+    result &= addInputDataDefinition(hSimConnect, 0, 6, "THROTTLE2_SET", true);
+
+    result &= addInputDataDefinition(hSimConnect, 0, 7, "THROTTLE_AXIS_SET_EX1", true);
+    result &= addInputDataDefinition(hSimConnect, 0, 8, "THROTTLE1_AXIS_SET_EX1", true);
+    result &= addInputDataDefinition(hSimConnect, 0, 9, "THROTTLE2_AXIS_SET_EX1", true);
+
+    result &= addInputDataDefinition(hSimConnect, 0, 10, "THROTTLE_FULL", true);
+    result &= addInputDataDefinition(hSimConnect, 0, 11, "THROTTLE_CUT", true);
+    result &= addInputDataDefinition(hSimConnect, 0, 12, "THROTTLE_INCR", true);
+    result &= addInputDataDefinition(hSimConnect, 0, 13, "THROTTLE_DECR", true);
+    result &= addInputDataDefinition(hSimConnect, 0, 14, "THROTTLE_INCR_SMALL", true);
+    result &= addInputDataDefinition(hSimConnect, 0, 15, "THROTTLE_DECR_SMALL", true);
+
+    result &= addInputDataDefinition(hSimConnect, 0, 16, "THROTTLE1_FULL", true);
+    result &= addInputDataDefinition(hSimConnect, 0, 17, "THROTTLE1_CUT", true);
+    result &= addInputDataDefinition(hSimConnect, 0, 18, "THROTTLE1_INCR", true);
+    result &= addInputDataDefinition(hSimConnect, 0, 19, "THROTTLE1_DECR", true);
+    result &= addInputDataDefinition(hSimConnect, 0, 20, "THROTTLE1_INCR_SMALL", true);
+    result &= addInputDataDefinition(hSimConnect, 0, 21, "THROTTLE1_DECR_SMALL", true);
+
+    result &= addInputDataDefinition(hSimConnect, 0, 22, "THROTTLE2_FULL", true);
+    result &= addInputDataDefinition(hSimConnect, 0, 23, "THROTTLE2_CUT", true);
+    result &= addInputDataDefinition(hSimConnect, 0, 24, "THROTTLE2_INCR", true);
+    result &= addInputDataDefinition(hSimConnect, 0, 25, "THROTTLE2_DECR", true);
+    result &= addInputDataDefinition(hSimConnect, 0, 26, "THROTTLE2_INCR_SMALL", true);
+    result &= addInputDataDefinition(hSimConnect, 0, 27, "THROTTLE2_DECR_SMALL", true);
+
+    result &= addInputDataDefinition(hSimConnect, 0, 28, "THROTTLE_REVERSE_THRUST_TOGGLE", true);
+    result &= addInputDataDefinition(hSimConnect, 0, 29, "THROTTLE_REVERSE_THRUST_HOLD", true);
+  }
 
   return result;
 }
@@ -126,6 +169,9 @@ bool SimConnectInterface::prepareSimOutputSimConnectDataDefinitions() {
   result &= addDataDefinition(hSimConnect, 1, SIMCONNECT_DATATYPE_FLOAT64, "RUDDER POSITION", "POSITION");
 
   result &= addDataDefinition(hSimConnect, 2, SIMCONNECT_DATATYPE_FLOAT64, "ELEVATOR TRIM POSITION", "DEGREE");
+
+  result &= addDataDefinition(hSimConnect, 3, SIMCONNECT_DATATYPE_FLOAT64, "GENERAL ENG THROTTLE LEVER POSITION:1", "PERCENT");
+  result &= addDataDefinition(hSimConnect, 3, SIMCONNECT_DATATYPE_FLOAT64, "GENERAL ENG THROTTLE LEVER POSITION:2", "PERCENT");
 
   return result;
 }
@@ -201,51 +247,41 @@ bool SimConnectInterface::readData() {
 bool SimConnectInterface::sendData(
   SimOutput output
 ) {
-  // check if we are connected
-  if (!isConnected)
-  {
-    return false;
-  }
-
-  // set output data
-  HRESULT result = SimConnect_SetDataOnSimObject(
-    hSimConnect,
-    1,
-    SIMCONNECT_OBJECT_ID_USER,
-    0,
-    0,
-    sizeof(output),
-    &output);
-
-  // check result of data request
-  if (result != S_OK)
-  {
-    // request failed
-    return false;
-  }
-
-  // success
-  return true;
+  // write data and return result
+  return sendData(1, sizeof(output), &output);
 }
 
 bool SimConnectInterface::sendData(
   SimOutputEtaTrim output
 ) {
+  // write data and return result
+  return sendData(2, sizeof(output), &output);
+}
+
+bool SimConnectInterface::sendData(
+  SimOutputThrottles output
+)
+{
+  // write data and return result
+  return sendData(3, sizeof(output), &output);
+}
+
+bool SimConnectInterface::sendAutoThrustArmEvent() {
   // check if we are connected
   if (!isConnected)
   {
     return false;
   }
 
-  // set output data
-  HRESULT result = SimConnect_SetDataOnSimObject(
+  // send event
+  HRESULT result = SimConnect_TransmitClientEvent(
     hSimConnect,
-    2,
-    SIMCONNECT_OBJECT_ID_USER,
     0,
+    3,
     0,
-    sizeof(output),
-    &output);
+    SIMCONNECT_GROUP_PRIORITY_HIGHEST,
+    SIMCONNECT_EVENT_FLAG_GROUPID_IS_PRIORITY
+  );
 
   // check result of data request
   if (result != S_OK)
@@ -258,7 +294,8 @@ bool SimConnectInterface::sendData(
   return true;
 }
 
-SimData SimConnectInterface::getSimData() {
+SimData SimConnectInterface::getSimData()
+{
   return simData;
 }
 
@@ -266,10 +303,22 @@ SimInput SimConnectInterface::getSimInput() {
   return simInput;
 }
 
+SimInputThrottles SimConnectInterface::getSimInputThrottles() {
+  return simInputThrottles;
+}
+
+bool SimConnectInterface::getIsAutothrottlesArmed() {
+  return isAutothrustArmed;
+}
+
+bool SimConnectInterface::getIsReverseToggleActive() {
+  return isReverseToggleActive;
+}
+
 void SimConnectInterface::simConnectProcessDispatchMessage(
   SIMCONNECT_RECV* pData,
-  DWORD* cbData
-) {
+  DWORD* cbData)
+{
   switch (pData->dwID)
   {
   case SIMCONNECT_RECV_ID_OPEN:
@@ -312,7 +361,113 @@ void SimConnectInterface::simConnectProcessEvent(
   auto* event = (SIMCONNECT_RECV_EVENT*)pData;
 
   // process depending on event id
-  simInput.inputs[event->uEventID] = static_cast<long>(event->dwData) / 16384.0;
+  switch (event->uEventID)
+  {
+  case 0:
+  case 1:
+  case 2:
+    simInput.inputs[event->uEventID] = static_cast<long>(event->dwData) / 16384.0;
+    break;
+
+  case 3:
+    isAutothrustArmed = !isAutothrustArmed;
+    break;
+
+  case 4:
+    simInputThrottles.throttles[0] = static_cast<long>(event->dwData) / 16384.0;
+    simInputThrottles.throttles[1] = static_cast<long>(event->dwData) / 16384.0;
+    break;
+  case 5:
+    simInputThrottles.throttles[0] = static_cast<long>(event->dwData) / 16384.0;
+    break;
+  case 6:
+    simInputThrottles.throttles[1] = static_cast<long>(event->dwData) / 16384.0;
+    break;
+
+  case 7:
+    simInputThrottles.throttles[0] = static_cast<long>(event->dwData) / 16384.0;
+    simInputThrottles.throttles[1] = static_cast<long>(event->dwData) / 16384.0;
+    break;
+  case 8:
+    simInputThrottles.throttles[0] = static_cast<long>(event->dwData) / 16384.0;
+    break;
+  case 9:
+    simInputThrottles.throttles[1] = static_cast<long>(event->dwData) / 16384.0;
+    break;
+
+  case 10:
+    simInputThrottles.throttles[0] = 100.0;
+    simInputThrottles.throttles[1] = 100.0;
+    break;
+  case 11:
+    simInputThrottles.throttles[0] = idleThrottleInput;
+    simInputThrottles.throttles[1] = idleThrottleInput;
+    break;
+  case 12:
+    simInputThrottles.throttles[0] = min(1.0, simInputThrottles.throttles[0] + 0.1);
+    simInputThrottles.throttles[1] = min(1.0, simInputThrottles.throttles[1] + 0.1);
+    break;
+  case 13:
+    simInputThrottles.throttles[0] = max(-1.0, simInputThrottles.throttles[0] - 0.1);
+    simInputThrottles.throttles[1] = max(-1.0, simInputThrottles.throttles[1] - 0.1);
+    break;
+  case 14:
+    simInputThrottles.throttles[0] = min(1.0, simInputThrottles.throttles[0] + 0.05);
+    simInputThrottles.throttles[1] = min(1.0, simInputThrottles.throttles[1] + 0.05);
+    break;
+  case 15:
+    simInputThrottles.throttles[0] = max(-1.0, simInputThrottles.throttles[0] - 0.05);
+    simInputThrottles.throttles[1] = max(-1.0, simInputThrottles.throttles[1] - 0.05);
+    break;
+
+  case 16:
+    simInputThrottles.throttles[0] = 100.0;
+    break;
+  case 17:
+    simInputThrottles.throttles[0] = idleThrottleInput;
+    break;
+  case 18:
+    simInputThrottles.throttles[0] = min(1.0, simInputThrottles.throttles[0] + 0.1);
+    break;
+  case 19:
+    simInputThrottles.throttles[0] = max(-1.0, simInputThrottles.throttles[0] - 0.1);
+    break;
+  case 20:
+    simInputThrottles.throttles[0] = min(1.0, simInputThrottles.throttles[0] + 0.05);
+    break;
+  case 21:
+    simInputThrottles.throttles[0] = max(-1.0, simInputThrottles.throttles[0] - 0.05);
+    break;
+
+  case 22:
+    simInputThrottles.throttles[1] = 100.0;
+    break;
+  case 23:
+    simInputThrottles.throttles[1] = idleThrottleInput;
+    break;
+  case 24:
+    simInputThrottles.throttles[1] = min(1.0, simInputThrottles.throttles[0] + 0.1);
+    break;
+  case 25:
+    simInputThrottles.throttles[1] = max(-1.0, simInputThrottles.throttles[0] - 0.1);
+    break;
+  case 26:
+    simInputThrottles.throttles[1] = min(1.0, simInputThrottles.throttles[0] + 0.05);
+    break;
+  case 27:
+    simInputThrottles.throttles[1] = max(-1.0, simInputThrottles.throttles[0] - 0.05);
+    break;
+
+  case 28:
+    isReverseToggleActive = !isReverseToggleActive;
+    break;
+  case 29:
+    isReverseToggleActive = static_cast<bool>(event->dwData);
+    break;
+
+  default:
+    break;
+  }
 }
 
 void SimConnectInterface::simConnectProcessSimObjectDataByType(
@@ -335,6 +490,40 @@ void SimConnectInterface::simConnectProcessSimObjectDataByType(
     cout << simObjectDataByType->dwRequestID << endl;
     return;
   }
+}
+
+bool SimConnectInterface::sendData(
+  SIMCONNECT_DATA_DEFINITION_ID id,
+  DWORD size,
+  void* data
+)
+{
+  // check if we are connected
+  if (!isConnected)
+  {
+    return false;
+  }
+
+  // set output data
+  HRESULT result = SimConnect_SetDataOnSimObject(
+    hSimConnect,
+    id,
+    SIMCONNECT_OBJECT_ID_USER,
+    0,
+    0,
+    size,
+    data
+  );
+
+  // check result of data request
+  if (result != S_OK)
+  {
+    // request failed
+    return false;
+  }
+
+  // success
+  return true;
 }
 
 bool SimConnectInterface::addDataDefinition(
