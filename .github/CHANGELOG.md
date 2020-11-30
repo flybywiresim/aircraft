@@ -119,9 +119,10 @@
 1. [Sound] Added new APU start contactor sounds - @hotshotp (Boris)
 1. [Sound] Added new realistic LEAP-1A engine sounds - @hotshotp (Boris)
 1. [Lights] Take-Off Lights | Intensity has increased | Range has decreased | Rotation has changed - @Snapmatics (Harry)
-1. [Lights] Landing Lights | Intensity has decreased | Range has decreased  - @Snapmatics (Harry)
+1. [Lights] Landing Lights | Intensity has decreased | Range has decreased | Not Final Look  - @Snapmatics (Harry)
 1. [Lights] Strobe Lights | Intensity has increased | Range has decreased | Rotation has changed | There is no bleeding into the cockpit anymore - @Snapmatics (Harry)
-1. [Lights] Beacon Lights | They now reflect on the wings - @Snapmatics (Harry)
+1. [Lights] Beacon Top Lights | They now reflect on the wings - @Snapmatics (Harry)
+1. [Lights] Beacon Belly Lights | They now reflect on the engines - @Snapmatics (Harry)
 
 ## 0.4.0
 1. [General] Add CHANGELOG.md - @nathaninnes (Nathan Innes)
