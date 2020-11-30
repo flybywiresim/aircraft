@@ -124,6 +124,7 @@
 1. [Sound] Improved nose wheel liftoff sound - @hotshotp (Boris)
 1. [Sound] Added new APU start contactor sounds - @hotshotp (Boris)
 1. [Sound] Added new realistic LEAP-1A engine sounds - @hotshotp (Boris)
+1. [ND] Fix weather radar not showing after switching to plan view - @ilyeshammadi (Ilyes Hammadi)
 
 ## 0.4.0
 1. [General] Add CHANGELOG.md - @nathaninnes (Nathan Innes)
