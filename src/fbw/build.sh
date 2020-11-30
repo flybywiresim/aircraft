@@ -28,6 +28,7 @@ clang++ \
   -Wl,--allow-undefined \
   -I "${MSFS_SDK}/WASM/include" \
   -I "${MSFS_SDK}/SimConnect SDK/include" \
+<<<<<<< HEAD
   -I "${DIR}/src/inih" \
   -I "${DIR}/src/model" \
   "${DIR}/src/model/FlyByWire.cpp" \
@@ -37,4 +38,15 @@ clang++ \
   "${DIR}/src/FlyByWireInterface.cpp" \
   "${DIR}/src/InterpolatingLookupTable.cpp" \
   "${DIR}/src/main.cpp" \
+=======
+  -I ./src/model \
+  -I ./src/inih \
+  ./src/model/FlyByWire.cpp \
+  ./src/model/FlyByWire_data.cpp \
+  -I ./src/interface \
+  ./src/interface/SimConnectInterface.cpp \
+  ./src/FlyByWireInterface.cpp \
+  ./src/InterpolatingLookupTable.cpp \
+  ./src/main.cpp \
+>>>>>>> 6daf48e3... Latest changes from wasm repository (#2137)
   -o $OUTPUT

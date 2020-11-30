@@ -25,7 +25,7 @@
 #include "FlyByWire.h"
 #include "InterpolatingLookupTable.h"
 
-class FlyByWireInterface
+    class FlyByWireInterface
 {
 public:
   bool connect();
@@ -43,8 +43,11 @@ private:
   bool useReverseOnAxis;
   double idleThrottleInput;
 
+<<<<<<< HEAD
   double previousSimulationTime;
 
+=======
+>>>>>>> 6daf48e3... Latest changes from wasm repository (#2137)
   SimConnectInterface simConnectInterface;
   FlyByWireModelClass model;
   InterpolatingLookupTable throttleLookupTable;

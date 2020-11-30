@@ -217,15 +217,25 @@ void FlyByWireInterface::initializeThrottles()
     configFile << "ReverseOnAxis = false" << endl;
     configFile << "DetentReverseFull = -1.00" << endl;
     configFile << "DetentIdle = -1.00" << endl;
+<<<<<<< HEAD
     configFile << "DetentClimb = 0.89" << endl;
     configFile << "DetentFlexMct = 0.95" << endl;
+=======
+    configFile << "DetentClimb = 0.66" << endl;
+    configFile << "DetentFlexMct = 0.88" << endl;
+>>>>>>> 6daf48e3... Latest changes from wasm repository (#2137)
     configFile << "DetentTakeOffGoAround = 1.00" << endl;
     configFile.close();
   }
 
   // read basic configuration
+<<<<<<< HEAD
   isThrottleHandlingEnabled = configuration.GetBoolean("Throttle", "Enabled", true);
   useReverseOnAxis = configuration.GetBoolean("Throttle", "ReverseOnAxis", false);
+=======
+  isThrottleHandlingEnabled = configuration.GetBoolean("Throttle", "Enabled", false);
+  useReverseOnAxis = configuration.GetBoolean("Throttle", "ReverseOnAxis", true);
+>>>>>>> 6daf48e3... Latest changes from wasm repository (#2137)
   // read mapping configuration
   vector<pair<double, double>> mappingTable;
   if (useReverseOnAxis)
@@ -233,8 +243,13 @@ void FlyByWireInterface::initializeThrottles()
     mappingTable.emplace_back(configuration.GetReal("Throttle", "DetendReverseFull", -1.00), -20.00);
   }
   mappingTable.emplace_back(configuration.GetReal("Throttle", "DetentIdle", useReverseOnAxis ? 0.00 : -1.00), 0.00);
+<<<<<<< HEAD
   mappingTable.emplace_back(configuration.GetReal("Throttle", "DetentClimb", 0.89), 89.00);
   mappingTable.emplace_back(configuration.GetReal("Throttle", "DetentFlexMct", 0.95), 95.00);
+=======
+  mappingTable.emplace_back(configuration.GetReal("Throttle", "DetentClimb", 0.67), 89.00);
+  mappingTable.emplace_back(configuration.GetReal("Throttle", "DetentFlexMct", 0.89), 95.00);
+>>>>>>> 6daf48e3... Latest changes from wasm repository (#2137)
   mappingTable.emplace_back(configuration.GetReal("Throttle", "DetentTakeOffGoAround", 1.00), 100.00);
 
   // remember idle throttle setting

@@ -21,7 +21,11 @@
 #include <utility>
 #include <vector>
 
+<<<<<<< HEAD
 class InterpolatingLookupTable
+=======
+    class InterpolatingLookupTable
+>>>>>>> 6daf48e3... Latest changes from wasm repository (#2137)
 {
 public:
   void initialize(

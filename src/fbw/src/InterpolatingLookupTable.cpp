@@ -18,7 +18,11 @@
 
 #include "InterpolatingLookupTable.h"
 
+<<<<<<< HEAD
 using namespace std;
+=======
+    using namespace std;
+>>>>>>> 6daf48e3... Latest changes from wasm repository (#2137)
 
 void InterpolatingLookupTable::initialize(
     vector<pair<double, double>> mapping,

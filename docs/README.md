@@ -1,5 +1,6 @@
 # Documentation
 
+<<<<<<< HEAD
 ## Custom Fly-By-Wire System
 
 ⚠️ This is work in progress, there are still issues, see section Known issues below!
@@ -18,14 +19,29 @@ In case of Steam version, the configuration of the throttle can be found here:
 
 This is the default configuration:
 
+=======
+Fill me out!
+
+## Custom Fly-By-Wire
+
+The configuration of the throttle can be found here:
+`%LOCALAPPDATA%\Packages\Microsoft.FlightSimulator_8wekyb3d8bbwe\LocalState\packages\<name of a32nx folder in community folder>\work\ThrottleConfiguration.ini`
+
+This is the default configuration:
+>>>>>>> 6daf48e3... Latest changes from wasm repository (#2137)
 ```
 [Throttle]
 Enabled = true
 ReverseOnAxis = false
 DetentReverseFull = -1.00
 DetentIdle = -1.00
+<<<<<<< HEAD
 DetentClimb = 0.89
 DetentFlexMct = 0.95
+=======
+DetentClimb = 0.66
+DetentFlexMct = 0.88
+>>>>>>> 6daf48e3... Latest changes from wasm repository (#2137)
 DetentTakeOffGoAround = 1.00
 ```
 
@@ -44,6 +60,7 @@ The following values can be configured:
 | DetentClimb | Configures the throttle value for CLB detent |
 | DetentFlexMct | Configures the throttle value for FLX/MCT detent |
 | DetentTakeOffGoAround | Configures the throttle value for TOGA detent |
+<<<<<<< HEAD
 
 ### Known issues
 
@@ -72,3 +89,5 @@ The following values can be configured:
 - :heavy_check_mark: after landing sometimes a slight pitch up moment is introduced, needs to be investigated
 - :heavy_check_mark: strange interaction with default auto thrust system -> thrust lever sometimes does not move, fix is to manually disable ATHR
 - :heavy_check_mark: after a longer pause the fbw system goes crazy
+=======
+>>>>>>> 6daf48e3... Latest changes from wasm repository (#2137)
