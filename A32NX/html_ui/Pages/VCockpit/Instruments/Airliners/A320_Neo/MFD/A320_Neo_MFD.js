@@ -336,6 +336,7 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
                 this.mapConfigId = 1;
             } else if (shouldShowWeather) {
                 this.showWeather();
+                this.map.instrument.bingMap.m_imgElement.style.mixBlendMode = 'lighten';
             } else {
                 this.mapConfigId = 0;
             }
@@ -517,6 +518,7 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
     showWeather() {
         this.setMapMode(this.mapMode);
         this.map.showWeather();
+        this.instrument.bingMap.m_imgElement.style.mixBlendMode = 'lighten';
     }
     updateNDInfo(_deltaTime) {
         this.info.showSymbol(A320_Neo_ND_Symbol.WXR, this.wxRadarOn && this.wxRadarMode == 0);
