@@ -298,3 +298,11 @@
 - A32NX_FWC_INHIBOVRD
     - Bool
     - True when the FWC decides that flight phase inhibits should be overridden (and ignored)
+
+- A32NX_SIDESTICK_POSITION_X
+    - Number
+    - Provides the direct sidestick position (lateral)
+
+- A32NX_SIDESTICK_POSITION_Y
+    - Number
+    - Provides the direct sidestick position (longitudinal)
