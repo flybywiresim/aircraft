@@ -117,6 +117,7 @@
 1. [CDU] Added constraints symbols logic to flight plan - @ilyeshammadi (Ilyes Hammadi)
 1. [ECAM] Changed SAT and TAT values to green colour - @RichardPilbery (Richard Pilbery)
 1. [General] Improve ground handling, steering, and suspension - @wpine215 (Iceman)
+1. [CDU] Added Airway Page airway to airway insert option - @MisterChocker (Leon)
 1. [Sound] Improved PTU, flaps, and fuel pump sounds which are no longer heard in cockpit - @hotshotp (Boris)
 1. [Sound] Improved and added new ground roll and touchdown sounds - @hotshotp (Boris)
 1. [Sound] Improved ambient avionics fan sound, and added cabin fan sound - @hotshotp (Boris)
