@@ -46,6 +46,10 @@ class A320_Neo_PFD_MainPage extends NavSystemPage {
         this.element = new NavSystemElementGroup([
             this.navStatus
         ]);
+
+        this.AttitudeIndicator = new FBW_PFD_AttitudeIndicator();
+        this.VSpeedIndicator = new FBW_PFD_VertSpeedIndicator();
+        this.LSIndicators = new FBW_PFD_LSIndicators();
     }
     init() {
         super.init();
@@ -55,9 +59,10 @@ class A320_Neo_PFD_MainPage extends NavSystemPage {
         this.pot_index = this.disp_index == 1 ? 88 : 90;
 
         this.getDeltaTime = A32NX_Util.createDeltaTimeCalculator(this._lastTime);
-        this.showILS = SimVar.GetSimVarValue(`L:BTN_LS_${this.disp_index}_FILTER_ACTIVE`, "bool");
 
-        this.hasInitialized = true;
+        this.AttitudeIndicator.init(this.disp_index);
+        this.VSpeedIndicator.init(this.disp_index);
+        this.LSIndicators.init(this.disp_index);
 
         //SELF TEST
         this.selfTestDiv = document.querySelector('#SelfTestDiv');
@@ -71,6 +76,8 @@ class A320_Neo_PFD_MainPage extends NavSystemPage {
         this.engMaintDiv = document.querySelector('#PfdMaintMode');
 
         this.electricity = document.querySelector('#Electricity');
+
+        this.hasInitialized = true;
     }
     onUpdate() {
         const _deltaTime = this.getDeltaTime();
@@ -103,6 +110,15 @@ class A320_Neo_PFD_MainPage extends NavSystemPage {
             }
         }
 
+        const isOnGround = SimVar.GetSimVarValue("SIM ON GROUND", "Bool");
+        const radioAlt = SimVar.GetSimVarValue("PLANE ALT ABOVE GROUND MINUS CG", "feet");
+
+        const decisionHeight = SimVar.GetSimVarValue("L:AIRLINER_DECISION_HEIGHT", "feet");
+
+        this.AttitudeIndicator.update(isOnGround, radioAlt, decisionHeight);
+        this.VSpeedIndicator.update(radioAlt);
+        this.LSIndicators.update();
+
         if (this.disp_index == 1) {
             updateDisplayDMC("PFD1", this.engTestDiv, this.engMaintDiv);
         } else {
@@ -118,8 +134,8 @@ class A320_Neo_PFD_MainPage extends NavSystemPage {
 
                 this.showILS = !this.showILS;
                 SimVar.SetSimVarValue(`L:BTN_LS_${this.disp_index}_FILTER_ACTIVE`, "number", this.showILS ? 1 : 0);
-                this.ils.showILS(this.showILS);
-                this.compass.showILS(this.showILS);
+                this.LSIndicators.onLSButtonPressed();
+                //this.compass.showILS(this.showILS);
                 break;
         }
     }
