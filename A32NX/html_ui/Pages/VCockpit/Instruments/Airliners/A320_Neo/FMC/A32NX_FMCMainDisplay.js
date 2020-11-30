@@ -1184,6 +1184,15 @@ class FMCMainDisplay extends BaseAirliners {
         this.v2Speed = 140;
     }
 
+    checkVSpeedDisagree() {
+        switch (true) {
+            case (this.v1Speed && this.vRSpeed && this.v1Speed > this.vRSpeed) : return false;
+            case (this.vRSpeed && this.v2Speed && this.vRSpeed > this.v2Speed) : return false;
+            case (this.v1Speed && this.v2Speed && this.v1Speed > this.v2Speed) : return false;
+            default: return true;
+        }
+    }
+
     trySetV1Speed(s) {
         if (!/^\d+$/.test(s)) {
             this.showErrorMessage("FORMAT ERROR");
@@ -1195,14 +1204,7 @@ class FMCMainDisplay extends BaseAirliners {
                 this.v1Speed = v;
                 SimVar.SetSimVarValue("L:AIRLINER_V1_SPEED", "Knots", this.v1Speed);
                 if ((v > SimVar.GetSimVarValue("L:AIRLINER_VR_SPEED", "Knots") || v > SimVar.GetSimVarValue("L:AIRLINER_V2_SPEED", "Knots")) && SimVar.GetSimVarValue("L:AIRLINER_VR_SPEED", "Knots") !== -1 && SimVar.GetSimVarValue("L:AIRLINER_V2_SPEED", "Knots") !== -1) {
-                    this.addTypeTwoMessage("V1/VR/V2 DISAGREE", "#ff9a00", () => {
-                        switch (true) {
-                            case (this.v1Speed && this.vRSpeed && this.v1Speed > this.vRSpeed) : return false;
-                            case (this.vRSpeed && this.v2Speed && this.vRSpeed > this.v2Speed) : return false;
-                            case (this.v1Speed && this.v2Speed && this.v1Speed > this.v2Speed) : return false;
-                            default: return true;
-                        }
-                    });
+                    this.addTypeTwoMessage("V1/VR/V2 DISAGREE", "#ff9a00", this.checkVSpeedDisagree);
                 }
                 return true;
             }
@@ -1224,14 +1226,7 @@ class FMCMainDisplay extends BaseAirliners {
                 this.vRSpeed = v;
                 SimVar.SetSimVarValue("L:AIRLINER_VR_SPEED", "Knots", this.vRSpeed);
                 if ((v < SimVar.GetSimVarValue("L:AIRLINER_V1_SPEED", "Knots") || v > SimVar.GetSimVarValue("L:AIRLINER_V2_SPEED", "Knots")) && SimVar.GetSimVarValue("L:AIRLINER_V1_SPEED", "Knots") !== -1 && SimVar.GetSimVarValue("L:AIRLINER_V2_SPEED", "Knots") !== -1) {
-                    this.addTypeTwoMessage("V1/VR/V2 DISAGREE", "#ff9a00", () => {
-                        switch (true) {
-                            case (this.v1Speed && this.vRSpeed && this.v1Speed > this.vRSpeed) : return false;
-                            case (this.vRSpeed && this.v2Speed && this.vRSpeed > this.v2Speed) : return false;
-                            case (this.v1Speed && this.v2Speed && this.v1Speed > this.v2Speed) : return false;
-                            default: return true;
-                        }
-                    });
+                    this.addTypeTwoMessage("V1/VR/V2 DISAGREE", "#ff9a00", this.checkVSpeedDisagree);
                 }
                 return true;
             }
@@ -1253,14 +1248,7 @@ class FMCMainDisplay extends BaseAirliners {
                 this.v2Speed = v;
                 SimVar.SetSimVarValue("L:AIRLINER_V2_SPEED", "Knots", this.v2Speed);
                 if ((v < SimVar.GetSimVarValue("L:AIRLINER_V1_SPEED", "Knots") || v < SimVar.GetSimVarValue("L:AIRLINER_VR_SPEED", "Knots")) && SimVar.GetSimVarValue("L:AIRLINER_V1_SPEED", "Knots") !== -1 && SimVar.GetSimVarValue("L:AIRLINER_VR_SPEED", "Knots") !== -1) {
-                    this.addTypeTwoMessage("V1/VR/V2 DISAGREE", "#ff9a00", () => {
-                        switch (true) {
-                            case (this.v1Speed && this.vRSpeed && this.v1Speed > this.vRSpeed) : return false;
-                            case (this.vRSpeed && this.v2Speed && this.vRSpeed > this.v2Speed) : return false;
-                            case (this.v1Speed && this.v2Speed && this.v1Speed > this.v2Speed) : return false;
-                            default: return true;
-                        }
-                    });
+                    this.addTypeTwoMessage("V1/VR/V2 DISAGREE", "#ff9a00", this.checkVSpeedDisagree);
                 }
                 return true;
             }
