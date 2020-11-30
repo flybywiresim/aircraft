@@ -461,15 +461,22 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
 
     _pulseYellow() {
         this.cursorSVGShape.classList.add("pulse-yellow");
+        // Trigger the warning sound only if both auto pilots are disabled
+        if (Simplane.getAutoPilotActive(1) == 0 && Simplane.getAutoPilotActive(2) == 0) {
+            SimVar.SetSimVarValue("L:A32NX_ALT_DEVIATION_SHORT", "Bool", 1);
+        }   
     }
 
     _flashAmber() {
         this.cursorSVGShape.classList.add("flash-amber");
+        SimVar.SetSimVarValue("L:A32NX_ALT_DEVIATION", "Bool", 1);
     }
 
     _removeAltitudeWarnings() {
         this.cursorSVGShape.classList.remove("pulse-yellow");
         this.cursorSVGShape.classList.remove("flash-amber");
+        SimVar.SetSimVarValue("L:A32NX_ALT_DEVIATION", "Bool", 0);
+        SimVar.SetSimVarValue("L:A32NX_ALT_DEVIATION_SHORT", "Bool", 0);
     }
 
     _updateAltitudeAlert(indicatedAltitude) {
