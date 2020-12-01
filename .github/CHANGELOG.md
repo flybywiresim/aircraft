@@ -5,6 +5,12 @@
 <!--  1. [Changed Area] Title of changes - @github username (Name)  -->
 
 ## 0.5.0
+1. [FLIGHTMODEL] Reworked AOA table - @donstim - (donbikes#4084)
+1. [FLIGHTMODEL] Reworked flaps - @donstim - (donbikes#4084)
+1. [FLIGHTMODEL] Reworked drag/thrust ratio - @donstim - (donbikes#4084)
+1. [ENGINE] Adjusted N1% thrust table - @MisterChocker - (Leon)
+1. [PFD] Added independent calculations for GD, Vls, Vaprot, Vamax, Vs - @MisterChocker - (Leon)
+1. [PFD] Fixed V1 not disappear after liftoff - @MisterChocker - (Leon)
 1. [CDU] Added Performance Page CI functionality - @MisterChocker (Leon)
 1. [CDU] Added Progress Page CRZ FL functionality and logic - @MisterChocker (Leon)
 1. [CDU] Added Init B page only available until engine start - @MisterChocker (Leon)
@@ -111,6 +117,7 @@
 1. [CDU] Added constraints symbols logic to flight plan - @ilyeshammadi (Ilyes Hammadi)
 1. [ECAM] Changed SAT and TAT values to green colour - @RichardPilbery (Richard Pilbery)
 1. [General] Improve ground handling, steering, and suspension - @wpine215 (Iceman)
+1. [CDU] Added Airway Page airway to airway insert option - @MisterChocker (Leon)
 1. [Sound] Improved PTU, flaps, and fuel pump sounds which are no longer heard in cockpit - @hotshotp (Boris)
 1. [Sound] Improved and added new ground roll and touchdown sounds - @hotshotp (Boris)
 1. [Sound] Improved ambient avionics fan sound, and added cabin fan sound - @hotshotp (Boris)
@@ -118,6 +125,8 @@
 1. [Sound] Improved nose wheel liftoff sound - @hotshotp (Boris)
 1. [Sound] Added new APU start contactor sounds - @hotshotp (Boris)
 1. [Sound] Added new realistic LEAP-1A engine sounds - @hotshotp (Boris)
+1. [CDU] Improved input handling while a message is visible - @MisterChocker (Leon)
+1. [ND] Fix weather radar not showing after switching to plan view - @ilyeshammadi (Ilyes Hammadi)
 
 ## 0.4.0
 1. [General] Add CHANGELOG.md - @nathaninnes (Nathan Innes)
