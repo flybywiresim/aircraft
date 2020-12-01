@@ -74,7 +74,7 @@ class A320_Neo_CDU_AirwaysFromWaypointPage {
                         }
                     };
                     if (i + 1 < rows.length) {
-                        rows[i + 1] = ["[ ][color]blue", ""];
+                        rows[i + 1] = ["[ ][color]cyan", ""];
                         subRows[i + 1] = ["VIA", ""];
                         mcdu.onLeftInput[i + 1] = async (value) => {
                             if (value.length > 0) {
