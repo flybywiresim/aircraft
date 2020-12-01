@@ -444,7 +444,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     sendDataToScratchpad(data) {
         this.isDisplayingErrorMessage = false;
         this.isDisplayingTypeTwoMessage = false;
-        this._inOutElement.style.color = "#ffffff";
+        this._inOutElement.className = "white";
         this.inOut = data;
     }
 
