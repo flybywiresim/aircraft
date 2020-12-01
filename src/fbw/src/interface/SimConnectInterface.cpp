@@ -21,7 +21,7 @@
 #include <vector>
 #include "SimConnectInterface.h"
 
-    using namespace std;
+using namespace std;
 
 bool SimConnectInterface::connect(
   bool isThrottleHandlingEnabled,
