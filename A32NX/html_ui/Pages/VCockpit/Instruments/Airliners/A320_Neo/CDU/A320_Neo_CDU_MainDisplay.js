@@ -23,6 +23,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this.altLock = 0;
         this.updateTypeIIMessage = false;
         this.messageQueue = [];
+        this._destDataChecked = false;
     }
     get templateID() {
         return "A320_Neo_CDU";
@@ -154,13 +155,12 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
 
         // Start the check routine for system health and status
         setInterval(() => {
-            if (this.currentFlightPhase === FlightPhase.FLIGHT_PHASE_CRUISE) {
+            if (this.currentFlightPhase === FlightPhase.FLIGHT_PHASE_CRUISE && !this._destDataChecked) {
                 const dest = this.flightPlanManager.getDestination();
                 if (dest && dest.liveDistanceTo < 180) {
+                    this._destDataChecked = true;
                     this.checkDestData();
                 }
-            } else if (this.currentFlightPhase === FlightPhase.FLIGHT_PHASE_DESCENT || this.currentFlightPhase === FlightPhase.FLIGHT_PHASE_APPROACH) {
-                this.checkDestData();
             }
         }, 15000);
 
@@ -687,7 +687,10 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         }
     }
     onFlightPhaseChanged() {
-        if (this.currentFlightPhase === FlightPhase.FLIGHT_PHASE_CLIMB) {
+        if (this.currentFlightPhase === FlightPhase.FLIGHT_PHASE_TAKEOFF) {
+            this._destDataChecked = false;
+        } else if (this.currentFlightPhase === FlightPhase.FLIGHT_PHASE_CLIMB) {
+            this._destDataChecked = false;
             let preSelectedClbSpeed = this.preSelectedClbSpeed;
             if (SimVar.GetSimVarValue("L:A32NX_GOAROUND_PASSED", "bool") === 1) {
                 preSelectedClbSpeed = this.getPerfGreenDotSpeed();
@@ -702,10 +705,13 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                 SimVar.SetSimVarValue("K:SPEED_SLOT_INDEX_SET", "number", 1);
             }
         } else if (this.currentFlightPhase === FlightPhase.FLIGHT_PHASE_DESCENT) {
+            this.checkDestData();
             if (isFinite(this.preSelectedDesSpeed)) {
                 this.setAPSelectedSpeed(this.preSelectedDesSpeed, Aircraft.A320_NEO);
                 SimVar.SetSimVarValue("K:SPEED_SLOT_INDEX_SET", "number", 1);
             }
+        } else if (this.currentFlightPhase === FlightPhase.FLIGHT_PHASE_APPROACH) {
+            this.checkDestData();
         }
         //TODO something for Goaround? Like Green Dot Speed SRS etc ...
     }
