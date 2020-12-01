@@ -377,7 +377,7 @@ class FMCMainDisplay extends BaseAirliners {
 
     /**
      * Returns true if an engine is running (FF > 0)
-     * @returns {number}
+     * @returns {boolean}
      */
     isAnEngineOn() {
         return Simplane.getEngineActive(0) || Simplane.getEngineActive(1);
@@ -385,7 +385,7 @@ class FMCMainDisplay extends BaseAirliners {
 
     /**
      * Returns true if all engines are running (FF > 0)
-     * @returns {number}
+     * @returns {boolean}
      */
     isAllEngineOn() {
         return Simplane.getEngineActive(0) && Simplane.getEngineActive(1);
