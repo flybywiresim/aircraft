@@ -216,7 +216,7 @@ void FlyByWireInterface::initializeThrottles()
   }
 
   // read basic configuration
-  isThrottleHandlingEnabled = configuration.GetBoolean("Throttle", "Enabled", false);
+  isThrottleHandlingEnabled = configuration.GetBoolean("Throttle", "Enabled", true);
   useReverseOnAxis = configuration.GetBoolean("Throttle", "ReverseOnAxis", true);
   // read mapping configuration
   vector<pair<double, double>> mappingTable;
