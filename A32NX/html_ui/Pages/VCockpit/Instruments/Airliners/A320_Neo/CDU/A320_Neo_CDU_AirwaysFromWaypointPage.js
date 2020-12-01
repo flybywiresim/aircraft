@@ -75,6 +75,7 @@ class A320_Neo_CDU_AirwaysFromWaypointPage {
                     };
                     if (i + 1 < rows.length) {
                         rows[i + 1] = ["[ ][color]blue", ""];
+                        subRows[i + 1] = ["VIA", ""];
                         mcdu.onLeftInput[i + 1] = async (value) => {
                             if (value.length > 0) {
                                 const toWp = await this._getFirstIntersection(mcdu.flightPlanManager, value, pendingAirway.icaos);
