@@ -10,21 +10,30 @@ class CDUProgressPage {
         let flCrz = "-----";
         switch (Simplane.getCurrentFlightPhase()) {
             case FlightPhase.FLIGHT_PHASE_TAKEOFF: {
-                if (!mcdu._cruiseEntered) {
-                    mcdu.cruiseFlightLevel = Math.floor(Math.max(0, Simplane.getAutoPilotDisplayedAltitudeLockValue()) / 100);
+                if (mcdu._cruiseEntered) {
+                    flCrz = "FL" + mcdu.cruiseFlightLevel.toFixed(0).padStart(3, "0") + "[color]blue";
                 }
-                flCrz = "FL" + mcdu.cruiseFlightLevel.toFixed(0).padStart(3, "0") + "[color]blue";
                 break;
             }
             case FlightPhase.FLIGHT_PHASE_CLIMB: {
-                mcdu.cruiseFlightLevel = Math.floor(Math.max(0, Simplane.getAutoPilotDisplayedAltitudeLockValue()) / 100);
-                flCrz = "FL" + mcdu.cruiseFlightLevel.toFixed(0).padStart(3, "0") + "[color]blue";
+                const alt = Math.round(Simplane.getAutoPilotSelectedAltitudeLockValue("feet") / 100);
+                const altCtn = Math.round(mcdu.constraintAlt / 100);
+                if (!mcdu._cruiseEntered) {
+                    flCrz = "FL" + (altCtn && alt > altCtn ? altCtn.toFixed(0).padStart(3, "0") : alt.toFixed(0).padStart(3, "0")) + "[color]blue";
+                } else if (mcdu.cruiseFlightLevel < alt) {
+                    mcdu.cruiseFlightLevel = alt;
+                    flCrz = "FL" + mcdu.cruiseFlightLevel.toFixed(0).padStart(3, "0") + "[color]blue";
+                    mcdu.addTypeTwoMessage("NEW CRZ ALT-" + mcdu.cruiseFlightLevel * 100);
+                } else {
+                    flCrz = "FL" + mcdu.cruiseFlightLevel.toFixed(0).padStart(3, "0") + "[color]blue";
+                }
                 break;
             }
             case FlightPhase.FLIGHT_PHASE_CRUISE: {
-                const fl = Math.floor(Math.max(0, Simplane.getAutoPilotDisplayedAltitudeLockValue()) / 100);
+                const fl = Math.round(Simplane.getAutoPilotSelectedAltitudeLockValue("feet") / 100);
                 if (fl > mcdu.cruiseFlightLevel) {
                     mcdu.cruiseFlightLevel = fl;
+                    mcdu.addTypeTwoMessage("NEW CRZ ALT-" + mcdu.cruiseFlightLevel * 100);
                 }
                 flCrz = "FL" + mcdu.cruiseFlightLevel.toFixed(0).padStart(3, "0") + "[color]blue";
                 break;
