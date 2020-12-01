@@ -562,6 +562,10 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         return speed;
     }
 
+    /**
+     * Gets the latitude, longitude, and heading of a map marker
+     * @param {number} _distance the distance of the marker along the flight plan from the origin
+     */
     getMarkerPosition(_distance, _waypoints) {
 
         if (_waypoints.length < 2) {
@@ -633,6 +637,10 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         };
     }
 
+    /**
+     * Gets the altitude at the origin airport or 0 if no origin is set.
+     * @returns {number}
+     */
     getTakeoffAltitude() {
         const origin = this.flightPlanManager.getOrigin();
         if (origin) {
@@ -641,6 +649,10 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         return 0;
     }
 
+    /**
+     * Gets the altitude at the destination airport or 0 if no destination is set.
+     * @returns {number}
+     */
     getLandingAltitude() {
         const dest = this.flightPlanManager.getDestination();
         if (dest) {
@@ -649,6 +661,13 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         return 0;
     }
 
+    /**
+     * Predicts the distance needed to climb from one altitude to another
+     * @param {number} _startAltitude the altitude at the start of the climb
+     * @param {number} _endAltitude the altitude at the end of the climb
+     * @param {number} _indicatedAirspeed the indicated airspeed during the climb
+     * @returns {number}
+     */
     predictClimbDistance(_waypoints, _startAltitude, _endAltitude, _indicatedAirspeed = 250) {
         for (let i = 0; i < _waypoints.length - 1; i++) {
             const waypoint = _waypoints[i].wp;
@@ -684,6 +703,12 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         }
     }
 
+    /**
+     * Predicts the altitude the aircraft will reach after climbing a given speed for a given distance and airspeed
+     * @param _distance the distance of the climb
+     * @param _indicatedAirspeed the indicated airspeed during the climb
+     * @returns {number}
+     */
     predictClimbAltitude(_waypoints, _distance, _indicatedAirspeed = 250) {
         let output = NaN;
         for (let i = 0; _waypoints[i].wp.cumulativeDistanceInFP < _distance; i++) {
@@ -736,11 +761,16 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     }
 
     calculatePressureAtAltitude(_altitude) {
+        //TODO: use better formula
         const m = -0.000643908531686;
         const b = 29.92126;
         return (m * _altitude) + b;
     }
 
+    /**
+     * Predicts ground speed given IAS and altitude
+     * @returns {number}
+     */
     predictGroundSpeed(_indicatedAirspeed, _altitude) {
         const pressure = this.calculatePressureAtAltitude(_altitude);
         //TODO: use better equation with mach and temp for TAS
@@ -749,6 +779,10 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         return trueAirspeed;
     }
 
+    /**
+     * Predicts the distance along the flight plan of the top of climb
+     * @returns {number}
+     */
     predictTopOfClimb(_waypoints, _constraintAltitude, _constraintDistance, _targetAltitude, _indicatedAirspeed = 250) {
         let previousClimbDuration = Math.max(0, 108.27 + ((-4.36e-3) * _constraintAltitude) + (7.33e-7 * Math.pow(_constraintAltitude, 2)));
         if (_constraintAltitude < 7500) {
@@ -766,6 +800,10 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         return _constraintDistance + climbDistance;
     }
 
+    /**
+     * Predicts the distance along the flight plan of the top of descent
+     * @returns {number}
+     */
     predictTopOfDescent(_constraintAltitude, _constraintDistance, _groundSpeed, _startAltitude) {
         const vSpeed = 2700;
         const descentDuration = Math.abs(_constraintAltitude - _startAltitude) / vSpeed / 60;
@@ -773,6 +811,10 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         return _constraintDistance - descentDistance;
     }
 
+    /**
+     * Gets the current distance of the aircraft along the flight plan
+     * @returns {number}
+     */
     getCurrentDistanceInFP() {
         const activeWaypoint = this.flightPlanManager.getActiveWaypoint();
         if (activeWaypoint && activeWaypoint.cumulativeDistanceInFP) {
@@ -781,6 +823,10 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         return NaN;
     }
 
+    /**
+     * Predicts IAS at a given distance along the flight plan
+     * @returns {number}
+     */
     predictSpeedAtDistance(_distance, _waypoints = this.getWaypoints()) {
 
         //TODO: use predicted altitude
@@ -797,6 +843,10 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         }
     }
 
+    /**
+     * Predicts altitude at a given distance along the flight plan
+     * @returns {number}
+     */
     predictAltitudeAtDistance(_waypoints, _distance) {
         if (!this.topOfClimb || !this.topOfDescent) {
             return NaN;
@@ -812,6 +862,10 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         }
     }
 
+    /**
+     * Predicts ETE at a given waypoint
+     * @returns {number}
+     */
     predictFlightTimeAtWaypoint(_waypoints, _index) {
         if (!this.topOfClimb || !this.topOfDescent) {
             return NaN;
@@ -829,6 +883,10 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         return totalTime;
     }
 
+    /**
+     * Predicts ETE at a given distance along the flight plan
+     * @returns {number}
+     */
     predictFlightTimeAtDistance(_waypoints, _distance) {
         if (!this.topOfClimb || !this.topOfDescent) {
             return NaN;
@@ -864,6 +922,10 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         return this.predictFlightTimeAtDistance(_waypoints, _distance) - this.predictFlightTimeAtDistance(_waypoints, this.getCurrentDistanceInFP());
     }
 
+    /**
+     * Predicts ETA to a given waypoint
+     * @returns {number}
+     */
     predictUTCAtWaypoint(_waypoints, _index) {
         const utc = SimVar.GetGlobalVarValue("ZULU TIME", "seconds");
         const ete = this.predictETEToWaypoint(_waypoints, _index);
@@ -874,6 +936,10 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         return prediction;
     }
 
+    /**
+     * Predicts ETA to a given distance along the flight plan
+     * @returns {number}
+     */
     predictUTCAtDistance(_waypoints, _distance) {
         const utc = SimVar.GetGlobalVarValue("ZULU TIME", "seconds");
         const ete = this.predictETEToDistance(_waypoints, _distance);
@@ -946,6 +1012,9 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this.todIndex = todPosition.index;
     }
 
+    /**
+     * Gets all waypoints in the flight plan
+     */
     getWaypoints() {
         const waypointsWithDiscontinuities = [];
         for (let i = 0; i < this.flightPlanManager.getWaypointsCount(); i++) {
