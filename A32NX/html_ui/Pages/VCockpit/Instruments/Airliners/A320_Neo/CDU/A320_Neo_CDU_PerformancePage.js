@@ -166,7 +166,7 @@ class CDUPerformancePage {
         mcdu.setTemplate([
             ["TAKE OFF[color]" + titleColor],
             ["V1", "RWY", "FLP RETR"],
-            [v1, runway, "F=" + flpRetrCell],
+            [v1, runway + "[color]green", "F=" + flpRetrCell],
             ["VR", "TO SHIFT", "SLT RETR"],
             [vR, "[M][]*[color]cyan", "S=" + sltRetrCell],
             ["V2", "FLAPS/THS", "CLEAN"],
