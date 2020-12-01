@@ -25,10 +25,10 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
         this.altOver20k = false;
         this._aircraft = Aircraft.A320_NEO;
         this._computedIASAcceleration = 0;
-        this._lowestSelectableSpeed = 0;
-        this._alphaProtectionMin = 0;
-        this._alphaProtectionMax = 0;
-        this._stallSpeed = 0;
+        this._vls = 0;
+        this._vaprot = 0;
+        this._vamax = 0;
+        this._vs = 0;
         this._maxSpeed = 600;
         this._lastMaxSpeedOverride = 600;
         this._lastMaxSpeedOverrideTime = 0;
@@ -83,10 +83,10 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
         this.greenDotSVGShape = null;
         this.stripsSVG = null;
         this.vMaxStripSVG = null;
-        this.vLSStripSVG = null;
-        this.stallProtMinStripSVG = null;
-        this.stallProtMaxStripSVG = null;
-        this.stallStripSVG = null;
+        this.vlsStripSVG = null;
+        this.vaprotStripSVG = null;
+        this.vamaxStripSVG = null;
+        this.vsStripSVG = null;
         this.speedMarkerSVG = null;
         this.speedMarkersWidth = null;
         this.speedMarkersHeight = null;
@@ -467,8 +467,8 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
                     shape.setAttribute("stroke", "red");
                     shape.setAttribute("d", "M 0 0 l " + stripWidth + " 0 l 0 " + (this.stripHeight) + " l " + (-stripWidth) + " 0 Z");
                     this.vMaxStripSVG.appendChild(shape);
-                    const dashHeight = stripWidth * 1.0;
-                    const dashSpacing = dashHeight * 0.75;
+                    const dashHeight = stripWidth * 1.2;
+                    const dashSpacing = dashHeight;
                     let y = this.stripHeight - dashHeight;
                     while (y > 0) {
                         const rect = document.createElementNS(Avionics.SVG.NS, "rect");
@@ -482,28 +482,30 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
                     }
                 }
                 this.stripsSVG.appendChild(this.vMaxStripSVG);
-                this.vLSStripSVG = document.createElementNS(Avionics.SVG.NS, "g");
-                this.vLSStripSVG.setAttribute("id", "VLS");
+                this.vlsStripSVG = document.createElementNS(Avionics.SVG.NS, "g");
+                this.vlsStripSVG.setAttribute("id", "VLS");
                 {
-                    const stripWidth = 9;
+                    const stripWidth = 10;
                     const shape = document.createElementNS(Avionics.SVG.NS, "path");
                     shape.setAttribute("fill", "url(#Backlight)");
                     shape.setAttribute("stroke", "orange");
+                    shape.setAttribute("stroke-width", "3");
                     shape.setAttribute("d", "M 0 0 l " + stripWidth + " 0 l 0 " + (this.stripHeight) + " l " + (-stripWidth) + " 0 Z");
-                    this.vLSStripSVG.appendChild(shape);
+                    this.vlsStripSVG.appendChild(shape);
                 }
-                this.stripsSVG.appendChild(this.vLSStripSVG);
-                this.stallProtMinStripSVG = document.createElementNS(Avionics.SVG.NS, "g");
-                this.stallProtMinStripSVG.setAttribute("id", "StallProtMin");
+                this.stripsSVG.appendChild(this.vlsStripSVG);
+                this.vaprotStripSVG = document.createElementNS(Avionics.SVG.NS, "g");
+                this.vaprotStripSVG.setAttribute("id", "StallProtMin");
                 {
                     const stripWidth = 14;
                     const shape = document.createElementNS(Avionics.SVG.NS, "path");
                     shape.setAttribute("fill", "url(#Backlight)");
                     shape.setAttribute("stroke", "orange");
+                    shape.setAttribute("stroke-width", "2");
                     shape.setAttribute("d", "M 0 0 l " + stripWidth + " 0 l 0 " + (this.stripHeight) + " l " + (-stripWidth) + " 0 Z");
-                    this.stallProtMinStripSVG.appendChild(shape);
-                    const dashHeight = stripWidth * 1.0;
-                    const dashSpacing = dashHeight * 0.75;
+                    this.vaprotStripSVG.appendChild(shape);
+                    const dashHeight = stripWidth * .4;
+                    const dashSpacing = dashHeight * 1.5;
                     let y = 0;
                     while (y < this.stripHeight) {
                         const rect = document.createElementNS(Avionics.SVG.NS, "rect");
@@ -512,22 +514,22 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
                         rect.setAttribute("y", y.toString());
                         rect.setAttribute("width", stripWidth.toString());
                         rect.setAttribute("height", dashHeight.toString());
-                        this.stallProtMinStripSVG.appendChild(rect);
+                        this.vaprotStripSVG.appendChild(rect);
                         y += dashHeight + dashSpacing;
                     }
                 }
-                this.stripsSVG.appendChild(this.stallProtMinStripSVG);
-                this.stallProtMaxStripSVG = document.createElementNS(Avionics.SVG.NS, "g");
-                this.stallProtMaxStripSVG.setAttribute("id", "StallProtMax");
+                this.stripsSVG.appendChild(this.vaprotStripSVG);
+                this.vamaxStripSVG = document.createElementNS(Avionics.SVG.NS, "g");
+                this.vamaxStripSVG.setAttribute("id", "StallProtMax");
                 {
                     const stripWidth = 19;
                     const shape = document.createElementNS(Avionics.SVG.NS, "path");
                     shape.setAttribute("fill", "red");
                     shape.setAttribute("stroke", "red");
                     shape.setAttribute("d", "M 0 0 l " + stripWidth + " 0 l 0 " + (this.stripHeight) + " l " + (-stripWidth) + " 0 Z");
-                    this.stallProtMaxStripSVG.appendChild(shape);
+                    this.vamaxStripSVG.appendChild(shape);
                 }
-                this.stripsSVG.appendChild(this.stallProtMaxStripSVG);
+                this.stripsSVG.appendChild(this.vamaxStripSVG);
             }
             const speedMarkersPosX = _left + _width;
             const speedMarkersPosY = 0;
@@ -641,21 +643,19 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
         const nextFlapSpeed = Simplane.getNextFlapsExtendSpeed(this.aircraft) * crossSpeedFactor;
         // Value used to draw the red VMAX barber pole
         const maxSpeed = A32NX_Selectors.VMAX();
-        const greenDot = Simplane.getGreenDotSpeed() * crossSpeedFactor;
-        const lowestSelectableSpeed = Simplane.getLowestSelectableSpeed();
-        const stallProtectionMin = Simplane.getStallProtectionMinSpeed();
-        const stallProtectionMax = Simplane.getStallProtectionMaxSpeed();
-        const stallSpeed = Simplane.getStallSpeed();
+        const greenDot = SimVar.GetSimVarValue("L:A32NX_GD", "number");
         const planeOnGround = Simplane.getIsGrounded();
-        this.smoothSpeeds(indicatedSpeed, dTime, maxSpeed, lowestSelectableSpeed, stallProtectionMin, stallProtectionMax, stallSpeed);
+        const vs = SimVar.GetSimVarValue("L:A32NX_VS", "number");
+        const vls = SimVar.GetSimVarValue("L:A32NX_VLS", "number");
+        this.smoothSpeeds(indicatedSpeed, dTime, maxSpeed, vls, vs * 1.1, vs * 1.03, vs);
         this.updateSpeedTrendArrow(indicatedSpeed, speedTrend);
         this.updateTargetSpeeds(indicatedSpeed);
         this.updateNextFlapSpeedIndicator(indicatedSpeed, nextFlapSpeed);
         this.updateStrip(this.vMaxStripSVG, indicatedSpeed, this._maxSpeed, false, true);
-        this.updateStrip(this.vLSStripSVG, indicatedSpeed, this._lowestSelectableSpeed, planeOnGround, false);
-        this.updateStrip(this.stallProtMinStripSVG, indicatedSpeed, this._alphaProtectionMin, planeOnGround, false);
-        this.updateStrip(this.stallProtMaxStripSVG, indicatedSpeed, this._alphaProtectionMax, planeOnGround, false);
-        this.updateStrip(this.stallStripSVG, indicatedSpeed, this._stallSpeed, planeOnGround, false);
+        this.updateStrip(this.vlsStripSVG, indicatedSpeed, this._vls, planeOnGround, false);
+        this.updateStrip(this.vaprotStripSVG, indicatedSpeed, this._vaprot, planeOnGround, false);
+        this.updateStrip(this.vamaxStripSVG, indicatedSpeed, this._vamax, planeOnGround, false);
+        this.updateStrip(this.vsStripSVG, indicatedSpeed, this._vs, planeOnGround, false);
         this.updateGreenDot(indicatedSpeed, greenDot);
         this.updateSpeedMarkers(indicatedSpeed);
         this.updateMachSpeed(dTime);
@@ -663,46 +663,13 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
         this.updateVSpeeds();
         this.updateFail();
     }
-    smoothSpeeds(_indicatedSpeed, _dTime, _maxSpeed, _lowestSelectableSpeed, _stallProtectionMin, _stallProtectionMax, _stallSpeed) {
-        let refSpeed = _maxSpeed;
-        if (this.vLSStripSVG) {
-            const delta = _lowestSelectableSpeed - refSpeed;
-            if (delta >= 0) {
-                _lowestSelectableSpeed -= delta + 5;
-            }
-            refSpeed = _lowestSelectableSpeed;
-        }
-        if (this.stallProtMinStripSVG) {
-            const delta = _stallProtectionMin - refSpeed;
-            if (delta >= 0) {
-                _stallProtectionMin -= delta + 5;
-            }
-            refSpeed = _stallProtectionMin;
-        }
-        if (this.stallProtMaxStripSVG) {
-            const delta = _stallProtectionMax - refSpeed;
-            if (delta >= 0) {
-                _stallProtectionMax -= delta + 5;
-            }
-            refSpeed = _stallProtectionMax;
-        }
-        if (this.stallStripSVG) {
-            const delta = _stallSpeed - refSpeed;
-            if (delta >= 0) {
-                _stallProtectionMax -= delta + 5;
-            }
-            refSpeed = _stallSpeed;
-        }
+    smoothSpeeds(_indicatedSpeed, _dTime, _maxSpeed, _vls, _vaprot, _vamax, _vs) {
         const seconds = _dTime / 1000;
         this._maxSpeed = Utils.SmoothSin(this._maxSpeed, _maxSpeed, this._smoothFactor, seconds);
-        this._lowestSelectableSpeed = Utils.SmoothSin(this._lowestSelectableSpeed, _lowestSelectableSpeed, this._smoothFactor, seconds);
-        this._alphaProtectionMin = Utils.SmoothSin(this._alphaProtectionMin, _stallProtectionMin, this._smoothFactor, seconds);
-        this._alphaProtectionMax = Utils.SmoothSin(this._alphaProtectionMax, _stallProtectionMax, this._smoothFactor, seconds);
-        this._stallSpeed = Utils.SmoothSin(this._stallSpeed, _stallSpeed, this._smoothFactor, seconds);
-        const delta = this._alphaProtectionMax - _indicatedSpeed;
-        if (delta >= 0) {
-            this._alphaProtectionMax -= delta;
-        }
+        this._vls = Utils.SmoothSin(this._vls, _vls, this._smoothFactor, seconds);
+        this._vaprot = Utils.SmoothSin(this._vaprot, _vaprot, this._smoothFactor, seconds);
+        this._vamax = Utils.SmoothSin(this._vamax, _vamax, this._smoothFactor, seconds);
+        this._vs = Utils.SmoothSin(this._vs, _vs, this._smoothFactor, seconds);
     }
     updateSpeedOverride(_dTime) {
         if (Math.abs(this._maxSpeed - this._lastMaxSpeedOverride) >= 5) {
@@ -1105,38 +1072,16 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
             }
         }
     }
-    getFlapApproachSpeed() {
-        const dWeight = SimVar.GetSimVarValue("TOTAL WEIGHT", "kilograms") / 1000;
-        switch (true) {
-            case (dWeight <= 50): return 131;
-            case (dWeight <= 55): return Math.ceil(131 + 1.2 * (dWeight - 50));
-            case (dWeight <= 60): return Math.ceil(137 + 1.4 * (dWeight - 55));
-            case (dWeight <= 65): return Math.ceil(144 + dWeight - 60);
-            case (dWeight <= 70): return Math.ceil(149 + 1.2 * (dWeight - 65));
-            case (dWeight <= 75): return Math.ceil(155 + dWeight - 70);
-            default: return Math.ceil(160 + 1.20 * (dWeight - 75));
-        }
-    }
-    getSlatApproachSpeed() {
-        const dWeight = SimVar.GetSimVarValue("TOTAL WEIGHT", "kilograms") / 1000;
-        switch (true) {
-            case (dWeight <= 45): return Math.ceil(152 + 1.8 * (dWeight - 40));
-            case (dWeight <= 50): return Math.ceil(161 + 1.6 * (dWeight - 45));
-            case (dWeight <= 55): return Math.ceil(169 + 1.8 * (dWeight - 50));
-            case (dWeight <= 60): return Math.ceil(178 + 1.6 * (dWeight - 55));
-            default: return Math.ceil(186 + 1.4 * (dWeight - 60));
-        }
-    }
     updateMarkerF(_marker, currentAirspeed) {
         let hideMarker = true;
         const phase = Simplane.getCurrentFlightPhase();
         const flapsHandleIndex = Simplane.getFlapsHandleIndex();
-        if (flapsHandleIndex == 2 || flapsHandleIndex == 3) {
+        if (flapsHandleIndex == 2 || (flapsHandleIndex == 3 && !SimVar.GetSimVarValue("L:A32NX_LANDING_CONF3", "boolean"))) {
             let flapSpeed = 0;
             if (phase == FlightPhase.FLIGHT_PHASE_TAKEOFF || phase == FlightPhase.FLIGHT_PHASE_CLIMB || phase == FlightPhase.FLIGHT_PHASE_GOAROUND) {
                 flapSpeed = Simplane.getStallSpeedPredicted(flapsHandleIndex - 1) * 1.26;
             } else if (phase == FlightPhase.FLIGHT_PHASE_DESCENT || phase == FlightPhase.FLIGHT_PHASE_APPROACH) {
-                flapSpeed = this.getFlapApproachSpeed();
+                flapSpeed = SimVar.GetSimVarValue("L:A32NX_FS", "number");
             }
             if (flapSpeed >= 60) {
                 const posY = this.valueToSvg(currentAirspeed, flapSpeed);
@@ -1158,7 +1103,7 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
             if (phase == FlightPhase.FLIGHT_PHASE_TAKEOFF || phase == FlightPhase.FLIGHT_PHASE_CLIMB || phase == FlightPhase.FLIGHT_PHASE_GOAROUND) {
                 slatSpeed = Simplane.getStallSpeedPredicted(flapsHandleIndex - 1) * 1.25;
             } else if (phase == FlightPhase.FLIGHT_PHASE_DESCENT || phase == FlightPhase.FLIGHT_PHASE_APPROACH) {
-                slatSpeed = this.getSlatApproachSpeed();
+                slatSpeed = SimVar.GetSimVarValue("L:A32NX_SS", "number");
             }
             if (slatSpeed >= 60) {
                 const posY = this.valueToSvg(currentAirspeed, slatSpeed);
@@ -1192,6 +1137,9 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
             _marker.svg.setAttribute("y", (posY - this.speedMarkersHeight * 0.5).toString());
             _marker.svg.setAttribute("visibility", "visible");
         } else {
+            _marker.svg.setAttribute("visibility", "hidden");
+        }
+        if (!Simplane.getIsGrounded()) {
             _marker.svg.setAttribute("visibility", "hidden");
         }
     }
