@@ -23,6 +23,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this.altLock = 0;
         this.updateTypeIIMessage = false;
         this.messageQueue = [];
+        this._destDataChecked = false;
     }
     get templateID() {
         return "A320_Neo_CDU";
@@ -154,13 +155,12 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
 
         // Start the check routine for system health and status
         setInterval(() => {
-            if (this.currentFlightPhase === FlightPhase.FLIGHT_PHASE_CRUISE) {
+            if (this.currentFlightPhase === FlightPhase.FLIGHT_PHASE_CRUISE && !this._destDataChecked) {
                 const dest = this.flightPlanManager.getDestination();
                 if (dest && dest.liveDistanceTo < 180) {
+                    this._destDataChecked = true;
                     this.checkDestData();
                 }
-            } else if (this.currentFlightPhase === FlightPhase.FLIGHT_PHASE_DESCENT || this.currentFlightPhase === FlightPhase.FLIGHT_PHASE_APPROACH) {
-                this.checkDestData();
             }
         }, 15000);
 
@@ -204,7 +204,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
 
     checkDestData() {
         if (!isFinite(this.perfApprQNH) || !isFinite(this.perfApprTemp) || !isFinite(this.perfApprWindHeading) || !isFinite(this.perfApprWindSpeed)) {
-            this.addTypeTwoMessage("ENTER DEST DATA", "#ffff00", () => {}, () => {
+            this.addTypeTwoMessage("ENTER DEST DATA", "#ffff00", () => {
                 return isFinite(this.perfApprQNH) && isFinite(this.perfApprTemp) && isFinite(this.perfApprWindHeading) && isFinite(this.perfApprWindSpeed);
             });
         }
@@ -326,20 +326,20 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     updateGPSMessage() {
         if (!SimVar.GetSimVarValue("L:GPSPrimaryAcknowledged", "Bool")) {
             if (SimVar.GetSimVarValue("L:GPSPrimary", "Bool")) {
+                SimVar.SetSimVarValue("L:A32NX_GPS_PRIMARY_LOST_MSG", "Bool", 0);
                 if (!SimVar.GetSimVarValue("L:GPSPrimaryMessageDisplayed", "Bool")) {
                     SimVar.SetSimVarValue("L:GPSPrimaryMessageDisplayed", "Bool", 1);
-                    SimVar.SetSimVarValue("L:A32NX_GPS_PRIMARY_LOST_MSG", "Bool", 0);
                     this.tryRemoveMessage("GPS PRIMARY LOST");
-                    this.addTypeTwoMessage("GPS PRIMARY", "#ffffff", () => {
+                    this.addTypeTwoMessage("GPS PRIMARY", "#ffffff", () => {}, () => {
                         SimVar.SetSimVarValue("L:GPSPrimaryAcknowledged", "Bool", 1);
                     });
                 }
             } else {
+                SimVar.SetSimVarValue("L:GPSPrimaryMessageDisplayed", "Bool", 0);
                 if (!SimVar.GetSimVarValue("L:A32NX_GPS_PRIMARY_LOST_MSG", "Bool")) {
                     SimVar.SetSimVarValue("L:A32NX_GPS_PRIMARY_LOST_MSG", "Bool", 1);
-                    SimVar.SetSimVarValue("L:GPSPrimaryMessageDisplayed", "Bool", 0);
                     this.tryRemoveMessage("GPS PRIMARY");
-                    this.addTypeTwoMessage("GPS PRIMARY LOST", "#ffff00", () => {
+                    this.addTypeTwoMessage("GPS PRIMARY LOST", "#ffff00", () => {}, () => {
                         SimVar.SetSimVarValue("L:A32NX_GPS_PRIMARY_LOST_MSG", "Bool", 1);
                     });
                 }
@@ -367,20 +367,20 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
      * Add Type II Message
      * @param message {string} Message to be displayed
      * @param color {string} Color of Message
-     * @param f {function} Function gets executed when error message has been cleared
      * @param c {function} Function that checks for validity of error message
+     * @param f {function} Function gets executed when error message has been cleared
      */
-    addTypeTwoMessage(message, color = "#ffffff", f = () => {}, c = () => {
+    addTypeTwoMessage(message, color = "#ffffff", c = () => {}, f = () => {
         return false;
     }) {
         if (this.checkForMessage(message)) {
             // Before adding message to queue, check other messages in queue for validity
             for (let i = 0; i < this.messageQueue.length; i++) {
-                if (this.messageQueue[i][3]()) {
+                if (this.messageQueue[i][2](this)) {
                     this.messageQueue.splice(i, 1);
                 }
             }
-            this.messageQueue.unshift([message, color, f, c]);
+            this.messageQueue.unshift([message, color, c, f]);
             if (this.messageQueue.length > 5) {
                 this.messageQueue.splice(5, 1);
             }
@@ -389,14 +389,15 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     }
 
     tryShowMessage() {
-        if (!this.isDisplayingErrorMessage && !this.inOut && this.messageQueue.length > 0) {
-            if (this.messageQueue[0][3]()) {
-                this.tryRemoveMessage(this.messageQueue[0][0]);
-                return this.tryShowMessage();
+        if (!this.isDisplayingErrorMessage && (!this.inOut || this.isDisplayingTypeTwoMessage) && this.messageQueue.length > 0) {
+            if (this.messageQueue[0][2](this)) {
+                return this.tryRemoveMessage(this.messageQueue[0][0]);
             }
             if (!this.isDisplayingErrorMessage) {
-                this.isDisplayingTypeTwoMessage = true;
-                this.lastUserInput = this.inOut;
+                if (!this.isDisplayingTypeTwoMessage) {
+                    this.isDisplayingTypeTwoMessage = true;
+                    this.lastUserInput = this.inOut;
+                }
                 this.inOut = this.messageQueue[0][0];
                 this._inOutElement.style.color = this.messageQueue[0][1];
             }
@@ -410,7 +411,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     tryRemoveMessage(message = this.inOut) {
         for (let i = 0; i < this.messageQueue.length; i++) {
             if (this.messageQueue[i][0] === message) {
-                this.messageQueue[i][2]();
+                this.messageQueue[i][3](this);
                 this.messageQueue.splice(i, 1);
                 break;
             }
@@ -424,10 +425,26 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         }
         for (let i = 0; i < this.messageQueue.length; i++) {
             if (this.messageQueue[i][0] === message) {
+                if (i !== 0) {
+                    this.messageQueue.unshift(this.messageQueue[i]);
+                    this.messageQueue.splice(i + 1, 1);
+                    this.tryShowMessage();
+                }
                 return false;
             }
         }
         return true;
+    }
+
+    /**
+     * This handler will write data to the scratchpad
+     * @param data {string}
+     */
+    sendDataToScratchpad(data) {
+        this.isDisplayingErrorMessage = false;
+        this.isDisplayingTypeTwoMessage = false;
+        this._inOutElement.style.color = "#ffffff";
+        this.inOut = data;
     }
 
     tryUpdateAltitudeConstraint(force = false) {
@@ -670,7 +687,10 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         }
     }
     onFlightPhaseChanged() {
-        if (this.currentFlightPhase === FlightPhase.FLIGHT_PHASE_CLIMB) {
+        if (this.currentFlightPhase === FlightPhase.FLIGHT_PHASE_TAKEOFF) {
+            this._destDataChecked = false;
+        } else if (this.currentFlightPhase === FlightPhase.FLIGHT_PHASE_CLIMB) {
+            this._destDataChecked = false;
             let preSelectedClbSpeed = this.preSelectedClbSpeed;
             if (SimVar.GetSimVarValue("L:A32NX_GOAROUND_PASSED", "bool") === 1) {
                 preSelectedClbSpeed = this.getPerfGreenDotSpeed();
@@ -685,10 +705,13 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                 SimVar.SetSimVarValue("K:SPEED_SLOT_INDEX_SET", "number", 1);
             }
         } else if (this.currentFlightPhase === FlightPhase.FLIGHT_PHASE_DESCENT) {
+            this.checkDestData();
             if (isFinite(this.preSelectedDesSpeed)) {
                 this.setAPSelectedSpeed(this.preSelectedDesSpeed, Aircraft.A320_NEO);
                 SimVar.SetSimVarValue("K:SPEED_SLOT_INDEX_SET", "number", 1);
             }
+        } else if (this.currentFlightPhase === FlightPhase.FLIGHT_PHASE_APPROACH) {
+            this.checkDestData();
         }
         //TODO something for Goaround? Like Green Dot Speed SRS etc ...
     }
