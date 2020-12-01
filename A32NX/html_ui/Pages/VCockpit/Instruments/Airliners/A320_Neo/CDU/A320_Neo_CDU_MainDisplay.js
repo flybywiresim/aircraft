@@ -21,7 +21,6 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this.activeWaypointIdx = -1;
         this.constraintAlt = 0;
         this.altLock = 0;
-        this.updateTypeIIMessage = false;
         this.messageQueue = [];
         this._destDataChecked = false;
     }
