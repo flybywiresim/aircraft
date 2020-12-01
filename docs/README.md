@@ -14,8 +14,8 @@ Enabled = true
 ReverseOnAxis = false
 DetentReverseFull = -1.00
 DetentIdle = -1.00
-DetentClimb = 0.66
-DetentFlexMct = 0.88
+DetentClimb = 0.89
+DetentFlexMct = 0.95
 DetentTakeOffGoAround = 1.00
 ```
 

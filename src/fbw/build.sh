@@ -9,7 +9,7 @@ set -ex
 
 clang++ \
   -Wno-unused-command-line-argument \
-  --sysroot "${MSFS_SDK}/wasi-sysroot" \
+  --sysroot "${MSFS_SDK}/WASM/wasi-sysroot" \
   -target wasm32-unknown-wasi \
   -D_MSFS_WASM=1 \
   -D__wasi__ \
