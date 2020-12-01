@@ -1743,13 +1743,19 @@ class FMCMainDisplay extends BaseAirliners {
             return false;
         }
         const phase = Simplane.getCurrentFlightPhase();
-        if (fl < Math.floor(Math.max(0, Simplane.getAutoPilotDisplayedAltitudeLockValue()) / 100) && phase === FlightPhase.FLIGHT_PHASE_CRUISE) {
+        const selFl = Math.floor(Math.max(0, Simplane.getAutoPilotSelectedAltitudeLockValue("feet")) / 100);
+        if (fl < selFl && phase === FlightPhase.FLIGHT_PHASE_CLIMB) {
             this.showErrorMessage(this.defaultInputErrorMessage);
             return false;
         }
         if (fl > Math.floor(Simplane.getAltitude() / 100) && phase > FlightPhase.FLIGHT_PHASE_CRUISE) {
             this.showErrorMessage("ENTRY OUT OF RANGE");
             return false;
+        }
+        if (fl < selFl && fl < 10 && phase === FlightPhase.FLIGHT_PHASE_CLIMB || phase === FlightPhase.FLIGHT_PHASE_CRUISE) {
+            this.cruiseFlightLevel = selFl;
+            this._cruiseEntered = true;
+            return true;
         }
         if (fl > 0 && fl <= this.maxCruiseFL) {
             this.cruiseFlightLevel = fl;
