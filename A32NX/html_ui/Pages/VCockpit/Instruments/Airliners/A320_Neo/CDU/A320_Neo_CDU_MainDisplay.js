@@ -20,6 +20,9 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this.currentFlightPhase = FlightPhase.FLIGHT_PHASE_PREFLIGHT;
         this.activeWaypointIdx = -1;
         this.constraintAlt = 0;
+        this.constraintAltCached = 0;
+        this.fcuSelAlt = 0;
+        this.updateTypeIIMessage = false;
         this.altLock = 0;
         this.messageQueue = [];
         this._destDataChecked = false;
@@ -300,6 +303,8 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this.updateScreenState();
 
         this.updateGPSMessage();
+
+        this.updateDisplayedConstraints();
     }
 
     /**
@@ -352,6 +357,38 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         } else {
             this.electricity.style.display = "none";
         }
+    }
+
+    updateDisplayedConstraints(force = false) {
+        const fcuSelAlt = Simplane.getAutoPilotDisplayedAltitudeLockValue("feet");
+        if (!force && fcuSelAlt === this.fcuSelAlt) {
+            return;
+        }
+        this.fcuSelAlt = fcuSelAlt;
+        this.constraintAlt = A32NX_ConstraintManager.getDisplayedConstraintAltitude(
+            this.currentFlightPhase,
+            this.fcuSelAlt,
+            this.constraintAltCached
+        );
+    }
+
+    tryUpdateConstraints() {
+        const activeWpIdx = this.flightPlanManager.getActiveWaypointIndex();
+        if (activeWpIdx === this.activeWpIdx) {
+            return;
+        }
+        this.activeWpIdx = activeWpIdx;
+        this.updateConstraints();
+    }
+
+    updateConstraints() {
+        this.constraintAltCached = A32NX_ConstraintManager.getConstraintAltitude(
+            this.currentFlightPhase,
+            this.flightPlanManager,
+            this.activeWaypointIdx,
+            this.constraintAltCached
+        );
+        this.updateDisplayedConstraints(true);
     }
 
     forceClearScratchpad() {
@@ -686,6 +723,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         }
     }
     onFlightPhaseChanged() {
+        this.updateConstraints();
         if (this.currentFlightPhase === FlightPhase.FLIGHT_PHASE_TAKEOFF) {
             this._destDataChecked = false;
         } else if (this.currentFlightPhase === FlightPhase.FLIGHT_PHASE_CLIMB) {
@@ -1090,7 +1128,6 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             }
             SimVar.SetSimVarValue("SIMVAR_AUTOPILOT_AIRSPEED_MIN_CALCULATED", "knots", Simplane.getStallProtectionMinSpeed());
             SimVar.SetSimVarValue("SIMVAR_AUTOPILOT_AIRSPEED_MAX_CALCULATED", "knots", Simplane.getMaxSpeed(Aircraft.A320_NEO));
-            this.tryUpdateAltitudeConstraint();
             if (this.isAltitudeManaged()) {
                 const prevWaypoint = this.flightPlanManager.getPreviousActiveWaypoint();
                 const nextWaypoint = this.flightPlanManager.getActiveWaypoint();
@@ -1129,6 +1166,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                     } else {
                         SimVar.SetSimVarValue("L:AIRLINER_FMS_SHOW_TOP_DSCNT", "number", 0);
                     }
+                    this.tryUpdateConstraints();
                     if (this.constraintAlt) {
                         SimVar.SetSimVarValue("L:A32NX_AP_CSTN_ALT", "feet", this.constraintAlt);
                         Coherent.call("AP_ALT_VAR_SET_ENGLISH", 2, this.constraintAlt, this._forceNextAltitudeUpdate);

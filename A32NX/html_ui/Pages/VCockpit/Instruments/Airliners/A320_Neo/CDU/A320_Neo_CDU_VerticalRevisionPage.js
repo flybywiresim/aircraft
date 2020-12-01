@@ -78,7 +78,7 @@ class CDUVerticalRevisionPage {
             mcdu.onRightInput[2] = (value) => {
                 if (value === FMCMainDisplay.clrValue) {
                     mcdu.removeWaypoint(fpIndex, () => {
-                        mcdu.tryUpdateAltitudeConstraint(true);
+                        mcdu.updateConstraints();
                         CDUFlightPlanPage.ShowPage(mcdu, offset);
                     });
                 }
@@ -104,7 +104,7 @@ class CDUVerticalRevisionPage {
                     if (altitude >= 0) {
                         mcdu.flightPlanManager.setLegAltitudeDescription(waypoint, code);
                         mcdu.flightPlanManager.setWaypointAltitude((altitude < 1000 ? altitude * 100 : altitude) / 3.28084, mcdu.flightPlanManager.indexOfWaypoint(waypoint), () => {
-                            mcdu.tryUpdateAltitudeConstraint(true);
+                            mcdu.updateConstraints();
                             this.ShowPage(mcdu, waypoint);
                         });
                     }
