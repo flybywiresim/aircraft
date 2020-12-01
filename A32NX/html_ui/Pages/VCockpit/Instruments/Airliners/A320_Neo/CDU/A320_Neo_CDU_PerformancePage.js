@@ -54,7 +54,7 @@ class CDUPerformancePage {
                 SimVar.SetSimVarValue("L:AIRLINER_V1_SPEED", "Knots", -1);
                 CDUPerformancePage.ShowTAKEOFFPage(mcdu);
             } else if (value === "") {
-                mcdu.inOut = mcdu._getV1Speed().toString();
+                mcdu.sendDataToScratchpad(mcdu._getV1Speed().toString());
                 CDUPerformancePage.ShowTAKEOFFPage(mcdu);
             } else {
                 if (mcdu.trySetV1Speed(value)) {
@@ -72,7 +72,7 @@ class CDUPerformancePage {
                 SimVar.SetSimVarValue("L:AIRLINER_VR_SPEED", "Knots", -1);
                 CDUPerformancePage.ShowTAKEOFFPage(mcdu);
             } else if (value === "") {
-                mcdu.inOut = mcdu._getVRSpeed().toString();
+                mcdu.sendDataToScratchpad(mcdu._getVRSpeed().toString());
                 CDUPerformancePage.ShowTAKEOFFPage(mcdu);
             } else {
                 if (mcdu.trySetVRSpeed(value)) {
@@ -90,7 +90,7 @@ class CDUPerformancePage {
                 SimVar.SetSimVarValue("L:AIRLINER_V2_SPEED", "Knots", -1);
                 CDUPerformancePage.ShowTAKEOFFPage(mcdu);
             } else if (value === "") {
-                mcdu.inOut = mcdu._getV2Speed().toString();
+                mcdu.sendDataToScratchpad(mcdu._getV2Speed().toString());
                 CDUPerformancePage.ShowTAKEOFFPage(mcdu);
             } else {
                 if (mcdu.trySetV2Speed(value)) {
@@ -668,9 +668,7 @@ class CDUPerformancePage {
         }
         thrRedAcc += "[color]blue";
 
-        mcdu.onLeftInput[4] = () => {
-            const value = mcdu.inOut;
-            mcdu.clearUserInput();
+        mcdu.onLeftInput[4] = (value) => {
             if (mcdu.trySetThrustReductionAccelerationAltitudeGoaround(value)) {
                 CDUPerformancePage.ShowGOAROUNDPage(mcdu);
             }
@@ -684,9 +682,7 @@ class CDUPerformancePage {
         }
         engOut += "[color]blue";
 
-        mcdu.onRightInput[4] = () => {
-            const value = mcdu.inOut;
-            mcdu.clearUserInput();
+        mcdu.onRightInput[4] = (value) => {
             if (mcdu.trySetEngineOutAcceleration(value)) {
                 CDUPerformancePage.ShowGOAROUNDPage(mcdu);
             }
