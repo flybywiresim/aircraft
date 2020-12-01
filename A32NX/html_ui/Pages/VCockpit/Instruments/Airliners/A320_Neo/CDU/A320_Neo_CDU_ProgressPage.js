@@ -48,7 +48,7 @@ class CDUProgressPage {
             CDUProgressPage.ShowPredictiveGPSPage(mcdu);
         };
         mcdu.setTemplate([
-            ["ECON " + flightPhase + " " + flightNo],
+            ["{green}ECON " + flightPhase + "{end} " + flightNo],
             [flightPhase, "REC MAX", "OPT"],
             [flCrz, "FL" + flMax.toString() + "[color]magenta", flOpt],
             [""],
