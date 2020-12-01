@@ -9,18 +9,23 @@ set -ex
 
 clang++ \
   -Wno-unused-command-line-argument \
-  --sysroot "${WASI_SYSROOT}" \
+  --sysroot "${MSFS_SDK}/wasi-sysroot" \
   -target wasm32-unknown-wasi \
   -D_MSFS_WASM=1 \
+  -D__wasi__ \
+  -D_LIBCPP_HAS_NO_THREADS \
+  -D_WINDLL \
+  -D_MBCS \
   -fno-exceptions \
   -fms-extensions \
   -fvisibility=hidden \
+  -Wl,--strip-debug \
+  -Wl,--no-entry \
   -Wl,--export=malloc \
   -Wl,--export=free \
   -Wl,--export=__wasm_call_ctors \
   -Wl,--export-table \
   -Wl,--allow-undefined \
-  -mexec-model=reactor \
   -I "${MSFS_SDK}/WASM/include" \
   -I "${MSFS_SDK}/SimConnect SDK/include" \
   -I "${DIR}/src/inih" \
@@ -33,5 +38,3 @@ clang++ \
   "${DIR}/src/InterpolatingLookupTable.cpp" \
   "${DIR}/src/main.cpp" \
   -o $OUTPUT
-
-wasm-opt -O4 --strip-debug --strip-producers $OUTPUT -o $OUTPUT
