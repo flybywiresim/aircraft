@@ -110,7 +110,7 @@ class CDUAirportsMonitor {
             if (this.page2) {
                 this.user_ap_line = [""];
             } else {
-                this.user_ap_line = ["[][color]blue", ""];
+                this.user_ap_line = ["[][color]cyan", ""];
             }
         } else if (this.total_delta_t === 0) {
             // calculate values for user selected airport
@@ -191,7 +191,7 @@ class CDUAirportsMonitor {
                     [""],
                     this.user_ap_line,
                     ["", "", this.frozen ? "LIST FROZEN" : ""],
-                    [this.frozen ? "{UNFREEZE[color]blue" : "{FREEZE[color]blue", "EFOB/WIND>"]
+                    [this.frozen ? "{UNFREEZE[color]cyan" : "{FREEZE[color]cyan", "EFOB/WIND>"]
                 ]);
 
                 // force spaces to emulate 4 columns

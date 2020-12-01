@@ -42,8 +42,8 @@ class CDUFlightPlanPage {
         let rowsCount = 6;
         if (mcdu.flightPlanManager.getCurrentFlightPlanIndex() === 1) {
             rowsCount = 5;
-            rows[10] = ["TMPY[color]red", "TMPY[color]red"];
-            rows[11] = ["*ERASE[color]red", "INSERT*[color]red"];
+            rows[10] = ["TMPY[color]amber", "TMPY[color]amber"];
+            rows[11] = ["*ERASE[color]amber", "INSERT*[color]amber"];
             mcdu.onLeftInput[5] = async () => {
                 mcdu.eraseTemporaryFlightPlan(() => {
                     CDUFlightPlanPage.ShowPage(mcdu, 0);
@@ -308,8 +308,8 @@ class CDUFlightPlanPage {
                         if (mcdu.activeHold && mcdu.activeHold.has(waypoint.ident)) {
                             const holdRows = [
                                 [waypoint.ident + "[color]" + color, speedConstraint + "/" + altitudeConstraint + "[s-text][color]" + color, timeCell + "[color]" + color],
-                                ["" , "IMM[color]blue" , "HOLD"],
-                                ["HOLD " + mcdu.activeHold.get(waypoint.ident).turn + "[color]" + color, "EXIT*[color]blue", "SPD " + mcdu.activeHold.get(waypoint.ident).speed],
+                                ["" , "IMM[color]cyan" , "HOLD"],
+                                ["HOLD " + mcdu.activeHold.get(waypoint.ident).turn + "[color]" + color, "EXIT*[color]cyan", "SPD " + mcdu.activeHold.get(waypoint.ident).speed],
                                 ["C" + mcdu.activeHold.get(waypoint.ident).course.toFixed(0) + "°"],
                                 [waypoint.ident + "[color]" + color, speedConstraint + "/" + altitudeConstraint + "[s-text][color]" + color, timeCell + "[color]" + color]
                             ];

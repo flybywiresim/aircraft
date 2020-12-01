@@ -127,7 +127,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                         const sender = msg["from"]["flight"];
 
                         const lines = [];
-                        lines.push("FROM " + sender + "[color]blue");
+                        lines.push("FROM " + sender + "[color]cyan");
                         const incLines = msg["message"].split(";");
                         incLines.forEach(l => lines.push(l.concat("[color]green")));
                         lines.push('---------------------------[color]white');
@@ -172,9 +172,10 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     _formatCell(str) {
         return str
             .replace(/{small}/g, "<span class='s-text'>")
+            .replace(/{amber}/g, "<span class='amber'>")
             .replace(/{red}/g, "<span class='red'>")
             .replace(/{green}/g, "<span class='green'>")
-            .replace(/{blue}/g, "<span class='blue'>")
+            .replace(/{cyan}/g, "<span class='cyan'>")
             .replace(/{white}/g, "<span class='white'>")
             .replace(/{magenta}/g, "<span class='magenta'>")
             .replace(/{inop}/g, "<span class='inop'>")
@@ -206,7 +207,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
 
     checkDestData() {
         if (!isFinite(this.perfApprQNH) || !isFinite(this.perfApprTemp) || !isFinite(this.perfApprWindHeading) || !isFinite(this.perfApprWindSpeed)) {
-            this.addTypeTwoMessage("ENTER DEST DATA", "#ffff00", () => {
+            this.addTypeTwoMessage("ENTER DEST DATA", true, () => {
                 return isFinite(this.perfApprQNH) && isFinite(this.perfApprTemp) && isFinite(this.perfApprWindHeading) && isFinite(this.perfApprWindSpeed);
             });
         }
@@ -334,7 +335,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                 if (!SimVar.GetSimVarValue("L:GPSPrimaryMessageDisplayed", "Bool")) {
                     SimVar.SetSimVarValue("L:GPSPrimaryMessageDisplayed", "Bool", 1);
                     this.tryRemoveMessage("GPS PRIMARY LOST");
-                    this.addTypeTwoMessage("GPS PRIMARY", "#ffffff", () => {}, () => {
+                    this.addTypeTwoMessage("GPS PRIMARY", false, () => {
                         SimVar.SetSimVarValue("L:GPSPrimaryAcknowledged", "Bool", 1);
                     });
                 }
@@ -343,7 +344,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                 if (!SimVar.GetSimVarValue("L:A32NX_GPS_PRIMARY_LOST_MSG", "Bool")) {
                     SimVar.SetSimVarValue("L:A32NX_GPS_PRIMARY_LOST_MSG", "Bool", 1);
                     this.tryRemoveMessage("GPS PRIMARY");
-                    this.addTypeTwoMessage("GPS PRIMARY LOST", "#ffff00", () => {}, () => {
+                    this.addTypeTwoMessage("GPS PRIMARY LOST", true, () => {
                         SimVar.SetSimVarValue("L:A32NX_GPS_PRIMARY_LOST_MSG", "Bool", 1);
                     });
                 }
@@ -402,11 +403,11 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     /**
      * Add Type II Message
      * @param message {string} Message to be displayed
-     * @param color {string} Color of Message
+     * @param isAmber {boolean} Is color amber
      * @param c {function} Function that checks for validity of error message
      * @param f {function} Function gets executed when error message has been cleared
      */
-    addTypeTwoMessage(message, color = "#ffffff", c = () => {}, f = () => {
+    addTypeTwoMessage(message, isAmber = false, c = () => {}, f = () => {
         return false;
     }) {
         if (this.checkForMessage(message)) {
@@ -416,7 +417,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                     this.messageQueue.splice(i, 1);
                 }
             }
-            this.messageQueue.unshift([message, color, c, f]);
+            this.messageQueue.unshift([message, isAmber, c, f]);
             if (this.messageQueue.length > 5) {
                 this.messageQueue.splice(5, 1);
             }
@@ -435,7 +436,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                     this.lastUserInput = this.inOut;
                 }
                 this.inOut = this.messageQueue[0][0];
-                this._inOutElement.style.color = this.messageQueue[0][1];
+                this._inOutElement.className = this.messageQueue[0][1] ? "amber" : "white";
             }
         }
     }
@@ -479,7 +480,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     sendDataToScratchpad(data) {
         this.isDisplayingErrorMessage = false;
         this.isDisplayingTypeTwoMessage = false;
-        this._inOutElement.style.color = "#ffffff";
+        this._inOutElement.className = "white";
         this.inOut = data;
     }
 

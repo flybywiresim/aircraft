@@ -52,7 +52,7 @@ class CDUVerticalRevisionPage {
                 [" CLB SPD LIM", ""],
                 [climbSpeedLimit + "/" + climbAltLimit + "[color]magenta", "RTA>"],
                 [" SPD CSTR", "ALT CSTR "],
-                [speedConstraint ? speedConstraint + "[color]magenta" : "*[\xa0\xa0\xa0][color]blue", altitudeConstraint ? altitudeConstraint + "[color]magenta" : "[\xa0\xa0\xa0\xa0]*[color]blue"],
+                [speedConstraint ? speedConstraint + "[color]magenta" : "*[\xa0\xa0\xa0][color]cyan", altitudeConstraint ? altitudeConstraint + "[color]magenta" : "[\xa0\xa0\xa0\xa0]*[color]cyan"],
                 ["", ""],
                 ["", ""],
                 [""],

@@ -15,7 +15,7 @@ class CDUCfdsMainMenu {
             [""],
             ["<SYSTEM REPORT / TEST"],
             ["", "", "POST"],
-            ["*SEND[color]blue", "PRINT*[color]blue", "FLT REP"]
+            ["*SEND[color]cyan", "PRINT*[color]cyan", "FLT REP"]
         ]);
 
         mcdu.leftInputDelay[3] = () => {
