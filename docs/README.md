@@ -4,8 +4,11 @@ Fill me out!
 
 ## Custom Fly-By-Wire
 
-The configuration of the throttle can be found here:
+In case of Microsoft Store version, the configuration of the throttle can be found here:
 `%LOCALAPPDATA%\Packages\Microsoft.FlightSimulator_8wekyb3d8bbwe\LocalState\packages\<name of a32nx folder in community folder>\work\ThrottleConfiguration.ini`
+
+In case of Steam version, the configuration of the throttle can be found here:
+`%APPDATA%\Roaming\Microsoft Flight Simulator\Packages\<name of a32nx folder in community folder>\work\ThrottleConfiguration.ini`
 
 This is the default configuration:
 ```
