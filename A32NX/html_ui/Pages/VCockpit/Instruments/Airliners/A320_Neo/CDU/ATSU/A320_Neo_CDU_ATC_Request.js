@@ -3,13 +3,13 @@ class CDUAtcRequest {
         mcdu.clearDisplay();
 
         if (store["dirTo"] == "") {
-            store["dirTo"] = "[\xa0\xa0\xa0][color]blue";
+            store["dirTo"] = "[\xa0\xa0\xa0][color]cyan";
         }
         if (store["flAlt"] == "") {
-            store["flAlt"] = "[\xa0\xa0\xa0][color]blue";
+            store["flAlt"] = "[\xa0\xa0\xa0][color]cyan";
         }
         if (store["spdMach"] == "") {
-            store["spdMach"] = "[\xa0][color]blue";
+            store["spdMach"] = "[\xa0][color]cyan";
         }
 
         mcdu.setTemplate([
@@ -21,7 +21,7 @@ class CDUAtcRequest {
             [""],
             [""],
             ["\xa0DUE TO", "DUE TO\xa0"],
-            ["{blue}{{end}WEATHER", "A/C PERF{blue}}{end}"],
+            ["{cyan}{{end}WEATHER", "A/C PERF{cyan}}{end}"],
             [""],
             [""],
             ["\xa0ATC MENU", "XFR TO\xa0[color]inop"],
@@ -33,7 +33,7 @@ class CDUAtcRequest {
         };
         mcdu.onLeftInput[0] = (value) => {
             if (value != "") {
-                store["dirTo"] = "[" + value + "][color]blue";
+                store["dirTo"] = "[" + value + "][color]cyan";
             }
             CDUAtcRequest.ShowPage(mcdu, store);
         };
@@ -43,7 +43,7 @@ class CDUAtcRequest {
         };
         mcdu.onRightInput[0] = (value) => {
             if (value != "") {
-                store["flAlt"] = "[" + value + "][color]blue";
+                store["flAlt"] = "[" + value + "][color]cyan";
             }
             CDUAtcRequest.ShowPage(mcdu, store);
         };
@@ -53,7 +53,7 @@ class CDUAtcRequest {
         };
         mcdu.onRightInput[0] = (value) => {
             if (value != "") {
-                store["spdMach"] = "[" + value + "][color]blue";
+                store["spdMach"] = "[" + value + "][color]cyan";
             }
             CDUAtcRequest.ShowPage(mcdu, store);
         };

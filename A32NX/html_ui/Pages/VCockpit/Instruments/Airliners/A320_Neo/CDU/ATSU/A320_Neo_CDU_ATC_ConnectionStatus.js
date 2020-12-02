@@ -10,7 +10,7 @@ class CDUAtcConnectionStatus {
         mcdu.setTemplate([
             ["CONNECTION STATUS"],
             ["ACTIVE ATC"],
-            ["____[color]red"],
+            ["____[color]amber"],
             ["NEXT ATC"],
             ["----"],
             ["", "MAX UPLINK DELAY\xa0"],

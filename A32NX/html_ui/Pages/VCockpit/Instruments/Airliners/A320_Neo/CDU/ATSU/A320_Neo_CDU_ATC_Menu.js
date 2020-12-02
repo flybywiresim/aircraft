@@ -14,7 +14,7 @@ class CDUAtcMenu {
             [""],
             ["<CONNECTION", ""],
             ["\xa0ATSU DLK"],
-            ["<RETURN", "EMERGENCY>[color]red"]
+            ["<RETURN", "EMERGENCY>[color]amber"]
         ]);
 
         mcdu.leftInputDelay[0] = () => {

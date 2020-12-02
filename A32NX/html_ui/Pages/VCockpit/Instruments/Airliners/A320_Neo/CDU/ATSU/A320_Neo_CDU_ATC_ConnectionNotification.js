@@ -3,15 +3,15 @@ class CDUAtcConnectionNotification {
         mcdu.clearDisplay();
         const canNotify = "";
         let flightNo = "______[color]green";
-        let fromTo = "____|____[color]red";
+        let fromTo = "____|____[color]amber";
         if (store["atcCenter"] == "") {
-            store["atcCenter"] = "____[color]red";
+            store["atcCenter"] = "____[color]amber";
         }
         if (SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string", "FMC")) {
             flightNo = SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string", "FMC") + "[color]green";
         }
         if (mcdu.flightPlanManager.getDestination() && mcdu.flightPlanManager.getDestination().ident) {
-            fromTo = mcdu.flightPlanManager.getOrigin().ident + "/" + mcdu.flightPlanManager.getDestination().ident + "[color]blue";
+            fromTo = mcdu.flightPlanManager.getOrigin().ident + "/" + mcdu.flightPlanManager.getDestination().ident + "[color]cyan";
         }
 
         mcdu.setTemplate([

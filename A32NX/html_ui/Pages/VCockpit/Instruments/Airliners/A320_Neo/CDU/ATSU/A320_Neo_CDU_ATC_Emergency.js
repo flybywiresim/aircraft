@@ -7,9 +7,9 @@ class CDUAtcEmergency {
         let setAds = "SET\xa0";
 
         if (store["emergType"] == 0) {
-            mayday += "[color]blue";
+            mayday += "[color]cyan";
         } else {
-            panpan += "[color]blue";
+            panpan += "[color]cyan";
         }
         if (store["emergAds"] == 0) {
             ads += "OFF";
@@ -19,25 +19,25 @@ class CDUAtcEmergency {
             setAds += "OFF";
         }
         if (store["des"] == "") {
-            store["des"] = "_____[color]red";
+            store["des"] = "_____[color]amber";
         }
         if (store["div"] == "") {
-            store["div"] = "____/____[color]red";
+            store["div"] = "____/____[color]amber";
         }
         if (store["freq"] == "") {
-            store["freq"] = "[121.5][color]blue";
+            store["freq"] = "[121.5][color]cyan";
         }
 
         mcdu.setTemplate([
-            ["EMERGENCY[color]red"],
+            ["EMERGENCY[color]amber"],
             ["", ads + "\xa0"],
-            [mayday, setAds + "*[color]blue"],
+            [mayday, setAds + "*[color]cyan"],
             ["", "DESCENDING TO\xa0"],
             [panpan, store["des"]],
             ["", "DIVERTING VIA\xa0"],
             ["", store["div"]],
-            ["\xa0VOICE[color]blue", "FREQ\xa0"],
-            ["\xa0CONTACT[color]blue", store["freq"]],
+            ["\xa0VOICE[color]cyan", "FREQ\xa0"],
+            ["\xa0CONTACT[color]cyan", store["freq"]],
             ["\xa0ALL FIELDS"],
             ["*ERASE"],
             ["\xa0ATC MENU", "ATC\xa0[color]inop"],
@@ -94,7 +94,7 @@ class CDUAtcEmergency {
         };
         mcdu.onRightInput[1] = (value) => {
             if (value != "") {
-                store["des"] = value + "[color]blue";
+                store["des"] = value + "[color]cyan";
             }
             CDUAtcEmergency.ShowPage(mcdu, store);
         };
@@ -104,7 +104,7 @@ class CDUAtcEmergency {
         };
         mcdu.onRightInput[2] = (value) => {
             if (value != "") {
-                store["div"] = value + "[color]blue";
+                store["div"] = value + "[color]cyan";
             }
             CDUAtcEmergency.ShowPage(mcdu, store);
         };
@@ -114,7 +114,7 @@ class CDUAtcEmergency {
         };
         mcdu.onRightInput[3] = (value) => {
             if (value != "") {
-                store["freq"] = "[" + value + "][color]blue";
+                store["freq"] = "[" + value + "][color]cyan";
             }
             CDUAtcEmergency.ShowPage(mcdu, store);
         };

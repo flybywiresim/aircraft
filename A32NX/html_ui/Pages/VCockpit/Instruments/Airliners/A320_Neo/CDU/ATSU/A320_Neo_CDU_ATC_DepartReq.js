@@ -2,28 +2,28 @@ class CDUAtcDepartReq {
     static ShowPage(mcdu, store = {"gate": "", "atis": "", "freeText": ""}) {
         mcdu.clearDisplay();
 
-        let flightNo = "______[color]red";
-        let fromTo = "____|____[color]red";
+        let flightNo = "______[color]amber";
+        let fromTo = "____|____[color]amber";
         if (store["gate"] == "") {
-            store["gate"] = "___[color]red";
+            store["gate"] = "___[color]amber";
         }
         if (store["atis"] == "") {
-            store["atis"] = "_[color]red";
+            store["atis"] = "_[color]amber";
         }
         if (store["freeText"] == "") {
-            store["freeText"] = "[\xa0\xa0\xa0][color]blue";
+            store["freeText"] = "[\xa0\xa0\xa0][color]cyan";
         }
         if (SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string", "FMC")) {
             flightNo = SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string", "FMC") + "[color]green";
         }
         if (mcdu.flightPlanManager.getDestination() && mcdu.flightPlanManager.getDestination().ident) {
-            fromTo = mcdu.flightPlanManager.getOrigin().ident + "/" + mcdu.flightPlanManager.getDestination().ident + "[color]blue";
+            fromTo = mcdu.flightPlanManager.getOrigin().ident + "/" + mcdu.flightPlanManager.getDestination().ident + "[color]cyan";
         }
 
         mcdu.setTemplate([
             ["DEPART REQUEST"],
             ["ATC FLT NBR", "A/C TYPE"],
-            [flightNo, "A20N[color]blue"],
+            [flightNo, "A20N[color]cyan"],
             ["FROM/TO"],
             [fromTo],
             ["GATE", "ATIS"],
@@ -41,7 +41,7 @@ class CDUAtcDepartReq {
         };
         mcdu.onLeftInput[2] = (value) => {
             if (value != "") {
-                store["gate"] = value + "[color]blue";
+                store["gate"] = value + "[color]cyan";
             }
             CDUAtcDepartReq.ShowPage(mcdu, store);
         };
@@ -51,7 +51,7 @@ class CDUAtcDepartReq {
         };
         mcdu.onRightInput[2] = (value) => {
             if (value != "") {
-                store["atis"] = value + "[color]blue";
+                store["atis"] = value + "[color]cyan";
             }
             CDUAtcDepartReq.ShowPage(mcdu, store);
         };
@@ -61,7 +61,7 @@ class CDUAtcDepartReq {
         };
         mcdu.onLeftInput[3] = (value) => {
             if (value != "") {
-                store["freeText"] = "[" + value + "][color]blue";
+                store["freeText"] = "[" + value + "][color]cyan";
             }
             CDUAtcDepartReq.ShowPage(mcdu, store);
         };
