@@ -1,7 +1,6 @@
 class CDUAtcConnectionStatus {
-    static ShowPage(mcdu) {
+    static ShowPage(mcdu, store = {"atcCenter": "", "nextAtc": ""}) {
         mcdu.clearDisplay();
-        const activeAtc = mcdu._cpdlcAtcCenter + "[color]green";
         let flightNo = "______[color]green";
 
         if (SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string", "FMC")) {
@@ -11,22 +10,18 @@ class CDUAtcConnectionStatus {
         mcdu.setTemplate([
             ["CONNECTION STATUS"],
             ["ACTIVE ATC"],
-            [activeAtc],
+            ["____[color]red"],
             ["NEXT ATC"],
             ["----"],
-            ["", "MAX UPLINK DELAY"],
-            ["", "NONE[color]blue"],
-            ["-----ADS: ARMED---------"],
-            ["*SET OFF[color]blue"],
+            ["", "MAX UPLINK DELAY\xa0"],
+            ["", "NONE[color]inop\xa0"],
+            ["--------ADS: ARMED---------"],
+            ["\xa0SET OFF[color]inop"],
             [""],
-            ["", "ADS DETAIL"],
-            ["ATC MENU", ""],
+            ["", "ADS DETAIL>[color]inop"],
+            ["\xa0ATC MENU", ""],
             ["<RETURN", "NOTIFICATION>"]
         ]);
-
-        mcdu.onLeftInput[4] = (value) => {
-            atcCenter = value + "[color]green";
-        };
 
         mcdu.leftInputDelay[5] = () => {
             return mcdu.getDelaySwitchPage();

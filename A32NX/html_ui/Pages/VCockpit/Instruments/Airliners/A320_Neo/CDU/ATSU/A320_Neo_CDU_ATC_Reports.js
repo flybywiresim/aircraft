@@ -5,15 +5,15 @@ class CDUAtcReports {
             ["ATC REPORTS"],
             [""],
             [""],
-            ["POSITION"],
+            ["\xa0POSITION"],
             ["<REPORT"],
             [""],
             [""],
-            ["MESSAGE[color]inop"],
-            ["MODIFY[color]inop"],
+            ["\xa0MESSAGE[color]inop"],
+            ["\xa0MODIFY[color]inop"],
             [""],
             [""],
-            ["ATC MENU"],
+            ["\xa0ATC MENU"],
             ["<RETURN"]
         ]);
 

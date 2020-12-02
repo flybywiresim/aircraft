@@ -1,34 +1,32 @@
 class CDUAtcConnectionNotification {
-    static ShowPage(mcdu, store = {"returnMsg": ""}) {
+    static ShowPage(mcdu, store = {"atcCenter": ""}) {
         mcdu.clearDisplay();
-        let canNotify = "";
+        const canNotify = "";
         let flightNo = "______[color]green";
-        let connectCtrField = mcdu._cpdlcAtcCenter;
-
-        if (mcdu._cpdlcAtcCenter != "") {
-            connectCtrField = mcdu._cpdlcAtcCenter + "[color]green";
-            canNotify = "*";
-        } else {
-            connectCtrField = "____[color]red";
-            canNotify = "\xa0";
+        let fromTo = "____|____[color]red";
+        if (store["atcCenter"] == "") {
+            store["atcCenter"] = "____[color]red";
         }
         if (SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string", "FMC")) {
             flightNo = SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string", "FMC") + "[color]green";
         }
+        if (mcdu.flightPlanManager.getDestination() && mcdu.flightPlanManager.getDestination().ident) {
+            fromTo = mcdu.flightPlanManager.getOrigin().ident + "/" + mcdu.flightPlanManager.getDestination().ident + "[color]blue";
+        }
 
         mcdu.setTemplate([
             ["NOTIFICATION"],
-            ["ATC FLT NBR"],
-            [flightNo],
-            ["ATC CENTER"],
-            [connectCtrField, "NOTIFY" + canNotify + "[color]blue"],
+            ["\xa0ATC FLT NBR", "FROM/TO\xa0"],
+            [flightNo, fromTo],
+            ["\xa0ATC CENTER"],
+            [store["atcCenter"], "NOTIFY\xa0[color]inop", "---------"],
             [""],
             [""],
             [""],
-            ["\xa0\xa0" + store["returnMsg"]],
             [""],
             [""],
-            ["ATC MENU", "CONNECTION"],
+            [""],
+            ["\xa0ATC MENU", "CONNECTION\xa0"],
             ["<RETURN", "STATUS>"]
         ]);
 
@@ -37,28 +35,16 @@ class CDUAtcConnectionNotification {
         };
         mcdu.onLeftInput[1] = (value) => {
             if (value != "") {
-                mcdu._cpdlcAtcCenter = value;
+                store["atcCenter"] = value + "[color]green";
             }
-            CDUAtcConnectionNotification.ShowPage(mcdu);
+            CDUAtcConnectionNotification.ShowPage(mcdu, store);
         };
 
         mcdu.leftInputDelay[5] = () => {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onLeftInput[5] = () => {
-            CDUAtcConnection.ShowPage(mcdu);
-        };
-
-        mcdu.rightInputDelay[1] = () => {
-            return mcdu.getDelaySwitchPage();
-        };
-        mcdu.onRightInput[1] = () => {
-            if (mcdu._cpdlcAtcCenter != "") {
-                store["returnMsg"] = mcdu._cpdlcAtcCenter + " NOTIFIED[color]green";
-            } else {
-                store["returnMsg"] = "INVALID ENTRY";
-            }
-            CDUAtcConnectionNotification.ShowPage(mcdu, store);
+            CDUAtcMenu.ShowPage1(mcdu);
         };
 
         mcdu.rightInputDelay[5] = () => {

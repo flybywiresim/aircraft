@@ -1,43 +1,68 @@
 class CDUAtcRequest {
-    static ShowPage(mcdu) {
+    static ShowPage(mcdu, store = {"dirTo": "", "flAlt": "", "spdMach": "", "dueTo": 0}) {
         mcdu.clearDisplay();
 
-        let flightNo = "______[color]red";
-        let fromTo = "____|____[color]red";
-        let atcCenter = "____[color]red";
-
-        if (SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string", "FMC")) {
-            flightNo = SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string", "FMC") + "[color]green";
+        if (store["dirTo"] == "") {
+            store["dirTo"] = "[\xa0\xa0\xa0][color]blue";
         }
-        if (mcdu.flightPlanManager.getDestination() && mcdu.flightPlanManager.getDestination().ident) {
-            fromTo = mcdu.flightPlanManager.getOrigin().ident + "/" + mcdu.flightPlanManager.getDestination().ident + "[color]blue";
+        if (store["flAlt"] == "") {
+            store["flAlt"] = "[\xa0\xa0\xa0][color]blue";
+        }
+        if (store["spdMach"] == "") {
+            store["spdMach"] = "[\xa0][color]blue";
         }
 
         mcdu.setTemplate([
             ["REQUEST"],
-            ["DIR TO", "FL/ALT"],
-            ["[{\xa0\xa0\xa0}]", "[{\xa0\xa0\xa0}]"],
-            ["", "SPD/MACH"],
-            ["", "[{\xa0\xa0\xa0}]"],
+            ["\xa0DIR TO", "FL/ALT\xa0"],
+            [store["dirTo"], store["flAlt"]],
+            ["", "SPD/MACH\xa0"],
+            ["", store["spdMach"]],
             [""],
             [""],
-            ["DUE TO", "DUE TO"],
-            ["{WEATHER", "A/C PERF}"],
+            ["\xa0DUE TO", "DUE TO\xa0"],
+            ["{blue}{{end}WEATHER", "A/C PERF{blue}}{end}"],
             [""],
             [""],
-            ["ATC MENU", "ATC DEPART[color]blue"],
-            ["<RETURN", "REQ DISPL*[color]blue"]
+            ["\xa0ATC MENU", "XFR TO\xa0[color]inop"],
+            ["<RETURN", "DCDU\xa0[color]inop"]
         ]);
 
-        mcdu.onLeftInput[4] = (value) => {
-            atcCenter = value + "[color]green";
+        mcdu.leftInputDelay[0] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
+        mcdu.onLeftInput[0] = (value) => {
+            if (value != "") {
+                store["dirTo"] = "[" + value + "][color]blue";
+            }
+            CDUAtcRequest.ShowPage(mcdu, store);
+        };
+
+        mcdu.rightInputDelay[0] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
+        mcdu.onRightInput[0] = (value) => {
+            if (value != "") {
+                store["flAlt"] = "[" + value + "][color]blue";
+            }
+            CDUAtcRequest.ShowPage(mcdu, store);
+        };
+
+        mcdu.rightInputDelay[0] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
+        mcdu.onRightInput[0] = (value) => {
+            if (value != "") {
+                store["spdMach"] = "[" + value + "][color]blue";
+            }
+            CDUAtcRequest.ShowPage(mcdu, store);
         };
 
         mcdu.leftInputDelay[5] = () => {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onLeftInput[5] = () => {
-            CDUAtcMenu.ShowPage2(mcdu);
+            CDUAtcMenu.ShowPage1(mcdu);
         };
     }
 }

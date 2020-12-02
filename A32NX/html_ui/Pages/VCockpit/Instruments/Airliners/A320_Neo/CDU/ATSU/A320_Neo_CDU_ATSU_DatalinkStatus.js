@@ -2,20 +2,20 @@ class CDUDatalinkStatus {
     static ShowPage(mcdu) {
         mcdu.clearDisplay();
         mcdu.setTemplate([
-            ["COMM MENU"],
-            ["VHF3[color]inop", "COMM[color]inop"],
-            ["<DATA MODE[color]inop", "STATUS>[color]inop"],
+            ["DATALINK STATUS"],
+            [""],
+            ["\xa0VHF3:{small}{green}DLK AVAIL{end}{end}"],
+            ["\xa0\xa0\xa0\xa0\xa0ATC / AOC"],
             [""],
             [""],
-            ["ATC ONLINE[color]inop"],
-            ["<LIST[color]inop"],
+            ["\xa0HF:{small}NOT INSTALLED{end}"],
             [""],
             [""],
             [""],
-            ["", "MAINTENANCE>[color]inop"],
-            ["ATC MENU"],
-            ["<RETURN"]
-        ]);
+            ["\xa0SATCOM:{small}NOT INSTALLED{end}"],
+            ["", "PAGE\xa0[color]inop"],
+            ["<RETURN", "PRINT*[color]inop"]
+        ], true);
 
         mcdu.leftInputDelay[5] = () => {
             return mcdu.getDelaySwitchPage();

@@ -12,8 +12,8 @@ class CDUAtsuMenu {
             [""],
             [""],
             [""],
-            ["", "DATALINK[color]inop"],
-            ["", "STATUS>[color]inop"],
+            ["", "DATALINK\xa0"],
+            ["", "STATUS>"],
             [""],
             ["", "COMM MENU>"]
         ];
@@ -31,6 +31,13 @@ class CDUAtsuMenu {
         };
         mcdu.onRightInput[1] = () => {
             CDUAocMenu.ShowPage(mcdu);
+        };
+
+        mcdu.rightInputDelay[4] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
+        mcdu.onRightInput[4] = () => {
+            CDUDatalinkStatus.ShowPage(mcdu);
         };
 
         mcdu.rightInputDelay[5] = () => {
