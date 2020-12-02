@@ -49,6 +49,7 @@
   double flaps_handle_index;
   bool autopilot_master_on;
   bool slew_on;
+  double simulationTime;
 };
 
 struct SimInput

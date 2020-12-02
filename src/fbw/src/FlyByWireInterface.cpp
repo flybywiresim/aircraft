@@ -100,6 +100,14 @@ bool FlyByWireInterface::getModelInputDataFromSim(
   SimData simData = simConnectInterface.getSimData();
   SimInput simInput = simConnectInterface.getSimInput();
 
+  // detect pause
+  bool isInPause = false;
+  if ((simData.simulationTime == previousSimulationTime) || (simData.simulationTime < 0.2))
+  {
+    isInPause = true;
+  }
+  previousSimulationTime = simData.simulationTime;
+
   // fill time into model
   model.FlyByWire_U.in.time.dt = sampleTime;
 
@@ -134,7 +142,7 @@ bool FlyByWireInterface::getModelInputDataFromSim(
   model.FlyByWire_U.in.data.flaps_handle_index = simData.flaps_handle_index;
   model.FlyByWire_U.in.data.autopilot_master_on = simData.autopilot_master_on;
   model.FlyByWire_U.in.data.slew_on = simData.slew_on;
-  model.FlyByWire_U.in.data.pause_on = 0;
+  model.FlyByWire_U.in.data.pause_on = isInPause;
 
   // fill inputs into model
   model.FlyByWire_U.in.input.delta_eta_pos = simInput.inputs[0];
