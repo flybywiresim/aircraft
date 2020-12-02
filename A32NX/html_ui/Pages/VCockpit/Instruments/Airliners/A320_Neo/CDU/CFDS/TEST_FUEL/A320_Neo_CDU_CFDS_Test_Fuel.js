@@ -15,7 +15,7 @@ class CDUCfdsTestFuel {
             [""],
             [""],
             [""],
-            ["<RETURN[color]blue"]
+            ["<RETURN[color]cyan"]
         ]);
 
         mcdu.leftInputDelay[0] = () => {

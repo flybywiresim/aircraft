@@ -110,6 +110,7 @@
 1. [ECAM] Implemented proper FWC flight phases - @beheh (Benedict Etzel)
 1. [ECAM] Updated ECAM messages - @beheh (Benedict Etzel)
 1. [CDU] New improved RADNAV page | Ability to tune navaids with identifier - @St54Kevin (Kevin Karas)
+1. [CDU] Corrected visuals for constraints on flight plan page - @MisterChocker (Leon)
 1. [ND] Add heading line to ARC and NAV map mode @ilyeshammadi (Ilyes Hammadi)
 1. [PFD] Add QNH flashing when reach transition altitude - @Kimbyeoungjang (김병장#7165)
 1. [ECAM] Added flight phase inhibit override to recall button - @beheh (Benedict Etzel)
@@ -125,7 +126,9 @@
 1. [Sound] Improved nose wheel liftoff sound - @hotshotp (Boris)
 1. [Sound] Added new APU start contactor sounds - @hotshotp (Boris)
 1. [Sound] Added new realistic LEAP-1A engine sounds - @hotshotp (Boris)
+1. [CDU] Improved input handling while a message is visible - @MisterChocker (Leon)
 1. [ND] Fix weather radar not showing after switching to plan view - @ilyeshammadi (Ilyes Hammadi)
+1. [Autopilot] Increase max bank angle from 20 to 25 - @wpine215 (Iceman)
 
 ## 0.4.0
 1. [General] Add CHANGELOG.md - @nathaninnes (Nathan Innes)

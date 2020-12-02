@@ -14,7 +14,7 @@ class CDU_CFDS_Test_Inst_CFDIU_Menu {
             [""],
             [""],
             [""],
-            ["<RETURN[color]blue"]
+            ["<RETURN[color]cyan"]
         ]);
 
         mcdu.leftInputDelay[5] = () => {

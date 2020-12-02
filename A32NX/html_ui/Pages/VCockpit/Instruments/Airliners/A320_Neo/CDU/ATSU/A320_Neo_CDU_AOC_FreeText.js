@@ -6,17 +6,17 @@ class CDUAocFreeText {
             mcdu.setTemplate([
                 ["AOC FREE TEXT"],
                 ["TO:"],
-                [`${store["msg_to"] != "" ? store["msg_to"] : "________"}[color]blue`],
+                [`${store["msg_to"] != "" ? store["msg_to"] : "________"}[color]cyan`],
                 [""],
-                [`${store["msg_line1"] != "" ? store["msg_line1"] : "["}[color]blue`, `${store["msg_line1"] != "" ? "" : "]"}[color]blue`],
+                [`${store["msg_line1"] != "" ? store["msg_line1"] : "["}[color]cyan`, `${store["msg_line1"] != "" ? "" : "]"}[color]cyan`],
                 [""],
-                [`${store["msg_line2"] != "" ? store["msg_line2"] : "["}[color]blue`, `${store["msg_line2"] != "" ? "" : "]"}[color]blue`],
+                [`${store["msg_line2"] != "" ? store["msg_line2"] : "["}[color]cyan`, `${store["msg_line2"] != "" ? "" : "]"}[color]cyan`],
                 [""],
-                [`${store["msg_line3"] != "" ? store["msg_line3"] : "["}[color]blue`, `${store["msg_line3"] != "" ? "" : "]"}[color]blue`],
+                [`${store["msg_line3"] != "" ? store["msg_line3"] : "["}[color]cyan`, `${store["msg_line3"] != "" ? "" : "]"}[color]cyan`],
                 [""],
-                [`${store["msg_line4"] != "" ? store["msg_line4"] : "["}[color]blue`, `${store["msg_line4"] != "" ? "" : "]"}[color]blue`],
+                [`${store["msg_line4"] != "" ? store["msg_line4"] : "["}[color]cyan`, `${store["msg_line4"] != "" ? "" : "]"}[color]cyan`],
                 ["RETURN TO", `${store["sendStatus"]}`],
-                ["<AOC MENU", "SEND*[color]blue"]
+                ["<AOC MENU", "SEND*[color]cyan"]
             ]);
         };
         updateView();
@@ -121,7 +121,7 @@ class CDUAocFreeText {
                         fMsgLines.forEach((line) => {
                             line += "[color]green";
                         });
-                        fMsgLines.unshift("TO " + store["msg_to"] + "[color]blue");
+                        fMsgLines.unshift("TO " + store["msg_to"] + "[color]cyan");
                         fMsgLines.push("---------------------------[color]white");
 
                         const sentMessage = { "id": Date.now(), "type": "FREE TEXT", "time": '00:00', "content": fMsgLines, };
