@@ -25,7 +25,7 @@
 #include "FlyByWire.h"
 #include "InterpolatingLookupTable.h"
 
-    class FlyByWireInterface
+class FlyByWireInterface
 {
 public:
   bool connect();
