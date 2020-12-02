@@ -43,9 +43,9 @@
   double H_ind_ft;
   double H_radio_ft;
   double CG_percent_MAC;
-  double geat_animation_pos_0;
-  double geat_animation_pos_1;
-  double geat_animation_pos_2;
+  double gear_animation_pos_0;
+  double gear_animation_pos_1;
+  double gear_animation_pos_2;
   double flaps_handle_index;
   bool autopilot_master_on;
   bool slew_on;

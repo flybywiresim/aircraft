@@ -128,9 +128,9 @@ bool FlyByWireInterface::getModelInputDataFromSim(
   model.FlyByWire_U.in.data.H_ind_ft = simData.H_ind_ft;
   model.FlyByWire_U.in.data.H_radio_ft = simData.H_radio_ft;
   model.FlyByWire_U.in.data.CG_percent_MAC = simData.CG_percent_MAC;
-  model.FlyByWire_U.in.data.gear_animation_pos_0 = simData.geat_animation_pos_0;
-  model.FlyByWire_U.in.data.gear_animation_pos_1 = simData.geat_animation_pos_1;
-  model.FlyByWire_U.in.data.gear_animation_pos_2 = simData.geat_animation_pos_2;
+  model.FlyByWire_U.in.data.gear_animation_pos_0 = simData.gear_animation_pos_0;
+  model.FlyByWire_U.in.data.gear_animation_pos_1 = simData.gear_animation_pos_1;
+  model.FlyByWire_U.in.data.gear_animation_pos_2 = simData.gear_animation_pos_2;
   model.FlyByWire_U.in.data.flaps_handle_index = simData.flaps_handle_index;
   model.FlyByWire_U.in.data.autopilot_master_on = simData.autopilot_master_on;
   model.FlyByWire_U.in.data.slew_on = simData.slew_on;
