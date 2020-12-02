@@ -182,6 +182,7 @@ class CDUInitPage {
     }
     // Does not refresh page so that other things can be performed first as necessary
     static updateTowIfNeeded(mcdu) {
+        mcdu._checkToData();
         if (isFinite(mcdu.taxiFuelWeight) && isFinite(mcdu.zeroFuelWeight) && isFinite(mcdu.blockFuel)) {
             const tow = mcdu.zeroFuelWeight + mcdu.blockFuel - mcdu.taxiFuelWeight;
             mcdu.trySetTakeOffWeightLandingWeight(tow.toFixed(1));

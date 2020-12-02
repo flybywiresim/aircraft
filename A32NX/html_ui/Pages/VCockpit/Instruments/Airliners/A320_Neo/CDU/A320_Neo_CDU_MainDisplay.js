@@ -26,6 +26,9 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this.altLock = 0;
         this.messageQueue = [];
         this._destDataChecked = false;
+        this._v1Checked = true;
+        this._vrChecked = true;
+        this._v2Checked = true;
     }
     get templateID() {
         return "A320_Neo_CDU";
@@ -428,7 +431,10 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     tryShowMessage() {
         if (!this.isDisplayingErrorMessage && (!this.inOut || this.isDisplayingTypeTwoMessage) && this.messageQueue.length > 0) {
             if (this.messageQueue[0][2](this)) {
-                return this.tryRemoveMessage(this.messageQueue[0][0]);
+                this.messageQueue.splice(0, 1);
+                this._inOutElement.className = "white";
+                this.inOut = this.lastUserInput;
+                return this.tryShowMessage();
             }
             if (!this.isDisplayingErrorMessage) {
                 if (!this.isDisplayingTypeTwoMessage) {
@@ -617,6 +623,15 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             payloadWeight += SimVar.GetSimVarValue(`PAYLOAD STATION WEIGHT:${i}`, unit);
         }
         return payloadWeight;
+    }
+
+    _checkToData() {
+        this._v1Checked = !isFinite(this.v1Speed);
+        this._vrChecked = !isFinite(this.vRSpeed);
+        this._v2Checked = !isFinite(this.v2Speed);
+        this.addTypeTwoMessage("CHECK TAKE OFF DATA", true, (mcdu) => {
+            return mcdu._v1Checked && mcdu._vrChecked && mcdu._v2Checked;
+        });
     }
 
     _onModeSelectedSpeed() {

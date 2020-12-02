@@ -44,56 +44,80 @@ class CDUPerformancePage {
                 runway = Avionics.Utils.formatRunway(predictedRunway.designation);
             }
         }
-        let v1 = "___[color]amber";
+        let v1 = "{amber}___{end}";
         if (mcdu.v1Speed) {
-            v1 = mcdu.v1Speed + "[color]cyan";
+            if (!mcdu._v1Checked) {
+                v1 = v1 + " {cyan}{small}" + mcdu.v1Speed + "{end}{end}";
+            } else {
+                v1 = mcdu.v1Speed + "[color]cyan";
+            }
         }
         mcdu.onLeftInput[0] = (value) => {
-            if (value === FMCMainDisplay.clrValue) {
+            if (value === FMCMainDisplay.clrValue && mcdu._v1Checked) {
                 mcdu.v1Speed = undefined;
                 SimVar.SetSimVarValue("L:AIRLINER_V1_SPEED", "Knots", -1);
                 CDUPerformancePage.ShowTAKEOFFPage(mcdu);
             } else if (value === "") {
-                mcdu.sendDataToScratchpad(mcdu._getV1Speed().toString());
+                if (mcdu._v1Checked) {
+                    mcdu.sendDataToScratchpad(mcdu._getV1Speed().toString());
+                }
+                mcdu._v1Checked = true;
                 CDUPerformancePage.ShowTAKEOFFPage(mcdu);
             } else {
                 if (mcdu.trySetV1Speed(value)) {
+                    mcdu._v1Checked = true;
                     CDUPerformancePage.ShowTAKEOFFPage(mcdu);
                 }
             }
         };
-        let vR = "___[color]amber";
+        let vR = "{amber}___{end}";
         if (mcdu.vRSpeed) {
-            vR = mcdu.vRSpeed + "[color]cyan";
+            if (!mcdu._vrChecked) {
+                vR = vR + " {cyan}{small}" + mcdu.vRSpeed + "{end}{end}";
+            } else {
+                vR = mcdu.vRSpeed + "[color]cyan";
+            }
         }
         mcdu.onLeftInput[1] = (value) => {
-            if (value === FMCMainDisplay.clrValue) {
+            if (value === FMCMainDisplay.clrValue && mcdu._vrChecked) {
                 mcdu.vRSpeed = undefined;
                 SimVar.SetSimVarValue("L:AIRLINER_VR_SPEED", "Knots", -1);
                 CDUPerformancePage.ShowTAKEOFFPage(mcdu);
             } else if (value === "") {
-                mcdu.sendDataToScratchpad(mcdu._getVRSpeed().toString());
+                if (mcdu._vrChecked) {
+                    mcdu.sendDataToScratchpad(mcdu._getVRSpeed().toString());
+                }
+                mcdu._vrChecked = true;
                 CDUPerformancePage.ShowTAKEOFFPage(mcdu);
             } else {
                 if (mcdu.trySetVRSpeed(value)) {
+                    mcdu._vrChecked = true;
                     CDUPerformancePage.ShowTAKEOFFPage(mcdu);
                 }
             }
         };
-        let v2 = "___[color]amber";
+        let v2 = "{amber}___{end}";
         if (mcdu.v2Speed) {
-            v2 = mcdu.v2Speed + "[color]cyan";
+            if (!mcdu._v2Checked) {
+                v2 = v2 + " {cyan}{small}" + mcdu.v2Speed + "{end}{end}";
+            } else {
+                v2 = mcdu.v2Speed + "[color]cyan";
+            }
         }
         mcdu.onLeftInput[2] = (value) => {
-            if (value === FMCMainDisplay.clrValue) {
+            if (value === FMCMainDisplay.clrValue && mcdu._v2Checked) {
                 mcdu.v2Speed = undefined;
                 SimVar.SetSimVarValue("L:AIRLINER_V2_SPEED", "Knots", -1);
                 CDUPerformancePage.ShowTAKEOFFPage(mcdu);
             } else if (value === "") {
-                mcdu.sendDataToScratchpad(mcdu._getV2Speed().toString());
+                if (mcdu._v2Checked) {
+                    mcdu.sendDataToScratchpad(mcdu._getV2Speed().toString());
+                }
+                mcdu._v2Checked = true;
                 CDUPerformancePage.ShowTAKEOFFPage(mcdu);
             } else {
                 if (mcdu.trySetV2Speed(value)) {
+                    mcdu._v2Checked = true;
                     CDUPerformancePage.ShowTAKEOFFPage(mcdu);
                 }
             }
@@ -151,6 +175,7 @@ class CDUPerformancePage {
         }
         mcdu.onRightInput[2] = (value) => {
             if (mcdu.trySetFlapsTHS(value)) {
+                mcdu._checkToData();
                 CDUPerformancePage.ShowTAKEOFFPage(mcdu);
             }
         };
@@ -160,9 +185,25 @@ class CDUPerformancePage {
         }
         mcdu.onRightInput[3] = (value) => {
             if (mcdu.setPerfTOFlexTemp(value)) {
+                mcdu._checkToData();
                 CDUPerformancePage.ShowTAKEOFFPage(mcdu);
             }
         };
+        let next = "NEXT";
+        let nextPage = "PHASE>";
+        mcdu.onRightInput[5] = () => {
+            CDUPerformancePage.ShowCLBPage(mcdu);
+        };
+        if (!mcdu._v1Checked || !mcdu._vrChecked || !mcdu._v2Checked) {
+            next = "CONFIRM";
+            nextPage = "TO DATA{small}*{end}";
+            mcdu.onRightInput[5] = () => {
+                mcdu._v1Checked = true;
+                mcdu._vrChecked = true;
+                mcdu._v2Checked = true;
+                CDUPerformancePage.ShowTAKEOFFPage(mcdu);
+            };
+        }
         mcdu.setTemplate([
             ["TAKE OFF[color]" + titleColor],
             ["V1", "RWY", "FLP RETR"],
@@ -175,14 +216,11 @@ class CDUPerformancePage {
             [transAlt, flexTakeOffTempCell + "[color]cyan"],
             ["THR RED/ACC", "ENG OUT ACC"],
             [thrRedAcc, "1680[color]cyan"],
-            ["", "NEXT"],
-            ["", "PHASE>"]
+            ["", next],
+            ["", nextPage]
         ]);
         mcdu.rightInputDelay[5] = () => {
             return mcdu.getDelaySwitchPage();
-        };
-        mcdu.onRightInput[5] = () => {
-            CDUPerformancePage.ShowCLBPage(mcdu);
         };
     }
     static ShowCLBPage(mcdu, confirmAppr = false) {
