@@ -4,10 +4,10 @@ class CDU_OPTIONS_ATIS {
 
         const storedAtisSrc = NXDataStore.get("CONFIG_ATIS_SRC", "FAA");
 
-        let faa = "*FAA (US ONLY)[color]blue";
-        let vatsim = "*VATSIM[color]blue";
-        let pilotedge = "*PILOTEDGE[color]blue";
-        let ivao = "*IVAO[color]blue";
+        let faa = "*FAA (US ONLY)[color]cyan";
+        let vatsim = "*VATSIM[color]cyan";
+        let pilotedge = "*PILOTEDGE[color]cyan";
+        let ivao = "*IVAO[color]cyan";
 
         switch (storedAtisSrc) {
             case "VATSIM":
@@ -36,7 +36,7 @@ class CDU_OPTIONS_ATIS {
             [""],
             [""],
             [""],
-            ["<RETURN[color]blue"]
+            ["<RETURN[color]cyan"]
         ]);
 
         mcdu.leftInputDelay[0] = () => {

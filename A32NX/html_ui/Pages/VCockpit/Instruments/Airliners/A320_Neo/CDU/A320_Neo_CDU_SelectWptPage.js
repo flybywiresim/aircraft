@@ -47,7 +47,7 @@ class A320_Neo_CDU_SelectWptPage {
                 const dist = calculateDistance(w);
 
                 rows[2 * i].splice(0, 1, "{green}" + dist.toFixed(0) + "{end}NM");
-                rows[2 * i + 1] = ["*" + w.ident + "[color]blue", freq + "[color]green", `${latString}/${longString}[color]green`];
+                rows[2 * i + 1] = ["*" + w.ident + "[color]cyan", freq + "[color]green", `${latString}/${longString}[color]green`];
                 mcdu.onLeftInput[i] = () => {
                     callback(w);
                 };

@@ -9,7 +9,7 @@ class A320_Neo_CDU_AirwaysFromWaypointPage {
         const pageCount = (Math.floor(allRows.length / 4) + 2);
         let rowBottomLine = ["<RETURN"];
         if (mcdu.flightPlanManager.getCurrentFlightPlanIndex() === 1) {
-            rowBottomLine = ["{ERASE[color]red", "INSERT*[color]red"];
+            rowBottomLine = ["{ERASE[color]amber", "INSERT*[color]amber"];
             mcdu.onRightInput[5] = async () => {
                 mcdu.insertTemporaryFlightPlan(() => {
                     mcdu.copyAirwaySelections();
@@ -37,7 +37,7 @@ class A320_Neo_CDU_AirwaysFromWaypointPage {
                 showInput = true;
                 if (!pendingAirway) {
                     subRows[i] = ["VIA", ""];
-                    rows[i] = ["[ ][color]blue", ""];
+                    rows[i] = ["[ ][color]cyan", ""];
                     mcdu.onRightInput[i] = async (value) => {
                         if (value.length > 0) {
                             mcdu.insertWaypoint(value, mcdu.flightPlanManager.getEnRouteWaypointsLastIndex() + 1, () => {
@@ -59,7 +59,7 @@ class A320_Neo_CDU_AirwaysFromWaypointPage {
                     };
                 } else if (pendingAirway) {
                     subRows[i] = ["VIA", "TO"];
-                    rows[i] = [`${pendingAirway.name}[color]blue`, "[ ][color]blue"];
+                    rows[i] = [`${pendingAirway.name}[color]cyan`, "[ ][color]cyan"];
                     mcdu.onRightInput[i] = (value) => {
                         if (value.length > 0) {
                             mcdu.ensureCurrentFlightPlanIsTemporary(() => {
@@ -74,7 +74,8 @@ class A320_Neo_CDU_AirwaysFromWaypointPage {
                         }
                     };
                     if (i + 1 < rows.length) {
-                        rows[i + 1] = ["[ ][color]blue", ""];
+                        rows[i + 1] = ["[ ][color]cyan", ""];
+                        subRows[i + 1] = ["VIA", ""];
                         mcdu.onLeftInput[i + 1] = async (value) => {
                             if (value.length > 0) {
                                 const toWp = await this._getFirstIntersection(mcdu.flightPlanManager, value, pendingAirway.icaos);
@@ -139,7 +140,7 @@ class A320_Neo_CDU_AirwaysFromWaypointPage {
                 if (wp) {
                     let color = 'green';
                     if (mcdu.flightPlanManager.getCurrentFlightPlanIndex() === 1) {
-                        color = 'blue';
+                        color = 'cyan';
                     }
                     if (wp.infos.airwayIn === undefined) {
                         // allRows.push(["DIRECT", wp.ident]);
