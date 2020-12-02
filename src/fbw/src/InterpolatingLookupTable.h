@@ -21,7 +21,7 @@
 #include <utility>
 #include <vector>
 
-    class InterpolatingLookupTable
+class InterpolatingLookupTable
 {
 public:
   void initialize(

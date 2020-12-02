@@ -18,7 +18,7 @@
 
 #include "InterpolatingLookupTable.h"
 
-    using namespace std;
+using namespace std;
 
 void InterpolatingLookupTable::initialize(
     vector<pair<double, double>> mapping,
