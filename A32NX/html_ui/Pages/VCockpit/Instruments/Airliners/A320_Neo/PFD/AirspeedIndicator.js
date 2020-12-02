@@ -378,7 +378,7 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
             } else {
                 Utils.RemoveAllChildren(this.vRSVG);
             }
-            this.vRSVG.setAttribute("x", greenDotPosX.toFixed(0));
+            this.vRSVG.setAttribute("x", (greenDotPosX + 6).toFixed(0));
             this.vRSVG.setAttribute("y", (greenDotPosY - greenDotHeight * 0.5).toFixed(0));
             this.vRSVG.setAttribute("width", greenDotWidth.toFixed(0));
             this.vRSVG.setAttribute("height", greenDotHeight.toFixed(0));
