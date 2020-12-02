@@ -1,12 +1,12 @@
 class CDUIRSInit {
-    static ShowPage(mcdu, lon, originAirportLat, originAirportLon, referenceName, originAirportCoordinates, alignMsg = "ALIGN ON REF}[color]blue") {
+    static ShowPage(mcdu, lon, originAirportLat, originAirportLon, referenceName, originAirportCoordinates, alignMsg = "ALIGN ON REF}[color]cyan") {
         mcdu.clearDisplay();
         mcdu.page.Current = mcdu.page.IRSInit;
         mcdu.setTitle('IRS INIT');
         const checkAligned = SimVar.GetSimVarValue("L:A320_Neo_ADIRS_STATE", "Number");
         if (checkAligned === 0) {
             SimVar.SetSimVarValue("L:A32XN_Neo_ADIRS_ALIGN_TYPE_REF", "Enum", 0);
-            alignMsg = "ALIGN ON REF}[color]blue";
+            alignMsg = "ALIGN ON REF}[color]cyan";
         }
         const emptyIRSGpsString = "--°--.--/---°--.--";
         const arrowupdwn = "↑↓";
@@ -46,7 +46,7 @@ class CDUIRSInit {
             GPSPosTitle = ["LAT", "LONG", "GPS POSITION"];
             originAirportTitle = ["LAT" + larrowupdwn , rarrowupdwn + "LONG", "REFERENCE"];
             GPSPosAlign = ["--°--.--", "--°--.--", " "];
-            originAirportString = [originAirportLat['deg'] + "°{small}" + originAirportLat['min'] + "." + originAirportLat['sec'] + "{end}" + originAirportLat['dir'] + "[color]blue", originAirportLon['deg'] + "°{small}" + originAirportLon['min'] + "." + originAirportLon['sec'] + "{end}" + originAirportLon['dir'] + "[color]blue", referenceName];
+            originAirportString = [originAirportLat['deg'] + "°{small}" + originAirportLat['min'] + "." + originAirportLat['sec'] + "{end}" + originAirportLat['dir'] + "[color]cyan", originAirportLon['deg'] + "°{small}" + originAirportLon['min'] + "." + originAirportLon['sec'] + "{end}" + originAirportLon['dir'] + "[color]cyan", referenceName];
             if (SimVar.GetSimVarValue("L:A32NX_ADIRS_KNOB_1", "Enum") || SimVar.GetSimVarValue("L:A32NX_ADIRS_KNOB_2", "Enum") || SimVar.GetSimVarValue("L:A32NX_ADIRS_KNOB_3", "Enum")) {
                 GPSPosAlign = [currentGPSLat['deg'] + "°{small}" + currentGPSLat['min'] + "." + Math.ceil(Number(currentGPSLat['sec'] / 100)) + "{end}" + currentGPSLat['dir'] + '[color]green', currentGPSLon['deg'] + "°{small}" + currentGPSLon['min'] + "." + Math.ceil(Number(currentGPSLon['sec'] / 100)) + "{end}" + currentGPSLon['dir'] + "[color]green", ""];
                 alignType = "GPS";
@@ -140,7 +140,7 @@ class CDUIRSInit {
                 if (alignMsg.includes("CONFIRM")) {
                     SimVar.SetSimVarValue("L:A32XN_Neo_ADIRS_ALIGN_TYPE_REF", "Enum", 1);
                 } else {
-                    alignMsg = "CONFIRM ALIGN* [color]red";
+                    alignMsg = "CONFIRM ALIGN* [color]amber";
                 }
             }
         };

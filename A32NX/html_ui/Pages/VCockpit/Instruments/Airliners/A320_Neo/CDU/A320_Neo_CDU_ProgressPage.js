@@ -9,24 +9,35 @@ class CDUProgressPage {
         const flOpt = (mcdu._zeroFuelWeightZFWCGEntered && mcdu._blockFuelEntered && (mcdu.isAllEngineOn() || Simplane.getIsGrounded())) ? "FL" + (Math.floor(flMax / 5) * 5).toString() + "[color]green" : "-----";
         let flCrz = "-----";
         switch (Simplane.getCurrentFlightPhase()) {
+            case FlightPhase.FLIGHT_PHASE_PREFLIGHT:
+            case FlightPhase.FLIGHT_PHASE_TAXI:
             case FlightPhase.FLIGHT_PHASE_TAKEOFF: {
-                if (!mcdu._cruiseEntered) {
-                    mcdu.cruiseFlightLevel = Math.floor(Math.max(0, Simplane.getAutoPilotDisplayedAltitudeLockValue()) / 100);
+                if (mcdu._cruiseEntered) {
+                    flCrz = "FL" + mcdu.cruiseFlightLevel.toFixed(0).padStart(3, "0") + "[color]cyan";
                 }
-                flCrz = "FL" + mcdu.cruiseFlightLevel.toFixed(0).padStart(3, "0") + "[color]blue";
                 break;
             }
             case FlightPhase.FLIGHT_PHASE_CLIMB: {
-                mcdu.cruiseFlightLevel = Math.floor(Math.max(0, Simplane.getAutoPilotDisplayedAltitudeLockValue()) / 100);
-                flCrz = "FL" + mcdu.cruiseFlightLevel.toFixed(0).padStart(3, "0") + "[color]blue";
+                const alt = Math.round(Simplane.getAutoPilotSelectedAltitudeLockValue("feet") / 100);
+                const altCtn = Math.round(mcdu.constraintAlt / 100);
+                if (!mcdu._cruiseEntered) {
+                    flCrz = "FL" + (altCtn && alt > altCtn ? altCtn.toFixed(0).padStart(3, "0") : alt.toFixed(0).padStart(3, "0")) + "[color]cyan";
+                } else if (mcdu.cruiseFlightLevel < alt) {
+                    mcdu.cruiseFlightLevel = alt;
+                    flCrz = "FL" + mcdu.cruiseFlightLevel.toFixed(0).padStart(3, "0") + "[color]cyan";
+                    mcdu.addTypeTwoMessage("NEW CRZ ALT-" + mcdu.cruiseFlightLevel * 100);
+                } else {
+                    flCrz = "FL" + mcdu.cruiseFlightLevel.toFixed(0).padStart(3, "0") + "[color]cyan";
+                }
                 break;
             }
             case FlightPhase.FLIGHT_PHASE_CRUISE: {
-                const fl = Math.floor(Math.max(0, Simplane.getAutoPilotDisplayedAltitudeLockValue()) / 100);
+                const fl = Math.round(Simplane.getAutoPilotSelectedAltitudeLockValue("feet") / 100);
                 if (fl > mcdu.cruiseFlightLevel) {
                     mcdu.cruiseFlightLevel = fl;
+                    mcdu.addTypeTwoMessage("NEW CRZ ALT-" + mcdu.cruiseFlightLevel * 100);
                 }
-                flCrz = "FL" + mcdu.cruiseFlightLevel.toFixed(0).padStart(3, "0") + "[color]blue";
+                flCrz = "FL" + mcdu.cruiseFlightLevel.toFixed(0).padStart(3, "0") + "[color]cyan";
                 break;
             }
         }
@@ -48,19 +59,19 @@ class CDUProgressPage {
             CDUProgressPage.ShowPredictiveGPSPage(mcdu);
         };
         mcdu.setTemplate([
-            ["ECON " + flightPhase + " " + flightNo],
+            ["{green}ECON " + flightPhase + "{end} " + flightNo],
             [flightPhase, "REC MAX", "OPT"],
             [flCrz, "FL" + flMax.toString() + "[color]magenta", flOpt],
             [""],
             ["<REPORT", ""],
             ["UPDATE AT"],
-            ["*[][color]blue"],
+            ["*[][color]cyan"],
             ["BRG / DIST"],
-            ["---°.----.-", "[ ][color]blue", "TO"],
+            ["---°.----.-", "[ ][color]cyan", "TO"],
             ["PREDICTIVE"],
             ["<GPS", "GPS PRIMARY[color]green"],
             ["REQUIRED", "ESTIMATED", "ACCUR"],
-            ["3.4NM[color]blue", "0.07NM[color]green", "HIGH[color]green"]
+            ["3.4NM[color]cyan", "0.07NM[color]green", "HIGH[color]green"]
         ]);
         mcdu.page.SelfPtr = setTimeout(() => {
             if (mcdu.page.Current === mcdu.page.ProgressPage) {
@@ -125,13 +136,13 @@ class CDUProgressPage {
         mcdu.setTemplate([
             ["REPORT"],
             ["OVHD", "ALT", "UTC"],
-            ["", altCell + "[color]blue"],
+            ["", altCell + "[color]cyan"],
             ["TO"],
             [toWaypointCell + "[color]green", toWaypointAltCell + "[color]green", toWaypointUTCCell + "[color]green"],
             ["NEXT"],
             [nextWaypointCell + "[color]green", nextWaypointAltCell + "[color]green", nextWaypointUTCCell + "[color]green"],
             ["SAT", "FOB", "T. WIND"],
-            ["[][color]blue"],
+            ["[][color]cyan"],
             ["S/C", "", "UTC DIST"],
             [""],
             ["DEST", "EFOB", "UTC DIST"],
@@ -157,15 +168,15 @@ class CDUProgressPage {
         mcdu.setTemplate([
             ["PREDICTIVE GPS"],
             ["DEST", "ETA"],
-            [destIdentCell, destETACell + "[color]blue", "PRIMARY"],
+            [destIdentCell, destETACell + "[color]cyan", "PRIMARY"],
             ["-15 -10", "+10 +15", "-5 ETA +5"],
             ["N Y", "Y Y", "N Y Y"],
             ["WPT", "ETA"],
-            ["[ ][color]blue", "", "PRIMARY"],
+            ["[ ][color]cyan", "", "PRIMARY"],
             ["-15 -10", "+10 +15", "-5 ETA +5"],
             [""],
             ["", "", "DESELECTED SATELLITES"],
-            ["[ ][color]blue"],
+            ["[ ][color]cyan"],
             [""],
             [""]
         ]);

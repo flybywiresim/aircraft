@@ -11,7 +11,7 @@ class CDUFlightPlanPage {
             }
         };
         const isFlying = Simplane.getAltitudeAboveGround() > 10 ||
-                         Simplane.getEngineThrottleMode(0) >= ThrottleMode.FLEX_MCT && Simplane.getEngineThrottleMode(1) >= ThrottleMode.FLEX_MCT;
+            Simplane.getEngineThrottleMode(0) >= ThrottleMode.FLEX_MCT && Simplane.getEngineThrottleMode(1) >= ThrottleMode.FLEX_MCT;
         let originIdentCell = "----";
         if (mcdu.flightPlanManager.getOrigin()) {
             originIdentCell = mcdu.flightPlanManager.getOrigin().ident;
@@ -42,8 +42,8 @@ class CDUFlightPlanPage {
         let rowsCount = 6;
         if (mcdu.flightPlanManager.getCurrentFlightPlanIndex() === 1) {
             rowsCount = 5;
-            rows[10] = ["TMPY[color]red", "TMPY[color]red"];
-            rows[11] = ["*ERASE[color]red", "INSERT*[color]red"];
+            rows[10] = ["TMPY[color]amber", "TMPY[color]amber"];
+            rows[11] = ["*ERASE[color]amber", "INSERT*[color]amber"];
             mcdu.onLeftInput[5] = async () => {
                 mcdu.eraseTemporaryFlightPlan(() => {
                     CDUFlightPlanPage.ShowPage(mcdu, 0);
@@ -227,7 +227,7 @@ class CDUFlightPlanPage {
                         rows[2 * i] = [airwayName, (index >= activeIndex || waypoint.ident === "(DECEL)" ? distance.toFixed(0) : "")];
                         let speedConstraint = "---";
                         if (waypoint.speedConstraint > 10) {
-                            speedConstraint = waypoint.speedConstraint.toFixed(0);
+                            speedConstraint = "{magenta}*{end}" + waypoint.speedConstraint.toFixed(0);
                             if (speedConstraint === lastSpeedConstraint) {
                                 speedConstraint = " \" ";
                             } else {
@@ -235,28 +235,22 @@ class CDUFlightPlanPage {
                             }
                         }
                         let altitudeConstraint = "---";
-                        if (waypoint.legAltitudeDescription !== 0) {
-                            if (mcdu.transitionAltitude >= 100 && waypoint.legAltitude1 > mcdu.transitionAltitude) {
-                                altitudeConstraint = "FL" + (waypoint.legAltitude1 / 100).toFixed(0);
-                            } else {
-                                altitudeConstraint = waypoint.legAltitude1.toFixed(0);
-                            }
-                            if (waypoint.legAltitudeDescription === 1) {
-                                altitudeConstraint = altitudeConstraint;
-                            }
-                            if (waypoint.legAltitudeDescription === 2) {
-                                altitudeConstraint = "+" + altitudeConstraint;
-                            }
-                            if (waypoint.legAltitudeDescription === 3) {
-                                altitudeConstraint = "-" + altitudeConstraint;
-                            } else if (waypoint.legAltitudeDescription === 4) {
+                        let altPrefix = "";
+                        if (mcdu.transitionAltitude >= 100 && waypoint.legAltitude1 > mcdu.transitionAltitude) {
+                            altitudeConstraint = "FL" + (waypoint.legAltitude1 / 100).toFixed(0);
+                        } else {
+                            altitudeConstraint = waypoint.legAltitude1.toFixed(0);
+                        }
+                        if (waypoint.legAltitudeDescription !== 0 && waypoint.ident !== "(DECEL)") {
+                            altPrefix = "{magenta}*{end}";
+                            if (waypoint.legAltitudeDescription === 4) {
                                 altitudeConstraint = ((waypoint.legAltitude1 + waypoint.legAltitude2) * 0.5).toFixed(0);
                             }
                         } else if (index < routeFirstWaypointIndex) {
                             if (index === routeFirstWaypointIndex - 1) {
                                 altitudeConstraint = "FL" + mcdu.cruiseFlightLevel;
                             } else {
-                                altitudeConstraint = Math.floor(waypoint.cumulativeDistanceInFP * 0.14 * 6076.118 / 10).toFixed(0) + "0";
+                                altitudeConstraint = Math.floor(waypoint.cumulativeDistanceInFP * 0.14 * 6076.118 / 10);
                             }
                         } else if ((index === routeFirstWaypointIndex - 1) || (index === routeLastWaypointIndex + 1)) {
                             altitudeConstraint = "FL" + mcdu.cruiseFlightLevel;
@@ -314,8 +308,8 @@ class CDUFlightPlanPage {
                         if (mcdu.activeHold && mcdu.activeHold.has(waypoint.ident)) {
                             const holdRows = [
                                 [waypoint.ident + "[color]" + color, speedConstraint + "/" + altitudeConstraint + "[s-text][color]" + color, timeCell + "[color]" + color],
-                                ["" , "IMM[color]blue" , "HOLD"],
-                                ["HOLD " + mcdu.activeHold.get(waypoint.ident).turn + "[color]" + color, "EXIT*[color]blue", "SPD " + mcdu.activeHold.get(waypoint.ident).speed],
+                                ["" , "IMM[color]cyan" , "HOLD"],
+                                ["HOLD " + mcdu.activeHold.get(waypoint.ident).turn + "[color]" + color, "EXIT*[color]cyan", "SPD " + mcdu.activeHold.get(waypoint.ident).speed],
                                 ["C" + mcdu.activeHold.get(waypoint.ident).course.toFixed(0) + "°"],
                                 [waypoint.ident + "[color]" + color, speedConstraint + "/" + altitudeConstraint + "[s-text][color]" + color, timeCell + "[color]" + color]
                             ];
@@ -339,7 +333,7 @@ class CDUFlightPlanPage {
                                 rows[2 * i + 2] = holdRows[j++];
                             }
                         } else {
-                            rows[2 * i + 1] = [waypoint.ident + "[color]" + color, speedConstraint + "/" + altitudeConstraint + "[s-text][color]" + color, timeCell + "[color]" + color];
+                            rows[2 * i + 1] = [waypoint.ident + "[color]" + color, speedConstraint + "/" + altPrefix + altitudeConstraint + "[s-text][color]" + color, timeCell + "[color]" + color];
                         }
                     } else {
                         let destTimeCell = "----";
@@ -378,12 +372,20 @@ class CDUFlightPlanPage {
             ["FROM " + originIdentCell],
             ...rows
         ]);
-        mcdu.onDown = () => {
-            offset = Math.max(offset - 1, 0);
+        mcdu.onDown = () => {//on page down decrement the page offset.
+            if (offset > 0) {//if page not on top
+                offset--;
+            } else {//else go to the bottom
+                offset = waypointsWithDiscontinuities.length - 1;
+            }
             CDUFlightPlanPage.ShowPage(mcdu, offset);
         };
         mcdu.onUp = () => {
-            offset++;
+            if (offset < waypointsWithDiscontinuities.length - 1) {//if page not on bottom
+                offset++;
+            } else {//else go on top
+                offset = 0;
+            }
             CDUFlightPlanPage.ShowPage(mcdu, offset);
         };
     }
