@@ -453,8 +453,10 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             if (this.messageQueue[i][0] === message) {
                 this.messageQueue[i][3](this);
                 this.messageQueue.splice(i, 1);
-                this._inOutElement.className = "white";
-                this.inOut = this.lastUserInput;
+                if (i === 0 && this.isDisplayingTypeTwoMessage) {
+                    this._inOutElement.className = "white";
+                    this.inOut = this.lastUserInput;
+                }
                 break;
             }
         }
