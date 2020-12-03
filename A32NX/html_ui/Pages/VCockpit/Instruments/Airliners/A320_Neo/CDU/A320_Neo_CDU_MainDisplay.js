@@ -79,6 +79,9 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this.onFuel = () => {
             CDUFuelPredPage.ShowPage(this);
         };
+        this.onAtc = () => {
+            CDUAtcMenu.ShowPage1(this);
+        };
         this.onMenu = () => {
             const cur = this.page.Current;
             setTimeout(() => {
@@ -428,7 +431,10 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     tryShowMessage() {
         if (!this.isDisplayingErrorMessage && (!this.inOut || this.isDisplayingTypeTwoMessage) && this.messageQueue.length > 0) {
             if (this.messageQueue[0][2](this)) {
-                return this.tryRemoveMessage(this.messageQueue[0][0]);
+                this.messageQueue.splice(0, 1);
+                this._inOutElement.className = "white";
+                this.inOut = this.lastUserInput;
+                return this.tryShowMessage();
             }
             if (!this.isDisplayingErrorMessage) {
                 if (!this.isDisplayingTypeTwoMessage) {
@@ -450,6 +456,10 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             if (this.messageQueue[i][0] === message) {
                 this.messageQueue[i][3](this);
                 this.messageQueue.splice(i, 1);
+                if (i === 0 && this.isDisplayingTypeTwoMessage) {
+                    this._inOutElement.className = "white";
+                    this.inOut = this.lastUserInput;
+                }
                 break;
             }
         }
