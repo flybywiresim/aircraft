@@ -1,6 +1,7 @@
 class CDUPosFrozen {
     static ShowPage(mcdu, currPos) {
         mcdu.clearDisplay();
+        mcdu.page.Current = mcdu.page.PosFrozen;
         const UTC_SECONDS = Math.floor(SimVar.GetGlobalVarValue("ZULU TIME", "seconds"));
         const hours = Math.floor(UTC_SECONDS / 3600) || 0;
         const minutes = Math.floor(UTC_SECONDS % 3600 / 60) || 0;
@@ -18,7 +19,7 @@ class CDUPosFrozen {
             ["IRS1", "IRS3", "IRS2"],
             ["NAV 0.0[color]green", "NAV 0.0[color]green", "NAV 0.0[color]green"],
             ["", "SEL"],
-            ["{UNFREEZE[color]blue", "NAVAIDS>"]
+            ["{UNFREEZE[color]cyan", "NAVAIDS>"]
         ]);
 
         mcdu.onLeftInput[5] = () => {

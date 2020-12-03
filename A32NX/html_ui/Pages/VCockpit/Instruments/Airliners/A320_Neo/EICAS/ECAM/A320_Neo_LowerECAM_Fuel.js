@@ -48,9 +48,9 @@ var A320_Neo_LowerECAM_Fuel;
             TemplateElement.call(this, this.init.bind(this));
         }
         init() {
-            this.allToggleElements.push(new JetFuelToggleElement(this, "#leftValve", "FUELSYSTEM VALVE SWITCH:6", "FUELSYSTEM VALVE OPEN:6"));
-            this.allToggleElements.push(new JetFuelToggleElement(this, "#middleValve", "FUELSYSTEM VALVE SWITCH:1", "FUELSYSTEM VALVE OPEN:1"));
-            this.allToggleElements.push(new JetFuelToggleElement(this, "#rightValve", "FUELSYSTEM VALVE SWITCH:7", "FUELSYSTEM VALVE OPEN:7"));
+            this.allToggleElements.push(new JetFuelToggleElement(this, "#leftValve", "FUELSYSTEM VALVE SWITCH:1", "FUELSYSTEM VALVE OPEN:1"));
+            this.allToggleElements.push(new JetFuelToggleElement(this, "#middleValve", "FUELSYSTEM VALVE SWITCH:3", "FUELSYSTEM VALVE OPEN:3"));
+            this.allToggleElements.push(new JetFuelToggleElement(this, "#rightValve", "FUELSYSTEM VALVE SWITCH:2", "FUELSYSTEM VALVE OPEN:2"));
             this.allToggleElements.push(new JetFuelToggleElement(this, "#leftPump1", "FUELSYSTEM PUMP SWITCH:2", "FUELSYSTEM PUMP ACTIVE:2"));
             this.allToggleElements.push(new JetFuelToggleElement(this, "#leftPump2", "FUELSYSTEM PUMP SWITCH:5", "FUELSYSTEM PUMP ACTIVE:5"));
             this.allToggleElements.push(new JetFuelToggleElement(this, "#rightPump1", "FUELSYSTEM PUMP SWITCH:3", "FUELSYSTEM PUMP ACTIVE:3"));
@@ -84,7 +84,7 @@ var A320_Neo_LowerECAM_Fuel;
             this.isInMetric = BaseAirliners.unitIsMetric(Aircraft.A320_NEO);
         }
         update(_deltaTime) {
-            if (!this.isInitialised) {
+            if (!this.isInitialised || !A320_Neo_EICAS.isOnBottomScreen()) {
                 return;
             }
             let factor = this.gallonToPounds;
@@ -205,4 +205,3 @@ var A320_Neo_LowerECAM_Fuel;
     A320_Neo_LowerECAM_Fuel.Page = Page;
 })(A320_Neo_LowerECAM_Fuel || (A320_Neo_LowerECAM_Fuel = {}));
 customElements.define("a320-neo-lower-ecam-fuel", A320_Neo_LowerECAM_Fuel.Page);
-//# sourceMappingURL=A320_Neo_LowerECAM_Fuel.js.map

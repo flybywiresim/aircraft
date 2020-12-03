@@ -74,13 +74,13 @@ EGT_DegR=1200
 ITT_DegR=1500
 
 [FuelSystem.0]
-Valve.1=False
-Valve.2=False
+Valve.1=True
+Valve.2=True
 Valve.3=False
 Valve.4=False
 Valve.5=False
-Valve.6=True
-Valve.7=True
+Valve.6=False
+Valve.7=False
 Valve.8=False
 Pump.1=True
 Pump.2=True
@@ -198,6 +198,8 @@ A32NX_OVHD_HYD_BLUEPUMP_OVRD=0
 A32NX_OVHD_HYD_LEAK_MEASUREMENT_G=1
 A32NX_OVHD_HYD_LEAK_MEASUREMENT_B=1
 A32NX_OVHD_HYD_LEAK_MEASUREMENT_Y=1
+A32NX_INITIAL_FLIGHT_PHASE = 3
+A32NX_FWC_SKIP_STARTUP=1
 
 [Gauges.0]
 KollsmanSetting=29.921342849731445313

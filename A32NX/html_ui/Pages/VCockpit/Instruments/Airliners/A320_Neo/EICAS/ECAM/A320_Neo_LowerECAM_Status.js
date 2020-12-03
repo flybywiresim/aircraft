@@ -355,7 +355,7 @@ var A320_Neo_LowerECAM_Status;
             this.isInitialised = true;
         }
         update(_deltaTime) {
-            if (!this.isInitialised) {
+            if (!this.isInitialised || !A320_Neo_EICAS.isOnBottomScreen()) {
                 return;
             }
             this.frameCount++;
@@ -549,4 +549,3 @@ class StatusMessagePanel extends A320_Neo_LowerECAM_Status.PanelBase {
     }
 }
 A320_Neo_LowerECAM_Status.StatusMessagePanel = StatusMessagePanel;
-//# sourceMappingURL=A320_Neo_LowerECAM_Status.js.map

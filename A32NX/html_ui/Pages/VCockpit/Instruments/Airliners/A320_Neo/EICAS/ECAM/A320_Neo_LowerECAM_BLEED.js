@@ -125,7 +125,7 @@ var A320_Neo_LowerECAM_BLEED;
         }
 
         update(_deltaTime) {
-            if (!this.isInitialised) {
+            if (!this.isInitialised || !A320_Neo_EICAS.isOnBottomScreen()) {
                 return;
             }
 
@@ -138,7 +138,7 @@ var A320_Neo_LowerECAM_BLEED;
             const throttleEng1 = SimVar.GetSimVarValue("GENERAL ENG THROTTLE LEVER POSITION:1", "number");
             const throttleEng2 = SimVar.GetSimVarValue("GENERAL ENG THROTTLE LEVER POSITION:1", "number");
             const currentApuBleedSate = SimVar.GetSimVarValue("BLEED AIR APU", "Bool");
-            const currentXbleedState = SimVar.GetSimVarValue("L:A32NX_KNOB_OVHD_AIRCOND_XBLEED_Position", "Position(0-2)");
+            const currentXbleedState = SimVar.GetSimVarValue("L:A32NX_KNOB_OVHD_AIRCOND_XBLEED_Position", "number");
             const radioHeight = SimVar.GetSimVarValue("RADIO HEIGHT", "Feet");
             const apuSwitchState = SimVar.GetSimVarValue("L:A32NX_APU_START_ACTIVATED", "bool");
             const fadecStatus = [SimVar.GetSimVarValue("L:A32NX_FADEC_POWERED_ENG1", "bool"), SimVar.GetSimVarValue("L:A32NX_FADEC_POWERED_ENG1", "bool")];
@@ -155,7 +155,7 @@ var A320_Neo_LowerECAM_BLEED;
             const outsidePressurePSI = outsidePressureINHG * this.inHgToPSI;
             const pressureDiff = cabinPressurePSI - outsidePressurePSI;
 
-            let currentPackFlow = SimVar.GetSimVarValue("L:A32NX_KNOB_OVHD_AIRCOND_PACKFLOW_Position", "Position(0-2)");
+            let currentPackFlow = SimVar.GetSimVarValue("L:A32NX_KNOB_OVHD_AIRCOND_PACKFLOW_Position", "number");
             let currentLeftPackState = SimVar.GetSimVarValue("L:A32NX_AIRCOND_PACK1_TOGGLE", "bool");
             let currentRightPackState = SimVar.GetSimVarValue("L:A32NX_AIRCOND_PACK2_TOGGLE", "bool");
             let currentRamState = SimVar.GetSimVarValue("L:A32NX_AIRCOND_RAMAIR_TOGGLE", "bool");
@@ -186,15 +186,7 @@ var A320_Neo_LowerECAM_BLEED;
             }
 
             if (!this.apuProvidesBleed && (currentApuN > 0.94)) {
-                this.apuBleedStartTimer = 2;
-            }
-
-            if (this.apuBleedStartTimer >= 0) {
-                this.apuBleedStartTimer -= _deltaTime / 1000;
-                if (this.apuBleedStartTimer < 0) {
-                    this.apuProvidesBleed = true;
-                    this.querySelector("#apu-connecting-line").setAttribute("style", "stroke:008000");
-                }
+                this.apuProvidesBleed = true;
             }
 
             //checks if engines are below idle
@@ -586,4 +578,3 @@ var A320_Neo_LowerECAM_BLEED;
     A320_Neo_LowerECAM_BLEED.Page = Page;
 })(A320_Neo_LowerECAM_BLEED || (A320_Neo_LowerECAM_BLEED = {}));
 customElements.define("a320-neo-lower-ecam-bleed", A320_Neo_LowerECAM_BLEED.Page);
-//# sourceMappingURL=A320_Neo_LowerECAM_BLEED.js.map

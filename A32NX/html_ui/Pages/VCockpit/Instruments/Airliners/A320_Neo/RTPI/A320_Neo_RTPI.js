@@ -37,4 +37,3 @@ class A320_Neo_RTPI extends BaseAirliners {
     }
 }
 registerInstrument("a320-neo-rtpi", A320_Neo_RTPI);
-//# sourceMappingURL=A320_Neo_RTPI.js.map

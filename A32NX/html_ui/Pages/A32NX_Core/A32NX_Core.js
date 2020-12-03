@@ -8,9 +8,13 @@ class A32NX_Core {
             new A32NX_LocalVarUpdater(),
             new A32NX_FADEC(1),
             new A32NX_FADEC(2),
-            new A32NX_GPWS(),
-            new A32NX_GroundReference()
+            new A32NX_FWC(),
+            new A32NX_GPWS(this),
+            new A32NX_GroundReference(),
+            new A32NX_Vspeeds()
         ];
+
+        this.soundManager = new A32NX_SoundManager();
     }
 
     init(startTime) {
@@ -32,6 +36,8 @@ class A32NX_Core {
         this.updateACPowerStateChange();
 
         const deltaTime = this.getDeltaTime();
+
+        this.soundManager.update(deltaTime);
         this.modules.forEach(module => {
             module.update(deltaTime, this);
         });
