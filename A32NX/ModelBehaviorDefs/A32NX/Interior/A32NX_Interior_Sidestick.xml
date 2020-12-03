@@ -19,31 +19,23 @@
             </False>
         </Condition>
 
-        <ANIM_SIMVAR_X>L:A32NX_SIDESTICK_POSITION_X</ANIM_SIMVAR_X>
-        <ANIM_SIMVAR_Y>L:A32NX_SIDESTICK_POSITION_Y</ANIM_SIMVAR_Y>
+        <ANIM_CODE_X>(L:A32NX_SIDESTICK_POSITION_X) 100 * 100 +</ANIM_CODE_X>
+        <ANIM_CODE_Y>(L:A32NX_SIDESTICK_POSITION_Y) 100 * 100 +</ANIM_CODE_Y>
 
         <ANIM_NAME_YOKE_X>HANDLING_YOKE_Lever_StickLR</ANIM_NAME_YOKE_X>
         <ANIM_NAME_YOKE_Y>HANDLING_YOKE_Lever_StickForeAft</ANIM_NAME_YOKE_Y>
         <PART_ID>HANDLING_Yoke</PART_ID>
     </DefaultTemplateParameters>
     <Component ID="#NODE_ID#_#ID#" Node="#NODE_ID#">
-        <UseTemplate Name="ASOBO_GT_Anim_Sim">
+        <UseTemplate Name="ASOBO_GT_Anim_Code">
             <ANIM_NAME>#ANIM_NAME_YOKE_X#</ANIM_NAME>
             <ANIM_LENGTH>200</ANIM_LENGTH>
-            <ANIM_SIMVAR>#ANIM_SIMVAR_X#</ANIM_SIMVAR>
-            <ANIM_SIMVAR_UNITS>percent</ANIM_SIMVAR_UNITS>
-            <!-- [-100, 100] -->
-            <ANIM_SIMVAR_BIAS>100</ANIM_SIMVAR_BIAS>
-            <!-- [-100, 100] + 100 => [0, 200] -->
+            <ANIM_CODE>#ANIM_CODE_X#</ANIM_CODE>
         </UseTemplate>
-        <UseTemplate Name="ASOBO_GT_Anim_Sim">
+        <UseTemplate Name="ASOBO_GT_Anim_Code">
             <ANIM_NAME>#ANIM_NAME_YOKE_Y#</ANIM_NAME>
             <ANIM_LENGTH>200</ANIM_LENGTH>
-            <ANIM_SIMVAR>#ANIM_SIMVAR_Y#</ANIM_SIMVAR>
-            <ANIM_SIMVAR_UNITS>percent</ANIM_SIMVAR_UNITS>
-            <!-- [-100, 100] -->
-            <ANIM_SIMVAR_BIAS>100</ANIM_SIMVAR_BIAS>
-            <!-- [-100, 100] + 100 => [0, 200] -->
+            <ANIM_CODE>#ANIM_CODE_Y#</ANIM_CODE>
         </UseTemplate>
     </Component>
     <Condition Check="CREATE_TWO_NODES">
