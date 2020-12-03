@@ -44,7 +44,6 @@ private:
   double idleThrottleInput;
 
   double previousSimulationTime;
-
   SimConnectInterface simConnectInterface;
   FlyByWireModelClass model;
   InterpolatingLookupTable throttleLookupTable;
