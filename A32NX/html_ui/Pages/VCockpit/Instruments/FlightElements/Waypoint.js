@@ -770,8 +770,7 @@ class IntersectionInfo extends WayPointInfo {
         return "GPS/Intersection.png";
     }
     imageFileName() {
-        if(this.name == "(DECEL)")
-        {
+        if (this.name == "(DECEL)") {
             if (BaseInstrument.useSvgImages) {
                 return "A32NX_DECEL.svg";
             }
