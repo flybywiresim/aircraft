@@ -5,4 +5,5 @@
     <Include RelativeFile="A32NX_Interior_FCU.xml"/>
     <Include RelativeFile="A32NX_Interior_Fire.xml"/>
     <Include RelativeFile="A32NX_Interior_Misc.xml"/>
+    <Include RelativeFile="A32NX_Interior_Sidestick.xml"/>
 </ModelBehaviors>
