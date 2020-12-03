@@ -25,7 +25,7 @@
 #include "FlyByWire.h"
 #include "InterpolatingLookupTable.h"
 
-    class FlyByWireInterface
+class FlyByWireInterface
 {
 public:
   bool connect();
@@ -43,6 +43,7 @@ private:
   bool useReverseOnAxis;
   double idleThrottleInput;
 
+  double previousSimulationTime;
   SimConnectInterface simConnectInterface;
   FlyByWireModelClass model;
   InterpolatingLookupTable throttleLookupTable;

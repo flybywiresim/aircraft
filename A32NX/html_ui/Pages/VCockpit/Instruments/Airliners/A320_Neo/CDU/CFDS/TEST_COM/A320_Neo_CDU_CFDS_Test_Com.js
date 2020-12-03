@@ -14,7 +14,7 @@ class CDUCfdsTestCom {
             [""],
             ["<CIDS 1[color]inop", "VHF 2>[color]inop"],
             [""],
-            ["<RETURN[color]blue", "VHF 3>[color]inop"]
+            ["<RETURN[color]cyan", "VHF 3>[color]inop"]
         ]);
 
         mcdu.leftInputDelay[5] = () => {
@@ -48,7 +48,7 @@ class CDUCfdsTestCom {
             [""],
             [""],
             [""],
-            ["<RETURN[color]blue"]
+            ["<RETURN[color]cyan"]
         ]);
 
         mcdu.leftInputDelay[5] = () => {

@@ -612,7 +612,6 @@ class A320_Neo_MFD_Map extends MapInstrumentElement {
         return ranges;
     }
     setMode(display) {
-        this.hideWeather();
         switch (display) {
             case Jet_NDCompass_Display.ROSE:
             {

@@ -14,7 +14,7 @@ class CDU_CFDS_Test_Common_GroundScanning {
             [""],
             ["<CLASS 3 FAULTS[color]inop"],
             [""],
-            ["<RETURN[color]blue"]
+            ["<RETURN[color]cyan"]
         ]);
 
         // IMPLEMENTED BUTTONS

@@ -81,6 +81,8 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
         this.nextFlapSVGShape = null;
         this.greenDotSVG = null;
         this.greenDotSVGShape = null;
+        this.vRSVG = null;
+        this.vRSVGShape = null;
         this.stripsSVG = null;
         this.vMaxStripSVG = null;
         this.vlsStripSVG = null;
@@ -370,6 +372,29 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
                 this.greenDotSVGShape.setAttribute("r", "7");
                 this.greenDotSVG.appendChild(this.greenDotSVGShape);
             }
+            if (!this.vRSVG) {
+                this.vRSVG = document.createElementNS(Avionics.SVG.NS, "svg");
+                this.vRSVG.setAttribute("id", "GreenDotIndicatorGroup");
+            } else {
+                Utils.RemoveAllChildren(this.vRSVG);
+            }
+            this.vRSVG.setAttribute("x", (greenDotPosX + 6).toFixed(0));
+            this.vRSVG.setAttribute("y", (greenDotPosY - greenDotHeight * 0.5).toFixed(0));
+            this.vRSVG.setAttribute("width", greenDotWidth.toFixed(0));
+            this.vRSVG.setAttribute("height", greenDotHeight.toFixed(0));
+            this.vRSVG.setAttribute("viewBox", "0 0 " + greenDotWidth + " " + greenDotHeight);
+            {
+                if (!this.vRSVGShape) {
+                    this.vRSVGShape = document.createElementNS(Avionics.SVG.NS, "circle");
+                }
+                this.vRSVGShape.setAttribute("fill", "none");
+                this.vRSVGShape.setAttribute("stroke", "#00FFFF");
+                this.vRSVGShape.setAttribute("stroke-width", "4");
+                this.vRSVGShape.setAttribute("cx", "10");
+                this.vRSVGShape.setAttribute("cy", "10");
+                this.vRSVGShape.setAttribute("r", "7");
+                this.vRSVG.appendChild(this.vRSVGShape);
+            }
             const blueSpeedPosX = _left + _width * 1.025;
             const blueSpeedPosY = _top + _height * 0.5;
             const blueSpeedWidth = width;
@@ -546,6 +571,7 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
             this.centerSVG.appendChild(this.speedMarkerSVG);
             this.centerSVG.appendChild(this.nextFlapSVG);
             this.centerSVG.appendChild(this.greenDotSVG);
+            this.centerSVG.appendChild(this.vRSVG);
         }
         this.rootGroup.appendChild(this.centerSVG);
         {
@@ -644,6 +670,7 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
         // Value used to draw the red VMAX barber pole
         const maxSpeed = A32NX_Selectors.VMAX();
         const greenDot = SimVar.GetSimVarValue("L:A32NX_GD", "number");
+        const vR = SimVar.GetSimVarValue("L:AIRLINER_VR_SPEED", "Knots");
         const planeOnGround = Simplane.getIsGrounded();
         const vs = SimVar.GetSimVarValue("L:A32NX_VS", "number");
         const vls = SimVar.GetSimVarValue("L:A32NX_VLS", "number");
@@ -657,6 +684,7 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
         this.updateStrip(this.vamaxStripSVG, indicatedSpeed, this._vamax, planeOnGround, false);
         this.updateStrip(this.vsStripSVG, indicatedSpeed, this._vs, planeOnGround, false);
         this.updateGreenDot(indicatedSpeed, greenDot);
+        this.updateVR(indicatedSpeed, vR, planeOnGround);
         this.updateSpeedMarkers(indicatedSpeed);
         this.updateMachSpeed(dTime);
         this.updateSpeedOverride(dTime);
@@ -1034,6 +1062,24 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
                 this.greenDotSVG.setAttribute("visibility", "hidden");
             } else {
                 this.greenDotSVG.setAttribute("visibility", "visible");
+            }
+        }
+    }
+    updateVR(currentAirspeed, _vR, _onGround) {
+        if (this.vRSVG) {
+            let hidePointer = true;
+            if (_vR > this.graduationMinValue && _onGround && Simplane.getCurrentFlightPhase() === FlightPhase.FLIGHT_PHASE_TAKEOFF) {
+                const vRPosY = this.valueToSvg(currentAirspeed, _vR);
+                const vRHeight = 20;
+                if (vRPosY > 0) {
+                    this.vRSVG.setAttribute("y", (vRPosY - vRHeight * 0.5).toString());
+                    hidePointer = false;
+                }
+            }
+            if (hidePointer) {
+                this.vRSVG.setAttribute("visibility", "hidden");
+            } else {
+                this.vRSVG.setAttribute("visibility", "visible");
             }
         }
     }

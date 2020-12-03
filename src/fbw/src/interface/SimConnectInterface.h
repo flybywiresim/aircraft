@@ -25,7 +25,7 @@
 
 #include "SimConnectData.h"
 
-    class SimConnectInterface {
+class SimConnectInterface {
 public:
   SimConnectInterface() = default;
 
