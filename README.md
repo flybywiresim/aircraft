@@ -38,7 +38,7 @@ This has the latest features, but is much more unstable, use at your own risk.
 
 This version is the same as the regular master/development version, but with the WIP custom fly-by-wire system. Expect issues with flight directors/autopilot if you intend to use this version. No support will be provided via Discord.
 
-[Download FBW development build here.](https://flybywiresim-packages.nyc3.cdn.digitaloceanspaces.com/vmaster-cfbw/A32NX-master-cfbw.zip)
+[Download custom FBW development build here.](https://flybywiresim-packages.nyc3.cdn.digitaloceanspaces.com/vmaster-cfbw/A32NX-master-cfbw.zip)
 
 ## Installation
 
