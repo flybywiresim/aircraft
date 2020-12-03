@@ -14,8 +14,8 @@ class CDUDirectToPage {
         let eraseLabel = "";
         if (directWaypoint) {
             iMax--;
-            eraseLabel = "DIR TO[color]amber";
-            waypointsCell[4] = "{ERASE[color]amber";
+            eraseLabel = "DIR TO[color]red";
+            waypointsCell[4] = "{ERASE[color]red";
             mcdu.onLeftInput[5] = () => {
                 SimVar.SetSimVarValue("L:A320_NEO_PREVIEW_DIRECT_TO", "number", 0);
                 CDUDirectToPage.ShowPage(mcdu);
@@ -39,7 +39,7 @@ class CDUDirectToPage {
         while (i < totalWaypointsCount && i + wptsListIndex < totalWaypointsCount && i < iMax) {
             const waypoint = mcdu.flightPlanManager.getWaypoint(i + wptsListIndex, NaN, true);
             if (waypoint) {
-                waypointsCell[i] = "{" + waypoint.ident + "[color]cyan";
+                waypointsCell[i] = "{" + waypoint.ident + "[color]blue";
                 if (waypointsCell[i]) {
                     mcdu.onLeftInput[i + 1] = () => {
                         SimVar.SetSimVarValue("L:A320_NEO_PREVIEW_DIRECT_TO", "number", 1);
@@ -61,8 +61,8 @@ class CDUDirectToPage {
         let insertLabel = "";
         let insertLine = "";
         if (directWaypoint) {
-            insertLabel = "TMPY[color]amber";
-            insertLine = "DIRECT*[color]amber";
+            insertLabel = "TMPY[color]red";
+            insertLine = "DIRECT*[color]red";
             mcdu.onRightInput[5] = () => {
                 mcdu.activateDirectToWaypoint(directWaypoint, () => {
                     SimVar.SetSimVarValue("L:A320_NEO_PREVIEW_DIRECT_TO", "number", 0);
@@ -73,15 +73,15 @@ class CDUDirectToPage {
         mcdu.setTemplate([
             ["DIR TO"],
             ["WAYPOINT", "DIST", "UTC"],
-            ["[" + directWaypointCell + "][color]cyan", "---", "----"],
+            ["[" + directWaypointCell + "][color]blue", "---", "----"],
             ["F-PLN WPTS"],
-            [waypointsCell[0], "DIRECT TO[color]cyan"],
+            [waypointsCell[0], "DIRECT TO[color]blue"],
             ["", "WITH"],
-            [waypointsCell[1], "ABEAM PTS[color]cyan"],
+            [waypointsCell[1], "ABEAM PTS[color]blue"],
             ["", "RADIAL IN"],
-            [waypointsCell[2], "[ ]°[color]cyan"],
+            [waypointsCell[2], "[ ]°[color]blue"],
             ["", "RADIAL OUT"],
-            [waypointsCell[3], "[ ]°[color]cyan"],
+            [waypointsCell[3], "[ ]°[color]blue"],
             [eraseLabel, insertLabel],
             [waypointsCell[4], insertLine]
         ]);

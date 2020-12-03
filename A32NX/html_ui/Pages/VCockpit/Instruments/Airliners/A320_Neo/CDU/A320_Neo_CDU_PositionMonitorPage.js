@@ -32,7 +32,7 @@ class CDUPositionMonitorPage {
             ["IRS1", "IRS3", "IRS2"],
             ["NAV 0.0[color]green", "NAV 0.0[color]green", "NAV 0.0[color]green"],
             ["", "SEL"],
-            ["{FREEZE[color]cyan", "NAVAIDS>"]
+            ["{FREEZE[color]blue", "NAVAIDS>"]
         ]);
 
         mcdu.rightInputDelay[5] = () => {

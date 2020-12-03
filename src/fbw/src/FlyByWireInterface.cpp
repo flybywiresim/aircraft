@@ -100,14 +100,6 @@ bool FlyByWireInterface::getModelInputDataFromSim(
   SimData simData = simConnectInterface.getSimData();
   SimInput simInput = simConnectInterface.getSimInput();
 
-  // detect pause
-  bool isInPause = false;
-  if ((simData.simulationTime == previousSimulationTime) || (simData.simulationTime < 0.2))
-  {
-    isInPause = true;
-  }
-  previousSimulationTime = simData.simulationTime;
-
   // fill time into model
   model.FlyByWire_U.in.time.dt = sampleTime;
 
@@ -136,13 +128,13 @@ bool FlyByWireInterface::getModelInputDataFromSim(
   model.FlyByWire_U.in.data.H_ind_ft = simData.H_ind_ft;
   model.FlyByWire_U.in.data.H_radio_ft = simData.H_radio_ft;
   model.FlyByWire_U.in.data.CG_percent_MAC = simData.CG_percent_MAC;
-  model.FlyByWire_U.in.data.gear_animation_pos_0 = simData.gear_animation_pos_0;
-  model.FlyByWire_U.in.data.gear_animation_pos_1 = simData.gear_animation_pos_1;
-  model.FlyByWire_U.in.data.gear_animation_pos_2 = simData.gear_animation_pos_2;
+  model.FlyByWire_U.in.data.gear_animation_pos_0 = simData.geat_animation_pos_0;
+  model.FlyByWire_U.in.data.gear_animation_pos_1 = simData.geat_animation_pos_1;
+  model.FlyByWire_U.in.data.gear_animation_pos_2 = simData.geat_animation_pos_2;
   model.FlyByWire_U.in.data.flaps_handle_index = simData.flaps_handle_index;
   model.FlyByWire_U.in.data.autopilot_master_on = simData.autopilot_master_on;
   model.FlyByWire_U.in.data.slew_on = simData.slew_on;
-  model.FlyByWire_U.in.data.pause_on = isInPause;
+  model.FlyByWire_U.in.data.pause_on = 0;
 
   // fill inputs into model
   model.FlyByWire_U.in.input.delta_eta_pos = simInput.inputs[0];
@@ -217,15 +209,15 @@ void FlyByWireInterface::initializeThrottles()
     configFile << "ReverseOnAxis = false" << endl;
     configFile << "DetentReverseFull = -1.00" << endl;
     configFile << "DetentIdle = -1.00" << endl;
-    configFile << "DetentClimb = 0.89" << endl;
-    configFile << "DetentFlexMct = 0.95" << endl;
+    configFile << "DetentClimb = 0.66" << endl;
+    configFile << "DetentFlexMct = 0.88" << endl;
     configFile << "DetentTakeOffGoAround = 1.00" << endl;
     configFile.close();
   }
 
   // read basic configuration
-  isThrottleHandlingEnabled = configuration.GetBoolean("Throttle", "Enabled", true);
-  useReverseOnAxis = configuration.GetBoolean("Throttle", "ReverseOnAxis", false);
+  isThrottleHandlingEnabled = configuration.GetBoolean("Throttle", "Enabled", false);
+  useReverseOnAxis = configuration.GetBoolean("Throttle", "ReverseOnAxis", true);
   // read mapping configuration
   vector<pair<double, double>> mappingTable;
   if (useReverseOnAxis)
@@ -233,8 +225,8 @@ void FlyByWireInterface::initializeThrottles()
     mappingTable.emplace_back(configuration.GetReal("Throttle", "DetendReverseFull", -1.00), -20.00);
   }
   mappingTable.emplace_back(configuration.GetReal("Throttle", "DetentIdle", useReverseOnAxis ? 0.00 : -1.00), 0.00);
-  mappingTable.emplace_back(configuration.GetReal("Throttle", "DetentClimb", 0.89), 89.00);
-  mappingTable.emplace_back(configuration.GetReal("Throttle", "DetentFlexMct", 0.95), 95.00);
+  mappingTable.emplace_back(configuration.GetReal("Throttle", "DetentClimb", 0.67), 89.00);
+  mappingTable.emplace_back(configuration.GetReal("Throttle", "DetentFlexMct", 0.89), 95.00);
   mappingTable.emplace_back(configuration.GetReal("Throttle", "DetentTakeOffGoAround", 1.00), 100.00);
 
   // remember idle throttle setting

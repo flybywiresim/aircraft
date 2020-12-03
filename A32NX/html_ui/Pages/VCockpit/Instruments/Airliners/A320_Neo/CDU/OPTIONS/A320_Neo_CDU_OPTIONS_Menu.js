@@ -19,15 +19,15 @@ class CDU_OPTIONS_MainMenu {
             ["AOC[color]green", "ADIRS[color]green"],
             ["<ATIS SRC", "ALIGN TIME>"],
             ["AOC[color]green", "ACCEL ALT[color]green"],
-            ["<METAR SRC", `${storedAccelAlt} FT.>[color]cyan`],
+            ["<METAR SRC", `${storedAccelAlt} FT.>[color]blue`],
             ["AOC[color]green", "DMC SELF-TEST[color]green"],
-            ["<SIGMET SRC[color]inop", `${storedDMCTestTime} SEC.>[color]cyan`],
+            ["<SIGMET SRC[color]inop", `${storedDMCTestTime} SEC.>[color]blue`],
             ["AOC[color]green"],
             ["<TAF SRC"],
             ["FREE TEXT[color]green"],
             [telexStatus],
             [""],
-            ["<RETURN[color]cyan"]
+            ["<RETURN[color]blue"]
         ]);
 
         mcdu.leftInputDelay[0] = () => {

@@ -9,20 +9,20 @@ class CDU_OPTIONS_TELEX {
 
         switch (storedTelexStatus) {
             case "ENABLED":
-                telexToggleText = "DISABLE*[color]cyan";
+                telexToggleText = "DISABLE*[color]blue";
                 break;
             case "UNKNOWN":
-                telexToggleText = "ENABLE*[color]cyan";
+                telexToggleText = "ENABLE*[color]blue";
                 firstTime = true;
                 break;
             case "DISABLED":
-                telexToggleText = "ENABLE*[color]cyan";
+                telexToggleText = "ENABLE*[color]blue";
         }
 
         mcdu.setTemplate([
             ["A32NX OPTIONS"],
             ["", "", "ONLINE FEATURES"],
-            ["WARNING:[color]amber"],
+            ["WARNING:[color]red"],
             ["[b-text]ENABLES FREE TEXT AND LIVE"],
             ["[s-text]MAP. IF ENABLED,"],
             ["[b-text]AIRCRAFT POSITION DATA WILL"],
@@ -30,9 +30,9 @@ class CDU_OPTIONS_TELEX {
             ["[b-text]DURATION OF THE FLIGHT."],
             ["[s-text]MSGS ARE PUBLIC, NOT MODERATED."],
             [""],
-            ["[s-text]USE AT YOUR OWN RISK.[color]amber"],
-            ["", "CONFIRM[color]cyan"],
-            firstTime ? ["<LATER[color]cyan", telexToggleText] : ["<RETURN[color]cyan", telexToggleText]
+            ["[s-text]USE AT YOUR OWN RISK.[color]red"],
+            ["", "CONFIRM[color]blue"],
+            firstTime ? ["<LATER[color]blue", telexToggleText] : ["<RETURN[color]blue", telexToggleText]
         ]);
 
         mcdu.leftInputDelay[5] = () => {

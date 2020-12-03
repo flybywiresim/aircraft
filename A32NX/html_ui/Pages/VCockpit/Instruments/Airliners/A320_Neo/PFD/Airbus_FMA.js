@@ -873,7 +873,6 @@ var Airbus_FMA;
                 this.currentRow2State = targetRow2State;
                 setTimeout(() => {
                     let isCst = false;
-                    let isManaged = false;
                     switch (this.currentRow1State) {
                         case Column2.ROW_1_STATE.SRS_ARMED: {
                             this.setRowText(0, "SRS", Airbus_FMA.MODE_STATE.ARMED);
@@ -910,7 +909,6 @@ var Airbus_FMA;
                                 str = speed.toFixed(0);
                             }
                             this.setRowMultiText(0, "V/S", Airbus_FMA.MODE_STATE.ENGAGED, str, Airbus_FMA.MODE_STATE.ARMED);
-                            isManaged = true;
                             break;
                         }
                         case Column2.ROW_1_STATE.FPA: {
@@ -919,7 +917,6 @@ var Airbus_FMA;
                             value = Math.min(Math.abs(value), 9.9);
                             var str = sign + value.toFixed(2) + String.fromCharCode(176);
                             this.setRowMultiText(0, "FPA", Airbus_FMA.MODE_STATE.ENGAGED, str, Airbus_FMA.MODE_STATE.ARMED);
-                            isManaged = true;
                             break;
                         }
                         case Column2.ROW_1_STATE.EXP_CLB: {
@@ -948,12 +945,10 @@ var Airbus_FMA;
                         }
                         case Column2.ROW_1_STATE.CLB_ENGAGED: {
                             this.setRowText(0, "CLB", Airbus_FMA.MODE_STATE.ENGAGED);
-                            isManaged = true;
                             break;
                         }
                         case Column2.ROW_1_STATE.DES: {
                             this.setRowText(0, "DES", Airbus_FMA.MODE_STATE.ENGAGED);
-                            isManaged = true;
                             break;
                         }
                         case Column2.ROW_1_STATE.ALT_CRZ: {
@@ -971,7 +966,7 @@ var Airbus_FMA;
                     } else {
                         switch (this.currentRow2State) {
                             case Column2.ROW_2_STATE.ALT_ARMED: {
-                                this.setRowMultiText(1, "ALT", this.currentConstrained && isManaged ? Airbus_FMA.MODE_STATE.CONSTRAINED : Airbus_FMA.MODE_STATE.ARMED, "", Airbus_FMA.MODE_STATE.ACTIVE);
+                                this.setRowMultiText(1, "ALT", this.currentConstrained ? Airbus_FMA.MODE_STATE.CONSTRAINED : Airbus_FMA.MODE_STATE.ARMED, "", Airbus_FMA.MODE_STATE.ACTIVE);
                                 break;
                             }
                             case Column2.ROW_2_STATE.GS_ARMED: {
@@ -987,7 +982,7 @@ var Airbus_FMA;
                                 break;
                             }
                             case Column2.ROW_2_STATE.ALT_GS_ARMED: {
-                                this.setRowMultiText(1, "ALT", this.currentConstrained && isManaged ? Airbus_FMA.MODE_STATE.CONSTRAINED : Airbus_FMA.MODE_STATE.ARMED, "G/S", Airbus_FMA.MODE_STATE.ARMED);
+                                this.setRowMultiText(1, "ALT", this.currentConstrained ? Airbus_FMA.MODE_STATE.CONSTRAINED : Airbus_FMA.MODE_STATE.ARMED, "G/S", Airbus_FMA.MODE_STATE.ARMED);
                                 break;
                             }
                             case Column2.ROW_2_STATE.OP_CLB_ARMED: {

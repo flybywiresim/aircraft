@@ -4,8 +4,8 @@ class CDU_OPTIONS_TAF {
 
         const storedTafSrc = NXDataStore.get("CONFIG_TAF_SRC", "NOAA");
 
-        let noaa = "*NOAA[color]cyan";
-        let ivao = "*IVAO[color]cyan";
+        let noaa = "*NOAA[color]blue";
+        let ivao = "*IVAO[color]blue";
 
         switch (storedTafSrc) {
             case "IVAO":
@@ -28,7 +28,7 @@ class CDU_OPTIONS_TAF {
             [""],
             [""],
             [""],
-            ["<RETURN[color]cyan"]
+            ["<RETURN[color]blue"]
         ]);
 
         mcdu.leftInputDelay[0] = () => {

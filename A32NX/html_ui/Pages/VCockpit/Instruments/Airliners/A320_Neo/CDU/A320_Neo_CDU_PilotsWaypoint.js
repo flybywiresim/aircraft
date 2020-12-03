@@ -5,7 +5,7 @@ class CDUPilotsWaypoint {
         mcdu.setTemplate([
             ["PILOTS WAYPOINT", "1", "1"],
             ["IDENT"],
-            ["[   ][color]cyan"],
+            ["[   ][color]blue"],
             [""],
             [""],
             [""],
@@ -14,7 +14,7 @@ class CDUPilotsWaypoint {
             [""],
             ["", "NEW"],
             ["", "WAYPOINT>"],
-            ["", "DELETE ALL}[color]cyan"]
+            ["", "DELETE ALL}[color]blue"]
         ]);
 
         mcdu.rightInputDelay[4] = () => {

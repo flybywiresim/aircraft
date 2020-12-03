@@ -52,7 +52,7 @@ class CDUVerticalRevisionPage {
                 [" CLB SPD LIM", ""],
                 [climbSpeedLimit + "/" + climbAltLimit + "[color]magenta", "RTA>"],
                 [" SPD CSTR", "ALT CSTR "],
-                [speedConstraint ? speedConstraint + "[color]magenta" : "*[\xa0\xa0\xa0][color]cyan", altitudeConstraint ? altitudeConstraint + "[color]magenta" : "[\xa0\xa0\xa0\xa0]*[color]cyan"],
+                [speedConstraint ? speedConstraint + "[color]magenta" : "*[\xa0\xa0\xa0][color]blue", altitudeConstraint ? altitudeConstraint + "[color]magenta" : "[\xa0\xa0\xa0\xa0]*[color]blue"],
                 ["", ""],
                 ["", ""],
                 [""],
@@ -78,7 +78,7 @@ class CDUVerticalRevisionPage {
             mcdu.onRightInput[2] = (value) => {
                 if (value === FMCMainDisplay.clrValue) {
                     mcdu.removeWaypoint(fpIndex, () => {
-                        mcdu.updateConstraints();
+                        mcdu.tryUpdateAltitudeConstraint(true);
                         CDUFlightPlanPage.ShowPage(mcdu, offset);
                     });
                 }
@@ -104,7 +104,7 @@ class CDUVerticalRevisionPage {
                     if (altitude >= 0) {
                         mcdu.flightPlanManager.setLegAltitudeDescription(waypoint, code);
                         mcdu.flightPlanManager.setWaypointAltitude((altitude < 1000 ? altitude * 100 : altitude) / 3.28084, mcdu.flightPlanManager.indexOfWaypoint(waypoint), () => {
-                            mcdu.updateConstraints();
+                            mcdu.tryUpdateAltitudeConstraint(true);
                             this.ShowPage(mcdu, waypoint);
                         });
                     }

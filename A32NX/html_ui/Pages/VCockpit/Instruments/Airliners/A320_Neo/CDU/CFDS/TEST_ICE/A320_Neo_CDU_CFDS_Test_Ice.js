@@ -14,7 +14,7 @@ class CDUCfdsTestIce {
             [""],
             ["<PHC 3[color]inop"],
             [""],
-            ["<RETURN[color]cyan"]
+            ["<RETURN[color]blue"]
         ]);
 
         mcdu.leftInputDelay[5] = () => {

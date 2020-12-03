@@ -4,9 +4,9 @@ class CDU_OPTIONS_ADIRS {
 
         const storedAlignTime = NXDataStore.get("CONFIG_ALIGN_TIME", "REAL");
 
-        let instant = "*INSTANT[color]cyan";
-        let fast = "*FAST[color]cyan";
-        let real = "*REAL[color]cyan";
+        let instant = "*INSTANT[color]blue";
+        let fast = "*FAST[color]blue";
+        let real = "*REAL[color]blue";
 
         switch (storedAlignTime) {
             case "INSTANT":
@@ -32,7 +32,7 @@ class CDU_OPTIONS_ADIRS {
             [""],
             [""],
             [""],
-            ["<RETURN[color]cyan"]
+            ["<RETURN[color]blue"]
         ]);
 
         mcdu.leftInputDelay[0] = () => {

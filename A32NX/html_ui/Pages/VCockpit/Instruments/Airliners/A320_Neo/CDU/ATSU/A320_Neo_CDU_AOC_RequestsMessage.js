@@ -31,7 +31,7 @@ class CDUAocRequestsMessage {
             [`[b-text]${lines[offset + 7] ? lines[offset + 7] : ""}`],
             [`[s-text]${lines[offset + 8] ? lines[offset + 8] : ""}`],
             ["RETURN TO"],
-            ["<RCVD MSGS", "PRINT*[color]cyan"]
+            ["<RCVD MSGS", "PRINT*[color]blue"]
         ]);
 
         if (lines.length > 8) {

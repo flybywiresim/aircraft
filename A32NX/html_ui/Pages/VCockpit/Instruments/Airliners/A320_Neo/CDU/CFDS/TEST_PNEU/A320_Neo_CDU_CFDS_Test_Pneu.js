@@ -14,7 +14,7 @@ class CDUCfdsTestPneu {
             [""],
             [""],
             [""],
-            ["<RETURN[color]cyan"]
+            ["<RETURN[color]blue"]
         ]);
 
         mcdu.leftInputDelay[5] = () => {

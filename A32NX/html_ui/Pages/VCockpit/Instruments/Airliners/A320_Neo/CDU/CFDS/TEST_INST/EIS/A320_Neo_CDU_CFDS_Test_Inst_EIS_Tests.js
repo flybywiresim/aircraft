@@ -16,7 +16,7 @@ class CDU_CFDS_Test_Inst_EIS_Tests {
             [""],
             ["<SYSTEM TEST RESULT[color]inop"],
             [""],
-            ["<RETURN[color]cyan"]
+            ["<RETURN[color]blue"]
         ]);
 
         mcdu.leftInputDelay[2] = () => {

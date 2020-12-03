@@ -6,16 +6,16 @@ class CDUSelectedNavaids {
         mcdu.setTemplate([
             ["SELECTED NAVAIDS"],
             ["VOR/TAC", "DESELECT", "AUTO"],
-            [``, `[  ]*[color]cyan`, ""],
+            [``, `[  ]*[color]blue`, ""],
             [""],
             [""],
             [""],
             [""],
             ["ILS", "", "AUTO"],
             [``, ``, ""],
-            ["RADIONAV SELECTED[color]cyan"],
+            ["RADIONAV SELECTED[color]blue"],
             ["DESELECT"],
-            ["GPS SELECTED[color]cyan"],
+            ["GPS SELECTED[color]blue"],
             ["DESELECT", "RETURN>"]
         ]);
 

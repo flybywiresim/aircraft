@@ -38,19 +38,19 @@ class CDUMenuPage {
                 textMaint = "MCDU MAINT>[color]green";
             }
             if (selectedFMGC) {
-                textFMGC = "<FMGC (SEL)[color]cyan";
+                textFMGC = "<FMGC (SEL)[color]blue";
             }
             if (selectedATSU) {
-                textATSU = "<ATSU (SEL)[color]cyan";
+                textATSU = "<ATSU (SEL)[color]blue";
             }
             if (selectedAIDS) {
-                textAIDS = "<AIDS (SEL)[color]cyan";
+                textAIDS = "<AIDS (SEL)[color]blue";
             }
             if (selectedCFDS) {
-                textCFDS = "<CFDS (SEL)[color]cyan";
+                textCFDS = "<CFDS (SEL)[color]blue";
             }
             if (selectedMaint) {
-                textMaint = "(SEL) MCDU MAINT>[color]cyan";
+                textMaint = "(SEL) MCDU MAINT>[color]blue";
             }
 
             mcdu.setTemplate([

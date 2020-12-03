@@ -14,7 +14,7 @@ class CDUCfdsTestAircond {
             [""],
             ["<AFT CHC[color]inop"],
             [""],
-            ["<RETURN[color]cyan"]
+            ["<RETURN[color]blue"]
         ]);
 
         mcdu.leftInputDelay[5] = () => {

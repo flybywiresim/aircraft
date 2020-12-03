@@ -14,8 +14,8 @@ class CDU_AIDS_MainMenu {
             ["", "REPORTS>[color]inop"],
             ["ASSIGNMENT[color]inop", "MAN REQST[color]inop"],
             ["<REMOTE PRINT[color]inop", "REPORTS>[color]inop"],
-            ["", "POST[color]cyan"],
-            ["DAR = RUNNING[color]green", "STOP*[color]cyan"]
+            ["", "POST[color]blue"],
+            ["DAR = RUNNING[color]green", "STOP*[color]blue"]
         ]);
 
         mcdu.rightInputDelay[5] = () => {
