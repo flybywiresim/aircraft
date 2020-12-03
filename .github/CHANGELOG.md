@@ -129,6 +129,7 @@
 1. [CDU] Improved input handling while a message is visible - @MisterChocker (Leon)
 1. [ND] Fix weather radar not showing after switching to plan view - @ilyeshammadi (Ilyes Hammadi)
 1. [Autopilot] Increase max bank angle from 20 to 25 - @wpine215 (Iceman)
+1. [PFD] Fix ALT magenta in OP DES/CLB - @MisterChocker (Leon)
 
 ## 0.4.0
 1. [General] Add CHANGELOG.md - @nathaninnes (Nathan Innes)
