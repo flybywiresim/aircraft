@@ -131,6 +131,8 @@
 1. [Autopilot] Increase max bank angle from 20 to 25 - @wpine215 (Iceman)
 1. [PFD] Fix ALT magenta in OP DES/CLB - @MisterChocker (Leon)
 1. [ECAM] Add G LOAD indication to lower ECAM - @beheh (Benedict Etzel)
+1. [PFD] Added vR indication - @MisterChocker (Leon)
+
 
 ## 0.4.0
 1. [General] Add CHANGELOG.md - @nathaninnes (Nathan Innes)
