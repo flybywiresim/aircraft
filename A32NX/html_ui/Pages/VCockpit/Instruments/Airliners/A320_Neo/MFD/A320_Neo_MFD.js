@@ -533,9 +533,9 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
     updateNDInfo(_deltaTime) {
         this.info.showSymbol(A320_Neo_ND_Symbol.TERR, this.terrainOn);
         this.info.showSymbol(A320_Neo_ND_Symbol.WXR, this.wxRadarOn && !this.terrainOn && this.wxRadarMode == 0);
-        this.info.showSymbol(A320_Neo_ND_Symbol.WXRTURB, this.wxRadarOn && !this.terrainOn &&this.wxRadarMode == 1);
-        this.info.showSymbol(A320_Neo_ND_Symbol.TURB, this.wxRadarOn &&!this.terrainOn && this.wxRadarMode == 2);
-        this.info.showSymbol(A320_Neo_ND_Symbol.MAP, this.wxRadarOn && !this.terrainOn &&this.wxRadarMode == 3);
+        this.info.showSymbol(A320_Neo_ND_Symbol.WXRTURB, this.wxRadarOn && !this.terrainOn && this.wxRadarMode == 1);
+        this.info.showSymbol(A320_Neo_ND_Symbol.TURB, this.wxRadarOn && !this.terrainOn && this.wxRadarMode == 2);
+        this.info.showSymbol(A320_Neo_ND_Symbol.MAP, this.wxRadarOn && !this.terrainOn && this.wxRadarMode == 3);
     }
 }
 class A320_Neo_MFD_Compass extends NavSystemElement {
