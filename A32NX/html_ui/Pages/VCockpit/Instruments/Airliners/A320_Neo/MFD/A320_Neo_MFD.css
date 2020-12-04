@@ -334,3 +334,7 @@ a320-neo-mfd-element #Mainframe #Symbols text.Large {
   font-size: 38px;
   fill: var(--displayGreen);
 }
+
+a320-neo-mfd-element #Mainframe #Symbols #TERR {
+  fill: var(--displayCyan);
+}

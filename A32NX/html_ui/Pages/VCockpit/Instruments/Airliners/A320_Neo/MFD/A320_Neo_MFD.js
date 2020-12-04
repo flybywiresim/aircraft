@@ -531,10 +531,11 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
         this.map.showWeather();
     }
     updateNDInfo(_deltaTime) {
-        this.info.showSymbol(A320_Neo_ND_Symbol.WXR, this.wxRadarOn && this.wxRadarMode == 0);
-        this.info.showSymbol(A320_Neo_ND_Symbol.WXRTURB, this.wxRadarOn && this.wxRadarMode == 1);
-        this.info.showSymbol(A320_Neo_ND_Symbol.TURB, this.wxRadarOn && this.wxRadarMode == 2);
-        this.info.showSymbol(A320_Neo_ND_Symbol.MAP, this.wxRadarOn && this.wxRadarMode == 3);
+        this.info.showSymbol(A320_Neo_ND_Symbol.TERR, this.terrainOn);
+        this.info.showSymbol(A320_Neo_ND_Symbol.WXR, this.wxRadarOn && !this.terrainOn && this.wxRadarMode == 0);
+        this.info.showSymbol(A320_Neo_ND_Symbol.WXRTURB, this.wxRadarOn && !this.terrainOn &&this.wxRadarMode == 1);
+        this.info.showSymbol(A320_Neo_ND_Symbol.TURB, this.wxRadarOn &&!this.terrainOn && this.wxRadarMode == 2);
+        this.info.showSymbol(A320_Neo_ND_Symbol.MAP, this.wxRadarOn && !this.terrainOn &&this.wxRadarMode == 3);
     }
 }
 class A320_Neo_MFD_Compass extends NavSystemElement {
@@ -726,6 +727,7 @@ var A320_Neo_ND_Symbol;
     A320_Neo_ND_Symbol[A320_Neo_ND_Symbol["WXRTURB"] = 1] = "WXRTURB";
     A320_Neo_ND_Symbol[A320_Neo_ND_Symbol["TURB"] = 2] = "TURB";
     A320_Neo_ND_Symbol[A320_Neo_ND_Symbol["MAP"] = 3] = "MAP";
+    A320_Neo_ND_Symbol[A320_Neo_ND_Symbol["TERR"] = 4] = "TERR";
 })(A320_Neo_ND_Symbol || (A320_Neo_ND_Symbol = {}));
 class A320_Neo_MFD_NDInfo extends NavSystemElement {
     constructor() {
@@ -740,6 +742,7 @@ class A320_Neo_MFD_NDInfo extends NavSystemElement {
         this.allSymbols.push(this.ndInfo.querySelector("#WXRTURB"));
         this.allSymbols.push(this.ndInfo.querySelector("#TURB"));
         this.allSymbols.push(this.ndInfo.querySelector("#MAP"));
+        this.allSymbols.push(this.ndInfo.querySelector("#TERR"));
         const url = document.getElementsByTagName("a320-neo-mfd-element")[0].getAttribute("url");
         this.screenIndex = parseInt(url.substring(url.length - 1));
         this.potIndex = this.screenIndex == 1 ? 89 : 91;
