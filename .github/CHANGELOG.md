@@ -148,6 +148,8 @@
 1. [FLIGHTMODEL] Updated legacy flight model parameters for consistency with modern flight model - @donstim - (donbikes#4084)
 1. [ECAM] Adjusted flaps panel - @MisterChocker (Leon)
 1. [CDU] F-PLN page visual rework - @Lollo999 (Lorenzo Pinna)
+1. [CDU] Fix PERF page order - @beheh (Benedict Etzel)
+1. [CDU] Improve PERF pages look and behaviour - @beheh (Benedict Etzel)
 
 ## 0.4.0
 1. [General] Add CHANGELOG.md - @nathaninnes (Nathan Innes)

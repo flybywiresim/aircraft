@@ -277,6 +277,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this.showErrorMessage("INVALID ENTRY");
         return false;
     }
+
     onPowerOn() {
         super.onPowerOn();
         if (Simplane.getAutoPilotAirspeedManaged()) {
@@ -1023,20 +1024,22 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     }
 
     getThrustTakeOffLimit() {
-        if (this.perfTOTemp <= 10) {
-            return 92.8;
-        }
-        if (this.perfTOTemp <= 40) {
-            return 92.8;
-        }
-        if (this.perfTOTemp <= 45) {
-            return 92.2;
-        }
-        if (this.perfTOTemp <= 50) {
-            return 90.5;
-        }
-        if (this.perfTOTemp <= 55) {
-            return 88.8;
+        if (isFinite(this.perfApprTransAlt)) {
+            if (this.perfTOTemp <= 10) {
+                return 92.8;
+            }
+            if (this.perfTOTemp <= 40) {
+                return 92.8;
+            }
+            if (this.perfTOTemp <= 45) {
+                return 92.2;
+            }
+            if (this.perfTOTemp <= 50) {
+                return 90.5;
+            }
+            if (this.perfTOTemp <= 55) {
+                return 88.8;
+            }
         }
         return 88.4;
     }

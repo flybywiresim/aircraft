@@ -26,8 +26,9 @@ class FMCMainDisplay extends BaseAirliners {
         this.routePageCount = 2;
         this.tmpOrigin = "";
         this.tmpDestination = "";
-        this.transitionAltitude = 10000;
-        this.perfTOTemp = 20;
+        this.transitionAltitude = NaN;
+        this.transitionAltitudeIsPilotEntered = false;
+        this.perfTOTemp = NaN;
         this._overridenFlapApproachSpeed = NaN;
         this._overridenSlatApproachSpeed = NaN;
         this._routeFinalFuelWeight = 0;
@@ -47,6 +48,7 @@ class FMCMainDisplay extends BaseAirliners {
         this.perfApprWindSpeed = NaN;
         this.perfApprTransAlt = NaN;
         this.vApp = NaN;
+        this.vAppIsPilotEntered = false;
         this.perfApprMDA = NaN;
         this.perfApprDH = NaN;
         this._flightPhases = ["PREFLIGHT", "TAXI", "TAKEOFF", "CLIMB", "CRUISE", "DESCENT", "APPROACH", "GOAROUND"];
@@ -1251,26 +1253,52 @@ class FMCMainDisplay extends BaseAirliners {
         return false;
     }
 
-    trySetTransAltitude(s) {
-        if (!/^\d+$/.test(s)) {
+    trySetTakeOffTransAltitude(s) {
+        if (s === FMCMainDisplay.clrValue) {
+            this.transitionAltitude = NaN;
+            this.transitionAltitudeIsPilotEntered = false;
+            return true;
+        }
+
+        let value = parseInt(s);
+        if (!isFinite(value) || !/^\d+$/.test(s)) {
             this.showErrorMessage("FORMAT ERROR");
             return false;
         }
-        const v = parseInt(s);
-        if (isFinite(v) && v > 0) {
-            this.transitionAltitude = v;
-            SimVar.SetSimVarValue("L:AIRLINER_TRANS_ALT", "Number", v);
-            return true;
+
+        value = Math.round(value / 10) * 10;
+        if (value > 45000) {
+            this.showErrorMessage("ENTRY OUT OF RANGE");
+            return false;
         }
-        this.showErrorMessage(this.defaultInputErrorMessage);
-        return false;
+
+        this.transitionAltitude = value;
+        this.transitionAltitudeIsPilotEntered = true;
+        return true;
     }
 
+    getTransitionAltitude() {
+        if (isFinite(this.transitionAltitude)) {
+            return this.transitionAltitude;
+        }
+
+        // todo base on nav database or user setting
+        return 10000;
+    }
+
+    // todo
     trySetThrustReductionAccelerationAltitude(s) {
+        if (s === "") {
+            this.showErrorMessage("NOT ALLOWED");
+            return false;
+        }
+        if (s === FMCMainDisplay.clrValue) {
+
+        }
         let thrRed = NaN;
         let accAlt = NaN;
         if (s) {
-            const sSplit = s.split("/");
+            let sSplit = s.split("/");
             thrRed = parseInt(sSplit[0]);
             accAlt = parseInt(sSplit[1]);
         }
@@ -1399,14 +1427,21 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     setPerfTOFlexTemp(s) {
-        const value = parseFloat(s);
-        if (isFinite(value) && value > -270 && value < 150) {
-            this.perfTOTemp = value;
-            SimVar.SetSimVarValue("L:AIRLINER_TO_FLEX_TEMP", "Number", this.perfTOTemp);
+        if (s === FMCMainDisplay.clrValue) {
+            this.perfTOTemp = NaN;
             return true;
         }
-        this.showErrorMessage(this.defaultInputErrorMessage);
-        return false;
+        const value = parseInt(s);
+        if (!isFinite(value) || !/^\d+$/.test(s)) {
+            this.showErrorMessage("FORMAT ERROR");
+            return false;
+        }
+        if (value < -99 || value > 99) {
+            this.showErrorMessage("ENTRY OUT OF RANGE");
+            return false;
+        }
+        this.perfTOTemp = value;
+        return true;
     }
 
     getClbManagedSpeed() {
@@ -2169,64 +2204,134 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     setPerfApprQNH(s) {
-        const value = parseFloat(s);
-        const QNH_REGEX = /[0-9]{2}.[0-9]{2}/;
-
-        if (QNH_REGEX.test(value)) {
-            this.perfApprQNH = value;
+        if (s === FMCMainDisplay.clrValue) {
+            if (this.flightPlanManager.getDestination() && this.flightPlanManager.getDestination().infos) {
+                const lat = SimVar.GetSimVarValue("PLANE LATITUDE", "degree latitude");
+                const long = SimVar.GetSimVarValue("PLANE LONGITUDE", "degree longitude");
+                const planeLla = new LatLongAlt(lat, long);
+                const distance = Avionics.Utils.computeGreatCircleDistance(
+                    planeLla, this.flightPlanManager.getDestination().infos.coordinates
+                );
+                if (distance <= 180) {
+                    this.showErrorMessage("NOT ALLOWED");
+                    return false;
+                }
+            }
+            this.perfApprQNH = NaN;
             return true;
-        } else if (isFinite(value)) {
+        }
+
+        const HP_REGEX = /^[0-9]{2}\.[0-9]{2}$/;
+        if (HP_REGEX.test(s)) {
+            const value = parseFloat(s);
+            if (value < 22 || value > 32.48) {
+                this.showErrorMessage("ENTRY OUT OF RANGE");
+                return false;
+            }
             this.perfApprQNH = value;
             return true;
         }
-        this.showErrorMessage(this.defaultInputErrorMessage);
+
+        const HG_REGEX = /^[0-9]{1,4}$/;
+        if (HG_REGEX.test(s)) {
+            const value = parseInt(s);
+            if (value < 745 || value > 1100) {
+                this.showErrorMessage("ENTRY OUT OF RANGE");
+                return false;
+            }
+            this.perfApprQNH = value;
+            return true;
+        }
+
+        this.showErrorMessage("FORMAT ERROR");
         return false;
     }
 
     setPerfApprTemp(s) {
-        const value = parseFloat(s);
-        if (isFinite(value) && value > -270 && value < 150) {
-            this.perfApprTemp = value;
+        if (s === FMCMainDisplay.clrValue) {
+            this.perfApprTemp = NaN;
             return true;
         }
-        this.showErrorMessage(this.defaultInputErrorMessage);
-        return false;
+        const value = parseInt(s);
+        if (!isFinite(value) || !/^\d+$/.test(s)) {
+            this.showErrorMessage("FORMAT ERROR");
+            return false;
+        }
+        if (value < -99 || value > 99) {
+            this.showErrorMessage("ENTRY OUT OF RANGE");
+            return false;
+        }
+        this.perfApprTemp = value;
+        return true;
     }
 
     setPerfApprWind(s) {
+        if (s === FMCMainDisplay.clrValue) {
+            this.perfApprWindHeading = NaN;
+            this.perfApprWindSpeed = NaN;
+            return true;
+        }
         let heading = NaN;
         let speed = NaN;
         if (s) {
             const sSplit = s.split("/");
-            heading = parseFloat(sSplit[0]);
-            speed = parseFloat(sSplit[1]);
-        }
-        if ((isFinite(heading) && heading >= 0 && heading < 360) || (isFinite(speed) && speed > 0)) {
-            if (isFinite(heading)) {
-                this.perfApprWindHeading = heading;
+            if (sSplit.length > 2) {
+                this.showErrorMessage("FORMAT ERROR");
+                return false;
             }
-            if (isFinite(speed)) {
-                this.perfApprWindSpeed = speed;
-            }
-            return true;
+            heading = parseInt(sSplit[0]);
+            speed = parseInt(sSplit[1]);
         }
-        this.showErrorMessage(this.defaultInputErrorMessage);
-        return false;
-    }
 
-    setPerfApprTransAlt(s) {
-        if (!/^\d+$/.test(s)) {
+        // initial entry requires both fields
+        if (
+            (isNaN(this.perfApprWindHeading) || isNaN(this.perfApprWindSpeed)) &&
+            !(isFinite(heading) && isFinite(speed))
+        ) {
             this.showErrorMessage("FORMAT ERROR");
             return false;
         }
-        const v = parseInt(s);
-        if (isFinite(v) && v > 0) {
-            this.perfApprTransAlt = v;
-            SimVar.SetSimVarValue("L:AIRLINER_APPR_TRANS_ALT", "Number", v);
+
+        if (isFinite(heading)) {
+            if (heading < 0 || heading > 360) {
+                this.showErrorMessage("ENTRY OUT OF RANGE");
+                return false;
+            }
+            this.perfApprWindHeading = heading % 360;
+        }
+
+        if (isFinite(speed)) {
+            if (speed < 0 || speed > 250) {
+                this.showErrorMessage("ENTRY OUT OF RANGE");
+                return false;
+            }
+            this.perfApprWindSpeed = speed;
+        }
+
+        return true;
+    }
+
+    setPerfApprTransAlt(s) {
+        if (s === FMCMainDisplay.clrValue) {
+            this.perfApprTransAlt = NaN;
             return true;
         }
-        this.showErrorMessage(this.defaultInputErrorMessage);
-        return false;
+
+        let value = parseInt(s);
+        if (!isFinite(value) || !/^\d{3,4}$/.test(s)) {
+            this.showErrorMessage("FORMAT ERROR");
+            return false;
+        }
+
+        value = Math.round(value / 10) * 10;
+        if (value < 0 || value > 45000) {
+            this.showErrorMessage("ENTRY OUT OF RANGE");
+            return false;
+        }
+
+        this.perfApprTransAlt = v;
+        SimVar.SetSimVarValue("L:AIRLINER_APPR_TRANS_ALT", "Number", v);
+        return true;
     }
 
     getVApp() {
@@ -2241,14 +2346,24 @@ class FMCMainDisplay extends BaseAirliners {
     setPerfApprVApp(s) {
         if (s === FMCMainDisplay.clrValue) {
             this.vApp = NaN;
-        }
-        const value = parseFloat(s);
-        if (isFinite(value) && value > 0) {
-            this.vApp = value;
+            this.vAppIsPilotEntered = false;
             return true;
         }
-        this.showErrorMessage(this.defaultInputErrorMessage);
-        return false;
+        const value = parseInt(s);
+
+        if (!isFinite(value) || !/^\d+$/.test(s)) {
+            this.showErrorMessage("FORMAT ERROR");
+            return false;
+        }
+
+        if (value < 90 || value > 999) { // todo VMO instead of 1000
+            this.showErrorMessage("ENTRY OUT OF RANGE");
+            return false;
+        }
+
+        this.vApp = value;
+        this.vAppIsPilotEntered = true;
+        return true;
     }
 
     getVLS() {
@@ -2308,16 +2423,22 @@ class FMCMainDisplay extends BaseAirliners {
             this.perfApprMDA = NaN;
             SimVar.SetSimVarValue("L:AIRLINER_MINIMUM_DESCENT_ALTITUDE", "feet", 0);
             return true;
-        } else {
-            const value = parseFloat(s);
-            if (isFinite(value)) {
-                this.perfApprMDA = value;
-                SimVar.SetSimVarValue("L:AIRLINER_MINIMUM_DESCENT_ALTITUDE", "feet", this.perfApprMDA);
-                return true;
-            }
-            this.showErrorMessage(this.defaultInputErrorMessage);
+        }
+        const value = parseInt(s);
+        if (!isFinite(value) || !/^\d+$/.test(s)) {
+            this.showErrorMessage("FORMAT ERROR");
             return false;
         }
+        const ldgElevation = 0;
+
+        if (value < ldgElevation || value > ldgElevation + 5000) {
+            this.showErrorMessage("ENTRY OUT OF RANGE");
+            return false;
+        }
+
+        this.perfApprMDA = value;
+        SimVar.SetSimVarValue("L:AIRLINER_MINIMUM_DESCENT_ALTITUDE", "feet", this.perfApprMDA);
+        return true;
     }
 
     setPerfApprDH(s) {
@@ -2325,7 +2446,9 @@ class FMCMainDisplay extends BaseAirliners {
             this.perfApprDH = NaN;
             SimVar.SetSimVarValue("L:AIRLINER_DECISION_HEIGHT", "feet", -1);
             return true;
-        } else if (s === "NO" || s === "NO DH" || s === "NODH") {
+        }
+
+        if (s === "NO" || s === "NO DH" || s === "NODH") {
             if (Simplane.getAutoPilotApproachType() === 4) {
                 this.perfApprDH = "NO DH";
                 SimVar.SetSimVarValue("L:AIRLINER_DECISION_HEIGHT", "feet", -2);
@@ -2334,21 +2457,22 @@ class FMCMainDisplay extends BaseAirliners {
                 this.showErrorMessage("NOT ALLOWED");
                 return false;
             }
-        } else {
-            const value = parseFloat(s);
-            if (isFinite(value)) {
-                if (value >= 0 && value <= 700) {
-                    this.perfApprDH = value;
-                    SimVar.SetSimVarValue("L:AIRLINER_DECISION_HEIGHT", "feet", this.perfApprDH);
-                    return true;
-                } else {
-                    this.showErrorMessage("ENTRY OUT OF RANGE");
-                    return false;
-                }
-            }
-            this.showErrorMessage(this.defaultInputErrorMessage);
+        }
+
+        const value = parseInt(s);
+        if (!isFinite(value) || !/^\d+$/.test(s)) {
+            this.showErrorMessage("FORMAT ERROR");
             return false;
         }
+
+        if (value < 0 || value > 700) {
+            this.showErrorMessage("ENTRY OUT OF RANGE");
+            return false;
+        }
+
+        this.perfApprDH = value;
+        SimVar.SetSimVarValue("L:AIRLINER_DECISION_HEIGHT", "feet", this.perfApprDH);
+        return true;
     }
 
     getIsFlying() {
