@@ -302,11 +302,13 @@
 - A32NX_VSPEEDS_VS
     - Number
     - Current config stall speed
+    - is mach corrected
 
 
 - A32NX_VSPEEDS_VLS
     - Number
     - Current config minimum selectable speed
+    - is mach corrected
 
 
 - A32NX_VSPEEDS_F
@@ -322,6 +324,7 @@
 - A32NX_VSPEEDS_GD
     - Number
     - Green Dot speed (clean config or O)
+    - is mach corrected
 
 
 - A32NX_VSPEEDS_LANDING_CONF3
@@ -336,4 +339,4 @@
 
 - A32NX_VSPEEDS_V2
     - Number
-    - TakeOff V2 Speed
+    - TakeOff V2 Speed calculated based on A32NX_VSPEEDS_TO_CONF config
