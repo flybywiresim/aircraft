@@ -151,9 +151,9 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
     }
 
     _hasMapModeChanged() {
-        if (this._previousMapMode !== this.mapMode){
+        if (this._previousMapMode !== this.mapMode) {
             this._previousMapMode = this.mapMode;
-            return true
+            return true;
         }
         return false;
     }
