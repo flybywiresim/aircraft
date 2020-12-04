@@ -783,6 +783,11 @@
                     <CAMERA_TITLE>PFD</CAMERA_TITLE>
                 </UseTemplate>
 
+                <UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
+                    <NODE_ID>SCREEN_EFB</NODE_ID>
+                    <EMISSIVE_CODE>1</EMISSIVE_CODE>
+                </UseTemplate>
+
                 <UseTemplate Name="ASOBO_LIGHTING_Knob_Potentiometer_Template">
                     <POTENTIOMETER>89</POTENTIOMETER>
                     <NODE_ID>KNOB_EFIS_CS_ND_SMALL</NODE_ID>
