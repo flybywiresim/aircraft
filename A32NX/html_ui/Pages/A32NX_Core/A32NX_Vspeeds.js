@@ -349,7 +349,7 @@ class A32NX_Vspeeds {
                 return;
             }
 
-            this.curFhi = this.lastFhi === 0 && fp > FlightPhase.FLIGHT_PHASE_TAKEOFF ? 5 : fhi;
+            this.curFhi = this.lastFhi === 0 && fhi === 1 && fp > FlightPhase.FLIGHT_PHASE_TAKEOFF ? 5 : fhi;
             this.lastFhi = fhi;
             this.lastGw = gw;
             this.cgw = Math.ceil(((gw > 80 ? 80 : gw) - 40) / 5);

@@ -104,6 +104,8 @@ class FMCMainDisplay extends BaseAirliners {
         this._fuelPredDone = false;
         this._fuelPlanningPhase = this._fuelPlanningPhases.PLANNING;
         this._blockFuelEntered = false;
+        /* CPDLC Fields */
+        this._cpdlcAtcCenter = "";
     }
 
     static approachTypeStringToIndex(approachType) {
