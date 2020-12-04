@@ -317,14 +317,14 @@ class A32NX_Vspeeds {
 
     init() {
         console.log('A32NX_VSPEEDS init');
-        SimVar.SetSimVarValue("L:A32NX_VS", "number", 0);
-        SimVar.SetSimVarValue("L:A32NX_VLS", "number", 0);
-        SimVar.SetSimVarValue("L:A32NX_FS", "number", 0);
-        SimVar.SetSimVarValue("L:A32NX_SS", "number", 0);
-        SimVar.SetSimVarValue("L:A32NX_GD", "number", 0);
-        SimVar.SetSimVarValue("L:A32NX_LANDING_CONF3", "boolean", 0);
-        SimVar.SetSimVarValue("L:A32NX_TO_CONF", "number", 1);
-        SimVar.SetSimVarValue("L:A32NX_V2", "number", 0);
+        SimVar.SetSimVarValue("L:A32NX_VSPEEDS_VS", "number", 0);
+        SimVar.SetSimVarValue("L:A32NX_VSPEEDS_VLS", "number", 0);
+        SimVar.SetSimVarValue("L:A32NX_VSPEEDS_F", "number", 0);
+        SimVar.SetSimVarValue("L:A32NX_VSPEEDS_S", "number", 0);
+        SimVar.SetSimVarValue("L:A32NX_VSPEEDS_GD", "number", 0);
+        SimVar.SetSimVarValue("L:A32NX_VSPEEDS_LANDING_CONF3", "boolean", 0);
+        SimVar.SetSimVarValue("L:A32NX_VSPEEDS_TO_CONF", "number", 1);
+        SimVar.SetSimVarValue("L:A32NX_VSPEEDS_V2", "number", 0);
         this.lastGw = 50;
         this.lastFhi = -1;
         this.curFhi = -1;
@@ -343,7 +343,7 @@ class A32NX_Vspeeds {
             const gw = this.round(SimVar.GetSimVarValue("TOTAL WEIGHT", "kg")) / 1000;
             const ldg = Math.round(SimVar.GetSimVarValue("GEAR POSITION:0", "Enum"));
             const alt = this.round(Simplane.getAltitude());
-            const conf = SimVar.GetSimVarValue("L:A32NX_TO_CONF", "number");
+            const conf = SimVar.GetSimVarValue("L:A32NX_VSPEEDS_TO_CONF", "number");
 
             if (fhi === this.lastFhi && gw === this.lastGw && ldg === this.ldgPos && alt === this.alt && conf === this.toConf) {
                 return;
@@ -357,16 +357,16 @@ class A32NX_Vspeeds {
             this.alt = alt;
             this.toConf = conf;
 
-            SimVar.SetSimVarValue("L:A32NX_VS", "number", this.compensateForMachEffect(vs[this.curFhi][this.cgw](this.lastGw, this.ldgPos)));
-            SimVar.SetSimVarValue("L:A32NX_VLS", "number", this.compensateForMachEffect(
+            SimVar.SetSimVarValue("L:A32NX_VSPEEDS_VS", "number", this.compensateForMachEffect(vs[this.curFhi][this.cgw](this.lastGw, this.ldgPos)));
+            SimVar.SetSimVarValue("L:A32NX_VSPEEDS_VLS", "number", this.compensateForMachEffect(
                 (fp < FlightPhase.FLIGHT_PHASE_CLIMB ? vlsTo : vls)[this.curFhi][this.cgw](this.lastGw, this.ldgPos)
             ));
-            SimVar.SetSimVarValue("L:A32NX_V2", "number",
+            SimVar.SetSimVarValue("L:A32NX_VSPEEDS_V2", "number",
                 Math.floor(to[this.toConf - 1][this.cgw](this.lastGw) + (this.toConf === 2 ? (Math.abs(this.alt * 0.0002)) : 0))
             );
-            SimVar.SetSimVarValue("L:A32NX_FS", "number", fs[this.cgw](this.lastGw));
-            SimVar.SetSimVarValue("L:A32NX_SS", "number", ss[this.cgw](this.lastGw));
-            SimVar.SetSimVarValue("L:A32NX_GD", "number", this.curFhi === 0 ? this.compensateForMachEffect(this.calculateGreenDotSpeed()) : 0);
+            SimVar.SetSimVarValue("L:A32NX_VSPEEDS_F", "number", fs[this.cgw](this.lastGw));
+            SimVar.SetSimVarValue("L:A32NX_VSPEEDS_S", "number", ss[this.cgw](this.lastGw));
+            SimVar.SetSimVarValue("L:A32NX_VSPEEDS_GD", "number", this.curFhi === 0 ? this.compensateForMachEffect(this.calculateGreenDotSpeed()) : 0);
         }, 500);
     }
 
