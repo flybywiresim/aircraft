@@ -25,7 +25,14 @@ class A32NX_Core {
                 module.init();
             }
         });
+        this.boot();
         this.isInit = true;
+    }
+
+    boot() {
+        // Set the baro unit selector to the config default baro unit. Default is InHg as in Asobo A320.
+        const storedDefaultBaroUnit = NXDataStore.get("CONFIG_DEFAULT_BARO_UNIT", "IN HG");
+        SimVar.SetSimVarValue("L:XMLVAR_Baro_Selector_HPA_1", "bool", storedDefaultBaroUnit == "HPA");
     }
 
     update() {

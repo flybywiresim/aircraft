@@ -6,6 +6,7 @@ class CDU_OPTIONS_MainMenu {
         const storedTelexStatus = NXDataStore.get("CONFIG_ONLINE_FEATURES_STATUS", "DISABLED");
         const storedAccelAlt = parseInt(NXDataStore.get("CONFIG_ACCEL_ALT", "1500"));
         const storedDMCTestTime = parseInt(NXDataStore.get("CONFIG_SELF_TEST_TIME", "15"));
+        const storedDefaultBaroUnit = NXDataStore.get("CONFIG_DEFAULT_BARO_UNIT", "IN HG");
 
         let telexStatus;
         if (storedTelexStatus == "ENABLED") {
@@ -22,8 +23,8 @@ class CDU_OPTIONS_MainMenu {
             ["<METAR SRC", `${storedAccelAlt} FT.>[color]cyan`],
             ["AOC[color]green", "DMC SELF-TEST[color]green"],
             ["<SIGMET SRC[color]inop", `${storedDMCTestTime} SEC.>[color]cyan`],
-            ["AOC[color]green"],
-            ["<TAF SRC"],
+            ["AOC[color]green", "DEFAULT BARO[color]green"],
+            ["<TAF SRC", `${storedDefaultBaroUnit}[color]cyan`],
             ["FREE TEXT[color]green"],
             [telexStatus],
             [""],
@@ -90,6 +91,19 @@ class CDU_OPTIONS_MainMenu {
                 mcdu.showErrorMessage("NOT ALLOWED");
             } else {
                 NXDataStore.set("CONFIG_SELF_TEST_TIME", value);
+            }
+            CDU_OPTIONS_MainMenu.ShowPage(mcdu);
+        };
+        mcdu.rightInputDelay[3] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
+        mcdu.onRightInput[3] = (value) => {
+            if (value != "") {
+                mcdu.showErrorMessage("NOT ALLOWED");
+            } else {
+                const newDefaultBaroRef = storedDefaultBaroUnit == "IN HG" ? "HPA" : "IN HG";
+                NXDataStore.set("CONFIG_DEFAULT_BARO_UNIT", newDefaultBaroRef);
+                SimVar.SetSimVarValue("L:XMLVAR_Baro_Selector_HPA_1", "bool", newDefaultBaroRef == "HPA");
             }
             CDU_OPTIONS_MainMenu.ShowPage(mcdu);
         };
