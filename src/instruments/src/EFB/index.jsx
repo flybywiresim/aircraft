@@ -16,9 +16,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-// eslint-disable-next-line import/no-extraneous-dependencies
+// eslint-disable-next-line import/no-extraneous-dependencies,no-unused-vars
+import React from 'react';
 import ReactDOM from 'react-dom';
 import Efb from './Efb.tsx';
 import { renderTarget } from '../util.mjs';
+import logo from './fbw.svg';
 
-ReactDOM.render(<Efb />, renderTarget);
+ReactDOM.render(<Efb logo={logo} />, renderTarget);
