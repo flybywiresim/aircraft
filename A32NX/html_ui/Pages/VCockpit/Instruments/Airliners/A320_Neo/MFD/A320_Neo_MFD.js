@@ -149,6 +149,15 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
         }
         return Math.max(totalSeconds, 0);
     }
+
+    _hasMapModeChanged() {
+        if (this._previousMapMode !== this.mapMode) {
+            this._previousMapMode = this.mapMode;
+            return true;
+        }
+        return false;
+    }
+
     onUpdate() {
         const currentKnobValue = SimVar.GetSimVarValue("LIGHT POTENTIOMETER:" + this.potIndex, "number");
         if (currentKnobValue <= 0.0) {
@@ -303,6 +312,7 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
         SimVar.SetSimVarValue("L:BTN_NDB_" + this.screenIndex + "_FILTER_ACTIVE", "number", this.map.instrument.showNDBs ? 1 : 0);
         SimVar.SetSimVarValue("L:BTN_ARPT_" + this.screenIndex + "_FILTER_ACTIVE", "number", this.map.instrument.showAirports ? 1 : 0);
     }
+
     updateMap(_deltaTime) {
         if (this.modeChangeMask && this.modeChangeTimer >= 0) {
             this.modeChangeTimer -= _deltaTime / 1000;
@@ -334,6 +344,7 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
                 this.mapConfigId = 0;
             } else if (this.terrainOn) {
                 this.mapConfigId = 1;
+                this.map.hideWeather();
             } else if (shouldShowWeather) {
                 this.showWeather();
             } else {
@@ -353,7 +364,8 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
                 this.map.hideWxMask();
                 this.map.hideCompassMask();
             }
-            if (this.modeChangeMask) {
+            // This animation should play only when MODE CHANGE nob is used
+            if (this.modeChangeMask && this._hasMapModeChanged()) {
                 this.modeChangeMask.style.display = "block";
                 this.modeChangeTimer = 0.5;
             }
@@ -519,10 +531,11 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
         this.map.showWeather();
     }
     updateNDInfo(_deltaTime) {
-        this.info.showSymbol(A320_Neo_ND_Symbol.WXR, this.wxRadarOn && this.wxRadarMode == 0);
-        this.info.showSymbol(A320_Neo_ND_Symbol.WXRTURB, this.wxRadarOn && this.wxRadarMode == 1);
-        this.info.showSymbol(A320_Neo_ND_Symbol.TURB, this.wxRadarOn && this.wxRadarMode == 2);
-        this.info.showSymbol(A320_Neo_ND_Symbol.MAP, this.wxRadarOn && this.wxRadarMode == 3);
+        this.info.showSymbol(A320_Neo_ND_Symbol.TERR, this.terrainOn);
+        this.info.showSymbol(A320_Neo_ND_Symbol.WXR, this.wxRadarOn && !this.terrainOn && this.wxRadarMode == 0);
+        this.info.showSymbol(A320_Neo_ND_Symbol.WXRTURB, this.wxRadarOn && !this.terrainOn && this.wxRadarMode == 1);
+        this.info.showSymbol(A320_Neo_ND_Symbol.TURB, this.wxRadarOn && !this.terrainOn && this.wxRadarMode == 2);
+        this.info.showSymbol(A320_Neo_ND_Symbol.MAP, this.wxRadarOn && !this.terrainOn && this.wxRadarMode == 3);
     }
 }
 class A320_Neo_MFD_Compass extends NavSystemElement {
@@ -714,6 +727,7 @@ var A320_Neo_ND_Symbol;
     A320_Neo_ND_Symbol[A320_Neo_ND_Symbol["WXRTURB"] = 1] = "WXRTURB";
     A320_Neo_ND_Symbol[A320_Neo_ND_Symbol["TURB"] = 2] = "TURB";
     A320_Neo_ND_Symbol[A320_Neo_ND_Symbol["MAP"] = 3] = "MAP";
+    A320_Neo_ND_Symbol[A320_Neo_ND_Symbol["TERR"] = 4] = "TERR";
 })(A320_Neo_ND_Symbol || (A320_Neo_ND_Symbol = {}));
 class A320_Neo_MFD_NDInfo extends NavSystemElement {
     constructor() {
@@ -728,6 +742,7 @@ class A320_Neo_MFD_NDInfo extends NavSystemElement {
         this.allSymbols.push(this.ndInfo.querySelector("#WXRTURB"));
         this.allSymbols.push(this.ndInfo.querySelector("#TURB"));
         this.allSymbols.push(this.ndInfo.querySelector("#MAP"));
+        this.allSymbols.push(this.ndInfo.querySelector("#TERR"));
         const url = document.getElementsByTagName("a320-neo-mfd-element")[0].getAttribute("url");
         this.screenIndex = parseInt(url.substring(url.length - 1));
         this.potIndex = this.screenIndex == 1 ? 89 : 91;
