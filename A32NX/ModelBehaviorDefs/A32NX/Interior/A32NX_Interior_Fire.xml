@@ -16,10 +16,10 @@
     <Template Name="FBW_Airbus_FIRE_AGENT">
         <UseTemplate Name="FBW_Push_Toggle">
             <SEQ1_CODE>(L:A32NX_FIRE_TEST_#TYPE##ID#, Bool) (L:A32NX_FIRE_BUTTON_#TYPE##ID#, Bool) or</SEQ1_CODE>
-            <SEQ2_CODE>(L:A32NX_FIRE_TEST_#TYPE##ID#, Bool) (L:A32NX_Fire_#TYPE##ID#_Agent#AGENT_ID#_Discharge) or</SEQ2_CODE>
+            <SEQ2_CODE>(L:A32NX_FIRE_TEST_#TYPE##ID#, Bool) (L:A32NX_FIRE_#TYPE##ID#_AGENT#AGENT_ID#_Discharge) or</SEQ2_CODE>
             <LEFT_SINGLE_CODE>
                 (L:A32NX_FIRE_BUTTON_#TYPE##ID#, Bool) if{
-                1 (>L:A32NX_Fire_#TYPE##ID#_Agent#AGENT_ID#_Discharge)
+                1 (>L:A32NX_FIRE_#TYPE##ID#_AGENT#AGENT_ID#_Discharge)
                 }
             </LEFT_SINGLE_CODE>
         </UseTemplate>
