@@ -1,9 +1,7 @@
 // Used to determine if an ICAO code uses InHG or HPa.
 function AirportUsesHPA(icao) {
     const InHgRegions = ["K", "C", "M", "P", "RJ", "RO", "TI", "TJ"];
-    for (let i = 0; i < InHgRegions.length; i++)
-        if (icao.substr(0, InHgRegions[i].length) == InHgRegions[i]) return false;
-    return true;
+    return !InHgRegions.some(r => icao.startsWith(r));
 }
 
 // Used to set the baro unit selector to the correct setting.
