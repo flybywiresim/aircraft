@@ -14,7 +14,7 @@ The following aircraft configuration is currently simulated:
 
  ```
  Model      A320-251N
- Engine     LEAP 1-A26
+ Engine     LEAP 1A-26
  FMGS       Honeywell Pegasus Step 1A
  FWC Std.   H2F9C
  ```
