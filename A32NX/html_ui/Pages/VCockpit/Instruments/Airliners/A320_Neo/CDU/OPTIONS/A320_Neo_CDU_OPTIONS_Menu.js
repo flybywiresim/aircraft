@@ -23,8 +23,8 @@ class CDU_OPTIONS_MainMenu {
             ["<METAR SRC", `${storedAccelAlt} FT.>[color]cyan`],
             ["AOC[color]green", "DMC SELF-TEST[color]green"],
             ["<SIGMET SRC[color]inop", `${storedDMCTestTime} SEC.>[color]cyan`],
-            ["AOC[color]green", "DEFAULT BARO[color]green"],
-            ["<TAF SRC", `${storedDefaultBaroUnit}[color]cyan`],
+            ["AOC[color]green", "INIT BARO[color]green"],
+            ["<TAF SRC", `${storedDefaultBaroUnit}>[color]cyan`],
             ["FREE TEXT[color]green"],
             [telexStatus],
             [""],
@@ -101,9 +101,10 @@ class CDU_OPTIONS_MainMenu {
             if (value != "") {
                 mcdu.showErrorMessage("NOT ALLOWED");
             } else {
-                const newDefaultBaroRef = storedDefaultBaroUnit == "IN HG" ? "HPA" : "IN HG";
+                // We'll go from AUTO -> HPA -> IN HG -> AUTO.
+                const newDefaultBaroRef = storedDefaultBaroUnit == "AUTO" ? "HPA" : 
+                    storedDefaultBaroUnit == "HPA" ? "IN HG" : "AUTO";
                 NXDataStore.set("CONFIG_DEFAULT_BARO_UNIT", newDefaultBaroRef);
-                SimVar.SetSimVarValue("L:XMLVAR_Baro_Selector_HPA_1", "bool", newDefaultBaroRef == "HPA");
             }
             CDU_OPTIONS_MainMenu.ShowPage(mcdu);
         };
