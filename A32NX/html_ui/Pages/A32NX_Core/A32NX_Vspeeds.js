@@ -334,6 +334,7 @@ class A32NX_Vspeeds {
         this.alt = -1;
         this.cgw = 0;
         this.toConf = 1;
+        this.ldgConf = 0;
 
         /**
          * Fetches aircraft parameter and checks against cached values.
@@ -346,8 +347,9 @@ class A32NX_Vspeeds {
             const ldg = Math.round(SimVar.GetSimVarValue("GEAR POSITION:0", "Enum"));
             const alt = this.round(Simplane.getAltitude());
             const conf = SimVar.GetSimVarValue("L:A32NX_VSPEEDS_TO_CONF", "number");
+            const confApp = SimVar.GetSimVarValue("L:A32NX_LANDING_CONF3", "number");
 
-            if (fhi === this.lastFhi && gw === this.lastGw && ldg === this.ldgPos && alt === this.alt && conf === this.toConf) {
+            if (fhi === this.lastFhi && gw === this.lastGw && ldg === this.ldgPos && alt === this.alt && conf === this.toConf && confApp === this.ldgConf) {
                 return;
             }
 
@@ -358,6 +360,7 @@ class A32NX_Vspeeds {
             this.ldgPos = ldg;
             this.alt = alt;
             this.toConf = conf;
+            this.ldgConf = confApp;
 
             SimVar.SetSimVarValue("L:A32NX_VSPEEDS_VS", "number", this.compensateForMachEffect(vs[this.curFhi][this.cgw](this.lastGw, this.ldgPos)));
             SimVar.SetSimVarValue("L:A32NX_VSPEEDS_VLS", "number", this.compensateForMachEffect(
@@ -369,7 +372,7 @@ class A32NX_Vspeeds {
             SimVar.SetSimVarValue("L:A32NX_VSPEEDS_F", "number", fs[this.cgw](this.lastGw));
             SimVar.SetSimVarValue("L:A32NX_VSPEEDS_S", "number", ss[this.cgw](this.lastGw));
             SimVar.SetSimVarValue("L:A32NX_VSPEEDS_GD", "number", this.curFhi === 0 ? this.compensateForMachEffect(this.calculateGreenDotSpeed()) : 0);
-            const vref = this.compensateForMachEffect(vls[SimVar.GetSimVarValue("L:A32NX_LANDING_CONF3", "boolean") ? 3 : 4][this.cgw](this.lastGw, 1));
+            const vref = this.compensateForMachEffect(vls[this.ldgConf ? 3 : 4][this.cgw](this.lastGw, 1));
             SimVar.SetSimVarValue("L:A32NX_VSPEEDS_VLS_APP", "number", vref);
             SimVar.SetSimVarValue("L:A32NX_VSPEEDS_VAPP", "number", this.compensateForWind(vref));
         }, 500);
