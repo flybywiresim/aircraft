@@ -132,8 +132,8 @@
 1. [PFD] Fix ALT magenta in OP DES/CLB - @MisterChocker (Leon)
 1. [ECAM] Add G LOAD indication to lower ECAM - @beheh (Benedict Etzel)
 1. [PFD] Added vR indication - @MisterChocker (Leon)
+1. [MFD] Corrected icon for the Decel point on flightplan - @LoungeFlyZ (Chris Johnson)
 1. [ND] Update ND to only show Mode Changed when mode button is used - @ilyeshammadi (Ilyes Hammadi)
-
 
 ## 0.4.0
 1. [General] Add CHANGELOG.md - @nathaninnes (Nathan Innes)

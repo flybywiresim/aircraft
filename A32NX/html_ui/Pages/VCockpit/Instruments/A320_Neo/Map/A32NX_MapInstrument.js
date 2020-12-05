@@ -805,7 +805,9 @@ class MapInstrument extends ISvgMapRootElement {
                     }
                     this.navMap.mapElements.push(...this.backOnTracks);
                     if ((SimVar.GetSimVarValue("L:FLIGHTPLAN_USE_DECEL_WAYPOINT", "number") === 1) && this.flightPlanManager.decelWaypoint) {
-                        this.navMap.mapElements.push(this.flightPlanManager.decelWaypoint.getSvgElement(this.navMap.index));
+                        var svg = this.flightPlanManager.decelWaypoint.getSvgElement(this.navMap.index);
+                        svg.ident = " ";
+                        this.navMap.mapElements.push(svg);
                     }
                     if (this.debugApproachFlightPlanElement) {
                         this.navMap.mapElements.push(this.debugApproachFlightPlanElement);
