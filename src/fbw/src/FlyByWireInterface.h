@@ -39,11 +39,16 @@ public:
 private:
   const std::string THROTTLE_CONFIGURATION_FILEPATH = "\\work\\ThrottleConfiguration.ini";
 
-  bool isThrottleHandlingEnabled;
-  bool useReverseOnAxis;
-  double idleThrottleInput;
+  bool isThrottleLoggingEnabled = false;
+  bool isThrottleHandlingEnabled = false;
+  bool useReverseOnAxis = false;
+  double idleThrottleInput = 0;
 
-  double previousSimulationTime;
+  bool lastUseReverseOnAxis = false;
+  double lastThrottleInput_1 = -1;
+  double lastThrottleInput_2 = -1;
+
+  double previousSimulationTime = 0;
 
   SimConnectInterface simConnectInterface;
   FlyByWireModelClass model;
