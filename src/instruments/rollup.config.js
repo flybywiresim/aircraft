@@ -24,6 +24,7 @@ import { ModuleResolutionKind } from "typescript/lib/tsserverlibrary.js";
 const os = require('os');
 const fs = require('fs');
 const typescript = require('@rollup/plugin-typescript');
+const image = require('@rollup/plugin-image');
 const { babel } = require('@rollup/plugin-babel');
 const { nodeResolve } = require('@rollup/plugin-node-resolve');
 const commonjs = require('@rollup/plugin-commonjs');
@@ -52,6 +53,7 @@ module.exports = fs.readdirSync(`${__dirname}/src`, { withFileTypes: true })
                     allowSyntheticDefaultImports: true,
                     declaration: false
                 }),
+                image(),
                 babel({
                     presets: [
                         ['@babel/preset-react', {

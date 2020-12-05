@@ -21,6 +21,8 @@ import './loadsheetWidget/LoadsheetWidget.scss';
 import './settings/Settings.scss';
 import './profile/Profile.scss';
 
+import 'material-design-icons/iconfont/material-icons.css'
+
 type EfbProps = {
     logo: string,
 };
@@ -179,71 +181,18 @@ class Efb extends React.Component<EfbProps, EfbState> {
 
     render() {
         return (
-            <Router>
+            <div>
                 <Time initTime={this.state.initTime} updateCurrentTime={this.updateCurrentTime} updateTimeSinceStart={this.updateTimeSinceStart}/>
                 <Toolbar logo={this.props.logo} fetchSimbrief={this.fetchSimbriefData}/>
                 <div id="main-container">
-                    <Switch>
-                        <Route path="/dashboard">
-                            <DashboardWidget
-                                departingAirport={this.state.departingAirport}
-                                arrivingAirport={this.state.arrivingAirport}
-                                flightDistance={this.state.flightDistance}
-                                flightETAInSeconds={this.state.flightETAInSeconds}
-                                timeSinceStart={this.state.timeSinceStart} />
-                        </Route>
-                        <Route path="/loadsheet">
-                            <LoadsheetWidget
-                                weights={this.state.weights}
-                                fuels={this.state.fuels}
-                                units={this.state.units}
-                                arrivingAirport={this.state.arrivingAirport}
-                                arrivingIata={this.state.arrivingIata}
-                                departingAirport={this.state.departingAirport}
-                                departingIata={this.state.departingIata}
-                                altBurn={this.state.altBurn}
-                                altIcao={this.state.altIcao}
-                                altIata={this.state.altIata}
-                                tripTime={this.state.tripTime}
-                                contFuelTime={this.state.contFuelTime}
-                                resFuelTime={this.state.resFuelTime}
-                                taxiOutTime={this.state.taxiOutTime}
-                            />
-                        </Route>
-                        <Route path="/flight">
-                            <div>
-                            </div>
-                        </Route>
-                        <Route path="/ground">
-                            <div>
-                            </div>
-                        </Route>
-                        <Route path="/multiplayer">
-                            <div>
-                            </div>
-                        </Route>
-                        <Route path="/settings">
-                            <div>
-                                <Settings />
-                            </div>
-                        </Route>
-                        <Route path="/profile">
-                            <Profile
-                                simbriefUsername={this.state.simbriefUsername}
-                                changeSimbriefUsername={this.changeSimbriefUsername} />
-                        </Route>
-                        <Route path="/">
-                            <DashboardWidget
-                                departingAirport={this.state.departingAirport}
-                                arrivingAirport={this.state.arrivingAirport}
-                                flightDistance={this.state.flightDistance}
-                                flightETAInSeconds={this.state.flightETAInSeconds}
-                                timeSinceStart={this.state.timeSinceStart}
-                            />
-                        </Route>
-                    </Switch>
+                    <DashboardWidget
+                        departingAirport={this.state.departingAirport}
+                        arrivingAirport={this.state.arrivingAirport}
+                        flightDistance={this.state.flightDistance}
+                        flightETAInSeconds={this.state.flightETAInSeconds}
+                        timeSinceStart={this.state.timeSinceStart} />
                 </div>
-            </Router>
+            </div>
         );
     }
 }

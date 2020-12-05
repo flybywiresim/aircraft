@@ -3,5 +3,8 @@
 // references or go to definitions.
 
 {
+  "compilerOptions": {
+      "jsx": "react"
+  },
   "exclude": ["node_modules"]
 }
