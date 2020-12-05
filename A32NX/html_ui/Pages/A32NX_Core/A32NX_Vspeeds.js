@@ -347,7 +347,7 @@ class A32NX_Vspeeds {
             const ldg = Math.round(SimVar.GetSimVarValue("GEAR POSITION:0", "Enum"));
             const alt = this.round(Simplane.getAltitude());
             const conf = SimVar.GetSimVarValue("L:A32NX_VSPEEDS_TO_CONF", "number");
-            const confApp = SimVar.GetSimVarValue("L:A32NX_LANDING_CONF3", "number");
+            const confApp = SimVar.GetSimVarValue("L:A32NX_VSPEEDS_LANDING_CONF3", "number");
 
             if (fhi === this.lastFhi && gw === this.lastGw && ldg === this.ldgPos && alt === this.alt && conf === this.toConf && confApp === this.ldgConf) {
                 return;
