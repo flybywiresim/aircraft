@@ -30,27 +30,20 @@
             <NODE_ID>#NODE_ID#</NODE_ID>
             <ANIM_NAME>#NODE_ID#</ANIM_NAME>
             <CURSOR>Grab</CURSOR>
-
             <ANIM_LENGTH>100</ANIM_LENGTH>
-            <SWITCH_POSITION_TYPE>O</SWITCH_POSITION_TYPE>
-            <SWITCH_POSITION_VAR>_ButtonAnimVar</SWITCH_POSITION_VAR>
-            <LEFT_SINGLE_CODE>1 (>L:A32NX_FIRE_BUTTON_#TYPE##ID#)</LEFT_SINGLE_CODE>
             <LEFT_LEAVE_CODE/>
+            <LEFT_SINGLE_CODE/>
             <ANIM_DURATION>0.3</ANIM_DURATION>
+            <TOGGLE_VAR>L:A32NX_FIRE_BUTTON_#TYPE##ID#</TOGGLE_VAR>
         </DefaultTemplateParameters>
         <Component ID="#NODE_ID#" Node="#NODE_ID#">
 
             <Update Frequency = "10">
-                (#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#) 0 &gt; (#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#_IsDown) 0 &gt; or if{
-                (O:AnimGoingForward)
+                (#TOGGLE_VAR#)
                 if{
-                (#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#) 0.1 #ANIM_DURATION# / + 1 min (&gt;#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#)
-                (#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#) 1 == if{
-                0 (&gt;O:AnimGoingForward)
-                }
+                (O:_ButtonAnimVar) 0.1 #ANIM_DURATION# / + 1 min (&gt;O:_ButtonAnimVar)
                 } els{
-                (#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#) 0.1 #ANIM_DURATION# / - (#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#_IsDown) max (&gt;#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#)
-                }
+                (O:_ButtonAnimVar) 0.1 #ANIM_DURATION# / - (#TOGGLE_VAR#) max (&gt;O:_ButtonAnimVar)
                 }
             </Update>
 
@@ -60,7 +53,7 @@
                         <ANIM_CODE>#OVERRIDE_ANIM_CODE#</ANIM_CODE>
                     </True>
                     <False>
-                        <ANIM_CODE>#ANIM_LENGTH# (#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#) *</ANIM_CODE>
+                        <ANIM_CODE>#ANIM_LENGTH# (O:_ButtonAnimVar) *</ANIM_CODE>
                     </False>
                 </Condition>
             </UseTemplate>
@@ -72,7 +65,7 @@
             <UseTemplate Name = "ASOBO_GT_Interaction_LeftSingle_Leave_Code">
                 <LEFT_SINGLE_CODE>
                     (L:A32NX_FIRE_GUARD_#TYPE##ID#) 1 == if{
-                    1 (&gt;#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#_IsDown) 1 (&gt;O:AnimGoingForward) #LEFT_SINGLE_CODE#
+                    1 (&gt;#TOGGLE_VAR#) #LEFT_SINGLE_CODE#
                     }
                 </LEFT_SINGLE_CODE>
             </UseTemplate>
@@ -86,24 +79,19 @@
             <CURSOR>Grab</CURSOR>
 
             <ANIM_LENGTH>100</ANIM_LENGTH>
-            <SWITCH_POSITION_TYPE>O</SWITCH_POSITION_TYPE>
-            <SWITCH_POSITION_VAR>_ButtonAnimVar</SWITCH_POSITION_VAR>
-            <LEFT_SINGLE_CODE>1 (>L:FIRE_GUARD_#ID#)</LEFT_SINGLE_CODE>
+            <LEFT_SINGLE_CODE/>
             <LEFT_LEAVE_CODE/>
             <ANIM_DURATION>0.3</ANIM_DURATION>
+
+            <TOGGLE_VAR>L:A32NX_FIRE_GUARD_#TYPE##ID#</TOGGLE_VAR>
         </DefaultTemplateParameters>
         <Component ID="#NODE_ID#" Node="#NODE_ID#">
 
             <Update Frequency = "10">
-                (#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#) 0 &gt; (#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#_IsDown) 0 &gt; or if{
-                (O:AnimGoingForward) if{
-                (#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#) 0.1 #ANIM_DURATION# / + 1 min (&gt;#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#)
-                (#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#) 1 == if{
-                0 (&gt;O:AnimGoingForward)
-                }
+                (#TOGGLE_VAR#) if#{
+                    (O:_ButtonAnimVar) 0.1 #ANIM_DURATION# / + 1 min (&gt;O:_ButtonAnimVar)
                 } els{
-                (#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#) 0.1 #ANIM_DURATION# / - (#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#_IsDown) max (&gt;#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#)
-                }
+                    (O:_ButtonAnimVar) 0.1 #ANIM_DURATION# / - (#TOGGLE_VAR#) max (&gt;O:_ButtonAnimVar)
                 }
             </Update>
 
@@ -113,7 +101,7 @@
                         <ANIM_CODE>#OVERRIDE_ANIM_CODE#</ANIM_CODE>
                     </True>
                     <False>
-                        <ANIM_CODE>#ANIM_LENGTH# (#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#) *</ANIM_CODE>
+                        <ANIM_CODE>#ANIM_LENGTH# (O:_ButtonAnimVar) *</ANIM_CODE>
                     </False>
                 </Condition>
             </UseTemplate>
@@ -121,10 +109,8 @@
             <UseTemplate Name = "ASOBO_GT_Interaction_LeftSingle_Leave_Code">
                 <LEFT_SINGLE_CODE>
                     (L:A32NX_FIRE_BUTTON_#TYPE##ID#) 0 == if{
-                    (#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#_IsDown) ! (&gt;#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#_IsDown)
-                    (O:AnimGoingForward) ! (&gt;O:AnimGoingForward)
-                    (L:A32NX_FIRE_GUARD_#TYPE##ID#) ! (&gt;L:A32NX_FIRE_GUARD_#TYPE##ID#)
-                    }
+                        (#TOGGLE_VAR#) ! (&gt;#TOGGLE_VAR#)
+                    } #LEFT_SINGLE_CODE#
                 </LEFT_SINGLE_CODE>
             </UseTemplate>
         </Component>
