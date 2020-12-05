@@ -1,0 +1,86 @@
+@import '../Efb.scss';
+
+.Toolbar {
+  $padding: 1em;
+  $spacing-padding: 2.25rem;
+
+  background: var(--cardBackground);
+
+  width: 1430px;
+
+  padding: 2em $padding $padding $spacing-padding;
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: center;
+  position: fixed;
+
+  #Tabs {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    align-items: flex-start;
+
+    margin-left: $spacing-padding;
+
+    & > div:hover {
+      border-bottom: solid var(--toolbarUnderlineColor) .1em;
+    }
+
+    img.FBW-Logo {
+      width: 2.25em;
+    }
+
+    .Tab {
+      margin-top: .4em;
+      margin-right: $spacing-padding;
+      padding-bottom: .135em;
+
+      font-family: "Nunito Sans", sans-serif;
+      font-size: 1.5rem;
+      font-weight: 700;
+
+      color: var(--mainText);
+
+      cursor: pointer;
+
+      &.Active {
+        border-bottom: solid var(--toolbarUnderlineColor) .1em;
+      }
+
+      &.Active:hover {
+        border-bottom: solid var(--toolbarUnderlineColor) .1em;
+      }
+
+      a {
+        color: inherit;
+        text-decoration: inherit;
+      }
+    }
+  }
+
+  #ProfileToolbar {
+    margin-left: auto;
+    margin-top: 5px;
+    margin-right: 3em;
+    display: flex;
+    align-items: flex-start;
+    font-weight: 600;
+    font-size: 1.3rem;
+    color: var(--profileText);
+
+    #Icon {
+      margin-left: 10px;
+      font-size: 3rem;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: inherit;
+    }
+  }
+
+  #Icon {
+    justify-content: end;
+  }
+}

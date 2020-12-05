@@ -1,0 +1,67 @@
+@import '../Efb.scss';
+
+.ProfileWidgets {
+    margin: 20px 30px 30px 30px;
+    display: grid;
+    font-family: "Nunito Sans", sans-serif;
+    grid-template-columns: 50% 50%;
+    justify-items: stretch;
+    align-items: flex-start;
+    grid-template-areas:
+      "SidebarWidget Widget";
+
+    .SidebarWidget {
+      margin: var(--widgetMargin);
+      display: flex;
+      font-size: 1.7rem;
+      flex-direction: column;
+      justify-content: flex-start;
+      height: 100%;
+
+      #Panel {
+        box-shadow: 0 0 3px rgba(0, 0, 0, 0.1);
+        margin: 3px;
+        color: var(--cardText);
+        background: var(--cardBackground);
+        padding: 5% 5%;
+        font-size: 1.75rem;
+
+        #Username {
+          font-size: 1.3rem;
+        }
+
+        #UserIcon {
+          margin-top: 3px;
+
+          img {
+            display: block;
+            float: none;
+            margin: auto auto;
+            width: 125px;
+            height: 125px;
+            -webkit-border-radius: 50%;
+            -moz-border-radius: 50%;
+            border-radius: 50%;
+            border-color: var(--imageBorder);
+          }
+        }
+      }
+
+      input {
+        font-size: 2rem;
+        font-weight: 700;
+        margin: 5px;
+        border-top-style: hidden;
+        border-right-style: hidden;
+        border-left-style: hidden;
+        border-bottom-style: dotted;
+        outline: none;
+        background-color: var(--cardBackground);
+        color: var(--cardText);
+      }
+    }
+
+    .ProfileUser {
+      color: var(--cardText);
+    }
+  }
