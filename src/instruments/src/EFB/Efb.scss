@@ -1,0 +1,78 @@
+@import url('https://fonts.googleapis.com/css2?family=Nunito+Sans&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@700&display=swap');
+
+@font-face{
+  font-family: 'JetBrains Mono';
+  src: url('https://raw.githubusercontent.com/JetBrains/JetBrainsMono/master/fonts/webfonts/JetBrainsMono-Regular.woff2') format('woff2');
+  font-weight: normal;
+  font-style: normal;
+}
+
+:root {
+  --mainText: rgba(0, 0, 0, 0.6);
+  --mainTextSecondary: rgba(0, 0, 0, 0.5);
+  --profileText: rgba(0, 0, 0, 1);
+
+  --cardText: rgba(0, 0, 0, 0.7);
+  --cardBackground: rgb(223, 224, 226);
+  --globalBackground: #E5E5E5;
+  --widgetMargin: 10px;
+  --toolbarUnderlineColor: #00C2CB
+}
+
+body {
+  background: var(--globalBackground);
+
+  // Center the UI for browser prototype
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  overflow-x: hidden;
+}
+
+.darkMode {
+  --mainText: rgba(255, 255, 255, 0.9);
+  --mainTextSecondary: rgba(255, 255, 255, 0.9);
+  --profileText: rgba(255, 255, 255, 0.9);
+
+  --cardText: rgba(255, 255, 255, 0.9);
+  --cardBackground: rgb(34, 34, 34);
+  --cardLoadsheetBackground: rgb(223, 224, 226);
+  --globalBackground: rgb(23, 23, 23);
+
+  --imageBorder: rgb(88, 88, 88);
+}
+
+#root {
+  width: 1430px;
+  height: 1000px;
+  background: var(--globalBackground);
+  cursor: default;
+}
+
+#main-container {
+  padding: 8em 1.15em 1.15em;
+  overflow-y: scroll;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+}
+
+.FBW-Logo {
+  max-width: 60px;
+}
+
+#Panel {
+  font-weight: 700;
+}
+
+.WidgetTitle {
+  font-size: 1.8rem;
+  font-weight: 600;
+  margin-bottom: 0.75%;
+  color: var(--mainText)
+}

@@ -1,7 +1,11 @@
 'use strict';
 
+import { JsxEmit } from "typescript";
+import { ModuleResolutionKind } from "typescript/lib/tsserverlibrary.js";
+
 const os = require('os');
 const fs = require('fs');
+const typescript = require('@rollup/plugin-typescript');
 const { babel } = require('@rollup/plugin-babel');
 const { nodeResolve } = require('@rollup/plugin-node-resolve');
 const commonjs = require('@rollup/plugin-commonjs');
@@ -24,6 +28,12 @@ module.exports = fs.readdirSync(`${__dirname}/src`, { withFileTypes: true })
                 format: 'iife',
             },
             plugins: [
+                typescript({
+                    jsx: JsxEmit.ReactJSX,
+                    moduleResolution: ModuleResolutionKind.NodeJs,
+                    allowSyntheticDefaultImports: true,
+                    declaration: false
+                }),
                 babel({
                     presets: [
                         ['@babel/preset-react', {

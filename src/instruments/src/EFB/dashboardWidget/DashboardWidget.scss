@@ -1,0 +1,254 @@
+@import '../Efb.scss';
+@import './weather-icons.scss';
+
+.DashboardWidget {
+    display: grid;
+    font-family: "Nunito Sans", sans-serif;
+    grid-template-columns: 25% 25% 25% 25%;
+    grid-template-rows: 3em auto;
+    grid-gap: 1em;
+    justify-items: stretch;
+    align-items: flex-start;
+    overflow: hidden;
+    grid-template-areas:
+        "TodaysFlightTitle WeatherTitle MapTitle MapTitle"
+        "FlightCard        OriginWxCard Map      Map"
+        "FlightCard        DestWxCard   Map      Map";
+
+    span.WidgetTitle#title-todays-flight {
+        grid-area: TodaysFlightTitle;
+    }
+
+    span.WidgetTitle#title-wx {
+        grid-area: WeatherTitle;
+    }
+
+    span.WidgetTitle#title-map {
+        grid-area: MapTitle;
+        visibility: hidden;
+    }
+
+    // TODO move this to its own stylesheet
+
+    .flight-widget {
+        grid-area: FlightCard;
+        height: 100%;
+
+        .flight-card {
+            height: 100%;
+            display: grid;
+            box-shadow: 0 0 3px rgba(0, 0, 0, 0.1);
+            grid-template-columns: auto auto;
+            grid-template-rows: 4rem auto auto auto 45%;
+            color: var(--cardText);
+            background: var(--cardBackground);
+            padding: 0 5%;
+            font-size: 2.25rem;
+            grid-template-areas:
+            "Toolbar Toolbar"
+            "DepArr  DepArr"
+            "Time    Distance"
+            "ETA     ETA";
+
+            .flight-widget-toolbar {
+                margin-top: 1rem;
+                grid-area: Toolbar;
+                display: flex;
+                align-content: center;
+                justify-content: center;
+                font-size: 1.5rem;
+
+                a {
+                    color: inherit;
+                    text-decoration: inherit;
+                }
+
+                #secondary-button {
+                    margin-left: 3rem;
+                }
+
+                &.Active {
+                    border-bottom: solid var(--toolbarUnderlineColor) .1em;
+                  }
+
+                &.Active:hover {
+                border-bottom: solid var(--toolbarUnderlineColor) .1em;
+                }
+            }
+
+            .Title {
+                font-size:1.1rem;
+                font-weight: 700;
+                color: var(--mainTextSecondary);
+                grid-area: DepArr;
+            }
+
+            .origin-destination {
+                font-size: 2.25rem;
+                font-weight: 700;
+                grid-area: DepArr;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+            }
+
+            #ETA {
+                grid-area: ETA;
+            }
+        }
+    }
+
+    // TODO move this to its own stylesheet
+
+    .weather-card {
+        height: 100%;
+        display: grid;
+        padding-bottom: 0;
+        box-shadow: 0 0 3px rgba(0, 0, 0, 0.1);
+        color: var(--cardText);
+        background: var(--cardBackground);
+        font-size: 1.5rem;
+        justify-content: space-between;
+        width: 100%;
+        grid-template-columns: 1fr;
+        grid-template-rows: auto auto auto auto;
+        grid-template-areas:
+            "OneByTwo"
+            "MetarModal"
+            "TwoByTwo"
+            "IcaoIdent";
+
+        #OneByTwo {
+            margin: 10px 0 0 20px;
+            align-content: center;
+            padding-top: 15px;
+            display: grid;
+            grid-template-columns: 50% 50%;
+            font-size: 1.5rem;
+            grid-template-areas:
+                "icao WeatherIcon";
+            width: 100%;
+        }
+
+        #TwoByTwo {
+            display: grid;
+            margin: 0 0 10px 30px;
+            grid-template-rows: auto auto;
+            grid-template-columns: 1fr 1fr;
+            font-size: 1.5rem;
+            justify-content: start;
+        }
+
+        #MetarModal p {
+            padding: 10px 15px;
+            width: 90%;
+            min-height: 206px;
+        }
+
+        #IcaoIdent {
+            display: flex;
+
+            .icaoUpdate {
+                padding-left: 15px;
+                justify-content: space-evenly;
+                font-size: 1rem;
+                padding-bottom: 10px;
+            }
+        }
+
+        .WeatherIcon {
+            font-size: 3.5rem;
+            margin-left: 1em;
+            grid-area: WeatherIcon;
+        }
+
+        #icao {
+            font-size: 2.25rem;
+            grid-area: icao;
+
+            ::placeholder {
+                color: var(--cardText) !important;
+            }
+
+            input {
+                font-size: 2rem;
+                font-weight: 700;
+                width: 95px;
+                margin: 5px;
+                border-top-style: hidden;
+                border-right-style: hidden;
+                border-left-style: hidden;
+                border-bottom-style: dotted;
+                outline: none;
+                background-color: var(--cardBackground);
+                color: var(--cardText);
+            }
+        }
+
+        #Pressure {
+            font-size: 1.25em;
+            grid-area: Pressure;
+        }
+
+        #Wind {
+            font-size: 1.25em;
+            grid-area: Wind;
+        }
+
+        #Temp {
+            font-size: 1.25em;
+            grid-area: Temp;
+        }
+
+        #Dew {
+            font-size: 1.25em;
+            grid-area: Dew;
+        }
+
+        .col {
+            width: 100%;
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+        }
+
+        .big {
+            font-size: 3rem;
+        }
+
+        .label, .unit {
+            font-size: 1.1rem;
+            color: var(--cardText);
+        }
+    }
+
+    .map-widget {
+        grid-area: Map;
+        height: 100%;
+        width: 100%;
+    }
+
+    #mapid {
+        width: 660px !important;
+        height: 740px !important;
+    }
+
+    #flight-todays {
+        grid-area: TodaysFlightCard;
+    }
+
+    #flight-previous {
+        grid-area: PreviousLegsCard;
+    }
+
+    #weather-card-origin {
+        grid-area: OriginWxCard;
+    }
+
+    #weather-card-dest {
+        grid-area: DestWxCard;
+    }
+
+    textarea:focus, input:focus{
+        outline: none;
+    }
+}
