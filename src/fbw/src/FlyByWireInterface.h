@@ -24,6 +24,7 @@
 #include "SimConnectInterface.h"
 #include "FlyByWire.h"
 #include "InterpolatingLookupTable.h"
+#include "FlightDataRecorder.h"
 
 class FlyByWireInterface
 {
@@ -49,6 +50,8 @@ private:
   double lastThrottleInput_2 = -1;
 
   double previousSimulationTime = 0;
+
+  FlightDataRecorder flightDataRecorder;
 
   SimConnectInterface simConnectInterface;
   FlyByWireModelClass model;

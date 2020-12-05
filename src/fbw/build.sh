@@ -35,6 +35,7 @@ clang++ \
   -I "${DIR}/src/interface" \
   "${DIR}/src/interface/SimConnectInterface.cpp" \
   "${DIR}/src/FlyByWireInterface.cpp" \
+  "${DIR}/src/FlightDataRecorder.cpp" \
   "${DIR}/src/InterpolatingLookupTable.cpp" \
   "${DIR}/src/main.cpp" \
   -o $OUTPUT

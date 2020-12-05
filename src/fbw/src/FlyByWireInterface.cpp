@@ -37,6 +37,9 @@ bool FlyByWireInterface::connect()
   // initialize model
   model.initialize();
 
+  // initialize flight data recorder
+  flightDataRecorder.initialize();
+
   // connect to sim connect
   return simConnectInterface.connect(
     isThrottleHandlingEnabled,
@@ -51,6 +54,9 @@ void FlyByWireInterface::disconnect()
 
   // terminate model
   model.terminate();
+
+  // terminate flight data recorder
+  flightDataRecorder.terminate();
 }
 
 bool FlyByWireInterface::update(
@@ -72,6 +78,9 @@ bool FlyByWireInterface::update(
   {
     result &= processThrottles();
   }
+
+  // update flight data recorder
+  flightDataRecorder.update(&model);
 
   // return result
   return result;
