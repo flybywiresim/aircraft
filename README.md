@@ -10,6 +10,17 @@
 
 The A32NX Project is a community-driven open source project to create a free Airbus A320neo in Microsoft Flight Simulator that is as close to reality as possible. It aims to enhance the default A320neo by improving the systems depth and functionality to bring it up to payware-level, all for free.
 
+The following aircraft configuration is currently simulated:
+
+ ```
+ Model      A320-251N
+ Engine     LEAP 1-A26
+ FMGS       Honeywell Pegasus Step 1A
+ FWC Std.   H2F9C
+ ```
+
+Note that those parameters might be incosistent / might change while the project evolves towards a more stable form.
+
 ## Downloads
 
 ### A32NX Installer
