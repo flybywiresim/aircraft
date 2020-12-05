@@ -132,6 +132,7 @@
 1. [PFD] Fix ALT magenta in OP DES/CLB - @MisterChocker (Leon)
 1. [ECAM] Add G LOAD indication to lower ECAM - @beheh (Benedict Etzel)
 1. [PFD] Added vR indication - @MisterChocker (Leon)
+1. [PFD] Changed S and F speeds data source - @MisterChocker (Leon)
 
 
 ## 0.4.0
