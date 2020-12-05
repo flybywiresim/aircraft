@@ -9,15 +9,24 @@ class A32NX_BaroSelector {
         this.cachedNearestAirportIcao = "";
 
         const configInitBaroUnit = NXDataStore.get("CONFIG_INIT_BARO_UNIT", "IN HG");
-        if (configInitBaroUnit != "AUTO") this.setBaroSelector(configInitBaroUnit == "HPA");
+        if (configInitBaroUnit != "AUTO") {
+            this.setBaroSelector(configInitBaroUnit == "HPA");
+        }
     }
     update(_deltaTime, _core) {
-        if (this.baroSelectionCompleted) return;
+        if (this.baroSelectionCompleted) {
+            return;
+        }
         this.totalDeltaTime += _deltaTime;
 
         // Check if we are waiting for a dispatched callback. If we've waited for more then 100ms, then try again.
-        if (this.callbackDispatchedAt != null && (this.totalDeltaTime - this.callbackDispatchedAt) < 100) return;
-        if (this.callbackDispatchedAt != null) console.log(`[${this.totalDeltaTime}] Dispatched callback timed-out`);
+        if (this.callbackDispatchedAt != null && (this.totalDeltaTime - this.callbackDispatchedAt) < 100) {
+            return;
+        }
+
+        if (this.callbackDispatchedAt != null) {
+            console.log(`[${this.totalDeltaTime}] Dispatched callback timed-out`);
+        }
 
         const lat = SimVar.GetSimVarValue("PLANE LATITUDE", "degree latitude");
         const lon = SimVar.GetSimVarValue("PLANE LONGITUDE", "degree longitude");
@@ -34,14 +43,18 @@ class A32NX_BaroSelector {
             const icao = values[0][0].substr(2).trim();
             console.log(`[${this.totalDeltaTime}] Callback called with ${icao}`);
 
-            if (this.nearestAirportIcao != icao) this.nearestAirportChanges++;
+            if (this.nearestAirportIcao != icao) {
+                this.nearestAirportChanges++;
+            }
             this.nearestAirportIcao = icao;
             this.nearestAirportSamples++;
             this.callbackDispatchedAt = null;
 
             // If nearestAirportChanges is more than 1, then the nearest airport has updated successfuly.
             // If nearestAirportSamples is more than 2 (experimentally found) then the airport we initially found was correct.
-            if (this.nearestAirportChanges > 1 || this.nearestAirportSamples > 2) this.setBaroSelectorForAirport(icao);
+            if (this.nearestAirportChanges > 1 || this.nearestAirportSamples > 2) {
+                this.setBaroSelectorForAirport(icao);
+            }
         });
     }
     setBaroSelector(value) {

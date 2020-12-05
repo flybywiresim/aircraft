@@ -102,7 +102,7 @@ class CDU_OPTIONS_MainMenu {
                 mcdu.showErrorMessage("NOT ALLOWED");
             } else {
                 // We'll go from AUTO -> HPA -> IN HG -> AUTO.
-                const newInitBaroUnit = storedInitBaroUnit == "AUTO" ? "HPA" : 
+                const newInitBaroUnit = storedInitBaroUnit == "AUTO" ? "HPA" :
                     storedInitBaroUnit == "HPA" ? "IN HG" : "AUTO";
                 NXDataStore.set("CONFIG_INIT_BARO_UNIT", newInitBaroUnit);
             }
