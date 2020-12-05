@@ -1,26 +1,23 @@
-// Used to determine if an ICAO code uses InHG or HPa.
-function AirportUsesHPA(icao) {
-    const InHgRegions = ["K", "C", "M", "P", "RJ", "RO", "TI", "TJ"];
-    return !InHgRegions.some(r => icao.startsWith(r));
-}
-
-// Used to set the baro unit selector to the correct setting.
 class A32NX_BaroSelector {
-    constructor() {
-        console.log('A32NX_BaroSelector constructed');
-    }
     init() {
-        console.log('A32NX_BaroSelector init');
-        this.SimVarCallbackPending = false;
-        this.BaroSelectorHasBeenSet = false;
+        this.totalDeltaTime = 0;
+        this.callbackDispatchedAt = null;
+        this.baroSelectionCompleted = false;
 
-        const configDefaultBaroUnit = NXDataStore.get("CONFIG_DEFAULT_BARO_UNIT", "IN HG");
-        if (configDefaultBaroUnit != "AUTO") this.SetBaroSelector(configDefaultBaroUnit == "HPA");
+        this.nearestAirportSamples = 0;
+        this.nearestAirportChanges = 0;
+        this.cachedNearestAirportIcao = "";
+
+        const configInitBaroUnit = NXDataStore.get("CONFIG_INIT_BARO_UNIT", "IN HG");
+        if (configInitBaroUnit != "AUTO") this.setBaroSelector(configInitBaroUnit == "HPA");
     }
-    update(_dTime, _core) {
-        if (this.BaroSelectorHasBeenSet) return;
-        // TODO: What if this callback never gets called?
-        if (this.SimVarCallbackPending) return;
+    update(_deltaTime, _core) {
+        if (this.baroSelectionCompleted) return;
+        this.totalDeltaTime += _deltaTime;
+
+        // Check if we are waiting for a dispatched callback. If we've waited for more then 100ms, then try again.
+        if (this.callbackDispatchedAt != null && (this.totalDeltaTime - this.callbackDispatchedAt) < 100) return;
+        if (this.callbackDispatchedAt != null) console.log(`[${this.totalDeltaTime}] Dispatched callback timed-out`);
 
         const lat = SimVar.GetSimVarValue("PLANE LATITUDE", "degree latitude");
         const lon = SimVar.GetSimVarValue("PLANE LONGITUDE", "degree longitude");
@@ -28,21 +25,32 @@ class A32NX_BaroSelector {
         SimVar.SetSimVarValue("C:fs9gps:NearestAirportMaximumDistance", "nautical miles", 10000);
         SimVar.SetSimVarValue("C:fs9gps:NearestAirportCurrentLatitude", "degree latitude", lat);
         SimVar.SetSimVarValue("C:fs9gps:NearestAirportCurrentLongitude", "degree longitude", lon);
-
         const batch = new SimVar.SimVarBatch("C:fs9gps:NearestAirportItemsNumber", "C:fs9gps:NearestAirportCurrentLine");
         batch.add("C:fs9gps:NearestAirportCurrentICAO", "string", "string");
 
+        console.log(`[${this.totalDeltaTime}] Dispatching callback`);
+        this.callbackDispatchedAt = this.totalDeltaTime;
         SimVar.GetSimVarArrayValues(batch, (values) => {
-            if (values.length != 1) return;
             const icao = values[0][0].substr(2).trim();
-            this.SetBaroSelector(AirportUsesHPA(icao));
-            this.SimVarCallbackPending = false;
-        });
+            console.log(`[${this.totalDeltaTime}] Callback called with ${icao}`);
 
-        this.SimVarCallbackPending = true;
+            if (this.nearestAirportIcao != icao) this.nearestAirportChanges++;
+            this.nearestAirportIcao = icao;
+            this.nearestAirportSamples++;
+            this.callbackDispatchedAt = null;
+
+            // If nearestAirportChanges is more than 1, then the nearest airport has updated successfuly.
+            // If nearestAirportSamples is more than 2 (experimentally found) then the airport we initially found was correct.
+            if (this.nearestAirportChanges > 1 || this.nearestAirportSamples > 2) this.setBaroSelectorForAirport(icao);
+        });
     }
-    SetBaroSelector(value) {
+    setBaroSelector(value) {
+        console.log(`[${this.totalDeltaTime}] Baro unit selector set to ` + (value ? "HPA" : "IN HG"));
         SimVar.SetSimVarValue("L:XMLVAR_Baro_Selector_HPA_1", "bool", value);
-        this.BaroSelectorHasBeenSet = true;
+        this.baroSelectionCompleted = true;
+    }
+    setBaroSelectorForAirport(icao) {
+        const inchOfMercuryRegions = ["K", "C", "M", "P", "RJ", "RO", "TI", "TJ"];
+        this.setBaroSelector(!inchOfMercuryRegions.some(r => icao.startsWith(r)));
     }
 }
