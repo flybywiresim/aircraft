@@ -325,6 +325,8 @@ class A32NX_Vspeeds {
         SimVar.SetSimVarValue("L:A32NX_VSPEEDS_LANDING_CONF3", "boolean", 0);
         SimVar.SetSimVarValue("L:A32NX_VSPEEDS_TO_CONF", "number", 1);
         SimVar.SetSimVarValue("L:A32NX_VSPEEDS_V2", "number", 0);
+        SimVar.SetSimVarValue("L:A32NX_VSPEEDS_VLS_APP", "number", 0);
+        SimVar.SetSimVarValue("L:A32NX_VSPEEDS_VAPP", "number", 0);
         this.lastGw = 50;
         this.lastFhi = -1;
         this.curFhi = -1;
@@ -367,6 +369,9 @@ class A32NX_Vspeeds {
             SimVar.SetSimVarValue("L:A32NX_VSPEEDS_F", "number", fs[this.cgw](this.lastGw));
             SimVar.SetSimVarValue("L:A32NX_VSPEEDS_S", "number", ss[this.cgw](this.lastGw));
             SimVar.SetSimVarValue("L:A32NX_VSPEEDS_GD", "number", this.curFhi === 0 ? this.compensateForMachEffect(this.calculateGreenDotSpeed()) : 0);
+            const vref = this.compensateForMachEffect(vls[SimVar.GetSimVarValue("L:A32NX_LANDING_CONF3", "boolean") ? 3 : 4][this.cgw](this.lastGw, 1));
+            SimVar.SetSimVarValue("L:A32NX_VSPEEDS_VLS_APP", "number", vref);
+            SimVar.SetSimVarValue("L:A32NX_VSPEEDS_VAPP", "number", this.compensateForWind(vref));
         }, 500);
     }
 
@@ -389,7 +394,7 @@ class A32NX_Vspeeds {
      * @returns {number} Mach corrected velocity in kt (CAS)
      */
     compensateForMachEffect(v) {
-        return this.alt > 20000 ? v + (this.alt - 20000) / 1000 : v;
+        return Math.ceil(this.alt > 20000 ? v + (this.alt - 20000) / 1000 : v);
     }
 
     /** Corrects velocity by min 5 kt and max 15 kt for wind correction
