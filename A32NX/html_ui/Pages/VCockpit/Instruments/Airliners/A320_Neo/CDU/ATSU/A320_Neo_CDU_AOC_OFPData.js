@@ -269,13 +269,14 @@ class CDUAocOfpData {
                 return true;
             }
             const maxAllowablePayload = 34327;
-            const currentRearBag = getCurrentRearBag(mcdu);
+            const currentRearBag = !isNaN(getCurrentRearBag(mcdu)) ? getCurrentRearBag(mcdu) : 0;
 
             const enteredFwdBag = Math.round(+value);
             const actualPayload = enteredFwdBag + (+currentRearBag);
 
             if (actualPayload >= 0 && actualPayload <= maxAllowablePayload) {
                 mcdu.aocWeight.fwdBag = enteredFwdBag.toString();
+                mcdu.aocWeight.rearBag = currentRearBag.toString();
                 updatePayloadValue();
                 updateView();
                 return true;
@@ -306,13 +307,14 @@ class CDUAocOfpData {
                 return true;
             }
             const maxAllowablePayload = 34327;
-            const currentFwdBag = getCurrentFwdBag(mcdu);
+            const currentFwdBag = !isNaN(getCurrentFwdBag(mcdu)) ? getCurrentFwdBag(mcdu) : 0;
 
             const enteredRearBag = Math.round(+value);
             const actualPayload = enteredRearBag + (+currentFwdBag);
 
             if (actualPayload >= 0 && actualPayload <= maxAllowablePayload) {
                 mcdu.aocWeight.rearBag = enteredRearBag.toString();
+                mcdu.aocWeight.fwdBag = currentFwdBag.toString();
                 updatePayloadValue();
                 updateView();
                 return true;
@@ -349,8 +351,6 @@ class CDUAocOfpData {
  * @return {number | NaN} currentFwdBag
  */
 function getCurrentFwdBag(mcdu) {
-    console.log('mcdu.aocWeight.fwdBag', mcdu.aocWeight.fwdBag);
-    console.log('mcdu.aocWeight.estFwdBag', mcdu.aocWeight.estFwdBag);
     return mcdu.aocWeight.fwdBag !== undefined ? +mcdu.aocWeight.fwdBag : +mcdu.aocWeight.estFwdBag; // number | NaN
 }
 
@@ -362,7 +362,7 @@ function getCurrentRearBag(mcdu) {
 }
 
 /**
- * @return {number | NaN} currentRearBag
+ * @return {number | NaN} currentPayload
  */
 function getCurrentPayload(mcdu) {
     return mcdu.aocWeight.payload !== undefined ? +mcdu.aocWeight.payload : +mcdu.simbrief.payload;
