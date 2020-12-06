@@ -108,8 +108,6 @@
 1. [PFD] Add QNH flashing when reach transition altitude - @Kimbyeoungjang (김병장#7165)
 1. [ECAM] Added flight phase inhibit override to recall button - @beheh (Benedict Etzel)
 1. [CDU] Added constraints symbols logic to flight plan @ilyeshammadi (Ilyes Hammadi)
-1. [ECAM] Add Autopilot & A/THR Disconnected Warning - @Kimbyeoungjang (김병장#7165)
-
 
 ## 0.4.0
 1. [General] Add CHANGELOG.md - @nathaninnes (Nathan Innes)
