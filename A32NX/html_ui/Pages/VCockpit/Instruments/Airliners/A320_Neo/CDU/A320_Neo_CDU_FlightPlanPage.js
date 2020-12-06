@@ -249,7 +249,7 @@ class CDUFlightPlanPage {
                         } else if (index < routeFirstWaypointIndex) {
                             if (index === routeFirstWaypointIndex - 1) {
                                 altitudeConstraint = "FL" + mcdu.cruiseFlightLevel;
-                            } else {
+                            } else if (routeFirstWaypointIndex > 1 && mcdu.flightPlanManager.getDepartureWaypoints().indexOf(waypointsWithDiscontinuities[index] != -1)) {
                                 altitudeConstraint = Math.floor(waypoint.cumulativeDistanceInFP * 0.14 * 6076.118 / 10);
                             }
                         } else if ((index === routeFirstWaypointIndex - 1) || (index === routeLastWaypointIndex + 1)) {
