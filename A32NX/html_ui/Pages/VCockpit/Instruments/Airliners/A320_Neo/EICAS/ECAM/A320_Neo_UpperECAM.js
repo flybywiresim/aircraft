@@ -2593,6 +2593,11 @@ var A320_Neo_UpperECAM;
                         if (this.knownFailures.includes(message.id)) {
                             this.knownFailures = this.knownFailures.filter(id => id !== message.id);
                         }
+                        if (this.clearedMessages.includes(message.id)) {
+                            // A message may reappear if it's conditions are no longer met, and then met again.
+                            // We do this by only keeping messages that are active in the list of cleared messages.
+                            this.clearedMessages = this.clearedMessages.filter(id => id !== message.id);
+                        }
                     }
                 }
             }
