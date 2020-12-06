@@ -1004,22 +1004,6 @@ var A320_Neo_UpperECAM;
                         important: true,
                         isActive: () => this.showLandingInhibit,
                     },
-                    {
-                        message: "AP OFF",
-                        style: "fail-3",
-                        important: true,
-                        isActive: () => {
-                            return (this.getAPWarning(3));
-                        }
-                    },
-                    {
-                        message: "A/THR OFF",
-                        style: "fail-2",
-                        important: true,
-                        isActive: () => {
-                            return (this.getATHRWarning(3));
-                        }
-                    },
 
                     //Secondary failures
                     {
