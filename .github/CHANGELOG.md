@@ -134,7 +134,9 @@
 1. [PFD] Added vR indication - @MisterChocker (Leon)
 1. [MFD] Corrected icon for the Decel point on flightplan - @LoungeFlyZ (Chris Johnson)
 1. [ND] Update ND to only show Mode Changed when mode button is used - @ilyeshammadi (Ilyes Hammadi)
-1. [General] Added default baro unit option, InHg/HPa - @theomessin (Theodore Messinezis)
+1. [TCAS] Implement first iteration of TCAS - @lukecologne (luke)
+1. [General] Added INIT BARO option, INHG/HPA/AUTO - @theomessin (Theodore Messinezis)
+
 
 ## 0.4.0
 1. [General] Add CHANGELOG.md - @nathaninnes (Nathan Innes)
