@@ -137,7 +137,6 @@
 1. [TCAS] Implement first iteration of TCAS - @lukecologne (luke)
 1. [General] Added INIT BARO option, INHG/HPA/AUTO - @theomessin (Theodore Messinezis)
 
-
 ## 0.4.0
 1. [General] Add CHANGELOG.md - @nathaninnes (Nathan Innes)
 1. [ECAM] Improved Upper ECAM Visuals - @wpine215 (Iceman)
