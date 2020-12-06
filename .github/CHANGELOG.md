@@ -134,7 +134,8 @@
 1. [PFD] Added vR indication - @MisterChocker (Leon)
 1. [MFD] Corrected icon for the Decel point on flightplan - @LoungeFlyZ (Chris Johnson)
 1. [ND] Update ND to only show Mode Changed when mode button is used - @ilyeshammadi (Ilyes Hammadi)
-1. [TCAS] Implement first iteration of TCAS - @lukecologne (luke)
+1. [TCAS] Implement first iteration of TCAS - @lukecologne (luke) - @Kimbyeongjang
+1. [ECAM] Temporary fix small word on lower ecam, status page
 
 ## 0.4.0
 1. [General] Add CHANGELOG.md - @nathaninnes (Nathan Innes)
