@@ -96,8 +96,8 @@ a320-neo-cdu-main-display::after {
   color: var(--mcduLightGrey);
 }
 
-.blue {
-  color: var(--mcduBlue);
+.cyan {
+  color: var(--mcduCyan);
 }
 
 .yellow {
@@ -106,6 +106,10 @@ a320-neo-cdu-main-display::after {
 
 .green {
   color: var(--mcduGreen);
+}
+
+.amber {
+  color: var(--mcduAmber);
 }
 
 .red {

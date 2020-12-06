@@ -19,7 +19,7 @@ jobs:
       - name: install
         run: npm install
       - name: lint
-        run: npm run lint
+        run: ./scripts/dev-env/run.sh npm run lint
   build:
     runs-on: ubuntu-latest
     if: github.event.pull_request.draft == false
@@ -28,8 +28,9 @@ jobs:
         uses: actions/checkout@v2
       - name: Generate layout.json and update manifest.json
         run: |
-          npm install
-          npm run build
+          ./scripts/dev-env/run.sh ./scripts/setup.sh
+          ./scripts/dev-env/run.sh ./scripts/build.sh
+
           mkdir tmp_A32NX
           mv A32NX tmp_A32NX/
           mv tmp_A32NX A32NX
