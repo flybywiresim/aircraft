@@ -102,7 +102,7 @@ class A32NX_LocalVarUpdater {
         let trimTemp = null;
 
         if (SimVar.GetSimVarValue("L:A32NX_AIRCOND_HOTAIR_TOGGLE", "Bool")) {
-            const airconKnobValue = SimVar.GetSimVarValue("L:A320_Neo_AIRCOND_LVL_" + _identifier, "Position(0-100)");
+            const airconKnobValue = SimVar.GetSimVarValue("L:A320_Neo_AIRCOND_LVL_" + _identifier, "number");
             trimTemp = (0.12 * airconKnobValue) + 18; // Map from knob range 0-100 to 18-30 degrees C
         } else {
             trimTemp = 18; // TODO replace placeholder with pack out temperature
@@ -132,7 +132,7 @@ class A32NX_LocalVarUpdater {
             compartmentSizeModifier = 0.0002;
         }
 
-        const cabinTempVariationSpeed = compartmentSizeModifier * (SimVar.GetSimVarValue("L:A32NX_KNOB_OVHD_AIRCOND_PACKFLOW_Position", "Position(0-2)") + 1);
+        const cabinTempVariationSpeed = compartmentSizeModifier * (SimVar.GetSimVarValue("L:A32NX_KNOB_OVHD_AIRCOND_PACKFLOW_Position", "number") + 1);
         const cabinTemp = currentCabinTemp + deltaTemp * cabinTempVariationSpeed;
 
         return cabinTemp;

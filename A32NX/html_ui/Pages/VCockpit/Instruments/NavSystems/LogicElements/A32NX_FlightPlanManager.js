@@ -269,7 +269,7 @@ class FlightPlanManager {
                         this.setOrGetLegAltitudeDescription(v, 3);
                         v.legAltitude1 = v.altitudeinFP;
                     } else if (ii > 0 && ii < data.length - 1) {
-                        this.setOrGetLegAltitudeDescription(v, 1);
+                        this.setOrGetLegAltitudeDescription(v, 0);
                         v.legAltitude1 = v.altitudeinFP;
                     }
                     this.addHardCodedConstraints(v);
@@ -317,7 +317,7 @@ class FlightPlanManager {
                                 this.setOrGetLegAltitudeDescription(v, 3);
                                 v.legAltitude1 = v.altitudeinFP;
                             } else if (ii > 0 && ii < data.length - 1) {
-                                this.setOrGetLegAltitudeDescription(v, 1);
+                                this.setOrGetLegAltitudeDescription(v, 0);
                                 v.legAltitude1 = v.altitudeinFP;
                             }
                             this.addHardCodedConstraints(v);
@@ -348,6 +348,7 @@ class FlightPlanManager {
                         this.decelWaypoint.icao = "";
                         this.decelWaypoint.infos.icao = this.decelWaypoint.icao;
                         this.decelWaypoint.ident = "(DECEL)";
+                        this.decelWaypoint.infos.name = "(DECEL)";
                         this.decelWaypoint.infos.ident = this.decelWaypoint.ident;
                         const decelPosition = this.getCoordinatesAtNMFromDestinationAlongFlightPlan(this._decelDistance);
                         if (decelPosition) {

@@ -22,7 +22,7 @@ class CDUFuelPredPage {
 
         let zfwCell = "___._";
         let zfwCgCell = (" __._");
-        let zfwColor = "[color]red";
+        let zfwColor = "[color]amber";
         mcdu.onRightInput[2] = async (value) => {
             if (await mcdu.trySetZeroFuelWeightZFWCG(value)) {
                 CDUFuelPredPage.ShowPage(mcdu);
@@ -60,14 +60,14 @@ class CDUFuelPredPage {
                     if (isFinite(mcdu.getRouteFinalFuelWeight())) {
                         finalFuelCell = "{sp}{sp}" + mcdu.getRouteFinalFuelWeight().toFixed(1);
                         finalTimeCell = FMCMainDisplay.minutesTohhmm(mcdu.getRouteFinalFuelTime());
-                        finalColor = "[color]blue";
+                        finalColor = "[color]cyan";
                     }
                 } else {
                     mcdu.tryUpdateRouteFinalFuel();
                     if (isFinite(mcdu.getRouteFinalFuelWeight())) {
                         finalFuelCell = "{sp}{sp}{small}" + mcdu.getRouteFinalFuelWeight().toFixed(1) + "{end}";
                         finalTimeCell = FMCMainDisplay.minutesTohhmm(mcdu.getRouteFinalFuelTime());
-                        finalColor = "[color]blue";
+                        finalColor = "[color]cyan";
                     }
                 }
                 mcdu.onLeftInput[4] = async (value) => {
@@ -80,14 +80,14 @@ class CDUFuelPredPage {
                     if (isFinite(mcdu.getRouteAltFuelWeight())) {
                         altFuelCell = "{sp}{sp}" + mcdu.getRouteAltFuelWeight().toFixed(1);
                         altFuelTimeCell = "{small}{green}" + FMCMainDisplay.minutesTohhmm(mcdu.getRouteAltFuelTime()) + "{end}{end}";
-                        altFuelColor = "[color]blue";
+                        altFuelColor = "[color]cyan";
                     }
                 } else {
                     mcdu.tryUpdateRouteAlternate();
                     if (isFinite(mcdu.getRouteAltFuelWeight())) {
                         altFuelCell = "{sp}{sp}{small}" + mcdu.getRouteAltFuelWeight().toFixed(1);
                         altFuelTimeCell = "{green}" + FMCMainDisplay.minutesTohhmm(mcdu.getRouteAltFuelTime()) + "{end}{end}";
-                        altFuelColor = "[color]blue";
+                        altFuelColor = "[color]cyan";
                     }
                 }
                 mcdu.onLeftInput[3] = async (value) => {
@@ -118,7 +118,7 @@ class CDUFuelPredPage {
 
                 fobCell = "{small}" + mcdu.getFOB().toFixed(1) + "{end}";
                 fobOtherCell = "FF";
-                fobCellColor = "[color]blue";
+                fobCellColor = "[color]cyan";
 
                 gwCell = "{small}" + mcdu.getGW().toFixed(1);
                 cgCell = mcdu.getCG().toFixed(1) + "{end}";
@@ -132,12 +132,12 @@ class CDUFuelPredPage {
                     if (mcdu._rteRsvPercentOOR) {
                         rteRsvWeightCell = "{sp}{sp}{small}" + "---.-" + "{end}";
                         rteRsvPercentCell = "--.-";
-                        rteRSvCellColor = "[color]blue";
+                        rteRSvCellColor = "[color]cyan";
                     } else {
                         rteRsvWeightCell = mcdu.getRouteReservedWeight().toFixed(1);
                         rteRsvPercentCell = mcdu.getRouteReservedPercent().toFixed(1);
                         rteRsvPercentCell = rteRsvPercentCell.length <= 3 ? "{sp}" + rteRsvPercentCell : rteRsvPercentCell;
-                        rteRSvCellColor = "[color]blue";
+                        rteRSvCellColor = "[color]cyan";
                         mcdu.onLeftInput[2] = async (value) => {
                             if (await mcdu.trySetRouteReservedFuel(value)) {
                                 CDUInitPage.ShowPage2(mcdu);
@@ -148,11 +148,11 @@ class CDUFuelPredPage {
 
                 if (mcdu._minDestFobEntered) {
                     minDestFobCell = "{sp}{sp}" + mcdu._minDestFob.toFixed(1);
-                    minDestFobCellColor = "[color]blue";
+                    minDestFobCellColor = "[color]cyan";
                 } else {
                     mcdu.tryUpdateMinDestFob();
                     minDestFobCell = "{sp}{sp}{small}" + mcdu._minDestFob.toFixed(1) + "{end}";
-                    minDestFobCellColor = "[color]blue";
+                    minDestFobCellColor = "[color]cyan";
                 }
                 mcdu.onLeftInput[5] = async (value) => {
                     if (await mcdu.trySetMinDestFob(value)) {
@@ -171,7 +171,7 @@ class CDUFuelPredPage {
                 // Currently not updating as there's no simvar to retrieve this.
                 if (isFinite(mcdu.zeroFuelWeight)) {
                     zfwCell = mcdu.zeroFuelWeight.toFixed(1);
-                    zfwColor = "[color]blue";
+                    zfwColor = "[color]cyan";
                 }
                 if (isFinite(mcdu.zeroFuelWeightMassCenter)) {
                     zfwCgCell = mcdu.zeroFuelWeightMassCenter.toFixed(1);

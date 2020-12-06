@@ -43,14 +43,14 @@ const getMETAR = async (icaos, lines, store, updateView) => {
         if (icao !== "") {
             await NXApi.getMetar(icao, srcMap[storedMetarSrc])
                 .then((data) => {
-                    lines.push(`METAR ${icao}[color]blue`);
+                    lines.push(`METAR ${icao}[color]cyan`);
                     const newLines = wordWrapToStringList(data.metar, 25);
                     newLines.forEach(l => lines.push(l.concat("[color]green")));
                     lines.push(msgSep);
                 })
                 .catch(() => {
-                    lines.push(`METAR ${icao}[color]blue`);
-                    lines.push('STATION NOT AVAILABLE[color]red');
+                    lines.push(`METAR ${icao}[color]cyan`);
+                    lines.push('STATION NOT AVAILABLE[color]amber');
                     lines.push(msgSep);
                 });
         }
@@ -65,14 +65,14 @@ const getTAF = async (icaos, lines, store, updateView) => {
         if (icao !== "") {
             await NXApi.getTaf(icao, srcMap[storedTafSrc])
                 .then((data) => {
-                    lines.push(`TAF ${icao}[color]blue`);
+                    lines.push(`TAF ${icao}[color]cyan`);
                     const newLines = wordWrapToStringList(data.taf, 25);
                     newLines.forEach(l => lines.push(l.concat("[color]green")));
                     lines.push(msgSep);
                 })
                 .catch(() => {
-                    lines.push(`TAF ${icao}[color]blue`);
-                    lines.push('STATION NOT AVAILABLE[color]red');
+                    lines.push(`TAF ${icao}[color]cyan`);
+                    lines.push('STATION NOT AVAILABLE[color]amber');
                     lines.push(msgSep);
                 });
         }
@@ -105,14 +105,14 @@ const getATIS = async (icao, lines, type, store, updateView) => {
                     default:
                         atisData = data.combined;
                 }
-                lines.push(`ATIS ${icao}[color]blue`);
+                lines.push(`ATIS ${icao}[color]cyan`);
                 const newLines = wordWrapToStringList(atisData, 25);
                 newLines.forEach(l => lines.push(l.concat("[color]green")));
                 lines.push(msgSep);
             })
             .catch(() => {
-                lines.push(`ATIS ${icao}[color]blue`);
-                lines.push('D-ATIS NOT AVAILABLE[color]red');
+                lines.push(`ATIS ${icao}[color]cyan`);
+                lines.push('D-ATIS NOT AVAILABLE[color]amber');
                 lines.push(msgSep);
             });
     }

@@ -85,6 +85,7 @@ Unit = Rpm</Comment>
 								<Property Name="Min" Type="Real64" Value="-20000"/>
 							</PropertyList>
 						</GameParameter>
+						<GameParameter Name="SIMVAR_GEAR_ANIMATION_POSITION" ID="{FF76A2A6-A2A2-406A-BB70-A363AE090912}"/>
 					</ChildrenList>
 				</Folder>
 				<Folder Name="instruments" ID="{94882CD7-C6F1-4046-82A6-1191727ED2D7}" ShortID="416687940">

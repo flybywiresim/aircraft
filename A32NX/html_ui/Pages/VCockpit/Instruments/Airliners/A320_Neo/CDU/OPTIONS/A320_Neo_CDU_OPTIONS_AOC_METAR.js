@@ -4,11 +4,11 @@ class CDU_OPTIONS_METAR {
 
         const storedMetarSrc = NXDataStore.get("CONFIG_METAR_SRC", "MSFS");
 
-        let msfs = "*METEOBLUE (MSFS)[color]blue";
-        let avwx = "*AVWX (UNREAL WEATHER)[color]blue";
-        let vatsim = "*VATSIM[color]blue";
-        let pilotedge = "*PILOTEDGE[color]blue";
-        let ivao = "*IVAO[color]blue";
+        let msfs = "*METEOBLUE (MSFS)[color]cyan";
+        let avwx = "*AVWX (UNREAL WEATHER)[color]cyan";
+        let vatsim = "*VATSIM[color]cyan";
+        let pilotedge = "*PILOTEDGE[color]cyan";
+        let ivao = "*IVAO[color]cyan";
 
         switch (storedMetarSrc) {
             case "AVWX":
@@ -40,7 +40,7 @@ class CDU_OPTIONS_METAR {
             [""],
             [ivao],
             [""],
-            ["<RETURN[color]blue"]
+            ["<RETURN[color]cyan"]
         ]);
 
         mcdu.leftInputDelay[0] = () => {
