@@ -20,6 +20,7 @@ class CDUFuelPredPage {
         let rteRsvPercentCell = "---.-";
         let rteRSvCellColor = "[color]white";
 
+        //TODO why is this doing format error?
         let zfwCell = "___._";
         let zfwCgCell = (" __._");
         let zfwColor = "[color]amber";
