@@ -17,12 +17,12 @@ class CDUAocInit {
         mcdu.page.Current = mcdu.page.AOCInit;
         mcdu.activeSystem = 'ATSU';
 
-        let fltNbr = '_______[color]red';
-        let originIcao = '____[color]red';
-        let destinationIcao = '____[color]red';
-        let ete = "____[color]red";
+        let fltNbr = '_______[color]amber';
+        let originIcao = '____[color]amber';
+        let destinationIcao = '____[color]amber';
+        let ete = "____[color]amber";
         let fob = `{small}---.-{end}[color]white`;
-        let requestButton = "INIT DATA REQ*[color]blue";
+        let requestButton = "INIT DATA REQ*[color]cyan";
         let gmt = "0000[color]green";
 
         const seconds = Math.floor(SimVar.GetGlobalVarValue("ZULU TIME", "seconds"));
@@ -40,19 +40,19 @@ class CDUAocInit {
         SimVar.SetSimVarValue("L:FMC_UPDATE_CURRENT_PAGE", "number", 1);
 
         if (mcdu.simbrief.sendStatus !== "READY" && mcdu.simbrief.sendStatus !== "DONE") {
-            requestButton = "INIT DATA REQ [color]blue";
+            requestButton = "INIT DATA REQ [color]cyan";
         }
         if (mcdu.simbrief.originIcao) {
-            originIcao = `${mcdu.simbrief.originIcao}[color]blue`;
+            originIcao = `${mcdu.simbrief.originIcao}[color]cyan`;
         }
         if (mcdu.simbrief.destinationIcao) {
-            destinationIcao = `${mcdu.simbrief.destinationIcao}[color]blue`;
+            destinationIcao = `${mcdu.simbrief.destinationIcao}[color]cyan`;
         }
         if (mcdu.simbrief.icao_airline || mcdu.simbrief.flight_number) {
             fltNbr = `{small}${mcdu.simbrief.icao_airline}${mcdu.simbrief.flight_number}{end}[color]green`;
         }
         if (mcdu.simbrief.ete) {
-            ete = `${formatTime(mcdu.simbrief.ete)}[color]blue`;
+            ete = `${formatTime(mcdu.simbrief.ete)}[color]cyan`;
         }
 
         const currentFob = formatWeight(mcdu.getFOB());
@@ -181,7 +181,7 @@ class CDUAocInit {
                 [" {big}FUEL REM{end}", "{big}LDG PILOT{end} "],
                 ["   " + fob, "-------"],
                 ["", ""],
-                ["*AUTOLAND <{small}n{end}>[color]blue"],
+                ["*AUTOLAND <{small}n{end}>[color]cyan"],
                 ["", "{big}ADVISORY{end} "],
                 ["<AOC MENU"]
             ];

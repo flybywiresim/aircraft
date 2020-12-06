@@ -24,64 +24,45 @@ class CDUAocOfpData {
             }
         }
 
-        let blockFuel = "_____[color]red";
-        let taxiFuel = "____[color]red";
-        let tripFuel = "_____[color]red";
-        let estZfw = "__._[color]red";
-        let payload = "_____[color]red";
-        let requestButton = "SEND*[color]blue";
+        let blockFuel = "_____[color]amber";
+        let taxiFuel = "____[color]amber";
+        let tripFuel = "_____[color]amber";
+        let requestButton = "SEND*[color]cyan";
 
         if (mcdu.simbrief.sendStatus !== "READY" && mcdu.simbrief.sendStatus !== "DONE") {
-            requestButton = "SEND [color]blue";
+            requestButton = "SEND [color]cyan";
         }
-
-        const cgPercent = SimVar.GetSimVarValue("CG PERCENT", "percent");
-
-        const cgColor = cgPercent >= 16 && cgPercent <= 40 ? 'green' : 'red';
-        const cg = `{small}${cgPercent.toFixed(1)}{end}[color]${cgColor}`;
 
         const currentBlockFuel = mcdu.aocWeight.blockFuel || mcdu.simbrief.blockFuel;
         if (currentBlockFuel) {
             const size = mcdu.aocWeight.blockFuel ? 'big' : 'small';
-            blockFuel = `{${size}}${currentBlockFuel}{end}[color]blue`;
-        }
-
-        const currentEstZfw = mcdu.aocWeight.estZfw || mcdu.simbrief.estZfw;
-        if (currentEstZfw) {
-            const size = mcdu.aocWeight.estZfw ? 'big' : 'small';
-            estZfw = `{${size}}${formatWeightInTons(currentEstZfw)}{end}[color]blue`;
+            blockFuel = `{${size}}${currentBlockFuel}{end}[color]cyan`;
         }
 
         const currentTaxiFuel = mcdu.aocWeight.taxiFuel || mcdu.simbrief.taxiFuel;
         if (currentTaxiFuel) {
             const size = mcdu.aocWeight.taxiFuel ? 'big' : 'small';
-            taxiFuel = `{${size}}${currentTaxiFuel}{end}[color]blue`;
+            taxiFuel = `{${size}}${currentTaxiFuel}{end}[color]cyan`;
         }
 
         const currentTripFuel = mcdu.aocWeight.tripFuel || mcdu.simbrief.tripFuel;
         if (currentTripFuel) {
             const size = mcdu.aocWeight.tripFuel ? 'big' : 'small';
-            tripFuel = `{${size}}${currentTripFuel}{end}[color]blue`;
-        }
-
-        const currentPayload = mcdu.aocWeight.payload || mcdu.simbrief.payload;
-        if (currentPayload) {
-            const size = mcdu.aocWeight.payload ? 'big' : 'small';
-            payload = `{${size}}${currentPayload}{end}[color]blue`;
+            tripFuel = `{${size}}${currentTripFuel}{end}[color]cyan`;
         }
 
         const display = [
-            ["OFP WT/BAL", undefined, undefined, "AOC"],
-            ["BLOCK FUEL", "ZFW"],
-            [blockFuel, estZfw],
-            ["TAXI FUEL", "CG"],
-            [taxiFuel, cg],
-            ["TRIP FUEL", "PAYLOAD"],
-            [tripFuel, payload],
-            ["PAYLOAD"],
-            ["*LOAD[color]blue", "PRINT*[color]inop"],
-            ["REFUEL", "OFP REQUEST[color]blue"],
-            ["*LOAD[color]blue", requestButton],
+            ["OFP WT/BAL", "1", "2", "AOC"],
+            ["BLOCK FUEL"],
+            [blockFuel],
+            ["TAXI FUEL"],
+            [taxiFuel],
+            ["TRIP FUEL"],
+            [tripFuel],
+            [""],
+            ["", "PRINT*[color]inop"],
+            ["REFUEL", "OFP REQUEST[color]cyan"],
+            ["*LOAD[color]cyan", requestButton],
             [""],
             ["<AOC MENU"]
         ];
@@ -147,77 +128,12 @@ class CDUAocOfpData {
             return false;
         };
 
-        mcdu.leftInputDelay[3] = () => {
-            return mcdu.getDelayBasic();
-        };
-        mcdu.onLeftInput[3] = async () => {
-            if (currentPayload) {
-                const pilotWeightInPounds = 200; // One pilot
-                const currentPayloadInPounds = (+currentPayload * 2.20462) - (pilotWeightInPounds * 2); // kg to pounds minus two pilots
-
-                const payloadCount = SimVar.GetSimVarValue("PAYLOAD STATION COUNT", "number");
-                for (let i = 1; i <= payloadCount; i++) {
-                    if (i === 1 || i === 2) {
-                        // Pilots
-                        await SimVar.SetSimVarValue(`PAYLOAD STATION WEIGHT:${i}`, "Pounds", pilotWeightInPounds);
-                    } else {
-                        await SimVar.SetSimVarValue(`PAYLOAD STATION WEIGHT:${i}`, "Pounds", currentPayloadInPounds / 4);
-                    }
-                }
-
-                updateView();
-            }
-        };
-
-        mcdu.leftInputDelay[1] = () => {
-            return mcdu.getDelayBasic();
-        };
-        mcdu.onLeftInput[1] = async () => {
-            if (currentPayload) {
-                const pilotWeightInPounds = 200; // One pilot
-                const currentPayloadInPounds = (+currentPayload * 2.20462) - (pilotWeightInPounds * 2); // kg to pounds minus two pilots
-
-                const payloadCount = SimVar.GetSimVarValue("PAYLOAD STATION COUNT", "number");
-                for (let i = 1; i <= payloadCount; i++) {
-                    if (i === 1 || i === 2) {
-                        // Pilots
-                        await SimVar.SetSimVarValue(`PAYLOAD STATION WEIGHT:${i}`, "Pounds", pilotWeightInPounds);
-                    } else {
-                        await SimVar.SetSimVarValue(`PAYLOAD STATION WEIGHT:${i}`, "Pounds", currentPayloadInPounds / 4);
-                    }
-                }
-
-                updateView();
-            }
-        };
-
         mcdu.leftInputDelay[4] = () => {
             return mcdu.getDelayBasic();
         };
         mcdu.onLeftInput[4] = async () => {
             if (currentBlockFuel) {
-                const outerTankCapacity = 200; // Left and Right
-                const innerTankCapacity = 1800; // Left and Right
-                const centerTankCapacity = 3000; // Center
-
-                const fuelWeightPerGallon = SimVar.GetSimVarValue("FUEL WEIGHT PER GALLON", "kilograms");
-                let currentBlockFuelInGallons = +currentBlockFuel / +fuelWeightPerGallon;
-
-                const outerTankFill = Math.min(outerTankCapacity, currentBlockFuelInGallons / 2);
-                await SimVar.SetSimVarValue(`FUEL TANK LEFT AUX QUANTITY`, "Gallons", outerTankFill);
-                await SimVar.SetSimVarValue(`FUEL TANK RIGHT AUX QUANTITY`, "Gallons", outerTankFill);
-                currentBlockFuelInGallons -= outerTankFill * 2;
-
-                const innerTankFill = Math.min(innerTankCapacity, currentBlockFuelInGallons / 2);
-                await SimVar.SetSimVarValue(`FUEL TANK LEFT MAIN QUANTITY`, "Gallons", innerTankFill);
-                await SimVar.SetSimVarValue(`FUEL TANK RIGHT MAIN QUANTITY`, "Gallons", innerTankFill);
-                currentBlockFuelInGallons -= innerTankFill * 2;
-
-                const centerTankFill = Math.min(centerTankCapacity, currentBlockFuelInGallons);
-                await SimVar.SetSimVarValue(`FUEL TANK CENTER QUANTITY`, "Gallons", centerTankFill);
-                currentBlockFuelInGallons -= centerTankFill;
-
-                mcdu.updateFuelVars();
+                loadFuel(mcdu);
 
                 updateView();
             }
@@ -236,5 +152,232 @@ class CDUAocOfpData {
         mcdu.onLeftInput[5] = () => {
             CDUAocMenu.ShowPage(mcdu);
         };
+
+        mcdu.onNextPage = () => {
+            CDUAocOfpData.ShowPage2(mcdu);
+        };
     }
+
+    static ShowPage2(mcdu) {
+        mcdu.clearDisplay();
+        mcdu.page.Current = mcdu.page.AOCOfpData2;
+        mcdu.activeSystem = 'ATSU';
+
+        setEstimatedBaggagePayload(mcdu);
+
+        let payload = "_____[color]amber";
+        let estZfw = "__._[color]amber";
+        let zfwcg = "__._[color]amber";
+        let fwdBag = "__._[color]amber";
+        let rearBag = "__._[color]amber";
+        let noPax = "---[color]white";
+        let requestButton = "SEND*[color]cyan";
+
+        if (mcdu.simbrief.sendStatus !== "READY" && mcdu.simbrief.sendStatus !== "DONE") {
+            requestButton = "SEND [color]cyan";
+        }
+
+        const currentZfwcg = calculateZfwCg(mcdu);
+        if (currentZfwcg) {
+            const cgColor = currentZfwcg >= 16 && currentZfwcg <= 40 ? 'green' : 'red';
+            zfwcg = `{small}${currentZfwcg.toFixed(1)}{end}[color]${cgColor}`;
+        }
+
+        const currentEstZfw = mcdu.aocWeight.estZfw || mcdu.simbrief.estZfw;
+        if (currentEstZfw) {
+            const size = mcdu.aocWeight.estZfw ? 'big' : 'small';
+            estZfw = `{${size}}${formatWeightInTons(currentEstZfw)}{end}[color]cyan`;
+        }
+
+        const currentNoPax = mcdu.aocWeight.noPax || mcdu.simbrief.paxCount;
+        if (currentNoPax) {
+            const size = mcdu.aocWeight.noPax ? 'big' : 'small';
+            noPax = `{${size}}${currentNoPax}{end}[color]cyan`;
+        }
+
+        const currentPayload = mcdu.aocWeight.payload || mcdu.simbrief.payload;
+        if (currentPayload) {
+            const size = mcdu.aocWeight.payload ? 'big' : 'small';
+            payload = `{${size}}${currentPayload}{end}[color]cyan`;
+        }
+
+        const currentfwdBag = mcdu.aocWeight.fwdBag || mcdu.aocWeight.estFwdBag;
+        if (currentfwdBag) {
+            const size = mcdu.aocWeight.fwdBag ? 'big' : 'small';
+            fwdBag = `{${size}}${Math.round(currentfwdBag)}{end}[color]cyan`;
+        }
+        const currentRearBag = mcdu.aocWeight.rearBag || mcdu.aocWeight.estRearBag;
+        if (currentRearBag) {
+            const size = mcdu.aocWeight.rearBag ? 'big' : 'small';
+            rearBag = `{${size}}${Math.round(currentRearBag)}{end}[color]cyan`;
+        }
+
+        function updateView() {
+            if (mcdu.page.Current === mcdu.page.AOCOfpData2) {
+                CDUAocOfpData.ShowPage2(mcdu);
+            }
+        }
+
+        const display = [
+            ["OFP WT/BAL", "2", "2", "AOC"],
+            ["PAYLOAD", "ZFW"],
+            [payload, estZfw],
+            ["FWD BAG", "ZFWCG"],
+            [fwdBag, zfwcg],
+            ["REAR BAG", "NO PAX"],
+            [rearBag, noPax],
+            [""],
+            ["", "PRINT*[color]inop"],
+            ["PAYLOAD", "OFP REQUEST[color]cyan"],
+            ["*LOAD[color]cyan", requestButton],
+            [""],
+            ["<AOC MENU"]
+        ];
+        mcdu.setTemplate(display);
+
+        mcdu.rightInputDelay[4] = () => {
+            return mcdu.getDelayBasic();
+        };
+        mcdu.onRightInput[4] = () => {
+            getSimBriefOfp(mcdu, updateView);
+        };
+
+        mcdu.leftInputDelay[4] = () => {
+            return mcdu.getDelayBasic();
+        };
+        mcdu.onLeftInput[4] = async () => {
+            if (currentPayload) {
+                await loadBaggagePayload(mcdu);
+
+                updateView();
+            }
+        };
+
+        mcdu.onPrevPage = () => {
+            CDUAocOfpData.ShowPage(mcdu);
+        };
+    }
+}
+
+function setEstimatedBaggagePayload(mcdu) {
+    const currentPayload = mcdu.aocWeight.payload || mcdu.simbrief.payload;
+    const {forwardBaggageWeight, rearBaggageWeight} = distributeBaggagePayload(currentPayload);
+
+    mcdu.aocWeight.estFwdBag = forwardBaggageWeight;
+    mcdu.aocWeight.estRearBag = rearBaggageWeight;
+}
+
+async function loadBaggagePayload(mcdu) {
+    const FORWARD_BAGGAGE_INDEX = 3 + 1; // Value from flight_model.cfg
+    const REAR_BAGGAGE_INDEX = 5 + 1; // Value from flight_model.cfg
+
+    const currentfwdBag = mcdu.aocWeight.fwdBag || mcdu.aocWeight.estFwdBag;
+    const currentRearBag = mcdu.aocWeight.rearBag || mcdu.aocWeight.estRearBag;
+
+    const payloadCount = SimVar.GetSimVarValue("PAYLOAD STATION COUNT", "number");
+    for (let i = 1; i <= payloadCount; i++) {
+        switch (i) {
+            case FORWARD_BAGGAGE_INDEX: {
+                await SimVar.SetSimVarValue(`PAYLOAD STATION WEIGHT:${i}`, "kilograms", currentfwdBag);
+                break;
+            }
+            case REAR_BAGGAGE_INDEX: {
+                await SimVar.SetSimVarValue(`PAYLOAD STATION WEIGHT:${i}`, "kilograms", currentRearBag);
+                break;
+            }
+            default: {
+                await SimVar.SetSimVarValue(`PAYLOAD STATION WEIGHT:${i}`, "kilograms", 0);
+                break;
+            }
+        }
+    }
+
+    return;
+}
+
+async function loadFuel(mcdu) {
+    const currentBlockFuel = mcdu.aocWeight.blockFuel || mcdu.simbrief.blockFuel;
+
+    const outerTankCapacity = 200; // Left and Right // Value from flight_model.cfg
+    const innerTankCapacity = 1800; // Left and Right // Value from flight_model.cfg
+    const centerTankCapacity = 3000; // Center // Value from flight_model.cfg
+
+    const fuelWeightPerGallon = SimVar.GetSimVarValue("FUEL WEIGHT PER GALLON", "kilograms");
+    let currentBlockFuelInGallons = +currentBlockFuel / +fuelWeightPerGallon;
+
+    const outerTankFill = Math.min(outerTankCapacity, currentBlockFuelInGallons / 2);
+    await SimVar.SetSimVarValue(`FUEL TANK LEFT AUX QUANTITY`, "Gallons", outerTankFill);
+    await SimVar.SetSimVarValue(`FUEL TANK RIGHT AUX QUANTITY`, "Gallons", outerTankFill);
+    currentBlockFuelInGallons -= outerTankFill * 2;
+
+    const innerTankFill = Math.min(innerTankCapacity, currentBlockFuelInGallons / 2);
+    await SimVar.SetSimVarValue(`FUEL TANK LEFT MAIN QUANTITY`, "Gallons", innerTankFill);
+    await SimVar.SetSimVarValue(`FUEL TANK RIGHT MAIN QUANTITY`, "Gallons", innerTankFill);
+    currentBlockFuelInGallons -= innerTankFill * 2;
+
+    const centerTankFill = Math.min(centerTankCapacity, currentBlockFuelInGallons);
+    await SimVar.SetSimVarValue(`FUEL TANK CENTER QUANTITY`, "Gallons", centerTankFill);
+    currentBlockFuelInGallons -= centerTankFill;
+
+    mcdu.updateFuelVars();
+}
+
+/**
+ * Calculate the baggage payload distribution to achieve target CG
+ * @param {number} payload in pound
+ * @param {number} percentMacTarget Target %MAC CG / 100
+ */
+function distributeBaggagePayload(payload = 0, percentMacTarget = 0.2678) {
+    const leMacZ = -5.233333; // Value from Debug Weight
+    const macSize = 14.0623; // Value from Debug Aircraft Sim Tunning
+    const FORWARD_BAGGAGE_POSITION = 21.825772; // Value from flight_model.cfg
+    const REAR_BAGGAGE_POSITION = -35.825745; // Value from flight_model.cfg
+
+    const cgTarget = leMacZ - (macSize * percentMacTarget);
+
+    const forwardBaggageRelPos = Math.abs(FORWARD_BAGGAGE_POSITION - cgTarget);
+    const rearBaggageRelPos = Math.abs(REAR_BAGGAGE_POSITION - cgTarget);
+
+    const forwardBaggageWeight = (payload * rearBaggageRelPos) / (rearBaggageRelPos + forwardBaggageRelPos);
+    const rearBaggageWeight = (payload * forwardBaggageRelPos) / (forwardBaggageRelPos + rearBaggageRelPos);
+
+    return {forwardBaggageWeight, rearBaggageWeight};
+}
+
+/**
+ * Calculate %MAC ZWFCG based on Empty and Baggage weight only*
+ * TODO: Add passengers sections weight into account
+ */
+function calculateZfwCg(mcdu) {
+    const leMacZ = -5.233333; // Value from Debug Weight
+    const macSize = 14.0623; // Value from Debug Aircraft Sim Tunning
+
+    const EMPTY_AIRCRAFT_WEIGHT = 90400; // Value from flight_model.cfg
+    const EMPTY_AIRCRAFT_POSITION = -9; // Value from flight_model.cfg
+    const FORWARD_BAGGAGE_POSITION = 21.825772; // Value from flight_model.cfg
+    const REAR_BAGGAGE_POSITION = -35.825745; // Value from flight_model.cfg
+
+    const currentfwdBag = mcdu.aocWeight.fwdBag || mcdu.aocWeight.estFwdBag;
+    const currentRearBag = mcdu.aocWeight.rearBag || mcdu.aocWeight.estRearBag;
+
+    if (!currentfwdBag || !currentRearBag) {
+        return null;
+    }
+
+    const emptyAircraftMoment = EMPTY_AIRCRAFT_POSITION * EMPTY_AIRCRAFT_WEIGHT;
+    const forwardBaggageMoment = FORWARD_BAGGAGE_POSITION * currentfwdBag;
+    const rearBaggageMoment = REAR_BAGGAGE_POSITION * currentRearBag;
+
+    const totalMass = EMPTY_AIRCRAFT_WEIGHT + currentfwdBag + currentRearBag;
+    const totalMoment = emptyAircraftMoment + forwardBaggageMoment + rearBaggageMoment;
+
+    const cgPosition = totalMoment / totalMass;
+
+    const cgPositionToLemac = cgPosition - leMacZ;
+
+    const cgPercentMac = -100 * cgPositionToLemac / macSize;
+
+    console.log('cgPercentMac', cgPercentMac);
+
+    return cgPercentMac;
 }
