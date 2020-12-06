@@ -1,13 +1,46 @@
 Event	ID	Name			Wwise Object Path	Notes
-	176856600	Play_Asobo_A320_NEO_cchordloop			\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved\Play_Asobo_A320_NEO_cchordloop	
-	395471396	Play_Asobo_A320_NEO_cchordshort			\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved\Play_Asobo_A320_NEO_cchordshort	
-	3760147643	Play_Asobo_A320_NEO_panelrattle			\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved\Play_Asobo_A320_NEO_panelrattle	
+	176856600	Play_Asobo_A320_NEO_cchordloop			\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved2\Play_Asobo_A320_NEO_cchordloop	
+	183534372	Play_Asobo_A320_NEO_tinnyroll			\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved2\Play_Asobo_A320_NEO_tinnyroll	
+	395471396	Play_Asobo_A320_NEO_cchordshort			\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved2\Play_Asobo_A320_NEO_cchordshort	
+	906944676	Play_Asobo_A320_NEO_flapsmovement			\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved2\Play_Asobo_A320_NEO_flapsmovement	
+	1444282249	Play_Asobo_A320_NEO_nosetouch			\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved2\Play_Asobo_A320_NEO_nosetouch	
+	2297690375	Play_Asobo_A320_NEO_packextR			\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved2\Play_Asobo_A320_NEO_packextR	
+	2297690393	Play_Asobo_A320_NEO_packextL			\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved2\Play_Asobo_A320_NEO_packextL	
+	2304457653	Play_Asobo_A320_NEO_startcontactors			\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved2\Play_Asobo_A320_NEO_startcontactors	
+	3259572658	Play_Asobo_A320_NEO_startcontactorsdc			\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved2\Play_Asobo_A320_NEO_startcontactorsdc	
+	3760147643	Play_Asobo_A320_NEO_panelrattle			\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved2\Play_Asobo_A320_NEO_panelrattle	
+	3779303495	Play_Asobo_A320_NEO_cabfans			\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved2\Play_Asobo_A320_NEO_cabfans	
+
+State Group	ID	Name			Wwise Object Path	Notes
+	4185053780	VIEWPOINT			\aircraft\VIEWPOINT	
+
+State	ID	Name	State Group			Notes
+	438105790	OUTSIDE	VIEWPOINT			
+	748895195	None	VIEWPOINT			
+	3553349781	INSIDE	VIEWPOINT			
+
+Custom State	ID	Name	State Group	Owner		Notes
+	174856536	INSIDE	VIEWPOINT	\Actor-Mixer Hierarchy\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved2\packextL		
+	396169113	OUTSIDE	VIEWPOINT	\Actor-Mixer Hierarchy\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved2\cabin_fans		
+	800124845	OUTSIDE	VIEWPOINT	\Actor-Mixer Hierarchy\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved2\startcontactorsdc		
+	885969671	OUTSIDE	VIEWPOINT	\Actor-Mixer Hierarchy\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved2\panelrattle		
+	921562629	INSIDE	VIEWPOINT	\Actor-Mixer Hierarchy\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved2\packextR		
+	1002977873	OUTSIDE	VIEWPOINT	\Actor-Mixer Hierarchy\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved2\startcontactors		
 
 Game Parameter	ID	Name			Wwise Object Path	Notes
 	1649214721	SIMVAR_GROUND_VELOCITY			\simvar\physic\SIMVAR_GROUND_VELOCITY	Speed relative to the earths surface  Unit : Knots
+	2750389324	SIMVAR_TURB_ENG_N1			\simvar\engine\turbine\SIMVAR_TURB_ENG_N1	Turbine engine N1  Unit : Percent
 
 In Memory Audio	ID	Name	Audio source file		Wwise Object Path	Notes	Data Size
-	323412330	Alt_01	H:\sound\.cache\Windows\SFX\Alt_BFD87124.wem		\Actor-Mixer Hierarchy\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved\Alt_01		24689
-	474126494	panelrattle	H:\sound\.cache\Windows\SFX\panelrattle_1D8DE606.wem		\Actor-Mixer Hierarchy\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved\panelrattle		307365
-	550405798	Alt	H:\sound\.cache\Windows\SFX\Alt_1E8ECBBC.wem		\Actor-Mixer Hierarchy\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved\Alt		24621
+	37667999	startcontactors	H:\sound\.cache\Windows\SFX\startcontactors_1E8ECBBC.wem		\Actor-Mixer Hierarchy\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved2\startcontactors		26484
+	180034175	roll3	H:\sound\.cache\Windows\SFX\roll3_230994F0.wem		\Actor-Mixer Hierarchy\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved2\roll3		254309
+	192062817	packextL	H:\sound\.cache\Windows\SFX\packextL_89DF4604.wem		\Actor-Mixer Hierarchy\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved2\packextL		139188
+	269761499	cabin_fans	H:\sound\.cache\Windows\SFX\cabin_fans_E05F4F10.wem		\Actor-Mixer Hierarchy\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved2\cabin_fans		662088
+	323412330	Alt_01	H:\sound\.cache\Windows\SFX\Alt_2CE0EC90.wem		\Actor-Mixer Hierarchy\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved2\Alt_01		24689
+	353424367	packextR	H:\sound\.cache\Windows\SFX\packextR_239FE2FF.wem		\Actor-Mixer Hierarchy\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved2\packextR		136084
+	371384298	startcontactorsdc	H:\sound\.cache\Windows\SFX\startcontactorsdc_1E8ECBBC.wem		\Actor-Mixer Hierarchy\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved2\startcontactorsdc		139175
+	474126494	panelrattle	H:\sound\.cache\Windows\SFX\panelrattle_1D8DE606.wem		\Actor-Mixer Hierarchy\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved2\panelrattle		307365
+	550405798	Alt	H:\sound\.cache\Windows\SFX\Alt_1E8ECBBC.wem		\Actor-Mixer Hierarchy\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved2\Alt		24621
+	951136660	nosetouch	H:\sound\.cache\Windows\SFX\nosetouch_1E8ECBBC.wem		\Actor-Mixer Hierarchy\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved2\nosetouch		45308
+	991537739	flaps1	H:\sound\.cache\Windows\SFX\flaps1_47B5D948.wem		\Actor-Mixer Hierarchy\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved2\flaps1		333326
 

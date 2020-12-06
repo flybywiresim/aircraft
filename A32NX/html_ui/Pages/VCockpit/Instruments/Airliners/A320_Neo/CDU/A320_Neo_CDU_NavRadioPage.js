@@ -254,15 +254,15 @@ class CDUNavRadioPage {
         mcdu.setTemplate([
             ["RADIO NAV"],
             ["VOR1/FREQ", "FREQ/VOR2"],
-            [vor1FrequencyCell + "[color]blue", vor2FrequencyCell + "[color]blue"],
+            [vor1FrequencyCell + "[color]cyan", vor2FrequencyCell + "[color]cyan"],
             ["CRS", "CRS"],
-            [vor1CourseCell + "[color]blue", vor2CourseCell + "[color]blue"],
+            [vor1CourseCell + "[color]cyan", vor2CourseCell + "[color]cyan"],
             ["\xa0LS\xa0/FREQ"],
-            [ilsFrequencyCell + "[color]blue"],
+            [ilsFrequencyCell + "[color]cyan"],
             ["CRS"],
-            [ilsCourseCell + "[color]blue"],
+            [ilsCourseCell + "[color]cyan"],
             ["ADF1/FREQ", "FREQ/ADF2"],
-            [adf1FrequencyCell + "[color]blue", adf2FrequencyCell + "[color]blue"],
+            [adf1FrequencyCell + "[color]cyan", adf2FrequencyCell + "[color]cyan"],
             [""],
             [adf1BfoOption + "[color]inop", adf2BfoOption + "[color]inop"]
         ]);

@@ -9,6 +9,12 @@ class A32NX_LocalVarUpdater {
     constructor() {
         // Initial data for deltas
         this.lastFlapsPosition = SimVar.GetSimVarValue("TRAILING EDGE FLAPS LEFT PERCENT", "percent");
+        // track which compartment has gotten temperature initialization
+        this.initializedCabinTemp = {
+            "CKPT":false,
+            "FWD":false,
+            "AFT":false
+        };
 
         this.updaters = [
             {
@@ -37,19 +43,19 @@ class A32NX_LocalVarUpdater {
             {
                 varName: "L:A32NX_CKPT_TEMP",
                 type: "celsius",
-                selector: this._condTrimOutletSelector,
+                selector: this._condTrimOutletSelector.bind(this),
                 identifier: "CKPT"
             },
             {
                 varName: "L:A32NX_FWD_TEMP",
                 type: "celsius",
-                selector: this._condTrimOutletSelector,
+                selector: this._condTrimOutletSelector.bind(this),
                 identifier: "FWD"
             },
             {
                 varName: "L:A32NX_AFT_TEMP",
                 type: "celsius",
-                selector: this._condTrimOutletSelector,
+                selector: this._condTrimOutletSelector.bind(this),
                 identifier: "AFT"
             },
             {
@@ -96,7 +102,7 @@ class A32NX_LocalVarUpdater {
         let trimTemp = null;
 
         if (SimVar.GetSimVarValue("L:A32NX_AIRCOND_HOTAIR_TOGGLE", "Bool")) {
-            const airconKnobValue = SimVar.GetSimVarValue("L:A320_Neo_AIRCOND_LVL_" + _identifier, "Position(0-100)");
+            const airconKnobValue = SimVar.GetSimVarValue("L:A320_Neo_AIRCOND_LVL_" + _identifier, "number");
             trimTemp = (0.12 * airconKnobValue) + 18; // Map from knob range 0-100 to 18-30 degrees C
         } else {
             trimTemp = 18; // TODO replace placeholder with pack out temperature
@@ -106,15 +112,27 @@ class A32NX_LocalVarUpdater {
     }
 
     _condTrimOutletSelector(_compartment) {
-        // Uses outlet temperature of trim air valves to generate the cabin temperature
+        // Cabin initially has outside temperature
+        if (!this.initializedCabinTemp[_compartment]) {
+            this.initializedCabinTemp[_compartment] = true;
+
+            return Simplane.getAmbientTemperature();
+        }
+
+        // Use outlet temperature of trim air valves to generate the cabin temperature
         const currentCabinTemp = SimVar.GetSimVarValue("L:A32NX_" + _compartment + "_TEMP", "celsius");
         const trimTemp = SimVar.GetSimVarValue("L:A32NX_" + _compartment + "_TRIM_TEMP", "celsius");
 
         const deltaTemp = trimTemp - currentCabinTemp;
 
-        // variation depends on packflow
-        const cabinTempVariationSpeed = 0.0005 * (SimVar.GetSimVarValue("L:A32NX_KNOB_OVHD_AIRCOND_PACKFLOW_Position", "Position(0-2)") + 1);
+        // temperature variation depends on packflow and compartment size
+        let compartmentSizeModifier = 0.0001;
 
+        if (_compartment == "CKPT") {
+            compartmentSizeModifier = 0.0002;
+        }
+
+        const cabinTempVariationSpeed = compartmentSizeModifier * (SimVar.GetSimVarValue("L:A32NX_KNOB_OVHD_AIRCOND_PACKFLOW_Position", "number") + 1);
         const cabinTemp = currentCabinTemp + deltaTemp * cabinTempVariationSpeed;
 
         return cabinTemp;

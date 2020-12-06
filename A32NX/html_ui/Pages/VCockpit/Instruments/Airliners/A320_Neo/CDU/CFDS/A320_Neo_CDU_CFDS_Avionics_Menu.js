@@ -14,7 +14,7 @@ class CDUCfdsAvionicsMenu {
             [""],
             ["AIDS"],
             [""],
-            ["<RETURN[color]blue", "PRINT*[color]blue"]
+            ["<RETURN[color]cyan", "PRINT*[color]cyan"]
         ]);
 
         mcdu.leftInputDelay[5] = () => {
@@ -49,7 +49,7 @@ class CDUCfdsAvionicsMenu {
             [""],
             [""],
             [""],
-            ["<RETURN[color]blue", "PRINT*[color]blue"]
+            ["<RETURN[color]cyan", "PRINT*[color]cyan"]
         ]);
 
         mcdu.leftInputDelay[5] = () => {

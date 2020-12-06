@@ -16,25 +16,25 @@ class CDUAocRequestsAtis {
         ];
 
         if (store.formatID == 0) {
-            formatString = "PRINTER*[color]blue";
+            formatString = "PRINTER*[color]cyan";
         } else {
-            formatString = "MCDU*[color]blue";
+            formatString = "MCDU*[color]cyan";
         }
 
-        let arrivalText = "{ARRIVAL[color]blue";
-        let departureText = "{DEPARTURE[color]blue";
-        let enrouteText = "ENROUTE}[color]blue";
+        let arrivalText = "{ARRIVAL[color]cyan";
+        let departureText = "{DEPARTURE[color]cyan";
+        let enrouteText = "ENROUTE}[color]cyan";
 
         if (mcdu.flightPlanManager.getOrigin() && mcdu.flightPlanManager.getDestination()) {
             store['arrIcao'] = mcdu.flightPlanManager.getDestination().ident;
         }
 
         if (store.reqID == 0) {
-            arrivalText = "~ARRIVAL[color]blue";
+            arrivalText = "~ARRIVAL[color]cyan";
         } else if (store.reqID == 1) {
-            departureText = "~DEPARTURE[color]blue";
+            departureText = "~DEPARTURE[color]cyan";
         } else {
-            enrouteText = "ENROUTE~[color]blue";
+            enrouteText = "ENROUTE~[color]cyan";
         }
 
         let arrText;
@@ -49,7 +49,7 @@ class CDUAocRequestsAtis {
             mcdu.setTemplate([
                 ["AOC ATIS REQUEST"],
                 ["AIRPORT", "↓FORMAT FOR"],
-                [`${arrText}[color]blue`, formatString],
+                [`${arrText}[color]cyan`, formatString],
                 ["", "", "-------SELECT ONE-------"],
                 [arrivalText, enrouteText],
                 [""],
@@ -59,7 +59,7 @@ class CDUAocRequestsAtis {
                 [""],
                 ["{TERMINATE AUTO UPDATE[color]inop"],
                 ["RETURN TO", `${store["sendStatus"]}`],
-                ["<AOC MENU", "SEND*[color]blue"]
+                ["<AOC MENU", "SEND*[color]cyan"]
             ]);
         };
         updateView();

@@ -41,34 +41,33 @@ class A32NX_BrakeTemp {
     }
 
     constructor() {
-        console.log("A32NX_BrakeTemp constructed");
+        this.initializedAmbientBrakeTemp = false;
     }
 
-    init() {
-        console.log("A32NX_BrakeTemp init");
-
-        const ambientTemperature = SimVar.GetSimVarValue("AMBIENT TEMPERATURE", "celsius");
-
-        // Initial brake temperatures
-
-        SimVar.SetSimVarValue("L:A32NX_BRAKE_TEMPERATURE_1", "celsius", ambientTemperature);
-        SimVar.SetSimVarValue("L:A32NX_BRAKE_TEMPERATURE_2", "celsius", ambientTemperature);
-        SimVar.SetSimVarValue("L:A32NX_BRAKE_TEMPERATURE_3", "celsius", ambientTemperature);
-        SimVar.SetSimVarValue("L:A32NX_BRAKE_TEMPERATURE_4", "celsius", ambientTemperature);
-    }
+    init() { }
 
     update(_deltaTime) {
+        let currentBrakeTemps = [0,0,0,0];
+
+        if (!this.initializedAmbientBrakeTemp) {
+            const ambientTemperature = Simplane.getAmbientTemperature();
+
+            // Initial brake temperatures
+            currentBrakeTemps.fill(ambientTemperature);
+            this.initializedAmbientBrakeTemp = true;
+        } else {
+            currentBrakeTemps = [
+                SimVar.GetSimVarValue("L:A32NX_BRAKE_TEMPERATURE_1", "celsius"),
+                SimVar.GetSimVarValue("L:A32NX_BRAKE_TEMPERATURE_2", "celsius"),
+                SimVar.GetSimVarValue("L:A32NX_BRAKE_TEMPERATURE_3", "celsius"),
+                SimVar.GetSimVarValue("L:A32NX_BRAKE_TEMPERATURE_4", "celsius")
+            ];
+        }
+
         const currentBrakeLeft = SimVar.GetSimVarValue("BRAKE LEFT POSITION", "position 32k");
         const currentBrakeRight = SimVar.GetSimVarValue("BRAKE RIGHT POSITION", "position 32k");
 
-        const currentBrakeTemps = [
-            SimVar.GetSimVarValue("L:A32NX_BRAKE_TEMPERATURE_1", "celsius"),
-            SimVar.GetSimVarValue("L:A32NX_BRAKE_TEMPERATURE_2", "celsius"),
-            SimVar.GetSimVarValue("L:A32NX_BRAKE_TEMPERATURE_3", "celsius"),
-            SimVar.GetSimVarValue("L:A32NX_BRAKE_TEMPERATURE_4", "celsius")
-        ];
-
-        const ambientTemperature = SimVar.GetSimVarValue("AMBIENT TEMPERATURE", "celsius");
+        const ambientTemperature = Simplane.getAmbientTemperature();
         const airspeed = SimVar.GetSimVarValue("AIRSPEED TRUE", "Meters per second");
 
         const GearLeftExtended = SimVar.GetSimVarValue("GEAR LEFT POSITION", "Percent Over 100") >= 0.25;

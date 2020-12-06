@@ -17,6 +17,7 @@ class FMCMainDisplay extends BaseAirliners {
         this.costIndex = 0;
         this.lastUserInput = "";
         this.isDisplayingErrorMessage = false;
+        this.isDisplayingTypeTwoMessage = false;
         this.maxCruiseFL = 390;
         this.routeIndex = 0;
         this.coRoute = "";
@@ -103,6 +104,8 @@ class FMCMainDisplay extends BaseAirliners {
         this._fuelPredDone = false;
         this._fuelPlanningPhase = this._fuelPlanningPhases.PLANNING;
         this._blockFuelEntered = false;
+        /* CPDLC Fields */
+        this._cpdlcAtcCenter = "";
     }
 
     static approachTypeStringToIndex(approachType) {
@@ -127,7 +130,7 @@ class FMCMainDisplay extends BaseAirliners {
             color = "white";
         }
         this._title = content.split("[color]")[0];
-        this._titleElement.classList.remove("white", "blue", "yellow", "green", "red", "magenta", "inop");
+        this._titleElement.classList.remove("white", "cyan", "yellow", "green", "amber", "red", "magenta", "inop");
         this._titleElement.classList.add(color);
         this._titleElement.textContent = this._title;
     }
@@ -210,7 +213,7 @@ class FMCMainDisplay extends BaseAirliners {
                 color = "white";
             }
             const e = this._labelElements[row][col];
-            e.classList.remove("white", "blue", "yellow", "green", "red", "magenta", "inop");
+            e.classList.remove("white", "cyan", "yellow", "green", "amber", "red", "magenta", "inop");
             e.classList.add(color);
             label = label.split("[color]")[0];
         }
@@ -257,7 +260,7 @@ class FMCMainDisplay extends BaseAirliners {
                 color = "white";
             }
             const e = this._lineElements[row][col];
-            e.classList.remove("white", "blue", "yellow", "green", "red", "magenta", "inop");
+            e.classList.remove("white", "cyan", "yellow", "green", "amber", "red", "magenta", "inop");
             e.classList.add(color);
             content = content.split("[color]")[0];
         }
@@ -350,34 +353,33 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     clearUserInput() {
-        if (!this.isDisplayingErrorMessage) {
+        if (!this.isDisplayingErrorMessage && !this.isDisplayingTypeTwoMessage) {
             this.lastUserInput = this.inOut;
             this.inOut = "";
-            this._inOutElement.style.color = "#ffffff";
-            return this.lastUserInput;
-        } else {
-            return this.inOut;
+            this._inOutElement.className = "white";
         }
+        return this.lastUserInput;
     }
 
     tryClearOldUserInput() {
-        if (!this.isDisplayingErrorMessage) {
+        if (!this.isDisplayingErrorMessage && !this.isDisplayingTypeTwoMessage) {
             this.lastUserInput = "";
         }
+        this.tryShowMessage();
     }
 
-    showErrorMessage(message, color = "#ffffff") {
-        if (!this.isDisplayingErrorMessage && this.inOut) {
+    showErrorMessage(message, color = false) {
+        if (!this.isDisplayingErrorMessage && !this.isDisplayingTypeTwoMessage && this.inOut) {
             this.lastUserInput = this.inOut;
         }
         this.isDisplayingErrorMessage = true;
         this.inOut = message;
-        this._inOutElement.style.color = color;
+        this._inOutElement.className = color ? "amber" : "white";
     }
 
     /**
      * Returns true if an engine is running (FF > 0)
-     * @returns {number}
+     * @returns {boolean}
      */
     isAnEngineOn() {
         return Simplane.getEngineActive(0) || Simplane.getEngineActive(1);
@@ -385,7 +387,7 @@ class FMCMainDisplay extends BaseAirliners {
 
     /**
      * Returns true if all engines are running (FF > 0)
-     * @returns {number}
+     * @returns {boolean}
      */
     isAllEngineOn() {
         return Simplane.getEngineActive(0) && Simplane.getEngineActive(1);
@@ -1184,6 +1186,10 @@ class FMCMainDisplay extends BaseAirliners {
         this.v2Speed = 140;
     }
 
+    checkVSpeedDisagree(mcdu) {
+        return mcdu.v1Speed && mcdu.vRSpeed && mcdu.v2Speed && mcdu.v1Speed <= mcdu.vRSpeed && mcdu.vRSpeed <= mcdu.v2Speed;
+    }
+
     trySetV1Speed(s) {
         if (!/^\d+$/.test(s)) {
             this.showErrorMessage("FORMAT ERROR");
@@ -1195,7 +1201,7 @@ class FMCMainDisplay extends BaseAirliners {
                 this.v1Speed = v;
                 SimVar.SetSimVarValue("L:AIRLINER_V1_SPEED", "Knots", this.v1Speed);
                 if ((v > SimVar.GetSimVarValue("L:AIRLINER_VR_SPEED", "Knots") || v > SimVar.GetSimVarValue("L:AIRLINER_V2_SPEED", "Knots")) && SimVar.GetSimVarValue("L:AIRLINER_VR_SPEED", "Knots") !== -1 && SimVar.GetSimVarValue("L:AIRLINER_V2_SPEED", "Knots") !== -1) {
-                    this.addTypeTwoMessage("V1/VR/V2 DISAGREE", "#ff9a00");
+                    this.addTypeTwoMessage("V1/VR/V2 DISAGREE", true, this.checkVSpeedDisagree);
                 }
                 return true;
             }
@@ -1217,7 +1223,7 @@ class FMCMainDisplay extends BaseAirliners {
                 this.vRSpeed = v;
                 SimVar.SetSimVarValue("L:AIRLINER_VR_SPEED", "Knots", this.vRSpeed);
                 if ((v < SimVar.GetSimVarValue("L:AIRLINER_V1_SPEED", "Knots") || v > SimVar.GetSimVarValue("L:AIRLINER_V2_SPEED", "Knots")) && SimVar.GetSimVarValue("L:AIRLINER_V1_SPEED", "Knots") !== -1 && SimVar.GetSimVarValue("L:AIRLINER_V2_SPEED", "Knots") !== -1) {
-                    this.addTypeTwoMessage("V1/VR/V2 DISAGREE", "#ff9a00");
+                    this.addTypeTwoMessage("V1/VR/V2 DISAGREE", true, this.checkVSpeedDisagree);
                 }
                 return true;
             }
@@ -1239,7 +1245,7 @@ class FMCMainDisplay extends BaseAirliners {
                 this.v2Speed = v;
                 SimVar.SetSimVarValue("L:AIRLINER_V2_SPEED", "Knots", this.v2Speed);
                 if ((v < SimVar.GetSimVarValue("L:AIRLINER_V1_SPEED", "Knots") || v < SimVar.GetSimVarValue("L:AIRLINER_VR_SPEED", "Knots")) && SimVar.GetSimVarValue("L:AIRLINER_V1_SPEED", "Knots") !== -1 && SimVar.GetSimVarValue("L:AIRLINER_VR_SPEED", "Knots") !== -1) {
-                    this.addTypeTwoMessage("V1/VR/V2 DISAGREE", "#ff9a00");
+                    this.addTypeTwoMessage("V1/VR/V2 DISAGREE", true, this.checkVSpeedDisagree);
                 }
                 return true;
             }
@@ -1414,7 +1420,7 @@ class FMCMainDisplay extends BaseAirliners {
         if (SimVar.GetSimVarValue("PLANE ALTITUDE", "feet") < 10000) {
             speed = Math.min(speed, 250);
         }
-        return speed;
+        return Math.min(speed, this.getSpeedConstraint());
     }
 
     getCrzManagedSpeed() {
@@ -1424,7 +1430,7 @@ class FMCMainDisplay extends BaseAirliners {
         if (SimVar.GetSimVarValue("PLANE ALTITUDE", "feet") < 10000) {
             speed = Math.min(speed, 250);
         }
-        return speed;
+        return Math.min(speed, this.getSpeedConstraint(false));
     }
 
     getDesManagedSpeed() {
@@ -1437,7 +1443,7 @@ class FMCMainDisplay extends BaseAirliners {
         if (SimVar.GetSimVarValue("PLANE ALTITUDE", "feet") < 10000) {
             speed = Math.min(speed, 250);
         }
-        return speed;
+        return Math.min(speed, this.getSpeedConstraint(false));
     }
 
     getFlapApproachSpeed(useCurrentWeight = true) {
@@ -1739,13 +1745,19 @@ class FMCMainDisplay extends BaseAirliners {
             return false;
         }
         const phase = Simplane.getCurrentFlightPhase();
-        if (fl < Math.floor(Math.max(0, Simplane.getAutoPilotDisplayedAltitudeLockValue()) / 100) && phase === FlightPhase.FLIGHT_PHASE_CRUISE) {
+        const selFl = Math.floor(Math.max(0, Simplane.getAutoPilotSelectedAltitudeLockValue("feet")) / 100);
+        if (fl < selFl && phase === FlightPhase.FLIGHT_PHASE_CLIMB) {
             this.showErrorMessage(this.defaultInputErrorMessage);
             return false;
         }
         if (fl > Math.floor(Simplane.getAltitude() / 100) && phase > FlightPhase.FLIGHT_PHASE_CRUISE) {
             this.showErrorMessage("ENTRY OUT OF RANGE");
             return false;
+        }
+        if (fl < selFl && fl < 10 && phase === FlightPhase.FLIGHT_PHASE_CLIMB || phase === FlightPhase.FLIGHT_PHASE_CRUISE) {
+            this.cruiseFlightLevel = selFl;
+            this._cruiseEntered = true;
+            return true;
         }
         if (fl > 0 && fl <= this.maxCruiseFL) {
             this.cruiseFlightLevel = fl;
@@ -2208,9 +2220,14 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     setPerfApprTransAlt(s) {
-        const value = parseFloat(s);
-        if (isFinite(value) && value > 0 && value < 60000) {
-            this.perfApprTransAlt = value;
+        if (!/^\d+$/.test(s)) {
+            this.showErrorMessage("FORMAT ERROR");
+            return false;
+        }
+        const v = parseInt(s);
+        if (isFinite(v) && v > 0) {
+            this.perfApprTransAlt = v;
+            SimVar.SetSimVarValue("L:AIRLINER_APPR_TRANS_ALT", "Number", v);
             return true;
         }
         this.showErrorMessage(this.defaultInputErrorMessage);
@@ -2819,10 +2836,11 @@ class FMCMainDisplay extends BaseAirliners {
         if (this.inOut === FMCMainDisplay.clrValue) {
             this.inOut = "";
         }
-        if (this.isDisplayingErrorMessage) {
+        if (this.isDisplayingErrorMessage || this.isDisplayingTypeTwoMessage) {
             this.inOut = this.lastUserInput;
-            this._inOutElement.style.color = "#ffffff";
+            this._inOutElement.className = "white";
             this.isDisplayingErrorMessage = false;
+            this.isDisplayingTypeTwoMessage = false;
         }
     }
 
@@ -2875,6 +2893,8 @@ class FMCMainDisplay extends BaseAirliners {
             ];
         }
         this._inOutElement = this.getChildById("in-out");
+        this._inOutElement.style.removeProperty("color");
+        this._inOutElement.className = "white";
         this.onMenu = () => {
             FMCMainDisplayPages.MenuPage(this);
         };
@@ -2901,14 +2921,16 @@ class FMCMainDisplay extends BaseAirliners {
                 this.inOut = FMCMainDisplay.clrValue;
             } else if (this.inOut === FMCMainDisplay.clrValue) {
                 this.inOut = "";
-            } else if (this.isDisplayingErrorMessage) {
+            } else if (this.isDisplayingErrorMessage || this.isDisplayingTypeTwoMessage) {
                 this.tryRemoveMessage();
                 this.inOut = this.lastUserInput;
-                this._inOutElement.style.color = "#ffffff";
+                this._inOutElement.className = "white";
                 this.isDisplayingErrorMessage = false;
+                this.isDisplayingTypeTwoMessage = false;
             } else {
                 this.inOut = this.inOut.slice(0, -1);
             }
+            this.tryShowMessage();
         };
         this.cruiseFlightLevel = SimVar.GetGameVarValue("AIRCRAFT CRUISE ALTITUDE", "feet");
         this.cruiseFlightLevel /= 100;
@@ -2934,12 +2956,9 @@ class FMCMainDisplay extends BaseAirliners {
                 });
                 const callback = () => {
                     this.flightPlanManager.createNewFlightPlan();
-                    this._computeV1Speed();
-                    this._computeVRSpeed();
-                    this._computeV2Speed();
-                    SimVar.SetSimVarValue("L:AIRLINER_V1_SPEED", "Knots", this.v1Speed);
-                    SimVar.SetSimVarValue("L:AIRLINER_V2_SPEED", "Knots", this.v2Speed);
-                    SimVar.SetSimVarValue("L:AIRLINER_VR_SPEED", "Knots", this.vRSpeed);
+                    SimVar.SetSimVarValue("L:AIRLINER_V1_SPEED", "Knots", NaN);
+                    SimVar.SetSimVarValue("L:AIRLINER_V2_SPEED", "Knots", NaN);
+                    SimVar.SetSimVarValue("L:AIRLINER_VR_SPEED", "Knots", NaN);
                     const cruiseAlt = Math.floor(this.flightPlanManager.cruisingAltitude / 100);
                     console.log("FlightPlan Cruise Override. Cruising at FL" + cruiseAlt + " instead of default FL" + this.cruiseFlightLevel);
                     if (cruiseAlt > 0) {
@@ -3190,7 +3209,7 @@ class FMCMainDisplay extends BaseAirliners {
                 const val = this.inOut;
                 if (val === "") {
                     this.inOut = "-";
-                } else if (val !== FMCMainDisplay.clrValue && !this.isDisplayingErrorMessage) {
+                } else if (val !== FMCMainDisplay.clrValue && (!this.isDisplayingErrorMessage || !this.isDisplayingTypeTwoMessage)) {
                     if (val.slice(-1) === "-") {
                         this.inOut = this.inOut.slice(0, -1) + "+";
                     } else if (val.slice(-1) === "+") {

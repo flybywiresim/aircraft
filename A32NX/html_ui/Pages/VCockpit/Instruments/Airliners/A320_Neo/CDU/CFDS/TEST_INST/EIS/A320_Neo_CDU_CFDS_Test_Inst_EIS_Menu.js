@@ -16,7 +16,7 @@ class CDU_CFDS_Test_Inst_EIS_Menu {
             [""],
             ["<DUMP BITE MEMORY[color]inop"],
             [""],
-            ["<RETURN[color]blue"]
+            ["<RETURN[color]cyan"]
         ]);
 
         mcdu.leftInputDelay[5] = () => {

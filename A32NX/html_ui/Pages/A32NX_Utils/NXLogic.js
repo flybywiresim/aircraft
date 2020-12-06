@@ -78,7 +78,7 @@ class NXLogic_ConfirmNode {
             }
         } else {
             if (value) {
-                this._timer = null;
+                this._timer = 0;
             } else if (this._timer > 0) {
                 this._timer = Math.max(this._timer - _deltaTime / 1000, 0);
                 this._previousValue = value;
@@ -91,6 +91,9 @@ class NXLogic_ConfirmNode {
         }
         this._previousValue = value;
         return value;
+    }
+    read() {
+        return this._previousValue;
     }
 }
 

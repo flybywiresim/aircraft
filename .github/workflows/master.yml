@@ -13,7 +13,6 @@ jobs:
       MASTER_PRE_RELEASE_ID: 32243965
       MASTER_PRE_RELEASE_TAG: vmaster
       MASTER_ZIP_NAME: A32NX-master.zip
-      MOD_FOLDER_NAME: A32NX
       BUILD_DIR_NAME: vmaster
     steps:
       - name: Checkout source
@@ -22,23 +21,12 @@ jobs:
         run: echo "BUILT_DATE_TIME=$(date -u -Iseconds)" >> $GITHUB_ENV
       - name: Build A32NX
         run: |
-          npm install
-          npm run build
-
-          echo $( \
-            jq -n \
-              --arg built '${{ env.BUILT_DATE_TIME }}' \
-              --arg ref '${{ github.ref }}' \
-              --arg sha '${{ github.sha }}' \
-              --arg actor '${{ github.actor }}' \
-              --arg event_name '${{ github.event_name }}' \
-              '{built: $built, ref: $ref, sha: $sha, actor: $actor, event_name: $event_name}' \
-          ) > ./${{ env.MOD_FOLDER_NAME }}/build_info.json
+          ./scripts/dev-env/run.sh ./scripts/setup.sh
+          ./scripts/dev-env/run.sh ./scripts/build.sh
       - name: Build ZIP file
         run: |
           mkdir ./${{ env.BUILD_DIR_NAME }}
-          cp ./${{ env.MOD_FOLDER_NAME }}/build_info.json ./${{ env.BUILD_DIR_NAME }}/build_info.json
-          zip -r ./${{ env.BUILD_DIR_NAME }}/${{ env.MASTER_ZIP_NAME }} ./${{ env.MOD_FOLDER_NAME }}/
+          zip -r ./${{ env.BUILD_DIR_NAME }}/${{ env.MASTER_ZIP_NAME }} ./A32NX/
       - name: Get and delete master pre-release zip asset
         run: |
           echo 'checking for first release asset...'

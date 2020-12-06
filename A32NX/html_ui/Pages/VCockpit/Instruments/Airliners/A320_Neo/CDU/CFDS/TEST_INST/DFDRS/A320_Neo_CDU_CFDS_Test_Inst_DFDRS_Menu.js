@@ -14,7 +14,7 @@ class CDU_CFDS_Test_Inst_DFDRS_Menu {
             ["TROUBLE SHOOT[color]inop", "GROUND[color]inop"],
             ["<DATA[color]inop", "REPORT>[color]inop"],
             ["", "SPECIFIC[color]inop"],
-            ["<RETURN[color]blue", "DATA>[color]inop"]
+            ["<RETURN[color]cyan", "DATA>[color]inop"]
         ]);
 
         mcdu.leftInputDelay[5] = () => {
