@@ -12,13 +12,13 @@ class CDUInitPage {
         let cruiseFlTemp = "-----|---°";
         let alignOption;
         let tropo = "{small}36090{end}[color]cyan";
-        let requestButton = "REQUEST*[color]red";
-        let requestButtonLabel = "INIT [color]red";
+        let requestButton = "REQUEST*[color]amber";
+        let requestButtonLabel = "INIT [color]amber";
         let requestEnable = true;
 
         if (mcdu.simbrief.sendStatus === "REQUESTING") {
             requestEnable = false;
-            requestButton = "REQUEST [color]red";
+            requestButton = "REQUEST [color]amber";
         }
 
         if (mcdu.flightPlanManager.getOrigin() && mcdu.flightPlanManager.getOrigin().ident) {
@@ -122,7 +122,7 @@ class CDUInitPage {
         };
 
         if (mcdu.tropo) {
-            tropo = mcdu.tropo + "[color]blue";
+            tropo = mcdu.tropo + "[color]cyan";
         }
         mcdu.onRightInput[4] = (value) => {
             if (mcdu.tryUpdateTropo(value)) {

@@ -145,6 +145,9 @@ const getSimBriefOfp = (mcdu, updateView) => {
             mcdu.simbrief["blockFuel"] = data.fuel.plan_ramp;
             mcdu.simbrief["payload"] = data.weights.payload;
             mcdu.simbrief["estZfw"] = data.weights.est_zfw;
+            mcdu.simbrief["paxCount"] = data.weights.pax_count;
+            mcdu.simbrief["paxWeight"] = data.weights.pax_weight;
+            mcdu.simbrief["cargo"] = data.weights.cargo;
             mcdu.simbrief["costIndex"] = data.general.costindex;
             mcdu.simbrief["navlog"] = data.navlog.fix;
             mcdu.simbrief["icao_airline"] = typeof data.general.icao_airline === 'string' ? data.general.icao_airline : "";

@@ -4,7 +4,7 @@ class CDUAocMenu {
         mcdu.setTemplate([
             ["AOC MENU"],
             [""],
-            ["<INIT/PRES FLT", "FREE TEXT>"],
+            ["<INIT/PRES", "FREE TEXT>"],
             ["", "RECEIVED"],
             ["<WX REQUEST", "MESSAGES>"],
             ["", "SENT"],
