@@ -1,0 +1,18 @@
+{
+  "models": [
+    {
+      "gltf": "model/a320-interior/A320_NEO_INTERIOR_LOD00.gltf",
+      "bin": "model/a320-interior/A320_NEO_INTERIOR_LOD00.bin",
+      "output": {
+        "gltf": "A32NX/SimObjects/AirPlanes/Asobo_A320_NEO/model/A320_NEO_INTERIOR_LOD00.gltf",
+        "bin": "A32NX/SimObjects/AirPlanes/Asobo_A320_NEO/model/A320_NEO_INTERIOR_LOD00.bin"
+      },
+      "additions": [
+        {
+          "gltf": "model/efb/flypad.gltf",
+          "bin": "model/efb/flypad.bin"
+        }
+      ]
+    }
+  ]
+}
