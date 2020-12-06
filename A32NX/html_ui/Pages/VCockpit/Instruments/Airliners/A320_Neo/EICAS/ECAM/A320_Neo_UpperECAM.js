@@ -347,44 +347,6 @@ var A320_Neo_UpperECAM;
                 }
             }
         }
-        getAPWarning(time) {
-            const count = time * 1000;
-            if (this.getCachedSimVar("AUTOPILOT MASTER", "Bool") == false) {
-                const timer = setTimeout(() => {
-                    SimVar.SetSimVarValue("L:A32NX_AP_DISCWARN", "Bool", true);
-                    SimVar.SetSimVarValue("L:Generic_Master_Warning_Active", "Bool", false);
-                }, count);
-                if (this.getCachedSimVar("L:A32NX_AP_DISCWARN", "Bool") != true) {
-                    SimVar.SetSimVarValue("L:Generic_Master_Warning_Active", "Bool", true);
-                    return true;
-                } else {
-                    clearTimeout(timer);
-                    return false;
-                }
-            } else {
-                SimVar.SetSimVarValue("L:A32NX_AP_DISCWARN", "Bool", false);
-            }
-        }
-        getATHRWarning(time) {
-            const count = time * 1000;
-            if (this.getCachedSimVar("AUTOTHROTTLE ACTIVE", "Bool") == false) {
-                SimVar.SetSimVarValue("L:A32NX_ATHR_DISC", "Bool", true);
-                const timer = setTimeout(() => {
-                    SimVar.SetSimVarValue("L:A32NX_ATHR_DISCWARN", "Bool", true);
-                    SimVar.SetSimVarValue("L:Generic_Master_Caution_Active", "Bool", false);
-                }, count);
-                if (this.getCachedSimVar("L:A32NX_ATHR_DISCWARN", "Bool") != true) {
-                    SimVar.SetSimVarValue("L:Generic_Master_Caution_Active", "Bool", true);
-                    return true;
-                } else {
-                    clearTimeout(timer);
-                    return false;
-                }
-            } else {
-                SimVar.SetSimVarValue("L:A32NX_ATHR_DISC", "Bool", false);
-                SimVar.SetSimVarValue("L:A32NX_ATHR_DISCWARN", "Bool", false);
-            }
-        }
         init() {
             this.enginePanel = new A320_Neo_UpperECAM.EnginePanel(this, "EnginesPanel");
             this.infoTopPanel = new A320_Neo_UpperECAM.InfoTopPanel(this, "InfoTopPanel");
@@ -1041,22 +1003,6 @@ var A320_Neo_UpperECAM;
                         style: "InfoSpecial",
                         important: true,
                         isActive: () => this.showLandingInhibit,
-                    },
-                    {
-                        message: "AP OFF",
-                        style: "fail-3",
-                        important: true,
-                        isActive: () => {
-                            return (this.getAPWarning(3));
-                        }
-                    },
-                    {
-                        message: "A/THR OFF",
-                        style: "fail-2",
-                        important: true,
-                        isActive: () => {
-                            return (this.getATHRWarning(3));
-                        }
                     },
 
                     //Secondary failures
