@@ -54,7 +54,8 @@ class CDUAvailableArrivalsPage {
                             for (let j = 0; j < arrival.runwayTransitions.length; j++) {
                                 const runwayTransition = arrival.runwayTransitions[j];
                                 if (runwayTransition) {
-                                    if (runwayTransition.name.indexOf(selectedRunway) != -1) {
+                                    // Check if selectedRunway matches a transition on the approach (and also checks for Center runways)
+                                    if (runwayTransition.name.match("^RW" + selectedRunway + "(C)*$")) {
                                         matchingArrivals.push({ arrival: arrival, arrivalIndex: i });
                                     }
                                 }
@@ -176,7 +177,7 @@ class CDUAvailableArrivalsPage {
             mcdu.onUp = () => {
                 pageCurrent++;
                 if (starSelection) {
-                    pageCurrent = Math.min(pageCurrent, airportInfo.arrivals.length - 3);
+                    pageCurrent = Math.min(pageCurrent, airportInfo.arrivals.length - 2);
                 } else {
                     pageCurrent = Math.min(pageCurrent, airportInfo.approaches.length - 3);
                 }
@@ -283,7 +284,7 @@ class CDUAvailableArrivalsPage {
             };
             mcdu.onUp = () => {
                 pageCurrent++;
-                pageCurrent = Math.min(pageCurrent, airportInfo.approaches.length - 3);
+                pageCurrent = Math.min(pageCurrent, selectedApproach.transitions.length - 3);
                 if (pageCurrent < 0) {
                     pageCurrent = 0;
                 }
