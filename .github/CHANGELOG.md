@@ -134,6 +134,7 @@
 1. [PFD] Added vR indication - @MisterChocker (Leon)
 1. [MFD] Corrected icon for the Decel point on flightplan - @LoungeFlyZ (Chris Johnson)
 1. [ND] Update ND to only show Mode Changed when mode button is used - @ilyeshammadi (Ilyes Hammadi)
+1. [TCAS] Implement first iteration of TCAS - @lukecologne (luke)
 1. [ANIMATIONS] Desynced the wiper animations - @pepperoni505 (pepperoni505), @lukecologne (lukecologne)
 
 ## 0.4.0
