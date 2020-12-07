@@ -1,7 +1,7 @@
 import React from 'react';
 import FlightWidget from "./dashboardWidgets/FlightWidget";
 import WeatherWidget from "./dashboardWidgets/WeatherWidget";
-import { MapX } from "./map/Map";
+import Map from "@flybywiresim/map";
 
 type DashboardWidgetProps = {
     departingAirport: string,
@@ -50,7 +50,7 @@ class DashboardWidget extends React.Component<DashboardWidgetProps, DashboardWid
                 <WeatherWidget name='dest' editIcao="yes" icao={this.props.arrivingAirport} />
 
                 <div className="map-widget">
-                    <MapX currentFlight="" disableSearch={true} disableInfo={true} />
+                    <Map currentFlight="" disableSearch={false} disableInfo={false} />
                 </div>
             </div>
         );
