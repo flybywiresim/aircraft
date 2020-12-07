@@ -25,7 +25,13 @@ class CDUFuelPredPage {
         let zfwCgCell = (" __._");
         let zfwColor = "[color]amber";
         mcdu.onRightInput[2] = async (value) => {
-            if (await mcdu.trySetZeroFuelWeightZFWCG(value)) {
+            if (value === "") {
+                mcdu.updateZfwVars();
+                mcdu.sendDataToScratchpad(
+                    (isFinite(mcdu.zeroFuelWeight) ? mcdu.zeroFuelWeight.toFixed(1) : "") +
+                    "/" +
+                    (isFinite(mcdu.zeroFuelWeightMassCenter) ? mcdu.zeroFuelWeightMassCenter.toFixed(1) : ""));
+            } else if (await mcdu.trySetZeroFuelWeightZFWCG(value)) {
                 CDUFuelPredPage.ShowPage(mcdu);
             }
         };
