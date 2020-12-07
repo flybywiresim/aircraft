@@ -791,7 +791,7 @@
                     </DefaultTemplateParameters>
 
                     <UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
-                        <EMISSIVE_CODE>1</EMISSIVE_CODE>
+                        <EMISSIVE_CODE>0.7</EMISSIVE_CODE>
                     </UseTemplate>
 
                     <UseTemplate Name="ASOBO_GT_Interaction_LeftSingle_Code">
