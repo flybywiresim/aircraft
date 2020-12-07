@@ -1,12 +1,7 @@
 import React from 'react';
-import {
-    BrowserRouter as Router,
-    Switch,
-    Route,
-} from "react-router-dom";
 import FlightWidget from "./dashboardWidgets/FlightWidget";
 import WeatherWidget from "./dashboardWidgets/WeatherWidget";
-import Map from "@flybywiresim/map";
+import { MapX } from "./map/Map";
 
 type DashboardWidgetProps = {
     departingAirport: string,
@@ -19,6 +14,7 @@ type DashboardWidgetProps = {
 type DashboardWidgetState = {}
 
 class DashboardWidget extends React.Component<DashboardWidgetProps, DashboardWidgetState> {
+
     calculateFlightTime(flightETAInSeconds: string): string {
         const timeInMinutes: number = parseInt(flightETAInSeconds) * 0.0166;
         if (timeInMinutes.toString() === "NaN") {
@@ -48,12 +44,13 @@ class DashboardWidget extends React.Component<DashboardWidgetProps, DashboardWid
                     distance={this.props.flightDistance}
                     eta={this.calculateFlightTime(this.props.flightETAInSeconds)}
                     timeSinceStart={this.props.timeSinceStart} />
-                                
+
 
                 <WeatherWidget name='origin' editIcao="yes" icao={this.props.departingAirport} />
                 <WeatherWidget name='dest' editIcao="yes" icao={this.props.arrivingAirport} />
+
                 <div className="map-widget">
-                    <Map currentFlight="" disableSearch={false} disableInfo={false} />
+                    <MapX currentFlight="" disableSearch={true} disableInfo={true} />
                 </div>
             </div>
         );

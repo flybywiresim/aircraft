@@ -59,7 +59,7 @@ class Toolbar extends React.Component<ToolbarProps, ToolbarState> {
                     {
                         this.tabs.map((tab) =>
                             <div key={tab.id} className={tab.id === this.state.activeIndex ? 'Tab Active' : 'Tab'} onClick={this.handleClick(tab.id)}>
-                                <Link to={"/" + tab.link}>{tab.name}</Link>
+                                <a href={"/" + tab.link}>{tab.name}</a>
                             </div>
                         )
                     }
@@ -72,9 +72,9 @@ class Toolbar extends React.Component<ToolbarProps, ToolbarState> {
                 </div>
 
                 <div id="ProfileToolbar">
-                    <Link to="/profile">
-                        <i className="material-icons" id="Icon">account_circle</i>
-                    </Link>
+                    {/*<Link to="/profile">*/}
+                    {/*    <i className="material-icons" id="Icon">account_circle</i>*/}
+                    {/*</Link>*/}
                 </div>
             </div>
         );

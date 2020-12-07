@@ -25,7 +25,6 @@
 
     span.WidgetTitle#title-map {
         grid-area: MapTitle;
-        visibility: hidden;
     }
 
     // TODO move this to its own stylesheet
@@ -83,13 +82,13 @@
                 grid-area: DepArr;
             }
 
-            .origin-destination {
-                font-size: 2.25rem;
-                font-weight: 700;
-                grid-area: DepArr;
-                display: flex;
-                justify-content: center;
-                align-items: center;
+            #origin-destination {
+              font-size: 2.25rem;
+              font-weight: 700;
+              grid-area: DepArr;
+              display: flex;
+              justify-content: center;
+              align-items: center;
             }
 
             #ETA {
@@ -230,14 +229,6 @@
     #mapid {
         width: 660px !important;
         height: 740px !important;
-    }
-
-    #flight-todays {
-        grid-area: TodaysFlightCard;
-    }
-
-    #flight-previous {
-        grid-area: PreviousLegsCard;
     }
 
     #weather-card-origin {

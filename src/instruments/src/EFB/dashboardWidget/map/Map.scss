@@ -1,0 +1,52 @@
+/*!
+ * A32NX
+ * Copyright (C) 2020 FlyByWire Simulations and its contributors
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+@import url('https://fonts.googleapis.com/css2?family=Nunito+Sans&display=swap');
+
+#mapid {
+  height: 100vh;
+  width: 100vw;
+
+  .map-icon-shadow {
+    text-shadow: 0 0 4px #000000;
+  }
+
+  .Panel {
+    font-family: "Nunito Sabs", sans-serif;
+    font-size: 1rem;
+    color: white;
+    padding: 1rem;
+    // height: 10rem;
+    // width: 30rem;
+    background: rgb(40, 40, 40);
+    pointer-events: all !important;
+
+    .PanelText {
+      margin: 0;
+      padding: 0 !important;
+    }
+  }
+
+  .SearchPanel {
+    margin: 1rem 0 0 3.5rem
+  }
+
+  .InfoPanel {
+    margin: 0 0 2.5rem 2.5rem;
+  }
+}
