@@ -3,6 +3,7 @@ class A32NX_Core {
         this.modules = [
             new A32NX_ADIRS(),
             new A32NX_APU(),
+            new A32NX_BaroSelector(),
             new A32NX_BrakeTemp(),
             new A32NX_Electricity(),
             new A32NX_LocalVarUpdater(),
