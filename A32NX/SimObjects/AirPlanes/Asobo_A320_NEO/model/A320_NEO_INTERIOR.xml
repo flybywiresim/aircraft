@@ -2214,7 +2214,7 @@
                 </UseTemplate>
                 <UseTemplate Name="ASOBO_HANDLING_Switch_Wipers_Template">
                     <NODE_ID>HANDLING_Switch_Wipers_1</NODE_ID>
-                    <CIRCUIT_ID_WIPERS>77</CIRCUIT_ID_WIPERS>
+                    <CIRCUIT_ID_WIPERS>81</CIRCUIT_ID_WIPERS>
                     <POS_OFF>0</POS_OFF>
                     <POS_SLOW>1</POS_SLOW>
                     <POS_NORM>2</POS_NORM>
