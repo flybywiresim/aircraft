@@ -1,0 +1,16 @@
+#status-bar {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+
+  font-size: 1.4rem;
+  font-weight: 500;
+  position: fixed;
+  z-index: 1000;
+  padding: 0.25rem 0.5em;
+  text-align: center;
+  width: 1430px;
+  color: var(--statusBarText);
+  background-color: var(--statusBarBackground);
+}
