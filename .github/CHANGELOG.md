@@ -123,6 +123,9 @@
 1. [Lights] Strobe Lights | Intensity has increased | Range has decreased | Rotation has changed | There is no bleeding into the cockpit anymore - @Snapmatics (Harry)
 1. [Lights] Beacon Top Lights | They now reflect on the wings - @Snapmatics (Harry)
 1. [Lights] Beacon Belly Lights | They now reflect on the engines - @Snapmatics (Harry)
+1. [Lights] Flood Lights - @Snapmatics (Harry)
+1. [Lights] Reading Lights - @Snapmatics (Harry)
+1. [Lights] PFD/ND/EICAS/MCDU Lights Updated - @Snapmatics (Harry)
 
 ## 0.4.0
 1. [General] Add CHANGELOG.md - @nathaninnes (Nathan Innes)
