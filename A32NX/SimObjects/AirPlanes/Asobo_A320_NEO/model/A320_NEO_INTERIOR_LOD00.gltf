@@ -148707,7 +148707,7 @@
           }
         }
       ],
-      "name": "x0_HANDLING_Switch_Wipers_right"
+      "name": "x0_HANDLING_Switch_Wiper_right"
     },
     {
       "primitives": [
@@ -179432,7 +179432,7 @@
         1
       ],
       "mesh": 1066,
-      "name": "HANDLING_Switch_Wipers_right"
+      "name": "HANDLING_Switch_Wiper_right"
     },
     {
       "translation": [
