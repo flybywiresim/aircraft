@@ -247,11 +247,14 @@ class CDUFlightPlanPage {
                             if (waypoint.legAltitudeDescription === 4) {
                                 altitudeConstraint = ((waypoint.legAltitude1 + waypoint.legAltitude2) * 0.5).toFixed(0);
                             }
+                        //predict altitude for STAR when constraints are missing
                         } else if (isDepartureWayPoint) {
-                            if (index !== routeFirstWaypointIndex - 1) {
-                                altitudeConstraint = Math.floor(waypoint.cumulativeDistanceInFP * 0.14 * 6076.118 / 10);
-                            }
-                        } else if (index <= routeLastWaypointIndex - 1 || index >= routeFirstWaypointIndex + 1) {
+                            altitudeConstraint = Math.floor(waypoint.cumulativeDistanceInFP * 0.14 * 6076.118 / 10);
+                        //waypoint is the first or the last of the actual route
+                        } else if ((index === routeFirstWaypointIndex - 1) || (index === routeLastWaypointIndex + 1)) {
+                            altitudeConstraint = "FL" + mcdu.cruiseFlightLevel;
+                        //waypoint is in between on the route
+                        } else if (index <= routeLastWaypointIndex) {
                             altitudeConstraint = "FL" + mcdu.cruiseFlightLevel;
                         }
                         if (altitudeConstraint === lastAltitudeConstraint) {
