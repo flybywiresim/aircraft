@@ -24,10 +24,6 @@ class A32NX_BaroSelector {
             return;
         }
 
-        if (this.callbackDispatchedAt != null) {
-            console.log(`[${this.totalDeltaTime}] Dispatched callback timed-out`);
-        }
-
         const lat = SimVar.GetSimVarValue("PLANE LATITUDE", "degree latitude");
         const lon = SimVar.GetSimVarValue("PLANE LONGITUDE", "degree longitude");
         SimVar.SetSimVarValue("C:fs9gps:NearestAirportMaximumItems", "number", 1);
@@ -37,11 +33,9 @@ class A32NX_BaroSelector {
         const batch = new SimVar.SimVarBatch("C:fs9gps:NearestAirportItemsNumber", "C:fs9gps:NearestAirportCurrentLine");
         batch.add("C:fs9gps:NearestAirportCurrentICAO", "string", "string");
 
-        console.log(`[${this.totalDeltaTime}] Dispatching callback`);
         this.callbackDispatchedAt = this.totalDeltaTime;
         SimVar.GetSimVarArrayValues(batch, (values) => {
             const icao = values[0][0].substr(2).trim();
-            console.log(`[${this.totalDeltaTime}] Callback called with ${icao}`);
 
             if (this.nearestAirportIcao != icao) {
                 this.nearestAirportChanges++;
@@ -58,7 +52,6 @@ class A32NX_BaroSelector {
         });
     }
     setBaroSelector(value) {
-        console.log(`[${this.totalDeltaTime}] Baro unit selector set to ` + (value ? "HPA" : "IN HG"));
         SimVar.SetSimVarValue("L:XMLVAR_Baro_Selector_HPA_1", "bool", value);
         this.baroSelectionCompleted = true;
     }
