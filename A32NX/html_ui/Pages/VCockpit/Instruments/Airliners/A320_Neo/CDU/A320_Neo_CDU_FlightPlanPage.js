@@ -236,6 +236,7 @@ class CDUFlightPlanPage {
                         }
                         let altitudeConstraint = "---";
                         let altPrefix = "";
+                        const isDepartureWayPoint = routeFirstWaypointIndex > 1 && mcdu.flightPlanManager.getDepartureWaypoints().indexOf(waypointsWithDiscontinuities[index]) != -1;
                         if (mcdu.transitionAltitude >= 100 && waypoint.legAltitude1 > mcdu.transitionAltitude) {
                             altitudeConstraint = "FL" + (waypoint.legAltitude1 / 100).toFixed(0);
                         } else {
@@ -246,16 +247,16 @@ class CDUFlightPlanPage {
                             if (waypoint.legAltitudeDescription === 4) {
                                 altitudeConstraint = ((waypoint.legAltitude1 + waypoint.legAltitude2) * 0.5).toFixed(0);
                             }
-                        } else if (index < routeFirstWaypointIndex) {
+                        } else if (isDepartureWayPoint) {
                             if (index === routeFirstWaypointIndex - 1) {
                                 altitudeConstraint = "FL" + mcdu.cruiseFlightLevel;
-                            } else if (routeFirstWaypointIndex > 1 && mcdu.flightPlanManager.getDepartureWaypoints().indexOf(waypointsWithDiscontinuities[index] != -1)) {
+                            } else {
                                 altitudeConstraint = Math.floor(waypoint.cumulativeDistanceInFP * 0.14 * 6076.118 / 10);
                             }
                         } else if ((index === routeFirstWaypointIndex - 1) || (index === routeLastWaypointIndex + 1)) {
                             altitudeConstraint = "FL" + mcdu.cruiseFlightLevel;
                         } else {
-                            if (index >= routeFirstWaypointIndex && index <= routeLastWaypointIndex) {
+                            if (index <= routeLastWaypointIndex) {
                                 altitudeConstraint = "FL" + mcdu.cruiseFlightLevel;
                             }
                         }
