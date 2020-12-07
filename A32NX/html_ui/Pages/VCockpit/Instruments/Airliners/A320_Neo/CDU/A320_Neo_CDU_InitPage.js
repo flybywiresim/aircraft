@@ -155,7 +155,7 @@ class CDUInitPage {
             [],
             [],
             ["COST INDEX"],
-            [costIndex, "WIND>"],
+            [costIndex, "WIND/TEMP>"],
             ["CRZ FL/TEMP", "TROPO"],
             [cruiseFlTemp, "{small}36090{end}[color]cyan"],
         ]);
