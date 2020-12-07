@@ -158,6 +158,13 @@
             </Requires>
         </Sound>
 
+        <Sound WwiseData="true" WwiseEvent="gearleverclick" Continuous="false" NodeName="PEDALS_LEFT" ViewPoint="Inside" SimVar="GEAR HANDLE POSITION" Units="BOOLEAN" Index="0">
+            <Range LowerBound="1" />
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="gearleverclick" Continuous="false" NodeName="PEDALS_LEFT" ViewPoint="Inside" SimVar="GEAR HANDLE POSITION" Units="BOOLEAN" Index="0">
+            <Range UpperBound="0" />
+        </Sound>
 
         <Sound WwiseEvent="Loudrelay" WwiseData="true" NodeName="FUSES01" Continuous="false" ApplyCockpitReverb="true" SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1">
             <Range LowerBound="28" />
@@ -168,7 +175,6 @@
             <WwiseRTPC SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1" RTPCName="SIMVAR_ELECTRICAL_MAIN_BUS_VOLTAGE" />
         </Sound>
 
-
         <Sound WwiseEvent="startbeep" WwiseData="true" Continuous="false" ViewPoint="Inside" SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1">
             <Range LowerBound="28" />
             <WwiseRTPC SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1" RTPCName="SIMVAR_ELECTRICAL_MAIN_BUS_VOLTAGE_A4_R4" />
@@ -178,7 +184,7 @@
             <Range LowerBound="47" />
         </Sound>
 
-        <!-- ENGINE SOUNDS ======================================================================================== -->
+        <!-- ENGINE SOUNDS (CFM LEAP-1A) ======================================================================================== -->
 
         <Sound WwiseEvent="LSpool" WwiseData="true" NodeName="Engine_PIVOT_LEFT_2" SimVar="TURB ENG N1" Units="percent" Index="1" ViewPoint="Inside" Continuous="true">
             <Range LowerBound="0" />
@@ -321,6 +327,7 @@
             <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Index="2" RTPCName="SIMVAR_TURB_ENG_N1" />
         </Sound>
 
+
         <Sound WwiseEvent="ReverseL" NodeName="Engine_PIVOT_LEFT_2" WwiseData="true" SimVar="TURB ENG N1" Units="percent" Index="1" Continuous="true">
             <Range LowerBound="1" />
             <WwiseRTPC SimVar="TURB ENG REVERSE NOZZLE PERCENT" Units="percent" Index="1" RTPCName="SIMVAR_TURB_ENG_REVERSE_NOZZLE_PERCENT" />
@@ -447,14 +454,6 @@
         <Sound WwiseEvent="ReverseREXT" NodeName="Engine_PIVOT_RIGHT_2" WwiseData="true" SimVar="TURB ENG N1" Units="percent" ViewPoint="outside" Index="2" Continuous="true">
             <Range LowerBound="1" />
             <WwiseRTPC SimVar="TURB ENG REVERSE NOZZLE PERCENT" Units="percent" Index="2" RTPCName="SIMVAR_TURB_ENG_REVERSE_NOZZLE_PERCENT" />
-        </Sound>
-
-        <Sound WwiseData="true" WwiseEvent="gearleverclick" Continuous="false" NodeName="PEDALS_LEFT" ViewPoint="Inside" SimVar="GEAR HANDLE POSITION" Units="BOOLEAN" Index="0">
-            <Range LowerBound="1" />
-        </Sound>
-
-        <Sound WwiseData="true" WwiseEvent="gearleverclick" Continuous="false" NodeName="PEDALS_LEFT" ViewPoint="Inside" SimVar="GEAR HANDLE POSITION" Units="BOOLEAN" Index="0">
-            <Range UpperBound="0" />
         </Sound>
 
         <!-- FUEL PUMP SOUNDS ========================================================================================== -->
@@ -615,13 +614,6 @@
             </Requires>
         </Sound>
 
-        <Sound WwiseEvent="nosetouch" FadeOutType="2" FadeOutTime="0.5" WwiseData="true" Continuous="false" ViewPoint="Inside" NodeName="PEDALS_LEFT" SimVar="GEAR ANIMATION POSITION" Units="PERCENT" Index="0">
-            <Range LowerBound="55" />
-            <Requires SimVar="VERTICAL SPEED" Units="FEET PER MINUTE" Index="0">
-                <Range LowerBound="-350" UpperBound="-151" />
-            </Requires>
-        </Sound>
-
         <Sound WwiseEvent="cabtouchsmooth" FadeOutType="2" FadeOutTime="0.5" WwiseData="true" Continuous="false" ViewPoint="Inside" NodeName="HublotIn002" SimVar="SIM ON GROUND" Units="BOOLEAN" Index="0">
             <Range LowerBound="1.0" />
             <Requires SimVar="VERTICAL SPEED" Units="FEET PER MINUTE" Index="0">
@@ -646,6 +638,11 @@
         <!-- BETTER WIND NOISES ========================================================================================== -->
 
         <Sound WwiseData="true" WwiseEvent="Betterwind" SimVar="AIRSPEED INDICATED" ViewPoint="Inside" NodeName="PEDALS_LEFT" Continuous="True" Units="KNOTS" Index="0" FadeOutType="2" FadeOutTime="1">
+            <Range LowerBound="80" />
+            <WwiseRTPC SimVar="AIRSPEED INDICATED" Units="KNOTS" Index="0" RTPCName="SIMVAR_AIRSPEED_INDICATED" />
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="cabinwind" SimVar="AIRSPEED INDICATED" ViewPoint="Inside" NodeName="HutblotIn002" Continuous="True" Units="KNOTS" Index="0" FadeOutType="2" FadeOutTime="1">
             <Range LowerBound="80" />
             <WwiseRTPC SimVar="AIRSPEED INDICATED" Units="KNOTS" Index="0" RTPCName="SIMVAR_AIRSPEED_INDICATED" />
         </Sound>
@@ -697,7 +694,7 @@
         <Sound WwiseEvent="gdown" WwiseData="true" FadeOutType="2" FadeOutTime="1" SimVar="GEAR TOTAL PCT EXTENDED" Units="PERCENT">
             <Range LowerBound="0.1" UpperBound="0.9" />
         </Sound>
-        
+
         <!-- INSTRUMENTS FOLEYS  =========================================================================  -->
 
         <Sound WwiseData="true" WwiseEvent="FLAPS_LEVER" ViewPoint="Inside" NodeName="LEVER_FLAPS" SimVar="FLAPS HANDLE PERCENT" Units="PERCENT" Index="0">
@@ -1078,5 +1075,4 @@
         <Sound WwiseData="true" WwiseEvent="wipers_backward" NodeName="WIPER_BASE_L"/>
 
     </AnimationSounds>
-
 </SoundInfo>
