@@ -55,7 +55,7 @@ class CDUAvailableArrivalsPage {
                                 const runwayTransition = arrival.runwayTransitions[j];
                                 if (runwayTransition) {
                                     // Check if selectedRunway matches a transition on the approach (and also checks for Center runways)
-                                    if (runwayTransition.name.match("^RW" + selectedRunway + "(C)*$")) {
+                                    if (runwayTransition.name.match("^RW" + selectedRunway + "C?$")) {
                                         matchingArrivals.push({ arrival: arrival, arrivalIndex: i });
                                     }
                                 }
