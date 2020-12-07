@@ -235,6 +235,8 @@ Potentiometer.90=0.5
 Potentiometer.91=0.5
 Potentiometer.92=0.5
 Potentiometer.93=0.5
+Potentiometer.96=0
+Potentiometer.97=0
 
 [AutoPilot.0]
 MasterSwitch=True
