@@ -236,7 +236,7 @@ class CDUFlightPlanPage {
                         }
                         let altitudeConstraint = "---";
                         let altPrefix = "";
-                        const isDepartureWayPoint = routeFirstWaypointIndex > 1 && mcdu.flightPlanManager.getDepartureWaypoints().indexOf(waypointsWithDiscontinuities[index]) != -1;
+                        const isDepartureWayPoint = routeFirstWaypointIndex > 1 && mcdu.flightPlanManager.getDepartureWaypoints().indexOf(waypointsWithDiscontinuities[index]) !== -1;
                         if (mcdu.transitionAltitude >= 100 && waypoint.legAltitude1 > mcdu.transitionAltitude) {
                             altitudeConstraint = "FL" + (waypoint.legAltitude1 / 100).toFixed(0);
                         } else {
@@ -248,17 +248,11 @@ class CDUFlightPlanPage {
                                 altitudeConstraint = ((waypoint.legAltitude1 + waypoint.legAltitude2) * 0.5).toFixed(0);
                             }
                         } else if (isDepartureWayPoint) {
-                            if (index === routeFirstWaypointIndex - 1) {
-                                altitudeConstraint = "FL" + mcdu.cruiseFlightLevel;
-                            } else {
+                            if (index !== routeFirstWaypointIndex - 1) {
                                 altitudeConstraint = Math.floor(waypoint.cumulativeDistanceInFP * 0.14 * 6076.118 / 10);
                             }
-                        } else if ((index === routeFirstWaypointIndex - 1) || (index === routeLastWaypointIndex + 1)) {
+                        } else if (index <= routeLastWaypointIndex - 1 || index >= routeFirstWaypointIndex + 1) {
                             altitudeConstraint = "FL" + mcdu.cruiseFlightLevel;
-                        } else {
-                            if (index <= routeLastWaypointIndex) {
-                                altitudeConstraint = "FL" + mcdu.cruiseFlightLevel;
-                            }
                         }
                         if (altitudeConstraint === lastAltitudeConstraint) {
                             altitudeConstraint = "  \"  ";
