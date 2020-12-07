@@ -21,8 +21,8 @@
  */
  @font-face {
     font-family: 'weathericons';
-    src: url('../font/weathericons-regular-webfont.eot');
-    src: url('../font/weathericons-regular-webfont.eot?#iefix') format('embedded-opentype'), url('../font/weathericons-regular-webfont.woff2') format('woff2'), url('../font/weathericons-regular-webfont.woff') format('woff'), url('../font/weathericons-regular-webfont.ttf') format('truetype'), url('../font/weathericons-regular-webfont.svg#weather_iconsregular') format('svg');
+    src: url('src/instruments/src/EFB/Assets/Fonts/weathericons-regular-webfont.eot');
+    src: url('src/instruments/src/EFB/Assets/Fonts/weathericons-regular-webfont.eot?#iefix') format('embedded-opentype'), url('src/instruments/src/EFB/Assets/Fonts/weathericons-regular-webfont.woff2') format('woff2'), url('src/instruments/src/EFB/Assets/Fonts/weathericons-regular-webfont.woff') format('woff'), url('src/instruments/src/EFB/Assets/Fonts/weathericons-regular-webfont.ttf') format('truetype'), url('src/instruments/src/EFB/Assets/Fonts/weathericons-regular-webfont.svg#weather_iconsregular') format('svg');
     font-weight: normal;
     font-style: normal;
   }
@@ -1836,4 +1836,3 @@
   .wi-wu-unknown:before {
     content: "\f00d";
   }
-  

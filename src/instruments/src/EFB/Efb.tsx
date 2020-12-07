@@ -1,17 +1,11 @@
 import React from "react";
 
-import {getSimbriefData, IFuel, IWeights} from './simbriefApi';
+import { getSimbriefData, IFuel, IWeights } from './SimbriefApi';
 import StatusBar from "./StatusBar/StatusBar";
-import Toolbar from "./toolbar/Toolbar";
-import DashboardWidget from "./dashboardWidget/DashboardWidget";
+import ToolBar from "./Toolbar/ToolBar";
+import DashboardWidget from "./Dashboard/DasshboardWidget";
 
 import './Efb.scss';
-import './StatusBar/StatusBar.scss';
-import './toolbar/Toolbar.scss';
-import './dashboardWidget/DashboardWidget.scss';
-import './loadsheetWidget/LoadsheetWidget.scss';
-import './settings/Settings.scss';
-import './profile/Profile.scss';
 
 import 'material-design-icons/iconfont/material-icons.css'
 
@@ -175,7 +169,7 @@ class Efb extends React.Component<EfbProps, EfbState> {
         return (
             <div>
                 <StatusBar initTime={this.state.initTime} updateCurrentTime={this.updateCurrentTime} updateTimeSinceStart={this.updateTimeSinceStart}/>
-                <Toolbar logo={this.props.logo} fetchSimbrief={this.fetchSimbriefData}/>
+                <ToolBar logo={this.props.logo} fetchSimbrief={this.fetchSimbriefData}/>
                 <div id="main-container">
                     <DashboardWidget
                         departingAirport={this.state.departingAirport}

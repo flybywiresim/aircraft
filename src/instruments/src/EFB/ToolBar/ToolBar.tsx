@@ -1,7 +1,4 @@
 import React from 'react';
-import {
-    Link
-} from 'react-router-dom';
 
 type ToolbarProps = {
     fetchSimbrief: Function;
@@ -12,7 +9,7 @@ type ToolbarState = {
     activeIndex: number;
 };
 
-class Toolbar extends React.Component<ToolbarProps, ToolbarState> {
+class ToolBar extends React.Component<ToolbarProps, ToolbarState> {
     constructor(props: ToolbarProps) {
         super(props);
         this.handleClick = this.handleClick.bind(this);
@@ -81,4 +78,4 @@ class Toolbar extends React.Component<ToolbarProps, ToolbarState> {
     }
 }
 
-export default Toolbar;
+export default ToolBar;

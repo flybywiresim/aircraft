@@ -1,5 +1,4 @@
-import { isFunctionLike } from "typescript";
-import {ISimbriefData} from "./simbriefInterface";
+import { ISimbriefData } from "./simbriefInterface";
 
 const simbriefApiUrl: URL = new URL("https://www.simbrief.com/api/xml.fetcher.php");
 const simbriefApiParams = simbriefApiUrl.searchParams;
@@ -11,24 +10,12 @@ const getRequestData: RequestInit = {
     method: "GET"
 };
 
-export function getSimbriefData(simbriefUsername: string): ISimbriefData {
+export function getSimbriefData(simbriefUsername: string): Promise<ISimbriefData> {
     simbriefApiParams.append("username", simbriefUsername);
     simbriefApiParams.append("json", "1");
     simbriefApiUrl.search = simbriefApiParams.toString();
 
-    const simbriefData = fetch(simbriefApiUrl.toString(), getRequestData)
-        .then(res => res.json())
-        .then(
-            (result: any) => {
-                console.info(result);
-                return simbriefDataParser(result);
-            },
-            (error) => {
-                console.log("err");
-            }
-        );
-    //@ts-ignore
-    return simbriefData;
+    return fetch(simbriefApiUrl.toString(), getRequestData).then(result => simbriefDataParser(result.json()));
 }
 
 function simbriefDataParser(simbriefJson: any): ISimbriefData {

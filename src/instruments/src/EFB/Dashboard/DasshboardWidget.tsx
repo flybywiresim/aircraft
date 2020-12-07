@@ -1,6 +1,6 @@
 import React from 'react';
-import FlightWidget from "./dashboardWidgets/FlightWidget";
-import WeatherWidget from "./dashboardWidgets/WeatherWidget";
+import FlightWidget from "./Widgets/FlightWidget";
+import WeatherWidget from "./Widgets/WeatherWidget";
 import Map from "@flybywiresim/map";
 
 type DashboardWidgetProps = {
