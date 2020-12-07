@@ -135,6 +135,7 @@
 1. [MFD] Corrected icon for the Decel point on flightplan - @LoungeFlyZ (Chris Johnson)
 1. [ND] Update ND to only show Mode Changed when mode button is used - @ilyeshammadi (Ilyes Hammadi)
 1. [TCAS] Implement first iteration of TCAS - @lukecologne (luke)
+1. [BAT] Add Batchfile for easy development and build - @Kimbyeongjang (김병장#7165)
 
 ## 0.4.0
 1. [General] Add CHANGELOG.md - @nathaninnes (Nathan Innes)
