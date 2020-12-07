@@ -1050,7 +1050,7 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
     updateGreenDot(currentAirspeed, _greenDot) {
         if (this.greenDotSVG) {
             let hidePointer = true;
-            if (_greenDot > this.graduationMinValue) {
+            if (Simplane.getFlapsHandleIndex() === 0 && _greenDot > this.graduationMinValue) {
                 const greenDotPosY = this.valueToSvg(currentAirspeed, _greenDot);
                 const greenDotHeight = 20;
                 if (greenDotPosY > 0) {
