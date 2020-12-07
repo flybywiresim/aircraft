@@ -11,7 +11,7 @@ class CDUNavaidPage {
         mcdu.setTemplate([
             ["NAVAID"],
             ["IDENT"],
-            ["_______[color]red"],
+            ["_______[color]amber"],
             [""],
             [""],
             [""],

@@ -2,6 +2,8 @@
 
 :root {
   --bodyHeightScale: 1;
+  --windLabelFontSize: 37px;
+  --speedLabelFontSize: 32px;
 }
 
 @keyframes TemporaryShow {
@@ -334,3 +336,29 @@ a320-neo-mfd-element #Mainframe #Symbols text.Large {
   font-size: 38px;
   fill: var(--displayGreen);
 }
+
+a320-neo-mfd-element #Mainframe #Symbols #TERR {
+  fill: var(--displayCyan);
+}
+
+a320-neo-mfd-element #Mainframe #Electricity #TAS_Text {
+  font-size: var(--speedLabelFontSize);
+}
+
+a320-neo-mfd-element #Mainframe #Electricity #GS_Text {
+  font-size: var(--speedLabelFontSize);
+}
+
+a320-neo-mfd-element #Mainframe #Electricity #Wind_Direction {
+  font-size: var(--windLabelFontSize);
+}
+
+a320-neo-mfd-element #Mainframe #Electricity #Wind_Separator {
+  font-size: var(--windLabelFontSize);
+}
+
+a320-neo-mfd-element #Mainframe #Electricity #Wind_Strength {
+  font-size: var(--windLabelFontSize);
+}
+
+

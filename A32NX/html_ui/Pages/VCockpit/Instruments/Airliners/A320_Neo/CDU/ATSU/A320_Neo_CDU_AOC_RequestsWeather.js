@@ -3,7 +3,7 @@ class CDUAocRequestsWeather {
         mcdu.clearDisplay();
         let labelTimeout;
 
-        let fplanArptColor = "[color]blue";
+        let fplanArptColor = "[color]cyan";
         if (mcdu.flightPlanManager.getOrigin() && mcdu.flightPlanManager.getDestination()) {
             store.arpt1 = mcdu.flightPlanManager.getOrigin().ident;
             store.arpt2 = mcdu.flightPlanManager.getDestination().ident;
@@ -19,17 +19,17 @@ class CDUAocRequestsWeather {
             mcdu.setTemplate([
                 ["AOC WEATHER REQUEST"],
                 [`WX TYPE`, "AIRPORTS"],
-                [`↓${reqTypes[store.reqID]}[color]blue`, `${store.arpt1 != "" ? store.arpt1 : "[ ]"}${fplanArptColor}`],
+                [`↓${reqTypes[store.reqID]}[color]cyan`, `${store.arpt1 != "" ? store.arpt1 : "[ ]"}${fplanArptColor}`],
                 [""],
                 ["", `${store["arpt2"] != "" ? store["arpt2"] : "[ ]"}${fplanArptColor}`],
                 [""],
-                ["", `${store["arpt3"] != "" ? store["arpt3"] : "[ ]"}[color]blue`],
+                ["", `${store["arpt3"] != "" ? store["arpt3"] : "[ ]"}[color]cyan`],
                 [""],
-                ["", `${store["arpt4"] != "" ? store["arpt4"] : "[ ]"}[color]blue`],
+                ["", `${store["arpt4"] != "" ? store["arpt4"] : "[ ]"}[color]cyan`],
                 [""],
                 [""],
                 ["RETURN TO", `${store["sendStatus"]}`],
-                ["<AOC MENU", "SEND*[color]blue"]
+                ["<AOC MENU", "SEND*[color]cyan"]
             ]);
         };
         updateView();

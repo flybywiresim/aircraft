@@ -99,6 +99,11 @@ var A320_Neo_UpperECAM;
             this._aircraft = Aircraft.A320_NEO;
             this.toInhibitTimer = new NXLogic_ConfirmNode(3);
             this.ldgInhibitTimer = new NXLogic_ConfirmNode(3);
+            this.iceSevereDetectedTimer = new NXLogic_ConfirmNode(40, false);
+            this.iceDetectedTimer1 = new NXLogic_ConfirmNode(40, false);
+            this.iceDetectedTimer2 = new NXLogic_ConfirmNode(5);
+            this.iceNotDetTimer1 = new NXLogic_ConfirmNode(60);
+            this.iceNotDetTimer2 = new NXLogic_ConfirmNode(130);
             this.predWsMemo = new NXLogic_MemoryNode(true);
         }
         get templateID() {
@@ -866,6 +871,56 @@ var A320_Neo_UpperECAM;
                         ]
                     },
                     {
+                        name: "SEVERE ICE",
+                        messages: [
+                            {
+                                message: "DETECTED",
+                                level: 2,
+                                actions: [
+                                    {
+                                        style: "action",
+                                        message: "WING ANTI ICE",
+                                        action: "ON",
+                                        isCompleted: () => this.getCachedSimVar("STRUCTURAL DEICE SWITCH", "Bool"),
+                                    },
+                                    {
+                                        style: "action",
+                                        message: "ENG MODE SEL",
+                                        action: "IGN",
+                                        isCompleted: () => this.getCachedSimVar("L:XMLVAR_ENG_MODE_SEL", "Enum") == 2,
+                                    }
+                                ],
+                                flightPhasesInhib: [3, 4, 5, 7, 8],
+                                isActive: () => this.iceSevereDetectedTimer.read(),
+                            },
+                        ]
+                    },
+                    {
+                        name: "ANTI ICE",
+                        messages: [
+                            {
+                                message: "ICE DETECTED",
+                                level: 2,
+                                actions: [
+                                    {
+                                        style: "action",
+                                        message: "ENG 1 ANTI ICE",
+                                        action: "ON",
+                                        isCompleted: () => this.getCachedSimVar("ENG ANTI ICE:1", "Bool"),
+                                    },
+                                    {
+                                        style: "action",
+                                        message: "ENG 2 ANTI ICE",
+                                        action: "ON",
+                                        isCompleted: () => this.getCachedSimVar("ENG ANTI ICE:2", "Bool"),
+                                    }
+                                ],
+                                flightPhasesInhib: [3, 4, 5, 7, 8],
+                                isActive: () => this.iceDetectedTimer2.read(),
+                            },
+                        ]
+                    },
+                    {
                         name: "NAV",
                         messages: [
                             {
@@ -1124,14 +1179,18 @@ var A320_Neo_UpperECAM;
                     {
                         message: "ENG A.ICE",
                         isActive: () => {
-                            return (this.getCachedSimVar("ENG ANTI ICE:1", "Bool") == 1) || (SimVar.GetSimVarValue("ENG ANTI ICE:2", "Bool") == 1);
+                            return this.getCachedSimVar("ENG ANTI ICE:1", "Bool") || this.getCachedSimVar("ENG ANTI ICE:2", "Bool");
                         }
                     },
                     {
                         message: "WING A.ICE",
                         isActive: () => {
-                            return (this.getCachedSimVar("STRUCTURAL DEICE SWITCH", "Bool") == 1);
+                            return this.getCachedSimVar("STRUCTURAL DEICE SWITCH", "Bool");
                         }
+                    },
+                    {
+                        message: "ICE NOT DET",
+                        isActive: () => this.iceNotDetTimer2.read() && !Simplane.getIsGrounded(),
                     },
                     {
                         message: "APU AVAIL",
@@ -1292,6 +1351,7 @@ var A320_Neo_UpperECAM;
             this.overflowArrow.setAttribute("opacity", (this.leftEcamMessagePanel.overflow || this.rightEcamMessagePanel.overflow) ? "1" : "0");
 
             this.updateInhibitMessages(_deltaTime);
+            this.updateIcing(_deltaTime);
 
             const memosInhibited = this.leftEcamMessagePanel.hasWarnings || this.leftEcamMessagePanel.hasCautions;
             const showTOMemo = SimVar.GetSimVarValue("L:A32NX_FWC_TOMEMO", "Bool") && !memosInhibited;
@@ -1438,6 +1498,44 @@ var A320_Neo_UpperECAM;
             this.inhibitOverride = this.getCachedSimVar("L:A32NX_FWC_INHIBOVRD", "Bool");
             this.showTakeoffInhibit = this.toInhibitTimer.write(this.isInFlightPhase(3, 4, 5) && !this.inhibOverride, _deltaTime);
             this.showLandingInhibit = this.ldgInhibitTimer.write(this.isInFlightPhase(7, 8) && !this.inhibOverride, _deltaTime);
+        }
+
+        updateIcing(_deltaTime) {
+            const ground = Simplane.getIsGrounded();
+            const tatInf10 = this.getCachedSimVar("TOTAL AIR TEMPERATURE", "Celsius") < 10;
+            const eng1AntiIceOn = this.getCachedSimVar("ENG ANTI ICE:1", "Bool");
+            const eng2AntiIceOn = this.getCachedSimVar("ENG ANTI ICE:2", "Bool");
+            const wingAntiIceOn = this.getCachedSimVar("STRUCTURAL DEICE SWITCH", "Bool");
+
+            // SEVERE ICING
+            const isSevereIceDetected = this.getCachedSimVar("STRUCTURAL ICE PCT", "Percent") >= 50;
+            this.iceSevereDetectedTimer.write(
+                isSevereIceDetected && tatInf10 && !ground,
+                _deltaTime
+            );
+
+            // ICE DETECTED
+            const isIceDetected = this.getCachedSimVar("STRUCTURAL ICE PCT", "Percent") >= 10;
+            const det1 = this.iceDetectedTimer1.write(
+                isIceDetected && !ground && tatInf10,
+                _deltaTime
+            );
+            this.iceDetectedTimer2.write(
+                det1 && !(eng1AntiIceOn && eng2AntiIceOn),
+                _deltaTime
+            );
+
+            // ICE NOT DET
+            const isActivelyIcing = (
+                isIceDetected || (
+                    tatInf10 &&
+                    this.getCachedSimVar("AMBIENT IN CLOUD", "boolean")
+                )
+            );
+            const isAnyAntiIceOn = eng1AntiIceOn || eng2AntiIceOn || wingAntiIceOn;
+            const notDet1 = this.iceNotDetTimer1.write(isAnyAntiIceOn, _deltaTime);
+            this.iceNotDetTimer2.write(!isActivelyIcing && notDet1, _deltaTime);
+
         }
 
         getInfoPanelManager() {

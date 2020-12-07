@@ -1,1 +1,4 @@
 * text=auto
+
+# Ensure LF for shell files, even on Windows, so that bash inside Docker does not panic
+*.sh text eol=lf

@@ -73,11 +73,11 @@ class CDULateralRevisionPage {
         if ((isDeparture && isPreflight) || isWaypoint || isDestination) {
             if (isDestination) {
                 // TODO remove this once we support waypoints after the destination (otherwise sim crash)
-                nextWptLabel = "NEXT WPT[color]inop";
+                nextWptLabel = "NEXT WPT{sp}[color]inop";
                 nextWpt = "[{sp}{sp}{sp}{sp}][color]inop";
             } else {
-                nextWptLabel = "NEXT WPT";
-                nextWpt = "[{sp}{sp}{sp}{sp}][color]blue";
+                nextWptLabel = "NEXT WPT{sp}";
+                nextWpt = "[{sp}{sp}{sp}{sp}][color]cyan";
                 mcdu.onRightInput[2] = async (value) => {
                     mcdu.insertWaypoint(value, waypointIndexFP + 1, (result) => {
                         if (result) {
@@ -110,7 +110,7 @@ class CDULateralRevisionPage {
         let newDestLabel = "";
         let newDestCell = "";
         if (!isDestination) {
-            newDestLabel = "NEW DEST[color]inop";
+            newDestLabel = "NEW DEST{sp}[color]inop";
             newDestCell = "[{sp}{sp}][color]inop";
         }
 

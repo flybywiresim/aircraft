@@ -54,17 +54,17 @@ class CDUHoldAtPage {
             const rows = [];
             rows.push([(computed ? "COMPUTED HOLD at " : "HOLD at ") + waypoint.ident ]);
             rows.push(["INB CRS", "", ""]);
-            rows.push([holdCourse.toFixed(0) + "°[color]blue", "", ""]);
+            rows.push([holdCourse.toFixed(0) + "°[color]cyan", "", ""]);
             rows.push(["TURN", computed ? "" : "REVERT TO", ""]);
-            rows.push([holdTurn + "[color]blue", computed ? "" : "COMPUTED}[color]blue", ""]);
+            rows.push([holdTurn + "[color]cyan", computed ? "" : "COMPUTED}[color]cyan", ""]);
             rows.push(["TIME/DIST"]);
-            rows.push([holdTime.toFixed(1) + "/" + holdDistance.toFixed(1) + "[color]blue"]);
+            rows.push([holdTime.toFixed(1) + "/" + holdDistance.toFixed(1) + "[color]cyan"]);
             rows.push(["", "", " LAST EXIT"]);
             rows.push(["", "", "UTC   FUEL"]);
             rows.push(["", "", exitTime + " " + resFuel.toFixed(1)]);
             rows.push([""]);
             rows.push([""]);
-            rows.push(["{ERASE[color]red", "INSERT}[color]red", ""]);
+            rows.push(["{ERASE[color]amber", "INSERT}[color]amber", ""]);
 
             mcdu.setTemplate([
                 ...rows

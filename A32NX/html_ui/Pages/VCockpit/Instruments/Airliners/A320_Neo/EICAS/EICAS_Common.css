@@ -56,6 +56,9 @@ eicas-common-display text.Value {
 eicas-common-display text.Unit {
     fill: var(--displayCyan) !important;
 }
+eicas-common-display text.Warning {
+  fill: var(--displayAmber) !important;
+}
 eicas-common-display text.Small {
   font-size: 18px !important;
 }

@@ -58,42 +58,49 @@ class NXLogic_ConfirmNode {
         this.t = t;
         this.risingEdge = risingEdge;
         this._timer = 0;
-        this._previousValue = null;
+        this._previousInput = null;
+        this._previousOutput = null;
     }
     write(value, _deltaTime) {
-        if (this._previousValue === null && SimVar.GetSimVarValue("L:A32NX_FWC_SKIP_STARTUP", "Bool")) {
-            this._previousValue = value;
+        if (this._previousInput === null && SimVar.GetSimVarValue("L:A32NX_FWC_SKIP_STARTUP", "Bool")) {
+            this._previousInput = value;
+            this._previousOutput = value;
         }
         if (this.risingEdge) {
             if (!value) {
                 this._timer = 0;
             } else if (this._timer > 0) {
                 this._timer = Math.max(this._timer - _deltaTime / 1000, 0);
-                this._previousValue = value;
+                this._previousInput = value;
+                this._previousOutput = !value;
                 return !value;
-            } else if (!this._previousValue && value) {
+            } else if (!this._previousInput && value) {
                 this._timer = this.t;
-                this._previousValue = value;
+                this._previousInput = value;
+                this._previousOutput = !value;
                 return !value;
             }
         } else {
             if (value) {
-                this._timer = null;
+                this._timer = 0;
             } else if (this._timer > 0) {
                 this._timer = Math.max(this._timer - _deltaTime / 1000, 0);
-                this._previousValue = value;
+                this._previousInput = value;
+                this._previousOutput = !value;
                 return !value;
-            } else if (this._previousValue && !value) {
+            } else if (this._previousInput && !value) {
                 this._timer = this.t;
-                this._previousValue = value;
+                this._previousInput = value;
+                this._previousOutput = !value;
                 return !value;
             }
         }
-        this._previousValue = value;
+        this._previousInput = value;
+        this._previousOutput = value;
         return value;
     }
     read() {
-        return this._previousValue;
+        return this._previousOutput;
     }
 }
 

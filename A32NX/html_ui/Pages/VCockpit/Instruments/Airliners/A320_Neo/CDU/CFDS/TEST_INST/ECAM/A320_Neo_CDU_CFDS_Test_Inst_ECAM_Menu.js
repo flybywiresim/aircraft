@@ -15,7 +15,7 @@ class CDU_CFDS_Test_Inst_ECAM_Menu {
             [""],
             ["<CLASS 3 FAULTS[color]inop"],
             [""],
-            ["<RETURN[color]blue"]
+            ["<RETURN[color]cyan"]
         ]);
 
         mcdu.leftInputDelay[5] = () => {

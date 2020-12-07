@@ -229,6 +229,10 @@ class Jet_NDCompass extends HTMLElement {
             const delta = ((desiredRotationHeading - this._delayedCompass + 540) % 360) - 180;
             if (Math.abs(delta) > 0.01) {
                 this._delayedCompass += delta * Math.min(1, 4 * (_deltaTime / 1000));
+
+                // Keep heading values within [0,360] range
+                this._delayedCompass %= 360;
+
                 compass = this._delayedCompass;
             }
 

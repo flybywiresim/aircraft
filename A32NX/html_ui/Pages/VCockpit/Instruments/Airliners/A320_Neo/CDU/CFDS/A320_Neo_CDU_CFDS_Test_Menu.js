@@ -14,7 +14,7 @@ class CDUCfdsTestMenu {
             [""],
             ["<FIRE PROT", "L/G>"],
             [""],
-            ["<RETURN[color]blue", "NAV>"]
+            ["<RETURN[color]cyan", "NAV>"]
         ]);
 
         mcdu.leftInputDelay[0] = () => {
@@ -102,7 +102,7 @@ class CDUCfdsTestMenu {
             [""],
             [""],
             [""],
-            ["<RETURN[color]blue"]
+            ["<RETURN[color]cyan"]
         ]);
 
         mcdu.leftInputDelay[0] = () => {
