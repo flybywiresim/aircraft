@@ -2206,6 +2206,8 @@
 
             <Component ID="Overhead_Handling">
                 <UseTemplate Name="ASOBO_HANDLING_Switch_Wipers_Template">
+                    <NODE_ID>HANDLING_Switch_Wiper_left</NODE_ID>
+                    <ANIM_NAME>HANDLING_Switch_Wiper_left</ANIM_NAME>
                     <CIRCUIT_ID_WIPERS>77</CIRCUIT_ID_WIPERS>
                     <POS_OFF>0</POS_OFF>
                     <POS_SLOW>1</POS_SLOW>
@@ -2213,7 +2215,8 @@
                     <PART_ID>HANDLING_Switch_Wipers</PART_ID>
                 </UseTemplate>
                 <UseTemplate Name="ASOBO_HANDLING_Switch_Wipers_Template">
-                    <NODE_ID>HANDLING_Switch_Wipers_1</NODE_ID>
+                    <NODE_ID>HANDLING_Switch_Wiper_right</NODE_ID>
+                    <ANIM_NAME>HANDLING_Switch_Wiper_right</ANIM_NAME>
                     <CIRCUIT_ID_WIPERS>81</CIRCUIT_ID_WIPERS>
                     <POS_OFF>0</POS_OFF>
                     <POS_SLOW>1</POS_SLOW>
