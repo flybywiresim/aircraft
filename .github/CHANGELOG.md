@@ -139,7 +139,7 @@
 1. [CDU] Fix CLR position in scratchpad - @beheh (Benedict Etzel)
 1. [General] Added INIT BARO option, INHG/HPA/AUTO - @theomessin (Theodore Messinezis)
 1. [FLIGHTMODEL] Changed rudder and vertical tail parameters for improved crosswind takeoff and landing capability - @donstim - (donbikes#4084)
-1. [FLIGHTMODEL]  Changed full landing flap deflection from 35 degrees to 40 degrees - @donstim - (donbikes#4084)
+1. [FLIGHTMODEL] Changed full landing flap deflection from 35 degrees to 40 degrees - @donstim - (donbikes#4084)
 1. [FLIGHTMODEL] Updated legacy flight model parameters for consistency with modern flight model - @donstim - (donbikes#4084)
 
 ## 0.4.0
