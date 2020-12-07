@@ -286,11 +286,6 @@ class FMCMainDisplay extends BaseAirliners {
     setInOut(content) {
         this._inOut = content;
         this._inOutElement.textContent = this._inOut;
-        if (content === FMCMainDisplay.clrValue) {
-            this._inOutElement.style.paddingLeft = "8%";
-        } else {
-            this._inOutElement.style.paddingLeft = "";
-        }
     }
 
     setTemplate(template, large = false) {
@@ -3441,5 +3436,5 @@ FMCMainDisplay.approachTypes = [
     "MLS",
     "ILS"
 ];
-FMCMainDisplay.clrValue = " CLR ";
+FMCMainDisplay.clrValue = "\xa0\xa0\xa0\xa0\xa0CLR";
 FMCMainDisplay._AvailableKeys = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";

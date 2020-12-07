@@ -76,7 +76,6 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
         this.getDeltaTime = A32NX_Util.createDeltaTimeCalculator(this._lastTime);
         this.modeChangeMask = this.gps.getChildById("ModeChangeMask");
         this.rangeChangeMask = this.gps.getChildById("RangeChangeMask");
-        this.map.instrument.setNPCAirplaneManagerTCASMode(true);
         this.map.instrument.showRoads = false;
         this.map.instrument.showObstacles = false;
         this.map.instrument.showVORs = false;
@@ -168,6 +167,9 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
         super.onUpdate(_deltaTime);
         this.updateMap(_deltaTime);
         this.updateNDInfo(_deltaTime);
+
+        //TCAS
+        this.map.instrument.TCASManager.update(_deltaTime);
 
         const ADIRSState = SimVar.GetSimVarValue("L:A320_Neo_ADIRS_STATE", "Enum");
 
