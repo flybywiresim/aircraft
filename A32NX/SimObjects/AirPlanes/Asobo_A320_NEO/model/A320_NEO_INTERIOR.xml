@@ -3122,11 +3122,18 @@
                 <NODE_ID>PUSH_ATC_FAIL_SEQ2</NODE_ID>
                 <EMISSIVE_CODE>(L:XMLVAR_LTS_Test)</EMISSIVE_CODE>
             </UseTemplate>
-            <UseTemplate Name="A32NX_ATC_Panel_TARA">
+            <UseTemplate Name="FBW_Airbus_ATC_Panel_TARA">
                 <Node_ID>KNOB_ATC_TARA</Node_ID>
                 <ANIMTIP_0>Set TCAS to STBY</ANIMTIP_0>
                 <ANIMTIP_1>Set TCAS to TA</ANIMTIP_1>
-                <ANIMTIP_2>Set TCAS to TARA</ANIMTIP_2>
+                <ANIMTIP_2>Set TCAS to TA/RA</ANIMTIP_2>
+            </UseTemplate>
+            <UseTemplate Name="FBW_Airbus_ATC_Panel_Traffic">
+                <Node_ID>KNOB_ATC_THRT</Node_ID>
+                <ANIMTIP_0>Set TCAS traffic to THRT</ANIMTIP_0>
+                <ANIMTIP_1>Set TCAS traffic to ALL</ANIMTIP_1>
+                <ANIMTIP_2>Set TCAS traffic to ABV</ANIMTIP_2>
+                <ANIMTIP_3>Set TCAS traffic to BLW</ANIMTIP_3>
             </UseTemplate>
         </Component>
 
@@ -3233,13 +3240,6 @@
             <UseTemplate Name="A32NX_PUSH_DOORPANEL_OPEN">
                 <NODE_ID>PUSH_DOORPANEL_OPEN</NODE_ID>
                 <ANIM_NAME>PUSH_DOORPANEL_OPEN</ANIM_NAME>
-            </UseTemplate>
-        </Component>
-
-        <Component ID="DUMMY_ELEMENTS_SETUP_ANIM_STATE">
-            <UseTemplate Name="ASOBO_GT_Anim_Setup">
-                <ANIM_NAME>KNOB_ATC_THRT</ANIM_NAME>
-                <PERCENT>33</PERCENT>
             </UseTemplate>
         </Component>
 
@@ -3524,9 +3524,6 @@
             </UseTemplate>
             <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
                 <NODE_ID>KNOB_ATC_1</NODE_ID>
-            </UseTemplate>
-            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-                <NODE_ID>KNOB_ATC_THRT</NODE_ID>
             </UseTemplate>
             <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
                 <NODE_ID>PUSH_HANDLE_LEFT_YOKE</NODE_ID>
