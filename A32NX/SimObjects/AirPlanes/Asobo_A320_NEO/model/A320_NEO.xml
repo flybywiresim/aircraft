@@ -110,13 +110,13 @@
 				<DIRECTION_5>Both</DIRECTION_5>
 			</UseTemplate>
             <Component ID="WipersLeft">
-                <UseTemplate Name="ASOBO_HANDLING_Wipers_Template">
+                <UseTemplate Name="FBW_Airbus_Wiper">
                     <ANIM_NAME>HANDLING_Wipers_left</ANIM_NAME>
                     <CIRCUIT_ID_WIPERS>77</CIRCUIT_ID_WIPERS>
                 </UseTemplate>
             </Component>
             <Component ID="WipersRight">
-                <UseTemplate Name="ASOBO_HANDLING_Wipers_Template">
+                <UseTemplate Name="FBW_Airbus_Wiper">
                     <ANIM_NAME>HANDLING_Wipers_right</ANIM_NAME>
                     <CIRCUIT_ID_WIPERS>81</CIRCUIT_ID_WIPERS>
                 </UseTemplate>
