@@ -27,7 +27,6 @@ const commonjs = require('@rollup/plugin-commonjs');
 const replace = require('@rollup/plugin-replace');
 const scss = require('rollup-plugin-scss');
 const scssCompiler = require('sass');
-const { resolve } = require('path');
 const template = require('./template/rollup.js');
 
 const TMPDIR = `${os.tmpdir()}/a32nx-instruments-gen`;

@@ -2,7 +2,14 @@
 @import url('https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@600&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@700&display=swap');
 
-@font-face{
+@import 'StatusBar/StatusBar';
+@import 'ToolBar/ToolBar';
+@import 'Dashboard/DashboardWidget';
+@import 'Loadsheet/LoadsheetWidget';
+@import 'Settings/Settings';
+@import 'Profile/Profile';
+
+@font-face {
   font-family: 'JetBrains Mono';
   src: url('https://raw.githubusercontent.com/JetBrains/JetBrainsMono/master/fonts/webfonts/JetBrainsMono-Regular.woff2') format('woff2');
   font-weight: normal;
