@@ -10,7 +10,7 @@ type TimeState = {
     timeSinceStart: string
 }
 
-export default class Time extends React.Component<TimeProps, any> {
+export default class StatusBar extends React.Component<TimeProps, any> {
     state: TimeState = {
         currentTime: this.props.initTime,
         timeSinceStart: "",
@@ -46,8 +46,16 @@ export default class Time extends React.Component<TimeProps, any> {
 
     render() {
         return (
-            <div id="time">
-                {formatTime(([this.state.currentTime.getUTCHours(), this.state.currentTime.getMinutes()])) + 'z'}
+            <div id="status-bar">
+                <div id="status-bar-left">
+                    <span>flyPad</span>
+                </div>
+                <div id="status-bar-center">
+                    <span>{formatTime(([this.state.currentTime.getUTCHours(), this.state.currentTime.getMinutes()])) + 'z'}</span>
+                </div>
+                <div id="status-bar-right">
+                    <span>100 %</span>
+                </div>
             </div>
         );
     }

@@ -1,20 +1,12 @@
 import React from "react";
-import {
-    BrowserRouter as Router,
-    Switch,
-    Route,
-} from "react-router-dom";
 
 import {getSimbriefData, IFuel, IWeights} from './simbriefApi';
-import Time from "./time/Time";
+import StatusBar from "./StatusBar/StatusBar";
 import Toolbar from "./toolbar/Toolbar";
 import DashboardWidget from "./dashboardWidget/DashboardWidget";
-import LoadsheetWidget from "./loadsheetWidget/LoadsheetWidget";
-import Settings from "./settings/Settings";
-import Profile from "./profile/Profile";
 
 import './Efb.scss';
-import './time/Time.scss';
+import './StatusBar/StatusBar.scss';
 import './toolbar/Toolbar.scss';
 import './dashboardWidget/DashboardWidget.scss';
 import './loadsheetWidget/LoadsheetWidget.scss';
@@ -182,7 +174,7 @@ class Efb extends React.Component<EfbProps, EfbState> {
     render() {
         return (
             <div>
-                <Time initTime={this.state.initTime} updateCurrentTime={this.updateCurrentTime} updateTimeSinceStart={this.updateTimeSinceStart}/>
+                <StatusBar initTime={this.state.initTime} updateCurrentTime={this.updateCurrentTime} updateTimeSinceStart={this.updateTimeSinceStart}/>
                 <Toolbar logo={this.props.logo} fetchSimbrief={this.fetchSimbriefData}/>
                 <div id="main-container">
                     <DashboardWidget

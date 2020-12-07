@@ -17,6 +17,8 @@
   --cardText: rgba(0, 0, 0, 0.7);
   --cardBackground: rgb(223, 224, 226);
   --globalBackground: #E5E5E5;
+  --statusBarBackground: rgb(15, 15, 15);
+  --statusBarText: rgb(245, 245, 245);
   --widgetMargin: 10px;
   --toolbarUnderlineColor: #00C2CB
 }
@@ -53,7 +55,7 @@ body {
 }
 
 #main-container {
-  padding: 8em 1.15em 1.15em;
+  padding: 11em 1.15em 1.15em;
   overflow-y: scroll;
 }
 

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import metarParser from 'aewx-metar-parser';
-import { formatTime, dateFormat} from "../../time/Time";
+import { formatTime, dateFormat} from "../../StatusBar/StatusBar";
 import { Metar } from '@flybywiresim/api-client';
 import { weatherIconArray } from './WeatherWidgetIcons';
 
