@@ -298,3 +298,49 @@
 - A32NX_FWC_INHIBOVRD
     - Bool
     - True when the FWC decides that flight phase inhibits should be overridden (and ignored)
+
+- A32NX_VSPEEDS_VS
+    - Number
+    - Current config stall speed
+    - is mach corrected
+
+- A32NX_VSPEEDS_VLS
+    - Number
+    - Current config minimum selectable speed
+    - is mach corrected
+
+- A32NX_VSPEEDS_F
+    - Number
+    - F-Speed (approach)
+
+- A32NX_VSPEEDS_S
+    - Number
+    - S-Speed (approach)
+
+- A32NX_VSPEEDS_GD
+    - Number
+    - Green Dot speed (clean config or O)
+    - is mach corrected
+
+
+- A32NX_VSPEEDS_LANDING_CONF3
+    - Bool
+    - True if FLAPS 3 is selected in perf page
+
+- A32NX_VSPEEDS_TO_CONF
+    - Number
+    - Flaps config for TakeOff, 1, 2 or 3
+
+- A32NX_VSPEEDS_V2
+    - Number
+    - TakeOff V2 Speed calculated based on A32NX_VSPEEDS_TO_CONF config
+
+- A32NX_VSPEEDS_VLS_APP
+    - Number
+    - vls calculated for config full whether A32NX_VSPEEDS_LANDING_CONF3 or not
+    - is mach corrected
+
+- A32NX_VSPEEDS_VAPP
+    - Number
+    - vapp calculated for config full  whether A32NX_VSPEEDS_LANDING_CONF3 or not
+    - is mach corrected
