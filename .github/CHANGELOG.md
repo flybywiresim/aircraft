@@ -136,6 +136,7 @@
 1. [ND] Update ND to only show Mode Changed when mode button is used - @ilyeshammadi (Ilyes Hammadi)
 1. [TCAS] Implement first iteration of TCAS - @lukecologne (luke)
 1. [ECAM] Add icing-related ECAM warnings and memos - @beheh (Benedict Etzel)
+1. [CDU] Fix CLR position in scratchpad - @beheh (Benedict Etzel)
 
 ## 0.4.0
 1. [General] Add CHANGELOG.md - @nathaninnes (Nathan Innes)
