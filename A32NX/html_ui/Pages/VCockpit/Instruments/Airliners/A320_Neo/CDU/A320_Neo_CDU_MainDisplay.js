@@ -267,7 +267,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
 
             // Commit changes.
             if (validEntry) {
-                SimVar.SetSimVarValue("L:A32NX_TO_CONF", "number", nextFlaps);
+                SimVar.SetSimVarValue("L:A32NX_SPEEDS_TO_CONF", "number", nextFlaps);
                 this.flaps = nextFlaps;
                 this.ths = nextThs;
                 return true;
@@ -972,7 +972,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         const max = A320_Neo_CDU_MainDisplay._v1sConf1[tempIndex][1];
 
         return this._getVSpeed(dWeightCoef, min, max);*/
-        return SimVar.GetSimVarValue("L:A32NX_V2", "number") - 5;
+        return SimVar.GetSimVarValue("L:A32NX_SPEEDS_V2", "number") - 5;
     }
     _computeV1Speed() {
         // computeV1Speed is called by inherited class so it must remain,
@@ -992,7 +992,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         const max = A320_Neo_CDU_MainDisplay._vRsConf1[tempIndex][1];
 
         return this._getVSpeed(dWeightCoef, min, max);*/
-        return SimVar.GetSimVarValue("L:A32NX_V2", "number") - 4;
+        return SimVar.GetSimVarValue("L:A32NX_SPEEDS_V2", "number") - 4;
     }
     _computeVRSpeed() {
         // computeVRSpeed is called by inherited class so it must remain,
@@ -1012,7 +1012,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         const max = A320_Neo_CDU_MainDisplay._v2sConf1[tempIndex][1];
 
         return this._getVSpeed(dWeightCoef, min, max);*/
-        return SimVar.GetSimVarValue("L:A32NX_V2", "number");
+        return SimVar.GetSimVarValue("L:A32NX_SPEEDS_V2", "number");
     }
     _computeV2Speed() {
         // computeV2Speed is called by inherited class so it must remain,
