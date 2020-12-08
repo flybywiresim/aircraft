@@ -1294,6 +1294,34 @@
 								</Action>
 							</ChildrenList>
 						</Event>
+						<Event Name="Play_Asobo_A320_NEO_LShutEXT" ID="{0FC0E989-6A30-41C4-91AA-957971B6EC16}">
+							<ChildrenList>
+								<Action Name="" ID="{699E35B9-15FE-47A7-A1D4-A9762D6EE068}" ShortID="741196962">
+									<PropertyList>
+										<Property Name="ActionType" Type="int16" Value="1"/>
+									</PropertyList>
+									<ReferenceList>
+										<Reference Name="Target">
+											<ObjectRef Name="LShutEXT" ID="{0C6D650A-FCA3-4063-9F4D-BED3BF607D4B}" WorkUnitID="{27D32D8D-6C92-4542-9BFC-F0D08111F92F}"/>
+										</Reference>
+									</ReferenceList>
+								</Action>
+							</ChildrenList>
+						</Event>
+						<Event Name="Play_Asobo_A320_NEO_RShutEXT" ID="{34EFB703-1684-42D2-9540-5287BFA84834}">
+							<ChildrenList>
+								<Action Name="" ID="{3A78D74B-8CBB-486B-A0DA-F176F2D3BDF6}" ShortID="573408325">
+									<PropertyList>
+										<Property Name="ActionType" Type="int16" Value="1"/>
+									</PropertyList>
+									<ReferenceList>
+										<Reference Name="Target">
+											<ObjectRef Name="RShutEXT" ID="{F2C54CE3-FE94-41F2-9E80-27D5F9CB250D}" WorkUnitID="{27D32D8D-6C92-4542-9BFC-F0D08111F92F}"/>
+										</Reference>
+									</ReferenceList>
+								</Action>
+							</ChildrenList>
+						</Event>
 					</ChildrenList>
 				</Folder>
 				<Event Name="Play_Asobo_A320_NEO_TOGAdetent" ID="{D5C16C0F-ED2D-48CF-819C-4A852CB6C458}">
