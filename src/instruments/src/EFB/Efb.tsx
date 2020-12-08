@@ -1,3 +1,21 @@
+/*
+ * A32NX
+ * Copyright (C) 2020 FlyByWire Simulations and its contributors
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 import React from "react";
 
 import { getSimbriefData, IFuel, IWeights } from './SimbriefApi';
@@ -8,12 +26,16 @@ import DashboardWidget from "./Dashboard/DasshboardWidget";
 import './Efb.scss';
 
 import 'material-design-icons/iconfont/material-icons.css'
+import LoadsheetWidget from "./Loadsheet/LoadsheetWidget";
+import Settings from "./Settings/Settings";
+import Profile from "./Profile/Profile";
 
 type EfbProps = {
     logo: string,
 };
 
 type EfbState = {
+    currentPageIndex: 0 | 1 | 2 | 3 | 4 | 5,
     simbriefUsername: string;
     departingAirport: string;
     departingIata: string;
@@ -45,6 +67,7 @@ class Efb extends React.Component<EfbProps, EfbState> {
     }
 
     state: EfbState = {
+        currentPageIndex: 0,
         departingAirport: 'N/A',
         departingIata: 'N/A',
         arrivingAirport: 'N/A',
@@ -165,18 +188,51 @@ class Efb extends React.Component<EfbProps, EfbState> {
         window.localStorage.setItem("SimbriefUsername", event.target.value.toString());
     }
 
+    currentPage() {
+        switch (this.state.currentPageIndex) {
+            case 1:
+                return <LoadsheetWidget
+                    weights={this.state.weights}
+                    fuels={this.state.fuels}
+                    units={this.state.units}
+                    arrivingAirport={this.state.arrivingAirport}
+                    arrivingIata={this.state.arrivingIata}
+                    departingAirport={this.state.departingAirport}
+                    departingIata={this.state.departingIata}
+                    altBurn={this.state.altBurn}
+                    altIcao={this.state.altIcao}
+                    altIata={this.state.altIata}
+                    tripTime={this.state.tripTime}
+                    contFuelTime={this.state.contFuelTime}
+                    resFuelTime={this.state.resFuelTime}
+                    taxiOutTime={this.state.taxiOutTime}
+                />;
+            case 2:
+                return <h1>Page 2</h1>;
+            case 3:
+                return <h1>Page 3</h1>;
+            case 4:
+                return <h1>Page 4</h1>;
+            case 5:
+                return <Settings/>;
+            default:
+                return <DashboardWidget
+                    departingAirport={this.state.departingAirport}
+                    arrivingAirport={this.state.arrivingAirport}
+                    flightDistance={this.state.flightDistance}
+                    flightETAInSeconds={this.state.flightETAInSeconds}
+                    timeSinceStart={this.state.timeSinceStart}
+                />;
+        }
+    }
+
     render() {
         return (
             <div>
                 <StatusBar initTime={this.state.initTime} updateCurrentTime={this.updateCurrentTime} updateTimeSinceStart={this.updateTimeSinceStart}/>
-                <ToolBar logo={this.props.logo} fetchSimbrief={this.fetchSimbriefData}/>
+                <ToolBar setPageIndex={(index) => this.setState({ currentPageIndex: index })} logo={this.props.logo} fetchSimbrief={this.fetchSimbriefData}/>
                 <div id="main-container">
-                    <DashboardWidget
-                        departingAirport={this.state.departingAirport}
-                        arrivingAirport={this.state.arrivingAirport}
-                        flightDistance={this.state.flightDistance}
-                        flightETAInSeconds={this.state.flightETAInSeconds}
-                        timeSinceStart={this.state.timeSinceStart} />
+                    {this.currentPage()}
                 </div>
             </div>
         );
