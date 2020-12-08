@@ -333,7 +333,7 @@ function _compensateForMachEffect(v, alt) {
 class NXSpeeds {
     /**
      * Computes Vs, Vls, Vapp, F, S and GD
-     * @param m {number} mass: gross weight
+     * @param m {number} mass: gross weight in t
      * @param fPos {number} flaps position
      * @param gPos {number} landing gear position
      * @param isTo {boolean} whether is takeoff nor not
@@ -359,7 +359,7 @@ class NXSpeeds {
 class NXToSpeeds {
     /**
      * Computes TakeOff speeds
-     * @param m {number} mass: tow
+     * @param m {number} mass: tow in t
      * @param fPos {number} flaps takeoff config
      * @param alt {number} field altitude
      * @returns {(number)[]} v2, vr, v1
