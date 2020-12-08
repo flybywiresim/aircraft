@@ -2428,8 +2428,8 @@
                 <CameraTitle>Overhead</CameraTitle>
             </Component>
 
-         <Component ID="Overhead_Reading_Lights">
-            <!-- Left -->
+            <Component ID="Overhead_Reading_Lights">
+                <!-- Left knob -->
                 <UseTemplate Name="FBW_Lighting_Knob_With_Potentiometer">
                     <NODE_ID>KNOB_OVHD_READINGLTL</NODE_ID>
                     <ANIM_NAME>KNOB_OVHD_READINGLTL</ANIM_NAME>
@@ -2437,14 +2437,14 @@
                     <ANIMTIP_0>Decrease reading light brightness</ANIMTIP_0>
                     <ANIMTIP_1>Increase reading light brightness</ANIMTIP_1>
                 </UseTemplate>
-                
-                <!---Left Inner-->
+
+                <!-- Left light -->
                 <UseTemplate Name="ASOBO_LIGHTING_Panel_Emissive_Template">
                     <NODE_ID>LIGHT_OVHD_READINGLLT</NODE_ID>
                     <POTENTIOMETER>96</POTENTIOMETER>
-               </UseTemplate>
+                </UseTemplate>
 
-                <!-- Right -->
+                <!-- Right knob -->
                 <UseTemplate Name="FBW_Lighting_Knob_With_Potentiometer">
                     <NODE_ID>KNOB_OVHD_READINGLTR</NODE_ID>
                     <ANIM_NAME>KNOB_OVHD_READINGLTR</ANIM_NAME>
@@ -2453,12 +2453,12 @@
                     <ANIMTIP_1>Increase reading light brightness</ANIMTIP_1>
                 </UseTemplate>
 
-                <!---Right Inner-->
+                <!-- Right light -->
                 <UseTemplate Name="ASOBO_LIGHTING_Panel_Emissive_Template">
                     <NODE_ID>LIGHT_OVHD_READINGLTR</NODE_ID>
                     <POTENTIOMETER>97</POTENTIOMETER>
-               </UseTemplate>
-              </Component>
+                </UseTemplate>
+            </Component>
 
             <Component ID="Overhead_Back_Panel">
                 <!-- "BLUE PUMP OVRD" -->
