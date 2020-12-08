@@ -1592,12 +1592,16 @@ class FMCMainDisplay extends BaseAirliners {
             this.showErrorMessage("FORMAT ERROR");
             return false;
         }
-        this._taxiEntered = true;
-
         const value = parseFloat(s);
-        if (isFinite(value) && value >= 0 && this.isTaxiFuelInRange(value)) {
-            this.taxiFuelWeight = value;
-            return true;
+        if (isFinite(value) && value >= 0) {
+            if (this.isTaxiFuelInRange(value)){
+                this._taxiEntered = true;
+                this.taxiFuelWeight = value;
+                return true;
+            } else {
+                this.showErrorMessage("ENTRY OUT OF RANGE")
+                return false;
+            }
         }
         this.showErrorMessage(this.defaultInputErrorMessage);
         return false;
@@ -2072,10 +2076,6 @@ class FMCMainDisplay extends BaseAirliners {
 
     isAvgWindInRange(wind) {
         return 0 <= wind && wind <= 250;
-    }
-
-    tryParseAverageWindEntry(s) {
-
     }
 
     async trySetAverageWind(s) {
