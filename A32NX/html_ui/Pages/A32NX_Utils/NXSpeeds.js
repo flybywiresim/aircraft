@@ -362,7 +362,6 @@ class NXToSpeeds {
      * @param m {number} mass: tow in t
      * @param fPos {number} flaps takeoff config
      * @param alt {number} field altitude
-     * @returns {(number)[]} v2, vr, v1
      */
     constructor(m = 60, fPos = 1, alt = 0) {
         this.v2 = Math.floor(to[fPos - 1][_correctMass(m)](m) + (fPos === 2 ? (Math.abs(alt * 0.0002)) : 0));
