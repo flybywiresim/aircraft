@@ -971,7 +971,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         const max = A320_Neo_CDU_MainDisplay._v1sConf1[tempIndex][1];
 
         return this._getVSpeed(dWeightCoef, min, max);*/
-        return new NXToSpeeds(this.getGrossWeight(), this.flaps, Simplane.getAltitude()).v1;
+        return (new NXToSpeeds(this.getGrossWeight(), this.flaps, Simplane.getAltitude())).v1;
     }
     _computeV1Speed() {
         // computeV1Speed is called by inherited class so it must remain,
@@ -991,7 +991,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         const max = A320_Neo_CDU_MainDisplay._vRsConf1[tempIndex][1];
 
         return this._getVSpeed(dWeightCoef, min, max);*/
-        return new NXToSpeeds(this.getGrossWeight(), this.flaps, Simplane.getAltitude()).vr;
+        return (new NXToSpeeds(this.getGrossWeight(), this.flaps, Simplane.getAltitude())).vr;
     }
     _computeVRSpeed() {
         // computeVRSpeed is called by inherited class so it must remain,
@@ -1011,7 +1011,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         const max = A320_Neo_CDU_MainDisplay._v2sConf1[tempIndex][1];
 
         return this._getVSpeed(dWeightCoef, min, max);*/
-        return new NXToSpeeds(this.getGrossWeight(), this.flaps, Simplane.getAltitude()).v2;
+        return (new NXToSpeeds(this.getGrossWeight(), this.flaps, Simplane.getAltitude())).v2;
     }
     _computeV2Speed() {
         // computeV2Speed is called by inherited class so it must remain,
