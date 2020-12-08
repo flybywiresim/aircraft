@@ -2015,13 +2015,19 @@ class FMCMainDisplay extends BaseAirliners {
         }
         let value = parseFloat(s);
         if (isFinite(value) && this.isBlockFuelInRange(value)) {
-            if (useLbs) {
-                value = value / 2.204623;
+            if (this.isBlockFuelInRange(value)){
+                if (useLbs) {
+                    value = value / 2.204623;
+                }
+                this.blockFuel = value;
+                this.updateTakeOffTrim();
+                this._blockFuelEntered = true;
+                return true;
+            } else {
+                this.showErrorMessage("ENTRY OUT OF RANGE");
+                return false;
             }
-            this.blockFuel = value;
-            this.updateTakeOffTrim();
-            this._blockFuelEntered = true;
-            return true;
+
         }
         this.showErrorMessage(this.defaultInputErrorMessage);
         return false;
