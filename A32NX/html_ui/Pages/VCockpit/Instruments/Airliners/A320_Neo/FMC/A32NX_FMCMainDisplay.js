@@ -603,11 +603,16 @@ class FMCMainDisplay extends BaseAirliners {
             return true;
         }
         const value = parseFloat(altFuel);
-        if (isFinite(value) && this.isAltFuelInRange(value)) {
-            this._routeAltFuelEntered = true;
-            this._routeAltFuelWeight = value;
-            this._routeAltFuelTime = FMCMainDisplay.minutesTohhmm(A32NX_FuelPred.computeUserAltTime(this._routeAltFuelWeight * 1000, 290));
-            return true;
+        if (isFinite(value)) {
+            if (this.isAltFuelInRange(value)) {
+                this._routeAltFuelEntered = true;
+                this._routeAltFuelWeight = value;
+                this._routeAltFuelTime = FMCMainDisplay.minutesTohhmm(A32NX_FuelPred.computeUserAltTime(this._routeAltFuelWeight * 1000, 290));
+                return true;
+            } else {
+                this.showErrorMessage("ENTRY OUT OF RANGE");
+                return false;
+            }
         }
         this.showErrorMessage("FORMAT ERROR");
         return false;
@@ -1646,12 +1651,15 @@ class FMCMainDisplay extends BaseAirliners {
                 return true;
             }
             const rteFinalTime = s.split("/")[1];
-            if (rteFinalTime !== undefined && this.isFinalTimeInRange(rteFinalTime)) {
-                this._routeFinalFuelTime = FMCMainDisplay.hhmmToMinutes(rteFinalTime.padStart(4,"0"));
-                return true;
+            if (rteFinalTime !== undefined) {
+                if (this.isFinalTimeInRange(rteFinalTime)) {
+                    this._routeFinalFuelTime = FMCMainDisplay.hhmmToMinutes(rteFinalTime.padStart(4,"0"));
+                    return true;
+                } else {
+                    this.showErrorMessage("ENTRY OUT OF RANGE");
+                    return false;
+                }
             }
-            this.showErrorMessage(this.defaultInputErrorMessage);
-            return false;
         }
         this.showErrorMessage(this.defaultInputErrorMessage);
         return false;
@@ -1672,14 +1680,24 @@ class FMCMainDisplay extends BaseAirliners {
             this._rteFinalEntered = true;
             const rteFinalWeight = parseFloat(s.split("/")[0]);
             const rteFinalTime = s.split("/")[1];
-            if (rteFinalTime === undefined && this.isFinalFuelInRange(rteFinalWeight)) {
-                this._routeFinalFuelWeight = rteFinalWeight;
-                this._routeFinalFuelTime = (rteFinalWeight * 1000) / this._rteFinalCoeffecient;
-                return true;
-            } else if (rteFinalTime !== undefined && this.isFinalTimeInRange(rteFinalTime)) {
-                this._routeFinalFuelTime = FMCMainDisplay.hhmmToMinutes(rteFinalTime.padStart(4,"0"));
-                this._routeFinalFuelWeight = (this._routeFinalFuelTime * this._rteFinalCoeffecient) / 1000;
-                return true;
+            if (rteFinalTime === undefined) {
+                if (this.isFinalFuelInRange(rteFinalWeight)) {
+                    this._routeFinalFuelWeight = rteFinalWeight;
+                    this._routeFinalFuelTime = (rteFinalWeight * 1000) / this._rteFinalCoeffecient;
+                    return true;
+                } else {
+                    this.showErrorMessage("ENTRY OUT OF RANGE");
+                    return false;
+                }
+            } else {
+                if (this.isFinalTimeInRange(rteFinalTime)) {
+                    this._routeFinalFuelTime = FMCMainDisplay.hhmmToMinutes(rteFinalTime.padStart(4,"0"));
+                    this._routeFinalFuelWeight = (this._routeFinalFuelTime * this._rteFinalCoeffecient) / 1000;
+                    return true;
+                } else {
+                    this.showErrorMessage("ENTRY OUT OF RANGE");
+                    return false;
+                }
             }
         }
         this.showErrorMessage(this.defaultInputErrorMessage);
