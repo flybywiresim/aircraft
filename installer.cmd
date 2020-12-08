@@ -40,7 +40,6 @@ if "%ERRORLEVEL%" == "0" (
 goto main
 
 :dockerERROR
-mode con cols=73 lines=8
 cls
 echo.
 echo =======================================================================
@@ -57,7 +56,6 @@ goto exit
 goto dockerERROR)
 
 :gitERROR
-mode con cols=73 lines=8
 cls
 echo.
 echo =======================================================================
@@ -75,7 +73,6 @@ goto gitERROR)
 
 :main
 @echo off
-mode con cols=73 lines=34
 cls
 ::: =======================================================================
 :::        ______ _         ____         __          ___          
@@ -130,7 +127,6 @@ goto exit
 goto main)
 
 :auto
-mode con cols=100 lines=50
 cls
 @echo on
 if exist %CD%/.github (
@@ -152,7 +148,6 @@ pause
 goto main
 
 :download
-mode con cols=100 lines=50
 cls
 @echo on
 git clone https://github.com/flybywiresim/a32nx.git
@@ -160,7 +155,6 @@ pause
 goto main
 
 :update
-mode con cols=100 lines=50
 cls
 @echo on
 git pull
@@ -168,7 +162,6 @@ pause
 goto main
 
 :setup
-mode con cols=100 lines=50
 cls
 @echo on
 call ./scripts/dev-env/run.cmd ./scripts/setup.sh
@@ -176,7 +169,6 @@ pause
 goto main
 
 :build
-mode con cols=100 lines=50
 cls
 @echo on
 call ./scripts/dev-env/run.cmd ./scripts/build.sh
@@ -184,7 +176,6 @@ pause
 goto main
 
 :help
-mode con cols=73 lines=50
 cls
 echo.
 echo =======================================================================
@@ -194,10 +185,15 @@ echo    First, Download Git image to use "git clone" or
 echo    via 2nd menu (2. Download Git Image (Download Only))
 echo.
 echo    Second, Setup default plugin via script folder in a32nx git folder
-echo    (./scripts/dev-env/run.cmd ./scripts/setup.sh)
+echo    (./scripts/dev-env/run.cmd ./scripts/setup.sh) or
+echo    via 4th menu (4. Setup A32NX (Setup Only))
 echo.    
 echo    Last, build via script folder in a32nx git folder
-echo    (./scripts/dev-env/run.cmd ./scripts/build.sh)
+echo    (./scripts/dev-env/run.cmd ./scripts/build.sh) or
+echo    via 5th menu (5. Build A32NX (Build Only))
+echo.
+echo    Or you can build automatically
+echo    via 1st menu (1. Download A32NX Git image and Setup (Recommended))
 echo.
 echo  2. Menu
 echo    2-1. Download A32NX Git image and Setup (Recommended)
@@ -238,7 +234,6 @@ pause
 goto main
 
 :contact
-mode con cols=73 lines=12
 cls
 echo.
 echo =======================================================================
