@@ -364,7 +364,7 @@ class NXToSpeeds {
      * @param alt {number} field altitude
      * @returns {(number)[]} v2, vr, v1
      */
-    constructor(m, fPos, alt) {
+    constructor(m = 60, fPos = 1, alt = 0) {
         this.v2 = Math.floor(to[fPos - 1][_correctMass(m)](m) + (fPos === 2 ? (Math.abs(alt * 0.0002)) : 0));
         this.vr = this.v2 - 4;
         this.v1 = this.v2 - 5;
