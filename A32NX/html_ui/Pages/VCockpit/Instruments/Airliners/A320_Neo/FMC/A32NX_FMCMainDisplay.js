@@ -526,6 +526,9 @@ class FMCMainDisplay extends BaseAirliners {
                 if (value < 1000) {
                     this.costIndex = value;
                     return true;
+                } else {
+                    this.showErrorMessage("ENTRY OUT OF RANGE");
+                    return false;
                 }
             }
         }
