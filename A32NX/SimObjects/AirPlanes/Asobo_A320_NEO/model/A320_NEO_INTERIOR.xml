@@ -2458,8 +2458,7 @@
                     <NODE_ID>LIGHT_OVHD_READINGLTR</NODE_ID>
                     <POTENTIOMETER>97</POTENTIOMETER>
                </UseTemplate>
-
-               </Component>
+              </Component>
 
             <Component ID="Overhead_Back_Panel">
                 <!-- "BLUE PUMP OVRD" -->
