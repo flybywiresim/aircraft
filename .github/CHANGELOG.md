@@ -138,7 +138,7 @@
 1. [ECAM] Add icing-related ECAM warnings and memos - @beheh (Benedict Etzel)
 1. [CDU] Fix CLR position in scratchpad - @beheh (Benedict Etzel)
 1. [General] Added INIT BARO option, INHG/HPA/AUTO - @theomessin (Theodore Messinezis)
-1. [BAT] Add Batchfile for easy development and build - @Kimbyeongjang (김병장#7165)
+1. [BAT] Add batch file to automate download and building A32NX from source for non-experienced users - @Kimbyeongjang (김병장#7165)
 
 ## 0.4.0
 1. [General] Add CHANGELOG.md - @nathaninnes (Nathan Innes)
