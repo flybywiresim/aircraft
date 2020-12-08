@@ -165,6 +165,7 @@ class CDUFuelPredPage {
                         CDUFuelPredPage.ShowPage(mcdu);
                     }
                 };
+                mcdu.checkEFOBBelowMin();
 
                 if (isFlying) {
                     extraFuelCell = "{small}" + (mcdu.tryGetExtraFuel(true) + mcdu.getRouteReservedWeight()).toFixed(1);

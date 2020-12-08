@@ -1968,7 +1968,6 @@ class FMCMainDisplay extends BaseAirliners {
             return this.getFOB() - this._routeTripFuelWeight - this.taxiFuelWeight;
         } else {
             return this.blockFuel - this._routeTripFuelWeight - this.taxiFuelWeight;
-
         }
     }
 

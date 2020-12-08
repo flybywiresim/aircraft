@@ -497,6 +497,7 @@ class CDUInitPage {
                         CDUInitPage.ShowPage2(mcdu);
                     }
                 };
+                mcdu.checkEFOBBelowMin();
 
                 extraWeightCell = "{small}" + mcdu.tryGetExtraFuel().toFixed(1);
                 extraTimeCell = FMCMainDisplay.minutesTohhmm(mcdu.tryGetExtraTime()) + "{end}";
