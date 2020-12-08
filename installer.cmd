@@ -14,7 +14,7 @@ if '%errorlevel%' NEQ '0' (
     echo UAC.ShellExecute "cmd.exe", "/c %~s0 %params%", "", "runas", 1 >> "%temp%\getadmin.vbs"
     "%temp%\getadmin.vbs"
     rem del "%temp%\getadmin.vbs"
-    exit /B
+    exit
 
 :gotAdmin
 pushd "%CD%"
