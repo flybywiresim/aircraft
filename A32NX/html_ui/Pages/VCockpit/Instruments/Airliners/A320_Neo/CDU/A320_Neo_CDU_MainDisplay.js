@@ -971,7 +971,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         const max = A320_Neo_CDU_MainDisplay._v1sConf1[tempIndex][1];
 
         return this._getVSpeed(dWeightCoef, min, max);*/
-        return (new NXToSpeeds(SimVar.GetSimVarValue("TOTAL WEIGHT", "kg") / 1000, this.flaps, Simplane.getAltitude())).vr;
+        return (new NXToSpeeds(SimVar.GetSimVarValue("TOTAL WEIGHT", "kg") / 1000, this.flaps, Simplane.getAltitude())).v1;
     }
     _computeV1Speed() {
         // computeV1Speed is called by inherited class so it must remain,
