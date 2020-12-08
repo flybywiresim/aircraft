@@ -153,11 +153,11 @@ class CDUInitPage {
             ["FLT NBR"],
             [flightNo + "[color]cyan", alignOption],
             [],
-            [],
-            ["COST INDEX"],
-            [costIndex, "WIND/TEMP>"],
-            ["CRZ FL/TEMP", "TROPO"],
-            [cruiseFlTemp, "{small}36090{end}[color]cyan"],
+            ["", "WIND/TEMP>[color]inop"],
+            ["COST INDEX", "TROPO"],
+            [costIndex, "{small}36090{end}[color]cyan"],
+            ["CRZ FL/TEMP", "GND TEMP"],
+            [cruiseFlTemp, "---°[color]inop"],
         ]);
 
         mcdu.onPrevPage = () => {
