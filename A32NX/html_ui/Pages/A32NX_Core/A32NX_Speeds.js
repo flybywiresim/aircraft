@@ -1,12 +1,5 @@
 /**
  * Calculates and shares Vs, Vls, F, S and GD.
- * L SimVars:
- * A32NX_VS,
- * A32NX_VLS,
- * A32NX_FS,
- * A32NX_SS,
- * A32NX_GD,
- * A32NX_LANDING_CONF3
  */
 class A32NX_Speeds {
     constructor() {
