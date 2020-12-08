@@ -21,14 +21,14 @@ pushd "%CD%"
     CD /D "%~dp0"
 	
 :init
-docker version
+docker v
 if "%ERRORLEVEL%" == "0" ( 
      echo. Docker check passed...
 ) else ( 
      goto dockerERROR
 )
 
-git version
+git v
 if "%ERRORLEVEL%" == "0" ( 
      echo. Git check passed...
 ) else ( 
@@ -45,7 +45,6 @@ echo               You should install Docker for build
 echo                 Do you want to install Docker?
 echo ===================================================================
 echo.
-echo
 set /p docker= Y or N : 
 if "%docker%"=="y" (
 start "" https://www.docker.com/get-started & goto exit
@@ -62,7 +61,6 @@ echo                 You should install git for build
 echo                   Do you want to install git?
 echo ===================================================================
 echo.
-echo
 set /p git= Y or N : 
 if "%git%"=="y" (
 start "" https://git-scm.com/downloads & goto exit
