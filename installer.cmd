@@ -130,6 +130,7 @@ goto exit
 goto main)
 
 :auto
+mode con cols=100 lines=50
 cls
 @echo on
 if exist %CD%/.github (
@@ -151,6 +152,7 @@ pause
 goto main
 
 :download
+mode con cols=100 lines=50
 cls
 @echo on
 git clone https://github.com/flybywiresim/a32nx.git
@@ -158,6 +160,7 @@ pause
 goto main
 
 :update
+mode con cols=100 lines=50
 cls
 @echo on
 git pull
@@ -165,6 +168,7 @@ pause
 goto main
 
 :setup
+mode con cols=100 lines=50
 cls
 @echo on
 call ./scripts/dev-env/run.cmd ./scripts/setup.sh
@@ -172,6 +176,7 @@ pause
 goto main
 
 :build
+mode con cols=100 lines=50
 cls
 @echo on
 call ./scripts/dev-env/run.cmd ./scripts/build.sh
