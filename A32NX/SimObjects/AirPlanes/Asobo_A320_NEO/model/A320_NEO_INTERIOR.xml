@@ -2216,19 +2216,22 @@
             </Component>
 
             <Component ID="Overhead_Handling">
-                <UseTemplate Name="ASOBO_HANDLING_Switch_Wipers_Template">
+                <UseTemplate Name="FBW_Airbus_Wiper_Knob">
+                    <NODE_ID>HANDLING_Switch_Wiper_left</NODE_ID>
+                    <ANIM_NAME>HANDLING_Switch_Wiper_left</ANIM_NAME>
                     <CIRCUIT_ID_WIPERS>77</CIRCUIT_ID_WIPERS>
-                    <POS_OFF>0</POS_OFF>
-                    <POS_SLOW>1</POS_SLOW>
-                    <POS_NORM>2</POS_NORM>
                     <PART_ID>HANDLING_Switch_Wipers</PART_ID>
+                    <ANIMTIP_0>Set left wiper to OFF</ANIMTIP_0>
+                    <ANIMTIP_1>Set left wiper to SLOW</ANIMTIP_1>
+                    <ANIMTIP_2>Set left wiper to FAST</ANIMTIP_2>
                 </UseTemplate>
-                <UseTemplate Name="ASOBO_HANDLING_Switch_Wipers_Template">
-                    <NODE_ID>HANDLING_Switch_Wipers_1</NODE_ID>
-                    <CIRCUIT_ID_WIPERS>77</CIRCUIT_ID_WIPERS>
-                    <POS_OFF>0</POS_OFF>
-                    <POS_SLOW>1</POS_SLOW>
-                    <POS_NORM>2</POS_NORM>
+                <UseTemplate Name="FBW_Airbus_Wiper_Knob">
+                    <NODE_ID>HANDLING_Switch_Wiper_right</NODE_ID>
+                    <ANIM_NAME>HANDLING_Switch_Wiper_right</ANIM_NAME>
+                    <CIRCUIT_ID_WIPERS>81</CIRCUIT_ID_WIPERS>
+                    <ANIMTIP_0>Set right wiper to OFF</ANIMTIP_0>
+                    <ANIMTIP_1>Set right wiper to SLOW</ANIMTIP_1>
+                    <ANIMTIP_2>Set right wiper to FAST</ANIMTIP_2>
                 </UseTemplate>
             </Component>
 

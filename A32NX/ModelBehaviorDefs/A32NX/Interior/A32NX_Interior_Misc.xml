@@ -454,4 +454,46 @@
             </UseTemplate>
         </Component>
     </Template>
+
+    <Template Name="FBW_Airbus_Wiper_Knob">
+        <DefaultTemplateParameters>
+            <NODE_ID>HANDLING_Switch_Wipers</NODE_ID>
+            <ANIM_NAME>HANDLING_Switch_Wipers</ANIM_NAME>
+            <CIRCUIT_ID_WIPERS>1</CIRCUIT_ID_WIPERS>
+            <WWISE_EVENT>wipers_switch</WWISE_EVENT>
+            <POWER_NORM>100</POWER_NORM>
+            <POWER_SLOW>75</POWER_SLOW>
+            <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.WIPERS_SET_OFF</ANIMTIP_0>
+            <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.WIPERS_SET_SLOW</ANIMTIP_1>
+            <ANIMTIP_2>TT:COCKPIT.TOOLTIPS.WIPERS_SET_FAST</ANIMTIP_2>
+        </DefaultTemplateParameters>
+        <OverrideTemplateParameters>
+            <SET_POWER>#CIRCUIT_ID_WIPERS# (&gt;K:2:ELECTRICAL_CIRCUIT_POWER_SETTING_SET)</SET_POWER>
+            <GET_POWER>(A:CIRCUIT POWER SETTING:#CIRCUIT_ID_WIPERS#, Percent)</GET_POWER>
+            <INIT_WIPERS_STATE>
+                (A:CIRCUIT SWITCH ON:#CIRCUIT_ID_WIPERS#, Bool) if{ #CIRCUIT_ID_WIPERS# (&gt;K:ELECTRICAL_CIRCUIT_TOGGLE) }
+            </INIT_WIPERS_STATE>
+            <WIPERS_ON>(A:CIRCUIT SWITCH ON:#CIRCUIT_ID_WIPERS#, Bool) ! if{ #CIRCUIT_ID_WIPERS# (&gt;K:ELECTRICAL_CIRCUIT_TOGGLE) }</WIPERS_ON>
+            <WIPERS_OFF>(A:CIRCUIT SWITCH ON:#CIRCUIT_ID_WIPERS#, Bool) if{ #CIRCUIT_ID_WIPERS# (&gt;K:ELECTRICAL_CIRCUIT_TOGGLE) }</WIPERS_OFF>
+            <IS_WIPERS_ON>(A:CIRCUIT SWITCH ON:#CIRCUIT_ID_WIPERS#, Bool)</IS_WIPERS_ON>
+        </OverrideTemplateParameters>
+
+        <Component ID="#NODE_ID#" Node="#NODE_ID#">
+            <UseTemplate Name="ASOBO_GT_Update">
+                <UPDATE_ONCE>True</UPDATE_ONCE>
+                <UPDATE_CODE>#INIT_WIPERS_STATE#</UPDATE_CODE>
+            </UseTemplate>
+
+            <UseTemplate Name="ASOBO_GT_Switch_3States">
+                <CODE_POS_0>#WIPERS_OFF#</CODE_POS_0>
+                <CODE_POS_1>#WIPERS_ON# #POWER_SLOW# #SET_POWER#</CODE_POS_1>
+                <CODE_POS_2>#WIPERS_ON# #POWER_NORM# #SET_POWER#</CODE_POS_2>
+                <STATE0_TEST>#IS_WIPERS_ON# !</STATE0_TEST>
+                <STATE1_TEST>#IS_WIPERS_ON# #GET_POWER# #POWER_SLOW# == and</STATE1_TEST>
+                <STATE2_TEST>#IS_WIPERS_ON# #GET_POWER# #POWER_NORM# == and</STATE2_TEST>
+                <SWITCH_DIRECTION>Horizontal</SWITCH_DIRECTION>
+                <ARROW_TYPE>Curved</ARROW_TYPE>
+            </UseTemplate>
+        </Component>
+    </Template>
 </ModelBehaviors>
