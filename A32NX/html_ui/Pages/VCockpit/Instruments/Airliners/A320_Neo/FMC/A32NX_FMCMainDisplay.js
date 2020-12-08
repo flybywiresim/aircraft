@@ -620,13 +620,17 @@ class FMCMainDisplay extends BaseAirliners {
             return true;
         }
         const value = parseFloat(fuel);
-        if (isFinite(value) && this.isMinDestFobInRange(value)) {
-            this._minDestFobEntered = true;
-            if (value < this._minDestFob) {
-                this.addTypeTwoMessage("CHECK MIN DEST FOB");
+        if (isFinite(value)) {
+            if (this.isMinDestFobInRange(value)) {
+                this._minDestFobEntered = true;
+                if (value < this._minDestFob) {
+                    this.addTypeTwoMessage("CHECK MIN DEST FOB");
+                }
+                this._minDestFob = value;
+                return true;
+            } else {
+                this.showErrorMessage("ENTRY OUT OF RANGE")
             }
-            this._minDestFob = value;
-            return true;
         }
         this.showErrorMessage("FORMAT ERROR");
         return false;
