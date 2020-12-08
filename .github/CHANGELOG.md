@@ -138,6 +138,7 @@
 1. [ECAM] Add icing-related ECAM warnings and memos - @beheh (Benedict Etzel)
 1. [CDU] Fix CLR position in scratchpad - @beheh (Benedict Etzel)
 1. [General] Added INIT BARO option, INHG/HPA/AUTO - @theomessin (Theodore Messinezis)
+1. [FLIGHTMODEL] Corrected the fuel tank capacities - @donstim (Don)
 
 ## 0.4.0
 1. [General] Add CHANGELOG.md - @nathaninnes (Nathan Innes)
