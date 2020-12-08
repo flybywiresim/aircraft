@@ -2074,68 +2074,30 @@ class FMCMainDisplay extends BaseAirliners {
         return 0 <= wind && wind <= 250;
     }
 
-    // If anyone wants to refactor this please do
+    tryParseAverageWindEntry(s) {
+
+    }
+
     async trySetAverageWind(s) {
-        let wind;
-        if (s.includes("HD")) {
-            wind = parseFloat(s.split("HD")[1]);
-            this._windDir = this._windDirections.HEADWIND;
-            if (isFinite(wind) && this.isAvgWindInRange(wind)) {
-                this.averageWind = wind;
-                return true;
+        let validDelims = ["HD", "H", "-", "TL", "T", "+"]
+        let matchedIndex = validDelims.findIndex(element => s.includes(element))
+
+        if (matchedIndex >= 0) {
+            let wind = parseFloat(s.split(validDelims[matchedIndex])[1]);
+
+            this._windDir = matchedIndex <= 2 ? this._windDirections.HEADWIND : this._windDirections.TAILWIND
+
+            if (isFinite(wind)) {
+                if (this.isAvgWindInRange(wind)) {
+                    this.averageWind = wind;
+                    return true;
+                } else {
+                    this.showErrorMessage("ENTRY OUT OF RANGE");
+                    return false
+                }
             } else {
                 this.showErrorMessage("FORMAT ERROR");
-                return false;
-            }
-        } else if (s.includes("H")) {
-            wind = parseFloat(s.split("H")[1]);
-            this._windDir = this._windDirections.HEADWIND;
-            if (isFinite(wind) && this.isAvgWindInRange(wind)) {
-                this.averageWind = wind;
-                return true;
-            } else {
-                this.showErrorMessage("FORMAT ERROR");
-                return false;
-            }
-        } else if (s.includes("-")) {
-            wind = parseFloat(s.split("-")[1]);
-            this._windDir = this._windDirections.HEADWIND;
-            if (isFinite(wind) && this.isAvgWindInRange(wind)) {
-                this.averageWind = wind;
-                return true;
-            } else {
-                this.showErrorMessage("FORMAT ERROR");
-                return false;
-            }
-        } else if (s.includes("TL")) {
-            wind = parseFloat(s.split("TL")[1]);
-            this._windDir = this._windDirections.TAILWIND;
-            if (isFinite(wind) && this.isAvgWindInRange(wind)) {
-                this.averageWind = wind;
-                return true;
-            } else {
-                this.showErrorMessage("FORMAT ERROR");
-                return false;
-            }
-        } else if (s.includes("T")) {
-            wind = parseFloat(s.split("T")[1]);
-            this._windDir = this._windDirections.TAILWIND;
-            if (isFinite(wind) && this.isAvgWindInRange(wind)) {
-                this.averageWind = wind;
-                return true;
-            } else {
-                this.showErrorMessage("FORMAT ERROR");
-                return false;
-            }
-        } else if (s.includes("+") || s) { // Will this work..?
-            wind = parseFloat(s);
-            this._windDir = this._windDirections.TAILWIND;
-            if (isFinite(wind) && this.isAvgWindInRange(wind)) {
-                this.averageWind = wind;
-                return true;
-            } else {
-                this.showErrorMessage("FORMAT ERROR");
-                return false;
+                return false
             }
         }
     }
