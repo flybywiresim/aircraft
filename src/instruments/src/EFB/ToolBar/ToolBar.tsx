@@ -1,6 +1,25 @@
+/*
+ * A32NX
+ * Copyright (C) 2020 FlyByWire Simulations and its contributors
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 import React from 'react';
 
 type ToolbarProps = {
+    setPageIndex: (number) => void;
     fetchSimbrief: Function;
     logo: string,
 };
@@ -16,12 +35,12 @@ class ToolBar extends React.Component<ToolbarProps, ToolbarState> {
     }
 
     tabs = [
-        { id: 1, name: 'Dashboard', link: 'dashboard'},
-        { id: 2, name: 'Loadsheet', link: 'loadsheet'},
-        { id: 3, name: 'Flight', link: 'flight' },
-        { id: 4, name: 'Ground', link: 'ground'},
-        { id: 5, name: 'Multiplayer', link: 'multiplayer' },
-        { id: 6, name: 'Settings', link: 'settings' }
+        { id: 0, name: 'Dashboard', link: 'dashboard'},
+        { id: 1, name: 'Loadsheet', link: 'loadsheet'},
+        { id: 2, name: 'Flight', link: 'flight' },
+        { id: 3, name: 'Ground', link: 'ground'},
+        { id: 4, name: 'Multiplayer', link: 'multiplayer' },
+        { id: 5, name: 'Settings', link: 'settings' }
     ];
 
     state: ToolbarState = {
@@ -44,6 +63,7 @@ class ToolBar extends React.Component<ToolbarProps, ToolbarState> {
     handleClick(index: number) {
         return (() => {
             this.setState({activeIndex: index });
+            this.props.setPageIndex(index);
         });
     }
 
