@@ -21,8 +21,6 @@ pushd "%CD%"
     CD /D "%~dp0"
 	
 :init
-set logfile=installer.log
-
 docker version
 if "%ERRORLEVEL%" == "0" ( 
      echo. Docker check passed...
