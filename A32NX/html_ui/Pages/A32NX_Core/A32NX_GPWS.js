@@ -59,8 +59,8 @@ class A32NX_GPWS {
         this.UpdateAltState(radioAlt);
         this.differentiate_radioalt(radioAlt, deltaTime);
 
-        const mda = SimVar.GetSimVarValue("L:AIRLINER_MINIMUM_DESCENT_ALTITUDE", "Number");
-        const dh = SimVar.GetSimVarValue("L:AIRLINER_DECISION_HEIGHT", "Number");
+        const mda = SimVar.GetSimVarValue("L:AIRLINER_MINIMUM_DESCENT_ALTITUDE", "feet");
+        const dh = SimVar.GetSimVarValue("L:AIRLINER_DECISION_HEIGHT", "feet");
         const phase = SimVar.GetSimVarValue("L:AIRLINER_FLIGHT_PHASE", "Enum");
 
         if (radioAlt >= 10 && radioAlt <= 2450 && !SimVar.GetSimVarValue("L:A32NX_GPWS_SYS_OFF", "Bool")) { //Activate between 10 - 2450 radio alt unless SYS is off
