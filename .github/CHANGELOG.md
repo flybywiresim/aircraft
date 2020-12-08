@@ -97,7 +97,7 @@
 1. [CDU] Fix flight phase when spawning mid-air - @beheh (Benedict Etzel)
 1. [CDU] Fixed autothrust targeting F or S speed on climb - @MisterChocker (Leon)
 1. [ND] Added altitude constraints in flight level based on the transition altitude provided in MCDU Take Off Performace @ilyeshammadi (Ilyes Hammadi)
-1. [CDU] Added TYPE I and TYPE II message types and handling - @MisterChocker (Leon) 
+1. [CDU] Added TYPE I and TYPE II message types and handling - @MisterChocker (Leon)
 1. [ECAM] Fix cabin vertical speed unit - @MrMinimal (Tom Langwaldt)
 1. [CDU] Improved constraints recognition - @MisterChocker (Leon)
 1. [PFD] Add altitude indicator alerts @ilyeshammadi (Ilyes Hammadi)
@@ -136,6 +136,10 @@
 1. [ND] Update ND to only show Mode Changed when mode button is used - @ilyeshammadi (Ilyes Hammadi)
 1. [TCAS] Implement first iteration of TCAS - @lukecologne (luke)
 1. [CDU] Fixed Arrival selection page scrolling, and duplicate STARs - @saintwolf (John Good)
+1. [ECAM] Add icing-related ECAM warnings and memos - @beheh (Benedict Etzel)
+1. [CDU] Fix CLR position in scratchpad - @beheh (Benedict Etzel)
+1. [General] Added INIT BARO option, INHG/HPA/AUTO - @theomessin (Theodore Messinezis)
+1. [ANIMATIONS] Desynced the wiper animations - @pepperoni505 (pepperoni505), @lukecologne (luke)
 
 ## 0.4.0
 1. [General] Add CHANGELOG.md - @nathaninnes (Nathan Innes)
