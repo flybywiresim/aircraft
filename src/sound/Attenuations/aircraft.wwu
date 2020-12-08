@@ -5448,12 +5448,6 @@
 													<SegmentShape>Exp3</SegmentShape>
 												</Point>
 												<Point>
-													<XPos>3.29154</XPos>
-													<YPos>-200</YPos>
-													<Flags>0</Flags>
-													<SegmentShape>Log3</SegmentShape>
-												</Point>
-												<Point>
 													<XPos>4</XPos>
 													<YPos>-200</YPos>
 													<Flags>37</Flags>
