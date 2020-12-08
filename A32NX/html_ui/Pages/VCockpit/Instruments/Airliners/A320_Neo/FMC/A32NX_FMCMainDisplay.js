@@ -1875,6 +1875,32 @@ class FMCMainDisplay extends BaseAirliners {
         return (8.0 <= zfwcg && zfwcg <= 50.0);
     }
 
+    tryEditZeroFuelWeightZFWCG(zfw = 0, zfwcg = 0, useLbs = false) {
+        if (zfw > 0) {
+            if (this.isZFWInRange(zfw)) {
+                if (useLbs) {
+                    zfw = zfw / 2.204623;
+                }
+                this.setZeroFuelWeight(zfw.toString());
+            } else {
+                this.showErrorMessage("ENTRY OUT OF RANGE")
+                return false;
+            }
+        }
+        if (zfwcg > 0) {
+            if (this.isZFWCGInRange(zfwcg)) {
+                this.setZeroFuelCG(zfwcg.toString());
+            } else {
+                this.showErrorMessage("ENTRY OUT OF RANGE")
+                return false;
+            }
+        }
+        this.updateTakeOffTrim();
+        this.updateCleanTakeOffSpeed();
+        this.updateCleanApproachSpeed();
+        return true;
+    }
+
     async trySetZeroFuelWeightZFWCG(s, useLbs = false) {
         let zfw = 0;
         let zfwcg = 0;
@@ -1887,41 +1913,27 @@ class FMCMainDisplay extends BaseAirliners {
                 zfw = parseFloat(s);
             }
         }
-        if (zfw > 0 && zfwcg > 0 && this.isZFWInRange(zfw) && this.isZFWCGInRange(zfwcg)) {
-            this._zeroFuelWeightZFWCGEntered = true;
-            if (useLbs) {
-                zfw = zfw / 2.204623;
-            }
-
-            this.setZeroFuelWeight(zfw.toString());
-            this.setZeroFuelCG(zfwcg.toString());
-
-            this.updateTakeOffTrim();
-            this.updateCleanTakeOffSpeed();
-            this.updateCleanApproachSpeed();
-            return true;
-        }
-        if (this._zeroFuelWeightZFWCGEntered) {
-            if (zfw > 0 && this.isZFWInRange(zfw)) {
+        if (zfw > 0 && zfwcg > 0) {
+            if (this.isZFWInRange(zfw) && this.isZFWCGInRange(zfwcg)) {
+                this._zeroFuelWeightZFWCGEntered = true;
                 if (useLbs) {
                     zfw = zfw / 2.204623;
                 }
-                this.setZeroFuelWeight(zfw.toString());
-            } else {
-                this.showErrorMessage("FORMAT ERROR");
-                return false;
-            }
-            if (zfwcg > 0 && this.isZFWCGInRange(zfwcg)) {
-                this.setZeroFuelCG(zfwcg.toString());
-            } else {
-                this.showErrorMessage("FORMAT ERROR");
-                return false;
-            }
 
-            this.updateTakeOffTrim();
-            this.updateCleanTakeOffSpeed();
-            this.updateCleanApproachSpeed();
-            return true;
+                this.setZeroFuelWeight(zfw.toString());
+                this.setZeroFuelCG(zfwcg.toString());
+
+                this.updateTakeOffTrim();
+                this.updateCleanTakeOffSpeed();
+                this.updateCleanApproachSpeed();
+                return true;
+            } else {
+                this.showErrorMessage("ENTRY OUT OF RANGE")
+                return false;
+            }
+        }
+        if (this._zeroFuelWeightZFWCGEntered) {
+            return this.tryEditZeroFuelWeightZFWCG(zfw, zfwcg, useLbs)
         }
         this.showErrorMessage("FORMAT ERROR");
         return false;

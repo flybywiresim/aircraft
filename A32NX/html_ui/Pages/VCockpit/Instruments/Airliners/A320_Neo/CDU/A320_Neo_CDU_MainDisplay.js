@@ -220,8 +220,9 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         if (!this._minDestFobEntered) {
             this.tryUpdateMinDestFob();
         }
+        let EFOBBelMin = this.isAnEngineOn() ? this.getDestEFOB(true) : this.getDestEFOB(false);
 
-        if (this.getDestEFOB(true) < this._minDestFob) {
+        if (EFOBBelMin < this._minDestFob) {
             if (this.isAnEngineOn()) {
                 setTimeout(() => {
                     this.addTypeTwoMessage("DEST EFOB BELOW MIN", true)
