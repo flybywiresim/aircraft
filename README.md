@@ -19,7 +19,7 @@ The following aircraft configuration is currently simulated:
  FWC Std.   H2F9C
  ```
 
-Note that those parameters might be incosistent / might change while the project evolves towards a more stable form.
+Please note that this configuration may change in the future as the A32NX project evolves and changes.
 
 ## Downloads
 
