@@ -107,6 +107,7 @@ A: Yes, see [Downloads](#Downloads).
 **Q: Where is the plane in-sim?**
 
 A: The mod is added on top of the default A320neo from Asobo. If you want to uninstall it and revert to the original aircraft, just delete the A32NX folder in your community folder.
+
 **Q: What are the liveries available?**
 
 A: This project modifies the default A320neo from Asobo, therefore all liveries should be compatible.
