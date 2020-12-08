@@ -21,14 +21,16 @@ pushd "%CD%"
     CD /D "%~dp0"
 	
 :init
-docker v
+set logfile=installer.log
+
+docker version
 if "%ERRORLEVEL%" == "0" ( 
      echo. Docker check passed...
 ) else ( 
      goto dockerERROR
 )
 
-git v
+git version
 if "%ERRORLEVEL%" == "0" ( 
      echo. Git check passed...
 ) else ( 
@@ -38,39 +40,42 @@ if "%ERRORLEVEL%" == "0" (
 goto main
 
 :dockerERROR
+mode con cols=73 lines=8
 cls
 echo.
-echo ===================================================================
-echo               You should install Docker for build
-echo                 Do you want to install Docker?
-echo ===================================================================
+echo =======================================================================
+echo                 You should install Docker for build
+echo                   Do you want to install Docker?
+echo =======================================================================
 echo.
 set /p docker= Y or N : 
-if "%docker%"=="y" (
+if /i "%docker%"=="y" (
 start "" https://www.docker.com/get-started & goto exit
-) else if "%docker%"=="n" (
+) else if /i "%docker%"=="n" (
 goto exit
 ) else (
 goto dockerERROR)
 
 :gitERROR
+mode con cols=73 lines=8
 cls
 echo.
-echo ===================================================================
-echo                 You should install git for build
-echo                   Do you want to install git?
-echo ===================================================================
+echo =======================================================================
+echo                   You should install git for build
+echo                     Do you want to install git?
+echo =======================================================================
 echo.
 set /p git= Y or N : 
-if "%git%"=="y" (
+if /i "%git%"=="y" (
 start "" https://git-scm.com/downloads & goto exit
-) else if "%git%"=="n" (
+) else if /i "%git%"=="n" (
 goto exit
 ) else (
 goto gitERROR)
 
 :main
 @echo off
+mode con cols=73 lines=34
 cls
 ::: =======================================================================
 :::        ______ _         ____         __          ___          
@@ -105,21 +110,21 @@ cls
 for /f "delims=: tokens=*" %%A in ('findstr /b ::: "%~f0"') do @echo(%%A
 
 set /p mainChoose= Choose number :
-if "%mainChoose%"=="1" (
+if /i "%mainChoose%"=="1" (
 goto auto
-) else if "%mainChoose%"=="2" (
+) else if /i "%mainChoose%"=="2" (
 goto download
-) else if "%mainChoose%"=="3" (
+) else if /i "%mainChoose%"=="3" (
 goto update
-) else if "%mainChoose%"=="4" (
+) else if /i "%mainChoose%"=="4" (
 goto setup
-) else if "%mainChoose%"=="5" (
+) else if /i "%mainChoose%"=="5" (
 goto build
-) else if "%mainChoose%"=="6" (
+) else if /i "%mainChoose%"=="6" (
 goto help
-) else if "%mainChoose%"=="7" (
+) else if /i "%mainChoose%"=="7" (
 goto contact
-) else if "%mainChoose%"=="8" (
+) else if /i "%mainChoose%"=="8" (
 goto exit
 ) else (
 goto main)
@@ -137,7 +142,7 @@ if exist %CD%/.github (
 if not exist %CD%/.github(
      git clone https://github.com/flybywiresim/a32nx.git
 	 cd a32nx
-     call ./scripts/dev-env/run.cmd ./scripts/setup.sh
+      call ./scripts/dev-env/run.cmd ./scripts/setup.sh
 	 call ./scripts/dev-env/run.cmd ./scripts/build.sh
 	 pause
 	 goto main
@@ -174,6 +179,7 @@ pause
 goto main
 
 :help
+mode con cols=73 lines=50
 cls
 echo.
 echo =======================================================================
@@ -227,6 +233,7 @@ pause
 goto main
 
 :contact
+mode con cols=73 lines=12
 cls
 echo.
 echo =======================================================================
@@ -240,13 +247,13 @@ echo =======================================================================
 echo.
 
 set /p contactChoose= Choose number :
-if "%contactChoose%"=="1" (
+if /i "%contactChoose%"=="1" (
 start "" https://discord.com/invite/flybywire & goto main
-) else if "%contactChoose%"=="2" (
+) else if /i "%contactChoose%"=="2" (
 start "" https://github.com/flybywiresim/a32nx & goto main
-) else if "%contactChoose%"=="3" (
+) else if /i "%contactChoose%"=="3" (
 start "" https://opencollective.com/flybywire & goto main
-) else if "%contactChoose%"=="4" (
+) else if /i "%contactChoose%"=="4" (
 goto main
 ) else (
 goto contact)
