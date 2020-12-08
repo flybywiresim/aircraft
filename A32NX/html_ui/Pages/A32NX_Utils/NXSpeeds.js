@@ -330,6 +330,15 @@ function _compensateForMachEffect(v, alt) {
     return Math.ceil(alt > 20000 ? v + (alt - 20000) / 1000 : v);
 }
 
+/**
+ * Calculates wind component for ground speed mini
+ * @param vw {number} velocity wind (headwind)
+ * @returns {number} velocity wind [5, 15]
+ */
+function _calculateWindComponent(vw) {
+    return Math.max(Math.min(15, vw), 5);
+}
+
 class NXSpeeds {
     /**
      * Computes Vs, Vls, Vapp, F, S and GD
@@ -343,7 +352,7 @@ class NXSpeeds {
         const cm = _correctMass(m);
         this.vs = vs[fPos][cm](m, gPos);
         this.vls = (isTo ? vlsTo : vls)[fPos][cm](m, gPos);
-        this.vapp = Math.ceil(Math.max(this.vls + (wind > 15 ? 15 : wind), 5));
+        this.vapp = this.vls + _calculateWindComponent(wind);
         this.f = f[cm](m);
         this.s = s[cm](m);
         this.gd = _computeGD(m);
@@ -367,5 +376,16 @@ class NXToSpeeds {
         this.v2 = Math.floor(to[fPos - 1][_correctMass(m)](m) + (fPos === 2 ? (Math.abs(alt * 0.0002)) : 0));
         this.vr = this.v2 - 4;
         this.v1 = this.v2 - 5;
+    }
+}
+
+class NXSpeedsUtils {
+    /**
+     * Calculates wind component for ground speed mini
+     * @param vw {number} velocity wind (headwind)
+     * @returns {number} velocity wind [5, 15]
+     */
+    static calculateWindComponent(vw = SimVar.GetSimVarValue("AIRCRAFT WIND Z", "knots") * -1) {
+        return _calculateWindComponent(vw);
     }
 }
