@@ -1,6 +1,6 @@
 ::@Kimbyeongjang - (김병장#7165)
-title A32NX Builder
 @echo off
+title A32NX Builder
 
 >nul 2>&1 "%SYSTEMROOT%\system32\cacls.exe" "%SYSTEMROOT%\system32\config\system"
 if '%errorlevel%' NEQ '0' (
@@ -41,31 +41,35 @@ goto main
 cls
 echo.
 echo ===================================================================
-echo              You should install Docker for build
-echo                Do you wanna install Docker?
+echo               You should install Docker for build
+echo                 Do you want to install Docker?
 echo ===================================================================
 echo.
 echo
 set /p docker= Y or N : 
-if "%docker%"=="Y" start "" https://www.docker.com/get-started & goto exit
-if "%docker%"=="y" start "" https://www.docker.com/get-started & goto exit
-if "%docker%"=="N" goto exit
-if "%docker%"=="n" goto exit
+if "%docker%"=="y" (
+start "" https://www.docker.com/get-started & goto exit
+) else if "%docker%"=="n" (
+goto exit
+) else (
+goto dockerERROR)
 
 :gitERROR
 cls
 echo.
 echo ===================================================================
-echo              You should install git for build
-echo                  Do you wanna install git?
+echo                 You should install git for build
+echo                   Do you want to install git?
 echo ===================================================================
 echo.
 echo
 set /p git= Y or N : 
-if "%git%"=="Y" start "" https://git-scm.com/downloads & goto exit
-if "%git%"=="y" start "" https://git-scm.com/downloads & goto exit
-if "%git%"=="N" goto exit
-if "%git%"=="n" goto exit
+if "%git%"=="y" (
+start "" https://git-scm.com/downloads & goto exit
+) else if "%git%"=="n" (
+goto exit
+) else (
+goto gitERROR)
 
 :main
 @echo off
@@ -247,7 +251,7 @@ start "" https://opencollective.com/flybywire & goto main
 ) else if "%contactChoose%"=="4" (
 goto main
 ) else (
-goto conatct)
+goto contact)
 
 :exit
 exit
