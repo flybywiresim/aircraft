@@ -13,7 +13,7 @@ class CDUFlightPlanPage {
         const isFlying = Simplane.getAltitudeAboveGround() > 10 ||
             Simplane.getEngineThrottleMode(0) >= ThrottleMode.FLEX_MCT && Simplane.getEngineThrottleMode(1) >= ThrottleMode.FLEX_MCT;
         let originIdentCell = "----";
-        var runway = null;
+        let runway = null;
         if (mcdu.flightPlanManager.getOrigin()) {
             originIdentCell = mcdu.flightPlanManager.getOrigin().ident;
             runway = mcdu.flightPlanManager.getDepartureRunway();
@@ -32,7 +32,7 @@ class CDUFlightPlanPage {
             }
         }
         let destCell = "----";
-        var approachRunway = null;
+        let approachRunway = null;
         if (mcdu.flightPlanManager.getDestination()) {
             destCell = mcdu.flightPlanManager.getDestination().ident;
             approachRunway = mcdu.flightPlanManager.getApproachRunway();
@@ -161,8 +161,8 @@ class CDUFlightPlanPage {
             }
             const index = iWaypoint;
             iWaypoint++;
-            var depAltColor = "white";
-            var depAlt = "-----";
+            let depAltColor = "white";
+            let depAlt = "-----";
             if (runway) {
                 depAlt = (runway.elevation * 3.280).toFixed(0).toString();
                 depAltColor = color;
@@ -181,8 +181,8 @@ class CDUFlightPlanPage {
             } else if (index === waypointsWithDiscontinuities.length - 1) {
                 let destTimeCell = "----";
                 let destDistCell = "---";
-                var apprElev = "-----";
-                var apprColor = "white";
+                let apprElev = "-----";
+                let apprColor = "white";
                 if (approachRunway) {
                     apprElev = (approachRunway.elevation * 3.280).toFixed(0).toString();
                     apprColor = color;
@@ -269,13 +269,13 @@ class CDUFlightPlanPage {
                             }
                         }
                         const distance = (waypoint === mcdu.flightPlanManager.getActiveWaypoint() ? waypoint.liveDistanceTo : waypoint.distanceInFP);
-                        var dstnc;
+                        let dstnc;
                         if (i === 1) {
                             dstnc = distance.toFixed(0).toString() + "NM";
                         } else {
                             dstnc = distance.toFixed(0).toString() + "\xa0\xa0";
                         }
-                        for (var z = 0; z < 9 - dstnc.length; z++) {
+                        for (let z = 0; z < 9 - dstnc.length; z++) {
                             dstnc = dstnc + "\xa0";
                         }
                         dstnc = dstnc + "[color]" + color;
@@ -384,8 +384,8 @@ class CDUFlightPlanPage {
                                 rows[2 * i + 2] = holdRows[j++];
                             }
                         } else {
-                            var spdColor = color;
-                            var altColor = color;
+                            let spdColor = color;
+                            let altColor = color;
                             if (speedConstraint === "---") {
                                 spdColor = "white";
                             }
