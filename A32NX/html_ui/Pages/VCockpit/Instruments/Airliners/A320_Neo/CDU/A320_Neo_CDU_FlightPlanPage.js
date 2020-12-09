@@ -433,9 +433,9 @@ class CDUFlightPlanPage {
         ]);
         mcdu.onDown = () => {//on page down decrement the page offset.
             if (waypointsWithDiscontinuities.length > 4) {//scroll only if there are more than 5 points
-                if (offset > 0) {//if page not on top
+                if (offset > 0) { // if page not on top
                     offset--;
-                } else {//else go to the bottom
+                } else { // else go to the bottom
                     offset = waypointsWithDiscontinuities.length;
                 }
                 CDUFlightPlanPage.ShowPage(mcdu, offset);
@@ -443,9 +443,9 @@ class CDUFlightPlanPage {
         };
         mcdu.onUp = () => {
             if (waypointsWithDiscontinuities.length > 4) {
-                if (offset < waypointsWithDiscontinuities.length) {//if page not on bottom
+                if (offset < waypointsWithDiscontinuities.length) { // if page not on bottom
                     offset++;
-                } else {//else go on top
+                } else { // else go on top
                     offset = 0;
                 }
                 CDUFlightPlanPage.ShowPage(mcdu, offset);

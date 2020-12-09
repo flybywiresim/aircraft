@@ -143,7 +143,6 @@
 1. [ANIMATIONS] Desynced the wiper animations - @pepperoni505 (pepperoni505), @lukecologne (luke)
 1. [CDU] F-PLN page visual rework - @Lollo999 (Lorenzo Pinna)
 
-
 ## 0.4.0
 1. [General] Add CHANGELOG.md - @nathaninnes (Nathan Innes)
 1. [ECAM] Improved Upper ECAM Visuals - @wpine215 (Iceman)
