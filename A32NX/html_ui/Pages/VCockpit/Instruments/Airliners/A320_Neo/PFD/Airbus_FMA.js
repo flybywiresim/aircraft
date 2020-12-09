@@ -117,7 +117,7 @@ var Airbus_FMA;
 
     class CurrentPlaneState {
         static init() {
-            SimVar.SetSimVarValue("L:AIRLINER_DECISION_HEIGHT", "number", -1);
+            SimVar.SetSimVarValue("L:AIRLINER_DECISION_HEIGHT", "feet", -1);
         }
 
         static refresh() {
@@ -158,8 +158,8 @@ var Airbus_FMA;
             this.rightThrottleDetent = Simplane.getEngineThrottleMode(1);
             this.highestThrottleDetent = (this.leftThrottleDetent >= this.rightThrottleDetent) ? this.leftThrottleDetent : this.rightThrottleDetent;
             this.managedAirspeed = SimVar.GetSimVarValue("L:AP_MANAGED_AIRSPEED", "number");
-            this.minimumDescentAltitude = SimVar.GetSimVarValue("L:AIRLINER_MINIMUM_DESCENT_ALTITUDE", "number");
-            this.decisionHeight = SimVar.GetSimVarValue("L:AIRLINER_DECISION_HEIGHT", "number");
+            this.minimumDescentAltitude = SimVar.GetSimVarValue("L:AIRLINER_MINIMUM_DESCENT_ALTITUDE", "feet");
+            this.decisionHeight = SimVar.GetSimVarValue("L:AIRLINER_DECISION_HEIGHT", "feet");
             this.radioAltitude = Simplane.getAltitudeAboveGround();
             this.flexTemperature = Simplane.getFlexTemperature();
         }
