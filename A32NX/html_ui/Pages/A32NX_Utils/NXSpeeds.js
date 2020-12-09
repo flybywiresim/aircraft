@@ -412,14 +412,23 @@ class NXSpeedsUtils {
     }
 
     /**
+     * Calculates headwind component
+     * @param v {number} velocity wind
+     * @param a {number} angle: a
+     * @param b {number} angle: b
+     * @returns {number} velocity headwind
+     */
+    static getHeadwind(v, a, b) {
+        return _getHeadwind(_getAngle(a, b), v);
+    }
+
+    /**
      * Calculates ground speed mini
-     * @param vTower {number} velocity wind tower
-     * @param aTower {number} angle wind tower
-     * @param runway arrival runway
-     * @param curHeadwind {number} current headwind
+     * @param vTwr {number} velocity tower headwind
+     * @param vCur {number} velocity current headwind
      * @returns {number} ground speed mini
      */
-    static groundSpeedMini(vTower, aTower, runway, curHeadwind = SimVar.GetSimVarValue("AIRCRAFT WIND Z", "knots") * -1) {
-        return runway ? curHeadwind - _getHeadwind(_getAngle(runway.direction, aTower), vTower) : 0;
+    static groundSpeedMini(vTwr, vCur = SimVar.GetSimVarValue("AIRCRAFT WIND Z", "knots") * -1) {
+        return vCur - vTwr;
     }
 }
