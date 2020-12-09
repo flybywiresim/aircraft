@@ -3190,30 +3190,42 @@ class FMCMainDisplay extends BaseAirliners {
                     }
                 }, this.getDelaySwitchPage());
             } else if (input === "SP") {
-                this.onSp();
+                setTimeout(() => {
+                    this.onSp();
+                }, this.getDelaySwitchPage());
             } else if (input === "DEL") {
-                this.onDel();
+                setTimeout(() => {
+                    this.onDel();
+                }, this.getDelaySwitchPage());
             } else if (input === "CLR") {
-                this.onClr();
+                setTimeout(() => {
+                    this.onClr();
+                }, this.getDelaySwitchPage());
             } else if (input === "DIV") {
-                this.onDiv();
+                setTimeout(() => {
+                    this.onDiv();
+                }, this.getDelaySwitchPage());
             } else if (input === "DOT") {
-                this.handlePreviousInputState();
-                this.inOut += ".";
+                setTimeout(() => {
+                    this.handlePreviousInputState();
+                    this.inOut += ".";
+                }, this.getDelaySwitchPage());
             } else if (input === "PLUSMINUS") {
-                this.handlePreviousInputState();
-                const val = this.inOut;
-                if (val === "") {
-                    this.inOut = "-";
-                } else if (val !== FMCMainDisplay.clrValue && (!this.isDisplayingErrorMessage || !this.isDisplayingTypeTwoMessage)) {
-                    if (val.slice(-1) === "-") {
-                        this.inOut = this.inOut.slice(0, -1) + "+";
-                    } else if (val.slice(-1) === "+") {
-                        this.inOut = this.inOut.slice(0, -1) + "-";
-                    } else {
-                        this.inOut += "-";
+                setTimeout(() => {
+                    this.handlePreviousInputState();
+                    const val = this.inOut;
+                    if (val === "") {
+                        this.inOut = "-";
+                    } else if (val !== FMCMainDisplay.clrValue && (!this.isDisplayingErrorMessage || !this.isDisplayingTypeTwoMessage)) {
+                        if (val.slice(-1) === "-") {
+                            this.inOut = this.inOut.slice(0, -1) + "+";
+                        } else if (val.slice(-1) === "+") {
+                            this.inOut = this.inOut.slice(0, -1) + "-";
+                        } else {
+                            this.inOut += "-";
+                        }
                     }
-                }
+                }, this.getDelaySwitchPage());
             } else if (input === "Localizer") {
                 this._apLocalizerOn = !this._apLocalizerOn;
             } else if (input.length === 2 && input[0] === "L") {
@@ -3245,7 +3257,9 @@ class FMCMainDisplay extends BaseAirliners {
                     }
                 }
             } else if (input.length === 1 && FMCMainDisplay._AvailableKeys.indexOf(input) !== -1) {
-                this.onLetterInput(input);
+                setTimeout(() => {
+                    this.onLetterInput(input);
+                }, this.getDelaySwitchPage());
             } else {
                 console.log("'" + input + "'");
             }
