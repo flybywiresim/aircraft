@@ -371,7 +371,7 @@ class A32NX_Speeds {
             );
             SimVar.SetSimVarValue("L:A32NX_SPEEDS_F", "number", fs[this.cgw](this.lastGw));
             SimVar.SetSimVarValue("L:A32NX_SPEEDS_S", "number", ss[this.cgw](this.lastGw));
-            SimVar.SetSimVarValue("L:A32NX_SPEEDS_GD", "number", this.curFhi === 0 ? this.compensateForMachEffect(this.calculateGreenDotSpeed()) : 0);
+            SimVar.SetSimVarValue("L:A32NX_SPEEDS_GD", "number", this.compensateForMachEffect(this.calculateGreenDotSpeed()));
             const vref = this.compensateForMachEffect(vls[(this.ldgConf ? 3 : 4)][this.cgw](this.lastGw, 1));
             SimVar.SetSimVarValue("L:A32NX_SPEEDS_VLS_APP", "number", vref);
             SimVar.SetSimVarValue("L:A32NX_SPEEDS_VAPP", "number", this.compensateForWind(vref));
