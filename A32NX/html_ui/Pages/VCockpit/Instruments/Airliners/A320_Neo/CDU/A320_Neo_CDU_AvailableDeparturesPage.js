@@ -21,6 +21,8 @@ class CDUAvailableDeparturesPage {
                     departureEnRouteTransition = selectedDeparture.enRouteTransitions[departureEnRouteTransitionIndex];
                     if (departureEnRouteTransition) {
                         selectedTransCell = departureEnRouteTransition.name;
+                    } else {
+                        selectedTransCell = "NONE";
                     }
                 }
             }
@@ -116,7 +118,7 @@ class CDUAvailableDeparturesPage {
                 ["DEPARTURES FROM " + airport.ident + " }"],
                 ["RWY", "TRANS", "SID"],
                 [selectedRunwayCell, selectedTransCell, selectedSidCell],
-                ["", "", "AVAILABLE " + (sidSelection ? "SIDS" : "RUNWAYS")],
+                [(sidSelection ? "SIDS AVAILABLE" : "AVAILABLE RUNWAYS"), (sidSelection ? "TRANS" : ""), ""],
                 rows[0],
                 rows[1],
                 rows[2],
