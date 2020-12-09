@@ -339,6 +339,28 @@ function _addWindComponent(vw) {
     return Math.max(Math.min(15, vw), 5);
 }
 
+/**
+ * Get difference between angles
+ * @param a {number} angle a
+ * @param b {number} angle b
+ * @returns {number} angle diff
+ * @private
+ */
+function _getAngle(a, b) {
+    return 180 - Math.abs(Math.abs(a - b) - 180);
+}
+
+/**
+ * Get Headwind
+ * @param a {number} angle a
+ * @param v {number} velocity wind
+ * @returns {number} velocity wind
+ * @private
+ */
+function _getHeadwind(a, v) {
+    return Math.abs(v * Math.cos(a));
+}
+
 class NXSpeeds {
     /**
      * Computes Vs, Vls, Vapp, F, S and GD
@@ -377,28 +399,6 @@ class NXToSpeeds {
         this.vr = this.v2 - 4;
         this.v1 = this.v2 - 5;
     }
-}
-
-/**
- * Get difference between angles
- * @param a {number} angle a
- * @param b {number} angle b
- * @returns {number} angle diff
- * @private
- */
-function _getAngle(a, b) {
-    return 180 - Math.abs(Math.abs(a - b) - 180);
-}
-
-/**
- * Get Headwind
- * @param a {number} angle a
- * @param v {number} velocity wind
- * @returns {number} velocity wind
- * @private
- */
-function _getHeadwind(a, v) {
-    return Math.abs(v * Math.cos(a));
 }
 
 class NXSpeedsUtils {
