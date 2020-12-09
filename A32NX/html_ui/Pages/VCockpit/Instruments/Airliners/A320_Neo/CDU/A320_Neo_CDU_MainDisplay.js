@@ -181,6 +181,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             .replace(/{cyan}/g, "<span class='cyan'>")
             .replace(/{white}/g, "<span class='white'>")
             .replace(/{magenta}/g, "<span class='magenta'>")
+            .replace(/{yellow}/g, "<span class='yellow'>")
             .replace(/{inop}/g, "<span class='inop'>")
             .replace(/{sp}/g, "&nbsp;")
             .replace(/{end}/g, "</span>");
