@@ -50,7 +50,7 @@ class CDUAvailableDeparturesPage {
                 }
             } else {
                 doInsertRunwayOnly = true;
-                insertRow = ["<F-PLN[color]yellow", "INSERT*[color]amber"];
+                insertRow = ["{ERASE[color]amber", "INSERT*[color]amber"];
                 mcdu.onRightInput[5] = () => {
                     mcdu.insertTemporaryFlightPlan(() => {
                         CDUFlightPlanPage.ShowPage(mcdu, 0);
@@ -124,7 +124,7 @@ class CDUAvailableDeparturesPage {
                 rows[4],
                 rows[5],
                 rows[6],
-                [doInsertRunwayOnly ? "TMPY[color]yellow" : ""],
+                [""],
                 insertRow
             ]);
             mcdu.onUp = () => {

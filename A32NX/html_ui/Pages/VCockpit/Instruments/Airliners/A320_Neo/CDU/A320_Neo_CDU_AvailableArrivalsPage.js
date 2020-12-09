@@ -142,8 +142,8 @@ class CDUAvailableArrivalsPage {
             let bottomLabel = [""];
             let bottomLine = ["<RETURN"];
             if (mcdu.flightPlanManager.getCurrentFlightPlanIndex() === 1) {
-                bottomLabel = ["TMPY[color]amber", "TMPY[color]amber"];
-                bottomLine = ["*ERASE[color]amber", "INSERT*[color]amber"];
+                bottomLabel = [""];
+                bottomLine = ["{ERASE[color]amber", "INSERT*[color]amber"];
                 mcdu.onLeftInput[5] = async () => {
                     mcdu.eraseTemporaryFlightPlan(() => {
                         CDUFlightPlanPage.ShowPage(mcdu);
@@ -245,8 +245,8 @@ class CDUAvailableArrivalsPage {
             let bottomLabel = [""];
             let bottomLine = ["<RETURN"];
             if (mcdu.flightPlanManager.getCurrentFlightPlanIndex() === 1) {
-                bottomLabel = ["TMPY[color]amber", "TMPY[color]amber"];
-                bottomLine = ["*ERASE[color]amber", "INSERT*[color]amber"];
+                bottomLabel = [""];
+                bottomLine = ["{ERASE[color]amber", "INSERT*[color]amber"];
                 mcdu.onLeftInput[5] = async () => {
                     mcdu.eraseTemporaryFlightPlan(() => {
                         CDUAvailableArrivalsPage.ShowPage(mcdu, airport, 0, true);
