@@ -142,6 +142,10 @@
 1. [ECAM] Add icing-related ECAM warnings and memos - @beheh (Benedict Etzel)
 1. [CDU] Fix CLR position in scratchpad - @beheh (Benedict Etzel)
 1. [General] Added INIT BARO option, INHG/HPA/AUTO - @theomessin (Theodore Messinezis)
+1. [CDU] Improved key input delays - @MisterChocker (Leon)
+1. [PFD] Changed S and F speeds data source - @MisterChocker (Leon)
+1. [ANIMATIONS] Desynced the wiper animations - @pepperoni505 (pepperoni505), @lukecologne (luke)
+1. [CDU] Added calculation for ground speed mini - @MisterChocker (Leon)
 
 ## 0.4.0
 1. [General] Add CHANGELOG.md - @nathaninnes (Nathan Innes)
