@@ -2231,11 +2231,12 @@ class FMCMainDisplay extends BaseAirliners {
 
     getVApp() {
         if (isFinite(this.vApp)) {
+            if (isFinite(this.perfApprWindSpeed) && isFinite(this.perfApprWindHeading)) {
+                return Math.max(this.vApp, Math.round(this.vApp + NXSpeedsUtils.groundSpeedMini(this.perfApprWindSpeed, this.perfApprWindHeading, this.flightPlanManager.getApproachRunway())));
+            }
             return this.vApp;
         }
-        let windComp = SimVar.GetSimVarValue("AIRCRAFT WIND Z", "knots") / 3;
-        windComp = Math.max(windComp, 5);
-        return Math.ceil(this.getVLS() + windComp);
+        return Math.ceil(this.getVLS() + NXSpeedsUtils.addWindComponent());
     }
 
     setPerfApprVApp(s) {

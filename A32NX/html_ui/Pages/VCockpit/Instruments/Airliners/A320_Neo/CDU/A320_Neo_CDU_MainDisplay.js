@@ -1302,7 +1302,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                         speed = Math.max(speed, ctn);
                     }
                     SimVar.SetSimVarValue("L:A32NX_AP_APPVLS", "knots", vls);
-                    this.setAPManagedSpeed(speed, Aircraft.A320_NEO);
+                    this.setAPManagedSpeed(Math.max(speed, vls), Aircraft.A320_NEO);
                 }
             }
             if (this.currentFlightPhase == FlightPhase.FLIGHT_PHASE_GOAROUND) {
