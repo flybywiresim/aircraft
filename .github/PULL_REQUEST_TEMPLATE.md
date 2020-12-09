@@ -2,6 +2,7 @@
 <!-- Pull requests that do not follow this template are likely to be ignored. -->
 
 <!-- Add the issues this PR fixes here. If no issues are related to this PR, then this line can be removed. -->
+<!-- Add further issues with a full "Fixes #[issue_no]" line to ensure GitHub closes each one when the PR is merged. -->
 Fixes #[issue_no]
 
 ## Summary of Changes
