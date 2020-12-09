@@ -633,7 +633,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     updateTowerHeadwind() {
         if (isFinite(this.perfApprWindSpeed) && isFinite(this.perfApprWindHeading)) {
             const rwy = this.flightPlanManager.getApproachRunway();
-            if (rwy && this.flightPlanManager.getCurrentFlightPlanIndex() === 0) {
+            if (rwy) {
                 this._towerHeadwind = NXSpeedsUtils.getHeadwind(this.perfApprWindSpeed, this.perfApprWindHeading, rwy.direction);
             }
         }
