@@ -2232,7 +2232,7 @@ class FMCMainDisplay extends BaseAirliners {
     getVApp() {
         if (isFinite(this.vApp)) {
             if (isFinite(this.perfApprWindSpeed) && isFinite(this.perfApprWindHeading)) {
-                return Math.max(this.vApp, Math.round(this.vApp + NXSpeedsUtils.groundSpeedMini(this.perfApprWindSpeed, this.perfApprWindHeading, this.flightPlanManager.getApproachRunway())));
+                return Math.max(this.vApp, Math.round(this.vApp + NXSpeedsUtils.groundSpeedMini(this._towerHeadwind)));
             }
             return this.vApp;
         }

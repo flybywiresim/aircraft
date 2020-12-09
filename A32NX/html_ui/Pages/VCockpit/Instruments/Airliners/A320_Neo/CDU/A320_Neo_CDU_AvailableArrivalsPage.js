@@ -150,6 +150,7 @@ class CDUAvailableArrivalsPage {
                 };
                 mcdu.onRightInput[5] = async () => {
                     mcdu.insertTemporaryFlightPlan(() => {
+                        mcdu.updateTowerHeadwind();
                         CDUFlightPlanPage.ShowPage(mcdu);
                     });
                 };

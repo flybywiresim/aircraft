@@ -26,6 +26,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this.altLock = 0;
         this.messageQueue = [];
         this._destDataChecked = false;
+        this._towerHeadwind = 0;
     }
     get templateID() {
         return "A320_Neo_CDU";
@@ -627,6 +628,15 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             payloadWeight += SimVar.GetSimVarValue(`PAYLOAD STATION WEIGHT:${i}`, unit);
         }
         return payloadWeight;
+    }
+
+    updateTowerHeadwind() {
+        if (isFinite(this.perfApprWindSpeed) && isFinite(this.perfApprWindHeading)) {
+            const rwy = this.flightPlanManager.getApproachRunway();
+            if (rwy && this.flightPlanManager.getCurrentFlightPlanIndex() === 0) {
+                this._towerHeadwind = NXSpeedsUtils.getHeadwind(this.perfApprWindSpeed, this.perfApprWindHeading, rwy.direction);
+            }
+        }
     }
 
     _onModeSelectedSpeed() {
