@@ -335,7 +335,7 @@ function _compensateForMachEffect(v, alt) {
  * @param vw {number} velocity wind (headwind)
  * @returns {number} velocity wind [5, 15]
  */
-function _calculateWindComponent(vw) {
+function _addWindComponent(vw) {
     return Math.max(Math.min(15, vw), 5);
 }
 
@@ -352,7 +352,7 @@ class NXSpeeds {
         const cm = _correctMass(m);
         this.vs = vs[fPos][cm](m, gPos);
         this.vls = (isTo ? vlsTo : vls)[fPos][cm](m, gPos);
-        this.vapp = this.vls + _calculateWindComponent(wind);
+        this.vapp = this.vls + _addWindComponent(wind);
         this.f = f[cm](m);
         this.s = s[cm](m);
         this.gd = _computeGD(m);
@@ -379,13 +379,47 @@ class NXToSpeeds {
     }
 }
 
+/**
+ * Get difference between angles
+ * @param a {number} angle a
+ * @param b {number} angle b
+ * @returns {number} angle diff
+ * @private
+ */
+function _getAngle(a, b) {
+    return 180 - Math.abs(Math.abs(a - b) - 180);
+}
+
+/**
+ * Get Headwind
+ * @param a {number} angle a
+ * @param v {number} velocity wind
+ * @returns {number} velocity wind
+ * @private
+ */
+function _getHeadwind(a, v) {
+    return Math.abs(v * Math.cos(a));
+}
+
 class NXSpeedsUtils {
     /**
      * Calculates wind component for ground speed mini
      * @param vw {number} velocity wind (headwind)
      * @returns {number} velocity wind [5, 15]
      */
-    static calculateWindComponent(vw = SimVar.GetSimVarValue("AIRCRAFT WIND Z", "knots") * -1) {
-        return _calculateWindComponent(vw);
+    static addWindComponent(vw = SimVar.GetSimVarValue("AIRCRAFT WIND Z", "knots") * -1) {
+        return _addWindComponent(vw);
+    }
+
+    /**
+     * Calculates ground speed mini
+     * @param vTower {number} velocity wind tower
+     * @param aTower {number} angle wind tower
+     * @param runway arrival runway
+     * @param curHeadwind {number} current headwind
+     * @returns {number} ground speed mini
+     */
+    static groundSpeedMini(vTower, aTower, runway, curHeadwind = SimVar.GetSimVarValue("AIRCRAFT WIND Z", "knots") * -1) {
+        return runway ? curHeadwind - _getHeadwind(_getAngle(runway.direction, aTower), vTower) : 0;
     }
 }
