@@ -254,7 +254,7 @@ class CDUFlightPlanPage {
                         } else if ((index === routeFirstWaypointIndex - 1) || (index === routeLastWaypointIndex + 1)) {
                             altitudeConstraint = "FL" + mcdu.cruiseFlightLevel;
                         //waypoint is in between on the route
-                        } else if (index <= routeLastWaypointIndex) {
+                        } else if (index <= routeLastWaypointIndex || index >= routeFirstWaypointIndex) {
                             altitudeConstraint = "FL" + mcdu.cruiseFlightLevel;
                         }
                         if (altitudeConstraint === lastAltitudeConstraint) {
