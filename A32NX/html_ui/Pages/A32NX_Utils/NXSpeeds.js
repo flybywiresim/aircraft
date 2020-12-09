@@ -404,10 +404,10 @@ class NXToSpeeds {
 class NXSpeedsUtils {
     /**
      * Calculates wind component for ground speed mini
-     * @param vw {number} velocity wind (headwind)
+     * @param vw {number} velocity wind (1/3 steady headwind)
      * @returns {number} velocity wind [5, 15]
      */
-    static addWindComponent(vw = SimVar.GetSimVarValue("AIRCRAFT WIND Z", "knots") * -1) {
+    static addWindComponent(vw = (SimVar.GetSimVarValue("AIRCRAFT WIND Z", "knots") * -1) / 3) {
         return _addWindComponent(vw);
     }
 
