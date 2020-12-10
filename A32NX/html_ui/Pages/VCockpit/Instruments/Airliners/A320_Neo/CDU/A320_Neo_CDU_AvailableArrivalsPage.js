@@ -132,7 +132,7 @@ class CDUAvailableArrivalsPage {
             let viasPageLine = "";
             if (starSelection) {
                 if (selectedApproach) {
-                    viasPageLabel = "APPR";
+                    viasPageLabel = "{sp}APPR";
                     viasPageLine = "<VIAS";
                     mcdu.onLeftInput[1] = () => {
                         CDUAvailableArrivalsPage.ShowViasPage(mcdu, airport, 0, selectedStarIndex);
