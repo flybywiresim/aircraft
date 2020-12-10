@@ -553,7 +553,7 @@ class CDUPerformancePage {
             }
         };
         let vappCell = "---";
-        const vApp = isFinite(mcdu.vApp) ? mcdu.vApp : mcdu.getVApp();
+        const vApp = mcdu.getVApp();
         if (isFinite(vApp)) {
             vappCell = vApp.toFixed(0);
         }
