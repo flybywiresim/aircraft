@@ -5,17 +5,22 @@ class CDUAvailableDeparturesPage {
         if (airportInfo instanceof AirportInfo) {
             mcdu.clearDisplay();
             mcdu.page.Current = mcdu.page.AvailableDeparturesPage;
-            let selectedRunwayCell = "---";
+            let selectedRunwayCell = "------";
+            let selectedRunwayCellColor = "white";
             const selectedRunway = mcdu.flightPlanManager.getDepartureRunway();
             if (selectedRunway) {
                 selectedRunwayCell = Avionics.Utils.formatRunway(selectedRunway.designation);
+                selectedRunwayCellColor = mcdu.flightPlanManager.getCurrentFlightPlanIndex() === 1 ? "yellow" : "green";
             }
             let selectedSidCell = "------";
+            let selectedSidCellColor = "white";
             let selectedTransCell = "------";
+            let selectedTransCellColor = "white";
             let departureEnRouteTransition;
             const selectedDeparture = airportInfo.departures[mcdu.flightPlanManager.getDepartureProcIndex()];
             if (selectedDeparture) {
                 selectedSidCell = selectedDeparture.name;
+                selectedSidCellColor = mcdu.flightPlanManager.getCurrentFlightPlanIndex() === 1 ? "yellow" : "green";
                 const departureEnRouteTransitionIndex = mcdu.flightPlanManager.getDepartureEnRouteTransitionIndex();
                 if (departureEnRouteTransitionIndex > -1) {
                     departureEnRouteTransition = selectedDeparture.enRouteTransitions[departureEnRouteTransitionIndex];
@@ -24,6 +29,7 @@ class CDUAvailableDeparturesPage {
                     } else {
                         selectedTransCell = "NONE";
                     }
+                    selectedTransCellColor = mcdu.flightPlanManager.getCurrentFlightPlanIndex() === 1 ? "yellow" : "green";
                 }
             }
             let doInsertRunwayOnly = false;
@@ -117,7 +123,7 @@ class CDUAvailableDeparturesPage {
             mcdu.setTemplate([
                 ["DEPARTURES FROM " + airport.ident + " }"],
                 ["{sp}RWY", "TRANS{sp}", "{sp}SID"],
-                [selectedRunwayCell, selectedTransCell, selectedSidCell],
+                [selectedRunwayCell + "[color]" + selectedRunwayCellColor, selectedTransCell + "[color]" + selectedTransCellColor, selectedSidCell + "[color]" + selectedSidCellColor],
                 sidSelection ? ["SIDS", "TRANS", "AVAILABLE"] : ["", "", "RUNWAYS AVAILABLE"],
                 rows[0],
                 rows[1],
