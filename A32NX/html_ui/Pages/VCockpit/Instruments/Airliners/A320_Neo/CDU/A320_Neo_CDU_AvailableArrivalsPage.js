@@ -170,7 +170,7 @@ class CDUAvailableArrivalsPage {
                 };
             }
             mcdu.setTemplate([
-                ["ARRIVAL TO " + airport.ident + "{ }"],
+                ["ARRIVAL {small}TO{end} {green}" + airport.ident + "{end}{ }"],
                 ["{sp}APPR", "STAR{sp}", "{sp}VIA"],
                 [selectedApproachCell + "[color]" + selectedApproachCellColor, selectedStarCell + "[color]" + selectedStarCellColor, "{sp}" + selectedViasCell + "[color]" + selectedViasCellColor],
                 [viasPageLabel, "TRANS{sp}"],
