@@ -139,6 +139,14 @@
 1. [ECAM] Add icing-related ECAM warnings and memos - @beheh (Benedict Etzel)
 1. [CDU] Fix CLR position in scratchpad - @beheh (Benedict Etzel)
 1. [General] Added INIT BARO option, INHG/HPA/AUTO - @theomessin (Theodore Messinezis)
+1. [CDU] Improved key input delays - @MisterChocker (Leon)
+1. [PFD] Changed S and F speeds data source - @MisterChocker (Leon)
+1. [ANIMATIONS] Desynced the wiper animations - @pepperoni505 (pepperoni505), @lukecologne (luke)
+1. [CDU] Added calculation for ground speed mini - @MisterChocker (Leon)
+1. [FLIGHTMODEL] Changed rudder and vertical tail parameters for improved crosswind takeoff and landing capability - @donstim - (donbikes#4084)
+1. [FLIGHTMODEL] Changed full landing flap deflection from 35 degrees to 40 degrees - @donstim - (donbikes#4084)
+1. [FLIGHTMODEL] Updated legacy flight model parameters for consistency with modern flight model - @donstim - (donbikes#4084)
+1. [ECAM] Adjusted flaps panel - @MisterChocker (Leon)
 
 ## 0.4.0
 1. [General] Add CHANGELOG.md - @nathaninnes (Nathan Innes)
