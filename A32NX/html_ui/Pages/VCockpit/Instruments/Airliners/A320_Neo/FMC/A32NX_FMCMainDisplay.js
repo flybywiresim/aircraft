@@ -689,7 +689,7 @@ class FMCMainDisplay extends BaseAirliners {
 
             this._predFailure = false;
             const deviation = (this.zeroFuelWeight + this._routeFinalFuelWeight - A32NX_FuelPred.refWeight) * A32NX_FuelPred.computeNumbers(airDistance, placeholderFl, A32NX_FuelPred.computations.CORRECTIONS, true);
-            if ((20 < airDistance && airDistance < 200) || (100 < placeholderFl && placeholderFl < 290)) { //This will always be true until we can setup alternate routes
+            if ((20 < airDistance && airDistance < 200) && (100 < placeholderFl && placeholderFl < 290)) { //This will always be true until we can setup alternate routes
                 this._routeAltFuelWeight = (A32NX_FuelPred.computeNumbers(airDistance, placeholderFl, A32NX_FuelPred.computations.FUEL, true) + deviation) / 1000;
                 this._routeAltFuelTime = A32NX_FuelPred.computeNumbers(airDistance, placeholderFl, A32NX_FuelPred.computations.TIME, true);
             } else {
@@ -720,12 +720,12 @@ class FMCMainDisplay extends BaseAirliners {
         this._predFailure = false;
 
         // Use alternate coefficients - EXPERIMENTAL
-        if ((20 < airDistance && airDistance < 200) || (100 < altToUse && altToUse < 290)) {
+        if ((20 < airDistance && airDistance < 200) && (100 < altToUse && altToUse < 290)) {
             const deviation = (this.zeroFuelWeight + this._routeFinalFuelWeight + this._routeAltFuelWeight - A32NX_FuelPred.refWeight) * A32NX_FuelPred.computeNumbers(airDistance, altToUse, A32NX_FuelPred.computations.CORRECTIONS, true);
 
             this._routeTripFuelWeight = (A32NX_FuelPred.computeNumbers(airDistance, altToUse, A32NX_FuelPred.computations.FUEL, true) + deviation - 60) / 1000; // Deducted 60KG fuel as Alternate predictions include go-around
             this._routeTripTime = A32NX_FuelPred.computeNumbers(airDistance, altToUse, A32NX_FuelPred.computations.TIME, true);
-        } else if ((200 <= airDistance && airDistance <= 3100) || (290 <= altToUse && altToUse <= 390)) {
+        } else if ((200 <= airDistance && airDistance <= 3100) && (290 <= altToUse && altToUse <= 390)) {
             const deviation = (this.zeroFuelWeight + this._routeFinalFuelWeight + this._routeAltFuelWeight - A32NX_FuelPred.refWeight) * A32NX_FuelPred.computeNumbers(airDistance, altToUse, A32NX_FuelPred.computations.CORRECTIONS, false);
 
             this._routeTripFuelWeight = (A32NX_FuelPred.computeNumbers(airDistance, altToUse, A32NX_FuelPred.computations.FUEL, false) + deviation) / 1000;
