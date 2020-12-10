@@ -258,7 +258,7 @@ const vlsTo = [
  * calls function(gross weight (t)) which returns CAS.
  * Indexes: 0 to 9 represent gross weight (t) in 5t steps from 40 to 80.
  */
-const fs = [
+const f = [
     () => 131,
     () => 131,
     () => 131,
@@ -276,7 +276,7 @@ const fs = [
  * calls function(gross weight (t)) which returns CAS.
  * Indexes: 0 to 9 represent gross weight (t) in 5t steps from 40 to 80.
  */
-const ss = [
+const s = [
     () => 152,
     (m) => 152 + 1.8 * (m - 40),
     (m) => 161 + 1.6 * (m - 45),
@@ -301,113 +301,125 @@ function correctCg(m, f, cg = SimVar.GetSimVarValue("CG PERCENT", "percent")) {
 }
 
 /**
- * Calculates and shares Vs, Vls, F, S and GD.
- * L SimVars:
- * A32NX_VS,
- * A32NX_VLS,
- * A32NX_FS,
- * A32NX_SS,
- * A32NX_GD,
- * A32NX_LANDING_CONF3
+ * Ensure gross weight (mass) is withing valid range
+ * @param m {number} mass: gross weight
+ * @returns {number} mass: gross weight
+ * @private
  */
-class A32NX_Vspeeds {
-    constructor() {
-        console.log('A32NX_VSPEEDS constructed');
+function _correctMass(m) {
+    return Math.ceil(((m > 80 ? 80 : m) - 40) / 5);
+}
+
+/**
+ * Calculate green dot speed
+ * Calculation:
+ * Gross weight (t) * 2 + 85 when below FL200
+ * @returns {number}
+ */
+function _computeGD(m) {
+    return m * 2 + 85;
+}
+
+/**
+ * Corrects velocity for mach effect by adding 1kt for every 1000ft above FL200
+ * @param v {number} velocity in kt (CAS)
+ * @param alt {number} altitude in feet (baro)
+ * @returns {number} Mach corrected velocity in kt (CAS)
+ */
+function _compensateForMachEffect(v, alt) {
+    return Math.ceil(alt > 20000 ? v + (alt - 20000) / 1000 : v);
+}
+
+/**
+ * Calculates wind component for ground speed mini
+ * @param vw {number} velocity wind (headwind)
+ * @returns {number} velocity wind [5, 15]
+ */
+function _addWindComponent(vw) {
+    return Math.max(Math.min(15, vw), 5);
+}
+
+/**
+ * Get difference between angles
+ * @param a {number} angle a
+ * @param b {number} angle b
+ * @returns {number} angle diff
+ * @private
+ */
+function _getAngle(a, b) {
+    return 180 - Math.abs(Math.abs(a - b) - 180);
+}
+
+/**
+ * Get Headwind
+ * @param a {number} angle a
+ * @param v {number} velocity wind
+ * @returns {number} velocity wind
+ * @private
+ */
+function _getHeadwind(a, v) {
+    return Math.abs(v * Math.cos(a));
+}
+
+class NXSpeeds {
+    /**
+     * Computes Vs, Vls, Vapp, F, S and GD
+     * @param m {number} mass: gross weight in t
+     * @param fPos {number} flaps position
+     * @param gPos {number} landing gear position
+     * @param isTo {boolean} whether is takeoff nor not
+     * @param wind {number} wind speed
+     */
+    constructor(m, fPos, gPos, isTo, wind = 0) {
+        const cm = _correctMass(m);
+        this.vs = vs[fPos][cm](m, gPos);
+        this.vls = (isTo ? vlsTo : vls)[fPos][cm](m, gPos);
+        this.vapp = this.vls + _addWindComponent(wind);
+        this.f = f[cm](m);
+        this.s = s[cm](m);
+        this.gd = _computeGD(m);
     }
 
-    init() {
-        console.log('A32NX_VSPEEDS init');
-        SimVar.SetSimVarValue("L:A32NX_VS", "number", 0);
-        SimVar.SetSimVarValue("L:A32NX_VLS", "number", 0);
-        SimVar.SetSimVarValue("L:A32NX_FS", "number", 0);
-        SimVar.SetSimVarValue("L:A32NX_SS", "number", 0);
-        SimVar.SetSimVarValue("L:A32NX_GD", "number", 0);
-        SimVar.SetSimVarValue("L:A32NX_LANDING_CONF3", "boolean", 0);
-        SimVar.SetSimVarValue("L:A32NX_TO_CONF", "number", 1);
-        SimVar.SetSimVarValue("L:A32NX_V2", "number", 0);
-        this.lastGw = 50;
-        this.lastFhi = -1;
-        this.curFhi = -1;
-        this.ldgPos = -1;
-        this.alt = -1;
-        this.cgw = 0;
-        this.toConf = 1;
-
-        /**
-         * Fetches aircraft parameter and checks against cached values.
-         * On disagree cache gets updated and Vspeeds recalculated, then shared.
-         */
-        setInterval(() => {
-            const fp = Simplane.getCurrentFlightPhase();
-            const fhi = Simplane.getFlapsHandleIndex();
-            const gw = this.round(SimVar.GetSimVarValue("TOTAL WEIGHT", "kg")) / 1000;
-            const ldg = Math.round(SimVar.GetSimVarValue("GEAR POSITION:0", "Enum"));
-            const alt = this.round(Simplane.getAltitude());
-            const conf = SimVar.GetSimVarValue("L:A32NX_TO_CONF", "number");
-
-            if (fhi === this.lastFhi && gw === this.lastGw && ldg === this.ldgPos && alt === this.alt && conf === this.toConf) {
-                return;
-            }
-
-            this.curFhi = this.lastFhi === 0 && fhi === 1 && fp > FlightPhase.FLIGHT_PHASE_TAKEOFF ? 5 : fhi;
-            this.lastFhi = fhi;
-            this.lastGw = gw;
-            this.cgw = Math.ceil(((gw > 80 ? 80 : gw) - 40) / 5);
-            this.ldgPos = ldg;
-            this.alt = alt;
-            this.toConf = conf;
-
-            SimVar.SetSimVarValue("L:A32NX_VS", "number", this.compensateForMachEffect(vs[this.curFhi][this.cgw](this.lastGw, this.ldgPos)));
-            SimVar.SetSimVarValue("L:A32NX_VLS", "number", this.compensateForMachEffect(
-                (fp < FlightPhase.FLIGHT_PHASE_CLIMB ? vlsTo : vls)[this.curFhi][this.cgw](this.lastGw, this.ldgPos)
-            ));
-            SimVar.SetSimVarValue("L:A32NX_V2", "number",
-                Math.floor(to[this.toConf - 1][this.cgw](this.lastGw) + (this.toConf === 2 ? (Math.abs(this.alt * 0.0002)) : 0))
-            );
-            SimVar.SetSimVarValue("L:A32NX_FS", "number", fs[this.cgw](this.lastGw));
-            SimVar.SetSimVarValue("L:A32NX_SS", "number", ss[this.cgw](this.lastGw));
-            SimVar.SetSimVarValue("L:A32NX_GD", "number", this.curFhi === 0 ? this.compensateForMachEffect(this.calculateGreenDotSpeed()) : 0);
-        }, 500);
+    compensateForMachEffect(alt) {
+        this.vs = _compensateForMachEffect(this.vs, alt);
+        this.vls = _compensateForMachEffect(this.vls, alt);
+        this.gd = _compensateForMachEffect(this.gd, alt);
     }
+}
 
-    update() {
+class NXToSpeeds {
+    /**
+     * Computes TakeOff speeds
+     * @param m {number} mass: tow in t
+     * @param fPos {number} flaps takeoff config
+     * @param alt {number} field altitude
+     */
+    constructor(m = 60, fPos = 1, alt = 0) {
+        this.v2 = Math.floor(to[fPos - 1][_correctMass(m)](m) + (fPos === 2 ? (Math.abs(alt * 0.0002)) : 0));
+        this.vr = this.v2 - 4;
+        this.v1 = this.v2 - 5;
+    }
+}
+
+class NXSpeedsUtils {
+    /**
+     * Calculates wind component for ground speed mini
+     * @param vw {number} velocity wind (1/3 steady headwind)
+     * @returns {number} velocity wind [5, 15]
+     */
+    static addWindComponent(vw = (SimVar.GetSimVarValue("AIRCRAFT WIND Z", "knots") * -1) / 3) {
+        return _addWindComponent(vw);
     }
 
     /**
-     * Calculate green dot speed
-     * Calculation:
-     * Gross weight (t) * 2 + 85 when below FL200
-     * @returns {number}
+     * Calculates ground speed mini
+     * @param vTower {number} velocity wind tower
+     * @param aTower {number} angle wind tower
+     * @param runway arrival runway
+     * @param curHeadwind {number} current headwind
+     * @returns {number} ground speed mini
      */
-    calculateGreenDotSpeed() {
-        return this.lastGw * 2 + 85;
-    }
-
-    /**
-     * Corrects velocity for mach effect by adding 1kt for every 1000ft above FL200
-     * @param v {number} velocity in kt (CAS)
-     * @returns {number} Mach corrected velocity in kt (CAS)
-     */
-    compensateForMachEffect(v) {
-        return this.alt > 20000 ? v + (this.alt - 20000) / 1000 : v;
-    }
-
-    /** Corrects velocity by min 5 kt and max 15 kt for wind correction
-     * @param v {number} CAS kt
-     * @param vw {number} wind speed kt
-     * @returns {number} CAS kt
-     */
-    compensateForWind(v, vw = SimVar.GetSimVarValue("AIRCRAFT WIND Z", "knots")) {
-        return Math.ceil(Math.max(v + (vw > 15 ? 15 : vw), 5));
-    }
-
-    /**
-     * Math.round(x / r) * r
-     * @param x {number} number to be rounded
-     * @param r {number} precision
-     * @returns {number} rounded number
-     */
-    round(x, r = 100) {
-        return Math.round(x / r) * r;
+    static groundSpeedMini(vTower, aTower, runway, curHeadwind = SimVar.GetSimVarValue("AIRCRAFT WIND Z", "knots") * -1) {
+        return runway ? curHeadwind - _getHeadwind(_getAngle(runway.direction, aTower), vTower) : 0;
     }
 }
