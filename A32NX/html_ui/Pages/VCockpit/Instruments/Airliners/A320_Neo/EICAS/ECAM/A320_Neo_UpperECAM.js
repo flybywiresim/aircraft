@@ -2340,8 +2340,8 @@ var A320_Neo_UpperECAM;
                     } else if (this.currentFlapsAngle <= this.cockpitSettings.FlapsLevels.flapsAngle[2]) {
                         var lerp = Utils.Clamp((this.currentFlapsAngle - 15) / 5, 0, 1);
                         dFlapsArrow = this.generateArrowPathD(this.flapArrowPathD, this.mainShapeCorners[1], this.flapDotPositions[2], this.flapDotPositions[3], lerp);
-                    } else if (this.currentFlapsAngle <= this.cockpitSettings.FlapsLevels.flapsAngle[3]) {
-                        var lerp = Utils.Clamp((this.currentFlapsAngle - 20) / 15, 0, 1);
+                    } else if (this.currentFlapsAngle <= this.cockpitSettings.FlapsLevels.flapsAngle[3] + 5) {
+                        var lerp = Utils.Clamp((this.currentFlapsAngle - 20) / 20, 0, 1);
                         dFlapsArrow = this.generateArrowPathD(this.flapArrowPathD, this.mainShapeCorners[1], this.flapDotPositions[3], this.flapDotPositions[4], lerp);
                     }
                     if (this.currentFlapsArrow != null) {
