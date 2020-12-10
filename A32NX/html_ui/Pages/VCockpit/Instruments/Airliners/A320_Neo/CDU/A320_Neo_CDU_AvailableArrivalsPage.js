@@ -161,11 +161,11 @@ class CDUAvailableArrivalsPage {
             }
             mcdu.setTemplate([
                 ["ARRIVAL TO " + airport.ident + "{ }"],
-                ["APPR", "STAR", "VIA"],
+                ["{sp}APPR", "STAR{sp}", "VIA"],
                 [selectedApproachCell + "[color]green", selectedStarCell + "[color]green", selectedViasCell + "[color]green"],
-                [viasPageLabel, "TRANS"],
+                [viasPageLabel, "TRANS{sp}"],
                 [viasPageLine, selectedTransitionCell + "[color]green"],
-                [starSelection ? "STAR" : "APPR", starSelection ? "TRANS" : "", "AVAILABLE"],
+                [starSelection ? "STARS" : "APPR", starSelection ? "TRANS" : "", "AVAILABLE"],
                 rows[0],
                 rows[1],
                 rows[2],
@@ -263,8 +263,8 @@ class CDUAvailableArrivalsPage {
                 };
             }
             mcdu.setTemplate([
-                ["ARRIVAL TO " + airport.ident + "{ }"],
-                ["APPR", "STAR", "VIA"],
+                ["APPROACH VIAS"],
+                ["{sp}APPR", "STAR{sp}", "VIA"],
                 [selectedApproachCell + "[color]green", selectedStarCell + "[color]green", selectedViasCell + "[color]green"],
                 ["APPR VIAS"],
                 ["{NO VIAS[color]cyan"],

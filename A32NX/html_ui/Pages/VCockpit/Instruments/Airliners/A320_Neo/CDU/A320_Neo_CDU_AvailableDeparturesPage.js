@@ -116,9 +116,9 @@ class CDUAvailableDeparturesPage {
             }
             mcdu.setTemplate([
                 ["DEPARTURES FROM " + airport.ident + " }"],
-                ["RWY", "TRANS", "SID"],
+                ["{sp}RWY", "TRANS{sp}", "{sp}SID"],
                 [selectedRunwayCell, selectedTransCell, selectedSidCell],
-                [(sidSelection ? "SIDS AVAILABLE" : "AVAILABLE RUNWAYS"), (sidSelection ? "TRANS" : ""), ""],
+                sidSelection ? ["SIDS", "TRANS", "AVAILABLE"] : ["", "", "RUNWAYS AVAILABLE"],
                 rows[0],
                 rows[1],
                 rows[2],
