@@ -15,6 +15,8 @@ class CDUAvailableArrivalsPage {
                 const selectedApproachTransition = selectedApproach.transitions[mcdu.flightPlanManager.getApproachTransitionIndex()];
                 if (selectedApproachTransition) {
                     selectedViasCell = selectedApproachTransition.waypoints[0].infos.icao.substr(7);
+                } else {
+                    selectedViasCell = "NONE";
                 }
             }
             let selectedStarCell = "------";
