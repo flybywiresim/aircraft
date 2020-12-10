@@ -5,12 +5,12 @@ class CDUAvailableArrivalsPage {
             mcdu.clearDisplay();
             mcdu.page.Current = mcdu.page.AvailableArrivalsPage;
             console.log(airport);
-            let selectedApproachCell = "---";
-            let selectedViasCell = "NONE";
-            let selectedTransitionCell = "NONE";
+            let selectedApproachCell = "------";
+            let selectedViasCell = "------";
+            let selectedTransitionCell = "------";
             const selectedApproach = mcdu.flightPlanManager.getApproach();
             console.log(selectedApproach);
-            if (selectedApproach) {
+            if (selectedApproach && selectedApproach.name) {
                 selectedApproachCell = Avionics.Utils.formatRunway(selectedApproach.name);
                 const selectedApproachTransition = selectedApproach.transitions[mcdu.flightPlanManager.getApproachTransitionIndex()];
                 if (selectedApproachTransition) {
@@ -161,8 +161,8 @@ class CDUAvailableArrivalsPage {
             }
             mcdu.setTemplate([
                 ["ARRIVAL TO " + airport.ident + "{ }"],
-                ["{sp}APPR", "STAR{sp}", "VIA"],
-                [selectedApproachCell + "[color]green", selectedStarCell + "[color]green", selectedViasCell + "[color]green"],
+                ["{sp}APPR", "STAR{sp}", "{sp}VIA"],
+                [selectedApproachCell + "[color]green", selectedStarCell + "[color]green", "{sp}" + selectedViasCell + "[color]green"],
                 [viasPageLabel, "TRANS{sp}"],
                 [viasPageLine, selectedTransitionCell + "[color]green"],
                 [starSelection ? "STARS" : "APPR", starSelection ? "TRANS" : "", "AVAILABLE"],
@@ -264,8 +264,8 @@ class CDUAvailableArrivalsPage {
             }
             mcdu.setTemplate([
                 ["APPROACH VIAS"],
-                ["{sp}APPR", "STAR{sp}", "VIA"],
-                [selectedApproachCell + "[color]green", selectedStarCell + "[color]green", selectedViasCell + "[color]green"],
+                ["{sp}APPR", "STAR{sp}", "{sp}VIA"],
+                [selectedApproachCell + "[color]green", selectedStarCell + "[color]green", "{sp}" + selectedViasCell + "[color]green"],
                 ["APPR VIAS"],
                 ["{NO VIAS[color]cyan"],
                 rows[0],
