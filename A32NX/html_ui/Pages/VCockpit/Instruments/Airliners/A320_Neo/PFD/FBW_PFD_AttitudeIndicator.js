@@ -51,6 +51,8 @@ class FBW_PFD_AttitudeIndicator {
         this.PrevSelectedHeadingBugVisible = true;
         this.HeadingTape = new FBW_PFD_HeadingTape(35, 10, 15, document.getElementById("HorizonHeadingTickGroup"));
 
+        this.IsAttitudeExcessive = false;
+
         this.disp_index = NaN;
     }
 
@@ -81,8 +83,6 @@ class FBW_PFD_AttitudeIndicator {
 
         const FDActive = SimVar.GetSimVarValue(`AUTOPILOT FLIGHT DIRECTOR ACTIVE:${this.disp_index}`, "Bool");
 
-        this.updateFDBars(FDActive);
-
         this.HeadingTape.updateGraduation(heading, Math.max(Math.min(this.calculateOffsetFromPitch(pitch), 31.563), -31.563));
 
         if (!isNaN(selectedHeading) && !FDActive) {
@@ -91,12 +91,23 @@ class FBW_PFD_AttitudeIndicator {
             this.HeadingTape.updateBug(this.SelectedHeadingBugIndex, 0, heading, false);
         }
 
+        this.updateExcessiveAtt(pitch, roll);
+
         this.setAttitude(pitch, roll);
+        this.updateFDBars(FDActive);
         this.updateSI(isOnGround);
         this.updateVerticalOffset(roll);
         this.updateRisingGround(radioAlt, pitch);
         this.updateRadioAlt(radioAlt, decisionHeight);
         this.updateSidestickIndicator(isOnGround);
+    }
+
+    updateExcessiveAtt(pitch, roll) {
+        if (!this.IsAttitudeExcessive && (pitch > 25 || pitch < -13 || Math.abs(roll) > 45)) {
+            this.IsAttitudeExcessive = true;
+        } else if (this.IsAttitudeExcessive && pitch < 22 && pitch > -10 && Math.abs(roll) < 40) {
+            this.IsAttitudeExcessive = false;
+        }
     }
 
     updateSidestickIndicator(onGround) {
@@ -173,7 +184,7 @@ class FBW_PFD_AttitudeIndicator {
     updateFDBars(FDActive) {
         // FD active handling to be improved
 
-        if (!FDActive) {
+        if (!FDActive && !this.IsAttitudeExcessive) {
             if (this.PrevFDPitchVisible) {
                 this.PrevFDPitchVisible = false;
                 this.FlightDirectorPitch.style.display = "none";
