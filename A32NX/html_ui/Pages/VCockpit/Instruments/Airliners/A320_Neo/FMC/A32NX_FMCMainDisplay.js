@@ -2234,7 +2234,7 @@ class FMCMainDisplay extends BaseAirliners {
             return this.vApp;
         }
         if (isFinite(this.perfApprWindSpeed) && isFinite(this.perfApprWindHeading)) {
-            return Math.ceil(this.getVLS() + NXSpeedsUtils.addWindComponent(this._towerHeadwind));
+            return Math.ceil(this.getVLS() + NXSpeedsUtils.addWindComponent(this._towerHeadwind / 3));
         }
         return Math.ceil(this.getVLS() + NXSpeedsUtils.addWindComponent());
     }
