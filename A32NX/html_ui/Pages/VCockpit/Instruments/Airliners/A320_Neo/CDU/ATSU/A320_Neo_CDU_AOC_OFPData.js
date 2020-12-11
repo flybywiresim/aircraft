@@ -445,9 +445,11 @@ async function loadFuel(mcdu) {
  * @param {number} payload in pound
  * @param {number} percentMacTarget Target %MAC CG / 100
  */
-function distributeBaggagePayload(payload = 0, percentMacTarget = 0.2678) {
+function distributeBaggagePayload(payload = 0, percentMacTarget = 0.30) {
     const leMacZ = -5.233333; // Value from Debug Weight
     const macSize = 14.0623; // Value from Debug Aircraft Sim Tunning
+    const EMPTY_AIRCRAFT_WEIGHT = 90400 * 0.453592; // Value from flight_model.cfg to kgs
+    const EMPTY_AIRCRAFT_POSITION = -9; // Value from flight_model.cfg
     const FORWARD_BAGGAGE_POSITION = 21.825772; // Value from flight_model.cfg
     const REAR_BAGGAGE_POSITION = -35.825745; // Value from flight_model.cfg
 
@@ -456,8 +458,11 @@ function distributeBaggagePayload(payload = 0, percentMacTarget = 0.2678) {
     const forwardBaggageRelPos = Math.abs(FORWARD_BAGGAGE_POSITION - cgTarget);
     const rearBaggageRelPos = Math.abs(REAR_BAGGAGE_POSITION - cgTarget);
 
-    const forwardBaggageWeight = (payload * rearBaggageRelPos) / (rearBaggageRelPos + forwardBaggageRelPos);
-    const rearBaggageWeight = (payload * forwardBaggageRelPos) / (forwardBaggageRelPos + rearBaggageRelPos);
+    // const forwardBaggageWeight = (payload * rearBaggageRelPos) / (rearBaggageRelPos + forwardBaggageRelPos);
+    // const rearBaggageWeight = (payload * forwardBaggageRelPos) / (forwardBaggageRelPos + rearBaggageRelPos);
+
+    const rearBaggageWeight = -1 * ((-(EMPTY_AIRCRAFT_WEIGHT * (EMPTY_AIRCRAFT_POSITION - cgTarget) + payload * (FORWARD_BAGGAGE_POSITION - cgTarget))) / (FORWARD_BAGGAGE_POSITION - REAR_BAGGAGE_POSITION));
+    const forwardBaggageWeight = -1 * ((EMPTY_AIRCRAFT_WEIGHT * (EMPTY_AIRCRAFT_POSITION - cgTarget) + payload * (REAR_BAGGAGE_POSITION - cgTarget))) / (FORWARD_BAGGAGE_POSITION - REAR_BAGGAGE_POSITION);
 
     return {forwardBaggageWeight, rearBaggageWeight};
 }
