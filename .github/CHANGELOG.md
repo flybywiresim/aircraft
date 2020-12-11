@@ -135,7 +135,7 @@
 1. [MFD] Corrected icon for the Decel point on flightplan - @LoungeFlyZ (Chris Johnson)
 1. [ND] Update ND to only show Mode Changed when mode button is used - @ilyeshammadi (Ilyes Hammadi)
 1. [TCAS] Implement first iteration of TCAS - @lukecologne (luke)
-1. [CDU] Fixed Arrival selection page scrolling, and duplicate STARs - @saintwolf (John Good)
+1. [CDU] Arrival and departure page fixes and updated Honeywell-style design - @saintwolf (John Good)
 1. [ECAM] Add icing-related ECAM warnings and memos - @beheh (Benedict Etzel)
 1. [CDU] Fix CLR position in scratchpad - @beheh (Benedict Etzel)
 1. [General] Added INIT BARO option, INHG/HPA/AUTO - @theomessin (Theodore Messinezis)
