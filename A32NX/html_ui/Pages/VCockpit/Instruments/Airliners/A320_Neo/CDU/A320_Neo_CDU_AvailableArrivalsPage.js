@@ -43,7 +43,7 @@ class CDUAvailableArrivalsPage {
             // Sort the approaches in Honeywell's documented order
             const sortedApproaches = approaches.sort(
                 function (a, b) {
-                    const approachTypeOrder = {"MLS":0, "ILS":1, "GLS":2, "IGS":3, "LOC":4, "BAC":5, "LDA":6, "SDF": 7, "GPS": 8, "RNAV":9, "VORDME":10, "NDB":11};
+                    const approachTypeOrder = {"MLS":0, "ILS":1, "GLS":2, "IGS":3, "LOC":4, "BLOC":5, "LDA":6, "SDF": 7, "GPS": 8, "RNAV":9, "VORDME":10, "NDB":11};
                     return approachTypeOrder[a.name.split(" ")[0]] - approachTypeOrder[b.name.split(" ")[0]];
                 }
             );
