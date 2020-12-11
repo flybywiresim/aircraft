@@ -45,6 +45,12 @@ class FBW_PFD_AttitudeIndicator {
         this.SideslipIndicator = document.getElementById("SideSlipIndicator");
         this.RollIndicatorTriangle = document.getElementById("RollTriangleGroup");
 
+        this.Tick = document.getElementById("HorizonHeadingTick");
+        this.SelectedHeadingBug = document.getElementById("HorizonHeadingBug");
+        this.SelectedHeadingBugIndex = NaN;
+        this.PrevSelectedHeadingBugVisible = true;
+        this.HeadingTape = new FBW_PFD_HeadingTape(35, 10, 15, document.getElementById("HorizonHeadingTickGroup"));
+
         this.disp_index = NaN;
     }
 
@@ -62,14 +68,28 @@ class FBW_PFD_AttitudeIndicator {
 
         this.TailstrikeWarning.style.display = "none";
 
+        this.HeadingTape.init(this.Tick, "HorizonHeadingTick");
+
+        this.SelectedHeadingBugIndex = this.HeadingTape.addBug(this.SelectedHeadingBug);
+
         this.disp_index = _index;
     }
 
-    update(isOnGround, radioAlt, decisionHeight) {
+    update(isOnGround, radioAlt, decisionHeight, heading, selectedHeading) {
         const roll = SimVar.GetSimVarValue("PLANE BANK DEGREES", "degrees");
         const pitch = -SimVar.GetSimVarValue("PLANE PITCH DEGREES", "degrees"); //Pitch is negative for up? wtf
 
-        this.updateFDBars();
+        const FDActive = SimVar.GetSimVarValue(`AUTOPILOT FLIGHT DIRECTOR ACTIVE:${this.disp_index}`, "Bool");
+
+        this.updateFDBars(FDActive);
+
+        this.HeadingTape.updateGraduation(heading, Math.max(Math.min(this.calculateOffsetFromPitch(pitch), 31.563), -31.563));
+
+        if (!isNaN(selectedHeading) && !FDActive) {
+            this.HeadingTape.updateBug(this.SelectedHeadingBugIndex, selectedHeading, heading, true);
+        } else {
+            this.HeadingTape.updateBug(this.SelectedHeadingBugIndex, 0, heading, false);
+        }
 
         this.setAttitude(pitch, roll);
         this.updateSI(isOnGround);
@@ -150,9 +170,8 @@ class FBW_PFD_AttitudeIndicator {
         this.RadioAlt.textContent = text;
     }
 
-    updateFDBars() {
+    updateFDBars(FDActive) {
         // FD active handling to be improved
-        const FDActive = SimVar.GetSimVarValue(`AUTOPILOT FLIGHT DIRECTOR ACTIVE:${this.disp_index}`, "Bool");
 
         if (!FDActive) {
             if (this.PrevFDPitchVisible) {

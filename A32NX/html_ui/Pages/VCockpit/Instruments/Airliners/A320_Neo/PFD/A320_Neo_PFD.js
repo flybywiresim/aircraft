@@ -50,6 +50,7 @@ class A320_Neo_PFD_MainPage extends NavSystemPage {
         this.AttitudeIndicator = new FBW_PFD_AttitudeIndicator();
         this.VSpeedIndicator = new FBW_PFD_VertSpeedIndicator();
         this.LSIndicators = new FBW_PFD_LSIndicators();
+        this.HeadingZone = new FBW_PFD_HeadingZone();
     }
     init() {
         super.init();
@@ -63,6 +64,7 @@ class A320_Neo_PFD_MainPage extends NavSystemPage {
         this.AttitudeIndicator.init(this.disp_index);
         this.VSpeedIndicator.init(this.disp_index);
         this.LSIndicators.init(this.disp_index);
+        this.HeadingZone.init(this.disp_index);
 
         //SELF TEST
         this.selfTestDiv = document.querySelector('#SelfTestDiv');
@@ -115,9 +117,19 @@ class A320_Neo_PFD_MainPage extends NavSystemPage {
 
         const decisionHeight = SimVar.GetSimVarValue("L:AIRLINER_DECISION_HEIGHT", "feet");
 
-        this.AttitudeIndicator.update(isOnGround, radioAlt, decisionHeight);
+        const heading = SimVar.GetSimVarValue("PLANE HEADING DEGREES MAGNETIC", "degrees");
+
+        const groundTrack = SimVar.GetSimVarValue("GPS GROUND MAGNETIC TRACK", "degrees");
+
+        let selectedHeading = NaN;
+        if (Simplane.getAutoPilotHeadingLockActive()) {
+            selectedHeading = Simplane.getAutoPilotSelectedHeadingLockValue(false);
+        }
+
+        this.AttitudeIndicator.update(isOnGround, radioAlt, decisionHeight, heading, selectedHeading);
         this.VSpeedIndicator.update(radioAlt);
         this.LSIndicators.update();
+        this.HeadingZone.update(heading, groundTrack, selectedHeading, this.showILS);
 
         if (this.disp_index == 1) {
             updateDisplayDMC("PFD1", this.engTestDiv, this.engMaintDiv);

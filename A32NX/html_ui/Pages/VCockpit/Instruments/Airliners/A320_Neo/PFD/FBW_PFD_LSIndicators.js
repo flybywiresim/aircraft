@@ -199,7 +199,7 @@ class FBW_PFD_LSIndicators {
             // normally the ident and freq should be always displayed when an ILS freq is set, but currently it only show when we have a signal
             this.LSIdentText.textContent = localizer.ident;
 
-            const freqTextSplit = localizer.freq.toString().split(".");
+            const freqTextSplit = (Math.round(localizer.freq * 1000) / 1000).toString().split(".");
             this.LSFrequencyLeadingDigits.textContent = freqTextSplit[0];
             this.LSFrequencyTrailingDigits.textContent = "." + freqTextSplit[1];
 
