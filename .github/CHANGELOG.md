@@ -147,6 +147,7 @@
 1. [FLIGHTMODEL] Changed full landing flap deflection from 35 degrees to 40 degrees - @donstim - (donbikes#4084)
 1. [FLIGHTMODEL] Updated legacy flight model parameters for consistency with modern flight model - @donstim - (donbikes#4084)
 1. [ECAM] Adjusted flaps panel - @MisterChocker (Leon)
+1. [CDU] F-PLN page visual rework - @Lollo999 (Lorenzo Pinna)
 
 ## 0.4.0
 1. [General] Add CHANGELOG.md - @nathaninnes (Nathan Innes)
