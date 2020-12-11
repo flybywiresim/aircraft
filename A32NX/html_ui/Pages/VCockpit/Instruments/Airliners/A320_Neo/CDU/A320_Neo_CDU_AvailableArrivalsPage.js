@@ -41,12 +41,8 @@ class CDUAvailableArrivalsPage {
             }
             const approaches = airportInfo.approaches;
             // Sort the approaches in Honeywell's documented order
-            const sortedApproaches = approaches.sort(
-                function (a, b) {
-                    const approachTypeOrder = {"MLS":0, "ILS":1, "GLS":2, "IGS":3, "LOC":4, "BLOC":5, "LDA":6, "SDF": 7, "GPS": 8, "RNAV":9, "VORDME":10, "NDB":11};
-                    return approachTypeOrder[a.name.split(" ")[0]] - approachTypeOrder[b.name.split(" ")[0]];
-                }
-            );
+            const approachTypeOrder = {"MLS":0, "ILS":1, "GLS":2, "IGS":3, "LOC":4, "BLOC":5, "LDA":6, "SDF": 7, "GPS": 8, "RNAV":9, "VORDME":10, "NDB":11};
+            const sortedApproaches = approaches.sort((a, b) => approachTypeOrder[a.name.split(" ")[0]] - approachTypeOrder[b.name.split(" ")[0]]);
             const rows = [[""], [""], [""], [""], [""], [""], [""], [""]];
             if (!starSelection) {
                 for (let i = 0; i < 3; i++) {
@@ -57,8 +53,7 @@ class CDUAvailableArrivalsPage {
                         const approachRunwayName = Avionics.Utils.formatRunway(approach.name.split(" ")[1]);
                         let runwayLength = 0;
                         let runwayCourse = 0;
-                        for (let i = 0; i < runways.length; i++) {
-                            const runway = runways[i];
+                        for (const runway of runways) {
                             const runwayName = Avionics.Utils.formatRunway(runway.designation);
                             if (runwayName.match("^" + approachRunwayName + "C?$")) {
                                 runwayLength = runway.length.toFixed(0);
