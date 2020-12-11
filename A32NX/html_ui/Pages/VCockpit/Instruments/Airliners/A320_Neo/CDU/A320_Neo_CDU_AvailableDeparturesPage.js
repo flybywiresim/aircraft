@@ -46,9 +46,10 @@ class CDUAvailableDeparturesPage {
                     if (runway) {
                         rows[2 * i] = [
                             "{" + Avionics.Utils.formatRunway(runway.designation) + "[color]cyan",
-                            "CRS" + (runway.direction / 10).toFixed(0) + "0[color]cyan",
-                            runway.length.toFixed(0) + "M[color]cyan"
+                            "",
+                            runway.length.toFixed(0) + "{small}M{end}[color]cyan"
                         ];
+                        rows[2 * i + 1] = ["{sp}{sp}{sp}{sp}" + Utils.leadingZeros(Math.round((runway.direction)), 3) + "[color]cyan",];
                         mcdu.onLeftInput[i + 1] = async () => {
                             mcdu.setOriginRunwayIndex(index, () => {
                                 CDUAvailableDeparturesPage.ShowPage(mcdu, airport, 0, true);
@@ -132,7 +133,7 @@ class CDUAvailableDeparturesPage {
                 rows[4],
                 rows[5],
                 rows[6],
-                [""],
+                rows[7],
                 insertRow
             ]);
             mcdu.onUp = () => {
@@ -140,7 +141,7 @@ class CDUAvailableDeparturesPage {
                 if (sidSelection) {
                     pageCurrent = Math.min(pageCurrent, airportInfo.departures.length - 3);
                 } else {
-                    pageCurrent = Math.min(pageCurrent, airportInfo.oneWayRunways.length - 3);
+                    pageCurrent = Math.min(pageCurrent, airportInfo.oneWayRunways.length - 4);
                 }
                 if (pageCurrent < 0) {
                     pageCurrent = 0;

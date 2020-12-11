@@ -40,13 +40,33 @@ class CDUAvailableArrivalsPage {
                 }
             }
             const approaches = airportInfo.approaches;
+            // Sort the approaches in Honeywell's documented order
+            const sortedApproaches = approaches.sort(
+                function (a, b) {
+                    const approachTypeOrder = {"MLS":0, "ILS":1, "GLS":2, "IGS":3, "LOC":4, "BAC":5, "LDA":6, "SDF": 7, "GPS": 8, "RNAV":9, "VORDME":10, "NDB":11};
+                    return approachTypeOrder[a.name.split(" ")[0]] - approachTypeOrder[b.name.split(" ")[0]];
+                }
+            );
             const rows = [[""], [""], [""], [""], [""], [""], [""], [""]];
             if (!starSelection) {
                 for (let i = 0; i < 3; i++) {
                     const index = i + pageCurrent;
-                    const approach = approaches[index];
+                    const approach = sortedApproaches[index];
                     if (approach) {
-                        rows[2 * i] = ["{" + Avionics.Utils.formatRunway(approach.name) + "[color]cyan"];
+                        const runways = airportInfo.oneWayRunways;
+                        const approachRunwayName = Avionics.Utils.formatRunway(approach.name.split(" ")[1]);
+                        let runwayLength = 0;
+                        let runwayCourse = 0;
+                        for (let i = 0; i < runways.length; i++) {
+                            const runway = runways[i];
+                            const runwayName = Avionics.Utils.formatRunway(runway.designation);
+                            if (runwayName.match("^" + approachRunwayName + "C?$")) {
+                                runwayLength = runway.length.toFixed(0);
+                                runwayCourse = Utils.leadingZeros(Math.round((runway.direction)), 3);
+                            }
+                        }
+                        rows[2 * i] = ["{" + Avionics.Utils.formatRunway(approach.name) + "[color]cyan", "", "{sp}{sp}{sp}{sp}" + runwayLength + "{small}M{end}[color]cyan"];
+                        rows[2 * i + 1] = ["{sp}{sp}{sp}{sp}" + runwayCourse + "[color]cyan"];
                         mcdu.onLeftInput[i + 2] = () => {
                             mcdu.setApproachIndex(index, () => {
                                 CDUAvailableArrivalsPage.ShowPage(mcdu, airport, 0, true);
@@ -149,10 +169,8 @@ class CDUAvailableArrivalsPage {
                     };
                 }
             }
-            let bottomLabel = [""];
             let bottomLine = ["<RETURN"];
             if (mcdu.flightPlanManager.getCurrentFlightPlanIndex() === 1) {
-                bottomLabel = [""];
                 bottomLine = ["{ERASE[color]amber", "INSERT*[color]amber"];
                 mcdu.onLeftInput[5] = async () => {
                     mcdu.eraseTemporaryFlightPlan(() => {
@@ -181,7 +199,7 @@ class CDUAvailableArrivalsPage {
                 rows[2],
                 rows[3],
                 rows[4],
-                bottomLabel,
+                rows[5],
                 bottomLine
             ]);
             mcdu.onUp = () => {
@@ -258,10 +276,8 @@ class CDUAvailableArrivalsPage {
                     }
                 }
             }
-            let bottomLabel = [""];
             let bottomLine = ["<RETURN"];
             if (mcdu.flightPlanManager.getCurrentFlightPlanIndex() === 1) {
-                bottomLabel = [""];
                 bottomLine = ["{ERASE[color]amber", "INSERT*[color]amber"];
                 mcdu.onLeftInput[5] = async () => {
                     mcdu.eraseTemporaryFlightPlan(() => {
@@ -290,7 +306,7 @@ class CDUAvailableArrivalsPage {
                 rows[3],
                 rows[4],
                 rows[5],
-                bottomLabel,
+                rows[6],
                 bottomLine
             ]);
             mcdu.onLeftInput[1] = () => {
