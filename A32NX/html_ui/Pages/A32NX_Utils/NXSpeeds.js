@@ -431,4 +431,17 @@ class NXSpeedsUtils {
     static groundSpeedMini(vTwr, vCur = SimVar.GetSimVarValue("AIRCRAFT WIND Z", "knots") * -1) {
         return vCur - vTwr;
     }
+
+    /**
+     * Returns Vtarget limited by Vmax
+     * @param vapp {number} Vapp
+     * @param gsMini {number} ground speed mini
+     * @returns {number}
+     */
+    static getVtargetGSMini(vapp, gsMini) {
+        return Math.max(vapp, Math.min(
+            Math.round(vapp + gsMini),
+            Math.round(Simplane.getMaxSpeed(Aircraft.A320_NEO) - 5)
+        ));
+    }
 }
