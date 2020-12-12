@@ -429,7 +429,7 @@ class NXSpeedsUtils {
      * @returns {number} ground speed mini
      */
     static groundSpeedMini(vTwr, vCur = SimVar.GetSimVarValue("AIRCRAFT WIND Z", "knots") * -1) {
-        return vCur - vTwr;
+        return vCur - Math.max(vTwr, 10);
     }
 
     /**
