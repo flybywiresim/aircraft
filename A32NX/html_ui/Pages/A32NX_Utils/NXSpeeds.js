@@ -368,7 +368,7 @@ function _getHeadwind(a, v) {
  * @returns {number} corrected speed target
  * @private
  */
-function _getMaxV(v, vmax = A32NX_Selectors.VMAX()) {
+function _getMaxV(v, vmax = A32NX_Selectors.VMAX() - 5) {
     return Math.min(Math.round(v), Math.round(vmax));
 }
 
@@ -450,7 +450,7 @@ class NXSpeedsUtils {
      * @returns {number}
      */
     static getVtargetGSMini(vapp, gsMini) {
-        return Math.max(vapp, _getMaxV(vapp + gsMini, A32NX_Selectors.VMAX() - 5));
+        return Math.max(vapp, _getMaxV(vapp + gsMini));
     }
 
     /**
