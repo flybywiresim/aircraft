@@ -20,7 +20,7 @@ import React from "react";
 
 import { getSimbriefData, IFuel, IWeights } from './SimbriefApi';
 import StatusBar from "./StatusBar/StatusBar";
-import ToolBar from "./Toolbar/ToolBar";
+import ToolBar from "./ToolBar/ToolBar";
 import DashboardWidget from "./Dashboard/DasshboardWidget";
 
 import './Efb.scss';
