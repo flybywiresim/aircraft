@@ -261,7 +261,8 @@ const insertUplink = (mcdu) => {
     }, mcdu.getDelayHigh());
 };
 
-const addWaypointAsync = (mcdu, routeIdent, wpIndex, via) => {
+const addWaypointAsync = (fix, mcdu, routeIdent, via) => {
+    const wpIndex = mcdu.flightPlanManager.getWaypointsCount() - 1;
     if (via) {
         return new Promise((res, rej) => {
             mcdu.insertWaypointsAlongAirway(routeIdent, wpIndex, via, (result) => {
@@ -279,6 +280,13 @@ const addWaypointAsync = (mcdu, routeIdent, wpIndex, via) => {
         return new Promise((res, rej) => {
             mcdu.getOrSelectWaypointByIdent(routeIdent, (waypoint) => {
                 if (waypoint) {
+                    const simbriefCoords = {
+                        lat: fix.pos_lat,
+                        long: fix.pos_long
+                    };
+                    const distanceToTarget = Avionics.Utils.computeGreatCircleDistance(simbriefCoords, waypoint.infos.coordinates);
+                    console.log('distanceToTarget', distanceToTarget, fix.ident);
+
                     mcdu.flightPlanManager.addWaypoint(waypoint.icao, wpIndex, () => {
                         console.log("Inserted waypoint: " + routeIdent);
                         res(true);
@@ -294,46 +302,40 @@ const addWaypointAsync = (mcdu, routeIdent, wpIndex, via) => {
 };
 
 const uplinkRoute = async (mcdu) => {
-    const {navlog, route} = mcdu.simbrief;
+    const {navlog} = mcdu.simbrief;
 
-    const routeSplit = route.split(' ');
     const procedures = new Set(navlog.filter(fix => fix.is_sid_star === "1").map(fix => fix.via_airway));
-    const waypoints = new Set(navlog.filter(fix => fix.type === "wpt").map(fix => fix.ident));
 
-    async function asyncForEach(array, callback) {
-        for (let index = 0; index < array.length; index++) {
-            await callback(array[index], index, array);
+    for (let i = 0; i < navlog.length; i++) {
+        const fix = navlog[i];
+        const nextFix = navlog[i + 1];
+
+        if (fix.is_sid_star === '1') {
+            continue;
         }
-    }
+        if (["TOP OF CLIMB", "TOP OF DESCENT"].includes(fix.name)) {
+            continue;
+        }
 
-    await asyncForEach(routeSplit, async (routeIdent, i) => {
-        console.log('----');
-        console.log(routeIdent);
-        for (const fix of navlog) {
-            if (fix.is_sid_star === "0") {
-                if (!procedures.has(routeIdent)) {
-                    if (routeIdent.match(/((^[0-9]+[a-z]+)|(^[a-z]+[0-9]+))+[0-9a-z]+$/i) || routeIdent === "DCT") {
-                        if (routeIdent === "DCT") {
-                            console.log("Direct to waypoint found, skipping");
-                            break;
-                        } else {
-                            const wpIndex = mcdu.flightPlanManager.getWaypointsCount() - 1;
-                            console.log("Inserting waypoint: " + routeSplit[i + 1] + " via " + routeIdent + " | " + wpIndex);
-                            await addWaypointAsync(mcdu, routeSplit[i + 1], wpIndex, routeIdent);
+        console.log('---- ' + fix.ident + ' ----');
 
-                            break;
-                        }
-                    } else {
-                        if (waypoints.has(routeIdent)) {
-                            const wpIndex = mcdu.flightPlanManager.getWaypointsCount() - 1;
-                            console.log("Inserting waypoint: " + routeIdent + " | " + wpIndex);
-                            await addWaypointAsync(mcdu, routeIdent, wpIndex);
-
-                            break;
-                        }
-                    }
-                }
+        if (procedures.has(fix.via_airway)) {
+            // last fix of departure
+            console.log("Inserting waypoint last of DEP: " + fix.ident);
+            await addWaypointAsync(fix, mcdu, fix.ident);
+            continue;
+        } else {
+            if (fix.via_airway === 'DCT') {
+                console.log("Inserting waypoint: " + fix.ident);
+                await addWaypointAsync(fix, mcdu, fix.ident);
+                continue;
+            }
+            if (nextFix.via_airway !== fix.via_airway) {
+                // last fix of airway
+                console.log("Inserting waypoint: " + fix.ident + " via " + fix.via_airway);
+                await addWaypointAsync(fix, mcdu, fix.ident, fix.via_airway);
+                continue;
             }
         }
-    });
+    }
 };
