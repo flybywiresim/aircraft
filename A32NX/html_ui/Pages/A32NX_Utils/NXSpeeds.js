@@ -358,7 +358,7 @@ function _getAngle(a, b) {
  * @private
  */
 function _getHeadwind(a, v) {
-    return Math.abs(v * Math.cos(a));
+    return v * Math.cos(a * (Math.PI / 180));
 }
 
 class NXSpeeds {
