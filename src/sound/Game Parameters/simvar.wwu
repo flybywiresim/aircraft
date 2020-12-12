@@ -1165,7 +1165,7 @@ Unit : Number</Comment>
 								<GameParameter Name="SIMVAR_TURB_ENG_N1_DERIVED" ID="{79A066BA-57E2-4045-8509-C0AC2DFF5235}">
 									<PropertyList>
 										<Property Name="InitialValue" Type="Real64" Value="1"/>
-										<Property Name="Max" Type="Real64" Value="1"/>
+										<Property Name="Max" Type="Real64" Value="5"/>
 										<Property Name="Min" Type="Real64" Value="-1"/>
 									</PropertyList>
 								</GameParameter>
