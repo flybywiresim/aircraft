@@ -429,8 +429,8 @@
         <Sound WwiseEvent="StartREXT" NodeName="Engine_PIVOT_RIGHT_2" FadeOutType="1" FadeOutTime="1" WwiseData="true" SimVar="TURB ENG N2" Units="percent" ViewPoint="Outside" Index="2" Continuous="true">
             <Range LowerBound="1" />
             <WwiseRTPC SimVar="TURB ENG N2" Units="percent" Index="2" RTPCName="SIMVAR_TURB_ENG_N2" />
-            <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Index="1" RTPCName="SIMVAR_TURB_ENG_N1" />
-            <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Derived="true" Index="1" RTPCName="SIMVAR_TURB_ENG_N1_DERIVED" />
+            <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Index="2" RTPCName="SIMVAR_TURB_ENG_N1" />
+            <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Derived="true" Index="2" RTPCName="SIMVAR_TURB_ENG_N1_DERIVED" />
         </Sound>
 
         <Sound WwiseEvent="FFlowLEXT" WwiseData="true" NodeName="Engine_PIVOT_LEFT_2" SimVar="TURB ENG N2" Units="percent" ViewPoint="Outside" Index="1" Continuous="true">
