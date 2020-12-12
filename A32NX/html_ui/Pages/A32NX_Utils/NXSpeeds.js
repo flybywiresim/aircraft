@@ -361,6 +361,17 @@ function _getHeadwind(a, v) {
     return v * Math.cos(a * (Math.PI / 180));
 }
 
+/**
+ * Returns highest speed without exceeding vmax
+ * @param v {number} speed target
+ * @param vmax {number} Vmax
+ * @returns {number} corrected speed target
+ * @private
+ */
+function _getMaxV(v, vmax = A32NX_Selectors.VMAX()) {
+    return Math.min(Math.round(v), Math.round(vmax));
+}
+
 class NXSpeeds {
     /**
      * Computes Vs, Vls, Vapp, F, S and GD
@@ -439,9 +450,15 @@ class NXSpeedsUtils {
      * @returns {number}
      */
     static getVtargetGSMini(vapp, gsMini) {
-        return Math.max(vapp, Math.min(
-            Math.round(vapp + gsMini),
-            Math.round(Simplane.getMaxSpeed(Aircraft.A320_NEO) - 5)
-        ));
+        return Math.max(vapp, _getMaxV(vapp + gsMini, A32NX_Selectors.VMAX() - 5));
+    }
+
+    /**
+     * Returns highest speed without exceeding vmax
+     * @param v {number} speed target
+     * @returns {number} corrected speed target
+     */
+    static getMaxV(v) {
+        return _getMaxV(v);
     }
 }
