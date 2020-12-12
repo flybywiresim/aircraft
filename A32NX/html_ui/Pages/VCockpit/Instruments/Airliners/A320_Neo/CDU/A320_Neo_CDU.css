@@ -124,7 +124,7 @@ fmc-main-display::before {
   left: 0;
   bottom: 0;
   right: 0;
-  background: linear-gradient(rgba(9,13,20, 1) 50%, rgba(9,13,20, 1) 50%),
+  background: linear-gradient(rgba(9,13, 20, 1) 50%, rgba(9, 13, 20, 1) 50%),
     linear-gradient(
       90deg,
       rgba(9,13,20, 1),
