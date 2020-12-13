@@ -148,6 +148,7 @@
 1. [FLIGHTMODEL] Updated legacy flight model parameters for consistency with modern flight model - @donstim - (donbikes#4084)
 1. [ECAM] Adjusted flaps panel - @MisterChocker (Leon)
 1. [CDU] F-PLN page visual rework - @Lollo999 (Lorenzo Pinna)
+1. [MFD] Flight route is now hidden in VOR ROSE and ILS ROSE modes @2hwk (2Cas#1022)
 
 ## 0.4.0
 1. [General] Add CHANGELOG.md - @nathaninnes (Nathan Innes)
