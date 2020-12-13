@@ -122,7 +122,7 @@ class A320_Neo_PFD_MainPage extends NavSystemPage {
         const groundTrack = SimVar.GetSimVarValue("GPS GROUND MAGNETIC TRACK", "degrees");
 
         let selectedHeading = NaN;
-        if (Simplane.getAutoPilotHeadingLockActive()) {
+        if (SimVar.GetSimVarValue("L:A320_FCU_SHOW_SELECTED_HEADING", "number")) {
             selectedHeading = Simplane.getAutoPilotSelectedHeadingLockValue(false);
         }
 

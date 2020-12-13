@@ -38,6 +38,13 @@ class FBW_PFD_HeadingTape {
         return this.Bugs.length - 1;
     }
 
+    /**
+     * Updates the bug with the given index
+     * @param index The index of the bug to update
+     * @param BugHeading The heading of the bug
+     * @param heading The current actual heading
+     * @param visible If the bug should be visible or not
+     */
     updateBug(index, BugHeading, heading, visible = true) {
         const bug = this.Bugs[index];
         if (visible && !bug.PrevVisible) {
@@ -70,9 +77,18 @@ class FBW_PFD_HeadingTape {
         }
     }
 
-    updateGraduation(heading, pitchOffset = 0) {
+    /**
+     * Updates the graduation (the tickmarks) of the heading tape
+     * @param heading Actual heading in degrees
+     * @param yOffset Optional offset in the y-Axis
+     */
+    updateGraduation(heading, yOffset = 0) {
+        let leftmostHeading = Math.round((heading - this.DisplayRange) / this.ValueSpacing) * this.ValueSpacing;
+        if (leftmostHeading < heading - this.DisplayRange) {
+            leftmostHeading += this.ValueSpacing;
+        }
+
         this.Graduation.forEach((value, index) => {
-            const leftmostHeading = Math.round((heading - this.DisplayRange) / this.ValueSpacing) * this.ValueSpacing;
             const offset = (leftmostHeading + index * this.ValueSpacing) * this.DistanceSpacing / this.ValueSpacing;
 
             if (value.PrevPos !== offset) {
@@ -103,9 +119,15 @@ class FBW_PFD_HeadingTape {
             }
         });
 
-        this.TapeGroup.setAttribute("transform", `translate(${-heading * this.DistanceSpacing / this.ValueSpacing} ${pitchOffset})`);
+        this.TapeGroup.setAttribute("transform", `translate(${-heading * this.DistanceSpacing / this.ValueSpacing} ${yOffset})`);
     }
 
+    /**
+     * Gets the smallest angle between two angles
+     * @param angle1 First angle in degrees
+     * @param angle2 Second angle in degrees
+     * @returns {number} Smallest angle between angle1 and angle2 in degrees
+     */
     static getSmallestAngle(angle1, angle2) {
         let smallestAngle = angle1 - angle2;
         if (smallestAngle > 180) {

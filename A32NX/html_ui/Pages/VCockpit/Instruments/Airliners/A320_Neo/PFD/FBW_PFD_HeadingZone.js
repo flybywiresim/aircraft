@@ -20,7 +20,7 @@ class FBW_PFD_HeadingZone {
         this.PrevQFUVisibilty = NaN;
         this.QFUBugIndex = NaN;
 
-        this.HeadingTape = new FBW_PFD_HeadingTape(29, 5, 7.555, this.TapeElement);
+        this.HeadingTape = new FBW_PFD_HeadingTape(27, 5, 7.555, this.TapeElement);
 
         this.disp_index = NaN;
     }
