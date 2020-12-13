@@ -1314,7 +1314,8 @@
                     <ANIM_NAME>LOCK_OVHD_ELEC_IDG1</ANIM_NAME>
                     <WWISE_EVENT_1>apu_generator_switch_on</WWISE_EVENT_1>
                     <WWISE_EVENT_2>apu_generator_switch_off</WWISE_EVENT_2>
-                    <LEFT_SINGLE_CODE>(L:A32NX_ELEC_IDG1LOCK_TOGGLE) ! (>L:A32NX_ELEC_IDG1LOCK_TOGGLE)</LEFT_SINGLE_CODE>
+                    <SWITCH_POSITION_TYPE>L</SWITCH_POSITION_TYPE>
+                    <SWITCH_POSITION_VAR>A32NX_ELEC_IDG1LOCK_TOGGLE</SWITCH_POSITION_VAR>
                 </UseTemplate>
 
                 <UseTemplate Name="ASOBO_GT_Switch_Dummy">
@@ -1322,7 +1323,8 @@
                     <ANIM_NAME>LOCK_OVHD_ELEC_IDG2</ANIM_NAME>
                     <WWISE_EVENT_1>apu_generator_switch_on</WWISE_EVENT_1>
                     <WWISE_EVENT_2>apu_generator_switch_off</WWISE_EVENT_2>
-                    <LEFT_SINGLE_CODE>(L:A32NX_ELEC_IDG2LOCK_TOGGLE) ! (>L:A32NX_ELEC_IDG2LOCK_TOGGLE)</LEFT_SINGLE_CODE>
+                    <SWITCH_POSITION_TYPE>L</SWITCH_POSITION_TYPE>
+                    <SWITCH_POSITION_VAR>A32NX_ELEC_IDG2LOCK_TOGGLE</SWITCH_POSITION_VAR>
                 </UseTemplate>
 
                 <UseTemplate Name="ASOBO_AIRBUS_Push_Fuel_Valve_Template">
@@ -1450,6 +1452,8 @@
                     <WWISE_EVENT_2>wing_light_switch_off</WWISE_EVENT_2>
                     <NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
                     <NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
+                    <SWITCH_POSITION_TYPE>L</SWITCH_POSITION_TYPE>
+                    <SWITCH_POSITION_VAR>A32NX_STBY_COMPASS_LIGHT_TOGGLE</SWITCH_POSITION_VAR>
                 </UseTemplate>
 
                 <UseTemplate Name="ASOBO_LIGHTING_Switch_Light_Beacon_Template">
@@ -1753,7 +1757,8 @@
                         <ANIM_NAME>LOCK_OVHD_EVAC_COMMAND</ANIM_NAME>
                         <WWISE_EVENT_1>apu_generator_switch_on</WWISE_EVENT_1>
                         <WWISE_EVENT_2>apu_generator_switch_off</WWISE_EVENT_2>
-                        <LEFT_SINGLE_CODE>(L:A32NX_EVAC_COMMANDLOCK_TOGGLE) ! (>L:A32NX_EVAC_COMMANDLOCK_TOGGLE)</LEFT_SINGLE_CODE>
+                        <SWITCH_POSITION_TYPE>L</SWITCH_POSITION_TYPE>
+                        <SWITCH_POSITION_VAR>A32NX_EVAC_COMMANDLOCK_TOGGLE</SWITCH_POSITION_VAR>
                     </UseTemplate>
                     <UseTemplate Name="ASOBO_GT_Push_Button_Airliner">
                         <NODE_ID>PUSH_OVHD_EVAC_COMMAND</NODE_ID>
@@ -1785,7 +1790,8 @@
                         <ANIM_NAME>LOCK_OVHD_EMERELECPWR_EMERTEST</ANIM_NAME>
                         <WWISE_EVENT_1>apu_generator_switch_on</WWISE_EVENT_1>
                         <WWISE_EVENT_2>apu_generator_switch_off</WWISE_EVENT_2>
-                        <LEFT_SINGLE_CODE>(L:A32NX_EMERELECPWR_EMERTESTLOCK_TOGGLE) ! (>L:A32NX_EMERELECPWR_EMERTESTLOCK_TOGGLE)</LEFT_SINGLE_CODE>
+                        <SWITCH_POSITION_TYPE>L</SWITCH_POSITION_TYPE>
+                        <SWITCH_POSITION_VAR>A32NX_EMERELECPWR_EMERTESTLOCK_TOGGLE</SWITCH_POSITION_VAR>
                     </UseTemplate>
                     <UseTemplate Name="ASOBO_GT_Push_Button_Airliner">
                         <NODE_ID>PUSH_OVHD_EMERELECPWR_GEN1</NODE_ID>
@@ -1809,14 +1815,14 @@
                         <NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
                         <NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
                         <TOOLTIPID>%((L:A32NX_EMERELECPWR_RAT_FAULT, Bool))%{if}RAT and emer gen FAULT%{else}RAT and emer gen NORMAL%{end}</TOOLTIPID>
-                        <LEFT_SINGLE_CODE></LEFT_SINGLE_CODE>
                     </UseTemplate>
                     <UseTemplate Name="ASOBO_GT_Switch_Dummy">
                         <NODE_ID>LOCK_OVHD_EMERELECPWR_MANON</NODE_ID>
                         <ANIM_NAME>LOCK_OVHD_EMERELECPWR_MANON</ANIM_NAME>
                         <WWISE_EVENT_1>apu_generator_switch_on</WWISE_EVENT_1>
                         <WWISE_EVENT_2>apu_generator_switch_off</WWISE_EVENT_2>
-                        <LEFT_SINGLE_CODE>(L:A32NX_EMERELECPWR_MANONLOCK_TOGGLE) ! (>L:A32NX_EMERELECPWR_MANONLOCK_TOGGLE)</LEFT_SINGLE_CODE>
+                        <SWITCH_POSITION_TYPE>L</SWITCH_POSITION_TYPE>
+                        <SWITCH_POSITION_VAR>A32NX_EMERELECPWR_MANONLOCK_TOGGLE</SWITCH_POSITION_VAR>
                     </UseTemplate>
 
                     <UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
@@ -1855,7 +1861,8 @@
                         <ANIM_NAME>LOCK_OVHD_HYD_RATMANON</ANIM_NAME>
                         <WWISE_EVENT_1>apu_generator_switch_on</WWISE_EVENT_1>
                         <WWISE_EVENT_2>apu_generator_switch_off</WWISE_EVENT_2>
-                        <LEFT_SINGLE_CODE>(L:A32NX_HYD_RATMANONLOCK_TOGGLE) ! (>L:A32NX_HYD_RATMANONLOCK_TOGGLE)</LEFT_SINGLE_CODE>
+                        <SWITCH_POSITION_TYPE>L</SWITCH_POSITION_TYPE>
+                        <SWITCH_POSITION_VAR>A32NX_HYD_RATMANONLOCK_TOGGLE</SWITCH_POSITION_VAR>
                     </UseTemplate>
                     <UseTemplate Name="ASOBO_GT_Push_Button_Airliner">
                         <NODE_ID>PUSH_OVHD_HYD_ELECPUMP</NODE_ID>
@@ -1874,7 +1881,8 @@
                         <ANIM_NAME>LOCK_OVHD_HYD_ELECPUMP</ANIM_NAME>
                         <WWISE_EVENT_1>apu_generator_switch_on</WWISE_EVENT_1>
                         <WWISE_EVENT_2>apu_generator_switch_off</WWISE_EVENT_2>
-                        <LEFT_SINGLE_CODE>(L:A32NX_HYD_ELECPUMPLOCK_TOGGLE) ! (>L:A32NX_HYD_ELECPUMPLOCK_TOGGLE)</LEFT_SINGLE_CODE>
+                        <SWITCH_POSITION_TYPE>L</SWITCH_POSITION_TYPE>
+                        <SWITCH_POSITION_VAR>A32NX_HYD_ELECPUMPLOCK_TOGGLE</SWITCH_POSITION_VAR>
                     </UseTemplate>
                     <UseTemplate Name="ASOBO_GT_Push_Button_Airliner">
                         <NODE_ID>PUSH_OVHD_HYD_PTU</NODE_ID>
@@ -1953,7 +1961,8 @@
                         <ANIM_NAME>LOCK_OVHD_AIRCOND_RAMAIR</ANIM_NAME>
                         <WWISE_EVENT_1>apu_generator_switch_on</WWISE_EVENT_1>
                         <WWISE_EVENT_2>apu_generator_switch_off</WWISE_EVENT_2>
-                        <LEFT_SINGLE_CODE>(L:A32NX_AIRCOND_RAMAIRLOCK_TOGGLE) ! (>L:A32NX_AIRCOND_RAMAIRLOCK_TOGGLE)</LEFT_SINGLE_CODE>
+                        <SWITCH_POSITION_TYPE>L</SWITCH_POSITION_TYPE>
+                        <SWITCH_POSITION_VAR>A32NX_AIRCOND_RAMAIRLOCK_TOGGLE</SWITCH_POSITION_VAR>
                     </UseTemplate>
                     <UseTemplate Name="ASOBO_AIRLINER_Aircond_Knob_Template">
                         <ID>1</ID>
@@ -2063,7 +2072,8 @@
                         <ANIM_NAME>LOCK_OVHD_ENGMANSTART_1</ANIM_NAME>
                         <WWISE_EVENT_1>apu_generator_switch_on</WWISE_EVENT_1>
                         <WWISE_EVENT_2>apu_generator_switch_off</WWISE_EVENT_2>
-                        <LEFT_SINGLE_CODE>(L:A32NX_ENGMANSTART1LOCK_TOGGLE) ! (>L:A32NX_ENGMANSTART1LOCK_TOGGLE)</LEFT_SINGLE_CODE>
+                        <SWITCH_POSITION_TYPE>L</SWITCH_POSITION_TYPE>
+                        <SWITCH_POSITION_VAR>A32NX_ENGMANSTART1LOCK_TOGGLE</SWITCH_POSITION_VAR>
                     </UseTemplate>
                     <UseTemplate Name="ASOBO_GT_Push_Button_Airliner">
                         <NODE_ID>PUSH_OVHD_ENGMANSTART_2</NODE_ID>
@@ -2082,7 +2092,8 @@
                         <ANIM_NAME>LOCK_OVHD_ENGMANSTART_2</ANIM_NAME>
                         <WWISE_EVENT_1>apu_generator_switch_on</WWISE_EVENT_1>
                         <WWISE_EVENT_2>apu_generator_switch_off</WWISE_EVENT_2>
-                        <LEFT_SINGLE_CODE>(L:A32NX_ENGMANSTART2LOCK_TOGGLE) ! (>L:A32NX_ENGMANSTART2LOCK_TOGGLE)</LEFT_SINGLE_CODE>
+                        <SWITCH_POSITION_TYPE>L</SWITCH_POSITION_TYPE>
+                        <SWITCH_POSITION_VAR>A32NX_ENGMANSTART2LOCK_TOGGLE</SWITCH_POSITION_VAR>
                     </UseTemplate>
                     <UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">
                         <NODE_ID>PUSH_OVHD_ENGN1MODE_1</NODE_ID>
@@ -2205,19 +2216,22 @@
             </Component>
 
             <Component ID="Overhead_Handling">
-                <UseTemplate Name="ASOBO_HANDLING_Switch_Wipers_Template">
+                <UseTemplate Name="FBW_Airbus_Wiper_Knob">
+                    <NODE_ID>HANDLING_Switch_Wiper_left</NODE_ID>
+                    <ANIM_NAME>HANDLING_Switch_Wiper_left</ANIM_NAME>
                     <CIRCUIT_ID_WIPERS>77</CIRCUIT_ID_WIPERS>
-                    <POS_OFF>0</POS_OFF>
-                    <POS_SLOW>1</POS_SLOW>
-                    <POS_NORM>2</POS_NORM>
                     <PART_ID>HANDLING_Switch_Wipers</PART_ID>
+                    <ANIMTIP_0>Set left wiper to OFF</ANIMTIP_0>
+                    <ANIMTIP_1>Set left wiper to SLOW</ANIMTIP_1>
+                    <ANIMTIP_2>Set left wiper to FAST</ANIMTIP_2>
                 </UseTemplate>
-                <UseTemplate Name="ASOBO_HANDLING_Switch_Wipers_Template">
-                    <NODE_ID>HANDLING_Switch_Wipers_1</NODE_ID>
-                    <CIRCUIT_ID_WIPERS>77</CIRCUIT_ID_WIPERS>
-                    <POS_OFF>0</POS_OFF>
-                    <POS_SLOW>1</POS_SLOW>
-                    <POS_NORM>2</POS_NORM>
+                <UseTemplate Name="FBW_Airbus_Wiper_Knob">
+                    <NODE_ID>HANDLING_Switch_Wiper_right</NODE_ID>
+                    <ANIM_NAME>HANDLING_Switch_Wiper_right</ANIM_NAME>
+                    <CIRCUIT_ID_WIPERS>81</CIRCUIT_ID_WIPERS>
+                    <ANIMTIP_0>Set right wiper to OFF</ANIMTIP_0>
+                    <ANIMTIP_1>Set right wiper to SLOW</ANIMTIP_1>
+                    <ANIMTIP_2>Set right wiper to FAST</ANIMTIP_2>
                 </UseTemplate>
             </Component>
 
@@ -2322,7 +2336,8 @@
                         <ANIM_NAME>LOCK_OVHD_CARGOSMOKE_2</ANIM_NAME>
                         <WWISE_EVENT_1>apu_generator_switch_on</WWISE_EVENT_1>
                         <WWISE_EVENT_2>apu_generator_switch_off</WWISE_EVENT_2>
-                        <LEFT_SINGLE_CODE>(L:A32NX_CARGOSMOKE_DISCH2LOCK_TOGGLE) ! (>L:A32NX_CARGOSMOKE_DISCH2LOCK_TOGGLE)</LEFT_SINGLE_CODE>
+                        <SWITCH_POSITION_TYPE>L</SWITCH_POSITION_TYPE>
+                        <SWITCH_POSITION_VAR>A32NX_CARGOSMOKE_DISCH2LOCK_TOGGLE</SWITCH_POSITION_VAR>
                     </UseTemplate>
                     <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
                         <NODE_ID>PUSH_OVHD_CARGOSMOKE_2</NODE_ID>
@@ -2332,7 +2347,8 @@
                         <ANIM_NAME>LOCK_OVHD_CARGOSMOKE_1</ANIM_NAME>
                         <WWISE_EVENT_1>apu_generator_switch_on</WWISE_EVENT_1>
                         <WWISE_EVENT_2>apu_generator_switch_off</WWISE_EVENT_2>
-                        <LEFT_SINGLE_CODE>(L:A32NX_CARGOSMOKE_DISCH1LOCK_TOGGLE) ! (>L:A32NX_CARGOSMOKE_DISCH1LOCK_TOGGLE)</LEFT_SINGLE_CODE>
+                        <SWITCH_POSITION_TYPE>L</SWITCH_POSITION_TYPE>
+                        <SWITCH_POSITION_VAR>A32NX_CARGOSMOKE_DISCH1LOCK_TOGGLE</SWITCH_POSITION_VAR>
                     </UseTemplate>
                     <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
                         <NODE_ID>PUSH_OVHD_CARGOSMOKE_1</NODE_ID>
@@ -3122,11 +3138,18 @@
                 <NODE_ID>PUSH_ATC_FAIL_SEQ2</NODE_ID>
                 <EMISSIVE_CODE>(L:XMLVAR_LTS_Test)</EMISSIVE_CODE>
             </UseTemplate>
-            <UseTemplate Name="A32NX_ATC_Panel_TARA">
+            <UseTemplate Name="FBW_Airbus_ATC_Panel_TARA">
                 <Node_ID>KNOB_ATC_TARA</Node_ID>
                 <ANIMTIP_0>Set TCAS to STBY</ANIMTIP_0>
                 <ANIMTIP_1>Set TCAS to TA</ANIMTIP_1>
-                <ANIMTIP_2>Set TCAS to TARA</ANIMTIP_2>
+                <ANIMTIP_2>Set TCAS to TA/RA</ANIMTIP_2>
+            </UseTemplate>
+            <UseTemplate Name="FBW_Airbus_ATC_Panel_Traffic">
+                <Node_ID>KNOB_ATC_THRT</Node_ID>
+                <ANIMTIP_0>Set TCAS traffic to THRT</ANIMTIP_0>
+                <ANIMTIP_1>Set TCAS traffic to ALL</ANIMTIP_1>
+                <ANIMTIP_2>Set TCAS traffic to ABV</ANIMTIP_2>
+                <ANIMTIP_3>Set TCAS traffic to BLW</ANIMTIP_3>
             </UseTemplate>
         </Component>
 
@@ -3233,13 +3256,6 @@
             <UseTemplate Name="A32NX_PUSH_DOORPANEL_OPEN">
                 <NODE_ID>PUSH_DOORPANEL_OPEN</NODE_ID>
                 <ANIM_NAME>PUSH_DOORPANEL_OPEN</ANIM_NAME>
-            </UseTemplate>
-        </Component>
-
-        <Component ID="DUMMY_ELEMENTS_SETUP_ANIM_STATE">
-            <UseTemplate Name="ASOBO_GT_Anim_Setup">
-                <ANIM_NAME>KNOB_ATC_THRT</ANIM_NAME>
-                <PERCENT>33</PERCENT>
             </UseTemplate>
         </Component>
 
@@ -3524,9 +3540,6 @@
             </UseTemplate>
             <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
                 <NODE_ID>KNOB_ATC_1</NODE_ID>
-            </UseTemplate>
-            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-                <NODE_ID>KNOB_ATC_THRT</NODE_ID>
             </UseTemplate>
             <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
                 <NODE_ID>PUSH_HANDLE_LEFT_YOKE</NODE_ID>

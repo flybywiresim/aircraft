@@ -4068,7 +4068,7 @@
 															<XPos>0.2</XPos>
 															<YPos>0</YPos>
 															<Flags>0</Flags>
-															<SegmentShape>Exp3</SegmentShape>
+															<SegmentShape>Log1</SegmentShape>
 														</Point>
 														<Point>
 															<XPos>200</XPos>
@@ -5446,12 +5446,6 @@
 													<YPos>0</YPos>
 													<Flags>0</Flags>
 													<SegmentShape>Exp3</SegmentShape>
-												</Point>
-												<Point>
-													<XPos>3.29154</XPos>
-													<YPos>-200</YPos>
-													<Flags>0</Flags>
-													<SegmentShape>Log3</SegmentShape>
 												</Point>
 												<Point>
 													<XPos>4</XPos>

@@ -577,6 +577,7 @@ class CDUPerformancePage {
         }
         mcdu.onLeftInput[2] = (value) => {
             if (mcdu.setPerfApprWind(value)) {
+                mcdu.updateTowerHeadwind();
                 CDUPerformancePage.ShowAPPRPage(mcdu);
             }
         };

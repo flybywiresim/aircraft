@@ -109,7 +109,7 @@
 
     Takes into account the value of L:XMLVAR_SWITCH_OVHD_INTLT_ANNLT_Position.
 
-    Authors: Asobo / Markus Ullmann (@jokey2k) 18/10/20   
+    Authors: Asobo / Markus Ullmann (@jokey2k) 18/10/20
     -->
     <Template Name="FBW_Airbus_HANDLING_Push_Autobrakes_Template">
         <DefaultTemplateParameters>
@@ -131,7 +131,7 @@
                 (A:ANTISKID BRAKES ACTIVE, Bool) ! (L:XMLVAR_Autobrakes_Level) #AUTOBRAKE_LEVEL# == or if{
                     0 (&gt;L:XMLVAR_Autobrakes_Level)
                     } els{
-                        (A:SIM ON GROUND, Bool) #AUTOBRAKE_LEVEL# 3 != or if{ 
+                        (A:SIM ON GROUND, Bool) #AUTOBRAKE_LEVEL# 3 != or if{
                             #AUTOBRAKE_LEVEL# (&gt;L:XMLVAR_Autobrakes_Level)
                         }
                     }
@@ -146,7 +146,7 @@
                         (L:XMLVAR_Autobrakes_Level) 1 + (&gt;K:SET_AUTOBRAKE_CONTROL)
                     }
                 }
-                
+
                 (A:SIM ON GROUND, Bool) if{
                     1 (&gt;L:A32NX_DISARM_AUTOBRAKES_ON_LG_RETRACT)
                 } els{
@@ -158,15 +158,15 @@
                 1) A:AUTO BRAKE SWITCH CB is not how we keep track of autobrake settings since it reflects the positioning of the rotary
                    BOEING switch. However, it is currently what is getting set by autobrakes settings in the .flt files. Taxi.flt and Runway.flt
                    both set autobrakes to 4, so we look for that value and set autbrakes to max if we find it. Technically, this is a bit
-                   abusive since RTO is 0, while 4 is the maximum setting for normal braking but doing it this way enables us to have 
+                   abusive since RTO is 0, while 4 is the maximum setting for normal braking but doing it this way enables us to have
                    the check work only once.
-                   
+
                 2) Autobrakes should automatically disarm 10 seconds after the landing gear is retracted. To simulate this, we use a counter
                    to create a delay after we notice that the landing gear lever has been retracted. Obviously, this won't be exactly accurate,
-                   but it is much closer to reality. Once the autobrakes have been automatically disarmed they are allowed to be rearmed. 
+                   but it is much closer to reality. Once the autobrakes have been automatically disarmed they are allowed to be rearmed.
                    Additionally, if the aircraft touches down and the autobrakes are not engaged; i.e. in the balked landing scenario where
                    the ground spoilers do not deploy, then the autobrakes will be disarmed normally by landing gear retraction.
-                   
+
                 3) Upon landing, the autobrake buttons will be disarmed once autobraking deactivates. To ensure that we are actually down,
                    we will also wait approximately 10 seconds before beginning to test for autobrake deactivation. This is necessary since
                    at least currently, the autobrake system is activating and deactivating during bounced landings.
@@ -180,25 +180,25 @@
                         (A:AUTO BRAKE SWITCH CB, Number) 4 == (A:SIM ON GROUND, Bool) and if{
                             3 (&gt;L:XMLVAR_Autobrakes_Level)
                         }
-                                
+
                         (L:XMLVAR_Autobrakes_Level) 0 != if{
                             (L:A32NX_DISARM_AUTOBRAKES_ON_LG_RETRACT) (A:GEAR HANDLE POSITION, Bool) ! and if{
-                                 30 (L:A32NX_LG_UP_WAIT_COUNTER) == if{                                                                 
+                                 30 (L:A32NX_LG_UP_WAIT_COUNTER) == if{
                                      0 (&gt;L:XMLVAR_Autobrakes_Level)
                                      0 (&gt;L:A32NX_DISARM_AUTOBRAKES_ON_LG_RETRACT)
                                      0 == (L:A32NX_LG_UP_WAIT_COUNTER)
                                  } els{
                                     (L:A32NX_LG_UP_WAIT_COUNTER) 1 + (&gt;L:A32NX_LG_UP_WAIT_COUNTER)
                                 }
-                            } 
-                            
+                            }
+
                             (A:SIM ON GROUND, Bool) if{
                                 1 (&gt;L:A32NX_DISARM_AUTOBRAKES_ON_LG_RETRACT)
-                                30 (L:A32NX_ON_GROUND_WAIT_COUNTER) == if{ 
+                                30 (L:A32NX_ON_GROUND_WAIT_COUNTER) == if{
                                     (A:AUTOBRAKES ACTIVE, Bool) if{
                                         1 (&gt;L:A32NX_AUTOBRAKES_ACTIVATED)
-                                    }                              
-                            
+                                    }
+
                                     (L:A32NX_AUTOBRAKES_ACTIVATED) (A:AUTOBRAKES ACTIVE, Bool) ! and if{
                                         0 (&gt;L:XMLVAR_Autobrakes_Level)
                                         0 (&gt;L:A32NX_AUTOBRAKES_ACTIVATED)
@@ -210,7 +210,7 @@
                             } els{
                                 0 (&gt;A32NX_ON_GROUND_WAIT_COUNTER)
                             }
-                        }  
+                        }
                         </UPDATE_CODE>
                     </UseTemplate>
                 </False>
@@ -425,6 +425,74 @@
                 <LEFT_LEAVE_CODE>
                     0 (&gt;L:A32NX_PRIORITY_TAKEOVER:#ID#)
                 </LEFT_LEAVE_CODE>
+            </UseTemplate>
+        </Component>
+    </Template>
+
+    <Template Name="FBW_Airbus_ATC_Panel_TARA">
+        <Component ID="#NODE_ID#" Node="#NODE_ID#">
+            <UseTemplate Name="ASOBO_GT_Switch_3States">
+                <WWISE_EVENT>autopilot_knob</WWISE_EVENT>
+                <ANIM_NAME>#NODE_ID#</ANIM_NAME>
+                <SWITCH_DIRECTION>Horizontal</SWITCH_DIRECTION>
+                <ARROW_TYPE>Curved</ARROW_TYPE>
+                <SWITCH_POSITION_TYPE>L</SWITCH_POSITION_TYPE>
+                <SWITCH_POSITION_VAR>A32NX_SWITCH_TCAS_Position</SWITCH_POSITION_VAR>
+            </UseTemplate>
+        </Component>
+    </Template>
+
+    <Template Name="FBW_Airbus_ATC_Panel_Traffic">
+        <Component ID="#NODE_ID#" Node="#NODE_ID#">
+            <UseTemplate Name="ASOBO_GT_Switch_4States">
+                <WWISE_EVENT>autopilot_knob</WWISE_EVENT>
+                <ANIM_NAME>#NODE_ID#</ANIM_NAME>
+                <SWITCH_DIRECTION>Horizontal</SWITCH_DIRECTION>
+                <ARROW_TYPE>Curved</ARROW_TYPE>
+                <SWITCH_POSITION_TYPE>L</SWITCH_POSITION_TYPE>
+                <SWITCH_POSITION_VAR>A32NX_SWITCH_TCAS_Traffic_Position</SWITCH_POSITION_VAR>
+            </UseTemplate>
+        </Component>
+    </Template>
+
+    <Template Name="FBW_Airbus_Wiper_Knob">
+        <DefaultTemplateParameters>
+            <NODE_ID>HANDLING_Switch_Wipers</NODE_ID>
+            <ANIM_NAME>HANDLING_Switch_Wipers</ANIM_NAME>
+            <CIRCUIT_ID_WIPERS>1</CIRCUIT_ID_WIPERS>
+            <WWISE_EVENT>wipers_switch</WWISE_EVENT>
+            <POWER_NORM>100</POWER_NORM>
+            <POWER_SLOW>75</POWER_SLOW>
+            <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.WIPERS_SET_OFF</ANIMTIP_0>
+            <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.WIPERS_SET_SLOW</ANIMTIP_1>
+            <ANIMTIP_2>TT:COCKPIT.TOOLTIPS.WIPERS_SET_FAST</ANIMTIP_2>
+        </DefaultTemplateParameters>
+        <OverrideTemplateParameters>
+            <SET_POWER>#CIRCUIT_ID_WIPERS# (&gt;K:2:ELECTRICAL_CIRCUIT_POWER_SETTING_SET)</SET_POWER>
+            <GET_POWER>(A:CIRCUIT POWER SETTING:#CIRCUIT_ID_WIPERS#, Percent)</GET_POWER>
+            <INIT_WIPERS_STATE>
+                (A:CIRCUIT SWITCH ON:#CIRCUIT_ID_WIPERS#, Bool) if{ #CIRCUIT_ID_WIPERS# (&gt;K:ELECTRICAL_CIRCUIT_TOGGLE) }
+            </INIT_WIPERS_STATE>
+            <WIPERS_ON>(A:CIRCUIT SWITCH ON:#CIRCUIT_ID_WIPERS#, Bool) ! if{ #CIRCUIT_ID_WIPERS# (&gt;K:ELECTRICAL_CIRCUIT_TOGGLE) }</WIPERS_ON>
+            <WIPERS_OFF>(A:CIRCUIT SWITCH ON:#CIRCUIT_ID_WIPERS#, Bool) if{ #CIRCUIT_ID_WIPERS# (&gt;K:ELECTRICAL_CIRCUIT_TOGGLE) }</WIPERS_OFF>
+            <IS_WIPERS_ON>(A:CIRCUIT SWITCH ON:#CIRCUIT_ID_WIPERS#, Bool)</IS_WIPERS_ON>
+        </OverrideTemplateParameters>
+
+        <Component ID="#NODE_ID#" Node="#NODE_ID#">
+            <UseTemplate Name="ASOBO_GT_Update">
+                <UPDATE_ONCE>True</UPDATE_ONCE>
+                <UPDATE_CODE>#INIT_WIPERS_STATE#</UPDATE_CODE>
+            </UseTemplate>
+
+            <UseTemplate Name="ASOBO_GT_Switch_3States">
+                <CODE_POS_0>#WIPERS_OFF#</CODE_POS_0>
+                <CODE_POS_1>#WIPERS_ON# #POWER_SLOW# #SET_POWER#</CODE_POS_1>
+                <CODE_POS_2>#WIPERS_ON# #POWER_NORM# #SET_POWER#</CODE_POS_2>
+                <STATE0_TEST>#IS_WIPERS_ON# !</STATE0_TEST>
+                <STATE1_TEST>#IS_WIPERS_ON# #GET_POWER# #POWER_SLOW# == and</STATE1_TEST>
+                <STATE2_TEST>#IS_WIPERS_ON# #GET_POWER# #POWER_NORM# == and</STATE2_TEST>
+                <SWITCH_DIRECTION>Horizontal</SWITCH_DIRECTION>
+                <ARROW_TYPE>Curved</ARROW_TYPE>
             </UseTemplate>
         </Component>
     </Template>

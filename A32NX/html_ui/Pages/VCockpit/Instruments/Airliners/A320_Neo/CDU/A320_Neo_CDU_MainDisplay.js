@@ -26,6 +26,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this.altLock = 0;
         this.messageQueue = [];
         this._destDataChecked = false;
+        this._towerHeadwind = 0;
         this._v1Checked = true;
         this._vrChecked = true;
         this._v2Checked = true;
@@ -81,6 +82,9 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         };
         this.onFuel = () => {
             CDUFuelPredPage.ShowPage(this);
+        };
+        this.onAtc = () => {
+            CDUAtcMenu.ShowPage1(this);
         };
         this.onMenu = () => {
             const cur = this.page.Current;
@@ -181,6 +185,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             .replace(/{cyan}/g, "<span class='cyan'>")
             .replace(/{white}/g, "<span class='white'>")
             .replace(/{magenta}/g, "<span class='magenta'>")
+            .replace(/{yellow}/g, "<span class='yellow'>")
             .replace(/{inop}/g, "<span class='inop'>")
             .replace(/{sp}/g, "&nbsp;")
             .replace(/{end}/g, "</span>");
@@ -267,7 +272,6 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
 
             // Commit changes.
             if (validEntry) {
-                SimVar.SetSimVarValue("L:A32NX_TO_CONF", "number", nextFlaps);
                 this.flaps = nextFlaps;
                 this.ths = nextThs;
                 return true;
@@ -456,6 +460,10 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             if (this.messageQueue[i][0] === message) {
                 this.messageQueue[i][3](this);
                 this.messageQueue.splice(i, 1);
+                if (i === 0 && this.isDisplayingTypeTwoMessage) {
+                    this._inOutElement.className = "white";
+                    this.inOut = this.lastUserInput;
+                }
                 break;
             }
         }
@@ -625,6 +633,15 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         return payloadWeight;
     }
 
+    updateTowerHeadwind() {
+        if (isFinite(this.perfApprWindSpeed) && isFinite(this.perfApprWindHeading)) {
+            const rwy = this.flightPlanManager.getApproachRunway();
+            if (rwy) {
+                this._towerHeadwind = NXSpeedsUtils.getHeadwind(this.perfApprWindSpeed, this.perfApprWindHeading, rwy.direction);
+            }
+        }
+    }
+    
     _checkToData() {
         this._v1Checked = !isFinite(this.v1Speed);
         this._vrChecked = !isFinite(this.vRSpeed);
@@ -977,7 +994,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         const max = A320_Neo_CDU_MainDisplay._v1sConf1[tempIndex][1];
 
         return this._getVSpeed(dWeightCoef, min, max);*/
-        return SimVar.GetSimVarValue("L:A32NX_V2", "number") - 5;
+        return (new NXToSpeeds(SimVar.GetSimVarValue("TOTAL WEIGHT", "kg") / 1000, this.flaps, Simplane.getAltitude())).v1;
     }
     _computeV1Speed() {
         // computeV1Speed is called by inherited class so it must remain,
@@ -997,7 +1014,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         const max = A320_Neo_CDU_MainDisplay._vRsConf1[tempIndex][1];
 
         return this._getVSpeed(dWeightCoef, min, max);*/
-        return SimVar.GetSimVarValue("L:A32NX_V2", "number") - 4;
+        return (new NXToSpeeds(SimVar.GetSimVarValue("TOTAL WEIGHT", "kg") / 1000, this.flaps, Simplane.getAltitude())).vr;
     }
     _computeVRSpeed() {
         // computeVRSpeed is called by inherited class so it must remain,
@@ -1017,7 +1034,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         const max = A320_Neo_CDU_MainDisplay._v2sConf1[tempIndex][1];
 
         return this._getVSpeed(dWeightCoef, min, max);*/
-        return SimVar.GetSimVarValue("L:A32NX_V2", "number");
+        return (new NXToSpeeds(SimVar.GetSimVarValue("TOTAL WEIGHT", "kg") / 1000, this.flaps, Simplane.getAltitude())).v2;
     }
     _computeV2Speed() {
         // computeV2Speed is called by inherited class so it must remain,
@@ -1302,12 +1319,15 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                     const ctn = this.getSpeedConstraint(false);
                     let speed = this.getManagedApproachSpeedMcdu();
                     let vls = this.getVApp();
+                    if (isFinite(this.perfApprWindSpeed) && isFinite(this.perfApprWindHeading)) {
+                        vls = NXSpeedsUtils.getVtargetGSMini(vls, NXSpeedsUtils.getHeadWindDiff(this._towerHeadwind));
+                    }
                     if (ctn !== Infinity) {
                         vls = Math.max(vls, ctn);
                         speed = Math.max(speed, ctn);
                     }
                     SimVar.SetSimVarValue("L:A32NX_AP_APPVLS", "knots", vls);
-                    this.setAPManagedSpeed(speed, Aircraft.A320_NEO);
+                    this.setAPManagedSpeed(Math.max(speed, vls), Aircraft.A320_NEO);
                 }
             }
             if (this.currentFlightPhase == FlightPhase.FLIGHT_PHASE_GOAROUND) {

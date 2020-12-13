@@ -2,14 +2,31 @@ Event	ID	Name			Wwise Object Path	Notes
 	176856600	Play_Asobo_A320_NEO_cchordloop			\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved2\Play_Asobo_A320_NEO_cchordloop	
 	183534372	Play_Asobo_A320_NEO_tinnyroll			\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved2\Play_Asobo_A320_NEO_tinnyroll	
 	395471396	Play_Asobo_A320_NEO_cchordshort			\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved2\Play_Asobo_A320_NEO_cchordshort	
+	544896677	Play_Asobo_A320_NEO_EndSpoolR			\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved2\PW 1100G\Play_Asobo_A320_NEO_EndSpoolR	
+	544896699	Play_Asobo_A320_NEO_EndSpoolL			\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved2\PW 1100G\Play_Asobo_A320_NEO_EndSpoolL	
 	906944676	Play_Asobo_A320_NEO_flapsmovement			\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved2\Play_Asobo_A320_NEO_flapsmovement	
+	1186852889	Play_Asobo_A320_NEO_PWRwhine			\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved2\PW 1100G\Play_Asobo_A320_NEO_PWRwhine	
 	1444282249	Play_Asobo_A320_NEO_nosetouch			\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved2\Play_Asobo_A320_NEO_nosetouch	
+	1646738531	Play_Asobo_A320_NEO_PWLSpool			\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved2\PW 1100G\Play_Asobo_A320_NEO_PWLSpool	
+	1740797696	Play_Asobo_A320_NEO_PWISpoolL			\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved2\PW 1100G\Play_Asobo_A320_NEO_PWISpoolL	
+	1740797726	Play_Asobo_A320_NEO_PWISpoolR			\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved2\PW 1100G\Play_Asobo_A320_NEO_PWISpoolR	
+	1839683392	Play_Asobo_A320_NEO_turbulence2			\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved2\Play_Asobo_A320_NEO_turbulence2	
+	1839683395	Play_Asobo_A320_NEO_turbulence1			\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved2\Play_Asobo_A320_NEO_turbulence1	
 	2297690375	Play_Asobo_A320_NEO_packextR			\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved2\Play_Asobo_A320_NEO_packextR	
 	2297690393	Play_Asobo_A320_NEO_packextL			\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved2\Play_Asobo_A320_NEO_packextL	
 	2304457653	Play_Asobo_A320_NEO_startcontactors			\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved2\Play_Asobo_A320_NEO_startcontactors	
+	2990366662	Play_Asobo_A320_NEO_WhaleR			\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved2\PW 1100G\Play_Asobo_A320_NEO_WhaleR	
+	2990366680	Play_Asobo_A320_NEO_WhaleL			\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved2\PW 1100G\Play_Asobo_A320_NEO_WhaleL	
+	3092322259	Play_Asobo_A320_NEO_PWLWhine			\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved2\PW 1100G\Play_Asobo_A320_NEO_PWLWhine	
 	3259572658	Play_Asobo_A320_NEO_startcontactorsdc			\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved2\Play_Asobo_A320_NEO_startcontactorsdc	
+	3493541461	Play_Asobo_A320_NEO_PWRSpool			\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved2\PW 1100G\Play_Asobo_A320_NEO_PWRSpool	
+	3500260578	Play_Asobo_A320_NEO_cabinwind			\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved2\Play_Asobo_A320_NEO_cabinwind	
 	3760147643	Play_Asobo_A320_NEO_panelrattle			\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved2\Play_Asobo_A320_NEO_panelrattle	
+	3766736123	Play_Asobo_A320_NEO_BuzzRPW			\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved2\PW 1100G\Play_Asobo_A320_NEO_BuzzRPW	
 	3779303495	Play_Asobo_A320_NEO_cabfans			\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved2\Play_Asobo_A320_NEO_cabfans	
+	3829609461	Play_Asobo_A320_NEO_BuzzLPW			\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved2\PW 1100G\Play_Asobo_A320_NEO_BuzzLPW	
+	4076237830	Play_Asobo_A320_NEO_RevWindL			\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved\LEAP1A\Play_Asobo_A320_NEO_RevWindL	
+	4076237848	Play_Asobo_A320_NEO_RevWindR			\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved\LEAP1A\Play_Asobo_A320_NEO_RevWindR	
 
 State Group	ID	Name			Wwise Object Path	Notes
 	4185053780	VIEWPOINT			\aircraft\VIEWPOINT	
@@ -28,19 +45,42 @@ Custom State	ID	Name	State Group	Owner		Notes
 	1002977873	OUTSIDE	VIEWPOINT	\Actor-Mixer Hierarchy\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved2\startcontactors		
 
 Game Parameter	ID	Name			Wwise Object Path	Notes
+	147346452	SIMVAR_ROTATION_VELOCITY_BODY_Z			\simvar\physic\SIMVAR_ROTATION_VELOCITY_BODY_Z	Rotation relative to aircraft axis - roll speed movements  Unit : degrees per second
+	147346454	SIMVAR_ROTATION_VELOCITY_BODY_X			\simvar\physic\SIMVAR_ROTATION_VELOCITY_BODY_X	Rotation relative to aircraft axis - pitch speed movements Unit : degrees per second
+	147346455	SIMVAR_ROTATION_VELOCITY_BODY_Y			\simvar\physic\SIMVAR_ROTATION_VELOCITY_BODY_Y	Rotation relative to aircraft axis - yaw speed movements  Unit : degrees per second
+	895650072	SIMVAR_TURB_ENG_REVERSE_NOZZLE_PERCENT			\simvar\engine\turbine\SIMVAR_TURB_ENG_REVERSE_NOZZLE_PERCENT	Percent thrust reverser nozzles deployed  Unit : Percent
 	1649214721	SIMVAR_GROUND_VELOCITY			\simvar\physic\SIMVAR_GROUND_VELOCITY	Speed relative to the earths surface  Unit : Knots
 	2750389324	SIMVAR_TURB_ENG_N1			\simvar\engine\turbine\SIMVAR_TURB_ENG_N1	Turbine engine N1  Unit : Percent
+	3852284635	SIMVAR_AIRSPEED_INDICATED			\simvar\physic\SIMVAR_AIRSPEED_INDICATED	Indicated airspeed  Unit : Knots
+	3898595254	SIMVAR_TURB_ENG_N1_DERIVED			\simvar\engine\turbine\SIMVAR_TURB_ENG_N1_DERIVED	
 
 In Memory Audio	ID	Name	Audio source file		Wwise Object Path	Notes	Data Size
 	37667999	startcontactors	H:\sound\.cache\Windows\SFX\startcontactors_1E8ECBBC.wem		\Actor-Mixer Hierarchy\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved2\startcontactors		26484
-	180034175	roll3	H:\sound\.cache\Windows\SFX\roll3_230994F0.wem		\Actor-Mixer Hierarchy\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved2\roll3		254309
+	105888033	RevWindR	H:\sound\.cache\Windows\SFX\RevWindR_89DC6E16.wem		\Actor-Mixer Hierarchy\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved\LEAP1A\RevWindR		120290
+	177306390	flaps1	H:\sound\.cache\Windows\SFX\flaps1_10D08852.wem		\Actor-Mixer Hierarchy\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved2\flaps1		333326
+	180034175	roll3	H:\sound\.cache\Windows\SFX\roll3_A2C63EB2.wem		\Actor-Mixer Hierarchy\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved2\roll3		254309
+	181087662	turbulence2	H:\sound\.cache\Windows\SFX\turbulence2_89DC6E16.wem		\Actor-Mixer Hierarchy\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved2\turbulence2		262546
 	192062817	packextL	H:\sound\.cache\Windows\SFX\packextL_89DF4604.wem		\Actor-Mixer Hierarchy\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved2\packextL		139188
+	219271835	PWBuzzR	H:\sound\.cache\Windows\SFX\PWBuzzR_B6E31ACA.wem		\Actor-Mixer Hierarchy\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved2\PW 1100G\PWBuzzR		74069
 	269761499	cabin_fans	H:\sound\.cache\Windows\SFX\cabin_fans_E05F4F10.wem		\Actor-Mixer Hierarchy\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved2\cabin_fans		662088
 	323412330	Alt_01	H:\sound\.cache\Windows\SFX\Alt_2CE0EC90.wem		\Actor-Mixer Hierarchy\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved2\Alt_01		24689
-	353424367	packextR	H:\sound\.cache\Windows\SFX\packextR_239FE2FF.wem		\Actor-Mixer Hierarchy\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved2\packextR		136084
+	340879894	WhaleL	H:\sound\.cache\Windows\SFX\WhaleL_C92EE952.wem		\Actor-Mixer Hierarchy\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved2\PW 1100G\WhaleL		12794
 	371384298	startcontactorsdc	H:\sound\.cache\Windows\SFX\startcontactorsdc_1E8ECBBC.wem		\Actor-Mixer Hierarchy\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved2\startcontactorsdc		139175
+	404133319	packextR	H:\sound\.cache\Windows\SFX\packextR_239FE2FF.wem		\Actor-Mixer Hierarchy\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved2\packextR		136084
+	449655708	RevWindL	H:\sound\.cache\Windows\SFX\RevWindL_89DC6E16.wem		\Actor-Mixer Hierarchy\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved\LEAP1A\RevWindL		120267
 	474126494	panelrattle	H:\sound\.cache\Windows\SFX\panelrattle_1D8DE606.wem		\Actor-Mixer Hierarchy\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved2\panelrattle		307365
+	526064182	PWLWhine	H:\sound\.cache\Windows\SFX\PWLWhine_E7163D8E.wem		\Actor-Mixer Hierarchy\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved2\PW 1100G\PWLWhine		312872
 	550405798	Alt	H:\sound\.cache\Windows\SFX\Alt_1E8ECBBC.wem		\Actor-Mixer Hierarchy\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved2\Alt		24621
+	560990817	EndSpoolR	H:\sound\.cache\Windows\SFX\EndSpoolR_647C3FEE.wem		\Actor-Mixer Hierarchy\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved2\PW 1100G\EndSpoolR		15640
+	661661928	EndSpoolL	H:\sound\.cache\Windows\SFX\EndSpoolL_EC6968E9.wem		\Actor-Mixer Hierarchy\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved2\PW 1100G\EndSpoolL		12794
+	687827707	turbulence	H:\sound\.cache\Windows\SFX\turbulence_89DC6E16.wem		\Actor-Mixer Hierarchy\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved2\turbulence		200711
+	740621411	PWRSpool	H:\sound\.cache\Windows\SFX\PWRSpool_89DC6E16.wem		\Actor-Mixer Hierarchy\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved2\PW 1100G\PWRSpool		19611
+	755616064	ISpoolR	H:\sound\.cache\Windows\SFX\ISpoolR_F9DAD686.wem		\Actor-Mixer Hierarchy\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved2\PW 1100G\ISpoolR		21685
+	799827812	PWRWhine	H:\sound\.cache\Windows\SFX\PWRWhine_3F49D76B.wem		\Actor-Mixer Hierarchy\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved2\PW 1100G\PWRWhine		197417
+	824559596	PWLSpool	H:\sound\.cache\Windows\SFX\PWLSpool_4C2B2287.wem		\Actor-Mixer Hierarchy\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved2\PW 1100G\PWLSpool		45177
+	903586535	WhaleR	H:\sound\.cache\Windows\SFX\WhaleR_68FB1465.wem		\Actor-Mixer Hierarchy\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved2\PW 1100G\WhaleR		15640
+	904912824	Cabin_wind	H:\sound\.cache\Windows\SFX\Cabin_wind_F9DAD686.wem		\Actor-Mixer Hierarchy\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved2\Cabin_wind		1000678
+	906236500	PWBuzzL	H:\sound\.cache\Windows\SFX\PWBuzzL_89DC6E16.wem		\Actor-Mixer Hierarchy\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved2\PW 1100G\PWBuzzL		80110
 	951136660	nosetouch	H:\sound\.cache\Windows\SFX\nosetouch_1E8ECBBC.wem		\Actor-Mixer Hierarchy\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved2\nosetouch		45308
-	991537739	flaps1	H:\sound\.cache\Windows\SFX\flaps1_47B5D948.wem		\Actor-Mixer Hierarchy\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved2\flaps1		333326
+	1041337501	ISpoolL	H:\sound\.cache\Windows\SFX\ISpoolL_F9DAD686.wem		\Actor-Mixer Hierarchy\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved2\PW 1100G\ISpoolL		41169
 

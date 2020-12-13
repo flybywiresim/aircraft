@@ -1,4 +1,5 @@
-# FlyByWire A32NX
+# <img src="https://raw.githubusercontent.com/flybywiresim/fbw-branding/master/svg/FBW-Logo.svg" placeholder="FlyByWire" width="400"/>
+
 
 [![Discord](https://img.shields.io/discord/738864299392630914.svg?label=&logo=discord&logoColor=ffffff&color=7389D8&labelColor=6A7EC2)](https://discord.gg/UjzuHMU)
 
@@ -9,6 +10,17 @@
 ## About
 
 The A32NX Project is a community-driven open source project to create a free Airbus A320neo in Microsoft Flight Simulator that is as close to reality as possible. It aims to enhance the default A320neo by improving the systems depth and functionality to bring it up to payware-level, all for free.
+
+The following aircraft configuration is currently simulated:
+
+ ```
+ Model      A320-251N
+ Engine     LEAP 1A-26
+ FMGS       Honeywell Pegasus Step 1A
+ FWC Std.   H2F9C
+ ```
+
+Please note that this configuration may change in the future as the A32NX project evolves and changes.
 
 ## Downloads
 
@@ -33,6 +45,14 @@ This has the latest features, but is much more unstable, use at your own risk.
 [Download developer build here.](https://github.com/flybywiresim/a32nx/releases/download/vmaster/A32NX-master.zip)
 
 [View info about the latest build here.](https://github.com/flybywiresim/a32nx/releases/tag/vmaster)
+
+#### Unstable Master Branch Build (with custom FBW)
+
+This version is the same as the regular master/development version, but with the WIP custom fly-by-wire system. Expect issues with flight directors/autopilot if you intend to use this version. No support will be provided via Discord.
+
+[Download custom FBW development build here.](https://flybywiresim-packages.nyc3.cdn.digitaloceanspaces.com/vmaster-cfbw/A32NX-master-cfbw.zip)
+
+[**IMPORTANT:** view warnings and info for the custom FBW build here.](https://github.com/flybywiresim/a32nx/tree/fbw/docs)
 
 ## Installation
 
@@ -88,6 +108,7 @@ A: Yes, see [Downloads](#Downloads).
 **Q: Where is the plane in-sim?**
 
 A: The mod is added on top of the default A320neo from Asobo. If you want to uninstall it and revert to the original aircraft, just delete the A32NX folder in your community folder.
+
 **Q: What are the liveries available?**
 
 A: This project modifies the default A320neo from Asobo, therefore all liveries should be compatible.
