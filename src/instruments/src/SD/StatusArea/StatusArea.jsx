@@ -5,7 +5,10 @@ import { useGlobalVar, useSimVar } from '../../util.mjs';
 export const StatusArea = () => {
     const gw = useSimVar('TOTAL WEIGHT', 'kg');
     const zulu = useGlobalVar('ZULU TIME', 'seconds');
-
+    const tat = Math.round(useSimVar('TOTAL AIR TEMPERATURE', 'celsius'));
+    const sat = Math.round(useSimVar('AMBIENT TEMPERATURE', 'celsius'));
+    const satPrefix = sat > 0 ? '+' : '';
+    const tatPrefix = tat > 0 ? '+' : '';
     const seconds = Math.floor(zulu);
     const hours = Math.floor(seconds / 3600);
     const minutes = Math.floor((seconds - (hours * 3600)) / 60);
@@ -16,6 +19,30 @@ export const StatusArea = () => {
             <path className="sd-status-line" d="M 0   510 h 600" />
             <path className="sd-status-line" d="M 200 510 v 100" />
             <path className="sd-status-line" d="M 400 510 v 100" />
+
+            {/* Temperatures */}
+
+            <Text title x={35} y={534} alignStart>
+                TAT
+            </Text>
+            <Text value x={125} y={534} alignEnd>
+                {tatPrefix}
+                {tat}
+            </Text>
+            <Text unit x={170} y={534} alignEnd>
+                &#176;C
+            </Text>
+
+            <Text title x={35} y={560} alignStart>
+                SAT
+            </Text>
+            <Text value x={125} y={560} alignEnd>
+                {satPrefix}
+                {sat}
+            </Text>
+            <Text unit x={170} y={560} alignEnd>
+                &#176;C
+            </Text>
 
             {/* Time */}
 
