@@ -346,30 +346,8 @@ function _addWindComponent(vw) {
  * @returns {number} angle diff
  * @private
  */
-function _getAngle(a, b) {
+function _getAngleDiff(a, b) {
     return 180 - Math.abs(Math.abs(a - b) - 180);
-}
-
-/**
- * Get Headwind
- * @param a {number} angle a
- * @param v {number} velocity wind
- * @returns {number} velocity wind
- * @private
- */
-function _getHeadwind(a, v) {
-    return v * Math.cos(a * (Math.PI / 180));
-}
-
-/**
- * Returns highest speed without exceeding vmax
- * @param v {number} speed target
- * @param vmax {number} Vmax
- * @returns {number} corrected speed target
- * @private
- */
-function _getMaxV(v, vmax = A32NX_Selectors.VMAX() - 5) {
-    return Math.min(Math.round(v), Math.round(vmax));
 }
 
 class NXSpeeds {
@@ -430,35 +408,30 @@ class NXSpeedsUtils {
      * @returns {number} velocity headwind
      */
     static getHeadwind(v, a, b) {
-        return _getHeadwind(_getAngle(a, b), v);
+        return v * Math.cos(_getAngleDiff(a, b) * (Math.PI / 180));
     }
 
     /**
-     * Calculates ground speed mini 1/3 * (current headwind - tower headwind)
+     * 1/3 * (current headwind - tower headwind)
      * @param vTwr {number} velocity tower headwind
      * @param vCur {number} velocity current headwind
-     * @returns {number} ground speed mini
+     * @returns {number} head wind diff
      */
-    static groundSpeedMini(vTwr, vCur = SimVar.GetSimVarValue("AIRCRAFT WIND Z", "knots") * -1) {
+    static getHeadWindDiff(vTwr, vCur = SimVar.GetSimVarValue("AIRCRAFT WIND Z", "knots") * -1) {
         return Math.round(1 / 3 * (vCur - vTwr));
     }
 
     /**
-     * Returns Vtarget limited by Vmax
+     * Returns Vtarget limited by Vapp and VFE next
      * @param vapp {number} Vapp
-     * @param gsMini {number} ground speed mini
+     * @param windDiff {number} ground speed mini
      * @returns {number}
      */
-    static getVtargetGSMini(vapp, gsMini) {
-        return Math.max(vapp, _getMaxV(vapp + gsMini));
-    }
-
-    /**
-     * Returns highest speed without exceeding vmax
-     * @param v {number} speed target
-     * @returns {number} corrected speed target
-     */
-    static getMaxV(v) {
-        return _getMaxV(v);
+    static getVtargetGSMini(vapp, windDiff) {
+        let vfe = Simplane.getNextFlapsExtendSpeed(Aircraft.A320_NEO);
+        if (Simplane.getFlapsHandleIndex() === 4) {
+            vfe -= 5;
+        }
+        return Math.max(vapp, Math.min(Math.round(vapp + windDiff), Math.round(vfe)));
     }
 }
