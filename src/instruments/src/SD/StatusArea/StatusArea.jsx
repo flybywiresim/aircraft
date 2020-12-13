@@ -7,6 +7,7 @@ export const StatusArea = () => {
     const zulu = useGlobalVar('ZULU TIME', 'seconds');
     const tat = Math.round(useSimVar('TOTAL AIR TEMPERATURE', 'celsius'));
     const sat = Math.round(useSimVar('AMBIENT TEMPERATURE', 'celsius'));
+    const adirsState = useSimVar('L:A320_Neo_ADIRS_STATE', 'Enum');
     const satPrefix = sat > 0 ? '+' : '';
     const tatPrefix = tat > 0 ? '+' : '';
     const seconds = Math.floor(zulu);
@@ -25,10 +26,18 @@ export const StatusArea = () => {
             <Text title x={35} y={534} alignStart>
                 TAT
             </Text>
-            <Text value x={125} y={534} alignEnd>
-                {tatPrefix}
-                {tat}
-            </Text>
+            { adirsState !== 2
+                ? (
+                    <Text warning x={125} y={534} alignEnd>
+                        XX
+                    </Text>
+                )
+                : (
+                    <Text value x={125} y={534} alignEnd>
+                        {tatPrefix}
+                        {tat}
+                    </Text>
+                )}
             <Text unit x={170} y={534} alignEnd>
                 &#176;C
             </Text>
@@ -36,10 +45,18 @@ export const StatusArea = () => {
             <Text title x={35} y={560} alignStart>
                 SAT
             </Text>
-            <Text value x={125} y={560} alignEnd>
-                {satPrefix}
-                {sat}
-            </Text>
+            { adirsState !== 2
+                ? (
+                    <Text warning x={125} y={560} alignEnd>
+                        XX
+                    </Text>
+                )
+                : (
+                    <Text value x={125} y={560} alignEnd>
+                        {satPrefix}
+                        {sat}
+                    </Text>
+                )}
             <Text unit x={170} y={560} alignEnd>
                 &#176;C
             </Text>
