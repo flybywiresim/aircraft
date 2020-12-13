@@ -1,4 +1,5 @@
 import React from "react";
+import { IconBatteryCharging } from '@tabler/icons';
 
 type TimeProps = {
     initTime: Date,
@@ -46,15 +47,15 @@ export default class StatusBar extends React.Component<TimeProps, any> {
 
     render() {
         return (
-            <div id="status-bar">
-                <div id="status-bar-left">
-                    <span>flyPad</span>
+            <div className="status-bar">
+                <div className="status-bar-item">
+                    flyPad
                 </div>
-                <div id="status-bar-center">
-                    <span>{formatTime(([this.state.currentTime.getUTCHours(), this.state.currentTime.getMinutes()])) + 'z'}</span>
+                <div className="status-bar-item">
+                    {formatTime(([this.state.currentTime.getUTCHours(), this.state.currentTime.getMinutes()])) + 'z'}
                 </div>
-                <div id="status-bar-right">
-                    <span>100 %</span>
+                <div className="status-bar-item">
+                    100% <IconBatteryCharging size={25} color="yellow" stroke={1.5} strokeLinejoin="miter" />
                 </div>
             </div>
         );

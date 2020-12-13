@@ -21,7 +21,7 @@ import React from "react";
 import { getSimbriefData, IFuel, IWeights } from './SimbriefApi';
 import StatusBar from "./StatusBar/StatusBar";
 import ToolBar from "./ToolBar/ToolBar";
-import DashboardWidget from "./Dashboard/DasshboardWidget";
+import DashboardWidget from "./Dashboard/DashboardWidget";
 
 import './Efb.scss';
 
@@ -57,6 +57,8 @@ type EfbState = {
     resFuelTime: number,
     taxiOutTime: number,
 };
+
+document.body.classList.add('darkMode');
 
 class Efb extends React.Component<EfbProps, EfbState> {
     constructor(props: EfbProps) {

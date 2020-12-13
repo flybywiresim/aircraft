@@ -17,6 +17,7 @@
  */
 
 import React from 'react';
+import { IconUser } from '@tabler/icons';
 
 type ToolbarProps = {
     setPageIndex: (number) => void;
@@ -49,7 +50,7 @@ class ToolBar extends React.Component<ToolbarProps, ToolbarState> {
 
     indexInit(): number {
         const url = window.location.pathname;
-        let index = 1;
+        let index = 0;
         this.tabs.map((tab) => {
             if (("/" + tab.link) === url) {
                 index = tab.id;
@@ -82,13 +83,16 @@ class ToolBar extends React.Component<ToolbarProps, ToolbarState> {
                     }
 
                     <div id="LoadSimbrief" className="Tab">
-                        <p onClick={() => this.props.fetchSimbrief()}>
-                            Load Flightdata
-                        </p>
+                        <a onClick={() => this.props.fetchSimbrief()}>
+                            Load Flight Data
+                        </a>
                     </div>
                 </div>
 
                 <div id="ProfileToolbar">
+                    <a href={"/profile"}>
+                        <IconUser size={35} stroke={1.5} strokeLinejoin="miter" />
+                    </a>
                     {/*<Link to="/profile">*/}
                     {/*    <i className="material-icons" id="Icon">account_circle</i>*/}
                     {/*</Link>*/}

@@ -1,4 +1,5 @@
 import React from 'react';
+import { IconPlane } from '@tabler/icons';
 
 type FlightWidgetProps = {
     name: string,
@@ -32,7 +33,9 @@ const FlightWidget = (props: FlightWidgetProps) => {
                 </div>
                 <div id='origin-destination'>
                     <span>{props.dep}</span>
-                    <i className="material-icons">send</i>
+                    &nbsp;&nbsp;
+                    <IconPlane size={40} stroke={1.5} strokeLinejoin="miter" />
+                    &nbsp;&nbsp;
                     <span>{props.arr}</span>
                 </div>
 
