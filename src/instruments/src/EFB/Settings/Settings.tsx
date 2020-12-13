@@ -29,19 +29,17 @@ class Settings extends React.Component<SettingsProps, SettingsState> {
     };
 
     darkModeInit() {
-        return false;
-        // TODO bugs out for now
-        // const darkMode = window.localStorage.getItem("darkMode");
-        // if (darkMode === null) {
-        //     // @ts-ignore
-        //     return document.getElementById("root").classList.contains("darkMode");
-        // } else if (darkMode === "true") {
-        //     this.handleDark(true);
-        //     return true;
-        // } else {
-        //     this.handleDark(false);
-        //     return false;
-        // }
+        const darkMode = window.localStorage.getItem("darkMode");
+        if (darkMode === null) {
+            // @ts-ignore
+            return document.body.classList.contains("darkMode");
+        } else if (darkMode === "true") {
+            this.handleDark(true);
+            return true;
+        } else {
+            this.handleDark(false);
+            return false;
+        }
     }
 
     handleDark(darkMode: boolean) {
@@ -56,7 +54,7 @@ class Settings extends React.Component<SettingsProps, SettingsState> {
 
     handleDarkToggle() {
         const darkMode = !this.state.darkMode;
-        const element = document.createElement("div");
+        const element = document.body;
         element.classList.toggle("darkMode");
         this.setState({ darkMode: darkMode });
         window.localStorage.setItem("darkMode", String(darkMode));
