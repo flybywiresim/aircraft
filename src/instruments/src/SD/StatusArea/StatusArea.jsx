@@ -9,6 +9,7 @@ export const StatusArea = () => {
     const seconds = Math.floor(zulu);
     const hours = Math.floor(seconds / 3600);
     const minutes = Math.floor((seconds - (hours * 3600)) / 60);
+    const padMinutes = String(minutes).padStart(2, '0');
 
     return (
         <>
@@ -20,7 +21,7 @@ export const StatusArea = () => {
 
             <Text bigValue x={251} y={560} alignStart>{hours}</Text>
             <Text unit x={290} y={560} alignStart>H</Text>
-            <Text value x={316} y={560} alignStart>{minutes}</Text>
+            <Text value x={316} y={560} alignStart>{padMinutes}</Text>
 
             {/* Gross weight */}
 
