@@ -434,13 +434,13 @@ class NXSpeedsUtils {
     }
 
     /**
-     * Calculates ground speed mini
+     * Calculates ground speed mini 1/3 * (current headwind - tower headwind)
      * @param vTwr {number} velocity tower headwind
      * @param vCur {number} velocity current headwind
      * @returns {number} ground speed mini
      */
     static groundSpeedMini(vTwr, vCur = SimVar.GetSimVarValue("AIRCRAFT WIND Z", "knots") * -1) {
-        return vCur - Math.max(vTwr, 10);
+        return Math.round(1 / 3 * (vCur - vTwr));
     }
 
     /**
