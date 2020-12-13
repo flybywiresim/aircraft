@@ -428,10 +428,8 @@ class NXSpeedsUtils {
      * @returns {number}
      */
     static getVtargetGSMini(vapp, windDiff) {
-        let vfe = Simplane.getNextFlapsExtendSpeed(Aircraft.A320_NEO);
-        if (Simplane.getFlapsHandleIndex() === 4) {
-            vfe -= 5;
-        }
-        return Math.max(vapp, Math.min(Math.round(vapp + windDiff), Math.round(vfe)));
+        return Math.max(vapp, Math.min(Math.round(vapp + windDiff), Math.round(
+            Simplane.getFlapsHandleIndex() === 4 ? Simplane.getMaxSpeed(Aircraft.A320_NEO) - 5 : Simplane.getNextFlapsExtendSpeed(Aircraft.A320_NEO)
+        )));
     }
 }

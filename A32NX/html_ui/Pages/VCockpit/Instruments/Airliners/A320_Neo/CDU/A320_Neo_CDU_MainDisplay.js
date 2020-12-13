@@ -1308,7 +1308,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                     let speed = this.getManagedApproachSpeedMcdu();
                     let vls = this.getVApp();
                     if (isFinite(this.perfApprWindSpeed) && isFinite(this.perfApprWindHeading)) {
-                        vls = NXSpeedsUtils.getVtargetGSMini(vls, NXSpeedsUtils.groundSpeedMini(this._towerHeadwind));
+                        vls = NXSpeedsUtils.getVtargetGSMini(vls, NXSpeedsUtils.getHeadWindDiff(this._towerHeadwind));
                     }
                     if (ctn !== Infinity) {
                         vls = Math.max(vls, ctn);
