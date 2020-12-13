@@ -3,7 +3,7 @@ import './Text.scss';
 export const Text = (props) => {
     const {
         x, y,
-        unit, bigValue, value, title,
+        unit, bigValue, value, title, warning,
         alignEnd, alignStart,
         children,
     } = props;
@@ -25,6 +25,10 @@ export const Text = (props) => {
 
     if (title) {
         return produceTextWithClass('title');
+    }
+
+    if (warning) {
+        return produceTextWithClass('warning');
     }
 
     return produceTextWithClass('value');
