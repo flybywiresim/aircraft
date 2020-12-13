@@ -13,7 +13,6 @@ namespace AK
 {
     namespace EVENTS
     {
-        static const AkUniqueID PLAY_ASOBO_A320_NEO_100 = 1943534218U;
         static const AkUniqueID PLAY_ASOBO_A320_NEO_APLOCK = 2605664391U;
         static const AkUniqueID PLAY_ASOBO_A320_NEO_APUNLOCK = 834519314U;
         static const AkUniqueID PLAY_ASOBO_A320_NEO_AURAL_100ABOVE = 1287945483U;
@@ -30,11 +29,14 @@ namespace AK
         static const AkUniqueID PLAY_ASOBO_A320_NEO_BUMPSLOW = 2656054274U;
         static const AkUniqueID PLAY_ASOBO_A320_NEO_BUZZL = 2008669410U;
         static const AkUniqueID PLAY_ASOBO_A320_NEO_BUZZLEXT = 1302032711U;
+        static const AkUniqueID PLAY_ASOBO_A320_NEO_BUZZLPW = 3829609461U;
         static const AkUniqueID PLAY_ASOBO_A320_NEO_BUZZR = 2008669436U;
         static const AkUniqueID PLAY_ASOBO_A320_NEO_BUZZREXT = 1638436053U;
+        static const AkUniqueID PLAY_ASOBO_A320_NEO_BUZZRPW = 3766736123U;
         static const AkUniqueID PLAY_ASOBO_A320_NEO_CABFANS = 3779303495U;
         static const AkUniqueID PLAY_ASOBO_A320_NEO_CABIN_CREW_SEATS_LANDING = 2291548167U;
         static const AkUniqueID PLAY_ASOBO_A320_NEO_CABIN_CREW_SEATS_TAKEOFF = 548293890U;
+        static const AkUniqueID PLAY_ASOBO_A320_NEO_CABINWIND = 3500260578U;
         static const AkUniqueID PLAY_ASOBO_A320_NEO_CABTOUCHHARD = 192473401U;
         static const AkUniqueID PLAY_ASOBO_A320_NEO_CABTOUCHMED = 2112433148U;
         static const AkUniqueID PLAY_ASOBO_A320_NEO_CABTOUCHSMOOTH = 577269460U;
@@ -49,6 +51,8 @@ namespace AK
         static const AkUniqueID PLAY_ASOBO_A320_NEO_DETENT = 3751251587U;
         static const AkUniqueID PLAY_ASOBO_A320_NEO_DUALINPUT = 3566138281U;
         static const AkUniqueID PLAY_ASOBO_A320_NEO_EMERCABINCALL = 2965778557U;
+        static const AkUniqueID PLAY_ASOBO_A320_NEO_ENDSPOOLL = 544896699U;
+        static const AkUniqueID PLAY_ASOBO_A320_NEO_ENDSPOOLR = 544896677U;
         static const AkUniqueID PLAY_ASOBO_A320_NEO_EVACHORNCABIN = 1835957270U;
         static const AkUniqueID PLAY_ASOBO_A320_NEO_EVACHORNCOCKPIT = 2026454070U;
         static const AkUniqueID PLAY_ASOBO_A320_NEO_EXL = 2736545818U;
@@ -104,10 +108,18 @@ namespace AK
         static const AkUniqueID PLAY_ASOBO_A320_NEO_PRIORITYLEFT = 2132569486U;
         static const AkUniqueID PLAY_ASOBO_A320_NEO_PRIORITYRIGHT = 1666133037U;
         static const AkUniqueID PLAY_ASOBO_A320_NEO_PTUTEST = 1266298034U;
+        static const AkUniqueID PLAY_ASOBO_A320_NEO_PWISPOOLL = 1740797696U;
+        static const AkUniqueID PLAY_ASOBO_A320_NEO_PWISPOOLR = 1740797726U;
+        static const AkUniqueID PLAY_ASOBO_A320_NEO_PWLSPOOL = 1646738531U;
+        static const AkUniqueID PLAY_ASOBO_A320_NEO_PWLWHINE = 3092322259U;
+        static const AkUniqueID PLAY_ASOBO_A320_NEO_PWRSPOOL = 3493541461U;
+        static const AkUniqueID PLAY_ASOBO_A320_NEO_PWRWHINE = 1186852889U;
         static const AkUniqueID PLAY_ASOBO_A320_NEO_REVERSEL = 3122667443U;
         static const AkUniqueID PLAY_ASOBO_A320_NEO_REVERSELEXT = 2082310016U;
         static const AkUniqueID PLAY_ASOBO_A320_NEO_REVERSER = 3122667437U;
         static const AkUniqueID PLAY_ASOBO_A320_NEO_REVERSEREXT = 4070683454U;
+        static const AkUniqueID PLAY_ASOBO_A320_NEO_REVWINDL = 4076237830U;
+        static const AkUniqueID PLAY_ASOBO_A320_NEO_REVWINDR = 4076237848U;
         static const AkUniqueID PLAY_ASOBO_A320_NEO_ROLLRATTLE = 276993210U;
         static const AkUniqueID PLAY_ASOBO_A320_NEO_ROLLRATTLE2 = 3079676156U;
         static const AkUniqueID PLAY_ASOBO_A320_NEO_RSHUTEXT = 188225848U;
@@ -138,6 +150,10 @@ namespace AK
         static const AkUniqueID PLAY_ASOBO_A320_NEO_TINNYROLL = 183534372U;
         static const AkUniqueID PLAY_ASOBO_A320_NEO_TOGADETENT = 958251500U;
         static const AkUniqueID PLAY_ASOBO_A320_NEO_TRUNIT = 2317823061U;
+        static const AkUniqueID PLAY_ASOBO_A320_NEO_TURBULENCE1 = 1839683395U;
+        static const AkUniqueID PLAY_ASOBO_A320_NEO_TURBULENCE2 = 1839683392U;
+        static const AkUniqueID PLAY_ASOBO_A320_NEO_WHALEL = 2990366680U;
+        static const AkUniqueID PLAY_ASOBO_A320_NEO_WHALER = 2990366662U;
     } // namespace EVENTS
 
     namespace STATES
