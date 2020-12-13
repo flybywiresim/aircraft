@@ -3300,9 +3300,6 @@
 
         <Component ID="INOP">
             <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-                <NODE_ID>PUSH_AUTOPILOT_HDGTRK</NODE_ID>
-            </UseTemplate>
-            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
                 <NODE_ID>SWITCH_LEFT</NODE_ID>
             </UseTemplate>
             <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
