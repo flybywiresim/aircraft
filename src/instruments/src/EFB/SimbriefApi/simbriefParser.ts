@@ -15,7 +15,19 @@ export function getSimbriefData(simbriefUsername: string): Promise<ISimbriefData
     simbriefApiParams.append("json", "1");
     simbriefApiUrl.search = simbriefApiParams.toString();
 
-    return fetch(simbriefApiUrl.toString(), getRequestData).then(result => simbriefDataParser(result.json()));
+    const simbriefData = fetch(simbriefApiUrl.toString(), getRequestData)
+        .then(res => res.json())
+        .then(
+            (result: any) => {
+                console.info(result);
+                return simbriefDataParser(result);
+            },
+            (error) => {
+                console.log("err");
+            }
+        );
+    //@ts-ignore
+    return simbriefData;
 }
 
 function simbriefDataParser(simbriefJson: any): ISimbriefData {

@@ -70,26 +70,26 @@ class ToolBar extends React.Component<ToolbarProps, ToolbarState> {
 
     render() {
         return (
-            <div className="Toolbar">
+            <div className="toolbar">
                 <img src={this.props.logo} className="FBW-Logo" alt="logo" />
 
-                <div id="Tabs">
+                <div className="tabs">
                     {
                         this.tabs.map((tab) =>
-                            <div key={tab.id} className={tab.id === this.state.activeIndex ? 'Tab Active' : 'Tab'} onClick={this.handleClick(tab.id)}>
+                            <div key={tab.id} className={tab.id === this.state.activeIndex ? 'tab active' : 'tab'} onClick={this.handleClick(tab.id)}>
                                 <a href={"/" + tab.link}>{tab.name}</a>
                             </div>
                         )
                     }
 
-                    <div id="LoadSimbrief" className="Tab">
+                    <div id="LoadSimbrief" className="tab">
                         <a onClick={() => this.props.fetchSimbrief()}>
                             Load Flight Data
                         </a>
                     </div>
                 </div>
 
-                <div id="ProfileToolbar">
+                <div className="profile-toolbar">
                     <a href={"/profile"}>
                         <IconUser size={35} stroke={1.5} strokeLinejoin="miter" />
                     </a>

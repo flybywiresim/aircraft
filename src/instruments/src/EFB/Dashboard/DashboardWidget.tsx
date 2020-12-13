@@ -31,10 +31,10 @@ class DashboardWidget extends React.Component<DashboardWidgetProps, DashboardWid
 
     render() {
         return (
-            <div className="DashboardWidget">
-                <span id='title-todays-flight' className="WidgetTitle">Today's Flight</span>
-                <span id='title-wx' className="WidgetTitle">Weather</span>
-                <span id='title-map' className="WidgetTitle">Map</span>
+            <div className="dashboard-widget">
+                <span id='title-todays-flight' className="widget-title">Today's Flight</span>
+                <span id='title-wx' className="widget-title">Weather</span>
+                <span id='title-map' className="widget-title">Map</span>
 
                 <FlightWidget
                     name="todays"
