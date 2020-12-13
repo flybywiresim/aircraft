@@ -48,9 +48,12 @@
     "sass": "~1.30.0",
     "@flybywiresim/api-client": "~0.2.2",
     "@flybywiresim/map": "~0.0.9",
+    "@tabler/icons": "^1.38.0",
     "aewx-metar-parser": "~0.10.1",
     "react": "^17.0.0",
     "react-dom": "^17.0.0",
-    "rollup-plugin-scss": "^2.6.1"
+    "react-router": "~5.2.0",
+    "react-router-dom": "~5.2.0",
+    "rollup-plugin-scss": "^2.6.1",
   }
 }

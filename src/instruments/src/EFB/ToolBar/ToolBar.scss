@@ -1,3 +1,21 @@
+/*!
+ * A32NX
+ * Copyright (C) 2020 FlyByWire Simulations and its contributors
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 .Toolbar {
   $padding: 1em;
   $spacing-padding: 2.25rem;
@@ -6,7 +24,7 @@
 
   width: 1430px;
 
-  padding: 4em $padding $padding $spacing-padding;
+  padding: 3.75em $padding $padding $spacing-padding;
   display: flex;
   flex-direction: row;
   justify-content: flex-start;
@@ -22,7 +40,7 @@
     margin-left: $spacing-padding;
 
     & > div:hover {
-      border-bottom: solid var(--toolbarUnderlineColor) .1em;
+      border-bottom: solid var(--toolbarUnderlineColor) 0.1em;
     }
 
     img.FBW-Logo {
@@ -30,9 +48,8 @@
     }
 
     .Tab {
-      margin-top: .4em;
       margin-right: $spacing-padding;
-      padding-bottom: .135em;
+      padding-bottom: 0.135em;
 
       font-family: "Nunito Sans", sans-serif;
       font-size: 1.5rem;
@@ -43,11 +60,11 @@
       cursor: pointer;
 
       &.Active {
-        border-bottom: solid var(--toolbarUnderlineColor) .1em;
+        border-bottom: solid var(--toolbarUnderlineColor) 0.1em;
       }
 
       &.Active:hover {
-        border-bottom: solid var(--toolbarUnderlineColor) .1em;
+        border-bottom: solid var(--toolbarUnderlineColor) 0.1em;
       }
 
       a {

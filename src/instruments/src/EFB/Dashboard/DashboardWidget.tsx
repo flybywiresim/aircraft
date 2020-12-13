@@ -1,3 +1,21 @@
+/*
+ * A32NX
+ * Copyright (C) 2020 FlyByWire Simulations and its contributors
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 import React from 'react';
 import FlightWidget from "./Widgets/FlightWidget";
 import WeatherWidget from "./Widgets/WeatherWidget";
@@ -32,7 +50,7 @@ class DashboardWidget extends React.Component<DashboardWidgetProps, DashboardWid
     render() {
         return (
             <div className="DashboardWidget">
-                <span id='title-todays-flight' className="WidgetTitle">Today's flight</span>
+                <span id='title-todays-flight' className="WidgetTitle">Today's Flight</span>
                 <span id='title-wx' className="WidgetTitle">Weather</span>
                 <span id='title-map' className="WidgetTitle">Map</span>
 
