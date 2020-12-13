@@ -18,11 +18,15 @@
 
 import React from 'react';
 import { IconPlane } from '@tabler/icons';
+import { IconPlaneDeparture } from '@tabler/icons';
+import { IconPlaneArrival } from '@tabler/icons';
 
 type FlightWidgetProps = {
     name: string,
     dep: string,
     arr: string,
+    std: number,
+    sta: number,
     elapsedTime: string,
     distance: string,
     eta: string,
@@ -31,9 +35,9 @@ type FlightWidgetProps = {
 
 const FlightWidget = (props: FlightWidgetProps) => {
     return (
-        <div className='flight-widget'>
+        <div className="flight-widget">
             <div id={'flight-' + props.name} className="flight-card">
-                <div className='flight-widget-toolbar'>
+                <div className="flight-widget-toolbar">
                     <a
                         id="primary-button"
                         href="/dashboard/primary"
@@ -49,7 +53,8 @@ const FlightWidget = (props: FlightWidgetProps) => {
                         Secondary
                     </a>
                 </div>
-                <div id='origin-destination'>
+
+                <div className="origin-destination">
                     <span>{props.dep}</span>
                     &nbsp;&nbsp;
                     <IconPlane size={40} stroke={1.5} strokeLinejoin="miter" />
@@ -57,19 +62,19 @@ const FlightWidget = (props: FlightWidgetProps) => {
                     <span>{props.arr}</span>
                 </div>
 
-                <div id="Time">
-                    <p className="Title">TIME</p>
-                    <p>{props.name === "todays" ? props.timeSinceStart : "01:43"}</p>
-                </div>
-
-                <div id="Distance">
-                    <p className="Title">DISTANCE</p>
-                    <p>{props.distance}</p>
-                </div>
-
-                <div id="ETA">
-                    <p className="Title">{props.name === "todays" ? "ETA (UTC)" : "ETA (UTC)"}</p>
-                    <p>{props.eta}</p>
+                <div className="flight-schedule">
+                    <div id="std">
+                        <h5 className="title">
+                            STD &nbsp; <IconPlaneDeparture size={25} stroke={1.5} strokeLinejoin="miter" />
+                        </h5>
+                        <span>{props.std}</span>
+                    </div>
+                    <div id="sta">
+                        <h5 className="title">
+                            <IconPlaneArrival size={25} stroke={1.5} strokeLinejoin="miter" /> &nbsp; STA
+                        </h5>
+                        <span>{props.sta}</span>
+                    </div>
                 </div>
             </div>
         </div>

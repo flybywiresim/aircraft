@@ -1,242 +1,290 @@
-.DashboardWidget {
-    display: grid;
-    font-family: "Nunito Sans", sans-serif;
-    grid-template-columns: 25% 25% 25% 25%;
-    grid-template-rows: 3em auto;
-    grid-gap: 1em;
-    justify-items: stretch;
-    align-items: flex-start;
-    overflow: hidden;
-    grid-template-areas:
-        "TodaysFlightTitle WeatherTitle MapTitle MapTitle"
-        "FlightCard        OriginWxCard Map      Map"
-        "FlightCard        DestWxCard   Map      Map";
+/*!
+ * A32NX
+ * Copyright (C) 2020 FlyByWire Simulations and its contributors
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 
-    span.WidgetTitle#title-todays-flight {
-        grid-area: TodaysFlightTitle;
-    }
+.dashboard-widget {
+  display: grid;
+  font-family: "Nunito Sans", sans-serif;
+  grid-template-columns: 25% 25% 25% 25%;
+  grid-template-rows: 3em auto;
+  grid-gap: 1em;
+  justify-items: stretch;
+  align-items: flex-start;
+  overflow: hidden;
+  grid-template-areas:
+    "TodaysFlightTitle WeatherTitle MapTitle MapTitle"
+    "FlightCard        OriginWxCard Map      Map"
+    "FlightCard        DestWxCard   Map      Map";
 
-    span.WidgetTitle#title-wx {
-        grid-area: WeatherTitle;
-    }
+  span.widget-title#title-todays-flight {
+    grid-area: TodaysFlightTitle;
+    font-size: 1.25rem;
+    font-weight: 400;
+  }
 
-    span.WidgetTitle#title-map {
-        grid-area: MapTitle;
-    }
+  span.widget-title#title-wx {
+    grid-area: WeatherTitle;
+    font-size: 1.25rem;
+    font-weight: 400;
+  }
 
-    // TODO move this to its own stylesheet
+  span.widget-title#title-map {
+    grid-area: MapTitle;
+    font-size: 1.25rem;
+    font-weight: 400;
+  }
 
-    .flight-widget {
-        grid-area: FlightCard;
-        height: 100%;
+  .flight-widget {
+    grid-area: FlightCard;
+    height: 100%;
 
-        .flight-card {
-            height: 100%;
-            display: grid;
-            box-shadow: 0 0 3px rgba(0, 0, 0, 0.1);
-            grid-template-columns: auto auto;
-            grid-template-rows: 4rem auto auto auto 45%;
-            color: var(--cardText);
-            background: var(--cardBackground);
-            padding: 0 5%;
-            font-size: 2.25rem;
-            grid-template-areas:
-            "Toolbar Toolbar"
-            "DepArr  DepArr"
-            "Time    Distance"
-            "ETA     ETA";
+    .flight-card {
+      height: 100%;
+      border-radius: 10px;
+      display: grid;
+      grid-gap: 0.75em;
+      box-shadow: 0 0 3px rgba(0, 0, 0, 0.1);
+      grid-template-columns: auto auto;
+      grid-template-rows: 4rem auto auto auto 45%;
+      color: var(--cardText);
+      background: var(--cardBackground);
+      padding: 1rem 2rem;
+      font-size: 1.25rem;
+      grid-template-areas:
+        "Toolbar  Toolbar"
+        "DepArr   DepArr"
+        "Schedule Schedule"
+        "ETA      ETA";
 
-            .flight-widget-toolbar {
-                margin-top: 1rem;
-                grid-area: Toolbar;
-                display: flex;
-                align-content: center;
-                justify-content: center;
-                font-size: 1.5rem;
+      .flight-widget-toolbar {
+        margin-top: 1rem;
+        grid-area: Toolbar;
+        display: flex;
+        align-content: center;
+        justify-content: center;
+        font-size: 1.25rem;
+        font-weight: 400;
 
-                a {
-                    color: inherit;
-                    text-decoration: inherit;
-                }
-
-                #secondary-button {
-                    margin-left: 3rem;
-                }
-
-                &.Active {
-                    border-bottom: solid var(--toolbarUnderlineColor) .1em;
-                  }
-
-                &.Active:hover {
-                border-bottom: solid var(--toolbarUnderlineColor) .1em;
-                }
-            }
-
-            .Title {
-                font-size:1.1rem;
-                font-weight: 700;
-                color: var(--mainTextSecondary);
-                grid-area: DepArr;
-            }
-
-            #origin-destination {
-              font-size: 2.25rem;
-              font-weight: 700;
-              grid-area: DepArr;
-              display: flex;
-              justify-content: center;
-              align-items: center;
-            }
-
-            #ETA {
-                grid-area: ETA;
-            }
+        a {
+          color: inherit;
+          text-decoration: inherit;
         }
-    }
 
-    // TODO move this to its own stylesheet
+        #primary-button {
+          margin-right: 1.5rem;
+        }
 
-    .weather-card {
-        height: 100%;
-        display: grid;
-        padding-bottom: 0;
-        box-shadow: 0 0 3px rgba(0, 0, 0, 0.1);
-        color: var(--cardText);
-        background: var(--cardBackground);
+        #secondary-button {
+          margin-left: 1.5rem;
+        }
+
+        &.active {
+          border-bottom: solid var(--toolbarUnderlineColor) 0.1em;
+        }
+
+        &.active:hover {
+          border-bottom: solid var(--toolbarUnderlineColor) 0.1em;
+        }
+      }
+
+      .title {
+        font-size: 1rem;
+        font-weight: 400;
+        color: var(--mainTextSecondary);
+        grid-area: DepArr;
+        display: flex;
+        align-items: center;
+      }
+
+      .origin-destination {
+        font-size: 2.25rem;
+        font-weight: 400;
+        grid-area: DepArr;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+
+      .flight-schedule {
+        grid-area: Schedule;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin-top: -4rem;
+      }
+
+      #std {
+        text-align: left;
         font-size: 1.5rem;
-        justify-content: space-between;
-        width: 100%;
-        grid-template-columns: 1fr;
-        grid-template-rows: auto auto auto auto;
-        grid-template-areas:
-            "OneByTwo"
-            "MetarModal"
-            "TwoByTwo"
-            "IcaoIdent";
+        margin-right: 2rem;
+      }
 
-        #OneByTwo {
-            margin: 10px 0 0 20px;
-            align-content: center;
-            padding-top: 15px;
-            display: grid;
-            grid-template-columns: 50% 50%;
-            font-size: 1.5rem;
-            grid-template-areas:
-                "icao WeatherIcon";
-            width: 100%;
-        }
+      #sta {
+        text-align: right;
+        font-size: 1.5rem;
+        margin-left: 2rem;
+      }
+    }
+  }
 
-        #TwoByTwo {
-            display: grid;
-            margin: 0 0 10px 30px;
-            grid-template-rows: auto auto;
-            grid-template-columns: 1fr 1fr;
-            font-size: 1.5rem;
-            justify-content: start;
-        }
+  .weather-card {
+    height: 100%;
+    border-radius: 10px;
+    display: grid;
+    padding-bottom: 0;
+    box-shadow: 0 0 3px rgba(0, 0, 0, 0.1);
+    color: var(--cardText);
+    background: var(--cardBackground);
+    font-size: 1.5rem;
+    justify-content: space-between;
+    width: 100%;
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto auto auto;
+    grid-template-areas:
+      "OneByTwo"
+      "MetarModal"
+      "TwoByTwo"
+      "IcaoIdent";
 
-        #MetarModal p {
-            padding: 10px 15px;
-            width: 90%;
-            min-height: 206px;
-        }
-
-        #IcaoIdent {
-            display: flex;
-
-            .icaoUpdate {
-                padding-left: 15px;
-                justify-content: space-evenly;
-                font-size: 1rem;
-                padding-bottom: 10px;
-            }
-        }
-
-        .WeatherIcon {
-            font-size: 3.5rem;
-            margin-left: 1em;
-            grid-area: WeatherIcon;
-        }
-
-        #icao {
-            font-size: 2.25rem;
-            grid-area: icao;
-
-            ::placeholder {
-                color: var(--cardText) !important;
-            }
-
-            input {
-                font-size: 2rem;
-                font-weight: 700;
-                width: 95px;
-                margin: 5px;
-                border-top-style: hidden;
-                border-right-style: hidden;
-                border-left-style: hidden;
-                border-bottom-style: dotted;
-                outline: none;
-                background-color: var(--cardBackground);
-                color: var(--cardText);
-            }
-        }
-
-        #Pressure {
-            font-size: 1.25em;
-            grid-area: Pressure;
-        }
-
-        #Wind {
-            font-size: 1.25em;
-            grid-area: Wind;
-        }
-
-        #Temp {
-            font-size: 1.25em;
-            grid-area: Temp;
-        }
-
-        #Dew {
-            font-size: 1.25em;
-            grid-area: Dew;
-        }
-
-        .col {
-            width: 100%;
-            margin-bottom: 20px;
-            font-size: 1.5rem;
-        }
-
-        .big {
-            font-size: 3rem;
-        }
-
-        .label, .unit {
-            font-size: 1.1rem;
-            color: var(--cardText);
-        }
+    #OneByTwo {
+      margin: 10px 0 0 20px;
+      align-content: center;
+      padding-top: 15px;
+      display: grid;
+      grid-template-columns: 50% 50%;
+      font-size: 1.5rem;
+      grid-template-areas: "icao WeatherIcon";
+      width: 100%;
     }
 
-    .map-widget {
-        grid-area: Map;
-        height: 100%;
-        width: 100%;
+    #TwoByTwo {
+      display: grid;
+      margin: 0 0 10px 30px;
+      grid-template-rows: auto auto;
+      grid-template-columns: 1fr 1fr;
+      font-size: 1.5rem;
+      justify-content: start;
     }
 
-    #mapid {
-        width: 660px !important;
-        height: 740px !important;
+    #MetarModal p {
+      padding: 10px 15px;
+      width: 90%;
+      min-height: 206px;
     }
 
-    #weather-card-origin {
-        grid-area: OriginWxCard;
+    #IcaoIdent {
+      display: flex;
+
+      .icaoUpdate {
+        padding-left: 15px;
+        justify-content: space-evenly;
+        font-size: 1rem;
+        padding-bottom: 10px;
+      }
     }
 
-    #weather-card-dest {
-        grid-area: DestWxCard;
+    .WeatherIcon {
+      font-size: 3.5rem;
+      margin-left: 1em;
+      grid-area: WeatherIcon;
     }
 
-    textarea:focus, input:focus{
+    #icao {
+      font-size: 2.25rem;
+      grid-area: icao;
+
+      ::placeholder {
+        color: var(--cardText) !important;
+      }
+
+      input {
+        font-size: 2rem;
+        font-weight: 700;
+        width: 95px;
+        margin: 5px;
+        border-top-style: hidden;
+        border-right-style: hidden;
+        border-left-style: hidden;
+        border-bottom-style: dotted;
         outline: none;
+        background-color: var(--cardBackground);
+        color: var(--cardText);
+      }
     }
+
+    #Pressure {
+      font-size: 1.25em;
+      grid-area: Pressure;
+    }
+
+    #Wind {
+      font-size: 1.25em;
+      grid-area: Wind;
+    }
+
+    #Temp {
+      font-size: 1.25em;
+      grid-area: Temp;
+    }
+
+    #Dew {
+      font-size: 1.25em;
+      grid-area: Dew;
+    }
+
+    .col {
+      width: 100%;
+      margin-bottom: 20px;
+      font-size: 1.5rem;
+    }
+
+    .big {
+      font-size: 3rem;
+    }
+
+    .label,
+    .unit {
+      font-size: 1.1rem;
+      color: var(--cardText);
+    }
+  }
+
+  .map-widget {
+    border-radius: 10px;
+    grid-area: Map;
+    height: 100%;
+    width: 100%;
+  }
+
+  #mapid {
+    width: 660px !important;
+    height: 740px !important;
+  }
+
+  #weather-card-origin {
+    grid-area: OriginWxCard;
+  }
+
+  #weather-card-dest {
+    grid-area: DestWxCard;
+  }
+
+  textarea:focus,
+  input:focus {
+    outline: none;
+  }
 }

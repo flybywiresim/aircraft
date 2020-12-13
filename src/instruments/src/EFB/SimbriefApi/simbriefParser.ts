@@ -1,3 +1,21 @@
+/*
+ * A32NX
+ * Copyright (C) 2020 FlyByWire Simulations and its contributors
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 import { ISimbriefData } from "./simbriefInterface";
 
 const simbriefApiUrl: URL = new URL("https://www.simbrief.com/api/xml.fetcher.php");
@@ -15,7 +33,19 @@ export function getSimbriefData(simbriefUsername: string): Promise<ISimbriefData
     simbriefApiParams.append("json", "1");
     simbriefApiUrl.search = simbriefApiParams.toString();
 
-    return fetch(simbriefApiUrl.toString(), getRequestData).then(result => simbriefDataParser(result.json()));
+    const simbriefData = fetch(simbriefApiUrl.toString(), getRequestData)
+        .then(res => res.json())
+        .then(
+            (result: any) => {
+                console.info(result);
+                return simbriefDataParser(result);
+            },
+            (error) => {
+                console.log("err");
+            }
+        );
+    //@ts-ignore
+    return simbriefData;
 }
 
 function simbriefDataParser(simbriefJson: any): ISimbriefData {

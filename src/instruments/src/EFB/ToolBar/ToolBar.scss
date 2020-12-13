@@ -16,14 +16,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-.Toolbar {
+.toolbar {
   $padding: 1em;
   $spacing-padding: 2.25rem;
-
   background: var(--cardBackground);
-
   width: 1430px;
-
   padding: 3.75em $padding $padding $spacing-padding;
   display: flex;
   flex-direction: row;
@@ -31,12 +28,11 @@
   align-items: center;
   position: fixed;
 
-  #Tabs {
+  .tabs {
     display: flex;
     flex-direction: row;
     justify-content: flex-start;
     align-items: flex-start;
-
     margin-left: $spacing-padding;
 
     & > div:hover {
@@ -47,23 +43,23 @@
       width: 2.25em;
     }
 
-    .Tab {
+    .tab {
       margin-right: $spacing-padding;
       padding-bottom: 0.135em;
 
       font-family: "Nunito Sans", sans-serif;
-      font-size: 1.5rem;
-      font-weight: 700;
+      font-size: 1.25rem;
+      font-weight: 400;
 
       color: var(--mainText);
 
       cursor: pointer;
 
-      &.Active {
+      &.active {
         border-bottom: solid var(--toolbarUnderlineColor) 0.1em;
       }
 
-      &.Active:hover {
+      &.active:hover {
         border-bottom: solid var(--toolbarUnderlineColor) 0.1em;
       }
 
@@ -74,28 +70,19 @@
     }
   }
 
-  #ProfileToolbar {
+  .profile-toolbar {
     margin-left: auto;
     margin-top: 5px;
-    margin-right: 3em;
+    margin-right: 2.25em;
     display: flex;
     align-items: flex-start;
     font-weight: 600;
     font-size: 1.3rem;
     color: var(--profileText);
 
-    #Icon {
-      margin-left: 10px;
-      font-size: 3rem;
-    }
-
     a {
       color: inherit;
       text-decoration: inherit;
     }
-  }
-
-  #Icon {
-    justify-content: end;
   }
 }

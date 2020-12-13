@@ -70,10 +70,10 @@ class Efb extends React.Component<EfbProps, EfbState> {
 
     state: EfbState = {
         currentPageIndex: 0,
-        departingAirport: 'N/A',
-        departingIata: 'N/A',
-        arrivingAirport: 'N/A',
-        arrivingIata: 'N/A',
+        departingAirport: '----',
+        departingIata: '---',
+        arrivingAirport: '----',
+        arrivingIata: '---',
         simbriefUsername: this.fetchSimbriefUsername(),
         flightDistance: 'N/A',
         flightETAInSeconds: 'N/A',
