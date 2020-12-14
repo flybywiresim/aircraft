@@ -9,6 +9,8 @@ type DashboardWidgetProps = {
     flightDistance: string,
     flightETAInSeconds: string,
     timeSinceStart: string,
+    schedOut: string,
+    schedIn: string
 }
 
 type DashboardWidgetState = {}
@@ -43,8 +45,9 @@ class DashboardWidget extends React.Component<DashboardWidgetProps, DashboardWid
                     elapsedTime="00:49"
                     distance={this.props.flightDistance}
                     eta={this.calculateFlightTime(this.props.flightETAInSeconds)}
-                    timeSinceStart={this.props.timeSinceStart} />
-
+                    timeSinceStart={this.props.timeSinceStart}
+                    sta={this.props.schedIn}
+                    std={this.props.schedOut} />
 
                 <WeatherWidget name='origin' editIcao="yes" icao={this.props.departingAirport} />
                 <WeatherWidget name='dest' editIcao="yes" icao={this.props.arrivingAirport} />

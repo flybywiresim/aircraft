@@ -56,6 +56,8 @@ type EfbState = {
     contFuelTime: number,
     resFuelTime: number,
     taxiOutTime: number,
+    schedOut: string,
+    schedIn: string
 };
 
 document.body.classList.add('darkMode');
@@ -113,7 +115,9 @@ class Efb extends React.Component<EfbProps, EfbState> {
         tripTime: 0,
         contFuelTime: 0,
         resFuelTime: 0,
-        taxiOutTime: 0
+        taxiOutTime: 0,
+        schedIn: '--:--',
+        schedOut: '--:--'
     }
 
     updateCurrentTime(currentTime: Date) {
@@ -125,7 +129,7 @@ class Efb extends React.Component<EfbProps, EfbState> {
     }
 
     fetchSimbriefUsername() {
-        const username = window.localStorage.getItem("SimbriefUsername");
+        const username = "myselfaaryan";
         if (username === null) {
             return '';
         } else {
@@ -181,7 +185,9 @@ class Efb extends React.Component<EfbProps, EfbState> {
             tripTime:           simbriefData.times.est_time_enroute,
             contFuelTime:       simbriefData.times.contfuel_time,
             resFuelTime:        simbriefData.times.reserve_time,
-            taxiOutTime:        simbriefData.times.taxi_out
+            taxiOutTime:        simbriefData.times.taxi_out,
+            schedOut:           simbriefData.times.sched_out,
+            schedIn:            simbriefData.times.sched_in
         });
     }
 
@@ -224,6 +230,8 @@ class Efb extends React.Component<EfbProps, EfbState> {
                     flightDistance={this.state.flightDistance}
                     flightETAInSeconds={this.state.flightETAInSeconds}
                     timeSinceStart={this.state.timeSinceStart}
+                    schedIn={this.state.schedIn}
+                    schedOut={this.state.schedOut}
                 />;
         }
     }

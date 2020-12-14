@@ -11,6 +11,7 @@
     "TodaysFlightTitle WeatherTitle MapTitle MapTitle"
     "FlightCard        OriginWxCard Map      Map"
     "FlightCard        DestWxCard   Map      Map";
+  color: var(--cardText);
 
   span.widget-title#title-todays-flight {
     grid-area: TodaysFlightTitle;
@@ -50,7 +51,7 @@
         "Toolbar  Toolbar"
         "DepArr   DepArr"
         "Schedule Schedule"
-        "ETA      ETA";
+        "Times    Times";
 
       .flight-widget-toolbar {
         margin-top: 1rem;
@@ -119,6 +120,14 @@
         text-align: right;
         font-size: 1.5rem;
         margin-left: 2rem;
+      }
+
+      .flight-times {
+        grid-area: Times;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin-top: -4rem;
       }
     }
   }
