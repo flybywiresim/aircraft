@@ -1,3 +1,21 @@
+<!--
+  ~ A32NX
+  ~ Copyright (C) 2020 FlyByWire Simulations and its contributors
+  ~
+  ~ This program is free software: you can redistribute it and/or modify
+  ~ it under the terms of the GNU General Public License as published by
+  ~ the Free Software Foundation, either version 3 of the License, or
+  ~ (at your option) any later version.
+  ~
+  ~ This program is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~ GNU General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU General Public License
+  ~ along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  -->
+
 <ModelBehaviors>
 	<Template Name="ASOBO_RMP_BACKLIGHT_Template">
 		<DefaultTemplateParameters>
@@ -802,77 +820,77 @@
 
 	<!-- This whole section is modified -->
 	<Template Name="ASOBO_ECAM_PAGE_SELECTION_Template">
-		<UseTemplate Name="ASOBO_ECAM_PAGE_BUTTON_Template">
+		<UseTemplate Name="FBW_Airbus_ECAM_Page_button">
 			<BASE_NAME>ENG</BASE_NAME>
 			<PART_ID>ECAM_ENG</PART_ID>
 			<GROUP_INDEX>0</GROUP_INDEX>
 			<TOOLTIPID>TT:COCKPIT.TOOLTIPS.PUSH_ECAM_ENG</TOOLTIPID>
 		</UseTemplate>
 
-		<UseTemplate Name="ASOBO_ECAM_PAGE_BUTTON_Template">
+		<UseTemplate Name="FBW_Airbus_ECAM_Page_button">
 			<BASE_NAME>BLEED</BASE_NAME>
 			<PART_ID>ECAM_BLEED</PART_ID>
 			<GROUP_INDEX>1</GROUP_INDEX> <!--Change to positive to activate-->
 			<TOOLTIPID>TT:COCKPIT.TOOLTIPS.PUSH_ECAM_BLEED</TOOLTIPID>
 		</UseTemplate>
 
-		<UseTemplate Name="ASOBO_ECAM_PAGE_BUTTON_Template">
+		<UseTemplate Name="FBW_Airbus_ECAM_Page_button">
 			<BASE_NAME>PRESS</BASE_NAME>
 			<PART_ID>ECAM_PRESS</PART_ID>
 			<GROUP_INDEX>2</GROUP_INDEX> <!--Change to positive to activate-->
 			<TOOLTIPID>TT:COCKPIT.TOOLTIPS.PUSH_ECAM_PRESS</TOOLTIPID>
 		</UseTemplate>
 
-		<UseTemplate Name="ASOBO_ECAM_PAGE_BUTTON_Template">
+		<UseTemplate Name="FBW_Airbus_ECAM_Page_button">
 			<BASE_NAME>ELEC</BASE_NAME>
 			<PART_ID>ECAM_ELEC</PART_ID>
 			<GROUP_INDEX>3</GROUP_INDEX> <!--Change to positive to activate-->
 			<TOOLTIPID>TT:COCKPIT.TOOLTIPS.PUSH_ECAM_ELEC</TOOLTIPID>
 		</UseTemplate>
 
-		<UseTemplate Name="ASOBO_ECAM_PAGE_BUTTON_Template">
+		<UseTemplate Name="FBW_Airbus_ECAM_Page_button">
 			<BASE_NAME>HYD</BASE_NAME>
 			<PART_ID>ECAM_HYD</PART_ID>
 			<GROUP_INDEX>4</GROUP_INDEX> <!--Change to positive to activate-->
 			<TOOLTIPID>TT:COCKPIT.TOOLTIPS.PUSH_ECAM_HYD</TOOLTIPID>
 		</UseTemplate>
 
-		<UseTemplate Name="ASOBO_ECAM_PAGE_BUTTON_Template">
+		<UseTemplate Name="FBW_Airbus_ECAM_Page_button">
 			<BASE_NAME>FUEL</BASE_NAME>
 			<PART_ID>ECAM_FUEL</PART_ID>
 			<GROUP_INDEX>5</GROUP_INDEX>
 			<TOOLTIPID>TT:COCKPIT.TOOLTIPS.PUSH_ECAM_FUEL</TOOLTIPID>
 		</UseTemplate>
 
-		<UseTemplate Name="ASOBO_ECAM_PAGE_BUTTON_Template">
+		<UseTemplate Name="FBW_Airbus_ECAM_Page_button">
 			<BASE_NAME>APU</BASE_NAME>
 			<PART_ID>ECAM_APU</PART_ID>
 			<GROUP_INDEX>6</GROUP_INDEX> <!--Change to positive to activate-->
 			<TOOLTIPID>TT:COCKPIT.TOOLTIPS.PUSH_ECAM_APU</TOOLTIPID>
 		</UseTemplate>
 
-		<UseTemplate Name="ASOBO_ECAM_PAGE_BUTTON_Template">
+		<UseTemplate Name="FBW_Airbus_ECAM_Page_button">
 			<BASE_NAME>COND</BASE_NAME>
 			<PART_ID>ECAM_COND</PART_ID>
 			<GROUP_INDEX>7</GROUP_INDEX> <!--Change to positive to activate-->
 			<TOOLTIPID>TT:COCKPIT.TOOLTIPS.PUSH_ECAM_COND</TOOLTIPID>
 		</UseTemplate>
 
-		<UseTemplate Name="ASOBO_ECAM_PAGE_BUTTON_Template">
+		<UseTemplate Name="FBW_Airbus_ECAM_Page_button">
 			<BASE_NAME>DOOR</BASE_NAME>
 			<PART_ID>ECAM_DOOR</PART_ID>
 			<GROUP_INDEX>8</GROUP_INDEX> <!--Change to positive to activate-->
 			<TOOLTIPID>TT:COCKPIT.TOOLTIPS.PUSH_ECAM_DOOR</TOOLTIPID>
 		</UseTemplate>
 
-		<UseTemplate Name="ASOBO_ECAM_PAGE_BUTTON_Template">
+		<UseTemplate Name="FBW_Airbus_ECAM_Page_button">
 			<BASE_NAME>WHEEL</BASE_NAME>
 			<PART_ID>ECAM_WHEEL</PART_ID>
 			<GROUP_INDEX>9</GROUP_INDEX> <!--Change to positive to activate-->
 			<TOOLTIPID>TT:COCKPIT.TOOLTIPS.PUSH_ECAM_WHEEL</TOOLTIPID>
 		</UseTemplate>
 
-		<UseTemplate Name="ASOBO_ECAM_PAGE_BUTTON_Template">
+		<UseTemplate Name="FBW_Airbus_ECAM_Page_button">
 			<BASE_NAME>FTCL</BASE_NAME>
 			<PART_ID>ECAM_FCTL</PART_ID>
 			<GROUP_INDEX>10</GROUP_INDEX> <!--Change to positive to activate-->
@@ -887,7 +905,7 @@
 			<TOOLTIPID>Cycle through ECAM pages</TOOLTIPID>
 		</UseTemplate>
 
-		<UseTemplate Name="ASOBO_ECAM_PAGE_BUTTON_Template">
+		<UseTemplate Name="FBW_Airbus_ECAM_Page_button">
 			<BASE_NAME>STS</BASE_NAME>
 			<GROUP_INDEX>11</GROUP_INDEX> <!--Change to positive to activate-->
 			<TOOLTIPID>Display STS informations on ECAM</TOOLTIPID>
