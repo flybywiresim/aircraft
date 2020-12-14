@@ -16,10 +16,6 @@ type FlightWidgetProps = {
 }
 
 const FlightWidget = (props: FlightWidgetProps) => {
-
-    const std = new Date(parseInt(props.std) * 1000);
-    const sta = new Date(parseInt(props.sta) * 1000);
-
     return (
         <div className="flight-widget">
             <div id={'flight-' + props.name} className="flight-card">
@@ -53,18 +49,18 @@ const FlightWidget = (props: FlightWidgetProps) => {
                         <h5 className="title">
                             STD &nbsp; <IconPlaneDeparture size={25} stroke={1.5} strokeLinejoin="miter" />
                         </h5>
-                        <span>{std.getUTCHours().toString().padStart(2, '0') + ":" + std.getUTCMinutes().toString().padStart(2, '0') + "z"}</span>
+                        <span>{props.std}</span>
                     </div>
                     <div id="sta">
                         <h5 className="title">
                             <IconPlaneArrival size={25} stroke={1.5} strokeLinejoin="miter" /> &nbsp; STA
                         </h5>
-                        <span>{sta.getUTCHours().toString().padStart(2, '0') + ":" + sta.getUTCMinutes().toString().padStart(2, '0') + "z"}</span>
+                        <span>{props.sta}</span>
                     </div>
                 </div>
 
                 <div className="flight-times">
-                    
+
                 </div>
             </div>
         </div>
