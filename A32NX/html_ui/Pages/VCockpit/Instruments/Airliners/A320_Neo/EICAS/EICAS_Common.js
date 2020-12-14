@@ -139,12 +139,16 @@ class EICASCommonDisplay extends Airliners.EICASTemplateElement {
         if (this.tatText != null && this.satText != null) {
             if (SimVar.GetSimVarValue("L:A320_Neo_ADIRS_STATE", "Enum") != 2) {
                 this.tatText.textContent = "XX";
-                this.tatText.setAttribute("fill", "#E68000");
+                this.tatText.classList.add("Warning");
+                this.tatText.classList.remove("Value");
                 this.satText.textContent = "XX";
-                this.satText.setAttribute("fill", "#E68000");
+                this.satText.classList.add("Warning");
+                this.satText.classList.remove("Value");
             } else {
-                this.tatText.setAttribute("fill", "#00ff00");
-                this.satText.setAttribute("fill", "#00ff00");
+                this.satText.classList.add("Value");
+                this.satText.classList.remove("Warning");
+                this.tatText.classList.add("Value");
+                this.tatText.classList.remove("Warning");
             }
         }
     }
