@@ -407,8 +407,8 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this.constraintAltCached = A32NX_ConstraintManager.getConstraintAltitude(
             this.currentFlightPhase,
             this.flightPlanManager,
-            this.activeWaypointIdx,
-            this.constraintAltCached
+            this.constraintAltCached,
+            this._cruiseFlightLevel * 100
         );
         this.updateDisplayedConstraints(true);
     }
