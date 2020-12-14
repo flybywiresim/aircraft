@@ -5,8 +5,14 @@ import { useGlobalVar, useSimVar } from '../../util.mjs';
 export const StatusArea = () => {
     const gw = useSimVar('TOTAL WEIGHT', 'kg');
     const zulu = useGlobalVar('ZULU TIME', 'seconds');
-    const tat = Math.round(useSimVar('TOTAL AIR TEMPERATURE', 'celsius'));
-    const sat = Math.round(useSimVar('AMBIENT TEMPERATURE', 'celsius'));
+    let tat = Math.round(useSimVar('TOTAL AIR TEMPERATURE', 'celsius'));
+    if (tat > 99 || tat < -99) {
+        tat = tat > 99 ? 99 : -99;
+    }
+    let sat = Math.round(useSimVar('AMBIENT TEMPERATURE', 'celsius'));
+    if (sat > 99 || sat < -99) {
+        sat = sat > 99 ? 99 : -99;
+    }
     const adirsState = useSimVar('L:A320_Neo_ADIRS_STATE', 'Enum');
     const satPrefix = sat > 0 ? '+' : '';
     const tatPrefix = tat > 0 ? '+' : '';
