@@ -602,7 +602,7 @@ class FMCMainDisplay extends BaseAirliners {
             this._routeAltFuelEntered = false;
             return true;
         }
-        const value = parseFloat(altFuel);
+        const value = parseFloat(altFuel) * this._conversionWeight;
         if (isFinite(value)) {
             if (this.isAltFuelInRange(value)) {
                 this._routeAltFuelEntered = true;
@@ -627,7 +627,7 @@ class FMCMainDisplay extends BaseAirliners {
             this._minDestFobEntered = false;
             return true;
         }
-        const value = parseFloat(fuel);
+        const value = parseFloat(fuel) * this._conversionWeight;
         if (isFinite(value)) {
             if (this.isMinDestFobInRange(value)) {
                 this._minDestFobEntered = true;
@@ -1604,7 +1604,7 @@ class FMCMainDisplay extends BaseAirliners {
             this.showErrorMessage("FORMAT ERROR");
             return false;
         }
-        const value = parseFloat(s);
+        const value = parseFloat(s) * this._conversionWeight;
         if (isFinite(value) && value >= 0) {
             if (this.isTaxiFuelInRange(value)) {
                 this._taxiEntered = true;

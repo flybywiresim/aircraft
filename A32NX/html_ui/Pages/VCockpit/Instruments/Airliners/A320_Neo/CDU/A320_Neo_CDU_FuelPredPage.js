@@ -27,7 +27,7 @@ class CDUFuelPredPage {
             if (value === "") {
                 mcdu.updateZfwVars();
                 mcdu.sendDataToScratchpad(
-                    (isFinite(mcdu.zeroFuelWeight) ? mcdu.zeroFuelWeight.toFixed(1) : "") +
+                    (isFinite(mcdu.zeroFuelWeight) ? (mcdu.zeroFuelWeight * mcdu._conversionWeight).toFixed(1) : "") +
                     "/" +
                     (isFinite(mcdu.zeroFuelWeightMassCenter) ? mcdu.zeroFuelWeightMassCenter.toFixed(1) : ""));
             } else if (await mcdu.trySetZeroFuelWeightZFWCG(value)) {
@@ -60,7 +60,7 @@ class CDUFuelPredPage {
 
         if (mcdu._zeroFuelWeightZFWCGEntered) {
             if (isFinite(mcdu.zeroFuelWeight)) {
-                zfwCell = mcdu.zeroFuelWeight.toFixed(1);
+                zfwCell = (mcdu.zeroFuelWeight * mcdu._conversionWeight).toFixed(1);
                 zfwColor = "[color]cyan";
             }
             if (isFinite(mcdu.zeroFuelWeightMassCenter)) {
@@ -76,11 +76,11 @@ class CDUFuelPredPage {
 
             destIdentCell = mcdu.flightPlanManager.getDestination().ident;
 
-            gwCell = "{small}" + mcdu.getGW().toFixed(1);
+            gwCell = "{small}" + (mcdu.getGW() * mcdu._conversionWeight).toFixed(1);
             cgCell = mcdu.getCG().toFixed(1) + "{end}";
             gwCgCellColor = "[color]green";
 
-            fobCell = "{small}" + mcdu.getFOB().toFixed(1) + "{end}";
+            fobCell = "{small}" + (mcdu.getFOB() * mcdu._conversionWeight).toFixed(1) + "{end}";
             fobOtherCell = "{inop}FF{end}";
             fobCellColor = "[color]cyan";
         }
@@ -160,7 +160,7 @@ class CDUFuelPredPage {
                         rteRSvCellColor = "[color]cyan";
                     } else {
                         rteRsvWeightCell = (mcdu.getRouteReservedWeight() * mcdu._conversionWeight).toFixed(1);
-                        rteRsvPercentCell = (mcdu.getRouteReservedPercent() * mcdu._conversionWeight).toFixed(1);
+                        rteRsvPercentCell = mcdu.getRouteReservedPercent().toFixed(1);
                         rteRsvPercentCell = rteRsvPercentCell.length <= 3 ? "{sp}" + rteRsvPercentCell : rteRsvPercentCell;
                         rteRSvCellColor = "[color]cyan";
                         mcdu.onLeftInput[2] = async (value) => {
