@@ -59,7 +59,7 @@ a320-neo-lower-ecam-engine #StartValveDiagrams path {
     fill: none;
 }
 a320-neo-lower-ecam-engine #StartValveDiagrams circle {
-    fill: rgba(13,20,35,1);
+    fill: rgba(4, 4, 5,1);
 }
 a320-neo-lower-ecam-engine #StartValveDiagrams line {
     fill: var(--displayGreen);
