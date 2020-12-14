@@ -153,6 +153,9 @@
 1. [FLIGHTMODEL] Updated legacy flight model parameters for consistency with modern flight model - @donstim - (donbikes#4084)
 1. [ECAM] Adjusted flaps panel - @MisterChocker (Leon)
 1. [CDU] F-PLN page visual rework - @Lollo999 (Lorenzo Pinna)
+1. [Sound] Improved ground roll - @hotshotp (Boris)
+1. [Sound] Added new turbulence sounds different in cabin and cockpit - @hotshotp (Boris)
+1. [CDU] Added ground speed mini - @MisterChocker (Leon)
 
 ## 0.4.0
 1. [General] Add CHANGELOG.md - @nathaninnes (Nathan Innes)
