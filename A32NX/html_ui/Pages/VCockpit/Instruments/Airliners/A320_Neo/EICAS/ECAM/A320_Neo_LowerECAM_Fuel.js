@@ -69,6 +69,7 @@ var A320_Neo_LowerECAM_Fuel;
             this.fuelFlowUnit = this.querySelector("#ffUnit");
             this.middleFuelUnit = this.querySelector("#middleFuelUnit");
             this.fuelLevels = SimVar.GetGameVarValue("AIRCRAFT INITIAL FUEL LEVELS", "FuelLevels");
+            this.gallonToKG = SimVar.GetSimVarValue("FUEL WEIGHT PER GALLON", "kg");
             this.apuElement = this.querySelector("#APU");
             this.apuLineElement = this.querySelector("#apuFuelLine");
             this.setAPUState(false, false, true);
@@ -156,7 +157,8 @@ var A320_Neo_LowerECAM_Fuel;
             }
         }
         updateFuelFlow(_unitFactor) {
-            const totalFuelFlow = (SimVar.GetSimVarValue("ENG FUEL FLOW GPH:1", "kg") + SimVar.GetSimVarValue("ENG FUEL FLOW GPH:2", "kg")) * (_unitFactor / 60);
+            const totalFuelFlow = (SimVar.GetSimVarValue("ENG FUEL FLOW GPH:1", "gallons per hour") + SimVar.GetSimVarValue("ENG FUEL FLOW GPH:2", "gallons per hour"))
+            * this.gallonToKG * _unitFactor / 60;
             this.fuelFlowValue.textContent = fastToFixed(totalFuelFlow, 0);
         }
         updateFuelConsumption(_unitFactor) {
@@ -176,7 +178,7 @@ var A320_Neo_LowerECAM_Fuel;
             }
         }
         updateQuantity(_elem, _simvar, _unitFactor) {
-            let quantity = SimVar.GetSimVarValue(_simvar, "gallons") * SimVar.GetSimVarValue("FUEL WEIGHT PER GALLON", "kg") * _unitFactor;
+            let quantity = SimVar.GetSimVarValue(_simvar, "gallons") * this.gallonToKG * _unitFactor;
             quantity -= quantity % 20;
             _elem.textContent = fastToFixed(quantity, 0);
         }
