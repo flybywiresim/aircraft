@@ -150,6 +150,7 @@
 1. [CDU] F-PLN page visual rework - @Lollo999 (Lorenzo Pinna)
 1. [Sound] Improved ground roll - @hotshotp (Boris)
 1. [Sound] Added new turbulence sounds different in cabin and cockpit - @hotshotp (Boris)
+1. [General] Added option to switch between KG and LBS - @MisterChocker (Leon)
 
 ## 0.4.0
 1. [General] Add CHANGELOG.md - @nathaninnes (Nathan Innes)

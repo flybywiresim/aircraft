@@ -26,8 +26,8 @@ class CDU_OPTIONS_MainMenu {
             ["<SIGMET SRC[color]inop", `${storedDMCTestTime} SEC.>[color]cyan`],
             ["AOC[color]green", "INIT BARO[color]green"],
             ["<TAF SRC", `${storedInitBaroUnit}>[color]cyan`],
-            ["FREE TEXT[color]green", "UNIT SYSTEM[color]green"],
-            [telexStatus, `${parseInt(storedUsingMetric) === 1 ? "METRIC" : "IMPERIAL"}>[color]cyan`],
+            ["FREE TEXT[color]green", "WEIGHT UNIT[color]green"],
+            [telexStatus, `${parseInt(storedUsingMetric) === 1 ? "KG" : "LBS"}>[color]cyan`],
             [""],
             ["<RETURN[color]cyan"]
         ]);

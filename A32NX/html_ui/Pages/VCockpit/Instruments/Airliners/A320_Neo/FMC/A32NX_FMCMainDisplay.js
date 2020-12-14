@@ -618,7 +618,7 @@ class FMCMainDisplay extends BaseAirliners {
             this._minDestFobEntered = false;
             return true;
         }
-        const value = parseFloat(fuel);
+        const value = parseFloat(fuel) / this._conversion;
         if (isFinite(value) && this.isMinDestFobInRange(value)) {
             this._minDestFobEntered = true;
             if (value < this._minDestFob) {
@@ -1771,7 +1771,7 @@ class FMCMainDisplay extends BaseAirliners {
                 this._routeReservedPercent = 5;
                 return true;
             }
-            const rteRsvWeight = parseFloat(s.split("/")[0]);
+            const rteRsvWeight = parseFloat(s.split("/")[0]) / this._conversion;
             const rteRsvPercent = parseFloat(s.split("/")[1]);
             if ((0 > rteRsvPercent && rteRsvPercent > 15)) {
                 this._rteRsvPercentOOR = true;
