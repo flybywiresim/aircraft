@@ -380,9 +380,11 @@
             <UseTemplate Name="ASOBO_LIGHTING_Knob_Glareshield_Template">
                 <NODE_ID>LIGHTING_Knob_Glareshield_4</NODE_ID>
                 <ANIM_NAME>LIGHTING_Knob_Glareshield_4</ANIM_NAME>
-                <ID>2</ID>
-                <SIMVAR_INDEX>2</SIMVAR_INDEX>
+                <ID>1</ID>
+                <SIMVAR_INDEX>1</SIMVAR_INDEX>
                 <POTENTIOMETER>11</POTENTIOMETER>
+                <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.LIGHTING_MAIN_PANEL_FLOOD_DECREASE</ANIMTIP_0>
+                <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.LIGHTING_MAIN_PANEL_FLOOD_INCREASE</ANIMTIP_1>
             </UseTemplate>
 
             <UseTemplate Name="ASOBO_LIGHTING_Glareshield_Emissive_Template">
