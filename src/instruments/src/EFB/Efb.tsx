@@ -197,6 +197,19 @@ class Efb extends React.Component<EfbProps, EfbState> {
     }
 
     currentPage() {
+
+        let schedInParsed = '--:--';
+        let schedOutParsed = '--:--';
+
+        if (this.state.schedIn !== '--:--') {
+            const sta = new Date(parseInt(this.state.schedIn) * 1000);
+            schedInParsed = sta.getUTCHours().toString().padStart(2, '0') + ":" + sta.getUTCMinutes().toString().padStart(2, '0') + "z"
+        }
+        if (this.state.schedOut !== '--:--') {
+            const std = new Date(parseInt(this.state.schedIn) * 1000);
+            schedOutParsed = std.getUTCHours().toString().padStart(2, '0') + ":" + std.getUTCMinutes().toString().padStart(2, '0') + "z"
+        }
+
         switch (this.state.currentPageIndex) {
             case 1:
                 return <LoadsheetWidget
@@ -230,8 +243,8 @@ class Efb extends React.Component<EfbProps, EfbState> {
                     flightDistance={this.state.flightDistance}
                     flightETAInSeconds={this.state.flightETAInSeconds}
                     timeSinceStart={this.state.timeSinceStart}
-                    schedIn={this.state.schedIn}
-                    schedOut={this.state.schedOut}
+                    schedIn={schedInParsed}
+                    schedOut={schedOutParsed}
                 />;
         }
     }
