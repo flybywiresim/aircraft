@@ -7,7 +7,7 @@ class CDU_OPTIONS_MainMenu {
         const storedAccelAlt = parseInt(NXDataStore.get("CONFIG_ACCEL_ALT", "1500"));
         const storedDMCTestTime = parseInt(NXDataStore.get("CONFIG_SELF_TEST_TIME", "15"));
         const storedInitBaroUnit = NXDataStore.get("CONFIG_INIT_BARO_UNIT", "IN HG");
-        const storedUsingMetric = NXDataStore.get("CONFIG_USING_METRIC_UNIT", "1");
+        const storedUsingMetric = parseInt(NXDataStore.get("CONFIG_USING_METRIC_UNIT", "1"));
 
         let telexStatus;
         if (storedTelexStatus == "ENABLED") {
@@ -27,7 +27,7 @@ class CDU_OPTIONS_MainMenu {
             ["AOC[color]green", "INIT BARO[color]green"],
             ["<TAF SRC", `${storedInitBaroUnit}>[color]cyan`],
             ["FREE TEXT[color]green", "WEIGHT UNIT[color]green"],
-            [telexStatus, `${parseInt(storedUsingMetric) === 1 ? "KG" : "LBS"}>[color]cyan`],
+            [telexStatus, `${storedUsingMetric === 1 ? "KG" : "LBS"}>[color]cyan`],
             [""],
             ["<RETURN[color]cyan"]
         ]);
@@ -116,7 +116,7 @@ class CDU_OPTIONS_MainMenu {
             if (value !== "") {
                 mcdu.showErrorMessage("NOT ALLOWED");
             } else {
-                NXDataStore.set("CONFIG_USING_METRIC_UNIT", parseInt(storedUsingMetric) === 1 ? "2.20462" : "1");
+                NXDataStore.set("CONFIG_USING_METRIC_UNIT", storedUsingMetric === 1 ? "2.20462" : "1");
             }
             CDU_OPTIONS_MainMenu.ShowPage(mcdu);
         };
