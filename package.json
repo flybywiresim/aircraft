@@ -47,7 +47,7 @@
   "dependencies": {
     "sass": "~1.30.0",
     "@flybywiresim/api-client": "~0.2.2",
-    "@flybywiresim/map": "~0.0.9",
+    "@flybywiresim/map": "~0.0.10",
     "@tabler/icons": "^1.38.0",
     "aewx-metar-parser": "~0.10.1",
     "react": "^17.0.0",

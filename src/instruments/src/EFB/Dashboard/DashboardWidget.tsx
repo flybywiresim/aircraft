@@ -71,7 +71,7 @@ class DashboardWidget extends React.Component<DashboardWidgetProps, DashboardWid
                 <WeatherWidget name='dest' editIcao="yes" icao={this.props.arrivingAirport} />
 
                 <div className="map-widget">
-                    <Map currentFlight="" disableSearch={false} disableInfo={false} />
+                    <Map class="map" currentFlight="" disableSearch={true} disableInfo={true} disableFlights={true} />
                 </div>
             </div>
         );
