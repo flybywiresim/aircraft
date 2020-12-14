@@ -2,7 +2,12 @@ import React, { useEffect, useState } from 'react';
 import metarParser from 'aewx-metar-parser';
 import { formatTime, dateFormat} from "../../StatusBar/StatusBar";
 import { Metar } from '@flybywiresim/api-client';
-import { weatherIconArray } from './WeatherWidgetIcons';
+import { IconWind } from '@tabler/icons';
+import { IconGauge } from '@tabler/icons';
+import { IconDroplet } from '@tabler/icons';
+import { IconTemperature } from '@tabler/icons';
+import { IconAccessPoint } from '@tabler/icons';
+import { IconPoint } from '@tabler/icons';
 
 declare type MetarParserType = {
     raw_text: string,
@@ -189,51 +194,8 @@ const WeatherWidget = (props: WeatherWidgetProps) => {
         getMetar(props.icao, source);
     }, [props.icao]);
 
-    useEffect(() => {
-        selectWeatherIcon();
-    }, [metar]);
-
     function showModal() {
         setModalStatus(!modalStatus);
-        selectWeatherIcon();
-    }
-
-    function selectWeatherIcon() {
-        const rawtext = metar.raw_text;
-        const date = new Date();
-        const day = date.getHours() > 5 && date.getHours() < 19 ? 1 : 0;
-        const precip = new RegExp("RA|SN|DZ|SG|PE|GR|GS").test(rawtext);
-        const wind = metar.wind.speed_kts;
-        var icon = "wi wi-cloud";
-        var findIcon = [];
-        findIcon = weatherIconArray.filter(item => {
-            return (item.day === day || item.day == 2)
-                && item.descriptor.every(desc => rawtext.includes(desc))
-                && rawtext.search(item.precip) != -1
-                && item.cloud.some(cld => rawtext.includes(cld))
-                && (wind > item.wind[0] && wind < item.wind[1])
-                && item.visibility.some(vis => rawtext.includes(vis));
-        });
-
-        if (findIcon.length === 1) {
-            icon = findIcon[0].iconName;
-        } else
-        if (findIcon.length > 1) {
-            var findIcon2 = [];
-            if (precip) {
-                findIcon2 = findIcon.filter(item => {
-                    return (new RegExp("RA|SN|DZ|SG|PE|GR|GS").test(item.precip));
-                });
-            } else {
-                findIcon2 = findIcon.filter(item => {
-                    return (item.day == day);
-                });
-            }
-            if (findIcon2.length > 0) {
-                icon = findIcon2[0].iconName;
-            }
-        }
-        setIcon(icon);
     }
 
     return (
@@ -242,7 +204,7 @@ const WeatherWidget = (props: WeatherWidgetProps) => {
                 <p>Loading ...</p>
                 :
                 <><div id="OneByTwo">
-                    <div id="icao">
+                    <div className="icao">
                         {props.editIcao == "yes" ?
                             <>
                                 <input id="icaoInput"
@@ -254,7 +216,6 @@ const WeatherWidget = (props: WeatherWidgetProps) => {
                             metar.icao
                         }
                     </div>
-                    <div className="WeatherIcon" onClick={showModal}><i className={icon} /></div>
                 </div>
                 {modalStatus ?
                     <div id="MetarModal">
@@ -264,35 +225,33 @@ const WeatherWidget = (props: WeatherWidgetProps) => {
                     <div id="TwoByTwo">
                         <div className="col">
                             <span className="big">
-                                <i className="wi wi-barometer" />
+                                <IconGauge size={45} stroke={1.5} strokeLinejoin="miter" />
                             </span><br />{metar.barometer.mb.toFixed(0)}
-                            <span className="unit"> mb</span>
+                            <span className="unit">mb</span>
                         </div>
                         <div className="col">
                             <span className="big">
-                                <i className="wi wi-strong-wind" />
-                            </span><br />{metar.wind.degrees.toFixed(0)}&deg; / {metar.wind.speed_kts.toFixed(0)}
-                            <span className="unit"> kts</span>
+                                <IconWind size={45} stroke={1.5} strokeLinejoin="miter" />
+                            </span><br />{metar.wind.degrees.toFixed(0)}<IconPoint size={20} stroke={1.5} strokeLinejoin="miter" />/{metar.wind.speed_kts.toFixed(0)}
+                            <span className="unit">kts</span>
                         </div>
                         <div>
                             <span className="big">
-                                <i className="wi wi-thermometer" />
-                            </span><br />{metar.temperature.celsius.toFixed(0)}&deg;
+                                <IconTemperature size={45} stroke={1.5} strokeLinejoin="miter" />
+                            </span><br />{metar.temperature.celsius.toFixed(0)}<IconPoint size={20} stroke={1.5} strokeLinejoin="miter" />
                             <span className="unit">C</span>
                         </div>
                         <div>
                             <span className="big">
-                                <i className="wi wi-raindrop" />
-                            </span><br />{metar.dewpoint.celsius.toFixed(0)}&deg;
+                                <IconDroplet size={45} stroke={1.5} strokeLinejoin="miter" />
+                            </span><br />{metar.dewpoint.celsius.toFixed(0)}<IconPoint size={20} stroke={1.5} strokeLinejoin="miter" />
                             <span className="unit">C</span>
                         </div>
                     </div>
                 }
-                <div id="IcaoIdent">
-                    <div>
-                        { (metar.raw_text !== "") &&
-                            <span className="icaoUpdate">Last updated on the {dateFormat(metar.observed.getUTCDate()) + " at " + formatTime(([metar.observed.getUTCHours(), metar.observed.getUTCMinutes()]))}z</span>
-                        }
+                <div className="icao-ident">
+                    <div className="icao-update">
+                        <IconAccessPoint size={25} stroke={1.5} strokeLinejoin="miter" /> &nbsp; Last Updated {dateFormat(metar.observed.getUTCDate()) + " at " + formatTime(([metar.observed.getUTCHours(), metar.observed.getUTCMinutes()]))}z
                     </div>
                 </div>
                 </>

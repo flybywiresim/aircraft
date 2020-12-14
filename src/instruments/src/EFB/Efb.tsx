@@ -206,7 +206,7 @@ class Efb extends React.Component<EfbProps, EfbState> {
             schedInParsed = sta.getUTCHours().toString().padStart(2, '0') + ":" + sta.getUTCMinutes().toString().padStart(2, '0') + "z"
         }
         if (this.state.schedOut !== '--:--') {
-            const std = new Date(parseInt(this.state.schedIn) * 1000);
+            const std = new Date(parseInt(this.state.schedOut) * 1000);
             schedOutParsed = std.getUTCHours().toString().padStart(2, '0') + ":" + std.getUTCMinutes().toString().padStart(2, '0') + "z"
         }
 

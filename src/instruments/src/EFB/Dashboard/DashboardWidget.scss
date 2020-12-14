@@ -136,11 +136,12 @@
     height: 100%;
     border-radius: 10px;
     display: grid;
-    padding-bottom: 0;
+    padding: 0.75rem 2rem;
     box-shadow: 0 0 3px rgba(0, 0, 0, 0.1);
     color: var(--cardText);
     background: var(--cardBackground);
-    font-size: 1.5rem;
+    font-size: 2.25rem;
+    font-weight: 400;
     justify-content: space-between;
     width: 100%;
     grid-template-columns: 1fr;
@@ -152,10 +153,8 @@
       "IcaoIdent";
 
     #OneByTwo {
-      margin: 10px 0 0 20px;
-      align-content: center;
-      padding-top: 15px;
       display: grid;
+      padding-top: 0.5rem;
       grid-template-columns: 50% 50%;
       font-size: 1.5rem;
       grid-template-areas: "icao WeatherIcon";
@@ -164,38 +163,35 @@
 
     #TwoByTwo {
       display: grid;
-      margin: 0 0 10px 30px;
+      padding-top: 0.6rem;
       grid-template-rows: auto auto;
       grid-template-columns: 1fr 1fr;
       font-size: 1.5rem;
-      justify-content: start;
     }
 
     #MetarModal p {
-      padding: 10px 15px;
       width: 90%;
       min-height: 206px;
     }
 
-    #IcaoIdent {
+    .icao-ident {
       display: flex;
+      margin-top: 1rem;
 
-      .icaoUpdate {
-        padding-left: 15px;
-        justify-content: space-evenly;
-        font-size: 1rem;
-        padding-bottom: 10px;
+      .icao-update {
+        display: flex;
+        align-items: center;
+        font-size: 0.85rem;
       }
     }
 
-    .WeatherIcon {
-      font-size: 3.5rem;
+    .refresh-icon {
       margin-left: 1em;
       grid-area: WeatherIcon;
     }
 
-    #icao {
-      font-size: 2.25rem;
+    .icao {
+      font-size: 2rem;
       grid-area: icao;
 
       ::placeholder {
@@ -204,13 +200,10 @@
 
       input {
         font-size: 2rem;
-        font-weight: 700;
+        font-weight: 400;
+        padding-top: 0.6rem;
         width: 95px;
-        margin: 5px;
-        border-top-style: hidden;
-        border-right-style: hidden;
-        border-left-style: hidden;
-        border-bottom-style: dotted;
+        border: none;
         outline: none;
         background-color: var(--cardBackground);
         color: var(--cardText);
@@ -255,10 +248,13 @@
   }
 
   .map-widget {
-    border-radius: 10px;
     grid-area: Map;
     height: 100%;
     width: 100%;
+  }
+
+  .map {
+    border-radius: 10px;
   }
 
   #mapid {
