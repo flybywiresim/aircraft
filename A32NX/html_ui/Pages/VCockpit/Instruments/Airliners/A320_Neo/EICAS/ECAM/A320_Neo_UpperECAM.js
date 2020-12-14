@@ -2003,7 +2003,8 @@ var A320_Neo_UpperECAM;
             return _isMetric ? "KG/H" : "LBS/H";
         }
         getValue(_engine, _conversion) {
-            return SimVar.GetSimVarValue("ENG FUEL FLOW GPH:" + _engine, "gallons per hour") * this.gallonToKG * _conversion;
+            const ff = SimVar.GetSimVarValue("ENG FUEL FLOW GPH:" + _engine, "gallons per hour") * this.gallonToKG * _conversion;
+            return ff - ff % 20;
         }
         getDisplayActiveEngine(_engine) {
             return "inactiveEngine";
