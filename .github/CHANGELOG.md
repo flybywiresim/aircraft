@@ -151,7 +151,7 @@
 1. [Sound] Improved ground roll - @hotshotp (Boris)
 1. [Sound] Added new turbulence sounds different in cabin and cockpit - @hotshotp (Boris)
 1. [CDU] Added ground speed mini - @MisterChocker (Leon)
-1. [Engines] Reduced idle thrust at low Mach and reduced climb thrust at high Mach - @donstim - (donbkes#4084)
+1. [Engines] Reduced idle thrust at low Mach to improve descent rate - @donstim - (donbkes#4084)
 
 ## 0.4.0
 1. [General] Add CHANGELOG.md - @nathaninnes (Nathan Innes)
