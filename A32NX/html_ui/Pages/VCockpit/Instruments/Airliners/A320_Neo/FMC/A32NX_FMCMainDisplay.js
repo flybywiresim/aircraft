@@ -598,7 +598,7 @@ class FMCMainDisplay extends BaseAirliners {
             this._routeAltFuelEntered = false;
             return true;
         }
-        const value = parseFloat(altFuel) / this._conversion;
+        const value = parseFloat(altFuel) / this._conversionWeight;
         if (isFinite(value) && this.isAltFuelInRange(value)) {
             this._routeAltFuelEntered = true;
             this._routeAltFuelWeight = value;
@@ -618,7 +618,7 @@ class FMCMainDisplay extends BaseAirliners {
             this._minDestFobEntered = false;
             return true;
         }
-        const value = parseFloat(fuel) / this._conversion;
+        const value = parseFloat(fuel) / this._conversionWeight;
         if (isFinite(value) && this.isMinDestFobInRange(value)) {
             this._minDestFobEntered = true;
             if (value < this._minDestFob) {
@@ -1582,7 +1582,7 @@ class FMCMainDisplay extends BaseAirliners {
         }
         this._taxiEntered = true;
 
-        const value = parseFloat(s) / this._conversion;
+        const value = parseFloat(s) / this._conversionWeight;
         if (isFinite(value) && value >= 0 && this.isTaxiFuelInRange(value)) {
             this.taxiFuelWeight = value;
             return true;
@@ -1647,7 +1647,7 @@ class FMCMainDisplay extends BaseAirliners {
         }
         if (s) {
             this._rteFinalEntered = true;
-            const rteFinalWeight = parseFloat(s.split("/")[0]) / this._conversion;
+            const rteFinalWeight = parseFloat(s.split("/")[0]) / this._conversionWeight;
             const rteFinalTime = s.split("/")[1];
             if (rteFinalTime === undefined && this.isFinalFuelInRange(rteFinalWeight)) {
                 this._routeFinalFuelWeight = rteFinalWeight;
@@ -1771,7 +1771,7 @@ class FMCMainDisplay extends BaseAirliners {
                 this._routeReservedPercent = 5;
                 return true;
             }
-            const rteRsvWeight = parseFloat(s.split("/")[0]) / this._conversion;
+            const rteRsvWeight = parseFloat(s.split("/")[0]) / this._conversionWeight;
             const rteRsvPercent = parseFloat(s.split("/")[1]);
             if ((0 > rteRsvPercent && rteRsvPercent > 15)) {
                 this._rteRsvPercentOOR = true;
@@ -1869,10 +1869,10 @@ class FMCMainDisplay extends BaseAirliners {
         if (s) {
             if (s.includes("/")) {
                 const sSplit = s.split("/");
-                zfw = parseFloat(sSplit[0]) / this._conversion;
+                zfw = parseFloat(sSplit[0]) / this._conversionWeight;
                 zfwcg = parseFloat(sSplit[1]);
             } else {
-                zfw = parseFloat(s) / this._conversion;
+                zfw = parseFloat(s) / this._conversionWeight;
             }
         }
         if (zfw > 0 && zfwcg > 0 && this.isZFWInRange(zfw) && this.isZFWCGInRange(zfwcg)) {
@@ -1979,7 +1979,7 @@ class FMCMainDisplay extends BaseAirliners {
             this._fuelPlanningPhase = this._fuelPlanningPhases.PLANNING;
             return true;
         }
-        let value = parseFloat(s) / this._conversion;
+        let value = parseFloat(s) / this._conversionWeight;
         if (isFinite(value) && this.isBlockFuelInRange(value)) {
             if (useLbs) {
                 value = value / 2.204623;

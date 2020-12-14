@@ -219,7 +219,7 @@ class CDUInitPage {
         let zfwCgCell = "__._";
         if (mcdu._zeroFuelWeightZFWCGEntered) {
             if (isFinite(mcdu.zeroFuelWeight)) {
-                zfwCell = (mcdu.zeroFuelWeight * mcdu._conversion).toFixed(1);
+                zfwCell = (mcdu.zeroFuelWeight * mcdu._conversionWeight).toFixed(1);
                 zfwColor = "[color]cyan";
             }
             if (isFinite(mcdu.zeroFuelWeightMassCenter)) {
@@ -233,7 +233,7 @@ class CDUInitPage {
             if (value === "") {
                 mcdu.updateZfwVars();
                 mcdu.sendDataToScratchpad(
-                    (isFinite(mcdu.zeroFuelWeight) ? (mcdu.zeroFuelWeight * mcdu._conversion).toFixed(1) : "") +
+                    (isFinite(mcdu.zeroFuelWeight) ? (mcdu.zeroFuelWeight * mcdu._conversionWeight).toFixed(1) : "") +
                     "/" +
                     (isFinite(mcdu.zeroFuelWeightMassCenter) ? mcdu.zeroFuelWeightMassCenter.toFixed(1) : ""));
             } else if (await mcdu.trySetZeroFuelWeightZFWCG(value)) {
@@ -247,7 +247,7 @@ class CDUInitPage {
         let blockFuelColor = "[color]amber";
         if (mcdu._blockFuelEntered || mcdu._fuelPlanningPhase === mcdu._fuelPlanningPhases.IN_PROGRESS) {
             if (isFinite(mcdu.blockFuel)) {
-                blockFuel = (mcdu.blockFuel * mcdu._conversion).toFixed(1);
+                blockFuel = (mcdu.blockFuel * mcdu._conversionWeight).toFixed(1);
                 blockFuelColor = "[color]cyan";
             }
         }
@@ -301,9 +301,9 @@ class CDUInitPage {
         let taxiFuelCell = "{small}0.4{end}";
         if (isFinite(mcdu.taxiFuelWeight)) {
             if (mcdu._taxiEntered) {
-                taxiFuelCell = (mcdu.taxiFuelWeight * mcdu._conversion).toFixed(1);
+                taxiFuelCell = (mcdu.taxiFuelWeight * mcdu._conversionWeight).toFixed(1);
             } else {
-                taxiFuelCell = "{small}" + (mcdu.taxiFuelWeight * mcdu._conversion).toFixed(1) + "{end}";
+                taxiFuelCell = "{small}" + (mcdu.taxiFuelWeight * mcdu._conversionWeight).toFixed(1) + "{end}";
             }
         }
         mcdu.onLeftInput[0] = async (value) => {
@@ -378,7 +378,7 @@ class CDUInitPage {
 
             mcdu.tryUpdateTOW();
             if (isFinite(mcdu.takeOffWeight)) {
-                towCell = "{small}" + (mcdu.takeOffWeight * mcdu._conversion).toFixed(1);
+                towCell = "{small}" + (mcdu.takeOffWeight * mcdu._conversionWeight).toFixed(1);
                 towLwColor = "[color]green";
             }
 
@@ -386,14 +386,14 @@ class CDUInitPage {
 
                 if (mcdu._rteFinalEntered) {
                     if (isFinite(mcdu.getRouteFinalFuelWeight())) {
-                        finalWeightCell = "{sp}{sp}" + (mcdu.getRouteFinalFuelWeight() * mcdu._conversion).toFixed(1);
+                        finalWeightCell = "{sp}{sp}" + (mcdu.getRouteFinalFuelWeight() * mcdu._conversionWeight).toFixed(1);
                         finalTimeCell = FMCMainDisplay.minutesTohhmm(mcdu.getRouteFinalFuelTime());
                         finalColor = "[color]cyan";
                     }
                 } else {
                     mcdu.tryUpdateRouteFinalFuel();
                     if (isFinite(mcdu.getRouteFinalFuelWeight())) {
-                        finalWeightCell = "{sp}{sp}{small}" + (mcdu.getRouteFinalFuelWeight() * mcdu._conversion).toFixed(1) + "{end}";
+                        finalWeightCell = "{sp}{sp}{small}" + (mcdu.getRouteFinalFuelWeight() * mcdu._conversionWeight).toFixed(1) + "{end}";
                         finalTimeCell = FMCMainDisplay.minutesTohhmm(mcdu.getRouteFinalFuelTime());
                         finalColor = "[color]cyan";
                     }
@@ -410,14 +410,14 @@ class CDUInitPage {
 
                 if (mcdu._routeAltFuelEntered) {
                     if (isFinite(mcdu.getRouteAltFuelWeight())) {
-                        altnWeightCell = "{sp}{sp}" + (mcdu.getRouteAltFuelWeight() * mcdu._conversion).toFixed(1);
+                        altnWeightCell = "{sp}{sp}" + (mcdu.getRouteAltFuelWeight() * mcdu._conversionWeight).toFixed(1);
                         altnTimeCell = "{small}{green}" + FMCMainDisplay.minutesTohhmm(mcdu.getRouteAltFuelTime()) + "{end}{end}";
                         altnColor = "[color]cyan";
                     }
                 } else {
                     mcdu.tryUpdateRouteAlternate();
                     if (isFinite(mcdu.getRouteAltFuelWeight())) {
-                        altnWeightCell = "{sp}{sp}{small}" + (mcdu.getRouteAltFuelWeight() * mcdu._conversion).toFixed(1);
+                        altnWeightCell = "{sp}{sp}{small}" + (mcdu.getRouteAltFuelWeight() * mcdu._conversionWeight).toFixed(1);
                         altnTimeCell = "{green}" + FMCMainDisplay.minutesTohhmm(mcdu.getRouteAltFuelTime()) + "{end}{end}";
                         altnColor = "[color]cyan";
                     }
@@ -434,7 +434,7 @@ class CDUInitPage {
 
                 mcdu.tryUpdateRouteTrip();
                 if (isFinite(mcdu.getTotalTripFuelCons()) && isFinite(mcdu.getTotalTripTime())) {
-                    tripWeightCell = "{sp}{sp}{small}" + (mcdu.getTotalTripFuelCons() * mcdu._conversion).toFixed(1);
+                    tripWeightCell = "{sp}{sp}{small}" + (mcdu.getTotalTripFuelCons() * mcdu._conversionWeight).toFixed(1);
                     tripTimeCell = FMCMainDisplay.minutesTohhmm(mcdu._routeTripTime);
                     tripColor = "[color]green";
                 }
@@ -446,9 +446,9 @@ class CDUInitPage {
                 } else {
                     if (isFinite(mcdu.getRouteReservedWeight()) && isFinite(mcdu.getRouteReservedPercent())) {
                         if (mcdu._rteReservedEntered) {
-                            rteRsvWeightCell = "{sp}{sp}" + (mcdu.getRouteReservedWeight() * mcdu._conversion).toFixed(1);
+                            rteRsvWeightCell = "{sp}{sp}" + (mcdu.getRouteReservedWeight() * mcdu._conversionWeight).toFixed(1);
                         } else {
-                            rteRsvWeightCell = "{sp}{sp}{small}" + (mcdu.getRouteReservedWeight() * mcdu._conversion).toFixed(1) + "{end}";
+                            rteRsvWeightCell = "{sp}{sp}{small}" + (mcdu.getRouteReservedWeight() * mcdu._conversionWeight).toFixed(1) + "{end}";
                         }
                         rteRsvPercentCell = mcdu.getRouteReservedPercent().toFixed(1);
                         rteRsvColor = "[color]cyan";
@@ -465,7 +465,7 @@ class CDUInitPage {
                 };
 
                 mcdu.tryUpdateLW();
-                lwCell = (mcdu.landingWeight * mcdu._conversion).toFixed(1);
+                lwCell = (mcdu.landingWeight * mcdu._conversionWeight).toFixed(1);
                 lwCell = lwCell.length <= 4 ? "{sp}" + lwCell : lwCell;
 
                 tripWindCell = "{small}" + mcdu._windDir + "000" + "{end}";
@@ -484,11 +484,11 @@ class CDUInitPage {
                 };
 
                 if (mcdu._minDestFobEntered) {
-                    minDestFob = "{sp}{sp}" + (mcdu._minDestFob * mcdu._conversion).toFixed(1);
+                    minDestFob = "{sp}{sp}" + (mcdu._minDestFob * mcdu._conversionWeight).toFixed(1);
                     minDestFobColor = "[color]cyan";
                 } else {
                     mcdu.tryUpdateMinDestFob();
-                    minDestFob = "{sp}{sp}{small}" + (mcdu._minDestFob * mcdu._conversion).toFixed(1) + "{end}";
+                    minDestFob = "{sp}{sp}{small}" + (mcdu._minDestFob * mcdu._conversionWeight).toFixed(1) + "{end}";
                     minDestFobColor = "[color]cyan";
                 }
                 mcdu.onLeftInput[5] = async (value) => {
@@ -497,7 +497,7 @@ class CDUInitPage {
                     }
                 };
 
-                extraWeightCell = "{small}" + (mcdu.tryGetExtraFuel() * mcdu._conversion).toFixed(1);
+                extraWeightCell = "{small}" + (mcdu.tryGetExtraFuel() * mcdu._conversionWeight).toFixed(1);
                 extraTimeCell = FMCMainDisplay.minutesTohhmm(mcdu.tryGetExtraTime()) + "{end}";
                 extraColor = "[color]green";
             }

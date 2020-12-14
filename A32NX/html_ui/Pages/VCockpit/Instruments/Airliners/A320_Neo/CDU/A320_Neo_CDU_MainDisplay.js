@@ -27,7 +27,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this.messageQueue = [];
         this._destDataChecked = false;
         this._towerHeadwind = 0;
-        this._conversion = parseFloat(NXDataStore.get("CONFIG_USING_METRIC_UNIT", "1"));
+        this._conversionWeight = parseFloat(NXDataStore.get("CONFIG_USING_METRIC_UNIT", "1"));
     }
     get templateID() {
         return "A320_Neo_CDU";
@@ -312,7 +312,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
 
         this.updateDisplayedConstraints();
 
-        this._conversion = parseFloat(NXDataStore.get("CONFIG_USING_METRIC_UNIT", "1"));
+        this._conversionWeight = parseFloat(NXDataStore.get("CONFIG_USING_METRIC_UNIT", "1"));
     }
 
     /**
