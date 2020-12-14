@@ -153,11 +153,11 @@ class CDUInitPage {
             ["FLT NBR"],
             [flightNo + "[color]cyan", alignOption],
             [],
-            [],
-            ["COST INDEX"],
-            [costIndex, "WIND>"],
-            ["CRZ FL/TEMP", "TROPO"],
-            [cruiseFlTemp, "{small}36090{end}[color]cyan"],
+            ["", "WIND/TEMP>[color]inop"],
+            ["COST INDEX", "TROPO"],
+            [costIndex, "{small}36090{end}[color]cyan"],
+            ["CRZ FL/TEMP", "GND TEMP"],
+            [cruiseFlTemp, "---°[color]inop"],
         ]);
 
         mcdu.onPrevPage = () => {
@@ -194,7 +194,8 @@ class CDUInitPage {
             mcdu.cruiseFlightLevel &&
             mcdu.flightPlanManager.getWaypointsCount() > 0 &&
             mcdu._zeroFuelWeightZFWCGEntered &&
-            mcdu._blockFuelEntered;
+            mcdu._blockFuelEntered &&
+            !mcdu.tryGetPredFailure();
     }
     static trySetFuelPred(mcdu) {
         if (CDUInitPage.fuelPredConditionsMet(mcdu) && !mcdu._fuelPredDone) {
@@ -496,6 +497,7 @@ class CDUInitPage {
                         CDUInitPage.ShowPage2(mcdu);
                     }
                 };
+                mcdu.checkEFOBBelowMin();
 
                 extraWeightCell = "{small}" + mcdu.tryGetExtraFuel().toFixed(1);
                 extraTimeCell = FMCMainDisplay.minutesTohhmm(mcdu.tryGetExtraTime()) + "{end}";
