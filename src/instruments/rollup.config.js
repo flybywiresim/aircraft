@@ -59,7 +59,7 @@ module.exports = fs.readdirSync(`${__dirname}/src`, { withFileTypes: true })
                     include: /node_modules/,
                 }),
                 scss({
-                    compiler: scssCompiler,
+                    sass: scssCompiler,
                     output: (generatedBundle) => {
                         cssBundle = generatedBundle;
                     },
