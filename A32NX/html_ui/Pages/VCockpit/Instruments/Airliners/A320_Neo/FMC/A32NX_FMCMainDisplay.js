@@ -598,7 +598,7 @@ class FMCMainDisplay extends BaseAirliners {
             this._routeAltFuelEntered = false;
             return true;
         }
-        const value = parseFloat(altFuel);
+        const value = parseFloat(altFuel) / this._conversion;
         if (isFinite(value) && this.isAltFuelInRange(value)) {
             this._routeAltFuelEntered = true;
             this._routeAltFuelWeight = value;
@@ -1582,7 +1582,7 @@ class FMCMainDisplay extends BaseAirliners {
         }
         this._taxiEntered = true;
 
-        const value = parseFloat(s);
+        const value = parseFloat(s) / this._conversion;
         if (isFinite(value) && value >= 0 && this.isTaxiFuelInRange(value)) {
             this.taxiFuelWeight = value;
             return true;
@@ -1647,7 +1647,7 @@ class FMCMainDisplay extends BaseAirliners {
         }
         if (s) {
             this._rteFinalEntered = true;
-            const rteFinalWeight = parseFloat(s.split("/")[0]);
+            const rteFinalWeight = parseFloat(s.split("/")[0]) / this._conversion;
             const rteFinalTime = s.split("/")[1];
             if (rteFinalTime === undefined && this.isFinalFuelInRange(rteFinalWeight)) {
                 this._routeFinalFuelWeight = rteFinalWeight;
@@ -1869,10 +1869,10 @@ class FMCMainDisplay extends BaseAirliners {
         if (s) {
             if (s.includes("/")) {
                 const sSplit = s.split("/");
-                zfw = parseFloat(sSplit[0]);
+                zfw = parseFloat(sSplit[0]) / this._conversion;
                 zfwcg = parseFloat(sSplit[1]);
             } else {
-                zfw = parseFloat(s);
+                zfw = parseFloat(s) / this._conversion;
             }
         }
         if (zfw > 0 && zfwcg > 0 && this.isZFWInRange(zfw) && this.isZFWCGInRange(zfwcg)) {
@@ -1979,7 +1979,7 @@ class FMCMainDisplay extends BaseAirliners {
             this._fuelPlanningPhase = this._fuelPlanningPhases.PLANNING;
             return true;
         }
-        let value = parseFloat(s);
+        let value = parseFloat(s) / this._conversion;
         if (isFinite(value) && this.isBlockFuelInRange(value)) {
             if (useLbs) {
                 value = value / 2.204623;

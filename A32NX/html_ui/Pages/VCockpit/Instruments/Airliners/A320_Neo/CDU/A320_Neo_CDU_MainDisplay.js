@@ -26,6 +26,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this.altLock = 0;
         this.messageQueue = [];
         this._destDataChecked = false;
+        this._conversion = parseFloat(NXDataStore.get("CONFIG_USING_METRIC_UNIT", "1"));
     }
     get templateID() {
         return "A320_Neo_CDU";
@@ -309,6 +310,8 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this.updateGPSMessage();
 
         this.updateDisplayedConstraints();
+
+        this._conversion = parseFloat(NXDataStore.get("CONFIG_USING_METRIC_UNIT", "1"));
     }
 
     /**
