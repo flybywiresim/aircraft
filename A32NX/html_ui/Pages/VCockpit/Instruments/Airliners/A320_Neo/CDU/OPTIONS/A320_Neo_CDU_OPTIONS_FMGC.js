@@ -7,7 +7,7 @@ class CDU_OPTIONS_FMGC {
 
         mcdu.setTemplate([
             ["A32NX OPTIONS FMGC"],
-            ["\xa0INIT BARO", "ACCEL ALT\xa0"],
+            ["\xa0DEFAULT BARO", "ACCEL ALT\xa0"],
             [`*${storedInitBaroUnit}[color]cyan`, `{small}[FT]{end}{cyan}[${storedAccelAlt}]*{end}`],
             ["\xa0WEIGHT UNIT", "THR RED ALT\xa0"],
             ["*KG[color]inop", "{small}[FT]{end}{inop}[1500]*{end}"],
