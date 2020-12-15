@@ -10,9 +10,9 @@ class CDUAocMenu {
             ["", "SENT"],
             ["<ATIS", "MESSAGES>"],
             [""],
-            ["<OFP WT/BAL[color]white", "BOARDING>[color]inop"],
+            ["<PERF/W&B[color]white", "BOARDING>[color]inop"],
             [""],
-            ["<PERF/W&B[color]inop", "DIVERSION>[color]inop"],
+            ["", "DIVERSION>[color]inop"],
             ["ATSU DLK"],
             ["<RETURN", "MISC>[color]inop"]
         ]);

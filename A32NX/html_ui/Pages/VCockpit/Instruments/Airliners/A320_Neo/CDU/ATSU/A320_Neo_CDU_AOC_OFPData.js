@@ -7,6 +7,27 @@ function formatWeightInTons(value) {
 }
 
 /**
+ * @return {number | NaN} currentFwdBag
+ */
+function getCurrentFwdBag(mcdu) {
+    return mcdu.aocWeight.fwdBag !== undefined ? +mcdu.aocWeight.fwdBag : +mcdu.aocWeight.estFwdBag; // number | NaN
+}
+
+/**
+ * @return {number | NaN} currentRearBag
+ */
+function getCurrentRearBag(mcdu) {
+    return mcdu.aocWeight.rearBag !== undefined ? +mcdu.aocWeight.rearBag : +mcdu.aocWeight.estRearBag;
+}
+
+/**
+ * @return {number | NaN} currentPayload
+ */
+function getCurrentPayload(mcdu) {
+    return mcdu.aocWeight.payload !== undefined ? +mcdu.aocWeight.payload : +mcdu.simbrief.payload;
+}
+
+/**
  * AOC - OFP WEIGHT
  * Fetch and display weight data to be loaded to the aircraft via the MCDU
  * - You can either fetch the weight from SimBrief or
@@ -52,7 +73,7 @@ class CDUAocOfpData {
         }
 
         const display = [
-            ["OFP WT/BAL", "1", "2", "AOC"],
+            ["PERF/W&B", "1", "2", "AOC"],
             ["BLOCK FUEL"],
             [blockFuel],
             ["TAXI FUEL"],
@@ -177,16 +198,17 @@ class CDUAocOfpData {
             requestButton = "SEND [color]cyan";
         }
 
-        const currentZfwcg = calculateZfwCg(mcdu);
+        const currentZfwcg = mcdu.aocWeight.zfwcg || getZfwcg(mcdu);
         if (currentZfwcg) {
-            const cgColor = currentZfwcg >= 16 && currentZfwcg <= 40 ? 'green' : 'red';
-            zfwcg = `{small}${currentZfwcg.toFixed(1)}{end}[color]${cgColor}`;
+            const cgColor = currentZfwcg >= 16 && currentZfwcg <= 40 ? 'cyan' : 'red';
+            const size = mcdu.aocWeight.zfwcg ? 'big' : 'small';
+            zfwcg = `{${size}}${currentZfwcg.toFixed(1)}{end}[color]${cgColor}`;
         }
 
         const currentNoPax = mcdu.aocWeight.noPax || mcdu.simbrief.paxCount;
         if (currentNoPax) {
             const size = mcdu.aocWeight.noPax ? 'big' : 'small';
-            noPax = `{${size}}${currentNoPax}{end}[color]cyan`;
+            noPax = `{${size}}${currentNoPax}{end}[color]green`;
         }
 
         const currentPayload = mcdu.aocWeight.payload || mcdu.simbrief.payload;
@@ -219,7 +241,7 @@ class CDUAocOfpData {
         }
 
         const display = [
-            ["OFP WT/BAL", "2", "2", "AOC"],
+            ["PERF/W&B", "2", "2", "AOC"],
             ["PAYLOAD", "ZFW"],
             [payload, estZfw],
             ["FWD BAG", "ZFWCG"],
@@ -277,6 +299,7 @@ class CDUAocOfpData {
             if (actualPayload >= 0 && actualPayload <= maxAllowablePayload) {
                 mcdu.aocWeight.fwdBag = enteredFwdBag.toString();
                 mcdu.aocWeight.rearBag = currentRearBag.toString();
+                mcdu.aocWeight.zfwcg = undefined;
                 updatePayloadValue();
                 updateView();
                 return true;
@@ -315,7 +338,31 @@ class CDUAocOfpData {
             if (actualPayload >= 0 && actualPayload <= maxAllowablePayload) {
                 mcdu.aocWeight.rearBag = enteredRearBag.toString();
                 mcdu.aocWeight.fwdBag = currentFwdBag.toString();
+                mcdu.aocWeight.zfwcg = undefined;
                 updatePayloadValue();
+                updateView();
+                return true;
+            }
+            mcdu.showErrorMessage(mcdu.defaultInputErrorMessage);
+            return false;
+        };
+
+        mcdu.rightInputDelay[1] = () => {
+            return mcdu.getDelayBasic();
+        };
+        mcdu.onRightInput[1] = (value) => {
+            if (value === FMCMainDisplay.clrValue) {
+                mcdu.aocWeight.zfwcg = undefined;
+                setEstimatedBaggagePayload(mcdu);
+                updateView();
+                return true;
+            }
+            const minAllowableZfwcg = 16;
+            const maxAllowableZfwcg = 40;
+
+            if (value >= minAllowableZfwcg && value <= maxAllowableZfwcg) {
+                mcdu.aocWeight.zfwcg = +value;
+                setEstimatedBaggagePayload(mcdu);
                 updateView();
                 return true;
             }
@@ -347,27 +394,6 @@ class CDUAocOfpData {
     }
 }
 
-/**
- * @return {number | NaN} currentFwdBag
- */
-function getCurrentFwdBag(mcdu) {
-    return mcdu.aocWeight.fwdBag !== undefined ? +mcdu.aocWeight.fwdBag : +mcdu.aocWeight.estFwdBag; // number | NaN
-}
-
-/**
- * @return {number | NaN} currentRearBag
- */
-function getCurrentRearBag(mcdu) {
-    return mcdu.aocWeight.rearBag !== undefined ? +mcdu.aocWeight.rearBag : +mcdu.aocWeight.estRearBag;
-}
-
-/**
- * @return {number | NaN} currentPayload
- */
-function getCurrentPayload(mcdu) {
-    return mcdu.aocWeight.payload !== undefined ? +mcdu.aocWeight.payload : +mcdu.simbrief.payload;
-}
-
 function setEstimatedBaggagePayload(mcdu) {
     if (mcdu.aocWeight.fwdBag !== undefined || mcdu.aocWeight.rearBag !== undefined) {
         return;
@@ -379,7 +405,7 @@ function setEstimatedBaggagePayload(mcdu) {
         return;
     }
 
-    const {forwardBaggageWeight, rearBaggageWeight} = distributeBaggagePayload(currentPayload);
+    const {forwardBaggageWeight, rearBaggageWeight} = getDistributedBaggagePayload(currentPayload, mcdu.aocWeight.zfwcg);
 
     mcdu.aocWeight.estFwdBag = forwardBaggageWeight;
     mcdu.aocWeight.estRearBag = rearBaggageWeight;
@@ -445,7 +471,7 @@ async function loadFuel(mcdu) {
  * @param {number} payload in pound
  * @param {number} percentMacTarget Target %MAC CG / 100
  */
-function distributeBaggagePayload(payload = 0, percentMacTarget = 0.30) {
+function getDistributedBaggagePayload(payload = 0, percentMacTarget = 30) {
     const leMacZ = -5.233333; // Value from Debug Weight
     const macSize = 14.0623; // Value from Debug Aircraft Sim Tunning
     const EMPTY_AIRCRAFT_WEIGHT = 90400 * 0.453592; // Value from flight_model.cfg to kgs
@@ -453,13 +479,7 @@ function distributeBaggagePayload(payload = 0, percentMacTarget = 0.30) {
     const FORWARD_BAGGAGE_POSITION = 21.825772; // Value from flight_model.cfg
     const REAR_BAGGAGE_POSITION = -35.825745; // Value from flight_model.cfg
 
-    const cgTarget = leMacZ - (macSize * percentMacTarget);
-
-    const forwardBaggageRelPos = Math.abs(FORWARD_BAGGAGE_POSITION - cgTarget);
-    const rearBaggageRelPos = Math.abs(REAR_BAGGAGE_POSITION - cgTarget);
-
-    // const forwardBaggageWeight = (payload * rearBaggageRelPos) / (rearBaggageRelPos + forwardBaggageRelPos);
-    // const rearBaggageWeight = (payload * forwardBaggageRelPos) / (forwardBaggageRelPos + rearBaggageRelPos);
+    const cgTarget = leMacZ - (macSize * (percentMacTarget / 100));
 
     const rearBaggageWeight = -1 * ((-(EMPTY_AIRCRAFT_WEIGHT * (EMPTY_AIRCRAFT_POSITION - cgTarget) + payload * (FORWARD_BAGGAGE_POSITION - cgTarget))) / (FORWARD_BAGGAGE_POSITION - REAR_BAGGAGE_POSITION));
     const forwardBaggageWeight = -1 * ((EMPTY_AIRCRAFT_WEIGHT * (EMPTY_AIRCRAFT_POSITION - cgTarget) + payload * (REAR_BAGGAGE_POSITION - cgTarget))) / (FORWARD_BAGGAGE_POSITION - REAR_BAGGAGE_POSITION);
@@ -471,7 +491,7 @@ function distributeBaggagePayload(payload = 0, percentMacTarget = 0.30) {
  * Calculate %MAC ZWFCG based on Empty and Baggage weight only*
  * TODO: Add passengers sections weight into account
  */
-function calculateZfwCg(mcdu) {
+function getZfwcg(mcdu) {
     const leMacZ = -5.233333; // Value from Debug Weight
     const macSize = 14.0623; // Value from Debug Aircraft Sim Tunning
 
@@ -499,8 +519,6 @@ function calculateZfwCg(mcdu) {
     const cgPositionToLemac = cgPosition - leMacZ;
 
     const cgPercentMac = -100 * cgPositionToLemac / macSize;
-
-    console.log('cgPercentMac', cgPercentMac);
 
     return cgPercentMac;
 }
