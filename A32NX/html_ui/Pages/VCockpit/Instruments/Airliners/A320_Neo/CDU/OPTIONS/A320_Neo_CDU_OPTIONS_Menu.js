@@ -3,10 +3,6 @@ class CDU_OPTIONS_MainMenu {
         mcdu.clearDisplay();
         mcdu.activeSystem = 'MAINT';
 
-        const storedUsingMetric = parseInt(NXDataStore.get("CONFIG_USING_METRIC_UNIT", "1"));
-          
-        // `${storedUsingMetric === 1 ? "KG" : "LBS"}>[color]cyan`
-
         mcdu.setTemplate([
             ["A32NX OPTIONS"],
             [""],
@@ -50,18 +46,6 @@ class CDU_OPTIONS_MainMenu {
         };
         mcdu.leftInputDelay[5] = () => {
             return mcdu.getDelaySwitchPage();
-        };
-
-        mcdu.rightInputDelay[4] = () => {
-            return mcdu.getDelaySwitchPage();
-        };
-        mcdu.onRightInput[4] = (value) => {
-            if (value !== "") {
-                mcdu.showErrorMessage("NOT ALLOWED");
-            } else {
-                NXDataStore.set("CONFIG_USING_METRIC_UNIT", storedUsingMetric === 1 ? "2.20462" : "1");
-            }
-            CDU_OPTIONS_MainMenu.ShowPage(mcdu);
         };
     }
 }

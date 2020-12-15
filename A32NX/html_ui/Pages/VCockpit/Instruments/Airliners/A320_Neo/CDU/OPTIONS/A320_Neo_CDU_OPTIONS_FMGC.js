@@ -4,13 +4,14 @@ class CDU_OPTIONS_FMGC {
 
         const storedAccelAlt = parseInt(NXDataStore.get("CONFIG_ACCEL_ALT", "1500"));
         const storedInitBaroUnit = NXDataStore.get("CONFIG_INIT_BARO_UNIT", "IN HG");
+        const storedUsingMetric = parseInt(NXDataStore.get("CONFIG_USING_METRIC_UNIT", "1"));
 
         mcdu.setTemplate([
             ["A32NX OPTIONS FMGC"],
             ["\xa0DEFAULT BARO", "ACCEL ALT\xa0"],
             [`*${storedInitBaroUnit}[color]cyan`, `{small}[FT]{end}{cyan}[${storedAccelAlt}]*{end}`],
             ["\xa0WEIGHT UNIT", "THR RED ALT\xa0"],
-            ["*KG[color]inop", "{small}[FT]{end}{inop}[1500]*{end}"],
+            [`*${storedUsingMetric === 1 ? "KG" : "LBS"}[color]cyan`, "{small}[FT]{end}{inop}[1500]*{end}"],
             [""],
             [""],
             [""],
@@ -47,8 +48,19 @@ class CDU_OPTIONS_FMGC {
             }
             CDU_OPTIONS_FMGC.ShowPage(mcdu);
         };
+        mcdu.onLeftInput[1] = (value) => {
+            if (value !== "") {
+                mcdu.showErrorMessage("NOT ALLOWED");
+            } else {
+                NXDataStore.set("CONFIG_USING_METRIC_UNIT", storedUsingMetric === 1 ? "2.20462" : "1");
+            }
+            CDU_OPTIONS_FMGC.ShowPage(mcdu);
+        };
 
         mcdu.leftInputDelay[0] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
+        mcdu.leftInputDelay[1] = () => {
             return mcdu.getDelaySwitchPage();
         };
 
