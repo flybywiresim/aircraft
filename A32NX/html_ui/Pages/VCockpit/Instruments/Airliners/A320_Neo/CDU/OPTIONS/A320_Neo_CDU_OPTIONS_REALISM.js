@@ -7,7 +7,7 @@ class CDU_OPTIONS_REALISM {
         mcdu.setTemplate([
             ["A32NX OPTIONS REALISM"],
             ["\xa0ADIRS", "DMC SELF-TEST\xa0"],
-            ["<ALIGN TIME", `${storedDMCTestTime} SEC.>[color]cyan`],
+            ["<ALIGN TIME", `{small}[S]{end}{cyan}[${storedDMCTestTime}]*{end}`],
             [""],
             [""],
             [""],
