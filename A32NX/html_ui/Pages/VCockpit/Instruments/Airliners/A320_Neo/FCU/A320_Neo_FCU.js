@@ -39,6 +39,7 @@ class A320_Neo_FCU extends BaseAirliners {
         }
     }
 }
+
 class A320_Neo_FCU_MainElement extends NavSystemElement {
     init(root) {
     }
@@ -51,6 +52,7 @@ class A320_Neo_FCU_MainElement extends NavSystemElement {
     onEvent(_event) {
     }
 }
+
 class A320_Neo_FCU_MainPage extends NavSystemPage {
     constructor() {
         super("Main", "Mainframe", new A320_Neo_FCU_MainElement());
@@ -76,6 +78,8 @@ class A320_Neo_FCU_MainPage extends NavSystemPage {
         this.smallScreen.onFlightStart();
     }
 }
+
+// Generic flight control unit component.
 class A320_Neo_FCU_Component {
     getDivElement(_name) {
         if (this.divRef != null) {
@@ -126,6 +130,8 @@ class A320_Neo_FCU_Component {
     onFlightStart() {
     }
 }
+
+// Flight control unit speed component.
 class A320_Neo_FCU_Speed extends A320_Neo_FCU_Component {
     constructor() {
         super(...arguments);
@@ -188,6 +194,8 @@ class A320_Neo_FCU_Speed extends A320_Neo_FCU_Component {
         }
     }
 }
+
+// Flight control unit heading component.
 class A320_Neo_FCU_Heading extends A320_Neo_FCU_Component {
     constructor() {
         super(...arguments);
@@ -213,7 +221,7 @@ class A320_Neo_FCU_Heading extends A320_Neo_FCU_Component {
     }
     update(_deltaTime) {
         const isLateralModeActive = Simplane.getAutoPilotLateralModeActive();
-        const isTRKMode = Simplane.getAutoPilotTRKFPAModeActive();
+        const isTRKMode = SimVar.GetSimVarValue("L:A32NX_TRK_FPA_MODE_ACTIVE", "Bool");
         let showSelectedHeading = SimVar.GetSimVarValue("L:A320_FCU_SHOW_SELECTED_HEADING", "number") === 1;
         if (SimVar.GetSimVarValue("AUTOPILOT GLIDESLOPE HOLD", "boolean")) {
             showSelectedHeading = false;
@@ -232,7 +240,11 @@ class A320_Neo_FCU_Heading extends A320_Neo_FCU_Component {
         } else {
             {
                 if (isTRKMode) {
-                    this.refresh(true, isManaged, true, showSelectedHeading, Simplane.getAutoPilotTrackAngle(), lightsTest);
+                    const track = SimVar.GetSimVarValue("L:A32NX_AUTOPILOT_TRACK_SELECTED:1", "Degrees");
+                    const heading = this.calculateHeadingForTrack(track);
+                    Coherent.call("HEADING_BUG_SET", 1, heading);
+
+                    this.refresh(true, isManaged, true, showSelectedHeading, track, lightsTest);
                 } else {
                     this.refresh(true, isManaged, false, showSelectedHeading, Simplane.getAutoPilotSelectedHeadingLockValue(false), lightsTest);
                 }
@@ -241,6 +253,9 @@ class A320_Neo_FCU_Heading extends A320_Neo_FCU_Component {
     }
     refresh(_isActive, _isManaged, _isTRKMode, _showSelectedHeading, _value, _lightsTest, _force = false) {
         if ((_isActive != this.isActive) || _isManaged != this.isManaged || (_isTRKMode != this.isTRKMode) || (_showSelectedHeading != this.showSelectedHeading) || (_value != this.currentValue) || (_lightsTest !== this.lightsTest) || _force) {
+            if(_isTRKMode != this.isTRKMode) {
+                this.onTRKModeChanged(_isTRKMode);
+            }
             if (_isManaged != this.isManaged) {
                 this.onManagedChanged(_isManaged);
             }
@@ -270,11 +285,11 @@ class A320_Neo_FCU_Heading extends A320_Neo_FCU_Component {
                 return;
             }
             if (!this.isManaged) {
-                var value = Math.round(Math.max(this.currentValue, 0));
+                var value = Math.round(Math.max(this.currentValue, 0)) % 360;
                 this.textValueContent = value.toString().padStart(3, "0");
             } else if (this.isManaged) {
                 if (this.showSelectedHeading) {
-                    var value = Math.round(Math.max(this.currentValue, 0));
+                    var value = Math.round(Math.max(this.currentValue, 0)) % 360;
                     this.textValueContent = value.toString().padStart(3, "0");
                 } else {
                     this.textValueContent = "---";
@@ -286,10 +301,43 @@ class A320_Neo_FCU_Heading extends A320_Neo_FCU_Component {
             this.setElementVisibility(this.decimalPoint3, false);
         }
     }
+    calculateTrackForHeading(_heading) {
+        const heading = _heading * Math.PI / 180;
+        const trueAirspeed = SimVar.GetSimVarValue("AIRSPEED TRUE", "Knots");
+        if (trueAirspeed < 50) return _heading;
+
+        const windVelocity = SimVar.GetSimVarValue("AMBIENT WIND VELOCITY", "Knots");
+        const windDirection = SimVar.GetSimVarValue("AMBIENT WIND DIRECTION", "Degrees") * Math.PI / 180;
+        const wca = Math.atan2(windVelocity * Math.sin(heading - windDirection), trueAirspeed - windVelocity * Math.cos(heading - windDirection));
+        const track = heading + wca % (2 * Math.PI);
+        return (((track * 180 / Math.PI) % 360) + 360) % 360
+    }
+    calculateHeadingForTrack(_track) {
+        const track = _track * Math.PI / 180;
+        const trueAirspeed = SimVar.GetSimVarValue("AIRSPEED TRUE", "Knots");
+        if (trueAirspeed < 50) return _track;
+
+        const windVelocity = SimVar.GetSimVarValue("AMBIENT WIND VELOCITY", "Knots");
+        const windDirection = SimVar.GetSimVarValue("AMBIENT WIND DIRECTION", "Degrees") * Math.PI / 180;
+        // https://web.archive.org/web/20160302090326/http://williams.best.vwh.net/avform.htm#Wind
+        const swc = (windVelocity / trueAirspeed) * Math.sin(windDirection - track);
+        const heading = track + Math.asin(swc) % (2 * Math.PI);
+        console.log(heading * 180 / Math.PI);
+        return (((heading * 180 / Math.PI) % 360) + 360) % 360
+    }
+    onTRKModeChanged(_newValue) {
+        if (_newValue) {
+            const heading = Simplane.getAutoPilotSelectedHeadingLockValue(false);
+            const track = this.calculateTrackForHeading(heading);
+            SimVar.SetSimVarValue("L:A32NX_AUTOPILOT_TRACK_SELECTED:1", "Degrees", track);
+        }
+    }
     onManagedChanged(_newValue) {
         if (_newValue) {
             const simHeading = SimVar.GetSimVarValue("PLANE HEADING DEGREES MAGNETIC", "degree");
             Coherent.call("HEADING_BUG_SET", 1, simHeading);
+            const track = SimVar.GetSimVarValue("GPS GROUND MAGNETIC TRACK", "Radians") * 180 / Math.PI;;
+            SimVar.SetSimVarValue("L:A32NX_AUTOPILOT_TRACK_SELECTED:1", "Degrees", track);
         } else {
             this.backToIdleTimeout = 0;
         }
@@ -304,7 +352,25 @@ class A320_Neo_FCU_Heading extends A320_Neo_FCU_Component {
             this.backToIdleTimeout = 5;
         }
     }
+    onEvent(_event) {
+        // TODO: increments of more than 1 if rolling quickly.
+        if (_event == "AP_INC_TRACK") {
+            const currentTrack = Math.round(SimVar.GetSimVarValue("L:A32NX_AUTOPILOT_TRACK_SELECTED:1", "Degrees"));
+            const newTrack = ((currentTrack + 1 % 360) + 360) % 360;
+            SimVar.SetSimVarValue("L:A32NX_AUTOPILOT_TRACK_SELECTED:1", "Degrees", newTrack);
+            SimVar.SetSimVarValue("L:A320_FCU_SHOW_SELECTED_HEADING", "number", 1);
+        } else if (_event == "AP_DEC_TRACK") {
+            const currentTrack = Math.round(SimVar.GetSimVarValue("L:A32NX_AUTOPILOT_TRACK_SELECTED:1", "Degrees"));
+            const newTrack = ((currentTrack - 1 % 360) + 360) % 360;
+            SimVar.SetSimVarValue("L:A32NX_AUTOPILOT_TRACK_SELECTED:1", "Degrees", newTrack);
+            SimVar.SetSimVarValue("L:A320_FCU_SHOW_SELECTED_HEADING", "number", 1);
+        } else if (_event == "MODE_MANAGED_HEADING" && this.isManaged) {
+            this.backToIdleTimeout = 0;
+        }
+    }
 }
+
+// Flight control unit HDG/TRK mode component.
 class A320_Neo_FCU_Mode extends A320_Neo_FCU_Component {
     init() {
         this.textHDG = this.getTextElement("HDG");
@@ -314,7 +380,8 @@ class A320_Neo_FCU_Mode extends A320_Neo_FCU_Component {
         this.refresh(false, 0, true);
     }
     update(_deltaTime) {
-        this.refresh(Simplane.getAutoPilotTRKFPAModeActive(), SimVar.GetSimVarValue("L:XMLVAR_LTS_Test", "Bool"));
+        const _isTRKFPADisplayMode = SimVar.GetSimVarValue("L:A32NX_TRK_FPA_MODE_ACTIVE", "Bool");
+        this.refresh(_isTRKFPADisplayMode, SimVar.GetSimVarValue("L:XMLVAR_LTS_Test", "Bool"));
     }
     refresh(_isTRKFPADisplayMode, _lightsTest, _force = false) {
         if ((_isTRKFPADisplayMode != this.isTRKFPADisplayMode) || (_lightsTest !== this.lightsTest) || _force) {
@@ -334,9 +401,8 @@ class A320_Neo_FCU_Mode extends A320_Neo_FCU_Component {
         }
     }
 }
-function IsAltVSNonManaged() {
-    return (Simplane.getAutoPilotVerticalSpeedHoldActive() || Simplane.getAutoPilotAltitudeLockActive() || Simplane.getAutoPilotAltitudeArmed());
-}
+
+// Flight control unit altitude component.
 class A320_Neo_FCU_Altitude extends A320_Neo_FCU_Component {
     init() {
         this.illuminator = this.getElement("circle", "Illuminator");
@@ -388,6 +454,7 @@ class A320_Neo_FCU_Altitude extends A320_Neo_FCU_Component {
         }
     }
 }
+
 var A320_Neo_FCU_VSpeed_State;
 (function (A320_Neo_FCU_VSpeed_State) {
     A320_Neo_FCU_VSpeed_State[A320_Neo_FCU_VSpeed_State["Idle"] = 0] = "Idle";
@@ -395,6 +462,7 @@ var A320_Neo_FCU_VSpeed_State;
     A320_Neo_FCU_VSpeed_State[A320_Neo_FCU_VSpeed_State["Selecting"] = 2] = "Selecting";
     A320_Neo_FCU_VSpeed_State[A320_Neo_FCU_VSpeed_State["Flying"] = 3] = "Flying";
 })(A320_Neo_FCU_VSpeed_State || (A320_Neo_FCU_VSpeed_State = {}));
+// Flight control unit vertical speed component.
 class A320_Neo_FCU_VerticalSpeed extends A320_Neo_FCU_Component {
     constructor() {
         super(...arguments);
@@ -591,12 +659,15 @@ class A320_Neo_FCU_VerticalSpeed extends A320_Neo_FCU_Component {
         }
     }
 }
+
+// Flight control unit large screen.
 class A320_Neo_FCU_LargeScreen extends NavSystemElement {
     init(root) {
         if (this.components == null) {
             this.components = new Array();
             this.components.push(new A320_Neo_FCU_Speed(this.gps, "Speed"));
-            this.components.push(new A320_Neo_FCU_Heading(this.gps, "Heading"));
+            this.headingDisplay = new A320_Neo_FCU_Heading(this.gps, "Heading");
+            this.components.push(this.headingDisplay);
             this.components.push(new A320_Neo_FCU_Mode(this.gps, "Mode"));
             this.components.push(new A320_Neo_FCU_Altitude(this.gps, "Altitude"));
             this.verticalSpeedDisplay = new A320_Neo_FCU_VerticalSpeed(this.gps, "VerticalSpeed");
@@ -635,9 +706,12 @@ class A320_Neo_FCU_LargeScreen extends NavSystemElement {
     onExit() {
     }
     onEvent(_event) {
+        this.headingDisplay.onEvent(_event);
         this.verticalSpeedDisplay.onEvent(_event);
     }
 }
+
+// Flight control unit pressure component.
 class A320_Neo_FCU_Pressure extends A320_Neo_FCU_Component {
     init() {
         this.selectedElem = this.getDivElement("Selected");
@@ -688,6 +762,8 @@ class A320_Neo_FCU_Pressure extends A320_Neo_FCU_Component {
         }
     }
 }
+
+// Flight control unit small screen (just pressure component).
 class A320_Neo_FCU_SmallScreen extends NavSystemElement {
     init(root) {
         if (this.pressure == null) {
@@ -713,4 +789,5 @@ class A320_Neo_FCU_SmallScreen extends NavSystemElement {
     onFlightStart() {
     }
 }
+
 registerInstrument("a320-neo-fcu-element", A320_Neo_FCU);

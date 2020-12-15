@@ -147,7 +147,7 @@ var Airbus_FMA;
             this.autoPilotThrottleLocked = Simplane.getAutoPilotThrottleLocked();
             this.autoPilotMachModeActive = Simplane.getAutoPilotMachModeActive();
             this.autoPilotGlideslopeActive = Simplane.getAutoPilotGlideslopeActive();
-            this.autoPilotTRKFPAModeActive = Simplane.getAutoPilotTRKFPAModeActive();
+            this.autoPilotTRKFPAModeActive = SimVar.GetSimVarValue("L:A32NX_TRK_FPA_MODE_ACTIVE", "Bool");
             this.altitude = Simplane.getAltitude();
             this.flapsHandlePercent = Simplane.getFlapsHandlePercent();
             this.flightPhase = Simplane.getCurrentFlightPhase(true);
