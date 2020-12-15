@@ -74,7 +74,10 @@ class CDUFuelPredPage {
                 altIdentCell = mcdu.altDestination.ident;
             }
 
-            destIdentCell = mcdu.flightPlanManager.getDestination().ident;
+            const dest = mcdu.flightPlanManager.getDestination();
+            if (dest) {
+                destIdentCell = dest.ident;
+            }
 
             gwCell = "{small}" + (mcdu.getGW() * mcdu._conversionWeight).toFixed(1);
             cgCell = mcdu.getCG().toFixed(1) + "{end}";
@@ -137,7 +140,10 @@ class CDUFuelPredPage {
                 }
 
                 mcdu.tryUpdateRouteTrip(isFlying);
-                destIdentCell = mcdu.flightPlanManager.getDestination().ident;
+                const dest = mcdu.flightPlanManager.getDestination();
+                if (dest) {
+                    destIdentCell = dest.ident;
+                }
                 destEFOBCell = (mcdu.getDestEFOB(true) * mcdu._conversionWeight).toFixed(1);
                 // Should we use predicted values or liveETATo and liveUTCto?
                 destTimeCell = isFlying ? FMCMainDisplay.secondsToUTC(utcTime + FMCMainDisplay.minuteToSeconds(mcdu._routeTripTime))
