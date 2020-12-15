@@ -278,15 +278,12 @@ const addWaypointAsync = (fix, mcdu, routeIdent, via) => {
         });
     } else {
         return new Promise((res, rej) => {
-            mcdu.getOrSelectWaypointByIdent(routeIdent, (waypoint) => {
+            const coords = {
+                lat: fix.pos_lat,
+                long: fix.pos_long
+            };
+            getWaypointByIdentAndCoords(mcdu, routeIdent, coords, (waypoint) => {
                 if (waypoint) {
-                    const simbriefCoords = {
-                        lat: fix.pos_lat,
-                        long: fix.pos_long
-                    };
-                    const distanceToTarget = Avionics.Utils.computeGreatCircleDistance(simbriefCoords, waypoint.infos.coordinates);
-                    console.log('distanceToTarget', distanceToTarget, fix.ident);
-
                     mcdu.flightPlanManager.addWaypoint(waypoint.icao, wpIndex, () => {
                         console.log("Inserted waypoint: " + routeIdent);
                         res(true);
@@ -339,3 +336,27 @@ const uplinkRoute = async (mcdu) => {
         }
     }
 };
+
+/**
+ * Get the waypoint by ident and coords whitin the threshold
+ * @param {string} ident Waypoint ident
+ * @param {object} coords Waypoint coords
+ * @param {function} callback Return waypoint
+ */
+function getWaypointByIdentAndCoords(mcdu, ident, coords, callback) {
+    const DISTANCE_THRESHOLD = 1;
+    mcdu.dataManager.GetWaypointsByIdent(ident).then((waypoints) => {
+        if (!waypoints || waypoints.length === 0) {
+            return callback(undefined);
+        }
+
+        for (waypoint of waypoints) {
+            const distanceToTarget = Avionics.Utils.computeGreatCircleDistance(coords, waypoint.infos.coordinates);
+            if (distanceToTarget < DISTANCE_THRESHOLD) {
+                return callback(waypoint);
+            }
+        }
+
+        return callback(undefined);
+    });
+}
