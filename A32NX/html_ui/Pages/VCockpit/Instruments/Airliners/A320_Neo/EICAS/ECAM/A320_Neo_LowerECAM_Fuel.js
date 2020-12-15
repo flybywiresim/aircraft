@@ -180,6 +180,9 @@ var A320_Neo_LowerECAM_Fuel;
         updateQuantity(_elem, _simvar, _unitFactor) {
             let quantity = SimVar.GetSimVarValue(_simvar, "gallons") * this.gallonToKG * _unitFactor;
             quantity -= quantity % 20;
+            if (quantity < 0) {
+                quantity = 0;
+            }
             _elem.textContent = fastToFixed(quantity, 0);
         }
         setAPUState(_isOn, _isActive, _force = false) {
