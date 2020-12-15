@@ -15,7 +15,7 @@ class CDU_OPTIONS_FMGC {
             [""],
             [""],
             [""],
-            ["<RETURN[color]cyan"]
+            ["<RETURN"]
         ]);
 
         mcdu.leftInputDelay[5] = () => {
