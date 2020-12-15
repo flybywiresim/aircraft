@@ -4,8 +4,8 @@ class CDU_OPTIONS_FMGC {
 
         mcdu.setTemplate([
             ["A32NX OPTIONS FMGC"],
-            [""],
-            [""],
+            ["", "WEIGHT UNIT"],
+            ["", "KG>[color]inop"],
             [""],
             [""],
             [""],

@@ -10,10 +10,10 @@ class CDU_OPTIONS_REALISM {
             ["A32NX OPTIONS REALISM"],
             ["ADIRS", "ACCEL ALT"],
             ["<ALIGN TIME", `${storedAccelAlt} FT.>[color]cyan`],
-            ["DMC SELF-TEST", "INIT BARO"],
-            [`<${storedDMCTestTime} SEC.[color]cyan`, `${storedInitBaroUnit}>[color]cyan`],
-            [""],
-            [""],
+            ["DMC SELF-TEST", "THR RED ALT"],
+            [`${storedDMCTestTime} SEC.>[color]cyan`, "1500 FT.>[color]inop"],
+            ["", "INIT BARO"],
+            ["", `${storedInitBaroUnit}>[color]cyan`],
             [""],
             [""],
             [""],
@@ -46,7 +46,7 @@ class CDU_OPTIONS_REALISM {
             }
             CDU_OPTIONS_REALISM.ShowPage(mcdu);
         };
-        mcdu.onRightInput[1] = (value) => {
+        mcdu.onRightInput[2] = (value) => {
             if (value !== "") {
                 mcdu.showErrorMessage("NOT ALLOWED");
             } else {
@@ -61,14 +61,14 @@ class CDU_OPTIONS_REALISM {
         mcdu.leftInputDelay[0] = () => {
             return mcdu.getDelaySwitchPage();
         };
-        mcdu.leftInputDelay[1] = () => {
+        mcdu.rightInputDelay[0] = () => {
             return mcdu.getDelaySwitchPage();
         };
 
         mcdu.rightInputDelay[0] = () => {
             return mcdu.getDelaySwitchPage();
         };
-        mcdu.rightInputDelay[1] = () => {
+        mcdu.rightInputDelay[2] = () => {
             return mcdu.getDelaySwitchPage();
         };
 

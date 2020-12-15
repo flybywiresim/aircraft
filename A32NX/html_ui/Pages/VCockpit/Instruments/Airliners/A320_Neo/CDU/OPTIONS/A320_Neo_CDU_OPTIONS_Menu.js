@@ -6,11 +6,11 @@ class CDU_OPTIONS_MainMenu {
         mcdu.setTemplate([
             ["A32NX OPTIONS"],
             [""],
-            ["<FMGC[color]inop"],
+            ["<AOC", "REALISM>"],
             [""],
-            ["<AOC"],
+            ["<FMGC"],
             [""],
-            ["<REALISM"],
+            [""],
             [""],
             [""],
             [""],
@@ -20,13 +20,10 @@ class CDU_OPTIONS_MainMenu {
         ]);
 
         mcdu.onLeftInput[0] = () => {
-            // CDU_OPTIONS_FMGC.ShowPage(mcdu);
-        };
-        mcdu.onLeftInput[1] = () => {
             CDU_OPTIONS_AOC.ShowPage(mcdu);
         };
-        mcdu.onLeftInput[2] = () => {
-            CDU_OPTIONS_REALISM.ShowPage(mcdu);
+        mcdu.onLeftInput[1] = () => {
+            CDU_OPTIONS_FMGC.ShowPage(mcdu);
         };
 
         mcdu.leftInputDelay[0] = () => {
@@ -35,7 +32,12 @@ class CDU_OPTIONS_MainMenu {
         mcdu.leftInputDelay[1] = () => {
             return mcdu.getDelaySwitchPage();
         };
-        mcdu.leftInputDelay[2] = () => {
+
+        mcdu.onRightInput[0] = () => {
+            CDU_OPTIONS_REALISM.ShowPage(mcdu);
+        };
+
+        mcdu.rightInputDelay[0] = () => {
             return mcdu.getDelaySwitchPage();
         };
 
