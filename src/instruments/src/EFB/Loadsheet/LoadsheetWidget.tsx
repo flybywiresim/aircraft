@@ -59,12 +59,12 @@ const LoadsheetWidget = (props: LoadsheetWidgetProps) => {
     return (
         <div className="loadsheet">
             <div>
-                <span className="title">Loadsheet</span>
+                <span className="title">Dispatch Loadsheet</span>
             </div>
             <div className='loadsheet-card' id="loadsheet-payload-card">
                 <div className='loadsheet-card-body'>
                     <div className="loadsheet-table">
-                        <table>
+                        <table className="mono">
                             <thead>
                                 <tr>
                                     <th scope="col" className="ls-col col-desc col-left">&nbsp;</th>
@@ -125,7 +125,7 @@ const LoadsheetWidget = (props: LoadsheetWidgetProps) => {
             <div className='loadsheet-card' id="loadsheet-fuel-card">
                 <div className='loadsheet-card-body'>
                     <div className="loadsheet-table">
-                        <table>
+                        <table className="mono">
                             <thead>
                                 <tr>
                                     <th scope="col" className="ls-col col-fuel-desc col-left">FUEL</th>

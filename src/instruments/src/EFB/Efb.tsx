@@ -25,7 +25,6 @@ import DashboardWidget from "./Dashboard/DashboardWidget";
 
 import './Efb.scss';
 
-import 'material-design-icons/iconfont/material-icons.css'
 import LoadsheetWidget from "./Loadsheet/LoadsheetWidget";
 import Settings from "./Settings/Settings";
 import Profile from "./Profile/Profile";

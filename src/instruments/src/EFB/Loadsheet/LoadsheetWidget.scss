@@ -12,7 +12,7 @@
   margin-right: 0.75rem;
 
   .title {
-    font-family: "Nunito Sans", sans-serif;
+    font-family: "Nunito", sans-serif;
     grid-area: LoadsheetTitle;
     font-size: 1.25rem;
     font-weight: 400;
@@ -66,7 +66,6 @@
     }
 
     .loadsheet-table {
-      font-family: "JetBrains Mono", monospace;
       color: var(--mainText);
       font-size: 1.25rem;
 
@@ -74,9 +73,14 @@
         width: 100%;
       }
 
-      td,
       th {
         padding: 15px 10px;
+        //border: 1px solid white;
+        vertical-align: top;
+      }
+
+      td {
+        padding: 5px 10px;
         //border: 1px solid white;
         vertical-align: top;
       }

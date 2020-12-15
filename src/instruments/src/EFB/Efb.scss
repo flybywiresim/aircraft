@@ -16,9 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-@import url("https://fonts.googleapis.com/css2?family=Nunito+Sans&display=swap");
-@import url("https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@600&display=swap");
-@import url("https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,200;0,300;0,400;0,600;0,700;0,800;0,900;1,200;1,300;1,400;1,600;1,700;1,800;1,900&display=swap");
 
 @import "StatusBar/StatusBar";
 @import "ToolBar/ToolBar";
@@ -26,14 +24,6 @@
 @import "Loadsheet/LoadsheetWidget";
 @import "Settings/Settings";
 @import "Profile/Profile";
-
-@font-face {
-  font-family: "JetBrains Mono";
-  src: url("https://raw.githubusercontent.com/JetBrains/JetBrainsMono/master/fonts/webfonts/JetBrainsMono-Regular.woff2")
-    format("woff2");
-  font-weight: normal;
-  font-style: normal;
-}
 
 :root {
   --mainText: rgba(0, 0, 0, 0.6);
@@ -109,7 +99,7 @@ body {
 
 .loading-screen {
   background: rgb(0, 0, 0);
-  font-family: "Nunito Sans", sans-serif;
+  font-family: "Nunito", sans-serif;
   font-size: 2.5rem;
   font-weight: 100;
   color: rgba(255, 255, 255, 0.9);
