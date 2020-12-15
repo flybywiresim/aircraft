@@ -26,6 +26,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this.altLock = 0;
         this.messageQueue = [];
         this._destDataChecked = false;
+        this._towerHeadwind = 0;
     }
     get templateID() {
         return "A320_Neo_CDU";
@@ -181,6 +182,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             .replace(/{cyan}/g, "<span class='cyan'>")
             .replace(/{white}/g, "<span class='white'>")
             .replace(/{magenta}/g, "<span class='magenta'>")
+            .replace(/{yellow}/g, "<span class='yellow'>")
             .replace(/{inop}/g, "<span class='inop'>")
             .replace(/{sp}/g, "&nbsp;")
             .replace(/{end}/g, "</span>");
@@ -213,6 +215,23 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             this.addTypeTwoMessage("ENTER DEST DATA", true, () => {
                 return isFinite(this.perfApprQNH) && isFinite(this.perfApprTemp) && isFinite(this.perfApprWindHeading) && isFinite(this.perfApprWindSpeed);
             });
+        }
+    }
+
+    checkEFOBBelowMin() {
+        if (!this._minDestFobEntered) {
+            this.tryUpdateMinDestFob();
+        }
+        const EFOBBelMin = this.isAnEngineOn() ? this.getDestEFOB(true) : this.getDestEFOB(false);
+
+        if (EFOBBelMin < this._minDestFob) {
+            if (this.isAnEngineOn()) {
+                setTimeout(() => {
+                    this.addTypeTwoMessage("DEST EFOB BELOW MIN", true);
+                }, 180000);
+            } else {
+                this.addTypeTwoMessage("DEST EFOB BELOW MIN", true);
+            }
         }
     }
 
@@ -626,6 +645,15 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             payloadWeight += SimVar.GetSimVarValue(`PAYLOAD STATION WEIGHT:${i}`, unit);
         }
         return payloadWeight;
+    }
+
+    updateTowerHeadwind() {
+        if (isFinite(this.perfApprWindSpeed) && isFinite(this.perfApprWindHeading)) {
+            const rwy = this.flightPlanManager.getApproachRunway();
+            if (rwy) {
+                this._towerHeadwind = NXSpeedsUtils.getHeadwind(this.perfApprWindSpeed, this.perfApprWindHeading, rwy.direction);
+            }
+        }
     }
 
     _onModeSelectedSpeed() {
@@ -1296,12 +1324,15 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                     const ctn = this.getSpeedConstraint(false);
                     let speed = this.getManagedApproachSpeedMcdu();
                     let vls = this.getVApp();
+                    if (isFinite(this.perfApprWindSpeed) && isFinite(this.perfApprWindHeading)) {
+                        vls = NXSpeedsUtils.getVtargetGSMini(vls, NXSpeedsUtils.getHeadWindDiff(this._towerHeadwind));
+                    }
                     if (ctn !== Infinity) {
                         vls = Math.max(vls, ctn);
                         speed = Math.max(speed, ctn);
                     }
                     SimVar.SetSimVarValue("L:A32NX_AP_APPVLS", "knots", vls);
-                    this.setAPManagedSpeed(speed, Aircraft.A320_NEO);
+                    this.setAPManagedSpeed(Math.max(speed, vls), Aircraft.A320_NEO);
                 }
             }
             if (this.currentFlightPhase == FlightPhase.FLIGHT_PHASE_GOAROUND) {
