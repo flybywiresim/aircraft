@@ -192,7 +192,7 @@ class CDUAocOfpData {
         setEstimatedBaggagePayload(mcdu);
 
         let payload = "_____[color]amber";
-        let estZfw = "--.-[color]amber";
+        let estZfw = "--.-[color]white";
         let zfwcg = "__._[color]amber";
         let fwdBag = "__._[color]amber";
         let rearBag = "__._[color]amber";
