@@ -158,6 +158,7 @@
 1. [CDU] Added ground speed mini - @MisterChocker (Leon)
 1. [MISC] Fix pedestal camera position triggering radio frequency display glitch - @pareil6 (pareil6)
 1. [FLIGHTMODEL] Corrected fuel tank capacities, including unusable fuel - @donstim - (donbikes#4084)
+1. [CDU] Improved Options Page - @MisterChocker (Leon)
 
 ## 0.4.0
 1. [General] Add CHANGELOG.md - @nathaninnes (Nathan Innes)

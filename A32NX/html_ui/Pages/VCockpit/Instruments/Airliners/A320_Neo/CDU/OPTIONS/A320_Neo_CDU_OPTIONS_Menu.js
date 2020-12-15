@@ -1,4 +1,4 @@
-class CDU_OPTIONS_MainMenu {
+/*class CDU_OPTIONS_MainMenu {
     static ShowPage(mcdu) {
         mcdu.clearDisplay();
         mcdu.activeSystem = 'MAINT';
@@ -107,6 +107,55 @@ class CDU_OPTIONS_MainMenu {
                 NXDataStore.set("CONFIG_INIT_BARO_UNIT", newInitBaroUnit);
             }
             CDU_OPTIONS_MainMenu.ShowPage(mcdu);
+        };
+    }
+}*/
+class CDU_OPTIONS_MainMenu {
+    static ShowPage(mcdu) {
+        mcdu.clearDisplay();
+        mcdu.activeSystem = 'MAINT';
+
+        mcdu.setTemplate([
+            ["A32NX OPTIONS"],
+            [""],
+            ["<FMGC"],
+            [""],
+            ["<AOC"],
+            [""],
+            ["<REALISM"],
+            [""],
+            [""],
+            [""],
+            [""],
+            [""],
+            ["<RETURN[color]cyan"]
+        ]);
+
+        mcdu.onLeftInput[0] = () => {
+            CDU_OPTIONS_FMGC.ShowPage(mcdu);
+        };
+        mcdu.onLeftInput[1] = () => {
+            CDU_OPTIONS_AOC.ShowPage(mcdu);
+        };
+        mcdu.onLeftInput[2] = () => {
+            CDU_OPTIONS_REALISM.ShowPage(mcdu);
+        };
+
+        mcdu.leftInputDelay[0] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
+        mcdu.leftInputDelay[1] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
+        mcdu.leftInputDelay[2] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
+
+        mcdu.onLeftInput[5] = () => {
+            CDUMenuPage.ShowPage(mcdu);
+        };
+        mcdu.leftInputDelay[5] = () => {
+            return mcdu.getDelaySwitchPage();
         };
     }
 }
