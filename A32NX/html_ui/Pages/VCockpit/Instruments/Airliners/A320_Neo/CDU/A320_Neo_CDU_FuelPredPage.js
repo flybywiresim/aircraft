@@ -24,7 +24,13 @@ class CDUFuelPredPage {
         let zfwCgCell = (" __._");
         let zfwColor = "[color]amber";
         mcdu.onRightInput[2] = async (value) => {
-            if (await mcdu.trySetZeroFuelWeightZFWCG(value)) {
+            if (value === "") {
+                mcdu.updateZfwVars();
+                mcdu.sendDataToScratchpad(
+                    (isFinite(mcdu.zeroFuelWeight) ? mcdu.zeroFuelWeight.toFixed(1) : "") +
+                    "/" +
+                    (isFinite(mcdu.zeroFuelWeightMassCenter) ? mcdu.zeroFuelWeightMassCenter.toFixed(1) : ""));
+            } else if (await mcdu.trySetZeroFuelWeightZFWCG(value)) {
                 CDUFuelPredPage.ShowPage(mcdu);
             }
         };
@@ -51,6 +57,33 @@ class CDUFuelPredPage {
         let extraFuelCell = "---.-";
         let extraTimeCell = "----";
         let extraCellColor = "[color]white";
+
+        if (mcdu._zeroFuelWeightZFWCGEntered) {
+            if (isFinite(mcdu.zeroFuelWeight)) {
+                zfwCell = mcdu.zeroFuelWeight.toFixed(1);
+                zfwColor = "[color]cyan";
+            }
+            if (isFinite(mcdu.zeroFuelWeightMassCenter)) {
+                zfwCgCell = mcdu.zeroFuelWeightMassCenter.toFixed(1);
+            }
+            if (isFinite(mcdu.zeroFuelWeight) && isFinite(mcdu.zeroFuelWeightMassCenter)) {
+                zfwColor = "[color]cyan";
+            }
+
+            if (mcdu.altDestination) {
+                altIdentCell = mcdu.altDestination.ident;
+            }
+
+            destIdentCell = mcdu.flightPlanManager.getDestination().ident;
+
+            gwCell = "{small}" + mcdu.getGW().toFixed(1);
+            cgCell = mcdu.getCG().toFixed(1) + "{end}";
+            gwCgCellColor = "[color]green";
+
+            fobCell = "{small}" + mcdu.getFOB().toFixed(1) + "{end}";
+            fobOtherCell = "{inop}FF{end}";
+            fobCellColor = "[color]cyan";
+        }
 
         if (CDUInitPage.fuelPredConditionsMet(mcdu)) {
             const utcTime = SimVar.GetGlobalVarValue("ZULU TIME", "seconds");
@@ -116,14 +149,6 @@ class CDUFuelPredPage {
                 destEFOBCellColor = "[color]green";
                 destTimeCellColor = "[color]green";
 
-                fobCell = "{small}" + mcdu.getFOB().toFixed(1) + "{end}";
-                fobOtherCell = "FF";
-                fobCellColor = "[color]cyan";
-
-                gwCell = "{small}" + mcdu.getGW().toFixed(1);
-                cgCell = mcdu.getCG().toFixed(1) + "{end}";
-                gwCgCellColor = "[color]green";
-
                 if (isFlying) {
                     rteRsvWeightCell = "{small}0.0{end}";
                     rteRsvPercentCell = "{white}--.-{end}";
@@ -159,6 +184,7 @@ class CDUFuelPredPage {
                         CDUFuelPredPage.ShowPage(mcdu);
                     }
                 };
+                mcdu.checkEFOBBelowMin();
 
                 if (isFlying) {
                     extraFuelCell = "{small}" + (mcdu.tryGetExtraFuel(true) + mcdu.getRouteReservedWeight()).toFixed(1);

@@ -104,6 +104,7 @@ class FMCMainDisplay extends BaseAirliners {
         this._fuelPredDone = false;
         this._fuelPlanningPhase = this._fuelPlanningPhases.PLANNING;
         this._blockFuelEntered = false;
+        this._predFailure = false;
         /* CPDLC Fields */
         this._cpdlcAtcCenter = "";
     }
@@ -525,6 +526,9 @@ class FMCMainDisplay extends BaseAirliners {
                 if (value < 1000) {
                     this.costIndex = value;
                     return true;
+                } else {
+                    this.showErrorMessage("ENTRY OUT OF RANGE");
+                    return false;
                 }
             }
         }
@@ -599,11 +603,16 @@ class FMCMainDisplay extends BaseAirliners {
             return true;
         }
         const value = parseFloat(altFuel);
-        if (isFinite(value) && this.isAltFuelInRange(value)) {
-            this._routeAltFuelEntered = true;
-            this._routeAltFuelWeight = value;
-            this._routeAltFuelTime = FMCMainDisplay.minutesTohhmm(A32NX_FuelPred.computeUserAltTime(this._routeAltFuelWeight * 1000, 290));
-            return true;
+        if (isFinite(value)) {
+            if (this.isAltFuelInRange(value)) {
+                this._routeAltFuelEntered = true;
+                this._routeAltFuelWeight = value;
+                this._routeAltFuelTime = FMCMainDisplay.minutesTohhmm(A32NX_FuelPred.computeUserAltTime(this._routeAltFuelWeight * 1000, 290));
+                return true;
+            } else {
+                this.showErrorMessage("ENTRY OUT OF RANGE");
+                return false;
+            }
         }
         this.showErrorMessage("FORMAT ERROR");
         return false;
@@ -619,13 +628,17 @@ class FMCMainDisplay extends BaseAirliners {
             return true;
         }
         const value = parseFloat(fuel);
-        if (isFinite(value) && this.isMinDestFobInRange(value)) {
-            this._minDestFobEntered = true;
-            if (value < this._minDestFob) {
-                this.addTypeTwoMessage("CHECK MIN DEST FOB");
+        if (isFinite(value)) {
+            if (this.isMinDestFobInRange(value)) {
+                this._minDestFobEntered = true;
+                if (value < this._minDestFob) {
+                    this.addTypeTwoMessage("CHECK MIN DEST FOB");
+                }
+                this._minDestFob = value;
+                return true;
+            } else {
+                this.showErrorMessage("ENTRY OUT OF RANGE");
             }
-            this._minDestFob = value;
-            return true;
         }
         this.showErrorMessage("FORMAT ERROR");
         return false;
@@ -674,10 +687,14 @@ class FMCMainDisplay extends BaseAirliners {
                 airDistance = A32NX_FuelPred.computeAirDistance(Math.round(this._DistanceToAlt), -this.averageWind);
             }
 
+            this._predFailure = false;
             const deviation = (this.zeroFuelWeight + this._routeFinalFuelWeight - A32NX_FuelPred.refWeight) * A32NX_FuelPred.computeNumbers(airDistance, placeholderFl, A32NX_FuelPred.computations.CORRECTIONS, true);
-
-            this._routeAltFuelWeight = (A32NX_FuelPred.computeNumbers(airDistance, placeholderFl, A32NX_FuelPred.computations.FUEL, true) + deviation) / 1000;
-            this._routeAltFuelTime = A32NX_FuelPred.computeNumbers(airDistance, placeholderFl, A32NX_FuelPred.computations.TIME, true);
+            if ((20 < airDistance && airDistance < 200) && (100 < placeholderFl && placeholderFl < 290)) { //This will always be true until we can setup alternate routes
+                this._routeAltFuelWeight = (A32NX_FuelPred.computeNumbers(airDistance, placeholderFl, A32NX_FuelPred.computations.FUEL, true) + deviation) / 1000;
+                this._routeAltFuelTime = A32NX_FuelPred.computeNumbers(airDistance, placeholderFl, A32NX_FuelPred.computations.TIME, true);
+            } else {
+                this._predFailure = true;
+            }
         }
     }
 
@@ -700,18 +717,21 @@ class FMCMainDisplay extends BaseAirliners {
         if (this.currentFlightPhase >= FlightPhase.FLIGHT_PHASE_DESCENT) {
             altToUse = SimVar.GetSimVarValue("PLANE ALTITUDE", 'Feet') / 100;
         }
+        this._predFailure = false;
 
         // Use alternate coefficients - EXPERIMENTAL
-        if ((20 < airDistance && airDistance < 200) || (100 < altToUse && altToUse < 290)) {
+        if ((20 < airDistance && airDistance < 200) && (100 < altToUse && altToUse < 290)) {
             const deviation = (this.zeroFuelWeight + this._routeFinalFuelWeight + this._routeAltFuelWeight - A32NX_FuelPred.refWeight) * A32NX_FuelPred.computeNumbers(airDistance, altToUse, A32NX_FuelPred.computations.CORRECTIONS, true);
 
             this._routeTripFuelWeight = (A32NX_FuelPred.computeNumbers(airDistance, altToUse, A32NX_FuelPred.computations.FUEL, true) + deviation - 60) / 1000; // Deducted 60KG fuel as Alternate predictions include go-around
             this._routeTripTime = A32NX_FuelPred.computeNumbers(airDistance, altToUse, A32NX_FuelPred.computations.TIME, true);
-        } else if ((200 <= airDistance && airDistance <= 3100) || (290 <= altToUse && altToUse <= 390)) {
+        } else if ((200 <= airDistance && airDistance <= 3100) && (290 <= altToUse && altToUse <= 390)) {
             const deviation = (this.zeroFuelWeight + this._routeFinalFuelWeight + this._routeAltFuelWeight - A32NX_FuelPred.refWeight) * A32NX_FuelPred.computeNumbers(airDistance, altToUse, A32NX_FuelPred.computations.CORRECTIONS, false);
 
             this._routeTripFuelWeight = (A32NX_FuelPred.computeNumbers(airDistance, altToUse, A32NX_FuelPred.computations.FUEL, false) + deviation) / 1000;
             this._routeTripTime = A32NX_FuelPred.computeNumbers(airDistance, altToUse, A32NX_FuelPred.computations.TIME, false);
+        } else {
+            this._predFailure = true;
         }
     }
 
@@ -725,6 +745,10 @@ class FMCMainDisplay extends BaseAirliners {
 
     tryUpdateLW() {
         this.landingWeight = this.takeOffWeight - this._routeTripFuelWeight;
+    }
+
+    tryGetPredFailure() {
+        return this._predFailure;
     }
 
     /**
@@ -1580,12 +1604,16 @@ class FMCMainDisplay extends BaseAirliners {
             this.showErrorMessage("FORMAT ERROR");
             return false;
         }
-        this._taxiEntered = true;
-
         const value = parseFloat(s);
-        if (isFinite(value) && value >= 0 && this.isTaxiFuelInRange(value)) {
-            this.taxiFuelWeight = value;
-            return true;
+        if (isFinite(value) && value >= 0) {
+            if (this.isTaxiFuelInRange(value)) {
+                this._taxiEntered = true;
+                this.taxiFuelWeight = value;
+                return true;
+            } else {
+                this.showErrorMessage("ENTRY OUT OF RANGE");
+                return false;
+            }
         }
         this.showErrorMessage(this.defaultInputErrorMessage);
         return false;
@@ -1623,12 +1651,15 @@ class FMCMainDisplay extends BaseAirliners {
                 return true;
             }
             const rteFinalTime = s.split("/")[1];
-            if (rteFinalTime !== undefined && this.isFinalTimeInRange(rteFinalTime)) {
-                this._routeFinalFuelTime = FMCMainDisplay.hhmmToMinutes(rteFinalTime.padStart(4,"0"));
-                return true;
+            if (rteFinalTime !== undefined) {
+                if (this.isFinalTimeInRange(rteFinalTime)) {
+                    this._routeFinalFuelTime = FMCMainDisplay.hhmmToMinutes(rteFinalTime.padStart(4,"0"));
+                    return true;
+                } else {
+                    this.showErrorMessage("ENTRY OUT OF RANGE");
+                    return false;
+                }
             }
-            this.showErrorMessage(this.defaultInputErrorMessage);
-            return false;
         }
         this.showErrorMessage(this.defaultInputErrorMessage);
         return false;
@@ -1649,14 +1680,24 @@ class FMCMainDisplay extends BaseAirliners {
             this._rteFinalEntered = true;
             const rteFinalWeight = parseFloat(s.split("/")[0]);
             const rteFinalTime = s.split("/")[1];
-            if (rteFinalTime === undefined && this.isFinalFuelInRange(rteFinalWeight)) {
-                this._routeFinalFuelWeight = rteFinalWeight;
-                this._routeFinalFuelTime = (rteFinalWeight * 1000) / this._rteFinalCoeffecient;
-                return true;
-            } else if (rteFinalTime !== undefined && this.isFinalTimeInRange(rteFinalTime)) {
-                this._routeFinalFuelTime = FMCMainDisplay.hhmmToMinutes(rteFinalTime.padStart(4,"0"));
-                this._routeFinalFuelWeight = (this._routeFinalFuelTime * this._rteFinalCoeffecient) / 1000;
-                return true;
+            if (rteFinalTime === undefined) {
+                if (this.isFinalFuelInRange(rteFinalWeight)) {
+                    this._routeFinalFuelWeight = rteFinalWeight;
+                    this._routeFinalFuelTime = (rteFinalWeight * 1000) / this._rteFinalCoeffecient;
+                    return true;
+                } else {
+                    this.showErrorMessage("ENTRY OUT OF RANGE");
+                    return false;
+                }
+            } else {
+                if (this.isFinalTimeInRange(rteFinalTime)) {
+                    this._routeFinalFuelTime = FMCMainDisplay.hhmmToMinutes(rteFinalTime.padStart(4,"0"));
+                    this._routeFinalFuelWeight = (this._routeFinalFuelTime * this._rteFinalCoeffecient) / 1000;
+                    return true;
+                } else {
+                    this.showErrorMessage("ENTRY OUT OF RANGE");
+                    return false;
+                }
             }
         }
         this.showErrorMessage(this.defaultInputErrorMessage);
@@ -1863,6 +1904,32 @@ class FMCMainDisplay extends BaseAirliners {
         return (8.0 <= zfwcg && zfwcg <= 50.0);
     }
 
+    tryEditZeroFuelWeightZFWCG(zfw = 0, zfwcg = 0, useLbs = false) {
+        if (zfw > 0) {
+            if (this.isZFWInRange(zfw)) {
+                if (useLbs) {
+                    zfw = zfw / 2.204623;
+                }
+                this.setZeroFuelWeight(zfw.toString());
+            } else {
+                this.showErrorMessage("ENTRY OUT OF RANGE");
+                return false;
+            }
+        }
+        if (zfwcg > 0) {
+            if (this.isZFWCGInRange(zfwcg)) {
+                this.setZeroFuelCG(zfwcg.toString());
+            } else {
+                this.showErrorMessage("ENTRY OUT OF RANGE");
+                return false;
+            }
+        }
+        this.updateTakeOffTrim();
+        this.updateCleanTakeOffSpeed();
+        this.updateCleanApproachSpeed();
+        return true;
+    }
+
     async trySetZeroFuelWeightZFWCG(s, useLbs = false) {
         let zfw = 0;
         let zfwcg = 0;
@@ -1875,41 +1942,27 @@ class FMCMainDisplay extends BaseAirliners {
                 zfw = parseFloat(s);
             }
         }
-        if (zfw > 0 && zfwcg > 0 && this.isZFWInRange(zfw) && this.isZFWCGInRange(zfwcg)) {
-            this._zeroFuelWeightZFWCGEntered = true;
-            if (useLbs) {
-                zfw = zfw / 2.204623;
-            }
-
-            this.setZeroFuelWeight(zfw.toString());
-            this.setZeroFuelCG(zfwcg.toString());
-
-            this.updateTakeOffTrim();
-            this.updateCleanTakeOffSpeed();
-            this.updateCleanApproachSpeed();
-            return true;
-        }
-        if (this._zeroFuelWeightZFWCGEntered) {
-            if (zfw > 0 && this.isZFWInRange(zfw)) {
+        if (zfw > 0 && zfwcg > 0) {
+            if (this.isZFWInRange(zfw) && this.isZFWCGInRange(zfwcg)) {
+                this._zeroFuelWeightZFWCGEntered = true;
                 if (useLbs) {
                     zfw = zfw / 2.204623;
                 }
-                this.setZeroFuelWeight(zfw.toString());
-            } else {
-                this.showErrorMessage("FORMAT ERROR");
-                return false;
-            }
-            if (zfwcg > 0 && this.isZFWCGInRange(zfwcg)) {
-                this.setZeroFuelCG(zfwcg.toString());
-            } else {
-                this.showErrorMessage("FORMAT ERROR");
-                return false;
-            }
 
-            this.updateTakeOffTrim();
-            this.updateCleanTakeOffSpeed();
-            this.updateCleanApproachSpeed();
-            return true;
+                this.setZeroFuelWeight(zfw.toString());
+                this.setZeroFuelCG(zfwcg.toString());
+
+                this.updateTakeOffTrim();
+                this.updateCleanTakeOffSpeed();
+                this.updateCleanApproachSpeed();
+                return true;
+            } else {
+                this.showErrorMessage("ENTRY OUT OF RANGE");
+                return false;
+            }
+        }
+        if (this._zeroFuelWeightZFWCGEntered) {
+            return this.tryEditZeroFuelWeightZFWCG(zfw, zfwcg, useLbs);
         }
         this.showErrorMessage("FORMAT ERROR");
         return false;
@@ -1956,7 +2009,6 @@ class FMCMainDisplay extends BaseAirliners {
             return this.getFOB() - this._routeTripFuelWeight - this.taxiFuelWeight;
         } else {
             return this.blockFuel - this._routeTripFuelWeight - this.taxiFuelWeight;
-
         }
     }
 
@@ -1981,13 +2033,19 @@ class FMCMainDisplay extends BaseAirliners {
         }
         let value = parseFloat(s);
         if (isFinite(value) && this.isBlockFuelInRange(value)) {
-            if (useLbs) {
-                value = value / 2.204623;
+            if (this.isBlockFuelInRange(value)) {
+                if (useLbs) {
+                    value = value / 2.204623;
+                }
+                this.blockFuel = value;
+                this.updateTakeOffTrim();
+                this._blockFuelEntered = true;
+                return true;
+            } else {
+                this.showErrorMessage("ENTRY OUT OF RANGE");
+                return false;
             }
-            this.blockFuel = value;
-            this.updateTakeOffTrim();
-            this._blockFuelEntered = true;
-            return true;
+
         }
         this.showErrorMessage(this.defaultInputErrorMessage);
         return false;
@@ -2051,65 +2109,23 @@ class FMCMainDisplay extends BaseAirliners {
         return 0 <= wind && wind <= 250;
     }
 
-    // If anyone wants to refactor this please do
     async trySetAverageWind(s) {
-        let wind;
-        if (s.includes("HD")) {
-            wind = parseFloat(s.split("HD")[1]);
-            this._windDir = this._windDirections.HEADWIND;
-            if (isFinite(wind) && this.isAvgWindInRange(wind)) {
-                this.averageWind = wind;
-                return true;
-            } else {
-                this.showErrorMessage("FORMAT ERROR");
-                return false;
-            }
-        } else if (s.includes("H")) {
-            wind = parseFloat(s.split("H")[1]);
-            this._windDir = this._windDirections.HEADWIND;
-            if (isFinite(wind) && this.isAvgWindInRange(wind)) {
-                this.averageWind = wind;
-                return true;
-            } else {
-                this.showErrorMessage("FORMAT ERROR");
-                return false;
-            }
-        } else if (s.includes("-")) {
-            wind = parseFloat(s.split("-")[1]);
-            this._windDir = this._windDirections.HEADWIND;
-            if (isFinite(wind) && this.isAvgWindInRange(wind)) {
-                this.averageWind = wind;
-                return true;
-            } else {
-                this.showErrorMessage("FORMAT ERROR");
-                return false;
-            }
-        } else if (s.includes("TL")) {
-            wind = parseFloat(s.split("TL")[1]);
-            this._windDir = this._windDirections.TAILWIND;
-            if (isFinite(wind) && this.isAvgWindInRange(wind)) {
-                this.averageWind = wind;
-                return true;
-            } else {
-                this.showErrorMessage("FORMAT ERROR");
-                return false;
-            }
-        } else if (s.includes("T")) {
-            wind = parseFloat(s.split("T")[1]);
-            this._windDir = this._windDirections.TAILWIND;
-            if (isFinite(wind) && this.isAvgWindInRange(wind)) {
-                this.averageWind = wind;
-                return true;
-            } else {
-                this.showErrorMessage("FORMAT ERROR");
-                return false;
-            }
-        } else if (s.includes("+") || s) { // Will this work..?
-            wind = parseFloat(s);
-            this._windDir = this._windDirections.TAILWIND;
-            if (isFinite(wind) && this.isAvgWindInRange(wind)) {
-                this.averageWind = wind;
-                return true;
+        const validDelims = ["HD", "H", "-", "TL", "T", "+"];
+        const matchedIndex = validDelims.findIndex(element => s.includes(element));
+
+        if (matchedIndex >= 0) {
+            const wind = parseFloat(s.split(validDelims[matchedIndex])[1]);
+
+            this._windDir = matchedIndex <= 2 ? this._windDirections.HEADWIND : this._windDirections.TAILWIND;
+
+            if (isFinite(wind)) {
+                if (this.isAvgWindInRange(wind)) {
+                    this.averageWind = wind;
+                    return true;
+                } else {
+                    this.showErrorMessage("ENTRY OUT OF RANGE");
+                    return false;
+                }
             } else {
                 this.showErrorMessage("FORMAT ERROR");
                 return false;
