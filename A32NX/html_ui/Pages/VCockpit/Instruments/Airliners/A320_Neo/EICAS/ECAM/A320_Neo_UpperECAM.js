@@ -1993,7 +1993,6 @@ var A320_Neo_UpperECAM;
         constructor(_divMain, _bottomValue) {
             super(_divMain, _bottomValue);
             this.gallonToKG = SimVar.GetSimVarValue("FUEL WEIGHT PER GALLON", "kilogram");
-            this.gallonToPounds = SimVar.GetSimVarValue("FUEL WEIGHT PER GALLON", "lbs");
             this.isInMetric = parseInt(NXDataStore.get("CONFIG_USING_METRIC_UNIT", "1")) === 1;
         }
         getTitle() {
@@ -2003,8 +2002,12 @@ var A320_Neo_UpperECAM;
             return _isMetric ? "KG/H" : "LBS/H";
         }
         getValue(_engine, _conversion) {
-            const ff = SimVar.GetSimVarValue("ENG FUEL FLOW GPH:" + _engine, "gallons per hour") * this.gallonToKG * _conversion;
-            return ff - ff % 20;
+            let ff = SimVar.GetSimVarValue("ENG FUEL FLOW GPH:" + _engine, "gallons per hour") * this.gallonToKG * _conversion;
+            ff -= ff % 20;
+            if (ff < 0) {
+                return 0;
+            }
+            return ff;
         }
         getDisplayActiveEngine(_engine) {
             return "inactiveEngine";
@@ -2171,10 +2174,10 @@ var A320_Neo_UpperECAM;
             }
         }
         setFuelOnBoard(_value, _isMetric, _force = false) {
-            if ((this.currentFOBValue != _value) || _force) {
+            if ((this.currentFOBValue !== _value) || _force) {
                 this.currentFOBValue = _value - (_value % 20);
                 if (this.fobValue != null) {
-                    this.fobValue.textContent = fastToFixed(this.currentFOBValue, 0);
+                    this.fobValue.textContent = fastToFixed(this.currentFOBValue < 0 ? 0 : this.currentFOBValue, 0);
                 }
                 if (this.fobUnit != null) {
                     this.fobUnit.textContent = _isMetric ? "KG" : "LBS";
