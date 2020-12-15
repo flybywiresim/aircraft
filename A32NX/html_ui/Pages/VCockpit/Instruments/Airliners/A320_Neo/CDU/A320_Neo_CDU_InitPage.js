@@ -162,14 +162,14 @@ class CDUInitPage {
 
         mcdu.onPrevPage = () => {
             if (mcdu.isAnEngineOn()) {
-                mcdu.showErrorMessage("NOT AVAILABLE");
+                CDUFuelPredPage.ShowPage(mcdu);
             } else {
                 CDUInitPage.ShowPage2(mcdu);
             }
         };
         mcdu.onNextPage = () => {
             if (mcdu.isAnEngineOn()) {
-                mcdu.showErrorMessage("NOT AVAILABLE");
+                CDUFuelPredPage.ShowPage(mcdu);
             } else {
                 CDUInitPage.ShowPage2(mcdu);
             }
