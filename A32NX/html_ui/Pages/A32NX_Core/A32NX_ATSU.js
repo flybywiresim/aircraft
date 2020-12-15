@@ -121,6 +121,14 @@ const getATIS = async (icao, lines, type, store, updateView) => {
 };
 
 /**
+ *  Converts lbs to kg
+ * @param {string | number} value
+ */
+const lbsToKg = (value) => {
+    return (+value * 0.453592).toString();
+};
+
+/**
  * Fetch SimBrief OFP data and store on FMCMainDisplay object
  * @param {FMCMainDisplay} mcdu FMCMainDisplay
  * @param {() => void} updateView
@@ -138,16 +146,17 @@ const getSimBriefOfp = (mcdu, updateView) => {
 
     return SimBriefApi.getSimBriefOfp(simBriefUsername)
         .then(data => {
+            mcdu.simbrief["units"] = data.params.units;
             mcdu.simbrief["route"] = data.general.route;
             mcdu.simbrief["cruiseAltitude"] = data.general.initial_altitude;
             mcdu.simbrief["originIcao"] = data.origin.icao_code;
             mcdu.simbrief["destinationIcao"] = data.destination.icao_code;
-            mcdu.simbrief["blockFuel"] = data.fuel.plan_ramp;
-            mcdu.simbrief["payload"] = data.weights.payload;
-            mcdu.simbrief["estZfw"] = data.weights.est_zfw;
+            mcdu.simbrief["blockFuel"] = mcdu.simbrief["units"] === 'kgs' ? data.fuel.plan_ramp : lbsToKg(data.fuel.plan_ramp);
+            mcdu.simbrief["payload"] = mcdu.simbrief["units"] === 'kgs' ? data.weights.payload : lbsToKg(data.weights.payload);
+            mcdu.simbrief["estZfw"] = mcdu.simbrief["units"] === 'kgs' ? data.weights.est_zfw : lbsToKg(data.weights.est_zfw);
             mcdu.simbrief["paxCount"] = data.weights.pax_count;
-            mcdu.simbrief["paxWeight"] = data.weights.pax_weight;
-            mcdu.simbrief["cargo"] = data.weights.cargo;
+            mcdu.simbrief["paxWeight"] = mcdu.simbrief["units"] === 'kgs' ? data.weights.pax_weight : lbsToKg(data.weights.pax_weight);
+            mcdu.simbrief["cargo"] = mcdu.simbrief["units"] === 'kgs' ? data.weights.cargo : lbsToKg(data.weights.cargo);
             mcdu.simbrief["costIndex"] = data.general.costindex;
             mcdu.simbrief["navlog"] = data.navlog.fix;
             mcdu.simbrief["icao_airline"] = typeof data.general.icao_airline === 'string' ? data.general.icao_airline : "";
@@ -160,8 +169,8 @@ const getSimBriefOfp = (mcdu, updateView) => {
             mcdu.simbrief["onTime"] = data.times.est_on;
             mcdu.simbrief["inTime"] = data.times.est_in;
             mcdu.simbrief["offTime"] = data.times.est_off;
-            mcdu.simbrief["taxiFuel"] = data.fuel.taxi;
-            mcdu.simbrief["tripFuel"] = data.fuel.enroute_burn;
+            mcdu.simbrief["taxiFuel"] = mcdu.simbrief["units"] === 'kgs' ? data.fuel.taxi : lbsToKg(data.fuel.taxi);
+            mcdu.simbrief["tripFuel"] = mcdu.simbrief["units"] === 'kgs' ? data.fuel.enroute_burn : lbsToKg(data.fuel.enroute_burn);
             mcdu.simbrief["sendStatus"] = "DONE";
 
             updateView();
