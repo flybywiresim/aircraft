@@ -49,9 +49,14 @@ class CDUAocOfpData {
         let taxiFuel = "____[color]amber";
         let tripFuel = "_____[color]amber";
         let requestButton = "SEND*[color]cyan";
+        let loadButton = "*LOAD[color]cyan";
 
         if (mcdu.simbrief.sendStatus !== "READY" && mcdu.simbrief.sendStatus !== "DONE") {
             requestButton = "SEND [color]cyan";
+        }
+
+        if (mcdu.aocWeight.loading) {
+            loadButton = " LOAD[color]cyan";
         }
 
         const currentBlockFuel = mcdu.aocWeight.blockFuel || mcdu.simbrief.blockFuel;
@@ -83,7 +88,7 @@ class CDUAocOfpData {
             [""],
             ["", "PRINT*[color]inop"],
             ["REFUEL", "OFP REQUEST[color]cyan"],
-            ["*LOAD[color]cyan", requestButton],
+            [loadButton, requestButton],
             [""],
             ["<AOC MENU"]
         ];
@@ -154,7 +159,7 @@ class CDUAocOfpData {
         };
         mcdu.onLeftInput[4] = async () => {
             if (currentBlockFuel) {
-                loadFuel(mcdu);
+                loadFuel(mcdu, updateView);
 
                 updateView();
             }
@@ -187,15 +192,20 @@ class CDUAocOfpData {
         setEstimatedBaggagePayload(mcdu);
 
         let payload = "_____[color]amber";
-        let estZfw = "__._[color]amber";
+        let estZfw = "--.-[color]amber";
         let zfwcg = "__._[color]amber";
         let fwdBag = "__._[color]amber";
         let rearBag = "__._[color]amber";
         let noPax = "---[color]white";
         let requestButton = "SEND*[color]cyan";
+        let loadButton = "*LOAD[color]cyan";
 
         if (mcdu.simbrief.sendStatus !== "READY" && mcdu.simbrief.sendStatus !== "DONE") {
             requestButton = "SEND [color]cyan";
+        }
+
+        if (mcdu.aocWeight.loading) {
+            loadButton = " LOAD[color]cyan";
         }
 
         const currentZfwcg = mcdu.aocWeight.zfwcg || getZfwcg(mcdu);
@@ -251,7 +261,7 @@ class CDUAocOfpData {
             [""],
             ["", "PRINT*[color]inop"],
             ["PAYLOAD", "OFP REQUEST[color]cyan"],
-            ["*LOAD[color]cyan", requestButton],
+            [loadButton, requestButton],
             [""],
             ["<AOC MENU"]
         ];
@@ -382,7 +392,7 @@ class CDUAocOfpData {
         };
         mcdu.onLeftInput[4] = async () => {
             if (currentPayload) {
-                await loadBaggagePayload(mcdu);
+                await loadBaggagePayload(mcdu, updateView);
 
                 updateView();
             }
@@ -411,12 +421,15 @@ function setEstimatedBaggagePayload(mcdu) {
     mcdu.aocWeight.estRearBag = rearBaggageWeight;
 }
 
-async function loadBaggagePayload(mcdu) {
+async function loadBaggagePayload(mcdu, updateView) {
     const FORWARD_BAGGAGE_INDEX = 3 + 1; // Value from flight_model.cfg
     const REAR_BAGGAGE_INDEX = 5 + 1; // Value from flight_model.cfg
 
     const currentfwdBag = getCurrentFwdBag(mcdu);
     const currentRearBag = getCurrentRearBag(mcdu);
+
+    mcdu.aocWeight.loading = true;
+    updateView();
 
     const payloadCount = SimVar.GetSimVarValue("PAYLOAD STATION COUNT", "number");
     for (let i = 1; i <= payloadCount; i++) {
@@ -436,11 +449,17 @@ async function loadBaggagePayload(mcdu) {
         }
     }
 
+    mcdu.aocWeight.loading = false;
+    updateView();
+
     return;
 }
 
-async function loadFuel(mcdu) {
+async function loadFuel(mcdu, updateView) {
     const currentBlockFuel = mcdu.aocWeight.blockFuel || mcdu.simbrief.blockFuel;
+
+    mcdu.aocWeight.loading = true;
+    updateView();
 
     const outerTankCapacity = 200; // Left and Right // Value from flight_model.cfg
     const innerTankCapacity = 1800; // Left and Right // Value from flight_model.cfg
@@ -464,6 +483,9 @@ async function loadFuel(mcdu) {
     currentBlockFuelInGallons -= centerTankFill;
 
     mcdu.updateFuelVars();
+
+    mcdu.aocWeight.loading = false;
+    updateView();
 }
 
 /**
