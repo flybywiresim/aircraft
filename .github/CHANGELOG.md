@@ -159,6 +159,7 @@
 1. [MISC] Fix pedestal camera position triggering radio frequency display glitch - @pareil6 (pareil6)
 1. [FLIGHTMODEL] Corrected fuel tank capacities, including unusable fuel - @donstim - (donbikes#4084)
 1. [General] Added option to switch between KG and LBS - @MisterChocker (Leon)
+1. [Sound] Added new sounds for park brake, speedbrake lever, flap lever, eng master switches, FCU, QNH, and RMP knobs, ADIRS knobs, switches, and various other knobs - @hotshotp (Boris)
 
 ## 0.4.0
 1. [General] Add CHANGELOG.md - @nathaninnes (Nathan Innes)
