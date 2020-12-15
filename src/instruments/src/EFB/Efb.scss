@@ -108,7 +108,7 @@ body {
 }
 
 .loading-screen {
-  background: var(--globalBackground);
+  background: rgb(0, 0, 0);
   font-family: "Nunito Sans", sans-serif;
   font-size: 2.5rem;
   font-weight: 100;
@@ -123,6 +123,34 @@ body {
       display: flex;
       justify-content: center;
       align-items: center;
+    }
+  }
+
+  .loading-bar {
+    display: flex;
+    justify-content: center;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 16px;
+    height: 3px;
+    width: 200px;
+    background: rgb(128, 128, 128);
+  }
+
+  .loaded {
+    height: 100%;
+    width: 100%;
+    background: rgb(255, 255, 255);
+    animation: 6s linear infinite loading;
+    transform-origin: 0%;
+  }
+
+  @keyframes loading {
+    0% {
+      transform: scaleX(0);
+    }
+    100% {
+      transform: scaleX(100%);
     }
   }
 }

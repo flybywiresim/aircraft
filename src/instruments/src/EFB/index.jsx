@@ -44,6 +44,9 @@ function ScreenLoading() {
                     {' '}
                     flyPad
                 </div>
+                <div className="loading-bar">
+                    <div className="loaded" />
+                </div>
             </div>
         </div>
     );
