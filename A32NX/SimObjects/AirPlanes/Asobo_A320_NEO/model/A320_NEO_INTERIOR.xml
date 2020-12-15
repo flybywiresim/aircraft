@@ -1358,7 +1358,7 @@
 
             <Component ID="Overhead_Lights">
                 <!-- Lights -->
-                <UseTemplate Name="FBW_LIGHTING_Switch_Light_Strobe_Template">
+                <UseTemplate Name="ASOBO_LIGHTING_Switch_Light_Strobe_Template">
                     <NODE_ID>SWITCH_OVHD_EXTLT_STROBE</NODE_ID>
                     <ANIM_NAME>SWITCH_OVHD_EXTLT_STROBE</ANIM_NAME>
                     <HAS_AUTO>True</HAS_AUTO>
