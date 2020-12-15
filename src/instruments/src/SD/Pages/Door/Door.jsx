@@ -55,29 +55,29 @@ export const DoorPage = () => (
             </g>
 
             <g id="dashes">
-                <path id="cabin1dash" className="WarningShape" strokeDasharray="7,4" d="M138, 137 l121 0" />
-                <path id="cabin4dash" className="WarningShape" strokeDasharray="7,4" d="M346, 437 l77 0" />
-                <path id="cargo1dash" className="WarningShape" strokeDasharray="7,4" d="M346, 214 l77 0" />
+                <path id="cabin1dash" className="WarningShape" strokeDasharray="7,4" d="M138, 136 l121 0" />
+                <path id="cabin4dash" className="WarningShape" strokeDasharray="7,4" d="M346, 438 l77 0" />
+                <path id="cargo1dash" className="WarningShape" strokeDasharray="7,4" d="M346, 210 l77 0" />
             </g>
 
             {/* Texts */}
             <g id="texts">
-                <text id="PageTitle" className="Title Large" x="300" y="10" textAnchor="middle" alignmentBaseline="central" textDecoration="underline">DOOR/OXY</text>
-                <text id="slide1" className="Slide" x="232" y="138" textAnchor="middle" alignmentBaseline="central">SLIDE</text>
-                <text id="slide2" className="Slide" x="368" y="138" textAnchor="middle" alignmentBaseline="central">SLIDE</text>
+                <text id="PageTitle" className="Title" x="300" y="16" textAnchor="middle" alignmentBaseline="central" textDecoration="underline">DOOR/OXY</text>
+                <text id="slide1" className="Slide" x="232" y="136" textAnchor="middle" alignmentBaseline="central">SLIDE</text>
+                <text id="slide2" className="Slide" x="368" y="136" textAnchor="middle" alignmentBaseline="central">SLIDE</text>
                 <text id="slide3" className="Slide" x="232" y="320" textAnchor="middle" alignmentBaseline="central">SLIDE</text>
                 <text id="slide4" className="Slide" x="368" y="320" textAnchor="middle" alignmentBaseline="central">SLIDE</text>
                 <text id="slide5" className="Slide" x="232" y="438" textAnchor="middle" alignmentBaseline="central">SLIDE</text>
                 <text id="slide6" className="Slide" x="368" y="438" textAnchor="middle" alignmentBaseline="central">SLIDE</text>
 
-                <text id="cabin1" className="Warning" x="103" y="138" textAnchor="middle" alignmentBaseline="central">CABIN</text>
+                <text id="cabin1" className="Warning" x="103" y="136" textAnchor="middle" alignmentBaseline="central">CABIN</text>
                 <text id="cabin4" className="Warning" x="455" y="438" textAnchor="middle" alignmentBaseline="central">CABIN</text>
-                <text id="cargo1" className="Warning" x="455" y="215" textAnchor="middle" alignmentBaseline="central">CARGO</text>
+                <text id="cargo1" className="Warning" x="455" y="211" textAnchor="middle" alignmentBaseline="central">CARGO</text>
 
-                <text id="oxy" className="NoteLarge" x="490" y="10" textAnchor="middle" alignmentBaseline="central">CKPT OXY</text>
-                <text id="psi_val" className="Value" x="438" y="30" textAnchor="middle" alignmentBaseline="central">1700</text>
-                <text id="psi_unit" className="Unit" x="486" y="31" textAnchor="middle" alignmentBaseline="central">PSI</text>
-                <text id="psi_val_right" className="Value" x="534" y="30" textAnchor="middle" alignmentBaseline="central">1700</text>
+                <text id="oxy" className="Note" x="490" y="18" textAnchor="middle" alignmentBaseline="central">CKPT OXY</text>
+                <text id="psi_val" className="Value" x="432" y="42" textAnchor="middle" alignmentBaseline="central">1700</text>
+                <text id="psi_unit" className="Unit" x="486" y="43" textAnchor="middle" alignmentBaseline="central">PSI</text>
+                <text id="psi_val_right" className="Value" x="538" y="42" textAnchor="middle" alignmentBaseline="central">1700</text>
             </g>
         </svg>
 
