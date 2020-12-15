@@ -207,20 +207,12 @@ const insertUplink = (mcdu) => {
 
     const uplinkInProg = "UPLINK INSERT IN PROG";
     const aocActFplnUplink = "AOC ACT F-PLN UPLINK";
-    const perfDataUplink = "PERF DATA UPLINK";
 
     mcdu.showErrorMessage(uplinkInProg);
 
     /**
-         * AOC ACT F-PLN UPLINK
-         * Updates:
-         * - From/To
-         * - Altn
-         * - F-pln
-         *
-         * TODO:
-         * - F-pln (almost done, needs some better error handling)
-         */
+     * AOC ACT F-PLN UPLINK
+     */
     mcdu.tryUpdateFromTo(fromTo, async (result) => {
         if (result) {
             CDUPerformancePage.UpdateThrRedAccFromOrigin(mcdu);
@@ -246,24 +238,12 @@ const insertUplink = (mcdu) => {
     });
 
     /**
-         * PERF DATA UPLINK
-         * Updates:
-         * - CRZ FL
-         * - CI
-         * - TROPO
-         *
-         * TODO:
-         * - CRZ TEMP
-         * - BLOCK
-         * - ?
-         */
+     * INIT PAGE DATA UPLINK
+    */
     setTimeout(() => {
-        if (mcdu.setCruiseFlightLevelAndTemperature(cruiseAltitude)) {
-        }
-        if (mcdu.tryUpdateCostIndex(costIndex)) {
-        }
-        if (mcdu.tryUpdateTropo(avgTropopause)) {
-        }
+        mcdu.setCruiseFlightLevelAndTemperature(cruiseAltitude);
+        mcdu.tryUpdateCostIndex(costIndex);
+        mcdu.tryUpdateTropo(avgTropopause);
         if (mcdu.page.Current === mcdu.page.InitPageA) {
             CDUInitPage.ShowPage1(mcdu);
         }

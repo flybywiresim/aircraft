@@ -1155,24 +1155,18 @@ class FMCMainDisplay extends BaseAirliners {
                             callback(true);
                             return;
                         }
-                        console.log('2ND INDEX NOT FOUND');
                         this.showErrorMessage("2ND INDEX NOT FOUND");
                         return callback(false);
                     }
-                    console.log('1ST INDEX NOT FOUND');
                     this.showErrorMessage("1ST INDEX NOT FOUND");
                     return callback(false);
                 }
-                console.log("NO REF WAYPOINT 1");
                 this.showErrorMessage("NO REF WAYPOINT");
                 return callback(false);
             }
-            console.log("NO WAYPOINT INFOS");
             this.showErrorMessage("NO WAYPOINT INFOS");
             return callback(false);
         }
-
-        console.log("NO REF WAYPOINT 2");
         this.showErrorMessage("NO REF WAYPOINT");
         return callback(false);
     }
