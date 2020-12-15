@@ -156,6 +156,7 @@
 1. [Sound] Improved ground roll - @hotshotp (Boris)
 1. [Sound] Added new turbulence sounds different in cabin and cockpit - @hotshotp (Boris)
 1. [CDU] Added ground speed mini - @MisterChocker (Leon)
+1. [MISC] Fix pedestal camera position triggering radio frequency display glitch - @pareil6 (pareil6)
 1. [General] Added option to switch between KG and LBS - @MisterChocker (Leon)
 
 ## 0.4.0
