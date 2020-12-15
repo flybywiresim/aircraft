@@ -1,46 +1,54 @@
-.loadsheet-div {
+.loadsheet {
   display: grid;
-  grid-template-rows: 5% 95%;
   grid-template-columns: 50% 50%;
+  grid-template-rows: 3em auto;
+  grid-gap: 1em;
+  justify-items: stretch;
+  align-items: flex-start;
   grid-template-areas:
     "LoadsheetTitle LoadsheetTitle"
     "PayloadCard    FuelCard";
-  height: 830px;
+  height: 100%;
+  margin-right: 0.75rem;
 
-  span.WidgetTitle#title-map {
+  .title {
+    font-family: "Nunito Sans", sans-serif;
     grid-area: LoadsheetTitle;
+    font-size: 1.25rem;
+    font-weight: 400;
   }
 
   #loadsheet-payload-card {
     grid-area: PayloadCard;
-    --loadsheetFooterBackground: #567FD2;
+    --loadsheetFooterBackground: #567fd2;
   }
 
   #loadsheet-fuel-card {
     grid-area: FuelCard;
-
-    --loadsheetFooterBackground: #FE5353;
+    --loadsheetFooterBackground: #fe5353;
   }
 
   .loadsheet-card {
     height: 100%;
+    border-radius: 10px;
     box-shadow: 0 0 3px rgba(0, 0, 0, 0.1);
     background: var(--cardBackground);
+    padding: 1rem 2rem;
     display: grid;
-    margin: 0.5em;
     grid-template-rows: 90% 10%;
     grid-template-areas:
-            "Body"
-            "Footer";
+      "Body"
+      "Footer";
 
     .loadsheet-card-body {
       grid-area: Body;
+      padding-bottom: 5rem;
     }
 
     .loadsheet-card-footer {
       grid-area: Footer;
       background-color: var(--loadsheetFooterBackground);
-
+      border-radius: 10px;
       color: white;
       font-weight: 700;
       font-size: 1.5rem;
@@ -50,84 +58,83 @@
       padding-left: 15px;
 
       .footer-title {
-        font-size:0.9rem;
+        font-size: 0.9rem;
         font-weight: 700;
         color: var(--mainTextSecondary);
         grid-area: DepArr;
       }
     }
 
-      .loadsheet-table {
-        font-family: 'JetBrains Mono', monospace;
-        color: var(--mainText);
-        font-size: 1.7rem;
+    .loadsheet-table {
+      font-family: "JetBrains Mono", monospace;
+      color: var(--mainText);
+      font-size: 1.25rem;
 
-        table {
-          width: 100%;
-          padding: 20px;
-        }
+      table {
+        width: 100%;
+      }
 
-          td, th {
-            padding: 15px 10px;
-            //border: 1px solid white;
-            vertical-align: top;
-          }
+      td,
+      th {
+        padding: 15px 10px;
+        //border: 1px solid white;
+        vertical-align: top;
+      }
 
-          th.dashed, td.dashed {
-            border-bottom:2px dashed var(--mainText);
-            border-top:2px dashed var(--mainText);
-          }
+      th.dashed,
+      td.dashed {
+        border-bottom: 2px dashed var(--mainText);
+        border-top: 2px dashed var(--mainText);
+      }
 
-          td.dashed-lower {
-            border-bottom:2px dashed var(--mainText);
-          }
+      td.dashed-lower {
+        border-bottom: 2px dashed var(--mainText);
+      }
 
-          td.dashed-upper {
-            border-top:2px dashed var(--mainText);
-          }
+      td.dashed-upper {
+        border-top: 2px dashed var(--mainText);
+      }
 
-            .ls-col {
-              padding: 10px;
-            }
+      .ls-col {
+        padding-right: 10px;
+      }
 
-            .ls-col-fuel {
-              padding: 5px 10px;
-            }
+      .ls-col-fuel {
+        padding: 5px 10px;
+      }
 
-            .col-desc {
-              width: 30%;
-            }
+      .col-desc {
+        width: 30%;
+      }
 
-            .col-fuel-desc {
-              width: 40%
-            }
+      .col-fuel-desc {
+        width: 40%;
+      }
 
-            .col-notes {
-              width: 30%;
-              padding-left: 20px;
-            }
+      .col-notes {
+        width: 30%;
+        padding-left: 20px;
+      }
 
-            .col-value {
-              width: 10%;
-            }
+      .col-value {
+        width: 10%;
+      }
 
-            .col-fuel-value {
-              width: 20%;
-            }
+      .col-fuel-value {
+        width: 20%;
+      }
 
-            .col-left {
-              text-align: left;
-            }
+      .col-left {
+        text-align: left;
+      }
 
-            .col-right {
-                text-align: right;
-            }
+      .col-right {
+        text-align: right;
+      }
 
-            .col-center {
-                text-align: center;
-            }
-
-          }
-
+      .col-center {
+        text-align: center;
+      }
+    }
   }
 }

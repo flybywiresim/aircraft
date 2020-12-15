@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { IconFileExport } from '@tabler/icons';
 
 type LoadsheetWidgetProps = {
     weights: {
@@ -40,6 +41,7 @@ type LoadsheetWidgetProps = {
     resFuelTime: number,
     taxiOutTime: number
 };
+
 type LoadsheetWidgetState = {
     unitConversion: number;
 };
@@ -55,9 +57,9 @@ const LoadsheetWidget = (props: LoadsheetWidgetProps) => {
     }, [props.units]);
 
     return (
-        <div className="loadsheet-div">
+        <div className="loadsheet">
             <div>
-                <span id='title-loadsheet' className="WidgetTitle">Loadsheet</span>
+                <span className="title">Loadsheet</span>
             </div>
             <div className='loadsheet-card' id="loadsheet-payload-card">
                 <div className='loadsheet-card-body'>
@@ -75,19 +77,16 @@ const LoadsheetWidget = (props: LoadsheetWidgetProps) => {
                                 <tr>
                                     <td className="ls-col col-desc col-left">PAX</td>
                                     <td className="col-right">{props.weights.passengerCount}</td>
-                                    <td>&nbsp;</td>
                                     <td className="ls-col col-notes col-left">&nbsp;</td>
                                 </tr>
                                 <tr>
                                     <td className="ls-col col-desc col-left">CARGO</td>
                                     <td className="col-right">{(props.weights.cargo / unitConversion).toFixed(1)}</td>
-                                    <td>&nbsp;</td>
                                     <td className="ls-col col-notes col-left">&nbsp;</td>
                                 </tr>
                                 <tr>
                                     <td className="ls-col col-desc col-left">PAYLOAD</td>
                                     <td className="ls-col col-value col-right">{(props.weights.payload / unitConversion).toFixed(1)}</td>
-                                    <td>&nbsp;</td>
                                     <td className="ls-col col-notes col-left">&nbsp;</td>
                                 </tr>
                                 <tr>
@@ -196,7 +195,7 @@ const LoadsheetWidget = (props: LoadsheetWidgetProps) => {
                 </div>
                 <div className='loadsheet-card-footer'>
                     <p className="footer-title">LOADSHEET</p>
-                    <p>Fuel Loading</p>
+                    <p>Fuel</p>
                 </div>
             </div>
         </div>

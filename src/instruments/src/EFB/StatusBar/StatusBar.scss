@@ -25,9 +25,7 @@
   font-weight: 400;
   position: fixed;
   z-index: 1000;
-  padding-top: 0.25rem;
-  padding-left: 1.5rem;
-  padding-right: 1.5rem;
+  padding: 0.25rem 1.5rem;
   width: 1430px;
   color: var(--statusBarText);
   background-color: var(--statusBarBackground);
@@ -36,4 +34,8 @@
 .status-bar-item {
   display: flex;
   align-items: center;
+}
+
+.battery-icon {
+  margin-left: 0.5rem;
 }

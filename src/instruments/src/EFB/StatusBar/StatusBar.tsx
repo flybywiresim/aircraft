@@ -73,7 +73,7 @@ export default class StatusBar extends React.Component<TimeProps, any> {
                     {formatTime(([this.state.currentTime.getUTCHours(), this.state.currentTime.getMinutes()])) + 'z'}
                 </div>
                 <div className="status-bar-item">
-                    100% <IconBatteryCharging size={25} color="yellow" stroke={1.5} strokeLinejoin="miter" />
+                    100% <IconBatteryCharging className="battery-icon" size={25} color="yellow" stroke={1.5} strokeLinejoin="miter" />
                 </div>
             </div>
         );

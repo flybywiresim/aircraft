@@ -269,14 +269,14 @@
     grid-area: Map;
     height: 100%;
     width: 100%;
-  }
-
-  .map {
     border-radius: 10px;
   }
 
+  .map {
+    z-index: -1000;
+  }
+
   #mapid {
-    width: 660px !important;
     height: 740px !important;
   }
 
