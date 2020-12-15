@@ -106,3 +106,28 @@ body {
   margin-bottom: 0.75%;
   color: var(--mainText);
 }
+
+.loading-screen {
+  background: var(--globalBackground);
+  font-family: "Nunito Sans", sans-serif;
+  font-size: 2.5rem;
+  font-weight: 100;
+  color: rgba(255, 255, 255, 0.9);
+
+  .center {
+    padding: 475px 0;
+    text-align: center;
+
+    .placeholder {
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+  }
+}
+
+.fbw-logo {
+  width: 5rem;
+  margin-right: 16px;
+}

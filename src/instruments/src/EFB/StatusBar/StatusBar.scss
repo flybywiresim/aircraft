@@ -18,10 +18,11 @@
 
 .status-bar {
   display: flex;
+  font-family: "Nunito Sans", sans-serif;
   justify-content: space-between;
   align-items: center;
   font-size: 0.85rem;
-  font-weight: 600;
+  font-weight: 400;
   position: fixed;
   z-index: 1000;
   padding-top: 0.25rem;
