@@ -26,6 +26,10 @@ const extraInstruments = [
         name: 'cond-page',
         path: 'SD/Pages/Cond',
     },
+    {
+        name: 'fuel-page',
+        path: 'SD/Pages/Fuel',
+    },
 ];
 
 function makePostcssPluginList(instrumentPath) {

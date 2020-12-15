@@ -1,11 +1,11 @@
-import { useState } from 'react/cjs/react.production.min.js';
+import { useState } from 'react';
 import { getSimVar, useInteractionEvent } from '../util.js';
 import { EngPage } from './Pages/Eng.jsx';
 import { BleedPage } from './Pages/Bleed.jsx';
 import { PressPage } from './Pages/Press.jsx';
 import { ElecPage } from './Pages/Elec.jsx';
 import { HydPage } from './Pages/Hyd.jsx';
-import { FuelPage } from './Pages/Fuel.jsx';
+import { FuelPage } from './Pages/Fuel/Fuel.tsx';
 import { ApuPage } from './Pages/Apu.jsx';
 import { CondPage } from './Pages/Cond/Cond.tsx';
 import { DoorPage } from './Pages/Door/Door.tsx';
