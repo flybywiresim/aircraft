@@ -461,9 +461,9 @@ async function loadFuel(mcdu, updateView) {
     mcdu.aocWeight.loading = true;
     updateView();
 
-    const outerTankCapacity = 200; // Left and Right // Value from flight_model.cfg
-    const innerTankCapacity = 1800; // Left and Right // Value from flight_model.cfg
-    const centerTankCapacity = 3000; // Center // Value from flight_model.cfg
+    const outerTankCapacity = 228; // Left and Right // Value from flight_model.cfg
+    const innerTankCapacity = 1816; // Left and Right // Value from flight_model.cfg
+    const centerTankCapacity = 2179; // Center // Value from flight_model.cfg
 
     const fuelWeightPerGallon = SimVar.GetSimVarValue("FUEL WEIGHT PER GALLON", "kilograms");
     let currentBlockFuelInGallons = +currentBlockFuel / +fuelWeightPerGallon;
