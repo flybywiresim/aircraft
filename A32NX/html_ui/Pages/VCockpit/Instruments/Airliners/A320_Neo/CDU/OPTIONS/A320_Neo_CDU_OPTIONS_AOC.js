@@ -6,13 +6,13 @@ class CDU_OPTIONS_AOC {
 
         mcdu.setTemplate([
             ["A32NX OPTIONS AOC"],
-            ["SOURCE", "FREE TEXT"],
+            ["\xa0SOURCE", "FREE TEXT\xa0"],
             ["<ATIS", telexStatus],
-            ["SOURCE"],
+            ["\xa0SOURCE"],
             ["<METAR"],
-            ["SOURCE"],
+            ["\xa0SOURCE"],
             ["<SIGMET[color]inop"],
-            ["SOURCE"],
+            ["\xa0SOURCE"],
             ["<TAF"],
             [""],
             [""],
