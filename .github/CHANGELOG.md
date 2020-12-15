@@ -126,6 +126,11 @@
 1. [Sound] Improved nose wheel liftoff sound - @hotshotp (Boris)
 1. [Sound] Added new APU start contactor sounds - @hotshotp (Boris)
 1. [Sound] Added new realistic LEAP-1A engine sounds - @hotshotp (Boris)
+1. [Lights] Added Flood Lights - @Snapmatics (Harry)
+1. [Lights] Added Reading Lights - @Snapmatics (Harry)
+1. [Lights] Improved Screen Backlight - @Snapmatics (Harry)
+1. [Lights] Improved Exterior Lights - @Snapmatics (Harry)
+1. [Lights] Improved Interior Lights - @Snapmatics (Harry)
 1. [CDU] Improved input handling while a message is visible - @MisterChocker (Leon)
 1. [ND] Fix weather radar not showing after switching to plan view - @ilyeshammadi (Ilyes Hammadi)
 1. [Autopilot] Increase max bank angle from 20 to 25 - @wpine215 (Iceman)
@@ -151,6 +156,7 @@
 1. [Sound] Improved ground roll - @hotshotp (Boris)
 1. [Sound] Added new turbulence sounds different in cabin and cockpit - @hotshotp (Boris)
 1. [CDU] Added ground speed mini - @MisterChocker (Leon)
+1. [MISC] Fix pedestal camera position triggering radio frequency display glitch - @pareil6 (pareil6)
 1. [Engines] Reduced idle thrust at low Mach to improve descent rate - @donstim - (donbkes#4084)
 
 ## 0.4.0
