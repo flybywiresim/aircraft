@@ -598,7 +598,7 @@
             </Component>
 
             <Component ID="HANDLING">
-                <UseTemplate Name="ASOBO_HANDLING_Knob_RudderTrim_Template">
+                <UseTemplate Name="FBW_HANDLING_Knob_RudderTrim_Template">
                     <AIRBUS_TYPE/>
                     <ANIM_NAME>KNOB_RUDDERTRIM</ANIM_NAME>
                     <NODE_ID>KNOB_RUDDERTRIM</NODE_ID>
@@ -606,7 +606,7 @@
                     <RESET_PUSH_NODE_ID>PUSH_RUDDERTRIM_RESET</RESET_PUSH_NODE_ID>
                 </UseTemplate>
 
-                <UseTemplate Name="ASOBO_HANDLING_Lever_With_Button_Flaps_Template">
+                <UseTemplate Name="FBW_HANDLING_Lever_With_Button_Flaps_Template">
                     <NODE_ID>LEVER_FLAPS</NODE_ID>
                     <ANIM_NAME_LEVER>flaps_lever</ANIM_NAME_LEVER>
                     <ANIM_NAME_BUTTON>lock_flaps</ANIM_NAME_BUTTON>
@@ -628,7 +628,7 @@
 
                 </UseTemplate>
 
-                <UseTemplate Name="ASOBO_LANDING_GEAR_Switch_ParkingBrake_Template">
+                <UseTemplate Name="FBW_LANDING_GEAR_Switch_ParkingBrake_Template">
                     <ANIM_NAME>lever_parking_brake</ANIM_NAME>
                     <NODE_ID>LEVER_PARKINGBRAKE</NODE_ID>
                 </UseTemplate>
@@ -664,8 +664,8 @@
                     <SWITCH_POSITION_VAR>A32NX_SWITCH_RADAR_PWS_Position</SWITCH_POSITION_VAR>
                     <ANIMTIP_0>Set predictive windshear to AUTO (INOP)</ANIMTIP_0>
                     <ANIMTIP_1>Turn OFF predictive windshear</ANIMTIP_1>
-                    <WWISE_EVENT_1>wing_light_switch_on</WWISE_EVENT_1>
-                    <WWISE_EVENT_2>wing_light_switch_off</WWISE_EVENT_2>
+                    <WWISE_EVENT_1>lswitch</WWISE_EVENT_1>
+                    <WWISE_EVENT_2>lswitch</WWISE_EVENT_2>
                     <NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
                     <NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
                 </UseTemplate>
@@ -1358,7 +1358,7 @@
 
             <Component ID="Overhead_Lights">
                 <!-- Lights -->
-                <UseTemplate Name="ASOBO_LIGHTING_Switch_Light_Strobe_Template">
+                <UseTemplate Name="FBW_LIGHTING_Switch_Light_Strobe_Template">
                     <NODE_ID>SWITCH_OVHD_EXTLT_STROBE</NODE_ID>
                     <ANIM_NAME>SWITCH_OVHD_EXTLT_STROBE</ANIM_NAME>
                     <HAS_AUTO>True</HAS_AUTO>
@@ -1380,8 +1380,8 @@
                     <SWITCH_POSITION_VAR>XMLVAR_SWITCH_OVHD_INTLT_SEATBELT_Position</SWITCH_POSITION_VAR>
                     <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.LIGHTS_SEATBELT_OFF</ANIMTIP_0>
                     <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.LIGHTS_SEATBELT_ON</ANIMTIP_1>
-                    <WWISE_EVENT_1>wing_light_switch_on</WWISE_EVENT_1>
-                    <WWISE_EVENT_2>wing_light_switch_off</WWISE_EVENT_2>
+                    <WWISE_EVENT_1>lswitch</WWISE_EVENT_1>
+                    <WWISE_EVENT_2>lswitch</WWISE_EVENT_2>
                     <NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
                     <NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
                 </UseTemplate>
@@ -1401,7 +1401,7 @@
                     <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.LIGHTS_NOSMOKE_ON</ANIMTIP_0>
                     <ANIMTIP_1>Set "no smoke" prompt light to AUTO</ANIMTIP_1>
                     <ANIMTIP_2>TT:COCKPIT.TOOLTIPS.LIGHTS_NOSMOKE_OFF</ANIMTIP_2>
-                    <WWISE_EVENT>double_light_switch</WWISE_EVENT>
+                    <WWISE_EVENT>lswitch</WWISE_EVENT>
                 </UseTemplate>
 
                 <UseTemplate Name="A32NX_GT_Switch_Dummy">
@@ -1417,7 +1417,7 @@
                     <ANIMTIP_0>Turn ON emergency exit signs</ANIMTIP_0>
                     <ANIMTIP_1>Set emergency exit signs to ARM</ANIMTIP_1>
                     <ANIMTIP_2>Turn OFF emergency exit signs</ANIMTIP_2>
-                    <WWISE_EVENT>double_light_switch</WWISE_EVENT>
+                    <WWISE_EVENT>lswitch</WWISE_EVENT>
                 </UseTemplate>
 
                 <UseTemplate Name="ASOBO_AIRLINER_SIGNS_LIGHT_Template">
@@ -1436,7 +1436,7 @@
                     <ANIMTIP_0>Test annunciator lights</ANIMTIP_0>
                     <ANIMTIP_1>Set annunciator lights to BRT</ANIMTIP_1>
                     <ANIMTIP_2>Set annunciator lights to DIM</ANIMTIP_2>
-                    <WWISE_EVENT>double_light_switch</WWISE_EVENT>
+                    <WWISE_EVENT>lswitch</WWISE_EVENT>
                     <NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
                     <NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
                     <CODE_POS_0>1 (&gt;L:XMLVAR_LTS_Test)</CODE_POS_0>
@@ -1450,8 +1450,8 @@
                     <LIGHT_TYPE>STBYCOMPAS</LIGHT_TYPE>
                     <ANIMTIP_0>Turn ON standby compass light</ANIMTIP_0>
                     <ANIMTIP_1>Turn OFF standby compass light</ANIMTIP_1>
-                    <WWISE_EVENT_1>wing_light_switch_on</WWISE_EVENT_1>
-                    <WWISE_EVENT_2>wing_light_switch_off</WWISE_EVENT_2>
+                    <WWISE_EVENT_1>lswitch</WWISE_EVENT_1>
+                    <WWISE_EVENT_2>lswitch</WWISE_EVENT_2>
                     <NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
                     <NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
                     <SWITCH_POSITION_TYPE>L</SWITCH_POSITION_TYPE>
@@ -1782,8 +1782,8 @@
                         <NODE_ID>SWITCH_OVHD_EVAC_CAPT</NODE_ID>
                         <ANIM_NAME>SWITCH_OVHD_EVAC_CAPT</ANIM_NAME>
                         <ANIM_CODE>100</ANIM_CODE>
-                        <WWISE_EVENT_1>wing_light_switch_on</WWISE_EVENT_1>
-                        <WWISE_EVENT_2>wing_light_switch_off</WWISE_EVENT_2>
+                        <WWISE_EVENT_1>lswitch</WWISE_EVENT_1>
+                        <WWISE_EVENT_2>lswitch</WWISE_EVENT_2>
                         <LEFT_SINGLE_CODE>(L:A32NX_EVAC_CAPT_TOGGLE) ! (>L:A32NX_EVAC_CAPT_TOGGLE)</LEFT_SINGLE_CODE>
                     </UseTemplate>
 
@@ -1993,7 +1993,7 @@
                         <NUM_STATES>3</NUM_STATES>
                         <SWITCH_DIRECTION>Horizontal</SWITCH_DIRECTION>
                         <ARROW_TYPE>Curved</ARROW_TYPE>
-                        <WWISE_EVENT>double_light_switch</WWISE_EVENT>
+                        <WWISE_EVENT>turnknob</WWISE_EVENT>
                         <INIT_VALUE>1</INIT_VALUE>
                     </UseTemplate>
                 </Component>
@@ -2230,7 +2230,7 @@
                 <UseTemplate Name="FBW_Airbus_Wiper_Knob">
                     <NODE_ID>HANDLING_Switch_Wiper_right</NODE_ID>
                     <ANIM_NAME>HANDLING_Switch_Wiper_right</ANIM_NAME>
-                    <CIRCUIT_ID_WIPERS>80</CIRCUIT_ID_WIPERS>
+                    <CIRCUIT_ID_WIPERS>81</CIRCUIT_ID_WIPERS>
                     <ANIMTIP_0>Set right wiper to OFF</ANIMTIP_0>
                     <ANIMTIP_1>Set right wiper to SLOW</ANIMTIP_1>
                     <ANIMTIP_2>Set right wiper to FAST</ANIMTIP_2>
@@ -2745,7 +2745,7 @@
                 <TYPE>AIRBUS</TYPE>
             </UseTemplate>
 
-            <UseTemplate Name="ASOBO_AUTOPILOT_Knob_SpeedMach_Template">
+            <UseTemplate Name="FBW_AUTOPILOT_Knob_SpeedMach_Template">
                 <NODE_ID>KNOB_AUTOPILOT_L2</NODE_ID>
                 <PART_ID>Speed_knob</PART_ID>
                 <ANIM_NAME>KNOB_AUTOPILOT_L2</ANIM_NAME>
@@ -2753,7 +2753,7 @@
                 <TYPE>AIRBUS</TYPE>
             </UseTemplate>
 
-            <UseTemplate Name="ASOBO_AUTOPILOT_Knob_Heading_Template">
+            <UseTemplate Name="FBW_AUTOPILOT_Knob_Heading_Template">
                 <NODE_ID>KNOB_AUTOPILOT_L3</NODE_ID>
                 <ANIM_NAME_KNOB>KNOB_AUTOPILOT_L3</ANIM_NAME_KNOB>
                 <ANIM_NAME_PUSHPULL>PUSH_AUTOPILOT_L3</ANIM_NAME_PUSHPULL>
@@ -3203,6 +3203,27 @@
                 </UseTemplate>
             </Component>
         </Component>
+
+>
+	<Template Name="FBW_AUTOPILOT_Knob_Heading_Template">
+		<DefaultTemplateParameters>
+			<ID>1</ID>
+		</DefaultTemplateParameters>
+		
+		<UseTemplate Name="ASOBO_GT_Helper_Suffix_ID_Appender">
+			<TEMPLATE_TO_CALL>FBW_AUTOPILOT_Knob_Heading_SubTemplate</TEMPLATE_TO_CALL>
+		</UseTemplate>
+	</Template>
+
+    <Template Name="ASOBO_AUTOPILOT_Knob_VerticalSpeed_Template">
+		<DefaultTemplateParameters>
+			<ID>1</ID>
+		</DefaultTemplateParameters>
+
+		<UseTemplate Name="ASOBO_GT_Helper_Suffix_ID_Appender">
+			<TEMPLATE_TO_CALL>FBW_AUTOPILOT_Knob_VerticalSpeed_SubTemplate</TEMPLATE_TO_CALL>
+		</UseTemplate>
+	</Template>
 
         <Component ID="SAFETY">
             <UseTemplate Name="ASOBO_SAFETY_Push_Template">
