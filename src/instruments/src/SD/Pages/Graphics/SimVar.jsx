@@ -16,6 +16,32 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-export const FuelPage = () => (
-    <text x={5} y={27} fill="white" fontSize={24}>FUEL</text>
-);
+import { useState, useEffect } from 'react';
+import { getSimVar } from '../../../util.mjs';
+
+export const SimVar = ({
+    name, type, frequency, transform = (x) => x,
+}) => {
+    const [value, updater] = useState(0);
+
+    setInterval(() => getSimVar(name, type) |> transform |> updater, 1000 / frequency);
+
+    return (
+        <>{value}</>
+    );
+};
+
+export const useSimVar = (
+    name, type, frequency = 10, transform = (x) => x,
+) => {
+    const [value, updater] = useState(0);
+
+    useEffect(() => {
+        const handler = () => getSimVar(name, type) |> transform |> updater;
+
+        handler();
+        setInterval(handler, 1000 / frequency);
+    }, []);
+
+    return value;
+};

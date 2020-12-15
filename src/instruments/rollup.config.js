@@ -47,6 +47,12 @@ module.exports = fs.readdirSync(`${__dirname}/src`, { withFileTypes: true })
                         ['@babel/preset-react', {
                             runtime: 'automatic',
                         }],
+
+                    ],
+                    plugins: [
+                        ['@babel/plugin-proposal-pipeline-operator', {
+                            proposal: 'minimal',
+                        }],
                     ],
                     babelHelpers: 'bundled',
                     exclude: /node_modules/,

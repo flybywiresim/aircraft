@@ -1,4 +1,4 @@
-/*!
+/*
  * A32NX
  * Copyright (C) 2020 FlyByWire Simulations and its contributors
  *
@@ -16,21 +16,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-$font-size-medium: 16px;
-$font-size-large: 18px;
-$font-size-xlarge: 19px;
-$font-size-huge: 21px;
-$font-size-xhuge: 23px;
-$font-size-mega: 25px;
-$font-size-xmega: 28px;
+import './index.scss';
 
-$display-white: #ffffff;
-$display-grey: #787878;
-$display-dark-grey: #b3b3b3;
-$display-light-grey: lightgray;
-$display-amber: #e68000;
-$display-cyan: #00ffff;
-$display-green: #00ff00;
-$display-magenta: #ff94ff;
-$display-red: #ff0000;
-$display-yellow: #ffff00;
+export const PageTitle = ({ x, y, children }) => (
+    <text className="ecam-page-title" x={x} y={y}>{children}</text>
+);

@@ -16,21 +16,16 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-$font-size-medium: 16px;
-$font-size-large: 18px;
-$font-size-xlarge: 19px;
-$font-size-huge: 21px;
-$font-size-xhuge: 23px;
-$font-size-mega: 25px;
-$font-size-xmega: 28px;
+@import "../../../Common/definitions";
 
-$display-white: #ffffff;
-$display-grey: #787878;
-$display-dark-grey: #b3b3b3;
-$display-light-grey: lightgray;
-$display-amber: #e68000;
-$display-cyan: #00ffff;
-$display-green: #00ff00;
-$display-magenta: #ff94ff;
-$display-red: #ff0000;
-$display-yellow: #ffff00;
+text.ecam-page-title {
+  fill: $display-white;
+  text-anchor: start;
+  font-size: $font-size-huge;
+}
+
+path.ThickShape {
+  fill: none;
+  stroke: $display-white;
+  stroke-width: 3;
+}
