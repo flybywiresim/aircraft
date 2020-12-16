@@ -17,7 +17,7 @@ jobs:
       - name: Checkout source
         uses: actions/checkout@v2
       - name: install
-        run: npm install
+        run: npm install --no-optional
       - name: lint
         run: ./scripts/dev-env/run.sh npm run lint
   build:

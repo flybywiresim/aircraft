@@ -110,12 +110,11 @@ class EICASCommonDisplay extends Airliners.EICASTemplateElement {
         }
     }
     refreshGrossWeight(_force = false) {
-        const isInMetric = BaseAirliners.unitIsMetric(Aircraft.A320_NEO);
-        const unit = isInMetric ? "kg" : "lbs";
-        const fuelWeight = SimVar.GetSimVarValue("FUEL TOTAL QUANTITY WEIGHT", unit);
-        const emptyWeight = SimVar.GetSimVarValue("EMPTY WEIGHT", unit);
-        const payloadWeight = this.getPayloadWeight(unit);
-        const gw = Math.round(emptyWeight + fuelWeight + payloadWeight);
+        const _correction = parseFloat(NXDataStore.get("CONFIG_USING_METRIC_UNIT", "1"));
+        const fuelWeight = SimVar.GetSimVarValue("FUEL TOTAL QUANTITY WEIGHT", "kg");
+        const emptyWeight = SimVar.GetSimVarValue("EMPTY WEIGHT", "kg");
+        const payloadWeight = this.getPayloadWeight("kg");
+        const gw = Math.round((emptyWeight + fuelWeight + payloadWeight) * _correction);
         if ((gw != this.currentGW) || _force) {
             this.currentGW = gw;
             if (this.gwValue != null) {
@@ -123,7 +122,7 @@ class EICASCommonDisplay extends Airliners.EICASTemplateElement {
                 this.gwValue.textContent = (Math.floor(this.currentGW / 100) * 100).toString();
             }
             if (this.gwUnit) {
-                this.gwUnit.textContent = unit.toUpperCase();
+                this.gwUnit.textContent = _correction === 1 ? "KG" : "LBS";
             }
         }
     }
