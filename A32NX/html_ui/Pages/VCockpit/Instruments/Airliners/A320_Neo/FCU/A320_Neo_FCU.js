@@ -200,6 +200,8 @@ class A320_Neo_FCU_Heading extends A320_Neo_FCU_Component {
     constructor() {
         super(...arguments);
         this.backToIdleTimeout = 0;
+        this.idleCountdown = 5; // in seconds
+        this.trueAirspeedThreshold = 50; // in knots
     }
     init() {
         this.textHDG = this.getTextElement("HDG");
@@ -295,7 +297,7 @@ class A320_Neo_FCU_Heading extends A320_Neo_FCU_Component {
     }
     calculateTrackForHeading(_heading) {
         const trueAirspeed = SimVar.GetSimVarValue("AIRSPEED TRUE", "Knots");
-        if (trueAirspeed < 50) {
+        if (trueAirspeed < this.trueAirspeedThreshold) {
             return _heading;
         }
 
@@ -309,7 +311,7 @@ class A320_Neo_FCU_Heading extends A320_Neo_FCU_Component {
     }
     calculateHeadingForTrack(_track) {
         const trueAirspeed = SimVar.GetSimVarValue("AIRSPEED TRUE", "Knots");
-        if (trueAirspeed < 50) {
+        if (trueAirspeed < this.trueAirspeedThreshold) {
             return _track;
         }
 
@@ -341,12 +343,12 @@ class A320_Neo_FCU_Heading extends A320_Neo_FCU_Component {
     }
     onValueChanged(_newValue) {
         if (this.isManaged && this.showSelectedHeading) {
-            this.backToIdleTimeout = 5;
+            this.backToIdleTimeout = this.idleCountdown;
         }
     }
     onShowSelectedHeadingChanged(_newValue) {
         if (this.isManaged && _newValue) {
-            this.backToIdleTimeout = 5;
+            this.backToIdleTimeout = this.idleCountdown;
         }
     }
     onEvent(_event) {
