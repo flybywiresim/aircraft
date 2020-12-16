@@ -4,14 +4,18 @@
 #fuselage {
     
     .MainShape {
-    fill: transparent;
-    stroke: $display-light-grey;
-    stroke-width: 2;
+        fill: transparent;
+        stroke: $display-light-grey;
+        stroke-width: 2;
     }
 }
 
 
 #hatches {
+
+    .Hide {
+        display:none;
+    }
 
     fill: $display-amber;
     stroke: $display-amber;
@@ -22,10 +26,13 @@
         stroke: $display-green;
         stroke-width: 2; 
     }
-
 }
 
 #slides {
+
+    .Hide {
+        display:none;
+    }
 
     fill: $display-amber;
     stroke: $display-amber;
@@ -41,12 +48,22 @@
 
 #dashes {
 
-    fill: $display-amber;
-    stroke: $display-amber;
-    stroke-width: 2;
+    .Hide {
+        display:none;
+    }
+
+    .WarningShape {
+        fill: $display-amber;
+        stroke: $display-amber;
+        stroke-width: 2;
+    }
 }
 
 #texts {
+
+    .Hide {
+        display:none;
+    }
 
     .Title {
         font-size: 24px;
@@ -63,7 +80,12 @@
         fill: $display-amber;
     }
 
-    .Note {
+    .OxyWarn {
+        font-size: 20px;
+        fill: $display-amber;
+    }
+
+    .Oxygen {
         font-size: 20px;
         fill: $display-white;
     }
