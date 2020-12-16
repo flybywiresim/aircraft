@@ -23,6 +23,9 @@ import { IconPlaneArrival } from '@tabler/icons';
 
 type FlightWidgetProps = {
     name: string,
+    airline: string,
+    flightNum: string,
+    aircraftReg: string,
     dep: string,
     arr: string,
     std: string,
@@ -37,21 +40,9 @@ const FlightWidget = (props: FlightWidgetProps) => {
     return (
         <div className="flight-widget">
             <div id={'flight-' + props.name} className="flight-card">
-                <div className="flight-widget-toolbar">
-                    <a
-                        id="primary-button"
-                        href="/dashboard/primary"
-                        style={props.name === "todays" ? {borderBottom: "solid #00C2CB .1em"} : {borderBottom: "none"}}
-                    >
-                        Primary
-                    </a>
-                    <a
-                        id="secondary-button"
-                        href="/dashboard/secondary"
-                        style={props.name !== "todays" ? {borderBottom: "solid #00C2CB .1em"} : {borderBottom: "none"}}
-                    >
-                        Secondary
-                    </a>
+                <div className="callsign-reg">
+                    {props.airline + props.flightNum}
+                    <div className="reg">{props.aircraftReg}</div>
                 </div>
 
                 <div className="origin-destination">

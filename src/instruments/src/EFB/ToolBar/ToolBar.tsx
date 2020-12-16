@@ -37,7 +37,7 @@ class ToolBar extends React.Component<ToolbarProps, ToolbarState> {
 
     tabs = [
         { id: 0, name: 'Dashboard', link: 'dashboard'},
-        { id: 1, name: 'Loadsheet', link: 'loadsheet'},
+        { id: 1, name: 'Dispatch', link: 'dispatch'},
         { id: 2, name: 'Flight', link: 'flight' },
         { id: 3, name: 'Performance', link: 'performance' },
         { id: 4, name: 'Settings', link: 'settings' }

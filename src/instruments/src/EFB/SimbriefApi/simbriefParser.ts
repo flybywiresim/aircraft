@@ -51,6 +51,7 @@ export function getSimbriefData(simbriefUsername: string): Promise<ISimbriefData
 function simbriefDataParser(simbriefJson: any): ISimbriefData {
     const general = simbriefJson.general;
     const origin = simbriefJson.origin;
+    const aircraft = simbriefJson.aircraft;
     const destination = simbriefJson.destination;
     const times = simbriefJson.times;
     const weights = simbriefJson.weights;
@@ -60,6 +61,7 @@ function simbriefDataParser(simbriefJson: any): ISimbriefData {
     return {
         airline: general.icao_airline,
         flightNumber: general.flight_number,
+        aircraftReg: aircraft.reg,
         cruiseAltitude: general.initial_altitude,
         costIndex: general.costindex,
         route: general.route,

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
-type LoadsheetWidgetProps = {
+type DispatchProps = {
     weights: {
         cargo: number,
         estLandingWeight: number,
@@ -45,7 +45,7 @@ type LoadsheetWidgetState = {
     unitConversion: number;
 };
 
-const LoadsheetWidget = (props: LoadsheetWidgetProps) => {
+const LoadsheetWidget = (props: DispatchProps) => {
 
     const [unitConversion, setunitConversion] = useState(1000);
 
@@ -56,7 +56,7 @@ const LoadsheetWidget = (props: LoadsheetWidgetProps) => {
     }, [props.units]);
 
     return (
-        <div className="loadsheet">
+        <div className="dispatch">
             <div>
                 <span className="title">Dispatch Loadsheet</span>
             </div>

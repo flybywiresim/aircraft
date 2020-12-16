@@ -22,6 +22,9 @@ import WeatherWidget from "./Widgets/WeatherWidget";
 import Map from "@flybywiresim/map";
 
 type DashboardWidgetProps = {
+    airline: string,
+    flightNum: string,
+    aircraftReg: string,
     departingAirport: string,
     arrivingAirport: string,
     flightDistance: string,
@@ -51,13 +54,16 @@ class DashboardWidget extends React.Component<DashboardWidgetProps, DashboardWid
 
     render() {
         return (
-            <div className="dashboard-widget">
+            <div className="dashboard">
                 <span id='title-todays-flight' className="widget-title">Today's Flight</span>
                 <span id='title-wx' className="widget-title">Weather</span>
                 <span id='title-map' className="widget-title">Map</span>
 
                 <FlightWidget
                     name="todays"
+                    airline={this.props.airline}
+                    flightNum={this.props.flightNum}
+                    aircraftReg={this.props.aircraftReg}
                     dep={this.props.departingAirport}
                     arr={this.props.arrivingAirport}
                     elapsedTime="00:49"

@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-.dashboard-widget {
+.dashboard {
   display: grid;
   font-family: "Nunito", sans-serif;
   grid-template-columns: 25% 25% 25% 25%;
@@ -66,49 +66,35 @@
       padding: 1rem 2rem;
       font-size: 1.25rem;
       grid-template-areas:
-        "Toolbar  Toolbar"
+        "Callsign Callsign"
         "DepArr   DepArr"
         "Schedule Schedule"
         "Times    Times";
-
-      .flight-widget-toolbar {
-        margin-top: 1rem;
-        grid-area: Toolbar;
-        display: flex;
-        align-content: center;
-        justify-content: center;
-        font-size: 1.25rem;
-        font-weight: 400;
-
-        a {
-          color: inherit;
-          text-decoration: inherit;
-        }
-
-        #primary-button {
-          margin-right: 1.5rem;
-        }
-
-        #secondary-button {
-          margin-left: 1.5rem;
-        }
-
-        &.active {
-          border-bottom: solid var(--toolbarUnderlineColor) 0.1em;
-        }
-
-        &.active:hover {
-          border-bottom: solid var(--toolbarUnderlineColor) 0.1em;
-        }
-      }
 
       .title {
         font-size: 1rem;
         font-weight: 400;
         color: var(--mainTextSecondary);
-        grid-area: DepArr;
         display: flex;
         align-items: center;
+      }
+
+      .callsign-reg {
+        margin-top: 1rem;
+        grid-area: Callsign;
+        display: flex;
+        flex-wrap: wrap;
+        align-content: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        font-weight: 400;
+
+        .reg {
+          flex: 1 0 100%;
+          text-align: center;
+          font-size: 1rem;
+          font-weight: 400;
+        }
       }
 
       .origin-destination {
@@ -118,6 +104,7 @@
         display: flex;
         justify-content: center;
         align-items: center;
+        margin-top: -1rem;
       }
 
       .flight-schedule {
@@ -225,6 +212,7 @@
         outline: none;
         background-color: var(--cardBackground);
         color: var(--cardText);
+        text-transform: uppercase;
       }
     }
 

@@ -178,7 +178,6 @@ const WeatherWidget = (props: WeatherWidgetProps) => {
 
     const [metar, setMetar] = useState<MetarParserType>(MetarParserTypeProp);
     const [modalStatus, setModalStatus] = useState(false);
-    const [icon, setIcon] = useState("wi wi-cloud");
 
     // This could be modified using the Settings tab perhaps?
     const source = "vatsim";
@@ -225,7 +224,7 @@ const WeatherWidget = (props: WeatherWidgetProps) => {
                     <div className="icao">
                         {props.editIcao == "yes" ?
                             <>
-                                <input id="icaoInput"
+                                <input className="input"
                                     type="text"
                                     placeholder={props.icao}
                                     onChange={handleIcao} />

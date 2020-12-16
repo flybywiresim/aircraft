@@ -21,27 +21,27 @@ import React from "react";
 import { getSimbriefData, IFuel, IWeights } from './SimbriefApi';
 import StatusBar from "./StatusBar/StatusBar";
 import ToolBar from "./ToolBar/ToolBar";
-import DashboardWidget from "./Dashboard/DashboardWidget";
+import DashboardWidget from "./Dashboard/Dashboard";
 
 import './EFB.scss';
 
-import LoadsheetWidget from "./Loadsheet/LoadsheetWidget";
+import LoadsheetWidget from "./Dispatch/Dispatch";
 import Settings from "./Settings/Settings";
 import Profile from "./Profile/Profile";
 
-type EfbProps = {
+type EFBProps = {
     logo: string
 };
 
-type EfbState = {
+type EFBState = {
     currentPageIndex: 0 | 1 | 2 | 3 | 4,
-    simbriefUsername: string;
-    departingAirport: string;
-    departingIata: string;
-    arrivingAirport: string;
-    arrivingIata: string;
-    flightDistance: string;
-    flightETAInSeconds: string;
+    simbriefUsername: string,
+    departingAirport: string,
+    departingIata: string,
+    arrivingAirport: string,
+    arrivingIata: string,
+    flightDistance: string,
+    flightETAInSeconds: string,
     currentTime: Date,
     initTime: Date,
     timeSinceStart: string,
@@ -56,25 +56,31 @@ type EfbState = {
     resFuelTime: number,
     taxiOutTime: number,
     schedOut: string,
-    schedIn: string
+    schedIn: string,
+    airline: string,
+    flightNum: string,
+    aircraftReg: string
 };
 
 document.body.classList.add('darkMode');
 
-class Efb extends React.Component<EfbProps, EfbState> {
-    constructor(props: EfbProps) {
+class EFB extends React.Component<EFBProps, EFBState> {
+    constructor(props: EFBProps) {
         super(props);
         this.updateCurrentTime = this.updateCurrentTime.bind(this);
         this.updateTimeSinceStart = this.updateTimeSinceStart.bind(this);
         this.fetchSimbriefData = this.fetchSimbriefData.bind(this);
     }
 
-    state: EfbState = {
+    state: EFBState = {
         currentPageIndex: 0,
+        airline: '---',
+        flightNum: '----',
         departingAirport: '----',
         departingIata: '---',
         arrivingAirport: '----',
         arrivingIata: '---',
+        aircraftReg: '-----',
         simbriefUsername: this.fetchSimbriefUsername(),
         flightDistance: 'N/A',
         flightETAInSeconds: 'N/A',
@@ -145,10 +151,13 @@ class Efb extends React.Component<EfbProps, EfbState> {
         const simbriefData = await getSimbriefData(this.state.simbriefUsername);
         console.info(simbriefData);
         this.setState({
+            airline:             simbriefData.airline,
+            flightNum:           simbriefData.flightNumber,
             departingAirport:    simbriefData.origin.icao,
             departingIata:       simbriefData.origin.iata,
             arrivingAirport:     simbriefData.destination.icao,
             arrivingIata:        simbriefData.destination.iata,
+            aircraftReg:         simbriefData.aircraftReg,
             flightDistance:      simbriefData.distance,
             flightETAInSeconds:  simbriefData.flightETAInSeconds,
             weights: {
@@ -235,6 +244,9 @@ class Efb extends React.Component<EfbProps, EfbState> {
                 return <Settings />;
             default:
                 return <DashboardWidget
+                    airline={this.state.airline}
+                    flightNum={this.state.flightNum}
+                    aircraftReg={this.state.aircraftReg}
                     departingAirport={this.state.departingAirport}
                     arrivingAirport={this.state.arrivingAirport}
                     flightDistance={this.state.flightDistance}
@@ -259,4 +271,4 @@ class Efb extends React.Component<EfbProps, EfbState> {
     }
 }
 
-export default Efb;
+export default EFB;
