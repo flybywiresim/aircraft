@@ -18,10 +18,10 @@
 
 import ReactDOM from 'react-dom';
 import { useState } from 'react';
-import Efb from './Efb.tsx';
+import EFB from './EFB.tsx';
 import { renderTarget, useUpdate, getSimVar } from '../util.mjs';
-import logo from './fbw.svg';
-import './Efb.scss';
+import logo from './Assets/fbw-logo.svg';
+import './EFB.scss';
 
 // TODO: Move anything dependent on ac power change to A32NX_Core
 function powerAvailable() {
@@ -83,7 +83,7 @@ function EFBLoad() {
         }, 6000);
         return <ScreenLoading />;
     case 'START':
-        return <Efb logo={logo} />;
+        return <EFB logo={logo} />;
     default:
         throw new RangeError();
     }

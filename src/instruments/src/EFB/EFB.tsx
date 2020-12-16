@@ -23,14 +23,14 @@ import StatusBar from "./StatusBar/StatusBar";
 import ToolBar from "./ToolBar/ToolBar";
 import DashboardWidget from "./Dashboard/DashboardWidget";
 
-import './Efb.scss';
+import './EFB.scss';
 
 import LoadsheetWidget from "./Loadsheet/LoadsheetWidget";
 import Settings from "./Settings/Settings";
 import Profile from "./Profile/Profile";
 
 type EfbProps = {
-    logo: string,
+    logo: string
 };
 
 type EfbState = {

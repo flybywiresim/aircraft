@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { IconFileExport } from '@tabler/icons';
 
 type LoadsheetWidgetProps = {
     weights: {
