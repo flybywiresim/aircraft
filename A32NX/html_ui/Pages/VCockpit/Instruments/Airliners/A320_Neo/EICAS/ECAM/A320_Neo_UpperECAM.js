@@ -2126,7 +2126,9 @@ var A320_Neo_UpperECAM;
                             }
                             case ThrottleMode.FLEX_MCT:
                             {
-                                this.throttleState.textContent = this.currentPhase === FlightPhase.FLIGHT_PHASE_GOAROUND ? "GA\xa0SOFT" : this.getThrustRatingMode(this.currentGrounded, "MCT");
+                                this.throttleState.textContent = this.currentPhase === FlightPhase.FLIGHT_PHASE_GOAROUND
+                                && Simplane.getEngineActive(0)
+                                && Simplane.getEngineActive(1) ? "GA\xa0SOFT" : this.getThrustRatingMode(this.currentGrounded, "MCT");
                                 break;
                             }
                             case ThrottleMode.REVERSE:

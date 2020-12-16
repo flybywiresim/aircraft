@@ -156,6 +156,7 @@ var Airbus_FMA;
             this.isNonILSApproachActive = ((this.flightPhase == FlightPhase.FLIGHT_PHASE_APPROACH) && (approachType != ApproachType.APPROACH_TYPE_ILS));
             this.leftThrottleDetent = Simplane.getEngineThrottleMode(0);
             this.rightThrottleDetent = Simplane.getEngineThrottleMode(1);
+            this.bothEnginesActive = Simplane.getEngineActive(0) && Simplane.getEngineActive(1);
             this.highestThrottleDetent = (this.leftThrottleDetent >= this.rightThrottleDetent) ? this.leftThrottleDetent : this.rightThrottleDetent;
             this.managedAirspeed = SimVar.GetSimVarValue("L:AP_MANAGED_AIRSPEED", "number");
             this.minimumDescentAltitude = SimVar.GetSimVarValue("L:AIRLINER_MINIMUM_DESCENT_ALTITUDE", "feet");
@@ -654,14 +655,16 @@ var Airbus_FMA;
         }
 
         IsActive_MANSGA() {
-            return !Airbus_FMA.CurrentPlaneState.autoPilotThrottleActive
+            return Airbus_FMA.CurrentPlaneState.bothEnginesActive
+                && !Airbus_FMA.CurrentPlaneState.autoPilotThrottleActive
                 && Airbus_FMA.CurrentPlaneState.autoPilotThrottleArmed
                 && Airbus_FMA.CurrentPlaneState.highestThrottleDetent === ThrottleMode.FLEX_MCT
                 && Airbus_FMA.CurrentPlaneState.flightPhase >= FlightPhase.FLIGHT_PHASE_APPROACH;
         }
 
         IsActive_SGA() {
-            return Airbus_FMA.CurrentPlaneState.autoPilotThrottleActive
+            return Airbus_FMA.CurrentPlaneState.bothEnginesActive
+                && Airbus_FMA.CurrentPlaneState.autoPilotThrottleActive
                 && Airbus_FMA.CurrentPlaneState.autoPilotThrottleArmed
                 && Airbus_FMA.CurrentPlaneState.highestThrottleDetent === ThrottleMode.FLEX_MCT
                 && Airbus_FMA.CurrentPlaneState.flightPhase >= FlightPhase.FLIGHT_PHASE_APPROACH;
