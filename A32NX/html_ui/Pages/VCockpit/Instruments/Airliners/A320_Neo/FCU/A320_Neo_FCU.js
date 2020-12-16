@@ -654,8 +654,6 @@ class A320_Neo_FCU_VerticalSpeed extends A320_Neo_FCU_Component {
         }
     }
     onEvent(_event) {
-        console.log("A320_Neo_FCU_VerticalSpeed onEvent " + _event);
-        console.trace();
         if (_event === "VS_INC") {
             this.onRotate();
         } else if (_event === "VS_DEC") {
@@ -667,7 +665,6 @@ class A320_Neo_FCU_VerticalSpeed extends A320_Neo_FCU_Component {
         } else if (_event === "AP_DEC_FPA") {
             // TODO: increments of more than 0.1 if rolling quickly.
             const currentFpa = SimVar.GetSimVarValue("L:A32NX_AUTOPILOT_FPA_SELECTED", "Degree");
-            console.log(currentFpa, typeof(currentFpa));
             const newFpa = Math.round((currentFpa - 0.1) * 10) / 10;
             SimVar.SetSimVarValue("L:A32NX_AUTOPILOT_FPA_SELECTED", "Degree", newFpa);
         } else if (_event === "AP_INC_FPA") {
@@ -684,16 +681,20 @@ class A320_Neo_FCU_VerticalSpeed extends A320_Neo_FCU_Component {
         }
     }
     calculateVerticalSpeedForAngle(_angle) {
-        if (_angle == 0) return 0;
+        if (_angle == 0) {
+            return 0;
+        }
         const _groundSpeed = SimVar.GetSimVarValue("GPS GROUND SPEED", "Meters per second");
         const groundSpeed = _groundSpeed * 3.28084 * 60; // Now in feet per minute.
         const angle = _angle * Math.PI / 180; // Now in radians.
         const verticalSpeed = Math.tan(angle) * groundSpeed;
-        console.log(verticalSpeed);
+        console.log("V/S for set FPA: " + verticalSpeed);
         return (verticalSpeed < -6000) ? -6000 : (verticalSpeed > 6000) ? 6000 : verticalSpeed;
     }
     calculateAngleForVerticalSpeed(verticalSpeed) {
-        if (verticalSpeed == 0) return 0;
+        if (verticalSpeed == 0) {
+            return 0;
+        }
         const _groundSpeed = SimVar.GetSimVarValue("GPS GROUND SPEED", "Meters per second");
         const groundSpeed = _groundSpeed * 3.28084 * 60; // Now in feet per minute.
         const angle = Math.atan(verticalSpeed / groundSpeed);
