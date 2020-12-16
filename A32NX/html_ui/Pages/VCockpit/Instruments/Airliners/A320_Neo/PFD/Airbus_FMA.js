@@ -1107,9 +1107,10 @@ var Airbus_FMA;
                 } else if ((Airbus_FMA.CurrentPlaneState.highestThrottleDetent == ThrottleMode.FLEX_MCT) && (Airbus_FMA.CurrentPlaneState.flexTemperature > 0)) {
                     SRSEnabled = true;
                 }
-            } else if (Airbus_FMA.CurrentPlaneState.flightPhase == FlightPhase.FLIGHT_PHASE_GOAROUND) {
-                if ((Airbus_FMA.CurrentPlaneState.highestThrottleDetent == ThrottleMode.TOGA) &&
-                    (Airbus_FMA.CurrentPlaneState.flapsHandlePercent != 0)) {
+            } else if (Airbus_FMA.CurrentPlaneState.flightPhase === FlightPhase.FLIGHT_PHASE_GOAROUND) {
+                if ((Airbus_FMA.CurrentPlaneState.highestThrottleDetent === ThrottleMode.TOGA
+                    || (Airbus_FMA.CurrentPlaneState.highestThrottleDetent === ThrottleMode.FLEX_MCT && Airbus_FMA.CurrentPlaneState.bothEnginesActive))
+                    && Airbus_FMA.CurrentPlaneState.flapsHandlePercent !== 0) {
                     SRSEnabled = true;
                     return Airbus_FMA.MODE_STATE.ENGAGED;
                 }
