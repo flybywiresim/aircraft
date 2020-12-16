@@ -137,7 +137,7 @@ var Airbus_FMA;
             this.autoPilotAirspeedHoldActive = Simplane.getAutoPilotAirspeedHoldActive();
             this.autoPilotVerticalSpeedHoldActive = Simplane.getAutoPilotVerticalSpeedHoldActive();
             this.autoPilotVerticalSpeedHoldValue = Simplane.getAutoPilotVerticalSpeedHoldValue();
-            this.autoPilotFlightPathAngle = Simplane.getAutoPilotFlightPathAngle();
+            this.autoPilotFlightPathAngle = SimVar.GetSimVarValue("L:A32NX_AUTOPILOT_FPA_SELECTED", "Degree");
             this.autoPilotAltitudeLockActive = Simplane.getAutoPilotAltitudeLockActive();
             this.autoPilotAltitudeArmed = Simplane.getAutoPilotAltitudeArmed();
             this.autoPilotAltitudeLockValue = Simplane.getAutoPilotAltitudeLockValue();
@@ -915,9 +915,9 @@ var Airbus_FMA;
                         }
                         case Column2.ROW_1_STATE.FPA: {
                             let value = -Airbus_FMA.CurrentPlaneState.autoPilotFlightPathAngle;
-                            const sign = (value < 0) ? "-" : "+";
+                            const sign = (value > 0) ? "-" : "+";
                             value = Math.min(Math.abs(value), 9.9);
-                            var str = sign + value.toFixed(2) + String.fromCharCode(176);
+                            var str = sign + value.toFixed(1) + String.fromCharCode(176);
                             this.setRowMultiText(0, "FPA", Airbus_FMA.MODE_STATE.ENGAGED, str, Airbus_FMA.MODE_STATE.ARMED);
                             isManaged = true;
                             break;
