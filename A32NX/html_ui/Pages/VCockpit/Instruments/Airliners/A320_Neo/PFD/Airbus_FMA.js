@@ -545,6 +545,18 @@ var Airbus_FMA;
                             this.setRowText(0, "THR LK", Airbus_FMA.MODE_STATE.WARNING);
                             break;
                         }
+                        case Column1.ROW_1_2_STATE.MANSGA: {
+                            this.setRowHighlightStyle(0, Airbus_FMA.HIGHLIGHT_STYLE.OPEN_BOTTOM, true);
+                            this.setRowHighlightStyle(1, Airbus_FMA.HIGHLIGHT_STYLE.OPEN_TOP, true);
+                            this.setRowText(0, "MAN", Airbus_FMA.MODE_STATE.STATUS);
+                            this.setRowText(1, "GA SOFT", Airbus_FMA.MODE_STATE.STATUS);
+                            break;
+                        }
+                        case Column1.ROW_1_2_STATE.SGA: {
+                            this.setRowHighlightStyle(0, Airbus_FMA.HIGHLIGHT_STYLE.FULL, true);
+                            this.setRowText(0, "GA SOFT", Airbus_FMA.MODE_STATE.ENGAGED);
+                            break;
+                        }
                     }
                     switch (this.currentRow3State) {
                         case Column1.ROW_3_STATE.LVRCLB: {
@@ -579,6 +591,10 @@ var Airbus_FMA;
                 return Column1.ROW_1_2_STATE.TOGALK;
             } else if (this.IsActive_MANFLX()) {
                 return Column1.ROW_1_2_STATE.MANFLX;
+            } else if (this.IsActive_MANSGA()) {
+                return Column1.ROW_1_2_STATE.MANSGA;
+            } else if (this.IsActive_SGA()) {
+                return Column1.ROW_1_2_STATE.SGA;
             } else if (this.IsActive_MANMCT()) {
                 return Column1.ROW_1_2_STATE.MANMCT;
             } else if (this.IsActive_MANTHR()) {
@@ -635,6 +651,20 @@ var Airbus_FMA;
                 }
             }
             return false;
+        }
+
+        IsActive_MANSGA() {
+            return !Airbus_FMA.CurrentPlaneState.autoPilotThrottleActive
+                && Airbus_FMA.CurrentPlaneState.autoPilotThrottleArmed
+                && Airbus_FMA.CurrentPlaneState.highestThrottleDetent === ThrottleMode.FLEX_MCT
+                && Airbus_FMA.CurrentPlaneState.flightPhase >= FlightPhase.FLIGHT_PHASE_APPROACH;
+        }
+
+        IsActive_SGA() {
+            return Airbus_FMA.CurrentPlaneState.autoPilotThrottleActive
+                && Airbus_FMA.CurrentPlaneState.autoPilotThrottleArmed
+                && Airbus_FMA.CurrentPlaneState.highestThrottleDetent === ThrottleMode.FLEX_MCT
+                && Airbus_FMA.CurrentPlaneState.flightPhase >= FlightPhase.FLIGHT_PHASE_APPROACH;
         }
 
         IsActive_MANMCT() {
@@ -823,6 +853,8 @@ var Airbus_FMA;
         MACH: 12,
         THRLK: 13,
         TOGA: 14,
+        MANSGA: 15,
+        SGA: 16,
     };
     Column1.ROW_3_STATE = {
         NONE: 0,
