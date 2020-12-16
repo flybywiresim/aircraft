@@ -20,7 +20,7 @@ class CDU_OPTIONS_ADIRS {
         }
 
         mcdu.setTemplate([
-            ["A32NX OPTIONS"],
+            ["A32NX OPTIONS REALISM"],
             ["", "", "IRS ALIGN TIME"],
             [instant],
             [""],
@@ -32,7 +32,7 @@ class CDU_OPTIONS_ADIRS {
             [""],
             [""],
             [""],
-            ["<RETURN[color]cyan"]
+            ["<RETURN"]
         ]);
 
         mcdu.leftInputDelay[0] = () => {
@@ -66,7 +66,7 @@ class CDU_OPTIONS_ADIRS {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onLeftInput[5] = () => {
-            CDU_OPTIONS_MainMenu.ShowPage(mcdu);
+            CDU_OPTIONS_REALISM.ShowPage(mcdu);
         };
     }
 }
