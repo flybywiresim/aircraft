@@ -289,8 +289,11 @@ class CDUFlightPlanPage {
                                 lastSpeedConstraint = speedConstraint;
                             }
                         }
+
                         let altitudeConstraint = "-----";
                         let altPrefix = "\xa0";
+                        const isDepartureWayPoint = routeFirstWaypointIndex > 1 && mcdu.flightPlanManager.getDepartureWaypoints().indexOf(waypointsWithDiscontinuities[index]) !== -1;
+
                         if (mcdu.transitionAltitude >= 100 && waypoint.legAltitude1 > mcdu.transitionAltitude) {
                             altitudeConstraint = (waypoint.legAltitude1 / 100).toFixed(0).toString();
                             altitudeConstraint = "FL" + altitudeConstraint.padStart(3,"0");
@@ -303,19 +306,17 @@ class CDUFlightPlanPage {
                                 altitudeConstraint = ((waypoint.legAltitude1 + waypoint.legAltitude2) * 0.5).toFixed(0).toString();
                                 altitudeConstraint = altitudeConstraint.padStart(5,"\xa0");
                             }
-                        } else if (index < routeFirstWaypointIndex) {
-                            if (index === routeFirstWaypointIndex - 1) {
-                                altitudeConstraint = "FL" + mcdu.cruiseFlightLevel.toString().padStart(3,"0");
-                            } else {
-                                altitudeConstraint = Math.floor(waypoint.cumulativeDistanceInFP * 0.14 * 6076.118 / 10).toString();
-                                altitudeConstraint = altitudeConstraint.padStart(5,"\xa0");
-                            }
+                        //predict altitude for STAR when constraints are missing
+                        } else if (isDepartureWayPoint) {
+                            altitudeConstraint = Math.floor(waypoint.cumulativeDistanceInFP * 0.14 * 6076.118 / 10);
+                            altitudeConstraint = altitudeConstraint.padStart(5,"\xa0");
+                        //waypoint is the first or the last of the actual route
                         } else if ((index === routeFirstWaypointIndex - 1) || (index === routeLastWaypointIndex + 1)) {
-                            altitudeConstraint = "FL" + mcdu.cruiseFlightLevel.toString().padStart(3,"0");
-                        } else {
-                            if (index >= routeFirstWaypointIndex && index <= routeLastWaypointIndex) {
-                                altitudeConstraint = "FL" + mcdu.cruiseFlightLevel.toString().padStart(3,"0");
-                            }
+                            altitudeConstraint = "FL" + mcdu.cruiseFlightLevel.toString().padStart(3,"0"); ;
+                        //waypoint is in between on the route
+                        } else if (index <= routeLastWaypointIndex && index >= routeFirstWaypointIndex) {
+                            altitudeConstraint = "FL" + mcdu.cruiseFlightLevel.toString().padStart(3,"0"); ;
+
                         }
                         if (altitudeConstraint === lastAltitudeConstraint) {
                             altitudeConstraint = "\xa0\xa0\"\xa0\xa0";
