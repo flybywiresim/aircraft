@@ -1523,7 +1523,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         }
         //Logic to switch from APPR to GOAROUND
         //another condition getIsGrounded < 30sec
-        if (this.currentFlightPhase === FlightPhase.FLIGHT_PHASE_APPROACH && highestThrottleDetent >= ThrottleMode.FLEX_MCT && flapsHandlePercent !== 0 && !Simplane.getAutoPilotThrottleActive() && SimVar.GetSimVarValue("RADIO HEIGHT", "feets") < 2000) {
+        if (this.currentFlightPhase == FlightPhase.FLIGHT_PHASE_APPROACH && highestThrottleDetent == ThrottleMode.TOGA && flapsHandlePercent != 0 && !Simplane.getAutoPilotThrottleActive() && SimVar.GetSimVarValue("RADIO HEIGHT", "feets") < 2000) {
 
             this.currentFlightPhase = FlightPhase.FLIGHT_PHASE_GOAROUND;
             SimVar.SetSimVarValue("L:A32NX_GOAROUND_GATRK_MODE", "bool", 0);
