@@ -118,7 +118,7 @@
             <Component ID="WipersRight">
                 <UseTemplate Name="FBW_Airbus_Wiper">
                     <ANIM_NAME>HANDLING_Wiper_right</ANIM_NAME>
-                    <CIRCUIT_ID_WIPERS>81</CIRCUIT_ID_WIPERS>
+                    <CIRCUIT_ID_WIPERS>80</CIRCUIT_ID_WIPERS>
                 </UseTemplate>
             </Component>
 		</Component>
