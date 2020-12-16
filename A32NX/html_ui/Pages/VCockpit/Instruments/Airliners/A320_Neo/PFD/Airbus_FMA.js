@@ -1550,7 +1550,11 @@ var Airbus_FMA;
         }
 
         GetModeState_NAV() {
-            if (Airbus_FMA.CurrentPlaneState.flightPhase != FlightPhase.FLIGHT_PHASE_GOAROUND && Airbus_FMA.CurrentPlaneState.autoPilotHeadingManagedMode && Airbus_FMA.CurrentPlaneState.thisFlightDirectorActive) {
+            if (
+                (Airbus_FMA.CurrentPlaneState.flightPhase !== FlightPhase.FLIGHT_PHASE_GOAROUND
+                || (Airbus_FMA.CurrentPlaneState.flightPhase === FlightPhase.FLIGHT_PHASE_GOAROUND && Airbus_FMA.CurrentPlaneState.highestThrottleDetent === ThrottleMode.FLEX_MCT))
+                && Airbus_FMA.CurrentPlaneState.autoPilotHeadingManagedMode && Airbus_FMA.CurrentPlaneState.thisFlightDirectorActive
+            ) {
                 if (Airbus_FMA.CurrentPlaneState.radioAltitude >= 30) {
                     return Airbus_FMA.MODE_STATE.ENGAGED;
                 } else {
