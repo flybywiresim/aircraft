@@ -2855,7 +2855,7 @@
                 <ANIMTIP_3_ON_CURSOR>DownArrow</ANIMTIP_3_ON_CURSOR>
             </UseTemplate>
 
-            <UseTemplate Name="ASOBO_AUTOPILOT_Knob_VerticalSpeed_Template">
+            <UseTemplate Name="FBW_AUTOPILOT_Knob_VerticalSpeed_Template">
                 <NODE_ID>KNOB_AUTOPILOT_UPDN</NODE_ID>
                 <ANIM_NAME_KNOB>KNOB_AUTOPILOT_UPDN</ANIM_NAME_KNOB>
                 <ANIM_NAME_PUSHPULL>PUSH_AUTOPILOT_UPDN</ANIM_NAME_PUSHPULL>
@@ -3215,7 +3215,7 @@
 		</UseTemplate>
 	</Template>
 
-    <Template Name="ASOBO_AUTOPILOT_Knob_VerticalSpeed_Template">
+    <Template Name="FBW_AUTOPILOT_Knob_VerticalSpeed_Template">
 		<DefaultTemplateParameters>
 			<ID>1</ID>
 		</DefaultTemplateParameters>
