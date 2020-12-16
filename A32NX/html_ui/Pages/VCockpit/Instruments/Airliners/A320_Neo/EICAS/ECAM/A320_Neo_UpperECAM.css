@@ -128,15 +128,16 @@ a320-neo-upper-ecam #InfoTopPanel div {
   font-size: 45px;
 }
 a320-neo-upper-ecam #InfoTopPanel #Status {
-  top: 1%;
+  top: 2%;
   height: 50%;
-  right: 5%;
+  right: 7%;
   width: 8%;
 }
 
 a320-neo-upper-ecam #InfoTopPanel #Status #ThrottleState {
-  right: 20%;
-  text-align: left;
+  left: -50%;
+  width: 180%;
+  text-align: center;
 }
 a320-neo-upper-ecam #InfoTopPanel #Status #ThrottleValue {
   top: 12%;
