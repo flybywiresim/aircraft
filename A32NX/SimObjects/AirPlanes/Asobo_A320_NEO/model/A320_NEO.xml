@@ -109,9 +109,18 @@
 				<NORMALIZED_TIME_5>0.58</NORMALIZED_TIME_5>
 				<DIRECTION_5>Both</DIRECTION_5>
 			</UseTemplate>
-			<UseTemplate Name="ASOBO_HANDLING_Wipers_Template">
-				<CIRCUIT_ID_WIPERS>77</CIRCUIT_ID_WIPERS>
-			</UseTemplate>
+            <Component ID="WipersLeft">
+                <UseTemplate Name="FBW_Airbus_Wiper">
+                    <ANIM_NAME>HANDLING_Wiper_left</ANIM_NAME>
+                    <CIRCUIT_ID_WIPERS>77</CIRCUIT_ID_WIPERS>
+                </UseTemplate>
+            </Component>
+            <Component ID="WipersRight">
+                <UseTemplate Name="FBW_Airbus_Wiper">
+                    <ANIM_NAME>HANDLING_Wiper_right</ANIM_NAME>
+                    <CIRCUIT_ID_WIPERS>80</CIRCUIT_ID_WIPERS>
+                </UseTemplate>
+            </Component>
 		</Component>
 		<Component ID="GEARS">
 			<UseTemplate Name="ASOBO_GEAR_Center_Template">

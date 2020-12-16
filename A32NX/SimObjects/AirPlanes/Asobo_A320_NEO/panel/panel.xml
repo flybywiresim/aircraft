@@ -20,7 +20,7 @@
   <Instrument>
     <Name>A320_Neo_SAI</Name>
     <Electric>
-      <Simvar name="CIRCUIT ON:80" unit="Boolean"/>
+      <Simvar name="CIRCUIT ON:79" unit="Boolean"/>
     </Electric>
   </Instrument>
 

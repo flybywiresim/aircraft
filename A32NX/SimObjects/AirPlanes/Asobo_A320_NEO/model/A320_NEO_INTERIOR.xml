@@ -366,7 +366,7 @@
             <UseTemplate Name="ASOBO_LIGHTING_Knob_Glareshield_Template">
                 <ID>1</ID>
                 <SIMVAR_INDEX>1</SIMVAR_INDEX>
-                <POTENTIOMETER>81</POTENTIOMETER>
+                <POTENTIOMETER>10</POTENTIOMETER>
                 <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.LIGHTING_MAIN_PANEL_FLOOD_DECREASE</ANIMTIP_0>
                 <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.LIGHTING_MAIN_PANEL_FLOOD_INCREASE</ANIMTIP_1>
             </UseTemplate>
@@ -374,7 +374,7 @@
             <UseTemplate Name="ASOBO_LIGHTING_Glareshield_Emissive_Template">
                 <NODE_ID>LIGHTS_Glareshield_Front_1</NODE_ID>
                 <SIMVAR_INDEX>1</SIMVAR_INDEX>
-                <POTENTIOMETER>81</POTENTIOMETER>
+                <POTENTIOMETER>10</POTENTIOMETER>
             </UseTemplate>
 
             <UseTemplate Name="ASOBO_LIGHTING_Knob_Glareshield_Template">
@@ -382,13 +382,15 @@
                 <ANIM_NAME>LIGHTING_Knob_Glareshield_4</ANIM_NAME>
                 <ID>2</ID>
                 <SIMVAR_INDEX>2</SIMVAR_INDEX>
-                <POTENTIOMETER>82</POTENTIOMETER>
+                <POTENTIOMETER>11</POTENTIOMETER>
+                <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.LIGHTING_MAIN_PANEL_FLOOD_DECREASE</ANIMTIP_0>
+                <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.LIGHTING_MAIN_PANEL_FLOOD_INCREASE</ANIMTIP_1>
             </UseTemplate>
 
             <UseTemplate Name="ASOBO_LIGHTING_Glareshield_Emissive_Template">
                 <NODE_ID>LIGHTS_Glareshield_Front_2</NODE_ID>
                 <SIMVAR_INDEX>2</SIMVAR_INDEX>
-                <POTENTIOMETER>82</POTENTIOMETER>
+                <POTENTIOMETER>11</POTENTIOMETER>
             </UseTemplate>
 
             <!-- Triangle Glareshields -->
@@ -2216,19 +2218,22 @@
             </Component>
 
             <Component ID="Overhead_Handling">
-                <UseTemplate Name="ASOBO_HANDLING_Switch_Wipers_Template">
+                <UseTemplate Name="FBW_Airbus_Wiper_Knob">
+                    <NODE_ID>HANDLING_Switch_Wiper_left</NODE_ID>
+                    <ANIM_NAME>HANDLING_Switch_Wiper_left</ANIM_NAME>
                     <CIRCUIT_ID_WIPERS>77</CIRCUIT_ID_WIPERS>
-                    <POS_OFF>0</POS_OFF>
-                    <POS_SLOW>1</POS_SLOW>
-                    <POS_NORM>2</POS_NORM>
                     <PART_ID>HANDLING_Switch_Wipers</PART_ID>
+                    <ANIMTIP_0>Set left wiper to OFF</ANIMTIP_0>
+                    <ANIMTIP_1>Set left wiper to SLOW</ANIMTIP_1>
+                    <ANIMTIP_2>Set left wiper to FAST</ANIMTIP_2>
                 </UseTemplate>
-                <UseTemplate Name="ASOBO_HANDLING_Switch_Wipers_Template">
-                    <NODE_ID>HANDLING_Switch_Wipers_1</NODE_ID>
-                    <CIRCUIT_ID_WIPERS>77</CIRCUIT_ID_WIPERS>
-                    <POS_OFF>0</POS_OFF>
-                    <POS_SLOW>1</POS_SLOW>
-                    <POS_NORM>2</POS_NORM>
+                <UseTemplate Name="FBW_Airbus_Wiper_Knob">
+                    <NODE_ID>HANDLING_Switch_Wiper_right</NODE_ID>
+                    <ANIM_NAME>HANDLING_Switch_Wiper_right</ANIM_NAME>
+                    <CIRCUIT_ID_WIPERS>80</CIRCUIT_ID_WIPERS>
+                    <ANIMTIP_0>Set right wiper to OFF</ANIMTIP_0>
+                    <ANIMTIP_1>Set right wiper to SLOW</ANIMTIP_1>
+                    <ANIMTIP_2>Set right wiper to FAST</ANIMTIP_2>
                 </UseTemplate>
             </Component>
 
@@ -2429,7 +2434,7 @@
             </Component>
 
             <Component ID="Overhead_Reading_Lights">
-                <!-- Left -->
+                <!-- Left knob -->
                 <UseTemplate Name="FBW_Lighting_Knob_With_Potentiometer">
                     <NODE_ID>KNOB_OVHD_READINGLTL</NODE_ID>
                     <ANIM_NAME>KNOB_OVHD_READINGLTL</ANIM_NAME>
@@ -2438,13 +2443,25 @@
                     <ANIMTIP_1>Increase reading light brightness</ANIMTIP_1>
                 </UseTemplate>
 
-                <!-- Right -->
+                <!-- Left light -->
+                <UseTemplate Name="ASOBO_LIGHTING_Panel_Emissive_Template">
+                    <NODE_ID>LIGHT_OVHD_READINGLLT</NODE_ID>
+                    <POTENTIOMETER>96</POTENTIOMETER>
+                </UseTemplate>
+
+                <!-- Right knob -->
                 <UseTemplate Name="FBW_Lighting_Knob_With_Potentiometer">
                     <NODE_ID>KNOB_OVHD_READINGLTR</NODE_ID>
                     <ANIM_NAME>KNOB_OVHD_READINGLTR</ANIM_NAME>
                     <POTENTIOMETER>97</POTENTIOMETER>
                     <ANIMTIP_0>Decrease reading light brightness</ANIMTIP_0>
                     <ANIMTIP_1>Increase reading light brightness</ANIMTIP_1>
+                </UseTemplate>
+
+                <!-- Right light -->
+                <UseTemplate Name="ASOBO_LIGHTING_Panel_Emissive_Template">
+                    <NODE_ID>LIGHT_OVHD_READINGLTR</NODE_ID>
+                    <POTENTIOMETER>97</POTENTIOMETER>
                 </UseTemplate>
             </Component>
 
