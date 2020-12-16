@@ -346,19 +346,8 @@ function _addWindComponent(vw) {
  * @returns {number} angle diff
  * @private
  */
-function _getAngle(a, b) {
+function _getAngleDiff(a, b) {
     return 180 - Math.abs(Math.abs(a - b) - 180);
-}
-
-/**
- * Get Headwind
- * @param a {number} angle a
- * @param v {number} velocity wind
- * @returns {number} velocity wind
- * @private
- */
-function _getHeadwind(a, v) {
-    return Math.abs(v * Math.cos(a));
 }
 
 class NXSpeeds {
@@ -412,14 +401,35 @@ class NXSpeedsUtils {
     }
 
     /**
-     * Calculates ground speed mini
-     * @param vTower {number} velocity wind tower
-     * @param aTower {number} angle wind tower
-     * @param runway arrival runway
-     * @param curHeadwind {number} current headwind
-     * @returns {number} ground speed mini
+     * Calculates headwind component
+     * @param v {number} velocity wind
+     * @param a {number} angle: a
+     * @param b {number} angle: b
+     * @returns {number} velocity headwind
      */
-    static groundSpeedMini(vTower, aTower, runway, curHeadwind = SimVar.GetSimVarValue("AIRCRAFT WIND Z", "knots") * -1) {
-        return runway ? curHeadwind - _getHeadwind(_getAngle(runway.direction, aTower), vTower) : 0;
+    static getHeadwind(v, a, b) {
+        return v * Math.cos(_getAngleDiff(a, b) * (Math.PI / 180));
+    }
+
+    /**
+     * 1/3 * (current headwind - tower headwind)
+     * @param vTwr {number} velocity tower headwind
+     * @param vCur {number} velocity current headwind
+     * @returns {number} head wind diff
+     */
+    static getHeadWindDiff(vTwr, vCur = SimVar.GetSimVarValue("AIRCRAFT WIND Z", "knots") * -1) {
+        return Math.round(1 / 3 * (vCur - vTwr));
+    }
+
+    /**
+     * Returns Vtarget limited by Vapp and VFE next
+     * @param vapp {number} Vapp
+     * @param windDiff {number} ground speed mini
+     * @returns {number}
+     */
+    static getVtargetGSMini(vapp, windDiff) {
+        return Math.max(vapp, Math.min(Math.round(vapp + windDiff), Math.round(
+            Simplane.getFlapsHandleIndex() === 4 ? Simplane.getMaxSpeed(Aircraft.A320_NEO) - 5 : Simplane.getNextFlapsExtendSpeed(Aircraft.A320_NEO)
+        )));
     }
 }

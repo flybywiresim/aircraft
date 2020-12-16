@@ -261,21 +261,25 @@
         <Sound WwiseEvent="BuzzL" NodeName="Engine_PIVOT_LEFT_2" WwiseData="true" SimVar="TURB ENG N1" Units="percent" Index="1" Continuous="true">
             <Range LowerBound="1" />
             <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Index="1" RTPCName="SIMVAR_TURB_ENG_N1" />
+            <WwiseRTPC SimVar="PLANE ALT ABOVE GROUND" Units="feet" Index="1" RTPCName="SIMVAR_PLANE_ALT_ABOVE_GROUND" />
         </Sound>
 
         <Sound WwiseEvent="BuzzR" NodeName="Engine_PIVOT_RIGHT_2" WwiseData="true" SimVar="TURB ENG N1" Units="percent" Index="2" Continuous="true">
             <Range LowerBound="1" />
             <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Index="2" RTPCName="SIMVAR_TURB_ENG_N1" />
+            <WwiseRTPC SimVar="PLANE ALT ABOVE GROUND" Units="feet" Index="1" RTPCName="SIMVAR_PLANE_ALT_ABOVE_GROUND" />
         </Sound>
 
         <Sound WwiseEvent="BuzzLEXT" WwiseData="true" NodeName="Engine_PIVOT_LEFT_2" SimVar="TURB ENG N1" Units="percent" Index="1" ViewPoint="Outside" Continuous="true">
             <Range LowerBound="1" />
             <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Index="1" RTPCName="SIMVAR_TURB_ENG_N1" />
+            <WwiseRTPC SimVar="PLANE ALT ABOVE GROUND" Units="feet" Index="1" RTPCName="SIMVAR_PLANE_ALT_ABOVE_GROUND" />
         </Sound>
 
         <Sound WwiseEvent="BuzzREXT" WwiseData="true" NodeName="Engine_PIVOT_RIGHT_2" SimVar="TURB ENG N1" Units="percent" Index="2" ViewPoint="Outside" Continuous="true">
             <Range LowerBound="1" />
             <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Index="2" RTPCName="SIMVAR_TURB_ENG_N1" />
+            <WwiseRTPC SimVar="PLANE ALT ABOVE GROUND" Units="feet" Index="1" RTPCName="SIMVAR_PLANE_ALT_ABOVE_GROUND" />
         </Sound>
 
         <Sound WwiseEvent="LWhineEXT" WwiseData="true" NodeName="Engine_PIVOT_LEFT_2" SimVar="TURB ENG N1" Units="percent" Index="1" ViewPoint="Outside" Continuous="true">
@@ -332,11 +336,25 @@
         <Sound WwiseEvent="ReverseL" NodeName="Engine_PIVOT_LEFT_2" WwiseData="true" SimVar="TURB ENG N1" Units="percent" Index="1" Continuous="true">
             <Range LowerBound="1" />
             <WwiseRTPC SimVar="TURB ENG REVERSE NOZZLE PERCENT" Units="percent" Index="1" RTPCName="SIMVAR_TURB_ENG_REVERSE_NOZZLE_PERCENT" />
+            <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Index="1" RTPCName="SIMVAR_TURB_ENG_N1" />
         </Sound>
 
         <Sound WwiseEvent="ReverseR" NodeName="Engine_PIVOT_RIGHT_2" WwiseData="true" SimVar="TURB ENG N1" Units="percent" Index="2" Continuous="true">
             <Range LowerBound="1" />
             <WwiseRTPC SimVar="TURB ENG REVERSE NOZZLE PERCENT" Units="percent" Index="2" RTPCName="SIMVAR_TURB_ENG_REVERSE_NOZZLE_PERCENT" />
+            <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Index="2" RTPCName="SIMVAR_TURB_ENG_N1" />
+        </Sound>
+
+        <Sound WwiseEvent="RevWindL" NodeName="Engine_PIVOT_LEFT_2" WwiseData="true" SimVar="TURB ENG N1" Units="percent" Index="1" Continuous="true">
+            <Range LowerBound="1" />
+            <WwiseRTPC SimVar="TURB ENG REVERSE NOZZLE PERCENT" Units="percent" Index="1" RTPCName="SIMVAR_TURB_ENG_REVERSE_NOZZLE_PERCENT" />
+            <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Index="1" RTPCName="SIMVAR_TURB_ENG_N1" />
+        </Sound>
+
+        <Sound WwiseEvent="RevWindR" NodeName="Engine_PIVOT_RIGHT_2" WwiseData="true" SimVar="TURB ENG N1" Units="percent" Index="2" Continuous="true">
+            <Range LowerBound="1" />
+            <WwiseRTPC SimVar="TURB ENG REVERSE NOZZLE PERCENT" Units="percent" Index="2" RTPCName="SIMVAR_TURB_ENG_REVERSE_NOZZLE_PERCENT" />
+            <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Index="2" RTPCName="SIMVAR_TURB_ENG_N1" />
         </Sound>
 
         <Sound WwiseEvent="StartL" NodeName="Engine_PIVOT_LEFT_2" FadeOutType="1" FadeOutTime="1" WwiseData="true" SimVar="TURB ENG N2" Units="percent" ViewPoint="Inside" Index="1" Continuous="true">
@@ -404,11 +422,15 @@
         <Sound WwiseEvent="StartLEXT" NodeName="Engine_PIVOT_LEFT_2" FadeOutType="1" FadeOutTime="1" WwiseData="true" SimVar="TURB ENG N2" Units="percent" ViewPoint="Outside" Index="1" Continuous="true">
             <Range LowerBound="1" />
             <WwiseRTPC SimVar="TURB ENG N2" Units="percent" Index="1" RTPCName="SIMVAR_TURB_ENG_N2" />
+            <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Index="1" RTPCName="SIMVAR_TURB_ENG_N1" />
+            <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Derived="true" Index="1" RTPCName="SIMVAR_TURB_ENG_N1_DERIVED" />
         </Sound>
 
         <Sound WwiseEvent="StartREXT" NodeName="Engine_PIVOT_RIGHT_2" FadeOutType="1" FadeOutTime="1" WwiseData="true" SimVar="TURB ENG N2" Units="percent" ViewPoint="Outside" Index="2" Continuous="true">
             <Range LowerBound="1" />
             <WwiseRTPC SimVar="TURB ENG N2" Units="percent" Index="2" RTPCName="SIMVAR_TURB_ENG_N2" />
+            <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Index="2" RTPCName="SIMVAR_TURB_ENG_N1" />
+            <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Derived="true" Index="2" RTPCName="SIMVAR_TURB_ENG_N1_DERIVED" />
         </Sound>
 
         <Sound WwiseEvent="FFlowLEXT" WwiseData="true" NodeName="Engine_PIVOT_LEFT_2" SimVar="TURB ENG N2" Units="percent" ViewPoint="Outside" Index="1" Continuous="true">
@@ -450,11 +472,13 @@
         <Sound WwiseEvent="ReverseLEXT" NodeName="Engine_PIVOT_LEFT_2" WwiseData="true" SimVar="TURB ENG N1" Units="percent" ViewPoint="outside" Index="1" Continuous="true">
             <Range LowerBound="1" />
             <WwiseRTPC SimVar="TURB ENG REVERSE NOZZLE PERCENT" Units="percent" Index="2" RTPCName="SIMVAR_TURB_ENG_REVERSE_NOZZLE_PERCENT" />
+            <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Index="1" RTPCName="SIMVAR_TURB_ENG_N1" />
         </Sound>
 
         <Sound WwiseEvent="ReverseREXT" NodeName="Engine_PIVOT_RIGHT_2" WwiseData="true" SimVar="TURB ENG N1" Units="percent" ViewPoint="outside" Index="2" Continuous="true">
             <Range LowerBound="1" />
             <WwiseRTPC SimVar="TURB ENG REVERSE NOZZLE PERCENT" Units="percent" Index="2" RTPCName="SIMVAR_TURB_ENG_REVERSE_NOZZLE_PERCENT" />
+            <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Index="2" RTPCName="SIMVAR_TURB_ENG_N1" />
         </Sound> 
 
 
@@ -499,7 +523,7 @@
             <Range LowerBound="1" />
             <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Index="2" RTPCName="SIMVAR_TURB_ENG_N1" />
         </Sound> -->
-
+        
         <!-- FUEL PUMP SOUNDS ========================================================================================== -->
 
         <Sound WwiseEvent="Fuelpump" WwiseData="true" Continuous="true" NodeName="WING_BONE_LEFT_01" SimVar="FUELSYSTEM PUMP ACTIVE" Units="BOOL" Index="2">
@@ -560,7 +584,7 @@
             <WwiseRTPC SimVar="GROUND VELOCITY" Units="KNOTS" Index="0" RTPCName="SIMVAR_GROUND_VELOCITY" />
         </Sound>
 
-        <Sound WwiseData="true" WwiseEvent="tinnyroll" ViewPoint="Inside" FadeOutType="2" FadeOutTime="1" SimVar="GEAR ANIMATION POSITION" Units="PERCENT" Index="0">
+        <Sound WwiseData="true" WwiseEvent="tinnyroll" NodeName="PEDALS_LEFT" ViewPoint="Inside" FadeOutType="2" FadeOutTime="1" SimVar="GEAR ANIMATION POSITION" Units="PERCENT" Index="0">
             <Range LowerBound="55" />
             <Requires SimVar="GEAR TOTAL PCT EXTENDED" Units="PERCENT" Index="0">
                 <Range LowerBound="1" />
@@ -571,9 +595,6 @@
         <Sound WwiseData="true" WwiseEvent="NWheelSpinAboveGround" NodeName="PEDALS_LEFT" ViewPoint="Inside" Continuous="false" SimVar="GEAR ANIMATION POSITION" Units="PERCENT" Index="0">
             <Range UpperBound="50" />
             <WwiseRTPC SimVar="GEAR ANIMATION POSITION" Units="PERCENT" Index="0" RTPCName="SIMVAR_GEAR_ANIMATION_POSITION" />
-            <Requires SimVar="WHEEL RPM" Units="RPM" Index="1">
-                <Range LowerBound="900" />
-            </Requires >
         </Sound>
 
         <Sound WwiseData="true" WwiseEvent="taxirattle" ViewPoint="Inside" SimVar="SIM ON GROUND" Units="BOOLEAN" Index="0">
@@ -679,6 +700,20 @@
             </Requires>
         </Sound>
 
+        <Sound WwiseData="true" NodeName="PEDALS_LEFT" WwiseEvent="turbulence1" SimVar="SIM ON GROUND" Units="BOOLEAN" Index="0" >
+        <Range UpperBound="0" />
+            <WwiseRTPC SimVar="ROTATION VELOCITY BODY X" Units="PERCENT" Index="0" RTPCName="SIMVAR_ROTATION_VELOCITY_BODY_X"/>
+            <WwiseRTPC SimVar="ROTATION VELOCITY BODY Y" Units="PERCENT" Index="0" RTPCName="SIMVAR_ROTATION_VELOCITY_BODY_Y"/>
+            <WwiseRTPC SimVar="ROTATION VELOCITY BODY Z" Units="PERCENT" Index="0" RTPCName="SIMVAR_ROTATION_VELOCITY_BODY_Z"/>
+        </Sound>
+
+        <Sound WwiseData="true" NodeName="HublotIn002" WwiseEvent="turbulence2" SimVar="SIM ON GROUND" Units="BOOLEAN" Index="0" >
+        <Range UpperBound="0" />
+            <WwiseRTPC SimVar="ROTATION VELOCITY BODY X" Units="PERCENT" Index="0" RTPCName="SIMVAR_ROTATION_VELOCITY_BODY_X"/>
+            <WwiseRTPC SimVar="ROTATION VELOCITY BODY Y" Units="PERCENT" Index="0" RTPCName="SIMVAR_ROTATION_VELOCITY_BODY_Y"/>
+            <WwiseRTPC SimVar="ROTATION VELOCITY BODY Z" Units="PERCENT" Index="0" RTPCName="SIMVAR_ROTATION_VELOCITY_BODY_Z"/>
+        </Sound>
+
         <!-- BETTER WIND NOISES ========================================================================================== -->
 
         <Sound WwiseData="true" WwiseEvent="Betterwind" SimVar="AIRSPEED INDICATED" ViewPoint="Inside" NodeName="PEDALS_LEFT" Continuous="True" Units="KNOTS" Index="0" FadeOutType="2" FadeOutTime="1">
@@ -686,7 +721,7 @@
             <WwiseRTPC SimVar="AIRSPEED INDICATED" Units="KNOTS" Index="0" RTPCName="SIMVAR_AIRSPEED_INDICATED" />
         </Sound>
 
-        <Sound WwiseData="true" WwiseEvent="cabinwind" SimVar="AIRSPEED INDICATED" ViewPoint="Inside" NodeName="HutblotIn002" Continuous="True" Units="KNOTS" Index="0" FadeOutType="2" FadeOutTime="1">
+        <Sound WwiseData="true" WwiseEvent="cabinwind" SimVar="AIRSPEED INDICATED" ViewPoint="Inside" NodeName="LIGHT_ASOBO_NAVIGATIONTAILRIGHT" Continuous="True" Units="KNOTS" Index="0" FadeOutType="2" FadeOutTime="1">
             <Range LowerBound="80" />
             <WwiseRTPC SimVar="AIRSPEED INDICATED" Units="KNOTS" Index="0" RTPCName="SIMVAR_AIRSPEED_INDICATED" />
         </Sound>
@@ -736,7 +771,7 @@
         </Sound>
 
         <Sound WwiseEvent="gdown" WwiseData="true" Continuous="false" NodeName="WHEELS_C" FadeOutType="2" FadeOutTime="1" SimVar="GEAR TOTAL PCT EXTENDED" Units="PERCENT">
-            <Range LowerBound="0.1" UpperBound="0.9" />
+            <Range LowerBound="0.05" UpperBound="0.95" />
             <WwiseRTPC SimVar="GEAR TOTAL PCT EXTENDED" Units="PERCENT" Index="0" RTPCName="SIMVAR_GEAR_TOTAL_PCT_EXTENDED" />
         </Sound>
 
@@ -758,39 +793,31 @@
         </Sound>
 
         <Sound WwiseData="true" WwiseEvent="detent" Continuous="false" ViewPoint="Inside" NodeName="LEVER_THROTTLE_1" LocalVar="XMLVAR_Throttle1Position">
-            <Range UpperBound="0" />
             <Range LowerBound="2.9" UpperBound="3.1" />
-            <Range LowerBound="1" UpperBound="1.1" />
         </Sound>
 
         <Sound WwiseData="true" WwiseEvent="detent" Continuous="false" ViewPoint="Inside" NodeName="LEVER_THROTTLE_2" LocalVar="XMLVAR_Throttle2Position">
-            <Range UpperBound="0" />
             <Range LowerBound="2.9" UpperBound="3.1" />
-            <Range LowerBound="1" UpperBound="1.1" />
-        </Sound>
-
-        <Sound WwiseData="true" WwiseEvent="detent" Continuous="false" ViewPoint="Inside" NodeName="LEVER_THROTTLE_1" LocalVar="XMLVAR_Throttle1Position">
-            <Range LowerBound="1.9" UpperBound="2.1" />
-        </Sound>
-
-        <Sound WwiseData="true" WwiseEvent="detent" Continuous="false" ViewPoint="Inside" NodeName="LEVER_THROTTLE_2" LocalVar="XMLVAR_Throttle2Position">
-            <Range LowerBound="1.9" UpperBound="2.1" />
         </Sound>
 
         <Sound WwiseData="true" WwiseEvent="TOGAdetent" Continuous="false" ViewPoint="Inside" NodeName="LEVER_THROTTLE_1" LocalVar="XMLVAR_Throttle1Position">
-            <Range LowerBound="3.9" />
+            <Range LowerBound="1.9" UpperBound="2.1" />
         </Sound>
 
         <Sound WwiseData="true" WwiseEvent="TOGAdetent" Continuous="false" ViewPoint="Inside" NodeName="LEVER_THROTTLE_2" LocalVar="XMLVAR_Throttle2Position">
-            <Range LowerBound="3.9" />
+            <Range LowerBound="1.9" UpperBound="2.1" />
         </Sound>
 
         <Sound WwiseData="true" WwiseEvent="IdleDetent" Continuous="false" ViewPoint="Inside" NodeName="LEVER_THROTTLE_1" LocalVar="XMLVAR_Throttle1Position">
             <Range LowerBound="0.9" UpperBound="1.1" />
+            <Range LowerBound="3.9" />
+            <Range UpperBound="0" />
         </Sound>
 
         <Sound WwiseData="true" WwiseEvent="IdleDetent" Continuous="false" ViewPoint="Inside" NodeName="LEVER_THROTTLE_2" LocalVar="XMLVAR_Throttle2Position">
             <Range LowerBound="0.9" UpperBound="1.1" />
+            <Range LowerBound="3.9" />
+            <Range UpperBound="0" />
         </Sound>
 
         <Sound WwiseData="true" WwiseEvent="lever_trim_elevator" ViewPoint="Inside" NodeName="LEVER_ELEVATORTRIM_1" ContinuousStopDelay="1.0" SimVar="ELEVATOR TRIM POSITION" Units="PERCENT" Index="0">
@@ -841,14 +868,14 @@
         </Sound>
 
         <!-- Play sound whenever the seat belts switch position changes -->
-        <Sound WwiseData="true" WwiseEvent="light_switch_seatbelt" LocalVar="XMLVAR_SWITCH_OVHD_INTLT_SEATBELT_Position" Continuous="false">
+        <Sound WwiseData="true" WwiseEvent="light_switch_seatbelt" LocalVar="XMLVAR_SWITCH_OVHD_INTLT_SEATBELT_Position" ViewPoint="Inside" Continuous="false">
             <Requires SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1">
                 <Range LowerBound="28" />
             </Requires>
         </Sound>
 
         <!-- Play sound whenever the no smoking ecam memo changes -->
-        <Sound WwiseData="true" WwiseEvent="light_switch_seatbelt" LocalVar="A32NX_NO_SMOKING_MEMO" Continuous="false">
+        <Sound WwiseData="true" WwiseEvent="light_switch_seatbelt" LocalVar="A32NX_NO_SMOKING_MEMO" ViewPoint="Inside" Continuous="false">
             <Requires SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1">
                 <Range LowerBound="28" />
             </Requires>
