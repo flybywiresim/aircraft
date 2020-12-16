@@ -205,9 +205,6 @@ class A320_Neo_FCU_Heading extends A320_Neo_FCU_Component {
         this.textHDG = this.getTextElement("HDG");
         this.textTRK = this.getTextElement("TRK");
         this.textLAT = this.getTextElement("LAT");
-        this.decimalPoint1 = this.getElement("circle", "DEC_PNT1");
-        this.decimalPoint2 = this.getElement("circle", "DEC_PNT2");
-        this.decimalPoint3 = this.getElement("circle", "DEC_PNT3");
         this.illuminator = this.getElement("circle", "Illuminator");
         this.refresh(false, false, false, false, 0, 0, true);
     }
@@ -240,6 +237,7 @@ class A320_Neo_FCU_Heading extends A320_Neo_FCU_Component {
         } else {
             {
                 if (isTRKMode) {
+                    // TODO: debounce re-calculating heading for track to increase performance.
                     const track = SimVar.GetSimVarValue("L:A32NX_AUTOPILOT_TRACK_SELECTED:1", "Degrees");
                     const heading = this.calculateHeadingForTrack(track);
                     Coherent.call("HEADING_BUG_SET", 1, heading);
@@ -253,7 +251,7 @@ class A320_Neo_FCU_Heading extends A320_Neo_FCU_Component {
     }
     refresh(_isActive, _isManaged, _isTRKMode, _showSelectedHeading, _value, _lightsTest, _force = false) {
         if ((_isActive != this.isActive) || _isManaged != this.isManaged || (_isTRKMode != this.isTRKMode) || (_showSelectedHeading != this.showSelectedHeading) || (_value != this.currentValue) || (_lightsTest !== this.lightsTest) || _force) {
-            if(_isTRKMode != this.isTRKMode) {
+            if (_isTRKMode != this.isTRKMode) {
                 this.onTRKModeChanged(_isTRKMode);
             }
             if (_isManaged != this.isManaged) {
@@ -279,9 +277,6 @@ class A320_Neo_FCU_Heading extends A320_Neo_FCU_Component {
                 this.setTextElementActive(this.textLAT, true);
                 this.textValueContent = "888";
                 this.setElementVisibility(this.illuminator, true);
-                this.setElementVisibility(this.decimalPoint1, true);
-                this.setElementVisibility(this.decimalPoint2, true);
-                this.setElementVisibility(this.decimalPoint3, true);
                 return;
             }
             if (!this.isManaged) {
@@ -296,34 +291,36 @@ class A320_Neo_FCU_Heading extends A320_Neo_FCU_Component {
                 }
             }
             this.setElementVisibility(this.illuminator, this.isManaged);
-            this.setElementVisibility(this.decimalPoint1, false);
-            this.setElementVisibility(this.decimalPoint2, false);
-            this.setElementVisibility(this.decimalPoint3, false);
         }
     }
     calculateTrackForHeading(_heading) {
-        const heading = _heading * Math.PI / 180;
         const trueAirspeed = SimVar.GetSimVarValue("AIRSPEED TRUE", "Knots");
-        if (trueAirspeed < 50) return _heading;
+        if (trueAirspeed < 50) {
+            return _heading;
+        }
 
+        const heading = _heading * Math.PI / 180;
         const windVelocity = SimVar.GetSimVarValue("AMBIENT WIND VELOCITY", "Knots");
         const windDirection = SimVar.GetSimVarValue("AMBIENT WIND DIRECTION", "Degrees") * Math.PI / 180;
+        // https://web.archive.org/web/20160302090326/http://williams.best.vwh.net/avform.htm#Wind
         const wca = Math.atan2(windVelocity * Math.sin(heading - windDirection), trueAirspeed - windVelocity * Math.cos(heading - windDirection));
         const track = heading + wca % (2 * Math.PI);
-        return (((track * 180 / Math.PI) % 360) + 360) % 360
+        return (((track * 180 / Math.PI) % 360) + 360) % 360;
     }
     calculateHeadingForTrack(_track) {
-        const track = _track * Math.PI / 180;
         const trueAirspeed = SimVar.GetSimVarValue("AIRSPEED TRUE", "Knots");
-        if (trueAirspeed < 50) return _track;
+        if (trueAirspeed < 50) {
+            return _track;
+        }
 
+        const track = _track * Math.PI / 180;
         const windVelocity = SimVar.GetSimVarValue("AMBIENT WIND VELOCITY", "Knots");
         const windDirection = SimVar.GetSimVarValue("AMBIENT WIND DIRECTION", "Degrees") * Math.PI / 180;
         // https://web.archive.org/web/20160302090326/http://williams.best.vwh.net/avform.htm#Wind
         const swc = (windVelocity / trueAirspeed) * Math.sin(windDirection - track);
         const heading = track + Math.asin(swc) % (2 * Math.PI);
-        console.log(heading * 180 / Math.PI);
-        return (((heading * 180 / Math.PI) % 360) + 360) % 360
+        const _heading = (((heading * 180 / Math.PI) % 360) + 360) % 360;
+        return _heading == NaN ? _track : _heading;
     }
     onTRKModeChanged(_newValue) {
         if (_newValue) {
@@ -336,7 +333,7 @@ class A320_Neo_FCU_Heading extends A320_Neo_FCU_Component {
         if (_newValue) {
             const simHeading = SimVar.GetSimVarValue("PLANE HEADING DEGREES MAGNETIC", "degree");
             Coherent.call("HEADING_BUG_SET", 1, simHeading);
-            const track = SimVar.GetSimVarValue("GPS GROUND MAGNETIC TRACK", "Radians") * 180 / Math.PI;;
+            const track = SimVar.GetSimVarValue("GPS GROUND MAGNETIC TRACK", "Radians") * 180 / Math.PI; ;
             SimVar.SetSimVarValue("L:A32NX_AUTOPILOT_TRACK_SELECTED:1", "Degrees", track);
         } else {
             this.backToIdleTimeout = 0;
