@@ -160,6 +160,7 @@
 1. [FLIGHTMODEL] Corrected fuel tank capacities, including unusable fuel - @donstim - (donbikes#4084)
 1. [General] Added option to switch between KG and LBS - @MisterChocker (Leon)
 1. [CDU] Improved INIT-A PAGE transition to INIT-B or FUEL PRED PAGE - @MisterChocker (Leon)
+1. [CDU] Improved Options Page - @MisterChocker (Leon)
 
 ## 0.4.0
 1. [General] Add CHANGELOG.md - @nathaninnes (Nathan Innes)
