@@ -36,7 +36,7 @@ class CDUAvailableArrivalsPage {
                     const index = i + pageCurrent;
                     const approach = approaches[index];
                     if (approach) {
-                        rows[2 * i] = ["{" + Avionics.Utils.formatRunway(approach.name) + "[color]cyan"];
+                        rows[2 * i] = ["{" + Avionics.Utils.formatRunway(approach.name.replace(/\s+/g, '')) + "[color]cyan"];
                         mcdu.onLeftInput[i + 2] = () => {
                             mcdu.setApproachIndex(index, () => {
                                 CDUAvailableArrivalsPage.ShowPage(mcdu, airport, 0, true);

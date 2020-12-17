@@ -38,8 +38,12 @@ class CDUAvailableDeparturesPage {
                     if (runway) {
                         rows[2 * i] = [
                             "{" + Avionics.Utils.formatRunway(runway.designation) + "[color]cyan",
-                            "CRS" + (runway.direction / 10).toFixed(0) + "0[color]cyan",
+                            "",
                             runway.length.toFixed(0) + "M[color]cyan"
+                        ];
+                        const crs = Math.round(runway.direction);
+                        rows[2 * i + 1] = [
+                            `\xa0\xa0\xa0\xa0${(crs < 100 ? `0${crs}` : crs)}[color]cyan`
                         ];
                         mcdu.onLeftInput[i + 1] = async () => {
                             mcdu.setOriginRunwayIndex(index, () => {
