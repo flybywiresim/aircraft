@@ -157,7 +157,7 @@
                 <Range UpperBound="0" />
             </Requires>
         </Sound>
-        
+
         <Sound WwiseData="true" WwiseEvent="gearleverclick" Continuous="false" NodeName="PEDALS_LEFT" ViewPoint="Inside" SimVar="GEAR HANDLE POSITION" Units="BOOLEAN" Index="0">
             <Range LowerBound="1" />
         </Sound>
@@ -479,51 +479,8 @@
             <Range LowerBound="1" />
             <WwiseRTPC SimVar="TURB ENG REVERSE NOZZLE PERCENT" Units="percent" Index="2" RTPCName="SIMVAR_TURB_ENG_REVERSE_NOZZLE_PERCENT" />
             <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Index="2" RTPCName="SIMVAR_TURB_ENG_N1" />
-        </Sound> 
-
-
-        <!-- ENGINE SOUNDS (IAE-V2500) ======================================================================================== -->
-
-      <!-- <Sound WwiseEvent="IAE_LSpool" WwiseData="true" NodeName="Engine_PIVOT_LEFT_2" SimVar="TURB ENG N1" Units="percent" Index="1" ViewPoint="Inside" Continuous="true">
-            <Range LowerBound="0" />
-            <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Index="1" RTPCName="SIMVAR_TURB_ENG_N1" />
         </Sound>
 
-        <Sound WwiseEvent="IAE_RSpool" WwiseData="true" NodeName="Engine_PIVOT_RIGHT_2" SimVar="TURB ENG N1" Units="percent" Index="2" ViewPoint="Inside" Continuous="true">
-            <Range LowerBound="0" />
-            <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Index="2" RTPCName="SIMVAR_TURB_ENG_N1" />
-        </Sound>
-
-        <Sound WwiseEvent="IAE_ISpoolL" WwiseData="true" NodeName="Engine_PIVOT_LEFT_2" SimVar="TURB ENG N1" Units="percent" Index="1" ViewPoint="Inside" Continuous="true">
-            <Range LowerBound="1" />
-            <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Index="1" RTPCName="SIMVAR_TURB_ENG_N1" />
-        </Sound>
-
-        <Sound WwiseEvent="IAE_ISpoolR" WwiseData="true" NodeName="Engine_PIVOT_RIGHT_2" SimVar="TURB ENG N1" Units="percent" Index="2" ViewPoint="Inside" Continuous="true">
-            <Range LowerBound="1" />
-            <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Index="2" RTPCName="SIMVAR_TURB_ENG_N1" />
-        </Sound>
-
-        <Sound WwiseEvent="IAE_BuzzL" NodeName="Engine_PIVOT_LEFT_2" WwiseData="true" SimVar="TURB ENG N1" Units="percent" Index="1" Continuous="true">
-            <Range LowerBound="1" />
-            <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Index="1" RTPCName="SIMVAR_TURB_ENG_N1" />
-        </Sound>
-
-        <Sound WwiseEvent="IAE_BuzzR" NodeName="Engine_PIVOT_RIGHT_2" WwiseData="true" SimVar="TURB ENG N1" Units="percent" Index="2" Continuous="true">
-            <Range LowerBound="1" />
-            <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Index="2" RTPCName="SIMVAR_TURB_ENG_N1" />
-        </Sound>
-
-        <Sound WwiseEvent="IAE_LWhine" WwiseData="true" NodeName="Engine_PIVOT_LEFT_2" SimVar="TURB ENG N1" Units="percent" Index="1" ViewPoint="Inside" Continuous="true">
-            <Range LowerBound="1" />
-            <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Index="1" RTPCName="SIMVAR_TURB_ENG_N1" />
-        </Sound>
-
-        <Sound WwiseEvent="IAE_RWhine" WwiseData="true" NodeName="Engine_PIVOT_RIGHT_2" SimVar="TURB ENG N1" Units="percent" Index="2" ViewPoint="Inside" Continuous="true">
-            <Range LowerBound="1" />
-            <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Index="2" RTPCName="SIMVAR_TURB_ENG_N1" />
-        </Sound> -->
-        
         <!-- FUEL PUMP SOUNDS ========================================================================================== -->
 
         <Sound WwiseEvent="Fuelpump" WwiseData="true" Continuous="true" NodeName="WING_BONE_LEFT_01" SimVar="FUELSYSTEM PUMP ACTIVE" Units="BOOL" Index="2">
@@ -700,15 +657,15 @@
             </Requires>
         </Sound>
 
-        <Sound WwiseData="true" NodeName="PEDALS_LEFT" WwiseEvent="turbulence1" SimVar="SIM ON GROUND" Units="BOOLEAN" Index="0" >
-        <Range UpperBound="0" />
+        <Sound WwiseData="true" NodeName="PEDALS_LEFT" WwiseEvent="turbulence1" SimVar="SIM ON GROUND" Units="BOOLEAN" Index="0">
+            <Range UpperBound="0" />
             <WwiseRTPC SimVar="ROTATION VELOCITY BODY X" Units="PERCENT" Index="0" RTPCName="SIMVAR_ROTATION_VELOCITY_BODY_X"/>
             <WwiseRTPC SimVar="ROTATION VELOCITY BODY Y" Units="PERCENT" Index="0" RTPCName="SIMVAR_ROTATION_VELOCITY_BODY_Y"/>
             <WwiseRTPC SimVar="ROTATION VELOCITY BODY Z" Units="PERCENT" Index="0" RTPCName="SIMVAR_ROTATION_VELOCITY_BODY_Z"/>
         </Sound>
 
-        <Sound WwiseData="true" NodeName="HublotIn002" WwiseEvent="turbulence2" SimVar="SIM ON GROUND" Units="BOOLEAN" Index="0" >
-        <Range UpperBound="0" />
+        <Sound WwiseData="true" NodeName="HublotIn002" WwiseEvent="turbulence2" SimVar="SIM ON GROUND" Units="BOOLEAN" Index="0">
+            <Range UpperBound="0" />
             <WwiseRTPC SimVar="ROTATION VELOCITY BODY X" Units="PERCENT" Index="0" RTPCName="SIMVAR_ROTATION_VELOCITY_BODY_X"/>
             <WwiseRTPC SimVar="ROTATION VELOCITY BODY Y" Units="PERCENT" Index="0" RTPCName="SIMVAR_ROTATION_VELOCITY_BODY_Y"/>
             <WwiseRTPC SimVar="ROTATION VELOCITY BODY Z" Units="PERCENT" Index="0" RTPCName="SIMVAR_ROTATION_VELOCITY_BODY_Z"/>
@@ -777,9 +734,44 @@
 
         <!-- INSTRUMENTS FOLEYS  =========================================================================  -->
 
-        <Sound WwiseData="true" WwiseEvent="FLAPS_LEVER" ViewPoint="Inside" NodeName="LEVER_FLAPS" SimVar="FLAPS HANDLE PERCENT" Units="PERCENT" Index="0">
-            <WwiseRTPC SimVar="FLAPS HANDLE PERCENT" Units="PERCENT" Index="0" Derived="true" RTPCName="SIMVAR_FLAPS_HANDLE_PERCENT_DERIVED" />
-            <WwiseRTPC SimVar="FLAPS HANDLE PERCENT" Units="PERCENT" Index="0" RTPCName="SIMVAR_FLAPS_HANDLE_PERCENT_DERIVED" />
+        <Sound WwiseData="true" WwiseEvent="flapnotch" NodeName="LEVER_FLAPS" Continuous="false" SimVar="FLAPS HANDLE PERCENT" Units="PERCENT" Index="1">
+            <Range LowerBound="0" UpperBound="0" />
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="flapnotch" NodeName="LEVER_FLAPS" Continuous="false" SimVar="FLAPS HANDLE PERCENT" Units="PERCENT" Index="1">
+            <Range LowerBound="25" UpperBound="25" />
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="flapnotch" NodeName="LEVER_FLAPS" Continuous="false" SimVar="FLAPS HANDLE PERCENT" Units="PERCENT" Index="1">
+            <Range LowerBound="50" UpperBound="50" />
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="flapnotch" NodeName="LEVER_FLAPS" Continuous="false" SimVar="FLAPS HANDLE PERCENT" Units="PERCENT" Index="1">
+            <Range LowerBound="75" UpperBound="75" />
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="flapnotch" NodeName="LEVER_FLAPS" Continuous="false" SimVar="FLAPS HANDLE PERCENT" Units="PERCENT" Index="1">
+            <Range LowerBound="100" UpperBound="100" />
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="Spoiler0" NodeName="LEVER_SPEEDBRAKE" Continuous="false" SimVar="SPOILERS HANDLE POSITION" Units="PERCENT" Index="1">
+            <Range LowerBound="0" UpperBound="0" />
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="Spoiler50" NodeName="LEVER_SPEEDBRAKE" Continuous="false" SimVar="SPOILERS HANDLE POSITION" Units="PERCENT" Index="1">
+            <Range LowerBound="49" UpperBound="51" />
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="Spoiler100" NodeName="LEVER_SPEEDBRAKE" Continuous="false" SimVar="SPOILERS HANDLE POSITION" Units="PERCENT" Index="1">
+            <Range LowerBound="99" />
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="SpoilerARM" NodeName="LEVER_SPEEDBRAKE" Continuous="false" SimVar="SPOILERS ARMED" Units="BOOL" Index="1">
+            <Range LowerBound="1" UpperBound="1" />
+        </Sound>
+
+        <Sound WwiseData="true" WwiseEvent="SpoilerDISARM" NodeName="LEVER_SPEEDBRAKE" Continuous="false" SimVar="SPOILERS ARMED" Units="BOOL" Index="1">
+            <Range LowerBound="0" UpperBound="0" />
         </Sound>
 
         <Sound WwiseData="true" WwiseEvent="lever_throttle_1" ViewPoint="Inside" NodeName="LEVER_THROTTLE_1" LocalVar="XMLVAR_Throttle1Position">
@@ -1009,7 +1001,6 @@
         <!-- BRAKES ==========================================================================================  -->
         <Sound WwiseData="true" WwiseEvent="parking_brake_switch_on" ViewPoint="Inside"/>
         <Sound WwiseData="true" WwiseEvent="parking_brake_switch_off" ViewPoint="Inside"/>
-        <Sound WwiseData="true" WwiseEvent="lever_speedbrakes" ViewPoint="Inside"/>
 
         <!--- SAFETY ==========================================================================================  -->
         <Sound WwiseData="true" WwiseEvent="safety_push_button_on" ViewPoint="Inside"/>
@@ -1077,13 +1068,22 @@
         <Sound WwiseData="true" WwiseEvent="cabin_light_switch" ViewPoint="Inside"/>
         <Sound WwiseData="true" WwiseEvent="lighting_knob_generic" ViewPoint="Inside"/>
 
-        <!-- pb1on and pb1off are push buttons that stay in, mpb1on and mpb1off are momentary push button, lswitch is the light switch -->
+        <!-- pb1on and pb1off are push buttons that stay in, mpb1on and mpb1off are momentary push buttons -->
 
         <Sound WwiseData="true" WwiseEvent="pb1on" Continuous="false" ViewPoint="Inside"/>
         <Sound WwiseData="true" WwiseEvent="pb1off" Continuous="false" ViewPoint="Inside"/>
         <Sound WwiseData="true" WwiseEvent="mpb1on" Continuous="false" ViewPoint="Inside"/>
         <Sound WwiseData="true" WwiseEvent="mpb1off" Continuous="false" ViewPoint="Inside"/>
         <Sound WwiseData="true" WwiseEvent="lswitch" Continuous="false" ViewPoint="Inside"/>
+        <Sound WwiseData="true" WwiseEvent="engmaster" Continuous="false" ViewPoint="Inside"/>
+        <Sound WwiseData="true" WwiseEvent="parkbrk" Continuous="false" ViewPoint="Inside"/>
+        <Sound WwiseData="true" WwiseEvent="QNHknob" Continuous="false" ViewPoint="Inside"/>
+        <Sound WwiseData="true" WwiseEvent="flapcover" Continuous="false" ViewPoint="Inside"/>
+        <Sound WwiseData="true" WwiseEvent="pulloutknob" Continuous="false" ViewPoint="Inside"/>
+        <Sound WwiseData="true" WwiseEvent="rudtrim" Continuous="false" ViewPoint="Inside"/>
+        <Sound WwiseData="true" WwiseEvent="turnknob" Continuous="false" ViewPoint="Inside"/>
+        <Sound WwiseData="true" WwiseEvent="clds" Continuous="false" ViewPoint="Inside"/>
+        <Sound WwiseData="true" WwiseEvent="RMPknob" Continuous="false" ViewPoint="Inside"/>
 
         <!-- AUTOPILOT =======================================================================================  -->
         <Sound WwiseData="true" WwiseEvent="autopilot_knob_push_button_on" ViewPoint="Inside"/>
