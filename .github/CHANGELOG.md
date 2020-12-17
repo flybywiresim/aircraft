@@ -162,6 +162,8 @@
 1. [CDU] Improved INIT-A PAGE transition to INIT-B or FUEL PRED PAGE - @MisterChocker (Leon)
 1. [CDU] Improved Options Page - @MisterChocker (Leon)
 1. [Sound] Replaced sounds for various switches, levers, and buttons - @hotshotp (Boris)
+1. [CDU] Added Soft GA Logic - @MisterChocker (Leon)
+1. [ECAM] Improved Thrust Rating update condition - @MisterChocker (Leon)
 
 ## 0.4.0
 1. [General] Add CHANGELOG.md - @nathaninnes (Nathan Innes)
