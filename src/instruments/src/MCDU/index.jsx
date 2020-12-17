@@ -7,9 +7,9 @@ import {
     getSimVar,
 } from '../util.mjs';
 import './style.scss';
-import { PagesContainer } from '../MCDU/PagesContainer';
-import { Titlebar } from '../MCDU/Titlebar/Titlebar.jsx';
-import { Scratchpad } from '../MCDU/Scratchpad/Scratchpad'
+import { Titlebar } from './Titlebar/Titlebar';
+import { PagesContainer } from './PagesContainer';
+import { Scratchpad } from './Scratchpad/Scratchpad';
 
 // TODO: Move anything dependent on ac power change to A32NX_Core
 function powerAvailable() {
@@ -32,15 +32,6 @@ function SelfTest() {
     );
 }
 
-function WaitingForData() {
-    return (
-        <svg className="text-wrapper">
-            <text x="246" y="170">WAITING FOR DATA</text>
-            <text x="246" y="210">(MAX 30 SECONDS)</text>
-        </svg>
-    );
-}
-
 function Idle() {
     const [inop, setInop] = useState(false);
 
@@ -55,24 +46,17 @@ function Idle() {
 
     return (
         <>
-            <svg className="dcdu-lines">
-                <g>
-                    <path d="m 21 236 h 450" />
-                    <path d="m 130 246 v 124" />
-                    <path d="m 362 246 v 124" />
-                </g>
-            </svg>
-
-            <svg className="inop-wrapper" style={{ visibility: inop ? 'visible' : 'hidden' }}>
-                <text x="246" y="170">INOP.</text>
+            <svg className="mcdu-svg">
+                <Titlebar />
+                <PagesContainer />
+                <Scratchpad />
             </svg>
         </>
     );
 }
 
-function DCDU() {
+function MCDU() {
     const [state, setState] = useState('DEFAULT');
-
     useUpdate((_deltaTime) => {
         if (state === 'OFF') {
             if (powerAvailable()) {
@@ -96,17 +80,10 @@ function DCDU() {
     case 'ON':
         setTimeout(() => {
             if (powerAvailable()) {
-                setState('WAITING');
-            }
-        }, 8000);
-        return <SelfTest />;
-    case 'WAITING':
-        setTimeout(() => {
-            if (powerAvailable()) {
                 setState('IDLE');
             }
-        }, 12000);
-        return <WaitingForData />;
+        }, 5000);
+        return <SelfTest />;
     case 'IDLE':
         return <Idle />;
     default:
@@ -114,4 +91,4 @@ function DCDU() {
     }
 }
 
-ReactDOM.render(<DCDU />, renderTarget);
+ReactDOM.render(<MCDU />, renderTarget);
