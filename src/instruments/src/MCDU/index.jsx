@@ -1,16 +1,15 @@
 import ReactDOM from 'react-dom';
 import { useState } from 'react';
-import PropTypes from 'prop-types';
 import {
     renderTarget,
+    useInteractionEvent,
     useUpdate,
     getSimVar,
 } from '../util.mjs';
 import './style.scss';
-import { Titlebar } from './Titlebar/Titlebar.jsx';
-import { PagesContainer } from './PagesContainer.jsx';
-import { Scratchpad } from './Scratchpad/Scratchpad.jsx';
-import { FMGC } from '../FMGC/FMGC.mjs';
+import { Titlebar } from './Titlebar/Titlebar';
+import { PagesContainer } from './PagesContainer';
+import { Scratchpad } from './Scratchpad/Scratchpad';
 
 // TODO: Move anything dependent on ac power change to A32NX_Core
 function powerAvailable() {
@@ -33,32 +32,35 @@ function SelfTest() {
     );
 }
 
-function Idle(props) {
-    const { fmgc } = props;
+function Idle() {
+    const [inop, setInop] = useState(false);
+
+    useInteractionEvent('A32NX_DCDU_BTN_INOP', () => {
+        if (!inop) {
+            setInop(true);
+            setTimeout(() => {
+                setInop(false);
+            }, 3000);
+        }
+    });
 
     return (
         <>
-            <svg className="mcdu-svg" viewBox="0 0 600 600">
+            <svg className="mcdu-svg">
                 <Titlebar />
-                <PagesContainer fmgc={fmgc} />
+                <PagesContainer />
                 <Scratchpad />
             </svg>
         </>
     );
 }
 
-Idle.propTypes = {
-    fmgc: PropTypes.instanceOf(FMGC).isRequired,
-};
-
 function MCDU() {
     const [state, setState] = useState('DEFAULT');
-    const Core = new FMGC();
     useUpdate((_deltaTime) => {
         if (state === 'OFF') {
             if (powerAvailable()) {
                 setState('ON');
-                Core.Init(_deltaTime);
             }
         } else if (!powerAvailable()) {
             setState('OFF');
@@ -83,7 +85,7 @@ function MCDU() {
         }, 5000);
         return <SelfTest />;
     case 'IDLE':
-        return <Idle fmgc={Core} />;
+        return <Idle />;
     default:
         throw new RangeError();
     }
