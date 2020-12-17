@@ -1,0 +1,126 @@
+@import url('/CSS/A32NX_Display_Common.css');
+
+@font-face {
+  font-family: "ECAMFontRegular";
+  src: url("/Fonts/ECAMFontRegular.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
+
+// TODO why doesn't this fucking work?
+@font-face {
+  src: url("/Fonts/HoneywellMCDU.ttf") format("truetype");
+  font-family: "HoneywellMCDU";
+  font-style: normal;
+  font-weight: 900;
+}
+
+@font-face {
+  src: url("/Fonts/HoneywellMCDUSmall.ttf") format("truetype");
+  font-family: "HoneywellMCDUSmall";
+  font-style: normal;
+  font-weight: 900;
+}
+
+// COLUMNS
+.column-holder {
+  flex: 1 1 auto;
+  display:flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: center;
+
+  margin: 0 20px 0 20px;
+}
+
+.row-holder {
+  flex: 1 1 auto;
+  display:flex;
+  flex-direction: row;
+  align-items: stretch;
+  justify-content: center;
+}
+
+//LINES
+.line-holder {
+  max-height: 126px;
+  min-height: 126px;
+
+  flex: 1 1 auto;
+}
+
+.line {
+  max-height: 63px;
+  min-height: 63px;
+  white-space: pre;
+}
+
+.line-left {
+  text-align: left;
+  left: 4.5%;
+  width: 100%;
+}
+
+.line-right {
+  text-align: right;
+  right: 5.0%;
+  width: 100%;
+}
+
+.line-center {
+  left: 0;
+  width: 100%;
+  text-align: center;
+}
+
+// TEXT
+.s-text {
+  font-size: 4.2vw;
+  //letter-spacing: 0.6vw;
+  line-height: 5.8vw;
+}
+
+p {
+  font-family: "ECAMFontRegular" !important;
+  color: var(--mcduWhite);
+  font-size: 5.8vw;
+  letter-spacing: normal;
+}
+
+span {
+  @extend p
+}
+
+// COLORS
+
+.white {
+  color: var(--mcduWhite);
+}
+
+.inop {
+  color: var(--mcduLightGrey);
+}
+
+.cyan {
+  color: var(--mcduCyan);
+}
+
+.yellow {
+  color: var(--mcduYellow);
+}
+
+.green {
+  color: var(--mcduGreen);
+}
+
+.amber {
+  color: var(--mcduAmber);
+}
+
+.red {
+  color: var(--mcduRed);
+}
+
+.magenta {
+  color: var(--mcduMagenta);
+}

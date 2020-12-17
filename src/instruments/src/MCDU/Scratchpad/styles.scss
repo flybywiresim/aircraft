@@ -1,0 +1,16 @@
+.scratchpad {
+  margin-top: 20px;
+  margin-left: 20px;
+
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+}
+
+.scratchpad-input {
+  flex-grow: 2;
+}
+
+.scratchpad-arrow {
+  flex-grow: 1;
+}
