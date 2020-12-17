@@ -9,7 +9,7 @@ class CDUIdentPage {
             ["\xa0ENG"],
             ["LEAP 1A-26[color]green"],
             ["\xa0ACTIVE NAV DATA BASE"],
-            ["\xa0" + date + "[color]cyan", "AIRAC[color]green"],
+            ["\xa0" + (date.length === 13 ? date[3] + date[4] + date[0] + date[1] + date[2] + "-" + date[8] + date[9] + date[5] + date[6] + date[7] : date) + "[color]cyan", "AIRAC[color]green"],
             ["\xa0SECOND NAV DATA BASE"],
             ["{small}{04MAY-04JUL{end}[color]cyan"],
             ["", "STORED"],
