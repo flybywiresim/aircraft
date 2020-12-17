@@ -1,0 +1,80 @@
+@import url('/CSS/A32NX_Display_Common.css');
+
+@font-face {
+  font-family: "Roboto";
+  src: url("/Fonts/RobotoMono-Medium.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Roboto-Light";
+  src: url("/Fonts/RobotoMono-Light.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "ECAMFontRegular";
+  src: url("/Fonts/ECAMFontRegular.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
+
+.dcdu-lines {
+  position: absolute;
+  left: 10px !important;
+  top: 10px !important;
+  width: 492px;
+  height: 364px;
+
+  background: radial-gradient(
+      ellipse at center,
+      rgba(9, 13, 20, 1) 0%,
+      rgb(9, 13, 20) 100%
+  );
+
+  visibility: visible !important;
+
+  font-family: Roboto;
+
+  path {
+    stroke: white;
+    stroke-width: 3;
+  }
+}
+
+.mcdu-outer {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+
+  background: radial-gradient(
+      ellipse at center,
+      rgba(4,4,5,1) 0%,
+      rgba(4, 4, 5, 1) 100%)
+}
+
+.mcdu-inner {
+  //margin-left: -10px;
+  margin-top: 15px;
+  margin-left: 10px;
+  margin-right: 20px;
+  max-height: 980px;
+  min-height: 980px;
+  max-width: 945px;
+  min-width: 945px;
+
+  display: flex;
+  flex-direction: column;
+}
+
+.mcdu-content {
+  display:flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: stretch;
+
+  flex-grow: 1;
+}
