@@ -402,16 +402,16 @@
         <Sound WwiseEvent="BoomL" WwiseData="true" Continuous="false" NodeName="Engine_PIVOT_LEFT_2" SimVar="TURB ENG N2" Units="percent" ViewPoint="Inside" Index="1" Continuous="true">
             <Range LowerBound="25.4" />
         </Sound>
-        
-         <Sound WwiseEvent="BoomR" WwiseData="true" Continuous="false" NodeName="Engine_PIVOT_RIGHT_2" SimVar="TURB ENG N2" Units="percent" ViewPoint="Inside" Index="2" Continuous="true">
+
+        <Sound WwiseEvent="BoomR" WwiseData="true" Continuous="false" NodeName="Engine_PIVOT_RIGHT_2" SimVar="TURB ENG N2" Units="percent" ViewPoint="Inside" Index="2" Continuous="true">
             <Range LowerBound="25.4" />
         </Sound>
-        
+
         <Sound WwiseEvent="BoomLEXT" WwiseData="true" Continuous="false" NodeName="Engine_PIVOT_LEFT_2" SimVar="TURB ENG N2" Units="percent" ViewPoint="Outside" Index="1" Continuous="true">
             <Range LowerBound="25.4" />
         </Sound>
-        
-         <Sound WwiseEvent="BoomREXT" WwiseData="true" Continuous="false" NodeName="Engine_PIVOT_RIGHT_2" SimVar="TURB ENG N2" Units="percent" ViewPoint="Outside" Index="2" Continuous="true">
+
+        <Sound WwiseEvent="BoomREXT" WwiseData="true" Continuous="false" NodeName="Engine_PIVOT_RIGHT_2" SimVar="TURB ENG N2" Units="percent" ViewPoint="Outside" Index="2" Continuous="true">
             <Range LowerBound="25.4" />
         </Sound>
 
@@ -504,7 +504,7 @@
             <Range LowerBound="1" />
             <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Index="1" RTPCName="SIMVAR_TURB_ENG_N1" />
             <Requires SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1">
-            <Range LowerBound="28" />
+                <Range LowerBound="28" />
             </Requires>
         </Sound>
 
@@ -512,7 +512,7 @@
             <Range LowerBound="1" />
             <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Index="1" RTPCName="SIMVAR_TURB_ENG_N1" />
             <Requires SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1">
-            <Range LowerBound="28" />
+                <Range LowerBound="28" />
             </Requires>
         </Sound>
 
@@ -520,7 +520,7 @@
             <Range LowerBound="1" />
             <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Index="2" RTPCName="SIMVAR_TURB_ENG_N1" />
             <Requires SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1">
-            <Range LowerBound="28" />
+                <Range LowerBound="28" />
             </Requires>
         </Sound>
 
@@ -528,7 +528,7 @@
             <Range LowerBound="1" />
             <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Index="2" RTPCName="SIMVAR_TURB_ENG_N1" />
             <Requires SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1">
-            <Range LowerBound="28" />
+                <Range LowerBound="28" />
             </Requires>
         </Sound>
 
@@ -536,7 +536,7 @@
             <Range LowerBound="1" />
             <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Index="1" RTPCName="SIMVAR_TURB_ENG_N1" />
             <Requires SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1">
-            <Range LowerBound="28" />
+                <Range LowerBound="28" />
             </Requires>
         </Sound>
 
@@ -544,7 +544,7 @@
             <Range LowerBound="1" />
             <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Index="1" RTPCName="SIMVAR_TURB_ENG_N1" />
             <Requires SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1">
-            <Range LowerBound="28" />
+                <Range LowerBound="28" />
             </Requires>
         </Sound>
 
@@ -552,7 +552,7 @@
             <Range LowerBound="1" />
             <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Index="1" RTPCName="SIMVAR_TURB_ENG_N1" />
             <Requires SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1">
-            <Range LowerBound="28" />
+                <Range LowerBound="28" />
             </Requires>
         </Sound>
 
@@ -560,7 +560,7 @@
             <Range LowerBound="1" />
             <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Index="1" RTPCName="SIMVAR_TURB_ENG_N1" />
             <Requires SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1">
-            <Range LowerBound="28" />
+                <Range LowerBound="28" />
             </Requires>
         </Sound>
 
