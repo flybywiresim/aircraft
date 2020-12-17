@@ -133,7 +133,7 @@
         </UseTemplate>
     </Template>
     
-    	<Template Name="FBW_AUTOPILOT_Knob_SpeedMach_Template">
+ <Template Name="FBW_AUTOPILOT_Knob_SpeedMach_Template">
 		<DefaultTemplateParameters>
 			<ANIM_NAME>AUTOPILOT_Knob_SpeedMach</ANIM_NAME>
 			<ANIM_NAME_PUSH>AUTOPILOT_Knob_SpeedMach_Push</ANIM_NAME_PUSH>

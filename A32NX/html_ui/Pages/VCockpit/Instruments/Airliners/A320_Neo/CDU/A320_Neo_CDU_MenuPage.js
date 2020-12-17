@@ -55,7 +55,7 @@ class CDUMenuPage {
 
             mcdu.setTemplate([
                 ["MCDU MENU"],
-                ["", "SELECT"],
+                ["", "SELECT\xa0"],
                 [textFMGC, "NAV B/UP>"],
                 [""],
                 [textATSU],

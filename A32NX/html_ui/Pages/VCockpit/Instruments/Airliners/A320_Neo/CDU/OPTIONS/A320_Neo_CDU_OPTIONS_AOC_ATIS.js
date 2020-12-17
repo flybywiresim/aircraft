@@ -24,7 +24,7 @@ class CDU_OPTIONS_ATIS {
         }
 
         mcdu.setTemplate([
-            ["A32NX OPTIONS"],
+            ["A32NX OPTIONS AOC"],
             ["", "", "ATIS UPLINK SRC"],
             [faa],
             [""],
@@ -36,7 +36,7 @@ class CDU_OPTIONS_ATIS {
             [""],
             [""],
             [""],
-            ["<RETURN[color]cyan"]
+            ["<RETURN"]
         ]);
 
         mcdu.leftInputDelay[0] = () => {
@@ -79,7 +79,7 @@ class CDU_OPTIONS_ATIS {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onLeftInput[5] = () => {
-            CDU_OPTIONS_MainMenu.ShowPage(mcdu);
+            CDU_OPTIONS_AOC.ShowPage(mcdu);
         };
     }
 }
