@@ -1144,10 +1144,7 @@ var A320_Neo_UpperECAM;
                         )
                     },
                     {
-                        message: "PRED W/S OFF",
-                        style: () => (
-                            this.isInFlightPhase(3, 4, 5, 7, 8, 9) || this.predWsMemo.read()
-                        ) ? "InfoCaution" : "InfoIndication",
+                        message: "CABIN READY",
                         isActive: () => {
                             return (
                                 (this.getCachedSimVar("L:A32NX_CABIN_READY", "Bool")) && 
@@ -1407,8 +1404,10 @@ var A320_Neo_UpperECAM;
             this.packsText = this.querySelector("#packsIndicator");
             this.isTogaFlexMct1 = this.getCachedSimVar("GENERAL ENG THROTTLE MANAGED MODE:1", "number") > 4;
             this.isTogaFlexMct2 = this.getCachedSimVar("GENERAL ENG THROTTLE MANAGED MODE:2", "number") > 4;
+            this.isGrounded = this.getCachedSimVar("SIM ON GROUND", "bool");
+            this.flightPhaseBeforeClb = (Simplane.getCurrentFlightPhase() < FlightPhase.FLIGHT_PHASE_CLIMB);
 
-            if (this.isTogaFlexMct1 && this.isTogaFlexMct2) {
+            if (this.isGrounded || this.flightPhaseBeforeClb || (this.isTogaFlexMct1 && this.isTogaFlexMct2)) {
                 const ignStateActive = this.getCachedSimVar("L:XMLVAR_ENG_MODE_SEL", "Enum") == 2;
                 const apuBleedActive = this.getCachedSimVar("BLEED AIR APU", "Bool");
                 const apuActive = this.getCachedSimVar("APU PCT RPM", "Percent") >= 95;
@@ -1417,10 +1416,9 @@ var A320_Neo_UpperECAM;
                 const eng1NAIactive = this.getCachedSimVar("ENG ANTI ICE:1", "Bool");
                 const eng2NAIactive = this.getCachedSimVar("ENG ANTI ICE:2", "Bool");
                 const WAIactive = this.getCachedSimVar("STRUCTURAL DEICE SWITCH", "Bool");
-                const isOnGround = this.getCachedSimVar("SIM ON GROUND", "bool");
 
                 let textList = [];
-                if ((!ignStateActive || !isOnGround) && ((apuActive && apuBleedActive) || (eng1active || eng2active))) {
+                if ((!ignStateActive || (ignStateActive && !this.isGrounded)) && ((apuActive && apuBleedActive) || (eng1active || eng2active))) {
                     textList.push("PACKS");
                 }
                 if ((eng1active && eng1NAIactive) || (eng2active && eng2NAIactive)) {
