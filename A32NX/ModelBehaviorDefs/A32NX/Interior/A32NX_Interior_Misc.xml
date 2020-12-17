@@ -347,8 +347,8 @@
         <DefaultTemplateParameters>
             <NODE_ID>ENGINE_Switch_Master_#ID#</NODE_ID>
             <ANIM_NAME>ENGINE_Switch_Master_#ID#</ANIM_NAME>
-            <WWISE_EVENT_1>engine_master_switch_on</WWISE_EVENT_1>
-            <WWISE_EVENT_2>engine_master_switch_off</WWISE_EVENT_2>
+            <WWISE_EVENT_1>engmaster</WWISE_EVENT_1>
+            <WWISE_EVENT_2>engmaster</WWISE_EVENT_2>
             <PART_ID>ENGINE_Switch_Master</PART_ID>
             <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.ENGINE#ID#_MASTER_TURN_ON</ANIMTIP_0>
             <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.ENGINE#ID#_MASTER_TURN_OFF</ANIMTIP_1>

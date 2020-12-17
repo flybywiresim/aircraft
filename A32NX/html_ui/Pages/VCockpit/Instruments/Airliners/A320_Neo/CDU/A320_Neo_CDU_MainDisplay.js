@@ -1556,7 +1556,10 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         //Logic to switch back from GOAROUND to CLB/CRZ
         //When missed approach or sec fpl are implemented this needs rework
         //Exit Scenario after successful GOAROUND
-        if (this.currentFlightPhase == FlightPhase.FLIGHT_PHASE_GOAROUND) {
+        if (this.currentFlightPhase === FlightPhase.FLIGHT_PHASE_GOAROUND) {
+            if (highestThrottleDetent === ThrottleMode.FLEX_MCT) {
+                SimVar.SetSimVarValue("L:A32NX_GOAROUND_NAV_MODE", "bool", 1);
+            }
 
             const planeAltitudeMsl = Simplane.getAltitude();
             const accelerationAltitudeMsl = this.accelerationAltitudeGoaround;
