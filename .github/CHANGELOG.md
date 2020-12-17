@@ -165,8 +165,8 @@
 1. [CDU] Added Soft GA Logic - @MisterChocker (Leon)
 1. [ECAM] Improved Thrust Rating update condition - @MisterChocker (Leon)
 1. [OPTIONS] Added options entry to enable NO PORTABLE DEVICES memo - @wpine215 (Iceman)
-1. [ECAM] Added REFUELG, OUTER TANK XFRD, CABIN READY, FUEL X FEED, and ADIRS SWTG memos - @wpine215 (Iceman)
-1. [ECAM] Added PACKS/NAI/WAI text indicator on upper ECAM - @wpine215 (Iceman)
+2. [ECAM] Added REFUELG, OUTR TK XFRD, CABIN READY, FUEL X FEED, and ADIRS SWTG memos - @wpine215 (Iceman)
+3. [ECAM] Added PACKS/NAI/WAI text indicator on upper ECAM - @wpine215 (Iceman)
 
 ## 0.4.0
 1. [General] Add CHANGELOG.md - @nathaninnes (Nathan Innes)

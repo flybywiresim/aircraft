@@ -1039,7 +1039,7 @@ var A320_Neo_UpperECAM;
                         ),
                     },
                     {
-                        message: "OUTER TK FUEL XFRD",
+                        message: "OUTR TK FUEL XFRD",
                         isActive: () => {
                             return (
                                 this.getCachedSimVar("A:FUELSYSTEM VALVE SWITCH:4", "Bool") ||
