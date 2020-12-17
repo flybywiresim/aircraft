@@ -254,7 +254,8 @@ class Jet_PFD_HSIndicator extends HTMLElement {
     }
     updateRibbon() {
         const compass = SimVar.GetSimVarValue("PLANE HEADING DEGREES MAGNETIC", "degree");
-        const selectedHeading = SimVar.GetSimVarValue("AUTOPILOT HEADING LOCK DIR", "degree");
+        const trkfpaMode = SimVar.GetSimVarValue("L:A32NX_TRK_FPA_MODE_ACTIVE", "Bool");
+        const selectedHeading = trkfpaMode ? SimVar.GetSimVarValue("L:A32NX_AUTOPILOT_TRACK_SELECTED:1", "Degree") : SimVar.GetSimVarValue("AUTOPILOT HEADING LOCK DIR", "degree");
         const track = SimVar.GetSimVarValue("GPS GROUND MAGNETIC TRACK", "degree");
         if (this.graduations) {
             this.graduationScroller.scroll(compass);
