@@ -14,7 +14,7 @@ class CDUIdentPage {
             ["{small}{04MAY-04JUL{end}[color]cyan"],
             ["", "STORED"],
             ["", "{green}10{end}{small}RTES\xa0{end}{green}10{end}{small}RWYS{end}"],
-            ["CHG CODE", "{big}{green}20{end}{end}WPTS\xa0{big}{green}20{end}{end}NAVS"],
+            ["CHG CODE", "[b-text]{big}{green}20{end}{end}WPTS\xa0{big}{green}20{end}{end}NAVS"],
             ["{small}[  ]{end}[color]cyan", "DELETE ALL}[color]cyan"],
             ["IDLE/PERF", "SOFTWARE"],
             ["+0.0/+0.0[color]green", "STATUS/XLOAD>"]
