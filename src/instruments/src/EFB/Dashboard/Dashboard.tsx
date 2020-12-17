@@ -22,6 +22,7 @@ import WeatherWidget from "./Widgets/WeatherWidget";
 import Map from "@flybywiresim/map";
 
 type DashboardWidgetProps = {
+    currentFlight: string,
     airline: string,
     flightNum: string,
     aircraftReg: string,
@@ -77,7 +78,7 @@ class DashboardWidget extends React.Component<DashboardWidgetProps, DashboardWid
                 <WeatherWidget name='dest' editIcao="yes" icao={this.props.arrivingAirport} />
 
                 <div className="map-widget">
-                    <Map class="map" currentFlight="" disableSearch={true} disableInfo={true} disableFlights={true} />
+                    <Map class="map" currentFlight={this.props.currentFlight} disableSearch={true} disableInfo={true} disableFlights={false} />
                 </div>
             </div>
         );

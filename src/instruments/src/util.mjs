@@ -49,6 +49,7 @@ export function useUpdate(handler) {
 
 const SIMVAR_TYPES = {
     '__proto__': null,
+    'ATC FLIGHT NUMBER': 'String',
     'GPS POSITION LAT': 'degrees latitude',
     'L:APU_GEN_ONLINE': 'Bool',
     'EXTERNAL POWER AVAILABLE:1': 'Bool',

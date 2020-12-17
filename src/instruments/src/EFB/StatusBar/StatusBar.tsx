@@ -18,6 +18,7 @@
 
 import React from "react";
 import { IconBatteryCharging } from '@tabler/icons';
+import { IconWifi } from '@tabler/icons';
 
 type TimeProps = {
     initTime: Date,
@@ -73,7 +74,7 @@ export default class StatusBar extends React.Component<TimeProps, any> {
                     {formatTime(([this.state.currentTime.getUTCHours(), this.state.currentTime.getMinutes()])) + 'z'}
                 </div>
                 <div className="status-bar-item">
-                    100% <IconBatteryCharging className="battery-icon" size={25} color="yellow" stroke={1.5} strokeLinejoin="miter" />
+                    <IconWifi className="wifi-icon" size={21} stroke={1.5} strokeLinejoin="miter" /> 100% <IconBatteryCharging className="battery-icon" size={25} color="yellow" stroke={1.5} strokeLinejoin="miter" />
                 </div>
             </div>
         );

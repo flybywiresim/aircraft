@@ -54,6 +54,7 @@ function ScreenLoading() {
 
 function EFBLoad() {
     const [state, setState] = useState('DEFAULT');
+    const currentFLight = getSimVar('ATC FLIGHT NUMBER');
 
     useUpdate((_deltaTime) => {
         if (state === 'OFF') {
@@ -83,7 +84,7 @@ function EFBLoad() {
         }, 6000);
         return <ScreenLoading />;
     case 'START':
-        return <Efb logo={logo} />;
+        return <Efb logo={logo} currentFLight={currentFLight} />;
     default:
         throw new RangeError();
     }

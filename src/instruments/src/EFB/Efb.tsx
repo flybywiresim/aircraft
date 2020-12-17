@@ -21,16 +21,17 @@ import React from "react";
 import { getSimbriefData, IFuel, IWeights } from './SimbriefApi';
 import StatusBar from "./StatusBar/StatusBar";
 import ToolBar from "./ToolBar/ToolBar";
-import DashboardWidget from "./Dashboard/Dashboard";
+import Dashboard from "./Dashboard/Dashboard";
 
 import './Efb.scss';
 
-import LoadsheetWidget from "./Dispatch/Dispatch";
+import Dispatch from "./Dispatch/Dispatch";
 import Settings from "./Settings/Settings";
 import Profile from "./Profile/Profile";
 
 type EfbProps = {
-    logo: string
+    logo: string,
+    currentFlight: string
 };
 
 type EfbState = {
@@ -220,7 +221,7 @@ class Efb extends React.Component<EfbProps, EfbState> {
 
         switch (this.state.currentPageIndex) {
             case 1:
-                return <LoadsheetWidget
+                return <Dispatch
                     weights={this.state.weights}
                     fuels={this.state.fuels}
                     units={this.state.units}
@@ -243,7 +244,8 @@ class Efb extends React.Component<EfbProps, EfbState> {
             case 4:
                 return <Settings />;
             default:
-                return <DashboardWidget
+                return <Dashboard
+                    currentFlight={this.props.currentFlight}
                     airline={this.state.airline}
                     flightNum={this.state.flightNum}
                     aircraftReg={this.state.aircraftReg}

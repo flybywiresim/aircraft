@@ -92,9 +92,6 @@ class ToolBar extends React.Component<ToolbarProps, ToolbarState> {
                     <a href={"/profile"}>
                         <IconUser size={35} stroke={1.5} strokeLinejoin="miter" />
                     </a>
-                    {/*<Link to="/profile">*/}
-                    {/*    <i className="material-icons" id="Icon">account_circle</i>*/}
-                    {/*</Link>*/}
                 </div>
             </div>
         );
