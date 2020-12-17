@@ -23,17 +23,17 @@ import StatusBar from "./StatusBar/StatusBar";
 import ToolBar from "./ToolBar/ToolBar";
 import DashboardWidget from "./Dashboard/Dashboard";
 
-import './EFB.scss';
+import './Efb.scss';
 
 import LoadsheetWidget from "./Dispatch/Dispatch";
 import Settings from "./Settings/Settings";
 import Profile from "./Profile/Profile";
 
-type EFBProps = {
+type EfbProps = {
     logo: string
 };
 
-type EFBState = {
+type EfbState = {
     currentPageIndex: 0 | 1 | 2 | 3 | 4,
     simbriefUsername: string,
     departingAirport: string,
@@ -64,15 +64,15 @@ type EFBState = {
 
 document.body.classList.add('darkMode');
 
-class EFB extends React.Component<EFBProps, EFBState> {
-    constructor(props: EFBProps) {
+class Efb extends React.Component<EfbProps, EfbState> {
+    constructor(props: EfbProps) {
         super(props);
         this.updateCurrentTime = this.updateCurrentTime.bind(this);
         this.updateTimeSinceStart = this.updateTimeSinceStart.bind(this);
         this.fetchSimbriefData = this.fetchSimbriefData.bind(this);
     }
 
-    state: EFBState = {
+    state: EfbState = {
         currentPageIndex: 0,
         airline: '---',
         flightNum: '----',
@@ -271,4 +271,4 @@ class EFB extends React.Component<EFBProps, EFBState> {
     }
 }
 
-export default EFB;
+export default Efb;
