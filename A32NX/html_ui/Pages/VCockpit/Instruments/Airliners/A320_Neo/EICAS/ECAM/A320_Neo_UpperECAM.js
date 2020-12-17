@@ -1147,7 +1147,7 @@ var A320_Neo_UpperECAM;
                         message: "CABIN READY",
                         isActive: () => {
                             return (
-                                (this.getCachedSimVar("L:A32NX_CABIN_READY", "Bool")) && 
+                                (this.getCachedSimVar("L:A32NX_CABIN_READY", "Bool")) &&
                                 ((this.isInFlightPhase(2)) ||
                                 (this.isInFlightPhase(6, 7) && this.getCachedSimVar("GEAR CENTER POSITION", "Percent") > 80))
                             );
@@ -1224,7 +1224,7 @@ var A320_Neo_UpperECAM;
                                 (SimVar.GetSimVarValue("L:A32NX_KNOB_SWITCHING_3_Position", "Enum") != 1) ||
                                 (SimVar.GetSimVarValue("L:A32NX_KNOB_SWITCHING_4_Position", "Enum") != 1)
                             );
-                        }                        
+                        }
                     },
                     {
                         message: "GPWS FLAP 3",
@@ -1273,7 +1273,7 @@ var A320_Neo_UpperECAM;
                                 (SimVar.GetSimVarValue("L:A32NX_KNOB_SWITCHING_1_Position", "Enum") != 1) ||
                                 (SimVar.GetSimVarValue("L:A32NX_KNOB_SWITCHING_2_Position", "Enum") != 1)
                             );
-                        }                        
+                        }
                     },
                 ]
             };
@@ -1417,7 +1417,7 @@ var A320_Neo_UpperECAM;
                 const eng2NAIactive = this.getCachedSimVar("ENG ANTI ICE:2", "Bool");
                 const WAIactive = this.getCachedSimVar("STRUCTURAL DEICE SWITCH", "Bool");
 
-                let textList = [];
+                const textList = [];
                 if ((!ignStateActive || (ignStateActive && !this.isGrounded)) && ((apuActive && apuBleedActive) || (eng1active || eng2active))) {
                     textList.push("PACKS");
                 }
