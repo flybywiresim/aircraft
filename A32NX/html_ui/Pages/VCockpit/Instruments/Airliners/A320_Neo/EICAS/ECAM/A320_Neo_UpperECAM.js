@@ -978,6 +978,10 @@ var A320_Neo_UpperECAM;
                 ],
                 normal: [
                     {
+                        message: "REFUELG",
+                        isActive: () => this.getCachedSimVar("INTERACTIVE POINT OPEN:9", "percent") == 100
+                    },
+                    {
                         message: "IR IN ALIGN > 7 MN",
                         style: () => this.isEngineRunning(1) || this.isEngineRunning(2) ? "InfoCaution" : "InfoIndication",
                         isActive: () => this.isInFlightPhase(1, 2) && this.getADIRSMins() >= 7
@@ -1022,13 +1026,28 @@ var A320_Neo_UpperECAM;
                     },
                     {
                         message: "NO SMOKING",
-                        isActive: () => this.getCachedSimVar("L:A32NX_NO_SMOKING_MEMO", "Bool")
+                        isActive: () => this.getCachedSimVar("L:A32NX_NO_SMOKING_MEMO", "Bool") && !parseInt(NXDataStore.get("CONFIG_USING_PORTABLE_DEVICES", "0"))
+                    },
+                    {
+                        message: "NO PORTABLE DEVICES",
+                        isActive: () => this.getCachedSimVar("L:A32NX_NO_SMOKING_MEMO", "Bool") && parseInt(NXDataStore.get("CONFIG_USING_PORTABLE_DEVICES", "0"))
                     },
                     {
                         message: "STROBE LT OFF",
                         isActive: () => (
                             this.isInFlightPhase(6, 7, 8) && !this.getCachedSimVar("LIGHT STROBE ON", "Bool")
                         ),
+                    },
+                    {
+                        message: "OUTER TK FUEL XFRD",
+                        isActive: () => {
+                            return (
+                                this.getCachedSimVar("A:FUELSYSTEM VALVE SWITCH:4", "Bool") ||
+                                this.getCachedSimVar("A:FUELSYSTEM VALVE SWITCH:5", "Bool") ||
+                                this.getCachedSimVar("A:FUELSYSTEM VALVE SWITCH:6", "Bool") ||
+                                this.getCachedSimVar("A:FUELSYSTEM VALVE SWITCH:7", "Bool")
+                            );
+                        }
                     },
                 ]
             };
@@ -1104,31 +1123,6 @@ var A320_Neo_UpperECAM;
                         ),
                     },
                     {
-                        message: "AUTO BRK LO",
-                        isActive: () => (
-                            (this.fwcFlightPhase === 7 || this.fwcFlightPhase === 8) &&
-                            SimVar.GetSimVarValue("L:XMLVAR_Autobrakes_Level", "Enum") === 1
-                        )
-                    },
-                    {
-                        message: "AUTO BRK MED",
-                        isActive: () => {
-                            return (
-                                (this.fwcFlightPhase === 7 || this.fwcFlightPhase === 8) &&
-                                SimVar.GetSimVarValue("L:XMLVAR_Autobrakes_Level", "Enum") === 2
-                            );
-                        }
-                    },
-                    {
-                        message: "AUTO BRK MAX",
-                        isActive: () => {
-                            return (
-                                (this.fwcFlightPhase === 7 || this.fwcFlightPhase === 8) &&
-                                SimVar.GetSimVarValue("L:XMLVAR_Autobrakes_Level", "Enum") === 3
-                            );
-                        }
-                    },
-                    {
                         message: "PARK BRK",
                         isActive: () => (
                             this.isInFlightPhase(1, 2, 9, 10) && this.getCachedSimVar("BRAKE PARKING INDICATOR", "Bool")
@@ -1148,6 +1142,19 @@ var A320_Neo_UpperECAM;
                         isActive: () => (
                             this.getCachedSimVar("PUSHBACK STATE", "Enum") !== 3
                         )
+                    },
+                    {
+                        message: "PRED W/S OFF",
+                        style: () => (
+                            this.isInFlightPhase(3, 4, 5, 7, 8, 9) || this.predWsMemo.read()
+                        ) ? "InfoCaution" : "InfoIndication",
+                        isActive: () => {
+                            return (
+                                (this.getCachedSimVar("L:A32NX_CABIN_READY", "Bool")) && 
+                                ((this.isInFlightPhase(2)) ||
+                                (this.isInFlightPhase(6, 7) && this.getCachedSimVar("GEAR CENTER POSITION", "Percent") > 80))
+                            );
+                        }
                     },
                     {
                         message: "PRED W/S OFF",
@@ -1214,12 +1221,70 @@ var A320_Neo_UpperECAM;
                         ),
                     },
                     {
+                        message: "AUDIO 3 XFRD",
+                        isActive: () => {
+                            return (
+                                (SimVar.GetSimVarValue("L:A32NX_KNOB_OVHD_AUDIOSWITCH_Position", "Enum") != 1)
+                            );
+                        }                        
+                    },
+                    {
                         message: "SWITCHG PNL",
-                        isActive: () => !SimVar.GetSimVarValue("L:A32NX_KNOB_SWITCHING_3_Position", "Enum")
+                        isActive: () => {
+                            return (
+                                (SimVar.GetSimVarValue("L:A32NX_KNOB_SWITCHING_3_Position", "Enum") != 1) ||
+                                (SimVar.GetSimVarValue("L:A32NX_KNOB_SWITCHING_4_Position", "Enum") != 1)
+                            );
+                        }                        
                     },
                     {
                         message: "GPWS FLAP 3",
                         isActive: () => this.getCachedSimVar("L:PUSH_OVHD_GPWS_LDG", "Bool")
+                    },
+                    {
+                        message: "AUTO BRK LO",
+                        isActive: () => (
+                            (this.fwcFlightPhase === 7 || this.fwcFlightPhase === 8) &&
+                            SimVar.GetSimVarValue("L:XMLVAR_Autobrakes_Level", "Enum") === 1
+                        )
+                    },
+                    {
+                        message: "AUTO BRK MED",
+                        isActive: () => {
+                            return (
+                                (this.fwcFlightPhase === 7 || this.fwcFlightPhase === 8) &&
+                                SimVar.GetSimVarValue("L:XMLVAR_Autobrakes_Level", "Enum") === 2
+                            );
+                        }
+                    },
+                    {
+                        message: "AUTO BRK MAX",
+                        isActive: () => {
+                            return (
+                                (this.fwcFlightPhase === 7 || this.fwcFlightPhase === 8) &&
+                                SimVar.GetSimVarValue("L:XMLVAR_Autobrakes_Level", "Enum") === 3
+                            );
+                        }
+                    },
+                    {
+                        message: "FUEL X FEED",
+                        style: () => (
+                            this.isInFlightPhase(3, 4, 5)
+                        ) ? "InfoCaution" : "InfoIndication",
+                        isActive: () => {
+                            return (
+                                this.getCachedSimVar("A:FUELSYSTEM VALVE SWITCH:3", "Bool")
+                            );
+                        }
+                    },
+                    {
+                        message: "ADIRS SWTG",
+                        isActive: () => {
+                            return (
+                                (SimVar.GetSimVarValue("L:A32NX_KNOB_SWITCHING_1_Position", "Enum") != 1) ||
+                                (SimVar.GetSimVarValue("L:A32NX_KNOB_SWITCHING_2_Position", "Enum") != 1)
+                            );
+                        }                        
                     },
                 ]
             };

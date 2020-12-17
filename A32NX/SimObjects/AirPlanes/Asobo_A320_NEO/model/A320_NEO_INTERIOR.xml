@@ -1995,6 +1995,7 @@
                         <ARROW_TYPE>Curved</ARROW_TYPE>
                         <WWISE_EVENT>turnknob</WWISE_EVENT>
                         <INIT_VALUE>1</INIT_VALUE>
+                        <SWITCH_POSITION_VAR>A32NX_KNOB_OVHD_AUDIOSWITCH_Position</SWITCH_POSITION_VAR>
                     </UseTemplate>
                 </Component>
 

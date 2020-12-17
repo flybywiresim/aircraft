@@ -230,7 +230,7 @@ a320-neo-pfd-element #Mainframe #InstrumentsContainer #FMA .Active {
 }
 a320-neo-pfd-element #Mainframe #InstrumentsContainer #FMA .ActiveBlink {
   color: var(--displayWhite);
-  animation: blinking 1s infinite;
+  animation: blinking 2s infinite;
 }
 a320-neo-pfd-element #Mainframe #InstrumentsContainer #FMA .Status {
   color: var(--displayWhite);
