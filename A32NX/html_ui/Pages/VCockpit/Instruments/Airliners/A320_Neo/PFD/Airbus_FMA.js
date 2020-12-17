@@ -550,8 +550,8 @@ var Airbus_FMA;
                                 this.setRowText(0, "GA SOFT", Airbus_FMA.MODE_STATE.ENGAGED);
                                 break;
                             }
-                            case Column1.ROW_1_STATE.BRKLOW: {
-                                this.setRowText(0, "BRK LOW", Airbus_FMA.MODE_STATE.CAPTURED);
+                            case Column1.ROW_1_STATE.BRKLO: {
+                                this.setRowText(0, "BRK LO", Airbus_FMA.MODE_STATE.CAPTURED);
                                 break;
                             }
                             case Column1.ROW_1_STATE.BRKMED: {
@@ -566,10 +566,10 @@ var Airbus_FMA;
                     }
                     if (lineTwo && this.currentRow2State && !this.currentRow1And2State) {
                         switch (this.currentRow2State) {
-                            case Column1.ROW_2_STATE.BRKLOW: {
+                            case Column1.ROW_2_STATE.BRKLO: {
                                 if (!Column1.ROW_1_STATE.BRKLOW) {
                                     this.setRowHighlightStyle(1, Airbus_FMA.HIGHLIGHT_STYLE.NONE);
-                                    this.setRowText(1, "BRK LOW", Airbus_FMA.MODE_STATE.ARMED);
+                                    this.setRowText(1, "BRK LO", Airbus_FMA.MODE_STATE.ARMED);
                                 } else {
                                     this.setRowText(1, "", Airbus_FMA.MODE_STATE.NONE);
                                 }
@@ -684,8 +684,8 @@ var Airbus_FMA;
                 return Column1.ROW_1_STATE.MACH;
             } else if (this.IsActive_THRLK()) {
                 return Column1.ROW_1_STATE.THRLK;
-            } else if (this.IsActive_BRKLOW(true)) {
-                return Column1.ROW_1_STATE.BRKLOW;
+            } else if (this.IsActive_BRKLO(true)) {
+                return Column1.ROW_1_STATE.BRKLO;
             } else if (this.IsActive_BRKMED(true)) {
                 return Column1.ROW_1_STATE.BRKMED;
             } else if (this.IsActive_BRKMAX(true)) {
@@ -712,8 +712,8 @@ var Airbus_FMA;
         }
 
         getTargetRow2State() {
-            if (this.IsActive_BRKLOW(false)) {
-                return Column1.ROW_2_STATE.BRKLOW;
+            if (this.IsActive_BRKLO(false)) {
+                return Column1.ROW_2_STATE.BRKLO;
             } else if (this.IsActive_BRKMED(false)) {
                 return Column1.ROW_2_STATE.BRKMED;
             } else {
@@ -943,7 +943,7 @@ var Airbus_FMA;
             return false;
         }
 
-        IsActive_BRKLOW(_engaged) {
+        IsActive_BRKLO(_engaged) {
             return _engaged === Airbus_FMA.CurrentPlaneState.autoBreakDecel && Airbus_FMA.CurrentPlaneState.autoBreakLevel === 1 && Airbus_FMA.CurrentPlaneState.flightPhase > FlightPhase.FLIGHT_PHASE_TAKEOFF;
         }
 
@@ -970,7 +970,7 @@ var Airbus_FMA;
         THRLK: 9,
         TOGA: 10,
         SGA: 11,
-        BRKLOW: 12,
+        BRKLO: 12,
         BRKMED: 13,
         BRKMAX: 14
     };
@@ -984,7 +984,7 @@ var Airbus_FMA;
     };
     Column1.ROW_2_STATE = {
         NONE: 0,
-        BRKLOW: 1,
+        BRKLO: 1,
         BRKMED: 2
     };
     Column1.ROW_3_STATE = {
