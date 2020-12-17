@@ -1391,8 +1391,7 @@
                     <PART_ID>Smoking_Switch</PART_ID>
                     <ANIM_NAME>SWITCH_OVHD_INTLT_NOSMOKING</ANIM_NAME>
                     <NUM_STATES>3</NUM_STATES>
-                    <SWITCH_DIRECTION>
-                    l</SWITCH_DIRECTION>
+                    <SWITCH_DIRECTION>Vertical</SWITCH_DIRECTION>
                     <INVERT_ANIM>True</INVERT_ANIM>
                     <SWITCH_POSITION_TYPE>L</SWITCH_POSITION_TYPE>
                     <SWITCH_POSITION_VAR>XMLVAR_SWITCH_OVHD_INTLT_NOSMOKING_Position</SWITCH_POSITION_VAR>
@@ -2753,8 +2752,8 @@
                 <ANIM_NAME_PUSHPULL>PUSH_AUTOPILOT_L2</ANIM_NAME_PUSHPULL>
                 <TYPE>AIRBUS</TYPE>
             </UseTemplate>
-            
-            <UseTemplate Name="FBW_AUTOPILOT_Knob_Heading_Template">
+
+            <UseTemplate Name="ASOBO_AUTOPILOT_Knob_Heading_Template">
                 <NODE_ID>KNOB_AUTOPILOT_L3</NODE_ID>
                 <ANIM_NAME_KNOB>KNOB_AUTOPILOT_L3</ANIM_NAME_KNOB>
                 <ANIM_NAME_PUSHPULL>PUSH_AUTOPILOT_L3</ANIM_NAME_PUSHPULL>
@@ -2853,6 +2852,22 @@
                 <ANIMTIP_2>TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_ENGAGE_MANAGED_ALTITUDE_MODE</ANIMTIP_2>
                 <ANIMTIP_2_ON_CURSOR>UpArrow</ANIMTIP_2_ON_CURSOR>
                 <ANIMTIP_3>TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_ENGAGE_SELECTED_ALTITUDE_MODE</ANIMTIP_3>
+                <ANIMTIP_3_ON_CURSOR>DownArrow</ANIMTIP_3_ON_CURSOR>
+            </UseTemplate>
+
+            <UseTemplate Name="ASOBO_AUTOPILOT_Knob_VerticalSpeed_Template">
+                <NODE_ID>KNOB_AUTOPILOT_UPDN</NODE_ID>
+                <ANIM_NAME_KNOB>KNOB_AUTOPILOT_UPDN</ANIM_NAME_KNOB>
+                <ANIM_NAME_PUSHPULL>PUSH_AUTOPILOT_UPDN</ANIM_NAME_PUSHPULL>
+                <AIRBUS_TYPE/>
+                <ANIMREF_ID>0</ANIMREF_ID>
+                <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_VS_DECREASE</ANIMTIP_0>
+                <ANIMTIP_0_ON_CURSOR>TurnLeft</ANIMTIP_0_ON_CURSOR>
+                <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_VS_INCREASE</ANIMTIP_1>
+                <ANIMTIP_1_ON_CURSOR>TurnRight</ANIMTIP_1_ON_CURSOR>
+                <ANIMTIP_2>TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_LEVEL_OFF</ANIMTIP_2>
+                <ANIMTIP_2_ON_CURSOR>UpArrow</ANIMTIP_2_ON_CURSOR>
+                <ANIMTIP_3>TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_VS_FPA_ENGAGE</ANIMTIP_3>
                 <ANIMTIP_3_ON_CURSOR>DownArrow</ANIMTIP_3_ON_CURSOR>
             </UseTemplate>
 
@@ -3189,16 +3204,7 @@
             </Component>
         </Component>
 
-        <UseTemplate Name="FBW_AUTOPILOT_Knob_Heading_Template">
-            <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_HDG_TUNING_LEFT</ANIMTIP_0>
-            <ANIMTIP_0_ON_CURSOR>TurnLeft</ANIMTIP_0_ON_CURSOR>
-            <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_HDG_TUNING_RIGHT</ANIMTIP_1>
-            <ANIMTIP_1_ON_CURSOR>TurnRight</ANIMTIP_1_ON_CURSOR>
-            <ANIMTIP_3>TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_HDG_PUSH</ANIMTIP_3>
-            <ANIMTIP_3_ON_CURSOR>Hand</ANIMTIP_3_ON_CURSOR>
-            <PUSH/>
-        </UseTemplate>
-
+>
         <Template Name="FBW_AUTOPILOT_Knob_Heading_Template">
             <DefaultTemplateParameters>
                 <ID>1</ID>
@@ -3209,7 +3215,148 @@
             </UseTemplate>
         </Template>
 
-        <Template Name="FBW_AUTOPILOT_Knob_Heading_SubTemplate">
+        <Template Name="FBW_AUTOPILOT_Knob_VerticalSpeed_Template">
+            <DefaultTemplateParameters>
+                <ID>1</ID>
+            </DefaultTemplateParameters>
+        </Template>
+
+        <Template Name="ASOBO_AUTOPILOT_Knob_VerticalSpeed_SubTemplate">
+            <DefaultTemplateParameters>
+                <NODE_ID>AUTOPILOT_Knob_VerticalSpeed#SUFFIX_ID#</NODE_ID>
+                <ANIM_NAME>AUTOPILOT_Knob_VerticalSpeed#SUFFIX_ID#</ANIM_NAME>
+                <ANIM_NAME_PUSHPULL>AUTOPILOT_Knob_VerticalSpeed_PushPull#SUFFIX_ID#</ANIM_NAME_PUSHPULL>
+                <Condition Valid="SEPARATED_INTERACTION">
+                    <HITBOX_UP_NODE_ID>AUTOPILOT_Knob_VerticalSpeed_DN#SUFFIX_ID#</HITBOX_UP_NODE_ID>
+                    <HITBOX_DOWN_NODE_ID>AUTOPILOT_Knob_VerticalSpeed_UP#SUFFIX_ID#</HITBOX_DOWN_NODE_ID>
+                </Condition>
+                <PART_ID>AUTOPILOT_Knob_VerticalSpeed</PART_ID>
+                <WWISE_EVENT>QNHknob</WWISE_EVENT>
+                <COUNT>36</COUNT>
+                <Condition Check="AIRBUS_TYPE">
+                    <False>
+                        <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_VS_DECREASE</ANIMTIP_0>
+                        <ANIMTIP_0_ON_CURSOR>UpArrow</ANIMTIP_0_ON_CURSOR>
+                        <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_VS_INCREASE</ANIMTIP_1>
+                        <ANIMTIP_1_ON_CURSOR>DownArrow</ANIMTIP_1_ON_CURSOR>
+                        <Switch>
+                            <Case Valid="UP_DEC_DN_INC">
+                                <CLOCKWISE_DIR>INC</CLOCKWISE_DIR>
+                                <ANTICLOCKWISE_DIR>DEC</ANTICLOCKWISE_DIR>
+                                <Condition Check="UP_DEC_DN_INC" Match="INVERT_ANIM">
+                                    <INVERT_ANIM>True</INVERT_ANIM>
+                                </Condition>
+                            </Case>
+                            <Default>
+                                <CLOCKWISE_DIR>DEC</CLOCKWISE_DIR>
+                                <ANTICLOCKWISE_DIR>INC</ANTICLOCKWISE_DIR>
+                            </Default>
+                        </Switch>
+                    </False>
+                    <True>
+                        <CLOCKWISE_DIR>DEC</CLOCKWISE_DIR>
+                        <ANTICLOCKWISE_DIR>INC</ANTICLOCKWISE_DIR>
+                    </True>
+                </Condition>
+                <Switch>
+                    <Case Valid="SEPARATED_INTERACTION">
+                    </Case>
+                    <Default>
+                        <SWITCH_DIRECTION>Vertical</SWITCH_DIRECTION>
+                    </Default>
+                </Switch>
+            </DefaultTemplateParameters>
+            <OverrideTemplateParameters>
+                <Condition Valid="SET_AIRSPEED_ON_FLC">
+                    <True>
+                        <!-- The Dir is voluntarily inverted for SPD and MACH -->
+                        <CLOCKWISE_CODE>
+						(A:AUTOPILOT FLIGHT LEVEL CHANGE, Bool) if{
+							(L:XMLVAR_AirSpeedIsInMach) if{
+								(&gt;K:AP_MACH_VAR_#ANTICLOCKWISE_DIR#)
+							} els{
+								(&gt;K:AP_SPD_VAR_#ANTICLOCKWISE_DIR#)
+							}
+						} els{
+							(&gt;K:AP_VS_VAR_#CLOCKWISE_DIR#)
+						}
+                        </CLOCKWISE_CODE>
+                        <ANTICLOCKWISE_CODE>
+						(A:AUTOPILOT FLIGHT LEVEL CHANGE, Bool) if{
+							(L:XMLVAR_AirSpeedIsInMach) if{
+								(&gt;K:AP_MACH_VAR_#CLOCKWISE_DIR#)
+							} els{
+								(&gt;K:AP_SPD_VAR_#CLOCKWISE_DIR#)
+							}
+						} els{
+							(&gt;K:AP_VS_VAR_#ANTICLOCKWISE_DIR#)
+						}
+                        </ANTICLOCKWISE_CODE>
+                        <!-- A CHECK -->
+                        <ANIMTIP_0>%((A:AUTOPILOT FLIGHT LEVEL CHANGE, Bool))%{if}TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_SPEED_INCREASE%{else}TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_VS_DECREASE%{end}</ANIMTIP_0>
+                        <ANIMTIP_0_ON_CURSOR>UpArrow</ANIMTIP_0_ON_CURSOR>
+                        <ANIMTIP_1>%((A:AUTOPILOT FLIGHT LEVEL CHANGE, Bool))%{if}TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_SPEED_DECREASE%{else}TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_VS_INCREASE%{end}</ANIMTIP_1>
+                        <ANIMTIP_1_ON_CURSOR>DownArrow</ANIMTIP_1_ON_CURSOR>
+
+                    </True>
+                    <False>
+                        <CLOCKWISE_CODE>(&gt;K:AP_VS_VAR_#CLOCKWISE_DIR#)</CLOCKWISE_CODE>
+                        <ANTICLOCKWISE_CODE>(&gt;K:AP_VS_VAR_#ANTICLOCKWISE_DIR#)</ANTICLOCKWISE_CODE>
+                    </False>
+                </Condition>
+                <Condition Check="HITBOX_UP_NODE_ID">
+                    <SEPARATED_INTERACTION>True</SEPARATED_INTERACTION>
+                </Condition>
+            </OverrideTemplateParameters>
+            <EditableTemplateParameters>
+                <AddParams>
+                    <ANIM_NAME></ANIM_NAME>
+                    <ANIM_NAME_PUSHPULL></ANIM_NAME_PUSHPULL>
+                </AddParams>
+                <AddOptions>
+                    <HITBOX_UP_NODE_ID></HITBOX_UP_NODE_ID>
+                    <HITBOX_DOWN_NODE_ID></HITBOX_DOWN_NODE_ID>
+                    <AIRBUS_TYPE></AIRBUS_TYPE>
+                </AddOptions>
+            </EditableTemplateParameters>
+
+            <Switch>
+                <Case Valid="SEPARATED_INTERACTION">
+                    <UseTemplate Name = "ASOBO_GT_Knob_Infinite_SeparatedInteraction">
+                        <SWITCH_DIRECTION>Vertical</SWITCH_DIRECTION>
+                    </UseTemplate>
+                </Case>
+                <Case Check="AIRBUS_TYPE">
+                    <Component ID="#NODE_ID#" Node="#NODE_ID#">
+                        <UseTemplate Name="ASOBO_GT_Knob_Infinite_PushPull">
+                            <CLOCKWISE_CODE>
+							2 (&gt;K:AP_VS_VAR_INC)
+							(&gt;H:A320_Neo_FCU_VS_INC)
+                            </CLOCKWISE_CODE>
+                            <ANTICLOCKWISE_CODE>
+							2 (&gt;K:AP_VS_VAR_DEC)
+							(&gt;H:A320_Neo_FCU_VS_DEC)
+                            </ANTICLOCKWISE_CODE>
+                            <PULL_CODE>
+							(&gt;H:A320_Neo_FCU_VS_HOLD)
+                            </PULL_CODE>
+                            <PUSH_CODE>
+							(&gt;H:A320_Neo_FCU_VS_ZERO)
+                            </PUSH_CODE>
+                            <CENTER_RADIUS>0</CENTER_RADIUS>
+                        </UseTemplate>
+                    </Component>
+                </Case>
+                <Default>
+                    <Component ID="#NODE_ID#" Node="#NODE_ID#">
+                        <UseTemplate Name="ASOBO_GT_Knob_Infinite">
+                        </UseTemplate>
+                    </Component>
+                </Default>
+            </Switch>
+        </Template>
+
+        <Template Name="ASOBO_AUTOPILOT_Knob_Heading_SubTemplate">
             <DefaultTemplateParameters>
                 <ANIM_NAME_KNOB>AUTOPILOT_Knob_Heading#SUFFIX_ID#</ANIM_NAME_KNOB>
                 <ANIM_NAME_PUSH>AUTOPILOT_Knob_Heading_Push#SUFFIX_ID#</ANIM_NAME_PUSH>
