@@ -110,7 +110,7 @@ class CDUAirportsMonitor {
             if (this.page2) {
                 this.user_ap_line = [""];
             } else {
-                this.user_ap_line = ["[][color]cyan", ""];
+                this.user_ap_line = ["[\xa0\xa0][color]cyan", ""];
             }
         } else if (this.total_delta_t === 0) {
             // calculate values for user selected airport
@@ -148,21 +148,21 @@ class CDUAirportsMonitor {
             if (this.page2) {
                 mcdu.setTemplate([
                     ["CLOSEST AIRPORTS"],
-                    ["", "EFF WIND", "EFOB"],
+                    ["", "EFF WIND\xa0", "EFOB"],
                     [`${this.icao1}[color]green`,
-                        `---[color]green`,
+                        `{small}[KTS]{end}{cyan}[\xa0\xa0\xa0]{end}`,
                         `${this.efob1.toString().padStart(3, "_")}[color]green`],
                     [""],
                     [`${this.icao2}[color]green`,
-                        `---[color]green`,
+                        `[\xa0\xa0\xa0][color]cyan`,
                         `${this.efob2.toString().padStart(3, "_")}[color]green`],
                     [""],
                     [`${this.icao3}[color]green`,
-                        `---[color]green`,
+                        `[\xa0\xa0\xa0][color]cyan`,
                         `${this.efob3.toString().padStart(3, "_")}[color]green`],
                     [""],
                     [`${this.icao4}[color]green`,
-                        `---[color]green`,
+                        `[\xa0\xa0\xa0][color]cyan`,
                         `${this.efob4.toString().padStart(3, "_")}[color]green`],
                     [""],
                     this.user_ap_line,
@@ -172,7 +172,7 @@ class CDUAirportsMonitor {
             } else {
                 mcdu.setTemplate([
                     ["CLOSEST AIRPORTS"],
-                    ["", "UTC", "BRG DIST"],
+                    ["", "BRG\xa0\xa0\xa0\xa0DIST\xa0\xa0\xa0UTC\xa0"],
                     [`${this.icao1}[color]green`,
                         `${this.eta1}[color]green`,
                         `${this.brng1.toString().padStart(3, "0")}°_${this.dist1.toString().padStart(5, "_")}[color]green`],
@@ -195,7 +195,7 @@ class CDUAirportsMonitor {
                 ]);
 
                 // force spaces to emulate 4 columns
-                mcdu._labelElements[0][2].innerHTML = "BRG&nbsp;&nbsp;&nbsp;DIST";
+                mcdu._labelElements[0][2].innerHTML = "&nbsp;&nbsp;&nbsp;";
                 for (let i = 0; i < (this.user_ap ? 5 : 4); i++) {
                     mcdu._lineElements[i][2].innerHTML = mcdu._lineElements[i][2].innerHTML.replace(/_/g, "&nbsp;");
                 }

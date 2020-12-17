@@ -124,12 +124,12 @@ fmc-main-display::before {
   left: 0;
   bottom: 0;
   right: 0;
-  background: linear-gradient(rgba(9,13, 20, 1) 50%, rgba(9,13, 20, 1) 50%),
+  background: linear-gradient(rgba(9, 13, 20, 1) 50%, rgba(9, 13, 20, 1) 50%),
     linear-gradient(
       90deg,
-      rgba(9,13,20, 1),
-      rgba(9,13,20, 1),
-      rgba(9,13,20, 1)
+      rgba(9, 13, 20, 1),
+      rgba(9, 13, 20, 1),
+      rgba(9, 13, 20, 1)
     );
   z-index: 2;
   background-size: 100% 2px, 3px 100%;
@@ -158,6 +158,11 @@ fmc-main-display::before {
   /* letter-spacing: 0.9vw;  */
   letter-spacing: 0.6vw;
   line-height: 5.8vw;
+}
+
+.b-text {
+  font-size: 5.8vw;
+  letter-spacing: normal;
 }
 
 .msg-text {

@@ -5,9 +5,9 @@ class CDUAvailableArrivalsPage {
             mcdu.clearDisplay();
             mcdu.page.Current = mcdu.page.AvailableArrivalsPage;
             console.log(airport);
-            let selectedApproachCell = "---";
-            let selectedViasCell = "NONE";
-            let selectedTransitionCell = "NONE";
+            let selectedApproachCell = "";
+            let selectedViasCell = "";
+            let selectedTransitionCell = "";
             const selectedApproach = mcdu.flightPlanManager.getApproach();
             console.log(selectedApproach);
             if (selectedApproach) {
@@ -17,7 +17,7 @@ class CDUAvailableArrivalsPage {
                     selectedViasCell = selectedApproachTransition.waypoints[0].infos.icao.substr(7);
                 }
             }
-            let selectedStarCell = "------";
+            let selectedStarCell = "";
             let selectedArrival = airportInfo.arrivals[mcdu.flightPlanManager.getArrivalProcIndex()];
             if (!selectedArrival) {
                 selectedArrival = airportInfo.arrivals[selectedStarIndex];
@@ -73,10 +73,10 @@ class CDUAvailableArrivalsPage {
                 for (let i = 0; i < 3; i++) {
                     let index = i + pageCurrent;
                     if (index === 0) {
-                        let color = "cyan";
-                        if (!selectedArrival) {
-                            color = "green";
-                        }
+                        const color = "cyan";
+                        // if (!selectedArrival) {
+                        //     color = "green";
+                        // }
                         rows[2 * i] = ["{NO STAR[color]" + color];
                         mcdu.onLeftInput[i + 2] = () => {
                             mcdu.setArrivalProcIndex(-1, () => {
@@ -131,7 +131,7 @@ class CDUAvailableArrivalsPage {
             let viasPageLine = "";
             if (starSelection) {
                 if (selectedApproach) {
-                    viasPageLabel = "APPR";
+                    viasPageLabel = "\xa0APPR";
                     viasPageLine = "<VIAS";
                     mcdu.onLeftInput[1] = () => {
                         CDUAvailableArrivalsPage.ShowViasPage(mcdu, airport, 0, selectedStarIndex);
@@ -160,11 +160,11 @@ class CDUAvailableArrivalsPage {
                 };
             }
             mcdu.setTemplate([
-                ["ARRIVAL TO " + airport.ident + "{ }"],
-                ["APPR", "STAR", "VIA"],
-                [selectedApproachCell + "[color]green", selectedStarCell + "[color]green", selectedViasCell + "[color]green"],
-                [viasPageLabel, "TRANS"],
-                [viasPageLine, selectedTransitionCell + "[color]green"],
+                ["\xa0\xa0\xa0ARRIVAL {small}TO{end}\xa0{green}" + airport.ident + "{end}\xa0\xa0\xa0{}"],
+                ["\xa0APPR", "STAR\xa0", "VIA"],
+                [(selectedApproachCell ? selectedApproachCell + "[color]yellow" : "------"), (selectedStarCell ? selectedStarCell + "[color]yellow" : "------"), (selectedViasCell ? selectedViasCell + "[color]yellow" : "------")],
+                [viasPageLabel, "TRANS\xa0"],
+                [viasPageLine, (selectedTransitionCell ? selectedTransitionCell + "[color]yellow" : "------")],
                 [starSelection ? "STAR" : "APPR", starSelection ? "TRANS" : "", "AVAILABLE"],
                 rows[0],
                 rows[1],
@@ -204,7 +204,7 @@ class CDUAvailableArrivalsPage {
         if (airportInfo instanceof AirportInfo) {
             mcdu.clearDisplay();
             mcdu.page.Current = mcdu.page.AvailableArrivalsPageVias;
-            let selectedApproachCell = "---";
+            let selectedApproachCell = "-----";
             let selectedViasCell = "NONE";
             const selectedApproach = mcdu.flightPlanManager.getApproach();
             if (selectedApproach) {
@@ -263,10 +263,10 @@ class CDUAvailableArrivalsPage {
                 };
             }
             mcdu.setTemplate([
-                ["ARRIVAL TO " + airport.ident + "{ }"],
-                ["APPR", "STAR", "VIA"],
-                [selectedApproachCell + "[color]green", selectedStarCell + "[color]green", selectedViasCell + "[color]green"],
-                ["APPR VIAS"],
+                ["\xa0\xa0\xa0ARRIVAL {small}TO{end}\xa0{green}" + airport.ident + "{end}\xa0\xa0\xa0{}"],
+                ["\xa0APPR", "STAR\xa0", "VIA"],
+                [(selectedApproachCell ? selectedApproachCell + "[color]yellow" : "------"), (selectedStarCell ? selectedStarCell + "[color]yellow" : "------"), (selectedViasCell ? selectedViasCell + "[color]yellow" : "------")],
+                ["\xa0APPR VIAS"],
                 ["{NO VIAS[color]cyan"],
                 rows[0],
                 rows[1],

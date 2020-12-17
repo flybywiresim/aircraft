@@ -52,16 +52,16 @@ class CDUHoldAtPage {
             }
 
             const rows = [];
-            rows.push([(computed ? "COMPUTED HOLD at " : "HOLD at ") + waypoint.ident ]);
+            rows.push([(computed ? "COMPUTED HOLD {small}at{end} " : "HOLD {small}at{end} ") + "{green}" + waypoint.ident + "{end}"]);
             rows.push(["INB CRS", "", ""]);
-            rows.push([holdCourse.toFixed(0) + "°[color]cyan", "", ""]);
+            rows.push([holdCourse.toFixed(0) + "°[color]yellow", "", ""]);
             rows.push(["TURN", computed ? "" : "REVERT TO", ""]);
-            rows.push([holdTurn + "[color]cyan", computed ? "" : "COMPUTED}[color]cyan", ""]);
+            rows.push([holdTurn + "[color]yellow", computed ? "" : "COMPUTED}[color]cyan", ""]);
             rows.push(["TIME/DIST"]);
-            rows.push([holdTime.toFixed(1) + "/" + holdDistance.toFixed(1) + "[color]cyan"]);
-            rows.push(["", "", " LAST EXIT"]);
-            rows.push(["", "", "UTC   FUEL"]);
-            rows.push(["", "", exitTime + " " + resFuel.toFixed(1)]);
+            rows.push([holdTime.toFixed(1) + "/" + holdDistance.toFixed(1) + "[color]yellow"]);
+            rows.push(["", "", "\xa0LAST EXIT"]);
+            rows.push(["", "", "{small}UTC\xa0\xa0\xa0FUEL{end}"]);
+            rows.push(["", "", exitTime + "\xa0\xa0" + (resFuel < 10 ? "\xa0" : "") + resFuel.toFixed(1) + "\xa0"]);
             rows.push([""]);
             rows.push([""]);
             rows.push(["{ERASE[color]amber", "INSERT}[color]amber", ""]);
