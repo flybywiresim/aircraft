@@ -1221,14 +1221,6 @@ var A320_Neo_UpperECAM;
                         ),
                     },
                     {
-                        message: "AUDIO 3 XFRD",
-                        isActive: () => {
-                            return (
-                                (SimVar.GetSimVarValue("L:A32NX_KNOB_OVHD_AUDIOSWITCH_Position", "Enum") != 1)
-                            );
-                        }                        
-                    },
-                    {
                         message: "SWITCHG PNL",
                         isActive: () => {
                             return (
@@ -1409,6 +1401,37 @@ var A320_Neo_UpperECAM;
             this.frameCount++;
             if (this.frameCount % 16 == 0) {
                 this.simVarCache = {};
+            }
+
+            // Packs indicator
+            this.packsText = this.querySelector("#packsIndicator");
+            this.isTogaFlexMct1 = this.getCachedSimVar("GENERAL ENG THROTTLE MANAGED MODE:1", "number") > 4;
+            this.isTogaFlexMct2 = this.getCachedSimVar("GENERAL ENG THROTTLE MANAGED MODE:2", "number") > 4;
+
+            if (this.isTogaFlexMct1 && this.isTogaFlexMct2) {
+                const ignStateActive = this.getCachedSimVar("L:XMLVAR_ENG_MODE_SEL", "Enum") == 2;
+                const apuBleedActive = this.getCachedSimVar("BLEED AIR APU", "Bool");
+                const apuActive = this.getCachedSimVar("APU PCT RPM", "Percent") >= 95;
+                const eng1active = this.getCachedSimVar("ENG COMBUSTION:1", "Bool");
+                const eng2active = this.getCachedSimVar("ENG COMBUSTION:2", "Bool");
+                const eng1NAIactive = this.getCachedSimVar("ENG ANTI ICE:1", "Bool");
+                const eng2NAIactive = this.getCachedSimVar("ENG ANTI ICE:2", "Bool");
+                const WAIactive = this.getCachedSimVar("STRUCTURAL DEICE SWITCH", "Bool");
+                const isOnGround = this.getCachedSimVar("SIM ON GROUND", "bool");
+
+                let textList = [];
+                if ((!ignStateActive || !isOnGround) && ((apuActive && apuBleedActive) || (eng1active || eng2active))) {
+                    textList.push("PACKS");
+                }
+                if ((eng1active && eng1NAIactive) || (eng2active && eng2NAIactive)) {
+                    textList.push("NAI");
+                }
+                if ((eng1active || eng2active) && WAIactive) {
+                    textList.push("WAI");
+                }
+                this.packsText.textContent = textList.join("/");
+            } else {
+                this.packsText.textContent = "";
             }
 
             this.fwcFlightPhase = SimVar.GetSimVarValue("L:A32NX_FWC_FLIGHT_PHASE", "Enum");
@@ -1953,19 +1976,19 @@ var A320_Neo_UpperECAM;
             return "42%";
         }
         getValueTextX() {
-            return "11%";
+            return "14%";
         }
         getBoxX() {
             return "15";
         }
         getValueTextX2() {
-            return "17%";
+            return "20%";
         }
         getValueTextXpoint() {
-            return "14%";
+            return "17%";
         }
         getValueTextXFF() {
-            return "20%";
+            return "17%";
         }
     }
     A320_Neo_UpperECAM.LinesStyleComponent_Left = LinesStyleComponent_Left;
@@ -1989,7 +2012,7 @@ var A320_Neo_UpperECAM;
             return "82%";
         }
         getValueTextXFF() {
-            return "85%";
+            return "82%";
         }
     }
     A320_Neo_UpperECAM.LinesStyleComponent_Right = LinesStyleComponent_Right;
