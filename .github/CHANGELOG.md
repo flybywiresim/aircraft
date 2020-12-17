@@ -154,11 +154,12 @@
 1. [ECAM] Adjusted flaps panel - @MisterChocker (Leon)
 1. [CDU] F-PLN page visual rework - @Lollo999 (Lorenzo Pinna)
 1. [Sound] Improved ground roll - @hotshotp (Boris)
-1. [Sound] Added new turbulence sounds different in cabin and cockpit - @hotshotp (Boris)
+1. [Sound] Added new heavy turbulence sounds different in cabin and cockpit - @hotshotp (Boris)
 1. [CDU] Added ground speed mini - @MisterChocker (Leon)
 1. [MISC] Fix pedestal camera position triggering radio frequency display glitch - @pareil6 (pareil6)
 1. [FLIGHTMODEL] Corrected fuel tank capacities, including unusable fuel - @donstim - (donbikes#4084)
 1. [General] Added option to switch between KG and LBS - @MisterChocker (Leon)
+1. [Sound] Added new sounds for various switches, levers, and buttons - @hotshotp (Boris)
 
 ## 0.4.0
 1. [General] Add CHANGELOG.md - @nathaninnes (Nathan Innes)
