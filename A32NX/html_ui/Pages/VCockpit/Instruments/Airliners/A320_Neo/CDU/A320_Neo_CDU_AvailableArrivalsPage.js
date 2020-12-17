@@ -40,9 +40,13 @@ class CDUAvailableArrivalsPage {
                 }
             }
             const approaches = airportInfo.approaches;
+            // Add an index member variable so we can track the original order of approaches
+            for (let j = 0; j < approaches.length; j++) {
+                approaches[j].index = j;
+            }
             // Sort the approaches in Honeywell's documented order
             const approachTypeOrder = {"MLS":0, "ILS":1, "GLS":2, "IGS":3, "LOC":4, "BLOC":5, "LDA":6, "SDF": 7, "GPS": 8, "RNAV":9, "VORDME":10, "NDB":11};
-            const sortedApproaches = approaches.sort((a, b) => approachTypeOrder[a.name.split(" ")[0]] - approachTypeOrder[b.name.split(" ")[0]]);
+            const sortedApproaches = approaches.slice().sort((a, b) => approachTypeOrder[a.name.split(" ")[0]] - approachTypeOrder[b.name.split(" ")[0]]);
             const rows = [[""], [""], [""], [""], [""], [""], [""], [""]];
             if (!starSelection) {
                 for (let i = 0; i < 3; i++) {
@@ -63,7 +67,7 @@ class CDUAvailableArrivalsPage {
                         rows[2 * i] = ["{" + Avionics.Utils.formatRunway(approach.name) + "[color]cyan", "", "{sp}{sp}{sp}{sp}" + runwayLength + "{small}M{end}[color]cyan"];
                         rows[2 * i + 1] = ["{sp}{sp}{sp}{sp}" + runwayCourse + "[color]cyan"];
                         mcdu.onLeftInput[i + 2] = () => {
-                            mcdu.setApproachIndex(index, () => {
+                            mcdu.setApproachIndex(approach.index, () => {
                                 CDUAvailableArrivalsPage.ShowPage(mcdu, airport, 0, true);
                             });
                         };
