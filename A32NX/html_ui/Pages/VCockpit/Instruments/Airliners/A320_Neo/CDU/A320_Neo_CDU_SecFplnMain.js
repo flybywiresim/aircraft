@@ -16,7 +16,7 @@ class CDUSecFplnMain {
             [""],
             [""],
             [""],
-            [""]
+            ["*SWAP ACTIVE[color]inop"]
         ]);
     }
 }
