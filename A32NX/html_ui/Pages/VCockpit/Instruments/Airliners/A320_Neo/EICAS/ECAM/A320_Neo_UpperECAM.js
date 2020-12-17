@@ -2035,7 +2035,7 @@ var A320_Neo_UpperECAM;
                 this.divMain.appendChild(fuelOnBoardDiv);
             }
 
-            this.setThrottle(false, 0, ThrottleMode.UNKNOWN, true);
+            this.setThrottle(false, 0, ThrottleMode.UNKNOWN, true, Simplane.getCurrentFlightPhase());
             this.setFlexTemperature(false, 0, true);
             this.setFuelOnBoard(0, true, true);
         }
@@ -2075,7 +2075,7 @@ var A320_Neo_UpperECAM;
                         this.setFlexTemperature(false);
                     }
 
-                    this.setThrottle(true, throttlePosition, throttleMode, onGround);
+                    this.setThrottle(true, throttlePosition, throttleMode, onGround, Simplane.getCurrentFlightPhase());
                 }
             } else {
                 this.setThrottle(false);
@@ -2104,14 +2104,16 @@ var A320_Neo_UpperECAM;
          * @param _value {number}
          * @param _mode {ThrottleMode}
          * @param _grounded {boolean}
+         * @param _phase {FlightPhase}
          */
-        setThrottle(_active, _value = 0, _mode = ThrottleMode.UNKNOWN, _grounded = true) {
-            if (_active !== this.currentThrottleIsActive || _value !== this.currentThrottleValue || _mode !== this.currentThrottleMode || _grounded !== this.currentGrounded || this.currentStart) {
+        setThrottle(_active, _value = 0, _mode = ThrottleMode.UNKNOWN, _grounded = true, _phase = Simplane.getCurrentFlightPhase()) {
+            if (_active !== this.currentThrottleIsActive || _value !== this.currentThrottleValue || _mode !== this.currentThrottleMode || _grounded !== this.currentGrounded || this.currentStart || _phase != this.currentPhase) {
                 this.currentThrottleIsActive = _active;
                 this.currentThrottleValue = _value;
                 this.currentThrottleMode = _mode;
                 this.currentGrounded = _grounded;
                 this.currentStart = false;
+                this.currentPhase = _phase;
 
                 if (this.throttleState != null) {
                     if (_active && (this.currentThrottleMode !== ThrottleMode.UNKNOWN)) {
@@ -2124,7 +2126,9 @@ var A320_Neo_UpperECAM;
                             }
                             case ThrottleMode.FLEX_MCT:
                             {
-                                this.throttleState.textContent = this.getThrustRatingMode(this.currentGrounded, "MCT");
+                                this.throttleState.textContent = this.currentPhase === FlightPhase.FLIGHT_PHASE_GOAROUND
+                                && Simplane.getEngineActive(0)
+                                && Simplane.getEngineActive(1) ? "GA\xa0SOFT" : this.getThrustRatingMode(this.currentGrounded, "MCT");
                                 break;
                             }
                             case ThrottleMode.REVERSE:
