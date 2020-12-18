@@ -1,6 +1,5 @@
 @import "../../../Common/definitions.scss";
 
-
 #fuselage {
     
     .MainShape {
@@ -101,71 +100,3 @@
     }
 
 }
-
-
-/*
-text {
-    text-anchor: middle;
-}
-
-.DoorActiveShape {
-    fill: var(--displayAmber);
-    stroke: var(--displayAmber);
-    stroke-width: 2;
-}
-.DoorWarningShape {
-    fill: var(--displayAmber);
-    stroke: var(--displayAmber);
-    stroke-width: 2;
-}
-.WarningShape {
-    fill: transparent;
-    stroke: var(--displayAmber);
-    stroke-width: 2;
-}
-
-
- text.Title {
-    font-size: 25px;
-    fill: var(--displayWhite);
-}
- text.Slide {
-    font-size: 12pt;
-    fill: var(--displayWhite);
-}
- text.Note {
-    font-size: 12pt;
-    fill: var(--displayWhite);
-}
- text.NoteLarge {
-    font-size: 13pt;
-    word-spacing: -4px;
-    fill: var(--displayWhite);
-}
- text.NoteLargeAmber {
-    font-size: 15pt;
-    word-spacing: -4px;
-    fill: var(--displayAmber);
-}
- text.Unit {
-    font-size: 14pt;
-    fill: var(--displayCyan);
-}
- text.Value {
-    font-size: 14pt;
-    fill: var(--displayGreen);
-}
- text.ValueSmall {
-    font-size: 13pt;
-    fill: var(--displayGreen);
-}
- text.Warning {
-    font-size: 18px;
-    fill: var(--displayAmber);
-}
- text.DoorWarning {
-    font-size: 12pt;
-    fill: var(--displayAmber);
-}
-
-*/
