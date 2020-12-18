@@ -2,7 +2,7 @@ class CDU_OPTIONS_SIMBRIEF {
     static ShowPage(mcdu) {
         mcdu.clearDisplay();
 
-        const simbriefUsername = NXDataStore.get("CONFIG_SIMBRIEF_USERNAME", "");
+        const simbriefUsername = NXDataStore.get("CONFIG_SIMBRIEF_USERNAME", "").replace('_', ' ');
 
         const simbriefUsernameString = simbriefUsername != "" ? simbriefUsername : "[ ]";
 
@@ -29,7 +29,7 @@ class CDU_OPTIONS_SIMBRIEF {
             if (value === FMCMainDisplay.clrValue) {
                 NXDataStore.set("CONFIG_SIMBRIEF_USERNAME", "");
             } else {
-                NXDataStore.set("CONFIG_SIMBRIEF_USERNAME", value);
+                NXDataStore.set("CONFIG_SIMBRIEF_USERNAME", value.replace(' ', '_'));
             }
             CDU_OPTIONS_SIMBRIEF.ShowPage(mcdu);
         };
