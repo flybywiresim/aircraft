@@ -55,7 +55,7 @@ class CDUAocInit {
             ete = `${formatTime(mcdu.simbrief.ete)}[color]cyan`;
         }
 
-        const currentFob = formatWeight(mcdu.getFOB());
+        const currentFob = formatWeight(mcdu.getFOB() * mcdu._conversionWeight);
         if (currentFob) {
             fob = `{small}${currentFob}{end}[color]green`;
         }
@@ -108,7 +108,7 @@ class CDUAocInit {
         mcdu.page.Current = mcdu.page.AOCInit2;
         mcdu.activeSystem = 'ATSU';
 
-        const currentFob = formatWeight(mcdu.getFOB());
+        const currentFob = formatWeight(mcdu.getFOB() * mcdu._conversionWeight);
 
         mcdu.refreshPageCallback = () => {
             CDUAocInit.ShowPage2(mcdu);

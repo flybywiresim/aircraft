@@ -62,19 +62,19 @@ class CDUAocOfpData {
         const currentBlockFuel = mcdu.aocWeight.blockFuel || mcdu.simbrief.blockFuel;
         if (currentBlockFuel) {
             const size = mcdu.aocWeight.blockFuel ? 'big' : 'small';
-            blockFuel = `{${size}}${Math.round(currentBlockFuel)}{end}[color]cyan`;
+            blockFuel = `{${size}}${Math.round(currentBlockFuel * mcdu._conversionWeight)}{end}[color]cyan`;
         }
 
         const currentTaxiFuel = mcdu.aocWeight.taxiFuel || mcdu.simbrief.taxiFuel;
         if (currentTaxiFuel) {
             const size = mcdu.aocWeight.taxiFuel ? 'big' : 'small';
-            taxiFuel = `{${size}}${Math.round(currentTaxiFuel)}{end}[color]cyan`;
+            taxiFuel = `{${size}}${Math.round(currentTaxiFuel * mcdu._conversionWeight)}{end}[color]cyan`;
         }
 
         const currentTripFuel = mcdu.aocWeight.tripFuel || mcdu.simbrief.tripFuel;
         if (currentTripFuel) {
             const size = mcdu.aocWeight.tripFuel ? 'big' : 'small';
-            tripFuel = `{${size}}${Math.round(currentTripFuel)}{end}[color]cyan`;
+            tripFuel = `{${size}}${Math.round(currentTripFuel * mcdu._conversionWeight)}{end}[color]cyan`;
         }
 
         const display = [
@@ -224,24 +224,24 @@ class CDUAocOfpData {
         const currentPayload = mcdu.aocWeight.payload || mcdu.simbrief.payload;
         if (currentPayload) {
             const size = mcdu.aocWeight.payload ? 'big' : 'small';
-            payload = `{${size}}${Math.round(currentPayload)}{end}[color]cyan`;
+            payload = `{${size}}${Math.round(currentPayload * mcdu._conversionWeight)}{end}[color]cyan`;
 
             // Update ZFW as well
             const emptyWeight = 41000;
             const actualZfw = emptyWeight + (+currentPayload);
-            estZfw = `{${size}}${formatWeightInTons(actualZfw)}{end}[color]cyan`;
+            estZfw = `{${size}}${formatWeightInTons(actualZfw * mcdu._conversionWeight)}{end}[color]cyan`;
         }
 
         const currentfwdBag = getCurrentFwdBag(mcdu);
         if (!isNaN(currentfwdBag)) {
             const size = mcdu.aocWeight.fwdBag ? 'big' : 'small';
-            fwdBag = `{${size}}${Math.round(currentfwdBag)}{end}[color]cyan`;
+            fwdBag = `{${size}}${Math.round(currentfwdBag * mcdu._conversionWeight)}{end}[color]cyan`;
         }
 
         const currentRearBag = getCurrentRearBag(mcdu);
         if (!isNaN(currentRearBag)) {
             const size = mcdu.aocWeight.rearBag ? 'big' : 'small';
-            rearBag = `{${size}}${Math.round(currentRearBag)}{end}[color]cyan`;
+            rearBag = `{${size}}${Math.round(currentRearBag * mcdu._conversionWeight)}{end}[color]cyan`;
         }
 
         function updateView() {
@@ -398,6 +398,13 @@ class CDUAocOfpData {
 
                 updateView();
             }
+        };
+
+        mcdu.leftInputDelay[5] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
+        mcdu.onLeftInput[5] = () => {
+            CDUAocMenu.ShowPage(mcdu);
         };
 
         mcdu.onPrevPage = () => {
