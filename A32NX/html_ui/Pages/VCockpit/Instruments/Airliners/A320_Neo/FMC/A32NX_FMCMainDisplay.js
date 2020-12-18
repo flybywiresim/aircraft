@@ -107,6 +107,7 @@ class FMCMainDisplay extends BaseAirliners {
         this._predFailure = false;
         /* CPDLC Fields */
         this._cpdlcAtcCenter = "";
+        this.tropo = "";
     }
 
     static approachTypeStringToIndex(approachType) {
@@ -134,6 +135,21 @@ class FMCMainDisplay extends BaseAirliners {
         this._titleElement.classList.remove("white", "cyan", "yellow", "green", "amber", "red", "magenta", "inop");
         this._titleElement.classList.add(color);
         this._titleElement.textContent = this._title;
+    }
+
+    setTitleLeft(content) {
+        if (!content) {
+            this._titleLeftElement.textContent = "";
+            return;
+        }
+        let color = content.split("[color]")[1];
+        if (!color) {
+            color = "white";
+        }
+        this._titleLeft = content.split("[color]")[0];
+        this._titleLeftElement.classList.remove("white", "blue", "yellow", "green", "red", "magenta", "inop");
+        this._titleLeftElement.classList.add(color);
+        this._titleLeftElement.textContent = this._titleLeft;
     }
 
     getPageCurrent() {
@@ -294,6 +310,7 @@ class FMCMainDisplay extends BaseAirliners {
             this.setTitle(template[0][0]);
             this.setPageCurrent(template[0][1]);
             this.setPageCount(template[0][2]);
+            this.setTitleLeft(template[0][3]);
         }
         for (let i = 0; i < 6; i++) {
             let tIndex = 2 * i + 1;
@@ -529,6 +546,27 @@ class FMCMainDisplay extends BaseAirliners {
                 } else {
                     this.showErrorMessage("ENTRY OUT OF RANGE");
                     return false;
+                }
+            }
+        }
+        this.showErrorMessage(this.defaultInputErrorMessage);
+        return false;
+    }
+
+    /**
+     * Any tropopause altitude up to 60,000 ft is able to be entered
+     * @param {string | number} tropo Format: NNNN or NNNNN Leading 0’s must be included. Entry is rounded to the nearest 10 ft
+     * @return {boolean} Whether tropopause could be set or not
+     */
+    tryUpdateTropo(tropo) {
+        const _tropo = typeof tropo === 'number' ? tropo.toString() : tropo;
+        if (_tropo.match(/^(?=(\D*\d){4,5}\D*$)/g)) {
+            const value = parseInt(_tropo.padEnd(5, '0'));
+            if (isFinite(value)) {
+                if (value >= 0 && value <= 60000) {
+                    const valueRounded = Math.round(value / 10) * 10;
+                    this.tropo = valueRounded.toString();
+                    return true;
                 }
             }
         }
@@ -1080,6 +1118,7 @@ class FMCMainDisplay extends BaseAirliners {
         if (referenceWaypoint) {
             const infos = referenceWaypoint.infos;
             if (infos instanceof WayPointInfo) {
+                await referenceWaypoint.infos.UpdateAirways(); // Sometimes the waypoint is initialized without waiting to the airways array to be filled
                 const airway = infos.airways.find(a => {
                     return a.name === airwayName;
                 });
@@ -2889,6 +2928,7 @@ class FMCMainDisplay extends BaseAirliners {
             mainFrame = this;
         }
         this.generateHTMLLayout(mainFrame);
+        this._titleLeftElement = this.getChildById("title-left");
         this._titleElement = this.getChildById("title");
         this._pageCurrentElement = this.getChildById("page-current");
         this._pageCountElement = this.getChildById("page-count");
@@ -3039,7 +3079,11 @@ class FMCMainDisplay extends BaseAirliners {
             SelectedNavaids: 39,
             SelectWptPage: 40,
             VerticalRevisionPage: 41,
-            WaypointPage: 42
+            WaypointPage: 42,
+            AOCInit: 43,
+            AOCInit2: 44,
+            AOCOfpData: 45,
+            AOCOfpData2: 46,
         };
     }
 
@@ -3315,24 +3359,37 @@ class FMCMainDisplay extends BaseAirliners {
         }
         const header = document.createElement("div");
         header.id = "header";
+
+        const titleLeft = document.createElement("div");
+        titleLeft.classList.add("s-text");
+        titleLeft.id = "title-left";
+        parent.appendChild(titleLeft);
+
         const title = document.createElement("span");
         title.id = "title";
         header.appendChild(title);
+
         parent.appendChild(header);
+
         const page = document.createElement("div");
         page.id = "page-info";
         page.classList.add("s-text");
+
         const pageCurrent = document.createElement("span");
         pageCurrent.id = "page-current";
+
         const pageSlash = document.createElement("span");
         pageSlash.id = "page-slash";
         pageSlash.textContent = "/";
+
         const pageCount = document.createElement("span");
         pageCount.id = "page-count";
+
         page.appendChild(pageCurrent);
         page.appendChild(pageSlash);
         page.appendChild(pageCount);
         parent.appendChild(page);
+
         for (let i = 0; i < 6; i++) {
             const label = document.createElement("div");
             label.classList.add("label", "s-text");

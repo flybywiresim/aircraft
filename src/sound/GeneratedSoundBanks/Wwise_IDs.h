@@ -14,7 +14,14 @@ namespace AK
     namespace EVENTS
     {
         static const AkUniqueID PLAY_ASOBO_A320_NEO_APLOCK = 2605664391U;
+        static const AkUniqueID PLAY_ASOBO_A320_NEO_APUBASS = 2675543670U;
+        static const AkUniqueID PLAY_ASOBO_A320_NEO_APUBASS2 = 2187019248U;
         static const AkUniqueID PLAY_ASOBO_A320_NEO_APUNLOCK = 834519314U;
+        static const AkUniqueID PLAY_ASOBO_A320_NEO_APURUN = 1485231110U;
+        static const AkUniqueID PLAY_ASOBO_A320_NEO_APUSHUT = 4266555373U;
+        static const AkUniqueID PLAY_ASOBO_A320_NEO_APUSTARTINIT = 1423536379U;
+        static const AkUniqueID PLAY_ASOBO_A320_NEO_APUWHINE = 3088240664U;
+        static const AkUniqueID PLAY_ASOBO_A320_NEO_APUWHINE2 = 3718092282U;
         static const AkUniqueID PLAY_ASOBO_A320_NEO_AURAL_100ABOVE = 1287945483U;
         static const AkUniqueID PLAY_ASOBO_A320_NEO_AURAL_MINIMUMNEW = 1432371593U;
         static const AkUniqueID PLAY_ASOBO_A320_NEO_AURAL_TOO_LOW_FLAPS = 2966091481U;
@@ -26,6 +33,10 @@ namespace AK
         static const AkUniqueID PLAY_ASOBO_A320_NEO_BETTERWIND = 2383051621U;
         static const AkUniqueID PLAY_ASOBO_A320_NEO_BLUESYSTEM = 2623742202U;
         static const AkUniqueID PLAY_ASOBO_A320_NEO_BOARDING = 1944365829U;
+        static const AkUniqueID PLAY_ASOBO_A320_NEO_BOOML = 2102434864U;
+        static const AkUniqueID PLAY_ASOBO_A320_NEO_BOOMLEXT = 770563073U;
+        static const AkUniqueID PLAY_ASOBO_A320_NEO_BOOMR = 2102434862U;
+        static const AkUniqueID PLAY_ASOBO_A320_NEO_BOOMREXT = 1313134859U;
         static const AkUniqueID PLAY_ASOBO_A320_NEO_BUMPSLOW = 2656054274U;
         static const AkUniqueID PLAY_ASOBO_A320_NEO_BUZZL = 2008669410U;
         static const AkUniqueID PLAY_ASOBO_A320_NEO_BUZZLEXT = 1302032711U;
@@ -744,6 +755,7 @@ namespace AK
         static const AkUniqueID SIMVAR_AMBIENT_WIND_DIRECTION = 2121926383U;
         static const AkUniqueID SIMVAR_AMBIENT_WIND_VELOCITY = 4154631997U;
         static const AkUniqueID SIMVAR_APU_PCT_RPM = 127634U;
+        static const AkUniqueID SIMVAR_APU_PCT_RPM_DERIVED = 953288096U;
         static const AkUniqueID SIMVAR_APU_PCT_STARTER = 611315644U;
         static const AkUniqueID SIMVAR_AUDIO_PANEL_VOLUME = 2769832386U;
         static const AkUniqueID SIMVAR_BRAKE_LEFT_POSITION = 227288839U;
