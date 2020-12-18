@@ -1,6 +1,6 @@
 class SimBriefApi {
     static getSimBriefOfp(username, userId) {
-        var apiUrl;
+        let apiUrl;
         if (username) {
             apiUrl = `${SimBriefApi.url}&username=${username}`;
         } else if (userId) {
