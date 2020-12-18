@@ -372,6 +372,8 @@ class CDUAocOfpData {
 
             if (value >= minAllowableZfwcg && value <= maxAllowableZfwcg) {
                 mcdu.aocWeight.zfwcg = +value;
+                mcdu.aocWeight.rearBag = undefined;
+                mcdu.aocWeight.fwdBag = undefined;
                 setEstimatedBaggagePayload(mcdu);
                 updateView();
                 return true;
