@@ -166,6 +166,7 @@ var Airbus_FMA;
             this.isOnGround = Simplane.getIsGrounded();
             this.autoBreakLevel = SimVar.GetSimVarValue("L:XMLVAR_Autobrakes_Level", "Enum");
             this.autoBreakDecel = this.autoBreakLevel !== 0 && this.isOnGround && (this.autoBreakLevel === 3 ? -6 : -2) > SimVar.GetSimVarValue("A:ACCELERATION BODY Z", "feet per second squared");
+            this.autoBreakActivated = SimVar.GetSimVarValue("L:A32NX_AUTOBRAKES_BRAKING", "Bool") === 1;
         }
     }
 
@@ -466,9 +467,9 @@ var Airbus_FMA;
             const targetRow1And2State = this.getTargetRow1And2State();
             const targetRow2State = this.getTargetRow2State();
             const targetRow3State = this.getTargetRow3State();
-            let lineOne = targetRow1State !== this.currentRow1State;
+            const lineOne = targetRow1State !== this.currentRow1State;
             const lineOneTwo = this.currentRow1And2State === Column1.ROW_1_2_STATE.MANFLX || this.currentRow1And2State !== targetRow1And2State;
-            let lineTwo = targetRow2State !== this.currentRow2State;
+            const lineTwo = lineOneTwo && targetRow1And2State === Airbus_FMA.MODE_STATE.NONE ? true : targetRow2State !== this.currentRow2State;
             const lineThree = targetRow3State !== this.currentRow3State;
             if (lineOne || lineOneTwo || lineTwo || lineThree) {
                 this.currentRow1State = targetRow1State;
@@ -476,24 +477,15 @@ var Airbus_FMA;
                 this.currentRow2State = targetRow2State;
                 this.currentRow3State = targetRow3State;
                 setTimeout(() => {
-                    if (lineOneTwo) {
+                    if (lineOne || lineOneTwo) {
                         this.setRowText(0, "", Airbus_FMA.MODE_STATE.NONE);
-                        this.setRowText(1, "", Airbus_FMA.MODE_STATE.NONE);
-                        if (!this.currentRow1And2State) {
-                            lineOne = true;
-                            lineTwo = true;
-                        }
-                    } else {
-                        if (lineOne) {
-                            this.setRowText(0, "", Airbus_FMA.MODE_STATE.NONE);
-                        } else if (lineTwo && !this.currentRow1And2State) {
+                    }
+                    if (lineTwo || lineOneTwo) {
+                        if (this.currentRow1And2State === Airbus_FMA.MODE_STATE.NONE) {
                             this.setRowText(1, "", Airbus_FMA.MODE_STATE.NONE);
                         }
                     }
-                    console.log("1: " + this.currentRow1State);
-                    console.log("1_2: " + this.currentRow1And2State);
-                    console.log("2: " + this.currentRow2State);
-                    if (lineOne && this.currentRow1State && !this.currentRow1And2State) {
+                    if (lineOne && this.currentRow1State !== Airbus_FMA.MODE_STATE.NONE) {
                         switch (this.currentRow1State) {
                             case Column1.ROW_1_STATE.TOGA: {
                                 this.setRowHighlightStyle(0, Airbus_FMA.HIGHLIGHT_STYLE.FULL, true);
@@ -551,42 +543,37 @@ var Airbus_FMA;
                                 break;
                             }
                             case Column1.ROW_1_STATE.BRKLO: {
+                                this.setRowHighlightStyle(0, Airbus_FMA.HIGHLIGHT_STYLE.FULL);
                                 this.setRowText(0, "BRK LO", Airbus_FMA.MODE_STATE.CAPTURED);
                                 break;
                             }
                             case Column1.ROW_1_STATE.BRKMED: {
+                                this.setRowHighlightStyle(0, Airbus_FMA.HIGHLIGHT_STYLE.FULL);
                                 this.setRowText(0, "BRK MED", Airbus_FMA.MODE_STATE.CAPTURED);
                                 break;
                             }
                             case Column1.ROW_1_STATE.BRKMAX: {
+                                this.setRowHighlightStyle(0, Airbus_FMA.HIGHLIGHT_STYLE.FULL);
                                 this.setRowText(0, "BRK MAX", Airbus_FMA.MODE_STATE.CAPTURED);
                                 break;
                             }
                         }
                     }
-                    if (lineTwo && this.currentRow2State && !this.currentRow1And2State) {
+                    if (lineTwo && this.currentRow2State !== Airbus_FMA.MODE_STATE.NONE && this.currentRow1And2State === Airbus_FMA.MODE_STATE.NONE) {
                         switch (this.currentRow2State) {
                             case Column1.ROW_2_STATE.BRKLO: {
-                                if (!Column1.ROW_1_STATE.BRKLOW) {
-                                    this.setRowHighlightStyle(1, Airbus_FMA.HIGHLIGHT_STYLE.NONE);
-                                    this.setRowText(1, "BRK LO", Airbus_FMA.MODE_STATE.ARMED);
-                                } else {
-                                    this.setRowText(1, "", Airbus_FMA.MODE_STATE.NONE);
-                                }
+                                this.setRowHighlightStyle(1, Airbus_FMA.HIGHLIGHT_STYLE.NONE);
+                                this.setRowText(1, "BRK LO", Airbus_FMA.MODE_STATE.ARMED);
                                 break;
                             }
                             case Column1.ROW_2_STATE.BRKMED: {
-                                if (!Column1.ROW_1_STATE.BRKMED) {
-                                    this.setRowHighlightStyle(1, Airbus_FMA.HIGHLIGHT_STYLE.NONE);
-                                    this.setRowText(1, "BRK MED", Airbus_FMA.MODE_STATE.ARMED);
-                                } else {
-                                    this.setRowText(1, "", Airbus_FMA.MODE_STATE.NONE);
-                                }
+                                this.setRowHighlightStyle(1, Airbus_FMA.HIGHLIGHT_STYLE.NONE);
+                                this.setRowText(1, "BRK MED", Airbus_FMA.MODE_STATE.ARMED);
                                 break;
                             }
                         }
                     }
-                    if (lineOneTwo && this.currentRow1And2State) {
+                    if (lineOneTwo && this.currentRow1And2State !== Airbus_FMA.MODE_STATE.NONE) {
                         switch (this.currentRow1And2State) {
                             case Column1.ROW_1_2_STATE.MANTOGA: {
                                 this.setRowHighlightStyle(0, Airbus_FMA.HIGHLIGHT_STYLE.OPEN_BOTTOM, true);
@@ -642,11 +629,8 @@ var Airbus_FMA;
                                 break;
                             }
                             case Column1.ROW_3_STATE.BRKMAX: {
-                                if (!Column1.ROW_1_STATE.BRKMAX) {
-                                    this.setRowText(2, "BRK MAX", Airbus_FMA.MODE_STATE.ARMED);
-                                } else {
-                                    this.setRowText(2, "", Airbus_FMA.MODE_STATE.NONE);
-                                }
+                                this.setRowHighlightStyle(1, Airbus_FMA.HIGHLIGHT_STYLE.NONE);
+                                this.setRowText(2, "BRK MAX", Airbus_FMA.MODE_STATE.ARMED);
                                 break;
                             }
                             default: {
@@ -684,11 +668,11 @@ var Airbus_FMA;
                 return Column1.ROW_1_STATE.MACH;
             } else if (this.IsActive_THRLK()) {
                 return Column1.ROW_1_STATE.THRLK;
-            } else if (this.IsActive_BRKLO(true)) {
+            } else if (this.IsActive_BRKLO()) {
                 return Column1.ROW_1_STATE.BRKLO;
-            } else if (this.IsActive_BRKMED(true)) {
+            } else if (this.IsActive_BRKMED()) {
                 return Column1.ROW_1_STATE.BRKMED;
-            } else if (this.IsActive_BRKMAX(true)) {
+            } else if (this.IsActive_BRKMAX()) {
                 return Column1.ROW_1_STATE.BRKMAX;
             } else {
                 return Column1.ROW_1_STATE.NONE;
@@ -712,9 +696,9 @@ var Airbus_FMA;
         }
 
         getTargetRow2State() {
-            if (this.IsActive_BRKLO(false)) {
+            if (this.IsActive_BRKLOARMED()) {
                 return Column1.ROW_2_STATE.BRKLO;
-            } else if (this.IsActive_BRKMED(false)) {
+            } else if (this.IsActive_BRKMEDARMED()) {
                 return Column1.ROW_2_STATE.BRKMED;
             } else {
                 return Column1.ROW_2_STATE.NONE;
@@ -728,7 +712,7 @@ var Airbus_FMA;
                 return Column1.ROW_3_STATE.LVRMCT;
             } else if (this.IsActive_LVRASYM()) {
                 return Column1.ROW_3_STATE.LVRASYM;
-            } else if (this.IsActive_BRKMAX(false)) {
+            } else if (this.IsActive_BRKMAXARMED()) {
                 return Column1.ROW_3_STATE.BRKMAX;
             } else {
                 return Column1.ROW_3_STATE.NONE;
@@ -943,16 +927,42 @@ var Airbus_FMA;
             return false;
         }
 
-        IsActive_BRKLO(_engaged) {
-            return _engaged === Airbus_FMA.CurrentPlaneState.autoBreakDecel && Airbus_FMA.CurrentPlaneState.autoBreakLevel === 1 && Airbus_FMA.CurrentPlaneState.flightPhase > FlightPhase.FLIGHT_PHASE_TAKEOFF;
+        IsActive_BRKLO() {
+            return Airbus_FMA.CurrentPlaneState.autoBreakActivated
+                && Airbus_FMA.CurrentPlaneState.autoBreakDecel
+                && Airbus_FMA.CurrentPlaneState.autoBreakLevel === 1
+                && (Airbus_FMA.CurrentPlaneState.flightPhase > FlightPhase.FLIGHT_PHASE_TAKEOFF
+                    || Airbus_FMA.CurrentPlaneState.flightPhase === FlightPhase.FLIGHT_PHASE_PREFLIGHT);
+        }
+        IsActive_BRKLOARMED() {
+            return !(Airbus_FMA.CurrentPlaneState.autoBreakDecel && Airbus_FMA.CurrentPlaneState.autoBreakActivated)
+                && Airbus_FMA.CurrentPlaneState.autoBreakLevel === 1
+                && Airbus_FMA.CurrentPlaneState.flightPhase > FlightPhase.FLIGHT_PHASE_TAKEOFF;
         }
 
-        IsActive_BRKMED(_engaged) {
-            return _engaged === Airbus_FMA.CurrentPlaneState.autoBreakDecel && Airbus_FMA.CurrentPlaneState.autoBreakLevel === 2 && Airbus_FMA.CurrentPlaneState.flightPhase > FlightPhase.FLIGHT_PHASE_TAKEOFF;
+        IsActive_BRKMED() {
+            return Airbus_FMA.CurrentPlaneState.autoBreakActivated
+                && Airbus_FMA.CurrentPlaneState.autoBreakDecel
+                && Airbus_FMA.CurrentPlaneState.autoBreakLevel === 2
+                && (Airbus_FMA.CurrentPlaneState.flightPhase > FlightPhase.FLIGHT_PHASE_TAKEOFF
+                    || Airbus_FMA.CurrentPlaneState.flightPhase === FlightPhase.FLIGHT_PHASE_PREFLIGHT);
+        }
+        IsActive_BRKMEDARMED() {
+            return !(Airbus_FMA.CurrentPlaneState.autoBreakDecel && Airbus_FMA.CurrentPlaneState.autoBreakActivated)
+                && Airbus_FMA.CurrentPlaneState.autoBreakLevel === 2
+                && Airbus_FMA.CurrentPlaneState.flightPhase > FlightPhase.FLIGHT_PHASE_TAKEOFF;
         }
 
-        IsActive_BRKMAX(_engaged) {
-            return _engaged === Airbus_FMA.CurrentPlaneState.autoBreakDecel && Airbus_FMA.CurrentPlaneState.isOnGround && Airbus_FMA.CurrentPlaneState.autoBreakLevel === 3 && Airbus_FMA.CurrentPlaneState.flightPhase < FlightPhase.FLIGHT_PHASE_CLIMB;
+        IsActive_BRKMAX() {
+            return Airbus_FMA.CurrentPlaneState.autoBreakDecel &&
+                Airbus_FMA.CurrentPlaneState.isOnGround && Airbus_FMA.CurrentPlaneState.autoBreakLevel === 3
+                && Airbus_FMA.CurrentPlaneState.flightPhase < FlightPhase.FLIGHT_PHASE_CLIMB;
+        }
+        IsActive_BRKMAXARMED() {
+            return (!Airbus_FMA.CurrentPlaneState.autoBreakDecel)
+                && Airbus_FMA.CurrentPlaneState.isOnGround
+                && Airbus_FMA.CurrentPlaneState.autoBreakLevel === 3
+                && Airbus_FMA.CurrentPlaneState.flightPhase < FlightPhase.FLIGHT_PHASE_CLIMB;
         }
 
     }

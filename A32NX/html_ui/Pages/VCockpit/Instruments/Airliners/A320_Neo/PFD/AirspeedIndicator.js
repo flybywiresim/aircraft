@@ -691,8 +691,13 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
         const vls = SimVar.GetSimVarValue("L:A32NX_SPEEDS_VLS", "number");
         const autobrakes = SimVar.GetSimVarValue("L:XMLVAR_Autobrakes_Level", "Enum");
         const flightPhase = Simplane.getCurrentFlightPhase();
-        const decel = planeOnGround && autobrakes !== 0 && (autobrakes === 3 ? -6 : -2) > SimVar.GetSimVarValue("A:ACCELERATION BODY Z", "feet per second squared")
-            && ((flightPhase < FlightPhase.FLIGHT_PHASE_CLIMB && autobrakes === 3) || (flightPhase > FlightPhase.FLIGHT_PHASE_TAKEOFF && autobrakes !== 3));
+        const decel = planeOnGround
+            && autobrakes !== 0
+            && (autobrakes === 3 ? -6 : -2) > SimVar.GetSimVarValue("A:ACCELERATION BODY Z", "feet per second squared")
+            && ((flightPhase < FlightPhase.FLIGHT_PHASE_CLIMB && autobrakes === 3)
+                || ((flightPhase > FlightPhase.FLIGHT_PHASE_TAKEOFF || flightPhase === FlightPhase.FLIGHT_PHASE_PREFLIGHT)
+                    && autobrakes !== 3 && SimVar.GetSimVarValue("L:A32NX_AUTOBRAKES_BRAKING", "Bool") === 1)
+            );
         this.smoothSpeeds(indicatedSpeed, dTime, maxSpeed, vls, vs * 1.1, vs * 1.03, vs);
         this.updateSpeedTrendArrow(indicatedSpeed, speedTrend);
         this.updateTargetSpeeds(indicatedSpeed, decel);
