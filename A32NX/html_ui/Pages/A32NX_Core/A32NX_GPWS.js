@@ -578,7 +578,7 @@ class A32NX_GPWS {
                 }
                 break;
             case "retardPlaying":
-                if (SimVar.GetSimVarValue("GENERAL ENG THROTTLE LEVER POSITION:1", "Percent over 100") === 0 || SimVar.GetSimVarValue("GENERAL ENG THROTTLE LEVER POSITION:2", "Percent over 100") === 0) {
+                if (SimVar.GetSimVarValue("GENERAL ENG THROTTLE LEVER POSITION:1", "Percent over 100") <= 0.05 || SimVar.GetSimVarValue("GENERAL ENG THROTTLE LEVER POSITION:2", "Percent over 100") <= 0.05) {
                     this.RetardState.action("land");
                     this.core.soundManager.removePeriodicSound(soundList.retard);
                 } else if (SimVar.GetSimVarValue("L:AIRLINER_FLIGHT_PHASE", "Enum") === FlightPhase.FLIGHT_PHASE_GOAROUND || radioAlt > 20) {
@@ -606,7 +606,7 @@ const RetardStateMachine = {
     retardPlaying: {
         transitions: {
             land: {
-                target: "retardStopped"
+                target: "landed"
             },
             go_around: {
                 target: "overRetard"
