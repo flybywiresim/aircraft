@@ -623,6 +623,104 @@
 						</Action>
 					</ChildrenList>
 				</Event>
+				<Event Name="Play_Asobo_A320_NEO_apuwhine" ID="{0DFAFFDD-06EF-464A-A592-03B9DCF246F4}">
+					<ChildrenList>
+						<Action Name="" ID="{A2029E36-2197-4D67-A903-21ED189B520D}" ShortID="735314382">
+							<PropertyList>
+								<Property Name="ActionType" Type="int16" Value="1"/>
+							</PropertyList>
+							<ReferenceList>
+								<Reference Name="Target">
+									<ObjectRef Name="apuwhine1" ID="{17277802-763D-4CFD-A4FF-1B43A0D3EB3F}" WorkUnitID="{D7EAEC44-D3F0-4907-B024-BD8713B7A33B}"/>
+								</Reference>
+							</ReferenceList>
+						</Action>
+					</ChildrenList>
+				</Event>
+				<Event Name="Play_Asobo_A320_NEO_apubass" ID="{3F0EE14F-CBC5-45CD-B739-8528ACF68B04}">
+					<ChildrenList>
+						<Action Name="" ID="{7CB57907-C868-4CC0-9DF4-4EA9C32E81F8}" ShortID="112003477">
+							<PropertyList>
+								<Property Name="ActionType" Type="int16" Value="1"/>
+							</PropertyList>
+							<ReferenceList>
+								<Reference Name="Target">
+									<ObjectRef Name="apubass1" ID="{B66D4298-8015-4CE5-AADB-AA1E31AD4E06}" WorkUnitID="{D7EAEC44-D3F0-4907-B024-BD8713B7A33B}"/>
+								</Reference>
+							</ReferenceList>
+						</Action>
+					</ChildrenList>
+				</Event>
+				<Event Name="Play_Asobo_A320_NEO_apurun" ID="{7A2C5920-3903-463D-8AFD-EE4162385E7B}">
+					<ChildrenList>
+						<Action Name="" ID="{3EB74B1E-3AD8-4834-9633-04C043109D5B}" ShortID="452817780">
+							<PropertyList>
+								<Property Name="ActionType" Type="int16" Value="1"/>
+							</PropertyList>
+							<ReferenceList>
+								<Reference Name="Target">
+									<ObjectRef Name="apurun" ID="{DAA430DF-FAE1-4372-A1B0-815E3191C0E2}" WorkUnitID="{D7EAEC44-D3F0-4907-B024-BD8713B7A33B}"/>
+								</Reference>
+							</ReferenceList>
+						</Action>
+					</ChildrenList>
+				</Event>
+				<Event Name="Play_Asobo_A320_NEO_apustartinit" ID="{C321FB2E-F52D-4759-A9F6-FD342486C963}">
+					<ChildrenList>
+						<Action Name="" ID="{8D49F7EF-A53F-4162-A75F-C13146C1A299}" ShortID="89542869">
+							<PropertyList>
+								<Property Name="ActionType" Type="int16" Value="1"/>
+							</PropertyList>
+							<ReferenceList>
+								<Reference Name="Target">
+									<ObjectRef Name="apustartinit" ID="{AD8B1277-41BC-432C-8E76-6FB2B0ABBF93}" WorkUnitID="{D7EAEC44-D3F0-4907-B024-BD8713B7A33B}"/>
+								</Reference>
+							</ReferenceList>
+						</Action>
+					</ChildrenList>
+				</Event>
+				<Event Name="Play_Asobo_A320_NEO_apubass2" ID="{FD37C329-5F8D-468D-9E6A-0DB943239925}">
+					<ChildrenList>
+						<Action Name="" ID="{C43052C2-E115-491B-B0F0-ECB03CE44325}" ShortID="470255906">
+							<PropertyList>
+								<Property Name="ActionType" Type="int16" Value="1"/>
+							</PropertyList>
+							<ReferenceList>
+								<Reference Name="Target">
+									<ObjectRef Name="apubass2" ID="{41082DBC-F5E9-4BB4-93B4-AF0B59DEA891}" WorkUnitID="{D7EAEC44-D3F0-4907-B024-BD8713B7A33B}"/>
+								</Reference>
+							</ReferenceList>
+						</Action>
+					</ChildrenList>
+				</Event>
+				<Event Name="Play_Asobo_A320_NEO_apuwhine2" ID="{D6DCD59E-BFFC-4815-B153-3D3513C9C8E0}">
+					<ChildrenList>
+						<Action Name="" ID="{AEA37947-96E9-42C1-B2DA-4B07E7A100E1}" ShortID="6093100">
+							<PropertyList>
+								<Property Name="ActionType" Type="int16" Value="1"/>
+							</PropertyList>
+							<ReferenceList>
+								<Reference Name="Target">
+									<ObjectRef Name="apuwhine2" ID="{76B4AF21-2E69-422E-A538-7CC11C03C47F}" WorkUnitID="{D7EAEC44-D3F0-4907-B024-BD8713B7A33B}"/>
+								</Reference>
+							</ReferenceList>
+						</Action>
+					</ChildrenList>
+				</Event>
+				<Event Name="Play_Asobo_A320_NEO_apushut" ID="{924B5F48-2ADC-40FF-A50A-0111DC51F23A}">
+					<ChildrenList>
+						<Action Name="" ID="{63C3574C-D7F2-4EFE-95FB-B98A3B64E12C}" ShortID="516332017">
+							<PropertyList>
+								<Property Name="ActionType" Type="int16" Value="1"/>
+							</PropertyList>
+							<ReferenceList>
+								<Reference Name="Target">
+									<ObjectRef Name="apushut" ID="{0F414D3F-3E28-44CA-B39B-DF93BBB7D1A9}" WorkUnitID="{D7EAEC44-D3F0-4907-B024-BD8713B7A33B}"/>
+								</Reference>
+							</ReferenceList>
+						</Action>
+					</ChildrenList>
+				</Event>
 			</ChildrenList>
 		</WorkUnit>
 	</Events>

@@ -11,6 +11,15 @@ class CDUInitPage {
         let costIndex = "---";
         let cruiseFlTemp = "-----|---°";
         let alignOption;
+        let tropo = "{small}36090{end}[color]cyan";
+        let requestButton = "REQUEST*[color]amber";
+        let requestButtonLabel = "INIT [color]amber";
+        let requestEnable = true;
+
+        if (mcdu.simbrief.sendStatus === "REQUESTING") {
+            requestEnable = false;
+            requestButton = "REQUEST [color]amber";
+        }
 
         if (mcdu.flightPlanManager.getOrigin() && mcdu.flightPlanManager.getOrigin().ident) {
             if (mcdu.flightPlanManager.getDestination() && mcdu.flightPlanManager.getDestination().ident) {
@@ -23,6 +32,10 @@ class CDUInitPage {
                 if (SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string", "FMC")) {
                     flightNo = SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string", "FMC") + "[color]cyan";
                 }
+
+                requestEnable = false;
+                requestButtonLabel = "";
+                requestButton = "";
 
                 if (resetFlightNo) {
                     flightNo = "________[color]amber";
@@ -108,6 +121,15 @@ class CDUInitPage {
             });
         };
 
+        if (mcdu.tropo) {
+            tropo = mcdu.tropo + "[color]cyan";
+        }
+        mcdu.onRightInput[4] = (value) => {
+            if (mcdu.tryUpdateTropo(value)) {
+                CDUInitPage.ShowPage1(mcdu);
+            }
+        };
+
         /**
          * If scratchpad is filled, attempt to update city pair
          * else show route selection pair if city pair is displayed
@@ -126,6 +148,18 @@ class CDUInitPage {
                 if (mcdu.flightPlanManager.getDestination() && mcdu.flightPlanManager.getDestination().ident) {
                     CDUAvailableFlightPlanPage.ShowPage(mcdu);
                 }
+            }
+        };
+        mcdu.onRightInput[1] = () => {
+            if (requestEnable) {
+                getSimBriefOfp(mcdu, () => {
+                    if (mcdu.page.Current === mcdu.page.InitPageA) {
+                        CDUInitPage.ShowPage1(mcdu);
+                    }
+                })
+                    .then(() => {
+                        insertUplink(mcdu);
+                    });
             }
         };
         mcdu.rightInputDelay[2] = () => {
@@ -148,14 +182,14 @@ class CDUInitPage {
             ["INIT {}"], //Need to find the right unicode for left/right arrow
             ["\xa0CO RTE", "FROM/TO\xa0\xa0\xa0"],
             [coRoute, fromTo],
-            ["ALTN/CO RTE", "INIT[color]inop\xa0"],
-            [altDest, "REQUEST*[color]inop"],
+            ["ALTN/CO RTE", requestButtonLabel],
+            [altDest, requestButton],
             ["FLT NBR"],
             [flightNo + "[color]cyan", alignOption],
             [],
             ["", "WIND/TEMP>[color]inop"],
             ["COST INDEX", "TROPO"],
-            [costIndex, "{small}36090{end}[color]cyan"],
+            [costIndex, tropo],
             ["CRZ FL/TEMP", "GND TEMP"],
             [cruiseFlTemp, "---°[color]inop"],
         ]);
