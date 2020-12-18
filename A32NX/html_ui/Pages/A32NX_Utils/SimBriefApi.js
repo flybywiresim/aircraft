@@ -4,7 +4,7 @@ class SimBriefApi {
         if (username) {
             apiUrl = `${SimBriefApi.url}&username=${username}`;
         } else if (userId) {
-            apiUrl = `${SimBriefApi.url}&userid=${username}`;
+            apiUrl = `${SimBriefApi.url}&userid=${userId}`;
         } else {
             throw ("No SimBrief username/user ID provided");
         }
