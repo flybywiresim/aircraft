@@ -527,7 +527,7 @@
                 <DOUBLE_WHEEL/>
                 <REPEAT_ANIM>5</REPEAT_ANIM>
                 <DRAG_AXIS_SCALE>20</DRAG_AXIS_SCALE>
-                <DRAG_MIN_VALUE>-4854</DRAG_MIN_VALUE>            <!-- Limit to -4.5 deg -->
+                <DRAG_MIN_VALUE>-4854</DRAG_MIN_VALUE>                <!-- Limit to -4.5 deg -->
 
             </UseTemplate>
 
@@ -598,7 +598,7 @@
             </Component>
 
             <Component ID="HANDLING">
-                <UseTemplate Name="ASOBO_HANDLING_Knob_RudderTrim_Template">
+                <UseTemplate Name="FBW_HANDLING_Knob_RudderTrim_Template">
                     <AIRBUS_TYPE/>
                     <ANIM_NAME>KNOB_RUDDERTRIM</ANIM_NAME>
                     <NODE_ID>KNOB_RUDDERTRIM</NODE_ID>
@@ -606,7 +606,7 @@
                     <RESET_PUSH_NODE_ID>PUSH_RUDDERTRIM_RESET</RESET_PUSH_NODE_ID>
                 </UseTemplate>
 
-                <UseTemplate Name="ASOBO_HANDLING_Lever_With_Button_Flaps_Template">
+                <UseTemplate Name="FBW_HANDLING_Lever_With_Button_Flaps_Template">
                     <NODE_ID>LEVER_FLAPS</NODE_ID>
                     <ANIM_NAME_LEVER>flaps_lever</ANIM_NAME_LEVER>
                     <ANIM_NAME_BUTTON>lock_flaps</ANIM_NAME_BUTTON>
@@ -628,7 +628,7 @@
 
                 </UseTemplate>
 
-                <UseTemplate Name="ASOBO_LANDING_GEAR_Switch_ParkingBrake_Template">
+                <UseTemplate Name="FBW_LANDING_GEAR_Switch_ParkingBrake_Template">
                     <ANIM_NAME>lever_parking_brake</ANIM_NAME>
                     <NODE_ID>LEVER_PARKINGBRAKE</NODE_ID>
                 </UseTemplate>
@@ -664,8 +664,8 @@
                     <SWITCH_POSITION_VAR>A32NX_SWITCH_RADAR_PWS_Position</SWITCH_POSITION_VAR>
                     <ANIMTIP_0>Set predictive windshear to AUTO (INOP)</ANIMTIP_0>
                     <ANIMTIP_1>Turn OFF predictive windshear</ANIMTIP_1>
-                    <WWISE_EVENT_1>wing_light_switch_on</WWISE_EVENT_1>
-                    <WWISE_EVENT_2>wing_light_switch_off</WWISE_EVENT_2>
+                    <WWISE_EVENT_1>lswitch</WWISE_EVENT_1>
+                    <WWISE_EVENT_2>lswitch</WWISE_EVENT_2>
                     <NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
                     <NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
                 </UseTemplate>
@@ -1380,8 +1380,8 @@
                     <SWITCH_POSITION_VAR>XMLVAR_SWITCH_OVHD_INTLT_SEATBELT_Position</SWITCH_POSITION_VAR>
                     <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.LIGHTS_SEATBELT_OFF</ANIMTIP_0>
                     <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.LIGHTS_SEATBELT_ON</ANIMTIP_1>
-                    <WWISE_EVENT_1>wing_light_switch_on</WWISE_EVENT_1>
-                    <WWISE_EVENT_2>wing_light_switch_off</WWISE_EVENT_2>
+                    <WWISE_EVENT_1>lswitch</WWISE_EVENT_1>
+                    <WWISE_EVENT_2>lswitch</WWISE_EVENT_2>
                     <NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
                     <NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
                 </UseTemplate>
@@ -1401,7 +1401,7 @@
                     <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.LIGHTS_NOSMOKE_ON</ANIMTIP_0>
                     <ANIMTIP_1>Set "no smoke" prompt light to AUTO</ANIMTIP_1>
                     <ANIMTIP_2>TT:COCKPIT.TOOLTIPS.LIGHTS_NOSMOKE_OFF</ANIMTIP_2>
-                    <WWISE_EVENT>double_light_switch</WWISE_EVENT>
+                    <WWISE_EVENT>lswitch</WWISE_EVENT>
                 </UseTemplate>
 
                 <UseTemplate Name="A32NX_GT_Switch_Dummy">
@@ -1417,7 +1417,7 @@
                     <ANIMTIP_0>Turn ON emergency exit signs</ANIMTIP_0>
                     <ANIMTIP_1>Set emergency exit signs to ARM</ANIMTIP_1>
                     <ANIMTIP_2>Turn OFF emergency exit signs</ANIMTIP_2>
-                    <WWISE_EVENT>double_light_switch</WWISE_EVENT>
+                    <WWISE_EVENT>lswitch</WWISE_EVENT>
                 </UseTemplate>
 
                 <UseTemplate Name="ASOBO_AIRLINER_SIGNS_LIGHT_Template">
@@ -1436,7 +1436,7 @@
                     <ANIMTIP_0>Test annunciator lights</ANIMTIP_0>
                     <ANIMTIP_1>Set annunciator lights to BRT</ANIMTIP_1>
                     <ANIMTIP_2>Set annunciator lights to DIM</ANIMTIP_2>
-                    <WWISE_EVENT>double_light_switch</WWISE_EVENT>
+                    <WWISE_EVENT>lswitch</WWISE_EVENT>
                     <NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
                     <NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
                     <CODE_POS_0>1 (&gt;L:XMLVAR_LTS_Test)</CODE_POS_0>
@@ -1450,8 +1450,8 @@
                     <LIGHT_TYPE>STBYCOMPAS</LIGHT_TYPE>
                     <ANIMTIP_0>Turn ON standby compass light</ANIMTIP_0>
                     <ANIMTIP_1>Turn OFF standby compass light</ANIMTIP_1>
-                    <WWISE_EVENT_1>wing_light_switch_on</WWISE_EVENT_1>
-                    <WWISE_EVENT_2>wing_light_switch_off</WWISE_EVENT_2>
+                    <WWISE_EVENT_1>lswitch</WWISE_EVENT_1>
+                    <WWISE_EVENT_2>lswitch</WWISE_EVENT_2>
                     <NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
                     <NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
                     <SWITCH_POSITION_TYPE>L</SWITCH_POSITION_TYPE>
@@ -1782,8 +1782,8 @@
                         <NODE_ID>SWITCH_OVHD_EVAC_CAPT</NODE_ID>
                         <ANIM_NAME>SWITCH_OVHD_EVAC_CAPT</ANIM_NAME>
                         <ANIM_CODE>100</ANIM_CODE>
-                        <WWISE_EVENT_1>wing_light_switch_on</WWISE_EVENT_1>
-                        <WWISE_EVENT_2>wing_light_switch_off</WWISE_EVENT_2>
+                        <WWISE_EVENT_1>lswitch</WWISE_EVENT_1>
+                        <WWISE_EVENT_2>lswitch</WWISE_EVENT_2>
                         <LEFT_SINGLE_CODE>(L:A32NX_EVAC_CAPT_TOGGLE) ! (>L:A32NX_EVAC_CAPT_TOGGLE)</LEFT_SINGLE_CODE>
                     </UseTemplate>
 
@@ -1993,8 +1993,9 @@
                         <NUM_STATES>3</NUM_STATES>
                         <SWITCH_DIRECTION>Horizontal</SWITCH_DIRECTION>
                         <ARROW_TYPE>Curved</ARROW_TYPE>
-                        <WWISE_EVENT>double_light_switch</WWISE_EVENT>
+                        <WWISE_EVENT>turnknob</WWISE_EVENT>
                         <INIT_VALUE>1</INIT_VALUE>
+                        <SWITCH_POSITION_VAR>KNOB_OVHD_AUDIOSWITCH_Position</SWITCH_POSITION_VAR>
                     </UseTemplate>
                 </Component>
 
@@ -2193,10 +2194,10 @@
                 </Component>
 
                 <Component ID="Back_Panel">
-<!--                    <UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">-->
-<!--                        <NODE_ID>PUSH_OVHD_HYD_BLUEPUMP</NODE_ID>-->
-<!--                        <BLOCK_SEQ1>1</BLOCK_SEQ1>-->
-<!--                    </UseTemplate>-->
+                    <!--                    <UseTemplate Name="ASOBO_AIRBUS_Push_Dummy_Template">-->
+                    <!--                        <NODE_ID>PUSH_OVHD_HYD_BLUEPUMP</NODE_ID>-->
+                    <!--                        <BLOCK_SEQ1>1</BLOCK_SEQ1>-->
+                    <!--                    </UseTemplate>-->
                 </Component>
             </Component>
 
@@ -2230,7 +2231,7 @@
                 <UseTemplate Name="FBW_Airbus_Wiper_Knob">
                     <NODE_ID>HANDLING_Switch_Wiper_right</NODE_ID>
                     <ANIM_NAME>HANDLING_Switch_Wiper_right</ANIM_NAME>
-                    <CIRCUIT_ID_WIPERS>80</CIRCUIT_ID_WIPERS>
+                    <CIRCUIT_ID_WIPERS>81</CIRCUIT_ID_WIPERS>
                     <ANIMTIP_0>Set right wiper to OFF</ANIMTIP_0>
                     <ANIMTIP_1>Set right wiper to SLOW</ANIMTIP_1>
                     <ANIMTIP_2>Set right wiper to FAST</ANIMTIP_2>
@@ -2745,7 +2746,7 @@
                 <TYPE>AIRBUS</TYPE>
             </UseTemplate>
 
-            <UseTemplate Name="ASOBO_AUTOPILOT_Knob_SpeedMach_Template">
+            <UseTemplate Name="FBW_AUTOPILOT_Knob_SpeedMach_Template">
                 <NODE_ID>KNOB_AUTOPILOT_L2</NODE_ID>
                 <PART_ID>Speed_knob</PART_ID>
                 <ANIM_NAME>KNOB_AUTOPILOT_L2</ANIM_NAME>
@@ -3194,6 +3195,269 @@
                 </UseTemplate>
             </Component>
         </Component>
+
+>
+        <Template Name="FBW_AUTOPILOT_Knob_Heading_Template">
+            <DefaultTemplateParameters>
+                <ID>1</ID>
+            </DefaultTemplateParameters>
+
+            <UseTemplate Name="ASOBO_GT_Helper_Suffix_ID_Appender">
+                <TEMPLATE_TO_CALL>FBW_AUTOPILOT_Knob_Heading_SubTemplate</TEMPLATE_TO_CALL>
+            </UseTemplate>
+        </Template>
+
+        <Template Name="FBW_AUTOPILOT_Knob_VerticalSpeed_Template">
+            <DefaultTemplateParameters>
+                <ID>1</ID>
+            </DefaultTemplateParameters>
+        </Template>
+
+        <Template Name="ASOBO_AUTOPILOT_Knob_VerticalSpeed_SubTemplate">
+            <DefaultTemplateParameters>
+                <NODE_ID>AUTOPILOT_Knob_VerticalSpeed#SUFFIX_ID#</NODE_ID>
+                <ANIM_NAME>AUTOPILOT_Knob_VerticalSpeed#SUFFIX_ID#</ANIM_NAME>
+                <ANIM_NAME_PUSHPULL>AUTOPILOT_Knob_VerticalSpeed_PushPull#SUFFIX_ID#</ANIM_NAME_PUSHPULL>
+                <Condition Valid="SEPARATED_INTERACTION">
+                    <HITBOX_UP_NODE_ID>AUTOPILOT_Knob_VerticalSpeed_DN#SUFFIX_ID#</HITBOX_UP_NODE_ID>
+                    <HITBOX_DOWN_NODE_ID>AUTOPILOT_Knob_VerticalSpeed_UP#SUFFIX_ID#</HITBOX_DOWN_NODE_ID>
+                </Condition>
+                <PART_ID>AUTOPILOT_Knob_VerticalSpeed</PART_ID>
+                <WWISE_EVENT>QNHknob</WWISE_EVENT>
+                <COUNT>36</COUNT>
+                <Condition Check="AIRBUS_TYPE">
+                    <False>
+                        <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_VS_DECREASE</ANIMTIP_0>
+                        <ANIMTIP_0_ON_CURSOR>UpArrow</ANIMTIP_0_ON_CURSOR>
+                        <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_VS_INCREASE</ANIMTIP_1>
+                        <ANIMTIP_1_ON_CURSOR>DownArrow</ANIMTIP_1_ON_CURSOR>
+                        <Switch>
+                            <Case Valid="UP_DEC_DN_INC">
+                                <CLOCKWISE_DIR>INC</CLOCKWISE_DIR>
+                                <ANTICLOCKWISE_DIR>DEC</ANTICLOCKWISE_DIR>
+                                <Condition Check="UP_DEC_DN_INC" Match="INVERT_ANIM">
+                                    <INVERT_ANIM>True</INVERT_ANIM>
+                                </Condition>
+                            </Case>
+                            <Default>
+                                <CLOCKWISE_DIR>DEC</CLOCKWISE_DIR>
+                                <ANTICLOCKWISE_DIR>INC</ANTICLOCKWISE_DIR>
+                            </Default>
+                        </Switch>
+                    </False>
+                    <True>
+                        <CLOCKWISE_DIR>DEC</CLOCKWISE_DIR>
+                        <ANTICLOCKWISE_DIR>INC</ANTICLOCKWISE_DIR>
+                    </True>
+                </Condition>
+                <Switch>
+                    <Case Valid="SEPARATED_INTERACTION">
+                    </Case>
+                    <Default>
+                        <SWITCH_DIRECTION>Vertical</SWITCH_DIRECTION>
+                    </Default>
+                </Switch>
+            </DefaultTemplateParameters>
+            <OverrideTemplateParameters>
+                <Condition Valid="SET_AIRSPEED_ON_FLC">
+                    <True>
+                        <!-- The Dir is voluntarily inverted for SPD and MACH -->
+                        <CLOCKWISE_CODE>
+						(A:AUTOPILOT FLIGHT LEVEL CHANGE, Bool) if{
+							(L:XMLVAR_AirSpeedIsInMach) if{
+								(&gt;K:AP_MACH_VAR_#ANTICLOCKWISE_DIR#)
+							} els{
+								(&gt;K:AP_SPD_VAR_#ANTICLOCKWISE_DIR#)
+							}
+						} els{
+							(&gt;K:AP_VS_VAR_#CLOCKWISE_DIR#)
+						}
+                        </CLOCKWISE_CODE>
+                        <ANTICLOCKWISE_CODE>
+						(A:AUTOPILOT FLIGHT LEVEL CHANGE, Bool) if{
+							(L:XMLVAR_AirSpeedIsInMach) if{
+								(&gt;K:AP_MACH_VAR_#CLOCKWISE_DIR#)
+							} els{
+								(&gt;K:AP_SPD_VAR_#CLOCKWISE_DIR#)
+							}
+						} els{
+							(&gt;K:AP_VS_VAR_#ANTICLOCKWISE_DIR#)
+						}
+                        </ANTICLOCKWISE_CODE>
+                        <!-- A CHECK -->
+                        <ANIMTIP_0>%((A:AUTOPILOT FLIGHT LEVEL CHANGE, Bool))%{if}TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_SPEED_INCREASE%{else}TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_VS_DECREASE%{end}</ANIMTIP_0>
+                        <ANIMTIP_0_ON_CURSOR>UpArrow</ANIMTIP_0_ON_CURSOR>
+                        <ANIMTIP_1>%((A:AUTOPILOT FLIGHT LEVEL CHANGE, Bool))%{if}TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_SPEED_DECREASE%{else}TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_VS_INCREASE%{end}</ANIMTIP_1>
+                        <ANIMTIP_1_ON_CURSOR>DownArrow</ANIMTIP_1_ON_CURSOR>
+
+                    </True>
+                    <False>
+                        <CLOCKWISE_CODE>(&gt;K:AP_VS_VAR_#CLOCKWISE_DIR#)</CLOCKWISE_CODE>
+                        <ANTICLOCKWISE_CODE>(&gt;K:AP_VS_VAR_#ANTICLOCKWISE_DIR#)</ANTICLOCKWISE_CODE>
+                    </False>
+                </Condition>
+                <Condition Check="HITBOX_UP_NODE_ID">
+                    <SEPARATED_INTERACTION>True</SEPARATED_INTERACTION>
+                </Condition>
+            </OverrideTemplateParameters>
+            <EditableTemplateParameters>
+                <AddParams>
+                    <ANIM_NAME></ANIM_NAME>
+                    <ANIM_NAME_PUSHPULL></ANIM_NAME_PUSHPULL>
+                </AddParams>
+                <AddOptions>
+                    <HITBOX_UP_NODE_ID></HITBOX_UP_NODE_ID>
+                    <HITBOX_DOWN_NODE_ID></HITBOX_DOWN_NODE_ID>
+                    <AIRBUS_TYPE></AIRBUS_TYPE>
+                </AddOptions>
+            </EditableTemplateParameters>
+
+            <Switch>
+                <Case Valid="SEPARATED_INTERACTION">
+                    <UseTemplate Name = "ASOBO_GT_Knob_Infinite_SeparatedInteraction">
+                        <SWITCH_DIRECTION>Vertical</SWITCH_DIRECTION>
+                    </UseTemplate>
+                </Case>
+                <Case Check="AIRBUS_TYPE">
+                    <Component ID="#NODE_ID#" Node="#NODE_ID#">
+                        <UseTemplate Name="ASOBO_GT_Knob_Infinite_PushPull">
+                            <CLOCKWISE_CODE>
+							2 (&gt;K:AP_VS_VAR_INC)
+							(&gt;H:A320_Neo_FCU_VS_INC)
+                            </CLOCKWISE_CODE>
+                            <ANTICLOCKWISE_CODE>
+							2 (&gt;K:AP_VS_VAR_DEC)
+							(&gt;H:A320_Neo_FCU_VS_DEC)
+                            </ANTICLOCKWISE_CODE>
+                            <PULL_CODE>
+							(&gt;H:A320_Neo_FCU_VS_HOLD)
+                            </PULL_CODE>
+                            <PUSH_CODE>
+							(&gt;H:A320_Neo_FCU_VS_ZERO)
+                            </PUSH_CODE>
+                            <CENTER_RADIUS>0</CENTER_RADIUS>
+                        </UseTemplate>
+                    </Component>
+                </Case>
+                <Default>
+                    <Component ID="#NODE_ID#" Node="#NODE_ID#">
+                        <UseTemplate Name="ASOBO_GT_Knob_Infinite">
+                        </UseTemplate>
+                    </Component>
+                </Default>
+            </Switch>
+        </Template>
+
+        <Template Name="ASOBO_AUTOPILOT_Knob_Heading_SubTemplate">
+            <DefaultTemplateParameters>
+                <ANIM_NAME_KNOB>AUTOPILOT_Knob_Heading#SUFFIX_ID#</ANIM_NAME_KNOB>
+                <ANIM_NAME_PUSH>AUTOPILOT_Knob_Heading_Push#SUFFIX_ID#</ANIM_NAME_PUSH>
+                <ANIM_NAME_PUSHPULL>AUTOPILOT_Knob_Heading_PushPull#SUFFIX_ID#</ANIM_NAME_PUSHPULL>
+                <PART_ID>AUTOPILOT_Knob_Heading</PART_ID>
+                <NODE_ID>AUTOPILOT_Knob_Heading#SUFFIX_ID#</NODE_ID>
+
+                <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_HDG_TUNING_LEFT</ANIMTIP_0>
+                <ANIMTIP_0_ON_CURSOR>TurnLeft</ANIMTIP_0_ON_CURSOR>
+                <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_HDG_TUNING_RIGHT</ANIMTIP_1>
+                <ANIMTIP_1_ON_CURSOR>TurnRight</ANIMTIP_1_ON_CURSOR>
+                <ANIMTIP_3_ON_CURSOR>Hand</ANIMTIP_3_ON_CURSOR>
+                <WWISE_EVENT_1>autopilot_knob_push_button_on</WWISE_EVENT_1>
+                <NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
+                <WWISE_EVENT_2>autopilot_knob_push_button_off</WWISE_EVENT_2>
+                <NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
+                <WWISE_EVENT>QNHknob</WWISE_EVENT>
+                <COUNT>36</COUNT>
+
+                <Switch Param="TYPE">
+                    <Case Value="B747">
+                        <ANIMTIP_3>TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_HDG_BUTTON_OFF</ANIMTIP_3>
+                    </Case>
+                    <Case Value="AS01B">
+                        <ANIMTIP_3>TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_HDG_BUTTON_OFF</ANIMTIP_3>
+                    </Case>
+                    <Default>
+                        <ANIMTIP_3>TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_HDG_PUSH</ANIMTIP_3>
+                    </Default>
+                </Switch>
+            </DefaultTemplateParameters>
+            <EditableTemplateParameters>
+                <AddParams>
+                    <ANIM_NAME_KNOB></ANIM_NAME_KNOB>
+                    <ANIM_NAME_PUSH></ANIM_NAME_PUSH>
+                    <ANIM_NAME_PUSHPULL></ANIM_NAME_PUSHPULL>
+                </AddParams>
+                <AddOptions>
+                    <PUSH></PUSH>
+                    <AIRBUS_TYPE></AIRBUS_TYPE>
+                </AddOptions>
+            </EditableTemplateParameters>
+
+            <Component ID="#NODE_ID#" Node="#NODE_ID#">
+                <Switch Param="TYPE">
+                    <Case Check="PUSH">
+                        <UseTemplate Name="ASOBO_GT_Knob_Infinite_Push">
+                            <CLOCKWISE_CODE>(&gt;K:HEADING_BUG_INC)</CLOCKWISE_CODE>
+                            <ANTICLOCKWISE_CODE>(&gt;K:HEADING_BUG_DEC)</ANTICLOCKWISE_CODE>
+                            <LEFT_SINGLE_CODE>(A:HEADING INDICATOR, degrees) (&gt;K:HEADING_BUG_SET)</LEFT_SINGLE_CODE>
+                            <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_HDG_TUNING_LEFT</ANIMTIP_0>
+                            <ANIMTIP_0_ON_CURSOR>TurnLeft</ANIMTIP_0_ON_CURSOR>
+                            <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_HDG_TUNING_RIGHT</ANIMTIP_1>
+                            <ANIMTIP_1_ON_CURSOR>TurnRight</ANIMTIP_1_ON_CURSOR>
+                            <ANIMTIP_3>TT:COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_HDG_PUSH</ANIMTIP_3>
+                            <ANIMTIP_3_ON_CURSOR>Hand</ANIMTIP_3_ON_CURSOR>
+                        </UseTemplate>
+                    </Case>
+                    <Case Value="AIRBUS">
+                        <UseTemplate Name="ASOBO_GT_Knob_Infinite_PushPull">
+                            <CLOCKWISE_CODE>
+							1 (&gt;K:HEADING_BUG_INC)
+							(&gt;H:A320_Neo_CDU_AP_INC_HEADING)
+                            </CLOCKWISE_CODE>
+                            <ANTICLOCKWISE_CODE>
+							1 (&gt;K:HEADING_BUG_DEC)
+							(&gt;H:A320_Neo_CDU_AP_DEC_HEADING)
+                            </ANTICLOCKWISE_CODE>
+                            <PULL_CODE>
+							(&gt;H:A320_Neo_CDU_MODE_SELECTED_HEADING)
+                            </PULL_CODE>
+                            <PUSH_CODE>
+							(&gt;H:A320_Neo_CDU_MODE_MANAGED_HEADING)
+                            </PUSH_CODE>
+                            <CENTER_RADIUS>0</CENTER_RADIUS>
+                            <WWISE_EVENT_1>autopilot_knob_push_button_on</WWISE_EVENT_1>
+                            <WWISE_EVENT_2>autopilot_knob_push_button_off</WWISE_EVENT_2>
+                        </UseTemplate>
+                    </Case>
+                    <Case Value="B747">
+                        <UseTemplate Name="ASOBO_GT_Knob_Infinite_Push">
+                            <CLOCKWISE_CODE>1 (&gt;K:HEADING_BUG_INC)</CLOCKWISE_CODE>
+                            <ANTICLOCKWISE_CODE>1 (&gt;K:HEADING_BUG_DEC)</ANTICLOCKWISE_CODE>
+                            <LEFT_SINGLE_CODE>
+							(&gt;H:B747_8_FMC_1_AP_HEADING_SEL)
+                            </LEFT_SINGLE_CODE>
+                        </UseTemplate>
+                    </Case>
+                    <Case Value="AS01B">
+                        <UseTemplate Name="ASOBO_GT_Knob_Infinite_Push">
+                            <CLOCKWISE_CODE>1 (&gt;K:HEADING_BUG_INC)</CLOCKWISE_CODE>
+                            <ANTICLOCKWISE_CODE>1 (&gt;K:HEADING_BUG_DEC)</ANTICLOCKWISE_CODE>
+                            <LEFT_SINGLE_CODE>
+							(&gt;H:AS01B_FMC_1_AP_HEADING_SEL)
+                            </LEFT_SINGLE_CODE>
+                        </UseTemplate>
+                    </Case>
+                    <Default>
+                        <UseTemplate Name="ASOBO_GT_Knob_Infinite">
+                            <ANIM_NAME>#ANIM_NAME_KNOB#</ANIM_NAME>
+                            <CLOCKWISE_CODE>(&gt;K:HEADING_BUG_INC)</CLOCKWISE_CODE>
+                            <ANTICLOCKWISE_CODE>(&gt;K:HEADING_BUG_DEC)</ANTICLOCKWISE_CODE>
+                            <!-- <WWISE_EVENT>autopilot_heading_knob</WWISE_EVENT> -->
+                            <!-- <COUNT>36</COUNT> -->
+                        </UseTemplate>
+                    </Default>
+                </Switch>
+            </Component>
+        </Template>
 
         <Component ID="SAFETY">
             <UseTemplate Name="ASOBO_SAFETY_Push_Template">
@@ -3708,48 +3972,48 @@
             <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
                 <NODE_ID>SWITCH_OVHD_DLS</NODE_ID>
             </UseTemplate>
-<!--            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">-->
-<!--                <NODE_ID>KNOB_OVHD_READINGLTR</NODE_ID>-->
-<!--            </UseTemplate>-->
-<!--            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">-->
-<!--                <NODE_ID>LOCK_OVHD_ENG_FADEC2</NODE_ID>-->
-<!--            </UseTemplate>-->
-<!--            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">-->
-<!--                <NODE_ID>PUSH_OVHD_ENG_FADEC2</NODE_ID>-->
-<!--            </UseTemplate>-->
-<!--            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">-->
-<!--                <NODE_ID>LOCK_OVHD_ENG_FADEC1</NODE_ID>-->
-<!--            </UseTemplate>-->
-<!--            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">-->
-<!--                <NODE_ID>PUSH_OVHD_ENG_FADEC1</NODE_ID>-->
-<!--            </UseTemplate>-->
+            <!--            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">-->
+            <!--                <NODE_ID>KNOB_OVHD_READINGLTR</NODE_ID>-->
+            <!--            </UseTemplate>-->
+            <!--            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">-->
+            <!--                <NODE_ID>LOCK_OVHD_ENG_FADEC2</NODE_ID>-->
+            <!--            </UseTemplate>-->
+            <!--            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">-->
+            <!--                <NODE_ID>PUSH_OVHD_ENG_FADEC2</NODE_ID>-->
+            <!--            </UseTemplate>-->
+            <!--            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">-->
+            <!--                <NODE_ID>LOCK_OVHD_ENG_FADEC1</NODE_ID>-->
+            <!--            </UseTemplate>-->
+            <!--            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">-->
+            <!--                <NODE_ID>PUSH_OVHD_ENG_FADEC1</NODE_ID>-->
+            <!--            </UseTemplate>-->
             <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
                 <NODE_ID>PUSH_OVHD_APU_AUTOEXITING_RESET</NODE_ID>
             </UseTemplate>
-<!--            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">-->
-<!--                <NODE_ID>PUSH_OVHD_APU_AUTOEXITING_TEST</NODE_ID>-->
-<!--            </UseTemplate>-->
-<!--            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">-->
-<!--                <NODE_ID>LOCK_OVHD_HYD_Y</NODE_ID>-->
-<!--            </UseTemplate>-->
-<!--            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">-->
-<!--                <NODE_ID>PUSH_OVHD_HYD_Y</NODE_ID>-->
-<!--            </UseTemplate>-->
-<!--            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">-->
-<!--                <NODE_ID>LOCK_OVHD_HYD_B</NODE_ID>-->
-<!--            </UseTemplate>-->
-<!--            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">-->
-<!--                <NODE_ID>PUSH_OVHD_HYD_B</NODE_ID>-->
-<!--            </UseTemplate>-->
-<!--            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">-->
-<!--                <NODE_ID>PUSH_OVHD_HYD_G</NODE_ID>-->
-<!--            </UseTemplate>-->
-<!--            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">-->
-<!--                <NODE_ID>LOCK_OVHD_HYD_G</NODE_ID>-->
-<!--            </UseTemplate>-->
-<!--            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">-->
-<!--                <NODE_ID>LOCK_OVHD_HYD_BLUEPUMPOVRD</NODE_ID>-->
-<!--            </UseTemplate>-->
+            <!--            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">-->
+            <!--                <NODE_ID>PUSH_OVHD_APU_AUTOEXITING_TEST</NODE_ID>-->
+            <!--            </UseTemplate>-->
+            <!--            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">-->
+            <!--                <NODE_ID>LOCK_OVHD_HYD_Y</NODE_ID>-->
+            <!--            </UseTemplate>-->
+            <!--            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">-->
+            <!--                <NODE_ID>PUSH_OVHD_HYD_Y</NODE_ID>-->
+            <!--            </UseTemplate>-->
+            <!--            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">-->
+            <!--                <NODE_ID>LOCK_OVHD_HYD_B</NODE_ID>-->
+            <!--            </UseTemplate>-->
+            <!--            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">-->
+            <!--                <NODE_ID>PUSH_OVHD_HYD_B</NODE_ID>-->
+            <!--            </UseTemplate>-->
+            <!--            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">-->
+            <!--                <NODE_ID>PUSH_OVHD_HYD_G</NODE_ID>-->
+            <!--            </UseTemplate>-->
+            <!--            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">-->
+            <!--                <NODE_ID>LOCK_OVHD_HYD_G</NODE_ID>-->
+            <!--            </UseTemplate>-->
+            <!--            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">-->
+            <!--                <NODE_ID>LOCK_OVHD_HYD_BLUEPUMPOVRD</NODE_ID>-->
+            <!--            </UseTemplate>-->
             <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
                 <NODE_ID>PUSH_OVHD_AVIONICS_COMPLT</NODE_ID>
             </UseTemplate>
