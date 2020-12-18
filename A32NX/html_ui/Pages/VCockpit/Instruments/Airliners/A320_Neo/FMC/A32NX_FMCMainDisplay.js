@@ -552,7 +552,7 @@ class FMCMainDisplay extends BaseAirliners {
                 return false;
             }
         }
-        this.showErrorMessage(this.defaultInputErrorMessage);
+        this.showErrorMessage("FORMAT ERROR");
         return false;
     }
 
