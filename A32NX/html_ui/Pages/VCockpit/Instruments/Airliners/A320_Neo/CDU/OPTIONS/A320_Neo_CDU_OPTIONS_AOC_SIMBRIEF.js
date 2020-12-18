@@ -4,14 +4,14 @@ class CDU_OPTIONS_SIMBRIEF {
 
         const simbriefUsername = NXDataStore.get("CONFIG_SIMBRIEF_USERNAME", "");
 
-        const simbriefUsernameString = simbriefUsername != "" ? simbriefUsername : "[ ]";
+        const simbriefUsernameString = simbriefUsername ? simbriefUsername : "\xa0\xa0\xa0\xa0\xa0";
 
         mcdu.setTemplate([
-            ["A32NX OPTIONS"],
+            ["A32NX OPTIONS AOC"],
             ["", "", "SIMBRIEF PROFILE"],
             [""],
-            ["USERNAME"],
-            [`${simbriefUsernameString}[color]blue`],
+            ["\xa0USERNAME"],
+            [`{cyan}*[${simbriefUsernameString}]{end}`],
             [""],
             [""],
             [""],
@@ -38,7 +38,7 @@ class CDU_OPTIONS_SIMBRIEF {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onLeftInput[5] = () => {
-            CDU_OPTIONS_MainMenu.ShowPage(mcdu);
+            CDU_OPTIONS_AOC.ShowPage(mcdu);
         };
     }
 }
