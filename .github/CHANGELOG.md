@@ -164,6 +164,9 @@
 1. [Sound] Replaced sounds for various switches, levers, and buttons - @hotshotp (Boris)
 1. [CDU] Added Soft GA Logic - @MisterChocker (Leon)
 1. [ECAM] Improved Thrust Rating update condition - @MisterChocker (Leon)
+1. [OPTIONS] Added options entry to enable NO PORTABLE DEVICES memo - @wpine215 (Iceman)
+1. [ECAM] Added REFUELG, OUTR TK XFRD, CABIN READY, FUEL X FEED, and ADIRS SWTG memos - @wpine215 (Iceman)
+1. [ECAM] Added PACKS/NAI/WAI text indicator on upper ECAM - @wpine215 (Iceman)
 1. [Engines] Reduced idle thrust at low Mach to improve descent rate - @donstim - (donbkes#4084)
 
 ## 0.4.0
