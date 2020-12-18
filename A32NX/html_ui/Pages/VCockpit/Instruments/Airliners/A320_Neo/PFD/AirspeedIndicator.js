@@ -1,3 +1,21 @@
+/*
+ * A32NX
+ * Copyright (C) 2020 FlyByWire Simulations and its contributors
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 class Jet_PFD_AirspeedIndicator extends HTMLElement {
     constructor() {
         super(...arguments);
@@ -804,24 +822,10 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
                     this.graduations[i].SVGLine.setAttribute("visibility", "visible");
                     this.graduations[i].SVGLine.setAttribute("transform", "translate(" + posX.toString() + " " + posY.toString() + ")");
                     if (this.graduations[i].SVGText1) {
-                        if (this.aircraft == Aircraft.CJ4) {
-                            if ((currentVal % 4) == 0) {
-                                this.graduations[i].SVGText1.textContent = currentVal.toString();
-                            } else {
-                                this.graduations[i].SVGText1.textContent = "";
-                            }
-                        } else if (this.aircraft == Aircraft.B747_8 || this.aircraft == Aircraft.AS01B) {
-                            if (currentVal < this.graduationMinValue) {
-                                this.graduations[i].SVGText1.textContent = "";
-                            } else {
-                                this.graduations[i].SVGText1.textContent = currentVal.toString();
-                            }
+                        if (currentVal < this.graduationMinValue) {
+                            this.graduations[i].SVGText1.textContent = "";
                         } else {
-                            if (currentVal < this.graduationMinValue) {
-                                this.graduations[i].SVGText1.textContent = "";
-                            } else {
-                                this.graduations[i].SVGText1.textContent = Utils.leadingZeros(currentVal, 3);
-                            }
+                            this.graduations[i].SVGText1.textContent = Utils.leadingZeros(currentVal, 3);
                         }
                         this.graduations[i].SVGText1.setAttribute("visibility", "visible");
                         this.graduations[i].SVGText1.setAttribute("transform", "translate(" + posX.toString() + " " + (posY + 3).toString() + ")");
@@ -859,14 +863,10 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
                 const arrowBaseY = this.valueToSvg(currentAirspeed, currentAirspeed);
                 const arrowTopY = this.valueToSvg(currentAirspeed, currentAirspeed + speedTrend);
                 let arrowPath = "M 70 " + arrowBaseY + " L 70 " + arrowTopY.toFixed(1) + " ";
-                if (this.aircraft == Aircraft.CJ4) {
-                    arrowPath += "L 50 " + arrowTopY.toFixed(1);
+                if (speedTrend > 0) {
+                    arrowPath += "M 62 " + (arrowTopY + 8).toFixed(1) + " L 70 " + arrowTopY.toFixed(1) + " L 78 " + (arrowTopY + 8).toFixed(1);
                 } else {
-                    if (speedTrend > 0) {
-                        arrowPath += "M 62 " + (arrowTopY + 8).toFixed(1) + " L 70 " + arrowTopY.toFixed(1) + " L 78 " + (arrowTopY + 8).toFixed(1);
-                    } else {
-                        arrowPath += "M 62 " + (arrowTopY - 8).toFixed(1) + " L 70 " + arrowTopY.toFixed(1) + " L 78 " + (arrowTopY - 8).toFixed(1);
-                    }
+                    arrowPath += "M 62 " + (arrowTopY - 8).toFixed(1) + " L 70 " + arrowTopY.toFixed(1) + " L 78 " + (arrowTopY - 8).toFixed(1);
                 }
                 this.speedTrendArrowSVGShape.setAttribute("d", arrowPath);
                 hideArrow = false;
@@ -1157,15 +1157,10 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
             v1Speed = SimVar.GetSimVarValue("L:AIRLINER_V1_SPEED", "Knots");
         }
         if (v1Speed > 0) {
-            let posY = this.valueToSvg(currentAirspeed, v1Speed);
-            if (posY < 25 && (this.aircraft == Aircraft.B747_8 || this.aircraft == Aircraft.AS01B)) {
-                posY = 25;
-                _marker.setOffscreen(true, Math.round(v1Speed));
-            } else {
-                _marker.setOffscreen(false);
-                if (posY >= this.refHeight + 25) {
-                    _marker.passed = true;
-                }
+            const posY = this.valueToSvg(currentAirspeed, v1Speed);
+            _marker.setOffscreen(false);
+            if (posY >= this.refHeight + 25) {
+                _marker.passed = true;
             }
             _marker.svg.setAttribute("y", (posY - this.speedMarkersHeight * 0.5).toString());
             _marker.svg.setAttribute("visibility", "visible");
@@ -1215,13 +1210,8 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
     updateMarkerVRef(_marker, currentAirspeed) {
         const vRefSpeed = Simplane.getREFAirspeed();
         if (vRefSpeed > 0) {
-            let posY = this.valueToSvg(currentAirspeed, vRefSpeed);
-            if (posY > this.refHeight - 25 && (this.aircraft == Aircraft.B747_8 || this.aircraft == Aircraft.AS01B)) {
-                posY = this.refHeight - 25;
-                _marker.setOffscreen(true, Math.round(vRefSpeed));
-            } else {
-                _marker.setOffscreen(false);
-            }
+            const posY = this.valueToSvg(currentAirspeed, vRefSpeed);
+            _marker.setOffscreen(false);
             _marker.svg.setAttribute("y", (posY - this.speedMarkersHeight * 0.5).toString());
             _marker.svg.setAttribute("visibility", "visible");
         } else {

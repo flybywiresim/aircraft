@@ -1,3 +1,21 @@
+/*
+ * A32NX
+ * Copyright (C) 2020 FlyByWire Simulations and its contributors
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 class Jet_MFD_NDInfo extends HTMLElement {
     constructor() {
         super(...arguments);
@@ -282,19 +300,11 @@ class Jet_MFD_NDInfo extends HTMLElement {
                     }
                     let suffix = "";
                     if (vor.id == 1 || this._navSource == 1) {
-                        if (this.aircraft == Aircraft.A320_NEO || this.aircraft == Aircraft.CJ4) {
-                            suffix = "1";
-                        } else {
-                            suffix = " L";
-                        }
+                        suffix = "1";
                     } else if (vor.id == 2 || this._navSource == 2) {
-                        if (this.aircraft == Aircraft.A320_NEO || this.aircraft == Aircraft.CJ4) {
-                            suffix = "2";
-                        } else {
-                            suffix = " R";
-                        }
+                        suffix = "2";
                     }
-                    let type = "VOR";
+                    const type = "VOR";
                     let freq = "--.--";
                     let course = "---°";
                     let ident = "";
@@ -302,22 +312,14 @@ class Jet_MFD_NDInfo extends HTMLElement {
                         freq = vor.freq.toFixed(2);
                         course = Utils.leadingZeros(Math.round(vor.course), 3) + "°";
                         ident = vor.ident;
-                        if (this.aircraft == Aircraft.CJ4) {
-                            const hasLocalizer = SimVar.GetSimVarValue("NAV HAS LOCALIZER:" + vor.id, "Bool");
-                            if (hasLocalizer) {
-                                type = "LOC";
-                            }
-                        }
                     }
                     this.approachType.textContent = type + suffix;
                     this.approachFreq.textContent = freq;
                     this.approachCourse.textContent = course;
                     this.approachInfo.textContent = ident;
-                    if (this.aircraft != Aircraft.CJ4) {
-                        this.approachFreq.setAttribute("class", "ValueVor");
-                        this.approachCourse.setAttribute("class", "ValueVor");
-                        this.approachInfo.setAttribute("class", "ValueVor");
-                    }
+                    this.approachFreq.setAttribute("class", "ValueVor");
+                    this.approachCourse.setAttribute("class", "ValueVor");
+                    this.approachInfo.setAttribute("class", "ValueVor");
                     break;
                 }
                 case Jet_NDCompass_Navigation.ILS:
@@ -330,17 +332,9 @@ class Jet_MFD_NDInfo extends HTMLElement {
                     }
                     let suffix = "";
                     if (ils.id == 1 || ils.id == 3 || this._navSource == 1) {
-                        if (this.aircraft == Aircraft.A320_NEO || this.aircraft == Aircraft.CJ4) {
-                            suffix = "1";
-                        } else {
-                            suffix = " L";
-                        }
+                        suffix = "1";
                     } else if (ils.id == 2 || ils.id == 4 || this._navSource == 2) {
-                        if (this.aircraft == Aircraft.A320_NEO || this.aircraft == Aircraft.CJ4) {
-                            suffix = "2";
-                        } else {
-                            suffix = " R";
-                        }
+                        suffix = "2";
                     }
                     const type = "ILS";
                     let freq = "--.--";
@@ -355,11 +349,9 @@ class Jet_MFD_NDInfo extends HTMLElement {
                     this.approachFreq.textContent = freq;
                     this.approachCourse.textContent = course;
                     this.approachInfo.textContent = ident;
-                    if (this.aircraft != Aircraft.CJ4) {
-                        this.approachFreq.setAttribute("class", "ValueIls");
-                        this.approachCourse.setAttribute("class", "ValueIls");
-                        this.approachInfo.setAttribute("class", "ValueIls");
-                    }
+                    this.approachFreq.setAttribute("class", "ValueIls");
+                    this.approachCourse.setAttribute("class", "ValueIls");
+                    this.approachInfo.setAttribute("class", "ValueIls");
                     break;
                 }
             }
@@ -434,13 +426,7 @@ class VORDMENavAid {
         this.aircraft = _aircraft;
         const url = document.getElementsByTagName("a320-neo-mfd-element")[0].getAttribute("url");
         const index = parseInt(url.substring(url.length - 1));
-        let state = Simplane.getAutoPilotNavAidState(index, this.index);
-        if (_aircraft == Aircraft.B747_8) {
-            state--;
-            if (state < 0) {
-                state = 2;
-            }
-        }
+        const state = Simplane.getAutoPilotNavAidState(index, this.index);
         this.setState(state);
         if (this.currentState != NAV_AID_STATE.OFF) {
             this.setDistanceValue(0);
@@ -465,27 +451,13 @@ class VORDMENavAid {
             switch (this.currentState) {
                 case NAV_AID_STATE.ADF:
                 {
-                    type = "ADF";
-                    if (this.aircraft == Aircraft.A320_NEO || this.aircraft == Aircraft.CJ4) {
-                        type += this.index.toString();
-                    } else if (this.index == 1) {
-                        type += " L";
-                    } else {
-                        type += " R";
-                    }
+                    type = "ADF" + this.index.toString();
                     show = true;
                     break;
                 }
                 case NAV_AID_STATE.VOR:
                 {
-                    type = "VOR";
-                    if (this.aircraft == Aircraft.A320_NEO || this.aircraft == Aircraft.CJ4) {
-                        type += this.index.toString();
-                    } else if (this.index == 1) {
-                        type += " L";
-                    } else {
-                        type += " R";
-                    }
+                    type = "VOR" + this.index.toString();
                     show = true;
                     break;
                 }

@@ -1,3 +1,21 @@
+/*
+ * A32NX
+ * Copyright (C) 2020 FlyByWire Simulations and its contributors
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 class BaseAirliners extends NavSystem {
     constructor() {
         super(...arguments);
@@ -18,16 +36,6 @@ class BaseAirliners extends NavSystem {
     onUpdate(_deltaTime) {
         super.onUpdate(_deltaTime);
         BaseAirliners.isMetric = Simplane.getUnitIsMetric();
-    }
-    static unitIsMetric(_plane) {
-        switch (_plane) {
-            case Aircraft.A320_NEO:
-                return true;
-            case Aircraft.B747_8:
-            case Aircraft.AS01B:
-                return false;
-        }
-        return BaseAirliners.isMetric;
     }
     updateMachTransition() {
         const crossSpeed = SimVar.GetGameVarValue("AIRCRAFT CROSSOVER SPEED", "knots");

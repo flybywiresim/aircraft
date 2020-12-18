@@ -1,3 +1,21 @@
+/*
+ * A32NX
+ * Copyright (C) 2020 FlyByWire Simulations and its contributors
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 var Jet_NDCompass_Display;
 (function (Jet_NDCompass_Display) {
     Jet_NDCompass_Display[Jet_NDCompass_Display["NONE"] = 0] = "NONE";
@@ -251,138 +269,34 @@ class Jet_NDCompass extends HTMLElement {
             }
         }
         if (this.referenceMode == Jet_NDCompass_Reference.HEADING) {
-            if (this.aircraft == Aircraft.A320_NEO) {
-                var selectedHeading = simSelectedHeading;
-                let showSelectedHeading = Simplane.getAutoPilotHeadingSelected();
-                const showTrackLine = showSelectedHeading;
-                if (!showSelectedHeading) {
-                    showSelectedHeading = SimVar.GetSimVarValue("L:A320_FCU_SHOW_SELECTED_HEADING", "number") === 1;
-                    if (showSelectedHeading) {
-                        selectedHeading = Simplane.getAutoPilotSelectedHeadingLockValue(false);
-                    }
-                }
-                var roundedSelectedHeading = fastToFixed(selectedHeading, 3);
-                this.setAttribute("selected_heading_bug_rotation", roundedSelectedHeading);
-                if (this.trackingLine) {
-                    this.trackingLine.classList.toggle('hide', !showTrackLine);
-                }
-                if (this.selectedHeadingGroup) {
-                    this.selectedHeadingGroup.classList.toggle('hide', !showSelectedHeading);
-                }
-                if (this.selectedTrackGroup) {
-                    this.selectedTrackGroup.classList.toggle('hide', true);
-                }
-                if (this.selectedRefGroup) {
-                    if (this.selectedRefValue) {
-                        this.selectedRefValue.textContent = selectedHeading.toString();
-                    }
-                    this.selectedRefGroup.classList.toggle('hide', false);
-                }
-                if (this.headingGroup) {
-                    this.headingGroup.classList.toggle('hide', true);
-                }
-            } else if (this.aircraft == Aircraft.B747_8 || this.aircraft == Aircraft.AS01B) {
-                var selectedHeading = simSelectedHeading;
-                let showSelectedLine = Simplane.getAutoPilotHeadingLockActive();
-                if (!showSelectedLine) {
-                    if (headingChanged) {
-                        showSelectedLine = true;
-                        this.showSelectedHeadingTimer = 5;
-                    } else if (this.showSelectedHeadingTimer > 0) {
-                        this.showSelectedHeadingTimer -= _deltaTime / 1000;
-                        if (this.showSelectedHeadingTimer <= 0) {
-                            this.showSelectedHeadingTimer = 0;
-                        } else {
-                            showSelectedLine = true;
-                        }
-                    }
-                } else {
-                    this.showSelectedHeadingTimer = 0;
-                }
-                var roundedSelectedHeading = fastToFixed(selectedHeading, 3);
-                this.setAttribute("selected_heading_bug_rotation", roundedSelectedHeading);
-                if (this.navigationMode == Jet_NDCompass_Navigation.NAV) {
-                    if (this.selectedHeadingGroup) {
-                        this.selectedHeadingGroup.classList.toggle('hide', false);
-                    }
-                    if (this.selectedHeadingLine) {
-                        this.selectedHeadingLine.classList.toggle('hide', !showSelectedLine);
-                    }
-                } else {
-                    if (this.selectedHeadingGroup) {
-                        this.selectedHeadingGroup.classList.toggle('hide', true);
-                    }
-                }
-                if (this.selectedTrackGroup) {
-                    this.selectedTrackGroup.classList.toggle('hide', true);
-                }
-                if (this.selectedRefGroup) {
-                    if (this.selectedRefValue) {
-                        this.selectedRefValue.textContent = selectedHeading.toString();
-                    }
-                    this.selectedRefGroup.classList.toggle('hide', false);
-                }
-            } else {
-                let showSelectedHeading = Simplane.getAutoPilotHeadingLockActive();
-                if (!showSelectedHeading) {
-                    if (headingChanged) {
-                        showSelectedHeading = true;
-                        this.showSelectedHeadingTimer = 5;
-                    } else if (this.showSelectedHeadingTimer > 0) {
-                        this.showSelectedHeadingTimer -= _deltaTime / 1000;
-                        if (this.showSelectedHeadingTimer <= 0) {
-                            this.showSelectedHeadingTimer = 0;
-                        } else {
-                            showSelectedHeading = true;
-                        }
-                    }
-                } else {
-                    this.showSelectedHeadingTimer = 0;
-                }
+            let selectedHeading = simSelectedHeading;
+            let showSelectedHeading = Simplane.getAutoPilotHeadingSelected();
+            const showTrackLine = showSelectedHeading;
+            if (!showSelectedHeading) {
+                showSelectedHeading = SimVar.GetSimVarValue("L:A320_FCU_SHOW_SELECTED_HEADING", "number") === 1;
                 if (showSelectedHeading) {
-                    var selectedHeading = simSelectedHeading;
-                    var roundedSelectedHeading = fastToFixed(selectedHeading, 3);
-                    this.setAttribute("selected_heading_bug_rotation", roundedSelectedHeading);
-                    if (this.navigationMode == Jet_NDCompass_Navigation.NAV) {
-                        if (this.selectedHeadingGroup) {
-                            this.selectedHeadingGroup.classList.toggle('hide', false);
-                        }
-                        if (this.selectedHeadingLine) {
-                            if (this.aircraft == Aircraft.CJ4 && this.displayMode == Jet_NDCompass_Display.ARC) {
-                                const CompassAngle = this.degreeToArc(compass);
-                                const selectedAngle = this.degreeToArc(simSelectedHeading);
-                                const delta = Math.abs(CompassAngle - selectedAngle);
-                                this.selectedHeadingLine.classList.toggle('hide', (delta > 65) ? false : true);
-                                this.selectedHeadingBug.classList.toggle('hide', (delta > 90) ? true : false);
-                            } else {
-                                this.selectedHeadingLine.classList.toggle('hide', false);
-                            }
-                        }
-                    } else {
-                        if (this.selectedHeadingGroup) {
-                            this.selectedHeadingGroup.classList.toggle('hide', true);
-                        }
-                    }
-                    if (this.selectedTrackGroup) {
-                        this.selectedTrackGroup.classList.toggle('hide', true);
-                    }
-                    if (this.selectedRefGroup) {
-                        if (this.selectedRefValue) {
-                            this.selectedRefValue.textContent = selectedHeading.toString();
-                        }
-                        this.selectedRefGroup.classList.toggle('hide', false);
-                    }
-                } else {
-                    if (this.selectedHeadingGroup) {
-                        this.selectedHeadingGroup.classList.toggle('hide', true);
-                    }
-                    if (this.selectedTrackGroup) {
-                        this.selectedTrackGroup.classList.toggle('hide', true);
-                    }
-                    if (this.selectedRefGroup) {
-                        this.selectedRefGroup.classList.toggle('hide', true);
-                    }
+                    selectedHeading = Simplane.getAutoPilotSelectedHeadingLockValue(false);
                 }
+            }
+            var roundedSelectedHeading = fastToFixed(selectedHeading, 3);
+            this.setAttribute("selected_heading_bug_rotation", roundedSelectedHeading);
+            if (this.trackingLine) {
+                this.trackingLine.classList.toggle('hide', !showTrackLine);
+            }
+            if (this.selectedHeadingGroup) {
+                this.selectedHeadingGroup.classList.toggle('hide', !showSelectedHeading);
+            }
+            if (this.selectedTrackGroup) {
+                this.selectedTrackGroup.classList.toggle('hide', true);
+            }
+            if (this.selectedRefGroup) {
+                if (this.selectedRefValue) {
+                    this.selectedRefValue.textContent = selectedHeading.toString();
+                }
+                this.selectedRefGroup.classList.toggle('hide', false);
+            }
+            if (this.headingGroup) {
+                this.headingGroup.classList.toggle('hide', true);
             }
         } else {
             const selectedTrack = simSelectedTrack;

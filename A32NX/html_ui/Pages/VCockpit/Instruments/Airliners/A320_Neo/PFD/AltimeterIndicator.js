@@ -1,3 +1,21 @@
+/*
+ * A32NX
+ * Copyright (C) 2020 FlyByWire Simulations and its contributors
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 class Jet_PFD_AltimeterIndicator extends HTMLElement {
     constructor() {
         super(...arguments);
@@ -442,12 +460,8 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
 
         const groundReference = indicatedAltitude - Simplane.getAltitudeAboveGround();
         const baroMode = Simplane.getPressureSelectedMode(this.aircraft);
-        let selectedAltitude;
-        if (this.aircraft === Aircraft.AS01B || this.aircraft === Aircraft.B747_8 || this.aircraft === Aircraft.A320_NEO) {
-            selectedAltitude = Math.max(0, Simplane.getAutoPilotDisplayedAltitudeLockValue());
-        } else {
-            selectedAltitude = Math.max(0, Simplane.getAutoPilotAltitudeLockValue());
-        }
+        const selectedAltitude = Math.max(0, Simplane.getAutoPilotDisplayedAltitudeLockValue());
+
         this.updateGraduationScrolling(indicatedAltitude);
         this.updateCursorScrolling(indicatedAltitude);
         this.updateGroundReference(indicatedAltitude, groundReference);
@@ -607,43 +621,26 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
         if (this.pressureSVG) {
             const units = Simplane.getPressureSelectedUnits();
             const pressure = Simplane.getPressureValue(units);
-            if (_mode == "STD") {
-                if (this.aircraft == Aircraft.A320_NEO) {
-                    this.STDpressureSVG.setAttribute("visibility", "visible");
-                    this.STDpressureSVGShape.setAttribute("visibility", "visible");
-                    this.pressureSVGLegend.setAttribute("visibility", "hidden");
-                    this.pressureSVG.setAttribute("visibility", "hidden");
-                } else {
-                    this.pressureSVG.textContent = "STD";
-                }
+
+            if (_mode === "STD") {
+                this.STDpressureSVG.setAttribute("visibility", "visible");
+                this.STDpressureSVGShape.setAttribute("visibility", "visible");
+                this.pressureSVGLegend.setAttribute("visibility", "hidden");
+                this.pressureSVG.setAttribute("visibility", "hidden");
             } else {
-                if (this.aircraft == Aircraft.A320_NEO) {
-                    this.STDpressureSVG.setAttribute("visibility", "hidden");
-                    this.STDpressureSVGShape.setAttribute("visibility", "hidden");
-                    this.pressureSVGLegend.setAttribute("visibility", "visible");
-                    this.pressureSVG.setAttribute("visibility", "visible");
-                    if (_mode == "QFE") {
-                        this.pressureSVGLegend.textContent = "QFE ";
-                    } else {
-                        this.pressureSVGLegend.textContent = "QNH ";
-                    }
-                    if (units == "millibar") {
-                        this.pressureSVG.textContent = pressure.toFixed(0);
-                    } else {
-                        this.pressureSVG.textContent = pressure.toFixed(2);
-                    }
-                } else if (this.aircraft == Aircraft.B747_8 || this.aircraft == Aircraft.AS01B) {
-                    if (units == "millibar") {
-                        this.pressureSVG.textContent = pressure.toFixed(0) + " HPA";
-                    } else {
-                        this.pressureSVG.textContent = pressure.toFixed(2) + " IN";
-                    }
+                this.STDpressureSVG.setAttribute("visibility", "hidden");
+                this.STDpressureSVGShape.setAttribute("visibility", "hidden");
+                this.pressureSVGLegend.setAttribute("visibility", "visible");
+                this.pressureSVG.setAttribute("visibility", "visible");
+                if (_mode === "QFE") {
+                    this.pressureSVGLegend.textContent = "QFE ";
                 } else {
-                    if (units == "millibar") {
-                        this.pressureSVG.textContent = pressure.toFixed(0) + " Hpa";
-                    } else {
-                        this.pressureSVG.textContent = pressure.toFixed(2) + " inHg";
-                    }
+                    this.pressureSVGLegend.textContent = "QNH ";
+                }
+                if (units === "millibar") {
+                    this.pressureSVG.textContent = pressure.toFixed(0);
+                } else {
+                    this.pressureSVG.textContent = pressure.toFixed(2);
                 }
             }
         }
@@ -660,34 +657,16 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
                 this.graduations[i].SVGLine.setAttribute("transform", "translate(" + posX.toString() + " " + posY.toString() + ")");
                 if (this.graduations[i].SVGText1) {
                     let roundedVal = 0;
-                    let divider = 100;
-                    if (this.aircraft == Aircraft.CJ4) {
-                        roundedVal = Math.floor(Math.abs(currentVal));
-                        const mod = roundedVal % 1000;
-                        if (mod != 0) {
-                            roundedVal = mod;
-                        }
-                    } else if (this.aircraft == Aircraft.B747_8 || this.aircraft == Aircraft.AS01B) {
-                        roundedVal = Math.floor(Math.abs(currentVal));
-                        divider = 1000;
-                    } else {
-                        roundedVal = Math.floor(Math.abs(currentVal) / 100);
-                    }
+                    const divider = 100;
+                    roundedVal = Math.floor(Math.abs(currentVal) / 100);
                     if (!this.graduations[i].SVGText2) {
                         this.graduations[i].SVGText1.textContent = ">" + Utils.leadingZeros(roundedVal, 3); // JZ Added small ">" from the modified Liberation font in front of altitude '\u02c3'
                     } else {
                         const integral = Math.floor(roundedVal / divider);
                         const modulo = Math.floor(roundedVal - (integral * divider));
-                        if (this.aircraft == Aircraft.B747_8 || this.aircraft == Aircraft.AS01B) {
-                            this.graduations[i].SVGText1.textContent = (integral > 0) ? integral.toString() : "";
-                        } else {
-                            this.graduations[i].SVGText1.textContent = integral.toString();
-                        }
-                        if (this.aircraft == Aircraft.B747_8 || this.aircraft == Aircraft.AS01B) {
-                            this.graduations[i].SVGText2.textContent = Utils.leadingZeros(modulo, 3);
-                        } else {
-                            this.graduations[i].SVGText2.textContent = Utils.leadingZeros(modulo, 2);
-                        }
+
+                        this.graduations[i].SVGText1.textContent = integral.toString();
+                        this.graduations[i].SVGText2.textContent = Utils.leadingZeros(modulo, 2);
                     }
                     this.graduations[i].SVGText1.setAttribute("transform", "translate(" + posX.toString() + " " + posY.toString() + ")");
                     if (this.graduations[i].SVGText2) {
@@ -708,9 +687,8 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
     }
     updateCursorScrolling(_altitude) {
         if (this.cursorIntegrals) {
-            const hideZeros = (this.aircraft == Aircraft.A320_NEO) ? true : false;
-            this.cursorIntegrals[0].update(_altitude, 10000, (hideZeros) ? 10000 : undefined);
-            this.cursorIntegrals[1].update(_altitude, 1000, (hideZeros) ? 1000 : undefined);
+            this.cursorIntegrals[0].update(_altitude, 10000, 10000);
+            this.cursorIntegrals[1].update(_altitude, 1000, 1000);
             this.cursorIntegrals[2].update(_altitude, 100);
         }
         if (this.cursorDecimals) {
@@ -782,96 +760,46 @@ class Jet_PFD_AltimeterIndicator extends HTMLElement {
         let hudAltitude = 0;
         if (this.targetAltitudeIndicatorSVG) {
             const APModeSelected = this.getAutopilotMode();
-            const stdMode = (baroMode == "STD") ? true : false;
-            if (this.aircraft == Aircraft.CJ4 || this.aircraft == Aircraft.B747_8 || this.aircraft == Aircraft.AS01B) {
-                if (APModeSelected) {
-                    let divider = 100;
-                    let refDelta = 275;
-                    let textAlwaysVisible = false;
-                    let leadingZeros = 2;
-                    if (this.aircraft == Aircraft.B747_8 || this.aircraft == Aircraft.AS01B) {
-                        divider = 1000;
-                        refDelta = 400;
-                        textAlwaysVisible = true;
-                        leadingZeros = 3;
-                    }
-                    const integral = Math.floor(targetAltitude / divider);
-                    const modulo = Math.floor(targetAltitude - (integral * divider));
-                    if (stdMode && targetAltitude >= 1000) {
-                        this.targetAltitudeTextSVG1.textContent = "FL";
-                        this.targetAltitudeTextSVG2.textContent = Math.floor(targetAltitude / 100).toString();
-                    } else {
-                        this.targetAltitudeTextSVG1.textContent = integral.toString();
-                        this.targetAltitudeTextSVG2.textContent = Utils.leadingZeros(modulo, leadingZeros);
-                    }
-                    hudAltitude = targetAltitude;
-                    const deltaAltitude = targetAltitude - currentAltitude;
-                    if (deltaAltitude < -refDelta || deltaAltitude > refDelta) {
-                        this.targetAltitudeTextSVG1.setAttribute("visibility", "visible");
-                        this.targetAltitudeTextSVG2.setAttribute("visibility", "visible");
-                        if (this.targetAltitudeBgSVG) {
-                            this.targetAltitudeBgSVG.setAttribute("visibility", "visible");
-                        }
-                        this.targetAltitudeIndicatorSVG.setAttribute("visibility", "hidden");
-                    } else {
-                        this.targetAltitudeTextSVG1.setAttribute("visibility", (textAlwaysVisible) ? "visible" : "hidden");
-                        this.targetAltitudeTextSVG2.setAttribute("visibility", (textAlwaysVisible) ? "visible" : "hidden");
-                        if (this.targetAltitudeBgSVG) {
-                            this.targetAltitudeBgSVG.setAttribute("visibility", (textAlwaysVisible) ? "visible" : "hidden");
-                        }
-                        var offsetY = this.valueToSvg(currentAltitude, targetAltitude);
-                        offsetY -= 48;
-                        this.targetAltitudeIndicatorSVG.setAttribute("y", offsetY.toString());
-                        this.targetAltitudeIndicatorSVG.setAttribute("visibility", "visible");
-                    }
-                } else {
-                    this.targetAltitudeTextSVG1.setAttribute("visibility", "hidden");
-                    this.targetAltitudeTextSVG2.setAttribute("visibility", "hidden");
-                    if (this.targetAltitudeBgSVG) {
-                        this.targetAltitudeBgSVG.setAttribute("visibility", "hidden");
-                    }
-                    this.targetAltitudeIndicatorSVG.setAttribute("visibility", "hidden");
+            const stdMode = baroMode === "STD";
+
+            if (!APModeSelected) {
+                const cstnAlt = SimVar.GetSimVarValue("L:A32NX_AP_CSTN_ALT", "feet");
+                if (isFinite(cstnAlt)) {
+                    targetAltitude = cstnAlt;
                 }
-            } else if (this.aircraft == Aircraft.A320_NEO) {
-                if (!APModeSelected) {
-                    const cstnAlt = SimVar.GetSimVarValue("L:A32NX_AP_CSTN_ALT", "feet");
-                    if (isFinite(cstnAlt)) {
-                        targetAltitude = cstnAlt;
-                    }
-                }
-                const deltaAltitude = targetAltitude - currentAltitude;
-                if (deltaAltitude < -650) {
-                    this.targetAltitudeText.textContent = this.getAltFL(targetAltitude, stdMode);
-                    this.targetAltitudeText.style.top = "718px";
-                    this.targetAltitudeText.style.left = "85px";
-                    this.targetAltitudeText.style.display = "block";
-                    this.targetAltitudeText.style.color = APModeSelected ? "#00FFFF" : "#FF94FF";
-                    this.targetAltitudeIndicatorSVG.setAttribute("visibility", "hidden");
-                } else if (deltaAltitude > 650) {
-                    this.targetAltitudeText.textContent = this.getAltFL(targetAltitude, stdMode);
-                    this.targetAltitudeText.style.top = "-16px";
-                    this.targetAltitudeText.style.left = "85px";
-                    this.targetAltitudeText.style.display = "block";
-                    this.targetAltitudeText.style.color = APModeSelected ? "#00FFFF" : "#FF94FF";
-                    this.targetAltitudeIndicatorSVG.setAttribute("visibility", "hidden");
-                } else {
-                    this.targetAltitudeText.style.display = "none";
-                    var offsetY = this.valueToSvg(currentAltitude, targetAltitude);
-                    offsetY -= 51;
-                    this.targetAltitudeIndicatorSVG.setAttribute("y", offsetY.toString());
-                    this.targetAltitudeIndicatorSVG.setAttribute("visibility", "visible");
-                    this.targetAltitudeIndicatorSVGShape.setAttribute("stroke", APModeSelected ? "#00FFFF" : "#FF94FF");
-                    if (this.targetAltitudeIndicatorSVGText) {
-                        if (targetAltitude >= 10) {
-                            this.targetAltitudeIndicatorSVGText.textContent = this.getAltFL(targetAltitude, stdMode, true);
-                        } else {
-                            this.targetAltitudeIndicatorSVGText.textContent = "100";
-                        }
-                        this.targetAltitudeIndicatorSVGText.setAttribute("fill", APModeSelected ? "#00FFFF" : "#FF94FF");
-                    }
-                }
-                hudAltitude = targetAltitude;
             }
+            const deltaAltitude = targetAltitude - currentAltitude;
+            if (deltaAltitude < -650) {
+                this.targetAltitudeText.textContent = this.getAltFL(targetAltitude, stdMode);
+                this.targetAltitudeText.style.top = "718px";
+                this.targetAltitudeText.style.left = "85px";
+                this.targetAltitudeText.style.display = "block";
+                this.targetAltitudeText.style.color = APModeSelected ? "#00FFFF" : "#FF94FF";
+                this.targetAltitudeIndicatorSVG.setAttribute("visibility", "hidden");
+            } else if (deltaAltitude > 650) {
+                this.targetAltitudeText.textContent = this.getAltFL(targetAltitude, stdMode);
+                this.targetAltitudeText.style.top = "-16px";
+                this.targetAltitudeText.style.left = "85px";
+                this.targetAltitudeText.style.display = "block";
+                this.targetAltitudeText.style.color = APModeSelected ? "#00FFFF" : "#FF94FF";
+                this.targetAltitudeIndicatorSVG.setAttribute("visibility", "hidden");
+            } else {
+                this.targetAltitudeText.style.display = "none";
+                var offsetY = this.valueToSvg(currentAltitude, targetAltitude);
+                offsetY -= 51;
+                this.targetAltitudeIndicatorSVG.setAttribute("y", offsetY.toString());
+                this.targetAltitudeIndicatorSVG.setAttribute("visibility", "visible");
+                this.targetAltitudeIndicatorSVGShape.setAttribute("stroke", APModeSelected ? "#00FFFF" : "#FF94FF");
+                if (this.targetAltitudeIndicatorSVGText) {
+                    if (targetAltitude >= 10) {
+                        this.targetAltitudeIndicatorSVGText.textContent = this.getAltFL(targetAltitude, stdMode, true);
+                    } else {
+                        this.targetAltitudeIndicatorSVGText.textContent = "100";
+                    }
+                    this.targetAltitudeIndicatorSVGText.setAttribute("fill", APModeSelected ? "#00FFFF" : "#FF94FF");
+                }
+            }
+            hudAltitude = targetAltitude;
         }
         if (this.hudAPAltitude != hudAltitude) {
             this.hudAPAltitude = Math.round(hudAltitude);

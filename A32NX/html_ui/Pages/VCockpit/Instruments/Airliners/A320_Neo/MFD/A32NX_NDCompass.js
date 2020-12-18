@@ -1,3 +1,21 @@
+/*
+ * A32NX
+ * Copyright (C) 2020 FlyByWire Simulations and its contributors
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 class Jet_MFD_NDCompass extends Jet_NDCompass {
     constructor() {
         super();
@@ -12,17 +30,8 @@ class Jet_MFD_NDCompass extends Jet_NDCompass {
     }
     constructArc() {
         super.constructArc();
-        if (this.aircraft == Aircraft.CJ4) {
-            this.constructArc_CJ4();
-        } else if (this.aircraft == Aircraft.B747_8) {
-            this.constructArc_B747_8();
-        } else if (this.aircraft == Aircraft.AS01B) {
-            this.constructArc_AS01B();
-        } else {
-            this.constructArc_A320_Neo();
-        }
+        this.constructArc_A320_Neo();
     }
-    constructArc_CJ4() { }
     constructArc_A320_Neo() {
         this.root = document.createElementNS(Avionics.SVG.NS, "svg");
         this.root.setAttribute("width", "100%");
@@ -235,23 +244,10 @@ class Jet_MFD_NDCompass extends Jet_NDCompass {
             }
         }
     }
-    constructArc_B747_8() { }
-    constructArc_AS01B() {
-    }
     constructPlan() {
         super.constructPlan();
-        if (this.aircraft == Aircraft.B747_8) {
-            this.constructPlan_B747_8();
-        } else if (this.aircraft == Aircraft.AS01B) {
-            this.constructPlan_AS01B();
-        } else if (this.aircraft == Aircraft.CJ4) {
-            this.constructPlan_CJ4();
-        } else {
-            this.constructPlan_A320_Neo();
-        }
+        this.constructPlan_A320_Neo();
     }
-    constructPlan_B747_8() { }
-    constructPlan_AS01B() { }
     constructPlan_A320_Neo() {
         this.root = document.createElementNS(Avionics.SVG.NS, "svg");
         this.root.setAttribute("width", "100%");
@@ -311,18 +307,9 @@ class Jet_MFD_NDCompass extends Jet_NDCompass {
             }
         }
     }
-    constructPlan_CJ4() { }
     constructRose() {
         super.constructRose();
-        if (this.aircraft == Aircraft.CJ4) {
-            this.constructRose_CJ4();
-        } else if (this.aircraft == Aircraft.B747_8) {
-            this.constructRose_B747_8();
-        } else if (this.aircraft == Aircraft.AS01B) {
-            this.constructRose_AS01B();
-        } else {
-            this.constructRose_A320_Neo();
-        }
+        this.constructRose_A320_Neo();
     }
     constructRose_A320_Neo() {
         this.root = document.createElementNS(Avionics.SVG.NS, "svg");
@@ -661,9 +648,6 @@ class Jet_MFD_NDCompass extends Jet_NDCompass {
             this.root.appendChild(neutralLine);
         }
     }
-    constructRose_B747_8() { }
-    constructRose_AS01B() { }
-    constructRose_CJ4() { }
     updateFail() {
         const failed = SimVar.GetSimVarValue("L:A320_Neo_ADIRS_STATE", "Enum") != 2;
         if (this.arcs) {
