@@ -152,6 +152,19 @@ fmc-main-display::before {
   right: 5%;
 }
 
+#title-left {
+  display: block;
+  text-align: right;
+  position: absolute;
+  top: 5%;
+  left: 5%;
+}
+
+.b-text {
+  font-size: 5.8vw;
+  letter-spacing: normal;
+}
+
 .s-text {
   font-size: 4.2vw;
   /* font-size: 4.8vw; */
@@ -176,6 +189,7 @@ fmc-main-display::before {
 .label {
   height: 5%;
   margin: 0;
+  white-space: pre;
 }
 
 .label-left {
@@ -202,6 +216,7 @@ fmc-main-display::before {
 .line {
   height: 8.1%;
   margin: 0;
+  white-space: pre;
 }
 
 .line-left {
