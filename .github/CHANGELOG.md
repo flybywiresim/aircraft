@@ -4,6 +4,9 @@
 <!-- Use the following format below -->
 <!--  1. [Changed Area] Title of changes - @github username (Name)  -->
 
+## 0.6.0
+1.
+
 ## 0.5.0
 1. [FLIGHTMODEL] Reworked AOA table - @donstim - (donbikes#4084)
 1. [FLIGHTMODEL] Reworked flaps - @donstim - (donbikes#4084)
