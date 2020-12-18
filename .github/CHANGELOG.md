@@ -168,6 +168,8 @@
 1. [ECAM] Added REFUELG, OUTR TK XFRD, CABIN READY, FUEL X FEED, and ADIRS SWTG memos - @wpine215 (Iceman)
 1. [ECAM] Added PACKS/NAI/WAI text indicator on upper ECAM - @wpine215 (Iceman)
 1. [Engines] Reduced idle thrust at low Mach to improve descent rate - @donstim - (donbkes#4084)
+1. [CDU] Added SIMBRIEF integration, INIT REQUEST and AOC INIT/REVIEW - @viniciusfont (subcomandante)
+1. [CDU] Added PERF W&B page allowing to Refuel and change Payload from the MCDU - @viniciusfont (subcomandante)
 
 ## 0.4.0
 1. [General] Add CHANGELOG.md - @nathaninnes (Nathan Innes)
