@@ -2,7 +2,17 @@
 
 set -ex
 
-npm run build
+# get directory of this script relative to root
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+
+npm run build:instruments
+
+node "${DIR}/../src/behavior/build.js"
+
+# create manifests
+node "${DIR}/build.js"
+
+# create build_info.json
 
 if [ -z "${GITHUB_ACTOR}" ]; then
     GITHUB_ACTOR="$(git log -1 --pretty=format:'%an <%ae>')"
@@ -19,4 +29,4 @@ jq -n \
     --arg actor "${GITHUB_ACTOR}" \
     --arg event_name "${GITHUB_EVENT_NAME}" \
     '{ built: $built, ref: $ref, sha: $sha, actor: $actor, event_name: $event_name }' \
-    > ./A32NX/build_info.json
+    > "${DIR}/../A32NX/build_info.json"
