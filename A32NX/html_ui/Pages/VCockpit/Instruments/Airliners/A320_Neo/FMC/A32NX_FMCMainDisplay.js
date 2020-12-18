@@ -547,6 +547,9 @@ class FMCMainDisplay extends BaseAirliners {
                     this.showErrorMessage("ENTRY OUT OF RANGE");
                     return false;
                 }
+            } else {
+                this.showErrorMessage("FORMAT ERROR");
+                return false;
             }
         }
         this.showErrorMessage(this.defaultInputErrorMessage);
