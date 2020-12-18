@@ -353,6 +353,6 @@
     - Degrees
     - The selected track in the FCU
 
-- L:A32NX_AUTOPILOT_FPA_SELECTED
+- A32NX_AUTOPILOT_FPA_SELECTED
     - Degrees
     - The selected flight path angle in the FCU

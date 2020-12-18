@@ -2753,7 +2753,7 @@
                 <TYPE>AIRBUS</TYPE>
             </UseTemplate>
 
-            <UseTemplate Name="A32NX_AUTOPILOT_Knob_Heading_Template">
+            <UseTemplate Name="FBW_Airbus_Autopilot_Knob_Heading_Template">
                 <NODE_ID>KNOB_AUTOPILOT_L3</NODE_ID>
                 <ANIM_NAME_KNOB>KNOB_AUTOPILOT_L3</ANIM_NAME_KNOB>
                 <ANIM_NAME_PUSHPULL>PUSH_AUTOPILOT_L3</ANIM_NAME_PUSHPULL>
@@ -2763,7 +2763,7 @@
                 <ANIMTIP_3_ON_CURSOR>DownArrow</ANIMTIP_3_ON_CURSOR>
             </UseTemplate>
 
-            <UseTemplate Name="A32NX_AIRBUS_Push_Heading_Track_Template">
+            <UseTemplate Name="FBW_Airbus_Push_Heading_Track_Template">
                 <NODE_ID>PUSH_AUTOPILOT_HDGTRK</NODE_ID>
                 <ANIM_NAME>PUSH_AUTOPILOT_HDGTRK</ANIM_NAME>
             </UseTemplate>
@@ -2853,7 +2853,7 @@
                 <ANIMTIP_3_ON_CURSOR>DownArrow</ANIMTIP_3_ON_CURSOR>
             </UseTemplate>
 
-            <UseTemplate Name="A32NX_AUTOPILOT_Knob_VerticalSpeed_Template">
+            <UseTemplate Name="FBW_Airbus_Autopilot_Knob_Heading_SubTemplate">
                 <NODE_ID>KNOB_AUTOPILOT_UPDN</NODE_ID>
                 <ANIM_NAME_KNOB>KNOB_AUTOPILOT_UPDN</ANIM_NAME_KNOB>
                 <ANIM_NAME_PUSHPULL>PUSH_AUTOPILOT_UPDN</ANIM_NAME_PUSHPULL>

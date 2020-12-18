@@ -295,6 +295,11 @@ class A320_Neo_FCU_Heading extends A320_Neo_FCU_Component {
             this.setElementVisibility(this.illuminator, this.isManaged);
         }
     }
+    /**
+     * Calculates the corresponding track for a given heading, assuming it is flown in the current conditions (TAS + wind).
+     * @param {number} _heading The heading in degrees.
+     * @returns {number} The corresponding track in degrees.
+     */
     calculateTrackForHeading(_heading) {
         const trueAirspeed = SimVar.GetSimVarValue("AIRSPEED TRUE", "Knots");
         if (trueAirspeed < 50) {
@@ -309,6 +314,11 @@ class A320_Neo_FCU_Heading extends A320_Neo_FCU_Component {
         const track = heading + wca % (2 * Math.PI);
         return (((track * 180 / Math.PI) % 360) + 360) % 360;
     }
+    /**
+     * Calculates the heading needed to fly a given track in the current conditions (TAS + wind).
+     * @param {number} _track The track in degrees.
+     * @returns {number} The corresponding heading in degrees.
+     */
     calculateHeadingForTrack(_track) {
         const trueAirspeed = SimVar.GetSimVarValue("AIRSPEED TRUE", "Knots");
         if (trueAirspeed < 50) {
@@ -465,6 +475,8 @@ class A320_Neo_FCU_VerticalSpeed extends A320_Neo_FCU_Component {
         super(...arguments);
         this.forceUpdate = true;
         this._debug = 300;
+        this.ABS_MINMAX_FPA = 9.9;
+        this.ABS_MINMAX_VS = 6000;
     }
     get currentState() {
         return this._currentState;
@@ -644,7 +656,7 @@ class A320_Neo_FCU_VerticalSpeed extends A320_Neo_FCU_Component {
             if (this.isActive && this.currentState != A320_Neo_FCU_VSpeed_State.Idle) {
                 const sign = (this.currentValue < 0) ? "-" : "+";
                 if (this.isFPAMode) {
-                    let value = Math.min(Math.abs(this.currentValue), 9.9);
+                    let value = Math.floor(Math.abs(this.currentValue));
                     value = Math.round(value * 10).toString().padStart(2, "0");
                     this.textValueContent = sign + value;
                 } else {
@@ -675,12 +687,12 @@ class A320_Neo_FCU_VerticalSpeed extends A320_Neo_FCU_Component {
         } else if (_event === "AP_DEC_FPA") {
             // TODO: increments of more than 0.1 if rolling quickly.
             const currentFpa = SimVar.GetSimVarValue("L:A32NX_AUTOPILOT_FPA_SELECTED", "Degree");
-            const newFpa = Math.round((currentFpa - 0.1) * 10) / 10;
+            const newFpa = Utils.Clamp(Math.round((currentFpa - 0.1) * 10) / 10, -this.ABS_MINMAX_FPA, this.ABS_MINMAX_FPA);
             SimVar.SetSimVarValue("L:A32NX_AUTOPILOT_FPA_SELECTED", "Degree", newFpa);
             this.onRotate();
         } else if (_event === "AP_INC_FPA") {
             const currentFpa = SimVar.GetSimVarValue("L:A32NX_AUTOPILOT_FPA_SELECTED", "Degree");
-            const newFpa = Math.round((currentFpa + 0.1) * 10) / 10;
+            const newFpa = Utils.Clamp(Math.round((currentFpa + 0.1) * 10) / 10, -this.ABS_MINMAX_FPA, this.ABS_MINMAX_FPA);
             SimVar.SetSimVarValue("L:A32NX_AUTOPILOT_FPA_SELECTED", "Degree", newFpa);
             this.onRotate();
         }
@@ -692,6 +704,11 @@ class A320_Neo_FCU_VerticalSpeed extends A320_Neo_FCU_Component {
             SimVar.SetSimVarValue("L:A32NX_AUTOPILOT_FPA_SELECTED", "Degree", angle);
         }
     }
+    /**
+     * Calculates the vertical speed needed to fly a flight path angle at the current ground speed.
+     * @param {number} _angle The flight path angle in degrees.
+     * @returns {number} The corresponding vertical speed in feet per minute.
+     */
     calculateVerticalSpeedForAngle(_angle) {
         if (_angle == 0) {
             return 0;
@@ -701,8 +718,13 @@ class A320_Neo_FCU_VerticalSpeed extends A320_Neo_FCU_Component {
         const angle = _angle * Math.PI / 180; // Now in radians.
         const verticalSpeed = Math.tan(angle) * groundSpeed;
         console.log("V/S for set FPA: " + verticalSpeed);
-        return (verticalSpeed < -6000) ? -6000 : (verticalSpeed > 6000) ? 6000 : verticalSpeed;
+        return Utils.Clamp(verticalSpeed, -this.ABS_MINMAX_VS, this.ABS_MINMAX_VS);
     }
+    /**
+     * Calculates the flight path angle for a given vertical speed, assuming it is flown at the current ground speed.
+     * @param {number} verticalSpeed The flight path angle in feet per minute.
+     * @returns {number} The corresponding flight path angle in degrees.
+     */
     calculateAngleForVerticalSpeed(verticalSpeed) {
         if (Math.abs(verticalSpeed) < 10) {
             return 0;
@@ -711,7 +733,7 @@ class A320_Neo_FCU_VerticalSpeed extends A320_Neo_FCU_Component {
         const groundSpeed = _groundSpeed * 3.28084 * 60; // Now in feet per minute.
         const angle = Math.atan(verticalSpeed / groundSpeed);
         const _angle = angle * 180 / Math.PI;
-        return (_angle > 9.9) ? 9.9 : (_angle < -9.9) ? -9.9 : _angle;
+        return Utils.Clamp(_angle, -this.ABS_MINMAX_FPA, this.ABS_MINMAX_FPA);
     }
 }
 
