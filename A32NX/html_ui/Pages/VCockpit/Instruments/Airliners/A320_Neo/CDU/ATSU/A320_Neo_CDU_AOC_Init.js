@@ -62,17 +62,17 @@ class CDUAocInit {
 
         const display = [
             ["INIT/REVIEW", "1", "2", "AOC"],
-            ["{big}FMC FLT NO{end}", "{big}GMT{end}"],
+            ["FMC FLT NO", "GMT"],
             [fltNbr, gmt],
-            ["{big}DEP{end}"],
+            ["DEP"],
             [originIcao],
-            ["{big}DEST{end}"],
+            ["DEST"],
             [destinationIcao, "CREW DETAILS>[color]inop"],
-            ["{big}FOB{end}"],
+            ["FOB"],
             ["   " + fob],
-            ["{big}ETE{end}"],
+            ["ETE"],
             [ete, requestButton],
-            ["", "{big}ADVISORY{end} "],
+            ["", "ADVISORY "],
             ["<AOC MENU"]
         ];
         mcdu.setTemplate(display);
@@ -172,17 +172,17 @@ class CDUAocInit {
             }
             const display = [
                 ["INIT/REVIEW", "2", "2", "AOC"],
-                [" {big}OUT{end}", "{big}OFF{end} ", "{big}DOORS{end}"],
+                [" OUT", "OFF ", "DOORS"],
                 [outTime, offTime, doorsTime],
-                [" {big}ON{end}", "{big}IN{end} ", "{big}GMT{end}"],
+                [" ON", "IN ", "GMT"],
                 [onTime, inTime, gmt],
-                [" {big}BLK TIME{end}", "{big}FLT TIME{end} "],
+                [" BLK TIME", "FLT TIME "],
                 [blockTime, fltTime],
-                [" {big}FUEL REM{end}", "{big}LDG PILOT{end} "],
+                [" FUEL REM", "LDG PILOT "],
                 ["   " + fob, "-------"],
                 ["", ""],
                 ["*AUTOLAND <{small}n{end}>[color]cyan"],
-                ["", "{big}ADVISORY{end} "],
+                ["", "ADVISORY "],
                 ["<AOC MENU"]
             ];
             mcdu.setTemplate(display);

@@ -62,19 +62,19 @@ class CDUAocOfpData {
         const currentBlockFuel = mcdu.aocWeight.blockFuel || mcdu.simbrief.blockFuel;
         if (currentBlockFuel) {
             const size = mcdu.aocWeight.blockFuel ? 'big' : 'small';
-            blockFuel = `{${size}}${currentBlockFuel}{end}[color]cyan`;
+            blockFuel = `{${size}}${Math.round(currentBlockFuel)}{end}[color]cyan`;
         }
 
         const currentTaxiFuel = mcdu.aocWeight.taxiFuel || mcdu.simbrief.taxiFuel;
         if (currentTaxiFuel) {
             const size = mcdu.aocWeight.taxiFuel ? 'big' : 'small';
-            taxiFuel = `{${size}}${currentTaxiFuel}{end}[color]cyan`;
+            taxiFuel = `{${size}}${Math.round(currentTaxiFuel)}{end}[color]cyan`;
         }
 
         const currentTripFuel = mcdu.aocWeight.tripFuel || mcdu.simbrief.tripFuel;
         if (currentTripFuel) {
             const size = mcdu.aocWeight.tripFuel ? 'big' : 'small';
-            tripFuel = `{${size}}${currentTripFuel}{end}[color]cyan`;
+            tripFuel = `{${size}}${Math.round(currentTripFuel)}{end}[color]cyan`;
         }
 
         const display = [
