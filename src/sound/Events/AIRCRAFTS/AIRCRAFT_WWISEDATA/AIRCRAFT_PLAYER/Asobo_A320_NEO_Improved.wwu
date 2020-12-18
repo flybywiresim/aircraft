@@ -1350,6 +1350,62 @@
 								</Action>
 							</ChildrenList>
 						</Event>
+						<Event Name="Play_Asobo_A320_NEO_BoomL" ID="{FEFA3F1A-2235-439D-90B3-64094C6618F5}">
+							<ChildrenList>
+								<Action Name="" ID="{230BDA43-0C8A-4280-A70D-68229708CD3B}" ShortID="85113101">
+									<PropertyList>
+										<Property Name="ActionType" Type="int16" Value="1"/>
+									</PropertyList>
+									<ReferenceList>
+										<Reference Name="Target">
+											<ObjectRef Name="BoomL" ID="{B52743A9-135A-40F4-AB03-0D1B251A2940}" WorkUnitID="{27D32D8D-6C92-4542-9BFC-F0D08111F92F}"/>
+										</Reference>
+									</ReferenceList>
+								</Action>
+							</ChildrenList>
+						</Event>
+						<Event Name="Play_Asobo_A320_NEO_BoomR" ID="{1FB02DAA-DB57-47A8-8F43-D0DB3DB34F62}">
+							<ChildrenList>
+								<Action Name="" ID="{6BCBEF98-0285-4F75-A4BE-07FDC2126560}" ShortID="382102519">
+									<PropertyList>
+										<Property Name="ActionType" Type="int16" Value="1"/>
+									</PropertyList>
+									<ReferenceList>
+										<Reference Name="Target">
+											<ObjectRef Name="BoomR" ID="{1E01EFBF-A44E-4658-AC5B-51DC58D25F55}" WorkUnitID="{27D32D8D-6C92-4542-9BFC-F0D08111F92F}"/>
+										</Reference>
+									</ReferenceList>
+								</Action>
+							</ChildrenList>
+						</Event>
+						<Event Name="Play_Asobo_A320_NEO_BoomLEXT" ID="{0358E6F1-ABC9-4D44-A3D7-B5827688C196}">
+							<ChildrenList>
+								<Action Name="" ID="{47D2F1B9-C044-484C-AD4F-717F0A79652B}" ShortID="727674983">
+									<PropertyList>
+										<Property Name="ActionType" Type="int16" Value="1"/>
+									</PropertyList>
+									<ReferenceList>
+										<Reference Name="Target">
+											<ObjectRef Name="BoomLEXT" ID="{29CD15F9-84E3-464B-B9B1-B47EF393EF13}" WorkUnitID="{27D32D8D-6C92-4542-9BFC-F0D08111F92F}"/>
+										</Reference>
+									</ReferenceList>
+								</Action>
+							</ChildrenList>
+						</Event>
+						<Event Name="Play_Asobo_A320_NEO_BoomREXT" ID="{8E89042E-F75F-46A0-B6FE-3D2F988597F2}">
+							<ChildrenList>
+								<Action Name="" ID="{47DF4BFA-6A6D-4DF9-BFB7-998E86609D81}" ShortID="647039618">
+									<PropertyList>
+										<Property Name="ActionType" Type="int16" Value="1"/>
+									</PropertyList>
+									<ReferenceList>
+										<Reference Name="Target">
+											<ObjectRef Name="BoomREXT" ID="{21133F5B-629A-4075-91CC-B9AA1D36BA2C}" WorkUnitID="{27D32D8D-6C92-4542-9BFC-F0D08111F92F}"/>
+										</Reference>
+									</ReferenceList>
+								</Action>
+							</ChildrenList>
+						</Event>
 					</ChildrenList>
 				</Folder>
 				<Event Name="Play_Asobo_A320_NEO_TOGAdetent" ID="{D5C16C0F-ED2D-48CF-819C-4A852CB6C458}">
