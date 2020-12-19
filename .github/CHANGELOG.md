@@ -5,7 +5,7 @@
 <!--  1. [Changed Area] Title of changes - @github username (Name)  -->
 
 ## 0.6.0
-1.
+1. [ECAM] Improved PACKS indication - @MisterChocker (Leon)
 
 ## 0.5.0
 1. [FLIGHTMODEL] Reworked AOA table - @donstim - (donbikes#4084)
