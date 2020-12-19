@@ -5,7 +5,7 @@
 <!--  1. [Changed Area] Title of changes - @github username (Name)  -->
 
 ## 0.6.0
-1. [CDU] Allow SimBrief user IDs as well as usernames
+1. [CDU] Allow SimBrief user IDs as well as usernames - @pareil6 - (@pareil6#0990)
 
 ## 0.5.0
 1. [FLIGHTMODEL] Reworked AOA table - @donstim - (donbikes#4084)
