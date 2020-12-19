@@ -18,26 +18,27 @@
 
 import './StatusArea.scss';
 import { Text } from '../Text/Text.jsx';
-import { useGlobalVar, useSimVar } from '../../util.mjs';
+import { useGlobalVar, getSimVar } from '../../util.mjs';
 
 export const StatusArea = () => {
-    const gw = useSimVar('TOTAL WEIGHT', 'kg');
+    const gw = getSimVar('TOTAL WEIGHT', 'kg');
     const zulu = useGlobalVar('ZULU TIME', 'seconds');
-    let tat = Math.round(useSimVar('TOTAL AIR TEMPERATURE', 'celsius'));
+    let tat = Math.round(getSimVar('TOTAL AIR TEMPERATURE', 'celsius'));
     if (tat > 99 || tat < -99) {
         tat = tat > 99 ? 99 : -99;
     }
-    let sat = Math.round(useSimVar('AMBIENT TEMPERATURE', 'celsius'));
+    let sat = Math.round(getSimVar('AMBIENT TEMPERATURE', 'celsius'));
     if (sat > 99 || sat < -99) {
         sat = sat > 99 ? 99 : -99;
     }
-    const adirsState = useSimVar('L:A320_Neo_ADIRS_STATE', 'Enum');
+    const adirsState = getSimVar('L:A320_Neo_ADIRS_STATE', 'Enum');
     const satPrefix = sat > 0 ? '+' : '';
     const tatPrefix = tat > 0 ? '+' : '';
     const seconds = Math.floor(zulu);
     const hours = Math.floor(seconds / 3600);
     const minutes = Math.floor((seconds - (hours * 3600)) / 60);
     const padMinutes = String(minutes).padStart(2, '0');
+    const padHours = String(hours).padStart(2, '0');
 
     return (
         <>
@@ -87,7 +88,7 @@ export const StatusArea = () => {
 
             {/* Time */}
 
-            <Text bigValue x={251} y={560} alignStart>{hours}</Text>
+            <Text bigValue x={251} y={560} alignStart>{padHours}</Text>
             <Text unit x={290} y={560} alignStart>H</Text>
             <Text value x={316} y={560} alignStart>{padMinutes}</Text>
 
