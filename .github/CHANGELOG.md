@@ -4,6 +4,10 @@
 <!-- Use the following format below -->
 <!--  1. [Changed Area] Title of changes - @github username (Name)  -->
 
+## 0.6.0
+1.
+1. [MFD] Flight route is now hidden in VOR ROSE and ILS ROSE modes @2hwk (2Cas#1022)
+
 ## 0.5.0
 1. [FLIGHTMODEL] Reworked AOA table - @donstim - (donbikes#4084)
 1. [FLIGHTMODEL] Reworked flaps - @donstim - (donbikes#4084)
@@ -126,6 +130,11 @@
 1. [Sound] Improved nose wheel liftoff sound - @hotshotp (Boris)
 1. [Sound] Added new APU start contactor sounds - @hotshotp (Boris)
 1. [Sound] Added new realistic LEAP-1A engine sounds - @hotshotp (Boris)
+1. [Lights] Added Flood Lights - @Snapmatics (Harry)
+1. [Lights] Added Reading Lights - @Snapmatics (Harry)
+1. [Lights] Improved Screen Backlight - @Snapmatics (Harry)
+1. [Lights] Improved Exterior Lights - @Snapmatics (Harry)
+1. [Lights] Improved Interior Lights - @Snapmatics (Harry)
 1. [CDU] Improved input handling while a message is visible - @MisterChocker (Leon)
 1. [ND] Fix weather radar not showing after switching to plan view - @ilyeshammadi (Ilyes Hammadi)
 1. [Autopilot] Increase max bank angle from 20 to 25 - @wpine215 (Iceman)
@@ -148,8 +157,23 @@
 1. [FLIGHTMODEL] Updated legacy flight model parameters for consistency with modern flight model - @donstim - (donbikes#4084)
 1. [ECAM] Adjusted flaps panel - @MisterChocker (Leon)
 1. [CDU] F-PLN page visual rework - @Lollo999 (Lorenzo Pinna)
-1. [MFD] Flight route is now hidden in VOR ROSE and ILS ROSE modes @2hwk (2Cas#1022)
-
+1. [Sound] Improved ground roll - @hotshotp (Boris)
+1. [Sound] Added new heavy turbulence sounds different in cabin and cockpit - @hotshotp (Boris)
+1. [CDU] Added ground speed mini - @MisterChocker (Leon)
+1. [MISC] Fix pedestal camera position triggering radio frequency display glitch - @pareil6 (pareil6)
+1. [FLIGHTMODEL] Corrected fuel tank capacities, including unusable fuel - @donstim - (donbikes#4084)
+1. [General] Added option to switch between KG and LBS - @MisterChocker (Leon)
+1. [CDU] Improved INIT-A PAGE transition to INIT-B or FUEL PRED PAGE - @MisterChocker (Leon)
+1. [CDU] Improved Options Page - @MisterChocker (Leon)
+1. [Sound] Replaced sounds for various switches, levers, and buttons - @hotshotp (Boris)
+1. [CDU] Added Soft GA Logic - @MisterChocker (Leon)
+1. [ECAM] Improved Thrust Rating update condition - @MisterChocker (Leon)
+1. [OPTIONS] Added options entry to enable NO PORTABLE DEVICES memo - @wpine215 (Iceman)
+1. [ECAM] Added REFUELG, OUTR TK XFRD, CABIN READY, FUEL X FEED, and ADIRS SWTG memos - @wpine215 (Iceman)
+1. [ECAM] Added PACKS/NAI/WAI text indicator on upper ECAM - @wpine215 (Iceman)
+1. [Engines] Reduced idle thrust at low Mach to improve descent rate - @donstim - (donbkes#4084)
+1. [CDU] Added SIMBRIEF integration, INIT REQUEST and AOC INIT/REVIEW - @viniciusfont (subcomandante)
+1. [CDU] Added PERF W&B page allowing to Refuel and change Payload from the MCDU - @viniciusfont (subcomandante)
 ## 0.4.0
 1. [General] Add CHANGELOG.md - @nathaninnes (Nathan Innes)
 1. [ECAM] Improved Upper ECAM Visuals - @wpine215 (Iceman)

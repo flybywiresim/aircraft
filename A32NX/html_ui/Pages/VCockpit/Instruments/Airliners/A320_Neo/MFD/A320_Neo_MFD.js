@@ -214,7 +214,7 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
             document.querySelector("#Map").setAttribute("style", "");
         }
 
-        if (this.map.planMode) {
+        if (this.map.instrument.airplaneIconElement._image) {
             this.map.instrument.airplaneIconElement._image.setAttribute("visibility", ADIRSState != 2 ? "hidden" : "visible");
         }
 

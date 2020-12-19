@@ -61,8 +61,8 @@ a320-neo-mfd-element #Electricity {
   height: 100%;
   background: radial-gradient(
     ellipse at center,
-    rgba(13, 20, 35, 1) 0%,
-    rgba(13, 20, 35, 1) 100%
+    rgba(4, 4, 5, 1) 0%,
+    rgba(4, 4, 5, 1) 100%
   );
 }
 a320-neo-mfd-element #Electricity[state="off"] {
@@ -107,7 +107,7 @@ a320-neo-mfd-element #Mainframe #Map #MapOrientation {
   right: 0%;
   width: 10%;
   height: calc(3 * 1vh * var(--bodyHeightScale));
-  background-color: #1a1d21;
+  background-color: rgba(4, 4, 5, 1);
   color: var(--displayWhite);
 }
 a320-neo-mfd-element #Mainframe #Map #WindData {
@@ -122,7 +122,7 @@ a320-neo-mfd-element #Mainframe #Map #MapRange {
   right: 0%;
   width: 7%;
   height: calc(3 * 1vh * var(--bodyHeightScale));
-  background-color: #1a1d21;
+  background-color: rgba(4, 4, 5, 1);
   color: var(--displayCyan);
 }
 a320-neo-mfd-element #Mainframe #Map #MapSVG,
@@ -147,8 +147,8 @@ a320-neo-mfd-element #Mainframe #ModeChangeMask {
   position: absolute;
   background: radial-gradient(
     ellipse at center,
-    rgba(13, 20, 35, 1) 0%,
-    rgba(13, 20, 35, 1) 100%
+    rgba(4, 4, 5, 1) 0%,
+    rgba(4, 4, 5, 1) 100%
   );
 }
 a320-neo-mfd-element #Mainframe #RangeChangeMask {
@@ -160,8 +160,8 @@ a320-neo-mfd-element #Mainframe #RangeChangeMask {
   position: absolute;
   background: radial-gradient(
     ellipse at center,
-    rgba(13, 20, 35, 1) 0%,
-    rgba(13, 20, 35, 1) 100%
+    rgba(4, 4, 5, 1) 0%,
+    rgba(4, 4, 5, 1) 100%
   );
 }
 a320-neo-mfd-element #Mainframe #TopBox {
@@ -185,7 +185,7 @@ a320-neo-mfd-element #Mainframe #TopBox #Speed svg {
   overflow: visible;
 }
 a320-neo-mfd-element #Mainframe #TopBox #Speed svg #GS_Value {
-  var(--displayWhite)-space: pre;
+  white-space: pre;
 }
 a320-neo-mfd-element #Mainframe #TopBox #Title {
   top: 11%;
@@ -360,5 +360,3 @@ a320-neo-mfd-element #Mainframe #Electricity #Wind_Separator {
 a320-neo-mfd-element #Mainframe #Electricity #Wind_Strength {
   font-size: var(--windLabelFontSize);
 }
-
-

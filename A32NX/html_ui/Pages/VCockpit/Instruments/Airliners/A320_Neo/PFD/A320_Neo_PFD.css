@@ -230,7 +230,7 @@ a320-neo-pfd-element #Mainframe #InstrumentsContainer #FMA .Active {
 }
 a320-neo-pfd-element #Mainframe #InstrumentsContainer #FMA .ActiveBlink {
   color: var(--displayWhite);
-  animation: blinking 1s infinite;
+  animation: blinking 1.5s infinite;
 }
 a320-neo-pfd-element #Mainframe #InstrumentsContainer #FMA .Status {
   color: var(--displayWhite);
@@ -404,7 +404,7 @@ a320-neo-pfd-element
   left: 22%;
   width: 36%;
   height: 100%;
-  background-color: rgba(13, 20, 35, 1);
+  background-color: rgba(4, 4, 5, 1);
 }
 a320-neo-pfd-element
   #Mainframe
@@ -416,7 +416,7 @@ a320-neo-pfd-element
   width: 36%;
   bottom: 0%;
   height: 34%;
-  background-color: rgba(13, 20, 35, 1);
+  background-color: rgba(4, 4, 5, 1);
 }
 a320-neo-pfd-element
   #Mainframe
@@ -452,29 +452,32 @@ a320-neo-pfd-element #Mainframe #InstrumentsContainer #ILS {
 }
 
 @keyframes pulse-yellow {
-  0%, 49% {
+  0%,
+  49% {
     stroke: rgb(61, 61, 29);
   }
-  50%, 100% {
-    stroke:  #ffff00;
+  50%,
+  100% {
+    stroke: #ffff00;
     stroke-width: 5;
   }
 }
-
 
 .flash-amber {
   animation: flash-amber 1s infinite;
 }
 
 @keyframes flash-amber {
-  0%, 49% {
+  0%,
+  49% {
     stroke: transparent;
   }
-  50%, 100% {
+  50%,
+  100% {
     stroke: #ff9a00;
   }
 }
 
 .blink {
-  animation : blinking 1s infinite;
+  animation: blinking 1s infinite;
 }
