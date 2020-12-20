@@ -17,11 +17,10 @@
  */
 
 import React from 'react';
-import { IconUser } from '@tabler/icons';
+import { IconSettings } from '@tabler/icons';
 
 type ToolbarProps = {
     setPageIndex: (number) => void;
-    fetchSimbrief: Function;
     logo: string,
 };
 
@@ -39,8 +38,8 @@ class ToolBar extends React.Component<ToolbarProps, ToolbarState> {
         { id: 0, name: 'Dashboard', link: 'dashboard'},
         { id: 1, name: 'Dispatch', link: 'dispatch'},
         { id: 2, name: 'Flight', link: 'flight' },
-        { id: 3, name: 'Performance', link: 'performance' },
-        { id: 4, name: 'Settings', link: 'settings' }
+        { id: 3, name: 'Performance', link: 'ground'},
+        { id: 4, name: 'Company', link: 'ground'}
     ];
 
     state: ToolbarState = {
@@ -69,31 +68,31 @@ class ToolBar extends React.Component<ToolbarProps, ToolbarState> {
 
     render() {
         return (
-            <div className="toolbar">
-                <img src={this.props.logo} className="FBW-Logo" alt="logo" />
-
-                <div className="tabs">
-                    {
-                        this.tabs.map((tab) =>
-                            <div key={tab.id} className={tab.id === this.state.activeIndex ? 'tab active' : 'tab'} onClick={this.handleClick(tab.id)}>
-                                <a href={"/" + tab.link}>{tab.name}</a>
-                            </div>
-                        )
-                    }
-
-                    <div id="LoadSimbrief" className="tab">
-                        <a onClick={() => this.props.fetchSimbrief()}>
-                            Load Flight Data
-                        </a>
+            <nav className="bg-gray-800">
+                <div className="flex justify-between py-3 px-6">
+                    <div className="flex-1 flex items-center justify-start">
+                        <div className="flex-shrink-0 flex items-center">
+                            <img className="h-20 mr-6" src={this.props.logo} />
+                        </div>
+                        <div className="flex space-x-4 text-base">
+                            {
+                                this.tabs.map((tab) =>
+                                    <a className={tab.id === this.state.activeIndex ? 'border-b-2 border-t-0 border-r-0 border-l-0 text-white px-3 py-2' : 'text-white px-3 py-2'} key={tab.id} onClick={this.handleClick(tab.id)}>
+                                        {tab.name}
+                                    </a>
+                                )
+                            }
+                        </div>
+                    </div>
+                    <div className="flex items-center text-white">
+                        <div>
+                            <a href="/profile">
+                                <IconSettings size={25} stroke={1.5} strokeLinejoin="miter" />
+                            </a>
+                        </div>
                     </div>
                 </div>
-
-                <div className="profile-toolbar">
-                    <a href={"/profile"}>
-                        <IconUser size={35} stroke={1.5} strokeLinejoin="miter" />
-                    </a>
-                </div>
-            </div>
+            </nav>
         );
     }
 }

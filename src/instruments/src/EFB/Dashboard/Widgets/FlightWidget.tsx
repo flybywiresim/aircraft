@@ -34,42 +34,50 @@ type FlightWidgetProps = {
     distance: string,
     eta: string,
     timeSinceStart: string,
+    fetchSimbrief: Function
 }
 
 const FlightWidget = (props: FlightWidgetProps) => {
     return (
-        <div className="flight-widget">
-            <div id={'flight-' + props.name} className="flight-card">
-                <div className="callsign-reg">
-                    {props.airline + props.flightNum}
-                    <div className="reg">{props.aircraftReg}</div>
+        <div className="bg-gray-800 rounded-xl p-6 text-white shadow-lg text-base">
+            <div id={'flight-' + props.name}>
+                <div className="text-center mb-6">
+                    <h1 className="text-xl leading-5">{props.airline + props.flightNum}</h1>
+                    <span className="text-sm">{props.aircraftReg}</span>
                 </div>
 
-                <div className="origin-destination">
-                    <span>{props.dep}</span>
-                    &nbsp;&nbsp;
-                    <IconPlane size={40} stroke={1.5} strokeLinejoin="miter" />
-                    &nbsp;&nbsp;
-                    <span>{props.arr}</span>
+                <div className="flex items-center justify-center mb-6 text-base">
+                    [BOM] <span className="mx-3 text-3xl">{props.dep}</span>
+                    <IconPlane size={35} stroke={1.5} strokeLinejoin="miter" />
+                    <span className="mx-3 text-3xl">{props.arr}</span> [DEL]
                 </div>
 
-                <div className="flight-schedule">
-                    <div id="std">
-                        <h5 className="title">
-                            STD &nbsp; <IconPlaneDeparture size={25} stroke={1.5} strokeLinejoin="miter" />
-                        </h5>
-                        <span>{props.std}</span>
+                <div className="flex mb-6">
+                    <div className="w-1/2 mr-4">
+                        <div className="flex justify-end">
+                            STD <IconPlaneDeparture className="ml-2" size={23} stroke={1.5} strokeLinejoin="miter" />
+                        </div>
+                        <div className="text-right mt-1">{props.std}z</div>
                     </div>
-                    <div id="sta">
-                        <h5 className="title">
-                            <IconPlaneArrival size={25} stroke={1.5} strokeLinejoin="miter" /> &nbsp; STA
-                        </h5>
-                        <span>{props.sta}</span>
+                    <div className="w-1/2 ml-4">
+                        <div className="flex justify-start">
+                            <IconPlaneArrival className="mr-2" size={23} stroke={1.5} strokeLinejoin="miter" /> STA
+                        </div>
+                        <div className="text-left mt-1">{props.sta}z</div>
                     </div>
                 </div>
 
-                <div className="flight-times">
+                <div className="flex justify-center text-center font-mono mb-6 max-w-md text-sm">
+                    AKRIB Q23 INTIL W19 IKAVA Q23 IBANI W19 BPL W20 HIA W71 LURGI Q21 TELUV [{props.distance}]
+                </div>
 
+                <div className="text-sm">
+                    <button onClick={() => props.fetchSimbrief()} className="w-full bg-blue-500 p-2 text-white flex items-center justify-center rounded-lg mb-2 focus:outline-none">
+                        FRM SIMBRIEF
+                    </button>
+                    <button className="w-full bg-green-500 p-2 text-white flex items-center justify-center rounded-lg focus:outline-none">
+                        LNK MCDU
+                    </button>
                 </div>
             </div>
         </div>

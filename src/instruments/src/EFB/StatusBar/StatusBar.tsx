@@ -66,15 +66,13 @@ export default class StatusBar extends React.Component<TimeProps, any> {
 
     render() {
         return (
-            <div className="status-bar">
-                <div className="status-bar-item">
-                    flyPad
-                </div>
-                <div className="status-bar-item">
-                    {formatTime(([this.state.currentTime.getUTCHours(), this.state.currentTime.getMinutes()])) + 'z'}
-                </div>
-                <div className="status-bar-item">
-                    <IconWifi className="wifi-icon" size={21} stroke={1.5} strokeLinejoin="miter" /> 100% <IconBatteryCharging className="battery-icon" size={25} color="yellow" stroke={1.5} strokeLinejoin="miter" />
+            <div className="flex items-center justify-between px-6 py-1 text-white text-xs leading-none">
+                <div>flyPad</div>
+                <div>{formatTime(([this.state.currentTime.getUTCHours(), this.state.currentTime.getMinutes()])) + 'z'}</div>
+                <div className="flex items-center">
+                    <IconWifi className="mr-2" size={22} stroke={1.5} strokeLinejoin="miter" />
+                    100%
+                    <IconBatteryCharging className="ml-2" color="yellow" size={25} stroke={1.5} strokeLinejoin="miter" />
                 </div>
             </div>
         );

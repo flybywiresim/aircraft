@@ -21,7 +21,7 @@ import { useState } from 'react';
 import Efb from './Efb.tsx';
 import { renderTarget, useUpdate, getSimVar } from '../util.mjs';
 import logo from './Assets/fbw-logo.svg';
-import './Efb.scss';
+import './Assets/Boot.scss';
 
 // TODO: Move anything dependent on ac power change to A32NX_Core
 function powerAvailable() {

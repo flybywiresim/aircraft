@@ -23,11 +23,10 @@ import StatusBar from "./StatusBar/StatusBar";
 import ToolBar from "./ToolBar/ToolBar";
 import Dashboard from "./Dashboard/Dashboard";
 
-import './Efb.scss';
+import './Assets/Efb.scss';
 
 import Dispatch from "./Dispatch/Dispatch";
 import Settings from "./Settings/Settings";
-import Profile from "./Profile/Profile";
 
 type EfbProps = {
     logo: string,
@@ -245,6 +244,7 @@ class Efb extends React.Component<EfbProps, EfbState> {
                 return <Settings />;
             default:
                 return <Dashboard
+                    fetchSimbrief={this.fetchSimbriefData}
                     currentFlight={this.props.currentFlight}
                     airline={this.state.airline}
                     flightNum={this.state.flightNum}
@@ -263,9 +263,9 @@ class Efb extends React.Component<EfbProps, EfbState> {
     render() {
         return (
             <div>
-                <StatusBar initTime={this.state.initTime} updateCurrentTime={this.updateCurrentTime} updateTimeSinceStart={this.updateTimeSinceStart}/>
-                <ToolBar setPageIndex={(index) => this.setState({ currentPageIndex: index })} logo={this.props.logo} fetchSimbrief={this.fetchSimbriefData}/>
-                <div id="main-container">
+                <StatusBar initTime={this.state.initTime} updateCurrentTime={this.updateCurrentTime} updateTimeSinceStart={this.updateTimeSinceStart} />
+                <ToolBar setPageIndex={(index) => this.setState({ currentPageIndex: index })} logo={this.props.logo} />
+                <div>
                     {this.currentPage()}
                 </div>
             </div>

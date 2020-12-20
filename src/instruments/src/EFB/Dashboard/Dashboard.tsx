@@ -21,7 +21,7 @@ import FlightWidget from "./Widgets/FlightWidget";
 import WeatherWidget from "./Widgets/WeatherWidget";
 import Map from "@flybywiresim/map";
 
-type DashboardWidgetProps = {
+type DashboardProps = {
     currentFlight: string,
     airline: string,
     flightNum: string,
@@ -32,12 +32,13 @@ type DashboardWidgetProps = {
     flightETAInSeconds: string,
     timeSinceStart: string,
     schedOut: string,
-    schedIn: string
+    schedIn: string,
+    fetchSimbrief: Function
 }
 
-type DashboardWidgetState = {}
+type DashboardState = {}
 
-class DashboardWidget extends React.Component<DashboardWidgetProps, DashboardWidgetState> {
+class Dashboard extends React.Component<DashboardProps, DashboardState> {
 
     calculateFlightTime(flightETAInSeconds: string): string {
         const timeInMinutes: number = parseInt(flightETAInSeconds) * 0.0166;
@@ -55,34 +56,43 @@ class DashboardWidget extends React.Component<DashboardWidgetProps, DashboardWid
 
     render() {
         return (
-            <div className="dashboard">
-                <span id='title-todays-flight' className="widget-title">Today's Flight</span>
-                <span id='title-wx' className="widget-title">Weather</span>
-                <span id='title-map' className="widget-title">Map</span>
+            <div className="flex p-6 w-full">
+                <div className="w-4/12 pr-1">
+                    <h1 className="text-white mb-6 text-base">Today's Flight</h1>
 
-                <FlightWidget
-                    name="todays"
-                    airline={this.props.airline}
-                    flightNum={this.props.flightNum}
-                    aircraftReg={this.props.aircraftReg}
-                    dep={this.props.departingAirport}
-                    arr={this.props.arrivingAirport}
-                    elapsedTime="00:49"
-                    distance={this.props.flightDistance}
-                    eta={this.calculateFlightTime(this.props.flightETAInSeconds)}
-                    timeSinceStart={this.props.timeSinceStart}
-                    sta={this.props.schedIn}
-                    std={this.props.schedOut} />
+                    <FlightWidget
+                        name="todays"
+                        airline={this.props.airline}
+                        flightNum={this.props.flightNum}
+                        aircraftReg={this.props.aircraftReg}
+                        dep={this.props.departingAirport}
+                        arr={this.props.arrivingAirport}
+                        elapsedTime="00:49"
+                        distance={this.props.flightDistance}
+                        eta={this.calculateFlightTime(this.props.flightETAInSeconds)}
+                        timeSinceStart={this.props.timeSinceStart}
+                        sta={this.props.schedIn}
+                        std={this.props.schedOut}
+                        fetchSimbrief={this.props.fetchSimbrief} />
+                </div>
 
-                <WeatherWidget name='origin' editIcao="yes" icao={this.props.departingAirport} />
-                <WeatherWidget name='dest' editIcao="yes" icao={this.props.arrivingAirport} />
+                <div className="w-3/12">
+                    <h1 className="text-white mb-6 text-base">Weather</h1>
+                        
+                    <WeatherWidget name='origin' editIcao="yes" icao={this.props.departingAirport} />
+                    <WeatherWidget name='dest' editIcao="yes" icao={this.props.arrivingAirport} />
+                </div>
 
-                <div className="map-widget">
-                    <Map class="map" currentFlight={this.props.currentFlight} disableSearch={true} disableInfo={true} disableFlights={false} />
+                <div className="w-5/12 pl-1">
+                    <h1 className="text-white mb-6 text-base">Map</h1>
+                    
+                    <div className="bg-gray-800 rounded-xl p-6 text-white overflow-hidden">
+                        {/** <Map class="map" currentFlight={this.props.currentFlight} disableSearch={true} disableInfo={true} disableFlights={false} /> **/}
+                    </div>
                 </div>
             </div>
         );
     }
 }
 
-export default DashboardWidget;
+export default Dashboard;

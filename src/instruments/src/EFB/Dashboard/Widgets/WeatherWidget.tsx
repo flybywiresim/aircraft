@@ -216,15 +216,16 @@ const WeatherWidget = (props: WeatherWidgetProps) => {
     }
 
     return (
-        <div className='weather-card' id={'weather-card-' + props.name}>
+        <div className="bg-gray-800 rounded-xl p-6 text-white mb-4 shadow-lg text-base" id={'weather-card-' + props.name}>
             {metar === undefined ?
                 <p>Loading ...</p>
                 :
-                <><div id="OneByTwo">
-                    <div className="icao">
+                <><div className="mb-6">
+                    <div className="flex items-center">
                         {props.editIcao == "yes" ?
                             <>
-                                <input className="input"
+                                <IconAccessPoint className="mr-2" size={30} stroke={1.5} strokeLinejoin="miter" />
+                                <input className="border-none focus:outline-none text-xl bg-transparent"
                                     type="text"
                                     placeholder={props.icao}
                                     onChange={handleIcao} />
@@ -234,42 +235,30 @@ const WeatherWidget = (props: WeatherWidgetProps) => {
                         }
                     </div>
                 </div>
-                {modalStatus ?
-                    <div id="MetarModal">
-                        <p>{metar.raw_text}</p>
-                    </div>
-                    :
-                    <div id="TwoByTwo">
-                        <div className="col">
-                            <span className="big">
-                                <IconGauge size={45} stroke={1.5} strokeLinejoin="miter" />
-                            </span><br />{metar.barometer.mb.toFixed(0)}
-                            <span className="unit">mb</span>
+                <div className="mb-6">
+                    <div className="grid grid-cols-2 gap-3">
+                        <div className="flextext-lg">
+                            <IconGauge className="mb-2" size={35} stroke={1.5} strokeLinejoin="miter" />
+                            {metar.barometer.mb.toFixed(0)} mb
                         </div>
-                        <div className="col">
-                            <span className="big">
-                                <IconWind size={45} stroke={1.5} strokeLinejoin="miter" />
-                            </span><br />{metar.wind.degrees.toFixed(0)}<IconPoint size={20} stroke={1.5} strokeLinejoin="miter" />/{metar.wind.speed_kts.toFixed(0)}
-                            <span className="unit">kts</span>
+                        <div className="text-lg">
+                            <IconWind className="mb-2" size={35} stroke={1.5} strokeLinejoin="miter" />
+                            {metar.wind.degrees.toFixed(0)}&deg; / {metar.wind.speed_kts.toFixed(0)} kts
                         </div>
-                        <div>
-                            <span className="big">
-                                <IconTemperature size={45} stroke={1.5} strokeLinejoin="miter" />
-                            </span><br />{metar.temperature.celsius.toFixed(0)}<IconPoint size={20} stroke={1.5} strokeLinejoin="miter" />
-                            <span className="unit">C</span>
+                        <div className="text-lg">
+                            <IconTemperature className="mb-2" size={35} stroke={1.5} strokeLinejoin="miter" />
+                            {metar.temperature.celsius.toFixed(0)} &deg; C
                         </div>
-                        <div>
-                            <span className="big">
-                                <IconDroplet size={45} stroke={1.5} strokeLinejoin="miter" />
-                            </span><br />{metar.dewpoint.celsius.toFixed(0)}<IconPoint size={20} stroke={1.5} strokeLinejoin="miter" />
-                            <span className="unit">C</span>
+                        <div className="text-lg">
+                            <IconDroplet className="mb-2" size={35} stroke={1.5} strokeLinejoin="miter" />
+                            {metar.dewpoint.celsius.toFixed(0)} &deg; C
                         </div>
                     </div>
-                }
-                <div className="icao-ident">
-                    <div className="icao-update">
-                        <IconAccessPoint size={25} stroke={1.5} strokeLinejoin="miter" /> &nbsp; Last Updated {dateFormat(metar.observed.getUTCDate()) + " at " + formatTime(([metar.observed.getUTCHours(), metar.observed.getUTCMinutes()]))}z
-                    </div>
+                </div>
+                <div>
+                    {
+                        <span className="font-mono text-sm">{metar.raw_text !== "" ? metar.raw_text : '----'}</span>
+                    }
                 </div>
                 </>
             }

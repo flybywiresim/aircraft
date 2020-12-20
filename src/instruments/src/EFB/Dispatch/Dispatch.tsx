@@ -41,11 +41,11 @@ type DispatchProps = {
     taxiOutTime: number
 };
 
-type LoadsheetWidgetState = {
+type LoadsheetState = {
     unitConversion: number;
 };
 
-const LoadsheetWidget = (props: DispatchProps) => {
+const Loadsheet = (props: DispatchProps) => {
 
     const [unitConversion, setunitConversion] = useState(1000);
 
@@ -56,149 +56,150 @@ const LoadsheetWidget = (props: DispatchProps) => {
     }, [props.units]);
 
     return (
-        <div className="dispatch">
-            <div>
-                <span className="title">Dispatch Loadsheet</span>
+        <div className="p-6">
+            <div className="mb-6 text-base">
+                <span className="text-white">Dispatch</span>
             </div>
-            <div className='loadsheet-card' id="loadsheet-payload-card">
-                <div className='loadsheet-card-body'>
-                    <div className="loadsheet-table">
-                        <table className="mono">
-                            <thead>
+            <div className="flex w-full">
+                <div className="w-1/2">
+                    <div className="bg-gray-800 rounded-xl p-6 text-white shadow-lg">
+                        <div className="text-lg p-2 rounded-lg flex items-center justify-center mb-8">
+                            -- Loadsheet [Payload] --
+                        </div>
+                        <table className="table-auto font-mono mx-8 my-6">
+                            <thead className="text-xl">
                                 <tr>
-                                    <th scope="col" className="ls-col col-desc col-left">&nbsp;</th>
-                                    <th scope="col" className="ls-col col-value col-right">EST</th>
-                                    <th scope="col" className="ls-col col-value col-right">MAX</th>
-                                    <th scope="col" className="ls-col col-notes col-left">NOTES</th>
+                                    <th className="text-left">&nbsp;</th>
+                                    <th className="px-12 text-right">EST</th>
+                                    <th className="px-12 text-right">MAX</th>
+                                    <th className="px-12 text-right">NOTES</th>
                                 </tr>
                             </thead>
+                            <div className="h-6"></div>
                             <tbody>
                                 <tr>
-                                    <td className="ls-col col-desc col-left">PAX</td>
-                                    <td className="col-right">{props.weights.passengerCount}</td>
-                                    <td className="ls-col col-notes col-left">&nbsp;</td>
+                                    <td className="text-left"> -- PAX</td>
+                                    <td className="px-12 text-right">{props.weights.passengerCount}</td>
+                                    <td>&nbsp;</td>
+                                    <td className="px-12 text-right">&nbsp;</td>
                                 </tr>
                                 <tr>
-                                    <td className="ls-col col-desc col-left">CARGO</td>
-                                    <td className="col-right">{(props.weights.cargo / unitConversion).toFixed(1)}</td>
-                                    <td className="ls-col col-notes col-left">&nbsp;</td>
+                                    <td className="text-left"> -- CARGO</td>
+                                    <td className="px-12 text-right">{(props.weights.cargo / unitConversion).toFixed(1)}</td>
+                                    <td>&nbsp;</td>
+                                    <td className="px-12 text-right">&nbsp;</td>
                                 </tr>
                                 <tr>
-                                    <td className="ls-col col-desc col-left">PAYLOAD</td>
-                                    <td className="ls-col col-value col-right">{(props.weights.payload / unitConversion).toFixed(1)}</td>
-                                    <td className="ls-col col-notes col-left">&nbsp;</td>
+                                    <td className="text-left"> -- PAYLOAD</td>
+                                    <td className="px-12 text-right">{(props.weights.payload / unitConversion).toFixed(1)}</td>
+                                    <td>&nbsp;</td>
+                                    <td className="px-12 text-right">&nbsp;</td>
                                 </tr>
                                 <tr>
-                                    <td>ZFW</td>
-                                    <td className="ls-col col-value col-right">{(props.weights.estZeroFuelWeight / unitConversion).toFixed(1)}</td>
-                                    <td className="ls-col col-value col-right">{(props.weights.maxZeroFuelWeight / unitConversion).toFixed(1)}</td>
-                                    <td className="ls-col col-notes col-left">&nbsp;</td>
+                                    <td className="text-left"> -- ZFW</td>
+                                    <td className="px-12 text-right">{(props.weights.estZeroFuelWeight / unitConversion).toFixed(1)}</td>
+                                    <td className="px-12 text-right">{(props.weights.maxZeroFuelWeight / unitConversion).toFixed(1)}</td>
+                                    <td className="px-12 text-right">&nbsp;</td>
                                 </tr>
                                 <tr>
-                                    <td className="ls-col col-desc col-left">FUEL</td>
-                                    <td className="ls-col col-value col-right">{(props.fuels.planRamp / unitConversion).toFixed(1)}</td>
-                                    <td className="ls-col col-value col-right">????</td>
-                                    <td className="ls-col col-notes col-left"></td>
+                                    <td className="text-left"> -- FUEL</td>
+                                    <td className="px-12 text-right">{(props.fuels.planRamp / unitConversion).toFixed(1)}</td>
+                                    <td className="px-12 text-right">????</td>
+                                    <td className="px-12 text-right"></td>
                                 </tr>
                                 <tr>
-                                    <td className="ls-col col-desc col-left">TOW</td>
-                                    <td className="ls-col col-value col-right">{(props.weights.estTakeOffWeight / unitConversion).toFixed(1)}</td>
-                                    <td className="ls-col col-value col-right">{(props.weights.maxTakeOffWeight / unitConversion).toFixed(1)}</td>
-                                    <td className="ls-col col-notes col-left">&nbsp;</td>
+                                    <td className="text-left"> -- TOW</td>
+                                    <td className="px-12 text-right">{(props.weights.estTakeOffWeight / unitConversion).toFixed(1)}</td>
+                                    <td className="px-12 text-right">{(props.weights.maxTakeOffWeight / unitConversion).toFixed(1)}</td>
+                                    <td className="px-12 text-right">&nbsp;</td>
                                 </tr>
                                 <tr>
-                                    <td className="ls-col col-desc col-left">LAW</td>
-                                    <td className="col-right">{(props.weights.estLandingWeight / unitConversion).toFixed(1)}</td>
-                                    <td className="col-right">{(props.weights.maxLandingWeight / unitConversion).toFixed(1)}</td>
-                                    <td className="ls-col col-notes col-left">&nbsp;</td>
+                                    <td className="text-left"> -- LAW</td>
+                                    <td className="px-12 text-right">{(props.weights.estLandingWeight / unitConversion).toFixed(1)}</td>
+                                    <td className="px-12 text-right">{(props.weights.maxLandingWeight / unitConversion).toFixed(1)}</td>
+                                    <td className="px-12 text-right">&nbsp;</td>
                                 </tr>
                             </tbody>
                         </table>
                     </div>
                 </div>
-                <div className="loadsheet-card-footer">
-                    <p className="footer-title">LOADSHEET</p>
-                    <p>Payload</p>
-                </div>
-            </div>
-            <div className='loadsheet-card' id="loadsheet-fuel-card">
-                <div className='loadsheet-card-body'>
-                    <div className="loadsheet-table">
-                        <table className="mono">
-                            <thead>
+                <div className="w-1/2 pl-1">
+                    <div className="bg-gray-800 rounded-xl p-6 text-white shadow-lg">
+                        <div className="text-lg p-2 rounded-lg flex items-center justify-center mb-8">
+                            -- Loadsheet [Fuel] --
+                        </div>
+                        <table className="table-auto font-mono mx-8 my-6">
+                            <thead className="text-xl">
                                 <tr>
-                                    <th scope="col" className="ls-col col-fuel-desc col-left">FUEL</th>
-                                    <th scope="col" className="ls-col col-fuel-value col-right">ARPT</th>
-                                    <th scope="col" className="ls-col col-fuel-value col-right">FUEL</th>
-                                    <th scope="col" className="ls-col col-fuel-value col-right">TIME</th>
+                                    <th className="text-left">FUEL</th>
+                                    <th className="px-12 text-right">ARPT</th>
+                                    <th className="px-12 text-right">FUEL</th>
+                                    <th className="px-12 text-right">TIME</th>
                                 </tr>
                             </thead>
+                            <div className="h-6"></div>
                             <tbody>
                                 <tr>
-                                    <td className="ls-col-fuel col-fuel-desc col-left">TRIP</td>
-                                    <td className="ls-col-fuel col-fuel-value col-right">{props.arrivingIata}</td>
-                                    <td className="ls-col-fuel col-fuel-value col-right">{props.fuels.enrouteBurn}</td>
-                                    <td className="ls-col-fuel col-fuel-value col-right">{(props.tripTime / 60).toFixed(0).padStart(4, "0")}</td>
+                                    <td className="text-left">TRIP</td>
+                                    <td className="px-12 text-right">{props.arrivingIata}</td>
+                                    <td className="px-12 text-right">{props.fuels.enrouteBurn}</td>
+                                    <td className="px-12 text-right">{(props.tripTime / 60).toFixed(0).padStart(4, "0")}</td>
                                 </tr>
                                 <tr>
-                                    <td className="ls-col-fuel col-fuel-desc col-left">CONT</td>
-                                    <td className="ls-col-fuel col-fuel-value col-right">&nbsp;</td>
-                                    <td className="ls-col-fuel col-fuel-value col-right">{props.fuels.contingency}</td>
-                                    <td className="ls-col-fuel col-fuel-value col-right">{(props.contFuelTime / 60).toFixed(0).padStart(4, "0")}</td>
+                                    <td className="text-left">CONT</td>
+                                    <td className="px-12 text-right">&nbsp;</td>
+                                    <td className="px-12 text-right">{props.fuels.contingency}</td>
+                                    <td className="px-12 text-right">{(props.contFuelTime / 60).toFixed(0).padStart(4, "0")}</td>
                                 </tr>
                                 <tr>
-                                    <td className="ls-col-fuel col-fuel-desc col-left">ALTN</td>
-                                    <td className="ls-col-fuel col-fuel-value col-right">{props.altIata}</td>
-                                    <td className="ls-col-fuel col-fuel-value col-right">{props.altBurn}</td>
-                                    <td className="ls-col-fuel col-fuel-value col-right">????</td>
+                                    <td className="text-left">ALTN</td>
+                                    <td className="px-12 text-right">{props.altIata}</td>
+                                    <td className="px-12 text-right">{props.altBurn}</td>
+                                    <td className="px-12 text-right">????</td>
                                 </tr>
                                 <tr>
-                                    <td className="ls-col-fuel col-fuel-desc col-left">FINRES</td>
-                                    <td className="ls-col-fuel col-fuel-value col-right">&nbsp;</td>
-                                    <td className="ls-col-fuel col-value col-right">{props.fuels.reserve}</td>
-                                    <td className="ls-col-fuel col-fuel-value col-right">????</td>
+                                    <td className="text-left">FINRES</td>
+                                    <td className="px-12 text-right">&nbsp;</td>
+                                    <td className="px-12 text-right">{props.fuels.reserve}</td>
+                                    <td className="px-12 text-right">????</td>
                                 </tr>
                                 <tr>
-                                    <td className="ls-col-fuel col-fuel-desc col-left">MIN T/OFF FUEL</td>
-                                    <td className="ls-col-fuel col-fuel-value col-right">&nbsp;</td>
-                                    <td className="ls-col-fuel col-fuel-value col-right">{props.fuels.minTakeOff}</td>
-                                    <td className="ls-col-fuel col-fuel-value col-right">????</td>
+                                    <td className="text-left">MIN T/OFF FUEL</td>
+                                    <td className="px-12 text-right">&nbsp;</td>
+                                    <td className="px-12 text-right">{props.fuels.minTakeOff}</td>
+                                    <td className="px-12 text-right">????</td>
                                 </tr>
                                 <tr>
-                                    <td className="ls-col-fuel col-fuel-desc col-left">EXTRA</td>
-                                    <td className="ls-col-fuel col-fuel-value col-right">&nbsp;</td>
-                                    <td className="ls-col-fuel col-fuel-value col-right">{props.fuels.extra}</td>
-                                    <td className="ls-col-fuel col-fuel-value col-right">????</td>
+                                    <td className="text-left">EXTRA</td>
+                                    <td className="px-12 text-right">&nbsp;</td>
+                                    <td className="px-12 text-right">{props.fuels.extra}</td>
+                                    <td className="px-12 text-right">????</td>
                                 </tr>
                                 <tr>
-                                    <td className="ls-col-fuel col-fuel-desc col-left">T/OFF FUEL</td>
-                                    <td className="ls-col-fuel col-fuel-value col-right">&nbsp;</td>
-                                    <td className="ls-col-fuel col-fuel-value col-right">{props.fuels.planTakeOff}</td>
-                                    <td className="ls-col-fuel col-fuel-value col-right">????</td>
+                                    <td className="text-left">T/OFF FUEL</td>
+                                    <td className="px-12 text-right">&nbsp;</td>
+                                    <td className="px-12 text-right">{props.fuels.planTakeOff}</td>
+                                    <td className="px-12 text-right">????</td>
                                 </tr>
                                 <tr>
-                                    <td className="ls-col-fuel col-fuel-desc col-left">TAXI</td>
-                                    <td className="ls-col-fuel col-fuel-value col-right">{props.departingIata}</td>
-                                    <td className="ls-col-fuel col-fuel-value col-right">{props.fuels.taxi}</td>
-                                    <td className="ls-col-fuel col-fuel-value col-right">{(props.taxiOutTime / 60).toFixed(0).padStart(4, "0")}</td>
+                                    <td className="text-left">TAXI</td>
+                                    <td className="px-12 text-right">{props.departingIata}</td>
+                                    <td className="px-12 text-right">{props.fuels.taxi}</td>
+                                    <td className="px-12 text-right">{(props.taxiOutTime / 60).toFixed(0).padStart(4, "0")}</td>
                                 </tr>
                                 <tr>
-                                    <td className="ls-col-fuel ls-col col-fuel-desc col-left">BLOCK FUEL</td>
-                                    <td className="ls-col-fuel col-fuel-value col-right">{props.departingIata}</td>
-                                    <td className="ls-col-fuel col-fuel-value col-right">{props.fuels.planRamp}</td>
-                                    <td className="ls-col-fuel col-fuel-value col-right">&nbsp;</td>
+                                    <td className="text-left">BLOCK FUEL</td>
+                                    <td className="px-12 text-right">{props.departingIata}</td>
+                                    <td className="px-12 text-right">{props.fuels.planRamp}</td>
+                                    <td className="px-12 text-right">&nbsp;</td>
                                 </tr>
                             </tbody>
                         </table>
                     </div>
-                </div>
-                <div className='loadsheet-card-footer'>
-                    <p className="footer-title">LOADSHEET</p>
-                    <p>Fuel</p>
                 </div>
             </div>
         </div>
     );
 };
 
-export default LoadsheetWidget;
+export default Loadsheet;
