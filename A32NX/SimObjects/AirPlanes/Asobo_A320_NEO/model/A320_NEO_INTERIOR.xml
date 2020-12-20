@@ -2231,7 +2231,7 @@
                 <UseTemplate Name="FBW_Airbus_Wiper_Knob">
                     <NODE_ID>HANDLING_Switch_Wiper_right</NODE_ID>
                     <ANIM_NAME>HANDLING_Switch_Wiper_right</ANIM_NAME>
-                    <CIRCUIT_ID_WIPERS>81</CIRCUIT_ID_WIPERS>
+                    <CIRCUIT_ID_WIPERS>80</CIRCUIT_ID_WIPERS>
                     <ANIMTIP_0>Set right wiper to OFF</ANIMTIP_0>
                     <ANIMTIP_1>Set right wiper to SLOW</ANIMTIP_1>
                     <ANIMTIP_2>Set right wiper to FAST</ANIMTIP_2>
