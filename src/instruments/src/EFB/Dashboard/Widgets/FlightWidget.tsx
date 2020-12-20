@@ -73,10 +73,10 @@ const FlightWidget = (props: FlightWidgetProps) => {
 
                 <div className="text-sm">
                     <button onClick={() => props.fetchSimbrief()} className="w-full bg-blue-500 p-2 text-white flex items-center justify-center rounded-lg mb-2 focus:outline-none">
-                        FRM SIMBRIEF
+                        FROM SIMBRIEF
                     </button>
                     <button className="w-full bg-green-500 p-2 text-white flex items-center justify-center rounded-lg focus:outline-none">
-                        LNK MCDU
+                        MCDU LINK
                     </button>
                 </div>
             </div>
