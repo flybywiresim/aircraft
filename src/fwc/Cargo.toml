@@ -1,0 +1,14 @@
+[package]
+name = "nvg_demo"
+version = "0.1.0"
+authors = ["Gus Caplan <me@gus.host>"]
+edition = "2018"
+
+[lib]
+crate-type = ["cdylib"]
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+msfs = "0.0.1-alpha.2"
+

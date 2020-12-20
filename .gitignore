@@ -25,3 +25,7 @@
 .DS_Store
 node_modules
 /src/sound/.cache
+/src/fwc/target
+/**/*.wasm
+/**/Cargo.lock
+/target
