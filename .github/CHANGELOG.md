@@ -5,7 +5,7 @@
 <!--  1. [Changed Area] Title of changes - @github username (Name)  -->
 
 ## 0.6.0
-1.
+1. [CDU] Allow SimBrief user IDs as well as usernames - @pareil6 - (pareil6)
 1. [MFD] Flight route is now hidden in VOR ROSE and ILS ROSE modes @2hwk (2Cas#1022)
 
 ## 0.5.0

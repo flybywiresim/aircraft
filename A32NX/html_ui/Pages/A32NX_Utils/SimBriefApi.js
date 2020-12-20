@@ -1,10 +1,15 @@
 class SimBriefApi {
-    static getSimBriefOfp(username) {
-        if (!username) {
-            throw ("No SimBrief username provided");
+    static getSimBriefOfp(username, userId) {
+        let apiUrl;
+        if (username) {
+            apiUrl = `${SimBriefApi.url}&username=${username}`;
+        } else if (userId) {
+            apiUrl = `${SimBriefApi.url}&userid=${userId}`;
+        } else {
+            throw ("No SimBrief username/user ID provided");
         }
 
-        return fetch(`${SimBriefApi.url}&username=${username}`)
+        return fetch(apiUrl)
             .then((response) => {
                 if (!response.ok) {
                     throw (response);
