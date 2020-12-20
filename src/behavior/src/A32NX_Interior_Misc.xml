@@ -176,41 +176,46 @@
                 <False>
                     <UseTemplate Name="ASOBO_GT_Update">
                         <FREQUENCY>1</FREQUENCY>
-                        <UPDATE_CODE>
-                        (A:AUTO BRAKE SWITCH CB, Number) 4 == (A:SIM ON GROUND, Bool) and if{
-                            3 (&gt;L:XMLVAR_Autobrakes_Level)
-                        }
+                        <UPDATE_CODE type="rnp">
+                            alias onGround = (A:SIM ON GROUND, bool);
+                            alias autobrakesLevel = (L:XMLVAR_Autobrakes_Level, number);
+                            alias lgUpWaitCounter = (L:A32NX_LG_UP_WAIT_COUNTER, number);
+                            alias onGroundWaitCounter = (L:A32NX_ON_GROUND_WAIT_COUNTER, number);
+                            alias disarmAutobrakesOnLgRetract = (L:A32NX_DISARM_AUTOBRAKES_ON_LG_RETRACT, bool);
+                            alias autobrakesActivated = (L:A32NX_AUTOBRAKES_ACTIVATED, bool);
 
-                        (L:XMLVAR_Autobrakes_Level) 0 != if{
-                            (L:A32NX_DISARM_AUTOBRAKES_ON_LG_RETRACT) (A:GEAR HANDLE POSITION, Bool) ! and if{
-                                 30 (L:A32NX_LG_UP_WAIT_COUNTER) == if{
-                                     0 (&gt;L:XMLVAR_Autobrakes_Level)
-                                     0 (&gt;L:A32NX_DISARM_AUTOBRAKES_ON_LG_RETRACT)
-                                     0 == (L:A32NX_LG_UP_WAIT_COUNTER)
-                                 } els{
-                                    (L:A32NX_LG_UP_WAIT_COUNTER) 1 + (&gt;L:A32NX_LG_UP_WAIT_COUNTER)
-                                }
+                            if onGround and (A:AUTO BRAKE SWITCH CB, number) == 4 {
+                                autobrakesLevel = 3;
                             }
 
-                            (A:SIM ON GROUND, Bool) if{
-                                1 (&gt;L:A32NX_DISARM_AUTOBRAKES_ON_LG_RETRACT)
-                                30 (L:A32NX_ON_GROUND_WAIT_COUNTER) == if{
-                                    (A:AUTOBRAKES ACTIVE, Bool) if{
-                                        1 (&gt;L:A32NX_AUTOBRAKES_ACTIVATED)
+                            if autobrakesLevel != 0 {
+                                if disarmAutobrakesOnLgRetract and !(A:GEAR HANDLE POSITION, bool) {
+                                    if lgUpWaitCounter == 30 {
+                                        autobrakesLevel = 0;
+                                        disarmAutobrakesOnLgRetract = false;
+                                        lgUpWaitCounter = 0;
+                                    } else {
+                                        lgUpWaitCounter += 1;
                                     }
-
-                                    (L:A32NX_AUTOBRAKES_ACTIVATED) (A:AUTOBRAKES ACTIVE, Bool) ! and if{
-                                        0 (&gt;L:XMLVAR_Autobrakes_Level)
-                                        0 (&gt;L:A32NX_AUTOBRAKES_ACTIVATED)
-                                        0 (&gt;A32NX_ON_GROUND_WAIT_COUNTER)
-                                    }
-                                } els{
-                                    (L:A32NX_ON_GROUND_WAIT_COUNTER) 1 + (&gt;L:A32NX_ON_GROUND_WAIT_COUNTER)
                                 }
-                            } els{
-                                0 (&gt;A32NX_ON_GROUND_WAIT_COUNTER)
+
+                                if onGround {
+                                    disarmAutobrakesOnLgRetract = true;
+                                    if onGroundWaitCounter == 30 {
+                                        if (A:AUTOBRAKES ACTIVE, bool) {
+                                            autobrakesActivated = true;
+                                        } else {
+                                            autobrakesLevel = 0;
+                                            autobrakesActivated = false;
+                                            onGroundWaitCounter = 0;
+                                        }
+                                    } else {
+                                        onGroundWaitCounter += 1;
+                                    }
+                                } else {
+                                    onGroundWaitCounter = 0;
+                                }
                             }
-                        }
                         </UPDATE_CODE>
                     </UseTemplate>
                 </False>
