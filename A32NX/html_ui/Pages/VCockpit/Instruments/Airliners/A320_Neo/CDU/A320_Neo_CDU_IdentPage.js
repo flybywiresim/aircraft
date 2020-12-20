@@ -5,7 +5,7 @@ class CDUIdentPage {
         mcdu.page.Current = mcdu.page.IdentPage;
         mcdu.activeSystem = 'FMGC';
         mcdu.setTemplate([
-            ["A320-251N"],
+            ["A320-200"],
             ["\xa0ENG"],
             ["LEAP 1A-26[color]green"],
             ["\xa0ACTIVE NAV DATA BASE"],
