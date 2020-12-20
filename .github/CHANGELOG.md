@@ -6,6 +6,7 @@
 
 ## 0.6.0
 1. [CDU] Allow SimBrief user IDs as well as usernames - @pareil6 - (pareil6)
+1. [CDU] Fix incorrect block time display on INIT/REVIEW - @pareil6 - (pareil6)
 1. [ECAM] Improved PACKS indication - @MisterChocker (Leon)
 
 ## 0.5.0
@@ -144,6 +145,7 @@
 1. [MFD] Corrected icon for the Decel point on flightplan - @LoungeFlyZ (Chris Johnson)
 1. [ND] Update ND to only show Mode Changed when mode button is used - @ilyeshammadi (Ilyes Hammadi)
 1. [TCAS] Implement first iteration of TCAS - @lukecologne (luke)
+1. [CDU] Arrival and departure page fixes and updated Honeywell-style design - @saintwolf (John Good)
 1. [ECAM] Temporary fix small word on lower ecam, status page - @Kimbyeongjang (김병장#7165)
 1. [ECAM] Add icing-related ECAM warnings and memos - @beheh (Benedict Etzel)
 1. [CDU] Fix CLR position in scratchpad - @beheh (Benedict Etzel)
