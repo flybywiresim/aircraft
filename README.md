@@ -133,6 +133,6 @@ A: No, it is a completely free aircraft, open-source.
 
 A: Report bugs to us in the [Discord server](https://discord.gg/flybywire), under the #help channel, or by creating a GitHub issue. Just make sure to search for existing issues first before creating a new one.
 
-**Q: Why is my version now the same as what I see others using?**
+**Q: Why is my version not the same as what I see others using?**
 
 A: We have two versions, the Stable and Developer (Master). The Stable version is a 'snapshot' of the development which we regard as stable with the current version of the simulator. The Developer build is updated daily and is a constant work in progress and although we test thoroughly each update, minor issues may occur from time to time. If you find this to be the case, you can report these issues in #help in discord or via GitHub Issues (Check there is not an existing issue of the same nature as yours).
