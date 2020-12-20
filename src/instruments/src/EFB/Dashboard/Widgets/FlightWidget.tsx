@@ -57,13 +57,13 @@ const FlightWidget = (props: FlightWidgetProps) => {
                         <div className="flex justify-end">
                             STD <IconPlaneDeparture className="ml-2" size={23} stroke={1.5} strokeLinejoin="miter" />
                         </div>
-                        <div className="text-right mt-1">{props.std}z</div>
+                        <div className="text-right mt-1">{props.std}</div>
                     </div>
                     <div className="w-1/2 ml-4">
                         <div className="flex justify-start">
                             <IconPlaneArrival className="mr-2" size={23} stroke={1.5} strokeLinejoin="miter" /> STA
                         </div>
-                        <div className="text-left mt-1">{props.sta}z</div>
+                        <div className="text-left mt-1">{props.sta}</div>
                     </div>
                 </div>
 

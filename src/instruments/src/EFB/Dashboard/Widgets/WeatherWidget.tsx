@@ -18,7 +18,6 @@
 
 import React, { useEffect, useState } from 'react';
 import metarParser from 'aewx-metar-parser';
-import { formatTime, dateFormat} from "../../StatusBar/StatusBar";
 import { Metar } from '@flybywiresim/api-client';
 import { IconWind } from '@tabler/icons';
 import { IconGauge } from '@tabler/icons';
@@ -239,19 +238,27 @@ const WeatherWidget = (props: WeatherWidgetProps) => {
                     <div className="grid grid-cols-2 gap-3">
                         <div className="flextext-lg">
                             <IconGauge className="mb-2" size={35} stroke={1.5} strokeLinejoin="miter" />
-                            {metar.barometer.mb.toFixed(0)} mb
+                            <div className="flex items-center">
+                                {metar.barometer.mb.toFixed(0)}mb
+                            </div>
                         </div>
                         <div className="text-lg">
                             <IconWind className="mb-2" size={35} stroke={1.5} strokeLinejoin="miter" />
-                            {metar.wind.degrees.toFixed(0)}&deg; / {metar.wind.speed_kts.toFixed(0)} kts
+                            <div className="flex">
+                                {metar.wind.degrees.toFixed(0)}<IconPoint size={20} stroke={1.5} strokeLinejoin="miter" />/{metar.wind.speed_kts.toFixed(0)} kts
+                            </div>
                         </div>
-                        <div className="text-lg">
+                        <div className="text-lg mt-3">
                             <IconTemperature className="mb-2" size={35} stroke={1.5} strokeLinejoin="miter" />
-                            {metar.temperature.celsius.toFixed(0)} &deg; C
+                            <div className="flex">
+                                {metar.temperature.celsius.toFixed(0)}<IconPoint size={20} stroke={1.5} strokeLinejoin="miter" />C
+                            </div>
                         </div>
-                        <div className="text-lg">
+                        <div className="text-lg mt-3">
                             <IconDroplet className="mb-2" size={35} stroke={1.5} strokeLinejoin="miter" />
-                            {metar.dewpoint.celsius.toFixed(0)} &deg; C
+                            <div className="flex">
+                                {metar.dewpoint.celsius.toFixed(0)}<IconPoint size={20} stroke={1.5} strokeLinejoin="miter" />C
+                            </div>
                         </div>
                     </div>
                 </div>

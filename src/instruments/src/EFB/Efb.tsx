@@ -262,7 +262,7 @@ class Efb extends React.Component<EfbProps, EfbState> {
 
     render() {
         return (
-            <div>
+            <div className="font-body">
                 <StatusBar initTime={this.state.initTime} updateCurrentTime={this.updateCurrentTime} updateTimeSinceStart={this.updateTimeSinceStart} />
                 <ToolBar setPageIndex={(index) => this.setState({ currentPageIndex: index })} logo={this.props.logo} />
                 <div>
