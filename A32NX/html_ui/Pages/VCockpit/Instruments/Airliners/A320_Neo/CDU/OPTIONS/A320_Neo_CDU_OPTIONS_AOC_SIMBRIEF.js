@@ -4,26 +4,26 @@ class CDU_OPTIONS_SIMBRIEF {
 
         const simbriefUsername = NXDataStore.get("CONFIG_SIMBRIEF_USERNAME", "").replace(/_/g, ' ');
 
-        const simbriefUsernameString = simbriefUsername ? simbriefUsername : "[ ]";
+        const simbriefUsernameString = simbriefUsername ? `{green}[${simbriefUsername}]{end}` : "{cyan}*[\xa0\xa0\xa0\xa0\xa0]{end}";
 
         const simbriefUserId = NXDataStore.get("CONFIG_SIMBRIEF_USERID", "");
 
-        const simbriefUserIdString = simbriefUserId ? simbriefUserId : "[ ]";
+        const simbriefUserIdString = simbriefUserId ? `{green}[${simbriefUserId}]{end}` : "{cyan}*[\xa0\xa0\xa0\xa0\xa0]{end}";
 
         mcdu.setTemplate([
             ["A32NX OPTIONS AOC"],
             ["", "", "SIMBRIEF PROFILE"],
             [""],
-            ["USERNAME"],
-            [`${simbriefUsernameString}[color]blue`],
-            ["USER ID"],
-            [`${simbriefUserIdString}[color]blue`],
+            ["\xa0USERNAME"],
+            [simbriefUsernameString],
+            ["\xa0USER ID"],
+            [simbriefUserIdString],
             [""],
             [""],
             [""],
             [""],
             [""],
-            ["<RETURN[color]blue"]
+            ["<RETURN"]
         ]);
 
         mcdu.leftInputDelay[1] = () => {

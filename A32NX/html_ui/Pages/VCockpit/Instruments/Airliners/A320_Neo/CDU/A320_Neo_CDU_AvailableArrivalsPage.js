@@ -64,7 +64,7 @@ class CDUAvailableArrivalsPage {
                                 runwayCourse = Utils.leadingZeros(Math.round((runway.direction)), 3);
                             }
                         }
-                        rows[2 * i] = ["{" + Avionics.Utils.formatRunway(approach.name) + "[color]cyan", "", "{sp}{sp}{sp}{sp}" + runwayLength + "{small}M{end}[color]cyan"];
+                        rows[2 * i] = ["{" + Avionics.Utils.formatRunway(approach.name.replace(/\s+/g, '')) + "[color]cyan", "", "{sp}{sp}{sp}{sp}" + runwayLength + "{small}M{end}[color]cyan"];
                         rows[2 * i + 1] = ["{sp}{sp}{sp}{sp}" + runwayCourse + "[color]cyan"];
                         mcdu.onLeftInput[i + 2] = () => {
                             mcdu.setApproachIndex(approach.index, () => {
@@ -103,10 +103,10 @@ class CDUAvailableArrivalsPage {
                 for (let i = 0; i < 3; i++) {
                     let index = i + pageCurrent;
                     if (index === 0) {
-                        const color = "cyan";
-                        // if (!selectedArrival) {
-                        //     color = "green";
-                        // }
+                        let color = "cyan";
+                        if (!selectedArrival) {
+                            color = "green";
+                        }
                         rows[2 * i] = ["{NO STAR[color]" + color];
                         mcdu.onLeftInput[i + 2] = () => {
                             mcdu.setArrivalProcIndex(-1, () => {
