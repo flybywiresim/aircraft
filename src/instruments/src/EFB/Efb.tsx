@@ -59,7 +59,8 @@ type EfbState = {
     schedIn: string,
     airline: string,
     flightNum: string,
-    aircraftReg: string
+    aircraftReg: string,
+    route: string
 };
 
 document.body.classList.add('darkMode');
@@ -82,7 +83,8 @@ class Efb extends React.Component<EfbProps, EfbState> {
         arrivingIata: '---',
         aircraftReg: '-----',
         simbriefUsername: this.fetchSimbriefUsername(),
-        flightDistance: 'N/A',
+        flightDistance: '---NM',
+        route: '---------------------',
         flightETAInSeconds: 'N/A',
         currentTime: new Date(),
         initTime: new Date(),
@@ -160,6 +162,7 @@ class Efb extends React.Component<EfbProps, EfbState> {
             aircraftReg:         simbriefData.aircraftReg,
             flightDistance:      simbriefData.distance,
             flightETAInSeconds:  simbriefData.flightETAInSeconds,
+            route:               simbriefData.route,
             weights: {
                 cargo:              simbriefData.weights.cargo,
                 estLandingWeight:   simbriefData.weights.estLandingWeight,
@@ -254,6 +257,9 @@ class Efb extends React.Component<EfbProps, EfbState> {
                     flightDistance={this.state.flightDistance}
                     flightETAInSeconds={this.state.flightETAInSeconds}
                     timeSinceStart={this.state.timeSinceStart}
+                    route={this.state.route}
+                    depIata={this.state.departingIata}
+                    arrIata={this.state.arrivingIata}
                     schedIn={schedInParsed}
                     schedOut={schedOutParsed}
                 />;

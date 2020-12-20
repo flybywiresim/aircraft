@@ -27,13 +27,16 @@ type DashboardProps = {
     flightNum: string,
     aircraftReg: string,
     departingAirport: string,
+    depIata: string,
     arrivingAirport: string,
+    arrIata: string,
     flightDistance: string,
     flightETAInSeconds: string,
     timeSinceStart: string,
     schedOut: string,
     schedIn: string,
-    fetchSimbrief: Function
+    fetchSimbrief: Function,
+    route: string
 }
 
 type DashboardState = {}
@@ -66,8 +69,10 @@ class Dashboard extends React.Component<DashboardProps, DashboardState> {
                         flightNum={this.props.flightNum}
                         aircraftReg={this.props.aircraftReg}
                         dep={this.props.departingAirport}
+                        depIata={this.props.depIata}
+                        arrIata={this.props.arrIata}
                         arr={this.props.arrivingAirport}
-                        elapsedTime="00:49"
+                        route={this.props.route}
                         distance={this.props.flightDistance}
                         eta={this.calculateFlightTime(this.props.flightETAInSeconds)}
                         timeSinceStart={this.props.timeSinceStart}

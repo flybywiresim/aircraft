@@ -27,14 +27,16 @@ type FlightWidgetProps = {
     flightNum: string,
     aircraftReg: string,
     dep: string,
+    depIata: string,
     arr: string,
+    arrIata: string,
     std: string,
     sta: string,
-    elapsedTime: string,
     distance: string,
     eta: string,
     timeSinceStart: string,
-    fetchSimbrief: Function
+    fetchSimbrief: Function,
+    route: string
 }
 
 const FlightWidget = (props: FlightWidgetProps) => {
@@ -47,9 +49,9 @@ const FlightWidget = (props: FlightWidgetProps) => {
                 </div>
 
                 <div className="flex items-center justify-center mb-6 text-base">
-                    [BOM] <span className="mx-3 text-3xl">{props.dep}</span>
+                    [{props.depIata}] <span className="mx-3 text-3xl">{props.dep}</span>
                     <IconPlane size={35} stroke={1.5} strokeLinejoin="miter" />
-                    <span className="mx-3 text-3xl">{props.arr}</span> [DEL]
+                    <span className="mx-3 text-3xl">{props.arr}</span> [{props.arrIata}]
                 </div>
 
                 <div className="flex mb-6">
@@ -67,8 +69,8 @@ const FlightWidget = (props: FlightWidgetProps) => {
                     </div>
                 </div>
 
-                <div className="flex justify-center text-center font-mono mb-6 max-w-md text-sm">
-                    AKRIB Q23 INTIL W19 IKAVA Q23 IBANI W19 BPL W20 HIA W71 LURGI Q21 TELUV [{props.distance}]
+                <div className="flex justify-center text-center font-mono mb-6 max-w-md text-sm uppercase">
+                    {props.route} [{props.distance}]
                 </div>
 
                 <div className="text-sm">
