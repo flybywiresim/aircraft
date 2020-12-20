@@ -5,6 +5,7 @@
 <!--  1. [Changed Area] Title of changes - @github username (Name)  -->
 
 ## 0.6.0
+1. [CDU] Allow SimBrief user IDs as well as usernames - @pareil6 - (pareil6)
 1. [PFD] Added auto brake status to FMA - @MisterChocker - (Leon)
 
 ## 0.5.0
