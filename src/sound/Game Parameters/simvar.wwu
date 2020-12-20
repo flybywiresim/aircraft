@@ -1403,6 +1403,12 @@ Unit : Percent</Comment>
 								</GameParameter>
 							</ChildrenList>
 						</Folder>
+						<GameParameter Name="SIMVAR_INTERACTIVE_POINT_OPEN" ID="{BC986C77-83A7-42D4-B9D4-76D4C9092E7D}">
+							<PropertyList>
+								<Property Name="InitialValue" Type="Real64" Value="1"/>
+								<Property Name="Max" Type="Real64" Value="1"/>
+							</PropertyList>
+						</GameParameter>
 					</ChildrenList>
 				</Folder>
 			</ChildrenList>
