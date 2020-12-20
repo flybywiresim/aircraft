@@ -2,6 +2,7 @@ class A320_Neo_MFD extends BaseAirliners {
     constructor() {
         super();
         this.initDuration = 11000;
+        this.showFlightPlan = true;
     }
     get templateID() {
         return "A320_Neo_MFD";
@@ -432,8 +433,10 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
         } else {
             this.map.instrument.tmpDirectToElement = undefined;
         }
-        this.map.updateTopOfDescent();
-        this.map.updateTopOfClimb();
+        if (this.showFlightPlan) {
+            this.map.updateTopOfDescent();
+            this.map.updateTopOfClimb();
+        }
     }
     // The BingMap is used by the A320 to render terrain and weather,
     // but it also renders airports, which the real A320 does not.
@@ -449,16 +452,32 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
     }
     // Show/Hide the route
     setFlightPlanVisibility(flightPlan) {
-        this.map.instrument.attributeChangedCallback("show-flightplan", null, flightPlan ? "true" : "false");
+        if (flightPlan != this.showFlightPlan) {
+            this.showFlightPlan = flightPlan;
+            this.map.instrument.attributeChangedCallback("show-flightplan", null, flightPlan ? "true" : "false");
+            if (!flightPlan) {
+                this.map.instrument.showConstraints = false;
+                this.map.removeTopOf();
+            } else {
+                const active = SimVar.GetSimVarValue("L:BTN_CSTR_" + this.screenIndex + "_FILTER_ACTIVE", "number");
+                console.log(active);
+                if (active) {
+                    this.map.instrument.showConstraints = true;
+                }
+            }
+        }
     }
+
     onEvent(_event) {
         switch (_event) {
             case "BTN_CSTR_" + this.screenIndex:
-                this.map.instrument.showConstraints = !this.map.instrument.showConstraints;
-                this.map.instrument.showIntersections = false;
-                this.map.instrument.showNDBs = false;
-                this.map.instrument.showAirports = false;
-                this.map.instrument.showVORs = false;
+                if (this.showFlightPlan) {
+                    this.map.instrument.showConstraints = !this.map.instrument.showConstraints;
+                    this.map.instrument.showIntersections = false;
+                    this.map.instrument.showNDBs = false;
+                    this.map.instrument.showAirports = false;
+                    this.map.instrument.showVORs = false;
+                }
                 this._updateNDFiltersStatuses();
                 break;
             case "BTN_VORD_" + this.screenIndex:
@@ -622,6 +641,11 @@ class A320_Neo_MFD_Map extends MapInstrumentElement {
             }
         }
     }
+
+    removeTopOf() {
+        this.instrument.topOfCurveElements = [];
+    }
+
     onTemplateLoaded() {
         super.onTemplateLoaded();
         this.compassModeMask = new SvgBottomMaskElement("a320-compass-mask", 0, -30);
