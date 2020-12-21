@@ -9,6 +9,7 @@
 1. [CDU] Fix incorrect block time display on INIT/REVIEW - @pareil6 - (pareil6)
 1. [ECAM] Improved PACKS indication - @MisterChocker (Leon)
 1. [CDU] Improved visuals of CDU Pages - @MisterChocker (Leon)
+1. [CDU] Fix FPLN airways showing as undefined
 
 ## 0.5.0
 1. [FLIGHTMODEL] Reworked AOA table - @donstim - (donbikes#4084)
