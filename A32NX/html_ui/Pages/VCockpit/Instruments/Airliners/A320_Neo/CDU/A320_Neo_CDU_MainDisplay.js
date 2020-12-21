@@ -470,15 +470,29 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     }
 
     /**
+     * General message handler
+     * @param msg {{text, isAmber, isTypeTwo}} Message Object
+     * @param c {function} Function that checks for validity of error message (typeII only)
+     * @param f {function} Function gets executed when error message has been cleared (typeII only)
+     */
+    addNewMessage(msg, c = () => {}, f = () => {
+        return false;
+    }) {
+        if (msg.isTypeTwo) {
+            this._addTypeTwoMessage(msg.text, msg.isAmber, c, f);
+        } else {
+            this._showTypeOneMessage(msg.text, msg.isAmber);
+        }
+    }
+
+    /**
      * Add Type II Message
      * @param message {string} Message to be displayed
      * @param isAmber {boolean} Is color amber
      * @param c {function} Function that checks for validity of error message
      * @param f {function} Function gets executed when error message has been cleared
      */
-    addTypeTwoMessage(message, isAmber = false, c = () => {}, f = () => {
-        return false;
-    }) {
+    _addTypeTwoMessage(message, isAmber, c, f) {
         if (this.checkForMessage(message)) {
             // Before adding message to queue, check other messages in queue for validity
             for (let i = 0; i < this.messageQueue.length; i++) {
