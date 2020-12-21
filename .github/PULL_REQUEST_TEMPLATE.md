@@ -24,6 +24,9 @@ Fixes #[issue_no]
 <!-- You may optionally provide your discord username, so that we may contact you directly about the issue. -->
 Discord username (if different from GitHub):
 
+## Testing instructions
+<!-- Detail how this PR should be tested by QA. Try to list important items that need checking, either directly changed by this PR or that could be affected by it -->
+
 <!-- DO NOT DELETE THIS -->
 ## How to download the PR for QA
 
