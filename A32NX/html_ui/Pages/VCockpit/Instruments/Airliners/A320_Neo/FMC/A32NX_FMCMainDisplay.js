@@ -2,6 +2,7 @@ class FMCMainDisplay extends BaseAirliners {
     constructor() {
         super(...arguments);
         this.defaultInputErrorMessage = "INVALID ENTRY";
+        this.defaultFormatErrorMessage = "FORMAT ERROR";
         this.currentFlightPlanWaypointIndex = -1;
         this._title = undefined;
         this._pageCurrent = undefined;
@@ -548,11 +549,11 @@ class FMCMainDisplay extends BaseAirliners {
                     return false;
                 }
             } else {
-                this.showErrorMessage("FORMAT ERROR");
+                this.defaultFormatErrorMessage;
                 return false;
             }
         }
-        this.showErrorMessage("FORMAT ERROR");
+        this.defaultFormatErrorMessage;
         return false;
     }
 
