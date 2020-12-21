@@ -8,6 +8,7 @@
 1. [CDU] Allow SimBrief user IDs as well as usernames - @pareil6 - (pareil6)
 1. [CDU] Fix incorrect block time display on INIT/REVIEW - @pareil6 - (pareil6)
 1. [ECAM] Improved PACKS indication - @MisterChocker (Leon)
+1. [CDU] Changed MDA and DH to BARO and RADIO in PERF APRR Page - @tareksabet - (Tarek)
 
 ## 0.5.0
 1. [FLIGHTMODEL] Reworked AOA table - @donstim - (donbikes#4084)
