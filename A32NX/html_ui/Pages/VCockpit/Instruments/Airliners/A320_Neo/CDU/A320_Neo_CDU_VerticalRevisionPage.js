@@ -109,7 +109,7 @@ class CDUVerticalRevisionPage {
                         });
                     }
                 } else {
-                    mcdu.showErrorMessage("INVALID ENTRY");
+                    mcdu.addNewMessage(NXSystemMessages.notAllowed);
                 }
             }; // ALT CSTR
             mcdu.onLeftInput[4] = () => {}; // WIND

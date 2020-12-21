@@ -2115,7 +2115,7 @@ class FMCMainDisplay extends BaseAirliners {
                     return callback(true);
                 }
             } else {
-                this.showErrorMessage("ZFW NOT SET");
+                this.addNewMessage(NXSystemMessages.initializeWeightOrCg);
                 return callback(false);
             }
         }

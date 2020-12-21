@@ -11,6 +11,7 @@ const NXSystemMessages = {
     formatError:            {text: "FORMAT ERROR", isAmber: false, isTypeTwo: false},
     gpsPrimary:             {text: "GPS PRIMARY", isAmber: false, isTypeTwo: true},
     gpsPrimaryLost:         {text: "GPS PRIMARY LOST", isAmber: true, isTypeTwo: true},
+    initializeWeightOrCg:   {text: "INITIALIZE WEIGHT/CG", isAmber: true, isTypeTwo: true},
     newCrzAlt:              {text: "NEW CRZ ALT-", isAmber: false, isTypeTwo: true},
     noIntersectionFound:    {text: "NO INTERSECTION FOUND", isAmber: false, isTypeTwo: false},
     notAllowed:             {text: "NOT ALLOWED", isAmber: false, isTypeTwo: false},

@@ -206,9 +206,7 @@ const insertUplink = (mcdu) => {
     const fromTo = `${originIcao}/${destinationIcao}`;
     const fltNbr = `${icao_airline}${flight_number}`;
 
-    const uplinkInProg = "UPLINK INSERT IN PROG";
-
-    mcdu.showErrorMessage(uplinkInProg);
+    mcdu.addNewMessage(NXSystemMessages.uplinkInsertInProg);
 
     /**
      * AOC ACT F-PLN UPLINK
