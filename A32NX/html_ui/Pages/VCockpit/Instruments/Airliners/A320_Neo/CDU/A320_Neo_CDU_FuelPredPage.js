@@ -213,15 +213,15 @@ class CDUFuelPredPage {
 
         mcdu.setTemplate([
             ["FUEL PRED"],
-            ["AT", "EFOB", isFlying ? "UTC" : "TIME"],
+            ["\xa0AT", "EFOB", isFlying ? "UTC" : "TIME"],
             [destIdentCell + "[color]green", destEFOBCell + destEFOBCellColor, destTimeCell + destTimeCellColor],
             [""],
             [altIdentCell + "[color]green", altEFOBCell + altEFOBCellColor, altTimeCell + altTimeCellColor],
             ["RTE RSV/%", "ZFW/ZFWCG"],
             [rteRsvWeightCell + "/" + rteRsvPercentCell + rteRSvCellColor, zfwCell + "/" + zfwCgCell + zfwColor],
-            ["ALTN/TIME", "FOB{sp}{sp}{sp}{sp}{sp}"],
+            ["ALTN\xa0\xa0/TIME", "FOB{sp}{sp}{sp}{sp}{sp}"],
             [altFuelCell + "/" + altFuelTimeCell + altFuelColor, fobCell + "/" + fobOtherCell + "{sp}{sp}" + fobCellColor],
-            ["FINAL/TIME", "GW/{sp}{sp} CG"],
+            ["FINAL\xa0/TIME", "GW/{sp}{sp} CG"],
             [finalFuelCell + "/" + finalTimeCell + finalColor, gwCell + "/  " + cgCell + gwCgCellColor],
             ["MIN DEST FOB", "EXTRA TIME"],
             [minDestFobCell + minDestFobCellColor, extraFuelCell + "/" + extraTimeCell + extraCellColor]
