@@ -22,6 +22,7 @@
 !.gitattributes
 !.prettierrc.json
 !.prettierignore
+!.npmrc
 !manifest-base.json
 .DS_Store
 node_modules
