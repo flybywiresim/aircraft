@@ -10,7 +10,7 @@ class CDUNavaidPage {
 
         mcdu.setTemplate([
             ["NAVAID"],
-            ["IDENT"],
+            ["\xa0IDENT"],
             ["_______[color]amber"],
             [""],
             [""],
@@ -30,9 +30,9 @@ class CDUNavaidPage {
                     mcdu.clearDisplay();
                     mcdu.setTemplate([
                         ["NAVAID"],
-                        ["IDENT"],
+                        ["\xa0IDENT"],
                         [`${value}`],
-                        ["LAT/LONG"],
+                        ["\xa0LAT/LONG"],
                         [`${new LatLong(res.infos.coordinates.lat, res.infos.coordinates.long).toShortDegreeString()}[color]green`],
                         [""],
                         [""],
