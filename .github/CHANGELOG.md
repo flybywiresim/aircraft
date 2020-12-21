@@ -8,6 +8,8 @@
 1. [CDU] Allow SimBrief user IDs as well as usernames - @pareil6 - (pareil6)
 1. [CDU] Fix incorrect block time display on INIT/REVIEW - @pareil6 - (pareil6)
 1. [ECAM] Improved PACKS indication - @MisterChocker (Leon)
+1. [CDU] Add Transition Altitude & Level Options - @Kimbyeongjang (김병장#7165)
+1. [System] Add Transition Layer Logic - @Kimbyeongjang (김병장#7165)
 
 ## 0.5.0
 1. [FLIGHTMODEL] Reworked AOA table - @donstim - (donbikes#4084)
