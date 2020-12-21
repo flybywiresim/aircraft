@@ -17,6 +17,6 @@ const NXSystemMessages = {
     notInDatabase:          {text: "NOT IN DATABASE", isAmber: false, isTypeTwo: false},
     selectDesiredSystem:    {text: "SELECT DESIRED SYSTEM", isAmber: false, isTypeTwo: false},
     uplinkInsertInProg:     {text: "UPLINK INSERT IN PROG", isAmber: false, isTypeTwo: true},
-    toSpeedsDisagree:       {text: "V1/VR/V2 DISAGREE", isAmber: true, isTypeTwo: true},
+    vToDisagree:            {text: "V1/VR/V2 DISAGREE", isAmber: true, isTypeTwo: true},
     waitForSystemResponse:  {text: "WAIT FOR SYSTEM RESPONSE", isAmber: false, isTypeTwo: false},
 };

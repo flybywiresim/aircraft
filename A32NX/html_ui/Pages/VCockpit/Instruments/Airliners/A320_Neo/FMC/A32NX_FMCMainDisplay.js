@@ -670,7 +670,7 @@ class FMCMainDisplay extends BaseAirliners {
             if (this.isMinDestFobInRange(value)) {
                 this._minDestFobEntered = true;
                 if (value < this._minDestFob) {
-                    this.addTypeTwoMessage("CHECK MIN DEST FOB");
+                    this.addNewMessage(NXSystemMessages.checkMinDestFob);
                 }
                 this._minDestFob = value;
                 return true;
@@ -1259,7 +1259,7 @@ class FMCMainDisplay extends BaseAirliners {
                 this.v1Speed = v;
                 SimVar.SetSimVarValue("L:AIRLINER_V1_SPEED", "Knots", this.v1Speed);
                 if ((v > SimVar.GetSimVarValue("L:AIRLINER_VR_SPEED", "Knots") || v > SimVar.GetSimVarValue("L:AIRLINER_V2_SPEED", "Knots")) && SimVar.GetSimVarValue("L:AIRLINER_VR_SPEED", "Knots") !== -1 && SimVar.GetSimVarValue("L:AIRLINER_V2_SPEED", "Knots") !== -1) {
-                    this.addTypeTwoMessage("V1/VR/V2 DISAGREE", true, this.checkVSpeedDisagree);
+                    this.addNewMessage(NXSystemMessages.vToDisagree, this.checkVSpeedDisagree);
                 }
                 return true;
             }
@@ -1281,7 +1281,7 @@ class FMCMainDisplay extends BaseAirliners {
                 this.vRSpeed = v;
                 SimVar.SetSimVarValue("L:AIRLINER_VR_SPEED", "Knots", this.vRSpeed);
                 if ((v < SimVar.GetSimVarValue("L:AIRLINER_V1_SPEED", "Knots") || v > SimVar.GetSimVarValue("L:AIRLINER_V2_SPEED", "Knots")) && SimVar.GetSimVarValue("L:AIRLINER_V1_SPEED", "Knots") !== -1 && SimVar.GetSimVarValue("L:AIRLINER_V2_SPEED", "Knots") !== -1) {
-                    this.addTypeTwoMessage("V1/VR/V2 DISAGREE", true, this.checkVSpeedDisagree);
+                    this.addNewMessage(NXSystemMessages.vToDisagree, this.checkVSpeedDisagree);
                 }
                 return true;
             }
@@ -1303,7 +1303,7 @@ class FMCMainDisplay extends BaseAirliners {
                 this.v2Speed = v;
                 SimVar.SetSimVarValue("L:AIRLINER_V2_SPEED", "Knots", this.v2Speed);
                 if ((v < SimVar.GetSimVarValue("L:AIRLINER_V1_SPEED", "Knots") || v < SimVar.GetSimVarValue("L:AIRLINER_VR_SPEED", "Knots")) && SimVar.GetSimVarValue("L:AIRLINER_V1_SPEED", "Knots") !== -1 && SimVar.GetSimVarValue("L:AIRLINER_VR_SPEED", "Knots") !== -1) {
-                    this.addTypeTwoMessage("V1/VR/V2 DISAGREE", true, this.checkVSpeedDisagree);
+                    this.addNewMessage(NXSystemMessages.vToDisagree, this.checkVSpeedDisagree);
                 }
                 return true;
             }
