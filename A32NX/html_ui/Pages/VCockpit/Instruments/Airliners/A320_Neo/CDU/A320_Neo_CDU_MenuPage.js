@@ -72,10 +72,10 @@ class CDUMenuPage {
 
         updateView();
 
-        mcdu.showErrorMessage("SELECT DESIRED SYSTEM");
+        mcdu.addNewMessage(NXSystemMessages.selectDesiredSystem);
 
         mcdu.onLeftInput[0] = () => {
-            mcdu.showErrorMessage("WAIT FOR SYSTEM RESPONSE");
+            mcdu.addNewMessage(NXSystemMessages.waitForSystemResponse);
             selectedFMGC = true;
             updateView();
             setTimeout(() => {
@@ -85,7 +85,7 @@ class CDUMenuPage {
         };
 
         mcdu.onLeftInput[1] = () => {
-            mcdu.showErrorMessage("WAIT FOR SYSTEM RESPONSE");
+            mcdu.addNewMessage(NXSystemMessages.waitForSystemResponse);
             selectedATSU = true;
             updateView();
             setTimeout(() => {
@@ -95,7 +95,7 @@ class CDUMenuPage {
         };
 
         mcdu.onLeftInput[2] = () => {
-            mcdu.showErrorMessage("WAIT FOR SYSTEM RESPONSE");
+            mcdu.addNewMessage(NXSystemMessages.waitForSystemResponse);
             selectedAIDS = true;
             updateView();
             setTimeout(() => {
@@ -105,7 +105,7 @@ class CDUMenuPage {
         };
 
         mcdu.onLeftInput[3] = () => {
-            mcdu.showErrorMessage("WAIT FOR SYSTEM RESPONSE");
+            mcdu.addNewMessage(NXSystemMessages.waitForSystemResponse);
             selectedCFDS = true;
             updateView();
             setTimeout(() => {
@@ -115,7 +115,7 @@ class CDUMenuPage {
         };
 
         mcdu.onRightInput[4] = () => {
-            mcdu.showErrorMessage("WAIT FOR SYSTEM RESPONSE");
+            mcdu.addNewMessage(NXSystemMessages.waitForSystemResponse);
             selectedMaint = true;
             updateView();
             setTimeout(() => {

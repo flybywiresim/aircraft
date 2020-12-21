@@ -72,7 +72,7 @@ class CDUHoldAtPage {
 
             mcdu.onLeftInput[0] = (value) => {
                 if (isNaN(value) || 0 < value > 360) {
-                    mcdu.showErrorMessage("ENTRY OUT OF RANGE");
+                    mcdu.addNewMessage(NXSystemMessages.entryOutOfRange);
                     return;
                 }
                 mcdu.manualHoldData = {
@@ -86,7 +86,7 @@ class CDUHoldAtPage {
 
             mcdu.onLeftInput[1] = (value) => {
                 if (value != "L" && value != "R") {
-                    mcdu.showErrorMessage("FORMAT ERROR");
+                    mcdu.addNewMessage(NXSystemMessages.formatError);
                     return;
                 }
                 mcdu.manualHoldData = {
@@ -102,7 +102,7 @@ class CDUHoldAtPage {
                 if (value.startsWith("/")) {
                     const distComp = value.replace("/", "");
                     if (isNaN(distComp)) {
-                        mcdu.showErrorMessage("FORMAT ERROR");
+                        mcdu.addNewMessage(NXSystemMessages.formatError);
                         return;
                     }
                     mcdu.manualHoldData = {
@@ -117,7 +117,7 @@ class CDUHoldAtPage {
                 }
 
                 if (isNaN(value)) {
-                    mcdu.showErrorMessage("FORMAT ERROR");
+                    mcdu.addNewMessage(NXSystemMessages.formatError);
                     return;
                 }
 

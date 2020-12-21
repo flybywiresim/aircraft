@@ -52,7 +52,7 @@ class A320_Neo_CDU_AirwaysFromWaypointPage {
                                 if (airway) {
                                     A320_Neo_CDU_AirwaysFromWaypointPage.ShowPage(mcdu, waypoint, offset, airway);
                                 } else {
-                                    mcdu.showErrorMessage("AWY/WPT MISMATCH");
+                                    mcdu.addNewMessage(NXSystemMessages.awyWptMismatch);
                                 }
                             });
                         }
@@ -67,7 +67,7 @@ class A320_Neo_CDU_AirwaysFromWaypointPage {
                                     if (result) {
                                         A320_Neo_CDU_AirwaysFromWaypointPage.ShowPage(mcdu, waypoint, offset);
                                     } else {
-                                        mcdu.showErrorMessage("AWY/WPT MISMATCH");
+                                        mcdu.addNewMessage(NXSystemMessages.awyWptMismatch);
                                     }
                                 });
                             });
@@ -87,18 +87,18 @@ class A320_Neo_CDU_AirwaysFromWaypointPage {
                                                 if (airway) {
                                                     A320_Neo_CDU_AirwaysFromWaypointPage.ShowPage(mcdu, waypoint, offset, airway);
                                                 } else {
-                                                    mcdu.showErrorMessage("NO INTERSECTION FOUND");
+                                                    mcdu.addNewMessage(NXSystemMessages.noIntersectionFound);
                                                 }
                                             } else {
-                                                mcdu.showErrorMessage("NO INTERSECTION FOUND");
+                                                mcdu.addNewMessage(NXSystemMessages.noIntersectionFound);
                                             }
                                         });
                                     });
                                 } else {
-                                    mcdu.showErrorMessage("NO INTERSECTION FOUND");
+                                    mcdu.addNewMessage(NXSystemMessages.noIntersectionFound);
                                 }
                             } else {
-                                mcdu.showErrorMessage("NO INTERSECTION FOUND");
+                                mcdu.addNewMessage(NXSystemMessages.noIntersectionFound);
                             }
                         };
                     }

@@ -289,7 +289,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             // Parse flaps
             if (flaps && flaps.length > 0) {
                 if (!/^\d+$/.test(flaps)) {
-                    this.showErrorMessage("FORMAT ERROR");
+                    this.addNewMessage(NXSystemMessages.formatError);
                     return false;
                 }
 
@@ -303,7 +303,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             // Parse THS
             if (ths) {
                 if (!/^((UP|DN)(\d?\.?\d)|(\d?\.?\d)(UP|DN))$/.test(ths)) {
-                    this.showErrorMessage("FORMAT ERROR");
+                    this.addNewMessage(NXSystemMessages.formatError);
                     return false;
                 }
 
@@ -336,7 +336,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             }
         }
 
-        this.showErrorMessage("INVALID ENTRY");
+        this.addNewMessage(NXSystemMessages.entryOutOfRange);
         return false;
     }
     onPowerOn() {

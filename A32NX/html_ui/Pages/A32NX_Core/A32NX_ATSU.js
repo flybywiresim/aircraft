@@ -207,7 +207,6 @@ const insertUplink = (mcdu) => {
     const fltNbr = `${icao_airline}${flight_number}`;
 
     const uplinkInProg = "UPLINK INSERT IN PROG";
-    const aocActFplnUplink = "AOC ACT F-PLN UPLINK";
 
     mcdu.showErrorMessage(uplinkInProg);
 
@@ -222,7 +221,7 @@ const insertUplink = (mcdu) => {
 
             setTimeout(async () => {
                 await uplinkRoute(mcdu);
-                mcdu.showErrorMessage(aocActFplnUplink);
+                mcdu.addNewMessage(NXSystemMessages.aocActFplnUplink);
             }, mcdu.getDelayRouteChange());
 
             if (mcdu.page.Current === mcdu.page.InitPageA) {
@@ -261,7 +260,7 @@ const addWaypointAsync = (fix, mcdu, routeIdent, via) => {
                     res(true);
                 } else {
                     console.log('AWY/WPT MISMATCH ' + routeIdent + " via " + via);
-                    mcdu.showErrorMessage("AWY/WPT MISMATCH");
+                    mcdu.addNewMessage(NXSystemMessages.awyWptMismatch);
                     res(false);
                 }
             });
@@ -280,7 +279,7 @@ const addWaypointAsync = (fix, mcdu, routeIdent, via) => {
                     });
                 } else {
                     console.log('NOT IN DATABASE ' + routeIdent);
-                    mcdu.showErrorMessage("NOT IN DATABASE");
+                    mcdu.addNewMessage(NXSystemMessages.notInDatabase);
                     res(false);
                 }
             });

@@ -446,7 +446,7 @@ class FMCMainDisplay extends BaseAirliners {
     async tryUpdateRefAirport(airportIdent) {
         const airport = await this.dataManager.GetAirportByIdent(airportIdent);
         if (!airport) {
-            this.showErrorMessage("NOT IN DATABASE");
+            this.addNewMessage(NXSystemMessages.notInDatabase);
             return false;
         }
         this.refAirport = airport;
@@ -455,7 +455,7 @@ class FMCMainDisplay extends BaseAirliners {
 
     tryUpdateGate(gate) {
         if (gate.length > 6) {
-            this.showErrorMessage(this.defaultInputErrorMessage);
+            this.addNewMessage(NXSystemMessages.notAllowed);
             return false;
         }
         this.refGate = gate;
@@ -465,7 +465,7 @@ class FMCMainDisplay extends BaseAirliners {
     tryUpdateHeading(heading) {
         let nHeading = parseInt(heading);
         if (isNaN(nHeading)) {
-            this.showErrorMessage(this.defaultInputErrorMessage);
+            this.addNewMessage(NXSystemMessages.notAllowed);
             return false;
         }
         nHeading = Math.round(nHeading) % 360;
@@ -475,7 +475,7 @@ class FMCMainDisplay extends BaseAirliners {
 
     async tryUpdateIrsCoordinatesDisplay(newIrsCoordinatesDisplay) {
         if (!this.dataManager.IsValidLatLon(newIrsCoordinatesDisplay)) {
-            this.showErrorMessage(this.defaultInputErrorMessage);
+            this.addNewMessage(NXSystemMessages.notAllowed);
             return false;
         }
         this.initCoordinates = newIrsCoordinatesDisplay;
@@ -500,13 +500,13 @@ class FMCMainDisplay extends BaseAirliners {
                     this.cruiseTemperature = temp;
                 } else {
                     if (onlyTemp) {
-                        this.showErrorMessage("ENTRY OUT OF RANGE");
+                        this.addNewMessage(NXSystemMessages.entryOutOfRange);
                         return false;
                     }
                 }
             } else {
                 if (onlyTemp) {
-                    this.showErrorMessage(this.defaultInputErrorMessage);
+                    this.addNewMessage(NXSystemMessages.notAllowed);
                     return false;
                 }
             }
@@ -522,7 +522,7 @@ class FMCMainDisplay extends BaseAirliners {
             }
             return false;
         }
-        this.showErrorMessage(this.defaultInputErrorMessage);
+        this.addNewMessage(NXSystemMessages.notAllowed);
         return false;
     }
 
@@ -532,7 +532,7 @@ class FMCMainDisplay extends BaseAirliners {
             this.groundTemperature = value;
             return true;
         }
-        this.showErrorMessage(this.defaultInputErrorMessage);
+        this.addNewMessage(NXSystemMessages.notAllowed);
         return false;
     }
 
@@ -544,12 +544,12 @@ class FMCMainDisplay extends BaseAirliners {
                     this.costIndex = value;
                     return true;
                 } else {
-                    this.showErrorMessage("ENTRY OUT OF RANGE");
+                    this.addNewMessage(NXSystemMessages.entryOutOfRange);
                     return false;
                 }
             }
         }
-        this.showErrorMessage(this.defaultInputErrorMessage);
+        this.addNewMessage(NXSystemMessages.notAllowed);
         return false;
     }
 
@@ -570,7 +570,7 @@ class FMCMainDisplay extends BaseAirliners {
                 }
             }
         }
-        this.showErrorMessage(this.defaultInputErrorMessage);
+        this.addNewMessage(NXSystemMessages.notAllowed);
         return false;
     }
 
@@ -590,7 +590,7 @@ class FMCMainDisplay extends BaseAirliners {
 
     tryUpdateFromTo(fromTo, callback = EmptyCallback.Boolean) {
         if (fromTo === FMCMainDisplay.clrValue) {
-            this.showErrorMessage("NOT ALLOWED");
+            this.addNewMessage(NXSystemMessages.notAllowed);
             return callback(false);
         }
         const from = fromTo.split("/")[0];
@@ -611,12 +611,12 @@ class FMCMainDisplay extends BaseAirliners {
                             });
                         });
                     } else {
-                        this.showErrorMessage("NOT IN DATABASE");
+                        this.addNewMessage(NXSystemMessages.notInDatabase);
                         callback(false);
                     }
                 });
             } else {
-                this.showErrorMessage("NOT IN DATABASE");
+                this.addNewMessage(NXSystemMessages.notInDatabase);
                 callback(false);
             }
         });
@@ -648,11 +648,11 @@ class FMCMainDisplay extends BaseAirliners {
                 this._routeAltFuelTime = FMCMainDisplay.minutesTohhmm(A32NX_FuelPred.computeUserAltTime(this._routeAltFuelWeight * 1000, 290));
                 return true;
             } else {
-                this.showErrorMessage("ENTRY OUT OF RANGE");
+                this.addNewMessage(NXSystemMessages.entryOutOfRange);
                 return false;
             }
         }
-        this.showErrorMessage("FORMAT ERROR");
+        this.addNewMessage(NXSystemMessages.formatError);
         return false;
     }
 
@@ -675,10 +675,10 @@ class FMCMainDisplay extends BaseAirliners {
                 this._minDestFob = value;
                 return true;
             } else {
-                this.showErrorMessage("ENTRY OUT OF RANGE");
+                this.addNewMessage(NXSystemMessages.entryOutOfRange);
             }
         }
-        this.showErrorMessage("FORMAT ERROR");
+        this.addNewMessage(NXSystemMessages.formatError);
         return false;
     }
 
@@ -694,7 +694,7 @@ class FMCMainDisplay extends BaseAirliners {
             this.tryUpdateDistanceToAlt();
             return true;
         }
-        this.showErrorMessage("NOT IN DATABASE");
+        this.addNewMessage(NXSystemMessages.notInDatabase);
         return false;
     }
 
@@ -836,7 +836,7 @@ class FMCMainDisplay extends BaseAirliners {
                     });
                 });
             } else {
-                this.showErrorMessage("NOT IN DATABASE");
+                this.addNewMessage(NXSystemMessages.notInDatabase);
                 return callback(false);
             }
         } else {
@@ -874,7 +874,7 @@ class FMCMainDisplay extends BaseAirliners {
                     });
                 }
             } else {
-                this.showErrorMessage("NOT IN DATABASE");
+                this.addNewMessage(NXSystemMessages.notInDatabase);
                 callback(false);
             }
         });
@@ -964,7 +964,7 @@ class FMCMainDisplay extends BaseAirliners {
 
     updateFlightNo(flightNo, callback = EmptyCallback.Boolean) {
         if (flightNo.length > 7) {
-            this.showErrorMessage(this.defaultInputErrorMessage);
+            this.addNewMessage(NXSystemMessages.notAllowed);
             return callback(false);
         }
 
@@ -995,7 +995,7 @@ class FMCMainDisplay extends BaseAirliners {
                 return callback(true);
             }
         }
-        this.showErrorMessage(this.defaultInputErrorMessage);
+        this.addNewMessage(NXSystemMessages.notAllowed);
         return callback(false);
     }
 
@@ -1018,7 +1018,7 @@ class FMCMainDisplay extends BaseAirliners {
     getOrSelectVORsByIdent(ident, callback) {
         this.dataManager.GetVORsByIdent(ident).then((navaids) => {
             if (!navaids || navaids.length === 0) {
-                this.showErrorMessage("NOT IN DATABASE");
+                this.addNewMessage(NXSystemMessages.notInDatabase);
                 return callback(undefined);
             }
             if (navaids.length === 1) {
@@ -1030,7 +1030,7 @@ class FMCMainDisplay extends BaseAirliners {
     getOrSelectNDBsByIdent(ident, callback) {
         this.dataManager.GetNDBsByIdent(ident).then((navaids) => {
             if (!navaids || navaids.length === 0) {
-                this.showErrorMessage("NOT IN DATABASE");
+                this.addNewMessage(NXSystemMessages.notInDatabase);
                 return callback(undefined);
             }
             if (navaids.length === 1) {
@@ -1048,7 +1048,7 @@ class FMCMainDisplay extends BaseAirliners {
     async tryAddNextWaypoint(newWaypointTo) {
         const waypoints = await this.dataManager.GetWaypointsByIdent(newWaypointTo);
         if (waypoints.length === 0) {
-            this.showErrorMessage("NOT IN DATABASE");
+            this.addNewMessage(NXSystemMessages.notInDatabase);
             return false;
         }
         if (waypoints.length === 1) {
@@ -1094,7 +1094,7 @@ class FMCMainDisplay extends BaseAirliners {
         if (referenceWaypointIndex >= 0) {
             return this.insertWaypoint(newWaypointTo, referenceWaypointIndex + 1, callback);
         }
-        this.showErrorMessage("NOT IN DATABASE");
+        this.addNewMessage(NXSystemMessages.notInDatabase);
         callback(false);
     }
 
@@ -1102,7 +1102,7 @@ class FMCMainDisplay extends BaseAirliners {
         this.ensureCurrentFlightPlanIsTemporary(async () => {
             this.getOrSelectWaypointByIdent(newWaypointTo, (waypoint) => {
                 if (!waypoint) {
-                    this.showErrorMessage("NOT IN DATABASE");
+                    this.addNewMessage(NXSystemMessages.notInDatabase);
                     return callback(false);
                 }
                 this.flightPlanManager.addWaypoint(waypoint.icao, index, () => {
@@ -1250,7 +1250,7 @@ class FMCMainDisplay extends BaseAirliners {
 
     trySetV1Speed(s) {
         if (!/^\d+$/.test(s)) {
-            this.showErrorMessage("FORMAT ERROR");
+            this.addNewMessage(NXSystemMessages.formatError);
             return false;
         }
         const v = parseInt(s);
@@ -1263,16 +1263,16 @@ class FMCMainDisplay extends BaseAirliners {
                 }
                 return true;
             }
-            this.showErrorMessage("ENTRY OUT OF RANGE");
+            this.addNewMessage(NXSystemMessages.entryOutOfRange);
             return false;
         }
-        this.showErrorMessage(this.defaultInputErrorMessage);
+        this.addNewMessage(NXSystemMessages.notAllowed);
         return false;
     }
 
     trySetVRSpeed(s) {
         if (!/^\d+$/.test(s)) {
-            this.showErrorMessage("FORMAT ERROR");
+            this.addNewMessage(NXSystemMessages.formatError);
             return false;
         }
         const v = parseInt(s);
@@ -1285,16 +1285,16 @@ class FMCMainDisplay extends BaseAirliners {
                 }
                 return true;
             }
-            this.showErrorMessage("ENTRY OUT OF RANGE");
+            this.addNewMessage(NXSystemMessages.entryOutOfRange);
             return false;
         }
-        this.showErrorMessage(this.defaultInputErrorMessage);
+        this.addNewMessage(NXSystemMessages.notAllowed);
         return false;
     }
 
     trySetV2Speed(s) {
         if (!/^\d+$/.test(s)) {
-            this.showErrorMessage("FORMAT ERROR");
+            this.addNewMessage(NXSystemMessages.formatError);
             return false;
         }
         const v = parseInt(s);
@@ -1307,16 +1307,16 @@ class FMCMainDisplay extends BaseAirliners {
                 }
                 return true;
             }
-            this.showErrorMessage("ENTRY OUT OF RANGE");
+            this.addNewMessage(NXSystemMessages.entryOutOfRange);
             return false;
         }
-        this.showErrorMessage(this.defaultInputErrorMessage);
+        this.addNewMessage(NXSystemMessages.notAllowed);
         return false;
     }
 
     trySetTransAltitude(s) {
         if (!/^\d+$/.test(s)) {
-            this.showErrorMessage("FORMAT ERROR");
+            this.addNewMessage(NXSystemMessages.formatError);
             return false;
         }
         const v = parseInt(s);
@@ -1325,7 +1325,7 @@ class FMCMainDisplay extends BaseAirliners {
             SimVar.SetSimVarValue("L:AIRLINER_TRANS_ALT", "Number", v);
             return true;
         }
-        this.showErrorMessage(this.defaultInputErrorMessage);
+        this.addNewMessage(NXSystemMessages.notAllowed);
         return false;
     }
 
@@ -1348,7 +1348,7 @@ class FMCMainDisplay extends BaseAirliners {
             }
             return true;
         }
-        this.showErrorMessage(this.defaultInputErrorMessage);
+        this.addNewMessage(NXSystemMessages.notAllowed);
         return false;
     }
 
@@ -1371,7 +1371,7 @@ class FMCMainDisplay extends BaseAirliners {
             }
             return true;
         }
-        this.showErrorMessage(this.defaultInputErrorMessage);
+        this.addNewMessage(NXSystemMessages.notAllowed);
         return false;
     }
 
@@ -1382,7 +1382,7 @@ class FMCMainDisplay extends BaseAirliners {
             SimVar.SetSimVarValue("L:AIRLINER_ENG_OUT_ACC_ALT_GOAROUND", "Number", this.engineOutAccelerationGoaround);
             return true;
         }
-        this.showErrorMessage(this.defaultInputErrorMessage);
+        this.addNewMessage(NXSystemMessages.notAllowed);
         return false;
     }
 
@@ -1391,7 +1391,7 @@ class FMCMainDisplay extends BaseAirliners {
             const flaps = s.split("/")[0];
             let validEntry = false;
             if (!/^\d+$/.test(flaps)) {
-                this.showErrorMessage("FORMAT ERROR");
+                this.addNewMessage(NXSystemMessages.formatError);
                 return false;
             }
             const vFlaps = parseInt(flaps);
@@ -1412,7 +1412,7 @@ class FMCMainDisplay extends BaseAirliners {
                 return true;
             }
         }
-        this.showErrorMessage(this.defaultInputErrorMessage);
+        this.addNewMessage(NXSystemMessages.notAllowed);
         return false;
     }
 
@@ -1468,7 +1468,7 @@ class FMCMainDisplay extends BaseAirliners {
             SimVar.SetSimVarValue("L:AIRLINER_TO_FLEX_TEMP", "Number", this.perfTOTemp);
             return true;
         }
-        this.showErrorMessage(this.defaultInputErrorMessage);
+        this.addNewMessage(NXSystemMessages.notAllowed);
         return false;
     }
 
@@ -1539,7 +1539,7 @@ class FMCMainDisplay extends BaseAirliners {
                 return true;
             }
         }
-        this.showErrorMessage(this.defaultInputErrorMessage);
+        this.addNewMessage(NXSystemMessages.notAllowed);
         return false;
     }
 
@@ -1574,7 +1574,7 @@ class FMCMainDisplay extends BaseAirliners {
                 return true;
             }
         }
-        this.showErrorMessage(this.defaultInputErrorMessage);
+        this.addNewMessage(NXSystemMessages.notAllowed);
         return false;
     }
 
@@ -1640,7 +1640,7 @@ class FMCMainDisplay extends BaseAirliners {
             return true;
         }
         if (!/[0-9]+(\.[0-9][0-9]?)?/.test(s)) {
-            this.showErrorMessage("FORMAT ERROR");
+            this.addNewMessage(NXSystemMessages.formatError);
             return false;
         }
         const value = parseFloat(s) * this._conversionWeight;
@@ -1650,11 +1650,11 @@ class FMCMainDisplay extends BaseAirliners {
                 this.taxiFuelWeight = value;
                 return true;
             } else {
-                this.showErrorMessage("ENTRY OUT OF RANGE");
+                this.addNewMessage(NXSystemMessages.entryOutOfRange);
                 return false;
             }
         }
-        this.showErrorMessage(this.defaultInputErrorMessage);
+        this.addNewMessage(NXSystemMessages.notAllowed);
         return false;
     }
 
@@ -1695,12 +1695,12 @@ class FMCMainDisplay extends BaseAirliners {
                     this._routeFinalFuelTime = FMCMainDisplay.hhmmToMinutes(rteFinalTime.padStart(4,"0"));
                     return true;
                 } else {
-                    this.showErrorMessage("ENTRY OUT OF RANGE");
+                    this.addNewMessage(NXSystemMessages.entryOutOfRange);
                     return false;
                 }
             }
         }
-        this.showErrorMessage(this.defaultInputErrorMessage);
+        this.addNewMessage(NXSystemMessages.notAllowed);
         return false;
     }
 
@@ -1725,7 +1725,7 @@ class FMCMainDisplay extends BaseAirliners {
                     this._routeFinalFuelTime = (rteFinalWeight * 1000) / this._rteFinalCoeffecient;
                     return true;
                 } else {
-                    this.showErrorMessage("ENTRY OUT OF RANGE");
+                    this.addNewMessage(NXSystemMessages.entryOutOfRange);
                     return false;
                 }
             } else {
@@ -1734,12 +1734,12 @@ class FMCMainDisplay extends BaseAirliners {
                     this._routeFinalFuelWeight = (this._routeFinalFuelTime * this._rteFinalCoeffecient) / 1000;
                     return true;
                 } else {
-                    this.showErrorMessage("ENTRY OUT OF RANGE");
+                    this.addNewMessage(NXSystemMessages.entryOutOfRange);
                     return false;
                 }
             }
         }
-        this.showErrorMessage(this.defaultInputErrorMessage);
+        this.addNewMessage(NXSystemMessages.notAllowed);
         return false;
     }
 
@@ -1768,7 +1768,7 @@ class FMCMainDisplay extends BaseAirliners {
             const rteRsvPercent = parseFloat(s.split("/")[1]);
             if ((0 > rteRsvPercent > 15)) {
                 this._rteRsvPercentOOR = true;
-                this.showErrorMessage(this.defaultInputErrorMessage);
+                this.addNewMessage(NXSystemMessages.notAllowed);
                 return false;
             }
             this._rteRsvPercentOOR = false;
@@ -1777,10 +1777,10 @@ class FMCMainDisplay extends BaseAirliners {
                 this._routeReservedPercent = rteRsvPercent;
                 return true;
             }
-            this.showErrorMessage(this.defaultInputErrorMessage);
+            this.addNewMessage(NXSystemMessages.notAllowed);
             return false;
         }
-        this.showErrorMessage(this.defaultInputErrorMessage);
+        this.addNewMessage(NXSystemMessages.notAllowed);
         return false;
     }
 
@@ -1791,12 +1791,12 @@ class FMCMainDisplay extends BaseAirliners {
      */
     trySetCruiseFlCheckInput(input) {
         if (input === FMCMainDisplay.clrValue) {
-            this.showErrorMessage(this.defaultInputErrorMessage);
+            this.addNewMessage(NXSystemMessages.notAllowed);
             return false;
         }
         const flString = input.replace("FL", "");
         if (!flString) {
-            this.showErrorMessage(this.defaultInputErrorMessage);
+            this.addNewMessage(NXSystemMessages.notAllowed);
             return false;
         }
         return this.trySetCruiseFl(parseFloat(flString));
@@ -1809,24 +1809,24 @@ class FMCMainDisplay extends BaseAirliners {
      */
     trySetCruiseFl(fl) {
         if (!isFinite(fl)) {
-            this.showErrorMessage(this.defaultInputErrorMessage);
+            this.addNewMessage(NXSystemMessages.notAllowed);
             return false;
         }
         if (fl >= 1000) {
             fl = Math.floor(fl / 100);
         }
         if (fl > this.maxCruiseFL) {
-            this.showErrorMessage(this.defaultInputErrorMessage);
+            this.addNewMessage(NXSystemMessages.notAllowed);
             return false;
         }
         const phase = Simplane.getCurrentFlightPhase();
         const selFl = Math.floor(Math.max(0, Simplane.getAutoPilotSelectedAltitudeLockValue("feet")) / 100);
         if (fl < selFl && phase === FlightPhase.FLIGHT_PHASE_CLIMB) {
-            this.showErrorMessage(this.defaultInputErrorMessage);
+            this.addNewMessage(NXSystemMessages.notAllowed);
             return false;
         }
         if (fl > Math.floor(Simplane.getAltitude() / 100) && phase > FlightPhase.FLIGHT_PHASE_CRUISE) {
-            this.showErrorMessage("ENTRY OUT OF RANGE");
+            this.addNewMessage(NXSystemMessages.entryOutOfRange);
             return false;
         }
         if (fl < selFl && fl < 10 && phase === FlightPhase.FLIGHT_PHASE_CLIMB || phase === FlightPhase.FLIGHT_PHASE_CRUISE) {
@@ -1839,7 +1839,7 @@ class FMCMainDisplay extends BaseAirliners {
             this._cruiseEntered = true;
             return true;
         }
-        this.showErrorMessage("ENTRY OUT OF RANGE");
+        this.addNewMessage(NXSystemMessages.entryOutOfRange);
         return false;
     }
 
@@ -1869,7 +1869,7 @@ class FMCMainDisplay extends BaseAirliners {
                 return true;
             }
         }
-        this.showErrorMessage(this.defaultInputErrorMessage);
+        this.addNewMessage(NXSystemMessages.notAllowed);
         return false;
     }
 
@@ -1895,7 +1895,7 @@ class FMCMainDisplay extends BaseAirliners {
                 return true;
             }
         }
-        this.showErrorMessage(this.defaultInputErrorMessage);
+        this.addNewMessage(NXSystemMessages.notAllowed);
         return false;
     }
 
@@ -1920,7 +1920,7 @@ class FMCMainDisplay extends BaseAirliners {
             this.updateTakeOffTrim();
             return callback(true);
         }
-        this.showErrorMessage(this.defaultInputErrorMessage);
+        this.addNewMessage(NXSystemMessages.notAllowed);
         callback(false);
     }
 
@@ -1931,7 +1931,7 @@ class FMCMainDisplay extends BaseAirliners {
             this.updateTakeOffTrim();
             return callback(true);
         }
-        this.showErrorMessage(this.defaultInputErrorMessage);
+        this.addNewMessage(NXSystemMessages.notAllowed);
         callback(false);
     }
 
@@ -1951,7 +1951,7 @@ class FMCMainDisplay extends BaseAirliners {
                 }
                 this.setZeroFuelWeight(zfw.toString());
             } else {
-                this.showErrorMessage("ENTRY OUT OF RANGE");
+                this.addNewMessage(NXSystemMessages.entryOutOfRange);
                 return false;
             }
         }
@@ -1959,7 +1959,7 @@ class FMCMainDisplay extends BaseAirliners {
             if (this.isZFWCGInRange(zfwcg)) {
                 this.setZeroFuelCG(zfwcg.toString());
             } else {
-                this.showErrorMessage("ENTRY OUT OF RANGE");
+                this.addNewMessage(NXSystemMessages.entryOutOfRange);
                 return false;
             }
         }
@@ -1996,14 +1996,14 @@ class FMCMainDisplay extends BaseAirliners {
                 this.updateCleanApproachSpeed();
                 return true;
             } else {
-                this.showErrorMessage("ENTRY OUT OF RANGE");
+                this.addNewMessage(NXSystemMessages.entryOutOfRange);
                 return false;
             }
         }
         if (this._zeroFuelWeightZFWCGEntered) {
             return this.tryEditZeroFuelWeightZFWCG(zfw, zfwcg, useLbs);
         }
-        this.showErrorMessage("FORMAT ERROR");
+        this.addNewMessage(NXSystemMessages.formatError);
         return false;
     }
 
@@ -2081,12 +2081,12 @@ class FMCMainDisplay extends BaseAirliners {
                 this._blockFuelEntered = true;
                 return true;
             } else {
-                this.showErrorMessage("ENTRY OUT OF RANGE");
+                this.addNewMessage(NXSystemMessages.entryOutOfRange);
                 return false;
             }
 
         }
-        this.showErrorMessage(this.defaultInputErrorMessage);
+        this.addNewMessage(NXSystemMessages.notAllowed);
         return false;
     }
 
@@ -2119,7 +2119,7 @@ class FMCMainDisplay extends BaseAirliners {
                 return callback(false);
             }
         }
-        this.showErrorMessage(this.defaultInputErrorMessage);
+        this.addNewMessage(NXSystemMessages.notAllowed);
         return callback(false);
     }
 
@@ -2140,7 +2140,7 @@ class FMCMainDisplay extends BaseAirliners {
             }
             return true;
         }
-        this.showErrorMessage(this.defaultInputErrorMessage);
+        this.addNewMessage(NXSystemMessages.notAllowed);
         return false;
     }
 
@@ -2162,11 +2162,11 @@ class FMCMainDisplay extends BaseAirliners {
                     this.averageWind = wind;
                     return true;
                 } else {
-                    this.showErrorMessage("ENTRY OUT OF RANGE");
+                    this.addNewMessage(NXSystemMessages.entryOutOfRange);
                     return false;
                 }
             } else {
-                this.showErrorMessage("FORMAT ERROR");
+                this.addNewMessage(NXSystemMessages.formatError);
                 return false;
             }
         }
@@ -2189,7 +2189,7 @@ class FMCMainDisplay extends BaseAirliners {
             }
             return true;
         }
-        this.showErrorMessage(this.defaultInputErrorMessage);
+        this.addNewMessage(NXSystemMessages.notAllowed);
         return false;
     }
 
@@ -2199,7 +2199,7 @@ class FMCMainDisplay extends BaseAirliners {
             this.preSelectedClbSpeed = v;
             return true;
         }
-        this.showErrorMessage(this.defaultInputErrorMessage);
+        this.addNewMessage(NXSystemMessages.notAllowed);
         return false;
     }
 
@@ -2209,7 +2209,7 @@ class FMCMainDisplay extends BaseAirliners {
             this.preSelectedCrzSpeed = v;
             return true;
         }
-        this.showErrorMessage(this.defaultInputErrorMessage);
+        this.addNewMessage(NXSystemMessages.notAllowed);
         return false;
     }
 
@@ -2219,7 +2219,7 @@ class FMCMainDisplay extends BaseAirliners {
             this.preSelectedDesSpeed = v;
             return true;
         }
-        this.showErrorMessage(this.defaultInputErrorMessage);
+        this.addNewMessage(NXSystemMessages.notAllowed);
         return false;
     }
 
@@ -2234,7 +2234,7 @@ class FMCMainDisplay extends BaseAirliners {
             this.perfApprQNH = value;
             return true;
         }
-        this.showErrorMessage(this.defaultInputErrorMessage);
+        this.addNewMessage(NXSystemMessages.notAllowed);
         return false;
     }
 
@@ -2244,7 +2244,7 @@ class FMCMainDisplay extends BaseAirliners {
             this.perfApprTemp = value;
             return true;
         }
-        this.showErrorMessage(this.defaultInputErrorMessage);
+        this.addNewMessage(NXSystemMessages.notAllowed);
         return false;
     }
 
@@ -2265,13 +2265,13 @@ class FMCMainDisplay extends BaseAirliners {
             }
             return true;
         }
-        this.showErrorMessage(this.defaultInputErrorMessage);
+        this.addNewMessage(NXSystemMessages.notAllowed);
         return false;
     }
 
     setPerfApprTransAlt(s) {
         if (!/^\d+$/.test(s)) {
-            this.showErrorMessage("FORMAT ERROR");
+            this.addNewMessage(NXSystemMessages.formatError);
             return false;
         }
         const v = parseInt(s);
@@ -2280,7 +2280,7 @@ class FMCMainDisplay extends BaseAirliners {
             SimVar.SetSimVarValue("L:AIRLINER_APPR_TRANS_ALT", "Number", v);
             return true;
         }
-        this.showErrorMessage(this.defaultInputErrorMessage);
+        this.addNewMessage(NXSystemMessages.notAllowed);
         return false;
     }
 
@@ -2303,7 +2303,7 @@ class FMCMainDisplay extends BaseAirliners {
             this.vApp = value;
             return true;
         }
-        this.showErrorMessage(this.defaultInputErrorMessage);
+        this.addNewMessage(NXSystemMessages.notAllowed);
         return false;
     }
 
@@ -2371,7 +2371,7 @@ class FMCMainDisplay extends BaseAirliners {
                 SimVar.SetSimVarValue("L:AIRLINER_MINIMUM_DESCENT_ALTITUDE", "feet", this.perfApprMDA);
                 return true;
             }
-            this.showErrorMessage(this.defaultInputErrorMessage);
+            this.addNewMessage(NXSystemMessages.notAllowed);
             return false;
         }
     }
@@ -2387,7 +2387,7 @@ class FMCMainDisplay extends BaseAirliners {
                 SimVar.SetSimVarValue("L:AIRLINER_DECISION_HEIGHT", "feet", -2);
                 return true;
             } else {
-                this.showErrorMessage("NOT ALLOWED");
+                this.addNewMessage(NXSystemMessages.notAllowed);
                 return false;
             }
         } else {
@@ -2398,11 +2398,11 @@ class FMCMainDisplay extends BaseAirliners {
                     SimVar.SetSimVarValue("L:AIRLINER_DECISION_HEIGHT", "feet", this.perfApprDH);
                     return true;
                 } else {
-                    this.showErrorMessage("ENTRY OUT OF RANGE");
+                    this.addNewMessage(NXSystemMessages.entryOutOfRange);
                     return false;
                 }
             }
-            this.showErrorMessage(this.defaultInputErrorMessage);
+            this.addNewMessage(NXSystemMessages.notAllowed);
             return false;
         }
     }
@@ -2647,10 +2647,10 @@ class FMCMainDisplay extends BaseAirliners {
                 this._ilsFrequencyPilotEntered = true;
                 return true;
             }
-            this.showErrorMessage("OUT OF RANGE");
+            this.addNewMessage(NXSystemMessages.entryOutOfRange);
             return false;
         }
-        this.showErrorMessage(this.defaultInputErrorMessage);
+        this.addNewMessage(NXSystemMessages.notAllowed);
         return false;
     }
 
