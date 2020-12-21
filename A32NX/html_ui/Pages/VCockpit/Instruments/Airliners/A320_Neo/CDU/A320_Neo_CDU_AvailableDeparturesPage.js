@@ -5,7 +5,7 @@ class CDUAvailableDeparturesPage {
         if (airportInfo instanceof AirportInfo) {
             mcdu.clearDisplay();
             mcdu.page.Current = mcdu.page.AvailableDeparturesPage;
-            let selectedRunwayCell = "------";
+            let selectedRunwayCell = "---";
             let selectedRunwayCellColor = "white";
             const selectedRunway = mcdu.flightPlanManager.getDepartureRunway();
             if (selectedRunway) {
