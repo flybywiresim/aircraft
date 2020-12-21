@@ -16,6 +16,8 @@ namespace AK
         static const AkUniqueID PLAY_ASOBO_A320_NEO_APLOCK = 2605664391U;
         static const AkUniqueID PLAY_ASOBO_A320_NEO_APUBASS = 2675543670U;
         static const AkUniqueID PLAY_ASOBO_A320_NEO_APUBASS2 = 2187019248U;
+        static const AkUniqueID PLAY_ASOBO_A320_NEO_APUFLAPOPEN = 726819106U;
+        static const AkUniqueID PLAY_ASOBO_A320_NEO_APUFLAPOPENFULL = 1205202037U;
         static const AkUniqueID PLAY_ASOBO_A320_NEO_APUNLOCK = 834519314U;
         static const AkUniqueID PLAY_ASOBO_A320_NEO_APURUN = 1485231110U;
         static const AkUniqueID PLAY_ASOBO_A320_NEO_APUSHUT = 4266555373U;
@@ -32,7 +34,6 @@ namespace AK
         static const AkUniqueID PLAY_ASOBO_A320_NEO_BATTERYRELAY = 1174167411U;
         static const AkUniqueID PLAY_ASOBO_A320_NEO_BETTERWIND = 2383051621U;
         static const AkUniqueID PLAY_ASOBO_A320_NEO_BLUESYSTEM = 2623742202U;
-        static const AkUniqueID PLAY_ASOBO_A320_NEO_BOARDING = 1944365829U;
         static const AkUniqueID PLAY_ASOBO_A320_NEO_BOOML = 2102434864U;
         static const AkUniqueID PLAY_ASOBO_A320_NEO_BOOMLEXT = 770563073U;
         static const AkUniqueID PLAY_ASOBO_A320_NEO_BOOMR = 2102434862U;
@@ -85,6 +86,7 @@ namespace AK
         static const AkUniqueID PLAY_ASOBO_A320_NEO_GEARDOWNWIND = 1163974770U;
         static const AkUniqueID PLAY_ASOBO_A320_NEO_GEARLEVERCLICK = 1519148384U;
         static const AkUniqueID PLAY_ASOBO_A320_NEO_GROLL = 3751190317U;
+        static const AkUniqueID PLAY_ASOBO_A320_NEO_GROUNDROLLNOSE = 3767625064U;
         static const AkUniqueID PLAY_ASOBO_A320_NEO_IDLEDETENT = 3820456089U;
         static const AkUniqueID PLAY_ASOBO_A320_NEO_IDLEHIGHL = 2766432749U;
         static const AkUniqueID PLAY_ASOBO_A320_NEO_IDLEHIGHR = 2766432755U;
@@ -172,7 +174,6 @@ namespace AK
         static const AkUniqueID PLAY_ASOBO_A320_NEO_TAXIRATTLE = 2073073335U;
         static const AkUniqueID PLAY_ASOBO_A320_NEO_TAXIRUMBLE = 1042444882U;
         static const AkUniqueID PLAY_ASOBO_A320_NEO_TAXIRUMBLECABIN = 3430288301U;
-        static const AkUniqueID PLAY_ASOBO_A320_NEO_THRUSTVIBRATION = 334192015U;
         static const AkUniqueID PLAY_ASOBO_A320_NEO_TINNYROLL = 183534372U;
         static const AkUniqueID PLAY_ASOBO_A320_NEO_TOGADETENT = 958251500U;
         static const AkUniqueID PLAY_ASOBO_A320_NEO_TRUNIT = 2317823061U;
@@ -816,6 +817,7 @@ namespace AK
         static const AkUniqueID SIMVAR_GROUND_VELOCITY_ICON_A5 = 1719343144U;
         static const AkUniqueID SIMVAR_INCIDENCE_ALPHA = 3709807603U;
         static const AkUniqueID SIMVAR_INCIDENCE_BETA = 2281158207U;
+        static const AkUniqueID SIMVAR_INTERACTIVE_POINT_OPEN = 4220647438U;
         static const AkUniqueID SIMVAR_MASTER_IGNITION_SWITCH = 3117047763U;
         static const AkUniqueID SIMVAR_NAV_VOLUME = 1014571212U;
         static const AkUniqueID SIMVAR_OVERSPEED_WARNING = 2648716210U;
