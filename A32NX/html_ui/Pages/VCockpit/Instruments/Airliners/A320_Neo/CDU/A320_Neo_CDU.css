@@ -51,11 +51,7 @@
 #Electricity {
   width: 100%;
   height: 100%;
-  background: radial-gradient(
-    ellipse at center,
-    rgba(13, 20, 35, 1) 0%,
-    rgb(13, 20, 35) 100%
-  );
+  background-color: rgb(4, 4, 5);
 }
 
 #Electricity[state="off"] {
@@ -128,12 +124,12 @@ fmc-main-display::before {
   left: 0;
   bottom: 0;
   right: 0;
-  background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%),
+  background: linear-gradient(rgba(9,13, 20, 1) 50%, rgba(9,13, 20, 1) 50%),
     linear-gradient(
       90deg,
-      rgba(255, 0, 0, 0.06),
-      rgba(0, 255, 0, 0.02),
-      rgba(0, 0, 255, 0.06)
+      rgba(9,13,20, 1),
+      rgba(9,13,20, 1),
+      rgba(9,13,20, 1)
     );
   z-index: 2;
   background-size: 100% 2px, 3px 100%;
@@ -154,6 +150,19 @@ fmc-main-display::before {
   position: absolute;
   top: 5%;
   right: 5%;
+}
+
+#title-left {
+  display: block;
+  text-align: right;
+  position: absolute;
+  top: 5%;
+  left: 5%;
+}
+
+.b-text {
+  font-size: 5.8vw;
+  letter-spacing: normal;
 }
 
 .s-text {
@@ -180,6 +189,7 @@ fmc-main-display::before {
 .label {
   height: 5%;
   margin: 0;
+  white-space: pre;
 }
 
 .label-left {
@@ -206,6 +216,7 @@ fmc-main-display::before {
 .line {
   height: 8.1%;
   margin: 0;
+  white-space: pre;
 }
 
 .line-left {

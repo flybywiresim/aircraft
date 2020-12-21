@@ -16,7 +16,7 @@ class CDU_OPTIONS_TAF {
         }
 
         mcdu.setTemplate([
-            ["A32NX OPTIONS"],
+            ["A32NX OPTIONS AOC"],
             ["", "", "TAF UPLINK SRC"],
             [noaa],
             [""],
@@ -28,7 +28,7 @@ class CDU_OPTIONS_TAF {
             [""],
             [""],
             [""],
-            ["<RETURN[color]cyan"]
+            ["<RETURN"]
         ]);
 
         mcdu.leftInputDelay[0] = () => {
@@ -53,7 +53,7 @@ class CDU_OPTIONS_TAF {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onLeftInput[5] = () => {
-            CDU_OPTIONS_MainMenu.ShowPage(mcdu);
+            CDU_OPTIONS_AOC.ShowPage(mcdu);
         };
     }
 }
