@@ -669,11 +669,11 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
         const nextFlapSpeed = Simplane.getNextFlapsExtendSpeed(this.aircraft) * crossSpeedFactor;
         // Value used to draw the red VMAX barber pole
         const maxSpeed = A32NX_Selectors.VMAX();
-        const greenDot = SimVar.GetSimVarValue("L:A32NX_GD", "number");
+        const greenDot = SimVar.GetSimVarValue("L:A32NX_SPEEDS_GD", "number");
         const vR = SimVar.GetSimVarValue("L:AIRLINER_VR_SPEED", "Knots");
         const planeOnGround = Simplane.getIsGrounded();
-        const vs = SimVar.GetSimVarValue("L:A32NX_VS", "number");
-        const vls = SimVar.GetSimVarValue("L:A32NX_VLS", "number");
+        const vs = SimVar.GetSimVarValue("L:A32NX_SPEEDS_VS", "number");
+        const vls = SimVar.GetSimVarValue("L:A32NX_SPEEDS_VLS", "number");
         this.smoothSpeeds(indicatedSpeed, dTime, maxSpeed, vls, vs * 1.1, vs * 1.03, vs);
         this.updateSpeedTrendArrow(indicatedSpeed, speedTrend);
         this.updateTargetSpeeds(indicatedSpeed);
@@ -1050,7 +1050,7 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
     updateGreenDot(currentAirspeed, _greenDot) {
         if (this.greenDotSVG) {
             let hidePointer = true;
-            if (_greenDot > this.graduationMinValue) {
+            if (Simplane.getFlapsHandleIndex() === 0 && _greenDot > this.graduationMinValue) {
                 const greenDotPosY = this.valueToSvg(currentAirspeed, _greenDot);
                 const greenDotHeight = 20;
                 if (greenDotPosY > 0) {
@@ -1120,15 +1120,9 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
     }
     updateMarkerF(_marker, currentAirspeed) {
         let hideMarker = true;
-        const phase = Simplane.getCurrentFlightPhase();
         const flapsHandleIndex = Simplane.getFlapsHandleIndex();
-        if (flapsHandleIndex == 2 || (flapsHandleIndex == 3 && !SimVar.GetSimVarValue("L:A32NX_LANDING_CONF3", "boolean"))) {
-            let flapSpeed = 0;
-            if (phase == FlightPhase.FLIGHT_PHASE_TAKEOFF || phase == FlightPhase.FLIGHT_PHASE_CLIMB || phase == FlightPhase.FLIGHT_PHASE_GOAROUND) {
-                flapSpeed = Simplane.getStallSpeedPredicted(flapsHandleIndex - 1) * 1.26;
-            } else if (phase == FlightPhase.FLIGHT_PHASE_DESCENT || phase == FlightPhase.FLIGHT_PHASE_APPROACH) {
-                flapSpeed = SimVar.GetSimVarValue("L:A32NX_FS", "number");
-            }
+        if (flapsHandleIndex === 2 || (flapsHandleIndex === 3 && !SimVar.GetSimVarValue("L:A32NX_SPEEDS_LANDING_CONF3", "boolean"))) {
+            const flapSpeed = SimVar.GetSimVarValue("L:A32NX_SPEEDS_F", "number");
             if (flapSpeed >= 60) {
                 const posY = this.valueToSvg(currentAirspeed, flapSpeed);
                 _marker.svg.setAttribute("y", (posY - this.speedMarkersHeight * 0.5).toString());
@@ -1142,15 +1136,8 @@ class Jet_PFD_AirspeedIndicator extends HTMLElement {
     }
     updateMarkerS(_marker, currentAirspeed) {
         let hideMarker = true;
-        const phase = Simplane.getCurrentFlightPhase();
-        const flapsHandleIndex = Simplane.getFlapsHandleIndex();
-        if (flapsHandleIndex == 1) {
-            let slatSpeed = 0;
-            if (phase == FlightPhase.FLIGHT_PHASE_TAKEOFF || phase == FlightPhase.FLIGHT_PHASE_CLIMB || phase == FlightPhase.FLIGHT_PHASE_GOAROUND) {
-                slatSpeed = Simplane.getStallSpeedPredicted(flapsHandleIndex - 1) * 1.25;
-            } else if (phase == FlightPhase.FLIGHT_PHASE_DESCENT || phase == FlightPhase.FLIGHT_PHASE_APPROACH) {
-                slatSpeed = SimVar.GetSimVarValue("L:A32NX_SS", "number");
-            }
+        if (Simplane.getFlapsHandleIndex() === 1) {
+            const slatSpeed = SimVar.GetSimVarValue("L:A32NX_SPEEDS_S", "number");
             if (slatSpeed >= 60) {
                 const posY = this.valueToSvg(currentAirspeed, slatSpeed);
                 _marker.svg.setAttribute("y", (posY - this.speedMarkersHeight * 0.5).toString());

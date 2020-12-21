@@ -59,8 +59,8 @@ class A32NX_GPWS {
         this.UpdateAltState(radioAlt);
         this.differentiate_radioalt(radioAlt, deltaTime);
 
-        const mda = SimVar.GetSimVarValue("L:AIRLINER_MINIMUM_DESCENT_ALTITUDE", "Number");
-        const dh = SimVar.GetSimVarValue("L:AIRLINER_DECISION_HEIGHT", "Number");
+        const mda = SimVar.GetSimVarValue("L:AIRLINER_MINIMUM_DESCENT_ALTITUDE", "feet");
+        const dh = SimVar.GetSimVarValue("L:AIRLINER_DECISION_HEIGHT", "feet");
         const phase = SimVar.GetSimVarValue("L:AIRLINER_FLIGHT_PHASE", "Enum");
 
         if (radioAlt >= 10 && radioAlt <= 2450 && !SimVar.GetSimVarValue("L:A32NX_GPWS_SYS_OFF", "Bool")) { //Activate between 10 - 2450 radio alt unless SYS is off
@@ -578,7 +578,7 @@ class A32NX_GPWS {
                 }
                 break;
             case "retardPlaying":
-                if (SimVar.GetSimVarValue("GENERAL ENG THROTTLE LEVER POSITION:1", "Percent over 100") === 0 || SimVar.GetSimVarValue("GENERAL ENG THROTTLE LEVER POSITION:2", "Percent over 100") === 0) {
+                if (SimVar.GetSimVarValue("GENERAL ENG THROTTLE LEVER POSITION:1", "Percent over 100") <= 0.05 || SimVar.GetSimVarValue("GENERAL ENG THROTTLE LEVER POSITION:2", "Percent over 100") <= 0.05) {
                     this.RetardState.action("land");
                     this.core.soundManager.removePeriodicSound(soundList.retard);
                 } else if (SimVar.GetSimVarValue("L:AIRLINER_FLIGHT_PHASE", "Enum") === FlightPhase.FLIGHT_PHASE_GOAROUND || radioAlt > 20) {
@@ -606,7 +606,7 @@ const RetardStateMachine = {
     retardPlaying: {
         transitions: {
             land: {
-                target: "retardStopped"
+                target: "landed"
             },
             go_around: {
                 target: "overRetard"

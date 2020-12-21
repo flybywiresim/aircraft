@@ -1165,7 +1165,7 @@ Unit : Number</Comment>
 								<GameParameter Name="SIMVAR_TURB_ENG_N1_DERIVED" ID="{79A066BA-57E2-4045-8509-C0AC2DFF5235}">
 									<PropertyList>
 										<Property Name="InitialValue" Type="Real64" Value="1"/>
-										<Property Name="Max" Type="Real64" Value="1"/>
+										<Property Name="Max" Type="Real64" Value="5"/>
 										<Property Name="Min" Type="Real64" Value="-1"/>
 									</PropertyList>
 								</GameParameter>
@@ -1327,7 +1327,13 @@ Unit : Percent over 100</Comment>
 								<Property Name="FilterTimeDown" Type="Real64" Value="1"/>
 								<Property Name="FilterTimeUp" Type="Real64" Value="1"/>
 								<Property Name="InitialValue" Type="Real64" Value="0"/>
-								<Property Name="Max" Type="Real64" Value="200"/>
+							</PropertyList>
+						</GameParameter>
+						<GameParameter Name="SIMVAR_APU_PCT_RPM_DERIVED" ID="{D800237B-0729-4C0C-BA23-1AF1433A180C}">
+							<PropertyList>
+								<Property Name="InitialValue" Type="Real64" Value="5"/>
+								<Property Name="Max" Type="Real64" Value="5"/>
+								<Property Name="Min" Type="Real64" Value="-5"/>
 							</PropertyList>
 						</GameParameter>
 					</ChildrenList>
@@ -1397,6 +1403,12 @@ Unit : Percent</Comment>
 								</GameParameter>
 							</ChildrenList>
 						</Folder>
+						<GameParameter Name="SIMVAR_INTERACTIVE_POINT_OPEN" ID="{BC986C77-83A7-42D4-B9D4-76D4C9092E7D}">
+							<PropertyList>
+								<Property Name="InitialValue" Type="Real64" Value="1"/>
+								<Property Name="Max" Type="Real64" Value="1"/>
+							</PropertyList>
+						</GameParameter>
 					</ChildrenList>
 				</Folder>
 			</ChildrenList>

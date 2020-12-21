@@ -20,7 +20,7 @@ class CDU_OPTIONS_TELEX {
         }
 
         mcdu.setTemplate([
-            ["A32NX OPTIONS"],
+            ["A32NX OPTIONS AOC"],
             ["", "", "ONLINE FEATURES"],
             ["WARNING:[color]amber"],
             ["[b-text]ENABLES FREE TEXT AND LIVE"],
@@ -32,7 +32,7 @@ class CDU_OPTIONS_TELEX {
             [""],
             ["[s-text]USE AT YOUR OWN RISK.[color]amber"],
             ["", "CONFIRM[color]cyan"],
-            firstTime ? ["<LATER[color]cyan", telexToggleText] : ["<RETURN[color]cyan", telexToggleText]
+            firstTime ? ["<LATER[color]cyan", telexToggleText] : ["<RETURN", telexToggleText]
         ]);
 
         mcdu.leftInputDelay[5] = () => {
@@ -40,11 +40,11 @@ class CDU_OPTIONS_TELEX {
         };
         mcdu.onLeftInput[5] = () => {
             if (firstTime) {
-                CDUMenuPage.ShowPage(mcdu);
+                CDU_OPTIONS_AOC.ShowPage(mcdu);
                 // Take "LATER" as disabling it
                 NXDataStore.set("CONFIG_ONLINE_FEATURES_STATUS", "DISABLED");
             } else {
-                CDU_OPTIONS_MainMenu.ShowPage(mcdu);
+                CDU_OPTIONS_AOC.ShowPage(mcdu);
             }
         };
         mcdu.rightInputDelay[5] = () => {
@@ -75,7 +75,7 @@ class CDU_OPTIONS_TELEX {
                         });
             }
             if (firstTime) {
-                CDUMenuPage.ShowPage(mcdu);
+                CDU_OPTIONS_AOC.ShowPage(mcdu);
             } else {
                 CDU_OPTIONS_TELEX.ShowPage(mcdu);
             }
