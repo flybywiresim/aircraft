@@ -127,16 +127,16 @@ goto main)
 :auto
 cls
 @echo on
-if not exist %CD%/.github(
-     git clone https://github.com/flybywiresim/a32nx.git
-	 cd a32nx
-      call ./scripts/dev-env/run.cmd ./scripts/setup.sh
+if exist %CD%/.github(
+     git pull
+	 call ./scripts/dev-env/run.cmd ./scripts/setup.sh
 	 call ./scripts/dev-env/run.cmd ./scripts/build.sh
 	 pause
 	 goto main
 ) else (
-     git pull
-	 call ./scripts/dev-env/run.cmd ./scripts/setup.sh
+     git clone https://github.com/flybywiresim/a32nx.git
+	 cd a32nx
+     call ./scripts/dev-env/run.cmd ./scripts/setup.sh
 	 call ./scripts/dev-env/run.cmd ./scripts/build.sh
 	 pause
 	 goto main
