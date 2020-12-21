@@ -22,16 +22,16 @@ class CDUPositionMonitorPage {
         mcdu.setTemplate([
             ["POSITION MONITOR"],
             [""],
-            ["FMS1", currPos + "[color]green"],
-            ["", "", "3IRS/GPS"],
-            ["FMS2", currPos + "[color]green"],
-            ["", "", "3IRS/GPS"],
-            ["GPIRS", currPos + "[color]green"],
+            ["{small}FMS1{end}", currPos + "[color]green"],
+            ["\xa0\xa0\xa0\xa0\xa0\xa03IRS/GPS"],
+            ["{small}FMS2{end}", currPos + "[color]green"],
+            ["\xa0\xa0\xa0\xa0\xa0\xa03IRS/GPS"],
+            ["{small}GPIRS{end}", currPos + "[color]green"],
             [""],
-            ["MIX IRS", currPos + "[color]green"],
-            ["IRS1", "IRS3", "IRS2"],
-            ["NAV 0.0[color]green", "NAV 0.0[color]green", "NAV 0.0[color]green"],
-            ["", "SEL"],
+            ["{small}MIX IRS{end}", currPos + "[color]green"],
+            ["\xa0\xa0IRS1", "IRS3\xa0", "\xa0IRS2"],
+            ["{small}NAV 0.0{end}[color]green", "{small}NAV 0.0{end}[color]green", "{small}NAV 0.0{end}[color]green"],
+            ["", "SEL\xa0"],
             ["{FREEZE[color]cyan", "NAVAIDS>"]
         ]);
 

@@ -172,6 +172,14 @@ class CDUMenuPage {
                 }
             }, mcdu.getDelaySwitchPage());
         };
+        mcdu.onSec = () => {
+            const cur = mcdu.page.Current;
+            setTimeout(() => {
+                if (mcdu.page.Current === cur) {
+                    CDUSecFplnMain.ShowPage(mcdu);
+                }
+            }, mcdu.getDelaySwitchPage());
+        };
         mcdu.onRad = () => {
             const cur = mcdu.page.Current;
             setTimeout(() => {
