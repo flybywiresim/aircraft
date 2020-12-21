@@ -303,7 +303,7 @@
 				</Event>
 				<Event Id="3092322259" Name="Play_Asobo_A320_NEO_PWLWhine" ObjectPath="\Events\AIRCRAFTS\AIRCRAFT_WWISEDATA\AIRCRAFT_PLAYER\Asobo_A320_NEO_Improved2\PW 1100G\Play_Asobo_A320_NEO_PWLWhine" GUID="{2F66825D-7D5F-4CD8-9E59-A9956D19153E}" MaxAttenuation="36.000000" DurationType="Infinite">
 					<IncludedMemoryFiles>
-						<File Id="526064182" Language="SFX">
+						<File Id="464815017" Language="SFX">
 							<ShortName>PWLWhine.wav</ShortName>
 							<Path>SFX\PWLWhine_F9DAD686.wem</Path>
 						</File>
