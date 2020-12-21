@@ -79,7 +79,7 @@ class CDUMenuPage {
             selectedFMGC = true;
             updateView();
             setTimeout(() => {
-                mcdu.showErrorMessage("");
+                mcdu.addNewMessage(NXFictionalMessages.emptyMessage);
                 CDUIdentPage.ShowPage(mcdu);
             }, Math.floor(Math.random() * 400) + 100);
         };
@@ -89,7 +89,7 @@ class CDUMenuPage {
             selectedATSU = true;
             updateView();
             setTimeout(() => {
-                mcdu.showErrorMessage("");
+                mcdu.addNewMessage(NXFictionalMessages.emptyMessage);
                 CDUAtsuMenu.ShowPage(mcdu);
             }, Math.floor(Math.random() * 400) + 200);
         };
@@ -99,7 +99,7 @@ class CDUMenuPage {
             selectedAIDS = true;
             updateView();
             setTimeout(() => {
-                mcdu.showErrorMessage("");
+                mcdu.addNewMessage(NXFictionalMessages.emptyMessage);
                 CDU_AIDS_MainMenu.ShowPage(mcdu);
             }, Math.floor(Math.random() * 400) + 400);
         };
@@ -109,7 +109,7 @@ class CDUMenuPage {
             selectedCFDS = true;
             updateView();
             setTimeout(() => {
-                mcdu.showErrorMessage("");
+                mcdu.addNewMessage(NXFictionalMessages.emptyMessage);
                 CDUCfdsMainMenu.ShowPage(mcdu);
             }, Math.floor(Math.random() * 400) + 400);
         };
@@ -119,7 +119,7 @@ class CDUMenuPage {
             selectedMaint = true;
             updateView();
             setTimeout(() => {
-                mcdu.showErrorMessage("");
+                mcdu.addNewMessage(NXFictionalMessages.emptyMessage);
                 CDU_OPTIONS_MainMenu.ShowPage(mcdu);
             }, Math.floor(Math.random() * 400) + 200);
         };

@@ -22,10 +22,7 @@ class CDU_AIDS_MainMenu {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onRightInput[5] = () => {
-            mcdu.showErrorMessage("NOT YET IMPLEMENTED");
-            setTimeout(() => {
-                mcdu.showErrorMessage("");
-            }, 1000);
+            mcdu.addNewMessage(NXFictionalMessages.notYetImplemented);
         };
     }
 }

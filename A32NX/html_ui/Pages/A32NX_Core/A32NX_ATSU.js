@@ -138,7 +138,7 @@ const getSimBriefOfp = (mcdu, updateView) => {
     const simBriefUserId = NXDataStore.get("CONFIG_SIMBRIEF_USERID", "");
 
     if (!simBriefUsername && !simBriefUserId) {
-        mcdu.showErrorMessage("NO SIMBRIEF USER");
+        mcdu.addNewMessage(NXFictionalMessages.noSimBriefUser);
         throw ("No simbrief username/user ID provided");
     }
 

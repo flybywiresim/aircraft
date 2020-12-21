@@ -56,10 +56,7 @@ class CDU_OPTIONS_METAR {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onLeftInput[1] = () => {
-            mcdu.showErrorMessage("NOT YET IMPLEMENTED");
-            setTimeout(() => {
-                mcdu.showErrorMessage("");
-            }, 1000);
+            mcdu.addNewMessage(NXFictionalMessages.notYetImplemented);
         };
         mcdu.leftInputDelay[2] = () => {
             return mcdu.getDelaySwitchPage();

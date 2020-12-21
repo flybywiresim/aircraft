@@ -70,10 +70,7 @@ class CDUVerticalRevisionPage {
                         // NYI
                     }
                 }
-                mcdu.showErrorMessage("NOT YET IMPLEMENTED");
-                setTimeout(() => {
-                    mcdu.showErrorMessage("");
-                }, 1000);
+                mcdu.addNewMessage(NXFictionalMessages.notYetImplemented);
             }; // SPD CSTR
             mcdu.onRightInput[2] = (value) => {
                 if (value === FMCMainDisplay.clrValue) {

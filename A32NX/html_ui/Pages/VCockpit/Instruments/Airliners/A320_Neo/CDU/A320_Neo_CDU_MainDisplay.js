@@ -90,11 +90,10 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         NXApi.connectTelex(flightNo)
             .catch((err) => {
                 if (err !== NXApi.disabledError) {
-                    this.showErrorMessage("FLT NBR IN USE");
+                    this.addNewMessage(NXFictionalMessages.fltNbrInUse);
                 }
             });
 
-        this.defaultInputErrorMessage = "NOT ALLOWED";
         this.onDir = () => {
             CDUDirectToPage.ShowPage(this);
         };

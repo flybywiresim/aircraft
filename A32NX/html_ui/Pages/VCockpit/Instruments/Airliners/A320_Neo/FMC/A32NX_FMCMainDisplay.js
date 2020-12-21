@@ -1,7 +1,6 @@
 class FMCMainDisplay extends BaseAirliners {
     constructor() {
         super(...arguments);
-        this.defaultInputErrorMessage = "INVALID ENTRY";
         this.currentFlightPlanWaypointIndex = -1;
         this._title = undefined;
         this._pageCurrent = undefined;
@@ -840,7 +839,7 @@ class FMCMainDisplay extends BaseAirliners {
                 return callback(false);
             }
         } else {
-            this.showErrorMessage("NO ORIGIN AIRPORT");
+            this.addNewMessage(NXFictionalMessages.noOriginApt);
             return callback(false);
         }
     }
@@ -859,7 +858,7 @@ class FMCMainDisplay extends BaseAirliners {
         this.ensureCurrentFlightPlanIsTemporary(() => {
             const routeOriginInfo = this.flightPlanManager.getOrigin().infos;
             if (!this.flightPlanManager.getOrigin()) {
-                this.showErrorMessage("NO ORIGIN SET");
+                this.addNewMessage(NXFictionalMessages.noOriginSet);
                 return callback(false);
             } else if (runwayIndex === -1) {
                 this.flightPlanManager.setDepartureRunwayIndex(-1, () => {
@@ -975,7 +974,7 @@ class FMCMainDisplay extends BaseAirliners {
                 })
                 .catch((err) => {
                     if (err !== NXApi.disabledError) {
-                        this.showErrorMessage("FLT NBR IN USE");
+                        this.addNewMessage(NXFictionalMessages.fltNbrInUse);
                         return callback(false);
                     }
 
@@ -1041,7 +1040,7 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     async tryAddNextAirway(newAirway) {
-        this.showErrorMessage("NOT IMPLEMENTED");
+        this.addNewMessage(NXFictionalMessages.notYetImplemented);
         return false;
     }
 
@@ -1155,19 +1154,19 @@ class FMCMainDisplay extends BaseAirliners {
                             callback(true);
                             return;
                         }
-                        this.showErrorMessage("2ND INDEX NOT FOUND");
+                        this.addNewMessage(NXFictionalMessages.secondIndexNotFound);
                         return callback(false);
                     }
-                    this.showErrorMessage("1ST INDEX NOT FOUND");
+                    this.addNewMessage(NXFictionalMessages.firstIndexNotFound);
                     return callback(false);
                 }
-                this.showErrorMessage("NO REF WAYPOINT");
+                this.addNewMessage(NXFictionalMessages.noRefWpt);
                 return callback(false);
             }
-            this.showErrorMessage("NO WAYPOINT INFOS");
+            this.addNewMessage(NXFictionalMessages.noWptInfos);
             return callback(false);
         }
-        this.showErrorMessage("NO REF WAYPOINT");
+        this.addNewMessage(NXFictionalMessages.noRefWpt);
         return callback(false);
     }
 
@@ -1184,12 +1183,12 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     async tryInsertAirwayByWaypointIdent(newWaypointIdent, from) {
-        this.showErrorMessage("NOT IMPLEMENTED");
+        this.addNewMessage(NXFictionalMessages.notYetImplemented);
         return false;
     }
 
     async tryInsertAirway(newAirway, from) {
-        this.showErrorMessage("NOT IMPLEMENTED");
+        this.addNewMessage(NXFictionalMessages.notYetImplemented);
         return false;
     }
 
@@ -1200,7 +1199,7 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     async tryUpdateWaypointVia(via, waypointIndex) {
-        this.showErrorMessage("NOT IMPLEMENTED");
+        this.addNewMessage(NXFictionalMessages.notYetImplemented);
         return false;
     }
 
