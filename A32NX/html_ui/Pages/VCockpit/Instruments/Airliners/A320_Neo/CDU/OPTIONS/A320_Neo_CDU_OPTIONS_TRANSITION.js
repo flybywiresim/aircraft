@@ -53,7 +53,7 @@ class CDU_OPTIONS_TRANSITION {
         };
 
         mcdu.onRightInput[2] = (value) => {
-            if (isNaN(value) || parseInt(value) > 50000 || parseInt(value) <= 0) {
+            if (isNaN(value) || parseInt(value) > 50000 || parseInt(value) < 3000) {
                 mcdu.showErrorMessage("NOT ALLOWED");
             } else {
                 NXDataStore.set("CONFIG_DEPART_TRANSALT", value);
@@ -65,7 +65,7 @@ class CDU_OPTIONS_TRANSITION {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onRightInput[3] = (value) => {
-            if (isNaN(value) || parseInt(value) > 50000 || parseInt(value) <= 0) {
+            if (isNaN(value) || parseInt(value) > 50000 || parseInt(value) < 3000) {
                 mcdu.showErrorMessage("NOT ALLOWED");
             } else {
                 NXDataStore.set("CONFIG_ARRIVAL_TRANSALT", value);
