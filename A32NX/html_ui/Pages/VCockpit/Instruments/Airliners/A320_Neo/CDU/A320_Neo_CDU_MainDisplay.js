@@ -1623,7 +1623,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                 this.landingResetTimer = 30;
             }
             if (this.landingAutoBrakeTimer == null) {
-                this.landingAutoBrakeTimer = 4;
+                this.landingAutoBrakeTimer = SimVar.GetSimVarValue("L:XMLVAR_Autobrakes_Level", "Enum") === 1 ? 4 : 2;
             }
             if (this.lastPhaseUpdateTime == null) {
                 this.lastPhaseUpdateTime = Date.now();
@@ -1646,10 +1646,11 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         } else {
             //Reset timer to 30 when airborne in case of go around
             this.landingResetTimer = 30;
-            this.landingAutoBrakeTimer = 4;
+            this.landingAutoBrakeTimer = SimVar.GetSimVarValue("L:XMLVAR_Autobrakes_Level", "Enum") === 1 ? 4 : 2;
         }
 
-        if (SimVar.GetSimVarValue("L:AIRLINER_FLIGHT_PHASE", "number") != this.currentFlightPhase) {
+        if (SimVar.GetSimVarValue("L:AIRLINER_FLIGHT_PHASE", "number") !== this.currentFlightPhase) {
+            this.landingAutoBrakeTimer = null;
             SimVar.SetSimVarValue("L:AIRLINER_FLIGHT_PHASE", "number", this.currentFlightPhase);
             this.onFlightPhaseChanged();
             SimVar.SetSimVarValue("L:A32NX_CABIN_READY", "Bool", 0);
