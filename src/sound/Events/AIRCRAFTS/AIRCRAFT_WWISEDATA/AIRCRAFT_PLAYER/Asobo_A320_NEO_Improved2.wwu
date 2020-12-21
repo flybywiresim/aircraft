@@ -399,20 +399,6 @@
 						</Action>
 					</ChildrenList>
 				</Event>
-				<Event Name="Play_Asobo_A320_NEO_thrustvibration" ID="{ED7E8AB2-9562-4915-AADB-8D49BAB8ED3D}">
-					<ChildrenList>
-						<Action Name="" ID="{7DF1E79B-02E0-43ED-8140-AB930501E2CC}" ShortID="937604530">
-							<PropertyList>
-								<Property Name="ActionType" Type="int16" Value="1"/>
-							</PropertyList>
-							<ReferenceList>
-								<Reference Name="Target">
-									<ObjectRef Name="vibration" ID="{E10EB3BA-42BA-4CC5-BAFF-B242B6DB56B6}" WorkUnitID="{D7EAEC44-D3F0-4907-B024-BD8713B7A33B}"/>
-								</Reference>
-							</ReferenceList>
-						</Action>
-					</ChildrenList>
-				</Event>
 				<Event Name="Play_Asobo_A320_NEO_engmaster" ID="{77051EBE-F8A3-4F58-9EDD-83441C7AB13A}">
 					<ChildrenList>
 						<Action Name="" ID="{1F772E6C-C020-4FCB-8631-28F4F0A77BEB}" ShortID="411433327">
@@ -716,6 +702,48 @@
 							<ReferenceList>
 								<Reference Name="Target">
 									<ObjectRef Name="apushut" ID="{0F414D3F-3E28-44CA-B39B-DF93BBB7D1A9}" WorkUnitID="{D7EAEC44-D3F0-4907-B024-BD8713B7A33B}"/>
+								</Reference>
+							</ReferenceList>
+						</Action>
+					</ChildrenList>
+				</Event>
+				<Event Name="Play_Asobo_A320_NEO_groundrollnose" ID="{C86D78C7-550B-4F69-BF2F-2B4D77CC2239}">
+					<ChildrenList>
+						<Action Name="" ID="{99896968-FFEE-452C-8176-2ECB48E56055}" ShortID="740219367">
+							<PropertyList>
+								<Property Name="ActionType" Type="int16" Value="1"/>
+							</PropertyList>
+							<ReferenceList>
+								<Reference Name="Target">
+									<ObjectRef Name="groundrollnose" ID="{80D8F834-CFA0-429C-845D-048CB6DB487A}" WorkUnitID="{D7EAEC44-D3F0-4907-B024-BD8713B7A33B}"/>
+								</Reference>
+							</ReferenceList>
+						</Action>
+					</ChildrenList>
+				</Event>
+				<Event Name="Play_Asobo_A320_NEO_apuflapopen" ID="{424FAB31-5D78-4356-895B-FA728C845103}">
+					<ChildrenList>
+						<Action Name="" ID="{ED81F8FD-7495-4617-BFAD-4AE88A04D2A7}" ShortID="122784277">
+							<PropertyList>
+								<Property Name="ActionType" Type="int16" Value="1"/>
+							</PropertyList>
+							<ReferenceList>
+								<Reference Name="Target">
+									<ObjectRef Name="intflapopen" ID="{1A456BE4-B4C0-48D1-A00A-2CCF3A52D613}" WorkUnitID="{D7EAEC44-D3F0-4907-B024-BD8713B7A33B}"/>
+								</Reference>
+							</ReferenceList>
+						</Action>
+					</ChildrenList>
+				</Event>
+				<Event Name="Play_Asobo_A320_NEO_apuflapopenfull" ID="{743C6F32-CFE1-4EEA-B746-173075D1FF54}">
+					<ChildrenList>
+						<Action Name="" ID="{681C1E79-D627-4DE5-B15B-2A5F548C7FB7}" ShortID="434004555">
+							<PropertyList>
+								<Property Name="ActionType" Type="int16" Value="1"/>
+							</PropertyList>
+							<ReferenceList>
+								<Reference Name="Target">
+									<ObjectRef Name="initflapopenfinish" ID="{E874A087-6FF8-48B6-A45F-FEB65D863C50}" WorkUnitID="{D7EAEC44-D3F0-4907-B024-BD8713B7A33B}"/>
 								</Reference>
 							</ReferenceList>
 						</Action>

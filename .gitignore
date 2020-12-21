@@ -8,6 +8,7 @@
 /A32NX/manifest.json
 /A32NX/build_info.json
 /A32NX/html_ui/Pages/VCockpit/Instruments/generated
+/A32NX/ModelBehaviorDefs/A32NX/generated
 !/docs/**
 !/src/**
 !/scripts/**
@@ -21,6 +22,7 @@
 !.gitattributes
 !.prettierrc.json
 !.prettierignore
+!.npmrc
 !manifest-base.json
 .DS_Store
 node_modules
