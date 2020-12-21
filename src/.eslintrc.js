@@ -37,6 +37,9 @@ module.exports = {
         'class-methods-use-this': 'off',
         'curly': ['error', 'all'],
         'import/prefer-default-export': 'off',
+        'import/no-extraneous-dependencies': ['error', {
+            devDependencies: true,
+        }],
         'indent': ['error', 4],
         'react/jsx-indent': ['error', 4],
         'no-restricted-syntax': 'off',

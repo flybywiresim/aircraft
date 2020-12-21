@@ -6,11 +6,6 @@ function formatWeight(value) {
     return (+value).toFixed(1);
 }
 
-function formatTime(timestamp) {
-    var date = new Date(+timestamp * 1000);
-    return `${date.getUTCHours().toString().padStart(2, "0")}${date.getUTCMinutes().toString().padEnd(2, "0")}`;
-}
-
 class CDUAocInit {
     static ShowPage(mcdu) {
         mcdu.clearDisplay();
@@ -52,7 +47,7 @@ class CDUAocInit {
             fltNbr = `{small}${mcdu.simbrief.icao_airline}${mcdu.simbrief.flight_number}{end}[color]green`;
         }
         if (mcdu.simbrief.ete) {
-            ete = `${formatTime(mcdu.simbrief.ete)}[color]cyan`;
+            ete = `${FMCMainDisplay.secondsTohhmm(mcdu.simbrief.ete)}[color]cyan`;
         }
 
         const currentFob = formatWeight(mcdu.getFOB() * mcdu._conversionWeight);
@@ -163,7 +158,7 @@ class CDUAocInit {
             inTime = `${FMCMainDisplay.secondsTohhmm(mcdu.aocTimes.in)}[color]green`;
         }
         if (mcdu.simbrief["blockTime"]) {
-            blockTime = `${formatTime(mcdu.simbrief.blockTime)}[color]green`;
+            blockTime = `${FMCMainDisplay.secondsTohhmm(mcdu.simbrief.blockTime)}[color]green`;
         }
 
         function updateView() {
