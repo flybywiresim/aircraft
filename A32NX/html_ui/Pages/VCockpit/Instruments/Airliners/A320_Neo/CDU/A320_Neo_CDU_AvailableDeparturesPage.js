@@ -62,6 +62,7 @@ class CDUAvailableDeparturesPage {
                 insertRow = ["{ERASE[color]amber", "INSERT*[color]amber"];
                 mcdu.onRightInput[5] = () => {
                     mcdu.insertTemporaryFlightPlan(() => {
+                        mcdu.updateConstraints();
                         CDUFlightPlanPage.ShowPage(mcdu, 0);
                     });
                 };
