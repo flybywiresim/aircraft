@@ -23,15 +23,16 @@ class CDU_OPTIONS_TRANSITION {
             [Auto],
             [""],
             [Manual],
-            ["", "", "DEFAULT TRANS ALT"],
-            ["DEP TRANS ALT", `{cyan}[${storedDepartTransAlt}]{end}`],
+            ["", "", "DEFAULT MANUAL TA"],
             [""],
-            ["ARR TRANS ALT", `{cyan}[${storedArrivalTransAlt}]{end}`],
+            ["{sp}DEPATURE", "ARRIVAL{sp}"],
+            [`{cyan}*[${storedDepartTransAlt}]{end}`, `{cyan}[${storedArrivalTransAlt}]*{end}`],
             [""],
             [""],
             [""],
             ["<RETURN"]
         ]);
+
 
         mcdu.leftInputDelay[0] = () => {
             return mcdu.getDelaySwitchPage();
