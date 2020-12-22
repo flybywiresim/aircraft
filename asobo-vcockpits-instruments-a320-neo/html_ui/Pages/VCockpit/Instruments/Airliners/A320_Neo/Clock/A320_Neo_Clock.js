@@ -4,7 +4,9 @@ class A320_Neo_Clock extends BaseAirliners {
         this.chronoStarted = false;
         this.chronoValue = 0;
     }
-    get templateID() { return "A320_Neo_Clock"; }
+    get templateID() {
+        return "A320_Neo_Clock";
+    }
     connectedCallback() {
         super.connectedCallback();
         this.topSelectorElem = this.getChildById("TopSelectorValue");
@@ -19,11 +21,9 @@ class A320_Neo_Clock extends BaseAirliners {
             if (_args[0] == "oclock_chrono") {
                 if (this.chronoStarted) {
                     this.chronoStarted = false;
-                }
-                else if (this.chronoValue > 0) {
+                } else if (this.chronoValue > 0) {
                     this.chronoValue = 0;
-                }
-                else {
+                } else {
                     this.chronoStarted = true;
                 }
             }
@@ -77,21 +77,24 @@ class A320_Neo_Clock extends BaseAirliners {
         var seconds = Math.floor(totalSeconds - (minutes * 60) - (hours * 3600));
         var time = "";
         if (hours == 0) {
-            if (minutes < 10)
+            if (minutes < 10) {
                 time += "0";
+            }
             time += minutes;
             time += ":";
-            if (seconds < 10)
+            if (seconds < 10) {
                 time += "0";
+            }
             time += seconds;
-        }
-        else {
-            if (hours < 10)
+        } else {
+            if (hours < 10) {
                 time += "0";
+            }
             time += hours;
             time += ":";
-            if (minutes < 10)
+            if (minutes < 10) {
                 time += "0";
+            }
             time += minutes;
         }
         return time.toString();

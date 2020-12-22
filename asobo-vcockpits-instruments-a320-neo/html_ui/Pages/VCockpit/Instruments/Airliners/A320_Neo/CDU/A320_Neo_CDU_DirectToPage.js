@@ -4,11 +4,10 @@ class CDUDirectToPage {
         let directWaypointCell = " ";
         if (directWaypoint) {
             directWaypointCell = directWaypoint.ident;
-        }
-        else if (mcdu.flightPlanManager.getDirectToTarget()) {
+        } else if (mcdu.flightPlanManager.getDirectToTarget()) {
             directWaypointCell = mcdu.flightPlanManager.getDirectToTarget().ident;
         }
-        let waypointsCell = ["", "", "", "", ""];
+        const waypointsCell = ["", "", "", "", ""];
         let iMax = 5;
         let eraseLabel = "";
         if (directWaypoint) {
@@ -21,7 +20,7 @@ class CDUDirectToPage {
             };
         }
         mcdu.onLeftInput[0] = () => {
-            let value = mcdu.inOut;
+            const value = mcdu.inOut;
             mcdu.clearUserInput();
             mcdu.getOrSelectWaypointByIdent(value, (w) => {
                 if (w) {
@@ -36,9 +35,9 @@ class CDUDirectToPage {
         };
         let i = 0;
         let index = 0;
-        let waypointsCount = mcdu.flightPlanManager.getWaypointsCount() + mcdu.flightPlanManager.getApproachWaypoints().length;
+        const waypointsCount = mcdu.flightPlanManager.getWaypointsCount() + mcdu.flightPlanManager.getApproachWaypoints().length;
         while (i + wptsListIndex < waypointsCount && index < iMax) {
-            let waypoint = mcdu.flightPlanManager.getWaypoint(i + wptsListIndex, undefined, true);
+            const waypoint = mcdu.flightPlanManager.getWaypoint(i + wptsListIndex, undefined, true);
             if (waypoint) {
                 if (waypoint.ident != "USR") {
                     waypointsCell[index] = "←" + waypoint.ident + "[color]blue";

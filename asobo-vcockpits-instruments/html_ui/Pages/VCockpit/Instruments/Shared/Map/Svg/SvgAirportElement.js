@@ -51,7 +51,7 @@ class SvgAirportElement extends SvgMapElement {
         return "airport-" + this.icao + "-map-" + map.index;
     }
     createDraw(map) {
-        let container = document.createElementNS(Avionics.SVG.NS, "svg");
+        const container = document.createElementNS(Avionics.SVG.NS, "svg");
         container.id = this.id(map);
         container.setAttribute("overflow", "visible");
         return container;
@@ -70,8 +70,8 @@ class SvgAirportElement extends SvgMapElement {
             rectStroke.setAttribute("ry", fastToFixed(map.config.runwayCornerRadius, 0));
         }
         for (let i = 0; i < this.runways.length; i++) {
-            let runway = this.runways[i];
-            let rectStroke = this.svgElement.children[i];
+            const runway = this.runways[i];
+            const rectStroke = this.svgElement.children[i];
             let rectNoStroke = this.svgElement.children[i + this.runways.length];
             if (!rectNoStroke) {
                 rectNoStroke = document.createElementNS(Avionics.SVG.NS, "rect");
@@ -83,13 +83,13 @@ class SvgAirportElement extends SvgMapElement {
             rectNoStroke.setAttribute("rx", fastToFixed(map.config.runwayCornerRadius, 0));
             rectNoStroke.setAttribute("ry", fastToFixed(map.config.runwayCornerRadius, 0));
             map.coordinatesToXYToRef(new LatLongAlt(runway.latitude, runway.longitude), this._tmpCenter);
-            let l = map.feetsToPixels(runway.length);
-            let w = Math.max(map.feetsToPixels(runway.width), map.config.runwayMinimalWidth);
-            let x = fastToFixed((this._tmpCenter.x - w * 0.5), 0);
-            let y = fastToFixed((this._tmpCenter.y - l * 0.5), 0);
-            let width = fastToFixed(w, 0);
-            let height = fastToFixed(l, 0);
-            let transform = "rotate(" +
+            const l = map.feetsToPixels(runway.length);
+            const w = Math.max(map.feetsToPixels(runway.width), map.config.runwayMinimalWidth);
+            const x = fastToFixed((this._tmpCenter.x - w * 0.5), 0);
+            const y = fastToFixed((this._tmpCenter.y - l * 0.5), 0);
+            const width = fastToFixed(w, 0);
+            const height = fastToFixed(l, 0);
+            const transform = "rotate(" +
                 fastToFixed((runway.direction), 0) + " " +
                 fastToFixed((this._tmpCenter.x), 0) + " " +
                 fastToFixed((this._tmpCenter.y), 0) + ")";

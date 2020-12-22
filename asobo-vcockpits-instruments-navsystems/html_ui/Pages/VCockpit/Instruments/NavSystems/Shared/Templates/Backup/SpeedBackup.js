@@ -58,7 +58,7 @@ class SpeedBackup extends HTMLElement {
         this.baroGroup = document.createElementNS(Avionics.SVG.NS, "g");
         this.baroGroup.setAttribute("transform", "translate(0," + baroDeltaY + ")");
         {
-            let baroTitle = document.createElementNS(Avionics.SVG.NS, "text");
+            const baroTitle = document.createElementNS(Avionics.SVG.NS, "text");
             baroTitle.setAttribute("x", "256");
             baroTitle.setAttribute("y", "30");
             baroTitle.setAttribute("font-size", "35");
@@ -67,7 +67,7 @@ class SpeedBackup extends HTMLElement {
             baroTitle.setAttribute("fill", "white");
             baroTitle.textContent = "BARO";
             this.baroGroup.appendChild(baroTitle);
-            let baroBg = document.createElementNS(Avionics.SVG.NS, "rect");
+            const baroBg = document.createElementNS(Avionics.SVG.NS, "rect");
             baroBg.setAttribute("x", "190");
             baroBg.setAttribute("y", "40");
             baroBg.setAttribute("width", "132");
@@ -130,7 +130,7 @@ class SpeedBackup extends HTMLElement {
                     this.flapsElement.setAttribute("height", "0");
                     this.flapsElement.setAttribute("fill", "white");
                     this.airspeedCenterGroup.appendChild(this.flapsElement);
-                    let dashSvg = document.createElementNS(Avionics.SVG.NS, "svg");
+                    const dashSvg = document.createElementNS(Avionics.SVG.NS, "svg");
                     dashSvg.setAttribute("id", "DASH");
                     dashSvg.setAttribute("x", "0");
                     dashSvg.setAttribute("y", "0");
@@ -140,7 +140,7 @@ class SpeedBackup extends HTMLElement {
                     this.airspeedGroup.appendChild(dashSvg);
                     this.startElement = document.createElementNS(Avionics.SVG.NS, "g");
                     dashSvg.appendChild(this.startElement);
-                    let startBg = document.createElementNS(Avionics.SVG.NS, "rect");
+                    const startBg = document.createElementNS(Avionics.SVG.NS, "rect");
                     startBg.setAttribute("x", "0");
                     startBg.setAttribute("y", "-940");
                     startBg.setAttribute("width", "25");
@@ -148,7 +148,7 @@ class SpeedBackup extends HTMLElement {
                     startBg.setAttribute("fill", "white");
                     this.startElement.appendChild(startBg);
                     for (let i = 0; i <= 32; i++) {
-                        let redLine = document.createElementNS(Avionics.SVG.NS, "rect");
+                        const redLine = document.createElementNS(Avionics.SVG.NS, "rect");
                         redLine.setAttribute("x", "0");
                         redLine.setAttribute("y", (-125 - 25 * i).toString());
                         redLine.setAttribute("width", "25");
@@ -159,7 +159,7 @@ class SpeedBackup extends HTMLElement {
                     }
                     this.endElement = document.createElementNS(Avionics.SVG.NS, "g");
                     dashSvg.appendChild(this.endElement);
-                    let endBg = document.createElementNS(Avionics.SVG.NS, "rect");
+                    const endBg = document.createElementNS(Avionics.SVG.NS, "rect");
                     endBg.setAttribute("x", "0");
                     endBg.setAttribute("y", "-900");
                     endBg.setAttribute("width", "25");
@@ -167,7 +167,7 @@ class SpeedBackup extends HTMLElement {
                     endBg.setAttribute("fill", "white");
                     this.endElement.appendChild(endBg);
                     for (let i = 0; i <= 32; i++) {
-                        let redLine = document.createElementNS(Avionics.SVG.NS, "rect");
+                        const redLine = document.createElementNS(Avionics.SVG.NS, "rect");
                         redLine.setAttribute("x", "0");
                         redLine.setAttribute("y", (-125 - 25 * i).toString());
                         redLine.setAttribute("width", "25");
@@ -178,7 +178,7 @@ class SpeedBackup extends HTMLElement {
                     }
                     var center = refCenter;
                     for (let i = -3; i <= 5; i++) {
-                        let grad = document.createElementNS(Avionics.SVG.NS, "rect");
+                        const grad = document.createElementNS(Avionics.SVG.NS, "rect");
                         grad.setAttribute("x", "0");
                         grad.setAttribute("y", (center + 80 * i).toString());
                         grad.setAttribute("height", "4");
@@ -186,7 +186,7 @@ class SpeedBackup extends HTMLElement {
                         grad.setAttribute("fill", "white");
                         this.airspeedCenterGroup.appendChild(grad);
                         if (i != 0) {
-                            let halfGrad = document.createElementNS(Avionics.SVG.NS, "rect");
+                            const halfGrad = document.createElementNS(Avionics.SVG.NS, "rect");
                             halfGrad.setAttribute("x", "0");
                             halfGrad.setAttribute("y", (center + 80 * i + (i < 0 ? 40 : -40)).toString());
                             halfGrad.setAttribute("height", "4");
@@ -194,7 +194,7 @@ class SpeedBackup extends HTMLElement {
                             halfGrad.setAttribute("fill", "white");
                             this.airspeedCenterGroup.appendChild(halfGrad);
                         }
-                        let gradText = document.createElementNS(Avionics.SVG.NS, "text");
+                        const gradText = document.createElementNS(Avionics.SVG.NS, "text");
                         gradText.setAttribute("x", "55");
                         gradText.setAttribute("y", (center + 10 + 80 * i).toString());
                         gradText.setAttribute("fill", "white");
@@ -223,7 +223,7 @@ class SpeedBackup extends HTMLElement {
                 this.airspeedCursor.setAttribute("stroke-width", "3");
                 this.airspeedCursor.setAttribute("fill", "black");
                 this.airspeedGroup.appendChild(this.airspeedCursor);
-                let baseCursorSvg = document.createElementNS(Avionics.SVG.NS, "svg");
+                const baseCursorSvg = document.createElementNS(Avionics.SVG.NS, "svg");
                 baseCursorSvg.setAttribute("x", (30 * this.cursorSizeFactor).toString());
                 baseCursorSvg.setAttribute("y", (center - 40 * this.cursorSizeFactor).toString());
                 baseCursorSvg.setAttribute("width", (100 * this.cursorSizeFactor).toString());
@@ -264,7 +264,7 @@ class SpeedBackup extends HTMLElement {
                     this.airspeedDigit2Bot.textContent = "-";
                     baseCursorSvg.appendChild(this.airspeedDigit2Bot);
                 }
-                let rotatingCursorSvg = document.createElementNS(Avionics.SVG.NS, "svg");
+                const rotatingCursorSvg = document.createElementNS(Avionics.SVG.NS, "svg");
                 rotatingCursorSvg.setAttribute("x", (130 * this.cursorSizeFactor).toString());
                 rotatingCursorSvg.setAttribute("y", (center - 60 * this.cursorSizeFactor).toString());
                 rotatingCursorSvg.setAttribute("width", (70 * this.cursorSizeFactor).toString());
@@ -276,7 +276,7 @@ class SpeedBackup extends HTMLElement {
                     rotatingCursorSvg.appendChild(this.airspeedEndDigitsGroup);
                     this.airspeedEndDigits = [];
                     for (let i = -2; i <= 2; i++) {
-                        let digit = document.createElementNS(Avionics.SVG.NS, "text");
+                        const digit = document.createElementNS(Avionics.SVG.NS, "text");
                         digit.setAttribute("x", "0");
                         digit.setAttribute("y", ((15 + 45 * i) * this.cursorSizeFactor).toString());
                         digit.setAttribute("fill", "white");
@@ -300,28 +300,28 @@ class SpeedBackup extends HTMLElement {
             this.altimeterCenter.setAttribute("viewBox", "0 0 200 " + refHeight);
             this.altimeterGroup.appendChild(this.altimeterCenter);
             {
-                let graduationSvg = document.createElementNS(Avionics.SVG.NS, "svg");
+                const graduationSvg = document.createElementNS(Avionics.SVG.NS, "svg");
                 graduationSvg.setAttribute("x", "0");
                 graduationSvg.setAttribute("y", "0");
                 graduationSvg.setAttribute("width", "200");
                 graduationSvg.setAttribute("height", refHeight.toString());
                 graduationSvg.setAttribute("viewBox", "0 0 200 " + refHeight);
                 this.altimeterCenter.appendChild(graduationSvg);
-                let center = refCenter;
+                const center = refCenter;
                 this.altimeterGraduationGroup = document.createElementNS(Avionics.SVG.NS, "g");
                 graduationSvg.appendChild(this.altimeterGraduationGroup);
                 {
-                    let graduationSize = 60;
+                    const graduationSize = 60;
                     this.altimeterGraduationTexts = [];
                     for (let i = -5; i <= 5; i++) {
-                        let mainGrad = document.createElementNS(Avionics.SVG.NS, "rect");
+                        const mainGrad = document.createElementNS(Avionics.SVG.NS, "rect");
                         mainGrad.setAttribute("x", "160");
                         mainGrad.setAttribute("y", fastToFixed(center - 2 + i * graduationSize, 0));
                         mainGrad.setAttribute("height", "4");
                         mainGrad.setAttribute("width", "40");
                         mainGrad.setAttribute("fill", "white");
                         this.altimeterGraduationGroup.appendChild(mainGrad);
-                        let gradText = document.createElementNS(Avionics.SVG.NS, "text");
+                        const gradText = document.createElementNS(Avionics.SVG.NS, "text");
                         gradText.setAttribute("x", "155");
                         gradText.setAttribute("y", fastToFixed(center + 8 + i * graduationSize, 0));
                         gradText.setAttribute("fill", "white");
@@ -332,7 +332,7 @@ class SpeedBackup extends HTMLElement {
                         this.altimeterGraduationGroup.appendChild(gradText);
                         this.altimeterGraduationTexts.push(gradText);
                         for (let j = 1; j < 5; j++) {
-                            let grad = document.createElementNS(Avionics.SVG.NS, "rect");
+                            const grad = document.createElementNS(Avionics.SVG.NS, "rect");
                             grad.setAttribute("x", "185");
                             grad.setAttribute("y", fastToFixed(center - 2 + i * graduationSize + j * (graduationSize / 5), 0));
                             grad.setAttribute("height", "4");
@@ -342,7 +342,7 @@ class SpeedBackup extends HTMLElement {
                         }
                     }
                 }
-                let cursor = document.createElementNS(Avionics.SVG.NS, "path");
+                const cursor = document.createElementNS(Avionics.SVG.NS, "path");
                 cursor.setAttribute("d", "M" + (200 - (200 * this.cursorSizeFactor)) + " " + (center - (40 * this.cursorSizeFactor)) +
                     " L" + (200 - (100 * this.cursorSizeFactor)) + " " + (center - (40 * this.cursorSizeFactor)) +
                     " L" + (200 - (100 * this.cursorSizeFactor)) + " " + (center - (60 * this.cursorSizeFactor)) +
@@ -358,7 +358,7 @@ class SpeedBackup extends HTMLElement {
                 cursor.setAttribute("stroke", "white");
                 cursor.setAttribute("stroke-width", "3");
                 graduationSvg.appendChild(cursor);
-                let cursorBaseSvg = document.createElementNS(Avionics.SVG.NS, "svg");
+                const cursorBaseSvg = document.createElementNS(Avionics.SVG.NS, "svg");
                 cursorBaseSvg.setAttribute("x", (200 - (200 * this.cursorSizeFactor)).toString());
                 cursorBaseSvg.setAttribute("y", (center - (40 * this.cursorSizeFactor)).toString());
                 cursorBaseSvg.setAttribute("width", (100 * this.cursorSizeFactor).toString());
@@ -415,7 +415,7 @@ class SpeedBackup extends HTMLElement {
                     this.altimeterDigit3Bot.textContent = "X";
                     cursorBaseSvg.appendChild(this.altimeterDigit3Bot);
                 }
-                let cursorRotatingSvg = document.createElementNS(Avionics.SVG.NS, "svg");
+                const cursorRotatingSvg = document.createElementNS(Avionics.SVG.NS, "svg");
                 cursorRotatingSvg.setAttribute("x", (200 - 105 * this.cursorSizeFactor).toString());
                 cursorRotatingSvg.setAttribute("y", (center - (60 * this.cursorSizeFactor)).toString());
                 cursorRotatingSvg.setAttribute("width", (70 * this.cursorSizeFactor).toString());
@@ -427,7 +427,7 @@ class SpeedBackup extends HTMLElement {
                     cursorRotatingSvg.appendChild(this.altimeterEndDigitsGroup);
                     this.altimeterEndDigits = [];
                     for (let i = -2; i <= 2; i++) {
-                        let digit = document.createElementNS(Avionics.SVG.NS, "text");
+                        const digit = document.createElementNS(Avionics.SVG.NS, "text");
                         digit.setAttribute("x", (7 * this.cursorSizeFactor).toString());
                         digit.setAttribute("y", ((27 + 45 * i) * this.cursorSizeFactor).toString().toString());
                         digit.setAttribute("fill", "white");
@@ -442,25 +442,26 @@ class SpeedBackup extends HTMLElement {
         }
     }
     attributeChangedCallback(name, oldValue, newValue) {
-        if (oldValue == newValue)
+        if (oldValue == newValue) {
             return;
+        }
         switch (name) {
             case "is-backup":
-                {
-                    this.isBackup = newValue == "true";
-                    break;
-                }
+            {
+                this.isBackup = newValue == "true";
+                break;
+            }
             case "aspect-ratio":
-                {
-                    this.aspectRatio = parseFloat(newValue);
-                    this.construct();
-                    break;
-                }
+            {
+                this.aspectRatio = parseFloat(newValue);
+                this.construct();
+                break;
+            }
             case "altitude":
                 {
-                    let value = parseFloat(newValue);
+                    const value = parseFloat(newValue);
                     this.altitude = value;
-                    let center = Math.round(value / 100) * 100;
+                    const center = Math.round(value / 100) * 100;
                     this.altimeterGraduationGroup.setAttribute("transform", "translate(0, " + ((value - center) * 60 / 100) + ")");
                     if (this.currentCenterGrad != center) {
                         this.currentCenterGrad = center;
@@ -468,15 +469,15 @@ class SpeedBackup extends HTMLElement {
                             this.altimeterGraduationTexts[i].textContent = fastToFixed(((5 - i) * 100) + center, 0);
                         }
                     }
-                    let endValue = value % 100;
-                    let endCenter = Math.round(endValue / 10) * 10;
+                    const endValue = value % 100;
+                    const endCenter = Math.round(endValue / 10) * 10;
                     this.altimeterEndDigitsGroup.setAttribute("transform", "translate(0, " + ((endValue - endCenter) * 45 * this.cursorSizeFactor / 10) + ")");
                     for (let i = 0; i < this.altimeterEndDigits.length; i++) {
-                        let digitValue = Math.round((((2 - i) * 10) + value) % 100 / 10) * 10;
+                        const digitValue = Math.round((((2 - i) * 10) + value) % 100 / 10) * 10;
                         this.altimeterEndDigits[i].textContent = fastToFixed(Math.abs((digitValue % 100) / 10), 0) + "0";
                     }
                     if (Math.abs(value) >= 90) {
-                        let d3Value = (Math.abs(value) % 1000) / 100;
+                        const d3Value = (Math.abs(value) % 1000) / 100;
                         this.altimeterDigit3Bot.textContent = Math.abs(value) < 100 ? "" : fastToFixed(Math.floor(d3Value), 0);
                         this.altimeterDigit3Top.textContent = fastToFixed((Math.floor(d3Value) + 1) % 10, 0);
                         if (endValue > 90 || endValue < -90) {
@@ -484,16 +485,15 @@ class SpeedBackup extends HTMLElement {
                                 this.altimeterDigit3Bot.textContent = fastToFixed((Math.floor(d3Value) + 1) % 10, 0);
                                 this.altimeterDigit3Top.textContent = Math.abs(value) < 100 ? "" : fastToFixed(Math.floor(d3Value), 0);
                             }
-                            let translate = (endValue > 0 ? (endValue - 90) : (endValue + 100)) * 57 * this.cursorSizeFactor / 10;
+                            const translate = (endValue > 0 ? (endValue - 90) : (endValue + 100)) * 57 * this.cursorSizeFactor / 10;
                             this.altimeterDigit3Bot.setAttribute("transform", "translate(0, " + translate + ")");
                             this.altimeterDigit3Top.setAttribute("transform", "translate(0, " + translate + ")");
-                        }
-                        else {
+                        } else {
                             this.altimeterDigit3Bot.setAttribute("transform", "");
                             this.altimeterDigit3Top.setAttribute("transform", "");
                         }
                         if (Math.abs(value) >= 990) {
-                            let d2Value = (Math.abs(value) % 10000) / 1000;
+                            const d2Value = (Math.abs(value) % 10000) / 1000;
                             this.altimeterDigit2Bot.textContent = Math.abs(value) < 1000 ? "" : fastToFixed(Math.floor(d2Value), 0);
                             this.altimeterDigit2Top.textContent = fastToFixed((Math.floor(d2Value) + 1) % 10, 0);
                             if ((endValue > 90 || endValue < -90) && d3Value > 9) {
@@ -501,16 +501,15 @@ class SpeedBackup extends HTMLElement {
                                     this.altimeterDigit2Bot.textContent = fastToFixed((Math.floor(d2Value) + 1) % 10, 0);
                                     this.altimeterDigit2Top.textContent = Math.abs(value) < 1000 ? "" : fastToFixed(Math.floor(d2Value), 0);
                                 }
-                                let translate = (endValue > 0 ? (endValue - 90) : (endValue + 100)) * 57 * this.cursorSizeFactor / 10;
+                                const translate = (endValue > 0 ? (endValue - 90) : (endValue + 100)) * 57 * this.cursorSizeFactor / 10;
                                 this.altimeterDigit2Bot.setAttribute("transform", "translate(0, " + translate + ")");
                                 this.altimeterDigit2Top.setAttribute("transform", "translate(0, " + translate + ")");
-                            }
-                            else {
+                            } else {
                                 this.altimeterDigit2Bot.setAttribute("transform", "");
                                 this.altimeterDigit2Top.setAttribute("transform", "");
                             }
                             if (Math.abs(value) >= 9990) {
-                                let d1Value = (Math.abs(value) % 100000) / 10000;
+                                const d1Value = (Math.abs(value) % 100000) / 10000;
                                 this.altimeterDigit1Bot.textContent = Math.abs(value) < 10000 ? "" : fastToFixed(Math.floor(d1Value), 0);
                                 this.altimeterDigit1Top.textContent = fastToFixed((Math.floor(d1Value) + 1) % 10, 0);
                                 if ((endValue > 90 || endValue < -90) && d3Value > 9 && d2Value > 9) {
@@ -518,46 +517,39 @@ class SpeedBackup extends HTMLElement {
                                         this.altimeterDigit1Bot.textContent = fastToFixed((Math.floor(d2Value) + 1) % 10, 0);
                                         this.altimeterDigit1Top.textContent = Math.abs(value) < 10000 ? "" : fastToFixed(Math.floor(d2Value), 0);
                                     }
-                                    let translate = (endValue > 0 ? (endValue - 90) : (endValue + 100)) * 57 * this.cursorSizeFactor / 10;
+                                    const translate = (endValue > 0 ? (endValue - 90) : (endValue + 100)) * 57 * this.cursorSizeFactor / 10;
                                     this.altimeterDigit1Bot.setAttribute("transform", "translate(0, " + translate + ")");
                                     this.altimeterDigit1Top.setAttribute("transform", "translate(0, " + translate + ")");
-                                }
-                                else {
+                                } else {
                                     this.altimeterDigit1Bot.setAttribute("transform", "");
                                     this.altimeterDigit1Top.setAttribute("transform", "");
                                 }
-                            }
-                            else {
+                            } else {
                                 this.altimeterDigit1Bot.setAttribute("transform", "");
                                 this.altimeterDigit1Top.setAttribute("transform", "");
                                 if (value < 0) {
                                     this.altimeterDigit1Bot.textContent = "-";
-                                }
-                                else {
+                                } else {
                                     this.altimeterDigit1Bot.textContent = "";
                                 }
                                 this.altimeterDigit1Top.textContent = "";
                             }
-                        }
-                        else {
+                        } else {
                             this.altimeterDigit2Bot.setAttribute("transform", "");
                             this.altimeterDigit2Top.setAttribute("transform", "");
                             if (value < 0) {
                                 this.altimeterDigit2Bot.textContent = "-";
-                            }
-                            else {
+                            } else {
                                 this.altimeterDigit2Bot.textContent = "";
                             }
                             this.altimeterDigit1Bot.textContent = "";
                             this.altimeterDigit1Top.textContent = "";
                             this.altimeterDigit2Top.textContent = "";
                         }
-                    }
-                    else {
+                    } else {
                         if (value < 0) {
                             this.altimeterDigit3Bot.textContent = "-";
-                        }
-                        else {
+                        } else {
                             this.altimeterDigit3Bot.textContent = "";
                         }
                         this.altimeterDigit2Bot.textContent = "";
@@ -575,11 +567,10 @@ class SpeedBackup extends HTMLElement {
             case "airspeed":
                 {
                     this.airspeed = Math.max(parseFloat(newValue), 20);
-                    let center = Math.max(Math.round(this.airspeed / 10) * 10, 50);
+                    const center = Math.max(Math.round(this.airspeed / 10) * 10, 50);
                     if (((this.minValue > 0) && (this.airspeed < this.minValue)) || ((this.maxValue > 0) && (this.airspeed > this.maxValue))) {
                         Avionics.Utils.diffAndSetAttribute(this.airspeedCursor, "fill", "red");
-                    }
-                    else {
+                    } else {
                         Avionics.Utils.diffAndSetAttribute(this.airspeedCursor, "fill", "black");
                     }
                     this.airspeedCenterGroup.setAttribute("transform", "translate(0, " + ((this.airspeed - center) * 8) + ")");
@@ -596,68 +587,63 @@ class SpeedBackup extends HTMLElement {
                         for (let i = 0; i < this.airspeedGradTexts.length; i++) {
                             this.airspeedGradTexts[i].textContent = fastToFixed(((3 - i) * 10) + center, 0);
                         }
-                        let greenEnd = Math.min(Math.max(-300, (175 + (-8 * (this.greenEnd - center)))), 800);
-                        let greenBegin = Math.min(Math.max(-300, (175 + (-8 * (this.greenBegin - center)))), 800);
+                        const greenEnd = Math.min(Math.max(-300, (175 + (-8 * (this.greenEnd - center)))), 800);
+                        const greenBegin = Math.min(Math.max(-300, (175 + (-8 * (this.greenBegin - center)))), 800);
                         this.greenElement.setAttribute("y", greenEnd.toString());
                         this.greenElement.setAttribute("height", (greenBegin - greenEnd).toString());
-                        let yellowEnd = Math.min(Math.max(-300, (175 + (-8 * (this.yellowEnd - center)))), 800);
-                        let yellowBegin = Math.min(Math.max(-300, (175 + (-8 * (this.yellowBegin - center)))), 800);
+                        const yellowEnd = Math.min(Math.max(-300, (175 + (-8 * (this.yellowEnd - center)))), 800);
+                        const yellowBegin = Math.min(Math.max(-300, (175 + (-8 * (this.yellowBegin - center)))), 800);
                         this.yellowElement.setAttribute("y", yellowEnd.toString());
                         this.yellowElement.setAttribute("height", (yellowBegin - yellowEnd).toString());
-                        let redEnd = Math.min(Math.max(-300, (175 + (-8 * (this.redEnd - center)))), 800);
-                        let redBegin = Math.min(Math.max(-300, (175 + (-8 * (this.redBegin - center)))), 800);
+                        const redEnd = Math.min(Math.max(-300, (175 + (-8 * (this.redEnd - center)))), 800);
+                        const redBegin = Math.min(Math.max(-300, (175 + (-8 * (this.redBegin - center)))), 800);
                         this.redElement.setAttribute("y", redEnd.toString());
                         this.redElement.setAttribute("height", (redBegin - redEnd).toString());
-                        let flapsEnd = Math.min(Math.max(-300, (175 + (-8 * (this.flapsEnd - center)))), 800);
-                        let flapsBegin = Math.min(Math.max(-300, (175 + (-8 * (this.flapsBegin - center)))), 800);
+                        const flapsEnd = Math.min(Math.max(-300, (175 + (-8 * (this.flapsEnd - center)))), 800);
+                        const flapsBegin = Math.min(Math.max(-300, (175 + (-8 * (this.flapsBegin - center)))), 800);
                         this.flapsElement.setAttribute("y", flapsEnd.toString());
                         this.flapsElement.setAttribute("height", (flapsBegin - flapsEnd).toString());
                     }
-                    let endValue = this.airspeed % 10;
-                    let endCenter = Math.round(endValue);
+                    const endValue = this.airspeed % 10;
+                    const endCenter = Math.round(endValue);
                     this.airspeedEndDigitsGroup.setAttribute("transform", "translate(0, " + ((endValue - endCenter) * 45) * this.cursorSizeFactor + ")");
                     for (let i = 0; i < this.airspeedEndDigits.length; i++) {
                         if (this.airspeed == 20) {
                             this.airspeedEndDigits[i].textContent = (i == 2 ? "-" : " ");
-                        }
-                        else {
-                            let digitValue = (2 - i + endCenter);
+                        } else {
+                            const digitValue = (2 - i + endCenter);
                             this.airspeedEndDigits[i].textContent = fastToFixed((10 + digitValue) % 10, 0);
                         }
                     }
                     if (this.airspeed > 20) {
-                        let d2Value = (Math.abs(this.airspeed) % 100) / 10;
+                        const d2Value = (Math.abs(this.airspeed) % 100) / 10;
                         this.airspeedDigit2Bot.textContent = fastToFixed(Math.floor(d2Value), 0);
                         this.airspeedDigit2Top.textContent = fastToFixed((Math.floor(d2Value) + 1) % 10, 0);
                         if (endValue > 9) {
-                            let translate = (endValue - 9) * 55 * this.cursorSizeFactor;
+                            const translate = (endValue - 9) * 55 * this.cursorSizeFactor;
                             this.airspeedDigit2Bot.setAttribute("transform", "translate(0, " + translate + ")");
                             this.airspeedDigit2Top.setAttribute("transform", "translate(0, " + translate + ")");
-                        }
-                        else {
+                        } else {
                             this.airspeedDigit2Bot.setAttribute("transform", "");
                             this.airspeedDigit2Top.setAttribute("transform", "");
                         }
                         if (Math.abs(this.airspeed) >= 99) {
-                            let d1Value = (Math.abs(this.airspeed) % 1000) / 100;
+                            const d1Value = (Math.abs(this.airspeed) % 1000) / 100;
                             this.airspeedDigit1Bot.textContent = Math.abs(this.airspeed) < 100 ? "" : fastToFixed(Math.floor(d1Value), 0);
                             this.airspeedDigit1Top.textContent = fastToFixed((Math.floor(d1Value) + 1) % 10, 0);
                             if (endValue > 9 && d2Value > 9) {
-                                let translate = (endValue - 9) * 55 * this.cursorSizeFactor;
+                                const translate = (endValue - 9) * 55 * this.cursorSizeFactor;
                                 this.airspeedDigit1Bot.setAttribute("transform", "translate(0, " + translate + ")");
                                 this.airspeedDigit1Top.setAttribute("transform", "translate(0, " + translate + ")");
-                            }
-                            else {
+                            } else {
                                 this.airspeedDigit1Bot.setAttribute("transform", "");
                                 this.airspeedDigit1Top.setAttribute("transform", "");
                             }
-                        }
-                        else {
+                        } else {
                             this.airspeedDigit1Bot.textContent = "";
                             this.airspeedDigit1Top.textContent = "";
                         }
-                    }
-                    else {
+                    } else {
                         this.airspeedDigit2Bot.textContent = "-";
                         this.airspeedDigit1Bot.textContent = "-";
                         this.airspeedDigit1Bot.setAttribute("transform", "");

@@ -1,5 +1,7 @@
 class AS1000_AttitudeBackup extends NavSystem {
-    get templateID() { return "AS1000_AttitudeBackup"; }
+    get templateID() {
+        return "AS1000_AttitudeBackup";
+    }
     connectedCallback() {
         super.connectedCallback();
         this.addIndependentElementContainer(new NavSystemElementContainer("Horizon", "Horizon", new Backup_Attitude()));

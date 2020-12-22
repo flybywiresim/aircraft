@@ -2,7 +2,9 @@ class AS1000_ED extends BaseAS1000 {
     constructor() {
         super();
     }
-    get templateID() { return "AS1000_ED"; }
+    get templateID() {
+        return "AS1000_ED";
+    }
     connectedCallback() {
         super.connectedCallback();
         this.engines = new Engine("Engine", "Engines");
@@ -14,8 +16,9 @@ class AS1000_ED extends BaseAS1000 {
     }
     reboot() {
         super.reboot();
-        if (this.engines)
+        if (this.engines) {
             this.engines.reset();
+        }
     }
 }
 registerInstrument("as1000-ed-element", AS1000_ED);

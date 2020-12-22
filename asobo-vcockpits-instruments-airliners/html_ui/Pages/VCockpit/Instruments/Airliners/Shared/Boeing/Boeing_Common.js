@@ -17,8 +17,7 @@ var Boeing;
                 if (mode === 2) {
                     text += " - 2";
                 }
-            }
-            else if (phase <= FlightPhase.FLIGHT_PHASE_CLIMB) {
+            } else if (phase <= FlightPhase.FLIGHT_PHASE_CLIMB) {
                 text = "CLB";
                 if (mode === 1) {
                     text += " - 1";
@@ -26,22 +25,20 @@ var Boeing;
                 if (mode === 2) {
                     text += " - 2";
                 }
-            }
-            else if (phase <= FlightPhase.FLIGHT_PHASE_CRUISE) {
+            } else if (phase <= FlightPhase.FLIGHT_PHASE_CRUISE) {
                 text = "CRZ";
             }
             return text;
         }
         update() {
-            let phase = Simplane.getCurrentFlightPhase();
+            const phase = Simplane.getCurrentFlightPhase();
             let mode = 0;
             if (phase <= FlightPhase.FLIGHT_PHASE_TAKEOFF) {
                 mode = Simplane.getEngineThrustTakeOffMode(0);
-            }
-            else {
+            } else {
                 mode = Simplane.getEngineThrustClimbMode(0);
             }
-            let tmaText = this.getText(phase, mode);
+            const tmaText = this.getText(phase, mode);
             this.refresh(tmaText);
         }
         refresh(_text, _force = false) {
@@ -79,11 +76,9 @@ var Boeing;
                 if (this.rootElement != null) {
                     if (this.currentValue <= 0) {
                         this.rootElement.setAttribute("class", "up");
-                    }
-                    else if (this.currentValue >= 100) {
+                    } else if (this.currentValue >= 100) {
                         this.rootElement.setAttribute("class", "down");
-                    }
-                    else {
+                    } else {
                         this.rootElement.setAttribute("class", "transit");
                     }
                 }
@@ -203,7 +198,7 @@ var Boeing;
                     this.valueText.textContent = displayValue.toFixed(this.valueDecimals);
                 }
                 if (this.arrow != null) {
-                    let clampedVal = Utils.Clamp(this.currentValue, -this.maxValue, this.maxValue);
+                    const clampedVal = Utils.Clamp(this.currentValue, -this.maxValue, this.maxValue);
                     var arrowY = clampedVal * this.valueToArrowY;
                     this.arrow.setAttribute("transform", "translate(0," + arrowY + ")");
                 }
@@ -245,8 +240,7 @@ var Boeing;
                 var displayValue = Math.abs(this.currentValue);
                 if (displayValue <= 0.05) {
                     displayValue = 0;
-                }
-                else {
+                } else {
                     bShowLeft = (this.currentValue < 0);
                     bShowRight = !bShowLeft;
                 }
@@ -338,8 +332,7 @@ var Boeing;
                 if (rotateIndex < 0) {
                     this.transformStringClosed = baseTransform + " rotate(0)";
                     this.transformStringOpen = baseTransform + " rotate(90)";
-                }
-                else {
+                } else {
                     this.transformStringClosed = baseTransform;
                     var rotateStartIndex = baseTransform.indexOf("rotate(") + 7;
                     var rotateEndIndex = baseTransform.indexOf(")", rotateStartIndex);
@@ -356,8 +349,7 @@ var Boeing;
             var open = this.isOpen;
             if (_openLevel >= 1) {
                 open = true;
-            }
-            else if (_openLevel <= 0) {
+            } else if (_openLevel <= 0) {
                 open = false;
             }
             if (_force || (this.isSwitched != _isSwitched) || (this.isOpen != open)) {
@@ -367,8 +359,7 @@ var Boeing;
                     if (this.isSwitched || this.isOpen) {
                         this.element.setAttribute("class", this.isSwitched ? "fuelvalve-open" : "fuelvalve-closing");
                         this.element.setAttribute("transform", this.transformStringOpen);
-                    }
-                    else {
+                    } else {
                         this.element.setAttribute("class", "fuelvalve-closed");
                         this.element.setAttribute("transform", this.transformStringClosed);
                     }
@@ -409,7 +400,7 @@ var Boeing;
         }
         addMessage(_id, _message, _style) {
             if (_message != "") {
-                let infoPanel = this.getInfoPanel(_id);
+                const infoPanel = this.getInfoPanel(_id);
                 if (infoPanel) {
                     infoPanel.addMessage(_message, _style);
                 }
@@ -417,22 +408,23 @@ var Boeing;
         }
         removeMessage(_id, _message) {
             if (_message != "") {
-                let infoPanel = this.getInfoPanel(_id);
+                const infoPanel = this.getInfoPanel(_id);
                 if (infoPanel) {
                     infoPanel.removeMessage(_message);
                 }
             }
         }
         modifyMessage(_id, _currentMessage, _newMessage, _newStyle) {
-            let infoPanel = this.getInfoPanel(_id);
+            const infoPanel = this.getInfoPanel(_id);
             if (infoPanel) {
-                if (_newMessage == "")
+                if (_newMessage == "") {
                     _newMessage = _currentMessage;
+                }
                 infoPanel.modifyMessage(_currentMessage, _newMessage, _newStyle);
             }
         }
         clearScreen(_id) {
-            let infoPanel = this.getInfoPanel(_id);
+            const infoPanel = this.getInfoPanel(_id);
             if (infoPanel) {
                 infoPanel.clearScreen();
             }
@@ -452,40 +444,38 @@ var Boeing;
                     let panelId;
                     if (strings[0] == "primary") {
                         panelId = Airliners.EICAS_INFO_PANEL_ID.PRIMARY;
-                    }
-                    else if (strings[0] == "secondary") {
+                    } else if (strings[0] == "secondary") {
                         panelId = Airliners.EICAS_INFO_PANEL_ID.PRIMARY;
-                    }
-                    else {
+                    } else {
                         return;
                     }
                     switch (_type) {
                         case Airliners.EICAS_INFO_PANEL_EVENT_TYPE.ADD_MESSAGE:
-                            {
-                                if (strings.length >= 3) {
-                                    this.addMessage(panelId, strings[1], Airliners.EICAS_INFO_PANEL_MESSAGE_STYLE[strings[2]]);
-                                }
-                                break;
+                        {
+                            if (strings.length >= 3) {
+                                this.addMessage(panelId, strings[1], Airliners.EICAS_INFO_PANEL_MESSAGE_STYLE[strings[2]]);
                             }
+                            break;
+                        }
                         case Airliners.EICAS_INFO_PANEL_EVENT_TYPE.REMOVE_MESSAGE:
-                            {
-                                if (strings.length >= 2) {
-                                    this.removeMessage(panelId, strings[1]);
-                                }
-                                break;
+                        {
+                            if (strings.length >= 2) {
+                                this.removeMessage(panelId, strings[1]);
                             }
+                            break;
+                        }
                         case Airliners.EICAS_INFO_PANEL_EVENT_TYPE.MODIFY_MESSAGE:
-                            {
-                                if (strings.length >= 4) {
-                                    this.modifyMessage(panelId, strings[1], strings[2], Airliners.EICAS_INFO_PANEL_MESSAGE_STYLE[strings[3]]);
-                                }
-                                break;
+                        {
+                            if (strings.length >= 4) {
+                                this.modifyMessage(panelId, strings[1], strings[2], Airliners.EICAS_INFO_PANEL_MESSAGE_STYLE[strings[3]]);
                             }
+                            break;
+                        }
                         case Airliners.EICAS_INFO_PANEL_EVENT_TYPE.CLEAR_SCREEN:
-                            {
-                                this.clearScreen(panelId);
-                                break;
-                            }
+                        {
+                            this.clearScreen(panelId);
+                            break;
+                        }
                     }
                 }
             }

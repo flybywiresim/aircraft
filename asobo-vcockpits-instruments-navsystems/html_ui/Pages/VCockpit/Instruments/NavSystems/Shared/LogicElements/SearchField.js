@@ -17,8 +17,8 @@ class SearchFieldWaypointICAO {
     }
     getUpdatedInfos() {
         if (this.isActive) {
-            let icao = SimVar.GetSimVarValue("C:fs9gps:IcaoSearchCurrentIcao", "string", this.instrument.instrumentIdentifier);
-            let ident = SimVar.GetSimVarValue("C:fs9gps:IcaoSearchCurrentIdent", "string", this.instrument.instrumentIdentifier);
+            const icao = SimVar.GetSimVarValue("C:fs9gps:IcaoSearchCurrentIcao", "string", this.instrument.instrumentIdentifier);
+            const ident = SimVar.GetSimVarValue("C:fs9gps:IcaoSearchCurrentIdent", "string", this.instrument.instrumentIdentifier);
             this.lastIcao = icao;
             if (ident != this.lastIdent) {
                 this.wayPoint = null;
@@ -26,8 +26,7 @@ class SearchFieldWaypointICAO {
                     if (waypoint) {
                         if (waypoint.infos.icao == this.lastIcao) {
                             this.wayPoint = waypoint;
-                        }
-                        else if (!this.wayPoint || this.wayPoint.icao != this.lastIcao) {
+                        } else if (!this.wayPoint || this.wayPoint.icao != this.lastIcao) {
                             this.lastIdent = ident;
                             this.wayPoint = null;
                         }
@@ -38,9 +37,8 @@ class SearchFieldWaypointICAO {
         }
         if (this.wayPoint) {
             return this.wayPoint.infos;
-        }
-        else {
-            let info = new WayPointInfo(this.instrument);
+        } else {
+            const info = new WayPointInfo(this.instrument);
             info.ident = this.lastIdent;
             info.icao = this.lastIcao;
             return info;
@@ -67,12 +65,10 @@ class SearchFieldWaypointICAO {
             var regex = new RegExp('^(.{' + blinkPos + '})(.)(.*)');
             var replace = '$1<span class="Blinking" state="' + state + '">$2</span>$3';
             ident = currICAO.replace(regex, replace);
-        }
-        else {
+        } else {
             if (this.wayPoint && this.wayPoint.infos && this.wayPoint.infos.icao) {
                 ident = this.wayPoint.infos.ident;
-            }
-            else {
+            } else {
                 this.instrument.facilityLoader.getFacilityCB(this.lastIcao, (waypoint) => {
                     this.wayPoint = waypoint;
                 });
@@ -88,8 +84,7 @@ class SearchFieldWaypointICAO {
         this.instrument.facilityLoader.getFacilityCB(_icao, (waypoint) => {
             if (waypoint) {
                 this.wayPoint = waypoint;
-            }
-            else {
+            } else {
                 this.wayPoint = new WayPoint(this.instrument);
             }
         });
@@ -143,12 +138,12 @@ class SearchFieldWaypointICAO {
             if (waypoint || this.wayPoint && this.wayPoint.infos.icao == this.lastIcao) {
                 this.isActive = false;
                 this.container.OnSearchFieldEndEditing();
-                let numberOfDuplicates = SimVar.GetSimVarValue("C:fs9gps:IcaoSearchMatchedIcaosNumber", "number", this.instrument.instrumentIdentifier);
+                const numberOfDuplicates = SimVar.GetSimVarValue("C:fs9gps:IcaoSearchMatchedIcaosNumber", "number", this.instrument.instrumentIdentifier);
                 if (numberOfDuplicates > 1) {
                     SimVar.GetSimVarArrayValues(this.batch, function (_Values) {
                         this.duplicates = [];
                         for (var i = 0; i < _Values.length; i++) {
-                            let waypoint = new WayPoint(this.instrument);
+                            const waypoint = new WayPoint(this.instrument);
                             waypoint.type = _Values[i][0];
                             waypoint.SetIdent(_Values[i][2]);
                             waypoint.SetICAO(_Values[i][1]);
@@ -159,17 +154,14 @@ class SearchFieldWaypointICAO {
                             this.endCallback();
                         }
                     }.bind(this), this.instrument.instrumentIdentifier);
-                }
-                else if (this.endCallback) {
+                } else if (this.endCallback) {
                     this.duplicates = [];
                     this.endCallback();
                 }
-            }
-            else {
+            } else {
                 if (this.wayPoint && this.wayPoint.infos) {
                     this.lastIcao = this.wayPoint.infos.icao;
-                }
-                else {
+                } else {
                     this.lastIcao = "";
                 }
                 if (this.endCallback) {
@@ -194,7 +186,7 @@ class SearchFieldWaypointName {
     }
     getUpdatedInfos() {
         if (this.isActive) {
-            let icao = SimVar.GetSimVarValue("C:fs9gps:NameSearchCurrentIcao", "string", this.instrument.instrumentIdentifier);
+            const icao = SimVar.GetSimVarValue("C:fs9gps:NameSearchCurrentIcao", "string", this.instrument.instrumentIdentifier);
             if (this.lastIcao != icao) {
                 this.wayPoint.type = SimVar.GetSimVarValue("C:fs9gps:NameSearchCurrentIcaoType", "string", this.instrument.instrumentIdentifier);
                 this.wayPoint.SetICAO(icao);
@@ -202,7 +194,7 @@ class SearchFieldWaypointName {
             }
         }
         if (this.relatedIcaoSearch) {
-            let icao = this.relatedIcaoSearch.getUpdatedInfos().icao;
+            const icao = this.relatedIcaoSearch.getUpdatedInfos().icao;
             if (this.lastIcao != icao) {
                 this.SetWaypoint(this.relatedIcaoSearch.getWaypoint().type, icao);
                 this.lastIcao = icao;
@@ -226,14 +218,13 @@ class SearchFieldWaypointName {
             var regex = new RegExp('^(.{' + blinkPos + '})(.)(.*)');
             var replace = '$1<span class="Blinking" state="' + state + '">$2</span>$3';
             name = currName.replace(regex, replace);
-            let relatedIcao = this.relatedIcaoSearch.getUpdatedInfos().icao;
+            const relatedIcao = this.relatedIcaoSearch.getUpdatedInfos().icao;
             if (this.lastIcao != relatedIcao) {
                 this.relatedIcaoSearch.SetWaypoint("", SimVar.GetSimVarValue("C:fs9gps:NameSearchCurrentIcao", "string", this.instrument.instrumentIdentifier));
             }
-        }
-        else {
+        } else {
             if (this.isActive) {
-                let icao = SimVar.GetSimVarValue("C:fs9gps:NameSearchCurrentIcao", "string", this.instrument.instrumentIdentifier);
+                const icao = SimVar.GetSimVarValue("C:fs9gps:NameSearchCurrentIcao", "string", this.instrument.instrumentIdentifier);
                 if (this.lastIcao != icao) {
                     this.wayPoint.type = SimVar.GetSimVarValue("C:fs9gps:NameSearchCurrentIcaoType", "string", this.instrument.instrumentIdentifier);
                     this.wayPoint.SetICAO(icao);
@@ -241,17 +232,16 @@ class SearchFieldWaypointName {
                 }
             }
             if (this.relatedIcaoSearch) {
-                let icao = this.relatedIcaoSearch.getUpdatedInfos().icao;
+                const icao = this.relatedIcaoSearch.getUpdatedInfos().icao;
                 if (this.lastIcao != icao) {
-                    let waypoint = this.relatedIcaoSearch.getWaypoint();
+                    const waypoint = this.relatedIcaoSearch.getWaypoint();
                     this.SetWaypoint(waypoint ? waypoint.type : "", icao);
                     this.lastIcao = icao;
                 }
             }
             if (this.wayPoint.GetInfos() && this.wayPoint.GetInfos().icao) {
                 name = this.wayPoint.GetInfos().name;
-            }
-            else {
+            } else {
                 name = "_____";
             }
         }
@@ -417,11 +407,11 @@ class SearchFieldTime {
         if (this.isActive && !this.container.IsEditingSearchField()) {
             this.isActive = false;
         }
-        let display = this.values[0].toString() + this.values[1].toString() + ":" + this.values[2].toString() + this.values[3].toString() + ":" + this.values[4].toString() + this.values[5].toString();
+        const display = this.values[0].toString() + this.values[1].toString() + ":" + this.values[2].toString() + this.values[3].toString() + ":" + this.values[4].toString() + this.values[5].toString();
         var state = this.container.blinkGetState(400, 200) ? "Blink" : "Off";
         var regex = new RegExp('^(.{' + Math.floor(this.cursorPos * 1.5) + '})(.)(.*)');
         var replace = '$1<span class="Blinking" state="' + state + '">$2</span>$3';
-        let finalDisplay = display.replace(regex, replace);
+        const finalDisplay = display.replace(regex, replace);
         for (let i = 0; i < this.elements.length; i++) {
             Avionics.Utils.diffAndSet(this.elements[i], finalDisplay);
         }
@@ -487,11 +477,11 @@ class SearchFieldAltitude {
             this.isActive = false;
         }
         if (this.isActive) {
-            let display = this.values[0].toString() + this.values[1].toString() + this.values[2].toString() + this.values[3].toString() + this.values[4].toString() + "FT";
+            const display = this.values[0].toString() + this.values[1].toString() + this.values[2].toString() + this.values[3].toString() + this.values[4].toString() + "FT";
             var state = this.container.blinkGetState(400, 200) ? "Blink" : "Off";
             var regex = new RegExp('^(.{' + this.cursorPos + '})(.)(.*)');
             var replace = '$1<span class="Blinking" state="' + state + '">$2</span>$3';
-            let finalDisplay = display.replace(regex, replace);
+            const finalDisplay = display.replace(regex, replace);
             for (let i = 0; i < this.elements.length; i++) {
                 Avionics.Utils.diffAndSet(this.elements[i], finalDisplay);
             }

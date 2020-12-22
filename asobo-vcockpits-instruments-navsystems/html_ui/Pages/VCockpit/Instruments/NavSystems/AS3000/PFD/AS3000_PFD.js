@@ -4,8 +4,12 @@ class AS3000_PFD extends NavSystem {
         this.handleReversionaryMode = false;
         this.initDuration = 7000;
     }
-    get IsGlassCockpit() { return true; }
-    get templateID() { return "AS3000_PFD"; }
+    get IsGlassCockpit() {
+        return true;
+    }
+    get templateID() {
+        return "AS3000_PFD";
+    }
     connectedCallback() {
         super.connectedCallback();
         this.mainPage = new AS3000_PFD_MainPage();
@@ -38,8 +42,7 @@ class AS3000_PFD extends NavSystem {
             }
             this.getChildById("SyntheticVision").style.display = "block";
             this.mainPage.syntheticVision = true;
-        }
-        else {
+        } else {
             if (this.mainPage.attitude.svg) {
                 this.mainPage.attitude.svg.setAttribute("background", "true");
             }
@@ -64,10 +67,12 @@ class AS3000_PFD extends NavSystem {
     }
     reboot() {
         super.reboot();
-        if (this.warnings)
+        if (this.warnings) {
             this.warnings.reset();
-        if (this.mainPage)
+        }
+        if (this.mainPage) {
             this.mainPage.reset();
+        }
     }
 }
 class AS3000_PFD_SoftKeyElement extends SoftKeyElement {
@@ -88,19 +93,16 @@ class AS3000_PFD_SoftKeyHtmlElement extends SoftKeyHtmlElement {
         super.fillFromElement(_elem);
         if (_elem.statusBarCallback == null) {
             Avionics.Utils.diffAndSetAttribute(this.StatusBar, "state", "None");
-        }
-        else {
+        } else {
             if (_elem.statusBarCallback()) {
                 Avionics.Utils.diffAndSetAttribute(this.StatusBar, "state", "Active");
-            }
-            else {
+            } else {
                 Avionics.Utils.diffAndSetAttribute(this.StatusBar, "state", "Inactive");
             }
         }
         if (_elem.valueCallback == null) {
             Avionics.Utils.diffAndSet(this.ValueElement, "");
-        }
-        else {
+        } else {
             Avionics.Utils.diffAndSet(this.ValueElement, _elem.valueCallback());
         }
     }
@@ -143,8 +145,7 @@ class AS3000_PFD_MainPage extends NavSystemPage {
         this.mapInstrument.setGPS(this.gps);
         if (this.syntheticVision) {
             this.attitude.svg.setAttribute("background", "false");
-        }
-        else {
+        } else {
             this.attitude.svg.setAttribute("background", "true");
         }
         this.rootMenu.elements = [
@@ -206,8 +207,9 @@ class AS3000_PFD_MainPage extends NavSystemPage {
         this.softKeys = this.rootMenu;
     }
     reset() {
-        if (this.annunciations)
+        if (this.annunciations) {
             this.annunciations.reset();
+        }
     }
     switchToMenu(_menu) {
         this.softKeys = _menu;
@@ -218,16 +220,14 @@ class AS3000_PFD_MainPage extends NavSystemPage {
     bearing1Status() {
         if (this.hsi && this.hsi.getAttribute("show_bearing1") == "true") {
             return this.hsi.getAttribute("bearing1_source");
-        }
-        else {
+        } else {
             return "OFF";
         }
     }
     bearing2Status() {
         if (this.hsi && this.hsi.getAttribute("show_bearing2") == "true") {
             return this.hsi.getAttribute("bearing2_source");
-        }
-        else {
+        } else {
             return "OFF";
         }
     }
@@ -320,12 +320,11 @@ class AS3000_PFD_ActiveNav extends NavSystemElement {
     onUpdate(_deltaTime) {
         if (!SimVar.GetSimVarValue("GPS DRIVES NAV1", "Boolean")) {
             Avionics.Utils.diffAndSetAttribute(this.NavInfos, "state", "Visible");
-            let index = SimVar.GetSimVarValue("AUTOPILOT NAV SELECTED", "number");
+            const index = SimVar.GetSimVarValue("AUTOPILOT NAV SELECTED", "number");
             Avionics.Utils.diffAndSet(this.ActiveNav, "NAV" + index);
             Avionics.Utils.diffAndSet(this.ActiveNavFreq, this.gps.frequencyFormat(SimVar.GetSimVarValue("NAV ACTIVE FREQUENCY:" + index, "MHz"), 2));
             Avionics.Utils.diffAndSet(this.ActiveNavName, SimVar.GetSimVarValue("NAV SIGNAL:" + index, "number") > 0 ? SimVar.GetSimVarValue("NAV IDENT:" + index, "string") : "");
-        }
-        else {
+        } else {
             Avionics.Utils.diffAndSetAttribute(this.NavInfos, "state", "Inactive");
         }
     }
@@ -376,8 +375,7 @@ class AS3000_PFD_AngleOfAttackIndicator extends NavSystemElement {
         }
         if (this.AoaMode == 0) {
             this.AoaElement.style.display = "none";
-        }
-        else {
+        } else {
             this.AoaElement.style.display = "block";
         }
         SimVar.SetSimVarValue("L:Glasscockpit_AOA_Mode", "number", this.AoaMode);

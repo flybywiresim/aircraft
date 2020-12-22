@@ -46,30 +46,29 @@ class FMCDataManager {
         if (!(await this.IsAirportValid(ident))) {
             return undefined;
         }
-        let icao = "A      " + ident.toLocaleUpperCase();
-        let airportWaypoint = await this.fmc.facilityLoader.getAirport(icao);
+        const icao = "A      " + ident.toLocaleUpperCase();
+        const airportWaypoint = await this.fmc.facilityLoader.getAirport(icao);
         return airportWaypoint;
     }
     async GetWaypointsByIdent(ident) {
-        let waypoints = [];
-        let intersections = await this.GetWaypointsByIdentAndType(ident, "W");
+        const waypoints = [];
+        const intersections = await this.GetWaypointsByIdentAndType(ident, "W");
         waypoints.push(...intersections);
-        let vors = await this.GetWaypointsByIdentAndType(ident, "V");
+        const vors = await this.GetWaypointsByIdentAndType(ident, "V");
         waypoints.push(...vors);
-        let ndbs = await this.GetWaypointsByIdentAndType(ident, "N");
+        const ndbs = await this.GetWaypointsByIdentAndType(ident, "N");
         waypoints.push(...ndbs);
-        let airports = await this.GetWaypointsByIdentAndType(ident, "A");
+        const airports = await this.GetWaypointsByIdentAndType(ident, "A");
         waypoints.push(...airports);
         let i = 0;
         while (i < waypoints.length) {
-            let wp = waypoints[i];
+            const wp = waypoints[i];
             let j = i + 1;
             while (j < waypoints.length) {
-                let other = waypoints[j];
+                const other = waypoints[j];
                 if (wp.icao === other.icao) {
                     waypoints.splice(j, 1);
-                }
-                else {
+                } else {
                     j++;
                 }
             }
@@ -79,21 +78,21 @@ class FMCDataManager {
     }
     async GetWaypointsByIdentAndType(ident, wpType = "W") {
         return new Promise((resolve) => {
-            let waypoints = [];
+            const waypoints = [];
             SimVar.SetSimVarValue("C:fs9gps:IcaoSearchStartCursor", "string", wpType, "FMC").then(() => {
                 SimVar.SetSimVarValue("C:fs9gps:IcaoSearchEnterChar", "string", ident, "FMC").then(async () => {
-                    let waypointsCount = SimVar.GetSimVarValue("C:fs9gps:IcaoSearchMatchedIcaosNumber", "number", "FMC");
-                    let getWaypoint = async (index) => {
+                    const waypointsCount = SimVar.GetSimVarValue("C:fs9gps:IcaoSearchMatchedIcaosNumber", "number", "FMC");
+                    const getWaypoint = async (index) => {
                         return new Promise((resolve) => {
                             SimVar.SetSimVarValue("C:fs9gps:IcaoSearchMatchedIcao", "number", index, "FMC").then(async () => {
-                                let icao = SimVar.GetSimVarValue("C:fs9gps:IcaoSearchCurrentIcao", "string", "FMC");
-                                let waypoint = await this.fmc.facilityLoader.getFacility(icao);
+                                const icao = SimVar.GetSimVarValue("C:fs9gps:IcaoSearchCurrentIcao", "string", "FMC");
+                                const waypoint = await this.fmc.facilityLoader.getFacility(icao);
                                 resolve(waypoint);
                             });
                         });
                     };
                     for (let i = 0; i < waypointsCount; i++) {
-                        let waypoint = await getWaypoint(i);
+                        const waypoint = await getWaypoint(i);
                         waypoints.push(waypoint);
                     }
                     resolve(waypoints);
@@ -102,7 +101,7 @@ class FMCDataManager {
         });
     }
     async _PushWaypointToFlightPlan(waypoint) {
-        let lastWaypointIndex = SimVar.GetSimVarValue("C:fs9gps:FlightPlanWaypointsNumber", "number", "FMC");
+        const lastWaypointIndex = SimVar.GetSimVarValue("C:fs9gps:FlightPlanWaypointsNumber", "number", "FMC");
         return new Promise((resolve) => {
             SimVar.SetSimVarValue("C:fs9gps:FlightPlanNewWaypointICAO", "string", waypoint.icao, "FMC").then(() => {
                 SimVar.SetSimVarValue("C:fs9gps:FlightPlanAddWaypoint", "number", lastWaypointIndex, "FMC").then(() => {
@@ -114,7 +113,7 @@ class FMCDataManager {
         });
     }
     async _DeleteFlightPlan() {
-        let deleteFirstWaypoint = async () => {
+        const deleteFirstWaypoint = async () => {
             return new Promise((resolve) => {
                 SimVar.SetSimVarValue("C:fs9gps:FlightPlanDeleteWaypoint", "number", 0, "FMC").then(() => {
                     resolve();

@@ -45,7 +45,7 @@ class DoubleHorizontalGauge extends HTMLElement {
         this.root.setAttribute("height", "100%");
         this.root.setAttribute("viewBox", "-7 -10 114 60");
         this.appendChild(this.root);
-        let centralLine = document.createElementNS(Avionics.SVG.NS, "rect");
+        const centralLine = document.createElementNS(Avionics.SVG.NS, "rect");
         centralLine.setAttribute("x", "0");
         centralLine.setAttribute("y", "24");
         centralLine.setAttribute("height", "2");
@@ -75,7 +75,7 @@ class DoubleHorizontalGauge extends HTMLElement {
         this.root.appendChild(this.redElement);
         this.cursor1 = document.createElementNS(Avionics.SVG.NS, "g");
         this.root.appendChild(this.cursor1);
-        let cursor1Bg = document.createElementNS(Avionics.SVG.NS, "polygon");
+        const cursor1Bg = document.createElementNS(Avionics.SVG.NS, "polygon");
         cursor1Bg.setAttribute("points", "0,25 -7,14 7,14");
         cursor1Bg.setAttribute("fill", "white");
         this.cursor1.appendChild(cursor1Bg);
@@ -90,7 +90,7 @@ class DoubleHorizontalGauge extends HTMLElement {
         this.cursor1.appendChild(this.cursor1Text);
         this.cursor2 = document.createElementNS(Avionics.SVG.NS, "g");
         this.root.appendChild(this.cursor2);
-        let cursor2Bg = document.createElementNS(Avionics.SVG.NS, "polygon");
+        const cursor2Bg = document.createElementNS(Avionics.SVG.NS, "polygon");
         cursor2Bg.setAttribute("points", "0,25 -7,36 7,36");
         cursor2Bg.setAttribute("fill", "white");
         this.cursor2.appendChild(cursor2Bg);
@@ -115,17 +115,17 @@ class DoubleHorizontalGauge extends HTMLElement {
     drawArcs() {
         if (!isNaN(this.min) && !isNaN(this.max)) {
             if (!isNaN(this.redStart) && !isNaN(this.redEnd)) {
-                let start = this.valueToPosX(this.redStart);
+                const start = this.valueToPosX(this.redStart);
                 this.redElement.setAttribute("x", start.toString());
                 this.redElement.setAttribute("width", (this.valueToPosX(this.redEnd) - start).toString());
             }
             if (!isNaN(this.greenStart) && !isNaN(this.greenEnd)) {
-                let start = this.valueToPosX(this.greenStart);
+                const start = this.valueToPosX(this.greenStart);
                 this.greenElement.setAttribute("x", start.toString());
                 this.greenElement.setAttribute("width", (this.valueToPosX(this.greenEnd) - start).toString());
             }
             if (!isNaN(this.yellowStart) && !isNaN(this.yellowEnd)) {
-                let start = this.valueToPosX(this.yellowStart);
+                const start = this.valueToPosX(this.yellowStart);
                 this.yellowElement.setAttribute("x", start.toString());
                 this.yellowElement.setAttribute("width", (this.valueToPosX(this.yellowEnd) - start).toString());
             }
@@ -142,8 +142,8 @@ class DoubleHorizontalGauge extends HTMLElement {
         this.graduationTexts = [];
         if (!isNaN(this.min) && !isNaN(this.max)) {
             for (let i = Math.ceil(this.min / 10); i <= Math.floor(this.max / 10); i++) {
-                let xPos = this.valueToPosX(10 * i);
-                let line = document.createElementNS(Avionics.SVG.NS, "rect");
+                const xPos = this.valueToPosX(10 * i);
+                const line = document.createElementNS(Avionics.SVG.NS, "rect");
                 line.setAttribute("x", (xPos - 0.5).toString());
                 line.setAttribute("y", "20");
                 line.setAttribute("height", "10");
@@ -151,7 +151,7 @@ class DoubleHorizontalGauge extends HTMLElement {
                 line.setAttribute("fill", "white");
                 this.root.appendChild(line);
                 this.graduations.push(line);
-                let graduationText = document.createElementNS(Avionics.SVG.NS, "text");
+                const graduationText = document.createElementNS(Avionics.SVG.NS, "text");
                 graduationText.setAttribute("x", xPos.toString());
                 graduationText.setAttribute("y", "50");
                 graduationText.setAttribute("fill", "white");
@@ -163,8 +163,8 @@ class DoubleHorizontalGauge extends HTMLElement {
                 this.graduationTexts.push(graduationText);
             }
             if (this.max % 10 != 0) {
-                let xPos = this.valueToPosX(this.max);
-                let line = document.createElementNS(Avionics.SVG.NS, "rect");
+                const xPos = this.valueToPosX(this.max);
+                const line = document.createElementNS(Avionics.SVG.NS, "rect");
                 line.setAttribute("x", (xPos - 0.5).toString());
                 line.setAttribute("y", "20");
                 line.setAttribute("height", "10");
@@ -172,7 +172,7 @@ class DoubleHorizontalGauge extends HTMLElement {
                 line.setAttribute("fill", "white");
                 this.root.appendChild(line);
                 this.graduations.push(line);
-                let graduationText = document.createElementNS(Avionics.SVG.NS, "text");
+                const graduationText = document.createElementNS(Avionics.SVG.NS, "text");
                 graduationText.setAttribute("x", xPos.toString());
                 graduationText.setAttribute("y", "50");
                 graduationText.setAttribute("fill", "white");
@@ -192,8 +192,9 @@ class DoubleHorizontalGauge extends HTMLElement {
         return ((_value - this.min) / (this.max - this.min)) * 100;
     }
     attributeChangedCallback(name, oldValue, newValue) {
-        if (oldValue == newValue)
+        if (oldValue == newValue) {
             return;
+        }
         switch (name) {
             case "value":
                 this.val1 = parseFloat(newValue);

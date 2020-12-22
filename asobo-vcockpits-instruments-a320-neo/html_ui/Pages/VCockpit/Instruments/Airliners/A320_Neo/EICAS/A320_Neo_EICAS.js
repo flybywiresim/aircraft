@@ -1,5 +1,7 @@
 class A320_Neo_EICAS extends Airliners.BaseEICAS {
-    get templateID() { return "A320_Neo_EICAS"; }
+    get templateID() {
+        return "A320_Neo_EICAS";
+    }
     createUpperScreenPage() {
         this.upperTopScreen = new Airliners.EICASScreen("TopScreen", "TopScreen", "a320-neo-upper-ecam");
         this.annunciations = new Cabin_Annunciations();
@@ -23,23 +25,25 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
     }
     reboot() {
         super.reboot();
-        if (this.warnings)
+        if (this.warnings) {
             this.warnings.reset();
-        if (this.annunciations)
+        }
+        if (this.annunciations) {
             this.annunciations.reset();
+        }
     }
     onUpdate(_deltaTime) {
         super.onUpdate(_deltaTime);
         this.updateAnnunciations();
     }
     updateAnnunciations() {
-        let infoPanelManager = this.upperTopScreen.getInfoPanelManager();
+        const infoPanelManager = this.upperTopScreen.getInfoPanelManager();
         if (infoPanelManager) {
             infoPanelManager.clearScreen(Airliners.EICAS_INFO_PANEL_ID.PRIMARY);
             if (this.warnings) {
-                let text = this.warnings.getCurrentWarningText();
+                const text = this.warnings.getCurrentWarningText();
                 if (text && text != "") {
-                    let level = this.warnings.getCurrentWarningLevel();
+                    const level = this.warnings.getCurrentWarningLevel();
                     switch (level) {
                         case 1:
                             infoPanelManager.addMessage(Airliners.EICAS_INFO_PANEL_ID.PRIMARY, text, Airliners.EICAS_INFO_PANEL_MESSAGE_STYLE.INDICATION);
@@ -54,18 +58,21 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
                 }
             }
             if (this.annunciations) {
-                let onGround = Simplane.getIsGrounded();
+                const onGround = Simplane.getIsGrounded();
                 for (let i = this.annunciations.displayWarning.length - 1; i >= 0; i--) {
-                    if (!this.annunciations.displayWarning[i].Acknowledged)
+                    if (!this.annunciations.displayWarning[i].Acknowledged) {
                         infoPanelManager.addMessage(Airliners.EICAS_INFO_PANEL_ID.PRIMARY, this.annunciations.displayWarning[i].Text, Airliners.EICAS_INFO_PANEL_MESSAGE_STYLE.WARNING);
+                    }
                 }
                 for (let i = this.annunciations.displayCaution.length - 1; i >= 0; i--) {
-                    if (!this.annunciations.displayCaution[i].Acknowledged)
+                    if (!this.annunciations.displayCaution[i].Acknowledged) {
                         infoPanelManager.addMessage(Airliners.EICAS_INFO_PANEL_ID.PRIMARY, this.annunciations.displayCaution[i].Text, Airliners.EICAS_INFO_PANEL_MESSAGE_STYLE.CAUTION);
+                    }
                 }
                 for (let i = this.annunciations.displayAdvisory.length - 1; i >= 0; i--) {
-                    if (!this.annunciations.displayAdvisory[i].Acknowledged)
+                    if (!this.annunciations.displayAdvisory[i].Acknowledged) {
                         infoPanelManager.addMessage(Airliners.EICAS_INFO_PANEL_ID.PRIMARY, this.annunciations.displayAdvisory[i].Text, (onGround) ? Airliners.EICAS_INFO_PANEL_MESSAGE_STYLE.INDICATION : Airliners.EICAS_INFO_PANEL_MESSAGE_STYLE.CAUTION);
+                    }
                 }
             }
         }

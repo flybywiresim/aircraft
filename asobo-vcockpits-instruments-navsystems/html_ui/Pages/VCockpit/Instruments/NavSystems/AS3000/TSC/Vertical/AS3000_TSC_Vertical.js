@@ -3,7 +3,9 @@ class AS3000_TSC_Vertical extends AS3000_TSC {
         super(...arguments);
         this.middleKnobText_Save = "";
     }
-    get templateID() { return "AS3000_TSC_Vertical"; }
+    get templateID() {
+        return "AS3000_TSC_Vertical";
+    }
     connectedCallback() {
         super.connectedCallback();
         this.topKnobText = this.getChildById("SoftKey_1");
@@ -27,7 +29,7 @@ class AS3000_TSC_Vertical extends AS3000_TSC {
     parseXMLConfig() {
         super.parseXMLConfig();
         if (this.instrumentXmlConfig) {
-            let pageGroup = this.instrumentXmlConfig.getElementsByTagName("PageGroup");
+            const pageGroup = this.instrumentXmlConfig.getElementsByTagName("PageGroup");
             if (pageGroup.length > 0) {
                 this.SwitchToMenuName(pageGroup[0].textContent);
             }
@@ -43,8 +45,7 @@ class AS3000_TSC_Vertical_NavComHome extends AS3000_TSC_NavComHome {
         this.setSoftkeysNames();
         if (_id == 1) {
             this.gps.frequencyKeyboard.getElementOfType(AS3000_TSC_FrequencyKeyboard).setContext("COM1 Standby", 118, 136.99, "COM ACTIVE FREQUENCY:1", "COM STANDBY FREQUENCY:1", this.setCom1Freq.bind(this), this.container, "COM SPACING MODE:1");
-        }
-        else {
+        } else {
             this.gps.frequencyKeyboard.getElementOfType(AS3000_TSC_FrequencyKeyboard).setContext("COM2 Standby", 118, 136.99, "COM ACTIVE FREQUENCY:2", "COM STANDBY FREQUENCY:2", this.setCom2Freq.bind(this), this.container, "COM SPACING MODE:2");
         }
         this.gps.switchToPopUpPage(this.gps.frequencyKeyboard);

@@ -13,20 +13,26 @@ class SvgTextManager {
         this._iterator = 0;
     }
     getManagedTextIndexByOwner(owner) {
-        return this._managedTexts.findIndex((t) => { return t.owner === owner; });
+        return this._managedTexts.findIndex((t) => {
+            return t.owner === owner;
+        });
     }
     getManagedTextByOwner(owner) {
-        let texts = this._managedTexts.find((t) => { return t.owner === owner; });
+        const texts = this._managedTexts.find((t) => {
+            return t.owner === owner;
+        });
         return texts ? texts[0] : undefined;
     }
     add(managedText) {
         if (!this.getManagedTextByOwner(managedText.owner)) {
             this._managedTexts.push(managedText);
         }
-        this._managedTexts.sort((t1, t2) => { return t1.priority - t2.priority; });
+        this._managedTexts.sort((t1, t2) => {
+            return t1.priority - t2.priority;
+        });
     }
     remove(managedText) {
-        let index = this.getManagedTextIndexByOwner(managedText.owner);
+        const index = this.getManagedTextIndexByOwner(managedText.owner);
         if (index > -1) {
             this._managedTexts.splice(index, 1);
         }
@@ -37,14 +43,14 @@ class SvgTextManager {
             if (this._iterator >= elementsWithTextBox.length) {
                 this._iterator = 0;
             }
-            let e = elementsWithTextBox[this._iterator];
+            const e = elementsWithTextBox[this._iterator];
             if (!e || !e._label) {
                 continue;
             }
             if (!e.minimize) {
                 let cross = false;
                 for (let j = 0; j < this._iterator; j++) {
-                    let other = elementsWithTextBox[j];
+                    const other = elementsWithTextBox[j];
                     if (other.showText) {
                         if (!(Math.abs(e.x - other.x) > 60 || Math.abs(e.y - other.y) > 30)) {
                             cross = true;
@@ -58,8 +64,7 @@ class SvgTextManager {
                     e._label.removeAttribute("display");
                     e.showText = true;
                 }
-            }
-            else {
+            } else {
                 e.showText = false;
                 e._label.setAttribute("display", "none");
             }

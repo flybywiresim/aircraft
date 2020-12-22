@@ -5,7 +5,9 @@ class AS1000_MFD extends BaseAS1000 {
         this.initDuration = 5500;
         this.needValidationAfterInit = true;
     }
-    get templateID() { return "AS1000_MFD"; }
+    get templateID() {
+        return "AS1000_MFD";
+    }
     connectedCallback() {
         super.connectedCallback();
         this.pagesContainer = this.getChildById("RightInfos");
@@ -39,7 +41,7 @@ class AS1000_MFD extends BaseAS1000 {
     parseXMLConfig() {
         super.parseXMLConfig();
         if (this.instrumentXmlConfig) {
-            let altimeterIndexElems = this.instrumentXmlConfig.getElementsByTagName("AltimeterIndex");
+            const altimeterIndexElems = this.instrumentXmlConfig.getElementsByTagName("AltimeterIndex");
             if (altimeterIndexElems.length > 0) {
                 this.altimeterIndex = parseInt(altimeterIndexElems[0].textContent) + 1;
             }
@@ -49,8 +51,8 @@ class AS1000_MFD extends BaseAS1000 {
     }
     onEvent(_event) {
         super.onEvent(_event);
-        let isGPSDrived = SimVar.GetSimVarValue("GPS DRIVES NAV1", "Bool");
-        let cdiSource = isGPSDrived ? 3 : SimVar.GetSimVarValue("AUTOPILOT NAV SELECTED", "number");
+        const isGPSDrived = SimVar.GetSimVarValue("GPS DRIVES NAV1", "Bool");
+        const cdiSource = isGPSDrived ? 3 : SimVar.GetSimVarValue("AUTOPILOT NAV SELECTED", "number");
         switch (_event) {
             case "CLR_Long":
                 this.currentInteractionState = 0;
@@ -66,24 +68,21 @@ class AS1000_MFD extends BaseAS1000 {
             case "CRS_INC":
                 if (cdiSource == 1) {
                     SimVar.SetSimVarValue("K:VOR1_OBI_INC", "number", 0);
-                }
-                else if (cdiSource == 2) {
+                } else if (cdiSource == 2) {
                     SimVar.SetSimVarValue("K:VOR2_OBI_INC", "number", 0);
                 }
                 break;
             case "CRS_DEC":
                 if (cdiSource == 1) {
                     SimVar.SetSimVarValue("K:VOR1_OBI_DEC", "number", 0);
-                }
-                else if (cdiSource == 2) {
+                } else if (cdiSource == 2) {
                     SimVar.SetSimVarValue("K:VOR2_OBI_DEC", "number", 0);
                 }
                 break;
             case "CRS_PUSH":
                 if (cdiSource == 1) {
                     SimVar.SetSimVarValue("K:VOR1_SET", "number", ((180 + SimVar.GetSimVarValue("NAV RADIAL:1", "degree")) % 360));
-                }
-                else if (cdiSource == 2) {
+                } else if (cdiSource == 2) {
                     SimVar.SetSimVarValue("K:VOR2_SET", "number", ((180 + SimVar.GetSimVarValue("NAV RADIAL:2", "degree")) % 360));
                 }
                 break;
@@ -98,8 +97,9 @@ class AS1000_MFD extends BaseAS1000 {
     }
     reboot() {
         super.reboot();
-        if (this.engines)
+        if (this.engines) {
             this.engines.reset();
+        }
     }
 }
 class AS1000_MFD_NavStatus extends NavSystemElement {
@@ -130,7 +130,7 @@ class AS1000_MFD_NavStatus extends NavSystemElement {
             this.currentTrack.textContent = currentTrackValue;
             this.currentTrackValue = currentTrackValue;
         }
-        let flightPlanActive = SimVar.GetSimVarValue("GPS IS ACTIVE FLIGHT PLAN", "boolean");
+        const flightPlanActive = SimVar.GetSimVarValue("GPS IS ACTIVE FLIGHT PLAN", "boolean");
         if (flightPlanActive) {
             var desiredTrackValue = fastToFixed(SimVar.GetSimVarValue("GPS WP DESIRED TRACK", "degree"), 0) + "°";
             if (this.desiredTrack.textContent != desiredTrackValue) {
@@ -142,8 +142,7 @@ class AS1000_MFD_NavStatus extends NavSystemElement {
                 this.eteElement.textContent = Math.floor(ete / 60) + ":" + (ete % 60 < 10 ? "0" : "") + ete % 60;
                 this.lastEte = ete;
             }
-        }
-        else {
+        } else {
             Avionics.Utils.diffAndSet(this.desiredTrack, "___°");
             Avionics.Utils.diffAndSet(this.eteElement, "__:__");
         }
@@ -180,7 +179,7 @@ class AS1000_MFD_PageNavigation extends NavSystemElement {
                 this.isVisible = false;
             }
             if (this.gps.currentEventLinkedPageGroup != null) {
-                let pageCells = '<td state="Selected" > ' + this.gps.currentEventLinkedPageGroup.pageGroup.name + '</td>';
+                const pageCells = '<td state="Selected" > ' + this.gps.currentEventLinkedPageGroup.pageGroup.name + '</td>';
                 if (pageCells != this.pageCellsValue) {
                     this.pageGroupElement.innerHTML = pageCells;
                     this.pageCellsValue = pageCells;
@@ -194,8 +193,7 @@ class AS1000_MFD_PageNavigation extends NavSystemElement {
                     this.pagesElement.innerHTML = pageHtml;
                     this.pagesHtmlValue = pageHtml;
                 }
-            }
-            else {
+            } else {
                 var pageCells = "";
                 for (let i = 0; i < this.gps.pageGroups.length; i++) {
                     pageCells += '<td state="' + (i == this.gps.currentPageGroupIndex ? "Selected" : "Unselected") + '">' + this.gps.pageGroups[i].name + '</td>';
@@ -218,8 +216,7 @@ class AS1000_MFD_PageNavigation extends NavSystemElement {
             if ((new Date()).getTime() - this.lastAction.getTime() > 5000) {
                 this.isVisible = false;
             }
-        }
-        else {
+        } else {
             this.pageSelectionElement.setAttribute("state", "Inactive");
         }
     }
@@ -262,7 +259,7 @@ class AS1000_MFD_MainMap extends NavSystemPage {
             new SoftKeyElement("", null),
             new SoftKeyElement("", null),
             new SoftKeyElement("DCLTR", () => {
-                let map = this.gps.getChildById("MapInstrument");
+                const map = this.gps.getChildById("MapInstrument");
                 if (map) {
                     map.declutterLevel++;
                     if (map.declutterLevel > 1) {
@@ -359,11 +356,10 @@ class AS1000_MFD_ActiveFlightPlan extends NavSystemPage {
         ];
     }
     getSoftKeyMenu() {
-        let menu = this.element.getSoftKeysMenu();
+        const menu = this.element.getSoftKeysMenu();
         if (menu == null) {
             return this.softKeys;
-        }
-        else {
+        } else {
             return menu;
         }
     }
@@ -437,9 +433,9 @@ class AS1000_MFD_AirportInfos1 extends NavSystemElement {
         this.runwaySizeElement = this.gps.getChildById("AirportInfos1_RunwaySize");
         this.runwaySurfaceTypeElement = this.gps.getChildById("AirportInfos1_RunwaySurfaceType");
         this.runwayLightsElement = this.gps.getChildById("AirportInfos1_RunwayLights");
-        let freqSlider = this.gps.getChildById("Slider");
-        let freqSliderCursor = this.gps.getChildById("SliderCursor");
-        let freqElements = [];
+        const freqSlider = this.gps.getChildById("Slider");
+        const freqSliderCursor = this.gps.getChildById("SliderCursor");
+        const freqElements = [];
         for (let i = 1; i <= 7; i++) {
             freqElements.push(new SelectableElement(this.gps, this.gps.getChildById("AirportInfos1_Frequency" + i), this.frequencyCallback.bind(this)));
         }
@@ -576,8 +572,7 @@ class AS1000_MFD_AirportInfos1 extends NavSystemElement {
             }
             this.frequenciesSelectionGroup.setStringElements(frequencies);
             this.mapElement.setCenter(infos.coordinates);
-        }
-        else {
+        } else {
             this.symbolElement.textContent = "";
             this.typeElement.textContent = "Unknown";
             this.facilityNameElement.textContent = "____________________";
@@ -611,9 +606,8 @@ class AS1000_MFD_AirportInfos1 extends NavSystemElement {
     runwaySelection(_event) {
         if (_event == "FMS_Upper_INC") {
             this.selectedRunway = (this.selectedRunway + 1) % this.icaoSearchField.getUpdatedInfos().runways.length;
-        }
-        else if (_event == "FMS_Upper_DEC") {
-            let length = this.icaoSearchField.getUpdatedInfos().runways.length;
+        } else if (_event == "FMS_Upper_DEC") {
+            const length = this.icaoSearchField.getUpdatedInfos().runways.length;
             this.selectedRunway = (this.selectedRunway - 1 + length) % length;
         }
     }
@@ -624,11 +618,10 @@ class AS1000_MFD_AirportInfos1 extends NavSystemElement {
         var infos = this.icaoSearchField.getUpdatedInfos();
         if (_event == "ENT_Push") {
             if (infos.frequencies[_index].mhValue >= 118) {
-                let index = this.gps.getElementOfType(AS1000.ComFrequencies).getActiveIndex();
+                const index = this.gps.getElementOfType(AS1000.ComFrequencies).getActiveIndex();
                 SimVar.SetSimVarValue("K:COM" + (index == 1 ? "" : "2") + "_STBY_RADIO_SET", "Frequency BCD16", infos.frequencies[_index].bcd16Value);
-            }
-            else {
-                let index = this.gps.getElementOfType(AS1000.NavFrequencies).getActiveIndex();
+            } else {
+                const index = this.gps.getElementOfType(AS1000.NavFrequencies).getActiveIndex();
                 SimVar.SetSimVarValue("K:NAV" + (index == 1 ? "1" : "2") + "_STBY_SET", "Frequency BCD16", infos.frequencies[_index].bcd16Value);
             }
         }
@@ -680,8 +673,7 @@ class AS1000_MFD_AirportInfos2 extends NavSystemElement {
             this.facilityElement.textContent = infos.name;
             this.cityElement.textContent = infos.city;
             this.mapElement.setCenter(infos.coordinates);
-        }
-        else {
+        } else {
             this.symbolElement.textContent = "";
             this.typeElement.textContent = "Unknown";
             this.facilityElement.textContent = "____________________";
@@ -867,7 +859,7 @@ class AS1000_MFD_NearestAirport_Element extends MFD_NearestAirport_Element {
     }
     onUpdate(_deltaTime) {
         super.onUpdate(_deltaTime);
-        let infos = this.currentWaypoint.GetInfos();
+        const infos = this.currentWaypoint.GetInfos();
         this.mapElement.setCenter(infos.coordinates);
     }
 }
@@ -884,12 +876,12 @@ class AS1000_MFD_NearestVOR_Element extends MFD_NearestVOR_Element {
     }
     onUpdate(_deltaTime) {
         super.onUpdate(_deltaTime);
-        let infos = this.currentWaypoint.GetInfos();
+        const infos = this.currentWaypoint.GetInfos();
         this.mapElement.setCenter(infos.coordinates);
     }
     frequencyCallback(_event) {
         if (_event == "ENT_Push") {
-            let navFreq = this.gps.getElementOfType(AS1000.NavFrequencies);
+            const navFreq = this.gps.getElementOfType(AS1000.NavFrequencies);
             let navIndex = 1;
             if (navFreq) {
                 navIndex = navFreq.getActiveIndex();
@@ -911,7 +903,7 @@ class AS1000_MFD_NearestNDB_Element extends MFD_NearestNDB_Element {
     }
     onUpdate(_deltaTime) {
         super.onUpdate(_deltaTime);
-        let infos = this.currentWaypoint.GetInfos();
+        const infos = this.currentWaypoint.GetInfos();
         this.mapElement.setCenter(infos.coordinates);
     }
 }
@@ -928,7 +920,7 @@ class AS1000_MFD_NearestIntersection_Element extends MFD_NearestIntersection_Ele
     }
     onUpdate(_deltaTime) {
         super.onUpdate(_deltaTime);
-        let infos = this.currentWaypoint.GetInfos();
+        const infos = this.currentWaypoint.GetInfos();
         this.mapElement.setCenter(infos.coordinates);
     }
 }
@@ -989,8 +981,7 @@ class AS1000_MapMenu {
                 new SoftKeyElement("BACK", this.close.bind(this)),
                 new SoftKeyElement("", null)
             ];
-        }
-        else {
+        } else {
             this.modeMenu.elements = [
                 new SoftKeyElement("", null),
                 new SoftKeyElement("", null),
@@ -1048,41 +1039,47 @@ class AS1000_MapMenu {
     getKeyState(_keyName) {
         switch (_keyName) {
             case "GPS":
-                {
-                    if (this.mapElement.getDisplayMode() == EMapDisplayMode.GPS)
-                        return "White";
-                    break;
+            {
+                if (this.mapElement.getDisplayMode() == EMapDisplayMode.GPS) {
+                    return "White";
                 }
+                break;
+            }
             case "WEATHER":
-                {
-                    if (this.mapElement.getDisplayMode() == EMapDisplayMode.RADAR)
-                        return "White";
-                    break;
+            {
+                if (this.mapElement.getDisplayMode() == EMapDisplayMode.RADAR) {
+                    return "White";
                 }
+                break;
+            }
             case "TOPO":
-                {
-                    if (this.mapElement.getIsolines())
-                        return "White";
-                    break;
+            {
+                if (this.mapElement.getIsolines()) {
+                    return "White";
                 }
+                break;
+            }
             case "NEXRAD":
-                {
-                    if (this.mapElement.getNexrad())
-                        return "White";
-                    break;
+            {
+                if (this.mapElement.getNexrad()) {
+                    return "White";
                 }
+                break;
+            }
             case "HORIZON":
-                {
-                    if (this.mapElement.getRadarMode() == ERadarMode.HORIZON)
-                        return "White";
-                    break;
+            {
+                if (this.mapElement.getRadarMode() == ERadarMode.HORIZON) {
+                    return "White";
                 }
+                break;
+            }
             case "VERTICAL":
-                {
-                    if (this.mapElement.getRadarMode() == ERadarMode.VERTICAL)
-                        return "White";
-                    break;
+            {
+                if (this.mapElement.getRadarMode() == ERadarMode.VERTICAL) {
+                    return "White";
                 }
+                break;
+            }
         }
         return "None";
     }

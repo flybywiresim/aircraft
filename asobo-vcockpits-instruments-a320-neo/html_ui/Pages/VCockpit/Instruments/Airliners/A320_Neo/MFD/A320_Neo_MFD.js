@@ -3,8 +3,12 @@ class A320_Neo_MFD extends BaseAirliners {
         super();
         this.initDuration = 11000;
     }
-    get templateID() { return "A320_Neo_MFD"; }
-    get IsGlassCockpit() { return true; }
+    get templateID() {
+        return "A320_Neo_MFD";
+    }
+    get IsGlassCockpit() {
+        return true;
+    }
     connectedCallback() {
         super.connectedCallback();
         this.pageGroups = [
@@ -121,18 +125,15 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
             this.setMapMode(this.mapMode);
             if (this.terrainOn) {
                 this.mapConfigId = 1;
-            }
-            else if (this.wxRadarOn && this.wxRadarMode != 3) {
+            } else if (this.wxRadarOn && this.wxRadarMode != 3) {
                 this.showWeather();
-            }
-            else {
+            } else {
                 this.mapConfigId = 0;
             }
             if (this.compass.svg.displayMode === Jet_NDCompass_Display.ARC) {
                 this.map.showCompassMask();
                 this.map.hidePlanMask();
-            }
-            else {
+            } else {
                 this.map.showPlanMask();
                 this.map.hideCompassMask();
             }
@@ -149,12 +150,11 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
                 }
                 break;
             case 1:
-                let altitude = Simplane.getAltitudeAboveGround();
+                const altitude = Simplane.getAltitudeAboveGround();
                 if (altitude >= 500 && this.map.instrument.mapConfigId != 1) {
                     this.map.instrument.mapConfigId = 1;
                     this.map.instrument.bingMapRef = EBingReference.PLANE;
-                }
-                else if (altitude < 490 && this.map.instrument.mapConfigId != 0) {
+                } else if (altitude < 490 && this.map.instrument.mapConfigId != 0) {
                     this.map.instrument.mapConfigId = 0;
                     this.map.instrument.bingMapRef = EBingReference.SEA;
                 }
@@ -165,13 +165,12 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
             this.map.instrument.setZoom(this.mapRange);
             this.compass.svg.mapRange = this.map.zoomRanges[this.mapRange];
         }
-        let selected = Simplane.getAutoPilotHeadingSelected();
+        const selected = Simplane.getAutoPilotHeadingSelected();
         if (selected != this.headingSelected) {
             this.headingSelected = selected;
             if (selected) {
                 this.map.instrument.setFlightPlanAsDashed(true);
-            }
-            else {
+            } else {
                 this.map.instrument.setFlightPlanAsDashed(false);
             }
         }
@@ -182,8 +181,7 @@ class A320_Neo_MFD_MainPage extends NavSystemPage {
             this.map.instrument.tmpDirectToElement.llaRequested = new LatLongAlt(SimVar.GetSimVarValue("L:A320_NEO_PREVIEW_DIRECT_TO_LAT_0", "number"), SimVar.GetSimVarValue("L:A320_NEO_PREVIEW_DIRECT_TO_LONG_0", "number"));
             this.map.instrument.tmpDirectToElement.targetLla = new LatLongAlt(SimVar.GetSimVarValue("L:A320_NEO_PREVIEW_DIRECT_TO_LAT_1", "number"), SimVar.GetSimVarValue("L:A320_NEO_PREVIEW_DIRECT_TO_LONG_1", "number"));
             this.map.instrument.tmpDirectToElement.planeHeading = SimVar.GetSimVarValue("PLANE HEADING DEGREES TRUE", "degree");
-        }
-        else {
+        } else {
             this.map.instrument.tmpDirectToElement = undefined;
         }
         this.map.updateTopOfDescent();
@@ -309,7 +307,7 @@ class A320_Neo_MFD_Map extends MapInstrumentElement {
         this.zoomRanges = [10, 20, 40, 80, 160, 320];
     }
     updateTopOfDescent() {
-        let showTopOfDescent = SimVar.GetSimVarValue("L:AIRLINER_FMS_SHOW_TOP_DSCNT", "number") === 1;
+        const showTopOfDescent = SimVar.GetSimVarValue("L:AIRLINER_FMS_SHOW_TOP_DSCNT", "number") === 1;
         if (showTopOfDescent) {
             if (!this.topOfDescentIcon) {
                 this.topOfDescentIcon = new SvgTopOfXElement("a320-neo-top-of-descent", "ICON_TOP_DSCNT_WHITE");
@@ -317,20 +315,19 @@ class A320_Neo_MFD_Map extends MapInstrumentElement {
             this.topOfDescentIcon.lat = SimVar.GetSimVarValue("L:AIRLINER_FMS_LAT_TOP_DSCNT", "number");
             this.topOfDescentIcon.long = SimVar.GetSimVarValue("L:AIRLINER_FMS_LONG_TOP_DSCNT", "number");
             this.topOfDescentIcon.heading = SimVar.GetSimVarValue("L:AIRLINER_FMS_HEADING_TOP_DSCNT", "number");
-            let index = this.instrument.topOfCurveElements.indexOf(this.topOfDescentIcon);
+            const index = this.instrument.topOfCurveElements.indexOf(this.topOfDescentIcon);
             if (index === -1) {
                 this.instrument.topOfCurveElements.push(this.topOfDescentIcon);
             }
-        }
-        else {
-            let index = this.instrument.topOfCurveElements.indexOf(this.topOfDescentIcon);
+        } else {
+            const index = this.instrument.topOfCurveElements.indexOf(this.topOfDescentIcon);
             if (index != -1) {
                 this.instrument.topOfCurveElements.splice(index, 1);
             }
         }
     }
     updateTopOfClimb() {
-        let showTopOfClimb = SimVar.GetSimVarValue("L:AIRLINER_FMS_SHOW_TOP_CLIMB", "number") === 1;
+        const showTopOfClimb = SimVar.GetSimVarValue("L:AIRLINER_FMS_SHOW_TOP_CLIMB", "number") === 1;
         if (showTopOfClimb) {
             if (!this.topOfClimbIcon) {
                 this.topOfClimbIcon = new SvgTopOfXElement("a320-neo-top-of-climb", "ICON_LEVEL_OFF_BLUE");
@@ -338,13 +335,12 @@ class A320_Neo_MFD_Map extends MapInstrumentElement {
             this.topOfClimbIcon.lat = SimVar.GetSimVarValue("L:AIRLINER_FMS_LAT_TOP_CLIMB", "number");
             this.topOfClimbIcon.long = SimVar.GetSimVarValue("L:AIRLINER_FMS_LONG_TOP_CLIMB", "number");
             this.topOfClimbIcon.heading = SimVar.GetSimVarValue("L:AIRLINER_FMS_HEADING_TOP_CLIMB", "number");
-            let index = this.instrument.topOfCurveElements.indexOf(this.topOfClimbIcon);
+            const index = this.instrument.topOfCurveElements.indexOf(this.topOfClimbIcon);
             if (index === -1) {
                 this.instrument.topOfCurveElements.push(this.topOfClimbIcon);
             }
-        }
-        else {
-            let index = this.instrument.topOfCurveElements.indexOf(this.topOfClimbIcon);
+        } else {
+            const index = this.instrument.topOfCurveElements.indexOf(this.topOfClimbIcon);
             if (index != -1) {
                 this.instrument.topOfCurveElements.splice(index, 1);
             }
@@ -356,41 +352,42 @@ class A320_Neo_MFD_Map extends MapInstrumentElement {
         this.planModeMask = new SvgPlanMaskElement("a320-plan-mask");
     }
     getAdaptiveRanges(_factor) {
-        let ranges = Array.from(this.zoomRanges);
-        for (let i = 0; i < ranges.length; i++)
+        const ranges = Array.from(this.zoomRanges);
+        for (let i = 0; i < ranges.length; i++) {
             ranges[i] *= _factor;
+        }
         return ranges;
     }
     setMode(display) {
         this.hideWeather();
         switch (display) {
             case Jet_NDCompass_Display.ROSE:
-                {
-                    this.instrument.zoomRanges = this.getAdaptiveRanges(4.5);
-                    this.instrument.style.top = "0%";
-                    this.instrument.rotateWithPlane(true);
-                    this.instrument.centerOnActiveWaypoint(false);
-                    this.instrument.setPlaneScale(2.0);
-                    break;
-                }
+            {
+                this.instrument.zoomRanges = this.getAdaptiveRanges(4.5);
+                this.instrument.style.top = "0%";
+                this.instrument.rotateWithPlane(true);
+                this.instrument.centerOnActiveWaypoint(false);
+                this.instrument.setPlaneScale(2.0);
+                break;
+            }
             case Jet_NDCompass_Display.ARC:
-                {
-                    this.instrument.zoomRanges = this.getAdaptiveRanges(2.3);
-                    this.instrument.style.top = "24%";
-                    this.instrument.rotateWithPlane(true);
-                    this.instrument.centerOnActiveWaypoint(false);
-                    this.instrument.setPlaneScale(3.5);
-                    break;
-                }
+            {
+                this.instrument.zoomRanges = this.getAdaptiveRanges(2.3);
+                this.instrument.style.top = "24%";
+                this.instrument.rotateWithPlane(true);
+                this.instrument.centerOnActiveWaypoint(false);
+                this.instrument.setPlaneScale(3.5);
+                break;
+            }
             case Jet_NDCompass_Display.PLAN:
-                {
-                    this.instrument.zoomRanges = this.getAdaptiveRanges(4.5);
-                    this.instrument.style.top = "0%";
-                    this.instrument.rotateWithPlane(false);
-                    this.instrument.centerOnActiveWaypoint(true);
-                    this.instrument.setPlaneScale(2.0);
-                    break;
-                }
+            {
+                this.instrument.zoomRanges = this.getAdaptiveRanges(4.5);
+                this.instrument.style.top = "0%";
+                this.instrument.rotateWithPlane(false);
+                this.instrument.centerOnActiveWaypoint(true);
+                this.instrument.setPlaneScale(2.0);
+                break;
+            }
             default:
                 this.instrument.style.top = "0%";
                 this.instrument.rotateWithPlane(false);
@@ -417,7 +414,7 @@ class A320_Neo_MFD_Map extends MapInstrumentElement {
     }
     hideCompassMask() {
         if (this.compassModeMask) {
-            let maskIndex = this.instrument.maskElements.indexOf(this.compassModeMask);
+            const maskIndex = this.instrument.maskElements.indexOf(this.compassModeMask);
             if (maskIndex !== -1) {
                 this.instrument.maskElements.splice(maskIndex, 1);
             }
@@ -432,7 +429,7 @@ class A320_Neo_MFD_Map extends MapInstrumentElement {
     }
     hidePlanMask() {
         if (this.planModeMask) {
-            let maskIndex = this.instrument.maskElements.indexOf(this.planModeMask);
+            const maskIndex = this.instrument.maskElements.indexOf(this.planModeMask);
             if (maskIndex !== -1) {
                 this.instrument.maskElements.splice(maskIndex, 1);
             }
@@ -482,8 +479,9 @@ class A320_Neo_MFD_NDInfo extends NavSystemElement {
         }
     }
     showSymbol(_symbol, _show) {
-        if (this.allSymbols[_symbol])
+        if (this.allSymbols[_symbol]) {
             this.allSymbols[_symbol].setAttribute("visibility", (_show) ? "visible" : "hidden");
+        }
     }
 }
 registerInstrument("a320-neo-mfd-element", A320_Neo_MFD);

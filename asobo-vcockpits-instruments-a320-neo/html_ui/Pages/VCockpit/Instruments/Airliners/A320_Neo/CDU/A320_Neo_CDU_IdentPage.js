@@ -1,6 +1,6 @@
 class CDUIdentPage {
     static ShowPage(mcdu) {
-        let date = mcdu.getNavDataDateRange();
+        const date = mcdu.getNavDataDateRange();
         mcdu.clearDisplay();
         mcdu.setTemplate([
             ["A320"],

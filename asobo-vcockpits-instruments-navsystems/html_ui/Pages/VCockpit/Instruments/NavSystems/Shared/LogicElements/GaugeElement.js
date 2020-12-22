@@ -23,20 +23,15 @@ class GaugeElement extends NavSystemElement {
         if (_range) {
             if (_range.__Type == "ColorRangeDisplay4") {
                 this.SetColorRange4(_range);
-            }
-            else if (_range.__Type == "ColorRangeDisplay3") {
+            } else if (_range.__Type == "ColorRangeDisplay3") {
                 this.SetColorRange3(_range);
-            }
-            else if (_range.__Type == "ColorRangeDisplay2") {
+            } else if (_range.__Type == "ColorRangeDisplay2") {
                 this.SetColorRange2(_range);
-            }
-            else if (_range.__Type == "ColorRangeDisplay") {
+            } else if (_range.__Type == "ColorRangeDisplay") {
                 this.SetColorRange(_range);
-            }
-            else if (_range.__Type == "FlapsRangeDisplay") {
+            } else if (_range.__Type == "FlapsRangeDisplay") {
                 this.setFlapsRange(_range);
-            }
-            else if (_range.__Type == "RangeDisplay") {
+            } else if (_range.__Type == "RangeDisplay") {
                 this.SetRange(_range);
             }
         }
@@ -92,8 +87,9 @@ class GaugeElement extends NavSystemElement {
     onEvent(_event) {
     }
     redraw() {
-        if (this.gauge && (this.gauge instanceof AbstractGauge))
+        if (this.gauge && (this.gauge instanceof AbstractGauge)) {
             this.gauge._redraw();
+        }
     }
     SetRange(_range) {
         this.maxValue = _range.max;

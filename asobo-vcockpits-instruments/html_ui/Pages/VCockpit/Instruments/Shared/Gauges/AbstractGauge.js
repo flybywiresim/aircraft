@@ -59,8 +59,7 @@ class AbstractGauge extends HTMLElement {
     get fontSize() {
         if (this._fixedFontSize > 0) {
             return this._fixedFontSize;
-        }
-        else {
+        } else {
             return this._computedFontSize;
         }
     }
@@ -172,8 +171,7 @@ class AbstractGauge extends HTMLElement {
     _redraw() {
         if (AbstractGauge.useSvgGauges || this.forceSvg) {
             this._redrawSvg();
-        }
-        else {
+        } else {
             if (!this._canvasBase) {
                 this._canvasBase = document.createElement("canvas");
                 this.appendChild(this._canvasBase);
@@ -203,12 +201,10 @@ class AbstractGauge extends HTMLElement {
     _updateValue() {
         if (AbstractGauge.useSvgGauges || this.forceSvg) {
             this._updateValueSvg();
-        }
-        else {
+        } else {
             if (!this._canvasCursor) {
                 this._drawBase();
-            }
-            else if (this._canvasBase.width * this._canvasBase.height === 0) {
+            } else if (this._canvasBase.width * this._canvasBase.height === 0) {
                 this._resize();
                 this._drawBase();
             }
@@ -222,95 +218,70 @@ class AbstractGauge extends HTMLElement {
                 if (this._canvasBase.width * this._canvasBase.height > 0) {
                     return;
                 }
-            }
-            else {
+            } else {
                 return;
             }
         }
-        let t0 = performance.now();
+        const t0 = performance.now();
         if (name === "value") {
             this._value = parseFloat(newValue);
             this._updateValue();
-        }
-        else {
+        } else {
             var needUpdate = true;
             if (name === "tilt") {
                 this._tilt = parseFloat(newValue);
-            }
-            else if (name === "angular-size") {
+            } else if (name === "angular-size") {
                 this._angularSize = parseFloat(newValue);
-            }
-            else if (name === "steps-count") {
+            } else if (name === "steps-count") {
                 this._stepsCount = parseFloat(newValue);
-            }
-            else if (name === "limit-low") {
+            } else if (name === "limit-low") {
                 this._limitLow = parseFloat(newValue);
-            }
-            else if (name === "limit-high") {
+            } else if (name === "limit-high") {
                 this._limitHigh = parseFloat(newValue);
-            }
-            else if (name === "min-value") {
+            } else if (name === "min-value") {
                 this._minValue = parseFloat(newValue);
-            }
-            else if (name === "max-value") {
+            } else if (name === "max-value") {
                 this._maxValue = parseFloat(newValue);
-            }
-            else if (name === "red-start") {
+            } else if (name === "red-start") {
                 this._redStartValue = parseFloat(newValue);
-            }
-            else if (name === "red-end") {
+            } else if (name === "red-end") {
                 this._redEndValue = parseFloat(newValue);
-            }
-            else if (name === "yellow-start") {
+            } else if (name === "yellow-start") {
                 this._yellowStartValue = parseFloat(newValue);
-            }
-            else if (name === "yellow-end") {
+            } else if (name === "yellow-end") {
                 this._yellowEndValue = parseFloat(newValue);
-            }
-            else if (name === "green-start") {
+            } else if (name === "green-start") {
                 this._greenStartValue = parseFloat(newValue);
-            }
-            else if (name === "green-end") {
+            } else if (name === "green-end") {
                 this._greenEndValue = parseFloat(newValue);
-            }
-            else if (name === "white-start") {
+            } else if (name === "white-start") {
                 this._whiteStartValue = parseFloat(newValue);
-            }
-            else if (name === "white-end") {
+            } else if (name === "white-end") {
                 this._whiteEndValue = parseFloat(newValue);
-            }
-            else if (name === "low-yellow-start") {
+            } else if (name === "low-yellow-start") {
                 this._lowYellowStartValue = parseFloat(newValue);
-            }
-            else if (name === "low-yellow-end") {
+            } else if (name === "low-yellow-end") {
                 this._lowYellowEndValue = parseFloat(newValue);
-            }
-            else if (name === "low-red-start") {
+            } else if (name === "low-red-start") {
                 this._lowRedStartValue = parseFloat(newValue);
-            }
-            else if (name === "low-red-end") {
+            } else if (name === "low-red-end") {
                 this._lowRedEndValue = parseFloat(newValue);
-            }
-            else if (name === "title") {
+            } else if (name === "title") {
                 this._title = newValue;
-            }
-            else if (name === "unit") {
+            } else if (name === "unit") {
                 this._unit = newValue;
-            }
-            else if (name === "value-precision") {
+            } else if (name === "value-precision") {
                 this._valuePrecision = parseInt(newValue);
-            }
-            else if (name === "fixed-font-size") {
+            } else if (name === "fixed-font-size") {
                 this._fixedFontSize = parseInt(newValue);
-            }
-            else {
+            } else {
                 needUpdate = false;
             }
             if (needUpdate) {
                 this._redraw();
             }
         }
-        let t = performance.now() - t0;
+        const t = performance.now() - t0;
         AbstractGauge.max = Math.max(t, AbstractGauge.max);
     }
 }

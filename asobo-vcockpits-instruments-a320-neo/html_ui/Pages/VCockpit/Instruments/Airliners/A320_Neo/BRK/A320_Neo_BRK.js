@@ -38,7 +38,9 @@ var A320_Neo_BRK;
         constructor() {
             super();
         }
-        get templateID() { return "A320_Neo_BRK"; }
+        get templateID() {
+            return "A320_Neo_BRK";
+        }
         connectedCallback() {
             super.connectedCallback();
             this.topGauge = new A320_Neo_BRK_Gauge(this.querySelector("#topGauge"), 0, 4);
@@ -144,8 +146,7 @@ var A320_Neo_BRK;
                 if (_isShort) {
                     end.x += dir.x * A320_Neo_BRK_Definitions.Marker.LENGTH_SHORT;
                     end.y += dir.y * A320_Neo_BRK_Definitions.Marker.LENGTH_SHORT;
-                }
-                else {
+                } else {
                     end.x += dir.x * A320_Neo_BRK_Definitions.Marker.LENGTH_LONG;
                     end.y += dir.y * A320_Neo_BRK_Definitions.Marker.LENGTH_LONG;
                 }

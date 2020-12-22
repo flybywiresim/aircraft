@@ -41,15 +41,13 @@ class Jet_PFD_AOAIndicator extends HTMLElement {
         if (!this.rootGroup) {
             this.rootGroup = document.createElementNS(Avionics.SVG.NS, "g");
             this.rootGroup.setAttribute("id", "AoA");
-        }
-        else {
+        } else {
             Utils.RemoveAllChildren(this.rootGroup);
         }
         if (!this.centerGroup) {
             this.centerGroup = document.createElementNS(Avionics.SVG.NS, "g");
             this.centerGroup.setAttribute("id", "CenterGroup");
-        }
-        else {
+        } else {
             Utils.RemoveAllChildren(this.centerGroup);
         }
         posY -= centerHeight;
@@ -81,8 +79,7 @@ class Jet_PFD_AOAIndicator extends HTMLElement {
             if (!this.graduationsGroup) {
                 this.graduationsGroup = document.createElementNS(Avionics.SVG.NS, "g");
                 this.graduationsGroup.setAttribute("id", "GraduationsGroup");
-            }
-            else {
+            } else {
                 Utils.RemoveAllChildren(this.graduationsGroup);
             }
             var _nbGrads = 9;
@@ -144,17 +141,18 @@ class Jet_PFD_AOAIndicator extends HTMLElement {
             if (!this.cursorSVG) {
                 this.cursorSVG = document.createElementNS(Avionics.SVG.NS, "svg");
                 this.cursorSVG.setAttribute("id", "CursorGroup");
-            }
-            else
+            } else {
                 Utils.RemoveAllChildren(this.cursorSVG);
+            }
             this.cursorSVG.setAttribute("x", cursorPosX.toString());
             this.cursorSVG.setAttribute("y", (cursorPosY - this.cursorHeight * 0.5).toString());
             this.cursorSVG.setAttribute("width", this.cursorWidth.toString());
             this.cursorSVG.setAttribute("height", this.cursorHeight.toString());
             this.cursorSVG.setAttribute("viewBox", "0 0 " + this.cursorWidth + " " + this.cursorHeight);
             {
-                if (!this.cursorSVGShape)
+                if (!this.cursorSVGShape) {
                     this.cursorSVGShape = document.createElementNS(Avionics.SVG.NS, "path");
+                }
                 this.cursorSVGShape.setAttribute("fill", "white");
                 this.cursorSVGShape.setAttribute("d", "M10 0 l25 0 l-4 8 l5 8 l-25 0 l-5 -8 l5 -8 Z");
                 this.cursorSVGShape.setAttribute("fill", "none");
@@ -169,8 +167,9 @@ class Jet_PFD_AOAIndicator extends HTMLElement {
         this.appendChild(this.rootSVG);
     }
     attributeChangedCallback(name, oldValue, newValue) {
-        if (oldValue == newValue)
+        if (oldValue == newValue) {
             return;
+        }
         switch (name) {
             case "angle":
                 let angle = parseFloat(newValue);
@@ -183,8 +182,7 @@ class Jet_PFD_AOAIndicator extends HTMLElement {
                 if (angle < 1.0) {
                     var radixPos = fixedAngle.indexOf('.');
                     this.bottomText.textContent = fixedAngle.slice(radixPos);
-                }
-                else {
+                } else {
                     this.bottomText.textContent = fixedAngle;
                 }
                 break;

@@ -52,7 +52,9 @@ var A320_Neo_UpperECAM;
             this.isInitialised = false;
             this.allPanels = [];
         }
-        get templateID() { return "UpperECAMTemplate"; }
+        get templateID() {
+            return "UpperECAMTemplate";
+        }
         connectedCallback() {
             super.connectedCallback();
         }
@@ -248,13 +250,11 @@ var A320_Neo_UpperECAM;
                     if (engineThrottle < autopilotThrottle) {
                         _values[0] = engineThrottle;
                         _values[1] = autopilotThrottle;
-                    }
-                    else {
+                    } else {
                         _values[0] = autopilotThrottle;
                         _values[1] = engineThrottle;
                     }
-                }
-                else {
+                } else {
                     _values[0] = 0;
                     _values[1] = 0;
                 }
@@ -263,8 +263,7 @@ var A320_Neo_UpperECAM;
         getN1GaugeExtraMessage() {
             if (Simplane.getEngineThrottle(this.index) < 0) {
                 return "REV";
-            }
-            else {
+            } else {
                 return "";
             }
         }
@@ -295,8 +294,7 @@ var A320_Neo_UpperECAM;
                     this.valueText.setAttribute("class", valueClass);
                     if (this.isActive) {
                         this.valueText.textContent = this.currentValue.toFixed(_valueDisplayPrecision);
-                    }
-                    else {
+                    } else {
                         this.valueText.textContent = "XX";
                     }
                 }
@@ -305,15 +303,27 @@ var A320_Neo_UpperECAM;
     }
     A320_Neo_UpperECAM.LinesStyleComponent_Base = LinesStyleComponent_Base;
     class LinesStyleComponent_Left extends LinesStyleComponent_Base {
-        getLineX1() { return "37%"; }
-        getLineX2() { return "43%"; }
-        getValueTextX() { return "25%"; }
+        getLineX1() {
+            return "37%";
+        }
+        getLineX2() {
+            return "43%";
+        }
+        getValueTextX() {
+            return "25%";
+        }
     }
     A320_Neo_UpperECAM.LinesStyleComponent_Left = LinesStyleComponent_Left;
     class LinesStyleComponent_Right extends LinesStyleComponent_Base {
-        getLineX1() { return "63%"; }
-        getLineX2() { return "57%"; }
-        getValueTextX() { return "75%"; }
+        getLineX1() {
+            return "63%";
+        }
+        getLineX2() {
+            return "57%";
+        }
+        getValueTextX() {
+            return "75%";
+        }
     }
     A320_Neo_UpperECAM.LinesStyleComponent_Right = LinesStyleComponent_Right;
     class LinesStyleInfo {
@@ -336,7 +346,9 @@ var A320_Neo_UpperECAM;
                 this.rightComponent.refresh(A320_Neo_ECAM_Common.isEngineDisplayActive(2), this.getValue(2), this.getValueStringPrecision());
             }
         }
-        getValueStringPrecision() { return 0; }
+        getValueStringPrecision() {
+            return 0;
+        }
     }
     A320_Neo_UpperECAM.LinesStyleInfo = LinesStyleInfo;
     class LinesStyleInfo_N2 extends LinesStyleInfo {
@@ -352,7 +364,9 @@ var A320_Neo_UpperECAM;
             percent = Math.max(0, Math.min(100, percent));
             return percent;
         }
-        getValueStringPrecision() { return 1; }
+        getValueStringPrecision() {
+            return 1;
+        }
     }
     A320_Neo_UpperECAM.LinesStyleInfo_N2 = LinesStyleInfo_N2;
     class LinesStyleInfo_FF extends LinesStyleInfo {
@@ -405,18 +419,15 @@ var A320_Neo_UpperECAM;
                         this.setThrottle(true, throttleValue, throttleMode, true);
                         var flexTemp = Simplane.getFlexTemperature();
                         this.setFlexTemperature((flexTemp > 0), flexTemp);
-                    }
-                    else {
+                    } else {
                         this.setThrottle(true, throttleValue, throttleMode);
                         this.setFlexTemperature(false);
                     }
-                }
-                else {
+                } else {
                     this.setThrottle(true, throttleValue, throttleMode);
                     this.setFlexTemperature(false);
                 }
-            }
-            else {
+            } else {
                 this.setThrottle(false);
                 this.setFlexTemperature(false);
             }
@@ -432,43 +443,41 @@ var A320_Neo_UpperECAM;
                         this.throttleState.className = "active";
                         switch (this.currentThrottleMode) {
                             case ThrottleMode.TOGA:
-                                {
-                                    this.throttleState.textContent = "TO/GA";
-                                    break;
-                                }
+                            {
+                                this.throttleState.textContent = "TO/GA";
+                                break;
+                            }
                             case ThrottleMode.FLEX_MCT:
-                                {
-                                    if ((Simplane.getCurrentFlightPhase() < FlightPhase.FLIGHT_PHASE_CLIMB) && (Simplane.getFlexTemperature() > 0)) {
-                                        this.throttleState.textContent = "FLX";
-                                    }
-                                    else {
-                                        this.throttleState.textContent = "MCT";
-                                    }
-                                    break;
+                            {
+                                if ((Simplane.getCurrentFlightPhase() < FlightPhase.FLIGHT_PHASE_CLIMB) && (Simplane.getFlexTemperature() > 0)) {
+                                    this.throttleState.textContent = "FLX";
+                                } else {
+                                    this.throttleState.textContent = "MCT";
                                 }
+                                break;
+                            }
                             case ThrottleMode.CLIMB:
-                                {
-                                    this.throttleState.textContent = "CL";
-                                    break;
-                                }
+                            {
+                                this.throttleState.textContent = "CL";
+                                break;
+                            }
                             case ThrottleMode.AUTO:
-                                {
-                                    this.throttleState.textContent = "AUTO";
-                                    break;
-                                }
+                            {
+                                this.throttleState.textContent = "AUTO";
+                                break;
+                            }
                             case ThrottleMode.IDLE:
-                                {
-                                    this.throttleState.textContent = "IDLE";
-                                    break;
-                                }
+                            {
+                                this.throttleState.textContent = "IDLE";
+                                break;
+                            }
                             case ThrottleMode.REVERSE:
-                                {
-                                    this.throttleState.textContent = "REV";
-                                    break;
-                                }
+                            {
+                                this.throttleState.textContent = "REV";
+                                break;
+                            }
                         }
-                    }
-                    else {
+                    } else {
                         this.throttleState.className = "inactive";
                         this.throttleState.textContent = "XX";
                     }
@@ -477,8 +486,7 @@ var A320_Neo_UpperECAM;
                     this.throttleValue.className = _active ? "active" : "inactive";
                     if (_active) {
                         this.throttleValue.textContent = _value.toFixed(1);
-                    }
-                    else {
+                    } else {
                         this.throttleValue.textContent = "XX";
                     }
                 }
@@ -625,8 +633,8 @@ var A320_Neo_UpperECAM;
             var slatsAngle = (SimVar.GetSimVarValue("LEADING EDGE FLAPS LEFT ANGLE", "degrees") + SimVar.GetSimVarValue("LEADING EDGE FLAPS RIGHT ANGLE", "degrees")) * 0.5;
             var flapsAngle = (SimVar.GetSimVarValue("TRAILING EDGE FLAPS LEFT ANGLE", "degrees") + SimVar.GetSimVarValue("TRAILING EDGE FLAPS RIGHT ANGLE", "degrees")) * 0.5;
             var handleIndex = Simplane.getFlapsHandleIndex(true);
-            let slatsTargetIndex = handleIndex;
-            let flapsTargetIndex = handleIndex;
+            const slatsTargetIndex = handleIndex;
+            const flapsTargetIndex = handleIndex;
             var slatsAngleChanged = (this.currentSlatsAngle != slatsAngle);
             var flapsAngleChanged = (this.currentFlapsAngle != flapsAngle);
             if ((slatsAngleChanged || flapsAngleChanged) && ((this.cockpitSettings != null) && (this.cockpitSettings.FlapsLevels != null) && this.cockpitSettings.FlapsLevels.initialised)) {
@@ -635,16 +643,13 @@ var A320_Neo_UpperECAM;
                     var dSlatsArrow = "";
                     if (this.currentSlatsAngle <= this.cockpitSettings.FlapsLevels.slatsAngle[0]) {
                         dSlatsArrow = this.targetSlatsArrowsStrings[0];
-                    }
-                    else if (this.currentSlatsAngle <= this.cockpitSettings.FlapsLevels.slatsAngle[1]) {
+                    } else if (this.currentSlatsAngle <= this.cockpitSettings.FlapsLevels.slatsAngle[1]) {
                         var lerp = Utils.Clamp(this.currentSlatsAngle / 18, 0, 1);
                         dSlatsArrow = this.generateArrowPathD(this.slatArrowPathD, this.mainShapeCorners[0], this.slatDotPositions[0], this.slatDotPositions[1], lerp);
-                    }
-                    else if (this.currentSlatsAngle <= this.cockpitSettings.FlapsLevels.slatsAngle[3]) {
+                    } else if (this.currentSlatsAngle <= this.cockpitSettings.FlapsLevels.slatsAngle[3]) {
                         var lerp = Utils.Clamp((this.currentSlatsAngle - 18) / 4, 0, 1);
                         dSlatsArrow = this.generateArrowPathD(this.slatArrowPathD, this.mainShapeCorners[0], this.slatDotPositions[1], this.slatDotPositions[2], lerp);
-                    }
-                    else if (this.currentSlatsAngle <= this.cockpitSettings.FlapsLevels.slatsAngle[4]) {
+                    } else if (this.currentSlatsAngle <= this.cockpitSettings.FlapsLevels.slatsAngle[4]) {
                         var lerp = Utils.Clamp((this.currentSlatsAngle - 22) / 5, 0, 1);
                         dSlatsArrow = this.generateArrowPathD(this.slatArrowPathD, this.mainShapeCorners[0], this.slatDotPositions[2], this.slatDotPositions[3], lerp);
                     }
@@ -657,20 +662,16 @@ var A320_Neo_UpperECAM;
                     var dFlapsArrow = "";
                     if (this.currentFlapsAngle <= this.cockpitSettings.FlapsLevels.flapsAngle[0]) {
                         dFlapsArrow = this.targetFlapsArrowsStrings[0];
-                    }
-                    else if (this.currentFlapsAngle <= this.cockpitSettings.FlapsLevels.flapsAngle[1]) {
+                    } else if (this.currentFlapsAngle <= this.cockpitSettings.FlapsLevels.flapsAngle[1]) {
                         var lerp = Utils.Clamp(this.currentFlapsAngle / 10, 0, 1);
                         dFlapsArrow = this.generateArrowPathD(this.flapArrowPathD, this.mainShapeCorners[1], this.flapDotPositions[0], this.flapDotPositions[1], lerp);
-                    }
-                    else if (this.currentFlapsAngle <= this.cockpitSettings.FlapsLevels.flapsAngle[2]) {
+                    } else if (this.currentFlapsAngle <= this.cockpitSettings.FlapsLevels.flapsAngle[2]) {
                         var lerp = Utils.Clamp((this.currentFlapsAngle - 10) / 5, 0, 1);
                         dFlapsArrow = this.generateArrowPathD(this.flapArrowPathD, this.mainShapeCorners[1], this.flapDotPositions[1], this.flapDotPositions[2], lerp);
-                    }
-                    else if (this.currentFlapsAngle <= this.cockpitSettings.FlapsLevels.flapsAngle[3]) {
+                    } else if (this.currentFlapsAngle <= this.cockpitSettings.FlapsLevels.flapsAngle[3]) {
                         var lerp = Utils.Clamp((this.currentFlapsAngle - 15) / 5, 0, 1);
                         dFlapsArrow = this.generateArrowPathD(this.flapArrowPathD, this.mainShapeCorners[1], this.flapDotPositions[2], this.flapDotPositions[3], lerp);
-                    }
-                    else if (this.currentFlapsAngle <= this.cockpitSettings.FlapsLevels.flapsAngle[4]) {
+                    } else if (this.currentFlapsAngle <= this.cockpitSettings.FlapsLevels.flapsAngle[4]) {
                         var lerp = Utils.Clamp((this.currentFlapsAngle - 20) / 15, 0, 1);
                         dFlapsArrow = this.generateArrowPathD(this.flapArrowPathD, this.mainShapeCorners[1], this.flapDotPositions[3], this.flapDotPositions[4], lerp);
                     }
@@ -681,44 +682,42 @@ var A320_Neo_UpperECAM;
                 if (this.currentStateText != null) {
                     switch (handleIndex) {
                         case 1:
-                            {
-                                let flapsOut = SimVar.GetSimVarValue("TRAILING EDGE FLAPS LEFT INDEX", "Number");
-                                if (flapsOut > 0) {
-                                    this.currentStateText.textContent = "1+F";
-                                }
-                                else {
-                                    this.currentStateText.textContent = "1";
-                                }
-                                break;
+                        {
+                            const flapsOut = SimVar.GetSimVarValue("TRAILING EDGE FLAPS LEFT INDEX", "Number");
+                            if (flapsOut > 0) {
+                                this.currentStateText.textContent = "1+F";
+                            } else {
+                                this.currentStateText.textContent = "1";
                             }
+                            break;
+                        }
                         case 2:
-                            {
-                                this.currentStateText.textContent = "2";
-                                break;
-                            }
+                        {
+                            this.currentStateText.textContent = "2";
+                            break;
+                        }
                         case 3:
-                            {
-                                this.currentStateText.textContent = "3";
-                                break;
-                            }
+                        {
+                            this.currentStateText.textContent = "3";
+                            break;
+                        }
                         case 4:
-                            {
-                                this.currentStateText.textContent = "FULL";
-                                break;
-                            }
+                        {
+                            this.currentStateText.textContent = "FULL";
+                            break;
+                        }
                         default:
-                            {
-                                this.currentStateText.textContent = "";
-                                break;
-                            }
+                        {
+                            this.currentStateText.textContent = "";
+                            break;
+                        }
                     }
                 }
                 var active = ((this.currentSlatsAngle > 0) || (this.currentFlapsAngle > 0));
                 if (this.isActive != active) {
                     if (active) {
                         this.activate();
-                    }
-                    else {
+                    } else {
                         this.deactivate();
                     }
                 }
@@ -727,8 +726,7 @@ var A320_Neo_UpperECAM;
                 if (slatsAngleChanged && (this.targetSlatsArrowsStrings != null) && (slatsTargetIndex >= 0) && (slatsTargetIndex < this.targetSlatsArrowsStrings.length)) {
                     this.targetSlatsArrow.setAttribute("d", this.targetSlatsArrowsStrings[slatsTargetIndex]);
                     this.targetSlatsArrow.style.display = "block";
-                }
-                else {
+                } else {
                     this.targetSlatsArrow.style.display = "none";
                 }
             }
@@ -736,8 +734,7 @@ var A320_Neo_UpperECAM;
                 if (flapsAngleChanged && (this.targetFlapsArrowsStrings != null) && (flapsTargetIndex >= 0) && (flapsTargetIndex < this.targetFlapsArrowsStrings.length)) {
                     this.targetFlapsArrow.setAttribute("d", this.targetFlapsArrowsStrings[flapsTargetIndex]);
                     this.targetFlapsArrow.style.display = "block";
-                }
-                else {
+                } else {
                     this.targetFlapsArrow.style.display = "none";
                 }
             }
@@ -748,12 +745,10 @@ var A320_Neo_UpperECAM;
             if (_currentLineProgress >= 1) {
                 finalPos.x = _end.x;
                 finalPos.y = _end.y;
-            }
-            else if (_currentLineProgress > 0) {
+            } else if (_currentLineProgress > 0) {
                 finalPos.x = (_start.x + (dir.x * _currentLineProgress));
                 finalPos.y = (_start.y + (dir.y * _currentLineProgress));
-            }
-            else {
+            } else {
                 finalPos.x = _start.x;
                 finalPos.y = _start.y;
             }
@@ -777,7 +772,7 @@ var A320_Neo_UpperECAM;
         }
         addMessage(_id, _message, _style) {
             if (_message != "") {
-                let infoPanel = this.getInfoPanel(_id);
+                const infoPanel = this.getInfoPanel(_id);
                 if (infoPanel) {
                     infoPanel.addMessage(_message, _style);
                 }
@@ -785,22 +780,23 @@ var A320_Neo_UpperECAM;
         }
         removeMessage(_id, _message) {
             if (_message != "") {
-                let infoPanel = this.getInfoPanel(_id);
+                const infoPanel = this.getInfoPanel(_id);
                 if (infoPanel) {
                     infoPanel.removeMessage(_message);
                 }
             }
         }
         modifyMessage(_id, _currentMessage, _newMessage, _newStyle) {
-            let infoPanel = this.getInfoPanel(_id);
+            const infoPanel = this.getInfoPanel(_id);
             if (infoPanel) {
-                if (_newMessage == "")
+                if (_newMessage == "") {
                     _newMessage = _currentMessage;
+                }
                 infoPanel.modifyMessage(_currentMessage, _newMessage, _newStyle);
             }
         }
         clearScreen(_id) {
-            let infoPanel = this.getInfoPanel(_id);
+            const infoPanel = this.getInfoPanel(_id);
             if (infoPanel) {
                 infoPanel.clearScreen();
             }
@@ -822,40 +818,38 @@ var A320_Neo_UpperECAM;
                     let panelId;
                     if (strings[0] == "primary") {
                         panelId = Airliners.EICAS_INFO_PANEL_ID.PRIMARY;
-                    }
-                    else if (strings[0] == "secondary") {
+                    } else if (strings[0] == "secondary") {
                         panelId = Airliners.EICAS_INFO_PANEL_ID.PRIMARY;
-                    }
-                    else {
+                    } else {
                         return;
                     }
                     switch (_type) {
                         case Airliners.EICAS_INFO_PANEL_EVENT_TYPE.ADD_MESSAGE:
-                            {
-                                if (strings.length >= 3) {
-                                    this.addMessage(panelId, strings[1], Airliners.EICAS_INFO_PANEL_MESSAGE_STYLE[strings[2]]);
-                                }
-                                break;
+                        {
+                            if (strings.length >= 3) {
+                                this.addMessage(panelId, strings[1], Airliners.EICAS_INFO_PANEL_MESSAGE_STYLE[strings[2]]);
                             }
+                            break;
+                        }
                         case Airliners.EICAS_INFO_PANEL_EVENT_TYPE.REMOVE_MESSAGE:
-                            {
-                                if (strings.length >= 2) {
-                                    this.removeMessage(panelId, strings[1]);
-                                }
-                                break;
+                        {
+                            if (strings.length >= 2) {
+                                this.removeMessage(panelId, strings[1]);
                             }
+                            break;
+                        }
                         case Airliners.EICAS_INFO_PANEL_EVENT_TYPE.MODIFY_MESSAGE:
-                            {
-                                if (strings.length >= 4) {
-                                    this.modifyMessage(panelId, strings[1], strings[2], Airliners.EICAS_INFO_PANEL_MESSAGE_STYLE[strings[3]]);
-                                }
-                                break;
+                        {
+                            if (strings.length >= 4) {
+                                this.modifyMessage(panelId, strings[1], strings[2], Airliners.EICAS_INFO_PANEL_MESSAGE_STYLE[strings[3]]);
                             }
+                            break;
+                        }
                         case Airliners.EICAS_INFO_PANEL_EVENT_TYPE.CLEAR_SCREEN:
-                            {
-                                this.clearScreen(panelId);
-                                break;
-                            }
+                        {
+                            this.clearScreen(panelId);
+                            break;
+                        }
                     }
                 }
             }

@@ -11,8 +11,8 @@ class HorizontalCompass extends HTMLElement {
     }
     createSVG() {
         let width = 288;
-        let truncateLeft_Text = this.getAttribute("TruncateLeft");
-        let truncateRight_Text = this.getAttribute("TruncateRight");
+        const truncateLeft_Text = this.getAttribute("TruncateLeft");
+        const truncateRight_Text = this.getAttribute("TruncateRight");
         let truncateLeft = 0;
         let truncateRight = 0;
         if (truncateLeft_Text) {
@@ -23,13 +23,13 @@ class HorizontalCompass extends HTMLElement {
             truncateRight = parseInt(truncateRight_Text);
             width -= truncateRight;
         }
-        let center = (width - truncateLeft + truncateRight) / 2;
+        const center = (width - truncateLeft + truncateRight) / 2;
         this.root = document.createElementNS(Avionics.SVG.NS, "svg");
         this.root.setAttribute("width", "100%");
         this.root.setAttribute("height", "100%");
         this.root.setAttribute("viewBox", "0 0 " + width + " 20");
         this.appendChild(this.root);
-        let background = document.createElementNS(Avionics.SVG.NS, "rect");
+        const background = document.createElementNS(Avionics.SVG.NS, "rect");
         background.setAttribute("x", "0");
         background.setAttribute("y", "0");
         background.setAttribute("width", width.toString());
@@ -41,7 +41,7 @@ class HorizontalCompass extends HTMLElement {
         this.root.appendChild(this.movingRibbon);
         this.digits = [];
         for (let i = -8; i <= 8; i++) {
-            let digit = document.createElementNS(Avionics.SVG.NS, "text");
+            const digit = document.createElementNS(Avionics.SVG.NS, "text");
             digit.setAttribute("fill", "white");
             digit.setAttribute("text-anchor", "middle");
             digit.setAttribute("x", (center + 20.6 * i).toString());
@@ -53,7 +53,7 @@ class HorizontalCompass extends HTMLElement {
             this.digits.push(digit);
         }
         for (let i = -80; i <= 80; i++) {
-            let rect = document.createElementNS(Avionics.SVG.NS, "rect");
+            const rect = document.createElementNS(Avionics.SVG.NS, "rect");
             rect.setAttribute("x", (center - 0.5 + 2.06 * i).toString());
             rect.setAttribute("y", i % 5 == 0 ? "17" : "18.5");
             rect.setAttribute("width", "1");
@@ -65,7 +65,7 @@ class HorizontalCompass extends HTMLElement {
         this.courseElement.setAttribute("points", center + ",20 " + (center + 6) + ",16 " + (center + 10) + ",16 " + (center + 10) + ",20 " + (center - 10) + ",20 " + (center - 10) + ",16 " + (center - 6) + ",16");
         this.courseElement.setAttribute("fill", "aqua");
         this.root.appendChild(this.courseElement);
-        let bearingBackground = document.createElementNS(Avionics.SVG.NS, "polygon");
+        const bearingBackground = document.createElementNS(Avionics.SVG.NS, "polygon");
         bearingBackground.setAttribute("points", center + ",20 " + (center + 6) + ",16 " + (center + 14) + ",16 " + (center + 14) + ",0 " + (center - 14) + ",0 " + (center - 14) + ",16 " + (center - 6) + ",16");
         bearingBackground.setAttribute("fill", "black");
         this.root.appendChild(bearingBackground);
@@ -86,11 +86,11 @@ class HorizontalCompass extends HTMLElement {
         switch (name) {
             case "bearing":
                 this.bearing = parseFloat(newValue);
-                let roundedBearing = Math.round(this.bearing / 10) * 10;
-                let bearingString = Math.round(this.bearing).toString();
+                const roundedBearing = Math.round(this.bearing / 10) * 10;
+                const bearingString = Math.round(this.bearing).toString();
                 this.bearingText.textContent = "000".slice(0, 3 - bearingString.length) + bearingString;
                 for (let i = -8; i <= 8; i++) {
-                    let string = ((roundedBearing + i * 10 + 360) % 360).toString();
+                    const string = ((roundedBearing + i * 10 + 360) % 360).toString();
                     this.digits[i + 8].textContent = "000".slice(0, 3 - string.length) + string;
                 }
                 this.movingRibbon.setAttribute("transform", "translate(" + ((roundedBearing - this.bearing) * 2.06) + ",0)");
@@ -99,8 +99,7 @@ class HorizontalCompass extends HTMLElement {
             case "course-active":
                 if (newValue == "True") {
                     this.courseElement.setAttribute("visibility", "");
-                }
-                else {
+                } else {
                     this.courseElement.setAttribute("visibility", "hidden");
                 }
                 break;

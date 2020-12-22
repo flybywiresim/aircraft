@@ -10,12 +10,10 @@ class ContextualMenu {
         for (var i = _gps.contextualMenuDisplayBeginIndex; i < Math.min(this.elements.length, _gps.contextualMenuDisplayBeginIndex + _maxElems); i++) {
             if (this.elements[i].isInactive()) {
                 elementsHTML += '<div class="ContextualMenuElement" state="Inactive">' + this.elements[i].name + '</div>';
-            }
-            else {
+            } else {
                 if (i == _gps.cursorIndex) {
                     elementsHTML += '<div class="ContextualMenuElement" state="Selected">' + this.elements[i].name + '</div>';
-                }
-                else {
+                } else {
                     elementsHTML += '<div class="ContextualMenuElement" state="Unselected">' + this.elements[i].name + '</div>';
                 }
             }
@@ -52,8 +50,7 @@ class ContextualMenuElement {
     isInactive() {
         if (this.inactiveCallback instanceof Function) {
             return this.inactiveCallback();
-        }
-        else {
+        } else {
             return this.inactiveCallback;
         }
     }

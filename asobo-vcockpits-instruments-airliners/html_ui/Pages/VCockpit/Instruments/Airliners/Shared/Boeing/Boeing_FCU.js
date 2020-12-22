@@ -48,7 +48,7 @@ var Boeing_FCU;
         }
         onUpdate(_deltaTime) {
             super.onUpdate(_deltaTime);
-            let machChanged = this.updateMachTransition();
+            const machChanged = this.updateMachTransition();
             var visible = this.shouldBeVisible();
             if ((visible != this.m_isVisible) || machChanged) {
                 this.m_isVisible = visible;
@@ -64,14 +64,15 @@ var Boeing_FCU;
             return new Airliners.DynamicValueComponent(this.querySelector("#value"), this.getCurrentValue.bind(this), 0, this.formatValueToString.bind(this));
         }
         getCurrentValue() {
-            if (Simplane.getAutoPilotMachModeActive())
+            if (Simplane.getAutoPilotMachModeActive()) {
                 return Simplane.getAutoPilotSelectedMachHoldValue();
+            }
             return Simplane.getAutoPilotSelectedAirspeedHoldValue();
         }
         formatValueToString(_value, _dp = 0) {
             if (Simplane.getAutoPilotMachModeActive()) {
                 if (_value < 1.0) {
-                    let fixedMach = _value.toFixed(3);
+                    const fixedMach = _value.toFixed(3);
                     var radixPos = fixedMach.indexOf('.');
                     return fixedMach.slice(radixPos);
                 }
@@ -82,8 +83,7 @@ var Boeing_FCU;
         shouldBeVisible() {
             if (SimVar.GetSimVarValue("L:AP_SPEED_INTERVENTION_ACTIVE", "number") === 1) {
                 return true;
-            }
-            else if (SimVar.GetSimVarValue("L:AP_VNAV_ACTIVE", "number") === 1) {
+            } else if (SimVar.GetSimVarValue("L:AP_VNAV_ACTIVE", "number") === 1) {
                 return false;
             }
             return true;
@@ -136,8 +136,7 @@ var Boeing_FCU;
         getCurrentValue() {
             if (this.isTRKMode) {
                 return Simplane.getAutoPilotTrackAngle();
-            }
-            else {
+            } else {
                 return SimVar.GetSimVarValue("AUTOPILOT HEADING LOCK DIR:1", "degrees");
             }
         }
@@ -184,16 +183,14 @@ var Boeing_FCU;
         getCurrentValue() {
             if (this.isFPAMode) {
                 return -Simplane.getAutoPilotFlightPathAngle();
-            }
-            else {
+            } else {
                 return Simplane.getAutoPilotVerticalSpeedHoldValue();
             }
         }
         formatValueToString(_value, _dp = 0) {
             if (this.isFPAMode) {
                 return ((_value > 0) ? "+" : "") + _value.toFixed(1);
-            }
-            else {
+            } else {
                 return ((_value > 0) ? "+" : "") + _value.toFixed(0);
             }
         }

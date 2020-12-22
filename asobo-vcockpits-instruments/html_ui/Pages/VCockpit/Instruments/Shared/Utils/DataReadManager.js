@@ -39,8 +39,7 @@ class DataReadManager {
             try {
                 this.metaManager.RegisterManager(this);
                 this.registered = true;
-            }
-            catch (Error) {
+            } catch (Error) {
                 this.registered = false;
             }
         }
