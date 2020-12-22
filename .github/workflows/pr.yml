@@ -6,8 +6,6 @@ on:
       - synchronize
       - reopened
       - ready_for_review
-    branches:
-      - master
 
 jobs:
   lint:
